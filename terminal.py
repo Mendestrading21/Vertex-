@@ -3282,13 +3282,38 @@ function buildSimulator(){
   if(prev!==''&&+prev<all.length)sel.value=prev;
   runSim();
 }
+function payoffSVG(c,spot){
+  const isCall=c.type==='CALL',mid=c.mid||(c.cost?c.cost/100:0),K=c.strike;
+  const lo=spot*0.72,hi=spot*1.38,N=64,W=340,H=160,padT=12,padB=22;
+  const X=S=>((S-lo)/(hi-lo))*W;
+  const xs=[],ys=[];for(let i=0;i<=N;i++){const S=lo+(hi-lo)*i/N;const val=isCall?Math.max(S-K,0):Math.max(K-S,0);xs.push(S);ys.push((val-mid)*100);}
+  const ymin=Math.min(...ys,0),ymax=Math.max(...ys,0),yr=(ymax-ymin)||1;
+  const Y=v=>padT+(1-(v-ymin)/yr)*(H-padT-padB);
+  const be=isCall?K+mid:K-mid,beX=X(be),zY=Y(0),spotX=X(spot);
+  const red=[],green=[];xs.forEach((S,i)=>{(ys[i]<0?red:green).push([X(S),Y(ys[i])]);});
+  if(red.length)red.push([beX,zY]);if(green.length)green.unshift([beX,zY]);
+  const poly=(a,col)=>a.length>1?`<polyline points="${a.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${col}" stroke-width="2.5" vector-effect="non-scaling-stroke"/>`:'';
+  const cx=x=>Math.min(Math.max(x,16),W-16);
+  return `<div style="background:#0a0a0a;border:1px solid #161616;border-radius:10px;padding:12px 10px 4px;margin-bottom:12px">
+    <div class="muted" style="font-size:9px;letter-spacing:.5px;text-transform:uppercase;margin:0 4px 4px">Profil de gain à l'échéance · ${isCall?'CALL':'PUT'} $${K}</div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:160px">
+      <line x1="0" y1="${zY.toFixed(1)}" x2="${W}" y2="${zY.toFixed(1)}" stroke="#444" stroke-width="1" stroke-dasharray="4 3"/>
+      <line x1="${beX.toFixed(1)}" y1="${padT}" x2="${beX.toFixed(1)}" y2="${H-padB}" stroke="#FFD27A" stroke-width="1" stroke-dasharray="3 3" opacity=".55"/>
+      <line x1="${spotX.toFixed(1)}" y1="${padT}" x2="${spotX.toFixed(1)}" y2="${H-padB}" stroke="#fff" stroke-width="1" stroke-dasharray="2 3" opacity=".4"/>
+      ${poly(red,'#EF4444')}${poly(green,'#22C55E')}
+      <text x="${cx(beX).toFixed(0)}" y="${H-6}" fill="#FFD27A" font-size="9" text-anchor="middle">BE $${be.toFixed(0)}</text>
+      <text x="${cx(spotX).toFixed(0)}" y="${(padT+9).toFixed(0)}" fill="#bbb" font-size="9" text-anchor="middle">cours $${spot.toFixed(0)}</text>
+    </svg>
+    <div class="muted" style="font-size:9.5px;text-align:center;padding:2px 4px 6px">🟥 perte · 🟩 gain · ligne or = breakeven · ligne blanche = cours actuel</div>
+  </div>`;
+}
 function runSim(){
   const all=window.__simAll||[]; const sel=document.getElementById('simSel'); if(!sel||!all.length)return;
   const c=all[+sel.value||0]; const spot=(window.__spot||{})[c.sym]||c.strike; const mid=c.mid||(c.cost?c.cost/100:0); const isCall=c.type==='CALL';
   document.getElementById('simInfo').textContent=`cours ≈ $${spot} · prime $${mid} · coût $${fmt(c.cost)} · breakeven $${c.be}`;
   const steps=[-0.2,-0.1,-0.05,0,0.05,0.1,0.15,0.2,0.3];
   const rws=steps.map(p=>{const S=+(spot*(1+p)).toFixed(2);const val=isCall?Math.max(S-c.strike,0):Math.max(c.strike-S,0);const pnl=Math.round((val-mid)*100);const ret=mid?Math.round((val-mid)/mid*100):0;const hl=p===0?'background:rgba(255,255,255,.04)':'';return `<tr style="${hl}"><td>$${S} <span class="muted">(${p>=0?'+':''}${Math.round(p*100)}%)</span></td><td>$${val.toFixed(2)}</td><td class="${pnl>=0?'up':'dn'}">${pnl>=0?'+':''}$${pnl}</td><td class="${ret>=0?'up':'dn'}">${ret>=0?'+':''}${ret}%</td></tr>`;}).join('');
-  document.getElementById('simOut').innerHTML=`<div class="tscroll"><table><thead><tr><th>Cours du titre</th><th>Valeur option</th><th>Gain / perte (1 contrat)</th><th>Rendement</th></tr></thead><tbody>${rws}</tbody></table></div>`;
+  document.getElementById('simOut').innerHTML=payoffSVG(c,spot)+`<div class="tscroll"><table><thead><tr><th>Cours du titre</th><th>Valeur option</th><th>Gain / perte (1 contrat)</th><th>Rendement</th></tr></thead><tbody>${rws}</tbody></table></div>`;
 }
 function buildStrategies(){
   const el=document.getElementById('strategies'); if(el.dataset.on)return; el.dataset.on='1';
