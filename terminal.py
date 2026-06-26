@@ -73,6 +73,7 @@ UNIVERSE = list(dict.fromkeys(WATCHLIST + _BIG_EXTRA + _TREND_EXTRA))   # dédup
 # Priorité : core 57 + fast movers (trend) + plus grosses caps, plafonné à 95.
 # Les titres au-delà gardent leur dernier cours yfinance (scan), pas le tick live.
 LIVE_SYMBOLS = list(dict.fromkeys(WATCHLIST + _TREND_EXTRA + _BIG_EXTRA))[:95]
+TREND_SET = set(_TREND_EXTRA)   # valeurs « buzz / fast movers » → badge 🔥 dans l'UI
 BENCH = 'SPY'
 R = 0.045
 # IBKR désactivé sur le cloud (pas de TWS) → met NO_IBKR=1 en variable d'env
@@ -371,8 +372,10 @@ def scan():
                     continue
                 d = analyse(df, bench_ret)
                 detail[sym] = d
+                d['trend'] = sym in TREND_SET
                 rows.append({'symbol': sym, 'price': d['price'], 'change': d['change'],
-                             'score': d['score'], 'grade': d['grade'], 'verdict': d['verdict'], 'sigcount': d['sigcount']})
+                             'score': d['score'], 'grade': d['grade'], 'verdict': d['verdict'],
+                             'sigcount': d['sigcount'], 'trend': sym in TREND_SET})
             except Exception:
                 continue
         rows.sort(key=lambda x: x['score'], reverse=True)
