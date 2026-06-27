@@ -462,6 +462,7 @@ def scan():
                            'recommendations': recs,
                            'breadth': breadth, 'spy': spy, 'market': market_status(),
                            'universe_n': len(UNIVERSE), 'scanned_n': len(rows),
+                           'scan_ts': time.time(),
                            'updated': datetime.now().strftime('%H:%M:%S'), 'error': None})
     except Exception as e:
         scan_state['error'] = f'{type(e).__name__}: {e}'
@@ -727,6 +728,7 @@ def healthz():
         'universe': len(UNIVERSE),
         'scanned': scan_state.get('scanned_n'),
         'last_scan': scan_state.get('updated'),
+        'scan_age': round(time.time() - scan_state['scan_ts']) if scan_state.get('scan_ts') else None,
         'scan_error': scan_state.get('error'),
     }), 200
 
@@ -1113,6 +1115,7 @@ html,body{overflow-x:hidden;max-width:100%}
 .gnav-search{display:flex;gap:6px;align-items:center}
 .gnav-search input{background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:9px;padding:7px 11px;font-size:13px;width:210px;max-width:46vw}
 .gnav-search button{background:rgba(245,180,91,.12);border:1px solid #F5B45B55;color:#F5B45B;border-radius:9px;padding:7px 13px;font-weight:800;cursor:pointer}
+.gnav-fresh{font-size:10px;font-weight:800;padding:5px 10px;border-radius:8px;white-space:nowrap;border:1px solid transparent;letter-spacing:.3px}
 .back{display:none!important}
 @media(max-width:640px){.gnav-in{padding:6px 10px;gap:8px}.gnav-links{order:2;overflow-x:auto;flex-wrap:nowrap}#gnav a{font-size:12px;padding:6px 9px}.gnav-search{order:1;width:100%}.gnav-search input{flex:1;max-width:none;width:auto}}
 /* === systeme de design premium (toutes pages) === */
@@ -1147,13 +1150,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;backgr
 function build(){if(document.getElementById('gnav'))return;var p=location.pathname;
 var links=L.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'>'+x[1]+'</a>';}).join('');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
+gnavFresh();setInterval(gnavFresh,30000);
 var M=[['/','🏠','Cockpit'],['/watchlist','📡','Scan'],['/ma-page','⭐','Ma Page'],['/options','💎','Options'],['/entreprises','🏢','Titres']];
 var mn=document.createElement('nav');mn.id='mnav';
 mn.innerHTML=M.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'><span class="mi">'+x[1]+'</span>'+x[2]+'</a>';}).join('');
 document.body.appendChild(mn);}
 window.gnavGo=function(e){e.preventDefault();var v=(document.getElementById('gnavq').value||'').trim().toUpperCase();if(v)location.href='/titre/'+encodeURIComponent(v);return false;};
+window.gnavFresh=function(){fetch('/healthz').then(function(r){return r.json()}).then(function(h){var el=document.getElementById('gnav-fresh');if(!el)return;var s,c;if(h.scan_error||h.scan_age==null||h.scan_age>300){s='⚠️ ANCIEN';c='#EF4444';}else if(h.ibkr_enabled){s='🟢 LIVE IBKR';c='#22C55E';}else{s='🟡 DIFFÉRÉ';c='#FFB23F';}el.textContent=s;el.style.color=c;el.style.borderColor=c+'66';el.style.background=c+'1a';el.style.display='';}).catch(function(){});};
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();})();
 </script></head><body>
@@ -1615,6 +1620,7 @@ html,body{overflow-x:hidden;max-width:100%}
 .gnav-search{display:flex;gap:6px;align-items:center}
 .gnav-search input{background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:9px;padding:7px 11px;font-size:13px;width:210px;max-width:46vw}
 .gnav-search button{background:rgba(245,180,91,.12);border:1px solid #F5B45B55;color:#F5B45B;border-radius:9px;padding:7px 13px;font-weight:800;cursor:pointer}
+.gnav-fresh{font-size:10px;font-weight:800;padding:5px 10px;border-radius:8px;white-space:nowrap;border:1px solid transparent;letter-spacing:.3px}
 .back{display:none!important}
 @media(max-width:640px){.gnav-in{padding:6px 10px;gap:8px}.gnav-links{order:2;overflow-x:auto;flex-wrap:nowrap}#gnav a{font-size:12px;padding:6px 9px}.gnav-search{order:1;width:100%}.gnav-search input{flex:1;max-width:none;width:auto}}
 /* === systeme de design premium (toutes pages) === */
@@ -1649,13 +1655,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;backgr
 function build(){if(document.getElementById('gnav'))return;var p=location.pathname;
 var links=L.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'>'+x[1]+'</a>';}).join('');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
+gnavFresh();setInterval(gnavFresh,30000);
 var M=[['/','🏠','Cockpit'],['/watchlist','📡','Scan'],['/ma-page','⭐','Ma Page'],['/options','💎','Options'],['/entreprises','🏢','Titres']];
 var mn=document.createElement('nav');mn.id='mnav';
 mn.innerHTML=M.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'><span class="mi">'+x[1]+'</span>'+x[2]+'</a>';}).join('');
 document.body.appendChild(mn);}
 window.gnavGo=function(e){e.preventDefault();var v=(document.getElementById('gnavq').value||'').trim().toUpperCase();if(v)location.href='/titre/'+encodeURIComponent(v);return false;};
+window.gnavFresh=function(){fetch('/healthz').then(function(r){return r.json()}).then(function(h){var el=document.getElementById('gnav-fresh');if(!el)return;var s,c;if(h.scan_error||h.scan_age==null||h.scan_age>300){s='⚠️ ANCIEN';c='#EF4444';}else if(h.ibkr_enabled){s='🟢 LIVE IBKR';c='#22C55E';}else{s='🟡 DIFFÉRÉ';c='#FFB23F';}el.textContent=s;el.style.color=c;el.style.borderColor=c+'66';el.style.background=c+'1a';el.style.display='';}).catch(function(){});};
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();})();
 </script></head><body>
@@ -2456,6 +2464,7 @@ html,body{overflow-x:hidden;max-width:100%}
 .gnav-search{display:flex;gap:6px;align-items:center}
 .gnav-search input{background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:9px;padding:7px 11px;font-size:13px;width:210px;max-width:46vw}
 .gnav-search button{background:rgba(245,180,91,.12);border:1px solid #F5B45B55;color:#F5B45B;border-radius:9px;padding:7px 13px;font-weight:800;cursor:pointer}
+.gnav-fresh{font-size:10px;font-weight:800;padding:5px 10px;border-radius:8px;white-space:nowrap;border:1px solid transparent;letter-spacing:.3px}
 .back{display:none!important}
 @media(max-width:640px){.gnav-in{padding:6px 10px;gap:8px}.gnav-links{order:2;overflow-x:auto;flex-wrap:nowrap}#gnav a{font-size:12px;padding:6px 9px}.gnav-search{order:1;width:100%}.gnav-search input{flex:1;max-width:none;width:auto}}
 /* === systeme de design premium (toutes pages) === */
@@ -2490,13 +2499,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;backgr
 function build(){if(document.getElementById('gnav'))return;var p=location.pathname;
 var links=L.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'>'+x[1]+'</a>';}).join('');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
+gnavFresh();setInterval(gnavFresh,30000);
 var M=[['/','🏠','Cockpit'],['/watchlist','📡','Scan'],['/ma-page','⭐','Ma Page'],['/options','💎','Options'],['/entreprises','🏢','Titres']];
 var mn=document.createElement('nav');mn.id='mnav';
 mn.innerHTML=M.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'><span class="mi">'+x[1]+'</span>'+x[2]+'</a>';}).join('');
 document.body.appendChild(mn);}
 window.gnavGo=function(e){e.preventDefault();var v=(document.getElementById('gnavq').value||'').trim().toUpperCase();if(v)location.href='/titre/'+encodeURIComponent(v);return false;};
+window.gnavFresh=function(){fetch('/healthz').then(function(r){return r.json()}).then(function(h){var el=document.getElementById('gnav-fresh');if(!el)return;var s,c;if(h.scan_error||h.scan_age==null||h.scan_age>300){s='⚠️ ANCIEN';c='#EF4444';}else if(h.ibkr_enabled){s='🟢 LIVE IBKR';c='#22C55E';}else{s='🟡 DIFFÉRÉ';c='#FFB23F';}el.textContent=s;el.style.color=c;el.style.borderColor=c+'66';el.style.background=c+'1a';el.style.display='';}).catch(function(){});};
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();})();
 </script></head><body>
@@ -2627,6 +2638,7 @@ html,body{overflow-x:hidden;max-width:100%}
 .gnav-search{display:flex;gap:6px;align-items:center}
 .gnav-search input{background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:9px;padding:7px 11px;font-size:13px;width:210px;max-width:46vw}
 .gnav-search button{background:rgba(245,180,91,.12);border:1px solid #F5B45B55;color:#F5B45B;border-radius:9px;padding:7px 13px;font-weight:800;cursor:pointer}
+.gnav-fresh{font-size:10px;font-weight:800;padding:5px 10px;border-radius:8px;white-space:nowrap;border:1px solid transparent;letter-spacing:.3px}
 .back{display:none!important}
 @media(max-width:640px){.gnav-in{padding:6px 10px;gap:8px}.gnav-links{order:2;overflow-x:auto;flex-wrap:nowrap}#gnav a{font-size:12px;padding:6px 9px}.gnav-search{order:1;width:100%}.gnav-search input{flex:1;max-width:none;width:auto}}
 /* === systeme de design premium (toutes pages) === */
@@ -2661,13 +2673,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;backgr
 function build(){if(document.getElementById('gnav'))return;var p=location.pathname;
 var links=L.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'>'+x[1]+'</a>';}).join('');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
+gnavFresh();setInterval(gnavFresh,30000);
 var M=[['/','🏠','Cockpit'],['/watchlist','📡','Scan'],['/ma-page','⭐','Ma Page'],['/options','💎','Options'],['/entreprises','🏢','Titres']];
 var mn=document.createElement('nav');mn.id='mnav';
 mn.innerHTML=M.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'><span class="mi">'+x[1]+'</span>'+x[2]+'</a>';}).join('');
 document.body.appendChild(mn);}
 window.gnavGo=function(e){e.preventDefault();var v=(document.getElementById('gnavq').value||'').trim().toUpperCase();if(v)location.href='/titre/'+encodeURIComponent(v);return false;};
+window.gnavFresh=function(){fetch('/healthz').then(function(r){return r.json()}).then(function(h){var el=document.getElementById('gnav-fresh');if(!el)return;var s,c;if(h.scan_error||h.scan_age==null||h.scan_age>300){s='⚠️ ANCIEN';c='#EF4444';}else if(h.ibkr_enabled){s='🟢 LIVE IBKR';c='#22C55E';}else{s='🟡 DIFFÉRÉ';c='#FFB23F';}el.textContent=s;el.style.color=c;el.style.borderColor=c+'66';el.style.background=c+'1a';el.style.display='';}).catch(function(){});};
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();})();
 </script></head><body>
@@ -2719,6 +2733,7 @@ html,body{overflow-x:hidden;max-width:100%}
 .gnav-search{display:flex;gap:6px;align-items:center}
 .gnav-search input{background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:9px;padding:7px 11px;font-size:13px;width:210px;max-width:46vw}
 .gnav-search button{background:rgba(245,180,91,.12);border:1px solid #F5B45B55;color:#F5B45B;border-radius:9px;padding:7px 13px;font-weight:800;cursor:pointer}
+.gnav-fresh{font-size:10px;font-weight:800;padding:5px 10px;border-radius:8px;white-space:nowrap;border:1px solid transparent;letter-spacing:.3px}
 .back{display:none!important}
 @media(max-width:640px){.gnav-in{padding:6px 10px;gap:8px}.gnav-links{order:2;overflow-x:auto;flex-wrap:nowrap}#gnav a{font-size:12px;padding:6px 9px}.gnav-search{order:1;width:100%}.gnav-search input{flex:1;max-width:none;width:auto}}
 /* === systeme de design premium (toutes pages) === */
@@ -2753,13 +2768,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;backgr
 function build(){if(document.getElementById('gnav'))return;var p=location.pathname;
 var links=L.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'>'+x[1]+'</a>';}).join('');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
+gnavFresh();setInterval(gnavFresh,30000);
 var M=[['/','🏠','Cockpit'],['/watchlist','📡','Scan'],['/ma-page','⭐','Ma Page'],['/options','💎','Options'],['/entreprises','🏢','Titres']];
 var mn=document.createElement('nav');mn.id='mnav';
 mn.innerHTML=M.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'><span class="mi">'+x[1]+'</span>'+x[2]+'</a>';}).join('');
 document.body.appendChild(mn);}
 window.gnavGo=function(e){e.preventDefault();var v=(document.getElementById('gnavq').value||'').trim().toUpperCase();if(v)location.href='/titre/'+encodeURIComponent(v);return false;};
+window.gnavFresh=function(){fetch('/healthz').then(function(r){return r.json()}).then(function(h){var el=document.getElementById('gnav-fresh');if(!el)return;var s,c;if(h.scan_error||h.scan_age==null||h.scan_age>300){s='⚠️ ANCIEN';c='#EF4444';}else if(h.ibkr_enabled){s='🟢 LIVE IBKR';c='#22C55E';}else{s='🟡 DIFFÉRÉ';c='#FFB23F';}el.textContent=s;el.style.color=c;el.style.borderColor=c+'66';el.style.background=c+'1a';el.style.display='';}).catch(function(){});};
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();})();
 </script></head><body>
@@ -2822,6 +2839,7 @@ html,body{overflow-x:hidden;max-width:100%}
 .gnav-search{display:flex;gap:6px;align-items:center}
 .gnav-search input{background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:9px;padding:7px 11px;font-size:13px;width:210px;max-width:46vw}
 .gnav-search button{background:rgba(245,180,91,.12);border:1px solid #F5B45B55;color:#F5B45B;border-radius:9px;padding:7px 13px;font-weight:800;cursor:pointer}
+.gnav-fresh{font-size:10px;font-weight:800;padding:5px 10px;border-radius:8px;white-space:nowrap;border:1px solid transparent;letter-spacing:.3px}
 .back{display:none!important}
 @media(max-width:640px){.gnav-in{padding:6px 10px;gap:8px}.gnav-links{order:2;overflow-x:auto;flex-wrap:nowrap}#gnav a{font-size:12px;padding:6px 9px}.gnav-search{order:1;width:100%}.gnav-search input{flex:1;max-width:none;width:auto}}
 /* === systeme de design premium (toutes pages) === */
@@ -2856,13 +2874,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;backgr
 function build(){if(document.getElementById('gnav'))return;var p=location.pathname;
 var links=L.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'>'+x[1]+'</a>';}).join('');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
+gnavFresh();setInterval(gnavFresh,30000);
 var M=[['/','🏠','Cockpit'],['/watchlist','📡','Scan'],['/ma-page','⭐','Ma Page'],['/options','💎','Options'],['/entreprises','🏢','Titres']];
 var mn=document.createElement('nav');mn.id='mnav';
 mn.innerHTML=M.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'><span class="mi">'+x[1]+'</span>'+x[2]+'</a>';}).join('');
 document.body.appendChild(mn);}
 window.gnavGo=function(e){e.preventDefault();var v=(document.getElementById('gnavq').value||'').trim().toUpperCase();if(v)location.href='/titre/'+encodeURIComponent(v);return false;};
+window.gnavFresh=function(){fetch('/healthz').then(function(r){return r.json()}).then(function(h){var el=document.getElementById('gnav-fresh');if(!el)return;var s,c;if(h.scan_error||h.scan_age==null||h.scan_age>300){s='⚠️ ANCIEN';c='#EF4444';}else if(h.ibkr_enabled){s='🟢 LIVE IBKR';c='#22C55E';}else{s='🟡 DIFFÉRÉ';c='#FFB23F';}el.textContent=s;el.style.color=c;el.style.borderColor=c+'66';el.style.background=c+'1a';el.style.display='';}).catch(function(){});};
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();})();
 </script></head><body>
@@ -2966,6 +2986,7 @@ html,body{overflow-x:hidden;max-width:100%}
 .gnav-search{display:flex;gap:6px;align-items:center}
 .gnav-search input{background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:9px;padding:7px 11px;font-size:13px;width:210px;max-width:46vw}
 .gnav-search button{background:rgba(245,180,91,.12);border:1px solid #F5B45B55;color:#F5B45B;border-radius:9px;padding:7px 13px;font-weight:800;cursor:pointer}
+.gnav-fresh{font-size:10px;font-weight:800;padding:5px 10px;border-radius:8px;white-space:nowrap;border:1px solid transparent;letter-spacing:.3px}
 .back{display:none!important}
 @media(max-width:640px){.gnav-in{padding:6px 10px;gap:8px}.gnav-links{order:2;overflow-x:auto;flex-wrap:nowrap}#gnav a{font-size:12px;padding:6px 9px}.gnav-search{order:1;width:100%}.gnav-search input{flex:1;max-width:none;width:auto}}
 /* === systeme de design premium (toutes pages) === */
@@ -3000,13 +3021,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;backgr
 function build(){if(document.getElementById('gnav'))return;var p=location.pathname;
 var links=L.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'>'+x[1]+'</a>';}).join('');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
+gnavFresh();setInterval(gnavFresh,30000);
 var M=[['/','🏠','Cockpit'],['/watchlist','📡','Scan'],['/ma-page','⭐','Ma Page'],['/options','💎','Options'],['/entreprises','🏢','Titres']];
 var mn=document.createElement('nav');mn.id='mnav';
 mn.innerHTML=M.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'><span class="mi">'+x[1]+'</span>'+x[2]+'</a>';}).join('');
 document.body.appendChild(mn);}
 window.gnavGo=function(e){e.preventDefault();var v=(document.getElementById('gnavq').value||'').trim().toUpperCase();if(v)location.href='/titre/'+encodeURIComponent(v);return false;};
+window.gnavFresh=function(){fetch('/healthz').then(function(r){return r.json()}).then(function(h){var el=document.getElementById('gnav-fresh');if(!el)return;var s,c;if(h.scan_error||h.scan_age==null||h.scan_age>300){s='⚠️ ANCIEN';c='#EF4444';}else if(h.ibkr_enabled){s='🟢 LIVE IBKR';c='#22C55E';}else{s='🟡 DIFFÉRÉ';c='#FFB23F';}el.textContent=s;el.style.color=c;el.style.borderColor=c+'66';el.style.background=c+'1a';el.style.display='';}).catch(function(){});};
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();})();
 </script></head><body>
@@ -3308,6 +3331,7 @@ html,body{overflow-x:hidden;max-width:100%}
 .gnav-search{display:flex;gap:6px;align-items:center}
 .gnav-search input{background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:9px;padding:7px 11px;font-size:13px;width:210px;max-width:46vw}
 .gnav-search button{background:rgba(245,180,91,.12);border:1px solid #F5B45B55;color:#F5B45B;border-radius:9px;padding:7px 13px;font-weight:800;cursor:pointer}
+.gnav-fresh{font-size:10px;font-weight:800;padding:5px 10px;border-radius:8px;white-space:nowrap;border:1px solid transparent;letter-spacing:.3px}
 .back{display:none!important}
 @media(max-width:640px){.gnav-in{padding:6px 10px;gap:8px}.gnav-links{order:2;overflow-x:auto;flex-wrap:nowrap}#gnav a{font-size:12px;padding:6px 9px}.gnav-search{order:1;width:100%}.gnav-search input{flex:1;max-width:none;width:auto}}
 /* === systeme de design premium (toutes pages) === */
@@ -3342,13 +3366,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;backgr
 function build(){if(document.getElementById('gnav'))return;var p=location.pathname;
 var links=L.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'>'+x[1]+'</a>';}).join('');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
+gnavFresh();setInterval(gnavFresh,30000);
 var M=[['/','🏠','Cockpit'],['/watchlist','📡','Scan'],['/ma-page','⭐','Ma Page'],['/options','💎','Options'],['/entreprises','🏢','Titres']];
 var mn=document.createElement('nav');mn.id='mnav';
 mn.innerHTML=M.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'><span class="mi">'+x[1]+'</span>'+x[2]+'</a>';}).join('');
 document.body.appendChild(mn);}
 window.gnavGo=function(e){e.preventDefault();var v=(document.getElementById('gnavq').value||'').trim().toUpperCase();if(v)location.href='/titre/'+encodeURIComponent(v);return false;};
+window.gnavFresh=function(){fetch('/healthz').then(function(r){return r.json()}).then(function(h){var el=document.getElementById('gnav-fresh');if(!el)return;var s,c;if(h.scan_error||h.scan_age==null||h.scan_age>300){s='⚠️ ANCIEN';c='#EF4444';}else if(h.ibkr_enabled){s='🟢 LIVE IBKR';c='#22C55E';}else{s='🟡 DIFFÉRÉ';c='#FFB23F';}el.textContent=s;el.style.color=c;el.style.borderColor=c+'66';el.style.background=c+'1a';el.style.display='';}).catch(function(){});};
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();})();
 </script></head><body>
@@ -3575,6 +3601,7 @@ html,body{overflow-x:hidden;max-width:100%}
 .gnav-search{display:flex;gap:6px;align-items:center}
 .gnav-search input{background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:9px;padding:7px 11px;font-size:13px;width:210px;max-width:46vw}
 .gnav-search button{background:rgba(245,180,91,.12);border:1px solid #F5B45B55;color:#F5B45B;border-radius:9px;padding:7px 13px;font-weight:800;cursor:pointer}
+.gnav-fresh{font-size:10px;font-weight:800;padding:5px 10px;border-radius:8px;white-space:nowrap;border:1px solid transparent;letter-spacing:.3px}
 .back{display:none!important}
 @media(max-width:640px){.gnav-in{padding:6px 10px;gap:8px}.gnav-links{order:2;overflow-x:auto;flex-wrap:nowrap}#gnav a{font-size:12px;padding:6px 9px}.gnav-search{order:1;width:100%}.gnav-search input{flex:1;max-width:none;width:auto}}
 /* === systeme de design premium (toutes pages) === */
@@ -3609,13 +3636,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;backgr
 function build(){if(document.getElementById('gnav'))return;var p=location.pathname;
 var links=L.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'>'+x[1]+'</a>';}).join('');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
+gnavFresh();setInterval(gnavFresh,30000);
 var M=[['/','🏠','Cockpit'],['/watchlist','📡','Scan'],['/ma-page','⭐','Ma Page'],['/options','💎','Options'],['/entreprises','🏢','Titres']];
 var mn=document.createElement('nav');mn.id='mnav';
 mn.innerHTML=M.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'><span class="mi">'+x[1]+'</span>'+x[2]+'</a>';}).join('');
 document.body.appendChild(mn);}
 window.gnavGo=function(e){e.preventDefault();var v=(document.getElementById('gnavq').value||'').trim().toUpperCase();if(v)location.href='/titre/'+encodeURIComponent(v);return false;};
+window.gnavFresh=function(){fetch('/healthz').then(function(r){return r.json()}).then(function(h){var el=document.getElementById('gnav-fresh');if(!el)return;var s,c;if(h.scan_error||h.scan_age==null||h.scan_age>300){s='⚠️ ANCIEN';c='#EF4444';}else if(h.ibkr_enabled){s='🟢 LIVE IBKR';c='#22C55E';}else{s='🟡 DIFFÉRÉ';c='#FFB23F';}el.textContent=s;el.style.color=c;el.style.borderColor=c+'66';el.style.background=c+'1a';el.style.display='';}).catch(function(){});};
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();})();
 </script></head><body>
@@ -3879,6 +3908,7 @@ html,body{overflow-x:hidden;max-width:100%}
 .gnav-search{display:flex;gap:6px;align-items:center}
 .gnav-search input{background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:9px;padding:7px 11px;font-size:13px;width:210px;max-width:46vw}
 .gnav-search button{background:rgba(245,180,91,.12);border:1px solid #F5B45B55;color:#F5B45B;border-radius:9px;padding:7px 13px;font-weight:800;cursor:pointer}
+.gnav-fresh{font-size:10px;font-weight:800;padding:5px 10px;border-radius:8px;white-space:nowrap;border:1px solid transparent;letter-spacing:.3px}
 .back{display:none!important}
 @media(max-width:640px){.gnav-in{padding:6px 10px;gap:8px}.gnav-links{order:2;overflow-x:auto;flex-wrap:nowrap}#gnav a{font-size:12px;padding:6px 9px}.gnav-search{order:1;width:100%}.gnav-search input{flex:1;max-width:none;width:auto}}
 /* === systeme de design premium (toutes pages) === */
@@ -3913,13 +3943,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;backgr
 function build(){if(document.getElementById('gnav'))return;var p=location.pathname;
 var links=L.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'>'+x[1]+'</a>';}).join('');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
+gnavFresh();setInterval(gnavFresh,30000);
 var M=[['/','🏠','Cockpit'],['/watchlist','📡','Scan'],['/ma-page','⭐','Ma Page'],['/options','💎','Options'],['/entreprises','🏢','Titres']];
 var mn=document.createElement('nav');mn.id='mnav';
 mn.innerHTML=M.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'><span class="mi">'+x[1]+'</span>'+x[2]+'</a>';}).join('');
 document.body.appendChild(mn);}
 window.gnavGo=function(e){e.preventDefault();var v=(document.getElementById('gnavq').value||'').trim().toUpperCase();if(v)location.href='/titre/'+encodeURIComponent(v);return false;};
+window.gnavFresh=function(){fetch('/healthz').then(function(r){return r.json()}).then(function(h){var el=document.getElementById('gnav-fresh');if(!el)return;var s,c;if(h.scan_error||h.scan_age==null||h.scan_age>300){s='⚠️ ANCIEN';c='#EF4444';}else if(h.ibkr_enabled){s='🟢 LIVE IBKR';c='#22C55E';}else{s='🟡 DIFFÉRÉ';c='#FFB23F';}el.textContent=s;el.style.color=c;el.style.borderColor=c+'66';el.style.background=c+'1a';el.style.display='';}).catch(function(){});};
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();})();
 </script></head><body>
@@ -4072,6 +4104,7 @@ html,body{overflow-x:hidden;max-width:100%}
 .gnav-search{display:flex;gap:6px;align-items:center}
 .gnav-search input{background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:9px;padding:7px 11px;font-size:13px;width:210px;max-width:46vw}
 .gnav-search button{background:rgba(245,180,91,.12);border:1px solid #F5B45B55;color:#F5B45B;border-radius:9px;padding:7px 13px;font-weight:800;cursor:pointer}
+.gnav-fresh{font-size:10px;font-weight:800;padding:5px 10px;border-radius:8px;white-space:nowrap;border:1px solid transparent;letter-spacing:.3px}
 .back{display:none!important}
 @media(max-width:640px){.gnav-in{padding:6px 10px;gap:8px}.gnav-links{order:2;overflow-x:auto;flex-wrap:nowrap}#gnav a{font-size:12px;padding:6px 9px}.gnav-search{order:1;width:100%}.gnav-search input{flex:1;max-width:none;width:auto}}
 /* === systeme de design premium (toutes pages) === */
@@ -4106,13 +4139,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;backgr
 function build(){if(document.getElementById('gnav'))return;var p=location.pathname;
 var links=L.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'>'+x[1]+'</a>';}).join('');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
+gnavFresh();setInterval(gnavFresh,30000);
 var M=[['/','🏠','Cockpit'],['/watchlist','📡','Scan'],['/ma-page','⭐','Ma Page'],['/options','💎','Options'],['/entreprises','🏢','Titres']];
 var mn=document.createElement('nav');mn.id='mnav';
 mn.innerHTML=M.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'><span class="mi">'+x[1]+'</span>'+x[2]+'</a>';}).join('');
 document.body.appendChild(mn);}
 window.gnavGo=function(e){e.preventDefault();var v=(document.getElementById('gnavq').value||'').trim().toUpperCase();if(v)location.href='/titre/'+encodeURIComponent(v);return false;};
+window.gnavFresh=function(){fetch('/healthz').then(function(r){return r.json()}).then(function(h){var el=document.getElementById('gnav-fresh');if(!el)return;var s,c;if(h.scan_error||h.scan_age==null||h.scan_age>300){s='⚠️ ANCIEN';c='#EF4444';}else if(h.ibkr_enabled){s='🟢 LIVE IBKR';c='#22C55E';}else{s='🟡 DIFFÉRÉ';c='#FFB23F';}el.textContent=s;el.style.color=c;el.style.borderColor=c+'66';el.style.background=c+'1a';el.style.display='';}).catch(function(){});};
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();})();
 </script></head><body>
@@ -4244,6 +4279,7 @@ html,body{overflow-x:hidden;max-width:100%}
 .gnav-search{display:flex;gap:6px;align-items:center}
 .gnav-search input{background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:9px;padding:7px 11px;font-size:13px;width:210px;max-width:46vw}
 .gnav-search button{background:rgba(245,180,91,.12);border:1px solid #F5B45B55;color:#F5B45B;border-radius:9px;padding:7px 13px;font-weight:800;cursor:pointer}
+.gnav-fresh{font-size:10px;font-weight:800;padding:5px 10px;border-radius:8px;white-space:nowrap;border:1px solid transparent;letter-spacing:.3px}
 .back{display:none!important}
 @media(max-width:640px){.gnav-in{padding:6px 10px;gap:8px}.gnav-links{order:2;overflow-x:auto;flex-wrap:nowrap}#gnav a{font-size:12px;padding:6px 9px}.gnav-search{order:1;width:100%}.gnav-search input{flex:1;max-width:none;width:auto}}
 /* === systeme de design premium (toutes pages) === */
@@ -4278,13 +4314,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;backgr
 function build(){if(document.getElementById('gnav'))return;var p=location.pathname;
 var links=L.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'>'+x[1]+'</a>';}).join('');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><div class="gnav-links">'+links+'</div><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher un titre… (ex: NVDA)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
+gnavFresh();setInterval(gnavFresh,30000);
 var M=[['/','🏠','Cockpit'],['/watchlist','📡','Scan'],['/ma-page','⭐','Ma Page'],['/options','💎','Options'],['/entreprises','🏢','Titres']];
 var mn=document.createElement('nav');mn.id='mnav';
 mn.innerHTML=M.map(function(x){var a=(x[0]==='/'?(p==='/'||p==='/daily'):p.indexOf(x[0])===0);return '<a href="'+x[0]+'"'+(a?' class="act"':'')+'><span class="mi">'+x[1]+'</span>'+x[2]+'</a>';}).join('');
 document.body.appendChild(mn);}
 window.gnavGo=function(e){e.preventDefault();var v=(document.getElementById('gnavq').value||'').trim().toUpperCase();if(v)location.href='/titre/'+encodeURIComponent(v);return false;};
+window.gnavFresh=function(){fetch('/healthz').then(function(r){return r.json()}).then(function(h){var el=document.getElementById('gnav-fresh');if(!el)return;var s,c;if(h.scan_error||h.scan_age==null||h.scan_age>300){s='⚠️ ANCIEN';c='#EF4444';}else if(h.ibkr_enabled){s='🟢 LIVE IBKR';c='#22C55E';}else{s='🟡 DIFFÉRÉ';c='#FFB23F';}el.textContent=s;el.style.color=c;el.style.borderColor=c+'66';el.style.background=c+'1a';el.style.display='';}).catch(function(){});};
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();})();
 </script></head><body>
