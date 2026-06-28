@@ -13,6 +13,8 @@ manquante) · aucun appel API · aucune dépendance lourde · aucun ordre.
 """
 import numpy as np
 
+from . import vertex_ml
+
 
 def _f(x, d=0.0):
     """float robuste : None/NaN/erreur → défaut."""
@@ -295,7 +297,7 @@ def evaluate(detail):
         else:
             verdict = 'VERTEX AVOID'
 
-        return {
+        out = {
             'score': edge, 'edge': edge,
             'trend_quality': tq, 'entry_quality': eq, 'rr': rr,
             'expected_move': em, 'asymmetry': asym, 'institutionality': inst,
@@ -305,5 +307,12 @@ def evaluate(detail):
             'no_trade': no_trade, 'risk_flags': risk_flags,
             'verdict': verdict, 'action': _ACTION.get(verdict, ''),
         }
+        try:                                  # couche ML / calibration (proba de gain)
+            out['ml'] = vertex_ml.predict(out)
+            if out['ml']:
+                out['p_win'] = out['ml']['p_win']
+        except Exception:
+            out['ml'] = None
+        return out
     except Exception:
         return None
