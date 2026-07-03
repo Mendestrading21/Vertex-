@@ -7104,7 +7104,7 @@ function recoCard(x){
   // progress entry -> now -> target
   var lo=Math.min(x.stop||entry,entry),hi=Math.max(x.tgt||entry,entry,now);var rg=(hi-lo)||1;
   var posNow=Math.max(0,Math.min(100,(now-lo)/rg*100)),posEnt=Math.max(0,Math.min(100,(entry-lo)/rg*100));
-  return '<div class="vcard" style="padding:14px 16px;border-left:3px solid '+st[1]+'">'
+  return '<div class="vcard" style="padding:15px 17px;border:1px solid '+st[1]+'44;background:radial-gradient(130% 90% at 100% -12%,'+st[1]+'14,transparent 55%),linear-gradient(180deg,#141821,#0c0f15);box-shadow:0 0 30px -18px '+st[1]+'">'
     +'<div style="display:flex;align-items:center;gap:9px"><span style="font-size:16px;font-weight:900">'+x.sym+'</span>'
     +(x.src?'<span style="font-size:9px;font-weight:800;color:#F5B45B;background:rgba(245,180,91,.14);border:1px solid rgba(245,180,91,.4);padding:2px 7px;border-radius:6px">reco '+x.src+'</span>':'')
     +'<span style="margin-left:auto;font-size:11px;font-weight:800;color:'+st[1]+';background:'+st[1]+'1a;border:1px solid '+st[1]+'44;padding:2px 9px;border-radius:7px">'+st[0]+'</span>'
