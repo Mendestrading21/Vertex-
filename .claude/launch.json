@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vertex",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["terminal.py"],
+      "port": 5002,
+      "autoPort": false
+    }
+  ]
+}
