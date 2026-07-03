@@ -946,6 +946,7 @@ def scan():
                 _cc = data[_tk]['Close'].dropna()
                 indices.append({'name': _nm, 'price': round(float(_cc.iloc[-1]), 2),
                                 'change': round((float(_cc.iloc[-1]) / float(_cc.iloc[-2]) - 1) * 100, 2),
+                                'spark': [round(float(x), 2) for x in _cc.tail(24).values],
                                 'vix': _tk == '^VIX'})
             except Exception:
                 pass
@@ -955,7 +956,8 @@ def scan():
             try:
                 _cc = data[_tk]['Close'].dropna()
                 commodities.append({'name': _nm, 'icon': _ic, 'price': round(float(_cc.iloc[-1]), 2),
-                                    'change': round((float(_cc.iloc[-1]) / float(_cc.iloc[-2]) - 1) * 100, 2)})
+                                    'change': round((float(_cc.iloc[-1]) / float(_cc.iloc[-2]) - 1) * 100, 2),
+                                    'spark': [round(float(x), 2) for x in _cc.tail(24).values]})
             except Exception:
                 pass
         # MACRO / TAUX (rendements du Trésor + dollar → contexte : coût de l'argent, courbe)
@@ -3616,15 +3618,16 @@ function renderInternals(d){
    +r('Nouveaux hauts / bas 52s',(b.nh||0),(b.nl||0),'up','dn')
    +`<div style="display:flex;justify-content:space-between;padding:7px 0;font-size:12px"><span class="muted">Au-dessus MM50 / MM200</span><span><b>${b.above50!=null?b.above50:'—'}%</b> <span class="muted">/</span> <b>${b.above200!=null?b.above200:'—'}%</b></span></div>`;
 }
+function tileSpark(ser,pos){if(!ser||ser.length<3)return '';var col=pos?'#22C55E':'#EF4444';var w=150,h=34,mn=Math.min.apply(null,ser),mx=Math.max.apply(null,ser),rg=(mx-mn)||1;var gid='ts'+Math.round(mn*100)+ser.length+(pos?'u':'d');var pts=ser.map(function(v,i){return (i/(ser.length-1)*w).toFixed(1)+','+(h-2-(v-mn)/rg*(h-6)).toFixed(1);});return '<div class="isp"><svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+col+'" stop-opacity=".22"/><stop offset="1" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs><polygon points="0,'+h+' '+pts.join(' ')+' '+w+','+h+'" fill="url(#'+gid+')"/><polyline points="'+pts.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg></div>';}
 function renderIndices(d){
   const el=document.getElementById('dIndices');if(!el)return;
   const ix=d.indices||[];
-  el.innerHTML=ix.length?ix.map(i=>{const pos=i.vix?(i.change<=0):(i.change>=0);return `<div class="idx"><div class="in">${i.name}</div><div class="ip">${(i.price||0).toLocaleString('fr-FR')}</div><div class="ic ${pos?'up':'dn'}">${i.change>=0?'▲ +':'▼ '}${i.change}%</div></div>`}).join(''):'<span class="muted">indices en cours…</span>';
+  el.innerHTML=ix.length?ix.map(i=>{const pos=i.vix?(i.change<=0):(i.change>=0);return `<div class="idx"><div class="in">${i.name}</div><div class="ip">${(i.price||0).toLocaleString('fr-FR')}</div><div class="ic ${pos?'up':'dn'}">${i.change>=0?'▲ +':'▼ '}${i.change}%</div>${tileSpark(i.spark,i.vix?(i.change<=0):(i.change>=0))}</div>`}).join(''):'<span class="muted">indices en cours…</span>';
 }
 function renderCommo(d){
   const el=document.getElementById('dCommo');if(!el)return;
   const cs=d.commodities||[];
-  el.innerHTML=cs.length?cs.map(c=>{const pos=c.change>=0;const px=(c.price||0).toLocaleString('fr-FR',{maximumFractionDigits:2});return `<div class="idx"><div class="in">${c.icon||''} ${c.name}</div><div class="ip">$${px}</div><div class="ic ${pos?'up':'dn'}">${pos?'▲ +':'▼ '}${c.change}%</div></div>`}).join(''):'<span class="muted">matières premières en cours…</span>';
+  el.innerHTML=cs.length?cs.map(c=>{const pos=c.change>=0;const px=(c.price||0).toLocaleString('fr-FR',{maximumFractionDigits:2});return `<div class="idx"><div class="in">${c.icon||''} ${c.name}</div><div class="ip">$${px}</div><div class="ic ${pos?'up':'dn'}">${pos?'▲ +':'▼ '}${c.change}%</div>${tileSpark(c.spark,pos)}</div>`}).join(''):'<span class="muted">matières premières en cours…</span>';
 }
 function renderMacro(d){
   const el=document.getElementById('dMacro');if(!el)return;
@@ -4317,11 +4320,13 @@ table tbody tr:hover{background:rgba(255,140,50,.05)!important}
 .live .d,.tick,.navtick,.rail .rfoot .d,.pill.live .pdot{box-shadow:0 0 10px rgba(255,140,50,.85)!important}
 /* ═══ bande INDICES PRINCIPAUX (haut du dashboard) ═══ */
 .idxstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
-.idx{background:linear-gradient(160deg,#171717,#0c0c0c);border:1px solid rgba(56,189,248,.16);border-top:2px solid rgba(56,189,248,.4);border-radius:12px;padding:12px 16px;transition:.2s}
+.idx{position:relative;background:linear-gradient(160deg,#171717,#0c0c0c);border:1px solid rgba(56,189,248,.16);border-top:2px solid rgba(56,189,248,.4);border-radius:12px;padding:12px 16px;transition:.2s;overflow:hidden}
 .idx:hover{border-color:rgba(56,189,248,.45);box-shadow:0 0 18px rgba(56,189,248,.12)}
-.idx .in{font-size:10.5px;color:#7FB3FF;text-transform:uppercase;letter-spacing:.7px;font-weight:700}
-.idx .ip{font-size:19px;font-weight:800;margin-top:4px;color:#f4f4f4}
-.idx .ic{font-size:12px;font-weight:700;margin-top:2px}
+.idx .in{font-size:10.5px;color:#7FB3FF;text-transform:uppercase;letter-spacing:.7px;font-weight:700;position:relative;z-index:1}
+.idx .ip{font-size:19px;font-weight:800;margin-top:4px;color:#f4f4f4;position:relative;z-index:1}
+.idx .ic{font-size:12px;font-weight:700;margin-top:2px;position:relative;z-index:1}
+.idx .isp{position:absolute;right:0;bottom:0;left:0;height:34px;opacity:.9;pointer-events:none}
+.idx .isp svg{display:block;width:100%;height:100%}
 </style>"""
 _RAIL_ITEMS = [('/', '🏠', 'Dashboard'), ('/analyse', '📈', 'Analyse titre'), ('/semaine', '🎯', 'Semaine'),
                ('/options', '💎', 'Options'), ('/sectors', '🔥', 'Secteurs'), ('/news', '📰', 'News'),
