@@ -3132,15 +3132,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   </div>
   <style>.dx-extra{display:none}body.showall .dx-extra{display:block}#essToggle{display:block;width:100%;margin:4px 0 16px;padding:12px;background:#0e1622;border:1px dashed #5BE3A855;border-radius:12px;color:#5BE3A8;font-weight:700;font-size:13px;cursor:pointer;letter-spacing:.4px}#essToggle:hover{background:#121c2b}</style>
   <div id="dMyDesk"></div>
-  <div class="stitle">🌍 LES MARCHÉS <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· indices US · matières premières &amp; crypto · macro (taux · courbe · inflation · crédit)</span></div>
-  <div class="idxstrip" id="dIndices" style="margin-bottom:10px"></div>
-  <div class="idxstrip" id="dCommo" style="margin-bottom:10px"></div>
-  <div class="idxstrip" id="dMacro" style="margin-bottom:14px"></div>
-  <div class="kpiband" id="dKpi" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))"><div class="kc skel" style="height:64px"></div><div class="kc skel" style="height:64px"></div><div class="kc skel" style="height:64px"></div><div class="kc skel" style="height:64px"></div></div>
-  <div class="stitle" style="margin-top:15px">📡 AMPLITUDE DU MARCHÉ · BREADTH <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· % au-dessus des moyennes · extrêmes 52 sem. · glance rapide · détail complet sur <a href="/bordel" style="color:#FF8C32;text-decoration:none;font-weight:700">Panorama →</a></span></div>
-  <div id="dBreadthTiles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:11px;margin-bottom:14px"></div>
-  <div class="stitle" style="margin-top:15px">🧭 VERDICT DU JOUR <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· le climat en un coup d'œil · <a href="/bordel" style="color:#FF8C32;text-decoration:none;font-weight:700">🔭 analyse marché complète sur Panorama →</a></span></div>
-  <div id="dVerdict" style="background:linear-gradient(135deg,#16171c,#0d0e12);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 20px;margin:4px 0 16px">
+  <div class="stitle">🧭 VERDICT DU JOUR <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· le climat en un coup d'œil, avant tout le reste · <a href="/bordel" style="color:#FF8C32;text-decoration:none;font-weight:700">🔭 analyse marché complète sur Panorama →</a></span></div>
+  <div id="dVerdict" style="background:linear-gradient(135deg,#16171c,#0d0e12);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 20px;margin:4px 0 18px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
       <div><div style="font-size:10px;letter-spacing:2px;color:#8794ab;font-weight:700;margin-bottom:6px">🧭 LECTURE DU MARCHÉ</div>
       <div id="dVerdictTxt" style="font-size:17px;font-weight:800;letter-spacing:.3px">lecture du marché…</div></div>
@@ -3149,6 +3142,13 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     </div>
     <div id="dPartic" style="margin-top:15px;padding-top:14px;border-top:1px solid #ffffff0d"></div>
   </div>
+  <div class="stitle">🌍 LES MARCHÉS <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· indices US · matières premières &amp; crypto · macro (taux · courbe · inflation · crédit)</span></div>
+  <div class="idxstrip" id="dIndices" style="margin-bottom:10px"></div>
+  <div class="idxstrip" id="dCommo" style="margin-bottom:10px"></div>
+  <div class="idxstrip" id="dMacro" style="margin-bottom:14px"></div>
+  <div class="kpiband" id="dKpi" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))"><div class="kc skel" style="height:64px"></div><div class="kc skel" style="height:64px"></div><div class="kc skel" style="height:64px"></div><div class="kc skel" style="height:64px"></div></div>
+  <div class="stitle" style="margin-top:15px">📡 AMPLITUDE DU MARCHÉ · BREADTH <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· % au-dessus des moyennes · extrêmes 52 sem. · glance rapide · détail complet sur <a href="/bordel" style="color:#FF8C32;text-decoration:none;font-weight:700">Panorama →</a></span></div>
+  <div id="dBreadthTiles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:11px;margin-bottom:14px"></div>
   <div id="dDetail" style="display:none;margin-bottom:14px"></div>
   <div style="display:none"><div id="dCmd"></div><div id="dRiskCenter"></div><div id="dBreadthCharts"></div></div>
   <div class="dx-extra">
@@ -6793,28 +6793,57 @@ PAGE_SECTORS = _vpage('Rotation',
 
 _CAT_JS = r"""
 var VL={BUY:['Achat','#22C55E'],WATCH:['Surveiller','#FFB23F'],WAIT:['Attente','#38BDF8'],AVOID:['Éviter','#EF4444']};
-var ALL=[],FILT='all',ADV=false;
+var ALL=[],FILT='all',VIEW='cal';
+function vcol(v){return (VL[v]||['','#8794ab'])[1];}
+function pad2(n){return (n<10?'0':'')+n;}
+function monthGrid(y,m,evs){
+  var byDay={};evs.forEach(function(e){var ds=String(e.date||'').slice(0,10);(byDay[ds]=byDay[ds]||[]).push(e);});
+  var first=new Date(y,m,1),startDow=(first.getDay()+6)%7,ndays=new Date(y,m+1,0).getDate();
+  var today=new Date(),tds=today.getFullYear()+'-'+pad2(today.getMonth()+1)+'-'+pad2(today.getDate());
+  var MN=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  var DW=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  var h='<div style="margin-bottom:22px"><div class="vstit" style="margin:0 0 10px">'+MN[m]+' '+y+'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">'
+    +DW.map(function(d){return '<div style="font-size:9px;letter-spacing:.6px;color:#5b6678;font-weight:700;text-transform:uppercase;text-align:center;padding:2px 0">'+d+'</div>';}).join('');
+  for(var i=0;i<startDow;i++)h+='<div></div>';
+  for(var d=1;d<=ndays;d++){
+    var ds=y+'-'+pad2(m+1)+'-'+pad2(d),evd=(byDay[ds]||[]).slice().sort(function(a,b){return (b.score||0)-(a.score||0);});
+    var isToday=ds===tds;
+    var chips=evd.slice(0,3).map(function(e){var c=vcol(e.verdict);return '<div onclick="event.stopPropagation();location.href=\'/titre/'+e.sym+'\'" title="'+e.sym+' · résultats" style="cursor:pointer;display:flex;align-items:center;gap:4px;background:'+c+'1c;border:1px solid '+c+'44;border-radius:5px;padding:1px 5px;margin-top:3px;font-size:9.5px;font-weight:800;color:'+c+';white-space:nowrap;overflow:hidden"><span style="width:5px;height:5px;border-radius:50%;background:'+c+';flex-shrink:0"></span>'+e.sym+'</div>';}).join('');
+    var more=evd.length>3?'<div style="font-size:8.5px;color:#8794ab;margin-top:2px">+'+(evd.length-3)+' autres</div>':'';
+    h+='<div style="min-height:82px;background:'+(evd.length?'#12151b':'#0c0e12')+';border:1px solid '+(isToday?'#FF8C32':'rgba(255,255,255,.05)')+';border-radius:10px;padding:6px 7px'+(isToday?';box-shadow:0 0 0 1px rgba(255,140,50,.4) inset':'')+'"><div style="font-size:10.5px;font-weight:700;color:'+(isToday?'#FF8C32':evd.length?'#cfd8e6':'#5b6678')+'">'+d+'</div>'+chips+more+'</div>';
+  }
+  return h+'</div></div>';
+}
+function renderCal(){var it=(FILT==='all'?ALL:ALL.filter(function(x){return x.verdict===FILT;}));
+  var dated=it.filter(function(x){return x.date;});
+  if(!dated.length){document.getElementById('cBody').innerHTML='<div class="vcard"><div class="muted" style="padding:8px">Aucun catalyseur daté dans ce filtre.</div></div>';return;}
+  var months={};dated.forEach(function(e){var ds=String(e.date).slice(0,7);months[ds]=1;});
+  var keys=Object.keys(months).sort().slice(0,3);
+  document.getElementById('cBody').innerHTML=keys.map(function(k){var p=k.split('-');return monthGrid(+p[0],+p[1]-1,dated);}).join('')
+    +'<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:10.5px;color:#8794ab;margin-top:4px">'+Object.keys(VL).map(function(v){return '<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:'+VL[v][1]+'"></span>'+VL[v][0]+'</span>';}).join('')+'</div>';}
 function ev(x){var soon=x.dte!=null&&x.dte<5,v=VL[x.verdict]||[x.verdict||'','#8794ab'];
   return '<div class="vcard" onclick="location.href=\'/titre/'+x.sym+'\'" style="cursor:pointer;padding:13px 15px">'
     +'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px;font-weight:800">'+x.sym+'</span><span style="margin-left:auto;font-size:11px;font-weight:800;color:'+(soon?'#EF4444':'#71717A')+'">'+(x.dte<=0?'🔴 auj.':'J-'+x.dte)+'</span></div>'
     +'<div style="font-size:11px;color:#71717A;margin-top:4px">📊 Résultats · '+String(x.date||'').slice(0,10)+'</div>'
     +'<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span style="font-size:10px;font-weight:700;color:'+v[1]+';background:'+v[1]+'1a;border:1px solid '+v[1]+'44;padding:2px 8px;border-radius:7px">'+v[0]+'</span>'+(x.score!=null?'<span style="margin-left:auto;font-size:11px;color:#8794ab">sc '+x.score+'</span>':'')+'</div></div>';}
-function render(){var it=(FILT==='all'?ALL:ALL.filter(function(x){return x.verdict===FILT;}));
-  if(ADV){var s=it.slice().sort(function(a,b){return (a.dte==null?999:a.dte)-(b.dte==null?999:b.dte);});document.getElementById('cBody').innerHTML='<div class="vcard" style="padding:0;overflow:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="font-size:9px;color:#8b93a7;text-transform:uppercase;letter-spacing:.5px"><th style="text-align:left;padding:11px 14px">Titre</th><th style="text-align:left;padding:11px 8px">Événement</th><th style="text-align:right;padding:11px 8px">Date</th><th style="text-align:right;padding:11px 8px">Échéance</th><th style="text-align:right;padding:11px 8px">Score</th><th style="text-align:right;padding:11px 14px 11px 8px">Décision</th></tr></thead><tbody>'+s.map(function(x){var soon=x.dte!=null&&x.dte<7,v=VL[x.verdict]||[x.verdict||'','#8794ab'];return '<tr onclick="location.href=\'/titre/'+x.sym+'\'" style="cursor:pointer;border-top:1px solid rgba(255,255,255,.06);font-size:12.5px"><td style="padding:10px 14px;font-weight:800">'+x.sym+'</td><td class="muted">📊 Résultats</td><td class="muted" style="text-align:right">'+String(x.date||'').slice(0,10)+'</td><td style="text-align:right;font-weight:800;color:'+(soon?'#EF4444':'#8794ab')+'">'+(x.dte<=0?'auj.':'J-'+x.dte)+'</td><td style="text-align:right">'+(x.score!=null?x.score:'-')+'</td><td style="text-align:right;padding-right:14px;color:'+v[1]+';font-weight:700">'+v[0]+'</td></tr>';}).join('')+'</tbody></table></div>';return;}
-  var B=[['Cette semaine',0,6],['Semaine prochaine',7,13],['Dans 30 jours',14,30],['Plus tard',31,9999]];var html='';
+function renderTable(){var it=(FILT==='all'?ALL:ALL.filter(function(x){return x.verdict===FILT;}));var s=it.slice().sort(function(a,b){return (a.dte==null?999:a.dte)-(b.dte==null?999:b.dte);});document.getElementById('cBody').innerHTML='<div class="vcard" style="padding:0;overflow:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="font-size:9px;color:#8b93a7;text-transform:uppercase;letter-spacing:.5px"><th style="text-align:left;padding:11px 14px">Titre</th><th style="text-align:left;padding:11px 8px">Événement</th><th style="text-align:right;padding:11px 8px">Date</th><th style="text-align:right;padding:11px 8px">Échéance</th><th style="text-align:right;padding:11px 8px">Score</th><th style="text-align:right;padding:11px 14px 11px 8px">Décision</th></tr></thead><tbody>'+s.map(function(x){var soon=x.dte!=null&&x.dte<7,v=VL[x.verdict]||[x.verdict||'','#8794ab'];return '<tr onclick="location.href=\'/titre/'+x.sym+'\'" style="cursor:pointer;border-top:1px solid rgba(255,255,255,.06);font-size:12.5px"><td style="padding:10px 14px;font-weight:800">'+x.sym+'</td><td class="muted">📊 Résultats</td><td class="muted" style="text-align:right">'+String(x.date||'').slice(0,10)+'</td><td style="text-align:right;font-weight:800;color:'+(soon?'#EF4444':'#8794ab')+'">'+(x.dte<=0?'auj.':'J-'+x.dte)+'</td><td style="text-align:right">'+(x.score!=null?x.score:'-')+'</td><td style="text-align:right;padding-right:14px;color:'+v[1]+';font-weight:700">'+v[0]+'</td></tr>';}).join('')+'</tbody></table></div>';}
+function renderTimeline(){var it=(FILT==='all'?ALL:ALL.filter(function(x){return x.verdict===FILT;}));var B=[['Cette semaine',0,6],['Semaine prochaine',7,13],['Dans 30 jours',14,30],['Plus tard',31,9999]];var html='';
   B.forEach(function(b){var cs=it.filter(function(x){return x.dte!=null&&x.dte>=b[1]&&x.dte<=b[2];}).sort(function(a,c){return a.dte-c.dte;});if(!cs.length)return;html+='<div class="vstit">'+b[0]+' <span style="color:#71717A;font-weight:400;letter-spacing:0;font-size:11px">· '+cs.length+'</span></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(192px,1fr));gap:12px">'+cs.map(ev).join('')+'</div>';});
   document.getElementById('cBody').innerHTML=html||'<div class="vcard"><div class="muted" style="padding:8px">Aucun catalyseur dans ce filtre.</div></div>';}
+function render(){if(VIEW==='cal')renderCal();else if(VIEW==='table')renderTable();else renderTimeline();}
 window.setF=function(f){FILT=f;pills();render();};
-window.setAdv=function(v){ADV=v;document.getElementById('advBtn').textContent=ADV?'◧ Timeline':'☰ Tableau';render();};
+window.setView=function(v){VIEW=v;seg();render();};
+function seg(){var S=[['cal','📅 Calendrier'],['timeline','◧ Timeline'],['table','☰ Tableau']];document.getElementById('cSeg').innerHTML=S.map(function(x){return '<button class="vbtn'+(VIEW===x[0]?' pri':'')+'" onclick="setView(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');}
 function pills(){var P=[['all','Tous'],['BUY','Achat'],['WATCH','Surveiller'],['AVOID','Éviter']];document.getElementById('cPills').innerHTML=P.map(function(p){return '<button class="vbtn'+(FILT===p[0]?' pri':'')+'" onclick="setF(\''+p[0]+'\')">'+p[1]+'</button>';}).join('');}
-function load(){fetch('/cal-feed').then(function(r){return r.json()}).then(function(d){ALL=(d.items||[]);var soon=ALL.filter(function(x){return x.dte!=null&&x.dte<=7;}).length;document.getElementById('cHead').innerHTML='<b style="color:#cfd8e6">'+ALL.length+'</b> résultats à venir · <b style="color:#FFB23F">'+soon+'</b> sous 7 jours';pills();render();}).catch(function(){});}
+function load(){fetch('/cal-feed').then(function(r){return r.json()}).then(function(d){ALL=(d.items||[]);var soon=ALL.filter(function(x){return x.dte!=null&&x.dte<=7;}).length;document.getElementById('cHead').innerHTML='<b style="color:#cfd8e6">'+ALL.length+'</b> résultats à venir · <b style="color:#FFB23F">'+soon+'</b> sous 7 jours · résultats posés sur leur date';seg();pills();render();}).catch(function(){});}
 load();setInterval(load,30000);
 """
 
 PAGE_CATALYSTS = _vpage('Catalyseurs',
-  '<div class="vhead"><div><h1>Catalyseurs</h1><div class="s" id="cHead">chargement du calendrier…</div></div>'
-  '<button class="vbtn" id="advBtn" onclick="setAdv(!ADV)" style="margin-left:auto;align-self:center">☰ Tableau</button></div>'
-  '<div id="cPills" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>'
+  '<div class="vhead"><div><h1>📅 Catalyseurs</h1><div class="s" id="cHead">chargement du calendrier…</div></div>'
+  '<div id="cSeg" style="margin-left:auto;align-self:center;display:flex;gap:6px"></div></div>'
+  '<div id="cPills" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>'
   '<div id="cBody"></div>',
   js=_CAT_JS)
 
