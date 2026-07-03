@@ -6919,7 +6919,25 @@ function entryCard(t){var win=t.result==='WIN',rc=win?'#22C55E':t.result==='LOSS
     +(t.lesson?'<div style="font-size:12px;color:#cfd8e6;margin-top:7px;padding:8px 11px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.18);border-radius:9px">💡 <b>Leçon :</b> '+t.lesson+'</div>':'')
     +(t.mistake?'<div style="font-size:12px;color:#f0b0b0;margin-top:7px;padding:8px 11px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);border-radius:9px">⚠️ <b>À corriger :</b> '+t.mistake+'</div>':'')
     +'<div style="font-size:9.5px;color:#5b6678;margin-top:8px">'+(t.date||'')+'</div></div>';}
-function render(){var a=jGet();renderKpi(metrics(a));document.getElementById('jCnt').textContent=a.length;
+function renderEquity(a){var host=document.getElementById('jEquityWrap');if(!host)return;
+  var closed=a.filter(function(t){return t.result&&t.pnl!==''&&t.pnl!=null;}).slice().reverse();
+  if(closed.length<2){host.innerHTML='';return;}
+  var cum=0,eq=[0];closed.forEach(function(t){cum+=(+t.pnl||0);eq.push(cum);});
+  var w=600,h=170,pad=10,mn=Math.min.apply(null,eq),mx=Math.max.apply(null,eq),rg=(mx-mn)||1;
+  var fin=eq[eq.length-1],col=fin>=0?'#22C55E':'#EF4444';
+  var X=function(i){return pad+i/(eq.length-1)*(w-2*pad);},Y=function(v){return h-pad-(v-mn)/rg*(h-2*pad);};
+  var pts=eq.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);});
+  var base=Math.max(pad,Math.min(h-pad,Y(0)));
+  var pk=-1e9,dd=0;eq.forEach(function(v){if(v>pk)pk=v;if(pk-v>dd)dd=pk-v;});
+  var pnls=closed.map(function(t){return +t.pnl||0;}),best=Math.max.apply(null,pnls),worst=Math.min.apply(null,pnls);
+  var st=function(l,v,c){return '<div style="text-align:center"><div style="font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:#8794ab;font-weight:700">'+l+'</div><div style="font-size:15px;font-weight:800;color:'+(c||'#e8edf5')+';margin-top:2px">'+v+'</div></div>';};
+  host.innerHTML='<div class="vcard" style="margin-bottom:4px"><div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:wrap"><span style="font-size:12px;font-weight:800;letter-spacing:.6px;color:#F5B45B">📈 COURBE D\'ÉQUITÉ</span><span style="font-size:11px;color:#8794ab">P&amp;L cumulé sur '+closed.length+' trades clôturés</span><span style="margin-left:auto;font-size:19px;font-weight:900;color:'+col+'">'+(fin>=0?'+':'')+'$'+fin.toFixed(0)+'</span></div>'
+    +'<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" style="width:100%;height:170px;display:block"><defs><linearGradient id="eqg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+col+'" stop-opacity=".28"/><stop offset="1" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs>'
+    +(Y(0)>pad&&Y(0)<h-pad?'<line x1="'+pad+'" y1="'+Y(0).toFixed(1)+'" x2="'+(w-pad)+'" y2="'+Y(0).toFixed(1)+'" stroke="rgba(255,255,255,.16)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>':'')
+    +'<polygon points="'+X(0).toFixed(1)+','+base.toFixed(1)+' '+pts.join(' ')+' '+X(eq.length-1).toFixed(1)+','+base.toFixed(1)+'" fill="url(#eqg)"/>'
+    +'<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2.2" vector-effect="non-scaling-stroke"/></svg>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06)">'+st('P&amp;L net',(fin>=0?'+':'')+'$'+fin.toFixed(0),col)+st('Meilleur','+$'+best.toFixed(0),'#22C55E')+st('Pire','$'+worst.toFixed(0),'#EF4444')+st('Max drawdown','-$'+dd.toFixed(0),'#F5B45B')+'</div></div>';}
+function render(){var a=jGet();renderKpi(metrics(a));renderEquity(a);document.getElementById('jCnt').textContent=a.length;
   var el=document.getElementById('jList');
   el.innerHTML=a.length?('<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:13px">'+a.map(entryCard).join('')+'</div>'):'<div class="vcard"><div class="muted" style="padding:14px;text-align:center;line-height:1.7">Ton journal est vide. Note ton premier trade ci-dessus — chaque entrée nourrit tes statistiques (win rate, profit factor, R moyen) et t\'aide à ne plus répéter les mêmes erreurs.</div></div>';}
 buildEmo();render();
@@ -6929,6 +6947,7 @@ PAGE_JOURNAL = _vpage('Journal',
   '<div class="vhead"><div><h1>📓 Journal de trading</h1><div class="s">Le journal qui corrige tes pertes · <b style="color:#F5B45B">Track · Learn · Improve · Repeat</b> · 🔒 stocké sur cet appareil</div></div>'
   '<div style="margin-left:auto;align-self:center;display:flex;gap:6px"><button class="vbtn" onclick="jExport()">⬇️ Export</button><button class="vbtn" onclick="jImport()">⬆️ Import</button></div></div>'
   '<div class="kpiband" id="jKpi" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"></div>'
+  '<div id="jEquityWrap"></div>'
   '<div class="vstit">✍️ NOUVELLE ENTRÉE <span style="color:#71717A;font-weight:400;letter-spacing:0;font-size:11px">· note ton trade pendant qu\'il est frais</span></div>'
   '<div class="vcard" style="padding:18px 20px">'
     '<div class="jg jmain" style="grid-template-columns:1.05fr .95fr;align-items:start;gap:16px">'
