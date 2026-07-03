@@ -6937,9 +6937,25 @@ function renderEquity(a){var host=document.getElementById('jEquityWrap');if(!hos
     +'<polygon points="'+X(0).toFixed(1)+','+base.toFixed(1)+' '+pts.join(' ')+' '+X(eq.length-1).toFixed(1)+','+base.toFixed(1)+'" fill="url(#eqg)"/>'
     +'<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2.2" vector-effect="non-scaling-stroke"/></svg>'
     +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06)">'+st('P&amp;L net',(fin>=0?'+':'')+'$'+fin.toFixed(0),col)+st('Meilleur','+$'+best.toFixed(0),'#22C55E')+st('Pire','$'+worst.toFixed(0),'#EF4444')+st('Max drawdown','-$'+dd.toFixed(0),'#F5B45B')+'</div></div>';}
-function render(){var a=jGet();renderKpi(metrics(a));renderEquity(a);document.getElementById('jCnt').textContent=a.length;
+var EMOIC={Calme:'😌',Concentré:'🎯',Stressé:'😰',Avide:'🤑',Neutre:'😐',Revanche:'😤'};
+function renderPsych(a){var host=document.getElementById('jPsychWrap');if(!host)return;
+  var closed=a.filter(function(t){return t.result&&t.emo;});
+  if(closed.length<2){host.innerHTML='';return;}
+  var by={};closed.forEach(function(t){(by[t.emo]=by[t.emo]||[]).push(t);});
+  var rows=Object.keys(by).map(function(e){var g=by[e],w=g.filter(function(t){return t.result==='WIN';}).length,pnl=g.reduce(function(s,t){return s+(+t.pnl||0);},0);return {emo:e,n:g.length,wr:Math.round(w/g.length*100),pnl:pnl};}).sort(function(x,y){return y.pnl-x.pnl;});
+  host.innerHTML='<div class="vcard" style="height:100%"><div style="font-size:12px;font-weight:800;letter-spacing:.5px;color:#F5B45B">🧠 PSYCHOLOGIE</div><div style="font-size:11px;color:#8794ab;margin:3px 0 11px">Win rate &amp; P&amp;L par état émotionnel — repère ce qui te coûte cher</div>'
+    +rows.map(function(r){var wc=r.wr>=50?'#22C55E':'#EF4444',pc=r.pnl>=0?'#22C55E':'#EF4444';return '<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-top:1px solid rgba(255,255,255,.05)"><span style="font-size:15px">'+(EMOIC[r.emo]||'•')+'</span><span style="font-size:12px;font-weight:700;color:#cfd8e6;min-width:74px">'+r.emo+'</span><div style="flex:1;height:6px;background:#0a0c11;border-radius:4px;overflow:hidden;min-width:30px"><div style="height:100%;width:'+r.wr+'%;background:'+wc+'"></div></div><span style="font-size:11px;font-weight:800;color:'+wc+';min-width:34px;text-align:right">'+r.wr+'%</span><span style="font-size:11.5px;font-weight:800;color:'+pc+';min-width:52px;text-align:right">'+(r.pnl>=0?'+':'')+'$'+r.pnl.toFixed(0)+'</span></div>';}).join('')+'</div>';}
+var JFILTER={res:'',q:''};
+window.setJF=function(k,v){JFILTER[k]=v;render();};
+window.jSearch=function(v){JFILTER.q=(v||'').toUpperCase().trim();render();};
+function buildJFilter(a){var el=document.getElementById('jFilter');if(!el)return;if(a.length<2){el.innerHTML='';return;}
+  var chip=function(l,on,k,v){return '<button class="vbtn'+(on?' pri':'')+'" onclick="setJF(\''+k+'\',\''+v+'\')">'+l+'</button>';};
+  el.innerHTML=chip('Tous',!JFILTER.res,'res','')+chip('✓ Gagnants',JFILTER.res==='WIN','res','WIN')+chip('✕ Perdants',JFILTER.res==='LOSS','res','LOSS')
+    +'<input placeholder="🔎 ticker" value="'+(JFILTER.q||'')+'" oninput="jSearch(this.value)" style="background:#0b0d12;border:1px solid rgba(255,255,255,.1);color:#eaf0fa;border-radius:9px;padding:7px 11px;font-size:12px;width:120px;margin-left:auto">';}
+function render(){var a=jGet();renderKpi(metrics(a));renderEquity(a);renderPsych(a);buildJFilter(a);document.getElementById('jCnt').textContent=a.length;
+  var f=a.filter(function(t){return (!JFILTER.res||t.result===JFILTER.res)&&(!JFILTER.q||(t.ticker||'').indexOf(JFILTER.q)>=0);});
   var el=document.getElementById('jList');
-  el.innerHTML=a.length?('<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:13px">'+a.map(entryCard).join('')+'</div>'):'<div class="vcard"><div class="muted" style="padding:14px;text-align:center;line-height:1.7">Ton journal est vide. Note ton premier trade ci-dessus — chaque entrée nourrit tes statistiques (win rate, profit factor, R moyen) et t\'aide à ne plus répéter les mêmes erreurs.</div></div>';}
+  el.innerHTML=a.length?(f.length?('<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:13px">'+f.map(entryCard).join('')+'</div>'):'<div class="vcard"><div class="muted" style="padding:14px;text-align:center">Aucun trade ne correspond à ce filtre.</div></div>'):'<div class="vcard"><div class="muted" style="padding:14px;text-align:center;line-height:1.7">Ton journal est vide. Note ton premier trade ci-dessus — chaque entrée nourrit tes statistiques (win rate, profit factor, R moyen) et t\'aide à ne plus répéter les mêmes erreurs.</div></div>';}
 buildEmo();render();
 """
 
@@ -6947,7 +6963,7 @@ PAGE_JOURNAL = _vpage('Journal',
   '<div class="vhead"><div><h1>📓 Journal de trading</h1><div class="s">Le journal qui corrige tes pertes · <b style="color:#F5B45B">Track · Learn · Improve · Repeat</b> · 🔒 stocké sur cet appareil</div></div>'
   '<div style="margin-left:auto;align-self:center;display:flex;gap:6px"><button class="vbtn" onclick="jExport()">⬇️ Export</button><button class="vbtn" onclick="jImport()">⬆️ Import</button></div></div>'
   '<div class="kpiband" id="jKpi" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"></div>'
-  '<div id="jEquityWrap"></div>'
+  '<div class="jg jmain" style="grid-template-columns:1.35fr 1fr;gap:14px;margin-top:2px"><div id="jEquityWrap"></div><div id="jPsychWrap"></div></div>'
   '<div class="vstit">✍️ NOUVELLE ENTRÉE <span style="color:#71717A;font-weight:400;letter-spacing:0;font-size:11px">· note ton trade pendant qu\'il est frais</span></div>'
   '<div class="vcard" style="padding:18px 20px">'
     '<div class="jg jmain" style="grid-template-columns:1.05fr .95fr;align-items:start;gap:16px">'
@@ -6985,6 +7001,7 @@ PAGE_JOURNAL = _vpage('Journal',
     '</div>'
   '</div>'
   '<div class="vstit">📒 MES TRADES JOURNALISÉS <span style="color:#71717A;font-weight:400;letter-spacing:0;font-size:11px">· <span id="jCnt">0</span> entrée(s) · ✕ pour supprimer</span></div>'
+  '<div id="jFilter" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:13px"></div>'
   '<div id="jList"></div>'
   '<div class="vstit">🔁 LA BOUCLE DE PROGRESSION</div>'
   '<div class="jloop">'
