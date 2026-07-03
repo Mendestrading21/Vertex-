@@ -827,6 +827,51 @@ def _demo_universe(tickers):
     return {t: _demo_one(t) for t in tickers}
 
 
+def _demo_options_board(rows, detail):
+    """Board d'options CALL synthétique (mode VITRINE) — crédible mais FICTIF.
+    Génère 3 échéances (court/moyen/long) pour les meilleurs titres scannés,
+    afin que la page Options Lab ne soit pas vide en démo."""
+    import zlib
+    board = []
+    top = sorted([r for r in rows if r.get('score') is not None],
+                 key=lambda r: r.get('score', 0), reverse=True)[:12]
+    BK = [('court', 45, 0.55), ('moyen', 180, 0.42), ('long', 400, 0.32)]
+    for r in top:
+        sym = r['symbol']
+        spot = r.get('price') or 100.0
+        d = detail.get(sym) or {}
+        rs = d.get('rs') or 50
+        seed = zlib.crc32(sym.encode()) & 0xffffffff
+        rng = np.random.default_rng(seed)
+        for bk, dte, dlt in BK:
+            T = dte / 365.0
+            iv = 0.28 + (rng.random() * 0.34)                 # 28 % → 62 %
+            strike = round(spot * (1 + (0.5 - dlt) * 0.12 + rng.random() * 0.03), 1)
+            em = iv * math.sqrt(T)
+            mid = max(0.4, spot * em * (0.55 + dlt * 0.4))
+            cost = round(mid * 100)
+            be = round(strike + mid, 2)
+            tgt = round(spot * (1 + em * 1.1), 2)
+            pot = round(max(0, (tgt - be)) / max(mid, 0.1) * 100)
+            pop = round(max(12, min(72, 50 - (be / spot - 1) * 220 + (rs - 50) * 0.3)))
+            dg = (2 if bk == 'court' else 0) + (1 if iv > 0.55 else 0) + (1 if dlt < 0.4 else 0)
+            theta_burn = round((0.9 if bk == 'court' else 0.35 if bk == 'moyen' else 0.16) * (1 + iv), 2)
+            quality = round(max(20, min(94, 40 + (r.get('score', 50) - 50) * 0.7
+                                        + (rs - 50) * 0.2 + pot * 0.05 - dg * 6)))
+            board.append({
+                'sym': sym, 'type': 'CALL', 'bucket': bk,
+                'exp': (datetime.now() + timedelta(days=dte)).strftime('%Y-%m-%dT00:00:00'),
+                'dte': dte, 'strike': strike, 'tgt': tgt, 'spot': round(spot, 2),
+                'pop': pop, 'p_tgt': max(8, round(pop * 0.7)), 'danger_n': dg,
+                'cost': cost, 'be': be, 'iv': round(iv * 100, 1),
+                'delta': round(dlt + rng.random() * 0.1, 2),
+                'theta_burn': theta_burn, 'pot': pot, 'em_pct': round(em * 100, 1),
+                'quality': quality, 'veh': (r.get('vehicle') or None),
+                'why': 'Échéance ' + bk + ' — profil synthétique de démonstration.'})
+    board.sort(key=lambda c: c.get('quality', 0), reverse=True)
+    return board
+
+
 def scan():
     try:
         # En DÉMO : on ne scanne que 20 titres → rapide sur le CPU bridé du cloud,
@@ -968,6 +1013,13 @@ def scan():
                            'universe_n': len(syms_scan), 'scanned_n': len(rows),
                            'scan_ts': time.time(),
                            'updated': datetime.now().strftime('%H:%M:%S'), 'error': None})
+        if DEMO_MODE:                                  # VITRINE : board d'options synthétique
+            try:
+                _db = _demo_options_board(rows, detail)
+                scan_state['options_board'] = _db
+                _attach_vehicle(rows, _db)
+            except Exception:
+                pass
         try:
             pf = backtest(data)
         except Exception:
