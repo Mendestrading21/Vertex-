@@ -8,6 +8,7 @@ P/E médian de son secteur (cher / dans la moyenne / décoté), marges, croissan
 rafraîchi toutes les ~6 h. Étiqueter : fondamentaux yfinance, peuvent dater.
 """
 import statistics
+from concurrent.futures import ThreadPoolExecutor
 
 import yfinance as yf
 
@@ -21,29 +22,49 @@ def _f(v):
         return None
 
 
+def _one(s):
+    """Fondamentaux d'UN titre via tk.info. Secteur : SECTOR_MAP sinon yfinance (couvre TOUT l'univers)."""
+    try:
+        info = yf.Ticker(s).info or {}
+    except Exception:
+        return s, None
+    sec = sectors.SECTOR_MAP.get(s) or info.get('sector')
+    return s, {
+        'pe': _f(info.get('trailingPE')),
+        'fwd_pe': _f(info.get('forwardPE')),
+        'pb': _f(info.get('priceToBook')),
+        'peg': _f(info.get('pegRatio') or info.get('trailingPegRatio')),
+        'margin': _f(info.get('profitMargins')),
+        'growth': _f(info.get('revenueGrowth')),
+        'beta': _f(info.get('beta')),
+        'mcap': _f(info.get('marketCap')),
+        'div': _f(info.get('dividendYield')),
+        'roe': _f(info.get('returnOnEquity')),
+        'debt_eq': _f(info.get('debtToEquity')),
+        'sector': sec,
+        'industry': info.get('industry'),
+        'name': info.get('shortName') or info.get('longName'),
+    }
+
+
 def build(symbols):
-    """tk.info pour chaque titre → {by_sym:{sym:{...}}, by_sector:{sec:{median_pe,...}}}."""
+    """tk.info pour CHAQUE titre (parallélisé) → {by_sym:{sym:{...}}, by_sector:{sec:{median_pe,...}}}.
+    Couvre TOUT l'univers passé (plus seulement la watchlist cœur)."""
     by_sym = {}
-    for s in symbols:
-        try:
-            info = yf.Ticker(s).info or {}
-        except Exception:
-            continue
-        by_sym[s] = {
-            'pe': _f(info.get('trailingPE')),
-            'fwd_pe': _f(info.get('forwardPE')),
-            'pb': _f(info.get('priceToBook')),
-            'peg': _f(info.get('pegRatio')),
-            'margin': _f(info.get('profitMargins')),
-            'growth': _f(info.get('revenueGrowth')),
-            'beta': _f(info.get('beta')),
-            'mcap': _f(info.get('marketCap')),
-            'div': _f(info.get('dividendYield')),
-            'sector': sectors.SECTOR_MAP.get(s),
-        }
+    try:
+        with ThreadPoolExecutor(max_workers=8) as ex:        # 176× tk.info en série = trop lent
+            for s, v in ex.map(_one, list(symbols)):
+                if v is not None:
+                    by_sym[s] = v
+    except Exception:
+        for s in symbols:                                     # repli séquentiel si l'executor casse
+            _s, v = _one(s)
+            if v is not None:
+                by_sym[_s] = v
 
     by_sector = {}
-    for sec in set(sectors.SECTOR_MAP.values()):
+    allsecs = set(v.get('sector') for v in by_sym.values() if v.get('sector'))
+    for sec in allsecs:
         members = [v for k, v in by_sym.items() if v.get('sector') == sec]
         pes = [v['pe'] for v in members if v.get('pe') and 0 < v['pe'] < 250]
         fwd = [v['fwd_pe'] for v in members if v.get('fwd_pe') and 0 < v['fwd_pe'] < 250]

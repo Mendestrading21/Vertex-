@@ -372,6 +372,18 @@ def evaluate(detail):
             # bonus/malus d'edge selon la proba first-touch
             edge = round(_clamp(edge + (mc['p_tp1_first'] - mc['p_stop_before_tp1']) * 18))
 
+        # ── FONDAMENTAUX RÉELS (Vertex v6) : la qualité d'entreprise affine l'edge ──
+        # Honnête : ne s'applique QUE si les fondamentaux sont réels (yfinance), jamais sur le proxy.
+        sub = d.get('sub') or {}
+        fund_quality = None
+        if sub and sub.get('fundamental_is_proxy') is False:
+            fund_quality = _f(sub.get('fundamental'), 50)
+            edge = round(_clamp(edge + (fund_quality - 50) * 0.10))   # ±5 : valorisation/marges/croissance/ROE réels
+            if fund_quality < 35:
+                risk_flags.append('fondamentaux_faibles')
+            elif fund_quality >= 80:
+                risk_flags.append('fondamentaux_solides')
+
         kelly = kelly_cap(edge, d.get('confidence'), max(rr_detail.get('rr2', 2.0), 1.0))
 
         if no_trade:
@@ -391,7 +403,7 @@ def evaluate(detail):
             'score': edge, 'edge': edge,
             'trend_quality': tq, 'entry_quality': eq, 'rr': rr,
             'expected_move': em, 'asymmetry': asym, 'institutionality': inst,
-            'extension_penalty': ext_pen,
+            'fund_quality': fund_quality, 'extension_penalty': ext_pen,
             'kelly': {'pct': kelly, 'note': 'indicatif · demi-Kelly capé 12 % · jamais automatique'},
             'rr_detail': rr_detail, 'mc': mc,
             'no_trade': no_trade, 'risk_flags': risk_flags,

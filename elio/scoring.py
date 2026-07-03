@@ -37,9 +37,28 @@ def momentum_score(ind):
     return _clip(s)
 
 
-def fundamental_score(ind):
-    # FALLBACK ASSUMÉ : aucune source de fondamentaux branchée (cahier §21 : noter ce qui manque).
-    # Proxy « qualité » = force relative durable + structure de tendance propre.
+def fundamental_score(ind, fund=None):
+    """Score fondamental /100. Si `fund` (vrais fondamentaux yfinance) est fourni → score RÉEL
+    (valorisation P/E vs secteur, marge, croissance, ROE). Sinon → proxy assumé (force relative)."""
+    if fund and (fund.get('pe') or fund.get('margin') is not None or fund.get('growth') is not None):
+        s = 50.0
+        pe, mpe = fund.get('pe'), fund.get('sector_median_pe')
+        if pe and mpe and mpe > 0:                                  # valorisation vs pairs
+            r = pe / mpe
+            s += 12 if r <= 0.75 else 6 if r <= 1.0 else -6 if r <= 1.3 else -12
+        mg, mmg = fund.get('margin'), fund.get('sector_median_margin')
+        if mg is not None:                                          # marge nette (absolue + vs secteur)
+            s += max(-10.0, min(15.0, mg * 100.0 * 0.5))
+            if mmg is not None:
+                s += 5 if mg * 100.0 > mmg else -3
+        gr = fund.get('growth')
+        if gr is not None:                                          # croissance du CA
+            s += max(-10.0, min(15.0, gr * 100.0 * 0.6))
+        roe = fund.get('roe')
+        if roe is not None:                                         # rentabilité des capitaux
+            s += max(-5.0, min(8.0, roe * 100.0 * 0.3))
+        return _clip(s)
+    # FALLBACK ASSUMÉ : pas de fondamentaux réels → proxy (force relative durable + structure).
     s = 45 + (ind.get('rs', 50) - 50) * 0.6 + (15 if ind.get('stacked') else 0)
     return _clip(s)
 
@@ -97,12 +116,14 @@ def options_score(opt):
     return _clip(s)
 
 
-def compose(ind, opt=None):
-    """Combine les sous-scores → {global, grade, technical, momentum, fundamental, risk, options?}."""
+def compose(ind, opt=None, fund=None):
+    """Combine les sous-scores → {global, grade, technical, momentum, fundamental, risk, options?}.
+    `fund` = vrais fondamentaux (yfinance) si dispos → score fondamental RÉEL au lieu du proxy."""
+    fund_real = bool(fund and (fund.get('pe') or fund.get('margin') is not None or fund.get('growth') is not None))
     parts = {
         'technical': technical_score(ind),
         'momentum': momentum_score(ind),
-        'fundamental': fundamental_score(ind),
+        'fundamental': fundamental_score(ind, fund),
         'risk': risk_score(ind),
     }
     osc = options_score(opt)
@@ -112,6 +133,7 @@ def compose(ind, opt=None):
     g = sum(w[k] * parts[k] for k in parts) / sum(w.values())
     out = {'global': round(g), 'grade': config.grade(g)}
     out.update({k: round(v) for k, v in parts.items()})
+    out['fundamental_is_proxy'] = not fund_real           # honnêteté : signale si le fondamental est un proxy
     # CONFIANCE : sous-scores alignés = haute confiance ; contradictoires = basse.
     core = [parts['technical'], parts['momentum'], parts['fundamental'], parts['risk']]
     out['confidence'] = round(_clip(100 - min(float(np.std(core)) * 2.5, 60)))

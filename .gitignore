@@ -8,6 +8,14 @@ daily_prev.json
 weekly_snapshot.json
 weekly_snapshot.json.tmp
 
+# Données personnelles du desk (positions réelles, sync appareils) — JAMAIS sur GitHub
+desk_data.json
+
+# Caches locaux régénérés automatiquement
+*_cache.json
+breadth_history.json
+paper_state.json
+
 # Python
 __pycache__/
 *.pyc

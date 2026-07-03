@@ -354,3 +354,53 @@ def recommend(contracts):
         why.append('couvre des résultats (risque IV-crush)')
     why.append(f"delta {best['delta']} · suitability {best['suit']}/100 · coût ${best['cost']:,}".replace(',', ' '))
     return {**best, 'why': ' · '.join(w for w in why if w)}
+
+
+def _reco_score(c):
+    """Score de recommandation (sweet-spot swing) — partagé par recommend/recommend_top."""
+    s = c['suit']
+    s += {'moyen': 6, 'long': 4, 'court': -2}.get(c.get('bucket'), 0)   # privilégie moyen/long
+    s += (c.get('pop', 50) - 50) * 0.4                                  # bonne proba de profit
+    s -= c.get('danger_n', 0) * 4                                       # pénalise le danger
+    if 'earnings' in (c.get('flags') or []):
+        s -= 5
+    if c.get('theta_burn', 0) > 1.5:
+        s -= 4
+    return s
+
+
+def recommend_top(contracts, n=2):
+    """Renvoie les n MEILLEURES échéances classées (#1, #2…), chacune avec justification
+    et un libellé de rang. Privilégie la DIVERSITÉ d'horizon (pas 2× le même bucket si évitable).
+    C'est ce qui répond à « trop d'échéances, dis-moi laquelle est la meilleure » (la/les 2 meilleures)."""
+    if not contracts:
+        return []
+    lab = {'court': 'échéance COURTE (~1-2 mois) — tactique, théta violent',
+           'moyen': 'échéance MOYENNE (~3 mois) — le compromis idéal du swing',
+           'long': 'échéance LONGUE (6-12M) — robuste, théta lent'}
+    tier = {1: 'MEILLEUR CHOIX', 2: 'ALTERNATIVE', 3: '3e option'}
+    ranked = sorted(contracts, key=_reco_score, reverse=True)
+    picked, seen_buckets = [], set()
+    for c in ranked:                                   # 1re passe : un seul par bucket (diversité)
+        if c.get('bucket') in seen_buckets:
+            continue
+        seen_buckets.add(c.get('bucket'))
+        picked.append(c)
+        if len(picked) >= n:
+            break
+    if len(picked) < n:                                # 2e passe : compléter si pas assez de buckets
+        for c in ranked:
+            if c not in picked:
+                picked.append(c)
+            if len(picked) >= n:
+                break
+    out = []
+    for i, best in enumerate(picked[:n], 1):
+        why = [lab.get(best.get('bucket'), '')]
+        why.append(f"proba de profit {best.get('pop')}% · danger {best.get('danger')}")
+        if 'earnings' in (best.get('flags') or []):
+            why.append('couvre des résultats (risque IV-crush)')
+        why.append(f"delta {best['delta']} · suitability {best['suit']}/100 · coût ${best['cost']:,}".replace(',', ' '))
+        out.append({**best, 'rank': i, 'tier': tier.get(i, f'#{i}'),
+                    'why': ' · '.join(w for w in why if w)})
+    return out
