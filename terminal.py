@@ -3164,9 +3164,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   </div>
   <div id="dStarOption" style="margin:0 0 16px"></div>
   <div id="dTopSetups" style="margin-bottom:16px"></div>
-  <div class="stitle">🎯 TOP STRATÉGIE · TES MEILLEURS SETUPS <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· score profil offensif × playbook aligné climat × R:R ≥ 2:1 · clic → fiche</span></div>
-  <div id="dStratTop" style="margin-bottom:18px"></div>
-  <div class="stitle" style="margin-top:6px">🎯 RECOMMANDATIONS · COMITÉ D'INVESTISSEMENT <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· le signal ci-dessus filtré par les 4 portes du profil (entreprise · catalyseur · timing · R:R) · <a href="/bordel" style="color:#FF8C32;text-decoration:none;font-weight:700">🎯 ces scores marchent-ils ? preuve →</a></span></div>
+  <div style="display:none"><div id="dStratTop"></div></div>
+  <div class="stitle" style="margin-top:6px">🎯 RECOMMANDATIONS · COMITÉ D'INVESTISSEMENT <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· le signal ci-dessus filtré par les 4 portes du profil (entreprise · catalyseur · timing · R:R) · <a href="/bordel" style="color:#FF8C32;text-decoration:none;font-weight:700">🎯 ces scores tiennent-ils ? preuve sur Panorama →</a></span></div>
   <div id="comite" style="margin-bottom:18px"></div>
   <div class="stitle">⭐ WATCHLIST DE LA SEMAINE <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· sélection figée du lundi · actions + options · clic → fiche</span></div>
   <div id="dWeekly" style="margin-bottom:18px"></div>
@@ -3195,22 +3194,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <div style="display:none">
   <div class="stitle">🎯 RECOMMANDATIONS IBKR <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· score /40 · niveau S+/S/A/B · timing · clic → verdict complet</span></div>
   <div class="secgrid" id="dRecs"></div></div>
-  <div class="stitle">🏆 PALMARÈS · TOP &amp; FLOP <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· jour · semaine (5j) · mois (~21j) · top/flop 6 · clic → fiche</span><span id="dMoversSess" style="font-weight:700;letter-spacing:0;font-size:11px;margin-left:8px"></span></div>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:14px">
-    <div class="pcard"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:10px;color:#22C55E;font-weight:800">📈 TOP · JOUR</div><div id="dPalTopD"></div></div>
-    <div class="pcard"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:10px;color:#EF4444;font-weight:800">📉 FLOP · JOUR</div><div id="dPalFlopD"></div></div>
-    <div class="pcard"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:10px;color:#22C55E;font-weight:800">📈 TOP · SEMAINE</div><div id="dPalTopW"></div></div>
-    <div class="pcard"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:10px;color:#EF4444;font-weight:800">📉 FLOP · SEMAINE</div><div id="dPalFlopW"></div></div>
-    <div class="pcard"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:10px;color:#22C55E;font-weight:800">📈 TOP · MOIS</div><div id="dPalTopM"></div></div>
-    <div class="pcard"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:10px;color:#EF4444;font-weight:800">📉 FLOP · MOIS</div><div id="dPalFlopM"></div></div>
-    <div class="pcard"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:10px;color:#38BDF8;font-weight:800">🏛️ TOP · DOW</div><div id="dPalDow"></div></div>
-    <div class="pcard"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:10px;color:#A78BFA;font-weight:800">💻 TOP · NASDAQ</div><div id="dPalNdx"></div></div>
-    <div class="pcard"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:10px;color:#F5B45B;font-weight:800">📊 TOP · S&amp;P 500</div><div id="dPalSp"></div></div>
-    <div class="pcard"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:10px;color:#34D399;font-weight:800">🇺🇸 TOP · RUSSELL 2000</div><div id="dPalRut"></div></div>
-    <div class="pcard"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:10px;color:#60A5FA;font-weight:800">🇪🇺 TOP · EUROPE</div><div id="dPalEu"></div></div>
-    <div class="pcard"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:10px;color:#F472B6;font-weight:800">🌏 TOP · ASIE</div><div id="dPalAsia"></div></div>
-  </div>
-  <div style="display:none"><div id="dCatalysts"></div><div id="dNews2"></div></div>
+  <a href="/heatmap" style="display:flex;align-items:center;gap:14px;text-decoration:none;background:linear-gradient(90deg,rgba(255,140,50,.08),#0f1218);border:1px solid rgba(255,140,50,.28);border-radius:14px;padding:15px 20px;margin-bottom:14px;transition:border-color .15s" onmouseover="this.style.borderColor='rgba(255,140,50,.6)'" onmouseout="this.style.borderColor='rgba(255,140,50,.28)'">
+    <span style="font-size:22px">🔥</span>
+    <div><div style="font-size:14px;font-weight:800;color:#f4f7fb">Palmarès &amp; mouvements du jour</div><div style="font-size:11.5px;color:#8794ab;margin-top:2px">Top / Flop par jour · semaine · mois · par indice — la carte de chaleur complète</div></div>
+    <span style="margin-left:auto;font-size:12px;color:#FF8C32;font-weight:800;white-space:nowrap">Ouvrir la Heatmap →</span>
+  </a>
+  <div style="display:none"><div id="dPalTopD"></div><div id="dPalFlopD"></div><div id="dPalTopW"></div><div id="dPalFlopW"></div><div id="dPalTopM"></div><div id="dPalFlopM"></div><div id="dPalDow"></div><div id="dPalNdx"></div><div id="dPalSp"></div><div id="dPalRut"></div><div id="dPalEu"></div><div id="dPalAsia"></div><span id="dMoversSess"></span><div id="dCatalysts"></div><div id="dNews2"></div></div>
   <div style="display:none"><span id="dIbkrCard"></span><span id="posBody"></span><span id="dSectors"></span><span id="dPicks"></span><span id="dPicksCnt"></span><span id="dSwing"></span><span id="dSwingCnt"></span><span id="dMom"></span><span id="dAnoms"></span><span id="dAnomCnt"></span><span id="dMovers"></span><span id="dSecond"></span><span id="dGuard"></span></div>
 
   </div>
@@ -6845,18 +6834,36 @@ function render(){var host=document.getElementById('hmHost');if(!host)return;var
     host.innerHTML=secs.map(function(s){var g=by[s].slice().sort(function(a,b){return b.change-a.change;});var up=g.filter(function(r){return r.change>=0;}).length;var avg=g.reduce(function(x,r){return x+r.change;},0)/g.length;return '<div style="margin-bottom:18px"><div class="vstit" style="margin:0 0 9px">'+s+' <span style="color:#71717A;font-weight:400;letter-spacing:0;font-size:11px">· '+g.length+' titres · moy <b style="color:'+(avg>=0?'#22C55E':'#EF4444')+'">'+(avg>=0?'+':'')+avg.toFixed(1)+'%</b> · '+up+'↑ '+(g.length-up)+'↓</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">'+g.map(tile).join('')+'</div></div>';}).join('');}}
 function buildSeg(){var seg=document.getElementById('hmSeg');if(!seg)return;var M=[['perf','📊 Par performance'],['sector','🔁 Par secteur']];seg.innerHTML=M.map(function(x){var on=MODE===x[0];return '<button class="vbtn'+(on?' pri':'')+'" onclick="setMode(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');}
 window.setMode=function(m){MODE=m;buildSeg();render();};
+var PAL=[],IDXSETS={};
+function _perfFrom(cl,n){if(!cl||cl.length<n+1)return null;var a=cl[cl.length-1-n],b=cl[cl.length-1];if(!a)return null;return (b-a)/a*100;}
+function _palLine(x,key){var v=x[key];if(v==null)return '';var cur=(x.symbol.indexOf('.')>=0)?'':'$';return '<div onclick="location.href=\'/titre/'+x.symbol+'\'" style="display:flex;justify-content:space-between;align-items:center;padding:6px 2px;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;font-size:12px"><span><b style="color:#F5B45B">'+x.symbol+'</b> <span style="color:#8794ab;font-size:10.5px">'+cur+x.price+'</span></span><span style="font-weight:800;color:'+(v>=0?'#22C55E':'#EF4444')+'">'+(v>=0?'+':'')+v.toFixed(1)+'%</span></div>';}
+function _palCard(title,col,rows,key,dir){var a=rows.filter(function(x){return x[key]!=null;});a.sort(function(p,q){return dir*(q[key]-p[key]);});if(!a.length)return '';return '<div class="pcard" style="background:linear-gradient(180deg,#13161d,#0f1218);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:13px 15px"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:9px;color:'+col+';font-weight:800">'+title+'</div>'+a.slice(0,6).map(function(x){return _palLine(x,key);}).join('')+'</div>';}
+function _palIdx(title,col,rows,setArr){var st={};(setArr||[]).forEach(function(s){st[s]=1;});var a=rows.filter(function(x){return st[x.symbol]&&x.d!=null;});if(!a.length)return '';a.sort(function(p,q){return q.d-p.d;});return '<div class="pcard" style="background:linear-gradient(180deg,#13161d,#0f1218);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:13px 15px"><div style="font-size:10.5px;letter-spacing:.5px;margin-bottom:9px;color:'+col+';font-weight:800">'+title+'</div>'+a.slice(0,6).map(function(x){return _palLine(x,'d');}).join('')+'</div>';}
+function renderPal(){var host=document.getElementById('hmPal');if(!host)return;var g='display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;margin-bottom:14px';
+  host.innerHTML='<div style="'+g+'">'
+    +_palCard('📈 TOP · JOUR','#22C55E',PAL,'d',1)+_palCard('📉 FLOP · JOUR','#EF4444',PAL,'d',-1)
+    +_palCard('📈 TOP · SEMAINE','#22C55E',PAL,'w',1)+_palCard('📉 FLOP · SEMAINE','#EF4444',PAL,'w',-1)
+    +_palCard('📈 TOP · MOIS','#22C55E',PAL,'m',1)+_palCard('📉 FLOP · MOIS','#EF4444',PAL,'m',-1)+'</div>'
+    +'<div style="'+g+'">'
+    +_palIdx('🏛️ TOP · DOW','#38BDF8',PAL,IDXSETS.dow)+_palIdx('💻 TOP · NASDAQ','#A78BFA',PAL,IDXSETS.ndx)
+    +_palIdx('📊 TOP · S&P 500','#F5B45B',PAL,IDXSETS.sp)+_palIdx('🇺🇸 TOP · RUSSELL','#34D399',PAL,IDXSETS.rut)
+    +_palIdx('🇪🇺 TOP · EUROPE','#60A5FA',PAL,IDXSETS.eu)+_palIdx('🌏 TOP · ASIE','#F472B6',PAL,IDXSETS.asia)+'</div>';}
 function load(){fetch('/scan').then(function(r){return r.json()}).then(function(d){var fs=((d.fundamentals||{}).by_sym)||{},det=d.detail||{};
   ALL=(d.rows||[]).map(function(r){var f=fs[r.symbol]||{},dd=det[r.symbol]||{};return {symbol:r.symbol,change:r.change,score:r.score,sector:r.sector||f.sector||dd.sector||'—'};});
+  IDXSETS=d.idx_sets||{};
+  PAL=(d.rows||[]).map(function(r){var cl=((det[r.symbol]||{}).series||{}).close||[];return {symbol:r.symbol,price:r.price,d:(typeof r.change==='number'?r.change:null),w:_perfFrom(cl,5),m:_perfFrom(cl,21)};});
   var up=ALL.filter(function(r){return (r.change||0)>=0;}).length;
   document.getElementById('hmHead').innerHTML='<b style="color:#22C55E">'+up+'↑</b> · <b style="color:#EF4444">'+(ALL.length-up)+'↓</b> sur '+ALL.length+' titres · intensité = ampleur du mouvement · clic → fiche';
-  buildSeg();render();}).catch(function(){});}
+  buildSeg();render();renderPal();}).catch(function(){});}
 load();setInterval(load,20000);
 """
 
 PAGE_HEATMAP = _vpage('Heatmap',
-  '<div class="vhead"><div><h1>Heatmap du jour</h1><div class="s" id="hmHead">chargement…</div></div>'
+  '<div class="vhead"><div><h1>🔥 Heatmap &amp; Palmarès</h1><div class="s" id="hmHead">chargement…</div></div>'
   '<div id="hmSeg" style="margin-left:auto;align-self:center;display:flex;gap:6px"></div></div>'
-  '<div id="hmHost"></div>',
+  '<div id="hmHost"></div>'
+  '<div class="vstit" style="margin-top:26px">🏆 PALMARÈS · TOP &amp; FLOP <span style="color:#71717A;font-weight:400;letter-spacing:0;font-size:11px">· jour · semaine (5j) · mois (~21j) · par indice · clic → fiche</span></div>'
+  '<div id="hmPal"></div>',
   js=_HEATMAP_JS)
 
 
