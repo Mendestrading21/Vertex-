@@ -1767,7 +1767,28 @@ def _cal_loop():
             cal_state['items'] = good
             cal_state['updated'] = datetime.now().strftime('%H:%M %d/%m')
             _save_json('cal_cache.json', good)
-    time.sleep(90)                                     # laisse le scan de démarrage finir (anti-throttle)
+    time.sleep(5 if DEMO_MODE else 90)                 # laisse le scan de démarrage finir (anti-throttle)
+    if DEMO_MODE:                                      # VITRINE : calendrier earnings synthétique
+        import zlib
+        while True:
+            rows = scan_state.get('rows') or []
+            if rows:
+                items = []
+                for r in rows:
+                    sym = r['symbol']
+                    seed = zlib.crc32(('cal' + sym).encode()) & 0xffffffff
+                    dte = 2 + (seed % 46)              # résultats étalés sur ~6 semaines
+                    es = (datetime.now() + timedelta(days=dte)).strftime('%Y-%m-%d')
+                    det = (scan_state.get('detail') or {}).get(sym, {})
+                    items.append({'sym': sym, 'date': es, 'dte': dte,
+                                  'score': det.get('score'), 'grade': det.get('grade'),
+                                  'verdict': det.get('verdict')})
+                items.sort(key=lambda x: x['dte'])
+                cal_state['items'] = items
+                cal_state['updated'] = datetime.now().strftime('%H:%M %d/%m')
+                time.sleep(3 * 3600)
+            else:
+                time.sleep(10)
     while True:
         if scan_state.get('rows'):
             items, fails = [], 0
@@ -3116,22 +3137,20 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <div class="idxstrip" id="dCommo" style="margin-bottom:10px"></div>
   <div class="idxstrip" id="dMacro" style="margin-bottom:14px"></div>
   <div class="kpiband" id="dKpi" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))"><div class="kc skel" style="height:64px"></div><div class="kc skel" style="height:64px"></div><div class="kc skel" style="height:64px"></div><div class="kc skel" style="height:64px"></div></div>
-  <div class="stitle" style="margin-top:15px">📡 AMPLITUDE DU MARCHÉ · BREADTH <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· % au-dessus des moyennes · extrêmes 52 sem. · distribution des scores · agrégé sur tout l'univers scanné</span></div>
+  <div class="stitle" style="margin-top:15px">📡 AMPLITUDE DU MARCHÉ · BREADTH <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· % au-dessus des moyennes · extrêmes 52 sem. · glance rapide · détail complet sur <a href="/bordel" style="color:#FF8C32;text-decoration:none;font-weight:700">Panorama →</a></span></div>
   <div id="dBreadthTiles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:11px;margin-bottom:14px"></div>
-  <div id="dBreadthCharts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:16px"></div>
-  <div class="stitle" style="margin-top:15px">📊 SENTIMENT &amp; RISQUE DU MARCHÉ <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· climat + santé du marché avant d'agir · <a href="/bordel" style="color:#FF8C32;text-decoration:none;font-weight:700">🧪 vue marché complète →</a></span></div>
-  <div id="dVerdict" style="background:linear-gradient(135deg,#16171c,#0d0e12);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 20px;margin:4px 0 14px">
-    <div id="dCmd" style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #ffffff0d"><div class="skel" style="height:86px"></div></div>
+  <div class="stitle" style="margin-top:15px">🧭 VERDICT DU JOUR <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· le climat en un coup d'œil · <a href="/bordel" style="color:#FF8C32;text-decoration:none;font-weight:700">🔭 analyse marché complète sur Panorama →</a></span></div>
+  <div id="dVerdict" style="background:linear-gradient(135deg,#16171c,#0d0e12);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 20px;margin:4px 0 16px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
-      <div><div style="font-size:10px;letter-spacing:2px;color:#8794ab;font-weight:700;margin-bottom:6px">🧭 VERDICT DU JOUR</div>
+      <div><div style="font-size:10px;letter-spacing:2px;color:#8794ab;font-weight:700;margin-bottom:6px">🧭 LECTURE DU MARCHÉ</div>
       <div id="dVerdictTxt" style="font-size:17px;font-weight:800;letter-spacing:.3px">lecture du marché…</div></div>
       <div id="dTrend" style="text-align:center;min-width:158px;padding:0 6px"></div>
       <div id="dVerdictTags" style="display:flex;gap:8px;flex-wrap:wrap"></div>
     </div>
     <div id="dPartic" style="margin-top:15px;padding-top:14px;border-top:1px solid #ffffff0d"></div>
   </div>
-  <div id="dRiskCenter" style="margin-bottom:16px"></div>
   <div id="dDetail" style="display:none;margin-bottom:14px"></div>
+  <div style="display:none"><div id="dCmd"></div><div id="dRiskCenter"></div><div id="dBreadthCharts"></div></div>
   <div class="dx-extra">
   <div style="display:none">
   <div class="stitle">⭐ L'ACTION DU JOUR <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· le meilleur trade du jour, sélectionné par le moteur IBKR</span></div>
@@ -3464,8 +3483,8 @@ function renderDaily(d){
       <div class="muted" style="margin:5px 0 12px">$${pick.price} ${chg(pick.change)} · <span class="badge ${bcls(pick.verdict)}">${vfr(pick.verdict)}</span> · ${pick.sigcount}/7 signaux · RVOL ${rv(pick.rvol)}</div>
       <div class="hplan"><span>ENTRÉE <b>$${p.entry??'—'}</b></span><span class="dn">STOP <b>$${p.stop??'—'}</b></span><span class="up">TP1 $${p.tp1??'—'}</span><span class="up">TP2 $${p.tp2??'—'}</span><span class="up">TP3 $${p.tp3??'—'}</span><span>R:R <b>${p.rr??'—'}</b></span></div></div>
       <div class="heroR">${call?`<div class="muted" style="font-size:11px;letter-spacing:1px;margin-bottom:6px">💎 CALL ASSOCIÉ</div>
-        <div class="hsym" style="font-size:19px">$${call.strike} <span class="muted" style="font-size:12px">${call.exp}</span></div>
-        <div class="muted" style="margin-top:6px">Δ ${call.delta} · IV ${call.iv}% · <span style="color:${clr(call.suit)};font-weight:700">${call.grade}</span></div>
+        <div class="hsym" style="font-size:19px">$${call.strike} <span class="muted" style="font-size:12px">${(call.exp||'').slice(0,10)}</span></div>
+        <div class="muted" style="margin-top:6px">Δ ${call.delta} · IV ${call.iv}%${call.grade?` · <span style="color:${clr(call.suit)};font-weight:700">${call.grade}</span>`:(call.quality!=null?` · <span style="color:${clr(call.quality)};font-weight:700">Q ${call.quality}</span>`:'')}</div>
         <div style="margin-top:8px;font-size:21px;font-weight:800">$${(call.cost||0).toLocaleString('fr-FR')}</div>
         <div class="muted">breakeven $${call.be}</div>`:'<span class="muted">pas de call propre aujourd\'hui</span>'}</div>`;
   } else q('dHero').innerHTML='<div style="padding:22px" class="muted">Aucun BUY aujourd\'hui — marché en repli. Patience, on ne force pas.</div>';
@@ -8552,6 +8571,8 @@ def _start_workers():
     dépendent de yfinance — inutiles et coûteuses (mémoire/CPU) quand le réseau est
     bloqué sur le serveur. Hors démo, tout démarre normalement."""
     threading.Thread(target=_loop, daemon=True).start()
+    if DEMO_MODE:                                     # VITRINE : calendrier earnings synthétique
+        threading.Thread(target=_cal_loop, daemon=True).start()
     if not DEMO_MODE:
         threading.Thread(target=_opt_loop, daemon=True).start()
         threading.Thread(target=_news_loop, daemon=True).start()
