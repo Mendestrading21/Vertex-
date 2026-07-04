@@ -570,6 +570,48 @@ def analyse(df, bench_ret, fund=None):
     else:
         profile, profile_hint = 'ÉQUILIBRÉ', 'polyvalent → actions ou options moyennes (1-3 mois) selon la conviction'
 
+    # ─── RADAR D'ANOMALIES VERTEX — repère l'INHABITUEL que l'œil rate : un prix,
+    # un volume ou une volatilité STATISTIQUEMENT hors-norme est une information.
+    # Gap, z-score extrême, pic de volume, expansion de range, choc de volatilité.
+    anomalies = []
+    o = df['Open']
+    prev_close = float(c.iloc[-2]) if len(c) > 2 else last
+    gap_pct = round((float(o.iloc[-1]) - prev_close) / prev_close * 100, 2) if prev_close else 0.0
+    gap_atr = round((float(o.iloc[-1]) - prev_close) / atr, 2) if atr else 0.0
+    if abs(gap_atr) >= 0.8:
+        anomalies.append({'k': 'gap', 'sev': int(min(3, max(1, round(abs(gap_atr))))),
+                          'lbl': ('⤒ Gap haussier ' if gap_atr > 0 else '⤓ Gap baissier ')
+                          + f'{gap_pct:+.1f}% ({abs(gap_atr):.1f} ATR)'})
+    sd20 = float(c.rolling(20).std().iloc[-1]) if len(c) > 20 else 0.0
+    zc = round((last - e20) / sd20, 2) if sd20 else 0.0
+    if abs(zc) >= 2.2:
+        anomalies.append({'k': 'zscore', 'sev': int(min(3, max(1, round(abs(zc)) - 1))),
+                          'lbl': f'σ Prix à {zc:+.1f}σ de la MM20 (extrême statistique)'})
+    vser = df['Volume'].tail(60)
+    vmean = float(vser.mean()); vstd = float(vser.std()) or 1.0
+    vz = round((vol - vmean) / vstd, 2)
+    if vz >= 2.5:
+        anomalies.append({'k': 'volspike', 'sev': int(min(3, max(1, round(vz) - 1))),
+                          'lbl': f'🔊 Volume anormal ({volx:.1f}× — z {vz:+.1f})'})
+    tr = float(df['High'].iloc[-1] - df['Low'].iloc[-1])
+    rng_x = round(tr / atr, 2) if atr else 0.0
+    if rng_x >= 2.0:
+        anomalies.append({'k': 'range', 'sev': int(min(3, max(1, round(rng_x) - 1))),
+                          'lbl': f'↔ Barre élargie ({rng_x:.1f}× ATR) — volatilité qui explose'})
+    if bb_rank is not None and bb_rank >= 90:
+        anomalies.append({'k': 'volshock', 'sev': 2, 'lbl': f'💥 Volatilité au plus-haut 6 mois (rang {bb_rank}%)'})
+    if rsi_div == 'bear':
+        anomalies.append({'k': 'divbear', 'sev': 2, 'lbl': '⚠️ Divergence RSI baissière (prix haut, momentum en repli)'})
+    elif rsi_div == 'bull':
+        anomalies.append({'k': 'divbull', 'sev': 1, 'lbl': '↗️ Divergence RSI haussière (prix bas, momentum qui remonte)'})
+    if distribution:
+        anomalies.append({'k': 'distrib', 'sev': 2, 'lbl': '🔴 Distribution cachée (OBV/prix divergent)'})
+    if ext_atr >= 4:
+        anomalies.append({'k': 'ext', 'sev': int(min(3, max(1, round(ext_atr) - 3))),
+                          'lbl': f'🌡️ Sur-extension {ext_atr:.1f} ATR au-dessus de la MM20'})
+    anomaly_score = int(min(100, sum(a['sev'] for a in anomalies) * 16))
+    anomaly_lvl = ('CALME' if anomaly_score < 25 else 'ACTIF' if anomaly_score < 55 else 'ALERTE')
+
     # signaux booléens (style checklist)
     sig = {
         'above20': last > e20, 'above50': last > s50, 'above200': last > s200,
@@ -649,6 +691,8 @@ def analyse(df, bench_ret, fund=None):
         'bb_rank': bb_rank, 'squeeze': squeeze, 'breakout': breakout,
         'accumulation': accumulation, 'distribution': distribution, 'pullback': pullback,
         'profile': profile, 'profile_hint': profile_hint,
+        'anomalies': anomalies, 'anomaly_score': anomaly_score, 'anomaly_lvl': anomaly_lvl,
+        'gap_pct': gap_pct, 'zscore': zc, 'vol_z': vz,
         'setup_quality': setup_quality, 'confidence': sc.get('confidence'),
         'signals': sig, 'sub': sc,
         'plan': plan, 'series': series,
@@ -890,6 +934,46 @@ def _demo_universe(tickers):
     return {t: _demo_one(t) for t in tickers}
 
 
+def _swing_project(spot, iv, delta, cost, theta_burn, dte, days=21):
+    """Projection SWING SÉCURISÉ : rendement estimé si le titre fait un mouvement
+    réaliste ~1σ sur ~3 semaines, en tenant compte du delta (levier) et de l'érosion
+    théta (faible sur les échéances lointaines). Renvoie (swing_ret%, swing_ok).
+
+    Logique VERTEX : on achète loin (≥ 90j) pour le coussin temporel / la faible érosion,
+    mais l'objectif est de REVENDRE en 1-4 semaines sur un gain rapide (≥ +25 %)."""
+    try:
+        spot = float(spot or 0); iv = float(iv or 0) / (100.0 if (iv or 0) > 3 else 1.0)
+        delta = abs(float(delta or 0)); cost = float(cost or 0)
+        if spot <= 0 or cost <= 0 or iv <= 0:
+            return None, False
+        sigma = spot * iv * math.sqrt(days / 252.0)          # 1σ sur la fenêtre (~3 sem)
+        move = 1.25 * sigma                                  # SWING de CONVICTION (setup A+ sélectif, pas du bruit)
+        T = max((dte or 30) / 365.0, 0.02)
+        gamma = 0.399 / (spot * iv * math.sqrt(T))           # convexité (approx ATM) : le delta monte avec le titre
+        eff_delta = min(0.95, delta + 0.5 * gamma * move)    # delta moyen effectif sur la hausse (gamma)
+        gain = eff_delta * move * 100.0                      # gain option (delta effectif × ΔS × 100)
+        theta_cost = cost * (float(theta_burn or 0) / 100.0) * days  # érosion faible sur échéance lointaine
+        net = gain - theta_cost
+        swing_ret = round(net / cost * 100.0)
+        swing_ok = bool((dte or 0) >= 90 and swing_ret >= 25)   # ≥ 90j (sécurité) + ≥ +25 % (objectif 1-4 sem)
+        return swing_ret, swing_ok
+    except Exception:
+        return None, False
+
+
+def _annotate_swing(board, detail):
+    """Ajoute swing_ret / swing_ok à chaque contrat du board (démo et réel)."""
+    for c in board or []:
+        if not isinstance(c, dict):
+            continue
+        spot = c.get('spot') or ((detail or {}).get(c.get('sym')) or {}).get('price')
+        sr, ok = _swing_project(spot, c.get('iv'), c.get('delta'),
+                                c.get('cost'), c.get('theta_burn'), c.get('dte'))
+        c['swing_ret'] = sr
+        c['swing_ok'] = ok
+    return board
+
+
 def _demo_options_board(rows, detail):
     """Board d'options CALL synthétique (mode VITRINE) — crédible mais FICTIF.
     Génère 3 échéances (court/moyen/long) pour les meilleurs titres scannés,
@@ -995,6 +1079,8 @@ def scan():
                              'profile': d.get('profile'), 'profile_hint': d.get('profile_hint'),
                              'squeeze': d.get('squeeze'), 'breakout': d.get('breakout'),
                              'accumulation': d.get('accumulation'), 'distribution': d.get('distribution'), 'pullback': d.get('pullback'),
+                             'anomalies': d.get('anomalies'), 'anomaly_score': d.get('anomaly_score'),
+                             'anomaly_lvl': d.get('anomaly_lvl'), 'gap_pct': d.get('gap_pct'), 'zscore': d.get('zscore'),
                              # VERTEX — noyau quant complet (edge, sous-scores, Kelly, Monte-Carlo, EV, drapeaux)
                              'vx_edge': _vx.get('edge'), 'vx_verdict': _vx.get('verdict'),
                              'vx_pwin': _vx.get('p_win'), 'vx_kelly': _kel.get('pct'),
@@ -1094,6 +1180,7 @@ def scan():
         if DEMO_MODE:                                  # VITRINE : board d'options synthétique
             try:
                 _db = _demo_options_board(rows, detail)
+                _annotate_swing(_db, detail)
                 scan_state['options_board'] = _db
                 _attach_vehicle(rows, _db)
             except Exception:
@@ -1697,6 +1784,7 @@ def _publish_board(focus):
         merged[(c.get('sym'), c.get('exp'), c.get('strike'), c.get('type'))] = c
     ob = list(merged.values())
     if ob:
+        _annotate_swing(ob, scan_state.get('detail') or {})
         scan_state['options_board'] = ob
         _attach_vehicle(scan_state.get('rows') or [], ob)   # rafraîchit le verdict véhicule
         _save_json('options_cache.json', {'board': ob, 'ts': time.time()})
@@ -1748,6 +1836,7 @@ def _opt_loop():
                     if probe:
                         _publish_board(ob)
                     else:                              # repli yfinance : board focus seul
+                        _annotate_swing(ob, scan_state.get('detail') or {})
                         scan_state['options_board'] = ob
                         _save_json('options_cache.json', {'board': ob, 'ts': time.time()})
             except Exception:
@@ -5081,9 +5170,10 @@ function row(c){const f=FIT[c.fit];return `<tr onclick="location.href='/titre/${
   <td>$${fmt(c.cost)}</td>
   <td class="muted">$${c.be}</td>
   <td class="muted">si $${c.tgt} <span class="${c.pot>=0?'up':'dn'}">${c.pot>=0?'+':''}${c.pot}%</span></td>
+  <td style="text-align:center">${c.swing_ret!=null?`<span title="Rendement projeté si le titre fait un swing de conviction (~3 sem)" style="font-weight:800;color:${c.swing_ok?C.g:'#8794ab'}">${c.swing_ret>=0?'+':''}${c.swing_ret}%</span>${c.swing_ok?' <span style="font-size:9px">🎯</span>':''}`:'—'}</td>
   <td><span class="fit" style="color:${f[1]};border:1px solid ${f[1]}66;background:${f[1]}14">${f[0]}</span></td></tr>`;}
-const HEAD=['Ticker','Échéance','Strike','Qualité','Δ','POP','Danger','OI','Vol','Spread','IV','Coût','Breakeven','Si cible','Verdict'];
-function section(col,title,list){return `<div class="panel"><div class="ph" style="background:linear-gradient(90deg,${col}26,transparent 70%)">${title}<span class="cnt">${list.length} contrats</span></div><div class="swipe">← glisse le tableau pour voir toutes les colonnes →</div><div class="tscroll"><table><thead><tr>${HEAD.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${list.map(row).join('')||'<tr><td colspan="15" class="muted" style="padding:16px">chaînes en calcul (~1-2 min)…</td></tr>'}</tbody></table></div></div>`;}
+const HEAD=['Ticker','Échéance','Strike','Qualité','Δ','POP','Danger','OI','Vol','Spread','IV','Coût','Breakeven','Si cible','Swing 1-4 sem','Verdict'];
+function section(col,title,list){return `<div class="panel"><div class="ph" style="background:linear-gradient(90deg,${col}26,transparent 70%)">${title}<span class="cnt">${list.length} contrats</span></div><div class="swipe">← glisse le tableau pour voir toutes les colonnes →</div><div class="tscroll"><table><thead><tr>${HEAD.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${list.map(row).join('')||'<tr><td colspan="16" class="muted" style="padding:16px">chaînes en calcul (~1-2 min)…</td></tr>'}</tbody></table></div></div>`;}
 async function load(){
   let s={};try{s=await fetch('/scan').then(r=>r.json());}catch(e){}
   const board=(s.options_board||[]).filter(c=>c.type==='CALL');
@@ -5100,7 +5190,9 @@ async function load(){
     <div style="flex:1;min-width:220px;font-size:12px;line-height:1.8"><div>POP <b style="color:${popc(best.pop)}">${best.pop}%</b> · danger <b style="color:${dgc(best.danger)}">${best.danger}</b> · delta <b>${best.delta}</b></div><div>coût <b>$${fmt(best.cost)}</b> · breakeven <b>$${best.be}</b> · si $${best.tgt} → <b class="${best.pot>=0?'up':'dn'}">${best.pot>=0?'+':''}${best.pot}%</b></div><div>OI ${fmt(best.oi)} · vol ${fmt(best.vol)} · IV ${best.iv}% · <span class="fit" style="color:${f[1]};border:1px solid ${f[1]}66">${f[0]}</span></div><div>proba cible <b style="color:${popc(best.p_tgt)}">${best.p_tgt}%</b> · move attendu <b>±${best.em_pct}%</b> · érosion théta <b style="color:${best.theta_burn>1.5?C.r:best.theta_burn>0.8?C.yl:C.g}">${best.theta_burn}%/j</b></div></div>`;}
   // stats
   const cnt=t=>board.filter(c=>c.fit===t).length;
-  document.getElementById('stats').innerHTML=[['leaps','LEAPS Core',C.g],['swing','Swing',C.blue],['tact','Tactique',C.yl],['avoid','À éviter',C.r]].map(([k,l,c])=>`<div class="stat" style="border-color:${c}33"><div class="n" style="color:${c}">${cnt(k)}</div><div class="l">${l}</div></div>`).join('');
+  const swSec=board.filter(c=>c.swing_ok).length;
+  const swSecPct=board.length?Math.round(swSec/board.length*100):0;
+  document.getElementById('stats').innerHTML=[['swingsec','🎯 Swing sécurisé',C.g,swSec],['leaps','LEAPS Core',C.g,cnt('leaps')],['swing','Swing',C.blue,cnt('swing')],['tact','Tactique',C.yl,cnt('tact')],['avoid','À éviter',C.r,cnt('avoid')]].map(([k,l,c,n])=>`<div class="stat" style="border-color:${c}33${k!=='avoid'?';cursor:pointer':''}"${k!=='avoid'?` onclick="setFilt('${k}')"`:''}><div class="n" style="color:${c}">${n}</div><div class="l">${l}</div></div>`).join('');
   // stockage global + briques avancees
   const spotMap={};(s.rows||[]).forEach(r=>{if(r&&r.symbol)spotMap[r.symbol]=r.price;});
   window.__board=board;window.__puts=puts;window.__spot=spotMap;
@@ -5119,13 +5211,15 @@ function renderSections(){
   else if(filt==='leaps') html=sec(C.g,'💎 LEAPS CORE',all.filter(c=>c.bucket==='long'));
   else if(filt==='swing') html=sec(C.blue,'⚡ SWING',all.filter(c=>c.bucket==='moyen'));
   else if(filt==='tact') html=sec(C.yl,'🎲 TACTIQUE',all.filter(c=>c.bucket==='court'));
+  else if(filt==='swingsec') html=`<div class="panel" style="border-color:${C.g}44"><div class="ph" style="background:linear-gradient(90deg,${C.g}22,transparent 70%)">🎯 SWING SÉCURISÉ · échéance lointaine (≥90j) + objectif +25% en 1-4 semaines<span class="cnt">${all.filter(c=>c.swing_ok).length} contrats</span></div><div style="padding:11px 16px;font-size:11.5px;line-height:1.6;color:#9aa4b8;border-bottom:1px solid rgba(255,255,255,.05)">💡 La stratégie VERTEX : on <b style="color:#cfd8e6">achète loin</b> (3-6-12 mois) pour le coussin de temps et la faible érosion théta, mais l'objectif est de <b style="color:#22C55E">revendre en 1-4 semaines à +25% ou plus</b> sur un swing de conviction. Le % « Swing 1-4 sem » projette le gain si le titre fait un mouvement ~1σ favorable. Sois <b style="color:#cfd8e6">sélectif</b> : ne prends que les setups A+.</div>`
+    +sec(C.g,'🎯 CANDIDATS SWING SÉCURISÉ · triés par rendement projeté',[...all.filter(c=>c.swing_ok)].sort((a,b)=>(b.swing_ret||0)-(a.swing_ret||0)));
   else if(filt==='puts') html=sec(C.r,'🛡️ PUTS',pu);
   document.getElementById('sections').innerHTML=html||'<div class="panel"><div class="muted" style="padding:18px">Aucun contrat ne correspond au filtre.</div></div>';
 }
 function buildFilterbar(){
   const fb=document.getElementById('filterbar'); if(fb.dataset.on)return; fb.dataset.on='1';
   const chip=(v,l)=>`<button class="chip" data-f="${v}" onclick="setFilt('${v}')">${l}</button>`;
-  fb.innerHTML=`<div class="fbar"><div class="fgrp">${chip('all','Tous')}${chip('leaps','💎 LEAPS')}${chip('swing','⚡ Swing')}${chip('tact','🎲 Tactique')}${chip('puts','🛡️ Puts')}</div>`
+  fb.innerHTML=`<div class="fbar"><div class="fgrp">${chip('all','Tous')}${chip('swingsec','🎯 Swing sécurisé')}${chip('leaps','💎 LEAPS')}${chip('swing','⚡ Swing')}${chip('tact','🎲 Tactique')}${chip('puts','🛡️ Puts')}</div>`
     +`<label class="fsel">Tri <select onchange="window.optSort=this.value;renderSections()"><option value="quality">Qualité</option><option value="pop">POP</option><option value="cost">Coût ↑</option><option value="danger">Danger ↑</option><option value="dte">Échéance</option></select></label>`
     +`<label class="fsel">Qualité min <select onchange="window.optMinQ=+this.value;renderSections()"><option value="0">Toutes</option><option value="50">≥50</option><option value="62">≥62</option><option value="78">≥78</option></select></label></div>`;
   setFilt('all');
@@ -6057,7 +6151,7 @@ function cell(c){
   <td style="color:${c.regime==='TREND'?C.g:c.regime==='CHOP'?C.r:C.gold}">${regTxt(c.regime)}</td>
   <td class="${c.earnSoon?'dn':'muted'}" style="${c.earnSoon?'font-weight:800':''}">${c.earn||'—'}</td></tr>`;}
 let FILTER={sector:'',minScore:0,q:'',preset:'',regime:'',verdict:'',rrok:false};
-const PRESETS={qual:c=>(c.score||0)>=72,grow:c=>c.growth!=null&&c.growth>=0.15,val:c=>c.valTone==='good',marg:c=>c.margin!=null&&c.margin>=0.2,mom:c=>(c.rs||0)>=70,up:c=>(c.change||0)>0,risk:c=>(c.growth!=null&&c.growth<0)||(c.margin!=null&&c.margin<0.05),mystrat:c=>(c.strat||0)>=70&&c.rrok&&!!c.pb};
+const PRESETS={qual:c=>(c.score||0)>=72,grow:c=>c.growth!=null&&c.growth>=0.15,val:c=>c.valTone==='good',marg:c=>c.margin!=null&&c.margin>=0.2,mom:c=>(c.rs||0)>=70,up:c=>(c.change||0)>0,risk:c=>(c.growth!=null&&c.growth<0)||(c.margin!=null&&c.margin<0.05),mystrat:c=>(c.strat||0)>=70&&c.rrok&&!!c.pb,anom:c=>(c.anoms&&c.anoms.length>0)};
 function applyFilter(arr){return arr.filter(c=>{
   if(FILTER.sector&&c.sector!==FILTER.sector)return false;
   if(FILTER.minScore&&(c.score||0)<FILTER.minScore)return false;
@@ -6085,6 +6179,7 @@ function buildFilter(){
     +grp('Score',chip('Tous',!FILTER.minScore,"setF('minScore',0)")+chip('≥55',FILTER.minScore===55,"setF('minScore',55)")+chip('≥72',FILTER.minScore===72,"setF('minScore',72)"))
     +grp('R:R',chip('Tous',!FILTER.rrok,"setF('rrok',false)")+chip('≥2:1',FILTER.rrok,"setF('rrok',true)"))
     +`<span class="sbtn strat ${FILTER.preset==='mystrat'?'on':''}" onclick="togPreset('mystrat')">🎯 Ma stratégie</span>`
+    +`<span class="sbtn ${FILTER.preset==='anom'?'on':''}" onclick="togPreset('anom')">🛰️ Anomalies</span>`
     +`<input class="finp" placeholder="🔍 ticker" oninput="entSearch(this.value)" value="${FILTER.q||''}">`
     +(active?`<span class="sbtn" onclick="resetF()" style="color:#EF4444;border-color:#EF444455">✕ Reset</span>`:'');
 }
@@ -6108,6 +6203,7 @@ function cardHTML(c){
     <div class="cmet">${mt('Force rel.',c.rs!=null?Math.round(c.rs):'—',(c.rs||0)>=70?C.g:(c.rs||0)<=35?C.r:'#dfe6f2')}${mt('RSI',Math.round(c.rsi||0),(c.rsi||0)>=70?C.r:(c.rsi||0)<=30?C.g:'#dfe6f2')}${mt('52 sem.',c.pos52!=null?Math.round(c.pos52)+'%':'—',(c.pos52||0)>=80?C.g:(c.pos52||0)<=20?C.r:'#dfe6f2')}${mt('R:R',rr?rr+':1':'—',rr>=2?C.g:'#dfe6f2')}</div>
     <div class="cfon"><span>P/E <b style="color:${c.valTone==='good'?C.g:c.valTone==='warn'?C.r:'#cfd8e6'}">${c.pe?c.pe.toFixed(1):'—'}</b></span><span>Marge <b>${pct(c.margin)}</b></span><span>Croiss. <b class="${(c.growth||0)>=0?'up':'dn'}">${c.growth!=null?pct(c.growth):'—'}</b></span><span>Cap. <b>${cap(c.mcap)}</b></span></div>
     ${c.chart_read?`<div class="csig"><span class="cdot" style="background:${vc};box-shadow:0 0 7px ${vc}"></span><span class="ct">${c.chart_read.charAt(0).toUpperCase()+c.chart_read.slice(1)}.</span></div>`:''}
+    ${(c.anoms&&c.anoms.length)?(()=>{const ac=c.anomLvl==='ALERTE'?C.r:c.anomLvl==='ACTIF'?C.gold:'#8794ab';const top=[...c.anoms].sort((a,b)=>(b.sev||0)-(a.sev||0))[0];return `<div class="csig" style="border-top:1px dashed ${ac}33;padding-top:7px"><span style="font-size:9px;font-weight:800;letter-spacing:.5px;color:${ac};background:${ac}1a;border:1px solid ${ac}44;padding:2px 7px;border-radius:20px;white-space:nowrap">🛰️ RADAR ${c.anomLvl}</span><span class="ct" style="color:${ac}cc">${top.lbl}${c.anoms.length>1?' +'+(c.anoms.length-1):''}</span></div>`;})():''}
     <div class="cgo">Analyse complète →</div></div>`;}
 function render(){
   const base=applyFilter(DATA);
@@ -6146,6 +6242,7 @@ async function load(){
       vehicle:r.vehicle,vehreco:(r.vehicle&&r.vehicle.reco)||'',
       strat:r.strat_score,pb:r.playbook||null,pbname:(r.playbook&&r.playbook.name)||'',rr:r.rr,rrok:!!r.rr_ok,
       profile:r.profile,profileHint:r.profile_hint,breakout:r.breakout,squeeze:r.squeeze,distribution:r.distribution,pullback:r.pullback,
+      anomScore:r.anomaly_score,anomLvl:r.anomaly_lvl,anoms:r.anomalies||[],
       earn:e?(e.dte<=0?'auj.':'J-'+e.dte):null,earnSoon:e&&e.dte!=null&&e.dte<7};});
   const m=s.market||{},SE={pre:'🌅 avant-bourse',open:'🟢 séance',after:'🌙 après-bourse',closed:'🌑 fermé'};
   document.getElementById('hsub').textContent=DATA.length+' sociétés · '+(SE[m.session]||'')+' '+(m.et||'');
@@ -9019,6 +9116,11 @@ window.openOptModal=function(k){ensureOptModal();var c=__OPTREG[k];if(!c){return
     +(valTgt!=null?'<span style="font-size:12.5px;color:#8794ab">· ta prime de <b style="color:#cfd8e6">$'+cc+'</b> vaudrait ≈ <b style="color:#22C55E">$'+fmt(valTgt)+'</b></span>':'')
     +'<span style="margin-left:auto;font-size:11px;color:#8794ab">proba <b style="color:#38BDF8">'+(c.p_tgt!=null?c.p_tgt+'%':'—')+'</b></span></div></div>':'';
   var obj=(c.tgt!=null)?tgtHero+'<div class="sect">📐 OBJECTIF &amp; ASYMÉTRIE</div><div class="mgrid g4">'+mt('Objectif titre','$'+c.tgt,'#38BDF8','proba '+(c.p_tgt!=null?c.p_tgt+'%':'—'))+mt('Gain visé',(c.pot>=0?'+':'')+c.pot+'%',c.pot>=0?'#22C55E':'#EF4444','si objectif atteint')+mt('Breakeven','$'+be,'#FF7A18',beDist!=null?'+'+beDist+'% à franchir':'à dépasser')+mt('Move attendu',c.em_pct!=null?'±'+c.em_pct+'%':'—','#cfd8e6','d\'ici l\'échéance')+'</div>':'';
+  var swing=(c.swing_ret!=null)?'<div class="sect">🎯 SWING SÉCURISÉ · achète loin, vends vite</div>'
+    +'<div style="padding:12px 14px;background:linear-gradient(180deg,'+(c.swing_ok?'rgba(34,197,94,.1)':'rgba(255,255,255,.03)')+',rgba(0,0,0,0));border:1px solid '+(c.swing_ok?'rgba(34,197,94,.35)':'rgba(255,255,255,.08)')+';border-radius:13px">'
+    +'<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font-size:26px;font-weight:900;color:'+(c.swing_ok?'#22C55E':'#8794ab')+'">'+(c.swing_ret>=0?'+':'')+c.swing_ret+'%</span><span style="font-size:12px;color:#cfd8e6">rendement projeté en <b>1-4 semaines</b> sur un swing de conviction (~1σ)</span>'
+    +(c.swing_ok?'<span style="margin-left:auto;font-size:10px;font-weight:800;color:#22C55E;background:rgba(34,197,94,.16);border:1px solid rgba(34,197,94,.4);padding:3px 10px;border-radius:20px">✓ ÉLIGIBLE</span>':'<span style="margin-left:auto;font-size:10px;color:#8794ab">'+(c.dte<90?'échéance < 90j — hors critère sécurité':'projection < +25% — trop juste')+'</span>')+'</div>'
+    +'<div style="font-size:11px;color:#9aa4b8;line-height:1.6;margin-top:8px">Échéance <b style="color:#cfd8e6">'+c.dte+' jours</b> ('+(c.dte>=90?'≥ 90j → coussin de temps, faible érosion théta = la sécurité':'< 90j')+'). L\'idée : garder l\'option comme un LEAPS pour la sécurité, mais <b style="color:#e8edf5">sortir dès +25 % en 1 à 4 semaines</b> plutôt que d\'attendre l\'échéance. Reste <b style="color:#e8edf5">sélectif</b>.</div></div>':'';
   document.getElementById('omod').style.setProperty('--vc',d[1]);
   document.getElementById('omod').innerHTML='<div class="om-hd">'
     +'<div style="display:flex;align-items:center;gap:14px"><div style="min-width:0"><div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font-size:25px;font-weight:900;letter-spacing:-.4px">'+c.sym+' <span style="color:#22C55E;font-size:16px">CALL</span> <span style="font-size:19px;color:#cfd8e6">$'+c.strike+'</span></span><span style="font-size:11px;font-weight:800;color:'+d[1]+';background:'+d[1]+'1a;border:1px solid '+d[1]+'55;padding:2px 11px;border-radius:8px;white-space:nowrap">'+d[0]+'</span></div>'
@@ -9027,6 +9129,7 @@ window.openOptModal=function(k){ensureOptModal();var c=__OPTREG[k];if(!c){return
     +'<span onclick="closeOptModal()" style="cursor:pointer;font-size:19px;color:#8794ab;padding:2px 6px;flex-shrink:0;align-self:flex-start">✕</span></div></div>'
     +'<div class="om-body">'
     +obj
+    +swing
     +'<div class="sect">📈 PAYOFF À L\'ÉCHÉANCE</div>'+pay(c,true)
     +'<div style="font-size:10.5px;color:#8794ab;margin-top:7px">⚠ Risque : perte max <b style="color:#EF4444">−100% du coût</b> ($'+cc+') si '+c.sym+' reste sous $'+c.strike+' à l\'échéance.</div>'
     +'<div class="sect">📊 LE CONTRAT EN CHIFFRES</div><div class="mgrid">'+mt('Coût (prime)','$'+cc,'#dfe6f2','pour 100 actions')+mt('POP',c.pop!=null?c.pop+'%':'—',popcol(c.pop),'proba de profit')+mt('Delta',c.delta,'#dfe6f2','sensibilité au titre')+mt('IV',c.iv!=null?c.iv+'%':'—','#dfe6f2','volatilité implicite')+mt('Érosion théta',c.theta_burn!=null?c.theta_burn+'%/j':'—',thcol(c.theta_burn),'coût du temps')+mt('Qualité Vertex',c.quality!=null?c.quality+'/100':'—',qc,'liquidité + asymétrie')+'</div>'
@@ -9051,6 +9154,7 @@ function card(c){var d=optDec(c),be=c.be||(c.strike+c.cost/100),cc=fmt(c.cost),q
   return '<div class="necard" style="padding:14px 16px;cursor:pointer;--vc:'+d[1]+'" onclick="openOptModal(\''+oreg(c)+'\')">'
     +'<div style="display:flex;align-items:center;gap:7px"><span style="font-size:17px;font-weight:900">'+c.sym+'</span><span style="font-size:11px;font-weight:800;color:#22C55E">CALL</span><span style="font-size:13px;font-weight:700;color:#cfd8e6">$'+c.strike+'</span><span style="margin-left:auto;display:flex;gap:8px;align-items:center"><span title="Suivre jusqu\'à la vente sur Mes Suivis" onclick="event.stopPropagation();vxFollowOpt(\''+c.sym+'\',\''+(c.exp||'').slice(0,10)+'\','+c.strike+','+(c.cost||0)+','+(c.tgt||'null')+','+(be||'null')+','+(c.quality||'null')+','+(c.pop||'null')+','+(c.pot||'null')+','+(c.spot||'null')+')" style="cursor:pointer;color:#F5B45B;font-size:14px">⭐</span><span style="font-size:10px;font-weight:800;color:'+d[1]+';background:'+d[1]+'1a;border:1px solid '+d[1]+'44;padding:3px 9px;border-radius:8px">'+d[0]+'</span></span></div>'
     +'<div style="font-size:10.5px;color:#8794ab;margin-top:4px">échéance '+eu(c.exp)+' · '+c.dte+' j'+(c.spot?' · titre à $'+c.spot:'')+'</div>'
+    +(c.swing_ok?'<div style="margin-top:9px;padding:8px 11px;background:linear-gradient(180deg,rgba(34,197,94,.13),rgba(34,197,94,.02));border:1px solid rgba(34,197,94,.38);border-radius:11px"><div style="font-size:9px;letter-spacing:.5px;color:#6ee7a0;font-weight:800;text-transform:uppercase">🎯 SWING SÉCURISÉ · éché. ≥90j, sortie 1-4 sem</div><div style="display:flex;align-items:baseline;gap:8px;margin-top:3px"><span style="font-size:19px;font-weight:900;color:#22C55E">+'+c.swing_ret+'%</span><span style="font-size:10.5px;color:#8794ab">projeté sur un swing de conviction (~3 sem)</span></div></div>':(c.swing_ret!=null?'<div style="font-size:10px;color:#8794ab;margin-top:6px">Swing 1-4 sem projeté : <b style="color:#cfd8e6">'+(c.swing_ret>=0?'+':'')+c.swing_ret+'%</b>'+(c.dte<90?' <span style="color:#71717A">(éché. &lt;90j — hors sécurité)</span>':'')+'</div>':''))
     +tgtBlock
     +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px">'+lvc('Coût (prime)','$'+cc)+lvc('Seuil gagnant','$'+be+(beDist!=null?' · +'+beDist.toFixed(0)+'%':''),'#FF7A18')+lvc('Proba gain',c.pop!=null?c.pop+'%':null,popcol(c.pop))+'</div>'
     +'<div style="font-size:9px;color:#71717A;margin:11px 0 0;letter-spacing:.5px">PAYOFF À L\'ÉCHÉANCE · <span style="color:#EF4444">perte max −100% ($'+cc+')</span></div>'+pay(c)
@@ -9121,12 +9225,14 @@ function podium(calls,best){var byS={};calls.forEach(function(c){if(!byS[c.sym]|
     return '<div onclick="openOptModal(\''+oreg(c)+'\')" style="cursor:pointer;background:linear-gradient(180deg,#13161d,#0f1218);border:1px solid '+qc+'33;border-radius:15px;padding:12px 14px;transition:transform .14s" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'none\'"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">'+med[i]+'</span><b style="font-size:15px">'+c.sym+'</b><span class="muted" style="font-size:11px">CALL $'+c.strike+'</span><span style="margin-left:auto;font-size:17px;font-weight:900;color:'+qc+'">'+c.quality+'</span></div><div class="muted" style="font-size:10.5px;margin-top:5px">'+eu(c.exp)+' · POP <b style="color:'+popcol(c.pop)+'">'+c.pop+'%</b> · coût $'+fmt(c.cost)+' · si $'+c.tgt+' → <b class="'+(c.pot>=0?'up':'dn')+'">'+(c.pot>=0?'+':'')+c.pot+'%</b></div></div>';}).join('')+'</div>';}
 function sortFn(){return SORT==='pop'?function(a,b){return (b.pop||0)-(a.pop||0);}:SORT==='cost'?function(a,b){return (a.cost||0)-(b.cost||0);}:SORT==='pot'?function(a,b){return (b.pot||0)-(a.pot||0);}:function(a,b){return (b.quality||0)-(a.quality||0);};}
 function render(){var calls=ALL.filter(function(c){return c.type==='CALL'&&c.quality!=null;});
-  if(FILT!=='all')calls=calls.filter(function(c){return optDec(c)[2]===FILT;});
+  if(FILT==='swingsec')calls=calls.filter(function(c){return c.swing_ok;});
+  else if(FILT!=='all')calls=calls.filter(function(c){return optDec(c)[2]===FILT;});
   if(Q)calls=calls.filter(function(c){return (c.sym||'').toUpperCase().indexOf(Q.toUpperCase())>=0;});
   calls.sort(sortFn());var host=document.getElementById('optHost');
   if(!calls.length){host.innerHTML='<div class="vcard"><div class="muted" style="padding:8px">Aucune option ne correspond à ce filtre'+(Q?' / recherche « '+Q+' »':'')+' aujourd\'hui.</div></div>';return;}
   if(ADV){host.innerHTML='<div class="vcard" style="padding:0;overflow:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="font-size:9.5px;color:#71717A;text-transform:uppercase">'+['Titre','Horizon','Strike','Éché','Δ','IV','Coût','BE','POP','Cible','Qual','Décision'].map(function(h){return '<th style="padding:11px 13px;text-align:left">'+h+'</th>';}).join('')+'</tr></thead><tbody>'+calls.slice(0,400).map(function(c){var d=optDec(c);return '<tr onclick="openOptModal(\''+oreg(c)+'\')" style="cursor:pointer;border-top:1px solid rgba(255,255,255,.05);font-size:12.5px"><td style="padding:10px 13px;font-weight:800">'+c.sym+'</td><td style="color:#8794ab">'+(c.bucket||'')+'</td><td>$'+c.strike+'</td><td style="color:#8794ab">'+c.dte+'j</td><td>'+c.delta+'</td><td>'+(c.iv||'-')+'%</td><td>$'+fmt(c.cost)+'</td><td style="color:#FF7A18">$'+(c.be||'-')+'</td><td style="color:'+popcol(c.pop)+'">'+(c.pop||'-')+'%</td><td class="'+(c.pot>=0?'up':'dn')+'">'+(c.pot!=null?(c.pot>=0?'+':'')+c.pot+'%':'-')+'</td><td style="color:'+qcol(c.quality)+';font-weight:700">'+(c.quality||'-')+'</td><td style="color:'+d[1]+';font-weight:700">'+d[0]+'</td></tr>';}).join('')+'</tbody></table></div>';return;}
-  var G=[['court','🎲 Court terme','1-3 mois · tactique, théta violent'],['moyen','⚡ Moyen terme','~6 mois · équilibre temps/coût'],['long','💎 Long / LEAPS','9-18 mois · le temps joue pour toi']];var html='';
+  var G=[['court','🎲 Court terme','1-3 mois · tactique, théta violent'],['moyen','⚡ Moyen terme','~6 mois · équilibre temps/coût'],['long','💎 Long / LEAPS','9-18 mois · le temps joue pour toi']];
+  var html=(FILT==='swingsec')?'<div class="vcard" style="border:1.5px solid rgba(34,197,94,.4);background:linear-gradient(135deg,rgba(34,197,94,.08),#0f1218);margin-bottom:14px"><div style="font-size:13px;font-weight:900;color:#22C55E;letter-spacing:.3px">🎯 STRATÉGIE SWING SÉCURISÉ</div><div style="font-size:12px;color:#c5cdda;line-height:1.7;margin-top:6px">On <b style="color:#e8edf5">achète loin</b> (échéance ≥ 90 jours : 3, 6 ou 12 mois) pour le <b>coussin de temps</b> et la <b>faible érosion théta</b> — la sécurité. Mais l\'objectif reste de <b style="color:#22C55E">revendre en 1 à 4 semaines dès +25 %</b> sur un swing de conviction, sans attendre l\'échéance. Le % vert = gain projeté si le titre fait un mouvement ~1σ favorable en ~3 semaines. <b style="color:#e8edf5">Sois sélectif</b> : ne joue que les meilleurs setups (qualité haute, tendance nette, catalyseur).</div></div>':'';
   G.forEach(function(g){var cs=calls.filter(function(c){return c.bucket===g[0];});if(!cs.length)return;var shown=cs.slice(0,60);html+='<div class="vstit">'+g[1]+' <span style="color:#71717A;font-weight:400;letter-spacing:0;font-size:11px">· '+g[2]+' · '+cs.length+' contrats'+(cs.length>60?' · 60 meilleurs affichés':'')+'</span></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px">'+shown.map(card).join('')+'</div>'+(cs.length>60?'<div class="muted" style="font-size:11px;padding:9px 2px">+ '+(cs.length-60)+' autres contrats — affine avec la recherche, le tri ou le mode avancé.</div>':'');});
   host.innerHTML=html;}
 window.setF=function(f){FILT=f;var el=document.getElementById('optControls');if(el)el.querySelectorAll('[data-k]').forEach(function(b){b.classList.toggle('pri',b.dataset.k===f);});render();};
@@ -9136,7 +9242,8 @@ window.setAdv=function(v){ADV=v;document.getElementById('advBtn').textContent=AD
 window.setEdu=function(v){EDU=v;var e=document.getElementById('optEdu');e.style.display=v?'block':'none';if(v&&!e.dataset.on){e.dataset.on='1';e.innerHTML=EDU_HTML;}document.getElementById('eduBtn').classList.toggle('pri',v);};
 window.setGloss=function(){var e=document.getElementById('optGlossBody'),show=e.style.display==='none';e.style.display=show?'block':'none';document.getElementById('glossBtn').textContent=show?'▲ Masquer le glossaire':'📖 Glossaire complet des termes';};
 function controls(){var el=document.getElementById('optControls');if(!el||el.dataset.on)return;el.dataset.on='1';
-  var P=[['all','Toutes'],['propre','💎 Propres'],['correct','👀 Correctes'],['tactique','⚠️ Tactiques'],['refuse','🛑 Refusées']];
+  var swN=ALL.filter(function(c){return c.type==='CALL'&&c.swing_ok;}).length;
+  var P=[['all','Toutes'],['swingsec','🎯 Swing sécurisé'+(swN?' ('+swN+')':'')],['propre','💎 Propres'],['correct','👀 Correctes'],['tactique','⚠️ Tactiques'],['refuse','🛑 Refusées']];
   var pills=P.map(function(p){return '<button class="vbtn'+(FILT===p[0]?' pri':'')+'" data-k="'+p[0]+'" onclick="setF(\''+p[0]+'\')">'+p[1]+'</button>';}).join('');
   var SO=[['quality','Qualité'],['pop','POP'],['cost','Coût ↑'],['pot','Asymétrie']];
   var sel='<select class="oinp" onchange="setSort(this.value)">'+SO.map(function(s){return '<option value="'+s[0]+'"'+(SORT===s[0]?' selected':'')+'>Trier : '+s[1]+'</option>';}).join('')+'</select>';
