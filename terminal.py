@@ -3533,7 +3533,8 @@ function renderDaily(d){
         <div class="hsym" style="font-size:19px">$${call.strike} <span class="muted" style="font-size:12px">${(call.exp||'').slice(0,10)}</span></div>
         <div class="muted" style="margin-top:6px">Δ ${call.delta} · IV ${call.iv}%${call.grade?` · <span style="color:${clr(call.suit)};font-weight:700">${call.grade}</span>`:(call.quality!=null?` · <span style="color:${clr(call.quality)};font-weight:700">Q ${call.quality}</span>`:'')}</div>
         <div style="margin-top:8px;font-size:21px;font-weight:800">$${(call.cost||0).toLocaleString('fr-FR')}</div>
-        <div class="muted">breakeven $${call.be}</div>`:'<span class="muted">pas de call propre aujourd\'hui</span>'}</div>`;
+        <div class="muted">breakeven $${call.be}</div>
+        <a href="/options?t=${pick.symbol}" style="display:inline-block;margin-top:9px;font-size:11px;color:#38BDF8;text-decoration:none;font-weight:700">💎 analyse option complète →</a>`:'<span class="muted">pas de call propre aujourd\'hui</span>'}</div>`;
   } else q('dHero').innerHTML='<div style="padding:22px" class="muted">Aucun BUY aujourd\'hui — marché en repli. Patience, on ne force pas.</div>';
 
   // CHANGES
@@ -4151,7 +4152,7 @@ function renderTitreDrawer(){var sym=window.__td;if(!sym)return;var d=tdDet()[sy
   var html='<div style="position:sticky;top:0;background:linear-gradient(180deg,#0b0d11,rgba(11,13,17,.95));backdrop-filter:blur(8px);padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08);z-index:2">'
     +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:26px;font-weight:800">'+sym+'</span><span style="font-size:20px;font-weight:800">'+tdUSD(price)+'</span>'+(chg!=null?'<span style="font-weight:700;color:'+(chg>=0?'#22C55E':'#EF4444')+'">'+(chg>=0?'+':'')+chg+'%</span>':'')+'<span style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:9px;color:'+dc+';background:'+dc+'1a;border:1px solid '+dc+'44">'+tv[0]+'</span><button onclick="closeTitreDrawer()" style="margin-left:auto;background:#1a1a22;border:1px solid #2a2a33;color:#A1A1AA;border-radius:10px;width:34px;height:34px;font-size:18px;cursor:pointer">×</button></div>'
     +'<div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">'+tabs.map(function(t){return '<button class="td-tab '+(tab===t[0]?'on':'')+'" onclick="tdTab(\''+t[0]+'\')">'+t[1]+'</button>';}).join('')+'</div></div>'
-    +'<div style="padding:20px 22px"><a href="/titre/'+sym+'" style="display:inline-block;font-size:11px;color:#38BDF8;text-decoration:none;margin-bottom:14px">📄 Fiche complète + fondamentaux →</a>'+body+'</div>';
+    +'<div style="padding:20px 22px"><a href="/titre/'+sym+'" style="display:inline-block;font-size:11px;color:#38BDF8;text-decoration:none;margin-bottom:14px">📄 Fiche complète + fondamentaux →</a><a href="/options?t='+sym+'" style="display:inline-block;font-size:11px;color:#A78BFA;text-decoration:none;margin-bottom:14px;margin-left:16px">💎 Analyse option complète →</a>'+body+'</div>';
   document.getElementById('tdPanel').innerHTML=html;}
 window.openTitreDrawer=function(s){ensureTd();var d=tdDet()[s];if(!d){location.href='/titre/'+s;return;}window.__td=s;window.__tdtab='resume';renderTitreDrawer();document.getElementById('tdrawer').classList.add('open');document.body.style.overflow='hidden';};
 window.closeTitreDrawer=function(){var e=document.getElementById('tdrawer');if(e)e.classList.remove('open');document.body.style.overflow='';window.__td=null;};
@@ -5514,7 +5515,7 @@ function card(sym){
   }else{
     noteEl=`<div onclick="openNote('${sym}')" style="margin-top:11px;padding:9px 12px;background:#0c0c0c;border:1px dashed #262630;border-radius:9px;font-size:11.5px;color:${note?'#cfd8e6':'#5b6678'};cursor:pointer;line-height:1.5">${note?'📝 '+note:'✎ Ajouter une note perso'}</div>`;
   }
-  const acts=`<div class="acts"><a href="/titre/${sym}">📄 Fiche</a><a href="/options">💎 Options</a></div>`;
+  const acts=`<div class="acts"><a href="/titre/${sym}">📄 Fiche</a><a href="/options?t=${sym}">💎 Options</a></div>`;
   return `<div class="fav"${al?` style="border-color:${al[2]}66"`:''}>${head}${alB}${meta}${sp}${lvls}${dist}${noteEl}${acts}</div>`;
 }
 function render(){
@@ -5762,7 +5763,7 @@ tbody tr{cursor:pointer;transition:background .12s}tbody tr:hover{background:rgb
 .comod .cm-full{flex:1;text-align:center;background:linear-gradient(135deg,#FF7A18,#FF9A3D);color:#0b0b0b;border:none;border-radius:12px;padding:13px;font-weight:900;font-size:13.5px;text-decoration:none;letter-spacing:.3px;transition:filter .15s}
 .comod .cm-full:hover{filter:brightness(1.1)}
 .comod .cm-star{background:transparent;border:1px solid #F5B45B66;color:#F5B45B;border-radius:12px;padding:0 16px;font-weight:800;font-size:12px;cursor:pointer}
-.comod .cm-star:hover{background:rgba(245,180,91,.1)}
+.comod .cm-star:hover{background:rgba(245,180,91,.1)}.comod .cm-opt{display:flex;align-items:center;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.4);color:#38BDF8;border-radius:12px;padding:0 15px;font-weight:800;font-size:12px;text-decoration:none;white-space:nowrap;transition:background .15s}.comod .cm-opt:hover{background:rgba(56,189,248,.2)}
 @media(max-width:640px){.comod .mgrid{grid-template-columns:repeat(2,1fr)}.comod .mgrid.g3{grid-template-columns:repeat(3,1fr)}.cardgrid{grid-template-columns:1fr}}
 @media print{.back{display:none}body{padding:0}}
 </style><style id="m-fix">
@@ -5950,7 +5951,7 @@ window.openCoModal=function(sym){ensureCoModal();var c=DATA.filter(function(x){r
     +'<div class="sect">📊 TECHNIQUE</div><div class="mgrid g3">'+mt('Score Vertex',(c.score!=null?c.score:'—')+(c.grade?' · '+c.grade:''),scol(c.score))+mt('Score stratégie',c.strat!=null?c.strat:'—',scol(c.strat))+mt('Régime',regTxt(c.regime),c.regime==='TREND'?C.g:c.regime==='CHOP'?C.r:C.gold)+mt('Force relative',c.rs!=null?Math.round(c.rs):'—',(c.rs||0)>=70?C.g:(c.rs||0)<=35?C.r:'#dfe6f2')+mt('RSI',Math.round(c.rsi||0),(c.rsi||0)>=70?C.r:(c.rsi||0)<=30?C.g:'#dfe6f2')+mt('Position 52 sem.',c.pos52!=null?Math.round(c.pos52)+'%':'—',(c.pos52||0)>=80?C.g:(c.pos52||0)<=20?C.r:'#dfe6f2')+'</div>'
     +'<div class="sect">🏢 INFOS GÉNÉRALES</div><div class="mgrid">'+mt('Capitalisation',cap(c.mcap),C.gold)+mt('P/E',c.pe?c.pe.toFixed(1):'—',c.valTone==='good'?C.g:c.valTone==='warn'?C.r:'#dfe6f2')+mt('Marge nette',pct(c.margin),(c.margin||0)>=.2?C.g:'#dfe6f2')+mt('Croissance CA',c.growth!=null?pct(c.growth):'—',(c.growth||0)>=0?C.g:C.r)+mt('Beta',c.beta?c.beta.toFixed(2):'—')+mt('Dividende',c.div?(c.div<1?(c.div*100).toFixed(1):c.div.toFixed(1))+'%':'—')+mt('Résultats',c.earn||'—',c.earnSoon?C.r:'#dfe6f2')+mt('Valorisation',c.valLabel||'—',c.valTone==='good'?C.g:c.valTone==='warn'?C.r:'#dfe6f2')+'</div>'
     +'<div style="font-size:9.5px;color:#5b6678;text-align:center;margin-top:15px">⛔ analyse éducative · jamais un ordre · fondamentaux yfinance</div></div>'
-    +'<div class="cm-foot"><button class="cm-star" onclick="vxFollowStk(\''+c.symbol+'\','+(c.price!=null?c.price:'null')+','+((c.plan&&c.plan.stop)||'null')+','+((c.plan&&c.plan.tp2)||'null')+')">⭐ Suivre</button><a class="cm-full" href="/titre/'+c.symbol+'">📄 Vue complète →</a></div>';
+    +'<div class="cm-foot"><button class="cm-star" onclick="vxFollowStk(\''+c.symbol+'\','+(c.price!=null?c.price:'null')+','+((c.plan&&c.plan.stop)||'null')+','+((c.plan&&c.plan.tp2)||'null')+')">⭐ Suivre</button><a class="cm-opt" href="/options?t='+c.symbol+'">💎 Option</a><a class="cm-full" href="/titre/'+c.symbol+'">📄 Vue complète →</a></div>';
   document.getElementById('comodbg').classList.add('on');document.body.style.overflow='hidden';};
 window.openCoDrawer=window.openCoModal;
 function vlab(v){return v==='BUY'?['ACHAT',C.g]:v==='WATCH'?['SURV.',C.gold]:v==='WAIT'?['ATT.',C.blue]:v==='AVOID'?['ÉVIT.',C.r]:['—',C.mut];}
