@@ -3689,12 +3689,12 @@ function tileSpark(ser,pos){if(!ser||ser.length<3)return '';var col=pos?'#22C55E
 function renderIndices(d){
   const el=document.getElementById('dIndices');if(!el)return;
   const ix=d.indices||[];
-  el.innerHTML=ix.length?ix.map(i=>{const pos=i.vix?(i.change<=0):(i.change>=0);return `<div class="idx"><div class="in">${i.name}</div><div class="ip">${(i.price||0).toLocaleString('fr-FR')}</div><div class="ic ${pos?'up':'dn'}">${i.change>=0?'▲ +':'▼ '}${i.change}%</div>${tileSpark(i.spark,i.vix?(i.change<=0):(i.change>=0))}</div>`}).join(''):'<span class="muted">indices en cours…</span>';
+  el.innerHTML=ix.length?ix.map(i=>{const pos=i.vix?(i.change<=0):(i.change>=0);return `<div class="idx"><div class="itop"><span class="in">${i.name}</span><span class="ic ${pos?'up':'dn'}">${i.change>=0?'▲ +':'▼ '}${i.change}%</span></div><div class="ip">${(i.price||0).toLocaleString('fr-FR')}</div>${tileSpark(i.spark,i.vix?(i.change<=0):(i.change>=0))}</div>`}).join(''):'<span class="muted">indices en cours…</span>';
 }
 function renderCommo(d){
   const el=document.getElementById('dCommo');if(!el)return;
   const cs=d.commodities||[];
-  el.innerHTML=cs.length?cs.map(c=>{const pos=c.change>=0;const px=(c.price||0).toLocaleString('fr-FR',{maximumFractionDigits:2});return `<div class="idx"><div class="in">${c.icon||''} ${c.name}</div><div class="ip">$${px}</div><div class="ic ${pos?'up':'dn'}">${pos?'▲ +':'▼ '}${c.change}%</div>${tileSpark(c.spark,pos)}</div>`}).join(''):'<span class="muted">matières premières en cours…</span>';
+  el.innerHTML=cs.length?cs.map(c=>{const pos=c.change>=0;const px=(c.price||0).toLocaleString('fr-FR',{maximumFractionDigits:2});return `<div class="idx"><div class="itop"><span class="in">${c.icon||''} ${c.name}</span><span class="ic ${pos?'up':'dn'}">${pos?'▲ +':'▼ '}${c.change}%</span></div><div class="ip">$${px}</div>${tileSpark(c.spark,pos)}</div>`}).join(''):'<span class="muted">matières premières en cours…</span>';
 }
 function renderMacro(d){
   const el=document.getElementById('dMacro');if(!el)return;
@@ -3703,7 +3703,7 @@ function renderMacro(d){
   el.innerHTML=ms.map(m=>{const up=(m.chg||0)>=0;
     const vcol=m.id==='CURVE'?(m.value<0?'#EF4444':'#22C55E'):'#e8edf5';
     const inv=m.id==='CURVE'&&m.value<0?' ⚠️':'';
-    return `<div class="idx" title="${m.name} · maj ${m.date||''}"><div class="in">🏦 ${m.name}${inv}</div><div class="ip" style="color:${vcol}">${m.value}${m.unit||''}</div><div class="ic ${up?'up':'dn'}">${up?'▲ +':'▼ '}${m.chg}</div></div>`}).join('');
+    return `<div class="idx" title="${m.name} · maj ${m.date||''}"><div class="itop"><span class="in">🏦 ${m.name}${inv}</span><span class="ic ${up?'up':'dn'}">${up?'▲ +':'▼ '}${m.chg}</span></div><div class="ip" style="color:${vcol}">${m.value}${m.unit||''}</div></div>`}).join('');
 }
 function renderStarOption(d){
   const el=document.getElementById('dStarOption');if(!el)return;
@@ -3721,7 +3721,7 @@ function renderStarOption(d){
       <div style="min-width:170px">
         <div style="font-size:10px;color:#F5B45B;font-weight:800;letter-spacing:1px;margin-bottom:5px">💎 L'OPTION DU JOUR · la plus asymétrique</div>
         <div style="font-size:27px;font-weight:900;letter-spacing:.5px">${best.sym} <span style="font-size:15px;color:#22C55E">CALL</span></div>
-        <div style="font-size:14px;font-weight:700;margin-top:2px">$${best.strike} <span class="muted" style="font-size:12px">strike · ${eud3(best.exp)}</span></div>
+        <div style="font-size:14px;font-weight:800;margin-top:3px"><span class="muted" style="font-size:10px;font-weight:700">ACTION</span> <span style="color:#38BDF8">$${spot}</span> <span style="color:#5b6678;font-weight:400">→</span> <span class="muted" style="font-size:10px;font-weight:700">STRIKE</span> $${best.strike} <span class="muted" style="font-size:11px;font-weight:600">· ${eud3(best.exp)}</span></div>
         <div class="muted" style="font-size:11px;margin-top:3px">${bl}</div>
         <div style="margin-top:10px;display:flex;gap:9px;align-items:center"><span style="font-size:22px;font-weight:900;color:${qc}">${best.quality}<span style="font-size:11px;color:#888">/100</span></span><span style="font-size:10px;color:#8794ab;font-weight:700">QUALITÉ VERTEX</span></div>
       </div>
@@ -4389,9 +4389,12 @@ table tbody tr:hover{background:rgba(255,140,50,.05)!important}
 .idxstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
 .idx{position:relative;background:linear-gradient(160deg,#171717,#0c0c0c);border:1px solid rgba(56,189,248,.16);border-top:2px solid rgba(56,189,248,.4);border-radius:12px;padding:12px 16px;transition:.2s;overflow:hidden}
 .idx:hover{border-color:rgba(56,189,248,.45);box-shadow:0 0 18px rgba(56,189,248,.12)}
-.idx .in{font-size:10.5px;color:#7FB3FF;text-transform:uppercase;letter-spacing:.7px;font-weight:700;position:relative;z-index:1}
-.idx .ip{font-size:19px;font-weight:800;margin-top:4px;color:#f4f4f4;position:relative;z-index:1}
-.idx .ic{font-size:12px;font-weight:700;margin-top:2px;position:relative;z-index:1}
+.idx .itop{display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative;z-index:1}
+.idx .in{font-size:10.5px;color:#7FB3FF;text-transform:uppercase;letter-spacing:.7px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.idx .ip{font-size:22px;font-weight:800;margin-top:7px;color:#f4f4f4;position:relative;z-index:1;letter-spacing:-.4px}
+.idx .ic{font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:7px;white-space:nowrap;flex-shrink:0}
+.idx .ic.up{color:#22C55E;background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.28)}
+.idx .ic.dn{color:#EF4444;background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.28)}
 .idx .isp{position:absolute;right:0;bottom:0;left:0;height:34px;opacity:.9;pointer-events:none}
 .idx .isp svg{display:block;width:100%;height:100%}
 </style>"""
@@ -5703,10 +5706,18 @@ body{background:radial-gradient(1200px 600px at 50% -10%,#161616,#070707 60%);co
 .htitle{font-size:32px;font-weight:800;letter-spacing:-.9px;background:linear-gradient(180deg,#FFB23F,#FF7A18);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .hsub{color:#8794ab;font-weight:700;font-size:13px;margin-top:4px}
 .hmeta{margin-left:auto;text-align:right;font-size:11px;color:#8794ab;line-height:1.7}.hmeta b{color:#FFB23F}
-.bar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 10px}
+.bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:14px 0 10px}
 .sbtn{font-size:11px;font-weight:700;color:#8b93a7;border:1px solid rgba(255,255,255,.12);background:transparent;padding:6px 13px;border-radius:20px;transition:color .14s,border-color .14s,background .14s;cursor:pointer}
 .sbtn:hover{border-color:#FF7A1855;color:#FFB23F}
 .sbtn.on{border-color:#FF7A18;color:#FF7A18;background:rgba(255,122,24,.1)}
+.fgrp{display:inline-flex;align-items:center;gap:5px;padding:5px 8px 5px 11px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:14px}
+.fgrp .flab{font-size:9px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#6b7280;white-space:nowrap;margin-right:1px}
+.fgrp select{background:#0d0f13;border:1px solid rgba(255,255,255,.1);color:#e8edf5;border-radius:9px;padding:5px 9px;font-size:12px;cursor:pointer}
+.fgrp .sbtn{padding:5px 11px;font-size:10.5px;border-radius:16px}
+.finp{background:#0d0f13;border:1px solid rgba(255,255,255,.1);color:#e8edf5;border-radius:14px;padding:7px 13px;font-size:12px;width:120px;transition:border-color .14s,box-shadow .14s}
+.finp::placeholder{color:#5b6678}.finp:focus{outline:none;border-color:rgba(255,122,24,.5);box-shadow:0 0 0 3px rgba(255,122,24,.1)}
+.sbtn.strat{border-color:#F5B45B66;color:#F5B45B;background:rgba(245,180,91,.08);font-weight:800}
+.sbtn.strat.on{border-color:#F5B45B;background:rgba(245,180,91,.18)}
 .panel{border:1px solid rgba(255,255,255,.07);border-radius:18px;background:linear-gradient(180deg,#15171d,#0d0e12);box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 12px 28px -18px rgba(0,0,0,.75);overflow:auto}
 table{width:100%;border-collapse:collapse;font-size:12px;min-width:1300px}
 thead th{position:sticky;top:0;background:#121316;text-align:right;padding:11px 12px;font-size:9px;letter-spacing:.6px;color:#8794ab;text-transform:uppercase;font-weight:700;cursor:pointer;white-space:nowrap;border-bottom:2px solid #1c1c24}
@@ -5997,15 +6008,16 @@ function buildFilter(){
   const secs=[...new Set(DATA.map(c=>c.sector).filter(Boolean))].sort();
   const chip=(lab,on,oc)=>`<span class="sbtn ${on?'on':''}" onclick="${oc}">${lab}</span>`;
   const active=FILTER.sector||FILTER.minScore||FILTER.q||FILTER.preset||FILTER.regime||FILTER.verdict||FILTER.rrok;
-  el.innerHTML='Secteur : <select onchange="setF(\'sector\',this.value)" style="background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:8px;padding:5px 9px;font-size:12px">'
-    +'<option value="">Tous</option>'+secs.map(s=>`<option value="${s}"${FILTER.sector===s?' selected':''}>${s}</option>`).join('')+'</select>'
-    +'  &nbsp;Régime : '+chip('Tous',!FILTER.regime,"setF('regime','')")+chip('Tendance',FILTER.regime==='TREND',"setF('regime','TREND')")+chip('Range',FILTER.regime==='CHOP',"setF('regime','CHOP')")
-    +'  &nbsp;Décision : '+chip('Toutes',!FILTER.verdict,"setF('verdict','')")+chip('🟢 Achat',FILTER.verdict==='BUY',"setF('verdict','BUY')")+chip('🟡 Surveiller',FILTER.verdict==='WATCH',"setF('verdict','WATCH')")+chip('🔵 Attendre',FILTER.verdict==='WAIT',"setF('verdict','WAIT')")+chip('🔴 Éviter',FILTER.verdict==='AVOID',"setF('verdict','AVOID')")
-    +'  &nbsp;R:R : '+chip('Tous',!FILTER.rrok,"setF('rrok',false)")+chip('≥ 2:1 ✓',FILTER.rrok,"setF('rrok',true)")
-    +'  &nbsp;'+chip('🎯 Ma stratégie',FILTER.preset==='mystrat',"togPreset('mystrat')")
-    +'  &nbsp;Score : '+chip('Tous',!FILTER.minScore,"setF('minScore',0)")+chip('≥55',FILTER.minScore===55,"setF('minScore',55)")+chip('≥72',FILTER.minScore===72,"setF('minScore',72)")
-    +'  <input placeholder="🔍 ticker" oninput="entSearch(this.value)" value="'+(FILTER.q||'')+'" style="background:#0e0e0e;border:1px solid #1c1c24;color:#e8edf5;border-radius:8px;padding:5px 10px;font-size:12px;width:110px">'
-    +(active?chip('✕ Reset',false,"resetF()"):'');
+  const grp=(lab,inner)=>`<span class="fgrp"><span class="flab">${lab}</span>${inner}</span>`;
+  el.innerHTML=
+    grp('Secteur',`<select onchange="setF('sector',this.value)"><option value="">Tous</option>${secs.map(s=>`<option value="${s}"${FILTER.sector===s?' selected':''}>${s}</option>`).join('')}</select>`)
+    +grp('Régime',chip('Tous',!FILTER.regime,"setF('regime','')")+chip('Tendance',FILTER.regime==='TREND',"setF('regime','TREND')")+chip('Range',FILTER.regime==='CHOP',"setF('regime','CHOP')"))
+    +grp('Décision',chip('Toutes',!FILTER.verdict,"setF('verdict','')")+chip('🟢',FILTER.verdict==='BUY',"setF('verdict','BUY')")+chip('🟡',FILTER.verdict==='WATCH',"setF('verdict','WATCH')")+chip('🔵',FILTER.verdict==='WAIT',"setF('verdict','WAIT')")+chip('🔴',FILTER.verdict==='AVOID',"setF('verdict','AVOID')"))
+    +grp('Score',chip('Tous',!FILTER.minScore,"setF('minScore',0)")+chip('≥55',FILTER.minScore===55,"setF('minScore',55)")+chip('≥72',FILTER.minScore===72,"setF('minScore',72)"))
+    +grp('R:R',chip('Tous',!FILTER.rrok,"setF('rrok',false)")+chip('≥2:1',FILTER.rrok,"setF('rrok',true)"))
+    +`<span class="sbtn strat ${FILTER.preset==='mystrat'?'on':''}" onclick="togPreset('mystrat')">🎯 Ma stratégie</span>`
+    +`<input class="finp" placeholder="🔍 ticker" oninput="entSearch(this.value)" value="${FILTER.q||''}">`
+    +(active?`<span class="sbtn" onclick="resetF()" style="color:#EF4444;border-color:#EF444455">✕ Reset</span>`:'');
 }
 // ── CARTE ENTREPRISE (vue par défaut) : cotation + sparkline + analyse + fondamentaux ──
 let VIEW=localStorage.getItem('entView')||'cards';
@@ -6044,7 +6056,10 @@ function render(){
 }
 window.setView=function(v){VIEW=v;try{localStorage.setItem('entView',v);}catch(e){}render();updateBar();};
 function setSort(k){if(SORT===k)DIR=-DIR;else{SORT=k;DIR=(k==='symbol'||k==='sector')?1:-1;}render();updateBar();}
-function updateBar(){document.getElementById('bar').innerHTML='Vue : '+`<span class="sbtn ${VIEW==='cards'?'on':''}" onclick="setView('cards')">🃏 Cartes</span><span class="sbtn ${VIEW==='table'?'on':''}" onclick="setView('table')">📋 Tableau</span>`+'  &nbsp;Trier : '+[['score','Score'],['strat','Score S 🎯'],['change','Variation'],['mcap','Capitalisation'],['pe','P/E'],['rs','Force relative'],['growth','Croissance'],['margin','Marge']].map(([k,l])=>`<span class="sbtn ${SORT===k?'on':''}" onclick="setSort('${k}')">${l}</span>`).join('');}
+function updateBar(){const grp=(lab,inner)=>`<span class="fgrp"><span class="flab">${lab}</span>${inner}</span>`;
+  document.getElementById('bar').innerHTML=
+    grp('Vue',`<span class="sbtn ${VIEW==='cards'?'on':''}" onclick="setView('cards')">🃏 Cartes</span><span class="sbtn ${VIEW==='table'?'on':''}" onclick="setView('table')">📋 Tableau</span>`)
+    +grp('Trier',[['score','Score'],['strat','Score S 🎯'],['change','Variation'],['mcap','Cap.'],['pe','P/E'],['rs','Force rel.'],['growth','Croiss.'],['margin','Marge']].map(([k,l])=>`<span class="sbtn ${SORT===k?'on':''}" onclick="setSort('${k}')">${l}</span>`).join(''));}
 async function load(){
   let s={},q={},cal={};
   try{[s,q,cal]=await Promise.all([fetch('/scan').then(r=>r.json()),fetch('/quotes').then(r=>r.json()).catch(()=>({})),fetch('/cal-feed').then(r=>r.json()).catch(()=>({}))]);}catch(e){}
@@ -7329,8 +7344,8 @@ function renderTeam(d){
   window.__teamD=d;buildTeamSeg();
   var host=document.getElementById('teamPitch');if(!host)return;
   var DET=(d&&d.detail)||{},rows=(d&&d.rows)||[],FS=((d&&d.fundamentals)||{}).by_sym||{};
-  var PK=TEAMDEF[TEAMWIN][0];
-  var pool=rows.map(function(r){var cl=((DET[r.symbol]||{}).series||{}).close||[];var mp=(r[PK]!=null?r[PK]:_perfFrom(cl,21));if(mp==null||r.score==null)return null;var fu=FS[r.symbol]||{};var beta=fu.beta||1,atr=r.ext_atr!=null?Math.abs(r.ext_atr):1.5;var off=(r.st_mom||0)*0.45+Math.max(-20,Math.min(60,mp))*0.9+(r.rs||0)*0.35;var dff=(r.st_fund||0)*0.55+(100-Math.min(100,beta*38))*0.35+(fu.div?14:0)+(100-Math.min(100,atr*22))*0.25;return {sym:r.symbol,score:r.score,mp:mp,bias:off-dff,price:r.price,veh:r.vehicle};}).filter(Boolean);
+  var PK=TEAMDEF[TEAMWIN][0];var LB={w:5,m:21,q:63,y:252}[TEAMWIN]||21;
+  var pool=rows.map(function(r){var cl=((DET[r.symbol]||{}).series||{}).close||[];var mp=(r[PK]!=null?r[PK]:_perfFrom(cl,LB));if(mp==null||r.score==null)return null;var fu=FS[r.symbol]||{};var beta=fu.beta||1,atr=r.ext_atr!=null?Math.abs(r.ext_atr):1.5;var off=(r.st_mom||0)*0.45+Math.max(-20,Math.min(60,mp))*0.9+(r.rs||0)*0.35;var dff=(r.st_fund||0)*0.55+(100-Math.min(100,beta*38))*0.35+(fu.div?14:0)+(100-Math.min(100,atr*22))*0.25;return {sym:r.symbol,score:r.score,mp:mp,bias:off-dff,price:r.price,veh:r.vehicle};}).filter(Boolean);
   if(pool.length<11){host.innerHTML='<div class="muted" style="font-size:12px;padding:12px">Données insuffisantes pour composer l\'équipe (rescan en cours).</div>';return;}
   pool.sort(function(a,b){return (b.score+b.mp*0.5)-(a.score+a.mp*0.5);});
   var squad=pool.slice(0,11);squad.sort(function(a,b){return b.bias-a.bias;});
@@ -7363,9 +7378,23 @@ function renderTeam(d){
   var infirmHtml=infirm.length?infirm.map(function(p){return '<span onclick="go(\''+p.sym+'\')" style="cursor:pointer;font-size:11px;padding:5px 11px;border-radius:8px;border:1px solid #EF444444;background:#EF444410"><b>'+p.sym+'</b> <span class="dn">'+Math.round(p.mp)+'%</span> <span class="muted">· sc '+p.score+'</span></span>';}).join(''):'<span class="muted" style="font-size:11.5px">Infirmerie vide — aucun titre de qualité en décrochage ✓</span>';
   host.innerHTML='<style>.ftp:hover circle{filter:brightness(1.35)}</style><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block">'+g+players2+'</svg>'
     +'<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px;font-size:12px"><span style="font-weight:800;color:#cfd8e6">Formation 4-3-3</span><span class="muted">·</span><span>Perf moy. '+TEAMDEF[TEAMWIN][1].toLowerCase()+' <b class="'+(avg>=0?'up':'dn')+'">'+(avg>=0?'+':'')+avg.toFixed(1)+'%</b></span><span class="muted">·</span><span>⭐ Capitaine <b style="color:#F5B45B">'+cap.sym+'</b> (score '+cap.score+')</span>'+(coach?'<span class="muted">·</span><span>👔 Entraîneur <b style="color:#FF8C32">'+coach.k+'</b> <span class="muted">(secteur le plus fort · '+Math.round(coach.avg)+')</span></span>':'')+'</div>'
+    +(function(){var la=function(a){return a.length?a.reduce(function(s,p){return s+p.mp;},0)/a.length:0;};
+        var attF=la(att),midF=la(mid),defF=la(def),tSc=Math.round(squad.reduce(function(s,p){return s+p.score;},0)/squad.length);
+        var motm=squad.slice().sort(function(a,b){return b.mp-a.mp;})[0];var univ=pool.reduce(function(s,p){return s+p.mp;},0)/pool.length;var edge=avg-univ;
+        var pcol=function(v){return v>=0?'#22C55E':'#EF4444';};var pf=function(v){return (v>=0?'+':'')+v.toFixed(1)+'%';};
+        var tk=function(ic,l,v,c,sub,sym){return '<div class="necard" '+(sym?'onclick="go(\''+sym+'\')" style="cursor:pointer;--vc:'+c+';padding:11px 13px"':'style="--vc:'+c+';padding:11px 13px"')+'><div style="font-size:9px;letter-spacing:.5px;color:#8794ab;font-weight:700;text-transform:uppercase">'+ic+' '+l+'</div><div style="font-size:18px;font-weight:900;margin-top:4px;color:'+(c||'#f2f5fa')+'">'+v+'</div>'+(sub?'<div class="muted" style="font-size:9.5px;margin-top:1px">'+sub+'</div>':'')+'</div>';};
+        return '<div class="vstit" style="margin-top:22px">📋 Bilan d\'équipe <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· horizon '+TEAMDEF[TEAMWIN][1]+' · les 3 lignes + l\'homme du match</span></div>'
+          +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:11px">'
+          +tk('🏆','Note d\'équipe',tSc+'/100',tSc>=72?'#22C55E':tSc>=55?'#F5B45B':'#EF4444','moyenne des 11 scores')
+          +tk('⚔️','Ligne d\'attaque',pf(attF),pcol(attF),'perf moy. des 3 attaquants')
+          +tk('⚙️','Milieu',pf(midF),pcol(midF),'perf moy. du milieu')
+          +tk('🛡️','Défense',pf(defF),pcol(defF),'perf moy. de la défense')
+          +tk('🏅','Homme du match',motm.sym+' '+pf(motm.mp),pcol(motm.mp),'meilleur performer · clic → fiche',motm.sym)
+          +tk('📊','vs univers',(edge>=0?'+':'')+edge.toFixed(1)+' pts',pcol(edge),(edge>=0?'l\'équipe bat le marché':'sous le marché'))
+          +'</div>';})()
     +'<div class="vstit" style="margin-top:20px">🪑 Banc des remplaçants <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· 12e → 16e du classement · prêts à entrer si un titulaire décroche</span></div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap">'+benchHtml+'</div>'
-    +'<div class="vstit" style="margin-top:20px">🏥 Infirmerie <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· qualité (score≥70) en décrochage ce mois — à surveiller pour le retour</span></div>'
+    +'<div class="vstit" style="margin-top:20px">🏥 Infirmerie <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· qualité (score≥70) en décrochage sur '+TEAMDEF[TEAMWIN][1].toLowerCase()+' — à surveiller pour le retour</span></div>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+infirmHtml+'</div>'
     +'<div class="muted" style="font-size:11px;margin-top:16px;line-height:1.5">Recomposée à chaque scan · horizon '+TEAMDEF[TEAMWIN][1]+' ('+TEAMDEF[TEAMWIN][2]+') : les meilleurs performers montent en attaque, les plus stables (qualité + beta faible) défendent, le plus solide est gardien.</div>';
 }
@@ -8877,7 +8906,7 @@ window.openOptModal=function(k){ensureOptModal();var c=__OPTREG[k];if(!c){return
   document.getElementById('omod').style.setProperty('--vc',d[1]);
   document.getElementById('omod').innerHTML='<div class="om-hd">'
     +'<div style="display:flex;align-items:center;gap:14px"><div style="min-width:0"><div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font-size:25px;font-weight:900;letter-spacing:-.4px">'+c.sym+' <span style="color:#22C55E;font-size:16px">CALL</span> <span style="font-size:19px;color:#cfd8e6">$'+c.strike+'</span></span><span style="font-size:11px;font-weight:800;color:'+d[1]+';background:'+d[1]+'1a;border:1px solid '+d[1]+'55;padding:2px 11px;border-radius:8px;white-space:nowrap">'+d[0]+'</span></div>'
-    +'<div style="font-size:11.5px;color:#8794ab;margin-top:4px">'+eu(c.exp)+' · '+c.dte+' jours · '+BL(c.bucket)+(c.spot?' · spot $'+c.spot:'')+'</div></div>'
+    +'<div style="font-size:12px;color:#8794ab;margin-top:5px">'+(c.spot?'<b style="color:#38BDF8">action $'+c.spot+'</b> → strike $'+c.strike+' · ':'')+eu(c.exp)+' · '+c.dte+' jours · '+BL(c.bucket)+'</div></div>'
     +'<span style="margin-left:auto;flex-shrink:0;text-align:center">'+oring(c.quality,qc,64)+'<div style="font-size:8px;color:#6b7280;letter-spacing:.5px;margin-top:1px">QUALITÉ</div></span>'
     +'<span onclick="closeOptModal()" style="cursor:pointer;font-size:19px;color:#8794ab;padding:2px 6px;flex-shrink:0;align-self:flex-start">✕</span></div></div>'
     +'<div class="om-body">'
@@ -8956,7 +8985,7 @@ function featured(){var el=document.getElementById('optBest');if(!el)return;var 
     <div style="min-width:180px">
       <div style="font-size:10px;color:#FF7A18;font-weight:800;letter-spacing:1px;margin-bottom:6px">💎 L'OPTION DU JOUR · la plus asymétrique</div>
       <div style="font-size:29px;font-weight:900;letter-spacing:.5px">${b.sym} <span style="font-size:16px;color:#22C55E">CALL</span></div>
-      <div style="font-size:14px;font-weight:700;margin-top:2px">$${b.strike} <span class="muted" style="font-size:12px">strike · ${eu(b.exp)} · ${b.dte}j</span></div>
+      <div style="font-size:15px;font-weight:800;margin-top:4px">${b.spot!=null?`<span class="muted" style="font-size:11px;font-weight:700">ACTION</span> <span style="color:#38BDF8">$${b.spot}</span> <span style="color:#5b6678;font-weight:400">→</span> `:''}<span class="muted" style="font-size:11px;font-weight:700">STRIKE</span> $${b.strike} <span class="muted" style="font-size:12px;font-weight:600">· ${eu(b.exp)} · ${b.dte}j</span></div>
       <div class="muted" style="font-size:11px;margin-top:3px">${BL(b.bucket)}</div>
       <div style="margin-top:11px;display:flex;gap:9px;align-items:center"><span style="font-size:24px;font-weight:900;color:${qc}">${b.quality}<span style="font-size:12px;color:#888">/100</span></span><span style="font-size:10px;color:#8794ab;font-weight:700">QUALITÉ VERTEX</span></div>
     </div>
