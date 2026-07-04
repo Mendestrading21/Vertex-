@@ -6070,6 +6070,70 @@ load();setInterval(load,12000);
 </script></body></html>"""
 
 
+_COMPARE_JS = r"""
+var ROWS={},DET={},FUND={},COMP=[];
+function cGet(){var u=new URLSearchParams(location.search).get('t');if(u)return u.toUpperCase().split(',').filter(Boolean).slice(0,4);try{return (JSON.parse(localStorage.getItem('vxCompare')||'[]')).slice(0,4);}catch(e){return[];}}
+function cSet(){localStorage.setItem('vxCompare',JSON.stringify(COMP));var u=new URL(location.href);u.searchParams.set('t',COMP.join(','));history.replaceState(null,'',u);}
+window.cAdd=function(s){s=(s||'').toUpperCase().trim();if(!s||COMP.indexOf(s)>=0||COMP.length>=4)return;COMP.push(s);cSet();render();};
+window.cDel=function(s){COMP=COMP.filter(function(x){return x!==s;});cSet();render();};
+window.cAddInput=function(e){if(e)e.preventDefault();var i=document.getElementById('cInp');if(i){cAdd(i.value);i.value='';}return false;};
+function scol(s){return s>=72?'#22C55E':s>=55?'#F5B45B':s==null?'#8794ab':'#EF4444';}
+function vlab(v){return v==='BUY'?['ACHAT','#22C55E']:v==='WATCH'?['SURVEILLER','#F5B45B']:v==='WAIT'?['ATTENDRE','#38BDF8']:v==='AVOID'?['ÉVITER','#EF4444']:['—','#8794ab'];}
+function pct(n,d){return n==null?'—':(n*100).toFixed(d==null?0:d)+'%';}
+function cap(n){return n==null?'—':n>=1e12?(n/1e12).toFixed(2)+'T':n>=1e9?(n/1e9).toFixed(1)+'B':n>=1e6?(n/1e6).toFixed(0)+'M':n;}
+function spk(ser,col){if(!ser||ser.length<2)return '';var w=200,h=40,mn=Math.min.apply(null,ser),mx=Math.max.apply(null,ser),rg=(mx-mn)||1;var pts=ser.map(function(v,i){return (i/(ser.length-1)*w).toFixed(1)+','+(h-3-(v-mn)/rg*(h-8)).toFixed(1);});var gid='cs'+Math.round(mn*10)+ser.length;return '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" style="width:100%;height:40px;display:block"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+col+'" stop-opacity=".25"/><stop offset="1" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs><polygon points="0,'+h+' '+pts.join(' ')+' '+w+','+h+'" fill="url(#'+gid+')"/><polyline points="'+pts.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="1.8" vector-effect="non-scaling-stroke"/></svg>';}
+function ring(v,col,size){var vv=Math.max(0,Math.min(100,v||0));var r=size*0.4,c=2*Math.PI*r,off=c*(1-vv/100);return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'"><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="#181b22" stroke-width="'+(size*0.1).toFixed(1)+'"/><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="'+(size*0.1).toFixed(1)+'" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 '+size/2+' '+size/2+')" style="filter:drop-shadow(0 0 5px '+col+'44)"/><text x="'+size/2+'" y="'+(size/2+1)+'" text-anchor="middle" dominant-baseline="middle" font-size="'+(size*0.32).toFixed(0)+'" font-weight="900" fill="'+col+'">'+(v!=null?v:'—')+'</text></svg>';}
+function row(o){var r=ROWS[o]||{},d=DET[o]||{},f=FUND[o]||{};var trend=(d.series&&d.series.close&&d.series.close.length>1)?d.series.close[d.series.close.length-1]>=d.series.close[0]:true;
+  return {sym:o,price:r.price,change:r.change,score:d.score,verdict:d.verdict,rs:d.rs,rsi:d.rsi,pos52:d.pos52,
+    pw:r.perf_w,pm:r.perf_m,py:r.perf_y,rr:(d.plan&&d.plan.entry&&d.plan.stop&&d.plan.tp2&&(d.plan.entry-d.plan.stop)>0)?((d.plan.tp2-d.plan.entry)/(d.plan.entry-d.plan.stop)):null,
+    pe:f.pe,margin:f.margin,growth:f.growth,beta:f.beta,mcap:f.mcap,name:f.name,sector:r.sector,series:(d.series&&d.series.close)?d.series.close:null,trend:trend};}
+function render(){
+  var host=document.getElementById('cHost');if(!host)return;
+  var chips=document.getElementById('cChips');
+  var syms=Object.keys(ROWS).sort();
+  document.getElementById('cSug').innerHTML=syms.filter(function(s){return COMP.indexOf(s)<0;}).slice(0,16).map(function(s){return '<span onclick="cAdd(\''+s+'\')" style="cursor:pointer;font-size:11px;padding:4px 9px;border-radius:8px;border:1px solid rgba(255,255,255,.1);color:#9aa4b8">+ '+s+'</span>';}).join('');
+  if(chips)chips.innerHTML=COMP.map(function(s){return '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:5px 10px;border-radius:9px;background:rgba(255,122,24,.12);border:1px solid #FF7A1855;color:#FF8C32">'+s+' <span onclick="cDel(\''+s+'\')" style="cursor:pointer;color:#8794ab">✕</span></span>';}).join('');
+  if(!COMP.length){host.innerHTML='<div class="vcard"><div class="muted" style="padding:22px;text-align:center;line-height:1.8">Ajoute 2 à 4 titres ci-dessus (ou depuis les suggestions) pour les comparer côte à côte : score Vertex, décision, momentum, valorisation, fondamentaux — la meilleure valeur de chaque ligne est surlignée.</div></div>';return;}
+  var data=COMP.map(row);
+  // colonnes = titres
+  var cols=data.map(function(x){var vl=vlab(x.verdict),tc=x.trend?'#22C55E':'#EF4444';
+    return '<div class="necard" style="--vc:'+vl[1]+';padding:15px 16px;min-width:0" onclick="location.href=\'/titre/'+x.sym+'\'" ><div style="display:flex;align-items:flex-start;gap:10px"><div style="min-width:0;flex:1"><div style="font-size:19px;font-weight:900">'+x.sym+' <span onclick="event.stopPropagation();cDel(\''+x.sym+'\')" style="cursor:pointer;color:#5b6678;font-size:13px">✕</span></div><div style="font-size:10px;color:#8794ab;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(x.name?x.name+' · ':'')+(x.sector||'—')+'</div></div>'+ring(x.score,scol(x.score),50)+'</div>'
+    +'<div style="display:flex;align-items:baseline;gap:8px;margin-top:8px"><span style="font-size:20px;font-weight:800">$'+(x.price!=null?x.price:'—')+'</span><span style="font-size:12px;font-weight:700;color:'+((x.change||0)>=0?'#22C55E':'#EF4444')+'">'+(x.change!=null?(x.change>=0?'+':'')+x.change+'%':'')+'</span></div>'
+    +'<div style="margin:8px -2px 2px">'+(x.series?spk(x.series,tc):'')+'</div>'
+    +'<div style="margin-top:8px"><span style="font-size:10px;font-weight:800;color:'+vl[1]+';background:'+vl[1]+'1a;border:1px solid '+vl[1]+'44;padding:3px 9px;border-radius:20px">'+vl[0]+'</span></div></div>';}).join('');
+  // lignes de comparaison, best surligné
+  var METR=[
+    ['Score Vertex','score',function(v){return v!=null?v:'—';},'max'],
+    ['Force relative','rs',function(v){return v!=null?Math.round(v):'—';},'max'],
+    ['RSI','rsi',function(v){return v!=null?Math.round(v):'—';},null],
+    ['Position 52 sem.','pos52',function(v){return v!=null?Math.round(v)+'%':'—';},'max'],
+    ['Perf 1 sem.','pw',function(v){return v!=null?(v>=0?'+':'')+v+'%':'—';},'max'],
+    ['Perf 1 mois','pm',function(v){return v!=null?(v>=0?'+':'')+v+'%':'—';},'max'],
+    ['Perf 1 an','py',function(v){return v!=null?(v>=0?'+':'')+v+'%':'—';},'max'],
+    ['R:R','rr',function(v){return v!=null?v.toFixed(1)+':1':'—';},'max'],
+    ['P/E','pe',function(v){return v!=null?v.toFixed(1):'—';},'min'],
+    ['Marge nette','margin',function(v){return v!=null?pct(v):'—';},'max'],
+    ['Croissance','growth',function(v){return v!=null?pct(v):'—';},'max'],
+    ['Beta','beta',function(v){return v!=null?v.toFixed(2):'—';},null],
+    ['Capitalisation','mcap',function(v){return cap(v);},'max']];
+  var trows=METR.map(function(m){var vals=data.map(function(x){return x[m[1]];});
+    var best=null;if(m[3]){var nums=vals.filter(function(v){return v!=null;});if(nums.length>1){best=m[3]==='max'?Math.max.apply(null,nums):Math.min.apply(null,nums);}}
+    var tds=data.map(function(x){var v=x[m[1]],isBest=(best!=null&&v===best);return '<td style="padding:9px 12px;text-align:center;font-weight:'+(isBest?'800':'600')+';color:'+(isBest?'#22C55E':'#dfe6f2')+';'+(isBest?'background:rgba(34,197,94,.08)':'')+'">'+m[2](v)+(isBest?' <span style="font-size:9px">✓</span>':'')+'</td>';}).join('');
+    return '<tr><td style="padding:9px 12px;color:#8794ab;font-size:11.5px;white-space:nowrap">'+m[0]+'</td>'+tds+'</tr>';}).join('');
+  host.innerHTML='<div style="display:grid;grid-template-columns:repeat('+data.length+',1fr);gap:12px;margin-bottom:16px">'+cols+'</div>'
+    +'<div class="vcard" style="padding:0;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr><th style="text-align:left;padding:10px 12px;font-size:9px;color:#8794ab;text-transform:uppercase;letter-spacing:.5px">Critère</th>'+data.map(function(x){return '<th style="padding:10px 12px;text-align:center;font-size:13px;font-weight:800">'+x.sym+'</th>';}).join('')+'</tr></thead><tbody>'+trows+'</tbody></table></div>'
+    +'<div class="muted" style="font-size:10.5px;margin-top:10px">✓ = meilleure valeur de la ligne (P/E : plus bas = mieux · le reste : plus haut = mieux). Clic sur une colonne → fiche du titre. ⛔ analyse éducative.</div>';}
+function load(){fetch('/scan').then(function(r){return r.json()}).then(function(d){ROWS={};(d.rows||[]).forEach(function(r){ROWS[r.symbol]=r;});DET=d.detail||{};FUND=((d.fundamentals||{}).by_sym)||{};COMP=cGet().filter(function(s){return ROWS[s]||true;});render();}).catch(function(){render();});}
+COMP=cGet();load();setInterval(load,15000);
+"""
+
+
+@app.route('/compare')
+@app.route('/comparateur')
+def compare_page():
+    return PAGE_COMPARE
+
+
 @app.route('/entreprises')
 @app.route('/analyse-entreprise')
 def entreprises_page():
@@ -6239,7 +6303,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     <div style="display:flex;gap:8px;margin-left:14px;flex-wrap:wrap">
     <button id="favBtn" onclick="toggleFav()" style="background:#0e0e12;border:1px solid #F5B45B55;color:#F5B45B;border-radius:10px;padding:9px 15px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap">☆ Suivre</button>
     <a href="/options" style="display:flex;align-items:center;background:rgba(167,139,250,.12);border:1px solid #A78BFA55;color:#A78BFA;border-radius:10px;padding:9px 15px;font-weight:800;font-size:13px;text-decoration:none;white-space:nowrap">💎 Options</a>
-    <a href="/entreprises" style="display:flex;align-items:center;background:#0e0e12;border:1px solid rgba(255,255,255,.12);color:#9aa4b8;border-radius:10px;padding:9px 15px;font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap">⚖ Comparer</a>
+    <a href="/compare" onclick="location.href='/compare?t='+SYM;return false;" style="display:flex;align-items:center;background:#0e0e12;border:1px solid rgba(255,255,255,.12);color:#9aa4b8;border-radius:10px;padding:9px 15px;font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap;cursor:pointer">⚖ Comparer</a>
     </div>
   </div>
   <div id="posBan"></div><div id="resume"></div>
@@ -7075,6 +7139,17 @@ PAGE_JOURNAL = _vpage('Journal',
     '<div class="jstep" style="border-color:rgba(245,180,91,.45)"><div style="font-size:20px">👑</div><div style="font-size:11.5px;font-weight:800;color:#F5B45B;margin-top:6px">Constance</div></div>'
   '</div>',
   head=_JOURNAL_HEAD, js=_JOURNAL_JS)
+
+
+PAGE_COMPARE = _vpage('Comparateur',
+  '<div class="vhead"><div><h1>⚖️ Comparateur de titres</h1><div class="s">Jusqu\'à 4 titres côte à côte · score · momentum · valorisation · fondamentaux · la meilleure valeur surlignée</div></div></div>'
+  '<div class="vcard" style="padding:14px 16px;margin-bottom:6px">'
+    '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><form onsubmit="return cAddInput(event)" style="display:flex;gap:6px"><input id="cInp" placeholder="Ajouter un ticker — ex. NVDA" style="background:#0b0d12;border:1px solid rgba(255,255,255,.1);color:#eaf0fa;border-radius:10px;padding:8px 12px;font-size:13px;width:200px"><button class="vbtn pri" type="submit">+ Ajouter</button></form>'
+    '<div id="cChips" style="display:flex;gap:7px;flex-wrap:wrap"></div></div>'
+    '<div style="margin-top:11px;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span style="font-size:10px;color:#5b6678;letter-spacing:.5px;font-weight:700">SUGGESTIONS :</span><span id="cSug" style="display:flex;gap:6px;flex-wrap:wrap"></span></div>'
+  '</div>'
+  '<div id="cHost" style="margin-top:14px"></div>',
+  js=_COMPARE_JS)
 
 
 _SUIVI_JS = r"""
