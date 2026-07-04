@@ -6712,7 +6712,7 @@ _BORDEL_JS = ("function go(s){location.href='/titre/'+encodeURIComponent(s);}\n"
   + "load();setInterval(load,20000);")
 
 _VPAGE_CSS = ("*{box-sizing:border-box;margin:0;padding:0}"
-  "body{background:radial-gradient(1100px 680px at 50% -14%,#0e1016,#07080a 60%);color:#F8FAFC;font-family:'Inter','Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;padding:20px 26px 80px;font-variant-numeric:tabular-nums}"
+  "body{background:radial-gradient(120% 34% at 18% -6%,rgba(255,122,24,.06),transparent 60%),radial-gradient(1100px 680px at 50% -14%,#0e1016,#07080a 60%);background-attachment:fixed;color:#F8FAFC;font-family:'Inter','Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;padding:20px 26px 80px;font-variant-numeric:tabular-nums}"
   ".vwrap{max-width:1320px;margin:0 auto}.muted{color:#8794ab}.up{color:#22C55E}.dn{color:#EF4444}"
   ".vhead{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:16px;margin-bottom:18px}"
   ".vhead h1{font-size:27px;font-weight:900;letter-spacing:-.7px;background:linear-gradient(180deg,#ffffff 30%,#c8ccd6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 10px rgba(0,0,0,.5))}.vhead .s{color:#8794ab;font-size:12px;margin-top:6px}"
