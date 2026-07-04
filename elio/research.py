@@ -75,6 +75,12 @@ def chart_read(d):
         parts.append('⚠️ divergence baissière du RSI (prix au plus-haut, momentum en repli)')
     elif d.get('rsi_div') == 'bull':
         parts.append('↗️ divergence haussière du RSI (prix au plus-bas, momentum qui remonte)')
+    if d.get('pullback'):
+        parts.append('🎯 repli sain sur tendance (cours revenu près des moyennes, RSI apaisé) — entrée à moindre risque')
+    if d.get('accumulation'):
+        parts.append('🟢 accumulation détectée (OBV monte, prix à plat) — smart money qui charge')
+    elif d.get('distribution'):
+        parts.append('🔴 distribution cachée (OBV baisse, prix qui monte) — faiblesse sous le capot')
 
     return ' · '.join(parts)
 

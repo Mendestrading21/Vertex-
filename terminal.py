@@ -536,6 +536,21 @@ def analyse(df, bench_ret, fund=None):
     hi20 = float(c.tail(21).iloc[:-1].max()) if len(c) > 21 else last
     breakout = bool(last >= hi20 and volx >= 1.5)
 
+    # ACCUMULATION / DISTRIBUTION via OBV (On-Balance Volume) — lecture du « smart money ».
+    # OBV qui monte pendant que le prix stagne = accumulation cachée (haussier).
+    # OBV qui baisse pendant que le prix monte = distribution cachée (faiblesse sous le capot).
+    obv = (np.sign(c.diff().fillna(0.0)) * df['Volume']).cumsum()
+    obv_slope = float(obv.iloc[-1] - obv.iloc[-20]) if len(obv) > 20 else 0.0
+    px_slope20 = (last - float(c.iloc[-20])) if len(c) > 20 else 0.0
+    accumulation = bool(obv_slope > 0 and px_slope20 <= 0.01 * last)
+    distribution = bool(obv_slope < 0 and px_slope20 > 0.01 * last)
+
+    # REPLI SUR TENDANCE (buy-the-dip sain) : fond haussier + MM50 qui monte + RSI redescendu
+    # + cours revenu près de la MM20/MM50 → entrée à moindre risque sur une tendance intacte.
+    uptrend = last > s50 and last > s200
+    near_ma = (abs(last - e20) < 1.0 * atr or abs(last - s50) < 1.2 * atr) if atr else False
+    pullback = bool(uptrend and ma50_rising and 40 <= r <= 56 and near_ma and not breakout)
+
     # signaux booléens (style checklist)
     sig = {
         'above20': last > e20, 'above50': last > s50, 'above200': last > s200,
@@ -575,6 +590,9 @@ def analyse(df, bench_ret, fund=None):
                                         - max(0.0, (last - recent_high) / atr) * 15
                                         + (9 if breakout else 0)          # cassure confirmée = meilleure entrée
                                         + (6 if squeeze else 0)           # compression = coup à venir
+                                        + (7 if pullback else 0)          # repli sain sur tendance = entrée à moindre risque
+                                        + (5 if accumulation else 0)      # accumulation OBV = smart money qui charge
+                                        - (10 if distribution else 0)     # distribution cachée = piège
                                         - (8 if not ma50_rising else 0),  # MM50 qui ne monte pas = setup fragile
                                         0, 100)))
     plan = {'entry': round(last, 2), 'stop': round(stop, 2),
@@ -610,6 +628,7 @@ def analyse(df, bench_ret, fund=None):
         'regime': regime, 'adx': round(adx), 'chop': round(chop), 'rsi_div': rsi_div,
         'trend_quality': trend_quality, 'ma50_rising': ma50_rising, 'ma200_rising': ma200_rising,
         'bb_rank': bb_rank, 'squeeze': squeeze, 'breakout': breakout,
+        'accumulation': accumulation, 'distribution': distribution, 'pullback': pullback,
         'setup_quality': setup_quality, 'confidence': sc.get('confidence'),
         'signals': sig, 'sub': sc,
         'plan': plan, 'series': series,
