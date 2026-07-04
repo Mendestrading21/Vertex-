@@ -551,6 +551,25 @@ def analyse(df, bench_ret, fund=None):
     near_ma = (abs(last - e20) < 1.0 * atr or abs(last - s50) < 1.2 * atr) if atr else False
     pullback = bool(uptrend and ma50_rising and 40 <= r <= 56 and near_ma and not breakout)
 
+    # PROFIL OFFENSIF / DÉFENSIF — la NATURE du titre (comment le jouer).
+    # Offensif = nerveux, fort beta, momentum ample → gros potentiel (options court/moyen).
+    # Défensif = stable, faible beta, dividende, secteur défensif → sécurité (actions / LEAPS).
+    _beta = (fund or {}).get('beta')
+    _div = (fund or {}).get('div')
+    _sec = ((fund or {}).get('sector') or (fund or {}).get('industry') or '')
+    _DEF = ('Utilities', 'Consumer Defensive', 'Consumer Staples', 'Healthcare', 'Health Care', 'Real Estate', 'Utility')
+    _OFF = ('Technology', 'Consumer Cyclical', 'Consumer Discretionary', 'Energy', 'Communication', 'Semiconduct')
+    _off = (2 if atr_pct >= 3.2 else 0) + (2 if (_beta is not None and _beta >= 1.25) else 0) \
+        + (1 if abs(roc) >= 12 else 0) + (2 if any(s in _sec for s in _OFF) else 0)
+    _def = (2 if atr_pct <= 1.7 else 0) + (2 if (_beta is not None and _beta <= 0.9) else 0) \
+        + (2 if (_div is not None and _div >= 0.02) else (1 if _div else 0)) + (2 if any(s in _sec for s in _DEF) else 0)
+    if _off - _def >= 2:
+        profile, profile_hint = 'OFFENSIF', 'titre nerveux → gros potentiel : options court/moyen (1-8 sem) pour le levier'
+    elif _def - _off >= 2:
+        profile, profile_hint = 'DÉFENSIF', 'titre stable → sécurité : actions ou LEAPS long, dividende, faible drawdown'
+    else:
+        profile, profile_hint = 'ÉQUILIBRÉ', 'polyvalent → actions ou options moyennes (1-3 mois) selon la conviction'
+
     # signaux booléens (style checklist)
     sig = {
         'above20': last > e20, 'above50': last > s50, 'above200': last > s200,
@@ -629,6 +648,7 @@ def analyse(df, bench_ret, fund=None):
         'trend_quality': trend_quality, 'ma50_rising': ma50_rising, 'ma200_rising': ma200_rising,
         'bb_rank': bb_rank, 'squeeze': squeeze, 'breakout': breakout,
         'accumulation': accumulation, 'distribution': distribution, 'pullback': pullback,
+        'profile': profile, 'profile_hint': profile_hint,
         'setup_quality': setup_quality, 'confidence': sc.get('confidence'),
         'signals': sig, 'sub': sc,
         'plan': plan, 'series': series,
@@ -943,8 +963,10 @@ def scan():
                 _fsec = (_fst.get('by_sector') or {}).get(_fsy.get('sector')) or {}
                 _fund = ({**_fsy, 'sector_median_pe': _fsec.get('median_pe'),
                           'sector_median_margin': _fsec.get('median_margin'),
-                          'sector_median_growth': _fsec.get('median_growth')} if _fsy else None)
-                d = analyse(df, bench_ret, fund=_fund)   # vrais fondamentaux → score fondamental réel (sinon proxy)
+                          'sector_median_growth': _fsec.get('median_growth')} if _fsy else {})
+                # secteur GICS statique TOUJOURS injecté → profil offensif/défensif fiable même sans fondamentaux live
+                _fund.setdefault('sector', _GICS_SECTOR.get(sym) or _INDUSTRY_MAP.get(sym))
+                d = analyse(df, bench_ret, fund=(_fund or None))   # vrais fondamentaux → score fondamental réel (sinon proxy)
                 d['chart_read'] = research.chart_read(d)   # analyse graphique FR (cartes Screener + modale)
                 detail[sym] = d
                 _clf = df['Close'].dropna()                # perf multi-horizons (Équipe semaine/mois/trim./année)
@@ -969,6 +991,9 @@ def scan():
                              'regime': d.get('regime'), 'rsi': d.get('rsi'), 'rs': d.get('rs'),
                              'rvol': d.get('volx'), 'setup_quality': d.get('setup_quality'),
                              'ext_atr': d.get('ext_atr'), 'rsi_div': d.get('rsi_div'), 'pos52': d.get('pos52'),
+                             'profile': d.get('profile'), 'profile_hint': d.get('profile_hint'),
+                             'squeeze': d.get('squeeze'), 'breakout': d.get('breakout'),
+                             'accumulation': d.get('accumulation'), 'distribution': d.get('distribution'), 'pullback': d.get('pullback'),
                              # VERTEX — noyau quant complet (edge, sous-scores, Kelly, Monte-Carlo, EV, drapeaux)
                              'vx_edge': _vx.get('edge'), 'vx_verdict': _vx.get('verdict'),
                              'vx_pwin': _vx.get('p_win'), 'vx_kelly': _kel.get('pct'),
@@ -6078,7 +6103,7 @@ function cardHTML(c){
       ${ringS(c.score,scol(c.score),54)}</div>
     <div class="cpx"><span class="cprice">$${c.price!=null?c.price:'—'}</span><span class="${(c.change||0)>=0?'up':'dn'}" style="font-size:13px;font-weight:700">${c.change!=null?(c.change>=0?'+':'')+c.change+'%':''}</span>${c.earnSoon?`<span style="margin-left:auto;font-size:8.5px;font-weight:800;color:#EF4444;background:#EF44441a;border:1px solid #EF444450;padding:2px 8px;border-radius:20px;white-space:nowrap">📅 ${c.earn}</span>`:''}</div>
     <div class="cspark">${c.series?spark(c.series,46,trendUp?'#22C55E':'#EF4444'):''}</div>
-    <div class="cbdg">${bdg(vfull,vc)}${bdg(regTxt(c.regime),c.regime==='TREND'?C.g:c.regime==='CHOP'?C.r:C.gold)}${c.pb?bdg(c.pb.ic+' '+c.pb.name,c.pb.col):''}${c.vehicle&&c.vehicle.reco&&c.vehicle.reco!=='—'?bdg((c.vehicle.reco==='OPTION'?'💎':c.vehicle.reco==='ACTION'?'📈':'⚖️')+' '+c.vehicle.reco,c.vehicle.tone==='orange'?'#FF7A18':c.vehicle.tone==='blue'?'#38BDF8':c.vehicle.tone==='gold'?'#F5B45B':'#8794ab'):''}</div>
+    <div class="cbdg">${c.profile?bdg((c.profile==='OFFENSIF'?'⚔️ ':c.profile==='DÉFENSIF'?'🛡️ ':'⚖️ ')+c.profile,c.profile==='OFFENSIF'?C.r:c.profile==='DÉFENSIF'?C.blue:C.gold):''}${bdg(vfull,vc)}${bdg(regTxt(c.regime),c.regime==='TREND'?C.g:c.regime==='CHOP'?C.r:C.gold)}${c.breakout?bdg('🚀 Cassure',C.g):c.pullback?bdg('🎯 Repli',C.blue):c.squeeze?bdg('🧨 Squeeze',C.gold):c.distribution?bdg('🔴 Distri.',C.r):c.pb?bdg(c.pb.ic+' '+c.pb.name,c.pb.col):''}${c.vehicle&&c.vehicle.reco&&c.vehicle.reco!=='—'?bdg((c.vehicle.reco==='OPTION'?'💎':c.vehicle.reco==='ACTION'?'📈':'⚖️')+' '+c.vehicle.reco,c.vehicle.tone==='orange'?'#FF7A18':c.vehicle.tone==='blue'?'#38BDF8':c.vehicle.tone==='gold'?'#F5B45B':'#8794ab'):''}</div>
     <div class="cmet">${mt('Force rel.',c.rs!=null?Math.round(c.rs):'—',(c.rs||0)>=70?C.g:(c.rs||0)<=35?C.r:'#dfe6f2')}${mt('RSI',Math.round(c.rsi||0),(c.rsi||0)>=70?C.r:(c.rsi||0)<=30?C.g:'#dfe6f2')}${mt('52 sem.',c.pos52!=null?Math.round(c.pos52)+'%':'—',(c.pos52||0)>=80?C.g:(c.pos52||0)<=20?C.r:'#dfe6f2')}${mt('R:R',rr?rr+':1':'—',rr>=2?C.g:'#dfe6f2')}</div>
     <div class="cfon"><span>P/E <b style="color:${c.valTone==='good'?C.g:c.valTone==='warn'?C.r:'#cfd8e6'}">${c.pe?c.pe.toFixed(1):'—'}</b></span><span>Marge <b>${pct(c.margin)}</b></span><span>Croiss. <b class="${(c.growth||0)>=0?'up':'dn'}">${c.growth!=null?pct(c.growth):'—'}</b></span><span>Cap. <b>${cap(c.mcap)}</b></span></div>
     ${c.chart_read?`<div class="csig"><span class="cdot" style="background:${vc};box-shadow:0 0 7px ${vc}"></span><span class="ct">${c.chart_read.charAt(0).toUpperCase()+c.chart_read.slice(1)}.</span></div>`:''}
@@ -6119,6 +6144,7 @@ async function load(){
       valTone,valLabel,valr,score:d.score,grade:d.grade,rs:d.rs,rsi:d.rsi,regime:d.regime,verdict:d.verdict,plan:d.plan,setup_quality:d.setup_quality,pos52:d.pos52,
       vehicle:r.vehicle,vehreco:(r.vehicle&&r.vehicle.reco)||'',
       strat:r.strat_score,pb:r.playbook||null,pbname:(r.playbook&&r.playbook.name)||'',rr:r.rr,rrok:!!r.rr_ok,
+      profile:r.profile,profileHint:r.profile_hint,breakout:r.breakout,squeeze:r.squeeze,distribution:r.distribution,pullback:r.pullback,
       earn:e?(e.dte<=0?'auj.':'J-'+e.dte):null,earnSoon:e&&e.dte!=null&&e.dte<7};});
   const m=s.market||{},SE={pre:'🌅 avant-bourse',open:'🟢 séance',after:'🌙 après-bourse',closed:'🌑 fermé'};
   document.getElementById('hsub').textContent=DATA.length+' sociétés · '+(SE[m.session]||'')+' '+(m.et||'');
