@@ -63,6 +63,19 @@ def chart_read(d):
     elif rs <= 35:
         parts.append(f'sous-performe le marché (force relative {rs:.0f})')
 
+    # NOUVEAUX SIGNAUX — cassure, compression, pente de tendance, divergence
+    if d.get('breakout'):
+        parts.append('🚀 cassure confirmée : nouveau plus-haut 20j porté par le volume')
+    if d.get('squeeze'):
+        br = d.get('bb_rank')
+        parts.append(f'🧨 compression de volatilité (bandes au plus bas 6 mois{f", rang {br}%" if br is not None else ""}) — cassure souvent imminente')
+    if _sig(d, 'stacked') and d.get('ma50_rising') is False:
+        parts.append('⚠️ MM50 qui s\'aplatit (tendance qui s\'essouffle malgré l\'empilement)')
+    if d.get('rsi_div') == 'bear':
+        parts.append('⚠️ divergence baissière du RSI (prix au plus-haut, momentum en repli)')
+    elif d.get('rsi_div') == 'bull':
+        parts.append('↗️ divergence haussière du RSI (prix au plus-bas, momentum qui remonte)')
+
     return ' · '.join(parts)
 
 

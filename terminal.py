@@ -518,6 +518,24 @@ def analyse(df, bench_ret, fund=None):
     bull_div = (last <= float(c.iloc[-win:-1].min())) and (r > float(rsi_s.iloc[-win:-1].min()) + 3)
     rsi_div = 'bear' if bear_div else 'bull' if bull_div else None
 
+    # QUALITÉ DE TENDANCE : les MM montent-elles VRAIMENT (pente) — pas juste empilées ?
+    ma50_rising = s50 > s50p
+    ma200_rising = s200 > s200p
+    # une structure empilée mais à pente plate/baissière = tendance qui s'essouffle → on la pénalise
+    trend_quality = round(trend * (1.0 if ma50_rising else 0.72))
+
+    # SQUEEZE DE VOLATILITÉ (Bollinger 20) : largeur de bande dans son plus-bas 6 mois
+    # → compression = énergie qui s'accumule, cassure souvent imminente.
+    bb_mid = c.rolling(20).mean()
+    bb_wid = (c.rolling(20).std() / bb_mid * 100).dropna()
+    bb_now = float(bb_wid.iloc[-1]) if len(bb_wid) else None
+    bb_rank = round(float((bb_wid.tail(126) <= bb_now).mean() * 100)) if (bb_now is not None and len(bb_wid) >= 20) else None
+    squeeze = bool(bb_rank is not None and bb_rank <= 20)
+
+    # CASSURE CONFIRMÉE : nouveau plus-haut 20 jours porté par le volume (≥ 1.5× la moyenne).
+    hi20 = float(c.tail(21).iloc[:-1].max()) if len(c) > 21 else last
+    breakout = bool(last >= hi20 and volx >= 1.5)
+
     # signaux booléens (style checklist)
     sig = {
         'above20': last > e20, 'above50': last > s50, 'above200': last > s200,
@@ -554,7 +572,11 @@ def analyse(df, bench_ret, fund=None):
     rr_res = (recent_high - last) / risk if risk > 0 else 0.0
     headroom = (recent_high - last) / atr if atr else 0.0
     setup_quality = round(float(np.clip(40 + rr_res * 20 + min(headroom, 4) * 5
-                                        - max(0.0, (last - recent_high) / atr) * 15, 0, 100)))
+                                        - max(0.0, (last - recent_high) / atr) * 15
+                                        + (9 if breakout else 0)          # cassure confirmée = meilleure entrée
+                                        + (6 if squeeze else 0)           # compression = coup à venir
+                                        - (8 if not ma50_rising else 0),  # MM50 qui ne monte pas = setup fragile
+                                        0, 100)))
     plan = {'entry': round(last, 2), 'stop': round(stop, 2),
             'tp1': round(last + risk, 2), 'tp2': round(last + 2 * risk, 2),
             'tp3': round(last + 3 * risk, 2), 'rr': 3.0, 'atr': round(atr, 2),
@@ -586,6 +608,8 @@ def analyse(df, bench_ret, fund=None):
         'ma20': round(e20, 2), 'ma50': round(s50, 2), 'ma200': round(s200, 2),
         'volx': round(volx, 2), 'atr_pct': round(atr_pct, 2), 'ext_atr': round(ext_atr, 2),
         'regime': regime, 'adx': round(adx), 'chop': round(chop), 'rsi_div': rsi_div,
+        'trend_quality': trend_quality, 'ma50_rising': ma50_rising, 'ma200_rising': ma200_rising,
+        'bb_rank': bb_rank, 'squeeze': squeeze, 'breakout': breakout,
         'setup_quality': setup_quality, 'confidence': sc.get('confidence'),
         'signals': sig, 'sub': sc,
         'plan': plan, 'series': series,
