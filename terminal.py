@@ -418,7 +418,8 @@ def _rsi(s, n=14):
     d = s.diff()
     up = d.clip(lower=0).ewm(alpha=1 / n, adjust=False).mean()
     dn = (-d.clip(upper=0)).ewm(alpha=1 / n, adjust=False).mean()
-    return 100 - 100 / (1 + up / dn.replace(0, np.nan))
+    # dn==0 (aucune baisse) → RSI = 100, pas NaN (le NaN casserait le JSON de /scan)
+    return (100 - 100 / (1 + up / dn.replace(0, np.nan))).fillna(100)
 
 
 def _atr(df, n=14):
@@ -483,16 +484,23 @@ def analyse(df, bench_ret, fund=None):
     e20 = float(c.ewm(span=20).mean().iloc[-1])
     e50 = float(c.ewm(span=50).mean().iloc[-1])
     e200 = float(c.ewm(span=200).mean().iloc[-1])
-    s50 = float(c.rolling(50).mean().iloc[-1])
-    s200 = float(c.rolling(200).mean().iloc[-1])
-    s50p = float(c.rolling(50).mean().iloc[-2])
-    s200p = float(c.rolling(200).mean().iloc[-2])
+    # SMA avec repli sur l'EWM quand l'historique est trop court (< 50/200 barres) :
+    # évite les NaN qui casseraient le JSON de /scan pour les titres récemment cotés.
+    s50 = float(c.rolling(50).mean().iloc[-1]);  s50 = e50 if math.isnan(s50) else s50
+    s200 = float(c.rolling(200).mean().iloc[-1]);  s200 = e200 if math.isnan(s200) else s200
+    s50p = float(c.rolling(50).mean().iloc[-2]) if len(c) > 1 else s50
+    s50p = s50 if math.isnan(s50p) else s50p
+    s200p = float(c.rolling(200).mean().iloc[-2]) if len(c) > 1 else s200
+    s200p = s200 if math.isnan(s200p) else s200p
     atr = float(_atr(df).iloc[-1])
     rsi_s = _rsi(c)
     r = float(rsi_s.iloc[-1])
     roc = (last / float(c.iloc[-21]) - 1) * 100 if len(c) > 21 else 0.0
-    vol = float(df['Volume'].iloc[-1])
-    volavg = float(df['Volume'].tail(20).mean())
+    # Certains flux (indices/ETF via Stooq) n'ont pas de colonne Volume → repli à 0 plutôt qu'un KeyError.
+    _v = df['Volume'] if 'Volume' in df.columns else pd.Series([0.0] * len(df), index=df.index)
+    vol = float(_v.iloc[-1]) if len(_v) else 0.0
+    volavg = float(_v.tail(20).mean()) if len(_v) else 0.0
+    volavg = 0.0 if math.isnan(volavg) else volavg
     hi = float(c.tail(252).max()); lo = float(c.tail(252).min())
     pos = (last - lo) / (hi - lo) * 100 if hi > lo else 50.0
 
@@ -539,7 +547,7 @@ def analyse(df, bench_ret, fund=None):
     # ACCUMULATION / DISTRIBUTION via OBV (On-Balance Volume) — lecture du « smart money ».
     # OBV qui monte pendant que le prix stagne = accumulation cachée (haussier).
     # OBV qui baisse pendant que le prix monte = distribution cachée (faiblesse sous le capot).
-    obv = (np.sign(c.diff().fillna(0.0)) * df['Volume']).cumsum()
+    obv = (np.sign(c.diff().fillna(0.0)) * _v).cumsum()
     obv_slope = float(obv.iloc[-1] - obv.iloc[-20]) if len(obv) > 20 else 0.0
     px_slope20 = (last - float(c.iloc[-20])) if len(c) > 20 else 0.0
     accumulation = bool(obv_slope > 0 and px_slope20 <= 0.01 * last)
@@ -587,7 +595,7 @@ def analyse(df, bench_ret, fund=None):
     if abs(zc) >= 2.2:
         anomalies.append({'k': 'zscore', 'sev': int(min(3, max(1, round(abs(zc)) - 1))),
                           'lbl': f'σ Prix à {zc:+.1f}σ de la MM20 (extrême statistique)'})
-    vser = df['Volume'].tail(60)
+    vser = _v.tail(60)
     vmean = float(vser.mean()); vstd = float(vser.std()) or 1.0
     vz = round((vol - vmean) / vstd, 2)
     if vz >= 2.5:
@@ -5860,7 +5868,7 @@ def my_page():
 # ─── ANALYSE ENTREPRISE (toutes les infos live + fondamentaux des sociétés) ──
 PAGE_ENTREPRISES = r"""<!doctype html><html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Vertex"><meta name="mobile-web-app-capable" content="yes"><meta name="theme-color" content="#0b0e14"><link rel="apple-touch-icon" href="/static/icon-180.png"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="manifest" href="/manifest.webmanifest"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
-<title>Screener · Vertex</title>
+<title>Scanner · Vertex</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:radial-gradient(1200px 600px at 50% -10%,#161616,#070707 60%);color:#e8edf5;font-family:'Inter','Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;padding:20px;font-variant-numeric:tabular-nums}
@@ -7242,7 +7250,10 @@ _JOURNAL_JS = r"""
 var EMO=[['😌','Calme'],['🎯','Concentré'],['😰','Stressé'],['🤑','Avide'],['😐','Neutre'],['😤','Revanche']];
 var FORM={dir:'',res:'',emo:''};
 function jGet(){try{return JSON.parse(localStorage.getItem('vxJournal')||'[]')}catch(e){return[]}}
-function jSet(a){localStorage.setItem('vxJournal',JSON.stringify(a));}
+function jSet(a){localStorage.setItem('vxJournal',JSON.stringify(a));localStorage.setItem('deskTs',String(Date.now()));jvSyncPush();}
+/* Le journal se synchronise entre appareils (via /api/desk, mêmes clés que le Desk) */
+function jvSyncPush(){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){var data=(d&&d.data)||{};data.vxJournal=localStorage.getItem('vxJournal');['myTrades','myTradesClosed','myTradeLog','myRecos','myRecosClosed','myFavs','myNotes','myCapital'].forEach(function(k){var v=localStorage.getItem(k);if(v!=null)data[k]=v;});fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:Date.now(),data:data})});}).catch(function(){});}catch(e){}}
+function jvSyncPull(cb){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){if(d&&d.data&&d.data.vxJournal){var lt=parseFloat(localStorage.getItem('deskTs')||'0');if((d.ts||0)>lt||!jGet().length){localStorage.setItem('vxJournal',d.data.vxJournal);if(d.data.myTradeLog)localStorage.setItem('myTradeLog',d.data.myTradeLog);localStorage.setItem('deskTs',String(d.ts||Date.now()));}}if(cb)cb();}).catch(function(){if(cb)cb();});}catch(e){if(cb)cb();}}
 function rMult(t){var e=+t.entry,s=+t.stop,x=+t.exit;if(!e||!s||!x||e===s)return null;var r=(t.dir==='SHORT')?(e-x)/(s-e):(x-e)/(e-s);return isFinite(r)?r:null;}
 window.setDir=function(d){FORM.dir=(FORM.dir===d?'':d);document.getElementById('jDirL').className=FORM.dir==='LONG'?'onL':'';document.getElementById('jDirS').className=FORM.dir==='SHORT'?'onS':'';};
 window.setRes=function(r){FORM.res=(FORM.res===r?'':r);document.getElementById('jResW').className=FORM.res==='WIN'?'onL':'';document.getElementById('jResL').className=FORM.res==='LOSS'?'onS':'';};
@@ -7286,6 +7297,7 @@ function entryCard(t){var win=t.result==='WIN',rc=win?'#22C55E':t.result==='LOSS
     +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:16px;font-weight:900">'+t.ticker+'</span>'
     +(t.dir?'<span style="font-size:10px;font-weight:800;color:'+dirc+';background:'+dirc+'1a;border:1px solid '+dirc+'44;padding:2px 8px;border-radius:6px">'+(t.dir==='LONG'?'▲ LONG':'▼ SHORT')+'</span>':'')
     +(t.tf?'<span style="font-size:11px;color:#8794ab">'+t.tf+'</span>':'')
+    +(t.auto?'<span title="Créé automatiquement à la clôture d\'une position du Desk" style="font-size:9.5px;font-weight:800;color:#FF8C32;background:rgba(255,140,50,.12);border:1px solid rgba(255,140,50,.4);padding:2px 8px;border-radius:6px">🤖 AUTO'+(t.kind&&t.kind!=='STK'?' · '+t.kind:'')+'</span>':'')
     +(t.result?'<span style="margin-left:auto;font-size:11px;font-weight:800;color:'+rc+';background:'+rc+'1a;border:1px solid '+rc+'44;padding:2px 10px;border-radius:7px">'+(win?'✓ GAGNANT':'✕ PERDANT')+'</span>':'<span style="margin-left:auto;font-size:10px;color:#8794ab">en cours</span>')
     +'<span onclick="jDel('+t.id+')" title="Supprimer" style="cursor:pointer;color:#5b6678;font-size:15px;padding:0 2px">✕</span></div>'
     +'<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:9px">'+tag('Entrée',t.entry?'$'+t.entry:'','#cfd8e6')+tag('Stop',t.stop?'$'+t.stop:'','#EF4444')+tag('Objectif',t.tp?'$'+t.tp:'','#22C55E')+tag('Sortie',t.exit?'$'+t.exit:'','#cfd8e6')+(t.pnl?'<span style="font-size:11px;color:#8794ab">P&amp;L <b class="'+((+t.pnl)>=0?'up':'dn')+'">'+((+t.pnl)>=0?'+':'')+'$'+t.pnl+'</b></span>':'')+(rm!=null?'<span style="font-size:11px;color:#8794ab">R <b style="color:'+(rm>=0?'#22C55E':'#EF4444')+'">'+(rm>=0?'+':'')+rm.toFixed(2)+'R</b></span>':'')+'</div>'
@@ -7331,11 +7343,11 @@ function render(){var a=jGet();renderKpi(metrics(a));renderEquity(a);renderPsych
   var f=a.filter(function(t){return (!JFILTER.res||t.result===JFILTER.res)&&(!JFILTER.q||(t.ticker||'').indexOf(JFILTER.q)>=0);});
   var el=document.getElementById('jList');
   el.innerHTML=a.length?(f.length?('<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:13px">'+f.map(entryCard).join('')+'</div>'):'<div class="vcard"><div class="muted" style="padding:14px;text-align:center">Aucun trade ne correspond à ce filtre.</div></div>'):'<div class="vcard"><div class="muted" style="padding:14px;text-align:center;line-height:1.7">Ton journal est vide. Note ton premier trade ci-dessus — chaque entrée nourrit tes statistiques (win rate, profit factor, R moyen) et t\'aide à ne plus répéter les mêmes erreurs.</div></div>';}
-buildEmo();render();
+buildEmo();render();jvSyncPull(render);setInterval(function(){jvSyncPull(render);},60000);
 """
 
 PAGE_JOURNAL = _vpage('Journal',
-  '<div class="vhead"><div><h1>📓 Journal de trading</h1><div class="s">Le journal qui corrige tes pertes · <b style="color:#F5B45B">Track · Learn · Improve · Repeat</b> · 🔒 stocké sur cet appareil</div></div>'
+  '<div class="vhead"><div><h1>📓 Journal de trading</h1><div class="s">Le journal qui corrige tes pertes · <b style="color:#F5B45B">Track · Learn · Improve · Repeat</b> · 🤖 les clôtures du Desk se journalisent ici tout seules · ☁️ synchronisé</div></div>'
   '<div style="margin-left:auto;align-self:center;display:flex;gap:6px"><button class="vbtn" onclick="jExport()">⬇️ Export</button><button class="vbtn" onclick="jImport()">⬆️ Import</button></div></div>'
   '<div class="kpiband" id="jKpi" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"></div>'
   '<div class="jg jmain" style="grid-template-columns:1.35fr 1fr;gap:14px;margin-top:2px"><div id="jEquityWrap"></div><div id="jPsychWrap"></div></div>'
@@ -7466,7 +7478,7 @@ function render(){
     +kc('📊 P&L moyen',avg!=null?(avg>=0?'+':'')+avg.toFixed(1)+'%':'—',avg>=0?'#22C55E':'#EF4444','simulé, non réel');
   var host=document.getElementById('sList');
   host.innerHTML=a.length?('<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:13px">'+a.map(recoCard).join('')+'</div>')
-    :'<div class="vcard"><div class="muted" style="padding:16px;text-align:center;line-height:1.8">Aucun suivi pour l\'instant.<br>Clique <b style="color:#F5B45B">⭐</b> sur un titre (Screener, Dashboard, fiche…) ou lance une <b style="color:#FF8C32">simulation</b> ci-dessus — je suis alors la position à ta place jusqu\'à ce que le plan dise de vendre (🎯 objectif ou 🛑 stop).</div></div>';}
+    :'<div class="vcard"><div class="muted" style="padding:16px;text-align:center;line-height:1.8">Aucun suivi pour l\'instant.<br>Clique <b style="color:#F5B45B">⭐</b> sur un titre (Scanner, Dashboard, fiche…) ou lance une <b style="color:#FF8C32">simulation</b> ci-dessus — je suis alors la position à ta place jusqu\'à ce que le plan dise de vendre (🎯 objectif ou 🛑 stop).</div></div>';}
 function load(){fetch('/scan').then(function(r){return r.json()}).then(function(d){ROWS={};(d.rows||[]).forEach(function(r){ROWS[r.symbol]=r;});DET=d.detail||{};MK=d.market||{};render();}).catch(function(){render();});}
 load();setInterval(load,15000);
 """
@@ -8037,7 +8049,7 @@ function rRenderFollow(){
   if(c.length){var pls=c.map(function(x){return (x.exit||0)-(x.entry||0);});var tot=pls.reduce(function(s,p){return s+p;},0);var wins=pls.filter(function(p){return p>0;}).length;var wr=Math.round(wins/c.length*100);var pc2=tot>=0?'#22C55E':'#EF4444';
     stats='<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:11.5px;margin-bottom:10px;padding:9px 13px;background:#0c0e13;border:1px solid rgba(255,255,255,.06);border-radius:11px"><b style="color:#8794ab;font-size:10px;letter-spacing:1px">TRACK RECORD DES RECOS VERTEX</b><span>'+c.length+' clôturée'+(c.length>1?'s':'')+'</span><span>Win rate <b style="color:'+(wr>=55?'#22C55E':wr>=40?'#FFB23F':'#EF4444')+'">'+wr+'%</b></span><span>P&L <b style="color:'+pc2+'">'+(tot>=0?'+':'')+tot.toFixed(0)+' $/ct</b></span></div>';}
   if(stq)stq.innerHTML=stats;
-  if(!a.length){el.innerHTML='<div class="muted" style="font-size:11.5px;padding:10px;border:1.5px dashed #2a2a33;border-radius:12px">Rien de suivi pour l\'instant. Clique ⭐ sur n\'importe quel titre ou contrat dans Vertex (Screener, Options Lab, Dashboard, fiche…) — je le surveille et je te dis quand vendre : 🎯 objectif · 🛑 stop/−50% · 💰 +100% · ⏳ théta · ⚠️ signal cassé.</div>';return;}
+  if(!a.length){el.innerHTML='<div class="muted" style="font-size:11.5px;padding:10px;border:1.5px dashed #2a2a33;border-radius:12px">Rien de suivi pour l\'instant. Clique ⭐ sur n\'importe quel titre ou contrat dans Vertex (Scanner, Options, Dashboard, fiche…) — je le surveille et je te dis quand vendre : 🎯 objectif · 🛑 stop/−50% · 💰 +100% · ⏳ théta · ⚠️ signal cassé.</div>';return;}
   var rows2=((window.__SCAND||{}).rows)||[];var vm={};rows2.forEach(function(r){vm[r.symbol]=r;});
   a=a.slice().sort(function(x,y){
     function sev(r5){var adv5=rAdvice(r5,(window.__TQ||{})[rKey(r5)],vm[r5.sym]);var L=adv5[0];
@@ -8451,7 +8463,7 @@ function vxNotifOn(){try{Notification.requestPermission().then(function(){alertB
 function aiBrief(){
   var el=document.getElementById('aiBrief');if(!el)return;
   var a=tGet(),rec=rGet();var SC=window.__SCAND||{};var mc=SC.market_ctx||{},M=SC.internals;
-  if(!a.length&&!rec.length){el.innerHTML='<div class="dcard" style="border-color:rgba(167,139,250,.3);background:linear-gradient(135deg,rgba(167,139,250,.05),#121316)"><div class="dhead" style="margin-bottom:5px"><h3>🧠 Brief Vertex</h3><span class="dsub">synthèse IA · recalculée en continu</span></div><div style="font-size:12px;line-height:1.75;color:#cfd6e4">Ton Trading Track est prêt. Ajoute ta première position ci-dessous ou étoile ⭐ un titre depuis le Screener / Options Lab — je commencerai à analyser ta situation, calculer tes risques et te dire quand agir.</div></div>';return;}
+  if(!a.length&&!rec.length){el.innerHTML='<div class="dcard" style="border-color:rgba(167,139,250,.3);background:linear-gradient(135deg,rgba(167,139,250,.05),#121316)"><div class="dhead" style="margin-bottom:5px"><h3>🧠 Brief Vertex</h3><span class="dsub">synthèse IA · recalculée en continu</span></div><div style="font-size:12px;line-height:1.75;color:#cfd6e4">Ton Trading Track est prêt. Ajoute ta première position ci-dessous ou étoile ⭐ un titre depuis le Scanner / Options — je commencerai à analyser ta situation, calculer tes risques et te dire quand agir.</div></div>';return;}
   var s=null;if(M&&mc){var br=mc.breadth||{};s=0;s+=mc.spy_regime==='TREND'?35:mc.spy_regime==='NEUTRAL'?18:mc.spy_regime==='CHOP'?6:14;s+=mc.roro==='RISK-ON'?25:mc.roro==='RISK-OFF'?2:12;s+=Math.round((br.above50!=null?br.above50:50)/100*25);s+=mc.vix_band==='calme'?15:mc.vix_band==='stress'?2:8;s=Math.max(0,Math.min(100,s));}
   var scol2=s==null?'#8b93a7':s>=65?'#22C55E':s>=40?'#FFB23F':'#EF4444';
   var slab=s==null?'—':s>=65?'FAVORABLE':s>=40?'NEUTRE':'DANGEREUX';
@@ -8469,7 +8481,7 @@ function aiBrief(){
   if(nA>0)action=nA+' position'+(nA>1?'s exigent':' exige')+' une action — traite les alertes ci-dessous en priorité.';
   else if(cap>0&&lev/cap>0.3)action='Ton levier dépasse ta règle des 30% — pas de nouvelle option avant d\'avoir allégé.';
   else if(best&&best.plp>=80)action='Pense à sécuriser une partie de '+best.sym+' (+'+best.plp.toFixed(0)+'%) — ne rends pas un gros gain au marché.';
-  else if(cap>0&&(cap-inv)/cap>0.6&&s!=null&&s>=65)action='Beaucoup de munitions ('+Math.round((cap-inv)/cap*100)+'% de cash) dans un marché favorable — va voir l\'Options Lab ou le Screener.';
+  else if(cap>0&&(cap-inv)/cap>0.6&&s!=null&&s>=65)action='Beaucoup de munitions ('+Math.round((cap-inv)/cap*100)+'% de cash) dans un marché favorable — va voir les Options ou le Scanner.';
   else action='Rien d\'urgent — la discipline, c\'est aussi savoir ne rien faire. Laisse tes plans travailler.';
   var arc='';
   if(s!=null){var AL=131.9;
@@ -8554,7 +8566,7 @@ function sTable(a){
 
 _TRADES_JS = r"""
 /* ===== ☁️ SYNC DESK : mêmes trades/journal/favoris sur PC ET iPhone (stockés côté serveur) ===== */
-var __deskT=null,__DESK_KEYS=['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes'];
+var __deskT=null,__DESK_KEYS=['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog'];
 function deskCollect(){var d={};__DESK_KEYS.forEach(function(k){var v=localStorage.getItem(k);if(v!=null)d[k]=v;});return d;}
 function deskPush(){var body={ts:Date.now(),data:deskCollect()};localStorage.setItem('deskTs',String(body.ts));
   fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
@@ -8573,6 +8585,27 @@ function deskPull(){fetch('/api/desk').then(function(r){return r.json()}).then(f
 }).catch(function(){});}
 function tGet(){try{return JSON.parse(localStorage.getItem('myTrades')||'[]')}catch(e){return[]}}
 function tSave(a){localStorage.setItem('myTrades',JSON.stringify(a));deskDirty();}
+/* ===== 🤖 SUIVI AUTOMATISÉ : journal des positions + notes auto sur signal ===== */
+function tlGet(){try{return JSON.parse(localStorage.getItem('myTradeLog')||'[]')}catch(e){return[]}}
+function tlSave(a){localStorage.setItem('myTradeLog',JSON.stringify(a.slice(-500)));deskDirty();}
+function tlAdd(sym,ev,txt,tid){var a=tlGet();a.push({ts:Date.now(),d:new Date().toISOString().slice(0,16).replace('T',' '),sym:sym,ev:ev,txt:txt,tid:tid||null});tlSave(a);if(typeof tAutoLogRender==='function')tAutoLogRender();}
+function jvGet(){try{return JSON.parse(localStorage.getItem('vxJournal')||'[]')}catch(e){return[]}}
+function tLogClear(){if(!confirm('Vider le fil de notes automatiques ? (tes trades et ton journal restent intacts)'))return;localStorage.setItem('myTradeLog','[]');deskDirty();tAutoLogRender();}
+function tAutoLogRender(){var el=document.getElementById('tAutoLog');if(!el)return;var log=tlGet().slice().reverse();
+  if(!log.length){el.innerHTML='<div class="muted" style="font-size:11.5px;padding:10px;border:1.5px dashed #2a2a33;border-radius:12px">Rien à noter pour l\'instant. Dès que tu ouvres une position, VERTEX journalise tout ici automatiquement : 🟢 ouverture · 🔔 signal de sortie (objectif · stop · −50% · théta · signal cassé) · 🏁 clôture — tout horodaté, sans rien saisir.</div>';return;}
+  var EV={OPEN:['🟢','#22C55E'],CLOSE:['🏁','#F5B45B'],SIGNAL:['🔔','#FF8C32']};
+  el.innerHTML='<div style="display:flex;flex-direction:column;gap:0;position:relative">'+log.slice(0,40).map(function(x){var e=EV[x.ev]||['•','#8794ab'];
+    return '<div style="display:flex;gap:11px;padding:9px 2px;border-bottom:1px solid rgba(255,255,255,.045)">'
+      +'<div style="flex-shrink:0;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:'+e[1]+'1a;border:1px solid '+e[1]+'44;font-size:13px">'+e[0]+'</div>'
+      +'<div style="min-width:0;flex:1"><div style="display:flex;gap:8px;align-items:baseline"><b style="font-size:12.5px;color:#e8edf5;cursor:pointer" onclick="go(\''+x.sym+'\')">'+x.sym+'</b><span style="font-size:9.5px;color:#6b7280">'+(x.d||'')+'</span></div>'
+      +'<div style="font-size:11.5px;color:#9aa4b8;line-height:1.5;margin-top:1px">'+(x.txt||'')+'</div></div></div>';}).join('')
+    +(log.length>40?'<div class="muted" style="font-size:10px;padding:8px 2px">+ '+(log.length-40)+' notes plus anciennes</div>':'')+'</div>';}
+/* Snapshot de la thèse Vertex au moment de l'entrée (pour comparer entrée vs sortie) */
+function tSnapOf(sym){try{var SC=window.__SCAND||{};var rows=SC.rows||[],det=SC.detail||{};for(var i=0;i<rows.length;i++){if(rows[i].symbol===sym){var r=rows[i],d=det[sym]||{},pl=d.plan||{};return {score:r.score,verdict:r.verdict,grade:r.grade,pb:(r.playbook&&r.playbook.name)||null,profile:r.profile,spot:r.price,stop:pl.stop,tgt:pl.tp2,thesis:d.thesis||null,date:new Date().toISOString().slice(0,10)};}}}catch(e){}return null;}
+/* Détecteur de transition : journalise une note auto quand le conseil de sortie devient actionnable */
+function tLogSignal(t,adv){if(!t||!adv||!t.id)return;var L=adv[0]||'';var actionable=(L.indexOf('VENDRE')>=0||L.indexOf('SORTIR')>=0||L.indexOf('SÉCURISER')>=0||L.indexOf('ROULER')>=0||L.indexOf('PROCHE')>=0);if(!actionable)return;
+  var log=tlGet();for(var i=log.length-1;i>=0;i--){if(log[i].tid===t.id&&log[i].ev==='SIGNAL'){if(log[i].sig===L)return;break;}}
+  var a=tlGet();a.push({ts:Date.now(),d:new Date().toISOString().slice(0,16).replace('T',' '),sym:t.sym,ev:'SIGNAL',sig:L,txt:L+' — '+(adv[2]||''),tid:t.id});tlSave(a);if(typeof tAutoLogRender==='function')tAutoLogRender();}
 function tKey(t){return (t.sym||'')+'|'+(t.exp||'')+'|'+(t.strike!=null?t.strike:'')+'|'+(t.right||'');}
 function tFmt(n,d){return n==null?'—':'$'+(+n).toLocaleString('fr-FR',{minimumFractionDigits:d==null?0:d,maximumFractionDigits:d==null?2:d});}
 function eCalc(){
@@ -8603,8 +8636,9 @@ function eAdd(){
     if(!pr){hint.innerHTML='<b style="color:#EF4444">Échéance non reconnue</b> — « JAN 27 », « 2027-01 » ou « 2027-01-15 ».';return;}
     pObj=pr;
   }
-  var a=tGet();
-  a.push({id:Date.now(),type:pObj.type,sym:pObj.sym,exp:pObj.exp||null,strike:pObj.strike!=null?pObj.strike:null,right:pObj.right||null,qty:q,cost:inv,added:new Date().toISOString().slice(0,10)});
+  var a=tGet();var _id=Date.now();var _snap=tSnapOf(pObj.sym);
+  a.push({id:_id,type:pObj.type,sym:pObj.sym,exp:pObj.exp||null,strike:pObj.strike!=null?pObj.strike:null,right:pObj.right||null,qty:q,cost:inv,added:new Date().toISOString().slice(0,10),entrySnap:_snap});
+  tlAdd(pObj.sym,'OPEN',(ty==='ACTION'?'Action':(ty==='PUT'?'PUT':'CALL'))+' '+pObj.sym+(pObj.strike?' $'+pObj.strike:'')+' · '+q+'× · investi $'+Math.round(inv)+(_snap&&_snap.score!=null?' — entrée score '+_snap.score+'/'+(_snap.verdict||''):''),_id);
   tSave(a);
   ['eSym','eExp','eStrike','ePrix'].forEach(function(id2){document.getElementById(id2).value='';});
   eCalc();
@@ -8656,8 +8690,9 @@ function tAdd(){
   if(!p){hint.innerHTML='<b style="color:#EF4444">Format non reconnu.</b> Exemples : « META JAN 27 750 CALL » · « NVDA 2026-12 190 PUT » · « AAPL » (action)';return;}
   if(!qty||qty<=0){hint.innerHTML='<b style="color:#EF4444">Indique la quantité</b> (nombre de contrats ou d’actions).';return;}
   if(!cost||cost<=0){hint.innerHTML='<b style="color:#EF4444">Indique le montant total investi</b> en $ (prime totale payée ou coût des actions).';return;}
-  var a=tGet();
-  a.push({id:Date.now(),type:p.type,sym:p.sym,exp:p.exp||null,strike:p.strike!=null?p.strike:null,right:p.right||null,qty:qty,cost:cost,added:new Date().toISOString().slice(0,10)});
+  var a=tGet();var _id=Date.now();var _snap=tSnapOf(p.sym);
+  a.push({id:_id,type:p.type,sym:p.sym,exp:p.exp||null,strike:p.strike!=null?p.strike:null,right:p.right||null,qty:qty,cost:cost,added:new Date().toISOString().slice(0,10),entrySnap:_snap});
+  tlAdd(p.sym,'OPEN',(p.type==='STK'?'Action':p.type)+' '+p.sym+(p.strike?' $'+p.strike:'')+' · '+qty+'× · investi $'+Math.round(cost)+(_snap&&_snap.score!=null?' — entrée score '+_snap.score+'/'+(_snap.verdict||''):''),_id);
   tSave(a);
   document.getElementById('tIn').value='';document.getElementById('tQty').value='';document.getElementById('tCost').value='';
   hint.innerHTML='<span style="color:#22C55E">✓ Position ajoutée — cotation en cours via IBKR…</span>';
@@ -8672,6 +8707,16 @@ function tClose(id){var a=tGet();var t=a.filter(function(x){return x.id===id;})[
   var q=(window.__TQ||{})[tKey(t)]||{};var mk=q.mark!=null?q.mark:q.last;var sug=t.type!=='STK'?(mk!=null?(mk*100*t.qty).toFixed(0):''):(q.spot!=null?(q.spot*t.qty).toFixed(0):'');
   var v=prompt('Clôture de '+t.sym+(t.strike!=null?' $'+t.strike:'')+' — montant TOTAL récupéré ($) :',sug);if(v==null)return;var n=parseFloat(v);if(isNaN(n)||n<0)return;
   var c=tcGet();c.push({sym:t.sym,type:t.type,strike:t.strike,exp:t.exp,qty:t.qty,cost:t.cost,exit:n,added:t.added,closed:new Date().toISOString().slice(0,10),note:t.note||''});tcSave(c);
+  /* 🤖 Journalisation AUTOMATIQUE : crée une entrée dans le Journal réflexif + une note dans le fil */
+  var pnl=n-(t.cost||0);var pnlPct=t.cost?(pnl/t.cost*100):null;var snap=t.entrySnap||{};
+  var je={id:Date.now(),ticker:t.sym,tf:'',dir:(t.type==='PUT')?'SHORT':'LONG',
+    reason:(snap.thesis?('Thèse à l\'entrée : '+snap.thesis+' '):'')+(snap.score!=null?('[entrée : score '+snap.score+'/100 · '+(snap.verdict||'')+(snap.pb?' · '+snap.pb:'')+']'):'Trade clôturé depuis le Desk.'),
+    entry:(snap.spot!=null?String(snap.spot):''),stop:(snap.stop!=null?String(snap.stop):''),tp:(snap.tgt!=null?String(snap.tgt):''),risk:'',emo:'',conf:'',disc:'',trigger:'',
+    result:(pnl>=0?'WIN':'LOSS'),exit:'',pnl:pnl.toFixed(0),
+    lesson:'',mistake:'',date:new Date().toISOString().slice(0,10),auto:true,
+    kind:t.type,strike:t.strike,invested:Math.round(t.cost||0),recovered:Math.round(n)};
+  try{var jj=jvGet();jj.unshift(je);localStorage.setItem('vxJournal',JSON.stringify(jj));}catch(e){}
+  tlAdd(t.sym,'CLOSE','Clôturé '+(pnl>=0?'+':'')+'$'+Math.round(pnl)+(pnlPct!=null?' ('+(pnlPct>=0?'+':'')+Math.round(pnlPct)+'%)':'')+' — archivé au track record & journalisé auto.',t.id);
   tSave(tGet().filter(function(x){return x.id!==id;}));tRender();}
 function tNote(id){var a=tGet();var t=a.filter(function(x){return x.id===id;})[0];if(!t)return;var v=prompt('Note pour '+t.sym+' (thèse, stop mental, cible…) :',t.note||'');if(v==null)return;t.note=v;tSave(a);tRender();}
 function tcDel(i){if(!confirm('Retirer cette ligne du journal ?'))return;var c=tcGet();c.splice(i,1);tcSave(c);tRender();}
@@ -8759,6 +8804,7 @@ function tPlanBox(t,q){
           entry_spot:!isOpt?(t.cost/Math.max(1,t.qty)):null,
           stop:stopEff,tgt:tgtEff};
   var adv=rAdvice(rr,q,row);
+  if(q)try{tLogSignal(t,adv);}catch(e){}
   var pt=function(l,v,sub,c){return '<div style="background:#0b0d11;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:7px 9px;text-align:center"><div style="font-size:7.5px;color:#6b7280;letter-spacing:.5px;font-weight:800;text-transform:uppercase;white-space:nowrap">'+l+'</div><div style="font-size:13.5px;font-weight:900;color:'+(c||'#e8edf5')+';margin-top:2px;white-space:nowrap">'+v+'</div>'+(sub?'<div style="font-size:8px;color:#8794ab;margin-top:1px;white-space:nowrap">'+sub+'</div>':'')+'</div>';};
   var lvT=function(l,v,c){if(v==null)return '';var pct=(spot&&v)?((v-spot)/spot*100):null;return pt(l,'$'+v,(pct!=null?((pct>=0?'+':'')+pct.toFixed(1)+'% du cours'):null),c);};
   var lvls=[lvT('Entrée idéale',plan.entry,'#F5B45B'),lvT(t.myStop!=null?'🎯 TON STOP':'Stop',stopEff,'#EF4444'),lvT('Cible 1',plan.tp1,'#22C55E'),lvT(t.myTgt!=null?'🎯 TON OBJECTIF':'Objectif',tgtEff,'#22C55E')].filter(function(s2){return s2;}).join('');
@@ -8915,7 +8961,7 @@ function heroBoard(inv,val,known){
 function tRender(){
   var a=tGet(),grid=document.getElementById('tGrid'),tot=document.getElementById('tTotals');
   if(!grid)return;
-  if(!a.length){tot.innerHTML='';var hp0=document.getElementById('heroPnl');if(hp0)hp0.innerHTML='';grid.innerHTML='<div class="muted" style="font-size:12px;padding:14px;border:1.5px dashed #2a2a33;border-radius:14px">Aucun trade suivi. Ajoute ta première position ci-dessus — ex. « META JAN 27 750 CALL », quantité 1, montant investi 1250.</div>';tJournalRender();rRenderFollow();pRender();sRender();alertBar();renderMyTeam();ovRender();heroBoard(0,0,false);aiBrief();return;}
+  if(!a.length){tot.innerHTML='';var hp0=document.getElementById('heroPnl');if(hp0)hp0.innerHTML='';grid.innerHTML='<div class="muted" style="font-size:12px;padding:14px;border:1.5px dashed #2a2a33;border-radius:14px">Aucun trade suivi. Ajoute ta première position ci-dessus — ex. « META JAN 27 750 CALL », quantité 1, montant investi 1250.</div>';tJournalRender();tAutoLogRender();rRenderFollow();pRender();sRender();alertBar();renderMyTeam();ovRender();heroBoard(0,0,false);aiBrief();return;}
   var inv=0,val=0,known=0;
   a.forEach(function(t){inv+=t.cost;var q=(window.__TQ||{})[tKey(t)];var isOpt=t.type!=='STK';var mark=q?(q.mark!=null?q.mark:q.last):null;
     if(isOpt&&mark!=null){val+=mark*100*t.qty;known++;}else if(!isOpt&&q&&q.spot!=null){val+=q.spot*t.qty;known++;}});
@@ -8931,7 +8977,7 @@ function tRender(){
     +'<span style="font-size:15px;font-weight:900;color:'+pc+'">'+(pl!=null?((pl>=0?'+':'')+pl.toFixed(0)+' $ ('+(inv>0?((val/inv-1)*100>=0?'+':'')+((val/inv-1)*100).toFixed(1):'—')+'%)'):'P&L en cours…')+'</span>'
     +'<span style="margin-left:auto;display:flex;align-items:center;gap:12px">'+tEquitySVG()+live+'</span></div>';
   grid.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:12px">'+a.map(tCard).join('')+'</div>';
-  tJournalRender();rRenderFollow();pRender();sRender();alertBar();renderMyTeam();ovRender();heroBoard(inv,val,known===a.length&&a.length>0);aiBrief();
+  tJournalRender();tAutoLogRender();rRenderFollow();pRender();sRender();alertBar();renderMyTeam();ovRender();heroBoard(inv,val,known===a.length&&a.length>0);aiBrief();
 }
 tRender();tRefresh();deskPull();setInterval(tRefresh,45000);setInterval(deskPull,120000);
 (function(){var ids=['secTrades','secPortf','secView','secJournal','secFavs','secReco','secSuivi','secSim','secTop','secPlay','secTeam'];
@@ -9014,6 +9060,7 @@ _DESK_MID = r"""<div id="tTotals"></div><div id="tGrid"></div></div>
 <div class="dcard" id="secSuivi"><div class="dhead"><h3>⭐ Suivi jusqu'à la vente</h3><span class="dsub">étoile ⭐ partout dans Vertex → conseil de sortie en continu</span></div><div id="rStats"></div><div id="rGrid"></div></div>
 </div>
 <div class="dcard" id="secView"><div class="dhead"><h3>📊 Vue d'ensemble</h3><span class="dsub">tout ton suivi en tableau · P&L par position · courbe d'équité · météo marché</span></div><div id="ovBody"></div></div>
+<div class="dcard" id="secAutoLog"><div class="dhead"><h3>🤖 Notes automatiques</h3><span class="dsub">journal auto de tes positions · ouverture · signal de sortie · clôture — horodaté</span><span class="dright"><button class="vbtn" style="font-size:10px;padding:4px 10px" onclick="tLogClear()">🧹 Vider</button></span></div><div id="tAutoLog"></div></div>
 <div class="g2">
 <div class="dcard" id="secJournal"><div class="dhead"><h3>📓 Journal · track record</h3><span class="dsub">trades clôturés 🏁 · win rate</span><span class="dright"><a href="/journal" class="vbtn" style="font-size:10px;padding:4px 10px;text-decoration:none;border-color:#FF8C3255;color:#FF8C32">📓 Journal réflexif →</a><button class="vbtn" style="font-size:10px;padding:4px 10px" onclick="tExport()">⬇️ Sauvegarder</button><button class="vbtn" style="font-size:10px;padding:4px 10px" onclick="tCSV()">📄 CSV</button><button class="vbtn" style="font-size:10px;padding:4px 10px" onclick="document.getElementById('tImp').click()">⬆️ Importer</button><input id="tImp" type="file" accept="application/json" style="display:none" onchange="tImport(this)"></span></div><div id="tStats"></div><div id="tJournal"></div></div>
 <div class="dcard" id="secFavs"><div class="dhead"><h3>📌 Ma watchlist</h3><span class="dsub">tes titres à l'œil · ⭐ vers le suivi</span></div><div style="display:flex;gap:8px;margin-bottom:8px"><input id="fIn" class="efld" placeholder="Ajouter un ticker — ex. NVDA" onkeydown="if(event.key==='Enter')fAdd()" style="flex:1;text-transform:uppercase"><button onclick="fAdd()" class="vbtn pri" style="padding:9px 16px;white-space:nowrap">+ Suivre</button></div><div id="fHint" class="muted" style="font-size:10px;margin-bottom:8px"></div><div id="fGrid"></div></div>
