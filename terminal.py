@@ -3191,7 +3191,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <style>.dx-extra{display:none}body.showall .dx-extra{display:block}#essToggle{display:block;width:100%;margin:4px 0 16px;padding:12px;background:#0e1622;border:1px dashed #5BE3A855;border-radius:12px;color:#5BE3A8;font-weight:700;font-size:13px;cursor:pointer;letter-spacing:.4px}#essToggle:hover{background:#121c2b}</style>
   <div id="dMyDesk"></div>
   <div class="stitle">🧭 VERDICT DU JOUR <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· le climat en un coup d'œil, avant tout le reste · <a href="/bordel" style="color:#FF8C32;text-decoration:none;font-weight:700">🔭 analyse marché complète sur Panorama →</a></span></div>
-  <div id="dVerdict" style="background:linear-gradient(135deg,#16171c,#0d0e12);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 20px;margin:4px 0 18px">
+  <div id="dVerdict" style="position:relative;background:radial-gradient(130% 120% at 0% 0%,rgba(255,122,24,.07),transparent 52%),linear-gradient(135deg,#16171c,#0d0e12);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px 22px;margin:4px 0 18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 14px 34px -22px rgba(0,0,0,.9)">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
       <div><div style="font-size:10px;letter-spacing:2px;color:#8794ab;font-weight:700;margin-bottom:6px">🧭 LECTURE DU MARCHÉ</div>
       <div id="dVerdictTxt" style="font-size:17px;font-weight:800;letter-spacing:.3px">lecture du marché…</div></div>
@@ -3497,7 +3497,7 @@ function renderDaily(d){
     const bcol=bb>=55?'#22C55E':bb>=40?'#FF8C32':'#EF4444';
     pq.innerHTML=`<div style="display:flex;align-items:center;gap:13px;flex-wrap:wrap">`
       +`<span style="font-size:9.5px;letter-spacing:1.5px;color:#8794ab;font-weight:700;white-space:nowrap">PARTICIPATION</span>`
-      +`<div style="flex:1;min-width:140px;height:9px;border-radius:6px;background:#0a0a0a;overflow:hidden"><div style="height:100%;width:${bb}%;background:linear-gradient(90deg,#EF4444,#FF8C32 55%,#22C55E);border-radius:6px"></div></div>`
+      +`<div style="flex:1;min-width:140px;height:9px;border-radius:6px;background:#0a0a0a;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)"><div style="height:100%;width:${bb}%;background:linear-gradient(90deg,#EF4444,#FF8C32 55%,#22C55E);border-radius:6px;box-shadow:0 0 10px ${bcol}66"></div></div>`
       +`<span style="font-weight:800;color:${bcol};font-size:15px;min-width:88px;text-align:right">${bb}% <span style="font-size:10px;color:#8794ab">ACHAT</span></span></div>`
       +`<div class="muted" style="font-size:11px;margin-top:9px;display:flex;gap:14px;flex-wrap:wrap">`
       +(br.above50!=null?`<span>📈 <b style="color:#cfd8e6">${br.above50}%</b> > MM50</span>`:'')
