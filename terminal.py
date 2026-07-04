@@ -968,6 +968,7 @@ def scan():
                 _fund.setdefault('sector', _GICS_SECTOR.get(sym) or _INDUSTRY_MAP.get(sym))
                 d = analyse(df, bench_ret, fund=(_fund or None))   # vrais fondamentaux → score fondamental réel (sinon proxy)
                 d['chart_read'] = research.chart_read(d)   # analyse graphique FR (cartes Screener + modale)
+                d['thesis'] = research.thesis(d)            # synthèse Vertex décisive (fusion signaux + comment jouer)
                 detail[sym] = d
                 _clf = df['Close'].dropna()                # perf multi-horizons (Équipe semaine/mois/trim./année)
 
@@ -6618,7 +6619,8 @@ async function load(){
     rz.innerHTML=`<div class="card" style="border:1px solid ${rcol}44;background:linear-gradient(135deg,${rcol}10,#0d0e12);margin-bottom:14px"><div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
       <div style="text-align:center;flex-shrink:0">${scoreRing(sVal,40,'/ 40',rcol)}<div style="font-size:14px;font-weight:900;color:${rcol};margin-top:2px">${decWord}</div></div>
       <div style="flex:1;min-width:280px">
-        <div style="font-size:10px;letter-spacing:1.5px;color:#8794ab;font-weight:800;margin-bottom:7px">📄 EN BREF</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:10px;letter-spacing:1.5px;color:#8794ab;font-weight:800">🧠 THÈSE VERTEX</span>${d.profile?`<span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:6px;color:${d.profile==='OFFENSIF'?C.r:d.profile==='DÉFENSIF'?C.blue:C.gold};background:${d.profile==='OFFENSIF'?C.r:d.profile==='DÉFENSIF'?C.blue:C.gold}1a;border:1px solid ${d.profile==='OFFENSIF'?C.r:d.profile==='DÉFENSIF'?C.blue:C.gold}50">${d.profile==='OFFENSIF'?'⚔️ ':d.profile==='DÉFENSIF'?'🛡️ ':'⚖️ '}${d.profile}</span>`:''}</div>
+        ${d.thesis?`<div style="font-size:13px;color:#f0f4fb;line-height:1.6;margin-bottom:9px;font-weight:600">${d.thesis}</div>`:''}
         <div style="font-size:12.5px;margin-bottom:8px;color:#eaf0fa">${l1}</div>
         <div style="font-size:12.5px;color:#cfd8e6;line-height:1.6">${valLine}${situ?situ.charAt(0).toUpperCase()+situ.slice(1)+'. ':''}${planLine}</div>
         <div id="bizDesc"></div>

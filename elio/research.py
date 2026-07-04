@@ -98,3 +98,40 @@ def chart_verdict(d):
     if not _sig(d, 'above200'):
         return '⛔ Graphique défavorable à un call : sous la MM200, tendance non confirmée.'
     return '≈ Graphique mitigé : tendance pas encore alignée, prudence.'
+
+
+def thesis(d):
+    """Synthèse Vertex DÉCISIVE : fusionne verdict, profil offensif/défensif, signaux (cassure /
+    repli / squeeze / distribution / accumulation), régime et plan → une thèse + 'comment jouer'
+    (lié à l'horizon options). Pure — aucune donnée externe ; l'IA peut l'enrichir si clé présente."""
+    if not d:
+        return None
+    v, sc, gr = d.get('verdict'), int(d.get('score') or 0), d.get('grade') or ''
+    prof, reg = d.get('profile') or 'ÉQUILIBRÉ', d.get('regime')
+    vmap = {'BUY': "signal d'ACHAT", 'WATCH': 'à SURVEILLER', 'WAIT': 'en ATTENTE', 'AVOID': 'à ÉVITER'}
+    head = f"{vmap.get(v, v or '—')} · score {sc}/100 ({gr})"
+    if d.get('distribution'):
+        driver = "distribution cachée (le volume trahit une faiblesse sous la hausse) — méfiance"
+    elif d.get('breakout'):
+        driver = "cassure confirmée par le volume, la force s'exprime"
+    elif d.get('pullback'):
+        driver = "repli sain sur une tendance intacte, fenêtre d'entrée à moindre risque"
+    elif d.get('squeeze'):
+        driver = "compression de volatilité, un mouvement se prépare (sens à confirmer)"
+    elif d.get('accumulation'):
+        driver = "accumulation discrète (OBV en hausse), quelqu'un charge"
+    elif reg == 'TREND':
+        driver = "tendance établie, momentum en place"
+    elif reg == 'CHOP':
+        driver = "marché en range agité, les cassures échouent — patience"
+    else:
+        driver = "structure encore indécise"
+    if prof == 'OFFENSIF':
+        play = "titre nerveux → CALL court/moyen (1-8 sem) pour le levier, taille maîtrisée"
+    elif prof == 'DÉFENSIF':
+        play = "titre stable → action ou LEAPS long ; le temps et le dividende jouent pour toi"
+    else:
+        play = "polyvalent → action, ou CALL 1-3 mois si la conviction est là"
+    rr = (d.get('plan') or {}).get('rr_res')
+    tail = f" R:R ~{rr}:1 vers la résistance." if rr else "."
+    return f"{head}. {driver[0].upper()}{driver[1:]}. Comment jouer : {play}.{tail}"
