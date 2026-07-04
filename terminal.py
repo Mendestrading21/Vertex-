@@ -8816,6 +8816,30 @@ function statsBand(){var el=document.getElementById('optStats');if(!el)return;va
   var bestPop=calls.reduce(function(m,c){return Math.max(m,c.pop||0);},0);
   var S=[['Contrats',calls.length,'#cfd8e6'],['💎 Propres',prop,'#22C55E'],['👀 Correctes',corr,'#F5B45B'],['⚠️ Tactiques',tact,'#FF8C32'],['IV médiane',ivMed!=null?ivMed+'%':'—','#38BDF8'],['Meilleure POP',bestPop?bestPop+'%':'—','#22C55E']];
   el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:10px">'+S.map(function(s){return '<div class="ostat"><div class="n" style="color:'+s[2]+'">'+s[1]+'</div><div class="l">'+s[0]+'</div></div>';}).join('')+'</div>';}
+function renderBasket(){var el=document.getElementById('optBasket');if(!el)return;
+  var calls=ALL.filter(function(c){return c.type==='CALL'&&c.quality!=null&&optDec(c)[2]!=='refuse';});
+  if(!calls.length){el.innerHTML='';return;}
+  var used={},legs=[];[['court','🎲 Court','1-3 mois'],['moyen','⚡ Moyen','~6 mois'],['long','💎 Long','9-18 mois']].forEach(function(bk){
+    var cs=calls.filter(function(c){return c.bucket===bk[0]&&!used[c.sym];}).sort(function(a,c){return (c.quality||0)-(a.quality||0);});
+    if(!cs.length)cs=calls.filter(function(c){return c.bucket===bk[0];}).sort(function(a,c){return (c.quality||0)-(a.quality||0);});
+    if(cs.length){used[cs[0].sym]=1;legs.push({c:cs[0],lab:bk});}});
+  if(legs.length<2){el.innerHTML='';return;}
+  var totCost=legs.reduce(function(s,l){return s+(l.c.cost||0);},0);
+  var totGain=legs.reduce(function(s,l){return s+Math.round((l.c.cost||0)*(l.c.pot||0)/100);},0);
+  var avgPop=Math.round(legs.reduce(function(s,l){return s+(l.c.pop||0);},0)/legs.length);
+  var qc=qcol(Math.round(legs.reduce(function(s,l){return s+(l.c.quality||0);},0)/legs.length));
+  var legHtml=legs.map(function(l){var c=l.c,q=qcol(c.quality),gain=Math.round((c.cost||0)*(c.pot||0)/100);
+    return '<div onclick="openOptModal(\''+oreg(c)+'\')" class="necard" style="cursor:pointer;--vc:'+q+';padding:12px 13px;flex:1;min-width:172px">'
+      +'<div style="font-size:9px;color:#8794ab;letter-spacing:.5px;font-weight:700">'+l.lab[1]+' <span style="color:#5b6678">· '+l.lab[2]+'</span></div>'
+      +'<div style="font-size:15px;font-weight:900;margin-top:3px">'+c.sym+' <span style="font-size:11px;color:#22C55E">CALL</span> <span style="font-size:12px;color:#cfd8e6">$'+c.strike+'</span></div>'
+      +'<div style="font-size:10.5px;color:#8794ab;margin-top:3px">échéance '+eu(c.exp)+' · '+c.dte+'j</div>'
+      +'<div style="display:flex;gap:11px;margin-top:8px;font-size:11px"><span>coût <b style="color:#cfd8e6">$'+fmt(c.cost)+'</b></span><span>POP <b style="color:'+popcol(c.pop)+'">'+c.pop+'%</b></span></div>'
+      +'<div style="font-size:11px;color:#8794ab;margin-top:5px">si cible → <b class="'+((c.pot||0)>=0?'up':'dn')+'">'+((c.pot||0)>=0?'+':'')+'$'+fmt(gain)+'</b> <span class="muted">('+(c.pot>=0?'+':'')+c.pot+'%)</span></div></div>';}).join('');
+  el.innerHTML='<div class="vcard" style="border:1.5px solid '+qc+'44;background:linear-gradient(135deg,'+qc+'0d,#0f1218)">'
+    +'<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;margin-bottom:12px"><span style="font-size:12px;font-weight:800;color:#F5B45B;letter-spacing:.5px">🧺 PANIER DIVERSIFIÉ · '+legs.length+' ÉCHÉANCES</span>'
+    +'<span style="font-size:11px;color:#8794ab">coût total <b style="color:#cfd8e6">$'+fmt(totCost)+'</b> · gain potentiel combiné <b style="color:#22C55E">+$'+fmt(totGain)+'</b>'+(totCost?' <b style="color:#22C55E">(+'+Math.round(totGain/totCost*100)+'%)</b>':'')+' · POP moyen <b style="color:'+popcol(avgPop)+'">'+avgPop+'%</b></span></div>'
+    +'<div style="display:flex;gap:12px;flex-wrap:wrap">'+legHtml+'</div>'
+    +'<div class="muted" style="font-size:10.5px;margin-top:12px;line-height:1.5">💡 Idée d\'allocation : une option par horizon (court / moyen / long) sur des titres différents → tu répartis le risque dans le temps plutôt que de tout jouer sur une seule échéance. ⛔ analyse éducative, jamais un ordre.</div></div>';}
 function featured(){var el=document.getElementById('optBest');if(!el)return;var calls=ALL.filter(function(c){return c.type==='CALL'&&c.quality!=null;});
   if(!calls.length){el.innerHTML=`<div class="vcard" style="border:1.5px dashed rgba(255,122,24,.32)"><div style="font-size:11px;color:#FF7A18;font-weight:800;letter-spacing:1px;margin-bottom:5px">💎 L'OPTION DU JOUR · la plus asymétrique</div><div class="muted" style="font-size:12px">Chaînes d'options en cours de calcul (ou hors séance). La meilleure option s'affiche dès que le board est prêt — laisse tourner sans redémarrer le serveur.</div></div>`;return;}
   var b=calls.slice().sort(function(a,c){return (c.quality||0)-(a.quality||0);})[0];var qc=qcol(b.quality);
@@ -8908,7 +8932,7 @@ function load(){fetch('/scan').then(function(r){return r.json()}).then(function(
   var ivs=calls.map(function(c){return c.iv;}).filter(function(v){return v!=null;}).sort(function(a,b){return a-b;});var ivMed=ivs.length?ivs[Math.floor(ivs.length/2)]:null;
   var cov=d.options_coverage;
   var ctx=document.getElementById('optCtx');if(ctx)ctx.innerHTML=(ivMed!=null?('IV médiane <b style="color:#38BDF8">'+ivMed+'%</b>'):'')+(cov?' &nbsp;·&nbsp; 🔄 univers balayé : <b style="color:'+(cov.done>=cov.total*0.9?'#22C55E':'#FFB23F')+'">'+cov.done+'/'+cov.total+'</b> titres <span style="color:#71717A">('+cov.with_options+' avec options propres)</span>':'');
-  controls();glossary();statsBand();featured();render();}).catch(function(){});}
+  controls();glossary();statsBand();featured();renderBasket();render();}).catch(function(){});}
 load();setInterval(load,30000);
 """
 
@@ -8924,6 +8948,8 @@ PAGE_OPTIONS_LAB = _vpage('Options Lab',
   '<div id="optStats" style="margin-bottom:16px"></div>'
   '<div class="vstit" style="margin-top:4px">💎 LA MEILLEURE OPTION DU JOUR</div>'
   '<div id="optBest" style="margin-bottom:6px"></div>'
+  '<div class="vstit">🧺 PANIER D\'IDÉES <span style="color:#71717A;font-weight:400;letter-spacing:0;font-size:11px">· une option par horizon · diversifié dans le temps · clic → analyse</span></div>'
+  '<div id="optBasket" style="margin-bottom:6px"></div>'
   '<div class="vstit">🔎 TOUTES LES OPTIONS <span style="color:#71717A;font-weight:400;letter-spacing:0;font-size:11px">· filtre · tri · recherche · clic → fiche du titre</span></div>'
   '<div id="optControls" style="margin:2px 0 14px"></div>'
   '<div id="optHost"></div>'
