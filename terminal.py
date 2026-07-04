@@ -7545,7 +7545,138 @@ def heatmap_page():
     return PAGE_HEATMAP
 
 
-_EQUIPE_JS = r"""
+_PLAYBOOK_CSS = r"""
+.pbstrat{padding:0;overflow:hidden;margin-bottom:15px;border:1px solid rgba(255,255,255,.07)}
+.pbstrat.emph{border-color:var(--pc);box-shadow:0 0 0 1px var(--pc)55,0 18px 40px -24px var(--pc)}
+.pbhd{display:flex;align-items:center;gap:13px;padding:15px 18px;background:linear-gradient(100deg,var(--pc)18,transparent 60%);border-bottom:1px solid rgba(255,255,255,.06)}
+.pbhd .pbic{width:44px;height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;border-radius:13px;background:var(--pc)1c;border:1px solid var(--pc)44}
+.pbhd h3{font-size:16.5px;font-weight:900;letter-spacing:.2px;margin:0;color:#f4f7fb}
+.pbhd .pbtag{font-size:11.5px;color:#9aa4b8;margin-top:2px}
+.pbhd .pbcnt{margin-left:auto;text-align:center;flex-shrink:0}
+.pbhd .pbcnt b{font-size:23px;font-weight:900;color:var(--pc);line-height:1}
+.pbhd .pbcnt span{display:block;font-size:8px;letter-spacing:1px;color:#71717A;font-weight:800;margin-top:2px}
+.pbbody{padding:14px 18px}
+.pbinfo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:720px){.pbinfo{grid-template-columns:1fr}}
+.pbinfo .pbi{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);border-radius:11px;padding:9px 11px}
+.pbinfo .pbi .l{font-size:8.5px;letter-spacing:1px;font-weight:800;text-transform:uppercase;color:var(--pc);margin-bottom:4px}
+.pbinfo .pbi .t{font-size:11.5px;line-height:1.55;color:#c5cdda}
+.pbcand{display:flex;flex-wrap:wrap;gap:7px}
+.pbchip{display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 10px;border-radius:9px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:700;transition:background .15s,border-color .15s}
+.pbchip:hover{background:var(--pc)14;border-color:var(--pc)55}
+.pbchip .s{font-weight:900;font-size:11px}
+.pbchip .pf{font-size:11px}
+.pbempty{font-size:11.5px;color:#71717A;padding:5px 0}
+.pbmeta{font-size:10.5px;color:#8794ab;margin-bottom:9px}
+.pbtiltcard{padding:16px 18px;margin-bottom:16px;border:1px solid var(--tc,#FF7A18)44;background:linear-gradient(120deg,var(--tc,#FF7A18)12,#0f1218)}
+"""
+
+_PLAYBOOK_JS = r"""
+function go(s){location.href='/titre/'+encodeURIComponent(s);}
+var PB_TILT=null,PB_ROWS=[],PB_DET={},PB_SWING={};
+var STRATS=[
+ {k:'mom',ic:'🚀',name:'Momentum Breakout',col:'#22C55E',emk:'Momentum Breakout',
+  tag:'Acheter la force qui casse ses plus-hauts',
+  when:'Régime en TENDANCE · force relative ≥ 70 · cours dans le haut du range 52 sem. (≥ 80 %).',
+  play:'Action, ou CALL court/moyen (1-8 sem) pour le levier. Entrée sur la cassure confirmée par le volume (≥1,5×).',
+  disc:'Stop sous le pivot de cassure. On ne court pas après un titre sur-étendu (> 4 ATR) — on attend un repli.',
+  match:function(r){return r.regime==='TREND'&&(r.rs||0)>=70&&(r.pos52||0)>=80;},
+  sort:function(r){return (r.rs||0)+(r.breakout?30:0);}},
+ {k:'dip',ic:'🎯',name:'Repli sur tendance',col:'#38BDF8',emk:'Repli sur tendance',
+  tag:'Entrer sur un creux dans une tendance saine — le meilleur R:R',
+  when:'Régime en TENDANCE · RSI redescendu entre 40 et 58 · cours revenu près des moyennes, pas au plus-bas.',
+  play:'Action ou CALL 1-3 mois. On achète la peur passagère, pas la panique — la tendance de fond reste haussière.',
+  disc:'Stop sous la MM50 ou le dernier creux. Si la MM50 s\'aplatit, ce n\'est plus un repli mais un retournement.',
+  match:function(r){return r.regime==='TREND'&&(r.rsi||0)>=40&&(r.rsi||0)<=58&&(r.pos52||0)>=40;},
+  sort:function(r){return (r.pullback?40:0)+(r.setup_quality||0);}},
+ {k:'qual',ic:'💎',name:'Qualité forte',col:'#A78BFA',emk:'Qualité forte',
+  tag:'Les meilleurs scores validés ACHAT — le socle du portefeuille',
+  when:'Score global ≥ 72 et verdict ACHAT. Fondamentaux + technique alignés.',
+  play:'Action en cœur de portefeuille, renforcée sur repli. LEAPS possible si la conviction est forte.',
+  disc:'On garde tant que la thèse tient. Position sizing normal — c\'est la base, pas un pari.',
+  match:function(r){return (r.score||0)>=72&&r.verdict==='BUY';},
+  sort:function(r){return (r.score||0);}},
+ {k:'leaps',ic:'⚡',name:'Levier LEAPS',col:'#FF7A18',emk:'Levier LEAPS',
+  tag:'CALL long terme sur forte conviction — levier maîtrisé, perte max = la prime',
+  when:'Edge VERTEX ≥ 60 et régime en TENDANCE. Le temps joue pour toi.',
+  play:'CALL échéance lointaine (≥ 6 mois). Delta 0,6-0,8 pour suivre le titre. ⚠️ Voir aussi la stratégie Swing sécurisé.',
+  disc:'Taille en % du capital, jamais all-in. Une option peut expirer sans valeur — la prime est le risque max.',
+  match:function(r){return (r.vx_edge||0)>=60&&r.regime==='TREND';},
+  sort:function(r){return (r.vx_edge||0);}},
+ {k:'sqz',ic:'🧨',name:'Compression / Squeeze',col:'#FFB23F',emk:null,
+  tag:'Volatilité comprimée au plus-bas — un mouvement se prépare',
+  when:'Bandes de Bollinger au plus-bas 6 mois (compression). L\'énergie s\'accumule.',
+  play:'Attendre la cassure (sens à confirmer) puis jouer le momentum. Straddle si tu ne veux pas parier le sens.',
+  disc:'Le squeeze dit QUAND, pas dans quel SENS. On ne devine pas — on attend la bougie de cassure.',
+  match:function(r){return !!r.squeeze;},
+  sort:function(r){return (r.setup_quality||0);}},
+ {k:'acc',ic:'🟢',name:'Accumulation',col:'#34D399',emk:null,
+  tag:'Le smart money charge en silence (OBV monte, prix à plat)',
+  when:'Volume acheteur (OBV) en hausse pendant que le prix stagne — accumulation cachée.',
+  play:'Se positionner AVANT la cassure, tant que le prix est calme. Action de préférence pour la patience.',
+  disc:'Signal précoce → petite taille au départ, on renforce à la confirmation. Invalidé si l\'OBV se retourne.',
+  match:function(r){return !!r.accumulation;},
+  sort:function(r){return (r.score||0);}},
+ {k:'rev',ic:'🔄',name:'Retournement de bas',col:'#F5B45B',emk:null,
+  tag:'Rebond depuis le bas du range — à CONFIRMER',
+  when:'Cours dans le bas du range 52 sem. (≤ 25 %) qui repart en hausse aujourd\'hui.',
+  play:'Petite position spéculative. Attendre la reprise de la MM50 pour renforcer. Contrarian, donc risqué.',
+  disc:'Ne jamais rattraper un couteau qui tombe. On veut la PREMIÈRE preuve de retournement, pas l\'espoir.',
+  match:function(r){return (r.pos52||0)<=25&&(r.change||0)>0;},
+  sort:function(r){return (r.change||0);}},
+ {k:'def',ic:'🛡️',name:'Socle défensif',col:'#60A5FA',emk:'Socle défensif',
+  tag:'Titres solides peu volatils — amortir les chocs, protéger le capital',
+  when:'Profil DÉFENSIF (faible beta, dividende, secteur stable) ou score correct sans sur-extension.',
+  play:'Action longue durée, dividende réinvesti. LEAPS profonds pour du levier tranquille. Idéal compte-titres fiscal.',
+  disc:'On ne cherche pas le jackpot mais la régularité. Faible drawdown = on tient dans les tempêtes.',
+  match:function(r){return r.profile==='DÉFENSIF'||((r.score||0)>=58&&Math.abs(r.ext_atr||2)<=1&&r.regime!=='CHOP');},
+  sort:function(r){return (r.score||0);}}
+];
+function pf(p){return p==='OFFENSIF'?'⚔️':p==='DÉFENSIF'?'🛡️':p==='ÉQUILIBRÉ'?'⚖️':'';}
+function scol(s){return s>=72?'#22C55E':s>=58?'#F5B45B':s>=45?'#FFB23F':'#EF4444';}
+function chip(r){var p=(PB_DET[r.symbol]||{}).profile||r.profile;return '<span class="pbchip" onclick="go(\''+r.symbol+'\')" title="'+(r.symbol)+' · score '+(r.score||'—')+' · RS '+(r.rs!=null?Math.round(r.rs):'—')+'"><span>'+r.symbol+'</span><span class="s" style="color:'+scol(r.score||0)+'">'+(r.score!=null?r.score:'—')+'</span><span class="pf">'+pf(p)+'</span></span>';}
+function stratCard(st){
+  var cands=PB_ROWS.filter(st.match).sort(function(a,b){return st.sort(b)-st.sort(a);});
+  var emph=PB_TILT&&st.emk&&(PB_TILT.emphasis||[]).indexOf(st.emk)>=0;
+  var top=cands.slice(0,14);
+  var swingNote=st.k==='leaps'?'<div class="pbmeta">🎯 <b style="color:#22C55E">'+(Object.keys(PB_SWING).length)+' titres</b> ont une option « swing sécurisé » éligible → <a href="/options" style="color:#FF8C32;text-decoration:none;font-weight:700">Options →</a></div>':'';
+  return '<div class="vcard pbstrat'+(emph?' emph':'')+'" style="--pc:'+st.col+'">'
+    +'<div class="pbhd"><div class="pbic">'+st.ic+'</div><div style="min-width:0"><h3>'+st.name+(emph?' <span style="font-size:9px;font-weight:800;color:'+st.col+';background:'+st.col+'22;border:1px solid '+st.col+'55;padding:2px 8px;border-radius:20px;letter-spacing:.5px;vertical-align:middle">★ À PRIVILÉGIER</span>':'')+'</h3><div class="pbtag">'+st.tag+'</div></div>'
+    +'<div class="pbcnt"><b>'+cands.length+'</b><span>CANDIDATS</span></div></div>'
+    +'<div class="pbbody"><div class="pbinfo">'
+    +'<div class="pbi"><div class="l">📍 Quand l\'utiliser</div><div class="t">'+st.when+'</div></div>'
+    +'<div class="pbi"><div class="l">🎬 Comment jouer</div><div class="t">'+st.play+'</div></div>'
+    +'<div class="pbi"><div class="l">🧭 Discipline</div><div class="t">'+st.disc+'</div></div></div>'
+    +swingNote
+    +(top.length?'<div class="pbcand">'+top.map(chip).join('')+(cands.length>top.length?'<span class="pbmeta" style="align-self:center">+ '+(cands.length-top.length)+' autres</span>':'')+'</div>':'<div class="pbempty">Aucun titre ne remplit ce setup dans le scan actuel — patience, le marché tourne.</div>')
+    +'</div></div>';
+}
+function tiltBanner(){
+  if(!PB_TILT)return '';
+  var t=PB_TILT,c=t.col||'#FF7A18';
+  return '<div class="vcard pbtiltcard" style="--tc:'+c+'"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+    +'<span style="font-size:11px;font-weight:900;letter-spacing:1px;color:'+c+'">🧭 CLIMAT DU JOUR · '+(t.regime||'')+'</span>'
+    +'<span style="font-size:22px;font-weight:900;color:'+c+'">'+(t.score!=null?t.score:'—')+'<span style="font-size:11px;color:#71717A">/100</span></span>'
+    +'<span style="font-size:11px;color:#8794ab">Taille CALL conseillée : <b style="color:#cfd8e6">'+(t.call_size||'—')+'</b></span></div>'
+    +'<div style="font-size:12.5px;color:#c5cdda;line-height:1.65;margin-top:8px">'+(t.note||'')+'</div>'
+    +((t.emphasis&&t.emphasis.length)?'<div style="margin-top:9px;font-size:11px;color:#8794ab">Stratégies à privilégier aujourd\'hui : '+t.emphasis.map(function(e){return '<b style="color:'+c+'">'+e+'</b>';}).join(' · ')+'</div>':'')
+    +'</div>';
+}
+function render(){
+  document.getElementById('pbTilt').innerHTML=tiltBanner();
+  document.getElementById('pbGrid').innerHTML=STRATS.map(stratCard).join('');
+}
+function load(){
+  fetch('/scan').then(function(r){return r.json()}).then(function(s){
+    PB_ROWS=s.rows||[];PB_DET=s.detail||{};PB_TILT=s.strat_tilt||null;
+    PB_SWING={};(s.options_board||[]).forEach(function(c){if(c.swing_ok)PB_SWING[c.sym]=1;});
+    render();
+  }).catch(function(){document.getElementById('pbGrid').innerHTML='<div class="muted" style="padding:20px">Chargement impossible — réessaie dans un instant.</div>';});
+}
+load();setInterval(load,30000);
+"""
+
+_EQUIPE_JS_UNUSED = r"""
 function go(s){location.href='/titre/'+encodeURIComponent(s);}
 function _perfFrom(cl,n){if(!cl||cl.length<n+1)return null;var a=cl[cl.length-1-n],b=cl[cl.length-1];if(!a)return null;return (b-a)/a*100;}
 var TEAMWIN='m';
@@ -7756,11 +7887,12 @@ loadStrat();setInterval(loadStrat,30000);
 """
 
 
-_EQUIPE_HEADER_BODY = r"""<div class="vhead"><div><h1>⚽ L'Équipe Vertex</h1><div class="s">Le onze idéal recomposé à chaque scan · attaque/défense équilibrée · clic joueur → fiche · <a href="/strategie" style="color:#FF8C32;text-decoration:none;font-weight:700">🎯 mon desk →</a></div></div><div id="teamSeg" style="margin-left:auto;align-self:center;display:flex;gap:6px"></div></div><div class="vcard" style="padding:16px"><div id="teamPitch"><div class="muted" style="padding:20px">Composition de l'équipe…</div></div></div>"""
+_PLAYBOOK_BODY = r"""<div class="vhead"><div><h1>🏆 Playbook</h1><div class="s">Les stratégies VERTEX appliquées au marché d'aujourd'hui · chaque setup + ses candidats en direct · clic titre → fiche · <a href="/strategie" style="color:#FF8C32;text-decoration:none;font-weight:700">🎯 mon desk →</a></div></div></div><div id="pbTilt"></div><div id="pbGrid"><div class="muted" style="padding:20px">Analyse des stratégies…</div></div>"""
 
-PAGE_EQUIPE = _vpage('Équipe du mois',
-  _EQUIPE_HEADER_BODY,
-  js=_EQUIPE_JS)
+PAGE_EQUIPE = _vpage('Playbook',
+  _PLAYBOOK_BODY,
+  head=_PLAYBOOK_CSS,
+  js=_PLAYBOOK_JS)
 
 
 @app.route('/equipe')
