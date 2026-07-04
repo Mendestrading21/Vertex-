@@ -21,7 +21,9 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from flask import Flask, jsonify, redirect, request
+from flask import Flask, jsonify, redirect, request, session
+import hmac as _hmac
+import hashlib as _hashlib
 
 try:
     from dotenv import load_dotenv
@@ -338,6 +340,118 @@ try:
     app.json = _SafeJSONProvider(app)
 except Exception:
     pass
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 🔒 CODE D'ENTRÉE (verrou d'accès) — OPTIONNEL, activé par variable d'env.
+#   • Mets  VERTEX_CODE=tonCode  → toute l'app est protégée par un code d'entrée.
+#   • Sans VERTEX_CODE défini    → aucun verrou (comportement d'origine, démo ouverte).
+#   • Session signée (cookie) valable 30 jours ; anti-force-brute par IP.
+#   • Recommandé aussi : VERTEX_SECRET=une_longue_chaine_aléatoire (sinon dérivée du code).
+# ─────────────────────────────────────────────────────────────────────────────
+VERTEX_CODE = (os.environ.get('VERTEX_CODE') or os.environ.get('ACCESS_CODE') or '').strip()
+AUTH_ON = bool(VERTEX_CODE)
+app.secret_key = (os.environ.get('VERTEX_SECRET')
+                  or _hashlib.sha256(('vertex-secret::' + (VERTEX_CODE or 'demo')).encode()).hexdigest())
+app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
+                  PERMANENT_SESSION_LIFETIME=timedelta(days=30))
+_AUTH_PUBLIC = {'/login', '/logout', '/healthz', '/api/healthz',
+                '/favicon.ico', '/favicon.svg', '/manifest.webmanifest', '/sw.js'}
+_LOGIN_FAILS = {}   # ip -> [nb_essais, bloqué_jusquà_ts]
+
+
+def _client_ip():
+    xf = (request.headers.get('X-Forwarded-For') or '').split(',')[0].strip()
+    return xf or request.remote_addr or '?'
+
+
+@app.before_request
+def _auth_gate():
+    if not AUTH_ON:
+        return None
+    p = request.path
+    if p in _AUTH_PUBLIC or p.startswith('/static'):
+        return None
+    if session.get('vx_ok'):
+        return None
+    # Non authentifié : les appels de données répondent 401 (le JS le gère),
+    # les pages redirigent vers le verrou.
+    if p.startswith('/api/') or p in ('/scan', '/quotes', '/cal-feed', '/news-feed', '/weekly-feed'):
+        return jsonify({'error': 'auth', 'login': '/login'}), 401
+    return redirect('/login?next=' + p)
+
+
+def _login_page(msg='', locked=False):
+    err = ('<div class="err">' + msg + '</div>') if msg else ''
+    return ('<!doctype html><html lang="fr"><head><meta charset="utf-8">'
+      '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
+      '<meta name="theme-color" content="#0b0e14"><title>VERTEX · Accès</title>'
+      '<style>'
+      '*{box-sizing:border-box}html,body{margin:0;height:100%}'
+      'body{background:radial-gradient(130% 60% at 50% -10%,rgba(255,122,24,.14),transparent 60%),linear-gradient(180deg,#0c0e14,#070809);'
+      'color:#e8edf5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;display:flex;align-items:center;justify-content:center;padding:22px}'
+      '.card{width:100%;max-width:360px;background:linear-gradient(180deg,#14171f,#0d0f14);border:1px solid rgba(255,140,50,.22);'
+      'border-radius:22px;padding:34px 28px;box-shadow:0 40px 90px -30px rgba(0,0,0,.9),0 0 60px -30px rgba(255,122,24,.5);text-align:center}'
+      '.mark{width:56px;height:56px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:26px;'
+      'background:linear-gradient(135deg,rgba(255,178,63,.22),rgba(255,122,24,.08));border:1px solid rgba(255,140,50,.42);'
+      'border-radius:16px;color:#FF9A3D;box-shadow:0 0 26px -6px rgba(255,122,24,.7)}'
+      '.t{font-size:22px;font-weight:900;letter-spacing:2px}.t b{color:#FF7A18}'
+      '.s{font-size:12px;color:#8794ab;margin:6px 0 22px}'
+      'input{width:100%;background:#0a0c11;border:1px solid rgba(255,255,255,.12);color:#f2f5fa;border-radius:12px;'
+      'padding:15px 16px;font-size:19px;text-align:center;letter-spacing:5px;font-weight:700;outline:none}'
+      'input:focus{border-color:#FF7A18;box-shadow:0 0 0 3px rgba(255,122,24,.16)}'
+      'button{width:100%;margin-top:13px;background:linear-gradient(135deg,#FF7A18,#FF9A3D);color:#0b0b0b;border:none;'
+      'border-radius:12px;padding:15px;font-weight:900;font-size:15px;letter-spacing:.5px;cursor:pointer;box-shadow:0 8px 24px -8px rgba(255,122,24,.6)}'
+      'button:hover{filter:brightness(1.08)}button:disabled{opacity:.5;cursor:not-allowed}'
+      '.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);color:#f0b0b0;font-size:12.5px;'
+      'border-radius:11px;padding:10px 12px;margin-bottom:16px}'
+      '.foot{font-size:9.5px;color:#4b5563;margin-top:18px;letter-spacing:1px}'
+      '</style></head><body>'
+      '<form class="card" method="POST" action="/login?next=' + (request.args.get('next', '/') if request else '/') + '">'
+      '<div class="mark">▲</div><div class="t">VERTEX<b>.</b></div>'
+      '<div class="s">🔒 Accès protégé — entre ton code</div>'
+      + err +
+      '<input name="code" type="password" inputmode="numeric" autocomplete="current-password" '
+      'placeholder="• • • •" autofocus ' + ('disabled' if locked else '') + '>'
+      '<button type="submit"' + (' disabled' if locked else '') + '>Entrer →</button>'
+      '<div class="foot">VERTEX TRADING DESK · ANALYSE ONLY</div>'
+      '</form></body></html>')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login_page():
+    if not AUTH_ON:
+        return redirect('/')
+    ip = _client_ip()
+    now = time.time()
+    st = _LOGIN_FAILS.get(ip, [0, 0])
+    nxt = request.args.get('next') or '/'
+    if not nxt.startswith('/'):
+        nxt = '/'
+    if request.method == 'POST':
+        if st[1] > now:
+            return _login_page("Trop d'essais. Réessaie dans %ds." % int(st[1] - now), locked=True)
+        code = (request.form.get('code') or '').strip()
+        if VERTEX_CODE and _hmac.compare_digest(code, VERTEX_CODE):
+            session.permanent = True
+            session['vx_ok'] = True
+            _LOGIN_FAILS.pop(ip, None)
+            return redirect(nxt)
+        st[0] += 1
+        lock = min(300, 15 * (st[0] - 4)) if st[0] >= 5 else 0   # verrou progressif après 5 essais
+        st[1] = now + lock
+        _LOGIN_FAILS[ip] = st
+        return _login_page('Code incorrect.' + (' Bloqué %ds.' % lock if lock else ''), locked=lock > 0)
+    if session.get('vx_ok'):
+        return redirect(nxt)
+    return _login_page()
+
+
+@app.route('/logout')
+def logout_page():
+    session.clear()
+    return redirect('/login')
+
+
 scan_state = {'rows': [], 'detail': {}, 'portfolio': None, 'options_board': [], 'daily': None,
               'anomalies': [], 'sectors': [], 'market_ctx': None, 'fundamentals': None, 'indices': [], 'commodities': [],
               'macro': [], 'edge': None, 'internals': None, 'radar': None, 'recommendations': [], 'strategy': None, 'committee': None, 'updated': None, 'error': None}
@@ -6830,6 +6944,10 @@ def _extract(s, a, b):
 
 _NAVCSS_BLOCK = _extract(PAGE_DAILY, '<style id="nav-css">', '</style>')
 _NAVJS_BLOCK = _extract(PAGE_DAILY, '(function(){var L=', '})();')
+# Session expirée en cours d'usage → toute réponse 401 renvoie vers le verrou.
+_NAVJS_BLOCK += (";(function(){var _f=window.fetch;window.fetch=function(){return _f.apply(this,arguments)"
+                 ".then(function(r){if(r&&r.status===401&&location.pathname!=='/login'){"
+                 "location.href='/login?next='+encodeURIComponent(location.pathname);}return r;});};})();")
 
 # ── extraits pour la page Bordel : scatter Qualité×Asymétrie déplacé hors du dashboard (DRY) ──
 _VXSCATTER_JS = _extract(PAGE_DAILY, 'function vxScatter(pts){', 'Score Vertex</text>${g}${dots}</svg>`;}')
@@ -7008,7 +7126,13 @@ PAGE_SETTINGS = _vpage('Paramètres',
     '<div class="vcard"><div class="set-h">🎚️ Densité d\'affichage</div><div class="set-sub">Compacité des cartes dans Mon espace</div><div id="densSeg" class="seg"></div></div>'
     '<div class="vcard"><div class="set-h">📡 Source de données</div><div id="dataInfo" class="set-sub" style="line-height:1.95;margin-top:6px">chargement…</div></div>'
   '</div>'
-  '<div class="vcard" style="margin-top:16px"><div class="set-h">⭐ Favoris &amp; notes</div><div id="favInfo" class="set-sub" style="margin:5px 0 14px"></div>'
+  + ('<div class="vcard" style="margin-top:16px;border-color:rgba(255,140,50,.28)"><div class="set-h">🔒 Sécurité · accès</div>'
+     '<div class="set-sub" style="margin:5px 0 13px;line-height:1.7">Ton VERTEX est protégé par un <b style="color:#cfd8e6">code d\'entrée</b>. Déconnecte-toi pour reverrouiller cet appareil (il redemandera le code).</div>'
+     '<a href="/logout" class="vbtn dng" style="text-decoration:none">🔓 Se déconnecter &amp; verrouiller</a></div>'
+     if AUTH_ON else
+     '<div class="vcard" style="margin-top:16px"><div class="set-h">🔒 Sécurité · accès</div>'
+     '<div class="set-sub" style="margin-top:5px;line-height:1.7">Aucun code d\'entrée actif pour l\'instant. Pour protéger l\'accès, définis la variable d\'environnement <b style="color:#cfd8e6">VERTEX_CODE</b> (sur Render → Environment, ou en local) — VERTEX demandera alors ce code à l\'ouverture, sur tous tes appareils.</div></div>')
+  + '<div class="vcard" style="margin-top:16px"><div class="set-h">⭐ Favoris &amp; notes</div><div id="favInfo" class="set-sub" style="margin:5px 0 14px"></div>'
     '<div class="set-row"><button class="vbtn" onclick="expFav()">⬇️ Exporter (.json)</button>'
     '<button class="vbtn" onclick="document.getElementById(\'impf\').click()">⬆️ Importer</button>'
     '<input id="impf" type="file" accept="application/json" style="display:none" onchange="impFav(this)"></div></div>'
