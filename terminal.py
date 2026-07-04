@@ -6384,7 +6384,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <div id="posBan"></div><div id="resume"></div>
   <div id="ibkr"></div>
   <div id="vertexcard"></div>
-  <div class="card" style="margin-bottom:14px"><div class="ct">📊 GRAPHIQUE TRADINGVIEW · <span id="tvsym"></span></div><div id="tvchart" style="height:430px"></div><div class="muted" style="font-size:10px;margin-top:6px">Graphique fourni par TradingView · analyse éducative.</div></div>
+  <div class="card" style="margin-bottom:14px"><div class="ct" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">📊 GRAPHIQUE TRADINGVIEW · <span id="tvsym"></span><span id="tvIv" style="display:flex;gap:4px;margin-left:4px"></span><a id="tvOpen" target="_blank" rel="noopener" style="margin-left:auto;font-size:10.5px;font-weight:800;color:#38BDF8;background:rgba(56,189,248,.1);border:1px solid #38BDF855;border-radius:8px;padding:4px 10px;text-decoration:none">↗ Ouvrir dans TradingView</a></div><div id="tvchart" style="height:460px"></div><div class="muted" style="font-size:10px;margin-top:6px">EMA · Bollinger · RSI · Volume — mêmes repères que l'analyse Vertex · change de timeframe pour l'intraday · fourni par TradingView, éducatif.</div></div>
+  <div id="execPlan" style="margin-bottom:14px"></div>
   <div class="grid2">
     <div id="left"></div>
     <div id="right"></div>
@@ -6395,11 +6396,54 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 const C={g:'#22C55E',r:'#EF4444',o:'#FF8C32',gold:'#F5B45B',blue:'#38BDF8',vio:'#A78BFA',cy:'#34D399',yl:'#FFB23F',mut:'#8794ab'};
 const SYM=decodeURIComponent((location.pathname.split('/').filter(Boolean).pop()||'')).toUpperCase();
 (function(){var t=document.getElementById('tvsym');if(t)t.textContent=SYM;var host=document.getElementById('tvchart');
+  var op=document.getElementById('tvOpen');if(op)op.href='https://www.tradingview.com/chart/?symbol='+encodeURIComponent(SYM);
+  var IV=[['D','Jour'],['240','4H'],['60','1H'],['15','15m'],['5','5m']];
+  try{window.__tvIv=localStorage.getItem('tvIv')||'D';}catch(e){window.__tvIv='D';}
   function fb(msg){if(host)host.innerHTML='<div class="muted" style="padding:34px;text-align:center;font-size:12px">'+msg+'<br><button onclick="location.reload()" style="margin-top:10px;background:#0e0e12;border:1px solid #38BDF855;color:#38BDF8;border-radius:9px;padding:6px 14px;font-weight:700;cursor:pointer">↻ reconnecter le graphique</button></div>';}
-  function mk(){try{new TradingView.widget({container_id:'tvchart',symbol:SYM,interval:'D',timezone:'Europe/Zurich',theme:'dark',style:'1',locale:'fr',autosize:true,hide_top_toolbar:false,hide_side_toolbar:true,allow_symbol_change:true,studies:['STD;EMA'],backgroundColor:'#16171c',gridColor:'#1a1a22'});}catch(e){fb('Graphique TradingView indisponible.');}}
-  var s=document.createElement('script');s.src='https://s3.tradingview.com/tv.js';s.async=true;s.onload=mk;s.onerror=function(){fb('Graphique TradingView hors-ligne.');};document.head.appendChild(s);
-  setTimeout(function(){if(host&&!host.querySelector('iframe')){if(window.TradingView&&TradingView.widget){host.innerHTML='';mk();}else{fb('Graphique TradingView lent à répondre.');}}},7000);})();
+  // EMA + Bollinger + RSI + Volume = les repères de l'analyse Vertex, tous timeframes
+  function mk(iv){try{host.innerHTML='';new TradingView.widget({container_id:'tvchart',symbol:SYM,interval:iv,timezone:'Europe/Zurich',theme:'dark',style:'1',locale:'fr',autosize:true,hide_top_toolbar:false,hide_side_toolbar:true,allow_symbol_change:true,studies:['STD;EMA','STD;Bollinger%1Bands','STD;RSI','Volume@tv-basicstudies'],backgroundColor:'#16171c',gridColor:'#1a1a22'});}catch(e){fb('Graphique TradingView indisponible.');}}
+  function ivBar(){var el=document.getElementById('tvIv');if(!el)return;el.innerHTML=IV.map(function(x){var on=window.__tvIv===x[0];return '<button onclick="tvSetIv(\''+x[0]+'\')" style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:7px;cursor:pointer;border:1px solid '+(on?'#38BDF8':'#2a2a33')+';background:'+(on?'rgba(56,189,248,.14)':'transparent')+';color:'+(on?'#38BDF8':'#8794ab')+'">'+x[1]+'</button>';}).join('');}
+  window.tvSetIv=function(iv){window.__tvIv=iv;try{localStorage.setItem('tvIv',iv);}catch(e){}ivBar();if(window.TradingView&&TradingView.widget)mk(iv);};
+  ivBar();
+  var s=document.createElement('script');s.src='https://s3.tradingview.com/tv.js';s.async=true;s.onload=function(){mk(window.__tvIv);};s.onerror=function(){fb('Graphique TradingView hors-ligne.');};document.head.appendChild(s);
+  setTimeout(function(){if(host&&!host.querySelector('iframe')){if(window.TradingView&&TradingView.widget){mk(window.__tvIv);}else{fb('Graphique TradingView lent à répondre.');}}},7000);})();
 function niv(n){return n==='S+'?C.g:n==='S'?C.cy:n==='A'?C.gold:n==='B'?C.yl:C.r}
+function renderExec(d,px){
+  var el=document.getElementById('execPlan');if(!el)return;
+  var p=(d&&d.plan)||{};
+  if(!d||p.entry==null){el.innerHTML='';return;}
+  px=px||p.entry;
+  var kind,tone,trig;
+  if(d.breakout){kind='CASSURE CONFIRMÉE';tone=C.g;trig='Entrer sur la <b>cassure de $'+p.resistance+'</b> en intraday <b>seulement si le volume dépasse la moyenne</b>. Ne pas courir après si le cours est déjà à +1 ATR au-dessus — attendre le retest.';}
+  else if(d.pullback){kind='REPLI SUR TENDANCE';tone=C.blue;trig='Attendre le <b>repli vers la MM20 (~$'+(d.ma20||p.entry)+')</b>, puis un <b>rebond confirmé</b> (bougie de force + volume qui revient). Stop juste sous la MM50.';}
+  else if(d.squeeze){kind='COMPRESSION (SQUEEZE)';tone=C.gold;trig='Titre en <b>compression de volatilité</b> — attendre la <b>sortie de range</b> (cassure du plus-haut OU plus-bas de la séance) avant d\'entrer. Le sens se révèle à la cassure, zéro anticipation.';}
+  else if(d.distribution){kind='PRUDENCE · DISTRIBUTION';tone=C.r;trig='<b>Distribution cachée</b> (OBV baisse pendant que le prix monte) — pas d\'achat tant que le volume ne confirme pas. Setup à éviter ou taille réduite.';}
+  else {kind='PLAN STANDARD';tone=C.mut;trig='Entrée sur repli vers <b>$'+p.entry+'</b>, invalidation nette sous <b>$'+p.stop+'</b>. Patienter un signal de force intraday (reprise du volume, cassure d\'un micro-range).';}
+  var risk=px-p.stop;
+  var rm=function(t){return risk>0?((t-px)/risk).toFixed(1)+'R':'—';};
+  var pm=function(t){return px?((t/px-1)*100).toFixed(1)+'%':'—';};
+  var chk=[['Régime en tendance (ADX)',d.regime==='TREND'],['R:R ≥ 2 vers résistance',(p.rr_res!=null&&p.rr_res>=2)],['Pas de distribution cachée',!d.distribution],['Momentum sain (RSI 45-72)',(d.rsi>=45&&d.rsi<=72)],['Pas sur-étendu (< 3 ATR)',!(d.ext_atr>=3)],['Pas collé au sommet 52s',!(d.pos52>=97)]];
+  var pass=chk.filter(function(x){return x[1];}).length,gc=pass>=5?C.g:pass>=4?C.gold:C.r;
+  var lv=function(l,v,c,s){return '<div style="flex:1;min-width:76px;background:#0c0e13;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:9px 8px;text-align:center"><div style="font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;font-weight:700">'+l+'</div><div style="font-size:14px;font-weight:800;color:'+(c||'#e8edf5')+';margin-top:2px">'+v+'</div>'+(s?'<div style="font-size:8.5px;color:#6b7280;margin-top:1px">'+s+'</div>':'')+'</div>';};
+  var cap=10000,rp=1;try{cap=+(localStorage.getItem('vxCap')||10000);rp=+(localStorage.getItem('vxRiskPct')||1);}catch(e){}
+  el.innerHTML='<div class="card" style="border:1px solid '+tone+'44;background:linear-gradient(135deg,'+tone+'0d,#0d0e12)">'
+    +'<div class="ct" style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">⚡ Plan d\'exécution intraday <span style="font-size:9px;font-weight:800;color:'+tone+';background:'+tone+'1a;border:1px solid '+tone+'55;padding:2px 9px;border-radius:7px">'+kind+'</span><span style="margin-left:auto;font-size:9.5px;color:#6b7280">analyse Vertex → TradingView → exécution</span></div>'
+    +'<div style="font-size:12.5px;color:#cfd8e6;line-height:1.6;margin-bottom:12px">🎯 '+trig+'</div>'
+    +'<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">'+lv('Cours','$'+px.toFixed(2),'#fff')+lv('Stop','$'+p.stop,C.r,pm(p.stop))+lv('TP1','$'+p.tp1,C.g,rm(p.tp1))+lv('TP2','$'+p.tp2,C.g,rm(p.tp2))+lv('TP3','$'+p.tp3,C.g,rm(p.tp3))+lv('Résist.','$'+(p.resistance||'—'),C.blue)+'</div>'
+    +'<div style="background:#0b0d12;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:11px 13px;margin-bottom:12px">'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11.5px;color:#8794ab"><b style="color:#F5B45B">💰 GESTION DU RISQUE</b> · capital <input id="exCap" value="'+cap+'" onchange="exSize()" style="width:80px;background:#0e0e12;border:1px solid #2a2a33;color:#e8edf5;border-radius:7px;padding:3px 7px;font-size:12px"> $ · risque <input id="exRisk" value="'+rp+'" onchange="exSize()" style="width:46px;background:#0e0e12;border:1px solid #2a2a33;color:#e8edf5;border-radius:7px;padding:3px 7px;font-size:12px"> %</div>'
+      +'<div id="exOut" style="display:flex;gap:16px;flex-wrap:wrap;margin-top:9px;font-size:12.5px"></div>'
+    +'</div>'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b style="font-size:11px;color:'+gc+';white-space:nowrap">✅ FEU VERT '+pass+'/6</b><div style="flex:1;height:5px;background:#0a0c11;border-radius:3px;overflow:hidden"><div style="height:100%;width:'+(pass/6*100)+'%;background:'+gc+'"></div></div></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 14px">'+chk.map(function(x){return '<div style="font-size:11.5px;color:'+(x[1]?'#cfd8e6':'#6b7280')+'"><span style="color:'+(x[1]?C.g:C.r)+'">'+(x[1]?'✓':'✗')+'</span> '+x[0]+'</div>';}).join('')+'</div>'
+    +'<div class="muted" style="font-size:9.5px;margin-top:11px;line-height:1.5">Éducatif · niveaux issus du plan Vertex (stop sur structure, cibles en R). Ouvre le même titre sur TradingView (↗) pour l\'exécuter sur ton timeframe intraday.</div>'
+    +'</div>';
+  window.__exPx=px;window.__exStop=p.stop;exSize();
+}
+window.exSize=function(){var ce=document.getElementById('exCap'),re=document.getElementById('exRisk'),out=document.getElementById('exOut');if(!out)return;
+  var cap=+((ce&&ce.value)||10000),rp=+((re&&re.value)||1);try{localStorage.setItem('vxCap',cap);localStorage.setItem('vxRiskPct',rp);}catch(e){}
+  var risk=(window.__exPx||0)-(window.__exStop||0),rd=cap*rp/100,sh=risk>0?Math.floor(rd/risk):0,pv=sh*(window.__exPx||0);
+  out.innerHTML='<span>Risque max <b style="color:#EF4444">$'+Math.round(rd)+'</b></span><span>Taille <b style="color:#fff">'+sh+' actions</b></span><span>Exposition <b style="color:#F5B45B">$'+Math.round(pv).toLocaleString('fr-FR')+'</b></span><span class="muted">stop = '+(risk>0&&window.__exPx?((risk/window.__exPx)*100).toFixed(1):'—')+'% du cours</span>';};
 function tim(s){return s==='BUY_NOW'?'✅ achat propre':s==='BUY_PULLBACK'?'⏳ sur repli':s==='WATCH_BREAKOUT'?'👀 sur cassure':s==='TOO_LATE'?'🛑 trop étendu':'éviter'}
 function eu(s){return s?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(2,4):''}
 function cap(n){return n==null?'—':n>=1e12?(n/1e12).toFixed(2)+'T':n>=1e9?(n/1e9).toFixed(1)+'B':n>=1e6?(n/1e6).toFixed(0)+'M':n}
@@ -6524,6 +6568,7 @@ async function load(){
   const visualCard=`<div class="card"><div class="ct">🎯 Analyse visuelle</div>${meters}${lvBar?`<div class="ct" style="margin-top:16px">📐 Niveaux du plan <span class="muted" style="font-weight:400;font-size:10px">· stop → prix → entrée → cibles</span></div>${lvBar}`:''}${radarBlock}</div>`;
   const stratCard=stratBox(row,s.strat_tilt);
   document.getElementById('left').innerHTML=`<div class="card"><div class="ct">📊 Indicateurs techniques</div>${kpis}</div>${stratCard}${visualCard}${chartCard}${decCard}`;
+  renderExec(d,px);
   // ── RÉSUMÉ SIMPLE (haut de fiche) : jauge score + phrase claire ──
   const rz=document.getElementById('resume');
   if(rz){
