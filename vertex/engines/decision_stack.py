@@ -203,6 +203,8 @@ def _committee(ev):
         'negative': ev.get('negative', [])[:5],
         'contradictory': ev.get('contradictory', []),
         'unknown': ev.get('unknown', []),
+        'watch_signals': ev.get('neutral', []),      # catalyseurs à vérifier (directionless)
+        'regime': ev.get('regime'),
     }
 
 

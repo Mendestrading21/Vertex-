@@ -6623,6 +6623,10 @@ function renderCommittee(r){
   var unk=(r.unknowns||[]).map(function(t){return cmtEvRow(t,C.mut,'❓');}).join('');
   var unkBlock=unk?'<div style="margin-top:12px;padding:11px 13px;background:rgba(135,148,171,.06);border:1px solid rgba(135,148,171,.28);border-radius:12px">'
     +'<div style="font-size:10px;font-weight:800;color:'+C.mut+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px">❓ Ce que nous ne savons pas</div>'+unk+'</div>':'';
+  // Catalyseurs à vérifier (signaux neutres, directionless) + régime de pondération
+  var cats=(com.watch_signals||[]).map(function(e){return cmtEvRow(e.text,C.blue,'⚡');}).join('');
+  var catBlock=cats?'<div style="margin-top:12px;padding:11px 13px;background:rgba(56,189,248,.05);border:1px solid '+C.blue+'2e;border-radius:12px">'
+    +'<div style="font-size:10px;font-weight:800;color:'+C.blue+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px">⚡ Catalyseurs à vérifier</div>'+cats+'</div>':'';
   // Scénarios conditionnels + invalidations (Ch. XVIII — raisonnement, pas prédiction)
   var reas=r.reasoning||{},reasBlock='';
   if(reas.scenarios&&reas.scenarios.length){
@@ -6651,7 +6655,8 @@ function renderCommittee(r){
     +'<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:12px">'
       +'<div style="font-size:12.5px;color:#dfe6f2"><b style="color:'+tone+'">Président :</b> vue '+(com.view||'—')
         +' · accord du comité <b>'+(com.agreement!=null?com.agreement+'%':'—')+'</b>'
-        +' · penché <b>'+(com.lean!=null?com.lean+'%':'—')+'</b> favorable</div>'
+        +' · penché <b>'+(com.lean!=null?com.lean+'%':'—')+'</b> favorable'
+        +(com.regime?' · <span style="color:#8794ab">pondéré pour un marché '+com.regime+'</span>':'')+'</div>'
       +'<div style="margin-left:auto;min-width:150px;flex:1">'
         +'<div style="display:flex;justify-content:space-between;font-size:9.5px;color:#8794ab;font-weight:700;margin-bottom:3px"><span>CONFIANCE</span><span style="color:'+tone+'">'+conf+'/100</span></div>'
         +'<div style="height:7px;border-radius:5px;background:#0a0c11;overflow:hidden"><div style="height:100%;width:'+conf+'%;background:'+tone+'"></div></div></div></div>'
@@ -6662,7 +6667,7 @@ function renderCommittee(r){
     +'<div class="grid2">'
       +'<div><div style="font-size:10px;font-weight:800;color:'+C.g+';letter-spacing:.4px;margin-bottom:5px">✓ ARGUMENTS POUR</div>'+pros+'</div>'
       +'<div><div style="font-size:10px;font-weight:800;color:'+C.r+';letter-spacing:.4px;margin-bottom:5px">⚠ ARGUMENTS CONTRE</div>'+cons+'</div></div>'
-    +contraBlock+devil+unkBlock+reasBlock
+    +contraBlock+devil+catBlock+unkBlock+reasBlock
     +'<div class="muted" style="font-size:10.5px;margin-top:13px;line-height:1.5">'+(r.explanation||'')
       +'<br>Le comité éclaire une décision — il ne la prend jamais à votre place. Analyse éducative, aucune certitude, aucun ordre.</div></div>';
 }

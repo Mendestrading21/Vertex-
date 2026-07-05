@@ -117,6 +117,27 @@ def risk_analyst(d, portfolio):
     return out
 
 
+def fundamental_analyst(d):
+    """Le fondamental : la société est-elle solide RELATIVEMENT à son secteur ?"""
+    out = []
+    fs = _num((d.get('sub') or {}).get('fundamental'))
+    if fs >= 70:
+        out.append(_ev(POSITIVE, f'Fondamentaux solides vs secteur (note {int(fs)})', 55, 'Fondamental'))
+    elif 0 < fs <= 35:
+        out.append(_ev(NEGATIVE, f'Fondamentaux fragiles vs secteur (note {int(fs)})', 55, 'Fondamental'))
+    return out
+
+
+def catalyst_analyst(d):
+    """Le catalyseur : un comportement inhabituel (volume/gap) signale un événement possible."""
+    vz = _num(d.get('vol_z'))
+    gap = abs(_num(d.get('gap_pct')))
+    if vz >= 2.5 or gap >= 4:
+        why = 'volume anormal' if vz >= 2.5 else 'gap marqué'
+        return [_ev(NEUTRAL, f'Activité inhabituelle ({why}) — catalyseur possible à vérifier', 45, 'Catalyseur')]
+    return []
+
+
 def data_quality_analyst(dq):
     if not dq:
         return []
@@ -139,13 +160,43 @@ def _contradictions(d, items):
     return out
 
 
+# ─── Pondération par régime : un même signal ne pèse pas pareil selon le marché ───
+# En tendance, la structure/le momentum comptent plus ; en range, ils comptent moins et
+# le risque compte plus ; en RISK-OFF, toute preuve négative est amplifiée (prudence).
+_REGIME_WEIGHTS = {
+    'TREND':   {'Momentum': 1.2, 'Multi-horizons': 1.2, 'Physique': 1.15, 'Technique': 1.1},
+    'CHOP':    {'Momentum': 0.75, 'Technique': 0.8, 'Multi-horizons': 0.85,
+                'Risque': 1.2, 'Portefeuille': 1.15},
+    'NEUTRAL': {},
+}
+
+
+def _apply_regime(items, market):
+    """Ajuste la force de chaque preuve selon le régime et le risk-on/off (jamais < 0, borné 100)."""
+    if not market:
+        return items
+    regime = market.get('spy_regime')
+    risk_off = market.get('roro') == 'RISK-OFF'
+    weights = _REGIME_WEIGHTS.get(regime, {})
+    for it in items:
+        mult = weights.get(it['source'], 1.0)
+        if risk_off and it['kind'] == NEGATIVE:
+            mult *= 1.25
+        if mult != 1.0:
+            it['strength'] = int(max(0, min(100, round(it['strength'] * mult))))
+            it['regime_weighted'] = True
+    return items
+
+
 def gather(detail, *, market=None, option=None, portfolio=None, data_quality=None):
-    """Réunit toutes les preuves des analystes, catégorisées, avec contradictions."""
+    """Réunit toutes les preuves des analystes, catégorisées, pondérées par régime, avec contradictions."""
     d = detail or {}
     items = (market_analyst(market) + structure_analyst(d) + technical_analyst(d)
-             + momentum_analyst(d) + options_analyst(option)
-             + risk_analyst(d, portfolio) + data_quality_analyst(data_quality))
-    items += _contradictions(d, items)
+             + momentum_analyst(d) + fundamental_analyst(d) + catalyst_analyst(d)
+             + options_analyst(option) + risk_analyst(d, portfolio)
+             + data_quality_analyst(data_quality))
+    items = _apply_regime(items, market)
+    items += _contradictions(d, items)          # les tensions ne sont pas pondérées
     buckets = {POSITIVE: [], NEGATIVE: [], NEUTRAL: [], UNKNOWN: [], CONTRADICTORY: []}
     for it in items:
         buckets[it['kind']].append(it)
@@ -154,6 +205,7 @@ def gather(detail, *, market=None, option=None, portfolio=None, data_quality=Non
     buckets['balance'] = (sum(x['strength'] for x in buckets[POSITIVE])
                           - sum(x['strength'] for x in buckets[NEGATIVE]))
     buckets['has_contradiction'] = bool(buckets[CONTRADICTORY])
+    buckets['regime'] = (market or {}).get('spy_regime')
     return buckets
 
 
