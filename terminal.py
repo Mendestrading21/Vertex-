@@ -7003,9 +7003,25 @@ for _pg in ('PAGE_DAILY', 'PAGE_WATCHLIST', 'PAGE_OPTIONS_DESK', 'PAGE_ME',
             'PAGE_ENTREPRISES', 'PAGE_TITRE'):
     globals()[_pg] = _inject_single_nav(globals()[_pg])
 
+# Le bloc de nav COMPLET (CSS sidebar + IIFE de construction, ≈26 Ko) était copié à
+# l'identique dans les 6 pages. PAGE_DAILY en devient la source ; on le recopie dans
+# les 5 autres. Éditer la sidebar = éditer PAGE_DAILY, plus jamais six endroits.
+_NAV_CSS_CANON = _extract(PAGE_DAILY, '<style id="nav-css">', '</style>')
+_NAV_BUILD_CANON = _extract(PAGE_DAILY, '(function(){var L=', '})();')
+for _pg in ('PAGE_WATCHLIST', 'PAGE_OPTIONS_DESK', 'PAGE_ME',
+            'PAGE_ENTREPRISES', 'PAGE_TITRE'):
+    _p = globals()[_pg]
+    _pcss = _extract(_p, '<style id="nav-css">', '</style>')
+    _pjs = _extract(_p, '(function(){var L=', '})();')
+    if _pcss and _NAV_CSS_CANON:
+        _p = _p.replace(_pcss, _NAV_CSS_CANON)
+    if _pjs and _NAV_BUILD_CANON:
+        _p = _p.replace(_pjs, _NAV_BUILD_CANON)
+    globals()[_pg] = _p
 
-_NAVCSS_BLOCK = _extract(PAGE_DAILY, '<style id="nav-css">', '</style>')
-_NAVJS_BLOCK = _extract(PAGE_DAILY, '(function(){var L=', '})();')
+
+_NAVCSS_BLOCK = _NAV_CSS_CANON
+_NAVJS_BLOCK = _NAV_BUILD_CANON
 # Session expirée en cours d'usage → toute réponse 401 renvoie vers le verrou.
 _NAVJS_BLOCK += (";(function(){var _f=window.fetch;window.fetch=function(){return _f.apply(this,arguments)"
                  ".then(function(r){if(r&&r.status===401&&location.pathname!=='/login'){"
