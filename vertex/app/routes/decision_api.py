@@ -17,6 +17,7 @@ from flask import Blueprint, jsonify
 
 from vertex.engines import decision_stack as _decision
 from vertex.engines import context as _context
+from vertex.engines import market_lens as _market_lens
 
 
 def make_blueprint(*, scan_state, demo_mode):
@@ -79,9 +80,17 @@ def make_blueprint(*, scan_state, demo_mode):
         sym = sym.upper()
         detail = dict((scan_state.get('detail') or {}).get(sym) or {})
         detail.setdefault('symbol', sym)
-        return jsonify(_decision.evaluate(
-            detail, symbol=sym, market=_market_ctx(), option=_best_option_for(sym),
-            scan_age_s=_scan_age(), demo=demo_mode, context=_ctx_for(sym)))
+        ctx = _ctx_for(sym)
+        res = _decision.evaluate(detail, symbol=sym, market=_market_ctx(),
+                                 option=_best_option_for(sym), scan_age_s=_scan_age(),
+                                 demo=demo_mode, context=ctx)
+        # Prisme marché & secteur : le vent est-il dans le dos ou de face ?
+        sc = next((dm.get('pct_universe') for dm in (ctx or {}).get('dimensions', [])
+                   if dm.get('key') == 'score'), None) if ctx else None
+        res['market_lens'] = _market_lens.build(
+            market=scan_state.get('market_ctx') or {}, sectors=scan_state.get('sectors') or [],
+            sector_name=detail.get('sector'), stock_pct=sc)
+        return jsonify(res)
 
     @bp.route('/api/brief')
     def brief_ep():

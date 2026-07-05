@@ -5869,6 +5869,17 @@ function renderCommittee(r){
   var unk=(r.unknowns||[]).map(function(t){return cmtEvRow(t,C.mut,'❓');}).join('');
   var unkBlock=unk?'<div style="margin-top:12px;padding:11px 13px;background:rgba(135,148,171,.06);border:1px solid rgba(135,148,171,.28);border-radius:12px">'
     +'<div style="font-size:10px;font-weight:800;color:'+C.mut+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px">❓ Ce que nous ne savons pas</div>'+unk+'</div>':'';
+  // Prisme marché & secteur — le vent est-il dans le dos ou de face ? (titre × secteur × marché)
+  var ml=r.market_lens||{},mlBlock='';
+  if(ml.lights){var mlt=CMT_TONE[ml.tone]||C.mut;
+    var light=function(lab,on){return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:#cfd8e6"><span style="width:8px;height:8px;border-radius:50%;background:'+(on?C.g:'#3a3f4a')+'"></span>'+lab+'</span>';};
+    var secTxt=ml.sector?(ml.sector.name+' #'+ml.sector.rank+'/'+ml.sector.n):'secteur ?';
+    mlBlock='<div style="margin:2px 0 12px;padding:10px 13px;background:'+mlt+'0d;border:1px solid '+mlt+'33;border-radius:12px">'
+      +'<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><span style="font-size:10px;font-weight:800;color:'+mlt+';letter-spacing:.4px;text-transform:uppercase">🧲 Prisme marché</span>'
+      +'<span style="font-size:11px;font-weight:800;color:'+mlt+'">'+(ml.alignment||'').toUpperCase()+'</span>'
+      +'<span style="display:flex;gap:13px;margin-left:auto;flex-wrap:wrap">'+light('Marché'+(ml.climate?' '+ml.climate.score:''),ml.lights.market)+light(secTxt,ml.lights.sector)+light('Titre',ml.lights.stock)+'</span></div>'
+      +(ml.headline?'<div style="font-size:11px;color:#9aa4b8;margin-top:7px">'+ml.headline+'</div>':'')+'</div>';
+  }
   // Contexte relatif (analyse transversale) — où se situe le titre dans l'univers
   var ctx=r.context||{},ctxBlock='';
   if(ctx.dimensions&&ctx.dimensions.length){
@@ -5933,7 +5944,7 @@ function renderCommittee(r){
       +'<div style="margin-left:auto;min-width:150px;flex:1">'
         +'<div style="display:flex;justify-content:space-between;font-size:9.5px;color:#8794ab;font-weight:700;margin-bottom:3px"><span>CONFIANCE</span><span style="color:'+tone+'">'+conf+'/100</span></div>'
         +'<div style="height:7px;border-radius:5px;background:#0a0c11;overflow:hidden"><div style="height:100%;width:'+conf+'%;background:'+tone+'"></div></div></div></div>'
-    +ctxBlock
+    +mlBlock+ctxBlock
     // Les membres
     +'<div style="font-size:10px;font-weight:800;color:#8794ab;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">Les analystes ('+(com.members||[]).length+') — chacun indépendant, chacun peut être en désaccord</div>'
     +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:7px;margin-bottom:12px">'+members+'</div>'
