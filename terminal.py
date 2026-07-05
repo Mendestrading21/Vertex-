@@ -6503,6 +6503,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     <div><div class="nm" id="nm">chargement…</div><div class="tk" id="sym">…</div></div>
     <div style="margin-left:18px"><div class="px" id="px">—</div><div id="chg" class="muted" style="font-size:13px"></div></div>
     <div style="margin-left:auto;text-align:right" id="tags"></div>
+    <div id="dqBadge" style="align-self:flex-end"></div>
     <div style="display:flex;gap:8px;margin-left:14px;flex-wrap:wrap">
     <button id="favBtn" onclick="toggleFav()" style="background:#0e0e12;border:1px solid #F5B45B55;color:#F5B45B;border-radius:10px;padding:9px 15px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap">☆ Suivre</button>
     <a href="/options" style="display:flex;align-items:center;background:rgba(167,139,250,.12);border:1px solid #A78BFA55;color:#A78BFA;border-radius:10px;padding:9px 15px;font-weight:800;font-size:13px;text-decoration:none;white-space:nowrap">💎 Options</a>
@@ -6545,6 +6546,13 @@ function renderCommittee(r){
   if(!r||!r.final_decision){el.innerHTML='';return;}
   var com=r.committee||{},tone=CMT_TONE[r.decision_tone]||C.mut,conf=r.confidence||0;
   var dq=r.data_quality||{};
+  // Badge qualité de donnée en tête de fiche — rien d'anonyme (Ch. IV)
+  var db=document.getElementById('dqBadge');
+  if(db){var gcol=dq.grade==='A'?C.g:dq.grade==='B'?C.yl:C.r;
+    var src=dq.source==='demo-synthetic'?'🎭 démo':(dq.source==='scan'?'live':dq.source||'—');
+    var age=dq.age_seconds!=null?(dq.age_seconds<90?'à jour':Math.round(dq.age_seconds/60)+' min'):'—';
+    db.innerHTML='<span title="'+(dq.warning||'données fraîches')+'" style="display:inline-flex;align-items:center;gap:6px;font-size:9.5px;font-weight:700;color:'+gcol+';background:'+gcol+'14;border:1px solid '+gcol+'44;border-radius:8px;padding:4px 9px">'
+      +'<span style="width:6px;height:6px;border-radius:50%;background:'+gcol+'"></span>DONNÉE '+(dq.grade||'?')+' · '+src+' · '+age+(dq.stale?' · ⚠ rassi':'')+'</span>';}
   if(r.final_decision==='DATA_INSUFFICIENT'){
     el.innerHTML='<div class="card" style="border:1px solid #8794ab44"><div class="ct">🏛️ Salle du comité</div>'
       +'<div class="muted" style="font-size:12.5px;line-height:1.6">⏳ Le comité ne peut pas se prononcer : '+(r.explanation||'données insuffisantes')
