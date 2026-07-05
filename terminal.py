@@ -43,6 +43,7 @@ from vertex.app.config import IBKR_ENABLED, DEMO_MODE  # noqa: F401
 from vertex.data import constants as _vconst
 from vertex.services import status_service as _status_svc
 from vertex.engines import decision_stack as _decision
+from vertex.ui import nav as _nav
 
 app = Flask(__name__)
 # ── JSON SÛR : convertit NaN/Infinity → null. Sinon Flask sort `NaN` (toléré par Python
@@ -6979,6 +6980,28 @@ def _extract(s, a, b):
         return ''
     j = s.find(b, i)
     return s[i:j + len(b)] if j >= 0 else ''
+
+
+# ─── NAVIGATION : source unique (vertex/ui/nav.py) réinjectée dans chaque page ───
+# Les 6 grandes pages embarquent leur propre `var NAV=[...]`/`var VSEC={...}`.
+# On les remplace par la version générée depuis le module : éditer la nav = éditer
+# UN fichier. Injection avant l'extraction du shell → les pages _vpage en héritent.
+def _inject_single_nav(page):
+    for prefix, end, gen in (('var NAV=[', ']];', 'var NAV=' + _nav.nav_array_js()),
+                             ('var VSEC={', '};', 'var VSEC=' + _nav.sections_js())):
+        a = page.find(prefix)
+        if a == -1:
+            continue
+        b = page.find(end, a)
+        if b == -1:
+            continue
+        page = page[:a] + gen + page[b + len(end) - 1:]   # conserve le ';' final
+    return page
+
+
+for _pg in ('PAGE_DAILY', 'PAGE_WATCHLIST', 'PAGE_OPTIONS_DESK', 'PAGE_ME',
+            'PAGE_ENTREPRISES', 'PAGE_TITRE'):
+    globals()[_pg] = _inject_single_nav(globals()[_pg])
 
 
 _NAVCSS_BLOCK = _extract(PAGE_DAILY, '<style id="nav-css">', '</style>')
