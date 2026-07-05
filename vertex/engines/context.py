@@ -74,10 +74,19 @@ def context_for(sym, detail_map):
         order = [s for s, _ in ranked]
         if sym in order:
             sector_rank = order.index(sym) + 1
+    # Pairs du secteur (par score), pour situer nommément le titre parmi ses semblables.
+    peers = []
+    if len(peers_sector) >= 2:
+        for s, v in sorted(peers_sector.items(), key=lambda kv: (_num(kv[1].get('score')) or -1),
+                           reverse=True)[:5]:
+            sc = _num(v.get('score'))
+            if sc is not None:
+                peers.append({'symbol': s, 'score': int(sc), 'is_self': s == sym})
     return {
         'symbol': sym, 'universe_n': len(detail_map), 'sector': d.get('sector'),
         'sector_n': len(peers_sector) or None, 'sector_rank': sector_rank,
-        'dimensions': dims, 'headline': _headline(dims, d.get('sector'), sector_rank, len(peers_sector)),
+        'dimensions': dims, 'peers': peers,
+        'headline': _headline(dims, d.get('sector'), sector_rank, len(peers_sector)),
     }
 
 

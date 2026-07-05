@@ -49,6 +49,16 @@ def test_sector_percentile_needs_enough_peers():
     assert sc['pct_universe'] is not None
 
 
+def test_peers_lists_sector_and_flags_self():
+    c = context.context_for('BBB', _universe())
+    peers = c['peers']
+    syms = [p['symbol'] for p in peers]
+    assert syms == ['AAA', 'BBB', 'CCC']              # Tech peers, triés par score
+    assert [p['score'] for p in peers] == [95, 70, 50]
+    assert next(p for p in peers if p['symbol'] == 'BBB')['is_self'] is True
+    assert all(p['is_self'] is False for p in peers if p['symbol'] != 'BBB')
+
+
 def test_unknown_symbol_is_none():
     assert context.context_for('ZZZ', _universe()) is None
 

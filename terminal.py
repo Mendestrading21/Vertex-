@@ -449,6 +449,7 @@ def scan():
                 d = analyse(df, bench_ret, fund=(_fund or None))   # vrais fondamentaux → score fondamental réel (sinon proxy)
                 d['chart_read'] = research.chart_read(d)   # analyse graphique FR (cartes Screener + modale)
                 d['thesis'] = research.thesis(d)            # synthèse Vertex décisive (fusion signaux + comment jouer)
+                d['sector'] = _GICS_SECTOR.get(sym)         # secteur GICS → contexte transversal / pairs (DecisionStack)
                 detail[sym] = d
                 _clf = df['Close'].dropna()                # perf multi-horizons (Équipe semaine/mois/trim./année)
 
@@ -5701,7 +5702,10 @@ function renderCommittee(r){
       +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px"><span style="font-size:10px;font-weight:800;color:#A78BFA;letter-spacing:.4px;text-transform:uppercase">🧭 Contexte relatif</span>'
       +(ctx.headline?'<span style="font-size:11px;font-weight:800;color:#cbbdf5">'+ctx.headline+'</span>':'')
       +'<span style="margin-left:auto;font-size:9.5px;color:#71717A">vs '+(ctx.universe_n||'—')+' titres scannés</span></div>'
-      +'<div style="display:flex;gap:12px;flex-wrap:wrap">'+bars+'</div></div>';
+      +'<div style="display:flex;gap:12px;flex-wrap:wrap">'+bars+'</div>'
+      +((ctx.peers&&ctx.peers.length>1)?'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:9px;padding-top:8px;border-top:1px solid rgba(167,139,250,.14)"><span style="font-size:9px;color:#6b7280;font-weight:800;text-transform:uppercase">Pairs '+(ctx.sector||'')+' :</span>'
+        +ctx.peers.map(function(p){var self=p.is_self;var scol=p.score>=65?C.g:p.score>=45?C.yl:C.r;return '<span style="font-size:10.5px;font-weight:'+(self?'900':'700')+';padding:2px 8px;border-radius:6px;background:'+(self?'rgba(167,139,250,.18)':'#0e1119')+';border:1px solid '+(self?'#A78BFA66':'rgba(255,255,255,.08)')+';color:'+(self?'#cbbdf5':'#9aa4b8')+'">'+p.symbol+' <b style="color:'+scol+'">'+p.score+'</b></span>';}).join('')+'</div>':'')
+      +'</div>';
   }
   // Décomposition du score (traçabilité) — sous-scores + ajustements structurels
   var bd=r.score_breakdown||{},bdBlock='';
