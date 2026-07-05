@@ -50,6 +50,7 @@ from vertex.engines import backtest as _backtest
 from vertex.engines import swing as _swing
 from vertex.engines import strategy_fit as _strategy_fit
 from vertex.engines import stats as _stats
+from vertex.app.routes import decision_api as _decision_api
 from vertex.data import demo as _demo
 from vertex.services import market_clock as _market_clock
 
@@ -2076,116 +2077,9 @@ def system_status_ep():
         demo_mode=DEMO_MODE, ai_on=ai.available(), thresholds=thresholds, engines=engines))
 
 
-def _best_option_for(sym):
-    """Meilleur CALL du board pour un titre (véhicule DecisionStack). None si absent."""
-    calls = [c for c in (scan_state.get('options_board') or [])
-             if c.get('sym') == sym and c.get('type') == 'CALL' and c.get('quality') is not None]
-    if not calls:
-        return None
-    return max(calls, key=lambda c: c.get('quality', 0))
-
-
-@app.route('/api/decision/<sym>')
-def decision_ep(sym):
-    """LA DÉCISION STACK — vérité unique, explicable, par titre. Analyse uniquement."""
-    sym = sym.upper()
-    detail = dict((scan_state.get('detail') or {}).get(sym) or {})
-    detail.setdefault('symbol', sym)
-    mctx = scan_state.get('market_ctx') or {}
-    market = {'roro': mctx.get('roro'), 'spy_regime': mctx.get('spy_regime'),
-              'vix_band': mctx.get('vix_band')}
-    scan_age = round(time.time() - scan_state['scan_ts']) if scan_state.get('scan_ts') else None
-    return jsonify(_decision.evaluate(
-        detail, symbol=sym, market=market, option=_best_option_for(sym),
-        scan_age_s=scan_age, demo=DEMO_MODE))
-
-
-def _market_ctx_for_decision():
-    """Contexte marché normalisé pour la DecisionStack (source unique)."""
-    mctx = scan_state.get('market_ctx') or {}
-    return {'roro': mctx.get('roro'), 'spy_regime': mctx.get('spy_regime'),
-            'vix_band': mctx.get('vix_band')}
-
-
-def _brief_row(sym, market, scan_age):
-    """Une ligne du brief : la décision du comité pour un titre, condensée."""
-    detail = dict((scan_state.get('detail') or {}).get(sym) or {})
-    detail.setdefault('symbol', sym)
-    r = _decision.evaluate(detail, symbol=sym, market=market,
-                           option=_best_option_for(sym), scan_age_s=scan_age, demo=DEMO_MODE)
-    com = r.get('committee') or {}
-    return {
-        'symbol': sym, 'decision': r['final_decision'], 'label': r['decision_label'],
-        'tone': r['decision_tone'], 'confidence': r['confidence'], 'conviction': r['conviction'],
-        'view': com.get('view'), 'agreement': com.get('agreement'),
-        'has_contradiction': com.get('has_contradiction', False),
-        'devils_advocate': com.get('devils_advocate'),
-        'top_pro': (r.get('pros') or [None])[0], 'top_con': (r.get('cons') or [None])[0],
-        'price': detail.get('price'),
-    }
-
-
-@app.route('/api/brief')
-def brief_ep():
-    """🌅 MORNING BRIEF — le comité passe en revue les meilleurs setups du jour (Ch. XIX)."""
-    market = _market_ctx_for_decision()
-    scan_age = round(time.time() - scan_state['scan_ts']) if scan_state.get('scan_ts') else None
-    rows = sorted((scan_state.get('rows') or []),
-                  key=lambda x: (x.get('score') or 0), reverse=True)
-    syms, seen = [], set()
-    for x in rows:
-        s = x.get('symbol')
-        if s and s not in seen:
-            seen.add(s)
-            syms.append(s)
-        if len(syms) >= 8:
-            break
-    briefs = [_brief_row(s, market, scan_age) for s in syms]
-    buyish = [b for b in briefs if b['decision'] in ('STRONG_BUY', 'BUY', 'BUY_PULLBACK')]
-    watch = [b for b in briefs if b['decision'] in ('WATCH_BREAKOUT', 'WAIT', 'TOO_LATE')]
-    avoid = [b for b in briefs if b['decision'] in ('AVOID', 'NO_NEW_RISK')]
-    contradictions = [b for b in briefs if b['has_contradiction']]
-    mctx = scan_state.get('market_ctx') or {}
-    return jsonify({
-        'as_of': scan_state.get('scan_ts_h') or scan_state.get('updated'),
-        'scan_age': scan_age, 'data_source': 'demo' if DEMO_MODE else 'scan',
-        'market': {'roro': mctx.get('roro'), 'spy_regime': mctx.get('spy_regime'),
-                   'vix_band': mctx.get('vix_band'), 'breadth': mctx.get('breadth')},
-        'setups': briefs,
-        'counts': {'buy': len(buyish), 'watch': len(watch), 'avoid': len(avoid),
-                   'contradictions': len(contradictions)},
-        'contradictions': contradictions,
-    })
-
-
-@app.route('/api/committee-review')
-def committee_review_ep():
-    """🧠 COMMITTEE REVIEW — le comité passe TOUT l'univers scanné en revue (Ch. XIX)."""
-    market = _market_ctx_for_decision()
-    scan_age = round(time.time() - scan_state['scan_ts']) if scan_state.get('scan_ts') else None
-    rows = sorted((scan_state.get('rows') or []),
-                  key=lambda x: (x.get('score') or 0), reverse=True)
-    syms, seen = [], set()
-    for x in rows:
-        s = x.get('symbol')
-        if s and s not in seen:
-            seen.add(s)
-            syms.append(s)
-        if len(syms) >= 60:                       # borne dure, journalisée côté UI
-            break
-    reviews = [_brief_row(s, market, scan_age) for s in syms]
-    tally = {}
-    for b in reviews:
-        tally[b['decision']] = tally.get(b['decision'], 0) + 1
-    mctx = scan_state.get('market_ctx') or {}
-    return jsonify({
-        'as_of': scan_state.get('scan_ts_h') or scan_state.get('updated'),
-        'scan_age': scan_age, 'data_source': 'demo' if DEMO_MODE else 'scan',
-        'market': {'roro': mctx.get('roro'), 'spy_regime': mctx.get('spy_regime'),
-                   'vix_band': mctx.get('vix_band')},
-        'count': len(reviews), 'capped_at': 60, 'universe_scanned': len(seen),
-        'tally': tally, 'reviews': reviews,
-    })
+# ─── API DÉCISION (Blueprint) — /api/decision · /api/brief · /api/committee-review ───
+# Sortie du monolithe : logique dans vertex/app/routes/decision_api.py, état injecté.
+app.register_blueprint(_decision_api.make_blueprint(scan_state=scan_state, demo_mode=DEMO_MODE))
 
 
 @app.route('/options/<sym>')
