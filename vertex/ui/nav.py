@@ -13,6 +13,7 @@ ITEMS = [
     ('/review',      '🏛️', 'Comité'),
     ('/decisions',   '📝', 'Décisions'),
     ('/research',    '🔬', 'Recherche'),
+    ('/health',      '🩺', 'Santé'),
     ('/strategie',   '🎯', 'Desk'),
     ('/journal',     '📖', 'Journal'),
     ('/suivi',       '⭐', 'Watchlist'),
