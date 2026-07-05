@@ -751,6 +751,26 @@ def analyse(df, bench_ret, fund=None):
            'rs': rs, 'pos52': pos, 'volx': volx, 'atr_pct': atr_pct, 'ext_atr': ext_atr}
     sc = scoring.compose(ind, fund=fund)
     score, grade, mom = sc['global'], sc['grade'], sc['momentum']
+    base_score = score
+    # ─── BOUCLE DE RÉTROACTION PHYSIQUE : le cerveau physique MODIFIE le score ───
+    # La structure fractale/entropique du titre renforce ou tempère la conviction.
+    try:
+        _phys = physics.analyze(c)
+    except Exception:
+        _phys = None
+    try:
+        phys_adj, phys_adj_why = physics.score_adjust(_phys, ext_atr=ext_atr, rsi=r)
+    except Exception:
+        phys_adj, phys_adj_why = 0, ''
+    if phys_adj:
+        score = int(max(0, min(100, score + phys_adj)))
+        try:
+            grade = config.grade(score)
+        except Exception:
+            pass
+    if _phys is not None:
+        _phys['adj'] = phys_adj
+        _phys['adj_why'] = phys_adj_why
     verdict = config.verdict(score, trend, regime)
 
     # PLAN — stop sur STRUCTURE (dernier swing-low réel), R:R réel vers la résistance
@@ -823,10 +843,9 @@ def analyse(df, bench_ret, fund=None):
         result['vertex'] = vertex.evaluate(result)
     except Exception:
         result['vertex'] = None
-    try:
-        result['physics'] = physics.analyze(c)   # cerveau physique : fractales, entropie, retour-moyenne
-    except Exception:
-        result['physics'] = None
+    result['physics'] = _phys                     # cerveau physique (déjà calculé + injecté dans le score)
+    result['base_score'] = base_score             # score AVANT rétroaction physique
+    result['phys_adj'] = phys_adj                 # contribution de la physique (transparence)
     return result
 
 
@@ -6853,7 +6872,8 @@ async function load(){
             <span title="Entropie de Shannon des rendements : 0 structuré → 100% désordre imprévisible">Entropie <b style="color:#e8edf5">${d.physics.entropy!=null?Math.round(d.physics.entropy*100)+'%':'—'}</b></span>
             ${d.physics.half_life?`<span title="Demi-vie de retour à la moyenne (Ornstein-Uhlenbeck), en jours de bourse">Demi-vie <b style="color:#e8edf5">${d.physics.half_life}j</b></span>`:''}
           </div>
-          <div style="font-size:10.5px;color:#9aa4b8;line-height:1.5;margin-top:7px">${d.physics.note}</div></div>`:''}
+          <div style="font-size:10.5px;color:#9aa4b8;line-height:1.5;margin-top:7px">${d.physics.note}</div>
+          ${(d.physics.adj!=null&&d.physics.adj!==0)?`<div style="font-size:10.5px;margin-top:7px;padding-top:7px;border-top:1px solid ${d.physics.state_col}22;color:#cdd5e2">⚙️ <b>Rétroaction sur le score Vertex : <span style="color:${d.physics.adj>=0?'#22C55E':'#EF4444'}">${d.physics.adj>=0?'+':''}${d.physics.adj} pts</span></b>${d.base_score!=null?` <span style="color:#8794ab">(${d.base_score} → ${d.score})</span>`:''}${d.physics.adj_why?`<div style="font-size:9.5px;color:#8794ab;margin-top:2px">${d.physics.adj_why}</div>`:''}</div>`:''}</div>`:''}
         <div style="font-size:12.5px;margin-bottom:8px;color:#eaf0fa">${l1}</div>
         <div style="font-size:12.5px;color:#cfd8e6;line-height:1.6">${valLine}${situ?situ.charAt(0).toUpperCase()+situ.slice(1)+'. ':''}${planLine}</div>
         <div id="bizDesc"></div>

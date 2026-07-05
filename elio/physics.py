@@ -102,6 +102,40 @@ def half_life(prices, lookback=120):
     return float(round(hl, 1))
 
 
+def score_adjust(phy, ext_atr=0.0, rsi=50.0):
+    """Rétroaction : combien la PHYSIQUE modifie le score Vertex (borné [-10, +8]).
+    Une structure fractale fiable renforce la conviction ; le chaos et le retour-
+    moyenne sur titre sur-étendu la réduisent. C'est ici que la physique DÉCIDE."""
+    if not phy:
+        return 0, ''
+    st = phy.get('state')
+    H = phy.get('hurst')
+    E = phy.get('efficiency') or 0.0
+    S = phy.get('entropy')
+    adj = 0
+    why = []
+    if st == 'TENDANCE FRACTALE':
+        adj += 4
+        why.append('structure fractale persistante (+4)')
+        if E >= 0.45:
+            adj += 3
+            why.append('tendance propre, efficience haute (+3)')
+    elif st == 'CHAOS':
+        adj -= 7
+        why.append('chaos : mouvement imprévisible, conviction réduite (−7)')
+    elif st == 'RETOUR MOYENNE':
+        adj -= 3
+        why.append('anti-persistant : la poursuite de tendance est risquée (−3)')
+        if ext_atr and ext_atr >= 3:
+            adj -= 3
+            why.append('déjà sur-étendu → risque de rappel vers la moyenne (−3)')
+    if S is not None and S >= 0.92:
+        adj -= 2
+        why.append('entropie extrême, forte incertitude (−2)')
+    adj = int(max(-10, min(8, adj)))
+    return adj, ' · '.join(why)
+
+
 def analyze(close):
     """Renvoie le bilan physique complet d'une série de clôtures + une synthèse FR."""
     p = np.asarray(close, dtype=float)
