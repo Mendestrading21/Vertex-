@@ -6656,6 +6656,7 @@ function setupCard(b){var tc=CT[b.tone]||'#8794ab';
       +(b.price!=null?'<span class="muted" style="font-size:11px">$'+b.price+'</span>':'')
       +'<span style="margin-left:auto;font-size:11px;font-weight:900;color:'+tc+';background:'+tc+'1a;border:1px solid '+tc+'55;padding:3px 10px;border-radius:8px">'+b.label+'</span></div>'
     +'<div style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:10.5px;color:#8794ab">Comité : <b style="color:#cfd8e6">'+(b.view||'—')+'</b> · accord '+(b.agreement!=null?b.agreement+'%':'—')+' · confiance <b style="color:'+tc+'">'+b.confidence+'</b>'+(b.has_contradiction?' <span title="contradiction interne" style="color:#FFB23F">⚠</span>':'')+'</div>'
+    +(b.context_headline?'<div style="font-size:10px;color:#A78BFA;margin-top:6px">🧭 '+b.context_headline+'</div>':'')
     +(b.top_pro?'<div style="font-size:11.5px;color:#cfd8e6;margin-top:8px"><span class="up">✓</span> '+b.top_pro+'</div>':'')
     +(b.top_con?'<div style="font-size:11.5px;color:#cfd8e6;margin-top:3px"><span class="dn">✗</span> '+b.top_con+'</div>':'')
     +'<div style="font-size:10px;color:#71717A;margin-top:9px;text-align:right">ouvrir la fiche ›</div></div>';}

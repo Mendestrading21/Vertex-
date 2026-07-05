@@ -48,8 +48,9 @@ def make_blueprint(*, scan_state, demo_mode):
         """Une ligne du brief : la décision du comité pour un titre, condensée."""
         detail = dict((scan_state.get('detail') or {}).get(sym) or {})
         detail.setdefault('symbol', sym)
+        ctx = _ctx_for(sym)
         r = _decision.evaluate(detail, symbol=sym, market=market, option=_best_option_for(sym),
-                               scan_age_s=scan_age, demo=demo_mode, context=_ctx_for(sym))
+                               scan_age_s=scan_age, demo=demo_mode, context=ctx)
         com = r.get('committee') or {}
         return {
             'symbol': sym, 'decision': r['final_decision'], 'label': r['decision_label'],
@@ -58,7 +59,7 @@ def make_blueprint(*, scan_state, demo_mode):
             'has_contradiction': com.get('has_contradiction', False),
             'devils_advocate': com.get('devils_advocate'),
             'top_pro': (r.get('pros') or [None])[0], 'top_con': (r.get('cons') or [None])[0],
-            'price': detail.get('price'),
+            'price': detail.get('price'), 'context_headline': (ctx or {}).get('headline'),
         }
 
     def _top_symbols(limit):
