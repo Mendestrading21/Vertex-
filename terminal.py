@@ -31,7 +31,7 @@ try:
 except Exception:
     pass
 
-from elio import scoring, config, options, ai, daily, anomalies, sectors, research, market, weekly, fundamentals, engine, ibkr, strategy, committee, pivots, vertex, portfolio_risk, validator
+from elio import scoring, config, options, ai, daily, anomalies, sectors, research, market, weekly, fundamentals, engine, ibkr, strategy, committee, pivots, vertex, portfolio_risk, validator, physics
 
 DAILY_PREV_PATH = os.path.join(os.path.dirname(__file__), 'daily_prev.json')  # baseline diff jour/jour
 WEEKLY_PATH = os.path.join(os.path.dirname(__file__), 'weekly_snapshot.json')  # sélection hebdo FIGÉE
@@ -823,6 +823,10 @@ def analyse(df, bench_ret, fund=None):
         result['vertex'] = vertex.evaluate(result)
     except Exception:
         result['vertex'] = None
+    try:
+        result['physics'] = physics.analyze(c)   # cerveau physique : fractales, entropie, retour-moyenne
+    except Exception:
+        result['physics'] = None
     return result
 
 
@@ -1203,6 +1207,7 @@ def scan():
                              'accumulation': d.get('accumulation'), 'distribution': d.get('distribution'), 'pullback': d.get('pullback'),
                              'anomalies': d.get('anomalies'), 'anomaly_score': d.get('anomaly_score'),
                              'anomaly_lvl': d.get('anomaly_lvl'), 'gap_pct': d.get('gap_pct'), 'zscore': d.get('zscore'),
+                             'physics': d.get('physics'),
                              # VERTEX — noyau quant complet (edge, sous-scores, Kelly, Monte-Carlo, EV, drapeaux)
                              'vx_edge': _vx.get('edge'), 'vx_verdict': _vx.get('verdict'),
                              'vx_pwin': _vx.get('p_win'), 'vx_kelly': _kel.get('pct'),
@@ -6840,6 +6845,15 @@ async function load(){
       <div style="flex:1;min-width:280px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:10px;letter-spacing:1.5px;color:#8794ab;font-weight:800">🧠 THÈSE VERTEX</span>${d.profile?`<span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:6px;color:${d.profile==='OFFENSIF'?C.r:d.profile==='DÉFENSIF'?C.blue:C.gold};background:${d.profile==='OFFENSIF'?C.r:d.profile==='DÉFENSIF'?C.blue:C.gold}1a;border:1px solid ${d.profile==='OFFENSIF'?C.r:d.profile==='DÉFENSIF'?C.blue:C.gold}50">${d.profile==='OFFENSIF'?'⚔️ ':d.profile==='DÉFENSIF'?'🛡️ ':'⚖️ '}${d.profile}</span>`:''}</div>
         ${d.thesis?`<div style="font-size:13px;color:#f0f4fb;line-height:1.6;margin-bottom:9px;font-weight:600">${d.thesis}</div>`:''}
+        ${(d.physics&&d.physics.state)?`<div style="margin:2px 0 10px;padding:10px 12px;border-radius:11px;background:${d.physics.state_col}12;border:1px solid ${d.physics.state_col}3a">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:9px;letter-spacing:1.5px;color:#8794ab;font-weight:800">🔬 PHYSIQUE DU MARCHÉ</span><span style="font-size:10px;font-weight:800;color:${d.physics.state_col};background:${d.physics.state_col}1a;border:1px solid ${d.physics.state_col}55;padding:2px 9px;border-radius:6px">${d.physics.state}</span></div>
+          <div style="display:flex;gap:15px;flex-wrap:wrap;margin-top:8px;font-size:10.5px;color:#8794ab">
+            <span title="Exposant de Hurst (fractale) : >0.5 tendance persistante, <0.5 retour à la moyenne, ≈0.5 aléatoire">Hurst <b style="color:#e8edf5">${d.physics.hurst!=null?d.physics.hurst:'—'}</b></span>
+            <span title="Ratio d'efficience de Kaufman : mouvement net / chemin parcouru (signal sur bruit)">Efficience <b style="color:#e8edf5">${d.physics.efficiency!=null?Math.round(d.physics.efficiency*100)+'%':'—'}</b></span>
+            <span title="Entropie de Shannon des rendements : 0 structuré → 100% désordre imprévisible">Entropie <b style="color:#e8edf5">${d.physics.entropy!=null?Math.round(d.physics.entropy*100)+'%':'—'}</b></span>
+            ${d.physics.half_life?`<span title="Demi-vie de retour à la moyenne (Ornstein-Uhlenbeck), en jours de bourse">Demi-vie <b style="color:#e8edf5">${d.physics.half_life}j</b></span>`:''}
+          </div>
+          <div style="font-size:10.5px;color:#9aa4b8;line-height:1.5;margin-top:7px">${d.physics.note}</div></div>`:''}
         <div style="font-size:12.5px;margin-bottom:8px;color:#eaf0fa">${l1}</div>
         <div style="font-size:12.5px;color:#cfd8e6;line-height:1.6">${valLine}${situ?situ.charAt(0).toUpperCase()+situ.slice(1)+'. ':''}${planLine}</div>
         <div id="bizDesc"></div>

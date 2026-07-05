@@ -134,6 +134,17 @@ def thesis(d):
         play = "polyvalent → action, ou CALL 1-3 mois si la conviction est là"
     rr = (d.get('plan') or {}).get('rr_res')
     tail = f" R:R ~{rr}:1 vers la résistance." if rr else "."
+    # Physique du marché : la structure fractale confirme ou nuance la lecture.
+    phy = d.get('physics') or {}
+    pst = phy.get('state')
+    phys = ''
+    if pst == 'TENDANCE FRACTALE':
+        phys = f" 🔬 Physique : {pst} (Hurst {phy.get('hurst')}) — les incréments ont de la mémoire, la tendance tend à se prolonger."
+    elif pst == 'RETOUR MOYENNE':
+        hl = phy.get('half_life')
+        phys = f" 🔬 Physique : {pst} (Hurst {phy.get('hurst')}{f', demi-vie ≈ {hl}j' if hl else ''}) — jouer les excès, pas la poursuite."
+    elif pst == 'CHAOS':
+        phys = f" 🔬 Physique : {pst} (entropie {phy.get('entropy')}) — mouvement bruité, réduis la taille."
     # Radar d'anomalies : si le titre est statistiquement hors-norme, on le signale.
     ano = d.get('anomalies') or []
     lvl = d.get('anomaly_lvl')
@@ -143,4 +154,4 @@ def thesis(d):
         alert = f" 🛰️ Radar ALERTE : {top.get('lbl')} — comportement hors-norme, vérifie la nouvelle avant d'agir."
     elif lvl == 'ACTIF' and ano:
         alert = f" 🛰️ Radar actif : {len(ano)} signal(s) inhabituel(s) détecté(s)."
-    return f"{head}. {driver[0].upper()}{driver[1:]}. Comment jouer : {play}.{tail}{alert}"
+    return f"{head}. {driver[0].upper()}{driver[1:]}. Comment jouer : {play}.{tail}{phys}{alert}"
