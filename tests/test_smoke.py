@@ -46,7 +46,7 @@ def test_api_search():
 def test_pages_render():
     # follow_redirects : /ma-page & co sont des alias qui redirigent (302) vers la page canonique.
     c = _client()
-    for path in ["/", "/brief", "/review", "/decisions", "/watchlist", "/options", "/ma-page", "/entreprises",
+    for path in ["/", "/brief", "/review", "/decisions", "/research", "/watchlist", "/options", "/ma-page", "/entreprises",
                  "/strategie", "/journal", "/suivi", "/equipe", "/bordel", "/settings"]:
         assert c.get(path, follow_redirects=True).status_code == 200, path
 
