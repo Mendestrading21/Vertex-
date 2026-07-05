@@ -6494,6 +6494,23 @@ function renderCommittee(r){
   var unk=(r.unknowns||[]).map(function(t){return cmtEvRow(t,C.mut,'❓');}).join('');
   var unkBlock=unk?'<div style="margin-top:12px;padding:11px 13px;background:rgba(135,148,171,.06);border:1px solid rgba(135,148,171,.28);border-radius:12px">'
     +'<div style="font-size:10px;font-weight:800;color:'+C.mut+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px">❓ Ce que nous ne savons pas</div>'+unk+'</div>':'';
+  // Scénarios conditionnels + invalidations (Ch. XVIII — raisonnement, pas prédiction)
+  var reas=r.reasoning||{},reasBlock='';
+  if(reas.scenarios&&reas.scenarios.length){
+    var scCards=reas.scenarios.map(function(s){var sc=CMT_TONE[s.tone]||C.mut;
+      var tgt=s.target!=null?('$'+s.target+(s.move_pct!=null?' ('+(s.move_pct>=0?'+':'')+s.move_pct+'%)':'')):'—';
+      return '<div style="flex:1;min-width:180px;background:#0c0e13;border:1px solid '+sc+'33;border-radius:12px;padding:11px 12px">'
+        +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><span style="font-size:12px;font-weight:800;color:'+sc+'">'+s.name+'</span>'
+        +'<span style="margin-left:auto;font-size:9px;font-weight:800;color:'+sc+';background:'+sc+'1a;border:1px solid '+sc+'44;padding:1px 7px;border-radius:6px">'+s.weight+'% · '+s.likelihood+'</span></div>'
+        +'<div style="font-size:11px;color:#cfd8e6;line-height:1.5"><b style="color:#8794ab">Déclencheur :</b> '+s.trigger+'</div>'
+        +'<div style="font-size:11px;color:#cfd8e6;margin-top:3px"><b style="color:#8794ab">Cible :</b> '+tgt+'</div>'
+        +'<div style="font-size:10.5px;color:#8794ab;margin-top:3px">Invalidé si : '+s.invalidation+'</div></div>';}).join('');
+    var invList=(reas.invalidations||[]).map(function(t){return cmtEvRow(t,C.r,'⛔');}).join('');
+    reasBlock='<div style="margin-top:13px"><div style="font-size:10px;font-weight:800;color:#8794ab;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">🔀 Scénarios conditionnels — ce qui doit se passer</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'+scCards+'</div>'
+      +(invList?'<div style="margin-top:11px;padding:11px 13px;background:rgba(239,68,68,.05);border:1px solid '+C.r+'2e;border-radius:12px"><div style="font-size:10px;font-weight:800;color:'+C.r+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px">⛔ Ce qui invaliderait la thèse</div>'+invList+'</div>':'')
+      +(reas.conviction_note?'<div class="muted" style="font-size:10px;margin-top:8px;font-style:italic">'+reas.conviction_note+'</div>':'')+'</div>';
+  }
   var freshCol=dq.stale?C.r:(dq.grade==='A'?C.g:C.yl);
   var freshTxt=(dq.warning?dq.warning:'données fraîches')+(dq.age_seconds!=null?' · scan il y a '+Math.round(dq.age_seconds)+'s':'');
   el.innerHTML='<div class="card" style="border:1px solid '+tone+'55;background:linear-gradient(135deg,'+tone+'0d,#0d0e12)">'
@@ -6515,7 +6532,7 @@ function renderCommittee(r){
     +'<div class="grid2">'
       +'<div><div style="font-size:10px;font-weight:800;color:'+C.g+';letter-spacing:.4px;margin-bottom:5px">✓ ARGUMENTS POUR</div>'+pros+'</div>'
       +'<div><div style="font-size:10px;font-weight:800;color:'+C.r+';letter-spacing:.4px;margin-bottom:5px">⚠ ARGUMENTS CONTRE</div>'+cons+'</div></div>'
-    +contraBlock+devil+unkBlock
+    +contraBlock+devil+unkBlock+reasBlock
     +'<div class="muted" style="font-size:10.5px;margin-top:13px;line-height:1.5">'+(r.explanation||'')
       +'<br>Le comité éclaire une décision — il ne la prend jamais à votre place. Analyse éducative, aucune certitude, aucun ordre.</div></div>';
 }

@@ -9,7 +9,7 @@ avec piste d'audit — jamais une certitude, toujours une aide à la décision.
 Analyse uniquement. Aucune exécution. Chaque règle appliquée est tracée.
 """
 
-from vertex.engines import evidence
+from vertex.engines import evidence, reasoning
 
 # ─── Décisions autorisées (label + tonalité UI) ────────────────────────────
 DECISIONS = {
@@ -245,6 +245,8 @@ def _result(decision, d, dq, committee, *, symbol, market, vehicle, conviction,
         flags = flags + [dq['warning']]
     unknowns = [e['text'] for e in committee.get('unknown', [])][:5]
     expl = explanation or _explain(decision, committee, confidence, audit)
+    reason = (reasoning.build(d, committee, decision)
+              if decision != 'DATA_INSUFFICIENT' else None)
     return {
         'symbol': symbol or d.get('symbol'),
         'final_decision': decision,
@@ -267,6 +269,7 @@ def _result(decision, d, dq, committee, *, symbol, market, vehicle, conviction,
         'blockers': blockers,
         'risk_flags': flags[:6],
         'unknowns': unknowns,          # « ce que nous ne savons pas » (Ch. XVI)
+        'reasoning': reason,           # scénarios + invalidations (Ch. XVIII)
         'data_quality': dq,
         'explanation': expl,
         'audit_trail': audit,
