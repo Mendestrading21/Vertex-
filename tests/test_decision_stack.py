@@ -140,3 +140,20 @@ def test_score_breakdown_is_traceable():
     assert any(s['label'] == 'Fondamental' and s['is_proxy'] for s in bd['subscores'])
     deltas = {a['label'][:8]: a['delta'] for a in bd['adjustments']}
     assert deltas['Physique'] == 5 and deltas['Multi-ho'] == 3
+
+
+def test_tipping_points_say_what_would_upgrade():
+    # R:R faible → « Surveiller » ; le seuil de bascule doit citer R:R ≥ 1.5.
+    r = ds.evaluate(_stock(plan={'entry': 100, 'stop': 96, 'tp1': 103, 'tp2': 105,
+                                  'tp3': 108, 'rr_res': 1.1}))
+    tp = r['tipping_points']
+    assert any('1.5' in t for t in tp)
+    # RISK-OFF → mentionne le retour en RISK-ON
+    r2 = ds.evaluate(_stock(score=90), market={'roro': 'RISK-OFF', 'spy_regime': 'TREND'})
+    assert any('RISK-ON' in t for t in r2['tipping_points'])
+
+
+def test_no_tipping_points_when_already_top():
+    r = ds.evaluate(_stock(), market={'roro': 'RISK-ON', 'spy_regime': 'TREND'})
+    if r['final_decision'] == 'STRONG_BUY':
+        assert r['tipping_points'] == []

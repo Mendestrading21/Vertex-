@@ -197,6 +197,32 @@ def _size_hint(decision, profile):
     return table.get(decision, {}).get(profile or 'ÉQUILIBRÉ', '0% — observer')
 
 
+def _tipping_points(decision, d, market, portfolio):
+    """Conditions CONCRÈTES et mesurables qui amélioreraient le verdict (Ch. XVIII).
+
+    Le complément des invalidations : au lieu de « ce qui tuerait la thèse »,
+    « ce qui la renforcerait ». Dérivé des mêmes seuils que les règles."""
+    if decision in ('STRONG_BUY', 'DATA_INSUFFICIENT'):
+        return []
+    out = []
+    rr = _num((d.get('plan') or {}).get('rr_res'))
+    if rr and rr < 1.5:
+        out.append(f'Un ratio risque/récompense ≥ 1.5 (actuellement {rr:.1f})')
+    if _timing(d) == 'EXTENDED':
+        out.append('Un repli vers la zone d\'entrée (le titre est sur-étendu)')
+    if not (d.get('signals') or {}).get('above200', True):
+        out.append('Une reprise durable au-dessus de la MM200')
+    if market and market.get('roro') == 'RISK-OFF':
+        out.append('Le retour du marché en RISK-ON (permission de risque)')
+    if market and market.get('spy_regime') == 'CHOP':
+        out.append('La sortie du régime de range (une tendance qui se réinstalle)')
+    if d.get('distribution'):
+        out.append('La fin de la distribution (le volume qui confirme la hausse)')
+    if portfolio and _num(portfolio.get('max_correlation')) >= 0.8:
+        out.append('Une corrélation portefeuille plus basse (diversifier le panier)')
+    return out[:4]
+
+
 def _member_stances(ev):
     """Vote net de chaque analyste du comité, par domaine."""
     by = {}
@@ -258,13 +284,14 @@ def evaluate(detail, *, symbol=None, market=None, option=None, portfolio=None,
     base_conf = _num(d.get('confidence'), 55)
     confidence = int(max(0, min(100, round((base_conf + committee['confidence']) / 2
                                            - dq.get('confidence_penalty', 0)))))
+    tipping = _tipping_points(decision, d, market, portfolio)
     return _result(decision, d, dq, committee, symbol=symbol, market=market, vehicle=vehicle,
                    conviction=conviction, confidence=confidence, audit=audit,
-                   permission=permission, context=context)
+                   permission=permission, context=context, tipping=tipping)
 
 
 def _result(decision, d, dq, committee, *, symbol, market, vehicle, conviction,
-            confidence, audit, permission=True, explanation=None, context=None):
+            confidence, audit, permission=True, explanation=None, context=None, tipping=None):
     label, tone = DECISIONS[decision]
     plan = d.get('plan') or {}
     pros = [e['text'] for e in committee.get('positive', [])][:5]
@@ -302,6 +329,7 @@ def _result(decision, d, dq, committee, *, symbol, market, vehicle, conviction,
         'unknowns': unknowns,          # « ce que nous ne savons pas » (Ch. XVI)
         'reasoning': reason,           # scénarios + invalidations (Ch. XVIII)
         'score_breakdown': breakdown,  # traçabilité du score (Ch. XVIII)
+        'tipping_points': tipping or [],  # ce qui améliorerait le verdict (Ch. XVIII)
         'context': context,            # situation transversale (percentiles, rang secteur)
         'data_quality': dq,
         'explanation': expl,

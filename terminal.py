@@ -5737,8 +5737,10 @@ function renderCommittee(r){
         +'<div style="font-size:11px;color:#cfd8e6;margin-top:3px"><b style="color:#8794ab">Cible :</b> '+tgt+'</div>'
         +'<div style="font-size:10.5px;color:#8794ab;margin-top:3px">Invalidé si : '+s.invalidation+'</div></div>';}).join('');
     var invList=(reas.invalidations||[]).map(function(t){return cmtEvRow(t,C.r,'⛔');}).join('');
+    var tipList=(r.tipping_points||[]).map(function(t){return cmtEvRow(t,C.g,'🔼');}).join('');
     reasBlock='<div style="margin-top:13px"><div style="font-size:10px;font-weight:800;color:#8794ab;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">🔀 Scénarios conditionnels — ce qui doit se passer</div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap">'+scCards+'</div>'
+      +(tipList?'<div style="margin-top:11px;padding:11px 13px;background:rgba(34,197,94,.05);border:1px solid '+C.g+'2e;border-radius:12px"><div style="font-size:10px;font-weight:800;color:'+C.g+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px">🔼 Ce qui améliorerait le verdict</div>'+tipList+'</div>':'')
       +(invList?'<div style="margin-top:11px;padding:11px 13px;background:rgba(239,68,68,.05);border:1px solid '+C.r+'2e;border-radius:12px"><div style="font-size:10px;font-weight:800;color:'+C.r+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px">⛔ Ce qui invaliderait la thèse</div>'+invList+'</div>':'')
       +(reas.conviction_note?'<div class="muted" style="font-size:10px;margin-top:8px;font-style:italic">'+reas.conviction_note+'</div>':'')+'</div>';
   }
