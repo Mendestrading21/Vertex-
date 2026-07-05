@@ -44,6 +44,7 @@ from vertex.data import constants as _vconst
 from vertex.services import status_service as _status_svc
 from vertex.engines import decision_stack as _decision
 from vertex.ui import nav as _nav
+from vertex.engines import indicators as _indicators
 
 app = Flask(__name__)
 # ── JSON SÛR : convertit NaN/Infinity → null. Sinon Flask sort `NaN` (toléré par Python
@@ -256,32 +257,10 @@ def _f(x):
         return 0.0
 
 
-def _rsi(s, n=14):
-    d = s.diff()
-    up = d.clip(lower=0).ewm(alpha=1 / n, adjust=False).mean()
-    dn = (-d.clip(upper=0)).ewm(alpha=1 / n, adjust=False).mean()
-    # dn==0 (aucune baisse) → RSI = 100, pas NaN (le NaN casserait le JSON de /scan)
-    return (100 - 100 / (1 + up / dn.replace(0, np.nan))).fillna(100)
-
-
-def _atr(df, n=14):
-    h, l, c = df['High'], df['Low'], df['Close']
-    tr = pd.concat([h - l, (h - c.shift()).abs(), (l - c.shift()).abs()], axis=1).max(axis=1)
-    return tr.ewm(alpha=1 / n, adjust=False).mean()
-
-
-def _adx(df, n=14):
-    """Force de tendance (ADX). Élevé = tendance directionnelle ; bas = range/bruit."""
-    h, l, c = df['High'], df['Low'], df['Close']
-    up, dn = h.diff(), -l.diff()
-    plus = ((up > dn) & (up > 0)) * up
-    minus = ((dn > up) & (dn > 0)) * dn
-    tr = pd.concat([h - l, (h - c.shift()).abs(), (l - c.shift()).abs()], axis=1).max(axis=1)
-    atr = tr.ewm(alpha=1 / n, adjust=False).mean()
-    pdi = 100 * plus.ewm(alpha=1 / n, adjust=False).mean() / atr
-    mdi = 100 * minus.ewm(alpha=1 / n, adjust=False).mean() / atr
-    dx = 100 * (pdi - mdi).abs() / (pdi + mdi).replace(0, np.nan)
-    return float(dx.ewm(alpha=1 / n, adjust=False).mean().iloc[-1])
+# Indicateurs techniques (RSI/ATR/ADX) : source unique dans vertex/engines/indicators.py.
+_rsi = _indicators.rsi
+_atr = _indicators.atr
+_adx = _indicators.adx
 
 
 # Black-Scholes : source unique dans elio/options.py (dé-duplication — cf. audit).
