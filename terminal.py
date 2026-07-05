@@ -7543,7 +7543,9 @@ PAGE_COMPARE = _vpage('Comparateur',
 _SUIVI_JS = r"""
 var ROWS={},DET={},MK={};
 function rGet(){try{return JSON.parse(localStorage.getItem('myRecos')||'[]')}catch(e){return[]}}
-function rSet(a){localStorage.setItem('myRecos',JSON.stringify(a));localStorage.setItem('deskTs',String(Date.now()));}
+function rSet(a){localStorage.setItem('myRecos',JSON.stringify(a));localStorage.setItem('deskTs',String(Date.now()));sSyncPush();}
+var _sT;function sSyncPush(){clearTimeout(_sT);_sT=setTimeout(function(){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){var data=(d&&d.data)||{};['myRecos','myRecosClosed','myFavs','myNotes','myTrades','myTradesClosed','myTradeLog','vxJournal','myCapital'].forEach(function(k){var v=localStorage.getItem(k);if(v!=null)data[k]=v;});fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:Date.now(),data:data})});}).catch(function(){});}catch(e){}},900);}
+function sSyncPull(cb){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){if(d&&d.data){var lt=parseFloat(localStorage.getItem('deskTs')||'0');if((d.ts||0)>lt){['myRecos','myRecosClosed','myFavs','myNotes'].forEach(function(k){if(d.data[k]!=null)localStorage.setItem(k,d.data[k]);});localStorage.setItem('deskTs',String(d.ts||Date.now()));}}if(cb)cb();}).catch(function(){if(cb)cb();});}catch(e){if(cb)cb();}}
 function today(){return new Date().toISOString().slice(0,10);}
 function bestReco(key){var rs=Object.keys(ROWS).map(function(k){return ROWS[k];});
   var buys=rs.filter(function(r){return r.verdict==='BUY'&&r[key]!=null;});
@@ -7561,32 +7563,54 @@ function statusOf(entry,now,stop,tgt){
   if(tgt&&now>=tgt)return ['🎯 Objectif atteint','#22C55E','win'];
   if(stop&&now<=stop)return ['🛑 Stop touché','#EF4444','loss'];
   return ['⏳ En cours','#F5B45B','open'];}
+// Conseil de sortie LIVE (même logique que le Desk) : dit QUAND vendre. Renvoie [label,couleur,raison,urgence(0=agir)].
+function sAdvice(x,now,row){
+  if(x.kind!=='STK'){
+    var spot=now||x.spot;var d=(spot&&x.tgt)?((x.tgt/spot-1)*100):null;
+    if(row&&row.verdict==='AVOID')return ['⚠️ SORTIR','#EF4444','Signal Vertex du sous-jacent passé à ÉVITER — la thèse est cassée.',0];
+    if(d!=null&&d<=0)return ['🎯 VENDRE / SÉCURISER','#22C55E','Le titre a atteint sa cible — sécurise la prime, ne rends pas le gain.',0];
+    if(d!=null&&d<=3)return ['👀 TRÈS PROCHE DE LA CIBLE','#FFB23F','Plus que '+d.toFixed(1)+'% de hausse du titre — prépare la vente.',1];
+    return ['✊ LAISSER COURIR','#38BDF8','Objectif titre encore à '+(d!=null?'+'+d.toFixed(1)+'%':'—')+'.',2];
+  }
+  var entry=x.entry_spot;var perf=(now!=null&&entry)?(now-entry)/entry*100:null;
+  if(x.tgt&&now>=x.tgt)return ['🎯 VENDRE / SÉCURISER','#22C55E','Objectif $'+x.tgt+' atteint — encaisse le gain ou remonte ton stop.',0];
+  if(x.stop&&now<=x.stop)return ['🛑 VENDRE','#EF4444','Stop $'+x.stop+' touché — sors selon le plan, sans discuter.',0];
+  if(row&&row.verdict==='AVOID')return ['⚠️ SORTIR','#EF4444','Signal Vertex passé à ÉVITER — la thèse est cassée.',0];
+  if(x.stop&&now<=x.stop*1.03)return ['👀 PROCHE DU STOP','#FFB23F','À moins de 3% du stop $'+x.stop+' — prépare la sortie.',1];
+  if(perf!=null&&perf>=15&&row&&row.verdict!=='BUY')return ['💰 SÉCURISER UNE PARTIE','#22C55E','+'+Math.round(perf)+'% et le signal faiblit — sécurise une partie.',1];
+  if(x.tgt&&x.tgt>entry&&(now-entry)/(x.tgt-entry)>=0.75)return ['💰 SÉCURISER','#22C55E','Proche de l\'objectif — remonte ton stop pour verrouiller le gain.',1];
+  return ['✊ GARDER','#38BDF8','Thèse intacte — laisse le plan travailler, ne touche à rien.',2];
+}
+function daysHeld(f){if(!f)return null;var d=Math.round((Date.now()-new Date(f+'T12:00:00').getTime())/86400000);return d>=0?d:null;}
+function vchip(row){if(!row||!row.verdict)return '';var m={BUY:['ACHAT','#22C55E'],WATCH:['SURV.','#FFB23F'],WAIT:['ATT.','#38BDF8'],AVOID:['ÉVITER','#EF4444']}[row.verdict]||['—','#8794ab'];return '<span style="font-size:9px;font-weight:800;color:'+m[1]+';background:'+m[1]+'1a;border:1px solid '+m[1]+'44;padding:2px 7px;border-radius:6px" title="Signal Vertex actuel du titre">Vertex '+m[0]+(row.score!=null?' '+row.score:'')+'</span>';}
 function kc(l,v,c,sub){return '<div class="kpi"><div class="kl">'+l+'</div><div class="kv" style="color:'+(c||'#f2f5fa')+'">'+v+'</div>'+(sub?'<div class="kd mut">'+sub+'</div>':'')+'</div>';}
+function advBox(adv){return '<div style="margin-top:11px;padding:9px 11px;border-radius:10px;background:'+adv[1]+'12;border:1px solid '+adv[1]+'3a"><div style="font-size:12.5px;font-weight:800;color:'+adv[1]+'">'+adv[0]+'</div><div style="font-size:10.5px;color:#9aa4b8;line-height:1.5;margin-top:2px">'+adv[2]+'</div></div>';}
 function recoCard(x){
-  var now=(ROWS[x.sym]||{}).price;var entry=x.entry_spot;
-  if(x.kind!=='STK'){ // option suivie — info + distance a la cible titre
-    var spot=now||x.spot;var d2=(spot&&x.tgt)?((x.tgt/spot-1)*100):null;
-    return '<div class="vcard" style="padding:14px 16px;border-left:3px solid #A78BFA"><div style="display:flex;align-items:center;gap:9px"><span style="font-size:15px;font-weight:900">'+x.sym+'</span><span style="font-size:11px;font-weight:800;color:#A78BFA;background:rgba(167,139,250,.14);border:1px solid rgba(167,139,250,.4);padding:2px 8px;border-radius:6px">💎 CALL $'+x.strike+'</span><span onclick="rDel('+x.id+')" style="margin-left:auto;cursor:pointer;color:#5b6678;font-size:15px">✕</span></div>'
-      +'<div style="font-size:11.5px;color:#8794ab;margin-top:8px">Suivi depuis le '+(x.followed||'—')+' · cible titre <b style="color:#38BDF8">$'+(x.tgt||'—')+'</b>'+(d2!=null?' ('+(d2>=0?'+':'')+d2.toFixed(1)+'% à parcourir)':'')+'</div>'
-      +'<div style="font-size:11px;color:#8794ab;margin-top:4px">Cours actuel '+(spot?'$'+spot:'—')+' · POP '+(x.pop!=null?x.pop+'%':'—')+' · qualité '+(x.quality!=null?x.quality:'—')+'</div>'
-      +'<div style="font-size:9.5px;color:#5b6678;margin-top:7px">clic → <a href="/options?t='+x.sym+'" style="color:#A78BFA;text-decoration:none;font-weight:700">💎 analyse option</a> · <a href="/titre/'+x.sym+'" style="color:#FF8C32;text-decoration:none;font-weight:700">📈 fiche action</a></div></div>';}
+  var row=ROWS[x.sym]||{};var now=row.price;var entry=x.entry_spot;var dh=daysHeld(x.followed);
+  if(x.kind!=='STK'){ // option suivie — conseil + distance à la cible titre
+    var spot=now||x.spot;var d2=(spot&&x.tgt)?((x.tgt/spot-1)*100):null;var adv=sAdvice(x,now,row);
+    return '<div class="vcard" style="padding:14px 16px;border:1px solid '+adv[1]+'40;background:radial-gradient(130% 90% at 100% -12%,'+adv[1]+'12,transparent 55%),linear-gradient(180deg,#141821,#0c0f15)"><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap"><span style="font-size:15px;font-weight:900">'+x.sym+'</span><span style="font-size:11px;font-weight:800;color:#A78BFA;background:rgba(167,139,250,.14);border:1px solid rgba(167,139,250,.4);padding:2px 8px;border-radius:6px">💎 CALL $'+x.strike+'</span>'+vchip(row)+'<span onclick="rDel('+x.id+')" style="margin-left:auto;cursor:pointer;color:#5b6678;font-size:15px">✕</span></div>'
+      +advBox(adv)
+      +'<div style="font-size:11px;color:#8794ab;margin-top:8px">Cours titre '+(spot?'<b style="color:#cfd8e6">$'+spot+'</b>':'—')+' → cible <b style="color:#38BDF8">$'+(x.tgt||'—')+'</b>'+(d2!=null?' ('+(d2>=0?'+':'')+d2.toFixed(1)+'% à parcourir)':'')+' · POP '+(x.pop!=null?x.pop+'%':'—')+'</div>'
+      +'<div style="font-size:9.5px;color:#5b6678;margin-top:7px">'+(dh!=null?'suivi depuis '+dh+'j · ':'')+'clic → <a href="/options?t='+x.sym+'" style="color:#A78BFA;text-decoration:none;font-weight:700">💎 option</a> · <a href="/titre/'+x.sym+'" style="color:#FF8C32;text-decoration:none;font-weight:700">📈 fiche</a></div></div>';}
   if(now==null||entry==null){return '<div class="vcard" style="padding:14px 16px"><div style="display:flex;align-items:center;gap:9px"><span style="font-size:15px;font-weight:900">'+x.sym+'</span><span class="muted" style="font-size:11px">cotation en attente…</span><span onclick="rDel('+x.id+')" style="margin-left:auto;cursor:pointer;color:#5b6678;font-size:15px">✕</span></div></div>';}
-  var pnl=(now-entry)/entry*100;var st=statusOf(entry,now,x.stop,x.tgt);
-  // progress entry -> now -> target
+  var pnl=(now-entry)/entry*100;var st=statusOf(entry,now,x.stop,x.tgt);var adv=sAdvice(x,now,row);
   var lo=Math.min(x.stop||entry,entry),hi=Math.max(x.tgt||entry,entry,now);var rg=(hi-lo)||1;
   var posNow=Math.max(0,Math.min(100,(now-lo)/rg*100)),posEnt=Math.max(0,Math.min(100,(entry-lo)/rg*100));
-  return '<div class="vcard" style="padding:15px 17px;border:1px solid '+st[1]+'44;background:radial-gradient(130% 90% at 100% -12%,'+st[1]+'14,transparent 55%),linear-gradient(180deg,#141821,#0c0f15);box-shadow:0 0 30px -18px '+st[1]+'">'
-    +'<div style="display:flex;align-items:center;gap:9px"><span style="font-size:16px;font-weight:900">'+x.sym+'</span>'
+  return '<div class="vcard" style="padding:15px 17px;border:1px solid '+adv[1]+'44;background:radial-gradient(130% 90% at 100% -12%,'+adv[1]+'14,transparent 55%),linear-gradient(180deg,#141821,#0c0f15);box-shadow:0 0 30px -18px '+adv[1]+'">'
+    +'<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap"><span style="font-size:16px;font-weight:900">'+x.sym+'</span>'
     +(x.src?'<span style="font-size:9px;font-weight:800;color:#F5B45B;background:rgba(245,180,91,.14);border:1px solid rgba(245,180,91,.4);padding:2px 7px;border-radius:6px">reco '+x.src+'</span>':'')
-    +'<span style="margin-left:auto;font-size:11px;font-weight:800;color:'+st[1]+';background:'+st[1]+'1a;border:1px solid '+st[1]+'44;padding:2px 9px;border-radius:7px">'+st[0]+'</span>'
-    +'<span onclick="rDel('+x.id+')" style="cursor:pointer;color:#5b6678;font-size:15px;margin-left:4px">✕</span></div>'
+    +vchip(row)
+    +'<span style="margin-left:auto;font-size:10px;font-weight:800;color:'+st[1]+';background:'+st[1]+'1a;border:1px solid '+st[1]+'44;padding:2px 8px;border-radius:7px">'+st[0]+'</span>'
+    +'<span onclick="rDel('+x.id+')" style="cursor:pointer;color:#5b6678;font-size:15px;margin-left:2px">✕</span></div>'
     +'<div style="display:flex;align-items:baseline;gap:12px;margin-top:9px"><span style="font-size:20px;font-weight:900;color:'+(pnl>=0?'#22C55E':'#EF4444')+'">'+(pnl>=0?'+':'')+pnl.toFixed(1)+'%</span><span style="font-size:11.5px;color:#8794ab">entrée $'+entry+' → actuel $'+now+'</span></div>'
+    +advBox(adv)
     +'<div style="position:relative;height:8px;background:#0a0c11;border-radius:5px;margin-top:12px">'
       +(x.stop?'<div style="position:absolute;left:0;top:0;bottom:0;width:'+posEnt+'%;background:linear-gradient(90deg,rgba(239,68,68,.35),rgba(255,178,63,.25));border-radius:5px"></div>':'')
       +'<div style="position:absolute;left:'+posNow+'%;top:-3px;width:3px;height:14px;background:'+(pnl>=0?'#22C55E':'#EF4444')+';border-radius:2px" title="cours actuel"></div>'
       +'<div style="position:absolute;left:'+posEnt+'%;top:-2px;width:2px;height:12px;background:#e8edf5" title="entrée"></div></div>'
     +'<div style="display:flex;justify-content:space-between;font-size:9.5px;color:#8794ab;margin-top:5px"><span>🛑 stop $'+(x.stop||'—')+'</span><span>entrée $'+entry+'</span><span>🎯 cible $'+(x.tgt||'—')+'</span></div>'
-    +'<div style="font-size:9.5px;color:#5b6678;margin-top:7px">Suivi depuis le '+(x.followed||'—')+' · clic → <a href="/titre/'+x.sym+'" style="color:#FF8C32;text-decoration:none">fiche</a></div></div>';}
+    +'<div style="font-size:9.5px;color:#5b6678;margin-top:7px">'+(dh!=null?'suivi depuis '+dh+' jour'+(dh>1?'s':'')+' · ':'')+'clic → <a href="/titre/'+x.sym+'" style="color:#FF8C32;text-decoration:none">fiche</a></div></div>';}
 function render(){
   var a=rGet();var stk=a.filter(function(x){return x.kind==='STK'&&x.entry_spot!=null;});
   var closed=stk.filter(function(x){var now=(ROWS[x.sym]||{}).price;return now!=null&&((x.tgt&&now>=x.tgt)||(x.stop&&now<=x.stop));});
@@ -7595,21 +7619,28 @@ function render(){
   var pnls=stk.map(function(x){var now=(ROWS[x.sym]||{}).price;return (now!=null&&x.entry_spot)?(now-x.entry_spot)/x.entry_spot*100:null;}).filter(function(v){return v!=null;});
   var avg=pnls.length?pnls.reduce(function(s,v){return s+v;},0)/pnls.length:null;
   var wr=closed.length?Math.round(wins.length/closed.length*100):null;
+  // combien réclament une action MAINTENANT (vendre / sécuriser)
+  var toAct=a.filter(function(x){var now=(ROWS[x.sym]||{}).price;return sAdvice(x,now,ROWS[x.sym]||{})[3]===0;}).length;
   var kb=document.getElementById('sKpi');
   if(kb)kb.innerHTML=kc('⭐ Suivis',a.length,'#f2f5fa',stk.length+' actions')
+    +kc('🔔 À vendre',toAct,toAct>0?'#EF4444':'#22C55E','signal de sortie')
     +kc('🎯 Réussite',wr!=null?wr+'%':'—',wr>=50?'#22C55E':wr!=null?'#EF4444':'#8794ab',closed.length+' clôturés')
-    +kc('⏳ En cours',open,'#F5B45B','positions ouvertes')
     +kc('📊 P&L moyen',avg!=null?(avg>=0?'+':'')+avg.toFixed(1)+'%':'—',avg>=0?'#22C55E':'#EF4444','simulé, non réel');
+  var banner=document.getElementById('sAlert');
+  if(banner)banner.innerHTML=toAct>0?('<div class="vcard" style="border:1px solid rgba(239,68,68,.45);background:linear-gradient(120deg,rgba(239,68,68,.1),#0f1218);padding:12px 15px;display:flex;align-items:center;gap:11px;flex-wrap:wrap"><span style="font-size:18px">🔔</span><span style="font-size:13px;font-weight:800;color:#f0b0b0">'+toAct+' position'+(toAct>1?'s':'')+' réclame'+(toAct>1?'nt':'')+' une action maintenant</span><span style="font-size:11px;color:#8794ab">— vends ou sécurise selon le conseil sur les cartes ci-dessous (triées par urgence).</span></div>'):'';
+  // tri par urgence : à agir d'abord, puis à surveiller, puis à garder
+  var sorted=a.slice().sort(function(p,q){var np=(ROWS[p.sym]||{}).price,nq=(ROWS[q.sym]||{}).price;return sAdvice(p,np,ROWS[p.sym]||{})[3]-sAdvice(q,nq,ROWS[q.sym]||{})[3];});
   var host=document.getElementById('sList');
-  host.innerHTML=a.length?('<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:13px">'+a.map(recoCard).join('')+'</div>')
-    :'<div class="vcard"><div class="muted" style="padding:16px;text-align:center;line-height:1.8">Aucun suivi pour l\'instant.<br>Clique <b style="color:#F5B45B">⭐</b> sur un titre (Scanner, Dashboard, fiche…) ou lance une <b style="color:#FF8C32">simulation</b> ci-dessus — je suis alors la position à ta place jusqu\'à ce que le plan dise de vendre (🎯 objectif ou 🛑 stop).</div></div>';}
+  host.innerHTML=a.length?('<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:13px">'+sorted.map(recoCard).join('')+'</div>')
+    :'<div class="vcard"><div class="muted" style="padding:16px;text-align:center;line-height:1.8">Aucun suivi pour l\'instant.<br>Clique <b style="color:#F5B45B">⭐</b> sur un titre (Scanner, Dashboard, fiche…) ou lance une <b style="color:#FF8C32">simulation</b> ci-dessus — je suis alors la position à ta place et je te dis <b style="color:#22C55E">quand vendre</b> (🎯 objectif · 🛑 stop · ⚠️ signal cassé · 💰 sécuriser).</div></div>';}
 function load(){fetch('/scan').then(function(r){return r.json()}).then(function(d){ROWS={};(d.rows||[]).forEach(function(r){ROWS[r.symbol]=r;});DET=d.detail||{};MK=d.market||{};render();}).catch(function(){render();});}
-load();setInterval(load,15000);
+sSyncPull(function(){load();});setInterval(load,15000);setInterval(function(){sSyncPull(render);},60000);
 """
 
-PAGE_SUIVI = _vpage('Mes Suivis',
-  '<div class="vhead"><div><h1>⭐ Mes Suivis</h1><div class="s">Si tu avais pris la reco, aurais-tu gagné ? · je simule l\'achat à l\'instant et je suis la position jusqu\'à ce que le plan dise de vendre · 🔒 stocké sur cet appareil</div></div></div>'
+PAGE_SUIVI = _vpage('Watchlist',
+  '<div class="vhead"><div><h1>⭐ Suivi jusqu\'à la vente</h1><div class="s">Chaque position ⭐ suivie en continu jusqu\'au signal de sortie · je te dis <b style="color:#22C55E">quand vendre</b> (🎯 objectif · 🛑 stop · ⚠️ signal cassé · 💰 sécuriser) · triées par urgence · ☁️ synchronisé</div></div></div>'
   '<div class="kpiband" id="sKpi" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"></div>'
+  '<div id="sAlert" style="margin-bottom:4px"></div>'
   '<div class="vcard" style="padding:15px 17px;margin-bottom:4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">'
     '<div style="font-size:12px;font-weight:800;letter-spacing:.5px;color:#F5B45B">🎬 SIMULER UNE RECO</div>'
     '<span style="font-size:11.5px;color:#8794ab;flex:1;min-width:180px">Je l\'achète à la cotation du moment et je la suis jusqu\'au 🎯 objectif ou 🛑 stop — sans engager un centime.</span>'
