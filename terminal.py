@@ -3352,6 +3352,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <div class="khero" id="dHero2"></div></div></div>
   <div class="stitle">🎯 À TRAVAILLER AUJOURD'HUI <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· les meilleurs setups Vertex + le trade #1 avec son plan</span></div>
   <div id="dVxBanner" style="display:none"></div>
+  <div id="dConsensus" style="margin-bottom:16px"></div>
   <div class="herorow">
     <div class="hero" id="dHero"><span class="muted" style="padding:20px">chargement…</span></div>
     <div class="scard s-green"><div class="shead"><span class="ico">🔄</span> CE QUI A CHANGÉ DEPUIS HIER</div><div id="dChanges" style="padding:14px"></div></div>
@@ -3584,7 +3585,24 @@ window.addEventListener('message',function(e){if(e&&e.data&&e.data.wlHeight){var
 window.__scFilter=window.__scFilter||'buy';
 function scFilter(pts){var m=window.__scFilter;if(m==='buy')return pts.filter(function(p){return p.v==='BUY'||p.v==='WATCH';});if(m==='rr')return pts.filter(function(p){return p.y>=2;});return pts;}
 function scatterHTML(){var all=window.__scPts||[];var m=window.__scFilter;var pts=scFilter(all);var nB=all.filter(function(p){return p.v==='BUY'||p.v==='WATCH';}).length;var nR=all.filter(function(p){return p.y>=2;}).length;var pill=function(id,lab){var on=m===id;return '<button type="button" onclick="setScF(\''+id+'\')" style="font-size:10px;font-weight:800;padding:3px 11px;border-radius:7px;cursor:pointer;border:1px solid '+(on?'#FF7A18':'rgba(255,255,255,.14)')+';background:'+(on?'rgba(255,122,24,.16)':'#0e0e12')+';color:'+(on?'#FF7A18':'#9aa4b8')+'">'+lab+'</button>';};return '<div class="stitle">🔵 QUALITÉ vs ASYMÉTRIE <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· score (→) vs R:R (↑) · clic point → fiche</span><span style="margin-left:14px;display:inline-flex;gap:5px;vertical-align:middle">'+pill('buy','⭐ Achat/Surv. '+nB)+pill('rr','🎯 R:R ≥ 2 '+nR)+pill('all','🌍 Tous '+all.length)+'</span></div><div class="scard" style="padding:12px 14px">'+(pts.length?vxScatter(pts):'<div class="muted" style="padding:24px;text-align:center">Aucun titre dans ce filtre aujourd\'hui.</div>')+'</div>';}
-window.setScF=function(m){window.__scFilter=m;var sc=document.getElementById('dScatter');if(sc)sc.innerHTML=scatterHTML();};
+// 🏛️ CONSENSUS DU COMITÉ — l'accueil lit la même DecisionStack que la fiche (source unique)
+var DTONE={'strong-green':'#16A34A','green':'#22C55E','blue':'#38BDF8','amber':'#FFB23F','red':'#EF4444','gray':'#8794ab'};
+function dConsChip(l,v,c){return '<div style="text-align:center;padding:4px 12px"><div style="font-size:8px;color:#6b7280;font-weight:800;letter-spacing:.5px;text-transform:uppercase">'+l+'</div><div style="font-size:18px;font-weight:900;color:'+c+'">'+v+'</div></div>';}
+function renderConsensus(b){
+  var el=document.getElementById('dConsensus');if(!el||!b||!b.setups)return;
+  var c=b.counts||{},s=(b.setups||[]).slice(0,6);
+  var pills=s.map(function(x){var tc=DTONE[x.tone]||'#8794ab';
+    return '<span onclick="location.href=\'/titre/'+x.symbol+'\'" title="'+(x.label||'')+' · comité '+(x.view||'')+'" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;background:#0e1119;border:1px solid '+tc+'44;border-radius:20px;padding:5px 11px;font-size:12px"><b>'+x.symbol+'</b><span style="width:7px;height:7px;border-radius:50%;background:'+tc+'"></span><span style="color:'+tc+';font-weight:800;font-size:10px">'+x.confidence+'</span>'+(x.has_contradiction?'<span style="color:#FFB23F;font-size:10px">⚠</span>':'')+'</span>';}).join('');
+  el.innerHTML='<div class="scard" style="padding:13px 16px;border:1px solid rgba(255,140,50,.28);background:linear-gradient(135deg,rgba(255,140,50,.06),#0d0f15)">'
+    +'<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
+      +'<div style="display:flex;align-items:center;gap:9px"><span style="font-size:13px;font-weight:800;letter-spacing:.5px;color:#FF9A3D">🏛️ CONSENSUS DU COMITÉ</span>'
+        +'<a href="/brief" style="font-size:10px;font-weight:800;color:#FF8C32;text-decoration:none;background:rgba(255,140,50,.1);border:1px solid #FF8C3255;border-radius:7px;padding:3px 9px">🌅 Morning Brief →</a></div>'
+      +'<div style="display:flex;gap:4px;border-left:1px solid rgba(255,255,255,.08);padding-left:12px">'+dConsChip('Achat',c.buy||0,'#22C55E')+dConsChip('Surv.',c.watch||0,'#FFB23F')+dConsChip('Éviter',c.avoid||0,'#EF4444')+dConsChip('⚠',c.contradictions||0,'#FFB23F')+'</div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto">'+pills+'</div></div>'
+    +'<div class="muted" style="font-size:9.5px;margin-top:8px">Même moteur que la fiche · le chiffre = confiance du comité /100 · ⚠ = contradiction interne exposée · analyse éducative, aucun ordre</div></div>';
+}
+(function(){function pull(){fetch('/api/brief').then(function(r){return r.json();}).then(renderConsensus).catch(function(){});}
+  pull();setInterval(pull,120000);})();
 function renderDaily(d){
   try{renderKPI(d);renderCmd(d);}catch(e){}
   try{buildComite(d.committee,d.detail);}catch(e){}
