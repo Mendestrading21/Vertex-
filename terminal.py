@@ -50,9 +50,11 @@ from vertex.engines import backtest as _backtest
 from vertex.engines import swing as _swing
 from vertex.engines import strategy_fit as _strategy_fit
 from vertex.engines import stats as _stats
-from vertex.app.state import scan_state
+from vertex.app.state import scan_state, weekly_state
+from vertex.engines import market_lens as _market_lens
 from vertex.app.routes import decision_api as _decision_api
 from vertex.app.routes import analysis_api as _analysis_api
+from vertex.app.routes import feeds as _feeds
 from vertex.data import demo as _demo
 from vertex.services import market_clock as _market_clock
 
@@ -1459,8 +1461,7 @@ def _market_internals(rows, detail, breadth):
             'health': health, 'sectors': sectors_breadth}
 
 
-# ─── WATCHLIST DE LA SEMAINE : sélection FIGÉE le lundi, options associées ──
-weekly_state = {'data': None, 'updated': None, 'regenerated': False}
+# ─── WATCHLIST DE LA SEMAINE : sélection FIGÉE le lundi (état partagé → state.py) ──
 
 
 def _earnings_map():
@@ -1727,67 +1728,17 @@ def api_watchlist_tv():
 
 
 def _market_score(mc):
-    """Score marché /100 (régime + risk-on/off + breadth + VIX). Même logique que l'UI."""
-    if not mc:
-        return None
-    br = mc.get('breadth') or {}
-    reg, ro, vb = mc.get('spy_regime'), mc.get('roro'), mc.get('vix_band')
-    s = (35 if reg == 'TREND' else 18 if reg == 'NEUTRAL' else 6 if reg == 'CHOP' else 14)
-    s += (25 if ro == 'RISK-ON' else 2 if ro == 'RISK-OFF' else 12)
-    a50 = br.get('above50')
-    s += round((a50 if a50 is not None else 50) / 100 * 25)
-    s += (15 if vb == 'calme' else 2 if vb == 'stress' else 8)
-    return max(0, min(100, round(s)))
+    """Score marché /100 — source unique dans vertex/engines/market_lens.climate()."""
+    cl = _market_lens.climate(mc)
+    return cl['score'] if cl else None
 
 
 def _scan_age():
     return round(time.time() - scan_state['scan_ts']) if scan_state.get('scan_ts') else None
 
 
-@app.route('/api/market/summary')
-def api_market_summary():
-    """Résumé marché pour widgets (lecture seule)."""
-    mc = scan_state.get('market_ctx') or {}
-    sc = _market_score(mc)
-    verdict = 'FAVORABLE' if (sc or 0) >= 65 else 'NEUTRE' if (sc or 0) >= 40 else 'DANGEREUX'
-    return jsonify({
-        'score': sc, 'verdict': verdict,
-        'regime': mc.get('spy_regime'), 'roro': mc.get('roro'), 'roro_gap': mc.get('roro_gap'),
-        'vix': mc.get('vix'), 'vix_band': mc.get('vix_band'), 'vix_chg': mc.get('vix_chg'),
-        'breadth': mc.get('breadth'), 'market_verdict': mc.get('verdict'),
-        'indices': scan_state.get('indices'), 'spy': scan_state.get('spy'),
-        'best_sector': (scan_state.get('sectors') or [None])[0],
-        'scanned': scan_state.get('scanned_n'), 'universe': len(UNIVERSE),
-        'scan_age': _scan_age(), 'market': scan_state.get('market'),
-        'source': 'ibkr' if IBKR_ENABLED else 'cloud',
-    })
-
-
-@app.route('/api/cockpit')
-def api_cockpit():
-    """Widgets du cockpit : action du jour + top opportunités."""
-    recs = scan_state.get('recommendations') or []
-    cand = sorted([r for r in recs if r.get('tone') in ('buy', 'pullback')],
-                  key=lambda r: ((r.get('timing') == 'BUY_NOW'), r.get('score40', 0)), reverse=True)
-    top = cand[0] if cand else (recs[0] if recs else None)
-    # TOP VERTEX : les meilleurs setups du jour selon le noyau quant (edge décroissant, verdict BUY/S+)
-    _rows = scan_state.get('rows') or []
-    _vxb = [r for r in _rows if (r.get('vx_verdict') or '') in ('VERTEX BUY', 'VERTEX S+') and r.get('vx_edge') is not None]
-    vertex_top = sorted(_vxb, key=lambda r: r.get('vx_edge') or 0, reverse=True)[:5]
-    return jsonify({'action': top, 'opportunities': recs[:15], 'vertex_top': vertex_top,
-                    'updated': scan_state.get('updated')})
-
-
-@app.route('/api/watchlist')
-def api_watchlist():
-    return jsonify({'rows': scan_state.get('rows') or [], 'sectors': scan_state.get('sectors') or [],
-                    'scanned': scan_state.get('scanned_n'), 'universe': len(UNIVERSE),
-                    'updated': scan_state.get('updated')})
-
-
-@app.route('/api/options')
-def api_options():
-    return jsonify({'board': scan_state.get('options_board') or [], 'updated': scan_state.get('updated')})
+# ─── FLUX DE DONNÉES (Blueprint) — market/summary · cockpit · watchlist · options · search · weekly · strategie · comite ───
+app.register_blueprint(_feeds.bp)
 
 
 @app.route('/api/ticker/<sym>')
@@ -1795,30 +1746,6 @@ def api_ticker(sym):
     sym = sym.upper()
     return jsonify({'symbol': sym, 'in_universe': sym in UNIVERSE,
                     'detail': (scan_state.get('detail') or {}).get(sym), 'pack': options_pack(sym)})
-
-
-@app.route('/api/search')
-def api_search():
-    q = (request.args.get('q') or '').upper().strip()
-    res = [{'ticker': s} for s in UNIVERSE if q in s][:20] if q else []
-    return jsonify(res)
-
-
-@app.route('/api/weekly')
-def api_weekly():
-    return jsonify(weekly_state.get('data') or {})
-
-
-@app.route('/api/strategie')
-def api_strategie():
-    """Stratégie options personnalisée (1/2/3/6/9/12 mois). Lecture seule, analyse only."""
-    return jsonify(scan_state.get('strategy') or {})
-
-
-@app.route('/api/comite')
-def api_comite():
-    """Comité d'investissement : décisions documentées (4 portes). Analyse only."""
-    return jsonify(scan_state.get('committee') or {})
 
 
 # ─── ENDPOINTS D'ANALYSE (Blueprint) — /api/vertex · /api/validator · /api/risk ───

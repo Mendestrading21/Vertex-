@@ -20,5 +20,8 @@ scan_state = {
     'updated': None, 'error': None,
 }
 
+# Watchlist de la semaine : sélection figée le lundi (régénérée en fond).
+weekly_state = {'data': None, 'updated': None, 'regenerated': False}
 
-__all__ = ['scan_state']
+
+__all__ = ['scan_state', 'weekly_state']
