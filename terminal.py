@@ -52,6 +52,7 @@ from vertex.engines import strategy_fit as _strategy_fit
 from vertex.engines import stats as _stats
 from vertex.app.state import scan_state
 from vertex.app.routes import decision_api as _decision_api
+from vertex.app.routes import analysis_api as _analysis_api
 from vertex.data import demo as _demo
 from vertex.services import market_clock as _market_clock
 
@@ -1820,38 +1821,8 @@ def api_comite():
     return jsonify(scan_state.get('committee') or {})
 
 
-@app.route('/api/vertex/<sym>')
-def api_vertex(sym):
-    """Deep-dive VERTEX d'un titre : bloc quant complet + décomposition explicable."""
-    d = (scan_state.get('detail') or {}).get(sym.upper())
-    if not d:
-        return jsonify({'ok': False, 'note': 'titre non scanné'})
-    v = d.get('vertex')
-    if not v:
-        return jsonify({'ok': False, 'note': 'vertex indisponible'})
-    return jsonify({'ok': True, 'symbol': sym.upper(), 'price': d.get('price'),
-                    'grade': d.get('grade'), 'score': d.get('score'),
-                    'vertex': v, 'explain': vertex.explain(v, d)})
-
-
-@app.route('/api/validator')
-def api_validator():
-    """VERTEX — validateur hors échantillon (walk-forward, DSR, PSR, PBO). Indicatif."""
-    pf = scan_state.get('portfolio') or {}
-    eq = pf.get('equity')
-    if not eq:
-        return jsonify({'ok': False, 'note': 'backtest indisponible (univers/historique insuffisant)'})
-    return jsonify(validator.build(eq))
-
-
-@app.route('/api/risk')
-def api_risk():
-    """VERTEX v4 — Risk Manager portefeuille (corrélation, concentration, secteurs).
-    Panier = top convictions du scan. Lecture seule, indicatif, aucun ordre."""
-    rows = scan_state.get('rows') or []
-    detail = scan_state.get('detail') or {}
-    syms = [r['symbol'] for r in rows[:10]]
-    return jsonify(portfolio_risk.build(syms, detail))
+# ─── ENDPOINTS D'ANALYSE (Blueprint) — /api/vertex · /api/validator · /api/risk ───
+app.register_blueprint(_analysis_api.bp)
 
 
 @app.route('/api/command')
