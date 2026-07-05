@@ -49,6 +49,7 @@ from vertex.engines import analysis as _analysis
 from vertex.engines import backtest as _backtest
 from vertex.engines import swing as _swing
 from vertex.engines import strategy_fit as _strategy_fit
+from vertex.engines import stats as _stats
 from vertex.data import demo as _demo
 from vertex.services import market_clock as _market_clock
 
@@ -219,23 +220,8 @@ def _save_json(name, obj):
         pass
 
 
-def _recompute_sectors(by_sym):
-    """Médianes de valorisation par secteur (mirroir de fundamentals.build, sur le cache fusionné)."""
-    import statistics
-    by_sector = {}
-    for sec in set(v.get('sector') for v in by_sym.values() if v.get('sector')):
-        m = [v for v in by_sym.values() if v.get('sector') == sec]
-        pes = [v['pe'] for v in m if v.get('pe') and 0 < v['pe'] < 250]
-        fwd = [v['fwd_pe'] for v in m if v.get('fwd_pe') and 0 < v['fwd_pe'] < 250]
-        mg = [v['margin'] for v in m if v.get('margin') is not None]
-        gr = [v['growth'] for v in m if v.get('growth') is not None]
-        if pes or fwd:
-            by_sector[sec] = {'median_pe': round(statistics.median(pes), 1) if pes else None,
-                              'median_fwd_pe': round(statistics.median(fwd), 1) if fwd else None,
-                              'median_margin': round(statistics.median(mg) * 100, 1) if mg else None,
-                              'median_growth': round(statistics.median(gr) * 100, 1) if gr else None,
-                              'n': len(m)}
-    return by_sector
+# Médianes de valorisation par secteur : source unique dans vertex/engines/stats.py.
+_recompute_sectors = _stats.sector_medians
 
 
 _FUND_CACHE = _load_json('fund_cache.json', {})     # {sym: {...fondamentaux...}} — accumulé
@@ -1300,15 +1286,8 @@ def _fund_loop():
 # Pour des dates PASSÉES, on recalcule le score « tel qu'il était » (analyse sur l'historique
 # tronqué) puis on mesure le rendement RÉALISÉ ensuite (5/21/63 j). Regroupé par tranche de
 # score → prouve (ou non) que score élevé = rendement supérieur. Zéro look-ahead. LECTURE SEULE.
-def _spearman(a, b):
-    a = np.asarray(a, float); b = np.asarray(b, float)
-    if len(a) < 8:
-        return None
-    ra = np.argsort(np.argsort(a)).astype(float)
-    rb = np.argsort(np.argsort(b)).astype(float)
-    ra -= ra.mean(); rb -= rb.mean()
-    den = math.sqrt(float((ra * ra).sum()) * float((rb * rb).sum()))
-    return round(float((ra * rb).sum() / den), 3) if den else None
+# Corrélation de rangs (Spearman) : source unique dans vertex/engines/stats.py.
+_spearman = _stats.spearman
 
 
 def edge_backtest(syms=None, horizons=(5, 21, 63), step=8, lookback=460):
