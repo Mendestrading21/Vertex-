@@ -9,6 +9,8 @@ avec piste d'audit — jamais une certitude, toujours une aide à la décision.
 Analyse uniquement. Aucune exécution. Chaque règle appliquée est tracée.
 """
 
+from vertex.engines import evidence
+
 # ─── Décisions autorisées (label + tonalité UI) ────────────────────────────
 DECISIONS = {
     'STRONG_BUY':        ('Achat fort', 'strong-green'),
@@ -156,84 +158,93 @@ def _select_vehicle(d, option, audit):
     return 'ACTION'
 
 
-def _reasons(d, market, option):
-    """Forces / faiblesses / bloqueurs / drapeaux de risque — langage clair, borné."""
-    pros, cons, blockers, flags = [], [], [], []
-    sig = d.get('signals') or {}
-    if sig.get('stacked'):
-        pros.append('Tendance haussière propre (MM empilées)')
-    if d.get('breakout'):
-        pros.append('Cassure confirmée par le volume')
-    if d.get('pullback'):
-        pros.append('Repli sain sur tendance (meilleur R:R)')
-    if _num(d.get('rs')) >= 70:
-        pros.append(f'Surperforme le marché (RS {int(_num(d.get("rs")))})')
-    if (d.get('mtf') or {}).get('state') == 'ALIGNÉ HAUSSIER':
-        pros.append('Journalier et hebdo alignés à la hausse')
-    if d.get('distribution'):
-        cons.append('Distribution cachée (faiblesse sous le capot)')
-    if _timing(d) == 'EXTENDED':
-        cons.append('Sur-étendu — risque de rappel')
-    if market and market.get('spy_regime') == 'CHOP':
-        cons.append('Marché de range — cassures fragiles')
-    if d.get('verdict') == 'AVOID':
-        blockers.append('Signal Vertex à ÉVITER (sous la MM200)')
-    if (d.get('anomaly_lvl')) == 'ALERTE':
-        flags.append('Radar ALERTE : comportement hors-norme')
-    if option and _num(option.get('iv')) >= 90:
-        flags.append('IV élevée sur les options')
-    return pros[:5], cons[:5], blockers[:5], flags[:5]
-
-
 def _conviction(d):
     return int(max(0, min(100, round(_num(d.get('score'))))))
-
-
-def _confidence(d, dq):
-    base = _num(d.get('confidence'), 55)
-    return int(max(0, min(100, round(base - dq.get('confidence_penalty', 0)))))
 
 
 def _size_hint(decision, profile):
     table = {
         'STRONG_BUY': {'OFFENSIF': '5-8%', 'DÉFENSIF': '4-6%', 'ÉQUILIBRÉ': '4-7%'},
         'BUY': {'OFFENSIF': '3-5%', 'DÉFENSIF': '3-5%', 'ÉQUILIBRÉ': '3-5%'},
-        'BUY_PULLBACK': {'OFFENSIF': '2-4% à l\'entrée sur repli', 'DÉFENSIF': '2-4%', 'ÉQUILIBRÉ': '2-4%'},
+        'BUY_PULLBACK': {'OFFENSIF': "2-4% à l'entrée sur repli", 'DÉFENSIF': '2-4%', 'ÉQUILIBRÉ': '2-4%'},
     }
     return table.get(decision, {}).get(profile or 'ÉQUILIBRÉ', '0% — observer')
 
 
+def _member_stances(ev):
+    """Vote net de chaque analyste du comité, par domaine."""
+    by = {}
+    for e in ev.get('positive', []):
+        by[e['source']] = by.get(e['source'], 0) + e['strength']
+    for e in ev.get('negative', []):
+        by[e['source']] = by.get(e['source'], 0) - e['strength']
+    members = [{'member': s, 'stance': ('Favorable' if n > 30 else 'Défavorable' if n < -30 else 'Neutre'),
+                'net': int(n)} for s, n in by.items()]
+    return sorted(members, key=lambda m: m['net'], reverse=True)
+
+
+def _committee(ev):
+    """Le Président : synthèse des avis, accord mesuré, contradictions exposées (Ch. IX/XVI)."""
+    pos = sum(x['strength'] for x in ev.get('positive', []))
+    neg = sum(x['strength'] for x in ev.get('negative', []))
+    lean = pos / (pos + neg) if (pos + neg) else 0.5
+    view = ('Constructif' if lean >= 0.66 else 'Modérément constructif' if lean >= 0.54
+            else 'Équilibré' if lean >= 0.44 else 'Prudent' if lean >= 0.30 else 'Négatif')
+    agreement = abs(lean - 0.5) * 2
+    conf = int(max(20, min(95, round(45 + agreement * 45 - (15 if ev.get('has_contradiction') else 0)))))
+    opposing = ev.get('negative', [])[:1]     # Avocat du diable : preuve adverse la plus forte.
+    return {
+        'view': view, 'confidence': conf, 'lean': round(lean * 100),
+        'agreement': round(agreement * 100),
+        'members': _member_stances(ev),
+        'has_contradiction': ev.get('has_contradiction', False),
+        'devils_advocate': opposing[0]['text'] if opposing else None,
+        'positive': ev.get('positive', [])[:5],
+        'negative': ev.get('negative', [])[:5],
+        'contradictory': ev.get('contradictory', []),
+        'unknown': ev.get('unknown', []),
+    }
+
+
 def evaluate(detail, *, symbol=None, market=None, option=None, portfolio=None,
              scan_age_s=None, demo=False):
-    """Point d'entrée unique : détail d'un titre → DecisionResult normalisé."""
+    """Point d'entrée unique : détail d'un titre → DecisionResult (vue du comité)."""
     d = detail or {}
     audit = []
     dq = assess_data_quality(d, scan_age_s=scan_age_s, demo=demo)
+    ev = evidence.gather(d, market=market, option=option, portfolio=portfolio, data_quality=dq)
+    committee = _committee(ev)
 
     if dq['blocks_decision']:
-        return _result('DATA_INSUFFICIENT', d, dq, symbol=symbol, market=market,
+        return _result('DATA_INSUFFICIENT', d, dq, committee, symbol=symbol, market=market,
                        vehicle='—', conviction=0, confidence=0, audit=audit,
-                       explanation='Données insuffisantes pour décider : ' +
-                                   ', '.join(dq['missing_fields']) + '.')
+                       explanation='Données insuffisantes pour décider : '
+                                   + ', '.join(dq['missing_fields']) + '.')
 
     permission = _market_permission(market, audit)
     decision = _apply_rules(_base_decision(d), d, market, option, portfolio, permission, audit)
     vehicle = 'ACTION' if decision not in _BUYISH else _select_vehicle(d, option, audit)
     conviction = _conviction(d)
-    confidence = _confidence(d, dq)
-    return _result(decision, d, dq, symbol=symbol, market=market, vehicle=vehicle,
-                   conviction=conviction, confidence=confidence, audit=audit,
-                   permission=permission)
+    # Confiance = accord scoring + accord du comité, moins la pénalité qualité de données.
+    base_conf = _num(d.get('confidence'), 55)
+    confidence = int(max(0, min(100, round((base_conf + committee['confidence']) / 2
+                                           - dq.get('confidence_penalty', 0)))))
+    return _result(decision, d, dq, committee, symbol=symbol, market=market, vehicle=vehicle,
+                   conviction=conviction, confidence=confidence, audit=audit, permission=permission)
 
 
-def _result(decision, d, dq, *, symbol, market, vehicle, conviction, confidence,
-            audit, permission=True, explanation=None):
+def _result(decision, d, dq, committee, *, symbol, market, vehicle, conviction,
+            confidence, audit, permission=True, explanation=None):
     label, tone = DECISIONS[decision]
     plan = d.get('plan') or {}
-    pros, cons, blockers, flags = _reasons(d, market, None) if decision != 'DATA_INSUFFICIENT' else ([], [], [], [])
+    pros = [e['text'] for e in committee.get('positive', [])][:5]
+    cons = [e['text'] for e in committee.get('negative', [])][:5]
+    blockers = ['Signal Vertex à ÉVITER (sous la MM200)'] if d.get('verdict') == 'AVOID' else []
+    flags = [e['text'] for e in committee.get('contradictory', [])]
     if dq.get('warning'):
-        flags = (flags + [dq['warning']])[:6]
-    expl = explanation or _explain(decision, d, conviction, confidence, audit)
+        flags = flags + [dq['warning']]
+    unknowns = [e['text'] for e in committee.get('unknown', [])][:5]
+    expl = explanation or _explain(decision, committee, confidence, audit)
     return {
         'symbol': symbol or d.get('symbol'),
         'final_decision': decision,
@@ -250,18 +261,24 @@ def _result(decision, d, dq, *, symbol, market, vehicle, conviction, confidence,
         'targets': {'tp1': plan.get('tp1'), 'tp2': plan.get('tp2'), 'tp3': plan.get('tp3')},
         'invalidation': plan.get('stop'),
         'position_size_hint': _size_hint(decision, d.get('profile')),
+        'committee': committee,
         'pros': pros,
         'cons': cons,
         'blockers': blockers,
-        'risk_flags': flags,
+        'risk_flags': flags[:6],
+        'unknowns': unknowns,          # « ce que nous ne savons pas » (Ch. XVI)
         'data_quality': dq,
         'explanation': expl,
         'audit_trail': audit,
     }
 
 
-def _explain(decision, d, conviction, confidence, audit):
+def _explain(decision, committee, confidence, audit):
     label = DECISIONS[decision][0]
-    head = f'{label} — conviction {conviction}/100, confiance {confidence}/100.'
-    why = audit[0] if audit else 'Lecture technique et structurelle cohérente avec le verdict.'
-    return f'{head} {why} Analyse éducative — aucune certitude, aucun ordre.'
+    head = f'{label} — vue du comité : {committee["view"]}, confiance {confidence}/100.'
+    if committee.get('has_contradiction'):
+        head += ' ⚠ Contradictions internes exposées.'
+    devil = committee.get('devils_advocate')
+    contra = f' Avocat du diable : {devil}.' if devil else ''
+    why = audit[0] if audit else "Les domaines d'analyse sont cohérents avec le verdict."
+    return f'{head} {why}{contra} Analyse éducative — aucune certitude, aucun ordre.'

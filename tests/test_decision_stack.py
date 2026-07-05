@@ -90,3 +90,39 @@ def test_conviction_confidence_bounded():
         r = ds.evaluate(_stock(**over))
         assert 0 <= r['conviction'] <= 100
         assert 0 <= r['confidence'] <= 100
+
+
+# ─── LE COMITÉ (Ch. IX / XVI / XVIII) ─────────────────────────────────────
+def test_committee_present_and_bounded():
+    # Toute décision porte la vue du comité, jamais un score anonyme.
+    r = ds.evaluate(_stock(), market={'roro': 'RISK-ON', 'spy_regime': 'TREND'})
+    com = r['committee']
+    assert com['view'] and 20 <= com['confidence'] <= 95
+    assert isinstance(com['members'], list) and com['members']
+    # chaque membre a une posture explicite
+    assert all(m['stance'] in {'Favorable', 'Défavorable', 'Neutre'} for m in com['members'])
+
+
+def test_contradiction_is_exposed_not_hidden():
+    # Prix fort (pos52 haut) mais momentum faible : la tension DOIT être affichée.
+    r = ds.evaluate(_stock(pos52=90, rs=30, rsi_div='bear'))
+    assert r['committee']['has_contradiction'] is True
+    assert any('momentum' in f.lower() or 'tension' in f.lower() for f in r['risk_flags'])
+
+
+def test_contradiction_lowers_confidence():
+    calm = ds.evaluate(_stock(pos52=70, rs=75))
+    tense = ds.evaluate(_stock(pos52=90, rs=30, rsi_div='bear'))
+    assert tense['committee']['confidence'] <= calm['committee']['confidence']
+
+
+def test_devils_advocate_surfaces_strongest_objection():
+    # Marché RISK-OFF : l'avocat du diable doit porter une objection réelle.
+    r = ds.evaluate(_stock(), market={'roro': 'RISK-OFF', 'spy_regime': 'CHOP'})
+    assert r['committee']['devils_advocate']
+
+
+def test_unknowns_channel_always_present():
+    # « Ce que nous ne savons pas » (Ch. XVI) est toujours un canal exposé.
+    r = ds.evaluate(_stock())
+    assert 'unknowns' in r and isinstance(r['unknowns'], list)
