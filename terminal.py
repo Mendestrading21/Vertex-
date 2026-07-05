@@ -6237,7 +6237,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </div>
 <script>
 const C={g:'#22C55E',r:'#EF4444',o:'#FF8C32',gold:'#F5B45B',blue:'#38BDF8',vio:'#A78BFA',cy:'#34D399',yl:'#FFB23F',mut:'#8794ab'};
-const COLS=[['symbol','Ticker'],['sector','Secteur'],['price','Prix'],['change','Var %'],['verdict','Décision'],['vehreco','Véhicule'],['pb','Playbook'],['score','Score'],['strat','Score S'],['rs','RS'],['pos52','52 sem.'],['valr','vs sect.'],['margin','Marge'],['growth','Croiss.'],['regime','Régime'],['earn','Résultats']];
+const COLS=[['symbol','Ticker'],['sector','Secteur'],['price','Prix'],['change','Var %'],['verdict','Décision'],['vehreco','Véhicule'],['pb','Playbook'],['score','Score'],['strat','Score S'],['rs','RS'],['pos52','52 sem.'],['valr','vs sect.'],['margin','Marge'],['growth','Croiss.'],['regime','Régime'],['struct','Structure'],['earn','Résultats']];
+function structChip(c){var out=[];
+  if(c.mtf&&c.mtf.state){var mc=c.mtf.state_col;var L={'ALIGNÉ HAUSSIER':'↑ Aligné','REPLI DANS TENDANCE':'↑ Repli','REBOND CONTRE-TENDANCE':'↯ Contre','ALIGNÉ BAISSIER':'↓ Aligné','NEUTRE':'~'}[c.mtf.state]||c.mtf.state;
+    out.push('<span title="Multi-horizons (jour × semaine) : '+c.mtf.state+'" style="font-size:8.5px;font-weight:800;color:'+mc+';background:'+mc+'1a;border:1px solid '+mc+'44;padding:1px 6px;border-radius:5px;white-space:nowrap">🧭 '+L+'</span>');}
+  if(c.mtf||c.physics){var sa=c.struct||0;var sc2=sa>0?'#22C55E':sa<0?'#EF4444':'#8794ab';out.push('<span title="Ajustement structurel du score (physique + multi-horizons)" style="font-size:9px;font-weight:800;color:'+sc2+';white-space:nowrap">'+(sa>0?'+':'')+sa+'</span>');}
+  return out.length?'<div style="display:flex;align-items:center;gap:5px;justify-content:flex-start">'+out.join('')+'</div>':'<span class="muted">—</span>';}
 function vehChip(v){if(!v||!v.reco||v.reco==='—')return '<span class="muted" style="font-size:10px">—</span>';var c=v.tone==='orange'?'#FF7A18':v.tone==='blue'?'#38BDF8':v.tone==='gold'?'#F5B45B':'#8794ab';var ic=v.reco==='OPTION'?'💎':v.reco==='ACTION'?'📈':'⚖️';return '<span title="'+(v.why||'').replace(/"/g,'')+'" style="font-size:9px;font-weight:800;color:'+c+';background:'+c+'1a;border:1px solid '+c+'55;padding:2px 8px;border-radius:6px;white-space:nowrap">'+ic+' '+v.reco+'</span>';}
 function pbChip(pb){if(!pb)return '<span class="muted" style="font-size:10px">—</span>';return '<span title="'+(pb.desc||'').replace(/"/g,'')+'" style="font-size:9px;font-weight:800;color:'+pb.col+';background:'+pb.col+'1a;border:1px solid '+pb.col+'55;padding:2px 7px;border-radius:6px;white-space:nowrap">'+pb.ic+' '+pb.name+'</span>';}
 function vxFollowStk(sym,spot,stop,tgt){try{var a=JSON.parse(localStorage.getItem('myRecos')||'[]');
@@ -6307,6 +6312,7 @@ function cell(c){
   <td class="muted">${pct(c.margin)}</td>
   <td class="${(c.growth||0)>=0?'up':'dn'}">${c.growth!=null?pct(c.growth):'—'}</td>
   <td style="color:${c.regime==='TREND'?C.g:c.regime==='CHOP'?C.r:C.gold}">${regTxt(c.regime)}</td>
+  <td>${structChip(c)}</td>
   <td class="${c.earnSoon?'dn':'muted'}" style="${c.earnSoon?'font-weight:800':''}">${c.earn||'—'}</td></tr>`;}
 let FILTER={sector:'',minScore:0,q:'',preset:'',regime:'',verdict:'',rrok:false};
 const PRESETS={qual:c=>(c.score||0)>=72,grow:c=>c.growth!=null&&c.growth>=0.15,val:c=>c.valTone==='good',marg:c=>c.margin!=null&&c.margin>=0.2,mom:c=>(c.rs||0)>=70,up:c=>(c.change||0)>0,risk:c=>(c.growth!=null&&c.growth<0)||(c.margin!=null&&c.margin<0.05),mystrat:c=>(c.strat||0)>=70&&c.rrok&&!!c.pb,anom:c=>(c.anoms&&c.anoms.length>0)};
@@ -6373,7 +6379,7 @@ function render(){
   }else{
     if(cardsEl)cardsEl.style.display='none';if(tbl)tbl.style.display='';
     document.getElementById('thead').innerHTML='<tr>'+COLS.map(([k,l])=>`<th onclick="setSort('${k}')">${l}${SORT===k?(DIR<0?' ▾':' ▴'):''}</th>`).join('')+'</tr>';
-    document.getElementById('tbody').innerHTML=d.map(cell).join('')||'<tr><td colspan="16" class="muted" style="padding:18px;text-align:center">Aucune société ne correspond aux filtres.</td></tr>';
+    document.getElementById('tbody').innerHTML=d.map(cell).join('')||'<tr><td colspan="17" class="muted" style="padding:18px;text-align:center">Aucune société ne correspond aux filtres.</td></tr>';
   }
   const hs=document.getElementById('hsub');if(hs&&base.length!==DATA.length)hs.textContent=base.length+' / '+DATA.length+' sociétés (filtré)';
 }
@@ -6401,6 +6407,7 @@ async function load(){
       strat:r.strat_score,pb:r.playbook||null,pbname:(r.playbook&&r.playbook.name)||'',rr:r.rr,rrok:!!r.rr_ok,
       profile:r.profile,profileHint:r.profile_hint,breakout:r.breakout,squeeze:r.squeeze,distribution:r.distribution,pullback:r.pullback,
       anomScore:r.anomaly_score,anomLvl:r.anomaly_lvl,anoms:r.anomalies||[],
+      physics:d.physics||r.physics||null,mtf:d.mtf||r.mtf||null,struct:(d.struct_adj!=null?d.struct_adj:0),
       earn:e?(e.dte<=0?'auj.':'J-'+e.dte):null,earnSoon:e&&e.dte!=null&&e.dte<7};});
   const m=s.market||{},SE={pre:'🌅 avant-bourse',open:'🟢 séance',after:'🌙 après-bourse',closed:'🌑 fermé'};
   document.getElementById('hsub').textContent=DATA.length+' sociétés · '+(SE[m.session]||'')+' '+(m.et||'');
