@@ -134,6 +134,18 @@ def thesis(d):
         play = "polyvalent → action, ou CALL 1-3 mois si la conviction est là"
     rr = (d.get('plan') or {}).get('rr_res')
     tail = f" R:R ~{rr}:1 vers la résistance." if rr else "."
+    # Confluence multi-horizons : le vent dominant (hebdo) vs la météo du jour.
+    mtf = d.get('mtf') or {}
+    mst = mtf.get('state')
+    mtftxt = ''
+    if mst == 'ALIGNÉ HAUSSIER':
+        mtftxt = " 🧭 Multi-horizons : journalier ET hebdo alignés à la hausse — vent porteur, pleine conviction."
+    elif mst == 'REPLI DANS TENDANCE':
+        mtftxt = " 🧭 Multi-horizons : repli journalier dans une tendance hebdo saine — la zone d'achat des pros."
+    elif mst == 'REBOND CONTRE-TENDANCE':
+        mtftxt = " 🧭 Multi-horizons : rebond à contre-courant de l'hebdo baissier — méfiance, garder court."
+    elif mst == 'ALIGNÉ BAISSIER':
+        mtftxt = " 🧭 Multi-horizons : les deux horizons baissiers — le vent souffle contre, pas d'achat."
     # Physique du marché : la structure fractale confirme ou nuance la lecture.
     phy = d.get('physics') or {}
     pst = phy.get('state')
@@ -154,4 +166,4 @@ def thesis(d):
         alert = f" 🛰️ Radar ALERTE : {top.get('lbl')} — comportement hors-norme, vérifie la nouvelle avant d'agir."
     elif lvl == 'ACTIF' and ano:
         alert = f" 🛰️ Radar actif : {len(ano)} signal(s) inhabituel(s) détecté(s)."
-    return f"{head}. {driver[0].upper()}{driver[1:]}. Comment jouer : {play}.{tail}{phys}{alert}"
+    return f"{head}. {driver[0].upper()}{driver[1:]}. Comment jouer : {play}.{tail}{mtftxt}{phys}{alert}"

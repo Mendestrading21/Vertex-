@@ -31,7 +31,7 @@ try:
 except Exception:
     pass
 
-from elio import scoring, config, options, ai, daily, anomalies, sectors, research, market, weekly, fundamentals, engine, ibkr, strategy, committee, pivots, vertex, portfolio_risk, validator, physics
+from elio import scoring, config, options, ai, daily, anomalies, sectors, research, market, weekly, fundamentals, engine, ibkr, strategy, committee, pivots, vertex, portfolio_risk, validator, physics, timeframe
 
 DAILY_PREV_PATH = os.path.join(os.path.dirname(__file__), 'daily_prev.json')  # baseline diff jour/jour
 WEEKLY_PATH = os.path.join(os.path.dirname(__file__), 'weekly_snapshot.json')  # sélection hebdo FIGÉE
@@ -762,15 +762,23 @@ def analyse(df, bench_ret, fund=None):
         phys_adj, phys_adj_why = physics.score_adjust(_phys, ext_atr=ext_atr, rsi=r)
     except Exception:
         phys_adj, phys_adj_why = 0, ''
-    if phys_adj:
-        score = int(max(0, min(100, score + phys_adj)))
+    if _phys is not None:
+        _phys['adj'] = phys_adj
+        _phys['adj_why'] = phys_adj_why
+    # ─── CONFLUENCE MULTI-HORIZONS : la tendance hebdo (vent dominant) pèse aussi ───
+    try:
+        _mtf = timeframe.analyze(c, sig['above50'], sig['above200'], r)
+    except Exception:
+        _mtf = None
+    mtf_adj = int((_mtf or {}).get('adj') or 0)
+    # Ajustement structurel combiné (physique + multi-horizons), borné pour rester sain.
+    struct_adj = int(max(-12, min(10, phys_adj + mtf_adj)))
+    if struct_adj:
+        score = int(max(0, min(100, base_score + struct_adj)))
         try:
             grade = config.grade(score)
         except Exception:
             pass
-    if _phys is not None:
-        _phys['adj'] = phys_adj
-        _phys['adj_why'] = phys_adj_why
     verdict = config.verdict(score, trend, regime)
 
     # PLAN — stop sur STRUCTURE (dernier swing-low réel), R:R réel vers la résistance
@@ -844,8 +852,11 @@ def analyse(df, bench_ret, fund=None):
     except Exception:
         result['vertex'] = None
     result['physics'] = _phys                     # cerveau physique (déjà calculé + injecté dans le score)
-    result['base_score'] = base_score             # score AVANT rétroaction physique
-    result['phys_adj'] = phys_adj                 # contribution de la physique (transparence)
+    result['mtf'] = _mtf                           # confluence multi-horizons (journalier × hebdo)
+    result['base_score'] = base_score             # score AVANT rétroaction structurelle
+    result['phys_adj'] = phys_adj                 # contribution de la physique
+    result['mtf_adj'] = mtf_adj                    # contribution multi-horizons
+    result['struct_adj'] = struct_adj             # ajustement structurel total appliqué (transparence)
     return result
 
 
@@ -1226,7 +1237,7 @@ def scan():
                              'accumulation': d.get('accumulation'), 'distribution': d.get('distribution'), 'pullback': d.get('pullback'),
                              'anomalies': d.get('anomalies'), 'anomaly_score': d.get('anomaly_score'),
                              'anomaly_lvl': d.get('anomaly_lvl'), 'gap_pct': d.get('gap_pct'), 'zscore': d.get('zscore'),
-                             'physics': d.get('physics'),
+                             'physics': d.get('physics'), 'mtf': d.get('mtf'),
                              # VERTEX — noyau quant complet (edge, sous-scores, Kelly, Monte-Carlo, EV, drapeaux)
                              'vx_edge': _vx.get('edge'), 'vx_verdict': _vx.get('verdict'),
                              'vx_pwin': _vx.get('p_win'), 'vx_kelly': _kel.get('pct'),
@@ -6865,6 +6876,15 @@ async function load(){
       <div style="flex:1;min-width:280px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:10px;letter-spacing:1.5px;color:#8794ab;font-weight:800">🧠 THÈSE VERTEX</span>${d.profile?`<span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:6px;color:${d.profile==='OFFENSIF'?C.r:d.profile==='DÉFENSIF'?C.blue:C.gold};background:${d.profile==='OFFENSIF'?C.r:d.profile==='DÉFENSIF'?C.blue:C.gold}1a;border:1px solid ${d.profile==='OFFENSIF'?C.r:d.profile==='DÉFENSIF'?C.blue:C.gold}50">${d.profile==='OFFENSIF'?'⚔️ ':d.profile==='DÉFENSIF'?'🛡️ ':'⚖️ '}${d.profile}</span>`:''}</div>
         ${d.thesis?`<div style="font-size:13px;color:#f0f4fb;line-height:1.6;margin-bottom:9px;font-weight:600">${d.thesis}</div>`:''}
+        ${(d.mtf&&d.mtf.state)?`<div style="margin:2px 0 10px;padding:10px 12px;border-radius:11px;background:${d.mtf.state_col}12;border:1px solid ${d.mtf.state_col}3a">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:9px;letter-spacing:1.5px;color:#8794ab;font-weight:800">🧭 MULTI-HORIZONS · JOUR × SEMAINE</span><span style="font-size:10px;font-weight:800;color:${d.mtf.state_col};background:${d.mtf.state_col}1a;border:1px solid ${d.mtf.state_col}55;padding:2px 9px;border-radius:6px">${d.mtf.state}</span></div>
+          <div style="display:flex;gap:15px;flex-wrap:wrap;margin-top:8px;font-size:10.5px;color:#8794ab">
+            <span title="Structure hebdomadaire : au-dessus de la MM30 hebdo ?">Hebdo <b style="color:#e8edf5">${d.mtf.weekly_above30?'▲ haussier':'▼ baissier'}${d.mtf.weekly_rising?' · en hausse':''}</b></span>
+            <span title="RSI hebdomadaire">RSI sem. <b style="color:#e8edf5">${d.mtf.weekly_rsi!=null?d.mtf.weekly_rsi:'—'}</b></span>
+            ${d.mtf.weekly_roc!=null?`<span title="Performance sur ~3 mois (13 semaines)">Perf 13 sem. <b style="color:${d.mtf.weekly_roc>=0?'#22C55E':'#EF4444'}">${d.mtf.weekly_roc>=0?'+':''}${d.mtf.weekly_roc}%</b></span>`:''}
+          </div>
+          <div style="font-size:10.5px;color:#9aa4b8;line-height:1.5;margin-top:7px">${d.mtf.note}</div>
+          ${(d.mtf.adj!=null&&d.mtf.adj!==0)?`<div style="font-size:10px;margin-top:6px;color:#cdd5e2">🧭 Contribution au score : <b style="color:${d.mtf.adj>=0?'#22C55E':'#EF4444'}">${d.mtf.adj>=0?'+':''}${d.mtf.adj} pts</b></div>`:''}</div>`:''}
         ${(d.physics&&d.physics.state)?`<div style="margin:2px 0 10px;padding:10px 12px;border-radius:11px;background:${d.physics.state_col}12;border:1px solid ${d.physics.state_col}3a">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:9px;letter-spacing:1.5px;color:#8794ab;font-weight:800">🔬 PHYSIQUE DU MARCHÉ</span><span style="font-size:10px;font-weight:800;color:${d.physics.state_col};background:${d.physics.state_col}1a;border:1px solid ${d.physics.state_col}55;padding:2px 9px;border-radius:6px">${d.physics.state}</span></div>
           <div style="display:flex;gap:15px;flex-wrap:wrap;margin-top:8px;font-size:10.5px;color:#8794ab">
@@ -6874,7 +6894,7 @@ async function load(){
             ${d.physics.half_life?`<span title="Demi-vie de retour à la moyenne (Ornstein-Uhlenbeck), en jours de bourse">Demi-vie <b style="color:#e8edf5">${d.physics.half_life}j</b></span>`:''}
           </div>
           <div style="font-size:10.5px;color:#9aa4b8;line-height:1.5;margin-top:7px">${d.physics.note}</div>
-          ${(d.physics.adj!=null&&d.physics.adj!==0)?`<div style="font-size:10.5px;margin-top:7px;padding-top:7px;border-top:1px solid ${d.physics.state_col}22;color:#cdd5e2">⚙️ <b>Rétroaction sur le score Vertex : <span style="color:${d.physics.adj>=0?'#22C55E':'#EF4444'}">${d.physics.adj>=0?'+':''}${d.physics.adj} pts</span></b>${d.base_score!=null?` <span style="color:#8794ab">(${d.base_score} → ${d.score})</span>`:''}${d.physics.adj_why?`<div style="font-size:9.5px;color:#8794ab;margin-top:2px">${d.physics.adj_why}</div>`:''}</div>`:''}</div>`:''}
+          ${(d.struct_adj!=null&&d.struct_adj!==0)?`<div style="font-size:10.5px;margin-top:7px;padding-top:7px;border-top:1px solid ${d.physics.state_col}22;color:#cdd5e2">⚙️ <b>Score ajusté par la structure : <span style="color:${d.struct_adj>=0?'#22C55E':'#EF4444'}">${d.base_score} → ${d.score}</span></b> <span style="color:#8794ab">(${d.struct_adj>=0?'+':''}${d.struct_adj} pts)</span><div style="font-size:9.5px;color:#8794ab;margin-top:2px">${[(d.physics&&d.physics.adj?'physique '+(d.physics.adj>=0?'+':'')+d.physics.adj:''),(d.mtf&&d.mtf.adj?'multi-horizons '+(d.mtf.adj>=0?'+':'')+d.mtf.adj:'')].filter(Boolean).join(' · ')}${d.physics.adj_why?' — '+d.physics.adj_why:''}</div></div>`:''}</div>`:''}
         <div style="font-size:12.5px;margin-bottom:8px;color:#eaf0fa">${l1}</div>
         <div style="font-size:12.5px;color:#cfd8e6;line-height:1.6">${valLine}${situ?situ.charAt(0).toUpperCase()+situ.slice(1)+'. ':''}${planLine}</div>
         <div id="bizDesc"></div>
