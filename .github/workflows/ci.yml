@@ -2,23 +2,37 @@ name: CI
 
 on:
   push:
-    branches: [main, "claude/**"]
+    branches: [main, "claude/**", "foundation/**"]
   pull_request:
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      NO_IBKR: "1"
+      DEMO: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
       - name: Install dependencies
         run: pip install -r requirements.txt pytest
-      - name: Syntax check
-        run: python -m py_compile terminal.py
-      - name: Tests (smoke + garde-fous lecture seule)
-        env:
-          NO_IBKR: "1"
+      - name: Compile check (terminal + packages)
+        run: python -m compileall -q terminal.py vertex elio
+      - name: Tests (sécurité lecture seule, fondations, quant, smoke)
         run: pytest -q
+
+  safety:
+    # Garde-fou de sûreté isolé et bloquant : aucun chemin d'exécution d'ordre.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest
+      - name: Vérifier LECTURE SEULE — aucun ordre possible
+        run: pytest tests/test_no_orders.py -q
