@@ -32,7 +32,7 @@ def test_healthz():
 def test_api_routes_200():
     c = _client()
     for path in ["/api/healthz", "/api/system-status", "/api/decision/AAPL",
-                 "/api/market/summary", "/api/cockpit",
+                 "/api/brief", "/api/market/summary", "/api/cockpit",
                  "/api/watchlist", "/api/options", "/api/weekly", "/api/strategie"]:
         assert c.get(path).status_code == 200, path
 
@@ -46,7 +46,7 @@ def test_api_search():
 def test_pages_render():
     # follow_redirects : /ma-page & co sont des alias qui redirigent (302) vers la page canonique.
     c = _client()
-    for path in ["/", "/watchlist", "/options", "/ma-page", "/entreprises",
+    for path in ["/", "/brief", "/watchlist", "/options", "/ma-page", "/entreprises",
                  "/strategie", "/journal", "/suivi", "/equipe", "/bordel", "/settings"]:
         assert c.get(path, follow_redirects=True).status_code == 200, path
 
