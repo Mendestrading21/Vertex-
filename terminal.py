@@ -45,6 +45,7 @@ from vertex.services import status_service as _status_svc
 from vertex.engines import decision_stack as _decision
 from vertex.ui import nav as _nav
 from vertex.engines import indicators as _indicators
+from vertex.services import market_clock as _market_clock
 
 app = Flask(__name__)
 # ── JSON SÛR : convertit NaN/Infinity → null. Sinon Flask sort `NaN` (toléré par Python
@@ -266,24 +267,8 @@ _adx = _indicators.adx
 # Black-Scholes : source unique dans elio/options.py (dé-duplication — cf. audit).
 
 
-def market_status():
-    """Phase de marché US (heure de New York) : pré-marché 4h-9h30, séance 9h30-16h,
-    après-bourse 16h-20h, sinon fermé. IBKR fournit les cours en pré/après-bourse."""
-    try:
-        et = datetime.now(ZoneInfo('America/New_York'))
-        t = et.hour * 60 + et.minute
-        wd = et.weekday() < 5
-        if wd and 570 <= t < 960:
-            session = 'open'        # 9:30 → 16:00
-        elif wd and 240 <= t < 570:
-            session = 'pre'         # 4:00 → 9:30  (avant-bourse)
-        elif wd and 960 <= t < 1200:
-            session = 'after'       # 16:00 → 20:00 (après-bourse)
-        else:
-            session = 'closed'
-        return {'open': session == 'open', 'session': session, 'et': et.strftime('%H:%M ET')}
-    except Exception:
-        return {'open': False, 'session': 'closed', 'et': '—'}
+# Horloge de marché US : source unique dans vertex/services/market_clock.py.
+market_status = _market_clock.market_status
 
 
 # ─── analyse par titre (sur OHLCV daily) ─────────────────────────────────
