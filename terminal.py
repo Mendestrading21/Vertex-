@@ -8260,6 +8260,18 @@ function pRender(){
   var realized=tcGet().reduce(function(s,x){return s+((x.exit||0)-(x.cost||0));},0);
   var open=(known&&a.length)?val-inv:null;
   var cash=cap>0?cap-inv:null;
+  // 🔥 RISQUE OUVERT (« heat ») : perte réelle si TOUS tes stops sautent maintenant.
+  //   Action = (prix d'entrée − stop) × quantité ; option = prime (risque défini).
+  var heat=0,noStop=0;
+  a.forEach(function(t){
+    if(t.type!=='STK'){heat+=t.cost;return;}
+    var px=(t.qty>0)?t.cost/t.qty:null;
+    var pl=(typeof vxSD==='function'?vxSD(t.sym).plan:null)||{};
+    var stop=(t.myStop!=null)?t.myStop:(pl.stop!=null?pl.stop:null);
+    if(px!=null&&stop!=null&&stop<px)heat+=(px-stop)*t.qty;
+    else noStop++;
+  });
+  var heatP=cap>0?heat/cap*100:null;
   var tile=function(l,v,c,sub){return '<div style="background:linear-gradient(180deg,#13161d,#0f1218);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:11px 13px"><div style="font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;font-weight:800;white-space:nowrap">'+l+'</div><div style="font-size:16px;font-weight:900;color:'+(c||'#e8edf5')+';margin-top:3px;white-space:nowrap">'+v+'</div>'+(sub?'<div style="font-size:9px;color:#71717A;margin-top:2px;white-space:nowrap">'+sub+'</div>':'')+'</div>';};
   var h='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px">';
   h+=tile('Capital <span onclick="pCapSet()" style="cursor:pointer;color:#FF8C32">✎</span>',cap>0?tFmt(cap):'<span style="font-size:12px;color:#FF8C32;cursor:pointer" onclick="pCapSet()">définir →</span>','#F5B45B',cap>0?'base des calculs':'clique pour régler');
@@ -8269,7 +8281,18 @@ function pRender(){
   h+=tile('P&L ouvert',open!=null?((open>=0?'+':'')+open.toFixed(0)+' $'):'—',open==null?'#8794ab':open>=0?'#22C55E':'#EF4444',null);
   h+=tile('P&L réalisé',(realized>=0?'+':'')+realized.toFixed(0)+' $',realized>=0?'#22C55E':'#EF4444','journal (trades clos)');
   h+=tile('Risque max options',tFmt(optInv),optInv>0?'#FF8C32':'#8794ab',cap>0?Math.round(optInv/Math.max(1,cap)*100)+'% du capital (primes)':'total des primes payées');
+  var heatCol=heatP==null?'#F5B45B':heatP<=6?'#22C55E':heatP<=10?'#FFB23F':'#EF4444';
+  h+=tile('🔥 Risque ouvert',a.length?(heat>0?tFmt(heat):'0 $'):'—',heatCol,heatP!=null?(heatP.toFixed(1)+'% du capital · si tous les stops sautent'):'perte si tous les stops sautent');
   h+='</div>';
+  // Verdict de gestion du risque : la règle pro = risque total ouvert ≤ ~6% du capital.
+  if(a.length){
+    var rv,rc,ri;
+    if(heatP==null){rv='Définis ton capital';rc='#F5B45B';ri='🎯';}
+    else if(heatP<=6){rv='Risque maîtrisé — '+heatP.toFixed(1)+'% du capital exposé (règle pro : ≤ 6%). Tu peux encaisser une série de pertes sans te faire mal.';rc='#22C55E';ri='🛡️';}
+    else if(heatP<=10){rv='Risque un peu élevé — '+heatP.toFixed(1)+'% du capital en jeu. Au-dessus de 6%, une mauvaise passe fait mal : resserre les stops ou allège.';rc='#FFB23F';ri='⚠️';}
+    else{rv='Risque DANGEREUX — '+heatP.toFixed(1)+'% du capital exposé d\'un coup. Une série de stops touchés entamerait sérieusement ton compte. Réduis la taille ou coupe les positions les plus risquées.';rc='#EF4444';ri='🚨';}
+    h+='<div style="margin-top:11px;padding:11px 13px;border-radius:12px;background:'+rc+'12;border:1px solid '+rc+'3a;display:flex;gap:10px;align-items:flex-start"><span style="font-size:17px;line-height:1">'+ri+'</span><div><div style="font-size:8px;letter-spacing:1px;font-weight:800;color:'+rc+';text-transform:uppercase;margin-bottom:2px">Gestion du risque</div><div style="font-size:11.5px;color:#cdd5e2;line-height:1.55">'+rv+'</div>'+(noStop>0?'<div style="font-size:10.5px;color:#FFB23F;margin-top:5px">⚠️ '+noStop+' position'+(noStop>1?'s':'')+' action sans stop défini → risque non maîtrisé. Ajoute un stop (✎) pour le compter dans ta chaleur.</div>':'')+'</div></div>';
+  }
   if(inv>0){
     var po=Math.round(optInv/inv*100),ps=100-po;
     h+='<div style="margin-top:13px"><div style="display:flex;justify-content:space-between;font-size:10px;color:#8794ab;margin-bottom:4px"><span>📈 Actions (socle) '+ps+'%</span><span>💎 Options (levier) '+po+'%</span></div><div style="display:flex;height:9px;border-radius:5px;overflow:hidden;background:#0a0c11">'+(stkInv?'<div style="flex:'+stkInv+';background:#38BDF8"></div>':'')+(optInv?'<div style="flex:'+optInv+';background:#FF7A18"></div>':'')+'</div>'
