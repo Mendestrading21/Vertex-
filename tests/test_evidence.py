@@ -59,6 +59,30 @@ def test_strength_stays_bounded_after_weighting():
             assert 0 <= it['strength'] <= 100
 
 
+def test_relative_analyst_reads_cross_sectional_standing():
+    leader = {'dimensions': [{'key': 'score', 'value': 90, 'pct_universe': 95, 'standing': 'leader'}],
+              'sector_rank': 1, 'sector_n': 5, 'sector': 'Energy'}
+    laggard = {'dimensions': [{'key': 'score', 'value': 20, 'pct_universe': 8, 'standing': 'retardataire'}],
+               'sector_rank': 9, 'sector_n': 10, 'sector': 'Tech'}
+    pos = ev.relative_analyst(leader)
+    neg = ev.relative_analyst(laggard)
+    assert any(e['kind'] == ev.POSITIVE and 'top' in e['text'].lower() for e in pos)
+    assert any('Leader de son secteur' in e['text'] for e in pos)
+    assert neg and neg[0]['kind'] == ev.NEGATIVE
+    assert ev.relative_analyst(None) == []                     # pas de contexte → silence
+
+
+def test_context_flows_into_committee_and_result():
+    from vertex.engines import decision_stack as ds
+    d = {'symbol': 'T', 'price': 100, 'score': 88,
+         'plan': {'entry': 100, 'stop': 92, 'tp2': 116, 'rr_res': 2.0}}
+    ctx = {'dimensions': [{'key': 'score', 'value': 88, 'pct_universe': 96, 'standing': 'leader'}],
+           'sector_rank': 1, 'sector_n': 4, 'sector': 'Energy', 'headline': 'Top 4% de l\'univers'}
+    r = ds.evaluate(d, context=ctx)
+    assert r['context']['headline'] == 'Top 4% de l\'univers'
+    assert 'Transversal' in [m['member'] for m in r['committee']['members']]
+
+
 def test_new_members_reach_the_committee():
     from vertex.engines import decision_stack as ds
     d = {'symbol': 'T', 'price': 100, 'score': 80, 'sub': {'fundamental': 85},

@@ -209,17 +209,18 @@ def _committee(ev):
 
 
 def evaluate(detail, *, symbol=None, market=None, option=None, portfolio=None,
-             scan_age_s=None, demo=False):
+             scan_age_s=None, demo=False, context=None):
     """Point d'entrée unique : détail d'un titre → DecisionResult (vue du comité)."""
     d = detail or {}
     audit = []
     dq = assess_data_quality(d, scan_age_s=scan_age_s, demo=demo)
-    ev = evidence.gather(d, market=market, option=option, portfolio=portfolio, data_quality=dq)
+    ev = evidence.gather(d, market=market, option=option, portfolio=portfolio,
+                         data_quality=dq, context=context)
     committee = _committee(ev)
 
     if dq['blocks_decision']:
         return _result('DATA_INSUFFICIENT', d, dq, committee, symbol=symbol, market=market,
-                       vehicle='—', conviction=0, confidence=0, audit=audit,
+                       vehicle='—', conviction=0, confidence=0, audit=audit, context=context,
                        explanation='Données insuffisantes pour décider : '
                                    + ', '.join(dq['missing_fields']) + '.')
 
@@ -232,11 +233,12 @@ def evaluate(detail, *, symbol=None, market=None, option=None, portfolio=None,
     confidence = int(max(0, min(100, round((base_conf + committee['confidence']) / 2
                                            - dq.get('confidence_penalty', 0)))))
     return _result(decision, d, dq, committee, symbol=symbol, market=market, vehicle=vehicle,
-                   conviction=conviction, confidence=confidence, audit=audit, permission=permission)
+                   conviction=conviction, confidence=confidence, audit=audit,
+                   permission=permission, context=context)
 
 
 def _result(decision, d, dq, committee, *, symbol, market, vehicle, conviction,
-            confidence, audit, permission=True, explanation=None):
+            confidence, audit, permission=True, explanation=None, context=None):
     label, tone = DECISIONS[decision]
     plan = d.get('plan') or {}
     pros = [e['text'] for e in committee.get('positive', [])][:5]
@@ -272,6 +274,7 @@ def _result(decision, d, dq, committee, *, symbol, market, vehicle, conviction,
         'risk_flags': flags[:6],
         'unknowns': unknowns,          # « ce que nous ne savons pas » (Ch. XVI)
         'reasoning': reason,           # scénarios + invalidations (Ch. XVIII)
+        'context': context,            # situation transversale (percentiles, rang secteur)
         'data_quality': dq,
         'explanation': expl,
         'audit_trail': audit,

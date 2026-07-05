@@ -16,6 +16,7 @@ import time
 from flask import Blueprint, jsonify
 
 from vertex.engines import decision_stack as _decision
+from vertex.engines import context as _context
 
 
 def make_blueprint(*, scan_state, demo_mode):
@@ -39,12 +40,15 @@ def make_blueprint(*, scan_state, demo_mode):
         return {'roro': mctx.get('roro'), 'spy_regime': mctx.get('spy_regime'),
                 'vix_band': mctx.get('vix_band')}
 
+    def _ctx_for(sym):
+        return _context.context_for(sym, scan_state.get('detail') or {})
+
     def _brief_row(sym, market, scan_age):
         """Une ligne du brief : la décision du comité pour un titre, condensée."""
         detail = dict((scan_state.get('detail') or {}).get(sym) or {})
         detail.setdefault('symbol', sym)
-        r = _decision.evaluate(detail, symbol=sym, market=market,
-                               option=_best_option_for(sym), scan_age_s=scan_age, demo=demo_mode)
+        r = _decision.evaluate(detail, symbol=sym, market=market, option=_best_option_for(sym),
+                               scan_age_s=scan_age, demo=demo_mode, context=_ctx_for(sym))
         com = r.get('committee') or {}
         return {
             'symbol': sym, 'decision': r['final_decision'], 'label': r['decision_label'],
@@ -77,7 +81,7 @@ def make_blueprint(*, scan_state, demo_mode):
         detail.setdefault('symbol', sym)
         return jsonify(_decision.evaluate(
             detail, symbol=sym, market=_market_ctx(), option=_best_option_for(sym),
-            scan_age_s=_scan_age(), demo=demo_mode))
+            scan_age_s=_scan_age(), demo=demo_mode, context=_ctx_for(sym)))
 
     @bp.route('/api/brief')
     def brief_ep():

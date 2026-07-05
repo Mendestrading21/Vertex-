@@ -5869,6 +5869,19 @@ function renderCommittee(r){
   var unk=(r.unknowns||[]).map(function(t){return cmtEvRow(t,C.mut,'❓');}).join('');
   var unkBlock=unk?'<div style="margin-top:12px;padding:11px 13px;background:rgba(135,148,171,.06);border:1px solid rgba(135,148,171,.28);border-radius:12px">'
     +'<div style="font-size:10px;font-weight:800;color:'+C.mut+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px">❓ Ce que nous ne savons pas</div>'+unk+'</div>':'';
+  // Contexte relatif (analyse transversale) — où se situe le titre dans l'univers
+  var ctx=r.context||{},ctxBlock='';
+  if(ctx.dimensions&&ctx.dimensions.length){
+    var stCol=function(s){return s==='leader'?C.g:s==='fort'?C.cy:s==='médian'?C.mut:s==='faible'?C.yl:C.r;};
+    var bars=ctx.dimensions.map(function(dm){var pu=dm.pct_universe;if(pu==null)return '';var col=stCol(dm.standing);
+      return '<div style="flex:1;min-width:120px"><div style="display:flex;justify-content:space-between;font-size:9px;color:#8794ab;font-weight:700;margin-bottom:2px"><span>'+dm.label+'</span><span style="color:'+col+'">'+pu+'ᵉ pct'+(dm.pct_sector!=null?' · '+dm.pct_sector+' sect.':'')+'</span></div>'
+        +'<div style="height:5px;border-radius:4px;background:#0a0c11;overflow:hidden"><div style="height:100%;width:'+pu+'%;background:'+col+'"></div></div></div>';}).join('');
+    ctxBlock='<div style="margin:2px 0 12px;padding:10px 13px;background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.22);border-radius:12px">'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px"><span style="font-size:10px;font-weight:800;color:#A78BFA;letter-spacing:.4px;text-transform:uppercase">🧭 Contexte relatif</span>'
+      +(ctx.headline?'<span style="font-size:11px;font-weight:800;color:#cbbdf5">'+ctx.headline+'</span>':'')
+      +'<span style="margin-left:auto;font-size:9.5px;color:#71717A">vs '+(ctx.universe_n||'—')+' titres scannés</span></div>'
+      +'<div style="display:flex;gap:12px;flex-wrap:wrap">'+bars+'</div></div>';
+  }
   // Catalyseurs à vérifier (signaux neutres, directionless) + régime de pondération
   var cats=(com.watch_signals||[]).map(function(e){return cmtEvRow(e.text,C.blue,'⚡');}).join('');
   var catBlock=cats?'<div style="margin-top:12px;padding:11px 13px;background:rgba(56,189,248,.05);border:1px solid '+C.blue+'2e;border-radius:12px">'
@@ -5906,6 +5919,7 @@ function renderCommittee(r){
       +'<div style="margin-left:auto;min-width:150px;flex:1">'
         +'<div style="display:flex;justify-content:space-between;font-size:9.5px;color:#8794ab;font-weight:700;margin-bottom:3px"><span>CONFIANCE</span><span style="color:'+tone+'">'+conf+'/100</span></div>'
         +'<div style="height:7px;border-radius:5px;background:#0a0c11;overflow:hidden"><div style="height:100%;width:'+conf+'%;background:'+tone+'"></div></div></div></div>'
+    +ctxBlock
     // Les membres
     +'<div style="font-size:10px;font-weight:800;color:#8794ab;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">Les analystes ('+(com.members||[]).length+') — chacun indépendant, chacun peut être en désaccord</div>'
     +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:7px;margin-bottom:12px">'+members+'</div>'

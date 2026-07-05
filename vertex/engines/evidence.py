@@ -138,6 +138,24 @@ def catalyst_analyst(d):
     return []
 
 
+def relative_analyst(context):
+    """L'analyste transversal : où se situe le titre PARMI l'univers scanné (Ch. IX)."""
+    if not context:
+        return []
+    out = []
+    sc = next((d for d in context.get('dimensions', []) if d['key'] == 'score'), None)
+    if sc and sc.get('pct_universe') is not None:
+        if sc['standing'] == 'leader':
+            out.append(_ev(POSITIVE, f'Parmi les meilleurs de l\'univers scanné (top {100 - sc["pct_universe"]}%)',
+                           55, 'Transversal'))
+        elif sc['standing'] == 'retardataire':
+            out.append(_ev(NEGATIVE, f'Parmi les plus faibles de l\'univers scanné (bas {sc["pct_universe"]}%)',
+                           50, 'Transversal'))
+    if context.get('sector_rank') == 1 and (context.get('sector_n') or 0) >= 3:
+        out.append(_ev(POSITIVE, f'Leader de son secteur ({context.get("sector")})', 50, 'Transversal'))
+    return out
+
+
 def data_quality_analyst(dq):
     if not dq:
         return []
@@ -188,12 +206,12 @@ def _apply_regime(items, market):
     return items
 
 
-def gather(detail, *, market=None, option=None, portfolio=None, data_quality=None):
+def gather(detail, *, market=None, option=None, portfolio=None, data_quality=None, context=None):
     """Réunit toutes les preuves des analystes, catégorisées, pondérées par régime, avec contradictions."""
     d = detail or {}
     items = (market_analyst(market) + structure_analyst(d) + technical_analyst(d)
              + momentum_analyst(d) + fundamental_analyst(d) + catalyst_analyst(d)
-             + options_analyst(option) + risk_analyst(d, portfolio)
+             + relative_analyst(context) + options_analyst(option) + risk_analyst(d, portfolio)
              + data_quality_analyst(data_quality))
     items = _apply_regime(items, market)
     items += _contradictions(d, items)          # les tensions ne sont pas pondérées
