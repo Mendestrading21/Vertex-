@@ -63,6 +63,25 @@ def chart_read(d):
     elif rs <= 35:
         parts.append(f'sous-performe le marché (force relative {rs:.0f})')
 
+    # NOUVEAUX SIGNAUX — cassure, compression, pente de tendance, divergence
+    if d.get('breakout'):
+        parts.append('🚀 cassure confirmée : nouveau plus-haut 20j porté par le volume')
+    if d.get('squeeze'):
+        br = d.get('bb_rank')
+        parts.append(f'🧨 compression de volatilité (bandes au plus bas 6 mois{f", rang {br}%" if br is not None else ""}) — cassure souvent imminente')
+    if _sig(d, 'stacked') and d.get('ma50_rising') is False:
+        parts.append('⚠️ MM50 qui s\'aplatit (tendance qui s\'essouffle malgré l\'empilement)')
+    if d.get('rsi_div') == 'bear':
+        parts.append('⚠️ divergence baissière du RSI (prix au plus-haut, momentum en repli)')
+    elif d.get('rsi_div') == 'bull':
+        parts.append('↗️ divergence haussière du RSI (prix au plus-bas, momentum qui remonte)')
+    if d.get('pullback'):
+        parts.append('🎯 repli sain sur tendance (cours revenu près des moyennes, RSI apaisé) — entrée à moindre risque')
+    if d.get('accumulation'):
+        parts.append('🟢 accumulation détectée (OBV monte, prix à plat) — smart money qui charge')
+    elif d.get('distribution'):
+        parts.append('🔴 distribution cachée (OBV baisse, prix qui monte) — faiblesse sous le capot')
+
     return ' · '.join(parts)
 
 
@@ -79,3 +98,72 @@ def chart_verdict(d):
     if not _sig(d, 'above200'):
         return '⛔ Graphique défavorable à un call : sous la MM200, tendance non confirmée.'
     return '≈ Graphique mitigé : tendance pas encore alignée, prudence.'
+
+
+def thesis(d):
+    """Synthèse Vertex DÉCISIVE : fusionne verdict, profil offensif/défensif, signaux (cassure /
+    repli / squeeze / distribution / accumulation), régime et plan → une thèse + 'comment jouer'
+    (lié à l'horizon options). Pure — aucune donnée externe ; l'IA peut l'enrichir si clé présente."""
+    if not d:
+        return None
+    v, sc, gr = d.get('verdict'), int(d.get('score') or 0), d.get('grade') or ''
+    prof, reg = d.get('profile') or 'ÉQUILIBRÉ', d.get('regime')
+    vmap = {'BUY': "signal d'ACHAT", 'WATCH': 'à SURVEILLER', 'WAIT': 'en ATTENTE', 'AVOID': 'à ÉVITER'}
+    head = f"{vmap.get(v, v or '—')} · score {sc}/100 ({gr})"
+    if d.get('distribution'):
+        driver = "distribution cachée (le volume trahit une faiblesse sous la hausse) — méfiance"
+    elif d.get('breakout'):
+        driver = "cassure confirmée par le volume, la force s'exprime"
+    elif d.get('pullback'):
+        driver = "repli sain sur une tendance intacte, fenêtre d'entrée à moindre risque"
+    elif d.get('squeeze'):
+        driver = "compression de volatilité, un mouvement se prépare (sens à confirmer)"
+    elif d.get('accumulation'):
+        driver = "accumulation discrète (OBV en hausse), quelqu'un charge"
+    elif reg == 'TREND':
+        driver = "tendance établie, momentum en place"
+    elif reg == 'CHOP':
+        driver = "marché en range agité, les cassures échouent — patience"
+    else:
+        driver = "structure encore indécise"
+    if prof == 'OFFENSIF':
+        play = "titre nerveux → CALL court/moyen (1-8 sem) pour le levier, taille maîtrisée"
+    elif prof == 'DÉFENSIF':
+        play = "titre stable → action ou LEAPS long ; le temps et le dividende jouent pour toi"
+    else:
+        play = "polyvalent → action, ou CALL 1-3 mois si la conviction est là"
+    rr = (d.get('plan') or {}).get('rr_res')
+    tail = f" R:R ~{rr}:1 vers la résistance." if rr else "."
+    # Confluence multi-horizons : le vent dominant (hebdo) vs la météo du jour.
+    mtf = d.get('mtf') or {}
+    mst = mtf.get('state')
+    mtftxt = ''
+    if mst == 'ALIGNÉ HAUSSIER':
+        mtftxt = " 🧭 Multi-horizons : journalier ET hebdo alignés à la hausse — vent porteur, pleine conviction."
+    elif mst == 'REPLI DANS TENDANCE':
+        mtftxt = " 🧭 Multi-horizons : repli journalier dans une tendance hebdo saine — la zone d'achat des pros."
+    elif mst == 'REBOND CONTRE-TENDANCE':
+        mtftxt = " 🧭 Multi-horizons : rebond à contre-courant de l'hebdo baissier — méfiance, garder court."
+    elif mst == 'ALIGNÉ BAISSIER':
+        mtftxt = " 🧭 Multi-horizons : les deux horizons baissiers — le vent souffle contre, pas d'achat."
+    # Physique du marché : la structure fractale confirme ou nuance la lecture.
+    phy = d.get('physics') or {}
+    pst = phy.get('state')
+    phys = ''
+    if pst == 'TENDANCE FRACTALE':
+        phys = f" 🔬 Physique : {pst} (Hurst {phy.get('hurst')}) — les incréments ont de la mémoire, la tendance tend à se prolonger."
+    elif pst == 'RETOUR MOYENNE':
+        hl = phy.get('half_life')
+        phys = f" 🔬 Physique : {pst} (Hurst {phy.get('hurst')}{f', demi-vie ≈ {hl}j' if hl else ''}) — jouer les excès, pas la poursuite."
+    elif pst == 'CHAOS':
+        phys = f" 🔬 Physique : {pst} (entropie {phy.get('entropy')}) — mouvement bruité, réduis la taille."
+    # Radar d'anomalies : si le titre est statistiquement hors-norme, on le signale.
+    ano = d.get('anomalies') or []
+    lvl = d.get('anomaly_lvl')
+    alert = ''
+    if lvl == 'ALERTE' and ano:
+        top = sorted(ano, key=lambda a: a.get('sev', 0), reverse=True)[0]
+        alert = f" 🛰️ Radar ALERTE : {top.get('lbl')} — comportement hors-norme, vérifie la nouvelle avant d'agir."
+    elif lvl == 'ACTIF' and ano:
+        alert = f" 🛰️ Radar actif : {len(ano)} signal(s) inhabituel(s) détecté(s)."
+    return f"{head}. {driver[0].upper()}{driver[1:]}. Comment jouer : {play}.{tail}{mtftxt}{phys}{alert}"

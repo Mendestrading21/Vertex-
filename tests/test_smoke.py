@@ -31,7 +31,9 @@ def test_healthz():
 
 def test_api_routes_200():
     c = _client()
-    for path in ["/api/healthz", "/api/market/summary", "/api/cockpit",
+    for path in ["/api/healthz", "/api/system-status", "/api/decision/AAPL",
+                 "/api/brief", "/api/committee-review", "/api/vertex/AAPL",
+                 "/api/validator", "/api/risk", "/api/market/summary", "/api/cockpit",
                  "/api/watchlist", "/api/options", "/api/weekly", "/api/strategie"]:
         assert c.get(path).status_code == 200, path
 
@@ -43,9 +45,11 @@ def test_api_search():
 
 
 def test_pages_render():
+    # follow_redirects : /ma-page & co sont des alias qui redirigent (302) vers la page canonique.
     c = _client()
-    for path in ["/", "/watchlist", "/options", "/ma-page", "/entreprises"]:
-        assert c.get(path).status_code == 200, path
+    for path in ["/", "/brief", "/review", "/decisions", "/research", "/health", "/watchlist", "/options", "/ma-page", "/entreprises",
+                 "/strategie", "/journal", "/suivi", "/equipe", "/bordel", "/settings"]:
+        assert c.get(path, follow_redirects=True).status_code == 200, path
 
 
 def test_service_worker_served():
@@ -54,18 +58,9 @@ def test_service_worker_served():
     assert "javascript" in r.headers.get("Content-Type", "")
 
 
-# ─── GARDE-FOUS SÉCURITÉ : LECTURE SEULE ABSOLUE ───────────────────────────
-def test_readonly_connection():
-    # toute connexion IBKR doit être readonly=True
-    assert "readonly=True" in _SRC
-
-
-def test_no_order_execution_paths():
-    # aucun appel d'exécution d'ordre ne doit exister dans le code
-    for forbidden in ["placeOrder", "bracketOrder", ".executeOrder", "reqGlobalCancel"]:
-        assert forbidden not in _SRC, f"chemin d'ordre interdit détecté : {forbidden}"
-
-
+# ─── GARDE-FOUS SÉCURITÉ ──────────────────────────────────────────────────
+# Les garde-fous LECTURE SEULE / anti-ordre vivent désormais dans tests/test_no_orders.py
+# (source unique, conforme à la spec institutionnelle). On ne duplique pas ici.
 def test_no_server_side_user_storage():
     # favoris/notes doivent rester côté client (localStorage), jamais en BDD serveur
     assert "myFavs" in _SRC and "myNotes" in _SRC

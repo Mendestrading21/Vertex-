@@ -66,3 +66,31 @@ def fr_news(ticker, items):
         for it in items:
             it['fr'] = it.get('title')
         return items, None
+
+
+def fr_desc(sym, summary):
+    """Traduit une description d'entreprise (longBusinessSummary) en français.
+    Cache par contenu ; fallback = texte d'origine si pas de clé / erreur."""
+    if not summary:
+        return summary
+    key = 'desc:' + hashlib.md5((sym + summary).encode('utf-8', 'ignore')).hexdigest()
+    if key in _cache:
+        return _cache[key]
+    if not available():
+        return summary
+    try:
+        client = Anthropic()
+        prompt = (
+            f"Traduis en français clair et naturel cette description de l'activité de "
+            f"l'entreprise {sym} (vocabulaire économique, fidèle, sans ajouter d'info). "
+            f"Réponds UNIQUEMENT par la traduction, sans guillemets ni préambule.\n\n{summary}"
+        )
+        msg = client.messages.create(model=MODEL, max_tokens=600,
+                                     messages=[{'role': 'user', 'content': prompt}])
+        fr = (msg.content[0].text or '').strip()
+        if fr:
+            _cache[key] = fr
+            return fr
+    except Exception:
+        pass
+    return summary
