@@ -42,6 +42,7 @@ from vertex.data.constants import BENCH, R, BUILD, REFRESH_SEC  # noqa: F401
 from vertex.app.config import IBKR_ENABLED, DEMO_MODE  # noqa: F401
 from vertex.data import constants as _vconst
 from vertex.services import status_service as _status_svc
+from vertex.engines import decision_stack as _decision
 
 app = Flask(__name__)
 # ── JSON SÛR : convertit NaN/Infinity → null. Sinon Flask sort `NaN` (toléré par Python
@@ -2692,6 +2693,30 @@ def system_status_ep():
     return jsonify(_status_svc.build_system_status(
         scan_state, build=BUILD, readonly=True, ibkr_enabled=IBKR_ENABLED,
         demo_mode=DEMO_MODE, ai_on=ai.available(), thresholds=thresholds, engines=engines))
+
+
+def _best_option_for(sym):
+    """Meilleur CALL du board pour un titre (véhicule DecisionStack). None si absent."""
+    calls = [c for c in (scan_state.get('options_board') or [])
+             if c.get('sym') == sym and c.get('type') == 'CALL' and c.get('quality') is not None]
+    if not calls:
+        return None
+    return max(calls, key=lambda c: c.get('quality', 0))
+
+
+@app.route('/api/decision/<sym>')
+def decision_ep(sym):
+    """LA DÉCISION STACK — vérité unique, explicable, par titre. Analyse uniquement."""
+    sym = sym.upper()
+    detail = dict((scan_state.get('detail') or {}).get(sym) or {})
+    detail.setdefault('symbol', sym)
+    mctx = scan_state.get('market_ctx') or {}
+    market = {'roro': mctx.get('roro'), 'spy_regime': mctx.get('spy_regime'),
+              'vix_band': mctx.get('vix_band')}
+    scan_age = round(time.time() - scan_state['scan_ts']) if scan_state.get('scan_ts') else None
+    return jsonify(_decision.evaluate(
+        detail, symbol=sym, market=market, option=_best_option_for(sym),
+        scan_age_s=scan_age, demo=DEMO_MODE))
 
 
 @app.route('/options/<sym>')
