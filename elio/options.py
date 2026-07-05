@@ -57,6 +57,14 @@ def _greeks(S, K, T, sig, is_call):
     return delta, gamma, theta, vega
 
 
+def gamma(S, K, T, sig):
+    """Gamma Black-Scholes (source unique — utilisé aussi par le GEX du terminal)."""
+    if T <= 0 or sig <= 0 or S <= 0 or K <= 0:
+        return 0.0
+    d1 = (math.log(S / K) + (R + 0.5 * sig * sig) * T) / (sig * math.sqrt(T))
+    return _npdf(d1) / (S * sig * math.sqrt(T))
+
+
 def _bs_price(S, K, T, sig, is_call):
     if T <= 0 or sig <= 0:
         return max((S - K) if is_call else (K - S), 0.0)

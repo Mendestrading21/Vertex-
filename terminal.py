@@ -23,7 +23,6 @@ import pandas as pd
 import yfinance as yf
 from flask import Flask, jsonify, redirect, request, session
 import hmac as _hmac
-import hashlib as _hashlib
 
 try:
     from dotenv import load_dotenv
@@ -76,10 +75,9 @@ except Exception:
 #   • Session signée (cookie) valable 30 jours ; anti-force-brute par IP.
 #   • Recommandé aussi : VERTEX_SECRET=une_longue_chaine_aléatoire (sinon dérivée du code).
 # ─────────────────────────────────────────────────────────────────────────────
-VERTEX_CODE = (os.environ.get('VERTEX_CODE') or os.environ.get('ACCESS_CODE') or '').strip()
-AUTH_ON = bool(VERTEX_CODE)
-app.secret_key = (os.environ.get('VERTEX_SECRET')
-                  or _hashlib.sha256(('vertex-secret::' + (VERTEX_CODE or 'demo')).encode()).hexdigest())
+# Source unique de la config d'accès : vertex/app/config.py (dé-duplication — cf. audit).
+from vertex.app.config import VERTEX_CODE, AUTH_ON, SECRET_KEY  # noqa: E402
+app.secret_key = SECRET_KEY
 app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
                   PERMANENT_SESSION_LIFETIME=timedelta(days=30))
 _AUTH_PUBLIC = {'/login', '/logout', '/healthz', '/api/healthz',
@@ -284,19 +282,7 @@ def _adx(df, n=14):
     return float(dx.ewm(alpha=1 / n, adjust=False).mean().iloc[-1])
 
 
-def _npdf(x):
-    return math.exp(-0.5 * x * x) / math.sqrt(2 * math.pi)
-
-
-def _ncdf(x):
-    return 0.5 * (1.0 + math.erf(x / math.sqrt(2)))
-
-
-def _gamma(S, K, T, sig):
-    if T <= 0 or sig <= 0 or S <= 0 or K <= 0:
-        return 0.0
-    d1 = (math.log(S / K) + (R + 0.5 * sig * sig) * T) / (sig * math.sqrt(T))
-    return _npdf(d1) / (S * sig * math.sqrt(T))
+# Black-Scholes : source unique dans elio/options.py (dé-duplication — cf. audit).
 
 
 def market_status():
@@ -2225,7 +2211,7 @@ def options_pack(sym):
                         continue
                     if is_call and abs(K - spot) <= spot * 0.03 and 0.03 < iv < 3.0:
                         atm_ivs.append(iv)
-                    g = _gamma(spot, K, T, iv)
+                    g = options.gamma(spot, K, T, iv)
                     d = agg.setdefault(K, {'cg': 0., 'pg': 0.})
                     d['cg' if is_call else 'pg'] += g * oi
         out['iv'] = round(float(np.median(atm_ivs)) * 100, 1) if atm_ivs else None
