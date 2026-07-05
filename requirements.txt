@@ -1,8 +1,10 @@
-flask
-yfinance
-pandas
-numpy
-ib_async
-anthropic
-python-dotenv
-gunicorn
+# VERTEX — dépendances. Installées automatiquement par les scripts Lancer_VERTEX.
+# Bornes sûres : versions récentes testées, sans casser sur une future version majeure.
+flask>=3.0
+yfinance>=0.2.40
+pandas>=2.0,<4
+numpy>=1.24,<3
+ib_async>=1.0            # connexion IBKR LECTURE SEULE (live si TWS/Gateway ouvert)
+anthropic>=0.30          # briefs IA en français (optionnel — clé ANTHROPIC_API_KEY)
+python-dotenv>=1.0       # charge le fichier .env (code d'accès, clés)
+gunicorn>=21.0           # serveur de production (cloud)

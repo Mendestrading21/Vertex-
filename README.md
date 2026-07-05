@@ -1,4 +1,10 @@
-# 🔱 Trading Desk — Cockpit IBKR (analyse only)
+# ▲ VERTEX — Terminal d'analyse (analyse only)
+
+> **🚀 Pour démarrer : ouvre [`DEMARRER_ICI.md`](DEMARRER_ICI.md)** — ou double-clic
+> sur **`Lancer_VERTEX.command`** (Mac) / **`Lancer_VERTEX.bat`** (Windows).
+> Tout s'installe et se lance tout seul, puis ça s'ouvre sur http://localhost:5002.
+
+---
 
 Cockpit d'analyse trading **local** (Python/Flask) pour 57 leaders US : scoring,
 moteur de décision IBKR /40, options desk, cours **en direct via IBKR**, fiches
