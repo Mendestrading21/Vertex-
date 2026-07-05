@@ -50,6 +50,7 @@ from vertex.engines import backtest as _backtest
 from vertex.engines import swing as _swing
 from vertex.engines import strategy_fit as _strategy_fit
 from vertex.engines import stats as _stats
+from vertex.app.state import scan_state
 from vertex.app.routes import decision_api as _decision_api
 from vertex.data import demo as _demo
 from vertex.services import market_clock as _market_clock
@@ -189,9 +190,8 @@ def logout_page():
     return redirect('/login')
 
 
-scan_state = {'rows': [], 'detail': {}, 'portfolio': None, 'options_board': [], 'daily': None,
-              'anomalies': [], 'sectors': [], 'market_ctx': None, 'fundamentals': None, 'indices': [], 'commodities': [],
-              'macro': [], 'edge': None, 'internals': None, 'radar': None, 'recommendations': [], 'strategy': None, 'committee': None, 'updated': None, 'error': None}
+# scan_state : état partagé du scan — domicile unique dans vertex/app/state.py.
+# Importé en tête ; rempli ci-dessous (caches disque) puis muté EN PLACE par la boucle.
 
 # ─── CACHES PERSISTANTS SUR DISQUE (survivent aux redémarrages → anti-throttle) ───
 # yfinance throttle les .info/option_chain en masse → après chaque restart tout retombait
