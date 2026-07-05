@@ -126,3 +126,17 @@ def test_unknowns_channel_always_present():
     # « Ce que nous ne savons pas » (Ch. XVI) est toujours un canal exposé.
     r = ds.evaluate(_stock())
     assert 'unknowns' in r and isinstance(r['unknowns'], list)
+
+
+def test_score_breakdown_is_traceable():
+    # Ch. XVIII : la décision expose la décomposition du score (sous-scores + ajustements).
+    r = ds.evaluate(_stock(score=90, base_score=82, phys_adj=5, mtf_adj=3,
+                           sub={'technical': 80, 'momentum': 85, 'fundamental': 70, 'risk': 60,
+                                'fundamental_is_proxy': True}))
+    bd = r['score_breakdown']
+    assert bd['base_score'] == 82 and bd['final_score'] == 90
+    labels = {s['label']: s['value'] for s in bd['subscores']}
+    assert labels['Technique'] == 80 and labels['Momentum'] == 85
+    assert any(s['label'] == 'Fondamental' and s['is_proxy'] for s in bd['subscores'])
+    deltas = {a['label'][:8]: a['delta'] for a in bd['adjustments']}
+    assert deltas['Physique'] == 5 and deltas['Multi-ho'] == 3

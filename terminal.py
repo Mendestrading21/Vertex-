@@ -5882,6 +5882,20 @@ function renderCommittee(r){
       +'<span style="margin-left:auto;font-size:9.5px;color:#71717A">vs '+(ctx.universe_n||'—')+' titres scannés</span></div>'
       +'<div style="display:flex;gap:12px;flex-wrap:wrap">'+bars+'</div></div>';
   }
+  // Décomposition du score (traçabilité) — sous-scores + ajustements structurels
+  var bd=r.score_breakdown||{},bdBlock='';
+  if(bd.subscores&&bd.subscores.length){
+    var scCol=function(v){return v>=65?C.g:v>=45?C.yl:C.r;};
+    var subs=bd.subscores.map(function(s){var col=scCol(s.value);
+      return '<div style="flex:1;min-width:96px"><div style="display:flex;justify-content:space-between;font-size:9px;color:#8794ab;font-weight:700;margin-bottom:2px"><span>'+s.label+(s.is_proxy?' <span title="estimé (fondamentaux réels indisponibles)" style="color:#71717A">~</span>':'')+'</span><span style="color:'+col+'">'+s.value+'</span></div>'
+        +'<div style="height:5px;border-radius:4px;background:#0a0c11;overflow:hidden"><div style="height:100%;width:'+s.value+'%;background:'+col+'"></div></div></div>';}).join('');
+    var adj=(bd.adjustments||[]).map(function(a){var pos=a.delta>=0;return '<span style="font-size:10px;font-weight:700;color:'+(pos?C.g:C.r)+';background:'+(pos?C.g:C.r)+'14;border:1px solid '+(pos?C.g:C.r)+'44;border-radius:6px;padding:2px 8px">'+a.label+' '+(pos?'+':'')+a.delta+'</span>';}).join(' ');
+    bdBlock='<div style="margin-top:12px;padding:11px 13px;background:rgba(56,189,248,.04);border:1px solid rgba(56,189,248,.2);border-radius:12px">'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px"><span style="font-size:10px;font-weight:800;color:'+C.blue+';letter-spacing:.4px;text-transform:uppercase">📐 Décomposition du score</span>'
+      +'<span style="font-size:11px;color:#8794ab">base <b style="color:#cfd8e6">'+bd.base_score+'</b>'+(adj?' → global <b style="color:#cfd8e6">'+bd.final_score+'</b>':'')+'</span></div>'
+      +'<div style="display:flex;gap:11px;flex-wrap:wrap;margin-bottom:'+(adj?'9px':'0')+'">'+subs+'</div>'
+      +(adj?'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span style="font-size:9px;color:#6b7280;font-weight:800;text-transform:uppercase">Ajustements structurels :</span>'+adj+'</div>':'')+'</div>';
+  }
   // Catalyseurs à vérifier (signaux neutres, directionless) + régime de pondération
   var cats=(com.watch_signals||[]).map(function(e){return cmtEvRow(e.text,C.blue,'⚡');}).join('');
   var catBlock=cats?'<div style="margin-top:12px;padding:11px 13px;background:rgba(56,189,248,.05);border:1px solid '+C.blue+'2e;border-radius:12px">'
@@ -5927,7 +5941,7 @@ function renderCommittee(r){
     +'<div class="grid2">'
       +'<div><div style="font-size:10px;font-weight:800;color:'+C.g+';letter-spacing:.4px;margin-bottom:5px">✓ ARGUMENTS POUR</div>'+pros+'</div>'
       +'<div><div style="font-size:10px;font-weight:800;color:'+C.r+';letter-spacing:.4px;margin-bottom:5px">⚠ ARGUMENTS CONTRE</div>'+cons+'</div></div>'
-    +contraBlock+devil+catBlock+unkBlock+reasBlock
+    +contraBlock+devil+catBlock+bdBlock+unkBlock+reasBlock
     +'<div class="muted" style="font-size:10.5px;margin-top:13px;line-height:1.5">'+(r.explanation||'')
       +'<br>Le comité éclaire une décision — il ne la prend jamais à votre place. Analyse éducative, aucune certitude, aucun ordre.</div></div>';
 }

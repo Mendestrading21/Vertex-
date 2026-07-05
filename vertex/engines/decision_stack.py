@@ -162,6 +162,32 @@ def _conviction(d):
     return int(max(0, min(100, round(_num(d.get('score'))))))
 
 
+_SUB_LABELS = {'technical': 'Technique', 'momentum': 'Momentum',
+               'fundamental': 'Fondamental', 'risk': 'Risque', 'options': 'Options'}
+
+
+def _decomposition(d):
+    """Traçabilité du score (Ch. XVIII) : sous-scores + ajustements structurels."""
+    sub = d.get('sub') or {}
+    subscores = [{'label': _SUB_LABELS[k], 'value': int(sub[k]),
+                  'is_proxy': bool(k == 'fundamental' and sub.get('fundamental_is_proxy'))}
+                 for k in ('technical', 'momentum', 'fundamental', 'risk', 'options')
+                 if isinstance(sub.get(k), (int, float))]
+    adjustments = []
+    pa, ma = int(_num(d.get('phys_adj'))), int(_num(d.get('mtf_adj')))
+    if pa:
+        adjustments.append({'label': 'Physique (structure du mouvement)', 'delta': pa})
+    if ma:
+        adjustments.append({'label': 'Multi-horizons (tendance hebdo)', 'delta': ma})
+    return {
+        'base_score': int(_num(d.get('base_score'), _num(d.get('score')))),
+        'final_score': int(_num(d.get('score'))),
+        'subscores': subscores, 'adjustments': adjustments,
+        'note': ('Le score compose technique / momentum / fondamental / risque, '
+                 'puis la structure (physique + multi-horizons) le tempère ou le renforce.'),
+    }
+
+
 def _size_hint(decision, profile):
     table = {
         'STRONG_BUY': {'OFFENSIF': '5-8%', 'DÉFENSIF': '4-6%', 'ÉQUILIBRÉ': '4-7%'},
@@ -251,6 +277,7 @@ def _result(decision, d, dq, committee, *, symbol, market, vehicle, conviction,
     expl = explanation or _explain(decision, committee, confidence, audit)
     reason = (reasoning.build(d, committee, decision)
               if decision != 'DATA_INSUFFICIENT' else None)
+    breakdown = _decomposition(d) if decision != 'DATA_INSUFFICIENT' else None
     return {
         'symbol': symbol or d.get('symbol'),
         'final_decision': decision,
@@ -274,6 +301,7 @@ def _result(decision, d, dq, committee, *, symbol, market, vehicle, conviction,
         'risk_flags': flags[:6],
         'unknowns': unknowns,          # « ce que nous ne savons pas » (Ch. XVI)
         'reasoning': reason,           # scénarios + invalidations (Ch. XVIII)
+        'score_breakdown': breakdown,  # traçabilité du score (Ch. XVIII)
         'context': context,            # situation transversale (percentiles, rang secteur)
         'data_quality': dq,
         'explanation': expl,
