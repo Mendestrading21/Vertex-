@@ -50,12 +50,13 @@ from vertex.engines import backtest as _backtest
 from vertex.engines import swing as _swing
 from vertex.engines import strategy_fit as _strategy_fit
 from vertex.engines import stats as _stats
-from vertex.app.state import scan_state, weekly_state
+from vertex.app.state import scan_state, weekly_state, news_state, cal_state
 from vertex.engines import market_lens as _market_lens
 from vertex.app.routes import decision_api as _decision_api
 from vertex.app.routes import analysis_api as _analysis_api
 from vertex.app.routes import feeds as _feeds
 from vertex.app.routes import system as _system
+from vertex.app.routes import content as _content
 from vertex.data import demo as _demo
 from vertex.services import market_clock as _market_clock
 
@@ -1155,7 +1156,7 @@ def _map_ibkr_fund(sym, d):
 
 
 # ─── NEWS LIVE : flux marché rafraîchi chaque minute ─────────────────────
-news_state = {'items': [], 'updated': None}
+# news_state : état partagé (state.py) — rempli par la boucle d'actualités.
 NEWS_SYMS = ['SPY', 'QQQ', 'NVDA', 'AAPL', 'MSFT', 'META', 'AMZN', 'TSLA', 'AMD', 'GOOGL', 'AVGO', 'PLTR']
 
 
@@ -1183,7 +1184,7 @@ def _news_loop():
 
 
 # ─── CALENDRIER EARNINGS : prochaines dates pour les 45 (rafraîchi /3h) ───
-cal_state = {'items': _load_json('cal_cache.json', []), 'updated': None}   # persistant (anti-restart)
+cal_state['items'] = _load_json('cal_cache.json', [])   # réhydrate l'état partagé (persistant, anti-restart)
 
 
 def _cal_loop():
@@ -2132,19 +2133,9 @@ def options_desk_page():
     return PAGE_OPTIONS_LAB
 
 
-@app.route('/news-feed')
-def news_feed_ep():
-    return jsonify({**news_state, 'ai_on': ai.available()})
+# ─── FILS DE CONTENU (Blueprint) — news-feed · cal-feed · weekly-feed ───
+app.register_blueprint(_content.bp)
 
-
-@app.route('/cal-feed')
-def cal_feed_ep():
-    return jsonify(cal_state)
-
-
-@app.route('/weekly-feed')
-def weekly_feed_ep():
-    return jsonify({**weekly_state, 'ai_on': ai.available()})
 
 
 @app.route('/weekly-regen', methods=['POST', 'GET'])
