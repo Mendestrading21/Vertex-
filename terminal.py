@@ -6436,6 +6436,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <div id="posBan"></div><div id="resume"></div>
   <div id="ibkr"></div>
   <div id="vertexcard"></div>
+  <div id="committeeRoom" style="margin-bottom:14px"></div>
   <div class="card" style="margin-bottom:14px"><div class="ct" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">📊 GRAPHIQUE TRADINGVIEW · <span id="tvsym"></span><span id="tvIv" style="display:flex;gap:4px;margin-left:4px"></span><a id="tvOpen" target="_blank" rel="noopener" style="margin-left:auto;font-size:10.5px;font-weight:800;color:#38BDF8;background:rgba(56,189,248,.1);border:1px solid #38BDF855;border-radius:8px;padding:4px 10px;text-decoration:none">↗ Ouvrir dans TradingView</a></div><div id="tvchart" style="height:460px"></div><div class="muted" style="font-size:10px;margin-top:6px">EMA · Bollinger · RSI · Volume — mêmes repères que l'analyse Vertex · change de timeframe pour l'intraday · fourni par TradingView, éducatif.</div></div>
   <div id="execPlan" style="margin-bottom:14px"></div>
   <div class="grid2">
@@ -6459,6 +6460,67 @@ const SYM=decodeURIComponent((location.pathname.split('/').filter(Boolean).pop()
   ivBar();
   var s=document.createElement('script');s.src='https://s3.tradingview.com/tv.js';s.async=true;s.onload=function(){mk(window.__tvIv);};s.onerror=function(){fb('Graphique TradingView hors-ligne.');};document.head.appendChild(s);
   setTimeout(function(){if(host&&!host.querySelector('iframe')){if(window.TradingView&&TradingView.widget){mk(window.__tvIv);}else{fb('Graphique TradingView lent à répondre.');}}},7000);})();
+// ─── SALLE DU COMITÉ — consomme la DecisionStack (source unique, Ch. IX/XVI) ───
+const CMT_TONE={'strong-green':'#16A34A','green':'#22C55E','blue':'#38BDF8','amber':'#FFB23F','red':'#EF4444','gray':'#8794ab'};
+function cmtStanceCol(s){return s==='Favorable'?C.g:s==='Défavorable'?C.r:C.mut;}
+function cmtEvRow(txt,col,ic){return '<div style="display:flex;gap:8px;align-items:flex-start;font-size:12px;margin:4px 0;line-height:1.5"><span style="color:'+col+';flex-shrink:0">'+ic+'</span><span style="color:#cfd8e6">'+txt+'</span></div>';}
+function renderCommittee(r){
+  var el=document.getElementById('committeeRoom');if(!el)return;
+  if(!r||!r.final_decision){el.innerHTML='';return;}
+  var com=r.committee||{},tone=CMT_TONE[r.decision_tone]||C.mut,conf=r.confidence||0;
+  var dq=r.data_quality||{};
+  if(r.final_decision==='DATA_INSUFFICIENT'){
+    el.innerHTML='<div class="card" style="border:1px solid #8794ab44"><div class="ct">🏛️ Salle du comité</div>'
+      +'<div class="muted" style="font-size:12.5px;line-height:1.6">⏳ Le comité ne peut pas se prononcer : '+(r.explanation||'données insuffisantes')
+      +'<br>Aucune décision n\'est inventée quand la donnée manque — c\'est la règle.</div></div>';
+    return;}
+  // Membres : chips avec posture
+  var members=(com.members||[]).map(function(m){var c=cmtStanceCol(m.stance);
+    return '<div style="display:flex;align-items:center;gap:8px;background:#0c0e13;border:1px solid '+c+'33;border-radius:9px;padding:6px 10px">'
+      +'<span style="width:7px;height:7px;border-radius:50%;background:'+c+';flex-shrink:0"></span>'
+      +'<span style="font-size:11px;font-weight:700;color:#dfe6f2">'+m.member+'</span>'
+      +'<span style="margin-left:auto;font-size:10px;font-weight:800;color:'+c+'">'+m.stance+'</span></div>';}).join('');
+  var pros=(com.positive||[]).map(function(e){return cmtEvRow(e.text,C.g,'✓');}).join('')||'<div class="muted" style="font-size:11.5px">Aucun argument favorable marquant.</div>';
+  var cons=(com.negative||[]).map(function(e){return cmtEvRow(e.text,C.r,'✗');}).join('')||'<div class="muted" style="font-size:11.5px">Aucune objection majeure.</div>';
+  // Contradictions exposées (jamais cachées — Loi 14)
+  var contra=(com.contradictory||[]).map(function(e){return cmtEvRow(e.text,C.yl,'⚠');}).join('');
+  var contraBlock=contra?'<div style="margin-top:12px;padding:11px 13px;background:rgba(255,178,63,.07);border:1px solid '+C.yl+'44;border-radius:12px">'
+    +'<div style="font-size:10px;font-weight:800;color:'+C.yl+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px">⚠ Contradictions internes — exposées, jamais masquées</div>'+contra+'</div>':'';
+  // Avocat du diable
+  var devil=com.devils_advocate?'<div style="margin-top:12px;padding:11px 13px;background:rgba(239,68,68,.06);border:1px solid '+C.r+'33;border-radius:12px">'
+    +'<div style="font-size:10px;font-weight:800;color:'+C.r+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:3px">😈 Avocat du diable</div>'
+    +'<div style="font-size:12px;color:#cfd8e6;line-height:1.5">'+com.devils_advocate+'</div></div>':'';
+  // Ce que nous ne savons pas (Ch. XVI — humilité intellectuelle)
+  var unk=(r.unknowns||[]).map(function(t){return cmtEvRow(t,C.mut,'❓');}).join('');
+  var unkBlock=unk?'<div style="margin-top:12px;padding:11px 13px;background:rgba(135,148,171,.06);border:1px solid rgba(135,148,171,.28);border-radius:12px">'
+    +'<div style="font-size:10px;font-weight:800;color:'+C.mut+';letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px">❓ Ce que nous ne savons pas</div>'+unk+'</div>':'';
+  var freshCol=dq.stale?C.r:(dq.grade==='A'?C.g:C.yl);
+  var freshTxt=(dq.warning?dq.warning:'données fraîches')+(dq.age_seconds!=null?' · scan il y a '+Math.round(dq.age_seconds)+'s':'');
+  el.innerHTML='<div class="card" style="border:1px solid '+tone+'55;background:linear-gradient(135deg,'+tone+'0d,#0d0e12)">'
+    +'<div class="ct" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">🏛️ Salle du comité'
+      +'<span style="font-size:12px;font-weight:900;color:'+tone+';background:'+tone+'1a;border:1px solid '+tone+'55;padding:3px 11px;border-radius:8px">'+(r.decision_label||'')+'</span>'
+      +'<span style="margin-left:auto;font-size:10px;color:'+freshCol+';font-weight:700">● '+freshTxt+'</span></div>'
+    // Le Président : synthèse
+    +'<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:12px">'
+      +'<div style="font-size:12.5px;color:#dfe6f2"><b style="color:'+tone+'">Président :</b> vue '+(com.view||'—')
+        +' · accord du comité <b>'+(com.agreement!=null?com.agreement+'%':'—')+'</b>'
+        +' · penché <b>'+(com.lean!=null?com.lean+'%':'—')+'</b> favorable</div>'
+      +'<div style="margin-left:auto;min-width:150px;flex:1">'
+        +'<div style="display:flex;justify-content:space-between;font-size:9.5px;color:#8794ab;font-weight:700;margin-bottom:3px"><span>CONFIANCE</span><span style="color:'+tone+'">'+conf+'/100</span></div>'
+        +'<div style="height:7px;border-radius:5px;background:#0a0c11;overflow:hidden"><div style="height:100%;width:'+conf+'%;background:'+tone+'"></div></div></div></div>'
+    // Les membres
+    +'<div style="font-size:10px;font-weight:800;color:#8794ab;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">Les analystes ('+(com.members||[]).length+') — chacun indépendant, chacun peut être en désaccord</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:7px;margin-bottom:12px">'+members+'</div>'
+    // Pour / Contre
+    +'<div class="grid2">'
+      +'<div><div style="font-size:10px;font-weight:800;color:'+C.g+';letter-spacing:.4px;margin-bottom:5px">✓ ARGUMENTS POUR</div>'+pros+'</div>'
+      +'<div><div style="font-size:10px;font-weight:800;color:'+C.r+';letter-spacing:.4px;margin-bottom:5px">⚠ ARGUMENTS CONTRE</div>'+cons+'</div></div>'
+    +contraBlock+devil+unkBlock
+    +'<div class="muted" style="font-size:10.5px;margin-top:13px;line-height:1.5">'+(r.explanation||'')
+      +'<br>Le comité éclaire une décision — il ne la prend jamais à votre place. Analyse éducative, aucune certitude, aucun ordre.</div></div>';
+}
+(function(){fetch('/api/decision/'+encodeURIComponent(SYM)).then(function(r){return r.json();})
+  .then(renderCommittee).catch(function(){var el=document.getElementById('committeeRoom');if(el)el.innerHTML='';});})();
 function niv(n){return n==='S+'?C.g:n==='S'?C.cy:n==='A'?C.gold:n==='B'?C.yl:C.r}
 function renderExec(d,px){
   var el=document.getElementById('execPlan');if(!el)return;
