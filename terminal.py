@@ -5598,9 +5598,14 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     </div>
   </div>
   <div id="posBan"></div><div id="resume"></div>
-  <div id="ibkr"></div>
-  <div id="vertexcard"></div>
+  <!-- SIMPLIFICATION : le Comité (verdict unique) passe en TÊTE ; les autres
+       verdicts (quant Vertex, IBKR) sont repliés en « détail avancé ». -->
   <div id="committeeRoom" style="margin-bottom:14px"></div>
+  <details style="margin-bottom:14px;border:1px solid #1c1c24;border-radius:12px;padding:0 14px;background:#0d1016">
+    <summary style="cursor:pointer;color:#8794ab;font-size:12px;font-weight:700;padding:12px 2px">🔎 Détail avancé — edge quantitatif, probabilités &amp; position IBKR</summary>
+    <div id="vertexcard"></div>
+    <div id="ibkr"></div>
+  </details>
   <div class="card" style="margin-bottom:14px"><div class="ct" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">📊 GRAPHIQUE TRADINGVIEW · <span id="tvsym"></span><span id="tvIv" style="display:flex;gap:4px;margin-left:4px"></span><a id="tvOpen" target="_blank" rel="noopener" style="margin-left:auto;font-size:10.5px;font-weight:800;color:#38BDF8;background:rgba(56,189,248,.1);border:1px solid #38BDF855;border-radius:8px;padding:4px 10px;text-decoration:none">↗ Ouvrir dans TradingView</a></div><div id="tvchart" style="height:460px"></div><div class="muted" style="font-size:10px;margin-top:6px">EMA · Bollinger · RSI · Volume — mêmes repères que l'analyse Vertex · change de timeframe pour l'intraday · fourni par TradingView, éducatif.</div></div>
   <div id="execPlan" style="margin-bottom:14px"></div>
   <div class="grid2">
