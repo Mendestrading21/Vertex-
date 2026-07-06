@@ -5765,17 +5765,21 @@ function renderCommittee(r){
       +'<div style="margin-left:auto;min-width:150px;flex:1">'
         +'<div style="display:flex;justify-content:space-between;font-size:9.5px;color:#8794ab;font-weight:700;margin-bottom:3px"><span>CONFIANCE</span><span style="color:'+tone+'">'+conf+'/100</span></div>'
         +'<div style="height:7px;border-radius:5px;background:#0a0c11;overflow:hidden"><div style="height:100%;width:'+conf+'%;background:'+tone+'"></div></div></div></div>'
-    +mlBlock+ctxBlock
-    // Les membres
-    +'<div style="font-size:10px;font-weight:800;color:#8794ab;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">Les analystes ('+(com.members||[]).length+') — chacun indépendant, chacun peut être en désaccord</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:7px;margin-bottom:12px">'+members+'</div>'
-    // Pour / Contre
+    // POURQUOI (essentiel) — pour / contre, en langage simple
     +'<div class="grid2">'
-      +'<div><div style="font-size:10px;font-weight:800;color:'+C.g+';letter-spacing:.4px;margin-bottom:5px">✓ ARGUMENTS POUR</div>'+pros+'</div>'
-      +'<div><div style="font-size:10px;font-weight:800;color:'+C.r+';letter-spacing:.4px;margin-bottom:5px">⚠ ARGUMENTS CONTRE</div>'+cons+'</div></div>'
-    +contraBlock+devil+catBlock+bdBlock+unkBlock+reasBlock
-    +'<div class="muted" style="font-size:10.5px;margin-top:13px;line-height:1.5">'+(r.explanation||'')
-      +'<br>Le comité éclaire une décision — il ne la prend jamais à votre place. Analyse éducative, aucune certitude, aucun ordre.</div></div>';
+      +'<div><div style="font-size:10px;font-weight:800;color:'+C.g+';letter-spacing:.4px;margin-bottom:5px">✓ POURQUOI OUI</div>'+pros+'</div>'
+      +'<div><div style="font-size:10px;font-weight:800;color:'+C.r+';letter-spacing:.4px;margin-bottom:5px">⚠ POURQUOI PRUDENCE</div>'+cons+'</div></div>'
+    // NOTE FINALE — le mot du comité, en clair
+    +'<div style="margin-top:14px;padding:13px 15px;background:'+tone+'12;border-left:3px solid '+tone+';border-radius:11px;font-size:13.5px;color:#e8edf5;line-height:1.65">'
+      +'<b style="color:'+tone+'">En clair — </b>'+(r.explanation||'Le comité éclaire la décision ; il ne la prend jamais à votre place.')+'</div>'
+    // DÉTAIL replié — tout le reste, accessible en un clic (rien n\'est perdu)
+    +'<details style="margin-top:12px"><summary style="cursor:pointer;color:#8794ab;font-size:11px;font-weight:700;padding:6px 0">🔎 Voir le détail de l analyse — les analystes, prisme marché, contexte, décomposition du score</summary>'
+      +'<div style="margin-top:10px">'
+      +'<div style="font-size:10px;font-weight:800;color:#8794ab;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px">Les analystes ('+(com.members||[]).length+') — chacun indépendant</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:7px;margin-bottom:12px">'+members+'</div>'
+      +mlBlock+ctxBlock+contraBlock+devil+catBlock+bdBlock+unkBlock+reasBlock
+      +'</div></details>'
+    +'<div class="muted" style="font-size:10px;margin-top:12px;line-height:1.5">Analyse éducative — aucune certitude, aucun ordre.</div></div>';
 }
 (function(){fetch('/api/decision/'+encodeURIComponent(SYM)).then(function(r){return r.json();})
   .then(renderCommittee).catch(function(){var el=document.getElementById('committeeRoom');if(el)el.innerHTML='';});})();
@@ -5925,7 +5929,9 @@ async function load(){
       <div style="margin-top:13px;padding-top:12px;border-top:1px solid #ffffff12;font-size:13px"><b style="color:${ic}">Raison :</b> ${ik.raison}<br><b style="color:${ic}">→ Action :</b> ${ik.action}</div></div>`;}
   // LEFT : KPIs + chart + decision
   const dec=o.decision,plan=d.plan||{};
-  const kpis=`<div class="kpis">${kpi('SCORE',(d.score!=null?d.score:'—')+' '+(d.grade||''))}${kpi('RÉGIME',d.regime==='TREND'?'Tendance':d.regime==='CHOP'?'Range':'Neutre')}${kpi('RSI',Math.round(d.rsi||0))}${kpi('FORCE REL.',Math.round(d.rs||0))}${kpi('QUALITÉ SETUP',(d.setup_quality!=null?d.setup_quality:'—')+'/100')}${kpi('POS 52S',Math.round(d.pos52||0)+'%')}${kpi('EXT. ATR',(d.ext_atr!=null?d.ext_atr.toFixed(1):'—')+'x')}${kpi('RVOL',(d.volx!=null?d.volx.toFixed(1):'—')+'x')}${kpi('PLAN',`$${plan.entry||'—'} <span class="dn">$${plan.stop||'—'}</span> <span class="up">$${plan.tp2||'—'}</span>`)}</div>`;
+  const _kEss=`<div class="kpis">${kpi('SCORE',(d.score!=null?d.score:'—')+' '+(d.grade||''))}${kpi('RÉGIME',d.regime==='TREND'?'Tendance':d.regime==='CHOP'?'Range':'Neutre')}${kpi('QUALITÉ SETUP',(d.setup_quality!=null?d.setup_quality:'—')+'/100')}${kpi('PLAN',`$${plan.entry||'—'} <span class="dn">$${plan.stop||'—'}</span> <span class="up">$${plan.tp2||'—'}</span>`)}</div>`;
+  const _kTech=`<details style="margin-top:10px"><summary style="cursor:pointer;color:#8794ab;font-size:11px;font-weight:700;padding:4px 0;list-style:none">Détail technique — RSI, force relative, position 52s, volatilité</summary><div class="kpis" style="margin-top:8px">${kpi('RSI',Math.round(d.rsi||0))}${kpi('FORCE REL.',Math.round(d.rs||0))}${kpi('POS 52S',Math.round(d.pos52||0)+'%')}${kpi('EXT. ATR',(d.ext_atr!=null?d.ext_atr.toFixed(1):'—')+'x')}${kpi('RVOL',(d.volx!=null?d.volx.toFixed(1):'—')+'x')}</div></details>`;
+  const kpis=_kEss+_kTech;
   const decCard=dec?`<div class="card"><div class="ct">🧠 Décision · conviction ${dec.conviction}/100</div><div class="grid2"><div><div style="font-size:10px;color:${C.g};font-weight:700;margin-bottom:4px">✓ FORCES</div>${(dec.pros||[]).map(p=>`<div style="font-size:12px;margin:3px 0"><span class="up">✓</span> ${p}</div>`).join('')||'—'}</div><div><div style="font-size:10px;color:${C.r};font-weight:700;margin-bottom:4px">⚠ RISQUES</div>${(dec.cons||[]).map(c=>`<div style="font-size:12px;margin:3px 0"><span class="dn">✗</span> ${c}</div>`).join('')||'aucun majeur'}</div></div></div>`:'';
   const chartCard=(d.series&&d.series.close)?`<div class="card"><div class="ct">📈 Cours · 120 jours <span style="color:${C.gold}">— MM20</span> <span class="muted">— MM50</span></div><div style="height:230px"><canvas id="cv"></canvas></div><div class="muted" style="font-size:11.5px;margin-top:10px;line-height:1.5">🔬 ${o.chart_read||''}</div></div>`:'';
   // ── CARTE ANALYSE VISUELLE : jauges à zones + radar multi-facteurs + niveaux du plan ──
