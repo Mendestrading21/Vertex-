@@ -3445,8 +3445,9 @@ async function dailyTick(){try{
 }catch(e){}}
 bootScan();setInterval(dailyTick,15000);dailyTick();
 setInterval(liveTick,7000);
-// TOUT sur une seule page, DIRECTEMENT (pas de bouton) : tout le détail affiché d'emblée.
-try{document.body.classList.add('showall');const __eb=document.getElementById('essToggle');if(__eb)__eb.style.display='none';}catch(e){}
+// ESSENTIEL PAR DÉFAUT (anti-surcharge) : on n'affiche que le coeur de décision.
+// Le détail (heatmap, boards IBKR, marché interne, scanners…) reste replié sous le
+// bouton « Voir tout ». L'utilisateur déplie seulement s'il le veut.
 const _qs=new URLSearchParams(location.search).get('sym');if(_qs)setTimeout(()=>{try{loadDetail(_qs.toUpperCase());}catch(e){}},1600);
 </script></body></html>"""
 
