@@ -5727,9 +5727,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     <a href="/compare" onclick="location.href='/compare?t='+SYM;return false;" style="display:flex;align-items:center;background:#0e0e12;border:1px solid rgba(255,255,255,.12);color:#9aa4b8;border-radius:10px;padding:9px 15px;font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap;cursor:pointer">⚖ Comparer</a>
     </div>
   </div>
-  <div id="posBan"></div><div id="resume"></div>
-  <!-- SIMPLIFICATION : le Comité (verdict unique) passe en TÊTE ; les autres
-       verdicts (quant Vertex, IBKR) sont repliés en « détail avancé ». -->
+  <div id="posBan"></div>
+  <!-- ═══ NOTE D'INVESTISSEMENT (refonte fiche) — rendu par rep() en bas ═══ -->
+  <div id="repHome"></div>
+  <div style="text-align:center;margin:10px 0 22px"><button type="button" onclick="var l=document.getElementById('repLegacy');var o=l.style.display==='none';l.style.display=o?'block':'none';this.textContent=o?'▴  masquer les données brutes':'▾  données brutes &amp; widgets (ancienne fiche)';" style="background:#0e1622;border:1px dashed #5BE3A855;border-radius:12px;color:#5BE3A8;font-weight:700;font-size:12px;cursor:pointer;letter-spacing:.4px;padding:11px 18px">▾  données brutes &amp; widgets (ancienne fiche)</button></div>
+  <div id="repLegacy" style="display:none">
+  <div id="resume"></div>
   <div id="committeeRoom" style="margin-bottom:14px"></div>
   <details style="margin-bottom:14px;border:1px solid #1c1c24;border-radius:12px;padding:0 14px;background:#0d1016">
     <summary style="cursor:pointer;color:#8794ab;font-size:12px;font-weight:700;padding:12px 2px">🔎 Détail avancé — edge quantitatif, probabilités &amp; position IBKR</summary>
@@ -5743,6 +5746,201 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     <div id="right"></div>
   </div>
   <div style="text-align:center;color:#5b6678;font-size:11px;margin:18px 0">⛔ analyse only · jamais un ordre · cours live IBKR si dispo, sinon yfinance différé</div>
+  </div><!-- /repLegacy -->
+<script>
+/* ═══ NOTE D INVESTISSEMENT — refonte fiche (13 sections) ═══ */
+(function(){
+ var RC={g:'#22C55E',r:'#EF4444',o:'#FF8C32',gold:'#F5B45B',blue:'#38BDF8',vio:'#A78BFA',cy:'#5BE3A8',mut:'#8794ab',ink:'#e8edf5'};
+ var RSYM=decodeURIComponent((location.pathname.split('/').filter(Boolean).pop()||'')).toUpperCase();
+ function fx(n,d){return (n==null||n!==n)?'—':(+n).toLocaleString('fr-FR',{minimumFractionDigits:d||0,maximumFractionDigits:d==null?2:d});}
+ function pc(n){return n==null?'—':((n>=0?'+':'')+(+n).toFixed(2)+'%');}
+ function card(inner,st){return '<div style="background:linear-gradient(170deg,#141821,#0d0e12);border:1px solid rgba(255,255,255,.06);border-radius:20px;'+(st||'padding:22px 24px')+'">'+inner+'</div>';}
+ function S(t,sub){return '<div style="margin:38px 2px 15px"><div style="font-size:11px;letter-spacing:2px;color:'+RC.o+';font-weight:800;text-transform:uppercase">'+t+'</div>'+(sub?'<div style="font-size:12px;color:'+RC.mut+';margin-top:3px">'+sub+'</div>':'')+'</div>';}
+ function para(t){return '<p style="font-size:14.5px;line-height:1.8;color:#c5cdda;margin:0 0 12px;max-width:74ch">'+t+'</p>';}
+ function pill(txt,col){return '<span style="font-size:11px;font-weight:800;color:'+col+';background:'+col+'18;border:1px solid '+col+'44;border-radius:7px;padding:3px 10px">'+txt+'</span>';}
+ function col2(a,b){return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'+a+b+'</div>';}
+ function evlist(arr,col,ic){if(!arr||!arr.length)return '<div style="color:'+RC.mut+';font-size:12.5px">—</div>';return arr.map(function(e){var t=(typeof e==='string')?e:(e.text||'');return '<div style="display:flex;gap:9px;padding:7px 0;font-size:13px;line-height:1.55;color:#cfd8e6"><span style="color:'+col+';flex:none">'+ic+'</span><span>'+t+'</span></div>';}).join('');}
+
+ function heroSec(dec,pk){
+  var name=pk.name||dec.sector||RSYM,price=pk.spot!=null?pk.spot:dec.price,chg=dec.change,conv=dec.conviction||0,conf=dec.confidence||conv;
+  var vt=dec.verdict||dec.final_decision||'',vc=vt.indexOf('ACHET')>=0||vt.indexOf('RENF')>=0?RC.g:vt.indexOf('EVIT')>=0||vt.indexOf('ÉVIT')>=0?RC.r:RC.gold;
+  var chgc=chg==null?RC.mut:chg>=0?RC.g:RC.r;
+  // Brief IA — narratif compose des vraies donnees
+  var st=dec.structure||{},pe=pk.pe,mpe=pk.sector_median_pe,fund=pk.fund||{},gr=fund.growth!=null?fund.growth:pk.growth,mg=fund.margin!=null?fund.margin:pk.margin,edge=(dec.vertex||{}).edge;
+  var trendTxt=st.trend==='up'?'haussiere':st.trend==='down'?'baissiere':'laterale';
+  var B=[];
+  B.push('<b style="color:'+RC.ink+'">'+name+'</b>'+(pk.sector?(' evolue dans le secteur '+pk.sector):'')+(pk.mcap?(' avec une capitalisation de '+fx(pk.mcap/1e9,0)+' Md$'):'')+'.');
+  if(dec.context&&dec.context.headline)B.push(dec.context.headline+'.');
+  if(pe!=null&&mpe!=null)B.push('La valorisation ressort a un PER de <b style="color:'+RC.ink+'">'+pe.toFixed(0)+'</b> contre '+mpe.toFixed(0)+' pour la mediane du secteur — une '+(pe>mpe?'prime que le marche accepte de payer':'decote relative')+'.');
+  if(gr!=null)B.push('La croissance atteint <b style="color:'+RC.ink+'">'+(gr*100).toFixed(0)+'%</b>'+(mg!=null?(' pour une marge de '+(mg*100).toFixed(0)+'%'):'')+', '+((gr>=0.15)?'un rythme soutenu qui justifie l interet des investisseurs':'un rythme plus mesure')+'.');
+  B.push('Les signaux quantitatifs de Vertex '+(edge>=55?'restent favorables':edge!=null?'sont mitiges':'sont neutres')+(edge!=null?(' (edge '+edge+'/100)'):'')+' et la tendance de fond demeure <b style="color:'+RC.ink+'">'+trendTxt+'</b>.');
+  if(st.last_high)B.push('A court terme, le titre '+(price>=st.last_high?'evolue au-dessus de sa resistance a $'+st.last_high+', en territoire de decouverte':'consolide sous une resistance a $'+st.last_high+' avant un possible nouveau mouvement')+'.');
+  return '<div style="display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap;margin-bottom:6px">'
+   +'<div style="flex:1;min-width:220px"><div style="font-size:clamp(30px,5vw,44px);font-weight:900;letter-spacing:-1.5px;line-height:1">'+RSYM+'</div>'
+   +'<div style="font-size:13px;color:'+RC.mut+';margin-top:4px">'+name+'</div>'
+   +'<div style="margin-top:10px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font-size:26px;font-weight:800">$'+fx(price)+'</span><span style="font-size:15px;font-weight:800;color:'+chgc+'">'+(chg!=null?(chg>=0?'▲ ':'▼ ')+pc(chg):'')+'</span></div></div>'
+   +'<div style="display:flex;gap:12px;flex-wrap:wrap">'
+    +'<div style="text-align:center;background:#0c0e13;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px 18px"><div style="font-size:9px;letter-spacing:1px;color:'+RC.mut+';font-weight:800">SCORE VERTEX</div><div style="font-size:28px;font-weight:900;color:'+(conv>=70?RC.g:conv>=55?RC.gold:RC.r)+'">'+conv+'</div></div>'
+    +'<div style="text-align:center;background:#0c0e13;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px 18px"><div style="font-size:9px;letter-spacing:1px;color:'+RC.mut+';font-weight:800">CONFIANCE IA</div><div style="font-size:28px;font-weight:900;color:'+RC.blue+'">'+conf+'%</div></div>'
+    +'<div style="text-align:center;background:'+vc+'14;border:1px solid '+vc+'55;border-radius:14px;padding:12px 18px"><div style="font-size:9px;letter-spacing:1px;color:'+RC.mut+';font-weight:800">VERDICT</div><div style="font-size:17px;font-weight:900;color:'+vc+';margin-top:6px">'+(vt||'—')+'</div></div>'
+   +'</div></div>'
+   +S('Brief IA','le resume, style analyste')
+   +card(B.map(para).join(''),'padding:22px 26px;border-color:rgba(255,140,50,.15);background:radial-gradient(120% 120% at 0% 0%,rgba(255,122,24,.07),transparent 55%),linear-gradient(160deg,#141821,#0d0e12)');
+ }
+
+ function situationSec(dec,pk){
+  var st=dec.structure||{},ml=dec.market_lens||{},ctx=dec.context||{},edge=(dec.vertex||{}).edge,ivr=pk.ivrank;
+  var lines=[
+   ['Tendance',st.trend==='up'?'haussiere':st.trend==='down'?'baissiere':'laterale',st.trend==='up'?'Les moyennes mobiles sont alignees a la hausse, la structure fait des sommets plus hauts.':st.trend==='down'?'La structure est degradee, prudence sur toute prise de position longue.':'Le titre evolue sans direction nette, on attend une cassure.'],
+   ['Momentum',edge!=null?(edge>=58?'fort':edge>=45?'modere':'faible'):'—',edge!=null?('Edge quantitatif de '+edge+'/100 — '+(edge>=58?'le flux acheteur domine':'le momentum manque de conviction')+'.'):'Momentum non mesure.'],
+   ['Volatilite',ivr!=null?(ivr>=60?'elevee':ivr>=35?'normale':'basse'):'—',ivr!=null?('IV-rank ~'+ivr+' — '+(ivr>=60?'options cheres, prudence a l achat de prime':'contexte favorable a l achat d options')+'.'):'Volatilite implicite non disponible.'],
+   ['Sentiment',(ml.tone||dec.decision_tone||'—'),ml.headline||'Le climat de marche influence directement ce dossier.'],
+   ['Flux institutionnels',edge!=null?(edge>=55?'positifs':'neutres'):'—','Les flux se lisent dans la force relative et le volume — '+(edge>=55?'accumulation probable':'pas de signal marque')+'.'],
+   ['Participation',ctx.dimensions&&ctx.dimensions[0]&&ctx.dimensions[0].pct_universe!=null?(ctx.dimensions[0].pct_universe+'e percentile'):'—',ctx.headline||'Position du titre dans son univers.']
+  ];
+  var inner=lines.map(function(x){return '<div style="display:flex;gap:16px;padding:13px 0;border-top:1px solid rgba(255,255,255,.05)"><div style="width:150px;flex:none"><div style="font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:'+RC.mut+';font-weight:800">'+x[0]+'</div><div style="font-size:15px;font-weight:800;margin-top:2px;color:'+RC.ink+'">'+x[1]+'</div></div><div style="flex:1;font-size:13px;line-height:1.55;color:#c5cdda;align-self:center">'+x[2]+'</div></div>';}).join('');
+  return S('Situation actuelle','en une carte, ou en est le titre')+card('<div style="margin-top:-6px">'+inner+'</div>');
+ }
+
+ function thesisSec(dec){
+  var cm=dec.committee||{};
+  var pos=cm.positive,neg=cm.negative;
+  if((!pos||!pos.length)&&(!neg||!neg.length))return '';
+  var verdict=dec.verdict||'',bias=verdict.indexOf('ACHET')>=0||verdict.indexOf('RENF')>=0?'haussier':verdict.indexOf('EVIT')>=0||verdict.indexOf('ÉVIT')>=0?'baissier':'neutre';
+  var left=card('<div style="font-size:11px;font-weight:800;color:'+RC.g+';letter-spacing:.4px;margin-bottom:8px">CE QUI SOUTIENT LE SCENARIO</div>'+evlist(pos,RC.g,'✓'));
+  var right=card('<div style="font-size:11px;font-weight:800;color:'+RC.r+';letter-spacing:.4px;margin-bottom:8px">CE QUI POURRAIT L INVALIDER</div>'+evlist(neg,RC.r,'⚠'));
+  return S('Pourquoi Vertex est '+bias,'la these, argumentee')+col2(left,right);
+ }
+
+ function summarySec(dec){
+  var note=dec.explanation||dec.note||dec.thesis;if(!note)return '';
+  var vt=dec.verdict||'',vc=vt.indexOf('ACHET')>=0||vt.indexOf('RENF')>=0?RC.g:vt.indexOf('EVIT')>=0||vt.indexOf('ÉVIT')>=0?RC.r:RC.gold;
+  return S('Resume de l analyste','lecture 15 secondes')+card('<div style="font-size:16px;line-height:1.75;color:'+RC.ink+';max-width:74ch"><b style="color:'+vc+'">Vertex — </b>'+note+'</div>','padding:24px 28px;border-left:3px solid '+vc+';border-color:'+vc+'44');
+ }
+
+ function chartSec(){
+  return S('Graphique principal','TradingView · EMA · Bollinger · RSI · Volume')
+   +card('<div id="repChart" style="height:520px"></div>','padding:0;overflow:hidden');
+ }
+ function loadRepChart(){var h=document.getElementById('repChart');if(!h)return;
+  function mk(){try{new TradingView.widget({container_id:'repChart',symbol:RSYM,interval:'D',timezone:'Europe/Zurich',theme:'dark',style:'1',locale:'fr',autosize:true,hide_side_toolbar:true,studies:['STD;EMA','STD;Bollinger%1Bands','STD;RSI','Volume@tv-basicstudies'],backgroundColor:'#0d0e12'});}catch(e){h.innerHTML='<div style="padding:40px;text-align:center;color:'+RC.mut+';font-size:12px">Graphique indisponible hors ligne.</div>';}}
+  if(window.TradingView){mk();}else{var s=document.createElement('script');s.src='https://s3.tradingview.com/tv.js';s.onload=mk;s.onerror=function(){h.innerHTML='<div style="padding:40px;text-align:center;color:'+RC.mut+';font-size:12px">Graphique TradingView indisponible.</div>';};document.head.appendChild(s);}
+ }
+
+ function planSec(dec){
+  var p=dec.plan||{};if(!p.entry&&!p.stop)return '';
+  function t(l,v,c){return '<div style="background:#0c0e13;border:1px solid rgba(255,255,255,.05);border-radius:13px;padding:13px 15px;text-align:center"><div style="font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:'+RC.mut+'">'+l+'</div><div style="font-size:18px;font-weight:800;margin-top:5px'+(c?';color:'+c:'')+'">'+v+'</div></div>';}
+  var g='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px">'
+   +t('Entree ideale',p.entry?('$'+p.entry):'—',RC.blue)+t('Stop',p.stop?('$'+p.stop):'—',RC.r)
+   +t('Objectif 1',p.tp2?('$'+p.tp2):'—',RC.g)+t('Objectif 2',p.tp3?('$'+p.tp3):'—',RC.g)
+   +t('Risk / Reward',p.rr?(p.rr+':1'):'—')+t('Confiance IA',(dec.confidence||dec.conviction||'—')+'%',RC.blue)+'</div>';
+  var expl=para('Le plan privilegie une entree '+(dec.in_zone?'immediate, le prix etant dans la zone favorable':'sur repli vers la zone '+(dec.entry_zone||'d achat')+' pour ameliorer le ratio rendement/risque')+'. Le stop a $'+(p.stop||'—')+' definit le risque maximal ; il est non negociable. '+(p.rr?('Le ratio de '+p.rr+':1 respecte la discipline du Comite (>= 2:1).'):''));
+  return S('Plan de trading','entree, stop, objectifs')+card(g+'<div style="margin-top:16px">'+expl+'</div>');
+ }
+
+ function fundaSec(dec,pk){
+  var pe=pk.pe,mpe=pk.sector_median_pe,fund=pk.fund||{},gr=fund.growth!=null?fund.growth:pk.growth,mg=fund.margin!=null?fund.margin:pk.margin,val=pk.valuation;
+  if(pe==null&&gr==null&&mg==null&&!val)return '';
+  var P=[];
+  if(gr!=null)P.push('<b style="color:'+RC.ink+'">Croissance.</b> Le chiffre d affaires progresse de '+(gr*100).toFixed(0)+'%'+((gr>=0.2)?', un rythme eleve qui place l entreprise parmi les plus dynamiques de son secteur':((gr>=0.08)?', une croissance saine et reguliere':', une croissance moderee')+'.'));
+  if(mg!=null)P.push('<b style="color:'+RC.ink+'">Rentabilite &amp; marges.</b> La marge s etablit a '+(mg*100).toFixed(0)+'%'+((mg>=0.2)?' — une profitabilite solide, signe d un fort pouvoir de fixation des prix':' — a surveiller face a la concurrence')+'.');
+  if(pe!=null)P.push('<b style="color:'+RC.ink+'">Valorisation.</b> Avec un PER de '+pe.toFixed(0)+(mpe!=null?(' contre '+mpe.toFixed(0)+' pour le secteur'):'')+', le titre '+((mpe!=null&&pe>mpe*1.15)?'se paie une prime qui exige une execution sans faute':'reste raisonnablement value')+(val&&val.label?(' ('+val.label+')'):'')+'.');
+  P.push('<b style="color:'+RC.ink+'">Risques fondamentaux.</b> Une deception sur la croissance ou une compression des marges serait le principal risque a ce niveau de valorisation.');
+  return S('Analyse fondamentale','ce que disent les comptes')+card(P.map(para).join(''));
+ }
+
+ function techSec(dec,pk){
+  var st=dec.structure||{},det=(pk&&pk.detail)||{},d=det;
+  var P=[];
+  var trendTxt=st.trend==='up'?'haussiere, moyennes alignees a la hausse':st.trend==='down'?'baissiere, prudence':'laterale, sans direction nette';
+  P.push('<b style="color:'+RC.ink+'">Tendance.</b> La structure est '+trendTxt+(st.signal?(' — signal '+st.signal):'')+'.');
+  if(st.last_high||st.last_low)P.push('<b style="color:'+RC.ink+'">Supports &amp; resistances.</b> '+(st.last_high?('Resistance majeure a $'+st.last_high+'. '):'')+(st.last_low?('Support cle a $'+st.last_low+'. '):'')+'Ces niveaux structurent la lecture court terme.');
+  P.push('<b style="color:'+RC.ink+'">Momentum.</b> '+((dec.vertex||{}).edge!=null?('L edge quantitatif ressort a '+(dec.vertex||{}).edge+'/100'):'Le momentum')+' — '+(((dec.vertex||{}).edge||0)>=55?'le flux reste porteur':'a confirmer avant d agir')+'.');
+  P.push('<b style="color:'+RC.ink+'">Volume &amp; cassures.</b> Une cassure de la resistance avec volume superieur a la moyenne validerait la reprise ; sans volume, elle resterait suspecte.');
+  return S('Analyse technique','ce que dit le graphique')+card(P.map(para).join(''));
+ }
+
+ function cataSec(dec,pk){
+  var cm=dec.committee||{},pos=(cm.positive||[]).slice(0,3),neg=(cm.negative||[]).slice(0,3);
+  var earn=pk.earnings;
+  var posL=pos.map(function(e){return (typeof e==='string')?e:e.text;});
+  if(earn)posL.push('Publication des resultats a venir — catalyseur potentiel de reevaluation.');
+  var left=card('<div style="font-size:11px;font-weight:800;color:'+RC.g+';margin-bottom:8px">CATALYSEURS POSITIFS</div>'+evlist(posL,RC.g,'▲'));
+  var right=card('<div style="font-size:11px;font-weight:800;color:'+RC.r+';margin-bottom:8px">CATALYSEURS NEGATIFS</div>'+evlist(neg,RC.r,'▼'));
+  if(!posL.length&&!neg.length)return '';
+  return S('Catalyseurs','ce qui peut faire bouger le titre')+col2(left,right);
+ }
+
+ function riskSec(dec,pk){
+  var pe=pk.pe,mpe=pk.sector_median_pe,ml=dec.market_lens||{};
+  var R=[
+   ['Risque fondamental',(pe!=null&&mpe!=null&&pe>mpe*1.2)?'Valorisation tendue — peu de marge d erreur si la croissance decoit.':'Valorisation maitrisee ; le risque fondamental reste contenu.'],
+   ['Risque technique',dec.invalidation?('Scenario invalide par une '+dec.invalidation+'.'):'Une cassure des supports cles degraderait la these.'],
+   ['Risque macro',ml.headline?('Contexte : '+ml.headline+'.'):'Un durcissement des conditions financieres pese sur les valeurs de croissance.'],
+   ['Risque sectoriel','Une rotation defavorable au secteur '+(pk.sector||'')+' limiterait le potentiel meme en cas de bons resultats.']
+  ];
+  var inner=R.map(function(x){return '<div style="padding:12px 0;border-top:1px solid rgba(255,255,255,.05)"><div style="font-size:12px;font-weight:800;color:'+RC.gold+'">'+x[0]+'</div><div style="font-size:13px;color:#c5cdda;line-height:1.55;margin-top:3px">'+x[1]+'</div></div>';}).join('');
+  return S('Risques','ce qui pourrait mal tourner')+card('<div style="margin-top:-6px">'+inner+'</div>');
+ }
+
+ function peersSec(dec){
+  var ctx=dec.context||{},peers=ctx.peers;if(!peers||peers.length<2)return '';
+  var rows=peers.map(function(p){var self=p.is_self,sc=p.score||0,col=sc>=65?RC.g:sc>=45?RC.gold:RC.r;
+    return '<div style="display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:10px;'+(self?'background:rgba(255,140,50,.1);border:1px solid rgba(255,140,50,.3)':'')+'"><span style="width:60px;font-weight:'+(self?900:700)+';color:'+(self?RC.o:'#dfe6f2')+'">'+p.symbol+(self?' ◄':'')+'</span><div style="flex:1;height:7px;background:#0a0c11;border-radius:5px;overflow:hidden"><div style="height:100%;width:'+Math.max(4,Math.min(100,sc))+'%;background:'+col+'"></div></div><span style="width:40px;text-align:right;font-weight:800;color:'+col+'">'+sc+'</span></div>';}).join('');
+  var best=peers.slice().sort(function(a,b){return (b.score||0)-(a.score||0);})[0];
+  var concl=para('<b style="color:'+RC.ink+'">Conclusion — </b>'+(best?(best.symbol+' domine le groupe '+(ctx.sector||'')+' avec le meilleur score Vertex. '+RSYM+(best.is_self||best.symbol===RSYM?' reste ainsi le leader de sa categorie.':' se situe '+(peers.filter(function(p){return p.is_self;})[0]?('au '+(peers.slice().sort(function(a,b){return (b.score||0)-(a.score||0);}).findIndex(function(p){return p.is_self;})+1)+'e rang du groupe.'):'dans le peloton.'))):'Comparaison indisponible.'));
+  return S('Comparaison sectorielle',(ctx.sector||'')+' · score Vertex')+card(rows+'<div style="margin-top:14px">'+concl+'</div>');
+ }
+
+ function medalCard(rank,inner){var m=['🥇','🥈','🥉'][rank]||'',mc=['#F5B45B','#c0c0c0','#cd7f32'][rank]||RC.mut;
+  return '<div style="background:linear-gradient(165deg,'+mc+'12,#0d0e12);border:1px solid '+mc+'44;border-radius:16px;padding:16px 18px"><div style="font-size:20px;margin-bottom:8px">'+m+'</div>'+inner+'</div>';}
+ function recoSec(cmd){
+  if(!cmd)return '';
+  var acts=(cmd.top_stocks||[]).slice(0,3),opts=(cmd.top_options||[]).slice(0,3);
+  if(!acts.length&&!opts.length)return '';
+  var actH=acts.map(function(a,i){var vx=a.vertex||{};
+    return medalCard(i,'<div style="display:flex;align-items:center;gap:8px"><a href="/titre/'+a.symbol+'" style="font-size:18px;font-weight:900;color:'+RC.ink+';text-decoration:none">'+a.symbol+'</a><span style="margin-left:auto;font-size:11px;font-weight:800;color:'+RC.g+'">'+(a.verdict||'')+'</span></div>'
+     +'<div style="font-size:12px;color:'+RC.mut+';margin-top:6px">$'+fx(a.price)+' · conviction '+(a.conviction||'—')+'/100'+(a.rr?(' · R:R '+a.rr):'')+'</div>'
+     +'<div style="font-size:12.5px;color:#c5cdda;line-height:1.5;margin-top:8px">'+(a.note||'Setup valide par le Comite, a privilegier maintenant.')+'</div>');}).join('');
+  var optH=opts.map(function(o,i){
+    return medalCard(i,'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:17px;font-weight:900">'+o.symbol+'</span><span style="font-size:11px;font-weight:800;color:'+(o.dir==='PUT'?RC.r:RC.g)+'">'+(o.dir||'CALL')+'</span><span style="margin-left:auto;font-size:11px;color:'+RC.mut+'">'+(o.label||'')+'</span></div>'
+     +'<div style="font-size:12px;color:'+RC.mut+';margin-top:6px">strike $'+fx(o.strike)+' · prime $'+fx(o.premium)+(o.prob!=null?(' · succes '+o.prob+'%'):'')+'</div>'
+     +'<div style="font-size:12.5px;color:#c5cdda;line-height:1.5;margin-top:8px">Meilleur compromis levier / probabilite du moment sur ce dossier.</div>');}).join('');
+  var g3='display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px';
+  var out=S('🔥 Recommandations IA','le classement dynamique — quoi acheter maintenant');
+  out+=card('<div style="font-size:12px;font-weight:800;color:'+RC.gold+';letter-spacing:.5px;margin-bottom:14px">🏆 TOP 3 ACTIONS</div><div style="'+g3+'">'+(actH||'<div class="muted">—</div>')+'</div>'
+     +'<div style="font-size:12px;font-weight:800;color:'+RC.vio+';letter-spacing:.5px;margin:22px 0 14px">💎 TOP 3 OPTIONS</div><div style="'+g3+'">'+(optH||'<div style="color:'+RC.mut+'">Aucune option qualifiee actuellement.</div>')+'</div>',
+     'padding:24px 26px;border-color:rgba(255,140,50,.2);background:radial-gradient(120% 100% at 100% 0%,rgba(255,122,24,.08),transparent 55%),linear-gradient(160deg,#16130d,#0d0e12)');
+  return out;
+ }
+
+ function conclusionSec(dec,pk){
+  var vt=dec.verdict||'',bias=vt.indexOf('ACHET')>=0||vt.indexOf('RENF')>=0?'positive':vt.indexOf('EVIT')>=0||vt.indexOf('ÉVIT')>=0?'prudente':'neutre',vc=bias==='positive'?RC.g:bias==='prudente'?RC.r:RC.gold;
+  var p=dec.plan||{};
+  var txt='Vertex maintient une opinion <b style="color:'+vc+'">'+bias+'</b> sur '+(pk.name||RSYM)+'. '
+   +(dec.note||dec.explanation||dec.thesis||'')+' '
+   +'Notre IA privilegie '+(dec.in_zone?'une entree immediate':'une entree progressive sur confirmation vers la zone '+(dec.entry_zone||'d achat'))
+   +(p.rr?(' (ratio rendement/risque '+p.rr+':1)'):'')+'.';
+  return S('Conclusion','l opinion finale du Comite')+card('<div style="font-size:15.5px;line-height:1.8;color:'+RC.ink+';max-width:76ch">'+txt+'</div>','padding:24px 28px');
+ }
+
+ function render(dec,tk,cmd){
+  var h=document.getElementById('repHome');if(!h)return;
+  if(!dec||!dec.symbol&&!dec.final_decision){h.innerHTML='<div style="padding:44px;text-align:center;color:'+RC.mut+'">⏳ Le Comite redige la note d investissement de '+RSYM+'…</div>';return;}
+  var pk=(tk&&tk.pack)||{};if(tk&&tk.detail&&!pk.detail)pk.detail=tk.detail;
+  h.innerHTML=heroSec(dec,pk)+situationSec(dec,pk)+thesisSec(dec)+summarySec(dec)+chartSec()+planSec(dec)+fundaSec(dec,pk)+techSec(dec,pk)+cataSec(dec,pk)+riskSec(dec,pk)+peersSec(dec)+recoSec(cmd)+conclusionSec(dec,pk);
+  loadRepChart();
+ }
+ function load(){
+  Promise.all([
+   fetch('/api/decision/'+encodeURIComponent(RSYM)).then(function(r){return r.json();}).catch(function(){return {};}),
+   fetch('/api/ticker/'+encodeURIComponent(RSYM)).then(function(r){return r.json();}).catch(function(){return {};}),
+   fetch('/api/command').then(function(r){return r.json();}).catch(function(){return {};})
+  ]).then(function(res){try{render(res[0]||{},res[1]||{},res[2]||{});}catch(e){var h=document.getElementById('repHome');if(h&&!h.innerHTML)h.innerHTML='';}});
+ }
+ load();
+})();
+</script>
 </div>
 <script>
 const C={g:'#22C55E',r:'#EF4444',o:'#FF8C32',gold:'#F5B45B',blue:'#38BDF8',vio:'#A78BFA',cy:'#34D399',yl:'#FFB23F',mut:'#8794ab'};
