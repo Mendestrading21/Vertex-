@@ -8704,9 +8704,13 @@ _DESK_TAIL = r"""<div id="simTotals"></div><div id="simGrid"></div></div>
 <div class="dcard" id="secTeam"><div class="dhead"><h3>⚽ Mon portefeuille sur le terrain</h3><span class="dsub">placé par Vertex : options à l'attaque · socle en défense · cash au but · blessés à l'infirmerie</span></div><div id="teamPitch"><div class="muted" style="padding:16px">Composition de ton équipe…</div></div></div>
 <div class="dcard" id="secStatus"><div class="dhead"><h3>🛰️ État du système</h3><span class="dsub">données · scan · options · sync · notifications — tout ce qui fait tourner ton desk</span></div><div id="sysBar"><div class="muted" style="font-size:11px;padding:6px">vérification…</div></div></div>"""
 
-PAGE_STRATEGIE = _vpage('Desk',
-  _DESK_TOP
-  + '<div class="vcard" style="padding:13px 15px;margin-bottom:12px">'
+# ─── VERTEX · REFONTE DESK — cockpit de trading sobre (6 sections) ──────────
+# Contenu épuré : résumé portefeuille · position prioritaire · ajout · graphique ·
+# alertes · actions rapides. Le moteur _TRADES_JS (positions localStorage myTrades,
+# cotations /api/pos-quotes → window.__TQ, formulaire eAdd/eCalc) est conservé et
+# réutilisé ; on ne modifie ni la sidebar, ni le header, ni la navigation.
+_DESK_ADDFORM = (
+    '<div class="vcard" style="padding:13px 15px;margin-bottom:12px">'
     '<div style="font-size:8.5px;color:#6b7280;letter-spacing:1px;font-weight:800;margin-bottom:6px">➕ NOUVELLE POSITION — REMPLIS, ÇA CALCULE TOUT SEUL</div>'
     '<div class="tscroll"><table class="etable" style="min-width:820px"><thead><tr><th>Type</th><th>Ticker</th><th>Échéance</th><th>Strike $</th><th style="text-align:right">Qté</th><th style="text-align:right">Prix payé</th><th style="text-align:right">= Investi</th><th></th></tr></thead><tbody><tr>'
     '<td><select id="eType" class="efld" onchange="eCalc()"><option value="CALL">📈 CALL</option><option value="PUT">🛡️ PUT</option><option value="ACTION">📊 ACTION</option></select></td>'
@@ -8718,25 +8722,144 @@ PAGE_STRATEGIE = _vpage('Desk',
     '<td style="text-align:right;vertical-align:middle"><b id="eInv" style="color:#F5B45B;font-size:15px">—</b></td>'
     '<td><button onclick="eAdd()" class="vbtn pri" style="padding:9px 17px;white-space:nowrap">+ Ajouter</button></td>'
     '</tr></tbody></table></div>'
-    '<div id="tHint" class="muted" style="font-size:10px;margin-top:7px">Échéance : « JAN 27 » ou « 2027-01 » — je trouve le vrai jour tout seul. Prix payé = prime par contrat (option) ou prix par action → l\'investi se calcule automatiquement. Cotation live IBKR dès l\'ajout.</div>'
-  '</div>'
-  + _DESK_MID
-  + '<div class="vcard" style="padding:13px 15px;margin-bottom:12px">'
-    '<div style="font-size:8.5px;color:#A78BFA;letter-spacing:1px;font-weight:800;margin-bottom:6px">🎮 SIMULE UN ACHAT — LE PRIX D\'ENTRÉE EST LA VRAIE COTATION DU MOMENT</div>'
+    '<div id="tHint" class="muted" style="font-size:10px;margin-top:7px">Échéance : « JAN 27 » ou « 2027-01 ». Prix payé = prime/contrat (option) ou prix/action → l\'investi se calcule tout seul.</div>'
+    '</div>')
+_DESK_SIMFORM = (
+    '<div class="vcard" style="padding:13px 15px;margin-bottom:12px">'
+    '<div style="font-size:8.5px;color:#A78BFA;letter-spacing:1px;font-weight:800;margin-bottom:6px">🎮 SIMULE UN ACHAT — PRIX D\'ENTRÉE = COTATION DU MOMENT</div>'
     '<div class="tscroll"><table class="etable" style="min-width:700px"><thead><tr><th>Type</th><th>Ticker</th><th>Échéance</th><th>Strike $</th><th style="text-align:right">Qté</th><th style="text-align:right">Prix d\'achat</th><th></th></tr></thead><tbody><tr>'
     '<td><select id="szType" class="efld" onchange="szCalc()"><option value="CALL">📈 CALL</option><option value="PUT">🛡️ PUT</option><option value="ACTION">📊 ACTION</option></select></td>'
     '<td><input id="szSym" class="efld" placeholder="NVDA" style="width:92px;text-transform:uppercase"></td>'
     '<td><input id="szExp" class="efld" placeholder="JAN 27" style="width:96px"></td>'
     '<td><input id="szStrike" class="efld" type="number" placeholder="190" style="width:88px"></td>'
     '<td style="text-align:right"><input id="szQty" class="efld" type="number" value="1" min="1" style="width:66px;text-align:right"></td>'
-    '<td style="text-align:right"><input id="szPrix" class="efld" type="number" step="0.01" placeholder="live auto" style="width:96px;text-align:right"><div class="muted" style="font-size:8px;margin-top:2px">vide = 🎯 prix live IBKR</div></td>'
+    '<td style="text-align:right"><input id="szPrix" class="efld" type="number" step="0.01" placeholder="live auto" style="width:96px;text-align:right"><div class="muted" style="font-size:8px;margin-top:2px">vide = 🎯 prix live</div></td>'
     '<td><button onclick="sAdd()" class="vbtn" style="padding:9px 17px;background:rgba(167,139,250,.14);border-color:#A78BFA;color:#A78BFA;font-weight:800;white-space:nowrap">🎮 Acheter</button></td>'
-    '</tr></tbody></table></div>'
-    '<div id="sHint" class="muted" style="font-size:10px;margin-top:7px">Je cote le contrat en direct chez IBKR et j\'achète (virtuellement) à ce prix — parfait pour tester la reco du jour sans engager un centime.</div>'
-  '</div>'
-  + _DESK_TAIL,
+    '</tr></tbody></table></div></div>')
+_DESK_COCKPIT = (
+    '<div class="gh"><div><h1>📈 Desk</h1><div class="gsub">Ton cockpit de trading · positions live · <span style="opacity:.7">⛔ analyse only, jamais un ordre</span></div></div>'
+    '<div style="text-align:right"><span id="deskSync" style="font-size:10px;color:#8b93a7">☁️ sync…</span>'
+    '<div style="margin-top:7px;display:flex;gap:6px;justify-content:flex-end"><button class="vbtn" style="font-size:9.5px;padding:4px 10px" onclick="tExport()">⬇️ Sauvegarder</button><button class="vbtn dng" style="font-size:9.5px;padding:4px 10px" onclick="deskReset()">🗑 Réinitialiser</button></div></div></div>'
+    # 1 · résumé portefeuille
+    '<div id="dkSummary" class="kgrid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"></div>'
+    # 2 · position prioritaire
+    '<div id="dkPriority"></div>'
+    # 3 · ajouter une position (bouton → formulaire existant)
+    '<button id="dkAddBtn" class="vbtn pri" style="width:100%;padding:15px;font-size:14.5px;font-weight:800;margin:2px 0 14px;letter-spacing:.3px" onclick="dkToggle(\'dkAddForm\',this)">➕ Ajouter une position</button>'
+    '<div id="dkAddForm" style="display:none">' + _DESK_ADDFORM + '</div>'
+    # 4 · graphique
+    '<div id="dkChartCard" class="dcard" style="display:none;padding:0;overflow:hidden">'
+    '<div class="dhead" style="padding:14px 16px 0"><h3 id="dkChartTitle">📊 Graphique</h3><div class="dright" id="dkLevels"></div></div>'
+    '<div id="dkChart" style="height:440px;margin-top:10px"></div></div>'
+    # 5 · alertes
+    '<div id="dkAlerts"></div>'
+    # 6 · actions rapides
+    '<div class="kgrid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:2px">'
+    '<button class="vbtn" style="padding:13px;font-weight:700" onclick="dkToggle(\'dkAddForm\',null,true)">➕ Nouvelle position</button>'
+    '<a href="/entreprises" class="vbtn" style="padding:13px;font-weight:700;text-decoration:none;text-align:center">🔍 Scanner</a>'
+    '<a href="/journal" class="vbtn" style="padding:13px;font-weight:700;text-decoration:none;text-align:center">📖 Journal</a>'
+    '<button class="vbtn" style="padding:13px;font-weight:700" onclick="dkToggle(\'dkSimForm\',this)">🎮 Simulateur</button>'
+    '</div>'
+    '<div id="dkSimForm" style="display:none;margin-top:12px">' + _DESK_SIMFORM + '</div>')
+_DESK_COCKPIT_JS = r"""
+function dkToggle(id,btn,scroll){var e=document.getElementById(id);if(!e)return;var show=e.style.display==='none';e.style.display=show?'block':'none';if(btn&&btn.textContent){}if(show&&scroll)e.scrollIntoView({behavior:'smooth',block:'center'});if(show){var f=e.querySelector('input,select');if(f)try{f.focus()}catch(_){}}}
+function dkMoney(n){return (typeof tFmt==='function')?tFmt(n):('$'+Math.round(n));}
+function dkPick(pos){
+  // priorité : d'abord la position la plus en danger (proche du stop / plus grosse perte),
+  // sinon la plus grosse en valeur.
+  var scored=pos.map(function(p){var s=0;var t=p.t;
+    if(p.plpct!=null){ if(p.plpct<=-25)s+=100; else if(p.plpct<0)s+=40+(-p.plpct); }
+    if(t.myStop!=null&&p.spot!=null){var d=(p.spot/t.myStop-1)*100; if(d>=0&&d<=6)s+=90-d*10;}
+    if(p.t.type!=='STK'&&p.t.exp){var dte=Math.round((new Date(p.t.exp)-new Date())/864e5); if(dte!=null&&dte<=14)s+=70;}
+    s+=(p.v||0)/1000; return {p:p,s:s};});
+  scored.sort(function(x,y){return y.s-x.s;});
+  return scored[0].p;
+}
+function dkTypeLabel(t){return t.type==='STK'?'📊 Action':(t.right==='PUT'?'🛡️ PUT':'📈 CALL');}
+function dkPriorityCard(p){
+  var t=p.t,plc=p.pl==null?'#8b93a7':p.pl>=0?'#22C55E':'#EF4444';
+  var dte=(t.type!=='STK'&&t.exp)?Math.round((new Date(t.exp)-new Date())/864e5):null;
+  var stopTxt=t.myStop!=null?('$'+t.myStop):'—';
+  var risk=(p.plpct!=null&&p.plpct<=-25)?'<span style="color:#EF4444;font-weight:800">élevé</span>':(dte!=null&&dte<=14)?'<span style="color:#FFB23F;font-weight:800">échéance proche</span>':(t.myStop!=null&&p.spot!=null&&(p.spot/t.myStop-1)*100<=5)?'<span style="color:#FFB23F;font-weight:800">stop proche</span>':'<span style="color:#22C55E;font-weight:800">maîtrisé</span>';
+  var reco;
+  if(p.plpct!=null&&p.plpct<=-25)reco='La perte dépasse -25% : le Comité conseille de couper ou de resserrer le stop, ne pas moyenner à la baisse.';
+  else if(dte!=null&&dte<=14)reco='Échéance dans '+dte+' j : le théta s\'accélère — envisage de rouler ou de sortir sur force.';
+  else if(p.plpct!=null&&p.plpct>=25)reco='Gain solide : sécurise une partie, laisse courir le reste avec un stop suiveur.';
+  else reco='Position sous contrôle : laisse le plan travailler, respecte ton stop.';
+  function cell(l,v,c){return '<div style="flex:1 1 92px;min-width:88px;background:#0c0e13;border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:9px 11px"><div style="font-size:8.5px;letter-spacing:.5px;text-transform:uppercase;color:#8794ab">'+l+'</div><div style="font-size:15px;font-weight:800;margin-top:3px'+(c?';color:'+c:'')+'">'+v+'</div></div>';}
+  return '<div class="dcard" style="border-color:'+plc+'44;background:linear-gradient(135deg,'+plc+'0c,#101216);padding:16px 18px">'
+    +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">'
+    +'<span style="font-size:24px;font-weight:900;letter-spacing:-.5px">'+t.sym+'</span>'
+    +'<span style="font-size:12px;font-weight:700;color:#cfd8e6">'+dkTypeLabel(t)+(t.strike?' $'+t.strike:'')+(t.exp?' · '+t.exp:'')+'</span>'
+    +'<span style="margin-left:auto;text-align:right"><div style="font-size:8.5px;letter-spacing:1px;color:#8794ab;font-weight:800">P&L OUVERT</div>'
+    +'<div style="font-size:24px;font-weight:900;color:'+plc+';line-height:1.1">'+(p.pl!=null?((p.pl>=0?'+':'')+p.pl.toFixed(0)+' $'):'…')+(p.plpct!=null?' <span style="font-size:13px">('+(p.plpct>=0?'+':'')+p.plpct.toFixed(1)+'%)</span>':'')+'</div></span></div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    +cell('Prix actuel',p.spot!=null?('$'+(+p.spot).toFixed(2)):'…')
+    +cell('Stop',stopTxt,'#EF4444')
+    +cell('Objectif',(t.entrySnap&&t.entrySnap.tp2)?('$'+t.entrySnap.tp2):'—','#22C55E')
+    +cell('Temps restant',dte!=null?(dte+' j'):'—')
+    +cell('Risque',risk)
+    +'</div>'
+    +'<div style="margin-top:13px;padding:12px 14px;background:'+plc+'12;border-left:3px solid '+plc+';border-radius:11px;font-size:13px;color:#e8edf5;line-height:1.55"><b style="color:'+plc+'">Le Comité — </b>'+reco+'</div>'
+    +'<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="vbtn" style="font-size:11px;padding:7px 13px" onclick="tLevels('+(t.id||0)+')">🎯 Définir mon stop</button><a class="vbtn" style="font-size:11px;padding:7px 13px;text-decoration:none" href="/titre/'+t.sym+'">🏛️ Salle du Comité →</a></div>'
+    +'</div>';
+}
+function dkAlertRow(ic,txt,col){return '<div style="display:flex;align-items:center;gap:11px;padding:11px 14px;background:#101216;border:1px solid '+col+'33;border-left:3px solid '+col+';border-radius:12px;margin-bottom:8px"><span style="font-size:17px">'+ic+'</span><span style="font-size:12.5px;color:#e8edf5;line-height:1.4">'+txt+'</span></div>';}
+function dkAlerts(pos){
+  var A=[];
+  pos.forEach(function(p){var t=p.t;
+    if(A.length>=3)return;
+    if(t.myStop!=null&&p.spot!=null){var d=(p.spot/t.myStop-1)*100; if(d>=0&&d<=5)A.push(dkAlertRow('🛑','<b>'+t.sym+'</b> à '+d.toFixed(1)+'% de ton stop ($'+t.myStop+') — surveille de près.','#EF4444'));}
+  });
+  pos.forEach(function(p){var t=p.t; if(A.length>=3)return;
+    if(t.type!=='STK'&&t.exp){var dte=Math.round((new Date(t.exp)-new Date())/864e5); if(dte!=null&&dte>=0&&dte<=14)A.push(dkAlertRow('⏳','<b>'+t.sym+'</b> expire dans '+dte+' j — le théta ronge la prime, prépare la sortie.','#FFB23F'));}
+  });
+  pos.forEach(function(p){ if(A.length>=3)return;
+    if(p.plpct!=null&&p.plpct<=-25)A.push(dkAlertRow('📉','<b>'+p.t.sym+'</b> à '+p.plpct.toFixed(0)+'% — perte importante, discipline sur le stop.','#EF4444'));
+  });
+  if(!A.length)return '';
+  return '<div class="dcard" style="padding:14px 16px"><div class="dhead" style="margin-bottom:10px"><h3>🔔 Alertes</h3><span class="dsub">'+A.length+' · les plus importantes</span></div>'+A.join('')+'</div>';
+}
+function dkLoadChart(sym,p){
+  var card=document.getElementById('dkChartCard'),host=document.getElementById('dkChart');if(!card||!host)return;
+  card.style.display='';
+  var tt=document.getElementById('dkChartTitle');if(tt)tt.textContent='📊 '+sym;
+  var lv=document.getElementById('dkLevels');
+  if(lv){function chip(l,v,c){return '<span style="font-size:10px;font-weight:700;color:'+c+';background:'+c+'18;border:1px solid '+c+'44;border-radius:7px;padding:3px 8px">'+l+' '+v+'</span>';}
+    lv.innerHTML=chip('Prix',p.spot!=null?('$'+(+p.spot).toFixed(2)):'…','#38BDF8')+(p.t.myStop!=null?chip('Stop','$'+p.t.myStop,'#EF4444'):'')+((p.t.entrySnap&&p.t.entrySnap.tp2)?chip('Objectif','$'+p.t.entrySnap.tp2,'#22C55E'):'');}
+  if(window.__dkTV===sym)return; window.__dkTV=sym; host.innerHTML='';
+  function make(){if(!window.TradingView)return;try{new TradingView.widget({autosize:true,symbol:sym,interval:'D',timezone:'Etc/UTC',theme:'dark',style:'1',locale:'fr',hide_side_toolbar:true,allow_symbol_change:false,container_id:'dkChart'});}catch(e){host.innerHTML='<div class="muted" style="padding:24px;text-align:center;font-size:12px">Graphique indisponible hors ligne.</div>';}}
+  if(window.TradingView){make();}else{var s=document.createElement('script');s.src='https://s3.tradingview.com/tv.js';s.onload=make;s.onerror=function(){host.innerHTML='<div class="muted" style="padding:24px;text-align:center;font-size:12px">Graphique TradingView indisponible.</div>';};document.head.appendChild(s);}
+}
+function dkRender(){
+  var a=(typeof tGet==='function')?tGet():[];var TQ=window.__TQ||{};
+  var inv=0,val=0,known=0,pos=[];
+  a.forEach(function(t){inv+=t.cost;var q=TQ[tKey(t)];var isOpt=t.type!=='STK';var mark=q?(q.mark!=null?q.mark:q.last):null;var v=null;
+    if(isOpt&&mark!=null){v=mark*100*t.qty;known++;}else if(!isOpt&&q&&q.spot!=null){v=q.spot*t.qty;known++;}
+    if(v!=null)val+=v;
+    var spot=q?(q.spot!=null?q.spot:(q.last!=null?q.last:(q.mark!=null?q.mark:null))):null;
+    pos.push({t:t,v:v,pl:v!=null?v-t.cost:null,plpct:(v!=null&&t.cost>0)?(v/t.cost-1)*100:null,spot:spot,isOpt:isOpt});});
+  var allKnown=(known===a.length&&a.length>0);var totPL=allKnown?val-inv:null;
+  var S=document.getElementById('dkSummary');
+  if(S){var plc=totPL==null?'#8b93a7':totPL>=0?'#22C55E':'#EF4444';
+    function mc(l,v,c,sub){return '<div class="kpi"><div class="kl">'+l+'</div><div class="kv" style="color:'+(c||'#f2f5fa')+'">'+v+'</div>'+(sub?'<span class="kd mut">'+sub+'</span>':'')+'</div>';}
+    S.innerHTML=mc('💼 Valeur totale',allKnown?dkMoney(val):(a.length?'…':'—'),'#F5B45B',a.length?(dkMoney(inv)+' investi'):'aucune position')
+      +mc('💵 Cash','—','#8b93a7','à connecter (IBKR)')
+      +mc('📈 P&L du jour',totPL!=null?((totPL>=0?'+':'')+totPL.toFixed(0)+' $'):(a.length?'…':'—'),plc,(totPL!=null&&inv>0)?((val/inv-1)*100>=0?'+':'')+((val/inv-1)*100).toFixed(1)+'%':'')
+      +mc('🎯 Positions',String(a.length),'#38BDF8','ouvertes');}
+  var P=document.getElementById('dkPriority');
+  if(P){if(!a.length){P.innerHTML='<div class="dcard" style="text-align:center;padding:30px 18px"><div style="font-size:16px;font-weight:800;margin-bottom:5px">Aucune position ouverte</div><div class="muted" style="font-size:12.5px">Clique « ➕ Ajouter une position » pour démarrer ton cockpit.</div></div>';var cc=document.getElementById('dkChartCard');if(cc)cc.style.display='none';}
+    else{var pr=dkPick(pos);P.innerHTML=dkPriorityCard(pr);dkLoadChart(pr.t.sym,pr);}}
+  var AL=document.getElementById('dkAlerts');if(AL)AL.innerHTML=a.length?dkAlerts(pos):'';
+}
+setTimeout(function(){dkRender();setInterval(dkRender,4000);},400);
+"""
+
+
+PAGE_STRATEGIE = _vpage('Desk',
+  _DESK_COCKPIT,
   head=_STRAT_EMBED_HEAD + _STRAT_PAGE_CSS,
-  js=_STRATTOP_JS + _TRADES_JS + _RECO_JS + _PORTSIM_JS)
+  js=_STRATTOP_JS + _TRADES_JS + _RECO_JS + _PORTSIM_JS + _DESK_COCKPIT_JS)
 
 
 _PIPELINE_SVG = r"""
