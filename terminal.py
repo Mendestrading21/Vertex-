@@ -2413,6 +2413,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   </div>
   <style>.dx-extra{display:none}body.showall .dx-extra{display:block}#essToggle{display:block;width:100%;margin:4px 0 16px;padding:12px;background:#0e1622;border:1px dashed #5BE3A855;border-radius:12px;color:#5BE3A8;font-weight:700;font-size:13px;cursor:pointer;letter-spacing:.4px}#essToggle:hover{background:#121c2b}</style>
   <div id="dMyDesk"></div>
+  <!-- ═══ MORNING BRIEF (refonte homepage) — rendu par le script mb() en bas de page ═══ -->
+  <div id="mbHome"></div>
+  <div style="text-align:center;margin:6px 0 26px"><button type="button" onclick="var l=document.getElementById('mbLegacy');var o=l.style.display==='none';l.style.display=o?'block':'none';this.textContent=o?'▴  masquer le détail complet':'▾  afficher le détail complet (ancien tableau de bord)';" style="background:#0e1622;border:1px dashed #5BE3A855;border-radius:12px;color:#5BE3A8;font-weight:700;font-size:12px;cursor:pointer;letter-spacing:.4px;padding:11px 18px">▾  afficher le détail complet (ancien tableau de bord)</button></div>
+  <div id="mbLegacy" style="display:none">
   <div class="stitle">🧭 VERDICT DU JOUR <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· le climat en un coup d'œil, avant tout le reste · <a href="/bordel" style="color:#FF8C32;text-decoration:none;font-weight:700">🧠 analyse marché complète sur Intel →</a></span></div>
   <div id="dVerdict" style="position:relative;background:radial-gradient(130% 120% at 0% 0%,rgba(255,122,24,.07),transparent 52%),linear-gradient(135deg,#16171c,#0d0e12);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px 22px;margin:4px 0 18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 14px 34px -22px rgba(0,0,0,.9)">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
@@ -2490,6 +2494,140 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     <div class="slogan">TRADE SMART · TRADE STRONG</div>
     <div class="dis">VERTEX · DONNÉES yfinance DIFFÉRÉ ~15MIN · ANALYSE ONLY — AUCUN ORDRE, AUCUNE EXÉCUTION · NOT FINANCIAL ADVICE</div>
   </div>
+  </div><!-- /mbLegacy -->
+<script>
+/* ═══ MORNING BRIEF — refonte homepage (rendu depuis /scan) ═══ */
+(function(){
+ var C={g:'#22C55E',r:'#EF4444',o:'#FF8C32',gold:'#F5B45B',blue:'#38BDF8',vio:'#A78BFA',cy:'#5BE3A8',mut:'#8794ab',ink:'#e8edf5'};
+ function fx(n,d){return (n==null||n!==n)?'—':(+n).toLocaleString('fr-FR',{minimumFractionDigits:d||0,maximumFractionDigits:d==null?2:d});}
+ function pc(n){return n==null?'—':((n>=0?'+':'')+(+n).toFixed(2)+'%');}
+ function gauge(lab,p,disp,col){p=Math.max(0,Math.min(100,p||0));return '<div style="margin-bottom:15px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px"><span style="color:'+C.mut+';text-transform:uppercase;letter-spacing:.6px;font-size:9.5px;font-weight:800">'+lab+'</span><span style="font-weight:800;font-size:12.5px;color:'+col+'">'+disp+'</span></div><div style="height:6px;border-radius:99px;background:#0a0c11;overflow:hidden"><div style="height:100%;width:'+p+'%;background:'+col+';border-radius:99px;transition:width 1s cubic-bezier(.2,.7,.3,1)"></div></div></div>';}
+ function card(inner,style){return '<div style="background:linear-gradient(170deg,#141821,#0d0e12);border:1px solid rgba(255,255,255,.06);border-radius:20px;'+(style||'')+'">'+inner+'</div>';}
+ function stitle(t,sub){return '<div style="display:flex;align-items:baseline;gap:11px;margin:34px 2px 15px"><span style="font-size:16px;font-weight:800;letter-spacing:-.2px">'+t+'</span>'+(sub?'<span style="font-size:11px;color:'+C.mut+'">'+sub+'</span>':'')+'</div>';}
+ function rate(v){return v>=70?['Excellent',C.g]:v>=55?['Bon',C.cy]:v>=45?['Neutre',C.gold]:['Faible',C.r];}
+
+ function hero(d){
+  var mc=d.market_ctx||{},br=mc.breadth||{},sec=(d.sectors||[]).slice().sort(function(a,b){return (b.avg_score||0)-(a.avg_score||0);});
+  var part=br.above50!=null?br.above50:50,reg=mc.spy_regime,roro=mc.roro,vix=mc.vix;
+  var conf=Math.round(Math.max(6,Math.min(94,part*0.6+(reg==='TREND'?20:reg==='CHOP'?-6:6)+(roro==='RISK-ON'?12:roro==='RISK-OFF'?-16:0))));
+  var regTxt=reg==='TREND'?'haussier':reg==='CHOP'?'agite (range)':'neutre';
+  var top=sec[0],weak=sec[sec.length-1];
+  var bias=conf>=56?'haussier':conf<=44?'prudent':'neutre',bc=conf>=56?C.g:conf<=44?C.r:C.gold;
+  var L=[];
+  L.push('Le marche reste dans un regime <b style="color:'+C.ink+'">'+regTxt+'</b>'+((weak&&sec.length>3)?' malgre une faiblesse sur '+weak.sector.toLowerCase():'')+'.');
+  if(vix!=null)L.push('Le VIX est a <b style="color:'+C.ink+'">'+vix+'</b>'+(vix<15?' — volatilite contenue':vix>22?' — tension marquee':'')+'.');
+  if(top)L.push('Les flux se concentrent sur <b style="color:'+C.ink+'">'+top.sector+'</b>.');
+  L.push('Climat <b style="color:'+(roro==='RISK-ON'?C.g:roro==='RISK-OFF'?C.r:C.gold)+'">'+(roro||'—')+'</b> — notre IA maintient aujourd hui un biais <b style="color:'+bc+'">'+bias+'</b>.');
+  var fear=vix==null?50:Math.max(0,Math.min(100,(vix-10)*6));
+  var G=gauge('Confiance IA',conf,conf+'%',bc)
+   +gauge('Indice de peur',fear,vix!=null?('VIX '+vix):'—',fear>60?C.r:fear>40?C.gold:C.g)
+   +gauge('Regime de marche',reg==='TREND'?85:reg==='CHOP'?32:55,regTxt,reg==='TREND'?C.g:reg==='CHOP'?C.r:C.gold)
+   +gauge('Volatilite',vix!=null?Math.min(100,vix*3.6):50,mc.vix_band||'—',(vix!=null&&vix<15)?C.g:(vix!=null&&vix>22)?C.r:C.gold)
+   +gauge('Participation',part,part+'%',part>=55?C.g:part>=45?C.gold:C.r);
+  return '<div style="display:grid;grid-template-columns:1.65fr 1fr;gap:20px;margin-bottom:6px">'
+   +card('<div style="font-size:11px;letter-spacing:2px;color:'+C.o+';font-weight:800">🌍 MORNING BRIEF</div>'
+      +'<div style="font-size:clamp(26px,4vw,34px);font-weight:900;letter-spacing:-.8px;margin:10px 0 16px">Bonjour Elio.</div>'
+      +'<div style="font-size:15.5px;line-height:1.8;color:#b9c2d0;max-width:62ch">'+L.join(' ')+'</div>'
+      +'<div style="margin-top:22px;display:flex;align-items:baseline;gap:13px;flex-wrap:wrap"><span style="font-size:10.5px;color:'+C.mut+';font-weight:800;letter-spacing:.6px">PROBABILITE DE POURSUITE</span><span style="font-size:36px;font-weight:900;color:'+bc+';line-height:1">'+(conf>=56?'🟢 ':conf<=44?'🔴 ':'🟡 ')+conf+'%</span></div>',
+      'padding:28px 30px;border-color:rgba(255,140,50,.16);background:radial-gradient(130% 120% at 0% 0%,rgba(255,122,24,.09),transparent 52%),linear-gradient(150deg,#141821,#0d0e12)')
+   +card('<div style="font-size:10px;letter-spacing:1.5px;color:'+C.mut+';font-weight:800;margin-bottom:18px">📊 INDICATEURS CLES</div>'+G,'padding:24px 24px 10px')
+  +'</div>';
+ }
+
+ function liveBrief(d,news){
+  var mc=d.market_ctx||{},rows=d.rows||[],idx=d.indices||[],sec=(d.sectors||[]).slice().sort(function(a,b){return (b.avg_score||0)-(a.avg_score||0);});
+  function find(nm){for(var i=0;i<idx.length;i++){if((idx[i].name||'').toUpperCase().indexOf(nm)>=0)return idx[i];}return null;}
+  var items=[];
+  var spy=find('SPY')||find('S&P'),qqq=find('QQQ')||find('NASDAQ'),wti=find('WTI')||find('PET'),vixi=find('VIX'),btc=find('BITCOIN')||find('BTC');
+  var byChg=rows.filter(function(r){return typeof r.change==='number';}).sort(function(a,b){return b.change-a.change;});
+  var t=new Date();function hm(off){var x=new Date(t.getTime()-off*3600000);return ('0'+x.getHours()).slice(-2)+':00';}
+  function imp(k){return k>=2?['🟢','Tres positif',C.g]:k===1?['🟢','Positif',C.g]:k===0?['⚪','Neutre',C.mut]:k===-1?['🔴','Negatif',C.r]:['🔴','Tres negatif',C.r];}
+  if(spy)items.push([hm(0),'Le S&P 500 evolue de '+pc(spy.change)+' sur la seance.',(spy.change>=0.5?2:spy.change>=0?1:spy.change<=-0.5?-2:-1)]);
+  if(byChg[0])items.push([hm(1),byChg[0].symbol+' mene le marche a '+pc(byChg[0].change)+(byChg[0].change>3?' — plus haut de session':'')+'.',byChg[0].change>3?2:1]);
+  if(sec[0])items.push([hm(2),'Rotation favorable au secteur '+sec[0].sector+' (score '+(sec[0].avg_score||'—')+').',1]);
+  if(wti)items.push([hm(3),'Le petrole (WTI) cote '+fx(wti.price)+' ('+pc(wti.change)+').',wti.change>=0?1:-1]);
+  if(vixi)items.push([hm(4),'Le VIX est a '+fx(vixi.price)+' — '+(vixi.price<14?'complaisance':vixi.price>22?'stress':'normal')+'.',vixi.price<14?1:vixi.price>22?-2:0]);
+  if(btc)items.push([hm(5),'Bitcoin a '+fx(btc.price)+' USD ('+pc(btc.change)+').',btc.change>=0?1:-1]);
+  (news&&news.items||[]).slice(0,3).forEach(function(n){if(items.length<9)items.push([(n.time||'').slice(0,5)||hm(6),(n.fr||n.title||''),0]);});
+  if(!items.length)return '';
+  var rowsH=items.slice(0,7).map(function(it){var im=imp(it[2]);
+    return '<div style="display:flex;gap:16px;padding:14px 4px;border-top:1px solid rgba(255,255,255,.05)"><div style="font-family:ui-monospace,monospace;font-size:13px;font-weight:700;color:'+C.mut+';min-width:46px">'+it[0]+'</div><div style="flex:1;font-size:13.5px;color:#dfe6f2;line-height:1.5">'+it[1]+'</div><div style="white-space:nowrap;font-size:11px;font-weight:800;color:'+im[2]+'">'+im[0]+' '+im[1]+'</div></div>';}).join('');
+  return stitle('📰 Vertex Live Brief','le fil de la seance · mis a jour en continu')+card('<div style="padding:6px 22px 16px">'+rowsH+'</div>');
+ }
+
+ function oppo(d){
+  var dec=((d.committee||{}).decisions||[]).filter(function(x){return x.verdict==='ACHETER'||x.verdict==='RENFORCER';});
+  dec.sort(function(a,b){return (b.conviction||0)-(a.conviction||0);});
+  var o=dec[0];if(!o)return '';
+  var rows=d.rows||[];var row=null;for(var i=0;i<rows.length;i++){if(rows[i].symbol===o.symbol){row=rows[i];break;}}row=row||{};
+  var pl=o.plan||{},conv=o.conviction||0,cc=conv>=70?C.g:conv>=55?C.gold:C.r;
+  function tile(l,v,c){return '<div style="background:#0c0e13;border:1px solid rgba(255,255,255,.05);border-radius:13px;padding:12px 14px"><div style="font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:'+C.mut+'">'+l+'</div><div style="font-size:17px;font-weight:800;margin-top:4px'+(c?';color:'+c:'')+'">'+v+'</div></div>';}
+  var g='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:16px">'
+   +tile('Objectif',pl.tp2?('$'+pl.tp2):'—',C.g)+tile('Stop',pl.stop?('$'+pl.stop):'—',C.r)
+   +tile('Risk / Reward',pl.rr?(pl.rr+':1'):'—')+tile('Confiance IA',conv+'/100',cc)
+   +tile('Volume (RVOL)',row.volx!=null?(row.volx.toFixed(1)+'x'):'—')
+   +tile('Signal technique',row.regime==='TREND'?'Tendance':row.regime==='CHOP'?'Range':'Neutre')
+   +tile('Flux options',(row.vehicle&&row.vehicle.reco)||'—',C.vio)
+   +tile('Earnings',(row.earn||'—'))+'</div>';
+  return stitle('⭐ Opportunite du jour','la meilleure idee, selectionnee par le Comite')
+   +card('<div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap"><div><div style="font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1">'+o.symbol+'</div><div style="font-size:12.5px;color:'+C.mut+';margin-top:3px">'+(o.sector||'')+(row.price!=null?' · $'+row.price:'')+(row.change!=null?' <span style="color:'+(row.change>=0?C.g:C.r)+';font-weight:700">'+pc(row.change)+'</span>':'')+'</div></div>'
+     +'<div style="margin-left:auto;text-align:right"><div style="font-size:9px;letter-spacing:1px;color:'+C.mut+';font-weight:800">VERDICT COMITE</div><div style="font-size:20px;font-weight:900;color:'+C.g+';border:1.5px solid '+C.g+';border-radius:11px;padding:2px 14px;margin-top:4px">ACHETER</div></div></div>'
+     +'<div style="margin-top:15px;font-size:14px;line-height:1.65;color:#c5cdda;max-width:70ch"><b style="color:'+C.o+'">Pourquoi aujourd hui — </b>'+(o.note||o.thesis||'')+'</div>'
+     +g
+     +'<div style="margin-top:18px"><a href="/titre/'+o.symbol+'" style="display:inline-block;background:'+C.o+';color:#1a1206;font-weight:800;font-size:14px;padding:12px 22px;border-radius:12px;text-decoration:none">Analyser completement →</a></div>',
+     'padding:24px 26px;border-color:rgba(34,197,94,.22);background:radial-gradient(120% 120% at 100% 0%,rgba(34,197,94,.07),transparent 55%),linear-gradient(160deg,#141a17,#0d0e12)');
+ }
+
+ function context(d){
+  var idx=d.indices||[];
+  var want=[['S&P 500',['SPY','S&P']],['NASDAQ',['QQQ','NASDAQ']],['VIX',['VIX']],['Dollar',['DOLLAR','DXY']],['Petrole',['WTI','PET','OIL']],['Bitcoin',['BITCOIN','BTC']]];
+  function find(keys){for(var i=0;i<idx.length;i++){var n=(idx[i].name||'').toUpperCase();for(var j=0;j<keys.length;j++)if(n.indexOf(keys[j])>=0)return idx[i];}return null;}
+  var cards=want.map(function(w){var it=find(w[1]);if(!it)return '';var ch=it.change,up=ch>=0,col=(w[0]==='VIX')?(up?C.r:C.g):(up?C.g:C.r);
+    return card('<div style="font-size:10px;letter-spacing:.6px;color:'+C.mut+';font-weight:800;text-transform:uppercase">'+w[0]+'</div>'
+      +'<div style="font-size:23px;font-weight:800;margin-top:8px;letter-spacing:-.5px">'+fx(it.price)+'</div>'
+      +'<div style="font-size:13px;font-weight:800;color:'+col+';margin-top:3px">'+(up?'▲ ':'▼ ')+pc(ch)+'</div>','padding:16px 18px');}).join('');
+  if(!cards.replace(/\s/g,''))return '';
+  return stitle('🌐 Contexte de marche')+'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">'+cards+'</div>';
+ }
+
+ function breadth(d){
+  var br=(d.market_ctx||{}).breadth||{};if(br.above50==null&&br.adv==null)return '';
+  var advdec=(br.adv!=null&&br.dec!=null&&(br.adv+br.dec)>0)?Math.round(br.adv/(br.adv+br.dec)*100):50;
+  var nh=(br.nh!=null&&br.nl!=null&&(br.nh+br.nl)>0)?Math.round(br.nh/(br.nh+br.nl)*100):50;
+  var rows=[['Participation',br.above50!=null?br.above50:50],['Momentum (> MM200)',br.above200!=null?br.above200:50],['Force du marche',advdec],['Nouveaux plus hauts',nh],['Sentiment',(d.market_ctx||{}).roro==='RISK-ON'?75:(d.market_ctx||{}).roro==='RISK-OFF'?25:50]];
+  var inner=rows.map(function(x){var rt=rate(x[1]);return '<div style="display:flex;align-items:center;gap:14px;padding:11px 0;border-top:1px solid rgba(255,255,255,.05)"><span style="width:180px;font-size:12.5px;color:#cfd8e6">'+x[0]+'</span><div style="flex:1;height:7px;background:#0a0c11;border-radius:5px;overflow:hidden"><div style="height:100%;width:'+x[1]+'%;background:'+rt[1]+'"></div></div><span style="width:82px;text-align:right;font-size:12px;font-weight:800;color:'+rt[1]+'">'+rt[0]+'</span></div>';}).join('');
+  return stitle('📡 Amplitude du marche')+card('<div style="padding:6px 22px 16px">'+inner+'</div>');
+ }
+
+ function miniCard(r){var sc=r.score||0,col=sc>=72?C.g:sc>=55?C.gold:C.r;
+  return '<a href="/titre/'+r.symbol+'" style="text-decoration:none;color:inherit"><div style="background:linear-gradient(165deg,'+col+'0c,#0d0e12);border:1px solid '+col+'33;border-radius:15px;padding:14px 16px;transition:transform .15s" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'none\'"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px;font-weight:900">'+r.symbol+'</span><span style="font-size:11px;color:'+C.mut+'">$'+(r.price!=null?r.price:'—')+'</span><span style="margin-left:auto;font-size:19px;font-weight:900;color:'+col+'">'+(r.score!=null?r.score:'—')+'</span></div><div style="font-size:11px;color:'+((r.change||0)>=0?C.g:C.r)+';font-weight:700;margin-top:6px">'+pc(r.change)+' · '+(r.sector||'')+'</div></div></a>';}
+
+ function setups(d){
+  var rows=(d.rows||[]).filter(function(r){return r.score!=null&&r.verdict!=='AVOID';}).sort(function(a,b){return (b.score||0)-(a.score||0);}).slice(0,3);
+  if(!rows.length)return '';
+  return stitle('🎯 Top 3 setups','classes par score IA')+'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">'+rows.map(miniCard).join('')+'</div>'
+   +'<div style="margin-top:12px"><a href="/entreprises" style="font-size:12px;font-weight:700;color:'+C.o+';text-decoration:none">Voir tous les setups →</a></div>';
+ }
+
+ function recos(d){
+  var dec=((d.committee||{}).decisions||[]).filter(function(x){return x.verdict==='ACHETER'||x.verdict==='RENFORCER';}).slice(0,3);
+  if(!dec.length)return '';
+  var cards=dec.map(function(o){var pl=o.plan||{},conv=o.conviction||0,col=conv>=70?C.g:conv>=55?C.gold:C.r;
+    return '<a href="/titre/'+o.symbol+'" style="text-decoration:none;color:inherit"><div style="background:linear-gradient(165deg,'+col+'0c,#0d0e12);border:1px solid '+col+'33;border-radius:15px;padding:14px 16px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px;font-weight:900">'+o.symbol+'</span><span style="margin-left:auto;font-size:10px;font-weight:800;color:'+C.g+';border:1px solid '+C.g+'66;border-radius:6px;padding:1px 7px">'+o.verdict+'</span></div><div style="font-size:11px;color:'+C.mut+';margin-top:6px">conviction '+conv+'/100 · '+(pl.rr?('R:R '+pl.rr):'')+'</div></div></a>';}).join('');
+  return stitle('🏛️ Top 3 recommandations','le Comite d investissement')+'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">'+cards+'</div>'
+   +'<div style="margin-top:12px"><a href="/suivi" style="font-size:12px;font-weight:700;color:'+C.o+';text-decoration:none">Voir toutes les recommandations →</a></div>';
+ }
+
+ function watchBtn(){return '<div style="margin:32px 0 10px"><a href="/suivi" style="display:flex;align-items:center;justify-content:center;gap:10px;background:#0f1218;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;text-decoration:none;color:'+C.ink+';font-weight:700;font-size:14px;transition:border-color .15s" onmouseover="this.style.borderColor=\'rgba(255,140,50,.4)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,.08)\'">⭐ Ouvrir ma Watchlist →</a></div>';}
+
+ function mbRender(d,news){var h=document.getElementById('mbHome');if(!h)return;
+   if(!d||!d.market_ctx){h.innerHTML='<div style="padding:40px;text-align:center;color:'+C.mut+'">⏳ Le Comite prepare ton Morning Brief…</div>';return;}
+   h.innerHTML=hero(d)+liveBrief(d,news)+oppo(d)+context(d)+breadth(d)+setups(d)+recos(d)+watchBtn();
+ }
+ function mbLoad(){Promise.all([fetch('/scan').then(function(r){return r.json();}).catch(function(){return {};}),fetch('/news').then(function(r){return r.json();}).catch(function(){return {};})]).then(function(res){try{mbRender(res[0]||{},res[1]||{});}catch(e){}});}
+ mbLoad();setInterval(mbLoad,60000);
+})();
+</script>
 </div>
 <script>
 function q(id){return document.getElementById(id)}
