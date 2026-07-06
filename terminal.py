@@ -5894,23 +5894,42 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
  function medalCard(rank,inner){var m=['🥇','🥈','🥉'][rank]||'',mc=['#F5B45B','#c0c0c0','#cd7f32'][rank]||RC.mut;
   return '<div style="background:linear-gradient(165deg,'+mc+'12,#0d0e12);border:1px solid '+mc+'44;border-radius:16px;padding:16px 18px"><div style="font-size:20px;margin-bottom:8px">'+m+'</div>'+inner+'</div>';}
- function recoSec(cmd){
-  if(!cmd)return '';
-  var acts=(cmd.top_stocks||[]).slice(0,3),opts=(cmd.top_options||[]).slice(0,3);
-  if(!acts.length&&!opts.length)return '';
-  var actH=acts.map(function(a,i){var vx=a.vertex||{};
-    return medalCard(i,'<div style="display:flex;align-items:center;gap:8px"><a href="/titre/'+a.symbol+'" style="font-size:18px;font-weight:900;color:'+RC.ink+';text-decoration:none">'+a.symbol+'</a><span style="margin-left:auto;font-size:11px;font-weight:800;color:'+RC.g+'">'+(a.verdict||'')+'</span></div>'
-     +'<div style="font-size:12px;color:'+RC.mut+';margin-top:6px">$'+fx(a.price)+' · conviction '+(a.conviction||'—')+'/100'+(a.rr?(' · R:R '+a.rr):'')+'</div>'
-     +'<div style="font-size:12.5px;color:#c5cdda;line-height:1.5;margin-top:8px">'+(a.note||'Setup valide par le Comite, a privilegier maintenant.')+'</div>');}).join('');
-  var optH=opts.map(function(o,i){
-    return medalCard(i,'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:17px;font-weight:900">'+o.symbol+'</span><span style="font-size:11px;font-weight:800;color:'+(o.dir==='PUT'?RC.r:RC.g)+'">'+(o.dir||'CALL')+'</span><span style="margin-left:auto;font-size:11px;color:'+RC.mut+'">'+(o.label||'')+'</span></div>'
-     +'<div style="font-size:12px;color:'+RC.mut+';margin-top:6px">strike $'+fx(o.strike)+' · prime $'+fx(o.premium)+(o.prob!=null?(' · succes '+o.prob+'%'):'')+'</div>'
-     +'<div style="font-size:12.5px;color:#c5cdda;line-height:1.5;margin-top:8px">Meilleur compromis levier / probabilite du moment sur ce dossier.</div>');}).join('');
-  var g3='display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px';
-  var out=S('🔥 Recommandations IA','le classement dynamique — quoi acheter maintenant');
-  out+=card('<div style="font-size:12px;font-weight:800;color:'+RC.gold+';letter-spacing:.5px;margin-bottom:14px">🏆 TOP 3 ACTIONS</div><div style="'+g3+'">'+(actH||'<div class="muted">—</div>')+'</div>'
-     +'<div style="font-size:12px;font-weight:800;color:'+RC.vio+';letter-spacing:.5px;margin:22px 0 14px">💎 TOP 3 OPTIONS</div><div style="'+g3+'">'+(optH||'<div style="color:'+RC.mut+'">Aucune option qualifiee actuellement.</div>')+'</div>',
-     'padding:24px 26px;border-color:rgba(255,140,50,.2);background:radial-gradient(120% 100% at 100% 0%,rgba(255,122,24,.08),transparent 55%),linear-gradient(160deg,#16130d,#0d0e12)');
+ function eu(d){if(!d||d.length<10)return d||'';return d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(2,4);}
+ function bucketWhy(b){return b==='court'?'échéance COURTE (~1-2 mois) — tactique, théta violent, à réserver aux gros mouvements rapides.'
+   :b==='long'?'échéance LONGUE (6-12 mois) — robuste, théta lent, laisse le temps à la thèse de se réaliser.'
+   :'échéance MOYENNE (~3 mois) — le compromis idéal du swing : assez de temps, théta maîtrisé.';}
+ function recoSec(pk,dec){
+  var cs=(pk&&pk.contracts)||[];
+  var vt=(dec&&dec.verdict||'').toUpperCase(),bullish=vt.indexOf('ACHET')>=0||vt.indexOf('RENF')>=0,bearish=vt.indexOf('EVIT')>=0||vt.indexOf('ÉVIT')>=0||vt.indexOf('ALLÉG')>=0||vt.indexOf('ALLEG')>=0;
+  // Top 3 des meilleures échéances sur CE titre (classées par qualité, diversité de bucket privilégiée)
+  var ranked=cs.slice().sort(function(a,b){return (b.quality||b.suit||0)-(a.quality||a.suit||0);});
+  var top=[],seen={};
+  ranked.forEach(function(c){if(top.length>=3)return;if(seen[c.bucket])return;seen[c.bucket]=1;top.push(c);});
+  ranked.forEach(function(c){if(top.length>=3)return;if(top.indexOf(c)<0)top.push(c);});
+  var tier=['LE MEILLEUR CHOIX','ALTERNATIVE','3ᵉ OPTION'];
+  var optH=top.map(function(c,i){var isP=(c.type||'CALL').indexOf('PUT')>=0,dc=isP?RC.r:RC.g,q=c.quality||c.suit||0,qc=q>=70?RC.g:q>=50?RC.gold:RC.r;
+    return medalCard(i,'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:800;letter-spacing:.5px;color:'+RC.mut+'">'+tier[i]+'</span><span style="margin-left:auto;font-size:11px;font-weight:900;padding:2px 9px;border-radius:7px;background:'+dc+'1a;color:'+dc+'">'+(isP?'PUT':'CALL')+'</span></div>'
+     +'<div style="display:flex;align-items:baseline;gap:8px;margin-top:8px"><span style="font-size:20px;font-weight:900;color:'+RC.ink+'">$'+fx(c.strike)+'</span><span style="font-size:12px;color:'+RC.mut+'">strike · '+eu(c.exp)+'</span></div>'
+     +'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">'
+       +pill('prime $'+fx(c.cost),RC.o)+pill('Δ '+(c.delta!=null?c.delta:'—'),RC.mut)+pill('IV '+(c.iv!=null?c.iv+'%':'—'),RC.mut)
+       +pill('θ '+(c.theta_burn!=null?c.theta_burn:'—'),RC.mut)+(c.pop!=null?pill(c.pop+'% succès',RC.g):'')+'</div>'
+     +'<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span style="font-size:11px;color:'+RC.mut+'">qualité</span><div style="flex:1;height:6px;background:#0a0c11;border-radius:5px;overflow:hidden"><div style="height:100%;width:'+Math.max(4,Math.min(100,q))+'%;background:'+qc+'"></div></div><span style="font-weight:800;color:'+qc+'">'+q+'</span></div>'
+     +'<div style="font-size:12px;color:#c5cdda;line-height:1.5;margin-top:10px">'+bucketWhy(c.bucket)+'</div>');}).join('');
+  var g3='display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px';
+  // Véhicule conseillé : action vs option
+  var bestQ=top.length?(top[0].quality||top[0].suit||0):0;
+  var veh,vehTxt;
+  if(!top.length){veh='ACTION';vehTxt='Aucune option ne passe le filtre de qualité en ce moment — sur '+RSYM+', privilégier l\'action au comptant pour jouer la thèse sans le risque de théta.';}
+  else if(bearish){veh='PRUDENCE';vehTxt='Le Comité est prudent sur '+RSYM+'. Les options ci-dessous existent mais l\'IA déconseille toute prise agressive tant que le verdict n\'est pas favorable — un PUT ne se justifie que sur cassure confirmée.';}
+  else if(bestQ>=60){veh='OPTION';vehTxt='Sur '+RSYM+', l\'IA privilégie l\'OPTION : le levier et la qualité de la chaîne (#1 à '+bestQ+'/100) offrent un meilleur rapport potentiel/capital que l\'action seule. Meilleure échéance retenue : '+eu(top[0].exp)+'.';}
+  else{veh='ACTION';vehTxt='Sur '+RSYM+', l\'IA penche pour l\'ACTION : la chaîne d\'options manque de qualité (#1 à '+bestQ+'/100), le comptant reste le véhicule le plus sûr pour cette thèse.';}
+  var vc=veh==='OPTION'?RC.vio:veh==='PRUDENCE'?RC.r:RC.g;
+  var head='<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><span style="font-size:11px;font-weight:800;color:'+RC.mut+';letter-spacing:.5px">VÉHICULE CONSEILLÉ</span><span style="font-size:13px;font-weight:900;padding:4px 14px;border-radius:9px;background:'+vc+'1a;color:'+vc+';border:1px solid '+vc+'55">'+veh+'</span></div>'
+     +'<div style="font-size:13.5px;line-height:1.65;color:'+RC.ink+';max-width:74ch;margin-bottom:6px">'+vehTxt+'</div>';
+  var body=optH?('<div style="font-size:12px;font-weight:800;color:'+RC.vio+';letter-spacing:.5px;margin:22px 0 14px">💎 TOP 3 DES MEILLEURS TRADES OPTIONS SUR '+RSYM+'</div><div style="'+g3+'">'+optH+'</div>')
+     :'<div style="color:'+RC.mut+';font-size:13px;margin-top:8px">Chaîne d\'options en calcul ou indisponible hors séance — l\'action reste le véhicule par défaut.</div>';
+  var out=S('🔥 Recommandations IA','les meilleurs trades à faire sur '+RSYM+' — action ou option, et quelle échéance');
+  out+=card(head+body,'padding:24px 26px;border-color:rgba(255,140,50,.2);background:radial-gradient(120% 100% at 100% 0%,rgba(255,122,24,.08),transparent 55%),linear-gradient(160deg,#16130d,#0d0e12)');
   return out;
  }
 
@@ -5928,7 +5947,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   var h=document.getElementById('repHome');if(!h)return;
   if(!dec||!dec.symbol&&!dec.final_decision){h.innerHTML='<div style="padding:44px;text-align:center;color:'+RC.mut+'">⏳ Le Comite redige la note d investissement de '+RSYM+'…</div>';return;}
   var pk=(tk&&tk.pack)||{};if(tk&&tk.detail&&!pk.detail)pk.detail=tk.detail;
-  h.innerHTML=heroSec(dec,pk)+situationSec(dec,pk)+thesisSec(dec)+summarySec(dec)+chartSec()+planSec(dec)+fundaSec(dec,pk)+techSec(dec,pk)+cataSec(dec,pk)+riskSec(dec,pk)+peersSec(dec)+recoSec(cmd)+conclusionSec(dec,pk);
+  h.innerHTML=heroSec(dec,pk)+situationSec(dec,pk)+thesisSec(dec)+summarySec(dec)+chartSec()+planSec(dec)+fundaSec(dec,pk)+techSec(dec,pk)+cataSec(dec,pk)+riskSec(dec,pk)+peersSec(dec)+recoSec(pk,dec)+conclusionSec(dec,pk);
   loadRepChart();
  }
  function load(){
