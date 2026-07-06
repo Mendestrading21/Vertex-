@@ -5164,7 +5164,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </div>
 <script>
 const C={g:'#22C55E',r:'#EF4444',o:'#FF8C32',gold:'#F5B45B',blue:'#38BDF8',vio:'#A78BFA',cy:'#34D399',yl:'#FFB23F',mut:'#8794ab'};
-const COLS=[['symbol','Ticker'],['sector','Secteur'],['price','Prix'],['change','Var %'],['verdict','Décision'],['vehreco','Véhicule'],['pb','Playbook'],['score','Score'],['strat','Score S'],['rs','RS'],['pos52','52 sem.'],['valr','vs sect.'],['margin','Marge'],['growth','Croiss.'],['regime','Régime'],['struct','Structure'],['earn','Résultats']];
+const COLS=[['symbol','Ticker'],['sector','Secteur'],['price','Prix'],['change','Var %'],['verdict','Décision'],['vehreco','Véhicule'],['score','Score'],['earn','Résultats']];
 function structChip(c){var out=[];
   if(c.mtf&&c.mtf.state){var mc=c.mtf.state_col;var L={'ALIGNÉ HAUSSIER':'↑ Aligné','REPLI DANS TENDANCE':'↑ Repli','REBOND CONTRE-TENDANCE':'↯ Contre','ALIGNÉ BAISSIER':'↓ Aligné','NEUTRE':'~'}[c.mtf.state]||c.mtf.state;
     out.push('<span title="Multi-horizons (jour × semaine) : '+c.mtf.state+'" style="font-size:8.5px;font-weight:800;color:'+mc+';background:'+mc+'1a;border:1px solid '+mc+'44;padding:1px 6px;border-radius:5px;white-space:nowrap">🧭 '+L+'</span>');}
@@ -5230,16 +5230,7 @@ function cell(c){
   <td class="${(c.change||0)>=0?'up':'dn'}">${c.change!=null?((c.change>=0?'+':'')+c.change+'%'):'—'}</td>
   <td><span style="font-size:9px;font-weight:800;color:${vd[1]};background:${vd[1]}1a;border:1px solid ${vd[1]}55;padding:2px 8px;border-radius:6px">${vd[0]}</span></td>
   <td>${vehChip(c.vehicle)}</td>
-  <td>${pbChip(c.pb)}</td>
   <td><div style="display:flex;align-items:center;gap:7px;justify-content:flex-end"><span style="font-weight:800;color:${scol(c.score)}">${c.score!=null?c.score:'—'}</span><span class="muted" style="font-size:10px">${c.grade||''}</span><div style="width:44px;height:5px;background:#0a0c11;border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.max(3,Math.min(100,c.score||0))}%;background:${scol(c.score)}"></div></div></div></td>
-  <td><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><span style="font-weight:800;color:${scol(c.strat)}">${c.strat!=null?c.strat:'—'}</span>${c.rr!=null?`<span title="Rapport risque/récompense ${c.rr}:1" style="font-size:8.5px;font-weight:800;color:${c.rrok?'#22C55E':'#5b6678'};background:${c.rrok?'rgba(34,197,94,.12)':'transparent'};border:1px solid ${c.rrok?'#22C55E55':'#2a2a33'};padding:1px 5px;border-radius:5px">${c.rrok?'R:R✓':'R:R '+c.rr}</span>`:''}</div></td>
-  <td style="color:${(c.rs||0)>=70?C.g:(c.rs||0)<=35?C.r:'#cfd8e6'};font-weight:700">${c.rs!=null?Math.round(c.rs):'—'}</td>
-  <td style="color:${p52c};font-weight:600">${p52!=null?p52+'%':'—'}</td>
-  <td style="color:${c.valTone==='good'?C.g:c.valTone==='warn'?C.r:C.mut};font-weight:600">${c.valLabel||'—'}</td>
-  <td class="muted">${pct(c.margin)}</td>
-  <td class="${(c.growth||0)>=0?'up':'dn'}">${c.growth!=null?pct(c.growth):'—'}</td>
-  <td style="color:${c.regime==='TREND'?C.g:c.regime==='CHOP'?C.r:C.gold}">${regTxt(c.regime)}</td>
-  <td>${structChip(c)}</td>
   <td class="${c.earnSoon?'dn':'muted'}" style="${c.earnSoon?'font-weight:800':''}">${c.earn||'—'}</td></tr>`;}
 let FILTER={sector:'',minScore:0,q:'',preset:'',regime:'',verdict:'',rrok:false};
 const PRESETS={qual:c=>(c.score||0)>=72,grow:c=>c.growth!=null&&c.growth>=0.15,val:c=>c.valTone==='good',marg:c=>c.margin!=null&&c.margin>=0.2,mom:c=>(c.rs||0)>=70,up:c=>(c.change||0)>0,risk:c=>(c.growth!=null&&c.growth<0)||(c.margin!=null&&c.margin<0.05),mystrat:c=>(c.strat||0)>=70&&c.rrok&&!!c.pb,anom:c=>(c.anoms&&c.anoms.length>0)};
