@@ -4,7 +4,19 @@ vertex/data/universe.py — L'UNIVERS de VERTEX (données pures, aucune logique)
 Listes de tickers scannés, ensembles d'indices (Dow/Nasdaq/S&P/Russell/EU/Asia),
 cartographie ticker→secteur GICS et ticker→industrie. Extrait de terminal.py
 (refonte institutionnelle — responsabilité unique : la donnée d'univers).
+
+Les 3 indices US (S&P 500, Nasdaq 100, Dow Jones) sont chargés LIVE et COMPLETS au
+démarrage via vertex.data.constituents (Wikipedia + cache + fallback statique) : ce sont
+les titres garantis toujours analysés et à jour à chaque lancement.
 """
+
+from vertex.data.constituents import get_index_members
+
+# ─── CONSTITUANTS LIVE DES 3 INDICES (chargés une fois à l'import, jamais bloquant) ───
+_IDX = get_index_members()
+INDEX_MEMBERS = _IDX               # {sp500, ndx100, dow30, union, source, ts}
+INDEX_SOURCE = _IDX['source']      # 'live' | 'cache' | 'cache-stale' | 'static'
+_IDX_UNION = _IDX['union']         # union dédupliquée S&P500 ∪ Nasdaq100 ∪ Dow30 (~517)
 
 WATCHLIST = ['AAPL', 'NVDA', 'MSFT', 'META', 'GOOGL', 'AMZN', 'AVGO', 'TSLA',
              'NFLX', 'AMD', 'CRM', 'COST', 'LLY', 'JPM', 'V', 'MA', 'HD',
@@ -143,25 +155,34 @@ _ASIA = ['7203.T', '6758.T', '9984.T', '8306.T', '6861.T', '9432.T', '6098.T', '
          '4063.T', '9433.T', '6501.T', '7267.T', '8058.T', '9983.T', '0700.HK', '9988.HK', '3690.HK',
          '1299.HK', '0941.HK', '1810.HK', '2318.HK', '0388.HK', '1211.HK', '005930.KS', '000660.KS',
          '005380.KS', '051910.KS', '2330.TW', '2317.TW', '2454.TW']
-UNIVERSE = list(dict.fromkeys(WATCHLIST + _BIG_EXTRA + _TREND_EXTRA + _SP500_EXTRA + _RUSSELL_EXTRA + _SECTOR_ETFS + _EUROPE + _ASIA))   # dédupliqué
+# UNIVERSE = STRICTEMENT les constituants des 3 indices US (S&P 500 ∪ Nasdaq 100 ∪ Dow Jones).
+# Aucune autre société : ni Europe, ni Asie, ni small caps Russell, ni valeurs « trend », ni ETF.
+# Rafraîchi et analysé en entier à chaque démarrage (source live + cache + fallback statique).
+UNIVERSE = list(_IDX_UNION)   # les ~517 titres des 3 indices, dédupliqués
 
 # ─── APPARTENANCE AUX INDICES (pour « top Dow / Nasdaq / S&P ») ───
-_DOW30 = ['AAPL', 'AMGN', 'AMZN', 'AXP', 'BA', 'CAT', 'CRM', 'CSCO', 'CVX', 'DIS', 'GS', 'HD',
-          'HON', 'IBM', 'JNJ', 'JPM', 'KO', 'MCD', 'MMM', 'MRK', 'MSFT', 'NKE', 'NVDA', 'PG',
-          'SHW', 'TRV', 'UNH', 'V', 'VZ', 'WMT']
-_NDX100 = ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'META', 'GOOGL', 'GOOG', 'AVGO', 'TSLA', 'COST', 'NFLX',
-           'AMD', 'PEP', 'TMUS', 'CSCO', 'ADBE', 'LIN', 'TXN', 'QCOM', 'INTC', 'AMAT', 'INTU', 'ISRG',
-           'CMCSA', 'AMGN', 'HON', 'BKNG', 'VRTX', 'ADP', 'REGN', 'MU', 'PANW', 'LRCX', 'ADI', 'GILD',
-           'SBUX', 'MELI', 'KLAC', 'SNPS', 'CDNS', 'CRWD', 'MDLZ', 'PYPL', 'MAR', 'ORLY', 'CTAS',
-           'ABNB', 'NXPI', 'MRVL', 'FTNT', 'DASH', 'ADSK', 'WDAY', 'ROP', 'PCAR', 'MNST', 'CPRT',
-           'PAYX', 'KDP', 'ODFL', 'ROST', 'CHTR', 'AEP', 'FANG', 'KHC', 'EA', 'FAST', 'CTSH', 'DDOG',
-           'VRSK', 'EXC', 'GEHC', 'BKR', 'XEL', 'TTWO', 'CSGP', 'IDXX', 'ANSS', 'ON', 'MCHP', 'ZS',
-           'DXCM', 'CDW', 'TEAM', 'WBD', 'MDB', 'LULU', 'TTD', 'ARM', 'SMCI', 'MRNA', 'BIIB', 'GFS', 'CCEP']
-_SP500_SET = list(dict.fromkeys(
+# Source LIVE (Wikipedia + cache + fallback) unie aux listes curées historiques : on ne perd
+# jamais un titre suivi, et on récupère automatiquement les nouveaux entrants des indices.
+_DOW30_CURATED = ['AAPL', 'AMGN', 'AMZN', 'AXP', 'BA', 'CAT', 'CRM', 'CSCO', 'CVX', 'DIS', 'GS', 'HD',
+                  'HON', 'IBM', 'JNJ', 'JPM', 'KO', 'MCD', 'MMM', 'MRK', 'MSFT', 'NKE', 'NVDA', 'PG',
+                  'SHW', 'TRV', 'UNH', 'V', 'VZ', 'WMT']
+_NDX100_CURATED = ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'META', 'GOOGL', 'GOOG', 'AVGO', 'TSLA', 'COST', 'NFLX',
+                   'AMD', 'PEP', 'TMUS', 'CSCO', 'ADBE', 'LIN', 'TXN', 'QCOM', 'INTC', 'AMAT', 'INTU', 'ISRG',
+                   'CMCSA', 'AMGN', 'HON', 'BKNG', 'VRTX', 'ADP', 'REGN', 'MU', 'PANW', 'LRCX', 'ADI', 'GILD',
+                   'SBUX', 'MELI', 'KLAC', 'SNPS', 'CDNS', 'CRWD', 'MDLZ', 'PYPL', 'MAR', 'ORLY', 'CTAS',
+                   'ABNB', 'NXPI', 'MRVL', 'FTNT', 'DASH', 'ADSK', 'WDAY', 'ROP', 'PCAR', 'MNST', 'CPRT',
+                   'PAYX', 'KDP', 'ODFL', 'ROST', 'CHTR', 'AEP', 'FANG', 'KHC', 'EA', 'FAST', 'CTSH', 'DDOG',
+                   'VRSK', 'EXC', 'GEHC', 'BKR', 'XEL', 'TTWO', 'CSGP', 'IDXX', 'ANSS', 'ON', 'MCHP', 'ZS',
+                   'DXCM', 'CDW', 'TEAM', 'WBD', 'MDB', 'LULU', 'TTD', 'ARM', 'SMCI', 'MRNA', 'BIIB', 'GFS', 'CCEP']
+_SP500_CURATED = (
     ['AAPL', 'NVDA', 'MSFT', 'META', 'GOOGL', 'GOOG', 'AMZN', 'AVGO', 'TSLA', 'NFLX', 'AMD', 'CRM',
      'COST', 'LLY', 'JPM', 'V', 'MA', 'HD', 'UNH', 'XOM', 'WMT', 'NOW', 'ORCL', 'ADBE', 'AMAT',
      'MRVL', 'QCOM', 'PANW', 'INTU', 'DELL', 'CEG', 'VST', 'ISRG', 'GEV', 'MU', 'UBER', 'ABNB', 'SMCI']
-    + _BIG_EXTRA + _SP500_EXTRA))
+    + _BIG_EXTRA + _SP500_EXTRA)
+# Appartenance = strictement les listes LIVE des indices (aucun ajout curé).
+_DOW30 = list(_IDX['dow30'])
+_NDX100 = list(_IDX['ndx100'])
+_SP500_SET = list(_IDX['sp500'])
 _RUT_SET = list(dict.fromkeys(_RUSSELL_EXTRA))   # small caps US ≈ Russell 2000
 
 # ─── CLASSIFICATION SECTORIELLE GICS STATIQUE (page Secteurs) ───
@@ -276,6 +297,8 @@ TREND_SET = set(_TREND_EXTRA)   # valeurs « buzz / fast movers » → badge �
 
 
 __all__ = [
+    'INDEX_MEMBERS',
+    'INDEX_SOURCE',
     'WATCHLIST',
     '_BIG_EXTRA',
     '_TREND_EXTRA',
