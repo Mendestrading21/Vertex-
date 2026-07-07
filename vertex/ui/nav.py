@@ -8,30 +8,28 @@ ailleurs — fini les six copies à garder synchronisées à la main.
 
 # (chemin, icône, libellé) — l'ordre de cette liste EST l'ordre d'affichage.
 ITEMS = [
-    ('/',            '📊', 'Overview'),
-    ('/review',      '🏛️', 'Comité'),
-    ('/research',    '🔬', 'Recherche'),
-    ('/health',      '🩺', 'Santé'),
-    ('/strategie',   '🎯', 'Desk'),
-    ('/journal',     '📖', 'Journal'),
+    ('/',            '📊', 'Market Overview'),
+    ('/stocks',      '🔍', 'Stock info'),
+    ('/strategie',   '🎯', 'Trading Desk'),
+    ('/journal',     '📖', 'Trade Journal'),
     ('/suivi',       '⭐', 'Watchlist'),
-    ('/options',     '⚡', 'Options'),
-    ('/sectors',     '🔄', 'Rotation'),
-    ('/catalysts',   '📅', 'Events'),
-    ('/anomalies',   '📡', 'Signals'),
-    ('/heatmap',     '🗺️', 'Heatmap'),
-    ('/equipe',      '🏆', 'Playbook'),
-    ('/bordel',      '🧠', 'Intel'),
+    ('/options',     '⚡', 'Options Lab'),
+    ('/sectors',     '🔄', 'Market Rotation'),
+    ('/catalysts',   '📅', 'Market Calendar'),
+    ('/anomalies',   '📡', 'Market Signals'),
+    ('/bordel',      '🧠', 'Market Intelligence'),
     ('/settings',    '⚙️', 'Settings'),
 ]
+# Pages regroupées en hubs (accès par onglets, plus dans la sidebar) :
+#   Intel (/bordel) : Comité · Recherche · Heatmap · Playbook
+#   Settings (/settings) : Santé
 
 # Séparateurs de section dans la sidebar — clé = 1er chemin de la section.
 SECTIONS = [
-    ('/',          'MARCHÉ'),
-    ('/strategie', 'TRADING'),
-    ('/sectors',   'ANALYSE'),
-    ('/equipe',    'STRATÉGIE'),
-    ('/settings',  'SYSTÈME'),
+    ('/',          '📈 MARKET'),
+    ('/strategie', '💼 TRADING'),
+    ('/sectors',   '🔬 RESEARCH'),
+    ('/settings',  '⚙️ SYSTEM'),
 ]
 
 
