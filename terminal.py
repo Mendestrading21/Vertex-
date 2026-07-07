@@ -6134,9 +6134,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
    +'<div style="display:flex;gap:12px;flex-wrap:wrap">'
     +'<div style="text-align:center;background:#0c0e13;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:12px 16px"><div style="font-size:9px;letter-spacing:1px;color:'+RC.mut+';font-weight:800">SCORE VERTEX</div><div style="font-size:30px;font-weight:900;color:'+(conv>=70?RC.g:conv>=55?RC.gold:RC.r)+'">'+conv+'</div></div>'
     +'<div style="text-align:center;background:#0c0e13;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:12px 16px"><div style="font-size:9px;letter-spacing:1px;color:'+RC.mut+';font-weight:800">CONFIANCE IA</div><div style="font-size:30px;font-weight:900;color:'+RC.blue+'">'+conf+'%</div></div>'
-    +'<div style="text-align:center;background:'+vc+'14;border:1px solid '+vc+'55;border-radius:16px;padding:12px 16px"><div style="font-size:9px;letter-spacing:1px;color:'+RC.mut+';font-weight:800">VERDICT</div><div style="font-size:17px;font-weight:900;color:'+vc+';margin-top:6px">'+(vt||'—')+'</div></div>'
+    +'<div style="text-align:center;background:'+vc+'14;border:1px solid '+vc+'55;border-radius:16px;padding:12px 16px"><div style="font-size:9px;letter-spacing:1px;color:'+RC.mut+';font-weight:800">VERDICT</div><div style="font-size:17px;font-weight:900;color:'+vc+';margin-top:6px">'+(vt?({'WATCH_BREAKOUT':'Surveiller · cassure','WATCH_PULLBACK':'Surveiller · repli','WATCH':'Surveiller','ACHETER':'Acheter','RENFORCER':'Renforcer','ATTENDRE':'Attendre','ATTENTE':'Attendre','EVITER':'Éviter','ÉVITER':'Éviter','AVOID':'Éviter','BUY':'Acheter','TOO_LATE':'Trop tard'}[vt]||(vt.charAt(0)+vt.slice(1).toLowerCase().replace(/_/g,' · '))):'—')+'</div></div>'
    +'</div></div>'
-   +S('Brief IA','le resume, style analyste')
+   +S('Brief IA','le résumé, style analyste')
    +card(B.map(para).join(''),'padding:20px 24px;border-color:rgba(255,140,50,.15);background:radial-gradient(120% 120% at 0% 0%,rgba(255,122,24,.07),transparent 55%),linear-gradient(160deg,#141821,#0d0e12)');
  }
 
