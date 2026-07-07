@@ -21,3 +21,6 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# Captures d'écran de design (régénérables, mode démo) — pas dans le repo
+docs/screenshots/
