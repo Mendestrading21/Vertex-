@@ -9884,10 +9884,16 @@ function optNarr(c){var s=c.sym,be=c.be||(c.strike+c.cost/100);
   var d=' Le scénario reste valide tant que '+s+' se maintient au-dessus de son seuil de $'+be+'.';
   return a+b+d;}
 function optNarrShort(c){
-  if(c.swing_ok)return 'Swing sécurisé éligible — échéance longue, sortie visée en 1 à 4 semaines.';
-  if(c.iv!=null&&c.iv<=35&&(c.pop||0)>=55)return 'Volatilité contenue et probabilité de profit élevée : configuration propre.';
-  if((c.pot||0)>=120)return 'Asymétrie forte — potentiel très supérieur au risque plafonné à la prime.';
-  if(c.iv!=null&&c.iv>55)return 'Momentum présent mais volatilité élevée : sizing prudent.';
+  var iv=c.iv,pop=c.pop||0,pot=c.pot||0,dte=c.dte||0,delta=c.delta;
+  if(c.swing_ok)return 'Swing sécurisé — échéance longue, faible érosion, sortie visée en 1 à 4 semaines.';
+  if(iv!=null&&iv>60)return 'Momentum haussier mais volatilité tendue — prime chère, sizing prudent.';
+  if(delta!=null&&delta>=0.62)return 'Delta élevé : suit le titre de près, comme une action à effet de levier.';
+  if(pot>=150&&pop>=45)return 'Asymétrie rare : fort potentiel adossé à une probabilité correcte.';
+  if(iv!=null&&iv<=28&&pop>=40)return 'Volatilité contenue et probabilité solide : entrée de qualité.';
+  if(pop>=52)return 'Probabilité de profit supérieure à la moyenne, coût du temps maîtrisé.';
+  if(dte<=45)return 'Échéance courte : théta agressif, à réserver à un catalyseur net et rapide.';
+  if(pot>=150)return 'Levier haussier marqué pour un risque strictement plafonné à la prime.';
+  if(pot>=80)return 'Bon rapport potentiel / prime dans un contexte de volatilité normale.';
   return optVerdictTxt(optDec(c)[2]);}
 var __OPTREG={};
 function oreg(c){var k=(c.sym+'|'+c.strike+'|'+(c.exp||'').slice(0,10)+'|'+(c.bucket||''));__OPTREG[k]=c;return k;}
@@ -9985,7 +9991,7 @@ function renderBasket(){var el=document.getElementById('optBasket');if(!el)retur
       +'<div style="display:flex;gap:12px;margin-top:8px;font-size:11px"><span>coût <b style="color:#C9D2E0">$'+fmt(c.cost)+'</b></span><span>POP <b style="color:'+popcol(c.pop)+'">'+c.pop+'%</b></span></div>'
       +'<div style="font-size:11px;color:#8794ab;margin-top:4px">si cible → <b class="'+((c.pot||0)>=0?'up':'dn')+'">'+((c.pot||0)>=0?'+':'')+'$'+fmt(gain)+'</b> <span class="muted">('+(c.pot>=0?'+':'')+c.pot+'%)</span></div></div>';}).join('');
   el.innerHTML='<div class="vcard" style="border:1.5px solid '+qc+'44;background:linear-gradient(135deg,'+qc+'0d,#0f1218)">'
-    +'<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;margin-bottom:12px"><span style="font-size:12px;font-weight:800;color:#F5B45B;letter-spacing:.5px">🧺 PANIER DIVERSIFIÉ · '+legs.length+' ÉCHÉANCES</span>'
+    +'<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;margin-bottom:12px"><span style="font-size:12px;font-weight:800;color:#F5B45B;letter-spacing:.5px">🎯 '+legs.length+' ÉCHÉANCES · COURT · MOYEN · LONG</span>'
     +'<span style="font-size:11px;color:#8794ab">coût total <b style="color:#C9D2E0">$'+fmt(totCost)+'</b> · gain potentiel combiné <b style="color:#22C55E">+$'+fmt(totGain)+'</b>'+(totCost?' <b style="color:#22C55E">(+'+Math.round(totGain/totCost*100)+'%)</b>':'')+' · POP moyen <b style="color:'+popcol(avgPop)+'">'+avgPop+'%</b></span></div>'
     +'<div style="display:flex;gap:12px;flex-wrap:wrap">'+legHtml+'</div>'
     +'<div class="muted" style="font-size:11px;margin-top:12px;line-height:1.5">💡 Idée d\'allocation : une option par horizon (court / moyen / long) sur des titres différents → tu répartis le risque dans le temps plutôt que de tout jouer sur une seule échéance. ⛔ analyse éducative, jamais un ordre.</div></div>';}
