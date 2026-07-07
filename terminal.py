@@ -2514,10 +2514,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   var top=sec[0],weak=sec[sec.length-1];
   var bias=conf>=56?'haussier':conf<=44?'prudent':'neutre',bc=conf>=56?C.g:conf<=44?C.r:C.gold;
   var L=[];
-  L.push('Le marché reste dans un regime <b style="color:'+C.ink+'">'+regTxt+'</b>'+((weak&&sec.length>3)?' malgre une faiblesse sur '+weak.sector.toLowerCase():'')+'.');
+  L.push('Le marché reste dans un regime <b style="color:'+C.ink+'">'+regTxt+'</b>'+((weak&&sec.length>3)?' malgré une faiblesse sur '+weak.sector.toLowerCase():'')+'.');
   if(vix!=null)L.push('Le VIX est a <b style="color:'+C.ink+'">'+vix+'</b>'+(vix<15?' — volatilite contenue':vix>22?' — tension marquee':'')+'.');
   if(top)L.push('Les flux se concentrent sur <b style="color:'+C.ink+'">'+top.sector+'</b>.');
-  L.push('Climat <b style="color:'+(roro==='RISK-ON'?C.g:roro==='RISK-OFF'?C.r:C.gold)+'">'+(roro||'—')+'</b> — notre IA maintient aujourd hui un biais <b style="color:'+bc+'">'+bias+'</b>.');
+  L.push('Climat <b style="color:'+(roro==='RISK-ON'?C.g:roro==='RISK-OFF'?C.r:C.gold)+'">'+(roro||'—')+'</b> — notre IA maintient aujourd'hui un biais <b style="color:'+bc+'">'+bias+'</b>.');
   var fear=vix==null?50:Math.max(0,Math.min(100,(vix-10)*6));
   var G=gauge('Confiance IA',conf,conf+'%',bc)
    +gauge('Indice de peur',fear,vix!=null?('VIX '+vix):'—',fear>60?C.r:fear>40?C.gold:C.g)
@@ -2572,7 +2572,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   return stitle('⭐ Opportunite du jour','la meilleure idee, selectionnee par le Comite')
    +card('<div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap"><div><div style="font-size:30px;font-weight:900;letter-spacing:-1px;line-height:1">'+o.symbol+'</div><div style="font-size:13px;color:'+C.mut+';margin-top:2px">'+(o.sector||'')+(row.price!=null?' · $'+row.price:'')+(row.change!=null?' <span style="color:'+(row.change>=0?C.g:C.r)+';font-weight:700">'+pc(row.change)+'</span>':'')+'</div></div>'
      +'<div style="margin-left:auto;text-align:right"><div style="font-size:9px;letter-spacing:1px;color:'+C.mut+';font-weight:800">VERDICT COMITE</div><div style="font-size:20px;font-weight:900;color:'+C.g+';border:1.5px solid '+C.g+';border-radius:12px;padding:2px 14px;margin-top:4px">ACHETER</div></div></div>'
-     +'<div style="margin-top:14px;font-size:15px;line-height:1.65;color:#C9D2E0;max-width:70ch"><b style="color:'+C.o+'">Pourquoi aujourd hui — </b>'+(o.note||o.thesis||'')+'</div>'
+     +'<div style="margin-top:14px;font-size:15px;line-height:1.65;color:#C9D2E0;max-width:70ch"><b style="color:'+C.o+'">Pourquoi aujourd'hui — </b>'+(o.note||o.thesis||'')+'</div>'
      +g
      +'<div style="margin-top:16px"><a href="/titre/'+o.symbol+'" style="display:inline-block;background:'+C.o+';color:#1a1206;font-weight:800;font-size:15px;padding:12px 20px;border-radius:12px;text-decoration:none">Analyser completement →</a></div>',
      'padding:24px 24px;border-color:rgba(34,197,94,.22);background:radial-gradient(120% 120% at 100% 0%,rgba(34,197,94,.07),transparent 55%),linear-gradient(160deg,#141a17,#0d0e12)');
@@ -5813,10 +5813,11 @@ _OV_EXTRA_JS = r"""<script>(function(){
     var opp=sc.filter(function(x){return x.q>=65||x.v==='BUY';}).length,top3=sc.slice(0,3).map(function(x){return x.s;});
     if(!reg&&!sc.length){el.innerHTML='';return;}
     var rc=roro==='RISK-ON'?'#22C55E':roro==='RISK-OFF'?'#EF4444':'#F5B45B';
-    var txt='Le marché est en régime <b style="color:#e8edf5">'+regTxt+'</b>, climat <b style="color:'+rc+'">'+(roro||'neutre')+'</b>'+(vix!=null?', VIX <b style="color:#e8edf5">'+vix+'</b>'+(band?' ('+band+')':''):'')+'. '
-      +'<b style="color:#22C55E">'+opp+' opportunités</b> ressortent aujourd\'hui'+(top3.length?' — Vertex privilégie <b style="color:#e8edf5">'+top3.join(', ')+'</b>':'')+'.';
+    var pill=function(l,v,c){return '<span style="font-size:11px;font-weight:700;border:1px solid '+c+'40;background:'+c+'12;border-radius:8px;padding:3px 10px;white-space:nowrap"><span style="color:#8794AB">'+l+'</span> <b style="color:'+c+'">'+v+'</b></span>';};
+    var line1='<b style="color:#22C55E">'+opp+' opportunités</b> détectées aujourd\'hui'+(top3.length?' — Vertex privilégie <b style="color:#e8edf5">'+top3.join(', ')+'</b>':'')+'.';
+    var tags='<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px">'+pill('Régime',regTxt,'#C9D2E0')+pill('Climat',(roro||'neutre'),rc)+(vix!=null?pill('VIX',vix+(band?' · '+band:''),'#38BDF8'):'')+'</div>';
     el.innerHTML='<div class="vstit">🧭 SYNTHÈSE DU JOUR</div>'
-      +'<div style="background:linear-gradient(135deg,#14161c,#0f1116);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:16px 20px;font-size:15px;line-height:1.7;color:#c9d2e0">'+txt+'</div>';}
+      +'<div style="background:linear-gradient(135deg,#14161c,#0f1116);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:16px 20px"><div style="font-size:15px;line-height:1.6;color:#c9d2e0">'+line1+'</div>'+tags+'</div>';}
   function perf(cl,n){if(!cl||cl.length<n+1)return null;var a=cl[cl.length-1-n],b=cl[cl.length-1];if(!a)return null;return (b-a)/a*100;}
   function renderPal(d){if(!pal)return;var det=d.detail||{};
     var arr=(d.rows||[]).map(function(r){var cl=((det[r.symbol]||{}).series||{}).close||[];return {symbol:r.symbol,price:r.price,d:(typeof r.change==='number'?r.change:null),m:perf(cl,21)};});
