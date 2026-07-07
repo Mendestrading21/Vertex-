@@ -6130,7 +6130,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   return '<div style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:6px">'
    +'<div style="flex:1;min-width:220px"><div style="font-size:clamp(30px,5vw,44px);font-weight:900;letter-spacing:-1.5px;line-height:1">'+RSYM+'</div>'
    +'<div style="font-size:13px;color:'+RC.mut+';margin-top:4px">'+name+'</div>'
-   +'<div style="margin-top:10px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font-size:24px;font-weight:800">$'+fx(price)+'</span><span style="font-size:15px;font-weight:800;color:'+chgc+'">'+(chg!=null?(chg>=0?'▲ ':'▼ ')+pc(chg):'')+'</span></div></div>'
+   +'</div>'
    +'<div style="display:flex;gap:12px;flex-wrap:wrap">'
     +'<div style="text-align:center;background:#0c0e13;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:12px 16px"><div style="font-size:9px;letter-spacing:1px;color:'+RC.mut+';font-weight:800">SCORE VERTEX</div><div style="font-size:30px;font-weight:900;color:'+(conv>=70?RC.g:conv>=55?RC.gold:RC.r)+'">'+conv+'</div></div>'
     +'<div style="text-align:center;background:#0c0e13;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:12px 16px"><div style="font-size:9px;letter-spacing:1px;color:'+RC.mut+';font-weight:800">CONFIANCE IA</div><div style="font-size:30px;font-weight:900;color:'+RC.blue+'">'+conf+'%</div></div>'
