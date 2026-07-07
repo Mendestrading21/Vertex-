@@ -58,6 +58,7 @@ from vertex.app.routes import feeds as _feeds
 from vertex.app.routes import system as _system
 from vertex.app.routes import content as _content
 from vertex.data import demo as _demo
+from vertex.data import company as _company
 from vertex.services import market_clock as _market_clock
 
 app = Flask(__name__)
@@ -1747,8 +1748,26 @@ app.register_blueprint(_feeds.bp)
 @app.route('/api/ticker/<sym>')
 def api_ticker(sym):
     sym = sym.upper()
+    try:
+        pack = options_pack(sym)
+    except Exception as e:
+        pack = {'sym': sym, 'error': f'{type(e).__name__}: {e}', 'contracts': []}
+    try:
+        comp = _company.get(sym, demo=DEMO_MODE)
+    except Exception:
+        comp = None
     return jsonify({'symbol': sym, 'in_universe': sym in UNIVERSE,
-                    'detail': (scan_state.get('detail') or {}).get(sym), 'pack': options_pack(sym)})
+                    'detail': (scan_state.get('detail') or {}).get(sym),
+                    'company': comp, 'pack': pack})
+
+
+@app.route('/api/company/<sym>')
+def api_company(sym):
+    """Profil d'entreprise seul (cache hebdomadaire — activité, CEO, segments, pairs)."""
+    try:
+        return jsonify(_company.get(sym.upper(), demo=DEMO_MODE))
+    except Exception as e:
+        return jsonify({'error': f'{type(e).__name__}: {e}'})
 
 
 # ─── ENDPOINTS D'ANALYSE (Blueprint) — /api/vertex · /api/validator · /api/risk ───
