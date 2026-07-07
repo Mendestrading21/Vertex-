@@ -9,15 +9,12 @@ ailleurs — fini les six copies à garder synchronisées à la main.
 # (chemin, icône, libellé) — l'ordre de cette liste EST l'ordre d'affichage.
 ITEMS = [
     ('/',            '📊', 'Overview'),
-    ('/brief',       '🌅', 'Matinal'),
     ('/review',      '🏛️', 'Comité'),
-    ('/decisions',   '📝', 'Décisions'),
     ('/research',    '🔬', 'Recherche'),
     ('/health',      '🩺', 'Santé'),
     ('/strategie',   '🎯', 'Desk'),
     ('/journal',     '📖', 'Journal'),
     ('/suivi',       '⭐', 'Watchlist'),
-    ('/entreprises', '🔍', 'Scanner'),
     ('/options',     '⚡', 'Options'),
     ('/sectors',     '🔄', 'Rotation'),
     ('/catalysts',   '📅', 'Events'),

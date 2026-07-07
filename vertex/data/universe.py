@@ -286,13 +286,14 @@ _INDUSTRY = {
 _INDUSTRY_MAP = {sym: ind for ind, syms in _INDUSTRY.items() for sym in syms}   # ticker → industrie fine
 _EU_SET = list(_EUROPE)
 _ASIA_SET = list(_ASIA)
-# ─── COURS EN DIRECT IBKR (au bureau) : snapshot-polling du haut de l'univers ───
-# Le SCORING couvre tout l'univers (967). Le LIVE est borné au top 300 (core + big +
-# trend + top S&P) : ce sont les titres qui ont réellement de la data IBKR ; les small
-# caps de la longue traîne n'en ont pas → elles gardent le cours du scan (différé).
-# Worker = reqTickersAsync par LOTS (snapshot, lignes libérées entre lots), core en 1er.
-# ⛔ LECTURE SEULE. Un titre sans abonnement data est ignoré sans crash. Cycle ~30-45s.
-LIVE_SYMBOLS = UNIVERSE[:300]
+# ─── COURS EN DIRECT IBKR (au bureau) : snapshot-polling de TOUT l'univers ───
+# Le LIVE couvre désormais l'INTÉGRALITÉ des 3 indices (517) : ce sont tous des
+# constituants liquides S&P500/Nasdaq100/Dow qui ont de la data IBKR.
+# Worker = reqTickersAsync par LOTS de 20 (snapshot, lignes libérées entre lots) →
+# ~26 lots par cycle, contourne la limite de lignes data simultanées d'IBKR.
+# ⛔ LECTURE SEULE. Un titre sans abonnement data est ignoré sans crash. Cycle plus
+# long qu'avec 300 titres (quelques minutes hors séance, plus rapide en séance).
+LIVE_SYMBOLS = list(UNIVERSE)
 TREND_SET = set(_TREND_EXTRA)   # valeurs « buzz / fast movers » → badge 🔥 dans l'UI
 
 
