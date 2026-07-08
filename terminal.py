@@ -42,6 +42,7 @@ from vertex.app.config import IBKR_ENABLED, DEMO_MODE  # noqa: F401
 from vertex.data import constants as _vconst
 from vertex.services import status_service as _status_svc
 from vertex.services import persist as _persist
+from vertex.services import live_engine as _live
 from vertex.engines import decision_stack as _decision
 from vertex.ui import nav as _nav
 from vertex.ui import options_lab as _olab_ui
@@ -49,6 +50,7 @@ from vertex.ui import journal as _tj_ui
 from vertex.ui import home_art as _home_art
 from vertex.ui import signals as _sg_ui
 from vertex.ui import vault as _av_ui
+from vertex.ui import sync_center as _sync_ui
 from vertex.engines import indicators as _indicators
 from vertex.engines import analysis as _analysis
 from vertex.engines import backtest as _backtest
@@ -60,6 +62,7 @@ from vertex.app.routes import auth as _auth
 from vertex.app.routes import command as _command
 from vertex.app.routes import desk as _desk
 from vertex.app.routes import options_lab_api as _options_lab_api
+from vertex.app.routes import live_api as _live_api
 from vertex.app.routes import decision_api as _decision_api
 from vertex.app.routes import analysis_api as _analysis_api
 from vertex.app.routes import feeds as _feeds
@@ -572,6 +575,10 @@ def scan():
 
 
 _rescan_evt = threading.Event()   # set() par /api/rescan → réveille la boucle pour un re-scan immédiat
+# ── VERTEX LIVE ENGINE : câblage du moteur central (états + déclencheur) ──
+_live.configure(scan_state=scan_state, news_state=news_state, cal_state=cal_state,
+                weekly_state=weekly_state, rescan_event=_rescan_evt,
+                ibkr_enabled=IBKR_ENABLED, demo=DEMO_MODE)
 
 
 def _loop():
@@ -1729,6 +1736,9 @@ app.register_blueprint(_command.bp)
 # ─── OPTIONS RESEARCH CENTER (Blueprint) — /api/options-lab ───
 app.register_blueprint(_options_lab_api.bp)
 
+# ─── VERTEX LIVE ENGINE (Blueprint) — /api/live/status · refresh · report ───
+app.register_blueprint(_live_api.bp)
+
 
 # ─── DESCRIPTION MÉTIER (yfinance longBusinessSummary) : à la demande + cache persistant ───
 # Fetché UNIQUEMENT quand une fiche est ouverte (pas en masse) → zéro throttle. Mis en
@@ -2213,7 +2223,7 @@ var side=document.createElement('aside');side.id='vside';
 var VSEC={'/':'MARCHÉ','/strategie':'TRADING','/sectors':'ANALYSE','/equipe':'STRATÉGIE','/settings':'SYSTÈME'};side.innerHTML='<a href="/" class="vlogo"><span class="vlmark">▲</span><span class="vltxt">VERTEX<b>TRADING DESK</b></span></a>'+NAV.map(function(x){var s=VSEC[x[0]]?'<div class="vsep">'+VSEC[x[0]]+'</div>':'';return s+'<a href="'+x[0]+'" class="vn'+(isAct(x[0])?' act':'')+'"><span class="vi">'+x[1]+'</span><span class="vlbl">'+x[2]+'</span></a>';}).join('')+'<div id="vdesk" style="margin-top:auto"></div><div class="vstat"><span class="vdot"></span>Live · maj 15s</div><div class="vfoot">⛔ ANALYSE ÉDUCATIVE · AUCUN ORDRE<br><span style="color:#FF7A1888;font-weight:800;letter-spacing:1px">VERTEX</span> <span style="color:#3a3f4a">· v1.2</span></div>';
 document.body.appendChild(side);document.body.classList.add('has-vnav');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><button type="button" class="gnav-tws" onclick="gnavRescan(this)" title="Analyse TOUS les titres IBKR maintenant (les 176) et met tout a jour">⟳ Analyser tout</button><button type="button" class="gnav-tws" onclick="gnavConnectTWS()">🔌 TWS</button><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher… (Ctrl+K)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><button type="button" class="gnav-tws" onclick="gnavRescan(this)" title="Vertex Sync Center — état des données, fraîcheur, mise à jour globale">⟳ Mettre à jour</button><button type="button" class="gnav-tws" onclick="gnavConnectTWS()">🔌 TWS</button><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher… (Ctrl+K)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
 gnavFresh();setInterval(gnavFresh,30000);
 var mn=document.createElement('nav');mn.id='mnav';
@@ -3848,7 +3858,7 @@ var side=document.createElement('aside');side.id='vside';
 var VSEC={'/':'MARCHÉ','/strategie':'TRADING','/sectors':'ANALYSE','/equipe':'STRATÉGIE','/settings':'SYSTÈME'};side.innerHTML='<a href="/" class="vlogo"><span class="vlmark">▲</span><span class="vltxt">VERTEX<b>TRADING DESK</b></span></a>'+NAV.map(function(x){var s=VSEC[x[0]]?'<div class="vsep">'+VSEC[x[0]]+'</div>':'';return s+'<a href="'+x[0]+'" class="vn'+(isAct(x[0])?' act':'')+'"><span class="vi">'+x[1]+'</span><span class="vlbl">'+x[2]+'</span></a>';}).join('')+'<div id="vdesk" style="margin-top:auto"></div><div class="vstat"><span class="vdot"></span>Live · maj 15s</div><div class="vfoot">⛔ ANALYSE ÉDUCATIVE · AUCUN ORDRE<br><span style="color:#FF7A1888;font-weight:800;letter-spacing:1px">VERTEX</span> <span style="color:#3a3f4a">· v1.2</span></div>';
 document.body.appendChild(side);document.body.classList.add('has-vnav');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><button type="button" class="gnav-tws" onclick="gnavRescan(this)" title="Analyse TOUS les titres IBKR maintenant (les 176) et met tout a jour">⟳ Analyser tout</button><button type="button" class="gnav-tws" onclick="gnavConnectTWS()">🔌 TWS</button><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher… (Ctrl+K)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><button type="button" class="gnav-tws" onclick="gnavRescan(this)" title="Vertex Sync Center — état des données, fraîcheur, mise à jour globale">⟳ Mettre à jour</button><button type="button" class="gnav-tws" onclick="gnavConnectTWS()">🔌 TWS</button><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher… (Ctrl+K)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
 gnavFresh();setInterval(gnavFresh,30000);
 var mn=document.createElement('nav');mn.id='mnav';
@@ -4195,7 +4205,7 @@ var side=document.createElement('aside');side.id='vside';
 var VSEC={'/':'MARCHÉ','/strategie':'TRADING','/sectors':'ANALYSE','/equipe':'STRATÉGIE','/settings':'SYSTÈME'};side.innerHTML='<a href="/" class="vlogo"><span class="vlmark">▲</span><span class="vltxt">VERTEX<b>TRADING DESK</b></span></a>'+NAV.map(function(x){var s=VSEC[x[0]]?'<div class="vsep">'+VSEC[x[0]]+'</div>':'';return s+'<a href="'+x[0]+'" class="vn'+(isAct(x[0])?' act':'')+'"><span class="vi">'+x[1]+'</span><span class="vlbl">'+x[2]+'</span></a>';}).join('')+'<div id="vdesk" style="margin-top:auto"></div><div class="vstat"><span class="vdot"></span>Live · maj 15s</div><div class="vfoot">⛔ ANALYSE ÉDUCATIVE · AUCUN ORDRE<br><span style="color:#FF7A1888;font-weight:800;letter-spacing:1px">VERTEX</span> <span style="color:#3a3f4a">· v1.2</span></div>';
 document.body.appendChild(side);document.body.classList.add('has-vnav');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><button type="button" class="gnav-tws" onclick="gnavRescan(this)" title="Analyse TOUS les titres IBKR maintenant (les 176) et met tout a jour">⟳ Analyser tout</button><button type="button" class="gnav-tws" onclick="gnavConnectTWS()">🔌 TWS</button><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher… (Ctrl+K)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><button type="button" class="gnav-tws" onclick="gnavRescan(this)" title="Vertex Sync Center — état des données, fraîcheur, mise à jour globale">⟳ Mettre à jour</button><button type="button" class="gnav-tws" onclick="gnavConnectTWS()">🔌 TWS</button><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher… (Ctrl+K)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
 gnavFresh();setInterval(gnavFresh,30000);
 var mn=document.createElement('nav');mn.id='mnav';
@@ -4652,7 +4662,7 @@ var side=document.createElement('aside');side.id='vside';
 var VSEC={'/':'MARCHÉ','/strategie':'TRADING','/sectors':'ANALYSE','/equipe':'STRATÉGIE','/settings':'SYSTÈME'};side.innerHTML='<a href="/" class="vlogo"><span class="vlmark">▲</span><span class="vltxt">VERTEX<b>TRADING DESK</b></span></a>'+NAV.map(function(x){var s=VSEC[x[0]]?'<div class="vsep">'+VSEC[x[0]]+'</div>':'';return s+'<a href="'+x[0]+'" class="vn'+(isAct(x[0])?' act':'')+'"><span class="vi">'+x[1]+'</span><span class="vlbl">'+x[2]+'</span></a>';}).join('')+'<div id="vdesk" style="margin-top:auto"></div><div class="vstat"><span class="vdot"></span>Live · maj 15s</div><div class="vfoot">⛔ ANALYSE ÉDUCATIVE · AUCUN ORDRE<br><span style="color:#FF7A1888;font-weight:800;letter-spacing:1px">VERTEX</span> <span style="color:#3a3f4a">· v1.2</span></div>';
 document.body.appendChild(side);document.body.classList.add('has-vnav');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><button type="button" class="gnav-tws" onclick="gnavRescan(this)" title="Analyse TOUS les titres IBKR maintenant (les 176) et met tout a jour">⟳ Analyser tout</button><button type="button" class="gnav-tws" onclick="gnavConnectTWS()">🔌 TWS</button><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher… (Ctrl+K)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><button type="button" class="gnav-tws" onclick="gnavRescan(this)" title="Vertex Sync Center — état des données, fraîcheur, mise à jour globale">⟳ Mettre à jour</button><button type="button" class="gnav-tws" onclick="gnavConnectTWS()">🔌 TWS</button><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher… (Ctrl+K)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
 gnavFresh();setInterval(gnavFresh,30000);
 var mn=document.createElement('nav');mn.id='mnav';
@@ -5152,7 +5162,7 @@ var side=document.createElement('aside');side.id='vside';
 var VSEC={'/':'MARCHÉ','/strategie':'TRADING','/sectors':'ANALYSE','/equipe':'STRATÉGIE','/settings':'SYSTÈME'};side.innerHTML='<a href="/" class="vlogo"><span class="vlmark">▲</span><span class="vltxt">VERTEX<b>TRADING DESK</b></span></a>'+NAV.map(function(x){var s=VSEC[x[0]]?'<div class="vsep">'+VSEC[x[0]]+'</div>':'';return s+'<a href="'+x[0]+'" class="vn'+(isAct(x[0])?' act':'')+'"><span class="vi">'+x[1]+'</span><span class="vlbl">'+x[2]+'</span></a>';}).join('')+'<div id="vdesk" style="margin-top:auto"></div><div class="vstat"><span class="vdot"></span>Live · maj 15s</div><div class="vfoot">⛔ ANALYSE ÉDUCATIVE · AUCUN ORDRE<br><span style="color:#FF7A1888;font-weight:800;letter-spacing:1px">VERTEX</span> <span style="color:#3a3f4a">· v1.2</span></div>';
 document.body.appendChild(side);document.body.classList.add('has-vnav');
 var nav=document.createElement('nav');nav.id='gnav';
-nav.innerHTML='<div class="gnav-in"><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><button type="button" class="gnav-tws" onclick="gnavRescan(this)" title="Analyse TOUS les titres IBKR maintenant (les 176) et met tout a jour">⟳ Analyser tout</button><button type="button" class="gnav-tws" onclick="gnavConnectTWS()">🔌 TWS</button><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher… (Ctrl+K)" autocomplete="off"><button type="submit">→</button></form></div>';
+nav.innerHTML='<div class="gnav-in"><span id="gnav-fresh" class="gnav-fresh" style="display:none"></span><button type="button" class="gnav-tws" onclick="gnavRescan(this)" title="Vertex Sync Center — état des données, fraîcheur, mise à jour globale">⟳ Mettre à jour</button><button type="button" class="gnav-tws" onclick="gnavConnectTWS()">🔌 TWS</button><form class="gnav-search" onsubmit="return gnavGo(event)"><input id="gnavq" placeholder="Rechercher… (Ctrl+K)" autocomplete="off"><button type="submit">→</button></form></div>';
 document.body.insertBefore(nav,document.body.firstChild);
 gnavFresh();setInterval(gnavFresh,30000);
 var mn=document.createElement('nav');mn.id='mnav';
@@ -5698,6 +5708,7 @@ PAGE_DAILY = PAGE_DAILY.replace(
 PAGE_DAILY = PAGE_DAILY.replace('</body>', _OPP_BRIEF_JS + '</body>', 1)
 # ── Couche artistique Market Overview (halos, chapitres, séance en images) — Ch. XI ──
 PAGE_DAILY = _home_art.apply(PAGE_DAILY)
+PAGE_DAILY = PAGE_DAILY.replace('</body>', '<script>' + _sync_ui.JS + '</script></body>', 1)
 
 # ── Overview : bandeau Marchés (matières + taux, SANS graphe) + Palmarès Top/Flop (sans Semaine/Russell) ──
 _OV_EXTRA_JS = r"""<script>(function(){
@@ -6157,6 +6168,7 @@ for _pg in ('PAGE_WATCHLIST', 'PAGE_OPTIONS_DESK', 'PAGE_ME',
 
 _NAVCSS_BLOCK = _NAV_CSS_CANON
 _NAVJS_BLOCK = _NAV_BUILD_CANON
+_NAVJS_BLOCK += _sync_ui.JS   # 🛰️ Sync Center global (Live Engine) sur toutes les pages
 # Session expirée en cours d'usage → toute réponse 401 renvoie vers le verrou.
 _NAVJS_BLOCK += (";(function(){var _f=window.fetch;window.fetch=function(){return _f.apply(this,arguments)"
                  ".then(function(r){if(r&&r.status===401&&location.pathname!=='/login'){"
