@@ -2521,6 +2521,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <!-- ═══ CONVICTION DU JOUR + TOP 5 (Phase 2) — renderConviction()/renderTop5() sur /scan ═══ -->
   <div id="ovConviction" style="margin:14px 0"></div>
   <div id="ovTop5" style="margin:14px 0"></div>
+  <!-- ═══ MARKET HEALTH + ROTATION (Phase 4) ═══ -->
+  <div id="ovHealth" style="margin:14px 0"></div>
+  <div id="ovRotation" style="margin:14px 0"></div>
   <div id="dMyDesk"></div>
   <!-- ═══ MORNING BRIEF (refonte homepage) — rendu par le script mb() en bas de page ═══ -->
   <div id="mbHome"></div>
@@ -6070,7 +6073,52 @@ _OV_EXTRA_JS = r"""<script>(function(){
         +'<div style="font-size:11px;color:#8794ab;line-height:1.4;margin-top:10px;border-top:1px solid rgba(255,255,255,.06);padding-top:9px">'+(pb.ic||'')+' <b style="color:#c3ccda">'+(pb.name||'')+'</b> — '+why+'</div></div>';}).join('');
     el.innerHTML='<div class="vstit">⚡ TOP 5 OPPORTUNITÉS <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· les meilleurs setups juste après la conviction · clic → fiche</span></div>'
      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">'+cards+'</div>';}
-  function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){try{renderHero(d);}catch(e){}try{renderConviction(d);}catch(e){}try{renderTop5(d);}catch(e){}try{renderMkt(d);}catch(e){}try{renderSynth(d);}catch(e){}try{renderPal(d);}catch(e){}}).catch(function(){});}
+  // ═══ MARKET HEALTH — 6 jauges reelles + score global ═══
+  function gauge(l,val,disp,sub,col){val=val==null?null:Math.max(0,Math.min(100,val));
+    return '<div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:11px;font-weight:700;color:#c3ccda">'+l+'</span><span style="font-size:12px;font-weight:800;color:'+(col||'#dfe6f2')+'">'+(disp!=null?disp:'—')+'</span></div>'
+      +'<div style="height:7px;border-radius:5px;background:rgba(255,255,255,.06);overflow:hidden">'+(val!=null?'<div style="height:100%;border-radius:5px;width:'+val+'%;background:'+(col||'#38BDF8')+'"></div>':'')+'</div>'
+      +'<div style="font-size:9.5px;color:#8794ab;margin-top:4px">'+(sub||'')+'</div></div>';}
+  function renderHealth(d){var el=document.getElementById('ovHealth');if(!el)return;
+    var mc=d.market_ctx||{},bd=mc.breadth||{},rows=d.rows||[],secs=d.sectors||[];
+    if(!rows.length){el.innerHTML='';return;}
+    var breadth=bd.above50;
+    var rsArr=rows.filter(function(r){return r.rs!=null;}),mom=rsArr.length?Math.round(rsArr.filter(function(r){return r.rs>=50;}).length/rsArr.length*100):null;
+    var vix=mc.vix,stress=vix!=null?Math.max(0,Math.min(100,(vix-11)/(32-11)*100)):null,calm=stress!=null?100-stress:null;
+    var roro=mc.roro||'',riskOn=mc.roro_gap!=null?Math.max(0,Math.min(100,50+mc.roro_gap*2)):(roro==='RISK-ON'?70:roro==='RISK-OFF'?30:50);
+    var sent=(bd.adv!=null&&bd.dec!=null&&(bd.adv+bd.dec)>0)?Math.round(bd.adv/(bd.adv+bd.dec)*100):null;
+    var chgs=secs.map(function(s){return s.avg_change;}).filter(function(x){return x!=null;});
+    var spread=chgs.length?(Math.max.apply(null,chgs)-Math.min.apply(null,chgs)):null,rota=spread!=null?Math.max(0,Math.min(100,spread/4*100)):null;
+    function C(v){return v==null?'#8794ab':v>=60?'#22C55E':v>=40?'#F5B45B':'#EF4444';}
+    var g=gauge('Breadth',breadth,breadth!=null?breadth+'%':'—','titres > MM50',C(breadth))
+      +gauge('Momentum global',mom,mom!=null?mom+'%':'—','titres RS ≥ 50 (surperforment)',C(mom))
+      +gauge('Volatilité (calme)',calm,vix!=null?('VIX '+vix):'—',(mc.vix_band||'')+' — plus haut = plus calme',C(calm))
+      +gauge('Risk-On',riskOn,roro||'—','appétit pour le risque',roro==='RISK-ON'?'#22C55E':roro==='RISK-OFF'?'#EF4444':'#F5B45B')
+      +gauge('Sentiment',sent,sent!=null?sent+'%':'—','avancées vs déclins',C(sent))
+      +gauge('Rotation',rota,spread!=null?('±'+spread.toFixed(1)+'%'):'—','dispersion sectorielle',C(rota));
+    var vals=[breadth,mom,calm,riskOn,sent,rota].filter(function(x){return x!=null;});
+    var glob=vals.length?Math.round(vals.reduce(function(s,x){return s+x;},0)/vals.length):null;
+    var gl=glob==null?['—','#8794ab']:glob>=60?['Sain','#22C55E']:glob>=45?['Mitigé','#F5B45B']:['Fragile','#EF4444'];
+    var concl='Santé du marché '+gl[0].toLowerCase()+(glob!=null?(' ('+glob+'/100)'):'')+' : breadth '+(breadth!=null?breadth+'%':'—')+', momentum '+(mom!=null?mom+'%':'—')+(vix!=null?(', VIX '+vix):'')+'. '+(roro==='RISK-OFF'?'Climat risk-off → sois sélectif.':roro==='RISK-ON'?'Climat risk-on → tu peux être offensif.':'Climat mitigé, reste discipliné.');
+    el.innerHTML='<div class="vstit">🩺 SANTÉ DU MARCHÉ <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· 6 dimensions mesurées · score global</span></div>'
+     +'<div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:18px 20px">'
+     +'<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:16px"><span style="font-size:32px;font-weight:900;color:'+gl[1]+'">'+(glob!=null?glob:'—')+'<span style="font-size:14px;color:#8794ab">/100</span></span><span style="font-size:16px;font-weight:800;color:'+gl[1]+'">'+gl[0]+'</span></div>'
+     +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px 24px">'+g+'</div>'
+     +'<div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.06);font-size:12.5px;color:#c3ccda;line-height:1.5">▲ '+concl+'</div></div>';}
+  // ═══ ROTATION SECTORIELLE — triée par score Vertex ═══
+  function renderRotation(d){var el=document.getElementById('ovRotation');if(!el)return;
+    var secs=(d.sectors||[]).slice().sort(function(a,b){return (b.avg_score||0)-(a.avg_score||0);});
+    if(!secs.length){el.innerHTML='';return;}
+    var maxAbs=Math.max.apply(null,secs.map(function(s){return Math.abs(s.avg_change||0);}).concat([1]));
+    var rows=secs.map(function(s){var ch=s.avg_change||0,pos=ch>=0,col=pos?'#22C55E':'#EF4444';var scc=s.avg_score>=70?'#22C55E':s.avg_score>=55?'#F5B45B':'#EF4444';
+      return '<div style="display:grid;grid-template-columns:150px 1fr 150px;gap:12px;align-items:center;padding:9px 4px;border-top:1px solid rgba(255,255,255,.05)">'
+        +'<div style="font-size:13px;font-weight:700;color:#e8edf5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.icon?s.icon+' ':'')+s.sector+'</div>'
+        +'<div style="height:16px;background:rgba(255,255,255,.04);border-radius:6px;overflow:hidden;position:relative"><div style="height:100%;width:'+(Math.abs(ch)/maxAbs*100).toFixed(0)+'%;background:'+col+';border-radius:6px"></div><span style="position:absolute;right:8px;top:0;line-height:16px;font-size:11px;font-weight:800;color:#f2f5fa">'+(pos?'+':'')+ch.toFixed(1)+'%</span></div>'
+        +'<div style="display:flex;gap:10px;justify-content:flex-end;font-size:10.5px;color:#8794ab;white-space:nowrap"><span>RS <b style="color:#c3ccda">'+(s.avg_rs!=null?Math.round(s.avg_rs):'—')+'</b></span><span>Flux <b style="color:#c3ccda">'+(s.pct_buy!=null?s.pct_buy+'%':'—')+'</b></span><span>Score <b style="color:'+scc+'">'+(s.avg_score!=null?s.avg_score:'—')+'</b></span></div></div>';}).join('');
+    var lead=secs[0],lag=secs[secs.length-1];
+    el.innerHTML='<div class="vstit">🔄 ROTATION SECTORIELLE <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· 9 secteurs · triés par score Vertex · perf · momentum(RS) · flux</span></div>'
+     +'<div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 18px">'
+     +'<div style="font-size:11px;color:#8794ab;margin-bottom:4px">▲ Les capitaux favorisent <b style="color:#22C55E">'+(lead.icon?lead.icon+' ':'')+lead.sector+'</b> (score '+lead.avg_score+') et délaissent <b style="color:#EF4444">'+(lag.icon?lag.icon+' ':'')+lag.sector+'</b> (score '+lag.avg_score+').</div>'+rows+'</div>';}
+  function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){try{renderHero(d);}catch(e){}try{renderConviction(d);}catch(e){}try{renderTop5(d);}catch(e){}try{renderHealth(d);}catch(e){}try{renderRotation(d);}catch(e){}try{renderMkt(d);}catch(e){}try{renderSynth(d);}catch(e){}try{renderPal(d);}catch(e){}}).catch(function(){});}
   load();setInterval(load,30000);
 })();</script>"""
 PAGE_DAILY = PAGE_DAILY.replace('</body>', _OV_EXTRA_JS + '</body>', 1)
