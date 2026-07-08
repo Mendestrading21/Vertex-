@@ -191,7 +191,42 @@ def _research(star, board, detail, market, pick, company=None):
                          'y sont simultanément parmi les meilleurs. Perte max = la prime ($%s).'
                          % (star.get('type'), quality, star.get('cost'))),
         'decision': decision,
+        'by_horizon': _by_horizon(star, board),
+        'runners': _runners(star, board),
     }
+
+
+def _by_horizon(star, board):
+    """La meilleure option par horizon (court / moyen / long) — priorité au titre vedette."""
+    out = []
+    for bk, lab in (('court', 'Court'), ('moyen', 'Moyen'), ('long', 'Long')):
+        cs = [c for c in board if c.get('bucket') == bk and c.get('quality') is not None]
+        if not cs:
+            continue
+        mine = [c for c in cs if c.get('sym') == star.get('sym')]
+        c = max(mine or cs, key=lambda x: x.get('quality', 0))
+        out.append({'bucket': lab, 'sym': c.get('sym'), 'type': c.get('type'),
+                    'strike': c.get('strike'), 'dte': c.get('dte'), 'score': c.get('quality')})
+    return out
+
+
+def _runners(star, board, n=3):
+    """Les dauphines : les meilleures options APRÈS celle du jour (titres distincts)."""
+    key = (star.get('sym'), star.get('exp'), star.get('strike'), star.get('type'))
+    seen = {star.get('sym')}
+    out = []
+    for c in sorted([c for c in board if c.get('quality') is not None],
+                    key=lambda x: -(x.get('quality') or 0)):
+        if (c.get('sym'), c.get('exp'), c.get('strike'), c.get('type')) == key or c.get('sym') in seen:
+            continue
+        seen.add(c.get('sym'))
+        out.append({'sym': c.get('sym'), 'type': c.get('type'), 'strike': c.get('strike'),
+                    'exp': (c.get('exp') or '')[:10], 'dte': c.get('dte'), 'score': c.get('quality'),
+                    'pop': c.get('pop'), 'cost': c.get('cost'), 'pot': c.get('pot'),
+                    'be': c.get('be')})
+        if len(out) >= n:
+            break
+    return out
 
 
 # ─── ③ ANALYSE COMPLÈTE (une seule grande section, 10 dimensions) ───

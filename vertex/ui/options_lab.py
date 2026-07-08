@@ -129,7 +129,7 @@ CSS = r"""
 
 BODY = (
   '<div id="olab">'
-  '<div class="vhead"><div><h1>💎 Options Research Center</h1>'
+  '<div class="vhead"><div><h1>💎 Options Lab</h1>'
   '<div class="s" id="olabHead">chargement du board…</div></div>'
   '<div style="margin-left:auto;align-self:center"><button class="vbtn" onclick="olabLoad(true)">⟳ Actualiser</button></div></div>'
   '<div id="olabRoot"><div class="skel">Vertex analyse le marché des options…</div></div>'
@@ -261,8 +261,15 @@ function s02(r){if(!r)return '';
  var caps=(r.capital||[]).map(function(s){return '<span class="pill p-mut num" style="margin:8px 8px 0 0">'+s.label+' → '+s.contracts+' contrats ($'+$n(s.cost)+')</span>';}).join('');
  var th=(r.thesis||[]).map(function(t,i){return '<div><span class="n">0'+(i+1)+'</span><span>'+t.replace(/^(Pourquoi[^—]*—)/,'<b>$1</b>')+'</span></div>';}).join('');
  var dv=r.decision||{};
+ var hz=(r.by_horizon||[]).map(function(h){return '<span class="pill p-mut num" style="margin:0 8px 8px 0;padding:6px 13px">'+h.sym+' '+h.type+' $'+$n(h.strike,1)+' · <b style="color:var(--ink)">'+h.bucket+'</b> · '+$n(h.score)+'</span>';}).join('');
+ var run=(r.runners||[]).map(function(x,i){return '<div style="flex:1;min-width:200px;background:var(--bg2);border:1px solid var(--hair);border-radius:14px;padding:13px 15px">'
+  +'<div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:15px">'+(i+2)+'ᵉ · '+x.sym+' <span style="font-size:10px;font-weight:800;color:'+(x.type==='PUT'?'var(--bad)':'var(--good)')+'">'+x.type+'</span></b>'
+  +'<b class="num" style="font-size:16px;color:'+scol(x.score)+'">'+$n(x.score)+'</b></div>'
+  +'<div style="font-size:11px;color:var(--mut);margin-top:4px" class="num">$'+$n(x.strike,1)+' · '+x.exp+' · POP '+$n(x.pop)+'% · coût '+$usd(x.cost)+' · si scénario → <b style="color:var(--good)">+'+$n(x.pot)+'%</b></div></div>';}).join('');
  return sec('02','Option Research','La meilleure opportunité parmi les contrats analysés — la fiche qui répond à tout : quoi, pourquoi, combien, jusqu\'à quand.',
-  '<div class="panel"><div class="hero"><div class="id">'
+  '<div class="panel" style="border-color:rgba(255,122,24,.28);box-shadow:0 0 60px -38px rgba(255,122,24,.55)">'
+  +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><span class="pill" style="background:linear-gradient(135deg,rgba(255,122,24,.22),rgba(255,122,24,.08));color:var(--acc2);font-size:11px;padding:6px 14px">💎 L\'OPTION DU JOUR</span><span style="font-size:11px;color:var(--mut)">la plus asymétrique des '+$n((OL.overview||{}).contracts)+' analysées</span></div>'
+  +'<div class="hero"><div class="id">'
   +'<span class="pill '+(r.type==='PUT'?'p-bad':'p-good')+'">'+r.type+'</span> <span class="pill p-mut">'+$h(r.sector)+'</span>'
   +'<div class="tk">'+r.sym+' <span style="font-size:.4em;color:var(--mut);font-weight:700">$'+$n(r.strike,1)+' · '+$h((r.exp||'').slice(0,10))+'</span></div>'
   +'<div class="ln">'+$h(r.name||'')+(r.stock_verdict?' · titre : '+r.stock_verdict+' ('+$n(r.stock_score)+'/100)':'')+'</div>'
@@ -271,7 +278,10 @@ function s02(r){if(!r)return '';
   +'<div class="lbl">Décision Vertex</div><div class="v" style="color:'+tone(dv.tone)+'">'+$h(dv.verdict)+'</div><div class="w">'+$h(dv.why)+'</div></div></div>'
   +'<div class="kpis">'+kp.map(function(x){return '<div><div class="lbl">'+x[0]+'</div><div class="v num">'+x[1]+'</div></div>';}).join('')+'</div>'
   +'<div class="thesis"><div style="border:0;padding-top:18px" class="lbl">Thèse d\'investissement</div>'+th+'</div>'
-  +ai(r.exec_summary,'Résumé exécutif')+'</div>');}
+  +ai(r.exec_summary,'Résumé exécutif')
+  +(hz?'<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--hair)"><div class="lbl" style="margin-bottom:10px">Aussi · la meilleure par horizon</div>'+hz+'</div>':'')
+  +(run?'<div style="margin-top:14px"><div class="lbl" style="margin-bottom:10px">Les dauphines — juste derrière l\'option du jour</div><div style="display:flex;gap:12px;flex-wrap:wrap">'+run+'</div></div>':'')
+  +'</div>');}
 
 function s03(rows){if(!rows||!rows.length)return '';
  var h=rows.map(function(a){return '<div class="arow">'
