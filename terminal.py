@@ -10771,22 +10771,22 @@ PAGE_OPTIONS_LAB = _vpage('Options Lab',
   '<div id="optStats" style="display:none"></div>'
   '<div class="ochap"><span class="n">01</span><div><div class="t">Options Lab Cockpit</div><div class="s">le board d\'options analysé en un coup d\'œil</div></div><div class="ln"></div></div>'
   '<div id="optCockpit"></div>'
-  '<div class="ochap"><span class="n">02</span><div><div class="t">Option du jour</div><div class="s">la meilleure opportunité — payoff · plan · top 3</div></div><div class="ln"></div></div>'
+  '<div class="ochap"><span class="n">02</span><div><div class="t">Option du jour</div><div class="s">analyse complète de la meilleure opportunité — payoff · score · playbook · scénarios · santé</div></div><div class="ln"></div></div>'
   '<div id="optBest"></div>'
-  '<div class="ochap"><span class="n">03</span><div><div class="t">Décomposition du score</div><div class="s">pourquoi ce score /100 — chaque facteur expliqué</div></div><div class="ln"></div></div>'
+  '<div class="ochsub">Décomposition du score</div>'
   '<div id="optScore"></div>'
-  '<div class="ochap"><span class="n">04</span><div><div class="t">Playbook</div><div class="s">comment jouer et gérer la position</div></div><div class="ln"></div></div>'
+  '<div class="ochsub">Playbook — comment jouer</div>'
   '<div id="optPlaybook"></div>'
-  '<div class="ochap"><span class="n">05</span><div><div class="t">Scénarios</div><div class="s">bull · base · bear — probabilités &amp; gestion</div></div><div class="ln"></div></div>'
+  '<div class="ochsub">Scénarios · bull · base · bear</div>'
   '<div id="optScenarios"></div>'
-  '<div class="ochap"><span class="n">06</span><div><div class="t">Santé de l\'option</div><div class="s">qualité · liquidité · IV · théta · POP · R:R</div></div><div class="ln"></div></div>'
+  '<div class="ochsub">Santé de l\'option</div>'
   '<div id="optHealth"></div>'
-  '<div class="ochap"><span class="n">07</span><div><div class="t">Panier par horizon</div><div class="s">une option par échéance — diversifié dans le temps</div></div><div class="ln"></div></div>'
+  '<div class="ochap"><span class="n">03</span><div><div class="t">Panier par horizon</div><div class="s">une option par échéance — diversifié dans le temps</div></div><div class="ln"></div></div>'
   '<div id="optBasket"></div>'
-  '<div class="ochap"><span class="n">08</span><div><div class="t">Toutes les options</div><div class="s">filtre · tri · recherche · clic → analyse</div></div><div class="ln"></div></div>'
+  '<div class="ochap"><span class="n">04</span><div><div class="t">Toutes les options</div><div class="s">filtre · tri · recherche · clic → analyse</div></div><div class="ln"></div></div>'
   '<div id="optControls" style="margin:2px 0 14px"></div>'
   '<div id="optHost"></div>'
-  '<div class="ochap"><span class="n">09</span><div><div class="t">Décision Vertex</div><div class="s">le verdict final sur la meilleure option</div></div><div class="ln"></div></div>'
+  '<div class="ochap"><span class="n">05</span><div><div class="t">Décision Vertex</div><div class="s">le verdict final sur la meilleure option</div></div><div class="ln"></div></div>'
   '<div id="optDecision"></div>'
   '<div class="obann">⚠️ CALLs directionnels uniquement · une option peut perdre <b>100% de sa prime</b> · court terme = théta agressif · <b>analyse éducative, aucun ordre passé</b></div>'
   '<div id="optGloss" style="margin-top:24px"></div>',
@@ -10795,6 +10795,7 @@ PAGE_OPTIONS_LAB = _vpage('Options Lab',
     ".obann{background:transparent;border:0;border-top:1px solid rgba(255,255,255,.06);border-radius:0;padding:12px 2px 0;font-size:11px;color:#6b7280;margin-top:36px;line-height:1.55}.obann b{color:#8794AB;font-weight:700}"
     ".vstit{margin-top:32px!important;letter-spacing:.35px}"
     ".ochap{display:flex;align-items:flex-end;gap:14px;margin:52px 2px 18px}.ochap:first-of-type{margin-top:30px}.ochap .n{font-size:12px;font-weight:800;color:#454a57;letter-spacing:2px;padding-bottom:3px}.ochap .t{font-size:21px;font-weight:800;letter-spacing:-.4px;color:#f2f5fa;line-height:1.05}.ochap .s{font-size:11.5px;color:#6B7280;margin-top:3px}.ochap .ln{flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.08),transparent);margin-bottom:8px}"
+    ".ochsub{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#8794ab;margin:26px 2px 12px}"
     ".ochip{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);color:#C9D2E0;border-radius:999px;font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;letter-spacing:.1px}.ochip:hover{border-color:rgba(255,255,255,.2);color:#e8edf5}.ochip.on{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:#fff}"
     ".oai{font-size:13px;line-height:1.65;color:#c2cad6}.oai b{color:#e8edf5;font-weight:700}"
     ".opremium{background:linear-gradient(180deg,#14161c,#0f1116);border:1px solid rgba(255,255,255,.1);border-radius:20px;transition:border-color .18s}.opremium:hover{border-color:rgba(255,255,255,.16)}"
