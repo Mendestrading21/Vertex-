@@ -203,20 +203,28 @@ def get(sym, demo=False, allow_fetch=True, brief=False):
     if e:
         base.update({k: v for k, v in e.items() if v is not None})
 
-    # ── explication métier : résumé FR + vend/gagne/clients/moat (IA optionnelle, cache disque) ──
-    if brief and base.get('summary') and not demo and not base.get('sells'):
+    # ── explication métier : résumé FR (traduit 1×) + vend/gagne/clients/moat (IA si clé) ──
+    if brief and base.get('summary') and not demo:
         try:
             from elio import ai as _ai
-            fr = _ai.fr_desc(sym, base['summary'])
-            bd = _ai.company_brief(sym, base['summary']) or {}
-            if fr:
-                base['summary'] = fr
-            for k_src, k_dst in (('sells', 'sells'), ('earns', 'model'),
-                                 ('clients', 'clients'), ('moat', 'moat')):
-                if bd.get(k_src) and not base.get(k_dst):
-                    base[k_dst] = bd[k_src]
-            if (bd or fr) and e is not None:                 # persiste l'enrichissement
-                for kk in ('summary', 'sells', 'model', 'clients', 'moat'):
+            if not base.get('summary_fr'):               # traduit une seule fois (IA→Google→EN)
+                fr = _ai.fr_desc(sym, base['summary'])
+                if fr:
+                    base['summary'] = fr
+                base['summary_fr'] = True
+            # libellé d'industrie (yfinance = anglais) → FR ; les titres curés sont déjà FR
+            if base.get('activity') and not base.get('activity_fr') and not cur.get('activity'):
+                base['activity'] = _ai.fr_label(base['activity'])
+                base['activity_fr'] = True
+            if not base.get('sells'):                    # vend/gagne/clients/moat : IA seulement
+                bd = _ai.company_brief(sym, base['summary']) or {}
+                for k_src, k_dst in (('sells', 'sells'), ('earns', 'model'),
+                                     ('clients', 'clients'), ('moat', 'moat')):
+                    if bd.get(k_src) and not base.get(k_dst):
+                        base[k_dst] = bd[k_src]
+            if e is not None:                            # persiste l'enrichissement sur disque
+                for kk in ('summary', 'summary_fr', 'activity', 'activity_fr',
+                           'sells', 'model', 'clients', 'moat'):
                     if base.get(kk) is not None:
                         e[kk] = base[kk]
                 cache[sym] = e

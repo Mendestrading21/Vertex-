@@ -103,29 +103,66 @@ def company_brief(sym, summary):
         return {}
 
 
+def _google_fr(text):
+    """Traduction EN→FR GRATUITE via l'endpoint public Google (aucune clé requise).
+    Découpe en segments (~4500 car.) et recolle la réponse. None si échec réseau."""
+    if not text:
+        return None
+    try:
+        import requests
+        out = []
+        for chunk in [text[i:i + 4500] for i in range(0, len(text), 4500)]:
+            r = requests.get('https://translate.googleapis.com/translate_a/single',
+                             params={'client': 'gtx', 'sl': 'en', 'tl': 'fr', 'dt': 't', 'q': chunk},
+                             timeout=8, headers={'User-Agent': 'Mozilla/5.0'})
+            r.raise_for_status()
+            data = r.json()
+            out.append(''.join(seg[0] for seg in (data[0] or []) if seg and seg[0]))
+        fr = ''.join(out).strip()
+        return fr or None
+    except Exception:
+        return None
+
+
+def fr_label(text):
+    """Traduit un court libellé EN→FR (secteur / industrie) via Google gratuit. Caché."""
+    if not text:
+        return text
+    key = 'lbl:' + text
+    if key in _cache:
+        return _cache[key]
+    fr = _google_fr(text) or text
+    _cache[key] = fr
+    return fr
+
+
 def fr_desc(sym, summary):
     """Traduit une description d'entreprise (longBusinessSummary) en français.
-    Cache par contenu ; fallback = texte d'origine si pas de clé / erreur."""
+    Ordre : IA Anthropic (si clé, meilleure qualité) → Google Translate gratuit →
+    texte d'origine. Cache par contenu."""
     if not summary:
         return summary
     key = 'desc:' + hashlib.md5((sym + summary).encode('utf-8', 'ignore')).hexdigest()
     if key in _cache:
         return _cache[key]
-    if not available():
-        return summary
-    try:
-        client = Anthropic()
-        prompt = (
-            f"Traduis en français clair et naturel cette description de l'activité de "
-            f"l'entreprise {sym} (vocabulaire économique, fidèle, sans ajouter d'info). "
-            f"Réponds UNIQUEMENT par la traduction, sans guillemets ni préambule.\n\n{summary}"
-        )
-        msg = client.messages.create(model=MODEL, max_tokens=600,
-                                     messages=[{'role': 'user', 'content': prompt}])
-        fr = (msg.content[0].text or '').strip()
-        if fr:
-            _cache[key] = fr
-            return fr
-    except Exception:
-        pass
+    if available():
+        try:
+            client = Anthropic()
+            prompt = (
+                f"Traduis en français clair et naturel cette description de l'activité de "
+                f"l'entreprise {sym} (vocabulaire économique, fidèle, sans ajouter d'info). "
+                f"Réponds UNIQUEMENT par la traduction, sans guillemets ni préambule.\n\n{summary}"
+            )
+            msg = client.messages.create(model=MODEL, max_tokens=600,
+                                         messages=[{'role': 'user', 'content': prompt}])
+            fr = (msg.content[0].text or '').strip()
+            if fr:
+                _cache[key] = fr
+                return fr
+        except Exception:
+            pass
+    fr = _google_fr(summary)                  # fallback gratuit sans clé
+    if fr:
+        _cache[key] = fr
+        return fr
     return summary
