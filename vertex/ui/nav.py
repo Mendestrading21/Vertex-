@@ -17,6 +17,7 @@ ITEMS = [
     ('/catalysts',   '📅', 'Market Calendar'),
     ('/anomalies',   '📡', 'Market Signals'),
     ('/settings',    '⚙️', 'Settings'),
+    ('/vault',       '🗄️', 'Archive Vault'),
 ]
 # Retirés de la sidebar (routes toujours actives) : /suivi (Watchlist — accessible
 # depuis le Desk) et /bordel (Intelligence — accessible par URL directe).

@@ -48,6 +48,7 @@ from vertex.ui import options_lab as _olab_ui
 from vertex.ui import journal as _tj_ui
 from vertex.ui import home_art as _home_art
 from vertex.ui import signals as _sg_ui
+from vertex.ui import vault as _av_ui
 from vertex.engines import indicators as _indicators
 from vertex.engines import analysis as _analysis
 from vertex.engines import backtest as _backtest
@@ -7005,6 +7006,9 @@ def settings_page():
 # ── MARKET SIGNALS — refonte : vertex/ui/signals.py (Ch. IV/XI) ──
 PAGE_ANOMALIES = _vpage('Signaux', _sg_ui.BODY, head=_sg_ui.CSS, js=_sg_ui.JS)
 
+# ── ARCHIVE VAULT — coffre-fort interne : vertex/ui/vault.py ──
+PAGE_VAULT = _vpage('Archive Vault', _av_ui.BODY, head=_av_ui.CSS, js=_av_ui.JS)
+
 
 _SECT_JS = r"""
 function sQuadrant(gs){var el=document.getElementById('sQuad');if(!el)return;
@@ -7498,8 +7502,8 @@ _SUIVI_JS = r"""
 var ROWS={},DET={},MK={};
 function rGet(){try{return JSON.parse(localStorage.getItem('myRecos')||'[]')}catch(e){return[]}}
 function rSet(a){localStorage.setItem('myRecos',JSON.stringify(a));localStorage.setItem('deskTs',String(Date.now()));sSyncPush();}
-var _sT;function sSyncPush(){clearTimeout(_sT);_sT=setTimeout(function(){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){var data=(d&&d.data)||{};['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog'].forEach(function(k){var v=localStorage.getItem(k);if(v!=null)data[k]=v;});fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:Date.now(),data:data})});}).catch(function(){});}catch(e){}},900);}
-function sSyncPull(cb){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){if(d&&d.data){var lt=parseFloat(localStorage.getItem('deskTs')||'0');if((d.ts||0)>lt){['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog'].forEach(function(k){if(d.data[k]!=null)localStorage.setItem(k,d.data[k]);});localStorage.setItem('deskTs',String(d.ts||Date.now()));}}if(cb)cb();}).catch(function(){if(cb)cb();});}catch(e){if(cb)cb();}}
+var _sT;function sSyncPush(){clearTimeout(_sT);_sT=setTimeout(function(){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){var data=(d&&d.data)||{};['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault'].forEach(function(k){var v=localStorage.getItem(k);if(v!=null)data[k]=v;});fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:Date.now(),data:data})});}).catch(function(){});}catch(e){}},900);}
+function sSyncPull(cb){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){if(d&&d.data){var lt=parseFloat(localStorage.getItem('deskTs')||'0');if((d.ts||0)>lt){['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault'].forEach(function(k){if(d.data[k]!=null)localStorage.setItem(k,d.data[k]);});localStorage.setItem('deskTs',String(d.ts||Date.now()));}}if(cb)cb();}).catch(function(){if(cb)cb();});}catch(e){if(cb)cb();}}
 function today(){return new Date().toISOString().slice(0,10);}
 function bestReco(key){var rs=Object.keys(ROWS).map(function(k){return ROWS[k];});
   var buys=rs.filter(function(r){return r.verdict==='BUY'&&r[key]!=null;});
@@ -7616,6 +7620,12 @@ def suivi_page():
 @app.route('/anomalies')
 def anomalies_page():
     return PAGE_ANOMALIES
+
+
+@app.route('/vault')
+@app.route('/archive')
+def vault_page():
+    return PAGE_VAULT
 
 
 _HEATMAP_JS = r"""
@@ -8698,7 +8708,7 @@ function sTable(a){
 
 _TRADES_JS = r"""
 /* ===== ☁️ SYNC DESK : mêmes trades/journal/favoris sur PC ET iPhone (stockés côté serveur) ===== */
-var __deskT=null,__DESK_KEYS=['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog'];
+var __deskT=null,__DESK_KEYS=['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault'];
 function deskCollect(){var d={};__DESK_KEYS.forEach(function(k){var v=localStorage.getItem(k);if(v!=null)d[k]=v;});return d;}
 function deskPush(){var body={ts:Date.now(),data:deskCollect()};localStorage.setItem('deskTs',String(body.ts));
   fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})

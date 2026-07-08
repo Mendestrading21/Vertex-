@@ -59,7 +59,7 @@ def test_desk_sync_keys_single_source_of_truth():
     """Toutes les listes de clés de sync (desk, journal, watchlist) sont identiques."""
     full = ("['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed',"
             "'myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes',"
-            "'vxJournal','myTradeLog']")
+            "'vxJournal','myTradeLog','vxVault']")
     src = open('terminal.py', encoding='utf-8').read()
     assert full in journal.JS                       # journal
     assert src.count(full) >= 3                     # desk (__DESK_KEYS) + suivi push/pull
