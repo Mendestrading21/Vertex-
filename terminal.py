@@ -2524,6 +2524,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <!-- ═══ MARKET HEALTH + ROTATION (Phase 4) ═══ -->
   <div id="ovHealth" style="margin:14px 0"></div>
   <div id="ovRotation" style="margin:14px 0"></div>
+  <!-- ═══ FLUX + OPTIONS + WATCHLIST (Phase 5) ═══ -->
+  <div id="ovFlows" style="margin:14px 0"></div>
+  <div id="ovOptions" style="margin:14px 0"></div>
+  <div id="ovWatch" style="margin:14px 0"></div>
   <div id="dMyDesk"></div>
   <!-- ═══ MORNING BRIEF (refonte homepage) — rendu par le script mb() en bas de page ═══ -->
   <div id="mbHome"></div>
@@ -6118,7 +6122,40 @@ _OV_EXTRA_JS = r"""<script>(function(){
     el.innerHTML='<div class="vstit">🔄 ROTATION SECTORIELLE <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· 9 secteurs · triés par score Vertex · perf · momentum(RS) · flux</span></div>'
      +'<div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 18px">'
      +'<div style="font-size:11px;color:#8794ab;margin-bottom:4px">▲ Les capitaux favorisent <b style="color:#22C55E">'+(lead.icon?lead.icon+' ':'')+lead.sector+'</b> (score '+lead.avg_score+') et délaissent <b style="color:#EF4444">'+(lag.icon?lag.icon+' ':'')+lag.sector+'</b> (score '+lag.avg_score+').</div>'+rows+'</div>';}
-  function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){try{renderHero(d);}catch(e){}try{renderConviction(d);}catch(e){}try{renderTop5(d);}catch(e){}try{renderHealth(d);}catch(e){}try{renderRotation(d);}catch(e){}try{renderMkt(d);}catch(e){}try{renderSynth(d);}catch(e){}try{renderPal(d);}catch(e){}}).catch(function(){});}
+  // ═══ FLUX INHABITUELS — anomalies reelles (remplace 'flux institutionnels' faute de donnee) ═══
+  function renderFlows(d){var el=document.getElementById('ovFlows');if(!el)return;var an=d.anomalies||[];if(!an.length){el.innerHTML='';return;}
+    var G=[['BREAKOUT_52W','🚀 Cassures 52 sem.','#22C55E'],['MA20_RECLAIM','↩️ Reprise MM20','#38BDF8'],['OUTSIZED_MOVE','⚡ Mouvements hors-norme','#F5B45B'],['OVEREXTENSION','🔥 Sur-extension','#EF4444'],['RSI_DIVERGENCE','📉 Divergence RSI','#A78BFA'],['RS_DIVERGENCE','📊 Divergence RS','#A78BFA'],['VOL_DRY_UP','🤫 Volume qui s\'assèche','#8794ab']];
+    var cards=G.map(function(g){var it=an.filter(function(a){return a.code===g[0];}).sort(function(a,b){return (b.score_anom||0)-(a.score_anom||0);});if(!it.length)return '';
+      var chips=it.slice(0,8).map(function(a){var dc=a.dir==='UP'?'#22C55E':a.dir==='DOWN'?'#EF4444':'#8794ab';return '<span onclick="event.stopPropagation();location.href=\'/titre/'+a.symbol+'\'" style="font-size:11px;font-weight:800;color:'+dc+';background:'+dc+'14;border:1px solid '+dc+'33;border-radius:8px;padding:2px 8px;cursor:pointer">'+a.symbol+'</span>';}).join(' ');
+      return '<div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 16px"><div style="font-size:12px;font-weight:800;color:'+g[2]+'">'+g[1]+' <span style="color:#8794ab;font-weight:600">· '+it.length+'</span></div><div style="font-size:10.5px;color:#8794ab;line-height:1.4;margin:6px 0 10px">'+((it[0].interest||'').slice(0,120))+'</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+chips+'</div></div>';}).filter(Boolean).join('');
+    el.innerHTML='<div class="vstit">📡 FLUX INHABITUELS <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· activité anormale détectée · cassures · mouvements · divergences · volume · '+an.length+' signaux</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">'+cards+'</div>';}
+  // ═══ OPTIONS DU JOUR — meilleur CALL & PUT ═══
+  function optCard(o){if(!o)return '';var c=o.type==='CALL'?'#22C55E':'#EF4444';
+    function st(l,v){return '<div><div style="font-size:8.5px;font-weight:800;text-transform:uppercase;color:#8794ab">'+l+'</div><div style="font-size:14px;font-weight:800;margin-top:2px">'+v+'</div></div>';}
+    var why='Qualité '+(o.grade||'?')+' ('+(o.quality!=null?o.quality:'—')+'/100) · POP '+(o.pop!=null?o.pop+'%':'—')+(o.pot!=null?(' · potentiel +'+o.pot+'%'):'')+(o.danger?(' · risque '+(''+o.danger).toLowerCase()):'')+'.';
+    return '<div onclick="location.href=\'/titre/'+o.sym+'\'" style="background:#111318;border:1px solid '+c+'33;border-left:2px solid '+c+';border-radius:16px;padding:16px 18px;cursor:pointer">'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:18px">'+o.sym+'</b><span style="font-size:10px;font-weight:800;color:'+c+';background:'+c+'18;border:1px solid '+c+'44;border-radius:8px;padding:2px 8px">'+o.type+' $'+o.strike+'</span><span style="font-size:11px;color:#8794ab">'+o.dte+'j</span><span style="margin-left:auto;font-size:11px;font-weight:800;color:#F5B45B">Grade '+(o.grade||'—')+'</span></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px">'+st('POP',(o.pop!=null?o.pop+'%':'—'))+st('IV',(o.iv!=null?o.iv+'%':'—'))+st('Move att.',(o.em_pct!=null?'±'+o.em_pct+'%':'—'))+st('Delta',(o.delta!=null?o.delta:'—'))+st('Theta',(o.theta!=null?o.theta+'/j':'—'))+st('Potentiel',(o.pot!=null?'+'+o.pot+'%':'—'))+'</div>'
+      +'<div style="font-size:11px;color:#8794ab;margin-top:12px;line-height:1.4">'+(o.be!=null?('Point mort $'+o.be+' · '):'')+(o.cost!=null?('coût ~$'+o.cost+'. '):'')+why+'</div></div>';}
+  function renderOptions(d){var el=document.getElementById('ovOptions');if(!el)return;var ob=d.options_board||[];if(!ob.length){el.innerHTML='';return;}
+    var calls=ob.filter(function(o){return o.type==='CALL';}).sort(function(a,b){return (b.quality||0)-(a.quality||0);});
+    var puts=ob.filter(function(o){return o.type==='PUT';}).sort(function(a,b){return (b.quality||0)-(a.quality||0);});
+    el.innerHTML='<div class="vstit">⚡ OPTIONS DU JOUR <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· meilleur CALL &amp; PUT · POP · IV · move attendu · greeks · pourquoi</span></div><div class="cvgrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+optCard(calls[0])+optCard(puts[0]||calls[1])+'</div>';}
+  // ═══ WATCHLIST PREMIUM — 3 meilleures idees par style ═══
+  function renderWatch(d){var el=document.getElementById('ovWatch');if(!el)return;var rows=d.rows||[],det=d.detail||{},ob=d.options_board||[];if(!rows.length){el.innerHTML='';return;}
+    function pick(f,key,n){var a=rows.filter(f);a.sort(function(x,y){return (y[key]||0)-(x[key]||0);});return a.slice(0,n||3);}
+    function card(title,items,meta){if(!items||!items.length)return '';var r2=items.map(function(r){return '<div onclick="location.href=\'/titre/'+r.symbol+'\'" style="display:flex;align-items:center;gap:8px;padding:6px 2px;cursor:pointer;border-top:1px solid rgba(255,255,255,.05)"><b style="font-size:13px">'+r.symbol+'</b><span style="font-size:10px;color:#F5B45B">'+(r.grade||'')+'</span><span style="margin-left:auto;font-size:10.5px;color:#8794ab">'+meta(r)+'</span><span style="font-size:12px;font-weight:800;color:#22C55E;margin-left:8px">'+(r.score!=null?r.score:'')+'</span></div>';}).join('');
+      return '<div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 16px"><div style="font-size:12px;font-weight:800;color:#f2f5fa;margin-bottom:4px">'+title+'</div>'+r2+'</div>';}
+    var cards=[card('🚀 Top Momentum',pick(function(r){return r.rs!=null&&r.verdict==='BUY';},'rs',3),function(r){return 'RS '+r.rs;}),
+      card('📈 Top Breakout',pick(function(r){return (r.pos52||0)>=95;},'score',3),function(r){return r.pos52+'% du haut 52s';}),
+      card('↩️ Top Rebond',pick(function(r){return r.pullback&&r.verdict==='BUY';},'score',3),function(r){return 'repli · RS '+(r.rs!=null?r.rs:'—');}),
+      card('🏦 Top Accumulation',pick(function(r){return r.accumulation&&r.verdict==='BUY';},'score',3),function(r){return 'accumulation';}),
+      card('🎯 Top Swing',pick(function(r){return (det[r.symbol]||{}).regime==='TREND'&&r.verdict==='BUY';},'setup_quality',3),function(r){return 'qualité '+(r.setup_quality!=null?r.setup_quality:'—');})].filter(Boolean);
+    var topOpts=ob.slice().sort(function(a,b){return (b.quality||0)-(a.quality||0);}).slice(0,3);
+    if(topOpts.length){var orows=topOpts.map(function(o){var cc=o.type==='CALL'?'#22C55E':'#EF4444';return '<div onclick="location.href=\'/titre/'+o.sym+'\'" style="display:flex;align-items:center;gap:8px;padding:6px 2px;cursor:pointer;border-top:1px solid rgba(255,255,255,.05)"><b style="font-size:13px">'+o.sym+'</b><span style="font-size:10px;color:'+cc+'">'+o.type+' $'+o.strike+'</span><span style="margin-left:auto;font-size:10.5px;color:#8794ab">POP '+o.pop+'%</span><span style="font-size:12px;font-weight:800;color:#F5B45B;margin-left:8px">'+(o.grade||'')+'</span></div>';}).join('');
+      cards.push('<div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 16px"><div style="font-size:12px;font-weight:800;color:#f2f5fa;margin-bottom:4px">⚡ Top Options</div>'+orows+'</div>');}
+    el.innerHTML='<div class="vstit">⭐ WATCHLIST PREMIUM <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· les 3 meilleures idées par style · momentum · breakout · rebond · accumulation · swing · options</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">'+cards.join('')+'</div>';}
+  function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){try{renderHero(d);}catch(e){}try{renderConviction(d);}catch(e){}try{renderTop5(d);}catch(e){}try{renderHealth(d);}catch(e){}try{renderRotation(d);}catch(e){}try{renderFlows(d);}catch(e){}try{renderOptions(d);}catch(e){}try{renderWatch(d);}catch(e){}try{renderMkt(d);}catch(e){}try{renderSynth(d);}catch(e){}try{renderPal(d);}catch(e){}}).catch(function(){});}
   load();setInterval(load,30000);
 })();</script>"""
 PAGE_DAILY = PAGE_DAILY.replace('</body>', _OV_EXTRA_JS + '</body>', 1)
