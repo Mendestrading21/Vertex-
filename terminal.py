@@ -1784,6 +1784,18 @@ def api_company(sym):
         return jsonify({'error': f'{type(e).__name__}: {e}'})
 
 
+@app.route('/api/names')
+def api_names():
+    """{ticker: nom d'entreprise} depuis le cache — pour afficher les noms dans Stock info
+    (lecture seule, instantané, aucun fetch réseau)."""
+    try:
+        cache = _company._load()
+        return jsonify({k: v.get('name') for k, v in cache.items()
+                        if isinstance(v, dict) and v.get('name')})
+    except Exception:
+        return jsonify({})
+
+
 # ─── ENDPOINTS D'ANALYSE (Blueprint) — /api/vertex · /api/validator · /api/risk ───
 app.register_blueprint(_analysis_api.bp)
 
@@ -9809,10 +9821,12 @@ function stkCard(r){var chg=r.change,ccol=chg==null?'#8794ab':chg>=0?'#22C55E':'
     +(r.sector?'<div style="font-size:9px;color:#6b7280;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+r.sector+'</div>':'')+'</div>';}
 function stkRender(list){var g=document.getElementById('stkGrid');if(!g)return;var c=document.getElementById('stkCount');if(c)c.textContent=list.length;g.innerHTML=list.length?list.map(stkCard).join(''):'<div class="muted" style="grid-column:1/-1;padding:24px;text-align:center">Aucun titre ne correspond.</div>';}
 window.stkFilter=function(q){q=(q||'').trim().toUpperCase();var l=q?STK.filter(function(r){return r.symbol.indexOf(q)>=0||(r.sector||'').toUpperCase().indexOf(q)>=0||(r.name||'').toUpperCase().indexOf(q)>=0;}):STK;stkRender(l);};
+var NAMES={};
 function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){var det=d.detail||{};
-  STK=(d.rows||[]).map(function(r){var x=det[r.symbol]||{};return {symbol:r.symbol,name:r.name||x.name||null,price:r.price,change:(typeof r.change==='number'?r.change:null),score:(r.score!=null?r.score:x.score),grade:r.grade||x.grade,verdict:r.verdict||x.verdict,sector:r.sector||x.sector,rs:r.rs,pos52:r.pos52,rvol:r.rvol,perf_w:r.perf_w,reco:(r.vehicle&&r.vehicle.reco)||null};}).sort(function(a,b){return (b.score||0)-(a.score||0);});
+  STK=(d.rows||[]).map(function(r){var x=det[r.symbol]||{};return {symbol:r.symbol,name:r.name||x.name||NAMES[r.symbol]||null,price:r.price,change:(typeof r.change==='number'?r.change:null),score:(r.score!=null?r.score:x.score),grade:r.grade||x.grade,verdict:r.verdict||x.verdict,sector:r.sector||x.sector,rs:r.rs,pos52:r.pos52,rvol:r.rvol,perf_w:r.perf_w,reco:(r.vehicle&&r.vehicle.reco)||null};}).sort(function(a,b){return (b.score||0)-(a.score||0);});
   var q=(document.getElementById('stkSearch')||{}).value||'';window.stkFilter(q);}).catch(function(){});}
-load();setInterval(load,30000);
+fetch('/api/names').then(function(r){return r.json();}).then(function(nm){NAMES=nm||{};load();}).catch(function(){load();});
+setInterval(load,30000);
 """
 PAGE_STOCKS = _vpage('Stock info',
   '<div class="vhead"><div><h1>🔍 Stock info</h1><div class="s">Toutes les entreprises analysées · <b id="stkCount">…</b> titres · verdict · grade · RS · position 52 sem. · RVOL · perf · clic → fiche détaillée</div></div></div>'
