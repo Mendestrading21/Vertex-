@@ -29,6 +29,8 @@ except Exception:  # pragma: no cover
 _ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 _CACHE = os.path.join(_ROOT, 'company_cache.json')
 _WEEK = 7 * 24 * 3600
+_SCHEMA_V = 3   # version du schéma de cache — bump quand on AJOUTE des champs (analystes, etc.)
+                # → les entrées d'une version antérieure sont re-récupérées automatiquement
 
 # ─── Segments de revenus (curés — % approximatifs du CA, ordre décroissant) ───
 REVENUE_SEGMENTS = {
@@ -184,13 +186,15 @@ def get(sym, demo=False, allow_fetch=True, brief=False):
     sym = (sym or '').upper()
     cache = _load()
     e = cache.get(sym)
-    fresh = bool(e) and (time.time() - (e.get('ts') or 0) < _WEEK)
+    # « frais » = récent ET du schéma courant (une version antérieure force le re-fetch)
+    fresh = bool(e) and (time.time() - (e.get('ts') or 0) < _WEEK) and e.get('_v') == _SCHEMA_V
 
     if not fresh and allow_fetch and not demo:
         try:
             prof = _fetch_profile(sym)
             if prof.get('name') or prof.get('employees'):
-                e = {'ts': time.time(), **{k: v for k, v in prof.items() if v is not None}}
+                e = {'ts': time.time(), '_v': _SCHEMA_V,
+                     **{k: v for k, v in prof.items() if v is not None}}
                 cache[sym] = e
                 _save(cache)
                 fresh = True

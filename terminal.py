@@ -1902,8 +1902,8 @@ def api_portefeuille():
 # cache sur disque (descriptions statiques) → 1 seul appel par titre, jamais re-fetché.
 _DESC_PATH = os.path.join(os.path.dirname(__file__), 'desc_cache.json')
 try:
-    with open(_DESC_PATH, 'r', encoding='utf-8') as _f:
-        _desc_cache = json.load(_f)
+    with open(_DESC_PATH, 'r', encoding='utf-8') as _fh:
+        _desc_cache = json.load(_fh)
 except Exception:
     _desc_cache = {}
 _desc_lock = threading.Lock()
@@ -1959,8 +1959,8 @@ def desc_ep(sym):
         with _desc_lock:
             _desc_cache[sym] = out
             try:
-                with open(_DESC_PATH, 'w', encoding='utf-8') as _f:
-                    json.dump(_desc_cache, _f)
+                with open(_DESC_PATH, 'w', encoding='utf-8') as _fh:
+                    json.dump(_desc_cache, _fh)
             except Exception:
                 pass
     return jsonify(out)
