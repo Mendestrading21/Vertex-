@@ -13,9 +13,9 @@ avant la suivante.
 | # | Phase | Objectif | État |
 |---|---|---|---|
 | 0 | **Fondation** | Extraire univers/constantes/config, statut système, tests sûreté, CI, docs | ✅ **fait** (branche `foundation/vertex-institutional-refactor`) |
-| 1 | **Architecture** | Package `vertex/`, factory Flask, routes découpées, ré-export des moteurs `elio` | à venir |
-| 2 | **Backend/Services** | `services/` (scanner, market_data, ibkr, options, cache, universe, news, status) | à venir |
-| 3 | **Decision Stack** | Moteur unifié 14 couches → décision explicable + audit trail | à venir |
+| 1 | **Architecture** | Package `vertex/`, factory Flask, routes découpées, ré-export des moteurs `elio` | **en cours** — 8 Blueprints extraits (decision, analysis, feeds, system, content, auth, desk, command) |
+| 2 | **Backend/Services** | `services/` (scanner, market_data, ibkr, options, cache, universe, news, status) | **en cours** — status, market_clock, persist |
+| 3 | **Decision Stack** | Moteur unifié 14 couches → décision explicable + audit trail | **en cours** — `vertex/engines/decision_stack.py` + comité |
 | 4 | **Scoring** | Sous-scores nommés/bornés/documentés/tracés dans l'UI | à venir |
 | 5 | **Risk Manager** | Chaleur portefeuille, corrélation, NO_NEW_RISK, sizing | à venir |
 | 6 | **Options Desk** | Table institutionnelle, IV rank, liquidité, danger, décision véhicule | à venir |
