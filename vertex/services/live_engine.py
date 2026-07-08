@@ -25,6 +25,7 @@ il ne transmet jamais d'ordre.
 """
 
 import os
+import threading
 import time
 
 # câblé par terminal.py au démarrage (configure) — aucune importation circulaire
@@ -34,6 +35,25 @@ _CFG = {
     'ibkr_enabled': False, 'demo': False,
 }
 _LAST_REPORT = {'ts': None, 'requested': [], 'lines': []}
+_FORCE = {}                                   # domaine -> threading.Event (forçage de cycle)
+
+
+def force_event(domain):
+    """L'événement de forçage d'un domaine (créé au premier accès)."""
+    ev = _FORCE.get(domain)
+    if ev is None:
+        ev = _FORCE[domain] = threading.Event()
+    return ev
+
+
+def wait_force(domain, timeout):
+    """Attente interruptible pour les boucles : dort `timeout` s OU se réveille
+    immédiatement si le Sync Center force le domaine. Renvoie True si forcé."""
+    ev = force_event(domain)
+    forced = ev.wait(timeout)
+    if forced:
+        ev.clear()
+    return forced
 
 # seuils de fraîcheur par domaine (secondes) : (frais, rassis) — au-delà : hors ligne
 _THRESH = {
@@ -203,9 +223,18 @@ def refresh(domains=None):
         elif k == 'options':
             action = ('relancé avec le scan (démo)' if _CFG['demo']
                       else 'planifié au prochain cycle options (≤5 min, chaînes réelles)')
-        elif k in ('news', 'calendar'):
-            action = ('indisponible en démo (aucun réseau)' if _CFG['demo']
-                      else 'planifié au prochain cycle (boucle dédiée)')
+        elif k == 'news':
+            if _CFG['demo']:
+                action = 'indisponible en démo (aucun réseau)'
+            else:
+                force_event('news').set()
+                action = 'cycle forcé — nouvelles fraîches sous ≈60 s'
+        elif k == 'calendar':
+            if _CFG['demo']:
+                action = 'indisponible en démo (aucun réseau)'
+            else:
+                force_event('calendar').set()
+                action = 'cycle forcé — la boucle earnings se réveille immédiatement'
         else:
             action = 'cache hebdo — se régénère à l\'ouverture des fiches'
         lines.append({'domain': k, 'icon': d['icon'], 'label': d['label'],
@@ -220,4 +249,5 @@ def report():
     return _LAST_REPORT
 
 
-__all__ = ['configure', 'status', 'refresh', 'report', 'mode', 'calculate_freshness']
+__all__ = ['configure', 'status', 'refresh', 'report', 'mode', 'calculate_freshness',
+           'force_event', 'wait_force']

@@ -103,3 +103,64 @@ def test_sync_center_features():
                    'Sync Center', 'Live Mode', 'Rapport de synchronisation',
                    'LIVE', 'DELAYED', 'DÉMO', 'OFFLINE'):
         assert marker in sync_center.JS, marker
+
+
+# ─── Connexions données réelles : forçage de cycle, recherche news, chiffres ───
+
+def test_force_event_wakes_loops():
+    ev = live_engine.force_event('calendar')
+    ev.clear()
+    assert live_engine.wait_force('calendar', 0.01) is False   # timeout sans forçage
+    live_engine.force_event('calendar').set()
+    assert live_engine.wait_force('calendar', 5) is True       # réveil immédiat
+    assert not live_engine.force_event('calendar').is_set()    # nettoyé après réveil
+
+
+def test_partial_refresh_forces_real_cycles_outside_demo():
+    _wire(scan={'scan_ts': time.time()}, demo=False, ibkr=False)
+    live_engine.force_event('news').clear()
+    live_engine.force_event('calendar').clear()
+    out = live_engine.refresh(['news', 'calendar'])
+    acts = {l['domain']: l['action'] for l in out['report']['lines']}
+    assert 'forcé' in acts['news'] and 'forcé' in acts['calendar']
+    assert live_engine.force_event('news').is_set()
+    assert live_engine.force_event('calendar').is_set()
+
+
+def test_news_feed_server_side_search():
+    import terminal
+    from vertex.app.state import news_state
+    saved = dict(news_state)
+    try:
+        news_state['items'] = [
+            {'sym': 'NVDA', 'title': 'Nvidia beats estimates', 'fr': 'Nvidia dépasse les attentes'},
+            {'sym': 'AAPL', 'title': 'Apple event', 'fr': 'Conférence Apple'},
+            {'sym': 'NVDA', 'title': 'Fed holds rates', 'fr': 'La Fed maintient ses taux'},
+        ]
+        c = terminal.app.test_client()
+        j = c.get('/news-feed?sym=NVDA').get_json()
+        assert len(j['items']) == 2 and j['filtered'] is True
+        j = c.get('/news-feed?q=fed').get_json()
+        assert len(j['items']) == 1 and 'Fed' in j['items'][0]['title']
+        j = c.get('/news-feed?sym=NVDA&q=attentes').get_json()
+        assert len(j['items']) == 1
+        j = c.get('/news-feed').get_json()
+        assert len(j['items']) == 3 and j['filtered'] is False
+    finally:
+        news_state.clear()
+        news_state.update(saved)
+
+
+def test_company_profile_enriched_fields():
+    src = open('vertex/data/company.py', encoding='utf-8').read()
+    for field in ('beta', 'ebitda', 'debt_to_ebitda', 'earnings_date'):
+        assert "'" + field + "'" in src, field
+    # exposés aussi dans la vue brève (fiche titre)
+    assert "'beta', 'ebitda', 'debt_to_ebitda', 'earnings_date'" in src
+
+
+def test_news_loop_follows_hot_scan_symbols():
+    src = open('terminal.py', encoding='utf-8').read()
+    assert 'NEWS_SYMS + hot' in src                      # socle + titres chauds du scan
+    assert "_live.wait_force('news', 60)" in src         # cycle interruptible
+    assert "_live.wait_force('calendar', 3 * 3600)" in src

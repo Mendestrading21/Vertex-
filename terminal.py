@@ -1069,7 +1069,15 @@ def _news_loop():
     while True:
         try:
             seen, feed = set(), []
-            for sym in NEWS_SYMS:
+            # couverture dynamique : le socle + les titres CHAUDS du scan (mouvement/volume)
+            hot = []
+            try:
+                rows_n = sorted((scan_state.get('rows') or []),
+                                key=lambda r: abs(r.get('change') or 0) + (r.get('rvol') or 0), reverse=True)
+                hot = [r['symbol'] for r in rows_n[:6] if r.get('symbol') not in NEWS_SYMS]
+            except Exception:
+                pass
+            for sym in NEWS_SYMS + hot:
                 try:
                     its = options.news_for(yf.Ticker(sym), n=4)
                     its, _ = ai.fr_news(sym, its)
@@ -1085,7 +1093,7 @@ def _news_loop():
             news_state['updated'] = datetime.now().strftime('%H:%M:%S')
         except Exception:
             pass
-        time.sleep(60)
+        _live.wait_force('news', 60)
 
 
 # ─── CALENDRIER EARNINGS : prochaines dates pour les 45 (rafraîchi /3h) ───
@@ -1122,7 +1130,7 @@ def _cal_loop():
                 items.sort(key=lambda x: x['dte'])
                 cal_state['items'] = items
                 cal_state['updated'] = datetime.now().strftime('%H:%M %d/%m')
-                time.sleep(3 * 3600)
+                _live.wait_force('calendar', 3 * 3600)   # interruptible : Sync Center peut forcer
             else:
                 time.sleep(10)
     while True:

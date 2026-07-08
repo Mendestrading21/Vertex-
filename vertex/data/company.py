@@ -164,7 +164,12 @@ def _fetch_profile(sym):
         'peg': info.get('pegRatio'), 'margin': info.get('profitMargins'),
         'roe': info.get('returnOnEquity'), 'rev_growth': info.get('revenueGrowth'),
         'eps_growth': info.get('earningsGrowth'), 'fcf': info.get('freeCashflow'),
-        'debt_to_ebitda': None, 'cash': info.get('totalCash'), 'debt': info.get('totalDebt'),
+        'debt_to_ebitda': (round(info['totalDebt'] / info['ebitda'], 2)
+                           if info.get('totalDebt') and info.get('ebitda') else None),
+        'ebitda': info.get('ebitda'), 'beta': info.get('beta'),
+        'earnings_date': (__import__('datetime').datetime.fromtimestamp(info['earningsTimestamp'])
+                          .strftime('%Y-%m-%d') if info.get('earningsTimestamp') else None),
+        'cash': info.get('totalCash'), 'debt': info.get('totalDebt'),
         'dividend': info.get('dividendYield'), 'mcap': info.get('marketCap'),
         # ── consensus analystes (type TipRanks — fourni par yfinance / IBKR) ──
         'rating': info.get('recommendationKey'), 'rating_mean': info.get('recommendationMean'),
@@ -258,7 +263,8 @@ def get(sym, demo=False, allow_fetch=True, brief=False):
         # fondamentaux lents (None si non fetché — l'UI affiche « — »)
         'fundamentals': {k: base.get(k) for k in
                          ('pe', 'forward_pe', 'peg', 'margin', 'roe', 'rev_growth',
-                          'eps_growth', 'fcf', 'cash', 'debt', 'dividend', 'mcap')},
+                          'eps_growth', 'fcf', 'cash', 'debt', 'dividend', 'mcap',
+                          'beta', 'ebitda', 'debt_to_ebitda', 'earnings_date')},
         'analysts': {k: base.get(k) for k in
                      ('rating', 'rating_mean', 'n_analysts', 'target_mean',
                       'target_high', 'target_low', 'target_median')},
