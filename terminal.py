@@ -2503,10 +2503,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </script></head><body>
 <div class="topbar"><span class="back" style="font-weight:800;letter-spacing:1px">🔺 VERTEX</span><span id="dLive" style="font-size:11px;margin-left:14px;color:#8794ab">· connexion…</span><span class="tick" id="dTick"></span></div>
 <div class="daily">
-  <div class="dhead">
+  <div class="dhead" style="padding-bottom:10px;border-bottom:none">
     <div>
-      <div class="ttl">🔺 VERTEX <span class="v">DASHBOARD</span></div>
-      <div class="sub">LEADERS US · S&P / NASDAQ / DOW · SCORÉS · CLASSÉS — TON COCKPIT QUOTIDIEN</div>
+      <div style="font-size:13px;font-weight:800;letter-spacing:1.4px;color:#8794ab">🔺 VERTEX</div>
     </div>
     <div class="meta">
       <span class="pill" id="dSpy">SPY $—</span>
@@ -2521,6 +2520,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <!-- ═══ CONVICTION DU JOUR + TOP 5 (Phase 2) — renderConviction()/renderTop5() sur /scan ═══ -->
   <div id="ovConviction" style="margin:14px 0"></div>
   <div id="ovTop5" style="margin:14px 0"></div>
+  <div id="ovMarket" style="margin:14px 0"></div>
   <!-- ═══ MARKET HEALTH + ROTATION (Phase 4) ═══ -->
   <div id="ovHealth" style="margin:14px 0"></div>
   <div id="ovRotation" style="margin:14px 0"></div>
@@ -2528,13 +2528,16 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <div id="ovFlows" style="margin:14px 0"></div>
   <div id="ovOptions" style="margin:14px 0"></div>
   <div id="ovWatch" style="margin:14px 0"></div>
+  <div id="ovPalmares" style="margin:14px 0"></div>
   <!-- ═══ LIVE FEED + AGENDA + RISQUES (Phase 6) ═══ -->
   <div id="ovFeed" style="margin:14px 0"></div>
   <div id="ovAgenda" style="margin:14px 0"></div>
   <div id="ovRisks" style="margin:14px 0"></div>
+  <!-- ═══ CONCLUSION VERTEX (Phase 7) ═══ -->
+  <div id="ovConclusion" style="margin:14px 0"></div>
   <div id="dMyDesk"></div>
-  <!-- ═══ MORNING BRIEF (refonte homepage) — rendu par le script mb() en bas de page ═══ -->
-  <div id="mbHome"></div>
+  <!-- ═══ ancien MORNING BRIEF masqué (Phase 7) : entièrement couvert par les sections ci-dessus ═══ -->
+  <div id="mbHome" style="display:none"></div>
   <div style="text-align:center;margin:6px 0 24px"><button type="button" onclick="var l=document.getElementById('mbLegacy');var o=l.style.display==='none';l.style.display=o?'block':'none';this.textContent=o?'▴  masquer le détail complet':'▾  afficher le détail complet (ancien tableau de bord)';" style="background:#0e1622;border:1px dashed #5BE3A855;border-radius:12px;color:#5BE3A8;font-weight:700;font-size:12px;cursor:pointer;letter-spacing:.4px;padding:10px 16px">▾  afficher le détail complet (ancien tableau de bord)</button></div>
   <div id="mbLegacy" style="display:none">
   <div class="stitle">🧭 VERDICT DU JOUR <span class="muted" style="font-weight:400;letter-spacing:0;font-size:11px">· le climat en un coup d'œil, avant tout le reste · <a href="/bordel" style="color:#FF7A18;text-decoration:none;font-weight:700">🧠 analyse marché complète sur Intel →</a></span></div>
@@ -5912,7 +5915,7 @@ _OV_EXTRA_JS = r"""<script>(function(){
       +'<div style="font-size:24px;font-weight:800;margin-top:8px;letter-spacing:-.5px;font-variant-numeric:tabular-nums;color:'+(valcol||'#e8edf5')+'">'+val+'</div>'
       +((chgTxt!=null&&chgTxt!=='')?'<div style="font-size:13px;font-weight:800;color:'+col+';margin-top:2px">'+(pos?'▲ ':'▼ ')+chgTxt+'</div>':'')
       +'</div>';}
-  function renderMkt(d){if(!mkt)return;var idx=d.indices||[],cs=d.commodities||[],ms=d.macro||[],mc=d.market_ctx||{};
+  function renderMkt(d){var mkt=document.getElementById('ovMarket');if(!mkt)return;var idx=d.indices||[],cs=d.commodities||[],ms=d.macro||[],mc=d.market_ctx||{};
     if(!idx.length&&!cs.length&&!ms.length){mkt.innerHTML='';return;}
     function sgn(v,suf,dec){if(v==null)return '';return (v>=0?'+':'')+(dec!=null?(+v).toFixed(dec):v)+(suf||'');}
     function row(name,val,chg,chgStr,sp){var pos=chg==null?null:chg>=0,col=pos==null?'#8794ab':pos?'#22C55E':'#EF4444';
@@ -5969,7 +5972,7 @@ _OV_EXTRA_JS = r"""<script>(function(){
     el.innerHTML='<div class="vstit">🧭 SYNTHÈSE DU JOUR</div>'
       +'<div style="background:linear-gradient(135deg,#14161c,#0f1116);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:16px 20px"><div style="font-size:15px;line-height:1.6;color:#c9d2e0">'+line1+'</div>'+tags+'</div>';}
   function perf(cl,n){if(!cl||cl.length<n+1)return null;var a=cl[cl.length-1-n],b=cl[cl.length-1];if(!a)return null;return (b-a)/a*100;}
-  function renderPal(d){if(!pal)return;var det=d.detail||{};
+  function renderPal(d){var pal=document.getElementById('ovPalmares');if(!pal)return;var det=d.detail||{};
     var arr=(d.rows||[]).map(function(r){var cl=((det[r.symbol]||{}).series||{}).close||[];return {symbol:r.symbol,price:r.price,d:(typeof r.change==='number'?r.change:null),m:perf(cl,21)};});
     var line=function(x,key,rank){var v=x[key];if(v==null)return '';var cur=(x.symbol.indexOf('.')>=0)?'':'$';var col=v>=0?'#22C55E':'#EF4444';
       return '<div onclick="location.href=\'/titre/'+x.symbol+'\'" style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:12px;cursor:pointer;transition:background .12s" onmouseover="this.style.background=\'rgba(255,255,255,.045)\'" onmouseout="this.style.background=\'transparent\'">'
@@ -6196,7 +6199,26 @@ _OV_EXTRA_JS = r"""<script>(function(){
       +'<div style="font-size:11.5px;color:#c3ccda;line-height:1.45;margin-top:6px">'+r[1]+'</div>'
       +'<div style="font-size:10px;color:#8794ab;margin-top:8px">Probabilité : <b style="color:#dfe6f2">'+r[3]+'</b> · Secteurs : <b style="color:#dfe6f2">'+r[4]+'</b></div></div>';}).join('');
     el.innerHTML='<div class="vstit">⚠️ RISQUES DU JOUR '+_muted('· dérivés de signaux réels · chaque risque justifié par sa source')+'</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">'+cards+'</div>';}
-  function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){try{renderHero(d);}catch(e){}try{renderConviction(d);}catch(e){}try{renderTop5(d);}catch(e){}try{renderHealth(d);}catch(e){}try{renderRotation(d);}catch(e){}try{renderFlows(d);}catch(e){}try{renderOptions(d);}catch(e){}try{renderWatch(d);}catch(e){}try{renderRisks(d);}catch(e){}try{renderMkt(d);}catch(e){}try{renderSynth(d);}catch(e){}try{renderPal(d);}catch(e){}}).catch(function(){});
+  // ═══ CONCLUSION VERTEX — synthese finale de la journee ═══
+  function renderConclusion(d){var el=document.getElementById('ovConclusion');if(!el)return;
+    var mc=d.market_ctx||{},tilt=d.strat_tilt||{},rows=d.rows||[],secs=d.sectors||[],ob=d.options_board||[];
+    var buys=rows.filter(function(r){return r.verdict==='BUY';}).sort(function(a,b){return (b.score||0)-(a.score||0);}),topA=buys[0];
+    var topO=ob.slice().sort(function(a,b){return (b.quality||0)-(a.quality||0);})[0];
+    var topSec=secs.slice().sort(function(a,b){return (b.avg_score||0)-(a.avg_score||0);})[0];
+    var vb=(mc.vix_band||'').toLowerCase(),risk=(vb.indexOf('lev')>=0||vb.indexOf('high')>=0)?'Élevé':(vb.indexOf('bas')>=0||vb.indexOf('low')>=0)?'Faible':'Modéré';
+    var dreg=tilt.regime||'NEUTRE',dcol=tilt.col||'#F5B45B';
+    var verdict=dreg==='OFFENSIF'?'Offensif':dreg==='DEFENSIF'?'Défensif':dreg==='NEUTRE'?'Sélectif · Neutre':dreg,conf=tilt.score;
+    var style=(tilt.emphasis&&tilt.emphasis.length)?tilt.emphasis.join(' · '):(dreg==='OFFENSIF'?'Momentum + levier':'Qualité + discipline');
+    var cap=dreg==='OFFENSIF'?'Exposition pleine possible':dreg==='DEFENSIF'?'Exposition réduite · priorité au cash':'Exposition modérée · taille réduite';
+    function K(l,v,c){return '<div style="min-width:0"><div style="font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#8794ab">'+l+'</div><div style="font-size:15px;font-weight:900;margin-top:4px;color:'+(c||'#f2f5fa')+';line-height:1.3">'+v+'</div></div>';}
+    var retenir='Marché '+verdict.toLowerCase()+' — '+(mc.roro==='RISK-OFF'?'reste sélectif et discipliné':'tu peux travailler tes meilleures idées')+(topA?(', et surveille <b style="color:#f2f5fa">'+topA.symbol+'</b> en priorité.'):'.');
+    el.innerHTML='<div class="vstit">🏁 CONCLUSION VERTEX <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· la synthèse de la journée</span></div>'
+     +'<div style="background:linear-gradient(135deg,'+dcol+'12,#0d0e12);border:1px solid '+dcol+'33;border-radius:20px;padding:24px 26px;box-shadow:0 16px 40px -26px rgba(0,0,0,.85)">'
+     +'<div style="font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#8794ab">Verdict du marché</div>'
+     +'<div style="font-size:30px;font-weight:900;letter-spacing:-.6px;color:'+dcol+';margin-top:4px">'+verdict+(conf!=null?(' <span style="font-size:15px;color:#8794ab">· confiance '+conf+'%</span>'):'')+'</div>'
+     +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-top:20px">'+K('Top action',topA?topA.symbol:'—','#F5B45B')+K('Top option',topO?(topO.sym+' '+(topO.type||'')):'—','#A78BFA')+K('Top secteur',topSec?((topSec.icon?topSec.icon+' ':'')+topSec.sector):'—')+K('Niveau de risque',risk,risk==='Élevé'?'#EF4444':risk==='Faible'?'#22C55E':'#F5B45B')+K('Capital conseillé',cap)+K('Style recommandé',style)+'</div>'
+     +'<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);font-size:14px;line-height:1.55;color:#dfe6f2"><b style="color:#f2f5fa">Si vous ne devez retenir qu\'une seule chose aujourd\'hui :</b> '+retenir+'</div></div>';}
+  function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){try{renderHero(d);}catch(e){}try{renderConviction(d);}catch(e){}try{renderTop5(d);}catch(e){}try{renderMkt(d);}catch(e){}try{renderHealth(d);}catch(e){}try{renderRotation(d);}catch(e){}try{renderFlows(d);}catch(e){}try{renderOptions(d);}catch(e){}try{renderWatch(d);}catch(e){}try{renderPal(d);}catch(e){}try{renderRisks(d);}catch(e){}try{renderConclusion(d);}catch(e){}}).catch(function(){});
     fetch('/news-feed').then(function(r){return r.json();}).then(function(n){try{renderFeed(n);}catch(e){}}).catch(function(){});
     fetch('/cal-feed').then(function(r){return r.json();}).then(function(c){try{renderAgenda(c);}catch(e){}}).catch(function(){});}
   load();setInterval(load,30000);
