@@ -32,10 +32,21 @@ def test_demo_universe_covers_all_tickers():
 def test_demo_options_board_is_synthetic_but_structured():
     rows = [{'symbol': 'AAPL', 'score': 85, 'price': 230}, {'symbol': 'MSFT', 'score': 70, 'price': 420}]
     board = demo.demo_options_board(rows, {'AAPL': {'rs': 75}, 'MSFT': {'rs': 55}})
-    assert board and all(c['type'] == 'CALL' for c in board)          # démo = CALL uniquement
+    types = {c['type'] for c in board}
+    assert board and types <= {'CALL', 'PUT'} and 'CALL' in types    # CALL + PUT (couverture)
     assert {c['bucket'] for c in board} == {'court', 'moyen', 'long'}
     for c in board:
         assert 20 <= c['quality'] <= 94 and c['cost'] > 0 and c['strike'] > 0
+        # liquidité synthétique présente — nourrit le cockpit Options Lab
+        assert c['oi'] > 0 and c['vol'] >= 0 and c['spread_pct'] > 0
+
+
+def test_demo_puts_target_weak_names_and_hedge_leaders():
+    rows = [{'symbol': 'AAA', 'score': 90, 'price': 100}, {'symbol': 'ZZZ', 'score': 25, 'price': 50}]
+    board = demo.demo_options_board(rows, {})
+    put_syms = {c['sym'] for c in board if c['type'] == 'PUT'}
+    assert 'ZZZ' in put_syms                     # pari baissier sur le titre faible
+    assert 'AAA' in put_syms                     # couverture sur le leader
 
 
 def test_terminal_bindings_are_the_module():

@@ -52,46 +52,68 @@ def _demo_universe(tickers):
 
 
 def _demo_options_board(rows, detail):
-    """Board d'options CALL synthétique (mode VITRINE) — crédible mais FICTIF.
-    Génère 3 échéances (court/moyen/long) pour les meilleurs titres scannés,
-    afin que la page Options Lab ne soit pas vide en démo."""
+    """Board d'options synthétique (mode VITRINE) — crédible mais FICTIF.
+    CALL sur les meilleurs titres + PUT sur les plus faibles (et couverture sur
+    les leaders), 3 échéances (court/moyen/long), avec liquidité synthétique
+    (open interest, volume, spread) pour nourrir le cockpit Options Lab."""
     import zlib
     board = []
-    top = sorted([r for r in rows if r.get('score') is not None],
-                 key=lambda r: r.get('score', 0), reverse=True)[:12]
+    scored = [r for r in rows if r.get('score') is not None]
+    top = sorted(scored, key=lambda r: r.get('score', 0), reverse=True)[:12]
+    weak = sorted(scored, key=lambda r: r.get('score', 0))[:6]
     BK = [('court', 45, 0.55), ('moyen', 180, 0.42), ('long', 400, 0.32)]
-    for r in top:
+
+    def _mk(r, right, bk, dte, dlt, rng):
         sym = r['symbol']
         spot = r.get('price') or 100.0
         d = detail.get(sym) or {}
         rs = d.get('rs') or 50
-        seed = zlib.crc32(sym.encode()) & 0xffffffff
-        rng = np.random.default_rng(seed)
+        T = dte / 365.0
+        iv = 0.28 + (rng.random() * 0.34)                 # 28 % → 62 %
+        sgn = 1 if right == 'CALL' else -1
+        strike = round(spot * (1 + sgn * ((0.5 - dlt) * 0.12 + rng.random() * 0.03)), 1)
+        em = iv * math.sqrt(T)
+        mid = max(0.4, spot * em * (0.55 + dlt * 0.4))
+        cost = round(mid * 100)
+        be = round(strike + sgn * mid, 2)
+        tgt = round(spot * (1 + sgn * em * 1.1), 2)
+        pot = round(abs(tgt - be) / max(mid, 0.1) * 100) if (tgt - be) * sgn > 0 else 0
+        edge = (be / spot - 1) * sgn
+        pop = round(max(12, min(72, 50 - edge * 220 + sgn * (rs - 50) * 0.3)))
+        dg = (2 if bk == 'court' else 0) + (1 if iv > 0.55 else 0) + (1 if dlt < 0.4 else 0)
+        theta_burn = round((0.9 if bk == 'court' else 0.35 if bk == 'moyen' else 0.16) * (1 + iv), 2)
+        base = r.get('score', 50) if right == 'CALL' else (100 - r.get('score', 50))
+        quality = round(max(20, min(94, 40 + (base - 50) * 0.7
+                                    + sgn * (rs - 50) * 0.2 + pot * 0.05 - dg * 6)))
+        # liquidité synthétique : les gros titres liquides ont plus d'OI et un spread serré
+        liq = max(0.15, min(1.0, (r.get('score', 50) / 100) + rng.random() * 0.3))
+        oi = int(800 + liq * 26000 * (1.3 if bk == 'moyen' else 1.0) * (0.5 + rng.random()))
+        vol = int(oi * (0.06 + rng.random() * 0.22))
+        spread_pct = round(max(0.6, 9.0 * (1.1 - liq) * (1.5 if bk == 'long' else 1.0)), 1)
+        return {
+            'sym': sym, 'type': right, 'bucket': bk,
+            'exp': (datetime.now() + timedelta(days=dte)).strftime('%Y-%m-%dT00:00:00'),
+            'dte': dte, 'strike': strike, 'tgt': tgt, 'spot': round(spot, 2),
+            'pop': pop, 'p_tgt': max(8, round(pop * 0.7)), 'danger_n': dg,
+            'cost': cost, 'be': be, 'iv': round(iv * 100, 1),
+            'delta': round(sgn * (dlt + rng.random() * 0.1), 2),
+            'theta_burn': theta_burn, 'pot': pot, 'em_pct': round(em * 100, 1),
+            'quality': quality, 'veh': (r.get('vehicle') or None),
+            'oi': oi, 'vol': vol, 'spread_pct': spread_pct,
+            'why': 'Échéance ' + bk + ' — profil synthétique de démonstration.'}
+
+    for r in top:
+        rng = np.random.default_rng(zlib.crc32(r['symbol'].encode()) & 0xffffffff)
         for bk, dte, dlt in BK:
-            T = dte / 365.0
-            iv = 0.28 + (rng.random() * 0.34)                 # 28 % → 62 %
-            strike = round(spot * (1 + (0.5 - dlt) * 0.12 + rng.random() * 0.03), 1)
-            em = iv * math.sqrt(T)
-            mid = max(0.4, spot * em * (0.55 + dlt * 0.4))
-            cost = round(mid * 100)
-            be = round(strike + mid, 2)
-            tgt = round(spot * (1 + em * 1.1), 2)
-            pot = round(max(0, (tgt - be)) / max(mid, 0.1) * 100)
-            pop = round(max(12, min(72, 50 - (be / spot - 1) * 220 + (rs - 50) * 0.3)))
-            dg = (2 if bk == 'court' else 0) + (1 if iv > 0.55 else 0) + (1 if dlt < 0.4 else 0)
-            theta_burn = round((0.9 if bk == 'court' else 0.35 if bk == 'moyen' else 0.16) * (1 + iv), 2)
-            quality = round(max(20, min(94, 40 + (r.get('score', 50) - 50) * 0.7
-                                        + (rs - 50) * 0.2 + pot * 0.05 - dg * 6)))
-            board.append({
-                'sym': sym, 'type': 'CALL', 'bucket': bk,
-                'exp': (datetime.now() + timedelta(days=dte)).strftime('%Y-%m-%dT00:00:00'),
-                'dte': dte, 'strike': strike, 'tgt': tgt, 'spot': round(spot, 2),
-                'pop': pop, 'p_tgt': max(8, round(pop * 0.7)), 'danger_n': dg,
-                'cost': cost, 'be': be, 'iv': round(iv * 100, 1),
-                'delta': round(dlt + rng.random() * 0.1, 2),
-                'theta_burn': theta_burn, 'pot': pot, 'em_pct': round(em * 100, 1),
-                'quality': quality, 'veh': (r.get('vehicle') or None),
-                'why': 'Échéance ' + bk + ' — profil synthétique de démonstration.'})
+            board.append(_mk(r, 'CALL', bk, dte, dlt, rng))
+    # PUT : baissiers sur les titres faibles + couverture (moyen terme) sur 3 leaders
+    for r in weak:
+        rng = np.random.default_rng((zlib.crc32(r['symbol'].encode()) ^ 0x9E3779B9) & 0xffffffff)
+        for bk, dte, dlt in BK[:2]:
+            board.append(_mk(r, 'PUT', bk, dte, dlt, rng))
+    for r in top[:3]:
+        rng = np.random.default_rng((zlib.crc32(r['symbol'].encode()) ^ 0x5DEECE66) & 0xffffffff)
+        board.append(_mk(r, 'PUT', 'moyen', 180, 0.35, rng))
     board.sort(key=lambda c: c.get('quality', 0), reverse=True)
     return board
 
