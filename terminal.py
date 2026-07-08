@@ -5901,18 +5901,48 @@ _OV_EXTRA_JS = r"""<script>(function(){
       +'<div style="font-size:24px;font-weight:800;margin-top:8px;letter-spacing:-.5px;font-variant-numeric:tabular-nums;color:'+(valcol||'#e8edf5')+'">'+val+'</div>'
       +((chgTxt!=null&&chgTxt!=='')?'<div style="font-size:13px;font-weight:800;color:'+col+';margin-top:2px">'+(pos?'▲ ':'▼ ')+chgTxt+'</div>':'')
       +'</div>';}
-  function renderMkt(d){if(!mkt)return;var idx=d.indices||[],cs=d.commodities||[],ms=d.macro||[];
-    function findIdx(nm){for(var i=0;i<idx.length;i++){if((idx[i].name||'').toUpperCase().indexOf(nm)>=0)return idx[i];}return null;}
-    var IW=[['S&P 500','S&P'],['Nasdaq','NASDAQ'],['Dow Jones','DOW'],['VIX','VIX']];
-    var ind=IW.map(function(w){var it=findIdx(w[1]);if(!it)return '';return mktTile(w[0],fmtN(it.price),it.change,(it.change!=null?Math.abs(it.change).toFixed(2)+'%':''),w[1]==='VIX'?'#F5B45B':'#e8edf5');}).filter(Boolean).join('');
-    var com=cs.map(function(c){return mktTile((c.icon?c.icon+' ':'')+c.name,'$'+fmtN(c.price),c.change,(c.change!=null?Math.abs(c.change).toFixed(2)+'%':''));}).join('');
-    var mac=ms.map(function(m){var nm=(m.name||'').replace('Taux ','').replace('Dollar (DXY)','Dollar').replace('Courbe 10a-3m','Courbe 10-3');var vcol=m.id==='CURVE'?(m.value<0?'#EF4444':'#22C55E'):'#e8edf5';
-      return mktTile(nm,m.value+(m.unit||''),(m.chg!=null?m.chg:null),(m.chg!=null?(''+m.chg):''),vcol);}).join('');
-    if(!ind&&!com&&!mac){mkt.innerHTML='';return;}
-    mkt.innerHTML='<div class="vstit" style="margin-top:8px!important">🌍 MARCHÉS <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· indices · matières · taux · prix en direct</span></div>'
-      +(ind?'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:10px">'+ind+'</div>':'')
-      +(com?'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:10px">'+com+'</div>':'')
-      +(mac?'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">'+mac+'</div>':'');}
+  function renderMkt(d){if(!mkt)return;var idx=d.indices||[],cs=d.commodities||[],ms=d.macro||[],mc=d.market_ctx||{};
+    if(!idx.length&&!cs.length&&!ms.length){mkt.innerHTML='';return;}
+    function sgn(v,suf,dec){if(v==null)return '';return (v>=0?'+':'')+(dec!=null?(+v).toFixed(dec):v)+(suf||'');}
+    function row(name,val,chg,chgStr,sp){var pos=chg==null?null:chg>=0,col=pos==null?'#8794ab':pos?'#22C55E':'#EF4444';
+      return '<div style="display:grid;grid-template-columns:1fr 82px 78px;gap:8px;align-items:center;padding:7px 2px;border-top:1px solid rgba(255,255,255,.05)">'
+        +'<div style="font-size:12.5px;font-weight:600;color:#dfe6f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+name+'</div>'
+        +'<div style="height:26px;opacity:.9">'+((sp&&sp.length>1)?spark(sp,110,26,col):'')+'</div>'
+        +'<div style="text-align:right;white-space:nowrap"><div style="font-size:13px;font-weight:800">'+val+'</div>'+(chgStr?'<div style="font-size:10.5px;font-weight:800;color:'+col+'">'+chgStr+'</div>':'')+'</div></div>';}
+    function block(icon,title,comment,rowsHTML){return '<div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 16px;transition:border-color .15s" onmouseover="this.style.borderColor=\'rgba(255,255,255,.14)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,.07)\'">'
+      +'<div style="font-size:12px;font-weight:800;letter-spacing:.3px;color:#f2f5fa">'+icon+' '+title+'</div>'
+      +(comment?'<div style="font-size:11px;color:#8794ab;line-height:1.45;margin-top:5px">▲ '+comment+'</div>':'')+'<div style="margin-top:6px">'+rowsHTML+'</div></div>';}
+    // Indices
+    var idxRows=idx.map(function(i){return row(i.name,fmtN(i.price),i.change,sgn(i.change,'%',2),i.spark);}).join('');
+    var iAvg=idx.filter(function(i){return (i.name||'').indexOf('VIX')<0&&i.change!=null;}),ia=iAvg.length?iAvg.reduce(function(s,i){return s+i.change;},0)/iAvg.length:null;
+    var vixIt=idx.filter(function(i){return (i.name||'').indexOf('VIX')>=0;})[0];
+    var idxCmt=(ia==null?'':(ia>=0.3?'Indices bien orientés':ia<=-0.3?'Séance sous pression':'Séance sans direction claire')+(vixIt&&vixIt.change>0?' — VIX en hausse (risque).':vixIt&&vixIt.change<0?' — VIX en baisse (apaisement).':'.'));
+    // Matières (hors Bitcoin)
+    var com=cs.filter(function(c){return (c.name||'').toUpperCase().indexOf('BITCOIN')<0;});
+    var comRows=com.map(function(c){return row((c.icon?c.icon+' ':'')+c.name,'$'+fmtN(c.price),c.change,sgn(c.change,'%',2),c.spark);}).join('');
+    var oil=com.filter(function(c){return (c.name||'').indexOf('WTI')>=0||(c.name||'').indexOf('Brent')>=0;}),oa=oil.length?oil.reduce(function(s,c){return s+(c.change||0);},0)/oil.length:null;
+    var gold=com.filter(function(c){return (c.name||'').indexOf('Or')>=0;})[0];
+    var comCmt=(oa!=null?(oa>=1?'Pétrole en nette hausse':oa<=-1?'Pétrole en baisse':'Pétrole stable'):'')+(gold&&gold.change!=null?(' · Or '+(gold.change>=0?'+':'')+gold.change+'%.'):'.');
+    // Obligations & taux (macro hors DXY)
+    var bond=ms.filter(function(m){return m.id!=='DX-Y.NYB';});
+    var bondRows=bond.map(function(m){var nm=(m.name||'').replace('Taux ','').replace('Courbe 10a-3m','Courbe 10-3m');var vc=m.id==='CURVE'?(m.value<0?'#EF4444':'#22C55E'):'#e8edf5';
+      return row(nm,'<span style="color:'+vc+'">'+m.value+(m.unit||'')+'</span>',m.chg,sgn(m.chg,' pt',3),null);}).join('');
+    var ty=ms.filter(function(m){return m.id==='^TNX';})[0],curve=ms.filter(function(m){return m.id==='CURVE';})[0];
+    var bondCmt=(ty?('10 ans à '+ty.value+'% '+(ty.chg>=0?'(en hausse — pression sur les valos)':'(en baisse — soutien aux valos)')):'')+(curve?(' · courbe '+(curve.value<0?'inversée (signal récession)':'positive')+'.'):'.');
+    // Crypto & devise
+    var btc=cs.filter(function(c){return (c.name||'').toUpperCase().indexOf('BITCOIN')>=0;})[0],dxy=ms.filter(function(m){return m.id==='DX-Y.NYB';})[0];
+    var cdRows=(btc?row((btc.icon?btc.icon+' ':'₿ ')+'Bitcoin','$'+fmtN(btc.price),btc.change,sgn(btc.change,'%',2),btc.spark):'')+(dxy?row('💵 Dollar (DXY)',dxy.value,dxy.chg,sgn(dxy.chg,'',3),null):'');
+    var cdCmt=(btc&&btc.change!=null?('Bitcoin '+(btc.change>=0?'en hausse':'en repli')+' ('+(btc.change>=0?'+':'')+btc.change+'%)'):'')+(dxy?(' · Dollar '+(dxy.chg>=0?'ferme':'faible')+'.'):'.');
+    // Sentiment (dérivé de market_ctx)
+    var roro=mc.roro||'',rc=roro==='RISK-ON'?'#22C55E':roro==='RISK-OFF'?'#EF4444':'#F5B45B',bd=mc.breadth||{};
+    var sentRows=row('Climat','<span style="color:'+rc+'">'+(roro||'—')+'</span>',mc.roro_gap,sgn(mc.roro_gap,'',0),null)
+      +row('VIX',mc.vix!=null?mc.vix:'—',mc.vix_chg,sgn(mc.vix_chg,'',1),null)
+      +row('Breadth (>MM50)',(bd.above50!=null?bd.above50+'%':'—'),null,'',null)
+      +row('Avancées / Déclins',(bd.adv!=null&&bd.dec!=null?(bd.adv+' / '+bd.dec):'—'),null,'',null);
+    var sentCmt='Marché '+(roro==='RISK-OFF'?'prudent (risk-off)':roro==='RISK-ON'?'offensif (risk-on)':'mitigé')+(bd.above50!=null?(', participation '+bd.above50+'%.'):'.');
+    mkt.innerHTML='<div class="vstit" style="margin-top:8px!important">🌍 LE MARCHÉ <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· indices · matières · taux · crypto · sentiment · en direct</span></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px">'
+      +block('📈','Indices',idxCmt,idxRows)+block('🛢️','Matières premières',comCmt,comRows)+block('🏦','Obligations &amp; taux',bondCmt,bondRows)+block('₿','Crypto &amp; devise',cdCmt,cdRows)+block('🧭','Sentiment',sentCmt,sentRows)+'</div>';}
   function renderSynth(d){var el=document.getElementById('ovSynth');if(!el)return;
     var mc=d.market_ctx||{},rows=d.rows||[],det=d.detail||{};
     var reg=mc.spy_regime,regTxt=reg==='TREND'?'haussier':reg==='CHOP'?'agité (range)':'neutre';
