@@ -2515,6 +2515,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     </div>
   </div>
   <style>.dx-extra{display:none}body.showall .dx-extra{display:block}#essToggle{display:block;width:100%;margin:4px 0 16px;padding:12px;background:#0e1622;border:1px dashed #5BE3A855;border-radius:12px;color:#5BE3A8;font-weight:700;font-size:13px;cursor:pointer;letter-spacing:.4px}#essToggle:hover{background:#121c2b}</style>
+  <!-- ═══ HERO MORNING COCKPIT (Phase 1 refonte Home) — rendu par renderHero() sur /scan ═══ -->
+  <div id="ovHero" style="margin:16px 0 6px"></div>
   <div id="dMyDesk"></div>
   <!-- ═══ MORNING BRIEF (refonte homepage) — rendu par le script mb() en bas de page ═══ -->
   <div id="mbHome"></div>
@@ -5887,7 +5889,7 @@ PAGE_DAILY = PAGE_DAILY.replace('</body>', _OPP_BRIEF_JS + '</body>', 1)
 
 # ── Overview : bandeau Marchés (matières + taux, SANS graphe) + Palmarès Top/Flop (sans Semaine/Russell) ──
 _OV_EXTRA_JS = r"""<script>(function(){
-  var mkt=document.getElementById('ovMkt'),pal=document.getElementById('ovPal');if(!mkt&&!pal&&!document.getElementById('ovSynth'))return;
+  var mkt=document.getElementById('ovMkt'),pal=document.getElementById('ovPal');if(!mkt&&!pal&&!document.getElementById('ovSynth')&&!document.getElementById('ovHero'))return;
   function fmtN(n){return (n==null||n!==n)?'—':(+n).toLocaleString('fr-FR',{maximumFractionDigits:2});}
   function mktTile(label,val,chg,chgTxt,valcol){var pos=(chg==null)?null:chg>=0,col=pos==null?'#8794ab':pos?'#22C55E':'#EF4444';
     return '<div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 16px;transition:border-color .15s" onmouseover="this.style.borderColor=\'rgba(255,255,255,.16)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,.07)\'">'
@@ -5940,7 +5942,48 @@ _OV_EXTRA_JS = r"""<script>(function(){
     pal.innerHTML='<div class="vstit">🏆 PALMARÈS · TOP &amp; FLOP <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· jour · mois (~21j) · par indice · clic → fiche</span></div>'
       +'<div style="'+g+'">'+pcard('📈 TOP · JOUR','#22C55E','d',1)+pcard('📉 FLOP · JOUR','#EF4444','d',-1)+pcard('📈 TOP · MOIS','#22C55E','m',1)+pcard('📉 FLOP · MOIS','#EF4444','m',-1)+'</div>'
       +'<div style="'+g+'">'+pidx('🏛️ TOP · DOW','#38BDF8',IS.dow)+pidx('💻 TOP · NASDAQ','#A78BFA',IS.ndx)+pidx('📊 TOP · S&amp;P 500','#F5B45B',IS.sp)+'</div>';}
-  function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){try{renderMkt(d);}catch(e){}try{renderSynth(d);}catch(e){}try{renderPal(d);}catch(e){}}).catch(function(){});}
+  // ═══ HERO MORNING COCKPIT — cockpit de 60 s, 100% données réelles /scan ═══
+  function renderHero(d){var el=document.getElementById('ovHero');if(!el)return;
+    var mc=d.market_ctx||{},mk=d.market||{},tilt=d.strat_tilt||{},rows=d.rows||[],secs=d.sectors||[],ob=d.options_board||[],idx=d.indices||[];
+    var open=!!mk.open,sess=open?'Séance ouverte':(mk.session==='pre'?'Pré-marché':mk.session==='post'?'After-hours':'Marché fermé'),scol=open?'#22C55E':'#F5B45B';
+    var reg=mc.spy_regime==='TREND'?'Tendance':mc.spy_regime==='CHOP'?'Range':'Neutre';
+    var roro=mc.roro||'—',rc=roro==='RISK-ON'?'#22C55E':roro==='RISK-OFF'?'#EF4444':'#F5B45B';
+    var vb=(mc.vix_band||'').toLowerCase(),risk=(vb.indexOf('lev')>=0||vb.indexOf('high')>=0||vb.indexOf('haut')>=0)?['Élevé','#EF4444']:(vb.indexOf('bas')>=0||vb.indexOf('low')>=0)?['Faible','#22C55E']:['Modéré','#F5B45B'];
+    var breadth=(mc.breadth||{}).above50;
+    var dreg=(tilt.regime||'—'),dcol=tilt.col||'#8794ab',dscore=tilt.score;
+    var decLabel=dreg==='OFFENSIF'?'Offensif':dreg==='DEFENSIF'?'Défensif':dreg==='NEUTRE'?'Neutre':dreg;
+    var buys=rows.filter(function(r){return r.verdict==='BUY';});buys.sort(function(a,b){return (b.score||0)-(a.score||0);});
+    var topA=buys[0],nBuy=buys.length;
+    var hot=rows.filter(function(r){return r.rvol!=null;}).sort(function(a,b){return b.rvol-a.rvol;})[0];
+    var topSec=secs.slice().sort(function(a,b){return (b.avg_score||0)-(a.avg_score||0);})[0];
+    var topO=ob.slice().sort(function(a,b){return (b.quality||0)-(a.quality||0);})[0];
+    function findIdx(nm){for(var i=0;i<idx.length;i++){if((idx[i].name||'').toUpperCase().indexOf(nm)>=0)return idx[i];}return null;}
+    function mini(nm,key){var it=findIdx(key);if(!it||it.change==null)return '';var c=it.change>=0?'#22C55E':'#EF4444';return '<span style="font-size:11px;color:#8794ab;margin-left:14px">'+nm+' <b style="color:'+c+'">'+(it.change>=0?'+':'')+it.change.toFixed(2)+'%</b></span>';}
+    var dt='';try{dt=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});}catch(e){}
+    function T(l,v,vc,s,sc){return '<div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px 14px;min-width:0;transition:border-color .15s" onmouseover="this.style.borderColor=\'rgba(255,255,255,.16)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,.07)\'">'
+      +'<div style="font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:#8794ab;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l+'</div>'
+      +'<div style="font-size:18px;font-weight:900;margin-top:6px;letter-spacing:-.3px;color:'+(vc||'#f2f5fa')+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+v+'</div>'
+      +(s?'<div style="font-size:10px;color:'+(sc||'#8794ab')+';margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+s+'</div>':'')+'</div>';}
+    var tiles=[T('Régime',reg,'#f2f5fa',roro,rc),
+      T('Décision Vertex',decLabel,dcol,dscore!=null?dscore+'/100 confiance':''),
+      T('Risque',risk[0],risk[1],mc.vix!=null?'VIX '+mc.vix:''),
+      T('Breadth',breadth!=null?breadth+'%':'—','#38BDF8','titres > MM50'),
+      T('Opportunités',String(nBuy),'#22C55E','signaux d\'achat'),
+      T('Top secteur',topSec?((topSec.icon?topSec.icon+' ':'')+topSec.sector):'—','#f2f5fa',topSec&&topSec.avg_change!=null?((topSec.avg_change>=0?'+':'')+topSec.avg_change.toFixed(1)+'% moy.'):''),
+      T('Top action',topA?topA.symbol:'—','#F5B45B',topA?('score '+topA.score+(topA.grade?' · '+topA.grade:'')):''),
+      T('Top option',topO?topO.sym:'—','#A78BFA',topO?((topO.type||'')+(topO.pop!=null?' · POP '+topO.pop+'%':'')):''),
+      T('Watchlist chaude',hot?hot.symbol:'—','#f2f5fa',hot&&hot.rvol!=null?('RVOL '+(+hot.rvol).toFixed(1)+'×'):''),
+      T('Sentiment',roro,rc,mc.roro_gap!=null?('écart '+mc.roro_gap):'')].join('');
+    var sum=[];if(mc.verdict)sum.push(mc.verdict);if(tilt.note)sum.push(tilt.note);
+    if(nBuy)sum.push(nBuy+' titres en signal d\'achat'+(topA?(' — meilleur score : <b style="color:#f2f5fa">'+topA.symbol+'</b> ('+topA.score+(topA.grade?', '+topA.grade:'')+')'):'')+(topSec?('. Secteur le plus fort : <b style="color:#f2f5fa">'+topSec.sector+'</b>.'):'.'));
+    var sumHTML=sum.slice(0,5).map(function(x){return '<div style="display:flex;gap:8px;font-size:13.5px;line-height:1.5;color:#c3ccda;margin-top:6px"><span style="color:#FF7A18;flex:none">›</span><span>'+x+'</span></div>';}).join('');
+    el.innerHTML='<div style="background:linear-gradient(180deg,#14161c,#0d0e12);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:22px 24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 14px 34px -24px rgba(0,0,0,.8)">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px"><div style="font-size:12px;color:#8794ab;font-weight:700">🕐 '+(mk.et||'—')+' · <span style="color:'+scol+'">'+sess+'</span></div><div>'+mini('S&P','S&P')+mini('NDX','NASDAQ')+mini('DOW','DOW')+mini('VIX','VIX')+'</div></div>'
+      +'<div style="font-size:38px;font-weight:900;letter-spacing:-1.2px;color:#f5f8fc;margin-top:14px;line-height:1">Morning Brief</div>'
+      +'<div style="font-size:12px;color:#8794ab;margin-top:8px;text-transform:capitalize">'+dt+' <span style="text-transform:none">· Lecture ~45 s'+(dscore!=null?(' · Confiance IA '+dscore+'%'):'')+'</span></div>'
+      +'<div style="margin:16px 0 20px;max-width:92ch">'+sumHTML+'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">'+tiles+'</div></div>';}
+  function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){try{renderHero(d);}catch(e){}try{renderMkt(d);}catch(e){}try{renderSynth(d);}catch(e){}try{renderPal(d);}catch(e){}}).catch(function(){});}
   load();setInterval(load,30000);
 })();</script>"""
 PAGE_DAILY = PAGE_DAILY.replace('</body>', _OV_EXTRA_JS + '</body>', 1)
