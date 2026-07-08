@@ -45,6 +45,7 @@ from vertex.services import persist as _persist
 from vertex.engines import decision_stack as _decision
 from vertex.ui import nav as _nav
 from vertex.ui import options_lab as _olab_ui
+from vertex.ui import journal as _tj_ui
 from vertex.engines import indicators as _indicators
 from vertex.engines import analysis as _analysis
 from vertex.engines import backtest as _backtest
@@ -7148,119 +7149,6 @@ PAGE_CATALYSTS = _vpage('Catalyseurs',
 
 
 # ─── JOURNAL DE TRADING (revue & apprentissage — 100% local, aucun ordre) ───
-_JOURNAL_HEAD = (
-  ".jsec{border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px 16px;margin-bottom:12px;background:#0f1218}"
-  ".jsec h4{font-size:12px;font-weight:800;letter-spacing:.7px;color:#F5B45B;margin-bottom:12px;display:flex;align-items:center;gap:10px}"
-  ".jsec h4 .n{width:21px;height:21px;border-radius:8px;background:rgba(245,180,91,.16);color:#F5B45B;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}"
-  ".jg{display:grid;grid-template-columns:1fr 1fr;gap:12px}"
-  ".jfield{min-width:0}.jfield label{display:block;font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:#8794ab;font-weight:700;margin-bottom:4px}"
-  ".jf{width:100%;background:#0b0d12;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:8px 10px;color:#eaf0fa;font-size:13px;font-family:inherit}"
-  ".jf:focus{outline:none;border-color:#FF7A18}textarea.jf{resize:vertical;min-height:56px}"
-  ".jtog{display:flex;gap:8px}.jtog button{flex:1;padding:8px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#8794ab;font-weight:800;font-size:12px;cursor:pointer;transition:.14s}"
-  ".jtog button.onL{border-color:#22C55E;color:#22C55E;background:rgba(34,197,94,.12)}.jtog button.onS{border-color:#EF4444;color:#EF4444;background:rgba(239,68,68,.12)}"
-  ".jchips{display:flex;gap:8px;flex-wrap:wrap}.jchip{padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#8794AB;font-size:12px;font-weight:700;cursor:pointer;transition:.14s}.jchip.on{border-color:#FF7A18;color:#FF7A18;background:rgba(255,122,24,.12)}"
-  ".jloop{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:6px}.jstep{flex:1;min-width:104px;text-align:center;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px 10px;background:#0f1218}.jarrow{color:#F5B45B;font-size:17px;font-weight:900}"
-  "@media(max-width:820px){.jmain{grid-template-columns:1fr!important}}")
-
-_JOURNAL_JS = r"""
-var EMO=[['😌','Calme'],['🎯','Concentré'],['😰','Stressé'],['🤑','Avide'],['😐','Neutre'],['😤','Revanche']];
-var FORM={dir:'',res:'',emo:''};
-function jGet(){try{return JSON.parse(localStorage.getItem('vxJournal')||'[]')}catch(e){return[]}}
-function jSet(a){localStorage.setItem('vxJournal',JSON.stringify(a));localStorage.setItem('deskTs',String(Date.now()));jvSyncPush();}
-/* Le journal se synchronise entre appareils (via /api/desk, mêmes clés que le Desk) */
-function jvSyncPush(){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){var data=(d&&d.data)||{};data.vxJournal=localStorage.getItem('vxJournal');['myTrades','myTradesClosed','myTradeLog','myRecos','myRecosClosed','myFavs','myNotes','myCapital'].forEach(function(k){var v=localStorage.getItem(k);if(v!=null)data[k]=v;});fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:Date.now(),data:data})});}).catch(function(){});}catch(e){}}
-function jvSyncPull(cb){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){if(d&&d.data&&d.data.vxJournal){var lt=parseFloat(localStorage.getItem('deskTs')||'0');if((d.ts||0)>lt||!jGet().length){localStorage.setItem('vxJournal',d.data.vxJournal);if(d.data.myTradeLog)localStorage.setItem('myTradeLog',d.data.myTradeLog);localStorage.setItem('deskTs',String(d.ts||Date.now()));}}if(cb)cb();}).catch(function(){if(cb)cb();});}catch(e){if(cb)cb();}}
-function rMult(t){var e=+t.entry,s=+t.stop,x=+t.exit;if(!e||!s||!x||e===s)return null;var r=(t.dir==='SHORT')?(e-x)/(s-e):(x-e)/(e-s);return isFinite(r)?r:null;}
-window.setDir=function(d){FORM.dir=(FORM.dir===d?'':d);document.getElementById('jDirL').className=FORM.dir==='LONG'?'onL':'';document.getElementById('jDirS').className=FORM.dir==='SHORT'?'onS':'';};
-window.setRes=function(r){FORM.res=(FORM.res===r?'':r);document.getElementById('jResW').className=FORM.res==='WIN'?'onL':'';document.getElementById('jResL').className=FORM.res==='LOSS'?'onS':'';};
-window.setEmo=function(e){FORM.emo=(FORM.emo===e?'':e);buildEmo();};
-function buildEmo(){document.getElementById('jEmoChips').innerHTML=EMO.map(function(x){return '<button type="button" class="jchip'+(FORM.emo===x[1]?' on':'')+'" onclick="setEmo(\''+x[1]+'\')">'+x[0]+' '+x[1]+'</button>';}).join('');}
-window.rr=function(){var e=+document.getElementById('jEntry').value,s=+document.getElementById('jStop').value,t=+document.getElementById('jTp').value;var el=document.getElementById('jRR');if(e&&s&&t&&e!==s){var v=Math.abs(t-e)/Math.abs(e-s);el.textContent=v.toFixed(2)+' : 1';el.style.color=v>=2?'#22C55E':v>=1?'#F5B45B':'#EF4444';}else{el.textContent='—';el.style.color='#F5B45B';}};
-function jmsg(t,c){var m=document.getElementById('jMsg');m.textContent=t;m.style.color=c;setTimeout(function(){if(m.textContent===t)m.textContent='';},2600);}
-window.jSave=function(){var g=function(id){return (document.getElementById(id).value||'').trim();};
-  var tk=g('jTicker');if(!tk){jmsg('Renseigne au moins un ticker.','#EF4444');return;}
-  var e={id:Date.now(),ticker:tk.toUpperCase(),tf:g('jTf'),dir:FORM.dir,reason:g('jReason'),entry:g('jEntry'),stop:g('jStop'),tp:g('jTp'),risk:g('jRisk'),emo:FORM.emo,conf:g('jConf'),disc:g('jDisc'),trigger:g('jTrigger'),result:FORM.res,exit:g('jExit'),pnl:g('jPnl'),lesson:g('jLesson'),mistake:g('jMistake'),date:new Date().toISOString().slice(0,10)};
-  var a=jGet();a.unshift(e);jSet(a);
-  ['jTicker','jReason','jEntry','jStop','jTp','jRisk','jConf','jDisc','jTrigger','jExit','jPnl','jLesson','jMistake'].forEach(function(id){document.getElementById(id).value='';});
-  FORM={dir:'',res:'',emo:''};setDir('');setRes('');buildEmo();rr();jmsg('✓ Trade enregistré dans ton journal.','#22C55E');render();};
-window.jDel=function(id){if(!confirm('Supprimer cette entrée du journal ?'))return;jSet(jGet().filter(function(t){return t.id!==id;}));render();};
-window.jExport=function(){var blob=new Blob([JSON.stringify(jGet(),null,2)],{type:'application/json'});var u=URL.createObjectURL(blob);var a=document.createElement('a');a.href=u;a.download='vertex-journal.json';a.click();URL.revokeObjectURL(u);};
-window.jImport=function(){var i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=function(){var f=i.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(Array.isArray(d)){jSet(d);render();jmsg('✓ Journal importé.','#22C55E');}}catch(e){jmsg('Fichier invalide.','#EF4444');}};r.readAsText(f);};i.click();};
-function metrics(a){var closed=a.filter(function(t){return t.result;});var n=closed.length;
-  var wins=closed.filter(function(t){return t.result==='WIN';}),losses=closed.filter(function(t){return t.result==='LOSS';});
-  var sumW=wins.reduce(function(s,t){return s+(+t.pnl||0);},0),sumL=losses.reduce(function(s,t){return s+Math.abs(+t.pnl||0);},0);
-  var pnl=closed.reduce(function(s,t){return s+(+t.pnl||0);},0);
-  var rs=closed.map(rMult).filter(function(v){return v!=null;});
-  var ds=a.map(function(t){return +t.disc;}).filter(function(v){return v>0;});
-  return {n:n,total:a.length,wr:n?Math.round(wins.length/n*100):0,
-    pf:sumL>0?sumW/sumL:(sumW>0?99:0),exp:n?pnl/n:0,pnl:pnl,
-    avgW:wins.length?sumW/wins.length:0,avgL:losses.length?sumL/losses.length:0,
-    avgR:rs.length?rs.reduce(function(s,v){return s+v;},0)/rs.length:null,
-    avgD:ds.length?ds.reduce(function(s,v){return s+v;},0)/ds.length:null,nwin:wins.length,nloss:losses.length};}
-function kc(l,v,c,sub){return '<div class="kpi"><div class="kl">'+l+'</div><div class="kv" style="color:'+(c||'#f2f5fa')+'">'+v+'</div>'+(sub?'<div class="kd mut">'+sub+'</div>':'')+'</div>';}
-function renderKpi(m){var el=document.getElementById('jKpi');if(!el)return;
-  var pfc=m.pf>=2?'#22C55E':m.pf>=1?'#F5B45B':'#EF4444';var wrc=m.wr>=50?'#22C55E':m.wr>=40?'#F5B45B':'#EF4444';
-  el.innerHTML=kc('📓 Trades',m.total,'#f2f5fa',m.n+' clôturés')
-    +kc('🎯 Win rate',m.n?m.wr+'%':'—',wrc,m.n?m.nwin+'W · '+m.nloss+'L':'—')
-    +kc('⚖️ Profit factor',m.n?(m.pf>=99?'∞':m.pf.toFixed(2)):'—',pfc,'gains / pertes')
-    +kc('📈 Expectancy',m.n?(m.exp>=0?'+':'')+'$'+m.exp.toFixed(0):'—',m.exp>=0?'#22C55E':'#EF4444','par trade')
-    +kc('🅡 R moyen',m.avgR!=null?(m.avgR>=0?'+':'')+m.avgR.toFixed(2)+'R':'—',m.avgR>=0?'#22C55E':'#EF4444','unités de risque')
-    +kc('🧭 Discipline',m.avgD!=null?m.avgD.toFixed(1)+'/10':'—',m.avgD>=7?'#22C55E':m.avgD>=5?'#F5B45B':'#EF4444','moyenne');}
-function entryCard(t){var win=t.result==='WIN',rc=win?'#22C55E':t.result==='LOSS'?'#EF4444':'#8794ab';
-  var rm=rMult(t);var dirc=t.dir==='LONG'?'#22C55E':t.dir==='SHORT'?'#EF4444':'#8794ab';
-  var tag=function(l,v,c){return v?'<span style="font-size:11px;color:#8794ab">'+l+' <b style="color:'+(c||'#C9D2E0')+'">'+v+'</b></span>':'';};
-  return '<div class="vcard" style="padding:14px 16px;border-left:3px solid '+rc+'">'
-    +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:15px;font-weight:900">'+t.ticker+'</span>'
-    +(t.dir?'<span style="font-size:10px;font-weight:800;color:'+dirc+';background:'+dirc+'1a;border:1px solid '+dirc+'44;padding:2px 8px;border-radius:8px">'+(t.dir==='LONG'?'▲ LONG':'▼ SHORT')+'</span>':'')
-    +(t.tf?'<span style="font-size:11px;color:#8794ab">'+t.tf+'</span>':'')
-    +(t.auto?'<span title="Créé automatiquement à la clôture d\'une position du Desk" style="font-size:10px;font-weight:800;color:#FF7A18;background:rgba(255,140,50,.12);border:1px solid rgba(255,140,50,.4);padding:2px 8px;border-radius:8px">🤖 AUTO'+(t.kind&&t.kind!=='STK'?' · '+t.kind:'')+'</span>':'')
-    +(t.result?'<span style="margin-left:auto;font-size:11px;font-weight:800;color:'+rc+';background:'+rc+'1a;border:1px solid '+rc+'44;padding:2px 10px;border-radius:8px">'+(win?'✓ GAGNANT':'✕ PERDANT')+'</span>':'<span style="margin-left:auto;font-size:10px;color:#8794ab">en cours</span>')
-    +'<span onclick="jDel('+t.id+')" title="Supprimer" style="cursor:pointer;color:#6B7280;font-size:15px;padding:0 2px">✕</span></div>'
-    +'<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px">'+tag('Entrée',t.entry?'$'+t.entry:'','#C9D2E0')+tag('Stop',t.stop?'$'+t.stop:'','#EF4444')+tag('Objectif',t.tp?'$'+t.tp:'','#22C55E')+tag('Sortie',t.exit?'$'+t.exit:'','#C9D2E0')+(t.pnl?'<span style="font-size:11px;color:#8794ab">P&amp;L <b class="'+((+t.pnl)>=0?'up':'dn')+'">'+((+t.pnl)>=0?'+':'')+'$'+t.pnl+'</b></span>':'')+(rm!=null?'<span style="font-size:11px;color:#8794ab">R <b style="color:'+(rm>=0?'#22C55E':'#EF4444')+'">'+(rm>=0?'+':'')+rm.toFixed(2)+'R</b></span>':'')+'</div>'
-    +((t.emo||t.conf||t.disc||t.trigger)?'<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05)">'+tag('Émotion',t.emo,'#A78BFA')+tag('Confiance',t.conf?t.conf+'/10':'','#F5B45B')+tag('Discipline',t.disc?t.disc+'/10':'','#38BDF8')+tag('Déclencheur',t.trigger,'#EF4444')+'</div>':'')
-    +(t.reason?'<div style="font-size:12px;color:#8794AB;margin-top:8px">🔍 '+t.reason+'</div>':'')
-    +(t.lesson?'<div style="font-size:12px;color:#C9D2E0;margin-top:6px;padding:8px 10px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.18);border-radius:8px">💡 <b>Leçon :</b> '+t.lesson+'</div>':'')
-    +(t.mistake?'<div style="font-size:12px;color:#f0b0b0;margin-top:6px;padding:8px 10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);border-radius:8px">⚠️ <b>À corriger :</b> '+t.mistake+'</div>':'')
-    +'<div style="font-size:10px;color:#6B7280;margin-top:8px">'+(t.date||'')+'</div></div>';}
-function renderEquity(a){var host=document.getElementById('jEquityWrap');if(!host)return;
-  var closed=a.filter(function(t){return t.result&&t.pnl!==''&&t.pnl!=null;}).slice().reverse();
-  if(closed.length<2){host.innerHTML='';return;}
-  var cum=0,eq=[0];closed.forEach(function(t){cum+=(+t.pnl||0);eq.push(cum);});
-  var w=600,h=170,pad=10,mn=Math.min.apply(null,eq),mx=Math.max.apply(null,eq),rg=(mx-mn)||1;
-  var fin=eq[eq.length-1],col=fin>=0?'#22C55E':'#EF4444';
-  var X=function(i){return pad+i/(eq.length-1)*(w-2*pad);},Y=function(v){return h-pad-(v-mn)/rg*(h-2*pad);};
-  var pts=eq.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);});
-  var base=Math.max(pad,Math.min(h-pad,Y(0)));
-  var pk=-1e9,dd=0;eq.forEach(function(v){if(v>pk)pk=v;if(pk-v>dd)dd=pk-v;});
-  var pnls=closed.map(function(t){return +t.pnl||0;}),best=Math.max.apply(null,pnls),worst=Math.min.apply(null,pnls);
-  var st=function(l,v,c){return '<div style="text-align:center"><div style="font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:#8794ab;font-weight:700">'+l+'</div><div style="font-size:15px;font-weight:800;color:'+(c||'#e8edf5')+';margin-top:2px">'+v+'</div></div>';};
-  host.innerHTML='<div class="vcard" style="margin-bottom:4px"><div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:wrap"><span style="font-size:12px;font-weight:800;letter-spacing:.6px;color:#F5B45B">📈 COURBE D\'ÉQUITÉ</span><span style="font-size:11px;color:#8794ab">P&amp;L cumulé sur '+closed.length+' trades clôturés</span><span style="margin-left:auto;font-size:20px;font-weight:900;color:'+col+'">'+(fin>=0?'+':'')+'$'+fin.toFixed(0)+'</span></div>'
-    +'<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" style="width:100%;height:170px;display:block"><defs><linearGradient id="eqg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+col+'" stop-opacity=".28"/><stop offset="1" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs>'
-    +(Y(0)>pad&&Y(0)<h-pad?'<line x1="'+pad+'" y1="'+Y(0).toFixed(1)+'" x2="'+(w-pad)+'" y2="'+Y(0).toFixed(1)+'" stroke="rgba(255,255,255,.16)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>':'')
-    +'<polygon points="'+X(0).toFixed(1)+','+base.toFixed(1)+' '+pts.join(' ')+' '+X(eq.length-1).toFixed(1)+','+base.toFixed(1)+'" fill="url(#eqg)"/>'
-    +'<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2.2" vector-effect="non-scaling-stroke"/></svg>'
-    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06)">'+st('P&amp;L net',(fin>=0?'+':'')+'$'+fin.toFixed(0),col)+st('Meilleur','+$'+best.toFixed(0),'#22C55E')+st('Pire','$'+worst.toFixed(0),'#EF4444')+st('Max drawdown','-$'+dd.toFixed(0),'#F5B45B')+'</div></div>';}
-var EMOIC={Calme:'😌',Concentré:'🎯',Stressé:'😰',Avide:'🤑',Neutre:'😐',Revanche:'😤'};
-function renderPsych(a){var host=document.getElementById('jPsychWrap');if(!host)return;
-  var closed=a.filter(function(t){return t.result&&t.emo;});
-  if(closed.length<2){host.innerHTML='';return;}
-  var by={};closed.forEach(function(t){(by[t.emo]=by[t.emo]||[]).push(t);});
-  var rows=Object.keys(by).map(function(e){var g=by[e],w=g.filter(function(t){return t.result==='WIN';}).length,pnl=g.reduce(function(s,t){return s+(+t.pnl||0);},0);return {emo:e,n:g.length,wr:Math.round(w/g.length*100),pnl:pnl};}).sort(function(x,y){return y.pnl-x.pnl;});
-  host.innerHTML='<div class="vcard" style="height:100%"><div style="font-size:12px;font-weight:800;letter-spacing:.5px;color:#F5B45B">🧠 PSYCHOLOGIE</div><div style="font-size:11px;color:#8794ab;margin:2px 0 10px">Win rate &amp; P&amp;L par état émotionnel — repère ce qui te coûte cher</div>'
-    +rows.map(function(r){var wc=r.wr>=50?'#22C55E':'#EF4444',pc=r.pnl>=0?'#22C55E':'#EF4444';return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid rgba(255,255,255,.05)"><span style="font-size:15px">'+(EMOIC[r.emo]||'•')+'</span><span style="font-size:12px;font-weight:700;color:#C9D2E0;min-width:74px">'+r.emo+'</span><div style="flex:1;height:6px;background:#0a0c11;border-radius:4px;overflow:hidden;min-width:30px"><div style="height:100%;width:'+r.wr+'%;background:'+wc+'"></div></div><span style="font-size:11px;font-weight:800;color:'+wc+';min-width:34px;text-align:right">'+r.wr+'%</span><span style="font-size:12px;font-weight:800;color:'+pc+';min-width:52px;text-align:right">'+(r.pnl>=0?'+':'')+'$'+r.pnl.toFixed(0)+'</span></div>';}).join('')+'</div>';}
-var JFILTER={res:'',q:''};
-window.setJF=function(k,v){JFILTER[k]=v;render();};
-window.jSearch=function(v){JFILTER.q=(v||'').toUpperCase().trim();render();};
-function buildJFilter(a){var el=document.getElementById('jFilter');if(!el)return;if(a.length<2){el.innerHTML='';return;}
-  var chip=function(l,on,k,v){return '<button class="vbtn'+(on?' pri':'')+'" onclick="setJF(\''+k+'\',\''+v+'\')">'+l+'</button>';};
-  el.innerHTML=chip('Tous',!JFILTER.res,'res','')+chip('✓ Gagnants',JFILTER.res==='WIN','res','WIN')+chip('✕ Perdants',JFILTER.res==='LOSS','res','LOSS')
-    +'<input placeholder="🔎 ticker" value="'+(JFILTER.q||'')+'" oninput="jSearch(this.value)" style="background:#0b0d12;border:1px solid rgba(255,255,255,.1);color:#eaf0fa;border-radius:8px;padding:6px 10px;font-size:12px;width:120px;margin-left:auto">';}
-function render(){var a=jGet();renderKpi(metrics(a));renderEquity(a);renderPsych(a);buildJFilter(a);document.getElementById('jCnt').textContent=a.length;
-  var f=a.filter(function(t){return (!JFILTER.res||t.result===JFILTER.res)&&(!JFILTER.q||(t.ticker||'').indexOf(JFILTER.q)>=0);});
-  var el=document.getElementById('jList');
-  el.innerHTML=a.length?(f.length?('<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px">'+f.map(entryCard).join('')+'</div>'):'<div class="vcard"><div class="muted" style="padding:14px;text-align:center">Aucun trade ne correspond à ce filtre.</div></div>'):'<div class="vcard"><div class="muted" style="padding:14px;text-align:center;line-height:1.7">Ton journal est vide. Note ton premier trade ci-dessus — chaque entrée nourrit tes statistiques (win rate, profit factor, R moyen) et t\'aide à ne plus répéter les mêmes erreurs.</div></div>';}
-buildEmo();render();jvSyncPull(render);setInterval(function(){jvSyncPull(render);},60000);
-"""
 
 _BRIEF_JS = r"""
 var CT={'strong-green':'#22C55E','green':'#22C55E','blue':'#38BDF8','amber':'#FFB23F','red':'#EF4444','gray':'#8794ab'};
@@ -7387,7 +7275,7 @@ function djCard(d){var tc=DJT[d.tone]||'#8794ab';
     +'<div style="display:flex;gap:6px;margin-top:10px;align-items:center"><span style="font-size:9px;color:#6b7280;font-weight:800;letter-spacing:.4px;text-transform:uppercase">Verdict a posteriori :</span>'
       +ob('held','✓ Tenue','#22C55E')+ob('invalidated','✗ Invalidée','#EF4444')
       +'<button type="button" onclick="djDel('+d.id+')" style="margin-left:auto;font-size:10px;color:#6B7280;background:transparent;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:4px 8px;cursor:pointer">Retirer</button></div></div>';}
-function djRender(){var l=djLoad();
+function djRender(){if(!document.getElementById('djStats')||!document.getElementById('djList'))return;var l=djLoad();
   var held=l.filter(function(x){return x.outcome==='held';}).length,inv=l.filter(function(x){return x.outcome==='invalidated';}).length,rated=held+inv;
   document.getElementById('djStats').innerHTML=l.length?'<div class="kpi"><div class="kl">Décisions épinglées</div><div class="kv">'+l.length+'</div></div>'
     +'<div class="kpi"><div class="kl">✓ Thèses tenues</div><div class="kv" style="color:#22C55E">'+held+'</div></div>'
@@ -7536,67 +7424,8 @@ def health_page():
     return PAGE_HEALTH
 
 
-PAGE_JOURNAL = _vpage('Journal',
-  '<div class="vhead"><div><h1>📓 Journal de trading</h1><div class="s">Le journal qui corrige tes pertes · <b style="color:#F5B45B">Track · Learn · Improve · Repeat</b> · 🤖 les clôtures du Desk se journalisent ici tout seules · ☁️ synchronisé</div></div>'
-  '<div style="margin-left:auto;align-self:center;display:flex;gap:6px"><button class="vbtn" onclick="jExport()">⬇️ Export</button><button class="vbtn" onclick="jImport()">⬆️ Import</button></div></div>'
-  '<div class="kpiband" id="jKpi" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"></div>'
-  '<div class="jg jmain" style="grid-template-columns:1.35fr 1fr;gap:14px;margin-top:2px"><div id="jEquityWrap"></div><div id="jPsychWrap"></div></div>'
-  '<div class="vstit">✍️ NOUVELLE ENTRÉE <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· note ton trade pendant qu\'il est frais</span></div>'
-  '<div class="vcard" style="padding:16px 20px">'
-    '<div class="jg jmain" style="grid-template-columns:1.05fr .95fr;align-items:start;gap:16px">'
-      '<div>'
-        '<div class="jsec"><h4><span class="n">1</span>SETUP DU TRADE</h4><div class="jg">'
-          '<div class="jfield"><label>Actif / Ticker</label><input id="jTicker" class="jf" placeholder="ex. NVDA · MNQ · BTC"></div>'
-          '<div class="jfield"><label>Timeframe</label><select id="jTf" class="jf"><option value="">—</option><option>1m</option><option>5m</option><option>15m</option><option>1h</option><option>4h</option><option>Daily</option><option>Weekly</option></select></div>'
-          '<div class="jfield"><label>Direction</label><div class="jtog"><button type="button" id="jDirL" onclick="setDir(\'LONG\')">▲ Long</button><button type="button" id="jDirS" onclick="setDir(\'SHORT\')">▼ Short</button></div></div>'
-          '<div class="jfield"><label>Raison d\'entrée</label><input id="jReason" class="jf" placeholder="setup / signal"></div>'
-        '</div></div>'
-        '<div class="jsec"><h4><span class="n">2</span>PLAN DE RISQUE</h4><div class="jg">'
-          '<div class="jfield"><label>Entrée</label><input id="jEntry" class="jf" type="number" step="any" oninput="rr()"></div>'
-          '<div class="jfield"><label>Stop loss</label><input id="jStop" class="jf" type="number" step="any" oninput="rr()"></div>'
-          '<div class="jfield"><label>Objectif (TP)</label><input id="jTp" class="jf" type="number" step="any" oninput="rr()"></div>'
-          '<div class="jfield"><label>Risque %</label><input id="jRisk" class="jf" type="number" step="any" placeholder="% capital"></div>'
-        '</div><div style="margin-top:10px;font-size:12px;color:#8794ab">Ratio R:R planifié : <b id="jRR" style="color:#F5B45B">—</b></div></div>'
-        '<div class="jsec"><h4><span class="n">3</span>CHECK PSYCHOLOGIQUE</h4>'
-          '<div class="jfield" style="margin-bottom:12px"><label>État émotionnel avant le trade</label><div class="jchips" id="jEmoChips"></div></div>'
-          '<div class="jg"><div class="jfield"><label>Confiance (1-10)</label><input id="jConf" class="jf" type="number" min="1" max="10"></div>'
-          '<div class="jfield"><label>Discipline (1-10)</label><input id="jDisc" class="jf" type="number" min="1" max="10"></div></div>'
-          '<div class="jfield" style="margin-top:10px"><label>Déclencheur d\'erreur (optionnel)</label><input id="jTrigger" class="jf" placeholder="ex. FOMO · revanche · sur-trading"></div>'
-        '</div>'
-      '</div>'
-      '<div>'
-        '<div class="jsec" style="border-color:rgba(255,140,50,.28)"><h4><span class="n">4</span>REVUE DU RÉSULTAT</h4>'
-          '<div class="jfield"><label>Résultat</label><div class="jtog"><button type="button" id="jResW" onclick="setRes(\'WIN\')">✓ Gagnant</button><button type="button" id="jResL" onclick="setRes(\'LOSS\')">✕ Perdant</button></div></div>'
-          '<div class="jg" style="margin-top:12px"><div class="jfield"><label>Prix de sortie</label><input id="jExit" class="jf" type="number" step="any"></div>'
-          '<div class="jfield"><label>P&amp;L ($)</label><input id="jPnl" class="jf" type="number" step="any"></div></div>'
-          '<div class="jfield" style="margin-top:12px"><label>💡 Leçon apprise</label><textarea id="jLesson" class="jf" placeholder="Qu\'est-ce qui a marché ? Que retenir ?"></textarea></div>'
-          '<div class="jfield" style="margin-top:10px"><label>⚠️ Erreur à ne plus répéter</label><input id="jMistake" class="jf" placeholder="ex. stop bougé trop tôt"></div>'
-        '</div>'
-        '<button class="vbtn pri" style="width:100%;padding:12px;font-size:15px;border-radius:16px" onclick="jSave()">💾 Enregistrer dans le journal</button>'
-        '<div id="jMsg" style="text-align:center;font-size:12px;margin-top:8px;min-height:15px;font-weight:700"></div>'
-      '</div>'
-    '</div>'
-  '</div>'
-  '<div class="vstit">📒 MES TRADES JOURNALISÉS <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· <span id="jCnt">0</span> entrée(s) · ✕ pour supprimer</span></div>'
-  '<div id="jFilter" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px"></div>'
-  '<div id="jList"></div>'
-  # ── Décisions du Comité épinglées (fusionné depuis /decisions) ──
-  '<div class="vstit">🏛️ DÉCISIONS DU COMITÉ ÉPINGLÉES <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· fige le verdict du comité, reviens dessus, apprends · le « verdict a posteriori » sert à apprendre &nbsp;<button class="vbtn dng" style="font-size:10px;padding:2px 8px;vertical-align:middle" onclick="djClear()">Tout effacer</button></span></div>'
-  '<div class="kpiband" id="djStats" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:10px"></div>'
-  '<div id="djList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;margin-bottom:8px"></div>'
-  '<div class="vstit">🔁 LA BOUCLE DE PROGRESSION</div>'
-  '<div class="jloop">'
-    '<div class="jstep" style="border-color:rgba(239,68,68,.35)"><div style="font-size:20px">❌</div><div style="font-size:12px;font-weight:800;color:#EF4444;margin-top:6px">Erreur</div></div>'
-    '<span class="jarrow">➜</span>'
-    '<div class="jstep"><div style="font-size:20px">🔍</div><div style="font-size:12px;font-weight:800;color:#C9D2E0;margin-top:6px">Revue</div></div>'
-    '<span class="jarrow">➜</span>'
-    '<div class="jstep"><div style="font-size:20px">🔧</div><div style="font-size:12px;font-weight:800;color:#C9D2E0;margin-top:6px">Ajustement</div></div>'
-    '<span class="jarrow">➜</span>'
-    '<div class="jstep" style="border-color:rgba(34,197,94,.35)"><div style="font-size:20px">📈</div><div style="font-size:12px;font-weight:800;color:#22C55E;margin-top:6px">Meilleur trade</div></div>'
-    '<span class="jarrow">➜</span>'
-    '<div class="jstep" style="border-color:rgba(245,180,91,.45)"><div style="font-size:20px">👑</div><div style="font-size:12px;font-weight:800;color:#F5B45B;margin-top:6px">Constance</div></div>'
-  '</div>',
-  head=_JOURNAL_HEAD, js=_JOURNAL_JS + _DECJ_JS)
+# ── TRADE JOURNAL 2.0 — le cerveau de Vertex : vertex/ui/journal.py (Ch. IV) ──
+PAGE_JOURNAL = _vpage('Journal', _tj_ui.BODY, head=_tj_ui.CSS, js=_tj_ui.JS + _DECJ_JS)
 
 
 PAGE_COMPARE = _vpage('Comparateur',
