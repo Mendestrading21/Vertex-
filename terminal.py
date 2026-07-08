@@ -21,8 +21,7 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from flask import Flask, jsonify, redirect, request, session
-import hmac as _hmac
+from flask import Flask, jsonify, redirect, request
 
 try:
     from dotenv import load_dotenv
@@ -30,7 +29,7 @@ try:
 except Exception:
     pass
 
-from elio import scoring, config, options, ai, daily, anomalies, sectors, research, market, weekly, fundamentals, engine, ibkr, strategy, committee, pivots, vertex, portfolio_risk, validator, physics, timeframe
+from elio import scoring, config, options, ai, daily, anomalies, sectors, research, market, weekly, fundamentals, engine, ibkr, strategy, committee, pivots, vertex, physics, timeframe
 
 DAILY_PREV_PATH = os.path.join(os.path.dirname(__file__), 'daily_prev.json')  # baseline diff jour/jour
 WEEKLY_PATH = os.path.join(os.path.dirname(__file__), 'weekly_snapshot.json')  # sélection hebdo FIGÉE
@@ -42,6 +41,7 @@ from vertex.data.constants import BENCH, R, BUILD, REFRESH_SEC  # noqa: F401
 from vertex.app.config import IBKR_ENABLED, DEMO_MODE  # noqa: F401
 from vertex.data import constants as _vconst
 from vertex.services import status_service as _status_svc
+from vertex.services import persist as _persist
 from vertex.engines import decision_stack as _decision
 from vertex.ui import nav as _nav
 from vertex.engines import indicators as _indicators
@@ -51,7 +51,9 @@ from vertex.engines import swing as _swing
 from vertex.engines import strategy_fit as _strategy_fit
 from vertex.engines import stats as _stats
 from vertex.app.state import scan_state, weekly_state, news_state, cal_state
-from vertex.engines import market_lens as _market_lens
+from vertex.app.routes import auth as _auth
+from vertex.app.routes import command as _command
+from vertex.app.routes import desk as _desk
 from vertex.app.routes import decision_api as _decision_api
 from vertex.app.routes import analysis_api as _analysis_api
 from vertex.app.routes import feeds as _feeds
@@ -94,106 +96,12 @@ except Exception:
 #   • Recommandé aussi : VERTEX_SECRET=une_longue_chaine_aléatoire (sinon dérivée du code).
 # ─────────────────────────────────────────────────────────────────────────────
 # Source unique de la config d'accès : vertex/app/config.py (dé-duplication — cf. audit).
+# Verrou complet (login/logout + garde globale + anti-force-brute) : Blueprint auth (Ch. II/XV).
 from vertex.app.config import VERTEX_CODE, AUTH_ON, SECRET_KEY  # noqa: E402
 app.secret_key = SECRET_KEY
 app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
                   PERMANENT_SESSION_LIFETIME=timedelta(days=30))
-_AUTH_PUBLIC = {'/login', '/logout', '/healthz', '/api/healthz',
-                '/favicon.ico', '/favicon.svg', '/manifest.webmanifest', '/sw.js'}
-_LOGIN_FAILS = {}   # ip -> [nb_essais, bloqué_jusquà_ts]
-
-
-def _client_ip():
-    xf = (request.headers.get('X-Forwarded-For') or '').split(',')[0].strip()
-    return xf or request.remote_addr or '?'
-
-
-@app.before_request
-def _auth_gate():
-    if not AUTH_ON:
-        return None
-    p = request.path
-    if p in _AUTH_PUBLIC or p.startswith('/static'):
-        return None
-    if session.get('vx_ok'):
-        return None
-    # Non authentifié : les appels de données répondent 401 (le JS le gère),
-    # les pages redirigent vers le verrou.
-    if p.startswith('/api/') or p in ('/scan', '/quotes', '/cal-feed', '/news-feed', '/weekly-feed'):
-        return jsonify({'error': 'auth', 'login': '/login'}), 401
-    return redirect('/login?next=' + p)
-
-
-def _login_page(msg='', locked=False):
-    err = ('<div class="err">' + msg + '</div>') if msg else ''
-    return ('<!doctype html><html lang="fr"><head><meta charset="utf-8">'
-      '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
-      '<meta name="theme-color" content="#0b0e14"><title>VERTEX · Accès</title>'
-      '<style>'
-      '*{box-sizing:border-box}html,body{margin:0;height:100%}'
-      'body{background:radial-gradient(130% 60% at 50% -10%,rgba(255,122,24,.14),transparent 60%),linear-gradient(180deg,#0c0e14,#070809);'
-      'color:#e8edf5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;display:flex;align-items:center;justify-content:center;padding:20px}'
-      '.card{width:100%;max-width:360px;background:linear-gradient(180deg,#14171f,#0d0f14);border:1px solid rgba(255,140,50,.22);'
-      'border-radius:20px;padding:32px 24px;box-shadow:0 40px 90px -30px rgba(0,0,0,.9),0 0 60px -30px rgba(255,122,24,.5);text-align:center}'
-      '.mark{width:56px;height:56px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:24px;'
-      'background:linear-gradient(135deg,rgba(255,178,63,.22),rgba(255,122,24,.08));border:1px solid rgba(255,140,50,.42);'
-      'border-radius:16px;color:#FF9A3D;box-shadow:0 0 26px -6px rgba(255,122,24,.7)}'
-      '.t{font-size:20px;font-weight:900;letter-spacing:2px}.t b{color:#FF7A18}'
-      '.s{font-size:12px;color:#8794ab;margin:6px 0 20px}'
-      'input{width:100%;background:#0a0c11;border:1px solid rgba(255,255,255,.12);color:#f2f5fa;border-radius:12px;'
-      'padding:14px 16px;font-size:20px;text-align:center;letter-spacing:5px;font-weight:700;outline:none}'
-      'input:focus{border-color:#FF7A18;box-shadow:0 0 0 3px rgba(255,122,24,.16)}'
-      'button{width:100%;margin-top:12px;background:linear-gradient(135deg,#FF7A18,#FF9A3D);color:#0b0b0b;border:none;'
-      'border-radius:12px;padding:14px;font-weight:900;font-size:15px;letter-spacing:.5px;cursor:pointer;box-shadow:0 8px 24px -8px rgba(255,122,24,.6)}'
-      'button:hover{filter:brightness(1.08)}button:disabled{opacity:.5;cursor:not-allowed}'
-      '.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);color:#f0b0b0;font-size:13px;'
-      'border-radius:12px;padding:10px 12px;margin-bottom:16px}'
-      '.foot{font-size:10px;color:#4b5563;margin-top:16px;letter-spacing:1px}'
-      '</style></head><body>'
-      '<form class="card" method="POST" action="/login?next=' + (request.args.get('next', '/') if request else '/') + '">'
-      '<div class="mark">▲</div><div class="t">VERTEX<b>.</b></div>'
-      '<div class="s">🔒 Accès protégé — entre ton code</div>'
-      + err +
-      '<input name="code" type="password" inputmode="numeric" autocomplete="current-password" '
-      'placeholder="• • • •" autofocus ' + ('disabled' if locked else '') + '>'
-      '<button type="submit"' + (' disabled' if locked else '') + '>Entrer →</button>'
-      '<div class="foot">VERTEX TRADING DESK · ANALYSE ONLY</div>'
-      '</form></body></html>')
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login_page():
-    if not AUTH_ON:
-        return redirect('/')
-    ip = _client_ip()
-    now = time.time()
-    st = _LOGIN_FAILS.get(ip, [0, 0])
-    nxt = request.args.get('next') or '/'
-    if not nxt.startswith('/'):
-        nxt = '/'
-    if request.method == 'POST':
-        if st[1] > now:
-            return _login_page("Trop d'essais. Réessaie dans %ds." % int(st[1] - now), locked=True)
-        code = (request.form.get('code') or '').strip()
-        if VERTEX_CODE and _hmac.compare_digest(code, VERTEX_CODE):
-            session.permanent = True
-            session['vx_ok'] = True
-            _LOGIN_FAILS.pop(ip, None)
-            return redirect(nxt)
-        st[0] += 1
-        lock = min(300, 15 * (st[0] - 4)) if st[0] >= 5 else 0   # verrou progressif après 5 essais
-        st[1] = now + lock
-        _LOGIN_FAILS[ip] = st
-        return _login_page('Code incorrect.' + (' Bloqué %ds.' % lock if lock else ''), locked=lock > 0)
-    if session.get('vx_ok'):
-        return redirect(nxt)
-    return _login_page()
-
-
-@app.route('/logout')
-def logout_page():
-    session.clear()
-    return redirect('/login')
+app.register_blueprint(_auth.make_blueprint(code=VERTEX_CODE))
 
 
 # scan_state : état partagé du scan — domicile unique dans vertex/app/state.py.
@@ -203,28 +111,9 @@ def logout_page():
 # yfinance throttle les .info/option_chain en masse → après chaque restart tout retombait
 # à 0. On persiste fondamentaux + options + macro sur disque : rechargés instantanément
 # au démarrage, remplis GRADUELLEMENT en fond (petits lots) → jamais 0.
-_CACHE_LOCK = threading.Lock()
-
-
-def _cache_path(name):
-    return os.path.join(os.path.dirname(__file__), name)
-
-
-def _load_json(name, default):
-    try:
-        with open(_cache_path(name), 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception:
-        return default
-
-
-def _save_json(name, obj):
-    try:
-        with _CACHE_LOCK:
-            with open(_cache_path(name), 'w', encoding='utf-8') as f:
-                json.dump(obj, f)
-    except Exception:
-        pass
+# Source unique de la persistance JSON : vertex/services/persist.py (Ch. II).
+_load_json = _persist.load_json
+_save_json = _persist.save_json
 
 
 # Médianes de valorisation par secteur : source unique dans vertex/engines/stats.py.
@@ -1672,71 +1561,6 @@ def _gzip_response(resp):
     return resp
 
 
-_DESK_LOCK = threading.Lock()
-
-
-@app.route('/api/desk', methods=['GET', 'POST'])
-def api_desk():
-    """Synchronisation du desk perso (trades, journal, favoris, capital, simulateur) entre appareils.
-    Stockage local dans desk_data.json — dernier écrivain gagne (blob complet + timestamp)."""
-    if request.method == 'POST':
-        body = request.get_json(force=True, silent=True) or {}
-        if not isinstance(body.get('data'), dict) or not body.get('ts'):
-            return jsonify({'ok': False, 'err': 'payload invalide'}), 400
-        with _DESK_LOCK:
-            _save_json('desk_data.json', {'ts': body['ts'], 'data': body['data']})
-        return jsonify({'ok': True, 'ts': body['ts']})
-    with _DESK_LOCK:
-        d = _load_json('desk_data.json', {}) or {}
-    return jsonify(d)
-
-
-_POSQ_CACHE = {}        # cotations des trades perso : {key: (ts, data)} — TTL 45 s
-
-
-@app.route('/api/pos-quotes', methods=['POST'])
-def api_pos_quotes():
-    """Cote en direct les TRADES PERSO saisis sur la page Ma Stratégie (actions + options).
-    Body : {positions:[{sym, exp?, strike?, right?}]} — exp 'YYYY-MM' acceptée (résolue au vrai jour).
-    ⛔ Lecture seule : cote les contrats, ne passe JAMAIS d'ordre."""
-    body = request.get_json(force=True, silent=True) or {}
-    poss = (body.get('positions') or [])[:24]
-    now = time.time()
-    todo, out = [], {}
-    for p in poss:
-        if not isinstance(p, dict):
-            continue
-        key = '%s|%s|%s|%s' % ((p.get('sym') or '').upper(), p.get('exp') or '',
-                               p.get('strike') if p.get('strike') is not None else '',
-                               (p.get('right') or '').upper())
-        p['key'] = key
-        c = _POSQ_CACHE.get(key)
-        if c and now - c[0] < 45:
-            out[key] = c[1]
-        else:
-            todo.append(p)
-    if todo and IBKR_ENABLED:
-        res = _opt_job('posq', (todo,), timeout=45) or {}
-        for k, v in res.items():
-            if v is not None:
-                _POSQ_CACHE[k] = (now, v)
-                out[k] = v
-    return jsonify({'results': out, 'live': bool(IBKR_ENABLED), 'ts': int(now)})
-
-
-@app.route('/api/watchlist-tv')
-def api_watchlist_tv():
-    """Univers du desk au format TradingView (à coller dans une watchlist TV pour rester synchronisé)."""
-    syms = list(UNIVERSE)
-    return jsonify({'count': len(syms), 'symbols': syms, 'tv': ','.join(syms)})
-
-
-def _market_score(mc):
-    """Score marché /100 — source unique dans vertex/engines/market_lens.climate()."""
-    cl = _market_lens.climate(mc)
-    return cl['score'] if cl else None
-
-
 def _scan_age():
     return round(time.time() - scan_state['scan_ts']) if scan_state.get('scan_ts') else None
 
@@ -1853,118 +1677,16 @@ def api_correlations(sym):
     except Exception as e:
         return jsonify({'sym': sym, 'corr': [], 'error': f'{type(e).__name__}: {e}'})
 
+# ─── DESK PERSO (Blueprint) — /api/desk · /api/watchlist-tv · /api/pos-quotes ───
+# (/api/ticker reste ici : la version enrichie — entreprise + pairs — a remplacé celle du Blueprint)
+app.register_blueprint(_desk.make_blueprint(opt_job=_opt_job, ibkr_enabled=IBKR_ENABLED))
+
 
 # ─── ENDPOINTS D'ANALYSE (Blueprint) — /api/vertex · /api/validator · /api/risk ───
 app.register_blueprint(_analysis_api.bp)
 
-
-@app.route('/api/command')
-def api_command():
-    """VERTEX COMMAND CENTER : consolide régime, top actions/options, alertes,
-    décision du jour, exposition. Machine de décision — lecture seule, aucun ordre."""
-    mc = scan_state.get('market_ctx') or {}
-    cm = scan_state.get('committee') or {}
-    st = scan_state.get('strategy') or {}
-    detail = scan_state.get('detail') or {}
-    score = _market_score(mc)
-    reg, roro = mc.get('spy_regime'), mc.get('roro')
-    # régime final
-    if roro == 'RISK-OFF':
-        regime = {'label': '🔴 RISK-OFF', 'color': '#EF4444'}
-    elif roro == 'RISK-ON' and reg != 'CHOP':
-        regime = {'label': '🟢 RISK-ON', 'color': '#22C55E'}
-    else:
-        regime = {'label': '🟡 NEUTRE', 'color': '#FFB23F'}
-    regime.update({'score': score, 'spy_regime': reg, 'roro': roro})
-    # top 5 actions (comité actionnable) + bloc VERTEX (edge probabiliste)
-    decisions = cm.get('decisions') or []
-
-    def _vtx(sym):
-        v = (detail.get(sym) or {}).get('vertex') or {}
-        mc2 = v.get('mc') or {}
-        return {'verdict': v.get('verdict'), 'edge': v.get('edge'),
-                'p_win': (v.get('ml') or {}).get('p_win'),
-                'p_tp1': mc2.get('p_hit_tp1'), 'edge_bps': mc2.get('edge_mean_bps'),
-                'no_trade': v.get('no_trade')}
-    top_stocks = [{'symbol': d['symbol'], 'verdict': d['verdict'], 'color': d['color'],
-                   'conviction': d['conviction'], 'price': d['price'],
-                   'rr': (d.get('plan') or {}).get('rr'), 'note': d['note'],
-                   'vertex': _vtx(d['symbol'])}
-                  for d in decisions if d['verdict'] in ('ACHETER', 'RENFORCER')][:5]
-    # top 5 options (meilleure échéance 6 mois)
-    top_options = []
-    for p in (st.get('picks') or [])[:5]:
-        d = p.get('primary', 'CALL')
-        legs = (p.get('put') if d == 'PUT' else p.get('call')) or []
-        leg = next((l for l in legs if l.get('key') == 'm6'), legs[0] if legs else None)
-        if leg:
-            sc = leg.get('scenarios') or {}
-            top_options.append({'symbol': p['symbol'], 'dir': d, 'label': leg['label'],
-                                'strike': leg['strike'], 'premium': leg['premium'],
-                                'prob': (sc.get('prob') or {}).get('pct'),
-                                'except': (sc.get('except') or {}).get('pct')})
-    # alertes rouges (risk manager, niveau marché)
-    alerts = []
-    if roro == 'RISK-OFF':
-        alerts.append(['🔴', 'RISK-OFF', "Marché risk-off — réduire l'exposition, pas de nouveau pari agressif."])
-    if reg == 'CHOP':
-        alerts.append(['🟠', 'RANGE', 'Marché sans tendance (chop) — les cassures échouent, patience.'])
-    vix = mc.get('vix')
-    if vix and vix > 22:
-        alerts.append(['🟠', 'VOLATILITÉ', f'VIX {round(vix)} élevé — options chères, dimensionner petit.'])
-    overext = sum(1 for dd in detail.values() if (dd.get('ext_atr') or 0) >= 3)
-    if overext >= 5:
-        alerts.append(['🟠', 'EUPHORIE', f'{overext} titres très étendus — ne pas chasser, attendre les replis.'])
-    # décision du jour
-    n_act = len(top_stocks)
-    if roro == 'RISK-OFF' or reg == 'CHOP':
-        decision = {'action': 'RÉDUIRE / DÉFENSIF', 'color': '#EF4444',
-                    'msg': 'Préserver le capital : cash + couvertures. On n\'attaque pas.'}
-    elif n_act >= 2 and (score or 0) >= 55:
-        decision = {'action': 'ATTAQUER', 'color': '#22C55E',
-                    'msg': f'{n_act} setups validés en marché porteur — déployer avec discipline (R:R ≥ 2:1).'}
-    else:
-        decision = {'action': 'ATTENDRE / SÉLECTIF', 'color': '#FFB23F',
-                    'msg': 'Peu d\'avantage statistique — n\'acheter que l\'exceptionnel, garder du cash.'}
-    # RISK MANAGER portefeuille (corrélation / concentration / secteurs)
-    try:
-        risk = portfolio_risk.build([r['symbol'] for r in (cm.get('decisions') or [])
-                                     if r['verdict'] in ('ACHETER', 'RENFORCER')][:8] or
-                                    [r['symbol'] for r in (scan_state.get('rows') or [])[:8]],
-                                    detail)
-    except Exception:
-        risk = None
-    if risk and risk.get('no_new_risk'):
-        if 'correlation_panier_elevee' in risk.get('flags', []):
-            alerts.append(['🟠', 'CORRÉLATION', f"Panier trop corrélé ({risk['avg_corr']}) — diversifier avant d'ajouter du risque."])
-        if 'concentration_sectorielle' in risk.get('flags', []):
-            alerts.append(['🟠', 'CONCENTRATION', f"Secteur {risk.get('max_sector_name')} à {risk.get('max_sector')}% — trop concentré."])
-    try:
-        valid = validator.build((scan_state.get('portfolio') or {}).get('equity') or [])
-    except Exception:
-        valid = None
-    return jsonify({'regime': regime, 'portfolio_score': score, 'decision': decision,
-                    'top_stocks': top_stocks, 'top_options': top_options, 'alerts': alerts,
-                    'counts': cm.get('counts') or {}, 'risk': risk, 'validation': valid,
-                    'exposure': {'actions': '70-90%', 'options': '10-20%', 'etf': 'tampon / cash'}})
-
-
-@app.route('/api/portefeuille')
-def api_portefeuille():
-    """Portefeuille d'options construit sur un capital (50k/100k/200k…). Analyse only."""
-    try:
-        cap = int(float(request.args.get('capital', 100000)))
-    except Exception:
-        cap = 100000
-    cap = max(5000, min(cap, 1000000))
-    rows = scan_state.get('rows')
-    if not rows:
-        return jsonify({})
-    try:
-        return jsonify(strategy.build_portfolio(rows, scan_state.get('detail'),
-                                                market=scan_state.get('market_ctx'), capital=cap))
-    except Exception as e:
-        return jsonify({'error': f'{type(e).__name__}: {e}'})
+# ─── COMMAND CENTER (Blueprint) — /api/command · /api/portefeuille ───
+app.register_blueprint(_command.bp)
 
 
 # ─── DESCRIPTION MÉTIER (yfinance longBusinessSummary) : à la demande + cache persistant ───

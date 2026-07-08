@@ -33,7 +33,7 @@ def test_shell_pages_inherit_single_source():
     assert nav.nav_array_js() in terminal._NAVJS_BLOCK
 
 
-def test_new_workflows_are_in_nav():
-    # Les workflows Ch. XIX livrés cette session doivent être navigables.
-    for path in ('/brief', '/review', '/decisions', '/research'):
+def test_core_workflows_are_in_nav():
+    # La nav redessinée (design 2026-07-08) : les pages cœur restent navigables.
+    for path in ('/', '/stocks', '/options', '/journal', '/settings'):
         assert path in nav.paths()
