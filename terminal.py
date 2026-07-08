@@ -41,6 +41,7 @@ from vertex.data.constants import BENCH, R, BUILD, REFRESH_SEC  # noqa: F401
 from vertex.app.config import IBKR_ENABLED, DEMO_MODE  # noqa: F401
 from vertex.data import constants as _vconst
 from vertex.services import status_service as _status_svc
+from vertex.services import persist as _persist
 from vertex.engines import decision_stack as _decision
 from vertex.ui import nav as _nav
 from vertex.engines import indicators as _indicators
@@ -52,6 +53,7 @@ from vertex.engines import stats as _stats
 from vertex.app.state import scan_state, weekly_state, news_state, cal_state
 from vertex.engines import market_lens as _market_lens
 from vertex.app.routes import auth as _auth
+from vertex.app.routes import desk as _desk
 from vertex.app.routes import decision_api as _decision_api
 from vertex.app.routes import analysis_api as _analysis_api
 from vertex.app.routes import feeds as _feeds
@@ -108,28 +110,9 @@ app.register_blueprint(_auth.make_blueprint(code=VERTEX_CODE))
 # yfinance throttle les .info/option_chain en masse → après chaque restart tout retombait
 # à 0. On persiste fondamentaux + options + macro sur disque : rechargés instantanément
 # au démarrage, remplis GRADUELLEMENT en fond (petits lots) → jamais 0.
-_CACHE_LOCK = threading.Lock()
-
-
-def _cache_path(name):
-    return os.path.join(os.path.dirname(__file__), name)
-
-
-def _load_json(name, default):
-    try:
-        with open(_cache_path(name), 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception:
-        return default
-
-
-def _save_json(name, obj):
-    try:
-        with _CACHE_LOCK:
-            with open(_cache_path(name), 'w', encoding='utf-8') as f:
-                json.dump(obj, f)
-    except Exception:
-        pass
+# Source unique de la persistance JSON : vertex/services/persist.py (Ch. II).
+_load_json = _persist.load_json
+_save_json = _persist.save_json
 
 
 # Médianes de valorisation par secteur : source unique dans vertex/engines/stats.py.
@@ -1577,65 +1560,6 @@ def _gzip_response(resp):
     return resp
 
 
-_DESK_LOCK = threading.Lock()
-
-
-@app.route('/api/desk', methods=['GET', 'POST'])
-def api_desk():
-    """Synchronisation du desk perso (trades, journal, favoris, capital, simulateur) entre appareils.
-    Stockage local dans desk_data.json — dernier écrivain gagne (blob complet + timestamp)."""
-    if request.method == 'POST':
-        body = request.get_json(force=True, silent=True) or {}
-        if not isinstance(body.get('data'), dict) or not body.get('ts'):
-            return jsonify({'ok': False, 'err': 'payload invalide'}), 400
-        with _DESK_LOCK:
-            _save_json('desk_data.json', {'ts': body['ts'], 'data': body['data']})
-        return jsonify({'ok': True, 'ts': body['ts']})
-    with _DESK_LOCK:
-        d = _load_json('desk_data.json', {}) or {}
-    return jsonify(d)
-
-
-_POSQ_CACHE = {}        # cotations des trades perso : {key: (ts, data)} — TTL 45 s
-
-
-@app.route('/api/pos-quotes', methods=['POST'])
-def api_pos_quotes():
-    """Cote en direct les TRADES PERSO saisis sur la page Ma Stratégie (actions + options).
-    Body : {positions:[{sym, exp?, strike?, right?}]} — exp 'YYYY-MM' acceptée (résolue au vrai jour).
-    ⛔ Lecture seule : cote les contrats, ne passe JAMAIS d'ordre."""
-    body = request.get_json(force=True, silent=True) or {}
-    poss = (body.get('positions') or [])[:24]
-    now = time.time()
-    todo, out = [], {}
-    for p in poss:
-        if not isinstance(p, dict):
-            continue
-        key = '%s|%s|%s|%s' % ((p.get('sym') or '').upper(), p.get('exp') or '',
-                               p.get('strike') if p.get('strike') is not None else '',
-                               (p.get('right') or '').upper())
-        p['key'] = key
-        c = _POSQ_CACHE.get(key)
-        if c and now - c[0] < 45:
-            out[key] = c[1]
-        else:
-            todo.append(p)
-    if todo and IBKR_ENABLED:
-        res = _opt_job('posq', (todo,), timeout=45) or {}
-        for k, v in res.items():
-            if v is not None:
-                _POSQ_CACHE[k] = (now, v)
-                out[k] = v
-    return jsonify({'results': out, 'live': bool(IBKR_ENABLED), 'ts': int(now)})
-
-
-@app.route('/api/watchlist-tv')
-def api_watchlist_tv():
-    """Univers du desk au format TradingView (à coller dans une watchlist TV pour rester synchronisé)."""
-    syms = list(UNIVERSE)
-    return jsonify({'count': len(syms), 'symbols': syms, 'tv': ','.join(syms)})
-
-
 def _market_score(mc):
     """Score marché /100 — source unique dans vertex/engines/market_lens.climate()."""
     cl = _market_lens.climate(mc)
@@ -1649,12 +1573,9 @@ def _scan_age():
 # ─── FLUX DE DONNÉES (Blueprint) — market/summary · cockpit · watchlist · options · search · weekly · strategie · comite ───
 app.register_blueprint(_feeds.bp)
 
-
-@app.route('/api/ticker/<sym>')
-def api_ticker(sym):
-    sym = sym.upper()
-    return jsonify({'symbol': sym, 'in_universe': sym in UNIVERSE,
-                    'detail': (scan_state.get('detail') or {}).get(sym), 'pack': options_pack(sym)})
+# ─── DESK PERSO (Blueprint) — /api/desk · /api/watchlist-tv · /api/ticker · /api/pos-quotes ───
+app.register_blueprint(_desk.make_blueprint(options_pack=options_pack, opt_job=_opt_job,
+                                            ibkr_enabled=IBKR_ENABLED))
 
 
 # ─── ENDPOINTS D'ANALYSE (Blueprint) — /api/vertex · /api/validator · /api/risk ───
