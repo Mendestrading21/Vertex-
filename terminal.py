@@ -47,6 +47,7 @@ from vertex.ui import nav as _nav
 from vertex.ui import options_lab as _olab_ui
 from vertex.ui import journal as _tj_ui
 from vertex.ui import home_art as _home_art
+from vertex.ui import signals as _sg_ui
 from vertex.engines import indicators as _indicators
 from vertex.engines import analysis as _analysis
 from vertex.engines import backtest as _backtest
@@ -6249,6 +6250,13 @@ _BORDEL_JS = ("function go(s){location.href='/titre/'+encodeURIComponent(s);}\n"
   + "load();setInterval(load,20000);")
 
 _VPAGE_CSS = ("*{box-sizing:border-box;margin:0;padding:0}"
+  "body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;"
+  "background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);"
+  "background-size:56px 56px;-webkit-mask-image:radial-gradient(900px 460px at 60% 0,#000 30%,transparent 75%);mask-image:radial-gradient(900px 460px at 60% 0,#000 30%,transparent 75%)}"
+  "::selection{background:rgba(255,122,24,.32);color:#fff}"
+  "*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent}"
+  "*::-webkit-scrollbar{width:9px;height:9px}*::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:9px}"
+  "*::-webkit-scrollbar-thumb:hover{background:rgba(255,122,24,.35)}"
   "body{background:radial-gradient(120% 34% at 18% -6%,rgba(255,122,24,.06),transparent 60%),radial-gradient(1100px 680px at 50% -14%,#0e1016,#07080a 60%);background-attachment:fixed;color:#F8FAFC;font-family:'Inter','Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;padding:20px 24px 80px;font-variant-numeric:tabular-nums}"
   ".vwrap{max-width:1320px;margin:0 auto}.muted{color:#8794ab}.up{color:#22C55E}.dn{color:#EF4444}"
   ".vhead{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:16px;margin-bottom:16px;animation:vheadIn .5s cubic-bezier(.22,1,.36,1) both}"
@@ -6956,57 +6964,37 @@ def settings_page():
     return PAGE_SETTINGS
 
 
-_ANOM_JS = r"""
-var ALL=[],ROWS={},FILT='all';
-function acol(x){return x.dir==='UP'?'#22C55E':x.dir==='DOWN'?'#EF4444':'#FFB23F';}
-function aVehChip(v){if(!v||!v.reco||v.reco==='—')return '';var c=v.tone==='orange'?'#FF7A18':v.tone==='blue'?'#38BDF8':v.tone==='gold'?'#F5B45B':'#8794ab';var ic=v.reco==='OPTION'?'💎':v.reco==='ACTION'?'📈':'⚖️';return '<span title="'+(v.why||'').replace(/"/g,'')+'" style="font-size:9px;font-weight:800;color:'+c+';background:'+c+'1a;border:1px solid '+c+'55;padding:2px 6px;border-radius:8px;white-space:nowrap">'+ic+' '+v.reco+'</span>';}
-function vxFollowStk(sym,spot,stop,tgt){try{var a=JSON.parse(localStorage.getItem('myRecos')||'[]');
- for(var i=0;i<a.length;i++){if(a[i].kind==='STK'&&a[i].sym===sym){
-   if(confirm('⭐ '+sym+' est déjà suivi — le RETIRER du suivi ?')){a.splice(i,1);localStorage.setItem('myRecos',JSON.stringify(a));localStorage.setItem('deskTs',String(Date.now()));if(typeof deskPush==='function')deskPush();if(typeof rRenderFollow==='function')rRenderFollow();alert(sym+' retiré du suivi ✓');}
-   return;}}
- a.push({id:Date.now(),kind:'STK',sym:sym,entry_spot:spot||null,stop:stop||null,tgt:tgt||null,followed:new Date().toISOString().slice(0,10)});
- localStorage.setItem('myRecos',JSON.stringify(a));localStorage.setItem('deskTs',String(Date.now()));if(typeof deskPush==='function')deskPush();
- alert('⭐ Suivi jusqu'+String.fromCharCode(8217)+'à la vente : '+sym+' — retrouve-le sur 📈 Trading Track. (Re-clique ⭐ pour le retirer.)');
- if(typeof rRenderFollow==='function'){rRenderFollow();if(typeof tRefresh==='function')tRefresh();}}catch(e){}}
-function aStar(sym){var r=ROWS[sym]||{};var pl=((window.__DET||{})[sym]||{}).plan||{};return '<span title="Suivre jusqu\'à la vente" onclick="event.stopPropagation();vxFollowStk(\''+sym+'\','+(r.price!=null?r.price:'null')+','+(pl.stop!=null?pl.stop:'null')+','+(pl.tp2!=null?pl.tp2:'null')+')" style="cursor:pointer;color:#F5B45B;font-size:12px">⭐</span>';}
-function aOpt(sym){return '<span title="Analyse option de '+sym+'" onclick="event.stopPropagation();location.href=\'/options?t='+sym+'\'" style="cursor:pointer;color:#A78BFA;font-size:12px">💎</span>';}
-function summary(){var by={};ALL.forEach(function(x){if(!by[x.code])by[x.code]={n:0,label:x.label};by[x.code].n++;});var codes=Object.keys(by).sort(function(a,b){return by[b].n-by[a].n;});
-  var nUp2=ALL.filter(function(x){return x.dir==='UP';}).length;var pctUp=ALL.length?Math.round(nUp2/ALL.length*100):0;
-  var ringCard='<div class="kpi" style="display:flex;align-items:center;gap:12px"><span>'+ (window.vxRing?vxRing(pctUp,pctUp>=55?'#22C55E':pctUp>=40?'#FFB23F':'#EF4444',pctUp+'%','HAUSSIERS',76):'') +'</span><div><div class="kl">SIGNAL GLOBAL</div><div class="kv" style="font-size:15px">'+nUp2+' 🟢 / '+(ALL.length-nUp2)+' 🔴</div><span class="kd '+(pctUp>=55?'up':pctUp>=40?'mut':'dn')+'">'+(pctUp>=55?'accumulation':pctUp>=40?'équilibré':'distribution')+'</span></div></div>';
-  document.getElementById('aSummary').innerHTML=ringCard+codes.slice(0,5).map(function(c){return '<div class="kpi"><div class="kl">'+by[c].label+'</div><div class="kv">'+by[c].n+'</div><span class="kd mut">signaux</span></div>';}).join('');}
-function scolA(s){return s>=72?'#22C55E':s>=55?'#FFB23F':'#EF4444';}
-function bestOpps(){var el=document.getElementById('aBest');if(!el)return;var seen={};
-  ALL.filter(function(x){return x.dir==='UP';}).forEach(function(x){var r=ROWS[x.symbol]||{};var sc=r.score||0;var opp=Math.round((x.score_anom||0)*0.45+sc*0.55);if(!seen[x.symbol]||seen[x.symbol].opp<opp)seen[x.symbol]={x:x,sc:sc,opp:opp,verdict:r.verdict,veh:r.vehicle};});
-  var list=Object.keys(seen).map(function(k){return seen[k];}).sort(function(a,b){return b.opp-a.opp;}).slice(0,6);
-  if(!list.length){el.innerHTML='';return;}
-  el.innerHTML='<div class="vstit" style="margin:0 0 12px">⭐ MEILLEURES OPPORTUNITÉS <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· anomalie haussière × qualité du titre · clic → fiche</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px">'+list.map(function(o){var sc=scolA(o.sc);return '<div onclick="location.href=\'/titre/'+o.x.symbol+'\'" class="necard" style="cursor:pointer;--vc:#22C55E;padding:12px 14px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px;font-weight:900">'+o.x.symbol+'</span><span style="font-size:9px;font-weight:800;color:#22C55E;background:rgba(34,197,94,.14);border:1px solid #22C55E44;padding:2px 6px;border-radius:8px">'+o.x.label+'</span><span style="margin-left:auto;text-align:right"><div style="font-size:8px;color:#6B7280;letter-spacing:.5px;font-weight:700">OPPORTUNITÉ</div><div style="font-size:17px;font-weight:900;color:#22C55E;line-height:1">'+o.opp+'</div></span></div><div style="display:flex;gap:10px;margin-top:8px;font-size:10px;align-items:center;flex-wrap:wrap"><span style="color:#8794ab">Score titre <b style="color:'+sc+'">'+o.sc+'</b></span>'+(o.verdict?'<span style="color:#8794ab">· '+o.verdict+'</span>':'')+aVehChip(o.veh)+aStar(o.x.symbol)+aOpt(o.x.symbol)+'</div><div style="font-size:11px;color:#C9D2E0;margin-top:8px;line-height:1.45">'+(o.x.note||'')+'</div></div>';}).join('')+'</div>';}
-function render(){var list=ALL.slice();if(FILT==='up')list=list.filter(function(x){return x.dir==='UP';});else if(FILT==='risk')list=list.filter(function(x){return x.dir==='DOWN'||x.dir==='WARN';});else if(FILT!=='all')list=list.filter(function(x){return x.code===FILT;});list=list.sort(function(a,b){return (b.score_anom||0)-(a.score_anom||0);});
-  document.getElementById('aGrid').innerHTML=list.map(function(x){var c=acol(x);
-    return '<div class="necard" onclick="location.href=\'/titre/'+x.symbol+'\'" style="cursor:pointer;--vc:'+c+';padding:12px 14px">'
-      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:15px;font-weight:800">'+x.symbol+'</span><span style="font-size:9px;font-weight:800;color:'+c+';background:'+c+'1a;border:1px solid '+c+'44;padding:2px 6px;border-radius:8px">'+x.label+'</span>'+aVehChip((ROWS[x.symbol]||{}).vehicle)+aStar(x.symbol)+aOpt(x.symbol)+'<span style="margin-left:auto;font-size:13px;font-weight:900;color:'+c+'">'+(x.score_anom!=null?x.score_anom:'')+'</span></div>'
-      +'<div style="font-size:11px;color:#6B7280;margin-top:6px">'+(x.note||'')+'</div></div>';
-  }).join('')||'<div class="muted" style="padding:20px">Aucune anomalie dans ce filtre.</div>';}
-function pills(){var by={};ALL.forEach(function(x){by[x.code]=(by[x.code]||0)+1;});var codes=Object.keys(by).sort(function(a,b){return by[b]-by[a];});var lab={};ALL.forEach(function(x){lab[x.code]=x.label;});
-  var nUp=ALL.filter(function(x){return x.dir==='UP';}).length,nRisk=ALL.filter(function(x){return x.dir==='DOWN'||x.dir==='WARN';}).length;
-  document.getElementById('aPills').innerHTML='<button class="vbtn'+(FILT==='all'?' pri':'')+'" onclick="setF(\'all\')">Toutes '+ALL.length+'</button>'
-    +'<button class="vbtn" onclick="setF(\'up\')" style="'+(FILT==='up'?'background:rgba(34,197,94,.16);border-color:#22C55E;color:#22C55E':'border-color:#22C55E44;color:#22C55E')+'">🟢 Opportunités '+nUp+'</button>'
-    +'<button class="vbtn" onclick="setF(\'risk\')" style="'+(FILT==='risk'?'background:rgba(239,68,68,.16);border-color:#EF4444;color:#EF4444':'border-color:#EF444444;color:#EF4444')+'">🔴 Risques '+nRisk+'</button>'
-    +codes.map(function(c){return '<button class="vbtn'+(FILT===c?' pri':'')+'" onclick="setF(\''+c+'\')">'+(lab[c]||c)+' '+by[c]+'</button>';}).join('');}
-window.setF=function(f){FILT=f;pills();render();};
-function load(){fetch('/scan').then(function(r){return r.json()}).then(function(d){ALL=d.anomalies||[];ROWS={};(d.rows||[]).forEach(function(r){ROWS[r.symbol]=r;});window.__DET=d.detail||{};document.getElementById('aHead').innerHTML='<b style="color:#C9D2E0">'+ALL.length+'</b> signaux hors-norme aujourd\'hui';summary();bestOpps();pills();render();}).catch(function(){});}
-load();setInterval(load,25000);
-"""
 
-PAGE_ANOMALIES = _vpage('Signaux',
-  '<div class="vhead"><div><h1>⚡ Signaux</h1><div class="s" id="aHead">détection en cours…</div></div></div>'
-  '<div id="aSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px"></div>'
-  '<div id="aBest" style="margin-bottom:16px"></div>'
-  '<div id="aPills" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div>'
-  '<div id="aGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:12px"></div>',
-  js=_ANOM_JS)
+# ── MARKET SIGNALS — refonte : vertex/ui/signals.py (Ch. IV/XI) ──
+PAGE_ANOMALIES = _vpage('Signaux', _sg_ui.BODY, head=_sg_ui.CSS, js=_sg_ui.JS)
 
 
 _SECT_JS = r"""
+function sQuadrant(gs){var el=document.getElementById('sQuad');if(!el)return;
+  if(!gs||gs.length<3){el.innerHTML='';return;}
+  var W=980,H=300,pL=52,pB=30,pT=14,pR=16;
+  var rsMin=30,rsMax=78,cgMax=Math.max(1.2,Math.max.apply(null,gs.map(function(g){return Math.abs(g.chg||0);}))*1.15);
+  var X=function(v){return pL+(W-pL-pR)*Math.max(0,Math.min(1,((v-rsMin)/(rsMax-rsMin))));};
+  var Y=function(v){return pT+(H-pT-pB)*(1-Math.max(0,Math.min(1,(v+cgMax)/(2*cgMax))));};
+  var grid='';[rsMin,50,rsMax].forEach(function(v){grid+='<line x1="'+X(v)+'" y1="'+pT+'" x2="'+X(v)+'" y2="'+(H-pB)+'" stroke="rgba(255,255,255,.05)"/><text x="'+X(v)+'" y="'+(H-12)+'" text-anchor="middle" font-size="9" fill="#5d6673">RS '+v+'</text>';});
+  grid+='<line x1="'+pL+'" y1="'+Y(0)+'" x2="'+(W-pR)+'" y2="'+Y(0)+'" stroke="rgba(255,255,255,.14)" stroke-dasharray="4 4"/>';
+  grid+='<text x="'+(W-pR-4)+'" y="'+(pT+12)+'" text-anchor="end" font-size="9.5" font-weight="800" fill="#22C55E" opacity=".7">LEADERS — force + momentum</text>';
+  grid+='<text x="'+(pL+4)+'" y="'+(H-pB-6)+'" font-size="9.5" font-weight="800" fill="#EF4444" opacity=".7">DÉLAISSÉS</text>';
+  var dots=gs.map(function(g,i){var col=scol(g.avg);var r=Math.max(10,Math.min(22,5+g.n*1.5));
+    return '<g style="cursor:pointer" onclick="openSec('+i+')"><circle cx="'+X(g.rs||50).toFixed(1)+'" cy="'+Y(g.chg||0).toFixed(1)+'" r="'+r+'" fill="'+col+'" fill-opacity=".28" stroke="'+col+'" stroke-width="1.5"><title>'+g.name+' — RS '+g.rs+' · '+((g.chg>=0?'+':'')+g.chg)+'% · score '+g.avg+' · '+g.n+' sociétés</title></circle>'
+     +'<text x="'+X(g.rs||50).toFixed(1)+'" y="'+(Y(g.chg||0)+4).toFixed(1)+'" text-anchor="middle" font-size="11">'+(g.icon||'')+'</text>'
+     +'<text x="'+X(g.rs||50).toFixed(1)+'" y="'+(Y(g.chg||0)-r-4).toFixed(1)+'" text-anchor="middle" font-size="9" font-weight="700" fill="#aeb8c8">'+String(g.name).slice(0,15)+'</text></g>';}).join('');
+  el.innerHTML='<div style="background:linear-gradient(170deg,#101218,#0b0d12);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:14px 16px 8px"><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;display:block">'+grid+dots+'</svg></div>';}
+function sFluxStrip(gs){var el=document.getElementById('sFlux');if(!el)return;
+  if(!gs||gs.length<2){el.innerHTML='';return;}
+  var top=gs[0],bot=gs[gs.length-1];
+  var chips=gs.slice(0,10).map(function(g){var col=scol(g.avg);
+    return '<span style="display:inline-flex;align-items:center;gap:6px;background:'+col+'14;border:1px solid '+col+'40;color:'+col+';border-radius:999px;font-size:11.5px;font-weight:800;padding:6px 13px;margin:0 8px 8px 0">'+g.icon+' '+g.name+' · '+g.avg+' <span style="color:'+((g.chg||0)>=0?'#22C55E':'#EF4444')+'">'+((g.chg||0)>=0?'+':'')+g.chg+'%</span></span>';}).join('');
+  var txt='Les capitaux favorisent <b style="color:#22C55E">'+top.icon+' '+top.name+'</b> (score '+top.avg+', '+((top.chg||0)>=0?'+':'')+top.chg+'%) et délaissent <b style="color:#EF4444">'+bot.icon+' '+bot.name+'</b> (score '+bot.avg+'). '
+    +(top.lead&&top.lead.sym?'Meilleur véhicule du flux : <b>'+top.lead.sym+'</b> (leader du secteur fort). ':'')
+    +'Règle de rotation : acheter la force, pas le rebond du faible.';
+  el.innerHTML=chips+'<div style="display:flex;gap:12px;align-items:flex-start;margin-top:6px;padding:13px 16px;background:linear-gradient(120deg,rgba(255,122,24,.09),rgba(255,122,24,.02));border:1px solid rgba(255,122,24,.16);border-left:2.5px solid #FF7A18;border-radius:13px;font-size:13px;line-height:1.6;color:#aeb8c8"><span style="flex:none;width:22px;height:22px;border-radius:7px;background:rgba(255,122,24,.16);display:grid;place-items:center;font-size:12px">▲</span><div><b style="color:#eef2f8">Lecture Vertex — </b>'+txt+'</div></div>';}
+
 var MODE='industry',Q='';
 var SIC={'Technology':'💻','Financial Services':'🏦','Healthcare':'⚕️','Consumer Cyclical':'🛍️','Consumer Defensive':'🛒','Communication Services':'📡','Energy':'🛢️','Industrials':'🏭','Basic Materials':'⛏️','Utilities':'💡','Real Estate':'🏢','Semiconducteurs':'🔩','Software':'🧠','Big Tech':'🌐','Conso':'🛒','Sante':'⚕️','Finance':'🏦','Energie':'🛢️','Crypto':'₿','Infra-IA':'⚡'};
 function scol(sc){return sc>=60?'#22C55E':sc>=45?'#FFB23F':'#EF4444';}
@@ -7056,7 +7044,7 @@ window.setMode=function(m){MODE=m;document.querySelectorAll('#sCtrl [data-m]').f
 window.setQ=function(v){Q=(v||'').trim();renderSections();};
 function controls(){var el=document.getElementById('sCtrl');if(!el||el.dataset.on)return;el.dataset.on='1';
   el.innerHTML='<button class="vbtn'+(MODE==='sector'?' pri':'')+'" data-m="sector" onclick="setMode(\'sector\')">🔁 Par secteur</button><button class="vbtn'+(MODE==='industry'?' pri':'')+'" data-m="industry" onclick="setMode(\'industry\')">🏭 Par industrie</button><input class="oinp2" placeholder="🔎 ticker" onchange="setQ(this.value)" style="margin-left:auto;width:130px">';}
-function renderSections(){var gs=buildGroups(MODE);window.__G=gs;
+function renderSections(){var gs=buildGroups(MODE);window.__G=gs;try{sQuadrant(gs);sFluxStrip(gs);}catch(e){}
   var bs=document.querySelector('#sCtrl [data-m=sector]'),bi=document.querySelector('#sCtrl [data-m=industry]');
   if(bs)bs.textContent='🔁 Par secteur ('+uniqCount('sector')+')';if(bi)bi.textContent='🏭 Par industrie ('+uniqCount('industry')+')';
   if(!gs.length){document.getElementById('sHead').innerHTML='en calcul…';document.getElementById('sHeat').innerHTML='';document.getElementById('sGrid').innerHTML='<div class="muted" style="padding:20px">'+(MODE==='industry'?'Industries en calcul…':'Secteurs en calcul…')+'</div>';return;}
@@ -7073,8 +7061,11 @@ load();setInterval(load,20000);
 """
 
 PAGE_SECTORS = _vpage('Rotation',
-  '<div class="vhead"><div><h1>🔁 Rotation sectorielle</h1><div class="s" id="sHead">analyse en cours…</div></div></div>'
+  '<div class="vhead"><div><h1>🔁 Market Rotation</h1><div class="s" id="sHead">analyse en cours…</div></div></div>'
   '<div id="sCtrl" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px"></div>'
+  '<div id="sFlux" style="margin-bottom:16px"></div>'
+  '<div class="vstit">Forces sectorielles <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· X = force relative · Y = perf du jour · en haut à droite : les secteurs qui aspirent les capitaux</span></div>'
+  '<div id="sQuad" style="margin-bottom:16px"></div>'
   '<div class="vstit">Carte de chaleur <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· taille ∝ nb de sociétés · couleur = force · clic → secteur</span></div>'
   '<div id="sHeat" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px"></div>'
   '<div class="vstit">Secteurs <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· classés par force · clic sur une carte → toutes les sociétés du secteur</span></div>'
@@ -7139,13 +7130,37 @@ window.setF=function(f){FILT=f;pills();render();};
 window.setView=function(v){VIEW=v;seg();render();};
 function seg(){var S=[['cal','📅 Calendrier'],['timeline','◧ Timeline'],['table','☰ Tableau']];document.getElementById('cSeg').innerHTML=S.map(function(x){return '<button class="vbtn'+(VIEW===x[0]?' pri':'')+'" onclick="setView(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');}
 function pills(){var P=[['all','Tous'],['BUY','Achat'],['WATCH','Surveiller'],['AVOID','Éviter']];document.getElementById('cPills').innerHTML=P.map(function(p){return '<button class="vbtn'+(FILT===p[0]?' pri':'')+'" onclick="setF(\''+p[0]+'\')">'+p[1]+'</button>';}).join('');}
-function load(){fetch('/cal-feed').then(function(r){return r.json()}).then(function(d){ALL=(d.items||[]);var soon=ALL.filter(function(x){return x.dte!=null&&x.dte<=7;}).length;document.getElementById('cHead').innerHTML='<b style="color:#C9D2E0">'+ALL.length+'</b> résultats à venir · <b style="color:#FFB23F">'+soon+'</b> sous 7 jours · résultats posés sur leur date';seg();pills();render();}).catch(function(){});}
+function countdown(){var el=document.getElementById('cCountdown');if(!el)return;
+  var nx=ALL.filter(function(x){return x.dte!=null&&x.dte>=0;}).sort(function(a,b){return a.dte-b.dte;}).slice(0,3);
+  if(!nx.length){el.innerHTML='';return;}
+  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px">'+nx.map(function(x,i){
+    var v=VL[x.verdict]||['','#8794ab'],hot=x.dte<=2;
+    return '<div onclick="location.href=\'/titre/'+x.sym+'\'" style="cursor:pointer;background:linear-gradient(165deg,#12141b,#0b0d12);border:1px solid '+(hot?'rgba(239,68,68,.4)':'rgba(255,255,255,.09)')+';border-radius:16px;padding:14px 16px;transition:transform .15s" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'none\'">'
+     +'<div style="display:flex;align-items:baseline;gap:9px"><b style="font-size:17px">'+(i===0?'⏰ ':'')+x.sym+'</b><span style="font-size:10px;color:#8794ab">résultats</span>'
+     +'<span style="margin-left:auto;font-size:22px;font-weight:900;color:'+(hot?'#EF4444':'#F5B45B')+'">'+(x.dte===0?'AUJ.':'J-'+x.dte)+'</span></div>'
+     +'<div style="display:flex;gap:8px;margin-top:8px;font-size:11px;color:#8794ab">'+String(x.date||'').slice(0,10)
+     +'<span style="margin-left:auto;font-weight:800;color:'+v[1]+'">'+(v[0]||'')+'</span>'+(x.score!=null?'<span>· sc '+x.score+'</span>':'')+'</div>'
+     +'<div style="font-size:10.5px;color:#6B7280;margin-top:6px">⚠️ IV crush probable — position options : réduire avant.</div></div>';}).join('')+'</div>';}
+function digest(){var el=document.getElementById('cDigest');if(!el)return;
+  var wk=ALL.filter(function(x){return x.dte!=null&&x.dte>=0&&x.dte<=7;});
+  var nb=wk.filter(function(x){return x.verdict==='BUY';}).length,na=wk.filter(function(x){return x.verdict==='AVOID';}).length;
+  var busiest={};wk.forEach(function(x){var d=String(x.date||'').slice(0,10);busiest[d]=(busiest[d]||0)+1;});
+  var bd=Object.keys(busiest).sort(function(a,b){return busiest[b]-busiest[a];})[0];
+  var txt=wk.length?('Semaine à <b>'+wk.length+' publication'+(wk.length>1?'s':'')+'</b>'+(nb?' dont <b style="color:#22C55E">'+nb+' titre'+(nb>1?'s':'')+' en signal d\'achat</b> (repli post-résultats = fenêtre d\'entrée à surveiller)':'')
+    +(na?' et <b style="color:#EF4444">'+na+' à éviter</b>':'')
+    +(bd?'. Journée la plus dense : <b>'+bd+'</b> ('+busiest[bd]+' publications — volatilité corrélée possible sur le secteur).':'.')
+    +' Règle du desk : <b>jamais de nouvelle position options la veille d\'une publication</b>.')
+   :'Aucune publication sous 7 jours — fenêtre calme pour les entrées swing (pas de risque de gap de résultats).';
+  el.innerHTML='<div style="display:flex;gap:12px;align-items:flex-start;padding:13px 16px;background:linear-gradient(120deg,rgba(255,122,24,.09),rgba(255,122,24,.02));border:1px solid rgba(255,122,24,.16);border-left:2.5px solid #FF7A18;border-radius:13px;font-size:13px;line-height:1.6;color:#aeb8c8"><span style="flex:none;width:22px;height:22px;border-radius:7px;background:rgba(255,122,24,.16);display:grid;place-items:center;font-size:12px">▲</span><div><b style="color:#eef2f8">Lecture Vertex — </b>'+txt+'</div></div>';}
+function load(){fetch('/cal-feed').then(function(r){return r.json()}).then(function(d){ALL=(d.items||[]);var soon=ALL.filter(function(x){return x.dte!=null&&x.dte<=7;}).length;document.getElementById('cHead').innerHTML='<b style="color:#C9D2E0">'+ALL.length+'</b> résultats à venir · <b style="color:#FFB23F">'+soon+'</b> sous 7 jours · résultats posés sur leur date';countdown();digest();seg();pills();render();}).catch(function(){});}
 load();setInterval(load,30000);
 """
 
-PAGE_CATALYSTS = _vpage('Catalyseurs',
-  '<div class="vhead"><div><h1>📅 Catalyseurs</h1><div class="s" id="cHead">chargement du calendrier…</div></div>'
+PAGE_CATALYSTS = _vpage('Market Calendar',
+  '<div class="vhead"><div><h1>📅 Market Calendar</h1><div class="s" id="cHead">chargement du calendrier…</div></div>'
   '<div id="cSeg" style="margin-left:auto;align-self:center;display:flex;gap:6px"></div></div>'
+  '<div id="cCountdown" style="margin-bottom:16px"></div>'
+  '<div id="cDigest" style="margin-bottom:16px"></div>'
   '<div id="cPills" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>'
   '<div id="cBody"></div>',
   js=_CAT_JS)

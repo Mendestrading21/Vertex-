@@ -12,14 +12,14 @@ ITEMS = [
     ('/stocks',      '🔍', 'Stock info'),
     ('/strategie',   '🎯', 'Trading Desk'),
     ('/journal',     '📖', 'Trade Journal'),
-    ('/suivi',       '⭐', 'Watchlist'),
     ('/options',     '⚡', 'Options Lab'),
     ('/sectors',     '🔄', 'Market Rotation'),
     ('/catalysts',   '📅', 'Market Calendar'),
     ('/anomalies',   '📡', 'Market Signals'),
-    ('/bordel',      '🧠', 'Market Intelligence'),
     ('/settings',    '⚙️', 'Settings'),
 ]
+# Retirés de la sidebar (routes toujours actives) : /suivi (Watchlist — accessible
+# depuis le Desk) et /bordel (Intelligence — accessible par URL directe).
 # Pages regroupées en hubs (accès par onglets, plus dans la sidebar) :
 #   Intel (/bordel) : Comité · Recherche · Heatmap · Playbook
 #   Settings (/settings) : Santé
