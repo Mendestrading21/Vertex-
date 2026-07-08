@@ -9745,22 +9745,39 @@ for _pg, _cur in (('PAGE_SETTINGS', '/settings'), ('PAGE_HEALTH', '/health')):
 # ─── STOCK INFO : parcourir / chercher toutes les entreprises → fiche détaillée ───
 _STOCKS_JS = r"""
 var STK=[];
-function stkCard(r){var chg=r.change,col=chg==null?'#8794ab':chg>=0?'#22C55E':'#EF4444';var sc=r.score,scc=sc>=72?'#22C55E':sc>=55?'#F5B45B':sc!=null?'#EF4444':'#8794ab';
-  return '<div onclick="location.href=\'/titre/'+r.symbol+'\'" style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:12px 14px;cursor:pointer;transition:transform .14s,border-color .14s" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.borderColor=\'rgba(255,255,255,.16)\'" onmouseout="this.style.transform=\'none\';this.style.borderColor=\'rgba(255,255,255,.07)\'">'
-    +'<div style="display:flex;align-items:center;gap:8px"><b style="font-size:15px">'+r.symbol+'</b>'+(sc!=null?'<span style="margin-left:auto;font-size:13px;font-weight:900;color:'+scc+'">'+sc+'</span>':'')+'</div>'
-    +'<div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><span style="font-size:15px;font-weight:700">'+(r.price!=null?'$'+r.price:'—')+'</span>'+(chg!=null?'<span style="font-size:12px;font-weight:800;color:'+col+'">'+(chg>=0?'+':'')+chg+'%</span>':'')+'</div>'
-    +(r.sector?'<div style="font-size:10px;color:#6b7280;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+r.sector+'</div>':'')+'</div>';}
+function _vcol(v){v=(v||'').toUpperCase();
+  if(v.indexOf('BUY')>=0||v.indexOf('ACHAT')>=0||v.indexOf('ACCUM')>=0)return['#22C55E','ACHAT'];
+  if(v.indexOf('WATCH')>=0||v.indexOf('SURV')>=0||v.indexOf('HOLD')>=0||v.indexOf('ATTEN')>=0)return['#F5B45B','SURVEILLER'];
+  if(v.indexOf('AVOID')>=0||v.indexOf('EVIT')>=0||v.indexOf('SELL')>=0||v.indexOf('VENTE')>=0)return['#EF4444','ÉVITER'];
+  return['#8794ab',v||'—'];}
+function _gcol(g){g=(g||'').toUpperCase();if(g.indexOf('S')>=0||g==='A'||g==='A+')return'#22C55E';if(g.charAt(0)==='B')return'#F5B45B';if(g)return'#EF4444';return'#8794ab';}
+function _rcol(r){r=(r||'').toUpperCase();if(r.indexOf('ACTION')>=0)return'#38BDF8';if(r.indexOf('OPTION')>=0)return'#A78BFA';return'#F5B45B';}
+function _pill(txt,col){return '<span style="font-size:9px;font-weight:800;color:'+col+';background:'+col+'1e;border:1px solid '+col+'44;border-radius:999px;padding:2px 7px;white-space:nowrap">'+txt+'</span>';}
+function _stat(l,v,c){return '<div style="text-align:center;min-width:0"><div style="font-size:12px;font-weight:800;color:'+(c||'#e8edf5')+'">'+v+'</div><div style="font-size:8px;color:#6b7280;letter-spacing:.3px">'+l+'</div></div>';}
+function stkCard(r){var chg=r.change,ccol=chg==null?'#8794ab':chg>=0?'#22C55E':'#EF4444';
+  var vc=_vcol(r.verdict),gc=_gcol(r.grade);
+  var rsC=r.rs!=null?(r.rs>=80?'#22C55E':r.rs>=50?'#F5B45B':'#EF4444'):'#8794ab';
+  var pw=r.perf_w,pwC=pw==null?'#8794ab':pw>=0?'#22C55E':'#EF4444';
+  return '<div onclick="location.href=\'/titre/'+r.symbol+'\'" style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:12px 13px;cursor:pointer;transition:transform .14s,border-color .14s" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.borderColor=\'rgba(255,255,255,.18)\'" onmouseout="this.style.transform=\'none\';this.style.borderColor=\'rgba(255,255,255,.07)\'">'
+    +'<div style="display:flex;align-items:center;gap:6px"><b style="font-size:15px">'+r.symbol+'</b>'+(r.grade?'<span style="font-size:11px;font-weight:900;color:'+gc+'">'+r.grade+'</span>':'')+(r.score!=null?'<span style="margin-left:auto;font-size:13px;font-weight:900;color:'+gc+'">'+r.score+'</span>':'')+'</div>'
+    +(r.name?'<div style="font-size:10px;color:#8794ab;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+r.name+'</div>':'')
+    +'<div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><span style="font-size:16px;font-weight:800">'+(r.price!=null?'$'+r.price:'—')+'</span>'+(chg!=null?'<span style="font-size:12px;font-weight:800;color:'+ccol+'">'+(chg>=0?'+':'')+chg+'%</span>':'')+'</div>'
+    +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">'+_pill(vc[1],vc[0])+(r.reco?_pill(r.reco,_rcol(r.reco)):'')+'</div>'
+    +'<div style="display:flex;justify-content:space-between;gap:4px;margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,255,255,.06)">'
+      +_stat('RS',r.rs!=null?r.rs:'—',rsC)+_stat('52S',r.pos52!=null?r.pos52+'%':'—')+_stat('RVOL',r.rvol!=null?r.rvol.toFixed(1)+'x':'—')+_stat('1SEM',pw!=null?(pw>=0?'+':'')+pw+'%':'—',pwC)
+    +'</div>'
+    +(r.sector?'<div style="font-size:9px;color:#6b7280;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+r.sector+'</div>':'')+'</div>';}
 function stkRender(list){var g=document.getElementById('stkGrid');if(!g)return;var c=document.getElementById('stkCount');if(c)c.textContent=list.length;g.innerHTML=list.length?list.map(stkCard).join(''):'<div class="muted" style="grid-column:1/-1;padding:24px;text-align:center">Aucun titre ne correspond.</div>';}
-window.stkFilter=function(q){q=(q||'').trim().toUpperCase();var l=q?STK.filter(function(r){return r.symbol.indexOf(q)>=0||(r.sector||'').toUpperCase().indexOf(q)>=0;}):STK;stkRender(l);};
+window.stkFilter=function(q){q=(q||'').trim().toUpperCase();var l=q?STK.filter(function(r){return r.symbol.indexOf(q)>=0||(r.sector||'').toUpperCase().indexOf(q)>=0||(r.name||'').toUpperCase().indexOf(q)>=0;}):STK;stkRender(l);};
 function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){var det=d.detail||{};
-  STK=(d.rows||[]).map(function(r){var x=det[r.symbol]||{};return {symbol:r.symbol,price:r.price,change:(typeof r.change==='number'?r.change:null),score:x.score,sector:r.sector||x.sector};}).sort(function(a,b){return (b.score||0)-(a.score||0);});
+  STK=(d.rows||[]).map(function(r){var x=det[r.symbol]||{};return {symbol:r.symbol,name:r.name||x.name||null,price:r.price,change:(typeof r.change==='number'?r.change:null),score:(r.score!=null?r.score:x.score),grade:r.grade||x.grade,verdict:r.verdict||x.verdict,sector:r.sector||x.sector,rs:r.rs,pos52:r.pos52,rvol:r.rvol,perf_w:r.perf_w,reco:(r.vehicle&&r.vehicle.reco)||null};}).sort(function(a,b){return (b.score||0)-(a.score||0);});
   var q=(document.getElementById('stkSearch')||{}).value||'';window.stkFilter(q);}).catch(function(){});}
 load();setInterval(load,30000);
 """
 PAGE_STOCKS = _vpage('Stock info',
-  '<div class="vhead"><div><h1>🔍 Stock info</h1><div class="s">Toutes les entreprises analysées · <b id="stkCount">…</b> titres · clic → fiche détaillée (Comité · plan de trade · graphique)</div></div></div>'
-  '<input id="stkSearch" class="oinp" placeholder="🔎 Rechercher un ticker ou un secteur…" oninput="stkFilter(this.value)" autocomplete="off" style="width:100%;max-width:380px;margin-bottom:16px;font-size:15px;padding:12px 14px">'
-  '<div id="stkGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px"></div>',
+  '<div class="vhead"><div><h1>🔍 Stock info</h1><div class="s">Toutes les entreprises analysées · <b id="stkCount">…</b> titres · verdict · grade · RS · position 52 sem. · RVOL · perf · clic → fiche détaillée</div></div></div>'
+  '<input id="stkSearch" class="oinp" placeholder="🔎 Rechercher un ticker, un nom ou un secteur…" oninput="stkFilter(this.value)" autocomplete="off" style="width:100%;max-width:380px;margin-bottom:16px;font-size:15px;padding:12px 14px">'
+  '<div id="stkGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px"></div>',
   head=".oinp{background:#0b0c10;border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#e8edf5;outline:none}.oinp:focus{border-color:rgba(255,122,24,.45)}",
   js=_STOCKS_JS)
 
