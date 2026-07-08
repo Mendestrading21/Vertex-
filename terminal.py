@@ -9688,7 +9688,7 @@ function dkPriorityCard(p,DET,rank){
     +'<button class="vbtn" style="font-size:12px;padding:8px 12px" onclick="tLevels('+(t.id||0)+');setTimeout(dkRender,60)">🎯 Stop/Objectif</button>'
     +'<button class="vbtn dng" style="font-size:12px;padding:8px 12px" onclick="tDel('+(t.id||0)+');setTimeout(dkRender,60)">🗑</button>'
     +'<a class="vbtn" style="font-size:12px;padding:8px 12px;text-decoration:none" href="/titre/'+t.sym+'">🏛️ Fiche →</a></div>';
-  return '<div class="pos" style="border-left:3px solid '+tc+'">'+head+cells+pb+comm+btns+'</div>';
+  return '<div class="pos">'+head+cells+pb+comm+btns+'</div>';
 }
 function dkAlertRow(ic,txt,col){return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#101216;border:1px solid '+col+'33;border-left:3px solid '+col+';border-radius:12px;margin-bottom:8px"><span style="font-size:17px">'+ic+'</span><span style="font-size:13px;color:#e8edf5;line-height:1.4">'+txt+'</span></div>';}
 function dkAlerts(pos){
