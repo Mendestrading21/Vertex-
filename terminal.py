@@ -1796,6 +1796,64 @@ def api_names():
         return jsonify({})
 
 
+# ─── CORRÉLATIONS RÉELLES : le titre vs macro (SOXX, QQQ, S&P, BTC, or, dollar, taux, VIX) ───
+_CORR_MAP = [('SOXX', 'SOXX'), ('QQQ', 'QQQ'), ('S&P 500', 'SPY'), ('Bitcoin', 'BTC-USD'),
+             ('Or', 'GC=F'), ('Dollar', 'DX-Y.NYB'), ('Taux 10a', '^TNX'), ('VIX', '^VIX')]
+_CORR_BENCH = {'ts': 0, 'df': None}
+
+
+def _to_naive(ix):
+    import pandas as pd
+    ix = pd.DatetimeIndex(ix)
+    try:
+        ix = ix.tz_localize(None)
+    except (TypeError, AttributeError):
+        pass
+    return ix.normalize()
+
+
+def _corr_benchmarks():
+    """Séries Close 6 mois des références macro — cache 1 h (mêmes pour tous les titres)."""
+    if _CORR_BENCH['df'] is not None and time.time() - _CORR_BENCH['ts'] < 3600:
+        return _CORR_BENCH['df']
+    import yfinance as yf
+    raw = yf.download([t for _, t in _CORR_MAP], period='6mo',
+                      progress=False, auto_adjust=True)['Close']
+    raw.index = _to_naive(raw.index)
+    _CORR_BENCH['df'] = raw
+    _CORR_BENCH['ts'] = time.time()
+    return raw
+
+
+@app.route('/api/correlations/<sym>')
+def api_correlations(sym):
+    """Corrélation RÉELLE (rendements journaliers, 6 mois) du titre avec chaque référence.
+    Lecture seule. Repli propre : liste vide si données insuffisantes."""
+    sym = (sym or '').upper()
+    try:
+        import yfinance as yf
+        import pandas as pd
+        bench = _corr_benchmarks()
+        s = yf.Ticker(sym).history(period='6mo')['Close']
+        s.index = _to_naive(s.index)
+        df = pd.concat([s.rename(sym), bench], axis=1)
+        rets = df.pct_change()
+        out = []
+        for label, tk in _CORR_MAP:
+            if tk not in rets.columns:
+                continue
+            pair = rets[[sym, tk]].dropna()
+            if len(pair) < 20:
+                continue
+            c = pair[sym].corr(pair[tk])
+            if pd.notna(c):
+                out.append([label, round(float(c), 2)])
+        out.sort(key=lambda x: -x[1])
+        return jsonify({'sym': sym, 'corr': out})
+    except Exception as e:
+        return jsonify({'sym': sym, 'corr': [], 'error': f'{type(e).__name__}: {e}'})
+
+
 # ─── ENDPOINTS D'ANALYSE (Blueprint) — /api/vertex · /api/validator · /api/risk ───
 app.register_blueprint(_analysis_api.bp)
 
@@ -6742,11 +6800,15 @@ function renderAnalysts(a){
    +(a.target_low!=null&&a.target_high!=null?box('$'+a.target_low.toFixed(0)+'–'+a.target_high.toFixed(0),C.mut,'fourchette des objectifs'):'')
    +'</div>';
 }
+function corrRows(CORR){return CORR.map(function(c){var v=c[1],pos=v>=0,w=Math.abs(v)*50,col=pos?C.info:C.warn;return '<div class="crow"><div class="ck2">'+c[0]+'</div><div class="corrbar"><div class="mid"></div><i style="'+(pos?'left:50%':'right:50%')+';width:'+w+'%;background:'+col+'"></i></div><div class="cvv" style="color:'+col+'">'+(pos?'+':'')+v.toFixed(2)+'</div></div>';}).join('');}
 function renderCorr(){
   set('corr-h2','Ce qui bouge avec '+M.sym);
-  var CORR=[['SOXX',0.6+rnd('c1')*0.35],['QQQ',0.5+rnd('c2')*0.4],['SPY',0.5+rnd('c3')*0.35],['BTC',rnd('c4')*0.5],['Or',(rnd('c5')-0.5)*0.4],['Dollar',-rnd('c6')*0.4],['Taux 10a',-rnd('c7')*0.5],['VIX',-0.4-rnd('c8')*0.35]];
-  CORR.sort(function(a,b){return b[1]-a[1];});
-  seth('corr',CORR.map(function(c){var v=c[1],pos=v>=0,w=Math.abs(v)*50,col=pos?C.info:C.warn;return '<div class="crow"><div class="ck2">'+c[0]+'</div><div class="corrbar"><div class="mid"></div><i style="'+(pos?'left:50%':'right:50%')+';width:'+w+'%;background:'+col+'"></i></div><div class="cvv" style="color:'+col+'">'+(pos?'+':'')+v.toFixed(2)+'</div></div>';}).join(''));
+  seth('corr','<div class="muted" style="padding:16px;font-size:12px">Calcul des corrélations (6 mois)…</div>');
+  fetch('/api/correlations/'+encodeURIComponent(M.sym)).then(function(r){return r.json();}).then(function(j){
+    var CORR=(j&&j.corr)||[];
+    if(!CORR.length){seth('corr','<div class="muted" style="padding:16px;font-size:12px">Corrélations indisponibles pour ce titre (historique insuffisant).</div>');return;}
+    seth('corr',corrRows(CORR));
+  }).catch(function(){seth('corr','<div class="muted" style="padding:16px;font-size:12px">Corrélations indisponibles.</div>');});
 }
 function renderVehicles(){
   var sc=Math.round(M.score);
