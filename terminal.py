@@ -2517,6 +2517,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <style>.dx-extra{display:none}body.showall .dx-extra{display:block}#essToggle{display:block;width:100%;margin:4px 0 16px;padding:12px;background:#0e1622;border:1px dashed #5BE3A855;border-radius:12px;color:#5BE3A8;font-weight:700;font-size:13px;cursor:pointer;letter-spacing:.4px}#essToggle:hover{background:#121c2b}</style>
   <!-- ═══ HERO MORNING COCKPIT (Phase 1 refonte Home) — rendu par renderHero() sur /scan ═══ -->
   <div id="ovHero" style="margin:16px 0 6px"></div>
+  <style>@media(max-width:820px){.cvgrid{grid-template-columns:1fr!important}}</style>
+  <!-- ═══ CONVICTION DU JOUR + TOP 5 (Phase 2) — renderConviction()/renderTop5() sur /scan ═══ -->
+  <div id="ovConviction" style="margin:14px 0"></div>
+  <div id="ovTop5" style="margin:14px 0"></div>
   <div id="dMyDesk"></div>
   <!-- ═══ MORNING BRIEF (refonte homepage) — rendu par le script mb() en bas de page ═══ -->
   <div id="mbHome"></div>
@@ -5983,7 +5987,60 @@ _OV_EXTRA_JS = r"""<script>(function(){
       +'<div style="font-size:12px;color:#8794ab;margin-top:8px;text-transform:capitalize">'+dt+' <span style="text-transform:none">· Lecture ~45 s'+(dscore!=null?(' · Confiance IA '+dscore+'%'):'')+'</span></div>'
       +'<div style="margin:16px 0 20px;max-width:92ch">'+sumHTML+'</div>'
       +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">'+tiles+'</div></div>';}
-  function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){try{renderHero(d);}catch(e){}try{renderMkt(d);}catch(e){}try{renderSynth(d);}catch(e){}try{renderPal(d);}catch(e){}}).catch(function(){});}
+  // ═══ sparkline (série de clôtures réelles) ═══
+  function spark(cl,w,h,col){if(!cl||cl.length<2)return '';var n=cl.length,lo=Math.min.apply(null,cl),hi=Math.max.apply(null,cl),rg=(hi-lo)||1;
+    var pts=cl.map(function(v,i){return ((i/(n-1))*w).toFixed(1)+','+(h-((v-lo)/rg)*h).toFixed(1);}).join(' ');
+    col=col||(cl[n-1]>=cl[0]?'#22C55E':'#EF4444');
+    return '<svg width="100%" height="'+h+'" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" style="display:block"><polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="1.6" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>';}
+  // ═══ CONVICTION DU JOUR — la meilleure idée du moteur, en grand ═══
+  function renderConviction(d){var el=document.getElementById('ovConviction');if(!el)return;
+    var rows=d.rows||[],det=d.detail||{},ob=d.options_board||[];
+    var buys=rows.filter(function(r){return r.verdict==='BUY';}).sort(function(a,b){return (b.score||0)-(a.score||0);});
+    if(!buys.length){el.innerHTML='';return;}
+    var r=buys[0],x=det[r.symbol]||{},p=x.plan||{},cl=(x.series||{}).close||[],pb=r.playbook||{};
+    var pot=(p.entry&&p.tp2)?((p.tp2/p.entry-1)*100):null,ris=(p.entry&&p.stop)?((1-p.stop/p.entry)*100):null;
+    var conf=x.confidence!=null?Math.round(x.confidence):(r.strat_score!=null?r.strat_score:r.score);
+    var opt=ob.filter(function(o){return o.sym===r.symbol;}).sort(function(a,b){return (b.quality||0)-(a.quality||0);})[0];
+    var why=x.chart_read||x.thesis||'';
+    function K(l,v,c){return '<div style="background:#0e0f13;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:11px 13px;min-width:0"><div style="font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#8794ab">'+l+'</div><div style="font-size:17px;font-weight:900;margin-top:4px;color:'+(c||'#f2f5fa')+'">'+v+'</div></div>';}
+    el.innerHTML='<div class="vstit">🔥 CONVICTION DU JOUR <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· la meilleure idée du moteur Vertex aujourd\'hui</span></div>'
+     +'<div style="background:linear-gradient(135deg,rgba(34,197,94,.06),#0d0e12);border:1px solid rgba(34,197,94,.25);border-radius:20px;padding:22px 24px;box-shadow:0 16px 40px -26px rgba(0,0,0,.85)">'
+     +'<div class="cvgrid" style="display:grid;grid-template-columns:1.1fr 1fr;gap:24px">'
+     +'<div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:32px;font-weight:900;letter-spacing:-1px;cursor:pointer" onclick="location.href=\'/titre/'+r.symbol+'\'">'+r.symbol+'</span>'
+       +'<span style="font-size:11px;font-weight:800;color:#22C55E;background:rgba(34,197,94,.12);border:1px solid #22C55E44;border-radius:20px;padding:3px 10px">'+(pb.ic||'')+' '+(pb.name||'ACHAT')+'</span></div>'
+       +'<div style="font-size:12px;color:#8794ab;margin-top:6px">'+(r.sector||'')+' · $'+r.price+' <span style="color:'+(r.change>=0?'#22C55E':'#EF4444')+';font-weight:700">'+(r.change>=0?'+':'')+r.change+'%</span></div>'
+       +'<div style="display:flex;gap:20px;margin-top:16px">'
+         +'<div><div style="font-size:9px;color:#8794ab;font-weight:800;text-transform:uppercase">Score Vertex</div><div style="font-size:30px;font-weight:900;color:#22C55E">'+r.score+'<span style="font-size:13px;color:#8794ab">/100</span></div></div>'
+         +'<div><div style="font-size:9px;color:#8794ab;font-weight:800;text-transform:uppercase">Confiance</div><div style="font-size:30px;font-weight:900;color:#f2f5fa">'+conf+'<span style="font-size:13px;color:#8794ab">%</span></div></div>'
+         +'<div><div style="font-size:9px;color:#8794ab;font-weight:800;text-transform:uppercase">R:R</div><div style="font-size:30px;font-weight:900;color:#F5B45B">'+(p.rr!=null?p.rr+':1':'—')+'</div></div></div>'
+       +(cl.length?'<div style="margin-top:16px;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px;background:#0b0c10">'+spark(cl,460,90,'#22C55E')+'</div>':'')
+       +'<div style="font-size:13px;line-height:1.55;color:#c3ccda;margin-top:14px"><b style="color:#f2f5fa">Pourquoi maintenant ?</b> '+why+'</div></div>'
+     +'<div><div style="font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#8794ab;margin-bottom:10px">Plan de trade</div>'
+       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+K('Entrée idéale',p.entry!=null?'$'+p.entry:'—')+K('Stop',p.stop!=null?'$'+p.stop:'—','#EF4444')+K('Objectif 1',p.tp1!=null?'$'+p.tp1:'—','#22C55E')+K('Objectif 2',p.tp2!=null?'$'+p.tp2:'—','#22C55E')+K('Potentiel',pot!=null?'+'+pot.toFixed(0)+'%':'—','#22C55E')+K('Risque',ris!=null?'-'+ris.toFixed(0)+'%':'—','#EF4444')+'</div>'
+       +(opt?('<div style="margin-top:12px;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.25);border-radius:12px;padding:11px 13px"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#A78BFA">Option associée</div><div style="font-size:14px;font-weight:800;margin-top:3px">'+(opt.type||'')+' $'+opt.strike+' · '+opt.dte+'j</div><div style="font-size:11px;color:#8794ab;margin-top:2px">Δ '+opt.delta+' · POP '+opt.pop+'% · move ±'+opt.em_pct+'%</div></div>'):'')
+       +'<a href="/titre/'+r.symbol+'" style="display:block;text-align:center;margin-top:14px;background:linear-gradient(135deg,#22C55E,#16a34a);color:#06210f;font-weight:900;font-size:14px;padding:13px;border-radius:12px;text-decoration:none">Analyse complète →</a></div>'
+     +'</div></div>';}
+  // ═══ TOP 5 OPPORTUNITÉS — cartes premium ═══
+  function renderTop5(d){var el=document.getElementById('ovTop5');if(!el)return;
+    var rows=d.rows||[],det=d.detail||{},ob=d.options_board||[];
+    var buys=rows.filter(function(r){return r.verdict==='BUY';}).sort(function(a,b){return (b.score||0)-(a.score||0);});
+    var top=buys.slice(1,6);if(!top.length){el.innerHTML='';return;}
+    function S(l,v,c){return '<div><div style="font-size:8.5px;font-weight:800;text-transform:uppercase;color:#8794ab">'+l+'</div><div style="font-size:13px;font-weight:800;margin-top:2px;color:'+(c||'#e8edf5')+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+v+'</div></div>';}
+    var cards=top.map(function(r){var x=det[r.symbol]||{},p=x.plan||{},cl=(x.series||{}).close||[],pb=r.playbook||{};
+      var pot=(p.entry&&p.tp2)?((p.tp2/p.entry-1)*100):null,conf=x.confidence!=null?Math.round(x.confidence):(r.strat_score!=null?r.strat_score:r.score);
+      var opt=ob.filter(function(o){return o.sym===r.symbol;}).sort(function(a,b){return (b.quality||0)-(a.quality||0);})[0];
+      var why=((pb.desc||x.chart_read||'')+'').slice(0,105),chgc=r.change>=0?'#22C55E':'#EF4444';
+      return '<div onclick="location.href=\'/titre/'+r.symbol+'\'" style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 15px;cursor:pointer;transition:transform .14s,border-color .14s" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.borderColor=\'rgba(255,255,255,.18)\'" onmouseout="this.style.transform=\'none\';this.style.borderColor=\'rgba(255,255,255,.07)\'">'
+        +'<div style="display:flex;align-items:center;gap:8px"><b style="font-size:16px">'+r.symbol+'</b><span style="font-size:10px;font-weight:800;color:#F5B45B">'+(r.grade||'')+'</span><span style="margin-left:auto;font-size:14px;font-weight:900;color:#22C55E">'+r.score+'</span></div>'
+        +'<div style="display:flex;align-items:baseline;gap:8px;margin-top:4px"><span style="font-size:15px;font-weight:700">$'+r.price+'</span><span style="font-size:12px;font-weight:800;color:'+chgc+'">'+(r.change>=0?'+':'')+r.change+'%</span></div>'
+        +(cl.length?'<div style="margin:10px 0">'+spark(cl,250,42)+'</div>':'<div style="height:12px"></div>')
+        +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'+S('Momentum','RS '+(r.rs!=null?r.rs:'—'))+S('Confiance',conf+'%')+S('Potentiel',pot!=null?'+'+pot.toFixed(0)+'%':'—','#22C55E')+'</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">'+S('R:R',p.rr!=null?p.rr+':1':'—','#F5B45B')+S('Qualité',(r.setup_quality!=null?r.setup_quality:'—'))+S('Secteur',(r.sector||'—'))+'</div>'
+        +(opt?'<div style="margin-top:10px;font-size:10px;color:#A78BFA">⚡ '+(opt.type||'')+' $'+opt.strike+' · POP '+opt.pop+'%</div>':'')
+        +'<div style="font-size:11px;color:#8794ab;line-height:1.4;margin-top:10px;border-top:1px solid rgba(255,255,255,.06);padding-top:9px">'+(pb.ic||'')+' <b style="color:#c3ccda">'+(pb.name||'')+'</b> — '+why+'</div></div>';}).join('');
+    el.innerHTML='<div class="vstit">⚡ TOP 5 OPPORTUNITÉS <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· les meilleurs setups juste après la conviction · clic → fiche</span></div>'
+     +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">'+cards+'</div>';}
+  function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){try{renderHero(d);}catch(e){}try{renderConviction(d);}catch(e){}try{renderTop5(d);}catch(e){}try{renderMkt(d);}catch(e){}try{renderSynth(d);}catch(e){}try{renderPal(d);}catch(e){}}).catch(function(){});}
   load();setInterval(load,30000);
 })();</script>"""
 PAGE_DAILY = PAGE_DAILY.replace('</body>', _OV_EXTRA_JS + '</body>', 1)
