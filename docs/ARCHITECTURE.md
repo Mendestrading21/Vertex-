@@ -1,5 +1,8 @@
 # VERTEX — Architecture & Plan de migration
 
+> **Note — Vertex vNext Production Baseline (2026-07-08)** : les scripts hérités de l'ère « bot » décrits dans ce document (bot_cockpit, paper_bot, paper_live_bot, dashboard, gex_dashboard, mnq_backtest, stock_backtest, daily_opportunities, notion_sync, _daily_check) ont été **supprimés** — aucun n'était importé par l'application. Ce document reste comme audit historique.
+
+
 ## 1. État actuel (audité)
 
 | Zone | LOC | État |
