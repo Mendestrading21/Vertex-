@@ -10843,6 +10843,7 @@ PAGE_OPTIONS_LAB = _vpage('Options Lab',
   '<div id="optDeepNote" style="display:none;margin-bottom:14px;padding:10px 14px;background:linear-gradient(180deg,rgba(56,189,248,.1),rgba(56,189,248,.02));border:1px solid rgba(56,189,248,.32);border-radius:12px;font-size:12px;color:#C9D2E0"></div>'
   '<div id="optStats" style="display:none"></div>''<div id="optBest" style="display:none"></div>'
   '<div id="optCockpit" style="margin-bottom:10px"></div>'
+  '<div class="oreport">'
   '<div id="optResearch"></div>'
   '<div class="ochsub">Pourquoi cette option — les facteurs du score</div>'
   '<div id="optScore"></div>'
@@ -10862,6 +10863,7 @@ PAGE_OPTIONS_LAB = _vpage('Options Lab',
   '<div id="optCatalysts"></div>'
   '<div class="ochsub">Décision Vertex</div>'
   '<div id="optDecision"></div>'
+  '</div>'
   '<div class="ochap"><div><div class="t">Autres opportunités</div><div class="s">clic → recharge le rapport complet pour l\'option choisie</div></div><div class="ln"></div></div>'
   '<div id="optOthers"></div>'
   '<div class="ochap"><div><div class="t">Explorer tout le board</div><div class="s">filtre · tri · recherche · clic → analyse</div></div><div class="ln"></div></div>'
@@ -10877,6 +10879,11 @@ PAGE_OPTIONS_LAB = _vpage('Options Lab',
     ".ochap{display:flex;align-items:flex-end;gap:14px;margin:52px 2px 18px}.ochap:first-of-type{margin-top:30px}.ochap .n{font-size:12px;font-weight:800;color:#454a57;letter-spacing:2px;padding-bottom:3px}.ochap .t{font-size:21px;font-weight:800;letter-spacing:-.4px;color:#f2f5fa;line-height:1.05}.ochap .s{font-size:11.5px;color:#6B7280;margin-top:3px}.ochap .ln{flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.08),transparent);margin-bottom:8px}"
     ".ochsub{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#8794ab;margin:26px 2px 12px}"
     "@media(max-width:640px){.ogg{grid-template-columns:1fr!important;justify-items:center;text-align:center}}"
+    ".oreport{background:linear-gradient(180deg,#14161c,#0f1116);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:8px 26px 26px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 18px 46px -30px rgba(0,0,0,.8)}"
+    ".oreport .opremium{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:22px 0!important}"
+    ".oreport #optResearch>.opremium{padding-top:20px!important}"
+    ".oreport .ochsub{border-top:1px solid rgba(255,255,255,.07);padding-top:22px;margin:10px 0 4px}"
+    "@media(max-width:640px){.oreport{padding:6px 16px 20px}}"
     ".ochip{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);color:#C9D2E0;border-radius:999px;font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;letter-spacing:.1px}.ochip:hover{border-color:rgba(255,255,255,.2);color:#e8edf5}.ochip.on{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:#fff}"
     ".oai{font-size:13px;line-height:1.65;color:#c2cad6}.oai b{color:#e8edf5;font-weight:700}"
     ".opremium{background:linear-gradient(180deg,#14161c,#0f1116);border:1px solid rgba(255,255,255,.1);border-radius:20px;transition:border-color .18s}.opremium:hover{border-color:rgba(255,255,255,.16)}"
