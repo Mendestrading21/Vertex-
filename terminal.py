@@ -2516,26 +2516,53 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <style>.dx-extra{display:none}body.showall .dx-extra{display:block}#essToggle{display:block;width:100%;margin:4px 0 16px;padding:12px;background:#0e1622;border:1px dashed #5BE3A855;border-radius:12px;color:#5BE3A8;font-weight:700;font-size:13px;cursor:pointer;letter-spacing:.4px}#essToggle:hover{background:#121c2b}</style>
   <!-- ═══ HERO MORNING COCKPIT (Phase 1 refonte Home) — rendu par renderHero() sur /scan ═══ -->
   <div id="ovHero" style="margin:16px 0 6px"></div>
-  <style>@media(max-width:820px){.cvgrid{grid-template-columns:1fr!important}}</style>
-  <!-- ═══ CONVICTION DU JOUR + TOP 5 (Phase 2) — renderConviction()/renderTop5() sur /scan ═══ -->
-  <div id="ovConviction" style="margin:14px 0"></div>
-  <div id="ovTop5" style="margin:14px 0"></div>
-  <div id="ovMarket" style="margin:14px 0"></div>
-  <!-- ═══ MARKET HEALTH + ROTATION (Phase 4) ═══ -->
-  <div id="ovHealth" style="margin:14px 0"></div>
-  <div id="ovRotation" style="margin:14px 0"></div>
-  <!-- ═══ FLUX + OPTIONS + WATCHLIST (Phase 5) ═══ -->
-  <div id="ovFlows" style="margin:14px 0"></div>
-  <div id="ovOptions" style="margin:14px 0"></div>
-  <div id="ovWatch" style="margin:14px 0"></div>
-  <div id="ovPalmares" style="margin:14px 0"></div>
-  <!-- ═══ LIVE FEED + AGENDA + RISQUES (Phase 6) ═══ -->
-  <div id="ovFeed" style="margin:14px 0"></div>
-  <div id="ovAgenda" style="margin:14px 0"></div>
-  <div id="ovRisks" style="margin:14px 0"></div>
-  <!-- ═══ CONCLUSION VERTEX (Phase 7) ═══ -->
-  <div id="ovConclusion" style="margin:14px 0"></div>
-  <div id="dMyDesk"></div>
+  <style id="ovchap-css">
+  .daily .vstit{display:none!important}
+  .ovchap{display:flex;align-items:flex-end;gap:14px;margin:58px 2px 20px}
+  .ovchap .n{font-size:12px;font-weight:800;color:#454a57;font-variant-numeric:tabular-nums;letter-spacing:2px;line-height:1;padding-bottom:3px}
+  .ovchap .t{font-size:23px;font-weight:800;letter-spacing:-.5px;color:#f2f5fa;line-height:1.05}
+  .ovchap .s{font-size:11.5px;color:#6B7280;margin-top:4px}
+  .ovchap .ln{flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.08),transparent);margin-bottom:9px}
+  .ovsub{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#8794ab;margin:28px 2px 12px}
+  .ovc{margin:0 0 10px}
+  @media(max-width:820px){.cvgrid{grid-template-columns:1fr!important}.ovchap{margin-top:44px}.ovchap .t{font-size:20px}}
+  </style>
+  <!-- ② CONVICTION VERTEX — la signature -->
+  <div class="ovchap"><span class="n">02</span><div><div class="t">Conviction Vertex</div><div class="s">la meilleure idée du moteur aujourd'hui — la signature Vertex</div></div><div class="ln"></div></div>
+  <div id="ovConviction" class="ovc"></div>
+  <!-- ③ LE MARCHÉ -->
+  <div class="ovchap"><span class="n">03</span><div><div class="t">Le Marché</div><div class="s">indices · matières · taux · crypto · volatilité · sentiment</div></div><div class="ln"></div></div>
+  <div id="ovMarket" class="ovc"></div>
+  <div class="ovsub">Santé &amp; régime du marché</div>
+  <div id="ovHealth" class="ovc"></div>
+  <!-- ④ OPPORTUNITÉS -->
+  <div class="ovchap"><span class="n">04</span><div><div class="t">Opportunités</div><div class="s">top setups · options du jour · flux inhabituels</div></div><div class="ln"></div></div>
+  <div id="ovTop5" class="ovc"></div>
+  <div class="ovsub">Options du jour</div>
+  <div id="ovOptions" class="ovc"></div>
+  <div class="ovsub">Flux inhabituels</div>
+  <div id="ovFlows" class="ovc"></div>
+  <!-- ⑤ ROTATION DES SECTEURS -->
+  <div class="ovchap"><span class="n">05</span><div><div class="t">Rotation des secteurs</div><div class="s">où vont les capitaux · perf · momentum · flux</div></div><div class="ln"></div></div>
+  <div id="ovRotation" class="ovc"></div>
+  <div class="ovsub">Palmarès · top &amp; flop</div>
+  <div id="ovPalmares" class="ovc"></div>
+  <!-- ⑥ NEWS -->
+  <div class="ovchap"><span class="n">06</span><div><div class="t">News</div><div class="s">ce qui fait bouger le marché — la ligne entière est cliquable</div></div><div class="ln"></div></div>
+  <div id="ovFeed" class="ovc"></div>
+  <!-- ⑦ CALENDRIER -->
+  <div class="ovchap"><span class="n">07</span><div><div class="t">Calendrier</div><div class="s">prochains résultats &amp; événements — avec l'avis Vertex</div></div><div class="ln"></div></div>
+  <div id="ovAgenda" class="ovc"></div>
+  <!-- ⑧ WATCHLIST -->
+  <div class="ovchap"><span class="n">08</span><div><div class="t">Watchlist</div><div class="s">les meilleures idées, par style</div></div><div class="ln"></div></div>
+  <div id="ovWatch" class="ovc"></div>
+  <!-- ⑨ RISQUES DU JOUR -->
+  <div class="ovchap"><span class="n">09</span><div><div class="t">Risques du jour</div><div class="s">dérivés de signaux réels · chaque risque justifié</div></div><div class="ln"></div></div>
+  <div id="ovRisks" class="ovc"></div>
+  <!-- ⑩ CONCLUSION VERTEX -->
+  <div class="ovchap"><span class="n">10</span><div><div class="t">Conclusion Vertex</div><div class="s">la synthèse de la journée</div></div><div class="ln"></div></div>
+  <div id="ovConclusion" class="ovc"></div>
+  <div id="dMyDesk" style="margin-top:44px"></div>
   <!-- ═══ ancien MORNING BRIEF masqué (Phase 7) : entièrement couvert par les sections ci-dessus ═══ -->
   <div id="mbHome" style="display:none"></div>
   <div style="text-align:center;margin:6px 0 24px"><button type="button" onclick="var l=document.getElementById('mbLegacy');var o=l.style.display==='none';l.style.display=o?'block':'none';this.textContent=o?'▴  masquer le détail complet':'▾  afficher le détail complet (ancien tableau de bord)';" style="background:#0e1622;border:1px dashed #5BE3A855;border-radius:12px;color:#5BE3A8;font-weight:700;font-size:12px;cursor:pointer;letter-spacing:.4px;padding:10px 16px">▾  afficher le détail complet (ancien tableau de bord)</button></div>
@@ -6024,7 +6051,7 @@ _OV_EXTRA_JS = r"""<script>(function(){
       T('Sentiment',roro,rc,mc.roro_gap!=null?('écart '+mc.roro_gap):'')].join('');
     var sum=[];if(mc.verdict)sum.push(mc.verdict);if(tilt.note)sum.push(tilt.note);
     if(nBuy)sum.push(nBuy+' titres en signal d\'achat'+(topA?(' — meilleur score : <b style="color:#f2f5fa">'+topA.symbol+'</b> ('+topA.score+(topA.grade?', '+topA.grade:'')+')'):'')+(topSec?('. Secteur le plus fort : <b style="color:#f2f5fa">'+topSec.sector+'</b>.'):'.'));
-    var sumHTML=sum.slice(0,5).map(function(x){return '<div style="display:flex;gap:8px;font-size:13.5px;line-height:1.5;color:#c3ccda;margin-top:6px"><span style="color:#FF7A18;flex:none">›</span><span>'+x+'</span></div>';}).join('');
+    var sumHTML=sum.slice(0,5).map(function(x){return '<div style="display:flex;gap:9px;font-size:13.5px;line-height:1.55;color:#c3ccda;margin-top:7px"><span style="color:#4a5160;flex:none;font-weight:700">—</span><span>'+x+'</span></div>';}).join('');
     el.innerHTML='<div style="background:linear-gradient(180deg,#14161c,#0d0e12);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:22px 24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 14px 34px -24px rgba(0,0,0,.8)">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px"><div style="font-size:12px;color:#8794ab;font-weight:700">🕐 '+(mk.et||'—')+' · <span style="color:'+scol+'">'+sess+'</span></div><div>'+mini('S&P','S&P')+mini('NDX','NASDAQ')+mini('DOW','DOW')+mini('VIX','VIX')+'</div></div>'
       +'<div style="font-size:38px;font-weight:900;letter-spacing:-1.2px;color:#f5f8fc;margin-top:14px;line-height:1">Morning Brief</div>'
