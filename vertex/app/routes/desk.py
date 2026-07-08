@@ -57,6 +57,19 @@ def make_blueprint(*, opt_job, ibkr_enabled):
         syms = list(UNIVERSE)
         return jsonify({'count': len(syms), 'symbols': syms, 'tv': ','.join(syms)})
 
+    @bp.route('/api/ibkr/positions')
+    def api_ibkr_positions():
+        """Portefeuille TWS en LECTURE SEULE — pour l'import dans le Desk.
+        Hors connexion : erreur claire, jamais de données inventées."""
+        if not ibkr_enabled:
+            return jsonify({'ok': False, 'positions': [],
+                            'err': 'IBKR non connecté (mode cloud/démo) — ouvre TWS ou Gateway puis réessaie.'}), 503
+        res = opt_job('positions', (), timeout=20)
+        if res is None:
+            return jsonify({'ok': False, 'positions': [],
+                            'err': 'TWS injoignable — vérifie que TWS/Gateway est ouvert et l\'API activée.'}), 503
+        return jsonify({'ok': True, 'positions': res, 'count': len(res)})
+
     @bp.route('/api/pos-quotes', methods=['POST'])
     def api_pos_quotes():
         """Cote en direct les TRADES PERSO saisis sur la page Ma Stratégie (actions + options).

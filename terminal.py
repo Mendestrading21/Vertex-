@@ -43,6 +43,7 @@ from vertex.data import constants as _vconst
 from vertex.services import status_service as _status_svc
 from vertex.services import persist as _persist
 from vertex.services import live_engine as _live
+from vertex.services import news_plus as _news_plus
 from vertex.engines import decision_stack as _decision
 from vertex.ui import nav as _nav
 from vertex.ui import options_lab as _olab_ui
@@ -871,6 +872,18 @@ def _ibkr_opt_worker():
                 box['res'] = scan(*args)
             elif kind == 'posq':
                 box['res'] = posq(*args)
+            elif kind == 'positions':
+                # LECTURE SEULE du portefeuille TWS (aucun ordre possible, readonly=True)
+                res = []
+                for p in ib.positions():
+                    ct = p.contract
+                    res.append({'sym': ct.symbol, 'secType': ct.secType,
+                                'right': getattr(ct, 'right', '') or '',
+                                'strike': getattr(ct, 'strike', None) or None,
+                                'exp': getattr(ct, 'lastTradeDateOrContractMonth', '') or '',
+                                'qty': float(p.position), 'avgCost': float(p.avgCost),
+                                'currency': getattr(ct, 'currency', 'USD')})
+                box['res'] = res
         except Exception:
             box['res'] = None
         evt.set()
@@ -1080,8 +1093,11 @@ def _news_loop():
             for sym in NEWS_SYMS + hot:
                 try:
                     its = options.news_for(yf.Ticker(sym), n=4)
+                    if not its:                                   # repli multi-sources (throttle yfinance)
+                        its = _news_plus.rss_news(sym, n=4)
                     its, _ = ai.fr_news(sym, its)
                     for it in its:
+                        it['senti'] = _news_plus.sentiment((it.get('title') or '') + ' ' + (it.get('fr') or ''))
                         k = (it.get('title') or '')[:60]
                         if k and k not in seen:
                             seen.add(k)
@@ -7191,6 +7207,16 @@ window.setF=function(f){FILT=f;pills();render();};
 window.setView=function(v){VIEW=v;seg();render();};
 function seg(){var S=[['cal','📅 Calendrier'],['timeline','◧ Timeline'],['table','☰ Tableau']];document.getElementById('cSeg').innerHTML=S.map(function(x){return '<button class="vbtn'+(VIEW===x[0]?' pri':'')+'" onclick="setView(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');}
 function pills(){var P=[['all','Tous'],['BUY','Achat'],['WATCH','Surveiller'],['AVOID','Éviter']];document.getElementById('cPills').innerHTML=P.map(function(p){return '<button class="vbtn'+(FILT===p[0]?' pri':'')+'" onclick="setF(\''+p[0]+'\')">'+p[1]+'</button>';}).join('');}
+var MACRO=[];
+function macroBand(){var el=document.getElementById('cMacro');if(!el)return;
+  if(!MACRO.length){el.innerHTML='';return;}
+  var KC={FOMC:'#EF4444',CPI:'#F5B45B',NFP:'#38BDF8'};
+  el.innerHTML='<div style="font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#FF9A3D;margin-bottom:8px">Macro — les rendez-vous qui font bouger les indices</div>'
+   +MACRO.slice(0,6).map(function(e){var c=KC[e.kind]||'#8794ab';
+    return '<span title="'+(e.note||'')+'" style="display:inline-flex;align-items:center;gap:7px;background:'+c+'12;border:1px solid '+c+'44;color:#e8edf5;border-radius:999px;font-size:11.5px;font-weight:700;padding:6px 13px;margin:0 8px 8px 0">'
+     +'<b style="color:'+c+'">'+e.kind+'</b> '+e.label.replace(/ \(.*\)/,'')+' · '+e.date.slice(5)
+     +' · <b style="color:'+(e.dte<=3?'#EF4444':'#F5B45B')+'">'+(e.dte===0?'AUJ.':'J-'+e.dte)+'</b>'
+     +(e.approx?' <span style="color:#8794ab;font-size:9px">(indicatif)</span>':'')+'</span>';}).join('');}
 function countdown(){var el=document.getElementById('cCountdown');if(!el)return;
   var nx=ALL.filter(function(x){return x.dte!=null&&x.dte>=0;}).sort(function(a,b){return a.dte-b.dte;}).slice(0,3);
   if(!nx.length){el.innerHTML='';return;}
@@ -7213,13 +7239,14 @@ function digest(){var el=document.getElementById('cDigest');if(!el)return;
     +' Règle du desk : <b>jamais de nouvelle position options la veille d\'une publication</b>.')
    :'Aucune publication sous 7 jours — fenêtre calme pour les entrées swing (pas de risque de gap de résultats).';
   el.innerHTML='<div style="display:flex;gap:12px;align-items:flex-start;padding:13px 16px;background:linear-gradient(120deg,rgba(255,122,24,.09),rgba(255,122,24,.02));border:1px solid rgba(255,122,24,.16);border-left:2.5px solid #FF7A18;border-radius:13px;font-size:13px;line-height:1.6;color:#aeb8c8"><span style="flex:none;width:22px;height:22px;border-radius:7px;background:rgba(255,122,24,.16);display:grid;place-items:center;font-size:12px">▲</span><div><b style="color:#eef2f8">Lecture Vertex — </b>'+txt+'</div></div>';}
-function load(){fetch('/cal-feed').then(function(r){return r.json()}).then(function(d){ALL=(d.items||[]);var soon=ALL.filter(function(x){return x.dte!=null&&x.dte<=7;}).length;document.getElementById('cHead').innerHTML='<b style="color:#C9D2E0">'+ALL.length+'</b> résultats à venir · <b style="color:#FFB23F">'+soon+'</b> sous 7 jours · résultats posés sur leur date';countdown();digest();seg();pills();render();}).catch(function(){});}
+function load(){fetch('/cal-feed').then(function(r){return r.json()}).then(function(d){ALL=(d.items||[]);var soon=ALL.filter(function(x){return x.dte!=null&&x.dte<=7;}).length;MACRO=d.macro||[];macroBand();document.getElementById('cHead').innerHTML='<b style="color:#C9D2E0">'+ALL.length+'</b> résultats à venir · <b style="color:#FFB23F">'+soon+'</b> sous 7 jours · résultats posés sur leur date';countdown();digest();seg();pills();render();}).catch(function(){});}
 load();setInterval(load,30000);
 """
 
 PAGE_CATALYSTS = _vpage('Market Calendar',
   '<div class="vhead"><div><h1>📅 Market Calendar</h1><div class="s" id="cHead">chargement du calendrier…</div></div>'
   '<div id="cSeg" style="margin-left:auto;align-self:center;display:flex;gap:6px"></div></div>'
+  '<div id="cMacro" style="margin-bottom:14px"></div>'
   '<div id="cCountdown" style="margin-bottom:16px"></div>'
   '<div id="cDigest" style="margin-bottom:16px"></div>'
   '<div id="cPills" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>'
@@ -9429,7 +9456,8 @@ _DESK_COCKPIT = (
     # 11 · actions rapides
     '<div class="sec"><div class="st"><h3>⚡ Actions</h3></div><div class="acts">'
     '<button class="act2 pri" onclick="dkToggle(\'dkAddForm\',null,true)">➕ Nouvelle position</button>'
-    '<button class="act2" onclick="document.getElementById(\'dkImp\').click()">📥 Importer IBKR</button>'
+    '<button class="act2" onclick="dkImportIBKR(this)">🔌 Importer TWS (réel)</button>'
+    '<button class="act2" onclick="document.getElementById(\'dkImp\').click()">📥 Importer (fichier)</button>'
     '<a href="/entreprises" class="act2">🔍 Scanner opportunités</a>'
     '<a href="/journal" class="act2">📖 Ouvrir journal</a>'
     '</div>'
@@ -9440,6 +9468,29 @@ _DESK_COCKPIT = (
     '<div id="dkDecision" class="decision" style="display:none"></div>'
     '</div>')
 _DESK_COCKPIT_JS = r"""
+function dkImportIBKR(btn){
+  // Portefeuille TWS (lecture seule) → positions du Desk. Fusion sans doublon.
+  if(btn){btn.textContent='⏳ lecture TWS…';btn.disabled=true;}
+  var done=function(msg){if(btn){btn.textContent='🔌 Importer TWS (réel)';btn.disabled=false;}if(msg)alert(msg);};
+  fetch('/api/ibkr/positions').then(function(r){return r.json();}).then(function(d){
+    if(!d.ok){done('❌ '+(d.err||'Import impossible.'));return;}
+    var a=tGet(),added=0,skipped=0,ignored=0;
+    (d.positions||[]).forEach(function(p){
+      if(!(p.qty>0)){ignored++;return;}                       // le desk modélise le long only
+      var type=(p.secType==='OPT')?(p.right==='P'?'PUT':'CALL'):(p.secType==='STK'?'STK':null);
+      if(!type){ignored++;return;}
+      var exp=(p.exp&&p.exp.length===8)?(p.exp.slice(0,4)+'-'+p.exp.slice(4,6)+'-'+p.exp.slice(6,8)):(p.exp||null);
+      var dup=a.some(function(t2){return t2.sym===p.sym&&t2.type===type&&String(t2.strike||'')===String(p.strike||'')&&String(t2.exp||'')===String(exp||'');});
+      if(dup){skipped++;return;}
+      var cost=Math.round(p.qty*p.avgCost);                    // avgCost IBKR : par contrat (multiplicateur inclus) / par action
+      a.push({id:Date.now()+added,type:type,sym:p.sym,exp:exp,strike:p.strike!=null?p.strike:null,
+              right:p.right||null,qty:p.qty,cost:cost,added:new Date().toISOString().slice(0,10),
+              note:'importé TWS (réel)',entrySnap:(typeof tSnapOf==='function'?tSnapOf(p.sym):null)});
+      if(typeof tlAdd==='function')tlAdd(p.sym,'OPEN',type+' '+p.sym+(p.strike?' $'+p.strike:'')+' · '+p.qty+'× — importé depuis TWS',0);
+      added++;});
+    tSave(a);setTimeout(dkRender,80);
+    done('✓ Import TWS terminé : '+added+' ajoutée(s) · '+skipped+' déjà présente(s)'+(ignored?' · '+ignored+' ignorée(s) (short/non géré)':'')+'.');
+  }).catch(function(){done('❌ API injoignable.');});}
 function dkToggle(id,btn,scroll){var e=document.getElementById(id);if(!e)return;var show=e.style.display==='none';e.style.display=show?'block':'none';if(btn&&btn.textContent){}if(show&&scroll)e.scrollIntoView({behavior:'smooth',block:'center'});if(show){var f=e.querySelector('input,select');if(f)try{f.focus()}catch(_){}}}
 function dkMoney(n){return (typeof tFmt==='function')?tFmt(n):('$'+Math.round(n));}
 function dkUrg(p){

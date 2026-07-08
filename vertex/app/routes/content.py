@@ -9,6 +9,8 @@ partagés (`vertex.app.state`). Le flag `ai_on` signale si la couche IA
 from flask import Blueprint, jsonify, request
 
 from elio import ai
+from vertex.data import macro_calendar
+from vertex.services import news_plus
 from vertex.app.state import news_state, cal_state, weekly_state
 
 bp = Blueprint('content', __name__)
@@ -27,12 +29,13 @@ def news_feed_ep():
                  if q in (str(n.get('title') or '') + ' ' + str(n.get('fr') or '')
                           + ' ' + str(n.get('publisher') or '')).lower()]
     return jsonify({**news_state, 'items': items, 'filtered': bool(sym or q),
-                    'ai_on': ai.available()})
+                    'sentiment': news_plus.aggregate(items), 'ai_on': ai.available()})
 
 
 @bp.route('/cal-feed')
 def cal_feed_ep():
-    return jsonify(cal_state)
+    """Earnings + macro RÉEL : FOMC (dates Fed publiées), NFP (1er vendredi), CPI (indicatif)."""
+    return jsonify({**cal_state, 'macro': macro_calendar.events(horizon_days=120)})
 
 
 @bp.route('/weekly-feed')

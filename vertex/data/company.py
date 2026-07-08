@@ -137,10 +137,32 @@ def _INDUSTRY_OF():
     return _IND_CACHE
 
 
+def _quarters(tk, n=8):
+    """Historique trimestriel (CA, résultat net) — [] si indisponible."""
+    try:
+        df = tk.quarterly_income_stmt
+        if df is None or df.empty:
+            return []
+        out = []
+        for col in list(df.columns)[:n]:
+            rev = df.at['Total Revenue', col] if 'Total Revenue' in df.index else None
+            ni = df.at['Net Income', col] if 'Net Income' in df.index else None
+            if rev is None and ni is None:
+                continue
+            out.append({'q': str(col)[:10],
+                        'rev': None if rev != rev or rev is None else round(float(rev)),
+                        'ni': None if ni != ni or ni is None else round(float(ni))})
+        out.reverse()                                  # chronologique
+        return out
+    except Exception:
+        return []
+
+
 def _fetch_profile(sym):
     """Profil via yfinance .info (lent/flaky — tourne sur la machine de l'utilisateur)."""
     import yfinance as yf
-    info = yf.Ticker(sym).info or {}
+    tk = yf.Ticker(sym)
+    info = tk.info or {}
     officers = info.get('companyOfficers') or []
     ceo = None
     for o in officers:
@@ -176,6 +198,8 @@ def _fetch_profile(sym):
         'n_analysts': info.get('numberOfAnalystOpinions'),
         'target_mean': info.get('targetMeanPrice'), 'target_high': info.get('targetHighPrice'),
         'target_low': info.get('targetLowPrice'), 'target_median': info.get('targetMedianPrice'),
+        # ── historique trimestriel (8 trimestres : CA + résultat net) ──
+        'quarters': _quarters(tk),
     }
 
 
@@ -264,7 +288,7 @@ def get(sym, demo=False, allow_fetch=True, brief=False):
         'fundamentals': {k: base.get(k) for k in
                          ('pe', 'forward_pe', 'peg', 'margin', 'roe', 'rev_growth',
                           'eps_growth', 'fcf', 'cash', 'debt', 'dividend', 'mcap',
-                          'beta', 'ebitda', 'debt_to_ebitda', 'earnings_date')},
+                          'beta', 'ebitda', 'debt_to_ebitda', 'earnings_date', 'quarters')},
         'analysts': {k: base.get(k) for k in
                      ('rating', 'rating_mean', 'n_analysts', 'target_mean',
                       'target_high', 'target_low', 'target_median')},
