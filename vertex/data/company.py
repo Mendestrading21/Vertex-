@@ -164,6 +164,11 @@ def _fetch_profile(sym):
         'eps_growth': info.get('earningsGrowth'), 'fcf': info.get('freeCashflow'),
         'debt_to_ebitda': None, 'cash': info.get('totalCash'), 'debt': info.get('totalDebt'),
         'dividend': info.get('dividendYield'), 'mcap': info.get('marketCap'),
+        # ── consensus analystes (type TipRanks — fourni par yfinance / IBKR) ──
+        'rating': info.get('recommendationKey'), 'rating_mean': info.get('recommendationMean'),
+        'n_analysts': info.get('numberOfAnalystOpinions'),
+        'target_mean': info.get('targetMeanPrice'), 'target_high': info.get('targetHighPrice'),
+        'target_low': info.get('targetLowPrice'), 'target_median': info.get('targetMedianPrice'),
     }
 
 
@@ -242,6 +247,9 @@ def get(sym, demo=False, allow_fetch=True, brief=False):
         'fundamentals': {k: base.get(k) for k in
                          ('pe', 'forward_pe', 'peg', 'margin', 'roe', 'rev_growth',
                           'eps_growth', 'fcf', 'cash', 'debt', 'dividend', 'mcap')},
+        'analysts': {k: base.get(k) for k in
+                     ('rating', 'rating_mean', 'n_analysts', 'target_mean',
+                      'target_high', 'target_low', 'target_median')},
         'stale': not fresh,          # True → couche curée / cache > 7j (UI le signale)
         'updated': (e or {}).get('ts'),
     }

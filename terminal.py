@@ -1756,8 +1756,22 @@ def api_ticker(sym):
         comp = _company.get(sym, demo=DEMO_MODE, brief=True)
     except Exception:
         comp = None
+    # ── comparaison pairs : VRAIES données (scan live + cache entreprise), zéro invention ──
+    det_all = scan_state.get('detail') or {}
+    peers_data = []
+    for p in ((comp or {}).get('peers') or [])[:4]:
+        pd = det_all.get(p) or {}
+        try:
+            pc = _company.get(p, demo=DEMO_MODE, allow_fetch=False)   # cache seul → rapide
+        except Exception:
+            pc = {}
+        pf = (pc or {}).get('fundamentals') or {}
+        peers_data.append({'symbol': p, 'name': (pc or {}).get('name'),
+                           'score': pd.get('score'), 'verdict': pd.get('verdict'),
+                           'perf_q': pd.get('perf_q'), 'rev_growth': pf.get('rev_growth'),
+                           'margin': pf.get('margin'), 'pe': pf.get('pe'), 'roe': pf.get('roe')})
     return jsonify({'symbol': sym, 'in_universe': sym in UNIVERSE,
-                    'detail': (scan_state.get('detail') or {}).get(sym),
+                    'detail': det_all.get(sym), 'peers_data': peers_data,
                     'company': comp, 'pack': pack})
 
 
@@ -6459,7 +6473,9 @@ _SI_BODY = (
   '<div class="divider"></div><div><div class="barhead"><span class="lbl">Confiance de l\'analyse</span><span class="num mono" style="font-weight:800;color:var(--info)">84%</span></div>'
   '<div class="track"><div class="fill" style="width:84%;background:var(--info)"></div></div></div></div></div></section>'
   # ── XV COMPETITION ──
-  '<section><div class="eyebrow"><span class="rn">15</span>Concurrence</div><h2 id="comp-h2">Face à ses pairs</h2><div class="card scroll"><table class="compt" id="compt"></table></div></section>'
+  '<section><div class="eyebrow"><span class="rn">15</span>Analystes &amp; concurrence</div><h2 id="comp-h2">Face à ses pairs</h2>'
+  '<div class="card" id="analystcard" style="margin-bottom:16px"></div>'
+  '<div class="card scroll"><table class="compt" id="compt"></table></div></section>'
   # ── XVI CORRELATIONS ──
   '<section><div class="eyebrow"><span class="rn">16</span>Corrélations · 90 jours</div><h2 id="corr-h2">Ce qui bouge avec le titre</h2><div class="card"><div class="corr" id="corr"></div></div></section>'
   # ── XVII INSTRUMENT ──
@@ -6685,13 +6701,34 @@ function renderNews(){
   seth('impact',ring(pos>neg?74:52,72,pos>neg?C.good:C.warn,false));
   set('news-impact',pos>neg?'Haussier':'Neutre');
 }
+function _cpPct(v){return v==null?'—':(v>=0?'+':'')+Math.round(v*100)+'%';}      // fraction → %
+function _cpPerf(v){return v==null?'—':(v>=0?'+':'')+v+'%';}                       // déjà en %
+function _cpPE(v){return v==null?'—':(+v).toFixed(0)+'×';}
 function renderCompetition(det){
   set('comp-h2',M.sym+' face à ses pairs');
-  var peers=(window.__peers||[]).slice(0,3);var COMPH=['Titre','Croiss. CA','Marge','PER','ROE','YTD','Score'];
-  var rows=[[M.sym,'+'+(5+_h%90)+'%',(15+_h%45)+'%',(20+_h%40)+'×',(12+_h%80)+'%',(rnd('ytd')>.4?'+':'-')+(_h%40)+'%',Math.round(M.score),true]];
-  peers.forEach(function(p){var ph=HS(p);rows.push([p,'+'+(2+ph%40)+'%',(6+ph%30)+'%',(18+ph%30)+'×',(4+ph%25)+'%',(ph%2?'+':'-')+(ph%30)+'%',50+ph%35,false]);});
-  var h='<thead><tr>'+COMPH.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr class="'+(r[7]?'me':'')+'">'+COMPH.map(function(_,i){var v=r[i];if(i===0)return '<td>'+v+'</td>';if(i===6){var col=+v>=75?C.good:+v>=55?C.warn:C.bad;return '<td><span class="heat" style="background:'+col+'22;color:'+col+'">'+v+'</span></td>';}var neg=(''+v).charAt(0)==='-';return '<td style="color:'+(neg?C.bad:C.ink)+'">'+v+'</td>';}).join('')+'</tr>';}).join('')+'</tbody>';
+  var COMPH=['Titre','Croiss. CA','Marge','PER','ROE','3 mois','Score'];
+  var cf=window.__cofund||{};
+  var rows=[[M.sym,_cpPct(cf.rev_growth),_cpPct(cf.margin),_cpPE(cf.pe),_cpPct(cf.roe),_cpPerf(det&&det.perf_q),(M.score!=null?Math.round(M.score):null),true]];
+  (window.__peersData||[]).slice(0,4).forEach(function(p){
+    rows.push([p.symbol,_cpPct(p.rev_growth),_cpPct(p.margin),_cpPE(p.pe),_cpPct(p.roe),_cpPerf(p.perf_q),(p.score!=null?Math.round(p.score):null),false]);
+  });
+  var h='<thead><tr>'+COMPH.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr class="'+(r[7]?'me':'')+'">'+COMPH.map(function(_,i){var v=r[i];if(i===0)return '<td><a href="/titre/'+v+'" style="color:inherit;text-decoration:none;font-weight:700">'+v+'</a></td>';if(i===6){if(v==null)return '<td><span style="color:'+C.mut+'">—</span></td>';var col=+v>=75?C.good:+v>=55?C.warn:C.bad;return '<td><span class="heat" style="background:'+col+'22;color:'+col+'">'+v+'</span></td>';}var neg=(''+v).charAt(0)==='-';return '<td style="color:'+(v==='—'?C.mut:neg?C.bad:C.ink)+'">'+v+'</td>';}).join('')+'</tr>';}).join('')+'</tbody>';
   seth('compt',h);
+}
+function renderAnalysts(a){
+  a=a||{};var host=el('analystcard');if(!host)return;
+  if(a.rating==null&&a.target_mean==null){host.innerHTML='<div class="lbl" style="margin-bottom:6px">Consensus analystes</div><div style="font-size:12.5px;color:'+C.mut+';line-height:1.5">Couverture analystes non disponible pour ce titre — le profil se rafraîchit 1×/semaine à l\'ouverture de la fiche.</div>';return;}
+  var MAP={strong_buy:['Achat fort',C.good],buy:['Achat',C.good],outperform:['Surperformance',C.good],hold:['Conserver',C.warn],neutral:['Neutre',C.warn],underperform:['Sous-performance',C.bad],sell:['Vendre',C.bad],strong_sell:['Vente forte',C.bad]};
+  var r=MAP[(a.rating||'').toLowerCase()]||[a.rating||'—',C.mut];
+  var tgt=a.target_mean,up=(tgt!=null&&M.price)?((tgt/M.price-1)*100):null,upC=up==null?C.mut:up>=0?C.good:C.bad;
+  var mean=a.rating_mean!=null?(+a.rating_mean).toFixed(1):null;
+  var box=function(big,bigc,sub){return '<div style="min-width:120px"><div style="font-size:22px;font-weight:900;color:'+(bigc||C.ink)+'">'+big+'</div><div style="font-size:10px;color:'+C.mut+';margin-top:2px">'+sub+'</div></div>';};
+  host.innerHTML='<div class="lbl" style="margin-bottom:14px">Consensus analystes'+(a.n_analysts?' · <b style="color:'+C.ink+'">'+a.n_analysts+'</b> analystes':'')+' <span style="color:'+C.mut+';font-weight:400">· source marché (IBKR/Refinitiv)</span></div>'
+   +'<div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start">'
+   +box(r[0],r[1],mean?'note '+mean+'/5 · 1 = achat fort':'recommandation')
+   +(tgt!=null?box('$'+tgt.toFixed(0),C.ink,'objectif moyen'+(up!=null?' · ':'')+(up!=null?'<b style="color:'+upC+'">'+(up>=0?'+':'')+up.toFixed(0)+'% vs cours</b>':'')):'')
+   +(a.target_low!=null&&a.target_high!=null?box('$'+a.target_low.toFixed(0)+'–'+a.target_high.toFixed(0),C.mut,'fourchette des objectifs'):'')
+   +'</div>';
 }
 function renderCorr(){
   set('corr-h2','Ce qui bouge avec '+M.sym);
@@ -6722,7 +6759,7 @@ fetch('/healthz').then(function(r){return r.json();}).then(function(h){
 }).catch(function(){});
 fetch('/api/ticker/'+SYM).then(function(r){return r.json();}).then(function(j){
   if(!j)return;var cp=j.company||{},d=j.detail||{},pk=j.pack||{};
-  window.__peers=cp.peers||[];window.__plan=d.plan||null;window.__contracts=pk.contracts||[];window.__pack=pk;
+  window.__peers=cp.peers||[];window.__peersData=j.peers_data||[];window.__cofund=cp.fundamentals||{};window.__plan=d.plan||null;window.__contracts=pk.contracts||[];window.__pack=pk;
   // marché live (guardé — écrase le synthétique quand présent)
   if(d.price!=null){M.price=d.price;M.demo=false;}
   if(pk.spot!=null){M.price=pk.spot;M.demo=false;}
@@ -6734,7 +6771,7 @@ fetch('/api/ticker/'+SYM).then(function(r){return r.json();}).then(function(j){
   var fu=cp.fundamentals||{};
   M.cap=bignum(fu.mcap||pk.mcap)||M.cap;
   M.sector=cp.sector||pk.sector||M.sector;M.industry=cp.industry||M.industry;M.name=cp.name||pk.name||M.name;
-  renderHeader();renderCompany(cp);renderChart();renderAnalytics(d);
+  renderHeader();renderCompany(cp);renderChart();renderAnalytics(d);renderAnalysts(cp.analysts);
 }).catch(function(){});
 """
 
