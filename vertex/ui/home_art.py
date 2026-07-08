@@ -134,4 +134,33 @@ def apply(page):
     return page.replace('</body>', '<style>' + ART_CSS + '</style><script>' + ART_JS + '</script></body>', 1)
 
 
-__all__ = ['ART_CSS', 'ART_JS', 'apply']
+# ── Trading Desk : même ambiance + titres de sections éditoriaux ──
+DESK_CSS = r"""
+body{background:
+ radial-gradient(1100px 520px at 78% -160px,rgba(255,122,24,.07),transparent 60%),
+ radial-gradient(900px 560px at -12% 34%,rgba(56,189,248,.045),transparent 55%),
+ #0b0e14 !important}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+ background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
+ linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+ background-size:56px 56px;
+ -webkit-mask-image:radial-gradient(900px 460px at 60% 0,#000 30%,transparent 75%);
+ mask-image:radial-gradient(900px 460px at 60% 0,#000 30%,transparent 75%)}
+::selection{background:rgba(255,122,24,.32);color:#fff}
+*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent}
+*::-webkit-scrollbar{width:9px;height:9px}
+*::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:9px}
+.stitle{display:flex;align-items:center;gap:11px;letter-spacing:.13em!important;text-transform:uppercase;
+ color:#FF9A3D!important;margin:44px 2px 14px!important;font-weight:800!important}
+.stitle::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,rgba(255,122,24,.4),rgba(255,255,255,.04) 60%,transparent);border-radius:2px}
+.vcard{transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.vcard:hover{transform:translateY(-1px);border-color:rgba(255,122,24,.24);box-shadow:0 16px 38px -28px rgba(0,0,0,.85)}
+"""
+
+
+def apply_desk(page):
+    """Applique l'ambiance salle de marché au Trading Desk (CSS seul)."""
+    return page.replace('</body>', '<style>' + DESK_CSS + '</style></body>', 1)
+
+
+__all__ = ['ART_CSS', 'ART_JS', 'DESK_CSS', 'apply', 'apply_desk']

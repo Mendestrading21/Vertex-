@@ -9165,14 +9165,17 @@ _STRAT_PAGE_CSS = (
   ".dk2 .gau .gf{height:100%;border-radius:5px}"
   ".dk2 .gau .gs{font-size:9.5px;color:var(--mut);margin-top:4px}"
   # position card
-  ".dk2 .pos{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:16px 18px;margin-bottom:12px}"
+  ".dk2 .pos{background:linear-gradient(168deg,var(--card),#0c0e13);border:1px solid var(--ln);border-radius:16px;padding:13px 15px;margin-bottom:0;transition:transform .16s,border-color .16s,box-shadow .16s}"
+  ".dk2 .pos:hover{transform:translateY(-2px);border-color:rgba(255,122,24,.3);box-shadow:0 18px 40px -28px rgba(0,0,0,.9)}"
+  ".dk2 #dkPriority{display:grid;grid-template-columns:repeat(auto-fill,minmax(470px,1fr));gap:12px;align-items:start}"
+  "@media(max-width:1020px){.dk2 #dkPriority{grid-template-columns:1fr}}"
   ".dk2 .pos .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}"
-  ".dk2 .pos .sym{font-size:22px;font-weight:900;letter-spacing:-.5px;cursor:pointer}"
+  ".dk2 .pos .sym{font-size:19px;font-weight:900;letter-spacing:-.4px;cursor:pointer}"
   ".dk2 .pos .pnl{margin-left:auto;text-align:right}"
-  ".dk2 .pos .pnl .big{font-size:22px;font-weight:900;line-height:1}"
+  ".dk2 .pos .pnl .big{font-size:24px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}"
   ".dk2 .pos .pnl .sub{font-size:10px;color:var(--mut);margin-top:2px}"
   ".dk2 .tp{font-size:10px;font-weight:800;padding:2px 9px;border-radius:8px;letter-spacing:.3px}"
-  ".dk2 .cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:7px;margin-bottom:12px}"
+  ".dk2 .cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:6px;margin-bottom:10px}"
   ".dk2 .cell{background:var(--card2);border:1px solid var(--ln);border-radius:10px;padding:8px 9px;min-width:0}"
   ".dk2 .cell .l{font-size:8.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--mut);white-space:nowrap}"
   ".dk2 .cell .v{font-size:14px;font-weight:800;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}"
@@ -9437,7 +9440,7 @@ function dkFactors(p,L,det){det=det||{};var F=[];
   return F;
 }
 function dkCommittee(p,L,det){var v=dkVerdict(p,L,det),F=dkFactors(p,L,det),sc={fav:'#22C55E',neu:'#8794ab',def:'#EF4444'};
-  var facs=F.map(function(f){return '<div class="fac"><span class="dot" style="background:'+sc[f[1]]+'"></span><div><div class="fl">'+f[0]+'</div><div class="fp">'+f[2]+'</div></div></div>';}).join('');
+  var facs=F.filter(function(f){return f[2]!=='—';}).map(function(f){return '<div class="fac"><span class="dot" style="background:'+sc[f[1]]+'"></span><div><div class="fl">'+f[0]+'</div><div class="fp">'+f[2]+'</div></div></div>';}).join('');
   return '<div class="comm"><div class="cv"><span style="font-size:9px;font-weight:800;letter-spacing:.6px;color:#8794ab">🏛️ COMITÉ VERTEX</span><span class="verdict" style="color:'+v[1]+'">'+v[0]+'</span><span class="cvs">'+v[2]+'</span></div><div class="facs">'+facs+'</div></div>';
 }
 function dkReason(p,L,det){
@@ -9546,7 +9549,7 @@ function dkPriorityCard(p,DET,rank){
     +'<span class="tp" style="background:'+tc+'1a;color:'+tc+'">'+dkTypeLabel(t)+(t.strike?' $'+t.strike:'')+'</span>'
     +(isOpt&&t.exp?'<span style="font-size:11px;color:#8794ab">'+t.exp+(dte!=null?' · '+dte+'j':'')+'</span>':'')
     +(rank===0?'<span class="tp" style="background:#F5B45B1a;color:#F5B45B">⚠ prioritaire</span>':'')
-    +'<span class="pnl"><div class="big" style="color:'+plc+'">'+(p.pl!=null?((p.pl>=0?'+':'')+p.pl.toFixed(0)+' $'):'…')+'</div><div class="sub">'+(p.plpct!=null?((p.plpct>=0?'+':'')+p.plpct.toFixed(1)+'%'):'cotation…')+' · '+dkMoney(t.cost)+' investi</div></span></div>';
+    +'<span class="pnl"><div class="big" style="color:'+plc+'">'+(p.pl!=null?((p.pl>=0?'+':'')+p.pl.toFixed(0)+' $'):'…')+'</div><div class="sub">'+(p.plpct!=null?((p.plpct>=0?'+':'')+p.plpct.toFixed(1)+'%'+(p.est?' · ≈ estimé':'')) : 'cotation…')+' · '+dkMoney(t.cost)+' investi</div></span></div>';
   function cell(l,v,c){return '<div class="cell"><div class="l">'+l+'</div><div class="v"'+(c?' style="color:'+c+'"':'')+'>'+v+'</div></div>';}
   var cells='<div class="cells">'
     +cell(isOpt?'Prime':'Prix',cur!=null?('$'+(+cur).toFixed(2)):'…')
@@ -9684,7 +9687,15 @@ function dkRender(){
     if(isOpt&&mark!=null){v=mark*100*t.qty;known++;}else if(!isOpt&&q&&q.spot!=null){v=q.spot*t.qty;known++;}
     if(v!=null)val+=v;
     var spot=q?(q.spot!=null?q.spot:(q.last!=null?q.last:(q.mark!=null?q.mark:(q.close!=null?q.close:null)))):null;
-    pos.push({t:t,v:v,pl:v!=null?v-t.cost:null,plpct:(v!=null&&t.cost>0)?(v/t.cost-1)*100:null,spot:spot,prem:isOpt?prem:null,premIsClose:premIsClose,isOpt:isOpt,delta:(q&&q.delta!=null?q.delta:null)});});
+    var est=false;
+    if(v==null){var dd=DET[t.sym]||{};var px=(dd.price!=null)?dd.price:((t.entrySnap||{}).spot!=null?t.entrySnap.spot:null);
+      if(px!=null){
+        if(!isOpt){v=px*t.qty;spot=px;est=true;known++;val+=v;}
+        else if(t.strike!=null){var u9=t.cost/(100*t.qty),sg9=(t.type==='PUT'?-1:1);
+          var s09=(t.entrySnap||{}).spot,i09=(s09!=null)?Math.max(0,sg9*(s09-t.strike)):null,tv9=(i09!=null)?Math.max(0,u9-i09):u9*0.5;
+          var iN9=Math.max(0,sg9*(px-t.strike));var pe9=Math.max(u9*0.05,iN9+tv9);
+          prem=pe9;mark=pe9;v=pe9*100*t.qty;spot=px;est=true;known++;val+=v;}}}
+    pos.push({t:t,v:v,pl:v!=null?v-t.cost:null,plpct:(v!=null&&t.cost>0)?(v/t.cost-1)*100:null,spot:spot,prem:isOpt?prem:null,premIsClose:premIsClose,est:est,isOpt:isOpt,delta:(q&&q.delta!=null?q.delta:null)});});
   var allKnown=(known===a.length&&a.length>0);var totPL=allKnown?val-inv:null;
   var cap=parseFloat(localStorage.getItem('dkCapital')||'0');
   var cash=cap>0?(cap-inv):null;
@@ -9742,6 +9753,8 @@ PAGE_STRATEGIE = _vpage('Desk',
   _DESK_COCKPIT,
   head=_STRAT_EMBED_HEAD + _STRAT_PAGE_CSS,
   js=_STRATTOP_JS + _TRADES_JS + _RECO_JS + _PORTSIM_JS + _DESK_COCKPIT_JS)
+# ── Ambiance salle de marché sur le Desk (Ch. XI) ──
+PAGE_STRATEGIE = _home_art.apply_desk(PAGE_STRATEGIE)
 
 
 _PIPELINE_SVG = r"""
