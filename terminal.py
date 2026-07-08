@@ -10644,7 +10644,7 @@ function load(){fetch('/scan').then(function(r){return r.json()}).then(function(
   var cov=d.options_coverage;
   var ctx=document.getElementById('optCtx');if(ctx)ctx.innerHTML=(ivMed!=null?('IV médiane <b style="color:#38BDF8">'+ivMed+'%</b>'):'')+(cov?' &nbsp;·&nbsp; 🔄 univers balayé : <b style="color:'+(cov.done>=cov.total*0.9?'#22C55E':'#FFB23F')+'">'+cov.done+'/'+cov.total+'</b> titres <span style="color:#6B7280">('+cov.with_options+' avec options propres)</span>':'');
   window.__optMAJ=(new Date()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-  controls();glossary();statsBand();featured();renderBasket();render();optTermRender();var _qt=(new URLSearchParams(location.search)).get('t');if(_qt){_qt=_qt.toUpperCase();var _dn=document.getElementById('optDeepNote');var _best=calls.filter(function(c){return c.sym===_qt;}).sort(function(a,b){return (b.quality||0)-(a.quality||0);})[0];if(_best){if(!window.__optDeep){window.__optDeep=1;setTimeout(function(){openOptModal(oreg(_best));},240);}if(_dn){_dn.style.display='block';_dn.innerHTML='💎 Analyse option de <b style="color:#38BDF8">'+_qt+'</b> — ouverte depuis l\'analyse action · <a href="/titre/'+_qt+'" style="color:#FF7A18;text-decoration:none;font-weight:700">📈 revenir à l\'action '+_qt+' →</a>';}}else if(_dn){_dn.style.display='block';_dn.innerHTML='Aucune option propre pour <b>'+_qt+'</b> aujourd\'hui — voici tout le board. <a href="/titre/'+_qt+'" style="color:#FF7A18;text-decoration:none;font-weight:700">📈 fiche action '+_qt+' →</a>';}}}).catch(function(){});}
+  controls();glossary();statsBand();renderBasket();render();optReport();var _qt=(new URLSearchParams(location.search)).get('t');if(_qt){_qt=_qt.toUpperCase();var _dn=document.getElementById('optDeepNote');var _best=calls.filter(function(c){return c.sym===_qt;}).sort(function(a,b){return (b.quality||0)-(a.quality||0);})[0];if(_best){if(!window.__optDeep){window.__optDeep=1;setTimeout(function(){openOptModal(oreg(_best));},240);}if(_dn){_dn.style.display='block';_dn.innerHTML='💎 Analyse option de <b style="color:#38BDF8">'+_qt+'</b> — ouverte depuis l\'analyse action · <a href="/titre/'+_qt+'" style="color:#FF7A18;text-decoration:none;font-weight:700">📈 revenir à l\'action '+_qt+' →</a>';}}else if(_dn){_dn.style.display='block';_dn.innerHTML='Aucune option propre pour <b>'+_qt+'</b> aujourd\'hui — voici tout le board. <a href="/titre/'+_qt+'" style="color:#FF7A18;text-decoration:none;font-weight:700">📈 fiche action '+_qt+' →</a>';}}}).catch(function(){});}
 /* ═══════════ REFONTE PREMIUM 2026 — design only : redéfinitions (aucun calcul modifié) ═══════════ */
 function featured(){var el=document.getElementById('optBest');if(!el)return;var calls=ALL.filter(function(c){return c.type==='CALL'&&c.quality!=null;});
   if(!calls.length){el.innerHTML='<div class="opremium" style="padding:20px 24px"><div style="font-size:10px;color:#8794ab;font-weight:800;letter-spacing:1.5px;text-transform:uppercase">⭐ Option du jour</div><div class="muted" style="font-size:13px;margin-top:8px">Chaînes d\'options en cours de calcul (ou hors séance). La meilleure option s\'affiche dès que le board est prêt.</div></div>';return;}
@@ -10692,7 +10692,7 @@ function podium(calls,best){var pool=calls.filter(function(c){return c.sym!==bes
     +'</div>';}).join('')+'</div>';}
 function card(c){var qc=qcol(c.quality),be=c.be||(c.strike+c.cost/100),rr=rrOf(c);
   function kv(l,v,col){return '<div><div class="osub">'+l+'</div><div style="font-size:15px;font-weight:800;color:'+(col||'#e8edf5')+';font-variant-numeric:tabular-nums;margin-top:2px">'+(v!=null&&v!==''?v:'—')+'</div></div>';}
-  return '<div class="ocard" onclick="openOptModal(\''+oreg(c)+'\')">'
+  return '<div class="ocard" onclick="optSelect(\''+okey(c)+'\')">'
     +'<div style="display:flex;align-items:center;gap:8px">'
       +'<span style="font-size:17px;font-weight:900">'+c.sym+'</span><span style="font-size:11px;font-weight:800;color:#22C55E">CALL</span><span style="font-size:13px;font-weight:700;color:#C9D2E0">$'+c.strike+'</span>'
       +'<span style="margin-left:auto;display:flex;align-items:center;gap:10px"><span title="Suivre" onclick="event.stopPropagation();vxFollowOpt(\''+c.sym+'\',\''+(c.exp||'').slice(0,10)+'\','+c.strike+','+(c.cost||0)+','+(c.tgt||'null')+','+(be||'null')+','+(c.quality||'null')+','+(c.pop||'null')+','+(c.pot||'null')+','+(c.spot||'null')+')" style="cursor:pointer;color:#6b7280;font-size:13px">⭐</span><span style="font-size:15px;font-weight:900;color:'+qc+';font-variant-numeric:tabular-nums">'+(c.quality!=null?c.quality:'—')+'</span></span>'
@@ -10727,16 +10727,17 @@ function optScore(b){var el=document.getElementById('optScore');if(!el)return;if
   var best=null,worst=null;keys.forEach(function(k){var r=qp[k][1]?qp[k][0]/qp[k][1]:0;if(best==null||r>(qp[best][1]?qp[best][0]/qp[best][1]:0))best=k;if(worst==null||r<(qp[worst][1]?qp[worst][0]/qp[worst][1]:1))worst=k;});
   var rows=keys.map(function(k){var p=qp[k],pct=p[1]?Math.round(p[0]/p[1]*100):0,col=pct>=75?'#22C55E':pct>=45?'#F5B45B':'#EF4444';return '<div style="display:grid;grid-template-columns:112px 1fr 52px;gap:12px;align-items:center;padding:7px 0"><div style="font-size:12px;font-weight:700;color:#dfe6f2">'+k+'<div style="font-size:9.5px;color:#6B7280;font-weight:400">'+(expl[k]||'')+'</div></div><div style="height:8px;border-radius:5px;background:rgba(255,255,255,.06);overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+col+'"></div></div><div style="text-align:right;font-size:12px;font-weight:800;color:'+col+'">'+p[0]+'/'+p[1]+'</div></div>';}).join('');
   el.innerHTML='<div class="opremium" style="padding:20px 22px"><div style="display:flex;align-items:baseline;gap:10px"><span style="font-size:26px;font-weight:900;color:'+qcol(b.quality)+'">'+b.quality+'<span style="font-size:13px;color:#6B7280">/100</span></span><span style="font-size:13px;color:#8794ab">décomposition du score Vertex — '+b.sym+' CALL $'+b.strike+'</span></div><div style="margin-top:12px">'+rows+'</div><div class="oai" style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);font-size:12.5px">Le score est tiré vers le haut par <b style="color:#22C55E">'+best+'</b>'+(worst&&worst!==best?', mais pénalisé par <b style="color:#EF4444">'+worst+'</b>':'')+'.</div></div>';}
-function optPlaybook(b){var el=document.getElementById('optPlaybook');if(!el)return;if(!b){el.innerHTML='';return;}var spot=b.spot,tgt=b.tgt,be=b.be||(b.strike+b.cost/100),sup=spot!=null?(spot*0.96).toFixed(0):null;
-  function row(ic,t,v){return '<div style="display:flex;gap:11px;padding:9px 0;border-top:1px solid rgba(255,255,255,.05)"><span style="flex:none;font-size:14px">'+ic+'</span><div><div style="font-size:12.5px;font-weight:700;color:#dfe6f2">'+t+'</div><div style="font-size:11.5px;color:#8794ab;line-height:1.45;margin-top:2px">'+v+'</div></div></div>';}
-  el.innerHTML='<div class="opremium" style="padding:20px 22px"><div style="font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#f2f5fa">Comment jouer cette option</div><div style="margin-top:6px">'
-    +row('🎯','Entrée idéale',(sup!=null?'Entrer tant que <b>'+b.sym+'</b> reste au-dessus de ~$'+sup+' (support). ':'')+'Éviter d\'acheter en pleine extension parabolique.')
-    +row('🛑','Stop mental','Couper si la prime perd <b>25-30%</b> sans amélioration du momentum, ou si le titre casse $'+(sup||'son support')+'.')
-    +row('💰','Prise de profit','Sécuriser <b>50%</b> vers <b>+35%</b> ; viser l\'objectif $'+(tgt!=null?tgt:'—')+' pour le reste, remonter le stop au point mort.')
-    +row('⏳','Date de sortie','Sortir <b>2-3 semaines avant l\'échéance</b> ('+eu(b.exp)+')'+(b.dte<=45?' — échéance déjà courte, gère vite':' pour éviter l\'accélération du théta')+'.')
-    +row('📅','Avant résultats','Réduire ou sortir avant des earnings (risque d\'IV crush), sauf si le catalyseur EST la thèse.')
-    +row('⚙️','Si -20% / théta / IV chute','Ne pas moyenner à la baisse ; si le théta s\'accélère ou l\'IV s\'effondre sans mouvement, alléger.')
-    +'</div></div>';}
+function optPlaybook(b){var el=document.getElementById('optPlaybook');if(!el)return;if(!b){el.innerHTML='';return;}var spot=b.spot,tgt=b.tgt,be=b.be||(b.strike+b.cost/100),sup=spot!=null?(spot*0.96).toFixed(0):null,exitD=Math.max(0,b.dte-18);
+  var steps=[['🎯','Entrée',(spot!=null?'tant que '+b.sym+' reste > ~$'+sup:'sur repli contrôlé')+' · prime ~$'+fmt(b.cost),'#38BDF8'],
+    ['✅','Validation','confirmation au-dessus du strike $'+b.strike+' — momentum intact','#22C55E'],
+    ['🛑','Stop mental','prime -25/30% OU cassure de $'+(sup||'support'),'#EF4444'],
+    ['🥇','TP1','sécuriser 50% vers +35% de gain','#22C55E'],
+    ['🥈','TP2','objectif $'+(tgt!=null?tgt:'—')+' · laisser courir le reste','#22C55E'],
+    ['⏳','Sortie idéale','~'+exitD+' j · 2-3 semaines avant l\'échéance','#F5B45B'],
+    ['📅','Avant résultats','réduire / sortir avant earnings (risque IV crush)','#F5B45B'],
+    ['🏁','Fin de vie','expiration '+eu(b.exp)+' — ne rien tenir au-delà','#8794ab']];
+  var rows=steps.map(function(s,i){var last=i===steps.length-1;return '<div style="display:grid;grid-template-columns:16px 1fr;gap:16px"><div style="display:flex;flex-direction:column;align-items:center"><div style="width:13px;height:13px;border-radius:50%;background:'+s[3]+';box-shadow:0 0 0 4px '+s[3]+'22;margin-top:3px;flex:none"></div>'+(last?'':'<div style="flex:1;width:2px;background:rgba(255,255,255,.07);margin:5px 0"></div>')+'</div><div style="padding-bottom:'+(last?'0':'16px')+'"><div style="font-size:13px;font-weight:800;color:#e8edf5">'+s[0]+' '+s[1]+'</div><div style="font-size:11.5px;color:#8794ab;margin-top:2px;line-height:1.4">'+s[2]+'</div></div></div>';}).join('');
+  el.innerHTML='<div class="opremium" style="padding:22px 24px">'+rows+'</div>';}
 function optScenarios(b){var el=document.getElementById('optScenarios');if(!el)return;if(!b){el.innerHTML='';return;}var pop=b.pop,pot=b.pot,em=b.em_pct,tgt=b.tgt,be=b.be||(b.strike+b.cost/100);
   var pBull=b.p_tgt!=null?b.p_tgt:(pop!=null?Math.round(pop*0.7):null),pBear=pop!=null?100-pop:null;
   function c(t,col,rows){return '<div style="background:#111318;border:1px solid '+col+'33;border-top:2px solid '+col+';border-radius:16px;padding:16px 18px"><div style="font-size:13px;font-weight:800;color:'+col+'">'+t+'</div>'+rows+'</div>';}
@@ -10755,7 +10756,79 @@ function optDecision(b){var el=document.getElementById('optDecision');if(!el)ret
   el.innerHTML='<div style="background:linear-gradient(135deg,'+vc+'12,#0d0e12);border:1px solid '+vc+'33;border-radius:20px;padding:24px 26px"><div style="font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#8794ab">Décision Vertex</div><div style="font-size:28px;font-weight:900;color:'+vc+';margin-top:4px">'+vd+'</div><div style="font-size:13.5px;color:#c3ccda;margin-top:8px;line-height:1.5">'+vt+'</div>'
     +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:18px">'+_og('Option recommandée',b.sym+' CALL $'+b.strike,'#f2f5fa')+_og('Conviction',b.quality+'/100',qcol(b.quality))+_og('Risque principal',(b.theta_burn!=null&&b.theta_burn>0.5)?'Théta élevé':((b.iv!=null&&b.iv>55)?'IV tendue':'maîtrisé'),'#F5B45B')+_og('Potentiel',b.pot!=null?'+'+b.pot+'%':'—','#22C55E')+'</div>'
     +'<div style="font-size:13.5px;color:#dfe6f2;margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)"><b style="color:#f2f5fa">Si Vertex devait choisir une seule option aujourd\'hui :</b> '+b.sym+' CALL $'+b.strike+' ('+eu(b.exp)+') — '+vd.toLowerCase()+'.</div></div>';}
-function optTermRender(){var b=optBestOf();optCockpit();optScore(b);optPlaybook(b);optScenarios(b);optHealth(b);optDecision(b);}
+// ── état « option sélectionnée » : cliquer une autre option recharge TOUT le rapport ──
+function okey(c){return c.sym+'|'+c.type+'|'+c.strike+'|'+(c.exp||'');}
+function optCurrent(){if(window.__optSel){var f=ALL.filter(function(c){return okey(c)===window.__optSel;})[0];if(f)return f;}return optBestOf();}
+window.optSelect=function(k){window.__optSel=k;optReport();try{document.getElementById('optResearch').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}};
+// ── Vertex Research : hero + thèse d'investissement + résumé exécutif ──
+function optResearch(b){var el=document.getElementById('optResearch');if(!el)return;if(!b){el.innerHTML='<div class="opremium" style="padding:28px 30px"><div class="muted">Board d\'options en cours de calcul (ou hors séance).</div></div>';return;}
+  var qc=qcol(b.quality),cf=confLabel(b),rr=rrOf(b),be=b.be||(b.strike+b.cost/100),conv=b.quality>=78?'Élevée':b.quality>=62?'Bonne':b.quality>=45?'Modérée':'Prudente';
+  var nC=ALL.filter(function(c){return c.type==='CALL';}).length,dt='';try{dt=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});}catch(e){}
+  var these=['Vertex retient <b>'+b.sym+' CALL $'+b.strike+'</b> ('+eu(b.exp)+', '+b.dte+' j) '+(b.iv!=null?'car sa volatilité implicite ('+b.iv+'%) reste '+ivTone(b.iv):'pour la qualité de sa configuration')+(b.pop!=null?' et sa probabilité de profit atteint '+b.pop+'%':'')+'.',
+    (b.pot!=null?'Le potentiel estimé de <b>+'+b.pot+'%</b> face à un risque plafonné à la prime ($'+fmt(b.cost)+') offre une asymétrie '+((b.pot||0)>=120?'forte':(b.pot||0)>=70?'favorable':'correcte')+'.':''),
+    'Pourquoi aujourd\'hui : meilleur rapport qualité / liquidité / coût du board ('+b.quality+'/100) parmi les '+nC+' contrats analysés.',
+    'Pourquoi maintenant : '+(b.spot!=null?b.sym+' cote $'+b.spot+' et ':'')+'la thèse tient tant que le titre reste au-dessus du seuil de $'+be+'.',
+    'Pourquoi pas une autre : les alternatives affichent soit une IV plus tendue, soit une liquidité plus faible, soit un R:R inférieur.'].filter(Boolean).slice(0,5);
+  function stat(v,l,c){return '<div><div style="font-size:30px;font-weight:900;color:'+(c||'#f2f5fa')+';line-height:1">'+v+'</div><div style="font-size:9px;color:#8794ab;text-transform:uppercase;letter-spacing:.6px;margin-top:5px">'+l+'</div></div>';}
+  el.innerHTML='<div class="opremium" style="padding:28px 30px">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px"><div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#8794ab">▲ Vertex Research · rapport d\'analyse</div><div style="font-size:11px;color:#6B7280;text-transform:capitalize">'+dt+' · '+(window.__optMAJ||'')+' · lecture ~2 min</div></div>'
+    +'<div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:14px"><div style="font-size:40px;font-weight:900;letter-spacing:-1.2px;line-height:1">'+b.sym+' <span style="font-size:19px;color:#22C55E">CALL</span></div><div style="font-size:13.5px;color:#8794ab;padding-bottom:6px">strike $'+b.strike+' · '+eu(b.exp)+' · '+b.dte+' j'+(b.spot!=null?' · titre $'+b.spot:'')+' · prime $'+fmt(b.cost)+'</div></div>'
+    +'<div style="display:flex;gap:28px;margin-top:18px;flex-wrap:wrap">'+stat(b.quality+'<span style="font-size:13px;color:#6B7280">/100</span>','Score Vertex',qc)+stat(cf[0],'Confiance IA',cf[1])+stat(conv,'Conviction')+stat(rr!=null?rr+':1':'—','Risk / Reward','#F5B45B')+'</div>'
+    +'<div style="margin-top:24px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#8794ab">Thèse d\'investissement</div>'
+    +'<div style="margin-top:8px">'+these.map(function(t){return '<div style="display:flex;gap:10px;font-size:14px;line-height:1.55;color:#c8d0dc;margin-top:8px"><span style="color:#4a5160;flex:none">—</span><span>'+t+'</span></div>';}).join('')+'</div>'
+    +'<div style="margin-top:20px;padding:16px 18px;background:rgba(56,189,248,.05);border:1px solid rgba(56,189,248,.2);border-left:2px solid #38BDF8;border-radius:14px"><div style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#38BDF8;margin-bottom:6px">Résumé exécutif</div><div style="font-size:14px;line-height:1.55;color:#dfe6f2">Vertex privilégie ce CALL car le momentum, la volatilité implicite, la liquidité et le rapport rendement/risque figurent parmi les meilleurs de tout l\'univers analysé.</div></div></div>';}
+// ── Greeks : radar + explications ──
+function optGreeks(b){var el=document.getElementById('optGreeks');if(!el)return;if(!b){el.innerHTML='';return;}
+  var ax=[['Delta',Math.min(1,Math.abs(b.delta||0))],['Gamma',Math.min(1,(b.gamma||0)/0.02)],['Théta',Math.min(1,Math.abs(b.theta||0)/0.3)],['Vega',Math.min(1,(b.vega||0)/2)],['POP',Math.min(1,(b.pop||0)/100)]],n=ax.length,cx=110,cy=110,R=80;
+  function pt(i,r){var a=-Math.PI/2+i/n*2*Math.PI;return [cx+Math.cos(a)*r*R,cy+Math.sin(a)*r*R];}
+  var g='';for(var gg=1;gg<=3;gg++){var ps=[];for(var i=0;i<n;i++){var p=pt(i,gg/3);ps.push(p[0].toFixed(1)+','+p[1].toFixed(1));}g+='<polygon points="'+ps.join(' ')+'" fill="none" stroke="rgba(255,255,255,.07)"/>';}
+  for(var i=0;i<n;i++){var p=pt(i,1);g+='<line x1="'+cx+'" y1="'+cy+'" x2="'+p[0].toFixed(1)+'" y2="'+p[1].toFixed(1)+'" stroke="rgba(255,255,255,.06)"/>';var lp=pt(i,1.2);g+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="9.5" fill="#8794ab" text-anchor="middle" dominant-baseline="middle">'+ax[i][0]+'</text>';}
+  var poly=[];for(var i=0;i<n;i++){var p=pt(i,ax[i][1]||0);poly.push(p[0].toFixed(1)+','+p[1].toFixed(1));}
+  var radar='<svg viewBox="0 0 220 220" style="width:200px;max-width:100%">'+g+'<polygon points="'+poly.join(' ')+'" fill="rgba(56,189,248,.16)" stroke="#38BDF8" stroke-width="1.6"/></svg>';
+  var ex=[];if(b.delta!=null)ex.push('<b>Delta '+b.delta+'</b> — '+(b.delta>=0.6?'suit fortement le titre (comme une action à levier) : parfait pour un pari directionnel haussier':'réagit modérément au titre')+'.');
+  if(b.theta_burn!=null)ex.push('<b>Théta '+b.theta+'</b> — érosion de '+b.theta_burn+'%/j, '+(b.theta_burn<0.4?'acceptable pour cette échéance':'agressive : gère le temps')+'.');
+  if(b.vega!=null)ex.push('<b>Vega '+b.vega+'</b> — sensibilité à l\'IV '+(b.vega<1?'faible : peu exposé à un IV crush':'notable : attention à une chute d\'IV')+'.');
+  if(b.gamma!=null)ex.push('<b>Gamma '+b.gamma+'</b> — le delta '+(b.gamma>0.005?'s\'accélère près du strike (convexité qui aide)':'évolue lentement')+'.');
+  el.innerHTML='<div class="opremium ogg" style="padding:22px 24px;display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center"><div style="display:grid;place-items:center">'+radar+'</div><div>'+ex.map(function(e){return '<div style="font-size:13px;line-height:1.55;color:#c8d0dc;margin-top:9px">'+e+'</div>';}).join('')+'</div></div>';}
+// ── Payoff centré ──
+function optPayoff(b){var el=document.getElementById('optPayoff');if(!el)return;if(!b){el.innerHTML='';return;}var be=b.be||(b.strike+b.cost/100);
+  el.innerHTML='<div class="opremium" style="padding:22px 24px">'+pay(b,true)+'<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:#6B7280"><span>🟢 zone de gain</span><span>🔴 zone de perte</span><span style="color:#FF7A18">seuil $'+be+'</span>'+(b.tgt!=null?'<span style="color:#38BDF8">cible $'+b.tgt+'</span>':'')+(b.spot!=null?'<span>titre $'+b.spot+'</span>':'')+(b.em_pct!=null?'<span>move ±'+b.em_pct+'%</span>':'')+'</div></div>';}
+// ── Catalyseurs : timeline (cal-feed earnings + expiration + sortie conseillée) ──
+function optCatalysts(b){var el=document.getElementById('optCatalysts');if(!el)return;if(!b){el.innerHTML='';return;}
+  var cal=window.__optCal||[],earn=cal.filter(function(x){return x.sym===b.sym&&x.dte!=null&&x.dte>=0;}).sort(function(a,c){return a.dte-c.dte;})[0];
+  var E=[['Aujourd\'hui',0,'#38BDF8','titre à $'+(b.spot!=null?b.spot:'—')+' · seuil $'+(b.be||(b.strike+b.cost/100))]];
+  if(earn)E.push(['Résultats '+b.sym,earn.dte,'#EF4444','⚠️ risque d\'IV crush — réduire avant']);
+  E.push(['Sortie conseillée',Math.max(0,b.dte-18),'#F5B45B','~2-3 semaines avant l\'échéance']);
+  E.push(['Expiration',b.dte,'#8794ab','fin de vie du contrat ('+eu(b.exp)+')']);
+  E.sort(function(a,c){return a[1]-c[1];});
+  var rows=E.map(function(e,i){var last=i===E.length-1;return '<div style="display:grid;grid-template-columns:14px 1fr;gap:16px"><div style="display:flex;flex-direction:column;align-items:center"><div style="width:11px;height:11px;border-radius:50%;background:'+e[2]+';box-shadow:0 0 0 4px '+e[2]+'22;margin-top:4px;flex:none"></div>'+(last?'':'<div style="flex:1;width:2px;background:rgba(255,255,255,.06);margin:6px 0"></div>')+'</div><div style="padding-bottom:'+(last?'0':'18px')+'"><div style="font-size:13px;font-weight:800;color:#e8edf5">'+e[0]+' <span style="font-size:10px;color:#8794ab;font-weight:600">· '+(e[1]===0?'maintenant':'dans '+e[1]+' j')+'</span></div><div style="font-size:11.5px;color:#8794ab;margin-top:2px">'+e[3]+'</div></div></div>';}).join('');
+  el.innerHTML='<div class="opremium" style="padding:22px 24px">'+rows+'</div>';}
+// ── Risques : carte premium (théta · IV crush · liquidité · spread · earnings · gap) ──
+function optRisks(b){var el=document.getElementById('optRisks');if(!el)return;if(!b){el.innerHTML='';return;}
+  var cal=window.__optCal||[],earn=cal.filter(function(x){return x.sym===b.sym&&x.dte!=null&&x.dte>=0;}).sort(function(a,c){return a.dte-c.dte;})[0];
+  var liqBad=(b.oi!=null&&b.oi<50)||(b.vol!=null&&b.vol<10);
+  var R=[['Théta (temps)',b.theta_burn!=null?(b.theta_burn>0.5?'Élevé':b.theta_burn>0.25?'Modéré':'Faible'):'—','Érosion '+(b.theta_burn!=null?b.theta_burn+'%/j':'—')+' — Vertex sort 2-3 sem. avant l\'échéance.',(b.theta_burn>0.5?'#EF4444':b.theta_burn>0.25?'#F5B45B':'#22C55E')],
+    ['IV crush',b.iv!=null?(b.iv>55?'Élevé':b.iv>38?'Modéré':'Faible'):'—','IV '+(b.iv!=null?b.iv+'%':'—')+' — éviter d\'acheter juste avant earnings.',(b.iv>55?'#EF4444':b.iv>38?'#F5B45B':'#22C55E')],
+    ['Liquidité',liqBad?'Élevé':'Faible','OI '+(b.oi!=null?b.oi:'—')+' · vol '+(b.vol!=null?b.vol:'—')+' — '+(liqBad?'ordres limités, petite taille.':'liquidité correcte.'),(liqBad?'#F5B45B':'#22C55E')],
+    ['Spread',b.spread!=null?(b.spread>0.3?'Élevé':'Faible'):'—','Écart '+(b.spread!=null?'$'+b.spread:'—')+' — '+(b.spread>0.3?'coûteux : ordre limite.':'acceptable.'),(b.spread>0.3?'#F5B45B':'#22C55E')],
+    ['Earnings',earn?(earn.dte<=b.dte?'Élevé':'Faible'):'Faible',earn?('Résultats dans '+earn.dte+' j — sortir avant (IV crush).'):'Pas de résultats avant l\'échéance.',(earn&&earn.dte<=b.dte?'#EF4444':'#22C55E')],
+    ['Gap / Macro',(b.iv!=null&&b.iv>50)?'Modéré':'Faible','Un gap adverse ou un choc macro amplifie la perte — taille réduite.',(b.iv>50?'#F5B45B':'#22C55E')]];
+  var cards=R.map(function(r){return '<div style="background:#111318;border:1px solid '+r[3]+'2e;border-left:2px solid '+r[3]+';border-radius:14px;padding:13px 15px"><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:12.5px;font-weight:800;color:#f2f5fa">'+r[0]+'</span><span style="margin-left:auto;font-size:9px;font-weight:800;color:'+r[3]+';background:'+r[3]+'18;border-radius:6px;padding:2px 6px">'+r[1]+'</span></div><div style="font-size:11.5px;color:#8794ab;line-height:1.45;margin-top:6px">'+r[2]+'</div></div>';}).join('');
+  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px">'+cards+'</div>';}
+// ── Autres opportunités : cartes simplifiées · clic = recharge tout le rapport ──
+function optOthers(){var el=document.getElementById('optOthers');if(!el)return;var cur=optCurrent();
+  var calls=ALL.filter(function(c){return c.type==='CALL'&&c.quality!=null&&okey(c)!==okey(cur);}).sort(function(a,b){return (b.quality||0)-(a.quality||0);}).slice(0,8);
+  if(!calls.length){el.innerHTML='';return;}
+  var cards=calls.map(function(c){var qc=qcol(c.quality),rr=rrOf(c);
+    return '<div onclick="optSelect(\''+okey(c)+'\')" style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:13px 15px;cursor:pointer;transition:transform .14s,border-color .14s" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.borderColor=\'rgba(255,255,255,.18)\'" onmouseout="this.style.transform=\'none\';this.style.borderColor=\'rgba(255,255,255,.07)\'">'
+      +'<div style="display:flex;align-items:center;gap:8px"><b style="font-size:15px">'+c.sym+'</b><span style="font-size:10px;color:#22C55E;font-weight:800">CALL</span><span style="font-size:12px;color:#C9D2E0">$'+c.strike+'</span><span style="margin-left:auto;font-size:15px;font-weight:900;color:'+qc+'">'+c.quality+'</span></div>'
+      +'<div style="font-size:11px;color:#8794ab;margin-top:5px">'+eu(c.exp)+' · '+c.dte+'j · prime $'+fmt(c.cost)+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:9px;font-size:11px"><div><span style="color:#6B7280">POP</span> <b>'+(c.pop!=null?c.pop+'%':'—')+'</b></div><div><span style="color:#6B7280">R:R</span> <b>'+(rr!=null?rr+':1':'—')+'</b></div><div><span style="color:#6B7280">IV</span> <b>'+(c.iv!=null?c.iv+'%':'—')+'</b></div></div>'
+      +'<div style="font-size:11px;color:#38BDF8;margin-top:10px;font-weight:700">Analyser cette option →</div></div>';}).join('');
+  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">'+cards+'</div>';}
+// ── rendu du rapport complet pour l'option courante ──
+function optReport(){var b=optCurrent();optCockpit();optResearch(b);optScore(b);optGreeks(b);optPlaybook(b);optPayoff(b);optScenarios(b);optHealth(b);optRisks(b);optCatalysts(b);optDecision(b);optOthers();}
+fetch('/cal-feed').then(function(r){return r.json();}).then(function(c){window.__optCal=(c&&c.items)||[];try{optCatalysts(optCurrent());optRisks(optCurrent());}catch(e){}}).catch(function(){});
 load();setInterval(load,30000);
 """
 
@@ -10768,26 +10841,33 @@ PAGE_OPTIONS_LAB = _vpage('Options Lab',
   '</div></div>'
   '<div id="optEdu" style="display:none;margin-bottom:16px"></div>'
   '<div id="optDeepNote" style="display:none;margin-bottom:14px;padding:10px 14px;background:linear-gradient(180deg,rgba(56,189,248,.1),rgba(56,189,248,.02));border:1px solid rgba(56,189,248,.32);border-radius:12px;font-size:12px;color:#C9D2E0"></div>'
-  '<div id="optStats" style="display:none"></div>'
-  '<div class="ochap"><span class="n">01</span><div><div class="t">Options Lab Cockpit</div><div class="s">le board d\'options analysé en un coup d\'œil</div></div><div class="ln"></div></div>'
-  '<div id="optCockpit"></div>'
-  '<div class="ochap"><span class="n">02</span><div><div class="t">Option du jour</div><div class="s">analyse complète de la meilleure opportunité — payoff · score · playbook · scénarios · santé</div></div><div class="ln"></div></div>'
-  '<div id="optBest"></div>'
-  '<div class="ochsub">Décomposition du score</div>'
+  '<div id="optStats" style="display:none"></div>''<div id="optBest" style="display:none"></div>'
+  '<div id="optCockpit" style="margin-bottom:10px"></div>'
+  '<div id="optResearch"></div>'
+  '<div class="ochap"><span class="n">01</span><div><div class="t">Pourquoi cette option ?</div><div class="s">chaque facteur du score, expliqué et pesé</div></div><div class="ln"></div></div>'
   '<div id="optScore"></div>'
-  '<div class="ochsub">Playbook — comment jouer</div>'
+  '<div class="ochsub">Les Greeks · lecture</div>'
+  '<div id="optGreeks"></div>'
+  '<div class="ochap"><span class="n">02</span><div><div class="t">Plan de trading</div><div class="s">de l\'entrée à la sortie — étape par étape</div></div><div class="ln"></div></div>'
   '<div id="optPlaybook"></div>'
-  '<div class="ochsub">Scénarios · bull · base · bear</div>'
+  '<div class="ochap"><span class="n">03</span><div><div class="t">Payoff</div><div class="s">profit / perte à l\'échéance</div></div><div class="ln"></div></div>'
+  '<div id="optPayoff"></div>'
+  '<div class="ochap"><span class="n">04</span><div><div class="t">Scénarios</div><div class="s">bull · base · bear — probabilités &amp; gestion</div></div><div class="ln"></div></div>'
   '<div id="optScenarios"></div>'
   '<div class="ochsub">Santé de l\'option</div>'
   '<div id="optHealth"></div>'
-  '<div class="ochap"><span class="n">03</span><div><div class="t">Panier par horizon</div><div class="s">une option par échéance — diversifié dans le temps</div></div><div class="ln"></div></div>'
-  '<div id="optBasket"></div>'
-  '<div class="ochap"><span class="n">04</span><div><div class="t">Toutes les options</div><div class="s">filtre · tri · recherche · clic → analyse</div></div><div class="ln"></div></div>'
+  '<div class="ochap"><span class="n">05</span><div><div class="t">Risques</div><div class="s">et comment Vertex compte les gérer</div></div><div class="ln"></div></div>'
+  '<div id="optRisks"></div>'
+  '<div class="ochap"><span class="n">06</span><div><div class="t">Catalyseurs</div><div class="s">les prochains événements avant l\'échéance</div></div><div class="ln"></div></div>'
+  '<div id="optCatalysts"></div>'
+  '<div class="ochap"><span class="n">07</span><div><div class="t">Décision Vertex</div><div class="s">le verdict final sur cette option</div></div><div class="ln"></div></div>'
+  '<div id="optDecision"></div>'
+  '<div class="ochap"><span class="n">08</span><div><div class="t">Autres opportunités</div><div class="s">clic → recharge le rapport complet pour l\'option choisie</div></div><div class="ln"></div></div>'
+  '<div id="optOthers"></div>'
+  '<div class="ochap"><span class="n">09</span><div><div class="t">Explorer tout le board</div><div class="s">filtre · tri · recherche · clic → analyse</div></div><div class="ln"></div></div>'
   '<div id="optControls" style="margin:2px 0 14px"></div>'
   '<div id="optHost"></div>'
-  '<div class="ochap"><span class="n">05</span><div><div class="t">Décision Vertex</div><div class="s">le verdict final sur la meilleure option</div></div><div class="ln"></div></div>'
-  '<div id="optDecision"></div>'
+  '<div id="optBasket" style="display:none"></div>'
   '<div class="obann">⚠️ CALLs directionnels uniquement · une option peut perdre <b>100% de sa prime</b> · court terme = théta agressif · <b>analyse éducative, aucun ordre passé</b></div>'
   '<div id="optGloss" style="margin-top:24px"></div>',
   js=_OPT_JS,
@@ -10796,6 +10876,7 @@ PAGE_OPTIONS_LAB = _vpage('Options Lab',
     ".vstit{margin-top:32px!important;letter-spacing:.35px}"
     ".ochap{display:flex;align-items:flex-end;gap:14px;margin:52px 2px 18px}.ochap:first-of-type{margin-top:30px}.ochap .n{font-size:12px;font-weight:800;color:#454a57;letter-spacing:2px;padding-bottom:3px}.ochap .t{font-size:21px;font-weight:800;letter-spacing:-.4px;color:#f2f5fa;line-height:1.05}.ochap .s{font-size:11.5px;color:#6B7280;margin-top:3px}.ochap .ln{flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.08),transparent);margin-bottom:8px}"
     ".ochsub{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#8794ab;margin:26px 2px 12px}"
+    "@media(max-width:640px){.ogg{grid-template-columns:1fr!important;justify-items:center;text-align:center}}"
     ".ochip{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);color:#C9D2E0;border-radius:999px;font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;letter-spacing:.1px}.ochip:hover{border-color:rgba(255,255,255,.2);color:#e8edf5}.ochip.on{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:#fff}"
     ".oai{font-size:13px;line-height:1.65;color:#c2cad6}.oai b{color:#e8edf5;font-weight:700}"
     ".opremium{background:linear-gradient(180deg,#14161c,#0f1116);border:1px solid rgba(255,255,255,.1);border-radius:20px;transition:border-color .18s}.opremium:hover{border-color:rgba(255,255,255,.16)}"
