@@ -2527,40 +2527,42 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   .ovc{margin:0 0 10px}
   @media(max-width:820px){.cvgrid{grid-template-columns:1fr!important}.ovchap{margin-top:44px}.ovchap .t{font-size:20px}}
   </style>
-  <!-- ② CONVICTION VERTEX — la signature -->
-  <div class="ovchap"><span class="n">02</span><div><div class="t">Conviction Vertex</div><div class="s">la meilleure idée du moteur aujourd'hui — la signature Vertex</div></div><div class="ln"></div></div>
-  <div id="ovConviction" class="ovc"></div>
+  <!-- ② RISQUES DU JOUR -->
+  <div class="ovchap"><span class="n">02</span><div><div class="t">Risques du jour</div><div class="s">dérivés de signaux réels · chaque risque justifié</div></div><div class="ln"></div></div>
+  <div id="ovRisks" class="ovc"></div>
   <!-- ③ LE MARCHÉ -->
   <div class="ovchap"><span class="n">03</span><div><div class="t">Le Marché</div><div class="s">indices · matières · taux · crypto · volatilité · sentiment</div></div><div class="ln"></div></div>
   <div id="ovMarket" class="ovc"></div>
-  <div class="ovsub">Santé &amp; régime du marché</div>
+  <!-- ④ RÉGIME DU MARCHÉ -->
+  <div class="ovchap"><span class="n">04</span><div><div class="t">Régime du marché</div><div class="s">santé · breadth · momentum · volatilité · sentiment</div></div><div class="ln"></div></div>
   <div id="ovHealth" class="ovc"></div>
-  <!-- ④ OPPORTUNITÉS -->
-  <div class="ovchap"><span class="n">04</span><div><div class="t">Opportunités</div><div class="s">top setups · options du jour · flux inhabituels</div></div><div class="ln"></div></div>
+  <!-- ⑤ PALMARÈS -->
+  <div class="ovchap"><span class="n">05</span><div><div class="t">Palmarès</div><div class="s">top &amp; flop · jour · mois · par indice</div></div><div class="ln"></div></div>
+  <div id="ovPalmares" class="ovc"></div>
+  <!-- ⑥ ROTATION DES SECTEURS -->
+  <div class="ovchap"><span class="n">06</span><div><div class="t">Rotation des secteurs</div><div class="s">où vont les capitaux · perf · momentum · flux</div></div><div class="ln"></div></div>
+  <div id="ovRotation" class="ovc"></div>
+  <!-- ⑦ CONVICTION VERTEX — la signature -->
+  <div class="ovchap"><span class="n">07</span><div><div class="t">Conviction Vertex</div><div class="s">la meilleure idée du moteur aujourd'hui — la signature Vertex</div></div><div class="ln"></div></div>
+  <div id="ovConviction" class="ovc"></div>
+  <!-- ⑧ OPPORTUNITÉS -->
+  <div class="ovchap"><span class="n">08</span><div><div class="t">Opportunités</div><div class="s">top setups · options du jour · flux inhabituels</div></div><div class="ln"></div></div>
   <div id="ovTop5" class="ovc"></div>
   <div class="ovsub">Options du jour</div>
   <div id="ovOptions" class="ovc"></div>
   <div class="ovsub">Flux inhabituels</div>
   <div id="ovFlows" class="ovc"></div>
-  <!-- ⑤ ROTATION DES SECTEURS -->
-  <div class="ovchap"><span class="n">05</span><div><div class="t">Rotation des secteurs</div><div class="s">où vont les capitaux · perf · momentum · flux</div></div><div class="ln"></div></div>
-  <div id="ovRotation" class="ovc"></div>
-  <div class="ovsub">Palmarès · top &amp; flop</div>
-  <div id="ovPalmares" class="ovc"></div>
-  <!-- ⑥ NEWS -->
-  <div class="ovchap"><span class="n">06</span><div><div class="t">News</div><div class="s">ce qui fait bouger le marché — la ligne entière est cliquable</div></div><div class="ln"></div></div>
+  <!-- ⑨ NEWS -->
+  <div class="ovchap"><span class="n">09</span><div><div class="t">News</div><div class="s">ce qui fait bouger le marché — la ligne entière est cliquable</div></div><div class="ln"></div></div>
   <div id="ovFeed" class="ovc"></div>
-  <!-- ⑦ CALENDRIER -->
-  <div class="ovchap"><span class="n">07</span><div><div class="t">Calendrier</div><div class="s">prochains résultats &amp; événements — avec l'avis Vertex</div></div><div class="ln"></div></div>
+  <!-- ⑩ CALENDRIER -->
+  <div class="ovchap"><span class="n">10</span><div><div class="t">Calendrier</div><div class="s">prochains résultats &amp; événements — avec l'avis Vertex</div></div><div class="ln"></div></div>
   <div id="ovAgenda" class="ovc"></div>
-  <!-- ⑧ WATCHLIST -->
-  <div class="ovchap"><span class="n">08</span><div><div class="t">Watchlist</div><div class="s">les meilleures idées, par style</div></div><div class="ln"></div></div>
+  <!-- ⑪ WATCHLIST -->
+  <div class="ovchap"><span class="n">11</span><div><div class="t">Watchlist</div><div class="s">les meilleures idées, par style</div></div><div class="ln"></div></div>
   <div id="ovWatch" class="ovc"></div>
-  <!-- ⑨ RISQUES DU JOUR -->
-  <div class="ovchap"><span class="n">09</span><div><div class="t">Risques du jour</div><div class="s">dérivés de signaux réels · chaque risque justifié</div></div><div class="ln"></div></div>
-  <div id="ovRisks" class="ovc"></div>
-  <!-- ⑩ CONCLUSION VERTEX -->
-  <div class="ovchap"><span class="n">10</span><div><div class="t">Conclusion Vertex</div><div class="s">la synthèse de la journée</div></div><div class="ln"></div></div>
+  <!-- ⑫ CONCLUSION VERTEX -->
+  <div class="ovchap"><span class="n">12</span><div><div class="t">Conclusion Vertex</div><div class="s">la synthèse de la journée</div></div><div class="ln"></div></div>
   <div id="ovConclusion" class="ovc"></div>
   <div id="dMyDesk" style="margin-top:44px"></div>
   <!-- ═══ ancien MORNING BRIEF masqué (Phase 7) : entièrement couvert par les sections ci-dessus ═══ -->
