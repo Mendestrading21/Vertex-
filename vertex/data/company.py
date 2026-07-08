@@ -167,11 +167,14 @@ def _fetch_profile(sym):
     }
 
 
-def get(sym, demo=False, allow_fetch=True):
+def get(sym, demo=False, allow_fetch=True, brief=False):
     """Profil d'entreprise (cache hebdo). Retourne un dict enrichi + méta de fraîcheur.
 
     - `demo=True`  : jamais de réseau, on sert la couche curée (cloud/démo).
     - rafraîchit en tâche de fond si l'entrée a > 7 jours et `allow_fetch`.
+    - `brief=True` : enrichit l'explication métier via l'IA (elio) SI une clé est
+      présente — résumé FR + « ce qu'elle vend / comment elle gagne / clients / moat »,
+      persistés dans le cache. Sans clé : no-op (on garde la description d'origine).
     """
     sym = (sym or '').upper()
     cache = _load()
@@ -195,18 +198,40 @@ def get(sym, demo=False, allow_fetch=True):
     if e:
         base.update({k: v for k, v in e.items() if v is not None})
 
+    # ── explication métier : résumé FR + vend/gagne/clients/moat (IA optionnelle, cache disque) ──
+    if brief and base.get('summary') and not demo and not base.get('sells'):
+        try:
+            from elio import ai as _ai
+            fr = _ai.fr_desc(sym, base['summary'])
+            bd = _ai.company_brief(sym, base['summary']) or {}
+            if fr:
+                base['summary'] = fr
+            for k_src, k_dst in (('sells', 'sells'), ('earns', 'model'),
+                                 ('clients', 'clients'), ('moat', 'moat')):
+                if bd.get(k_src) and not base.get(k_dst):
+                    base[k_dst] = bd[k_src]
+            if (bd or fr) and e is not None:                 # persiste l'enrichissement
+                for kk in ('summary', 'sells', 'model', 'clients', 'moat'):
+                    if base.get(kk) is not None:
+                        e[kk] = base[kk]
+                cache[sym] = e
+                _save(cache)
+        except Exception:
+            pass
+
     country = base.get('country') or (cur.get('country'))
     out = {
         'symbol': sym,
         'name': base.get('name'),
         'activity': base.get('activity') or cur.get('activity') or _INDUSTRY_OF().get(sym),
         'model': base.get('model') or cur.get('model'),
+        'sells': base.get('sells'),
         'position': base.get('position') or cur.get('position'),
         'ceo': base.get('ceo') or cur.get('ceo'),
         'employees': base.get('employees') or cur.get('employees'),
         'country': _LABELS.get(country, country),
-        'clients': cur.get('clients'),
-        'moat': cur.get('moat') or base.get('position'),
+        'clients': base.get('clients') or cur.get('clients'),
+        'moat': base.get('moat') or cur.get('moat') or base.get('position'),
         'summary': base.get('summary'),
         'sector': base.get('sector') or _GICS_SECTOR.get(sym),
         'industry': _INDUSTRY_OF().get(sym),

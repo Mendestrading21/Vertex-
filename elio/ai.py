@@ -68,6 +68,41 @@ def fr_news(ticker, items):
         return items, None
 
 
+def company_brief(sym, summary):
+    """Extrait d'une description factuelle un mini-profil FR :
+    {sells, earns, clients, moat}. N'invente RIEN (fidèle à la source, aucun chiffre
+    ajouté). Cache par contenu ; renvoie {} si pas de clé / erreur (dégradation propre)."""
+    if not summary:
+        return {}
+    key = 'brief:' + hashlib.md5((sym + summary).encode('utf-8', 'ignore')).hexdigest()
+    if key in _cache:
+        return _cache[key]
+    if not available():
+        return {}
+    try:
+        client = Anthropic()
+        prompt = (
+            f"À partir de cette description factuelle de l'entreprise {sym}, produis un JSON "
+            f"compact en français. Sois fidèle : n'invente rien, n'ajoute aucun chiffre absent. "
+            f'Clés (valeurs courtes) : "sells" (ce qu\'elle vend, ~6 mots), '
+            f'"earns" (comment elle gagne de l\'argent, ~10 mots), '
+            f'"clients" (ses clients types, ~6 mots), '
+            f'"moat" (son avantage concurrentiel, ~10 mots). '
+            f"Réponds UNIQUEMENT par le JSON, sans préambule.\n\n{summary}"
+        )
+        msg = client.messages.create(model=MODEL, max_tokens=400,
+                                     messages=[{'role': 'user', 'content': prompt}])
+        txt = (msg.content[0].text or '').strip()
+        if txt.startswith('```'):
+            txt = txt.split('\n', 1)[1].rsplit('```', 1)[0] if '\n' in txt else txt
+        data = json.loads(txt)
+        out = {k: data.get(k) for k in ('sells', 'earns', 'clients', 'moat') if data.get(k)}
+        _cache[key] = out
+        return out
+    except Exception:
+        return {}
+
+
 def fr_desc(sym, summary):
     """Traduit une description d'entreprise (longBusinessSummary) en français.
     Cache par contenu ; fallback = texte d'origine si pas de clé / erreur."""

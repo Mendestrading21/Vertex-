@@ -1753,7 +1753,7 @@ def api_ticker(sym):
     except Exception as e:
         pack = {'sym': sym, 'error': f'{type(e).__name__}: {e}', 'contracts': []}
     try:
-        comp = _company.get(sym, demo=DEMO_MODE)
+        comp = _company.get(sym, demo=DEMO_MODE, brief=True)
     except Exception:
         comp = None
     return jsonify({'symbol': sym, 'in_universe': sym in UNIVERSE,
@@ -1765,7 +1765,7 @@ def api_ticker(sym):
 def api_company(sym):
     """Profil d'entreprise seul (cache hebdomadaire — activité, CEO, segments, pairs)."""
     try:
-        return jsonify(_company.get(sym.upper(), demo=DEMO_MODE))
+        return jsonify(_company.get(sym.upper(), demo=DEMO_MODE, brief=True))
     except Exception as e:
         return jsonify({'error': f'{type(e).__name__}: {e}'})
 
@@ -6535,15 +6535,18 @@ function renderCompany(cp){
   set('co-h2','Comprendre '+(cp.name||M.sym)+' en 30 secondes');
   var lead='';
   if(cp.activity){lead='<b>'+(cp.name||M.sym)+'</b> — '+cp.activity+'.'+(cp.position?' Position : <b style="color:'+C.acc+'">'+cp.position+'</b>.':'');}
-  else lead='Profil de <b>'+M.sym+'</b> en cours de constitution (rafraîchi 1×/semaine).';
-  seth('co-summary',lead);
-  seth('co-ex4',[['🧠','Ce qu\'elle vend',cp.activity],['💰','Comment elle gagne',cp.model],['🏢','Ses clients',cp.clients],['🛡️','Sa force (moat)',cp.moat||cp.position]]
-    .map(function(x){return '<div class="ext"><span class="exi">'+x[0]+'</span><div><div class="exk">'+x[1]+'</div><div class="exv">'+(x[2]||'—')+'</div></div></div>';}).join(''));
+  var summ=cp.summary?'<div style="'+(lead?'margin-top:10px;':'')+'color:var(--ink2);font-size:14.5px;line-height:1.62">'+cp.summary+'</div>':'';
+  if(!lead&&!summ)lead='Profil de <b>'+M.sym+'</b> en cours de constitution (rafraîchi 1×/semaine).';
+  seth('co-summary',lead+summ);
+  var ex=[['🧠','Ce qu\'elle vend',cp.sells||cp.activity],['💰','Comment elle gagne',cp.model],['🏢','Ses clients',cp.clients],['🛡️','Sa force (moat)',cp.moat||cp.position]].filter(function(x){return x[2];});
+  seth('co-ex4',ex.length?ex.map(function(x){return '<div class="ext"><span class="exi">'+x[0]+'</span><div><div class="exk">'+x[1]+'</div><div class="exv">'+x[2]+'</div></div></div>';}).join(''):'');
   var facts=[['Activité',cp.activity],['Modèle',cp.model],['Position',cp.position],['CEO',cp.ceo],['Employés',cp.employees?fmtInt(cp.employees):null],['Pays',cp.country],['Fondation',cp.founded],['Secteur',cp.sector],['Industrie',cp.industry]];
   seth('co-facts',facts.filter(function(x){return x[1];}).map(function(x){return '<div class="fct"><span class="fk">'+x[0]+'</span><span class="fv">'+x[1]+'</span></div>';}).join('')||'<div class="fct"><span class="fk">Profil</span><span class="fv">MAJ hebdo en attente</span></div>');
   // donut
   if(cp.segments&&cp.segments.length){drawDonut(cp.segments);}
-  else{seth('donut','');seth('dleg','<div style="font-size:12px;color:'+C.mut+'">Répartition des revenus non disponible pour ce titre.</div>');}
+  else{seth('donut','');var f=cp.fundamentals||{};var P=function(v){return v==null?null:Math.round(v*100)+'%';};
+    var rows=[['Marge nette',P(f.margin)],['Croissance CA',P(f.rev_growth)],['Rentabilité (ROE)',P(f.roe)],['P/E',f.pe!=null?(+f.pe).toFixed(1):null],['Dividende',P(f.dividend)]].filter(function(x){return x[1]!=null;});
+    seth('dleg',rows.length?('<div style="font-size:11px;color:'+C.mut+';margin-bottom:9px;line-height:1.5">Répartition détaillée curée pour les grandes capis. Voici la <b>santé du résultat</b> :</div>'+rows.map(function(x){return '<div class="fct"><span class="fk">'+x[0]+'</span><span class="fv">'+x[1]+'</span></div>';}).join('')):'<div style="font-size:12px;color:'+C.mut+'">Profil en cours de constitution — ouvre la fiche, le résumé et les fondamentaux se remplissent (rafraîchi 1×/sem.).</div>');}
   // timeline + peers
   var tl=coTL(cp);
   seth('ctl',tl.map(function(e){return '<div class="ce"><div class="cy num">'+e[0]+'</div><div class="cc"><div class="ct">'+e[1]+'</div><div class="cd">'+(e[2]||'')+'</div></div></div>';}).join(''));
