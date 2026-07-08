@@ -36,9 +36,19 @@ def fr_news(ticker, items):
         for it, fr in zip(items, c['fr']):
             it['fr'] = fr
         return items, c['why']
-    if not available():                     # pas de clé → fallback anglais, zéro appel
-        for it in items:
-            it['fr'] = it.get('title')
+    if not available():                     # pas de clé Anthropic → traduction FR GRATUITE (Google)
+        frs = titles
+        try:
+            joined = _google_fr('\n'.join(titles))
+            if joined:
+                cand = joined.split('\n')
+                if len(cand) == len(titles):
+                    frs = [(c.strip() or titles[k]) for k, c in enumerate(cand)]
+        except Exception:
+            frs = titles
+        _cache[key] = {'fr': frs, 'why': None}
+        for it, fr in zip(items, frs):
+            it['fr'] = fr
         return items, None
     try:
         client = Anthropic()                # lit ANTHROPIC_API_KEY de l'environnement
