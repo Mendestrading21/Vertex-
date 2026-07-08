@@ -106,6 +106,7 @@ from vertex.app.config import VERTEX_CODE, AUTH_ON, SECRET_KEY  # noqa: E402
 app.secret_key = SECRET_KEY
 app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
                   PERMANENT_SESSION_LIFETIME=timedelta(days=30))
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024   # 2 Mo — le desk sync est un petit blob JSON
 app.register_blueprint(_auth.make_blueprint(code=VERTEX_CODE))
 
 
@@ -1537,6 +1538,37 @@ def api_rescan():
     _rescan_evt.set()
     return jsonify({'ok': True, 'universe': len(UNIVERSE),
                     'msg': f'Re-scan lancé — recalcul des {len(UNIVERSE)} titres (≈10-30 s). Recharge dans un instant.'})
+
+
+@app.after_request
+def _security_headers(resp):
+    """Production : en-têtes de sécurité sur toutes les réponses (analyse only, zéro iframe tierce entrante)."""
+    resp.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    resp.headers.setdefault('X-Frame-Options', 'DENY')
+    resp.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+    resp.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+    if request.is_secure or request.headers.get('X-Forwarded-Proto') == 'https':
+        resp.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+    return resp
+
+
+@app.errorhandler(404)
+def _err_404(e):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'not_found', 'path': request.path}), 404
+    return ('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<title>404 · Vertex</title><style>body{background:#0b0e14;color:#eef2f8;font-family:Inter,system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0}'
+            '.c{text-align:center}.n{font-size:64px;font-weight:900;color:#FF7A18}.t{color:#8794ab;margin:10px 0 22px}'
+            'a{color:#FF9A3D;text-decoration:none;font-weight:700;border:1px solid rgba(255,122,24,.4);padding:10px 20px;border-radius:12px}</style></head>'
+            '<body><div class="c"><div class="n">404</div><div class="t">Cette page n\'existe pas (ou plus).</div>'
+            '<a href="/">\u2190 Retour au Market Overview</a></div></body></html>'), 404
+
+
+@app.errorhandler(500)
+def _err_500(e):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'internal', 'detail': str(e)[:200]}), 500
+    return redirect('/')
 
 
 @app.after_request
@@ -6257,6 +6289,11 @@ _VPAGE_CSS = ("*{box-sizing:border-box;margin:0;padding:0}"
   "*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent}"
   "*::-webkit-scrollbar{width:9px;height:9px}*::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:9px}"
   "*::-webkit-scrollbar-thumb:hover{background:rgba(255,122,24,.35)}"
+  # ── accessibilité & confort (production) ──
+  ":focus-visible{outline:2px solid rgba(255,154,61,.85);outline-offset:2px;border-radius:6px}"
+  "button:focus-visible,a:focus-visible,[onclick]:focus-visible{outline:2px solid rgba(255,154,61,.85);outline-offset:2px}"
+  "@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}"
+  "@media print{body::before{display:none}}"
   "body{background:radial-gradient(120% 34% at 18% -6%,rgba(255,122,24,.06),transparent 60%),radial-gradient(1100px 680px at 50% -14%,#0e1016,#07080a 60%);background-attachment:fixed;color:#F8FAFC;font-family:'Inter','Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;padding:20px 24px 80px;font-variant-numeric:tabular-nums}"
   ".vwrap{max-width:1320px;margin:0 auto}.muted{color:#8794ab}.up{color:#22C55E}.dn{color:#EF4444}"
   ".vhead{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:16px;margin-bottom:16px;animation:vheadIn .5s cubic-bezier(.22,1,.36,1) both}"
@@ -7461,8 +7498,8 @@ _SUIVI_JS = r"""
 var ROWS={},DET={},MK={};
 function rGet(){try{return JSON.parse(localStorage.getItem('myRecos')||'[]')}catch(e){return[]}}
 function rSet(a){localStorage.setItem('myRecos',JSON.stringify(a));localStorage.setItem('deskTs',String(Date.now()));sSyncPush();}
-var _sT;function sSyncPush(){clearTimeout(_sT);_sT=setTimeout(function(){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){var data=(d&&d.data)||{};['myRecos','myRecosClosed','myFavs','myNotes','myTrades','myTradesClosed','myTradeLog','vxJournal','myCapital'].forEach(function(k){var v=localStorage.getItem(k);if(v!=null)data[k]=v;});fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:Date.now(),data:data})});}).catch(function(){});}catch(e){}},900);}
-function sSyncPull(cb){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){if(d&&d.data){var lt=parseFloat(localStorage.getItem('deskTs')||'0');if((d.ts||0)>lt){['myRecos','myRecosClosed','myFavs','myNotes'].forEach(function(k){if(d.data[k]!=null)localStorage.setItem(k,d.data[k]);});localStorage.setItem('deskTs',String(d.ts||Date.now()));}}if(cb)cb();}).catch(function(){if(cb)cb();});}catch(e){if(cb)cb();}}
+var _sT;function sSyncPush(){clearTimeout(_sT);_sT=setTimeout(function(){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){var data=(d&&d.data)||{};['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog'].forEach(function(k){var v=localStorage.getItem(k);if(v!=null)data[k]=v;});fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:Date.now(),data:data})});}).catch(function(){});}catch(e){}},900);}
+function sSyncPull(cb){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){if(d&&d.data){var lt=parseFloat(localStorage.getItem('deskTs')||'0');if((d.ts||0)>lt){['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog'].forEach(function(k){if(d.data[k]!=null)localStorage.setItem(k,d.data[k]);});localStorage.setItem('deskTs',String(d.ts||Date.now()));}}if(cb)cb();}).catch(function(){if(cb)cb();});}catch(e){if(cb)cb();}}
 function today(){return new Date().toISOString().slice(0,10);}
 function bestReco(key){var rs=Object.keys(ROWS).map(function(k){return ROWS[k];});
   var buys=rs.filter(function(r){return r.verdict==='BUY'&&r[key]!=null;});

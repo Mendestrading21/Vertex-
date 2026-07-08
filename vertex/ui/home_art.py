@@ -34,6 +34,9 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opa
 *::-webkit-scrollbar{width:9px;height:9px}
 *::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:9px}
 *::-webkit-scrollbar-thumb:hover{background:rgba(255,122,24,.35)}
+:focus-visible{outline:2px solid rgba(255,154,61,.85);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
 /* ── chapitres éditoriaux ── */
 .ovchap{margin:64px 2px 22px!important;align-items:center!important}
 .ovchap .n{color:#FF9A3D!important;background:linear-gradient(135deg,rgba(255,122,24,.16),rgba(255,122,24,.05));
@@ -150,6 +153,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opa
 *{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent}
 *::-webkit-scrollbar{width:9px;height:9px}
 *::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:9px}
+:focus-visible{outline:2px solid rgba(255,154,61,.85);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 .stitle{display:flex;align-items:center;gap:11px;letter-spacing:.13em!important;text-transform:uppercase;
  color:#FF9A3D!important;margin:44px 2px 14px!important;font-weight:800!important}
 .stitle::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,rgba(255,122,24,.4),rgba(255,255,255,.04) 60%,transparent);border-radius:2px}
