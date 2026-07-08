@@ -46,6 +46,7 @@ from vertex.engines import decision_stack as _decision
 from vertex.ui import nav as _nav
 from vertex.ui import options_lab as _olab_ui
 from vertex.ui import journal as _tj_ui
+from vertex.ui import home_art as _home_art
 from vertex.engines import indicators as _indicators
 from vertex.engines import analysis as _analysis
 from vertex.engines import backtest as _backtest
@@ -2397,7 +2398,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   L.push('Le marché reste dans un regime <b style="color:'+C.ink+'">'+regTxt+'</b>'+((weak&&sec.length>3)?' malgré une faiblesse sur '+weak.sector.toLowerCase():'')+'.');
   if(vix!=null)L.push('Le VIX est a <b style="color:'+C.ink+'">'+vix+'</b>'+(vix<15?' — volatilite contenue':vix>22?' — tension marquee':'')+'.');
   if(top)L.push('Les flux se concentrent sur <b style="color:'+C.ink+'">'+top.sector+'</b>.');
-  L.push('Climat <b style="color:'+(roro==='RISK-ON'?C.g:roro==='RISK-OFF'?C.r:C.gold)+'">'+(roro||'—')+'</b> — notre IA maintient aujourd'hui un biais <b style="color:'+bc+'">'+bias+'</b>.');
+  L.push('Climat <b style="color:'+(roro==='RISK-ON'?C.g:roro==='RISK-OFF'?C.r:C.gold)+'">'+(roro||'—')+'</b> — notre IA maintient aujourd\'hui un biais <b style="color:'+bc+'">'+bias+'</b>.');
   var fear=vix==null?50:Math.max(0,Math.min(100,(vix-10)*6));
   var G=gauge('Confiance IA',conf,conf+'%',bc)
    +gauge('Indice de peur',fear,vix!=null?('VIX '+vix):'—',fear>60?C.r:fear>40?C.gold:C.g)
@@ -2452,7 +2453,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   return stitle('⭐ Opportunite du jour','la meilleure idee, selectionnee par le Comite')
    +card('<div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap"><div><div style="font-size:30px;font-weight:900;letter-spacing:-1px;line-height:1">'+o.symbol+'</div><div style="font-size:13px;color:'+C.mut+';margin-top:2px">'+(o.sector||'')+(row.price!=null?' · $'+row.price:'')+(row.change!=null?' <span style="color:'+(row.change>=0?C.g:C.r)+';font-weight:700">'+pc(row.change)+'</span>':'')+'</div></div>'
      +'<div style="margin-left:auto;text-align:right"><div style="font-size:9px;letter-spacing:1px;color:'+C.mut+';font-weight:800">VERDICT COMITE</div><div style="font-size:20px;font-weight:900;color:'+C.g+';border:1.5px solid '+C.g+';border-radius:12px;padding:2px 14px;margin-top:4px">ACHETER</div></div></div>'
-     +'<div style="margin-top:14px;font-size:15px;line-height:1.65;color:#C9D2E0;max-width:70ch"><b style="color:'+C.o+'">Pourquoi aujourd'hui — </b>'+(o.note||o.thesis||'')+'</div>'
+     +'<div style="margin-top:14px;font-size:15px;line-height:1.65;color:#C9D2E0;max-width:70ch"><b style="color:'+C.o+'">Pourquoi aujourd\'hui — </b>'+(o.note||o.thesis||'')+'</div>'
      +g
      +'<div style="margin-top:16px"><a href="/titre/'+o.symbol+'" style="display:inline-block;background:'+C.o+';color:#1a1206;font-weight:800;font-size:15px;padding:12px 20px;border-radius:12px;text-decoration:none">Analyser completement →</a></div>',
      'padding:24px 24px;border-color:rgba(34,197,94,.22);background:radial-gradient(120% 120% at 100% 0%,rgba(34,197,94,.07),transparent 55%),linear-gradient(160deg,#141a17,#0d0e12)');
@@ -5661,6 +5662,8 @@ PAGE_DAILY = PAGE_DAILY.replace(
     '<div id="mbHome"></div>',
     '<div id="ovSynth"></div>\n   <div id="mbHero" style="margin-top:10px"></div>\n   <div id="ovMkt" style="margin-top:10px"></div>\n   <div id="ovPal" style="margin-top:10px"></div>\n   <div id="scHome" style="margin-top:10px"></div>\n   <div id="mbRest" style="margin-top:10px"></div>', 1)
 PAGE_DAILY = PAGE_DAILY.replace('</body>', _OPP_BRIEF_JS + '</body>', 1)
+# ── Couche artistique Market Overview (halos, chapitres, séance en images) — Ch. XI ──
+PAGE_DAILY = _home_art.apply(PAGE_DAILY)
 
 # ── Overview : bandeau Marchés (matières + taux, SANS graphe) + Palmarès Top/Flop (sans Semaine/Russell) ──
 _OV_EXTRA_JS = r"""<script>(function(){
