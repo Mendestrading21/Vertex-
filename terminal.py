@@ -2528,6 +2528,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <div id="ovFlows" style="margin:14px 0"></div>
   <div id="ovOptions" style="margin:14px 0"></div>
   <div id="ovWatch" style="margin:14px 0"></div>
+  <!-- ═══ LIVE FEED + AGENDA + RISQUES (Phase 6) ═══ -->
+  <div id="ovFeed" style="margin:14px 0"></div>
+  <div id="ovAgenda" style="margin:14px 0"></div>
+  <div id="ovRisks" style="margin:14px 0"></div>
   <div id="dMyDesk"></div>
   <!-- ═══ MORNING BRIEF (refonte homepage) — rendu par le script mb() en bas de page ═══ -->
   <div id="mbHome"></div>
@@ -6155,7 +6159,46 @@ _OV_EXTRA_JS = r"""<script>(function(){
     if(topOpts.length){var orows=topOpts.map(function(o){var cc=o.type==='CALL'?'#22C55E':'#EF4444';return '<div onclick="location.href=\'/titre/'+o.sym+'\'" style="display:flex;align-items:center;gap:8px;padding:6px 2px;cursor:pointer;border-top:1px solid rgba(255,255,255,.05)"><b style="font-size:13px">'+o.sym+'</b><span style="font-size:10px;color:'+cc+'">'+o.type+' $'+o.strike+'</span><span style="margin-left:auto;font-size:10.5px;color:#8794ab">POP '+o.pop+'%</span><span style="font-size:12px;font-weight:800;color:#F5B45B;margin-left:8px">'+(o.grade||'')+'</span></div>';}).join('');
       cards.push('<div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 16px"><div style="font-size:12px;font-weight:800;color:#f2f5fa;margin-bottom:4px">⚡ Top Options</div>'+orows+'</div>');}
     el.innerHTML='<div class="vstit">⭐ WATCHLIST PREMIUM <span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">· les 3 meilleures idées par style · momentum · breakout · rebond · accumulation · swing · options</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">'+cards.join('')+'</div>';}
-  function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){try{renderHero(d);}catch(e){}try{renderConviction(d);}catch(e){}try{renderTop5(d);}catch(e){}try{renderHealth(d);}catch(e){}try{renderRotation(d);}catch(e){}try{renderFlows(d);}catch(e){}try{renderOptions(d);}catch(e){}try{renderWatch(d);}catch(e){}try{renderMkt(d);}catch(e){}try{renderSynth(d);}catch(e){}try{renderPal(d);}catch(e){}}).catch(function(){});}
+  // ═══ LIVE FEED — fil de nouvelles reel (/news-feed) ═══
+  function _muted(t){return '<span style="color:#6B7280;font-weight:400;letter-spacing:0;font-size:11px">'+t+'</span>';}
+  function renderFeed(n){var el=document.getElementById('ovFeed');if(!el)return;var items=(n&&n.items)||[];if(!items.length){el.innerHTML='';return;}
+    var rows=items.slice(0,18).map(function(it){var t=(it.time||'').slice(11,16),title=it.fr||it.title||'';
+      return '<div style="display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:baseline;padding:8px 4px;border-top:1px solid rgba(255,255,255,.05)">'
+        +'<span style="font-size:10px;color:#8794ab;font-family:ui-monospace,monospace">'+t+'</span>'
+        +'<div style="min-width:0"><div style="font-size:12.5px;color:#dfe6f2;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+title+'</div><div style="font-size:9.5px;color:#6B7280">'+(it.pub||'')+'</div></div>'
+        +(it.sym?'<span onclick="location.href=\'/titre/'+it.sym+'\'" style="font-size:10px;font-weight:800;color:#38BDF8;background:rgba(56,189,248,.1);border:1px solid #38BDF833;border-radius:8px;padding:2px 7px;cursor:pointer;white-space:nowrap">'+it.sym+'</span>':'<span></span>')+'</div>';}).join('');
+    el.innerHTML='<div class="vstit">📰 LIVE FEED '+_muted('· fil de nouvelles en direct · '+items.length+' titres · clic → fiche')+'</div><div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:6px 16px 12px">'+rows+'</div>';}
+  // ═══ AGENDA — resultats a venir (/cal-feed) ═══
+  function renderAgenda(c){var el=document.getElementById('ovAgenda');if(!el)return;var items=((c&&c.items)||[]).filter(function(x){return x.dte!=null&&x.dte>=0;}).sort(function(a,b){return a.dte-b.dte;});if(!items.length){el.innerHTML='';return;}
+    var vc={BUY:'#22C55E',WATCH:'#F5B45B',WAIT:'#38BDF8',AVOID:'#EF4444'};
+    var rows=items.slice(0,14).map(function(it){var col=vc[it.verdict]||'#8794ab',when=it.dte===0?"aujourd'hui":it.dte===1?'demain':'dans '+it.dte+'j';
+      return '<div onclick="location.href=\'/titre/'+it.sym+'\'" style="display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px 4px;border-top:1px solid rgba(255,255,255,.05);cursor:pointer">'
+        +'<div><b style="font-size:13px">'+it.sym+'</b> <span style="font-size:10px;color:#8794ab">'+(it.date||'')+' · '+when+'</span></div>'
+        +'<span style="font-size:10px;font-weight:800;color:#F5B45B">'+(it.grade||'')+(it.score!=null?' · '+it.score:'')+'</span>'
+        +'<span style="font-size:9.5px;font-weight:800;color:'+col+';background:'+col+'14;border:1px solid '+col+'33;border-radius:8px;padding:2px 7px">'+(it.verdict||'')+'</span></div>';}).join('');
+    el.innerHTML='<div class="vstit">📅 AGENDA · RÉSULTATS '+_muted('· prochains résultats trimestriels · avec l\'avis Vertex · (Fed / IPO / splits non fournis)')+'</div><div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:6px 16px 12px">'+rows+'</div>';}
+  // ═══ RISQUES DU JOUR — derives de signaux reels, chacun justifie ═══
+  function renderRisks(d){var el=document.getElementById('ovRisks');if(!el)return;var mc=d.market_ctx||{},an=d.anomalies||[],secs=d.sectors||[],ms=d.macro||[],R=[];
+    if(mc.vix_chg!=null&&mc.vix_chg>0)R.push(['Volatilité en hausse','VIX '+(mc.vix!=null?mc.vix:'')+' ('+(mc.vix_chg>=0?'+':'')+mc.vix_chg+'%) — nervosité accrue, mouvements amplifiés.',mc.vix>20?'Élevé':'Moyen',mc.vix>20?'Élevée':'Modérée','Marché large','#EF4444']);
+    var curve=ms.filter(function(m){return m.id==='CURVE';})[0];
+    if(curve&&curve.value<0.3)R.push(['Courbe des taux tendue','Courbe 10-3m à '+curve.value+'% '+(curve.value<0?'(inversée — signal de récession)':'(quasi plate)')+'.','Moyen','Faible','Banques · cycliques','#F5B45B']);
+    if(mc.roro==='RISK-OFF')R.push(['Climat risk-off','Les capitaux fuient le risque (écart '+(mc.roro_gap!=null?mc.roro_gap:'')+') — les rebonds restent fragiles.','Moyen','En cours','Croissance · spéculatif','#F5B45B']);
+    var ovx=an.filter(function(a){return a.code==='OVEREXTENSION';});
+    if(ovx.length)R.push([ovx.length+' titres sur-étendus','Trop loin de leur moyenne mobile — risque de repli technique brutal ('+ovx.slice(0,4).map(function(a){return a.symbol;}).join(', ')+'…).','Moyen','Modérée','Momentum · leaders','#F5B45B']);
+    var ws=secs.slice().sort(function(a,b){return (a.avg_change||0)-(b.avg_change||0);})[0];
+    if(ws&&ws.avg_change<-1)R.push(['Secteur sous pression',(ws.icon?ws.icon+' ':'')+ws.sector+' en repli ('+ws.avg_change+'% moy.) — évite d\'y ajouter de l\'exposition.','Faible','En cours',ws.sector,'#38BDF8']);
+    var b50=(mc.breadth||{}).above50;
+    if(b50!=null&&b50<45)R.push(['Participation faible','Seulement '+b50+'% des titres au-dessus de leur MM50 — hausse peu soutenue.','Moyen','En cours','Marché large','#F5B45B']);
+    R=R.slice(0,5);
+    if(!R.length){el.innerHTML='<div class="vstit">⚠️ RISQUES DU JOUR</div><div style="background:#111318;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:16px;color:#8794ab;font-size:12px">Aucun risque majeur détecté aujourd\'hui — conditions normales.</div>';return;}
+    var cards=R.map(function(r){return '<div style="background:#111318;border:1px solid '+r[5]+'2e;border-left:2px solid '+r[5]+';border-radius:14px;padding:13px 15px">'
+      +'<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:13px;font-weight:800;color:#f2f5fa">'+r[0]+'</span><span style="margin-left:auto;font-size:9px;font-weight:800;color:'+r[5]+';background:'+r[5]+'18;border-radius:6px;padding:2px 6px">Impact '+r[2]+'</span></div>'
+      +'<div style="font-size:11.5px;color:#c3ccda;line-height:1.45;margin-top:6px">'+r[1]+'</div>'
+      +'<div style="font-size:10px;color:#8794ab;margin-top:8px">Probabilité : <b style="color:#dfe6f2">'+r[3]+'</b> · Secteurs : <b style="color:#dfe6f2">'+r[4]+'</b></div></div>';}).join('');
+    el.innerHTML='<div class="vstit">⚠️ RISQUES DU JOUR '+_muted('· dérivés de signaux réels · chaque risque justifié par sa source')+'</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">'+cards+'</div>';}
+  function load(){fetch('/scan').then(function(r){return r.json();}).then(function(d){try{renderHero(d);}catch(e){}try{renderConviction(d);}catch(e){}try{renderTop5(d);}catch(e){}try{renderHealth(d);}catch(e){}try{renderRotation(d);}catch(e){}try{renderFlows(d);}catch(e){}try{renderOptions(d);}catch(e){}try{renderWatch(d);}catch(e){}try{renderRisks(d);}catch(e){}try{renderMkt(d);}catch(e){}try{renderSynth(d);}catch(e){}try{renderPal(d);}catch(e){}}).catch(function(){});
+    fetch('/news-feed').then(function(r){return r.json();}).then(function(n){try{renderFeed(n);}catch(e){}}).catch(function(){});
+    fetch('/cal-feed').then(function(r){return r.json();}).then(function(c){try{renderAgenda(c);}catch(e){}}).catch(function(){});}
   load();setInterval(load,30000);
 })();</script>"""
 PAGE_DAILY = PAGE_DAILY.replace('</body>', _OV_EXTRA_JS + '</body>', 1)
