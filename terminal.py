@@ -6845,31 +6845,62 @@ function renderChart(){
 
 // ═══════════ ANALYTICS (synthétiques, seedés — remplacés par le live sur ta machine) ═══════════
 function renderAnalytics(det){
-  det=det||{};
-  var rsi=det.rsi!=null?Math.round(det.rsi):40+_h%45, adx=det.adx!=null?Math.round(det.adx):18+_h%30, rs=det.rs!=null?Math.round(det.rs):40+HS(SYM+'r')%40;
-  // health
-  var HEALTH=[['Croissance',70+_h%28,''],['Rentabilité',60+HS(SYM+'p')%38,''],['Cash Flow',62+HS(SYM+'f')%34,''],['Dette',55+HS(SYM+'d')%42,''],['Liquidité',58+HS(SYM+'l')%38,''],['Innovation',60+HS(SYM+'i')%38,''],['Valorisation',35+HS(SYM+'v')%45,''],['Moat',60+HS(SYM+'m')%36,'']];
-  seth('health',HEALTH.map(function(h){return '<div class="ga">'+ring(h[1],86)+'<div class="glabel">'+h[0]+'</div></div>';}).join(''));
-  // indicators
-  var IND=[['RSI 14',rsi,scoreCol(rsi>70?55:rsi),rsi>70?'Zone de surchauffe':rsi>50?'Momentum haussier':'Sous la neutralité'],['MACD',(rnd('mc')>.5?'+':'-')+(1+rnd('m2')*2).toFixed(1),C.good,'Croisement récent'],['ADX',adx,adx>25?C.good:C.warn,adx>25?'Tendance forte':'Tendance faible'],['ATR','$'+(M.price*0.03).toFixed(2),C.info,'Volatilité ~3%'],['Force rel.',(rs>50?'+':'')+(rs-50)+'%',rs>50?C.good:C.bad,rs>50?'Surperforme le SPX':'Sous-performe'],['Volume',(50+_h%400)+'M',C.info,'vs moyenne'],['RVol',(det.volx!=null?det.volx.toFixed(1):(0.8+rnd('rv')*1.2).toFixed(1))+'×',C.good,'Intérêt acheteur'],['Pos. 52s',(det.pos52!=null?Math.round(det.pos52):(40+_h%58))+'%',C.warn,'Dans le range annuel'],['MM20','$'+(M.price*0.95).toFixed(0),C.good,'Support court'],['MM50','$'+(M.price*0.9).toFixed(0),C.good,'Pente haussière'],['MM200','$'+(M.price*0.78).toFixed(0),C.good,'Tendance de fond']];
+  det=det||{};var pk=window.__pack||{},fu=window.__cofund||{};
+  function _nz(v){return (v==null||v===''||(typeof v==='number'&&!isFinite(v)))?null:v;}
+  function sc100(v){v=_nz(v);return v==null?null:Math.max(2,Math.min(98,Math.round(v)));}
+  function scl(v,lo,hi){v=_nz(v);return v==null?null:Math.max(2,Math.min(98,Math.round((v-lo)/(hi-lo)*100)));}
+  function fscore(){var p=[];if(fu.rev_growth!=null)p.push(scl(fu.rev_growth*100,-5,35));if(fu.margin!=null)p.push(scl(fu.margin*100,0,35));if(fu.roe!=null)p.push(scl(fu.roe*100,0,45));return p.length?Math.round(p.reduce(function(a,b){return a+b;},0)/p.length):null;}
+  function gauge(label,val){return '<div class="ga">'+(val==null?'<div style="width:86px;height:86px;display:grid;place-items:center;color:'+C.mut+';font-size:11px;border:2px solid rgba(255,255,255,.07);border-radius:50%">n/d</div>':ring(val,86))+'<div class="glabel">'+label+'</div></div>';}
+  var rsi=_nz(det.rsi)!=null?Math.round(det.rsi):null, adx=_nz(det.adx)!=null?Math.round(det.adx):null, rs=_nz(det.rs)!=null?Math.round(det.rs):null;
+  // health — DONNÉES RÉELLES : fondamentaux (fu) + qualité technique (det)
+  var HEALTH=[['Croissance CA',scl(fu.rev_growth!=null?fu.rev_growth*100:null,-5,35)],['Rentabilité (ROE)',scl(fu.roe!=null?fu.roe*100:null,0,45)],['Marge nette',scl(fu.margin!=null?fu.margin*100:null,0,35)],['Valorisation',scl(fu.pe!=null?(60-fu.pe):null,5,50)],['Force relative',sc100(det.rs)],['Tendance',sc100(det.trend_quality)],['Momentum',sc100(det.mom)],['Setup',sc100(det.setup_quality)]];
+  seth('health',HEALTH.map(function(h){return gauge(h[0],h[1]);}).join(''));
+  // indicators — DONNÉES RÉELLES du scan
+  var a20=det.ma20!=null&&M.price>=det.ma20;
+  var IND=[
+   ['RSI 14',rsi!=null?rsi:'—',rsi!=null?scoreCol(rsi>70?55:rsi):C.mut,rsi==null?'n/d':(rsi>70?'Surchauffe':rsi>=50?'Momentum haussier':'Sous la neutralité')],
+   ['ROC',det.roc!=null?((det.roc>=0?'+':'')+(+det.roc).toFixed(1)+'%'):'—',det.roc>=0?C.good:C.bad,'Taux de variation'],
+   ['ADX',adx!=null?adx:'—',adx!=null?(adx>25?C.good:C.warn):C.mut,adx==null?'n/d':(adx>25?'Tendance forte':'Tendance faible')],
+   ['ATR',det.atr_pct!=null?(+det.atr_pct).toFixed(1)+'%':'—',C.info,'Volatilité relative'],
+   ['Force rel.',rs!=null?rs:'—',rs!=null?(rs>=50?C.good:C.bad):C.mut,rs==null?'n/d':(rs>=50?'Surperforme':'Sous-performe')],
+   ['Perf. 1 sem.',det.perf_w!=null?((det.perf_w>=0?'+':'')+(+det.perf_w).toFixed(1)+'%'):'—',det.perf_w>=0?C.good:C.bad,'Sur 5 séances'],
+   ['RVol',det.volx!=null?(+det.volx).toFixed(1)+'×':'—',det.volx>=1?C.good:C.mut,'Volume relatif'],
+   ['Pos. 52 sem.',det.pos52!=null?Math.round(det.pos52)+'%':'—',det.pos52>=85?C.warn:C.good,'Dans le range annuel'],
+   ['MM20',det.ma20!=null?'$'+(+det.ma20).toFixed(0):'—',a20?C.good:C.bad,a20?'Cours au-dessus':'Cours en-dessous'],
+   ['MM50',det.ma50!=null?'$'+(+det.ma50).toFixed(0):'—',det.ma50_rising?C.good:C.warn,det.ma50_rising?'Pente haussière':'Pente molle'],
+   ['MM200',det.ma200!=null?'$'+(+det.ma200).toFixed(0):'—',det.ma200_rising?C.good:C.warn,det.ma200_rising?'Fond haussier':'Fond neutre']];
   seth('ind',IND.map(function(x){return '<div class="ind" style="--c:'+x[2]+'"><div class="ik">'+x[0]+'</div><div class="iv" style="color:'+x[2]+'">'+x[1]+'</div><div class="ic">'+x[3]+'</div></div>';}).join(''));
-  // fundamentals vs sector
+  // fundamentals vs sector — DONNÉES RÉELLES (fu), médiane secteur si dispo
   set('cmp-sym',M.sym);
-  var CMP=[['PER',(20+_h%40)+'×',(22+_h%12)+'×',20+_h%40,22+_h%12,true],['Marge nette',(15+_h%45)+'%','18%',15+_h%45,18,false],['ROE',(12+_h%80)+'%','16%',12+_h%80,16,false],['Croissance CA','+'+(5+_h%90)+'%','+11%',5+_h%90,11,false],['Dette/EBITDA',(0.2+rnd('de')*2).toFixed(1),'1,6',0.2+rnd('de')*2,1.6,true],['Dividende',(rnd('dv')*3).toFixed(2)+'%','1,4%',rnd('dv')*3,1.4,true]];
-  seth('cmp',CMP.map(function(r){var mx=Math.max(r[3],r[4])*1.15,wa=Math.max(4,r[3]/mx*100),wb=Math.max(4,r[4]/mx*100),better=r[5]?r[3]<r[4]:r[3]>r[4],col=better?C.good:C.bad,diff=r[4]!==0?(r[3]/r[4]-1)*100:0;
-    return '<div class="cmprow"><div class="cl">'+r[0]+'</div><div class="cmpbar"><div class="cf" style="width:'+wa+'%;background:'+C.acc+'"></div><span class="ct">'+r[1]+'</span></div><div class="cmpbar sec"><div class="cf" style="width:'+wb+'%;background:'+C.mut+'"></div><span class="ct" style="color:'+C.ink+'">'+r[2]+'</span></div><div class="diff" style="color:'+col+'">'+(diff>=0?'+':'')+Math.round(diff)+'%</div></div>';}).join(''));
-  // valuation
-  var per=20+_h%40,vpos=Math.max(8,Math.min(94,(per-15)/40*100));el('val-needle').style.left=vpos+'%';
-  seth('val-txt','Position '+(vpos>65?'<b style="color:'+C.warn+'">tendue</b>':vpos<40?'<b style="color:'+C.good+'">attractive</b>':'<b>équilibrée</b>')+' — lecture relative au secteur.');
-  seth('val',[['PER actuel',per,C.warn],['Moyenne 5 ans',Math.round(per*0.85),C.info],['Secteur',22+_h%12,C.mut]].map(function(v){return '<div class="brow" style="grid-template-columns:112px 1fr"><div class="bl">'+v[0]+'</div><div><div class="barhead"><span></span><span class="bv" style="color:'+v[2]+'">'+v[1]+'×</span></div><div class="track"><div class="fill" style="width:'+(v[1]/60*100)+'%;background:'+v[2]+'"></div></div></div></div>';}).join(''));
-  // score factors
+  function md(k){return _nz(pk['sector_median_'+k]);}
+  var CMP=[['PER',fu.pe,md('pe'),true,'x'],['Marge nette',fu.margin!=null?fu.margin*100:null,md('margin')!=null?md('margin')*100:null,false,'%'],['ROE',fu.roe!=null?fu.roe*100:null,null,false,'%'],['Croissance CA',fu.rev_growth!=null?fu.rev_growth*100:null,md('growth')!=null?md('growth')*100:null,false,'%'],['PEG',fu.peg,null,true,'x'],['Dividende',fu.dividend,null,true,'%']].filter(function(r){return r[1]!=null;});
+  function ftxt(v,u){return u==='x'?(+v).toFixed(v<10?2:1)+'×':(u==='%'?(v>=0?'':'')+Math.round(v)+'%':(+v).toFixed(1));}
+  seth('cmp',CMP.length?CMP.map(function(r){var val=r[1],med=r[2],inv=r[3],u=r[4];
+    var mx=Math.max(Math.abs(val),Math.abs(med||val))*1.2||1,wa=Math.max(4,Math.abs(val)/mx*100),wb=med!=null?Math.max(4,Math.abs(med)/mx*100):0;
+    var better=med!=null?(inv?val<med:val>med):null,col=better==null?C.mut:(better?C.good:C.bad),diff=med?(val/med-1)*100:null;
+    return '<div class="cmprow"><div class="cl">'+r[0]+'</div><div class="cmpbar"><div class="cf" style="width:'+wa+'%;background:'+C.acc+'"></div><span class="ct">'+ftxt(val,u)+'</span></div><div class="cmpbar sec"><div class="cf" style="width:'+wb+'%;background:'+C.mut+'"></div><span class="ct" style="color:'+C.ink+'">'+(med!=null?ftxt(med,u):'n/d')+'</span></div><div class="diff" style="color:'+col+'">'+(diff!=null?(diff>=0?'+':'')+Math.round(diff)+'%':'—')+'</div></div>';}).join(''):'<div style="color:'+C.mut+';font-size:12px;padding:14px">Fondamentaux en cours de chargement…</div>');
+  // valuation — DONNÉES RÉELLES (PER / forward / PEG / IV Rank)
+  var per=_nz(fu.pe)!=null?fu.pe:_nz(pk.pe);
+  var vpos=per!=null?Math.max(8,Math.min(94,(per-10)/45*100)):50;el('val-needle').style.left=vpos+'%';
+  seth('val-txt','Position '+(vpos>65?'<b style="color:'+C.warn+'">tendue</b>':vpos<40?'<b style="color:'+C.good+'">attractive</b>':'<b>équilibrée</b>')+(pk.ivrank!=null?' · IV Rank <b style="color:'+C.ink+'">'+pk.ivrank+'</b>/100':'')+' — données réelles.');
+  var VAL=[['PER actuel',per,C.warn,'x'],['PER forward',_nz(fu.forward_pe),C.info,'x'],['PEG',_nz(fu.peg),C.mut,'peg'],['IV Rank',_nz(pk.ivrank),C.acc,'iv']].filter(function(v){return v[1]!=null;});
+  seth('val',VAL.map(function(v){var isPeg=v[3]==='peg',isIv=v[3]==='iv';var disp=isPeg?(+v[1]).toFixed(2):(isIv?Math.round(v[1])+'/100':(+v[1]).toFixed(1)+'×');var w=isIv?v[1]:Math.min(100,v[1]/(isPeg?4:60)*100);return '<div class="brow" style="grid-template-columns:112px 1fr"><div class="bl">'+v[0]+'</div><div><div class="barhead"><span></span><span class="bv" style="color:'+v[2]+'">'+disp+'</span></div><div class="track"><div class="fill" style="width:'+w+'%;background:'+v[2]+'"></div></div></div></div>';}).join(''));
+  // score factors — DONNÉES RÉELLES (sous-scores du moteur)
   set('score-h2',Math.round(M.score)+' / 100 — d\'où vient la note');
-  var SF=[['Fondamental',60+HS(SYM+'sf')%35,'Croissance et marges'],['Momentum',rs+_h%10,'Force relative'],['Technique',adx+40,'Structure de tendance'],['Institutionnels',55+HS(SYM+'si')%35,'Flux détectés'],['Options',50+HS(SYM+'so')%40,'Positionnement dealers'],['Macro',50+HS(SYM+'sm')%35,'Régime de marché'],['Risque',40+HS(SYM+'sr')%40,'Extension / bêta'],['Valorisation',30+HS(SYM+'sv')%45,'Prime sur le secteur']];
-  SF=SF.map(function(x){return [x[0],Math.min(96,x[1]),x[2]];}).sort(function(a,b){return b[1]-a[1];});
+  var SF=[['Fondamental',fscore(),'Croissance · marge · ROE'],['Momentum',sc100(det.mom),'Force du mouvement'],['Technique',sc100(det.trend_quality),'Qualité de tendance'],['Force relative',sc100(det.rs),'vs marché'],['Setup',sc100(det.setup_quality),'Point d\'entrée'],['Position 52s',sc100(det.pos52),'Range annuel'],['Valorisation',scl(fu.pe!=null?(60-fu.pe):null,5,50),'Prime / décote'],['Stabilité',scl(det.atr_pct!=null?(6-det.atr_pct):null,0,6),'Volatilité maîtrisée']].filter(function(x){return x[1]!=null;});
+  SF.sort(function(a,b){return b[1]-a[1];});
   seth('score',SF.map(function(s){var col=scoreCol(s[1]);return '<div class="brow"><div class="bl">'+s[0]+'<span class="why">'+s[2]+'</span></div><div><div class="barhead"><span></span><span class="bv" style="color:'+col+'">'+s[1]+'</span></div><div class="track"><div class="fill" style="width:'+s[1]+'%;background:linear-gradient(90deg,'+col+'99,'+col+')"></div></div></div></div>';}).join(''));
-  renderRadar([['Technique',adx+40],['Momentum',rs+_h%10],['Fondamental',60+HS(SYM+'sf')%35],['Qualité',60+HS(SYM+'q')%35],['Institut.',55+HS(SYM+'si')%35],['Risque',40+HS(SYM+'sr')%40],['Confiance',M.conf]]);
-  // flows
-  var FL=[['Flux institut.',(rnd('fi')>.5?'Accumulation':'Neutre'),50+HS(SYM+'fi')%40,C.good],['Flux retail','Modéré',45+_h%30,C.warn],['Flux options',(rnd('fo')>.5?'Call-heavy':'Équilibré'),50+HS(SYM+'fo')%35,C.good],['Sentiment analystes',(60+_h%38)+'% Buy',60+_h%38,C.good],['Sentiment médias','Positif',55+HS(SYM+'fm')%30,C.good],['Dark Pool',(35+_h%25)+'%',35+_h%25,C.warn],['Volume anormal','+'+(10+_h%50)+'%',50+_h%40,C.info]];
+  renderRadar([['Technique',sc100(det.trend_quality)||50],['Momentum',sc100(det.mom)||50],['Fondamental',fscore()||50],['Force rel.',sc100(det.rs)||50],['Setup',sc100(det.setup_quality)||50],['Position',sc100(det.pos52)||50],['Confiance',Math.round(M.conf)]]);
+  // flux & sentiment — DONNÉES RÉELLES (accumulation, volume z, physique, structure, IV)
+  var accTxt=det.accumulation?'Accumulation':det.distribution?'Distribution':'Neutre',accCol=det.accumulation?C.good:det.distribution?C.bad:C.mut;
+  var phys=det.physics||{},strc=det.structure||{};
+  var FL=[
+   ['Pression volume',accTxt,det.vol_z!=null?Math.max(5,Math.min(100,50+det.vol_z*22)):50,accCol],
+   ['Volume anormal',det.vol_z!=null?((det.vol_z>=0?'+':'')+(+det.vol_z).toFixed(1)+'σ'):'—',det.vol_z!=null?Math.max(5,Math.min(100,50+det.vol_z*22)):50,det.vol_z>=1?C.info:C.mut],
+   ['Physique du prix',phys.state||'—',phys.hurst!=null?Math.round(phys.hurst*100):50,phys.state_col||C.info],
+   ['Structure',strc.trend||'—',det.trend_quality!=null?Math.round(det.trend_quality):50,strc.trend==='UP'?C.good:strc.trend==='DOWN'?C.bad:C.warn],
+   ['IV Rank',pk.ivrank!=null?pk.ivrank+'/100':'—',pk.ivrank!=null?pk.ivrank:50,pk.ivrank>=70?C.warn:C.info],
+   ['Bollinger rank',det.bb_rank!=null?det.bb_rank+'%':'—',det.bb_rank!=null?det.bb_rank:50,C.info]];
   seth('flows',FL.map(function(f){return '<div class="flow"><div class="fl">'+f[0]+'</div><div class="fv" style="color:'+f[3]+'">'+f[1]+'</div><div class="meter"><i style="width:'+f[2]+'%;background:'+f[3]+'"></i></div></div>';}).join(''));
   renderOptions();renderScenarios();renderNews();renderCompetition(det);renderCorr();renderVehicles();renderDecision();
 }
