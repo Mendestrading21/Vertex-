@@ -6854,11 +6854,14 @@ function renderHeader(){
   seth('h-chgpct',(chgUp?'+':'')+M.chg.toFixed(2)+'%'); el('h-chgpct').className='pill num '+(chgUp?'bg-up':'bg-dn');
   set('ck-cap',M.cap||'—'); set('ck-sector',M.sector||'—'); set('ck-industry',M.industry||'—');
   set('ck-rank','#'+M.rank); set('ck-score',Math.round(M.score)); set('ck-conf',Math.round(M.conf)+' %');
-  set('ck-verdict',M.verdict); set('ck-upd',M.demo?'démo':'à l\'instant');
+  set('ck-verdict',M.verdict); set('ck-upd',M.demo?(window.__srvDemo?'démo':'chargement…'):'à l\'instant');
   el('ck-score').innerHTML=Math.round(M.score)+'<small>/100</small>'; el('ck-conf').innerHTML=Math.round(M.conf)+'<small>%</small>';
   el('ck-score').style.color=scoreCol(M.score);
   seth('ring-score',ring(M.score,42,scoreCol(M.score),false)); seth('ring-conf',ring(M.conf,42,C.info,false));
-  seth('h-aiq','Vertex '+(M.score>=70?'considère <b>'+M.sym+'</b> comme une <b>configuration de qualité</b>':'suit <b>'+M.sym+'</b> avec prudence')+' — synthèse marché, technique et fondamentaux. '+(M.demo?'<b style="color:'+C.warn+'">Valeurs de marché en démo ici</b> ; en direct IBKR/yfinance sur ta machine.':'Score composite '+Math.round(M.score)+'/100.'));
+  seth('h-aiq','Vertex '+(M.score>=70?'considère <b>'+M.sym+'</b> comme une <b>configuration de qualité</b>':'suit <b>'+M.sym+'</b> avec prudence')+' — synthèse marché, technique et fondamentaux. '
+    +(M.demo?(window.__srvDemo?'<b style="color:'+C.warn+'">Valeurs de marché en démo ici</b> ; en direct IBKR/yfinance sur ta machine.'
+                              :'<b style="color:'+C.info+'">Connexion aux valeurs de marché en direct…</b>')   // jamais « démo » si le serveur est live
+             :'Score composite '+Math.round(M.score)+'/100 · données en direct.'));
 }
 
 // ═══════════ COMPANY ═══════════
@@ -7138,7 +7141,8 @@ function renderDecision(){
 // ═══════════ INIT : rendu synthétique instantané, puis binding live ═══════════
 renderHeader();renderCompany({});renderChart();renderAnalytics({});
 fetch('/healthz').then(function(r){return r.json();}).then(function(h){
-  if(h && h.data_source!=='demo' && h.ibkr_enabled!==false){M.demo=false;}
+  window.__srvDemo=(h&&h.data_source==='demo');
+  if(h && h.data_source!=='demo' && h.ibkr_enabled!==false){M.demo=false;renderHeader();}   // re-rendu : sinon le texte « démo » restait affiché (course)
   if(h && h.data_source==='demo'){el('cb-src').style.display='';}
 }).catch(function(){});
 function loadTicker(){return fetch('/api/ticker/'+SYM).then(function(r){return r.json();}).then(function(j){
