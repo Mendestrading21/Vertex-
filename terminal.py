@@ -1666,9 +1666,13 @@ def api_ticker(sym):
                            'score': pd.get('score'), 'verdict': pd.get('verdict'),
                            'perf_q': pd.get('perf_q'), 'rev_growth': pf.get('rev_growth'),
                            'margin': pf.get('margin'), 'pe': pf.get('pe'), 'roe': pf.get('roe')})
+    try:
+        _sec_med = _company.sector_medians().get((comp or {}).get('sector')) or {}
+    except Exception:
+        _sec_med = {}
     return jsonify({'symbol': sym, 'in_universe': sym in UNIVERSE,
                     'detail': det_all.get(sym), 'peers_data': peers_data,
-                    'company': comp, 'pack': pack})
+                    'company': comp, 'pack': pack, 'sector_median': _sec_med})
 
 
 @app.route('/api/company/<sym>')
@@ -6880,9 +6884,10 @@ function renderAnalytics(det){
   seth('ind',IND.map(function(x){return '<div class="ind" style="--c:'+x[2]+'"><div class="ik">'+x[0]+'</div><div class="iv" style="color:'+x[2]+'">'+x[1]+'</div><div class="ic">'+x[3]+'</div></div>';}).join(''));
   // fundamentals vs sector — DONNÉES RÉELLES (fu), médiane secteur si dispo
   set('cmp-sym',M.sym);
-  function md(k){return _nz(pk['sector_median_'+k]);}
-  var CMP=[['PER',fu.pe,md('pe'),true,'x'],['Marge nette',fu.margin!=null?fu.margin*100:null,md('margin')!=null?md('margin')*100:null,false,'%'],['ROE',fu.roe!=null?fu.roe*100:null,null,false,'%'],['Croissance CA',fu.rev_growth!=null?fu.rev_growth*100:null,md('growth')!=null?md('growth')*100:null,false,'%'],['PEG',fu.peg,null,true,'x'],['Dividende',fu.dividend,null,true,'%']].filter(function(r){return r[1]!=null;});
-  function ftxt(v,u){return u==='x'?(+v).toFixed(v<10?2:1)+'×':(u==='%'?(v>=0?'':'')+Math.round(v)+'%':(+v).toFixed(1));}
+  var _sm=window.__secmed||{};
+  function md(k){return _nz(_sm['median_'+k])!=null?_nz(_sm['median_'+k]):_nz(pk['sector_median_'+k]);}
+  var CMP=[['PER',fu.pe,md('pe'),true,'x'],['Marge nette',fu.margin!=null?fu.margin*100:null,md('margin'),false,'%'],['ROE',fu.roe!=null?fu.roe*100:null,md('roe'),false,'%'],['Croissance CA',fu.rev_growth!=null?fu.rev_growth*100:null,md('growth'),false,'%'],['PEG',fu.peg,null,true,'x'],['Dividende',fu.dividend,null,true,'%']].filter(function(r){return r[1]!=null;});
+  function ftxt(v,u){return u==='x'?(+v).toFixed(v<10?2:1)+'×':(u==='%'?(Math.abs(v)<3?(+v).toFixed(1):Math.round(v))+'%':(+v).toFixed(1));}
   seth('cmp',CMP.length?CMP.map(function(r){var val=r[1],med=r[2],inv=r[3],u=r[4];
     var mx=Math.max(Math.abs(val),Math.abs(med||val))*1.2||1,wa=Math.max(4,Math.abs(val)/mx*100),wb=med!=null?Math.max(4,Math.abs(med)/mx*100):0;
     var better=med!=null?(inv?val<med:val>med):null,col=better==null?C.mut:(better?C.good:C.bad),diff=med?(val/med-1)*100:null;
@@ -7058,7 +7063,7 @@ fetch('/healthz').then(function(r){return r.json();}).then(function(h){
 }).catch(function(){});
 function loadTicker(){return fetch('/api/ticker/'+SYM).then(function(r){return r.json();}).then(function(j){
   if(!j)return;var cp=j.company||{},d=j.detail||{},pk=j.pack||{};
-  window.__peers=cp.peers||[];window.__peersData=j.peers_data||[];window.__cofund=cp.fundamentals||{};window.__plan=d.plan||null;window.__contracts=pk.contracts||[];window.__pack=pk;window.__series=d.series||null;
+  window.__peers=cp.peers||[];window.__peersData=j.peers_data||[];window.__cofund=cp.fundamentals||{};window.__plan=d.plan||null;window.__contracts=pk.contracts||[];window.__pack=pk;window.__series=d.series||null;window.__secmed=j.sector_median||{};
   // marché live (guardé — écrase le synthétique quand présent)
   if(d.price!=null){M.price=d.price;M.demo=false;}
   if(pk.spot!=null){M.price=pk.spot;M.demo=false;}

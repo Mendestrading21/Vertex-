@@ -113,6 +113,43 @@ def _save(cache):
         pass
 
 
+_SECMED = {'ts': 0.0, 'data': {}}
+
+
+def sector_medians(max_age=1800):
+    """Médianes de valorisation par SECTEUR, calculées sur le cache entreprise RÉEL
+    (pe / forward_pe / margin / rev_growth / roe). Mémoïsé 30 min. Alimente la
+    comparaison « vs secteur » de la fiche avec de vraies données (plus de n/d)."""
+    import statistics
+    now = time.time()
+    if _SECMED['data'] and now - _SECMED['ts'] < max_age:
+        return _SECMED['data']
+    groups = {}
+    for v in _load().values():
+        sec = v.get('sector')
+        if sec:
+            groups.setdefault(sec, []).append(v)
+
+    def med(vals, mult=1.0, nd=3):
+        vals = [x for x in vals if x is not None]
+        return round(statistics.median(vals) * mult, 2) if len(vals) >= nd else None
+
+    out = {}
+    for sec, rows in groups.items():
+        pes = [v['pe'] for v in rows if v.get('pe') and 0 < v['pe'] < 250]
+        fwd = [v['forward_pe'] for v in rows if v.get('forward_pe') and 0 < v['forward_pe'] < 250]
+        mg = [v['margin'] for v in rows if v.get('margin') is not None]
+        gr = [v['rev_growth'] for v in rows if v.get('rev_growth') is not None]
+        roe = [v['roe'] for v in rows if v.get('roe') is not None]
+        if len(pes) >= 3 or len(mg) >= 3:
+            out[sec] = {'median_pe': med(pes), 'median_fwd_pe': med(fwd),
+                        'median_margin': med(mg, 100.0), 'median_growth': med(gr, 100.0),
+                        'median_roe': med(roe, 100.0), 'n': len(rows)}
+    _SECMED['ts'] = now
+    _SECMED['data'] = out
+    return out
+
+
 def peers(sym, n=4):
     """Concurrents = pairs de la MÊME INDUSTRIE dans l'univers (sinon même secteur GICS)."""
     ind = _INDUSTRY_OF().get(sym)
@@ -298,4 +335,4 @@ def get(sym, demo=False, allow_fetch=True, brief=False):
     return out
 
 
-__all__ = ['get', 'peers', 'REVENUE_SEGMENTS', 'FOUNDED', 'PROFILE_CURATED']
+__all__ = ['get', 'peers', 'sector_medians', 'REVENUE_SEGMENTS', 'FOUNDED', 'PROFILE_CURATED']
