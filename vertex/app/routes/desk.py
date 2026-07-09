@@ -78,6 +78,10 @@ def make_blueprint(*, opt_job, ibkr_enabled):
         body = request.get_json(force=True, silent=True) or {}
         poss = (body.get('positions') or [])[:POSQ_MAX_POSITIONS]
         now = time.time()
+        # purge des cotations périmées : le cache reste borné (pas de fuite mémoire
+        # au fil des contrats cotés sur des semaines d'usage)
+        for k in [k for k, (ts, _) in posq_cache.items() if now - ts > 20 * POSQ_TTL_S]:
+            posq_cache.pop(k, None)
         todo, out = [], {}
         for p in poss:
             if not isinstance(p, dict):

@@ -7,7 +7,7 @@ verrou d'accès) est centralisée et explicite ici.
 """
 
 import os
-import hashlib
+import secrets
 
 # ─── SÛRETÉ : VERTEX est un terminal d'ANALYSE, en LECTURE SEULE. ───
 # Cette constante est structurelle et ne doit jamais passer à False.
@@ -28,9 +28,33 @@ DEMO_MODE = os.environ.get('DEMO', '1' if os.environ.get('NO_IBKR') == '1' else 
 VERTEX_CODE = (os.environ.get('VERTEX_CODE') or os.environ.get('ACCESS_CODE') or '').strip()
 AUTH_ON = bool(VERTEX_CODE)
 
-# Clé de signature des sessions : VERTEX_SECRET, sinon dérivée déterministe du code.
-SECRET_KEY = (os.environ.get('VERTEX_SECRET')
-              or hashlib.sha256(('vertex-secret::' + (VERTEX_CODE or 'demo')).encode()).hexdigest())
+# Clé de signature des sessions : VERTEX_SECRET, sinon un secret ALÉATOIRE persistant.
+# ⚠️ Sécurité : la clé n'est JAMAIS dérivée du code d'accès (sinon un code court
+# permettrait de forger un cookie de session hors-ligne). À défaut de VERTEX_SECRET,
+# on génère 32 octets aléatoires une fois et on les conserve localement
+# (.vertex_secret, hors git) pour que les sessions survivent aux redémarrages.
+
+
+def _local_secret():
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    path = os.path.join(root, '.vertex_secret')
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            s = f.read().strip()
+        if len(s) >= 32:
+            return s
+    except Exception:
+        pass
+    s = secrets.token_hex(32)
+    try:
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(s)
+    except Exception:
+        pass   # disque en lecture seule → secret par-process (sessions reset au reboot)
+    return s
+
+
+SECRET_KEY = os.environ.get('VERTEX_SECRET') or _local_secret()
 
 # Démarrage immédiat du scan à l'import (utile derrière gunicorn --preload / Render).
 START_ON_IMPORT = os.environ.get('START_ON_IMPORT') == '1'

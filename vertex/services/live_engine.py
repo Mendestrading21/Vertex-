@@ -147,7 +147,12 @@ def _domains():
         'news': _upd_ts(news), 'calendar': _upd_ts(cal),
         'weekly': scan_ts if wk.get('data') else None, 'ai': scan_ts,
     }
+    # Source HONNÊTE du domaine prix : les scores/tableaux du scan viennent du
+    # téléchargement daily (yfinance/stooq) même en mode IBKR — le live IBKR
+    # alimente l'overlay /quotes et les options. On affiche la vraie chaîne.
+    scan_src = st.get('source')
     src = ('démo (synthétique)' if _CFG['demo']
+           else ('scan %s + cotations IBKR temps réel' % scan_src) if (_CFG['ibkr_enabled'] and scan_src and scan_src != 'demo')
            else 'IBKR live (TWS)' if _CFG['ibkr_enabled'] else 'yfinance (delayed ~15 min)')
     sources = {
         'prices': src, 'options': ('démo' if _CFG['demo'] else 'chaînes IBKR/yfinance'),

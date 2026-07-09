@@ -28,6 +28,8 @@ def news_feed_ep():
         items = [n for n in items
                  if q in (str(n.get('title') or '') + ' ' + str(n.get('fr') or '')
                           + ' ' + str(n.get('publisher') or '')).lower()]
+    # XSS : titres/liens externes assainis AU POINT DE SORTIE (rendus en innerHTML côté client)
+    items = news_plus.sanitize_news(items)
     return jsonify({**news_state, 'items': items, 'filtered': bool(sym or q),
                     'sentiment': news_plus.aggregate(items), 'ai_on': ai.available()})
 

@@ -122,7 +122,9 @@ def sector_medians(max_age=1800):
     comparaison « vs secteur » de la fiche avec de vraies données (plus de n/d)."""
     import statistics
     now = time.time()
-    if _SECMED['data'] and now - _SECMED['ts'] < max_age:
+    # memo sur le TIMESTAMP (pas la truthiness) : un résultat vide est aussi mémoïsé,
+    # sinon chaque appel reparserait le cache entreprise (~1.4 Mo) → perf dégradée.
+    if _SECMED['ts'] > 0 and now - _SECMED['ts'] < max_age:
         return _SECMED['data']
     groups = {}
     for v in _load().values():

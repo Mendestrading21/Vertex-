@@ -82,4 +82,43 @@ def rss_news(sym, n=4, timeout=6):
         return []
 
 
-__all__ = ['sentiment', 'aggregate', 'parse_rss', 'rss_news']
+_TAG_RE = re.compile(r'<[^>]*>')
+
+
+def _clean_text(s):
+    """Neutralise tout HTML/JS d'un texte externe : balises retirées, méta-caractères
+    échappés. Le résultat est sûr dans innerHTML, dans un attribut ET dans une
+    chaîne JS inline côté client."""
+    s = _TAG_RE.sub('', str(s))
+    return (s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+             .replace('"', '&quot;').replace("'", '&#39;'))
+
+
+def sanitize_news(items):
+    """Assainit une liste d'items de news EXTERNES (yfinance/RSS/traduction) avant
+    de la servir au client. XSS : les titres/liens de publishers tiers sont rendus
+    en innerHTML côté client — on neutralise ici, au point unique de sortie.
+    - title/fr/pub/publisher/sym/why : balises retirées + échappement complet ;
+    - link : schéma http(s) obligatoire (sinon supprimé) + quotes/chevrons encodés
+      (sûr en href="…" comme dans window.open('…'))."""
+    out = []
+    for it in (items or []):
+        if not isinstance(it, dict):
+            continue
+        d = dict(it)
+        for k in ('title', 'fr', 'pub', 'publisher', 'sym', 'why', 'time'):
+            if d.get(k) is not None:
+                d[k] = _clean_text(d[k])
+        lk = d.get('link')
+        if lk:
+            lk = str(lk).strip()
+            if not lk.lower().startswith(('http://', 'https://')):
+                d['link'] = None
+            else:
+                d['link'] = (lk.replace('"', '%22').replace("'", '%27')
+                               .replace('<', '%3C').replace('>', '%3E'))
+        out.append(d)
+    return out
+
+
+__all__ = ['sentiment', 'aggregate', 'parse_rss', 'rss_news', 'sanitize_news']

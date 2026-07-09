@@ -48,8 +48,12 @@ def make_blueprint(*, code):
     login_fails = {}    # ip -> [nb_essais, bloqué_jusquà_ts]
 
     def _client_ip():
-        xf = (request.headers.get('X-Forwarded-For') or '').split(',')[0].strip()
-        return xf or request.remote_addr or '?'
+        # ⚠️ Sécurité anti-bypass du lockout : X-Forwarded-For est fourni par le CLIENT
+        # (sa valeur la plus à gauche est librement usurpable → essais illimités).
+        # Derrière UN proxy de confiance (Render), la seule valeur fiable est la plus
+        # à DROITE (ajoutée par le proxy). En local, remote_addr suffit.
+        xf = [p.strip() for p in (request.headers.get('X-Forwarded-For') or '').split(',') if p.strip()]
+        return (xf[-1] if xf else '') or request.remote_addr or '?'
 
     @bp.before_app_request
     def _auth_gate():

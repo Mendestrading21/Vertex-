@@ -113,7 +113,9 @@ except Exception:
 from vertex.app.config import VERTEX_CODE, AUTH_ON, SECRET_KEY  # noqa: E402
 app.secret_key = SECRET_KEY
 app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
-                  PERMANENT_SESSION_LIFETIME=timedelta(days=30))
+                  PERMANENT_SESSION_LIFETIME=timedelta(days=30),
+                  # cookie jamais envoyé en clair quand l'app est servie en HTTPS (Render/prod)
+                  SESSION_COOKIE_SECURE=bool(os.environ.get('RENDER') or os.environ.get('VERTEX_HTTPS')))
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024   # 2 Mo — le desk sync est un petit blob JSON
 app.register_blueprint(_auth.make_blueprint(code=VERTEX_CODE))
 
@@ -271,6 +273,7 @@ def _download_universe(tickers, period='1y', chunk=50):
     Si yfinance échoue (ex: Yahoo bloque l'IP du serveur cloud), bascule
     automatiquement sur Stooq pour les tickers manquants."""
     frames = {}
+    bad_batches = 0
     for i in range(0, len(tickers), chunk):
         part = tickers[i:i + chunk]
         try:
@@ -279,7 +282,14 @@ def _download_universe(tickers, period='1y', chunk=50):
         except Exception:
             dl = None
         if dl is None or len(dl) == 0:
+            # BACKOFF anti-throttle (429) : après 3 lots vides d'affilée, Yahoo bloque
+            # l'IP → inutile d'insister, on passe direct au filet Stooq (caché 6 h)
+            bad_batches += 1
+            if bad_batches >= 3:
+                break
+            time.sleep(2 * bad_batches)
             continue
+        bad_batches = 0
         for t in part:
             try:
                 df = dl if len(part) == 1 else dl[t]
@@ -605,10 +615,24 @@ _optq = _queue.Queue()
 
 
 def _ibkr_opt_worker():
-    import asyncio
-    asyncio.set_event_loop(asyncio.new_event_loop())
-    from ib_async import IB, Stock, Option, ScannerSubscription
-    ib = IB()
+    # Setup GARDÉ : si ib_async manque ou si l'init échoue, le worker répond None
+    # à tous les jobs (dégradation rapide) au lieu de mourir → file jamais bloquée.
+    try:
+        import asyncio
+        asyncio.set_event_loop(asyncio.new_event_loop())
+        from ib_async import IB, Stock, Option, ScannerSubscription
+        ib = IB()
+        # ⛑️ ANTI-BLOCAGE : borne TOUTES les requêtes synchrones ib_async
+        # (qualifyContracts/reqTickers/reqSecDefOptParams/…). Sans elle, un TWS
+        # en socket semi-ouvert fige le worker unique POUR TOUJOURS et tout le
+        # canal options/scan/posq meurt en silence. Timeout → exception rattrapée
+        # par le try du job → None → on continue.
+        ib.RequestTimeout = 45
+    except Exception:
+        while True:                                  # drain : réponses immédiates None
+            _k, _a, box, evt = _optq.get()
+            box['res'] = None
+            evt.set()
 
     def conn():
         if ib.isConnected():
@@ -889,6 +913,13 @@ def _ibkr_opt_worker():
                 box['res'] = res
         except Exception:
             box['res'] = None
+            # Échec de job (timeout/déconnexion) : on repart d'une connexion PROPRE.
+            # Un socket semi-ouvert renverrait isConnected()=True et referait échouer
+            # tous les jobs suivants — le disconnect force conn() à se reconnecter.
+            try:
+                ib.disconnect()
+            except Exception:
+                pass
         evt.set()
 
 
@@ -1050,7 +1081,7 @@ def _radar_loop():
         try:
             nw = _opt_job('news', (), timeout=40)
             if nw:
-                out['news'] = nw[:35]
+                out['news'] = _news_plus.sanitize_news(nw[:35])   # XSS : titres IBKR externes
         except Exception:
             pass
         if out:
@@ -1153,32 +1184,37 @@ def _cal_loop():
             else:
                 time.sleep(10)
     while True:
-        if scan_state.get('rows'):
-            items, fails = [], 0
-            for i, sym in enumerate(targets):
-                try:
-                    cal = yf.Ticker(sym).calendar
-                    ed = cal.get('Earnings Date') if isinstance(cal, dict) else None
-                    ed = ed[0] if isinstance(ed, (list, tuple)) and ed else ed
-                    fails = 0
-                    if ed is not None:
-                        es = str(ed)[:10]
-                        d = (datetime.strptime(es, '%Y-%m-%d') - datetime.now()).days
-                        det = scan_state['detail'].get(sym, {})
-                        items.append({'sym': sym, 'date': es, 'dte': d,
-                                      'score': det.get('score'), 'grade': det.get('grade'),
-                                      'verdict': det.get('verdict')})
-                except Exception:
-                    fails += 1
-                    if fails % 12 == 0:                # rafale d'échecs = throttle → on respire
-                        time.sleep(45)
-                time.sleep(0.12)
-                if i and i % 40 == 0:                 # publication INCRÉMENTALE (pas d'attente 5 min)
-                    _publish(items)
-            _publish(items)
-            time.sleep(3 * 3600)
-        else:
-            time.sleep(10)
+        # try/except ENGLOBANT : seule boucle qui n'en avait pas — une ligne malformée
+        # dans rows/items tuait le thread → calendrier figé à vie, sans bruit.
+        try:
+            if scan_state.get('rows'):
+                items, fails = [], 0
+                for i, sym in enumerate(targets):
+                    try:
+                        cal = yf.Ticker(sym).calendar
+                        ed = cal.get('Earnings Date') if isinstance(cal, dict) else None
+                        ed = ed[0] if isinstance(ed, (list, tuple)) and ed else ed
+                        fails = 0
+                        if ed is not None:
+                            es = str(ed)[:10]
+                            d = (datetime.strptime(es, '%Y-%m-%d') - datetime.now()).days
+                            det = scan_state['detail'].get(sym, {})
+                            items.append({'sym': sym, 'date': es, 'dte': d,
+                                          'score': det.get('score'), 'grade': det.get('grade'),
+                                          'verdict': det.get('verdict')})
+                    except Exception:
+                        fails += 1
+                        if fails % 12 == 0:            # rafale d'échecs = throttle → on respire
+                            time.sleep(45)
+                    time.sleep(0.12)
+                    if i and i % 40 == 0:             # publication INCRÉMENTALE (pas d'attente 5 min)
+                        _publish(items)
+                _publish(items)
+                time.sleep(3 * 3600)
+            else:
+                time.sleep(10)
+        except Exception:
+            time.sleep(30)
 
 
 # ─── FONDAMENTAUX : P/E par titre + médianes secteur (lent, rafraîchi /6h) ───
@@ -1455,9 +1491,10 @@ def options_pack(sym):
         out['sector_median_margin'] = _fsec.get('median_margin')
         out['sector_median_growth'] = _fsec.get('median_growth')
         out['valuation'] = fundamentals.valuation(_fs.get('pe') or out.get('pe'), _fsec.get('median_pe'))
-        # news (pourquoi ça bouge) + traduction FR live
+        # news (pourquoi ça bouge) + traduction FR live — assainies (XSS, rendu innerHTML client)
         out['news'] = options.news_for(tk)
         out['news'], out['news_why'] = ai.fr_news(sym, out['news'])
+        out['news'] = _news_plus.sanitize_news(out['news'])
         # HV-rank proxy (yfinance ne donne pas l'IV-rank historique)
         h = tk.history(period='1y')['Close']
         ret = np.log(h / h.shift(1)).dropna()
@@ -1564,7 +1601,10 @@ def scan_ep():
                    'scan_age': _scan_age(),
                    'idx_sets': {'dow': _DOW30, 'ndx': _NDX100, 'sp': _SP500_SET,
                                 'rut': _RUT_SET, 'eu': _EU_SET, 'asia': _ASIA_SET},
-                   'data_source': ('ibkr' if IBKR_ENABLED else (scan_state.get('source') or 'cloud'))})
+                   # source HONNÊTE des données du scan (yfinance/stooq/demo) — le badge
+                   # « LIVE IBKR » du header reste piloté par ibkr_enabled (overlay /quotes réel)
+                   'data_source': (scan_state.get('source')
+                                   or ('yfinance' if IBKR_ENABLED else 'cloud'))})
 
 
 @app.route('/api/rescan', methods=['POST', 'GET'])
@@ -6742,6 +6782,7 @@ function ring(v,size,col,unit){v=Math.round(v);col=col||scoreCol(v);var r=size*0
   return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'"><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="'+(size*.09)+'"/><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="'+(size*.09)+'" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 '+size/2+' '+size/2+')" style="filter:drop-shadow(0 0 4px '+col+'66)"/>'+(unit!==false?'<text x="'+size/2+'" y="'+(size/2+size*.11)+'" text-anchor="middle" font-size="'+(size*.32)+'" font-weight="850" fill="'+col+'" font-family="ui-monospace,monospace">'+v+'</text>':'')+'</svg>';}
 
 var SYM=(location.pathname.split('/').filter(function(x){return x;}).pop()||'NVDA').toUpperCase();
+if(!/^[A-Z.\-]{1,8}$/.test(SYM))SYM='NVDA';   // durcissement : ticker valide uniquement (comme le reste de l'app)
 (function _vxSI(){if(!window.VX){return setTimeout(_vxSI,40);}try{var a=document.getElementById('si-actions');if(a)a.innerHTML=window.VX.actionBar(SYM,{hideFiche:true});var c=document.getElementById('si-chips');if(c){c.setAttribute('data-vx-chips',SYM);c.innerHTML=window.VX.linkChips(SYM);}}catch(e){}})();
 function HS(s){var h=5381;for(var i=0;i<s.length;i++)h=((h*33)^s.charCodeAt(i))>>>0;return h;}
 function rnd(k){return (HS(SYM+'|'+k)%10000)/10000;}
@@ -6934,7 +6975,7 @@ function convCol(v){return v>=75?C.good:v>=60?C.warn:C.bad;}
 function renderOptions(){
   var sp=M.price,OH=['Contrat','Éch.','Prime','Δ','Γ','Θ','V','IV','IVR','POP','BE','EM','Kelly','R:R','Conv.'];
   function mk(dir){var rows=[];[[1.05,30,0.52],[1.09,60,0.48],[1.16,90,0.44]].forEach(function(b,i){var k=dir==='C'?b[0]:(2-b[0]);var strike=Math.round(sp*k),prem=(sp*0.045*(1+i*0.4)).toFixed(2),iv=(40+_h%20+i*2),pop=(48-i*4),be=dir==='C'?(strike*1+ +prem):(strike-prem),em=Math.round(sp*iv/100*Math.sqrt(b[1]/365)),conv=(dir==='C'?78:64)-i*5;
-    rows.push([(dir==='C'?'CALL $':'PUT $')+strike,b[1]+'j','$'+prem,(dir==='C'?'':'-')+b[2].toFixed(2),'0.0'+(3-i),'-0.1'+(8-i*3),'0.'+(22+i*5),iv+'%',(40-i*3),pop+'%','$'+Math.round(be),'±$'+em,(6-i)+'%',(2.1+i*0.3).toFixed(1),conv]);});return rows;}
+    rows.push([(dir==='C'?'CALL $':'PUT $')+strike,b[1]+'j','$'+prem,(dir==='C'?'':'-')+b[2].toFixed(2),'0.0'+(3-i),'-0.1'+(8-i*3),'0.'+(22+i*5),iv+'%',(40-i*3),pop+'%','$'+Math.round(be),'±'+Math.round(em/sp*100)+'%',(6-i)+'%',(2.1+i*0.3).toFixed(1),conv]);});return rows;}
   function tbl(id,rows,dir){var col=dir==='C'?C.good:C.bad;var h='<thead><tr>'+OH.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+r.map(function(v,i){if(i===0)return '<td>'+v+'</td>';if(i===OH.length-1)return '<td class="conv" style="color:'+convCol(+v)+'">'+v+'</td>';return '<td>'+v+'</td>';}).join('')+'</tr>';}).join('')+'</tbody>';seth(id,h);}
   // contrats RÉELS (IBKR/yfinance) si présents, sinon synthétique
   var ivr=(window.__pack&&window.__pack.ivrank!=null)?window.__pack.ivrank:'—';
@@ -7654,8 +7695,8 @@ _SUIVI_JS = r"""
 var ROWS={},DET={},MK={};
 function rGet(){try{return JSON.parse(localStorage.getItem('myRecos')||'[]')}catch(e){return[]}}
 function rSet(a){localStorage.setItem('myRecos',JSON.stringify(a));localStorage.setItem('deskTs',String(Date.now()));sSyncPush();}
-var _sT;function sSyncPush(){clearTimeout(_sT);_sT=setTimeout(function(){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){var data=(d&&d.data)||{};['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault'].forEach(function(k){var v=localStorage.getItem(k);if(v!=null)data[k]=v;});fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:Date.now(),data:data})});}).catch(function(){});}catch(e){}},900);}
-function sSyncPull(cb){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){if(d&&d.data){var lt=parseFloat(localStorage.getItem('deskTs')||'0');if((d.ts||0)>lt){['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault'].forEach(function(k){if(d.data[k]!=null)localStorage.setItem(k,d.data[k]);});localStorage.setItem('deskTs',String(d.ts||Date.now()));}}if(cb)cb();}).catch(function(){if(cb)cb();});}catch(e){if(cb)cb();}}
+var _sT;function sSyncPush(){clearTimeout(_sT);_sT=setTimeout(function(){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){var data=(d&&d.data)||{};['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts'].forEach(function(k){var v=localStorage.getItem(k);if(v!=null)data[k]=v;});fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:Date.now(),data:data})});}).catch(function(){});}catch(e){}},900);}
+function sSyncPull(cb){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){if(d&&d.data){var lt=parseFloat(localStorage.getItem('deskTs')||'0');if((d.ts||0)>lt){['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts'].forEach(function(k){if(d.data[k]!=null)localStorage.setItem(k,d.data[k]);});localStorage.setItem('deskTs',String(d.ts||Date.now()));}}if(cb)cb();}).catch(function(){if(cb)cb();});}catch(e){if(cb)cb();}}
 function today(){return new Date().toISOString().slice(0,10);}
 function bestReco(key){var rs=Object.keys(ROWS).map(function(k){return ROWS[k];});
   var buys=rs.filter(function(r){return r.verdict==='BUY'&&r[key]!=null;});
@@ -8860,7 +8901,7 @@ function sTable(a){
 
 _TRADES_JS = r"""
 /* ===== ☁️ SYNC DESK : mêmes trades/journal/favoris sur PC ET iPhone (stockés côté serveur) ===== */
-var __deskT=null,__DESK_KEYS=['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault'];
+var __deskT=null,__DESK_KEYS=['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts'];
 function deskCollect(){var d={};__DESK_KEYS.forEach(function(k){var v=localStorage.getItem(k);if(v!=null)d[k]=v;});return d;}
 function deskPush(){var body={ts:Date.now(),data:deskCollect()};localStorage.setItem('deskTs',String(body.ts));
   fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})

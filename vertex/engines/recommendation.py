@@ -116,7 +116,7 @@ def position_decision(pos, underlying=None):
                 'action': action, 'risk': risk, 'confidence': conf}
 
     # 1. Stop touché / perte lourde → discipline, on sort
-    if stop is not None and cur is not None and ((is_opt and cur <= stop) or (not is_opt and cur <= stop)):
+    if stop is not None and cur is not None and cur <= stop:
         return out('EXIT', 'Le cours a atteint ou franchi le stop du plan.',
                    'Sortir maintenant — le scénario est invalidé.', 'perte au stop', 78)
     if pl is not None and pl <= -25:
