@@ -19,7 +19,9 @@ def _client():
 def test_security_headers_on_every_response():
     r = _client().get('/healthz')
     assert r.headers['X-Content-Type-Options'] == 'nosniff'
-    assert r.headers['X-Frame-Options'] == 'DENY'
+    # SAMEORIGIN (pas DENY) : la Home embarque ses propres pages en iframe (?embed=1) —
+    # DENY les bloquait silencieusement ; le clickjacking externe reste interdit.
+    assert r.headers['X-Frame-Options'] == 'SAMEORIGIN'
     assert 'strict-origin' in r.headers['Referrer-Policy']
     assert 'camera=()' in r.headers['Permissions-Policy']
 

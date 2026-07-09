@@ -119,6 +119,7 @@ app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
                   SESSION_COOKIE_SECURE=bool(os.environ.get('RENDER') or os.environ.get('VERTEX_HTTPS')))
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024   # 2 Mo — le desk sync est un petit blob JSON
 app.register_blueprint(_auth.make_blueprint(code=VERTEX_CODE))
+# (headers de sécurité : _security_headers plus bas — source unique, avec HSTS)
 
 
 # scan_state : état partagé du scan — domicile unique dans vertex/app/state.py.
@@ -1663,7 +1664,9 @@ def api_rescan():
 def _security_headers(resp):
     """Production : en-têtes de sécurité sur toutes les réponses (analyse only, zéro iframe tierce entrante)."""
     resp.headers.setdefault('X-Content-Type-Options', 'nosniff')
-    resp.headers.setdefault('X-Frame-Options', 'DENY')
+    # SAMEORIGIN (pas DENY) : la Home embarque ses propres pages en iframe (?embed=1)
+    # — DENY les bloquait silencieusement. Le clickjacking externe reste interdit.
+    resp.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
     resp.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
     resp.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
     if request.is_secure or request.headers.get('X-Forwarded-Proto') == 'https':
@@ -10405,9 +10408,17 @@ def _start_workers():
 def _start_app():
     _start_workers()
     port = int(os.environ.get('PORT', 5002))          # le cloud (Render…) impose le port via $PORT
-    # host 0.0.0.0 = accessible réseau local (iPhone) ET cloud
+    # 🔒 EXPOSITION RÉSEAU INTELLIGENTE :
+    #   • verrou actif (VERTEX_CODE) ou VERTEX_LAN=1 ou cloud ($PORT) → 0.0.0.0 (iPhone/LAN ok)
+    #   • sinon → 127.0.0.1 SEULEMENT : sans code d'accès, le desk ne doit pas être
+    #     lisible par n'importe qui sur le Wi-Fi. (Pour l'iPhone sans code : VERTEX_LAN=1.)
+    lan_ok = AUTH_ON or os.environ.get('VERTEX_LAN') == '1' or 'PORT' in os.environ
+    host = '0.0.0.0' if lan_ok else '127.0.0.1'
     print(f'VERTEX -> http://localhost:{port}  ·  IBKR live: {IBKR_ENABLED}  (Ctrl+C pour arreter)')
-    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False, threaded=True)
+    print(('   acces reseau local: OUI (' + ('verrou VERTEX_CODE actif' if AUTH_ON else 'VERTEX_LAN=1 — SANS code !') + ')')
+          if lan_ok else
+          '   acces reseau local: NON (127.0.0.1 seul) — pour l\'iPhone : definis VERTEX_CODE dans .env (recommande) ou VERTEX_LAN=1')
+    app.run(host=host, port=port, debug=False, use_reloader=False, threaded=True)
 
 
 # démarre les threads dès l'import (pour gunicorn/cloud) si demandé, sinon en __main__

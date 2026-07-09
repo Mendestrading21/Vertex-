@@ -9,6 +9,31 @@ verrou d'accès) est centralisée et explicite ici.
 import os
 import secrets
 
+
+def _load_dotenv():
+    """Charge .env (racine du projet) dans os.environ — sans dépendance externe.
+    Les variables déjà présentes dans l'environnement GARDENT la priorité.
+    Rend le verrou d'accès activable en copiant .env.example → .env."""
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    path = os.path.join(root, '.env')
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                k, _, v = line.partition('=')
+                k, v = k.strip(), v.strip().strip('"').strip("'")
+                if k and k not in os.environ:
+                    os.environ[k] = v
+    except FileNotFoundError:
+        pass
+    except Exception:
+        pass
+
+
+_load_dotenv()
+
 # ─── SÛRETÉ : VERTEX est un terminal d'ANALYSE, en LECTURE SEULE. ───
 # Cette constante est structurelle et ne doit jamais passer à False.
 # Elle documente et affirme l'invariant produit : aucun ordre n'est jamais passé.
