@@ -6812,11 +6812,19 @@ function drawDonut(seg){
 
 // ═══════════ CHART (synthétique, ancré sur M.price) ═══════════
 function renderChart(){
-  var n=120,W=1000,H=380,padL=8,padR=64,padT=14,padB=64,seed=(_h%9973)+3,px=[],v=M.price*0.66||90;
-  for(var i=0;i<n;i++){seed=(seed*9301+49297)%233280;var rr=seed/233280;v=v*(1+(rr-0.46)*0.03+0.0016);px.push(v);}
-  var last=px[n-1];px=px.map(function(p){return p*M.price/last;});
+  var W=1000,H=380,padL=8,padR=64,padT=14,padB=64,i;
   function ma(p,w){return p.map(function(_,i){var s=0,c=0;for(var j=Math.max(0,i-w+1);j<=i;j++){s+=p[j];c++;}return s/c;});}
-  var m20=ma(px,20),m50=ma(px,50),m200=ma(px,90),vwap=px.map(function(p,i){return p*.4+m20[i]*.6;});
+  var S=window.__series,px,m20,m50,m200,vwap;
+  if(S&&S.close&&S.close.length>5){  // ── COURS RÉELS (historique du scan) ──
+    px=S.close.slice();
+    m20=(S.ema20&&S.ema20.length===px.length)?S.ema20.slice():ma(px,20);
+    m50=(S.sma50&&S.sma50.length===px.length)?S.sma50.slice():ma(px,50);
+    m200=ma(px,Math.min(90,px.length));vwap=px.map(function(p,k){return p*.4+m20[k]*.6;});
+  }else{  // secours synthétique si l'historique n'est pas encore chargé
+    var seed=(_h%9973)+3,v=M.price*0.66||90;px=[];for(var q=0;q<120;q++){seed=(seed*9301+49297)%233280;var rr=seed/233280;v=v*(1+(rr-0.46)*0.03+0.0016);px.push(v);}
+    var last=px[px.length-1];px=px.map(function(p){return p*M.price/last;});
+    m20=ma(px,20);m50=ma(px,50);m200=ma(px,90);vwap=px.map(function(p,k){return p*.4+m20[k]*.6;});}
+  var n=px.length;
   var P=window.__plan||{};
   var entry=P.entry||M.price,stop=P.stop||M.price*0.925,tp2=P.tp2||M.price*1.17,tp3=P.tp3||M.price*1.285;
   var tp1=P.tp2?(entry+(tp2-entry)/2):M.price*1.083,sup=P.stop?P.stop*0.96:M.price*0.868;
@@ -6839,7 +6847,7 @@ function renderChart(){
   // plan cells
   function pc(a){return (a/entry-1)*100;}function fp(x){return (x>=0?'+':'')+x.toFixed(1).replace('.',',')+'%';}
   var rr=(P.rr!=null)?(''+P.rr).replace('.',','):'2,4';
-  var PLAN=[['Entrée','$'+entry.toFixed(1),'zone',C.info],['Stop','$'+stop.toFixed(0),fp(pc(stop)),C.bad],['TP1','$'+tp1.toFixed(0),fp(pc(tp1)),C.good],['TP2','$'+tp2.toFixed(0),fp(pc(tp2)),C.good],['TP3','$'+tp3.toFixed(0),fp(pc(tp3)),C.good],['Probabilité','62%','de succès',C.ink],['Horizon','6–10 sem.','swing',C.ink],['Taille','5–8%','du book',C.ink],['Kelly','6%','fraction',C.ink],['Drawdown','-9%','attendu',C.warn],['R:R',rr,'risque/réc.',C.good],['Conviction',Math.round(M.score)+'%','élevée',scoreCol(M.score)]];
+  var PLAN=[['Entrée','$'+entry.toFixed(1),'zone',C.info],['Stop','$'+stop.toFixed(0),fp(pc(stop)),C.bad],['TP1','$'+tp1.toFixed(0),fp(pc(tp1)),C.good],['TP2','$'+tp2.toFixed(0),fp(pc(tp2)),C.good],['TP3','$'+tp3.toFixed(0),fp(pc(tp3)),C.good],['Setup',(P.setup_quality!=null?P.setup_quality+'/100':'—'),'qualité',C.ink],['ATR',(P.atr!=null?'$'+(+P.atr).toFixed(1):'—'),'volatilité',C.ink],['Stop dist.',(P.stop_dist_atr!=null?(+P.stop_dist_atr).toFixed(1)+' ATR':'—'),'risque',C.warn],['Taille','5–8%','du book',C.ink],['Horizon','swing','6–10 sem.',C.ink],['R:R',rr,'risque/réc.',C.good],['Conviction',Math.round(M.score)+'%','élevée',scoreCol(M.score)]];
   seth('plan',PLAN.map(function(p){return '<div class="pcell"><div class="pk">'+p[0]+'</div><div class="pv" style="color:'+p[3]+'">'+p[1]+'</div><div class="ps">'+p[2]+'</div></div>';}).join(''));
 }
 
@@ -6952,10 +6960,16 @@ function renderOptions(){
   h+='</div>';seth('heat',h);
 }
 function renderScenarios(){
-  var raw=[35+_h%15,38+HS(SYM+'b')%10,15+HS(SYM+'br')%10],tot=raw[0]+raw[1]+raw[2];
-  var pr=raw.map(function(x){return Math.round(x/tot*100);});pr[1]+=100-(pr[0]+pr[1]+pr[2]);
-  var SCN=[['Bull',pr[0],C.good,'+'+(12+_h%12)+'%','-8%','Cassure + guidance relevée','< support','4–8 sem.'],['Base',pr[1],C.warn,'+'+(4+_h%5)+'%','-5%','Range, momentum entretenu','< stop','en cours'],['Bear',pr[2],C.bad,'-'+(10+_h%8)+'%','-14%','Guidance coupée / RISK-OFF','> résistance','2–5 sem.']];
-  seth('scn',SCN.map(function(s){return '<div class="scard" style="--c:'+s[2]+'"><div class="stopbar"></div><div class="sh"><span class="stitle">'+s[0]+'</span><span class="sprob num" style="color:'+s[2]+'">'+s[1]+'%</span></div><div class="meter" style="margin-top:12px"><i style="width:'+s[1]+'%;background:'+s[2]+'"></i></div><div class="sgl"><div class="sg"><div class="sgk">Gain estimé</div><div class="sgv" style="color:'+C.good+'">'+s[3]+'</div></div><div class="sg"><div class="sgk">Perte estimée</div><div class="sgv" style="color:'+C.bad+'">'+s[4]+'</div></div></div><div class="srow"><b>Déclencheur</b><span>'+s[5]+'</span></div><div class="srow"><b>Invalidation</b><span>'+s[6]+'</span></div><div class="srow"><b>Horizon</b><span>'+s[7]+'</span></div></div>';}).join(''));
+  var pk=window.__pack||{},sc=pk.scenarios||{},spot=M.price;
+  function mv(px){return (spot&&px!=null)?((px/spot-1)*100):null;}
+  function f1(x){return (x>=0?'+':'')+x.toFixed(1)+'%';}
+  var rows=[['Haussier',sc.exalt,C.good],['Central',sc.prob,C.warn],['Baissier',sc.pess,C.bad]];
+  if(!rows.some(function(r){return r[1]&&r[1].px!=null;})){seth('scn','<div style="color:'+C.mut+';font-size:12px;padding:14px">Scénarios en cours de calcul (données réelles)…</div>');return;}
+  seth('scn',rows.map(function(r){var s=r[1]||{},m=mv(s.px),w=m!=null?Math.max(6,Math.min(100,Math.abs(m)*3)):6;
+    return '<div class="scard" style="--c:'+r[2]+'"><div class="stopbar"></div><div class="sh"><span class="stitle">'+r[0]+'</span><span class="sprob num" style="color:'+r[2]+'">'+(m!=null?f1(m):'—')+'</span></div>'
+     +'<div class="meter" style="margin-top:12px"><i style="width:'+w+'%;background:'+r[2]+'"></i></div>'
+     +'<div class="sgl"><div class="sg"><div class="sgk">Cible (titre)</div><div class="sgv">'+(s.px!=null?'$'+(+s.px).toFixed(0):'—')+'</div></div><div class="sg"><div class="sgk">P&L option</div><div class="sgv" style="color:'+(s.pnl>=0?C.good:C.bad)+'">'+(s.pnl!=null?(s.pnl>=0?'+':'')+s.pnl+'%':'—')+'</div></div></div>'
+     +'<div class="srow"><b>Mouvement requis</b><span>'+(m!=null?f1(m)+' vs cours':'—')+'</span></div><div class="srow"><b>Horizon</b><span>'+(sc.horizon!=null?sc.horizon+' j':'—')+'</span></div></div>';}).join(''));
 }
 function renderNews(){
   var pos=3+_h%6,neu=1+_h%4,neg=_h%3;
@@ -7044,7 +7058,7 @@ fetch('/healthz').then(function(r){return r.json();}).then(function(h){
 }).catch(function(){});
 function loadTicker(){return fetch('/api/ticker/'+SYM).then(function(r){return r.json();}).then(function(j){
   if(!j)return;var cp=j.company||{},d=j.detail||{},pk=j.pack||{};
-  window.__peers=cp.peers||[];window.__peersData=j.peers_data||[];window.__cofund=cp.fundamentals||{};window.__plan=d.plan||null;window.__contracts=pk.contracts||[];window.__pack=pk;
+  window.__peers=cp.peers||[];window.__peersData=j.peers_data||[];window.__cofund=cp.fundamentals||{};window.__plan=d.plan||null;window.__contracts=pk.contracts||[];window.__pack=pk;window.__series=d.series||null;
   // marché live (guardé — écrase le synthétique quand présent)
   if(d.price!=null){M.price=d.price;M.demo=false;}
   if(pk.spot!=null){M.price=pk.spot;M.demo=false;}
