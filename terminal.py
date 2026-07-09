@@ -9728,7 +9728,7 @@ function dkPriorityCard(p,DET,rank){
     +'<button class="vbtn" style="font-size:12px;padding:8px 12px" onclick="tEdit('+(t.id||0)+');setTimeout(dkRender,60)">✏️ Modifier</button>'
     +'<button class="vbtn" style="font-size:12px;padding:8px 12px" onclick="tLevels('+(t.id||0)+');setTimeout(dkRender,60)">🎯 Stop/Objectif</button>'
     +'<button class="vbtn dng" style="font-size:12px;padding:8px 12px" onclick="tDel('+(t.id||0)+');setTimeout(dkRender,60)">🗑</button>'
-    +'<a class="vbtn" style="font-size:12px;padding:8px 12px;text-decoration:none" href="/options?t='+t.sym+'">💎 Options</a>'
+    +'<button class="vbtn" style="font-size:12px;padding:8px 12px" onclick="if(window.VX){VX.optionsFor(\''+t.sym+'\',\''+t.type+'\')}else{location.href=\'/options?t='+t.sym+'\'}">💎 Options sur la position</button>'
     +'<button class="vbtn" style="font-size:12px;padding:8px 12px" onclick="if(window.VX)VX.addAlert(\''+t.sym+'\')">🔔 Alerte</button>'
     +'<a class="vbtn" style="font-size:12px;padding:8px 12px;text-decoration:none" href="/titre/'+t.sym+'">🏛️ Fiche →</a></div>';
   return '<div class="pos">'+head+cells+pb+comm+btns+'</div>';

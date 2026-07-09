@@ -152,4 +152,57 @@ def position_decision(pos, underlying=None):
                'Conserver et surveiller le prochain niveau.', None, 60)
 
 
-__all__ = ['DECISIONS', 'HELD', 'normalize', 'vocab_js', 'position_decision', 'TONE_CLS']
+def options_for_position(sym, board, held_type='STK'):
+    """
+    « Options disponibles sur cette position » (point 6).
+
+    Sélectionne, dans le board d'options, les meilleurs véhicules autour d'un
+    sous-jacent détenu : meilleur CALL, meilleur PUT, LEAPS, covered call (revenu)
+    et protective put (protection) — pour une position longue en actions.
+    Retourne {sym, held_type, suggestions:[{role, role_label, sym, type, strike,
+    exp, dte, premium, pop, score, grade, why}], note}.
+    """
+    sym = (sym or '').upper()
+    rows = [c for c in (board or []) if (c.get('sym') or '').upper() == sym]
+
+    def best(cands, key=lambda c: (c.get('quality') or 0)):
+        cands = [c for c in cands if c.get('quality') is not None]
+        return max(cands, key=key) if cands else None
+
+    calls = [c for c in rows if c.get('type') == 'CALL']
+    puts = [c for c in rows if c.get('type') == 'PUT']
+
+    def pack(role, label, c, why):
+        if not c:
+            return None
+        return {'role': role, 'role_label': label, 'sym': sym, 'type': c.get('type'),
+                'strike': c.get('strike'), 'exp': (c.get('exp') or '')[:10], 'dte': c.get('dte'),
+                'premium': c.get('mid'), 'pop': c.get('pop'), 'score': c.get('quality'),
+                'grade': c.get('grade'), 'delta': c.get('delta'), 'why': why}
+
+    sugg = []
+    sugg.append(pack('CALL', 'Meilleur CALL', best(calls),
+                     'Le contrat haussier le mieux noté du board sur ce titre.'))
+    sugg.append(pack('PUT', 'Meilleur PUT / hedge', best(puts),
+                     'Pari baissier ou couverture directionnelle sur le titre.'))
+    leaps = best([c for c in rows if (c.get('dte') or 0) >= 300])
+    sugg.append(pack('LEAPS', 'LEAPS (≥ 300 j)', leaps,
+                     'Exposition longue durée — le temps pèse peu, quasi-action.'))
+    if held_type == 'STK':
+        cc = best([c for c in calls if 0.15 <= (c.get('delta') or 0) <= 0.40
+                   and 20 <= (c.get('dte') or 0) <= 90])
+        sugg.append(pack('COVERED_CALL', 'Covered call (revenu)', cc,
+                         'Vendu contre tes actions : encaisse une prime, plafonne le gain.'))
+        pp = best([c for c in puts if -0.45 <= (c.get('delta') or 0) <= -0.12
+                   and 25 <= (c.get('dte') or 0) <= 180])
+        sugg.append(pack('PROTECTIVE_PUT', 'Protective put (protection)', pp,
+                         'Assurance sur ta position longue contre une chute du titre.'))
+
+    sugg = [s for s in sugg if s]
+    note = None if sugg else ('Aucun contrat chargé pour ' + sym
+                              + ' — le board d\'options se remplit au scan.')
+    return {'sym': sym, 'held_type': held_type, 'suggestions': sugg, 'note': note}
+
+
+__all__ = ['DECISIONS', 'HELD', 'normalize', 'vocab_js', 'position_decision',
+           'options_for_position', 'TONE_CLS']

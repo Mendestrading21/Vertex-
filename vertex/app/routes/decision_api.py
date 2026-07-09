@@ -126,6 +126,15 @@ def make_blueprint(*, scan_state, demo_mode):
                               'tone': (underlying or {}).get('decision_tone')} if underlying else None
         return jsonify(reco)
 
+    @bp.route('/api/options-for/<sym>')
+    def options_for_ep(sym):
+        """« Options disponibles sur cette position » — meilleurs CALL/PUT/LEAPS/
+        covered call/protective put pour un sous-jacent. Analyse uniquement."""
+        held = (request.args.get('type') or 'STK').upper()
+        held = 'STK' if held == 'STK' else 'OPT'
+        return jsonify(_reco.options_for_position(
+            sym.upper(), scan_state.get('options_board') or [], held_type=held))
+
     @bp.route('/api/brief')
     def brief_ep():
         """🌅 MORNING BRIEF — le comité passe en revue les meilleurs setups du jour (Ch. XIX)."""

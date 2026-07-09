@@ -37,6 +37,11 @@ CSS = r"""
 .vx-chip.al{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.34);color:#fca5a5}
 .vx-dash{color:#5c6577}
 .vx-verdict{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font:800 11px/1.2 ui-sans-serif,system-ui,sans-serif;letter-spacing:.3px}
+.vx-ofrow{padding:13px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.vx-ofrow:last-child{border-bottom:0}
+.vx-ofh{display:flex;justify-content:space-between;align-items:baseline;font:700 13px/1.2 ui-sans-serif,system-ui,sans-serif;color:#eef2f8}
+.vx-ofm{font:600 12px/1.4 ui-monospace,Menlo,monospace;color:#c9d2e0;margin-top:5px}
+.vx-ofw{font:400 12px/1.5 ui-sans-serif,system-ui,sans-serif;color:#8794ab;margin-top:4px}
 .vx-crumb{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:2px 0 14px}
 .vx-back{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 13px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.045);color:#cbd4e2;font:600 12.5px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;transition:background .13s,border-color .13s}
 .vx-back:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.26)}
@@ -127,6 +132,19 @@ function field(label,name,v,type,ro){return '<label class="vx-field"><span>'+lab
 function selField(label,name,opts,sel){var o=opts.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===sel?' selected':'')+'>'+x[1]+'</option>';}).join('');return '<label class="vx-field"><span>'+label+'</span><select name="'+name+'">'+o+'</select></label>';}
 
 /* ---------- journal d'evenements (myTradeLog) ---------- */
+function optionsFor(s,ht){s=up(s);
+ modal({title:'💎 Options sur cette position — '+s,ok:'Ouvrir Options Lab',body:'<div id="vx-of" class="vx-hint">Analyse du board d\'options…</div>',onOk:function(){goOptions(s);return true;}});
+ fetch('/api/options-for/'+encodeURIComponent(s)+(ht&&ht!=='STK'?'?type=OPT':'')).then(function(r){return r.json();}).then(function(d){
+  var host=document.getElementById('vx-of');if(!host)return;
+  if(!d||!d.suggestions||!d.suggestions.length){host.innerHTML=(d&&d.note)||'Aucun contrat disponible pour '+s+'.';return;}
+  var TCOL={CALL:'#22c55e',PUT:'#ef4444'};
+  host.className='';host.innerHTML=d.suggestions.map(function(x){var col=TCOL[x.type]||'#8794ab';var sc=_n(x.score);
+   return '<div class="vx-ofrow"><div class="vx-ofh"><b>'+x.role_label+'</b><span style="font-weight:800;color:'+(sc>=60?'#22c55e':sc>=45?'#f5b45b':'#ef4444')+'">'+fmtNum(x.score)+'/100 · '+(x.grade||'—')+'</span></div>'
+    +'<div class="vx-ofm"><span style="color:'+col+';font-weight:800">'+(x.type||'')+'</span> '+fmtNum(x.strike,2)+' · '+(x.exp||'—')+(x.dte!=null?' · '+x.dte+'j':'')+' · prime '+fmtPrice(x.premium)+' · POP '+fmtNum(x.pop)+'%</div>'
+    +'<div class="vx-ofw">'+(x.why||'')+'</div>'
+    +'<button class="vx-btn" style="margin-top:8px;height:30px;font-size:11.5px" onclick="VX.goOptions(\''+s+'\')">Analyser dans Options Lab →</button></div>';}).join('');
+ }).catch(function(){var h=document.getElementById('vx-of');if(h)h.innerHTML='Erreur de chargement du board.';});}
+
 function logEvent(sym,ev,txt,tid){try{if(typeof window.tlAdd==='function'){window.tlAdd(sym,ev,txt,tid);return;}var a=jget('myTradeLog',[]);a.unshift({ts:Date.now(),d:new Date().toISOString().slice(0,10),sym:up(sym),ev:ev,txt:txt,tid:tid});jset('myTradeLog',a.slice(0,400));}catch(e){}}
 
 /* ---------- actions ---------- */
@@ -239,7 +257,7 @@ window.VX={fmtNum:fmtNum,fmtPrice:fmtPrice,fmtPct:fmtPct,fmtMoney:fmtMoney,fmtCa
  positions:positions,follows:follows,favs:favs,alerts:alerts,hasPosition:hasPosition,isFollowed:isFollowed,inWatch:inWatch,hasAlert:hasAlert,posFor:posFor,alertsFor:alertsFor,
  goStock:goStock,goOptions:goOptions,goJournal:goJournal,goDesk:goDesk,
  toast:toast,modal:modal,closeModal:closeModal,
- watch:watch,follow:follow,addPosition:addPosition,addAlert:addAlert,logEvent:logEvent,
+ watch:watch,follow:follow,addPosition:addPosition,addAlert:addAlert,optionsFor:optionsFor,logEvent:logEvent,
  actionBar:actionBar,miniBar:miniBar,linkChips:linkChips,breadcrumb:breadcrumb,goBack:goBack,
  verdict:verdict,verdictColor:verdictColor,verdictBadge:verdictBadge,refresh:refresh,init:initAuto};
 })();
