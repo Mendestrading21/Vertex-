@@ -36,6 +36,7 @@ CSS = r"""
 .vx-chip.wl{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.34);color:#7dd3fc}
 .vx-chip.al{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.34);color:#fca5a5}
 .vx-dash{color:#5c6577}
+.vx-verdict{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font:800 11px/1.2 ui-sans-serif,system-ui,sans-serif;letter-spacing:.3px}
 .vx-crumb{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:2px 0 14px}
 .vx-back{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 13px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.045);color:#cbd4e2;font:600 12.5px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;transition:background .13s,border-color .13s}
 .vx-back:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.26)}
@@ -211,6 +212,12 @@ function linkChips(s){s=up(s);var c=[];
 function refresh(){var bars=document.querySelectorAll('.vx-abar[data-vx-sym]');for(var i=0;i<bars.length;i++){var el=bars[i];var s=el.getAttribute('data-vx-sym');el.outerHTML=actionBar(s,{hideFiche:el.getAttribute('data-hidefiche')==='1',hideJournal:el.getAttribute('data-hidejournal')==='1'});}
  var chips=document.querySelectorAll('[data-vx-chips]');for(var k=0;k<chips.length;k++){chips[k].innerHTML=linkChips(chips[k].getAttribute('data-vx-chips'));}}
 
+/* ---------- verdict normalise (vocabulaire unique, source = recommendation.py) ---------- */
+function verdict(raw){var V=window.__VXVOCAB||{};if(raw==null||raw==='')return {label:'—',tone:'gray',cls:'p-mut'};var m=V[String(raw).trim().toUpperCase()];return m||{label:String(raw),tone:'gray',cls:'p-mut'};}
+var TONECOL={'strong-green':'#16d17a','green':'#22c55e','blue':'#38bdf8','amber':'#f5b45b','red':'#ef4444','gray':'#8794ab'};
+function verdictColor(raw){return TONECOL[verdict(raw).tone]||'#8794ab';}
+function verdictBadge(raw){var v=verdict(raw);return '<span class="vx-verdict" style="color:'+(TONECOL[v.tone]||'#8794ab')+';background:'+(TONECOL[v.tone]||'#8794ab')+'22">'+v.label+'</span>';}
+
 /* ---------- fil d'ariane + retour intelligent (point 17) ---------- */
 var CRUMB={'':'Accueil','titre':'Stock Info','company':'Stock Info','stocks':'Stock Info','options':'Options Lab','strategie':'Trading Desk','journal':'Trade Journal','suivi':'Suivi','sectors':'Market Rotation','catalysts':'Market Calendar','anomalies':'Market Signals','vault':'Archive Vault','settings':'Reglages','compare':'Comparateur'};
 function goBack(){if(history.length>1&&document.referrer&&document.referrer.indexOf(location.host)>=0){history.back();}else{location.href='/';}}
@@ -233,6 +240,7 @@ window.VX={fmtNum:fmtNum,fmtPrice:fmtPrice,fmtPct:fmtPct,fmtMoney:fmtMoney,fmtCa
  goStock:goStock,goOptions:goOptions,goJournal:goJournal,goDesk:goDesk,
  toast:toast,modal:modal,closeModal:closeModal,
  watch:watch,follow:follow,addPosition:addPosition,addAlert:addAlert,logEvent:logEvent,
- actionBar:actionBar,miniBar:miniBar,linkChips:linkChips,breadcrumb:breadcrumb,goBack:goBack,refresh:refresh,init:initAuto};
+ actionBar:actionBar,miniBar:miniBar,linkChips:linkChips,breadcrumb:breadcrumb,goBack:goBack,
+ verdict:verdict,verdictColor:verdictColor,verdictBadge:verdictBadge,refresh:refresh,init:initAuto};
 })();
 """

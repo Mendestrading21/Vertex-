@@ -13,11 +13,12 @@ Analyse uniquement. Aucune exécution — ces routes lisent, ne commandent rien.
 
 import time
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from vertex.engines import decision_stack as _decision
 from vertex.engines import context as _context
 from vertex.engines import market_lens as _market_lens
+from vertex.engines import recommendation as _reco
 
 
 def make_blueprint(*, scan_state, demo_mode):
@@ -92,6 +93,38 @@ def make_blueprint(*, scan_state, demo_mode):
             market=scan_state.get('market_ctx') or {}, sectors=scan_state.get('sectors') or [],
             sector_name=detail.get('sector'), stock_pct=sc)
         return jsonify(res)
+
+    @bp.route('/api/position-decision/<sym>')
+    def position_decision_ep(sym):
+        """Décision de GESTION d'une position détenue — source unique (remplace les
+        conseillers JS divergents). Params : type,entry,stop,tp,current,pl_pct,dte.
+        Analyse uniquement."""
+        sym = sym.upper()
+        detail = dict((scan_state.get('detail') or {}).get(sym) or {})
+        detail.setdefault('symbol', sym)
+        try:
+            underlying = _decision.evaluate(detail, symbol=sym, market=_market_ctx(),
+                                            option=_best_option_for(sym), scan_age_s=_scan_age(),
+                                            demo=demo_mode, context=_ctx_for(sym))
+        except Exception:
+            underlying = None
+
+        def _f(name):
+            v = request.args.get(name)
+            try:
+                return float(v) if v not in (None, '') else None
+            except ValueError:
+                return None
+
+        pos = {'type': (request.args.get('type') or 'STK').upper(),
+               'entry': _f('entry'), 'stop': _f('stop'), 'tp': _f('tp'),
+               'current': _f('current'), 'pl_pct': _f('pl_pct'), 'dte': _f('dte')}
+        reco = _reco.position_decision(pos, underlying)
+        reco['symbol'] = sym
+        reco['underlying'] = {'decision': (underlying or {}).get('final_decision'),
+                              'label': (underlying or {}).get('decision_label'),
+                              'tone': (underlying or {}).get('decision_tone')} if underlying else None
+        return jsonify(reco)
 
     @bp.route('/api/brief')
     def brief_ep():
