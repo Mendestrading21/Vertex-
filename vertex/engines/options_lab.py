@@ -653,7 +653,7 @@ def _comparator(star, pick, detail):
     add('Bear Put Spread (6 mois)', bps, bps, spot * 10 - bps, 100 - min(90, (star.get('pop') or 40) + 18),
         spot - bps / 100, 'baissier à risque défini')
     # verdict
-    trending = (d.get('trend') or '').upper() in ('UP', 'HAUSSE', 'TREND') or (d.get('score') or 0) >= 60
+    trending = str(d.get('trend') or '').upper() in ('UP', 'HAUSSE', 'TREND') or (d.get('score') or 0) >= 60
     iv_rich = iv * 100 >= 45
     if trending and not iv_rich:
         v = 'CALL 6 mois : tendance amie + prime raisonnable, la convexité sèche est le meilleur rapport gain/complexité.'

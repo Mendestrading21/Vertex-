@@ -52,6 +52,7 @@ from vertex.ui import home_art as _home_art
 from vertex.ui import signals as _sg_ui
 from vertex.ui import vault as _av_ui
 from vertex.ui import sync_center as _sync_ui
+from vertex.ui import vx_kit as _vx
 from vertex.engines import indicators as _indicators
 from vertex.engines import analysis as _analysis
 from vertex.engines import backtest as _backtest
@@ -2555,7 +2556,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   var rows=(d.rows||[]).filter(function(r){return r.score!=null&&r.verdict!=='AVOID';}).sort(function(a,b){return (b.score||0)-(a.score||0);}).slice(0,3);
   if(!rows.length)return '';
   return stitle('🎯 Top 3 setups','classes par score IA')+'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">'+rows.map(miniCard).join('')+'</div>'
-   +'<div style="margin-top:12px"><a href="/entreprises" style="font-size:12px;font-weight:700;color:'+C.o+';text-decoration:none">Voir tous les setups →</a></div>';
+   +'<div style="margin-top:12px"><a href="/stocks" style="font-size:12px;font-weight:700;color:'+C.o+';text-decoration:none">Voir tous les setups →</a></div>';
  }
 
  function recos(d){
@@ -2587,7 +2588,7 @@ function bcls(v){return v==='BUY'?'b-achat':(v==='WATCH'||v==='WAIT')?'b-surv':'
 function vfr(v){return {BUY:'ACHAT',WATCH:'SURVEILLER',WAIT:'ATTENTE',AVOID:'ÉVITER'}[v]||v}
 function rv(v){v=v||0;const c=v>=1.5?'hot':v>=1.0?'warm':'cold';return `<span class="rvol ${c}">${v.toFixed(2)}×</span>`}
 function chg(c){c=c||0;return `<span class="${c>=0?'up':'dn'}">${c>=0?'+':''}${c}%</span>`}
-function go(s){location.href='/analyse?sym='+s}
+function go(s){location.href='/titre/'+s}
 function er(n,t){return `<tr><td colspan="${n}" class="muted" style="text-align:center;padding:16px">${t}</td></tr>`}
 let __spkN=0;
 function spark(arr,w=82,h=22,days=24){
@@ -3584,7 +3585,7 @@ function bcls(v){return v==='BUY'?'b-achat':(v==='WATCH'||v==='WAIT')?'b-surv':'
 function vfr(v){return {BUY:'ACHAT',WATCH:'SURVEILLER',WAIT:'ATTENTE',AVOID:'ÉVITER'}[v]||v}
 function eud(s){if(!s)return s;const m=String(s).slice(0,10).match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);return m?m[3]+'/'+m[2]+'/'+m[1]:s}
 function dcol(d){return d==='Faible'?'#FF7A18':d==='Modéré'?'#FFB23F':d==='Élevé'?'#d98a52':'#EF4444'}
-function go(s){location.href='/analyse?sym='+s}
+function go(s){location.href='/titre/'+s}
 """
 
 
@@ -4099,7 +4100,7 @@ async function load(){
     ['✅ Verdicts','<b style="color:'+C.g+'">Achat</b> = signal favorable · <b style="color:'+C.blue+'">Surveiller</b> = attendre confirmation · <b style="color:'+C.r+'">Éviter</b> = pas maintenant.'],
   ].map(g=>`<div style="flex:1 1 30%;min-width:235px;background:#0c0c0c;border:1px solid #161616;border-radius:12px;padding:10px 12px"><div style="font-size:12px;font-weight:800;color:#C9D2E0;margin-bottom:4px">${g[0]}</div><div class="muted" style="font-size:11px;line-height:1.55">${g[1]}</div></div>`).join('');
   out.push(`<div class="panel span2" style="border-color:#A78BFA33"><div class="ph" style="background:linear-gradient(90deg,#A78BFA24,transparent 72%)"><span class="pn" style="background:#A78BFA">?</span><span style="color:#fff;text-shadow:0 1px 2px #000">GUIDE · COMPRENDRE LES INDICATEURS</span></div><div style="display:flex;flex-wrap:wrap;gap:10px;padding:14px">${gloss}</div><div class="src">Repère pédagogique — analyse éducative, jamais un conseil financier. Aucun ordre passé — lecture seule.</div></div>`);
-  document.getElementById('grid').innerHTML=out.join('');
+  var _g=document.getElementById('grid');_g.innerHTML=out.join('');if(!_g.__vxw){_g.__vxw=1;_g.addEventListener('click',function(e){if(e.target.closest('button,a,input,select'))return;var el=e.target.closest('[data-sym]');var s=el&&el.getAttribute('data-sym');if(!s){var tr=e.target.closest('tr');var sy=tr&&tr.querySelector('.sym');s=sy&&sy.textContent;}if(s){s=s.trim().toUpperCase();if(/^[A-Z.\-]{1,8}$/.test(s)&&window.VX)VX.goStock(s);}});}
 }
 load();setInterval(load,20000);
 </script></body></html>"""
@@ -6198,6 +6199,26 @@ _NAVJS_BLOCK += (";(function(){var _f=window.fetch;window.fetch=function(){retur
                  ".then(function(r){if(r&&r.status===401&&location.pathname!=='/login'){"
                  "location.href='/login?next='+encodeURIComponent(location.pathname);}return r;});};})();")
 
+# ─── VERTEX CONNECT KIT : tissu connectif (window.VX) sur TOUTES les pages ───
+# Deux canaux : (1) les pages _vpage héritent via _NAVCSS/_NAVJS_BLOCK ;
+#               (2) les 5 pages « legacy » (brutes) reçoivent le kit par injection directe.
+_NAVCSS_BLOCK += '<style id="vx-kit-css">' + _vx.CSS + '</style>'
+_NAVJS_BLOCK += ';' + _vx.JS
+
+
+def _inject_vx(page):
+    if 'id="vx-kit-css"' in page:
+        return page
+    if '</head>' in page:
+        page = page.replace('</head>', '<style id="vx-kit-css">' + _vx.CSS + '</style></head>', 1)
+    if '</body>' in page:
+        page = page.replace('</body>', '<script id="vx-kit-js">' + _vx.JS + '</script></body>', 1)
+    return page
+
+
+for _pg in ('PAGE_DAILY', 'PAGE_WATCHLIST', 'PAGE_OPTIONS_DESK', 'PAGE_ME', 'PAGE_ENTREPRISES'):
+    globals()[_pg] = _inject_vx(globals()[_pg])
+
 # ── extraits pour la page Bordel : scatter Qualité×Asymétrie déplacé hors du dashboard (DRY) ──
 _VXSCATTER_JS = _extract(PAGE_DAILY, 'function vxScatter(pts){', 'Score Vertex</text>${g}${dots}</svg>`;}')
 _SCATTER_HELP_JS = _extract(PAGE_DAILY, "window.__scFilter=window.__scFilter||'buy';", 'if(sc)sc.innerHTML=scatterHTML();};')
@@ -6587,6 +6608,8 @@ _SI_BODY = (
   '<span class="demo-chip" id="cb-src" style="display:none">🎭 DÉMO</span>'
   '<span class="px num" id="cb-px">—</span><span class="chg num" id="cb-chg">—</span>'
   '<span class="sc">SCORE VERTEX <span class="scv num" id="cb-score">—</span></span></div>'
+  # ── barre d'actions contextuelle (tissu connectif Vertex) ──
+  '<div id="si-actions"></div><div id="si-chips"></div>'
   # ── I HERO ──
   '<section class="hero" id="visu"><div class="hero-top"><div>'
   '<div class="name mono" id="h-name">—</div><div class="co" id="h-co">—</div></div>'
@@ -6708,6 +6731,7 @@ function ring(v,size,col,unit){v=Math.round(v);col=col||scoreCol(v);var r=size*0
   return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'"><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="'+(size*.09)+'"/><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="'+(size*.09)+'" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 '+size/2+' '+size/2+')" style="filter:drop-shadow(0 0 4px '+col+'66)"/>'+(unit!==false?'<text x="'+size/2+'" y="'+(size/2+size*.11)+'" text-anchor="middle" font-size="'+(size*.32)+'" font-weight="850" fill="'+col+'" font-family="ui-monospace,monospace">'+v+'</text>':'')+'</svg>';}
 
 var SYM=(location.pathname.split('/').filter(function(x){return x;}).pop()||'NVDA').toUpperCase();
+(function _vxSI(){if(!window.VX){return setTimeout(_vxSI,40);}try{var a=document.getElementById('si-actions');if(a)a.innerHTML=window.VX.actionBar(SYM,{hideFiche:true});var c=document.getElementById('si-chips');if(c){c.setAttribute('data-vx-chips',SYM);c.innerHTML=window.VX.linkChips(SYM);}}catch(e){}})();
 function HS(s){var h=5381;for(var i=0;i<s.length;i++)h=((h*33)^s.charCodeAt(i))>>>0;return h;}
 function rnd(k){return (HS(SYM+'|'+k)%10000)/10000;}
 var _h=HS(SYM);
@@ -9458,7 +9482,7 @@ _DESK_COCKPIT = (
     '<button class="act2 pri" onclick="dkToggle(\'dkAddForm\',null,true)">➕ Nouvelle position</button>'
     '<button class="act2" onclick="dkImportIBKR(this)">🔌 Importer TWS (réel)</button>'
     '<button class="act2" onclick="document.getElementById(\'dkImp\').click()">📥 Importer (fichier)</button>'
-    '<a href="/entreprises" class="act2">🔍 Scanner opportunités</a>'
+    '<a href="/stocks" class="act2">🔍 Scanner opportunités</a>'
     '<a href="/journal" class="act2">📖 Ouvrir journal</a>'
     '</div>'
     '<input id="dkImp" type="file" accept="application/json" style="display:none" onchange="if(typeof tImport===\'function\')tImport(this);setTimeout(dkRender,120)">'
@@ -9667,7 +9691,7 @@ function dkFeed(){
 }
 function dkEmpty(){
   return '<div class="empty"><div style="font-size:40px;margin-bottom:8px">🎯</div><div class="eh">Ton desk est prêt</div><div class="es">Ajoute ta première position pour transformer le desk en cockpit : plan visuel, comité Vertex, alertes et priorités calculés automatiquement.</div>'
-   +'<div class="acts" style="max-width:540px;margin:0 auto"><button class="act2 pri" onclick="dkToggle(\'dkAddForm\',null,true)">➕ Ajouter une position</button><a class="act2" href="/entreprises">🔍 Scanner des opportunités</a><button class="act2" onclick="document.getElementById(\'dkImp\').click()">📥 Importer</button></div></div>';
+   +'<div class="acts" style="max-width:540px;margin:0 auto"><button class="act2 pri" onclick="dkToggle(\'dkAddForm\',null,true)">➕ Ajouter une position</button><a class="act2" href="/stocks">🔍 Scanner des opportunités</a><button class="act2" onclick="document.getElementById(\'dkImp\').click()">📥 Importer</button></div></div>';
 }
 function dkChartEmptyHTML(sym){
   return '<div class="chart-empty"><div style="font-size:32px;opacity:.5">📊</div><div class="ce-h">Graphique indisponible</div><div class="ce-s">TradingView n\'a pas pu se charger (hors ligne / proxy).</div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><button class="act2" style="padding:9px 14px" onclick="window.__dkTV=null;dkRender()">🔄 Reconnecter</button><a class="act2" style="padding:9px 14px" href="/titre/'+sym+'">📈 Voir les niveaux du plan</a></div></div>';
