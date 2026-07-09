@@ -7,8 +7,9 @@ worker). Lit l'état partagé ; aucune donnée sensible ; jamais d'ordre.
 """
 
 import time
+from collections import deque
 
-from flask import Blueprint, jsonify, Response
+from flask import Blueprint, jsonify, Response, request
 
 from elio import ai
 from vertex.app.config import IBKR_ENABLED, DEMO_MODE
@@ -40,6 +41,31 @@ def healthz():
         'engines': ['scoring', 'pivots', 'committee', 'strategy', 'portfolio_risk',
                     'vertex', 'vertex_ml', 'validator'],
     }), 200
+
+
+# ─── TÉLÉMÉTRIE D'ERREURS CLIENT (objectif 0-erreur : observer pour corriger) ───
+# Les erreurs JS des navigateurs remontent ici (window.onerror du vx_kit).
+# Borné (100 max, payloads tronqués) — aucune donnée sensible, lecture locale.
+_CLIENT_ERRORS = deque(maxlen=100)
+
+
+@bp.route('/api/client-log', methods=['POST'])
+def client_log_post():
+    b = request.get_json(force=True, silent=True) or {}
+    _CLIENT_ERRORS.append({
+        'ts': round(time.time()),
+        'page': str(b.get('page') or '')[:120],
+        'msg': str(b.get('msg') or '')[:300],
+        'src': str(b.get('src') or '')[:160],
+        'line': b.get('line') if isinstance(b.get('line'), int) else None,
+    })
+    return jsonify({'ok': True})
+
+
+@bp.route('/api/client-log')
+def client_log_get():
+    """Journal des erreurs JS remontées par les navigateurs — diagnostic 0-erreur."""
+    return jsonify({'count': len(_CLIENT_ERRORS), 'errors': list(_CLIENT_ERRORS)})
 
 
 @bp.route('/api/system-status')

@@ -284,6 +284,13 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal()
 /* hydrate depuis le serveur au demarrage, puis re-synchronise toutes les 2 min sur toute page */
 bootSync();setInterval(function(){if(!document.hidden)bootSync();},120000);
 
+/* ---------- telemetrie 0-erreur : toute erreur JS remonte au serveur (bornee) ---------- */
+var _errN=0;
+function _report(msg,src,line){if(_errN>=8)return;_errN++;
+ try{fetch('/api/client-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({page:location.pathname,msg:String(msg||'').slice(0,300),src:String(src||'').slice(0,160),line:line|0})}).catch(function(){});}catch(e){}}
+window.addEventListener('error',function(e){_report(e.message,e.filename,e.lineno);});
+window.addEventListener('unhandledrejection',function(e){var r=e&&e.reason;_report('unhandledrejection: '+(r&&r.message?r.message:String(r)).slice(0,260),'',0);});
+
 window.VX={fmtNum:fmtNum,fmtPrice:fmtPrice,fmtPct:fmtPct,fmtMoney:fmtMoney,fmtCap:fmtCap,fmtDate:fmtDate,DASH:DASH,
  positions:positions,follows:follows,favs:favs,alerts:alerts,hasPosition:hasPosition,isFollowed:isFollowed,inWatch:inWatch,hasAlert:hasAlert,posFor:posFor,alertsFor:alertsFor,
  goStock:goStock,goOptions:goOptions,goJournal:goJournal,goDesk:goDesk,

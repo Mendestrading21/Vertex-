@@ -137,6 +137,45 @@ _recompute_sectors = _stats.sector_medians
 
 
 _FUND_CACHE = _load_json('fund_cache.json', {})     # {sym: {...fondamentaux...}} — accumulé
+
+
+def _seed_fund_from_company():
+    """Complète les TROUS du cache fondamentaux avec le profil entreprise RÉEL
+    (company_cache : pe/forward_pe/marge/croissance/ROE, couverture ~518 titres).
+    Le job IBKR (tick 258) et yfinance restent prioritaires : on ne remplit QUE
+    les champs None — jamais d'écrasement d'une valeur fraîche. Sans ce seeding,
+    le cache restait creux (titres présents mais tout-null, donc jamais re-tentés)
+    → valorisation/médianes/P&L sectoriels privés de données réelles."""
+    try:
+        prof = _company._load()
+    except Exception:
+        return 0
+    n = 0
+    for sym, cp in (prof or {}).items():
+        if not isinstance(cp, dict):
+            continue
+        cur = _FUND_CACHE.get(sym) or {'sector': _GICS_SECTOR.get(sym),
+                                       'industry': None, 'name': cp.get('name')}
+        div = cp.get('dividend')
+        m = {'pe': cp.get('pe'), 'fwd_pe': cp.get('forward_pe'), 'peg': cp.get('peg'),
+             'margin': cp.get('margin'), 'growth': cp.get('rev_growth'),
+             'mcap': cp.get('mcap'), 'roe': cp.get('roe'),
+             'div': (div / 100.0) if isinstance(div, (int, float)) else None}
+        changed = False
+        for k, v in m.items():
+            if v is not None and cur.get(k) is None:
+                cur[k] = v
+                changed = True
+        if changed:
+            cur.setdefault('sector', _GICS_SECTOR.get(sym))
+            _FUND_CACHE[sym] = cur
+            n += 1
+    if n:
+        _save_json('fund_cache.json', _FUND_CACHE)
+    return n
+
+
+_seed_fund_from_company()                            # données réelles dès le boot
 _OPT_CACHE = _load_json('options_cache.json', {})   # {'board':[...], 'ts':...}
 if _FUND_CACHE:                                      # publie le cache dès le démarrage → zéro attente
     scan_state['fundamentals'] = {'by_sym': _FUND_CACHE, 'by_sector': _recompute_sectors(_FUND_CACHE)}
