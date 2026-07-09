@@ -9483,11 +9483,13 @@ _STRAT_PAGE_CSS = (
   ".dk2 .cell .l{font-size:8.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--mut);white-space:nowrap}"
   ".dk2 .cell .v{font-size:14px;font-weight:800;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}"
   # plan bar
-  ".dk2 .plan{margin:4px 0 14px}"
-  ".dk2 .plan .track{position:relative;height:6px;border-radius:5px;background:linear-gradient(90deg,rgba(239,68,68,.55),rgba(245,180,91,.5) 50%,rgba(34,197,94,.55));margin:26px 0 24px}"
-  ".dk2 .plan .mk{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;border:2px solid #101216;box-shadow:0 0 0 1px rgba(255,255,255,.15)}"
-  ".dk2 .plan .lab{position:absolute;transform:translateX(-50%);font-size:8.5px;font-weight:800;letter-spacing:.3px;white-space:nowrap;text-transform:uppercase}"
-  ".dk2 .plan .val{position:absolute;transform:translateX(-50%);font-size:10px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}"
+  ".dk2 .plan{margin:6px 0 16px;padding:0 10px}"
+  ".dk2 .plan .track{position:relative;height:8px;border-radius:6px;background:linear-gradient(90deg,rgba(239,68,68,.5),rgba(245,180,91,.42) 50%,rgba(34,197,94,.5));margin:38px 0 42px}"
+  ".dk2 .plan .fillbar{position:absolute;left:0;top:0;height:100%;border-radius:6px;background:linear-gradient(90deg,rgba(56,189,248,.18),rgba(56,189,248,.4));pointer-events:none}"
+  ".dk2 .plan .mk{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;border:2px solid #101216;box-shadow:0 0 0 1px rgba(255,255,255,.2);z-index:2}"
+  ".dk2 .plan .lab{position:absolute;font-size:9px;font-weight:800;letter-spacing:.4px;white-space:nowrap;text-transform:uppercase;z-index:3}"
+  ".dk2 .plan .val{position:absolute;font-size:12px;font-weight:850;white-space:nowrap;font-variant-numeric:tabular-nums;z-index:3;text-shadow:0 1px 4px rgba(0,0,0,.8)}"
+  ".dk2 .plan .val .rel{font-size:9.5px;font-weight:700;opacity:.75}"
   # committee
   ".dk2 .comm{background:var(--card2);border:1px solid var(--ln);border-radius:14px;padding:14px 15px;margin-top:12px}"
   ".dk2 .comm .cv{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}"
@@ -9730,16 +9732,28 @@ function dkVal(v){return (typeof v==='number')?('$'+(Math.abs(v)>=100?v.toFixed(
 function dkPlanBar(stop,entry,cur,tp,curLbl){
   if(stop==null||tp==null||tp<=stop)return '';
   function P(v){return v==null?null:Math.max(0,Math.min(100,(v-stop)/(tp-stop)*100));}
-  function mrk(v,pct,col,name,above){if(pct==null)return '';
-    var y1=above?'top:-24px':'bottom:-22px',y2=above?'top:-13px':'bottom:-9px',big=above?';width:15px;height:15px':'';
-    return '<div class="lab" style="left:'+pct+'%;'+y1+';color:'+col+'">'+name+'</div>'
-      +'<div class="val" style="left:'+pct+'%;'+y2+';color:'+col+'">'+dkVal(v)+'</div>'
-      +'<div class="mk" style="left:'+pct+'%;background:'+col+big+'"></div>';}
   var pe=P(entry),pc=P(cur);
-  var h='<div class="track">'+mrk(stop,0,'#EF4444','STOP',false)
-    +(pe!=null?mrk(entry,pe,'#8794ab','ENTRÉE',false):'')
-    +mrk(tp,100,'#22C55E','OBJECTIF',false)
-    +(pc!=null?mrk(cur,pc,'#38BDF8',curLbl||'PRIX',true):'')+'</div>';
+  // Alignement intelligent : jamais de libellé coupé aux bords (0% → aligné gauche, 100% → aligné droite)
+  function al(pct){return pct<=4?'translateX(-6px)':pct>=96?'translateX(calc(-100% + 6px))':'translateX(-50%)';}
+  // Écart % vs l'entrée (lisibilité immédiate du risque et du potentiel)
+  function rel(v){return (entry!=null&&entry>0&&v!=null)?Math.round((v/entry-1)*100):null;}
+  function mrk(v,pct,col,name,above,noTxt,sub){if(pct==null)return '';
+    var tf=al(pct),txt='';
+    if(!noTxt){
+      var y1=above?'top:-32px':'bottom:-34px',y2=above?'top:-19px':'bottom:-19px';
+      txt='<div class="lab" style="left:'+pct+'%;'+y1+';transform:'+tf+';color:'+col+'">'+name+'</div>'
+         +'<div class="val" style="left:'+pct+'%;'+y2+';transform:'+tf+';color:'+col+'">'+dkVal(v)
+         +(sub!=null?' <span class="rel">('+(sub>=0?'+':'')+sub+'%)</span>':'')+'</div>';}
+    return txt+'<div class="mk" style="left:'+pct+'%;background:'+col+(above?';width:15px;height:15px;box-shadow:0 0 10px '+col+'AA,0 0 0 2px #101216':'')+'"></div>';}
+  // PRIME/PRIX confondu avec l'ENTRÉE → une seule étiquette (fini le chevauchement illisible)
+  var overlap=(pc!=null&&pe!=null&&Math.abs(pc-pe)<9);
+  var curName=(curLbl||'PRIX')+(overlap?' = ENTRÉE':'');
+  var h='<div class="track">'
+    +(pc!=null?'<div class="fillbar" style="width:'+pc+'%"></div>':'')
+    +mrk(stop,0,'#EF4444','STOP',false,false,rel(stop))
+    +(pe!=null?mrk(entry,pe,'#8794ab','ENTRÉE',false,overlap):'')
+    +mrk(tp,100,'#22C55E','OBJECTIF',false,false,rel(tp))
+    +(pc!=null?mrk(cur,pc,'#38BDF8',curName,true):'')+'</div>';
   return '<div class="plan">'+h+'</div>';
 }
 // verdict par position : conserver / surveiller / alléger / vendre / renforcer
