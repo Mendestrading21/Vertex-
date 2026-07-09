@@ -6973,18 +6973,36 @@ function renderCorr(){
   }).catch(function(){seth('corr','<div class="muted" style="padding:16px;font-size:12px">Corrélations indisponibles.</div>');});
 }
 function renderVehicles(){
-  var sc=Math.round(M.score);
-  seth('veh','<div class="vcard2 reco"><span class="vbadge">★ RECOMMANDÉ PAR VERTEX</span><div class="vtop"><div class="vname">ACTION<small>Exposition directe · cœur de position</small></div>'+ring(sc,54,C.good)+'</div><div class="vstat"><div class="vs"><div class="vsk">R:R</div><div class="vsv" style="color:'+C.good+'">2,4</div></div><div class="vs"><div class="vsk">Horizon</div><div class="vsv">6–10 sem.</div></div><div class="vs"><div class="vsk">Risque</div><div class="vsv" style="color:'+C.warn+'">Modéré</div></div><div class="vs"><div class="vsk">Perte max</div><div class="vsv" style="color:'+C.bad+'">-7,5%</div></div></div><div class="vwhy"><b style="color:'+C.ink+'">L\'expression la plus propre de la thèse</b> — pas d\'érosion, gestion simple.</div><div class="vwho">Pour : <b>cœur de portefeuille, horizon swing.</b></div></div>'
-   +'<div class="vcard2"><div class="vtop"><div class="vname">CALL<small>Levier haussier · 30 jours</small></div>'+ring(Math.max(40,sc-6),54,C.warn)+'</div><div class="vstat"><div class="vs"><div class="vsk">R:R</div><div class="vsv" style="color:'+C.good+'">2,1</div></div><div class="vs"><div class="vsk">POP</div><div class="vsv">48%</div></div><div class="vs"><div class="vsk">Risque</div><div class="vsv" style="color:'+C.bad+'">Élevé · théta</div></div><div class="vs"><div class="vsk">Perte max</div><div class="vsv" style="color:'+C.bad+'">prime</div></div></div><div class="vwhy">Alternative <b style="color:'+C.ink+'">agressive</b> : levier sur la hausse, risque plafonné à la prime.</div><div class="vwho">Pour : <b>conviction forte, catalyseur rapide.</b></div></div>'
-   +'<div class="vcard2"><div class="vtop"><div class="vname">PUT<small>Couverture · défensif</small></div>'+ring(52,54,C.bad)+'</div><div class="vstat"><div class="vs"><div class="vsk">R:R</div><div class="vsv">1,9</div></div><div class="vs"><div class="vsk">POP</div><div class="vsv">44%</div></div><div class="vs"><div class="vsk">Rôle</div><div class="vsv" style="color:'+C.info+'">Hedge</div></div><div class="vs"><div class="vsk">Perte max</div><div class="vsv" style="color:'+C.bad+'">prime</div></div></div><div class="vwhy"><b style="color:'+C.ink+'">À contre-thèse</b> — utile seulement en couverture.</div><div class="vwho">Pour : <b>protéger une position.</b></div></div>');
-  seth('veh-aiq','Thèse '+(M.score>=60?'haussière':'prudente')+' → Vertex privilégie <b>l\'ACTION</b> pour le cœur de position et le <b>CALL</b> comme levier tactique. Le <b>PUT</b> n\'a de sens qu\'en couverture.');
+  var sc=Math.round(M.score);var plan=window.__plan||{};var pk=window.__pack||{};var bp=pk.best_pick||null;
+  var rrA=plan.rr!=null?(+plan.rr).toFixed(1):'—';
+  var lossA=(plan.entry&&plan.stop&&plan.entry>0)?('-'+(((plan.entry-plan.stop)/plan.entry)*100).toFixed(1)+'%'):'—';
+  var callCard;
+  if(bp){var q=Math.max(35,Math.round(bp.quality||50));
+   callCard='<div class="vcard2"><div class="vtop"><div class="vname">'+bp.type+' $'+(+bp.strike).toFixed(0)+'<small>'+(bp.exp||'')+(bp.dte!=null?' · '+bp.dte+'j':'')+' · contrat réel</small></div>'+ring(q,54,C.warn)+'</div><div class="vstat"><div class="vs"><div class="vsk">Prime</div><div class="vsv">'+(bp.mid!=null?'$'+(+bp.mid).toFixed(2):'—')+'</div></div><div class="vs"><div class="vsk">POP</div><div class="vsv">'+(bp.pop!=null?bp.pop+'%':'—')+'</div></div><div class="vs"><div class="vsk">Gain pot.</div><div class="vsv" style="color:'+C.good+'">'+(bp.pot!=null?'+'+bp.pot+'%':'—')+'</div></div><div class="vs"><div class="vsk">Perte max</div><div class="vsv" style="color:'+C.bad+'">'+(bp.cost!=null?'$'+bp.cost:'prime')+'</div></div></div><div class="vwhy">Meilleur contrat du board — delta '+(bp.delta!=null?(+bp.delta).toFixed(2):'—')+' · IV '+(bp.iv!=null?Math.round(bp.iv)+'%':'—')+' · seuil $'+(bp.be!=null?(+bp.be).toFixed(0):'—')+'.</div><div class="vwho"><a href="/options?t='+M.sym+'" style="color:'+C.acc+';font-weight:700;text-decoration:none">💎 Analyser dans Options Lab →</a></div></div>';
+  }else{callCard='<div class="vcard2"><div class="vtop"><div class="vname">CALL<small>option</small></div>'+ring(45,54,C.warn)+'</div><div class="vwhy">Aucun contrat chargé pour ce titre.</div><div class="vwho"><a href="/options?t='+M.sym+'" style="color:'+C.acc+';font-weight:700;text-decoration:none">💎 Ouvrir Options Lab →</a></div></div>';}
+  seth('veh','<div class="vcard2 reco"><span class="vbadge">★ RECOMMANDÉ PAR VERTEX</span><div class="vtop"><div class="vname">ACTION<small>Exposition directe · cœur de position</small></div>'+ring(sc,54,C.good)+'</div><div class="vstat"><div class="vs"><div class="vsk">R:R</div><div class="vsv" style="color:'+C.good+'">'+rrA+'</div></div><div class="vs"><div class="vsk">Entrée</div><div class="vsv">'+(plan.entry!=null?'$'+(+plan.entry).toFixed(2):'—')+'</div></div><div class="vs"><div class="vsk">Stop</div><div class="vsv" style="color:'+C.bad+'">'+(plan.stop!=null?'$'+(+plan.stop).toFixed(2):'—')+'</div></div><div class="vs"><div class="vsk">Perte max</div><div class="vsv" style="color:'+C.bad+'">'+lossA+'</div></div></div><div class="vwhy"><b style="color:'+C.ink+'">L\'expression la plus propre de la thèse</b> — pas d\'érosion, gestion simple.</div><div class="vwho">Pour : <b>cœur de portefeuille, horizon swing.</b></div></div>'
+   +callCard
+   +'<div class="vcard2"><div class="vtop"><div class="vname">PUT<small>Couverture · défensif</small></div>'+ring(52,54,C.bad)+'</div><div class="vwhy"><b style="color:'+C.ink+'">À contre-thèse</b> — utile en couverture d\'une position longue (protective put).</div><div class="vwho"><a href="/options?t='+M.sym+'" style="color:'+C.acc+';font-weight:700;text-decoration:none">💎 Voir les puts →</a></div></div>');
+  seth('veh-aiq','Thèse '+(M.score>=60?'haussière':'prudente')+' → Vertex privilégie <b>l\'ACTION</b> pour le cœur de position'+(bp?' et le <b>'+bp.type+' $'+(+bp.strike).toFixed(0)+'</b> comme levier réel (contrat le mieux noté)':'')+'.');
 }
 function renderDecision(){
+  var pk=window.__pack||{},dc=pk.decision||{},plan=window.__plan||{};
   var sc=Math.round(M.score);seth('ring-final',ring(sc,84,scoreCol(sc)));
-  set('dec-conf','Verdict final · conviction '+sc+'%');set('dec-verdict',M.verdict);
-  el('dec-verdict').style.color=M.vcol;seth('dec-confpill','Confiance IA '+Math.round(M.conf)+'%');
-  seth('dec-grid','<div class="dcard" style="--c:'+C.good+'"><div class="dk">✓ Pourquoi</div><ul><li>Score composite '+sc+'/100</li><li>Momentum et structure favorables</li><li>Fondamentaux solides du secteur</li></ul></div><div class="dcard" style="--c:'+C.info+'"><div class="dk">↑ Ce qui améliorerait le score</div><ul><li>Normalisation de la valorisation</li><li>Confirmation des flux institutionnels</li><li>Catalyseur (résultats / guidance)</li></ul></div><div class="dcard" style="--c:'+C.bad+'"><div class="dk">✕ Ce qui invaliderait</div><ul><li>Cassure des supports clés</li><li>Bascule macro en RISK-OFF</li><li>Dégradation des fondamentaux</li></ul></div><div class="dcard" style="--c:'+C.acc+'"><div class="dk">▲ Action recommandée</div><ul><li><b style="color:'+C.ink+'">'+(M.score>=60?'Accumuler sur repli':'Attendre un signal net')+'</b></li><li>Stop discipliné · R:R ≥ 2:1</li><li>Taille 5–8% du portefeuille</li></ul></div>');
-  set('foot2','▲ VERTEX · Stock Info — '+M.sym+' · profil entreprise MAJ hebdo · valeurs de marché en direct (IBKR/yfinance). Analyse only.');
+  var verd=dc.decision||M.verdict;var vcol=(window.VX?VX.verdictColor(verd):M.vcol)||M.vcol;
+  var conv=dc.conviction!=null?dc.conviction:sc;
+  set('dec-conf','Verdict final · conviction '+conv+'%');set('dec-verdict',verd);
+  el('dec-verdict').style.color=vcol;seth('dec-confpill','Confiance IA '+Math.round(M.conf)+'%');
+  function li(arr,fb){var a=(arr&&arr.length)?arr:fb;return a.map(function(x){return '<li>'+x+'</li>';}).join('');}
+  var pros=dc.pros||[],cons=dc.cons||[],action=dc.action||'';
+  var planLis=(plan.entry!=null?'<li>Entrée <b style="color:'+C.ink+'">$'+(+plan.entry).toFixed(2)+'</b></li>':'')
+   +(plan.stop!=null?'<li>Stop <b style="color:'+C.bad+'">$'+(+plan.stop).toFixed(2)+'</b>'+(plan.stop_type?' · '+plan.stop_type:'')+'</li>':'')
+   +(plan.tp1!=null?'<li>Objectifs $'+(+plan.tp1).toFixed(0)+(plan.tp2!=null?' / $'+(+plan.tp2).toFixed(0):'')+(plan.tp3!=null?' / $'+(+plan.tp3).toFixed(0):'')+'</li>':'')
+   +(plan.rr!=null?'<li>R:R <b style="color:'+C.good+'">'+(+plan.rr).toFixed(1)+':1</b></li>':'');
+  seth('dec-grid','<div class="dcard" style="--c:'+C.good+'"><div class="dk">✓ Pourquoi (réel)</div><ul>'+li(pros,['Analyse en cours de chargement…'])+'</ul></div>'
+   +'<div class="dcard" style="--c:'+C.bad+'"><div class="dk">✕ Risques / ce qui invaliderait</div><ul>'+li(cons,['Cassure des supports clés','Bascule macro en RISK-OFF'])+'</ul></div>'
+   +'<div class="dcard" style="--c:'+C.info+'"><div class="dk">🎯 Plan chiffré (réel)</div><ul>'+(planLis||'<li>Plan indisponible — données en cours.</li>')+'</ul></div>'
+   +'<div class="dcard" style="--c:'+C.acc+'"><div class="dk">▲ Action recommandée</div><ul><li><b style="color:'+C.ink+'">'+(action||(M.score>=60?'Accumuler sur repli':'Attendre un signal net'))+'</b></li></ul></div>');
+  set('foot2','▲ VERTEX · Stock Info — '+M.sym+' · données de marché en direct (IBKR) · analyse only.');
 }
 
 // ═══════════ INIT : rendu synthétique instantané, puis binding live ═══════════
@@ -6993,7 +7011,7 @@ fetch('/healthz').then(function(r){return r.json();}).then(function(h){
   if(h && h.data_source!=='demo' && h.ibkr_enabled!==false){M.demo=false;}
   if(h && h.data_source==='demo'){el('cb-src').style.display='';}
 }).catch(function(){});
-fetch('/api/ticker/'+SYM).then(function(r){return r.json();}).then(function(j){
+function loadTicker(){return fetch('/api/ticker/'+SYM).then(function(r){return r.json();}).then(function(j){
   if(!j)return;var cp=j.company||{},d=j.detail||{},pk=j.pack||{};
   window.__peers=cp.peers||[];window.__peersData=j.peers_data||[];window.__cofund=cp.fundamentals||{};window.__plan=d.plan||null;window.__contracts=pk.contracts||[];window.__pack=pk;
   // marché live (guardé — écrase le synthétique quand présent)
@@ -7008,7 +7026,13 @@ fetch('/api/ticker/'+SYM).then(function(r){return r.json();}).then(function(j){
   M.cap=bignum(fu.mcap||pk.mcap)||M.cap;
   M.sector=cp.sector||pk.sector||M.sector;M.industry=cp.industry||M.industry;M.name=cp.name||pk.name||M.name;
   renderHeader();renderCompany(cp);renderChart();renderAnalytics(d);renderAnalysts(cp.analysts);
-}).catch(function(){});
+  return j;
+}).catch(function(){});}
+// LIVE : recharge tout de suite si l'analyse n'est pas encore prete (scan en cours),
+// puis rafraichit en continu — la fiche reste synchronisee avec IBKR sans intervention.
+loadTicker().then(function(j){var d=(j&&j.detail)||{},pk=(j&&j.pack)||{};
+  if(!d.plan||!pk.decision){setTimeout(loadTicker,4000);setTimeout(loadTicker,10000);setTimeout(loadTicker,20000);}});
+setInterval(function(){if(!document.hidden)loadTicker();},45000);
 """
 
 PAGE_TITRE = _vpage('Stock info', _SI_BODY, head=_SI_CSS, js=_SI_JS)
