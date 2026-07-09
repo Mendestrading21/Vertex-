@@ -6939,7 +6939,7 @@ function renderOptions(){
   tbl('calls',RC.length?RC.slice(0,3).map(real):mk('C'),'C');
   tbl('puts',RP.length?RP.slice(0,3).map(real):mk('P'),'P');
   // payoff
-  var s=Math.round(sp*1.05),cost=(sp*0.045),be=s+cost,tgt=sp*1.17,lo=sp*0.9,hi=sp*1.25,W=300,Hh=150,pad=22;
+  var bp=(window.__pack&&window.__pack.best_pick)||{},popv=bp.pop!=null?bp.pop:48;var s=bp.strike!=null?bp.strike:Math.round(sp*1.05),cost=bp.mid!=null?bp.mid:(sp*0.045),be=bp.be!=null?bp.be:s+cost,tgt=(window.__plan&&window.__plan.tp2)||sp*1.17,lo=Math.min(sp*0.9,s*0.92),hi=Math.max(sp*1.25,be*1.08),W=300,Hh=150,pad=22;
   function plf(p){return Math.max(0,p-s)-cost;}var vlo=plf(lo),vhi=plf(hi),vmin=Math.min(vlo,-cost),vmax=Math.max(vhi,0);
   var X=function(p){return pad+(p-lo)/(hi-lo)*(W-pad*2);},Y=function(v){return Hh-pad-(v-vmin)/(vmax-vmin)*(Hh-pad*2);};
   var g='<svg viewBox="0 0 '+W+' '+Hh+'" style="width:100%;height:auto"><defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+C.good+'" stop-opacity=".4"/><stop offset="1" stop-color="'+C.good+'" stop-opacity="0"/></linearGradient></defs>';
@@ -6950,8 +6950,8 @@ function renderOptions(){
   // prob
   var W2=300,H2=150,p2=20,s2='<svg viewBox="0 0 '+W2+' '+H2+'" style="width:100%;height:auto"><defs><linearGradient id="prg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+C.info+'" stop-opacity=".35"/><stop offset="1" stop-color="'+C.info+'" stop-opacity="0"/></linearGradient></defs>',pts='',area='';
   for(var i=0;i<=60;i++){var x=p2+i/60*(W2-p2*2),z=(i/60-0.5)*6,y=Math.exp(-z*z/2),yy=H2-p2-y*(H2-p2*2)*0.92;pts+=(i?'L':'M')+x.toFixed(1)+' '+yy.toFixed(1);if(i===0)area='M'+x.toFixed(1)+' '+(H2-p2);area+='L'+x.toFixed(1)+' '+yy.toFixed(1);}
-  area+='L'+(W2-p2)+' '+(H2-p2)+'Z';var beX=p2+0.66*(W2-p2*2);
-  s2+='<path d="'+area+'" fill="url(#prg)"/><rect x="'+beX.toFixed(1)+'" y="'+p2+'" width="'+(W2-p2-beX).toFixed(1)+'" height="'+(H2-p2*2)+'" fill="'+C.good+'" opacity=".08"/><line x1="'+beX.toFixed(1)+'" y1="'+p2+'" x2="'+beX.toFixed(1)+'" y2="'+(H2-p2)+'" stroke="'+C.good+'" stroke-dasharray="3 3"/><text x="'+(beX+4).toFixed(1)+'" y="'+(p2+10)+'" font-size="9" fill="'+C.good+'">POP 48%</text><path d="'+pts+'" fill="none" stroke="'+C.info+'" stroke-width="2"/><line x1="'+(W2/2).toFixed(1)+'" y1="'+p2+'" x2="'+(W2/2).toFixed(1)+'" y2="'+(H2-p2)+'" stroke="rgba(255,255,255,.2)" stroke-dasharray="2 2"/></svg>';
+  area+='L'+(W2-p2)+' '+(H2-p2)+'Z';var beX=p2+Math.max(0,Math.min(1,(be-lo)/((hi-lo)||1)))*(W2-p2*2);
+  s2+='<path d="'+area+'" fill="url(#prg)"/><rect x="'+beX.toFixed(1)+'" y="'+p2+'" width="'+(W2-p2-beX).toFixed(1)+'" height="'+(H2-p2*2)+'" fill="'+C.good+'" opacity=".08"/><line x1="'+beX.toFixed(1)+'" y1="'+p2+'" x2="'+beX.toFixed(1)+'" y2="'+(H2-p2)+'" stroke="'+C.good+'" stroke-dasharray="3 3"/><text x="'+(beX+4).toFixed(1)+'" y="'+(p2+10)+'" font-size="9" fill="'+C.good+'">POP '+popv+'%</text><path d="'+pts+'" fill="none" stroke="'+C.info+'" stroke-width="2"/><line x1="'+(W2/2).toFixed(1)+'" y1="'+p2+'" x2="'+(W2/2).toFixed(1)+'" y2="'+(H2-p2)+'" stroke="rgba(255,255,255,.2)" stroke-dasharray="2 2"/></svg>';
   seth('prob',s2);
   // heat
   var strikes=[];for(i=-4;i<=4;i++)strikes.push(Math.round(sp*(1+i*0.04)));var exps=['30j','60j','90j'];
