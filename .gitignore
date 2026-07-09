@@ -25,3 +25,8 @@ venv/
 # Captures d'écran de design (régénérables, mode démo) — pas dans le repo
 docs/screenshots/
 .vertex_secret
+# Donnees runtime locales (regenerees par l'app — jamais dans le repo)
+edge_ledger.jsonl
+track_meta.json
+alerts_fired.json
+desk_backup_*.json
