@@ -77,7 +77,14 @@ JS = r"""
 if(window.VX)return;
 function jget(k,d){try{var v=JSON.parse(localStorage.getItem(k));return v==null?d:v;}catch(e){return d;}}
 function jset(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
-function touch(){try{localStorage.setItem('deskTs',String(Date.now()));if(typeof window.deskPush==='function')window.deskPush();}catch(e){}}
+/* Persiste le desk cote serveur depuis N'IMPORTE QUELLE page (les actions VX
+   deviennent visibles partout, pas seulement quand on ouvre le Desk).
+   Ne pousse qu'APRES avoir hydrate la page (bootSync) → jamais d'ecrasement partiel. */
+var _pendingPush=false;
+function pushServer(){try{var data={};DESK_KEYS.forEach(function(k){var v=localStorage.getItem(k);if(v!=null)data[k]=v;});var ts=Date.now();localStorage.setItem('deskTs',String(ts));fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:ts,data:data})}).catch(function(){});}catch(e){}}
+function touch(){try{localStorage.setItem('deskTs',String(Date.now()));}catch(e){}
+ if(typeof window.deskPush==='function'){try{window.deskPush();return;}catch(e){}}
+ if(_bootDone){pushServer();}else{_pendingPush=true;}}
 function up(s){return (s==null?'':String(s)).toUpperCase();}
 function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
 
@@ -246,12 +253,36 @@ function breadcrumb(host){var parts=location.pathname.split('/').filter(function
  if(sym)h+='<span class="sep">›</span><span class="cur">'+sym+'</span>';
  h+='</nav></div>';return h;}
 
+/* ---------- SYNC AU DEMARRAGE : hydrate le desk depuis le serveur sur CHAQUE page ---------- */
+/* Sans ca, positions/suivis/watchlist n'etaient charges que sur le Desk. Desormais,
+   quand tu allumes Vertex sur n'importe quelle page, tout est deja synchronise. */
+var DESK_KEYS=['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts'];
+var _bootDone=false;
+function bootSync(cb){
+ fetch('/api/desk').then(function(r){return r.json();}).then(function(d){
+  var changed=false;
+  if(d&&d.data){var lt=parseFloat(localStorage.getItem('deskTs')||'0');var srvNewer=(d.ts||0)>lt;
+   DESK_KEYS.forEach(function(k){
+    if(d.data[k]==null)return;
+    var loc=localStorage.getItem(k);
+    /* SÉCURITÉ anti-perte : on remplit toute clé ABSENTE en local (jamais d'écrasement
+       d'une donnée serveur qu'on n'aurait pas), et on prend le serveur s'il est plus récent. */
+    if(loc==null||srvNewer){if(loc!==d.data[k]){localStorage.setItem(k,d.data[k]);changed=true;}}
+   });
+   if(srvNewer)localStorage.setItem('deskTs',String(d.ts||Date.now()));}
+  if(changed){refresh();
+   ['tRender','tRefresh','rRenderFollow','renderMyDesk','renderFav','dkRender','fRender','sRender'].forEach(function(fn){try{if(typeof window[fn]==='function')window[fn]();}catch(e){}});}
+  _bootDone=true;if(_pendingPush){_pendingPush=false;pushServer();}if(cb)cb(changed);
+ }).catch(function(){/* échec réseau : on NE pousse PAS (blob potentiellement incomplet) — les changements restent locaux et partiront au prochain sync réussi */ if(cb)cb(false);});}
+
 /* auto-init : remplit les conteneurs declaratifs [data-vx-actions] / [data-vx-chips] */
 function initAuto(){var hosts=document.querySelectorAll('[data-vx-actions]');for(var i=0;i<hosts.length;i++){var h=hosts[i];if(h.__vx)continue;h.__vx=1;h.innerHTML=actionBar(h.getAttribute('data-vx-actions'),{hideFiche:h.hasAttribute('data-hidefiche'),hideJournal:h.hasAttribute('data-hidejournal')});}
  var ch=document.querySelectorAll('[data-vx-chips]');for(var j=0;j<ch.length;j++){if(!ch[j].__vx){ch[j].__vx=1;ch[j].innerHTML=linkChips(ch[j].getAttribute('data-vx-chips'));}}
  var cb=document.querySelectorAll('[data-vx-crumb]');for(var m=0;m<cb.length;m++){if(!cb[m].__vx){cb[m].__vx=1;cb[m].innerHTML=breadcrumb(cb[m]);}}}
 if(document.readyState!=='loading')initAuto();else document.addEventListener('DOMContentLoaded',initAuto);
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+/* hydrate depuis le serveur au demarrage, puis re-synchronise toutes les 2 min sur toute page */
+bootSync();setInterval(function(){if(!document.hidden)bootSync();},120000);
 
 window.VX={fmtNum:fmtNum,fmtPrice:fmtPrice,fmtPct:fmtPct,fmtMoney:fmtMoney,fmtCap:fmtCap,fmtDate:fmtDate,DASH:DASH,
  positions:positions,follows:follows,favs:favs,alerts:alerts,hasPosition:hasPosition,isFollowed:isFollowed,inWatch:inWatch,hasAlert:hasAlert,posFor:posFor,alertsFor:alertsFor,
@@ -259,6 +290,6 @@ window.VX={fmtNum:fmtNum,fmtPrice:fmtPrice,fmtPct:fmtPct,fmtMoney:fmtMoney,fmtCa
  toast:toast,modal:modal,closeModal:closeModal,
  watch:watch,follow:follow,addPosition:addPosition,addAlert:addAlert,optionsFor:optionsFor,logEvent:logEvent,
  actionBar:actionBar,miniBar:miniBar,linkChips:linkChips,breadcrumb:breadcrumb,goBack:goBack,
- verdict:verdict,verdictColor:verdictColor,verdictBadge:verdictBadge,refresh:refresh,init:initAuto};
+ verdict:verdict,verdictColor:verdictColor,verdictBadge:verdictBadge,bootSync:bootSync,refresh:refresh,init:initAuto};
 })();
 """
