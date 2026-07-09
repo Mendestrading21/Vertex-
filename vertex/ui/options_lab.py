@@ -129,6 +129,7 @@ CSS = r"""
 
 BODY = (
   '<div id="olab">'
+  '<div data-vx-crumb></div>'
   '<div class="vhead"><div><h1>💎 Options Lab</h1>'
   '<div class="s" id="olabHead">chargement du board…</div></div>'
   '<div style="margin-left:auto;align-self:center"><button class="vbtn" onclick="olabLoad(true)">⟳ Actualiser</button></div></div>'
@@ -276,6 +277,8 @@ function s02(r){if(!r)return '';
   +(caps?'<div>'+caps+'</div>':'')+'</div>'
   +'<div class="verdict" style="background:linear-gradient(150deg,'+(dv.tone==='good'?'rgba(34,197,94,.10)':dv.tone==='warn'?'rgba(245,180,91,.09)':'rgba(239,68,68,.09)')+',transparent)">'
   +'<div class="lbl">Décision Vertex</div><div class="v" style="color:'+tone(dv.tone)+'">'+$h(dv.verdict)+'</div><div class="w">'+$h(dv.why)+'</div></div></div>'
+  +'<div data-vx-chips="'+r.sym+'">'+(window.VX?VX.linkChips(r.sym):'')+'</div>'
+  +(window.VX?VX.actionBar(r.sym,{}):'')
   +'<div class="kpis">'+kp.map(function(x){return '<div><div class="lbl">'+x[0]+'</div><div class="v num">'+x[1]+'</div></div>';}).join('')+'</div>'
   +'<div class="thesis"><div style="border:0;padding-top:18px" class="lbl">Thèse d\'investissement</div>'+th+'</div>'
   +ai(r.exec_summary,'Résumé exécutif')
@@ -392,7 +395,7 @@ function olabRender(){var d=OL;if(!d)return;
   +s07(d.tops)+s08(d.comparator)+s09(d.committee)+s10(d.risks)+s11(d.timeline)
   +'<div class="foot">⚠️ <b>Analyse éducative</b> — une option achetée peut perdre 100 % de sa prime · les probabilités sont des estimations de modèle, pas des promesses · '
   +'<b>aucun ordre n\'est passé ni passable depuis Vertex</b> · sources : '+$h(o.source)+'.</div>';
- OLDRAWN={};lazyDraw();}
+ OLDRAWN={};lazyDraw();if(window.VX)VX.init();}
 
 async function olabLoad(force){try{
  if(force){var b=document.querySelector('#olab .vbtn');if(b){b.textContent='⟳ Analyse…';setTimeout(function(){b.textContent='⟳ Actualiser';},1500);}}

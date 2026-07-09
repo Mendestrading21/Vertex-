@@ -36,6 +36,14 @@ CSS = r"""
 .vx-chip.wl{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.34);color:#7dd3fc}
 .vx-chip.al{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.34);color:#fca5a5}
 .vx-dash{color:#5c6577}
+.vx-crumb{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:2px 0 14px}
+.vx-back{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 13px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.045);color:#cbd4e2;font:600 12.5px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;transition:background .13s,border-color .13s}
+.vx-back:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.26)}
+.vx-trail{display:flex;align-items:center;gap:8px;font:600 12px/1 ui-sans-serif,system-ui,sans-serif;flex-wrap:wrap}
+.vx-trail a{color:#8794ab;text-decoration:none}
+.vx-trail a:hover{color:#cbd4e2}
+.vx-trail .sep{color:#4b5563}
+.vx-trail .cur{color:#ff9a3d;font-weight:800}
 .vx-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);background:#12151c;border:1px solid rgba(255,255,255,.16);color:#eef2f8;padding:11px 18px;border-radius:12px;font:600 13px/1.3 ui-sans-serif,system-ui,sans-serif;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:99999;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;max-width:min(92vw,420px)}
 .vx-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .vx-toast.ok{border-color:rgba(34,197,94,.5)}
@@ -203,9 +211,20 @@ function linkChips(s){s=up(s);var c=[];
 function refresh(){var bars=document.querySelectorAll('.vx-abar[data-vx-sym]');for(var i=0;i<bars.length;i++){var el=bars[i];var s=el.getAttribute('data-vx-sym');el.outerHTML=actionBar(s,{hideFiche:el.getAttribute('data-hidefiche')==='1',hideJournal:el.getAttribute('data-hidejournal')==='1'});}
  var chips=document.querySelectorAll('[data-vx-chips]');for(var k=0;k<chips.length;k++){chips[k].innerHTML=linkChips(chips[k].getAttribute('data-vx-chips'));}}
 
+/* ---------- fil d'ariane + retour intelligent (point 17) ---------- */
+var CRUMB={'':'Accueil','titre':'Stock Info','company':'Stock Info','stocks':'Stock Info','options':'Options Lab','strategie':'Trading Desk','journal':'Trade Journal','suivi':'Suivi','sectors':'Market Rotation','catalysts':'Market Calendar','anomalies':'Market Signals','vault':'Archive Vault','settings':'Reglages','compare':'Comparateur'};
+function goBack(){if(history.length>1&&document.referrer&&document.referrer.indexOf(location.host)>=0){history.back();}else{location.href='/';}}
+function breadcrumb(host){var parts=location.pathname.split('/').filter(function(x){return x;});var seg=parts[0]||'';var label=CRUMB[seg]||(seg?seg.charAt(0).toUpperCase()+seg.slice(1):'Accueil');
+ var sym=host&&host.getAttribute('data-sym');if(!sym&&parts.length>1&&/^[A-Z.\-]{1,8}$/i.test(parts[1]))sym=parts[1].toUpperCase();
+ var h='<div class="vx-crumb"><button class="vx-back" onclick="VX.goBack()">‹ Retour</button><nav class="vx-trail"><a href="/">Accueil</a>';
+ if(seg&&label!=='Accueil')h+='<span class="sep">›</span><a href="/'+seg+'">'+label+'</a>';
+ if(sym)h+='<span class="sep">›</span><span class="cur">'+sym+'</span>';
+ h+='</nav></div>';return h;}
+
 /* auto-init : remplit les conteneurs declaratifs [data-vx-actions] / [data-vx-chips] */
 function initAuto(){var hosts=document.querySelectorAll('[data-vx-actions]');for(var i=0;i<hosts.length;i++){var h=hosts[i];if(h.__vx)continue;h.__vx=1;h.innerHTML=actionBar(h.getAttribute('data-vx-actions'),{hideFiche:h.hasAttribute('data-hidefiche'),hideJournal:h.hasAttribute('data-hidejournal')});}
- var ch=document.querySelectorAll('[data-vx-chips]');for(var j=0;j<ch.length;j++){if(!ch[j].__vx){ch[j].__vx=1;ch[j].innerHTML=linkChips(ch[j].getAttribute('data-vx-chips'));}}}
+ var ch=document.querySelectorAll('[data-vx-chips]');for(var j=0;j<ch.length;j++){if(!ch[j].__vx){ch[j].__vx=1;ch[j].innerHTML=linkChips(ch[j].getAttribute('data-vx-chips'));}}
+ var cb=document.querySelectorAll('[data-vx-crumb]');for(var m=0;m<cb.length;m++){if(!cb[m].__vx){cb[m].__vx=1;cb[m].innerHTML=breadcrumb(cb[m]);}}}
 if(document.readyState!=='loading')initAuto();else document.addEventListener('DOMContentLoaded',initAuto);
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
 
@@ -214,6 +233,6 @@ window.VX={fmtNum:fmtNum,fmtPrice:fmtPrice,fmtPct:fmtPct,fmtMoney:fmtMoney,fmtCa
  goStock:goStock,goOptions:goOptions,goJournal:goJournal,goDesk:goDesk,
  toast:toast,modal:modal,closeModal:closeModal,
  watch:watch,follow:follow,addPosition:addPosition,addAlert:addAlert,logEvent:logEvent,
- actionBar:actionBar,miniBar:miniBar,linkChips:linkChips,refresh:refresh,init:initAuto};
+ actionBar:actionBar,miniBar:miniBar,linkChips:linkChips,breadcrumb:breadcrumb,goBack:goBack,refresh:refresh,init:initAuto};
 })();
 """
