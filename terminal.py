@@ -55,6 +55,7 @@ from vertex.ui import sync_center as _sync_ui
 from vertex.ui import vx_kit as _vx
 from vertex.ui import design_system as _ds
 from vertex.engines import recommendation as _reco
+from vertex.engines import track_record as _track
 from vertex.engines import indicators as _indicators
 from vertex.engines import analysis as _analysis
 from vertex.engines import backtest as _backtest
@@ -1415,6 +1416,10 @@ def _edge_loop():
                 if eb:
                     scan_state['edge'] = eb
                     _save_json('edge_cache.json', eb)
+            except Exception:
+                pass
+            try:
+                _track.record(scan_state)             # 📓 snapshot quotidien des verdicts (idempotent)
             except Exception:
                 pass
             time.sleep(6 * 3600)
@@ -10299,12 +10304,75 @@ def options_lab_page():
     return PAGE_OPTIONS_LAB
 
 
+# ─── 🔔 ALERTES ACTIVES : évaluation SERVEUR des alertes utilisateur (60 s) ───
+# Les vxAlerts étaient stockées mais jamais évaluées. Ici : prix live IBKR
+# (repli scan) vs niveau → déclenchement persisté (alerts_fired.json), consommé
+# par le kit client (toast + journal + désactivation). Lecture seule, zéro ordre.
+_ALERTS_FIRED = _load_json('alerts_fired.json', {})
+
+
+def _alert_price(sym):
+    q = _live_quotes.get(sym)
+    if q and _live_meta.get('connected') and q.get('last') is not None:
+        return q['last']
+    d = (scan_state.get('detail') or {}).get(sym) or {}
+    return d.get('price')
+
+
+def _alerts_loop():
+    while True:
+        try:
+            blob = _load_json('desk_data.json', {}) or {}
+            raw = (blob.get('data') or {}).get('vxAlerts')
+            alerts = json.loads(raw) if isinstance(raw, str) else (raw or [])
+            changed = False
+            for a in alerts:
+                if not isinstance(a, dict):
+                    continue
+                aid = str(a.get('id') or '')
+                if not aid or aid in _ALERTS_FIRED or a.get('active') is False:
+                    continue
+                sym = (a.get('sym') or '').upper()
+                lvl, px = a.get('level'), _alert_price((a.get('sym') or '').upper())
+                if px is None or lvl is None:
+                    continue
+                cond = a.get('cond') or 'above'
+                hit = (px >= lvl) if cond in ('above', 'target') else (px <= lvl)
+                if hit:
+                    _ALERTS_FIRED[aid] = {'id': a.get('id'), 'sym': sym, 'cond': cond,
+                                          'level': lvl, 'price': round(float(px), 4),
+                                          'ts': int(time.time()), 'note': a.get('note') or ''}
+                    changed = True
+            if changed:
+                if len(_ALERTS_FIRED) > 200:          # borne dure
+                    for k in sorted(_ALERTS_FIRED, key=lambda k: _ALERTS_FIRED[k].get('ts', 0))[:-200]:
+                        _ALERTS_FIRED.pop(k, None)
+                _save_json('alerts_fired.json', _ALERTS_FIRED)
+        except Exception:
+            pass
+        time.sleep(60)
+
+
+@app.route('/api/alerts/status')
+def api_alerts_status():
+    """Alertes déclenchées côté serveur (évaluées toutes les 60 s, prix live IBKR)."""
+    return jsonify({'fired': _ALERTS_FIRED, 'ts': int(time.time())})
+
+
+@app.route('/api/track-record')
+def api_track_record():
+    """📓 LE MOTEUR SE NOTE : fiabilité mesurée des verdicts (rendements réels
+    +5/+20 séances, TP1-avant-stop) par verdict/grade/régime. Analyse only."""
+    return jsonify(_track.evaluate(scan_state))
+
+
 def _start_workers():
     """Démarre les threads de fond. En mode DÉMO (vitrine cloud) on ne lance QUE le
     scan synthétique : les autres boucles (options/news/calendrier/hebdo/fondamentaux)
     dépendent de yfinance — inutiles et coûteuses (mémoire/CPU) quand le réseau est
     bloqué sur le serveur. Hors démo, tout démarre normalement."""
     threading.Thread(target=_loop, daemon=True).start()
+    threading.Thread(target=_alerts_loop, daemon=True).start()   # 🔔 alertes utilisateur actives
     if DEMO_MODE:                                     # VITRINE : calendrier earnings synthétique
         threading.Thread(target=_cal_loop, daemon=True).start()
     if not DEMO_MODE:

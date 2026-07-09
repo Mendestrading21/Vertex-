@@ -14,13 +14,39 @@ sont INJECTÉES à la construction — le Blueprint reste testable sans réseau.
 ⛔ Lecture seule : ces routes lisent et cotent, ne passent JAMAIS d'ordre.
 """
 
+import glob
+import os
+import shutil
 import threading
 import time
+from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
 from vertex.data.universe import UNIVERSE
 from vertex.services import persist
+
+BACKUP_KEEP = 7   # rotations quotidiennes conservées
+
+
+def _backup_desk():
+    """Snapshot QUOTIDIEN de desk_data.json avant écrasement (1er write du jour).
+    Filet de sécurité contre le last-writer-wins : positions/journal/alertes
+    restaurables sur 7 jours. Silencieux — ne bloque jamais la sync."""
+    try:
+        src = persist.cache_path('desk_data.json')
+        if not os.path.exists(src) or os.path.getsize(src) < 20:
+            return
+        day = datetime.now().strftime('%Y%m%d')
+        dst = persist.cache_path('desk_backup_%s.json' % day)
+        if os.path.exists(dst):
+            return                                   # déjà sauvegardé aujourd'hui
+        shutil.copyfile(src, dst)
+        olds = sorted(glob.glob(persist.cache_path('desk_backup_*.json')))
+        for p in olds[:-BACKUP_KEEP]:
+            os.remove(p)
+    except Exception:
+        pass
 
 POSQ_TTL_S = 45          # fraîcheur d'une cotation de trade perso
 POSQ_MAX_POSITIONS = 24  # borne dure par requête
@@ -45,11 +71,39 @@ def make_blueprint(*, opt_job, ibkr_enabled):
             if not isinstance(body.get('data'), dict) or not body.get('ts'):
                 return jsonify({'ok': False, 'err': 'payload invalide'}), 400
             with desk_lock:
+                _backup_desk()                       # snapshot quotidien AVANT écrasement
                 persist.save_json('desk_data.json', {'ts': body['ts'], 'data': body['data']})
             return jsonify({'ok': True, 'ts': body['ts']})
         with desk_lock:
             d = persist.load_json('desk_data.json', {}) or {}
         return jsonify(d)
+
+    @bp.route('/api/desk/backups')
+    def api_desk_backups():
+        """Liste les snapshots quotidiens du desk (restaurables)."""
+        out = []
+        for p in sorted(glob.glob(persist.cache_path('desk_backup_*.json')), reverse=True):
+            name = os.path.basename(p)
+            out.append({'name': name, 'date': name[12:20], 'size': os.path.getsize(p)})
+        return jsonify({'backups': out, 'keep': BACKUP_KEEP})
+
+    @bp.route('/api/desk/restore', methods=['POST'])
+    def api_desk_restore():
+        """Restaure un snapshot quotidien → desk_data.json (ts=maintenant, donc
+        tous les appareils re-tireront cette version). Nom STRICTEMENT validé."""
+        name = str((request.get_json(force=True, silent=True) or {}).get('name') or '')
+        import re
+        if not re.fullmatch(r'desk_backup_\d{8}\.json', name):
+            return jsonify({'ok': False, 'err': 'nom invalide'}), 400
+        src = persist.cache_path(name)
+        if not os.path.exists(src):
+            return jsonify({'ok': False, 'err': 'backup introuvable'}), 404
+        with desk_lock:
+            snap = persist.load_json(name, None)
+            if not snap or not isinstance(snap.get('data'), dict):
+                return jsonify({'ok': False, 'err': 'backup illisible'}), 500
+            persist.save_json('desk_data.json', {'ts': int(time.time() * 1000), 'data': snap['data']})
+        return jsonify({'ok': True, 'restored': name})
 
     @bp.route('/api/watchlist-tv')
     def api_watchlist_tv():

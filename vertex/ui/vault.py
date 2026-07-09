@@ -77,6 +77,7 @@ BODY = (
   '<button class="vbtn pri" onclick="avNew()">➕ Ajouter</button>'
   '<button class="vbtn" onclick="avExport()">⬇ Export</button>'
   '<button class="vbtn" onclick="avImport()">⬆ Import</button></div></div>'
+  '<div id="trkHost"></div>'
   '<div id="avRoot"></div>'
   '</div>')
 
@@ -266,6 +267,35 @@ function avRender(){var a=avGet(),c=avCounts();
   +'<div style="margin-top:30px;padding-top:12px;border-top:1px solid var(--hair);font-size:11px;color:var(--faint)">🗄️ <b style="color:var(--mut)">Coffre interne</b> — sert à nettoyer les pages principales sans perdre les bonnes idées · Archiver = réversible, Supprimer = définitif (confirmation) · privé, synchronisé via ton desk.</div>';
  var q=document.getElementById('avQ');if(q&&AV.f.q){q.focus();q.setSelectionRange(q.value.length,q.value.length);}}
 avPull(function(){avRender();});
+
+/* ═══ 📓 TRACK RECORD — le moteur se note lui-même (/api/track-record) ═══ */
+function trkCell(v,unit,good){if(v==null)return '<td style="color:#5c6577">n/d</td>';
+ var col=good===undefined?'#eef2f8':(v>=(good||0)?'#22c55e':'#ef4444');
+ return '<td class="num" style="color:'+col+';font-weight:700">'+v+(unit||'')+'</td>';}
+function trkTable(title,obj){var keys=Object.keys(obj||{});if(!keys.length)return '';
+ keys.sort(function(a,b){return (obj[b].n||0)-(obj[a].n||0);});
+ return '<div style="margin-top:14px"><div style="font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8794ab;margin-bottom:6px">'+title+'</div>'
+  +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'
+  +'<thead><tr>'+['','N','Réussite 1j','Réussite 5j','Réussite 20j','Moy. 1j','Moy. 5j','Moy. 20j','TP1 avant stop'].map(function(h){return '<th style="text-align:left;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#8794ab;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.12)">'+h+'</th>';}).join('')+'</tr></thead><tbody>'
+  +keys.map(function(k){var b=obj[k];return '<tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:8px 10px;font-weight:700">'+(window.VX?VX.verdictBadge(k):k)+'</td>'
+   +'<td class="num" style="color:#aeb8c8">'+b.n+'</td>'
+   +trkCell(b.win_1j,'%',50)+trkCell(b.win_5j,'%',50)+trkCell(b.win_20j,'%',50)
+   +trkCell(b.avg_1j,'%',0)+trkCell(b.avg_5j,'%',0)+trkCell(b.avg_20j,'%',0)
+   +trkCell(b.tp1_rate,b.tp1_rate!=null?('% ('+b.tp1_resolved+')'):'',50)+'</tr>';}).join('')
+  +'</tbody></table></div></div>';}
+function trkLoad(){var host=document.getElementById('trkHost');if(!host)return;
+ fetch('/api/track-record').then(function(r){return r.json();}).then(function(d){
+  if(!d||!d.entries){host.innerHTML='';return;}
+  var thin=d.resolved<30;
+  host.innerHTML='<div style="background:linear-gradient(170deg,#101218,#0b0d12);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:20px 22px;margin-bottom:22px">'
+   +'<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><h2 style="font-size:19px;font-weight:800;margin:0">📓 Track record du moteur</h2>'
+   +'<span style="font-size:11.5px;color:#8794ab">'+d.entries+' verdicts journalisés · '+d.resolved+' résolus · '+d.days+' jours de collecte · MAJ '+(d.as_of||'—')+'</span></div>'
+   +'<div style="font-size:12px;color:#aeb8c8;margin-top:6px">Vertex mesure ses PROPRES verdicts contre les prix réels — aucune promesse, que du constaté.'
+   +(thin?' <b style="color:#f5b45b">Échantillon encore mince — les stats se densifient chaque jour de collecte.</b>':'')+'</div>'
+   +trkTable('Par verdict',d.by_verdict)+trkTable('Par grade',d.by_grade)+trkTable('Par régime de marché',d.by_regime)
+   +'<div style="font-size:10px;color:#5c6577;margin-top:12px">⚠️ '+(d.note||'')+'</div></div>';
+ }).catch(function(){});}
+trkLoad();
 """
 
 __all__ = ['CSS', 'BODY', 'JS']

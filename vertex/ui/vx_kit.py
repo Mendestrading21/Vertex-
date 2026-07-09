@@ -284,6 +284,18 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal()
 /* hydrate depuis le serveur au demarrage, puis re-synchronise toutes les 2 min sur toute page */
 bootSync();setInterval(function(){if(!document.hidden)bootSync();},120000);
 
+/* ---------- alertes ACTIVES : consommation des declenchements serveur ---------- */
+function checkAlerts(){var mine=alerts();if(!mine.length)return;
+ fetch('/api/alerts/status').then(function(r){return r.json();}).then(function(d){
+  var fired=(d&&d.fired)||{};var ch=false;var a=jget('vxAlerts',[]);
+  a.forEach(function(al){var f=fired[String(al.id)];
+   if(f&&al.active!==false&&!al.fired){al.fired=true;al.active=false;al.firedTs=f.ts;al.firedPrice=f.price;ch=true;
+    toast('🔔 <b>ALERTE '+al.sym+'</b> — cours $'+f.price+' ('+(al.cond==='below'?'≤':'≥')+' $'+f.level+')','ok');
+    logEvent(al.sym,'ALERT','🔔 Alerte déclenchée : '+al.sym+' '+(al.cond==='below'?'sous':'au-dessus de')+' $'+f.level+' — cours $'+f.price+(al.note?' · '+al.note:''),al.id);}});
+  if(ch){jset('vxAlerts',a);touch();refresh();}
+ }).catch(function(){});}
+setTimeout(checkAlerts,2500);setInterval(function(){if(!document.hidden)checkAlerts();},60000);
+
 /* ---------- telemetrie 0-erreur : toute erreur JS remonte au serveur (bornee) ---------- */
 var _errN=0;
 function _report(msg,src,line){if(_errN>=8)return;_errN++;
