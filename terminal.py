@@ -7135,7 +7135,7 @@ function renderDecision(){
   var planLis=(plan.entry!=null?'<li>Entrée <b style="color:'+C.ink+'">$'+(+plan.entry).toFixed(2)+'</b></li>':'')
    +(plan.stop!=null?'<li>Stop <b style="color:'+C.bad+'">$'+(+plan.stop).toFixed(2)+'</b>'+(plan.stop_type?' · '+plan.stop_type:'')+'</li>':'')
    +(plan.tp1!=null?'<li>Objectifs $'+(+plan.tp1).toFixed(0)+(plan.tp2!=null?' / $'+(+plan.tp2).toFixed(0):'')+(plan.tp3!=null?' / $'+(+plan.tp3).toFixed(0):'')+'</li>':'')
-   +(plan.rr!=null?'<li>R:R <b style="color:'+C.good+'">'+(+plan.rr).toFixed(1)+':1</b></li>':'');
+   +(plan.rr!=null?'<li>R:R <b style="color:'+C.good+'">'+(+plan.rr).toFixed(1)+':1</b> <span style="color:'+C.mut+';font-size:11px">(risque → TP3)</span></li>':'');
   seth('dec-grid','<div class="dcard" style="--c:'+C.good+'"><div class="dk">✓ Pourquoi (réel)</div><ul>'+li(pros,['Analyse en cours de chargement…'])+'</ul></div>'
    +'<div class="dcard" style="--c:'+C.bad+'"><div class="dk">✕ Risques / ce qui invaliderait</div><ul>'+li(cons,['Cassure des supports clés','Bascule macro en RISK-OFF'])+'</ul></div>'
    +'<div class="dcard" style="--c:'+C.info+'"><div class="dk">🎯 Plan chiffré (réel)</div><ul>'+(planLis||'<li>Plan indisponible — données en cours.</li>')+'</ul></div>'

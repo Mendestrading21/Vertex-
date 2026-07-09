@@ -133,6 +133,7 @@ BODY = (
   '<div class="vhead"><div><h1>💎 Options Lab</h1>'
   '<div class="s" id="olabHead">chargement du board…</div></div>'
   '<div style="margin-left:auto;align-self:center"><button class="vbtn" onclick="olabLoad(true)">⟳ Actualiser</button></div></div>'
+  '<div id="olabSym"></div>'
   '<div id="olabRoot"><div class="skel">Vertex analyse le marché des options…</div></div>'
   '</div>')
 
@@ -403,6 +404,30 @@ async function olabLoad(force){try{
  OL=await r.json();olabRender();
 }catch(e){document.getElementById('olabRoot').innerHTML='<div class="skel">Erreur de chargement — nouvelle tentative dans 5 s…</div>';setTimeout(olabLoad,5000);}}
 olabLoad();setInterval(function(){if(!document.hidden)olabLoad();},120000);
+
+/* ═══ FOCUS TITRE (?t=SYM) — les boutons « 💎 Options » de toute l'app scoprent ici ═══ */
+(function olabSymFocus(){
+ var t=(new URLSearchParams(location.search).get('t')||'').toUpperCase();
+ if(!/^[A-Z.\-]{1,8}$/.test(t))return;
+ var host=document.getElementById('olabSym');if(!host)return;
+ host.innerHTML='<div class="panel" style="margin:14px 0 6px;border-color:rgba(56,189,248,.3)">'
+  +'<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><h2 style="margin:0;font-size:20px">🎯 Options sur '+t+'</h2>'
+  +'<a href="/titre/'+t+'" style="color:#38bdf8;font-size:12px;font-weight:700;text-decoration:none">📄 Fiche '+t+' →</a></div>'
+  +'<div id="olabSymBody" class="sub" style="margin:10px 0 0">analyse du board pour '+t+'…</div>'
+  +'<div data-vx-actions="'+t+'" data-hidejournal></div></div>';
+ if(window.VX)VX.init();
+ fetch('/api/options-for/'+t).then(function(r){return r.json();}).then(function(d){
+  var b=document.getElementById('olabSymBody');if(!b)return;
+  if(!d||!d.suggestions||!d.suggestions.length){b.innerHTML=(d&&d.note)||('Aucun contrat chargé pour '+t+' — le board se remplit au fil du scan (reviens dans ~5 min).');return;}
+  b.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:4px">'
+   +d.suggestions.map(function(x){var col=x.type==='PUT'?'#ef4444':'#22c55e';
+    return '<div style="background:var(--bg2);border:1px solid var(--hair);border-radius:14px;padding:12px 14px">'
+     +'<div style="display:flex;justify-content:space-between;gap:8px"><b style="font-size:12.5px">'+x.role_label+'</b><b class="num" style="color:'+scol(x.score)+'">'+$n(x.score)+'/100</b></div>'
+     +'<div class="num" style="font-size:12px;color:var(--ink2);margin-top:5px"><span style="color:'+col+';font-weight:800">'+x.type+'</span> $'+$n(x.strike,1)+' · '+(x.exp||'—')+(x.dte!=null?' · '+x.dte+'j':'')+'</div>'
+     +'<div class="num" style="font-size:11px;color:var(--mut);margin-top:3px">prime '+$usd(x.premium)+' · POP '+$n(x.pop)+'%'+(x.grade?' · '+x.grade:'')+'</div>'
+     +'<div style="font-size:11px;color:var(--mut);margin-top:5px;line-height:1.45">'+(x.why||'')+'</div></div>';}).join('')+'</div>';
+ }).catch(function(){});
+})();
 """
 
 __all__ = ['CSS', 'BODY', 'JS']
