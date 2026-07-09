@@ -353,9 +353,14 @@ def _plan(star, research, pick):
     spot, be = star.get('spot'), star.get('be')
     steps = [
         {'key': 'entry', 'label': 'Entrée', 'icon': '🎯', 'tone': 'info',
-         'text': 'Prime $%s (limite au milieu de fourchette). Titre à $%s.' % (star.get('cost'), spot)},
+         'text': ('Prime $%s (limite au milieu de fourchette).'
+                  % ('%d' % star['cost'] if star.get('cost') is not None else '—'))
+                 + (' Titre à $%s.' % ('%g' % spot) if spot else '')},
         {'key': 'valid', 'label': 'Validation', 'icon': '✅', 'tone': 'good',
-         'text': 'La thèse est validée si le titre progresse vers le point mort ($%s) dans le premier tiers de la durée de vie.' % be},
+         'text': ('La thèse est validée si le titre progresse vers le point mort ($%s) '
+                  'dans le premier tiers de la durée de vie.' % ('%g' % be)) if be else
+                 'La thèse est validée si le titre progresse vers le point mort dans '
+                 'le premier tiers de la durée de vie.'},
         {'key': 'stop', 'label': 'Stop', 'icon': '🛑', 'tone': 'bad',
          'text': 'Sortie à −50 %% de la prime' + (' ($%s)' % ex.get('stop50') if ex.get('stop50') else '') +
                  ' — on ne moyenne jamais à la baisse une option.'},
@@ -797,8 +802,8 @@ def _timeline(star, plan, cal_items=None):
 
     tl = [
         {'when': 'Aujourd\'hui', 'date': at(0), 'icon': '📍', 'tone': 'info',
-         'label': 'Point de départ', 'text': 'titre à $%s · prime $%s · plan écrit avant l\'entrée'
-         % (star.get('spot'), star.get('cost'))},
+         'label': 'Point de départ', 'text': (('titre à $%s · ' % ('%g' % star['spot'])) if star.get('spot') else '')
+         + 'prime $%s · plan écrit avant l\'entrée' % ('%d' % star['cost'] if star.get('cost') is not None else '—')},
         {'when': 'J+%s' % max(5, dte // 6), 'date': at(max(5, dte // 6)), 'icon': '✅', 'tone': 'good',
          'label': 'Checkpoint de validation', 'text': 'la thèse doit commencer à payer — sinon réévaluer sans état d\'âme'},
         {'when': 'J+%s' % (dte // 3), 'date': at(dte // 3), 'icon': '🥇', 'tone': 'good',

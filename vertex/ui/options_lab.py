@@ -273,7 +273,7 @@ function s02(r){if(!r)return '';
   +'<div class="hero"><div class="id">'
   +'<span class="pill '+(r.type==='PUT'?'p-bad':'p-good')+'">'+r.type+'</span> <span class="pill p-mut">'+$h(r.sector)+'</span>'
   +'<div class="tk">'+r.sym+' <span style="font-size:.4em;color:var(--mut);font-weight:700">$'+$n(r.strike,1)+' · '+$h((r.exp||'').slice(0,10))+'</span></div>'
-  +'<div class="ln">'+$h(r.name||'')+(r.stock_verdict?' · titre : '+r.stock_verdict+' ('+$n(r.stock_score)+'/100)':'')+'</div>'
+  +'<div class="ln">'+$h(r.name||'')+(r.stock_verdict?' · titre : '+(window.VX?VX.verdictBadge(r.stock_verdict):$h(r.stock_verdict))+' ('+$n(r.stock_score)+'/100)':'')+'</div>'
   +(caps?'<div>'+caps+'</div>':'')+'</div>'
   +'<div class="verdict" style="background:linear-gradient(150deg,'+(dv.tone==='good'?'rgba(34,197,94,.10)':dv.tone==='warn'?'rgba(245,180,91,.09)':'rgba(239,68,68,.09)')+',transparent)">'
   +'<div class="lbl">Décision Vertex</div><div class="v" style="color:'+tone(dv.tone)+'">'+$h(dv.verdict)+'</div><div class="w">'+$h(dv.why)+'</div></div></div>'
