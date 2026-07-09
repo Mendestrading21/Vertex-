@@ -53,6 +53,7 @@ from vertex.ui import signals as _sg_ui
 from vertex.ui import vault as _av_ui
 from vertex.ui import sync_center as _sync_ui
 from vertex.ui import vx_kit as _vx
+from vertex.ui import design_system as _ds
 from vertex.engines import recommendation as _reco
 from vertex.engines import indicators as _indicators
 from vertex.engines import analysis as _analysis
@@ -6205,7 +6206,9 @@ _NAVJS_BLOCK += (";(function(){var _f=window.fetch;window.fetch=function(){retur
 #               (2) les 5 pages « legacy » (brutes) reçoivent le kit par injection directe.
 # Vocabulaire de verdicts = source unique Python (recommendation.py), injecté client.
 _VX_JS_FULL = 'window.__VXVOCAB=' + _reco.vocab_js() + ';' + _vx.JS
-_NAVCSS_BLOCK += '<style id="vx-kit-css">' + _vx.CSS + '</style>'
+# Couche Design System globale (cosmétique) EN AMONT du kit, pour que le kit et les pages gardent la main.
+_VX_CSS_FULL = '<style id="vx-ds">' + _ds.CSS + '</style><style id="vx-kit-css">' + _vx.CSS + '</style>'
+_NAVCSS_BLOCK += _VX_CSS_FULL
 _NAVJS_BLOCK += ';' + _VX_JS_FULL
 
 
@@ -6213,7 +6216,7 @@ def _inject_vx(page):
     if 'id="vx-kit-css"' in page:
         return page
     if '</head>' in page:
-        page = page.replace('</head>', '<style id="vx-kit-css">' + _vx.CSS + '</style></head>', 1)
+        page = page.replace('</head>', _VX_CSS_FULL + '</head>', 1)
     if '</body>' in page:
         page = page.replace('</body>', '<script id="vx-kit-js">' + _VX_JS_FULL + '</script></body>', 1)
     return page
