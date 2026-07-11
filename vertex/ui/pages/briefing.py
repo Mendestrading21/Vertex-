@@ -240,7 +240,7 @@ async function loadStrip(){
     const val=d.last??d.price??d.close??null;const chg=d.change??null;
     const series=d.series||d.spark||null;
     const target=slug==='vix'?'/markets?view=volatility':(['tnx','dxy','oil','gold','btc'].includes(slug)?'/markets?view=macro':'/markets?view=overview');
-    return `<a class="vx-card vx-col-3 vx-kpi" style="grid-column:span 2;text-decoration:none;color:inherit" href="${target}" aria-label="${label}">
+    return `<a class="vx-card vx-kpi vx-strip-item" style="text-decoration:none;color:inherit" href="${target}" aria-label="${label}">
       <span class="vx-kpi-label">${label}</span>
       <span class="vx-kpi-value" style="font-size:19px">${VX.fmt.nd(val!==null?VX.fmt.price(val):null)}</span>
       <span class="vx-kpi-delta ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}">${chg!==null?VX.fmt.pct(chg):'n/d'}</span>

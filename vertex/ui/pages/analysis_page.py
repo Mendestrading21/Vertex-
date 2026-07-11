@@ -229,7 +229,7 @@ async function loadDossier(){
     +kv('Croissance CA',me.rev_growth!==undefined?VX.fmt.pct(me.rev_growth*100,0):null)
     +kv('Marge',me.margin!==undefined?VX.fmt.pct(me.margin*100,0):null)
     +kv('P/E',me.pe)+kv('ROE',me.roe!==undefined?VX.fmt.pct(me.roe*100,0):null)
-    +kv('Médiane sectorielle P/E',t&&t.sector_median)
+    +kv('Médiane sectorielle P/E',t&&t.sector_median&&(t.sector_median.median_pe??t.sector_median))
     +(peers.length>1?`<div class="vx-meta vx-mt2">Pairs : ${peers.filter(p=>p.symbol!==SYM).slice(0,4).map(p=>
       `<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${p.symbol}">${p.symbol}</button>`).join('')}</div>`:''));
 

@@ -2,8 +2,10 @@
    Breakpoints : 1280 (compact), 1024 (tablette), 768 (petite tablette),
    720 (mobile tableaux→cartes), 640 (mobile). */
 
+.vx-strip-item{grid-column:span 2;min-width:0}
 @media (max-width:1280px){
   .vx-content{padding-left:var(--vx-s4);padding-right:var(--vx-s4)}
+  .vx-strip-item{grid-column:span 3}
   .vx-col-7,.vx-col-8,.vx-col-9{grid-column:span 12}
   .vx-col-5{grid-column:span 6}
   .vx-col-4{grid-column:span 6}
@@ -21,6 +23,7 @@
 
 @media (max-width:768px){
   .vx-grid{gap:var(--vx-s3)}
+  .vx-strip-item{grid-column:span 4}
   .vx-col-2,.vx-col-3,.vx-col-4,.vx-col-5,.vx-col-6{grid-column:span 6}
   h1{font-size:24px}
   .vx-topbar{padding:0 var(--vx-s3);gap:var(--vx-s2)}
@@ -39,6 +42,8 @@
     calc(var(--vx-mobile-bar-h) + var(--vx-s10) + env(safe-area-inset-bottom))}
   .vx-col-2,.vx-col-3,.vx-col-4,.vx-col-5,.vx-col-6,.vx-col-7,.vx-col-8,
   .vx-col-9{grid-column:span 12}
+  .vx-strip-item{grid-column:span 6}
+  .vx-strip-item .vx-kpi-value{font-size:17px!important}
   .vx-topbar-search{max-width:none}
   .vx-page-header .vx-actions{width:100%;justify-content:flex-start;
     overflow-x:auto;scrollbar-width:none}
