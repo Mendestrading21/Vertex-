@@ -1,0 +1,80 @@
+/* Vertex Design System — tokens.css
+   Langage visuel canonique (§7). Source unique des couleurs, typos, rayons,
+   espacements. Aucune couleur financière décorative : vert=positif,
+   rouge=négatif, orange=risque/alerte, violet=options/IA, bleu/cyan=données. */
+:root{
+  /* Fonds */
+  --vx-bg:#050811;
+  --vx-bg-secondary:#09101D;
+  --vx-surface:#0D1524;
+  --vx-surface-elevated:#111C30;
+  --vx-surface-hover:#16243B;
+
+  /* Bordures */
+  --vx-border:rgba(91,140,255,.18);
+  --vx-border-soft:rgba(255,255,255,.07);
+  --vx-border-strong:rgba(91,140,255,.34);
+
+  /* Texte */
+  --vx-text:#F5F7FB;
+  --vx-text-secondary:#9AA8C1;
+  --vx-text-muted:#73829D;
+  --vx-text-faint:#536078;
+
+  /* Accents */
+  --vx-blue:#3B82F6;
+  --vx-cyan:#22D3EE;
+  --vx-violet:#7C3AED;
+  --vx-positive:#22C77A;
+  --vx-negative:#EF5350;
+  --vx-warning:#F59E42;
+  --vx-information:#4DA3FF;
+
+  /* Teintes dérivées (fonds subtils, jamais du glow) */
+  --vx-blue-dim:rgba(59,130,246,.14);
+  --vx-cyan-dim:rgba(34,211,238,.12);
+  --vx-violet-dim:rgba(124,58,237,.14);
+  --vx-positive-dim:rgba(34,199,122,.12);
+  --vx-negative-dim:rgba(239,83,80,.12);
+  --vx-warning-dim:rgba(245,158,66,.14);
+
+  /* Typographie */
+  --vx-font:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --vx-font-mono:"SFMono-Regular","Roboto Mono","JetBrains Mono",Consolas,monospace;
+  --vx-fs-page:30px;      /* 30-34 titre de page */
+  --vx-fs-section:19px;   /* 18-22 titre de section */
+  --vx-fs-card:13px;      /* 13-15 titre de carte */
+  --vx-fs-body:13px;      /* 13-14 corps */
+  --vx-fs-meta:11px;      /* 11-12 métadonnées */
+  --vx-fs-kpi:28px;       /* 24-34 KPI */
+
+  /* Rayons */
+  --vx-r-sm:6px;
+  --vx-r:10px;
+  --vx-r-lg:12px;
+  --vx-r-modal:14px;
+
+  /* Espacements */
+  --vx-s1:4px;--vx-s2:8px;--vx-s3:12px;--vx-s4:16px;--vx-s5:20px;
+  --vx-s6:24px;--vx-s8:32px;--vx-s10:40px;--vx-s12:48px;--vx-s16:64px;
+
+  /* Layout */
+  --vx-content-max:1600px;
+  --vx-sidebar-w:244px;
+  --vx-sidebar-w-collapsed:72px;
+  --vx-topbar-h:62px;
+  --vx-mobile-bar-h:56px;
+
+  /* Élévation (discrète — pas de grosses ombres) */
+  --vx-shadow-1:0 1px 2px rgba(0,0,0,.35);
+  --vx-shadow-2:0 4px 14px rgba(0,0,0,.35);
+  --vx-shadow-modal:0 12px 40px rgba(0,0,0,.55);
+
+  /* Transitions */
+  --vx-t-fast:120ms ease;
+  --vx-t:180ms ease;
+
+  /* Z-index */
+  --vx-z-sidebar:40;--vx-z-topbar:35;--vx-z-drawer:60;--vx-z-modal:70;
+  --vx-z-palette:80;--vx-z-toast:90;
+}

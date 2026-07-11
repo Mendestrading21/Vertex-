@@ -1,0 +1,53 @@
+/* Vertex Design System — responsive.css (§44).
+   Breakpoints : 1280 (compact), 1024 (tablette), 768 (petite tablette),
+   720 (mobile tableaux→cartes), 640 (mobile). */
+
+@media (max-width:1280px){
+  .vx-content{padding-left:var(--vx-s4);padding-right:var(--vx-s4)}
+  .vx-col-7,.vx-col-8,.vx-col-9{grid-column:span 12}
+  .vx-col-5{grid-column:span 6}
+  .vx-col-4{grid-column:span 6}
+}
+
+@media (max-width:1024px){
+  /* Sidebar compacte forcée */
+  .vx-app .vx-sidebar{width:var(--vx-sidebar-w-collapsed)}
+  .vx-app .vx-main{margin-left:var(--vx-sidebar-w-collapsed)}
+  .vx-app .vx-logo-name,.vx-app .vx-nav-label,
+  .vx-app .vx-sidebar-status .vx-status-label{display:none}
+  .vx-col-6,.vx-col-5{grid-column:span 6}
+  .vx-session{display:none}
+}
+
+@media (max-width:768px){
+  .vx-grid{gap:var(--vx-s3)}
+  .vx-col-2,.vx-col-3,.vx-col-4,.vx-col-5,.vx-col-6{grid-column:span 6}
+  h1{font-size:24px}
+  .vx-topbar{padding:0 var(--vx-s3);gap:var(--vx-s2)}
+  .vx-breadcrumb .vx-crumb-root{display:none}
+}
+
+@media (max-width:640px){
+  /* Mobile : sidebar cachée, bottom navigation */
+  .vx-app .vx-sidebar{transform:translateX(-102%);width:var(--vx-sidebar-w);
+    transition:transform var(--vx-t)}
+  .vx-app[data-mobile-nav="open"] .vx-sidebar{transform:translateX(0)}
+  .vx-app .vx-main{margin-left:0}
+  .vx-app .vx-logo-name,.vx-app .vx-nav-label{display:inline}
+  .vx-mobile-bar{display:block}
+  .vx-content{padding:var(--vx-s3) var(--vx-s3)
+    calc(var(--vx-mobile-bar-h) + var(--vx-s10) + env(safe-area-inset-bottom))}
+  .vx-col-2,.vx-col-3,.vx-col-4,.vx-col-5,.vx-col-6,.vx-col-7,.vx-col-8,
+  .vx-col-9{grid-column:span 12}
+  .vx-topbar-search{max-width:none}
+  .vx-page-header .vx-actions{width:100%;justify-content:flex-start;
+    overflow-x:auto;scrollbar-width:none}
+  .vx-kpi .vx-kpi-value{font-size:22px}
+  .vx-drawer{width:100vw}
+  .vx-modal{padding:4vh var(--vx-s2)}
+  /* Cibles tactiles ≥ 40px */
+  .vx-btn,.vx-tab,.vx-chip{min-height:40px}
+  .vx-btn-sm{min-height:32px}
+}
+/* Aucun débordement horizontal global */
+html,body{overflow-x:clip}

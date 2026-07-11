@@ -1,0 +1,25 @@
+/* Vertex Design System — forms.css */
+.vx-field{display:flex;flex-direction:column;gap:5px;margin-bottom:var(--vx-s3)}
+.vx-field label{font-size:11.5px;font-weight:600;color:var(--vx-text-secondary);
+  text-transform:uppercase;letter-spacing:.4px}
+.vx-input,.vx-select,.vx-textarea{background:var(--vx-bg-secondary);
+  border:1px solid var(--vx-border-soft);border-radius:var(--vx-r-sm);
+  padding:8px 11px;color:var(--vx-text);font-size:13px;font-family:inherit;
+  width:100%}
+.vx-input:focus,.vx-select:focus,.vx-textarea:focus{
+  border-color:var(--vx-border-strong)}
+.vx-input[data-numeric],.vx-input[type=number]{font-family:var(--vx-font-mono)}
+.vx-textarea{min-height:76px;resize:vertical}
+.vx-select{appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2373829D' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.vx-help{font-size:11px;color:var(--vx-text-faint)}
+.vx-field-error{font-size:11px;color:var(--vx-negative)}
+.vx-form-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--vx-s3)}
+.vx-checkbox{display:flex;align-items:center;gap:8px;font-size:13px;
+  color:var(--vx-text-secondary);cursor:pointer}
+.vx-checkbox input{accent-color:var(--vx-blue);width:15px;height:15px}
+/* Étapes (formulaire progressif §19) */
+.vx-steps{display:flex;gap:6px;margin-bottom:var(--vx-s4)}
+.vx-steps span{flex:1;height:3px;border-radius:3px;background:var(--vx-border-soft)}
+.vx-steps span[data-done="1"]{background:var(--vx-cyan)}

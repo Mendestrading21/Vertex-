@@ -1,0 +1,27 @@
+/* Vertex Design System — utilities.css */
+.vx-flex{display:flex;align-items:center;gap:var(--vx-s2)}
+.vx-flex-col{display:flex;flex-direction:column;gap:var(--vx-s2)}
+.vx-between{justify-content:space-between}
+.vx-wrap{flex-wrap:wrap}
+.vx-grow{flex:1;min-width:0}
+.vx-right{margin-left:auto}
+.vx-center{text-align:center}
+.vx-nowrap{white-space:nowrap}
+.vx-truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vx-mt1{margin-top:var(--vx-s1)}.vx-mt2{margin-top:var(--vx-s2)}
+.vx-mt3{margin-top:var(--vx-s3)}.vx-mt4{margin-top:var(--vx-s4)}
+.vx-mb2{margin-bottom:var(--vx-s2)}.vx-mb3{margin-bottom:var(--vx-s3)}
+.vx-mb4{margin-bottom:var(--vx-s4)}
+.vx-gap1{gap:var(--vx-s1)}.vx-gap3{gap:var(--vx-s3)}.vx-gap4{gap:var(--vx-s4)}
+.vx-hide-desktop{display:none}
+@media (max-width:640px){
+  .vx-hide-mobile{display:none!important}
+  .vx-hide-desktop{display:initial}
+}
+.vx-divider{height:1px;background:var(--vx-border-soft);margin:var(--vx-s3) 0}
+.vx-kv{display:flex;justify-content:space-between;gap:var(--vx-s3);
+  padding:4px 0;border-bottom:1px dashed var(--vx-border-soft);font-size:12.5px}
+.vx-kv:last-child{border-bottom:none}
+.vx-kv .k{color:var(--vx-text-muted)}
+.vx-kv .v{font-family:var(--vx-font-mono);font-variant-numeric:tabular-nums;
+  font-weight:600;text-align:right}

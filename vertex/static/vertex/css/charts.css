@@ -1,0 +1,28 @@
+/* Vertex Design System — charts.css : contrat visuel des graphiques (§34). */
+.vx-chart-card{display:flex;flex-direction:column;min-width:0}
+.vx-chart-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;
+  margin-bottom:var(--vx-s2)}
+.vx-chart-head .vx-chart-title{font-size:14px;font-weight:700;color:var(--vx-text)}
+.vx-chart-head .vx-chart-controls{margin-left:auto;display:flex;gap:6px;align-items:center}
+.vx-chart-question{font-size:12px;color:var(--vx-text-muted);font-style:italic;
+  width:100%}
+.vx-chart-conclusion{font-size:12.5px;color:var(--vx-text-secondary);
+  font-weight:500;width:100%}
+.vx-chart-body{position:relative;flex:1;min-height:120px}
+.vx-chart-body canvas{width:100%!important}
+.vx-chart-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:var(--vx-s2);
+  font-size:11px;color:var(--vx-text-muted)}
+.vx-chart-legend .vx-swatch{display:inline-block;width:10px;height:10px;
+  border-radius:3px;margin-right:5px;vertical-align:-1px}
+.vx-chart-foot{display:flex;align-items:center;gap:var(--vx-s3);flex-wrap:wrap;
+  margin-top:var(--vx-s2);padding-top:var(--vx-s2);
+  border-top:1px solid var(--vx-border-soft)}
+.vx-chart-foot .vx-explain-btn{margin-left:auto}
+.vx-sparkline{display:block}
+/* Annotation de niveau sur les graphiques (entrée/stop/TP) */
+.vx-level-tag{display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--vx-font-mono);font-size:10.5px;padding:1px 7px;
+  border-radius:4px;border:1px solid var(--vx-border-soft)}
+.vx-level-tag[data-kind="entry"]{color:var(--vx-information)}
+.vx-level-tag[data-kind="stop"]{color:var(--vx-negative)}
+.vx-level-tag[data-kind="tp"]{color:var(--vx-positive)}

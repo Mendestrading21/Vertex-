@@ -1,0 +1,49 @@
+/* Vertex Design System — tables.css : tableau financier canonique (§36). */
+.vx-table-wrap{overflow-x:auto;border:1px solid var(--vx-border-soft);
+  border-radius:var(--vx-r-lg);background:var(--vx-surface)}
+.vx-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.vx-table th{position:sticky;top:0;z-index:2;background:var(--vx-bg-secondary);
+  color:var(--vx-text-muted);font-size:10.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.6px;text-align:left;
+  padding:9px 12px;border-bottom:1px solid var(--vx-border-soft);white-space:nowrap}
+.vx-table th[data-sortable]{cursor:pointer;user-select:none}
+.vx-table th[data-sortable]:hover{color:var(--vx-text)}
+.vx-table th[aria-sort="ascending"]::after{content:" ↑";color:var(--vx-cyan)}
+.vx-table th[aria-sort="descending"]::after{content:" ↓";color:var(--vx-cyan)}
+.vx-table td{padding:8px 12px;border-bottom:1px solid var(--vx-border-soft);
+  white-space:nowrap;vertical-align:middle}
+.vx-table tbody tr:last-child td{border-bottom:none}
+.vx-table tbody tr{transition:background var(--vx-t-fast)}
+.vx-table tbody tr:hover{background:var(--vx-surface-hover)}
+.vx-table tbody tr[data-clickable]{cursor:pointer}
+.vx-table .vx-num{font-family:var(--vx-font-mono);font-variant-numeric:tabular-nums;
+  text-align:right}
+.vx-table .vx-row-actions{opacity:0;display:flex;gap:4px;justify-content:flex-end;
+  transition:opacity var(--vx-t-fast)}
+.vx-table tbody tr:hover .vx-row-actions,
+.vx-table tbody tr:focus-within .vx-row-actions{opacity:1}
+.vx-table .vx-ticker{font-family:var(--vx-font-mono);font-weight:700;
+  color:var(--vx-text);letter-spacing:.3px}
+/* Barre de filtres */
+.vx-filterbar{display:flex;flex-wrap:wrap;gap:var(--vx-s2);align-items:center;
+  margin-bottom:var(--vx-s3)}
+.vx-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;
+  border-radius:99px;font-size:12px;border:1px solid var(--vx-border-soft);
+  background:var(--vx-surface);color:var(--vx-text-secondary);cursor:pointer;
+  font-family:inherit}
+.vx-chip[aria-pressed="true"]{background:var(--vx-blue-dim);
+  border-color:var(--vx-border-strong);color:var(--vx-text)}
+/* Mobile : transformation en cartes */
+@media (max-width:720px){
+  .vx-table-cards .vx-table,.vx-table-cards thead{display:block}
+  .vx-table-cards thead{display:none}
+  .vx-table-cards tbody{display:flex;flex-direction:column;gap:8px;padding:8px}
+  .vx-table-cards tbody tr{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;
+    border:1px solid var(--vx-border-soft);border-radius:var(--vx-r);
+    padding:10px;background:var(--vx-surface-elevated)}
+  .vx-table-cards td{border:none;padding:2px 0;white-space:normal}
+  .vx-table-cards td::before{content:attr(data-label);display:block;
+    font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;
+    color:var(--vx-text-faint)}
+  .vx-table-cards .vx-row-actions{opacity:1;grid-column:1/-1;justify-content:flex-start}
+}
