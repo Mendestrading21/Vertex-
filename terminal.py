@@ -1960,8 +1960,14 @@ from vertex.ui import strategy_os as _strategy_os_ui
 app.register_blueprint(_strategy_os_api.make_blueprint(scan_state=scan_state))
 
 
-@app.route('/strategy-os')
-@app.route('/vertex-intelligence')
+# ─── VERTEX MASTER REDESIGN (Blueprint) — 8 espaces + fiche canonique +
+#     redirections des anciennes pages (strangler pattern, APIs intactes) ───
+from vertex.app.routes import redesign as _redesign
+app.register_blueprint(_redesign.make_blueprint(scan_state=scan_state))
+
+
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/strategy-os')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/vertex-intelligence')
 def strategy_os_page():
     return _strategy_os_ui.render_page()
 
@@ -2142,23 +2148,23 @@ def ibkr_ep():
     return jsonify(_ibkr_snapshot())
 
 
-@app.route('/')
-@app.route('/daily')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/daily')
 def home():
     return PAGE_DAILY
 
 
 # Pages historiques fusionnées dans le dashboard → tout est sur une seule page.
 # On garde les routes pour ne pas casser d'anciens liens, mais elles redirigent vers /.
-@app.route('/analyse')
-@app.route('/news')
-@app.route('/calendar')
-@app.route('/semaine')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/analyse')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/news')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/calendar')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/semaine')
 def _legacy_pages_redirect():
     return redirect('/', code=302)
 
 
-@app.route('/options')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/options')
 def options_desk_page():
     return PAGE_OPTIONS_LAB
 
@@ -4240,7 +4246,7 @@ load();setInterval(load,20000);
 </script></body></html>"""
 
 
-@app.route('/watchlist')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/watchlist')
 def watchlist_page():
     # Intégrée DANS la Dashboard via iframe (?embed=1). Reste accessible en direct aussi.
     return PAGE_WATCHLIST
@@ -4692,7 +4698,7 @@ load();setInterval(load,20000);
 </script></body></html>"""
 
 
-@app.route('/options-desk')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/options-desk')
 def options_desk_alias():
     return PAGE_OPTIONS_DESK
 
@@ -4700,8 +4706,8 @@ def options_desk_alias():
 # ─── PAGE STRATÉGIE (dédiée) : bouton Actions/Options · 5 meilleures idées · live ──
 
 
-@app.route('/strategie')
-@app.route('/strategy')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/strategie')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/strategy')
 def strategie_page():
     return PAGE_STRATEGIE
 
@@ -5158,8 +5164,8 @@ applyDensity();render();load();setInterval(load,20000);
 </script></body></html>"""
 
 
-@app.route('/ma-page')
-@app.route('/moi')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/ma-page')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/moi')
 def my_page():
     # Mon Espace est FUSIONNÉ dans le desk (section 📌 MA WATCHLIST) — mêmes clés localStorage, rien n'est perdu
     return redirect('/strategie#secFavs')
@@ -6256,14 +6262,14 @@ COMP=cGet();load();setInterval(load,15000);
 """
 
 
-@app.route('/compare')
-@app.route('/comparateur')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/compare')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/comparateur')
 def compare_page():
     return PAGE_COMPARE
 
 
-@app.route('/entreprises')
-@app.route('/analyse-entreprise')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/entreprises')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/analyse-entreprise')
 def entreprises_page():
     return redirect('/', code=302)   # fusionné dans l'Overview (Morning Opportunity Brief)
 
@@ -6272,8 +6278,8 @@ def entreprises_page():
 # (ancienne fiche titre supprimée — remplacée par la refonte _SI_* portée dans _vpage)
 
 
-@app.route('/titre/<sym>')
-@app.route('/company/<sym>')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/titre/<sym>')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/company/<sym>')
 def titre_page(sym):
     return PAGE_TITRE
 
@@ -7270,8 +7276,8 @@ PAGE_SETTINGS = _vpage('Paramètres',
   js=_SETTINGS_JS)
 
 
-@app.route('/settings')
-@app.route('/parametres')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/settings')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/parametres')
 def settings_page():
     return PAGE_SETTINGS
 
@@ -7546,7 +7552,7 @@ PAGE_BRIEF = _vpage('Morning Brief',
   js=_BRIEF_JS)
 
 
-@app.route('/brief')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/brief')
 def brief_page():
     return redirect('/', code=302)   # « Matinal » fusionné dans l'Overview
 
@@ -7590,7 +7596,7 @@ PAGE_REVIEW = _vpage('Committee Review',
   js=_REVIEW_JS)
 
 
-@app.route('/review')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/review')
 def review_page():
     return PAGE_REVIEW
 
@@ -7639,7 +7645,7 @@ PAGE_DECISIONS = _vpage('Journal des décisions',
   js=_DECJ_JS)
 
 
-@app.route('/decisions')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/decisions')
 def decisions_page():
     return redirect('/journal', code=302)   # fusionné dans le Journal
 
@@ -7709,7 +7715,7 @@ PAGE_RESEARCH = _vpage('Research',
   js=_RESEARCH_JS)
 
 
-@app.route('/research')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/research')
 def research_page():
     return PAGE_RESEARCH
 
@@ -7763,7 +7769,7 @@ PAGE_HEALTH = _vpage('Santé du système',
   js=_HEALTH_JS)
 
 
-@app.route('/health')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/health')
 def health_page():
     return PAGE_HEALTH
 
@@ -7787,8 +7793,8 @@ _SUIVI_JS = r"""
 var ROWS={},DET={},MK={};
 function rGet(){try{return JSON.parse(localStorage.getItem('myRecos')||'[]')}catch(e){return[]}}
 function rSet(a){localStorage.setItem('myRecos',JSON.stringify(a));localStorage.setItem('deskTs',String(Date.now()));sSyncPush();}
-var _sT;function sSyncPush(){clearTimeout(_sT);_sT=setTimeout(function(){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){var data=(d&&d.data)||{};['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts'].forEach(function(k){var v=localStorage.getItem(k);if(v!=null)data[k]=v;});fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:Date.now(),data:data})});}).catch(function(){});}catch(e){}},900);}
-function sSyncPull(cb){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){if(d&&d.data){var lt=parseFloat(localStorage.getItem('deskTs')||'0');if((d.ts||0)>lt){['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts'].forEach(function(k){if(d.data[k]!=null)localStorage.setItem(k,d.data[k]);});localStorage.setItem('deskTs',String(d.ts||Date.now()));}}if(cb)cb();}).catch(function(){if(cb)cb();});}catch(e){if(cb)cb();}}
+var _sT;function sSyncPush(){clearTimeout(_sT);_sT=setTimeout(function(){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){var data=(d&&d.data)||{};['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts','vxWatchlist'].forEach(function(k){var v=localStorage.getItem(k);if(v!=null)data[k]=v;});fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:Date.now(),data:data})});}).catch(function(){});}catch(e){}},900);}
+function sSyncPull(cb){try{fetch('/api/desk').then(function(r){return r.json()}).then(function(d){if(d&&d.data){var lt=parseFloat(localStorage.getItem('deskTs')||'0');if((d.ts||0)>lt){['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts','vxWatchlist'].forEach(function(k){if(d.data[k]!=null)localStorage.setItem(k,d.data[k]);});localStorage.setItem('deskTs',String(d.ts||Date.now()));}}if(cb)cb();}).catch(function(){if(cb)cb();});}catch(e){if(cb)cb();}}
 function today(){return new Date().toISOString().slice(0,10);}
 function bestReco(key){var rs=Object.keys(ROWS).map(function(k){return ROWS[k];});
   var buys=rs.filter(function(r){return r.verdict==='BUY'&&r[key]!=null;});
@@ -7895,20 +7901,20 @@ PAGE_SUIVI = _vpage('Watchlist',
   js=_SUIVI_JS)
 
 
-@app.route('/suivi')
-@app.route('/suivis')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/suivi')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/suivis')
 def suivi_page():
     return PAGE_SUIVI
 
 
 
-@app.route('/anomalies')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/anomalies')
 def anomalies_page():
     return PAGE_ANOMALIES
 
 
-@app.route('/vault')
-@app.route('/archive')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/vault')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/archive')
 def vault_page():
     return PAGE_VAULT
 
@@ -7956,7 +7962,7 @@ PAGE_HEATMAP = _vpage('Heatmap',
   js=_HEATMAP_JS)
 
 
-@app.route('/heatmap')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/heatmap')
 def heatmap_page():
     return PAGE_HEATMAP
 
@@ -8311,8 +8317,8 @@ PAGE_EQUIPE = _vpage('Playbook',
   js=_PLAYBOOK_JS)
 
 
-@app.route('/equipe')
-@app.route('/equipe-du-mois')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/equipe')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/equipe-du-mois')
 def equipe_page():
     return PAGE_EQUIPE
 
@@ -8993,7 +8999,7 @@ function sTable(a){
 
 _TRADES_JS = r"""
 /* ===== ☁️ SYNC DESK : mêmes trades/journal/favoris sur PC ET iPhone (stockés côté serveur) ===== */
-var __deskT=null,__DESK_KEYS=['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts'];
+var __deskT=null,__DESK_KEYS=['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts','vxWatchlist'];
 function deskCollect(){var d={};__DESK_KEYS.forEach(function(k){var v=localStorage.getItem(k);if(v!=null)d[k]=v;});return d;}
 function deskPush(){var body={ts:Date.now(),data:deskCollect()};localStorage.setItem('deskTs',String(body.ts));
   fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
@@ -10262,7 +10268,7 @@ PAGE_BORDEL = _vpage('Intel',
   js=_BORDEL_JS)
 
 
-@app.route('/bordel')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/bordel')
 def bordel_page():
     return PAGE_BORDEL
 
@@ -10332,23 +10338,23 @@ PAGE_STOCKS = _vpage('Stock info',
   js=_STOCKS_JS)
 
 
-@app.route('/stocks')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/stocks')
 def stocks_page():
     return PAGE_STOCKS
 
 
-@app.route('/sectors')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/sectors')
 def sectors_page():
     return PAGE_SECTORS
 
 
-@app.route('/catalysts')
-@app.route('/catalyseurs')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/catalysts')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/catalyseurs')
 def catalysts_page():
     return PAGE_CATALYSTS
 
 
-@app.route('/journal')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/journal')
 def journal_page():
     return PAGE_JOURNAL
 
@@ -10357,7 +10363,7 @@ def journal_page():
 PAGE_OPTIONS_LAB = _vpage('Options Lab', _olab_ui.BODY, head=_olab_ui.CSS, js=_olab_ui.JS)
 
 
-@app.route('/options-lab')
+# [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/options-lab')
 def options_lab_page():
     return PAGE_OPTIONS_LAB
 

@@ -256,7 +256,7 @@ function breadcrumb(host){var parts=location.pathname.split('/').filter(function
 /* ---------- SYNC AU DEMARRAGE : hydrate le desk depuis le serveur sur CHAQUE page ---------- */
 /* Sans ca, positions/suivis/watchlist n'etaient charges que sur le Desk. Desormais,
    quand tu allumes Vertex sur n'importe quelle page, tout est deja synchronise. */
-var DESK_KEYS=['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts'];
+var DESK_KEYS=['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts','vxWatchlist'];
 var _bootDone=false;
 function bootSync(cb){
  fetch('/api/desk').then(function(r){return r.json();}).then(function(d){

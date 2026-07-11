@@ -1,0 +1,388 @@
+/* Vertex Entity Actions (§17-19) — LA couche unique favoris / watchlist /
+   suivis / positions / alertes / notes / thèses.
+   Schémas localStorage historiques PRÉSERVÉS À L'IDENTIQUE (audit §3) :
+   - myFavs   = ["NVDA", ...]
+   - myNotes  = {"NVDA": "note"}
+   - myRecos  = suivis ⭐ [{id,kind:'STK',sym,entry_spot,stop,tgt,followed}]
+   - myTrades = positions [{id,type,sym,exp,strike,right,qty,cost,added,entrySnap,note}]
+   - myTradesClosed = [{sym,type,strike,exp,qty,cost,exit,added,closed,note}]
+   - vxAlerts = [{id,sym,cond:'above'|'below'|'target',level,note,created,active}]
+   - vxJournal = entrées de journal (schéma journal.py)
+   - vxWatchlist (NOUVEAU, ajouté aux 4 listes de sync) =
+       [{sym,priority,thesis,zone,catalyst,added,review,status}]
+   Sync desk : POST /api/desk {ts, data} — last-writer-wins, INCHANGÉ. */
+(function () {
+  'use strict';
+  const VX = window.VX;
+
+  /* Clés synchronisées — MIROIR EXACT de __DESK_KEYS (terminal.py) + vxWatchlist. */
+  const DESK_KEYS = ['myTrades', 'myTradesClosed', 'myTradesEquity', 'myRecos',
+    'myRecosClosed', 'myCapital', 'simCash', 'simStart', 'simTrades', 'simClosed',
+    'myFavs', 'myNotes', 'vxJournal', 'myTradeLog', 'vxVault', 'vxAlerts',
+    'vxWatchlist'];
+
+  const today = () => new Date().toISOString().slice(0, 10);
+  function get(key, fallback) {
+    try { const v = JSON.parse(localStorage.getItem(key)); return v === null || v === undefined ? fallback : v; }
+    catch (e) { return fallback; }
+  }
+  function set(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); localStorage.setItem('deskTs', String(Date.now())); } catch (e) {}
+    schedulePush();
+  }
+
+  /* ── Sync /api/desk (protocole historique inchangé) ─────────────── */
+  let pushTimer = null;
+  function schedulePush() { clearTimeout(pushTimer); pushTimer = setTimeout(pushNow, 1200); }
+  function pushNow() {
+    try {
+      const data = {};
+      DESK_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v != null) data[k] = v; });
+      const ts = Number(localStorage.getItem('deskTs') || Date.now());
+      fetch('/api/desk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ts, data }) }).catch(() => {});
+    } catch (e) {}
+  }
+  async function pull() {
+    try {
+      const r = await fetch('/api/desk'); const d = await r.json();
+      const localTs = Number(localStorage.getItem('deskTs') || 0);
+      if (d && d.ts && d.data) {
+        if (d.ts > localTs) { /* serveur plus récent : ne jamais écraser du plus récent par du plus ancien */
+          Object.entries(d.data).forEach(([k, v]) => { if (DESK_KEYS.includes(k)) try { localStorage.setItem(k, v); } catch (e) {} });
+          try { localStorage.setItem('deskTs', String(d.ts)); } catch (e) {}
+          VX.bus.emit('vx:data-refreshed', { reason: 'desk-pull' });
+          ['vx:favorites-changed', 'vx:watchlist-changed', 'vx:follow-changed', 'vx:position-changed', 'vx:alert-changed'].forEach(ev => VX.bus.emit(ev, { source: 'sync' }));
+        } else if (localTs > d.ts) pushNow();
+      } else if (!d || !d.ts) {
+        if (localTs) pushNow();
+      }
+    } catch (e) {}
+  }
+  pull(); setInterval(() => { if (!document.hidden) pull(); }, 120000);
+
+  /* ── Store ───────────────────────────────────────────────────────── */
+  const E = window.VXEntities = {
+    DESK_KEYS,
+    /* Favoris (étoile, accès rapide) */
+    favorites() { return get('myFavs', []); },
+    isFavorite(sym) { return this.favorites().includes(String(sym).toUpperCase()); },
+    toggleFavorite(sym) {
+      sym = String(sym).toUpperCase();
+      const favs = this.favorites();
+      const i = favs.indexOf(sym);
+      if (i >= 0) { favs.splice(i, 1); VX.toast(`${sym} retiré des favoris`); }
+      else { favs.push(sym); VX.toast(`${sym} ajouté aux favoris`, 'success'); }
+      set('myFavs', favs);
+      VX.bus.emit('vx:favorites-changed', { sym, active: i < 0 });
+      return i < 0;
+    },
+    /* Watchlist (surveillance active, riche) */
+    watchlist() { return get('vxWatchlist', []); },
+    inWatchlist(sym) { return this.watchlist().some(w => w.sym === String(sym).toUpperCase()); },
+    addToWatchlist(sym, fields) {
+      sym = String(sym).toUpperCase();
+      const list = this.watchlist().filter(w => w.sym !== sym);
+      list.push(Object.assign({ sym, priority: 'normal', thesis: '', zone: '', catalyst: '',
+        added: today(), review: '', status: 'a_etudier' }, fields || {}));
+      set('vxWatchlist', list);
+      VX.bus.emit('vx:watchlist-changed', { sym, active: true });
+      VX.toast(`${sym} ajouté à la watchlist`, 'success');
+    },
+    removeFromWatchlist(sym) {
+      sym = String(sym).toUpperCase();
+      set('vxWatchlist', this.watchlist().filter(w => w.sym !== sym));
+      VX.bus.emit('vx:watchlist-changed', { sym, active: false });
+      VX.toast(`${sym} retiré de la watchlist`);
+    },
+    /* Suivis ⭐ (setup suivi — schéma myRecos historique) */
+    follows() { return get('myRecos', []); },
+    isFollowed(sym) { return this.follows().some(r => r.sym === String(sym).toUpperCase() && r.kind === 'STK'); },
+    followStock(sym, { entry_spot = null, stop = null, tgt = null } = {}) {
+      sym = String(sym).toUpperCase();
+      const list = this.follows();
+      if (this.isFollowed(sym)) return;
+      list.push({ id: Date.now(), kind: 'STK', sym, entry_spot, stop, tgt, followed: today() });
+      set('myRecos', list);
+      VX.bus.emit('vx:follow-changed', { sym, active: true });
+      VX.toast(`Suivi créé sur ${sym}`, 'success');
+    },
+    unfollow(sym) {
+      sym = String(sym).toUpperCase();
+      set('myRecos', this.follows().filter(r => !(r.sym === sym && r.kind === 'STK')));
+      VX.bus.emit('vx:follow-changed', { sym, active: false });
+      VX.toast(`Suivi retiré sur ${sym}`);
+    },
+    /* Positions (schéma myTrades historique — AUCUN ordre : registre déclaratif) */
+    positions() { return get('myTrades', []); },
+    closedPositions() { return get('myTradesClosed', []); },
+    hasPosition(sym) { return this.positions().some(t => t.sym === String(sym).toUpperCase()); },
+    addPosition(fields) {
+      const t = Object.assign({ id: Date.now(), type: 'STK', sym: '', exp: null,
+        strike: null, right: null, qty: 1, cost: 0, added: today(),
+        entrySnap: {}, note: '' }, fields || {});
+      t.sym = String(t.sym).toUpperCase();
+      if (!t.sym || !(t.qty > 0)) { VX.toast('Position invalide (ticker/quantité)', 'error'); return null; }
+      const list = this.positions(); list.push(t); set('myTrades', list);
+      this._log(t.sym, 'OPEN', `${t.type} ${t.qty} @ ${t.cost}`, t.id);
+      VX.bus.emit('vx:position-changed', { sym: t.sym, action: 'open' });
+      VX.toast(`Position ${t.sym} enregistrée`, 'success');
+      return t;
+    },
+    updatePosition(id, fields) {
+      const list = this.positions();
+      const t = list.find(x => x.id === id); if (!t) return;
+      Object.assign(t, fields || {}); set('myTrades', list);
+      VX.bus.emit('vx:position-changed', { sym: t.sym, action: 'update' });
+      VX.toast(`Position ${t.sym} modifiée`, 'success');
+    },
+    closePosition(id, exitAmount, note) {
+      const list = this.positions();
+      const i = list.findIndex(x => x.id === id); if (i < 0) return;
+      const t = list.splice(i, 1)[0];
+      const closed = this.closedPositions();
+      closed.push({ sym: t.sym, type: t.type, strike: t.strike, exp: t.exp,
+        qty: t.qty, cost: t.cost, exit: Number(exitAmount) || 0,
+        added: t.added, closed: today(), note: note || t.note || '' });
+      set('myTrades', list); set('myTradesClosed', closed);
+      /* entrée de journal automatique (comportement historique conservé) */
+      const jr = get('vxJournal', []);
+      const invested = (t.cost || 0) * (t.qty || 1) * (t.type === 'STK' ? 1 : 100);
+      const recovered = Number(exitAmount) || 0;
+      jr.push({ id: Date.now() + 1, ticker: t.sym, tf: 'swing',
+        dir: 'LONG', reason: '', entry: t.cost, stop: t.entrySnap?.stop ?? '',
+        tp: t.entrySnap?.tgt ?? '', risk: '', emo: '', conf: '', disc: '',
+        trigger: '', result: recovered >= invested ? 'WIN' : 'LOSS',
+        exit: recovered, pnl: Math.round((recovered - invested) * 100) / 100,
+        lesson: '', mistake: '', date: today(), auto: true, kind: t.type,
+        strike: t.strike, invested, recovered });
+      set('vxJournal', jr);
+      this._log(t.sym, 'CLOSE', `sortie ${recovered}`, t.id);
+      VX.bus.emit('vx:position-changed', { sym: t.sym, action: 'close' });
+      VX.toast(`Position ${t.sym} clôturée (journal mis à jour)`, 'success');
+    },
+    /* Alertes (schéma vxAlerts historique — évaluées côté serveur) */
+    alerts() { return get('vxAlerts', []); },
+    hasAlert(sym) { return this.alerts().some(a => a.sym === String(sym).toUpperCase() && a.active); },
+    addAlert(sym, cond, level, note) {
+      sym = String(sym).toUpperCase();
+      const list = this.alerts();
+      list.push({ id: Date.now(), sym, cond: cond || 'above', level: Number(level),
+        note: note || '', created: new Date().toISOString(), active: true });
+      set('vxAlerts', list);
+      VX.bus.emit('vx:alert-changed', { sym, active: true });
+      VX.toast(`Alerte créée sur ${sym} (${cond} ${level})`, 'success');
+    },
+    removeAlert(id) {
+      const list = this.alerts(); const a = list.find(x => x.id === id);
+      set('vxAlerts', list.filter(x => x.id !== id));
+      VX.bus.emit('vx:alert-changed', { sym: a?.sym, active: false });
+    },
+    /* Notes & thèses */
+    notes() { return get('myNotes', {}); },
+    note(sym) { return this.notes()[String(sym).toUpperCase()] || ''; },
+    setNote(sym, text) {
+      sym = String(sym).toUpperCase();
+      const n = this.notes();
+      if (text) n[sym] = text; else delete n[sym];
+      set('myNotes', n);
+      VX.bus.emit('vx:thesis-changed', { sym });
+      VX.toast('Note enregistrée', 'success');
+    },
+    journal() { return get('vxJournal', []); },
+    addJournalEntry(entry) {
+      const jr = this.journal();
+      jr.push(Object.assign({ id: Date.now(), date: today() }, entry));
+      set('vxJournal', jr);
+      VX.toast('Entrée de journal enregistrée', 'success');
+    },
+    capital() { const c = get('myCapital', null); return c === null ? null : Number(c); },
+    equity() { return get('myTradesEquity', []); },
+    _log(sym, ev, txt, tid) {
+      const log = get('myTradeLog', []);
+      const d = new Date();
+      log.push({ ts: Date.now(), d: d.toISOString().slice(0, 16).replace('T', ' '), sym, ev, txt, tid });
+      set('myTradeLog', log.slice(-400));
+    },
+    /* Badges d'état d'un ticker (§18) */
+    badges(sym) {
+      sym = String(sym).toUpperCase();
+      const out = [];
+      if (this.isFavorite(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="fav">★ Favori</span>');
+      if (this.inWatchlist(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="watch">Watchlist</span>');
+      if (this.isFollowed(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="follow">Suivi actif</span>');
+      if (this.hasPosition(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="position">Position</span>');
+      if (this.hasAlert(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="alert">Alerte active</span>');
+      return out.join(' ');
+    },
+  };
+
+  /* ── Menu d'actions universel (§17) ─────────────────────────────── */
+  E.actionsFor = function (sym, contract) {
+    sym = String(sym).toUpperCase();
+    const acts = [
+      { label: 'Ouvrir l’analyse', run: () => VX.openAnalysis(sym) },
+      { label: E.isFavorite(sym) ? 'Retirer des favoris' : 'Ajouter aux favoris', run: () => E.toggleFavorite(sym) },
+      { label: E.inWatchlist(sym) ? 'Retirer de la watchlist' : 'Ajouter à la watchlist', run: () => E.inWatchlist(sym) ? E.removeFromWatchlist(sym) : E.openAddModal(sym, 'watchlist') },
+      { label: E.isFollowed(sym) ? 'Modifier le suivi' : 'Créer un suivi', run: () => E.openAddModal(sym, 'follow') },
+      { label: 'Créer une alerte', run: () => E.openAddModal(sym, 'alert') },
+      { label: 'Ajouter une position', run: () => E.openAddModal(sym, 'position', contract) },
+      { sep: true },
+      { label: 'Ouvrir les options', run: () => { VX.context.save({ selectedSymbol: sym }); location.href = '/opportunities?view=options&sym=' + sym; } },
+      { label: 'Ajouter une note / thèse', run: () => E.openAddModal(sym, 'note') },
+      { label: 'Ouvrir le journal', run: () => { VX.context.save(); location.href = '/performance?view=journal&sym=' + sym; } },
+      { label: 'Copier le ticker', run: () => { navigator.clipboard?.writeText(sym); VX.toast(sym + ' copié'); } },
+      { label: 'Ouvrir TradingView ↗', run: () => window.open('https://www.tradingview.com/chart/?symbol=' + encodeURIComponent(sym), '_blank', 'noopener') },
+    ];
+    return acts;
+  };
+  /* Menu contextuel positionné (clavier: ↑↓ Entrée Échap) */
+  E.openMenu = function (sym, anchorEl, contract) {
+    const menu = document.getElementById('vx-context-menu');
+    const acts = E.actionsFor(sym, contract);
+    menu.innerHTML = acts.map((a, i) => a.sep ? '<div class="vx-sep"></div>' :
+      `<button role="menuitem" data-i="${i}">${a.label}</button>`).join('');
+    const r = anchorEl.getBoundingClientRect();
+    menu.style.left = Math.min(r.left, window.innerWidth - 250) + 'px';
+    menu.style.top = Math.min(r.bottom + 4, window.innerHeight - 320) + 'px';
+    menu.dataset.open = '1';
+    const btns = [...menu.querySelectorAll('button')];
+    let sel = 0; btns[0]?.focus();
+    function highlight() { btns.forEach((b, i) => b.dataset.active = i === sel ? '1' : '0'); btns[sel]?.focus(); }
+    menu.onkeydown = (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(btns.length - 1, sel + 1); highlight(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(0, sel - 1); highlight(); }
+      else if (e.key === 'Enter') { e.preventDefault(); btns[sel]?.click(); }
+    };
+    btns.forEach(b => b.addEventListener('click', () => {
+      menu.dataset.open = '0';
+      acts[+b.dataset.i].run();
+    }));
+    const close = (ev) => { if (!menu.contains(ev.target)) { menu.dataset.open = '0'; document.removeEventListener('mousedown', close); } };
+    setTimeout(() => document.addEventListener('mousedown', close), 0);
+  };
+  /* Délégation globale : tout élément [data-entity-menu="SYM"] ouvre le menu. */
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-entity-menu]');
+    if (trigger) { e.preventDefault(); e.stopPropagation(); E.openMenu(trigger.dataset.entityMenu, trigger); return; }
+    const open = e.target.closest('[data-open-analysis]');
+    if (open) { e.preventDefault(); VX.openAnalysis(open.dataset.openAnalysis); }
+  });
+
+  /* ── + Ajouter : formulaire progressif (§19) ─────────────────────── */
+  E.openAddModal = function (presetSym, presetDest, contract) {
+    const destinations = [
+      ['favorite', 'Favori'], ['watchlist', 'Watchlist'], ['follow', 'Suivi'],
+      ['position', 'Position'], ['alert', 'Alerte'], ['note', 'Thèse / note'],
+    ];
+    let step = presetSym ? (presetDest ? 3 : 2) : 1;
+    let sym = presetSym || '', dest = presetDest || '';
+    function stepsBar() {
+      return `<div class="vx-steps">${[1, 2, 3].map(i => `<span data-done="${step >= i ? 1 : 0}"></span>`).join('')}</div>`;
+    }
+    function render() {
+      let body = stepsBar(); let footer = '';
+      if (step === 1) {
+        body += `<div class="vx-field"><label for="vx-add-sym">Ticker</label>
+          <input class="vx-input" id="vx-add-sym" placeholder="ex. NVDA" value="${sym}"
+            autocomplete="off" style="text-transform:uppercase" /></div>
+          <div class="vx-help">Recherchez l’actif puis choisissez la destination.</div>`;
+        footer = '<button class="vx-btn vx-btn-primary" id="vx-add-next">Continuer</button>';
+      } else if (step === 2) {
+        body += `<div class="vx-flex vx-mb3"><span class="vx-ticker" style="font-size:18px">${sym}</span>${E.badges(sym)}</div>
+          <div class="vx-flex vx-wrap vx-gap3">` +
+          destinations.map(([id, label]) =>
+            `<button class="vx-btn" data-dest="${id}">${label}</button>`).join('') + '</div>';
+      } else {
+        body += `<div class="vx-flex vx-mb3"><span class="vx-ticker" style="font-size:18px">${sym}</span>
+          <span class="vx-badge">${destinations.find(d => d[0] === dest)?.[1] || dest}</span></div>` + detailForm();
+        footer = '<button class="vx-btn vx-btn-primary" id="vx-add-confirm">Confirmer</button>';
+      }
+      VX.shell.openModal('Ajouter', body, footer);
+      wire();
+    }
+    function detailForm() {
+      if (dest === 'favorite') return '<div class="vx-help">Aucun détail requis — l’étoile donne un accès rapide permanent.</div>';
+      if (dest === 'watchlist') return `
+        <div class="vx-form-row">
+          <div class="vx-field"><label>Priorité</label><select class="vx-select" id="f-priority">
+            <option value="haute">Haute</option><option value="normal" selected>Normale</option><option value="basse">Basse</option></select></div>
+          <div class="vx-field"><label>Zone souhaitée</label><input class="vx-input" id="f-zone" placeholder="ex. 480-495" /></div>
+        </div>
+        <div class="vx-field"><label>Thèse courte</label><input class="vx-input" id="f-thesis" placeholder="pourquoi surveiller ?" /></div>
+        <div class="vx-field"><label>Catalyseur</label><input class="vx-input" id="f-catalyst" placeholder="earnings, produit…" /></div>`;
+      if (dest === 'follow') return `
+        <div class="vx-form-row">
+          <div class="vx-field"><label>Entrée visée</label><input class="vx-input" id="f-entry" type="number" step="any" /></div>
+          <div class="vx-field"><label>Stop (invalidation)</label><input class="vx-input" id="f-stop" type="number" step="any" /></div>
+        </div>
+        <div class="vx-field"><label>Objectif</label><input class="vx-input" id="f-tgt" type="number" step="any" /></div>`;
+      if (dest === 'alert') return `
+        <div class="vx-form-row">
+          <div class="vx-field"><label>Condition</label><select class="vx-select" id="f-cond">
+            <option value="above">Franchit à la hausse</option>
+            <option value="below">Casse à la baisse</option>
+            <option value="target">Atteint la cible</option></select></div>
+          <div class="vx-field"><label>Niveau</label><input class="vx-input" id="f-level" type="number" step="any" required /></div>
+        </div>
+        <div class="vx-field"><label>Note</label><input class="vx-input" id="f-note" placeholder="contexte de l’alerte" /></div>
+        <div class="vx-help">Évaluée côté serveur toutes les 60 s sur données réelles.</div>`;
+      if (dest === 'position') {
+        const c = contract || {};
+        return `
+        <div class="vx-form-row">
+          <div class="vx-field"><label>Type</label><select class="vx-select" id="f-type">
+            <option value="STK" ${!c.right ? 'selected' : ''}>Action</option>
+            <option value="CALL" ${c.right === 'C' ? 'selected' : ''}>CALL</option>
+            <option value="PUT" ${c.right === 'P' ? 'selected' : ''}>PUT</option></select></div>
+          <div class="vx-field"><label>Quantité</label><input class="vx-input" id="f-qty" type="number" min="1" value="1" /></div>
+        </div>
+        <div class="vx-form-row">
+          <div class="vx-field"><label>Prix unitaire (prime si option)</label>
+            <input class="vx-input" id="f-cost" type="number" step="any" value="${c.mid ?? ''}" /></div>
+          <div class="vx-field"><label>Stop sous-jacent</label><input class="vx-input" id="f-stop" type="number" step="any" value="${c.stop ?? ''}" /></div>
+        </div>
+        <div class="vx-form-row">
+          <div class="vx-field"><label>Strike (option)</label><input class="vx-input" id="f-strike" type="number" step="any" value="${c.strike ?? ''}" /></div>
+          <div class="vx-field"><label>Expiration (option)</label><input class="vx-input" id="f-exp" placeholder="YYYY-MM-DD" value="${c.expiry ?? ''}" /></div>
+        </div>
+        <div class="vx-help">Registre déclaratif — Vertex n’envoie JAMAIS un ordre.</div>`;
+      }
+      if (dest === 'note') return `
+        <div class="vx-field"><label>Thèse / note</label>
+        <textarea class="vx-textarea" id="f-text">${E.note(sym)}</textarea></div>`;
+      return '';
+    }
+    function confirm() {
+      const v = (id) => document.getElementById(id)?.value?.trim();
+      const n = (id) => { const x = v(id); return x === '' || x === undefined ? null : Number(x); };
+      if (dest === 'favorite') { if (!E.isFavorite(sym)) E.toggleFavorite(sym); }
+      else if (dest === 'watchlist') E.addToWatchlist(sym, { priority: v('f-priority'), zone: v('f-zone'), thesis: v('f-thesis'), catalyst: v('f-catalyst') });
+      else if (dest === 'follow') E.followStock(sym, { entry_spot: n('f-entry'), stop: n('f-stop'), tgt: n('f-tgt') });
+      else if (dest === 'alert') {
+        if (n('f-level') === null) { VX.toast('Niveau requis', 'error'); return; }
+        E.addAlert(sym, v('f-cond'), n('f-level'), v('f-note'));
+      } else if (dest === 'position') {
+        E.addPosition({ type: v('f-type'), sym, qty: n('f-qty') || 1, cost: n('f-cost') || 0,
+          strike: n('f-strike'), exp: v('f-exp') || null,
+          right: v('f-type') === 'CALL' ? 'C' : (v('f-type') === 'PUT' ? 'P' : null),
+          entrySnap: { stop: n('f-stop') } });
+      } else if (dest === 'note') E.setNote(sym, v('f-text'));
+      VX.shell.closeModal();
+    }
+    function wire() {
+      document.getElementById('vx-add-next')?.addEventListener('click', () => {
+        const val = document.getElementById('vx-add-sym')?.value?.trim().toUpperCase();
+        if (!/^[A-Z.\-]{1,7}$/.test(val || '')) { VX.toast('Ticker invalide', 'error'); return; }
+        sym = val; step = 2; render();
+      });
+      document.getElementById('vx-add-sym')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('vx-add-next')?.click();
+      });
+      document.querySelectorAll('#vx-modal [data-dest]').forEach(b =>
+        b.addEventListener('click', () => { dest = b.dataset.dest; step = 3; render(); }));
+      document.getElementById('vx-add-confirm')?.addEventListener('click', confirm);
+      document.getElementById('vx-add-sym')?.focus();
+    }
+    render();
+  };
+})();

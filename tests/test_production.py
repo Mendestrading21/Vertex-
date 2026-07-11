@@ -61,13 +61,14 @@ def test_desk_sync_keys_single_source_of_truth():
     """Toutes les listes de clés de sync (desk, journal, watchlist) sont identiques."""
     full = ("['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed',"
             "'myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes',"
-            "'vxJournal','myTradeLog','vxVault','vxAlerts']")
+            "'vxJournal','myTradeLog','vxVault','vxAlerts','vxWatchlist']")
     src = open('terminal.py', encoding='utf-8').read()
     assert full in journal.JS                       # journal
     assert src.count(full) >= 3                     # desk (__DESK_KEYS) + suivi push/pull
     # aucune ancienne liste partielle ne subsiste
     assert "'myNotes','myCapital']" not in src.replace(full, '')
     assert "'myTradeLog','vxVault']" not in src     # liste SANS vxAlerts = perte d'alertes
+    assert "'vxAlerts']" not in src.replace(full, '')  # liste SANS vxWatchlist = perte watchlist
     # le kit global (vx_kit) référence les mêmes clés + vxAlerts
     from vertex.ui import vx_kit
     assert "'vxAlerts'" in vx_kit.JS
