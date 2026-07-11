@@ -45,8 +45,10 @@ def test_decision_route_uses_executive_engine(client):
 
 def test_decision_route_honest_when_symbol_unknown(client):
     r = client.get('/api/strategy/decision/ZZZZ')
-    assert r.status_code == 404
-    assert r.get_json()['final_decision'] == 'ATTENDRE'
+    assert r.status_code == 200
+    j = r.get_json()
+    assert j['available'] is False
+    assert j['final_decision'] == 'ATTENDRE'
 
 
 def test_regime_route(client):
@@ -98,7 +100,8 @@ def test_degraded_mode_empty_scan():
     app.register_blueprint(strategy_os_api.make_blueprint(scan_state={}))
     c = app.test_client()
     assert c.get('/api/strategy/profile').status_code == 200
-    assert c.get('/api/strategy/decision/NVDA').status_code == 404
+    dec = c.get('/api/strategy/decision/NVDA')
+    assert dec.status_code == 200 and dec.get_json()['available'] is False
     regime = c.get('/api/market/regime').get_json()
     assert regime['regime'] == 'UNKNOWN'
     assert c.get('/api/system/diagnostics').status_code == 200

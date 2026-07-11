@@ -5,6 +5,21 @@
   'use strict';
   const VX = window.VX = window.VX || {};
 
+  /* ── Télémétrie d'erreurs (objectif 0-erreur : /api/client-log) ──── */
+  function reportError(msg, src, line) {
+    try {
+      fetch('/api/client-log', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page: location.pathname, msg: String(msg || '').slice(0, 300), src: String(src || '').slice(0, 160), line: line | 0 }),
+      }).catch(() => {});
+    } catch (e) {}
+  }
+  window.addEventListener('error', (e) => reportError(e.message, e.filename, e.lineno));
+  window.addEventListener('unhandledrejection', (e) => {
+    const r = e && e.reason;
+    reportError('unhandledrejection: ' + ((r && r.message) ? r.message : String(r)).slice(0, 260), '', 0);
+  });
+
   /* ── Event bus (§41) ─────────────────────────────────────────────── */
   const bus = new EventTarget();
   VX.bus = {

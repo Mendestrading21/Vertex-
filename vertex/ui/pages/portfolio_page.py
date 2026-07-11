@@ -50,10 +50,18 @@ function kv(k,v,cls){return `<div class="vx-kv"><span class="k">${k}</span><span
 async function quotesFor(pos){
   if(!pos.length)return{};
   try{
-    const body=pos.map(t=>({key:t.id,sym:t.sym,type:t.type,strike:t.strike,exp:t.exp,right:t.right}));
+    /* Contrat serveur /api/pos-quotes : {positions:[{sym,exp,strike,right}]}
+       → résultats indexés par clé composite 'SYM|exp|strike|RIGHT'. */
+    const body=pos.map(t=>({sym:t.sym,exp:t.exp,strike:t.strike,right:t.right}));
     const r=await fetch('/api/pos-quotes',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({items:body})});
-    const d=await r.json();window.__pfLive=!!d.live;return d.results||{};
+      body:JSON.stringify({positions:body})});
+    const d=await r.json();window.__pfLive=!!d.live;
+    const res=d.results||{};const byId={};
+    pos.forEach(t=>{const key=[String(t.sym).toUpperCase(),t.exp||'',
+      (t.strike!==null&&t.strike!==undefined)?t.strike:'',
+      (t.right||'').toUpperCase()].join('|');
+      if(res[key])byId[t.id]=res[key];});
+    return byId;
   }catch(e){return{};}
 }
 function enrich(pos,quotes){

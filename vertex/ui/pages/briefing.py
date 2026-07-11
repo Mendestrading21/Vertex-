@@ -393,9 +393,14 @@ async function loadPortfolio(){
   }
   let quotes={};
   try{
-    const body=pos.map(t=>({key:t.id,sym:t.sym,type:t.type,strike:t.strike,exp:t.exp,right:t.right}));
-    const r=await fetch('/api/pos-quotes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:body})});
-    quotes=(await r.json()).results||{};
+    /* Contrat serveur : {positions:[...]} → résultats par clé 'SYM|exp|strike|RIGHT'. */
+    const body=pos.map(t=>({sym:t.sym,exp:t.exp,strike:t.strike,right:t.right}));
+    const r=await fetch('/api/pos-quotes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({positions:body})});
+    const res=(await r.json()).results||{};
+    pos.forEach(t=>{const key=[String(t.sym).toUpperCase(),t.exp||'',
+      (t.strike!==null&&t.strike!==undefined)?t.strike:'',
+      (t.right||'').toUpperCase()].join('|');
+      if(res[key])quotes[t.id]=res[key];});
   }catch(e){}
   $('vx-portfolio').innerHTML=pos.slice(0,6).map(t=>{
     const q=quotes[t.id]||{};const mark=q.mark??q.last??null;

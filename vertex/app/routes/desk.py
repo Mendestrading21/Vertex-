@@ -115,13 +115,15 @@ def make_blueprint(*, opt_job, ibkr_enabled):
     def api_ibkr_positions():
         """Portefeuille TWS en LECTURE SEULE — pour l'import dans le Desk.
         Hors connexion : erreur claire, jamais de données inventées."""
+        # ok:false en 200 : broker hors ligne = état attendu (pas une panne du
+        # serveur Vertex) — un 503 pollue la console à chaque visite Portefeuille.
         if not ibkr_enabled:
             return jsonify({'ok': False, 'positions': [],
-                            'err': 'IBKR non connecté (mode cloud/démo) — ouvre TWS ou Gateway puis réessaie.'}), 503
+                            'err': 'IBKR non connecté (mode cloud/démo) — ouvre TWS ou Gateway puis réessaie.'}), 200
         res = opt_job('positions', (), timeout=20)
         if res is None:
             return jsonify({'ok': False, 'positions': [],
-                            'err': 'TWS injoignable — vérifie que TWS/Gateway est ouvert et l\'API activée.'}), 503
+                            'err': 'TWS injoignable — vérifie que TWS/Gateway est ouvert et l\'API activée.'}), 200
         return jsonify({'ok': True, 'positions': res, 'count': len(res)})
 
     @bp.route('/api/pos-quotes', methods=['POST'])

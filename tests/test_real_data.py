@@ -115,10 +115,12 @@ def test_quarters_survives_bad_ticker():
 
 # ─── Import positions IBKR ───
 
-def test_ibkr_positions_offline_is_honest_503():
+def test_ibkr_positions_offline_is_honest():
+    # 200 + ok:false : broker hors ligne = état applicatif déclaré, pas une
+    # panne serveur (un 503 générerait une erreur console à chaque visite).
     import terminal
     r = terminal.app.test_client().get('/api/ibkr/positions')
-    assert r.status_code == 503
+    assert r.status_code == 200
     j = r.get_json()
     assert j['ok'] is False and 'IBKR' in j['err'] and j['positions'] == []
 

@@ -11,6 +11,14 @@ baissiers. Échéances ciblées 6 / 9 / 12 mois (profil utilisateur).
 """
 import math
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
+
+def _ny_now():
+    """Heure de New York (naïve) — les échéances d'options sont des dates de
+    séance US : un serveur en UTC/Europe surestimerait le DTE d'un jour en
+    soirée avec datetime.now() naïf."""
+    return datetime.now(ZoneInfo('America/New_York')).replace(tzinfo=None)
 
 import yfinance as yf
 
@@ -212,7 +220,7 @@ def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=N
     out = []
     try:
         tk = yf.Ticker(sym)
-        now = datetime.now()
+        now = _ny_now()
         for exp, dte, bk in _pick_expiries(list(tk.options), now, buckets):
             T = max(dte / 365.0, 0.02)
             ch = tk.option_chain(exp)

@@ -36,7 +36,7 @@ secteurs en anglais dans les filtres, brief IA branchable non branché.
   vérifié, `readonly=True` codé en dur, `order_execution: disabled-by-design`.
 - TradingView : webhook actif mais `TRADINGVIEW_SECRET` absent → 503 honnête.
 - Claude (runtime Vertex) : clé absente → repli déterministe vérifié.
-- Service worker : `td-shell-v6`.
+- Service worker : `td-shell-v7`.
 
 ## Vérification noms personnels
 Recherche insensible à la casse des deux noms personnels (motif du cahier,

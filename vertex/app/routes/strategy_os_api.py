@@ -43,9 +43,12 @@ def make_blueprint(scan_state: dict) -> Blueprint:
         sym = sym.upper()
         detail = (scan_state.get('detail') or {}).get(sym) or {}
         if not detail:
-            return jsonify({'error': f'{sym} absent du scan courant',
+            # 200 + available:false : état applicatif honnête (pas une erreur
+            # transport) — un 404 pollue la console navigateur à chaque fiche.
+            return jsonify({'available': False,
+                            'error': f'{sym} absent du scan courant',
                             'final_decision': 'ATTENDRE',
-                            'reason': 'aucune donnée — impossible de décider'}), 404
+                            'reason': 'aucune donnée — impossible de décider'}), 200
         plan = detail.get('plan') or {}
         source = scan_state.get('source') or ''
         packet = {

@@ -16,6 +16,7 @@ jamais une invention.
 
 import math
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 # ─── petits outils numériques (Black-Scholes léger, sans dépendance) ───
 
@@ -795,7 +796,8 @@ def _timeline(star, plan, cal_items=None):
     if not star:
         return []
     dte = star.get('dte') or 90
-    today = datetime.now()
+    # Dates de séance US : horloge de New York, pas celle du serveur.
+    today = datetime.now(ZoneInfo('America/New_York')).replace(tzinfo=None)
 
     def at(days):
         return (today + timedelta(days=days)).strftime('%d %b')
