@@ -66,11 +66,14 @@ async function quotesFor(pos){
   }catch(e){return{};}
 }
 function enrich(pos,quotes){
+  /* Schéma desk : t.cost = TOTAL investi. Cotes serveur : spot (actions,
+     par action) · mark (options, PAR ACTION → ×100 par contrat). */
   return pos.map(t=>{
-    const q=quotes[t.id]||{};const mark=q.mark??q.last??null;
-    const mult=t.type==='STK'?1:100;
-    const value=mark!==null?mark*t.qty*mult:null;
-    const invested=(t.cost||0)*t.qty*mult;
+    const q=quotes[t.id]||{};
+    const isOpt=t.type!=='STK';
+    const mark=isOpt?(q.mark??q.last??null):(q.spot??q.mark??q.last??null);
+    const value=mark!==null?(isOpt?mark*100*t.qty:mark*t.qty):null;
+    const invested=t.cost||0;
     const pl=value!==null&&invested?((value-invested)/invested*100):null;
     return Object.assign({},t,{mark,value,invested,pl});
   });
@@ -190,7 +193,7 @@ async function renderPositions(){
         <td data-label="Titre"><span class="vx-ticker">${t.sym}</span> ${E().badges(t.sym)}</td>
         <td data-label="Contrat">${t.type}${t.strike?' '+t.strike+' '+(t.exp||''):''}</td>
         <td data-label="Qté" class="vx-num">${t.qty}</td>
-        <td data-label="Coût" class="vx-num">${VX.fmt.price(t.cost)}</td>
+        <td data-label="Coût (total)" class="vx-num">${VX.fmt.price(t.cost)}</td>
         <td data-label="Marque" class="vx-num">${t.mark!==null?VX.fmt.price(t.mark):'n/d'}</td>
         <td data-label="P&L" class="vx-num ${t.pl>0?'vx-pos':t.pl<0?'vx-neg':''}">${t.pl!==null?VX.fmt.pct(t.pl,1):'n/d'}</td>
         <td data-label="Depuis" class="vx-mono vx-meta">${t.added||'—'}</td>

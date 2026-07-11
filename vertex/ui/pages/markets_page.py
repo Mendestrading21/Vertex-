@@ -127,6 +127,7 @@ _JS = r"""
 <script src="/static/vertex/js/charts/bar-chart.js" defer></script>
 <script src="/static/vertex/js/charts/breadth-chart.js" defer></script>
 <script src="/static/vertex/js/charts/sector-chart.js" defer></script>
+<script src="/static/vertex/js/charts/heatmap.js" defer></script>
 <script src="/static/vertex/js/charts/donut-chart.js" defer></script>
 <script src="/static/vertex/js/charts/timeline-chart.js" defer></script>
 <script>

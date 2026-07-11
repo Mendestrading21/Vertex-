@@ -411,9 +411,10 @@ async function loadPortfolio(){
       if(res[key])quotes[t.id]=res[key];});
   }catch(e){}
   $('vx-portfolio').innerHTML=pos.slice(0,6).map(t=>{
-    const q=quotes[t.id]||{};const mark=q.mark??q.last??null;
-    const mult=t.type==='STK'?1:100;
-    const pl=mark!==null&&t.cost?((mark-t.cost)/t.cost*100):null;
+    const q=quotes[t.id]||{};const isOpt=t.type!=='STK';
+    const mark=isOpt?(q.mark??q.last??null):(q.spot??q.mark??q.last??null);
+    const value=mark!==null?(isOpt?mark*100*t.qty:mark*t.qty):null;
+    const pl=value!==null&&t.cost?((value-t.cost)/t.cost*100):null;
     return `<div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">
       <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${t.sym}">${t.sym}</button>
       <span class="vx-badge" ${t.type!=='STK'?'style="color:var(--vx-violet)"':''}>${t.type}${t.strike?' '+t.strike:''}</span>

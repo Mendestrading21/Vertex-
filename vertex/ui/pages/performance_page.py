@@ -114,6 +114,8 @@ Aucun chiffre de l’un n’alimente l’autre.</div>
 _JS = r"""
 <script src="/static/vertex/js/charts/equity-chart.js" defer></script>
 <script src="/static/vertex/js/charts/drawdown-chart.js" defer></script>
+<script src="/static/vertex/js/charts/heatmap.js" defer></script>
+<script src="/static/vertex/js/charts/bar-chart.js" defer></script>
 <script>
 (function(){
 'use strict';

@@ -160,7 +160,7 @@
       set('myTrades', list); set('myTradesClosed', closed);
       /* entrée de journal automatique (comportement historique conservé) */
       const jr = get('vxJournal', []);
-      const invested = (t.cost || 0) * (t.qty || 1) * (t.type === 'STK' ? 1 : 100);
+      const invested = t.cost || 0; /* schéma desk : cost = TOTAL investi */
       const recovered = Number(exitAmount) || 0;
       jr.push({ id: Date.now() + 1, ticker: t.sym, tf: 'swing',
         dir: 'LONG', reason: '', entry: t.cost, stop: t.entrySnap?.stop ?? '',
@@ -351,7 +351,7 @@
           <div class="vx-field"><label>Quantité</label><input class="vx-input" id="f-qty" type="number" min="1" value="1" /></div>
         </div>
         <div class="vx-form-row">
-          <div class="vx-field"><label>Prix unitaire (prime si option)</label>
+          <div class="vx-field"><label>Prix unitaire (prime PAR ACTION si option — le coût total est calculé)</label>
             <input class="vx-input" id="f-cost" type="number" step="any" value="${c.mid ?? ''}" /></div>
           <div class="vx-field"><label>Stop sous-jacent</label><input class="vx-input" id="f-stop" type="number" step="any" value="${c.stop ?? ''}" /></div>
         </div>
@@ -376,9 +376,13 @@
         if (n('f-level') === null) { VX.toast('Niveau requis', 'error'); return; }
         E.addAlert(sym, v('f-cond'), n('f-level'), v('f-note'));
       } else if (dest === 'position') {
-        E.addPosition({ type: v('f-type'), sym, qty: n('f-qty') || 1, cost: n('f-cost') || 0,
+        const qty = n('f-qty') || 1, unit = n('f-cost') || 0, typ = v('f-type');
+        /* schéma desk historique : cost = TOTAL investi (option = prime×100×qté) */
+        const total = typ === 'STK' ? qty * unit : qty * unit * 100;
+        E.addPosition({ type: typ, sym, qty, cost: Math.round(total * 100) / 100,
+          entryPrice: unit,
           strike: n('f-strike'), exp: v('f-exp') || null,
-          right: v('f-type') === 'CALL' ? 'C' : (v('f-type') === 'PUT' ? 'P' : null),
+          right: typ === 'CALL' ? 'C' : (typ === 'PUT' ? 'P' : null),
           entrySnap: { stop: n('f-stop') } });
       } else if (dest === 'note') E.setNote(sym, v('f-text'));
       VX.shell.closeModal();
