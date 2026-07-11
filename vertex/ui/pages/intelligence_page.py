@@ -54,6 +54,7 @@ _VIEW_CONTENT = {
       </div>
       <button class="vx-btn vx-btn-primary" type="submit">Analyser</button>
     </form>
+    <div class="vx-mt3" id="vx-analyst-suggestions"></div>
     <div class="vx-insight vx-mt3" data-tone="ai"><b>Claude explique, ne d&eacute;cide jamais.</b>
       La d&eacute;cision finale vient exclusivement des moteurs d&eacute;terministes (constitution
       + moteur ex&eacute;cutif). Si l&#8217;IA est indisponible, une synth&egrave;se d&eacute;terministe des
@@ -170,7 +171,24 @@ function initAnalyst(){
   const idle=VX.states.empty('Aucune analyse lanc&eacute;e — saisissez un ticker ci-contre.','');
   $('vx-analyst-verdict').innerHTML=idle;
   $('vx-analyst-audit').innerHTML=idle;
-  $('vx-analyst-form').addEventListener('submit',(e)=>{
+  /* Suggestions : exemples + tickers récents + raccourcis — rien d'inventé */
+(function(){
+  const host=$('vx-analyst-suggestions');if(!host)return;
+  const recents=(VX.recentTickers&&VX.recentTickers.get&&VX.recentTickers.get())||[];
+  const favs=(window.VXEntities&&VXEntities.favorites())||[];
+  const EX=['La thèse tient-elle après les résultats ?','Quels risques invalideraient le dossier ?',
+    'Le timing est-il aligné avec le régime de marché ?','Que disent les anomalies récentes ?'];
+  host.innerHTML=
+    '<div class="vx-meta vx-mb1">Exemples de questions</div>'
+    +'<div class="vx-flex vx-wrap vx-mb2">'+EX.map(q=>
+      `<button type="button" class="vx-chip" data-exq="${q}">${q}</button>`).join('')+'</div>'
+    +((recents.length||favs.length)?'<div class="vx-meta vx-mb1">Tickers récents & favoris</div>'
+      +'<div class="vx-flex vx-wrap">'+[...new Set([...recents.slice(0,6),...favs.slice(0,4)])].map(t=>
+      `<button type="button" class="vx-chip" data-ext="${t}">${t}</button>`).join('')+'</div>':'');
+  host.querySelectorAll('[data-exq]').forEach(b=>b.addEventListener('click',()=>{$('vx-analyst-q').value=b.dataset.exq;$('vx-analyst-sym').focus();}));
+  host.querySelectorAll('[data-ext]').forEach(b=>b.addEventListener('click',()=>{$('vx-analyst-sym').value=b.dataset.ext;$('vx-analyst-q').focus();}));
+})();
+$('vx-analyst-form').addEventListener('submit',(e)=>{
     e.preventDefault();
     const sym=($('vx-analyst-sym').value||'').trim().toUpperCase();
     if(!/^[A-Z.\-]{1,7}$/.test(sym)){VX.toast('Ticker invalide','error');return;}

@@ -80,8 +80,12 @@ _SECTIONS = """
   <div id="an-thesis" class="vx-dim">—</div>
 </section>
 
+<!-- Workspace (§22) : colonne principale + rail sticky décisionnel -->
+<div class="vx-grid vx-mt4" id="an-workspace">
+<div class="vx-col-8">
+
 <!-- 3. Graphique principal -->
-<div class="vx-mt4" id="an-chart"></div>
+<div id="an-chart"></div>
 
 <!-- 4-8. Dimensions dans l'ordre imposé -->
 <div class="vx-grid vx-mt4">
@@ -103,13 +107,9 @@ _SECTIONS = """
     <span class="vx-card-title">Signaux TradingView</span></div><div data-body>%%LOADING%%</div></section>
 </div>
 
-<!-- 9-10. Scénarios + plan -->
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-7" id="an-scenarios"><div class="vx-card-header">
-    <span class="vx-card-title">Scénarios Bull / Base / Bear</span></div><div data-body>%%LOADING%%</div></section>
-  <section class="vx-card vx-col-5" id="an-plan"><div class="vx-card-header">
-    <span class="vx-card-title">Plan</span></div><div data-body>%%LOADING%%</div></section>
-</div>
+<!-- 9. Scénarios -->
+<section class="vx-card vx-mt4" id="an-scenarios"><div class="vx-card-header">
+  <span class="vx-card-title">Scénarios Bull / Base / Bear</span></div><div data-body>%%LOADING%%</div></section>
 
 <!-- 11. Options -->
 <section class="vx-card vx-mt4" id="an-options">
@@ -125,6 +125,19 @@ _SECTIONS = """
     <span class="vx-card-title">Compatibilité portefeuille</span></div><div data-body>%%LOADING%%</div></section>
   <section class="vx-card vx-col-6" id="an-history"><div class="vx-card-header">
     <span class="vx-card-title">Historique (journal & suivis)</span></div><div data-body>%%LOADING%%</div></section>
+</div>
+
+</div>
+<aside class="vx-col-4" id="an-rail">
+<div style="position:sticky;top:calc(var(--vx-topbar-h) + 88px);display:flex;flex-direction:column;gap:var(--vx-s3)">
+  <section class="vx-card vx-card--hero" id="an-rail-decision"><div class="vx-card-header">
+    <span class="vx-card-title">Décision finale</span></div><div data-body>%%LOADING%%</div></section>
+  <section class="vx-card" id="an-plan"><div class="vx-card-header">
+    <span class="vx-card-title">Plan & niveaux clés</span></div><div data-body>%%LOADING%%</div></section>
+  <section class="vx-card vx-card--compact" id="an-rail-risks"><div class="vx-card-header">
+    <span class="vx-card-title">Risques identifiés</span></div><div data-body>—</div></section>
+</div>
+</aside>
 </div>
 """
 
@@ -183,6 +196,26 @@ async function loadDossier(){
   $('an-change').className='vx-mono '+(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted');
   const decision=(exec&&exec.final_decision)||'ATTENDRE';
   const db=$('an-decision');db.textContent=decision;db.dataset.decision=decision.replace('É','E');
+  /* Rail décisionnel sticky */
+  const railD=$('an-rail-decision')&&$('an-rail-decision').querySelector('[data-body]');
+  if(railD){
+    const audit=(exec&&exec.audit_trail)||[];
+    railD.innerHTML=`<div class="vx-kpi vx-mb2">
+        <span class="vx-kpi-value" style="font-size:24px"><span class="vx-badge vx-badge-decision" data-decision="${decision.replace('É','E')}" style="font-size:14px;padding:5px 14px">${decision}</span></span>
+        <span class="vx-kpi-delta vx-muted">${exec&&exec.reason?esc(exec.reason):'moteur exécutif unique'}</span></div>`
+      +(audit.length?`<details class="vx-mt1"><summary class="vx-meta" style="cursor:pointer">Audit trail (${audit.length})</summary>
+        <ul style="margin:6px 0 0;padding-left:16px;font-size:11.5px" class="vx-dim">${audit.slice(0,8).map(a=>`<li>${esc(typeof a==='string'?a:JSON.stringify(a))}</li>`).join('')}</ul></details>`:'')
+      +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'ExecutiveEngine',demo?'fallback':'delayed')}</div>`;
+  }
+  const railR=$('an-rail-risks')&&$('an-rail-risks').querySelector('[data-body]');
+  if(railR){
+    const blocking=(exec&&exec.blocking_anomalies)||(exec&&exec.blocking)||[];
+    const warns=(exec&&exec.warnings)||[];
+    const all=[...blocking.map(b=>({t:'bloquant',v:b})),...warns.map(w=>({t:'attention',v:w}))];
+    railR.innerHTML=all.length?all.slice(0,6).map(r=>
+      `<div class="vx-insight" data-tone="risk" style="font-size:12px"><b>${r.t}</b> — ${esc(typeof r.v==='string'?r.v:JSON.stringify(r.v))}</div>`).join('')
+      :'<span class="vx-meta">Aucun risque bloquant remonté par les moteurs.</span>';
+  }
   const sc=(exec&&exec.scores)||{};
   $('an-scores').innerHTML=[['Conviction',sc.conviction],['Risque',sc.risk],['Timing',sc.timing],
     ['Asymétrie',sc.asymmetry],['Qualité données',sc.data_quality]].map(([k,v])=>

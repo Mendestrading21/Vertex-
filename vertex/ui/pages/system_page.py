@@ -290,12 +290,25 @@ async function loadConnections(){
   if(st&&Array.isArray(st.engines)&&st.engines.length){
     $('vx-conn-engines').innerHTML='<div class="vx-flex vx-wrap vx-gap2">'
       +st.engines.map(en=>{
-        const on=en.status==='ok'||en.ok===true;
-        return `<span class="vx-badge vx-badge-status" data-status="${on?'live':'offline'}"
-          title="${esc(en.last_error||'')}">${esc(en.name||'moteur')} · ${on?'OK':'KO'}</span>`;
+        const loaded=en.status==='ok'||en.ok===true;
+        const hasData=!!(en.last_success||en.last_run||en.fresh);
+        /* jamais « OK » si le moteur n'a aucune donnée exploitable */
+        const state=!loaded?['offline','KO']:(hasData?['live','prêt']:['frozen','chargé — sans données']);
+        return `<span class="vx-badge vx-badge-status" data-status="${state[0]}"
+          title="${esc(en.last_error||en.last_success||'')}">${esc(en.name||'moteur')} · ${state[1]}</span>`;
       }).join('')+'</div>'
-      +((st.warnings||[]).length?`<div class="vx-stale-banner vx-mt3">⏳ ${st.warnings.map(esc).join(' · ')}</div>`:'');
+      +((st.warnings||[]).length?`<div class="vx-stale-banner vx-mt3">⏳ ${st.warnings.map(esc).join(' · ')}</div>`:'')
+      +`<div class="vx-mt3"><button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-tech-endpoints">Détails techniques (endpoints) →</button></div>`;
     $('vx-conn-meta').innerHTML=VX.updateIndicator(st.ts||Date.now(),'/api/system-status','delayed');
+    $('vx-tech-endpoints')?.addEventListener('click',()=>{
+      VX.shell.openDrawer('Endpoints techniques',
+        [['GET /healthz','santé serveur'],['GET /api/system-status','état institutionnel complet'],
+         ['GET /api/live/status','mode + fraîcheur par domaine'],['GET /api/system/diagnostics','diagnostics moteurs'],
+         ['GET /api/data-quality','rapport qualité données'],['GET /api/client-log','erreurs JS remontées'],
+         ['GET /scan','dump du dernier scan'],['GET/POST /api/desk','sync données perso (17 clés)'],
+         ['POST /api/live/refresh','déclencher une mise à jour'],['GET /api/desk/backups + POST /api/desk/restore','sauvegardes quotidiennes']]
+        .map(([ep,d])=>`<div class="vx-kv"><span class="k vx-mono" style="font-size:11px">${ep}</span><span class="v vx-meta">${d}</span></div>`).join('')
+        +'<div class="vx-help vx-mt3">Lecture seule — aucun de ces endpoints ne peut passer un ordre.</div>');});
   }else{
     $('vx-conn-engines').innerHTML=VX.states.empty('Liste des moteurs indisponible.');
   }
