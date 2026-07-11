@@ -104,12 +104,9 @@ _CONTENT = """
 </div>
 <div id="vx-demo-banner"></div>
 
-<!-- Rangée 2 (§22 market strip d'abord pour la vision immédiate) -->
-<div class="vx-grid vx-mb3" id="vx-market-strip" aria-label="Indices et marchés"></div>
-
-<!-- Rangée 1 : Brief (8) + Régime (4) -->
+<!-- Rangée 1 (§18) : Brief Vertex hero (8) + Régime (4) -->
 <div class="vx-grid">
-  <section class="vx-card vx-accent vx-col-8" id="vx-brief" data-block="brief" aria-label="Brief Vertex">
+  <section class="vx-card vx-card--hero vx-col-8" id="vx-brief" data-block="brief" aria-label="Brief Vertex">
     <div class="vx-card-header"><span class="vx-card-title">Brief Vertex</span>
       <span class="vx-actions" id="vx-brief-meta"></span></div>
     <div id="vx-brief-body">%%LOADING%%</div>
@@ -119,6 +116,9 @@ _CONTENT = """
     <div id="vx-regime-body">%%LOADING%%</div>
   </section>
 </div>
+
+<!-- Rangée 2 : indices & marchés -->
+<div class="vx-grid vx-mt4" id="vx-market-strip" aria-label="Indices et marchés"></div>
 
 <!-- Rangée 3 : marché (8) + breadth (4) -->
 <div class="vx-grid vx-mt4" data-block="market">
@@ -223,7 +223,8 @@ document.getElementById('vx-customize-btn')?.addEventListener('click',()=>{
 
 /* ── Market strip (§22) ── */
 const STRIP=[['S&P 500','sp'],['Nasdaq','ndx'],['Dow Jones','dow'],['Russell 2000','rut'],
-  ['VIX','vix'],['Taux 10 ans','tnx'],['DXY','dxy'],['Pétrole','oil'],['Or','gold'],['Bitcoin','btc']];
+  ['VIX','vix'],['Taux 10 ans','tnx']];
+const CROSS=[['DXY','dxy'],['Pétrole','oil'],['Or','gold'],['Bitcoin','btc']];
 async function loadStrip(){
   let sum=null,scan=null;
   try{sum=await VX.fetch('/api/market/summary',{ttl:60000});}catch(e){}
@@ -235,22 +236,29 @@ async function loadStrip(){
     rut:pick('Russell 2000'),vix:byName['VIX']?pick('VIX'):{last:sum&&sum.vix,change:sum&&sum.vix_chg},
     tnx:pick('Taux 10 ans'),dxy:pick('DXY'),oil:pick('Pétrole'),gold:pick('Or'),btc:pick('Bitcoin')};
   const mode=(scan&&scan.data_source==='demo')?'fallback':(scan&&scan.source==='ibkr'?'live':'delayed');
+  const crossRows=CROSS.map(([label,slug])=>{
+    const d=bySlug[slug]||{};const val=d.last??null;const chg=d.change??null;
+    return `<div class="vx-kv"><span class="k">${label}</span>
+      <span class="v vx-mono ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}">${val!==null?VX.fmt.price(val):'n/d'}${chg!==null?' · '+VX.fmt.pct(chg):''}</span></div>`;
+  }).join('');
   $('vx-market-strip').innerHTML=STRIP.map(([label,slug])=>{
     const d=bySlug[slug]||{};
     const val=d.last??d.price??d.close??null;const chg=d.change??null;
-    const series=d.series||d.spark||null;
     const target=slug==='vix'?'/markets?view=volatility':(['tnx','dxy','oil','gold','btc'].includes(slug)?'/markets?view=macro':'/markets?view=overview');
-    return `<a class="vx-card vx-kpi vx-strip-item" style="text-decoration:none;color:inherit" href="${target}" aria-label="${label}">
+    return `<a class="vx-card vx-card--compact vx-kpi vx-strip-item" style="text-decoration:none;color:inherit" href="${target}" aria-label="${label}">
       <span class="vx-kpi-label">${label}</span>
       <span class="vx-kpi-value" style="font-size:19px">${VX.fmt.nd(val!==null?VX.fmt.price(val):null)}</span>
       <span class="vx-kpi-delta ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}">${chg!==null?VX.fmt.pct(chg):'n/d'}</span>
       <span data-spark="${slug}"></span>
       ${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),scan&&scan.source,mode)}</a>`;
-  }).join('');
+  }).join('')
+  +`<div class="vx-card vx-card--compact vx-strip-item" aria-label="Cross-asset">
+     <span class="vx-kpi-label">Cross-asset</span>${crossRows}
+     <a class="vx-btn vx-btn-sm vx-btn-ghost vx-mt1" href="/markets?view=macro">Macro →</a></div>`;
   STRIP.forEach(([_,slug])=>{const d=bySlug[slug]||{};
     if(d.series&&window.VXCharts)VXCharts.sparklineInto(document.querySelector(`[data-spark="${slug}"]`),d.series);});
   if(scan&&scan.data_source==='demo')
-    $('vx-demo-banner').innerHTML='<div class="vx-stale-banner">Mode DÉMO — données synthétiques clairement identifiées, jamais présentées comme réelles.</div>';
+    $('vx-demo-banner').innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
   return scan;
 }
 

@@ -64,6 +64,9 @@ _VIEW_CONTENT = {
 <div class="vx-grid vx-mt4">
   <div class="vx-col-12" id="vx-mk-spy"></div>
 </div>
+<div class="vx-grid vx-mt4">
+  <div class="vx-col-12" id="vx-mk-multi"></div>
+</div>
 """,
     'macro': """
 <div class="vx-grid vx-mt3" id="vx-mk-macro-kpis" aria-label="Indicateurs macro"></div>
@@ -84,6 +87,9 @@ _VIEW_CONTENT = {
     <div class="vx-card-header"><span class="vx-card-title">Leaders par secteur</span></div>
     <div id="vx-mk-sectors-leaders">%%LOADING%%</div>
   </section>
+</div>
+<div class="vx-grid vx-mt4">
+  <div class="vx-col-12" id="vx-mk-sectors-heat"></div>
 </div>
 """,
     'breadth': """
@@ -134,7 +140,7 @@ function mkt(scan){return (scan&&(scan.market||scan.market_ctx))||{};}
 async function getScan(){try{return await VX.fetch('/scan',{ttl:120000});}catch(e){return null;}}
 function demoBanner(scan){
   if(scan&&scan.data_source==='demo'&&$('vx-demo-banner'))
-    $('vx-demo-banner').innerHTML='<div class="vx-stale-banner">Mode DÉMO — données synthétiques clairement identifiées, jamais présentées comme réelles.</div>';
+    $('vx-demo-banner').innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
 }
 function emptyCard(host,reason,action){
   const el=$(host);if(el)el.innerHTML='<div class="vx-card">'+VX.states.empty(reason,action||'')+'</div>';
@@ -181,8 +187,11 @@ function loadRisk(scan){
     +(m.spy_regime?`<div class="vx-kv"><span class="k">Régime S&amp;P 500</span><span class="v">${esc(m.spy_regime)}</span></div>`:'')
     +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
 }
-const IDX=[['S&P 500','SPX'],['Nasdaq','NDX'],['Dow Jones','DJI'],['Russell 2000','RUT'],
-  ['Taux 10 ans','TNX'],['DXY','DXY'],['Pétrole','OIL'],['Or','GOLD'],['Bitcoin','BTC']];
+const IDX=['S&P 500','Nasdaq','Dow Jones','Russell 2000','Taux 10 ans','DXY','Pétrole','Or','Bitcoin'];
+function idxByName(scan){
+  const list=(scan&&Array.isArray(scan.indices))?scan.indices:[];
+  const by={};list.forEach(i=>{if(i&&i.name)by[i.name]=i;});return by;
+}
 function kpiCell(label,d,scan,extraNote){
   const val=d&&(d.last??d.price??d.close);const chg=d?d.change:null;
   return `<div class="vx-card vx-kpi" style="grid-column:span 4" aria-label="${esc(label)}">
@@ -193,14 +202,38 @@ function kpiCell(label,d,scan,extraNote){
     ${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
 }
 function loadStrip(scan){
-  const idx=(scan&&scan.indices)||{};const spy=(scan&&scan.spy)||{};
-  if(!Object.keys(idx).length&&!Object.keys(spy).length){
+  const by=idxByName(scan);
+  const known=IDX.filter(n=>by[n]&&(by[n].price!==null&&by[n].price!==undefined));
+  if(!known.length){
     $('vx-mk-strip').innerHTML='<div class="vx-card vx-col-12">'+VX.states.empty('Indices indisponibles — lancer un scan depuis Système.',SCAN_ACTION)+'</div>';return;
   }
-  $('vx-mk-strip').innerHTML=IDX.map(([label,key])=>{
-    const d=idx[key]||(key==='SPX'?spy:null);
-    return kpiCell(label,d,scan).replace('grid-column:span 4','grid-column:span 3');
+  $('vx-mk-strip').innerHTML=known.map(label=>{
+    const i=by[label];
+    return kpiCell(label,{last:i.price,change:i.change},scan).replace('grid-column:span 4','grid-column:span 3');
   }).join('');
+}
+/* Comparaison multi-indices : chaque série rebasée à 0 % (transformation
+   d'affichage des séries fournies — aucun point inventé). */
+function loadMultiIndex(scan){
+  const by=idxByName(scan);
+  const wanted=['S&P 500','Nasdaq','Dow Jones','Russell 2000'];
+  const sets=wanted.map(n=>({n,spark:(by[n]&&by[n].spark)||[]})).filter(x=>x.spark.length>5);
+  if(!sets.length){emptyCard('vx-mk-multi','Séries indices indisponibles dans le dernier scan.',SCAN_ACTION);return;}
+  const len=Math.min(...sets.map(x=>x.spark.length));
+  const labels=Array.from({length:len},(_,i)=>i-len);
+  window.VXCharts.card('vx-mk-multi',{
+    title:'Indices — performance comparée',timeframe:len+' points',
+    question:'Qui mène : large caps, tech ou small caps ?',
+    conclusion:'Chaque indice rebasé à 0 % en début de fenêtre.',
+    height:240,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
+    legend:wanted.map((n,i)=>({label:n,color:VXCharts.colors.series[i%6]})),
+    explain:{shows:'Les mêmes séries d’indices que le bandeau, rebasées à 0 % pour comparer la force relative.',
+      why:'Le leadership (tech vs small caps) qualifie l’appétit pour le risque.',
+      confirm:'Small caps et tech au-dessus des large caps — appétit confirmé.',
+      invalidate:'Défensives seules en tête — régime prudent.'},
+    render:(cv)=>VXCharts.multiLine(cv,labels,
+      sets.map(x=>({label:x.n,data:x.spark.slice(-len).map(v=>x.spark[x.spark.length-len]?(v/x.spark[x.spark.length-len]-1)*100:0)})),
+      {yFmt:(v)=>v.toFixed(1)+' %'})});
 }
 function loadSpyChart(scan){
   const det=(scan&&scan.detail)||{};
@@ -223,14 +256,14 @@ function loadSpyChart(scan){
 }
 
 /* ═══ MACRO ═══ */
-const MACRO_KEYS=[['Taux 10 ans','TNX'],['Dollar (DXY)','DXY'],['Pétrole','OIL'],['Or','GOLD'],['Bitcoin','BTC']];
+const MACRO_NAMES=['Taux 10 ans','DXY','Pétrole','Or','Bitcoin'];
 function loadMacroKpis(scan){
-  const idx=(scan&&scan.indices)||{};
-  const known=MACRO_KEYS.filter(([_,k])=>idx[k]);
+  const by=idxByName(scan);
+  const known=MACRO_NAMES.filter(n=>by[n]&&by[n].price!==null&&by[n].price!==undefined);
   if(!known.length){
-    $('vx-mk-macro-kpis').innerHTML='<div class="vx-card vx-col-12">'+VX.states.empty('Données macro indisponibles — lancer un scan depuis Système.',SCAN_ACTION)+'</div>';return;
+    $('vx-mk-macro-kpis').innerHTML='<div class="vx-card vx-col-12">'+VX.states.empty('Données macro non fournies par le scan (VIX et indices actions seulement) — rien d’inventé.',SCAN_ACTION)+'</div>';return;
   }
-  $('vx-mk-macro-kpis').innerHTML=MACRO_KEYS.map(([label,key])=>kpiCell(label,idx[key],scan)).join('');
+  $('vx-mk-macro-kpis').innerHTML=known.map(n=>kpiCell(n,{last:by[n].price,change:by[n].change},scan)).join('');
 }
 async function loadMacroCal(){
   try{
@@ -249,7 +282,20 @@ function loadSectors(scan){
   const sectors=(scan&&scan.sectors)||[];
   if(!sectors.length){
     emptyCard('vx-mk-sectors-chart','Secteurs non calculés par le dernier scan.',SCAN_ACTION);
-    $('vx-mk-sectors-leaders').innerHTML=VX.states.empty('Secteurs non calculés par le dernier scan.');
+    VXCharts.heatmapCard('vx-mk-sectors-heat',{
+    title:'Performance et momentum par secteur',
+    question:'Quels secteurs attirent le capital aujourd’hui ?',
+    conclusion:'Vert = flux entrant, rouge = flux sortant (variation moyenne du jour).',
+    columns:['Var. moyenne %','Score','RVOL','Titres'],
+    rows:sectors.map(sec=>({label:esc(sec.sector||'n/d'),cells:[
+      {value:sec.avg_change??null,onclick:'/opportunities?view=stocks&sector='+encodeURIComponent(sec.sector||'')},
+      {value:sec.avg_score??null,label:VX.fmt.nd(sec.avg_score)},
+      {value:null,label:VX.fmt.nd(sec.avg_rvol)},
+      {value:null,label:String(sec.n??'—')}]})),
+    min:-3,max:3,fmt:(v)=>v===null?'—':VX.fmt.pct(v),
+    source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
+    limits:'univers = leaders scannés'});
+  $('vx-mk-sectors-leaders').innerHTML=VX.states.empty('Secteurs non calculés par le dernier scan.');
     return;
   }
   VXCharts.sectorCard('vx-mk-sectors-chart',{
@@ -261,6 +307,19 @@ function loadSectors(scan){
     explain:{shows:'Le score moyen par secteur calculé par le moteur de rotation.',
       why:'La stratégie suit les secteurs qui attirent le capital.',
       confirm:'Leadership stable sur plusieurs séances.',invalidate:'Rotation défensive brutale.'}});
+  VXCharts.heatmapCard('vx-mk-sectors-heat',{
+    title:'Performance et momentum par secteur',
+    question:'Quels secteurs attirent le capital aujourd’hui ?',
+    conclusion:'Vert = flux entrant, rouge = flux sortant (variation moyenne du jour).',
+    columns:['Var. moyenne %','Score','RVOL','Titres'],
+    rows:sectors.map(sec=>({label:esc(sec.sector||'n/d'),cells:[
+      {value:sec.avg_change??null,onclick:'/opportunities?view=stocks&sector='+encodeURIComponent(sec.sector||'')},
+      {value:sec.avg_score??null,label:VX.fmt.nd(sec.avg_score)},
+      {value:null,label:VX.fmt.nd(sec.avg_rvol)},
+      {value:null,label:String(sec.n??'—')}]})),
+    min:-3,max:3,fmt:(v)=>v===null?'—':VX.fmt.pct(v),
+    source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
+    limits:'univers = leaders scannés'});
   $('vx-mk-sectors-leaders').innerHTML=
     `<table class="vx-table"><thead><tr><th>Secteur</th><th class="vx-num">Score</th><th>Leader</th><th></th></tr></thead><tbody>`
     +sectors.map(s=>{
@@ -325,7 +384,7 @@ async function loadVix(scan){
 async function boot(){
   const scan=await getScan();
   demoBanner(scan);
-  if(VIEW==='overview'){loadRegime();loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);}
+  if(VIEW==='overview'){loadRegime();loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);}
   else if(VIEW==='macro'){loadMacroKpis(scan);loadMacroCal();}
   else if(VIEW==='sectors'){loadSectors(scan);}
   else if(VIEW==='breadth'){loadBreadth(scan);}

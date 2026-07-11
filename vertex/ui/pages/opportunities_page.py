@@ -80,19 +80,33 @@ async function renderRadar(){
       invalidate:'Retour sous 55 en qualité stratégique.'},
     render:(cv)=>VXCharts.mount(cv,{type:'scatter',
       data:{datasets:[{data:rows.map(r=>({x:r.strat_score??r.score,y:r.st_tech??r.rs??50,sym:r.symbol,
-          v:r.verdict,r:4+Math.min(8,(r.anomaly_score||r.sigcount||0))})),
+          v:r.verdict,setup:r.playbook||r.profile||'',sector:r.sector||'',price:r.price,rr:r.rr,
+          r:4+Math.min(8,(r.anomaly_score||r.sigcount||0))})),
         pointRadius:(ctx)=>ctx.raw?ctx.raw.r:4,
-        pointBackgroundColor:(ctx)=>{const v=ctx.raw&&ctx.raw.v;
-          return v==='BUY'||v==='ACHETER'?'#22C77A':(v==='AVOID'||v==='ÉVITER'?'#EF5350':'#3B82F6');},
+        pointBackgroundColor:(ctx)=>{const v=ctx.raw&&ctx.raw.v;const cc=VXCharts.colors;
+          return v==='BUY'||v==='ACHETER'?cc.positive:(v==='AVOID'||v==='ÉVITER'?cc.negative:cc.info);},
         pointBorderColor:%%DEMO_BORDER%%,pointBorderWidth:1}]},
       options:{scales:{x:{title:{display:true,text:'Qualité stratégique'},grid:{color:'rgba(255,255,255,.06)'}},
         y:{title:{display:true,text:'Qualité du timing'},grid:{color:'rgba(255,255,255,.06)'}}},
         onClick:(evt,els,chart)=>{const pts=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
           if(pts.length){const d=chart.data.datasets[0].data[pts[0].index];
             document.getElementById('op-radar-sel').innerHTML=
-              `<div class="vx-flex"><span class="vx-ticker">${d.sym}</span>${window.VXEntities.badges(d.sym)}</div>
-               <div class="vx-flex vx-mt2"><button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${d.sym}">Ouvrir l’analyse</button>
-               <button class="vx-btn vx-btn-sm" data-entity-menu="${d.sym}">Actions ▾</button></div>`;}},
+              `<div class="vx-flex"><span class="vx-ticker" style="font-size:16px">${d.sym}</span>${window.VXEntities.badges(d.sym)}
+                 <span class="vx-badge vx-badge-decision vx-right" data-decision="${d.v||''}">${d.v||'n/d'}</span></div>
+               <div class="vx-kv vx-mt2"><span class="k">Score stratégique</span><span class="v vx-mono">${VX.fmt.nd(d.x)}</span></div>
+               <div class="vx-kv"><span class="k">Timing</span><span class="v vx-mono">${VX.fmt.nd(d.y)}</span></div>
+               <div class="vx-kv"><span class="k">Cours</span><span class="v vx-mono">${d.price!==undefined&&d.price!==null?VX.fmt.price(d.price):'n/d'}</span></div>
+               <div class="vx-kv"><span class="k">R:R plan</span><span class="v vx-mono">${VX.fmt.nd(d.rr)}</span></div>
+               ${d.setup?`<div class="vx-kv"><span class="k">Setup</span><span class="v">${d.setup}</span></div>`:''}
+               ${d.sector?`<div class="vx-kv"><span class="k">Secteur</span><span class="v">${d.sector}</span></div>`:''}
+               <div class="vx-flex vx-wrap vx-mt2">
+                 <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${d.sym}">Analyse</button>
+                 <button class="vx-btn vx-btn-sm" onclick="VXEntities.toggleFavorite('${d.sym}')">★ Favori</button>
+                 <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${d.sym}','watchlist')">Watchlist</button>
+                 <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${d.sym}','follow')">Suivi</button>
+                 <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${d.sym}','alert')">Alerte</button>
+                 <a class="vx-btn vx-btn-sm" href="/opportunities?view=options&sym=${d.sym}">Options</a>
+                 <button class="vx-btn vx-btn-sm vx-btn-ghost" data-entity-menu="${d.sym}">Plus ▾</button></div>`;}},
         plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} · stratégie ${ctx.raw.x} · timing ${ctx.raw.y}`}}}}})});
 }
 

@@ -30,6 +30,7 @@ _CONTENT = """
   <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('','watchlist')">+ Watchlist</button>
 </div></div>
 %%TABS%%
+<div class="vx-grid vx-mt4" id="pf-summary" aria-label="Synthèse portefeuille"></div>
 <div id="pf-body" class="vx-mt4">%%LOADING%%</div>
 """
 
@@ -76,10 +77,37 @@ function enrich(pos,quotes){
 }
 function roleOf(t){
   const snap=t.entrySnap||{};
-  if(t.type!=='STK')return'Réserve tactique (options)';
+  if(t.type!=='STK')return'Options tactiques';
   if((snap.score||0)>=78||(snap.verdict||'').includes('FORT'))return'Offensive';
-  if(['XLU','XLP','BIL','SGOV','SHV','GLD'].includes(t.sym))return'Défense';
+  if(['XLU','XLP','BIL','SGOV','SHV','GLD'].includes(t.sym))return'Défense / gardien';
   return'Noyau';
+}
+/* Synthèse chiffrée : valeur au coût toujours calculable ; marques live si
+   disponibles — jamais un chiffre inventé, l'étiquette dit ce qui est affiché. */
+function renderSummary(rich){
+  const host=$('pf-summary');if(!host)return;
+  if(!rich.length){host.innerHTML='';return;}
+  const stocks=rich.filter(t=>t.type==='STK'),opts=rich.filter(t=>t.type!=='STK');
+  const invested=rich.reduce((s,t)=>s+t.invested,0);
+  const marked=rich.filter(t=>t.value!==null);
+  const value=marked.length===rich.length?rich.reduce((s,t)=>s+t.value,0):null;
+  const pl=value!==null&&invested?(value-invested):null;
+  const cell=(label,val,delta,cls)=>`<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3">
+    <span class="vx-kpi-label">${label}</span>
+    <span class="vx-kpi-value" style="font-size:20px">${val}</span>
+    ${delta?`<span class="vx-kpi-delta ${cls||'vx-muted'}">${delta}</span>`:''}</div>`;
+  host.innerHTML=
+    cell('Valeur',value!==null?VX.fmt.price(value):VX.fmt.price(invested),
+      value!==null?'marques live/desk':'au coût (marques indisponibles)')
+    +cell('P&L latent',pl!==null?VX.fmt.price(pl):'n/d',
+      pl!==null?VX.fmt.pct(pl/invested*100,1):'IBKR hors ligne',
+      pl>0?'vx-pos':pl<0?'vx-neg':'vx-muted')
+    +cell('Équipe actions',stocks.length+' / 10',
+      stocks.length>=10?'complet — remplacement obligatoire':'places disponibles',
+      stocks.length>=10?'vx-warn':'')
+    +cell('Options tactiques',opts.length+' / 3',
+      opts.length>=3?'plafond atteint':'hors équipe — convexité ciblée',
+      opts.length>=3?'vx-warn':'');
 }
 
 /* ── ÉQUIPE ── */
@@ -93,10 +121,12 @@ async function renderTeam(){
     return;
   }
   const rich=enrich(pos,await quotesFor(pos));
-  const roles={'Offensive':[],'Noyau':[],'Défense':[],'Réserve tactique (options)':[]};
+  renderSummary(rich);
+  const roles={'Offensive':[],'Noyau':[],'Défense / gardien':[],'Options tactiques':[]};
   rich.forEach(t=>roles[roleOf(t)].push(t));
   const totalValue=rich.reduce((s,t)=>s+(t.value??t.invested),0);
-  const sub={'Offensive':'Attaquants','Noyau':'Milieux','Défense':'Défenseurs','Réserve tactique (options)':'Gardien / réserve'};
+  const sub={'Offensive':'Attaquants','Noyau':'Milieux','Défense / gardien':'Défenseurs & gardien',
+    'Options tactiques':'HORS équipe — jamais gardien (max 3)'};
   $('pf-body').innerHTML=`<div class="vx-grid">
     <div class="vx-col-8" id="pf-team-cols"></div>
     <div class="vx-col-4"><div id="pf-roles-donut"></div>
@@ -105,7 +135,14 @@ async function renderTeam(){
       ${kv('Options ouvertes',rich.filter(t=>t.type!=='STK').length+' / 3 max',
         rich.filter(t=>t.type!=='STK').length>=3?'vx-warn':'')}
       ${kv('Règle','11e position = remplacement obligatoire')}
-      <div class="vx-meta vx-mt2"><a href="/opportunities">Chercher des candidats →</a></div></div></div></div>`;
+      <div class="vx-meta vx-mt2"><a href="/opportunities">Chercher des candidats →</a></div></div>
+      <div class="vx-card vx-mt3" id="pf-contrib"><div class="vx-card-header"><span class="vx-card-title">Contributeurs</span></div>
+      <div id="pf-contrib-body"></div></div></div></div>`;
+  const withPl=rich.filter(t=>t.pl!==null).sort((a,b)=>b.pl-a.pl);
+  $('pf-contrib-body').innerHTML=withPl.length?
+    withPl.slice(0,3).map(t=>`<div class="vx-kv"><span class="k">▲ ${t.sym}</span><span class="v vx-pos">${VX.fmt.pct(t.pl,1)}</span></div>`).join('')
+    +withPl.slice(-2).reverse().filter(t=>t.pl<0).map(t=>`<div class="vx-kv"><span class="k">▼ ${t.sym}</span><span class="v vx-neg">${VX.fmt.pct(t.pl,1)}</span></div>`).join('')
+    :'<div class="vx-meta">Marques indisponibles (IBKR hors ligne) — aucun P&L affiché plutôt qu’un chiffre inventé.</div>';
   $('pf-team-cols').innerHTML=Object.entries(roles).map(([role,list])=>`
     <section class="vx-card vx-mb3" aria-label="${role}">
       <div class="vx-card-header"><span class="vx-card-title">${role}</span>
@@ -137,6 +174,7 @@ async function renderTeam(){
 async function renderPositions(){
   const pos=E().positions();
   const rich=enrich(pos,await quotesFor(pos));
+  renderSummary(rich);
   let ibkr=null;
   try{ibkr=await VX.fetch('/api/ibkr/positions',{ttl:120000});}catch(e){}
   const groups={Actions:rich.filter(t=>t.type==='STK'),Options:rich.filter(t=>t.type!=='STK')};
@@ -186,6 +224,7 @@ async function renderRisk(){
   const pos=E().positions();
   if(!pos.length){$('pf-body').innerHTML=VX.states.empty('Aucune position déclarée — le risque se calcule sur les positions réelles, jamais sur les candidats du scanner.');return;}
   const rich=enrich(pos,await quotesFor(pos));
+  renderSummary(rich);
   let scan=null;try{scan=await VX.fetch('/scan',{ttl:300000});}catch(e){}
   const sectorOf=(sym)=>{const d=scan&&scan.detail&&scan.detail[sym];return(d&&d.sector)||'';};
   const payload={positions:rich.filter(t=>t.type==='STK').map(t=>({symbol:t.sym,quantity:t.qty,
