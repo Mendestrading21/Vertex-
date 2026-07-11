@@ -3,7 +3,7 @@ vertex/engines/strategy_fit.py — COUCHE STRATÉGIE (présentation, Ch. II).
 
 Re-pondère l'analyse déjà calculée selon le profil « offensif croissance » :
 choix du véhicule (ACTION vs OPTION), score stratégie, playbook, et tilt du
-climat de marché. NE TOUCHE JAMAIS elio : lit uniquement des champs déjà
+climat de marché. NE TOUCHE JAMAIS les moteurs quant : lit uniquement des champs déjà
 présents sur les lignes (rows). Pur, sans état, sans dépendance externe.
 
 Extrait verbatim du monolithe. Analyse uniquement, aucune exécution.
@@ -60,7 +60,7 @@ def _attach_vehicle(rows, board):
 
 # ─── COUCHE STRATÉGIE (présentation) : re-pondère l'analyse selon le profil de l'utilisateur ──
 # Profil : OFFENSIF CROISSANCE — action socle + CALL comme levier · R:R ≥ 2:1 · tendance propre.
-# ⛔ Ne touche jamais elio : lit uniquement les champs déjà calculés (st_*, rs, regime, plan…).
+# ⛔ Ne touche jamais les moteurs quant : lit uniquement les champs déjà calculés (st_*, rs, regime, plan…).
 def _strat_score(r):
     """Score /100 ré-pondéré vers l'offensif croissance (momentum/force/tendance surpondérés)."""
     score = r.get('score') or 0

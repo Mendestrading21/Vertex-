@@ -127,7 +127,7 @@ function avSeed(){
    'Quand TWS est absent, les positions du Desk estiment le P&L : actions = prix du scan ; options = intrinsèque + valeur temps d\'entrée, étiqueté « ≈ estimé ». Le live remplace l\'estimation dès que la cotation arrive. Implémenté dans le builder de positions (_DESK_COCKPIT_JS).',
    ['desk','ibkr','fallback'],'refonte desk 2026-07-08','/strategie'),
   mk(9,'Historique — Production Baseline (nettoyage)','version',
-   '17 fichiers hérités supprimés après preuve de non-référence (ère bot : bot_cockpit, paper_bot, paper_live_bot, dashboard, gex_dashboard, mnq_backtest, stock_backtest, daily_opportunities, _daily_check + launchers + notion + VERTEX_1.0.md). Conservés : ib_reader/test_connection (IBKR live), elio complet, chart.umd, company_cache. Tag local : vertex-vnext-baseline.',
+   '17 fichiers hérités supprimés après preuve de non-référence (ère bot : bot_cockpit, paper_bot, paper_live_bot, dashboard, gex_dashboard, mnq_backtest, stock_backtest, daily_opportunities, _daily_check + launchers + notion + VERTEX_1.0.md). Conservés : ib_reader/test_connection (IBKR live), moteurs quant complets (migrés depuis l'ancien package), chart.umd, company_cache. Tag local : vertex-vnext-baseline.',
    ['baseline','nettoyage','2026-07'],'baseline 2026-07-08',''),
   mk(10,'Idée — appliquer l\'ambiance aux pages hors menu','design',
    'Les pages hors sidebar (suivi, bordel, heatmap, equipe, compare, ma-page) sont encore dans l\'ancien style. À harmoniser avec l\'ambiance salle de marché si elles reviennent dans le produit — sinon candidates à l\'archivage définitif.',

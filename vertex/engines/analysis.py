@@ -2,7 +2,7 @@
 vertex/engines/analysis.py — LE CŒUR ANALYTIQUE (Ch. II).
 
 analyse() transforme un DataFrame OHLCV en fiche technique complète : tendances,
-régime, momentum, anomalies, profil, scoring (elio), rétroaction physique &
+régime, momentum, anomalies, profil, scoring modulaire, rétroaction physique &
 multi-horizons, plan (stop structurel + R:R). Extrait verbatim du monolithe —
 même logique, désormais isolée et testable (test de non-régression « golden »).
 
@@ -14,7 +14,11 @@ import math
 import numpy as np
 import pandas as pd
 
-from elio import scoring, config, pivots, physics, timeframe, vertex
+from vertex.quant import scoring, pivots
+from vertex.strategy import config
+from vertex.market import regime_features as physics
+from vertex.engines import timeframes as timeframe
+from vertex.engines import quant_engine as vertex
 from vertex.engines import indicators
 
 
@@ -171,7 +175,7 @@ def analyse(df, bench_ret, fund=None):
     }
     sigcount = sum(1 for k in ('above20', 'above50', 'above200', 'stacked', 'golden', 'momCross', 'volUp') if sig[k])
 
-    # SCORING MODULAIRE (elio.scoring) : technique/momentum/fondamental/risque → global + grade + verdict
+    # SCORING MODULAIRE (vertex.quant.scoring) : technique/momentum/fondamental/risque → global + grade + verdict
     ind = {'above20': sig['above20'], 'above50': sig['above50'], 'above200': sig['above200'],
            'stacked': sig['stacked'], 'golden': sig['golden'], 'rsi': r, 'roc': roc,
            'rs': rs, 'pos52': pos, 'volx': volx, 'atr_pct': atr_pct, 'ext_atr': ext_atr}

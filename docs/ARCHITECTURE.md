@@ -8,7 +8,7 @@
 | Zone | LOC | État |
 |---|---|---|
 | `terminal.py` | ~9 500 | Monolithe : routes Flask + HTML/CSS/JS embarqués + logique + données. À dégraisser progressivement. |
-| `elio/` (23 modules) | ~4 300 | Moteurs quant : `scoring`, `vertex`, `options`, `strategy`, `committee`, `validator`, `physics`, `timeframe`, `research`, `anomalies`, `pivots`, `market`, `weekly`, `fundamentals`, `portfolio_risk`, `ibkr`, `ai`, `daily`, `sectors`, `engine`, `config`, `vertex_ml`. |
+| moteurs quant migrés (ex-package personnel, 23 modules, désormais sous `vertex/quant`, `vertex/engines`, `vertex/options`, `vertex/market`…) | ~4 300 | scoring, noyau quant, options (legacy_engine), stratégie (legacy_adapter), comité, validateur hors échantillon, régime physique, timeframes, chart_read, anomalies, pivots, contexte marché, weekly, fondamentaux, risque portefeuille, scorecard, briefs IA, daily, secteurs, décision, config, calibration ML. |
 | `vertex/` (nouveau) | — | Package institutionnel en construction : `data/`, `app/`, `services/`. |
 | `tests/` | — | `test_no_orders`, `test_foundation`, `test_smoke`, `test_vertex`. |
 | Scripts racine | ~2 000 | `mnq_backtest`, `stock_backtest`, `paper_bot`, `bot_cockpit`, `gex_dashboard`, `dashboard`, `notion_sync`, `daily_opportunities`, `ib_reader`… (outils/legacy). |
@@ -39,8 +39,8 @@ On n'exécute **jamais** de « big bang ». À chaque PR :
 2. `terminal.py` **importe** le nouveau module (comportement identique) ;
 3. tests + smoke verts avant de continuer.
 
-Les moteurs `elio/*` seront progressivement ré-exposés sous `vertex/engines/`
-(ré-export d'abord, déplacement ensuite) pour ne rien casser.
+Les moteurs de l'ancien package ont été migrés sous `vertex/*`
+(migration réalisée par la refonte Strategy OS).
 
 ## 4. Ce qui a été fait (PR fondation)
 

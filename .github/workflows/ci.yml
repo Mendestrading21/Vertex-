@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt pytest
       - name: Compile check (terminal + packages)
-        run: python -m compileall -q terminal.py vertex elio
+        run: python -m compileall -q terminal.py vertex
       - name: Tests (sécurité lecture seule, fondations, quant, smoke)
         run: pytest -q
 

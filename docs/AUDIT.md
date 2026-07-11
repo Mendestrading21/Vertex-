@@ -3,7 +3,7 @@
 > **Note — Vertex vNext Production Baseline (2026-07-08)** : les scripts hérités de l'ère « bot » décrits dans ce document (bot_cockpit, paper_bot, paper_live_bot, dashboard, gex_dashboard, mnq_backtest, stock_backtest, daily_opportunities, notion_sync, _daily_check) ont été **supprimés** — aucun n'était importé par l'application. Ce document reste comme audit historique.
 
 
-Analyse factuelle du dépôt `Mendestrading21/IBKT-DASHBORD-`. Chaque constat est
+Analyse factuelle du dépôt (version historique). Chaque constat est
 mesuré, pas subjectif. Objectif : établir la base honnête avant transformation.
 
 ---
@@ -25,7 +25,7 @@ mesuré, pas subjectif. Objectif : établir la base honnête avant transformatio
 
 - **`terminal.py` (9 782 lignes, 142 fonctions)** — mélange routes Flask + HTML/CSS/JS
   embarqués + logique métier + workers + données. C'est le cœur du problème.
-- **`elio/` (23 modules, ~4 300 lignes)** — moteurs quant bien séparés. `terminal.py`
+- **Ancien package quant (23 modules, ~4 300 lignes — depuis migré sous `vertex/*`)** — moteurs quant bien séparés. `terminal.py`
   dépend de **21** d'entre eux (physique ×24, options ×13, anomalies ×10, vertex ×9…).
 - **`vertex/` (nouveau)** — package institutionnel amorcé (data/app/services).
 - **Scripts racine (~2 000 lignes)** — outils/legacy (`paper_bot`, `dashboard`,
@@ -50,7 +50,7 @@ mesuré, pas subjectif. Objectif : établir la base honnête avant transformatio
 
 ### 🟠 HAUTE
 3. **God-functions** — `analyse` (266), `scan` (256), `_ibkr_opt_worker` (274) font trop de choses. À décomposer par responsabilité.
-4. **Logique dupliquée** — barre de nav ×6, Black-Scholes (`_gamma/_npdf/_ncdf`) dans `terminal.py` ET `elio/options.py`, scoring de reco en double dans `options.py`. Risque de divergence silencieuse.
+4. **Logique dupliquée** — barre de nav ×6, Black-Scholes (`_gamma/_npdf/_ncdf`) dans `terminal.py` ET le moteur options, scoring de reco en double dans `options.py`. Risque de divergence silencieuse.
 5. **`except Exception: pass`** — plusieurs blocs avalent les erreurs (boucle de scan par titre) : des bugs deviennent invisibles (moins de titres, sans raison).
 
 ### 🟡 MOYENNE

@@ -5,7 +5,7 @@ Les deux vues de commandement : /api/command (régime, top actions/options,
 alertes du risk manager, décision du jour, exposition) et /api/portefeuille
 (portefeuille d'options construit sur un capital donné).
 
-Les moteurs (risk manager, validateur, stratégie options) viennent d'`elio` —
+Les moteurs (risk manager, validateur, stratégie options) viennent des moteurs purs `vertex.*` —
 modules purs, sans Flask ; l'état partagé vient de `vertex.app.state`.
 
 Machine de décision — lecture seule, aucun ordre. Logique déplacée verbatim.
@@ -13,7 +13,9 @@ Machine de décision — lecture seule, aucun ordre. Logique déplacée verbatim
 
 from flask import Blueprint, jsonify, request
 
-from elio import portfolio_risk, strategy, validator
+from vertex.portfolio import risk_engine as portfolio_risk
+from vertex.strategy import legacy_adapter as strategy
+from vertex.validation import out_of_sample as validator
 from vertex.app.state import scan_state
 from vertex.engines import market_lens
 

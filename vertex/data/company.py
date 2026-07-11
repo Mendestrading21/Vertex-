@@ -247,7 +247,7 @@ def get(sym, demo=False, allow_fetch=True, brief=False):
 
     - `demo=True`  : jamais de réseau, on sert la couche curée (cloud/démo).
     - rafraîchit en tâche de fond si l'entrée a > 7 jours et `allow_fetch`.
-    - `brief=True` : enrichit l'explication métier via l'IA (elio) SI une clé est
+    - `brief=True` : enrichit l'explication métier via l'IA SI une clé est
       présente — résumé FR + « ce qu'elle vend / comment elle gagne / clients / moat »,
       persistés dans le cache. Sans clé : no-op (on garde la description d'origine).
     """
@@ -278,7 +278,7 @@ def get(sym, demo=False, allow_fetch=True, brief=False):
     # ── explication métier : résumé FR (traduit 1×) + vend/gagne/clients/moat (IA si clé) ──
     if brief and base.get('summary') and not demo:
         try:
-            from elio import ai as _ai
+            from vertex.ai import briefs as _ai
             if not base.get('summary_fr'):               # traduit une seule fois (IA→Google→EN)
                 fr = _ai.fr_desc(sym, base['summary'])
                 if fr:

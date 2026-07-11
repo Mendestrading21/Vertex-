@@ -2,7 +2,7 @@
 tests/test_strategy_fit.py — Couche stratégie (véhicule / score / playbook / tilt).
 
 Non-régression golden : re-pondération offensive de champs déjà calculés, sans
-jamais toucher elio, sans passer d'ordre.
+jamais toucher les moteurs quant, sans passer d'ordre.
 """
 
 from vertex.engines import strategy_fit as sf

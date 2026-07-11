@@ -51,6 +51,6 @@ Le serveur écoute déjà sur tout le réseau local (`host='0.0.0.0'`).
 ## Structure
 
 - `terminal.py` — app Flask + toutes les pages + connexion IBKR + flux cours live
-- `elio/` — moteurs : `scoring`, `engine` (décision), `ibkr` (verdict /40), `options`,
+- `vertex/quant`, `vertex/engines`, `vertex/options`… — moteurs : `scoring`, `decide` (décision), `scorecard` (verdict /40), `legacy_engine` (options),
   `fundamentals`, `sectors`, `daily`, `anomalies`, `market`, `weekly`, `research`, `ai`
 - `ib_reader.py` — lecture IBKR (readonly, garde-fou anti-ordre)

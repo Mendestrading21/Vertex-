@@ -8,7 +8,7 @@ partagés (`vertex.app.state`). Le flag `ai_on` signale si la couche IA
 
 from flask import Blueprint, jsonify, request
 
-from elio import ai
+from vertex.ai import briefs as ai
 from vertex.data import macro_calendar
 from vertex.services import news_plus
 from vertex.app.state import news_state, cal_state, weekly_state

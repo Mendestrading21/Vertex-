@@ -9,7 +9,9 @@ import os
 
 os.environ.setdefault("NO_IBKR", "1")
 
-from elio import vertex, options, validator  # noqa: E402
+from vertex.engines import quant_engine as vertex  # noqa: E402
+from vertex.options import legacy_engine as options  # noqa: E402
+from vertex.validation import out_of_sample as validator  # noqa: E402
 
 
 def _equity(mu=0.0010, sd=0.011, n=240, seed=3):

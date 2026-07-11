@@ -11,7 +11,7 @@ from collections import deque
 
 from flask import Blueprint, jsonify, Response, request
 
-from elio import ai
+from vertex.ai import briefs as ai
 from vertex.app.config import IBKR_ENABLED, DEMO_MODE
 from vertex.app.state import scan_state
 from vertex.data.universe import UNIVERSE

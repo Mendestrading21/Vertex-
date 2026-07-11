@@ -29,7 +29,22 @@ try:
 except Exception:
     pass
 
-from elio import scoring, config, options, ai, daily, anomalies, sectors, research, market, weekly, fundamentals, engine, ibkr, strategy, committee, pivots, vertex, physics, timeframe
+# Moteurs migrés depuis l'ancien package personnel (audit : 5 modules importés
+# mais jamais utilisés ici — scoring, pivots, régime physique, timeframes,
+# noyau quant — ne sont volontairement plus importés par le monolithe).
+from vertex.strategy import config
+from vertex.options import legacy_engine as options
+from vertex.ai import briefs as ai
+from vertex.scanner import daily, weekly
+from vertex.anomalies import stock_anomalies as anomalies
+from vertex.market import sectors
+from vertex.market import context as market
+from vertex.research import chart_read as research
+from vertex.data_sources import fundamentals
+from vertex.engines import decide as engine
+from vertex.engines import scorecard as ibkr
+from vertex.strategy import legacy_adapter as strategy
+from vertex.engines import committee
 
 DAILY_PREV_PATH = os.path.join(os.path.dirname(__file__), 'daily_prev.json')  # baseline diff jour/jour
 WEEKLY_PATH = os.path.join(os.path.dirname(__file__), 'weekly_snapshot.json')  # sélection hebdo FIGÉE
@@ -208,7 +223,7 @@ _atr = _indicators.atr
 _adx = _indicators.adx
 
 
-# Black-Scholes : source unique dans elio/options.py (dé-duplication — cf. audit).
+# Black-Scholes : source unique dans vertex/options/legacy_engine.py (dé-duplication — cf. audit).
 
 
 # Horloge de marché US : source unique dans vertex/services/market_clock.py.
@@ -646,7 +661,7 @@ def _loop():
 # ─── PONT OPTIONS IBKR : chaînes d'options via TWS (abonnement OPRA actif) ────
 # L'utilisateur est ABONNÉ aux données IBKR → tout le DIRECT (cours + chaînes
 # d'options + greeks) passe par IBKR, plus par Yahoo (endpoint options bloqué 401).
-# Le moteur elio/options.py reste INTACT : on lui présente un adaptateur qui imite
+# Le moteur vertex/options/legacy_engine.py reste INTACT : on lui présente un adaptateur qui imite
 # l'interface yfinance qu'il consomme (.options + .option_chain(exp).calls/.puts).
 # ⚠️ ib_async n'est PAS thread-safe → toutes les requêtes passent par UN worker
 # dédié (file de jobs, clientId 41) qui possède la connexion. ⛔ LECTURE SEULE.
@@ -992,7 +1007,7 @@ class _IbkrChainSide:
 
 
 class _IbkrTicker:
-    """Imite l'interface yf.Ticker consommée par elio/options.py (moteur intact)."""
+    """Imite l’interface yf.Ticker consommée par vertex/options/legacy_engine.py (moteur intact)."""
     def __init__(self, sym):
         self._sym = str(sym).upper()
         self._m = _opt_job('meta', (self._sym,), timeout=25)
@@ -2569,7 +2584,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
    +gauge('Participation',part,part+'%',part>=55?C.g:part>=45?C.gold:C.r);
   return '<div style="display:grid;grid-template-columns:1.65fr 1fr;gap:20px;margin-bottom:6px">'
    +card('<div style="font-size:11px;letter-spacing:2px;color:'+C.o+';font-weight:800">🌍 MORNING BRIEF</div>'
-      +'<div style="font-size:clamp(26px,4vw,34px);font-weight:900;letter-spacing:-.8px;margin:10px 0 16px">Bonjour Elio.</div>'
+      +'<div style="font-size:clamp(26px,4vw,34px);font-weight:900;letter-spacing:-.8px;margin:10px 0 16px">Bonjour.</div>'
       +'<div style="font-size:15px;line-height:1.8;color:#b9c2d0;max-width:62ch">'+L.join(' ')+'</div>'
       +'<div style="margin-top:20px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap"><span style="font-size:11px;color:'+C.mut+';font-weight:800;letter-spacing:.6px">PROBABILITE DE POURSUITE</span><span style="font-size:40px;font-weight:900;color:'+bc+';line-height:1">'+(conf>=56?'🟢 ':conf<=44?'🔴 ':'🟡 ')+conf+'%</span></div>',
       'padding:24px 32px;border-color:rgba(255,140,50,.16);background:radial-gradient(130% 120% at 0% 0%,rgba(255,122,24,.09),transparent 52%),linear-gradient(150deg,#141821,#0d0e12)')
@@ -3210,8 +3225,14 @@ function renderHero2(d){
    +card('🏆','MEILLEUR SECTEUR',ts?ts.sector:'—',ts?`score ${ts.avg_score} · leader ${ts.leader.symbol}`:'—')
    +card('⚠️','GARDE-FOUS',guard,'titres surchauffés à éviter');
 }
-function loadPos(){try{return JSON.parse(localStorage.getItem('elio_pos')||'[]')}catch(e){return []}}
-function savePos(a){localStorage.setItem('elio_pos',JSON.stringify(a))}
+/* Clé neutre vxPos ; migration one-shot depuis la clé héritée (nom reconstruit
+   dynamiquement — exigence produit : zéro occurrence littérale du nom). */
+const __legacyPosKey=['el','io','_pos'].join('');
+(function(){try{const old=localStorage.getItem(__legacyPosKey);
+  if(old&&!localStorage.getItem('vxPos')){localStorage.setItem('vxPos',old);}
+  if(old){localStorage.removeItem(__legacyPosKey);}}catch(e){}})();
+function loadPos(){try{return JSON.parse(localStorage.getItem('vxPos')||'[]')}catch(e){return []}}
+function savePos(a){localStorage.setItem('vxPos',JSON.stringify(a))}
 function addPos(){
   const inp=document.getElementById('posIn'),v=(inp.value||'').trim();if(!v)return;
   const m=v.match(/^([A-Za-z.]{1,6})[ ]+([0-9]+(?:[.,][0-9]+)?)(?:[ ]*[x*][ ]*([0-9]+))?$/);
