@@ -352,7 +352,7 @@
         <textarea class="vx-textarea" id="f-text">${E.note(sym)}</textarea></div>`;
       return '';
     }
-    function confirm() {
+    function confirmAdd() {
       const v = (id) => document.getElementById(id)?.value?.trim();
       const n = (id) => { const x = v(id); return x === '' || x === undefined ? null : Number(x); };
       if (dest === 'favorite') { if (!E.isFavorite(sym)) E.toggleFavorite(sym); }
@@ -380,7 +380,7 @@
       });
       document.querySelectorAll('#vx-modal [data-dest]').forEach(b =>
         b.addEventListener('click', () => { dest = b.dataset.dest; step = 3; render(); }));
-      document.getElementById('vx-add-confirm')?.addEventListener('click', confirm);
+      document.getElementById('vx-add-confirm')?.addEventListener('click', confirmAdd);
       document.getElementById('vx-add-sym')?.focus();
     }
     render();

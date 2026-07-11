@@ -129,7 +129,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v5';   // v5 : Vertex Strategy OS (hub, decision unique, zero nom personnel)
+const CACHE='td-shell-v6';   // v6 : Master Redesign (shell unique, 8 espaces, redirections legacy)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
