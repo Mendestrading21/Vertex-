@@ -36,17 +36,16 @@ def build_editorial(scan_state: dict) -> dict:
                      + (f" · {roro}" if roro else '') + '.')
     else:
         missing.append('régime')
-    spy = scan_state.get('spy') or {}
-    idx = scan_state.get('indices') or {}
-    if spy or idx:
-        parts = []
-        if isinstance(spy, dict) and spy.get('change') is not None:
-            parts.append(f"S&P 500 {spy['change']:+.1f} %")
-        nd = idx.get('NDX') or idx.get('QQQ') or {}
-        if isinstance(nd, dict) and nd.get('change') is not None:
-            parts.append(f"Nasdaq {nd['change']:+.1f} %")
-        if parts:
-            lines.append('Indices : ' + ' · '.join(parts) + '.')
+    idx = scan_state.get('indices') or []
+    by_name = {i.get('name'): i for i in idx if isinstance(i, dict)} \
+        if isinstance(idx, list) else {}
+    parts = []
+    for name in ('S&P 500', 'Nasdaq'):
+        entry = by_name.get(name) or {}
+        if entry.get('change') is not None:
+            parts.append(f"{name} {entry['change']:+.1f} %")
+    if parts:
+        lines.append('Indices : ' + ' · '.join(parts) + '.')
     vix = m.get('vix')
     if vix is not None:
         band = m.get('vix_band') or ''
@@ -95,6 +94,7 @@ _CONTENT = """
   <div><h1>Briefing</h1>
   <div class="vx-sub">Que dois-je comprendre et surveiller aujourd’hui ?</div></div>
   <div class="vx-actions">
+    <button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-customize-btn">Personnaliser</button>
     <div class="vx-segmented" role="group" aria-label="Densité">
       <button data-density-btn="compact" aria-pressed="false">Compact</button>
       <button data-density-btn="confort" aria-pressed="true">Confort</button>
@@ -121,7 +121,7 @@ _CONTENT = """
 </div>
 
 <!-- Rangée 3 : marché (8) + breadth (4) -->
-<div class="vx-grid vx-mt4">
+<div class="vx-grid vx-mt4" data-block="market">
   <div class="vx-col-8" id="vx-market-chart"></div>
   <div class="vx-col-4" id="vx-breadth-chart"></div>
 </div>
@@ -142,7 +142,7 @@ _CONTENT = """
 </div>
 
 <!-- Rangée 5 : rotation (7) + alertes (5) -->
-<div class="vx-grid vx-mt4">
+<div class="vx-grid vx-mt4" data-block="rotation">
   <div class="vx-col-7" id="vx-rotation"></div>
   <section class="vx-card vx-col-5" data-block="alerts" aria-label="Alertes prioritaires">
     <div class="vx-card-header"><span class="vx-card-title">Alertes prioritaires</span>
@@ -158,7 +158,7 @@ _CONTENT = """
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></span></div>
     <div id="vx-portfolio">%%LOADING%%</div>
   </section>
-  <div class="vx-col-5" id="vx-calendar"></div>
+  <div class="vx-col-5" data-block="calendar" id="vx-calendar"></div>
 </div>
 """
 
@@ -175,6 +175,35 @@ _JS = r"""
 const $=(id)=>document.getElementById(id);
 const E=()=>window.VXEntities;
 function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+
+/* Personnalisation contrôlée des blocs (§43 — vxDashboardLayout.hidden) */
+const BLOCKS=[['brief','Brief Vertex'],['regime','Régime'],['market','Marchés (graphiques)'],
+  ['opportunities','Opportunités'],['rotation','Rotation & alertes'],
+  ['portfolio','Portefeuille'],['calendar','Calendrier'],['alerts','Alertes']];
+function layoutGet(){try{return JSON.parse(localStorage.getItem('vxDashboardLayout')||'{}')}catch(e){return{}}}
+function layoutSet(l){try{localStorage.setItem('vxDashboardLayout',JSON.stringify(l))}catch(e){}}
+function applyBlocks(){
+  const hidden=(layoutGet().hidden)||[];
+  document.querySelectorAll('[data-block]').forEach(el=>{
+    el.style.display=hidden.includes(el.dataset.block)?'none':'';});
+}
+applyBlocks();
+document.getElementById('vx-customize-btn')?.addEventListener('click',()=>{
+  const hidden=(layoutGet().hidden)||[];
+  VX.shell.openModal('Personnaliser le Briefing',
+    BLOCKS.map(([id,label])=>`<label class="vx-checkbox" style="padding:5px 0">
+      <input type="checkbox" data-blk="${id}" ${hidden.includes(id)?'':'checked'}> ${label}</label>`).join('')
+    +'<div class="vx-help vx-mt2">Grille contrôlée — l’ordre des rangées reste fixe. Synchronisé sur cet appareil.</div>',
+    '<button class="vx-btn" id="vx-layout-reset">Réinitialiser</button>'
+    +'<button class="vx-btn vx-btn-primary" id="vx-layout-save">Enregistrer</button>');
+  document.getElementById('vx-layout-save').addEventListener('click',()=>{
+    const l=layoutGet();
+    l.hidden=[...document.querySelectorAll('[data-blk]')].filter(c=>!c.checked).map(c=>c.dataset.blk);
+    layoutSet(l);applyBlocks();VX.shell.closeModal();VX.toast('Briefing personnalisé','success');});
+  document.getElementById('vx-layout-reset').addEventListener('click',()=>{
+    const l=layoutGet();delete l.hidden;layoutSet(l);applyBlocks();VX.shell.closeModal();
+    VX.toast('Disposition réinitialisée');});
+});
 
 /* Densité (vxDashboardLayout §43) */
 (function(){
@@ -199,10 +228,12 @@ async function loadStrip(){
   let sum=null,scan=null;
   try{sum=await VX.fetch('/api/market/summary',{ttl:60000});}catch(e){}
   try{scan=await VX.fetch('/scan',{ttl:120000});}catch(e){}
-  const idx=(scan&&scan.indices)||{};const spy=(scan&&scan.spy)||{};
-  const bySlug={sp:idx.SPX||idx.SPY||spy,ndx:idx.NDX||idx.QQQ,dow:idx.DJI||idx.DIA,
-    rut:idx.RUT||idx.IWM,vix:{last:sum&&sum.vix,change:sum&&sum.vix_chg},
-    tnx:idx.TNX,dxy:idx.DXY,oil:idx.OIL||idx.CL,gold:idx.GOLD||idx.GC,btc:idx.BTC};
+  const list=(scan&&Array.isArray(scan.indices))?scan.indices:[];
+  const byName={};list.forEach(i=>{byName[i.name]=i;});
+  const pick=(n)=>{const i=byName[n]||{};return{last:i.price,change:i.change,series:i.spark};};
+  const bySlug={sp:pick('S&P 500'),ndx:pick('Nasdaq'),dow:pick('Dow Jones'),
+    rut:pick('Russell 2000'),vix:byName['VIX']?pick('VIX'):{last:sum&&sum.vix,change:sum&&sum.vix_chg},
+    tnx:pick('Taux 10 ans'),dxy:pick('DXY'),oil:pick('Pétrole'),gold:pick('Or'),btc:pick('Bitcoin')};
   const mode=(scan&&scan.data_source==='demo')?'fallback':(scan&&scan.source==='ibkr'?'live':'delayed');
   $('vx-market-strip').innerHTML=STRIP.map(([label,slug])=>{
     const d=bySlug[slug]||{};

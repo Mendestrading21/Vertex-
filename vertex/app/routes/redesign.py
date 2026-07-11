@@ -142,12 +142,25 @@ def make_blueprint(scan_state: dict) -> Blueprint:
         if spot <= 0:
             return jsonify({'error': f'{sym}: spot indisponible — simulation refusée '
                                      '(aucune donnée inventée)'}), 422
+        notes = []
+        # Normalisations documentées : le board historique exprime l'IV en %
+        # et le coût en dollars PAR CONTRAT (prime × 100).
+        if contract['iv'] and contract['iv'] > 3:
+            contract['iv'] = round(contract['iv'] / 100.0, 4)
+            notes.append('IV convertie de % en décimal')
+        if contract['mid'] and spot and contract['mid'] > spot:
+            contract['mid'] = round(contract['mid'] / 100.0, 4)
+            notes.append('prime par contrat convertie en prime par action (÷100)')
         setup = UnderlyingSetup(
             symbol=sym, spot=spot,
             invalidation=plan.get('stop'), tp1=plan.get('tp1'),
             tp2=plan.get('tp2'), tp3=plan.get('tp3'))
-        sim = scenario_pricer.simulate(contract, setup)
-        analysis = scenario_pricer.capital_free_analysis(sim, contract)
+        try:
+            sim = scenario_pricer.simulate(contract, setup)
+            analysis = scenario_pricer.capital_free_analysis(sim, contract)
+        except Exception as exc:
+            return jsonify({'error': f'simulation impossible: {exc}'}), 422
+        sim['limitations'] = list(sim.get('limitations') or []) + notes
         return jsonify({'symbol': sym, 'contract': contract, 'sim': sim,
                         'capital_free': analysis})
 
