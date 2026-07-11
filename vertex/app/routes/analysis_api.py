@@ -13,7 +13,7 @@ from flask import Blueprint, jsonify
 
 from vertex.engines import quant_engine as vertex
 from vertex.validation import out_of_sample as validator
-from vertex.portfolio import risk_engine as portfolio_risk
+from vertex.portfolio import legacy_basket_risk as portfolio_risk
 from vertex.app.state import scan_state
 
 bp = Blueprint('analysis_api', __name__)

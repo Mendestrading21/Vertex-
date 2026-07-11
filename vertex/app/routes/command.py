@@ -13,7 +13,7 @@ Machine de décision — lecture seule, aucun ordre. Logique déplacée verbatim
 
 from flask import Blueprint, jsonify, request
 
-from vertex.portfolio import risk_engine as portfolio_risk
+from vertex.portfolio import legacy_basket_risk as portfolio_risk
 from vertex.strategy import legacy_adapter as strategy
 from vertex.validation import out_of_sample as validator
 from vertex.app.state import scan_state
