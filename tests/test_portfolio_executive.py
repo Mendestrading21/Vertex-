@@ -223,6 +223,8 @@ def test_single_decision_source():
         rel = path.relative_to(root)
         if 'strategy' in rel.parts:
             continue
+        if 'ui' in rel.parts:
+            continue  # la couche d'affichage RENDS le vocabulaire, elle ne décide pas
         text = path.read_text(encoding='utf-8', errors='ignore')
         if all(d in text for d in ('ACHETER', 'RENFORCER', 'REDUIRE', 'REFUSER')):
             offenders.append(str(rel))
