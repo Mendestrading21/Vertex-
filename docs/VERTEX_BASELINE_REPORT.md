@@ -39,4 +39,6 @@ secteurs en anglais dans les filtres, brief IA branchable non branché.
 - Service worker : `td-shell-v6`.
 
 ## Vérification noms personnels
-`rg -ni --hidden --glob '!.git/**' '(elio|mendes)' .` → **0 occurrence**.
+Recherche insensible à la casse des deux noms personnels (motif du cahier,
+reconstruit dans les tests gardiens) sur tout l'arbre hors `.git` →
+**0 occurrence**.
