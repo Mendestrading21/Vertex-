@@ -41,6 +41,12 @@ def test_analysis_engine_sections_present():
 
 
 def test_route_serves_journal():
+    # Redesign : /journal redirige vers Performance/Journal (301), qui rend
+    # le shell unique. Le schéma vxJournal (module journal.py) reste la
+    # source du contrat de données, gardée par les autres tests du fichier.
     c = terminal.app.test_client()
     r = c.get('/journal')
-    assert r.status_code == 200 and b'tjRoot' in r.data
+    assert r.status_code == 301
+    assert '/performance' in r.headers['Location']
+    r2 = c.get('/journal', follow_redirects=True)
+    assert r2.status_code == 200 and b'vx-app' in r2.data

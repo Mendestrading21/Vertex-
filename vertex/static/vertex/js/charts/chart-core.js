@@ -21,7 +21,8 @@
     d.color = C.colors.text;
     d.font.family = getComputedStyle(document.documentElement).getPropertyValue('--vx-font') || 'Inter,sans-serif';
     d.font.size = 11;
-    d.animation = matchMedia('(prefers-reduced-motion: reduce)').matches ? false : { duration: 250 };
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) d.animation = false;
+    else if (d.animation && typeof d.animation === 'object') d.animation.duration = 250;
     d.plugins.legend.display = false;
     d.plugins.tooltip.backgroundColor = '#111C30';
     d.plugins.tooltip.borderColor = 'rgba(91,140,255,.34)';

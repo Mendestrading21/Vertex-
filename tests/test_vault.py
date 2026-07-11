@@ -11,10 +11,15 @@ from vertex.ui import nav, vault
 
 
 def test_vault_routes_serve_page():
+    # Redesign : /vault et /archive redirigent vers Système/Archive (301),
+    # qui lit le même vxVault (schéma préservé, gardé plus bas).
     c = terminal.app.test_client()
     for p in ('/vault', '/archive'):
         r = c.get(p)
-        assert r.status_code == 200 and b'avRoot' in r.data, p
+        assert r.status_code == 301, p
+        assert '/system' in r.headers['Location'], p
+        r2 = c.get(p, follow_redirects=True)
+        assert r2.status_code == 200 and b'vx-app' in r2.data, p
 
 
 def test_vault_in_nav_system_section():

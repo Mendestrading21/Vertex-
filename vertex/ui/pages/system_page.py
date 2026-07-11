@@ -1,0 +1,680 @@
+"""vertex.ui.pages.system_page — l'espace Système (§29).
+
+Question : « Le système est-il en bonne santé et branché sur du réel ? ».
+Quatre sous-vues : connections (IBKR / TradingView / Claude / sync / stockage),
+data (qualité + fraîcheur par domaine), settings (préférences locales +
+export/import desk), archive (coffre vxVault).
+
+Invariant produit affirmé partout : READONLY — aucun ordre possible
+(disabled-by-design). Donnée absente → état vide honnête avec action.
+"""
+from __future__ import annotations
+
+from vertex.ui.shell import render_shell
+
+VIEWS = (
+    ('connections', 'Connexions'),
+    ('data', 'Données'),
+    ('settings', 'Réglages'),
+    ('archive', 'Archive'),
+)
+_DEFAULT_VIEW = 'connections'
+
+
+def _tabs(active: str) -> str:
+    tabs = ''.join(
+        f'<a class="vx-tab" role="tab" href="?view={vid}" '
+        f'aria-selected="{"true" if vid == active else "false"}">{label}</a>'
+        for vid, label in VIEWS)
+    return f'<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Système">{tabs}</nav>'
+
+
+def _header(active: str) -> str:
+    return f'''<div class="vx-page-header">
+  <div><h1>Système</h1>
+  <div class="vx-sub">Le système est-il en bonne santé et branché sur du réel ?</div></div>
+</div>
+<div class="vx-insight vx-mb3" data-tone="risk" id="vx-readonly-invariant">
+  <b>READONLY — aucun ordre possible (disabled-by-design).</b>
+  Vertex est un terminal d&#8217;analyse : il lit, il n&#8217;ex&eacute;cute jamais.
+  <span id="vx-readonly-confirm" class="vx-meta"></span></div>
+{_tabs(active)}'''
+
+
+_VIEW_CONTENT = {
+    'connections': '''
+<div class="vx-grid vx-mt4" id="vx-conn-grid">
+  <section class="vx-card vx-col-4" aria-label="IBKR">
+    <div class="vx-card-header"><span class="vx-card-title">IBKR</span>
+      <span id="vx-conn-ibkr-badge"></span></div>
+    <div id="vx-conn-ibkr">%%LOADING%%</div>
+  </section>
+  <section class="vx-card vx-col-4" aria-label="TradingView">
+    <div class="vx-card-header"><span class="vx-card-title">TradingView</span>
+      <span id="vx-conn-tv-badge"></span></div>
+    <div id="vx-conn-tv">%%LOADING%%</div>
+  </section>
+  <section class="vx-card vx-col-4" aria-label="Claude (IA)">
+    <div class="vx-card-header"><span class="vx-card-title">Claude (IA)</span>
+      <span id="vx-conn-ai-badge"></span></div>
+    <div id="vx-conn-ai">%%LOADING%%</div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-6" aria-label="Synchronisation">
+    <div class="vx-card-header"><span class="vx-card-title">Synchronisation</span>
+      <span id="vx-conn-sync-badge"></span></div>
+    <div id="vx-conn-sync">%%LOADING%%</div>
+  </section>
+  <section class="vx-card vx-col-6" aria-label="Stockage">
+    <div class="vx-card-header"><span class="vx-card-title">Stockage &amp; sant&eacute;</span>
+      <span id="vx-conn-store-badge"></span></div>
+    <div id="vx-conn-store">%%LOADING%%</div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Moteurs">
+    <div class="vx-card-header"><span class="vx-card-title">Moteurs</span>
+      <span class="vx-actions" id="vx-conn-meta"></span></div>
+    <div id="vx-conn-engines">%%LOADING%%</div>
+  </section>
+</div>''',
+
+    'data': '''
+<div class="vx-grid vx-mt4">
+  <div class="vx-col-5" id="vx-data-quality-chart"></div>
+  <section class="vx-card vx-col-7" aria-label="Dernier scan">
+    <div class="vx-card-header"><span class="vx-card-title">Dernier scan &amp; m&eacute;triques</span>
+      <span class="vx-actions">
+        <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-data-refresh">Actualiser</button></span></div>
+    <div id="vx-data-scan">%%LOADING%%</div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Fra&icirc;cheur par domaine">
+    <div class="vx-card-header"><span class="vx-card-title">Fra&icirc;cheur par domaine</span>
+      <span class="vx-actions" id="vx-data-fresh-meta"></span></div>
+    <div id="vx-data-fresh">%%LOADING%%</div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Titres d&eacute;grad&eacute;s">
+    <div class="vx-card-header"><span class="vx-card-title">Titres en qualit&eacute; d&eacute;grad&eacute;e</span></div>
+    <div id="vx-data-degraded">%%LOADING%%</div>
+  </section>
+</div>''',
+
+    'settings': '''
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-6" aria-label="Affichage">
+    <div class="vx-card-header"><span class="vx-card-title">Affichage</span></div>
+    <div class="vx-kv"><span class="k">Densit&eacute;</span><span class="v">
+      <span class="vx-segmented" role="group" aria-label="Densit&eacute;">
+        <button data-density-btn="compact" aria-pressed="false">Compact</button>
+        <button data-density-btn="confort" aria-pressed="true">Confort</button>
+        <button data-density-btn="dense" aria-pressed="false">Dense</button>
+      </span></span></div>
+    <div class="vx-kv"><span class="k">Navigation lat&eacute;rale</span><span class="v">
+      <span class="vx-segmented" role="group" aria-label="Sidebar">
+        <button data-sidebar-btn="expanded" aria-pressed="false">D&eacute;ploy&eacute;e</button>
+        <button data-sidebar-btn="collapsed" aria-pressed="false">R&eacute;duite</button>
+      </span></span></div>
+    <div class="vx-kv"><span class="k">Notifications push</span><span class="v">
+      <span class="vx-segmented" role="group" aria-label="Notifications">
+        <button data-notif-btn="1" aria-pressed="false">Activ&eacute;es</button>
+        <button data-notif-btn="0" aria-pressed="false">Coup&eacute;es</button>
+      </span></span></div>
+    <div class="vx-kv"><span class="k">Langue</span>
+      <span class="v">Fran&ccedil;ais <span class="vx-meta">(interface FR uniquement pour l&#8217;instant)</span></span></div>
+    <div class="vx-help vx-mt2">Pr&eacute;f&eacute;rences purement locales (localStorage de ce navigateur) —
+      elles ne touchent ni les moteurs ni les donn&eacute;es desk.</div>
+  </section>
+  <section class="vx-card vx-col-6" aria-label="Donn&eacute;es desk">
+    <div class="vx-card-header"><span class="vx-card-title">Donn&eacute;es desk (export / import)</span></div>
+    <div id="vx-settings-desk">%%LOADING%%</div>
+    <div class="vx-flex vx-wrap vx-gap2 vx-mt3">
+      <button class="vx-btn vx-btn-primary" id="vx-desk-export">Exporter (JSON)</button>
+      <label class="vx-btn" for="vx-desk-import-file" style="cursor:pointer">Importer un JSON&hellip;</label>
+      <input type="file" id="vx-desk-import-file" accept="application/json,.json" hidden />
+    </div>
+    <div class="vx-help vx-mt2">L&#8217;export t&eacute;l&eacute;charge vos cl&eacute;s desk telles quelles
+      (positions, journal, alertes, coffre&hellip;). L&#8217;import demande confirmation avant
+      toute &eacute;criture — aucune cl&eacute; n&#8217;est renomm&eacute;e, le protocole de sync reste intact.</div>
+  </section>
+</div>''',
+
+    'archive': '''
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Coffre — archive">
+    <div class="vx-card-header"><span class="vx-card-title">Coffre (archive interne)</span>
+      <span class="vx-actions">
+        <button class="vx-btn vx-btn-sm" id="vx-vault-new">Nouvelle entr&eacute;e</button>
+        <button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-vault-export">Exporter (JSON)</button></span></div>
+    <div class="vx-flex vx-wrap vx-gap2 vx-mb3">
+      <input class="vx-input" id="vx-vault-search" type="search"
+        placeholder="Recherche plein texte (titre, contenu, tags)"
+        aria-label="Rechercher dans le coffre" style="max-width:340px"
+        data-filter-key="q" />
+      <span id="vx-vault-chips" role="group" aria-label="Filtrer par type"
+        class="vx-flex vx-wrap vx-gap2"></span>
+    </div>
+    <div id="vx-vault-list">%%LOADING%%</div>
+  </section>
+</div>''',
+}
+
+
+_JS = r"""
+<script src="/static/vertex/js/charts/donut-chart.js" defer></script>
+<script>
+(function(){
+'use strict';
+const $=(id)=>document.getElementById(id);
+const E=()=>window.VXEntities;
+const ROOT=document.getElementById('vx-system');
+const VIEW=(ROOT&&ROOT.dataset.view)||'connections';
+function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function whenChartsReady(fn){
+  if(window.VXCharts&&window.Chart)return fn();
+  window.addEventListener('load',fn,{once:true});
+}
+function statusBadge(status,label){
+  return `<span class="vx-badge vx-badge-status" data-status="${esc(status)}">${esc(label||status)}</span>`;
+}
+function kv(k,v){return `<div class="vx-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`;}
+
+/* ══ Vue CONNEXIONS ═════════════════════════════════════════════════ */
+async function loadConnections(){
+  const [stR,liveR,diagR,hzR]=await Promise.allSettled([
+    VX.fetch('/api/system-status',{ttl:30000}),
+    VX.fetch('/api/live/status',{ttl:30000}),
+    VX.fetch('/api/system/diagnostics',{ttl:30000}),
+    VX.fetch('/healthz',{ttl:30000})]);
+  const st=stR.status==='fulfilled'?stR.value:null;
+  const live=liveR.status==='fulfilled'?liveR.value:null;
+  const diag=diagR.status==='fulfilled'?diagR.value:null;
+  const hz=hzR.status==='fulfilled'?hzR.value:null;
+
+  /* Invariant READONLY confirmé par le serveur */
+  if(st)$('vx-readonly-confirm').textContent=st.readonly&&st.analysis_only
+    ?' Confirmé par le serveur : ordres '+(st.order_execution||'disabled-by-design')+'.'
+    :' ATTENTION : le serveur ne confirme pas le mode lecture seule.';
+
+  /* IBKR */
+  if(st){
+    const ib=(st.data_sources||{}).ibkr||'inconnu';
+    const on=String(ib).indexOf('enabled')===0;
+    $('vx-conn-ibkr-badge').innerHTML=statusBadge(on?'live':'offline',on?'connecté (lecture seule)':'désactivé');
+    $('vx-conn-ibkr').innerHTML=
+      kv('&Eacute;tat',esc(ib))
+      +kv('Donn&eacute;es march&eacute;',esc((st.data_sources||{}).market_data||'—'))
+      +kv('Mode global',esc(st.mode||'—'))
+      +kv('Ex&eacute;cution d&#8217;ordres','<b class="vx-neg">'+esc(st.order_execution||'disabled-by-design')+'</b>')
+      +`<div class="vx-card-footer">${VX.updateIndicator(st.ts||Date.now(),'/api/system-status',on?'live':'fallback')}</div>`;
+  }else{
+    $('vx-conn-ibkr').innerHTML=VX.states.error('&Eacute;tat syst&egrave;me indisponible');
+    $('vx-conn-ibkr-badge').innerHTML=statusBadge('offline','inconnu');
+  }
+
+  /* TradingView */
+  const tv=diag&&diag.tradingview;
+  if(tv){
+    const stored=tv.stored??tv.count??0;
+    $('vx-conn-tv-badge').innerHTML=statusBadge(stored>0?'live':'offline',stored>0?'signaux reçus':'aucun signal');
+    $('vx-conn-tv').innerHTML=
+      kv('Signaux stock&eacute;s',VX.fmt.nd(stored))
+      +kv('R&ocirc;le','webhooks d&#8217;alertes TradingView (entr&eacute;e seule)')
+      +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'/api/system/diagnostics','delayed')}</div>`;
+  }else{
+    $('vx-conn-tv').innerHTML=VX.states.empty('Aucun diagnostic TradingView disponible — le magasin de signaux n&#8217;a rien re&ccedil;u.',
+      '<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=radar">Voir le radar</a>');
+    $('vx-conn-tv-badge').innerHTML=statusBadge('offline','n/d');
+  }
+
+  /* Claude / IA */
+  const ai=diag&&diag.ai;
+  const aiSrc=st&&(st.data_sources||{}).ai;
+  if(ai||aiSrc!==undefined){
+    const ok=ai?(ai.ok??0):null,total=ai?(ai.total??0):null,fb=ai?(ai.fallbacks??0):null;
+    const aiOn=String(aiSrc||'').indexOf('on')===0||String(aiSrc||'')==='enabled'||(ok!==null&&ok>0);
+    $('vx-conn-ai-badge').innerHTML=statusBadge(aiOn?'live':(fb?'fallback':'offline'),
+      aiOn?'disponible':(fb?'mode secours':'indisponible'));
+    $('vx-conn-ai').innerHTML=
+      kv('Source IA',esc(aiSrc??'—'))
+      +(ai?kv('Appels r&eacute;ussis',VX.fmt.nd(ok)+' / '+VX.fmt.nd(total))
+          +kv('Replis d&eacute;terministes',VX.fmt.nd(fb)):'')
+      +kv('R&ocirc;le','<span class="vx-dim">explique et reformule — ne d&eacute;cide jamais</span>')
+      +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'/api/system/diagnostics',aiOn?'live':'fallback')}</div>`;
+  }else{
+    $('vx-conn-ai').innerHTML=VX.states.empty('Audit IA indisponible — la synth&egrave;se d&eacute;terministe des moteurs reste servie.');
+    $('vx-conn-ai-badge').innerHTML=statusBadge('fallback','n/d');
+  }
+
+  /* Synchronisation (Live Engine) */
+  if(live){
+    const doms=live.domains||{};
+    const names=Object.keys(doms);
+    const freshCount=names.filter(k=>doms[k].fresh||doms[k].state==='fresh'||doms[k].state==='live').length;
+    const errs=(live.errors||[]);
+    $('vx-conn-sync-badge').innerHTML=statusBadge(
+      errs.length?'delayed':(freshCount===names.length&&names.length?'live':'delayed'),
+      freshCount+' / '+names.length+' domaines frais');
+    $('vx-conn-sync').innerHTML=
+      kv('Mode',esc(live.mode||'—'))
+      +kv('Derni&egrave;re synchro',VX.fmt.ago(live.last_refresh))
+      +kv('Domaines',names.map(esc).join(', ')||'—')
+      +(errs.length?`<div class="vx-error-banner vx-mt2">⚠ ${errs.map(e=>esc(e.domain+' : '+e.error)).join('<br>')}</div>`:'')
+      +`<div class="vx-card-footer">${VX.updateIndicator(live.generated?live.generated*1000:Date.now(),'/api/live/status','delayed')}
+        <a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/system?view=data">D&eacute;tail par domaine →</a></div>`;
+  }else{
+    $('vx-conn-sync').innerHTML=VX.states.error('Live Engine injoignable');
+    $('vx-conn-sync-badge').innerHTML=statusBadge('offline','hors ligne');
+  }
+
+  /* Stockage & santé */
+  if(hz){
+    const ok=hz.ok!==false&&(hz.status==='ok'||hz.ok===true||hz.status===undefined);
+    $('vx-conn-store-badge').innerHTML=statusBadge(ok?'live':'offline',ok?'sain':'dégradé');
+    $('vx-conn-store').innerHTML=
+      kv('Sant&eacute; serveur',ok?'<span class="vx-pos">OK</span>':'<span class="vx-neg">d&eacute;grad&eacute;</span>')
+      +(st?kv('Build',esc(st.build||'—')):'')
+      +kv('Donn&eacute;es perso','localStorage navigateur &harr; blob desk_data.json (last-writer-wins)')
+      +kv('Sauvegardes','backup quotidien desk_backup_* c&ocirc;t&eacute; serveur')
+      +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'/healthz',ok?'live':'error')}</div>`;
+  }else{
+    $('vx-conn-store').innerHTML=VX.states.error('/healthz injoignable');
+    $('vx-conn-store-badge').innerHTML=statusBadge('offline','hors ligne');
+  }
+
+  /* Moteurs */
+  if(st&&Array.isArray(st.engines)&&st.engines.length){
+    $('vx-conn-engines').innerHTML='<div class="vx-flex vx-wrap vx-gap2">'
+      +st.engines.map(en=>{
+        const on=en.status==='ok'||en.ok===true;
+        return `<span class="vx-badge vx-badge-status" data-status="${on?'live':'offline'}"
+          title="${esc(en.last_error||'')}">${esc(en.name||'moteur')} · ${on?'OK':'KO'}</span>`;
+      }).join('')+'</div>'
+      +((st.warnings||[]).length?`<div class="vx-stale-banner vx-mt3">⏳ ${st.warnings.map(esc).join(' · ')}</div>`:'');
+    $('vx-conn-meta').innerHTML=VX.updateIndicator(st.ts||Date.now(),'/api/system-status','delayed');
+  }else{
+    $('vx-conn-engines').innerHTML=VX.states.empty('Liste des moteurs indisponible.');
+  }
+}
+
+/* ══ Vue DONNÉES ════════════════════════════════════════════════════ */
+async function loadData(){
+  const [dqR,diagR,liveR]=await Promise.allSettled([
+    VX.fetch('/api/data-quality',{ttl:30000}),
+    VX.fetch('/api/system/diagnostics',{ttl:30000}),
+    VX.fetch('/api/live/status',{ttl:30000})]);
+  const dq=dqR.status==='fulfilled'?dqR.value:null;
+  const diag=diagR.status==='fulfilled'?diagR.value:null;
+  const live=liveR.status==='fulfilled'?liveR.value:null;
+  const scan=diag&&diag.scan;
+
+  /* Qualité (donut) */
+  if(dq&&dq.total>0){
+    const byQ=dq.by_quality||{};
+    const labels=Object.keys(byQ);
+    const values=labels.map(k=>byQ[k]);
+    const colByQ={FRESH:VXCharts.colors.positive,RECENT:VXCharts.colors.cyan,
+      STALE:VXCharts.colors.warning,EXPIRED:VXCharts.colors.negative,MISSING:VXCharts.colors.muted};
+    const dominant=labels.slice().sort((a,b)=>byQ[b]-byQ[a])[0];
+    whenChartsReady(()=>VXCharts.donutCard('vx-data-quality-chart',{
+      title:'Qualit&eacute; des donn&eacute;es ('+dq.total+' titres)',
+      question:'Les donn&eacute;es sont-elles utilisables pour d&eacute;cider ?',
+      conclusion:'Dominante : '+dominant+' ('+byQ[dominant]+' / '+dq.total+') · source '+(dq.scan_source||'n/d'),
+      labels,values,colors:labels.map(k=>colByQ[k]||VXCharts.colors.muted),height:200,
+      source:'scan '+(dq.scan_source||'n/d'),timestamp:(scan&&scan.last_scan_ts)||Date.now(),
+      mode:dq.scan_source==='demo'?'fallback':'delayed',
+      limits:dq.note||'',
+      explain:{shows:'La r&eacute;partition des titres scann&eacute;s par niveau de qualit&eacute; de donn&eacute;es.',
+        why:'Une d&eacute;cision ACTIONABLE exige des donn&eacute;es fra&icirc;ches — la qualit&eacute; plafonne la d&eacute;cision.',
+        confirm:'Une majorit&eacute; FRESH/RECENT issue d&#8217;une source r&eacute;elle.',
+        invalidate:'Des paquets STALE/EXPIRED/MISSING ou une source d&eacute;mo.'}}));
+  }else{
+    $('vx-data-quality-chart').innerHTML='<div class="vx-card">'
+      +VX.states.empty('Aucun titre scann&eacute; — la qualit&eacute; ne peut pas &ecirc;tre mesur&eacute;e.',
+        '<button class="vx-btn vx-btn-sm" id="vx-data-refresh-empty">Actualiser maintenant</button>')+'</div>';
+    document.getElementById('vx-data-refresh-empty')?.addEventListener('click',doRefresh);
+  }
+
+  /* Scan + métriques */
+  if(scan){
+    const metrics=diag.metrics||{};
+    const mkeys=Object.keys(metrics).slice(0,8);
+    $('vx-data-scan').innerHTML=
+      kv('Lignes scann&eacute;es',VX.fmt.nd(scan.rows))
+      +kv('Source scan',esc(scan.source||'aucune'))
+      +kv('Source options',esc(scan.options_source||'—'))
+      +kv('Dernier scan',VX.fmt.ago(scan.last_scan_ts))
+      +(mkeys.length?'<div class="vx-divider"></div><div class="vx-meta vx-mb1">M&eacute;triques internes</div>'
+        +mkeys.map(k=>kv(esc(k),'<span class="vx-mono">'+esc(JSON.stringify(metrics[k]))+'</span>')).join(''):'')
+      +`<div class="vx-card-footer">${VX.updateIndicator(scan.last_scan_ts,'/api/system/diagnostics',
+        scan.source&&scan.source!=='demo'?'delayed':'fallback')}</div>`;
+  }else{
+    $('vx-data-scan').innerHTML=VX.states.error('Diagnostics indisponibles');
+  }
+
+  /* Fraîcheur par domaine */
+  if(live&&live.domains&&Object.keys(live.domains).length){
+    const doms=live.domains;
+    $('vx-data-fresh').innerHTML=`<div style="overflow-x:auto"><table class="vx-table">
+      <thead><tr><th>Domaine</th><th>&Eacute;tat</th><th class="vx-num">&Acirc;ge</th><th>D&eacute;tail</th></tr></thead><tbody>`
+      +Object.keys(doms).map(k=>{
+        const d=doms[k]||{};
+        const fresh=d.fresh===true||d.state==='fresh'||d.state==='live';
+        const status=fresh?'live':(d.state==='offline'?'offline':'delayed');
+        const age=d.age_s===null||d.age_s===undefined?'—'
+          :(d.age_s<120?Math.round(d.age_s)+' s':Math.round(d.age_s/60)+' min');
+        return `<tr><td><b>${esc(k)}</b></td>
+          <td>${statusBadge(status,fresh?'frais':(d.state||'rassis'))}</td>
+          <td class="vx-num vx-mono">${age}</td>
+          <td class="vx-dim" style="font-size:12px">${esc(d.detail||'—')}</td></tr>`;
+      }).join('')+'</tbody></table></div>';
+    $('vx-data-fresh-meta').innerHTML=VX.updateIndicator(
+      live.generated?live.generated*1000:Date.now(),'Live Engine · mode '+(live.mode||'n/d'),'delayed');
+  }else{
+    $('vx-data-fresh').innerHTML=VX.states.empty('Aucun domaine suivi par le Live Engine pour l&#8217;instant.');
+  }
+
+  /* Titres dégradés */
+  if(dq){
+    const worst=dq.degraded||[];
+    $('vx-data-degraded').innerHTML=worst.length
+      ?'<div class="vx-flex vx-wrap vx-gap2">'+worst.map(w=>
+        `<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(w.symbol)}"
+          title="${esc((w.warnings||[]).join(' · '))}">${esc(w.symbol)}
+          <span class="vx-badge vx-badge-status" data-status="delayed">${esc(w.quality)}</span></button>`).join('')+'</div>'
+      :VX.states.empty('Aucun titre en qualit&eacute; d&eacute;grad&eacute;e — rien &agrave; signaler.');
+  }else{
+    $('vx-data-degraded').innerHTML=VX.states.error('Rapport de qualit&eacute; indisponible');
+  }
+}
+async function doRefresh(){
+  const btn=$('vx-data-refresh');
+  if(btn){btn.disabled=true;btn.textContent='Actualisation…';}
+  try{
+    const r=await fetch('/api/live/refresh',{method:'POST'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    VX.toast('Actualisation demandée au Live Engine','success');
+    await VX.refresh.runAll();
+  }catch(e){VX.toast('Actualisation impossible : '+e.message,'error');}
+  if(btn){btn.disabled=false;btn.textContent='Actualiser';}
+  loadData();
+}
+
+/* ══ Vue RÉGLAGES ═══════════════════════════════════════════════════ */
+function initSettings(){
+  /* Densité (vxDashboardLayout.density) */
+  let layout={};try{layout=JSON.parse(localStorage.getItem('vxDashboardLayout')||'{}')}catch(e){}
+  const density=layout.density||'confort';
+  document.querySelectorAll('[data-density-btn]').forEach(b=>{
+    b.setAttribute('aria-pressed',String(b.dataset.densityBtn===density));
+    b.addEventListener('click',()=>{
+      layout.density=b.dataset.densityBtn;
+      try{localStorage.setItem('vxDashboardLayout',JSON.stringify(layout))}catch(e){}
+      document.body.dataset.density=layout.density==='compact'?'compact':(layout.density==='dense'?'dense':'');
+      document.querySelectorAll('[data-density-btn]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+      VX.toast('Densité enregistrée','success');
+    });
+  });
+  /* Sidebar (vxSidebarState) */
+  const sb=localStorage.getItem('vxSidebarState')||'expanded';
+  document.querySelectorAll('[data-sidebar-btn]').forEach(b=>{
+    b.setAttribute('aria-pressed',String(b.dataset.sidebarBtn===sb));
+    b.addEventListener('click',()=>{
+      try{localStorage.setItem('vxSidebarState',b.dataset.sidebarBtn)}catch(e){}
+      const app=document.getElementById('vx-app');
+      if(app)app.dataset.sidebar=b.dataset.sidebarBtn;
+      document.querySelectorAll('[data-sidebar-btn]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+    });
+  });
+  /* Notifications (vxNotificationPrefs {push:bool}) */
+  let notif={push:false};try{notif=Object.assign(notif,JSON.parse(localStorage.getItem('vxNotificationPrefs')||'{}'))}catch(e){}
+  document.querySelectorAll('[data-notif-btn]').forEach(b=>{
+    b.setAttribute('aria-pressed',String((b.dataset.notifBtn==='1')===!!notif.push));
+    b.addEventListener('click',()=>{
+      notif.push=b.dataset.notifBtn==='1';
+      try{localStorage.setItem('vxNotificationPrefs',JSON.stringify(notif))}catch(e){}
+      document.querySelectorAll('[data-notif-btn]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+      VX.toast(notif.push?'Notifications push activées':'Notifications push coupées','success');
+    });
+  });
+  renderDeskSummary();
+  $('vx-desk-export').addEventListener('click',exportDesk);
+  $('vx-desk-import-file').addEventListener('change',importDesk);
+  VX.bus.on('vx:data-refreshed',renderDeskSummary);
+}
+function deskKeys(){
+  return (E()&&E().DESK_KEYS)||['myTrades','myTradesClosed','myTradesEquity','myRecos',
+    'myRecosClosed','myCapital','simCash','simStart','simTrades','simClosed',
+    'myFavs','myNotes','vxJournal','myTradeLog','vxVault','vxAlerts','vxWatchlist'];
+}
+function renderDeskSummary(){
+  const keys=deskKeys();
+  let present=0,bytes=0;
+  keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null){present++;bytes+=v.length;}});
+  $('vx-settings-desk').innerHTML=
+    kv('Cl&eacute;s synchronis&eacute;es',keys.length+' (contrat __DESK_KEYS — aucune cl&eacute; renomm&eacute;e)')
+    +kv('Cl&eacute;s pr&eacute;sentes localement',String(present))
+    +kv('Taille locale',VX.fmt.num(bytes/1024,1)+' Ko')
+    +kv('Derni&egrave;re &eacute;criture locale',VX.fmt.ago(Number(localStorage.getItem('deskTs')||0)||null));
+}
+function exportDesk(){
+  const keys=deskKeys();const data={};
+  keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null)data[k]=v;});
+  const payload={exported:new Date().toISOString(),ts:Number(localStorage.getItem('deskTs')||Date.now()),data};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='vertex-desk-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  VX.toast('Export desk téléchargé','success');
+}
+function importDesk(ev){
+  const file=ev.target.files&&ev.target.files[0];
+  ev.target.value='';
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    let payload=null;
+    try{payload=JSON.parse(String(reader.result));}catch(e){VX.toast('Fichier JSON invalide','error');return;}
+    const data=payload&&payload.data?payload.data:payload;
+    if(!data||typeof data!=='object'){VX.toast('Structure inattendue — export desk attendu','error');return;}
+    const keys=deskKeys();
+    const importable=Object.keys(data).filter(k=>keys.includes(k)&&typeof data[k]==='string');
+    if(!importable.length){VX.toast('Aucune clé desk reconnue dans ce fichier','error');return;}
+    VX.shell.openModal('Confirmer l’import',
+      `<p>Ce fichier va <b>remplacer</b> ${importable.length} cl&eacute;(s) locale(s) :</p>
+       <div class="vx-flex vx-wrap vx-gap2 vx-mt2">${importable.map(k=>`<span class="vx-badge">${esc(k)}</span>`).join('')}</div>
+       <div class="vx-insight vx-mt3" data-tone="risk">L&#8217;&eacute;criture est suivie d&#8217;une synchronisation
+       serveur (last-writer-wins). Les backups quotidiens desk_backup_* restent disponibles en cas d&#8217;erreur.</div>`,
+      '<button class="vx-btn vx-btn-primary" id="vx-desk-import-confirm">Importer et synchroniser</button>');
+    document.getElementById('vx-desk-import-confirm').addEventListener('click',()=>{
+      importable.forEach(k=>{try{localStorage.setItem(k,data[k]);}catch(e){}});
+      try{localStorage.setItem('deskTs',String(Date.now()));}catch(e){}
+      const out={};keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null)out[k]=v;});
+      fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ts:Number(localStorage.getItem('deskTs')||Date.now()),data:out})}).catch(()=>{});
+      VX.shell.closeModal();
+      VX.bus.emit('vx:data-refreshed',{reason:'desk-import'});
+      VX.toast(importable.length+' clé(s) importée(s) et synchronisée(s)','success');
+      renderDeskSummary();
+    });
+  };
+  reader.readAsText(file);
+}
+
+/* ══ Vue ARCHIVE (vxVault) ══════════════════════════════════════════ */
+let vaultTypeFilter='';
+function vaultGet(){try{const v=JSON.parse(localStorage.getItem('vxVault')||'[]');return Array.isArray(v)?v:[];}catch(e){return[];}}
+function vaultSet(list){
+  try{
+    localStorage.setItem('vxVault',JSON.stringify(list));
+    localStorage.setItem('deskTs',String(Date.now()));
+  }catch(e){VX.toast('Écriture locale impossible (quota ?)','error');return;}
+  /* Push desk — même protocole que vx-entities.js (last-writer-wins). */
+  try{
+    const keys=deskKeys();const data={};
+    keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null)data[k]=v;});
+    fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ts:Number(localStorage.getItem('deskTs')||Date.now()),data})}).catch(()=>{});
+  }catch(e){}
+}
+function initArchive(){
+  renderVault();
+  $('vx-vault-search').addEventListener('input',renderVault);
+  $('vx-vault-new').addEventListener('click',()=>openVaultModal(null));
+  $('vx-vault-export').addEventListener('click',()=>{
+    const blob=new Blob([JSON.stringify(vaultGet(),null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='vertex-vault-'+new Date().toISOString().slice(0,10)+'.json';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+    VX.toast('Export du coffre téléchargé','success');
+  });
+  VX.bus.on('vx:data-refreshed',renderVault);
+}
+function renderVault(){
+  const all=vaultGet();
+  const types=[...new Set(all.map(e=>e.type).filter(Boolean))].sort();
+  $('vx-vault-chips').innerHTML=[['','Tous ('+all.length+')']]
+    .concat(types.map(t=>[t,t+' ('+all.filter(e=>e.type===t).length+')']))
+    .map(([val,label])=>`<button class="vx-chip" data-filter-key="type" data-filter-value="${esc(val)}"
+      aria-pressed="${String(val===vaultTypeFilter)}">${esc(label)}</button>`).join('');
+  document.querySelectorAll('#vx-vault-chips .vx-chip').forEach(ch=>
+    ch.addEventListener('click',()=>{vaultTypeFilter=ch.dataset.filterValue;renderVault();}));
+  const q=($('vx-vault-search').value||'').trim().toLowerCase();
+  const rows=all.filter(e=>{
+    if(vaultTypeFilter&&e.type!==vaultTypeFilter)return false;
+    if(!q)return true;
+    return [e.title,e.content,(e.tags||[]).join(' '),e.type]
+      .map(x=>String(x||'').toLowerCase()).some(x=>x.includes(q));
+  }).sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
+  if(!rows.length){
+    $('vx-vault-list').innerHTML=VX.states.empty(
+      all.length?'Aucune entr&eacute;e ne correspond &agrave; la recherche ou au filtre.'
+      :'Le coffre est vide — archivez ici vos analyses, mod&egrave;les et documents de r&eacute;f&eacute;rence.',
+      all.length?'':'<button class="vx-btn vx-btn-sm" id="vx-vault-new-empty">Cr&eacute;er la premi&egrave;re entr&eacute;e</button>');
+    document.getElementById('vx-vault-new-empty')?.addEventListener('click',()=>openVaultModal(null));
+    return;
+  }
+  $('vx-vault-list').innerHTML=`<div style="overflow-x:auto"><table class="vx-table">
+    <thead><tr><th>Titre</th><th>Type</th><th>Tags</th><th class="vx-num">Mis &agrave; jour</th><th></th></tr></thead><tbody>`
+    +rows.map(e=>`<tr>
+      <td><button class="vx-btn vx-btn-sm vx-btn-ghost" data-vault-open="${esc(String(e.id))}"
+        style="font-weight:600">${esc(e.title||'(sans titre)')}</button>
+        <div class="vx-meta vx-truncate" style="max-width:420px">${esc(String(e.content||'').slice(0,120))}</div></td>
+      <td><span class="vx-badge">${esc(e.type||'note')}</span>
+        ${e.status?`<span class="vx-badge vx-muted">${esc(e.status)}</span>`:''}</td>
+      <td class="vx-dim" style="font-size:12px">${(e.tags||[]).map(t=>'#'+esc(t)).join(' ')||'—'}</td>
+      <td class="vx-num vx-meta">${VX.fmt.ago(e.updatedAt||e.createdAt)}</td>
+      <td><button class="vx-btn vx-btn-sm" data-vault-edit="${esc(String(e.id))}">Modifier</button></td>
+    </tr>`).join('')+'</tbody></table></div>'
+    +`<div class="vx-card-footer">${rows.length} entr&eacute;e(s) affich&eacute;e(s) · coffre local synchronis&eacute; via /api/desk</div>`;
+  document.querySelectorAll('[data-vault-open]').forEach(b=>
+    b.addEventListener('click',()=>openVaultDrawer(b.dataset.vaultOpen)));
+  document.querySelectorAll('[data-vault-edit]').forEach(b=>
+    b.addEventListener('click',()=>openVaultModal(b.dataset.vaultEdit)));
+}
+function openVaultDrawer(id){
+  const e=vaultGet().find(x=>String(x.id)===String(id));
+  if(!e)return;
+  VX.shell.openDrawer(e.title||'(sans titre)',
+    `<div class="vx-flex vx-wrap vx-gap2 vx-mb3">
+      <span class="vx-badge">${esc(e.type||'note')}</span>
+      ${e.priority?`<span class="vx-badge">priorit&eacute; ${esc(e.priority)}</span>`:''}
+      ${e.status?`<span class="vx-badge">${esc(e.status)}</span>`:''}</div>
+    <div style="white-space:pre-wrap;font-size:13px;line-height:1.7">${esc(e.content||'')}</div>
+    ${(e.tags||[]).length?`<div class="vx-mt3 vx-dim">${e.tags.map(t=>'#'+esc(t)).join(' ')}</div>`:''}
+    <div class="vx-divider"></div>
+    <div class="vx-meta">Cr&eacute;&eacute;e ${VX.fmt.ago(e.createdAt)} · mise &agrave; jour ${VX.fmt.ago(e.updatedAt||e.createdAt)}</div>
+    <div class="vx-mt3"><button class="vx-btn vx-btn-sm" onclick="document.querySelector('[data-vault-edit=&quot;${esc(String(e.id))}&quot;]')?.click();VX.shell.closeDrawer()">Modifier</button></div>`);
+}
+function openVaultModal(id){
+  const existing=id?vaultGet().find(x=>String(x.id)===String(id)):null;
+  const e=existing||{title:'',type:'note',content:'',tags:[],priority:'normal',status:'active'};
+  VX.shell.openModal(existing?'Modifier l’entrée':'Nouvelle entrée',
+    `<div class="vx-field"><label for="vv-title">Titre</label>
+      <input class="vx-input" id="vv-title" value="${esc(e.title)}" /></div>
+    <div class="vx-form-row">
+      <div class="vx-field"><label for="vv-type">Type</label>
+        <select class="vx-select" id="vv-type">
+          ${['note','analyse','modele','document','lien','regle'].map(t=>
+            `<option value="${t}" ${e.type===t?'selected':''}>${t}</option>`).join('')}
+        </select></div>
+      <div class="vx-field"><label for="vv-priority">Priorit&eacute;</label>
+        <select class="vx-select" id="vv-priority">
+          ${['haute','normal','basse'].map(p=>
+            `<option value="${p}" ${e.priority===p?'selected':''}>${p}</option>`).join('')}
+        </select></div>
+    </div>
+    <div class="vx-field"><label for="vv-content">Contenu</label>
+      <textarea class="vx-textarea" id="vv-content" rows="8">${esc(e.content)}</textarea></div>
+    <div class="vx-field"><label for="vv-tags">Tags (s&eacute;par&eacute;s par des virgules)</label>
+      <input class="vx-input" id="vv-tags" value="${esc((e.tags||[]).join(', '))}" /></div>`,
+    `${existing?'<button class="vx-btn vx-btn-ghost" id="vv-delete">Supprimer</button>':''}
+     <button class="vx-btn vx-btn-primary" id="vv-save">${existing?'Enregistrer':'Cr&eacute;er'}</button>`);
+  document.getElementById('vv-save').addEventListener('click',()=>{
+    const title=(document.getElementById('vv-title').value||'').trim();
+    if(!title){VX.toast('Titre requis','error');return;}
+    const now=new Date().toISOString();
+    const entry={
+      id:existing?existing.id:Date.now(),
+      title,
+      type:document.getElementById('vv-type').value,
+      content:document.getElementById('vv-content').value,
+      tags:(document.getElementById('vv-tags').value||'').split(',').map(s=>s.trim()).filter(Boolean),
+      createdAt:existing?(existing.createdAt||now):now,
+      updatedAt:now,
+      status:existing?(existing.status||'active'):'active',
+      priority:document.getElementById('vv-priority').value,
+    };
+    const list=vaultGet().filter(x=>String(x.id)!==String(entry.id));
+    list.push(entry);
+    vaultSet(list);
+    VX.shell.closeModal();
+    VX.toast(existing?'Entrée mise à jour':'Entrée créée','success');
+    renderVault();
+  });
+  document.getElementById('vv-delete')?.addEventListener('click',()=>{
+    vaultSet(vaultGet().filter(x=>String(x.id)!==String(id)));
+    VX.shell.closeModal();
+    VX.toast('Entrée supprimée');
+    renderVault();
+  });
+}
+
+/* ══ Orchestration ══════════════════════════════════════════════════ */
+if(VIEW==='connections'){
+  loadConnections();
+  VX.refresh.register(loadConnections,60000,'connections');
+}else if(VIEW==='data'){
+  loadData();
+  $('vx-data-refresh').addEventListener('click',doRefresh);
+  VX.refresh.register(loadData,60000,'data');
+}else if(VIEW==='settings'){
+  initSettings();
+}else if(VIEW==='archive'){
+  initArchive();
+}
+VX.context.restoreIfReturning();
+})();
+</script>
+"""
+
+
+def render(view: str = 'connections') -> str:
+    view = view if view in dict(VIEWS) else _DEFAULT_VIEW
+    body = _VIEW_CONTENT[view].replace(
+        '%%LOADING%%', '<div class="vx-skeleton" style="height:60px"></div>')
+    content = (_header(view)
+               + f'<div id="vx-system" data-view="{view}">' + body + '</div>')
+    sub = dict(VIEWS)[view]
+    return render_shell(title='Système', active='system',
+                        space_label='Système', sub_label=sub,
+                        content=content, page_js=_JS,
+                        page_label='Système — ' + sub)
