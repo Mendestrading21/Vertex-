@@ -1953,6 +1953,19 @@ from vertex.data_sources import tradingview_webhooks as _tv_webhooks
 app.register_blueprint(_tv_webhooks.make_blueprint())
 
 
+# ─── VERTEX STRATEGY OS (Blueprint + page) — constitution · décision unique ·
+#     régime · anomalies · équipe · diagnostics · qualité de données ───
+from vertex.app.routes import strategy_os_api as _strategy_os_api
+from vertex.ui import strategy_os as _strategy_os_ui
+app.register_blueprint(_strategy_os_api.make_blueprint(scan_state=scan_state))
+
+
+@app.route('/strategy-os')
+@app.route('/vertex-intelligence')
+def strategy_os_page():
+    return _strategy_os_ui.render_page()
+
+
 # ─── API DÉCISION (Blueprint) — /api/decision · /api/brief · /api/committee-review ───
 # Sortie du monolithe : logique dans vertex/app/routes/decision_api.py, état injecté.
 app.register_blueprint(_decision_api.make_blueprint(scan_state=scan_state, demo_mode=DEMO_MODE))
