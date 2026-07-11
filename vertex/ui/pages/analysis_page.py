@@ -25,7 +25,7 @@ def render_index(view: str = '') -> str:
   <div class="vx-help vx-mt2">Astuce : ⌘K / Ctrl+K depuis n’importe quelle page.</div>
 </div>
 <div class="vx-section-header"><h2>Titres récents</h2></div>
-<div class="vx-flex vx-wrap" id="an-recent"></div>
+<div class="vx-flex vx-wrap" id="an-recent"><span class="vx-skeleton" style="width:120px;height:26px"></span></div>
 """
     js = r"""
 <script>

@@ -46,7 +46,7 @@ _HEADER = """
 
 _VIEW_CONTENT = {
     'overview': """
-<div class="vx-grid vx-mt3" id="vx-pf-kpis" aria-label="Indicateurs de performance"></div>
+<div class="vx-grid vx-mt3" id="vx-pf-kpis" aria-label="Indicateurs de performance"><div class="vx-skeleton vx-skeleton-kpi vx-col-3" style="grid-column:span 3"></div></div>
 <div class="vx-grid vx-mt4">
   <div class="vx-col-7" id="vx-pf-equity"></div>
   <div class="vx-col-5" id="vx-pf-drawdown"></div>
