@@ -93,7 +93,8 @@
       const open = day >= 1 && day <= 5 && mins >= 570 && mins < 960;
       const pre = day >= 1 && day <= 5 && mins >= 240 && mins < 570;
       const label = open ? 'Marché ouvert' : (pre ? 'Pré-marché' : 'Marché fermé');
-      el.innerHTML = `<b>${label}</b><br><span class="vx-muted">New York ${ny}</span>`;
+      const dotCol = open ? 'var(--vx-positive)' : (pre ? 'var(--vx-warning)' : 'var(--vx-text-faint)');
+      el.innerHTML = `<b><span class="vx-live-dot" style="display:inline-block;margin-right:5px;background:${dotCol}"></span>${label}</b><br><span class="vx-muted">New York ${ny}</span>`;
     } catch (e) { /* fuseaux non dispo */ }
   }
   tickClock(); setInterval(tickClock, 30000);

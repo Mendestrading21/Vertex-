@@ -8,8 +8,8 @@
   padding:9px 12px;border-bottom:1px solid var(--vx-border-soft);white-space:nowrap}
 .vx-table th[data-sortable]{cursor:pointer;user-select:none}
 .vx-table th[data-sortable]:hover{color:var(--vx-text)}
-.vx-table th[aria-sort="ascending"]::after{content:" ↑";color:var(--vx-cyan)}
-.vx-table th[aria-sort="descending"]::after{content:" ↓";color:var(--vx-cyan)}
+.vx-table th[aria-sort="ascending"]::after{content:" ↑";color:var(--vx-brand)}
+.vx-table th[aria-sort="descending"]::after{content:" ↓";color:var(--vx-brand)}
 .vx-table td{padding:8px 12px;border-bottom:1px solid var(--vx-border-soft);
   white-space:nowrap;vertical-align:middle}
 .vx-table tbody tr:last-child td{border-bottom:none}
@@ -31,8 +31,11 @@
   border-radius:99px;font-size:12px;border:1px solid var(--vx-border-soft);
   background:var(--vx-surface);color:var(--vx-text-secondary);cursor:pointer;
   font-family:inherit}
-.vx-chip[aria-pressed="true"]{background:var(--vx-blue-dim);
-  border-color:var(--vx-border-strong);color:var(--vx-text)}
+.vx-chip[aria-pressed="true"]{background:var(--vx-brand-soft);
+  border-color:rgba(246,138,60,.34);color:var(--vx-text)}
+.vx-filter-count{display:inline-flex;align-items:center;justify-content:center;
+  min-width:17px;height:17px;padding:0 5px;border-radius:99px;font-size:10px;
+  font-weight:700;background:var(--vx-brand-soft);color:var(--vx-brand-strong)}
 /* Mobile : transformation en cartes */
 @media (max-width:720px){
   .vx-table-cards .vx-table,.vx-table-cards thead{display:block}

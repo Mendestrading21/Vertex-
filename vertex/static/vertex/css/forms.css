@@ -7,7 +7,7 @@
   padding:8px 11px;color:var(--vx-text);font-size:13px;font-family:inherit;
   width:100%}
 .vx-input:focus,.vx-select:focus,.vx-textarea:focus{
-  border-color:var(--vx-border-strong)}
+  border-color:rgba(246,138,60,.42);box-shadow:0 0 0 3px rgba(246,138,60,.08)}
 .vx-input[data-numeric],.vx-input[type=number]{font-family:var(--vx-font-mono)}
 .vx-textarea{min-height:76px;resize:vertical}
 .vx-select{appearance:none;
@@ -18,8 +18,8 @@
 .vx-form-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--vx-s3)}
 .vx-checkbox{display:flex;align-items:center;gap:8px;font-size:13px;
   color:var(--vx-text-secondary);cursor:pointer}
-.vx-checkbox input{accent-color:var(--vx-blue);width:15px;height:15px}
+.vx-checkbox input{accent-color:var(--vx-brand);width:15px;height:15px}
 /* Étapes (formulaire progressif §19) */
 .vx-steps{display:flex;gap:6px;margin-bottom:var(--vx-s4)}
 .vx-steps span{flex:1;height:3px;border-radius:3px;background:var(--vx-border-soft)}
-.vx-steps span[data-done="1"]{background:var(--vx-cyan)}
+.vx-steps span[data-done="1"]{background:var(--vx-brand)}
