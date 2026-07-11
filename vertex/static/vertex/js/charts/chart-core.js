@@ -8,12 +8,15 @@
   const VX = window.VX;
   const C = window.VXCharts = window.VXCharts || {};
 
-  C.colors = {
-    blue: '#3B82F6', cyan: '#22D3EE', violet: '#7C3AED', positive: '#22C77A',
-    negative: '#EF5350', warning: '#F59E42', info: '#4DA3FF',
-    text: '#9AA8C1', muted: '#73829D', grid: 'rgba(255,255,255,.06)',
-    series: ['#3B82F6', '#22D3EE', '#7C3AED', '#4DA3FF', '#22C77A', '#F59E42'],
-  };
+  /* Thème V3 unique (chart-theme.js) — repli sur les mêmes valeurs si absent */
+  const THEME = window.VXChartTheme || { colors: {}, tooltip: {} };
+  C.colors = Object.assign({
+    brand: '#f68a3c', blue: '#4ca6ff', cyan: '#2cc9d8', violet: '#8b6df6',
+    positive: '#2acb7f', negative: '#f05d55', warning: '#f3a93b',
+    info: '#4ca6ff', neutral: '#738096',
+    text: '#b3bdca', muted: '#7f8b9d', grid: 'rgba(255,255,255,.055)',
+    series: ['#f68a3c', '#4ca6ff', '#2cc9d8', '#8b6df6', '#f5b942', '#738096'],
+  }, THEME.colors);
 
   function chartDefaults() {
     if (!window.Chart) return;
@@ -24,11 +27,14 @@
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) d.animation = false;
     else if (d.animation && typeof d.animation === 'object') d.animation.duration = 250;
     d.plugins.legend.display = false;
-    d.plugins.tooltip.backgroundColor = '#111C30';
-    d.plugins.tooltip.borderColor = 'rgba(91,140,255,.34)';
+    const tt = (window.VXChartTheme && window.VXChartTheme.tooltip) || {};
+    d.plugins.tooltip.backgroundColor = tt.backgroundColor || '#151c27';
+    d.plugins.tooltip.borderColor = tt.borderColor || 'rgba(255,255,255,.14)';
     d.plugins.tooltip.borderWidth = 1;
-    d.plugins.tooltip.titleColor = '#F5F7FB';
-    d.plugins.tooltip.bodyColor = '#9AA8C1';
+    d.plugins.tooltip.padding = 10;
+    d.plugins.tooltip.cornerRadius = 8;
+    d.plugins.tooltip.titleColor = tt.titleColor || '#f7f8fa';
+    d.plugins.tooltip.bodyColor = tt.bodyColor || '#b3bdca';
     d.maintainAspectRatio = false;
   }
   if (window.Chart) chartDefaults(); else document.addEventListener('DOMContentLoaded', chartDefaults);

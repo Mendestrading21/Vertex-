@@ -1,0 +1,59 @@
+/* Vertex Design System V3 — states.css
+   États premium : LOADING / READY / EMPTY / STALE / ERROR / OFFLINE / DEMO.
+   Un état honnête, compact, actionnable — jamais un rectangle géant vide. */
+
+.vx-state{display:flex;flex-direction:column;align-items:center;gap:var(--vx-s2);
+  padding:var(--vx-s6) var(--vx-s4);text-align:center;color:var(--vx-text-muted);
+  font-size:13px;max-height:240px;justify-content:center}
+.vx-state b{color:var(--vx-text-secondary)}
+.vx-state .vx-state-icon{width:34px;height:34px;border-radius:10px;
+  display:grid;place-items:center;background:var(--vx-surface-2);
+  border:1px solid var(--vx-border-soft);color:var(--vx-text-faint);font-size:16px}
+.vx-state[data-tone="error"] .vx-state-icon{color:var(--vx-negative);
+  background:var(--vx-negative-soft)}
+.vx-state[data-tone="offline"] .vx-state-icon{color:var(--vx-text-muted)}
+.vx-state .vx-state-action{margin-top:4px}
+
+/* Skeletons — dimensions proches du contenu final */
+.vx-skeleton{position:relative;overflow:hidden;background:var(--vx-surface-2);
+  border-radius:var(--vx-r-sm);min-height:14px}
+.vx-skeleton::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);
+  animation:vx-shimmer 1.4s infinite}
+@keyframes vx-shimmer{to{transform:translateX(100%)}}
+.vx-skeleton-kpi{height:34px;width:60%}
+.vx-skeleton-line{height:12px}
+.vx-skeleton-chart{height:140px}
+
+/* Bannières d'état */
+.vx-stale-banner{display:flex;align-items:center;gap:8px;
+  background:var(--vx-warning-soft);border:1px solid rgba(243,169,59,.3);
+  color:var(--vx-warning);border-radius:var(--vx-r-sm);padding:6px 10px;
+  font-size:12px;margin-bottom:var(--vx-s3)}
+.vx-error-banner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:var(--vx-negative-soft);border:1px solid rgba(240,93,85,.3);
+  color:var(--vx-negative);border-radius:var(--vx-r-sm);padding:6px 10px;
+  font-size:12px;margin-bottom:var(--vx-s3)}
+.vx-offline-banner{display:flex;align-items:center;gap:8px;
+  background:var(--vx-surface-2);border:1px solid var(--vx-border-default);
+  color:var(--vx-text-muted);border-radius:var(--vx-r-sm);padding:6px 10px;
+  font-size:12px;margin-bottom:var(--vx-s3)}
+
+/* Mode démo — clair, propre, sans ambiguïté */
+.vx-demo-banner{display:flex;align-items:center;gap:9px;
+  background:var(--vx-brand-soft);border:1px solid rgba(246,138,60,.3);
+  color:var(--vx-brand-strong);border-radius:var(--vx-r-sm);
+  padding:7px 12px;font-size:12px;font-weight:600;margin-bottom:var(--vx-s4)}
+.vx-badge-demo{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;
+  border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;background:var(--vx-brand-soft);
+  color:var(--vx-brand-strong);border:1px solid rgba(246,138,60,.3)}
+
+/* Indicateurs live (§29) : live/delayed/frozen/fallback/offline */
+.vx-live-dot{width:7px;height:7px;border-radius:99px;flex:none;
+  background:var(--vx-text-faint)}
+[data-live="live"] .vx-live-dot,.vx-live-dot[data-live="live"]{background:var(--vx-positive)}
+[data-live="delayed"] .vx-live-dot,.vx-live-dot[data-live="delayed"]{background:var(--vx-warning)}
+[data-live="frozen"] .vx-live-dot,.vx-live-dot[data-live="frozen"]{background:var(--vx-neutral-chart)}
+[data-live="fallback"] .vx-live-dot,.vx-live-dot[data-live="fallback"]{background:var(--vx-violet)}
+[data-live="offline"] .vx-live-dot,.vx-live-dot[data-live="offline"]{background:var(--vx-negative)}

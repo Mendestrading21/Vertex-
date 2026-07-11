@@ -1,0 +1,26 @@
+/* Vertex Design System V3 — animations.css
+   Transitions courtes et fonctionnelles. Aucune pulsation continue,
+   aucune animation décorative permanente (reduced-motion coupé dans base). */
+
+/* Highlight temporaire quand une valeur change (§29) */
+@keyframes vx-value-flash{
+  0%{background:var(--vx-brand-soft)}
+  100%{background:transparent}}
+.vx-flash{animation:vx-value-flash .9s ease-out 1}
+@keyframes vx-value-flash-pos{0%{background:var(--vx-positive-soft)}100%{background:transparent}}
+@keyframes vx-value-flash-neg{0%{background:var(--vx-negative-soft)}100%{background:transparent}}
+.vx-flash-pos{animation:vx-value-flash-pos .9s ease-out 1}
+.vx-flash-neg{animation:vx-value-flash-neg .9s ease-out 1}
+
+/* Apparition douce des cartes au premier rendu */
+@keyframes vx-rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.vx-rise{animation:vx-rise .28s ease-out 1}
+
+/* Drawer / modal — entrée courte */
+@keyframes vx-fade-in{from{opacity:0}to{opacity:1}}
+.vx-modal[data-open="1"] .vx-modal-box{animation:vx-rise .22s ease-out 1}
+.vx-palette[data-open="1"] .vx-palette-box{animation:vx-rise .18s ease-out 1}
+
+/* Toast entrée/sortie */
+@keyframes vx-toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.vx-toast{animation:vx-toast-in .22s ease-out 1}

@@ -1,40 +1,57 @@
-/* Vertex Design System — base.css : reset, typo, éléments natifs. */
+/* Vertex Design System V3 — base.css : reset, typo, ambiance de fond. */
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--vx-bg);color:var(--vx-text);
+body{margin:0;background:var(--vx-bg-1);color:var(--vx-text-primary);
   font-family:var(--vx-font);font-size:var(--vx-fs-body);line-height:1.5;
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+/* Ambiance : halo orange diffus en coin + vignettage très léger.
+   Fixe, non animé, jamais derrière le texte principal (opacités < .06). */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 900px 520px at 88% -12%,rgba(246,138,60,.05),transparent 62%),
+    radial-gradient(ellipse 700px 460px at -8% 108%,rgba(217,119,63,.035),transparent 60%),
+    radial-gradient(ellipse 140% 100% at 50% 50%,transparent 62%,rgba(0,0,0,.28) 100%)}
+#vx-app{position:relative;z-index:1}
+
 h1,h2,h3,h4,p{margin:0}
-h1{font-size:var(--vx-fs-page);font-weight:800;letter-spacing:-.5px}
+h1{font-size:var(--vx-fs-page);font-weight:800;letter-spacing:-.6px}
 h2{font-size:var(--vx-fs-section);font-weight:700;letter-spacing:-.2px}
 h3{font-size:var(--vx-fs-card);font-weight:600;color:var(--vx-text-secondary);
   text-transform:uppercase;letter-spacing:.6px}
-a{color:var(--vx-information);text-decoration:none}
+a{color:var(--vx-info);text-decoration:none}
 a:hover{text-decoration:underline}
 small,.vx-meta{font-size:var(--vx-fs-meta);color:var(--vx-text-muted)}
-code,.vx-mono,[data-numeric]{font-family:var(--vx-font-mono);
+code,.vx-mono,.vx-num,[data-numeric]{font-family:var(--vx-font-mono);
   font-variant-numeric:tabular-nums}
+td.vx-num,th.vx-num{font-variant-numeric:tabular-nums}
 img,canvas,svg{max-width:100%}
-::selection{background:var(--vx-blue-dim)}
+::selection{background:var(--vx-brand-soft)}
 :focus{outline:none}
-:focus-visible{outline:2px solid var(--vx-cyan);outline-offset:2px;border-radius:4px}
+:focus-visible{outline:2px solid var(--vx-brand);outline-offset:2px;border-radius:4px}
 [hidden]{display:none!important}
+
 /* Scrollbars discrètes */
-*{scrollbar-width:thin;scrollbar-color:#22314e transparent}
+*{scrollbar-width:thin;scrollbar-color:#26303f transparent}
 *::-webkit-scrollbar{width:8px;height:8px}
-*::-webkit-scrollbar-thumb{background:#22314e;border-radius:8px}
+*::-webkit-scrollbar-thumb{background:#26303f;border-radius:8px}
 *::-webkit-scrollbar-track{background:transparent}
-/* Sémantique financière — jamais uniquement par la couleur : toujours signe/±/flèche en plus */
+
+/* Sémantique financière — jamais uniquement par la couleur :
+   toujours signe/±/flèche/texte en plus */
 .vx-pos{color:var(--vx-positive)}
 .vx-neg{color:var(--vx-negative)}
 .vx-warn{color:var(--vx-warning)}
-.vx-info{color:var(--vx-information)}
+.vx-info{color:var(--vx-info)}
 .vx-violet{color:var(--vx-violet)}
+.vx-brand{color:var(--vx-brand)}
 .vx-dim{color:var(--vx-text-secondary)}
 .vx-muted{color:var(--vx-text-muted)}
+
 /* Accessibilité : lecteurs d'écran */
 .vx-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
   overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
 /* Reduced motion : couper transitions et animations */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;

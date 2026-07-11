@@ -1,11 +1,23 @@
 /* Vertex Design System — components.css : cartes, badges, KPI, drawers,
    modals, toasts, palette, notifications, états de données. */
 
-/* ── Cartes ────────────────────────────────────────────────────────── */
-.vx-card{background:var(--vx-surface);border:1px solid var(--vx-border-soft);
-  border-radius:var(--vx-r-lg);padding:var(--vx-s4);min-width:0}
-.vx-card.vx-elevated{background:var(--vx-surface-elevated);box-shadow:var(--vx-shadow-1)}
-.vx-card.vx-accent{border-color:var(--vx-border)}
+/* ── Cartes — 3 niveaux (§9) ───────────────────────────────────────── */
+.vx-card{background:var(--vx-surface-1);border:1px solid var(--vx-border-soft);
+  border-radius:var(--vx-r-lg);padding:var(--vx-s4);min-width:0;
+  transition:border-color var(--vx-t),box-shadow var(--vx-t),transform var(--vx-t)}
+.vx-card:hover{border-color:var(--vx-border-default);box-shadow:var(--vx-shadow-1)}
+.vx-card.vx-elevated{background:var(--vx-surface-2);box-shadow:var(--vx-shadow-1)}
+.vx-card.vx-accent{border-color:var(--vx-border-default)}
+.vx-card.vx-active{border-color:rgba(246,138,60,.35);box-shadow:var(--vx-glow-brand)}
+/* LEVEL 1 — HERO : contenu principal, halo ambré discret */
+.vx-card--hero{background:var(--vx-hero-halo),var(--vx-surface-2);
+  border-color:var(--vx-border-default);padding:var(--vx-s5);
+  box-shadow:var(--vx-shadow-1)}
+.vx-card--hero:hover{box-shadow:var(--vx-shadow-2)}
+/* LEVEL 2 — ANALYTICAL : la carte par défaut (.vx-card) */
+/* LEVEL 3 — COMPACT : KPI, statut, métrique */
+.vx-card--compact{padding:var(--vx-s3)}
+.vx-card--compact .vx-card-header{margin-bottom:var(--vx-s2)}
 .vx-card-header{display:flex;align-items:baseline;gap:var(--vx-s2);
   margin-bottom:var(--vx-s3)}
 .vx-card-header .vx-actions{margin-left:auto;display:flex;gap:6px;align-items:center}
@@ -57,23 +69,7 @@
 .vx-badge-entity[data-kind="alert"]{color:var(--vx-warning)}
 .vx-badge-entity[data-kind="option"]{color:var(--vx-violet)}
 
-/* ── Boutons ───────────────────────────────────────────────────────── */
-.vx-btn{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;
-  border-radius:var(--vx-r-sm);border:1px solid var(--vx-border-soft);
-  background:var(--vx-surface-elevated);color:var(--vx-text);font-size:13px;
-  font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;
-  transition:background var(--vx-t-fast),border-color var(--vx-t-fast)}
-.vx-btn:hover{background:var(--vx-surface-hover);text-decoration:none}
-.vx-btn:disabled{opacity:.5;cursor:not-allowed}
-.vx-btn-primary{background:var(--vx-blue);border-color:var(--vx-blue);color:#fff}
-.vx-btn-primary:hover{background:#2f6fe0}
-.vx-btn-ghost{background:transparent;border-color:transparent;
-  color:var(--vx-text-secondary)}
-.vx-btn-ghost:hover{background:var(--vx-surface-hover);color:var(--vx-text)}
-.vx-btn-danger{color:var(--vx-negative);border-color:rgba(239,83,80,.35)}
-.vx-btn-sm{padding:4px 10px;font-size:12px}
-.vx-btn-icon{padding:7px;width:34px;height:34px;justify-content:center}
-.vx-btn svg{width:16px;height:16px;stroke:currentColor;flex:none}
+/* ── Boutons : voir buttons.css (système V3 complet) ───────────────── */
 
 /* ── Tabs / segmented ──────────────────────────────────────────────── */
 .vx-tabs{display:flex;gap:2px;border-bottom:1px solid var(--vx-border-soft);
@@ -84,7 +80,9 @@
   border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit}
 .vx-tab:hover{color:var(--vx-text)}
 .vx-tab[aria-selected="true"]{color:var(--vx-text);
-  border-bottom-color:var(--vx-cyan)}
+  border-bottom-color:var(--vx-brand)}
+.vx-tab .vx-tab-count{font-size:10px;padding:0 6px;border-radius:99px;
+  background:var(--vx-surface-2);color:var(--vx-text-muted);margin-left:5px}
 .vx-segmented{display:inline-flex;background:var(--vx-bg-secondary);
   border:1px solid var(--vx-border-soft);border-radius:var(--vx-r-sm);padding:2px}
 .vx-segmented button{padding:5px 12px;font-size:12px;font-weight:600;border:none;
@@ -138,7 +136,7 @@
   color:var(--vx-text-faint);padding:8px 12px 4px}
 .vx-palette-item{display:flex;align-items:center;gap:10px;padding:8px 12px;
   border-radius:var(--vx-r-sm);cursor:pointer;font-size:13px;color:var(--vx-text-secondary)}
-.vx-palette-item[aria-selected="true"]{background:var(--vx-blue-dim);color:var(--vx-text)}
+.vx-palette-item[aria-selected="true"]{background:var(--vx-brand-soft);color:var(--vx-text)}
 .vx-palette-item .vx-mono{color:var(--vx-cyan);min-width:52px}
 
 /* ── Toasts ────────────────────────────────────────────────────────── */
@@ -164,25 +162,7 @@
   background:var(--vx-surface-hover);color:var(--vx-text)}
 .vx-context-menu .vx-sep{height:1px;background:var(--vx-border-soft);margin:4px 6px}
 
-/* ── États de données (§39) ────────────────────────────────────────── */
-.vx-state{display:flex;flex-direction:column;align-items:center;gap:var(--vx-s2);
-  padding:var(--vx-s8) var(--vx-s4);text-align:center;color:var(--vx-text-muted);
-  font-size:13px}
-.vx-state b{color:var(--vx-text-secondary)}
-.vx-skeleton{position:relative;overflow:hidden;background:var(--vx-surface-elevated);
-  border-radius:var(--vx-r-sm);min-height:14px}
-.vx-skeleton::after{content:"";position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);
-  animation:vx-shimmer 1.4s infinite}
-@keyframes vx-shimmer{to{transform:translateX(100%)}}
-.vx-stale-banner{display:flex;align-items:center;gap:8px;
-  background:var(--vx-warning-dim);border:1px solid rgba(245,158,66,.3);
-  color:var(--vx-warning);border-radius:var(--vx-r-sm);padding:6px 10px;
-  font-size:12px;margin-bottom:var(--vx-s3)}
-.vx-error-banner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-  background:var(--vx-negative-dim);border:1px solid rgba(239,83,80,.3);
-  color:var(--vx-negative);border-radius:var(--vx-r-sm);padding:6px 10px;
-  font-size:12px;margin-bottom:var(--vx-s3)}
+/* ── États de données : voir states.css (V3) ───────────────────────── */
 
 /* ── UpdateIndicator / SourceFooter (§38) ──────────────────────────── */
 .vx-update{display:inline-flex;align-items:center;gap:6px;

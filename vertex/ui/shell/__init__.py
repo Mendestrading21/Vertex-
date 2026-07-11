@@ -146,7 +146,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
     mobile_bar = mobile_actions or _mobile_bar(active)
     return f'''<!doctype html><html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#050811">
+<meta name="theme-color" content="#080b10">
 <title>{title} · Vertex</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/static/icon-180.png">
@@ -155,6 +155,9 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/base.css">
 <link rel="stylesheet" href="/static/vertex/css/layout.css">
 <link rel="stylesheet" href="/static/vertex/css/components.css">
+<link rel="stylesheet" href="/static/vertex/css/buttons.css">
+<link rel="stylesheet" href="/static/vertex/css/states.css">
+<link rel="stylesheet" href="/static/vertex/css/animations.css">
 <link rel="stylesheet" href="/static/vertex/css/forms.css">
 <link rel="stylesheet" href="/static/vertex/css/tables.css">
 <link rel="stylesheet" href="/static/vertex/css/charts.css">
@@ -177,6 +180,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <script src="/static/vertex/js/vx-core.js"></script>
 <script src="/static/vertex/js/vx-entities.js"></script>
 <script src="/static/vertex/js/vx-shell.js"></script>
+<script src="/static/vertex/js/charts/chart-theme.js" defer></script>
 <script src="/static/vertex/js/charts/chart-core.js" defer></script>
 {page_js}
 </body></html>'''
