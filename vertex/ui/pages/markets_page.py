@@ -161,12 +161,13 @@ function loadLeader(scan){
     $('vx-mk-leader-body').innerHTML=VX.states.empty('Secteurs non calculés par le dernier scan.',SCAN_ACTION);return;
   }
   const top=sectors[0];
+  const topLeader=top.leader&&(top.leader.symbol||((typeof top.leader==='string')?top.leader:null));
   $('vx-mk-leader-body').innerHTML=
     `<div class="vx-kpi vx-mb3"><span class="vx-kpi-value" style="font-size:20px">${esc(top.sector||'n/d')}</span>
      <span class="vx-kpi-delta vx-muted">score moyen ${VX.fmt.nd(top.avg_score)}</span></div>`
-    +(top.leader?`<div class="vx-kv"><span class="k">Titre leader</span><span class="v">
-      <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(top.leader)}">${esc(top.leader)}</button>
-      <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(top.leader)}" aria-label="Actions ${esc(top.leader)}">⋯</button></span></div>`:'')
+    +(topLeader?`<div class="vx-kv"><span class="k">Titre leader</span><span class="v">
+      <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(topLeader)}">${esc(topLeader)}</button>
+      <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(topLeader)}" aria-label="Actions ${esc(topLeader)}">⋯</button></span></div>`:'')
     +`<div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.source||'scan',modeOf(scan))}</div>`;
 }
 function loadRisk(scan){
@@ -262,12 +263,14 @@ function loadSectors(scan){
       confirm:'Leadership stable sur plusieurs séances.',invalidate:'Rotation défensive brutale.'}});
   $('vx-mk-sectors-leaders').innerHTML=
     `<table class="vx-table"><thead><tr><th>Secteur</th><th class="vx-num">Score</th><th>Leader</th><th></th></tr></thead><tbody>`
-    +sectors.map(s=>`<tr>
+    +sectors.map(s=>{
+      const L=s.leader&&(s.leader.symbol||((typeof s.leader==='string')?s.leader:null));
+      return `<tr>
       <td><a href="/opportunities?view=stocks&sector=${encodeURIComponent(s.sector||'')}" onclick="VX.context.save()">${esc(s.sector||'n/d')}</a></td>
       <td class="vx-num vx-mono">${VX.fmt.nd(s.avg_score)}</td>
-      <td>${s.leader?`<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(s.leader)}">${esc(s.leader)}</button>`:'—'}</td>
-      <td>${s.leader?`<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(s.leader)}" aria-label="Actions ${esc(s.leader)}">⋯</button>`:''}</td>
-    </tr>`).join('')+'</tbody></table>'
+      <td>${L?`<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(L)}">${esc(L)}</button>`:'—'}</td>
+      <td>${L?`<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(L)}" aria-label="Actions ${esc(L)}">⋯</button>`:''}</td>
+    </tr>`;}).join('')+'</tbody></table>'
     +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
 }
 
