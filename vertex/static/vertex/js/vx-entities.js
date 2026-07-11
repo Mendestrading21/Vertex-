@@ -33,7 +33,7 @@
 
   /* ── Sync /api/desk (protocole historique inchangé) ─────────────── */
   let pushTimer = null;
-  function schedulePush() { clearTimeout(pushTimer); pushTimer = setTimeout(pushNow, 1200); }
+  function schedulePush() { clearTimeout(pushTimer); pushTimer = setTimeout(() => { pushTimer = null; pushNow(); }, 1200); }
   function pushNow() {
     try {
       const data = {};
@@ -59,6 +59,20 @@
     } catch (e) {}
   }
   pull(); setInterval(() => { if (!document.hidden) pull(); }, 120000);
+  /* Flush du push au déchargement : une écriture suivie d'une navigation
+     immédiate ne doit jamais se perdre (le débounce n'attend pas la page
+     suivante — sendBeacon survit à l'unload). */
+  window.addEventListener('pagehide', () => {
+    if (pushTimer === null) return;
+    clearTimeout(pushTimer); pushTimer = null;
+    try {
+      const data = {};
+      DESK_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v != null) data[k] = v; });
+      const ts = Number(localStorage.getItem('deskTs') || Date.now());
+      const blob = new Blob([JSON.stringify({ ts, data })], { type: 'application/json' });
+      if (!navigator.sendBeacon || !navigator.sendBeacon('/api/desk', blob)) pushNow();
+    } catch (e) {}
+  });
 
   /* ── Store ───────────────────────────────────────────────────────── */
   const E = window.VXEntities = {

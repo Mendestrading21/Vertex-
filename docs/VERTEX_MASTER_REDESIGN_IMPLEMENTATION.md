@@ -142,7 +142,26 @@ Préférences locales non synchronisées volontairement device-specific :
 `td-shell-v6` (bump — le shell a changé), anciens caches purgés par le SW
 existant, version testée (`test_service_worker_bumped`).
 
-## 11. Tests
+## 11. Parcours navigateur (§50) — exécutés en Chromium réel
+
+6/6 PASS, 0 erreur JS (mode démo, serveur sans IBKR/Claude/TradingView) :
+1. Briefing → NVDA → Analyse → favori (toast) → retour Briefing → `myFavs` ✓
+2. Opportunités/Options → filtre DYNAMIC → contrat (payoff+scénarios moteur)
+   → alerte créée (`vxAlerts`) → centre de notifications ✓
+3. Analyse → watchlist AAPL → Portefeuille/Watchlist → rouvrir → retour
+   contextuel restauré ✓
+4. Position CALL MSFT déclarée → Portefeuille → clôture déclarative →
+   entrée automatique dans Performance/Journal + `vxJournal` ✓
+5. Marchés/Secteurs → Opportunités filtrées (état vide honnête si le filtre
+   ne matche pas) → Analyse ✓
+6. Ctrl+K → « AAPL » → Entrée → `/analysis/AAPL` ✓
+Modes dégradés (`/`, Système/Connexions) : rendus propres, erreurs HTTP
+attendues catchées (404 décision hors scan, 503 IBKR hors ligne).
+Responsive 390×844 : zéro débordement horizontal, mobile bar visible.
+Correctif issu des parcours : flush `sendBeacon` du push desk au
+`pagehide` (une écriture suivie d'une navigation immédiate ne se perd plus).
+
+## 11 bis. Tests
 
 448 verts au total, dont ~45 nouveaux (`tests/test_redesign_ui.py`) :
 navigation 8 items, 200 sur toutes les routes et sous-vues, 43 redirections,
@@ -170,6 +189,11 @@ affaibli.
   affichés (honnêteté), documenté sur Marchés/Breadth.
 - Le brief éditorial est déterministe par défaut ; la reformulation Claude
   du même paquet pourra s'y brancher (validation stricte déjà en place).
+- Le clic direct sur les barres du graphique de rotation exige de viser la
+  barre (Chart.js hit-test) — le drill-down par tableau des leaders reste
+  toujours disponible.
+- Les noms de secteurs viennent des moteurs en anglais (« Technology ») —
+  les filtres d'opportunités utilisent ces valeurs exactes.
 
 ## 13. Lancement
 
