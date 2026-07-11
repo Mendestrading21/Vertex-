@@ -1,0 +1,60 @@
+//@version=5
+// VERTEX STRATEGY — signaux TradingView → webhook Vertex.
+// INFORMATION UNIQUEMENT : chaque alerte déclenche une réévaluation côté
+// Vertex, jamais un ordre. Voir tradingview/README.md pour l'installation.
+indicator("Vertex Signals", overlay=true)
+
+// ── Paramètres ────────────────────────────────────────────────────────
+lenBreakout = input.int(60, "Période de cassure (jours)")
+lenTrend    = input.int(50, "MM tendance")
+volMult     = input.float(2.0, "Seuil d'expansion de volume (x moyenne 20)")
+atrLen      = input.int(14, "ATR")
+
+// ── Briques ───────────────────────────────────────────────────────────
+ma       = ta.sma(close, lenTrend)
+ma200    = ta.sma(close, 200)
+hi       = ta.highest(high, lenBreakout)[1]
+lo       = ta.lowest(low, lenBreakout)[1]
+avgVol   = ta.sma(volume, 20)
+atr      = ta.atr(atrLen)
+atrRatio = ta.sma(atr, 5) / ta.sma(atr, 60)
+
+// ── Conditions de signal (miroir des codes Vertex) ────────────────────
+breakoutConfirmed = ta.crossover(close, hi) and volume > avgVol * 1.3
+breakoutRetest    = close > hi * 0.99 and close < hi * 1.02 and close[1] > hi
+failedBreakout    = high > hi and close < hi
+supportReclaim    = ta.crossover(close, ma) and close > ma200
+correctionDeep    = close < ma * 0.92 and close > ma200
+momentumAccel     = ta.roc(close, 10) > ta.roc(close, 10)[10] + 4
+volumeExpansion   = volume > avgVol * volMult
+volCompression    = atrRatio < 0.6
+volExpansion      = atrRatio > 1.6
+trendAlignment    = close > ma and ma > ma200 and ta.roc(ma, 10) > 0
+thesisInvalidation= ta.crossunder(close, ma200)
+
+// ── Alertes (message = JSON attendu par POST /api/tradingview/webhook) ─
+// Remplacer VOTRE_SECRET par la valeur de TRADINGVIEW_SECRET côté serveur.
+payload(sig) =>
+    '{"secret":"VOTRE_SECRET","symbol":"' + syminfo.ticker +
+      '","signal":"' + sig + '","timestamp":' + str.tostring(time / 1000) +
+      ',"price":' + str.tostring(close) + '}'
+
+alertcondition(breakoutConfirmed,  "VX BREAKOUT_CONFIRMED",  "BREAKOUT_CONFIRMED")
+alertcondition(breakoutRetest,     "VX BREAKOUT_RETEST",     "BREAKOUT_RETEST")
+alertcondition(failedBreakout,     "VX FAILED_BREAKOUT",     "FAILED_BREAKOUT")
+alertcondition(supportReclaim,     "VX SUPPORT_RECLAIM",     "SUPPORT_RECLAIM")
+alertcondition(correctionDeep,     "VX CORRECTION_DEEP",     "CORRECTION_DEEP")
+alertcondition(momentumAccel,      "VX MOMENTUM_ACCELERATION","MOMENTUM_ACCELERATION")
+alertcondition(volumeExpansion,    "VX VOLUME_EXPANSION",    "VOLUME_EXPANSION")
+alertcondition(volCompression,     "VX VOLATILITY_COMPRESSION","VOLATILITY_COMPRESSION")
+alertcondition(volExpansion,       "VX VOLATILITY_EXPANSION","VOLATILITY_EXPANSION")
+alertcondition(trendAlignment,     "VX TREND_ALIGNMENT",     "TREND_ALIGNMENT")
+alertcondition(thesisInvalidation, "VX THESIS_INVALIDATION", "THESIS_INVALIDATION")
+
+// Aides visuelles
+plot(ma, "MM tendance", color=color.new(color.orange, 30))
+plot(ma200, "MM200", color=color.new(color.gray, 50))
+plotshape(breakoutConfirmed, style=shape.triangleup, location=location.belowbar,
+          color=color.green, size=size.tiny, title="Breakout")
+plotshape(thesisInvalidation, style=shape.xcross, location=location.abovebar,
+          color=color.red, size=size.tiny, title="Invalidation")

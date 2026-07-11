@@ -1946,6 +1946,13 @@ def desc_ep(sym):
 app.register_blueprint(_system.bp)
 
 
+# ─── TRADINGVIEW (Blueprint) — /api/tradingview/webhook · /api/tradingview/signals ───
+# Signaux d'information uniquement : le webhook déclenche une RÉÉVALUATION,
+# jamais un achat (secret TRADINGVIEW_SECRET requis, anti-replay, dédup).
+from vertex.data_sources import tradingview_webhooks as _tv_webhooks
+app.register_blueprint(_tv_webhooks.make_blueprint())
+
+
 # ─── API DÉCISION (Blueprint) — /api/decision · /api/brief · /api/committee-review ───
 # Sortie du monolithe : logique dans vertex/app/routes/decision_api.py, état injecté.
 app.register_blueprint(_decision_api.make_blueprint(scan_state=scan_state, demo_mode=DEMO_MODE))
