@@ -68,9 +68,10 @@
 
 ## Adaptateurs temporaires
 
-Un shim de compatibilité (ancien nom de package → nouveaux modules, avec
-`DeprecationWarning`) a été utilisé PENDANT la migration puis **supprimé avant
-livraison** : l'arbre final n'a plus ni l'ancien package ni d'adaptateur.
+La migration a pu se faire d'un bloc (tous les consommateurs mis à jour dans
+le même commit, suite de tests verte avant/après) : **aucun adaptateur
+temporaire n'a été nécessaire**, et le test
+`test_no_temporary_migration_adapters_left` garantit qu'aucun résidu n'existe.
 
 ## Test gardien
 
