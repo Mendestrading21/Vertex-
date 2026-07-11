@@ -16,8 +16,8 @@ CASH_LIKE = {'CASH', 'BIL', 'SGOV', 'SHV', 'MMF'}
 FIT_QUESTIONS = (
     'quelle_place',            # Quelle place occupe-t-elle ?
     'remplace_qui',            # Quelle position remplace-t-elle ?
-    'ameliore_qualite',        # Améliore-t-elle la qualité ?
-    'ameliore_asymetrie',      # Améliore-t-elle l'asymétrie ?
+    'renforce_qualite',        # Améliore-t-elle la qualité ?
+    'renforce_asymetrie',      # Améliore-t-elle l'asymétrie ?
     'augmente_correlation',    # Augmente-t-elle la corrélation ?
     'risque_sectoriel',        # Ajoute-t-elle un risque sectoriel ?
     'risque_evenementiel',     # Ajoute-t-elle un risque événementiel ?
@@ -84,8 +84,8 @@ def candidate_fit(snapshot: PortfolioSnapshot, profile, candidate: dict) -> dict
     answers['quelle_place'] = role
     replaces = candidate.get('replaces')
     answers['remplace_qui'] = replaces or None
-    answers['ameliore_qualite'] = bool(candidate.get('quality_improvement'))
-    answers['ameliore_asymetrie'] = bool(candidate.get('asymmetry_improvement'))
+    answers['renforce_qualite'] = bool(candidate.get('quality_improvement'))
+    answers['renforce_asymetrie'] = bool(candidate.get('asymmetry_improvement'))
     corr = candidate.get('correlation_to_portfolio')
     answers['augmente_correlation'] = bool(corr is not None and corr >= 0.75)
     sector = candidate.get('sector', '')
@@ -103,7 +103,7 @@ def candidate_fit(snapshot: PortfolioSnapshot, profile, candidate: dict) -> dict
     if len(team['by_role'].get(role, [])) >= hi and not replaces:
         reasons.append(f'rôle {role} déjà au complet — remplacement requis')
         blocked = True
-    if answers['augmente_correlation'] and not answers['ameliore_qualite']:
+    if answers['augmente_correlation'] and not answers['renforce_qualite']:
         reasons.append('corrélation en hausse sans gain de qualité — apport douteux')
     return {'answers': answers, 'blocked': blocked, 'reasons': reasons,
             'questions': list(FIT_QUESTIONS), 'team': {'stock_count': team['stock_count'],
