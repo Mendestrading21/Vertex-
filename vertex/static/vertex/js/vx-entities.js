@@ -111,14 +111,23 @@
     /* Suivis ⭐ (setup suivi — schéma myRecos historique) */
     follows() { return get('myRecos', []); },
     isFollowed(sym) { return this.follows().some(r => r.sym === String(sym).toUpperCase() && r.kind === 'STK'); },
-    followStock(sym, { entry_spot = null, stop = null, tgt = null } = {}) {
+    followStock(sym, { entry_spot = null, stop = null, tgt = null, decision = '', score = null } = {}) {
       sym = String(sym).toUpperCase();
       const list = this.follows();
       if (this.isFollowed(sym)) return;
       list.push({ id: Date.now(), kind: 'STK', sym, entry_spot, stop, tgt, followed: today() });
       set('myRecos', list);
+      /* Moteur de SUIVI serveur (§14) : capture le prix de référence + SPY à
+         l'instant du clic → performance hypothétique horodatée. Best-effort ;
+         le bookmark local reste même si l'API est indisponible. */
+      try {
+        fetch('/api/tracking', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ entity_type: 'STOCK', symbol: sym, decision: decision || '', score: score })
+        }).catch(function () { });
+      } catch (e) { /* jamais bloquant */ }
       VX.bus.emit('vx:follow-changed', { sym, active: true });
-      VX.toast(`Suivi créé sur ${sym}`, 'success');
+      VX.toast(`Suivi créé sur ${sym} — performance hypothétique depuis maintenant`, 'success');
     },
     unfollow(sym) {
       sym = String(sym).toUpperCase();

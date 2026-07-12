@@ -66,6 +66,9 @@ _SECTIONS = """
     <span id="an-badges"></span>
     <span class="vx-right vx-flex">
       <button class="vx-btn vx-btn-icon vx-btn-ghost" id="an-fav" aria-label="Favori" title="Favori">★</button>
+      <button class="vx-btn vx-btn-sm vx-btn-soft" id="an-follow"
+        onclick="VXEntities.followStock('%%SYM%%',{decision:(document.getElementById('an-decision')||{}).dataset&&document.getElementById('an-decision').dataset.decision});location.href='/tracking';"
+        title="Suivre : mesure la performance hypothétique depuis maintenant">Suivre →</button>
       <button class="vx-btn vx-btn-sm" data-entity-menu="%%SYM%%">Actions ▾</button>
     </span>
   </div>
