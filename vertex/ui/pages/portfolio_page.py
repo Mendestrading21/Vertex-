@@ -175,34 +175,68 @@ async function renderTeam(){
 }
 
 /* ── POSITIONS ── */
+/* Liste « Positions nécessitant une action » (§31) — moteur Position
+   Intelligence (statut, priorité, verdict) — jamais une exécution. */
+function actionListHtml(state){
+  const pf=(state&&state.portfolio)||{};
+  const rows=pf.positions_needing_action||[];
+  if(!rows.length)return '<section class="vx-card vx-mb3"><div class="vx-card-header">'
+    +'<span class="vx-card-title">Positions nécessitant une action</span></div>'
+    +VX.states.empty('Aucune position prioritaire — toutes saines ou en surveillance normale.')+'</section>';
+  const pill=(pr)=>{const c={P0_CRITICAL:'var(--vx-negative)',P1_HIGH:'var(--vx-warning)'}[pr]||'var(--vx-text-muted)';
+    return `<span class="vx-badge" style="color:${c}">${(pr||'').replace('_',' ')}</span>`;}
+  return `<section class="vx-card vx-mb3"><div class="vx-card-header">
+    <span class="vx-card-title">Positions nécessitant une action</span>
+    <span class="vx-meta vx-right">${rows.length} · priorité P0 puis P1</span></div>
+    <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
+    <th>Priorité</th><th>Titre</th><th>Actif</th><th>Statut</th><th>Action analytique</th>
+    <th>Verdict moteur</th><th class="vx-num">P&L</th><th>MàJ</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr>
+      <td data-label="Priorité">${pill(r.priority)}</td>
+      <td data-label="Titre"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${r.symbol}">${r.symbol}</button></td>
+      <td data-label="Actif">${r.asset_type==='OPTION'?'Option':'Action'}</td>
+      <td data-label="Statut">${esc((r.status||'').replace(/_/g,' '))}</td>
+      <td data-label="Action"><b>${esc((r.action||'').replace(/_/g,' '))}</b></td>
+      <td data-label="Verdict">${r.decision?`<span class="vx-badge vx-badge-decision" data-decision="${(r.decision||'').replace('É','E')}">${r.decision}</span>`:'—'}</td>
+      <td data-label="P&L" class="vx-num ${r.pl_pct>0?'vx-pos':r.pl_pct<0?'vx-neg':''}">${r.pl_pct!=null?VX.fmt.pct(r.pl_pct,1):'n/d'}</td>
+      <td data-label="MàJ" class="vx-mono vx-meta">${VX.fmt.ago(r.updated_at)}</td>
+    </tr>`).join('')}</tbody></table></div>
+    <div class="vx-card-footer">${VX.updateIndicator(state.updated_at,'Position Intelligence',state.live?'live':'fallback')}
+    · verdicts moteur unique — aucune action n'exécute d'ordre</div></section>`;
+}
 async function renderPositions(){
   const pos=E().positions();
   const rich=enrich(pos,await quotesFor(pos));
   renderSummary(rich);
-  let ibkr=null;
+  let ibkr=null,posState=null;
   try{ibkr=await VX.fetch('/api/ibkr/positions',{ttl:120000});}catch(e){}
+  try{posState=await VX.fetch('/api/positions/state',{ttl:30000});}catch(e){}
+  const posById={};((posState&&posState.positions)||[]).forEach(p=>{posById[String(p.position_id)]=p;});
+  const srcLabel=(s)=>({IBKR:'IBKR',MANUAL:'Manuelle',PAPER:'Paper',SIMULATED:'Simulation',IMPORTED:'Importée'}[s]||'Manuelle');
   const groups={Actions:rich.filter(t=>t.type==='STK'),Options:rich.filter(t=>t.type!=='STK')};
   $('pf-body').innerHTML=
+    (posState?actionListHtml(posState):'')+
     (ibkr&&ibkr.ok===false?'<div class="vx-stale-banner">IBKR hors ligne — marques desk/EOD utilisées (aucune valeur inventée).</div>':'')
     +Object.entries(groups).map(([g,list])=>`
     <section class="vx-card vx-mb3"><div class="vx-card-header"><span class="vx-card-title">${g}</span>
       <span class="vx-meta vx-right">${list.length}</span></div>
     ${list.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
-      <th>Titre</th><th>Contrat</th><th class="vx-num">Qté</th><th class="vx-num">Coût</th>
-      <th class="vx-num">Marque</th><th class="vx-num">P&L</th><th>Depuis</th><th></th></tr></thead><tbody>
-      ${list.map(t=>`<tr>
+      <th>Titre</th><th>Source</th><th>Contrat</th><th class="vx-num">Qté</th><th class="vx-num">Coût</th>
+      <th class="vx-num">Marque</th><th class="vx-num">P&L</th><th>Statut</th><th></th></tr></thead><tbody>
+      ${list.map(t=>{const pi=posById[String(t.id)]||{};return `<tr>
         <td data-label="Titre"><span class="vx-ticker">${t.sym}</span> ${E().badges(t.sym)}</td>
+        <td data-label="Source"><span class="vx-badge">${srcLabel(pi.source)}</span></td>
         <td data-label="Contrat">${t.type}${t.strike?' '+t.strike+' '+(t.exp||''):''}</td>
         <td data-label="Qté" class="vx-num">${t.qty}</td>
         <td data-label="Coût (total)" class="vx-num">${VX.fmt.price(t.cost)}</td>
         <td data-label="Marque" class="vx-num">${t.mark!==null?VX.fmt.price(t.mark):'n/d'}</td>
         <td data-label="P&L" class="vx-num ${t.pl>0?'vx-pos':t.pl<0?'vx-neg':''}">${t.pl!==null?VX.fmt.pct(t.pl,1):'n/d'}</td>
-        <td data-label="Depuis" class="vx-mono vx-meta">${t.added||'—'}</td>
+        <td data-label="Statut" class="vx-meta">${pi.lifecycle_status?esc(pi.lifecycle_status.replace(/_/g,' ')):'—'}</td>
         <td><div class="vx-row-actions">
           <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyse</button>
           <button class="vx-btn vx-btn-sm" data-close-pos="${t.id}">Clôturer</button>
           <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Plus">⋯</button>
-        </div></td></tr>`).join('')}</tbody></table></div>`
+        </div></td></tr>`;}).join('')}</tbody></table></div>`
       :VX.states.empty('Aucune position '+g.toLowerCase()+'.')}
     </section>`).join('')
     +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}

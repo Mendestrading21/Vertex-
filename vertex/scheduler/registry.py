@@ -37,6 +37,14 @@ _CANONICAL = (
     ('DATA_BACKUP', 'Backup quotidien du desk (rotation 7)', 86400),
     ('TRACK_RECORD_UPDATE', 'Mise à jour de la fiabilité mesurée', 86400),
     ('ALERTS_EVALUATION', 'Évaluation serveur des alertes utilisateur', 60),
+    # Position Intelligence (§39) — cycle de vie analytique des positions.
+    ('STARTUP_POSITION_SYNC', 'Détection & réconciliation des positions au démarrage', None),
+    ('OPEN_POSITION_REFRESH', 'Cotation des positions actions ouvertes', 45),
+    ('OPEN_OPTION_REFRESH', 'Cotation des positions options ouvertes', 60),
+    ('MATERIAL_POSITION_RECALCULATION', 'Recalcul après changement matériel', None),
+    ('THESIS_HEALTH_REVIEW', 'Réévaluation de la santé des thèses', None),
+    ('EOD_POSITION_SNAPSHOT', 'Instantané de fin de journée des positions', 86400),
+    ('POSITION_INTEGRITY_AUDIT', 'Audit d’intégrité des positions', None),
 )
 
 for name, desc, interval in _CANONICAL:

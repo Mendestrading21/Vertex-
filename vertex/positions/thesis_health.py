@@ -1,0 +1,97 @@
+"""vertex.positions.thesis_health — santé de la thèse (§16).
+
+Dimensions : FUNDAMENTAL, CATALYST, TECHNICAL, SENTIMENT, PORTFOLIO_FIT,
+RISK, DATA_QUALITY — évaluées depuis ce que les moteurs FOURNISSENT
+(scan detail + plan + qualité). Sans thèse écrite : THESIS_REQUIRED.
+Une microvariation intraday ne bascule jamais un statut (matérialité).
+"""
+from __future__ import annotations
+
+import time
+
+STATUSES = ('STRENGTHENING', 'INTACT', 'MIXED', 'WEAKENING', 'AT_RISK',
+            'INVALIDATED', 'UNKNOWN')
+
+
+def assess(p: dict, detail: dict | None = None,
+           previous_status: str | None = None) -> dict:
+    d = detail or {}
+    pos_ev, neg_ev, unknowns, blocking = [], [], [], []
+
+    if not p.get('thesis_text'):
+        return {'overall_status': 'UNKNOWN', 'previous_status': previous_status,
+                'changed': previous_status not in (None, 'UNKNOWN'),
+                'positive_evidence': [], 'negative_evidence': [],
+                'unknowns': ['thèse absente'], 'blocking_factors': ['THESIS_REQUIRED'],
+                'confidence': 0.0,
+                'updated_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
+
+    # FUNDAMENTAL
+    fund = d.get('st_fund') or d.get('fund_score')
+    if fund is None:
+        unknowns.append('fondamental')
+    elif fund >= 60:
+        pos_ev.append(f'fondamental {fund}')
+    elif fund < 45:
+        neg_ev.append(f'fondamental faible {fund}')
+    # CATALYST
+    edte = d.get('earnings_dte') if d.get('earnings_dte') is not None else p.get('days_to_earnings')
+    if edte is None:
+        unknowns.append('catalyseur')
+    elif 0 <= edte <= 30:
+        pos_ev.append(f'earnings dans {edte} j (catalyseur actif)')
+    # TECHNICAL — invalidation = franchissement CONFIRMÉ du stop (pas intraday)
+    price, stop = p.get('current_price') or p.get('underlying_price'), \
+        p.get('stop') or p.get('underlying_stop')
+    if price is None or stop is None:
+        unknowns.append('technique (prix ou stop manquant)')
+    else:
+        breached = price <= stop if p.get('right') != 'PUT' else price >= stop
+        if breached:
+            blocking.append('INVALIDATION_LEVEL_BREACHED')
+            neg_ev.append('niveau d’invalidation franchi')
+        elif p.get('remaining_rr') is not None and p['remaining_rr'] >= 2:
+            pos_ev.append(f"R:R restant {p['remaining_rr']}")
+        elif p.get('remaining_rr') is not None and p['remaining_rr'] < 1:
+            neg_ev.append(f"R:R restant dégradé {p['remaining_rr']}")
+    # SENTIMENT
+    rs = d.get('rs')
+    if rs is None:
+        unknowns.append('sentiment')
+    elif rs >= 60:
+        pos_ev.append(f'force relative {rs}')
+    elif rs < 40:
+        neg_ev.append(f'force relative faible {rs}')
+    # RISK / DATA_QUALITY
+    if (p.get('data_quality') or {}).get('overall') in ('STALE', 'MISSING_PRICE',
+                                                        'MISSING_MARK'):
+        unknowns.append('qualité de données dégradée')
+
+    if blocking and 'INVALIDATION_LEVEL_BREACHED' in blocking:
+        overall = 'INVALIDATED'
+    elif len(neg_ev) >= 2 and not pos_ev:
+        overall = 'AT_RISK'
+    elif neg_ev and len(neg_ev) > len(pos_ev):
+        overall = 'WEAKENING'
+    elif pos_ev and neg_ev:
+        overall = 'MIXED'
+    elif len(pos_ev) >= 2:
+        overall = 'STRENGTHENING'
+    elif pos_ev:
+        overall = 'INTACT'
+    elif len(unknowns) >= 3:
+        overall = 'UNKNOWN'
+    else:
+        overall = 'INTACT'
+
+    known = len(pos_ev) + len(neg_ev)
+    confidence = round(known / (known + len(unknowns)), 2) if (known + len(unknowns)) else 0.0
+    return {'overall_status': overall, 'previous_status': previous_status,
+            'changed': previous_status is not None and previous_status != overall,
+            'positive_evidence': pos_ev, 'negative_evidence': neg_ev,
+            'unknowns': unknowns, 'blocking_factors': blocking,
+            'confidence': confidence,
+            'updated_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
+
+
+__all__ = ['assess', 'STATUSES']

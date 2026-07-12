@@ -1995,6 +1995,11 @@ app.register_blueprint(_redesign.make_blueprint(scan_state=scan_state))
 from vertex.app.routes import live_events as _live_events
 app.register_blueprint(_live_events.bp)
 
+# ─── POSITION INTELLIGENCE : /api/positions/* — lecture seule, cycle de vie ───
+from vertex.app.routes import positions_api as _positions_api
+app.register_blueprint(_positions_api.make_blueprint(
+    scan_state=scan_state, opt_job=_opt_job, ibkr_enabled=IBKR_ENABLED))
+
 
 # [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/strategy-os')
 # [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/vertex-intelligence')
