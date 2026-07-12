@@ -376,6 +376,42 @@
     _charts.push(c);
   }
 
+  // ── Scénarios du meilleur contrat (§19) ───────────────────────────
+  function loadScenarios(sym) {
+    var el = document.getElementById('vx-opt-sc-out-body');
+    if (!sym) { el.innerHTML = '<div class="vx-empty">Saisis un symbole.</div>'; return; }
+    loading(el);
+    get('/api/options/scenarios/' + encodeURIComponent(sym)).then(function (d) {
+      if (!d || d.empty) { el.innerHTML = (window.VX && VX.states) ? VX.states.empty(esc((d && d.reason) || 'Indisponible.')) : 'Indisponible.'; return; }
+      var c = d.contract || {}, sim = d.sim || {};
+      var sc = sim.scenarios || {};
+      var order = ['STOP', 'BEAR', 'FLAT', 'BASE', 'TP1', 'TP2', 'TP3'];
+      // Chaque scénario porte {spot, by_time_days:{'0':{value,pnl_pct},...}} :
+      // on affiche l'immédiat (J+0) et un horizon (J+10) pour montrer le theta.
+      var rows = order.filter(function (k) { return sc[k]; }).map(function (k) {
+        var s = sc[k]; var bt = s.by_time_days || {};
+        var d0 = bt['0'] || {}, d10 = bt['10'] || bt['15'] || {};
+        var g = d0.pnl_pct, g10 = d10.pnl_pct;
+        var cls = g == null ? '' : (g >= 0 ? 'vx-pos' : 'vx-neg');
+        var cls10 = g10 == null ? '' : (g10 >= 0 ? 'vx-pos' : 'vx-neg');
+        return '<tr><td><b>' + esc(k) + '</b></td>' +
+          '<td>' + (s.spot != null ? VXf.num(s.spot, 2) : '—') + '</td>' +
+          '<td>' + (d0.value != null ? VXf.num(d0.value, 2) : '—') + '</td>' +
+          '<td class="' + cls + '">' + (g != null ? (g >= 0 ? '+' : '') + VXf.num(g, 0) + ' %' : '—') + '</td>' +
+          '<td class="' + cls10 + '">' + (g10 != null ? (g10 >= 0 ? '+' : '') + VXf.num(g10, 0) + ' %' : '—') + '</td></tr>';
+      }).join('');
+      var lims = (sim.limitations || []).map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('');
+      el.innerHTML =
+        '<div class="vx-muted" style="margin-bottom:.6rem">Contrat : ' + esc(c.type || '') + ' ' + VXf.nd(c.strike) +
+        ' · ' + (c.dte != null ? c.dte + ' j' : '—') + ' · IV ' + (c.iv != null ? VXf.num(c.iv, 1) + ' %' : '—') +
+        ' · spot ' + VXf.nd(c.spot) + '</div>' +
+        (rows ? '<div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Scénario</th><th>Spot</th><th>Prime (J+0)</th><th>Gain J+0</th><th>Gain J+10</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<div class="vx-empty">Grille de scénarios indisponible.</div>') +
+        (sim.reward_risk != null ? '<div class="vx-muted" style="margin-top:.5rem">R:R du plan : <b>' + VXf.num(sim.reward_risk, 2) + '</b> · pire perte planifiée : ' + (sim.worst_planned_loss_pct != null ? VXf.num(sim.worst_planned_loss_pct, 0) + ' %' : '—') + '</div>' : '') +
+        '<div class="vx-explain" style="margin-top:.8rem"><h4>Limites (estimation)</h4><ul>' + (lims || '<li class="vx-muted">—</li>') + '</ul>' +
+        (sim.model_source ? '<p class="vx-muted">Modèle : ' + esc(sim.model_source) + '</p>' : '') + '</div>';
+    }).catch(function (e) { fail(el, e.message); });
+  }
+
   // ── Événements par titre ──────────────────────────────────────────
   function loadEvents(sym) {
     var el = document.getElementById('vx-opt-ev-out-body');
@@ -418,6 +454,11 @@
       var s2 = document.getElementById('vx-opt-ev-sym');
       if (g2) g2.addEventListener('click', function () { loadEvents((s2.value || '').trim().toUpperCase()); });
       if (s2) s2.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadEvents((s2.value || '').trim().toUpperCase()); });
+    } else if (v === 'scenarios') {
+      var g3 = document.getElementById('vx-opt-sc-go');
+      var s3 = document.getElementById('vx-opt-sc-sym');
+      if (g3) g3.addEventListener('click', function () { loadScenarios((s3.value || '').trim().toUpperCase()); });
+      if (s3) s3.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadScenarios((s3.value || '').trim().toUpperCase()); });
     }
   }
 

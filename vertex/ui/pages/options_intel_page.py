@@ -18,6 +18,7 @@ _VIEWS = (
     ('overview', 'Vue d’ensemble'),
     ('volatility', 'Volatilité'),
     ('radar', 'Radar contrats'),
+    ('scenarios', 'Scénarios'),
     ('events', 'Événements'),
 )
 
@@ -141,6 +142,22 @@ _VIEW_CONTENT = {
   <section class="vx-card vx-col-12" id="vx-opt-radar" aria-label="Radar des contrats">
     <div class="vx-card-header"><span class="vx-card-title">Radar des contrats — qualité décroissante</span></div>
     <div id="vx-opt-radar-body">%%LOADING%%</div>
+  </section>
+</div>
+""",
+    'scenarios': """
+<div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-12" aria-label="Sélecteur de titre">
+    <div class="vx-card-header"><span class="vx-card-title">Scénarios du meilleur contrat</span></div>
+    <div class="vx-card-body">
+      <label class="vx-field"><span>Symbole</span>
+        <input id="vx-opt-sc-sym" class="vx-input" placeholder="ex. GOOGL" maxlength="12" autocomplete="off"></label>
+      <button class="vx-btn vx-btn-sm" id="vx-opt-sc-go">Simuler</button>
+    </div>
+  </section>
+  <section class="vx-card vx-col-12" id="vx-opt-sc-out" aria-label="Scénarios">
+    <div class="vx-card-header"><span class="vx-card-title">Que vaudra le contrat selon le spot, le temps et l'IV ?</span></div>
+    <div id="vx-opt-sc-out-body"><div class="vx-empty">Choisis un symbole présent dans le tableau d'options.</div></div>
   </section>
 </div>
 """,

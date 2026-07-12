@@ -54,6 +54,20 @@ def test_options_overview_includes_environment_and_pulses(client):
     assert 'environment' in d and 'option_pulse' in d and 'volatility_pulse' in d
 
 
+def test_options_scenarios_route(client):
+    r = client.get('/api/options/scenarios/AAPL')
+    assert r.status_code == 200
+    d = r.get_json()
+    assert 'empty' in d
+    # présent ou honnêtement vide (jamais une exception 500)
+    if not d['empty']:
+        assert 'sim' in d and 'contract' in d
+
+
+def test_options_scenarios_subview_page(client):
+    assert client.get('/options?view=scenarios').status_code == 200
+
+
 def test_options_vol_charts_route(client):
     r = client.get('/api/options/vol-charts/AAPL')
     assert r.status_code == 200

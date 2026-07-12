@@ -74,6 +74,52 @@ def options_volatility(sym):
                     'current_iv': cur_iv, 'interpretation': d})
 
 
+@bp.route('/api/options/scenarios/<sym>')
+def options_scenarios(sym):
+    """Scénarios multi-facteurs (§19) du meilleur contrat d'un titre : spot ×
+    temps × IV via scenario_pricer. ESTIMATION Black-Scholes clairement étiquetée."""
+    from vertex.options import scenario_pricer
+    from vertex.options.models import UnderlyingSetup
+    sym = (sym or '').upper()[:12]
+    contracts = sorted([c for c in _board()
+                        if str(c.get('sym', '')).upper() == sym and c.get('quality') is not None],
+                       key=lambda c: c.get('quality', 0), reverse=True)
+    if not contracts:
+        return jsonify({'symbol': sym, 'empty': True,
+                        'reason': 'aucun contrat pour ce titre dans le tableau'}), 200
+    c = contracts[0]
+    detail = (scan_state.get('detail') or {}).get(sym) or {}
+    plan = detail.get('plan') or {}
+    spot = _num(c.get('spot')) or _num(detail.get('price'))
+    if not spot or spot <= 0:
+        return jsonify({'symbol': sym, 'empty': True,
+                        'reason': 'spot indisponible — simulation refusée (aucune donnée inventée)'}), 200
+    iv = c.get('iv')
+    contract = {'symbol': sym, 'right': 'P' if c.get('type') == 'PUT' else 'C',
+                'strike': _num(c.get('strike')), 'dte': int(c.get('dte') or 0),
+                'mid': (_num(c.get('cost')) / 100.0 if c.get('cost') else None),
+                'iv': (iv / 100.0 if isinstance(iv, (int, float)) and iv > 3 else iv),
+                'expiry': c.get('exp') or ''}
+    setup = UnderlyingSetup(symbol=sym, spot=spot, invalidation=plan.get('stop'),
+                            tp1=plan.get('tp1'), tp2=plan.get('tp2'), tp3=plan.get('tp3'))
+    try:
+        sim = scenario_pricer.simulate(contract, setup)
+    except Exception as e:
+        return jsonify({'symbol': sym, 'empty': True,
+                        'reason': 'simulation impossible: %s' % e}), 200
+    return jsonify({'symbol': sym, 'empty': False, 'contract': {
+        'type': c.get('type'), 'strike': c.get('strike'), 'dte': c.get('dte'),
+        'exp': c.get('exp'), 'iv': iv, 'cost': c.get('cost'), 'spot': spot,
+    }, 'sim': sim, 'as_of': _as_of()})
+
+
+def _num(x):
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return None
+
+
 @bp.route('/api/options/vol-charts/<sym>')
 def options_vol_charts(sym):
     """Jeux de données pour les graphiques de volatilité d'un titre (§15)."""
