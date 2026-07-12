@@ -18,7 +18,7 @@
 .vx-sidebar-logo{display:flex;align-items:center;gap:10px;height:var(--vx-topbar-h);
   padding:0 var(--vx-s4);border-bottom:1px solid var(--vx-border-soft);flex:none}
 .vx-logo-mark{width:30px;height:30px;flex:none;border-radius:9px;
-  background:var(--vx-brand-gradient);box-shadow:0 2px 10px rgba(246,138,60,.25);
+  background:var(--vx-brand-gradient);box-shadow:0 2px 10px rgba(207,97,40,.25);
   display:grid;place-items:center;font-weight:900;font-size:15px;color:#1a0f06}
 .vx-logo-name{font-weight:800;font-size:16px;letter-spacing:.4px;white-space:nowrap}
 .vx-sidebar-nav{flex:1;overflow-y:auto;padding:var(--vx-s3) var(--vx-s2)}
@@ -29,7 +29,7 @@
 .vx-nav-item:hover{background:var(--vx-surface-hover);color:var(--vx-text);
   text-decoration:none}
 .vx-nav-item[aria-current="page"]{background:var(--vx-brand-soft);
-  border-color:rgba(246,138,60,.22);color:var(--vx-text)}
+  border-color:rgba(207,97,40,.22);color:var(--vx-text)}
 .vx-nav-item[aria-current="page"]::before{content:"";position:absolute;
   left:-8px;top:8px;bottom:8px;width:3px;border-radius:3px;
   background:linear-gradient(var(--vx-brand),var(--vx-amber))}
@@ -66,7 +66,7 @@ button.vx-nav-item{background:none;font:inherit;cursor:pointer;text-align:left;
 .vx-topbar-search input{width:100%;background:var(--vx-surface);
   border:1px solid var(--vx-border-soft);border-radius:var(--vx-r);
   padding:8px 12px 8px 34px;color:var(--vx-text);font-size:13px}
-.vx-topbar-search input:focus{border-color:rgba(246,138,60,.4);box-shadow:0 0 0 3px rgba(246,138,60,.08)}
+.vx-topbar-search input:focus{border-color:rgba(207,97,40,.4);box-shadow:0 0 0 3px rgba(207,97,40,.08)}
 .vx-topbar-search .vx-kbd{position:absolute;right:8px;top:7px}
 .vx-topbar-search svg{position:absolute;left:10px;top:9px;width:16px;height:16px;
   stroke:var(--vx-text-muted)}

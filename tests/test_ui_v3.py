@@ -133,7 +133,7 @@ def test_every_chart_has_timestamp():
 
 
 def test_chart_theme_is_single():
-    theme = _read(VXJS, 'charts', 'chart-theme.js')
+    theme = _read(VXJS, 'charts', 'chart-theme-obsidian-copper.js')
     assert 'VXChartTheme' in theme
     core = _read(VXJS, 'charts', 'chart-core.js')
     assert 'VXChartTheme' in core
@@ -252,7 +252,10 @@ def test_no_order_execution_path():
 
 
 def test_v3_tokens_are_canonical():
+    """Palette Obsidian Copper Deep (§30) — canonique et centralisée."""
     tokens = _read(VXCSS, 'tokens.css')
-    for var in ('--vx-brand:#f68a3c', '--vx-bg-0:#050608', '--vx-positive:#2acb7f',
-                '--vx-negative:#f05d55', '--vx-info:#4ca6ff', '--vx-violet:#8b6df6'):
+    for var in ('--vx-obsidian-950:#050505', '--vx-orange-500:#cf6128',
+                '--vx-copper:#914b2b', '--vx-positive:#38b879',
+                '--vx-negative:#dc5f52', '--vx-warning:#ce8a29',
+                '--vx-option:#85609f', '--vx-neutral-chart:#8f8a83'):
         assert var in tokens, f'token manquant : {var}'

@@ -11,11 +11,11 @@
   /* Thème V3 unique (chart-theme.js) — repli sur les mêmes valeurs si absent */
   const THEME = window.VXChartTheme || { colors: {}, tooltip: {} };
   C.colors = Object.assign({
-    brand: '#f68a3c', blue: '#4ca6ff', cyan: '#2cc9d8', violet: '#8b6df6',
-    positive: '#2acb7f', negative: '#f05d55', warning: '#f3a93b',
-    info: '#4ca6ff', neutral: '#738096',
-    text: '#b3bdca', muted: '#7f8b9d', grid: 'rgba(255,255,255,.055)',
-    series: ['#f68a3c', '#4ca6ff', '#2cc9d8', '#8b6df6', '#f5b942', '#738096'],
+    brand: '#cf6128', blue: '#b9683d', cyan: '#c8ad8d', violet: '#85609f',
+    positive: '#38b879', negative: '#dc5f52', warning: '#ce8a29',
+    info: '#b9683d', neutral: '#8f8a83',
+    text: '#b7b3ad', muted: '#817d77', grid: 'rgba(255,255,255,.05)',
+    series: ['#cf6128', '#c8ad8d', '#8f8a83', '#85609f', '#ce8a29', '#914b2b'],
   }, THEME.colors);
 
   function chartDefaults() {
@@ -28,13 +28,13 @@
     else if (d.animation && typeof d.animation === 'object') d.animation.duration = 250;
     d.plugins.legend.display = false;
     const tt = (window.VXChartTheme && window.VXChartTheme.tooltip) || {};
-    d.plugins.tooltip.backgroundColor = tt.backgroundColor || '#151c27';
-    d.plugins.tooltip.borderColor = tt.borderColor || 'rgba(255,255,255,.14)';
+    d.plugins.tooltip.backgroundColor = tt.backgroundColor || '#151719';
+    d.plugins.tooltip.borderColor = tt.borderColor || 'rgba(255,255,255,.15)';
     d.plugins.tooltip.borderWidth = 1;
     d.plugins.tooltip.padding = 10;
     d.plugins.tooltip.cornerRadius = 8;
-    d.plugins.tooltip.titleColor = tt.titleColor || '#f7f8fa';
-    d.plugins.tooltip.bodyColor = tt.bodyColor || '#b3bdca';
+    d.plugins.tooltip.titleColor = tt.titleColor || '#f3f1ed';
+    d.plugins.tooltip.bodyColor = tt.bodyColor || '#b7b3ad';
     d.maintainAspectRatio = false;
   }
   if (window.Chart) chartDefaults(); else document.addEventListener('DOMContentLoaded', chartDefaults);

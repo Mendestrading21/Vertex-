@@ -1,109 +1,132 @@
-/* Vertex Design System V3 — tokens.css
-   DARK FINANCIAL LUXURY. Source unique des couleurs, typos, rayons,
-   espacements. UNE COULEUR = UNE SIGNIFICATION :
-   orange/ambre = marque & action · vert = positif · rouge corail = négatif ·
-   bleu = information · cyan = données/live · violet = options & IA ·
-   gris = référence neutre. Aucune couleur décorative. */
+/* Vertex Design System — tokens.css
+   VERTEX OBSIDIAN COPPER DEEP (§30). Source unique des couleurs, typos,
+   rayons, espacements. UNE COULEUR = UNE SIGNIFICATION :
+   orange brûlé/cuivre = marque, action, série de référence ·
+   ambre/beige = série secondaire & attention · vert atténué = positif ·
+   rouge corail = négatif · violet sombre = options & IA ·
+   gris = benchmark/neutre. LE BLEU N'EST PLUS UNE IDENTITÉ :
+   aucun bouton, lien ou série principale bleue. */
 :root{
-  /* ── Fonds (du plus profond au plus proche) ── */
-  --vx-bg-0:#050608;
-  --vx-bg-1:#080b10;
-  --vx-bg-2:#0b0f16;
-  --vx-bg-3:#10151e;
+  /* ── Noirs & graphites (§30) ── */
+  --vx-black:#020202;
+  --vx-obsidian-950:#050505;
+  --vx-obsidian-900:#080808;
+  --vx-obsidian-850:#0b0b0c;
+  --vx-obsidian-800:#0f1011;
+  --vx-graphite-900:#121315;
+  --vx-graphite-850:#151719;
+  --vx-graphite-800:#191b1e;
+  --vx-graphite-750:#1e2024;
+  --vx-graphite-700:#25282d;
+
+  /* ── Fonds (compat V3 : bg-0..3) ── */
+  --vx-bg-0:var(--vx-obsidian-950);
+  --vx-bg-1:var(--vx-obsidian-900);
+  --vx-bg-2:var(--vx-obsidian-850);
+  --vx-bg-3:var(--vx-obsidian-800);
 
   /* ── Surfaces ── */
-  --vx-surface-1:#111720;
-  --vx-surface-2:#151c27;
-  --vx-surface-3:#1a2230;
-  --vx-surface-hover:#202a38;
+  --vx-surface-base:rgba(15,16,18,.97);
+  --vx-surface-raised:rgba(20,22,24,.98);
+  --vx-surface-elevated:rgba(27,29,32,.98);
+  --vx-surface-hover:rgba(34,36,39,.98);
+  --vx-surface-1:var(--vx-surface-base);
+  --vx-surface-2:var(--vx-surface-raised);
+  --vx-surface-3:var(--vx-surface-elevated);
 
   /* ── Bordures ── */
-  --vx-border-soft:rgba(255,255,255,.055);
-  --vx-border-default:rgba(255,255,255,.085);
-  --vx-border-strong:rgba(255,255,255,.14);
+  --vx-border-faint:rgba(255,255,255,.035);
+  --vx-border-soft:rgba(255,255,255,.065);
+  --vx-border-default:rgba(255,255,255,.095);
+  --vx-border-strong:rgba(255,255,255,.15);
 
   /* ── Texte ── */
-  --vx-text-primary:#f7f8fa;
-  --vx-text-secondary:#b3bdca;
-  --vx-text-muted:#7f8b9d;
-  --vx-text-faint:#596577;
+  --vx-text-primary:#f3f1ed;
+  --vx-text-secondary:#b7b3ad;
+  --vx-text-muted:#817d77;
+  --vx-text-faint:#5e5b56;
 
-  /* ── Marque ── */
-  --vx-brand:#f68a3c;
-  --vx-brand-strong:#ff9a4d;
-  --vx-brand-soft:rgba(246,138,60,.14);
-  --vx-amber:#f5b942;
-  --vx-copper:#d9773f;
+  /* ── Orange brûlé profond (§30) ── */
+  --vx-orange-950:#3e1607;
+  --vx-orange-900:#591f09;
+  --vx-orange-850:#6e280c;
+  --vx-orange-800:#843310;
+  --vx-orange-700:#9f4117;
+  --vx-orange-600:#ba501e;
+  --vx-orange-500:#cf6128;
+  --vx-orange-400:#df7739;
 
-  /* ── Sémantique ── */
-  --vx-positive:#2acb7f;
-  --vx-positive-soft:rgba(42,203,127,.13);
-  --vx-negative:#f05d55;
-  --vx-negative-soft:rgba(240,93,85,.13);
-  --vx-warning:#f3a93b;
-  --vx-warning-soft:rgba(243,169,59,.14);
-  --vx-info:#4ca6ff;
-  --vx-info-soft:rgba(76,166,255,.13);
-  --vx-cyan:#2cc9d8;
-  --vx-cyan-soft:rgba(44,201,216,.12);
-  --vx-violet:#8b6df6;
-  --vx-violet-soft:rgba(139,109,246,.14);
-  --vx-neutral-chart:#738096;
+  /* ── Cuivre ── */
+  --vx-copper-dark:#66321c;
+  --vx-copper:#914b2b;
+  --vx-copper-light:#b9683d;
 
-  /* ── Dégradés de marque (réservés aux éléments importants) ── */
-  --vx-brand-gradient:linear-gradient(135deg,#f68a3c 0%,#d9773f 100%);
-  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(246,138,60,.075),transparent 68%);
+  /* ── Marque : CTA orange 600/500 · hover 700 · sélection 800 ·
+        fond actif 950 transparent (§30) ── */
+  --vx-brand:var(--vx-orange-500);
+  --vx-brand-strong:var(--vx-orange-400);
+  --vx-brand-hover:var(--vx-orange-700);
+  --vx-brand-selected:var(--vx-orange-800);
+  --vx-brand-soft:rgba(62,22,7,.55);
+  --vx-amber:#ce8a29;
+  --vx-beige:#c8ad8d;
+
+  /* ── États (§30) ── */
+  --vx-positive:#38b879;
+  --vx-positive-soft:rgba(56,184,121,.12);
+  --vx-negative:#dc5f52;
+  --vx-negative-soft:rgba(220,95,82,.12);
+  --vx-warning:#ce8a29;
+  --vx-warning-soft:rgba(206,138,41,.13);
+  --vx-option:#85609f;
+  --vx-violet:#85609f;
+  --vx-violet-soft:rgba(133,96,159,.14);
+  --vx-neutral-chart:#8f8a83;
+  /* information = cuivre clair — plus jamais bleue */
+  --vx-info:var(--vx-copper-light);
+  --vx-info-soft:rgba(185,104,61,.13);
+  --vx-cyan:var(--vx-beige);
+  --vx-cyan-soft:rgba(200,173,141,.12);
+
+  /* ── Dégradés (réservés aux éléments importants) ── */
+  --vx-brand-gradient:linear-gradient(135deg,var(--vx-orange-500) 0%,var(--vx-copper) 100%);
+  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(207,97,40,.06),transparent 68%);
 
   /* ── Typographie ── */
   --vx-font:Inter,Geist,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --vx-font-mono:"SFMono-Regular","Roboto Mono","JetBrains Mono",Consolas,monospace;
-  --vx-fs-page:32px;      /* 30-36 titre de page */
-  --vx-fs-subtitle:14px;  /* 13-15 sous-titre */
-  --vx-fs-section:19px;   /* 18-22 titre de section */
-  --vx-fs-card:13px;      /* 13-15 titre de widget */
-  --vx-fs-body:13px;      /* 13-14 corps */
-  --vx-fs-meta:11px;      /* 11-12 métadonnées */
-  --vx-fs-kpi:28px;       /* 24-36 KPI principal */
-  --vx-fs-kpi-sm:20px;    /* 18-24 KPI secondaire */
+  --vx-fs-page:32px;--vx-fs-subtitle:14px;--vx-fs-section:19px;
+  --vx-fs-card:13px;--vx-fs-body:13px;--vx-fs-meta:11px;
+  --vx-fs-kpi:28px;--vx-fs-kpi-sm:20px;
 
   /* ── Rayons ── */
-  --vx-r-sm:8px;
-  --vx-r:12px;
-  --vx-r-lg:14px;
-  --vx-r-modal:16px;
+  --vx-r-sm:8px;--vx-r:12px;--vx-r-lg:14px;--vx-r-modal:16px;
 
-  /* ── Espacements (4/8/12/16/20/24/32/40/48/64) ── */
+  /* ── Espacements ── */
   --vx-s1:4px;--vx-s2:8px;--vx-s3:12px;--vx-s4:16px;--vx-s5:20px;
   --vx-s6:24px;--vx-s8:32px;--vx-s10:40px;--vx-s12:48px;--vx-s16:64px;
 
   /* ── Layout ── */
-  --vx-content-max:1600px;
-  --vx-sidebar-w:240px;
-  --vx-sidebar-w-collapsed:72px;
-  --vx-topbar-h:62px;
-  --vx-mobile-bar-h:56px;
+  --vx-content-max:1600px;--vx-sidebar-w:240px;--vx-sidebar-w-collapsed:72px;
+  --vx-topbar-h:62px;--vx-mobile-bar-h:56px;
 
-  /* ── Élévation (discrète) ── */
-  --vx-shadow-1:0 1px 2px rgba(0,0,0,.4);
-  --vx-shadow-2:0 4px 16px rgba(0,0,0,.4);
-  --vx-shadow-modal:0 16px 48px rgba(0,0,0,.6);
-  --vx-glow-brand:0 0 0 1px rgba(246,138,60,.22),0 4px 20px rgba(246,138,60,.07);
+  /* ── Élévation ── */
+  --vx-shadow-1:0 1px 2px rgba(0,0,0,.45);
+  --vx-shadow-2:0 4px 16px rgba(0,0,0,.45);
+  --vx-shadow-modal:0 16px 48px rgba(0,0,0,.65);
+  --vx-glow-brand:0 0 0 1px rgba(207,97,40,.24),0 4px 20px rgba(207,97,40,.08);
 
   /* ── Transitions ── */
-  --vx-t-fast:140ms ease;
-  --vx-t:200ms ease;
-  --vx-t-slow:240ms ease;
+  --vx-t-fast:140ms ease;--vx-t:200ms ease;--vx-t-slow:240ms ease;
 
   /* ── Z-index ── */
   --vx-z-sidebar:40;--vx-z-topbar:35;--vx-z-drawer:60;--vx-z-modal:70;
   --vx-z-palette:80;--vx-z-toast:90;
 
-  /* ═══ ALIAS LEGACY (compatibilité Master Redesign — ne pas supprimer
-     tant que toutes les pages ne consomment pas les noms V3) ═══ */
+  /* ═══ ALIAS LEGACY (compat — mappés Obsidian Copper, à purger) ═══ */
   --vx-bg:var(--vx-bg-1);
   --vx-bg-secondary:var(--vx-bg-2);
   --vx-surface:var(--vx-surface-1);
-  --vx-surface-elevated:var(--vx-surface-2);
   --vx-border:var(--vx-border-default);
   --vx-text:var(--vx-text-primary);
   --vx-blue:var(--vx-info);
@@ -114,4 +137,5 @@
   --vx-positive-dim:var(--vx-positive-soft);
   --vx-negative-dim:var(--vx-negative-soft);
   --vx-warning-dim:var(--vx-warning-soft);
+  --vx-copper-legacy:#d9773f;
 }

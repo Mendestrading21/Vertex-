@@ -32,7 +32,7 @@
   background:var(--vx-surface);color:var(--vx-text-secondary);cursor:pointer;
   font-family:inherit}
 .vx-chip[aria-pressed="true"]{background:var(--vx-brand-soft);
-  border-color:rgba(246,138,60,.34);color:var(--vx-text)}
+  border-color:rgba(207,97,40,.34);color:var(--vx-text)}
 .vx-filter-count{display:inline-flex;align-items:center;justify-content:center;
   min-width:17px;height:17px;padding:0 5px;border-radius:99px;font-size:10px;
   font-weight:700;background:var(--vx-brand-soft);color:var(--vx-brand-strong)}

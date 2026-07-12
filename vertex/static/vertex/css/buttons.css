@@ -17,8 +17,8 @@
 
 /* Primary — bouton de marque (orange, dégradé très léger) */
 .vx-btn-primary{background:var(--vx-brand-gradient);border-color:transparent;
-  color:#1a0f06}
-.vx-btn-primary:hover{background:var(--vx-brand-strong);box-shadow:var(--vx-glow-brand)}
+  color:#f7efe7}
+.vx-btn-primary:hover{background:var(--vx-brand-hover);box-shadow:var(--vx-glow-brand)}
 
 /* Secondary — contour marqué, fond neutre */
 .vx-btn-secondary{background:var(--vx-surface-1);border-color:var(--vx-border-strong)}
@@ -32,15 +32,15 @@
 /* Soft — teinte de marque douce */
 .vx-btn-soft{background:var(--vx-brand-soft);border-color:transparent;
   color:var(--vx-brand-strong)}
-.vx-btn-soft:hover{background:rgba(246,138,60,.22)}
+.vx-btn-soft:hover{background:var(--vx-brand-selected)}
 
 /* Sémantiques */
 .vx-btn-danger{background:var(--vx-negative-soft);color:var(--vx-negative);
-  border-color:rgba(240,93,85,.32)}
-.vx-btn-danger:hover{background:rgba(240,93,85,.22)}
+  border-color:rgba(220,95,82,.32)}
+.vx-btn-danger:hover{background:rgba(220,95,82,.22)}
 .vx-btn-success{background:var(--vx-positive-soft);color:var(--vx-positive);
-  border-color:rgba(42,203,127,.32)}
-.vx-btn-success:hover{background:rgba(42,203,127,.2)}
+  border-color:rgba(56,184,121,.32)}
+.vx-btn-success:hover{background:rgba(56,184,121,.2)}
 
 /* Tailles & formes */
 .vx-btn-sm{padding:4px 10px;min-height:26px;font-size:12px}
@@ -64,8 +64,8 @@
 .vx-btn[data-state="loading"]::after{content:"";position:absolute;width:14px;height:14px;
   border:2px solid rgba(255,255,255,.25);border-top-color:var(--vx-brand);
   border-radius:99px;animation:vx-spin .7s linear infinite}
-.vx-btn-primary[data-state="loading"]::after{border-color:rgba(26,15,6,.3);
-  border-top-color:#1a0f06}
-.vx-btn[data-state="success"]{border-color:rgba(42,203,127,.5);color:var(--vx-positive)}
-.vx-btn[data-state="error"]{border-color:rgba(240,93,85,.5);color:var(--vx-negative)}
+.vx-btn-primary[data-state="loading"]::after{border-color:rgba(247,239,231,.3);
+  border-top-color:#f7efe7}
+.vx-btn[data-state="success"]{border-color:rgba(56,184,121,.5);color:var(--vx-positive)}
+.vx-btn[data-state="error"]{border-color:rgba(220,95,82,.5);color:var(--vx-negative)}
 @keyframes vx-spin{to{transform:rotate(360deg)}}
