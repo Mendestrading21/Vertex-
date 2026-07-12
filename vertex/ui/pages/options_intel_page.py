@@ -130,6 +130,10 @@ _VIEW_CONTENT = {
       <span class="vx-actions"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-explain="volatility">Comprendre ce graphique</button></span></div>
     <div id="vx-opt-vol-out-body"><div class="vx-empty">Choisis un symbole présent dans le tableau d'options.</div></div>
   </section>
+  <div class="vx-col-6" id="vx-opt-term"></div>
+  <div class="vx-col-6" id="vx-opt-cone"></div>
+  <div class="vx-col-6" id="vx-opt-oi"></div>
+  <div class="vx-col-6" id="vx-opt-smile"></div>
 </div>
 """,
     'radar': """

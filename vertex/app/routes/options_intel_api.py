@@ -74,6 +74,24 @@ def options_volatility(sym):
                     'current_iv': cur_iv, 'interpretation': d})
 
 
+@bp.route('/api/options/vol-charts/<sym>')
+def options_vol_charts(sym):
+    """Jeux de données pour les graphiques de volatilité d'un titre (§15)."""
+    from vertex.options import vol_charts
+    sym = (sym or '').upper()[:12]
+    expiry = request.args.get('dte')
+    try:
+        expiry = int(expiry) if expiry else None
+    except (TypeError, ValueError):
+        expiry = None
+    try:
+        return jsonify(vol_charts.build(_board(), sym, as_of=_as_of(),
+                                        source='SCAN', expiry=expiry))
+    except Exception as e:
+        return jsonify({'symbol': sym, 'empty': True,
+                        'error': '%s: %s' % (type(e).__name__, e)}), 500
+
+
 @bp.route('/api/options/event-risk/<sym>')
 def options_event_risk(sym):
     """Risque d'événement pour le meilleur contrat d'un titre."""

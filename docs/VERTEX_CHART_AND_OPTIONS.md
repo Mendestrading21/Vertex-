@@ -146,6 +146,29 @@ Preuves : **654 tests OK** (+19), 0 erreur console Chromium sur `/options`
 (hero + 4 sous-vues), score environnement vérifié à 45/100 « Neutre » avec 3/5
 dimensions mesurées et `n/d` honnête sur les 2 absentes.
 
+## 7ter. Graphiques de volatilité interactifs (§15)
+
+La sous-vue **Volatilité** de `/options` affiche désormais **4 vrais graphiques
+Chart.js interactifs** (hover + crosshair + tooltip, tiroir « Comprendre »),
+alimentés par des données RÉELLES du tableau d'options via
+`GET /api/options/vol-charts/<sym>` (moteur `vertex/options/vol_charts.py`) :
+
+1. **Structure par terme de l'IV** (line) — ATM IV par échéance, pente
+   détectée (contango/inversée/plate) → verdict canonique.
+2. **Cône de mouvement attendu** (fan) — bandes spot ±1σ/±2σ par échéance
+   (σ = spot·IV_ATM·√(DTE/365)).
+3. **Open interest par strike** (bar divergente) — CALL (orange) vs PUT (violet).
+4. **Smile d'IV** (line) — IV par strike pour une échéance, calls et puts.
+
+Chaque graphique porte titre, question, conclusion, source, fraîcheur, limites
+et tiroir explicatif (contrat carte §5/§34). Couleurs du registre sémantique
+(§3), zéro bleu. Série vide honnête si la donnée manque.
+
+Preuves : **662 tests OK** (+8 dont 7 datasets §15) ; navigateur Chromium →
+**4 canvas rendus, 0 erreur console**, tooltip de survol vérifié
+(« 45 j · IV 46,8 % »). Service worker bumpé **td-shell-v10** (changement de
+shell visible).
+
 ## 8. Périmètre livré vs reste à faire (honnêteté §6)
 
 **Livré et prouvé** : contrat d'interprétation canonique ; moteurs

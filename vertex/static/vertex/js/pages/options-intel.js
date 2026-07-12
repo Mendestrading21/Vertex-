@@ -219,6 +219,145 @@
         '<div class="vx-muted" style="margin-top:.6rem">Contrats analysés : ' + VXf.nd(d && d.contracts) +
         (d && d.current_iv != null ? ' · IV médiane ' + VXf.num(d.current_iv * 100, 1) + ' %' : '') + '</div>';
     }).catch(function (e) { fail(el, e.message); });
+    renderVolCharts(sym);
+  }
+
+  // ── Graphiques interactifs de volatilité (§15) ────────────────────
+  function clearChart(id) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+    return el;
+  }
+  var _charts = [];
+  function destroyCharts() { _charts.forEach(function (c) { try { c && c.destroy && c.destroy(); } catch (e) { } }); _charts = []; }
+
+  function renderVolCharts(sym) {
+    var VC = window.VXCharts;
+    var ids = ['vx-opt-term', 'vx-opt-cone', 'vx-opt-oi', 'vx-opt-smile'];
+    ids.forEach(function (id) { var e = clearChart(id); if (e) e.innerHTML = '<div class="vx-skeleton" style="height:240px"></div>'; });
+    if (!VC || !window.Chart) { ids.forEach(function (id) { var e = document.getElementById(id); if (e) e.innerHTML = '<div class="vx-empty">Moteur graphique indisponible.</div>'; }); return; }
+    destroyCharts();
+    get('/api/options/vol-charts/' + encodeURIComponent(sym)).then(function (d) {
+      if (!d || d.empty) {
+        ids.forEach(function (id) { var e = document.getElementById(id); if (e) e.innerHTML = (window.VX && VX.states) ? VX.states.empty('Aucun contrat pour ' + esc(sym) + ' dans le tableau.') : 'Aucune donnée.'; });
+        return;
+      }
+      chartTerm(VC, d);
+      chartCone(VC, d);
+      chartOI(VC, d);
+      chartSmile(VC, d);
+    }).catch(function (e) {
+      ids.forEach(function (id) { var el = document.getElementById(id); if (el) el.innerHTML = '<div class="vx-error-banner">⚠ ' + esc(e.message) + '</div>'; });
+    });
+  }
+
+  function col(VC, name, fallback) { return (VC.colors && VC.colors[name]) || fallback; }
+
+  // Structure par terme de l'IV — line, une série (marque).
+  function chartTerm(VC, d) {
+    var pts = (d.term_structure && d.term_structure.points) || [];
+    if (pts.length < 2) { document.getElementById('vx-opt-term').innerHTML = '<div class="vx-card"><div class="vx-empty">Structure par terme : pas assez d’échéances.</div></div>'; return; }
+    var brand = col(VC, 'brand', '#cf6128');
+    var slope = d.term_structure.slope;
+    var concl = slope == null ? '' : slope > 0.02 ? 'Contango — court terme meilleur marché' : slope < -0.02 ? 'Inversée — stress court terme' : 'Structure plate';
+    var c = VC.card('vx-opt-term', {
+      title: 'Structure par terme de l’IV', question: 'L’IV monte-t-elle ou baisse-t-elle avec l’échéance ?',
+      conclusion: concl, height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
+      limits: 'IV ATM approximée par le contrat le plus proche du spot',
+      explain: { shows: 'IV ATM par échéance (DTE).', why: 'Une structure inversée signale un stress/événement de court terme (crush probable).', confirm: 'Pente positive et régulière.', invalidate: 'Pente fortement négative.' },
+      render: function (canvas) {
+        return VC.mount(canvas, {
+          type: 'line',
+          data: { labels: pts.map(function (p) { return p.dte + ' j'; }),
+            datasets: [{ label: 'IV ATM', data: pts.map(function (p) { return +(p.iv * 100).toFixed(1); }),
+              borderColor: brand, backgroundColor: brand + '22', borderWidth: 2, pointRadius: 3, pointHoverRadius: 6, tension: .2, fill: true }] },
+          options: { interaction: { mode: 'index', intersect: false },
+            plugins: { tooltip: { callbacks: { label: function (ctx) { return 'IV ' + ctx.parsed.y + ' %'; } } } },
+            scales: { y: { ticks: { callback: function (v) { return v + ' %'; } } } } } });
+      } });
+    _charts.push(c);
+  }
+
+  // Cône de mouvement attendu — bandes 1σ/2σ (fill entre datasets).
+  function chartCone(VC, d) {
+    var pts = (d.expected_move_cone && d.expected_move_cone.points) || [];
+    if (pts.length < 2) { document.getElementById('vx-opt-cone').innerHTML = '<div class="vx-card"><div class="vx-empty">Cône : pas assez d’échéances.</div></div>'; return; }
+    var brand = col(VC, 'brand', '#cf6128'), copper = col(VC, 'copper', '#914b2b');
+    var labels = pts.map(function (p) { return p.dte + ' j'; });
+    var ds = function (key, w, fill, bg) {
+      return { data: pts.map(function (p) { return p[key]; }), borderColor: w ? copper : 'transparent', borderWidth: w, pointRadius: 0, fill: fill, backgroundColor: bg, tension: .25 };
+    };
+    var c = VC.card('vx-opt-cone', {
+      title: 'Cône de mouvement attendu', question: 'Jusqu’où le sous-jacent peut-il bouger, à 1σ et 2σ ?',
+      conclusion: 'Spot ' + VXf.nd(d.spot), height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
+      limits: 'σ = spot · IV_ATM · √(DTE/365) — estimation lognormale',
+      legend: [{ label: '1σ', color: brand }, { label: '2σ', color: copper }],
+      explain: { shows: 'Fourchette probable du spot par échéance (±1σ, ±2σ).', why: 'Situe stop et objectifs par rapport au mouvement réellement price.', confirm: 'Cible à l’intérieur de 1σ.', invalidate: 'Cible au-delà de 2σ.' },
+      render: function (canvas) {
+        return VC.mount(canvas, {
+          type: 'line',
+          data: { labels: labels, datasets: [
+            ds('hi2', 0, false, 'transparent'),
+            Object.assign(ds('hi1', 1, '-1', copper + '18'), {}),
+            Object.assign(ds('mid', 2, '-1', brand + '20'), { borderColor: brand }),
+            Object.assign(ds('lo1', 1, '-1', brand + '20'), {}),
+            Object.assign(ds('lo2', 1, '-1', copper + '18'), {}) ] },
+          options: { interaction: { mode: 'index', intersect: false },
+            plugins: { tooltip: { callbacks: { label: function (ctx) { return ['2σ+', '1σ+', 'médian', '1σ−', '2σ−'][ctx.datasetIndex] + ' : ' + VXf.num(ctx.parsed.y, 2); } } } },
+            scales: { y: { ticks: { callback: function (v) { return VXf.num(v, 0); } } } } } });
+      } });
+    _charts.push(c);
+  }
+
+  // Open interest par strike — bar divergente CALL / PUT.
+  function chartOI(VC, d) {
+    var rows = (d.oi_by_strike && d.oi_by_strike.rows) || [];
+    if (!rows.length) { document.getElementById('vx-opt-oi').innerHTML = '<div class="vx-card"><div class="vx-empty">Open interest indisponible.</div></div>'; return; }
+    var brand = col(VC, 'brand', '#cf6128'), violet = col(VC, 'violet', '#85609f');
+    var c = VC.card('vx-opt-oi', {
+      title: 'Open interest par strike', question: 'Où se concentrent les positions ouvertes ?',
+      conclusion: 'CALL vs PUT', height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
+      legend: [{ label: 'CALL OI', color: brand }, { label: 'PUT OI', color: violet }],
+      explain: { shows: 'Open interest CALL (haut) et PUT (bas) par strike.', why: 'Les gros strikes agissent souvent comme aimants/paliers.', confirm: 'OI CALL massif au-dessus du spot.', invalidate: 'OI PUT dominant sous le spot.' },
+      render: function (canvas) {
+        return VC.mount(canvas, {
+          type: 'bar',
+          data: { labels: rows.map(function (r) { return r.strike; }),
+            datasets: [
+              { label: 'CALL OI', data: rows.map(function (r) { return r.call; }), backgroundColor: brand + 'cc', borderRadius: 2, maxBarThickness: 22 },
+              { label: 'PUT OI', data: rows.map(function (r) { return -r.put; }), backgroundColor: violet + 'cc', borderRadius: 2, maxBarThickness: 22 } ] },
+          options: { interaction: { mode: 'index', intersect: false },
+            plugins: { tooltip: { callbacks: { label: function (ctx) { return ctx.dataset.label + ' : ' + VXf.num(Math.abs(ctx.parsed.y), 0); } } } },
+            scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: function (v) { return VXf.num(Math.abs(v), 0); } } } } } });
+      } });
+    _charts.push(c);
+  }
+
+  // Smile d'IV — IV par strike (calls + puts) pour une échéance.
+  function chartSmile(VC, d) {
+    var sm = d.iv_smile || {};
+    var calls = sm.calls || [], puts = sm.puts || [];
+    if (!calls.length && !puts.length) { document.getElementById('vx-opt-smile').innerHTML = '<div class="vx-card"><div class="vx-empty">Smile indisponible.</div></div>'; return; }
+    var brand = col(VC, 'brand', '#cf6128'), beige = col(VC, 'beige', '#c8ad8d');
+    var strikes = {};
+    calls.concat(puts).forEach(function (r) { strikes[r.strike] = 1; });
+    var xs = Object.keys(strikes).map(Number).sort(function (a, b) { return a - b; });
+    var mapiv = function (arr) { var m = {}; arr.forEach(function (r) { m[r.strike] = +(r.iv * 100).toFixed(1); }); return xs.map(function (x) { return m[x] != null ? m[x] : null; }); };
+    var c = VC.card('vx-opt-smile', {
+      title: 'Smile d’IV' + (sm.dte != null ? ' · ' + sm.dte + ' j' : ''), question: 'L’IV est-elle plus chère sur les puts (skew) ?',
+      conclusion: 'Spot ' + VXf.nd(sm.spot), height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
+      legend: [{ label: 'CALL IV', color: brand }, { label: 'PUT IV', color: beige }],
+      explain: { shows: 'IV par strike pour une échéance (calls et puts).', why: 'Un skew put marqué révèle une demande de protection (peur).', confirm: 'Smile symétrique et bas.', invalidate: 'Skew put très pentu.' },
+      render: function (canvas) {
+        return VC.mount(canvas, {
+          type: 'line', data: { labels: xs, datasets: [
+            { label: 'CALL IV', data: mapiv(calls), borderColor: brand, backgroundColor: brand, borderWidth: 2, pointRadius: 3, pointHoverRadius: 6, spanGaps: true, tension: .2, fill: false },
+            { label: 'PUT IV', data: mapiv(puts), borderColor: beige, backgroundColor: beige, borderWidth: 2, pointRadius: 3, pointHoverRadius: 6, spanGaps: true, tension: .2, fill: false } ] },
+          options: { interaction: { mode: 'index', intersect: false },
+            plugins: { tooltip: { callbacks: { label: function (ctx) { return ctx.dataset.label + ' : ' + (ctx.parsed.y == null ? '—' : ctx.parsed.y + ' %'); } } } },
+            scales: { y: { ticks: { callback: function (v) { return v + ' %'; } } } } } });
+      } });
+    _charts.push(c);
   }
 
   // ── Événements par titre ──────────────────────────────────────────

@@ -54,6 +54,15 @@ def test_options_overview_includes_environment_and_pulses(client):
     assert 'environment' in d and 'option_pulse' in d and 'volatility_pulse' in d
 
 
+def test_options_vol_charts_route(client):
+    r = client.get('/api/options/vol-charts/AAPL')
+    assert r.status_code == 200
+    d = r.get_json()
+    assert d['symbol'] == 'AAPL'
+    for k in ('term_structure', 'expected_move_cone', 'oi_by_strike', 'iv_smile', 'interpretation'):
+        assert k in d
+
+
 def test_chart_interpretation_contract_route(client):
     r = client.get('/api/charts/options.overview_mix/interpretation')
     assert r.status_code == 200
@@ -103,6 +112,7 @@ _NEW_FILES = (
     'vertex/options/interpretation.py',
     'vertex/options/environment.py',
     'vertex/options/pulse.py',
+    'vertex/options/vol_charts.py',
     'vertex/visualization/palette.py',
     'vertex/visualization/chart_spec.py',
     'vertex/app/routes/options_intel_api.py',
