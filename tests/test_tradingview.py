@@ -86,3 +86,67 @@ def test_webhook_validates_symbol_and_signal():
     assert _post(c, secret=SECRET, symbol='NVDA', signal='HACK',
                  timestamp=time.time()).status_code == 400
     assert 'THESIS_INVALIDATION' in ALLOWED_SIGNALS
+
+
+# ─────────────────────────────────────── honnêteté du secret (nom documenté)
+def test_webhook_secret_resolves_documented_name(monkeypatch):
+    """Un utilisateur qui suit la doc (TRADINGVIEW_WEBHOOK_SECRET) doit être actif —
+    pas un webhook qui répond 503 en prétendant être configuré."""
+    import os
+    from vertex.data_sources import tradingview_webhooks as tw
+    from vertex.data_sources.tradingview_signal_store import TradingViewSignalStore
+    monkeypatch.delenv('TRADINGVIEW_SECRET', raising=False)
+    monkeypatch.setenv('TRADINGVIEW_WEBHOOK_SECRET', 'doc-secret')
+    assert tw._resolve_secret() == 'doc-secret'
+    app = Flask(__name__)
+    app.register_blueprint(tw.make_blueprint(store=TradingViewSignalStore(), secret=None))
+    r = app.test_client().post('/api/tradingview/webhook',
+                               json={'secret': 'doc-secret', 'symbol': 'NVDA',
+                                     'signal': 'BREAKOUT_CONFIRMED', 'timestamp': time.time()})
+    assert r.status_code == 200          # actif, pas 503
+
+
+def test_webhook_secret_legacy_name_still_works(monkeypatch):
+    from vertex.data_sources import tradingview_webhooks as tw
+    monkeypatch.delenv('TRADINGVIEW_WEBHOOK_SECRET', raising=False)
+    monkeypatch.setenv('TRADINGVIEW_SECRET', 'legacy')
+    assert tw._resolve_secret() == 'legacy'
+
+
+# ─────────────────────────────────────── statut honnête : off / attente / actif
+def test_status_distinguishes_disabled_waiting_active():
+    store = TradingViewSignalStore()
+    assert store.status()['state'] == 'DISABLED'      # secret jamais déclaré
+    store.set_configured(True)
+    st = store.status()
+    assert st['state'] == 'WAITING' and st['configured'] is True and st['stored'] == 0
+    store.add(symbol='NVDA', signal='BREAKOUT_CONFIRMED', event_ts=time.time())
+    st = store.status()
+    assert st['state'] == 'ACTIVE' and st['fresh'] == 1
+
+
+def test_recent_entries_carry_server_freshness():
+    store = TradingViewSignalStore()
+    store.add(symbol='NVDA', signal='TREND_ALIGNMENT', event_ts=time.time())
+    e = store.recent()[0]
+    assert 'age_s' in e and e['fresh'] is True and e['age_s'] >= 0
+
+
+def test_stale_signal_marked_not_fresh():
+    clock = {'t': 1_000_000.0}
+    store = TradingViewSignalStore(clock=lambda: clock['t'])
+    store.set_configured(True)
+    store.add(symbol='NVDA', signal='VOLUME_EXPANSION', event_ts=clock['t'])
+    clock['t'] += 7 * 3600            # +7 h > seuil de fraîcheur (6 h)
+    assert store.recent()[0]['fresh'] is False
+    assert store.status()['state'] == 'WAITING'   # configuré mais plus de signal frais
+
+
+def test_seen_keys_pruned_under_load():
+    clock = {'t': 1_000.0}
+    store = TradingViewSignalStore(clock=lambda: clock['t'])
+    from vertex.data_sources.tradingview_signal_store import MAX_SIGNALS, DEDUP_WINDOW_S
+    for i in range(MAX_SIGNALS + 50):
+        clock['t'] += DEDUP_WINDOW_S + 1        # chaque clé expire avant la suivante
+        store.add(symbol='SYM%d' % (i % 90 or 1), signal='TREND_ALIGNMENT', event_ts=clock['t'])
+    assert len(store._seen_keys) <= MAX_SIGNALS + 1

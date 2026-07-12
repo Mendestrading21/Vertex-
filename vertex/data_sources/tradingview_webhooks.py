@@ -19,16 +19,30 @@ from flask import Blueprint, jsonify, request
 from .tradingview_signal_store import SIGNAL_STORE, TradingViewSignalStore
 
 
+def _resolve_secret() -> str:
+    """Résout le secret webhook en acceptant les DEUX noms documentés.
+
+    La doc/.env/rapports utilisent TRADINGVIEW_WEBHOOK_SECRET ; le code lisait
+    historiquement TRADINGVIEW_SECRET. On accepte les deux (WEBHOOK d'abord) —
+    sinon un utilisateur qui suit la doc croit son webhook actif alors qu'il
+    répond 503 (statut menteur). Cf. config_validation._ALIASES."""
+    return (os.environ.get('TRADINGVIEW_WEBHOOK_SECRET', '').strip()
+            or os.environ.get('TRADINGVIEW_SECRET', '').strip())
+
+
 def make_blueprint(store: TradingViewSignalStore = SIGNAL_STORE,
                    secret: str | None = None,
                    on_signal: Callable[[dict], None] | None = None) -> Blueprint:
     bp = Blueprint('tradingview', __name__)
-    configured_secret = secret if secret is not None else os.environ.get('TRADINGVIEW_SECRET', '')
+    configured_secret = secret if secret is not None else _resolve_secret()
+    # L'UI doit pouvoir distinguer « webhook désactivé » de « en attente ».
+    store.set_configured(bool(configured_secret))
 
     @bp.route('/api/tradingview/webhook', methods=['POST'])
     def tradingview_webhook():
         if not configured_secret:
-            return jsonify({'ok': False, 'error': 'webhook désactivé (TRADINGVIEW_SECRET absent)'}), 503
+            return jsonify({'ok': False, 'error': 'webhook désactivé '
+                            '(TRADINGVIEW_WEBHOOK_SECRET absent)'}), 503
         body = request.get_json(silent=True) or {}
         provided = str(body.get('secret') or '')
         if not hmac.compare_digest(provided, configured_secret):

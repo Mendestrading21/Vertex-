@@ -338,15 +338,27 @@ async function loadConnections(){
     $('vx-conn-ibkr-badge').innerHTML=statusBadge('offline','inconnu');
   }
 
-  /* TradingView */
+  /* TradingView — état honnête : désactivé ≠ configuré-en-attente ≠ actif */
   const tv=diag&&diag.tradingview;
   if(tv){
     const stored=tv.stored??tv.count??0;
-    $('vx-conn-tv-badge').innerHTML=statusBadge(stored>0?'live':'offline',stored>0?'signaux reçus':'aucun signal');
+    const fresh=tv.fresh??0;
+    /* state serveur : DISABLED (pas de secret) / WAITING (configuré, 0 signal frais) / ACTIVE */
+    const state=tv.state||(tv.configured?(fresh>0?'ACTIVE':'WAITING'):'DISABLED');
+    const badge={ACTIVE:['live','actif · '+fresh+' frais'],
+      WAITING:['frozen','configuré · en attente'],
+      DISABLED:['offline','webhook désactivé']}[state]||['offline','n/d'];
+    $('vx-conn-tv-badge').innerHTML=statusBadge(badge[0],badge[1]);
     $('vx-conn-tv').innerHTML=
-      kv('Signaux stock&eacute;s',VX.fmt.nd(stored))
-      +kv('R&ocirc;le','webhooks d&#8217;alertes TradingView (entr&eacute;e seule)')
-      +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'/api/system/diagnostics','delayed')}</div>`;
+      kv('&Eacute;tat',state==='DISABLED'
+        ?'<span class="vx-dim">secret webhook absent — 503 honn&ecirc;te, aucun signal invent&eacute;</span>'
+        :(state==='ACTIVE'?'<span class="vx-pos">signaux re&ccedil;us</span>':'<span class="vx-dim">webhook pr&ecirc;t, aucun signal r&eacute;cent</span>'))
+      +kv('Signaux stock&eacute;s',VX.fmt.nd(stored)+(fresh?' <span class="vx-dim">('+fresh+' frais)</span>':''))
+      +(tv.newest_age_s!=null?kv('Dernier signal',VX.fmt.ago(Date.now()-tv.newest_age_s*1000)):'')
+      +kv('R&ocirc;le','webhooks d&#8217;alertes TradingView — <b>r&eacute;&eacute;valuation</b>, jamais un ordre')
+      +(state==='DISABLED'?'<div class="vx-help vx-mt2">Active-le : d&eacute;finis <span class="vx-mono">TRADINGVIEW_WEBHOOK_SECRET</span> dans <span class="vx-mono">.env</span>.</div>':'')
+      +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'/api/system/diagnostics',state==='ACTIVE'?'live':'delayed')}
+        <a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/opportunities?view=radar">Voir le radar des signaux →</a></div>`;
   }else{
     $('vx-conn-tv').innerHTML=VX.states.empty('Aucun diagnostic TradingView disponible — le magasin de signaux n&#8217;a rien re&ccedil;u.',
       '<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=radar">Voir le radar</a>');

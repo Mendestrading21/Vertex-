@@ -2003,9 +2003,22 @@ app.register_blueprint(_system.bp)
 
 # ─── TRADINGVIEW (Blueprint) — /api/tradingview/webhook · /api/tradingview/signals ───
 # Signaux d'information uniquement : le webhook déclenche une RÉÉVALUATION,
-# jamais un achat (secret TRADINGVIEW_SECRET requis, anti-replay, dédup).
+# jamais un achat (secret TRADINGVIEW_WEBHOOK_SECRET requis, anti-replay, dédup).
 from vertex.data_sources import tradingview_webhooks as _tv_webhooks
-app.register_blueprint(_tv_webhooks.make_blueprint())
+
+
+def _on_tv_signal(entry):
+    """Réacteur : un signal TradingView accepté réveille la boucle de scan.
+
+    Tient la promesse REEVALUATE — le prochain passage réévalue le titre. Reste
+    strictement lecture seule : aucun ordre, aucune écriture de position."""
+    try:
+        _rescan_evt.set()
+    except Exception:
+        pass
+
+
+app.register_blueprint(_tv_webhooks.make_blueprint(on_signal=_on_tv_signal))
 
 
 # ─── VERTEX STRATEGY OS (Blueprint + page) — constitution · décision unique ·
