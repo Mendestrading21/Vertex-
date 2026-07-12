@@ -253,9 +253,10 @@ async function renderOptions(){
         placeholder="Ticker" value="${esc(state.sym)}" aria-label="Filtrer par ticker">
       <span class="vx-meta">Greeks complets (gamma/theta/vega) : disponibles à la simulation du contrat — le board legacy n'expose que le delta.</span>
     </div>
-    <div class="vx-flex vx-mb2"><button class="vx-btn vx-btn-sm vx-btn-soft" id="op-compare"
+    <div class="vx-flex vx-mb2" style="gap:.5rem;flex-wrap:wrap"><button class="vx-btn vx-btn-sm vx-btn-soft" id="op-compare"
       onclick="window.__opCompare&&window.__opCompare((new URLSearchParams(location.search)).get('sym')||'')">
-      Comparer 3 contrats (défensif · principal · explosif)</button></div>
+      Comparer 3 contrats (défensif · principal · explosif)</button>
+      <a class="vx-btn vx-btn-sm" href="/options">Options Intelligence →</a></div>
     <div class="vx-table-wrap vx-table-cards" id="op-opt-table"></div>
     <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.options_source||scan.source,metaMode(scan))}</div>
     <div class="vx-grid vx-mt4" id="op-contract" hidden>

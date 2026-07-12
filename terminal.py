@@ -1895,6 +1895,10 @@ app.register_blueprint(_command.bp)
 # ─── OPTIONS RESEARCH CENTER (Blueprint) — /api/options-lab ───
 app.register_blueprint(_options_lab_api.bp)
 
+# ─── OPTIONS INTELLIGENCE (Blueprint) — /api/options/overview · volatility · event-risk · /api/charts ───
+from vertex.app.routes import options_intel_api as _options_intel_api
+app.register_blueprint(_options_intel_api.bp)
+
 # ─── VERTEX LIVE ENGINE (Blueprint) — /api/live/status · refresh · report ───
 app.register_blueprint(_live_api.bp)
 

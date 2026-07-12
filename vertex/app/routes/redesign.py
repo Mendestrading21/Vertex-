@@ -11,8 +11,8 @@ from pathlib import Path
 from flask import Blueprint, jsonify, redirect, request, send_from_directory
 
 from vertex.ui.pages import (analysis_page, briefing, intelligence_page,
-                             markets_page, opportunities_page, performance_page,
-                             portfolio_page, system_page)
+                             markets_page, opportunities_page, options_intel_page,
+                             performance_page, portfolio_page, system_page)
 
 # Anciennes routes → nouvelles destinations (§11). Jamais de suppression sèche.
 LEGACY_REDIRECTS = {
@@ -34,7 +34,6 @@ LEGACY_REDIRECTS = {
     '/watchlist': '/portfolio?view=watchlist',
     '/suivi': '/portfolio?view=watchlist',
     '/suivis': '/portfolio?view=watchlist',
-    '/options': '/opportunities?view=options',
     '/options-lab': '/opportunities?view=options',
     '/options-desk': '/opportunities?view=options',
     '/sectors': '/markets?view=sectors',
@@ -113,6 +112,13 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     @bp.route('/system')
     def system_route():
         return system_page.render(view=request.args.get('view', 'connections'))
+
+    # ── Options Intelligence (§18) — approfondissement d'Opportunités.
+    # PAS un 9e espace : le nav reste à huit, cette page se rejoint depuis
+    # Opportunités (vue Options), Analyse et la palette.
+    @bp.route('/options')
+    def options_intel_route():
+        return options_intel_page.render(view=request.args.get('view', 'overview'))
 
     # ── Brief éditorial (§21) : paquet structuré → 10 lignes ─────────
     @bp.route('/api/briefing/editorial')
