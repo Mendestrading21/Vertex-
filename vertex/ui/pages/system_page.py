@@ -322,17 +322,23 @@ async function loadConnections(){
     ?' Confirmé par le serveur : ordres '+(st.order_execution||'disabled-by-design')+'.'
     :' ATTENTION : le serveur ne confirme pas le mode lecture seule.';
 
-  /* IBKR */
+  /* IBKR — honnête : connecté-live / connecté-différé / activé-inactif / désactivé */
   if(st){
-    const ib=(st.data_sources||{}).ibkr||'inconnu';
-    const on=String(ib).indexOf('enabled')===0;
-    $('vx-conn-ibkr-badge').innerHTML=statusBadge(on?'live':'offline',on?'connecté (lecture seule)':'désactivé');
+    const ib=String((st.data_sources||{}).ibkr||'inconnu');
+    const map={'connected-live':['live','connecté · temps réel (lecture seule)'],
+      'connected-delayed':['delayed','connecté · différé (lecture seule)'],
+      'enabled-idle':['frozen','activé · aucune session TWS confirmée'],
+      'disabled':['offline','désactivé']};
+    const m=map[ib]||['offline','inconnu'];
+    const proven=ib==='connected-live'||ib==='connected-delayed';
+    $('vx-conn-ibkr-badge').innerHTML=statusBadge(m[0],m[1]);
     $('vx-conn-ibkr').innerHTML=
-      kv('&Eacute;tat',esc(ib))
+      kv('&Eacute;tat',esc(m[1]))
+      +(ib==='enabled-idle'?'<div class="vx-help vx-mt1 vx-mb1">Config présente mais <b>aucune preuve de session</b> — jamais affiché « connecté » sans tick réel. Ouvre TWS/Gateway (lecture seule).</div>':'')
       +kv('Donn&eacute;es march&eacute;',esc((st.data_sources||{}).market_data||'—'))
       +kv('Mode global',esc(st.mode||'—'))
       +kv('Ex&eacute;cution d&#8217;ordres','<b class="vx-neg">'+esc(st.order_execution||'disabled-by-design')+'</b>')
-      +`<div class="vx-card-footer">${VX.updateIndicator(st.ts||Date.now(),'/api/system-status',on?'live':'fallback')}</div>`;
+      +`<div class="vx-card-footer">${VX.updateIndicator(st.ts||Date.now(),'/api/system-status',proven?(ib==='connected-live'?'live':'delayed'):'fallback')}</div>`;
   }else{
     $('vx-conn-ibkr').innerHTML=VX.states.error('&Eacute;tat syst&egrave;me indisponible');
     $('vx-conn-ibkr-badge').innerHTML=statusBadge('offline','inconnu');

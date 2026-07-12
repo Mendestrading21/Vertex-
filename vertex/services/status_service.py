@@ -67,7 +67,12 @@ def build_system_status(scan_state, *, build, readonly, ibkr_enabled, demo_mode,
         'order_execution': 'disabled-by-design',
         'mode': 'demo' if demo_mode else ('ibkr' if ibkr_enabled else 'cloud'),
         'data_sources': {
-            'ibkr': 'enabled-readonly' if ibkr_enabled else 'disabled',
+            # Honnêteté §2/§10 : « activé » (config) ≠ « connecté » (preuve socket).
+            # On ne renvoie un état connecté que si la session live est confirmée.
+            'ibkr': (('connected-live' if scan_state.get('ibkr_live')
+                      else 'connected-delayed' if scan_state.get('ibkr_connected')
+                      else 'enabled-idle')
+                     if ibkr_enabled else 'disabled'),
             'market_data': 'demo' if demo_mode else 'yfinance/ibkr',
             'ai': 'on' if ai_on else 'off',
         },

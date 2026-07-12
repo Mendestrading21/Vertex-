@@ -2149,6 +2149,20 @@ _live_quotes = {}                       # {sym: {last, change, bid, ask}}
 _live_meta = {'connected': False, 'ts': 0.0, 'rt': False, 'n': 0}
 
 
+def _sync_ibkr_state():
+    """Reflète l'état RÉEL du socket IBKR dans scan_state (honnêteté §2/§10).
+
+    connections.py lit scan_state['ibkr_connected']/['ibkr_live'] — sans cette
+    passerelle, la carte Système resterait à un état de configuration mensonger.
+    Garde-fou fraîcheur : une session dont les ticks datent de > 75 s n'est plus
+    « connectée » (un worker figé ne doit jamais paraître live). On ne mute que
+    des clés — scan_state n'est jamais réassigné."""
+    fresh = (time.time() - _live_meta.get('ts', 0)) < 75
+    connected = bool(_live_meta.get('connected')) and fresh
+    scan_state['ibkr_connected'] = connected
+    scan_state['ibkr_live'] = connected and bool(_live_meta.get('rt'))
+
+
 def _store_ticker(t):
     """Range un ticker IBKR dans _live_quotes. Renvoie True si temps réel."""
     s = t.contract.symbol.replace(' ', '-')   # IBKR 'BRK B' -> forme interne yfinance 'BRK-B'
@@ -2185,6 +2199,7 @@ def _quotes_worker():
                     continue
             if not ok:
                 _live_meta['connected'] = False
+                _sync_ibkr_state()
                 time.sleep(20)
                 continue
             ib.reqMarketDataType(1)      # 1 = temps réel (bascule auto en différé si pas d'abonnement)
@@ -2206,17 +2221,20 @@ def _quotes_worker():
                         if _store_ticker(t):
                             rt = True
                     _live_meta.update({'ts': time.time(), 'rt': rt})   # frais dès le 1er lot
+                    _sync_ibkr_state()
                     ib.sleep(0.2)
                 ib.sleep(4)
         except Exception as _e:
             _live_meta['connected'] = False
             _live_meta['err'] = f'loop: {type(_e).__name__}: {_e}'
+            _sync_ibkr_state()
         time.sleep(15)
 
 
 @app.route('/quotes')
 def quotes_ep():
     fresh = (time.time() - _live_meta.get('ts', 0)) < 75
+    _sync_ibkr_state()          # rafraîchit l'état honnête (garde-fou fraîcheur)
     return jsonify({'quotes': _live_quotes if fresh else {}, 'meta': _live_meta, 'fresh': fresh})
 
 
