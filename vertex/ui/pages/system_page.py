@@ -67,6 +67,20 @@ _VIEW_CONTENT = {
   </section>
 </div>
 <div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Cerveau Claude — enrichissement web">
+    <div class="vx-card-header">
+      <span class="vx-card-title">Cerveau Claude &mdash; donn&eacute;es web &agrave; jour</span>
+      <span class="vx-actions">
+        <span id="vx-brain-badge"></span>
+        <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-brain-refresh">Mettre &agrave; jour avec Claude</button></span></div>
+    <div class="vx-help vx-mb2">Quand l&#8217;acc&egrave;s live manque, Claude va chercher les vraies donn&eacute;es du jour
+      sur le web (cotations diff&eacute;r&eacute;es, actualit&eacute;s) &mdash; toujours <b>sourc&eacute;es</b> et &eacute;tiquet&eacute;es
+      <span class="vx-badge" style="color:var(--vx-orange-500,#cf6128);border:1px solid var(--vx-orange-500,#cf6128)">via Claude · web · diff&eacute;r&eacute;</span>,
+      jamais d&eacute;guis&eacute;es en donn&eacute;e broker r&eacute;elle. Aucun chiffre invent&eacute;.</div>
+    <div id="vx-brain-body">%%LOADING%%</div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-6" aria-label="Synchronisation">
     <div class="vx-card-header"><span class="vx-card-title">Synchronisation</span>
       <span id="vx-conn-sync-badge"></span></div>
@@ -225,9 +239,74 @@ async function loadConnSummary(){
   el.innerHTML=rows||'<div class="vx-empty">Aucun canal.</div>';
 }
 
+/* Cerveau Claude+web — /api/ai/status + /api/ai/enrichment (provenance honnête). */
+const BRAIN_TONE={OK:['live','à jour'],DEGRADED:['delayed','partiel'],
+  MISSING:['frozen','indisponible'],EMPTY:['frozen','jamais lancé']};
+function brainCitations(cits){
+  if(!cits||!cits.length)return '';
+  return '<div class="vx-flex vx-wrap vx-gap2" style="margin-top:.2rem">'
+    +cits.slice(0,4).map(c=>`<a class="vx-badge vx-badge-ghost" href="${esc(c.url)}" target="_blank" rel="noopener noreferrer"
+       style="font-size:11px" title="${esc(c.url)}">↗ ${esc((c.title||c.url).slice(0,42))}</a>`).join('')+'</div>';
+}
+async function loadBrain(){
+  const body=$('vx-brain-body');if(!body)return;
+  let st,snap;
+  try{
+    [st,snap]=await Promise.all([
+      VX.fetch('/api/ai/status',{ttl:8000}),
+      VX.fetch('/api/ai/enrichment',{ttl:8000})]);
+  }catch(e){body.innerHTML=VX.states.error('Cerveau Claude injoignable');return;}
+  const status=(st&&st.status)||'EMPTY';
+  const tn=BRAIN_TONE[status]||['frozen','—'];
+  $('vx-brain-badge').innerHTML=statusBadge(tn[0],tn[1]);
+  const quotes=(snap&&snap.surfaces&&snap.surfaces.quotes)||{};
+  const news=(snap&&snap.surfaces&&snap.surfaces.news)||{};
+  const found=st&&st.quotes_found!=null?st.quotes_found:0;
+  let head=kv('&Eacute;tat',statusBadge(tn[0],status)+' <span class="vx-dim" style="font-size:12px">'+esc((st&&st.note)||'')+'</span>')
+    +kv('Mod&egrave;le',esc((st&&st.model)||'—'))
+    +kv('Derni&egrave;re analyse',(snap&&snap.as_of)?VX.fmt.ago(Date.parse(snap.as_of)):'&mdash;')
+    +kv('Cotations trouv&eacute;es',VX.fmt.nd(found)+' / '+VX.fmt.nd((st&&st.symbols)||0)+' <span class="vx-dim" style="font-size:12px">(diff&eacute;r&eacute;es, sourc&eacute;es)</span>');
+  const syms=Object.keys(quotes).filter(s=>quotes[s]&&quotes[s].value!=null).slice(0,12);
+  let table='';
+  if(syms.length){
+    table='<div class="vx-divider"></div><div style="overflow-x:auto"><table class="vx-table">'
+      +'<thead><tr><th>Titre</th><th class="vx-num">Cours (diff&eacute;r&eacute;)</th><th>Provenance</th><th>Actualit&eacute;</th></tr></thead><tbody>'
+      +syms.map(s=>{
+        const q=quotes[s];const n=news[s]&&news[s].value&&news[s].value[0];
+        const chg=q.change_pct!=null?(' <span class="'+(q.change_pct>=0?'vx-pos':'vx-neg')+'">'+(q.change_pct>=0?'+':'')+VX.fmt.num(q.change_pct,2)+'%</span>'):'';
+        const impactCls=n?({HAUSSIER:'vx-pos',BAISSIER:'vx-neg',NEUTRE:'vx-dim'}[n.impact]||'vx-dim'):'';
+        return '<tr><td><b>'+esc(s)+'</b></td>'
+          +'<td class="vx-num vx-mono">'+VX.fmt.num(q.value,2)+' '+esc(q.currency||'')+chg+'</td>'
+          +'<td><span class="vx-badge" style="color:var(--vx-orange-500,#cf6128);border:1px solid var(--vx-orange-500,#cf6128);font-size:11px">'+esc(q.source_label||'via Claude · web')+'</span>'+brainCitations(q.citations)+'</td>'
+          +'<td class="'+impactCls+'" style="font-size:12px">'+(n?esc(n.impact)+' — '+esc((n.headline||'').slice(0,64)):'<span class="vx-dim">—</span>')+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+  }else if(status==='MISSING'){
+    table='<div class="vx-insight vx-mt2" data-tone="neutral">Analyse Claude+web <b>indisponible</b> — ajoute '
+      +'<span class="vx-mono">ANTHROPIC_API_KEY</span> dans <span class="vx-mono">.env</span> pour activer le cerveau. '
+      +'En attendant, l&#8217;app sert les donn&eacute;es r&eacute;elles/moteur uniquement (aucun chiffre invent&eacute;).</div>';
+  }else{
+    table='<div class="vx-empty vx-mt2">Aucune cotation web pour l&#8217;instant. « Mettre &agrave; jour avec Claude » pour lancer une recherche.</div>';
+  }
+  body.innerHTML=head+table
+    +'<div class="vx-card-footer">'+VX.updateIndicator((snap&&snap.as_of)?Date.parse(snap.as_of):Date.now(),'/api/ai/enrichment',status==='OK'?'delayed':'fallback')
+    +' · rendements/prix 100% diff&eacute;r&eacute;s &mdash; jamais un ordre</div>';
+}
+async function refreshBrain(){
+  const btn=$('vx-brain-refresh');
+  if(btn){btn.disabled=true;btn.textContent='Recherche Claude…';}
+  try{
+    const r=await fetch('/api/ai/refresh',{method:'POST'});
+    const d=await r.json().catch(()=>({}));
+    VX.toast(d.note||'Enrichissement Claude lancé', r.ok?'success':'error');
+  }catch(e){VX.toast('Mise à jour impossible : '+e.message,'error');}
+  /* Laisse le temps à la tâche de fond, puis rafraîchit l'affichage. */
+  setTimeout(()=>{ if(btn){btn.disabled=false;btn.textContent='Mettre à jour avec Claude';} loadBrain(); }, 3500);
+}
+
 /* ══ Vue CONNEXIONS ═════════════════════════════════════════════════ */
 async function loadConnections(){
   loadConnSummary();
+  loadBrain();
   const [stR,liveR,diagR,hzR]=await Promise.allSettled([
     VX.fetch('/api/system-status',{ttl:30000}),
     VX.fetch('/api/live/status',{ttl:30000}),
@@ -751,6 +830,7 @@ async function loadAutomations(){
 /* ══ Orchestration ══════════════════════════════════════════════════ */
 if(VIEW==='connections'){
   loadConnections();
+  document.getElementById('vx-brain-refresh')?.addEventListener('click',refreshBrain);
   VX.refresh.register(loadConnections,60000,'connections');
 }else if(VIEW==='data'){
   loadData();
