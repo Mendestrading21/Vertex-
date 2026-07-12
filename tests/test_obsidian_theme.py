@@ -133,3 +133,21 @@ def test_claude_outage_uses_fallback():
     h = health.health()
     assert h['status'] in ('MISSING', 'CONFIGURED', 'CONNECTED', 'DEGRADED')
     assert 'déterministe' in h['fallback']
+
+
+def test_company_twin_never_invents():
+    from vertex.companies import company_twin
+    t = company_twin('ZZZZ', {})
+    assert t['fundamentals'] is None and t['scan'] is None
+    assert 'scan' in t['missing'] and 'fondamentaux' in t['missing']
+
+
+def test_change_detector_triggers_recalc():
+    from vertex.companies.change_detector import detect_changes
+    before = {'scan': {'score': 80, 'verdict': 'BUY'}, 'fundamentals': {'pe': 30}}
+    after = {'scan': {'score': 80, 'verdict': 'AVOID'}, 'fundamentals': {'pe': 30}}
+    r = detect_changes(before, after)
+    assert r['changed'] and r['recalc_required']
+    assert any(c['kind'] == 'DECISION_CHANGED' for c in r['changes'])
+    same = detect_changes(before, before)
+    assert not same['changed'] and not same['recalc_required']

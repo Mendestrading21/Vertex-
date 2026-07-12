@@ -16,6 +16,7 @@ VIEWS = (
     ('analyst', 'Analyste'),
     ('committee', 'Comité'),
     ('strategy', 'Stratégie'),
+    ('impacts', 'Impacts'),
     ('research', 'Recherche'),
     ('memory', 'Mémoire'),
 )
@@ -128,6 +129,24 @@ _VIEW_CONTENT = {
   </div>
 </div>''',
 
+    'impacts': '''
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-7" aria-label="&Eacute;v&eacute;nements en direct">
+    <div class="vx-card-header"><span class="vx-card-title">&Eacute;v&eacute;nements syst&egrave;me (flux temps r&eacute;el)</span>
+      <span class="vx-meta vx-right" id="vx-imp-status">connexion&hellip;</span></div>
+    <div id="vx-imp-feed">%%LOADING%%</div>
+  </section>
+  <section class="vx-card vx-col-5" aria-label="Cha&icirc;ne d&#8217;impact">
+    <div class="vx-card-header"><span class="vx-card-title">Cha&icirc;ne d&#8217;impact (&sect;27)</span></div>
+    <div class="vx-dim" style="font-size:12.5px;line-height:2">
+      March&eacute; &rarr; r&eacute;gime &rarr; secteur &rarr; entreprise &rarr; opportunit&eacute; &rarr; position &rarr; option &rarr; portefeuille &rarr; risque &rarr; d&eacute;cision</div>
+    <div class="vx-insight vx-mt2" data-tone="risk"><b>Corr&eacute;lation &ne; causalit&eacute;.</b>
+      Chaque impact affich&eacute; est POTENTIEL : source, cible, direction et confiance &mdash;
+      le recalcul de d&eacute;cision passe toujours par le moteur ex&eacute;cutif unique.</div>
+    <div id="vx-imp-counters" class="vx-mt3"></div>
+  </section>
+</div>
+''',
     'memory': '''
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-7" aria-label="Th&egrave;ses par titre">
@@ -509,10 +528,37 @@ function renderMemory(){
 }
 
 /* ══ Orchestration ══════════════════════════════════════════════════ */
+function initImpacts(){
+  const feed=[];const MAX=40;
+  const CHANNELS=['market','positions','options','portfolio','decisions','alerts','connections','jobs','system'];
+  function paintStatus(){const el=$('vx-imp-status');
+    if(el)el.textContent='flux '+((VX.liveStatus&&VX.liveStatus())||'—');}
+  function paint(){
+    const el=$('vx-imp-feed');if(!el)return;
+    el.innerHTML=feed.length?feed.slice(0,MAX).map(ev=>`
+      <div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
+        <span class="vx-badge" style="color:var(--vx-info)">${esc(ev.channel)}</span>
+        <span class="vx-grow vx-mono vx-meta" style="font-size:11.5px">${esc(JSON.stringify(ev.data||{}).slice(0,110))}</span>
+        <span class="vx-meta">${VX.fmt.ago(ev.ts*1000)}</span></div>`).join('')
+      :VX.states.empty('Aucun événement reçu pour l’instant — le flux se remplit au rythme des scans, alertes et jobs.',
+        '<span class="vx-meta">SSE '+((VX.liveStatus&&VX.liveStatus())||'')+'</span>');
+    const counts={};feed.forEach(e=>counts[e.channel]=(counts[e.channel]||0)+1);
+    const c=$('vx-imp-counters');
+    if(c)c.innerHTML=Object.entries(counts).map(([k,v])=>
+      `<div class="vx-kv"><span class="k">${esc(k)}</span><span class="v vx-mono">${v}</span></div>`).join('')
+      ||'<span class="vx-meta">Compteurs vides.</span>';
+  }
+  CHANNELS.forEach(ch=>VX.bus.on('vx:live:'+ch,(e)=>{
+    feed.unshift({channel:ch,data:e.detail,ts:Date.now()/1000});
+    if(feed.length>MAX)feed.pop();paint();}));
+  VX.bus.on('vx:live-status',paintStatus);
+  paintStatus();paint();
+}
 if(VIEW==='analyst')initAnalyst();
 else if(VIEW==='committee'){initCommittee();VX.refresh.register(initCommittee,120000,'committee');}
 else if(VIEW==='strategy')initStrategy();
 else if(VIEW==='research')initResearch();
+else if(VIEW==='impacts')initImpacts();
 else if(VIEW==='memory')initMemory();
 VX.context.restoreIfReturning();
 })();

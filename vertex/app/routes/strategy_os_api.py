@@ -89,6 +89,12 @@ def make_blueprint(scan_state: dict) -> Blueprint:
         }
         return jsonify(classify_regime(inputs))
 
+    @bp.route('/api/company/twin/<sym>')
+    def company_twin_ep(sym):
+        """Jumeau analytique entreprise (§16) — champs absents = None, jamais 0."""
+        from vertex.companies import company_twin
+        return jsonify(company_twin(sym, scan_state))
+
     @bp.route('/api/anomalies/<sym>')
     def anomalies_for(sym):
         sym = sym.upper()

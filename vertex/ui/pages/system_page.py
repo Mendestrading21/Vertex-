@@ -15,6 +15,7 @@ from vertex.ui.shell import render_shell
 VIEWS = (
     ('connections', 'Connexions'),
     ('data', 'Données'),
+    ('automations', 'Automatisations'),
     ('settings', 'Réglages'),
     ('archive', 'Archive'),
 )
@@ -104,6 +105,25 @@ _VIEW_CONTENT = {
   </section>
 </div>''',
 
+    'automations': '''
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-7" aria-label="Jobs de fond">
+    <div class="vx-card-header"><span class="vx-card-title">Automatisations (§24)</span>
+      <span class="vx-meta vx-right">priorit&eacute; : positions &gt; stops &gt; options &gt; risques &gt; d&eacute;cisions &gt; univers</span></div>
+    <div id="vx-auto-jobs">%%LOADING%%</div>
+  </section>
+  <section class="vx-card vx-col-5" aria-label="Rapport de d&eacute;marrage">
+    <div class="vx-card-header"><span class="vx-card-title">Startup report (§10)</span></div>
+    <div id="vx-auto-startup">%%LOADING%%</div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Configuration">
+    <div class="vx-card-header"><span class="vx-card-title">Configuration (statuts — aucune valeur affich&eacute;e)</span></div>
+    <div id="vx-auto-config">%%LOADING%%</div>
+  </section>
+</div>
+''',
     'settings': '''
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-6" aria-label="Affichage">
@@ -661,6 +681,50 @@ function openVaultModal(id){
   });
 }
 
+/* ══ Vue AUTOMATISATIONS (§24) ══════════════════════════════════════ */
+async function loadAutomations(){
+  try{
+    const d=await VX.fetch('/api/system/automations',{ttl:15000});
+    const jobs=d.jobs||[];
+    $('vx-auto-jobs').innerHTML=jobs.length?`<div class="vx-table-wrap"><table class="vx-table"><thead><tr>
+      <th>Job</th><th>Statut</th><th class="vx-num">Exécutions</th><th>Dernière</th><th>Prochaine (est.)</th><th class="vx-num">Durée</th></tr></thead><tbody>
+      ${jobs.map(j=>{
+        const st=j.last_run===null?['frozen','jamais exécuté']:(j.last_ok?['live','OK']:['offline','erreur']);
+        return `<tr><td><b>${esc(j.name)}</b><br><span class="vx-meta">${esc(j.description||'')}</span></td>
+        <td><span class="vx-badge vx-badge-status" data-status="${st[0]}" title="${esc(j.last_error||'')}">${st[1]}</span></td>
+        <td class="vx-num">${j.runs||0}</td>
+        <td class="vx-mono vx-meta">${j.age_s!==null&&j.age_s!==undefined?VX.fmt.ago(Date.now()-j.age_s*1000):'—'}</td>
+        <td class="vx-mono vx-meta">${j.next_run_eta_s!==null&&j.next_run_eta_s!==undefined?('dans ~'+Math.round(j.next_run_eta_s/60)+' min'):(j.interval_s?'—':'sur événement')}</td>
+        <td class="vx-num">${j.last_duration_ms!==null&&j.last_duration_ms!==undefined?j.last_duration_ms+' ms':'—'}</td></tr>`;}).join('')}
+      </tbody></table></div>
+      <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'/api/system/automations','live')}
+      · les jobs « jamais exécuté » dépendent d'intégrations absentes dans cet environnement (honnêteté avant tout)</div>`
+      :VX.states.empty('Registre de jobs vide.');
+  }catch(e){$('vx-auto-jobs').innerHTML=VX.states.error('Registre indisponible : '+esc(e.message));}
+  try{
+    const r=await VX.fetch('/api/system/startup-report',{ttl:60000});
+    $('vx-auto-startup').innerHTML=(r.steps||[]).length?
+      (r.steps.map(st2=>{
+        const tone={CONNECTED:'live',READY:'live',CONFIGURED:'live',DEGRADED:'delayed',
+          MISSING:'frozen',OFFLINE:'offline',ERROR:'offline'}[st2.status]||'frozen';
+        return `<div class="vx-kv"><span class="k">${esc(st2.step)}</span>
+          <span class="v"><span class="vx-badge vx-badge-status" data-status="${tone}">${esc(st2.status)}</span></span></div>
+          <div class="vx-meta" style="margin:-4px 0 6px">${esc(st2.detail||'')}</div>`;}).join('')
+       +`<div class="vx-kv"><span class="k">Exécution d'ordres</span><span class="v vx-pos">${esc(r.order_execution||'')}</span></div>`
+       +`<div class="vx-card-footer">${VX.updateIndicator((r.ts||0)*1000,'séquence de démarrage','live')}</div>`)
+      :VX.states.empty('Rapport non généré (serveur fraîchement démarré ?).');
+  }catch(e){$('vx-auto-startup').innerHTML=VX.states.error('Rapport indisponible');}
+  try{
+    const c=await VX.fetch('/api/system/config',{ttl:60000});
+    const rows=Object.entries(c).filter(([k])=>!k.startsWith('_'));
+    $('vx-auto-config').innerHTML=`<div class="vx-flex vx-wrap vx-gap2">${rows.map(([k,v])=>{
+      const tone={CONFIGURED:'live',MISSING:'frozen',INVALID:'offline'}[v.status]||'frozen';
+      return `<span class="vx-badge vx-badge-status" data-status="${tone}"
+        title="${esc(v.consequence||'')}">${esc(k)} · ${esc(v.status)}</span>`;}).join('')}</div>
+      <div class="vx-help vx-mt2">Survoler un badge : conséquence exacte d'une variable absente. Aucune valeur n'est jamais affichée ni journalisée.</div>`;
+  }catch(e){$('vx-auto-config').innerHTML=VX.states.error('Validation indisponible');}
+}
+
 /* ══ Orchestration ══════════════════════════════════════════════════ */
 if(VIEW==='connections'){
   loadConnections();
@@ -669,6 +733,9 @@ if(VIEW==='connections'){
   loadData();
   $('vx-data-refresh').addEventListener('click',doRefresh);
   VX.refresh.register(loadData,60000,'data');
+}else if(VIEW==='automations'){
+  loadAutomations();
+  VX.refresh.register(loadAutomations,60000,'automations');
 }else if(VIEW==='settings'){
   initSettings();
 }else if(VIEW==='archive'){
