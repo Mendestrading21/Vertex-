@@ -44,6 +44,11 @@ def _header(active: str) -> str:
 
 _VIEW_CONTENT = {
     'connections': '''
+<section class="vx-card vx-mt4" id="vx-conn-summary" aria-label="Canaux de connexion">
+  <div class="vx-card-header"><span class="vx-card-title">Canaux — état honnête</span>
+    <span class="vx-dim" style="font-size:12px">configuré ≠ connecté · jamais LIVE sans preuve</span></div>
+  <div id="vx-conn-summary-body">%%LOADING%%</div>
+</section>
 <div class="vx-grid vx-mt4" id="vx-conn-grid">
   <section class="vx-card vx-col-4" aria-label="IBKR">
     <div class="vx-card-header"><span class="vx-card-title">IBKR</span>
@@ -203,8 +208,26 @@ function statusBadge(status,label){
 }
 function kv(k,v){return `<div class="vx-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`;}
 
+/* Bandeau consolidé des canaux — /api/system/connections (statuts canoniques). */
+async function loadConnSummary(){
+  const el=document.getElementById('vx-conn-summary-body');if(!el)return;
+  let d;try{d=await VX.fetch('/api/system/connections',{ttl:20000});}catch(e){el.innerHTML=VX.states.error('Connexions indisponibles');return;}
+  const tone={LIVE:'pos',READY:'pos',DELAYED:'warn',DEGRADED:'warn',FALLBACK:'warn',STALE:'warn',
+    OFFLINE:'neg',ERROR:'neg',BLOCKED:'neg',CONFIGURATION_MISSING:'neutral',NOT_IMPLEMENTED:'neutral',DEMO:'neutral',LOADING:'neutral'};
+  const col={pos:'var(--vx-positive,#39b879)',warn:'var(--vx-warning,#cc892c)',neg:'var(--vx-negative,#dc6254)',neutral:'var(--vx-text-dim,#817d77)'};
+  const rows=(d.connections||[]).map(function(c){
+    const t=tone[c.status]||'neutral';
+    return '<div style="display:grid;grid-template-columns:150px 130px 1fr;gap:.6rem;align-items:center;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.05)">'
+      +'<b>'+esc(c.name)+'</b>'
+      +'<span class="vx-badge" style="color:'+col[t]+';border:1px solid '+col[t]+'">'+esc(c.status)+'</span>'
+      +'<span class="vx-dim" style="font-size:12.5px">'+esc(c.detail||'')+(c.action?' <span style="color:var(--vx-orange-500,#cf6128)">→ '+esc(c.action)+'</span>':'')+'</span></div>';
+  }).join('');
+  el.innerHTML=rows||'<div class="vx-empty">Aucun canal.</div>';
+}
+
 /* ══ Vue CONNEXIONS ═════════════════════════════════════════════════ */
 async function loadConnections(){
+  loadConnSummary();
   const [stR,liveR,diagR,hzR]=await Promise.allSettled([
     VX.fetch('/api/system-status',{ttl:30000}),
     VX.fetch('/api/live/status',{ttl:30000}),
