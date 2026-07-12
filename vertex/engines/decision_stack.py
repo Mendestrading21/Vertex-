@@ -122,9 +122,10 @@ def _apply_rules(decision, d, market, option, portfolio, permission, audit):
         audit.append('Cassure en marché de range → surveiller, ne pas poursuivre.')
         decision = 'WATCH_BREAKOUT'
 
-    # 5. Risque/récompense insuffisant → pas d'achat.
-    if rr and rr < 1.5 and decision in {'STRONG_BUY', 'BUY'}:
-        audit.append(f'R:R {rr:.1f} < 1.5 → pas d\'achat, surveiller.')
+    # 5. Risque/récompense insuffisant → pas d'achat. Seuil canonique = 2.0
+    #    (aligné sur le hard gate ExecutiveEngine — jamais 1,5 concurrent).
+    if rr and rr < 2.0 and decision in {'STRONG_BUY', 'BUY'}:
+        audit.append(f'R:R {rr:.1f} < 2.0 (minimum stratégie) → pas d\'achat, surveiller.')
         decision = 'WATCH_BREAKOUT'
 
     # 6. Marché RISK-OFF → jamais d'achat FORT.
@@ -206,8 +207,8 @@ def _tipping_points(decision, d, market, portfolio):
         return []
     out = []
     rr = _num((d.get('plan') or {}).get('rr_res'))
-    if rr and rr < 1.5:
-        out.append(f'Un ratio risque/récompense ≥ 1.5 (actuellement {rr:.1f})')
+    if rr and rr < 2.0:
+        out.append(f'Un ratio risque/récompense ≥ 2.0 (actuellement {rr:.1f})')
     if _timing(d) == 'EXTENDED':
         out.append('Un repli vers la zone d\'entrée (le titre est sur-étendu)')
     if not (d.get('signals') or {}).get('above200', True):

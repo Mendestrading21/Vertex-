@@ -107,6 +107,24 @@ def test_ibkr_not_claimed_live_without_proof(client):
         assert ibkr['status'] != 'LIVE'
 
 
+def test_header_badge_never_claims_live_ibkr_from_config_flag():
+    """Le badge d'en-tête ne doit PAS afficher « LIVE IBKR » sur le simple flag
+    de config (ibkr_enabled) — seulement sur une donnée IBKR réelle (data_source).
+    Règle de vérité : jamais LIVE sans preuve."""
+    src = open(os.path.join(ROOT, 'terminal.py'), encoding='utf-8').read()
+    assert "ibkr_enabled){s='🟢 LIVE IBKR'" not in src, \
+        'le badge LIVE IBKR est dérivé du flag de config au lieu de la donnée réelle'
+    # la version honnête consulte data_source==='ibkr'
+    assert "data_source==='ibkr'){s='🟢 LIVE IBKR'" in src
+
+
+def test_morning_brief_uses_live_news_endpoint():
+    """Le morning brief doit interroger /news-feed (JSON réel), pas /news
+    (redirection HTML → news vides silencieuses)."""
+    src = open(os.path.join(ROOT, 'terminal.py'), encoding='utf-8').read()
+    assert "fetch('/news')" not in src, '/news est une redirection HTML, pas un endpoint JSON'
+
+
 # ───────────────────────────────────────────── Couverture des routes (§31)
 _MAIN_ROUTES = [
     '/', '/markets', '/opportunities', '/portfolio', '/analysis', '/options',

@@ -102,10 +102,15 @@ def enrich_option(p: dict, quote: dict | None, underlying_quote: dict | None = N
     issues = p['data_quality'].setdefault('issues', [])
     for name in ('delta', 'gamma', 'theta', 'vega'):
         per = g.get(name)
-        if per is None:
+        # Quantité inconnue → Greek positionnel INCONNU (None), jamais 0 fabriqué
+        # (règle de vérité : absent ≠ zéro). On garde tout de même la valeur
+        # unitaire par option si elle existe.
+        if per is None or qty is None:
             p[name] = None
+            if per is not None:
+                p[f'{name}_per_option'] = per
             continue
-        p[name] = round(per * mult * (qty or 0), 4)
+        p[name] = round(per * mult * qty, 4)
         p[f'{name}_per_option'] = per
     # Cohérence des signes (long uniquement — le desk modélise l'achat)
     dpo = g.get('delta')

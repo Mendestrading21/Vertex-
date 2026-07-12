@@ -59,8 +59,14 @@ def recalculate_all(scan_state: dict, desk_blob: dict | None = None,
         if p['asset_type'] == 'OPTION':
             oq, uq = _quote_for_option(quotes, p)
             greeks = None
-            if oq and oq.get('iv') is not None:
-                greeks = {'source': 'BROKER_GREEKS'} if ibkr_positions else None
+            # Ne réclamer BROKER_GREEKS que si des valeurs de Greeks RÉELLES sont
+            # présentes (§21). Une IV seule ne prouve pas des Greeks broker :
+            # étiqueter BROKER_GREEKS sans delta/gamma/theta/vega serait un
+            # label de provenance faux (règle de vérité).
+            if oq and any(oq.get(k) is not None for k in ('delta', 'gamma', 'theta', 'vega')):
+                greeks = {'source': 'BROKER_GREEKS',
+                          'delta': oq.get('delta'), 'gamma': oq.get('gamma'),
+                          'theta': oq.get('theta'), 'vega': oq.get('vega')}
             calculator.enrich_option(p, oq, uq, greeks, d)
             p['lifecycle_status'] = lifecycle.option_status(p)
         else:

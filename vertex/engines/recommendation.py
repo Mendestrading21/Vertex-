@@ -119,8 +119,12 @@ def position_decision(pos, underlying=None):
     if stop is not None and cur is not None and cur <= stop:
         return out('EXIT', 'Le cours a atteint ou franchi le stop du plan.',
                    'Sortir maintenant — le scénario est invalidé.', 'perte au stop', 78)
-    if pl is not None and pl <= -25:
-        return out('EXIT', 'Perte au-delà du seuil de discipline (−25 %).',
+    # Seuil de discipline aligné sur la constitution : action -20 % (stock_max_drawdown),
+    # option -25 % (convexité tolère plus). Ne JAMAIS appliquer la limite portefeuille
+    # (-25 %) à une action isolée — c'était une incohérence avec le hard gate -20 %.
+    _dd_limit = -25 if is_opt else -20
+    if pl is not None and pl <= _dd_limit:
+        return out('EXIT', 'Perte au-delà du seuil de discipline (%d %%).' % _dd_limit,
                    'Couper la position, ne pas moyenner à la baisse.', 'perte non maîtrisée', 74)
     # 2. Option proche de l'expiration → le thêta commande
     if is_opt and dte is not None and dte <= 14:

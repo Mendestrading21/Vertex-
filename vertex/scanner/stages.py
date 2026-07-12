@@ -82,9 +82,10 @@ def technical_stage(candidate: dict) -> dict:
         if rr >= 2:
             score += 15
             reasons.append(f'R:R structurel {rr}')
-        elif rr < 1.5:
+        elif rr < 2:
+            # Sous le minimum stratégie 2:1 → pénalisé (plus de zone 1,5–2,0 neutre).
             score -= 20
-            reasons.append(f'R:R {rr} insuffisant')
+            reasons.append(f'R:R {rr} sous le minimum 2:1')
     score = max(0.0, min(100.0, score))
     return _res(score >= 45, score, reasons)
 

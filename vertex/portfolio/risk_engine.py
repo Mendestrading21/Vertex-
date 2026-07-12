@@ -74,11 +74,17 @@ def portfolio_risk(snapshot: PortfolioSnapshot, profile,
     greeks = {'delta': None, 'gamma': None, 'theta': None, 'vega': None,
               'open_options': 0}
     if options_greeks:
-        greeks = {'delta': round(sum(g.get('delta') or 0 for g in options_greeks), 3),
-                  'gamma': round(sum(g.get('gamma') or 0 for g in options_greeks), 4),
-                  'theta': round(sum(g.get('theta') or 0 for g in options_greeks), 3),
-                  'vega': round(sum(g.get('vega') or 0 for g in options_greeks), 3),
-                  'open_options': len(options_greeks)}
+        def _agg(name, dp):
+            # Somme des seules valeurs connues ; None si aucune (jamais un 0
+            # agrégé qui sous-estimerait l'exposition). `partial` signale un
+            # agrégat incomplet.
+            vals = [g.get(name) for g in options_greeks if g.get(name) is not None]
+            return round(sum(vals), dp) if vals else None
+        _known = sum(1 for g in options_greeks if g.get('delta') is not None)
+        greeks = {'delta': _agg('delta', 3), 'gamma': _agg('gamma', 4),
+                  'theta': _agg('theta', 3), 'vega': _agg('vega', 3),
+                  'open_options': len(options_greeks),
+                  'greeks_partial': _known < len(options_greeks)}
         if greeks['open_options'] > profile.max_simultaneous_options:
             no_new_risk = True
             warnings.append(f"{greeks['open_options']} options ouvertes > maximum "

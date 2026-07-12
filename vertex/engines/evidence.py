@@ -108,8 +108,10 @@ def risk_analyst(d, portfolio):
     rr = _num((d.get('plan') or {}).get('rr_res'))
     if rr and rr >= 2:
         out.append(_ev(POSITIVE, f'Risque/récompense favorable ({rr:.1f}:1)', 60, 'Risque'))
-    elif rr and rr < 1.5:
-        out.append(_ev(NEGATIVE, f'Risque/récompense faible ({rr:.1f}:1)', 65, 'Risque'))
+    elif rr and rr < 2:
+        # Sous le minimum stratégie (2:1) : preuve négative — jamais de zone
+        # 1,5–2,0 « acceptable » qui contredirait le hard gate.
+        out.append(_ev(NEGATIVE, f'Risque/récompense sous le minimum 2:1 ({rr:.1f}:1)', 65, 'Risque'))
     if d.get('anomaly_lvl') == 'ALERTE':
         out.append(_ev(NEGATIVE, 'Radar ALERTE — comportement hors-norme', 60, 'Risque'))
     if portfolio and _num(portfolio.get('max_correlation')) >= 0.8:
