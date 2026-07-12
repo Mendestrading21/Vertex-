@@ -1798,9 +1798,18 @@ def api_ticker(sym):
         _sec_med = _company.sector_medians().get((comp or {}).get('sector')) or {}
     except Exception:
         _sec_med = {}
+    # Carte des risques d'entreprise (§24) — depuis fondamentaux réels + médianes.
+    try:
+        from vertex.company import risk_map as _risk_map
+        _det = det_all.get(sym) or {}
+        _risk = _risk_map.build(comp, sector_median=_sec_med,
+                                earnings_in_days=_det.get('earnings_dte'))
+    except Exception:
+        _risk = None
     return jsonify({'symbol': sym, 'in_universe': sym in UNIVERSE,
                     'detail': det_all.get(sym), 'peers_data': peers_data,
-                    'company': comp, 'pack': pack, 'sector_median': _sec_med})
+                    'company': comp, 'pack': pack, 'sector_median': _sec_med,
+                    'risk_map': _risk})
 
 
 @app.route('/api/company/<sym>')

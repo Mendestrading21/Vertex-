@@ -215,9 +215,21 @@ async function loadDossier(){
     const blocking=(exec&&exec.blocking_anomalies)||(exec&&exec.blocking)||[];
     const warns=(exec&&exec.warnings)||[];
     const all=[...blocking.map(b=>({t:'bloquant',v:b})),...warns.map(w=>({t:'attention',v:w}))];
-    railR.innerHTML=all.length?all.slice(0,6).map(r=>
+    let html=all.length?all.slice(0,6).map(r=>
       `<div class="vx-insight" data-tone="risk" style="font-size:12px"><b>${r.t}</b> — ${esc(typeof r.v==='string'?r.v:JSON.stringify(r.v))}</div>`).join('')
       :'<span class="vx-meta">Aucun risque bloquant remonté par les moteurs.</span>';
+    /* Carte des risques d'entreprise (§24) — fondamentaux réels. */
+    const rm=t&&t.risk_map;
+    if(rm&&rm.risks){
+      const col={'ÉLEVÉ':'var(--vx-negative,#dc6254)','MODÉRÉ':'var(--vx-warning,#cc892c)',
+        'FAIBLE':'var(--vx-positive,#39b879)','INCONNU':'var(--vx-text-dim,#817d77)'};
+      html+='<div class="vx-mt3" style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--vx-text-dim,#817d77)">Carte des risques ('
+        +esc(rm.known_count)+'/'+esc(rm.total_count)+' mesurés)</div>'
+        +rm.risks.map(r=>`<div style="display:flex;justify-content:space-between;gap:.5rem;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px">`
+          +`<span>${esc(r.category)}</span><span style="color:${col[r.level]||'#888'};font-weight:600">${esc(r.level)}</span></div>`
+          +`<div class="vx-meta" style="font-size:11px;margin-bottom:.2rem">${esc(r.note||'')}</div>`).join('');
+    }
+    railR.innerHTML=html;
   }
   const sc=(exec&&exec.scores)||{};
   $('an-scores').innerHTML=[['Conviction',sc.conviction],['Risque',sc.risk],['Timing',sc.timing],
