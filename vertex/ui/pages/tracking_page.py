@@ -40,6 +40,7 @@ _CONTENT = """
     <div class="vx-card-header"><span class="vx-card-title">Résumé</span></div>
     <div id="vx-trk-summary-body"><div class="vx-skeleton" style="height:60px"></div></div>
   </section>
+  <div class="vx-col-12" id="vx-trk-chart"></div>
   <section class="vx-card vx-col-12" id="vx-trk-active" aria-label="Suivis actifs">
     <div class="vx-card-header"><span class="vx-card-title">Suivis actifs</span></div>
     <div id="vx-trk-active-body"><div class="vx-skeleton" style="height:160px"></div></div>

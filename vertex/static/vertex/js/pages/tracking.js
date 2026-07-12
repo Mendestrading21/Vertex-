@@ -47,6 +47,50 @@
       '</tr></thead><tbody>' + bodyRows + '</tbody></table></div>';
   }
 
+  // Graphique interactif : rendement hypothétique vs SPY par suivi actif.
+  function renderPerfChart(rows) {
+    var host = document.getElementById('vx-trk-chart');
+    var VC = window.VXCharts;
+    if (!host || !VC || !window.Chart) return;
+    var pts = rows.filter(function (r) { return r.p && r.p.return_pct != null; });
+    if (!pts.length) { host.innerHTML = ''; return; }
+    var brand = (VC.colors && VC.colors.brand) || '#cf6128';
+    var neutral = (VC.colors && VC.colors.neutral) || '#8f8a83';
+    var labels = pts.map(function (r) { return r.t.symbol; });
+    var self = pts.map(function (r) { return +r.p.return_pct.toFixed(2); });
+    var spy = pts.map(function (r) { return r.p.benchmark_return_pct != null ? +r.p.benchmark_return_pct.toFixed(2) : null; });
+    VC.card('vx-trk-chart', {
+      title: 'Performance hypothétique depuis le suivi',
+      question: 'Chaque idée suivie bat-elle SPY depuis que je l\'ai marquée ?',
+      conclusion: pts.length + ' suivi(s) actif(s) — rendements 100 % hypothétiques',
+      height: 240, source: 'SCAN', timestamp: Date.now(), mode: 'delayed',
+      limits: 'rendement prix hors frais/dividendes · aucune position réelle',
+      legend: [{ label: 'Idée suivie', color: brand }, { label: 'SPY', color: neutral }],
+      explain: {
+        shows: 'Le rendement de chaque idée suivie et celui de SPY sur la même fenêtre.',
+        why: 'Vertex vise à battre SPY : un alpha positif valide la sélection.',
+        confirm: 'Barres oranges au-dessus des grises (alpha positif).',
+        invalidate: 'Sous-performance persistante vs SPY.'
+      },
+      render: function (cv) {
+        return VC.mount(cv, {
+          type: 'bar',
+          data: {
+            labels: labels, datasets: [
+              { label: 'Idée suivie', data: self, backgroundColor: brand, borderRadius: 3, maxBarThickness: 26 },
+              { label: 'SPY', data: spy, backgroundColor: neutral + 'cc', borderRadius: 3, maxBarThickness: 26 }
+            ]
+          },
+          options: {
+            interaction: { mode: 'index', intersect: false },
+            plugins: { tooltip: { callbacks: { label: function (ctx) { return ctx.dataset.label + ' : ' + (ctx.parsed.y == null ? '—' : (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y + ' %'); } } } },
+            scales: { y: { ticks: { callback: function (v) { return v + ' %'; } } } }
+          }
+        });
+      }
+    });
+  }
+
   function loadActive() {
     var sEl = document.getElementById('vx-trk-summary-body');
     var aEl = document.getElementById('vx-trk-active-body');
@@ -66,6 +110,7 @@
         })).then(function (rows) {
           aEl.innerHTML = table(['Titre', 'Depuis le', 'Référence', 'Actuel', 'Rdt hypo.', 'SPY', 'Alpha', 'MFE / MAE', 'Décision init.'],
             rows.map(function (r) { return activeRow(r.t, r.p); }).join(''));
+          renderPerfChart(rows);
         });
       }
       if (stopped.length) {
