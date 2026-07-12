@@ -267,14 +267,24 @@ async function loadBrief(){
   try{
     const b=await VX.fetch('/api/briefing/editorial',{ttl:60000});
     const changed=(b.changed_since_yesterday||[]).map(c=>`<li>${esc(c)}</li>`).join('');
+    const daily=b.daily||{};
+    const kindLabel={PRE_MARKET:'Pré-marché',INTRADAY:'Intraday',CLOSE:'Clôture',WEEKLY:'Hebdo'}[daily.kind]||'';
+    const news=(b.what_changed_today||[]).map(x=>`<li>${esc(x)}</li>`).join('');
+    const domSec=(daily.sections||[]).find(x=>x.label==='Actualité dominante');
     $('vx-brief-body').innerHTML=
       '<div style="font-size:14px;line-height:1.75">'+b.lines.map(l=>esc(l)).join('<br>')+'</div>'
-      +(changed?`<div class="vx-insight vx-mt3"><b>Ce qui a changé depuis hier</b><ul class="vx-mt1" style="margin:0;padding-left:18px">${changed}</ul></div>`:'')
+      +(domSec?`<div class="vx-insight vx-mt3"><b>Actualité dominante</b><div class="vx-mt1">${esc(domSec.text)}</div></div>`:'')
+      +(news?`<div class="vx-insight vx-mt2"><b>Ce qui a changé (sourcé)</b><ul class="vx-mt1" style="margin:0;padding-left:18px">${news}</ul></div>`:'')
+      +(changed?`<div class="vx-insight vx-mt2"><b>Ce qui a changé depuis hier (moteurs)</b><ul class="vx-mt1" style="margin:0;padding-left:18px">${changed}</ul></div>`:'')
+      +((b.main_risk||b.main_opportunity)?`<div class="vx-flex vx-wrap vx-mt2">
+         ${b.main_risk?`<span class="vx-badge" style="color:var(--vx-negative)">Risque : ${esc(b.main_risk)}</span>`:''}
+         ${b.main_opportunity?`<span class="vx-badge" style="color:var(--vx-positive)">Opportunité : ${esc(b.main_opportunity)}</span>`:''}</div>`:'')
       +`<div class="vx-card-footer">
          ${VX.updateIndicator(b.as_of,(b.sources||[]).join(', '),b.demo?'fallback':'delayed')}
          <span class="vx-badge">${b.generator==='deterministic'?'Brief déterministe (moteurs)':'Brief IA validé'}</span>
+         ${kindLabel?`<span class="vx-badge" style="color:var(--vx-amber)">${kindLabel}</span>`:''}
          <a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets">Voir les preuves →</a></div>`;
-    $('vx-brief-meta').innerHTML=`<span class="vx-meta">${b.word_count} mots</span>`;
+    $('vx-brief-meta').innerHTML=`<span class="vx-meta">${(daily.word_count||b.word_count)} mots</span>`;
   }catch(e){$('vx-brief-body').innerHTML=VX.states.error('Brief indisponible ('+e.message+')');}
 }
 

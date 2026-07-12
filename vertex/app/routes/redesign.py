@@ -117,7 +117,29 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     # ── Brief éditorial (§21) : paquet structuré → 10 lignes ─────────
     @bp.route('/api/briefing/editorial')
     def briefing_editorial():
-        return jsonify(briefing.build_editorial(scan_state))
+        base = briefing.build_editorial(scan_state)
+        # Brief quotidien §15 (PRE_MARKET/INTRADAY/CLOSE/WEEKLY) : sections
+        # sourcées + actualités RÉELLES validées (news_state) — fusionné sans
+        # casser le schéma historique (lines/word_count/...).
+        try:
+            from vertex.app.state import news_state
+            from vertex.market.daily_brief import build_daily_brief
+            from vertex.services import persist as _persist
+            desk = _persist.load_json('desk_data.json', {}) or {}
+            import json as _json
+            raw = (desk.get('data') or {}).get('myTrades')
+            trades = _json.loads(raw) if isinstance(raw, str) else (raw or [])
+            syms = sorted({str(t.get('sym', '')).upper() for t in trades
+                           if isinstance(t, dict) and t.get('sym')})
+            daily = build_daily_brief(scan_state, news_state, syms)
+            base.update({'daily': daily, 'kind': daily['kind'],
+                         'sources': daily['sources'],
+                         'what_changed_today': daily['what_changed'],
+                         'main_risk': daily['main_risk'],
+                         'main_opportunity': daily['main_opportunity']})
+        except Exception as e:
+            base['daily_error'] = str(e)[:120]
+        return jsonify(base)
 
     # ── Simulation d'un contrat (moteur scenario_pricer — §35) ───────
     @bp.route('/api/options/simulate')
