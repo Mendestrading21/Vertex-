@@ -59,17 +59,44 @@ function rowActions(sym){return `<div class="vx-row-actions">
   <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${sym}">Analyse</button>
   <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${sym}" aria-label="Actions ${sym}">⋯</button></div>`;}
 
+/* ── ENTONNOIR D'OPPORTUNITÉS (§11-12) : univers → … → actionnable ── */
+async function renderFunnel(){
+  const el=$('op-funnel');if(!el)return;
+  let f;try{f=await VX.fetch('/api/opportunities/funnel',{ttl:60000});}catch(e){return;}
+  if(!f||!f.stages||!f.stages.length)return;
+  const roleColor={'ATTAQUE':'var(--vx-orange-500,#cf6128)','MILIEU':'var(--vx-beige,#c8ad8d)',
+    'DÉFENSE':'var(--vx-neutral,#8f8a83)','RÉSERVE':'var(--vx-text-dim,#817d77)'};
+  const steps=f.stages.map(function(s,i){
+    return '<div style="flex:1;min-width:88px;text-align:center;position:relative">'
+      +'<div style="font-size:24px;font-weight:700;color:var(--vx-text,#f1efeb)">'+esc(s.count)+'</div>'
+      +'<div style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--vx-text-dim,#817d77)">'+esc(s.label)+'</div>'
+      +(i<f.stages.length-1?'<span style="position:absolute;right:-6px;top:14px;color:var(--vx-text-dim,#555)">›</span>':'')+'</div>';
+  }).join('');
+  const roles=(f.roles||[]).map(function(r){
+    return '<span class="vx-chip" style="border:1px solid '+ (roleColor[r.role]||'#555')
+      +';color:'+(roleColor[r.role]||'#aaa')+'">'+esc(r.role)+' '+esc(r.count)+'</span>';
+  }).join(' ');
+  el.innerHTML='<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Entonnoir d\'opportunités</span>'
+    +'<span class="vx-actions" style="display:flex;gap:.4rem;flex-wrap:wrap">'+roles+'</span></div>'
+    +'<div style="display:flex;align-items:flex-end;gap:.4rem;padding:.6rem .2rem 0">'+steps+'</div>'
+    +(f.note?'<div class="vx-dim" style="font-size:12px;margin-top:.5rem">'+esc(f.note)+'</div>':'')
+    +(f.actionable_symbols&&f.actionable_symbols.length?'<div class="vx-dim" style="font-size:12px;margin-top:.5rem">Actionnables : '
+      +f.actionable_symbols.map(function(s){return '<b style="color:var(--vx-orange-500,#cf6128)">'+esc(s)+'</b>';}).join(' · ')+'</div>':'')
+    +'</div>';
+}
+
 /* ── RADAR (§24) : X qualité stratégique · Y timing · taille intensité ── */
 async function renderRadar(){
   const scan=await VX.fetch('/scan',{ttl:120000});
   const rows=(scan.rows||[]).filter(r=>r.score!==undefined);
   if(!rows.length){$('op-body').innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
-  $('op-body').innerHTML=demoBanner(scan)+'<div class="vx-grid"><div class="vx-col-8" id="op-radar"></div>'
+  $('op-body').innerHTML=demoBanner(scan)+'<div id="op-funnel" class="vx-mb3"></div><div class="vx-grid"><div class="vx-col-8" id="op-radar"></div>'
     +'<div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Lecture</span></div>'
     +'<div class="vx-dim" style="font-size:12.5px">X : qualité stratégique (score composite moteur).<br>'
     +'Y : qualité du timing (timing technique moteur).<br>Taille : intensité du signal (anomalies).<br>'
     +'Couleur : direction du verdict.<br>Bordure orange : qualité de données dégradée.</div>'
     +'<div id="op-radar-sel" class="vx-mt3"></div></div></div>';
+  renderFunnel();
   VXCharts.card('op-radar',{
     title:'Radar des opportunités',question:'Où se trouvent les meilleurs couples stratégie × timing ?',
     conclusion:rows.filter(r=>bucketOf(r)==='Actionnable').length+' candidat(s) en zone actionnable',

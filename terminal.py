@@ -1903,6 +1903,10 @@ app.register_blueprint(_options_intel_api.bp)
 from vertex.app.routes import tracking_api as _tracking_api
 app.register_blueprint(_tracking_api.bp)
 
+# ─── OPPORTUNITY FUNNEL (Blueprint) — /api/opportunities/funnel (§11-12) ───
+from vertex.app.routes import opportunities_api as _opportunities_api
+app.register_blueprint(_opportunities_api.bp)
+
 # ─── VERTEX LIVE ENGINE (Blueprint) — /api/live/status · refresh · report ───
 app.register_blueprint(_live_api.bp)
 
