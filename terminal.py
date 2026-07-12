@@ -1899,6 +1899,10 @@ app.register_blueprint(_options_lab_api.bp)
 from vertex.app.routes import options_intel_api as _options_intel_api
 app.register_blueprint(_options_intel_api.bp)
 
+# ─── TRACKING ENGINE (Blueprint) — /api/tracking (suivi hypothétique, lecture seule) ───
+from vertex.app.routes import tracking_api as _tracking_api
+app.register_blueprint(_tracking_api.bp)
+
 # ─── VERTEX LIVE ENGINE (Blueprint) — /api/live/status · refresh · report ───
 app.register_blueprint(_live_api.bp)
 

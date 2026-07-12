@@ -45,6 +45,10 @@ _CANONICAL = (
     ('THESIS_HEALTH_REVIEW', 'Réévaluation de la santé des thèses', None),
     ('EOD_POSITION_SNAPSHOT', 'Instantané de fin de journée des positions', 86400),
     ('POSITION_INTEGRITY_AUDIT', 'Audit d’intégrité des positions', None),
+    # Tracking Engine (§14-18) — suivi analytique hypothétique.
+    ('TRACKING_REFRESH', 'Rafraîchissement des suivis actifs', 60),
+    ('TRACKING_SNAPSHOT', 'Instantané horodaté des suivis', 300),
+    ('EOD_TRACKING_SNAPSHOT', 'Instantané de fin de journée des suivis', 86400),
 )
 
 for name, desc, interval in _CANONICAL:

@@ -150,6 +150,24 @@ def test_main_routes_ok_or_redirect(client, route):
     assert r.status_code in (200, 301, 302, 308), '%s → %s' % (route, r.status_code)
 
 
+def test_tracking_page_and_api_respond(client):
+    assert client.get('/tracking').status_code == 200
+    r = client.get('/api/tracking')
+    assert r.status_code == 200
+    assert 'summary' in r.get_json()
+
+
+def test_tracking_engine_has_no_order_path():
+    import glob
+    banned = re.compile(r'(?:\.|\bdef\s+|\bfunction\s+)(place_order|placeOrder|'
+                        r'submit_order|close_position|closePosition|execute_trade|'
+                        r'send_order|cancel_order)\s*\(')
+    for path in glob.glob(os.path.join(ROOT, 'vertex/tracking/*.py')) + \
+            [os.path.join(ROOT, 'vertex/app/routes/tracking_api.py'),
+             os.path.join(ROOT, 'vertex/static/vertex/js/pages/tracking.js')]:
+        assert not banned.search(open(path, encoding='utf-8').read()), path
+
+
 _LEGACY_REDIRECTS = ['/options-lab', '/watchlist', '/journal', '/sectors', '/health']
 
 

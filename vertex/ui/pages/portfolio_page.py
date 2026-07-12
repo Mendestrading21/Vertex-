@@ -28,6 +28,7 @@ _CONTENT = """
 <div class="vx-actions">
   <button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal('','position')">+ Position</button>
   <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('','watchlist')">+ Watchlist</button>
+  <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/tracking">Suivis →</a>
 </div></div>
 %%TABS%%
 <div class="vx-grid vx-mt4" id="pf-summary" aria-label="Synthèse portefeuille"></div>

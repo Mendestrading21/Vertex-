@@ -10,6 +10,9 @@ weekly_snapshot.json.tmp
 
 # Données personnelles du desk (positions réelles, sync appareils) — JAMAIS sur GitHub
 desk_data.json
+# Suivis analytiques hypothétiques (runtime) — jamais sur GitHub
+tracking.json
+tracking_backup_*.json
 
 # Caches locaux régénérés automatiquement
 *_cache.json

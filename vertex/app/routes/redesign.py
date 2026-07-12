@@ -12,7 +12,8 @@ from flask import Blueprint, jsonify, redirect, request, send_from_directory
 
 from vertex.ui.pages import (analysis_page, briefing, intelligence_page,
                              markets_page, opportunities_page, options_intel_page,
-                             performance_page, portfolio_page, system_page)
+                             performance_page, portfolio_page, system_page,
+                             tracking_page)
 
 # Anciennes routes → nouvelles destinations (§11). Jamais de suppression sèche.
 LEGACY_REDIRECTS = {
@@ -119,6 +120,11 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     @bp.route('/options')
     def options_intel_route():
         return options_intel_page.render(view=request.args.get('view', 'overview'))
+
+    # ── Suivis (§14-18) — approfondissement du Portefeuille, pas un 9e espace.
+    @bp.route('/tracking')
+    def tracking_route():
+        return tracking_page.render()
 
     # ── Brief éditorial (§21) : paquet structuré → 10 lignes ─────────
     @bp.route('/api/briefing/editorial')
