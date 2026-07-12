@@ -47,7 +47,7 @@ JS = r"""
  document.body.appendChild(ovl);
 
  var MODES={live:['LIVE','#22C55E','rgba(34,197,94,.15)'],delayed:['DELAYED ~15 min','#F5B45B','rgba(245,180,91,.15)'],
-  demo:['🎭 DÉMO','#a78bfa','rgba(167,139,250,.15)'],offline:['OFFLINE','#EF4444','rgba(239,68,68,.15)']};
+  demo:['🎭 DÉMO','#85609f','rgba(167,139,250,.15)'],offline:['OFFLINE','#EF4444','rgba(239,68,68,.15)']};
  var STC={ok:'#22C55E',stale:'#F5B45B',offline:'#EF4444'};
 
  function fmtTs(ts){if(!ts)return '—';var d=new Date(ts*1000);return d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}

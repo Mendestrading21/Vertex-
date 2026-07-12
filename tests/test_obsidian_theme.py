@@ -36,6 +36,18 @@ def test_no_blue_primary_buttons():
     assert 'var(--vx-brand-gradient)' in css   # CTA = orange/cuivre
 
 
+def test_no_blue_in_ui_pages():
+    """Zéro bleu jusque dans les pages bespoke (§36) — accents info/violet compris."""
+    import glob
+    offenders = []
+    for path in glob.glob(os.path.join(ROOT, 'vertex', 'ui', '**', '*.py'), recursive=True):
+        src = open(path, encoding='utf-8').read()
+        for m in re.finditer(r'#[0-9a-fA-F]{6}', src):
+            if _is_blueish(m.group(0)):
+                offenders.append(f'{os.path.relpath(path, ROOT)}: {m.group(0)}')
+    assert not offenders, 'couleurs bleues interdites dans l\'UI : ' + ', '.join(offenders)
+
+
 def test_no_blue_main_series():
     theme = _read(VXJS, 'charts', 'chart-theme-obsidian-copper.js')
     series = re.search(r'series:\s*\[(.*?)\]', theme, re.S).group(1)

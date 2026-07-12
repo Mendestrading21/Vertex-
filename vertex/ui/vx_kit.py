@@ -33,7 +33,7 @@ CSS = r"""
 .vx-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font:600 11.5px/1.2 ui-sans-serif,system-ui,sans-serif;text-decoration:none;border:1px solid transparent}
 .vx-chip.pos{background:rgba(255,122,24,.14);border-color:rgba(255,122,24,.4);color:#ffb774}
 .vx-chip.fol{background:rgba(245,180,91,.13);border-color:rgba(245,180,91,.35);color:#f5c67f}
-.vx-chip.wl{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.34);color:#7dd3fc}
+.vx-chip.wl{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.34);color:#c8ad8d}
 .vx-chip.al{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.34);color:#fca5a5}
 .vx-dash{color:#5c6577}
 .vx-verdict{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font:800 11px/1.2 ui-sans-serif,system-ui,sans-serif;letter-spacing:.3px}
@@ -239,7 +239,7 @@ function refresh(){var bars=document.querySelectorAll('.vx-abar[data-vx-sym]');f
 
 /* ---------- verdict normalise (vocabulaire unique, source = recommendation.py) ---------- */
 function verdict(raw){var V=window.__VXVOCAB||{};if(raw==null||raw==='')return {label:'—',tone:'gray',cls:'p-mut'};var m=V[String(raw).trim().toUpperCase()];return m||{label:String(raw),tone:'gray',cls:'p-mut'};}
-var TONECOL={'strong-green':'#16d17a','green':'#22c55e','blue':'#38bdf8','amber':'#f5b45b','red':'#ef4444','gray':'#8794ab'};
+var TONECOL={'strong-green':'#16d17a','green':'#22c55e','blue':'#b9683d','amber':'#f5b45b','red':'#ef4444','gray':'#8794ab'};
 function verdictColor(raw){return TONECOL[verdict(raw).tone]||'#8794ab';}
 function verdictBadge(raw){var v=verdict(raw);return '<span class="vx-verdict" style="color:'+(TONECOL[v.tone]||'#8794ab')+';background:'+(TONECOL[v.tone]||'#8794ab')+'22">'+v.label+'</span>';}
 

@@ -27,7 +27,7 @@ le produit. Analyse only, aucun ordre.
 """
 
 CSS = r"""
-#av{--acc:#ff7a18;--acc2:#ff9a3d;--good:#22c55e;--bad:#ef4444;--info:#38bdf8;--warn:#f5b45b;--vio:#a78bfa;
+#av{--acc:#ff7a18;--acc2:#ff9a3d;--good:#22c55e;--bad:#ef4444;--info:#b9683d;--warn:#f5b45b;--vio:#85609f;
  --ink:#eef2f8;--ink2:#aeb8c8;--mut:#8794ab;--faint:#4b5563;--surf:#101218;--bg2:#0b0d12;
  --hair:rgba(255,255,255,.07);--hair2:rgba(255,255,255,.12);
  --mono:ui-monospace,'SF Mono',Menlo,monospace;color:var(--ink);display:block}
@@ -83,7 +83,7 @@ BODY = (
 
 JS = r"""
 /* ═══ ArchiveVault — données (localStorage vxVault, sync desk) ═══ */
-var AV_TYPES={prompt:['📜','Prompt','#a78bfa'],analyse:['🔬','Analyse','#38bdf8'],idee:['💡','Idée','#f5b45b'],
+var AV_TYPES={prompt:['📜','Prompt','#85609f'],analyse:['🔬','Analyse','#b9683d'],idee:['💡','Idée','#f5b45b'],
  version:['🕰️','Ancienne version','#8794ab'],technote:['🔧','Note technique','#22c55e'],design:['🎨','Design','#ec4899'],
  bug:['🐛','Bug','#ef4444'],feature:['🚀','Feature future','#ff7a18'],texte:['📝','Texte libre','#aeb8c8']};
 var AV={f:{q:'',type:'',status:'active',imp:false,period:''},sel:null,edit:null};

@@ -16,7 +16,7 @@ CSS = r"""
 /* ── Tokens Vertex canoniques (référence ; les composants VX les consomment) ── */
 :root{
  --vx-accent:#ff7a18;--vx-accent2:#ff9a3d;--vx-good:#22c55e;--vx-good2:#16d17a;
- --vx-bad:#ef4444;--vx-info:#38bdf8;--vx-warn:#f5b45b;--vx-neutral:#8794ab;
+ --vx-bad:#ef4444;--vx-info:#b9683d;--vx-warn:#f5b45b;--vx-neutral:#8794ab;
  --vx-ink:#eef2f8;--vx-ink2:#c9d2e0;--vx-mut:#8794ab;--vx-faint:#5c6577;
  --vx-hair:rgba(255,255,255,.08);--vx-hair2:rgba(255,255,255,.14);
  --vx-r-sm:8px;--vx-r:12px;--vx-r-lg:18px;--vx-r-pill:999px;

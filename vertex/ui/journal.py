@@ -24,7 +24,7 @@ le trader ne complète que l'émotion, l'erreur et la leçon.
 """
 
 CSS = r"""
-#tj{--acc:#ff7a18;--acc2:#ff9a3d;--good:#22c55e;--bad:#ef4444;--info:#38bdf8;--warn:#f5b45b;--vio:#a78bfa;
+#tj{--acc:#ff7a18;--acc2:#ff9a3d;--good:#22c55e;--bad:#ef4444;--info:#b9683d;--warn:#f5b45b;--vio:#85609f;
  --ink:#eef2f8;--ink2:#aeb8c8;--mut:#8794ab;--faint:#4b5563;--surf:#101218;--bg2:#0b0d12;
  --hair:rgba(255,255,255,.07);--hair2:rgba(255,255,255,.12);
  --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
@@ -358,7 +358,7 @@ function drawDash(a){var c=closedOf(a).slice().reverse();if(c.length<3)return;
  var pk=0,dd=[[0,0]];cum=0;c.forEach(function(t,i){cum+=(pnlOf(t)||0);if(cum>pk)pk=cum;dd.push([i+1,-(pk-cum)]);});
  lineChart('jcDd',dd,{color:'#ef4444',fmt:function(v){return '$'+Math.round(v);}});
  var wr=[];for(var i=9;i<c.length;i++){var w=c.slice(i-9,i+1).filter(function(t){return t.result==='WIN';}).length;wr.push([i,w*10]);}
- if(wr.length>=2)lineChart('jcWr',wr,{color:'#38bdf8',fmt:function(v){return Math.round(v)+'%';}});
+ if(wr.length>=2)lineChart('jcWr',wr,{color:'#b9683d',fmt:function(v){return Math.round(v)+'%';}});
  var mo={};c.forEach(function(t){var k=(t.date||'').slice(0,7);if(k)mo[k]=(mo[k]||0)+(pnlOf(t)||0);});
  var items=Object.keys(mo).sort().slice(-8).map(function(k){return [k.slice(2),mo[k]];});
  barChart('jcMo',items);}

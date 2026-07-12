@@ -15,7 +15,7 @@ Analyse uniquement — un signal n'est jamais un ordre.
 """
 
 CSS = r"""
-#sg{--acc:#ff7a18;--acc2:#ff9a3d;--good:#22c55e;--bad:#ef4444;--info:#38bdf8;--warn:#f5b45b;--vio:#a78bfa;
+#sg{--acc:#ff7a18;--acc2:#ff9a3d;--good:#22c55e;--bad:#ef4444;--info:#b9683d;--warn:#f5b45b;--vio:#85609f;
  --ink:#eef2f8;--ink2:#aeb8c8;--mut:#8794ab;--faint:#4b5563;--surf:#101218;--bg2:#0b0d12;
  --hair:rgba(255,255,255,.07);--hair2:rgba(255,255,255,.12);
  --mono:ui-monospace,'SF Mono',Menlo,monospace;--sp:clamp(40px,5vw,60px);color:var(--ink);display:block}
@@ -82,7 +82,7 @@ function vxFollowStk(sym,spot,stop,tgt){try{var a=JSON.parse(localStorage.getIte
  alert('⭐ Suivi : '+sym+' — retrouve-le sur le Trading Desk.');}catch(e){}}
 function sgStar(sym){var r=SG_ROWS[sym]||{},pl=(SG_DET[sym]||{}).plan||{};
  return '<span title="Suivre jusqu\'à la vente" onclick="event.stopPropagation();vxFollowStk(\''+sym+'\','+(r.price!=null?r.price:'null')+','+(pl.stop!=null?pl.stop:'null')+','+(pl.tp2!=null?pl.tp2:'null')+')" style="cursor:pointer;color:#F5B45B">⭐</span>';}
-function sgOptBtn(sym){return '<span title="Analyser en option" onclick="event.stopPropagation();location.href=\'/options?t='+sym+'\'" style="cursor:pointer;color:#A78BFA">💎</span>';}
+function sgOptBtn(sym){return '<span title="Analyser en option" onclick="event.stopPropagation();location.href=\'/options?t='+sym+'\'" style="cursor:pointer;color:#85609f">💎</span>';}
 
 /* ① le pouls */
 function sgPulse(){var n=SG_ALL.length,up=SG_ALL.filter(function(x){return x.dir==='UP';}).length;

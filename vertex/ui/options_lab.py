@@ -14,7 +14,7 @@ canvas haute densité (devicePixelRatio), responsive.
 """
 
 CSS = r"""
-#olab{--acc:#ff7a18;--acc2:#ff9a3d;--good:#22c55e;--bad:#ef4444;--info:#38bdf8;--warn:#f5b45b;--vio:#a78bfa;
+#olab{--acc:#ff7a18;--acc2:#ff9a3d;--good:#22c55e;--bad:#ef4444;--info:#b9683d;--warn:#f5b45b;--vio:#85609f;
  --ink:#eef2f8;--ink2:#aeb8c8;--mut:#8794ab;--faint:#4b5563;--surf:#101218;--bg2:#0b0d12;
  --hair:rgba(255,255,255,.07);--hair2:rgba(255,255,255,.12);
  --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
@@ -185,7 +185,7 @@ function drawOne(id){if(OLDRAWN[id]||!OL)return;OLDRAWN[id]=1;var v=OL.viz||{};
   x.save();x.globalAlpha=.9;x.strokeStyle='rgba(255,255,255,.18)';x.beginPath();x.moveTo(pad.l,m.Y(0));x.lineTo(x.W-pad.r,m.Y(0));x.stroke();x.restore();
   vline(x,m,v.payoff.spot,ymin,ymax,'#8794ab','titre '+$usd(v.payoff.spot));
   vline(x,m,v.payoff.be,ymin,ymax,'#f5b45b','seuil '+$usd(v.payoff.be));
-  if(v.payoff.target)vline(x,m,v.payoff.target,ymin,ymax,'#38bdf8','cible');}
+  if(v.payoff.target)vline(x,m,v.payoff.target,ymin,ymax,'#b9683d','cible');}
  if(id==='cCone'&&v.cone){var x=ctx2d(id);if(!x)return;var C=v.cone,pad={l:44,r:8,t:14,b:14};
   var lo=Math.min.apply(0,C.map(function(r){return r.p5;})),hi=Math.max.apply(0,C.map(function(r){return r.p95;}));
   axes(x,pad,lo,hi,function(y){return '$'+Math.round(y);});
@@ -194,7 +194,7 @@ function drawOne(id){if(OLDRAWN[id]||!OL)return;OLDRAWN[id]=1;var v=OL.viz||{};
    var up=C.map(function(r){return [r.d,r[band[0]]];}),dn=C.slice().reverse().map(function(r){return [r.d,r[band[0]==='p95'?'p5':'p25']];});
    x.beginPath();up.concat(dn).forEach(function(p,i){var X=pad.l+(x.W-pad.l-pad.r)*p[0]/xmax,Y=pad.t+(x.H-pad.t-pad.b)*(1-(p[1]-lo)/(hi-lo));i?x.lineTo(X,Y):x.moveTo(X,Y);});
    x.closePath();x.fillStyle=band[1];x.fill();});
-  m=line(x,C.map(function(r){return [r.d,r.p50];}),pad,lo,hi,0,xmax,'#38bdf8');
+  m=line(x,C.map(function(r){return [r.d,r.p50];}),pad,lo,hi,0,xmax,'#b9683d');
   var be=(v.dist||{}).be;if(be){x.save();x.setLineDash([4,4]);x.strokeStyle='#f5b45b';x.beginPath();x.moveTo(pad.l,m.Y(be));x.lineTo(x.W-pad.r,m.Y(be));x.stroke();x.restore();
    x.fillStyle='#f5b45b';x.textAlign='right';x.fillText('seuil '+$usd(be),x.W-10,m.Y(be)-4);}
   x.fillStyle='#6b7480';x.textAlign='center';x.fillText('jours →',x.W/2,x.H-2);}
@@ -206,7 +206,7 @@ function drawOne(id){if(OLDRAWN[id]||!OL)return;OLDRAWN[id]=1;var v=OL.viz||{};
    var X=pad.l+(x.W-pad.l-pad.r)*(p[0]-xmin)/(xmax-xmin),Y=pad.t+(x.H-pad.t-pad.b)*(1-p[1]/ymax);
    started?x.lineTo(X,Y):x.moveTo(X,pad.t+(x.H-pad.t-pad.b));if(!started){x.lineTo(X,Y);started=true;}});
   if(started){x.lineTo(sgn>0?x.W-pad.r:pad.l+(x.W-pad.l-pad.r)*(be-xmin)/(xmax-xmin),pad.t+(x.H-pad.t-pad.b));x.closePath();x.fillStyle='rgba(34,197,94,.18)';x.fill();}
-  var m=line(x,P,pad,0,ymax,xmin,xmax,'#a78bfa');
+  var m=line(x,P,pad,0,ymax,xmin,xmax,'#85609f');
   vline(x,m,v.dist.spot,0,ymax,'#8794ab','titre');vline(x,m,be,0,ymax,'#f5b45b','seuil');
   x.fillStyle='#22c55e';x.textAlign=sgn>0?'right':'left';x.fillText('P(profit) '+$n(v.dist.p_be,1)+'%',sgn>0?x.W-12:12,pad.t+10);}
  if(id==='cTheta'&&v.theta){var x=ctx2d(id);if(!x)return;var P=v.theta.map(function(p){return [p.d,p.v];});
@@ -412,7 +412,7 @@ olabLoad();setInterval(function(){if(!document.hidden)olabLoad();},120000);
  var host=document.getElementById('olabSym');if(!host)return;
  host.innerHTML='<div class="panel" style="margin:14px 0 6px;border-color:rgba(56,189,248,.3)">'
   +'<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><h2 style="margin:0;font-size:20px">🎯 Options sur '+t+'</h2>'
-  +'<a href="/titre/'+t+'" style="color:#38bdf8;font-size:12px;font-weight:700;text-decoration:none">📄 Fiche '+t+' →</a></div>'
+  +'<a href="/titre/'+t+'" style="color:#b9683d;font-size:12px;font-weight:700;text-decoration:none">📄 Fiche '+t+' →</a></div>'
   +'<div id="olabSymBody" class="sub" style="margin:10px 0 0">analyse du board pour '+t+'…</div>'
   +'<div data-vx-actions="'+t+'" data-hidejournal></div></div>';
  if(window.VX)VX.init();

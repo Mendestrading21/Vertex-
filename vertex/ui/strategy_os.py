@@ -14,7 +14,7 @@ def render_page() -> str:
 <title>Vertex Strategy OS</title>
 <style>
 :root{--bg:#080A0E;--card:#111827;--line:#1f2937;--tx:#e5e7eb;--dim:#9ca3af;
---pos:#34d399;--neg:#f87171;--warn:#fbbf24;--acc:#818cf8}
+--pos:#34d399;--neg:#f87171;--warn:#fbbf24;--acc:#85609f}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);
 font:14px/1.5 -apple-system,'Segoe UI',Roboto,sans-serif;padding:18px}
 h1{font-size:22px;margin:0 0 4px}h2{font-size:15px;margin:0 0 10px;color:var(--acc)}
