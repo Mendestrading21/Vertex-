@@ -84,6 +84,26 @@ def decide(d, opt=None):
     else:
         dec, tone = 'ÉVITER', 'avoid'
 
+    # ── Hard gates stratégie (autorité unique) : AUCUN achat ne survit sans
+    #    R:R ≥ 2:1, régime connu et invalidation définie. Aligné sur
+    #    ExecutiveEngine — le verdict de scan ne peut plus contredire le gate.
+    if dec in ('ACHETER FORT', 'ACHETER'):
+        rr = plan.get('rr_res')
+        if rr is None:
+            rr = plan.get('rr')
+        gate_fail = None
+        if plan.get('stop') is None:
+            gate_fail = 'invalidation (stop) absente'
+        elif regime in (None, '', 'UNKNOWN', 'INCONNU'):
+            gate_fail = 'régime de marché inconnu → pas de nouveau risque'
+        elif rr is None:
+            gate_fail = 'R:R non confirmé (≥ 2:1 requis)'
+        elif float(rr) < 2.0:
+            gate_fail = f'R:R {float(rr):.1f} < 2:1 (minimum stratégie)'
+        if gate_fail:
+            cons.append('Hard gate : ' + gate_fail)
+            dec, tone = 'SURVEILLER', 'watch'
+
     reg_bonus = 15 if regime == 'TREND' else (-12 if regime == 'CHOP' else 0)
     conv = round(min(100, max(0, score * 0.4 + conf * 0.25 + sq * 0.2 + reg_bonus - len(cons) * 4)))
 

@@ -59,11 +59,27 @@ l'ExecutiveEngine).
   somme des seules valeurs connues, `None` si aucune, drapeau `greeks_partial`.
 - Tests : `tests/test_calc_honesty.py`.
 
+## Renforcement de l'autorité de décision (optimisation stratégie)
+
+Plutôt qu'un refactor risqué rerroutant tous les moteurs, les **hard gates de la
+stratégie sont désormais appliqués au verdict de scan lui-même**, de sorte
+qu'aucun achat ne peut contredire l'ExecutiveEngine :
+- ✅ `engines/decide.py` — après le calcul du verdict (ACHETER/ACHETER FORT
+  depuis score/tendance/régime), un **gate final** dégrade en SURVEILLER si :
+  R:R < 2:1, R:R non confirmé, régime UNKNOWN, ou invalidation (stop) absente.
+  Avant : `decide.py` pouvait afficher ACHETER **sans jamais lire le R:R** (un
+  titre à R:R 0,2 pouvait ressortir « Achat » si le score était élevé).
+- Vérifié en conditions réelles : sur le scan démo, **0 verdict ACHETER** ne
+  subsiste avec un R:R < 2 (ex. ACN, R:R 0,2 → jamais ACHETER).
+- Tests : `test_scan_verdict_downgraded_when_rr_below_2 / _regime_unknown /
+  _stop_missing` dans `tests/test_strategy_consistency.py`.
+
 ## Points signalés, NON corrigés (honnêteté §2)
-- **Autorité de décision multiple** : `decide.py`, `committee.py`, `scorecard.py`
-  publient encore des verdicts d'achat en parallèle de l'ExecutiveEngine,
-  réconciliés par la façade `recommendation.py` (`__VXVOCAB`). Router tout via
-  l'ExecutiveEngine est un refactor lourd et risqué — **non entrepris** ici.
+- **Autorité de décision multiple (résiduelle)** : `committee.py` et
+  `scorecard.py` publient encore des avis en parallèle, réconciliés par la façade
+  `recommendation.py` (`__VXVOCAB`). Le verdict de scan principal (`decide.py`)
+  honore désormais les hard gates ; un reroute total de tous les moteurs via
+  l'ExecutiveEngine reste un refactor lourd — **non entrepris** ici.
 - **Committee `g_rr` contournable** : `committee.py:65` permet de passer le gate
   R:R via un breakout/uptrend. L'ExecutiveEngine reste l'autorité finale (2,0),
   mais le comité (avis consultatif) peut afficher un R:R sous-minimum. Non modifié.

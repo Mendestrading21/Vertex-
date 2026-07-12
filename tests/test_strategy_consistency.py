@@ -44,6 +44,34 @@ def test_evidence_rr_at_2_is_favorable():
     assert pos
 
 
+def _scan_buy(rr=2.5, regime='TREND', stop=95):
+    from vertex.engines import decide
+    d = {'score': 82, 'trend': 70, 'regime': regime, 'setup_quality': 70,
+         'confidence': 70, 'rsi': 55, 'pos52': 80, 'rs': 70, 'volx': 1.4,
+         'sig': {'above50': True, 'above200': True, 'stacked': True},
+         'plan': {'entry': 100, 'stop': stop, 'rr_res': rr}}
+    return decide.decide(d)
+
+
+def test_scan_verdict_buys_when_gates_pass():
+    assert _scan_buy(rr=2.5)['decision'] in ('ACHETER', 'ACHETER FORT')
+
+
+def test_scan_verdict_downgraded_when_rr_below_2():
+    """decide.py surfaçait ACHETER sans lire le R:R — il applique désormais le gate."""
+    r = _scan_buy(rr=1.7)
+    assert r['decision'] not in ('ACHETER', 'ACHETER FORT')
+    assert any('Hard gate' in c for c in r.get('cons', []))
+
+
+def test_scan_verdict_downgraded_when_regime_unknown():
+    assert _scan_buy(regime='UNKNOWN')['decision'] not in ('ACHETER', 'ACHETER FORT')
+
+
+def test_scan_verdict_downgraded_when_stop_missing():
+    assert _scan_buy(stop=None)['decision'] not in ('ACHETER', 'ACHETER FORT')
+
+
 def test_no_stale_rr_1p5_threshold_in_engines():
     """Aucun seuil `rr < 1.5` / `rr >= 1.5` décisionnel ne subsiste dans les moteurs."""
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
