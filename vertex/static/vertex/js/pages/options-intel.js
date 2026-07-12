@@ -182,9 +182,24 @@
       (asOf ? '<div class="vx-muted" style="margin-top:.5rem">Scan : ' + esc(asOf) + '</div>' : '');
   }
 
+  // Suivi hypothétique d'un contrat : référence = prime par action (cost/100).
+  window.__optFollow = function (btn) {
+    var d = btn.dataset;
+    var mark = d.cost ? Number(d.cost) / 100 : null;
+    if (mark == null || !isFinite(mark)) { if (window.VX && VX.toast) VX.toast('Prime indisponible — suivi impossible', 'error'); return; }
+    fetch('/api/tracking', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entity_type: 'OPTION', symbol: d.sym, contract_id: d.cid, mark: mark, decision: 'SURVEILLER' })
+    }).then(function () { if (window.VX && VX.toast) VX.toast('Contrat ' + d.sym + ' suivi (hypothétique)', 'success'); setTimeout(function () { location.href = '/tracking'; }, 700); })
+      .catch(function () { if (window.VX && VX.toast) VX.toast('Suivi impossible', 'error'); });
+  };
+
   function radarTable(rows) {
     if (!rows || !rows.length) return '<div class="vx-empty">Aucun contrat de qualité mesurable.</div>';
     var body = rows.map(function (r) {
+      var cid = [r.sym, r.exp || '', r.strike != null ? r.strike : '', r.type === 'PUT' ? 'P' : 'C'].join('|');
+      var follow = r.cost != null ? '<button class="vx-btn vx-btn-sm vx-btn-ghost" data-sym="' + esc(r.sym) +
+        '" data-cid="' + esc(cid) + '" data-cost="' + esc(r.cost) + '" onclick="window.__optFollow(this)">Suivre</button>' : '<span class="vx-muted">—</span>';
       return '<tr><td><b>' + esc(r.sym) + '</b></td>' +
         '<td>' + esc(r.type || '') + '</td>' +
         '<td>' + esc(r.bucket || '') + '</td>' +
@@ -192,11 +207,12 @@
         '<td>' + (r.dte != null ? r.dte + ' j' : '—') + '</td>' +
         '<td>' + (r.iv != null ? VXf.num(r.iv, 1) + ' %' : '—') + '</td>' +
         '<td>' + (r.quality != null ? VXf.num(r.quality, 0) : '—') + '</td>' +
-        '<td>' + (r.pop != null ? VXf.num(r.pop, 0) + ' %' : '—') + '</td></tr>';
+        '<td>' + (r.pop != null ? VXf.num(r.pop, 0) + ' %' : '—') + '</td>' +
+        '<td>' + follow + '</td></tr>';
     }).join('');
     return '<div class="vx-table-wrap"><table class="vx-table"><thead><tr>' +
       '<th>Titre</th><th>Type</th><th>Échéance</th><th>Strike</th><th>DTE</th>' +
-      '<th>IV</th><th>Qualité</th><th>PoP</th></tr></thead><tbody>' + body + '</tbody></table></div>';
+      '<th>IV</th><th>Qualité</th><th>PoP</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
 
   function loadRadar() {

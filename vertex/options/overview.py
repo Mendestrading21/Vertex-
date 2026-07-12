@@ -66,6 +66,8 @@ def summarize(board, *, as_of=None, demo=False, source='', detail_by_sym=None):
         'strike': c.get('strike'), 'dte': c.get('dte'), 'iv': _num(c.get('iv')),
         'quality': _num(c.get('quality')), 'pop': _num(c.get('pop')),
         'spread_pct': _num(c.get('spread_pct')), 'why': c.get('why'),
+        # pour « Suivre ce contrat » : coût (prime × 100) et échéance exacte.
+        'cost': _num(c.get('cost')), 'exp': c.get('exp'),
     } for c in top]
     from .pulse import option_pulse, volatility_pulse
     from .environment import score_environment
