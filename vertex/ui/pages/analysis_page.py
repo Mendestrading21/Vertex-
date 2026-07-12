@@ -365,10 +365,55 @@ async function loadDossier(){
     kv('Entrée',plan.entry)+kv('Stop (invalidation sous-jacent)',plan.stop,'vx-neg')
     +kv('TP1',plan.tp1,'vx-pos')+kv('TP2',plan.tp2,'vx-pos')+kv('TP3',plan.tp3,'vx-pos')
     +kv('R:R structurel',plan.rr)
-    +`<div class="vx-flex vx-mt3">
+    +`<div class="vx-flex vx-mt3" style="flex-wrap:wrap;gap:.4rem">
       <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${SYM}','follow')">Créer un suivi</button>
       <button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXCharts.alertFromLevel('${SYM}',${JSON.stringify(plan.entry??null)})">Alerte sur l’entrée</button>
-    </div>`);
+      <button class="vx-btn vx-btn-sm vx-btn-soft" onclick="window.__prepOrder&&window.__prepOrder('${SYM}')">Préparer l’ordre (copier IBKR)</button>
+    </div>
+    <div id="an-order-ticket" class="vx-mt2"></div>`);
+  window.__prepOrder=function(sym){
+    const host=document.getElementById('an-order-ticket');if(!host)return;
+    const av=Number(localStorage.getItem('vxAccountValue')||'')||null;
+    host.innerHTML=`<div class="vx-card" style="border-color:rgba(207,97,40,.35)">
+      <div class="vx-card-header"><span class="vx-card-title">Préparation d’ordre — READONLY</span></div>
+      <div class="vx-card-body vx-flex" style="gap:.5rem;flex-wrap:wrap;align-items:end">
+        <label class="vx-field" style="max-width:170px"><span>Valeur du compte ($)</span>
+          <input id="ot-av" class="vx-input" type="number" step="any" value="${av||''}" placeholder="ex. 100000"></label>
+        <label class="vx-field" style="max-width:130px"><span>Risque par trade (%)</span>
+          <input id="ot-rp" class="vx-input" type="number" step="any" value="1"></label>
+        <button class="vx-btn vx-btn-sm" id="ot-go">Calculer le ticket</button>
+      </div>
+      <div id="ot-out"></div></div>`;
+    document.getElementById('ot-go').addEventListener('click',function(){
+      const avv=Number(document.getElementById('ot-av').value)||null;
+      const rp=Number(document.getElementById('ot-rp').value)||null;
+      if(avv)localStorage.setItem('vxAccountValue',String(avv));
+      fetch('/api/planning/ticket',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({symbol:sym,account_value:avv,risk_pct:rp})})
+        .then(r=>r.json()).then(function(t){
+          const out=document.getElementById('ot-out');if(!out)return;
+          const s=t.sizing||{};
+          const warn=(t.blockers||[]).concat(t.warnings||[]);
+          out.innerHTML='<div class="vx-mt2">'
+            +'<div class="vx-stats-row" style="display:flex;gap:1.2rem;flex-wrap:wrap">'
+            +'<div><div class="vx-meta">Quantité</div><b style="font-size:18px">'+(t.qty!=null?t.qty:'—')+'</b></div>'
+            +'<div><div class="vx-meta">Capital à risque</div><b>'+(s.capital_at_risk!=null?'$'+s.capital_at_risk:'—')+'</b></div>'
+            +'<div><div class="vx-meta">Capital engagé</div><b>'+(s.capital_deployed!=null?'$'+s.capital_deployed:'—')+'</b></div>'
+            +'<div><div class="vx-meta">Poids projeté</div><b>'+(s.weight_pct!=null?s.weight_pct+' %':'—')+'</b></div>'
+            +'<div><div class="vx-meta">R:R</div><b>'+(t.reward_risk!=null?t.reward_risk:'—')+'</b></div></div>'
+            +(t.blocked?'<div class="vx-stale-banner vx-mt2">⛔ Préparation bloquée par la stratégie : '+warn.map(esc).join(' · ')+'</div>'
+              :(warn.length?'<div class="vx-meta vx-mt2" style="color:var(--vx-warning)">'+warn.map(esc).join(' · ')+'</div>':''))
+            +'<pre id="ot-pre" style="white-space:pre-wrap;background:var(--vx-surface-2,#1d1f22);padding:.7rem;border-radius:8px;margin-top:.7rem;font-size:12px">'+esc(t.copy_text||'')+'</pre>'
+            +'<button class="vx-btn vx-btn-sm vx-btn-ghost" id="ot-copy">Copier le ticket</button>'
+            +'<div class="vx-meta vx-mt1">'+esc(t.disclaimer||'')+'</div></div>';
+          const cp=document.getElementById('ot-copy');
+          if(cp)cp.addEventListener('click',function(){
+            const pre=document.getElementById('ot-pre');
+            if(pre&&navigator.clipboard)navigator.clipboard.writeText(pre.textContent);
+            VX.toast('Ticket copié — à saisir manuellement dans IBKR','success');});
+        }).catch(function(e){document.getElementById('ot-out').innerHTML='<div class="vx-error-banner">'+esc(e.message)+'</div>';});
+    });
+  };
 
   /* 11. Options */
   try{

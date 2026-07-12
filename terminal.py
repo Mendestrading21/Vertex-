@@ -1916,6 +1916,10 @@ app.register_blueprint(_tracking_api.bp)
 from vertex.app.routes import opportunities_api as _opportunities_api
 app.register_blueprint(_opportunities_api.bp)
 
+# ─── PLANNING (Blueprint) — /api/planning/ticket (préparation d'ordre, READONLY) ───
+from vertex.app.routes import planning_api as _planning_api
+app.register_blueprint(_planning_api.bp)
+
 # ─── VERTEX LIVE ENGINE (Blueprint) — /api/live/status · refresh · report ───
 app.register_blueprint(_live_api.bp)
 
