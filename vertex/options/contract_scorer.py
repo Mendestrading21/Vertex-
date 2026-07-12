@@ -16,7 +16,7 @@ from .models import (ScoredContract, CATEGORY_BALANCED, CATEGORY_DYNAMIC,
                      CATEGORY_ULTRA_CONVEX, CATEGORY_BEARISH_TACTICAL)
 
 # R:R minimal pour qu'un contrat soit présentable (aligné constitution, unique).
-MIN_REWARD_RISK = 1.5
+MIN_REWARD_RISK = 2.0
 GOOD_REWARD_RISK = 2.5
 
 

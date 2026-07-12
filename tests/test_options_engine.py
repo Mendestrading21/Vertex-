@@ -189,8 +189,8 @@ def put_chain():
 
 
 def bearish_setup():
-    return setup_long(direction='SHORT', invalidation=530.0, tp1=460.0,
-                      tp2=430.0, tp3=400.0)
+    return setup_long(direction='SHORT', invalidation=522.0, tp1=440.0,
+                      tp2=410.0, tp3=380.0)
 
 
 def test_rare_put_is_isolated():
@@ -216,7 +216,7 @@ def test_put_selected_with_converging_evidence():
     assert sel is not None
     assert sel['contract']['right'] == 'P'
     assert 0.30 <= abs(sel['contract']['delta']) <= 0.55
-    assert sel['scenarios']['reward_risk'] >= 1.5
+    assert sel['scenarios']['reward_risk'] >= 2.0  # constitution : R:R minimal 2:1
 
 
 def test_max_one_bearish_position():

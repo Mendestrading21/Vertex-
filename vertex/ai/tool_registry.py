@@ -23,6 +23,8 @@ FORBIDDEN_TOOLS = (
     'transfer_cash', 'change_constitution', 'activate_rule', 'delete_history',
     'submit_order', 'transmit_order', 'withdraw_cash', 'rebalance_automatically',
     'auto_execute',
+
+    'auto_close_position', 'auto_rebalance', 'one_click_trade',
 )
 
 # Outils d'écriture tolérés : ils créent des PROPOSITIONS (statut PROPOSED),

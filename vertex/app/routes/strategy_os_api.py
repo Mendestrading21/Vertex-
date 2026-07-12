@@ -66,6 +66,14 @@ def make_blueprint(scan_state: dict) -> Blueprint:
             'reconciliation': {'actionable_allowed': True},
             'guard': {'blocking_rules': [], 'mandatory_reviews': []},
         }
+        try:
+            market = scan_state.get('market') or {}
+            inputs = {'index_trend': {'TREND': 'UP', 'CHOP': 'FLAT'}.get(market.get('regime'),
+                                                                         market.get('spy_trend')),
+                      'breadth_pct': market.get('breadth'), 'vix': market.get('vix')}
+            packet['market_regime'] = classify_regime(inputs)
+        except Exception:
+            packet['market_regime'] = {}
         return jsonify(_executive.decide(packet, _profile()))
 
     @bp.route('/api/market/regime')

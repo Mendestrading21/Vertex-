@@ -15,6 +15,8 @@ FINAL_DECISIONS = _constitution.ALLOWED_FINAL_DECISIONS  # ACHETER RENFORCER ATT
 
 # Règles bloquantes reconnues (chacune plafonne ou force la décision)
 BLOCKING_TO_MAX_DECISION = {
+    'RR_BELOW_MINIMUM': 'ATTENDRE',
+    'REGIME_BLOCKS_NEW_RISK': 'ATTENDRE',
     'DATA_QUALITY': 'ATTENDRE',
     'SOURCE_DISAGREEMENT': 'ATTENDRE',
     'BLOCKING_ANOMALY': 'ATTENDRE',
@@ -75,6 +77,18 @@ def decide(packet: dict, profile=None) -> dict:
     if tech.get('thesis_invalidated'):
         blocking.append('THESIS_INVALIDATED')
         audit.append('thèse invalidée')
+    # Hard gate constitution : R:R structurel < 2:1 → jamais ACHETER/RENFORCER.
+    _rr_gate = tech.get('reward_risk')
+    if _rr_gate is not None and float(_rr_gate) < 2.0:
+        blocking.append('RR_BELOW_MINIMUM')
+        audit.append(f'R:R {_rr_gate} < 2:1 — ACHETER/RENFORCER interdits (constitution)')
+    # Hard gate régime : UNKNOWN ou nouveau risque bloqué par le régime.
+    regime_ctx = packet.get('market_regime') or {}
+    _adj = regime_ctx.get('adjustments') or {}
+    if regime_ctx and (_adj.get('new_risk_allowed') is False
+                       or regime_ctx.get('regime') == 'UNKNOWN'):
+        blocking.append('REGIME_BLOCKS_NEW_RISK')
+        audit.append(f"régime {regime_ctx.get('regime', '?')} — nouveau risque bloqué")
 
     # ── 2. Scores agrégés (déterministes) ─────────────────────────────
     def _score(block: dict | None, key: str = 'score'):

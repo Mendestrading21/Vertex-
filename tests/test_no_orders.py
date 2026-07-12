@@ -22,6 +22,11 @@ FORBIDDEN = [
     r'\bStopOrder\b',
     r'\breqGlobalCancel\b',
     r'\.placeOrder\(',
+    # Noms d'exécution étendus (§2 Ultimate) — appels et définitions
+    r'(?:\.|\bdef\s+|\bfunction\s+)auto_close_position\s*\(',
+    r'(?:\.|\bdef\s+|\bfunction\s+)auto_rebalance\s*\(',
+    r'(?:\.|\bdef\s+|\bfunction\s+)one_click_trade\s*\(',
+    r'(?:\.|\bdef\s+|\bfunction\s+)auto_execute\s*\(',
 ]
 
 def _py_files():

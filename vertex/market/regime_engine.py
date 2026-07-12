@@ -118,8 +118,11 @@ def _adjustments(regime: str) -> dict:
         'VOLATILITY_COMPRESSION': {'setup_priority': 'BREAKOUT_WATCH'},
         'MEAN_REVERSION': {'setup_priority': 'MEAN_REVERSION'},
         'TRANSITION': {'score_threshold_shift': 8, 'confirmation_required': 2},
-        'UNKNOWN': {'score_threshold_shift': 15, 'size_factor_if_capital': 0.5,
-                    'confirmation_required': 2},
+        # UNKNOWN = pas assez de dimensions pour qualifier l'environnement :
+        # le risque NEUF est bloqué, jamais « autorisé » (§9).
+        'UNKNOWN': {'setup_priority': 'ATTENDRE', 'score_threshold_shift': 15,
+                    'size_factor_if_capital': 0.0, 'confirmation_required': 3,
+                    'new_risk_allowed': False},
     }
     base.update(table.get(regime, {}))
     return base
