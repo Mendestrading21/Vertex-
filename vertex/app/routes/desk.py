@@ -42,6 +42,11 @@ def _backup_desk():
         if os.path.exists(dst):
             return                                   # déjà sauvegardé aujourd'hui
         shutil.copyfile(src, dst)
+        try:
+            from vertex.scheduler import registry as _sched
+            _sched.beat('DATA_BACKUP', ok=True)
+        except Exception:
+            pass
         olds = sorted(glob.glob(persist.cache_path('desk_backup_*.json')))
         for p in olds[:-BACKUP_KEEP]:
             os.remove(p)

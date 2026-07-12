@@ -652,8 +652,19 @@ _live.configure(scan_state=scan_state, news_state=news_state, cal_state=cal_stat
 
 
 def _loop():
+    from vertex.scheduler import registry as _sched
+    from vertex.services.live_stream import BROKER as _broker
     while True:
-        scan()
+        _t0 = time.time()
+        try:
+            scan()
+            _sched.beat('MARKET_DATA_REFRESH', ok=True,
+                        duration_ms=(time.time() - _t0) * 1000)
+            _broker.publish('market', {'scan_ts': scan_state.get('scan_ts'),
+                                       'source': scan_state.get('source'),
+                                       'scanned': scan_state.get('scanned_n')})
+        except Exception as _e:
+            _sched.beat('MARKET_DATA_REFRESH', ok=False, error=str(_e))
         _rescan_evt.wait(REFRESH_SEC)   # dort jusqu'à REFRESH_SEC, OU se réveille tout de suite si rescan manuel
         _rescan_evt.clear()
 
@@ -1236,6 +1247,11 @@ def _cal_loop():
                 items.sort(key=lambda x: x['dte'])
                 cal_state['items'] = items
                 cal_state['updated'] = datetime.now().strftime('%H:%M %d/%m')
+                try:
+                    from vertex.scheduler import registry as _sched
+                    _sched.beat('CATALYST_REFRESH', ok=True)
+                except Exception:
+                    pass
                 _live.wait_force('calendar', 3 * 3600)   # interruptible : Sync Center peut forcer
             else:
                 time.sleep(10)
@@ -1307,6 +1323,11 @@ def _fund_loop():
             except Exception:
                 pass
             still_missing = any(s not in _FUND_CACHE for s in targets)
+            try:
+                from vertex.scheduler import registry as _sched
+                _sched.beat('TRACK_RECORD_UPDATE', ok=True)
+            except Exception:
+                pass
             time.sleep(45 if still_missing else 6 * 3600)     # rapide tant que ça remplit, puis lent
         else:
             time.sleep(12)
@@ -1512,6 +1533,11 @@ def _weekly_loop():
                     earnings=_earnings_map(), n=6, with_options=True)
                 weekly_state.update({'data': snap, 'regenerated': regen,
                                      'updated': datetime.now().strftime('%H:%M:%S')})
+            except Exception:
+                pass
+            try:
+                from vertex.scheduler import registry as _sched
+                _sched.beat('WEEKLY_REVIEW', ok=True)
             except Exception:
                 pass
             time.sleep(300)        # options réelles = lent → toutes les 5 min
@@ -1964,6 +1990,10 @@ app.register_blueprint(_strategy_os_api.make_blueprint(scan_state=scan_state))
 #     redirections des anciennes pages (strangler pattern, APIs intactes) ───
 from vertex.app.routes import redesign as _redesign
 app.register_blueprint(_redesign.make_blueprint(scan_state=scan_state))
+
+# ─── FLUX TEMPS RÉEL (SSE) : /api/live/events — lecture seule, §26 ───
+from vertex.app.routes import live_events as _live_events
+app.register_blueprint(_live_events.bp)
 
 
 # [redesign] route migrée vers vertex/app/routes/redesign.py : @app.route('/strategy-os')
@@ -10414,6 +10444,11 @@ def _alerts_loop():
                 _save_json('alerts_fired.json', _ALERTS_FIRED)
         except Exception:
             pass
+        try:
+            from vertex.scheduler import registry as _sched
+            _sched.beat('ALERTS_EVALUATION', ok=True)
+        except Exception:
+            pass
         time.sleep(60)
 
 
@@ -10454,6 +10489,18 @@ def _start_workers():
 
 def _start_app():
     _start_workers()
+    # Séquence de démarrage ordonnée (§10) — jamais bloquante, rapport exposé
+    def _startup():
+        try:
+            from vertex.services.startup import run_startup_sequence
+            from vertex.scheduler import registry as _sched
+            from vertex.services.live_stream import BROKER as _broker
+            rep = run_startup_sequence(scan_state)
+            _sched.beat('STARTUP_HEALTH_CHECK', ok=rep.get('ok', False))
+            _broker.publish('system', {'startup': True, 'ok': rep.get('ok')})
+        except Exception as _e:
+            print('[startup] rapport indisponible:', _e)
+    threading.Thread(target=_startup, daemon=True).start()
     port = int(os.environ.get('PORT', 5002))          # le cloud (Render…) impose le port via $PORT
     # 🔒 EXPOSITION RÉSEAU INTELLIGENTE :
     #   • verrou actif (VERTEX_CODE) ou VERTEX_LAN=1 ou cloud ($PORT) → 0.0.0.0 (iPhone/LAN ok)

@@ -68,6 +68,27 @@ def client_log_get():
     return jsonify({'count': len(_CLIENT_ERRORS), 'errors': list(_CLIENT_ERRORS)})
 
 
+@bp.route('/api/system/startup-report')
+def startup_report_ep():
+    """Rapport de la séquence de démarrage (§10) — honnête, jamais « OK » sans preuve."""
+    from vertex.services.startup import startup_report
+    return jsonify(startup_report())
+
+
+@bp.route('/api/system/config')
+def config_validation_ep():
+    """Statuts de configuration CONFIGURED/MISSING/INVALID — aucune valeur exposée."""
+    from vertex.app.config_validation import validate_config
+    return jsonify(validate_config())
+
+
+@bp.route('/api/system/automations')
+def automations_ep():
+    """Registre des jobs de fond : statut, dernière exécution, cadence, erreurs."""
+    from vertex.scheduler import registry
+    return jsonify({'jobs': registry.jobs()})
+
+
 @bp.route('/api/system-status')
 def system_status_ep():
     """État système institutionnel : version, LECTURE SEULE, sources, fraîcheur
