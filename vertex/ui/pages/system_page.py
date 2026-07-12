@@ -303,6 +303,54 @@ async function refreshBrain(){
   setTimeout(()=>{ if(btn){btn.disabled=false;btn.textContent='Mettre à jour avec Claude';} loadBrain(); }, 3500);
 }
 
+/* TradingView — liste globale des signaux récents (tous titres) + aide setup. */
+const TV_BULL2=['SUPPORT_RECLAIM','BREAKOUT_CONFIRMED','BREAKOUT_RETEST','MOMENTUM_ACCELERATION','VOLUME_EXPANSION','TREND_ALIGNMENT'];
+const TV_BEAR2=['FAILED_BREAKOUT','THESIS_INVALIDATION'];
+function tvDirBadge(sig){
+  const up=TV_BULL2.indexOf(sig)>=0,dn=TV_BEAR2.indexOf(sig)>=0;
+  const c=up?'vx-pos':(dn?'vx-neg':'vx-dim'),t=up?'haussier':(dn?'baissier':'contextuel');
+  return '<span class="vx-badge '+c+'" style="font-size:11px">'+t+'</span>';
+}
+async function loadTvSignals(){
+  const host=$('vx-tv-signals');if(!host)return;
+  let d;try{d=await VX.fetch('/api/tradingview/signals',{ttl:15000});}catch(e){host.innerHTML='';return;}
+  const sigs=(d.signals||[]).slice().reverse();   // plus récent d'abord
+  if(!sigs.length){host.innerHTML='<div class="vx-empty" style="margin-top:.6rem">Aucun signal reçu pour l\'instant — la liste se remplira à la première alerte TradingView.</div>';return;}
+  host.innerHTML='<div class="vx-divider"></div><div class="vx-meta vx-mb1">Signaux récents — tous titres (plus récent d\'abord)</div>'
+    +'<div style="overflow-x:auto"><table class="vx-table"><thead><tr><th>Titre</th><th>Signal</th><th>Sens</th><th>Reçu</th><th></th></tr></thead><tbody>'
+    +sigs.slice(0,20).map(function(s){
+      return '<tr><td><b>'+esc(s.symbol)+'</b></td><td class="vx-mono" style="font-size:12px">'+esc(s.signal)+'</td>'
+        +'<td>'+tvDirBadge(s.signal)+'</td>'
+        +'<td class="vx-meta">'+VX.fmt.ago((s.received_ts||0)*1000)+(s.fresh===false?' <span class="vx-badge">rassis</span>':'')+'</td>'
+        +'<td><a class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" href="/analysis/'+esc(s.symbol)+'">Analyser →</a></td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+function openTvSetup(){
+  const origin=location.origin;
+  const url=origin+'/api/tradingview/webhook';
+  const codes=['SUPPORT_RECLAIM','BREAKOUT_CONFIRMED','BREAKOUT_RETEST','MOMENTUM_ACCELERATION',
+    'VOLUME_EXPANSION','VOLATILITY_COMPRESSION','VOLATILITY_EXPANSION','TREND_ALIGNMENT',
+    'CORRECTION_DEEP','FAILED_BREAKOUT','THESIS_INVALIDATION'];
+  const payload='{\n  "secret": "TON_SECRET",\n  "symbol": "{{ticker}}",\n  "signal": "BREAKOUT_CONFIRMED",\n  "timestamp": {{timenow}},\n  "price": {{close}}\n}';
+  VX.shell.openDrawer('Configurer ton alerte TradingView',
+    '<div class="vx-help">Une alerte TradingView pointée ici déclenche une <b>réévaluation</b> Vertex — <b>jamais un ordre</b>. Suis ces 4 étapes.</div>'
+    +'<ol style="padding-left:1.1rem;line-height:1.9;font-size:13px">'
+    +'<li>Dans <span class="vx-mono">.env</span>, définis <span class="vx-mono">TRADINGVIEW_WEBHOOK_SECRET</span> (un mot de passe à toi) puis relance Vertex.</li>'
+    +'<li>Sur TradingView : <b>Créer une alerte</b> → onglet <b>Notifications</b> → coche <b>Webhook URL</b> et colle :</li></ol>'
+    +'<div class="vx-kv"><span class="k">URL webhook</span><span class="v"><code class="vx-mono" style="font-size:12px">'+esc(url)+'</code> '
+    +'<button class="vx-btn vx-btn-sm" id="vx-tv-copy-url">Copier</button></span></div>'
+    +'<ol start="3" style="padding-left:1.1rem;line-height:1.9;font-size:13px">'
+    +'<li>Dans le <b>message</b> de l\'alerte, colle ce corps JSON (remplace <span class="vx-mono">TON_SECRET</span> par ton secret) :</li></ol>'
+    +'<pre class="vx-mono" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;overflow-x:auto;font-size:12px">'+esc(payload)+'</pre>'
+    +'<button class="vx-btn vx-btn-sm vx-mb2" id="vx-tv-copy-payload">Copier le corps JSON</button>'
+    +'<ol start="4" style="padding-left:1.1rem;line-height:1.9;font-size:13px">'
+    +'<li>Change <span class="vx-mono">"signal"</span> selon ton alerte. Codes acceptés :</li></ol>'
+    +'<div class="vx-flex vx-wrap vx-gap2">'+codes.map(function(c){return '<span class="vx-badge vx-mono" style="font-size:11px">'+c+'</span>';}).join('')+'</div>'
+    +'<div class="vx-help vx-mt3">Astuce : le script Pine prêt à l\'emploi est dans <span class="vx-mono">tradingview/vertex_signals.pine</span> — il émet déjà ce JSON avec les bons codes.</div>');
+  document.getElementById('vx-tv-copy-url')?.addEventListener('click',function(){navigator.clipboard&&navigator.clipboard.writeText(url);VX.toast('URL webhook copiée','success');});
+  document.getElementById('vx-tv-copy-payload')?.addEventListener('click',function(){navigator.clipboard&&navigator.clipboard.writeText(payload);VX.toast('Corps JSON copié','success');});
+}
+
 /* ══ Vue CONNEXIONS ═════════════════════════════════════════════════ */
 async function loadConnections(){
   loadConnSummary();
@@ -363,8 +411,12 @@ async function loadConnections(){
       +(tv.newest_age_s!=null?kv('Dernier signal',VX.fmt.ago(Date.now()-tv.newest_age_s*1000)):'')
       +kv('R&ocirc;le','webhooks d&#8217;alertes TradingView — <b>r&eacute;&eacute;valuation</b>, jamais un ordre')
       +(state==='DISABLED'?'<div class="vx-help vx-mt2">Active-le : d&eacute;finis <span class="vx-mono">TRADINGVIEW_WEBHOOK_SECRET</span> dans <span class="vx-mono">.env</span>.</div>':'')
+      +'<div class="vx-flex vx-wrap vx-gap2 vx-mt2"><button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-tv-setup">Configurer mon alerte TradingView</button></div>'
+      +'<div id="vx-tv-signals"></div>'
       +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'/api/system/diagnostics',state==='ACTIVE'?'live':'delayed')}
         <a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/opportunities?view=radar">Voir le radar des signaux →</a></div>`;
+    document.getElementById('vx-tv-setup')?.addEventListener('click',openTvSetup);
+    loadTvSignals();
   }else{
     $('vx-conn-tv').innerHTML=VX.states.empty('Aucun diagnostic TradingView disponible — le magasin de signaux n&#8217;a rien re&ccedil;u.',
       '<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=radar">Voir le radar</a>');
