@@ -18,11 +18,12 @@ C.priceCard=function(host,opts){
   return C.card(host,Object.assign({},opts,{render:(cv)=>{
     const extra=(opts.overlays||[]).map((o,i)=>({data:o.values,label:o.label,
       borderColor:o.color||C.colors.series[(i+2)%6],borderWidth:1,pointRadius:0,tension:.2,fill:false}));
+    const brand=C.colors.brand||'#cf6128';
     const chart=C.mount(cv,{type:'line',
-      data:{labels:opts.labels,datasets:[{data:opts.closes,borderColor:C.colors.blue,
+      data:{labels:opts.labels,datasets:[{label:'Cours',data:opts.closes,borderColor:brand,
         borderWidth:1.7,pointRadius:0,tension:.15,fill:{target:'origin'},
         backgroundColor:(ctx)=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,ctx.chart.height||260);
-          g.addColorStop(0,'#3B82F63A');g.addColorStop(1,'#3B82F600');return g;}},...extra]},
+          g.addColorStop(0,brand+'3A');g.addColorStop(1,brand+'00');return g;}},...extra]},
       options:{scales:C.axes({yFmt:(v)=>VX.fmt.price(v)}),interaction:{mode:'index',intersect:false}},
       plugins:[C.levelLines(levels),C.eventMarkers(opts.events||[])]});
     return chart;}}));};

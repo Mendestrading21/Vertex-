@@ -169,6 +169,32 @@ Preuves : **662 tests OK** (+8 dont 7 datasets §15) ; navigateur Chromium →
 (« 45 j · IV 46,8 % »). Service worker bumpé **td-shell-v10** (changement de
 shell visible).
 
+## 7quater. Trading Workspace — chandeliers réels + overlays (§12)
+
+Le graphique principal de la page **Analyse** est passé d'une simple courbe de
+clôtures à un vrai poste de trading interactif :
+
+- **Chandeliers OHLC réels** rendus dès que le moteur fournit open/high/low
+  (jamais reconstitués côté UI — repli honnête en clôtures sinon, limitation
+  affichée). La série `analysis.py` est enrichie : `open/high/low/volume/sma200`
+  en plus de `close/ema20/sma50/rsi`.
+- **Overlays de moyennes mobiles** MM20 (ambre) / MM50 (beige pointillé) /
+  MM200 (gris pointillé) — séries RÉELLES calculées côté serveur, superposées en
+  lignes interactives ; masquées si indisponibles.
+- **Niveaux du plan** (entrée/stop/TP1-3) et **marqueur earnings** conservés,
+  tooltip index unifié (OHLC + valeurs des MM), sélecteur d'échéance
+  (1m/3m/6m/1y/2y).
+- **`vertex/market/indicators.py`** (§12) : indicateurs purs et testés
+  (SMA, EMA, RSI Wilder, ATR, Bollinger, VWAP) — réutilisables sur toutes les
+  pages ; point indisponible → None, jamais inventé.
+- Correctif zéro-bleu : le dégradé de repli de `price-chart.js` passe du bleu
+  (#3B82F6) à la marque cuivre.
+
+Preuves : **673 tests OK** (+11 indicateurs) ; navigateur Chromium sur
+`/analysis/ACN` → chandeliers + 3 MM rendus, **0 erreur console**, tooltip
+vérifié (« MM20 187,66 · MM50 180,37 · MM200 162,14 · O/H/L/C »). Service
+worker **td-shell-v11**.
+
 ## 8. Périmètre livré vs reste à faire (honnêteté §6)
 
 **Livré et prouvé** : contrat d'interprétation canonique ; moteurs

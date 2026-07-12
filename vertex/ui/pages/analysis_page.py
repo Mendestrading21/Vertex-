@@ -222,11 +222,24 @@ async function loadDossier(){
     `<span class="vx-badge" title="${k}">${k} <b class="vx-mono">${VX.fmt.nd(v)}</b></span>`).join('')
     +(demo?'<span class="vx-badge" style="color:var(--vx-warning)">DÉMO</span>':'');
 
-  /* 3. Graphique principal */
-  const closes=(d.series&&d.series.close)||[];
+  /* 3. Graphique principal — Trading Workspace (chandeliers réels + overlays MM) */
+  const S=d.series||{};
+  const closes=S.close||[];
   const plan=d.plan||{};
   const tfN={'1m':21,'3m':63,'6m':126,'1y':252,'2y':504}[TF]||126;
   const cut=closes.slice(-tfN);
+  const tail=(arr)=>Array.isArray(arr)?arr.slice(-tfN):null;
+  /* Bougies RÉELLES seulement si OHLC complet fourni par le moteur (jamais inventé). */
+  const O=tail(S.open),H=tail(S.high),L=tail(S.low);
+  const bars=(O&&H&&L&&O.length===cut.length)?cut.map((c,i)=>({o:O[i],h:H[i],l:L[i],c:c})):[];
+  const VC=window.VXCharts||{cols:{}};
+  const cc=(n,f)=>(VC.colors&&VC.colors[n])||f;
+  /* Overlays = moyennes mobiles RÉELLES calculées côté serveur (ema20/sma50/sma200). */
+  const overlays=[
+    {label:'MM20',color:cc('amber','#ce8a29'),data:tail(S.ema20),dash:[]},
+    {label:'MM50',color:cc('beige','#c8ad8d'),data:tail(S.sma50),dash:[5,3]},
+    {label:'MM200',color:cc('neutral','#8f8a83'),data:tail(S.sma200),dash:[2,3]},
+  ].filter(o=>o.data&&o.data.some(x=>x!=null));
   const events=[];
   if(d.earnings_dte!==null&&d.earnings_dte!==undefined&&d.earnings_dte>=0&&d.earnings_dte<=cut.length)
     events.push({index:cut.length-1,label:'E-'+d.earnings_dte+'j'});
@@ -238,13 +251,13 @@ async function loadDossier(){
         +(plan.rr?` · R:R structurel ${plan.rr}`:''),
       controlsHtml:['1m','3m','6m','1y','2y'].map(tf=>
         `<button class="vx-chip" data-tf="${tf}" aria-pressed="${tf===TF}">${tf}</button>`).join(''),
-      labels:cut.map((_,i)=>i-cut.length),bars:[],closes:cut,plan:plan,events,height:290,
+      labels:cut.map((_,i)=>i-cut.length),bars:bars,closes:cut,overlays:overlays,plan:plan,events,height:290,
       source:(window.__vxStatus&&window.__vxStatus.demo)?'scan (DÉMO)':'scan',
       timestamp:(t&&t.detail&&t.detail.updated)||Date.now(),mode:demo?'fallback':'delayed',
-      limits:'clôtures quotidiennes du scan — niveaux = plan moteur (jamais recalculés côté UI)',
-      explain:{shows:'Les clôtures du titre avec les niveaux du plan moteur : entrée, stop (invalidation du sous-jacent), objectifs.',
-        why:'Le plan chiffré discipline l’exécution : l’invalidation est définie AVANT d’engager du capital.',
-        confirm:'Cassure de la résistance avec volume, breadth de marché favorable.',
+      limits:(bars.length?'bougies OHLC quotidiennes':'clôtures quotidiennes')+' du scan · MM = moyennes serveur · niveaux = plan moteur',
+      explain:{shows:'Chandeliers (ou clôtures) du titre, moyennes mobiles 20/50/200 et niveaux du plan moteur : entrée, stop (invalidation), objectifs.',
+        why:'Le plan chiffré discipline l’exécution : l’invalidation est définie AVANT d’engager du capital ; les MM situent la tendance.',
+        confirm:'Cours au-dessus des MM, cassure de la résistance avec volume, breadth favorable.',
         invalidate:`Clôture sous le stop ${VX.fmt.nd(plan.stop)} — la thèse est invalidée, pas « en retard ».`}});
     document.querySelectorAll('[data-tf]').forEach(b=>b.addEventListener('click',()=>{TF=b.dataset.tf;loadDossier();}));
     const chartEl=document.querySelector('#an-chart canvas');

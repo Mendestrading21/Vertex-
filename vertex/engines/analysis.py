@@ -243,17 +243,35 @@ def analyse(df, bench_ret, fund=None):
             'resistance': round(recent_high, 2), 'rr_res': round(rr_res, 1),
             'setup_quality': setup_quality}
 
-    # série pour le mini-chart (120 dernières barres)
+    # série pour le graphique principal (120 dernières barres) — Trading Workspace.
+    # Toutes les moyennes/OHLC/volume proviennent des données RÉELLES (df), jamais
+    # reconstituées côté UI. Une moyenne indisponible (fenêtre trop courte) → None.
     cc = c.tail(120)
-    ema20s = cc.ewm(span=20).mean()
+    ema20s = c.ewm(span=20).mean().tail(120)
     sma50s = c.rolling(50).mean().tail(120)
+    sma200s = c.rolling(200).mean().tail(120)
     rsi120 = rsi_s.tail(120)
+
+    def _clean(seq):
+        return [None if (x is None or (isinstance(x, float) and math.isnan(x)))
+                else round(float(x), 2) for x in seq]
+
+    idx = cc.index
+    _o = df['Open'].reindex(idx) if 'Open' in df.columns else None
+    _h = df['High'].reindex(idx) if 'High' in df.columns else None
+    _l = df['Low'].reindex(idx) if 'Low' in df.columns else None
+    _v = df['Volume'].reindex(idx) if 'Volume' in df.columns else None
     series = {
         'dates': [d.strftime('%m-%d') for d in cc.index],
         'close': [round(float(x), 2) for x in cc.values],
-        'ema20': [round(float(x), 2) for x in ema20s.values],
-        'sma50': [None if math.isnan(x) else round(float(x), 2) for x in sma50s.values],
+        'ema20': _clean(ema20s.values),
+        'sma50': _clean(sma50s.values),
+        'sma200': _clean(sma200s.values),
         'rsi': [None if math.isnan(x) else round(float(x), 1) for x in rsi120.values],
+        'open': _clean(_o.values) if _o is not None else None,
+        'high': _clean(_h.values) if _h is not None else None,
+        'low': _clean(_l.values) if _l is not None else None,
+        'volume': ([None if (x != x) else int(x) for x in _v.values] if _v is not None else None),
     }
     try:
         struct = pivots.structure(df, atr)
