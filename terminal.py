@@ -1920,6 +1920,10 @@ app.register_blueprint(_opportunities_api.bp)
 from vertex.app.routes import planning_api as _planning_api
 app.register_blueprint(_planning_api.bp)
 
+# ─── CERVEAU CLAUDE+WEB (Blueprint) — /api/ai/enrichment · status · refresh ───
+from vertex.app.routes import ai_api as _ai_api
+app.register_blueprint(_ai_api.bp)
+
 # ─── VERTEX LIVE ENGINE (Blueprint) — /api/live/status · refresh · report ───
 app.register_blueprint(_live_api.bp)
 
@@ -10530,7 +10534,31 @@ def _start_app():
             _broker.publish('system', {'startup': True, 'ok': rep.get('ok')})
         except Exception as _e:
             print('[startup] rapport indisponible:', _e)
+
+    def _brain_boot():
+        """« Lancer avec Claude » : enrichit toutes les surfaces au démarrage.
+
+        Attend que le premier scan peuple les titres, puis lance Claude+web une
+        fois. Sans clé, on écrit malgré tout un instantané MISSING honnête (l'UI
+        affiche « analyse Claude indisponible » au lieu d'inventer). Jamais
+        bloquant."""
+        try:
+            from vertex.ai import enrichment as _enrich
+            from vertex.app.routes.ai_api import enrich_symbols, start_background_enrichment
+            from vertex.ai.web_provider import ClaudeWebProvider
+            for _ in range(30):                      # ~30 s max d'attente du 1er scan
+                if scan_state.get('rows'):
+                    break
+                time.sleep(1)
+            if ClaudeWebProvider().available():
+                start_background_enrichment()        # tâche de fond, non bloquante
+            else:
+                _enrich.run(enrich_symbols())        # écrit un instantané MISSING honnête
+        except Exception as _e:
+            print('[brain] enrichissement Claude indisponible:', _e)
+
     threading.Thread(target=_startup, daemon=True).start()
+    threading.Thread(target=_brain_boot, daemon=True).start()
     port = int(os.environ.get('PORT', 5002))          # le cloud (Render…) impose le port via $PORT
     # 🔒 EXPOSITION RÉSEAU INTELLIGENTE :
     #   • verrou actif (VERTEX_CODE) ou VERTEX_LAN=1 ou cloud ($PORT) → 0.0.0.0 (iPhone/LAN ok)
