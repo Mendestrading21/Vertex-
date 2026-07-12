@@ -271,7 +271,16 @@ async function loadBrief(){
     const kindLabel={PRE_MARKET:'Pré-marché',INTRADAY:'Intraday',CLOSE:'Clôture',WEEKLY:'Hebdo'}[daily.kind]||'';
     const news=(b.what_changed_today||[]).map(x=>`<li>${esc(x)}</li>`).join('');
     const domSec=(daily.sections||[]).find(x=>x.label==='Actualité dominante');
-    $('vx-brief-body').innerHTML=
+    const ed=b.editorial||{};
+    const edBlock=ed.narrative?(
+      '<p style="font-size:15.5px;line-height:1.8;color:var(--vx-text,#f1efeb);margin:0 0 .8rem">'+esc(ed.narrative)+'</p>'
+      +(ed.prices_mainly?'<div class="vx-insight vx-mt1"><b>Aujourd’hui, le marché prixe principalement</b><div class="vx-mt1">'+esc(ed.prices_mainly)+'</div></div>':'')
+      +((ed.calls_impact||ed.discipline)?'<div class="vx-flex vx-wrap vx-mt2" style="gap:.4rem">'
+        +(ed.calls_impact?'<span class="vx-badge" style="color:var(--vx-option,#85609f)">Calls : '+esc(ed.calls_impact)+'</span>':'')
+        +(ed.news_available===false?'<span class="vx-badge" style="color:var(--vx-text-dim,#817d77)">Actualités indisponibles — brief data-only</span>':'')
+        +'</div>':'')
+      +'<div class="vx-divider vx-mt2"></div>'):'';
+    $('vx-brief-body').innerHTML= edBlock+
       '<div style="font-size:14px;line-height:1.75">'+b.lines.map(l=>esc(l)).join('<br>')+'</div>'
       +(domSec?`<div class="vx-insight vx-mt3"><b>Actualité dominante</b><div class="vx-mt1">${esc(domSec.text)}</div></div>`:'')
       +(news?`<div class="vx-insight vx-mt2"><b>Ce qui a changé (sourcé)</b><ul class="vx-mt1" style="margin:0;padding-left:18px">${news}</ul></div>`:'')

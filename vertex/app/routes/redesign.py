@@ -151,6 +151,14 @@ def make_blueprint(scan_state: dict) -> Blueprint:
                          'main_opportunity': daily['main_opportunity']})
         except Exception as e:
             base['daily_error'] = str(e)[:120]
+        # Brief éditorial narratif (§10) — texte fluide de séance, sourcé, jamais
+        # de fait d'actualité inventé. Fusionné sans casser le schéma historique.
+        try:
+            from vertex.app.state import news_state
+            from vertex.market.editorial import build_narrative
+            base['editorial'] = build_narrative(scan_state, news_state)
+        except Exception as e:
+            base['editorial_error'] = str(e)[:120]
         return jsonify(base)
 
     # ── Simulation d'un contrat (moteur scenario_pricer — §35) ───────
