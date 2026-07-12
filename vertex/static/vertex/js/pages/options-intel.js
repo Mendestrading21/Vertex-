@@ -97,25 +97,69 @@
       : fetch(url).then(function (r) { return r.json(); });
   }
 
+  // Jauge d'environnement + pulses (OPTIONS HERO §14).
+  function heroHtml(env, op, vp, demo) {
+    if (!env || env.score == null) {
+      LAST['options.environment'] = env && env.interpretation;
+      return '<div class="vx-empty">Environnement non calculable : aucune dimension mesurable.</div>';
+    }
+    LAST['options.environment'] = env.interpretation;
+    var pct = Math.max(0, Math.min(100, env.score));
+    var tone = env.label === 'PORTEUR' ? 'pos' : env.label === 'HOSTILE' ? 'neg' : 'neutral';
+    var dims = (env.dimensions || []).map(function (d) {
+      var w = d.known ? Math.round(d.score) : null;
+      return '<div class="vx-opt-dim"><span class="vx-opt-dim-l">' + esc(d.label) + '</span>' +
+        '<span class="vx-opt-dim-bar"><i style="width:' + (w == null ? 0 : w) + '%"></i></span>' +
+        '<span class="vx-opt-dim-v">' + (w == null ? 'n/d' : w) + '</span></div>';
+    }).join('');
+    var pulse = '';
+    if (op && !op.empty) {
+      pulse += pill('CALLS', op.calls) + pill('PUTS', op.puts) +
+        pill('C/P', op.call_put_ratio != null ? VXf.num(op.call_put_ratio, 2) : '—') +
+        pill('IV moy', op.avg_iv != null ? VXf.num(op.avg_iv, 1) + ' %' : '—') +
+        pill('DTE moy', op.avg_dte != null ? Math.round(op.avg_dte) + ' j' : '—') +
+        pill('Theta', op.avg_theta_burn != null ? VXf.num(op.avg_theta_burn, 2) : '—');
+    }
+    if (vp && !vp.empty) {
+      pulse += pill('Vol', vp.state) + pill('IV médiane', vp.median_iv != null ? VXf.num(vp.median_iv, 1) + ' %' : '—') +
+        pill('Dispersion', vp.dispersion != null ? VXf.num(vp.dispersion, 1) + ' pts' : '—');
+    }
+    return (demo ? '<div class="vx-demo-tag">Données de démonstration</div>' : '') +
+      '<div class="vx-opt-hero-grid">' +
+      '<div class="vx-opt-gauge"><div class="vx-opt-gauge-score" data-tone="' + tone + '">' +
+      Math.round(env.score) + '<small>/100</small></div>' +
+      badge(env.label === 'PORTEUR' ? 'FAVORABLE' : env.label === 'HOSTILE' ? 'DEFAVORABLE' : 'NEUTRE') +
+      '<div class="vx-opt-gauge-track"><i data-tone="' + tone + '" style="width:' + pct + '%"></i></div>' +
+      '<div class="vx-muted">' + env.dimensions_known + '/' + env.dimensions_total + ' dimensions mesurées</div></div>' +
+      '<div class="vx-opt-dims">' + dims + '</div></div>' +
+      (pulse ? '<div class="vx-opt-pulse">' + pulse + '</div>' : '');
+  }
+  function pill(label, val) {
+    return '<span class="vx-opt-chip"><b>' + esc(label) + '</b> ' + esc(val == null ? '—' : val) + '</span>';
+  }
+
   // ── Vue d'ensemble ────────────────────────────────────────────────
   function loadOverview() {
+    var hEl = document.getElementById('vx-opt-hero-body');
     var cEl = document.getElementById('vx-opt-counters-body');
     var vEl = document.getElementById('vx-opt-verdict-body');
     var rEl = document.getElementById('vx-opt-radar-lite-body');
-    [cEl, vEl, rEl].forEach(loading);
+    [hEl, cEl, vEl, rEl].forEach(loading);
     get('/api/options/overview').then(function (d) {
       if (!d || d.empty) {
         var msg = (window.VX && VX.states) ? VX.states.empty('Aucun contrat dans le tableau (scan vide ou hors séance).') : 'Aucune donnée.';
+        if (hEl) hEl.innerHTML = heroHtml(d && d.environment, d && d.option_pulse, d && d.volatility_pulse, d && d.demo);
         if (cEl) cEl.innerHTML = msg;
         if (vEl) vEl.innerHTML = verdictCard(d && d.interpretation);
         if (rEl) rEl.innerHTML = '';
         return;
       }
       var c = d.counters || {};
+      if (hEl) hEl.innerHTML = heroHtml(d.environment, d.option_pulse, d.volatility_pulse, d.demo);
       if (cEl) cEl.innerHTML = countersHtml(c, d.demo, d.as_of);
       if (vEl) vEl.innerHTML = verdictCard(d.interpretation);
       if (rEl) rEl.innerHTML = radarTable((d.radar || []).slice(0, 4));
-    }).catch(function (e) { fail(cEl, 'Chargement overview: ' + e.message); if (vEl) vEl.innerHTML = ''; });
+    }).catch(function (e) { fail(hEl, 'Chargement overview: ' + e.message); if (cEl) cEl.innerHTML = ''; });
   }
 
   function stat(label, val) {
@@ -199,7 +243,7 @@
     document.body.addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('[data-explain]') : null;
       if (!b) return;
-      var map = { overview: 'options.overview_mix', volatility: 'options.volatility', event_risk: 'options.event_risk' };
+      var map = { overview: 'options.overview_mix', volatility: 'options.volatility', event_risk: 'options.event_risk', environment: 'options.environment' };
       explainDrawer(LAST[map[b.dataset.explain]]);
     });
   }

@@ -36,7 +36,7 @@ def _quality_band(q):
     return 'FAIBLE'
 
 
-def summarize(board, *, as_of=None, demo=False, source=''):
+def summarize(board, *, as_of=None, demo=False, source='', detail_by_sym=None):
     """Vue d'ensemble consolidée du board options. board : liste d'items §18."""
     board = board or []
     calls = [c for c in board if str(c.get('type', '')).upper() == 'CALL']
@@ -67,12 +67,19 @@ def summarize(board, *, as_of=None, demo=False, source=''):
         'quality': _num(c.get('quality')), 'pop': _num(c.get('pop')),
         'spread_pct': _num(c.get('spread_pct')), 'why': c.get('why'),
     } for c in top]
+    from .pulse import option_pulse, volatility_pulse
+    from .environment import score_environment
+    env = score_environment(board, detail_by_sym=detail_by_sym or {},
+                            as_of=as_of, source=source)
     return {
         'as_of': as_of,
         'demo': bool(demo),
         'empty': not board,
         'counters': counters,
         'radar': radar,
+        'environment': env,
+        'option_pulse': option_pulse(board),
+        'volatility_pulse': volatility_pulse(board),
         'interpretation': _interpret_mix(board, calls, puts, avg_qual,
                                          as_of=as_of, source=source),
     }

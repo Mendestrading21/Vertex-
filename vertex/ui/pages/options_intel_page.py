@@ -56,6 +56,26 @@ _STYLE = """
 .vx-explain ul{margin:.2rem 0;padding-left:1.1rem}
 .vx-explain li{margin:.15rem 0;font-size:13.5px}
 @media(max-width:640px){.vx-explain .vx-grid2{grid-template-columns:1fr}}
+#vx-content .vx-opt-hero-grid{display:grid;grid-template-columns:220px 1fr;gap:1.6rem;align-items:center}
+#vx-content .vx-opt-gauge{display:flex;flex-direction:column;gap:.45rem;align-items:flex-start}
+#vx-content .vx-opt-gauge-score{font-size:44px;font-weight:700;line-height:1;color:var(--vx-text,#f1efeb)}
+#vx-content .vx-opt-gauge-score small{font-size:16px;color:var(--vx-text-dim,#817c75);font-weight:500}
+#vx-content .vx-opt-gauge-score[data-tone="pos"]{color:var(--vx-positive,#39b978)}
+#vx-content .vx-opt-gauge-score[data-tone="neg"]{color:var(--vx-negative,#dc6254)}
+#vx-content .vx-opt-gauge-track{width:100%;height:7px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
+#vx-content .vx-opt-gauge-track i{display:block;height:100%;border-radius:4px;background:var(--vx-orange-500,#cf6128);transition:width .32s ease}
+#vx-content .vx-opt-gauge-track i[data-tone="pos"]{background:var(--vx-positive,#39b978)}
+#vx-content .vx-opt-gauge-track i[data-tone="neg"]{background:var(--vx-negative,#dc6254)}
+#vx-content .vx-opt-dims{display:flex;flex-direction:column;gap:.5rem}
+#vx-content .vx-opt-dim{display:grid;grid-template-columns:140px 1fr 42px;gap:.6rem;align-items:center;font-size:13px}
+#vx-content .vx-opt-dim-l{color:var(--vx-text-dim,#b6b1aa)}
+#vx-content .vx-opt-dim-bar{height:6px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
+#vx-content .vx-opt-dim-bar i{display:block;height:100%;background:var(--vx-copper-light,#b9683d);border-radius:4px;transition:width .3s ease}
+#vx-content .vx-opt-dim-v{text-align:right;color:var(--vx-text,#f1efeb);font-variant-numeric:tabular-nums}
+#vx-content .vx-opt-pulse{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem;padding-top:.9rem;border-top:1px solid rgba(255,255,255,.06)}
+#vx-content .vx-opt-chip{font-size:12px;padding:.25rem .6rem;border-radius:999px;background:var(--vx-surface-2,#1d1f22);color:var(--vx-text-dim,#b6b1aa)}
+#vx-content .vx-opt-chip b{color:var(--vx-text,#f1efeb);font-weight:600}
+@media(max-width:720px){#vx-content .vx-opt-hero-grid{grid-template-columns:1fr}}
 </style>
 """
 
@@ -74,6 +94,11 @@ _LOADING = '<div class="vx-skeleton" style="height:120px"></div>'
 _VIEW_CONTENT = {
     'overview': """
 <div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-12 vx-opt-hero" id="vx-opt-hero" aria-label="Environnement options">
+    <div class="vx-card-header"><span class="vx-card-title">Environnement pour l'achat d'options</span>
+      <span class="vx-actions"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-explain="environment">Comprendre ce graphique</button></span></div>
+    <div id="vx-opt-hero-body">%%LOADING%%</div>
+  </section>
   <section class="vx-card vx-col-12" id="vx-opt-counters" aria-label="Compteurs options">
     <div class="vx-card-header"><span class="vx-card-title">Tableau d'options — synthèse</span>
       <span class="vx-actions"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-explain="overview">Comprendre ce graphique</button></span></div>

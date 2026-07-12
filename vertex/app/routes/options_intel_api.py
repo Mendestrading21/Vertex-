@@ -26,14 +26,31 @@ def _as_of():
     return scan_state.get('scan_ts_h') or scan_state.get('updated')
 
 
+def _detail_by_sym():
+    return scan_state.get('detail') or {}
+
+
 @bp.route('/api/options/overview')
 def options_overview():
-    """Vue d'ensemble : compteurs, radar, interprétation du biais."""
+    """Vue d'ensemble : compteurs, radar, environnement, pulses, interprétation."""
     try:
         return jsonify(_ov.summarize(_board(), as_of=_as_of(),
-                                     demo=bool(DEMO_MODE), source='SCAN'))
+                                     demo=bool(DEMO_MODE), source='SCAN',
+                                     detail_by_sym=_detail_by_sym()))
     except Exception as e:
         return jsonify({'empty': True, 'error': '%s: %s' % (type(e).__name__, e)}), 500
+
+
+@bp.route('/api/options/environment')
+def options_environment():
+    """Score LONG OPTION ENVIRONMENT (§14) — dimensions + verdict canonique."""
+    from vertex.options.environment import score_environment
+    try:
+        return jsonify(score_environment(_board(), detail_by_sym=_detail_by_sym(),
+                                         as_of=_as_of(), source='SCAN'))
+    except Exception as e:
+        return jsonify({'score': None, 'label': 'INCONNU',
+                        'error': '%s: %s' % (type(e).__name__, e)}), 500
 
 
 @bp.route('/api/options/volatility/<sym>')

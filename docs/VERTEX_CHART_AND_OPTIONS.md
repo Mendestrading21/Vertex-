@@ -115,6 +115,37 @@ interactif de volatilité vérifié (GOOGL ⇒ DÉFAVORABLE, IV médiane 46,8 %)
 - **Huit espaces** : `/options` n'ajoute pas d'item de navigation.
 - **Zéro nom personnel** dans le code ajouté (garde-fou `test_namespace_guards` ⇒ vert).
 
+## 7bis. Visual Intelligence Ultra — fondations ajoutées
+
+Extension « VERTEX VISUAL INTELLIGENCE ULTRA » : les fondations centralisées et
+un premier widget phare, livrés et testés.
+
+- **Registre central des couleurs sémantiques** (§3) —
+  `vertex/visualization/palette.py`. UNE source de vérité : rôle → couleur
+  (marque, benchmark, positif, négatif, option violet, statuts). `series_color`
+  déterministe (jamais d'arc-en-ciel), `status_color`, garde-fou `audit_no_blue`.
+  Test vérifie la **cohérence avec le thème graphique JS** (`chart-theme-obsidian-copper.js`)
+  et l'absence de couleur bleu-dominant dans les séries.
+- **Objet canonique de graphique** (§5) — `vertex/visualization/chart_spec.py`.
+  `chart_spec(...)` produit l'objet complet : `id, title, question, chart_type,
+  series, source, as_of, freshness, quality, dominant_reading, strategy_impact,
+  confirmation, invalidation, uncertainties, status, confidence`. 18 types de la
+  grammaire §4 ; niveaux de fraîcheur/qualité §30 ; `empty_spec` honnête ;
+  `is_valid_chart_spec`. Aucune série exploitable ⇒ statut INCONNU forcé.
+- **LONG OPTION ENVIRONMENT score** (§14) — `vertex/options/environment.py`.
+  Note 0..100 + verdict PORTEUR/MITIGÉ/HOSTILE agrégée depuis des dimensions
+  RÉELLES (volatilité, IV rank, qualité, liquidité, event risk). Dimension
+  absente = INCONNUE, **exclue de la moyenne** (jamais comptée zéro). Rendu par
+  une interprétation canonique. Exposé via `GET /api/options/environment` et le
+  **OPTIONS HERO** (jauge + barres de dimensions + `n/d` honnête).
+- **Widgets pulse** (§7) — `vertex/options/pulse.py` : `option_pulse`
+  (CALLS/PUTS/ratio/IV/DTE/theta) et `volatility_pulse` (IV médiane, dispersion,
+  état COMPRESSION/NORMALE/EXPANSION). Intégrés dans le hero.
+
+Preuves : **654 tests OK** (+19), 0 erreur console Chromium sur `/options`
+(hero + 4 sous-vues), score environnement vérifié à 45/100 « Neutre » avec 3/5
+dimensions mesurées et `n/d` honnête sur les 2 absentes.
+
 ## 8. Périmètre livré vs reste à faire (honnêteté §6)
 
 **Livré et prouvé** : contrat d'interprétation canonique ; moteurs

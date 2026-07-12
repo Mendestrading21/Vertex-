@@ -41,6 +41,19 @@ def test_options_event_risk_route(client):
     assert is_valid_interpretation(r.get_json()['interpretation'])
 
 
+def test_options_environment_route(client):
+    r = client.get('/api/options/environment')
+    assert r.status_code == 200
+    d = r.get_json()
+    assert 'score' in d and 'dimensions' in d
+    assert is_valid_interpretation(d['interpretation'])
+
+
+def test_options_overview_includes_environment_and_pulses(client):
+    d = client.get('/api/options/overview').get_json()
+    assert 'environment' in d and 'option_pulse' in d and 'volatility_pulse' in d
+
+
 def test_chart_interpretation_contract_route(client):
     r = client.get('/api/charts/options.overview_mix/interpretation')
     assert r.status_code == 200
@@ -88,6 +101,10 @@ _NEW_FILES = (
     'vertex/options/event_risk.py',
     'vertex/options/overview.py',
     'vertex/options/interpretation.py',
+    'vertex/options/environment.py',
+    'vertex/options/pulse.py',
+    'vertex/visualization/palette.py',
+    'vertex/visualization/chart_spec.py',
     'vertex/app/routes/options_intel_api.py',
     'vertex/ui/pages/options_intel_page.py',
     'vertex/static/vertex/js/pages/options-intel.js',
