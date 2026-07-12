@@ -126,11 +126,22 @@ def build_ticket(symbol, *, side=BUY, qty=None, entry=None, stop=None,
         blockers.append('R:R %.1f < %.1f (minimum stratégie)' % (rr, MIN_REWARD_RISK))
     if not is_option and (stop is None):
         blockers.append('invalidation (stop) absente — pas de préparation offensive')
+    # Discipline R:R : pour une action avec entrée + stop mais sans objectif
+    # exploitable, le R:R est INVALIDABLE → on bloque (symétrie avec le stop).
+    elif not is_option and rr is None:
+        blockers.append('R:R non validable (objectif absent) — discipline %.0f:1 requise'
+                        % MIN_REWARD_RISK)
 
-    # Garde-fou poids.
-    if sizing and sizing.get('weight_pct') is not None and not is_option \
-            and sizing['weight_pct'] > MAX_STOCK_WEIGHT_PCT:
-        blockers.append('poids projeté %.1f %% > %.0f %%' % (sizing['weight_pct'], MAX_STOCK_WEIGHT_PCT))
+    # Garde-fou poids. `sizing` n'existe que si qty a été dérivé du budget de
+    # risque ; si qty est fourni directement, on recalcule le poids ici pour que
+    # le garde-fou reste actif (jamais un contournement silencieux du 15 %).
+    weight_pct = sizing.get('weight_pct') if sizing else None
+    if weight_pct is None and not is_option:
+        av, q, ent = _num(account_value), _num(qty), _num(limit_price) or _num(entry)
+        if av and av > 0 and q is not None and ent is not None:
+            weight_pct = round(q * ent * STOCK_MULT / av * 100.0, 2)
+    if weight_pct is not None and not is_option and weight_pct > MAX_STOCK_WEIGHT_PCT:
+        blockers.append('poids projeté %.1f %% > %.0f %%' % (weight_pct, MAX_STOCK_WEIGHT_PCT))
 
     lim = _num(limit_price) or _num(entry)
     copy_lines = ['# %s' % DISCLAIMER, 'ACTION: %s (analyse seule)' % side, 'TICKER: %s' % sym]

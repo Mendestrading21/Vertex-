@@ -103,6 +103,10 @@ def stop(tracking_id, *, at, final_price=None, final_decision=None, reason=''):
     t = next((x for x in blob['trackings'] if x.get('tracking_id') == tracking_id), None)
     if not t:
         return None
+    # Idempotence : un suivi déjà arrêté est GELÉ — ne jamais recalculer/écraser
+    # le résultat final (un second stop renverrait un final différent).
+    if t.get('status') == models.ST_STOPPED:
+        return t
     from . import returns as R
     values = [t.get('reference_price')] + [s.get('price') for s in t.get('snapshots', [])]
     if final_price is not None:

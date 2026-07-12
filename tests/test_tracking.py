@@ -162,6 +162,17 @@ def test_stopped_tracking_is_immutable_to_snapshots(_isolated_store):
     assert not repo.get('t1')['snapshots']
 
 
+def test_stop_is_idempotent_frozen_result_not_overwritten(_isolated_store):
+    repo.create(tracking_id='t1', entity_type='STOCK', symbol='NVDA',
+                quote={'bid': 100, 'ask': 100}, started_at=TS)
+    repo.stop('t1', at='2026-07-20T20:00:00Z', final_price=115)
+    # Un second arrêt avec un prix différent NE DOIT PAS écraser le résultat gelé.
+    t = repo.stop('t1', at='2026-08-01T20:00:00Z', final_price=90)
+    assert t['stopped_at'] == '2026-07-20T20:00:00Z'
+    assert t['final']['final_price'] == 115
+    assert t['final']['return_pct'] == 15.0
+
+
 def test_restart_creates_new_tracking_id(_isolated_store):
     repo.create(tracking_id='t1', entity_type='STOCK', symbol='NVDA',
                 quote={'bid': 100, 'ask': 100}, started_at=TS)

@@ -61,6 +61,19 @@ def test_role_defense_for_defensive_profile():
     assert F.classify_role(_row(68, profile='DÉFENSIF')) == F.ROLE_DEFENSE
 
 
+def test_role_defense_when_risk_score_is_genuinely_zero():
+    # st_risk == 0 (risque très faible RÉEL) doit rester 0 et donner DÉFENSE,
+    # pas être coercé vers le défaut neutre 50 (`0 or 50 == 50`).
+    r = _row(60, st_mom=20, st_fund=40, rs=40, vx_asym=20, perf_q=2, st_risk=0)
+    assert F.classify_role(r) == F.ROLE_DEFENSE
+
+
+def test_role_missing_risk_uses_neutral_default():
+    # st_risk absent → défaut neutre 50 → pas de bascule défensive automatique.
+    r = _row(60, st_mom=20, st_fund=40, rs=40, vx_asym=20, perf_q=2)
+    assert F.classify_role(r) == F.ROLE_MID
+
+
 def test_role_distribution_sums_to_priority_count():
     rows = [_row(80, st_mom=70, vx_asym=60, perf_q=15, rs=70, symbol='A'),
             _row(70, st_fund=60, rs=58, symbol='B'),

@@ -97,7 +97,7 @@ def options_scenarios(sym):
     iv = c.get('iv')
     contract = {'symbol': sym, 'right': 'P' if c.get('type') == 'PUT' else 'C',
                 'strike': _num(c.get('strike')), 'dte': int(c.get('dte') or 0),
-                'mid': (_num(c.get('cost')) / 100.0 if c.get('cost') else None),
+                'mid': ((_num(c.get('cost')) or 0) / 100.0 if _num(c.get('cost')) else None),
                 'iv': (iv / 100.0 if isinstance(iv, (int, float)) and iv > 3 else iv),
                 'expiry': c.get('exp') or ''}
     setup = UnderlyingSetup(symbol=sym, spot=spot, invalidation=plan.get('stop'),

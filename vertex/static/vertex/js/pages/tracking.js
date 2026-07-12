@@ -84,7 +84,7 @@
           options: {
             interaction: { mode: 'index', intersect: false },
             plugins: { tooltip: { callbacks: { label: function (ctx) { return ctx.dataset.label + ' : ' + (ctx.parsed.y == null ? '—' : (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y + ' %'); } } } },
-            scales: { y: { ticks: { callback: function (v) { return v + ' %'; } } } }
+            scales: { y: { suggestedMin: -1, suggestedMax: 1, ticks: { callback: function (v) { return v + ' %'; } } } }
           }
         });
       }

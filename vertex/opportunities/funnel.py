@@ -56,9 +56,13 @@ def classify_role(row):
         return ROLE_RESERVE
     mom = _num(row.get('st_mom')) or 0
     fund = _num(row.get('st_fund')) or 0
-    risk = _num(row.get('st_risk')) or 50
+    # Un score réel de 0 doit être conservé (0 or 50 == 50 fausserait le rôle) :
+    # défaut neutre 50 seulement quand la donnée est absente (None).
+    risk = _num(row.get('st_risk'))
+    risk = 50 if risk is None else risk
     asym = _num(row.get('vx_asym')) or 0
-    rs = _num(row.get('rs')) or 50
+    rs = _num(row.get('rs'))
+    rs = 50 if rs is None else rs
     growth = _num(row.get('perf_q')) or 0
     # Défense : profil explicite ou risque faible + momentum modéré.
     if 'DÉFENS' in profile or 'DEFENS' in profile:

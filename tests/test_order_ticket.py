@@ -74,6 +74,24 @@ def test_ticket_blocks_when_stop_missing():
     assert any('stop' in b.lower() for b in t['blockers'])
 
 
+def test_ticket_blocks_when_rr_uncomputable_for_stock():
+    # entrée + stop mais AUCUN objectif ni rr_res → R:R invalidable → bloqué
+    # (symétrie avec le garde-fou du stop ; la discipline 2:1 ne peut être validée)
+    t = OT.build_ticket('NVDA', qty=100, entry=100, stop=95)
+    assert t['reward_risk'] is None
+    assert t['blocked'] is True
+    assert any('R:R' in b for b in t['blockers'])
+
+
+def test_ticket_blocks_weight_even_when_qty_given_directly():
+    # qty fourni directement (pas via budget) : le garde-fou 15 % doit rester actif.
+    # 300 × 100 = 30 000 sur 100 000 = 30 % > 15 %
+    t = OT.build_ticket('NVDA', qty=300, entry=100, stop=95, tp1=115,
+                        account_value=100000)
+    assert t['blocked'] is True
+    assert any('poids' in b.lower() for b in t['blockers'])
+
+
 def test_ticket_computes_qty_from_account_and_risk():
     t = OT.build_ticket('NVDA', entry=100, stop=95, tp1=115,
                         account_value=100000, risk_pct=1.0)
