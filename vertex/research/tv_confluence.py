@@ -18,7 +18,8 @@ BEARISH_SIGNALS = frozenset({'FAILED_BREAKOUT', 'THESIS_INVALIDATION'})
 # Verdicts moteur haussiers / prudents (vocabulaire décisionnel Vertex).
 _BULLISH_VERDICTS = ('ACHETER', 'BUY', 'STRONG_BUY', 'RENFORCER', 'ACCUMULER', 'BUY_PULLBACK')
 _BEARISH_VERDICTS = ('AVOID', 'ÉVITER', 'EVITER', 'ALLÉGER', 'ALLEGER', 'SORTIR',
-                     'RÉDUIRE', 'REDUIRE', 'NO_NEW_RISK', 'VENDRE')
+                     'RÉDUIRE', 'REDUIRE', 'NO_NEW_RISK', 'VENDRE', 'REFUSÉ', 'REFUSE',
+                     'REJETÉ', 'REJETE')
 
 CONFIRM = 'CONFIRME'
 CONTRADICT = 'CONTREDIT'
@@ -40,10 +41,12 @@ def verdict_stance(verdict: str) -> str:
     v = str(verdict or '').strip().upper()
     if not v:
         return 'NEUTRAL'
-    if any(b in v for b in _BULLISH_VERDICTS):
-        return 'BULLISH'
+    # Baissier d'abord : plus sûr — jamais un faux CONFIRME si un verdict prudent
+    # contient par hasard un mot haussier en sous-chaîne (« NE PAS ACHETER »).
     if any(b in v for b in _BEARISH_VERDICTS):
         return 'BEARISH'
+    if any(b in v for b in _BULLISH_VERDICTS):
+        return 'BULLISH'
     return 'NEUTRAL'
 
 

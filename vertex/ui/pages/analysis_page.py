@@ -328,9 +328,10 @@ async function loadDossier(){
   try{
     const TV_BULL=['SUPPORT_RECLAIM','BREAKOUT_CONFIRMED','BREAKOUT_RETEST','MOMENTUM_ACCELERATION','VOLUME_EXPANSION','TREND_ALIGNMENT'];
     const TV_BEAR=['FAILED_BREAKOUT','THESIS_INVALIDATION'];
+    const vDn=/AVOID|ÉVITER|EVITER|ALL[ÉE]GER|SORTIR|R[ÉE]DUIRE|NO_NEW_RISK|VENDRE|REFUS|REJET/i.test(d.verdict||'');
     const vUp=/ACHETER|BUY|RENFORCER|ACCUMULER/i.test(d.verdict||'');
-    const vDn=/AVOID|ÉVITER|EVITER|ALL[ÉE]GER|SORTIR|R[ÉE]DUIRE|NO_NEW_RISK|VENDRE/i.test(d.verdict||'');
-    const vStance=vUp?'BULLISH':(vDn?'BEARISH':'NEUTRAL');
+    /* baissier d'abord (miroir de tv_confluence.verdict_stance) — jamais un faux CONFIRME */
+    const vStance=vDn?'BEARISH':(vUp?'BULLISH':'NEUTRAL');
     function confl(sig){
       const sd=TV_BULL.indexOf(sig)>=0?'BULLISH':(TV_BEAR.indexOf(sig)>=0?'BEARISH':'NEUTRAL');
       if(sd==='NEUTRAL'||vStance==='NEUTRAL')return ['NEUTRE','vx-dim','·'];

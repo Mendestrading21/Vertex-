@@ -61,7 +61,14 @@ def start_background_enrichment():
         if _refreshing['on']:
             return False
         _refreshing['on'] = True
-    threading.Thread(target=_run_refresh, daemon=True).start()
+    try:
+        threading.Thread(target=_run_refresh, daemon=True).start()
+    except Exception:
+        # Le thread n'a pas démarré : on relâche le verrou (sinon /refresh reste
+        # bloqué à « déjà en cours » jusqu'au redémarrage).
+        with _refresh_lock:
+            _refreshing['on'] = False
+        raise
     return True
 
 

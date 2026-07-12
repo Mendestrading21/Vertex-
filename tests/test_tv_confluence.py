@@ -16,6 +16,18 @@ def test_bearish_signal_confirms_avoid_verdict():
     assert C.confluence('FAILED_BREAKOUT', 'AVOID')['state'] == C.CONFIRM
 
 
+def test_refused_verdict_is_bearish():
+    # « REFUSÉ » (verdict rouge du moteur) est baissier : un signal haussier le CONTREDIT.
+    assert C.verdict_stance('REFUSÉ') == 'BEARISH'
+    assert C.confluence('BREAKOUT_CONFIRMED', 'REFUSÉ')['state'] == C.CONTRADICT
+
+
+def test_bearish_checked_before_bullish_no_false_confirm():
+    # Un libellé prudent contenant un mot haussier en sous-chaîne ne doit pas
+    # devenir haussier (sécurité : baissier d'abord).
+    assert C.verdict_stance('NE PAS ACHETER — ÉVITER') == 'BEARISH'
+
+
 def test_neutral_signal_is_neutral():
     assert C.confluence('VOLATILITY_COMPRESSION', 'ACHETER')['state'] == C.NEUTRAL
 

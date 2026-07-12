@@ -82,12 +82,14 @@ def parse_quote(res: dict) -> dict:
     """Emballe une cotation Claude+web. Chiffre gardé SEULEMENT si recherche réelle."""
     data = (res or {}).get('data') or {}
     cits = (res or {}).get('citations') or []
-    searched = (res or {}).get('searches', 0) > 0 or bool(cits)
+    searched = (res or {}).get('searches', 0) > 0
+    sourced = bool(cits)                 # un prix n'est gardé QUE s'il porte une citation réelle
     price = _num(data.get('price'))
     text = (res or {}).get('text') or ''
-    # Garde-fou : pas de recherche réelle OU langage de certitude → on n'affiche AUCUN prix.
-    if price is None or not searched or _has_certainty(text):
-        return prov.absent('prix non trouvé de source fiable' if searched
+    # Garde-fou d'honnêteté : AUCUN prix sans citation (une recherche qui échoue
+    # ou ne cite rien ne suffit pas) NI avec langage de certitude.
+    if price is None or not sourced or _has_certainty(text):
+        return prov.absent('prix trouvé mais sans source citable' if searched
                            else 'aucune recherche web aboutie')
     env = prov.wrap(price, source=prov.SRC_CLAUDE_WEB, citations=cits,
                     as_of=_now_iso(),

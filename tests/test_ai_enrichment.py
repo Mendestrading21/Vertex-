@@ -59,6 +59,15 @@ def test_quote_dropped_when_no_web_search_happened():
     assert env['source'] == P.SRC_NONE
 
 
+def test_quote_dropped_when_search_ran_but_no_citation():
+    # Trou d'honnêteté : une recherche a eu lieu (searches>0) mais SANS citation
+    # exploitable → le prix ne doit PAS être affiché (invariant « citations présentes »).
+    res = {'data': {'price': 200.0}, 'citations': [], 'searches': 2, 'text': 'cours 200'}
+    env = E.parse_quote(res)
+    assert env['value'] is None
+    assert env['source'] == P.SRC_NONE
+
+
 def test_quote_kept_when_search_with_citations():
     res = {'data': {'price': 198.5, 'currency': 'USD', 'change_pct': 1.2, 'note': 'Yahoo différé'},
            'citations': [{'title': 'Yahoo', 'url': 'https://finance.yahoo.com/quote/ACN'}],
