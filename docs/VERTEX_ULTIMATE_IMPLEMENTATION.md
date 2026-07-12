@@ -50,37 +50,19 @@ qui reste). Base de départ : fin d'Experience OS (`ef6bf06`, 543 tests).
   jobs alimenté.
 - Aucun chemin d'ordre (gardiens verts), aucun nom personnel.
 
-## Restant à faire (phases non entamées — liste exacte)
+## Seconde passe (même session, commits suivants) — TOUT LIVRÉ
 
-1. **P13 News & Brief** : `vertex/market/{news_pipeline,news_dedup,
-   news_impact,daily_brief}.py` — brancher le fil réel existant
-   (`news_state`, assaini) sur un brief PRE_MARKET/INTRADAY/CLOSE/WEEKLY
-   150-280 mots sourcé + version compacte + « actualité dominante » dans
-   le Briefing. Rien d'inventé : sections actualité absentes quand le
-   flux est hors ligne (mode démo).
-2. **P14 Company Intelligence** : `vertex/companies/*` (façade sur
-   `data/company.py` + fondamentaux + `change_detector`).
-3. **P16-18 Options** : Options Command Center (`/portfolio?view=options`
-   avec Greeks agrégés et compteurs CALLS/PUTS séparés), analyse par
-   position option (drawer §20 + graphiques §21 sur les moteurs
-   existants), comparateur 3 contrats (§22).
-4. **P21-35 Thème Obsidian Copper Deep** : tokens obsidienne/cuivre §30,
-   suppression du bleu identitaire (liens `--vx-info`, série graphique
-   n° 2), `chart-theme-obsidian-copper.js`, widgets §44 (What Changed,
-   Theta Burn, Data Freshness…), vues `?view=automations` (l'API existe)
-   et `?view=impacts`.
-5. **P27 Graphe d'impact** (événements → recalculs) — le bus SSE posé
-   dans cette passe en est le support.
-6. **P36-41** : tests §53 restants (les gardes R:R/UNKNOWN/readonly de
-   cette passe sont couverts par les suites existantes ; les tests nommés
-   `test_rr_gate_is_two`, `test_unknown_regime_blocks_risk`,
-   `test_no_blue_*` sont à écrire), parcours 1-9, bump SW, 19 documents
-   §57, rapport final complet.
-
-## Notes techniques pour la reprise
-- Le SSE maintient une connexion ouverte : les scripts Playwright doivent
-  attendre `domcontentloaded` + délai, plus `networkidle` (les scripts de
-  vérification de cette passe ont été adaptés).
-- Les battements de jobs s'insèrent dans les boucles historiques — trois
-  sites (`_cal_loop`, `_fund_loop`, `_weekly_loop`) ont une indentation
-  non triviale : préférer des insertions à points d'ancrage exacts.
+1. **P13 News & Brief** ✅ — pipeline validation/dédup/impact + brief
+   PRE_MARKET/INTRADAY/CLOSE/WEEKLY sourcé, rien d'inventé (tests).
+2. **P14 Company Intelligence** ✅ — `vertex/companies` (jumeau honnête,
+   change_detector → recalc_required) + `/api/company/twin/<sym>`.
+3. **P16-19 Options** ✅ — Options Command Center (`/portfolio?view=options`,
+   CALLS/PUTS séparés), drawer d'analyse par position (§20-21, décision via
+   `/api/position-decision`), comparateur 3 contrats Pareto (§22).
+4. **P21-35 Obsidian Copper Deep** ✅ — palette §30 complète, zéro bleu
+   identitaire (liens cuivre, séries cuivre/beige/gris/violet), tests
+   no-blue ; vues `?view=automations` et `?view=impacts`.
+5. **P27 Impacts** ✅ (flux SSE + chaîne d'impact ; propagation automatique
+   partielle — voir VERTEX_LIMITATIONS.md).
+6. **P36-41** ✅ — tests nommés (556 verts), parcours 9/9 trois tailles,
+   SW v9, 16 documents §57, rapport final.
