@@ -10,7 +10,7 @@ import json
 
 from vertex.ui.shell import render_shell
 
-_VIEWS = (('team', 'Équipe'), ('positions', 'Positions'),
+_VIEWS = (('team', 'Équipe'), ('positions', 'Positions'), ('options', 'Options'),
           ('risk', 'Risque'), ('watchlist', 'Watchlist'))
 
 
@@ -38,6 +38,7 @@ _JS = r"""
 <script src="/static/vertex/js/charts/donut-chart.js" defer></script>
 <script src="/static/vertex/js/charts/sparkline.js" defer></script>
 <script src="/static/vertex/js/charts/equity-chart.js" defer></script>
+<script src="/static/vertex/js/charts/option-payoff.js" defer></script>
 <script src="/static/vertex/js/charts/line-area-chart.js" defer></script>
 <script>
 (function(){
@@ -109,8 +110,8 @@ function renderSummary(rich){
       stocks.length>=10?'complet — remplacement obligatoire':'places disponibles',
       stocks.length>=10?'vx-warn':'')
     +cell('Options tactiques',opts.length+' / 3',
-      opts.length>=3?'plafond atteint':'hors équipe — convexité ciblée',
-      opts.length>=3?'vx-warn':'');
+      `CALLS ${opts.filter(t=>t.type==='CALL').length} · PUTS ${opts.filter(t=>t.type==='PUT').length} / 1 max`,
+      (opts.length>=3||opts.filter(t=>t.type==='PUT').length>1)?'vx-warn':'');
 }
 
 /* ── ÉQUIPE ── */
@@ -222,6 +223,121 @@ async function renderPositions(){
   }));
 }
 
+/* ── OPTIONS COMMAND CENTER (§19) ── */
+async function renderOptions(){
+  const pos=E().positions();
+  const opts=pos.filter(t=>t.type!=='STK');
+  const rich=enrich(opts,await quotesFor(opts));
+  renderSummary(enrich(pos,await quotesFor(pos)));
+  if(!opts.length){
+    $('pf-body').innerHTML=VX.states.empty(
+      'Aucune position option — le sélecteur Vertex Dynamic Options privilégie les CALLS (max 3, dont 1 PUT tactique).',
+      '<a class="vx-btn vx-btn-sm vx-btn-primary" href="/opportunities?view=options">Chercher un contrat</a>');
+    return;
+  }
+  const calls=rich.filter(t=>t.type==='CALL'),puts=rich.filter(t=>t.type==='PUT');
+  const engaged=rich.reduce((s2,t)=>s2+t.invested,0);
+  const marked=rich.filter(t=>t.pl!==null);
+  const plTot=marked.length===rich.length&&rich.length?rich.reduce((s2,t)=>s2+(t.value-t.invested),0):null;
+  const dtes=rich.map(t=>t.exp?Math.round((new Date(t.exp)-Date.now())/86400000):null).filter(v=>v!==null);
+  const dteAvg=dtes.length?Math.round(dtes.reduce((a,b)=>a+b,0)/dtes.length):null;
+  const H=(l,v,d,cls)=>`<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3">
+    <span class="vx-kpi-label">${l}</span><span class="vx-kpi-value" style="font-size:20px">${v}</span>
+    ${d?`<span class="vx-kpi-delta ${cls||'vx-muted'}">${d}</span>`:''}</div>`;
+  $('pf-body').innerHTML=
+    `<div class="vx-grid vx-mb3">
+      ${H('CALLS ouverts',calls.length,'direction principale (~90 %)')}
+      ${H('PUTS tactiques',puts.length+' / 1',puts.length>1?'PLAFOND DÉPASSÉ':'rares, jamais « parce que ça baisse »',puts.length>1?'vx-neg':'')}
+      ${H('Capital engagé',VX.fmt.price(engaged),'coût total déclaré')}
+      ${H('P&L options',plTot!==null?VX.fmt.price(plTot):'n/d',plTot!==null?VX.fmt.pct(plTot/engaged*100,1):'marques indisponibles (IBKR hors ligne)',plTot>0?'vx-pos':plTot<0?'vx-neg':'vx-muted')}
+    </div>
+    <div class="vx-grid vx-mb3">
+      ${H('DTE moyen',dteAvg!==null?dteAvg+' j':'n/d','constitution : 60-270, préf. 90-210')}
+      ${H('Delta total','n/d','Greeks broker requis — jamais estimés sans IBKR')}
+      ${H('Theta quotidien','n/d','IBKR hors ligne')}
+      ${H('Risque événementiel',rich.some(t=>t.entrySnap&&t.entrySnap.earnings_dte!=null)?'à vérifier':'—','earnings par position ci-dessous')}
+    </div>
+    <section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Positions options</span>
+      <span class="vx-meta vx-right">analyse complète par position — aucune exécution</span></div>
+    <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
+      <th>Contrat</th><th class="vx-num">Qté</th><th class="vx-num">Coût</th><th class="vx-num">Marque</th>
+      <th class="vx-num">P&L</th><th class="vx-num">DTE</th><th>Stop sous-jacent</th><th></th></tr></thead><tbody>
+    ${rich.map(t=>{
+      const dte=t.exp?Math.round((new Date(t.exp)-Date.now())/86400000):null;
+      return `<tr>
+      <td data-label="Contrat"><span class="vx-ticker">${t.sym}</span>
+        <span class="vx-badge" style="color:var(--vx-option)">${t.type} ${t.strike??''} ${t.exp||''}</span></td>
+      <td data-label="Qté" class="vx-num">${t.qty}</td>
+      <td data-label="Coût" class="vx-num">${VX.fmt.price(t.cost)}</td>
+      <td data-label="Marque" class="vx-num">${t.mark!==null?VX.fmt.price(t.mark):'n/d'}</td>
+      <td data-label="P&L" class="vx-num ${t.pl>0?'vx-pos':t.pl<0?'vx-neg':''}">${t.pl!==null?VX.fmt.pct(t.pl,1):'n/d'}</td>
+      <td data-label="DTE" class="vx-num ${dte!==null&&dte<=7?'vx-warn':''}">${dte!==null?dte+' j':'—'}</td>
+      <td data-label="Stop">${VX.fmt.nd(t.entrySnap&&t.entrySnap.stop)}</td>
+      <td><div class="vx-row-actions">
+        <button class="vx-btn vx-btn-sm vx-btn-primary" data-opt-analyze="${t.id}">Analyser</button>
+        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Plus">⋯</button>
+      </div></td></tr>`;}).join('')}</tbody></table></div>
+    <div class="vx-card-footer">${VX.updateIndicator(Date.now(),window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
+      · Greeks agrégés affichés uniquement avec IBKR (jamais estimés en agrégat)</div></section>`;
+  document.querySelectorAll('[data-opt-analyze]').forEach(b=>
+    b.addEventListener('click',()=>openOptionDrawer(rich.find(t=>String(t.id)===b.dataset.optAnalyze))));
+}
+
+/* Drawer d'analyse COMPLET par position option (§20-21) — lecture seule. */
+async function openOptionDrawer(t){
+  if(!t)return;
+  const dte=t.exp?Math.round((new Date(t.exp)-Date.now())/86400000):null;
+  const unit=t.qty?t.cost/(t.qty*100):null;   /* prime par action dérivée du coût total */
+  const snap=t.entrySnap||{};
+  const kvR=(k,v,cls)=>`<div class="vx-kv"><span class="k">${k}</span><span class="v vx-mono ${cls||''}">${VX.fmt.nd(v)}</span></div>`;
+  VX.shell.openDrawer(`${t.sym} ${t.type} ${t.strike??''} ${t.exp||''}`,
+    `<h3 class="vx-mb2">Identité</h3>
+     ${kvR('Contrat',`${t.sym} ${t.type} ${t.strike??'—'} · ${t.exp||'—'}`)}
+     ${kvR('DTE',dte!==null?dte+' j':'—',dte!==null&&dte<=7?'vx-warn':'')}
+     ${kvR('Quantité × multiplicateur',t.qty+' × 100')}
+     ${kvR('Coût moyen (prime/action)',unit!==null?VX.fmt.price(unit):'—')}
+     ${kvR('Capital engagé',VX.fmt.price(t.cost))}
+     <h3 class="vx-mt4 vx-mb2">Marché</h3><div id="od-market">${kvR('Marque',t.mark!==null?VX.fmt.price(t.mark):'n/d (IBKR hors ligne)')}
+     ${kvR('P&L',t.pl!==null?VX.fmt.pct(t.pl,1):'n/d',t.pl>0?'vx-pos':t.pl<0?'vx-neg':'')}
+     <div class="vx-meta">bid/ask/volume/OI/IV/Greeks : fournis par IBKR uniquement — jamais estimés ici.</div></div>
+     <h3 class="vx-mt4 vx-mb2">Plan</h3>
+     ${kvR('Invalidation (sous-jacent)',snap.stop,'vx-neg')}
+     ${kvR('Objectif',snap.tgt,'vx-pos')}
+     ${kvR('Objectif de gain typique','+50 % (jamais garanti)')}
+     ${kvR('Time stop','réévaluer avant '+(dte!==null?Math.max(5,Math.round(dte/6))+' j':'—'))}
+     <h3 class="vx-mt4 vx-mb2">Décision analytique</h3><div id="od-decision"><div class="vx-skeleton" style="height:40px"></div></div>
+     <h3 class="vx-mt4 vx-mb2">Payoff à l'échéance</h3><div id="od-payoff" style="height:180px"><canvas></canvas></div>
+     <h3 class="vx-mt4 vx-mb2">Scénarios (moteur)</h3><div id="od-scenarios"><div class="vx-skeleton" style="height:60px"></div></div>
+     <div class="vx-help vx-mt3">⛔ Lecture seule : aucune action de cette analyse ne peut exécuter, clôturer ou modifier un ordre.</div>`);
+  /* Décision de gestion — moteur unique /api/position-decision */
+  try{
+    const q=new URLSearchParams({type:t.type,entry:unit??'',stop:snap.stop??'',tp:snap.tgt??'',
+      current:t.mark??'',pl_pct:t.pl??'',dte:dte??''});
+    const d=await VX.fetch('/api/position-decision/'+t.sym+'?'+q.toString(),{ttl:60000});
+    const el=document.getElementById('od-decision');
+    if(el)el.innerHTML=`<div class="vx-flex"><span class="vx-badge vx-badge-decision" data-decision="${(d.action||'').replace('É','E')}" style="font-size:13px;padding:4px 12px">${d.action||d.label||'n/d'}</span></div>
+      <div class="vx-dim vx-mt2" style="font-size:12.5px">${(d.reasons||[]).map(r=>'· '+r).join('<br>')||d.note||''}</div>
+      ${d.underlying&&d.underlying.decision?`<div class="vx-meta vx-mt2">Sous-jacent : ${d.underlying.decision}</div>`:''}`;
+  }catch(e){const el=document.getElementById('od-decision');
+    if(el)el.innerHTML='<span class="vx-meta">Moteur de gestion indisponible : '+esc(e.message)+'</span>';}
+  /* Payoff : calculable du strike + prime (données déclarées, pas de marché) */
+  try{
+    if(window.VXCharts&&VXCharts.payoffCard&&t.strike&&unit){
+      VXCharts.payoffCard('od-payoff',{title:'Payoff',spot:(t.mark!==null&&t.markSpot)?t.markSpot:t.strike,
+        strike:t.strike,premium:unit,right:t.type==='PUT'?'P':'C',height:170,
+        source:'position déclarée (centre = strike sans cote)',timestamp:Date.now(),mode:'fallback'});
+    }
+  }catch(e){}
+  /* Scénarios moteur : nécessite IV + spot — refus honnête sinon */
+  try{
+    const spot=(t.markSpot??null);
+    const el=document.getElementById('od-scenarios');
+    if(el)el.innerHTML='<div class="vx-meta">Simulation spot×temps×IV disponible depuis le desk options '
+      +'(<a href="/opportunities?view=options&sym='+t.sym+'">ouvrir</a>) — elle exige IV et spot frais ; '
+      +'sans IBKR, rien n\'est estimé ici.</div>';
+  }catch(e){}
+}
+
 /* ── RISQUE (positions réelles → moteur §26) ── */
 async function renderRisk(){
   const pos=E().positions();
@@ -314,7 +430,7 @@ async function renderWatchlist(){
     E().addToWatchlist(sel.dataset.wlStatus,Object.assign({},E().watchlist().find(w=>w.sym===sel.dataset.wlStatus),{status:sel.value}));}));
 }
 
-const RENDER={team:renderTeam,positions:renderPositions,risk:renderRisk,watchlist:renderWatchlist};
+const RENDER={team:renderTeam,positions:renderPositions,options:renderOptions,risk:renderRisk,watchlist:renderWatchlist};
 function boot(){(RENDER[VIEW]||renderTeam)().catch(e=>{$('pf-body').innerHTML=VX.states.error(e.message);});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 ['vx:position-changed','vx:watchlist-changed','vx:follow-changed','vx:favorites-changed']

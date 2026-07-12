@@ -164,6 +164,52 @@ async function renderStocks(){
 async function renderOptions(){
   const scan=await VX.fetch('/scan',{ttl:120000});
   const board=(scan.options_board||[]);
+  /* Comparateur §22 : 3 contrats max — défensif (BALANCED) / principal
+     (DYNAMIC) / explosif (ULTRA_CONVEX) — dominance expliquée, jamais
+     d'exécution. */
+  window.__opCompare=function(symWanted){
+    const catOf2=(c)=>{const d=Math.abs(c.delta||0);
+      if(d>=0.40&&d<=0.60)return'BALANCED';if(d>=0.28&&d<0.45)return'DYNAMIC';
+      if(d>=0.18&&d<0.30)return'ULTRA_CONVEX';return'AUTRE';};
+    let pool=board;
+    if(symWanted)pool=pool.filter(c=>c.sym===symWanted);
+    const pick=(cat)=>pool.filter(c=>catOf2(c)===cat)
+      .sort((a,b)=>(b.quality||0)-(a.quality||0))[0]||null;
+    const trio=[['Défensif (Balanced)',pick('BALANCED')],
+                ['PRINCIPAL (Dynamic)',pick('DYNAMIC')],
+                ['Explosif (Ultra convex)',pick('ULTRA_CONVEX')]];
+    const avail=trio.filter(([,c])=>c);
+    if(!avail.length){VX.toast('Aucun contrat comparable sur ce filtre','warning');return;}
+    const row=(label,c)=>c?`<tr>
+      <td><b>${label}</b><br><span class="vx-mono vx-meta">${c.sym} ${VX.fmt.nd(c.strike)} ${c.exp||''}</span></td>
+      <td class="vx-num">${VX.fmt.nd(c.delta)}</td><td class="vx-num">${VX.fmt.nd(c.dte)}</td>
+      <td class="vx-num">${c.iv!=null?(c.iv).toFixed(0)+'%':'—'}</td>
+      <td class="vx-num">${VX.fmt.nd(c.cost)}</td>
+      <td class="vx-num">${c.spread_pct!=null?c.spread_pct+'%':'—'}</td>
+      <td class="vx-num">${VX.fmt.nd(c.oi)}</td>
+      <td class="vx-num"><b>${VX.fmt.nd(c.quality)}</b></td></tr>`:'';
+    const main=avail.find(([l])=>l.startsWith('PRINCIPAL'))||avail[0];
+    const others=avail.filter(x=>x!==main);
+    const why=others.map(([l,c])=>{
+      const m=main[1];const wins=[];
+      if((c.delta||0)>(m.delta||0))wins.push('delta plus élevé (plus défensif)');
+      if((c.cost||1e9)<(m.cost||1e9))wins.push('prime plus faible (plus convexe)');
+      if((c.oi||0)>(m.oi||0))wins.push('OI supérieur');
+      return `<li><b>${l}</b> : ${wins.length?('gagne sur '+wins.join(', ')):'ne domine sur aucune dimension clé'} — mais qualité globale ${VX.fmt.nd(c.quality)} vs ${VX.fmt.nd(m[1]?m[1].quality:m.quality??'')}.</li>`;
+    }).join('');
+    VX.shell.openDrawer('Comparateur de contrats'+(symWanted?' — '+symWanted:''),
+      `<div class="vx-table-wrap"><table class="vx-table"><thead><tr>
+        <th>Contrat</th><th class="vx-num">Δ</th><th class="vx-num">DTE</th><th class="vx-num">IV</th>
+        <th class="vx-num">Prime</th><th class="vx-num">Spread</th><th class="vx-num">OI</th>
+        <th class="vx-num">Qualité</th></tr></thead>
+        <tbody>${avail.map(([l,c])=>row(l,c)).join('')}</tbody></table></div>
+       <div class="vx-insight vx-mt3"><b>Pourquoi ${main[0]} domine</b>
+         <div class="vx-mt1" style="font-size:12.5px">Frontière de Pareto : le contrat principal offre le meilleur
+         score composite (R:R simulé × liquidité × coût du temps). Les alternatives gagnent chacune sur UNE
+         dimension mais en sacrifient d'autres :</div>
+         <ul class="vx-mt1" style="margin:0;padding-left:18px;font-size:12.5px">${why||'<li>aucune alternative disponible</li>'}</ul></div>
+       <div class="vx-help vx-mt2">Analyse uniquement — copier le contrat pour le consulter chez le broker.</div>`);
+  };
   const symFilter=(PARAMS.sym||'').toUpperCase();
   const state={cat:PARAMS.setup||'',sym:symFilter};
   function catOf(c){const d=Math.abs(c.delta||0);
@@ -207,6 +253,9 @@ async function renderOptions(){
         placeholder="Ticker" value="${esc(state.sym)}" aria-label="Filtrer par ticker">
       <span class="vx-meta">Greeks complets (gamma/theta/vega) : disponibles à la simulation du contrat — le board legacy n'expose que le delta.</span>
     </div>
+    <div class="vx-flex vx-mb2"><button class="vx-btn vx-btn-sm vx-btn-soft" id="op-compare"
+      onclick="window.__opCompare&&window.__opCompare((new URLSearchParams(location.search)).get('sym')||'')">
+      Comparer 3 contrats (défensif · principal · explosif)</button></div>
     <div class="vx-table-wrap vx-table-cards" id="op-opt-table"></div>
     <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.options_source||scan.source,metaMode(scan))}</div>
     <div class="vx-grid vx-mt4" id="op-contract" hidden>

@@ -15,7 +15,7 @@ C.payoffCard=function(host,opts){
   const be=opts.breakeven??(right==='C'?K+prem:K-prem);
   return C.card(host,Object.assign({},opts,{render:(cv)=>C.mount(cv,{type:'line',
     data:{labels:xs,datasets:[{data:ys,borderColor:C.colors.violet,borderWidth:1.8,pointRadius:0,
-      fill:{target:{value:0},above:'#22C77A22',below:'#EF535022'}}]},
+      fill:{target:{value:0},above:'#38b87922',below:'#dc5f5222'}}]},
     options:{scales:C.axes({yFmt:(v)=>v+' %'}),plugins:{tooltip:{callbacks:{
       label:(ctx)=>`P&L à l'échéance : ${ctx.parsed.y} %`}}}}})}));};
 })();
