@@ -324,17 +324,36 @@ async function loadDossier(){
       :VX.states.empty('Aucune anomalie détectée sur la série disponible.'));
   }catch(e){body('an-anomalies',VX.states.error('Moteur d’anomalies injoignable'));}
 
-  /* TradingView (§30) */
+  /* TradingView (§30) + confluence vs verdict moteur (miroir de tv_confluence.py) */
   try{
+    const TV_BULL=['SUPPORT_RECLAIM','BREAKOUT_CONFIRMED','BREAKOUT_RETEST','MOMENTUM_ACCELERATION','VOLUME_EXPANSION','TREND_ALIGNMENT'];
+    const TV_BEAR=['FAILED_BREAKOUT','THESIS_INVALIDATION'];
+    const vUp=/ACHETER|BUY|RENFORCER|ACCUMULER/i.test(d.verdict||'');
+    const vDn=/AVOID|ÉVITER|EVITER|ALL[ÉE]GER|SORTIR|R[ÉE]DUIRE|NO_NEW_RISK|VENDRE/i.test(d.verdict||'');
+    const vStance=vUp?'BULLISH':(vDn?'BEARISH':'NEUTRAL');
+    function confl(sig){
+      const sd=TV_BULL.indexOf(sig)>=0?'BULLISH':(TV_BEAR.indexOf(sig)>=0?'BEARISH':'NEUTRAL');
+      if(sd==='NEUTRAL'||vStance==='NEUTRAL')return ['NEUTRE','vx-dim','·'];
+      if(sd===vStance)return ['CONFIRME','vx-pos','✓'];
+      return ['CONTREDIT','vx-neg','✗'];
+    }
     const tv=await VX.fetch('/api/tradingview/signals?symbol='+SYM,{ttl:60000});
     const sigs=(tv.signals||[]).slice(-4).reverse();
-    body('an-tv',(sigs.length?sigs.map(s=>{
-      const age=(Date.now()/1000-(s.received_ts||0));
-      const expired=age>4*3600;
+    let confirms=0,contradicts=0;
+    sigs.forEach(s=>{const c=confl(s.signal);if(c[0]==='CONFIRME')confirms++;else if(c[0]==='CONTREDIT')contradicts++;});
+    const overall=contradicts&&!confirms?['CONTREDIT le verdict','vx-neg']
+      :confirms&&!contradicts?['CONFIRME le verdict','vx-pos']
+      :(confirms||contradicts)?['signaux MIXTES','vx-dim']:['—','vx-dim'];
+    body('an-tv',(sigs.length?
+      (d.verdict?`<div class="vx-kv"><span class="k">Confluence</span><span class="v ${overall[1]}"><b>${overall[0]}</b> <span class="vx-meta">(vs ${esc(d.verdict)})</span></span></div>`:'')
+      +sigs.map(s=>{
+      const fresh=(s.fresh!==undefined)?s.fresh:((Date.now()/1000-(s.received_ts||0))<=6*3600);
+      const c=confl(s.signal);
       return `<div class="vx-kv"><span class="k">${s.signal}</span>
-        <span class="v">${expired?'<span class="vx-badge">expiré</span>':'<span class="vx-badge" style="color:var(--vx-cyan)">à confirmer</span>'}
+        <span class="v"><span class="vx-badge ${c[1]}" title="confluence">${c[2]} ${c[0]}</span>
+        ${fresh?'':'<span class="vx-badge">rassis</span>'}
         <span class="vx-meta">${VX.fmt.ago((s.received_ts||0)*1000)}</span></span></div>`;}).join('')
-      +'<div class="vx-meta vx-mt2">Un signal TradingView déclenche une réévaluation — jamais un ACHETER direct. Confirmation par les données broker exigée.</div>'
+      +'<div class="vx-meta vx-mt2">Un signal TradingView déclenche une réévaluation — jamais un ACHETER direct. La confluence est une lecture de cohérence, pas une décision.</div>'
       :VX.states.empty('Aucun signal TradingView reçu pour ce titre.',
         '<span class="vx-meta">Webhook : /api/tradingview/webhook (voir tradingview/README.md)</span>'))
       +`<div class="vx-flex vx-mt2">
