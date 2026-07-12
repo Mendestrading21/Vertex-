@@ -149,7 +149,9 @@
       VX.bus.emit('vx:position-changed', { sym: t.sym, action: 'update' });
       VX.toast(`Position ${t.sym} modifiée`, 'success');
     },
-    closePosition(id, exitAmount, note) {
+    /* recordExit : clôture DÉCLARATIVE d'une position dans le desk local
+       (localStorage → journal). AUCUN ordre n'est envoyé — analyse seule. */
+    recordExit(id, exitAmount, note) {
       const list = this.positions();
       const i = list.findIndex(x => x.id === id); if (i < 0) return;
       const t = list.splice(i, 1)[0];

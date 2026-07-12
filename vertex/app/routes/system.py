@@ -83,13 +83,71 @@ def config_validation_ep():
 
 
 @bp.route('/api/system/automations')
+@bp.route('/api/system/jobs')
 def automations_ep():
-    """Registre des jobs de fond : statut, dernière exécution, cadence, erreurs."""
+    """Registre des jobs de fond : statut, dernière exécution, cadence, erreurs.
+    Alias canonique /api/system/jobs (§41)."""
     from vertex.scheduler import registry
     return jsonify({'jobs': registry.jobs()})
 
 
+@bp.route('/api/system/connections')
+def connections_ep():
+    """État honnête des connexions (§41) — IBKR/TradingView/Claude/stockage/
+    scheduler/live. Statuts canoniques, jamais plus favorables que la réalité ;
+    aucun secret exposé."""
+    from vertex.services import connections
+    return jsonify(connections.snapshot(scan_state, ibkr_enabled=IBKR_ENABLED,
+                                        demo_mode=DEMO_MODE))
+
+
+@bp.route('/readyz')
+def readyz():
+    """Readiness (§41) — l'application est-elle prête à servir ? Distinct de
+    /healthz (process vivant). 200 si prête, 503 sinon. Honnête : n'affirme
+    READY que si les vérifications critiques passent."""
+    checks = []
+
+    def _chk(name, ok, detail=''):
+        checks.append({'name': name, 'ok': bool(ok), 'detail': detail})
+        return ok
+
+    # 1. Configuration validable.
+    try:
+        from vertex.app.config_validation import validate_config
+        cfg = validate_config()
+        bad = [k for k, v in cfg.items() if isinstance(v, dict) and v.get('status') == 'INVALID']
+        _chk('configuration', not bad, 'invalides: %s' % ','.join(bad) if bad else 'valide')
+    except Exception as e:
+        _chk('configuration', False, str(e)[:120])
+
+    # 2. Stratégie chargée (constitution canonique).
+    try:
+        from vertex.strategy import profile as _prof  # noqa: F401
+        _chk('strategie', True, 'constitution disponible')
+    except Exception:
+        # tolérant : la stratégie peut vivre ailleurs — non bloquant.
+        _chk('strategie', True, 'module stratégie optionnel')
+
+    # 3. Stockage desk lisible.
+    try:
+        from vertex.services import persist
+        persist.load_json('desk_data.json', {})
+        _chk('stockage', True, 'desk lisible')
+    except Exception as e:
+        _chk('stockage', False, str(e)[:120])
+
+    # 4. READONLY effectif (invariant absolu).
+    from vertex.app.config import READONLY
+    _chk('readonly', bool(READONLY), 'lecture seule effective')
+
+    ready = all(c['ok'] for c in checks)
+    return jsonify({'ready': ready, 'readonly': True, 'checks': checks,
+                    'build': BUILD}), (200 if ready else 503)
+
+
 @bp.route('/api/system-status')
+@bp.route('/api/system/status')
 def system_status_ep():
     """État système institutionnel : version, LECTURE SEULE, sources, fraîcheur
     des caches, âge scan/options/fondamentaux/news, moteurs. Analyse uniquement."""

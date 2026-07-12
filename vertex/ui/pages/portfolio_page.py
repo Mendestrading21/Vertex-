@@ -252,7 +252,7 @@ async function renderPositions(){
     document.getElementById('pf-close-confirm').addEventListener('click',()=>{
       const v=Number(document.getElementById('pf-exit').value);
       if(!isFinite(v)){VX.toast('Montant requis','error');return;}
-      E().closePosition(t.id,v,document.getElementById('pf-note').value);
+      E().recordExit(t.id,v,document.getElementById('pf-note').value);
       VX.shell.closeModal();renderPositions();});
   }));
 }
