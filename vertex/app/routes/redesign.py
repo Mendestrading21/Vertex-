@@ -114,6 +114,11 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     def system_route():
         return system_page.render(view=request.args.get('view', 'connections'))
 
+    @bp.route('/system/design-system')
+    def design_system_route():
+        from vertex.ui.pages import design_system_demo
+        return design_system_demo.render()
+
     # ── Options Intelligence (§18) — approfondissement d'Opportunités.
     # PAS un 9e espace : le nav reste à huit, cette page se rejoint depuis
     # Opportunités (vue Options), Analyse et la palette.
