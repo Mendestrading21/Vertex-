@@ -309,6 +309,12 @@ async function renderOptions(){
       ${H('Theta quotidien','n/d','IBKR hors ligne')}
       ${H('Risque événementiel',rich.some(t=>t.entrySnap&&t.entrySnap.earnings_dte!=null)?'à vérifier':'—','earnings par position ci-dessous')}
     </div>
+    <section class="vx-card vx-mb3" aria-label="Allocation du capital options">
+      <div class="vx-chart-head"><span class="vx-chart-title">Capital engagé par contrat</span>
+        <span class="vx-chart-question">Où est concentré le capital options ?</span></div>
+      <div id="pf-opt-tree" style="height:220px"></div>
+      <div class="vx-card-foot"><span class="vx-meta">Taille = capital engagé (coût déclaré) · couleur = sens (CALL cuivre / PUT violet). Aucune valeur inventée.</span></div>
+    </section>
     <section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Positions options</span>
       <span class="vx-meta vx-right">analyse complète par position — aucune exécution</span></div>
     <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
@@ -331,6 +337,14 @@ async function renderOptions(){
       </div></td></tr>`;}).join('')}</tbody></table></div>
     <div class="vx-card-footer">${VX.updateIndicator(Date.now(),window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
       · Greeks agrégés affichés uniquement avec IBKR (jamais estimés en agrégat)</div></section>`;
+  if(window.VXCharts&&VXCharts.treemap){
+    const cc=VXCharts.colors;const el=document.getElementById('pf-opt-tree');const w=(el&&el.clientWidth)||900;
+    VXCharts.treemap(el,{width:w,height:220,
+      items:rich.map(t=>({label:t.sym+' '+(t.strike||''),value:Math.max(1,t.invested||0),
+        sub:(t.type==='PUT'?'PUT':'CALL')+(t.exp?' '+t.exp:''),
+        color:(t.type==='PUT'?(cc.option||'#806095'):(cc.info||'#b9683d'))})),
+      fmt:(v)=>VX.fmt.price(v)});
+  }
   document.querySelectorAll('[data-opt-analyze]').forEach(b=>
     b.addEventListener('click',()=>openOptionDrawer(rich.find(t=>String(t.id)===b.dataset.optAnalyze))));
 }
