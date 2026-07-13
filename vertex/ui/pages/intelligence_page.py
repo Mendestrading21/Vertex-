@@ -138,8 +138,7 @@ _VIEW_CONTENT = {
   </section>
   <section class="vx-card vx-col-5" aria-label="Cha&icirc;ne d&#8217;impact">
     <div class="vx-card-header"><span class="vx-card-title">Cha&icirc;ne d&#8217;impact (&sect;27)</span></div>
-    <div class="vx-dim" style="font-size:12.5px;line-height:2">
-      March&eacute; &rarr; r&eacute;gime &rarr; secteur &rarr; entreprise &rarr; opportunit&eacute; &rarr; position &rarr; option &rarr; portefeuille &rarr; risque &rarr; d&eacute;cision</div>
+    <div id="vx-imp-flow" style="margin:2px 0 8px"></div>
     <div class="vx-insight vx-mt2" data-tone="risk"><b>Corr&eacute;lation &ne; causalit&eacute;.</b>
       Chaque impact affich&eacute; est POTENTIEL : source, cible, direction et confiance &mdash;
       le recalcul de d&eacute;cision passe toujours par le moteur ex&eacute;cutif unique.</div>
@@ -547,12 +546,22 @@ function initImpacts(){
     if(c)c.innerHTML=Object.entries(counts).map(([k,v])=>
       `<div class="vx-kv"><span class="k">${esc(k)}</span><span class="v vx-mono">${v}</span></div>`).join('')
       ||'<span class="vx-meta">Compteurs vides.</span>';
+    /* Chaîne d'impact en flow diagram — compteurs live par nœud raccordé à un canal */
+    if(window.VXCharts&&VXCharts.flow){
+      const chain=[['Marché','market'],['Régime',null],['Secteur',null],['Entreprise',null],
+        ['Opportunité',null],['Position','positions'],['Option','options'],['Portefeuille','portfolio'],
+        ['Risque',null],['Décision','decisions']];
+      VXCharts.flow('vx-imp-flow',{ariaLabel:'Chaîne d\'impact',
+        nodes:chain.map(function(p){const cnt=p[1]?(counts[p[1]]||0):null;
+          return {label:p[0],count:cnt,tone:(cnt>0?'active':'idle')};})});
+    }
   }
   CHANNELS.forEach(ch=>VX.bus.on('vx:live:'+ch,(e)=>{
     feed.unshift({channel:ch,data:e.detail,ts:Date.now()/1000});
     if(feed.length>MAX)feed.pop();paint();}));
   VX.bus.on('vx:live-status',paintStatus);
   paintStatus();paint();
+  whenChartsReady(paint);   /* re-render une fois chart-core.js (defer) chargé → flow diagram */
 }
 if(VIEW==='analyst')initAnalyst();
 else if(VIEW==='committee'){initCommittee();VX.refresh.register(initCommittee,120000,'committee');}

@@ -275,6 +275,32 @@
     return el;
   };
 
+  /* ── Flow diagram (chaîne de nœuds connectés) — impacts, pipeline système ──
+     opts: {nodes:[{label, count?, sub?, tone?('active'|'idle'|'warn'|'err'), color?}], ariaLabel, emptyHtml}
+     Horizontal, scrollable, responsive. Accessible : role=img + résumé. */
+  C.flow = function (host, opts) {
+    const el = typeof host === 'string' ? document.getElementById(host) : host;
+    if (!el) return null;
+    const o = opts || {};
+    const nodes = o.nodes || [];
+    if (!nodes.length) { el.innerHTML = o.emptyHtml || ''; return null; }
+    const toneCol = { active: C.colors.positive, idle: C.colors.neutral, warn: C.colors.warning, err: C.colors.negative };
+    const aria = (o.ariaLabel || 'diagramme de flux') + ' : ' + nodes.map(n => n.label + (n.count != null ? ' ' + n.count : '')).join(' → ');
+    el.innerHTML = '<div role="img" aria-label="' + aria.replace(/"/g, '&quot;') + '" style="display:flex;align-items:stretch;overflow-x:auto;padding:4px 0">'
+      + nodes.map((n, i) => {
+        const col = n.color || toneCol[n.tone] || C.colors.neutral;
+        const active = n.tone === 'active' || (n.count > 0);
+        const bg = active ? 'rgba(57,184,120,.09)' : 'var(--vx-surface-2,#111315)';
+        const arrow = i < nodes.length - 1 ? '<span aria-hidden="true" style="align-self:center;color:var(--vx-text-muted,#817d77);padding:0 5px;font-size:13px">→</span>' : '';
+        return '<div style="flex:0 0 auto;min-width:76px;text-align:center;padding:8px 10px;border-radius:9px;background:' + bg + ';border:1px solid ' + col + '55">'
+          + '<div style="font-size:10.5px;color:var(--vx-text-secondary,#b7b2aa);text-transform:capitalize;white-space:nowrap">' + String(n.label) + '</div>'
+          + (n.count != null ? '<div style="font-size:15px;font-weight:800;color:' + col + ';font-variant-numeric:tabular-nums">' + n.count + '</div>' : '')
+          + (n.sub ? '<div style="font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--vx-text-muted,#817d77)">' + n.sub + '</div>' : '')
+          + '</div>' + arrow;
+      }).join('') + '</div>';
+    return el;
+  };
+
   /* Marqueurs verticaux (earnings, événements). */
   C.eventMarkers = function (markers) {
     return {
