@@ -106,6 +106,9 @@ _VIEW_CONTENT = {
   <div class="vx-col-12" id="vx-mk-sectors-heat"></div>
 </div>
 <div class="vx-grid vx-mt4">
+  <div class="vx-col-12" id="vx-mk-rotation"></div>
+</div>
+<div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Poids et performance par secteur">
     <div class="vx-chart-head"><span class="vx-chart-title">Poids &amp; performance par secteur</span>
       <span class="vx-chart-question">Où se concentre l’univers, et qui performe ?</span></div>
@@ -441,6 +444,41 @@ function loadSectors(scan){
         sub:(s.avg_change!=null?((s.avg_change>=0?'+':'')+Number(s.avg_change).toFixed(1)+'%'):''),
         color:col(s.avg_change)})),
       fmt:(v)=>v+' titres'});
+  }
+  /* Rotation sectorielle en quadrant (RRG-like) : force relative × momentum */
+  if(window.VXCharts&&sectors.length>=2){
+    const cc2=VXCharts.colors;
+    const pts=sectors.map(s=>({x:(s.avg_score!=null?s.avg_score:(s.score||50)),y:(s.avg_change!=null?s.avg_change:0),label:s.sector||''}));
+    const quadCol=(x,y)=>x>=50?(y>=0?cc2.positive:cc2.warning):(y>=0?cc2.info:cc2.negative);
+    VXCharts.card('vx-mk-rotation',{
+      title:'Rotation sectorielle — force relative × momentum',
+      question:'Quels secteurs mènent, lesquels s’essoufflent ?',
+      conclusion:'Haut-droit = Leaders (force + momentum) · bas-gauche = Retardataires — cliquer un secteur',
+      height:360,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
+      limits:'force = score moyen · momentum = variation moyenne du jour (univers scanné)',
+      explain:{shows:'Chaque secteur placé par sa force relative (score moyen) et son momentum (variation moyenne du jour).',
+        why:'La stratégie surpondère la zone « Leading » (haut-droit) et se méfie du « Lagging » (bas-gauche).',
+        confirm:'Un secteur qui migre vers le haut-droit sur plusieurs séances.',invalidate:'Bascule vers le bas-gauche.'},
+      render:(cv)=>VXCharts.mount(cv,{type:'scatter',
+        data:{datasets:[{data:pts,pointRadius:7,pointHoverRadius:11,
+          pointBackgroundColor:(ctx)=>ctx.raw?quadCol(ctx.raw.x,ctx.raw.y):cc2.neutral,
+          pointBorderColor:'rgba(255,255,255,.22)',pointBorderWidth:1}]},
+        options:{scales:{
+          x:{title:{display:true,text:'Force relative (score moyen) →'},min:0,max:100,grid:{color:'rgba(255,255,255,.06)'}},
+          y:{title:{display:true,text:'Momentum (var. moy. %) ↑'},grid:{color:'rgba(255,255,255,.06)'}}},
+          plugins:{tooltip:{callbacks:{label:(ctx)=>ctx.raw.label+' · force '+VX.fmt.num(ctx.raw.x,0)+' · momentum '+VX.fmt.pct(ctx.raw.y,1)}}},
+          onClick:(evt,els,chart)=>{const p=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+            if(p.length){const d=chart.data.datasets[0].data[p[0].index];VX.context.save();location.href='/opportunities?view=stocks&sector='+encodeURIComponent(d.label);}}},
+        plugins:[{id:'vxQuad',afterDatasetsDraw(chart){const a=chart.chartArea,sx=chart.scales.x,sy=chart.scales.y;const xc=sx.getPixelForValue(50),y0=sy.getPixelForValue(0);const g=chart.ctx;
+          g.save();g.strokeStyle='rgba(255,255,255,.12)';g.setLineDash([4,4]);g.beginPath();
+          if(xc>a.left&&xc<a.right){g.moveTo(xc,a.top);g.lineTo(xc,a.bottom);}
+          if(y0>a.top&&y0<a.bottom){g.moveTo(a.left,y0);g.lineTo(a.right,y0);}g.stroke();g.setLineDash([]);
+          g.font='10px sans-serif';g.fillStyle='rgba(255,255,255,.32)';
+          g.fillText('LEADING',a.right-58,a.top+14);g.fillText('IMPROVING',a.left+6,a.top+14);
+          g.fillText('WEAKENING',a.right-66,a.bottom-8);g.fillText('LAGGING',a.left+6,a.bottom-8);
+          g.fillStyle='#bab4ac';g.font='9px sans-serif';
+          chart.data.datasets[0].data.forEach((d,i)=>{const m=chart.getDatasetMeta(0).data[i];if(m)g.fillText(String(d.label).slice(0,11),m.x+9,m.y+3);});
+          g.restore();}}]})});
   }
 }
 
