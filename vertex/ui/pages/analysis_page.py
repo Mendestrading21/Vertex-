@@ -266,7 +266,8 @@ async function loadDossier(){
         +(plan.rr?` · R:R structurel ${plan.rr}`:''),
       controlsHtml:['1m','3m','6m','1y','2y'].map(tf=>
         `<button class="vx-chip" data-tf="${tf}" aria-pressed="${tf===TF}">${tf}</button>`).join(''),
-      labels:cut.map((_,i)=>i-cut.length),bars:bars,closes:cut,overlays:overlays,plan:plan,events,height:290,
+      labels:cut.map((_,i)=>i-cut.length),bars:bars,closes:cut,overlays:overlays,plan:plan,events,
+      height:Math.round(Math.min(460,Math.max(340,(window.innerWidth||1200)*0.30))),
       source:(window.__vxStatus&&window.__vxStatus.demo)?'scan (DÉMO)':'scan',
       timestamp:(t&&t.detail&&t.detail.updated)||Date.now(),mode:demo?'fallback':'delayed',
       limits:(bars.length?'bougies OHLC quotidiennes':'clôtures quotidiennes')+' du scan · MM = moyennes serveur · niveaux = plan moteur',
