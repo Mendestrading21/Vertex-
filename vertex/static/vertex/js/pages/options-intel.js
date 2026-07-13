@@ -167,6 +167,19 @@
       '</span><span class="vx-stat-value">' + val + '</span></div>';
   }
 
+  // Barre de proportion CALL vs PUT (direction dominante du tableau d'options).
+  function callPutBar(calls, puts) {
+    var t = (calls || 0) + (puts || 0); if (!t) return '';
+    var cp = Math.round((calls || 0) / t * 100), pp = 100 - cp;
+    return '<div style="margin-top:.8rem" role="img" aria-label="CALLS ' + (calls || 0) + ' contre PUTS ' + (puts || 0) + ', ' + cp + ' % calls">' +
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--vx-text-secondary,#bab4ac);margin-bottom:3px">' +
+      '<span>CALLS ' + VXf.nd(calls) + ' (' + cp + ' %)</span><span>PUTS ' + VXf.nd(puts) + ' (' + pp + ' %)</span></div>' +
+      '<div style="height:14px;border-radius:5px;overflow:hidden;display:flex;background:var(--vx-surface-3,#17191b)">' +
+      '<span style="width:' + cp + '%;background:var(--vx-copper-light,#b47852)"></span>' +
+      '<span style="width:' + pp + '%;background:var(--vx-option,#806095)"></span></div>' +
+      '<div class="vx-muted" style="font-size:11px;margin-top:4px">Direction dominante : CALLS — la Stratégie Vertex privilégie l’achat de calls ; les puts restent tactiques et rares. Volume/OI ≠ conviction certaine.</div></div>';
+  }
+
   function countersHtml(c, demo, asOf) {
     var band = c.quality_band ? esc(c.quality_band) : '—';
     return (demo ? '<div class="vx-demo-tag">Données de démonstration</div>' : '') +
@@ -179,6 +192,7 @@
       stat('Qualité moy.', c.avg_quality != null ? VXf.num(c.avg_quality, 0) + ' (' + band + ')' : '—') +
       stat('Spread moy.', c.avg_spread_pct != null ? VXf.num(c.avg_spread_pct, 1) + ' %' : '—') +
       '</div>' +
+      callPutBar(c.calls, c.puts) +
       (asOf ? '<div class="vx-muted" style="margin-top:.5rem">Scan : ' + esc(asOf) + '</div>' : '');
   }
 
