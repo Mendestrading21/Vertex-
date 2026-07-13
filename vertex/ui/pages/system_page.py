@@ -564,7 +564,20 @@ async function loadData(){
   /* Fraîcheur par domaine */
   if(live&&live.domains&&Object.keys(live.domains).length){
     const doms=live.domains;
-    $('vx-data-fresh').innerHTML=`<div style="overflow-x:auto"><table class="vx-table">
+    /* Heatmap de fraîcheur (§37) : une tuile/domaine, couleur = état, chiffre = âge. */
+    const tile=(k)=>{const d=doms[k]||{};
+      const fresh=d.fresh===true||d.state==='fresh'||d.state==='live';
+      const off=d.state==='offline';
+      const col=fresh?'--vx-positive':(off?'--vx-negative':'--vx-warning');
+      const soft=fresh?'rgba(57,184,120,.13)':(off?'rgba(220,98,85,.13)':'rgba(204,137,44,.13)');
+      const age=d.age_s===null||d.age_s===undefined?'—':(d.age_s<120?Math.round(d.age_s)+' s':Math.round(d.age_s/60)+' min');
+      const lbl=fresh?'frais':(off?'hors ligne':'différé');
+      return `<div role="img" aria-label="${esc(k)} ${lbl} ${age}" style="padding:10px 12px;border-radius:9px;display:flex;flex-direction:column;gap:1px;background:${soft};border:1px solid var(${col},#8f8a83)">
+        <span style="font-size:11px;color:var(--vx-text-secondary,#b7b2aa);text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</span>
+        <span style="font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(${col},#8f8a83)">${age}</span>
+        <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#817d77)">${lbl}</span></div>`;};
+    const heat=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-bottom:14px" aria-label="Heatmap de fraîcheur des données">${Object.keys(doms).map(tile).join('')}</div>`;
+    $('vx-data-fresh').innerHTML=heat+`<div style="overflow-x:auto"><table class="vx-table">
       <thead><tr><th>Domaine</th><th>&Eacute;tat</th><th class="vx-num">&Acirc;ge</th><th>D&eacute;tail</th></tr></thead><tbody>`
       +Object.keys(doms).map(k=>{
         const d=doms[k]||{};
