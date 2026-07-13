@@ -153,13 +153,20 @@ async function loadRegime(){
   try{
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
     const adj=r.adjustments||{};
+    const conf=Math.round((r.confidence||0)*100);
     $('vx-mk-regime-body').innerHTML=
-      `<div class="vx-kpi vx-mb3"><span class="vx-kpi-value" style="font-size:24px" data-regime="${esc(r.regime)}">${esc(r.regime)}</span>
-       <span class="vx-kpi-delta vx-muted">confiance ${VX.fmt.num((r.confidence||0)*100,0)} % · ${(r.dimensions_used||[]).length} dimensions</span></div>
+      `<div id="vx-mk-regime-gauge" class="vx-mb2"></div>
+      <div class="vx-kpi vx-mb3" style="text-align:center"><span class="vx-kpi-value" style="font-size:22px" data-regime="${esc(r.regime)}">${esc(r.regime)}</span>
+       <span class="vx-kpi-delta vx-muted">${(r.dimensions_used||[]).length} dimensions évaluées</span></div>
       <div class="vx-kv"><span class="k">Nouveau risque</span><span class="v ${adj.new_risk_allowed?'vx-pos':'vx-neg'}">${adj.new_risk_allowed?'autorisé':'BLOQUÉ'}</span></div>
       <div class="vx-kv"><span class="k">Priorité setups</span><span class="v">${VX.fmt.nd(esc(adj.setup_priority))}</span></div>
       <div class="vx-kv"><span class="k">Confirmations exigées</span><span class="v">${VX.fmt.nd(esc(adj.confirmation_required))}</span></div>
       <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')}</div>`;
+    if(window.VXCharts&&VXCharts.gauge){
+      const reading=conf>=70?'Signal net — régime lisible':conf>=40?'Signal modéré — confirmations utiles':'Signal faible — prudence accrue';
+      VXCharts.gauge('vx-mk-regime-gauge',{value:conf,min:0,max:100,unit:' %',label:'confiance',reading:reading,
+        bands:[{to:40,color:VXCharts.colors.negative},{to:70,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.positive}]});
+    }
   }catch(e){$('vx-mk-regime-body').innerHTML=VX.states.error('Régime indisponible');}
 }
 function loadLeader(scan){
