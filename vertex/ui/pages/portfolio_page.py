@@ -132,7 +132,13 @@ async function renderTeam(){
   const totalValue=rich.reduce((s,t)=>s+(t.value??t.invested),0);
   const sub={'Offensive':'Attaquants','Noyau':'Milieux','Défense / gardien':'Défenseurs & gardien',
     'Options tactiques':'HORS équipe — jamais gardien (max 3)'};
-  $('pf-body').innerHTML=`<div class="vx-grid">
+  $('pf-body').innerHTML=`<section class="vx-card vx-mb3" aria-label="Allocation du portefeuille">
+      <div class="vx-chart-head"><span class="vx-chart-title">Allocation du portefeuille</span>
+        <span class="vx-chart-question">Où est concentré le capital, et qui gagne/perd ?</span></div>
+      <div id="pf-alloc-tree" style="height:260px"></div>
+      <div class="vx-card-foot"><span class="vx-meta">Taille = poids (valeur au marché ou au coût) · couleur = P&amp;L latent (vert gagnant / rouge perdant / gris sans marque). Positions déclarées, aucune valeur inventée.</span></div>
+    </section>
+    <div class="vx-grid">
     <div class="vx-col-8" id="pf-team-cols"></div>
     <div class="vx-col-4"><div id="pf-roles-donut"></div>
       <div class="vx-card vx-mt3"><div class="vx-card-header"><span class="vx-card-title">Places</span></div>
@@ -164,6 +170,17 @@ async function renderTeam(){
           <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Actions ${t.sym}">⋯</button>
         </div>`).join(''):'<div class="vx-meta">— vide —</div>'}
     </section>`).join('');
+  /* Treemap d'allocation (§20 — remplace le donut seul) : taille = poids, couleur = P&L */
+  if(window.VXCharts&&VXCharts.treemap){
+    const cc=VXCharts.colors;
+    const el=document.getElementById('pf-alloc-tree');
+    const w=(el&&el.clientWidth)||900;
+    VXCharts.treemap(el,{width:w,height:260,
+      items:rich.map(t=>({label:t.sym,value:Math.max(1,t.value??t.invested??0),
+        sub:(t.pl!=null?((t.pl>=0?'+':'')+VX.fmt.num(t.pl,1)+'%'):(t.type!=='STK'?t.type:'')),
+        color:(t.pl>0?cc.positive:t.pl<0?cc.negative:cc.neutral)})),
+      fmt:(v)=>VX.fmt.price(v)});
+  }
   const counts=Object.entries(roles).filter(([,l])=>l.length);
   if(counts.length)VXCharts.donutCard('pf-roles-donut',{
     title:'Répartition par rôle',question:'L’équipe est-elle équilibrée ?',
