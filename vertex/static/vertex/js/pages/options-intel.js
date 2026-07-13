@@ -126,13 +126,21 @@
     }
     return (demo ? '<div class="vx-demo-tag">Données de démonstration</div>' : '') +
       '<div class="vx-opt-hero-grid">' +
-      '<div class="vx-opt-gauge"><div class="vx-opt-gauge-score" data-tone="' + tone + '">' +
-      Math.round(env.score) + '<small>/100</small></div>' +
+      '<div class="vx-opt-gauge" style="align-items:center;text-align:center">' +
+      '<div id="vx-opt-gauge-radial" data-score="' + Math.round(env.score) + '"></div>' +
       badge(env.label === 'PORTEUR' ? 'FAVORABLE' : env.label === 'HOSTILE' ? 'DEFAVORABLE' : 'NEUTRE') +
-      '<div class="vx-opt-gauge-track"><i data-tone="' + tone + '" style="width:' + pct + '%"></i></div>' +
       '<div class="vx-muted">' + env.dimensions_known + '/' + env.dimensions_total + ' dimensions mesurées</div></div>' +
       '<div class="vx-opt-dims">' + dims + '</div></div>' +
       (pulse ? '<div class="vx-opt-pulse">' + pulse + '</div>' : '');
+  }
+  function mountEnvGauge(env) {
+    if (!env || !window.VXCharts || !VXCharts.gauge) return;
+    var el = document.getElementById('vx-opt-gauge-radial'); if (!el) return;
+    var s = Math.round(env.score || 0);
+    var reading = s >= 60 ? 'Environnement porteur pour l’achat de calls'
+      : s >= 40 ? 'Environnement neutre — sélectivité' : 'Environnement coûteux — prudence sur les primes';
+    VXCharts.gauge(el, { value: s, min: 0, max: 100, unit: ' /100', label: 'environnement', reading: reading,
+      bands: [{ to: 40, color: VXCharts.colors.negative }, { to: 60, color: VXCharts.colors.warning }, { to: 100, color: VXCharts.colors.positive }] });
   }
   function pill(label, val) {
     return '<span class="vx-opt-chip"><b>' + esc(label) + '</b> ' + esc(val == null ? '—' : val) + '</span>';
@@ -148,14 +156,14 @@
     get('/api/options/overview').then(function (d) {
       if (!d || d.empty) {
         var msg = (window.VX && VX.states) ? VX.states.empty('Aucun contrat dans le tableau (scan vide ou hors séance).') : 'Aucune donnée.';
-        if (hEl) hEl.innerHTML = heroHtml(d && d.environment, d && d.option_pulse, d && d.volatility_pulse, d && d.demo);
+        if (hEl) { hEl.innerHTML = heroHtml(d && d.environment, d && d.option_pulse, d && d.volatility_pulse, d && d.demo); mountEnvGauge(d && d.environment); }
         if (cEl) cEl.innerHTML = msg;
         if (vEl) vEl.innerHTML = verdictCard(d && d.interpretation);
         if (rEl) rEl.innerHTML = '';
         return;
       }
       var c = d.counters || {};
-      if (hEl) hEl.innerHTML = heroHtml(d.environment, d.option_pulse, d.volatility_pulse, d.demo);
+      if (hEl) { hEl.innerHTML = heroHtml(d.environment, d.option_pulse, d.volatility_pulse, d.demo); mountEnvGauge(d.environment); }
       if (cEl) cEl.innerHTML = countersHtml(c, d.demo, d.as_of);
       if (vEl) vEl.innerHTML = verdictCard(d.interpretation);
       if (rEl) rEl.innerHTML = radarTable((d.radar || []).slice(0, 4));
