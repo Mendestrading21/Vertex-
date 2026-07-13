@@ -67,6 +67,17 @@ _VIEW_CONTENT = {
 <div class="vx-grid vx-mt4">
   <div class="vx-col-12" id="vx-mk-multi"></div>
 </div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-6" aria-label="Top 10 hausses">
+    <div class="vx-card-header"><span class="vx-card-title">Top 10 — plus fortes hausses</span>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Univers →</a></span></div>
+    <div id="vx-mk-top"></div>
+  </section>
+  <section class="vx-card vx-col-6" aria-label="Flop 10 baisses">
+    <div class="vx-card-header"><span class="vx-card-title">Flop 10 — plus fortes baisses</span></div>
+    <div id="vx-mk-flop"></div>
+  </section>
+</div>
 """,
     'macro': """
 <div class="vx-grid vx-mt3" id="vx-mk-macro-kpis" aria-label="Indicateurs macro"></div>
@@ -187,6 +198,26 @@ async function loadRegime(){
         bands:[{to:40,color:VXCharts.colors.negative},{to:70,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.positive}]});
     }
   }catch(e){$('vx-mk-regime-body').innerHTML=VX.states.error('Régime indisponible');}
+}
+function moversRows(rows,dir){
+  const sorted=(rows||[]).filter(r=>r.change!==null&&r.change!==undefined).slice()
+    .sort((a,b)=>dir==='top'?(b.change-a.change):(a.change-b.change)).slice(0,10);
+  if(!sorted.length)return VX.states.empty('Aucune variation exploitable dans le dernier scan.');
+  return sorted.map(function(r){const chg=r.change;
+    return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
+      <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${r.symbol}">${r.symbol}</button>
+      <span class="vx-num vx-mono ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}" style="width:62px;text-align:right;font-weight:700">${VX.fmt.pct(chg,1)}</span>
+      <span class="vx-grow vx-truncate vx-dim" style="font-size:11.5px">${esc(r.sector||'')}</span>
+      <span class="vx-num vx-mono vx-meta" style="width:64px;text-align:right">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):''}</span>
+      ${r.score!==null&&r.score!==undefined?`<span class="vx-badge" title="Score Vertex">${VX.fmt.num(r.score,0)}</span>`:''}
+      <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${r.symbol}" aria-label="Actions ${r.symbol}">⋯</button></div>`;}).join('');
+}
+function loadMovers(scan){
+  const rows=(scan&&scan.rows)||[];
+  const t=$('vx-mk-top'),f=$('vx-mk-flop');
+  const foot=`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))} · ${rows.length} titres scannés</div>`;
+  if(t)t.innerHTML=moversRows(rows,'top')+foot;
+  if(f)f.innerHTML=moversRows(rows,'flop')+foot;
 }
 function loadLeader(scan){
   const sectors=(scan&&scan.sectors)||[];
@@ -469,7 +500,7 @@ async function loadVix(scan){
 async function boot(){
   const scan=await getScan();
   demoBanner(scan);
-  if(VIEW==='overview'){loadRegime();loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);}
+  if(VIEW==='overview'){loadRegime();loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);loadMovers(scan);}
   else if(VIEW==='macro'){loadMacroKpis(scan);loadYield(scan);loadMacroCal();}
   else if(VIEW==='sectors'){loadSectors(scan);}
   else if(VIEW==='breadth'){loadBreadth(scan);}
