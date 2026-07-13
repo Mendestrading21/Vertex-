@@ -1,0 +1,42 @@
+/* Vertex — POLISH premium additif (Obsidian Copper).
+   Non destructif : n'ajoute que profondeur et raffinement sur les composants existants.
+   Chargé en dernier ; ne redéfinit aucune structure, uniquement du style. */
+
+/* ── Profondeur des cartes Hero : liseré cuivre supérieur + halo d'angle ── */
+.vx-card--hero{position:relative;overflow:hidden}
+.vx-card--hero::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(207,97,40,.5),transparent);opacity:.75}
+.vx-card--hero::after{content:"";position:absolute;top:-38%;right:-8%;width:440px;height:440px;pointer-events:none;
+  background:radial-gradient(circle,rgba(146,88,56,.10),transparent 62%)}
+.vx-card--hero>*{position:relative}
+
+/* ── Données financières : chiffres tabulaires (colonnes alignées, lecture nette) ── */
+.vx-kpi-value,.vx-kpi-delta,.vx-num,.vx-mono,.vx-ticker,td.vx-num,.vx-strip-item .vx-kpi-value{
+  font-variant-numeric:tabular-nums}
+.vx-kpi-value{letter-spacing:-.01em}
+
+/* ── Micro-lift au survol (cartes non-graphiques) — coupé en reduced-motion ── */
+@media (prefers-reduced-motion:no-preference){
+  .vx-card:not(.vx-chart-card):not(.vx-card--hero):hover{transform:translateY(-1px)}
+  a.vx-strip-item:hover{transform:translateY(-1px)}
+}
+
+/* ── Titres légèrement plus nets ── */
+.vx-chart-title,.vx-card-title{letter-spacing:.004em}
+
+/* ── Scrollbars fines & sombres (touche premium) ── */
+.vx-content ::-webkit-scrollbar,.vx-table-wrap::-webkit-scrollbar,.vx-drawer ::-webkit-scrollbar{width:9px;height:9px}
+.vx-content ::-webkit-scrollbar-thumb,.vx-table-wrap::-webkit-scrollbar-thumb,.vx-drawer ::-webkit-scrollbar-thumb{
+  background:var(--vx-surface-4,#1e2023);border-radius:7px;border:2px solid transparent;background-clip:padding-box}
+.vx-content ::-webkit-scrollbar-thumb:hover{background:var(--vx-surface-hover,#25282c);background-clip:padding-box}
+.vx-content ::-webkit-scrollbar-track,.vx-table-wrap::-webkit-scrollbar-track{background:transparent}
+
+/* ── Tableaux : survol de ligne plus doux + header légèrement détaché ── */
+.vx-table tbody tr[data-clickable]:hover{background:rgba(255,255,255,.028)}
+.vx-table thead th{letter-spacing:.02em}
+
+/* ── Badges de décision : fond teinté discret (meilleure séparation) ── */
+.vx-badge-decision[data-decision]{background:rgba(255,255,255,.035)}
+
+/* ── Barre KPI (indices/cross-asset) : contour un peu plus vivant au survol ── */
+a.vx-strip-item:hover{border-color:rgba(207,97,40,.28)}
