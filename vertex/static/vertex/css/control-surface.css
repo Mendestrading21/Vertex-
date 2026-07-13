@@ -1,0 +1,58 @@
+/* Vertex — TACTILE COMMAND SURFACE (couche additive, chargée en dernier).
+   Rehausse les contrôles EXISTANTS (boutons/chips/onglets/segmented) avec du relief
+   tactile Obsidian Copper. Relief = action / sélection / priorité (§33), jamais déco.
+   Aucune structure/logique modifiée ; réutilise les tokens de couleur existants. */
+
+:root{
+  --vx-radius-xs:5px;--vx-radius-sm:7px;--vx-radius-md:10px;--vx-radius-lg:14px;--vx-radius-xl:18px;--vx-radius-pill:999px;
+  --vx-control-xs:24px;--vx-control-sm:30px;--vx-control-md:36px;--vx-control-lg:42px;--vx-control-xl:48px;
+  --vx-shadow-raised:0 1px 0 rgba(255,255,255,.05) inset,0 6px 14px rgba(0,0,0,.28);
+  --vx-shadow-pressed:0 2px 7px rgba(0,0,0,.34) inset;
+  --vx-shadow-copper:0 6px 18px rgba(126,47,13,.24),0 1px 0 rgba(255,220,190,.10) inset;
+  --vx-shadow-floating:0 18px 48px rgba(0,0,0,.42);
+  --vx-cs-focus:0 0 0 2px rgba(196,90,37,.34);
+  --vx-motion-fast:130ms;--vx-motion-standard:200ms;--vx-motion-slow:320ms;
+}
+
+/* ── Boutons tactiles (Raised Graphite) — sauf ghost & link qui restent plats ── */
+.vx-btn:not(.vx-btn-ghost):not(.vx-btn-link){box-shadow:var(--vx-shadow-raised)}
+@media (prefers-reduced-motion:no-preference){
+  .vx-btn:not(.vx-btn-ghost):not(.vx-btn-link):hover{transform:translateY(-1px)}
+}
+.vx-btn:not(.vx-btn-ghost):not(.vx-btn-link):active{transform:translateY(1px);box-shadow:var(--vx-shadow-pressed)}
+.vx-btn-ghost,.vx-btn-link{box-shadow:none}
+
+/* ── Primary (Copper Action) — dominant, profondeur cuivre ── */
+.vx-btn-primary{box-shadow:var(--vx-shadow-copper);font-weight:700;letter-spacing:.01em}
+.vx-btn-primary:hover{box-shadow:var(--vx-shadow-copper),var(--vx-glow-brand)}
+.vx-btn-primary:active{box-shadow:var(--vx-shadow-pressed)}
+
+/* ── Focus visible cohérent (accessibilité §31) ── */
+.vx-btn:focus-visible,.vx-chip:focus-visible,.vx-tab:focus-visible,
+.vx-segmented button:focus-visible,.vx-switch:focus-visible,
+.vx-select:focus-visible,input[type="range"]:focus-visible{outline:none;box-shadow:var(--vx-cs-focus)}
+
+/* ── Chips / filtres tactiles ; état actif = liseré cuivre ── */
+.vx-chip{transition:background var(--vx-motion-fast),border-color var(--vx-motion-fast),box-shadow var(--vx-motion-fast),transform var(--vx-motion-fast)}
+@media (prefers-reduced-motion:no-preference){.vx-chip:hover{transform:translateY(-1px)}}
+.vx-chip:hover{border-color:var(--vx-border-strong,rgba(255,255,255,.16))}
+.vx-chip[aria-pressed="true"]{border-color:var(--vx-orange-500,#cf6128);
+  box-shadow:0 0 0 1px rgba(207,97,40,.18),0 4px 10px rgba(126,47,13,.16)}
+
+/* ── Onglets : actif surélevé + barre cuivre plus marquée ── */
+.vx-tab{transition:color var(--vx-motion-fast),background var(--vx-motion-fast),border-color var(--vx-motion-fast);border-radius:7px 7px 0 0}
+.vx-tab:hover{background:rgba(255,255,255,.03)}
+.vx-tab[aria-selected="true"]{background:rgba(207,97,40,.07);border-bottom-width:2.5px}
+
+/* ── Segmented control : rail creusé, indicateur actif surélevé ── */
+.vx-segmented{box-shadow:var(--vx-shadow-pressed);gap:2px}
+.vx-segmented button{transition:background var(--vx-motion-fast),color var(--vx-motion-fast),box-shadow var(--vx-motion-fast);border-radius:5px}
+.vx-segmented button[aria-pressed="true"]{box-shadow:var(--vx-shadow-raised)}
+
+/* ── Bulles de décision stratégiques : léger relief teinté (jamais tous les badges) ── */
+.vx-badge-decision[data-decision]{box-shadow:0 2px 8px rgba(0,0,0,.22)}
+.vx-badge-decision[data-decision="ACHETER"],.vx-badge-decision[data-decision="RENFORCER"]{box-shadow:0 3px 10px rgba(56,184,121,.16)}
+.vx-badge-decision[data-decision="REFUSER"],.vx-badge-decision[data-decision="REDUIRE"]{box-shadow:0 3px 10px rgba(220,98,85,.16)}
+
+/* ── Surfaces flottantes (Glass Control, usage limité) : ombre profonde ── */
+.vx-drawer,.vx-modal,.vx-palette,.vx-popover{box-shadow:var(--vx-shadow-floating)}
