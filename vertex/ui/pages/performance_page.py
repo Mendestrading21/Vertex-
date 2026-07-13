@@ -146,9 +146,26 @@ function emptyCard(host,reason,action){
 function loadKpis(){
   const list=trades();
   if(list.length<5){
-    $('vx-pf-kpis').innerHTML='<div class="vx-card vx-col-12">'
-      +VX.states.empty('Pas assez de données pour juger la méthode — '+list.length
-        +' trade(s) déclaré(s) avec résultat (minimum 5). Tenez le journal après chaque sortie.',JOURNAL_ACTION)+'</div>';
+    const n=list.length;
+    const milestones=[[5,'P&L, taux de réussite, profit factor, espérance'],
+      [10,'Distribution gains/pertes, meilleurs & pires trades'],
+      [20,'Courbe d’équité vs SPY, drawdown, MAE / MFE'],
+      [30,'Rolling win rate & expectancy, perf par setup / régime']];
+    const pct=Math.min(100,Math.round(n/5*100));
+    const rows=milestones.map(function(m){const done=n>=m[0];
+      return `<div class="vx-kv"><span class="k">${done?'✅':'🔒'} ${m[0]} trades</span>`
+        +`<span class="v vx-dim" style="font-size:12px;text-align:right">${esc(m[1])}</span></div>`;}).join('');
+    $('vx-pf-kpis').innerHTML=`<div class="vx-card vx-col-12">
+      <div class="vx-card-header"><span class="vx-card-title">Construis ton track record</span>
+        <span class="vx-meta vx-right">${n} / 5 trades pour débloquer les premières statistiques</span></div>
+      <div style="height:10px;border-radius:6px;background:var(--vx-surface-3,#17191b);overflow:hidden;margin:8px 0 14px" role="img" aria-label="progression ${pct} %">
+        <span style="display:block;height:100%;width:${pct}%;background:var(--vx-orange-500,#ad4718);border-radius:6px"></span></div>
+      <div class="vx-help vx-mb3">Chaque trade clôturé (WIN/LOSS + P&amp;L) débloque des analyses. Aucune fausse performance n’est affichée avant d’avoir des données réelles — la méthode se juge sur des faits, pas des estimations.</div>
+      ${rows}
+      <div class="vx-flex vx-mt3" style="gap:.5rem;flex-wrap:wrap">
+        <a class="vx-btn vx-btn-sm vx-btn-primary" href="/performance?view=journal">Ajouter une entrée au journal</a>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio?view=positions">Voir mes positions</a></div>
+    </div>`;
     return list;
   }
   const s=stats(list);
