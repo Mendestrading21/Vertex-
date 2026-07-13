@@ -81,7 +81,11 @@
       return h + '</div>';
     },
     empty(reason, action) {
-      return `<div class="vx-state" data-state="empty"><b>Aucune donnée</b><span>${reason || ''}</span>${action || ''}</div>`;
+      return `<div class="vx-state" data-state="empty"><span class="vx-state-icon" aria-hidden="true">`
+        + `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">`
+        + `<rect x="3.5" y="4.5" width="17" height="15" rx="2.5" stroke-dasharray="3 3"/>`
+        + `<path d="M7 11h5M7 15h8" stroke-dasharray="2 3"/></svg></span>`
+        + `<b>Aucune donnée</b><span>${reason || ''}</span>${action || ''}</div>`;
     },
     stale(ageText, source, impact) {
       return `<div class="vx-stale-banner" data-state="stale">⏳ Donnée rassise (${ageText}${source ? ' · ' + source : ''})` +
