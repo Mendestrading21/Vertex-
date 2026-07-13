@@ -71,6 +71,33 @@ function scoreBar(label,val,color){
       <span style="display:block;height:100%;width:${v}%;background:${color};border-radius:4px"></span></span>
     <span style="width:26px;text-align:right;font-size:10.5px;font-variant-numeric:tabular-nums;color:var(--vx-text-secondary,#b7b2aa)">${Math.round(v)}</span></div>`;
 }
+/* Top Opportunities (§17) : cartes des meilleurs candidats — actionnables d'abord */
+function renderTopCards(rows){
+  const el=$('op-topcards');if(!el)return;
+  const prio=(r)=>bucketOf(r)==='Actionnable'?0:bucketOf(r)==='Proche'?1:bucketOf(r)==='À surveiller'?2:3;
+  const ranked=(rows||[]).filter(r=>r.verdict!=='AVOID'&&r.verdict!=='ÉVITER')
+    .slice().sort((a,b)=>prio(a)-prio(b)||(b.score||0)-(a.score||0)).slice(0,6);
+  if(!ranked.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="vx-card-header" style="padding:0 0 8px"><span class="vx-card-title">Top opportunités — les mieux notées</span>'
+    +'<span class="vx-chart-question">Lesquelles méritent ton attention en premier ?</span></div>'
+    +'<div class="vx-grid vx-mb3">'+ranked.map(function(r){const dec=r.verdict||'';
+    return `<div class="vx-card vx-col-4" style="grid-column:span 4" aria-label="${r.symbol}">
+      <div class="vx-flex"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px" data-open-analysis="${r.symbol}">${r.symbol}</button>
+        <span class="vx-badge">${bucketOf(r)}</span><span class="vx-grow"></span>
+        <span class="vx-mono" style="font-size:22px;font-weight:800;color:var(--vx-text-primary,#f4f1ec)">${VX.fmt.nd(r.score)}</span></div>
+      <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">
+        ${dec?`<span class="vx-badge vx-badge-decision" data-decision="${esc(dec)}">${esc(dec)}</span>`:''}
+        ${r.rr!==null&&r.rr!==undefined?`<span class="vx-meta">R:R ${VX.fmt.nd(r.rr)}</span>`:''}
+        ${r.sector?`<span class="vx-meta vx-truncate" style="max-width:110px">${esc(r.sector)}</span>`:''}</div>
+      <div class="vx-kv vx-mt1"><span class="k">Cours</span><span class="v vx-mono">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):'—'}</span></div>
+      ${(r.playbook||r.profile)?`<div class="vx-meta vx-truncate">${esc(r.playbook||r.profile)}</div>`:''}
+      <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
+        <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${r.symbol}">Analyser</button>
+        <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','follow')">Suivre</button>
+        <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','alert')">Alerte</button>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" target="_blank" rel="noopener" href="https://www.tradingview.com/chart/?symbol=${r.symbol}">TV ↗</a>
+      </div></div>`;}).join('')+'</div>';
+}
 function renderRanking(rows){
   const el=$('op-ranking');if(!el||!window.VXCharts)return;
   const cc=VXCharts.colors;
@@ -124,13 +151,14 @@ async function renderRadar(){
   const scan=await VX.fetch('/scan',{ttl:120000});
   const rows=(scan.rows||[]).filter(r=>r.score!==undefined);
   if(!rows.length){$('op-body').innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
-  $('op-body').innerHTML=demoBanner(scan)+'<div id="op-funnel" class="vx-mb3"></div><div class="vx-grid"><div class="vx-col-8" id="op-radar"></div>'
+  $('op-body').innerHTML=demoBanner(scan)+'<div id="op-topcards"></div><div id="op-funnel" class="vx-mb3"></div><div class="vx-grid"><div class="vx-col-8" id="op-radar"></div>'
     +'<div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Lecture</span></div>'
     +'<div class="vx-dim" style="font-size:12.5px">X : qualité stratégique (score composite moteur).<br>'
     +'Y : qualité du timing (timing technique moteur).<br>Taille : intensité du signal (anomalies).<br>'
     +'Couleur : direction du verdict.<br>Bordure orange : qualité de données dégradée.</div>'
     +'<div id="op-radar-sel" class="vx-mt3"></div></div></div>'
     +'<div id="op-ranking" class="vx-mt4"></div>';
+  renderTopCards(rows);
   renderFunnel();
   renderRanking(rows);
   VXCharts.card('op-radar',{
