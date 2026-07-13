@@ -71,13 +71,16 @@ _VIEW_CONTENT = {
     'macro': """
 <div class="vx-grid vx-mt3" id="vx-mk-macro-kpis" aria-label="Indicateurs macro"></div>
 <div class="vx-grid vx-mt4">
-  <div class="vx-col-7" id="vx-mk-macro-cal"></div>
+  <div class="vx-col-7" id="vx-mk-yield"></div>
   <section class="vx-card vx-col-5" aria-label="Limites des données macro">
     <div class="vx-card-header"><span class="vx-card-title">Limites des données</span></div>
-    <div class="vx-insight">La courbe des taux complète n’est pas fournie par les
-    moteurs — seul le taux 10 ans est disponible via le scan. Aucune autre maturité
-    n’est affichée plutôt que d’inventer des points de courbe.</div>
+    <div class="vx-insight">Courbe tracée sur les <b>4 maturités réelles</b> du scan
+    (3M · 5A · 10A · 30A). Les maturités intermédiaires (2A/7A/20A) ne sont pas fournies
+    par les moteurs — non affichées plutôt qu’inventées.</div>
   </section>
+</div>
+<div class="vx-grid vx-mt4">
+  <div class="vx-col-12" id="vx-mk-macro-cal"></div>
 </div>
 """,
     'sectors': """
@@ -289,6 +292,34 @@ function loadMacroKpis(scan){
   }
   $('vx-mk-macro-kpis').innerHTML=known.map(n=>kpiCell(n,{last:by[n].price,change:by[n].change},scan)).join('');
 }
+/* Courbe des taux US — 4 maturités RÉELLES du scan (jamais interpolées) */
+function loadYield(scan){
+  const el=document.getElementById('vx-mk-yield');if(!el||!window.VXCharts)return;
+  const macro=(scan&&scan.macro)||[];const byId={};macro.forEach(m=>{byId[m.id]=m;});
+  const mats=[['^IRX','3M'],['^FVX','5A'],['^TNX','10A'],['^TYX','30A']];
+  const pts=mats.filter(m=>byId[m[0]]&&byId[m[0]].value!=null);
+  if(pts.length<2){emptyCard('vx-mk-yield','Courbe des taux indisponible — maturités non fournies par le scan.',SCAN_ACTION);return;}
+  const labels=pts.map(m=>m[1]);
+  const cur=pts.map(m=>byId[m[0]].value);
+  const prev=pts.map(m=>byId[m[0]].prev!=null?byId[m[0]].prev:byId[m[0]].value);
+  const t10=byId['^TNX'],t3=byId['^IRX'];
+  const spread=(t10&&t3&&t10.value!=null&&t3.value!=null)?(t10.value-t3.value):null;
+  const cc=VXCharts.colors;
+  VXCharts.card('vx-mk-yield',{
+    title:'Courbe des taux US',timeframe:'clôture',
+    question:'La courbe est-elle normale ou inversée ?',
+    conclusion:spread!=null?('Spread 10a-3m '+(spread>=0?'+':'')+spread.toFixed(2)+' pt — '+(spread<0?'INVERSÉE (signal de récession)':'pentue / normale')):'—',
+    height:250,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
+    limits:'4 maturités réelles (3M/5A/10A/30A)',
+    legend:[{label:'Actuelle',color:cc.brand},{label:'Séance préc.',color:cc.neutral}],
+    explain:{shows:'Le rendement du Trésor US par maturité (points réels du scan, non interpolés).',
+      why:'Une courbe inversée (court > long) précède souvent les récessions et module l’appétit pour le risque.',
+      confirm:'Repentification : le spread 10a-3m remonte durablement.',invalidate:'Inversion qui s’aggrave.'},
+    render:(cv)=>VXCharts.multiLine(cv,labels,[
+      {label:'Actuelle',data:cur,borderColor:cc.brand,borderWidth:2.2,pointRadius:3,pointBackgroundColor:cc.brand,fill:false},
+      {label:'Séance préc.',data:prev,borderColor:cc.neutral,borderWidth:1.4,borderDash:[4,3],pointRadius:0,fill:false}
+    ],{yFmt:(v)=>v+' %'})});
+}
 async function loadMacroCal(){
   try{
     const cal=await VX.fetch('/cal-feed',{ttl:300000});
@@ -439,7 +470,7 @@ async function boot(){
   const scan=await getScan();
   demoBanner(scan);
   if(VIEW==='overview'){loadRegime();loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);}
-  else if(VIEW==='macro'){loadMacroKpis(scan);loadMacroCal();}
+  else if(VIEW==='macro'){loadMacroKpis(scan);loadYield(scan);loadMacroCal();}
   else if(VIEW==='sectors'){loadSectors(scan);}
   else if(VIEW==='breadth'){loadBreadth(scan);}
   else if(VIEW==='volatility'){loadVix(scan);}
