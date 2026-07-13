@@ -84,6 +84,27 @@ def analyse(df, bench_ret, fund=None):
     bb_rank = round(float((bb_wid.tail(126) <= bb_now).mean() * 100)) if (bb_now is not None and len(bb_wid) >= 20) else None
     squeeze = bool(bb_rank is not None and bb_rank <= 20)
 
+    # TTM SQUEEZE (précis, directionnel) : Bollinger 20/2σ CONTENUES dans Keltner 20/1.5×ATR
+    # = compression VRAIE (pas juste bande étroite). Momentum = sens probable de la sortie.
+    ttm_on = ttm_fired = False
+    ttm_dir = None
+    try:
+        _std = c.rolling(20).std()
+        _bbu, _bbl = bb_mid + 2 * _std, bb_mid - 2 * _std
+        _tr = pd.concat([df['High'] - df['Low'], (df['High'] - c.shift()).abs(),
+                         (df['Low'] - c.shift()).abs()], axis=1).max(axis=1)
+        _atr20 = _tr.rolling(20).mean()
+        _kcu, _kcl = bb_mid + 1.5 * _atr20, bb_mid - 1.5 * _atr20
+        ttm_on = bool(_bbl.iloc[-1] > _kcl.iloc[-1] and _bbu.iloc[-1] < _kcu.iloc[-1])
+        _prev_on = bool(_bbl.iloc[-2] > _kcl.iloc[-2] and _bbu.iloc[-2] < _kcu.iloc[-2])
+        ttm_fired = bool(_prev_on and not ttm_on)     # sortie de compression = déclenchement
+        _hh, _ll = df['High'].rolling(20).max(), df['Low'].rolling(20).min()
+        _mom = c - ((_hh + _ll) / 2 + bb_mid) / 2      # momentum TTM (histogramme)
+        _m = float(_mom.iloc[-1])
+        ttm_dir = 'up' if _m > 0 else ('down' if _m < 0 else 'flat')
+    except Exception:
+        pass
+
     # CASSURE CONFIRMÉE : nouveau plus-haut 20 jours porté par le volume (≥ 1.5× la moyenne).
     hi20 = float(c.tail(21).iloc[:-1].max()) if len(c) > 21 else last
     breakout = bool(last >= hi20 and volx >= 1.5)
@@ -287,6 +308,7 @@ def analyse(df, bench_ret, fund=None):
         'regime': regime, 'adx': round(adx), 'chop': round(chop), 'rsi_div': rsi_div,
         'trend_quality': trend_quality, 'ma50_rising': ma50_rising, 'ma200_rising': ma200_rising,
         'bb_rank': bb_rank, 'squeeze': squeeze, 'breakout': breakout,
+        'ttm_squeeze': ttm_on, 'ttm_fired': ttm_fired, 'ttm_dir': ttm_dir,
         'accumulation': accumulation, 'distribution': distribution, 'pullback': pullback,
         'profile': profile, 'profile_hint': profile_hint,
         'anomalies': anomalies, 'anomaly_score': anomaly_score, 'anomaly_lvl': anomaly_lvl,

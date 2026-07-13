@@ -307,11 +307,14 @@ async function loadDossier(){
     +`<div class="vx-meta vx-mt2"><a href="/opportunities?view=calendar">Calendrier complet →</a></div>`);
 
   /* 6. Technique */
+  const ttm=(d.ttm_fired?'🚀 sortie de compression':(d.ttm_squeeze?'🔒 en compression (BB dans Keltner)':null));
+  const ttmDir=d.ttm_dir==='up'?' · momentum haussier':d.ttm_dir==='down'?' · momentum baissier':'';
   body('an-technical',
     kv('Score',d.score)+kv('Verdict technique (métadonnée)',d.verdict)
     +kv('Force relative',d.rs)+kv('RSI',d.rsi)
     +kv('Position 52 semaines',d.pos52!==undefined?d.pos52+' %':null)
     +kv('Extension vs ATR',d.ext_atr,(d.ext_atr>=2.5?'vx-warn':''))
+    +(ttm?kv('TTM Squeeze',ttm+ttmDir,(d.ttm_fired&&d.ttm_dir==='up'?'vx-pos':d.ttm_fired&&d.ttm_dir==='down'?'vx-neg':'')):'')
     +`<div class="vx-meta vx-mt2">La décision finale unique reste ${decision} — les verdicts techniques sont des entrées du moteur exécutif.</div>`);
 
   /* 7. Sentiment + consensus analystes (données company déjà chargées → objectif de cours + potentiel) */
@@ -495,6 +498,46 @@ async function loadDossier(){
       :VX.states.empty('Aucune entrée de journal sur ce titre.'))
     +`<div class="vx-meta vx-mt2"><a href="/performance?view=journal&sym=${SYM}">Journal complet →</a></div>`);
   paintBadges();paintThesis();
+  try{loadAnalyst();}catch(e){}
+}
+
+/* Analystes PROFONDS (à la demande) : révisions BPA, surprises, notes, détention, initiés.
+   Enrichit Catalyseurs + Sentiment sans bloquer le dossier principal. */
+async function loadAnalyst(){
+  let a=null;
+  try{a=await VX.fetch('/api/analyst/'+SYM,{ttl:600000});}catch(e){}
+  if(!a||a.demo||a.error)return;
+  const $b=id=>document.querySelector('#'+id+' [data-body]');
+  const price=(TICKER&&TICKER.detail&&TICKER.detail.price)||null;
+  /* Catalyseurs : révisions BPA + surprises + notes datées */
+  const er=a.eps_revisions, su=a.surprises, sm=su&&su.summary, ra=a.ratings_actions, et=a.eps_trend;
+  let cat='';
+  if(su&&su.next)cat+=kv('Prochains résultats (est.)',su.next);
+  if(sm)cat+=kv('Surprises BPA',`battu ${sm.beats}/${sm.total} trim.`+(sm.avg!=null?` · moy. ${sm.avg>=0?'+':''}${sm.avg}%`:''),(sm.beats>=sm.total*0.7?'vx-pos':sm.beats<=sm.total*0.4?'vx-neg':''));
+  if(er&&er.net30!=null)cat+=kv('Révisions BPA (30j)',`${er.up30||0} ↑ / ${er.down30||0} ↓`+(et&&et.revision_pct_90d!=null?` · estim. ${et.revision_pct_90d>=0?'+':''}${et.revision_pct_90d}% /90j`:''),(er.trend==='up'?'vx-pos':er.trend==='down'?'vx-neg':''));
+  if(a.growth_fwd!=null)cat+=kv('Croissance BPA attendue',`${a.growth_fwd>=0?'+':''}${a.growth_fwd}%`);
+  if(ra&&ra.length){
+    cat+=`<div class="vx-meta vx-mt2" style="text-transform:uppercase;letter-spacing:.04em">Notes récentes</div>`;
+    cat+=ra.slice(0,4).map(function(r){
+      const s=(r.pt_action||'')+' '+(r.to||'');
+      const dir=/rais|upgrade|overweight|\bbuy\b|outperform/i.test(s)?'vx-pos':/low|cut|downgrade|underweight|\bsell\b|reduce/i.test(s)?'vx-neg':'';
+      const tgt=r.target?` → ${VX.fmt.price(r.target)}`+(r.prior&&r.prior!==r.target?` (av. ${VX.fmt.price(r.prior)})`:''):'';
+      return `<div class="vx-kv"><span class="k">${esc(r.date)} · ${esc(r.firm)}</span><span class="v ${dir}">${esc(r.to||r.pt_action||r.action)}${tgt}</span></div>`;
+    }).join('');
+  }
+  if(cat){const el=$b('an-catalysts');if(el)el.innerHTML+=`<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">${cat}</div>`;}
+  /* Sentiment : détention institutionnelle (13F) + initiés */
+  let sen='';
+  if(a.holders&&a.holders.length){
+    sen+=`<div class="vx-meta vx-mt2" style="text-transform:uppercase;letter-spacing:.04em">Top détenteurs (13F)</div>`;
+    sen+=a.holders.slice(0,5).map(function(h){
+      return `<div class="vx-kv"><span class="k">${esc(h.holder)}</span><span class="v">${h.pct!=null?(h.pct*100).toFixed(1)+' %':'—'}${h.change?` <span class="${h.change>0?'vx-pos':'vx-neg'}">(${h.change>0?'+':''}${(h.change*100).toFixed(0)}%)</span>`:''}</span></div>`;
+    }).join('');
+  }
+  if(a.insider){const ib=a.insider;
+    sen+=kv('Initiés (récent)',`${ib.buys} achat(s) / ${ib.sells} vente(s)`,(ib.bias==='buy'?'vx-pos':ib.bias==='sell'?'vx-neg':''));
+  }
+  if(sen){const el=$b('an-sentiment');if(el)el.innerHTML+=`<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">${sen}</div>`;}
 }
 loadDossier();
 VX.refresh.register(loadDossier,180000,'analysis');

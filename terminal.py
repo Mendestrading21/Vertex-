@@ -41,6 +41,7 @@ from vertex.market import sectors
 from vertex.market import context as market
 from vertex.research import chart_read as research
 from vertex.data_sources import fundamentals
+from vertex.data_sources import analyst_deep
 from vertex.engines import decide as engine
 from vertex.engines import scorecard as ibkr
 from vertex.strategy import legacy_adapter as strategy
@@ -1821,6 +1822,18 @@ def api_company(sym):
     """Profil d'entreprise seul (cache hebdomadaire — activité, CEO, segments, pairs)."""
     try:
         return jsonify(_company.get(sym.upper(), demo=DEMO_MODE, brief=True))
+    except Exception as e:
+        return jsonify({'error': f'{type(e).__name__}: {e}'})
+
+
+@app.route('/api/analyst/<sym>')
+def api_analyst(sym):
+    """Données analystes PROFONDES à la demande (révisions BPA, surprises, notes,
+    détention, initiés) — yfinance caché 12 h. En démo : rien (pas de réseau)."""
+    if DEMO_MODE:
+        return jsonify({'demo': True})
+    try:
+        return jsonify(analyst_deep.get(sym.upper()) or {})
     except Exception as e:
         return jsonify({'error': f'{type(e).__name__}: {e}'})
 
