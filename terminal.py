@@ -6906,6 +6906,10 @@ function drawDonut(seg){
 }
 
 // ═══════════ CHART (synthétique, ancré sur M.price) ═══════════
+function _chartTip(){var t=el('chartTip');if(t)return t;var host=el('chart');if(!host)return null;host.style.position='relative';t=document.createElement('div');t.id='chartTip';t.style.cssText='position:absolute;pointer-events:none;z-index:20;display:none;background:#12151c;border:1px solid rgba(255,255,255,.16);border-radius:9px;padding:7px 10px;font-family:ui-monospace,monospace;box-shadow:0 10px 30px rgba(0,0,0,.5);white-space:nowrap';host.appendChild(t);return t;}
+function _chartMove(ev){var host=el('chart'),M2=window.__chartMeta,tip=_chartTip();if(!host||!M2||!tip)return;var svg=host.querySelector('svg');if(!svg)return;var r=svg.getBoundingClientRect();if(!r.width)return;var vx=(ev.clientX-r.left)/r.width*M2.W;var frac=(vx-M2.padL)/(M2.W-M2.padL-M2.padR);var i=Math.round(frac*(M2.n-1));if(i<0)i=0;if(i>M2.n-1)i=M2.n-1;var X=M2.padL+i/(M2.n-1)*(M2.W-M2.padL-M2.padR);var Y=M2.padT+(1-(M2.px[i]-M2.lo)/(M2.hi-M2.lo))*(M2.H-M2.padT-M2.padB);var g=host.querySelector('#chx');if(g){g.style.display='';var v=host.querySelector('#chxv');v.setAttribute('x1',X.toFixed(1));v.setAttribute('x2',X.toFixed(1));var d=host.querySelector('#chxd');d.setAttribute('cx',X.toFixed(1));d.setAttribute('cy',Y.toFixed(1));}var pxX=X/M2.W*r.width,pxY=Y/M2.H*r.height,tx=pxX<70?'0':(pxX>r.width-70?'-100%':'-50%');tip.style.left=pxX.toFixed(0)+'px';tip.style.top=pxY.toFixed(0)+'px';tip.style.transform='translate('+tx+',calc(-100% - 12px))';tip.style.display='';var lbl=M2.dates?M2.dates[i]:('séance '+(i+1)),m20=(M2.m20&&M2.m20[i]!=null)?'<span style="color:'+C.info+'">MM20 $'+(+M2.m20[i]).toFixed(2)+'</span>':'',m50=(M2.m50&&M2.m50[i]!=null)?'<span style="color:'+C.vio+'">MM50 $'+(+M2.m50[i]).toFixed(2)+'</span>':'';tip.innerHTML='<div style="color:'+C.mut+';font-size:10px;margin-bottom:2px">'+lbl+'</div><div style="color:'+C.ink+';font-weight:800;font-size:13px">$'+(+M2.px[i]).toFixed(2)+'</div>'+((m20||m50)?'<div style="margin-top:4px;display:flex;gap:9px;font-size:10px;font-weight:600">'+m20+m50+'</div>':'');}
+function _chartLeave(){var tip=el('chartTip');if(tip)tip.style.display='none';var host=el('chart'),g=host&&host.querySelector('#chx');if(g)g.style.display='none';}
+function bindChartHover(){var host=el('chart');if(!host)return;_chartTip();if(host.__hbound)return;host.__hbound=true;host.addEventListener('mousemove',_chartMove);host.addEventListener('mouseleave',_chartLeave);}
 function renderChart(){
   var W=1000,H=380,padL=8,padR=64,padT=14,padB=64,i;
   function ma(p,w){return p.map(function(_,i){var s=0,c=0;for(var j=Math.max(0,i-w+1);j<=i;j++){s+=p[j];c++;}return s/c;});}
@@ -6934,8 +6938,16 @@ function renderChart(){
   s+='<path d="'+path(vwap)+'" fill="none" stroke="'+C.acc+'" stroke-width="1.3" stroke-dasharray="4 4" opacity=".8"/><path d="'+path(px)+'" fill="none" stroke="'+C.ink+'" stroke-width="2.2" stroke-linejoin="round"/>';
   [['Entrée',entry,C.good],['Stop',stop,C.bad],['TP1',tp1,C.good],['TP2',tp2,C.good],['TP3',tp3,C.good],['Support',sup,'rgba(255,255,255,.3)']].forEach(function(L){var yy=Y(L[1]),dashed=L[0].charAt(0)==='T'||L[0]==='Support';
     s+='<line x1="'+padL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+yy.toFixed(1)+'" stroke="'+L[2]+'" stroke-width="1" stroke-dasharray="'+(dashed?'5 4':'0')+'" opacity="'+(L[0]==='Support'?.5:.75)+'"/><rect x="'+(W-padR+2)+'" y="'+(yy-8).toFixed(1)+'" width="'+(padR-4)+'" height="16" rx="3" fill="'+L[2]+'" opacity=".16"/><text x="'+(W-padR+6)+'" y="'+(yy+3.5).toFixed(1)+'" font-size="9" font-weight="700" fill="'+L[2]+'" font-family="ui-monospace,monospace">'+L[0]+' '+L[1].toFixed(0)+'</text>';});
-  s+='<circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(px[n-1]).toFixed(1)+'" r="4" fill="'+C.ink+'"/></svg>';
+  s+='<circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(px[n-1]).toFixed(1)+'" r="4" fill="'+C.ink+'"/>';
+  // axe des dates (léger) — seulement si dates réelles disponibles
+  var __dts=(S&&S.dates&&S.dates.length===n)?S.dates:null;
+  if(__dts){var ndl=Math.min(6,n);for(var dl=0;dl<ndl;dl++){var di=Math.round(dl/(ndl-1)*(n-1)),lx=X(di);s+='<text x="'+lx.toFixed(1)+'" y="'+(H-padB+44).toFixed(1)+'" text-anchor="'+(dl===0?'start':dl===ndl-1?'end':'middle')+'" font-size="9" fill="'+C.mut+'" font-family="ui-monospace,monospace">'+__dts[di]+'</text>';}}
+  // crosshair interactif (positionné au survol par _chartMove)
+  s+='<g id="chx" style="display:none"><line id="chxv" x1="0" x2="0" y1="'+padT+'" y2="'+(H-padB+14).toFixed(1)+'" stroke="rgba(255,255,255,.32)" stroke-width="1" stroke-dasharray="3 3"/><circle id="chxd" cx="0" cy="0" r="4.5" fill="'+C.acc+'" stroke="#0b0d12" stroke-width="1.6"/></g>';
+  s+='</svg>';
+  window.__chartMeta={n:n,px:px,m20:m20,m50:m50,dates:__dts,W:W,H:H,padL:padL,padR:padR,padT:padT,padB:padB,lo:lo,hi:hi};
   seth('chart',s);
+  bindChartHover();
   // scenario timeline anchored on plan
   var TL=[['Aujourd\'hui',entry,'done',C.info],['Cassure',M.price*1.026,'',C.good],['Validation',M.price*1.047,'',C.good],['Entrée',entry,'',C.good],['TP1',tp1,'',C.good],['TP2',tp2,'',C.good],['TP3',tp3,'',C.good],['Invalid.',stop,'',C.bad]];
   seth('tl',TL.map(function(t){var c=t[3];return '<div class="tstep '+t[2]+'" style="--c:'+c+'"><span class="tnode"></span><div class="tk">'+t[0]+'</div><div class="tv" style="color:'+c+'">$'+t[1].toFixed(0)+'</div></div>';}).join(''));
