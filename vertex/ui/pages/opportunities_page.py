@@ -59,6 +59,40 @@ function rowActions(sym){return `<div class="vx-row-actions">
   <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${sym}">Analyse</button>
   <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${sym}" aria-label="Actions ${sym}">⋯</button></div>`;}
 
+/* ── CLASSEMENT : décomposition du score (§19.3) — barres de sous-scores moteur ── */
+function scoreBar(label,val,color){
+  if(val===null||val===undefined||isNaN(val))return `<div style="display:flex;align-items:center;gap:6px;margin:2px 0">
+    <span style="width:82px;font-size:10.5px;color:var(--vx-text-muted,#817d77)">${label}</span>
+    <span class="vx-muted" style="flex:1;font-size:10.5px">n/d</span></div>`;
+  const v=Math.max(0,Math.min(100,val));
+  return `<div style="display:flex;align-items:center;gap:6px;margin:2px 0" role="img" aria-label="${label} ${Math.round(v)} sur 100">
+    <span style="width:82px;font-size:10.5px;color:var(--vx-text-muted,#817d77)">${label}</span>
+    <span style="flex:1;height:6px;background:var(--vx-surface-3,#17191c);border-radius:4px;overflow:hidden">
+      <span style="display:block;height:100%;width:${v}%;background:${color};border-radius:4px"></span></span>
+    <span style="width:26px;text-align:right;font-size:10.5px;font-variant-numeric:tabular-nums;color:var(--vx-text-secondary,#b7b2aa)">${Math.round(v)}</span></div>`;
+}
+function renderRanking(rows){
+  const el=$('op-ranking');if(!el||!window.VXCharts)return;
+  const cc=VXCharts.colors;
+  const top=(rows||[]).filter(r=>r.st_fund!=null||r.st_tech!=null||r.st_mom!=null)
+    .slice().sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,6);
+  if(!top.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="vx-card"><div class="vx-chart-head"><span class="vx-chart-title">Classement — décomposition du score</span>'
+    +'<span class="vx-chart-question">Pourquoi ces titres sortent-ils du lot ?</span></div>'
+    +top.map(function(r){return '<div style="padding:9px 0;border-bottom:1px dashed var(--vx-border-soft,rgba(255,255,255,.065))">'
+      +'<div class="vx-flex"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+r.symbol+'">'+r.symbol+'</button>'
+      +'<span class="vx-badge">'+esc(r.verdict||'')+'</span>'
+      +(r.sector?'<span class="vx-meta vx-truncate" style="max-width:120px">'+esc(r.sector)+'</span>':'')
+      +'<span class="vx-grow"></span><span class="vx-mono" style="font-size:16px;font-weight:800;color:var(--vx-text-primary,#f3f1ed)">'+VX.fmt.nd(r.score)+'</span></div>'
+      +'<div class="vx-mt1">'
+        +scoreBar('Fondamental',r.st_fund,cc.positive)
+        +scoreBar('Technique',r.st_tech,cc.info)
+        +scoreBar('Momentum',r.st_mom,cc.warning)
+        +scoreBar('Risque',r.st_risk,cc.negative)
+      +'</div></div>';}).join('')
+    +'<div class="vx-card-foot"><span class="vx-meta">Sous-scores du moteur de scoring (technical/momentum/fundamental/risk) — aucune pondération inventée.</span></div></div>';
+}
+
 /* ── ENTONNOIR D'OPPORTUNITÉS (§11-12) : univers → … → actionnable ── */
 async function renderFunnel(){
   const el=$('op-funnel');if(!el)return;
@@ -95,8 +129,10 @@ async function renderRadar(){
     +'<div class="vx-dim" style="font-size:12.5px">X : qualité stratégique (score composite moteur).<br>'
     +'Y : qualité du timing (timing technique moteur).<br>Taille : intensité du signal (anomalies).<br>'
     +'Couleur : direction du verdict.<br>Bordure orange : qualité de données dégradée.</div>'
-    +'<div id="op-radar-sel" class="vx-mt3"></div></div></div>';
+    +'<div id="op-radar-sel" class="vx-mt3"></div></div></div>'
+    +'<div id="op-ranking" class="vx-mt4"></div>';
   renderFunnel();
+  renderRanking(rows);
   VXCharts.card('op-radar',{
     title:'Radar des opportunités',question:'Où se trouvent les meilleurs couples stratégie × timing ?',
     conclusion:rows.filter(r=>bucketOf(r)==='Actionnable').length+' candidat(s) en zone actionnable',
