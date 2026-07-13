@@ -259,9 +259,12 @@ async function loadStrip(){
     const d=bySlug[slug]||{};
     const val=d.last??d.price??d.close??null;const chg=d.change??null;
     const target=slug==='vix'?'/markets?view=volatility':(['tnx','dxy','oil','gold','btc'].includes(slug)?'/markets?view=macro':'/markets?view=overview');
+    /* Grand chiffre coloré pour les indices actions (direction = hausse bonne) ;
+       VIX/taux restent neutres — colorer leur niveau induirait en erreur. */
+    const dirClass=(chg!==null&&!['vix','tnx'].includes(slug))?(chg>0?'vx-pos':chg<0?'vx-neg':''):'';
     return `<a class="vx-card vx-card--compact vx-kpi vx-strip-item" style="text-decoration:none;color:inherit" href="${target}" aria-label="${label}">
       <span class="vx-kpi-label">${label}</span>
-      <span class="vx-kpi-value" style="font-size:19px">${VX.fmt.nd(val!==null?VX.fmt.price(val):null)}</span>
+      <span class="vx-kpi-value ${dirClass}" style="font-size:19px">${VX.fmt.nd(val!==null?VX.fmt.price(val):null)}</span>
       <span class="vx-kpi-delta ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}">${chg!==null?VX.fmt.pct(chg):'n/d'}</span>
       <span data-spark="${slug}"></span>
       ${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),scan&&scan.source,mode)}</a>`;

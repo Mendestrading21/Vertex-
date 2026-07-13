@@ -167,6 +167,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/responsive.css">
 <link rel="stylesheet" href="/static/vertex/css/polish.css">
 <link rel="stylesheet" href="/static/vertex/css/control-surface.css">
+<link rel="stylesheet" href="/static/vertex/css/cockpit.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <div class="vx-app" id="vx-app" data-sidebar="expanded">

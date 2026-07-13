@@ -1,0 +1,82 @@
+/* Vertex — COCKPIT (couche premium additive, chargée en DERNIER).
+   Inspirée des cockpits financiers premium (grands chiffres lumineux, profondeur
+   bento, glow cuivre discret, bandeau d'indices, jauges/rails). Obsidian Copper
+   STRICT — aucun néon bleu, le vert/rouge ne servent qu'à la direction.
+   Additive : ne modifie AUCUNE structure ni logique ; réutilise les tokens. */
+
+:root{
+  --vx-glow-pos:0 0 15px rgba(56,184,121,.30);
+  --vx-glow-neg:0 0 15px rgba(220,95,82,.30);
+  --vx-glow-copper-soft:0 0 24px rgba(207,97,40,.15);
+  --vx-tile-hi:inset 0 1px 0 rgba(255,255,255,.045);
+  --vx-tile-grad:linear-gradient(180deg,rgba(255,255,255,.016),transparent 40%);
+}
+
+/* ══ Profondeur « bento » sur toutes les cartes ══
+   Liseré interne clair en haut (relief matériel) + ombre portée plus riche.
+   Les cartes graphiques gardent leur rendu propre. */
+.vx-card:not(.vx-card--hero){box-shadow:var(--vx-tile-hi),var(--vx-shadow-1)}
+@media (prefers-reduced-motion:no-preference){
+  .vx-card:not(.vx-chart-card):not(.vx-card--hero):hover{
+    box-shadow:var(--vx-tile-hi),0 10px 30px rgba(0,0,0,.5)}
+}
+
+/* ══ Bandeau MARKET COMMAND — les tuiles d'indices deviennent des tuiles premium ══ */
+a.vx-strip-item,.vx-strip-item{position:relative;overflow:hidden;
+  background:var(--vx-tile-grad),var(--vx-surface-2);
+  border-radius:var(--vx-r);
+  transition:transform var(--vx-t-fast),border-color var(--vx-t-fast),box-shadow var(--vx-t-fast)}
+.vx-strip-item::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(207,97,40,.42),transparent);opacity:.55}
+a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(207,97,40,.32)}
+/* Grand chiffre net + delta directionnel appuyé, façon cockpit de référence */
+.vx-strip-item .vx-kpi-label{opacity:.85}
+.vx-strip-item .vx-kpi-value{font-size:23px!important;letter-spacing:-.02em;color:var(--vx-text-primary)}
+.vx-strip-item .vx-kpi-delta{font-weight:700;font-size:12.5px}
+.vx-strip-item .vx-kpi-delta.vx-pos{color:var(--vx-positive);text-shadow:var(--vx-glow-pos)}
+.vx-strip-item .vx-kpi-delta.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}
+/* Flèches ▲▼ ajoutées visuellement (le texte du delta garde déjà son signe +/–) */
+.vx-strip-item .vx-kpi-delta.vx-pos::after{content:" ▲";font-size:8.5px;vertical-align:1px}
+.vx-strip-item .vx-kpi-delta.vx-neg::after{content:" ▼";font-size:8.5px;vertical-align:-1px}
+
+/* ══ Grands chiffres directionnels génériques (.vx-kpi-value.vx-pos/.vx-neg) ══ */
+.vx-kpi-value.vx-pos{color:var(--vx-positive);text-shadow:var(--vx-glow-pos)}
+.vx-kpi-value.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}
+
+/* ══ Utilitaire « grand chiffre » (hero KPI façon référence) ══ */
+.vx-stat-xl{font-family:var(--vx-font-mono);font-weight:800;font-size:44px;line-height:1;
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--vx-text-primary)}
+.vx-stat-xl.vx-pos{color:var(--vx-positive);text-shadow:var(--vx-glow-pos)}
+.vx-stat-xl.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}
+.vx-stat-xl-label{font-size:var(--vx-fs-meta);text-transform:uppercase;letter-spacing:.6px;
+  color:var(--vx-text-muted)}
+
+/* ══ Rail segmenté à dégradé (dark-pool / fear-greed / positionnement) ══
+   Réutilisable ; marqueur = flèche cuivre positionnée par --vx-rail-pos (0–100%). */
+.vx-rail{position:relative;height:8px;border-radius:99px;overflow:hidden;
+  box-shadow:var(--vx-shadow-pressed,inset 0 2px 6px rgba(0,0,0,.4));
+  background:linear-gradient(90deg,var(--vx-negative),var(--vx-warning),var(--vx-positive))}
+.vx-rail--copper{background:linear-gradient(90deg,var(--vx-orange-900),var(--vx-orange-500),var(--vx-orange-400))}
+.vx-rail--mono{background:linear-gradient(90deg,var(--vx-graphite-700),var(--vx-orange-500))}
+.vx-rail-mark{position:absolute;top:-4px;left:var(--vx-rail-pos,50%);transform:translateX(-50%);
+  width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;
+  border-top:7px solid var(--vx-text-primary);filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.vx-rail-scale{display:flex;justify-content:space-between;font-size:10px;color:var(--vx-text-faint);
+  margin-top:5px;letter-spacing:.4px;text-transform:uppercase}
+
+/* ══ Liseré supérieur cuivre sur les cartes phares marquées .vx-card--accent ══ */
+.vx-card--accent{position:relative}
+.vx-card--accent::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--vx-orange-500),transparent);opacity:.6;
+  border-radius:var(--vx-r) var(--vx-r) 0 0}
+
+/* ══ Sparklines des tuiles : un peu d'air ══ */
+.vx-strip-item [data-spark]{display:block;margin-top:4px;min-height:22px}
+
+/* ══ Titres de section : filet cuivre discret sous les H1 de page ══ */
+.vx-page-header h1{position:relative}
+
+/* ══ Réduction de mouvement : neutralise lifts/glows animés ══ */
+@media (prefers-reduced-motion:reduce){
+  .vx-strip-item,.vx-card{transition:none}
+}
