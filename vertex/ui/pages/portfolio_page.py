@@ -423,7 +423,18 @@ async function renderRisk(){
         ${kv('Theta global',risk.options_exposure&&risk.options_exposure.theta)}
         ${kv('Vega global',risk.options_exposure&&risk.options_exposure.vega)}
         <div class="vx-meta vx-mt2">Greeks broker requis — sans IBKR, non estimés (aucune invention).</div></div>
-      <section class="vx-card vx-col-12"><div class="vx-card-header"><span class="vx-card-title">Stress tests (§26)</span></div>
+      <section class="vx-card vx-col-12"><div class="vx-card-header"><span class="vx-card-title">Stress tests (§26)</span>
+        <span class="vx-chart-question">Combien perd le portefeuille dans chaque scénario ?</span></div>
+        ${(function(){const arr=Object.entries(stress).filter(([,v])=>v.impact_pct!=null);
+          if(!arr.length)return '';
+          const maxAbs=Math.max.apply(null,[1].concat(arr.map(([,v])=>Math.abs(v.impact_pct))));
+          return '<div class="vx-mb3">'+arr.map(([k,v])=>{const neg=v.impact_pct<0;
+            const w=Math.min(100,Math.abs(v.impact_pct)/maxAbs*100);
+            return '<div style="display:flex;align-items:center;gap:8px;margin:3px 0" role="img" aria-label="'+esc(k)+' '+VX.fmt.pct(v.impact_pct,1)+'">'
+              +'<span style="width:150px;font-size:11px;color:var(--vx-text-secondary,#b7b2aa);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(k)+'</span>'
+              +'<span style="flex:1;height:13px;background:var(--vx-surface-3,#17191c);border-radius:4px;overflow:hidden"><span style="display:block;height:100%;width:'+w.toFixed(0)+'%;background:'+(neg?'var(--vx-negative,#dc6255)':'var(--vx-positive,#39b878)')+';border-radius:4px"></span></span>'
+              +'<span style="width:58px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums" class="'+(neg?'vx-neg':'vx-pos')+'">'+VX.fmt.pct(v.impact_pct,1)+'</span></div>';
+          }).join('')+'</div>';})()}
         <div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Scénario</th>
         <th class="vx-num">Impact estimé</th><th>Note</th></tr></thead><tbody>
         ${Object.entries(stress).map(([k,v])=>`<tr><td>${k}</td>
