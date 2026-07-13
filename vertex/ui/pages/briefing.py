@@ -120,6 +120,23 @@ _CONTENT = """
 <!-- Rangée 2 : indices & marchés -->
 <div class="vx-grid vx-mt4" id="vx-market-strip" aria-label="Indices et marchés"></div>
 
+<!-- Rangée 2b : Pouls du marché — jauges radiales (VIX/Breadth/Régime) + rail de positionnement -->
+<div class="vx-grid vx-mt4" data-block="pulse">
+  <section class="vx-card vx-col-8 vx-card--accent" aria-label="Pouls du marché">
+    <div class="vx-card-header"><span class="vx-card-title">Pouls du marché</span>
+      <span class="vx-actions vx-meta" id="vx-pulse-meta"></span></div>
+    <div class="vx-flex vx-wrap" style="gap:1rem;align-items:flex-start;justify-content:space-around">
+      <div id="vx-gauge-vix" style="flex:1;min-width:150px">%%LOADING%%</div>
+      <div id="vx-gauge-breadth" style="flex:1;min-width:150px"></div>
+      <div id="vx-gauge-trend" style="flex:1;min-width:150px"></div>
+    </div>
+  </section>
+  <section class="vx-card vx-col-4 vx-card--accent" aria-label="Positionnement du régime">
+    <div class="vx-card-header"><span class="vx-card-title">Positionnement</span></div>
+    <div id="vx-regime-rail">%%LOADING%%</div>
+  </section>
+</div>
+
 <!-- Rangée 3 : marché (8) + breadth (4) -->
 <div class="vx-grid vx-mt4" data-block="market">
   <div class="vx-col-8" id="vx-market-chart"></div>
@@ -191,7 +208,8 @@ const E=()=>window.VXEntities;
 function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
 
 /* Personnalisation contrôlée des blocs (§43 — vxDashboardLayout.hidden) */
-const BLOCKS=[['brief','Brief Vertex'],['regime','Régime'],['market','Marchés (graphiques)'],
+const BLOCKS=[['brief','Brief Vertex'],['regime','Régime'],['pulse','Pouls du marché (jauges)'],
+  ['market','Marchés (graphiques)'],
   ['topflop','Top 10 / Flop 10'],['opportunities','Opportunités'],['rotation','Rotation & alertes'],
   ['portfolio','Portefeuille'],['calendar','Calendrier'],['alerts','Alertes']];
 function layoutGet(){try{return JSON.parse(localStorage.getItem('vxDashboardLayout')||'{}')}catch(e){return{}}}
@@ -372,6 +390,54 @@ async function loadMarketCharts(scan){
   }else{$('vx-breadth-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Breadth non calculée par le dernier scan.')+'</div>';}
 }
 
+/* ── Pouls du marché (rangée 2b) — jauges radiales + rail de positionnement ── */
+async function loadPulse(scan){
+  scan=scan||{};
+  /* Les métriques marché vivent dans /api/market/summary (breadth, vix, régime),
+     pas dans scan.market (qui ne porte que la session). */
+  let sum={};try{sum=await VX.fetch('/api/market/summary',{ttl:60000})||{};}catch(e){}
+  const G=window.VXCharts&&VXCharts.gauge;const CO=(window.VXCharts&&VXCharts.colors)||{};
+  const mode=scan.data_source==='demo'?'fallback':'delayed';
+  /* VIX — niveau de volatilité (bas = calme). Source : summary, repli indice VIX. */
+  let vix=(sum.vix!=null&&!isNaN(sum.vix))?Number(sum.vix):null;
+  if(vix==null){const vi=(scan.indices||[]).find(i=>i&&i.name==='VIX');if(vi&&vi.price!=null)vix=Number(vi.price);}
+  if(G&&vix!=null){VXCharts.gauge('vx-gauge-vix',{value:vix,min:0,max:50,unit:'',label:'VIX',
+    reading:vix<15?'Calme':vix<25?'Normal':'Tendu',
+    bands:[{to:15,color:CO.positive},{to:25,color:CO.warning},{to:50,color:CO.negative}]});}
+  else $('vx-gauge-vix').innerHTML=VX.states.empty('VIX non calculé.');
+  /* Breadth — participation. summary.breadth = objet {above50,above200,...} ou nombre. */
+  let br=null;const sb=sum.breadth;
+  if(sb!=null&&typeof sb==='object')br=(sb.above50!=null)?Number(sb.above50):(sb.above200!=null?Number(sb.above200):null);
+  else if(sb!=null&&!isNaN(sb))br=Number(sb);
+  if(G&&br!=null){VXCharts.gauge('vx-gauge-breadth',{value:br,min:0,max:100,unit:' %',label:'Breadth',
+    reading:br>=55?'Participation saine':'Étroite',
+    bands:[{to:40,color:CO.negative},{to:55,color:CO.warning},{to:100,color:CO.positive}]});}
+  else $('vx-gauge-breadth').innerHTML=VX.states.empty('Breadth non calculée.');
+  /* Régime — confiance + rail de positionnement */
+  try{
+    const r=await VX.fetch('/api/market/regime',{ttl:120000});
+    const conf=Math.round((r.confidence||0)*100);
+    const allowed=r.adjustments&&r.adjustments.new_risk_allowed;
+    if(G){VXCharts.gauge('vx-gauge-trend',{value:conf,min:0,max:100,unit:' %',label:esc(r.regime||'Régime'),
+      reading:allowed?'Risque autorisé':'Risque bloqué',
+      bands:[{to:40,color:CO.negative},{to:70,color:CO.warning},{to:100,color:CO.positive}]});}
+    /* Position 0 (défense) → 100 (attaque) : autorisé pousse ≥55, bloqué plafonne à 45 */
+    const pos=allowed?Math.max(55,conf):Math.min(45,100-conf);
+    $('vx-regime-rail').innerHTML=
+      '<div class="vx-stat-xl-label">Défense ↔ Attaque</div>'
+      +'<div class="vx-rail vx-mt2" style="--vx-rail-pos:'+pos+'%"><span class="vx-rail-mark"></span></div>'
+      +'<div class="vx-rail-scale"><span>Défense</span><span>Neutre</span><span>Attaque</span></div>'
+      +'<div class="vx-meta vx-mt3">Régime <b>'+esc(r.regime||'n/d')+'</b> · '
+      +(allowed?'<span class="vx-pos">nouveau risque autorisé</span>':'<span class="vx-neg">nouveau risque BLOQUÉ</span>')+'</div>'
+      +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')
+      +'<a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets?view=volatility">Volatilité →</a></div>';
+  }catch(e){
+    if($('vx-gauge-trend'))$('vx-gauge-trend').innerHTML=VX.states.empty('Régime non calculé.');
+    if($('vx-regime-rail'))$('vx-regime-rail').innerHTML=VX.states.error('Positionnement indisponible');
+  }
+  $('vx-pulse-meta').innerHTML=VX.updateIndicator(scan.scan_ts||scan.updated,scan.source||'scan',mode);
+}
+
 /* ── Top 10 / Flop 10 de la séance (rangée 3b) ── */
 function moversHtml(rows,dir){
   const sorted=rows.filter(r=>r.change!==null&&r.change!==undefined).slice()
@@ -506,7 +572,7 @@ async function loadCalendar(){
 async function boot(){
   loadBrief();loadRegime();loadOpportunities();loadAlerts();loadPortfolio();loadCalendar();
   const scan=await loadStrip();
-  loadMarketCharts(scan);loadTopFlop(scan);loadRotation(scan);
+  loadPulse(scan);loadMarketCharts(scan);loadTopFlop(scan);loadRotation(scan);
 }
 function whenChartsReady(fn){
   if(window.VXCharts&&window.Chart)return fn();
