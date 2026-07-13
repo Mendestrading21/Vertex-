@@ -129,8 +129,16 @@ _VIEW_CONTENT = {
   </section>
 </div>
 <div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-5 vx-card--accent" aria-label="Entonnoir de sélection">
+    <div class="vx-card-header"><span class="vx-card-title">Entonnoir de sélection</span>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Dossiers →</a></span></div>
+    <div id="vx-mk-funnel">%%LOADING%%</div>
+  </section>
   <div class="vx-col-7" id="vx-mk-breadth-chart"></div>
+</div>
+<div class="vx-grid vx-mt4">
   <div class="vx-col-5" id="vx-mk-verdicts"></div>
+  <div class="vx-col-7" id="vx-mk-participation-rings"></div>
 </div>
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-5" id="vx-mk-internals-card" aria-label="Internals du marché" hidden>
@@ -564,6 +572,37 @@ async function loadBreadth(scan){
         why:'Beaucoup d’ÉVITER = environnement hostile même si les indices tiennent.',
         confirm:'Verdicts d’achat en hausse sur plusieurs scans.',invalidate:'Bascule massive vers ÉVITER.'}});
   }else emptyCard('vx-mk-verdicts','Aucun verdict dans le dernier scan.',SCAN_ACTION);
+  /* Entonnoir de sélection : univers → notés → dossiers → achats (données du scan) */
+  if(window.VXCharts&&VXCharts.funnel){
+    const scanned=rows.length;
+    const noted=rows.filter(r=>r.score!==null&&r.score!==undefined).length;
+    const isBuy=v=>['ACHETER','RENFORCER'].includes((v||'').toUpperCase());
+    const isAct=v=>{const u=(v||'').toUpperCase();return u&&u!=='ÉVITER'&&u!=='EVITER';};
+    const dossiers=rows.filter(r=>isAct(r.verdict||r.decision)).length;
+    const buys=rows.filter(r=>isBuy(r.verdict||r.decision)).length;
+    if(scanned>0){
+      VXCharts.funnel('vx-mk-funnel',{ariaLabel:'Entonnoir de sélection',fmt:v=>v,
+        stages:[{label:'Univers scanné',value:scanned,color:CO.neutral},
+          {label:'Notés',value:noted,color:CO.info},
+          {label:'Dossiers actionnables',value:dossiers,color:CO.warning},
+          {label:'Achats',value:buys,color:CO.positive}]});
+      const el=$('vx-mk-funnel');if(el)el.insertAdjacentHTML('beforeend',
+        '<div class="vx-help vx-mt2">Chaque étape resserre l’univers scanné jusqu’aux verdicts d’achat du comité. Aucune idée n’est forcée : un entonnoir plat = marché hostile.</div>');
+    }else emptyCard('vx-mk-funnel','Univers non scanné.',SCAN_ACTION);
+  }
+  /* Anneaux de participation : > MM50 / > MM200 / avancées (composite) */
+  if(window.VXCharts&&VXCharts.rings&&bo){
+    const advPct=(bo.adv!=null&&bo.dec!=null&&(bo.adv+bo.dec)>0)?Math.round(bo.adv/(bo.adv+bo.dec)*100):null;
+    const items=[];
+    if(bo.above50!=null)items.push({label:'Titres > MM50',value:Math.round(bo.above50),color:CO.brand});
+    if(bo.above200!=null)items.push({label:'Titres > MM200',value:Math.round(bo.above200),color:CO.cyan});
+    if(advPct!=null)items.push({label:'Avancées / total',value:advPct,color:CO.positive});
+    const host=$('vx-mk-participation-rings');
+    if(host&&items.length){
+      host.innerHTML='<section class="vx-card vx-card--accent"><div class="vx-card-header"><span class="vx-card-title">Composite de participation</span></div><div id="vx-mk-rings-svg"></div><div class="vx-card-foot"><span class="vx-meta">Anneaux = part des titres au-dessus des moyennes et ratio d’avancées, sur l’univers scanné.</span></div></section>';
+      VXCharts.rings('vx-mk-rings-svg',{items:items,size:180,centerValue:(brNum!=null?Math.round(brNum):'—'),centerLabel:'participation',ariaLabel:'Composite de participation'});
+    }
+  }
   /* Waterfall : composition de la santé du marché (contributions pondérées de l'internals) */
   const inter=(scan&&scan.internals)||{};
   const card=$('vx-mk-health-card');

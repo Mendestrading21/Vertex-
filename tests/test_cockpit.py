@@ -28,6 +28,29 @@ def test_markets_volatility_cockpit_gauges():
     assert 'VIX non fourni' in src  # état vide honnête
 
 
+def test_chart_core_new_types():
+    """chart-core.js expose les nouveaux types : anneaux, entonnoir, barres-étincelles."""
+    js = open(os.path.join(ROOT, 'vertex', 'static', 'vertex', 'js', 'charts', 'chart-core.js'),
+              encoding='utf-8').read()
+    for needle in ('C.rings = function', 'C.funnel = function', 'C.sparkbars = function'):
+        assert needle in js, needle
+
+
+def test_design_system_charts_catalog():
+    """La page démo /system/design-system inclut un catalogue de graphiques."""
+    src = open(os.path.join(ROOT, 'vertex', 'ui', 'pages', 'design_system_demo.py'), encoding='utf-8').read()
+    for needle in ('Catalogue de graphiques', 'dsc-rings', 'dsc-funnel', 'C.rings', 'C.funnel'):
+        assert needle in src, needle
+
+
+def test_breadth_selection_funnel_real_data():
+    """Vue Breadth : entonnoir de sélection alimenté par les données réelles du scan."""
+    src = open(os.path.join(ROOT, 'vertex', 'ui', 'pages', 'markets_page.py'), encoding='utf-8').read()
+    for needle in ('vx-mk-funnel', 'VXCharts.funnel', 'Univers scanné',
+                   'vx-mk-participation-rings', 'VXCharts.rings'):
+        assert needle in src, needle
+
+
 def test_markets_breadth_participation_gauge():
     """Vue Breadth : jauge de participation + détail (>MM50/MM200, adv/déc, NH/NL)
     sourcés depuis summary.breadth (objet), état vide honnête sinon."""

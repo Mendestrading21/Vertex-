@@ -377,6 +377,95 @@
     return el;
   };
 
+  /* ── Anneaux concentriques (multi-métriques en %) — composite, scorecard ──
+     opts: {items:[{label, value, max?(=100), color?}], size?, centerLabel?, centerValue?, ariaLabel, emptyHtml}
+     Jusqu'à 5 anneaux, extérieur → intérieur. SVG pur, accessible. */
+  C.rings = function (host, opts) {
+    const el = typeof host === 'string' ? document.getElementById(host) : host;
+    if (!el) return null;
+    const o = opts || {};
+    const items = (o.items || []).filter(d => d && d.value != null && !isNaN(d.value)).slice(0, 5);
+    if (!items.length) { el.innerHTML = o.emptyHtml || ''; return null; }
+    const S = o.size || 200, cx = S / 2, cy = S / 2;
+    const gap = 4, sw = Math.max(6, (S / 2 - 24) / items.length - gap);
+    const TAU = Math.PI * 2;
+    let rings = '', legend = '';
+    items.forEach((d, i) => {
+      const r = (S / 2 - 10) - i * (sw + gap);
+      const frac = Math.max(0, Math.min(1, (d.value || 0) / (d.max || 100)));
+      const col = d.color || C.colors.series[i % C.colors.series.length];
+      const circ = TAU * r;
+      // piste + arc de valeur (départ à 12h, sens horaire)
+      rings += `<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="none" stroke="${col}" stroke-opacity=".16" stroke-width="${sw.toFixed(1)}"/>`;
+      rings += `<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw.toFixed(1)}" stroke-linecap="round"
+        stroke-dasharray="${(circ * frac).toFixed(1)} ${(circ * (1 - frac) + circ).toFixed(1)}"
+        transform="rotate(-90 ${cx} ${cy})"/>`;
+      legend += `<div class="vx-flex" style="gap:6px;align-items:center;font-size:11px">
+        <span style="width:9px;height:9px;border-radius:2px;background:${col};flex:0 0 auto"></span>
+        <span class="vx-grow vx-truncate" style="color:var(--vx-text-secondary,#b7b2aa)">${String(d.label)}</span>
+        <b class="vx-mono" style="color:${col}">${Number.isInteger(d.value) ? d.value : (+d.value).toFixed(1)}${o.unit || ' %'}</b></div>`;
+    });
+    const center = (o.centerValue != null)
+      ? `<text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="26" font-weight="800" fill="var(--vx-text-primary,#f3f1ed)" style="font-variant-numeric:tabular-nums">${o.centerValue}</text>
+         ${o.centerLabel ? `<text x="${cx}" y="${cy + 16}" text-anchor="middle" font-size="9.5" fill="var(--vx-text-muted,#817d77)">${o.centerLabel}</text>` : ''}`
+      : '';
+    const aria = (o.ariaLabel || 'anneaux') + ' : ' + items.map(d => d.label + ' ' + Math.round(d.value)).join(', ');
+    el.innerHTML = `<div class="vx-flex vx-wrap" style="gap:14px;align-items:center;justify-content:center">
+      <svg viewBox="0 0 ${S} ${S}" width="${S}" style="max-width:${S}px;flex:0 0 auto" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${rings}${center}</svg>
+      <div style="flex:1;min-width:140px;display:flex;flex-direction:column;gap:6px">${legend}</div></div>`;
+    return el;
+  };
+
+  /* ── Entonnoir de conversion (étapes qui se resserrent) — pipeline de sélection ──
+     opts: {stages:[{label, value, color?}], ariaLabel, fmt?, emptyHtml}
+     Trapèzes centrés, largeur ∝ valeur, % de l'étape initiale affiché. */
+  C.funnel = function (host, opts) {
+    const el = typeof host === 'string' ? document.getElementById(host) : host;
+    if (!el) return null;
+    const o = opts || {};
+    const stages = (o.stages || []).filter(s => s && s.value != null && !isNaN(s.value));
+    if (stages.length < 2) { el.innerHTML = o.emptyHtml || ''; return null; }
+    const fmt = o.fmt || ((v) => v);
+    const top = Math.max(...stages.map(s => s.value), 1);
+    const W = o.width || 320, rowH = 34, gap = 6, H = stages.length * (rowH + gap);
+    const cx = W / 2, minW = 26;
+    let rows = '';
+    stages.forEach((s, i) => {
+      const w0 = minW + (W - minW) * (Math.max(0, s.value) / top);
+      const next = stages[i + 1];
+      const w1 = next ? minW + (W - minW) * (Math.max(0, next.value) / top) : w0 * 0.86;
+      const y = i * (rowH + gap);
+      const col = s.color || C.colors.series[i % C.colors.series.length];
+      const pct = Math.round(s.value / top * 100);
+      rows += `<polygon points="${(cx - w0 / 2).toFixed(1)},${y} ${(cx + w0 / 2).toFixed(1)},${y} ${(cx + w1 / 2).toFixed(1)},${y + rowH} ${(cx - w1 / 2).toFixed(1)},${y + rowH}"
+        fill="${col}" fill-opacity=".8"/>
+        <text x="${cx}" y="${y + rowH / 2 - 1}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="800" fill="#0b0b0c" style="font-variant-numeric:tabular-nums">${fmt(s.value)}</text>`;
+      rows += `<text x="8" y="${y + rowH / 2}" dominant-baseline="middle" font-size="10.5" fill="var(--vx-text-secondary,#b7b2aa)">${String(s.label)}</text>
+        <text x="${W - 6}" y="${y + rowH / 2}" text-anchor="end" dominant-baseline="middle" font-size="10" fill="var(--vx-text-muted,#817d77)" style="font-variant-numeric:tabular-nums">${pct}%</text>`;
+    });
+    const aria = (o.ariaLabel || 'entonnoir') + ' : ' + stages.map(s => s.label + ' ' + fmt(s.value)).join(' → ');
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${rows}</svg>`;
+    return el;
+  };
+
+  /* ── Barres-étincelles (mini bar chart pour tuiles KPI) ──
+     C.sparkbars(hostOrEl, values[], {color?, height?, posNeg?}) */
+  C.sparkbars = function (host, values, opts) {
+    const el = typeof host === 'string' ? document.getElementById(host) : host;
+    if (!el) return null;
+    const o = opts || {}, v = (values || []).filter(x => x != null && !isNaN(x));
+    if (v.length < 2) { el.innerHTML = ''; return null; }
+    const H = o.height || 30, W = Math.max(40, v.length * 5), max = Math.max(...v.map(Math.abs), 1e-9);
+    const bw = W / v.length * 0.7, gap = W / v.length * 0.3;
+    const bars = v.map((x, i) => {
+      const h = Math.max(1, Math.abs(x) / max * (H - 2));
+      const col = o.posNeg ? (x >= 0 ? C.colors.positive : C.colors.negative) : (o.color || C.colors.brand);
+      return `<rect x="${(i * (bw + gap)).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="1" fill="${col}" opacity=".9"/>`;
+    }).join('');
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none" style="display:block" aria-hidden="true">${bars}</svg>`;
+    return el;
+  };
+
   /* Marqueurs verticaux (earnings, événements). */
   C.eventMarkers = function (markers) {
     return {

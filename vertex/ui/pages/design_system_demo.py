@@ -110,6 +110,55 @@ _STYLE = """
 """
 
 
+def _charts_catalog():
+    """Catalogue visible des types de graphiques VXCharts (données d'exemple, READONLY)."""
+    tiles = [
+        ('Jauge radiale', 'dsc-gauge'), ('Anneaux concentriques', 'dsc-rings'),
+        ('Entonnoir de conversion', 'dsc-funnel'), ('Radar / scorecard', 'dsc-radar'),
+        ('Treemap (poids relatif)', 'dsc-tree'), ('Waterfall (contributions)', 'dsc-wf'),
+        ('Flow / pipeline', 'dsc-flow'), ('Barres-étincelles', 'dsc-spark'),
+    ]
+    cells = ''.join(
+        f'<div class="vx-col-6"><section class="vx-card vx-card--accent">'
+        f'<div class="vx-card-header"><span class="vx-card-title">{label}</span></div>'
+        f'<div id="{cid}"></div></section></div>' for label, cid in tiles)
+    return '<div class="vx-grid">' + cells + '</div>'
+
+
+_CHARTS_JS = r"""
+<script>
+(function(){
+  function init(){
+    if(!window.VXCharts){return setTimeout(init,120);}
+    var C=window.VXCharts, CO=C.colors||{};
+    C.gauge&&C.gauge('dsc-gauge',{value:63,min:0,max:100,unit:' %',label:'confiance',reading:'Signal net',
+      bands:[{to:40,color:CO.negative},{to:70,color:CO.warning},{to:100,color:CO.positive}]});
+    C.rings&&C.rings('dsc-rings',{size:170,centerValue:72,centerLabel:'composite',
+      items:[{label:'Momentum',value:78,color:CO.brand},{label:'Qualité',value:64,color:CO.cyan},{label:'Valorisation',value:52,color:CO.positive}]});
+    C.funnel&&C.funnel('dsc-funnel',{ariaLabel:'entonnoir',
+      stages:[{label:'Univers',value:500,color:CO.neutral},{label:'Notés',value:180,color:CO.info},
+        {label:'Dossiers',value:42,color:CO.warning},{label:'Achats',value:7,color:CO.positive}]});
+    C.radar&&C.radar('dsc-radar',{ariaLabel:'scorecard',axes:[
+      {label:'Momentum',value:80},{label:'Tendance',value:65},{label:'Qualité',value:72},
+      {label:'Valorisation',value:48},{label:'Volatilité',value:55}]});
+    C.treemap&&C.treemap('dsc-tree',{height:180,items:[
+      {label:'Tech',value:34,color:CO.brand},{label:'Santé',value:22,color:CO.cyan},
+      {label:'Énergie',value:18,color:CO.warning},{label:'Finance',value:14,color:CO.violet},
+      {label:'Conso',value:12,color:CO.positive}]});
+    C.waterfall&&C.waterfall('dsc-wf',{ariaLabel:'contributions',items:[
+      {label:'>MM50',value:15},{label:'>MM200',value:11},{label:'Breadth',value:13},
+      {label:'Adv/Déc',value:8},{label:'Santé',value:47,isTotal:true}],fmt:function(v){return Math.round(v);}});
+    C.flow&&C.flow('dsc-flow',{ariaLabel:'pipeline',nodes:[
+      {label:'Données',count:5,tone:'active'},{label:'Scan',count:500,tone:'active'},
+      {label:'Comité',count:42,tone:'active'},{label:'Décision',count:7,tone:'warn'}]});
+    C.sparkbars&&C.sparkbars('dsc-spark',[4,7,3,8,5,9,6,11,7,10,8,13],{posNeg:false,height:44});
+  }
+  if(document.readyState!=='loading')init();else window.addEventListener('load',init);
+})();
+</script>
+"""
+
+
 def render() -> str:
     def block(title, body):
         return (f'<section class="vx-card vx-ds-block"><div class="vx-meta">{title}</div>{body}</section>')
@@ -142,10 +191,13 @@ def render() -> str:
         + block('Toggles / switches', toggles)
         + block('Sliders', sliders)
         + block('Cartes sélectionnables (Contract Optimizer)', _cards_row())
+        + '<section class="vx-card vx-ds-block"><div class="vx-meta">Catalogue de graphiques (VXCharts)</div>'
+        + _charts_catalog() + '</section>'
         + '</div>'
         + '<script>document.querySelectorAll("#vx-ds .vx-switch").forEach(function(s){'
           's.addEventListener("click",function(){var on=s.dataset.on==="1";s.dataset.on=on?"0":"1";'
           's.setAttribute("aria-checked",String(!on));});});</script>'
+        + _CHARTS_JS
     )
     return render_shell(title='Design System', active='system', space_label='Système',
                         sub_label='Design System', content=content, page_label='design-system')
