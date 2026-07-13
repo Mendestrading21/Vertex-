@@ -266,12 +266,20 @@ function idxByName(scan){
   const list=(scan&&Array.isArray(scan.indices))?scan.indices:[];
   const by={};list.forEach(i=>{if(i&&i.name)by[i.name]=i;});return by;
 }
+function sparkSvg(vals,pos){
+  if(!Array.isArray(vals)||vals.length<2)return '';
+  const w=100,h=22,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=(mx-mn)||1;
+  const pts=vals.map((v,i)=>(i/(vals.length-1)*w).toFixed(1)+','+(h-((v-mn)/rng)*(h-2)-1).toFixed(1)).join(' ');
+  const col=pos?'var(--vx-positive,#39b878)':'var(--vx-negative,#dc6255)';
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" width="100%" height="22" style="margin-top:5px;display:block" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
 function kpiCell(label,d,scan,extraNote){
   const val=d&&(d.last??d.price??d.close);const chg=d?d.change:null;
   return `<div class="vx-card vx-kpi" style="grid-column:span 4" aria-label="${esc(label)}">
     <span class="vx-kpi-label">${esc(label)}</span>
     <span class="vx-kpi-value" style="font-size:19px">${(val===null||val===undefined)?'—':VX.fmt.price(val)}</span>
     <span class="vx-kpi-delta ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}">${(chg===null||chg===undefined)?'n/d':VX.fmt.pct(chg)}</span>
+    ${(d&&d.series)?sparkSvg(d.series,(chg==null?true:chg>=0)):''}
     ${extraNote?`<span class="vx-meta">${extraNote}</span>`:''}
     ${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
 }
@@ -283,7 +291,7 @@ function loadStrip(scan){
   }
   $('vx-mk-strip').innerHTML=known.map(label=>{
     const i=by[label];
-    return kpiCell(label,{last:i.price,change:i.change},scan).replace('grid-column:span 4','grid-column:span 3');
+    return kpiCell(label,{last:i.price,change:i.change,series:i.spark},scan).replace('grid-column:span 4','grid-column:span 3');
   }).join('');
 }
 /* Comparaison multi-indices : chaque série rebasée à 0 % (transformation
