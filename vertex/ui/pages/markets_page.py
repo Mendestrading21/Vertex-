@@ -373,12 +373,16 @@ async function loadVix(scan){
     $('vx-mk-vix-body').innerHTML=VX.states.empty('VIX non fourni par le dernier scan.',SCAN_ACTION);return;
   }
   $('vx-mk-vix-body').innerHTML=
-    `<div class="vx-kpi vx-mb3"><span class="vx-kpi-label">VIX</span>
-     <span class="vx-kpi-value" style="font-size:26px">${VX.fmt.num(m.vix,1)}</span>
-     <span class="vx-kpi-delta ${chg>0?'vx-neg':chg<0?'vx-pos':'vx-muted'}">${(chg===null||chg===undefined)?'variation n/d':VX.fmt.pct(chg)}</span></div>`
+    `<div id="vx-mk-vix-gauge" class="vx-mb2"></div>`
+    +(chg!==null&&chg!==undefined?`<div class="vx-kv"><span class="k">Variation</span><span class="v ${chg>0?'vx-neg':chg<0?'vx-pos':'vx-muted'}">${VX.fmt.pct(chg)} vs hier</span></div>`:'')
     +(m.vix_band?`<div class="vx-kv"><span class="k">Bande</span><span class="v">${esc(m.vix_band)}</span></div>`:'')
     +`<div class="vx-help vx-mt2">Un VIX bas comprime les primes d’options ; un VIX en expansion invalide les entrées agressives.</div>`
     +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
+  if(window.VXCharts&&VXCharts.gauge){
+    const reading=m.vix<15?'Volatilité comprimée — primes d’options bon marché':m.vix<25?'Volatilité élevée — prudence sur les entrées':'Stress — expansion de volatilité';
+    VXCharts.gauge('vx-mk-vix-gauge',{value:m.vix,min:0,max:50,label:'VIX',reading:reading,
+      bands:[{to:15,color:VXCharts.colors.positive},{to:25,color:VXCharts.colors.warning},{to:50,color:VXCharts.colors.negative}]});
+  }
 }
 
 /* ═══ Orchestration ═══ */

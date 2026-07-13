@@ -172,6 +172,53 @@
       },
     };
   };
+  /* ── Jauge radiale (SVG, sans Chart.js) — régime, risk score, VIX, options env ──
+     opts: {value, min=0, max=100, unit, label, reading,
+            bands:[{to, color}], // zones colorées de gauche→droite (ordre croissant)
+            positiveIsLow=false} // n/u : la couleur vient des bandes
+     Accessible : role=img + aria-label chiffré. Aucune animation permanente. */
+  C.gauge = function (host, opts) {
+    const el = typeof host === 'string' ? document.getElementById(host) : host;
+    if (!el) return null;
+    const o = opts || {};
+    const min = o.min != null ? o.min : 0, max = o.max != null ? o.max : 100;
+    const v = (o.value == null || isNaN(o.value)) ? null : Math.max(min, Math.min(max, o.value));
+    const W = 200, H = 118, cx = 100, cy = 104, r = 84;
+    const ang = (t) => Math.PI * (1 - (Math.max(min, Math.min(max, t)) - min) / (max - min)); // 180°→0°
+    const pt = (a, rr = r) => [cx + rr * Math.cos(a), cy - rr * Math.sin(a)];
+    const arc = (a0, a1, rr = r) => {
+      const [x0, y0] = pt(a0, rr), [x1, y1] = pt(a1, rr);
+      const large = Math.abs(a0 - a1) > Math.PI ? 1 : 0;
+      return `M ${x0.toFixed(1)} ${y0.toFixed(1)} A ${rr} ${rr} 0 ${large} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+    };
+    const bands = o.bands && o.bands.length ? o.bands : [{ to: max, color: C.colors.neutral }];
+    // pistes de fond colorées par bande (contexte), puis arc de valeur par-dessus
+    let track = '', prev = min;
+    bands.forEach(b => {
+      track += `<path d="${arc(ang(prev), ang(b.to))}" stroke="${b.color}" stroke-opacity=".22" stroke-width="9" fill="none" stroke-linecap="butt"/>`;
+      prev = b.to;
+    });
+    let valArc = '', needle = '', valColor = C.colors.neutral;
+    if (v != null) {
+      for (const b of bands) { if (v <= b.to) { valColor = b.color; break; } valColor = b.color; }
+      valArc = `<path d="${arc(ang(min), ang(v))}" stroke="${valColor}" stroke-width="9" fill="none" stroke-linecap="round"/>`;
+      const [nx, ny] = pt(ang(v), r - 2);
+      needle = `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="4.5" fill="${valColor}"/>`;
+    }
+    const disp = v == null ? '—' : (Number.isInteger(v) ? v : (+v).toFixed(1));
+    const aria = `${o.label || 'jauge'} : ${v == null ? 'donnée indisponible' : disp + (o.unit || '')}${o.reading ? ' — ' + o.reading : ''}`;
+    el.innerHTML = `
+      <div class="vx-gauge" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
+        <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:230px;display:block;margin:0 auto">
+          ${track}${valArc}${needle}
+          <text x="${cx}" y="${cy - 20}" text-anchor="middle" fill="${valColor}" font-size="30" font-weight="800" style="font-variant-numeric:tabular-nums">${disp}</text>
+          <text x="${cx}" y="${cy - 3}" text-anchor="middle" fill="var(--vx-text-muted,#817d77)" font-size="10" letter-spacing=".5">${(o.unit || '') + (o.label ? ' · ' + o.label : '')}</text>
+        </svg>
+        ${o.reading ? `<div class="vx-meta" style="text-align:center;margin-top:4px">${o.reading}</div>` : ''}
+      </div>`;
+    return el;
+  };
+
   /* Marqueurs verticaux (earnings, événements). */
   C.eventMarkers = function (markers) {
     return {
