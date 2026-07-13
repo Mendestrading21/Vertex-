@@ -640,6 +640,10 @@ def scan():
                            'universe_n': len(syms_scan), 'scanned_n': len(rows),
                            'scan_ts': time.time(),
                            'updated': datetime.now().strftime('%H:%M:%S'), 'error': None})
+        try:
+            _apply_ibkr_indices()   # overlay indices/VIX TEMPS RÉEL IBKR par-dessus le différé yfinance
+        except Exception:
+            pass
     except Exception as e:
         scan_state['error'] = f'{type(e).__name__}: {e}'
 
@@ -2228,6 +2232,110 @@ def _quotes_worker():
             _live_meta['connected'] = False
             _live_meta['err'] = f'loop: {type(_e).__name__}: {_e}'
             _sync_ibkr_state()
+        time.sleep(15)
+
+
+# ─── INDICES EN DIRECT (IBKR temps réel) ───────────────────────────────────
+# yfinance ne cote les indices qu'en différé ~15 min. IBKR les donne en temps réel :
+# S&P 500 et VIX via les indices CBOE (abonnement actif), Dow Jones via le CFD gratuit
+# IBUS30. On overlaie scan_state['indices'] + le VIX du contexte. On N'OVERLAIE PAS
+# le Nasdaq (yfinance = ^IXIC Composite ; IBKR gratuit = NDX 100 → indices DIFFÉRENTS,
+# mélanger serait malhonnête §4) ni le Russell. ⛔ LECTURE SEULE (reqMktData only).
+_IDX_IBKR = {}      # {nom_affiché: {'price':.., 'change':.., 'ts':..}}
+_IDX_META = {'connected': False, 'ts': 0.0, 'n': 0}
+# nom d'affichage (DOIT matcher scan_state['indices']) -> (secType, symbol, exchange)
+_IDX_SPECS = [
+    ('S&P 500', 'IND', 'SPX', 'CBOE'),
+    ('VIX', 'IND', 'VIX', 'CBOE'),
+    ('Dow Jones', 'CFD', 'IBUS30', 'SMART'),
+]
+
+
+def _apply_ibkr_indices():
+    """Overlaie les valeurs indices IBKR fraîches (< 75 s) sur scan_state.
+    Ne mute QUE des clés/éléments existants — scan_state jamais réassigné."""
+    now = time.time()
+    fresh = {n: v for n, v in _IDX_IBKR.items()
+             if v.get('price') is not None and (now - v.get('ts', 0)) < 75}
+    if not fresh:
+        return
+    idx = scan_state.get('indices')
+    if isinstance(idx, list):
+        for e in idx:
+            v = fresh.get(e.get('name'))
+            if v:
+                e['price'] = v['price']
+                if v.get('change') is not None:
+                    e['change'] = v['change']
+                e['src'] = 'ibkr'          # provenance temps réel (honnêteté §4)
+    vx = fresh.get('VIX')
+    if vx:
+        mc = scan_state.get('market_ctx')
+        if isinstance(mc, dict):
+            mc['vix'] = round(vx['price'], 2)
+            if vx.get('change') is not None:
+                mc['vix_chg'] = round(vx['change'], 2)
+    scan_state['indices_live'] = {'source': 'ibkr', 'ts': now,
+                                  'names': sorted(fresh.keys())}
+
+
+def _indices_loop():
+    """Worker indices TEMPS RÉEL IBKR (SPX/VIX CBOE + CFD Dow). Lecture seule —
+    reqMktData uniquement, jamais d'ordre. 3 lignes de marché : cadence négligeable."""
+    import asyncio
+    while True:
+        try:
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            from ib_async import IB, Index, CFD
+            ib = IB()
+            ok = False
+            for port in (7496, 7497, 4001, 4002):
+                try:
+                    ib.connect('127.0.0.1', port, clientId=22, readonly=True, timeout=4)
+                    ok = True
+                    break
+                except Exception:
+                    continue
+            if not ok:
+                _IDX_META['connected'] = False
+                time.sleep(20)
+                continue
+            ib.reqMarketDataType(1)        # temps réel (repli auto différé si besoin)
+            streams = []
+            for name, sec, sym, exch in _IDX_SPECS:
+                try:
+                    c = Index(sym, exch, 'USD') if sec == 'IND' else CFD(sym)
+                    ib.qualifyContracts(c)
+                    if getattr(c, 'conId', 0):
+                        streams.append((name, ib.reqMktData(c, '', False)))
+                except Exception:
+                    continue
+            _IDX_META.update({'connected': bool(streams), 'n': len(streams)})
+            while ib.isConnected():
+                ib.sleep(12)
+                for name, t in streams:
+                    px = None
+                    for v in (getattr(t, 'last', None), t.marketPrice(), getattr(t, 'close', None)):
+                        try:
+                            if v is not None and v == v and v > 0:
+                                px = float(v)
+                                break
+                        except Exception:
+                            continue
+                    prev = getattr(t, 'close', None)
+                    chg = None
+                    try:
+                        if px and prev and prev == prev and prev > 0:
+                            chg = round((px / float(prev) - 1) * 100, 2)
+                    except Exception:
+                        chg = None
+                    if px is not None:
+                        _IDX_IBKR[name] = {'price': round(px, 2), 'change': chg, 'ts': time.time()}
+                _IDX_META['ts'] = time.time()
+                _apply_ibkr_indices()
+        except Exception as _e:
+            _IDX_META['connected'] = False
+            _IDX_META['err'] = f'{type(_e).__name__}: {_e}'
         time.sleep(15)
 
 
@@ -10548,6 +10656,7 @@ def _start_workers():
         threading.Thread(target=_edge_loop, daemon=True).start()
     if IBKR_ENABLED:                                  # pas de TWS sur le cloud → on n'essaie pas
         threading.Thread(target=_quotes_worker, daemon=True).start()
+        threading.Thread(target=_indices_loop, daemon=True).start()      # indices/VIX TEMPS RÉEL IBKR (lecture seule)
         threading.Thread(target=_ibkr_opt_worker, daemon=True).start()   # chaînes options IBKR (lecture seule)
         threading.Thread(target=_radar_loop, daemon=True).start()        # scanners + news IBKR (lecture seule)
 

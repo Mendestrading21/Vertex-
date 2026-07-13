@@ -284,12 +284,17 @@ async function loadDossier(){
   /* 4. Fondamental */
   const f=(exec&&exec.fundamental)||{};
   const peers=(t&&t.peers_data)||[];
-  const me=peers.find(p=>p.symbol===SYM)||{};
+  /* Le titre analysé n'est JAMAIS dans sa propre liste de pairs → on part de ses
+     fondamentaux propres (company.fundamentals) puis on superpose l'entrée pairs
+     si elle existe. Sans ce socle, P/E / marge / croissance / ROE restaient vides. */
+  const cf=(t&&t.company&&t.company.fundamentals)||{};
+  const me=Object.assign({pe:cf.pe,margin:cf.margin,rev_growth:cf.rev_growth,roe:cf.roe},
+                         peers.find(p=>p.symbol===SYM)||{});
   body('an-fundamental',
     kv('Score fondamental moteur',d.st_fund??f.score)
     +kv('Croissance CA',me.rev_growth!==undefined?VX.fmt.pct(me.rev_growth*100,0):null)
     +kv('Marge',me.margin!==undefined?VX.fmt.pct(me.margin*100,0):null)
-    +kv('P/E',me.pe)+kv('ROE',me.roe!==undefined?VX.fmt.pct(me.roe*100,0):null)
+    +kv('P/E',me.pe!=null?(+me.pe).toFixed(1):null)+kv('ROE',me.roe!==undefined&&me.roe!==null?VX.fmt.pct(me.roe*100,0):null)
     +kv('Médiane sectorielle P/E',t&&t.sector_median&&(t.sector_median.median_pe??t.sector_median))
     +(peers.length>1?`<div class="vx-meta vx-mt2">Pairs : ${peers.filter(p=>p.symbol!==SYM).slice(0,4).map(p=>
       `<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${p.symbol}">${p.symbol}</button>`).join('')}</div>`:''));
@@ -309,11 +314,22 @@ async function loadDossier(){
     +kv('Extension vs ATR',d.ext_atr,(d.ext_atr>=2.5?'vx-warn':''))
     +`<div class="vx-meta vx-mt2">La décision finale unique reste ${decision} — les verdicts techniques sont des entrées du moteur exécutif.</div>`);
 
-  /* 7. Sentiment */
+  /* 7. Sentiment + consensus analystes (données company déjà chargées → objectif de cours + potentiel) */
+  const an=(t&&t.company&&t.company.analysts)||{};
+  const _px=d.price, _tgt=an.target_mean;
+  const _up=(_tgt&&_px)?((_tgt/_px-1)*100):null;
+  const _rl={strong_buy:'Achat fort',buy:'Achat',outperform:'Surperformance',hold:'Conserver',underperform:'Sous-performance',sell:'Vente'}[an.rating]||an.rating;
+  const consensus=(an.rating||_tgt)?(
+    `<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">`
+    +(an.rating?`<div class="vx-kv"><span class="k">Consensus analystes</span><span class="v">${esc(_rl||'—')}${an.rating_mean!=null?` (${(+an.rating_mean).toFixed(1)}/5)`:''}${an.n_analysts?` · ${an.n_analysts} analystes`:''}</span></div>`:'')
+    +(_tgt?`<div class="vx-kv"><span class="k">Objectif moyen</span><span class="v">${VX.fmt.price(_tgt)}${_up!=null?` <span class="${_up>=0?'vx-pos':'vx-neg'}">(${_up>=0?'+':''}${_up.toFixed(1)}%)</span>`:''}</span></div>`:'')
+    +((an.target_low&&an.target_high)?`<div class="vx-kv"><span class="k">Fourchette</span><span class="v vx-dim">${VX.fmt.price(an.target_low)} – ${VX.fmt.price(an.target_high)}</span></div>`:'')
+    +`</div>`):'';
   body('an-sentiment',
     kv('Force relative vs univers',d.rs)
     +kv('Régime marché',(exec&&exec.technical&&exec.technical.regime)||null)
-    +`<div class="vx-meta vx-mt2">Positionnement institutionnel : proxies uniquement — jamais présentés comme des flux certains.</div>`);
+    +consensus
+    +`<div class="vx-meta vx-mt2">Positionnement institutionnel : proxies uniquement — jamais présentés comme des flux certains. Consensus analystes = données publiques (peut dater).</div>`);
 
   /* 8. Anomalies */
   try{

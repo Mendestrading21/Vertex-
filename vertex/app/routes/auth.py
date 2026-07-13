@@ -21,8 +21,13 @@ from html import escape
 from flask import Blueprint, jsonify, redirect, request, session
 
 # Chemins publics même verrou actif : le verrou lui-même, la santé, la PWA.
+# Le webhook TradingView est public par NÉCESSITÉ : les serveurs TV n'ont pas
+# de session — il porte sa PROPRE authentification par secret (hmac.compare_digest,
+# anti-replay, dédup). Sans cette exemption, le verrou VERTEX_CODE rendrait le
+# webhook injoignable (401) et la fonctionnalité serait morte dès le verrou actif.
 PUBLIC_PATHS = {'/login', '/logout', '/healthz', '/api/healthz',
-                '/favicon.ico', '/favicon.svg', '/manifest.webmanifest', '/sw.js'}
+                '/favicon.ico', '/favicon.svg', '/manifest.webmanifest', '/sw.js',
+                '/api/tradingview/webhook'}
 
 # Flux de données hors /api/ : répondent 401 JSON (le JS le gère) au lieu
 # d'une redirection HTML vers le verrou.
