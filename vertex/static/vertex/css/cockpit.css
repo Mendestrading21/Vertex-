@@ -58,6 +58,8 @@ a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(20
   background:linear-gradient(90deg,var(--vx-negative),var(--vx-warning),var(--vx-positive))}
 .vx-rail--copper{background:linear-gradient(90deg,var(--vx-orange-900),var(--vx-orange-500),var(--vx-orange-400))}
 .vx-rail--mono{background:linear-gradient(90deg,var(--vx-graphite-700),var(--vx-orange-500))}
+/* Stress (VIX) : calme à gauche (vert) → stress à droite (rouge) */
+.vx-rail--stress{background:linear-gradient(90deg,var(--vx-positive),var(--vx-warning),var(--vx-negative))}
 .vx-rail-mark{position:absolute;top:-4px;left:var(--vx-rail-pos,50%);transform:translateX(-50%);
   width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;
   border-top:7px solid var(--vx-text-primary);filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}

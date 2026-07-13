@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v35';   // v35 : Cockpit premium — profondeur bento, tuiles d'indices lumineuses, deltas directionnels, rails (cockpit.css)
+const CACHE='td-shell-v36';   // v36 : Cockpit volatilité — rail stress + jauges régime/participation sur Marchés (cockpit.css .vx-rail--stress)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

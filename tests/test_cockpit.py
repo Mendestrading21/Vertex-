@@ -13,9 +13,19 @@ def test_cockpit_css_exists_with_tokens():
     assert os.path.isfile(CSS)
     src = open(CSS, encoding='utf-8').read()
     for needle in ('--vx-glow-pos', '--vx-glow-neg', '--vx-glow-copper-soft',
-                   'vx-strip-item', 'vx-rail', 'vx-stat-xl',
+                   'vx-strip-item', 'vx-rail', 'vx-rail--stress', 'vx-stat-xl',
                    'prefers-reduced-motion:reduce'):
         assert needle in src, needle
+
+
+def test_markets_volatility_cockpit_gauges():
+    """Vue Volatilité = cockpit : jauge VIX + rail stress + jauges régime/participation,
+    tous sourcés depuis /api/market/summary (réel), états vides honnêtes sinon."""
+    src = open(os.path.join(ROOT, 'vertex', 'ui', 'pages', 'markets_page.py'), encoding='utf-8').read()
+    for needle in ('vx-mk-vix-gauge', 'vx-rail--stress', 'vx-mk-vol-regime',
+                   'vx-mk-vol-breadth', 'vx-mk-vol-rail', "/api/market/summary"):
+        assert needle in src, needle
+    assert 'VIX non fourni' in src  # état vide honnête
 
 
 def test_cockpit_loaded_in_shell_last():

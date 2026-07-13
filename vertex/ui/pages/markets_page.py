@@ -153,15 +153,25 @@ _VIEW_CONTENT = {
 """,
     'volatility': """
 <div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-6" id="vx-mk-vix" aria-label="VIX">
+  <section class="vx-card vx-col-6 vx-card--accent" id="vx-mk-vix" aria-label="VIX">
     <div class="vx-card-header"><span class="vx-card-title">VIX — volatilité implicite du marché</span></div>
     <div id="vx-mk-vix-body">%%LOADING%%</div>
   </section>
-  <section class="vx-card vx-col-6" aria-label="Volatilité implicite par symbole">
+  <section class="vx-card vx-col-6 vx-card--accent" aria-label="Contexte de volatilité">
+    <div class="vx-card-header"><span class="vx-card-title">Contexte — régime &amp; participation</span></div>
+    <div class="vx-flex vx-wrap" style="gap:1rem;align-items:flex-start">
+      <div id="vx-mk-vol-regime" style="flex:1;min-width:150px">%%LOADING%%</div>
+      <div id="vx-mk-vol-breadth" style="flex:1;min-width:150px"></div>
+    </div>
+    <div id="vx-mk-vol-rail" class="vx-mt3"></div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Volatilité implicite par symbole">
     <div class="vx-card-header"><span class="vx-card-title">IV par symbole</span></div>
     <div class="vx-insight">La term structure de volatilité implicite par symbole est
-    disponible dans la fiche analyse de chaque titre (onglet Options). Cette vue ne
-    couvre que la volatilité de marché (VIX) fournie par le moteur de contexte.</div>
+    disponible dans la fiche analyse de chaque titre (onglet Options). Cette vue
+    couvre la volatilité de marché (VIX) et le contexte de régime fournis par le moteur.</div>
     <div class="vx-mt3"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/analysis">Ouvrir une fiche analyse →</a></div>
   </section>
 </div>
@@ -561,25 +571,57 @@ function loadBreadthInternals(scan){
   }else if(dCard){dCard.hidden=true;}
 }
 
-/* ═══ VOLATILITY ═══ */
+/* ═══ VOLATILITY ═══ (cockpit : jauge VIX + rail calme↔stress + régime/participation)
+   Source RÉELLE = /api/market/summary (scan.market ne porte que la session). */
 async function loadVix(scan){
-  const m=mkt(scan);
-  let chg=null;
-  try{const sum=await VX.fetch('/api/market/summary',{ttl:60000});if(sum&&sum.vix_chg!==undefined)chg=sum.vix_chg;}catch(e){}
-  if(m.vix===null||m.vix===undefined){
-    $('vx-mk-vix-body').innerHTML=VX.states.empty('VIX non fourni par le dernier scan.',SCAN_ACTION);return;
+  const G=window.VXCharts&&VXCharts.gauge;const CO=(window.VXCharts&&VXCharts.colors)||{};
+  let sum={};try{sum=await VX.fetch('/api/market/summary',{ttl:60000})||{};}catch(e){}
+  let vix=(sum.vix!=null&&!isNaN(sum.vix))?Number(sum.vix):null;
+  if(vix==null){const vi=((scan&&scan.indices)||[]).find(i=>i&&i.name==='VIX');if(vi&&vi.price!=null)vix=Number(vi.price);}
+  const chg=(sum.vix_chg!==undefined)?sum.vix_chg:null;
+  const band=sum.vix_band||mkt(scan).vix_band;
+  if(vix==null){
+    $('vx-mk-vix-body').innerHTML=VX.states.empty('VIX non fourni par le dernier scan.',SCAN_ACTION);
+  }else{
+    $('vx-mk-vix-body').innerHTML=
+      `<div id="vx-mk-vix-gauge" class="vx-mb2"></div>`
+      +(chg!==null&&chg!==undefined?`<div class="vx-kv"><span class="k">Variation</span><span class="v ${chg>0?'vx-neg':chg<0?'vx-pos':'vx-muted'}">${VX.fmt.pct(chg)} vs hier</span></div>`:'')
+      +(band?`<div class="vx-kv"><span class="k">Bande</span><span class="v">${esc(band)}</span></div>`:'')
+      /* Rail calme ↔ stress : VIX 10→40 projeté sur 0→100 % */
+      +`<div class="vx-stat-xl-label vx-mt3">Calme ↔ Stress</div>`
+      +`<div class="vx-rail vx-rail--stress vx-mt2" style="--vx-rail-pos:${Math.max(0,Math.min(100,(vix-10)/30*100)).toFixed(0)}%"><span class="vx-rail-mark"></span></div>`
+      +`<div class="vx-rail-scale"><span>10</span><span>25</span><span>40+</span></div>`
+      +`<div class="vx-help vx-mt2">Un VIX bas comprime les primes d’options ; un VIX en expansion invalide les entrées agressives.</div>`
+      +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
+    if(G){
+      const reading=vix<15?'Volatilité comprimée — primes d’options bon marché':vix<25?'Volatilité élevée — prudence sur les entrées':'Stress — expansion de volatilité';
+      VXCharts.gauge('vx-mk-vix-gauge',{value:vix,min:0,max:50,label:'VIX',reading:reading,
+        bands:[{to:15,color:CO.positive},{to:25,color:CO.warning},{to:50,color:CO.negative}]});
+    }
   }
-  $('vx-mk-vix-body').innerHTML=
-    `<div id="vx-mk-vix-gauge" class="vx-mb2"></div>`
-    +(chg!==null&&chg!==undefined?`<div class="vx-kv"><span class="k">Variation</span><span class="v ${chg>0?'vx-neg':chg<0?'vx-pos':'vx-muted'}">${VX.fmt.pct(chg)} vs hier</span></div>`:'')
-    +(m.vix_band?`<div class="vx-kv"><span class="k">Bande</span><span class="v">${esc(m.vix_band)}</span></div>`:'')
-    +`<div class="vx-help vx-mt2">Un VIX bas comprime les primes d’options ; un VIX en expansion invalide les entrées agressives.</div>`
-    +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
-  if(window.VXCharts&&VXCharts.gauge){
-    const reading=m.vix<15?'Volatilité comprimée — primes d’options bon marché':m.vix<25?'Volatilité élevée — prudence sur les entrées':'Stress — expansion de volatilité';
-    VXCharts.gauge('vx-mk-vix-gauge',{value:m.vix,min:0,max:50,label:'VIX',reading:reading,
-      bands:[{to:15,color:VXCharts.colors.positive},{to:25,color:VXCharts.colors.warning},{to:50,color:VXCharts.colors.negative}]});
-  }
+  /* Contexte : jauge participation (breadth) + jauge régime */
+  let br=null;const sb=sum.breadth;
+  if(sb!=null&&typeof sb==='object')br=(sb.above50!=null)?Number(sb.above50):(sb.above200!=null?Number(sb.above200):null);
+  else if(sb!=null&&!isNaN(sb))br=Number(sb);
+  if(G&&br!=null){VXCharts.gauge('vx-mk-vol-breadth',{value:br,min:0,max:100,unit:' %',label:'Breadth',
+    reading:br>=55?'Participation saine':'Étroite',
+    bands:[{to:40,color:CO.negative},{to:55,color:CO.warning},{to:100,color:CO.positive}]});}
+  else if($('vx-mk-vol-breadth'))$('vx-mk-vol-breadth').innerHTML=VX.states.empty('Breadth non calculée.');
+  try{
+    const r=await VX.fetch('/api/market/regime',{ttl:120000});
+    const conf=Math.round((r.confidence||0)*100);
+    const allowed=r.adjustments&&r.adjustments.new_risk_allowed;
+    if(G){VXCharts.gauge('vx-mk-vol-regime',{value:conf,min:0,max:100,unit:' %',label:esc(r.regime||'Régime'),
+      reading:allowed?'Risque autorisé':'Risque bloqué',
+      bands:[{to:40,color:CO.negative},{to:70,color:CO.warning},{to:100,color:CO.positive}]});}
+    const pos=allowed?Math.max(55,conf):Math.min(45,100-conf);
+    if($('vx-mk-vol-rail'))$('vx-mk-vol-rail').innerHTML=
+      '<div class="vx-stat-xl-label">Positionnement — Défense ↔ Attaque</div>'
+      +'<div class="vx-rail vx-mt2" style="--vx-rail-pos:'+pos+'%"><span class="vx-rail-mark"></span></div>'
+      +'<div class="vx-rail-scale"><span>Défense</span><span>Neutre</span><span>Attaque</span></div>'
+      +'<div class="vx-meta vx-mt2">Régime <b>'+esc(r.regime||'n/d')+'</b> · '
+      +(allowed?'<span class="vx-pos">nouveau risque autorisé</span>':'<span class="vx-neg">nouveau risque BLOQUÉ</span>')+'</div>';
+  }catch(e){if($('vx-mk-vol-regime'))$('vx-mk-vol-regime').innerHTML=VX.states.empty('Régime non calculé.');}
 }
 
 /* ═══ Orchestration ═══ */
