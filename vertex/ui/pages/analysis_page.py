@@ -399,9 +399,36 @@ async function loadDossier(){
       <div class="vx-meta vx-mt2">Niveaux du plan moteur (structure de marché) — variations arithmétiques vs cours actuel.</div>`);
   }else body('an-scenarios',VX.states.empty('Plan moteur indisponible — pas de scénarios chiffrés.'));
 
-  /* 10. Plan */
+  /* 10. Plan — échelle Risk/Reward (§24.5) : niveaux du plan proportionnels au prix */
+  function rrLadder(px,plan){
+    const VC=window.VXCharts||{colors:{}};const col=(n,f)=>(VC.colors&&VC.colors[n])||f;
+    const lv=[];
+    if(plan.stop!=null)lv.push({k:'Stop',v:plan.stop,c:col('negative','#dc5f52')});
+    const e=(plan.entry!=null?plan.entry:px);
+    if(e!=null)lv.push({k:'Entrée',v:e,c:col('info','#b9683d')});
+    [plan.tp1,plan.tp2,plan.tp3].forEach(function(t,i){if(t!=null)lv.push({k:'TP'+(i+1),v:t,c:col('positive','#38b879')});});
+    if(lv.length<2)return '';
+    const vals=lv.map(function(l){return l.v;});
+    const min=Math.min.apply(null,vals),max=Math.max.apply(null,vals),rng=(max-min)||1;
+    const W=280,H=16+lv.length*26,padT=12,padB=12,plotH=H-padT-padB,axX=70;
+    const y=function(v){return padT+(max-v)/rng*plotH;};
+    let bands='';
+    if(plan.stop!=null&&e!=null)bands+='<rect x="'+(axX-4)+'" y="'+Math.min(y(e),y(plan.stop)).toFixed(1)+'" width="8" height="'+Math.abs(y(plan.stop)-y(e)).toFixed(1)+'" fill="'+col('negative','#dc5f52')+'" fill-opacity=".18"/>';
+    const tps=[plan.tp1,plan.tp2,plan.tp3].filter(function(t){return t!=null;});
+    const topTp=tps.length?Math.max.apply(null,tps):null;
+    if(topTp!=null&&e!=null)bands+='<rect x="'+(axX-4)+'" y="'+Math.min(y(e),y(topTp)).toFixed(1)+'" width="8" height="'+Math.abs(y(topTp)-y(e)).toFixed(1)+'" fill="'+col('positive','#38b879')+'" fill-opacity=".16"/>';
+    const rows=lv.map(function(l){const yy=y(l.v);const pct=(px&&l.v)?((l.v/px-1)*100):null;
+      return '<line x1="'+axX+'" y1="'+yy.toFixed(1)+'" x2="'+(axX+8)+'" y2="'+yy.toFixed(1)+'" stroke="'+l.c+'" stroke-width="2"/>'
+        +'<circle cx="'+axX+'" cy="'+yy.toFixed(1)+'" r="3" fill="'+l.c+'"/>'
+        +'<text x="'+(axX-8)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="var(--vx-text-secondary,#b7b2aa)">'+l.k+'</text>'
+        +'<text x="'+(axX+14)+'" y="'+(yy+3).toFixed(1)+'" font-size="10.5" fill="'+l.c+'" style="font-variant-numeric:tabular-nums">'+VX.fmt.nd(l.v)+(pct!=null?' ('+(pct>=0?'+':'')+pct.toFixed(1)+'%)':'')+'</text>';}).join('');
+    const aria='Échelle risque/récompense : '+lv.map(function(l){return l.k+' '+VX.fmt.nd(l.v);}).join(', ')+(plan.rr?', R:R '+plan.rr:'');
+    return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:'+W+'px;display:block;margin:0 auto 10px" role="img" aria-label="'+aria.replace(/"/g,'&quot;')+'">'
+      +'<line x1="'+axX+'" y1="'+padT+'" x2="'+axX+'" y2="'+(H-padB)+'" stroke="rgba(255,255,255,.12)"/>'+bands+rows+'</svg>';
+  }
   body('an-plan',
-    kv('Entrée',plan.entry)+kv('Stop (invalidation sous-jacent)',plan.stop,'vx-neg')
+    rrLadder(d.price,plan)
+    +kv('Entrée',plan.entry)+kv('Stop (invalidation sous-jacent)',plan.stop,'vx-neg')
     +kv('TP1',plan.tp1,'vx-pos')+kv('TP2',plan.tp2,'vx-pos')+kv('TP3',plan.tp3,'vx-pos')
     +kv('R:R structurel',plan.rr)
     +`<div class="vx-flex vx-mt3" style="flex-wrap:wrap;gap:.4rem">
