@@ -91,6 +91,14 @@ _VIEW_CONTENT = {
 <div class="vx-grid vx-mt4">
   <div class="vx-col-12" id="vx-mk-sectors-heat"></div>
 </div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Poids et performance par secteur">
+    <div class="vx-chart-head"><span class="vx-chart-title">Poids &amp; performance par secteur</span>
+      <span class="vx-chart-question">Où se concentre l’univers, et qui performe ?</span></div>
+    <div id="vx-mk-sectors-tree" style="height:300px"></div>
+    <div class="vx-card-foot"><span class="vx-meta">Taille = nombre de titres scannés du secteur · couleur = variation moyenne du jour (vert entrant / rouge sortant).</span></div>
+  </section>
+</div>
 """,
     'breadth': """
 <div class="vx-grid vx-mt3">
@@ -339,6 +347,18 @@ function loadSectors(scan){
       <td>${L?`<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(L)}" aria-label="Actions ${esc(L)}">⋯</button>`:''}</td>
     </tr>`;}).join('')+'</tbody></table>'
     +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
+  /* Treemap poids & performance par secteur (type réutilisable) */
+  if(window.VXCharts&&VXCharts.treemap){
+    const cc=VXCharts.colors;
+    const col=(ch)=>ch==null?cc.neutral:(ch>=0.3?cc.positive:ch<=-0.3?cc.negative:cc.warning);
+    const el=document.getElementById('vx-mk-sectors-tree');
+    const w=(el&&el.clientWidth)||900;
+    VXCharts.treemap(el,{width:w,height:300,
+      items:sectors.map(s=>({label:s.sector||'n/d',value:(s.n||s.avg_score||1),
+        sub:(s.avg_change!=null?((s.avg_change>=0?'+':'')+Number(s.avg_change).toFixed(1)+'%'):''),
+        color:col(s.avg_change)})),
+      fmt:(v)=>v+' titres'});
+  }
 }
 
 /* ═══ BREADTH ═══ */

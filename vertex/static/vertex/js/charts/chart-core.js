@@ -219,6 +219,62 @@
     return el;
   };
 
+  /* ── Treemap (SVG squarifié) — poids relatif : portefeuille, segments, secteurs ──
+     opts: {items:[{label, value>0, color?, sub?}], width, height, fmt?, emptyHtml?}
+     Aspect ratios équilibrés (algorithme squarify). Accessible : chaque tuile role=img. */
+  C.treemap = function (host, opts) {
+    const el = typeof host === 'string' ? document.getElementById(host) : host;
+    if (!el) return null;
+    const o = opts || {};
+    let items = (o.items || []).filter(d => d && d.value > 0).sort((a, b) => b.value - a.value);
+    if (!items.length) { el.innerHTML = o.emptyHtml || ''; return null; }
+    const W = o.width || 640, H = o.height || 300;
+    const total = items.reduce((s, d) => s + d.value, 0);
+    const nodes = items.map(d => ({ d, area: d.value / total * W * H }));
+    const rects = [];
+    let fx = 0, fy = 0, fw = W, fh = H;
+    const worst = (row, len) => {
+      let sum = 0, mx = 0, mn = Infinity;
+      row.forEach(r => { sum += r.area; if (r.area > mx) mx = r.area; if (r.area < mn) mn = r.area; });
+      const s2 = sum * sum, l2 = len * len;
+      return Math.max(l2 * mx / s2, s2 / (l2 * mn));
+    };
+    const layout = (row) => {
+      const sum = row.reduce((a, r) => a + r.area, 0);
+      if (fw >= fh) {                       // bande verticale à gauche (largeur rw)
+        const rw = sum / fh; let oy = fy;
+        row.forEach(r => { const rh = r.area / rw; rects.push({ d: r.d, x: fx, y: oy, w: rw, h: rh }); oy += rh; });
+        fx += rw; fw -= rw;
+      } else {                              // bande horizontale en haut (hauteur rh)
+        const rh = sum / fw; let ox = fx;
+        row.forEach(r => { const rw = r.area / rh; rects.push({ d: r.d, x: ox, y: fy, w: rw, h: rh }); ox += rw; });
+        fy += rh; fh -= rh;
+      }
+    };
+    let rest = nodes.slice(), row = [];
+    while (rest.length) {
+      const len = Math.min(fw, fh), next = rest[0];
+      if (row.length === 0 || worst(row.concat(next), len) <= worst(row, len)) row.push(rest.shift());
+      else { layout(row); row = []; }
+    }
+    if (row.length) layout(row);
+    const fmt = o.fmt || ((v) => v);
+    const svg = rects.map(r => {
+      const col = r.d.color || C.colors.neutral;
+      const small = r.w < 54 || r.h < 30;
+      const lbl = String(r.d.label || '');
+      const aria = `${lbl} : ${fmt(r.d.value)}${r.d.sub ? ' ' + r.d.sub : ''}`;
+      return `<g role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
+        <rect x="${r.x.toFixed(1)}" y="${r.y.toFixed(1)}" width="${Math.max(0, r.w - 1.5).toFixed(1)}" height="${Math.max(0, r.h - 1.5).toFixed(1)}"
+          rx="3" fill="${col}" fill-opacity=".82" stroke="var(--vx-bg-app,#050505)" stroke-width="1.5"/>
+        ${small ? '' : `<text x="${(r.x + 6).toFixed(1)}" y="${(r.y + 16).toFixed(1)}" fill="#f3f1ed" font-size="11" font-weight="700">${lbl.slice(0, Math.floor(r.w / 7))}</text>
+        <text x="${(r.x + 6).toFixed(1)}" y="${(r.y + 30).toFixed(1)}" fill="rgba(255,255,255,.82)" font-size="10" style="font-variant-numeric:tabular-nums">${fmt(r.d.value)}${r.d.sub ? ' · ' + r.d.sub : ''}</text>`}
+      </g>`;
+    }).join('');
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block">${svg}</svg>`;
+    return el;
+  };
+
   /* Marqueurs verticaux (earnings, événements). */
   C.eventMarkers = function (markers) {
     return {
