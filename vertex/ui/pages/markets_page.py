@@ -120,6 +120,18 @@ _VIEW_CONTENT = {
   <div class="vx-col-5" id="vx-mk-verdicts"></div>
 </div>
 <div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-5" id="vx-mk-internals-card" aria-label="Internals du marché" hidden>
+    <div class="vx-card-header"><span class="vx-card-title">Internals — participation mesurée</span></div>
+    <div id="vx-mk-internals"></div>
+  </section>
+  <section class="vx-card vx-col-7" id="vx-mk-dist-card" aria-label="Distribution des scores" hidden>
+    <div class="vx-chart-head"><span class="vx-chart-title">Distribution des scores de l’univers</span>
+      <span class="vx-chart-question">Le marché est-il globalement fort ou faible ?</span></div>
+    <div id="vx-mk-dist"></div>
+    <div class="vx-card-foot"><span class="vx-meta">Nombre de titres par tranche de score Vertex (0-100). Décalage à droite = univers globalement fort.</span></div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" id="vx-mk-health-card" aria-label="Composition de la santé du marché" hidden>
     <div class="vx-chart-head"><span class="vx-chart-title">Composition de la santé du marché</span>
       <span class="vx-chart-question">D’où vient le score de santé ?</span></div>
@@ -129,9 +141,10 @@ _VIEW_CONTENT = {
 </div>
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Limites des données de breadth">
-    <div class="vx-insight">Advance/decline et nouveaux hauts/bas ne sont pas fournis
-    par les moteurs — non affichés. La breadth ci-dessus est calculée sur l’univers
-    des leaders scannés (univers partiel).</div>
+    <div class="vx-insight">Breadth, participation (&gt;MM50/MM200), avancées/déclins,
+    nouveaux hauts/bas et distribution des scores sont calculés sur l’<b>univers des leaders
+    scannés</b> (univers partiel, pas l’ensemble du NYSE). Advance/decline cumulés
+    multi-séances ne sont pas fournis — non affichés plutôt qu’inventés.</div>
   </section>
 </div>
 """,
@@ -473,6 +486,33 @@ function loadBreadth(scan){
         {label:'Santé',value:inter.health,isTotal:true}],
       fmt:(v)=>Math.round(v)});
   }else if(card){card.hidden=true;}
+  loadBreadthInternals(scan);
+}
+function loadBreadthInternals(scan){
+  const inter=(scan&&scan.internals)||{};
+  const iCard=$('vx-mk-internals-card'),dCard=$('vx-mk-dist-card');
+  if(!inter||inter.pct_a50===null||inter.pct_a50===undefined){if(iCard)iCard.hidden=true;if(dCard)dCard.hidden=true;return;}
+  if(iCard)iCard.hidden=false;
+  const kvr=(k,v,cls)=>`<div class="vx-kv"><span class="k">${k}</span><span class="v vx-mono ${cls||''}">${v}</span></div>`;
+  const pos=(v)=>v>=55?'vx-pos':v<=45?'vx-neg':'';
+  $('vx-mk-internals').innerHTML=
+    kvr('% au-dessus MM50',inter.pct_a50+' %',pos(inter.pct_a50))
+    +kvr('% au-dessus MM200',inter.pct_a200+' %',pos(inter.pct_a200))
+    +kvr('Avancées / déclins',inter.advpct+' % en hausse',pos(inter.advpct))
+    +kvr('Nouveaux plus-hauts (52s)',VX.fmt.nd(inter.nh),inter.nh>inter.nl?'vx-pos':'')
+    +kvr('Nouveaux plus-bas (52s)',VX.fmt.nd(inter.nl),inter.nl>inter.nh?'vx-neg':'')
+    +(inter.avg_rsi!==null&&inter.avg_rsi!==undefined?kvr('RSI moyen univers',inter.avg_rsi):'')
+    +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))} · univers scanné</div>`;
+  const dist=inter.dist||[];
+  if(dCard&&dist.length&&window.VXCharts){dCard.hidden=false;
+    const maxN=Math.max(1,...dist);const cc=VXCharts.colors;
+    const bar=(n,i)=>{const h=Math.round(n/maxN*100);
+      const col=i>=7?cc.positive:i<=2?cc.negative:cc.warning;
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px" role="img" aria-label="score ${i*10} à ${i*10+10} : ${n} titres">
+        <span style="width:100%;height:120px;display:flex;align-items:flex-end"><span style="width:100%;height:${h}%;background:${col};border-radius:3px 3px 0 0;min-height:2px"></span></span>
+        <span style="font-size:9px;color:var(--vx-text-muted,#817b73);font-variant-numeric:tabular-nums">${i*10}</span></div>`;};
+    $('vx-mk-dist').innerHTML='<div style="display:flex;gap:3px;align-items:flex-end;padding:6px 2px">'+dist.map(bar).join('')+'</div>';
+  }else if(dCard){dCard.hidden=true;}
 }
 
 /* ═══ VOLATILITY ═══ */
