@@ -275,6 +275,41 @@
     return el;
   };
 
+  /* ── Radar (SVG polygonal) — scorecard, greeks, risques d'entreprise ──
+     opts: {axes:[{label, value}], max=100, color, ariaLabel, width, height, emptyHtml}
+     ≥3 axes requis. Accessible : role=img + résumé chiffré. */
+  C.radar = function (host, opts) {
+    const el = typeof host === 'string' ? document.getElementById(host) : host;
+    if (!el) return null;
+    const o = opts || {};
+    const axes = (o.axes || []).filter(a => a && a.label != null);
+    if (axes.length < 3) { el.innerHTML = o.emptyHtml || ''; return null; }
+    const max = o.max || 100, N = axes.length, W = o.width || 260, H = o.height || 240;
+    const cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 26;
+    const ang = (i) => -Math.PI / 2 + i * 2 * Math.PI / N;
+    const pt = (i, r) => [cx + r * Math.cos(ang(i)), cy + r * Math.sin(ang(i))];
+    let grid = '';
+    [0.25, 0.5, 0.75, 1].forEach(f => {
+      grid += `<polygon points="${axes.map((_, i) => pt(i, R * f).map(n => n.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1"/>`;
+    });
+    let spokes = '', labels = '';
+    axes.forEach((a, i) => {
+      const [ex, ey] = pt(i, R);
+      spokes += `<line x1="${cx}" y1="${cy}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="rgba(255,255,255,.06)"/>`;
+      const [lx, ly] = pt(i, R + 13);
+      const anchor = Math.abs(lx - cx) < 6 ? 'middle' : (lx > cx ? 'start' : 'end');
+      labels += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="9.5" fill="var(--vx-text-muted,#817d77)">${a.label}</text>`;
+    });
+    const clamp = (v) => Math.max(0, Math.min(1, (v || 0) / max));
+    const vpts = axes.map((a, i) => pt(i, R * clamp(a.value)).map(n => n.toFixed(1)).join(',')).join(' ');
+    const col = o.color || C.colors.brand;
+    const dots = axes.map((a, i) => { const [px, py] = pt(i, R * clamp(a.value)); return `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.6" fill="${col}"/>`; }).join('');
+    const aria = (o.ariaLabel || 'radar') + ' : ' + axes.map(a => a.label + ' ' + Math.round(a.value || 0)).join(', ');
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block;margin:0 auto" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
+      ${grid}${spokes}<polygon points="${vpts}" fill="${col}" fill-opacity=".18" stroke="${col}" stroke-width="1.8"/>${dots}${labels}</svg>`;
+    return el;
+  };
+
   /* ── Flow diagram (chaîne de nœuds connectés) — impacts, pipeline système ──
      opts: {nodes:[{label, count?, sub?, tone?('active'|'idle'|'warn'|'err'), color?}], ariaLabel, emptyHtml}
      Horizontal, scrollable, responsive. Accessible : role=img + résumé. */

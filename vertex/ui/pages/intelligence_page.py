@@ -276,22 +276,25 @@ function renderAudit(strat,deci){
 }
 function renderScores(sym,strat){
   const s=strat&&strat.scores;
-  if(!s){$('vx-analyst-scores').innerHTML='<div class="vx-card">'
+  const host=$('vx-analyst-scores');
+  if(!s){host.innerHTML='<div class="vx-card">'
     +VX.states.empty('Scores indisponibles pour '+esc(sym)+' — dossier absent du moteur ex&eacute;cutif.')+'</div>';return;}
-  const labels=['Conviction','Risque','Timing','Asym&eacute;trie','Qualit&eacute; donn&eacute;es'];
-  const values=[s.conviction,s.risk,s.timing,s.asymmetry,s.data_quality].map(v=>v??0);
-  whenChartsReady(()=>VXCharts.barCard('vx-analyst-scores',{
-    title:'Scores du dossier '+sym,
-    question:'O&ugrave; le dossier est-il fort, o&ugrave; est-il fragile ?',
-    conclusion:'Conviction '+VX.fmt.num(s.conviction??0,0)+' / 100'
-      +((strat.blocking_rules||[]).length?' — plafonn&eacute;e par r&egrave;gle bloquante':''),
-    labels,values,height:210,horizontal:true,
-    colors:values.map(v=>v>=70?VXCharts.colors.positive:v>=50?VXCharts.colors.warning:VXCharts.colors.negative),
-    source:'moteur ex&eacute;cutif',timestamp:Date.now(),mode:'delayed',
-    explain:{shows:'Les cinq scores calcul&eacute;s par le moteur ex&eacute;cutif d&eacute;terministe (0-100).',
-      why:'La d&eacute;cision finale d&eacute;coule de ces scores et des r&egrave;gles bloquantes — jamais d&#8217;une intuition.',
-      confirm:'Conviction &ge; 70 avec asym&eacute;trie &ge; 40 et timing &ge; 50 sans inconnue critique.',
-      invalidate:'Une r&egrave;gle bloquante (qualit&eacute; de donn&eacute;es, anomalie, garde-fou) plafonne la d&eacute;cision.'}}));
+  const axes=[{label:'Conviction',value:s.conviction??0},{label:'Risque',value:s.risk??0},
+    {label:'Timing',value:s.timing??0},{label:'Asym&eacute;trie',value:s.asymmetry??0},
+    {label:'Donn&eacute;es',value:s.data_quality??0}];
+  const capped=(strat.blocking_rules||[]).length;
+  whenChartsReady(()=>{
+    host.classList.add('vx-card');
+    host.innerHTML='<div class="vx-chart-head"><span class="vx-chart-title">Scores du dossier '+esc(sym)+'</span>'
+      +'<span class="vx-chart-question">O&ugrave; le dossier est-il fort, o&ugrave; est-il fragile ?</span></div>'
+      +'<div id="vx-analyst-radar" class="vx-mb2"></div>'
+      +axes.map(function(a){const v=a.value;const cls=v>=70?'vx-pos':v>=50?'vx-warn':'vx-neg';
+        return '<div class="vx-kv"><span class="k">'+a.label+'</span><span class="v vx-mono '+cls+'">'+VX.fmt.num(v,0)+' / 100</span></div>';}).join('')
+      +'<div class="vx-card-foot"><span class="vx-meta">Cinq scores du moteur ex&eacute;cutif d&eacute;terministe (0-100)'
+      +(capped?' — conviction plafonn&eacute;e par une r&egrave;gle bloquante':'')+'.</span></div>';
+    if(window.VXCharts&&VXCharts.radar)
+      VXCharts.radar('vx-analyst-radar',{axes:axes,max:100,ariaLabel:'Scores dossier '+sym,color:VXCharts.colors.brand});
+  });
 }
 
 /* ══ Vue COMITÉ ═════════════════════════════════════════════════════ */
