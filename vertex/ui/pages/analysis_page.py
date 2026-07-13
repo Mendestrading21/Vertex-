@@ -232,10 +232,16 @@ async function loadDossier(){
     railR.innerHTML=html;
   }
   const sc=(exec&&exec.scores)||{};
-  $('an-scores').innerHTML=[['Conviction',sc.conviction],['Risque',sc.risk],['Timing',sc.timing],
-    ['Asymétrie',sc.asymmetry],['Qualité données',sc.data_quality]].map(([k,v])=>
+  const scAxes=[['Conviction',sc.conviction],['Risque',sc.risk],['Timing',sc.timing],
+    ['Asymétrie',sc.asymmetry],['Qualité',sc.data_quality]];
+  $('an-scores').innerHTML=scAxes.map(([k,v])=>
     `<span class="vx-badge" title="${k}">${k} <b class="vx-mono">${VX.fmt.nd(v)}</b></span>`).join('')
-    +(demo?'<span class="vx-badge" style="color:var(--vx-warning)">DÉMO</span>':'');
+    +(demo?'<span class="vx-badge" style="color:var(--vx-warning)">DÉMO</span>':'')
+    +'<div id="an-scorecard-radar" style="flex:1 0 100%;max-width:240px;margin:8px auto 0"></div>';
+  if(window.VXCharts&&VXCharts.radar&&scAxes.some(a=>a[1]!==null&&a[1]!==undefined)){
+    VXCharts.radar('an-scorecard-radar',{axes:scAxes.map(a=>({label:a[0],value:a[1]||0})),
+      max:100,ariaLabel:'Scorecard '+SYM,color:VXCharts.colors.brand,width:240,height:190});
+  }
 
   /* 3. Graphique principal — Trading Workspace (chandeliers réels + overlays MM) */
   const S=d.series||{};
