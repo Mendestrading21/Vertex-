@@ -119,6 +119,16 @@ _VIEW_CONTENT = {
 """,
     'breadth': """
 <div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-5 vx-card--accent" aria-label="Participation du marché">
+    <div class="vx-card-header"><span class="vx-card-title">Participation du marché</span></div>
+    <div id="vx-mk-breadth-gauge">%%LOADING%%</div>
+  </section>
+  <section class="vx-card vx-col-7" aria-label="Détail de la participation">
+    <div class="vx-card-header"><span class="vx-card-title">Détail — au-dessus des moyennes</span></div>
+    <div id="vx-mk-breadth-detail">%%LOADING%%</div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
   <div class="vx-col-7" id="vx-mk-breadth-chart"></div>
   <div class="vx-col-5" id="vx-mk-verdicts"></div>
 </div>
@@ -501,13 +511,39 @@ function loadSectors(scan){
 }
 
 /* ═══ BREADTH ═══ */
-function loadBreadth(scan){
+async function loadBreadth(scan){
+  const G=window.VXCharts&&VXCharts.gauge;const CO=(window.VXCharts&&VXCharts.colors)||{};
+  /* breadth réelle = /api/market/summary.breadth (objet), pas scan.market. */
+  let sum={};try{sum=await VX.fetch('/api/market/summary',{ttl:60000})||{};}catch(e){}
+  const sb=sum.breadth;let brNum=null,bo=null;
+  if(sb!=null&&typeof sb==='object'){bo=sb;brNum=(sb.above50!=null)?Number(sb.above50):(sb.above200!=null?Number(sb.above200):null);}
+  else if(sb!=null&&!isNaN(sb))brNum=Number(sb);
+  /* Jauge de participation (au-dessus de la MM50) */
+  if(G&&brNum!=null){VXCharts.gauge('vx-mk-breadth-gauge',{value:brNum,min:0,max:100,unit:' %',label:'> MM50',
+    reading:brNum>=55?'Participation saine — hausse partagée':brNum>=45?'Participation moyenne':'Participation étroite — sélectivité',
+    bands:[{to:40,color:CO.negative},{to:55,color:CO.warning},{to:100,color:CO.positive}]});}
+  else emptyCard('vx-mk-breadth-gauge','Participation non calculée par le dernier scan.',SCAN_ACTION);
+  /* Détail : au-dessus des moyennes, avancées/déclins, nouveaux hauts/bas */
+  const dEl=$('vx-mk-breadth-detail');
+  if(dEl){
+    if(bo){
+      const kv=(k,v,cls)=>`<div class="vx-kv"><span class="k">${k}</span><span class="v vx-mono ${cls||''}">${v}</span></div>`;
+      const pc=(v)=>v>=55?'vx-pos':v<=45?'vx-neg':'';
+      dEl.innerHTML=
+        (bo.above50!=null?kv('Titres > MM50',Math.round(bo.above50)+' %',pc(bo.above50)):'')
+        +(bo.above200!=null?kv('Titres > MM200',Math.round(bo.above200)+' %',pc(bo.above200)):'')
+        +((bo.adv!=null&&bo.dec!=null)?kv('Avancées / Déclins',bo.adv+' / '+bo.dec,bo.adv>=bo.dec?'vx-pos':'vx-neg'):'')
+        +((bo.nh!=null&&bo.nl!=null)?kv('Nouveaux hauts / bas',bo.nh+' / '+bo.nl,bo.nh>=bo.nl?'vx-pos':'vx-neg'):'')
+        +(bo.buy!=null?kv('Signaux d’achat (univers)',bo.buy):'')
+        +`<div class="vx-help vx-mt2">Calculé sur l’univers des leaders scannés (partiel, pas tout le NYSE). Advance/decline cumulés multi-séances non fournis — non affichés plutôt qu’inventés.</div>`;
+    }else dEl.innerHTML=VX.states.empty('Détail de participation non fourni par le dernier scan.');
+  }
   const m=mkt(scan);
-  if(m.breadth!==null&&m.breadth!==undefined){
+  if(brNum!==null){
     VXCharts.breadthCard('vx-mk-breadth-chart',{
       title:'Breadth / participation',question:'La hausse est-elle partagée ?',
-      conclusion:m.breadth>=55?'Participation saine.':'Participation étroite — sélectivité obligatoire.',
-      labels:['> moyenne'],values:[m.breadth],height:200,
+      conclusion:brNum>=55?'Participation saine.':'Participation étroite — sélectivité obligatoire.',
+      labels:['> moyenne'],values:[brNum],height:200,
       source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
       limits:'breadth calculée sur les leaders scannés (univers partiel)',
       explain:{shows:'Le pourcentage de titres au-dessus de leur moyenne (moteur de contexte marché).',
@@ -537,7 +573,7 @@ function loadBreadth(scan){
       items:[
         {label:'>MM50',value:0.30*(inter.pct_a50||0)},
         {label:'>MM200',value:0.25*(inter.pct_a200||0)},
-        {label:'Breadth',value:0.25*(inter.breadth!=null?inter.breadth:(m.breadth||0))},
+        {label:'Breadth',value:0.25*(inter.breadth!=null?inter.breadth:(brNum||0))},
         {label:'Adv/Déc',value:0.20*(inter.advpct||0)},
         {label:'Santé',value:inter.health,isTotal:true}],
       fmt:(v)=>Math.round(v)});

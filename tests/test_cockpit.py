@@ -28,6 +28,16 @@ def test_markets_volatility_cockpit_gauges():
     assert 'VIX non fourni' in src  # état vide honnête
 
 
+def test_markets_breadth_participation_gauge():
+    """Vue Breadth : jauge de participation + détail (>MM50/MM200, adv/déc, NH/NL)
+    sourcés depuis summary.breadth (objet), état vide honnête sinon."""
+    src = open(os.path.join(ROOT, 'vertex', 'ui', 'pages', 'markets_page.py'), encoding='utf-8').read()
+    for needle in ('vx-mk-breadth-gauge', 'vx-mk-breadth-detail',
+                   'Titres > MM50', 'above200', 'async function loadBreadth'):
+        assert needle in src, needle
+    assert 'Participation non calculée' in src
+
+
 def test_cockpit_loaded_in_shell_last():
     shell = open(os.path.join(ROOT, 'vertex', 'ui', 'shell', '__init__.py'), encoding='utf-8').read()
     assert 'cockpit.css' in shell
