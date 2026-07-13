@@ -309,12 +309,28 @@ async function loadDossier(){
   /* 6. Technique */
   const ttm=(d.ttm_fired?'🚀 sortie de compression':(d.ttm_squeeze?'🔒 en compression (BB dans Keltner)':null));
   const ttmDir=d.ttm_dir==='up'?' · momentum haussier':d.ttm_dir==='down'?' · momentum baissier':'';
+  function perfBars(d){
+    const rows=[['1 sem.',d.perf_w],['1 mois',d.perf_m],['1 trim.',d.perf_q],['1 an',d.perf_y]].filter(r=>r[1]!=null&&!isNaN(r[1]));
+    if(!rows.length)return '';
+    const maxAbs=Math.max(5,...rows.map(r=>Math.abs(r[1])));
+    return '<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">'
+      +'<div class="vx-meta vx-mb1" style="text-transform:uppercase;letter-spacing:.04em">Performance multi-horizons</div>'
+      +rows.map(function(r){const v=r[1];const neg=v<0;const w=Math.min(50,Math.abs(v)/maxAbs*50);
+        return '<div style="display:flex;align-items:center;gap:6px;margin:2px 0" role="img" aria-label="'+r[0]+' '+(v>=0?'+':'')+v+' %">'
+          +'<span style="width:52px;font-size:10.5px;color:var(--vx-text-muted,#817d77)">'+r[0]+'</span>'
+          +'<span style="flex:1;height:10px;position:relative;background:var(--vx-surface-3,#17191c);border-radius:3px;overflow:hidden">'
+            +'<span style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.16)"></span>'
+            +'<span style="position:absolute;top:0;bottom:0;'+(neg?('right:50%;width:'+w.toFixed(1)+'%'):('left:50%;width:'+w.toFixed(1)+'%'))+';background:'+(neg?'var(--vx-negative,#dc6255)':'var(--vx-positive,#39b878)')+'"></span></span>'
+          +'<span style="width:54px;text-align:right;font-size:10.5px;font-variant-numeric:tabular-nums" class="'+(neg?'vx-neg':'vx-pos')+'">'+(v>=0?'+':'')+VX.fmt.num(v,1)+'%</span></div>';
+      }).join('')+'</div>';
+  }
   body('an-technical',
     kv('Score',d.score)+kv('Verdict technique (métadonnée)',d.verdict)
     +kv('Force relative',d.rs)+kv('RSI',d.rsi)
     +kv('Position 52 semaines',d.pos52!==undefined?d.pos52+' %':null)
     +kv('Extension vs ATR',d.ext_atr,(d.ext_atr>=2.5?'vx-warn':''))
     +(ttm?kv('TTM Squeeze',ttm+ttmDir,(d.ttm_fired&&d.ttm_dir==='up'?'vx-pos':d.ttm_fired&&d.ttm_dir==='down'?'vx-neg':'')):'')
+    +perfBars(d)
     +`<div class="vx-meta vx-mt2">La décision finale unique reste ${decision} — les verdicts techniques sont des entrées du moteur exécutif.</div>`);
 
   /* 7. Sentiment + consensus analystes (données company déjà chargées → objectif de cours + potentiel) */
