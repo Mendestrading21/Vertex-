@@ -90,15 +90,17 @@ def test_chart_interpretation_unknown_chart_is_honest(client):
     assert d['status'] == 'INCONNU'
 
 
-def test_options_page_renders_and_stays_eight_spaces(client):
+def test_options_page_renders_as_primary_space(client):
     r = client.get('/options')
     assert r.status_code == 200
     html = r.get_data(as_text=True)
     assert 'Options Intelligence' in html
-    # reste un approfondissement d'Opportunités : le nav marque Opportunités actif
-    assert 'data-nav-id="opportunities"' in html
-    # exactement huit espaces dans la nav principale
-    assert len(re.findall(r'class="vx-nav-item"', html)) == 8
+    # Options est désormais un espace PRINCIPAL (§18 overhaul) : le nav le marque actif
+    assert 'data-nav-id="options"' in html
+    assert re.search(r'data-nav-id="options"[^>]*aria-current="page"', html) \
+        or 'data-nav-id="options" aria-current="page"' in html
+    # neuf espaces dans la nav principale (Options ajouté)
+    assert len(re.findall(r'class="vx-nav-item"', html)) == 9
 
 
 def test_options_page_subviews(client):
