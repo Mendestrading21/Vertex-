@@ -189,9 +189,9 @@ def render(view: str = 'overview') -> str:
                + _VIEW_CONTENT[view].replace('%%LOADING%%', _LOADING))
     return render_shell(
         title='Options Intelligence',
-        active='opportunities',            # reste dans les 8 espaces (approfondissement)
-        space_label='Options Intelligence',
-        sub_label='Approfondissement d’Opportunités',
+        active='options',                  # espace principal Options (9e entrée nav)
+        space_label='Options',
+        sub_label='Options Intelligence',
         page_label='options:%s' % view,
         content=content,
         page_js=_PAGE_JS)

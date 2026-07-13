@@ -27,14 +27,22 @@ def client():
 
 
 # ── Navigation (§10) ──────────────────────────────────────────────────
-def test_primary_navigation_has_eight_items():
-    assert len(PRIMARY_NAV) == 8
+def test_primary_navigation_has_nine_items():
+    """Options est un espace principal (§18 overhaul institutionnel)."""
+    assert len(PRIMARY_NAV) == 9
     assert [i['label'] for i in PRIMARY_NAV] == [
         'Briefing', 'Marchés', 'Opportunités', 'Portefeuille',
-        'Analyse', 'Performance', 'Intelligence', 'Système']
+        'Analyse', 'Options', 'Performance', 'Intelligence', 'Système']
     assert [i['href'] for i in PRIMARY_NAV] == [
         '/', '/markets', '/opportunities', '/portfolio',
-        '/analysis', '/performance', '/intelligence', '/system']
+        '/analysis', '/options', '/performance', '/intelligence', '/system']
+
+
+def test_options_is_in_primary_navigation():
+    ids = [i['id'] for i in PRIMARY_NAV]
+    assert 'options' in ids
+    opt = next(i for i in PRIMARY_NAV if i['id'] == 'options')
+    assert opt['href'] == '/options'
 
 
 def test_every_primary_route_returns_200(client):
@@ -294,8 +302,8 @@ def test_service_worker_bumped(client):
     r = client.get('/sw.js')
     assert r.status_code == 200
     body = r.get_data(as_text=True)
-    assert 'td-shell-v28' in body, 'le shell a changé — la version du cache doit suivre'
-    assert 'td-shell-v27' not in body
+    assert 'td-shell-v29' in body, 'le shell a changé — la version du cache doit suivre'
+    assert 'td-shell-v28' not in body
 
 
 # ── Lecture seule (rappel §1) ─────────────────────────────────────────

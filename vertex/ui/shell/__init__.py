@@ -16,6 +16,7 @@ PRIMARY_NAV = (
     {'id': 'opportunities', 'label': 'Opportunités', 'href': '/opportunities', 'icon': 'radar'},
     {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
     {'id': 'analysis', 'label': 'Analyse', 'href': '/analysis', 'icon': 'chart'},
+    {'id': 'options', 'label': 'Options', 'href': '/options', 'icon': 'bolt'},
     {'id': 'performance', 'label': 'Performance', 'href': '/performance', 'icon': 'trend'},
     {'id': 'intelligence', 'label': 'Intelligence', 'href': '/intelligence', 'icon': 'brain'},
     {'id': 'system', 'label': 'Système', 'href': '/system', 'icon': 'settings'},
@@ -39,6 +40,7 @@ _ICONS = {
     'chevrons': '<path d="m11 17-5-5 5-5m7 10-5-5 5-5"/>',
     'back': '<path d="m15 18-6-6 6-6"/>',
     'star': '<path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/>',
+    'bolt': '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
 }
 
 
