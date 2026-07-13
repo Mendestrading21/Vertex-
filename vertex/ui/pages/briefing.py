@@ -126,6 +126,20 @@ _CONTENT = """
   <div class="vx-col-4" id="vx-breadth-chart"></div>
 </div>
 
+<!-- Rangée 3b : Top 10 / Flop 10 de la séance -->
+<div class="vx-grid vx-mt4" data-block="topflop">
+  <section class="vx-card vx-col-6" aria-label="Top 10 de la séance">
+    <div class="vx-card-header"><span class="vx-card-title">Top 10 de la séance</span>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Univers →</a></span></div>
+    <div id="vx-top10">%%LOADING%%</div>
+  </section>
+  <section class="vx-card vx-col-6" aria-label="Flop 10 de la séance">
+    <div class="vx-card-header"><span class="vx-card-title">Flop 10 de la séance</span>
+      <span class="vx-actions"><span class="vx-meta">plus fortes baisses · univers scanné</span></span></div>
+    <div id="vx-flop10">%%LOADING%%</div>
+  </section>
+</div>
+
 <!-- Rangée 4 : opportunités actions (6) + options (6) -->
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-6" data-block="opportunities" aria-label="Opportunités actions">
@@ -178,7 +192,7 @@ function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;
 
 /* Personnalisation contrôlée des blocs (§43 — vxDashboardLayout.hidden) */
 const BLOCKS=[['brief','Brief Vertex'],['regime','Régime'],['market','Marchés (graphiques)'],
-  ['opportunities','Opportunités'],['rotation','Rotation & alertes'],
+  ['topflop','Top 10 / Flop 10'],['opportunities','Opportunités'],['rotation','Rotation & alertes'],
   ['portfolio','Portefeuille'],['calendar','Calendrier'],['alerts','Alertes']];
 function layoutGet(){try{return JSON.parse(localStorage.getItem('vxDashboardLayout')||'{}')}catch(e){return{}}}
 function layoutSet(l){try{localStorage.setItem('vxDashboardLayout',JSON.stringify(l))}catch(e){}}
@@ -355,6 +369,30 @@ async function loadMarketCharts(scan){
   }else{$('vx-breadth-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Breadth non calculée par le dernier scan.')+'</div>';}
 }
 
+/* ── Top 10 / Flop 10 de la séance (rangée 3b) ── */
+function moversHtml(rows,dir){
+  const sorted=rows.filter(r=>r.change!==null&&r.change!==undefined).slice()
+    .sort((a,b)=>dir==='top'?(b.change-a.change):(a.change-b.change)).slice(0,10);
+  if(!sorted.length)return VX.states.empty('Aucune variation exploitable dans le dernier scan.');
+  return sorted.map(function(r){const chg=r.change;
+    return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
+      <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${r.symbol}">${r.symbol}</button>
+      <span class="vx-num vx-mono ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}" style="width:62px;text-align:right;font-weight:700">${VX.fmt.pct(chg,1)}</span>
+      <span class="vx-grow vx-truncate vx-dim" style="font-size:11.5px">${esc(r.sector||'')}</span>
+      <span class="vx-num vx-mono vx-meta" style="width:64px;text-align:right">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):''}</span>
+      ${r.score!==null&&r.score!==undefined?`<span class="vx-badge" title="Score Vertex">${VX.fmt.num(r.score,0)}</span>`:''}
+      <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${r.symbol}" aria-label="Actions ${r.symbol}">⋯</button>
+    </div>`;}).join('');
+}
+function loadTopFlop(scan){
+  const rows=(scan&&scan.rows)||[];
+  const t=$('vx-top10'),f=$('vx-flop10');
+  const mode=(scan&&scan.data_source==='demo')?'fallback':(scan&&scan.source==='ibkr'?'live':'delayed');
+  const foot=`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',mode)} · ${rows.length} titres scannés</div>`;
+  if(t)t.innerHTML=moversHtml(rows,'top')+foot;
+  if(f)f.innerHTML=moversHtml(rows,'flop')+foot;
+}
+
 /* ── Opportunités (rangée 4) ── */
 async function loadOpportunities(){
   try{
@@ -465,7 +503,7 @@ async function loadCalendar(){
 async function boot(){
   loadBrief();loadRegime();loadOpportunities();loadAlerts();loadPortfolio();loadCalendar();
   const scan=await loadStrip();
-  loadMarketCharts(scan);loadRotation(scan);
+  loadMarketCharts(scan);loadTopFlop(scan);loadRotation(scan);
 }
 function whenChartsReady(fn){
   if(window.VXCharts&&window.Chart)return fn();
