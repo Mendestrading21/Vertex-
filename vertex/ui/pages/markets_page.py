@@ -106,6 +106,14 @@ _VIEW_CONTENT = {
   <div class="vx-col-5" id="vx-mk-verdicts"></div>
 </div>
 <div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" id="vx-mk-health-card" aria-label="Composition de la santé du marché" hidden>
+    <div class="vx-chart-head"><span class="vx-chart-title">Composition de la santé du marché</span>
+      <span class="vx-chart-question">D’où vient le score de santé ?</span></div>
+    <div id="vx-mk-health-wf" style="height:240px"></div>
+    <div class="vx-card-foot"><span class="vx-meta">Santé = 30&nbsp;% (&gt;MM50) + 25&nbsp;% (&gt;MM200) + 25&nbsp;% (breadth) + 20&nbsp;% (avancées/déclins). Contributions pondérées du moteur d’internals — aucune pondération inventée.</span></div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Limites des données de breadth">
     <div class="vx-insight">Advance/decline et nouveaux hauts/bas ne sont pas fournis
     par les moteurs — non affichés. La breadth ci-dessus est calculée sur l’univers
@@ -389,6 +397,20 @@ function loadBreadth(scan){
         why:'Beaucoup d’ÉVITER = environnement hostile même si les indices tiennent.',
         confirm:'Verdicts d’achat en hausse sur plusieurs scans.',invalidate:'Bascule massive vers ÉVITER.'}});
   }else emptyCard('vx-mk-verdicts','Aucun verdict dans le dernier scan.',SCAN_ACTION);
+  /* Waterfall : composition de la santé du marché (contributions pondérées de l'internals) */
+  const inter=(scan&&scan.internals)||{};
+  const card=$('vx-mk-health-card');
+  if(card&&window.VXCharts&&VXCharts.waterfall&&inter.health!=null&&inter.pct_a50!=null){
+    card.hidden=false;
+    VXCharts.waterfall('vx-mk-health-wf',{ariaLabel:'Composition de la santé du marché',
+      items:[
+        {label:'>MM50',value:0.30*(inter.pct_a50||0)},
+        {label:'>MM200',value:0.25*(inter.pct_a200||0)},
+        {label:'Breadth',value:0.25*(inter.breadth!=null?inter.breadth:(m.breadth||0))},
+        {label:'Adv/Déc',value:0.20*(inter.advpct||0)},
+        {label:'Santé',value:inter.health,isTotal:true}],
+      fmt:(v)=>Math.round(v)});
+  }else if(card){card.hidden=true;}
 }
 
 /* ═══ VOLATILITY ═══ */

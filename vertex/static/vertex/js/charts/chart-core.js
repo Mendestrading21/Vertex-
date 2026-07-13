@@ -275,6 +275,47 @@
     return el;
   };
 
+  /* ── Waterfall (SVG) — décomposition/contribution : P&L, risque, santé, décision ──
+     opts: {items:[{label, value, isTotal?}], fmt?, ariaLabel, width, height, emptyHtml}
+     Contributions cumulatives (vert +, rouge −) ; isTotal = barre depuis 0 (brand).
+     Accessible : role=img + résumé. */
+  C.waterfall = function (host, opts) {
+    const el = typeof host === 'string' ? document.getElementById(host) : host;
+    if (!el) return null;
+    const o = opts || {};
+    const items = (o.items || []).filter(it => it && it.value != null && !isNaN(it.value));
+    if (!items.length) { el.innerHTML = o.emptyHtml || ''; return null; }
+    const W = o.width || 620, H = o.height || 240, PAD_B = 30, PAD_T = 16;
+    let cum = 0; const bars = [];
+    items.forEach(it => {
+      if (it.isTotal) { bars.push({ label: it.label, from: 0, to: it.value, val: it.value, total: true }); }
+      else { const from = cum; cum += it.value; bars.push({ label: it.label, from, to: cum, val: it.value }); }
+    });
+    const vals = bars.reduce((a, b) => a.concat([b.from, b.to]), [0]);
+    const maxV = Math.max.apply(null, vals), minV = Math.min.apply(null, vals);
+    const range = (maxV - minV) || 1, plotH = H - PAD_B - PAD_T;
+    const y = (v) => PAD_T + (maxV - v) / range * plotH;
+    const n = bars.length, gap = 10, bw = Math.max(6, (W - gap * (n + 1)) / n);
+    const fmt = o.fmt || ((v) => Math.round(v));
+    let svg = '';
+    bars.forEach((b, i) => {
+      const x = gap + i * (bw + gap);
+      const yTop = y(Math.max(b.from, b.to)), yBot = y(Math.min(b.from, b.to));
+      const h = Math.max(2, yBot - yTop);
+      const col = b.total ? C.colors.brand : (b.val >= 0 ? C.colors.positive : C.colors.negative);
+      svg += `<rect x="${x.toFixed(1)}" y="${yTop.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${col}" fill-opacity=".82"/>`;
+      if (i < bars.length - 1 && !bars[i + 1].total) {
+        const yc = y(b.to), xn = gap + (i + 1) * (bw + gap);
+        svg += `<line x1="${(x + bw).toFixed(1)}" y1="${yc.toFixed(1)}" x2="${xn.toFixed(1)}" y2="${yc.toFixed(1)}" stroke="rgba(255,255,255,.18)" stroke-dasharray="2,2"/>`;
+      }
+      svg += `<text x="${(x + bw / 2).toFixed(1)}" y="${(yTop - 4).toFixed(1)}" text-anchor="middle" font-size="10" fill="var(--vx-text-secondary,#b7b2aa)" style="font-variant-numeric:tabular-nums">${(b.val >= 0 && !b.total ? '+' : '') + fmt(b.val)}</text>`;
+      svg += `<text x="${(x + bw / 2).toFixed(1)}" y="${(H - 9).toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--vx-text-muted,#817d77)">${String(b.label).slice(0, Math.floor(bw / 6) + 2)}</text>`;
+    });
+    const aria = (o.ariaLabel || 'décomposition') + ' : ' + bars.map(b => b.label + ' ' + fmt(b.val)).join(', ');
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${svg}</svg>`;
+    return el;
+  };
+
   /* ── Radar (SVG polygonal) — scorecard, greeks, risques d'entreprise ──
      opts: {axes:[{label, value}], max=100, color, ariaLabel, width, height, emptyHtml}
      ≥3 axes requis. Accessible : role=img + résumé chiffré. */
