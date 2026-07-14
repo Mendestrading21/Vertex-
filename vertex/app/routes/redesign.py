@@ -10,10 +10,10 @@ from pathlib import Path
 
 from flask import Blueprint, jsonify, redirect, request, send_from_directory
 
-from vertex.ui.pages import (analysis_page, briefing, intelligence_page,
-                             markets_page, opportunities_page, options_intel_page,
-                             performance_page, portfolio_page, system_page,
-                             tracking_page)
+from vertex.ui.pages import (analysis_page, briefing, design_system_page,
+                             intelligence_page, markets_page, opportunities_page,
+                             options_intel_page, performance_page, portfolio_page,
+                             system_page, tracking_page)
 
 # Anciennes routes → nouvelles destinations (§11). Jamais de suppression sèche.
 LEGACY_REDIRECTS = {
@@ -125,6 +125,13 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     @bp.route('/tracking')
     def tracking_route():
         return tracking_page.render()
+
+    # ── Design System (§50) — page de référence visuelle interne. Purement
+    # cosmétique : aucune donnée, aucun moteur. Accessible depuis Système.
+    @bp.route('/design-system')
+    @bp.route('/system/design-system')
+    def design_system_route():
+        return design_system_page.render()
 
     # ── Brief éditorial (§21) : paquet structuré → 10 lignes ─────────
     @bp.route('/api/briefing/editorial')
