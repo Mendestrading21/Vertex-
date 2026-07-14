@@ -15,8 +15,10 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 #vx-app{position:relative;z-index:1}
 
 h1,h2,h3,h4,p{margin:0}
+h1,h2,h3,h4{text-wrap:balance}
 h1{font-size:var(--vx-fs-page);font-weight:800;letter-spacing:-.6px}
 h2{font-size:var(--vx-fs-section);font-weight:700;letter-spacing:-.2px}
+p,.vx-sub,.vx-card-sub,.vx-help,.ds-note{text-wrap:pretty}
 h3{font-size:var(--vx-fs-card);font-weight:600;color:var(--vx-text-secondary);
   text-transform:uppercase;letter-spacing:.6px}
 a{color:var(--vx-info);text-decoration:none}

@@ -117,7 +117,10 @@
   --vx-glow-brand:0 0 0 1px rgba(207,97,40,.24),0 4px 20px rgba(207,97,40,.08);
 
   /* ── Transitions ── */
-  --vx-t-fast:140ms ease;--vx-t:200ms ease;--vx-t-slow:240ms ease;
+  /* Courbes craft : ease-out marqué (entrées/interactions), jamais ease-in. */
+  --vx-ease-out:cubic-bezier(.23,1,.32,1);
+  --vx-ease-in-out:cubic-bezier(.77,0,.175,1);
+  --vx-t-fast:140ms var(--vx-ease-out);--vx-t:200ms var(--vx-ease-out);--vx-t-slow:260ms var(--vx-ease-out);
 
   /* ── Z-index ── */
   --vx-z-sidebar:40;--vx-z-topbar:35;--vx-z-drawer:60;--vx-z-modal:70;
