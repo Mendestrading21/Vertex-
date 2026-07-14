@@ -29,8 +29,18 @@ Ce document vérifie l'état réel et documente les seuls ajouts de cette sessio
 | 2 | **Lien Design System** découvrable depuis l'espace Système (§50) | `vertex/ui/pages/system_page.py` | onglet-lien cuivre à droite |
 | 3 | **États vides enrichis** d'une mini-viz fantôme (§44/§10) | `vertex/static/vertex/js/vx-core.js`, `states.css` | `VX.states.empty()` → silhouette placeholder, global |
 | 4 | **Page-index Analyse densifiée** (§10 — espace mort) | `vertex/ui/pages/analysis_page.py` | workspace 2 col : recherche+récents+favoris / aperçu fiche+raccourcis · 0 débordement mobile |
-| 5 | **Dernier hex bleu retiré** (`#22D3EE` → beige) | `vertex/ui/pages/performance_page.py` | grep bleu = 0 |
-| 6 | **Passe de vérification** desktop/tablette/mobile | — | ci-dessous |
+| 5 | **Graphiques débloqués** (données existantes non utilisées) | `markets_page.py`, `briefing.py`, `options-intel.js` | voir tableau ci-dessous |
+| 6 | **Dernier hex bleu retiré** (`#22D3EE` → beige) | `vertex/ui/pages/performance_page.py` | grep bleu = 0 |
+| 7 | **Passe de vérification** desktop/tablette/mobile | — | ci-dessous |
+
+### Graphiques débloqués (§18/§23/§26/§27/§36-38) — donnée RÉELLE, rien d'inventé
+
+| Correctif | Cause | Résultat |
+|---|---|---|
+| Marchés · graphique de référence | exigeait `SPY` précis | repli sur 1er titre du scan porteur d'une série, proxy étiqueté |
+| Marchés · `mkt()` fusionne market+market_ctx | `market` (statut) masquait `market_ctx` (régime/vix/breadth) via `\|\|` | Vue d'ensemble = verdict · Breadth = 2 graphiques · Volatilité = VIX |
+| Briefing · breadth | même masquage | Briefing passe de 7 à 8 graphiques |
+| Options · Volatilité/Scénarios/Événements | formulaire vide sans symbole | pré-sélection d'un symbole réel du tableau + puces → 4 graphiques IV + grille payoff d'emblée |
 
 ## Vérification (mesurée)
 
