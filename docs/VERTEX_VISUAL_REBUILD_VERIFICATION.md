@@ -28,8 +28,9 @@ Ce document vérifie l'état réel et documente les seuls ajouts de cette sessio
 | 1 | **Page Design System** (§50) `/design-system` + `/system/design-system` | `vertex/ui/pages/design_system_page.py`, route `redesign.py` | 200 · rendue avec les vrais tokens/classes · échantillons interactifs |
 | 2 | **Lien Design System** découvrable depuis l'espace Système (§50) | `vertex/ui/pages/system_page.py` | onglet-lien cuivre à droite |
 | 3 | **États vides enrichis** d'une mini-viz fantôme (§44/§10) | `vertex/static/vertex/js/vx-core.js`, `states.css` | `VX.states.empty()` → silhouette placeholder, global |
-| 4 | **Dernier hex bleu retiré** (`#22D3EE` → beige) | `vertex/ui/pages/performance_page.py` | grep bleu = 0 |
-| 5 | **Passe de vérification** desktop/tablette/mobile | — | ci-dessous |
+| 4 | **Page-index Analyse densifiée** (§10 — espace mort) | `vertex/ui/pages/analysis_page.py` | workspace 2 col : recherche+récents+favoris / aperçu fiche+raccourcis · 0 débordement mobile |
+| 5 | **Dernier hex bleu retiré** (`#22D3EE` → beige) | `vertex/ui/pages/performance_page.py` | grep bleu = 0 |
+| 6 | **Passe de vérification** desktop/tablette/mobile | — | ci-dessous |
 
 ## Vérification (mesurée)
 
