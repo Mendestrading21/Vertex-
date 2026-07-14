@@ -137,7 +137,10 @@ const VIEW='%%VIEW%%';
 const $=(id)=>document.getElementById(id);
 function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
 function modeOf(scan){return scan&&scan.data_source==='demo'?'fallback':(scan&&scan.source==='ibkr'?'live':'delayed');}
-function mkt(scan){return (scan&&(scan.market||scan.market_ctx))||{};}
+// Contexte de marché = market_ctx (régime/vix/breadth/verdict) FUSIONNÉ avec
+// market (statut horaire). Avant, `market` (et/open/session) masquait tout le
+// contexte via `||` — d'où « verdict non calculé » et VIX/breadth vides à tort.
+function mkt(scan){if(!scan)return {};return Object.assign({},scan.market||{},scan.market_ctx||{});}
 async function getScan(){try{return await VX.fetch('/scan',{ttl:120000});}catch(e){return null;}}
 function demoBanner(scan){
   if(scan&&scan.data_source==='demo'&&$('vx-demo-banner'))
@@ -344,11 +347,15 @@ function loadSectors(scan){
 /* ═══ BREADTH ═══ */
 function loadBreadth(scan){
   const m=mkt(scan);
-  if(m.breadth!==null&&m.breadth!==undefined){
+  // breadth peut être un objet {above50,above200,…} (market_ctx) ou un nombre.
+  const bdRaw=m.breadth;
+  const bd=(bdRaw&&typeof bdRaw==='object')?(bdRaw.above50??bdRaw.above200??null)
+          :(typeof bdRaw==='number'?bdRaw:((scan&&typeof scan.breadth==='number')?scan.breadth:null));
+  if(bd!==null&&bd!==undefined){
     VXCharts.breadthCard('vx-mk-breadth-chart',{
       title:'Breadth / participation',question:'La hausse est-elle partagée ?',
-      conclusion:m.breadth>=55?'Participation saine.':'Participation étroite — sélectivité obligatoire.',
-      labels:['> moyenne'],values:[m.breadth],height:200,
+      conclusion:bd>=55?'Participation saine.':'Participation étroite — sélectivité obligatoire.',
+      labels:['> moyenne'],values:[bd],height:200,
       source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
       limits:'breadth calculée sur les leaders scannés (univers partiel)',
       explain:{shows:'Le pourcentage de titres au-dessus de leur moyenne (moteur de contexte marché).',
