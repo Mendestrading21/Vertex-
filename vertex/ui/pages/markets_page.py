@@ -238,21 +238,28 @@ function loadMultiIndex(scan){
 }
 function loadSpyChart(scan){
   const det=(scan&&scan.detail)||{};
-  const closes=(det.SPY&&det.SPY.series&&det.SPY.series.close)||[];
+  const okSeries=(k)=>det[k]&&det[k].series&&Array.isArray(det[k].series.close)&&det[k].series.close.length>10;
+  // Comme le Briefing : SPY si présent, sinon 1er titre du scan porteur d'une
+  // série RÉELLE (proxy explicitement étiqueté — jamais présenté comme SPY).
+  const hasSpy=okSeries('SPY');
+  const key=hasSpy?'SPY':Object.keys(det).find(okSeries);
+  const closes=(key&&det[key].series.close)||[];
   const m=mkt(scan);
   if(closes.length>10){
+    const title=hasSpy?'S&P 500 (SPY) — série de référence'
+                      :('Marché — série de référence · '+key+' (SPY absente du scan)');
     VXCharts.areaCard('vx-mk-spy',{
-      title:'S&P 500 (SPY) — série de référence',timeframe:closes.length+' séances',
+      title:title,timeframe:closes.length+' séances',
       question:'La tendance de fond reste-t-elle exploitable ?',
       conclusion:(m.spy_regime==='TREND'?'Tendance intacte':'Régime '+(m.spy_regime||'n/d'))+(m.verdict?' — '+m.verdict:''),
       labels:closes.map((_,i)=>i-closes.length),values:closes,height:260,
       source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
-      explain:{shows:'Les clôtures de SPY telles que fournies par le scan (aucun indicateur recalculé côté UI).',
+      explain:{shows:(hasSpy?'Les clôtures de SPY':'Les clôtures de '+key+' (proxy : SPY non incluse dans ce scan)')+' telles que fournies par le scan (aucun indicateur recalculé côté UI).',
         why:'La Stratégie Vertex n’attaque qu’en environnement porteur : le régime module seuils et tailles.',
         confirm:'Clôtures au-dessus des dernières résistances avec breadth > 55 %.',
         invalidate:'Cassure des supports avec expansion de volatilité.'}});
   }else{
-    emptyCard('vx-mk-spy','Série SPY indisponible — lancer un scan depuis Système.',SCAN_ACTION);
+    emptyCard('vx-mk-spy','Série de référence indisponible — lancer un scan depuis Système.',SCAN_ACTION);
   }
 }
 
