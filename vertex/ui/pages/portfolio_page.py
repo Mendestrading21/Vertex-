@@ -670,30 +670,55 @@ async function renderRisk(){
 }
 
 /* ── WATCHLIST (+ suivis + favoris §18) ── */
+/* Sparkline compacte pour les tuiles de watchlist (série réelle du scan). */
+function sparkWl(closes,up){
+  const v=(closes||[]).filter(x=>x!=null&&isFinite(x)).slice(-40);
+  if(v.length<8)return '';
+  const w=100,h=20,mn=Math.min.apply(null,v),mx=Math.max.apply(null,v),rng=(mx-mn)||1;
+  const pts=v.map((x,i)=>(i/(v.length-1)*w).toFixed(1)+','+(h-1-((x-mn)/rng)*(h-2)).toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" width="100%" height="20" style="display:block;margin:7px 0 2px;opacity:.9" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${up?'var(--vx-positive)':'var(--vx-negative)'}" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
 async function renderWatchlist(){
   const wl=E().watchlist(),follows=E().follows(),favs=E().favorites();
   const statuses=['idee','a_etudier','en_attente','proche','declenchee','invalidee','archivee'];
   const labels={idee:'Idée',a_etudier:'À étudier',en_attente:'En attente',proche:'Proche',
     declenchee:'Déclenchée',invalidee:'Invalidée',archivee:'Archivée'};
+  /* Jointure watchlist ↔ scan : score, variation, MTF et sparkline RÉELS quand le
+     titre est scanné ; tuile sobre (sans enrichissement inventé) sinon. */
+  let scan=null;try{scan=await VX.fetch('/scan',{ttl:120000});}catch(e){}
+  const rowOf={};((scan&&scan.rows)||[]).forEach(r=>{if(r&&r.symbol)rowOf[r.symbol]=r;});
+  const detOf=(scan&&scan.detail)||{};
+  const wlTiles=wl.map(w=>{
+    const r=rowOf[w.sym]||{};const det=detOf[w.sym]||{};
+    const chg=r.change;const mtf=det.mtf||{};
+    const mtfTone=/HAUSS/i.test(mtf.state||'')?'var(--vx-positive)':/BAISS/i.test(mtf.state||'')?'var(--vx-negative)':'var(--vx-warning)';
+    const prio=(w.priority||'normale');
+    return `<div class="vx-mover" style="cursor:default">
+      <div class="vx-flex" style="justify-content:space-between;gap:6px">
+        <span class="mv-sym">${esc(w.sym)}</span>
+        <span class="vx-flex" style="gap:4px">
+          ${prio!=='normale'?`<span class="vx-badge" style="color:var(--vx-warning)">${esc(prio)}</span>`:''}
+          ${r.score!=null?`<span class="vx-badge" title="Score Vertex">${VX.fmt.num(r.score,0)}</span>`:''}</span></div>
+      <div class="mv-chg ${chg>0?'vx-pos':chg<0?'vx-neg':''}" style="font-size:15px">
+        ${chg!=null?VX.fmt.pct(chg,1):'<span class="vx-muted" style="font-size:12px">hors scan</span>'}
+        ${r.price!=null?`<span class="vx-meta" style="font-weight:500"> · ${VX.fmt.price(r.price)}</span>`:''}</div>
+      ${mtf.state?`<div class="mv-sub" style="color:${mtfTone};margin-top:4px">MTF ${esc(mtf.state)}</div>`:''}
+      ${sparkWl(det.series&&det.series.close,chg==null?true:chg>=0)}
+      ${w.thesis?`<div class="mv-sub" style="white-space:normal;line-height:1.4;max-height:2.9em;overflow:hidden" title="${esc(w.thesis)}">${esc(w.thesis)}</div>`:''}
+      <div class="mv-sub" style="margin-top:5px">${w.zone?`zone <b>${esc(w.zone)}</b>`:''}${w.zone&&w.catalyst?' · ':''}${w.catalyst?esc(w.catalyst):''}</div>
+      <div class="vx-flex vx-mt2" style="gap:.3rem;align-items:center">
+        <select class="vx-select" data-wl-status="${w.sym}" style="width:auto;padding:3px 22px 3px 8px;font-size:11px">
+          ${statuses.map(s=>`<option value="${s}" ${w.status===s?'selected':''}>${labels[s]}</option>`).join('')}</select>
+        <span class="vx-grow"></span>
+        <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${w.sym}">Analyser</button>
+        <button class="vx-btn vx-btn-sm vx-btn-danger" data-wl-del="${w.sym}">✕</button>
+      </div>
+    </div>`;}).join('');
   $('pf-body').innerHTML=`
-    <section class="vx-card vx-mb3"><div class="vx-card-header"><span class="vx-card-title">Watchlist (surveillance active)</span>
+    <section class="vx-card vx-mb3 vx-card--premium"><div class="vx-card-header"><span class="vx-card-title">Watchlist (surveillance active)</span>
+      <span class="vx-chart-question">Score, tendance et alignement en direct du scan</span>
       <span class="vx-actions"><button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('','watchlist')">+ Ajouter</button></span></div>
-      ${wl.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
-        <th>Titre</th><th>Priorité</th><th>Thèse</th><th>Zone</th><th>Catalyseur</th>
-        <th>Statut</th><th>Ajouté</th><th></th></tr></thead><tbody>
-        ${wl.map(w=>`<tr>
-          <td data-label="Titre"><span class="vx-ticker">${w.sym}</span> ${E().badges(w.sym)}</td>
-          <td data-label="Priorité"><span class="vx-badge">${esc(w.priority||'normale')}</span></td>
-          <td data-label="Thèse" class="vx-truncate" style="max-width:200px">${esc(w.thesis||'—')}</td>
-          <td data-label="Zone" class="vx-mono">${esc(w.zone||'—')}</td>
-          <td data-label="Catalyseur">${esc(w.catalyst||'—')}</td>
-          <td data-label="Statut"><select class="vx-select" data-wl-status="${w.sym}" style="width:auto;padding:3px 24px 3px 8px">
-            ${statuses.map(s=>`<option value="${s}" ${w.status===s?'selected':''}>${labels[s]}</option>`).join('')}</select></td>
-          <td data-label="Ajouté" class="vx-mono vx-meta">${w.added||'—'}</td>
-          <td><div class="vx-row-actions">
-            <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${w.sym}">Analyse</button>
-            <button class="vx-btn vx-btn-sm vx-btn-danger" data-wl-del="${w.sym}">Retirer</button>
-          </div></td></tr>`).join('')}</tbody></table></div>`
+      ${wl.length?`<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">${wlTiles}</div>`
         :VX.states.empty('Watchlist vide — ajoutez les titres à surveiller activement avec thèse et zone.',
           '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'watchlist\')">+ Ajouter</button>')}
     </section>
