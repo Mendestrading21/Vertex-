@@ -421,7 +421,19 @@ async function renderRisk(){
     const d=await r.json();
     const risk=d.risk||{},guard=d.guard||{},stress=(d.stress||{}).scenarios||{};
     const optGreeks={delta:risk.options_exposure&&risk.options_exposure.delta};
-    $('pf-body').innerHTML=`<div class="vx-grid">
+    $('pf-body').innerHTML=`<div class="vx-grid vx-mb3">
+      <section class="vx-card vx-col-4" aria-label="Concentration du risque">
+        <div class="vx-card-header"><span class="vx-card-title">Concentration du risque</span>
+          <span class="vx-chart-question">Le capital est-il trop concentré ?</span></div>
+        <div id="pf-risk-gauge"><div class="vx-skeleton" style="height:118px"></div></div>
+        <div class="vx-card-footer"><span class="vx-meta">Indice HHI (0 = dispersé · 100 = tout sur un titre) — donnée réelle du moteur.</span></div>
+      </section>
+      <section class="vx-card vx-col-8" aria-label="Synthèse du risque">
+        <div class="vx-card-header"><span class="vx-card-title">Synthèse du risque</span></div>
+        <div class="vx-grid" id="pf-risk-kpis"></div>
+      </section>
+    </div>
+    <div class="vx-grid">
       <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Garde-fous</span></div>
         ${kv('Nouveau titre',guard.new_stock_allowed?'autorisé':'BLOQUÉ',guard.new_stock_allowed?'vx-pos':'vx-neg')}
         ${kv('Nouvelle option',guard.new_option_allowed?'autorisée':'BLOQUÉE',guard.new_option_allowed?'vx-pos':'vx-neg')}
@@ -456,6 +468,24 @@ async function renderRisk(){
           <td class="vx-meta">${esc(v.note||'')}</td></tr>`).join('')}</tbody></table></div>
         <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'risk_engine (positions réelles)','live')}
         ${(risk.warnings||[]).length?'· '+risk.warnings.length+' avertissement(s)':''}</div></section></div>`;
+    /* Hero §31-32 : jauge de concentration (HHI×100) + bande KPI risque. Données
+       réelles du moteur (risk.hhi/beta/drawdown, pire scénario stress). */
+    try{
+      var _hhi=(risk.hhi!=null)?Math.round(risk.hhi*100):null;
+      if(window.VXCharts&&VXCharts.gauge)VXCharts.gauge('pf-risk-gauge',{
+        value:_hhi,min:0,max:100,unit:'',label:'Concentration',
+        reading:_hhi==null?'donnée indisponible':(_hhi>=66?'très concentré':_hhi>=33?'concentration modérée':'bien dispersé'),
+        bands:[{to:33,color:VXCharts.colors.positive},{to:66,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.negative}]});
+      var _ws=Object.values(stress).map(function(v){return v&&v.impact_pct;}).filter(function(x){return typeof x==='number';});
+      var _worst=_ws.length?Math.min.apply(null,_ws):null;
+      var _rk=function(l,v,d,cls){return '<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value" style="font-size:22px">'+(v==null?'—':v)+'</span>'+(d?'<span class="vx-kpi-delta '+(cls||'vx-muted')+'">'+d+'</span>':'')+'</div>';};
+      var _rh=$('pf-risk-kpis');
+      if(_rh)_rh.innerHTML=
+        _rk('HHI',risk.hhi!=null?risk.hhi:'—','indice',(_hhi!=null&&_hhi>=66)?'vx-neg':'')
+        +_rk('Bêta',risk.beta!=null?risk.beta:'—','pondéré')
+        +_rk('Drawdown',(risk.drawdown_pct!=null)?(risk.drawdown_pct+' %'):'n/d','pic')
+        +_rk('Pire scénario',_worst!=null?VX.fmt.pct(_worst,1):'—','stress',(_worst!=null&&_worst<0)?'vx-neg':'');
+    }catch(e){}
   }catch(e){$('pf-body').innerHTML=VX.states.error('Moteur de risque injoignable : '+e.message);}
 }
 
