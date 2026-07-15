@@ -91,7 +91,7 @@ def build_editorial(scan_state: dict) -> dict:
 
 _CONTENT = """
 <div class="vx-page-header">
-  <div><h1>Briefing</h1>
+  <div><h1>Dashboard</h1>
   <div class="vx-sub">Que dois-je comprendre et surveiller aujourd’hui ?</div></div>
   <div class="vx-actions">
     <button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-customize-btn">Personnaliser</button>
@@ -103,6 +103,16 @@ _CONTENT = """
   </div>
 </div>
 <div id="vx-demo-banner"></div>
+
+<!-- Ancres de section : navigation fluide dans le Dashboard -->
+<style>
+  [data-block]{scroll-margin-top:118px}
+  #vx-dash-anchors{position:sticky;top:calc(var(--vx-topbar-h) + 4px);z-index:15;
+    display:flex;flex-wrap:wrap;gap:.35rem;padding:8px 0 10px;
+    background:linear-gradient(180deg,var(--vx-app) 78%,transparent)}
+  #vx-dash-anchors .vx-chip[aria-pressed="true"]{border-color:var(--vx-brand);color:var(--vx-brand-strong)}
+</style>
+<nav id="vx-dash-anchors" aria-label="Sections du Dashboard"></nav>
 
 <!-- Rangée 0 : L'ESSENTIEL — le marché en langage simple + actualités -->
 <div class="vx-grid" data-block="essential">
@@ -240,7 +250,7 @@ function applyBlocks(){
 applyBlocks();
 document.getElementById('vx-customize-btn')?.addEventListener('click',()=>{
   const hidden=(layoutGet().hidden)||[];
-  VX.shell.openModal('Personnaliser le Briefing',
+  VX.shell.openModal('Personnaliser le Dashboard',
     BLOCKS.map(([id,label])=>`<label class="vx-checkbox" style="padding:5px 0">
       <input type="checkbox" data-blk="${id}" ${hidden.includes(id)?'':'checked'}> ${label}</label>`).join('')
     +'<div class="vx-help vx-mt2">Grille contrôlée — l’ordre des rangées reste fixe. Synchronisé sur cet appareil.</div>',
@@ -249,7 +259,7 @@ document.getElementById('vx-customize-btn')?.addEventListener('click',()=>{
   document.getElementById('vx-layout-save').addEventListener('click',()=>{
     const l=layoutGet();
     l.hidden=[...document.querySelectorAll('[data-blk]')].filter(c=>!c.checked).map(c=>c.dataset.blk);
-    layoutSet(l);applyBlocks();VX.shell.closeModal();VX.toast('Briefing personnalisé','success');});
+    layoutSet(l);applyBlocks();VX.shell.closeModal();VX.toast('Dashboard personnalisé','success');});
   document.getElementById('vx-layout-reset').addEventListener('click',()=>{
     const l=layoutGet();delete l.hidden;layoutSet(l);applyBlocks();VX.shell.closeModal();
     VX.toast('Disposition réinitialisée');});
@@ -723,8 +733,31 @@ async function loadNews(){
   +`<div class="vx-meta vx-mt2">Sources publiques, assainies côté serveur — de l’information, jamais un conseil.</div>`;
 }
 
+/* ── Ancres de section : navigation fluide + chip actif au scroll ── */
+function buildAnchors(){
+  const nav=$('vx-dash-anchors');if(!nav)return;
+  const A=[['essential','Essentiel'],['brief','Brief'],['market','Marchés'],['pulse','Pouls'],
+    ['topflop','Mouvements'],['opportunities','Opportunités'],['rotation','Rotation'],
+    ['portfolio','Portefeuille'],['calendar','Calendrier']];
+  nav.innerHTML=A.map(([k,l])=>`<button class="vx-chip" data-anchor="${k}" aria-pressed="false">${l}</button>`).join('');
+  nav.querySelectorAll('[data-anchor]').forEach(b=>b.addEventListener('click',()=>{
+    const t=document.querySelector('[data-block='+b.dataset.anchor+']');
+    if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}));
+  /* chip actif : la section la plus visible allume son ancre */
+  if('IntersectionObserver' in window){
+    const map={};A.forEach(([k])=>{const t=document.querySelector('[data-block='+k+']');if(t)map[k]=t;});
+    const io=new IntersectionObserver((ents)=>{
+      ents.forEach(e=>{if(!e.isIntersecting)return;
+        const k=Object.keys(map).find(x=>map[x]===e.target);if(!k)return;
+        nav.querySelectorAll('[data-anchor]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.anchor===k)));});
+    },{rootMargin:'-120px 0px -60% 0px'});
+    Object.values(map).forEach(t=>io.observe(t));
+  }
+}
+
 /* ── Orchestration ── */
 async function boot(){
+  buildAnchors();
   loadBrief();loadRegime();loadOpportunities();loadAlerts();loadPortfolio();loadCalendar();loadNews();
   const scan=await loadStrip();
   loadEssential(scan);loadPulse(scan);loadMarketCharts(scan);loadTopFlop(scan);loadRotation(scan);
@@ -747,6 +780,6 @@ VX.bus.on('vx:data-refreshed',()=>{loadBrief();loadRegime();});
 def render(scan_state: dict | None = None) -> str:
     content = _CONTENT.replace('%%LOADING%%',
                                '<div class="vx-skeleton" style="height:60px"></div>')
-    return render_shell(title='Briefing', active='briefing', space_label='Briefing',
+    return render_shell(title='Dashboard', active='briefing', space_label='Dashboard',
                         sub_label='Marchés US', content=content, page_js=_JS,
-                        page_label='Briefing')
+                        page_label='Dashboard')

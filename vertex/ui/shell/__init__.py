@@ -11,7 +11,7 @@ SHELL_VERSION = 'vx-shell-1'
 
 # Navigation principale — EXACTEMENT huit espaces (§10).
 PRIMARY_NAV = (
-    {'id': 'briefing', 'label': 'Briefing', 'href': '/', 'icon': 'home'},
+    {'id': 'briefing', 'label': 'Dashboard', 'href': '/', 'icon': 'home'},
     {'id': 'markets', 'label': 'Marchés', 'href': '/markets', 'icon': 'globe'},
     {'id': 'opportunities', 'label': 'Opportunités', 'href': '/opportunities', 'icon': 'radar'},
     {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},

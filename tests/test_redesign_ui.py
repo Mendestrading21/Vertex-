@@ -31,7 +31,7 @@ def test_primary_navigation_has_nine_items():
     """Options est un espace principal (§18 overhaul institutionnel)."""
     assert len(PRIMARY_NAV) == 9
     assert [i['label'] for i in PRIMARY_NAV] == [
-        'Briefing', 'Marchés', 'Opportunités', 'Portefeuille',
+        'Dashboard', 'Marchés', 'Opportunités', 'Portefeuille',
         'Analyse', 'Options', 'Performance', 'Intelligence', 'Système']
     assert [i['href'] for i in PRIMARY_NAV] == [
         '/', '/markets', '/opportunities', '/portfolio',
@@ -302,8 +302,8 @@ def test_service_worker_bumped(client):
     r = client.get('/sw.js')
     assert r.status_code == 200
     body = r.get_data(as_text=True)
-    assert 'td-shell-v46' in body, 'le shell a changé — la version du cache doit suivre'
-    assert 'td-shell-v45' not in body
+    assert 'td-shell-v47' in body, 'le shell a changé — la version du cache doit suivre'
+    assert 'td-shell-v46' not in body
 
 
 # ── Lecture seule (rappel §1) ─────────────────────────────────────────
