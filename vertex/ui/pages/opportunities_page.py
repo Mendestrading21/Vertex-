@@ -53,6 +53,19 @@ function pbIcon(r){const p=r&&r.playbook;return (p&&typeof p==='object'&&p.ic)?p
 /* Direction du verdict → jauge de confiance (émeraude/corail/acier). */
 function verdictDir(v){return (v==='BUY'||v==='ACHETER')?'up':(v==='AVOID'||v==='ÉVITER')?'down':'flat';}
 function verdictWord(v){return (v==='BUY'||v==='ACHETER')?'Achat':(v==='AVOID'||v==='ÉVITER')?'Éviter':'Suivi';}
+/* Cellule heat-bar : nombre + barre inline color-codée (score 0-100, R:R…).
+   opts:{label,max,good,mid,fmt}. Repli « — » honnête. */
+function heatCell(val,opts){
+  opts=opts||{};
+  if(val===null||val===undefined||val===''||isNaN(val))return `<td class="vx-num" data-label="${opts.label||''}">—</td>`;
+  const max=opts.max||100;const w=Math.max(4,Math.min(100,Math.abs(val)/max*100));
+  const col=(opts.good!=null)?(val>=opts.good?'var(--vx-positive)':val>=(opts.mid||0)?'var(--vx-warning)':'var(--vx-negative)'):'var(--vx-brand)';
+  const disp=opts.fmt?opts.fmt(val):VX.fmt.num(val,0);
+  return `<td class="vx-num" data-label="${opts.label||''}"><span style="display:inline-flex;align-items:center;gap:7px;justify-content:flex-end">`
+    +`<span style="flex:0 0 40px;height:6px;border-radius:99px;background:var(--vx-surface-0);position:relative;overflow:hidden">`
+    +`<i style="position:absolute;left:0;top:0;bottom:0;width:${w}%;background:${col};border-radius:99px"></i></span>`
+    +`<b class="vx-mono" style="min-width:26px;font-weight:600">${disp}</b></span></td>`;
+}
 const OUT=['Rejetée','Radar','À surveiller','Proche','Actionnable','Invalidée'];
 function bucketOf(r){
   if(r.verdict==='AVOID'||r.verdict==='ÉVITER')return'Rejetée';
@@ -237,11 +250,11 @@ async function renderStocks(){
       ${f.slice(0,80).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
         <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
         <td data-label="Statut"><span class="vx-badge">${bucketOf(r)}</span></td>
-        <td data-label="Score" class="vx-num">${VX.fmt.nd(r.score)}</td>
-        <td data-label="Décision"><span class="vx-badge">${esc(r.verdict||'')}</span></td>
+        ${heatCell(r.score,{label:'Score',good:72,mid:56})}
+        <td data-label="Décision"><span class="vx-badge vx-badge-decision" data-decision="${esc(r.verdict||'')}">${esc(r.verdict||'')}</span></td>
         <td data-label="Cours" class="vx-num">${VX.fmt.nd(r.price!==undefined?VX.fmt.price(r.price):null)}</td>
-        <td data-label="R:R" class="vx-num">${VX.fmt.nd(r.rr)}</td>
-        <td data-label="Setup" class="vx-truncate" style="max-width:130px">${esc(r.playbook||r.profile||'—')}</td>
+        ${heatCell(r.rr,{label:'R:R',max:3,good:2,mid:1,fmt:v=>VX.fmt.num(v,1)})}
+        <td data-label="Setup" class="vx-truncate" style="max-width:140px">${esc(pbText(r)||'—')}</td>
         <td data-label="Secteur">${esc(r.sector||'—')}</td>
         <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table>`
       :VX.states.empty('Aucun titre ne correspond aux filtres.','<button class="vx-btn vx-btn-sm" id="op-clear">Effacer les filtres</button>');

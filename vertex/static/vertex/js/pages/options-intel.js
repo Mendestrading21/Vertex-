@@ -175,30 +175,38 @@
       '</span><span class="vx-stat-value">' + val + '</span></div>';
   }
 
-  // Barre de proportion CALL vs PUT (direction dominante du tableau d'options).
+  // Cellule de métrique premium color-codée (kit .vx-metric). bar = valeur 0-100
+  // pour la mini-barre (optionnelle). Repli « — » honnête.
+  function mCell(k, v, unit, tone, bar) {
+    var barHtml = (bar != null && v != null) ? '<div class="vx-metric-bar"><i style="width:' + Math.max(3, Math.min(100, bar)) + '%"></i></div>' : '';
+    return '<div class="vx-metric" data-tone="' + (v == null ? '' : (tone || '')) + '"><span class="vx-metric-k">' + esc(k) + '</span>' +
+      '<span class="vx-metric-v">' + (v == null ? '—' : v) + (unit ? '<span class="vx-metric-u">' + unit + '</span>' : '') + '</span>' + barHtml + '</div>';
+  }
+
+  // Répartition CALL vs PUT en barre empilée (kit .vx-stackbar) + légende.
   function callPutBar(calls, puts) {
     var t = (calls || 0) + (puts || 0); if (!t) return '';
     var cp = Math.round((calls || 0) / t * 100), pp = 100 - cp;
-    return '<div style="margin-top:.8rem" role="img" aria-label="CALLS ' + (calls || 0) + ' contre PUTS ' + (puts || 0) + ', ' + cp + ' % calls">' +
-      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--vx-text-secondary,#bab4ac);margin-bottom:3px">' +
-      '<span>CALLS ' + VXf.nd(calls) + ' (' + cp + ' %)</span><span>PUTS ' + VXf.nd(puts) + ' (' + pp + ' %)</span></div>' +
-      '<div style="height:14px;border-radius:5px;overflow:hidden;display:flex;background:var(--vx-surface-3,#17191b)">' +
-      '<span style="width:' + cp + '%;background:var(--vx-positive,#36c889)"></span>' +
-      '<span style="width:' + pp + '%;background:var(--vx-negative,#ed655c)"></span></div>' +
-      '<div class="vx-muted" style="font-size:11px;margin-top:4px">Dominante : ' + ((calls || 0) >= (puts || 0) ? 'CALLS' : 'PUTS') + ' — biais de la Stratégie Vertex : achat de calls (les puts restent tactiques). Volume/OI ≠ conviction certaine.</div></div>';
+    return '<div style="margin-top:.9rem" role="img" aria-label="CALLS ' + (calls || 0) + ' contre PUTS ' + (puts || 0) + ', ' + cp + ' % calls">' +
+      '<div class="vx-stackbar-legend" style="justify-content:space-between;margin-bottom:6px">' +
+      '<span><i style="background:var(--vx-positive)"></i>CALLS ' + VXf.nd(calls) + ' <b>' + cp + '%</b></span>' +
+      '<span><i style="background:var(--vx-negative)"></i>PUTS ' + VXf.nd(puts) + ' <b>' + pp + '%</b></span></div>' +
+      '<div class="vx-stackbar"><i style="width:' + cp + '%;background:var(--vx-positive)"></i><i style="width:' + pp + '%;background:var(--vx-negative)"></i></div>' +
+      '<div class="vx-muted" style="font-size:11px;margin-top:5px">Dominante : ' + ((calls || 0) >= (puts || 0) ? 'CALLS' : 'PUTS') + ' — biais de la Stratégie Vertex : achat de calls (les puts restent tactiques). Volume/OI ≠ conviction certaine.</div></div>';
   }
 
   function countersHtml(c, demo, asOf) {
     var band = c.quality_band ? esc(c.quality_band) : '—';
+    var qtone = c.avg_quality == null ? '' : (c.avg_quality >= 66 ? 'pos' : c.avg_quality >= 45 ? 'warn' : 'neg');
     return (demo ? '<div class="vx-demo-tag">Données de démonstration</div>' : '') +
-      '<div class="vx-stats-row">' +
-      stat('Contrats', VXf.nd(c.total)) +
-      stat('CALLS', VXf.nd(c.calls)) +
-      stat('PUTS', VXf.nd(c.puts)) +
-      stat('Titres', VXf.nd(c.symbols)) +
-      stat('IV moyenne', c.avg_iv != null ? VXf.num(c.avg_iv, 1) + ' %' : '—') +
-      stat('Qualité moy.', c.avg_quality != null ? VXf.num(c.avg_quality, 0) + ' (' + band + ')' : '—') +
-      stat('Spread moy.', c.avg_spread_pct != null ? VXf.num(c.avg_spread_pct, 1) + ' %' : '—') +
+      '<div class="vx-metricgrid">' +
+      mCell('Contrats', VXf.nd(c.total)) +
+      mCell('CALLS', VXf.nd(c.calls), '', (c.calls >= c.puts ? 'pos' : '')) +
+      mCell('PUTS', VXf.nd(c.puts), '', (c.puts > c.calls ? 'neg' : '')) +
+      mCell('Titres', VXf.nd(c.symbols)) +
+      mCell('IV moyenne', c.avg_iv != null ? VXf.num(c.avg_iv, 1) : null, '%', 'warn', c.avg_iv) +
+      mCell('Qualité moy.', c.avg_quality != null ? VXf.num(c.avg_quality, 0) : null, ' (' + band + ')', qtone, c.avg_quality) +
+      mCell('Spread moy.', c.avg_spread_pct != null ? VXf.num(c.avg_spread_pct, 1) : null, '%', (c.avg_spread_pct > 5 ? 'warn' : '')) +
       '</div>' +
       callPutBar(c.calls, c.puts) +
       (asOf ? '<div class="vx-muted" style="margin-top:.5rem">Scan : ' + esc(asOf) + '</div>' : '');
