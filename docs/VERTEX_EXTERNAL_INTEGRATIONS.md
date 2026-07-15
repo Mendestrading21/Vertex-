@@ -48,3 +48,26 @@ Plateforme de trading algo dont le **cœur est l'exécution d'ordres** (34 broke
 4. **Jamais** : chemins d'ordre (code-rabi IBKR-MCP, OpenAlgo). Toute réutilisation IBKR force `readonly=True`.
 
 > Toute intégration réelle implique un **téléchargement/dépendance externe** → demande une validation explicite avant exécution. Rien n'est téléchargé/installé sans accord.
+
+## Passe 2 — triage de ~30 dépôts (design, charts, options, MCP/data)
+
+Verdict honnête : sur ~30 ressources, **une poignée seulement est intégrable** dans l'archi
+Flask + HTML/JS-en-chaînes-Python + vanilla READONLY de Vertex. Le reste est soit du **React/
+build** (non importable sans réécriture front), soit **redondant**, soit à **chemins d'ordre**.
+
+- ✅ **LIVRÉ — Stratégies options multi-jambes** (inspiré d'optionlab/optionvisualizer, mais
+  **réimplémenté NATIVEMENT** : aucune dépendance ajoutée, ni GPL-3.0 ni scipy ; réutilise le
+  Black-Scholes maison). `vertex/engines/multileg_lab.py` + route `/api/options/strategies/<sym>`
+  + UI « Stratégies multi-jambes » (payoff, PoP, gain/perte max, breakevens, greeks). 10 tests
+  math. Comble le gap réel : le mono-jambe du scenario_pricer.
+- 🟡 **Greeks d'ordre supérieur** (vanna/charm/vomma — formules MIT d'optionvisualizer à lifter
+  dans options_lab, numpy suffit) : additif, non encore fait.
+- 🟡 **Design — patterns tremor/shadcn** : uniquement en inspiration CSS vanilla (métrique-cards,
+  delta-badge, tracker). Le design system maison (tokens.css) est déjà solide ; valeur marginale.
+- 🟢 **DATA optionnel** (réserve dépendance/clé/réseau, à valider) : `financial-datasets`
+  (états financiers — comble le trou Reuters bloqué IBKR), `unusual-whales` (flux d'options,
+  abonnement payant), `tradingview-screener` (screener, ToS fragile).
+- 🔴 **Rejeté** : React (shadcn, radix, MUI, tremor, recharts, visx, templates next/astro),
+  Tailwind (impose un build), ECharts (bloat redondant), Streamlit-apps (runtime propre),
+  TV widgets (iframes tiers = privacy/CSP), Selenium scrapers, et tout MCP à chemins d'ordre
+  (interactive-brokers-mcp, openalgo, ibkr-mcp-server générique).
