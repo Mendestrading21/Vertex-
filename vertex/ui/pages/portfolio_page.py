@@ -41,6 +41,7 @@ _JS = r"""
 <script src="/static/vertex/js/charts/equity-chart.js" defer></script>
 <script src="/static/vertex/js/charts/option-payoff.js" defer></script>
 <script src="/static/vertex/js/charts/line-area-chart.js" defer></script>
+<script src="/static/vertex/js/charts/heatmap.js" defer></script>
 <script>
 (function(){
 'use strict';
@@ -101,6 +102,41 @@ function divBars(items,opt){
     return `<div class="vx-divbar"><span class="db-name">${esc(x.name)}</span>`
       +`<span class="db-track"><i class="${pos?'pos':'neg'}" style="width:${w.toFixed(1)}%"></i></span>`
       +`<span class="db-val ${pos?'vx-pos':'vx-neg'}">${fmt(x.val)}</span></div>`;}).join('')+'</div>';
+}
+/* Greeks agrégés du portefeuille options : delta directionnel (émeraude/corail),
+   theta = décroissance (corail si négatif). Note honnête si non estimés (IBKR requis). */
+function greeksBlock(g){
+  g=g||{};
+  const has=g.delta!=null||g.gamma!=null||g.theta!=null||g.vega!=null;
+  if(!has)return '<div class="vx-meta vx-mt2">Greeks broker requis — sans IBKR ni options ouvertes, non estimés (aucune invention).</div>';
+  const row=(k,v,dec,tone)=>`<div class="vx-kv"><span class="k">${k} global</span><span class="v vx-mono ${tone||''}">${v==null?'—':VX.fmt.num(v,dec)}</span></div>`;
+  return row('Delta',g.delta,3,g.delta>0?'vx-pos':g.delta<0?'vx-neg':'')
+    +row('Gamma',g.gamma,4)
+    +row('Theta',g.theta,3,g.theta<0?'vx-neg':'')
+    +row('Vega',g.vega,3)
+    +(g.open_options?`<div class="vx-meta vx-mt2">${g.open_options} option(s) ouverte(s)${g.greeks_partial?' · agrégat partiel (certaines jambes sans greeks)':''}</div>`:'');
+}
+/* Heatmap de corrélations du portefeuille (risk.correlations : pairs réels +
+   symbols_covered). Couleur INVERSÉE vs défaut : haute corrélation = risque =
+   corail ; décorrélé = émeraude. Vide honnête sans historique. */
+function corrHeatmap(hostId,corr){
+  const el=$(hostId);if(!el)return;
+  const syms=(corr&&corr.symbols_covered)||[];const pairs=(corr&&corr.pairs)||{};
+  if(syms.length<2||!Object.keys(pairs).length){
+    el.className='vx-col-12';
+    el.innerHTML='<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Corrélations du portefeuille</span></div>'
+      +VX.states.empty('Corrélations indisponibles — nécessitent un historique de prix (≥ 30 séances par titre, disponible avec le flux live).')+'</div>';
+    return;
+  }
+  const raw=(a,b)=>a===b?1:((pairs[a+'/'+b]!=null)?pairs[a+'/'+b]:(pairs[b+'/'+a]!=null?pairs[b+'/'+a]:null));
+  const rows=syms.map(a=>({label:a,cells:syms.map(b=>{const v=raw(a,b);
+    return {value:(a===b||v==null)?null:-v,   // négation : haute corrélation → corail
+            label:(v==null?'—':(+v).toFixed(2)),title:a+' / '+b+' : '+(v==null?'n/d':(+v).toFixed(2))};})}));
+  VXCharts.heatmapCard(hostId,{title:'Corrélations du portefeuille',
+    question:'La diversification est-elle réelle ou illusoire ?',
+    conclusion:(corr.average!=null?('corrélation moyenne '+(+corr.average).toFixed(2)):'')+(corr.warning?' — '+corr.warning:''),
+    columns:syms,rows:rows,min:-1,max:1,source:'risk_engine · rendements réels',timestamp:Date.now(),mode:'live',
+    limits:'corail = fortement corrélé (risque de concentration) · émeraude = décorrélé (diversification réelle)'});
 }
 /* Composition du capital : Actions / Options / Cash en barre empilée + légende.
    Valeur au marché si dispo, sinon au coût ; cash = capital déclaré. Réel. */
@@ -557,11 +593,7 @@ async function renderRisk(){
         ${kv('HHI',risk.hhi)}${kv('Bêta pondéré',risk.beta)}
         <div id="pf-sector-donut" class="vx-mt2"><span class="vx-meta">Exposition sectorielle…</span></div></div>
       <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Greeks agrégés</span></div>
-        ${kv('Delta global',risk.options_exposure&&risk.options_exposure.delta)}
-        ${kv('Gamma global',risk.options_exposure&&risk.options_exposure.gamma)}
-        ${kv('Theta global',risk.options_exposure&&risk.options_exposure.theta)}
-        ${kv('Vega global',risk.options_exposure&&risk.options_exposure.vega)}
-        <div class="vx-meta vx-mt2">Greeks broker requis — sans IBKR, non estimés (aucune invention).</div></div>
+        ${greeksBlock(risk.options_exposure)}</div>
       <section class="vx-card vx-col-12"><div class="vx-card-header"><span class="vx-card-title">Stress tests (§26)</span>
         <span class="vx-chart-question">Combien perd le portefeuille dans chaque scénario ?</span></div>
         ${(function(){const arr=Object.entries(stress).filter(([,v])=>v.impact_pct!=null);
@@ -580,7 +612,12 @@ async function renderRisk(){
           <td class="vx-num ${v.impact_pct<0?'vx-neg':''}">${v.impact_pct!==null&&v.impact_pct!==undefined?VX.fmt.pct(v.impact_pct,1):'non estimé'}</td>
           <td class="vx-meta">${esc(v.note||'')}</td></tr>`).join('')}</tbody></table></div>
         <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'risk_engine (positions réelles)','live')}
-        ${(risk.warnings||[]).length?'· '+risk.warnings.length+' avertissement(s)':''}</div></section></div>`;
+        ${(risk.warnings||[]).length?'· '+risk.warnings.length+' avertissement(s)':''}</div></section>
+      <div class="vx-col-12" id="pf-corr-heatmap"></div></div>`;
+    /* Heatmap de corrélations RÉELLES entre les positions (risk_engine · rendements) :
+       rouge = fortement corrélé (diversification illusoire), vert = décorrélé. Vide
+       honnête sans historique de prix (flux live requis). */
+    corrHeatmap('pf-corr-heatmap',risk.correlations);
     /* Hero §31-32 : jauge de concentration (HHI×100) + bande KPI risque. Données
        réelles du moteur (risk.hhi/beta/drawdown, pire scénario stress). */
     try{

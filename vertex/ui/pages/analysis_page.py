@@ -155,6 +155,9 @@ _SECTIONS = """
   </section>
 </div>
 
+<!-- 3-ter. Croissance trimestrielle (CA · résultat net · marge) -->
+<div class="vx-mt4" id="an-quarters"></div>
+
 <!-- 4-8. Dimensions dans l'ordre imposé -->
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-6" id="an-fundamental"><div class="vx-card-header">
@@ -352,6 +355,53 @@ function paintValuation(t,cf){
   const cmpBlock=cmp?`<div class="vx-mt3"><div class="vx-metric-k" style="margin-bottom:6px">P/E — ${SYM} vs pairs</div>${cmp}</div>`:'';
   body('an-financials',metricGrid(cells)+cmpBlock);
   const srcEl=$('an-fin-src');if(srcEl)srcEl.textContent=demo?'DÉMO':'cache';
+  paintQuarters(cf,demo);
+}
+
+/* Croissance trimestrielle : CA + résultat net (barres) + marge nette (ligne, axe
+   droit) sur les 8 derniers trimestres. Vraie donnée company.fundamentals.quarters
+   (peuplée via yfinance sur le poste utilisateur). Vide honnête si absente. */
+function paintQuarters(cf,demo){
+  const host=$('an-quarters');if(!host)return;
+  const qs=((cf&&cf.quarters)||[]).filter(q=>q&&(q.rev!=null||q.ni!=null));
+  if(qs.length<2){
+    host.className='';
+    host.innerHTML='<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Croissance trimestrielle</span></div>'
+      +VX.states.empty('Historique trimestriel indisponible pour ce titre (CA/résultat par trimestre servis via le flux de données du poste).')+'</div>';
+    return;
+  }
+  if(!(window.VXCharts&&window.Chart))return;
+  const cc=VXCharts.colors;
+  const labels=qs.map(q=>String(q.q).slice(0,7));
+  const B=(x)=>x==null?'—':(Math.abs(x)>=1e9?(x/1e9).toFixed(1)+' Md':(Math.abs(x)>=1e6?(x/1e6).toFixed(0)+' M':(''+x)));
+  VXCharts.card('an-quarters',{
+    title:'Croissance trimestrielle',question:'Le chiffre d’affaires et le résultat progressent-ils ?',
+    conclusion:(function(){const r0=qs[0].rev,r1=qs[qs.length-1].rev;
+      return (r0&&r1)?('CA '+(r1>=r0?'en hausse':'en baisse')+' sur '+qs.length+' trimestres'):(qs.length+' trimestres');})(),
+    height:300,legend:[{label:'Chiffre d’affaires',color:cc.neutral},{label:'Résultat net',color:cc.positive},{label:'Marge nette',color:cc.brand}],
+    source:demo?'company (DÉMO)':'company (cache)',timestamp:Date.now(),mode:demo?'fallback':'delayed',
+    limits:'CA & résultat net par trimestre · marge = résultat/CA',
+    explain:{shows:'Le chiffre d’affaires et le résultat net des 8 derniers trimestres, plus la marge nette.',
+      why:'La trajectoire trimestrielle révèle l’accélération ou l’essoufflement, invisibles sur un seul point annuel.',
+      confirm:'CA et marge qui montent ensemble, trimestre après trimestre.',
+      invalidate:'Marge qui s’érode malgré un CA en hausse — croissance non rentable.'},
+    render:(cv)=>VXCharts.mount(cv,{
+      type:'bar',
+      data:{labels:labels,datasets:[
+        {type:'bar',label:'CA',data:qs.map(q=>q.rev),backgroundColor:'rgba(143,138,131,.55)',
+         borderColor:cc.neutral,borderWidth:1,yAxisID:'y',order:2},
+        {type:'bar',label:'Résultat net',data:qs.map(q=>q.ni),
+         backgroundColor:qs.map(q=>q.ni>=0?'rgba(54,200,137,.75)':'rgba(237,101,92,.75)'),yAxisID:'y',order:2},
+        {type:'line',label:'Marge nette',data:qs.map(q=>(q.rev?q.ni/q.rev*100:null)),
+         borderColor:cc.brand,backgroundColor:cc.brand,borderWidth:2,tension:.3,pointRadius:3,yAxisID:'y1',order:1}]},
+      options:{scales:{
+        y:{position:'left',grid:{color:'rgba(237,255,237,.05)'},ticks:{callback:(v)=>B(v)}},
+        y1:{position:'right',grid:{display:false},ticks:{callback:(v)=>v+' %'}},
+        x:{grid:{display:false}}},
+        plugins:{tooltip:{callbacks:{label:(it)=>{const q=qs[it.dataIndex];
+          return it.dataset.label==='Marge nette'?('Marge '+(q.rev?(q.ni/q.rev*100).toFixed(1):'—')+' %')
+            :(it.dataset.label+' : '+B(it.parsed.y));}}}}}});
+  });
 }
 
 VX.recentTickers.push(SYM);

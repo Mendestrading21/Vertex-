@@ -198,14 +198,15 @@ function loadKpis(){
     ['Espérance / trade',(s.expectancy>=0?'+':'')+VX.fmt.num(s.expectancy,0)+' $',s.expectancy>=0?'vx-pos':'vx-neg'],
     ['Trades déclarés',String(s.n),'vx-muted'],
   ];
-  $('vx-pf-kpis').innerHTML=cells.map(([label,val,cls])=>
-    `<div class="vx-card vx-kpi" style="grid-column:span 2" aria-label="${esc(label)}">
-      <span class="vx-kpi-label">${label}</span>
-      <span class="vx-kpi-value ${cls}" style="font-size:20px">${val}</span>
-      <span class="vx-meta">journal local (vos déclarations)</span></div>`).join('')
-    +`<div class="vx-card vx-kpi" style="grid-column:span 2">
-      <span class="vx-kpi-label">Source</span>
-      <span class="vx-meta" style="font-size:12px">Calculs arithmétiques sur VOS trades déclarés — aucun indicateur de marché.</span></div>`;
+  $('vx-pf-kpis').innerHTML=cells.map(([label,val,cls])=>{
+    const tone=cls==='vx-pos'?'pos':cls==='vx-neg'?'neg':'';
+    return `<div class="vx-stat" style="grid-column:span 2" data-tone="${tone}" aria-label="${esc(label)}">
+      <div class="vx-stat-k">${label}</div>
+      <div class="vx-stat-v">${val}</div>
+      <div class="vx-stat-sub">journal local · vos déclarations</div></div>`;}).join('')
+    +`<div class="vx-stat" style="grid-column:span 2">
+      <div class="vx-stat-k">Source</div>
+      <div class="vx-meta" style="font-size:11.5px;margin-top:5px;line-height:1.4">Calculs arithmétiques sur VOS trades déclarés — aucun indicateur de marché.</div></div>`;
   return list;
 }
 function loadEquity(){
