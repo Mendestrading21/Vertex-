@@ -423,14 +423,25 @@
           '<td class="' + cls10 + '">' + (g10 != null ? (g10 >= 0 ? '+' : '') + VXf.num(g10, 0) + ' %' : '—') + '</td></tr>';
       }).join('');
       var lims = (sim.limitations || []).map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('');
+      // Table plate = repli honnête si les composants graphiques ne sont pas chargés.
+      var tableHTML = rows ? '<div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Scénario</th><th>Spot</th><th>Prime (J+0)</th><th>Gain J+0</th><th>Gain J+10</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<div class="vx-empty">Grille de scénarios indisponible.</div>';
       el.innerHTML =
         '<div class="vx-muted" style="margin-bottom:.6rem">Contrat : ' + esc(c.type || '') + ' ' + VXf.nd(c.strike) +
         ' · ' + (c.dte != null ? c.dte + ' j' : '—') + ' · IV ' + (c.iv != null ? VXf.num(c.iv, 1) + ' %' : '—') +
         ' · spot ' + VXf.nd(c.spot) + '</div>' +
-        (rows ? '<div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Scénario</th><th>Spot</th><th>Prime (J+0)</th><th>Gain J+0</th><th>Gain J+10</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<div class="vx-empty">Grille de scénarios indisponible.</div>') +
+        '<div id="vx-opt-sc-matrix">' + tableHTML + '</div>' +
         (sim.reward_risk != null ? '<div class="vx-muted" style="margin-top:.5rem">R:R du plan : <b>' + VXf.num(sim.reward_risk, 2) + '</b> · pire perte planifiée : ' + (sim.worst_planned_loss_pct != null ? VXf.num(sim.worst_planned_loss_pct, 0) + ' %' : '—') + '</div>' : '') +
+        '<div class="vx-grid vx-mt3"><div class="vx-col-6" id="vx-opt-sc-theta"></div><div class="vx-col-6" id="vx-opt-sc-iv"></div></div>' +
         '<div class="vx-explain" style="margin-top:.8rem"><h4>Limites (estimation)</h4><ul>' + (lims || '<li class="vx-muted">—</li>') + '</ul>' +
         (sim.model_source ? '<p class="vx-muted">Modèle : ' + esc(sim.model_source) + '</p>' : '') + '</div>';
+      // Heatmap scénario×temps + décote temps (theta) + sensibilité IV — mêmes données
+      // moteur (sim.scenarios / sim.time_decay / sim.iv_sensitivity), rien de calculé ici.
+      if (window.VXCharts) {
+        var VC = window.VXCharts, ts = Date.now();
+        if (VC.scenarioMatrix && VC.heatmapCard) VC.scenarioMatrix('vx-opt-sc-matrix', sim, { title: 'Valeur du contrat — scénario × horizon', question: 'Que vaut le contrat selon le mouvement du spot et le temps ?', source: 'scenario_pricer', timestamp: ts, mode: 'delayed' });
+        if (VC.thetaCard) VC.thetaCard('vx-opt-sc-theta', sim, { title: 'Décote temps (theta)', question: 'Combien le temps grignote-t-il la prime, à spot figé ?', source: 'scenario_pricer', timestamp: ts, mode: 'delayed' });
+        if (VC.ivSensitivityCard && VC.barCard) VC.ivSensitivityCard('vx-opt-sc-iv', sim, { title: 'Sensibilité à l\'IV', question: 'Quel impact d\'une variation d\'implicite sur la prime ?', source: 'scenario_pricer', timestamp: ts, mode: 'delayed' });
+      }
     }).catch(function (e) { fail(el, e.message); });
   }
 

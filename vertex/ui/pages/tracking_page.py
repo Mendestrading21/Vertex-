@@ -12,11 +12,11 @@ from vertex.ui.shell import render_shell
 _STYLE = """
 <style>
 #vx-content .vx-hypo{display:inline-block;font-size:11px;font-weight:650;letter-spacing:.03em;
-  color:var(--vx-orange-500,#cf6128);border:1px solid var(--vx-orange-500,#cf6128);border-radius:999px;
+  color:var(--vx-warning,#dda23b);border:1px solid var(--vx-warning,#dda23b);border-radius:999px;
   padding:.12rem .6rem}
 #vx-content .vx-trk-note{color:var(--vx-text-dim,#8a837a);font-size:12.5px;margin:.4rem 0 0}
-#vx-content .vx-pos{color:var(--vx-positive,#39b879)}
-#vx-content .vx-neg{color:var(--vx-negative,#dc6254)}
+#vx-content .vx-pos{color:var(--vx-positive,#36c889)}
+#vx-content .vx-neg{color:var(--vx-negative,#ed655c)}
 #vx-content .vx-muted{color:var(--vx-text-dim,#8a837a)}
 #vx-content .vx-stat{display:flex;flex-direction:column;min-width:88px}
 #vx-content .vx-stat-label{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--vx-text-dim,#8a837a)}

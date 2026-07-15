@@ -373,7 +373,8 @@ async function loadTrack(){
       return;
     }
     $('vx-pf-track').innerHTML=
-      `<table class="vx-table"><thead><tr><th>Verdict moteur</th><th class="vx-num">N</th>
+      `<div id="vx-pf-track-bar" class="vx-mb3"></div>`
+      +`<table class="vx-table"><thead><tr><th>Verdict moteur</th><th class="vx-num">N</th>
        <th class="vx-num">Rdt +5 séances</th><th class="vx-num">Rdt +20 séances</th>
        <th class="vx-num">% gagnants +5 s</th><th class="vx-num">TP1 avant stop</th></tr></thead><tbody>`
       +rows.map(([verdict,s])=>`<tr>
@@ -386,6 +387,18 @@ async function loadTrack(){
       </tr>`).join('')+'</tbody></table>'
       +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'moteur track-record','delayed')}
         <span class="vx-meta">${esc(tr.note||'')}${tr.as_of?' · au '+esc(tr.as_of):''}</span></div>`;
+    /* Aperçu graphique du rendement moyen +20 séances par verdict (au-dessus du tableau
+       détaillé qui garde N, %gagnants, TP1). Données réelles du moteur — null exclu. */
+    try{
+      const _tl=rows.map(([v])=>v),_tv=rows.map(([,s])=>(s.avg_20j==null?null:s.avg_20j));
+      if(window.VXCharts&&VXCharts.card&&VXCharts.bars&&_tv.some(x=>x!=null)){
+        VXCharts.card('vx-pf-track-bar',{title:'Rendement moyen +20 séances par verdict',
+          question:'Quels verdicts moteur ont le mieux tenu ?',height:200,
+          source:'moteur track-record',timestamp:Date.now(),mode:'delayed',
+          limits:'moyenne réelle des verdicts résolus (n≥5) — mesure, pas une promesse',
+          render:(cv)=>VXCharts.bars(cv,_tl,_tv,{colors:_tv.map(v=>v==null?'#8f8a83':(v>=0?'#36c889':'#ed655c')),yFmt:(x)=>x+' %'})});
+      }
+    }catch(e){}
   }catch(e){$('vx-pf-track').innerHTML=VX.states.error('Track record moteur indisponible ('+esc(e.message)+')');}
 }
 function loadReal(){

@@ -180,7 +180,16 @@ _VIEW_CONTENT = {
 """,
 }
 
-_PAGE_JS = '<script src="/static/vertex/js/pages/options-intel.js" defer></script>'
+# Composants graphiques options + dépendances (bar/heatmap) — sinon VXCharts.thetaCard /
+# ivSensitivityCard / scenarioMatrix sont undefined sur cette page (console-risk).
+_PAGE_JS = (
+    '<script src="/static/vertex/js/charts/bar-chart.js" defer></script>'
+    '<script src="/static/vertex/js/charts/heatmap.js" defer></script>'
+    '<script src="/static/vertex/js/charts/option-scenarios.js" defer></script>'
+    '<script src="/static/vertex/js/charts/option-theta.js" defer></script>'
+    '<script src="/static/vertex/js/charts/option-iv-sensitivity.js" defer></script>'
+    '<script src="/static/vertex/js/pages/options-intel.js" defer></script>'
+)
 
 
 def render(view: str = 'overview') -> str:

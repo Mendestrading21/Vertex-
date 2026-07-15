@@ -54,7 +54,8 @@
     if (!host || !VC || !window.Chart) return;
     var pts = rows.filter(function (r) { return r.p && r.p.return_pct != null; });
     if (!pts.length) { host.innerHTML = ''; return; }
-    var brand = (VC.colors && VC.colors.brand) || '#84aa31';
+    var positive = (VC.colors && VC.colors.positive) || '#36c889';
+    var negative = (VC.colors && VC.colors.negative) || '#ed655c';
     var neutral = (VC.colors && VC.colors.neutral) || '#8f8a83';
     var labels = pts.map(function (r) { return r.t.symbol; });
     var self = pts.map(function (r) { return +r.p.return_pct.toFixed(2); });
@@ -65,11 +66,11 @@
       conclusion: pts.length + ' suivi(s) actif(s) — rendements 100 % hypothétiques',
       height: 240, source: 'SCAN', timestamp: Date.now(), mode: 'delayed',
       limits: 'rendement prix hors frais/dividendes · aucune position réelle',
-      legend: [{ label: 'Idée suivie', color: brand }, { label: 'SPY', color: neutral }],
+      legend: [{ label: 'Idée suivie — émeraude = gain / corail = perte', color: positive }, { label: 'SPY (référence)', color: neutral }],
       explain: {
         shows: 'Le rendement de chaque idée suivie et celui de SPY sur la même fenêtre.',
         why: 'Vertex vise à battre SPY : un alpha positif valide la sélection.',
-        confirm: 'Barres oranges au-dessus des grises (alpha positif).',
+        confirm: 'Barre de l\'idée au-dessus de sa barre SPY (grise) → alpha positif.',
         invalidate: 'Sous-performance persistante vs SPY.'
       },
       render: function (cv) {
@@ -77,7 +78,7 @@
           type: 'bar',
           data: {
             labels: labels, datasets: [
-              { label: 'Idée suivie', data: self, backgroundColor: brand, borderRadius: 3, maxBarThickness: 26 },
+              { label: 'Idée suivie', data: self, backgroundColor: self.map(function (v) { return v >= 0 ? positive : negative; }), borderRadius: 3, maxBarThickness: 26 },
               { label: 'SPY', data: spy, backgroundColor: neutral + 'cc', borderRadius: 3, maxBarThickness: 26 }
             ]
           },

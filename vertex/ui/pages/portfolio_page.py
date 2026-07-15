@@ -313,7 +313,7 @@ async function renderOptions(){
       <div class="vx-chart-head"><span class="vx-chart-title">Capital engagé par contrat</span>
         <span class="vx-chart-question">Où est concentré le capital options ?</span></div>
       <div id="pf-opt-tree" style="height:220px"></div>
-      <div class="vx-card-foot"><span class="vx-meta">Taille = capital engagé (coût déclaré) · couleur = sens (CALL cuivre / PUT violet). Aucune valeur inventée.</span></div>
+      <div class="vx-card-foot"><span class="vx-meta">Taille = capital engagé (coût déclaré) · couleur = sens (CALL acier / PUT violet). Aucune valeur inventée.</span></div>
     </section>
     <section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Positions options</span>
       <span class="vx-meta vx-right">analyse complète par position — aucune exécution</span></div>
@@ -342,7 +342,7 @@ async function renderOptions(){
     VXCharts.treemap(el,{width:w,height:220,
       items:rich.map(t=>({label:t.sym+' '+(t.strike||''),value:Math.max(1,t.invested||0),
         sub:(t.type==='PUT'?'PUT':'CALL')+(t.exp?' '+t.exp:''),
-        color:(t.type==='PUT'?(cc.option||'#806095'):(cc.info||'#b9683d'))})),
+        color:(t.type==='PUT'?(cc.violet||'#9c79d0'):(cc.neutral||'#8f8a83'))})),
       fmt:(v)=>VX.fmt.price(v)});
   }
   document.querySelectorAll('[data-opt-analyze]').forEach(b=>
@@ -442,7 +442,7 @@ async function renderRisk(){
       <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Concentration</span></div>
         ${kv('Drawdown portefeuille',risk.drawdown_pct!==null&&risk.drawdown_pct!==undefined?risk.drawdown_pct+' %':'n/d (pic non renseigné)')}
         ${kv('HHI',risk.hhi)}${kv('Bêta pondéré',risk.beta)}
-        ${Object.entries(risk.sector_weights||{}).slice(0,5).map(([s,w])=>kv(s,w+' %')).join('')}</div>
+        <div id="pf-sector-donut" class="vx-mt2"><span class="vx-meta">Exposition sectorielle…</span></div></div>
       <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Greeks agrégés</span></div>
         ${kv('Delta global',risk.options_exposure&&risk.options_exposure.delta)}
         ${kv('Gamma global',risk.options_exposure&&risk.options_exposure.gamma)}
@@ -485,6 +485,22 @@ async function renderRisk(){
         +_rk('Bêta',risk.beta!=null?risk.beta:'—','pondéré')
         +_rk('Drawdown',(risk.drawdown_pct!=null)?(risk.drawdown_pct+' %'):'n/d','pic')
         +_rk('Pire scénario',_worst!=null?VX.fmt.pct(_worst,1):'—','stress',(_worst!=null&&_worst<0)?'vx-neg':'');
+      /* Exposition sectorielle : donut au lieu d'une liste tronquée à 5 ; le surplus
+         est regroupé en « Autres » (aucune troncature silencieuse). '—' honnête si vide. */
+      var _sw=risk.sector_weights||{};
+      var _sh=document.getElementById('pf-sector-donut');
+      if(_sh){
+        var _se=Object.keys(_sw).map(function(k){return [k,+_sw[k]];}).filter(function(e){return isFinite(e[1])&&e[1]>0;}).sort(function(a,b){return b[1]-a[1];});
+        if(!_se.length){_sh.innerHTML='<span class="vx-meta">Exposition sectorielle indisponible (aucune position action).</span>';}
+        else if(window.VXCharts&&VXCharts.donut){
+          var _lab,_val;
+          if(_se.length<=5){_lab=_se.map(function(e){return e[0];});_val=_se.map(function(e){return e[1];});}
+          else{var _t=_se.slice(0,4);_lab=_t.map(function(e){return e[0];});_val=_t.map(function(e){return e[1];});
+            var _rest=_se.slice(4).reduce(function(s,e){return s+e[1];},0);_lab.push('Autres');_val.push(+_rest.toFixed(2));}
+          _sh.innerHTML='<div class="vx-kpi-label vx-mb1">Exposition sectorielle</div><div style="height:150px"><canvas></canvas></div>';
+          VXCharts.donut(_sh.querySelector('canvas'),_lab,_val,{});
+        } else {_sh.innerHTML=_se.map(function(e){return kv(e[0],e[1]+' %');}).join('');}
+      }
     }catch(e){}
   }catch(e){$('pf-body').innerHTML=VX.states.error('Moteur de risque injoignable : '+e.message);}
 }

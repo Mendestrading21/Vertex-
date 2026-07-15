@@ -113,7 +113,7 @@ function renderRanking(rows){
       +'<span class="vx-grow"></span><span class="vx-mono" style="font-size:16px;font-weight:800;color:var(--vx-text-primary,#f3f1ed)">'+VX.fmt.nd(r.score)+'</span></div>'
       +'<div class="vx-mt1">'
         +scoreBar('Fondamental',r.st_fund,cc.positive)
-        +scoreBar('Technique',r.st_tech,cc.info)
+        +scoreBar('Technique',r.st_tech,cc.cyan)
         +scoreBar('Momentum',r.st_mom,cc.warning)
         +scoreBar('Risque',r.st_risk,cc.negative)
       +'</div></div>';}).join('')
@@ -125,25 +125,26 @@ async function renderFunnel(){
   const el=$('op-funnel');if(!el)return;
   let f;try{f=await VX.fetch('/api/opportunities/funnel',{ttl:60000});}catch(e){return;}
   if(!f||!f.stages||!f.stages.length)return;
-  const roleColor={'ATTAQUE':'var(--vx-orange-500,#cf6128)','MILIEU':'var(--vx-beige,#c8ad8d)',
+  const roleColor={'ATTAQUE':'var(--vx-positive,#36c889)','MILIEU':'var(--vx-beige,#c8ad8d)',
     'DÉFENSE':'var(--vx-neutral,#8f8a83)','RÉSERVE':'var(--vx-text-dim,#817d77)'};
-  const steps=f.stages.map(function(s,i){
-    return '<div style="flex:1;min-width:88px;text-align:center;position:relative">'
-      +'<div style="font-size:24px;font-weight:700;color:var(--vx-text,#f1efeb)">'+esc(s.count)+'</div>'
-      +'<div style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--vx-text-dim,#817d77)">'+esc(s.label)+'</div>'
-      +(i<f.stages.length-1?'<span style="position:absolute;right:-6px;top:14px;color:var(--vx-text-dim,#555)">›</span>':'')+'</div>';
-  }).join('');
   const roles=(f.roles||[]).map(function(r){
     return '<span class="vx-chip" style="border:1px solid '+ (roleColor[r.role]||'#555')
       +';color:'+(roleColor[r.role]||'#aaa')+'">'+esc(r.role)+' '+esc(r.count)+'</span>';
   }).join(' ');
   el.innerHTML='<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Entonnoir d\'opportunités</span>'
     +'<span class="vx-actions" style="display:flex;gap:.4rem;flex-wrap:wrap">'+roles+'</span></div>'
-    +'<div style="display:flex;align-items:flex-end;gap:.4rem;padding:.6rem .2rem 0">'+steps+'</div>'
+    +'<div id="op-funnel-viz" style="margin-top:.4rem"></div>'
     +(f.note?'<div class="vx-dim" style="font-size:12px;margin-top:.5rem">'+esc(f.note)+'</div>':'')
     +(f.actionable_symbols&&f.actionable_symbols.length?'<div class="vx-dim" style="font-size:12px;margin-top:.5rem">Actionnables : '
-      +f.actionable_symbols.map(function(s){return '<b style="color:var(--vx-orange-500,#cf6128)">'+esc(s)+'</b>';}).join(' · ')+'</div>':'')
+      +f.actionable_symbols.map(function(s){return '<b style="color:var(--vx-positive,#36c889)">'+esc(s)+'</b>';}).join(' · ')+'</div>':'')
     +'</div>';
+  /* Vrai entonnoir décroissant (trapèzes + % par étage) au lieu des colonnes texte —
+     donnée réelle /api/opportunities/funnel, jamais inventée ; le composant gère
+     lui-même le repli si < 2 étages. */
+  if(window.VXCharts&&VXCharts.funnel){
+    VXCharts.funnel('op-funnel-viz',{stages:f.stages.map(function(s){return {label:s.label,value:s.count};}),
+      fmt:function(v){return VX.fmt.nd(v);},ariaLabel:'Entonnoir d\'opportunités : univers vers actionnables'});
+  }
 }
 
 /* ── RADAR (§24) : X qualité stratégique · Y timing · taille intensité ── */
@@ -155,7 +156,7 @@ async function renderRadar(){
     +'<div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Lecture</span></div>'
     +'<div class="vx-dim" style="font-size:12.5px">X : qualité stratégique (score composite moteur).<br>'
     +'Y : qualité du timing (timing technique moteur).<br>Taille : intensité du signal (anomalies).<br>'
-    +'Couleur : direction du verdict.<br>Bordure orange : qualité de données dégradée.</div>'
+    +'Couleur : direction du verdict (émeraude = achat · corail = éviter · acier = neutre).<br>Bordure ambre : qualité de données dégradée (démo).</div>'
     +'<div id="op-radar-sel" class="vx-mt3"></div></div></div>'
     +'<div id="op-ranking" class="vx-mt4"></div>';
   renderTopCards(rows);
@@ -175,7 +176,7 @@ async function renderRadar(){
           r:4+Math.min(8,(r.anomaly_score||r.sigcount||0))})),
         pointRadius:(ctx)=>ctx.raw?ctx.raw.r:4,
         pointBackgroundColor:(ctx)=>{const v=ctx.raw&&ctx.raw.v;const cc=VXCharts.colors;
-          return v==='BUY'||v==='ACHETER'?cc.positive:(v==='AVOID'||v==='ÉVITER'?cc.negative:cc.info);},
+          return v==='BUY'||v==='ACHETER'?cc.positive:(v==='AVOID'||v==='ÉVITER'?cc.negative:cc.neutral);},
         pointBorderColor:%%DEMO_BORDER%%,pointBorderWidth:1}]},
       options:{scales:{x:{title:{display:true,text:'Qualité stratégique'},grid:{color:'rgba(255,255,255,.06)'}},
         y:{title:{display:true,text:'Qualité du timing'},grid:{color:'rgba(255,255,255,.06)'}}},
@@ -471,7 +472,7 @@ def render(view: str = 'radar', params=None) -> str:
     js = (_JS.replace('%%VIEW%%', json.dumps(view))
           .replace('%%PARAMS%%', json.dumps(p))
           .replace('%%DEMO_BORDER%%',
-                   "(window.__vxStatus&&window.__vxStatus.demo)?'#F59E42':'rgba(255,255,255,.25)'"))
+                   "(window.__vxStatus&&window.__vxStatus.demo)?'#dda23b':'rgba(255,255,255,.25)'"))
     label = dict(_VIEWS)[view]
     return render_shell(title=f'Opportunités · {label}', active='opportunities',
                         space_label='Opportunités', sub_label=label,

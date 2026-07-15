@@ -298,6 +298,19 @@ function idxByName(scan){
   const list=(scan&&Array.isArray(scan.indices))?scan.indices:[];
   const by={};list.forEach(i=>{if(i&&i.name)by[i.name]=i;});return by;
 }
+/* Source cross-asset UNIFIÉE : indices actions (scan.indices : .price/.change %),
+   taux & dollar (scan.macro : .value + .chg en POINTS absolus, pas %), matières &
+   crypto (scan.commodities : .price/.change %). Normalise les noms (WTI→Pétrole,
+   Dollar (DXY)→DXY). Aucun point inventé — un actif absent du scan est simplement omis. */
+function crossAsset(scan){
+  const m={};
+  ((scan&&scan.indices)||[]).forEach(i=>{if(i&&i.name)m[i.name]={last:i.price,change:i.change,series:i.spark};});
+  ((scan&&scan.commodities)||[]).forEach(c=>{if(c&&c.name){const nm=(c.name==='WTI')?'Pétrole':c.name;
+    m[nm]={last:c.price,change:c.change,series:c.spark};}});
+  ((scan&&scan.macro)||[]).forEach(x=>{if(x&&x.name){const nm=(x.name==='Dollar (DXY)')?'DXY':x.name;
+    m[nm]={last:x.value,change:x.chg,unit:x.unit,deltaUnit:'pts',deltaNeutral:true};}});
+  return m;
+}
 function sparkSvg(vals,pos){
   if(!Array.isArray(vals)||vals.length<2)return '';
   const w=100,h=22,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=(mx-mn)||1;
@@ -307,24 +320,28 @@ function sparkSvg(vals,pos){
 }
 function kpiCell(label,d,scan,extraNote){
   const val=d&&(d.last??d.price??d.close);const chg=d?d.change:null;
+  /* deltaNeutral : la variation ne code PAS « bon/mauvais » (taux, DXY — haut ≠ bien).
+     deltaUnit : variation en unité absolue (points) et non en %. unit : suffixe de niveau. */
+  const dcls=(d&&d.deltaNeutral)?'vx-muted':(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted');
+  const dtxt=(chg===null||chg===undefined)?'n/d'
+    :((d&&d.deltaUnit)?((chg>0?'+':'')+VX.fmt.num(chg,2)+' '+d.deltaUnit):VX.fmt.pct(chg));
+  const vtxt=(val===null||val===undefined)?'—':(VX.fmt.price(val)+((d&&d.unit)?' '+d.unit:''));
   return `<div class="vx-card vx-kpi" style="grid-column:span 4" aria-label="${esc(label)}">
     <span class="vx-kpi-label">${esc(label)}</span>
-    <span class="vx-kpi-value" style="font-size:19px">${(val===null||val===undefined)?'—':VX.fmt.price(val)}</span>
-    <span class="vx-kpi-delta ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}">${(chg===null||chg===undefined)?'n/d':VX.fmt.pct(chg)}</span>
+    <span class="vx-kpi-value" style="font-size:19px">${vtxt}</span>
+    <span class="vx-kpi-delta ${dcls}">${dtxt}</span>
     ${(d&&d.series)?sparkSvg(d.series,(chg==null?true:chg>=0)):''}
     ${extraNote?`<span class="vx-meta">${extraNote}</span>`:''}
     ${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
 }
 function loadStrip(scan){
-  const by=idxByName(scan);
-  const known=IDX.filter(n=>by[n]&&(by[n].price!==null&&by[n].price!==undefined));
+  const by=crossAsset(scan);
+  const known=IDX.filter(n=>by[n]&&(by[n].last!==null&&by[n].last!==undefined));
   if(!known.length){
     $('vx-mk-strip').innerHTML='<div class="vx-card vx-col-12">'+VX.states.empty('Indices indisponibles — lancer un scan depuis Système.',SCAN_ACTION)+'</div>';return;
   }
-  $('vx-mk-strip').innerHTML=known.map(label=>{
-    const i=by[label];
-    return kpiCell(label,{last:i.price,change:i.change,series:i.spark},scan).replace('grid-column:span 4','grid-column:span 3');
-  }).join('');
+  $('vx-mk-strip').innerHTML=known.map(label=>
+    kpiCell(label,by[label],scan).replace('grid-column:span 4','grid-column:span 3')).join('');
 }
 /* Comparaison multi-indices : chaque série rebasée à 0 % (transformation
    d'affichage des séries fournies — aucun point inventé). */
@@ -379,12 +396,12 @@ function loadSpyChart(scan){
 /* ═══ MACRO ═══ */
 const MACRO_NAMES=['Taux 10 ans','DXY','Pétrole','Or','Bitcoin'];
 function loadMacroKpis(scan){
-  const by=idxByName(scan);
-  const known=MACRO_NAMES.filter(n=>by[n]&&by[n].price!==null&&by[n].price!==undefined);
+  const by=crossAsset(scan);
+  const known=MACRO_NAMES.filter(n=>by[n]&&by[n].last!==null&&by[n].last!==undefined);
   if(!known.length){
-    $('vx-mk-macro-kpis').innerHTML='<div class="vx-card vx-col-12">'+VX.states.empty('Données macro non fournies par le scan (VIX et indices actions seulement) — rien d’inventé.',SCAN_ACTION)+'</div>';return;
+    $('vx-mk-macro-kpis').innerHTML='<div class="vx-card vx-col-12">'+VX.states.empty('Données macro non fournies par le scan — rien d’inventé.',SCAN_ACTION)+'</div>';return;
   }
-  $('vx-mk-macro-kpis').innerHTML=known.map(n=>kpiCell(n,{last:by[n].price,change:by[n].change},scan)).join('');
+  $('vx-mk-macro-kpis').innerHTML=known.map(n=>kpiCell(n,by[n],scan)).join('');
 }
 /* Courbe des taux US — 4 maturités RÉELLES du scan (jamais interpolées) */
 function loadYield(scan){
@@ -517,7 +534,7 @@ function loadSectors(scan){
   if(window.VXCharts&&sectors.length>=2){
     const cc2=VXCharts.colors;
     const pts=sectors.map(s=>({x:(s.avg_score!=null?s.avg_score:(s.score||50)),y:(s.avg_change!=null?s.avg_change:0),label:s.sector||''}));
-    const quadCol=(x,y)=>x>=50?(y>=0?cc2.positive:cc2.warning):(y>=0?cc2.info:cc2.negative);
+    const quadCol=(x,y)=>x>=50?(y>=0?cc2.positive:cc2.warning):(y>=0?cc2.neutral:cc2.negative);
     VXCharts.card('vx-mk-rotation',{
       title:'Rotation sectorielle — force relative × momentum',
       question:'Quels secteurs mènent, lesquels s’essoufflent ?',

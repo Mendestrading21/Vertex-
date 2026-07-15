@@ -170,6 +170,8 @@ _CONTENT = """
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=options">Tout voir →</a></span></div>
     <div id="vx-opp-options">%%LOADING%%</div>
   </section>
+  <!-- Posture du comité : répartition réelle des verdicts (donut) — servie mais jusqu'ici invisible -->
+  <div class="vx-col-12" id="vx-opp-posture"></div>
 </div>
 
 <!-- Rangée 5 : rotation (7) + alertes (5) -->
@@ -199,6 +201,7 @@ _JS = r"""
 <script src="/static/vertex/js/charts/breadth-chart.js" defer></script>
 <script src="/static/vertex/js/charts/sector-chart.js" defer></script>
 <script src="/static/vertex/js/charts/bar-chart.js" defer></script>
+<script src="/static/vertex/js/charts/donut-chart.js" defer></script>
 <script src="/static/vertex/js/charts/timeline-chart.js" defer></script>
 <script>
 (function(){
@@ -280,10 +283,13 @@ async function loadStrip(){
     /* Grand chiffre coloré pour les indices actions (direction = hausse bonne) ;
        VIX/taux restent neutres — colorer leur niveau induirait en erreur. */
     const dirClass=(chg!==null&&!['vix','tnx'].includes(slug))?(chg>0?'vx-pos':chg<0?'vx-neg':''):'';
+    /* Même logique pour le delta : un VIX/taux en hausse ne doit PAS s'afficher en
+       émeraude « ça va bien » — niveau et variation restent neutres. */
+    const deltaClass=(chg!==null&&!['vix','tnx'].includes(slug))?(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'):'vx-muted';
     return `<a class="vx-card vx-card--compact vx-kpi vx-strip-item" style="text-decoration:none;color:inherit" href="${target}" aria-label="${label}">
       <span class="vx-kpi-label">${label}</span>
       <span class="vx-kpi-value ${dirClass}" style="font-size:19px">${VX.fmt.nd(val!==null?VX.fmt.price(val):null)}</span>
-      <span class="vx-kpi-delta ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}">${chg!==null?VX.fmt.pct(chg):'n/d'}</span>
+      <span class="vx-kpi-delta ${deltaClass}">${chg!==null?VX.fmt.pct(chg):'n/d'}</span>
       <span data-spark="${slug}"></span>
       ${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),scan&&scan.source,mode)}</a>`;
   }).join('')
@@ -488,6 +494,23 @@ async function loadOpportunities(){
         <span class="vx-grow vx-num vx-mono vx-dim">strike ${VX.fmt.nd(o.strike)} · prime ${VX.fmt.nd(o.premium)}</span>
         <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${o.symbol}" aria-label="Actions ${o.symbol}">⋯</button>
       </div>`).join(''):VX.states.empty('Aucun contrat retenu — le sélecteur ne force jamais une idée.');
+    /* Posture du comité : répartition RÉELLE des verdicts (c.counts, même fetch) en donut.
+       Achat = émeraude · attente = ambre · éviter = corail — jamais le vert marque. */
+    const posture=$('vx-opp-posture');
+    if(posture){
+      const counts=c.counts||{};
+      const _ck=Object.keys(counts).filter(k=>counts[k]>0);
+      if(!_ck.length){posture.innerHTML='';}
+      else if(window.VXCharts&&VXCharts.donutCard){
+        const tone={'ACHETER':'#36c889','RENFORCER':'#36c889','ATTENDRE':'#dda23b','WAIT':'#dda23b',
+          'ÉVITER':'#ed655c','AVOID':'#ed655c','ALLÉGER':'#ed655c','ALLEGER':'#ed655c'};
+        VXCharts.donutCard('vx-opp-posture',{title:'Posture du comité',
+          question:'Comment se répartissent les verdicts du comité aujourd’hui ?',
+          labels:_ck,values:_ck.map(k=>counts[k]),colors:_ck.map(k=>tone[k]||'#8f8a83'),height:172,
+          source:(c.data_source==='demo'?'démo':'comité'),timestamp:Date.now(),
+          mode:(c.data_source==='demo'?'fallback':'delayed')});
+      }
+    }
   }catch(e){
     $('vx-opp-stocks').innerHTML=VX.states.error('Opportunités indisponibles');
     $('vx-opp-options').innerHTML=VX.states.error('Opportunités indisponibles');

@@ -6,7 +6,7 @@ C.scenarioMatrix=function(host,sim,opts){
   if(!el)return;
   const scen=sim&&sim.scenarios;
   if(!scen){el.innerHTML=VX.states.empty('Simulation moteur indisponible pour ce contrat.');return;}
-  const order=['STOP','FLAT','BASE','TP1','TP2','TP3'];
+  const order=['STOP','BEAR','FLAT','BASE','TP1','TP2','TP3'];
   const rows=order.filter(k=>scen[k]).map(k=>{
     const by=scen[k].by_time_days||{};
     return{label:`${k} (${VX.fmt.price(scen[k].spot)})`,

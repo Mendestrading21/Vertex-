@@ -237,7 +237,10 @@ async function runAnalysis(sym,question){
     VX.fetch('/api/decision/'+encodeURIComponent(sym),{ttl:15000})]);
   const strat=sd.status==='fulfilled'?sd.value:null;
   const deci=dd.status==='fulfilled'?dd.value:null;
-  if(!strat&&!deci){
+  /* Honnêteté : le serveur renvoie 200 + available:false pour un ticker absent du
+     scan (strategy_os_api). On NE fabrique PAS un verdict « ATTENDRE » : on affiche
+     l'état vide honnête tant qu'aucun dossier réel n'existe. */
+  if(!strat||strat.available===false){
     $('vx-analyst-verdict').innerHTML=VX.states.empty(
       sym+' est absent du scan courant — impossible de d&eacute;cider sans donn&eacute;es.',
       '<a class="vx-btn vx-btn-sm" href="/system?view=data">Lancer un scan (Syst&egrave;me)</a>');
@@ -339,11 +342,23 @@ function renderCommittee(){
       bands:[{to:40,color:VXCharts.colors.negative},{to:70,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.positive}]}); });
     var _kp=function(l,v,d){return '<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value" style="font-size:22px">'+(v==null?'—':v)+'</span>'+(d?'<span class="vx-kpi-delta vx-muted">'+d+'</span>':'')+'</div>';};
     var _kh=$('vx-committee-kpis');
-    if(_kh)_kh.innerHTML=
+    if(_kh){_kh.innerHTML=
       _kp('Univers scanné',c.universe_scanned!=null?c.universe_scanned:c.count,'dossiers')
       +_kp('Conviction moy.',_convc,'/100')
       +_kp('Confiance moy.',_conf,'/100')
       +_kp('Contradictions',_contra,_contra?'à arbitrer':'aucune');
+      /* Contexte marché qui conditionne la revue du comité — servi par l'API mais
+         jamais affiché jusqu'ici (RoRo / régime SPY / bande VIX). '—' honnête si null. */
+      var _mk=c.market||{};
+      if(_mk.roro||_mk.spy_regime||_mk.vix_band){
+        _kh.innerHTML+='<div class="vx-card vx-card--compact" style="grid-column:span 12;display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin-top:2px">'
+          +'<span class="vx-kpi-label" style="letter-spacing:.04em">Contexte marché</span>'
+          +'<span class="vx-kv"><span class="k">RoRo</span><span class="v">'+(_mk.roro?esc(_mk.roro):'—')+'</span></span>'
+          +'<span class="vx-kv"><span class="k">Régime S&amp;P</span><span class="v">'+(_mk.spy_regime?esc(_mk.spy_regime):'—')+'</span></span>'
+          +'<span class="vx-kv"><span class="k">Bande VIX</span><span class="v">'+(_mk.vix_band?esc(_mk.vix_band):'—')+'</span></span>'
+          +'</div>';
+      }
+    }
     var _tone={AVOID:'var(--vx-negative)',WAIT:'var(--vx-warning)',WATCH_BREAKOUT:'var(--vx-brand)',ACHETER:'var(--vx-positive)',RENFORCER:'var(--vx-positive)',ATTENDRE:'var(--vx-warning)'};
     var _tk=Object.keys(tally),_tmax=Math.max.apply(null,[1].concat(_tk.map(function(k){return tally[k];})));
     var _th=$('vx-committee-tally');
