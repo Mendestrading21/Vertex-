@@ -104,6 +104,20 @@ _CONTENT = """
 </div>
 <div id="vx-demo-banner"></div>
 
+<!-- Rangée 0 : L'ESSENTIEL — le marché en langage simple + actualités -->
+<div class="vx-grid" data-block="essential">
+  <section class="vx-card vx-col-8 vx-card--premium" id="vx-essential" aria-label="L’essentiel du jour">
+    <div class="vx-card-header"><span class="vx-card-title">L’essentiel du jour — en clair</span>
+      <span class="vx-chart-question">Que fait le marché, sans jargon ?</span>
+      <span class="vx-actions vx-meta" id="vx-ess-meta"></span></div>
+    <div id="vx-ess-body">%%LOADING%%</div>
+  </section>
+  <section class="vx-card vx-col-4" id="vx-news" aria-label="Actualités marquantes">
+    <div class="vx-card-header"><span class="vx-card-title">Actualités marquantes</span></div>
+    <div id="vx-news-body">%%LOADING%%</div>
+  </section>
+</div>
+
 <!-- Rangée 1 (§18) : Brief Vertex hero (8) + Régime (4) -->
 <div class="vx-grid">
   <section class="vx-card vx-card--hero vx-col-8" id="vx-brief" data-block="brief" aria-label="Brief Vertex">
@@ -212,7 +226,7 @@ const E=()=>window.VXEntities;
 function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
 
 /* Personnalisation contrôlée des blocs (§43 — vxDashboardLayout.hidden) */
-const BLOCKS=[['brief','Brief Vertex'],['regime','Régime'],['pulse','Pouls du marché (jauges)'],
+const BLOCKS=[['essential','L’essentiel (en clair)'],['brief','Brief Vertex'],['regime','Régime'],['pulse','Pouls du marché (jauges)'],
   ['market','Marchés (graphiques)'],
   ['topflop','Top 10 / Flop 10'],['opportunities','Opportunités'],['rotation','Rotation & alertes'],
   ['portfolio','Portefeuille'],['calendar','Calendrier'],['alerts','Alertes']];
@@ -647,11 +661,73 @@ async function loadCalendar(){
   }catch(e){$('vx-calendar').innerHTML='<div class="vx-card">'+VX.states.error('Calendrier indisponible')+'</div>';}
 }
 
+/* ── L'ESSENTIEL (rangée 0) : le marché en langage simple, au coup d'œil.
+   4 tuiles météo (tendance/ambiance/volatilité/secteur) + « à retenir » +
+   mouvements du jour. Données réelles (scan + summary + éditorial) ; chaque
+   lecture absente affiche « — » honnête, jamais un mot inventé. */
+async function loadEssential(scan){
+  const el=$('vx-ess-body');if(!el)return;
+  let sum={};try{sum=await VX.fetch('/api/market/summary',{ttl:60000})||{};}catch(e){}
+  let ed=null;try{ed=await VX.fetch('/api/briefing/editorial',{ttl:120000});}catch(e){}
+  const idx=((scan&&scan.indices)||[]);
+  const spx=idx.find(i=>i&&i.name==='S&P 500')||{};
+  const chg=spx.change;
+  const tTone=chg>0.15?'pos':chg<-0.15?'neg':'';
+  const tWord=(chg===null||chg===undefined)?'—':(chg>0.15?'EN HAUSSE':chg<-0.15?'EN BAISSE':'STABLE');
+  const tSub=(chg===null||chg===undefined)?'S&P 500 indisponible':('S&P 500 '+VX.fmt.pct(chg,1)+' aujourd’hui');
+  const roro=String(sum.roro||'').toUpperCase();
+  const aWord=roro==='RISK-ON'?'APPÉTIT':roro==='RISK-OFF'?'PRUDENCE':'—';
+  const aTone=roro==='RISK-ON'?'pos':roro==='RISK-OFF'?'neg':'';
+  const aSub=roro==='RISK-ON'?'l’argent va vers les actifs risqués':roro==='RISK-OFF'?'les investisseurs privilégient la sécurité':'lecture indisponible';
+  const vix=sum.vix;
+  const vWord=vix==null?'—':(vix<15?'CALME':vix<25?'NORMALE':'NERVEUSE');
+  const vTone=vix==null?'':(vix<15?'pos':vix<25?'':'neg');
+  const vSub=vix==null?'VIX indisponible':('VIX '+VX.fmt.num(vix,1)+' — '+(vix<15?'pas de stress visible':vix<25?'nervosité ordinaire':'protection recherchée'));
+  const bs=(sum.best_sector&&sum.best_sector.sector)||null;
+  const tile=(k,v,sub,tone)=>`<div class="vx-stat" data-tone="${tone||''}"><div class="vx-stat-k">${k}</div><div class="vx-stat-v" style="font-size:17px">${v}</div><div class="vx-stat-sub">${sub}</div></div>`;
+  const rows=(scan&&scan.rows)||[];
+  const ups=rows.filter(r=>r.change>0).sort((a,b)=>b.change-a.change);
+  const downs=rows.filter(r=>r.change<0).sort((a,b)=>a.change-b.change);
+  const mv=(r,pos)=>r?`<button class="vx-chip" data-open-analysis="${esc(r.symbol)}" style="color:${pos?'var(--vx-positive)':'var(--vx-negative)'}"><b>${esc(r.symbol)}</b>&nbsp;${VX.fmt.pct(r.change,1)}</button>`:'';
+  const lines=((ed&&ed.lines)||[]).slice(0,3);
+  el.innerHTML=
+    `<div class="vx-statrow">${tile('Tendance',tWord,tSub,tTone)}${tile('Ambiance',aWord,aSub,aTone)}${tile('Volatilité',vWord,vSub,vTone)}${tile('Secteur fort',bs?esc(bs):'—',bs?'meneur du jour':'lecture indisponible',bs?'brand':'')}</div>`
+    +(lines.length?`<div class="vx-mt3"><span class="vx-metric-k" style="display:block;margin-bottom:6px">À retenir</span>${lines.map(l=>`<div class="vx-flex" style="gap:8px;padding:4px 0;align-items:flex-start"><span style="flex:0 0 6px;height:6px;border-radius:99px;background:var(--vx-brand);margin-top:6px"></span><span class="vx-dim" style="font-size:13px">${esc(l)}</span></div>`).join('')}</div>`:'')
+    +((ups.length||downs.length)?`<div class="vx-mt3"><span class="vx-metric-k" style="display:block;margin-bottom:6px">Mouvements du jour</span><div class="vx-flex vx-wrap" style="gap:.4rem">${mv(ups[0],1)}${mv(ups[1],1)}${mv(downs[0],0)}${mv(downs[1],0)}<button class="vx-btn vx-btn-sm vx-btn-ghost" data-scrollto="topflop">Tout voir ↓</button></div></div>`:'');
+  const meta=$('vx-ess-meta');
+  if(meta)meta.innerHTML=VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',(scan&&scan.data_source==='demo')?'fallback':'delayed');
+  el.parentElement.querySelectorAll('[data-scrollto]').forEach(b=>b.addEventListener('click',()=>{
+    const t=document.querySelector('[data-block='+b.dataset.scrollto+']');if(t)t.scrollIntoView({behavior:'smooth'});}));
+}
+
+/* ── Actualités marquantes : news RÉELLES (assainies côté serveur, ré-échappées
+   ici) ; hors ligne → état vide honnête, jamais un titre inventé. */
+async function loadNews(){
+  const el=$('vx-news-body');if(!el)return;
+  let d=null;try{d=await VX.fetch('/news-feed',{ttl:120000});}catch(e){}
+  const items=((d&&d.items)||[]).slice(0,6);
+  if(!items.length){
+    el.innerHTML=VX.states.empty('Flux d’actualités hors ligne dans cet environnement — sur ton poste, les actualités réelles du jour s’affichent ici (sources publiques, filtrées).');
+    return;
+  }
+  el.innerHTML=items.map(n=>{
+    const t=esc(n.title||n.headline||'—');
+    const src=esc(n.publisher||n.source||'');
+    const sym=n.sym||n.symbol||'';
+    const link=n.link||n.url||'';
+    const inner=`<div style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">
+      <div style="font-size:12.5px;line-height:1.45;color:var(--vx-text-secondary)">${t}</div>
+      <div class="vx-meta vx-mt1">${sym?`<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(sym)}" style="padding:0 4px">${esc(sym)}</button> · `:''}${src}</div></div>`;
+    return link?`<a href="${esc(link)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none">${inner}</a>`:inner;
+  }).join('')
+  +`<div class="vx-meta vx-mt2">Sources publiques, assainies côté serveur — de l’information, jamais un conseil.</div>`;
+}
+
 /* ── Orchestration ── */
 async function boot(){
-  loadBrief();loadRegime();loadOpportunities();loadAlerts();loadPortfolio();loadCalendar();
+  loadBrief();loadRegime();loadOpportunities();loadAlerts();loadPortfolio();loadCalendar();loadNews();
   const scan=await loadStrip();
-  loadPulse(scan);loadMarketCharts(scan);loadTopFlop(scan);loadRotation(scan);
+  loadEssential(scan);loadPulse(scan);loadMarketCharts(scan);loadTopFlop(scan);loadRotation(scan);
 }
 function whenChartsReady(fn){
   if(window.VXCharts&&window.Chart)return fn();
