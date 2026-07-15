@@ -237,12 +237,42 @@
       '<th>IV</th><th>Qualité</th><th>PoP</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
 
+  // Nuage qualité × probabilité de profit : chaque contrat placé par sa qualité (X)
+  // et sa PoP (Y) ; taille = IV (convexité), violet = PUT / acier = CALL. Le coin
+  // haut-droit = contrats de qualité ET à forte probabilité. Données réelles /api.
+  function radarScatter(hostId, rows) {
+    var host = document.getElementById(hostId);
+    if (!host || !window.VXCharts || !window.Chart) { if (host) host.innerHTML = ''; return; }
+    var cc = VXCharts.colors;
+    var pts = (rows || []).filter(function (r) { return r.quality != null && r.pop != null; }).map(function (r) {
+      return { x: +r.quality, y: +r.pop, sym: r.sym, type: r.type, iv: r.iv, r: 4 + Math.min(9, (r.iv || 30) / 12) };
+    });
+    if (pts.length < 2) { host.innerHTML = ''; return; }
+    var cfg = {
+      type: 'scatter', data: { datasets: [{ data: pts,
+        pointRadius: function (ctx) { return ctx.raw ? ctx.raw.r : 5; }, pointHoverRadius: 11,
+        pointBackgroundColor: function (ctx) { var p = ctx.raw; return p && p.type === 'PUT' ? cc.violet : cc.neutral; },
+        pointBorderColor: 'rgba(0,0,0,.4)', pointBorderWidth: 1 }] },
+      options: { scales: {
+        x: { title: { display: true, text: 'Qualité du contrat' }, grid: { color: 'rgba(237,255,237,.06)' } },
+        y: { title: { display: true, text: 'Probabilité de profit (%)' }, grid: { color: 'rgba(237,255,237,.06)' } } },
+        plugins: { tooltip: { callbacks: { label: function (it) { var p = it.raw;
+          return p.sym + ' ' + (p.type || '') + ' — qualité ' + Math.round(p.x) + ' · PoP ' + Math.round(p.y) + '% · IV ' + (p.iv != null ? Math.round(p.iv) + '%' : 'n/d'); } } } } }
+    };
+    host.innerHTML = '<div class="vx-chart-body" style="height:320px"><canvas id="' + hostId + '-cv"></canvas></div>' +
+      '<div class="vx-chart-legend"><span><span class="vx-swatch" style="background:' + cc.neutral + '"></span>CALL</span>' +
+      '<span><span class="vx-swatch" style="background:' + cc.violet + '"></span>PUT</span>' +
+      '<span class="vx-meta">taille = IV (convexité) · haut-droit = qualité ET probabilité</span></div>';
+    VXCharts.mount(document.getElementById(hostId + '-cv'), cfg);
+  }
+
   function loadRadar() {
     var el = document.getElementById('vx-opt-radar-body');
     loading(el);
     get('/api/options/overview').then(function (d) {
       if (!d || d.empty) { el.innerHTML = (window.VX && VX.states) ? VX.states.empty('Tableau d’options vide.') : 'Aucune donnée.'; return; }
-      el.innerHTML = radarTable(d.radar || []);
+      el.innerHTML = '<div id="vx-opt-radar-scatter" class="vx-mb3"></div>' + radarTable(d.radar || []);
+      radarScatter('vx-opt-radar-scatter', d.radar || []);
     }).catch(function (e) { fail(el, e.message); });
   }
 
