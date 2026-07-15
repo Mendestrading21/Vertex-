@@ -386,11 +386,35 @@ async function loadMarketCharts(scan){
   }else{
     $('vx-market-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Série marché indisponible — lancer un scan depuis Système.','<a class="vx-btn vx-btn-sm" href="/system?view=data">Système / Données</a>')+'</div>';
   }
-  // breadth : objet {above50,above200,…} (market_ctx) ou nombre.
+  // breadth : objet {above50,above200,adv,dec,nh,nl} (market_ctx) ou nombre.
   const bdRaw=m.breadth;
   const breadth=(bdRaw&&typeof bdRaw==='object')?(bdRaw.above50??bdRaw.above200??null)
                :(typeof bdRaw==='number'?bdRaw:((typeof scan.breadth==='number')?scan.breadth:null));
-  if(breadth!==null&&breadth!==undefined){
+  const _hasInternals=bdRaw&&typeof bdRaw==='object'&&(bdRaw.adv!=null||bdRaw.nh!=null||bdRaw.above200!=null);
+  if(_hasInternals){
+    /* Internals de breadth RÉELS (adv/dec, nouveaux hauts/bas, % > MM50/MM200)
+       servis par /api/market/summary mais jamais tracés jusqu'ici. Jauges + barres
+       divergentes ; « — » honnête si un champ manque. */
+    const mbar=(k,v)=>{const tone=v==null?'':(v>=55?'pos':(v<40?'neg':'warn'));
+      return `<div class="vx-metric" data-tone="${tone}"><span class="vx-metric-k">${k}</span>`
+        +`<span class="vx-metric-v">${v==null?'—':v}${v==null?'':`<span class="vx-metric-u">%</span>`}</span>`
+        +`<div class="vx-metric-bar"><i style="width:${v==null?0:Math.max(3,Math.min(100,v))}%"></i><b style="left:55%"></b></div></div>`;};
+    const dbar=(la,a,lb,bv)=>{const tot=(a||0)+(bv||0)||1;const pa=Math.round((a||0)/tot*100);
+      return `<div class="vx-mt3"><div style="display:flex;justify-content:space-between;font:600 11px/1 var(--vx-font);margin-bottom:5px">`
+        +`<span style="color:var(--vx-positive)">${la} · ${a==null?'—':a}</span>`
+        +`<span style="color:var(--vx-negative)">${bv==null?'—':bv} · ${lb}</span></div>`
+        +`<div style="display:flex;height:9px;border-radius:99px;overflow:hidden;background:var(--vx-surface-0)">`
+        +`<i style="width:${pa}%;background:var(--vx-positive)"></i><i style="flex:1;background:var(--vx-negative)"></i></div></div>`;};
+    let _bh='<div class="vx-metricgrid" style="grid-template-columns:1fr 1fr">'+mbar('&gt; MM50',bdRaw.above50)+mbar('&gt; MM200',bdRaw.above200)+'</div>';
+    if(bdRaw.adv!=null||bdRaw.dec!=null)_bh+=dbar('Avancées',bdRaw.adv,'Déclins',bdRaw.dec);
+    if(bdRaw.nh!=null||bdRaw.nl!=null)_bh+=dbar('Nouveaux hauts',bdRaw.nh,'Nouveaux bas',bdRaw.nl);
+    const _be=$('vx-breadth-chart');
+    _be.classList.add('vx-card','vx-card--premium');
+    _be.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Breadth — internals</span>'
+      +'<span class="vx-chart-question">La hausse est-elle partagée ?</span></div>'+_bh
+      +'<div class="vx-card-footer">'+VX.updateIndicator(scan.scan_ts||scan.updated,scan.source||'scan',mode)
+      +'<span class="vx-meta">participation mesurée sur les leaders scannés (univers partiel)</span></div>';
+  }else if(breadth!==null&&breadth!==undefined){
     VXCharts.breadthCard('vx-breadth-chart',{
       title:'Breadth / participation',question:'La hausse est-elle partagée ?',
       conclusion:breadth>=55?'Participation saine.':'Participation étroite — sélectivité.',
