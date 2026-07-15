@@ -88,7 +88,7 @@ Aucun chiffre de l’un n’alimente l’autre.</div>
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Trades réels du journal">
     <div class="vx-card-header"><span class="vx-card-title">Trades réels (journal)</span>
-      <span class="vx-badge" style="color:var(--vx-cyan,#22D3EE)">Vos déclarations</span>
+      <span class="vx-badge" style="color:var(--vx-cyan,#c8ad8d)">Vos déclarations</span>
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=journal">Ouvrir le journal →</a></span></div>
     <div id="vx-pf-real">%%LOADING%%</div>
   </section>

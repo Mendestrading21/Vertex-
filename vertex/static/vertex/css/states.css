@@ -13,6 +13,10 @@
   background:var(--vx-negative-soft)}
 .vx-state[data-tone="offline"] .vx-state-icon{color:var(--vx-text-muted)}
 .vx-state .vx-state-action{margin-top:4px}
+/* Mini-visualisation fantôme (§44) — placeholder, jamais une donnée */
+.vx-state .vx-state-ghost{width:120px;height:auto;margin-bottom:2px;color:var(--vx-text-faint);opacity:.9}
+.vx-state[data-state="empty"] .vx-state-ghost circle,
+.vx-state[data-state="empty"] .vx-state-ghost rect{transition:opacity var(--vx-t)}
 
 /* Skeletons — dimensions proches du contenu final */
 .vx-skeleton{position:relative;overflow:hidden;background:var(--vx-surface-2);

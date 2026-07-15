@@ -15,8 +15,10 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 #vx-app{position:relative;z-index:1}
 
 h1,h2,h3,h4,p{margin:0}
+h1,h2,h3,h4{text-wrap:balance}
 h1{font-size:var(--vx-fs-page);font-weight:800;letter-spacing:-.6px}
 h2{font-size:var(--vx-fs-section);font-weight:700;letter-spacing:-.2px}
+p,.vx-sub,.vx-card-sub,.vx-help,.ds-note{text-wrap:pretty}
 h3{font-size:var(--vx-fs-card);font-weight:600;color:var(--vx-text-secondary);
   text-transform:uppercase;letter-spacing:.6px}
 a{color:var(--vx-info);text-decoration:none}
@@ -58,3 +60,11 @@ img,canvas,svg{max-width:100%}
     animation-iteration-count:1!important;transition-duration:.01ms!important;
     scroll-behavior:auto!important}
 }
+
+/* ── Lien d'évitement clavier (§47) : caché, révélé au focus (Tab) ── */
+.vx-skip-link{position:fixed;top:10px;left:10px;z-index:calc(var(--vx-z-toast) + 10);
+  padding:9px 15px;background:var(--vx-surface-3);border:1px solid var(--vx-brand);
+  border-radius:var(--vx-r-sm);color:var(--vx-text-primary);font-size:13px;font-weight:600;
+  box-shadow:var(--vx-shadow-2);transform:translateY(-160%);
+  transition:transform var(--vx-t-fast)}
+.vx-skip-link:focus{transform:translateY(0);outline:2px solid var(--vx-brand);outline-offset:2px}

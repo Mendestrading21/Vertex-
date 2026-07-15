@@ -27,7 +27,10 @@ def _tabs(active: str) -> str:
         f'<a class="vx-tab" role="tab" href="?view={vid}" '
         f'aria-selected="{"true" if vid == active else "false"}">{label}</a>'
         for vid, label in VIEWS)
-    return f'<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Système">{tabs}</nav>'
+    # Référence visuelle (§50) — lien vers la page Design System, à droite.
+    ds = ('<a class="vx-tab" href="/design-system" style="margin-left:auto;color:var(--vx-copper-light)" '
+          'title="Référence visuelle OBSIDIAN COPPER">Design System</a>')
+    return f'<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Système">{tabs}{ds}</nav>'
 
 
 def _header(active: str) -> str:

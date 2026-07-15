@@ -170,6 +170,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
+<a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
 <div class="vx-app" id="vx-app" data-sidebar="expanded">
 {_sidebar(active)}
 <div class="vx-main">

@@ -33,7 +33,7 @@ def test_no_order_execution_path():
     """AUCUN chemin d'exécution d'ordre dans tout le code applicatif."""
     offenders = []
     for path in _python_sources():
-        rel = str(path.relative_to(ROOT))
+        rel = path.relative_to(ROOT).as_posix()  # forward-slash sur tout OS (Windows inclus)
         if rel in DENY_LIST_FILES:
             continue
         text = path.read_text(encoding='utf-8', errors='ignore')

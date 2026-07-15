@@ -360,7 +360,9 @@ async function loadMarketCharts(scan){
   scan=scan||{};const det=(scan.detail||{});
   const spyd=det.SPY||det[Object.keys(det)[0]]||{};
   const closes=(spyd.series&&spyd.series.close)||[];
-  const m=scan.market||scan.market_ctx||{};
+  // Fusion : market (statut) + market_ctx (régime/vix/breadth) — sinon le statut
+  // horaire masque tout le contexte via `||` (breadth/régime vides à tort).
+  const m=Object.assign({},scan.market||{},scan.market_ctx||{});
   const mode=scan.data_source==='demo'?'fallback':'delayed';
   if(closes.length>10){
     VXCharts.areaCard('vx-market-chart',{
@@ -376,7 +378,10 @@ async function loadMarketCharts(scan){
   }else{
     $('vx-market-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Série marché indisponible — lancer un scan depuis Système.','<a class="vx-btn vx-btn-sm" href="/system?view=data">Système / Données</a>')+'</div>';
   }
-  const breadth=m.breadth;
+  // breadth : objet {above50,above200,…} (market_ctx) ou nombre.
+  const bdRaw=m.breadth;
+  const breadth=(bdRaw&&typeof bdRaw==='object')?(bdRaw.above50??bdRaw.above200??null)
+               :(typeof bdRaw==='number'?bdRaw:((typeof scan.breadth==='number')?scan.breadth:null));
   if(breadth!==null&&breadth!==undefined){
     VXCharts.breadthCard('vx-breadth-chart',{
       title:'Breadth / participation',question:'La hausse est-elle partagée ?',

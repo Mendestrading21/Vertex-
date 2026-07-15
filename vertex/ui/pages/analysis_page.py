@@ -14,18 +14,69 @@ from vertex.ui.shell import render_shell
 
 
 def render_index(view: str = '') -> str:
+    dims = ''.join(
+        f'<div class="an-dim"><span class="an-dim-n">{n}</span>'
+        f'<span class="an-dim-l">{lab}</span></div>'
+        for n, lab in [
+            ('1', 'Fondamental — qualité, croissance, valorisation'),
+            ('2', 'Catalyseurs — résultats, événements datés'),
+            ('3', 'Timing technique — tendance, niveaux, R:R'),
+            ('4', 'Sentiment & positionnement'),
+            ('·', 'Anomalies & signaux TradingView'),
+            ('·', 'Scénarios Bull / Base / Bear'),
+            ('·', 'Options associées — convexité, IV, DTE'),
+            ('★', 'Décision finale & plan de niveaux'),
+        ])
     content = """
 <div class="vx-page-header"><div><h1>Analyse</h1>
 <div class="vx-sub">Rechercher un titre pour ouvrir sa fiche canonique.</div></div></div>
-<div class="vx-card" style="max-width:640px">
-  <div class="vx-field"><label for="an-search">Ticker ou entreprise</label>
-  <input class="vx-input" id="an-search" placeholder="ex. NVDA, Microsoft…" autocomplete="off"
-    style="font-size:16px;padding:12px" /></div>
-  <div id="an-results" class="vx-flex-col"></div>
-  <div class="vx-help vx-mt2">Astuce : ⌘K / Ctrl+K depuis n’importe quelle page.</div>
+<style id="an-index-css">
+.an-dim{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed var(--vx-border-soft)}
+.an-dim:last-child{border-bottom:none}
+.an-dim-n{flex:0 0 26px;height:26px;display:grid;place-items:center;border-radius:8px;
+ background:var(--vx-brand-soft);color:var(--vx-copper-light);font:700 12px/1 var(--vx-font-mono,monospace);
+ border:1px solid rgba(185,104,61,.28)}
+.an-dim-l{font-size:13px;color:var(--vx-text-secondary)}
+.an-shortcut{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;
+ border-bottom:1px dashed var(--vx-border-soft);font-size:13px;color:var(--vx-text-secondary)}
+.an-shortcut:last-child{border-bottom:none}
+.an-kbd{font:600 11px/1 var(--vx-font-mono,monospace);color:var(--vx-text-primary);
+ background:var(--vx-graphite-800);border:1px solid var(--vx-border-default);border-radius:6px;padding:4px 7px}
+</style>
+<div class="vx-grid">
+  <div class="vx-col-7">
+    <div class="vx-card">
+      <div class="vx-field"><label for="an-search">Ticker ou entreprise</label>
+      <input class="vx-input" id="an-search" placeholder="ex. NVDA, Microsoft…" autocomplete="off"
+        style="font-size:16px;padding:12px" /></div>
+      <div id="an-results" class="vx-flex-col"></div>
+      <div class="vx-help vx-mt2">Astuce : ⌘K / Ctrl+K depuis n’importe quelle page.</div>
+    </div>
+    <section class="vx-card vx-mt4" aria-label="Titres récents">
+      <div class="vx-card-header"><span class="vx-card-title">Titres récents</span></div>
+      <div class="vx-card-body vx-flex vx-wrap" id="an-recent"><span class="vx-skeleton" style="width:120px;height:26px"></span></div>
+    </section>
+    <section class="vx-card vx-mt4" aria-label="Favoris">
+      <div class="vx-card-header"><span class="vx-card-title">Favoris</span>
+        <span class="vx-dim" style="font-size:12px">titres marqués ★</span></div>
+      <div class="vx-card-body vx-flex vx-wrap" id="an-favs"></div>
+    </section>
+  </div>
+  <aside class="vx-col-5">
+    <section class="vx-card vx-accent" aria-label="Contenu d'une fiche">
+      <div class="vx-card-header"><span class="vx-card-title">Ce que révèle une fiche</span></div>
+      <div class="vx-card-body">""" + dims + """</div>
+    </section>
+    <section class="vx-card vx-mt4" aria-label="Raccourcis">
+      <div class="vx-card-header"><span class="vx-card-title">Raccourcis</span></div>
+      <div class="vx-card-body">
+        <div class="an-shortcut"><span>Recherche globale</span><span class="an-kbd">⌘K</span></div>
+        <div class="an-shortcut"><span>Scanner d’opportunités</span><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities">Ouvrir →</a></div>
+        <div class="an-shortcut"><span>Portefeuille & positions</span><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></div>
+      </div>
+    </section>
+  </aside>
 </div>
-<div class="vx-section-header"><h2>Titres récents</h2></div>
-<div class="vx-flex vx-wrap" id="an-recent"><span class="vx-skeleton" style="width:120px;height:26px"></span></div>
 """
     js = r"""
 <script>
@@ -34,6 +85,10 @@ const $=(id)=>document.getElementById(id);
 $('an-recent').innerHTML=VX.recentTickers.get().map(s=>
   `<button class="vx-btn vx-ticker" data-open-analysis="${s}">${s}</button>`).join('')
   ||'<span class="vx-muted">Aucun titre consulté récemment.</span>';
+let favs=[];try{favs=JSON.parse(localStorage.getItem('myFavs')||'[]');}catch(e){favs=[];}
+$('an-favs').innerHTML=(Array.isArray(favs)&&favs.length?favs:[]).map(s=>
+  `<button class="vx-btn vx-ticker" data-open-analysis="${s}">${s}</button>`).join('')
+  ||'<span class="vx-muted">Aucun favori — marque un titre avec ★ depuis sa fiche.</span>';
 let names=null;
 $('an-search').addEventListener('input',async function(){
   const q=this.value.trim().toUpperCase();

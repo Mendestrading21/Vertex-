@@ -461,6 +461,44 @@
     });
   }
 
+  // ── Symboles réellement présents dans le tableau d'options (démo/scan) ──
+  function boardSyms(cb) {
+    get('/api/options/overview').then(function (d) {
+      var rows = (d && d.radar) || [];
+      var seen = {}, syms = [];
+      rows.forEach(function (r) { var s = (r && r.sym || '').toUpperCase(); if (s && !seen[s]) { seen[s] = 1; syms.push(s); } });
+      cb(syms);
+    }).catch(function () { cb([]); });
+  }
+  // Pré-sélectionne un symbole du tableau + puces d'accès rapide, pour que les
+  // graphiques s'affichent d'emblée (§36) au lieu d'un formulaire vide (§10).
+  function autoSym(goEl, inputEl, loadFn) {
+    if (!inputEl) return;
+    boardSyms(function (syms) {
+      if (!syms.length) return;
+      if (goEl && goEl.parentNode && !goEl.parentNode.querySelector('.opt-chips')) {
+        var chips = document.createElement('div');
+        chips.className = 'opt-chips vx-flex vx-wrap';
+        chips.style.cssText = 'gap:6px;margin-top:10px;align-items:center';
+        chips.innerHTML = '<span class="vx-muted" style="font-size:11px">Depuis le tableau :</span>' +
+          syms.slice(0, 8).map(function (x) { return '<button type="button" class="vx-btn vx-btn-sm vx-btn-ghost opt-chip" data-optsym="' + esc(x) + '">' + esc(x) + '</button>'; }).join('');
+        goEl.parentNode.appendChild(chips);
+        chips.addEventListener('click', function (e) {
+          var b = e.target.closest ? e.target.closest('[data-optsym]') : null;
+          if (!b) return;
+          var sym = b.getAttribute('data-optsym');
+          inputEl.value = sym; loadFn(sym);
+          chips.querySelectorAll('.opt-chip').forEach(function (c) { c.classList.toggle('vx-active', c === b); });
+        });
+      }
+      if (!inputEl.value) {
+        inputEl.value = syms[0]; loadFn(syms[0]);
+        var first = goEl && goEl.parentNode && goEl.parentNode.querySelector('.opt-chip');
+        if (first) first.classList.add('vx-active');
+      }
+    });
+  }
+
   function init() {
     bindExplain();
     var v = view();
@@ -471,16 +509,19 @@
       var s = document.getElementById('vx-opt-vol-sym');
       if (g) g.addEventListener('click', function () { loadVolatility((s.value || '').trim().toUpperCase()); });
       if (s) s.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadVolatility((s.value || '').trim().toUpperCase()); });
+      autoSym(g, s, loadVolatility);
     } else if (v === 'events') {
       var g2 = document.getElementById('vx-opt-ev-go');
       var s2 = document.getElementById('vx-opt-ev-sym');
       if (g2) g2.addEventListener('click', function () { loadEvents((s2.value || '').trim().toUpperCase()); });
       if (s2) s2.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadEvents((s2.value || '').trim().toUpperCase()); });
+      autoSym(g2, s2, loadEvents);
     } else if (v === 'scenarios') {
       var g3 = document.getElementById('vx-opt-sc-go');
       var s3 = document.getElementById('vx-opt-sc-sym');
       if (g3) g3.addEventListener('click', function () { loadScenarios((s3.value || '').trim().toUpperCase()); });
       if (s3) s3.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadScenarios((s3.value || '').trim().toUpperCase()); });
+      autoSym(g3, s3, loadScenarios);
     }
   }
 

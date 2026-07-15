@@ -5,7 +5,7 @@
 .vx-card{background:var(--vx-surface-1);border:1px solid var(--vx-border-soft);
   border-radius:var(--vx-r-lg);padding:var(--vx-s4);min-width:0;
   transition:border-color var(--vx-t),box-shadow var(--vx-t),transform var(--vx-t)}
-.vx-card:hover{border-color:var(--vx-border-default);box-shadow:var(--vx-shadow-1)}
+.vx-card:hover{border-color:var(--vx-border-default);box-shadow:var(--vx-shadow-1);transform:translateY(-1px)}
 .vx-card.vx-elevated{background:var(--vx-surface-2);box-shadow:var(--vx-shadow-1)}
 .vx-card.vx-accent{border-color:var(--vx-border-default)}
 .vx-card.vx-active{border-color:rgba(207,97,40,.35);box-shadow:var(--vx-glow-brand)}
