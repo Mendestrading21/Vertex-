@@ -126,6 +126,14 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     def options_intel_route():
         return options_intel_page.render(view=request.args.get('view', 'overview'))
 
+    # ── Dossier Options d'un titre — la « machine d'analyse » d'un sous-jacent
+    # (chaîne, probabilités, IV, scénarios, stratégies). Bascule Action|Options
+    # depuis la fiche /analysis/<sym>.
+    @bp.route('/options/<sym>')
+    def options_symbol_route(sym):
+        from vertex.ui.pages import options_symbol_page
+        return options_symbol_page.render(sym)
+
     # ── Suivis (§14-18) — approfondissement du Portefeuille, pas un 9e espace.
     @bp.route('/tracking')
     def tracking_route():

@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v43';   // v43 : couche PREMIUM (radar valorisation vs secteur + grille financials color-codée sur Analyse, jauges de confiance sur Opportunités)
+const CACHE='td-shell-v44';   // v44 : dossier Options par titre (/options/<sym>) + bascule Action|Options sur la fiche
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

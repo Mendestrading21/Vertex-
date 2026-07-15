@@ -120,6 +120,10 @@ _SECTIONS = """
     <span class="vx-badge vx-badge-decision" id="an-decision" data-decision="">—</span>
     <span id="an-badges"></span>
     <span class="vx-right vx-flex">
+      <span class="vx-flex" style="gap:2px;margin-right:6px" role="group" aria-label="Mode d'analyse">
+        <span class="vx-btn vx-btn-sm vx-btn-primary" aria-current="true" title="Mode actuel : analyse de l'action">Action</span>
+        <a class="vx-btn vx-btn-sm" href="/options/%%SYM%%" title="Dossier options : chaîne, probabilités, IV, scénarios, stratégies">Options</a>
+      </span>
       <button class="vx-btn vx-btn-icon vx-btn-ghost" id="an-fav" aria-label="Favori" title="Favori">★</button>
       <button class="vx-btn vx-btn-sm vx-btn-soft" id="an-follow"
         onclick="VXEntities.followStock('%%SYM%%',{decision:(document.getElementById('an-decision')||{}).dataset&&document.getElementById('an-decision').dataset.decision});location.href='/tracking';"
