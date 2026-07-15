@@ -95,6 +95,30 @@
     }, opts));
   };
 
+  /* Mini-jauge radiale de SCORE (0-100) pour un cluster « profil ». Arc coloré par
+     niveau (vert haut · ambre moyen · corail bas ; inversé pour le risque), nombre
+     au centre + libellé dessous. Autonome (SVG), aucune dépendance. */
+  C.scoreGaugeSVG = function (pct, opts) {
+    opts = opts || {};
+    var size = opts.size || 84, sw = opts.stroke || 7;
+    var r = (size - sw) / 2 - 1, cx = size / 2, cy = size / 2;
+    var start = 135, sweep = 270;
+    var v = (pct == null || isNaN(pct)) ? null : Math.max(0, Math.min(100, +pct));
+    var circ = 2 * Math.PI * r, arcLen = circ * (sweep / 360);
+    var dash = v == null ? 0 : arcLen * (v / 100);
+    // niveau → couleur (invert : haut = risque = corail)
+    var lvl = v == null ? 0 : (opts.invert ? 100 - v : v);
+    var col = lvl >= 67 ? 'var(--vx-positive)' : lvl >= 40 ? 'var(--vx-warning)' : 'var(--vx-negative)';
+    var glow = lvl >= 67 ? 'rgba(54,200,137,.5)' : lvl >= 40 ? 'rgba(221,162,59,.45)' : 'rgba(237,101,92,.45)';
+    var rot = 'rotate(' + start + ' ' + cx + ' ' + cy + ')';
+    return '<div class="vx-scoregauge" style="--_glow:' + glow + '">' +
+      '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="' + (opts.label || 'score') + ' ' + (v == null ? 'n/d' : Math.round(v)) + '">' +
+      '<circle class="vx-cg-track" cx="' + cx + '" cy="' + cy + '" r="' + r + '" stroke-width="' + sw + '" stroke-dasharray="' + arcLen + ' ' + circ + '" transform="' + rot + '"/>' +
+      '<circle class="vx-cg-arc" cx="' + cx + '" cy="' + cy + '" r="' + r + '" stroke="' + col + '" stroke-width="' + sw + '" stroke-dasharray="' + dash + ' ' + circ + '" transform="' + rot + '"/>' +
+      '<text class="vx-sg-val" x="' + cx + '" y="' + (cy + 5) + '" text-anchor="middle" fill="' + (v == null ? 'var(--vx-text-faint)' : col) + '">' + (v == null ? '—' : Math.round(v)) + '</text>' +
+      '</svg><div class="vx-sg-lbl">' + (opts.label || '') + '</div></div>';
+  };
+
   /* Jauge de confiance circulaire (Signals). Renvoie une chaîne SVG autonome :
      arc coloré (émeraude si hausse, corail si baisse, acier si neutre),
      libellé direction + %. `dir` ∈ {'up','down','flat'}. `pct` ∈ [0..100]. */

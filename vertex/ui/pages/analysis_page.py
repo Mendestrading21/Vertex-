@@ -138,6 +138,13 @@ _SECTIONS = """
   <div id="an-thesis" class="vx-dim">—</div>
 </section>
 
+<!-- 2-bis. PROFIL DU TITRE — synthèse visuelle au coup d'œil -->
+<section class="vx-card vx-mt4 vx-card--premium" id="an-profile">
+  <div class="vx-card-header"><span class="vx-card-title">Profil du titre — coup d'œil</span>
+    <span class="vx-chart-question">Que disent les moteurs en un regard ?</span></div>
+  <div data-body>%%LOADING%%</div>
+</section>
+
 <!-- Workspace (§22) : colonne principale + rail sticky décisionnel -->
 <div class="vx-grid vx-mt4" id="an-workspace">
 <div class="vx-col-8">
@@ -465,6 +472,46 @@ function paintQuarters(cf,demo){
     render:function(cv){return VXCharts.mount(cv,_qcfg);}});
 }
 
+/* PROFIL DU TITRE — scorecard de synthèse instantanée. 5 mini-jauges radiales
+   (dimensions du scoring), probabilité de gain, R:R, performance multi-horizon,
+   alignement multi-timeframe, position 52 sem. Données réelles /scan + detail ;
+   « — » honnête si le titre est hors du scan courant. */
+async function paintProfile(d){
+  const el=document.querySelector('#an-profile [data-body]');if(!el)return;
+  d=d||{};
+  let scan=null;try{scan=await VX.fetch('/scan',{ttl:120000});}catch(e){}
+  const row=((scan&&scan.rows)||[]).find(r=>r&&r.symbol===SYM)||{};
+  const G=(window.VXCharts&&VXCharts.scoreGaugeSVG)?VXCharts.scoreGaugeSVG:null;
+  const dims=[['Conviction',row.st_conf,0],['Momentum',row.st_mom,0],['Technique',row.st_tech,0],
+              ['Fondamental',row.st_fund,0],['Risque',row.st_risk,1]];
+  const hasDim=dims.some(x=>x[1]!=null);
+  if(!hasDim&&d.perf_m==null&&!d.mtf){
+    el.innerHTML=VX.states.empty('Profil indisponible — titre hors du scan courant.',
+      '<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a>');
+    return;
+  }
+  const gauges=(G&&hasDim)?dims.map(x=>G(x[1],{label:x[0],invert:!!x[2]})).join(''):'';
+  const score=row.score;
+  const pwin=row.vx_pwin!=null?Math.round(row.vx_pwin*100):null;
+  const rr=row.vx_rr;
+  const pos52=d.pos52;
+  const perf=[['1 sem',d.perf_w],['1 mois',d.perf_m],['1 trim',d.perf_q],['1 an',d.perf_y]];
+  const perfHtml=perf.map(p=>`<div class="vx-perfbar"><span class="pb-k">${p[0]}</span>`
+    +`<span class="pb-v ${p[1]>0?'vx-pos':p[1]<0?'vx-neg':'vx-muted'}">${p[1]!=null&&!isNaN(p[1])?VX.fmt.pct(p[1],1):'—'}</span></div>`).join('');
+  const mtf=d.mtf||{};
+  const mtfTone=/HAUSS/i.test(mtf.state||'')?'ai':/BAISS/i.test(mtf.state||'')?'risk':'';
+  const side=(score!=null?`<div class="vx-flex" style="align-items:baseline;gap:8px"><span style="font:800 32px/1 var(--vx-font-mono);color:var(--vx-brand-strong)">${score}</span><span class="vx-meta">score composite Vertex</span></div>`:'')
+    +(pwin!=null?`<div><div class="vx-meter-row"><span>Probabilité de gain</span><b class="vx-mono">${pwin}%${rr!=null?' · R:R '+VX.fmt.num(rr,1):''}</b></div><div class="vx-meter"><i style="width:${Math.max(2,Math.min(100,pwin))}%"></i></div></div>`:'')
+    +(pos52!=null&&!isNaN(pos52)?`<div><div class="vx-meter-row"><span>Position 52 sem.</span><b class="vx-mono">${Math.round(pos52)}%</b></div><div class="vx-meter"><i style="width:${Math.max(2,Math.min(100,pos52))}%;background:var(--vx-steel-3)"></i><b style="left:${Math.max(0,Math.min(100,pos52))}%"></b></div></div>`:'')
+    +(mtf.state?`<div class="vx-insight" data-tone="${mtfTone}" style="font-size:12px"><b>MTF ${esc(mtf.state)}</b>${mtf.note?' — '+esc(mtf.note):''}</div>`:'');
+  el.innerHTML=`<div class="vx-scorecard">`
+    +(gauges?`<div class="vx-gaugecluster">${gauges}</div>`:'')
+    +`<div class="vx-scorecard-side">${side||'<span class="vx-meta">Métriques de décision indisponibles.</span>'}</div>`
+    +(perfHtml?`<div class="vx-scorecard-side" style="grid-column:1/-1"><span class="vx-metric-k" style="display:block;margin-bottom:2px">Performance</span><div class="vx-perfbars">${perfHtml}</div></div>`:'')
+    +`</div>`
+    +`<div class="vx-card-footer">${VX.updateIndicator((TICKER&&TICKER.detail&&TICKER.detail.updated)||Date.now(),(scan&&scan.source)||'scan',(window.__vxStatus&&window.__vxStatus.demo)?'fallback':'delayed')}</div>`;
+}
+
 VX.recentTickers.push(SYM);
 
 /* Header : badges entités + favori */
@@ -619,6 +666,8 @@ async function loadDossier(){
 
   /* 4-bis. Valorisation vs secteur (radar) + Financials premium — vraie donnée cachée */
   paintValuation(t,cf);
+  /* 2-bis. Profil du titre — scorecard au coup d'œil (dimensions + pwin + perf + MTF) */
+  paintProfile(d);
 
   /* 5. Catalyseurs */
   body('an-catalysts',
