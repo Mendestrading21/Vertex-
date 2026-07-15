@@ -81,6 +81,7 @@ _VIEW_CONTENT = {
 """,
     'macro': """
 <div class="vx-grid vx-mt3" id="vx-mk-macro-kpis" aria-label="Indicateurs macro"></div>
+<div class="vx-grid vx-mt3" id="vx-mk-macro-regime" aria-label="Appétit pour le risque &amp; régime"></div>
 <div class="vx-grid vx-mt4">
   <div class="vx-col-7" id="vx-mk-yield"></div>
   <section class="vx-card vx-col-5" aria-label="Limites des données macro">
@@ -413,6 +414,27 @@ function loadYield(scan){
       {label:'Séance préc.',data:prev,borderColor:cc.neutral,borderWidth:1.4,borderDash:[4,3],pointRadius:0,fill:false}
     ],{yFmt:(v)=>v+' %'})});
 }
+async function loadMacroRegime(){
+  var s; try{ s=await VX.fetch('/api/market/summary',{ttl:30000}); }catch(e){ return; }
+  var el=$('vx-mk-macro-regime'); if(!el||!s)return;
+  var gap=(typeof s.roro_gap==='number')?s.roro_gap:null,roro=s.roro||'—',br=s.breadth||{};
+  var pos=gap!=null&&gap>=0,mag=gap==null?0:Math.min(100,Math.abs(gap)/25*100);
+  var bar='<div style="position:relative;height:16px;background:var(--vx-surface-3);border-radius:6px;overflow:hidden;margin:6px 0">'
+    +'<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--vx-border-strong)"></div>'
+    +(gap==null?'':'<div style="position:absolute;top:2px;bottom:2px;'+(pos?'left:50%':'right:50%')+';width:'+(mag/2).toFixed(0)+'%;background:'+(pos?'var(--vx-positive)':'var(--vx-negative)')+';border-radius:3px"></div>')+'</div>';
+  var kp=function(l,v,d){return '<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value" style="font-size:22px">'+v+'</span>'+(d?'<span class="vx-kpi-delta vx-muted">'+d+'</span>':'')+'</div>';};
+  el.innerHTML='<section class="vx-card vx-col-5" aria-label="Appétit pour le risque">'
+    +'<div class="vx-card-header"><span class="vx-card-title">Appétit pour le risque</span><span class="vx-chart-question">Risk-on ou risk-off ?</span></div>'
+    +'<div style="font-size:22px;font-weight:800;color:'+(pos?'var(--vx-positive)':'var(--vx-negative)')+'">'+esc(roro)+'</div>'+bar
+    +'<div class="vx-flex" style="justify-content:space-between"><span class="vx-meta">RISK-OFF</span><span class="vx-meta">écart '+(gap==null?'n/d':(gap>0?'+':'')+gap)+'</span><span class="vx-meta">RISK-ON</span></div>'
+    +'<div class="vx-card-footer"><span class="vx-meta">Écart risk-on/risk-off du moteur (positif = appétit, négatif = aversion). Aucune valeur inventée.</span></div></section>'
+    +'<div class="vx-col-7"><div class="vx-grid">'
+    +kp('Régime',esc(s.regime||'—'),'marché')
+    +kp('VIX',s.vix!=null?s.vix:'—',esc(s.vix_band||''))
+    +kp('&gt; MM50',br.above50!=null?br.above50+' %':'—','participation')
+    +kp('&gt; MM200',br.above200!=null?br.above200+' %':'—','tendance long')
+    +'</div></div>';
+}
 async function loadMacroCal(){
   try{
     const cal=await VX.fetch('/cal-feed',{ttl:300000});
@@ -713,7 +735,7 @@ async function boot(){
   const scan=await getScan();
   demoBanner(scan);
   if(VIEW==='overview'){loadRegime();loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);loadMovers(scan);}
-  else if(VIEW==='macro'){loadMacroKpis(scan);loadYield(scan);loadMacroCal();}
+  else if(VIEW==='macro'){loadMacroKpis(scan);loadMacroRegime();loadYield(scan);loadMacroCal();}
   else if(VIEW==='sectors'){loadSectors(scan);}
   else if(VIEW==='breadth'){loadBreadth(scan);}
   else if(VIEW==='volatility'){loadVix(scan);}
