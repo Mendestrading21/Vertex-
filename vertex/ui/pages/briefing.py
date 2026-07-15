@@ -734,13 +734,17 @@ async function loadNews(){
     return;
   }
   el.innerHTML=items.map(n=>{
-    const t=esc(n.title||n.headline||'—');
-    const src=esc(n.publisher||n.source||'');
-    const sym=n.sym||n.symbol||'';
-    const link=n.link||n.url||'';
+    // Schéma réel serveur (news_loop/news_for/parse_rss) : fr·title·pub|publisher·time·link·sym·senti
+    const t=esc(n.fr||n.title||'—');
+    const src=esc(n.publisher||n.pub||'');
+    const sym=n.sym||'';
+    const link=n.link||'';
+    const hm=((n.time||'').match(/\b(\d{2}:\d{2})/)||[])[1]||'';
+    const s=+n.senti||0;
+    const dot=s?`<span style="display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px;background:${s>0?'var(--vx-positive)':'var(--vx-negative)'}"></span>`:'';
     const inner=`<div style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">
-      <div style="font-size:12.5px;line-height:1.45;color:var(--vx-text-secondary)">${t}</div>
-      <div class="vx-meta vx-mt1">${sym?`<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(sym)}" style="padding:0 4px">${esc(sym)}</button> · `:''}${src}</div></div>`;
+      <div style="font-size:12.5px;line-height:1.45;color:var(--vx-text-secondary)">${dot}${t}</div>
+      <div class="vx-meta vx-mt1">${sym?`<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(sym)}" style="padding:0 4px">${esc(sym)}</button> · `:''}${src}${hm?` · ${hm}`:''}</div></div>`;
     return link?`<a href="${esc(link)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none">${inner}</a>`:inner;
   }).join('')
   +`<div class="vx-meta vx-mt2">Sources publiques, assainies côté serveur — de l’information, jamais un conseil.</div>`;
