@@ -136,6 +136,7 @@ _VIEW_CONTENT = {
     <div id="vx-mk-funnel">%%LOADING%%</div>
   </section>
   <div class="vx-col-7" id="vx-mk-breadth-chart"></div>
+  <div class="vx-col-12" id="vx-mk-breadth-trend"></div>
 </div>
 <div class="vx-grid vx-mt4">
   <div class="vx-col-5" id="vx-mk-verdicts"></div>
@@ -606,6 +607,22 @@ async function loadBreadth(scan){
         why:'Une hausse portée par 3 titres est fragile ; la breadth qualifie le régime.',
         confirm:'Breadth > 60 % stable plusieurs séances.',invalidate:'Breadth < 40 % pendant que les indices montent.'}});
   }else emptyCard('vx-mk-breadth-chart','Breadth non calculée par le dernier scan.',SCAN_ACTION);
+  /* Tendance de participation : historique breadth RÉEL (internals.history : d/a50/a200/
+     health) déjà servi mais jamais tracé — montre si la participation s'améliore ou se dégrade. */
+  const H=(scan&&scan.internals&&scan.internals.history)||[];
+  const tEl=$('vx-mk-breadth-trend');
+  if(tEl){
+    if(H.length>2&&window.VXCharts&&VXCharts.card&&VXCharts.multiLine){
+      const tl=H.map(p=>p.d);
+      const series=[{label:'> MM50 %',data:H.map(p=>p.a50)},{label:'> MM200 %',data:H.map(p=>p.a200)},
+        {label:'Santé',data:H.map(p=>p.health)}];
+      VXCharts.card('vx-mk-breadth-trend',{title:'Tendance de participation',
+        question:'La participation s’améliore-t-elle ou se dégrade-t-elle ?',height:210,
+        source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
+        limits:'historique breadth de l’univers scanné (partiel, pas tout le NYSE)',
+        render:(cv)=>VXCharts.multiLine(cv,tl,series,{yFmt:(v)=>Math.round(v)+' %'})});
+    }else emptyCard('vx-mk-breadth-trend','Historique de participation insuffisant (se remplit à chaque scan).',SCAN_ACTION);
+  }
   const rows=(scan&&scan.rows)||[];
   const counts={};
   rows.forEach(r=>{const v=r.verdict||r.decision;if(v)counts[v]=(counts[v]||0)+1;});

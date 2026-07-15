@@ -316,7 +316,7 @@ async function renderOptions(){
       <th class="vx-num">DTE</th><th class="vx-num">Delta</th><th class="vx-num">IV</th>
       <th class="vx-num">Prime</th><th class="vx-num">Spread</th><th class="vx-num">Volume</th>
       <th class="vx-num">OI</th><th class="vx-num">Breakeven</th><th class="vx-num">R:R cible</th><th></th></tr></thead>
-      <tbody>${f.slice(0,50).map((c,i)=>`<tr data-clickable data-ct="${board.indexOf(c)}">
+      <tbody>${f.slice(0,50).map((c,i)=>`<tr data-clickable data-ct="${board.indexOf(c)}" tabindex="0" role="button" aria-label="Simuler ${esc(c.sym)} ${VX.fmt.nd(c.strike)}">
         <td data-label="Sous-jacent"><span class="vx-ticker">${c.sym}</span></td>
         <td data-label="Catégorie"><span class="vx-badge" style="color:var(--vx-violet)">${catOf(c)}</span></td>
         <td data-label="Strike" class="vx-num">${VX.fmt.nd(c.strike)}</td>
@@ -333,9 +333,10 @@ async function renderOptions(){
         <td>${rowActions(c.sym)}</td></tr>`).join('')}</tbody></table>`
       :VX.states.empty(state.sym?'Aucun contrat pour '+state.sym+' dans le board courant.':'Board options vide — le sélecteur ne force jamais une idée.',
         '<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a>');
-    document.querySelectorAll('[data-ct]').forEach(tr=>tr.addEventListener('click',(e)=>{
-      if(e.target.closest('[data-open-analysis],[data-entity-menu]'))return;
-      openContract(board[+tr.dataset.ct]);}));
+    document.querySelectorAll('[data-ct]').forEach(tr=>{
+      const open=(e)=>{if(e.target.closest('[data-open-analysis],[data-entity-menu]'))return;openContract(board[+tr.dataset.ct]);};
+      tr.addEventListener('click',open);
+      tr.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e);}});});
   }
   $('op-body').innerHTML=demoBanner(scan)+`
     <div class="vx-filterbar">

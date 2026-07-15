@@ -163,6 +163,7 @@ _CONTENT = """
     <div class="vx-card-header"><span class="vx-card-title">Opportunités actions</span>
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Tout voir →</a></span></div>
     <div id="vx-opp-stocks">%%LOADING%%</div>
+    <div id="vx-opp-rr" class="vx-mt2"></div>
   </section>
   <section class="vx-card vx-col-6" aria-label="Opportunités options">
     <div class="vx-card-header"><span class="vx-card-title">Opportunités options</span>
@@ -489,6 +490,16 @@ async function loadOpportunities(){
         <span class="vx-num vx-mono">${VX.fmt.nd(s.price)}</span>
         <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(s.symbol)}" aria-label="Actions ${esc(s.symbol)}">⋯</button>
       </div>`).join(''):VX.states.empty('Aucune opportunité action retenue par le comité.');
+    /* Priorité de déploiement par R:R (champ réel top_stocks[].rr, jamais tracé jusqu'ici).
+       Émeraude = métrique positive ; repli honnête si aucun R:R servi. */
+    const rrRows=stocks.filter(s=>s.rr!=null);
+    const rrHost=$('vx-opp-rr');
+    if(rrHost){
+      if(rrRows.length&&window.VXCharts&&VXCharts.bars){
+        rrHost.innerHTML='<div class="vx-kpi-label vx-mb1">Priorité de déploiement — R:R</div><div style="height:'+Math.max(70,rrRows.length*24)+'px"><canvas></canvas></div>';
+        VXCharts.bars(rrHost.querySelector('canvas'),rrRows.map(s=>esc(s.symbol)),rrRows.map(s=>s.rr),{horizontal:true,colors:rrRows.map(()=>'#36c889'),yFmt:(v)=>v.toFixed(1)});
+      } else rrHost.innerHTML='';
+    }
     const opts=(c.top_options||[]).slice(0,5);
     $('vx-opp-options').innerHTML=opts.length?opts.map(o=>`
       <div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">

@@ -74,10 +74,13 @@ function enrich(pos,quotes){
     const q=quotes[t.id]||{};
     const isOpt=t.type!=='STK';
     const mark=isOpt?(q.mark??q.last??null):(q.spot??q.mark??q.last??null);
+    /* Spot du SOUS-JACENT (options) : fourni par /api/pos-quotes → centre honnête du
+       payoff sur le vrai cours, plus sur le strike par défaut. Null si pas de cote. */
+    const underSpot=isOpt?(q.spot??null):null;
     const value=mark!==null?(isOpt?mark*100*t.qty:mark*t.qty):null;
     const invested=t.cost||0;
     const pl=value!==null&&invested?((value-invested)/invested*100):null;
-    return Object.assign({},t,{mark,value,invested,pl});
+    return Object.assign({},t,{mark,underSpot,value,invested,pl});
   });
 }
 function roleOf(t){
@@ -150,10 +153,15 @@ async function renderTeam(){
       <div class="vx-card vx-mt3" id="pf-contrib"><div class="vx-card-header"><span class="vx-card-title">Contributeurs</span></div>
       <div id="pf-contrib-body"></div></div></div></div>`;
   const withPl=rich.filter(t=>t.pl!==null).sort((a,b)=>b.pl-a.pl);
-  $('pf-contrib-body').innerHTML=withPl.length?
-    withPl.slice(0,3).map(t=>`<div class="vx-kv"><span class="k">▲ ${t.sym}</span><span class="v vx-pos">${VX.fmt.pct(t.pl,1)}</span></div>`).join('')
-    +withPl.slice(-2).reverse().filter(t=>t.pl<0).map(t=>`<div class="vx-kv"><span class="k">▼ ${t.sym}</span><span class="v vx-neg">${VX.fmt.pct(t.pl,1)}</span></div>`).join('')
+  /* Barre P&L par position (gagnants/perdants d'un coup d'œil) — coloration émeraude/
+     corail auto par signe (C.bars). Repli honnête si aucune marque (jamais de faux 0). */
+  $('pf-contrib-body').innerHTML=withPl.length
+    ?'<div style="height:'+Math.max(90,Math.min(280,withPl.length*26))+'px"><canvas id="pf-contrib-cv"></canvas></div>'
     :'<div class="vx-meta">Marques indisponibles (IBKR hors ligne) — aucun P&L affiché plutôt qu’un chiffre inventé.</div>';
+  if(withPl.length&&window.VXCharts&&VXCharts.bars){
+    VXCharts.bars(document.getElementById('pf-contrib-cv'),withPl.map(t=>t.sym),withPl.map(t=>t.pl),
+      {horizontal:true,yFmt:(v)=>v+' %'});
+  }
   $('pf-team-cols').innerHTML=Object.entries(roles).map(([role,list])=>`
     <section class="vx-card vx-mb3" aria-label="${role}">
       <div class="vx-card-header"><span class="vx-card-title">${role}</span>
@@ -389,14 +397,15 @@ async function openOptionDrawer(t){
   /* Payoff : calculable du strike + prime (données déclarées, pas de marché) */
   try{
     if(window.VXCharts&&VXCharts.payoffCard&&t.strike&&unit){
-      VXCharts.payoffCard('od-payoff',{title:'Payoff',spot:(t.mark!==null&&t.markSpot)?t.markSpot:t.strike,
+      VXCharts.payoffCard('od-payoff',{title:'Payoff',spot:(t.underSpot!=null)?t.underSpot:t.strike,
         strike:t.strike,premium:unit,right:t.type==='PUT'?'P':'C',height:170,
-        source:'position déclarée (centre = strike sans cote)',timestamp:Date.now(),mode:'fallback'});
+        source:(t.underSpot!=null)?'position déclarée (centre = cours réel)':'position déclarée (centre = strike sans cote)',
+        timestamp:Date.now(),mode:(t.underSpot!=null)?'delayed':'fallback'});
     }
   }catch(e){}
   /* Scénarios moteur : nécessite IV + spot — refus honnête sinon */
   try{
-    const spot=(t.markSpot??null);
+    const spot=(t.underSpot??null);
     const el=document.getElementById('od-scenarios');
     if(el)el.innerHTML='<div class="vx-meta">Simulation spot×temps×IV disponible depuis le desk options '
       +'(<a href="/opportunities?view=options&sym='+t.sym+'">ouvrir</a>) — elle exige IV et spot frais ; '

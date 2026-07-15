@@ -217,6 +217,7 @@ _VIEW_CONTENT = {
 
 _JS = r"""
 <script src="/static/vertex/js/charts/donut-chart.js" defer></script>
+<script src="/static/vertex/js/charts/bar-chart.js" defer></script>
 <script>
 (function(){
 'use strict';
@@ -279,6 +280,10 @@ async function loadBrain(){
     +kv('Derni&egrave;re analyse',(snap&&snap.as_of)?VX.fmt.ago(Date.parse(snap.as_of)):'&mdash;')
     +kv('Cotations trouv&eacute;es',VX.fmt.nd(found)+' / '+VX.fmt.nd((st&&st.symbols)||0)+' <span class="vx-dim" style="font-size:12px">(diff&eacute;r&eacute;es, sourc&eacute;es)</span>');
   const syms=Object.keys(quotes).filter(s=>quotes[s]&&quotes[s].value!=null).slice(0,12);
+  /* Plus forts mouvements du jour (change_pct réel déjà servi) en barres signées — au-dessus
+     du tableau texte. Émeraude/corail par signe (hex, Chart.js ne résout pas var(--x)). */
+  const movers=Object.keys(quotes).filter(s=>quotes[s]&&quotes[s].change_pct!=null)
+    .sort((a,b)=>Math.abs(quotes[b].change_pct)-Math.abs(quotes[a].change_pct)).slice(0,8);
   let table='';
   if(syms.length){
     table='<div class="vx-divider"></div><div style="overflow-x:auto"><table class="vx-table">'
@@ -289,7 +294,7 @@ async function loadBrain(){
         const impactCls=n?({HAUSSIER:'vx-pos',BAISSIER:'vx-neg',NEUTRE:'vx-dim'}[n.impact]||'vx-dim'):'';
         return '<tr><td><b>'+esc(s)+'</b></td>'
           +'<td class="vx-num vx-mono">'+VX.fmt.num(q.value,2)+' '+esc(q.currency||'')+chg+'</td>'
-          +'<td><span class="vx-badge" style="color:var(--vx-orange-500,#cf6128);border:1px solid var(--vx-orange-500,#cf6128);font-size:11px">'+esc(q.source_label||'via Claude · web')+'</span>'+brainCitations(q.citations)+'</td>'
+          +'<td><span class="vx-badge" style="color:var(--vx-warning,#dda23b);border:1px solid var(--vx-warning,#dda23b);font-size:11px">'+esc(q.source_label||'via Claude · web')+'</span>'+brainCitations(q.citations)+'</td>'
           +'<td class="'+impactCls+'" style="font-size:12px">'+(n?esc(n.impact)+' — '+esc((n.headline||'').slice(0,64)):'<span class="vx-dim">—</span>')+'</td></tr>';
       }).join('')+'</tbody></table></div>';
   }else if(status==='MISSING'){
@@ -299,9 +304,16 @@ async function loadBrain(){
   }else{
     table='<div class="vx-empty vx-mt2">Aucune cotation web pour l&#8217;instant. « Mettre &agrave; jour avec Claude » pour lancer une recherche.</div>';
   }
-  body.innerHTML=head+table
+  body.innerHTML=head+(movers.length?'<div id="vx-brain-movers" class="vx-mt3"></div>':'')+table
     +'<div class="vx-card-footer">'+VX.updateIndicator((snap&&snap.as_of)?Date.parse(snap.as_of):Date.now(),'/api/ai/enrichment',status==='OK'?'delayed':'fallback')
     +' · rendements/prix 100% diff&eacute;r&eacute;s &mdash; jamais un ordre</div>';
+  if(window.VXCharts&&VXCharts.barCard&&movers.length){
+    VXCharts.barCard('vx-brain-movers',{title:'Plus forts mouvements du jour',
+      labels:movers,values:movers.map(s=>quotes[s].change_pct),
+      colors:movers.map(s=>quotes[s].change_pct>=0?'#36c889':'#ed655c'),
+      horizontal:true,yFmt:(v)=>v+'%',source:'via Claude · web',
+      timestamp:(snap&&snap.as_of)?Date.parse(snap.as_of):Date.now(),mode:'delayed'});
+  }
 }
 async function refreshBrain(){
   const btn=$('vx-brain-refresh');
