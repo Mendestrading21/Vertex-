@@ -46,16 +46,16 @@ _HEADER = """
 _VIEW_CONTENT = {
     'overview': """
 <div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-4" id="vx-mk-regime" aria-label="Régime de marché">
+  <section class="vx-card vx-col-4 vx-card--premium" id="vx-mk-regime" aria-label="Régime de marché">
     <div class="vx-card-header"><span class="vx-card-title">Régime de marché</span></div>
     <div id="vx-mk-regime-body">%%LOADING%%</div>
   </section>
-  <section class="vx-card vx-col-4" id="vx-mk-leader" aria-label="Leadership sectoriel">
+  <section class="vx-card vx-col-4 vx-card--premium" id="vx-mk-leader" aria-label="Leadership sectoriel">
     <div class="vx-card-header"><span class="vx-card-title">Leadership sectoriel</span>
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=sectors">Secteurs →</a></span></div>
     <div id="vx-mk-leader-body">%%LOADING%%</div>
   </section>
-  <section class="vx-card vx-col-4" id="vx-mk-risk" aria-label="Risque du jour">
+  <section class="vx-card vx-col-4 vx-card--premium" id="vx-mk-risk" aria-label="Risque du jour">
     <div class="vx-card-header"><span class="vx-card-title">Risque du jour</span></div>
     <div id="vx-mk-risk-body">%%LOADING%%</div>
   </section>

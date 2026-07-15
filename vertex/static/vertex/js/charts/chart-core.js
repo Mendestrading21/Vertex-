@@ -444,7 +444,9 @@
         <text x="${W - 6}" y="${y + rowH / 2}" text-anchor="end" dominant-baseline="middle" font-size="10" fill="var(--vx-text-muted,#817d77)" style="font-variant-numeric:tabular-nums">${pct}%</text>`;
     });
     const aria = (o.ariaLabel || 'entonnoir') + ' : ' + stages.map(s => s.label + ' ' + fmt(s.value)).join(' → ');
-    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${rows}</svg>`;
+    /* max-width : évite que l'entonnoir ne s'étire grotesquement sur une carte
+       large (le viewBox 320px scalé à 100% gonflait tout ×4). Centré. */
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;max-width:${o.maxWidth || 460}px;margin:0 auto" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${rows}</svg>`;
     return el;
   };
 
