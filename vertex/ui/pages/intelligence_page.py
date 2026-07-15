@@ -328,6 +328,16 @@ async function initCommittee(){
     $('vx-committee-body').innerHTML=VX.states.error('Comit&eacute; indisponible ('+esc(e.message)+')');
   }
 }
+/* Cellule de tableau avec mini-barre inline (conviction/accord 0-100) — plus
+   parlant qu'un nombre nu. Repli honnête « — » si null. */
+function cbar(val,col,unit){
+  if(val===null||val===undefined||isNaN(val))return '<td class="vx-num vx-mono">—</td>';
+  const w=Math.max(3,Math.min(100,val));
+  return `<td class="vx-num"><span style="display:inline-flex;align-items:center;gap:7px;justify-content:flex-end">`
+    +`<span style="flex:0 0 44px;height:6px;border-radius:99px;background:var(--vx-surface-0);position:relative;overflow:hidden">`
+    +`<i style="position:absolute;left:0;top:0;bottom:0;width:${w}%;background:${col};border-radius:99px"></i></span>`
+    +`<b class="vx-mono" style="min-width:30px;font-weight:600">${Math.round(val)}${unit||''}</b></span></td>`;
+}
 function renderCommittee(){
   const c=committeeData;const reviews=c.reviews||[];
   const tally=c.tally||{};
@@ -436,8 +446,8 @@ function renderCommittee(){
         <td><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(r.symbol)}">${esc(r.symbol)}</button>
           ${r.has_contradiction?'<span class="vx-badge" style="color:var(--vx-warning)" title="Le comit&eacute; est divis&eacute; sur ce titre">contradiction</span>':''}</td>
         <td><span class="vx-badge vx-badge-decision" data-decision="${esc(grp)}" title="${esc(r.decision)}">${esc(r.label||r.decision)}</span></td>
-        <td class="vx-num vx-mono">${VX.fmt.nd(r.conviction!==null&&r.conviction!==undefined?VX.fmt.num(r.conviction,0):null)}</td>
-        <td class="vx-num vx-mono">${agree===null?'—':VX.fmt.num(agree,0)+' %'}</td>
+        ${cbar(r.conviction,'var(--vx-brand)')}
+        ${cbar(agree,agree>=70?'var(--vx-positive)':agree>=40?'var(--vx-warning)':'var(--vx-negative)','%')}
         <td class="vx-num vx-mono">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):'—'}</td>
         <td><button class="vx-btn vx-btn-sm vx-btn-ghost" data-committee-detail="${i}" aria-expanded="false">D&eacute;tail</button></td>
         <td><button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(r.symbol)}" aria-label="Actions ${esc(r.symbol)}">⋯</button></td>

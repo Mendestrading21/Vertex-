@@ -482,10 +482,12 @@ function moversHtml(rows,dir){
   const signed=rows.filter(r=>r.change!==null&&r.change!==undefined&&(dir==='top'?r.change>0:r.change<0));
   const sorted=signed.slice().sort((a,b)=>dir==='top'?(b.change-a.change):(a.change-b.change)).slice(0,10);
   if(!sorted.length)return VX.states.empty(dir==='top'?'Aucune hausse dans le dernier scan.':'Aucune baisse dans le dernier scan.');
-  return sorted.map(function(r){const chg=r.change;
+  const maxAbs=Math.max.apply(null,[0.5].concat(sorted.map(r=>Math.abs(r.change))));
+  return sorted.map(function(r){const chg=r.change;const bw=Math.max(6,Math.min(100,Math.abs(chg)/maxAbs*100));
     return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
       <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(r.symbol)}">${esc(r.symbol)}</button>
       <span class="vx-num vx-mono ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}" style="width:62px;text-align:right;font-weight:700">${VX.fmt.pct(chg,1)}</span>
+      <span style="flex:0 0 46px;height:5px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden" aria-hidden="true"><i style="display:block;height:100%;width:${bw.toFixed(0)}%;background:${chg>0?'var(--vx-positive)':'var(--vx-negative)'};border-radius:99px"></i></span>
       <span class="vx-grow vx-truncate vx-dim" style="font-size:11.5px">${esc(r.sector||'')}</span>
       <span class="vx-num vx-mono vx-meta" style="width:64px;text-align:right">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):''}</span>
       ${r.score!==null&&r.score!==undefined?`<span class="vx-badge" title="Score Vertex">${VX.fmt.num(r.score,0)}</span>`:''}
