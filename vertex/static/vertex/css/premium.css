@@ -190,6 +190,8 @@
   background:var(--vx-surface-base);border:1px solid var(--vx-border-faint)}
 .vx-perfbar .pb-k{font:600 9px/1 var(--vx-font);letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-faint);display:block;margin-bottom:4px}
 .vx-perfbar .pb-v{font:700 13px/1 var(--vx-font-mono);font-variant-numeric:tabular-nums}
+.vx-perfbar .pb-bar{height:5px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden;margin:6px 2px 0}
+.vx-perfbar .pb-bar>i{display:block;height:100%;border-radius:99px;transition:width .5s var(--vx-ease)}
 
 /* ── Halo premium opt-in sur une carte (accent discret en haut) ───────── */
 .vx-card--premium{position:relative;overflow:hidden}

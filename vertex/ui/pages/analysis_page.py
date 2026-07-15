@@ -496,8 +496,13 @@ async function paintProfile(d){
   const rr=row.vx_rr;
   const pos52=d.pos52;
   const perf=[['1 sem',d.perf_w],['1 mois',d.perf_m],['1 trim',d.perf_q],['1 an',d.perf_y]];
-  const perfHtml=perf.map(p=>`<div class="vx-perfbar"><span class="pb-k">${p[0]}</span>`
-    +`<span class="pb-v ${p[1]>0?'vx-pos':p[1]<0?'vx-neg':'vx-muted'}">${p[1]!=null&&!isNaN(p[1])?VX.fmt.pct(p[1],1):'—'}</span></div>`).join('');
+  const perfMax=Math.max.apply(null,[1].concat(perf.map(p=>Math.abs(p[1]||0))));
+  const perfHtml=perf.map(p=>{const v=p[1];const has=v!=null&&!isNaN(v);
+    const w=has?Math.max(6,Math.min(100,Math.abs(v)/perfMax*100)):0;
+    const col=v>0?'var(--vx-positive)':v<0?'var(--vx-negative)':'var(--vx-steel-3)';
+    return `<div class="vx-perfbar"><span class="pb-k">${p[0]}</span>`
+      +`<span class="pb-v ${v>0?'vx-pos':v<0?'vx-neg':'vx-muted'}">${has?VX.fmt.pct(v,1):'—'}</span>`
+      +`<div class="pb-bar"><i style="width:${w.toFixed(0)}%;background:${col}"></i></div></div>`;}).join('');
   const mtf=d.mtf||{};
   const mtfTone=/HAUSS/i.test(mtf.state||'')?'ai':/BAISS/i.test(mtf.state||'')?'risk':'';
   const side=(score!=null?`<div class="vx-flex" style="align-items:baseline;gap:8px"><span style="font:800 32px/1 var(--vx-font-mono);color:var(--vx-brand-strong)">${score}</span><span class="vx-meta">score composite Vertex</span></div>`:'')
