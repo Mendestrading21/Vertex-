@@ -145,6 +145,16 @@ _SECTIONS = """
 <!-- 3. Graphique principal -->
 <div id="an-chart"></div>
 
+<!-- 3-bis. Valorisation vs secteur (radar) + Financials — fondamentaux réels -->
+<div class="vx-grid vx-mt4">
+  <div class="vx-col-5" id="an-valuation"></div>
+  <section class="vx-card vx-col-7 vx-card--premium" id="an-financials">
+    <div class="vx-card-header"><span class="vx-card-title">Financials — fondamentaux</span>
+      <span class="vx-actions"><span class="vx-badge" id="an-fin-src">—</span></span></div>
+    <div data-body>%%LOADING%%</div>
+  </section>
+</div>
+
 <!-- 4-8. Dimensions dans l'ordre imposé -->
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-6" id="an-fundamental"><div class="vx-card-header">
@@ -214,6 +224,88 @@ const E=()=>window.VXEntities;
 function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
 function body(id,html){const el=document.querySelector('#'+id+' [data-body]');if(el)el.innerHTML=html;}
 function kv(k,v,cls){return `<div class="vx-kv"><span class="k">${k}</span><span class="v ${cls||''}">${VX.fmt.nd(v)}</span></div>`;}
+
+/* Cellule de métrique premium color-codée. m:{k,val,unit,cmp,tone,bar} — tone∈
+   pos/neg/warn/opt/'' ; bar∈[0..100] (position vs médiane, repère à 50). Une
+   valeur nulle rend « — » (aucun chiffre inventé). */
+function metric(m){
+  const v=(m.val===null||m.val===undefined||m.val==='')?'—':m.val;
+  const tone=v==='—'?'':(m.tone||'');
+  const bar=(m.bar!=null&&v!=='—')?
+    `<div class="vx-metric-bar"><i style="width:${Math.max(3,Math.min(100,m.bar))}%"></i><b style="left:50%"></b></div>`:'';
+  const cmp=(m.cmp&&v!=='—')?`<div class="vx-metric-cmp">${m.cmp}</div>`:'';
+  return `<div class="vx-metric" data-tone="${tone}">`
+    +`<span class="vx-metric-k" title="${esc(m.k)}">${esc(m.k)}</span>`
+    +`<span class="vx-metric-v">${v}${m.unit?`<span class="vx-metric-u">${m.unit}</span>`:''}</span>`
+    +cmp+bar+`</div>`;
+}
+function metricGrid(cells){return `<div class="vx-metricgrid">${cells.join('')}</div>`;}
+/* score radial 0..100 (50=médiane) pour la mini-barre, aligné sur le radar. */
+function vsMed(value,median,better){
+  if(value==null||median==null||!median)return null;
+  const r=better==='low'?(median/value):(value/median);
+  return Math.max(6,Math.min(100,r*50));
+}
+
+/* Valorisation vs secteur (radar) + Financials premium — données company réelles
+   (cache serveur), jamais inventées. Le prix live peut manquer ; les
+   fondamentaux/médianes sectorielles sont servis même sans flux temps réel. */
+function paintValuation(t,cf){
+  cf=cf||{};
+  const sm=(t&&t.sector_median)||{};
+  const demo=!!(window.__vxStatus&&window.__vxStatus.demo);
+  /* pourcentages : cf.* en fraction (0.27) · sm.median_* déjà en % (18.03) */
+  const revG=cf.rev_growth!=null?cf.rev_growth*100:null;
+  const marg=cf.margin!=null?cf.margin*100:null;
+  const roe=cf.roe!=null?cf.roe*100:null;
+  /* ── Radar (via kit premium) ── */
+  if(window.VXCharts&&VXCharts.valuationRadar){
+    VXCharts.valuationRadar('an-valuation',{
+      title:'Valorisation vs secteur',sym:SYM,sectorLabel:'Médiane secteur',
+      question:'Le titre se paie-t-il cher ou bon marché face à ses pairs ?',
+      axes:[
+        {label:'Valorisation',value:cf.pe,median:sm.median_pe,better:'low',fmt:v=>'×'+(+v).toFixed(1)},
+        {label:'Valo. fwd',value:cf.forward_pe,median:sm.median_fwd_pe,better:'low',fmt:v=>'×'+(+v).toFixed(1)},
+        {label:'Croissance',value:revG,median:sm.median_growth,better:'high',fmt:v=>(+v).toFixed(1)+'%'},
+        {label:'Marge',value:marg,median:sm.median_margin,better:'high',fmt:v=>(+v).toFixed(1)+'%'},
+        {label:'Rentab.',value:roe,median:sm.median_roe,better:'high',fmt:v=>(+v).toFixed(0)+'%'},
+      ],
+      source:demo?'company (DÉMO)':'company (cache)',timestamp:Date.now(),mode:demo?'fallback':'delayed',
+    });
+  }
+  /* ── Grille Financials premium ── */
+  const B=(x)=>{if(x==null||!isFinite(x))return '—';const a=Math.abs(x),s=x<0?'-':'';
+    if(a>=1e12)return s+(a/1e12).toFixed(2)+' T$';if(a>=1e9)return s+(a/1e9).toFixed(1)+' Md$';
+    if(a>=1e6)return s+(a/1e6).toFixed(0)+' M$';return s+a.toFixed(0)+' $';};
+  const cells=[
+    metric({k:'P/E',val:cf.pe!=null?'×'+(+cf.pe).toFixed(1):null,
+      tone:cf.pe!=null&&sm.median_pe?(cf.pe<sm.median_pe?'pos':'neg'):'',
+      cmp:sm.median_pe?`méd ×${(+sm.median_pe).toFixed(1)}`:'',bar:vsMed(cf.pe,sm.median_pe,'low')}),
+    metric({k:'P/E anticipé',val:cf.forward_pe!=null?'×'+(+cf.forward_pe).toFixed(1):null,
+      tone:cf.forward_pe!=null&&sm.median_fwd_pe?(cf.forward_pe<sm.median_fwd_pe?'pos':'neg'):'',
+      cmp:sm.median_fwd_pe?`méd ×${(+sm.median_fwd_pe).toFixed(1)}`:'',bar:vsMed(cf.forward_pe,sm.median_fwd_pe,'low')}),
+    metric({k:'PEG',val:cf.peg!=null?(+cf.peg).toFixed(2):null,
+      tone:cf.peg!=null?(cf.peg<1?'pos':cf.peg>2?'warn':''):''}),
+    metric({k:'Croissance CA',val:revG!=null?(revG>=0?'+':'')+revG.toFixed(1):null,unit:'%',
+      tone:revG!=null&&sm.median_growth?(revG>sm.median_growth?'pos':'neg'):'',
+      cmp:sm.median_growth?`méd ${(+sm.median_growth).toFixed(1)}%`:'',bar:vsMed(revG,sm.median_growth,'high')}),
+    metric({k:'Croissance BPA',val:cf.eps_growth!=null?((cf.eps_growth*100>=0?'+':'')+(cf.eps_growth*100).toFixed(1)):null,unit:'%',
+      tone:cf.eps_growth!=null?(cf.eps_growth>0?'pos':'neg'):''}),
+    metric({k:'Marge nette',val:marg!=null?marg.toFixed(1):null,unit:'%',
+      tone:marg!=null&&sm.median_margin?(marg>sm.median_margin?'pos':'neg'):'',
+      cmp:sm.median_margin?`méd ${(+sm.median_margin).toFixed(1)}%`:'',bar:vsMed(marg,sm.median_margin,'high')}),
+    metric({k:'ROE',val:roe!=null?roe.toFixed(0):null,unit:'%',
+      tone:roe!=null&&sm.median_roe?(roe>sm.median_roe?'pos':'neg'):'',
+      cmp:sm.median_roe?`méd ${(+sm.median_roe).toFixed(0)}%`:'',bar:vsMed(roe,sm.median_roe,'high')}),
+    metric({k:'Free cash flow',val:B(cf.fcf),tone:cf.fcf>0?'pos':cf.fcf<0?'neg':''}),
+    metric({k:'Capitalisation',val:B(cf.mcap)}),
+    metric({k:'Trésorerie',val:B(cf.cash),tone:'pos'}),
+    metric({k:'Dette',val:B(cf.debt),tone:cf.debt>cf.cash?'warn':''}),
+    metric({k:'Dividende',val:cf.dividend!=null?(+cf.dividend).toFixed(2):null,unit:cf.dividend?'$':''}),
+  ];
+  body('an-financials',metricGrid(cells));
+  const srcEl=$('an-fin-src');if(srcEl)srcEl.textContent=demo?'DÉMO':'cache';
+}
 
 VX.recentTickers.push(SYM);
 
@@ -366,6 +458,9 @@ async function loadDossier(){
     +kv('Médiane sectorielle P/E',t&&t.sector_median&&(t.sector_median.median_pe??t.sector_median))
     +(peers.length>1?`<div class="vx-meta vx-mt2">Pairs : ${peers.filter(p=>p.symbol!==SYM).slice(0,4).map(p=>
       `<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${p.symbol}">${p.symbol}</button>`).join('')}</div>`:''));
+
+  /* 4-bis. Valorisation vs secteur (radar) + Financials premium — vraie donnée cachée */
+  paintValuation(t,cf);
 
   /* 5. Catalyseurs */
   body('an-catalysts',

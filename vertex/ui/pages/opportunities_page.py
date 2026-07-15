@@ -44,6 +44,15 @@ _JS = r"""
 const VIEW=%%VIEW%%;const PARAMS=%%PARAMS%%;
 const $=(id)=>document.getElementById(id);
 function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+/* Libellé de playbook robuste : r.playbook peut être un OBJET {name,desc,ic}
+   (→ « [object Object] » si passé brut à esc) ou une chaîne ; sinon r.profile. */
+function pbText(r){const p=r&&r.playbook;
+  const s=(p&&typeof p==='object')?(p.name||p.desc||''):(typeof p==='string'?p:'');
+  return s||(r&&typeof r.profile==='string'?r.profile:'');}
+function pbIcon(r){const p=r&&r.playbook;return (p&&typeof p==='object'&&p.ic)?p.ic:'';}
+/* Direction du verdict → jauge de confiance (émeraude/corail/acier). */
+function verdictDir(v){return (v==='BUY'||v==='ACHETER')?'up':(v==='AVOID'||v==='ÉVITER')?'down':'flat';}
+function verdictWord(v){return (v==='BUY'||v==='ACHETER')?'Achat':(v==='AVOID'||v==='ÉVITER')?'Éviter':'Suivi';}
 const OUT=['Rejetée','Radar','À surveiller','Proche','Actionnable','Invalidée'];
 function bucketOf(r){
   if(r.verdict==='AVOID'||r.verdict==='ÉVITER')return'Rejetée';
@@ -81,16 +90,23 @@ function renderTopCards(rows){
   el.innerHTML='<div class="vx-card-header" style="padding:0 0 8px"><span class="vx-card-title">Top opportunités — les mieux notées</span>'
     +'<span class="vx-chart-question">Lesquelles méritent ton attention en premier ?</span></div>'
     +'<div class="vx-grid vx-mb3">'+ranked.map(function(r){const dec=r.verdict||'';
-    return `<div class="vx-card vx-col-4" style="grid-column:span 4" aria-label="${r.symbol}">
-      <div class="vx-flex"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px" data-open-analysis="${r.symbol}">${r.symbol}</button>
-        <span class="vx-badge">${bucketOf(r)}</span><span class="vx-grow"></span>
-        <span class="vx-mono" style="font-size:22px;font-weight:800;color:var(--vx-text-primary,#f4f1ec)">${VX.fmt.nd(r.score)}</span></div>
+    const gauge=(window.VXCharts&&VXCharts.confidenceGaugeSVG&&r.score!=null)
+      ?VXCharts.confidenceGaugeSVG(r.score,verdictDir(dec),{size:78,stroke:7,dirLabel:verdictWord(dec)}):'';
+    const pb=pbText(r);const ic=pbIcon(r);
+    return `<div class="vx-card vx-col-4 vx-card--premium" style="grid-column:span 4" aria-label="${r.symbol}">
+      <div class="vx-flex" style="align-items:flex-start;gap:.6rem">
+        <div style="min-width:0;flex:1">
+          <div class="vx-flex" style="gap:.4rem"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px;padding-left:0" data-open-analysis="${r.symbol}">${r.symbol}</button>
+            <span class="vx-badge">${bucketOf(r)}</span></div>
+          <div class="vx-mono vx-mt1" style="font-size:18px;font-weight:700;color:var(--vx-text-primary,#f4f1ec)">${r.price!==null&&r.price!==undefined?'$'+VX.fmt.price(r.price):'—'}</div>
+        </div>
+        <div style="flex:0 0 auto">${gauge}</div>
+      </div>
       <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">
         ${dec?`<span class="vx-badge vx-badge-decision" data-decision="${esc(dec)}">${esc(dec)}</span>`:''}
         ${r.rr!==null&&r.rr!==undefined?`<span class="vx-meta">R:R ${VX.fmt.nd(r.rr)}</span>`:''}
         ${r.sector?`<span class="vx-meta vx-truncate" style="max-width:110px">${esc(r.sector)}</span>`:''}</div>
-      <div class="vx-kv vx-mt1"><span class="k">Cours</span><span class="v vx-mono">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):'—'}</span></div>
-      ${(r.playbook||r.profile)?`<div class="vx-meta vx-truncate">${esc(r.playbook||r.profile)}</div>`:''}
+      ${pb?`<div class="vx-meta vx-truncate vx-mt1">${ic?esc(ic)+' ':''}${esc(pb)}</div>`:''}
       <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
         <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${r.symbol}">Analyser</button>
         <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','follow')">Suivre</button>
@@ -172,7 +188,7 @@ async function renderRadar(){
       invalidate:'Retour sous 55 en qualité stratégique.'},
     render:(cv)=>VXCharts.mount(cv,{type:'scatter',
       data:{datasets:[{data:rows.map(r=>{const _t=(r.st_tech??r.rs);return {x:r.strat_score??r.score,y:(_t??50),tOk:_t!=null,sym:r.symbol,
-          v:r.verdict,setup:r.playbook||r.profile||'',sector:r.sector||'',price:r.price,rr:r.rr,
+          v:r.verdict,setup:pbText(r),sector:r.sector||'',price:r.price,rr:r.rr,
           r:4+Math.min(8,(r.anomaly_score||r.sigcount||0))};}),
         pointRadius:(ctx)=>ctx.raw?ctx.raw.r:4,
         pointBackgroundColor:(ctx)=>{const v=ctx.raw&&ctx.raw.v;const cc=VXCharts.colors;

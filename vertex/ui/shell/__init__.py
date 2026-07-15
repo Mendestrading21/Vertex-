@@ -171,6 +171,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/polish.css">
 <link rel="stylesheet" href="/static/vertex/css/control-surface.css">
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
+<link rel="stylesheet" href="/static/vertex/css/premium.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
@@ -192,5 +193,6 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <script src="/static/vertex/js/live-updates.js" defer></script>
 <script src="/static/vertex/js/charts/chart-theme-obsidian-copper.js" defer></script>
 <script src="/static/vertex/js/charts/chart-core.js" defer></script>
+<script src="/static/vertex/js/charts/radar-chart.js" defer></script>
 {page_js}
 </body></html>'''

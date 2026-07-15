@@ -1,0 +1,106 @@
+/* Vertex Design System — premium.css
+   COUCHE PREMIUM opt-in : composants riches (grille de métriques color-codée,
+   stat-tiles à halo, jauge de confiance, cadre radar) inspirés des terminaux
+   pro haut de gamme, mais STRICTEMENT dans la palette Vertex (vert Signal =
+   identité, émeraude = gain, corail = perte, ambre = attente, violet = options,
+   acier = neutre/benchmark — jamais de bleu). Chaque classe est nouvelle et
+   opt-in : rien n'écrase les composants existants. Les valeurs absentes
+   dégradent en « — » (aucun chiffre inventé). */
+
+/* ── Grille de métriques financières color-codée ─────────────────────── */
+.vx-metricgrid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:10px;margin-top:6px}
+.vx-metric{
+  position:relative;padding:11px 13px 12px;border-radius:var(--vx-r);
+  background:linear-gradient(180deg,var(--vx-surface-raised),var(--vx-surface-base));
+  border:1px solid var(--vx-border-soft);overflow:hidden;
+  transition:border-color .18s var(--vx-ease),transform .14s var(--vx-ease),box-shadow .18s var(--vx-ease)}
+.vx-metric::before{/* liseré d'accent gauche selon le ton */
+  content:"";position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:var(--_tone,var(--vx-border-strong));opacity:.85}
+.vx-metric:hover{transform:translateY(-1px);border-color:var(--vx-border-default);
+  box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.vx-metric .vx-metric-k{
+  font:600 10px/1.3 var(--vx-font);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--vx-text-muted);display:block;margin-bottom:5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vx-metric .vx-metric-v{
+  font:600 19px/1.05 var(--vx-font-mono);font-variant-numeric:tabular-nums lining-nums;
+  color:var(--vx-text-primary);display:flex;align-items:baseline;gap:6px}
+.vx-metric .vx-metric-u{font-size:11px;color:var(--vx-text-faint);font-weight:500}
+.vx-metric .vx-metric-cmp{/* chip comparaison vs référence */
+  margin-top:7px;font:600 10.5px/1 var(--vx-font-mono);
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 7px;border-radius:var(--vx-r-sm);
+  background:var(--vx-surface-0);color:var(--vx-text-secondary);
+  border:1px solid var(--vx-border-faint)}
+.vx-metric[data-tone="pos"]{--_tone:var(--vx-positive)}
+.vx-metric[data-tone="pos"] .vx-metric-v{color:var(--vx-positive)}
+.vx-metric[data-tone="pos"] .vx-metric-cmp{color:var(--vx-positive);background:var(--vx-positive-soft)}
+.vx-metric[data-tone="neg"]{--_tone:var(--vx-negative)}
+.vx-metric[data-tone="neg"] .vx-metric-v{color:var(--vx-negative)}
+.vx-metric[data-tone="neg"] .vx-metric-cmp{color:var(--vx-negative);background:var(--vx-negative-soft)}
+.vx-metric[data-tone="warn"]{--_tone:var(--vx-warning)}
+.vx-metric[data-tone="warn"] .vx-metric-cmp{color:var(--vx-warning);background:var(--vx-warning-soft)}
+.vx-metric[data-tone="opt"]{--_tone:var(--vx-option)}
+.vx-metric[data-tone="opt"] .vx-metric-v{color:var(--vx-option)}
+/* mini-barre de position vs médiane (track + remplissage + repère médiane) */
+.vx-metric-bar{position:relative;height:4px;border-radius:99px;margin-top:9px;
+  background:var(--vx-surface-0);overflow:hidden}
+.vx-metric-bar>i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;
+  background:var(--_tone,var(--vx-steel-3));opacity:.9;
+  transition:width .5s var(--vx-ease)}
+.vx-metric-bar>b{position:absolute;top:-2px;bottom:-2px;width:1.5px;
+  background:var(--vx-text-secondary);opacity:.55}
+
+/* ── Rangée de stat-tiles à halo (KPI hero) ──────────────────────────── */
+.vx-statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));
+  gap:10px;margin-top:8px}
+.vx-stat{position:relative;padding:12px 14px;border-radius:var(--vx-r);
+  background:radial-gradient(120% 140% at 0% 0%,rgba(163,202,66,.06),transparent 60%),var(--vx-surface-base);
+  border:1px solid var(--vx-border-soft)}
+.vx-stat .vx-stat-k{font:600 10px/1.2 var(--vx-font);letter-spacing:.08em;
+  text-transform:uppercase;color:var(--vx-text-muted);margin-bottom:6px}
+.vx-stat .vx-stat-v{font:700 22px/1 var(--vx-font-mono);
+  font-variant-numeric:tabular-nums;color:var(--vx-text-primary)}
+.vx-stat .vx-stat-sub{font:500 10.5px/1.2 var(--vx-font);color:var(--vx-text-faint);margin-top:5px}
+.vx-stat[data-tone="pos"] .vx-stat-v{color:var(--vx-positive)}
+.vx-stat[data-tone="neg"] .vx-stat-v{color:var(--vx-negative)}
+.vx-stat[data-tone="brand"] .vx-stat-v{color:var(--vx-brand-strong)}
+
+/* ── Cadre radar + légende ───────────────────────────────────────────── */
+.vx-radar-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.vx-radar-legend{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;
+  font:600 11px/1 var(--vx-font);color:var(--vx-text-secondary);margin-top:2px}
+.vx-radar-legend span{display:inline-flex;align-items:center;gap:6px}
+.vx-radar-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.vx-verdict-line{display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:9px 12px;margin-top:10px;border-radius:var(--vx-r);
+  background:var(--vx-surface-0);border:1px solid var(--vx-border-faint);
+  font:600 12px/1.35 var(--vx-font);color:var(--vx-text-secondary)}
+.vx-verdict-line b{color:var(--vx-text-primary)}
+
+/* ── Jauge de confiance circulaire (Signals) ─────────────────────────── */
+.vx-confgauge{display:flex;flex-direction:column;align-items:center;gap:2px}
+.vx-confgauge svg{overflow:visible;display:block}
+.vx-confgauge .vx-cg-track{stroke:var(--vx-surface-4);fill:none}
+.vx-confgauge .vx-cg-arc{fill:none;stroke-linecap:round;
+  filter:drop-shadow(0 0 5px var(--_glow,rgba(163,202,66,.5)));
+  transition:stroke-dashoffset .7s var(--vx-ease)}
+.vx-confgauge .vx-cg-dir{font:800 12px/1 var(--vx-font);letter-spacing:.03em}
+.vx-confgauge .vx-cg-pct{font:700 15px/1 var(--vx-font-mono);fill:var(--vx-text-primary)}
+.vx-confgauge .vx-cg-lbl{font:600 9px/1 var(--vx-font);letter-spacing:.09em;
+  text-transform:uppercase;fill:var(--vx-text-muted)}
+
+/* ── Halo premium opt-in sur une carte (accent discret en haut) ───────── */
+.vx-card--premium{position:relative;overflow:hidden}
+.vx-card--premium::after{content:"";position:absolute;inset:0 0 auto 0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(163,202,66,.45),transparent);
+  opacity:.7;pointer-events:none}
+.vx-card--premium:hover{border-color:var(--vx-border-default)}
+
+@media (max-width:640px){
+  .vx-metricgrid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
+  .vx-metric .vx-metric-v{font-size:17px}
+}
