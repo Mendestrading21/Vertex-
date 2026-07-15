@@ -90,6 +90,49 @@ function roleOf(t){
   if(['XLU','XLP','BIL','SGOV','SHV','GLD'].includes(t.sym))return'Défense / gardien';
   return'Noyau';
 }
+/* Barres divergentes autour de 0 : attribution P&L par position (gagnants à droite,
+   perdants à gauche). items:[{name,val}] où val = P&L en %. Données réelles. */
+function divBars(items,opt){
+  opt=opt||{};const fmt=opt.fmt||((v)=>VX.fmt.pct(v,1));
+  const arr=(items||[]).filter(x=>x&&x.val!=null&&isFinite(x.val)).sort((a,b)=>b.val-a.val);
+  if(!arr.length)return '';
+  const mx=Math.max.apply(null,[1e-9].concat(arr.map(x=>Math.abs(x.val))));
+  return '<div class="vx-divbars">'+arr.map(x=>{const pos=x.val>=0;const w=Math.max(2,Math.min(50,Math.abs(x.val)/mx*50));
+    return `<div class="vx-divbar"><span class="db-name">${esc(x.name)}</span>`
+      +`<span class="db-track"><i class="${pos?'pos':'neg'}" style="width:${w.toFixed(1)}%"></i></span>`
+      +`<span class="db-val ${pos?'vx-pos':'vx-neg'}">${fmt(x.val)}</span></div>`;}).join('')+'</div>';
+}
+/* Composition du capital : Actions / Options / Cash en barre empilée + légende.
+   Valeur au marché si dispo, sinon au coût ; cash = capital déclaré. Réel. */
+function compositionBar(rich){
+  const stk=rich.filter(t=>t.type==='STK').reduce((s,t)=>s+(t.value??t.invested),0);
+  const opt=rich.filter(t=>t.type!=='STK').reduce((s,t)=>s+(t.value??t.invested),0);
+  const cash=E().capital()||0;const tot=stk+opt+cash;
+  if(!tot)return '';
+  const seg=(v,col)=>{const p=v/tot*100;return p>0?`<i style="width:${p.toFixed(1)}%;background:${col}"></i>`:'';};
+  const leg=(l,v,col)=>`<span><i style="background:${col}"></i>${l} <b>${(v/tot*100).toFixed(0)}%</b> · ${VX.fmt.price(v)} $</span>`;
+  const A='var(--vx-brand)',O='var(--vx-violet)',C='var(--vx-steel-3)';
+  return `<div class="vx-mt3"><span class="vx-metric-k" style="display:block;margin-bottom:2px">Composition du capital</span>`
+    +`<div class="vx-stackbar" role="img" aria-label="Actions ${(stk/tot*100).toFixed(0)}% Options ${(opt/tot*100).toFixed(0)}% Cash ${(cash/tot*100).toFixed(0)}%">`
+    +seg(stk,A)+seg(opt,O)+seg(cash,C)+`</div>`
+    +`<div class="vx-stackbar-legend">`+leg('Actions',stk,A)+leg('Options',opt,O)+leg('Cash',cash,C)+`</div></div>`;
+}
+/* Barres de poids par position (allocation réelle du moteur risk.weights) : cash
+   inclus, surpondérations (risk.overweight) en ambre, repère au poids max. */
+function weightBars(weights,overweight,maxW){
+  maxW=maxW||15;
+  const es=Object.keys(weights||{}).map(k=>({k:k==='_CASH'?'Cash':k,raw:k,v:+weights[k],
+      cash:k==='_CASH',over:!!(overweight&&overweight[k]!=null)}))
+    .filter(e=>isFinite(e.v)&&e.v>0).sort((a,b)=>b.v-a.v);
+  if(!es.length)return '';
+  const mx=Math.max.apply(null,[maxW*1.15].concat(es.map(e=>e.v)));
+  return '<div class="vx-wbars">'+es.map(e=>`<div class="vx-wbar" data-tone="${e.cash?'cash':e.over?'over':''}">`
+    +`<span class="wb-name">${esc(e.k)}${e.over?'<span class="wb-tag">surpondéré</span>':''}</span>`
+    +`<span class="wb-track"><i style="width:${Math.max(2,Math.min(100,e.v/mx*100)).toFixed(0)}%"></i>`
+    +`${e.cash?'':`<b style="left:${Math.min(100,maxW/mx*100).toFixed(0)}%"></b>`}</span>`
+    +`<span class="wb-val">${e.v.toFixed(1)}%</span></div>`).join('')
+    +`<div class="vx-meta vx-mt2">Repère corail = poids max ${maxW}% par position · Cash = liquidités.</div></div>`;
+}
 /* Synthèse chiffrée : valeur au coût toujours calculable ; marques live si
    disponibles — jamais un chiffre inventé, l'étiquette dit ce qui est affiché. */
 function renderSummary(rich){
@@ -139,6 +182,7 @@ async function renderTeam(){
       <div class="vx-chart-head"><span class="vx-chart-title">Allocation du portefeuille</span>
         <span class="vx-chart-question">Où est concentré le capital, et qui gagne/perd ?</span></div>
       <div id="pf-alloc-tree" style="height:260px"></div>
+      ${compositionBar(rich)}
       <div class="vx-card-foot"><span class="vx-meta">Taille = poids (valeur au marché ou au coût) · couleur = P&amp;L latent (vert gagnant / rouge perdant / gris sans marque). Positions déclarées, aucune valeur inventée.</span></div>
     </section>
     <div class="vx-grid">
@@ -152,16 +196,14 @@ async function renderTeam(){
       <div class="vx-meta vx-mt2"><a href="/opportunities">Chercher des candidats →</a></div></div>
       <div class="vx-card vx-mt3" id="pf-contrib"><div class="vx-card-header"><span class="vx-card-title">Contributeurs</span></div>
       <div id="pf-contrib-body"></div></div></div></div>`;
-  const withPl=rich.filter(t=>t.pl!==null).sort((a,b)=>b.pl-a.pl);
-  /* Barre P&L par position (gagnants/perdants d'un coup d'œil) — coloration émeraude/
-     corail auto par signe (C.bars). Repli honnête si aucune marque (jamais de faux 0). */
-  $('pf-contrib-body').innerHTML=withPl.length
-    ?'<div style="height:'+Math.max(90,Math.min(280,withPl.length*26))+'px"><canvas id="pf-contrib-cv"></canvas></div>'
+  /* Attribution P&L par position en barres divergentes, en DOLLARS de contribution
+     (value − investi) — « qui a bougé l'aiguille », pas le % qui exagère les petites
+     lignes. Gagnants à droite, perdants à gauche. Repli honnête sans marque. */
+  const withVal=rich.filter(t=>t.value!=null&&t.invested);
+  const _pfx=(v)=>(v>=0?'+':'')+VX.fmt.price(v)+' $';
+  $('pf-contrib-body').innerHTML=withVal.length
+    ?divBars(withVal.map(t=>({name:(t.sym+(t.type!=='STK'?' '+t.type:'')),val:(t.value-t.invested)})),{fmt:_pfx})
     :'<div class="vx-meta">Marques indisponibles (IBKR hors ligne) — aucun P&L affiché plutôt qu’un chiffre inventé.</div>';
-  if(withPl.length&&window.VXCharts&&VXCharts.bars){
-    VXCharts.bars(document.getElementById('pf-contrib-cv'),withPl.map(t=>t.sym),withPl.map(t=>t.pl),
-      {horizontal:true,yFmt:(v)=>v+' %'});
-  }
   $('pf-team-cols').innerHTML=Object.entries(roles).map(([role,list])=>`
     <section class="vx-card vx-mb3" aria-label="${role}">
       <div class="vx-card-header"><span class="vx-card-title">${role}</span>
@@ -500,6 +542,8 @@ async function renderRisk(){
       <section class="vx-card vx-col-8" aria-label="Synthèse du risque">
         <div class="vx-card-header"><span class="vx-card-title">Synthèse du risque</span></div>
         <div class="vx-grid" id="pf-risk-kpis"></div>
+        <div class="vx-mt3"><span class="vx-metric-k" style="display:block;margin-bottom:2px">Poids par position</span>
+          <div id="pf-weight-bars"><span class="vx-meta">Allocation…</span></div></div>
       </section>
     </div>
     <div class="vx-grid">
@@ -554,6 +598,10 @@ async function renderRisk(){
         +_rk('Bêta',risk.beta!=null?risk.beta:'—','pondéré')
         +_rk('Drawdown',(risk.drawdown_pct!=null)?(risk.drawdown_pct+' %'):'n/d','pic')
         +_rk('Pire scénario',_worst!=null?VX.fmt.pct(_worst,1):'—','stress',(_worst!=null&&_worst<0)?'vx-neg':'');
+      /* Barres de poids par position (risk.weights réel + cash + surpondérations) —
+         remplit la synthèse et rend la concentration lisible d'un coup d'œil. */
+      var _wb=$('pf-weight-bars');
+      if(_wb)_wb.innerHTML=weightBars(risk.weights,risk.overweight,15)||'<span class="vx-meta">Poids par position indisponibles.</span>';
       /* Exposition sectorielle : donut au lieu d'une liste tronquée à 5 ; le surplus
          est regroupé en « Autres » (aucune troncature silencieuse). '—' honnête si vide. */
       var _sw=risk.sector_weights||{};

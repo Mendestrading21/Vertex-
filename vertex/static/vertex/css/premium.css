@@ -81,6 +81,47 @@
   font:600 12px/1.35 var(--vx-font);color:var(--vx-text-secondary)}
 .vx-verdict-line b{color:var(--vx-text-primary)}
 
+/* ── Barres divergentes autour d'un axe zéro (attribution P&L par position) ── */
+.vx-divbars{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+.vx-divbar{display:grid;grid-template-columns:52px 1fr 62px;align-items:center;gap:9px}
+.vx-divbar .db-name{font:600 11.5px/1 var(--vx-font-mono);color:var(--vx-text-secondary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vx-divbar .db-track{position:relative;height:12px;border-radius:6px;background:var(--vx-surface-0)}
+.vx-divbar .db-track::before{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;
+  background:var(--vx-border-strong);opacity:.7}
+.vx-divbar .db-track>i{position:absolute;top:1.5px;bottom:1.5px;border-radius:4px;transition:width .5s var(--vx-ease)}
+.vx-divbar .db-track>i.pos{left:50%;background:linear-gradient(90deg,var(--vx-positive-strong),var(--vx-positive))}
+.vx-divbar .db-track>i.neg{right:50%;background:linear-gradient(270deg,var(--vx-negative-strong),var(--vx-negative))}
+.vx-divbar .db-val{text-align:right;font:600 11.5px/1 var(--vx-font-mono);font-variant-numeric:tabular-nums}
+
+/* ── Barre empilée (composition : actions / options / cash) + légende ──── */
+.vx-stackbar{display:flex;height:16px;border-radius:8px;overflow:hidden;
+  background:var(--vx-surface-0);margin-top:8px;border:1px solid var(--vx-border-faint)}
+.vx-stackbar>i{height:100%;transition:width .6s var(--vx-ease);position:relative}
+.vx-stackbar>i+i{box-shadow:-1px 0 0 rgba(0,0,0,.35)}
+.vx-stackbar-legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:9px;
+  font:600 11.5px/1 var(--vx-font);color:var(--vx-text-secondary)}
+.vx-stackbar-legend span{display:inline-flex;align-items:center;gap:6px}
+.vx-stackbar-legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.vx-stackbar-legend b{color:var(--vx-text-primary);font-variant-numeric:tabular-nums}
+
+/* ── Barres de poids par position (allocation · surpondération · cash) ──── */
+.vx-wbars{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.vx-wbar{display:grid;grid-template-columns:118px 1fr 46px;align-items:center;gap:10px}
+.vx-wbar .wb-name{font:600 11.5px/1.2 var(--vx-font-mono);color:var(--vx-text-secondary);
+  display:flex;align-items:center;gap:6px;overflow:hidden}
+.vx-wbar .wb-tag{font:600 8.5px/1 var(--vx-font);letter-spacing:.05em;text-transform:uppercase;
+  color:var(--vx-warning);background:var(--vx-warning-soft);padding:2px 5px;border-radius:99px;white-space:nowrap}
+.vx-wbar .wb-track{position:relative;height:12px;border-radius:6px;background:var(--vx-surface-0);overflow:visible}
+.vx-wbar .wb-track>i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;
+  background:var(--vx-brand-gradient);transition:width .5s var(--vx-ease)}
+.vx-wbar .wb-track>b{position:absolute;top:-3px;bottom:-3px;width:1.5px;background:var(--vx-negative);opacity:.6}
+.vx-wbar[data-tone="over"] .wb-track>i{background:linear-gradient(90deg,var(--vx-warning),#e8b455)}
+.vx-wbar[data-tone="cash"] .wb-track>i{background:var(--vx-steel-3)}
+.vx-wbar[data-tone="cash"] .wb-name{color:var(--vx-text-muted)}
+.vx-wbar .wb-val{text-align:right;font:600 11.5px/1 var(--vx-font-mono);color:var(--vx-text-primary);
+  font-variant-numeric:tabular-nums}
+
 /* ── Jauge de confiance circulaire (Signals) ─────────────────────────── */
 .vx-confgauge{display:flex;flex-direction:column;align-items:center;gap:2px}
 .vx-confgauge svg{overflow:visible;display:block}
