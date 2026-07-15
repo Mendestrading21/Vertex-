@@ -18,15 +18,56 @@
     series: ['#84aa31', '#c0b79f', '#8f8a83', '#9c79d0', '#dda23b', '#48631b'],
   }, THEME.colors);
 
+  /* ── Rendu MODERNE (global) : dégradés, glow, barres arrondies, crosshair ──
+     Un seul endroit → tous les graphiques Chart.js de l'app en profitent. */
+  function _rgba(col, a) {
+    if (typeof col !== 'string') return null;
+    if (col[0] === '#' && col.length >= 7) {
+      const r = parseInt(col.slice(1, 3), 16), g = parseInt(col.slice(3, 5), 16), b = parseInt(col.slice(5, 7), 16);
+      if ([r, g, b].some(isNaN)) return null;
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+    }
+    const m = col.match(/rgba?\(([^)]+)\)/);
+    if (m) { const p = m[1].split(',').slice(0, 3).map(s => s.trim()); return 'rgba(' + p.join(',') + ',' + a + ')'; }
+    return null;
+  }
+  /* Lueur douce sous chaque ligne (couleur de la série) — désactivée si l'OS
+     demande moins d'animations (économie de peinture). */
+  const _glowPlugin = {
+    id: 'vxglow',
+    beforeDatasetDraw(chart, args) {
+      if (args.meta.type !== 'line') return;
+      const ds = chart.data.datasets[args.index] || {};
+      const col = typeof ds.borderColor === 'string' ? _rgba(ds.borderColor, .40) : null;
+      const c = chart.ctx; c.save();
+      c.shadowColor = col || 'rgba(163,202,66,.25)';
+      c.shadowBlur = 6; c.shadowOffsetY = 1;
+    },
+    afterDatasetDraw(chart, args) { if (args.meta.type === 'line') chart.ctx.restore(); },
+  };
+  /* Crosshair pointillé vertical au survol (axes cartésiens uniquement). */
+  const _crossPlugin = {
+    id: 'vxcrosshair',
+    afterDraw(chart) {
+      if (!chart.scales || !chart.scales.x || !chart.chartArea) return;
+      const act = chart.tooltip && chart.tooltip.getActiveElements ? chart.tooltip.getActiveElements() : [];
+      if (!act.length) return;
+      const x = act[0].element.x, a = chart.chartArea, c = chart.ctx;
+      c.save(); c.strokeStyle = 'rgba(237,255,237,.14)'; c.lineWidth = 1; c.setLineDash([3, 3]);
+      c.beginPath(); c.moveTo(x, a.top); c.lineTo(x, a.bottom); c.stroke(); c.restore();
+    },
+  };
   function chartDefaults() {
     if (!window.Chart) return;
     const d = Chart.defaults;
     d.color = C.colors.text;
     d.font.family = getComputedStyle(document.documentElement).getPropertyValue('--vx-font') || 'Inter,sans-serif';
     d.font.size = 11;
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) d.animation = false;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) d.animation = false;
     else if (d.animation && typeof d.animation === 'object') d.animation.duration = 250;
     d.plugins.legend.display = false;
+    d.interaction = { mode: 'nearest', axis: 'xy', intersect: false };
     const tt = (window.VXChartTheme && window.VXChartTheme.tooltip) || {};
     d.plugins.tooltip.backgroundColor = tt.backgroundColor || '#151719';
     d.plugins.tooltip.borderColor = tt.borderColor || 'rgba(255,255,255,.15)';
@@ -36,15 +77,42 @@
     d.plugins.tooltip.titleColor = tt.titleColor || '#f3f1ed';
     d.plugins.tooltip.bodyColor = tt.bodyColor || '#b7b3ad';
     d.maintainAspectRatio = false;
+    try { if (!reduced) Chart.register(_glowPlugin); Chart.register(_crossPlugin); } catch (e) { /* déjà enregistrés */ }
   }
   if (window.Chart) chartDefaults(); else document.addEventListener('DOMContentLoaded', chartDefaults);
+
+  /* Modernise une config avant montage : remplissage des lignes en DÉGRADÉ
+     vertical (couleur de série → transparent) et barres ARRONDIES. Opt-out
+     naturel : une série qui fournit déjà un backgroundColor scriptable ou un
+     borderRadius garde son réglage. */
+  function _modernize(config) {
+    const sets = (config && config.data && config.data.datasets) || [];
+    sets.forEach(function (ds) {
+      const t = ds.type || config.type;
+      if (t === 'line' && ds.fill && typeof (ds.backgroundColor || '') === 'string') {
+        const base = (typeof ds.borderColor === 'string' && _rgba(ds.borderColor, 1)) ? ds.borderColor : ds.backgroundColor;
+        const top = _rgba(base, .30), bottom = _rgba(base, .02);
+        if (top && bottom) ds.backgroundColor = function (c2) {
+          const ch = c2.chart, area = ch.chartArea;
+          if (!area) return bottom;
+          const g = ch.ctx.createLinearGradient(0, area.top, 0, area.bottom);
+          g.addColorStop(0, top); g.addColorStop(1, bottom); return g;
+        };
+      }
+      if (t === 'bar') {
+        if (ds.borderRadius == null) ds.borderRadius = 5;
+        if (ds.maxBarThickness == null) ds.maxBarThickness = 38;
+      }
+    });
+    return config;
+  }
 
   const registry = new Map(); // canvasId -> Chart (évite les canvas orphelins)
   C.mount = function (canvas, config) {
     if (!window.Chart || !canvas) return null;
     const prev = registry.get(canvas);
     if (prev) prev.destroy();
-    const chart = new Chart(canvas.getContext('2d'), config);
+    const chart = new Chart(canvas.getContext('2d'), _modernize(config));
     registry.set(canvas, chart);
     return chart;
   };
