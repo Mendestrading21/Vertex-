@@ -354,9 +354,10 @@ async function loadRegime(){
       <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')}
       <a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets">Marchés →</a></div>`;
     if(window.VXCharts&&VXCharts.gauge){
+      const CO=(window.VXCharts&&VXCharts.colors)||{};
       const reading=conf>=70?'Signal net — régime lisible':conf>=40?'Signal modéré — confirmations utiles':'Signal faible — prudence accrue';
       VXCharts.gauge('vx-regime-gauge',{value:conf,min:0,max:100,unit:' %',label:'confiance',reading:reading,
-        bands:[{to:40,color:VXCharts.colors.negative},{to:70,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.positive}]});
+        bands:[{to:40,color:CO.negative},{to:70,color:CO.warning},{to:100,color:CO.positive}]});
     }
   }catch(e){$('vx-regime-body').innerHTML=VX.states.error('Régime indisponible');}
 }
@@ -451,17 +452,19 @@ async function loadPulse(scan){
 
 /* ── Top 10 / Flop 10 de la séance (rangée 3b) ── */
 function moversHtml(rows,dir){
-  const sorted=rows.filter(r=>r.change!==null&&r.change!==undefined).slice()
-    .sort((a,b)=>dir==='top'?(b.change-a.change):(a.change-b.change)).slice(0,10);
-  if(!sorted.length)return VX.states.empty('Aucune variation exploitable dans le dernier scan.');
+  /* Filtre par SIGNE : « Flop » ne montre que des baisses, « Top » que des hausses —
+     sinon en séance très verte le Flop afficherait des hausses colorées en vert. */
+  const signed=rows.filter(r=>r.change!==null&&r.change!==undefined&&(dir==='top'?r.change>0:r.change<0));
+  const sorted=signed.slice().sort((a,b)=>dir==='top'?(b.change-a.change):(a.change-b.change)).slice(0,10);
+  if(!sorted.length)return VX.states.empty(dir==='top'?'Aucune hausse dans le dernier scan.':'Aucune baisse dans le dernier scan.');
   return sorted.map(function(r){const chg=r.change;
     return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
-      <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${r.symbol}">${r.symbol}</button>
+      <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(r.symbol)}">${esc(r.symbol)}</button>
       <span class="vx-num vx-mono ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}" style="width:62px;text-align:right;font-weight:700">${VX.fmt.pct(chg,1)}</span>
       <span class="vx-grow vx-truncate vx-dim" style="font-size:11.5px">${esc(r.sector||'')}</span>
       <span class="vx-num vx-mono vx-meta" style="width:64px;text-align:right">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):''}</span>
       ${r.score!==null&&r.score!==undefined?`<span class="vx-badge" title="Score Vertex">${VX.fmt.num(r.score,0)}</span>`:''}
-      <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${r.symbol}" aria-label="Actions ${r.symbol}">⋯</button>
+      <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(r.symbol)}" aria-label="Actions ${esc(r.symbol)}">⋯</button>
     </div>`;}).join('');
 }
 function loadTopFlop(scan){
@@ -480,19 +483,19 @@ async function loadOpportunities(){
     const stocks=(c.top_stocks||[]).slice(0,5);
     $('vx-opp-stocks').innerHTML=stocks.length?stocks.map(s=>`
       <div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">
-        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${s.symbol}">${s.symbol}</button>
+        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(s.symbol)}">${esc(s.symbol)}</button>
         <span class="vx-badge">${esc(s.verdict||'')}</span>
         <span class="vx-grow vx-truncate vx-dim" style="font-size:12px">${esc(s.note||'')}</span>
         <span class="vx-num vx-mono">${VX.fmt.nd(s.price)}</span>
-        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${s.symbol}" aria-label="Actions ${s.symbol}">⋯</button>
+        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(s.symbol)}" aria-label="Actions ${esc(s.symbol)}">⋯</button>
       </div>`).join(''):VX.states.empty('Aucune opportunité action retenue par le comité.');
     const opts=(c.top_options||[]).slice(0,5);
     $('vx-opp-options').innerHTML=opts.length?opts.map(o=>`
       <div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">
-        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${o.symbol}">${o.symbol}</button>
+        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(o.symbol)}">${esc(o.symbol)}</button>
         <span class="vx-badge" style="color:var(--vx-violet)">${esc(o.label||o.dir||'CALL')}</span>
         <span class="vx-grow vx-num vx-mono vx-dim">strike ${VX.fmt.nd(o.strike)} · prime ${VX.fmt.nd(o.premium)}</span>
-        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${o.symbol}" aria-label="Actions ${o.symbol}">⋯</button>
+        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(o.symbol)}" aria-label="Actions ${esc(o.symbol)}">⋯</button>
       </div>`).join(''):VX.states.empty('Aucun contrat retenu — le sélecteur ne force jamais une idée.');
     /* Posture du comité : répartition RÉELLE des verdicts (c.counts, même fetch) en donut.
        Achat = émeraude · attente = ambre · éviter = corail — jamais le vert marque. */
@@ -536,18 +539,29 @@ async function loadRotation(scan){
 }
 async function loadAlerts(){
   try{
-    const [mine,fired]=await Promise.all([
+    const [mine,fired,cmd]=await Promise.all([
       Promise.resolve((E()&&E().alerts())||[]),
-      VX.fetch('/api/alerts/status',{ttl:30000}).catch(()=>({fired:{}}))]);
+      VX.fetch('/api/alerts/status',{ttl:30000}).catch(()=>({fired:{}})),
+      VX.fetch('/api/command',{ttl:30000}).catch(()=>({}))]);
     const firedMap=fired.fired||{};
+    /* Alertes RÉELLES du risk-manager serveur (icône/label/message) AVANT les alertes
+       perso — ne JAMAIS afficher « aucune alerte » si le serveur en a. Texte serveur
+       rendu en innerHTML => esc(). */
+    const srv=((cmd&&cmd.alerts)||[]).map(a=>{
+      const icon=a[0]||'⚠', danger=(icon==='🔴');
+      return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
+        <span aria-hidden="true">${esc(icon)}</span>
+        <span class="vx-grow vx-dim" style="font-size:12px">${esc(a[2]||a[1]||'')}</span>
+        <span class="vx-badge" style="color:var(--vx-${danger?'negative':'warning'})">${esc(a[1]||'alerte')}</span>
+      </div>`;}).join('');
     const rows=mine.filter(a=>a.active).slice(0,6).map(a=>{
       const hit=Object.values(firedMap).find(f=>f.id===a.id);
       return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
-        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${a.sym}">${a.sym}</button>
+        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(a.sym)}">${esc(a.sym)}</button>
         <span class="vx-grow vx-dim" style="font-size:12px">${a.cond==='above'?'franchit':'casse'} ${VX.fmt.price(a.level)} ${esc(a.note||'')}</span>
         ${hit?'<span class="vx-badge" style="color:var(--vx-warning)">déclenchée</span>':'<span class="vx-badge">armée</span>'}
       </div>`;}).join('');
-    $('vx-alerts').innerHTML=rows||VX.states.empty('Aucune alerte active.',
+    $('vx-alerts').innerHTML=(srv+rows)||VX.states.empty('Aucune alerte active.',
       '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'alert\')">Créer une alerte</button>');
   }catch(e){$('vx-alerts').innerHTML=VX.states.error('Alertes indisponibles');}
 }

@@ -74,7 +74,12 @@ def make_blueprint(scan_state: dict) -> Blueprint:
             packet['market_regime'] = classify_regime(inputs)
         except Exception:
             packet['market_regime'] = {}
-        return jsonify(_executive.decide(packet, _profile()))
+        resp = _executive.decide(packet, _profile())
+        # Fraîcheur RÉELLE du scan (jamais l'heure du navigateur) — le verdict dérive de
+        # scan_state['detail'], aussi vieux que le dernier scan.
+        if isinstance(resp, dict):
+            resp['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+        return jsonify(resp)
 
     @bp.route('/api/market/regime')
     def market_regime():

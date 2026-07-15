@@ -171,9 +171,9 @@ async function renderRadar(){
       confirm:'Un point qui migre vers le haut-droit avec volume.',
       invalidate:'Retour sous 55 en qualité stratégique.'},
     render:(cv)=>VXCharts.mount(cv,{type:'scatter',
-      data:{datasets:[{data:rows.map(r=>({x:r.strat_score??r.score,y:r.st_tech??r.rs??50,sym:r.symbol,
+      data:{datasets:[{data:rows.map(r=>{const _t=(r.st_tech??r.rs);return {x:r.strat_score??r.score,y:(_t??50),tOk:_t!=null,sym:r.symbol,
           v:r.verdict,setup:r.playbook||r.profile||'',sector:r.sector||'',price:r.price,rr:r.rr,
-          r:4+Math.min(8,(r.anomaly_score||r.sigcount||0))})),
+          r:4+Math.min(8,(r.anomaly_score||r.sigcount||0))};}),
         pointRadius:(ctx)=>ctx.raw?ctx.raw.r:4,
         pointBackgroundColor:(ctx)=>{const v=ctx.raw&&ctx.raw.v;const cc=VXCharts.colors;
           return v==='BUY'||v==='ACHETER'?cc.positive:(v==='AVOID'||v==='ÉVITER'?cc.negative:cc.neutral);},
@@ -186,7 +186,7 @@ async function renderRadar(){
               `<div class="vx-flex"><span class="vx-ticker" style="font-size:16px">${d.sym}</span>${window.VXEntities.badges(d.sym)}
                  <span class="vx-badge vx-badge-decision vx-right" data-decision="${d.v||''}">${d.v||'n/d'}</span></div>
                <div class="vx-kv vx-mt2"><span class="k">Score stratégique</span><span class="v vx-mono">${VX.fmt.nd(d.x)}</span></div>
-               <div class="vx-kv"><span class="k">Timing</span><span class="v vx-mono">${VX.fmt.nd(d.y)}</span></div>
+               <div class="vx-kv"><span class="k">Timing</span><span class="v vx-mono">${d.tOk?VX.fmt.nd(d.y):'n/d'}</span></div>
                <div class="vx-kv"><span class="k">Cours</span><span class="v vx-mono">${d.price!==undefined&&d.price!==null?VX.fmt.price(d.price):'n/d'}</span></div>
                <div class="vx-kv"><span class="k">R:R plan</span><span class="v vx-mono">${VX.fmt.nd(d.rr)}</span></div>
                ${d.setup?`<div class="vx-kv"><span class="k">Setup</span><span class="v">${d.setup}</span></div>`:''}
@@ -199,7 +199,7 @@ async function renderRadar(){
                  <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${d.sym}','alert')">Alerte</button>
                  <a class="vx-btn vx-btn-sm" href="/opportunities?view=options&sym=${d.sym}">Options</a>
                  <button class="vx-btn vx-btn-sm vx-btn-ghost" data-entity-menu="${d.sym}">Plus ▾</button></div>`;}},
-        plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} · stratégie ${ctx.raw.x} · timing ${ctx.raw.y}`}}}}})});
+        plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} · stratégie ${ctx.raw.x} · timing ${ctx.raw.tOk?ctx.raw.y:'n/d'}`}}}}})});
 }
 
 /* ── ACTIONS ── */

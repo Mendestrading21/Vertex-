@@ -183,9 +183,9 @@
       '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--vx-text-secondary,#bab4ac);margin-bottom:3px">' +
       '<span>CALLS ' + VXf.nd(calls) + ' (' + cp + ' %)</span><span>PUTS ' + VXf.nd(puts) + ' (' + pp + ' %)</span></div>' +
       '<div style="height:14px;border-radius:5px;overflow:hidden;display:flex;background:var(--vx-surface-3,#17191b)">' +
-      '<span style="width:' + cp + '%;background:var(--vx-copper-light,#b47852)"></span>' +
-      '<span style="width:' + pp + '%;background:var(--vx-option,#806095)"></span></div>' +
-      '<div class="vx-muted" style="font-size:11px;margin-top:4px">Direction dominante : CALLS — la Stratégie Vertex privilégie l’achat de calls ; les puts restent tactiques et rares. Volume/OI ≠ conviction certaine.</div></div>';
+      '<span style="width:' + cp + '%;background:var(--vx-positive,#36c889)"></span>' +
+      '<span style="width:' + pp + '%;background:var(--vx-negative,#ed655c)"></span></div>' +
+      '<div class="vx-muted" style="font-size:11px;margin-top:4px">Dominante : ' + ((calls || 0) >= (puts || 0) ? 'CALLS' : 'PUTS') + ' — biais de la Stratégie Vertex : achat de calls (les puts restent tactiques). Volume/OI ≠ conviction certaine.</div></div>';
   }
 
   function countersHtml(c, demo, asOf) {

@@ -271,7 +271,7 @@ function renderVerdict(sym,question,strat,deci){
       <button class="vx-btn vx-btn-sm" data-open-analysis="${sym}">Ouvrir l&#8217;analyse compl&egrave;te</button>
       <button class="vx-btn vx-btn-sm vx-btn-ghost" data-entity-menu="${sym}">Actions (suivi, alerte, note…)</button>
     </div>
-    <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'moteur ex&eacute;cutif + decision stack','delayed')}</div>`;
+    <div class="vx-card-footer">${VX.updateIndicator((strat&&strat.as_of),'moteur ex&eacute;cutif + decision stack','delayed')}</div>`;
   $('vx-analyst-meta').innerHTML=`<span class="vx-meta">${esc(sym)}</span>`;
 }
 function renderAudit(strat,deci){
@@ -340,7 +340,7 @@ function renderCommittee(){
       value:_conv,min:0,max:100,unit:'',label:'Accord moyen',
       reading:_conv==null?'donnée indisponible':(_conv>=70?'forte convergence':_conv>=40?'convergence modérée':'faible convergence'),
       bands:[{to:40,color:VXCharts.colors.negative},{to:70,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.positive}]}); });
-    var _kp=function(l,v,d){return '<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value" style="font-size:22px">'+(v==null?'—':v)+'</span>'+(d?'<span class="vx-kpi-delta vx-muted">'+d+'</span>':'')+'</div>';};
+    var _kp=function(l,v,d){return '<div class="vx-card vx-card--compact vx-kpi vx-col-3"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value" style="font-size:22px">'+(v==null?'—':v)+'</span>'+(d?'<span class="vx-kpi-delta vx-muted">'+d+'</span>':'')+'</div>';};
     var _kh=$('vx-committee-kpis');
     if(_kh){_kh.innerHTML=
       _kp('Univers scanné',c.universe_scanned!=null?c.universe_scanned:c.count,'dossiers')
@@ -385,7 +385,7 @@ function renderCommittee(){
   }
   $('vx-committee-body').innerHTML=`<div style="overflow-x:auto"><table class="vx-table">
     <thead><tr><th>Titre</th><th>D&eacute;cision</th><th class="vx-num">Conviction</th>
-    <th class="vx-num">Accord</th><th class="vx-num">Prix</th><th></th><th></th></tr></thead><tbody>`
+    <th class="vx-num">Accord</th><th class="vx-num">Prix</th><th><span class="vx-sr-only">D&eacute;tail</span></th><th><span class="vx-sr-only">Actions</span></th></tr></thead><tbody>`
     +rows.map((r,i)=>{
       const grp=DECISION_GROUP[r.decision]||'ATTENDRE';
       const agree=r.agreement===null||r.agreement===undefined?null
@@ -569,7 +569,7 @@ function renderMemory(){
     return;
   }
   $('vx-memory-body').innerHTML=`<div style="overflow-x:auto"><table class="vx-table">
-    <thead><tr><th>Titre</th><th>Th&egrave;se / note</th><th></th><th></th></tr></thead><tbody>`
+    <thead><tr><th>Titre</th><th>Th&egrave;se / note</th><th><span class="vx-sr-only">Modifier</span></th><th><span class="vx-sr-only">Actions</span></th></tr></thead><tbody>`
     +syms.map(sym=>`<tr>
       <td><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(sym)}">${esc(sym)}</button></td>
       <td class="vx-dim" style="font-size:13px;max-width:480px">${esc(String(notes[sym]).slice(0,220))}${String(notes[sym]).length>220?'…':''}</td>

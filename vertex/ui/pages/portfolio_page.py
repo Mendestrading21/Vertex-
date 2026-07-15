@@ -182,7 +182,7 @@ async function renderTeam(){
       fmt:(v)=>VX.fmt.price(v)});
   }
   const counts=Object.entries(roles).filter(([,l])=>l.length);
-  if(counts.length)VXCharts.donutCard('pf-roles-donut',{
+  if(counts.length&&window.VXCharts&&VXCharts.donutCard)VXCharts.donutCard('pf-roles-donut',{
     title:'Répartition par rôle',question:'L’équipe est-elle équilibrée ?',
     conclusion:counts.map(([r,l])=>`${r.split(' ')[0]} ${l.length}`).join(' · '),
     labels:counts.map(([r])=>r.split(' ')[0]),values:counts.map(([,l])=>l.length),
@@ -412,8 +412,11 @@ async function renderRisk(){
   renderSummary(rich);
   let scan=null;try{scan=await VX.fetch('/scan',{ttl:300000});}catch(e){}
   const sectorOf=(sym)=>{const d=scan&&scan.detail&&scan.detail[sym];return(d&&d.sector)||'';};
-  const payload={positions:rich.filter(t=>t.type==='STK').map(t=>({symbol:t.sym,quantity:t.qty,
-      avg_cost:t.cost,last_price:t.mark??t.cost,sector:sectorOf(t.sym)})),
+  /* risk_engine attend des unités PAR ACTION (pl=(last/avg-1), mv=qty*last). Or t.cost
+     est le TOTAL investi → dériver le prix unitaire, sinon fausses alertes de stop ~-100 %
+     et concentration/bêta/stress corrompus. */
+  const payload={positions:rich.filter(t=>t.type==='STK').map(t=>{const per=t.qty?t.cost/t.qty:t.cost;
+      return {symbol:t.sym,quantity:t.qty,avg_cost:per,last_price:(t.mark!=null?t.mark:per),sector:sectorOf(t.sym)};}),
     cash:E().capital()||0,simulated:false};
   try{
     const r=await fetch('/api/portfolio/team',{method:'POST',
