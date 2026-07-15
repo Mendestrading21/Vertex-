@@ -7,7 +7,7 @@ consolidé côté serveur (le client ne télécharge plus le /scan géant).
 Analyse uniquement, lecture seule. Aucun ordre.
 """
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from vertex.app.config import DEMO_MODE
 from vertex.app.state import cal_state, scan_state
@@ -52,6 +52,21 @@ def api_options_strategies(sym):
         res = multileg_lab.strategies_for_symbol(board, sym, spot, bias=bias)
         res['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
         res['demo'] = DEMO_MODE
+        return jsonify(res)
+    except Exception as e:
+        return jsonify({'available': False, 'reason': f'{type(e).__name__}: {e}'}), 200
+
+
+@bp.route('/api/options/analyze', methods=['POST'])
+def api_options_analyze():
+    """Analyse une stratégie multi-jambes ARBITRAIRE (jambes fournies par le client :
+    p.ex. les positions options RÉELLES du desk regroupées par sous-jacent). Payoff,
+    breakevens, gain/perte max, PoP (si IV), greeks. Lecture seule, aucun ordre."""
+    try:
+        b = request.get_json(force=True, silent=True) or {}
+        res = multileg_lab.analyze_strategy(
+            b.get('legs'), b.get('spot'), b.get('iv'), b.get('days'),
+            name=b.get('name'))
         return jsonify(res)
     except Exception as e:
         return jsonify({'available': False, 'reason': f'{type(e).__name__}: {e}'}), 200

@@ -185,6 +185,23 @@ def test_strategies_route_real_and_honest(client):
     assert r2.get_json()['available'] is False
 
 
+def test_analyze_route_post(client):
+    # stratégie arbitraire (spread haussier) via POST → analyse cohérente
+    r = client.post('/api/options/analyze', json={
+        'legs': [{'type': 'call', 'strike': 100, 'premium': 5, 'qty': 1},
+                 {'type': 'call', 'strike': 110, 'premium': 2, 'qty': -1}],
+        'spot': 100, 'iv': 0.30, 'days': 30})
+    assert r.status_code == 200
+    d = r.get_json()
+    assert d['available'] is True
+    assert d['max_loss'] == -300.0
+    assert d['max_profit'] == pytest.approx(700.0, abs=1.0)
+    assert 'payoff' in d
+    # entrée vide → refus honnête, jamais 500
+    r2 = client.post('/api/options/analyze', json={'legs': [], 'spot': 100})
+    assert r2.status_code == 200 and r2.get_json()['available'] is False
+
+
 def test_no_order_paths_in_module():
     """Garde-fou READONLY : le module ne contient aucun chemin d'ordre."""
     import inspect

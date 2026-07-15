@@ -323,6 +323,7 @@ async function renderOptions(){
       <div id="pf-opt-tree" style="height:220px"></div>
       <div class="vx-card-foot"><span class="vx-meta">Taille = capital engagé (coût déclaré) · couleur = sens (CALL acier / PUT violet). Aucune valeur inventée.</span></div>
     </section>
+    <div id="pf-opt-combined" class="vx-grid vx-mb3"></div>
     <section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Positions options</span>
       <span class="vx-meta vx-right">analyse complète par position — aucune exécution</span></div>
     <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
@@ -355,6 +356,62 @@ async function renderOptions(){
   }
   document.querySelectorAll('[data-opt-analyze]').forEach(b=>
     b.addEventListener('click',()=>openOptionDrawer(rich.find(t=>String(t.id)===b.dataset.optAnalyze))));
+  renderCombinedOptions(rich);
+}
+
+/* Structure combinée par sous-jacent : analyse TES positions options réelles comme une
+   stratégie multi-jambes (payoff net, breakevens, gain/perte max) via le moteur
+   multileg_lab. Greeks/PoP nécessitent l'IV (n/d sans IBKR) — jamais estimés. */
+async function renderCombinedOptions(rich){
+  const host=document.getElementById('pf-opt-combined'); if(!host)return;
+  const by={};
+  rich.forEach(t=>{ if(t.type==='CALL'||t.type==='PUT'){(by[t.sym]=by[t.sym]||[]).push(t);} });
+  const syms=Object.keys(by);
+  if(!syms.length){host.innerHTML='';return;}
+  const results=await Promise.all(syms.map(async sym=>{
+    const group=by[sym];
+    const spot=group.map(t=>t.underSpot).find(s=>s!=null);
+    if(spot==null)return null;   // pas de cote sous-jacent → pas de payoff honnête
+    const legs=group.map(t=>({type:(t.type||'').toLowerCase(),strike:t.strike,
+      premium:(t.qty&&t.cost)?t.cost/(t.qty*100):null,qty:t.qty}));
+    if(legs.some(l=>l.premium==null||l.strike==null))return null;
+    const dtes=group.map(t=>t.exp?Math.round((new Date(t.exp)-Date.now())/86400000):null).filter(v=>v!=null);
+    const days=dtes.length?Math.min.apply(null,dtes):null;
+    try{
+      const r=await fetch('/api/options/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({legs:legs,spot:spot,iv:null,days:days,name:sym})});
+      const d=await r.json(); if(!d||!d.available)return null; return {sym:sym,spot:spot,group:group,d:d};
+    }catch(e){return null;}
+  }));
+  const ok=results.filter(Boolean);
+  if(!ok.length){host.innerHTML='';return;}
+  host.innerHTML=ok.map((x,i)=>{
+    const d=x.d;
+    const mp=d.max_profit_unbounded?'illimité':(d.max_profit!=null?VX.fmt.price(d.max_profit):'—');
+    const be=(d.breakevens&&d.breakevens.length)?d.breakevens.map(b=>VX.fmt.nd(b)).join(' · '):'—';
+    return `<section class="vx-card vx-col-6">
+      <div class="vx-card-header"><span class="vx-card-title">${esc(x.sym)} — structure combinée (${x.group.length} jambe${x.group.length>1?'s':''})</span>
+        <span class="vx-badge" style="color:var(--vx-${d.is_credit?'positive':'option'})">${d.is_credit?'crédit ':'débit '}${VX.fmt.price(Math.abs(d.net_premium))}</span></div>
+      <div id="pf-comb-pf-${i}" style="height:150px"></div>
+      <div class="vx-grid vx-mt2" style="grid-template-columns:repeat(3,1fr);gap:6px">
+        <div class="vx-kv"><span class="k">Gain max</span><span class="v vx-mono">${mp}</span></div>
+        <div class="vx-kv"><span class="k">Perte max</span><span class="v vx-mono vx-neg">${d.max_loss!=null?VX.fmt.price(d.max_loss):'—'}</span></div>
+        <div class="vx-kv"><span class="k">Breakevens</span><span class="v vx-mono">${be}</span></div>
+      </div>
+      <div class="vx-card-foot"><span class="vx-meta">Payoff à l’échéance depuis tes positions réelles (spot ${VX.fmt.nd(x.spot)}) · greeks/PoP requièrent l’IV.</span></div>
+    </section>`;
+  }).join('');
+  ok.forEach((x,i)=>{
+    const cont=document.getElementById('pf-comb-pf-'+i); const pts=x.d.payoff||[];
+    if(!cont||!window.VXCharts||pts.length<2)return;
+    cont.innerHTML='<canvas></canvas>';
+    VXCharts.mount(cont.querySelector('canvas'),{type:'line',
+      data:{labels:pts.map(p=>p.price),datasets:[{data:pts.map(p=>p.pnl),borderColor:VXCharts.colors.neutral,
+        borderWidth:1.6,pointRadius:0,fill:false,tension:0,
+        segment:{borderColor:(ctx)=>ctx.p1.parsed.y>=0?VXCharts.colors.positive:VXCharts.colors.negative}}]},
+      options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>'P&L '+VX.fmt.price(ctx.parsed.y)+' @ '+VX.fmt.nd(ctx.label)}}},
+        scales:{x:{ticks:{maxTicksLimit:6},grid:{display:false}},y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{callback:(v)=>VX.fmt.price(v)}}}}});
+  });
 }
 
 /* Drawer d'analyse COMPLET par position option (§20-21) — lecture seule. */
