@@ -93,12 +93,57 @@
 .vx-confgauge .vx-cg-lbl{font:600 9px/1 var(--vx-font);letter-spacing:.09em;
   text-transform:uppercase;fill:var(--vx-text-muted)}
 
+/* ── Barre de fourchette (objectifs analystes : bas · médian · haut · prix) ── */
+.vx-rangebar{position:relative;height:7px;border-radius:99px;margin:30px 6px 40px;
+  background:linear-gradient(90deg,var(--vx-negative-soft) 0%,var(--vx-surface-4) 50%,var(--vx-positive-soft) 100%);
+  border:1px solid var(--vx-border-faint)}
+.vx-rangebar .rb-fill{position:absolute;top:0;bottom:0;border-radius:99px;
+  background:linear-gradient(90deg,var(--vx-negative),var(--vx-warning),var(--vx-positive));opacity:.5}
+.vx-rangebar .rb-tick{position:absolute;top:50%;width:2px;height:16px;transform:translate(-50%,-50%);
+  background:var(--vx-text-secondary);border-radius:2px}
+.vx-rangebar .rb-tick[data-kind="mean"]{height:22px;width:3px;background:var(--vx-brand-strong);
+  box-shadow:0 0 8px var(--vx-signal-glow)}
+.vx-rangebar .rb-tick[data-kind="price"]{height:24px;width:3px;background:var(--vx-text-primary)}
+.vx-rangebar .rb-lab{position:absolute;transform:translateX(-50%);white-space:nowrap;
+  font:600 10.5px/1 var(--vx-font-mono);color:var(--vx-text-muted);top:calc(100% + 8px)}
+.vx-rangebar .rb-lab[data-kind="mean"]{color:var(--vx-brand-strong);font-weight:700}
+.vx-rangebar .rb-lab[data-kind="price"]{color:var(--vx-text-primary);font-weight:700;top:-24px}
+.vx-rangebar .rb-lab-sub{display:block;font-size:9px;color:var(--vx-text-faint);text-transform:uppercase;
+  letter-spacing:.06em;margin-top:2px;font-weight:600}
+
+/* ── Barres comparatives (titre vs pairs vs médiane) ─────────────────── */
+.vx-cmpbars{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.vx-cmpbar{display:grid;grid-template-columns:52px 1fr 58px;align-items:center;gap:8px}
+.vx-cmpbar .cb-name{font:600 11px/1.2 var(--vx-font-mono);color:var(--vx-text-secondary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vx-cmpbar[data-self="1"] .cb-name{color:var(--vx-brand-strong)}
+.vx-cmpbar .cb-track{position:relative;height:9px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden}
+.vx-cmpbar .cb-track>i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;
+  background:var(--vx-steel-3);transition:width .5s var(--vx-ease)}
+.vx-cmpbar[data-self="1"] .cb-track>i{background:var(--vx-brand-gradient)}
+.vx-cmpbar .cb-val{font:600 11px/1 var(--vx-font-mono);color:var(--vx-text-secondary);text-align:right;
+  font-variant-numeric:tabular-nums}
+.vx-cmpbar[data-self="1"] .cb-val{color:var(--vx-text-primary)}
+.vx-cmp-med{position:relative;height:1px;margin:2px 0 0 60px;border-top:1px dashed var(--vx-border-strong)}
+
 /* ── Halo premium opt-in sur une carte (accent discret en haut) ───────── */
 .vx-card--premium{position:relative;overflow:hidden}
 .vx-card--premium::after{content:"";position:absolute;inset:0 0 auto 0;height:1px;
   background:linear-gradient(90deg,transparent,rgba(163,202,66,.45),transparent);
   opacity:.7;pointer-events:none}
 .vx-card--premium:hover{border-color:var(--vx-border-default)}
+
+/* ── Identité premium GLOBALE : liseré d'accent devant chaque titre de
+   section + hover de carte plus profond. Additif, lifte toutes les pages
+   sans toucher au fond des cartes (préserve le halo hero). ───────────── */
+.vx-card-title,.vx-chart-title{position:relative}
+.vx-card-title::before,.vx-chart-title::before{
+  content:"";display:inline-block;width:3px;height:0.82em;border-radius:2px;
+  background:var(--vx-brand);margin-right:8px;vertical-align:-1px;opacity:.9;
+  box-shadow:0 0 6px var(--vx-signal-glow)}
+.vx-card:hover{box-shadow:var(--vx-shadow-2)}
+/* En-tête de page : halo radial discret derrière le grand titre */
+.vx-content>h1:first-of-type,.vx-page-head{position:relative}
 
 /* ── Glow d'angle subtil sur TOUTES les tuiles KPI (additif) ──────────
    Unifie Marchés, Portefeuille, Performance sans toucher les pages : le

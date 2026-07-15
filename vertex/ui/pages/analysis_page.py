@@ -247,6 +247,49 @@ function vsMed(value,median,better){
   return Math.max(6,Math.min(100,r*50));
 }
 
+/* Barre de fourchette des objectifs analystes (bas · médian · haut · prix courant).
+   Données réelles company.analysts — jamais inventées ; le prix courant n'est
+   superposé que s'il existe (souvent absent hors flux live). */
+function analystRangeBar(an,price){
+  const lo=an.target_low,hi=an.target_high,mid=an.target_median??an.target_mean;
+  if(lo==null||hi==null||hi<=lo)return '';
+  const pts=[lo,hi];if(mid!=null)pts.push(mid);if(price!=null)pts.push(price);
+  const dmin=Math.min.apply(null,pts),dmax=Math.max.apply(null,pts),span=(dmax-dmin)||1;
+  const pad=span*0.06,a=dmin-pad,b=dmax+pad,rng=(b-a)||1;
+  const pos=(x)=>((x-a)/rng*100).toFixed(1);
+  const fillL=pos(lo),fillR=pos(hi);
+  const P=(v)=>'$'+VX.fmt.price(v);
+  let ticks=`<i class="rb-tick" style="left:${pos(lo)}%"></i><i class="rb-tick" style="left:${pos(hi)}%"></i>`
+    +`<span class="rb-lab" style="left:${pos(lo)}%">${P(lo)}<span class="rb-lab-sub">bas</span></span>`
+    +`<span class="rb-lab" style="left:${pos(hi)}%">${P(hi)}<span class="rb-lab-sub">haut</span></span>`;
+  if(mid!=null)ticks+=`<i class="rb-tick" data-kind="mean" style="left:${pos(mid)}%"></i>`
+    +`<span class="rb-lab" data-kind="mean" style="left:${pos(mid)}%">${P(mid)}<span class="rb-lab-sub">objectif</span></span>`;
+  if(price!=null)ticks+=`<i class="rb-tick" data-kind="price" style="left:${pos(price)}%"></i>`
+    +`<span class="rb-lab" data-kind="price" style="left:${pos(price)}%">${P(price)}<span class="rb-lab-sub">cours</span></span>`;
+  return `<div class="vx-rangebar" role="img" aria-label="Fourchette d'objectifs ${P(lo)} à ${P(hi)}">`
+    +`<span class="rb-fill" style="left:${fillL}%;right:${(100-fillR)}%"></span>${ticks}</div>`;
+}
+
+/* Barres comparatives titre vs pairs sur une métrique (P/E par défaut).
+   rows réels (company.fundamentals + peers_data) ; médiane sectorielle en repère. */
+function peersCompareBars(cf,peers,sm,opt){
+  opt=opt||{};const key=opt.key||'pe';const med=opt.median;
+  const self={sym:SYM,val:cf[key],self:1};
+  const others=(peers||[]).filter(p=>p&&p.symbol!==SYM&&p[key]!=null&&isFinite(p[key]))
+    .map(p=>({sym:p.symbol,val:+p[key]}));
+  const all=[self].concat(others).filter(r=>r.val!=null&&isFinite(r.val));
+  if(all.length<2)return '';
+  const mx=Math.max.apply(null,all.map(r=>Math.abs(r.val)),med?[Math.abs(med)]:[])||1;
+  const fmtV=opt.fmt||(v=>(+v).toFixed(1));
+  const bars=all.sort((x,y)=>y.val-x.val).map(r=>
+    `<div class="vx-cmpbar" data-self="${r.self?1:0}">
+       <span class="cb-name">${esc(r.sym)}</span>
+       <span class="cb-track"><i style="width:${Math.max(4,Math.min(100,Math.abs(r.val)/mx*100)).toFixed(0)}%"></i></span>
+       <span class="cb-val">${fmtV(r.val)}</span></div>`).join('');
+  return `<div class="vx-cmpbars">${bars}</div>`
+    +(med!=null?`<div class="vx-meta vx-mt1">Médiane secteur : <b class="vx-mono">${fmtV(med)}</b></div>`:'');
+}
+
 /* Valorisation vs secteur (radar) + Financials premium — données company réelles
    (cache serveur), jamais inventées. Le prix live peut manquer ; les
    fondamentaux/médianes sectorielles sont servis même sans flux temps réel. */
@@ -303,7 +346,11 @@ function paintValuation(t,cf){
     metric({k:'Dette',val:B(cf.debt),tone:cf.debt>cf.cash?'warn':''}),
     metric({k:'Dividende',val:cf.dividend!=null?(+cf.dividend).toFixed(2):null,unit:cf.dividend?'$':''}),
   ];
-  body('an-financials',metricGrid(cells));
+  /* Comparaison P/E vs pairs (réel : company.fundamentals + peers_data) */
+  const peers=(t&&t.peers_data)||[];
+  const cmp=peersCompareBars(cf,peers,sm,{key:'pe',median:sm.median_pe,fmt:v=>'×'+(+v).toFixed(1)});
+  const cmpBlock=cmp?`<div class="vx-mt3"><div class="vx-metric-k" style="margin-bottom:6px">P/E — ${SYM} vs pairs</div>${cmp}</div>`:'';
+  body('an-financials',metricGrid(cells)+cmpBlock);
   const srcEl=$('an-fin-src');if(srcEl)srcEl.textContent=demo?'DÉMO':'cache';
 }
 
@@ -505,7 +552,7 @@ async function loadDossier(){
     `<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">`
     +(an.rating?`<div class="vx-kv"><span class="k">Consensus analystes</span><span class="v">${esc(_rl||'—')}${an.rating_mean!=null?` (${(+an.rating_mean).toFixed(1)}/5)`:''}${an.n_analysts?` · ${an.n_analysts} analystes`:''}</span></div>`:'')
     +(_tgt?`<div class="vx-kv"><span class="k">Objectif moyen</span><span class="v">${VX.fmt.price(_tgt)}${_up!=null?` <span class="${_up>=0?'vx-pos':'vx-neg'}">(${_up>=0?'+':''}${_up.toFixed(1)}%)</span>`:''}</span></div>`:'')
-    +((an.target_low&&an.target_high)?`<div class="vx-kv"><span class="k">Fourchette</span><span class="v vx-dim">${VX.fmt.price(an.target_low)} – ${VX.fmt.price(an.target_high)}</span></div>`:'')
+    +analystRangeBar(an,_px)
     +`</div>`):'';
   body('an-sentiment',
     kv('Force relative vs univers',d.rs)
