@@ -36,7 +36,8 @@ def test_no_order_path_anywhere_in_source():
     offenders = []
     for base, dirs, files in os.walk(ROOT):
         if any(s in base for s in ('/.git', '/node_modules', '__pycache__',
-                                   '/.pytest_cache', '/tests', '/docs')):
+                                   '/.pytest_cache', '/tests', '/docs',
+                                   'site-packages', '.venv', 'venv')):
             continue
         for f in files:
             if not f.endswith(('.py', '.js')):
