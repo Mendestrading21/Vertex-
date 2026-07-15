@@ -167,15 +167,15 @@ _CONTENT = """
   <div class="vx-col-4" id="vx-breadth-chart"></div>
 </div>
 
-<!-- Rangée 3b : Top 10 / Flop 10 de la séance -->
+<!-- Rangée 3b : Top 10 / Flop de la séance -->
 <div class="vx-grid vx-mt4" data-block="topflop">
-  <section class="vx-card vx-col-6" aria-label="Top 10 de la séance">
-    <div class="vx-card-header"><span class="vx-card-title">Top 10 de la séance</span>
+  <section class="vx-card vx-col-6" aria-label="Top de la séance">
+    <div class="vx-card-header"><span class="vx-card-title">Top de la séance</span>
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Univers →</a></span></div>
     <div id="vx-top10">%%LOADING%%</div>
   </section>
-  <section class="vx-card vx-col-6" aria-label="Flop 10 de la séance">
-    <div class="vx-card-header"><span class="vx-card-title">Flop 10 de la séance</span>
+  <section class="vx-card vx-col-6" aria-label="Flop de la séance">
+    <div class="vx-card-header"><span class="vx-card-title">Flop de la séance</span>
       <span class="vx-actions"><span class="vx-meta">plus fortes baisses · univers scanné</span></span></div>
     <div id="vx-flop10">%%LOADING%%</div>
   </section>
@@ -238,7 +238,7 @@ function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;
 /* Personnalisation contrôlée des blocs (§43 — vxDashboardLayout.hidden) */
 const BLOCKS=[['essential','L’essentiel (en clair)'],['brief','Brief Vertex'],['regime','Régime'],['pulse','Pouls du marché (jauges)'],
   ['market','Marchés (graphiques)'],
-  ['topflop','Top 10 / Flop 10'],['opportunities','Opportunités'],['rotation','Rotation & alertes'],
+  ['topflop','Top / Flop de la séance'],['opportunities','Opportunités'],['rotation','Rotation & alertes'],
   ['portfolio','Portefeuille'],['calendar','Calendrier'],['alerts','Alertes']];
 function layoutGet(){try{return JSON.parse(localStorage.getItem('vxDashboardLayout')||'{}')}catch(e){return{}}}
 function layoutSet(l){try{localStorage.setItem('vxDashboardLayout',JSON.stringify(l))}catch(e){}}
@@ -304,7 +304,7 @@ async function loadStrip(){
   $('vx-market-strip').innerHTML=STRIP.map(([label,slug])=>{
     const d=bySlug[slug]||{};
     const val=d.last??d.price??d.close??null;const chg=d.change??null;
-    const target=slug==='vix'?'/markets?view=volatility':(['tnx','dxy','oil','gold','btc'].includes(slug)?'/markets?view=macro':'/markets?view=overview');
+    const target=slug==='vix'?'/markets?view=volatility':(['tnx','dxy','oil','gold','btc'].includes(slug)?'/markets?view=macro':'/markets?view=sectors');
     /* Grand chiffre coloré pour les indices actions (direction = hausse bonne) ;
        VIX/taux restent neutres — colorer leur niveau induirait en erreur. */
     const dirClass=(chg!==null&&!['vix','tnx'].includes(slug))?(chg>0?'vx-pos':chg<0?'vx-neg':''):'';
@@ -499,47 +499,59 @@ async function loadPulse(scan){
   $('vx-pulse-meta').innerHTML=VX.updateIndicator(scan.scan_ts||scan.updated,scan.source||'scan',mode);
 }
 
-/* ── Top 10 / Flop 10 de la séance (rangée 3b) ── */
-function moversHtml(rows,dir){
+/* ── Top 10 / Flop de la séance (rangée 3b) ── */
+/* Sparkline compacte (40 dernières clôtures réelles du scan) — rien si absente. */
+function sparkTile(closes,up){
+  const v=(closes||[]).filter(x=>x!=null&&isFinite(x)).slice(-40);
+  if(v.length<8)return '';
+  const w=100,h=22,mn=Math.min.apply(null,v),mx=Math.max.apply(null,v),rng=(mx-mn)||1;
+  const pts=v.map((x,i)=>(i/(v.length-1)*w).toFixed(1)+','+(h-1-((x-mn)/rng)*(h-2)).toFixed(1)).join(' ');
+  const col=up?'var(--vx-positive)':'var(--vx-negative)';
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" width="100%" height="22" style="display:block;margin-top:7px;opacity:.9" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+/* Mouvements en TUILES (fini les lignes) : symbole + variation en grand +
+   secteur/prix + sparkline réelle — chaque tuile ouvre la fiche du titre. */
+function moversHtml(rows,dir,detail){
   /* Filtre par SIGNE : « Flop » ne montre que des baisses, « Top » que des hausses —
      sinon en séance très verte le Flop afficherait des hausses colorées en vert. */
   const signed=rows.filter(r=>r.change!==null&&r.change!==undefined&&(dir==='top'?r.change>0:r.change<0));
-  const sorted=signed.slice().sort((a,b)=>dir==='top'?(b.change-a.change):(a.change-b.change)).slice(0,10);
+  const sorted=signed.slice().sort((a,b)=>dir==='top'?(b.change-a.change):(a.change-b.change)).slice(0,6);
   if(!sorted.length)return VX.states.empty(dir==='top'?'Aucune hausse dans le dernier scan.':'Aucune baisse dans le dernier scan.');
-  const maxAbs=Math.max.apply(null,[0.5].concat(sorted.map(r=>Math.abs(r.change))));
-  return sorted.map(function(r){const chg=r.change;const bw=Math.max(6,Math.min(100,Math.abs(chg)/maxAbs*100));
-    return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
-      <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(r.symbol)}">${esc(r.symbol)}</button>
-      <span class="vx-num vx-mono ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}" style="width:62px;text-align:right;font-weight:700">${VX.fmt.pct(chg,1)}</span>
-      <span style="flex:0 0 46px;height:5px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden" aria-hidden="true"><i style="display:block;height:100%;width:${bw.toFixed(0)}%;background:${chg>0?'var(--vx-positive)':'var(--vx-negative)'};border-radius:99px"></i></span>
-      <span class="vx-grow vx-truncate vx-dim" style="font-size:11.5px">${esc(r.sector||'')}</span>
-      <span class="vx-num vx-mono vx-meta" style="width:64px;text-align:right">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):''}</span>
-      ${r.score!==null&&r.score!==undefined?`<span class="vx-badge" title="Score Vertex">${VX.fmt.num(r.score,0)}</span>`:''}
-      <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(r.symbol)}" aria-label="Actions ${esc(r.symbol)}">⋯</button>
-    </div>`;}).join('');
+  return '<div class="vx-movergrid">'+sorted.map(function(r){
+    const ser=detail&&detail[r.symbol]&&detail[r.symbol].series;
+    return `<button class="vx-mover" data-open-analysis="${esc(r.symbol)}" aria-label="${esc(r.symbol)} ${VX.fmt.pct(r.change,1)}">
+      <div class="vx-flex" style="justify-content:space-between;gap:6px"><span class="mv-sym">${esc(r.symbol)}</span>
+        ${r.score!==null&&r.score!==undefined?`<span class="vx-badge" title="Score Vertex">${VX.fmt.num(r.score,0)}</span>`:''}</div>
+      <div class="mv-chg ${r.change>0?'vx-pos':'vx-neg'}">${VX.fmt.pct(r.change,1)}</div>
+      <div class="mv-sub">${esc(r.sector||'—')}${r.price!==null&&r.price!==undefined?' · '+VX.fmt.price(r.price):''}</div>
+      ${sparkTile(ser&&ser.close,r.change>0)}
+    </button>`;}).join('')+'</div>';
 }
 function loadTopFlop(scan){
   const rows=(scan&&scan.rows)||[];
   const t=$('vx-top10'),f=$('vx-flop10');
   const mode=(scan&&scan.data_source==='demo')?'fallback':(scan&&scan.source==='ibkr'?'live':'delayed');
   const foot=`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',mode)} · ${rows.length} titres scannés</div>`;
-  if(t)t.innerHTML=moversHtml(rows,'top')+foot;
-  if(f)f.innerHTML=moversHtml(rows,'flop')+foot;
+  if(t)t.innerHTML=moversHtml(rows,'top',scan&&scan.detail)+foot;
+  if(f)f.innerHTML=moversHtml(rows,'flop',scan&&scan.detail)+foot;
 }
 
 /* ── Opportunités (rangée 4) ── */
 async function loadOpportunities(){
   try{
     const c=await VX.fetch('/api/command',{ttl:60000});
-    const stocks=(c.top_stocks||[]).slice(0,5);
-    $('vx-opp-stocks').innerHTML=stocks.length?stocks.map(s=>`
-      <div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">
-        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(s.symbol)}">${esc(s.symbol)}</button>
-        <span class="vx-badge">${esc(s.verdict||'')}</span>
-        <span class="vx-grow vx-truncate vx-dim" style="font-size:12px">${esc(s.note||'')}</span>
-        <span class="vx-num vx-mono">${VX.fmt.nd(s.price)}</span>
-        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(s.symbol)}" aria-label="Actions ${esc(s.symbol)}">⋯</button>
-      </div>`).join(''):VX.states.empty('Aucune opportunité action retenue par le comité.');
+    const stocks=(c.top_stocks||[]).slice(0,6);
+    /* Recommandations en MINI-CARTES (fini les lignes) : verdict + prix + R:R +
+       conviction + thèse courte — chaque carte ouvre la fiche. */
+    $('vx-opp-stocks').innerHTML=stocks.length?'<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(215px,1fr))">'+stocks.map(s=>`
+      <button class="vx-mover" data-open-analysis="${esc(s.symbol)}" aria-label="Ouvrir ${esc(s.symbol)}">
+        <div class="vx-flex" style="justify-content:space-between;gap:6px"><span class="mv-sym">${esc(s.symbol)}</span>
+          <span class="vx-badge vx-badge-decision" data-decision="${esc(s.verdict||'')}">${esc(s.verdict||'')}</span></div>
+        <div class="mv-chg" style="font-size:14.5px;color:var(--vx-text-primary)">${s.price!=null?VX.fmt.price(s.price):'—'}
+          ${s.rr!=null?`<span class="vx-meta" style="font-weight:500"> · R:R ${VX.fmt.num(s.rr,1)}</span>`:''}
+          ${s.conviction!=null?`<span class="vx-meta" style="font-weight:500"> · conv. ${VX.fmt.num(s.conviction,0)}</span>`:''}</div>
+        ${s.note?`<div class="mv-sub" style="white-space:normal;line-height:1.4;max-height:3.9em;overflow:hidden">${esc(s.note)}</div>`:''}
+      </button>`).join('')+'</div>':VX.states.empty('Aucune opportunité action retenue par le comité.');
     /* Priorité de déploiement par R:R (champ réel top_stocks[].rr, jamais tracé jusqu'ici).
        Émeraude = métrique positive ; repli honnête si aucun R:R servi. */
     const rrRows=stocks.filter(s=>s.rr!=null);
@@ -550,14 +562,15 @@ async function loadOpportunities(){
         VXCharts.bars(rrHost.querySelector('canvas'),rrRows.map(s=>esc(s.symbol)),rrRows.map(s=>s.rr),{horizontal:true,colors:rrRows.map(()=>'#36c889'),yFmt:(v)=>v.toFixed(1)});
       } else rrHost.innerHTML='';
     }
-    const opts=(c.top_options||[]).slice(0,5);
-    $('vx-opp-options').innerHTML=opts.length?opts.map(o=>`
-      <div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">
-        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(o.symbol)}">${esc(o.symbol)}</button>
-        <span class="vx-badge" style="color:var(--vx-violet)">${esc(o.label||o.dir||'CALL')}</span>
-        <span class="vx-grow vx-num vx-mono vx-dim">strike ${VX.fmt.nd(o.strike)} · prime ${VX.fmt.nd(o.premium)}</span>
-        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(o.symbol)}" aria-label="Actions ${esc(o.symbol)}">⋯</button>
-      </div>`).join(''):VX.states.empty('Aucun contrat retenu — le sélecteur ne force jamais une idée.');
+    const opts=(c.top_options||[]).slice(0,6);
+    /* Contrats en MINI-CARTES violettes : un clic ouvre le DOSSIER OPTIONS du titre. */
+    $('vx-opp-options').innerHTML=opts.length?'<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(195px,1fr))">'+opts.map(o=>`
+      <button class="vx-mover" onclick="location.href='/options/${esc(o.symbol)}'" aria-label="Dossier options ${esc(o.symbol)}" style="border-left:2px solid var(--vx-violet)">
+        <div class="vx-flex" style="justify-content:space-between;gap:6px"><span class="mv-sym">${esc(o.symbol)}</span>
+          <span class="vx-badge" style="color:var(--vx-violet)">${esc(o.label||o.dir||'CALL')}</span></div>
+        <div class="mv-sub" style="margin-top:6px">strike <b>${VX.fmt.nd(o.strike)}</b> · prime <b>${VX.fmt.nd(o.premium)}</b></div>
+        <div class="mv-sub" style="color:var(--vx-violet);margin-top:5px">Dossier options →</div>
+      </button>`).join('')+'</div>':VX.states.empty('Aucun contrat retenu — le sélecteur ne force jamais une idée.');
     /* Posture du comité : répartition RÉELLE des verdicts (c.counts, même fetch) en donut.
        Achat = émeraude · attente = ambre · éviter = corail — jamais le vert marque. */
     const posture=$('vx-opp-posture');

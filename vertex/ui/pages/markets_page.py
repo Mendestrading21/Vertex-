@@ -13,10 +13,11 @@ from __future__ import annotations
 from vertex.ui.shell import render_shell
 
 # Sous-vues canoniques (ordre = ordre des onglets).
+# La « Vue d'ensemble » historique est FUSIONNÉE dans le Dashboard (/) —
+# Marchés est désormais la page d'analyse PROFONDE (macro, secteurs, breadth, vol).
 _VIEWS = (
-    ('overview', 'Vue d’ensemble'),
-    ('macro', 'Macro'),
     ('sectors', 'Secteurs'),
+    ('macro', 'Macro'),
     ('breadth', 'Breadth'),
     ('volatility', 'Volatilité'),
 )
@@ -785,10 +786,10 @@ VX.bus.on('vx:data-refreshed',boot);
 """
 
 
-def render(view: str = 'overview') -> str:
+def render(view: str = 'sectors') -> str:
     """Assemble la page Marchés pour la sous-vue demandée (URL = état)."""
     if view not in dict(_VIEWS):
-        view = 'overview'
+        view = 'sectors'
     label = dict(_VIEWS)[view]
     content = (_HEADER.replace('%%TABS%%', _tabs(view))
                + _VIEW_CONTENT[view]).replace(

@@ -82,7 +82,10 @@ def make_blueprint(scan_state: dict) -> Blueprint:
 
     @bp.route('/markets')
     def markets_route():
-        return markets_page.render(view=request.args.get('view', 'overview'))
+        view = request.args.get('view', 'sectors')
+        if view == 'overview':          # vue fusionnée dans le Dashboard (/)
+            return redirect('/', code=302)
+        return markets_page.render(view=view)
 
     @bp.route('/opportunities')
     def opportunities_route():

@@ -226,8 +226,8 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v47' in body
-    assert 'td-shell-v46' not in body
+    assert 'td-shell-v48' in body
+    assert 'td-shell-v47' not in body
 
 
 # ── Sécurité produit ─────────────────────────────────────────────────────

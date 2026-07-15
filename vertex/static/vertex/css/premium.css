@@ -193,6 +193,21 @@
 .vx-perfbar .pb-bar{height:5px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden;margin:6px 2px 0}
 .vx-perfbar .pb-bar>i{display:block;height:100%;border-radius:99px;transition:width .5s var(--vx-ease)}
 
+/* ── Tuiles de mouvements & mini-cartes de recommandation (fini les lignes) ── */
+.vx-movergrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:9px}
+.vx-mover{position:relative;display:block;width:100%;padding:10px 12px;border-radius:var(--vx-r);
+  cursor:pointer;text-align:left;font:inherit;color:inherit;
+  background:linear-gradient(180deg,var(--vx-surface-raised),var(--vx-surface-base));
+  border:1px solid var(--vx-border-soft);overflow:hidden;
+  transition:transform .14s var(--vx-ease),border-color .18s var(--vx-ease),box-shadow .18s var(--vx-ease)}
+.vx-mover:hover{transform:translateY(-2px);border-color:var(--vx-border-default);
+  box-shadow:0 8px 22px rgba(0,0,0,.42)}
+.vx-mover .mv-sym{font:700 13.5px/1 var(--vx-font-mono);color:var(--vx-text-primary);letter-spacing:.02em}
+.vx-mover .mv-chg{font:800 16.5px/1.1 var(--vx-font-mono);font-variant-numeric:tabular-nums;margin-top:5px}
+.vx-mover .mv-sub{font:500 10.5px/1.35 var(--vx-font);color:var(--vx-text-faint);margin-top:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vx-mover .mv-sub b{color:var(--vx-text-secondary);font-weight:600}
+
 /* ── Halo premium opt-in sur une carte (accent discret en haut) ───────── */
 .vx-card--premium{position:relative;overflow:hidden}
 .vx-card--premium::after{content:"";position:absolute;inset:0 0 auto 0;height:1px;
