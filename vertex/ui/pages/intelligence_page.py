@@ -77,6 +77,20 @@ _VIEW_CONTENT = {
 
     'committee': '''
 <div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-4" aria-label="Convergence du comit&eacute;">
+    <div class="vx-card-header"><span class="vx-card-title">Convergence</span>
+      <span class="vx-chart-question">Les moteurs sont-ils d&#8217;accord ?</span></div>
+    <div id="vx-committee-gauge"><div class="vx-skeleton" style="height:118px"></div></div>
+    <div class="vx-card-footer"><span class="vx-meta">Accord moyen des moteurs sur l&#8217;univers scann&eacute; (0-100).</span></div>
+  </section>
+  <section class="vx-card vx-col-8" aria-label="Synth&egrave;se du comit&eacute;">
+    <div class="vx-card-header"><span class="vx-card-title">Verdicts du comit&eacute;</span>
+      <span class="vx-chart-question">Comment se r&eacute;partissent les d&eacute;cisions ?</span></div>
+    <div class="vx-grid" id="vx-committee-kpis"></div>
+    <div id="vx-committee-tally" class="vx-mt3"></div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Matrice du comit&eacute;">
     <div class="vx-card-header"><span class="vx-card-title">Comit&eacute; — revue de l&#8217;univers scann&eacute;</span>
       <span class="vx-actions" id="vx-committee-meta"></span></div>
@@ -313,6 +327,29 @@ async function initCommittee(){
 function renderCommittee(){
   const c=committeeData;const reviews=c.reviews||[];
   const tally=c.tally||{};
+  /* Hero §40 : jauge de convergence (accord moyen) + KPI + répartition des verdicts.
+     Agrégations RÉELLES des reviews ; aucune valeur inventée. */
+  try{
+    var _avg=function(k){var xs=reviews.map(function(r){return r[k];}).filter(function(v){return typeof v==='number';});return xs.length?Math.round(xs.reduce(function(a,b){return a+b;},0)/xs.length):null;};
+    var _conv=_avg('agreement'),_convc=_avg('conviction'),_conf=_avg('confidence');
+    var _contra=reviews.filter(function(r){return r&&r.has_contradiction;}).length;
+    whenChartsReady(function(){ if(window.VXCharts&&VXCharts.gauge) VXCharts.gauge('vx-committee-gauge',{
+      value:_conv,min:0,max:100,unit:'',label:'Accord moyen',
+      reading:_conv==null?'donnée indisponible':(_conv>=70?'forte convergence':_conv>=40?'convergence modérée':'faible convergence'),
+      bands:[{to:40,color:VXCharts.colors.negative},{to:70,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.positive}]}); });
+    var _kp=function(l,v,d){return '<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value" style="font-size:22px">'+(v==null?'—':v)+'</span>'+(d?'<span class="vx-kpi-delta vx-muted">'+d+'</span>':'')+'</div>';};
+    var _kh=$('vx-committee-kpis');
+    if(_kh)_kh.innerHTML=
+      _kp('Univers scanné',c.universe_scanned!=null?c.universe_scanned:c.count,'dossiers')
+      +_kp('Conviction moy.',_convc,'/100')
+      +_kp('Confiance moy.',_conf,'/100')
+      +_kp('Contradictions',_contra,_contra?'à arbitrer':'aucune');
+    var _tone={AVOID:'var(--vx-negative)',WAIT:'var(--vx-warning)',WATCH_BREAKOUT:'var(--vx-brand)',ACHETER:'var(--vx-positive)',RENFORCER:'var(--vx-positive)',ATTENDRE:'var(--vx-warning)'};
+    var _tk=Object.keys(tally),_tmax=Math.max.apply(null,[1].concat(_tk.map(function(k){return tally[k];})));
+    var _th=$('vx-committee-tally');
+    if(_th)_th.innerHTML='<div class="vx-kpi-label vx-mb2">Répartition des verdicts</div>'+_tk.sort(function(a,b){return tally[b]-tally[a];}).map(function(k){var w=Math.round(tally[k]/_tmax*100);
+      return '<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:140px;font-size:12px;color:var(--vx-text-secondary)">'+esc(k)+'</span><span style="flex:1;height:12px;background:var(--vx-surface-3);border-radius:6px;overflow:hidden"><span style="display:block;height:100%;width:'+w+'%;background:'+(_tone[k]||'var(--vx-neutral-chart)')+';border-radius:6px"></span></span><span class="vx-mono" style="width:34px;text-align:right;font-size:12px">'+tally[k]+'</span></div>';}).join('');
+  }catch(e){}
   $('vx-committee-meta').innerHTML=VX.updateIndicator(c.as_of,
     (c.data_source==='demo'?'d&eacute;mo':'scan')+' · '+(c.universe_scanned??reviews.length)+' titres pass&eacute;s en revue',
     c.data_source==='demo'?'fallback':'delayed');
