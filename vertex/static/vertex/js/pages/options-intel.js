@@ -295,7 +295,7 @@
   function chartTerm(VC, d) {
     var pts = (d.term_structure && d.term_structure.points) || [];
     if (pts.length < 2) { document.getElementById('vx-opt-term').innerHTML = '<div class="vx-card"><div class="vx-empty">Structure par terme : pas assez d’échéances.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#cf6128');
+    var brand = col(VC, 'brand', '#84aa31');
     var slope = d.term_structure.slope;
     var concl = slope == null ? '' : slope > 0.02 ? 'Contango — court terme meilleur marché' : slope < -0.02 ? 'Inversée — stress court terme' : 'Structure plate';
     var c = VC.card('vx-opt-term', {
@@ -320,7 +320,7 @@
   function chartCone(VC, d) {
     var pts = (d.expected_move_cone && d.expected_move_cone.points) || [];
     if (pts.length < 2) { document.getElementById('vx-opt-cone').innerHTML = '<div class="vx-card"><div class="vx-empty">Cône : pas assez d’échéances.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#cf6128'), copper = col(VC, 'copper', '#914b2b');
+    var brand = col(VC, 'brand', '#84aa31'), copper = col(VC, 'copper', '#48631b');
     var labels = pts.map(function (p) { return p.dte + ' j'; });
     var ds = function (key, w, fill, bg) {
       return { data: pts.map(function (p) { return p[key]; }), borderColor: w ? copper : 'transparent', borderWidth: w, pointRadius: 0, fill: fill, backgroundColor: bg, tension: .25 };
@@ -351,7 +351,7 @@
   function chartOI(VC, d) {
     var rows = (d.oi_by_strike && d.oi_by_strike.rows) || [];
     if (!rows.length) { document.getElementById('vx-opt-oi').innerHTML = '<div class="vx-card"><div class="vx-empty">Open interest indisponible.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#cf6128'), violet = col(VC, 'violet', '#85609f');
+    var brand = col(VC, 'brand', '#84aa31'), violet = col(VC, 'violet', '#9c79d0');
     var c = VC.card('vx-opt-oi', {
       title: 'Open interest par strike', question: 'Où se concentrent les positions ouvertes ?',
       conclusion: 'CALL vs PUT', height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
@@ -376,7 +376,7 @@
     var sm = d.iv_smile || {};
     var calls = sm.calls || [], puts = sm.puts || [];
     if (!calls.length && !puts.length) { document.getElementById('vx-opt-smile').innerHTML = '<div class="vx-card"><div class="vx-empty">Smile indisponible.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#cf6128'), beige = col(VC, 'beige', '#c8ad8d');
+    var brand = col(VC, 'brand', '#84aa31'), beige = col(VC, 'beige', '#c0b79f');
     var strikes = {};
     calls.concat(puts).forEach(function (r) { strikes[r.strike] = 1; });
     var xs = Object.keys(strikes).map(Number).sort(function (a, b) { return a - b; });

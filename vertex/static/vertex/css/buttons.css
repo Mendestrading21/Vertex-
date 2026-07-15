@@ -36,11 +36,11 @@
 
 /* Sémantiques */
 .vx-btn-danger{background:var(--vx-negative-soft);color:var(--vx-negative);
-  border-color:rgba(220,95,82,.32)}
-.vx-btn-danger:hover{background:rgba(220,95,82,.22)}
+  border-color:rgba(237,101,92,.32)}
+.vx-btn-danger:hover{background:rgba(237,101,92,.22)}
 .vx-btn-success{background:var(--vx-positive-soft);color:var(--vx-positive);
-  border-color:rgba(56,184,121,.32)}
-.vx-btn-success:hover{background:rgba(56,184,121,.2)}
+  border-color:rgba(54,200,137,.32)}
+.vx-btn-success:hover{background:rgba(54,200,137,.2)}
 
 /* Tailles & formes */
 .vx-btn-sm{padding:4px 10px;min-height:26px;font-size:12px}
@@ -66,8 +66,8 @@
   border-radius:99px;animation:vx-spin .7s linear infinite}
 .vx-btn-primary[data-state="loading"]::after{border-color:rgba(247,239,231,.3);
   border-top-color:#f7efe7}
-.vx-btn[data-state="success"]{border-color:rgba(56,184,121,.5);color:var(--vx-positive)}
-.vx-btn[data-state="error"]{border-color:rgba(220,95,82,.5);color:var(--vx-negative)}
+.vx-btn[data-state="success"]{border-color:rgba(54,200,137,.5);color:var(--vx-positive)}
+.vx-btn[data-state="error"]{border-color:rgba(237,101,92,.5);color:var(--vx-negative)}
 @keyframes vx-spin{to{transform:rotate(360deg)}}
 
 /* ── Retour tactile au clic (craft motion) — tous les contrôles réagissent ── */

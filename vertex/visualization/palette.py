@@ -6,29 +6,30 @@ une intention (marque, benchmark, positif, négatif, option…). Le thème
 graphique JS (`chart-theme-obsidian-copper.js`) DOIT rester cohérent avec ce
 registre — un test le vérifie.
 
-Identité Vertex : Obsidian Copper Deep. Zéro bleu dominant.
+Identité Vertex : Signal Terminal. Vert Signal = marque/série de référence
+(PAS « hausse »). Émeraude = positif. Zéro bleu dominant.
 """
 from __future__ import annotations
 
-# ── Couleurs de marque (série principale = orange cuivré) ──────────────
-BRAND = '#cf6128'          # série principale Vertex
-COPPER = '#914b2b'
-COPPER_LIGHT = '#b9683d'
-AMBER = '#ce8a29'          # série secondaire
-BEIGE = '#c8ad8d'          # benchmark clair
+# ── Couleurs de marque (série principale = VERT SIGNAL) ────────────────
+BRAND = '#84aa31'          # série principale Vertex (identité, pas « hausse »)
+COPPER = '#747d75'         # série neutre acier (ex-cuivre, purgé)
+COPPER_LIGHT = '#a3ca42'   # vert Signal clair (accents)
+AMBER = '#dda23b'          # série secondaire / attention
+BEIGE = '#c0b79f'          # benchmark clair (sable)
 
 # ── États (direction / statut réel uniquement) ────────────────────────
-POSITIVE = '#39b978'
-NEGATIVE = '#dc6254'
-WARNING = '#cc892c'
-NEUTRAL = '#8e8981'        # benchmark neutre
-OPTION = '#85609f'         # violet sombre — RÉSERVÉ aux options / IA
+POSITIVE = '#36c889'       # ÉMERAUDE — gain / donnée positive (distinct du vert marque)
+NEGATIVE = '#ed655c'       # corail — perte / risque
+WARNING = '#dda23b'
+NEUTRAL = '#9d978e'        # benchmark neutre (gris chaud)
+OPTION = '#9c79d0'         # violet contrôlé — RÉSERVÉ aux options / IV / Greeks
 #                            (identité déployée : tokens.css, chart-theme, chart-core)
 
 # ── Texte ──────────────────────────────────────────────────────────────
-TEXT = '#f1efeb'
-TEXT_DIM = '#b6b1aa'
-TEXT_MUTED = '#817c75'
+TEXT = '#f2f5f1'
+TEXT_DIM = '#b8beb7'
+TEXT_MUTED = '#818980'
 
 # Palette de séries — ordre déterministe, jamais arc-en-ciel. La série 0 est
 # toujours la marque ; les suivantes descendent en neutralité.
@@ -72,10 +73,11 @@ def status_color(status: str) -> str:
 
 
 def is_bluish(hex_color: str) -> bool:
-    """Heuristique « bleu dominant » : b nettement > r et > g, et b élevé.
+    """Heuristique « bleu dominant » : b nettement > r et > g, b élevé, ET rouge
+    FAIBLE (le bleu vrai a peu de rouge ; le violet en a beaucoup).
 
-    Sert au garde-fou zéro-bleu. Ne considère PAS le vert (#39b978) ni le
-    violet option (#806096) comme bleus."""
+    Sert au garde-fou zéro-bleu. Ne considère PAS le vert (#36c889) ni le
+    violet option (#9c79d0, r élevé) comme bleus."""
     h = str(hex_color or '').lstrip('#')
     if len(h) != 6:
         return False
@@ -83,7 +85,7 @@ def is_bluish(hex_color: str) -> bool:
         r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
     except ValueError:
         return False
-    return b > r + 30 and b > g + 30 and b > 90
+    return b > r + 30 and b > g + 30 and b > 90 and r < 110
 
 
 def audit_no_blue() -> list:

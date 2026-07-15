@@ -8,25 +8,25 @@
   'use strict';
   window.VXChartTheme = {
     colors: {
-      brand: '#cf6128',       /* série principale : orange cuivré */
-      copper: '#914b2b',
-      copperLight: '#b9683d',
-      amber: '#ce8a29',       /* série secondaire */
-      beige: '#c8ad8d',
-      info: '#b9683d',        /* information = cuivre clair */
-      blue: '#b9683d',        /* alias legacy — plus jamais bleu */
-      cyan: '#c8ad8d',        /* alias legacy → beige */
-      violet: '#85609f',      /* options & IA (limité) */
-      positive: '#38b879',
-      negative: '#dc5f52',
-      warning: '#ce8a29',
+      brand: '#84aa31',       /* série principale : orange cuivré */
+      copper: '#48631b',
+      copperLight: '#84aa31',
+      amber: '#dda23b',       /* série secondaire */
+      beige: '#c0b79f',
+      info: '#84aa31',        /* information = cuivre clair */
+      blue: '#84aa31',        /* alias legacy — plus jamais bleu */
+      cyan: '#c0b79f',        /* alias legacy → beige */
+      violet: '#9c79d0',      /* options & IA (limité) */
+      positive: '#36c889',
+      negative: '#ed655c',
+      warning: '#dda23b',
       neutral: '#8f8a83',     /* benchmark */
       text: '#b7b3ad',
       muted: '#817d77',
       grid: 'rgba(255,255,255,.05)',
       /* Ordre des séries : référence cuivrée, beige, gris benchmark,
          violet options, ambre, cuivre sombre. */
-      series: ['#cf6128', '#c8ad8d', '#8f8a83', '#85609f', '#ce8a29', '#914b2b'],
+      series: ['#84aa31', '#c0b79f', '#8f8a83', '#9c79d0', '#dda23b', '#48631b'],
     },
     tooltip: {
       backgroundColor: '#151719',

@@ -252,10 +252,11 @@ def test_no_order_execution_path():
 
 
 def test_v3_tokens_are_canonical():
-    """Palette Obsidian Copper Deep (§30) — canonique et centralisée."""
+    """Palette Vertex Signal Terminal — canonique et centralisée.
+    Vert Signal = identité (pas « hausse ») · émeraude = positif distinct."""
     tokens = _read(VXCSS, 'tokens.css')
-    for var in ('--vx-obsidian-950:#050505', '--vx-orange-500:#cf6128',
-                '--vx-copper:#914b2b', '--vx-positive:#38b879',
-                '--vx-negative:#dc5f52', '--vx-warning:#ce8a29',
-                '--vx-option:#85609f', '--vx-neutral-chart:#8f8a83'):
+    for var in ('--vx-obsidian-950:#040504', '--vx-signal-500:#84aa31',
+                '--vx-brand:var(--vx-signal-500)', '--vx-positive:#36c889',
+                '--vx-negative:#ed655c', '--vx-warning:#dda23b',
+                '--vx-option:#9c79d0', '--vx-neutral-chart:#9d978e'):
         assert var in tokens, f'token manquant : {var}'

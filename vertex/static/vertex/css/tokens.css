@@ -1,23 +1,24 @@
 /* Vertex Design System — tokens.css
-   VERTEX OBSIDIAN COPPER DEEP (§30). Source unique des couleurs, typos,
-   rayons, espacements. UNE COULEUR = UNE SIGNIFICATION :
-   orange brûlé/cuivre = marque, action, série de référence ·
-   ambre/beige = série secondaire & attention · vert atténué = positif ·
-   rouge corail = négatif · violet sombre = options & IA ·
-   gris = benchmark/neutre. LE BLEU N'EST PLUS UNE IDENTITÉ :
-   aucun bouton, lien ou série principale bleue. */
+   VERTEX SIGNAL TERMINAL — source unique des couleurs, typos, rayons, espacements.
+   UNE COULEUR = UNE SIGNIFICATION :
+   VERT SIGNAL = identité / marque / action principale / sélection / actif
+                 (⚠️ NE signifie PAS « hausse ») ·
+   VERT ÉMERAUDE = gain / donnée positive · ROUGE CORAIL = perte / risque ·
+   AMBRE = attente / avertissement / donnée retardée · VIOLET = options / IV / Greeks ·
+   ACIER & GRIS CHAUD = benchmark / neutre / indisponible. Ni bleu ni cyan en identité. */
 :root{
-  /* ── Noirs & graphites (§30) ── */
-  --vx-black:#020202;
-  --vx-obsidian-950:#050505;
-  --vx-obsidian-900:#080808;
-  --vx-obsidian-850:#0b0b0c;
-  --vx-obsidian-800:#0f1011;
-  --vx-graphite-900:#121315;
-  --vx-graphite-850:#151719;
-  --vx-graphite-800:#191b1e;
-  --vx-graphite-750:#1e2024;
-  --vx-graphite-700:#25282d;
+  /* ── Noirs & graphites (fond légèrement teinté vert) ── */
+  --vx-black:#020302;
+  --vx-obsidian-950:#040504;
+  --vx-obsidian-900:#060806;
+  --vx-obsidian-850:#070907;
+  --vx-obsidian-800:#090b09;
+  --vx-graphite-900:#0d100e;
+  --vx-graphite-850:#121612;
+  --vx-graphite-800:#181d19;
+  --vx-graphite-750:#202621;
+  --vx-graphite-700:#272e28;
+  --vx-root:var(--vx-obsidian-950);--vx-app:var(--vx-obsidian-900);--vx-sidebar:var(--vx-obsidian-850);--vx-topbar:rgba(8,10,8,.94);
 
   /* ── Fonds (compat V3 : bg-0..3) ── */
   --vx-bg-0:var(--vx-obsidian-950);
@@ -25,76 +26,99 @@
   --vx-bg-2:var(--vx-obsidian-850);
   --vx-bg-3:var(--vx-obsidian-800);
 
-  /* ── Surfaces ── */
-  --vx-surface-base:rgba(15,16,18,.97);
-  --vx-surface-raised:rgba(20,22,24,.98);
-  --vx-surface-elevated:rgba(27,29,32,.98);
-  --vx-surface-hover:rgba(34,36,39,.98);
+  /* ── Surfaces (0..4 explicites) ── */
+  --vx-surface-0:#090b09;
+  --vx-surface-base:#0d100e;
+  --vx-surface-raised:#121612;
+  --vx-surface-elevated:#181d19;
+  --vx-surface-hover:#272e28;
   --vx-surface-1:var(--vx-surface-base);
   --vx-surface-2:var(--vx-surface-raised);
   --vx-surface-3:var(--vx-surface-elevated);
+  --vx-surface-4:#202621;
 
-  /* ── Bordures ── */
-  --vx-border-faint:rgba(255,255,255,.035);
-  --vx-border-soft:rgba(255,255,255,.065);
-  --vx-border-default:rgba(255,255,255,.095);
-  --vx-border-strong:rgba(255,255,255,.15);
+  /* ── Bordures (blanc légèrement vert) ── */
+  --vx-border-faint:rgba(237,255,237,.035);
+  --vx-border-soft:rgba(237,255,237,.065);
+  --vx-border-default:rgba(237,255,237,.105);
+  --vx-border-strong:rgba(237,255,237,.17);
 
   /* ── Texte ── */
-  --vx-text-primary:#f3f1ed;
-  --vx-text-secondary:#b7b3ad;
-  --vx-text-muted:#817d77;
-  --vx-text-faint:#5e5b56;
+  --vx-text-primary:#f2f5f1;
+  --vx-text-secondary:#b8beb7;
+  --vx-text-muted:#818980;
+  --vx-text-faint:#5d645d;
 
-  /* ── Orange brûlé profond (§30) ── */
-  --vx-orange-950:#3e1607;
-  --vx-orange-900:#591f09;
-  --vx-orange-850:#6e280c;
-  --vx-orange-800:#843310;
-  --vx-orange-700:#9f4117;
-  --vx-orange-600:#ba501e;
-  --vx-orange-500:#cf6128;
-  --vx-orange-400:#df7739;
+  /* ── VERTEX SIGNAL GREEN — identité (⚠️ pas « hausse ») ── */
+  --vx-signal-950:#111a07;
+  --vx-signal-900:#1d2b0b;
+  --vx-signal-800:#304412;
+  --vx-signal-700:#48631b;
+  --vx-signal-600:#648525;
+  --vx-signal-500:#84aa31;
+  --vx-signal-400:#a3ca42;
+  --vx-signal-300:#badf58;
+  --vx-signal-soft:rgba(163,202,66,.14);
+  --vx-signal-glow:rgba(163,202,66,.18);
 
-  /* ── Cuivre ── */
-  --vx-copper-dark:#66321c;
-  --vx-copper:#914b2b;
-  --vx-copper-light:#b9683d;
+  /* ── Compat : rampe « orange » legacy → vert Signal (propagation d'identité) ── */
+  --vx-orange-950:var(--vx-signal-950);
+  --vx-orange-900:var(--vx-signal-900);
+  --vx-orange-850:var(--vx-signal-800);
+  --vx-orange-800:var(--vx-signal-800);
+  --vx-orange-700:var(--vx-signal-700);
+  --vx-orange-600:var(--vx-signal-600);
+  --vx-orange-500:var(--vx-signal-500);
+  --vx-orange-400:var(--vx-signal-400);
+  /* Copper → tons verts sombres (gradient marque) */
+  --vx-copper-dark:var(--vx-signal-800);
+  --vx-copper:var(--vx-signal-700);
+  --vx-copper-light:var(--vx-signal-500);
 
-  /* ── Marque : CTA orange 600/500 · hover 700 · sélection 800 ·
-        fond actif 950 transparent (§30) ── */
-  --vx-brand:var(--vx-orange-500);
-  --vx-brand-strong:var(--vx-orange-400);
-  --vx-brand-hover:var(--vx-orange-700);
-  --vx-brand-selected:var(--vx-orange-800);
-  --vx-brand-soft:rgba(62,22,7,.55);
-  --vx-amber:#ce8a29;
-  --vx-beige:#c8ad8d;
+  /* ── Marque : capsule graphite + liseré/texte Signal Green ── */
+  --vx-brand:var(--vx-signal-500);
+  --vx-brand-strong:var(--vx-signal-400);
+  --vx-brand-hover:var(--vx-signal-400);
+  --vx-brand-selected:var(--vx-signal-700);
+  --vx-brand-soft:rgba(48,68,18,.45);
+  --vx-amber:#dda23b;
+  --vx-beige:#c0b79f;
 
-  /* ── États (§30) ── */
-  --vx-positive:#38b879;
-  --vx-positive-soft:rgba(56,184,121,.12);
-  --vx-negative:#dc5f52;
-  --vx-negative-soft:rgba(220,95,82,.12);
-  --vx-warning:#ce8a29;
-  --vx-warning-soft:rgba(206,138,41,.13);
-  --vx-option:#85609f;
-  --vx-violet:#85609f;
-  --vx-violet-soft:rgba(133,96,159,.14);
-  --vx-neutral-chart:#8f8a83;
-  /* information = cuivre clair — plus jamais bleue */
-  --vx-info:var(--vx-copper-light);
-  --vx-info-soft:rgba(185,104,61,.13);
-  --vx-cyan:var(--vx-beige);
-  --vx-cyan-soft:rgba(200,173,141,.12);
+  /* ── États sémantiques ── */
+  --vx-positive:#36c889;
+  --vx-positive-strong:#22a970;
+  --vx-positive-soft:rgba(54,200,137,.14);
+  --vx-negative:#ed655c;
+  --vx-negative-strong:#ce4d46;
+  --vx-negative-soft:rgba(237,101,92,.14);
+  --vx-warning:#dda23b;
+  --vx-warning-soft:rgba(221,162,59,.14);
+  --vx-option:#9c79d0;
+  --vx-option-strong:#7853ad;
+  --vx-option-soft:rgba(156,121,208,.14);
+  --vx-violet:#9c79d0;
+  --vx-violet-soft:rgba(156,121,208,.14);
+
+  /* ── Séries neutres (benchmark / secondaire) ── */
+  --vx-steel-1:#d4d8d2;
+  --vx-steel-2:#a6ada5;
+  --vx-steel-3:#747d75;
+  --vx-warm-grey:#9d978e;
+  --vx-sand:#c0b79f;
+  --vx-neutral-chart:#9d978e;
+  /* information = acier neutre (jamais bleu, jamais orange) */
+  --vx-info:var(--vx-steel-2);
+  --vx-info-soft:rgba(166,173,165,.12);
+  --vx-cyan:var(--vx-sand);
+  --vx-cyan-soft:rgba(192,183,159,.12);
 
   /* ── Dégradés (réservés aux éléments importants) ── */
-  --vx-brand-gradient:linear-gradient(135deg,var(--vx-orange-500) 0%,var(--vx-copper) 100%);
-  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(207,97,40,.06),transparent 68%);
+  --vx-brand-gradient:linear-gradient(135deg,var(--vx-signal-500) 0%,var(--vx-signal-700) 100%);
+  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(163,202,66,.05),transparent 68%);
 
-  /* ── Typographie ── */
-  --vx-font:Inter,Geist,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  --vx-font-mono:"SFMono-Regular","Roboto Mono","JetBrains Mono",Consolas,monospace;
+  /* ── Typographie (Inter UI · IBM Plex Mono numérique) ── */
+  --vx-font:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --vx-font-mono:"IBM Plex Mono","SFMono-Regular",Consolas,"Liberation Mono",monospace;
   --vx-fs-page:32px;--vx-fs-subtitle:14px;--vx-fs-section:19px;
   --vx-fs-card:13px;--vx-fs-body:13px;--vx-fs-meta:11px;
   --vx-fs-kpi:28px;--vx-fs-kpi-sm:20px;
@@ -113,11 +137,11 @@
   /* ── Élévation ── */
   --vx-shadow-1:0 1px 2px rgba(0,0,0,.45);
   --vx-shadow-2:0 4px 16px rgba(0,0,0,.45);
+  --vx-shadow-signal:0 8px 26px rgba(132,170,49,.14);
   --vx-shadow-modal:0 16px 48px rgba(0,0,0,.65);
-  --vx-glow-brand:0 0 0 1px rgba(207,97,40,.24),0 4px 20px rgba(207,97,40,.08);
+  --vx-glow-brand:0 0 0 1px rgba(163,202,66,.24),0 4px 20px rgba(163,202,66,.08);
 
-  /* ── Transitions ── */
-  /* Courbes craft : ease-out marqué (entrées/interactions), jamais ease-in. */
+  /* ── Transitions (craft ease-out — préservé) ── */
   --vx-ease-out:cubic-bezier(.23,1,.32,1);
   --vx-ease-in-out:cubic-bezier(.77,0,.175,1);
   --vx-t-fast:140ms var(--vx-ease-out);--vx-t:200ms var(--vx-ease-out);--vx-t-slow:260ms var(--vx-ease-out);
@@ -126,7 +150,7 @@
   --vx-z-sidebar:40;--vx-z-topbar:35;--vx-z-drawer:60;--vx-z-modal:70;
   --vx-z-palette:80;--vx-z-toast:90;
 
-  /* ═══ ALIAS LEGACY (compat — mappés Obsidian Copper, à purger) ═══ */
+  /* ═══ ALIAS LEGACY (compat — mappés Signal Terminal) ═══ */
   --vx-bg:var(--vx-bg-1);
   --vx-bg-secondary:var(--vx-bg-2);
   --vx-surface:var(--vx-surface-1);
@@ -140,5 +164,5 @@
   --vx-positive-dim:var(--vx-positive-soft);
   --vx-negative-dim:var(--vx-negative-soft);
   --vx-warning-dim:var(--vx-warning-soft);
-  --vx-copper-legacy:#d9773f;
+  --vx-copper-legacy:var(--vx-signal-400);
 }

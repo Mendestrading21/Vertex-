@@ -8,7 +8,7 @@
 .vx-card:hover{border-color:var(--vx-border-default);box-shadow:var(--vx-shadow-1);transform:translateY(-1px)}
 .vx-card.vx-elevated{background:var(--vx-surface-2);box-shadow:var(--vx-shadow-1)}
 .vx-card.vx-accent{border-color:var(--vx-border-default)}
-.vx-card.vx-active{border-color:rgba(207,97,40,.35);box-shadow:var(--vx-glow-brand)}
+.vx-card.vx-active{border-color:rgba(163,202,66,.35);box-shadow:var(--vx-glow-brand)}
 /* LEVEL 1 — HERO : contenu principal, halo ambré discret */
 .vx-card--hero{background:var(--vx-hero-halo),var(--vx-surface-2);
   border-color:var(--vx-border-default);padding:var(--vx-s5);

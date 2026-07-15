@@ -36,13 +36,13 @@
 .vx-chip{transition:background var(--vx-motion-fast),border-color var(--vx-motion-fast),box-shadow var(--vx-motion-fast),transform var(--vx-motion-fast)}
 @media (prefers-reduced-motion:no-preference){.vx-chip:hover{transform:translateY(-1px)}}
 .vx-chip:hover{border-color:var(--vx-border-strong,rgba(255,255,255,.16))}
-.vx-chip[aria-pressed="true"]{border-color:var(--vx-orange-500,#cf6128);
-  box-shadow:0 0 0 1px rgba(207,97,40,.18),0 4px 10px rgba(126,47,13,.16)}
+.vx-chip[aria-pressed="true"]{border-color:var(--vx-orange-500,#84aa31);
+  box-shadow:0 0 0 1px rgba(163,202,66,.18),0 4px 10px rgba(126,47,13,.16)}
 
 /* ── Onglets : actif surélevé + barre cuivre plus marquée ── */
 .vx-tab{transition:color var(--vx-motion-fast),background var(--vx-motion-fast),border-color var(--vx-motion-fast);border-radius:7px 7px 0 0}
 .vx-tab:hover{background:rgba(255,255,255,.03)}
-.vx-tab[aria-selected="true"]{background:rgba(207,97,40,.07);border-bottom-width:2.5px}
+.vx-tab[aria-selected="true"]{background:rgba(163,202,66,.07);border-bottom-width:2.5px}
 
 /* ── Segmented control : rail creusé, indicateur actif surélevé ── */
 .vx-segmented{box-shadow:var(--vx-shadow-pressed);gap:2px}
@@ -51,8 +51,8 @@
 
 /* ── Bulles de décision stratégiques : léger relief teinté (jamais tous les badges) ── */
 .vx-badge-decision[data-decision]{box-shadow:0 2px 8px rgba(0,0,0,.22)}
-.vx-badge-decision[data-decision="ACHETER"],.vx-badge-decision[data-decision="RENFORCER"]{box-shadow:0 3px 10px rgba(56,184,121,.16)}
-.vx-badge-decision[data-decision="REFUSER"],.vx-badge-decision[data-decision="REDUIRE"]{box-shadow:0 3px 10px rgba(220,98,85,.16)}
+.vx-badge-decision[data-decision="ACHETER"],.vx-badge-decision[data-decision="RENFORCER"]{box-shadow:0 3px 10px rgba(54,200,137,.16)}
+.vx-badge-decision[data-decision="REFUSER"],.vx-badge-decision[data-decision="REDUIRE"]{box-shadow:0 3px 10px rgba(237,101,92,.16)}
 
 /* ── Surfaces flottantes (Glass Control, usage limité) : ombre profonde ── */
 .vx-drawer,.vx-modal,.vx-palette,.vx-popover{box-shadow:var(--vx-shadow-floating)}

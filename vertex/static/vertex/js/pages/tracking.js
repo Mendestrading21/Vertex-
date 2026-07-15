@@ -54,7 +54,7 @@
     if (!host || !VC || !window.Chart) return;
     var pts = rows.filter(function (r) { return r.p && r.p.return_pct != null; });
     if (!pts.length) { host.innerHTML = ''; return; }
-    var brand = (VC.colors && VC.colors.brand) || '#cf6128';
+    var brand = (VC.colors && VC.colors.brand) || '#84aa31';
     var neutral = (VC.colors && VC.colors.neutral) || '#8f8a83';
     var labels = pts.map(function (r) { return r.t.symbol; });
     var self = pts.map(function (r) { return +r.p.return_pct.toFixed(2); });

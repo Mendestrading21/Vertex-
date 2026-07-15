@@ -20,7 +20,9 @@ def _is_blueish(hexval: str) -> bool:
     if len(h) == 3:
         h = ''.join(c * 2 for c in h)
     r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-    return b > r + 30 and b > g + 30 and b > 90   # dominante bleue NETTE (les deux canaux)
+    # dominante bleue NETTE : b > r et > g, b élevé, ET rouge faible (le bleu vrai
+    # a peu de rouge ; le violet des options en a beaucoup → non bleu)
+    return b > r + 30 and b > g + 30 and b > 90 and r < 110
 
 
 def test_no_blue_primary_theme():

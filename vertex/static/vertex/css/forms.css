@@ -7,7 +7,7 @@
   padding:8px 11px;color:var(--vx-text);font-size:13px;font-family:inherit;
   width:100%}
 .vx-input:focus,.vx-select:focus,.vx-textarea:focus{
-  border-color:rgba(207,97,40,.42);box-shadow:0 0 0 3px rgba(207,97,40,.08)}
+  border-color:rgba(163,202,66,.42);box-shadow:0 0 0 3px rgba(163,202,66,.08)}
 .vx-input[data-numeric],.vx-input[type=number]{font-family:var(--vx-font-mono)}
 .vx-textarea{min-height:76px;resize:vertical}
 .vx-select{appearance:none;
