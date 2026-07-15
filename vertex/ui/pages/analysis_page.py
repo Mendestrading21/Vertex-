@@ -158,6 +158,16 @@ _SECTIONS = """
 <!-- 3-ter. Croissance trimestrielle (CA · résultat net · marge) -->
 <div class="vx-mt4" id="an-quarters"></div>
 
+<!-- 3-quater. Positionnement (croissance × rentabilité vs pairs) + carte des risques -->
+<div class="vx-grid vx-mt4">
+  <div class="vx-col-7" id="an-quadrant"></div>
+  <section class="vx-card vx-col-5 vx-card--premium" id="an-riskmap">
+    <div class="vx-card-header"><span class="vx-card-title">Carte des risques</span>
+      <span class="vx-chart-question">Où se concentre la vigilance ?</span></div>
+    <div data-body>%%LOADING%%</div>
+  </section>
+</div>
+
 <!-- 4-8. Dimensions dans l'ordre imposé -->
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-6" id="an-fundamental"><div class="vx-card-header">
@@ -356,6 +366,57 @@ function paintValuation(t,cf){
   body('an-financials',metricGrid(cells)+cmpBlock);
   const srcEl=$('an-fin-src');if(srcEl)srcEl.textContent=demo?'DÉMO':'cache';
   paintQuarters(cf,demo);
+  paintQuadrant(cf,sm,peers,demo);
+  paintRiskMap(t&&t.risk_map);
+}
+
+/* Quadrant croissance × rentabilité : le titre (vert) vs ses pairs (acier) vs la
+   médiane secteur (repère). Haut-droit = croissance ET rentabilité fortes. Réel. */
+function paintQuadrant(cf,sm,peers,demo){
+  const host=$('an-quadrant');if(!host)return;
+  const P=[];const ok=(x)=>x!=null&&isFinite(x);
+  if(ok(cf.rev_growth)&&ok(cf.roe))P.push({x:cf.rev_growth*100,y:cf.roe*100,sym:SYM,self:1});
+  (peers||[]).forEach(function(p){if(p&&p.symbol!==SYM&&ok(p.rev_growth)&&ok(p.roe))P.push({x:+p.rev_growth*100,y:+p.roe*100,sym:p.symbol,self:0});});
+  if(!P.length||!(window.VXCharts&&window.Chart)){
+    host.className='';host.innerHTML='<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Croissance × rentabilité</span></div>'
+      +VX.states.empty('Comparables insuffisants pour positionner le titre.')+'</div>';return;
+  }
+  const cc=VXCharts.colors;
+  const med=(ok(sm&&sm.median_growth)&&ok(sm&&sm.median_roe))?[{x:+sm.median_growth,y:+sm.median_roe,sym:'Médiane secteur',self:2}]:[];
+  const cfg={type:'scatter',
+    data:{datasets:[
+      {data:P,pointRadius:function(x){return x.raw&&x.raw.self?8:5;},pointHoverRadius:10,
+       pointBackgroundColor:function(x){return x.raw&&x.raw.self?cc.brand:cc.neutral;},
+       pointBorderColor:'rgba(0,0,0,.4)',pointBorderWidth:1},
+      {data:med,pointStyle:'triangle',pointRadius:9,pointBackgroundColor:cc.warning,
+       pointBorderColor:'rgba(0,0,0,.4)',pointBorderWidth:1}]},
+    options:{scales:{
+      x:{title:{display:true,text:'Croissance CA (%)'},grid:{color:'rgba(237,255,237,.06)'}},
+      y:{title:{display:true,text:'ROE (%)'},grid:{color:'rgba(237,255,237,.06)'}}},
+      plugins:{tooltip:{callbacks:{label:function(it){var p=it.raw;return p.sym+' — croissance '+p.x.toFixed(1)+'% · ROE '+p.y.toFixed(0)+'%';}}}}}};
+  VXCharts.card('an-quadrant',{title:'Croissance × rentabilité vs pairs',
+    question:'Le titre allie-t-il croissance ET rentabilité ?',
+    conclusion:(ok(cf.rev_growth)&&ok(cf.roe)&&sm)?((cf.rev_growth*100>=(sm.median_growth||0)&&cf.roe*100>=(sm.median_roe||0))?'Cadran qualité — croissance et rentabilité au-dessus du secteur':'Au moins un axe sous la médiane sectorielle'):'',
+    height:320,legend:[{label:SYM,color:cc.brand},{label:'Pairs',color:cc.neutral},{label:'Médiane',color:cc.warning}],
+    source:demo?'company (DÉMO)':'company (cache)',timestamp:Date.now(),mode:'delayed',
+    limits:'X = croissance du CA · Y = ROE (rentabilité des fonds propres)',
+    render:function(cv){return VXCharts.mount(cv,cfg);}});
+}
+
+/* Carte des risques visuelle : les catégories de risk_map (réel, heuristique) en
+   barres color-codées par niveau (FAIBLE=vert · MODÉRÉ=ambre · ÉLEVÉ=corail). */
+function paintRiskMap(rm){
+  const el=document.querySelector('#an-riskmap [data-body]');if(!el)return;
+  const risks=(rm&&rm.risks)||[];
+  if(!risks.length){el.innerHTML=VX.states.empty('Carte des risques indisponible pour ce titre.');return;}
+  const T={'FAIBLE':['var(--vx-positive)',30],'MODÉRÉ':['var(--vx-warning)',62],'MODERE':['var(--vx-warning)',62],
+    'ÉLEVÉ':['var(--vx-negative)',95],'ELEVE':['var(--vx-negative)',95],'INCONNU':['var(--vx-steel-3)',10]};
+  el.innerHTML='<div class="vx-wbars" style="margin-top:2px">'+risks.map(r=>{
+    const t=T[r.level]||['var(--vx-steel-3)',10];
+    return `<div class="vx-wbar" title="${esc(r.note||'')}"><span class="wb-name">${esc(r.category||'—')}</span>`
+      +`<span class="wb-track"><i style="width:${t[1]}%;background:${t[0]}"></i></span>`
+      +`<span class="wb-val" style="color:${t[0]}">${esc(r.level||'—')}</span></div>`;}).join('')+'</div>'
+    +`<div class="vx-meta vx-mt2">${esc((rm.limitations&&rm.limitations[0])||'Indicateur de vigilance heuristique — pas une prévision.')}</div>`;
 }
 
 /* Croissance trimestrielle : CA + résultat net (barres) + marge nette (ligne, axe
@@ -374,6 +435,22 @@ function paintQuarters(cf,demo){
   const cc=VXCharts.colors;
   const labels=qs.map(q=>String(q.q).slice(0,7));
   const B=(x)=>x==null?'—':(Math.abs(x)>=1e9?(x/1e9).toFixed(1)+' Md':(Math.abs(x)>=1e6?(x/1e6).toFixed(0)+' M':(''+x)));
+  const _qtip=function(it){var q=qs[it.dataIndex];
+    return it.dataset.label==='Marge nette'?('Marge '+(q.rev?(q.ni/q.rev*100).toFixed(1):'—')+' %')
+      :(it.dataset.label+' : '+B(it.parsed.y));};
+  const _qcfg={type:'bar',
+    data:{labels:labels,datasets:[
+      {type:'bar',label:'CA',data:qs.map(q=>q.rev),backgroundColor:'rgba(143,138,131,.55)',
+       borderColor:cc.neutral,borderWidth:1,yAxisID:'y',order:2},
+      {type:'bar',label:'Résultat net',data:qs.map(q=>q.ni),
+       backgroundColor:qs.map(q=>q.ni>=0?'rgba(54,200,137,.75)':'rgba(237,101,92,.75)'),yAxisID:'y',order:2},
+      {type:'line',label:'Marge nette',data:qs.map(q=>(q.rev?q.ni/q.rev*100:null)),
+       borderColor:cc.brand,backgroundColor:cc.brand,borderWidth:2,tension:.3,pointRadius:3,yAxisID:'y1',order:1}]},
+    options:{scales:{
+      y:{position:'left',grid:{color:'rgba(237,255,237,.05)'},ticks:{callback:function(v){return B(v);}}},
+      y1:{position:'right',grid:{display:false},ticks:{callback:function(v){return v+' %';}}},
+      x:{grid:{display:false}}},
+      plugins:{tooltip:{callbacks:{label:_qtip}}}}};
   VXCharts.card('an-quarters',{
     title:'Croissance trimestrielle',question:'Le chiffre d’affaires et le résultat progressent-ils ?',
     conclusion:(function(){const r0=qs[0].rev,r1=qs[qs.length-1].rev;
@@ -385,23 +462,7 @@ function paintQuarters(cf,demo){
       why:'La trajectoire trimestrielle révèle l’accélération ou l’essoufflement, invisibles sur un seul point annuel.',
       confirm:'CA et marge qui montent ensemble, trimestre après trimestre.',
       invalidate:'Marge qui s’érode malgré un CA en hausse — croissance non rentable.'},
-    render:(cv)=>VXCharts.mount(cv,{
-      type:'bar',
-      data:{labels:labels,datasets:[
-        {type:'bar',label:'CA',data:qs.map(q=>q.rev),backgroundColor:'rgba(143,138,131,.55)',
-         borderColor:cc.neutral,borderWidth:1,yAxisID:'y',order:2},
-        {type:'bar',label:'Résultat net',data:qs.map(q=>q.ni),
-         backgroundColor:qs.map(q=>q.ni>=0?'rgba(54,200,137,.75)':'rgba(237,101,92,.75)'),yAxisID:'y',order:2},
-        {type:'line',label:'Marge nette',data:qs.map(q=>(q.rev?q.ni/q.rev*100:null)),
-         borderColor:cc.brand,backgroundColor:cc.brand,borderWidth:2,tension:.3,pointRadius:3,yAxisID:'y1',order:1}]},
-      options:{scales:{
-        y:{position:'left',grid:{color:'rgba(237,255,237,.05)'},ticks:{callback:(v)=>B(v)}},
-        y1:{position:'right',grid:{display:false},ticks:{callback:(v)=>v+' %'}},
-        x:{grid:{display:false}}},
-        plugins:{tooltip:{callbacks:{label:(it)=>{const q=qs[it.dataIndex];
-          return it.dataset.label==='Marge nette'?('Marge '+(q.rev?(q.ni/q.rev*100).toFixed(1):'—')+' %')
-            :(it.dataset.label+' : '+B(it.parsed.y));}}}}}});
-  });
+    render:function(cv){return VXCharts.mount(cv,_qcfg);}});
 }
 
 VX.recentTickers.push(SYM);
