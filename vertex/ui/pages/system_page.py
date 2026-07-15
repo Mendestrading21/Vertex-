@@ -47,6 +47,15 @@ def _header(active: str) -> str:
 
 _VIEW_CONTENT = {
     'connections': '''
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-4" aria-label="Santé du système">
+    <div class="vx-card-header"><span class="vx-card-title">Santé — moteurs</span>
+      <span class="vx-chart-question">Les moteurs tournent-ils ?</span></div>
+    <div id="vx-sys-gauge"><div class="vx-skeleton" style="height:118px"></div></div>
+    <div class="vx-card-footer"><span class="vx-meta">% de moteurs au statut « ok » — donnée réelle, aucun score inventé.</span></div>
+  </section>
+  <div class="vx-col-8"><div class="vx-grid" id="vx-sys-kpis"><div class="vx-skeleton" style="height:70px"></div></div></div>
+</div>
 <section class="vx-card vx-mt4" id="vx-conn-summary" aria-label="Canaux de connexion">
   <div class="vx-card-header"><span class="vx-card-title">Canaux — état honnête</span>
     <span class="vx-dim" style="font-size:12px">configuré ≠ connecté · jamais LIVE sans preuve</span></div>
@@ -367,6 +376,33 @@ async function loadConnections(){
   const live=liveR.status==='fulfilled'?liveR.value:null;
   const diag=diagR.status==='fulfilled'?diagR.value:null;
   const hz=hzR.status==='fulfilled'?hzR.value:null;
+
+  /* Hero santé (jauge % moteurs ok) + bande KPI command center — §41.
+     Agrégations RÉELLES des payloads (statuts moteurs, fraîcheur, warnings,
+     scan, IA) ; aucun chiffre inventé, jamais 0 pour une valeur absente. */
+  try{
+    var _eng=(st&&st.engines)||[];
+    var _ok=_eng.filter(function(e){return e&&e.status==='ok';}).length;
+    var _fr=(st&&st.freshness)||{}, _frK=Object.keys(_fr);
+    var _frOk=_frK.filter(function(k){return _fr[k]&&_fr[k].state==='fresh';}).length;
+    var _warn=((st&&st.warnings)||[]).length;
+    var _sym=(st&&st.scan&&st.scan.symbols); if(_sym==null&&diag&&diag.scan)_sym=diag.scan.rows;
+    var _ai=(diag&&diag.ai)||{};
+    var _pct=_eng.length?Math.round(_ok/_eng.length*100):null;
+    whenChartsReady(function(){ if(window.VXCharts&&VXCharts.gauge) VXCharts.gauge('vx-sys-gauge',{
+      value:_pct,min:0,max:100,unit:'%',label:'Moteurs OK',
+      reading:_eng.length?(_ok+'/'+_eng.length+' moteurs opérationnels'):'moteurs inconnus',
+      bands:[{to:60,color:VXCharts.colors.negative},{to:85,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.positive}]}); });
+    var _kp=function(l,v,d,cls){return '<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 4"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value" style="font-size:22px">'+v+'</span>'+(d?'<span class="vx-kpi-delta '+(cls||'vx-muted')+'">'+d+'</span>':'')+'</div>';};
+    var _kh=$('vx-sys-kpis');
+    if(_kh)_kh.innerHTML=
+      _kp('Moteurs',_eng.length?(_ok+'/'+_eng.length):'—','opérationnels',(_eng.length&&_ok===_eng.length)?'vx-pos':'')
+      +_kp('Données fraîches',_frK.length?(_frOk+'/'+_frK.length):'—','domaines')
+      +_kp('Erreurs',_warn,_warn===0?'aucune':'à voir',_warn===0?'vx-pos':'vx-neg')
+      +_kp('Scan',_sym!=null?_sym:'—','titres')
+      +_kp('Appels IA',_ai.total!=null?(_ai.ok+'/'+_ai.total):'—',(_ai.fallbacks?(_ai.fallbacks+' repli'):'ok'))
+      +_kp('Lecture seule',(st&&st.readonly)?'✓':'⚠',(st&&st.readonly)?'aucun ordre':'à vérifier',(st&&st.readonly)?'vx-pos':'vx-neg');
+  }catch(e){}
 
   /* Invariant READONLY confirmé par le serveur */
   if(st)$('vx-readonly-confirm').textContent=st.readonly&&st.analysis_only
