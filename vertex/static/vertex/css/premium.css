@@ -100,6 +100,14 @@
   opacity:.7;pointer-events:none}
 .vx-card--premium:hover{border-color:var(--vx-border-default)}
 
+/* ── Glow d'angle subtil sur TOUTES les tuiles KPI (additif) ──────────
+   Unifie Marchés, Portefeuille, Performance sans toucher les pages : le
+   dégradé se superpose au fond de carte existant (spécificité .vx-card.vx-kpi
+   + chargement tardif → gagne uniquement sur background-image). */
+.vx-card.vx-kpi{
+  background-image:radial-gradient(130% 140% at 0% 0%,rgba(163,202,66,.055),transparent 58%)}
+.vx-card.vx-kpi:hover{border-color:var(--vx-border-default);transform:translateY(-1px)}
+
 @media (max-width:640px){
   .vx-metricgrid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
   .vx-metric .vx-metric-v{font-size:17px}
