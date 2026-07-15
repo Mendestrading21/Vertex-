@@ -722,13 +722,27 @@ async function renderWatchlist(){
         :VX.states.empty('Watchlist vide — ajoutez les titres à surveiller activement avec thèse et zone.',
           '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'watchlist\')">+ Ajouter</button>')}
     </section>
-    <section class="vx-card vx-mb3"><div class="vx-card-header"><span class="vx-card-title">Suivis actifs (setups)</span></div>
-      ${follows.length?follows.map(r=>`<div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">
+    <section class="vx-card vx-mb3"><div class="vx-card-header"><span class="vx-card-title">Suivis actifs (setups)</span>
+      <span class="vx-chart-question">Stop · entrée · objectif — le plan de chaque setup, visuel</span></div>
+      ${follows.length?follows.map(r=>{
+        const e=+r.entry_spot,s=+r.stop,t=+r.tgt;
+        let range='';
+        if([e,s,t].every(x=>isFinite(x))){
+          const lo=Math.min(e,s,t),hi=Math.max(e,s,t),span=(hi-lo)||1,pad=span*.08,a=lo-pad,rng=(hi+pad*2)-a;
+          const P=x=>((x-a)/rng*100).toFixed(1);
+          range=`<div class="vx-rangebar" style="margin:24px 10px 32px;flex:1;min-width:170px">
+            <span class="rb-fill" style="left:${P(Math.min(s,t))}%;right:${(100-+P(Math.max(s,t))).toFixed(1)}%"></span>
+            <i class="rb-tick" style="left:${P(s)}%;background:var(--vx-negative)"></i><span class="rb-lab" style="left:${P(s)}%;color:var(--vx-negative)">${VX.fmt.price(s)}<span class="rb-lab-sub">stop</span></span>
+            <i class="rb-tick" data-kind="price" style="left:${P(e)}%"></i><span class="rb-lab" data-kind="price" style="left:${P(e)}%">${VX.fmt.price(e)}<span class="rb-lab-sub">entrée</span></span>
+            <i class="rb-tick" data-kind="mean" style="left:${P(t)}%;background:var(--vx-positive)"></i><span class="rb-lab" data-kind="mean" style="left:${P(t)}%;color:var(--vx-positive)">${VX.fmt.price(t)}<span class="rb-lab-sub">objectif</span></span>
+          </div>`;
+        }
+        return `<div class="vx-flex" style="padding:9px 0;border-bottom:1px dashed var(--vx-border-soft);gap:12px;align-items:center">
         <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${r.sym}">${r.sym}</button>
         <span class="vx-badge vx-badge-entity" data-kind="follow">${r.kind}</span>
-        <span class="vx-grow vx-mono vx-meta">entrée ${VX.fmt.nd(r.entry_spot)} · stop ${VX.fmt.nd(r.stop)} · objectif ${VX.fmt.nd(r.tgt)}</span>
+        ${range||`<span class="vx-grow vx-mono vx-meta">entrée ${VX.fmt.nd(r.entry_spot)} · stop ${VX.fmt.nd(r.stop)} · objectif ${VX.fmt.nd(r.tgt)}</span>`}
         <span class="vx-meta">depuis ${r.followed||'—'}</span>
-        <button class="vx-btn vx-btn-sm vx-btn-danger" data-unfollow="${r.sym}">Retirer</button></div>`).join('')
+        <button class="vx-btn vx-btn-sm vx-btn-danger" data-unfollow="${r.sym}">Retirer</button></div>`;}).join('')
         :VX.states.empty('Aucun suivi actif — créez un suivi depuis une analyse (entrée/stop/objectif).')}
     </section>
     <section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Favoris (accès rapide)</span></div>
