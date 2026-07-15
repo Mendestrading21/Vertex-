@@ -90,6 +90,7 @@ _VIEW_CONTENT = {
     <div id="vx-committee-tally" class="vx-mt3"></div>
   </section>
 </div>
+<div id="vx-committee-map" class="vx-mt4"></div>
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Matrice du comit&eacute;">
     <div class="vx-card-header"><span class="vx-card-title">Comit&eacute; — revue de l&#8217;univers scann&eacute;</span>
@@ -365,6 +366,47 @@ function renderCommittee(){
     if(_th)_th.innerHTML='<div class="vx-kpi-label vx-mb2">Répartition des verdicts</div>'+_tk.sort(function(a,b){return tally[b]-tally[a];}).map(function(k){var w=Math.round(tally[k]/_tmax*100);
       return '<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:140px;font-size:12px;color:var(--vx-text-secondary)">'+esc(k)+'</span><span style="flex:1;height:12px;background:var(--vx-surface-3);border-radius:6px;overflow:hidden"><span style="display:block;height:100%;width:'+w+'%;background:'+(_tone[k]||'var(--vx-neutral-chart)')+';border-radius:6px"></span></span><span class="vx-mono" style="width:34px;text-align:right;font-size:12px">'+tally[k]+'</span></div>';}).join('');
   }catch(e){}
+  /* Carte conviction × accord : chaque titre positionné (x=accord, y=conviction),
+     couleur = groupe de décision, halo ambre = contradiction. 100 % données réelles
+     des reviews ; se replie proprement si < 2 points exploitables. */
+  try{
+    var _mpts=reviews.map(function(r){
+      var ag=(r.agreement==null)?null:(r.agreement<=1?r.agreement*100:r.agreement);
+      if(ag==null||r.conviction==null)return null;
+      return {x:ag,y:r.conviction,sym:r.symbol,dec:r.decision,grp:DECISION_GROUP[r.decision]||'ATTENDRE',contra:!!r.has_contradiction};
+    }).filter(Boolean);
+    var _mhost=$('vx-committee-map');
+    if(_mhost){
+      if(_mpts.length<2){_mhost.innerHTML='';}
+      else whenChartsReady(function(){
+        var cc=VXCharts.colors;
+        var _gc={AVOID:cc.negative,'ÉVITER':cc.negative,WAIT:cc.warning,ATTENDRE:cc.warning,WATCH_BREAKOUT:cc.brand,ACHETER:cc.positive,RENFORCER:cc.positive};
+        VXCharts.card('vx-committee-map',{
+          title:'Carte du comité — conviction × accord',
+          question:'Qui est à la fois convaincu ET consensuel ?',
+          conclusion:_mpts.filter(function(p){return p.y>=60&&p.x>=60;}).length+' titre(s) en zone haute (conviction ≥60, accord ≥60)',
+          height:360,legend:[{label:'Achat',color:cc.positive},{label:'Cassure',color:cc.brand},{label:'Éviter',color:cc.negative},{label:'Attente',color:cc.warning}],
+          source:(committeeData.data_source==='demo'?'scan (DÉMO)':'scan'),timestamp:committeeData.as_of,
+          mode:committeeData.data_source==='demo'?'fallback':'delayed',
+          explain:{shows:'Chaque point est un titre passé en revue, placé par l’accord du comité (X) et la conviction (Y). Couleur = groupe de décision ; cerclé d’ambre = comité divisé.',
+            why:'Le coin haut-droit réunit forte conviction ET fort consensus — les dossiers les plus solides.',
+            confirm:'Un titre qui migre vers le haut-droit au fil des scans.',invalidate:'Conviction ou accord qui s’effondre.'},
+          render:function(cv){return VXCharts.mount(cv,{type:'scatter',
+            data:{datasets:[{data:_mpts,
+              pointRadius:function(ctx){return ctx.raw&&ctx.raw.contra?7:5;},pointHoverRadius:9,
+              pointBackgroundColor:function(ctx){var p=ctx.raw;return p?(_gc[p.dec]||_gc[p.grp]||cc.neutral):cc.neutral;},
+              pointBorderColor:function(ctx){return ctx.raw&&ctx.raw.contra?cc.warning:'rgba(0,0,0,.4)';},
+              pointBorderWidth:function(ctx){return ctx.raw&&ctx.raw.contra?2:1;}}]},
+            options:{scales:{
+              x:{min:0,max:100,title:{display:true,text:'Accord du comité'},grid:{color:'rgba(237,255,237,.06)'}},
+              y:{min:0,max:100,title:{display:true,text:'Conviction'},grid:{color:'rgba(237,255,237,.06)'}}},
+              onClick:function(evt,els,chart){var q=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+                if(q.length){var d=chart.data.datasets[0].data[q[0].index];if(d&&d.sym)location.href='/analysis/'+d.sym;}},
+              plugins:{tooltip:{callbacks:{label:function(it){var p=it.raw;return p.sym+' · '+p.dec+' — conviction '+Math.round(p.y)+', accord '+Math.round(p.x)+'%'+(p.contra?' (contradiction)':'');}}}}}});}
+        });
+      });
+    }
+  }catch(e){}
   $('vx-committee-meta').innerHTML=VX.updateIndicator(c.as_of,
     (c.data_source==='demo'?'d&eacute;mo':'scan')+' · '+(c.universe_scanned??reviews.length)+' titres pass&eacute;s en revue',
     c.data_source==='demo'?'fallback':'delayed');
@@ -515,8 +557,23 @@ async function initResearch(){
       <td class="vx-num vx-mono">${val}</td></tr>`;
     $('vx-research-meta').innerHTML=
       `<span class="vx-badge" style="color:${esc(v.color||'inherit')}">${esc(v.verdict||'—')}</span>`;
-    $('vx-research-body').innerHTML=
-      `<div style="overflow-x:auto"><table class="vx-table"><thead>
+    /* Bandeau premium : stat-tiles + mini-jauges des probabilités 0-1 (PSR/DSR/PBO).
+       Données réelles /api/validator ; « — » honnête si absent. */
+    const _vtone=v.verdict==='ROBUSTE'?'brand':(v.verdict==='FRAGILE'?'neg':'');
+    const _statrow=`<div class="vx-statrow">
+      <div class="vx-stat" data-tone="${_vtone}"><div class="vx-stat-k">Verdict</div><div class="vx-stat-v">${esc(v.verdict||'—')}</div><div class="vx-stat-sub">robustesse hors échantillon</div></div>
+      <div class="vx-stat" data-tone="${v.sharpe_ann>0?'pos':v.sharpe_ann<0?'neg':''}"><div class="vx-stat-k">Sharpe annualisé</div><div class="vx-stat-v">${VX.fmt.num(v.sharpe_ann,2)}</div><div class="vx-stat-sub">rendement / risque</div></div>
+      <div class="vx-stat" data-tone="${v.folds_positive_pct>=50?'pos':v.folds_positive_pct!=null?'neg':''}"><div class="vx-stat-k">Walk-forward +</div><div class="vx-stat-v">${VX.fmt.num(v.folds_positive_pct,0)}%</div><div class="vx-stat-sub">fenêtres au Sharpe &gt; 0</div></div>
+    </div>`;
+    const _gm=(k,val,tone,cmp)=>`<div class="vx-metric" data-tone="${val==null?'':tone}"><span class="vx-metric-k">${k}</span><span class="vx-metric-v">${val==null?'—':VX.fmt.num(val,3)}</span>${cmp?`<div class="vx-metric-cmp">${cmp}</div>`:''}<div class="vx-metric-bar"><i style="width:${val==null?0:Math.max(3,Math.min(100,val*100))}%"></i></div></div>`;
+    const _probs=`<div class="vx-metricgrid vx-mt3">
+      ${_gm('PSR',v.psr0,v.psr0>=0.5?'pos':'warn','P(Sharpe&gt;0)')}
+      ${_gm('DSR',v.dsr,v.dsr>=0.5?'pos':'neg','Sharpe déflaté')}
+      ${_gm('PBO',v.pbo_estimate,v.pbo_estimate>=0.5?'neg':'pos','sur-optimisation')}
+    </div>`;
+    $('vx-research-body').innerHTML=_statrow+_probs+
+      `<details class="vx-mt3"><summary class="vx-meta" style="cursor:pointer;margin-bottom:8px">Toutes les métriques du validateur</summary>`
+      +`<div style="overflow-x:auto"><table class="vx-table"><thead>
         <tr><th>M&eacute;trique</th><th class="vx-num">Valeur</th></tr></thead><tbody>`
       +row('Sharpe annualis&eacute;',VX.fmt.num(v.sharpe_ann,2))
       +row('PSR',VX.fmt.num(v.psr0,3),'probabilit&eacute; que le Sharpe r&eacute;el d&eacute;passe 0')
@@ -528,7 +585,7 @@ async function initResearch(){
       +row('PBO (proxy)',VX.fmt.num(v.pbo_estimate,2),'probabilit&eacute; de sur-optimisation')
       +row('Skew / Kurtosis',VX.fmt.num(v.skew,2)+' / '+VX.fmt.num(v.kurtosis,2))
       +row('Observations',VX.fmt.nd(v.n))
-      +'</tbody></table></div>'
+      +'</tbody></table></div></details>'
       +`<div class="vx-insight vx-mt3" data-tone="${v.verdict==='FRAGILE'?'risk':'ai'}">${esc(v.note||'')}</div>`
       +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'validateur hors &eacute;chantillon (indicatif)','delayed')}</div>`;
     const folds=v.fold_sharpes||[];
