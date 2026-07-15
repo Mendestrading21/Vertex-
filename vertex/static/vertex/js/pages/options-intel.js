@@ -463,8 +463,10 @@
         el.innerHTML = (window.VX && VX.states) ? VX.states.empty(esc((d && d.reason) || 'Stratégies indisponibles pour ce titre.')) : 'Indisponible.';
         return;
       }
+      var biasFr = { bullish: 'haussier', bearish: 'baissier', neutral: 'neutre' }[d.bias] || '—';
       var head = '<div class="vx-muted" style="margin-bottom:.6rem">' + esc(sym) + ' · spot ' + VXf.nd(d.spot) +
-        ' · échéance ' + esc(d.exp || '—') + ' (' + VXf.nd(d.dte) + ' j) · IV ' + (d.iv != null ? (d.iv * 100).toFixed(0) + ' %' : '—') + '</div>';
+        ' · échéance ' + esc(d.exp || '—') + ' (' + VXf.nd(d.dte) + ' j) · IV ' + (d.iv != null ? (d.iv * 100).toFixed(0) + ' %' : '—') +
+        ' · biais ' + biasFr + ' → stratégies classées par adéquation</div>';
       el.innerHTML = head + '<div class="vx-grid">' + d.strategies.map(function (s, i) {
         var credit = s.is_credit;
         var mp = s.max_profit_unbounded ? 'illimité' : (s.max_profit != null ? fmtUsd(s.max_profit) : '—');
@@ -472,9 +474,12 @@
         var pop = s.probability_of_profit != null ? s.probability_of_profit + ' %' : '—';
         var be = (s.breakevens && s.breakevens.length) ? s.breakevens.map(function (b) { return VXf.nd(b); }).join(' · ') : '—';
         var g = s.greeks;
-        return '<section class="vx-card vx-col-6">' +
+        var recoStyle = s.recommended ? ' style="border-color:var(--vx-signal-500,#84aa31);box-shadow:0 0 0 1px var(--vx-signal-500,#84aa31)"' : '';
+        return '<section class="vx-card vx-col-6"' + recoStyle + '>' +
           '<div class="vx-card-header"><span class="vx-card-title">' + esc(s.label) + '</span>' +
+          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-signal-500,#84aa31);color:#0b0d0a;font-weight:700">★ Recommandée</span>' : '') +
           '<span class="vx-badge" style="color:var(--vx-' + (credit ? 'positive' : 'option') + ')">' + (credit ? 'crédit ' : 'débit ') + fmtUsd(Math.abs(s.net_premium)) + '</span></div>' +
+          (s.fit_reason ? '<div class="vx-meta" style="margin:-2px 0 6px">' + esc(s.fit_reason) + '</div>' : '') +
           '<div id="strat-pf-' + i + '" style="height:150px"></div>' +
           '<div class="vx-grid vx-mt2" style="grid-template-columns:repeat(4,1fr);gap:6px">' +
           stratKpi('PoP', pop) + stratKpi('Gain max', mp) + stratKpi('Perte max', ml) + stratKpi('Breakevens', be) +

@@ -40,7 +40,16 @@ def api_options_strategies(sym):
         if not spot:
             spot = next((c.get('spot') for c in board
                          if c.get('sym') == sym and c.get('spot')), None)
-        res = multileg_lab.strategies_for_symbol(board, sym, spot)
+        # Biais directionnel RÉEL du titre (verdict/score du scan) → recommandation adaptée.
+        verdict = (detail.get('verdict') or '').upper()
+        score = detail.get('score')
+        if verdict in ('ACHETER', 'RENFORCER', 'BUY') or (score is not None and score >= 60):
+            bias = 'bullish'
+        elif verdict in ('ÉVITER', 'EVITER', 'ALLÉGER', 'ALLEGER', 'AVOID') or (score is not None and score < 40):
+            bias = 'bearish'
+        else:
+            bias = 'neutral'
+        res = multileg_lab.strategies_for_symbol(board, sym, spot, bias=bias)
         res['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
         res['demo'] = DEMO_MODE
         return jsonify(res)

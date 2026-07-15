@@ -146,6 +146,30 @@ def test_strategies_from_board_synthetic():
     assert ml.strategies_for_symbol(board, 'ZZZ', 100)['available'] is False
 
 
+def _board():
+    return [
+        {'sym': 'TEST', 'type': 'CALL', 'strike': 100, 'exp': '2026-08-21', 'dte': 35, 'iv': 0.30, 'cost': 500},
+        {'sym': 'TEST', 'type': 'PUT', 'strike': 100, 'exp': '2026-08-21', 'dte': 35, 'iv': 0.30, 'cost': 500},
+        {'sym': 'TEST', 'type': 'CALL', 'strike': 106, 'exp': '2026-08-21', 'dte': 35, 'iv': 0.30, 'cost': 220},
+        {'sym': 'TEST', 'type': 'PUT', 'strike': 94, 'exp': '2026-08-21', 'dte': 35, 'iv': 0.30, 'cost': 210},
+    ]
+
+
+def test_ranking_recommends_by_bias():
+    # exactement une recommandée, alignée sur le biais
+    rb = ml.strategies_for_symbol(_board(), 'TEST', 100, bias='bullish')
+    reco = [s for s in rb['strategies'] if s['recommended']]
+    assert len(reco) == 1 and reco[0]['kind'] in ('long_call', 'bull_call_spread')
+    rx = ml.strategies_for_symbol(_board(), 'TEST', 100, bias='bearish')
+    assert [s for s in rx['strategies'] if s['recommended']][0]['kind'] in ('long_put', 'bear_put_spread')
+    rn = ml.strategies_for_symbol(_board(), 'TEST', 100, bias='neutral')
+    assert [s for s in rn['strategies'] if s['recommended']][0]['kind'] in ('iron_condor', 'straddle', 'strangle')
+    # tri décroissant par fit_score + reason présente
+    scores = [s['fit_score'] for s in rb['strategies']]
+    assert scores == sorted(scores, reverse=True)
+    assert all(s.get('fit_reason') for s in rb['strategies'])
+
+
 def test_strategies_route_real_and_honest(client):
     # symbole présent dans le board → 200 + stratégies analysées
     r = client.get('/api/options/strategies/TEST')

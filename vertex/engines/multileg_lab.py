@@ -245,7 +245,52 @@ _STRATEGY_ORDER = ['bull_call_spread', 'bear_put_spread', 'iron_condor', 'stradd
                    'strangle', 'long_call', 'long_put']
 
 
-def strategies_for_symbol(board, sym, spot, iv_hint=None):
+# Adéquation directionnelle de base par stratégie (0 = contre-indiqué, 1 = idéal).
+_FIT = {
+    'long_call':        {'bullish': 1.00, 'bearish': 0.00, 'neutral': 0.20},
+    'bull_call_spread': {'bullish': 0.90, 'bearish': 0.00, 'neutral': 0.30},
+    'long_put':         {'bullish': 0.00, 'bearish': 1.00, 'neutral': 0.20},
+    'bear_put_spread':  {'bullish': 0.00, 'bearish': 0.90, 'neutral': 0.30},
+    'iron_condor':      {'bullish': 0.25, 'bearish': 0.25, 'neutral': 1.00},
+    'straddle':         {'bullish': 0.45, 'bearish': 0.45, 'neutral': 0.55},
+    'strangle':         {'bullish': 0.45, 'bearish': 0.45, 'neutral': 0.55},
+}
+_BIAS_LABEL = {'bullish': 'haussier', 'bearish': 'baissier', 'neutral': 'neutre'}
+
+
+def rank_strategies(strategies, bias='neutral'):
+    """Note et classe les stratégies par ADÉQUATION au contexte (heuristique TRANSPARENTE,
+    aide à la décision — pas une promesse). Score = 45 % alignement directionnel +
+    30 % probabilité de profit + 25 % reward/risk. Marque la mieux adaptée `recommended`.
+    Modifie et renvoie la liste triée."""
+    bias = bias if bias in ('bullish', 'bearish', 'neutral') else 'neutral'
+    for s in strategies:
+        fit = _FIT.get(s.get('kind'), {}).get(bias, 0.4)
+        pop = (s.get('probability_of_profit') or 0.0) / 100.0
+        # reward/risk normalisé (illimité → plafonné à 1) ; perte bornée
+        loss = abs(s.get('max_loss') or 0.0)
+        if s.get('max_profit_unbounded'):
+            rr = 1.0
+        elif loss > 0 and s.get('max_profit') is not None:
+            rr = min(1.0, (s['max_profit'] / loss) / 2.0)
+        else:
+            rr = 0.0
+        score = 0.45 * fit + 0.30 * pop + 0.25 * rr
+        s['fit_score'] = round(score * 100, 1)
+        bits = ['aligné ' + _BIAS_LABEL[bias] if fit >= 0.7 else
+                ('neutre au biais' if fit >= 0.4 else 'peu aligné au biais')]
+        if s.get('probability_of_profit') is not None:
+            bits.append('PoP %s%%' % s['probability_of_profit'])
+        if rr >= 0.5:
+            bits.append('R:R favorable')
+        s['fit_reason'] = ' · '.join(bits)
+    strategies.sort(key=lambda s: s.get('fit_score', 0), reverse=True)
+    for i, s in enumerate(strategies):
+        s['recommended'] = (i == 0)
+    return strategies
+
+
+def strategies_for_symbol(board, sym, spot, iv_hint=None, bias='neutral'):
     """Construit + analyse les stratégies canoniques réalisables depuis le BOARD réel.
 
     Le board porte `cost` = prime PAR CONTRAT (×100) → convertie en prime/action.
@@ -309,7 +354,8 @@ def strategies_for_symbol(board, sym, spot, iv_hint=None):
             an['kind'] = kind
             an['label'] = STRATEGY_LABELS.get(kind, kind)
             out.append(an)
+    rank_strategies(out, bias)  # classe par adéquation au contexte, marque la recommandée
     return {'available': bool(out), 'sym': sym, 'spot': round(spot, 2),
             'exp': exp, 'dte': dte, 'iv': round(iv, 4) if iv else None,
-            'atm_strike': atm_strike, 'strategies': out,
+            'bias': bias, 'atm_strike': atm_strike, 'strategies': out,
             'reason': None if out else 'primes insuffisantes dans le board pour construire une stratégie.'}
