@@ -142,6 +142,26 @@ function emptyCard(host,reason,action){
   const el=$(host);if(el)el.innerHTML='<div class="vx-card">'+VX.states.empty(reason,action||'')+'</div>';
 }
 
+/* Anneau de progression (§39) — n/max trades clôturés. SVG pur, sur tokens. */
+function progressRing(n,max){
+  var frac=Math.max(0,Math.min(1,max?n/max:0)),R=46,C=2*Math.PI*R;
+  var col=frac>=1?'var(--vx-positive)':'var(--vx-brand)';
+  return '<svg viewBox="0 0 120 120" style="width:132px;height:132px" role="img" aria-label="'+n+' sur '+max+' trades clôturés">'
+    +'<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="var(--vx-surface-3)" stroke-width="10"/>'
+    +'<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+col+'" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+(frac*C).toFixed(1)+' '+C.toFixed(1)+'" transform="rotate(-90 60 60)"/>'
+    +'<text x="60" y="57" text-anchor="middle" font-size="32" font-weight="800" fill="var(--vx-text-primary)" style="font-variant-numeric:tabular-nums">'+n+'</text>'
+    +'<text x="60" y="78" text-anchor="middle" font-size="12" fill="var(--vx-text-muted)">/ '+max+' trades</text></svg>';
+}
+/* Aperçu FANTÔME de la courbe d'équité (§39) — forme déterministe, AUCUN chiffre :
+   fait sentir le produit à venir sans jamais afficher de fausse performance. */
+function ghostEquity(){
+  var pts='M0 95 L60 88 L120 92 L180 70 L240 74 L300 52 L360 58 L420 34';
+  return '<div style="position:relative;margin-bottom:6px"><svg viewBox="0 0 420 120" preserveAspectRatio="none" style="width:100%;height:118px;opacity:.55" aria-hidden="true">'
+    +'<defs><linearGradient id="pfghost" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--vx-brand)" stop-opacity=".22"/><stop offset="1" stop-color="var(--vx-brand)" stop-opacity="0"/></linearGradient></defs>'
+    +'<path d="'+pts+' L420 120 L0 120 Z" fill="url(#pfghost)"/><path d="'+pts+'" fill="none" stroke="var(--vx-brand)" stroke-width="2" stroke-dasharray="4 5" stroke-linejoin="round"/></svg>'
+    +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span class="vx-meta" style="background:var(--vx-surface-1);padding:4px 11px;border-radius:999px;border:1px solid var(--vx-border-soft)">Ta courbe d&#8217;équité apparaîtra ici</span></div></div>';
+}
+
 /* ═══ OVERVIEW ═══ */
 function loadKpis(){
   const list=trades();
@@ -158,10 +178,11 @@ function loadKpis(){
     $('vx-pf-kpis').innerHTML=`<div class="vx-card vx-col-12">
       <div class="vx-card-header"><span class="vx-card-title">Construis ton track record</span>
         <span class="vx-meta vx-right">${n} / 5 trades pour débloquer les premières statistiques</span></div>
-      <div style="height:10px;border-radius:6px;background:var(--vx-surface-3,#17191b);overflow:hidden;margin:8px 0 14px" role="img" aria-label="progression ${pct} %">
-        <span style="display:block;height:100%;width:${pct}%;background:var(--vx-orange-500,#ad4718);border-radius:6px"></span></div>
-      <div class="vx-help vx-mb3">Chaque trade clôturé (WIN/LOSS + P&amp;L) débloque des analyses. Aucune fausse performance n’est affichée avant d’avoir des données réelles — la méthode se juge sur des faits, pas des estimations.</div>
-      ${rows}
+      <div class="vx-grid">
+        <div class="vx-col-4" style="display:flex;align-items:center;justify-content:center;padding:6px 0">${progressRing(n,5)}</div>
+        <div class="vx-col-8">${ghostEquity()}<div class="vx-mt1">${rows}</div></div>
+      </div>
+      <div class="vx-help vx-mt3">Chaque trade clôturé (WIN/LOSS + P&amp;L) débloque des analyses. Aucune fausse performance n’est affichée avant d’avoir des données réelles — la méthode se juge sur des faits, pas des estimations.</div>
       <div class="vx-flex vx-mt3" style="gap:.5rem;flex-wrap:wrap">
         <a class="vx-btn vx-btn-sm vx-btn-primary" href="/performance?view=journal">Ajouter une entrée au journal</a>
         <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio?view=positions">Voir mes positions</a></div>
