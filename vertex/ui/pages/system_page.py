@@ -531,14 +531,18 @@ async function loadConnections(){
 
   /* Moteurs */
   if(st&&Array.isArray(st.engines)&&st.engines.length){
-    $('vx-conn-engines').innerHTML='<div class="vx-flex vx-wrap vx-gap2">'
+    /* Moteurs en stat-tiles à halo (au lieu de badges plats) : nom + état
+       color-codé. Jamais « prêt » si le moteur n'a aucune donnée exploitable. */
+    $('vx-conn-engines').innerHTML='<div class="vx-statrow">'
       +st.engines.map(en=>{
         const loaded=en.status==='ok'||en.ok===true;
         const hasData=!!(en.last_success||en.last_run||en.fresh);
-        /* jamais « OK » si le moteur n'a aucune donnée exploitable */
-        const state=!loaded?['offline','KO']:(hasData?['live','prêt']:['frozen','chargé — sans données']);
-        return `<span class="vx-badge vx-badge-status" data-status="${state[0]}"
-          title="${esc(en.last_error||en.last_success||'')}">${esc(en.name||'moteur')} · ${state[1]}</span>`;
+        const state=!loaded?['neg','KO','hors service']:(hasData?['pos','Prêt','opérationnel']:['','Chargé','sans données']);
+        const dotc=state[0]==='pos'?'var(--vx-positive)':state[0]==='neg'?'var(--vx-negative)':'var(--vx-warning)';
+        return `<div class="vx-stat" data-tone="${state[0]}" title="${esc(en.last_error||en.last_success||'')}">
+          <div class="vx-stat-k">${esc(en.name||'moteur')}</div>
+          <div class="vx-stat-v" style="font-size:15px;display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:99px;background:${dotc};flex:0 0 auto"></span>${state[1]}</div>
+          <div class="vx-stat-sub">${state[2]}</div></div>`;
       }).join('')+'</div>'
       +((st.warnings||[]).length?`<div class="vx-stale-banner vx-mt3">⏳ ${st.warnings.map(esc).join(' · ')}</div>`:'')
       +`<div class="vx-mt3"><button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-tech-endpoints">Détails techniques (endpoints) →</button></div>`;
