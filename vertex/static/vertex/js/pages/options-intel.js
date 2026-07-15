@@ -484,7 +484,8 @@
           '<div class="vx-grid vx-mt2" style="grid-template-columns:repeat(4,1fr);gap:6px">' +
           stratKpi('PoP', pop) + stratKpi('Gain max', mp) + stratKpi('Perte max', ml) + stratKpi('Breakevens', be) +
           '</div>' +
-          (g ? '<div class="vx-meta vx-mt2">Δ ' + g.delta + ' · Θ ' + g.theta + '/j · Vega ' + g.vega + '/1%IV</div>' : '') +
+          (g ? '<div class="vx-meta vx-mt2">Δ ' + g.delta + ' · Θ ' + g.theta + '/j · Vega ' + g.vega + '/1%IV' +
+            (g.vanna != null ? ' · Vanna ' + g.vanna + ' · Vomma ' + g.vomma : '') + '</div>' : '') +
           '</section>';
       }).join('') + '</div>' +
         '<div class="vx-explain" style="margin-top:.6rem"><p class="vx-muted">' + esc(d.strategies[0].model_note || '') + '</p></div>';

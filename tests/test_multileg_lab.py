@@ -104,6 +104,22 @@ def test_greeks_signs():
     assert r2['greeks']['delta'] > 0 and r2['greeks']['theta'] > 0
 
 
+def test_higher_order_greeks():
+    # Call OTM : vanna>0 et vomma>0 (d1,d2 < 0 → d1*d2 > 0, -d2 > 0).
+    g = ml.analyze_strategy([{'type': 'call', 'strike': 120, 'premium': 1, 'qty': 1}],
+                            spot=100, iv=0.30, days_to_exp=30)['greeks']
+    assert 'vanna' in g and 'vomma' in g
+    assert g['vomma'] > 0 and g['vanna'] > 0
+    # Parité call/put : vega, vanna, vomma IDENTIQUES au même strike/qty (garde-fou math).
+    gc = ml.analyze_strategy([{'type': 'call', 'strike': 110, 'premium': 2, 'qty': 1}],
+                             spot=100, iv=0.30, days_to_exp=30)['greeks']
+    gp = ml.analyze_strategy([{'type': 'put', 'strike': 110, 'premium': 2, 'qty': 1}],
+                             spot=100, iv=0.30, days_to_exp=30)['greeks']
+    assert abs(gc['vega'] - gp['vega']) < 1e-6
+    assert abs(gc['vanna'] - gp['vanna']) < 1e-6
+    assert abs(gc['vomma'] - gp['vomma']) < 1e-6
+
+
 def test_honest_refusals():
     # Prime manquante → refus honnête, pas de P&L inventé.
     bad = ml.analyze_strategy([{'type': 'call', 'strike': 100, 'premium': None, 'qty': 1}],

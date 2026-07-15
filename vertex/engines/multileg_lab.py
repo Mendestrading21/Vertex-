@@ -60,7 +60,7 @@ def _leg_greeks(spot, leg, T, iv, r=R_DEFAULT):
     q = leg.get('qty') or 0.0
     m = _mult(leg)
     if leg.get('type') == 'stock':
-        return {'delta': q * m, 'gamma': 0.0, 'theta': 0.0, 'vega': 0.0}
+        return {'delta': q * m, 'gamma': 0.0, 'theta': 0.0, 'vega': 0.0, 'vanna': 0.0, 'vomma': 0.0}
     k = leg.get('strike') or 0.0
     right = 'CALL' if leg.get('type') == 'call' else 'PUT'
     if T <= 0 or iv <= 0 or spot <= 0 or k <= 0:
@@ -77,12 +77,17 @@ def _leg_greeks(spot, leg, T, iv, r=R_DEFAULT):
         theta_yr = -(spot * nd1 * iv) / (2.0 * math.sqrt(T)) + r * k * math.exp(-r * T) * _ncdf(-d2)
     gamma = nd1 / (spot * sq)
     vega = spot * nd1 * math.sqrt(T)
+    # Greeks d'ordre supérieur (identiques call/put par parité — dépendent de φ(d1)) :
+    vanna = -nd1 * d2 / iv                     # ∂vega/∂spot = ∂delta/∂vol
+    vomma = vega * d1 * d2 / iv                # ∂vega/∂vol (convexité de vol)
     scale = q * m
     return {
         'delta': scale * delta,               # par $1 de sous-jacent
         'gamma': scale * gamma,
         'theta': scale * theta_yr / 365.0,    # par jour
         'vega': scale * vega / 100.0,         # par point d'IV (1 %)
+        'vanna': scale * vanna / 100.0,       # par 1 % d'IV
+        'vomma': scale * vomma / 100.0,       # par 1 % d'IV
     }
 
 
@@ -160,7 +165,7 @@ def analyze_strategy(legs, spot, iv, days_to_exp, r=R_DEFAULT, name=None):
             pop = round(prof / total * 100.0, 1)
 
     # Greeks agrégés (position)
-    g = {'delta': 0.0, 'gamma': 0.0, 'theta': 0.0, 'vega': 0.0}
+    g = {'delta': 0.0, 'gamma': 0.0, 'theta': 0.0, 'vega': 0.0, 'vanna': 0.0, 'vomma': 0.0}
     have_iv = bool(iv and iv > 0 and T > 0)
     if have_iv:
         for leg in legs:
