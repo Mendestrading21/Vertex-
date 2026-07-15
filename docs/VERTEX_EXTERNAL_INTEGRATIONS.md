@@ -42,7 +42,7 @@ Plateforme de trading algo dont le **cœur est l'exécution d'ordres** (34 broke
 
 ## Plan de connexion recommandé (sûr)
 
-1. ✅ **lightweight-charts** → chandeliers pro **livrés sur Analyse** (`VXCharts.lwCandlestickCard`, v4.2.3 auto-hébergé, attribution TV affichée). Repli auto sur le candlestick Chart.js si OHLC daté absent. *Reste à étendre : Options.*
+1. ✅ **lightweight-charts** → chandeliers pro **livrés sur Analyse** (`VXCharts.lwCandlestickCard`, v4.2.3 auto-hébergé, attribution TV affichée). Repli auto sur le candlestick Chart.js si OHLC daté absent. *Options : pas de graphe chandeliers du sous-jacent (page = analytics options : OI/strike, scénarios, thêta, greeks) → non applicable, sauf ajout délibéré d'un contexte prix.*
 2. **tradingview-screener/-ta** → moteur de backtesting + screeners + consensus TA, en routes Flask read-only, courbes via les composants existants. *Capacité nouvelle (à valider comme hors-visuel).*
 3. Idées à réimplémenter (pas de dépendance) : dashboards options GEX/max-pain/IV-smile (inspiration OpenAlgo), TWS Scanner (idée omdv, via l'ib_async existant).
 4. **Jamais** : chemins d'ordre (code-rabi IBKR-MCP, OpenAlgo). Toute réutilisation IBKR force `readonly=True`.
