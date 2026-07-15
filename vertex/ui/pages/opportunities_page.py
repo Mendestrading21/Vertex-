@@ -93,9 +93,37 @@ function scoreBar(label,val,color){
       <span style="display:block;height:100%;width:${v}%;background:${color};border-radius:4px"></span></span>
     <span style="width:26px;text-align:right;font-size:10.5px;font-variant-numeric:tabular-nums;color:var(--vx-text-secondary,#b7b2aa)">${Math.round(v)}</span></div>`;
 }
+/* Sparkline compacte (60 dernières clôtures réelles du scan) — vert si la série
+   monte, corail si elle baisse ; rien si la série manque (aucune invention). */
+function sparkMini(closes){
+  const v=(closes||[]).filter(x=>x!=null&&isFinite(x)).slice(-60);
+  if(v.length<8)return '';
+  const w=120,h=26,mn=Math.min.apply(null,v),mx=Math.max.apply(null,v),rng=(mx-mn)||1;
+  const pts=v.map((x,i)=>(i/(v.length-1)*w).toFixed(1)+','+(h-1-((x-mn)/rng)*(h-2)).toFixed(1)).join(' ');
+  const up=v[v.length-1]>=v[0];
+  const col=up?'var(--vx-positive)':'var(--vx-negative)';
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" width="100%" height="26" style="display:block;margin-top:6px" aria-hidden="true">
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/></svg>`;
+}
+/* Bande des 5 dimensions du scoring (mini-colonnes C·M·T·F·R) — couleur par
+   niveau (risque inversé). Tooltip = nom + valeur. Rien si tout manque. */
+function dimStrip(r){
+  const dims=[['C','Conviction',r.st_conf,0],['M','Momentum',r.st_mom,0],['T','Technique',r.st_tech,0],
+              ['F','Fondamental',r.st_fund,0],['R','Risque',r.st_risk,1]];
+  if(!dims.some(d=>d[2]!=null))return '';
+  return `<div style="display:flex;gap:5px;align-items:flex-end;margin-top:8px" role="img" aria-label="dimensions du score">`
+    +dims.map(d=>{const v=d[2];
+      const lvl=v==null?null:(d[3]?100-v:v);
+      const col=lvl==null?'var(--vx-surface-4)':lvl>=67?'var(--vx-positive)':lvl>=40?'var(--vx-warning)':'var(--vx-negative)';
+      const hh=v==null?4:Math.max(4,Math.round(v/100*24));
+      return `<span title="${d[1]} : ${v==null?'n/d':Math.round(v)}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+        <span style="display:flex;align-items:flex-end;height:24px;width:100%"><i style="display:block;width:100%;height:${hh}px;border-radius:3px 3px 1px 1px;background:${col};opacity:${v==null?.35:.95}"></i></span>
+        <b style="font:600 8.5px/1 var(--vx-font);color:var(--vx-text-faint)">${d[0]}</b></span>`;}).join('')+'</div>';
+}
 /* Top Opportunities (§17) : cartes des meilleurs candidats — actionnables d'abord */
-function renderTopCards(rows){
+function renderTopCards(rows,detail){
   const el=$('op-topcards');if(!el)return;
+  detail=detail||{};
   const prio=(r)=>bucketOf(r)==='Actionnable'?0:bucketOf(r)==='Proche'?1:bucketOf(r)==='À surveiller'?2:3;
   const ranked=(rows||[]).filter(r=>r.verdict!=='AVOID'&&r.verdict!=='ÉVITER')
     .slice().sort((a,b)=>prio(a)-prio(b)||(b.score||0)-(a.score||0)).slice(0,6);
@@ -106,15 +134,19 @@ function renderTopCards(rows){
     const gauge=(window.VXCharts&&VXCharts.confidenceGaugeSVG&&r.score!=null)
       ?VXCharts.confidenceGaugeSVG(r.score,verdictDir(dec),{size:78,stroke:7,dirLabel:verdictWord(dec)}):'';
     const pb=pbText(r);const ic=pbIcon(r);
+    const ser=detail[r.symbol]&&detail[r.symbol].series;
+    const spark=sparkMini(ser&&ser.close);
     return `<div class="vx-card vx-col-4 vx-card--premium" style="grid-column:span 4" aria-label="${r.symbol}">
       <div class="vx-flex" style="align-items:flex-start;gap:.6rem">
         <div style="min-width:0;flex:1">
           <div class="vx-flex" style="gap:.4rem"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px;padding-left:0" data-open-analysis="${r.symbol}">${r.symbol}</button>
             <span class="vx-badge">${bucketOf(r)}</span></div>
           <div class="vx-mono vx-mt1" style="font-size:18px;font-weight:700;color:var(--vx-text-primary,#f4f1ec)">${r.price!==null&&r.price!==undefined?'$'+VX.fmt.price(r.price):'—'}</div>
+          ${spark}
         </div>
         <div style="flex:0 0 auto">${gauge}</div>
       </div>
+      ${dimStrip(r)}
       <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">
         ${dec?`<span class="vx-badge vx-badge-decision" data-decision="${esc(dec)}">${esc(dec)}</span>`:''}
         ${r.rr!==null&&r.rr!==undefined?`<span class="vx-meta">R:R ${VX.fmt.nd(r.rr)}</span>`:''}
@@ -188,7 +220,7 @@ async function renderRadar(){
     +'Couleur : direction du verdict (émeraude = achat · corail = éviter · acier = neutre).<br>Bordure ambre : qualité de données dégradée (démo).</div>'
     +'<div id="op-radar-sel" class="vx-mt3"></div></div></div>'
     +'<div id="op-ranking" class="vx-mt4"></div>';
-  renderTopCards(rows);
+  renderTopCards(rows,scan.detail||{});
   renderFunnel();
   renderRanking(rows);
   VXCharts.card('op-radar',{

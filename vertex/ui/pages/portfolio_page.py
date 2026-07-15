@@ -169,8 +169,10 @@ function weightBars(weights,overweight,maxW){
     +`<span class="wb-val">${e.v.toFixed(1)}%</span></div>`).join('')
     +`<div class="vx-meta vx-mt2">Repère corail = poids max ${maxW}% par position · Cash = liquidités.</div></div>`;
 }
-/* Synthèse chiffrée : valeur au coût toujours calculable ; marques live si
-   disponibles — jamais un chiffre inventé, l'étiquette dit ce qui est affiché. */
+/* COCKPIT de synthèse : jauge « positions gagnantes » + gagnants/perdants +
+   valeur/P&L/équipe/options en tuiles. Valeur au coût toujours calculable ;
+   marques live si disponibles — jamais un chiffre inventé, l'étiquette dit
+   ce qui est affiché ; jauge absente sans marques (honnête). */
 function renderSummary(rich){
   const host=$('pf-summary');if(!host)return;
   if(!rich.length){host.innerHTML='';return;}
@@ -179,22 +181,30 @@ function renderSummary(rich){
   const marked=rich.filter(t=>t.value!==null);
   const value=marked.length===rich.length?rich.reduce((s,t)=>s+t.value,0):null;
   const pl=value!==null&&invested?(value-invested):null;
-  const cell=(label,val,delta,cls)=>`<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3">
-    <span class="vx-kpi-label">${label}</span>
-    <span class="vx-kpi-value" style="font-size:20px">${val}</span>
-    ${delta?`<span class="vx-kpi-delta ${cls||'vx-muted'}">${delta}</span>`:''}</div>`;
-  host.innerHTML=
-    cell('Valeur',value!==null?VX.fmt.price(value):VX.fmt.price(invested),
-      value!==null?'marques live/desk':'au coût (marques indisponibles)')
-    +cell('P&L latent',pl!==null?VX.fmt.price(pl):'n/d',
-      pl!==null?VX.fmt.pct(pl/invested*100,1):'IBKR hors ligne',
-      pl>0?'vx-pos':pl<0?'vx-neg':'vx-muted')
-    +cell('Équipe actions',stocks.length+' / 10',
-      stocks.length>=10?'complet — remplacement obligatoire':'places disponibles',
-      stocks.length>=10?'vx-warn':'')
-    +cell('Options tactiques',opts.length+' / 3',
-      `CALLS ${opts.filter(t=>t.type==='CALL').length} · PUTS ${opts.filter(t=>t.type==='PUT').length} / 1 max`,
-      (opts.length>=3||opts.filter(t=>t.type==='PUT').length>1)?'vx-warn':'');
+  const winners=marked.filter(t=>t.pl>0).length,losers=marked.filter(t=>t.pl<0).length;
+  const winPct=marked.length?Math.round(winners/marked.length*100):null;
+  const gauge=(winPct!=null&&window.VXCharts&&VXCharts.scoreGaugeSVG)
+    ?VXCharts.scoreGaugeSVG(winPct,{label:'positions gagnantes',size:92,stroke:8}):'';
+  const wl=marked.length?`<div style="display:flex;height:9px;border-radius:99px;overflow:hidden;background:var(--vx-surface-0);margin-top:8px" role="img" aria-label="${winners} gagnantes contre ${losers} perdantes">
+      <i style="width:${(winners/(marked.length||1)*100).toFixed(0)}%;background:var(--vx-positive)"></i>
+      <i style="flex:1;background:var(--vx-negative)"></i></div>
+    <div class="vx-meter-row" style="margin-top:5px"><span style="color:var(--vx-positive)">${winners} gagnante(s)</span><span style="color:var(--vx-negative)">${losers} perdante(s)</span></div>`:'';
+  const tile=(label,val,sub,tone)=>`<div class="vx-stat" data-tone="${tone||''}">
+    <div class="vx-stat-k">${label}</div><div class="vx-stat-v" style="font-size:19px">${val}</div>
+    ${sub?`<div class="vx-stat-sub">${sub}</div>`:''}</div>`;
+  host.innerHTML=`<div class="vx-card vx-col-12 vx-card--premium">
+    <div class="vx-scorecard" style="grid-template-columns:auto minmax(0,1fr)">
+      ${gauge?`<div class="vx-gaugecluster" style="flex-direction:column">${gauge}</div>`:''}
+      <div class="vx-scorecard-side">
+        <div class="vx-statrow">
+          ${tile('Valeur',value!==null?VX.fmt.price(value):VX.fmt.price(invested),value!==null?'marques live/desk':'au coût (marques indisponibles)')}
+          ${tile('P&L latent',pl!==null?((pl>=0?'+':'')+VX.fmt.price(pl)):'n/d',pl!==null?VX.fmt.pct(pl/invested*100,1):'IBKR hors ligne',pl>0?'pos':pl<0?'neg':'')}
+          ${tile('Équipe actions',stocks.length+' / 10',stocks.length>=10?'complet — remplacement obligatoire':'places disponibles')}
+          ${tile('Options tactiques',opts.length+' / 3','CALLS '+opts.filter(t=>t.type==='CALL').length+' · PUTS '+opts.filter(t=>t.type==='PUT').length+' / 1 max')}
+        </div>
+        ${wl}
+      </div>
+    </div></div>`;
 }
 
 /* ── ÉQUIPE ── */
