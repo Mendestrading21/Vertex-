@@ -334,7 +334,7 @@ async function renderPositions(){
         <td data-label="Qté" class="vx-num">${t.qty}</td>
         <td data-label="Coût (total)" class="vx-num">${VX.fmt.price(t.cost)}</td>
         <td data-label="Marque" class="vx-num">${t.mark!==null?VX.fmt.price(t.mark):'n/d'}</td>
-        <td data-label="P&L" class="vx-num ${t.pl>0?'vx-pos':t.pl<0?'vx-neg':''}">${t.pl!==null?VX.fmt.pct(t.pl,1):'n/d'}</td>
+        <td data-label="P&L" class="vx-num">${t.pl!==null?`<span style="display:inline-flex;align-items:center;gap:7px;justify-content:flex-end"><span style="flex:0 0 38px;height:6px;border-radius:99px;background:var(--vx-surface-0);position:relative;overflow:hidden"><i style="position:absolute;left:0;top:0;bottom:0;width:${Math.max(4,Math.min(100,Math.abs(t.pl)*6)).toFixed(0)}%;background:${t.pl>0?'var(--vx-positive)':t.pl<0?'var(--vx-negative)':'var(--vx-steel-3)'};border-radius:99px"></i></span><b class="vx-mono ${t.pl>0?'vx-pos':t.pl<0?'vx-neg':''}" style="min-width:44px">${VX.fmt.pct(t.pl,1)}</b></span>`:'<span class="vx-muted">n/d</span>'}</td>
         <td data-label="Statut" class="vx-meta">${pi.lifecycle_status?esc(pi.lifecycle_status.replace(/_/g,' ')):'—'}</td>
         <td><div class="vx-row-actions">
           <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyse</button>

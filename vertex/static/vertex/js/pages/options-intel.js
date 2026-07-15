@@ -224,6 +224,16 @@
       .catch(function () { if (window.VX && VX.toast) VX.toast('Suivi impossible', 'error'); });
   };
 
+  // Cellule micro-barre inline (qualité, PoP…) : barre + nombre, color-codée.
+  function microBar(val, unit, col) {
+    if (val == null || isNaN(val)) return '<td>—</td>';
+    var w = Math.max(4, Math.min(100, val));
+    return '<td><span style="display:inline-flex;align-items:center;gap:6px">' +
+      '<span style="flex:0 0 34px;height:5px;border-radius:99px;background:var(--vx-surface-0);position:relative;overflow:hidden">' +
+      '<i style="position:absolute;left:0;top:0;bottom:0;width:' + w + '%;background:' + (col || 'var(--vx-brand)') + ';border-radius:99px"></i></span>' +
+      '<b class="vx-mono" style="font-weight:600">' + Math.round(val) + (unit || '') + '</b></span></td>';
+  }
+
   function radarTable(rows) {
     if (!rows || !rows.length) return '<div class="vx-empty">Aucun contrat de qualité mesurable.</div>';
     var body = rows.map(function (r) {
@@ -236,8 +246,8 @@
         '<td>' + VXf.nd(r.strike) + '</td>' +
         '<td>' + (r.dte != null ? r.dte + ' j' : '—') + '</td>' +
         '<td>' + (r.iv != null ? VXf.num(r.iv, 1) + ' %' : '—') + '</td>' +
-        '<td>' + (r.quality != null ? VXf.num(r.quality, 0) : '—') + '</td>' +
-        '<td>' + (r.pop != null ? VXf.num(r.pop, 0) + ' %' : '—') + '</td>' +
+        microBar(r.quality, '', r.quality >= 66 ? 'var(--vx-positive)' : r.quality >= 45 ? 'var(--vx-warning)' : 'var(--vx-negative)') +
+        microBar(r.pop, '%', 'var(--vx-brand)') +
         '<td>' + follow + '</td></tr>';
     }).join('');
     return '<div class="vx-table-wrap"><table class="vx-table"><thead><tr>' +
