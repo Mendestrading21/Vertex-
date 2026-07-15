@@ -202,6 +202,8 @@ _SECTIONS = """
 _JS = r"""
 <script src="/static/vertex/js/charts/price-chart.js" defer></script>
 <script src="/static/vertex/js/charts/candlestick-chart.js" defer></script>
+<script src="/static/vertex/js/vendor/lightweight-charts.standalone.production.js" defer></script>
+<script src="/static/vertex/js/charts/candlestick-lwc.js" defer></script>
 <script src="/static/vertex/js/charts/annotations.js" defer></script>
 <script>
 (function(){
@@ -320,7 +322,10 @@ async function loadDossier(){
   if(d.earnings_dte!==null&&d.earnings_dte!==undefined&&d.earnings_dte>=0&&d.earnings_dte<=cut.length)
     events.push({index:cut.length-1,label:'E-'+d.earnings_dte+'j'});
   if(cut.length>10){
-    VXCharts.candlestickCard('an-chart',{
+    /* Chandeliers PRO (TradingView LWC) si OHLC daté dispo ; repli auto sur le
+       candlestick Chart.js sinon. Même contrat de carte (contrôles TF, explain…). */
+    const drawChart=(window.VXCharts&&VXCharts.lwCandlestickCard)||VXCharts.candlestickCard;
+    drawChart('an-chart',{
       title:SYM+' — graphique principal',timeframe:TF,
       question:'Le timing est-il exploitable maintenant ?',
       conclusion:(d.verdict?('Verdict technique moteur : '+d.verdict):'—')
@@ -328,6 +333,7 @@ async function loadDossier(){
       controlsHtml:['1m','3m','6m','1y','2y'].map(tf=>
         `<button class="vx-chip" data-tf="${tf}" aria-pressed="${tf===TF}">${tf}</button>`).join(''),
       labels:cut.map((_,i)=>i-cut.length),bars:bars,closes:cut,overlays:overlays,plan:plan,events,
+      dates:tail(S.dates),volume:tail(S.volume),
       height:Math.round(Math.min(460,Math.max(340,(window.innerWidth||1200)*0.30))),
       source:(window.__vxStatus&&window.__vxStatus.demo)?'scan (DÉMO)':'scan',
       timestamp:(t&&t.detail&&t.detail.updated)||Date.now(),mode:demo?'fallback':'delayed',
@@ -337,7 +343,7 @@ async function loadDossier(){
         confirm:'Cours au-dessus des MM, cassure de la résistance avec volume, breadth favorable.',
         invalidate:`Clôture sous le stop ${VX.fmt.nd(plan.stop)} — la thèse est invalidée, pas « en retard ».`}});
     document.querySelectorAll('[data-tf]').forEach(b=>b.addEventListener('click',()=>{TF=b.dataset.tf;loadDossier();}));
-    const chartEl=document.querySelector('#an-chart canvas');
+    const chartEl=document.querySelector('#an-chart .vx-lwc')||document.querySelector('#an-chart canvas');
     if(chartEl)chartEl.addEventListener('dblclick',()=>VXCharts.alertFromLevel(SYM,plan.entry||d.price));
   }else{
     $('an-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Série de prix indisponible pour ce titre.')+'</div>';

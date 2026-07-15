@@ -9,7 +9,7 @@
 
 | Dépôt | Type | Ordres ? | Verdict READONLY | Recommandation |
 |-------|------|:--------:|------------------|----------------|
-| **tradingview/lightweight-charts** | Lib graphique | non | ✅ sûr | 🟢 **Intégrer (visuel)** |
+| **tradingview/lightweight-charts** | Lib graphique | non | ✅ sûr | ✅ **INTÉGRÉ** (Analyse — chandeliers pro) |
 | **atilaahmettaner/tradingview-mcp** | MCP (libs read-only) | non | ✅ sûr | 🟢 **Intégrer (backtest/screener)** |
 | **omdv/ibkr-mcp-server** | MCP IBKR (Python) | non | ✅ sûr | 🟡 Optionnel (2e passerelle) |
 | **ertugrul59/tradingview-chart-mcp** | MCP (captures TV) | non | ✅ sûr | 🟡 Marginal (Selenium/ToS) |
@@ -42,7 +42,7 @@ Plateforme de trading algo dont le **cœur est l'exécution d'ordres** (34 broke
 
 ## Plan de connexion recommandé (sûr)
 
-1. **lightweight-charts** → chandeliers pro (Analyse/Options), auto-hébergé, attribution TV affichée. *Aligné avec la refonte visuelle.*
+1. ✅ **lightweight-charts** → chandeliers pro **livrés sur Analyse** (`VXCharts.lwCandlestickCard`, v4.2.3 auto-hébergé, attribution TV affichée). Repli auto sur le candlestick Chart.js si OHLC daté absent. *Reste à étendre : Options.*
 2. **tradingview-screener/-ta** → moteur de backtesting + screeners + consensus TA, en routes Flask read-only, courbes via les composants existants. *Capacité nouvelle (à valider comme hors-visuel).*
 3. Idées à réimplémenter (pas de dépendance) : dashboards options GEX/max-pain/IV-smile (inspiration OpenAlgo), TWS Scanner (idée omdv, via l'ib_async existant).
 4. **Jamais** : chemins d'ordre (code-rabi IBKR-MCP, OpenAlgo). Toute réutilisation IBKR force `readonly=True`.
