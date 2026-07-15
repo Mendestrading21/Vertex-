@@ -403,6 +403,7 @@
     var el = document.getElementById('vx-opt-sc-out-body');
     if (!sym) { el.innerHTML = '<div class="vx-empty">Saisis un symbole.</div>'; return; }
     loading(el);
+    loadStrategies(sym);   // stratégies multi-jambes en parallèle (même sélecteur)
     get('/api/options/scenarios/' + encodeURIComponent(sym)).then(function (d) {
       if (!d || d.empty) { el.innerHTML = (window.VX && VX.states) ? VX.states.empty(esc((d && d.reason) || 'Indisponible.')) : 'Indisponible.'; return; }
       var c = d.contract || {}, sim = d.sim || {};
@@ -442,6 +443,68 @@
         if (VC.thetaCard) VC.thetaCard('vx-opt-sc-theta', sim, { title: 'Décote temps (theta)', question: 'Combien le temps grignote-t-il la prime, à spot figé ?', source: 'scenario_pricer', timestamp: ts, mode: 'delayed' });
         if (VC.ivSensitivityCard && VC.barCard) VC.ivSensitivityCard('vx-opt-sc-iv', sim, { title: 'Sensibilité à l\'IV', question: 'Quel impact d\'une variation d\'implicite sur la prime ?', source: 'scenario_pricer', timestamp: ts, mode: 'delayed' });
       }
+    }).catch(function (e) { fail(el, e.message); });
+  }
+
+  // ── Stratégies options MULTI-JAMBES (§19) — moteur multileg_lab, lecture seule ──
+  function fmtUsd(v) { var n = Math.round(v); return (n < 0 ? '-$' : '$') + VXf.num(Math.abs(n), 0); }
+  function stratKpi(l, v) {
+    return '<div class="vx-card--compact" style="padding:5px 7px;background:var(--vx-surface-2,#111315);border-radius:7px">' +
+      '<div style="font-size:10px;letter-spacing:.03em;color:var(--vx-text-muted,#817d77)">' + l + '</div>' +
+      '<div class="vx-mono" style="font-size:13px;font-weight:700">' + v + '</div></div>';
+  }
+  function loadStrategies(sym) {
+    var el = document.getElementById('vx-opt-strategies');
+    if (!el) return;
+    if (!sym) { el.innerHTML = '<div class="vx-empty">Saisis un symbole.</div>'; return; }
+    loading(el);
+    get('/api/options/strategies/' + encodeURIComponent(sym)).then(function (d) {
+      if (!d || !d.available || !d.strategies || !d.strategies.length) {
+        el.innerHTML = (window.VX && VX.states) ? VX.states.empty(esc((d && d.reason) || 'Stratégies indisponibles pour ce titre.')) : 'Indisponible.';
+        return;
+      }
+      var head = '<div class="vx-muted" style="margin-bottom:.6rem">' + esc(sym) + ' · spot ' + VXf.nd(d.spot) +
+        ' · échéance ' + esc(d.exp || '—') + ' (' + VXf.nd(d.dte) + ' j) · IV ' + (d.iv != null ? (d.iv * 100).toFixed(0) + ' %' : '—') + '</div>';
+      el.innerHTML = head + '<div class="vx-grid">' + d.strategies.map(function (s, i) {
+        var credit = s.is_credit;
+        var mp = s.max_profit_unbounded ? 'illimité' : (s.max_profit != null ? fmtUsd(s.max_profit) : '—');
+        var ml = s.max_loss != null ? fmtUsd(s.max_loss) : '—';
+        var pop = s.probability_of_profit != null ? s.probability_of_profit + ' %' : '—';
+        var be = (s.breakevens && s.breakevens.length) ? s.breakevens.map(function (b) { return VXf.nd(b); }).join(' · ') : '—';
+        var g = s.greeks;
+        return '<section class="vx-card vx-col-6">' +
+          '<div class="vx-card-header"><span class="vx-card-title">' + esc(s.label) + '</span>' +
+          '<span class="vx-badge" style="color:var(--vx-' + (credit ? 'positive' : 'option') + ')">' + (credit ? 'crédit ' : 'débit ') + fmtUsd(Math.abs(s.net_premium)) + '</span></div>' +
+          '<div id="strat-pf-' + i + '" style="height:150px"></div>' +
+          '<div class="vx-grid vx-mt2" style="grid-template-columns:repeat(4,1fr);gap:6px">' +
+          stratKpi('PoP', pop) + stratKpi('Gain max', mp) + stratKpi('Perte max', ml) + stratKpi('Breakevens', be) +
+          '</div>' +
+          (g ? '<div class="vx-meta vx-mt2">Δ ' + g.delta + ' · Θ ' + g.theta + '/j · Vega ' + g.vega + '/1%IV</div>' : '') +
+          '</section>';
+      }).join('') + '</div>' +
+        '<div class="vx-explain" style="margin-top:.6rem"><p class="vx-muted">' + esc(d.strategies[0].model_note || '') + '</p></div>';
+      // Courbe payoff par stratégie (ligne P&L verte au-dessus de 0, corail en dessous).
+      d.strategies.forEach(function (s, i) {
+        var host = document.getElementById('strat-pf-' + i);
+        var pts = s.payoff || [];
+        if (!host || !window.VXCharts || pts.length < 2) return;
+        host.innerHTML = '<canvas></canvas>';
+        VXCharts.mount(host.querySelector('canvas'), {
+          type: 'line',
+          data: {
+            labels: pts.map(function (p) { return p.price; }),
+            datasets: [{
+              data: pts.map(function (p) { return p.pnl; }),
+              borderColor: VXCharts.colors.neutral, borderWidth: 1.6, pointRadius: 0, fill: false, tension: 0,
+              segment: { borderColor: function (ctx) { return ctx.p1.parsed.y >= 0 ? VXCharts.colors.positive : VXCharts.colors.negative; } },
+            }],
+          },
+          options: {
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return 'P&L ' + fmtUsd(ctx.parsed.y) + ' @ ' + VXf.nd(ctx.label); } } } },
+            scales: { x: { ticks: { maxTicksLimit: 6 }, grid: { display: false } }, y: { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { callback: function (v) { return fmtUsd(v); } } } },
+          },
+        });
+      });
     }).catch(function (e) { fail(el, e.message); });
   }
 

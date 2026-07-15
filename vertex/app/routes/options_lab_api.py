@@ -11,7 +11,7 @@ from flask import Blueprint, jsonify
 
 from vertex.app.config import DEMO_MODE
 from vertex.app.state import cal_state, scan_state
-from vertex.engines import options_lab
+from vertex.engines import multileg_lab, options_lab
 
 bp = Blueprint('options_lab_api', __name__)
 
@@ -25,6 +25,27 @@ def api_options_lab():
                                          cal_items=cal_state.get('items')))
     except Exception as e:
         return jsonify({'empty': True, 'error': f'{type(e).__name__}: {e}'}), 500
+
+
+@bp.route('/api/options/strategies/<sym>')
+def api_options_strategies(sym):
+    """Stratégies options MULTI-JAMBES construites depuis le board RÉEL : payoff à
+    l'échéance, breakevens, gain/perte max, probabilité de profit, greeks agrégés.
+    Analyse pure, lecture seule — aucun ordre. Donnée absente => available:false honnête."""
+    sym = sym.upper()
+    try:
+        board = scan_state.get('options_board') or []
+        detail = (scan_state.get('detail') or {}).get(sym) or {}
+        spot = detail.get('price')
+        if not spot:
+            spot = next((c.get('spot') for c in board
+                         if c.get('sym') == sym and c.get('spot')), None)
+        res = multileg_lab.strategies_for_symbol(board, sym, spot)
+        res['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+        res['demo'] = DEMO_MODE
+        return jsonify(res)
+    except Exception as e:
+        return jsonify({'available': False, 'reason': f'{type(e).__name__}: {e}'}), 200
 
 
 __all__ = ['bp']

@@ -159,6 +159,11 @@ _VIEW_CONTENT = {
     <div class="vx-card-header"><span class="vx-card-title">Que vaudra le contrat selon le spot, le temps et l'IV ?</span></div>
     <div id="vx-opt-sc-out-body"><div class="vx-empty">Choisis un symbole présent dans le tableau d'options.</div></div>
   </section>
+  <section class="vx-card vx-col-12" id="vx-opt-strat" aria-label="Stratégies multi-jambes">
+    <div class="vx-card-header"><span class="vx-card-title">Stratégies multi-jambes</span>
+      <span class="vx-chart-question">Spreads, straddle, iron condor — payoff, probabilité de profit, gain/perte max & greeks (depuis le board réel, aucun ordre)</span></div>
+    <div id="vx-opt-strategies"><div class="vx-empty">Choisis un symbole pour construire les stratégies depuis le board.</div></div>
+  </section>
 </div>
 """,
     'events': """
