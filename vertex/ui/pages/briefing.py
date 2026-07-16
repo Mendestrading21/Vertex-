@@ -674,14 +674,23 @@ function loadMainChart(scan){
       why:'La Stratégie Vertex n’attaque qu’en environnement porteur : le régime module seuils et tailles.',
       confirm:'Clôtures au-dessus des MM50/MM200 ascendantes avec breadth > 55 %.',
       invalidate:'Cassure des MM avec expansion de volatilité.'},
-    render:(cv)=>VXCharts.mount(cv,{type:'line',
+    render:(cv)=>{
+      /* Plus-haut / plus-bas RÉELS de la fenêtre affichée (annotation de niveau) */
+      const vals=closes.filter(x=>x!=null&&isFinite(x));
+      const hi=vals.length?Math.max.apply(null,vals):null;
+      const lo=vals.length?Math.min.apply(null,vals):null;
+      return VXCharts.mount(cv,{type:'line',
       data:{labels,datasets:[
         {label:hasSpy?'SPY':key,data:closes,borderColor:cc.brand,borderWidth:1.9,pointRadius:0,tension:.22,fill:true,
          backgroundColor:(ctx)=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,ctx.chart.height||H_HERO);
            g.addColorStop(0,(cc.brand||'#84aa31')+'33');g.addColorStop(1,(cc.brand||'#84aa31')+'00');return g;}},
         ...mm(S.ema20,'MM20',cc.amber,[]),...mm(S.sma50,'MM50',cc.beige,[5,3]),...mm(S.sma200,'MM200',cc.neutral,[2,3])]},
       options:{scales:VXCharts.axes({yFmt:(v)=>VX.fmt.price(v)}),interaction:{mode:'index',intersect:false},
-        plugins:{legend:{display:false}}}})});
+        plugins:{legend:{display:false}}},
+      plugins:(hi!=null&&VXCharts.levelLines)?[VXCharts.levelLines([
+        {value:hi,label:'plus haut',kind:'resistance'},
+        {value:lo,label:'plus bas',kind:'support'}])]:[]});
+    }});
   host.querySelectorAll('[data-mktf]').forEach(b=>b.addEventListener('click',()=>{
     MK_TF=b.dataset.mktf;try{localStorage.setItem('vxDashMkTf',MK_TF)}catch(e){}
     loadMainChart(scan);}));
@@ -708,7 +717,10 @@ function loadCompare(scan){
   VXCharts.card('vx-market-compare',{
     title:'Qui mène ?',timeframe:len+' points',
     question:'Large caps, tech ou small caps ?',
-    conclusion:'Chaque indice rebasé à 0 %.',
+    conclusion:(function(){
+      const ranked=sets.map(x=>({n:x.n,f:finPct(x)})).filter(x=>x.f!=null).sort((a,b)=>b.f-a.f);
+      return ranked.length?(ranked[0].n+' mène ('+(ranked[0].f>=0?'+':'')+ranked[0].f.toFixed(1)+' %) · chaque indice rebasé à 0 %'):'Chaque indice rebasé à 0 %.';
+    })(),
     height:H_HERO,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
     legend:sets.map((x,i)=>{const f=finPct(x);
       return {label:x.n+(f!=null?' '+(f>=0?'+':'')+f.toFixed(1)+' %':''),color:((window.VXCharts&&VXCharts.colors.series)||[])[i%6]};}),
@@ -781,25 +793,28 @@ function loadSectorsBlock(scan){
   /* Quadrant RRG-like : force relative (score) × momentum (variation du jour) */
   if(window.VXCharts&&sectors.length>=2){
     const cc2=VXCharts.colors;
-    const pts=sectors.map(s=>({x:(s.avg_score!=null?s.avg_score:(s.score||50)),y:(s.avg_change!=null?s.avg_change:0),label:s.sector||''}));
+    const maxN=Math.max.apply(null,sectors.map(x=>x.n||1));
+    const pts=sectors.map(s=>({x:(s.avg_score!=null?s.avg_score:(s.score||50)),y:(s.avg_change!=null?s.avg_change:0),label:s.sector||'',n:(s.n||1)}));
     const quadCol=(x,y)=>x>=50?(y>=0?cc2.positive:cc2.warning):(y>=0?cc2.neutral:cc2.negative);
     VXCharts.card('vx-sectors-quadrant',{
       title:'Rotation — force relative × momentum',
       question:'Quels secteurs mènent, lesquels s’essoufflent ?',
       conclusion:'Haut-droit = Leaders · bas-gauche = Retardataires — cliquer un secteur',
       height:H_HERO,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode,
-      limits:'force = score moyen · momentum = variation moyenne du jour (univers scanné)',
+      limits:'force = score moyen · momentum = variation du jour · taille de bulle = nombre de titres',
       explain:{shows:'Chaque secteur placé par sa force relative (score moyen) et son momentum (variation moyenne du jour).',
         why:'La stratégie surpondère la zone « Leading » (haut-droit) et se méfie du « Lagging » (bas-gauche).',
         confirm:'Un secteur qui migre vers le haut-droit sur plusieurs séances.',invalidate:'Bascule vers le bas-gauche.'},
       render:(cv)=>VXCharts.mount(cv,{type:'scatter',
-        data:{datasets:[{data:pts,pointRadius:7,pointHoverRadius:11,
+        data:{datasets:[{data:pts,
+          pointRadius:(ctx)=>ctx.raw?Math.max(6,Math.round(6+10*Math.sqrt((ctx.raw.n||1)/maxN))):7,
+          pointHoverRadius:(ctx)=>ctx.raw?Math.max(10,Math.round(9+11*Math.sqrt((ctx.raw.n||1)/maxN))):11,
           pointBackgroundColor:(ctx)=>ctx.raw?quadCol(ctx.raw.x,ctx.raw.y):cc2.neutral,
           pointBorderColor:'rgba(255,255,255,.22)',pointBorderWidth:1}]},
         options:{scales:{
           x:{title:{display:true,text:'Force relative (score moyen) →'},min:0,max:100,grid:{color:'rgba(255,255,255,.06)'}},
           y:{title:{display:true,text:'Momentum (var. moy. %) ↑'},grid:{color:'rgba(255,255,255,.06)'}}},
-          plugins:{tooltip:{callbacks:{label:(ctx)=>ctx.raw.label+' · force '+VX.fmt.num(ctx.raw.x,0)+' · momentum '+VX.fmt.pct(ctx.raw.y,1)}}},
+          plugins:{tooltip:{callbacks:{label:(ctx)=>ctx.raw.label+' · force '+VX.fmt.num(ctx.raw.x,0)+' · momentum '+VX.fmt.pct(ctx.raw.y,1)+' · '+(ctx.raw.n||1)+' titres'}}},
           onClick:(evt,els,chart)=>{const p=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
             if(p.length){const d=chart.data.datasets[0].data[p[0].index];VX.context.save();location.href='/opportunities?view=stocks&sector='+encodeURIComponent(d.label);}}},
         plugins:[{id:'vxQuad',afterDatasetsDraw(chart){const a=chart.chartArea,sx=chart.scales.x,sy=chart.scales.y;const xc=sx.getPixelForValue(50),y0=sy.getPixelForValue(0);const g=chart.ctx;
@@ -985,6 +1000,9 @@ function loadPulseExtra(scan){
   const dEl=$('vx-score-dist');
   if(dEl){
     const dist=inter.dist||[];
+    /* Score moyen approché depuis la distribution réelle (milieux de tranches) */
+    const totN=dist.reduce((a,b)=>a+(b||0),0);
+    const avgScore=totN?Math.round(dist.reduce((a,b,i)=>a+(b||0)*(i*10+5),0)/totN):null;
     if(dist.length&&dist.some(v=>v>0)){
       const maxN=Math.max(1,...dist);
       dEl.innerHTML='<div style="display:flex;gap:4px;align-items:flex-end;padding:8px 2px">'+dist.map((n,i)=>{
@@ -994,7 +1012,8 @@ function loadPulseExtra(scan){
           <span style="font-size:9.5px;color:var(--vx-text-dim)">${n||''}</span>
           <span style="width:100%;height:120px;display:flex;align-items:flex-end"><span style="width:100%;height:${hh}%;background:${col};border-radius:3px 3px 0 0;min-height:2px;opacity:.85"></span></span>
           <span style="font-size:9px;color:var(--vx-text-muted);font-variant-numeric:tabular-nums">${i*10}</span></div>`;
-      }).join('')+'</div>';
+      }).join('')+'</div>'
+      +(avgScore!=null?`<div class="vx-meta" style="text-align:center;margin-top:4px">score moyen de l’univers : <b>${avgScore}</b> / 100 · ${totN} titres</div>`:'');
     }else dEl.innerHTML=VX.states.empty('Distribution non calculée par le dernier scan.');
   }
   /* Santé : contributions pondérées (waterfall réel du moteur) */
@@ -1027,13 +1046,16 @@ function moversHtml(rows,dir,detail){
   const sorted=signed.slice().sort((a,b)=>dir==='top'?(b.change-a.change):(a.change-b.change)).slice(0,6);
   if(!sorted.length)return VX.states.empty(dir==='top'?'Aucune hausse dans le dernier scan.':'Aucune baisse dans le dernier scan.');
   return '<div class="vx-movergrid">'+sorted.map(function(r){
-    const ser=detail&&detail[r.symbol]&&detail[r.symbol].series;
+    const det2=detail&&detail[r.symbol];
+    const ser=det2&&det2.series;
+    const p52=det2&&det2.pos52!=null&&isFinite(det2.pos52)?Math.max(0,Math.min(100,det2.pos52)):null;
     return `<button class="vx-mover" data-open-analysis="${esc(r.symbol)}" aria-label="${esc(r.symbol)} ${VX.fmt.pct(r.change,1)}">
       <div class="vx-flex" style="justify-content:space-between;gap:6px"><span class="mv-sym">${esc(r.symbol)}</span>
         ${r.score!==null&&r.score!==undefined?`<span class="vx-badge" title="Score Vertex">${VX.fmt.num(r.score,0)}</span>`:''}</div>
       <div class="mv-chg ${r.change>0?'vx-pos':'vx-neg'}">${VX.fmt.pct(r.change,1)}</div>
       <div class="mv-sub">${esc(r.sector||'—')}${r.price!==null&&r.price!==undefined?' · '+VX.fmt.price(r.price):''}${r.rvol!=null&&isFinite(r.rvol)?` · vol ×${VX.fmt.num(r.rvol,1)}`:''}</div>
       ${sparkTile(ser&&ser.close,r.change>0)}
+      ${p52!=null?`<div class="vx-flex" style="gap:6px;align-items:center;margin-top:5px"><span class="vx-meta" style="flex:0 0 auto;font-size:9.5px">52 sem.</span><span style="flex:1;height:4px;border-radius:99px;background:var(--vx-surface-0);position:relative"><i style="position:absolute;left:${p52}%;top:-2px;width:8px;height:8px;margin-left:-4px;border-radius:99px;background:var(--vx-beige,#c0b79f)"></i></span></div>`:''}
     </button>`;}).join('')+'</div>';
 }
 function loadTopFlop(scan){
@@ -1069,6 +1091,7 @@ async function loadOpportunities(){
       const vx=s.vertex||{};
       const chips=[];
       if(vx.p_win!=null)chips.push(`<span class="vx-badge" style="color:var(--vx-positive)" title="probabilité que le trade soit gagnant (moteur Monte-Carlo)">proba. gain ${Math.round(vx.p_win*100)} %</span>`);
+      if(vx.edge!=null)chips.push(`<span class="vx-badge" title="avantage statistique du dossier (0-100)">edge ${Math.round(vx.edge)}</span>`);
       if(s.rr!=null)chips.push(`<span class="vx-badge" title="rapport gain potentiel / risque">gain/risque ${VX.fmt.num(s.rr,1)}×</span>`);
       if(s.conviction!=null)chips.push(`<span class="vx-badge">conviction ${VX.fmt.num(s.conviction,0)}/100</span>`);
       return `
@@ -1227,6 +1250,8 @@ async function loadPortfolio(){
     const value=mark!==null?(isOpt?mark*100*t.qty:mark*t.qty):null;
     const pl=value!==null&&t.cost?((value-t.cost)/t.cost*100):null;
     const plCol=pl>0?'var(--vx-positive)':pl<0?'var(--vx-negative)':'var(--vx-text-dim)';
+    const totCost=pos.reduce((a,x)=>a+(x.cost||0),0)||1;
+    const wgt=Math.round((t.cost||0)/totCost*100);
     return `<div class="vx-pf-card" style="border-left:3px solid ${plCol}">
       <div class="vx-flex" style="justify-content:space-between;gap:6px">
         <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(t.sym)}" style="font-weight:800;padding:0 4px">${esc(t.sym)}</button>
@@ -1234,6 +1259,7 @@ async function loadPortfolio(){
       <div class="pf-pl" style="color:${plCol}">${pl!==null?((pl>0?'+':'')+VX.fmt.num(pl,1)+' %'):'n/d'}</div>
       <div class="pf-sub">${esc(t.qty)} × ${VX.fmt.price(t.cost)} $${t.exp?' · éch. '+esc(t.exp):''}</div>
       <div class="pf-sub">${value!==null?('valeur '+VX.fmt.price(value)+' $'+(q.delayed?' · différé':'')):'marque indisponible'}</div>
+      <div class="vx-flex" style="gap:6px;align-items:center"><span class="vx-meta" style="flex:0 0 auto;font-size:9.5px">poids</span><span style="flex:1;height:4px;border-radius:99px;background:var(--vx-surface-1)"><i style="display:block;height:100%;width:${Math.max(3,Math.min(100,wgt))}%;background:var(--vx-brand);border-radius:99px"></i></span><b class="vx-mono" style="font-size:10px">${wgt} %</b></div>
       <div class="vx-flex" style="justify-content:flex-end;margin-top:auto">
         <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(t.sym)}" aria-label="Actions ${esc(t.sym)}">⋯</button></div>
     </div>`;
@@ -1245,8 +1271,9 @@ let CAL_FILTER='all';
 async function loadCalendar(){
   try{
     const cal=await VX.fetch('/cal-feed',{ttl:300000});
-    const macro=(cal.macro||[]).map(m=>({when:m.date,kind:m.kind||'Économie',
-      label:m.label+(m.note?' — '+m.note:'')+((m.dte!==undefined&&m.dte!==null)?` (J-${m.dte})`:''),cat:'macro'}));
+    const today=new Date().toISOString().slice(0,10);
+    const macro=(cal.macro||[]).map(m=>({when:m.date,kind:(m.date===today?'AUJOURD’HUI':(m.kind||'Économie')),
+      label:m.label+(m.note?' — '+m.note:'')+((m.dte!==undefined&&m.dte!==null&&m.dte>0)?` (J-${m.dte})`:''),cat:'macro'}));
     const earn=(cal.items||[]).slice(0,14).map(it=>({when:it.date,kind:'Résultats',label:`résultats dans ${it.dte} j`,sym:it.sym,cat:'earnings'}));
     const items=[...macro,...earn]
       .filter(i=>CAL_FILTER==='all'||i.cat===CAL_FILTER)
@@ -1304,13 +1331,15 @@ async function loadEssential(scan){
   const bSub=br==null?'participation indisponible':(Math.round(br)+' % des titres > MM50');
   const tile=(k,v,sub,tone,extra)=>`<div class="vx-stat" data-tone="${tone||''}"><div class="vx-stat-k">${k}</div><div class="vx-stat-v" style="font-size:17px">${v}</div><div class="vx-stat-sub">${sub}</div>${extra||''}</div>`;
   const spxSpark=(spx.spark&&spx.spark.length>2)?sparkSvg(spx.spark,(chg==null?true:chg>=0)):'';
+  const vixIdx=idx.find(i=>i&&i.name==='VIX')||{};
+  const vixSpark=(vixIdx.spark&&vixIdx.spark.length>2)?sparkSvg(vixIdx.spark,true,true):'';
   const rows=(scan&&scan.rows)||[];
   const ups=rows.filter(r=>r.change>0).sort((a,b)=>b.change-a.change);
   const downs=rows.filter(r=>r.change<0).sort((a,b)=>a.change-b.change);
   const mv=(r,pos)=>r?`<button class="vx-chip" data-open-analysis="${esc(r.symbol)}" style="color:${pos?'var(--vx-positive)':'var(--vx-negative)'}"><b>${esc(r.symbol)}</b>&nbsp;${VX.fmt.pct(r.change,1)}</button>`:'';
   const lines=((ed&&ed.lines)||[]).slice(0,3);
   el.innerHTML=
-    `<div class="vx-statrow">${tile('Tendance',tWord,tSub,tTone,spxSpark)}${tile('Ambiance',aWord,aSub,aTone)}${tile('Volatilité',vWord,vSub,vTone)}${tile('Participation',bWord,bSub,bTone)}${tile('Secteur fort',bs?esc(bs):'—',bs?'meneur du jour':'lecture indisponible',bs?'brand':'')}</div>`
+    `<div class="vx-statrow">${tile('Tendance',tWord,tSub,tTone,spxSpark)}${tile('Ambiance',aWord,aSub,aTone)}${tile('Volatilité',vWord,vSub,vTone,vixSpark)}${tile('Participation',bWord,bSub,bTone)}${tile('Secteur fort',bs?esc(bs):'—',bs?'meneur du jour':'lecture indisponible',bs?'brand':'')}</div>`
     +(lines.length?`<div class="vx-mt3"><span class="vx-metric-k" style="display:block;margin-bottom:6px">À retenir</span>${lines.map(l=>`<div class="vx-flex" style="gap:8px;padding:4px 0;align-items:flex-start"><span style="flex:0 0 6px;height:6px;border-radius:99px;background:var(--vx-brand);margin-top:6px"></span><span class="vx-dim" style="font-size:13px">${esc(l)}</span></div>`).join('')}</div>`:'')
     +((ups.length||downs.length)?`<div class="vx-mt3"><span class="vx-metric-k" style="display:block;margin-bottom:6px">Mouvements du jour</span><div class="vx-flex vx-wrap" style="gap:.4rem">${mv(ups[0],1)}${mv(ups[1],1)}${mv(downs[0],0)}${mv(downs[1],0)}<button class="vx-btn vx-btn-sm vx-btn-ghost" data-scrollto="topflop">Tout voir ↓</button></div></div>`:'')
     +sessionLine(scan);
@@ -1321,12 +1350,26 @@ async function loadEssential(scan){
 /* ── Actualités marquantes : news RÉELLES (assainies serveur, ré-échappées).
    HTML VALIDE : le lien source (↗) et le bouton ticker sont FRÈRES — jamais
    de bouton imbriqué dans un lien. ── */
+let NEWS_FILTER='all';
 async function loadNews(){
   const el=$('vx-news-body');if(!el)return;
   let d=null;try{d=await VX.fetch('/news-feed',{ttl:120000});}catch(e){}
-  const items=((d&&d.items)||[]).slice(0,8);
+  /* Filtre de sentiment : côté affichage uniquement (le flux reste complet) */
+  const all=((d&&d.items)||[]);
+  const head=el.closest('section').querySelector('.vx-card-header');
+  if(head&&!head.querySelector('[data-newsf]')){
+    head.insertAdjacentHTML('beforeend','<span class="vx-actions">'
+      +[['all','Tout'],['pos','Positives'],['neg','Négatives']].map(([id,l])=>
+        `<button class="vx-chip" data-newsf="${id}" aria-pressed="${id===NEWS_FILTER}">${l}</button>`).join('')+'</span>');
+    head.querySelectorAll('[data-newsf]').forEach(b=>b.addEventListener('click',()=>{
+      NEWS_FILTER=b.dataset.newsf;
+      head.querySelectorAll('[data-newsf]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+      loadNews();}));
+  }
+  const items=all.filter(n=>{const v=+n.senti||0;
+    return NEWS_FILTER==='all'||(NEWS_FILTER==='pos'?v>0:v<0);}).slice(0,8);
   if(!items.length){
-    el.innerHTML=VX.states.empty('Flux d’actualités hors ligne dans cet environnement — sur ton poste, les actualités réelles du jour s’affichent ici (sources publiques, filtrées).');
+    el.innerHTML=VX.states.empty(all.length?'Aucune actualité ne correspond à ce filtre de sentiment.':'Flux d’actualités hors ligne dans cet environnement — sur ton poste, les actualités réelles du jour s’affichent ici (sources publiques, filtrées).');
     return;
   }
   el.innerHTML=items.map(n=>{
