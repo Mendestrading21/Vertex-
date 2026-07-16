@@ -273,7 +273,7 @@ _CONTENT = """
   </div>
   <div class="vx-grid vx-mt4">
     <section class="vx-card vx-col-6 vx-card--premium" id="vx-breadth-internals-card" aria-label="Breadth internals">
-      <div class="vx-card-header"><span class="vx-card-title">Participation — le détail</span>
+      <div class="vx-card-header"><span class="vx-card-title">Participation</span>
         <span class="vx-chart-question">La hausse est-elle portée par beaucoup de titres, ou par une poignée ?</span></div>
       <div id="vx-breadth-internals">%%LOADING%%</div>
     </section>
@@ -286,7 +286,7 @@ _CONTENT = """
   <div class="vx-grid vx-mt4">
     <div class="vx-col-6" id="vx-breadth-trend"></div>
     <section class="vx-card vx-col-6" id="vx-score-dist-card" aria-label="Distribution des scores">
-      <div class="vx-card-header"><span class="vx-card-title">Distribution des scores de l’univers</span>
+      <div class="vx-card-header"><span class="vx-card-title">Scores de l’univers</span>
         <span class="vx-chart-question">Le marché est-il globalement fort ou faible ?</span></div>
       <div id="vx-score-dist">%%LOADING%%</div>
       <div class="vx-card-foot"><span class="vx-meta">Nombre de titres par tranche de score Vertex (0-100). Décalage à droite = univers globalement fort.</span></div>
@@ -294,7 +294,7 @@ _CONTENT = """
   </div>
   <div class="vx-grid vx-mt4">
     <section class="vx-card vx-col-12" id="vx-health-card" aria-label="Composition de la santé du marché">
-      <div class="vx-card-header"><span class="vx-card-title">Santé du marché — d’où vient le score ?</span>
+      <div class="vx-card-header"><span class="vx-card-title">Santé du marché</span>
         <span class="vx-chart-question">Quelles composantes portent (ou plombent) la santé du jour ?</span></div>
       <div id="vx-health-wf" style="height:230px">%%LOADING%%</div>
       <div class="vx-card-foot"><span class="vx-meta">Santé = 30 % (&gt; moy. 50 j) + 25 % (&gt; moy. 200 j) + 25 % (participation) + 20 % (avancées/déclins) — pondérations réelles du moteur d’internals.</span></div>
@@ -339,7 +339,7 @@ _CONTENT = """
   </div>
   <div class="vx-grid vx-mt4">
     <section class="vx-card vx-col-4 vx-card--accent" aria-label="Entonnoir de sélection">
-      <div class="vx-card-header"><span class="vx-card-title">Entonnoir de sélection</span>
+      <div class="vx-card-header"><span class="vx-card-title">Entonnoir</span>
         <span class="vx-chart-question">Combien de dossiers survivent au tri ?</span></div>
       <div id="vx-opp-funnel">%%LOADING%%</div>
     </section>
@@ -864,8 +864,8 @@ async function loadPulse(scan){
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
     const conf=Math.round((r.confidence||0)*100);
     const allowed=r.adjustments&&r.adjustments.new_risk_allowed;
-    if(G){VXCharts.gauge('vx-gauge-trend',{value:conf,min:0,max:100,unit:' %',label:esc(r.regime||'Régime'),
-      reading:allowed?'Risque autorisé':'Risque bloqué',
+    if(G){VXCharts.gauge('vx-gauge-trend',{value:conf,min:0,max:100,unit:' %',label:'Régime',
+      reading:regFr(r.regime)[0]+' · '+(allowed?'risque autorisé':'risque bloqué'),
       bands:[{to:40,color:CO.negative},{to:70,color:CO.warning},{to:100,color:CO.positive}]});}
     /* Posture = lecture DIRECTE du moteur : risque bloqué → Défense ;
        autorisé + confiance ≥ 55 → Attaque ; autorisé sinon → Neutre. */
@@ -1060,38 +1060,69 @@ async function loadOpportunities(){
         ${s.note?`<div class="mv-sub" style="white-space:normal;line-height:1.45;max-height:6.2em;overflow:hidden"><b style="color:var(--vx-text-secondary)">Pourquoi :</b> ${esc(s.note)}</div>`:''}
         <div class="mv-sub" style="color:var(--vx-brand);margin-top:5px">Ouvrir le dossier complet →</div>
       </button>`;}).join('')+'</div>':VX.states.empty('Aucune opportunité action retenue par le comité.');
-    const rrRows=stocks.filter(s=>s.rr!=null);
+    /* Comparatif du comité : proba de gain + conviction par titre, en barres HTML
+       (taille déterministe — remplace l'ancien graphique R:R illisible). */
     const rrHost=$('vx-opp-rr');
     if(rrHost){
-      if(rrRows.length&&window.VXCharts&&VXCharts.bars){
-        rrHost.innerHTML='<div class="vx-kpi-label vx-mb1">Priorité — rapport gain/risque (R:R)</div><div style="height:'+Math.max(70,rrRows.length*24)+'px"><canvas></canvas></div>';
-        VXCharts.bars(rrHost.querySelector('canvas'),rrRows.map(s=>esc(s.symbol)),rrRows.map(s=>s.rr),{horizontal:true,colors:rrRows.map(()=>'#36c889'),yFmt:(v)=>v.toFixed(1)});
+      const comp=stocks.filter(x=>(x.vertex&&x.vertex.p_win!=null)||x.conviction!=null);
+      if(comp.length){
+        const row=(sym,label,v,col)=>`<div class="vx-flex" style="gap:8px;align-items:center;padding:2px 0">
+          <span class="vx-mono" style="flex:0 0 46px;font-weight:700;font-size:11.5px">${sym}</span>
+          <span class="vx-meta" style="flex:0 0 86px">${label}</span>
+          <span style="flex:1;height:7px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden">
+            <i style="display:block;height:100%;width:${Math.max(3,Math.min(100,v))}%;background:${col};border-radius:99px"></i></span>
+          <b class="vx-mono" style="flex:0 0 34px;text-align:right;font-size:11.5px">${Math.round(v)}</b></div>`;
+        rrHost.innerHTML='<div class="vx-kpi-label vx-mb1">Comparatif du comité — proba de gain & conviction</div>'
+          +comp.map(x=>{
+            const pw=x.vertex&&x.vertex.p_win!=null?Math.round(x.vertex.p_win*100):null;
+            return (pw!=null?row(esc(x.symbol),'proba. de gain',pw,'var(--vx-positive)'):'')
+              +(x.conviction!=null?row(esc(x.symbol),'conviction',x.conviction,'var(--vx-brand)'):'');
+          }).join('');
       } else rrHost.innerHTML='';
     }
     const opts=(c.top_options||[]).slice(0,6);
-    $('vx-opp-options').innerHTML=opts.length?'<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(195px,1fr))">'+opts.map(o=>`
-      <button class="vx-mover" onclick="location.href='/options/${esc(o.symbol)}'" aria-label="Dossier options ${esc(o.symbol)}" style="border-left:2px solid var(--vx-violet)">
+    $('vx-opp-options').innerHTML=opts.length?'<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr))">'+opts.map(o=>{
+      const isPut=(o.dir||'').toUpperCase()==='PUT';
+      const prob=(o.prob!=null&&isFinite(o.prob))?Math.round(o.prob):null;
+      return `
+      <button class="vx-mover" onclick="location.href='/options/${esc(o.symbol)}'" aria-label="Dossier options ${esc(o.symbol)}" style="border-left:3px solid var(--vx-violet)">
         <div class="vx-flex" style="justify-content:space-between;gap:6px"><span class="mv-sym">${esc(o.symbol)}</span>
-          <span class="vx-badge" style="color:var(--vx-violet)">${esc(o.label||o.dir||'CALL')}</span></div>
-        <div class="mv-sub" style="margin-top:6px">strike <b>${VX.fmt.nd(o.strike)}</b> · prime <b>${VX.fmt.nd(o.premium)}</b></div>
-        <div class="mv-sub" style="color:var(--vx-violet);margin-top:5px">Dossier options →</div>
-      </button>`).join('')+'</div>':VX.states.empty('Aucun contrat retenu — le sélecteur ne force jamais une idée.');
-    /* Posture du comité : répartition réelle des verdicts en donut */
+          <span class="vx-badge" style="color:${isPut?'var(--vx-negative)':'var(--vx-positive)'}">${esc((o.dir||'CALL').toUpperCase())}</span>
+          <span class="vx-badge" style="color:var(--vx-violet)">${esc(o.label||'')}</span></div>
+        <div class="mv-sub" style="margin-top:6px">strike <b>${VX.fmt.nd(o.strike)}</b> · prime <b>${VX.fmt.nd(o.premium)} $</b></div>
+        ${prob!=null?`<div class="vx-flex" style="gap:7px;align-items:center;margin-top:6px">
+          <span class="vx-meta" style="flex:0 0 auto">proba. profit</span>
+          <span style="flex:1;height:6px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden">
+            <i style="display:block;height:100%;width:${Math.max(3,Math.min(100,prob))}%;background:${prob>=50?'var(--vx-positive)':'var(--vx-warning)'};border-radius:99px"></i></span>
+          <b class="vx-mono" style="font-size:11.5px">${prob} %</b></div>`:''}
+        <div class="mv-sub" style="color:var(--vx-violet);margin-top:6px">Dossier options →</div>
+      </button>`;}).join('')+'</div>':VX.states.empty('Aucun contrat retenu — le sélecteur ne force jamais une idée.');
+    /* Posture du comité : gros compteurs + barre empilée (HTML sur mesure,
+       taille déterministe — fini le donut qui prenait toute la page). */
     const posture=$('vx-opp-posture');
     if(posture){
       const counts=c.counts||{};
       const _ck=Object.keys(counts).filter(k=>counts[k]>0);
       if(!_ck.length){posture.innerHTML='';}
-      else if(window.VXCharts&&VXCharts.donutCard){
-        const tone={'ACHETER':'#36c889','RENFORCER':'#36c889','ATTENDRE':'#dda23b','WAIT':'#dda23b',
-          'ÉVITER':'#ed655c','AVOID':'#ed655c','ALLÉGER':'#ed655c','ALLEGER':'#ed655c'};
-        /* /api/command ne porte pas data_source — l'état démo vient du statut global. */
+      else{
+        const tone={'ACHETER':'var(--vx-positive)','RENFORCER':'var(--vx-positive)','ATTENDRE':'var(--vx-warning)','WAIT':'var(--vx-warning)',
+          'ÉVITER':'var(--vx-negative)','AVOID':'var(--vx-negative)','ALLÉGER':'var(--vx-negative)','ALLEGER':'var(--vx-negative)'};
+        const total=_ck.reduce((a,k)=>a+counts[k],0)||1;
         const isDemo=!!(window.__vxStatus&&window.__vxStatus.demo);
-        VXCharts.donutCard('vx-opp-posture',{title:'Posture du comité',
-          question:'Comment se répartissent les verdicts du comité aujourd’hui ?',
-          labels:_ck,values:_ck.map(k=>counts[k]),colors:_ck.map(k=>tone[k]||'#8f8a83'),height:H_CPT,
-          source:(isDemo?'démo':'comité'),timestamp:Date.now(),
-          mode:(isDemo?'fallback':'delayed')});
+        posture.classList.add('vx-card');
+        posture.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Posture du comité</span>
+            <span class="vx-chart-question">Comment se répartissent les verdicts aujourd’hui ?</span></div>
+          <div class="vx-flex vx-wrap" style="gap:12px;margin:6px 0 12px">
+            ${_ck.map(k=>`<div style="flex:1;min-width:110px;padding:11px 13px;border-radius:11px;background:var(--vx-surface-0);border:1px solid var(--vx-border);border-left:3px solid ${tone[k]||'var(--vx-text-dim)'}">
+              <div style="font:800 24px/1.1 var(--vx-font-mono,monospace);color:${tone[k]||'var(--vx-text-dim)'}">${counts[k]}</div>
+              <div class="vx-meta" style="margin-top:3px">${esc(k)}</div>
+              <div class="vx-meta">${Math.round(counts[k]/total*100)} % des dossiers</div></div>`).join('')}
+          </div>
+          <div style="display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--vx-surface-0)" role="img" aria-label="Répartition des verdicts du comité">
+            ${_ck.map(k=>`<i style="width:${(counts[k]/total*100).toFixed(1)}%;background:${tone[k]||'var(--vx-text-dim)'}"></i>`).join('')}
+          </div>
+          <div class="vx-card-footer">${VX.updateIndicator(Date.now(),isDemo?'démo':'comité',isDemo?'fallback':'delayed')}
+            <span class="vx-meta">${total} dossier(s) passés en revue par le comité</span></div>`;
       }
     }
   }catch(e){
@@ -1146,8 +1177,8 @@ async function loadAlerts(){
         <span class="vx-grow vx-dim" style="font-size:12px">${a.cond==='above'?'franchit':'casse'} ${VX.fmt.price(a.level)} ${esc(a.note||'')}</span>
         ${hit?'<span class="vx-badge" style="color:var(--vx-warning)">déclenchée</span>':'<span class="vx-badge">armée</span>'}
       </div>`;}).join('');
-    $('vx-alerts').innerHTML=(srv+rows)||VX.states.empty('Aucune alerte active.',
-      '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'alert\')">Créer une alerte</button>');
+    $('vx-alerts').innerHTML=((srv+rows)||VX.states.empty('Aucune alerte active.'))
+      +'<div class="vx-mt2"><button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXEntities.openAddModal(\'\',\'alert\')">+ Créer une alerte</button></div>';
   }catch(e){$('vx-alerts').innerHTML=VX.states.error('Alertes indisponibles');}
 }
 

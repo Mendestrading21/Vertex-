@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v55';   // v55 : cockpit trading v3 — ordre 1-9 définitif, tuiles XL, pouls complet (tendance/distribution/santé), opportunités avec pourquoi, portefeuille en cartes
+const CACHE='td-shell-v56';   // v56 : rotation avec noms de secteurs, posture comité en compteurs, comparatif proba/conviction, options CALL/PUT+proba, jauge régime FR
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

@@ -190,10 +190,16 @@
   };
   C.bars = function (canvas, labels, values, { colors, horizontal = false, yFmt } = {}) {
     const cols = colors || values.map(v => v >= 0 ? C.colors.positive : C.colors.negative);
+    /* Horizontal : les CATÉGORIES vivent sur l'axe y — yFmt ne s'applique qu'aux
+       VALEURS (axe x), sinon les noms disparaissent au profit de ticks formatés. */
+    const scales = horizontal
+      ? { x: { grid: { color: C.colors.grid }, ticks: { maxTicksLimit: 6, callback: yFmt || undefined } },
+          y: { grid: { display: false }, ticks: { autoSkip: false } } }
+      : C.axes({ yFmt });
     return C.mount(canvas, {
       type: 'bar',
       data: { labels, datasets: [{ data: values, backgroundColor: cols, borderRadius: 3, maxBarThickness: 26 }] },
-      options: { indexAxis: horizontal ? 'y' : 'x', scales: C.axes({ yFmt }) },
+      options: { indexAxis: horizontal ? 'y' : 'x', scales },
     });
   };
   C.donut = function (canvas, labels, values, { colors } = {}) {
