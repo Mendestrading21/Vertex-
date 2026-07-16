@@ -203,11 +203,15 @@ _SECTIONS = """
 <section class="vx-card vx-mt4" id="an-scenarios"><div class="vx-card-header">
   <span class="vx-card-title">Scénarios Bull / Base / Bear</span></div><div data-body>%%LOADING%%</div></section>
 
-<!-- 11. Options -->
-<section class="vx-card vx-mt4" id="an-options">
+<!-- 11. Options : chaîne enrichie (greeks réels + BE/risque max/rendement) + bulle d'équilibre -->
+<div class="vx-grid vx-mt4">
+  <div class="vx-col-7" id="an-options-chain"></div>
+  <div class="vx-col-5" id="an-options-bubble"></div>
+</div>
+<section class="vx-card vx-mt4" id="an-options" hidden>
   <div class="vx-card-header"><span class="vx-card-title">Options — Vertex Dynamic Options</span>
     <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost"
-      href="/opportunities?view=options&sym=%%SYM%%">Ouvrir le desk options →</a></span></div>
+      href="/options/%%SYM%%">Dossier options complet →</a></span></div>
   <div data-body>%%LOADING%%</div>
 </section>
 
@@ -235,6 +239,7 @@ _SECTIONS = """
 
 _JS = r"""
 <script src="/static/vertex/js/charts/price-chart.js" defer></script>
+<script src="/static/vertex/js/charts/option-chain.js" defer></script>
 <script src="/static/vertex/js/charts/candlestick-chart.js" defer></script>
 <script src="/static/vertex/js/vendor/lightweight-charts.standalone.production.js" defer></script>
 <script src="/static/vertex/js/charts/candlestick-lwc.js" defer></script>
@@ -368,7 +373,10 @@ function paintValuation(t,cf){
     metric({k:'Capitalisation',val:B(cf.mcap)}),
     metric({k:'Trésorerie',val:B(cf.cash),tone:'pos'}),
     metric({k:'Dette',val:B(cf.debt),tone:cf.debt>cf.cash?'warn':''}),
-    metric({k:'Dividende',val:cf.dividend!=null?(+cf.dividend).toFixed(2):null,unit:cf.dividend?'$':''}),
+    /* cf.dividend = dividendYield (un RENDEMENT, pas un montant $). yfinance le
+       renvoie tantôt en fraction (0.0044) tantôt en pourcent (0.44) selon la
+       version → normaliser en % : ×100 si < 1 (fraction), sinon tel quel. */
+    metric({k:'Rendement du dividende',val:cf.dividend!=null?((cf.dividend<1?cf.dividend*100:cf.dividend)).toFixed(2):null,unit:cf.dividend!=null?'%':''}),
   ];
   /* Comparaison P/E vs pairs (réel : company.fundamentals + peers_data) */
   const peers=(t&&t.peers_data)||[];
@@ -888,30 +896,30 @@ async function loadDossier(){
     });
   };
 
-  /* 11. Options */
+  /* 11. Options — chaîne ENRICHIE via /api/options/chain (board réel : greeks
+     delta/gamma/theta/vega, IV, OI, volume, prime, break-even, PoP, qualité) +
+     colonnes calculées risque max & rendement. Composant partagé C.optionChainTable
+     + bulle d'équilibre prime×DTE. Shortlist honnête, greeks = modèle. */
   try{
-    const ob=await VX.fetch('/api/options-for/'+SYM+'?type=CALL',{ttl:180000});
-    /* Schéma serveur (reco.options_for_position) : {suggestions:[{role,strike,exp,
-       delta,premium,pop,score,grade,why}]} — les alias contracts/list/best couvrent
-       les anciens schémas. */
-    const cs=(ob&&(ob.suggestions||ob.contracts||ob.list||ob.best))||ob||{};
-    const arr=Array.isArray(cs)?cs:(cs.suggestions||cs.contracts||[]);
-    body('an-options',arr.length?
-      `<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
-        <th>Contrat</th><th class="vx-num">Strike</th><th>Échéance</th><th class="vx-num">Delta</th>
-        <th class="vx-num">Prime</th><th class="vx-num">PoP</th><th></th></tr></thead><tbody>${
-        arr.slice(0,3).map(c=>`<tr title="${esc(c.why||'')}">
-          <td data-label="Contrat"><span class="vx-badge" style="color:var(--vx-violet)">${esc(c.role||c.type||'CALL')}</span>${c.role_label?` <span class="vx-meta">${esc(c.role_label)}</span>`:''}</td>
-          <td data-label="Strike" class="vx-num">${VX.fmt.nd(c.strike)}</td>
-          <td data-label="Échéance" class="vx-mono">${VX.fmt.nd(c.exp||c.expiry)}${c.dte!=null?` <span class="vx-meta">${c.dte} j</span>`:''}</td>
-          <td data-label="Delta" class="vx-num">${VX.fmt.nd(c.delta)}</td>
-          <td data-label="Prime" class="vx-num">${VX.fmt.nd(c.mid??c.premium??c.cost)}</td>
-          <td data-label="PoP" class="vx-num">${c.pop!=null?c.pop+' %':VX.fmt.nd(c.oi??c.openInterest)}</td>
-          <td><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/${SYM}">Analyser →</a></td></tr>`).join('')}
-      </tbody></table></div>`
-      :VX.states.empty('Aucun contrat CALL exploitable retourné par le moteur.',
-        `<a class="vx-btn vx-btn-sm" href="/opportunities?view=options&sym=${SYM}">Ouvrir le desk options</a>`));
-  }catch(e){body('an-options',VX.states.empty('Chaîne d’options indisponible (IBKR hors ligne ou titre sans options).'));}
+    const ch=await VX.fetch('/api/options/chain/'+SYM,{ttl:180000});
+    const arr=(ch&&ch.contracts)||[];
+    if(arr.length&&window.VXCharts&&VXCharts.optionChainTable){
+      VXCharts.optionChainTable('an-options-chain',{contracts:arr,spot:ch.spot,sym:SYM,
+        source:ch.source||'board options',timestamp:ch.as_of,mode:ch.on_demand?'delayed':'delayed'});
+      if(VXCharts.bestContractBubble)VXCharts.bestContractBubble('an-options-bubble',{contracts:arr,spot:ch.spot,
+        source:ch.source||'board options',timestamp:ch.as_of,mode:'delayed'});
+    }else{
+      const host=document.getElementById('an-options-chain');
+      if(host){host.className='vx-card';host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Chaîne — meilleurs contrats</span></div>'
+        +VX.states.empty('Aucun contrat exploitable pour '+esc(SYM)+' (IBKR hors ligne ou titre sans options liquides).',
+          '<a class="vx-btn vx-btn-sm" href="/options/'+SYM+'">Ouvrir le dossier options</a>');}
+      const bb=document.getElementById('an-options-bubble');if(bb)bb.innerHTML='';
+    }
+  }catch(e){
+    const host=document.getElementById('an-options-chain');
+    if(host){host.className='vx-card';host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Chaîne — meilleurs contrats</span></div>'
+      +VX.states.empty('Chaîne d’options indisponible ('+esc(e.message)+').');}
+  }
 
   /* 12. Compatibilité portefeuille */
   const positions=E()?E().positions():[];
