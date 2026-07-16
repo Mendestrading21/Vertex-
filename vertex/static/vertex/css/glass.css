@@ -207,6 +207,72 @@ body::before{
 .vx-kpi-sub{display:block;font-size:var(--vx-fs-meta);color:var(--vx-text-muted);margin-top:1px}
 .vx-kpi .vx-kpi-value{color:var(--vx-text-primary)}
 
+/* ══════════════════════════════════════════════════════════════════
+   11) ENRICHISSEMENT GLOBAL — chaque carte / tuile / graphique / donnée
+   soignée dans le style verre. Sous-surfaces en « verre creusé », pistes
+   neutres, remplissages sémantiques, grands chiffres nets.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Sous-surfaces imbriquées (tuiles KPI/stat/metric, cartes de liste) : verre creusé */
+.vx-stat,.vx-metric,.vx-perfbar,.vx-poscard,.vx-opp-card,.vx-pf-card,.vx-mover,
+.vx-strip-item,.vx-scr-kpis .k,.vx-cmd-strip .vx-cmd-k,.vx-metric-cmp,.vx-verdict-line,
+.vx-opt-chip,.vx-notif-item{
+  background:rgba(255,255,255,.022)!important;
+  border:1px solid var(--vx-glass-border)!important;
+  border-radius:var(--vx-r)!important;
+  box-shadow:var(--vx-glass-sheen)!important}
+.vx-stat:hover,.vx-metric:hover,.vx-poscard:hover,.vx-opp-card:hover,.vx-pf-card:hover,
+.vx-mover:hover,a.vx-strip-item:hover{border-color:var(--vx-glass-border-strong)!important;
+  background:rgba(255,255,255,.04)!important}
+/* liseré de ton (metric/stat) → conserve le SENS (pos/neg/warn) mais neutre par défaut */
+.vx-metric::before{background:var(--_tone,var(--vx-silver-line))!important;opacity:.9}
+
+/* Grands chiffres : blanc net, mono, tabulaire */
+.vx-kpi-value,.vx-stat-v,.vx-metric-v,.vx-stat-xl,.vx-cmd-v,.vx-sg-val,.pf-pl,.mv-chg{
+  color:var(--vx-text-primary)}
+.vx-stat[data-tone="pos"] .vx-stat-v,.vx-metric[data-tone="pos"] .vx-metric-v,.vx-pos{color:var(--vx-positive)}
+.vx-stat[data-tone="neg"] .vx-stat-v,.vx-metric[data-tone="neg"] .vx-metric-v,.vx-neg{color:var(--vx-negative)}
+.vx-stat[data-tone="warn"] .vx-stat-v,.vx-metric[data-tone="warn"] .vx-metric-v,.vx-warn{color:var(--vx-warning)}
+
+/* Pistes de jauges / barres / rails : piste neutre translucide, repère argent */
+.vx-meter,.vx-metric-bar,.vx-rangebar,.vx-stackbar,.vx-opt-gauge-track,.vx-opt-dim-bar,
+.db-track,.wb-track,.cb-track,.pb-bar,.vx-rail{
+  background:rgba(255,255,255,.06)!important}
+.vx-meter>b,.db-track::before,.vx-metric-bar>b{background:var(--vx-text-primary)!important}
+/* remplissages « marque » (non directionnels) → argent ; directionnels gardent le sens */
+.vx-meter>i,.wb-track>i,.cb-track>i,.vx-opt-dim-bar i{background:var(--vx-silver)!important}
+.vx-opt-gauge-track i{background:var(--vx-silver)}
+.vx-opt-gauge-track i[data-tone="pos"],.wb-track>i[data-tone="pos"]{background:var(--vx-positive)!important}
+.vx-opt-gauge-track i[data-tone="neg"]{background:var(--vx-negative)!important}
+/* Rails sémantiques (VIX stress calme→stress) : on garde vert→ambre→rouge (SENS) */
+
+/* Cartes graphiques : en-tête/pied lisibles sur verre */
+.vx-chart-card .vx-chart-head{border-bottom:1px solid var(--vx-glass-border)}
+.vx-chart-foot{border-top:1px solid var(--vx-glass-border);color:var(--vx-text-muted)}
+.vx-chart-tf,.vx-chart-badge{background:rgba(255,255,255,.04);border:1px solid var(--vx-glass-border);
+  border-radius:999px;color:var(--vx-text-secondary)}
+
+/* Badges / pills sur verre */
+.vx-badge{background:rgba(255,255,255,.04);border:1px solid var(--vx-glass-border);color:var(--vx-text-secondary)}
+.vx-badge-decision[data-decision="ACHETER"],.vx-badge-decision[data-decision="RENFORCER"]{
+  background:var(--vx-positive-soft);color:var(--vx-positive);border-color:rgba(54,200,137,.35)}
+.vx-badge-decision[data-decision="ATTENDRE"]{background:var(--vx-warning-soft);color:var(--vx-warning);border-color:rgba(221,162,59,.35)}
+.vx-badge-decision[data-decision="REDUIRE"],.vx-badge-decision[data-decision="REFUSER"]{
+  background:var(--vx-negative-soft);color:var(--vx-negative);border-color:rgba(237,101,92,.35)}
+
+/* Tables : zébrures très douces + numériques nets */
+.vx-table tbody tr:nth-child(even){background:rgba(255,255,255,.012)}
+.vx-table .vx-num,.vx-table td.vx-num{color:var(--vx-text-primary)}
+.vx-ticker{color:var(--vx-text-primary);font-weight:600}
+
+/* Insight / panneaux : liseré argent par défaut (sens conservé si tonalité) */
+.vx-insight{background:rgba(255,255,255,.03);border-left-color:var(--vx-silver-line)}
+.vx-insight[data-tone="risk"]{border-left-color:var(--vx-warning)}
+.vx-insight[data-tone="ai"]{border-left-color:var(--vx-option)}
+
+/* Skeletons cohérents verre */
+.vx-skeleton{background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.06),rgba(255,255,255,.03))}
+
 /* Scrollbars fines neutres */
 *{scrollbar-color:#2a2e34 transparent}
 *::-webkit-scrollbar-thumb{background:#2a2e34;border-radius:8px}
