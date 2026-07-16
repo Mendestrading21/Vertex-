@@ -67,7 +67,24 @@
   --vx-glow-brand:0 0 0 1px rgba(201,205,212,.18),0 4px 20px rgba(201,205,212,.06);
   --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(222,227,237,.04),transparent 68%);
   --vx-info:var(--vx-silver);
+
+  /* Rampe « signal/orange/copper » (ancienne identité VERTE) → argent/graphite.
+     Le vert ne subsiste que via --vx-positive (sémantique). Les hex figés
+     restent dans tokens.css ; ici on ne change que la valeur d'exécution. */
+  --vx-signal-950:#191b1f;--vx-signal-900:#202329;--vx-signal-800:#2b2f36;
+  --vx-signal-700:#3a3f47;--vx-signal-600:#565c66;--vx-signal-500:#c9cdd4;
+  --vx-signal-400:#dfe2e7;--vx-signal-300:#eef0f3;
+  --vx-orange-950:var(--vx-signal-950);--vx-orange-900:var(--vx-signal-900);
+  --vx-orange-850:var(--vx-signal-800);--vx-orange-800:var(--vx-signal-800);
+  --vx-orange-700:var(--vx-signal-700);--vx-orange-600:var(--vx-signal-600);
+  --vx-orange-500:var(--vx-signal-500);--vx-orange-400:var(--vx-signal-400);
+  --vx-copper-dark:var(--vx-signal-800);--vx-copper:var(--vx-signal-700);
+  --vx-copper-light:var(--vx-signal-500);--vx-copper-legacy:var(--vx-signal-400);
+  --vx-beige:#c9cdd4;
 }
+/* Onglet actif : plus de fond/soulignement vert (control-surface) → argent */
+.vx-tab[aria-selected="true"]{background:transparent!important;border-bottom-color:var(--vx-silver)!important}
+.vx-tab:hover{background:rgba(255,255,255,.03)}
 
 /* ══════════════════════════════════════════════════════════════════
    2) FOND — noir profond neutre + halo lumineux diffus (sidebar) sans couleur
