@@ -38,6 +38,14 @@ def _dir_word(chg):
     return 'quasi inchangés'
 
 
+def _s(n):
+    """Accord du pluriel français (0 et 1 → singulier)."""
+    try:
+        return '' if abs(int(n)) <= 1 else 's'
+    except (TypeError, ValueError):
+        return 's'
+
+
 def _indices(scan_state):
     idx = scan_state.get('indices') or []
     out = {}
@@ -73,11 +81,11 @@ def build_narrative(scan_state, news_state=None):
 
     sent = []  # phrases du narratif
 
-    # 1-2. Direction des indices.
+    # 1-3. Direction des indices + moteur de séance.
     sp, ndx = idx.get('sp'), idx.get('ndx')
     if sp is not None or ndx is not None:
         w = _dir_word(sp if sp is not None else ndx)
-        lead = 'Les indices américains ont terminé %s' % (w or 'proches de l\'équilibre')
+        lead = 'Les indices américains s\'affichent %s' % (w or 'proches de l\'équilibre')
         bits = []
         if sp is not None:
             bits.append('le S&P 500 %+.1f %%' % sp)
@@ -85,12 +93,12 @@ def build_narrative(scan_state, news_state=None):
             bits.append('le Nasdaq %+.1f %%' % ndx)
         if bits:
             lead += ', ' + ' et '.join(bits)
-        # 3. Moteur principal : leadership techno si Nasdaq surperforme.
+        # Moteur principal : leadership techno si le Nasdaq surperforme.
         if sp is not None and ndx is not None:
             if ndx > sp + 0.2:
-                lead += ' — le leadership technologique domine la séance'
+                lead += ' : la technologie mène la hausse et concentre le leadership de la séance'
             elif sp > ndx + 0.2:
-                lead += ' — la rotation favorise les valeurs cycliques hors technologie'
+                lead += ' : la rotation profite aux valeurs cycliques, au détriment de la technologie'
         sent.append(lead + '.')
         sources.append('indices (scan)')
 
@@ -98,29 +106,30 @@ def build_narrative(scan_state, news_state=None):
     regime = _regime_fr(m.get('spy_regime') or m.get('regime'))
     roro = m.get('roro')
     if regime or roro:
-        s = 'Le régime de marché est %s' % (regime or 'indéterminé')
+        s = 'Le régime de fond reste %s' % (regime or 'indéterminé')
         if roro:
-            s += ' dans un contexte %s' % roro
+            s += ', dans un climat %s' % roro
         sent.append(s + '.')
 
     # 5. Volatilité.
     vix = _num(m.get('vix'))
     if vix is not None:
         band = m.get('vix_band')
-        s = 'La volatilité implicite (VIX) ressort à %.1f' % vix
+        s = 'Le VIX, mesure de la volatilité implicite, s\'établit à %.1f' % vix
         if band:
             s += ' (%s)' % band
-        s += (', un niveau qui favorise l\'achat de convexité' if vix < 18 else
-              ', ce qui renchérit les primes d\'options' if vix > 25 else
-              ', dans une zone médiane')
+        s += (', un niveau contenu qui rend la couverture et l\'achat de convexité bon marché' if vix < 18 else
+              ', un niveau tendu qui renchérit les primes d\'options et récompense la prudence' if vix > 25 else
+              ', en zone médiane, sans excès de stress ni d\'euphorie')
         sent.append(s + '.')
 
     # 6. Breadth / participation.
     breadth = _num(m.get('breadth'))
     if breadth is not None:
-        s = 'La participation (breadth) atteint %.0f %% des leaders au-dessus de leur moyenne' % breadth
-        s += (' — participation saine' if breadth >= 55 else
-              ' — participation étroite qui impose la sélectivité')
+        s = 'La participation est %s : %.0f %% des valeurs leaders traitent au-dessus de leur moyenne mobile' % (
+            ('large' if breadth >= 55 else 'étroite'), breadth)
+        s += (', signe d\'un mouvement bien soutenu' if breadth >= 55 else
+              ', ce qui impose la sélectivité et fragilise les cassures')
         sent.append(s + '.')
 
     # 7-8. Secteurs leaders / faibles.
@@ -131,16 +140,17 @@ def build_narrative(scan_state, news_state=None):
         dominant = [r.get('sector') for r in ranked[:2] if r.get('sector')]
         weak = [r.get('sector') for r in ranked[-2:] if r.get('sector')]
         if top.get('sector'):
-            sent.append('Le leadership sectoriel revient à %s' % top.get('sector')
+            sent.append('Côté rotation, %s mène la cote' % top.get('sector')
                         + (' devant %s' % ranked[1].get('sector') if len(ranked) > 1 and ranked[1].get('sector') else '')
                         + '.')
         sources.append('secteurs (scan)')
 
     # 9. Comité / opportunités.
     if counts:
-        sent.append('Le comité identifie %d dossier(s) d\'achat possible(s) et %d en attente ; '
-                    'aucune décision offensive n\'est prise sans valider le dossier complet.'
-                    % (int(counts.get('ACHETER', 0)), int(counts.get('ATTENDRE', 0))))
+        na, nw = int(counts.get('ACHETER', 0)), int(counts.get('ATTENDRE', 0))
+        sent.append('Le comité Vertex retient %d dossier%s achetable%s et %d en surveillance ; '
+                    'aucune position offensive n\'est engagée sans dossier complet validé.'
+                    % (na, _s(na), _s(na), nw))
 
     # 10. Actualités — UNIQUEMENT si réelles. Sinon signalé, jamais inventé.
     news_available = bool(news_items)
@@ -151,12 +161,12 @@ def build_narrative(scan_state, news_state=None):
             sent.append('À la une : %s.' % title[:180])
             sources.append('actualités (fil assaini)')
     else:
-        sent.append('Aucune actualité validée n\'est disponible : ce brief s\'appuie '
-                    'uniquement sur les données de marché (aucun récit n\'est inventé).')
+        sent.append('Aucune actualité validée à cette heure : le brief s\'appuie uniquement '
+                    'sur les données de marché — aucun récit n\'est inventé.')
 
     # 11. Discipline.
-    sent.append('Discipline du jour : fondamental avant technique, R:R minimum 2:1, '
-                'stops dérivés du sous-jacent, décision finale unique — aucune improvisation.')
+    sent.append('Discipline du jour : le fondamental prime sur le technique, R:R minimum de 2:1, '
+                'stops dérivés du sous-jacent et décision finale unique — aucune improvisation.')
 
     narrative = ' '.join(sent)
     words = len(narrative.split())
@@ -167,23 +177,23 @@ def build_narrative(scan_state, news_state=None):
     decisions = committee.get('decisions') or []
     prio = next((d for d in decisions if d.get('verdict') in ('ACHETER', 'RENFORCER')), None)
     if prio:
-        main_opp = '%s — vérifier le dossier complet avant toute décision.' % prio.get('symbol')
+        main_opp = '%s — dossier complet à valider avant toute décision.' % prio.get('symbol')
 
     calls_impact = None
     if vix is not None:
-        calls_impact = ('IV basse : environnement favorable à l\'achat de calls (convexité abordable).'
+        calls_impact = ('Volatilité implicite basse : environnement porteur pour l\'achat de calls, la convexité se paie peu.'
                         if vix < 18 else
-                        'IV élevée : les calls coûtent cher, exiger un R:R strict.'
+                        'Volatilité implicite élevée : les calls coûtent cher, n\'entrer qu\'avec un R:R strict.'
                         if vix > 25 else
-                        'IV médiane : sélection de calls au cas par cas.')
+                        'Volatilité implicite médiane : sélection de calls au cas par cas.')
 
     main_risk = None
     if regime in (None, 'UNKNOWN', 'INCONNU', 'INDÉTERMINÉ'):
-        main_risk = 'Régime de marché indéterminé — aucun nouveau risque autorisé.'
+        main_risk = 'Régime de marché indéterminé — aucun nouveau risque autorisé tant que la direction n\'est pas confirmée.'
     elif roro == 'RISK-OFF':
-        main_risk = 'Contexte RISK-OFF — pas d\'achat offensif, protéger le capital.'
+        main_risk = 'Climat d\'aversion au risque (RISK-OFF) — pas d\'achat offensif, priorité à la protection du capital.'
     elif breadth is not None and breadth < 45:
-        main_risk = 'Participation étroite — risque de faux départs sur les cassures.'
+        main_risk = 'Participation étroite — risque accru de faux départs sur les cassures.'
 
     return {
         'narrative': narrative,

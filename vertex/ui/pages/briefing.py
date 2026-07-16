@@ -66,8 +66,8 @@ def build_editorial(scan_state: dict) -> dict:
     if isinstance(breadth, dict):          # market_ctx.breadth = {above50, above200, …}
         breadth = breadth.get('above50', breadth.get('above200'))
     if breadth is not None:
-        lines.append(f'Breadth : {round(breadth)} % des leaders au-dessus de leur moyenne — '
-                     + ('participation saine.' if breadth >= 55 else
+        lines.append(f'Participation : {round(breadth)} % des valeurs leaders au-dessus de leur moyenne mobile — '
+                     + ('participation large, mouvement soutenu.' if breadth >= 55 else
                         'participation étroite, sélectivité obligatoire.'))
     if sectors:
         top = sectors[0] if isinstance(sectors[0], dict) else None
@@ -78,15 +78,17 @@ def build_editorial(scan_state: dict) -> dict:
         if weak and weak is not top:
             lines.append(f"Secteur faible : {weak.get('sector', 'n/d')}.")
     if counts:
-        lines.append(f"Comité : {counts.get('ACHETER', 0)} achat(s) possibles, "
-                     f"{counts.get('ATTENDRE', 0)} en attente, "
-                     f"{counts.get('ÉVITER', counts.get('EVITER', 0))} à éviter.")
+        na = counts.get('ACHETER', 0)
+        nv = counts.get('ÉVITER', counts.get('EVITER', 0))
+        lines.append(f"Comité : {na} dossier{'s' if na != 1 else ''} d'achat, "
+                     f"{counts.get('ATTENDRE', 0)} en surveillance, "
+                     f"{nv} à éviter.")
     decisions = committee.get('decisions') or []
     prio = next((d for d in decisions if d.get('verdict') in ('ACHETER', 'RENFORCER')), None)
     if prio:
-        lines.append(f"Opportunité prioritaire : {prio.get('symbol')} — vérifier le dossier complet avant toute décision.")
-    lines.append('Discipline du jour : aucune improvisation — fondamental avant '
-                 'technique, décision finale unique, stops dérivés du sous-jacent.')
+        lines.append(f"Opportunité prioritaire : {prio.get('symbol')} — dossier complet à valider avant toute décision.")
+    lines.append('Discipline du jour : aucune improvisation — le fondamental prime sur '
+                 'le technique, décision finale unique, stops dérivés du sous-jacent.')
 
     changed = scan_state.get('daily_changes') or []
     return {

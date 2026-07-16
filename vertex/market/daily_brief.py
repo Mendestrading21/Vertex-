@@ -75,25 +75,26 @@ def build_daily_brief(scan_state: dict, news_state: dict | None = None,
     regime = _regime_fr(m.get('spy_regime') or m.get('regime')) or 'n/d'
     roro = m.get('roro') or ''
     sections.append(('Situation générale',
-                     f"Régime {regime}{' · ' + roro if roro else ''} — "
-                     + ('participation saine.' if (m.get('breadth') or 0) >= 55
-                        else 'sélectivité obligatoire.')))
+                     f"Le marché évolue en régime {regime}{', climat ' + roro if roro else ''} ; "
+                     + ('la participation large autorise une exposition normale.'
+                        if (m.get('breadth') or 0) >= 55
+                        else 'la participation étroite impose la sélectivité.')))
     # 2. Indices
     parts = []
     for name in ('S&P 500', 'Nasdaq', 'Dow Jones', 'Russell 2000'):
         e = by.get(name) or {}
         if e.get('change') is not None:
             parts.append(f"{name} {e['change']:+.1f} %")
-    sections.append(('Indices', ' · '.join(parts) + '.' if parts
+    sections.append(('Indices', 'Sur la séance, ' + ' · '.join(parts) + '.' if parts
                      else 'Indices indisponibles dans le dernier scan.'))
     # 3. Taux et volatilité
     vix = m.get('vix')
     tnx = (by.get('Taux 10 ans') or {}).get('price')
     vol_txt = []
     if vix is not None:
-        vol_txt.append(f"VIX {vix}{' (' + m.get('vix_band', '') + ')' if m.get('vix_band') else ''}")
+        vol_txt.append(f"VIX à {vix}{' (' + m.get('vix_band', '') + ')' if m.get('vix_band') else ''}")
     if tnx is not None:
-        vol_txt.append(f'10 ans {tnx}')
+        vol_txt.append(f'taux 10 ans à {tnx}')
     sections.append(('Taux et volatilité', ' · '.join(vol_txt) + '.' if vol_txt
                      else 'Taux et volatilité non fournis par le scan.'))
     # 4. Actualité dominante — UNIQUEMENT des événements réels et sourcés
@@ -110,10 +111,10 @@ def build_daily_brief(scan_state: dict, news_state: dict | None = None,
     # 5-6. Secteurs
     if sectors and isinstance(sectors[0], dict):
         sections.append(('Secteurs leaders',
-                         f"{sectors[0].get('sector', 'n/d')} en tête "
+                         f"{sectors[0].get('sector', 'n/d')} mène la cote "
                          f"(score {sectors[0].get('avg_score', 'n/d')})."))
         if len(sectors) > 1:
-            sections.append(('Secteurs faibles', f"{sectors[-1].get('sector', 'n/d')} à la traîne."))
+            sections.append(('Secteurs faibles', f"{sectors[-1].get('sector', 'n/d')} reste à la traîne."))
     else:
         sections.append(('Secteurs', 'Rotation sectorielle non calculée par le dernier scan.'))
     # 7. Entreprises importantes (comité + événements entreprises réels)
@@ -121,26 +122,29 @@ def build_daily_brief(scan_state: dict, news_state: dict | None = None,
     prio = next((d for d in decisions if d.get('verdict') in ('ACHETER', 'RENFORCER')), None)
     ent = []
     if prio:
-        ent.append(f"{prio.get('symbol')} ressort du comité — dossier complet requis avant décision")
+        ent.append(f"{prio.get('symbol')} ressort du comité — dossier complet à valider avant décision")
     for ev in top_events:
         if ev['category'] in ('RESULTATS', 'GUIDANCE') and ev.get('entities'):
             ent.append(f"{ev['entities'][0]} : {ev.get('title_fr') or ev['title']} ({ev['source']})")
             break
+    _na, _nw = counts.get('ACHETER', 0), counts.get('ATTENDRE', 0)
     sections.append(('Entreprises', ' · '.join(ent) + '.' if ent
-                     else f"Comité : {counts.get('ACHETER', 0)} achat(s) possibles, "
-                          f"{counts.get('ATTENDRE', 0)} en attente."))
+                     else f"Le comité retient {_na} dossier{'s' if _na != 1 else ''} d'achat "
+                          f"et {_nw} en surveillance."))
     # 8. Options et volatilité
     board = scan_state.get('options_board') or []
-    sections.append(('Options', f"{len(board)} contrat(s) sur le board Vertex Dynamic Options — "
-                     'sélection CALL prioritaire, R:R minimal 2:1.' if board
-                     else 'Board options vide — aucun contrat ne force le R:R 2:1.'))
+    _nb = len(board)
+    sections.append(('Options', f"{_nb} contrat{'s' if _nb != 1 else ''} au board Vertex Dynamic Options — "
+                     'priorité aux CALL, R:R minimal de 2:1.' if board
+                     else 'Board options vide — aucun contrat ne satisfait le R:R 2:1.'))
     # 9. Portefeuille
-    sections.append(('Portefeuille', f"{len(syms)} position(s) déclarée(s) suivie(s)."
-                     if syms else 'Aucune position déclarée — surveillance générale.'))
+    _ns = len(syms)
+    sections.append(('Portefeuille', f"{_ns} position{'s' if _ns != 1 else ''} déclarée{'s' if _ns != 1 else ''} sous surveillance."
+                     if syms else 'Aucune position déclarée — surveillance générale du marché.'))
     # 10. Plan et discipline
     sections.append(('Plan et discipline',
-                     'Aucune improvisation : fondamental avant technique, décision finale '
-                     'unique, R:R 2:1 minimum, stops dérivés du sous-jacent.'))
+                     'Aucune improvisation : le fondamental prime sur le technique, décision finale '
+                     'unique, R:R minimum de 2:1 et stops dérivés du sous-jacent.'))
 
     text = ' '.join(f'{label} : {body}' for label, body in sections)
     words = len(text.split())
