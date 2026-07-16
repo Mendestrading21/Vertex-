@@ -107,4 +107,51 @@ earnings_dte fiable, rho.
 
 ---
 
-*Ce document sera enrichi à chaque phase (état après / preuves / captures).*
+## 6. Résultats des phases livrées (feature/vertex-hyper-visual-intelligence)
+
+| Phase | Commit | Livré | Vérifié en direct |
+|---|---|---|---|
+| **F1 Fondation** | `424505c` | audit + tokens macro/teal + neutres + typo étendue + grille `.vx-span/.vx-grid-N` + skeletons ; courbe des taux → teal | tokens présents, brand/positive intacts, teal `#53b9ad` appliqué |
+| **F2 Système graphique** | `acac88f` | plein écran (focus mode + backdrop + Échap) + vue tableau (données réelles) sur TOUS les `VXCharts.card` | 5 graphiques équipés, fullscreen + table 21 lignes OK |
+| **P1 Portefeuille cockpit** | `494e8d0` | KPI command strip (6, risque réel) + positions en cartes design | strip 6 KPI, 4 cartes, 0 débordement |
+| **P2 Options positions** | `b9c6c45` | CALL/PUT ring + distribution DTE (add-only, §0) | ring canvas + DTE 168 j OK |
+
+## 7. Constat d'audit : une grande partie du brief EST déjà en place
+
+Vérifié page par page — le socle refondu couvre déjà l'essentiel des §12-27 :
+
+- **Dashboard** (§12) : 9 sections hiérarchisées, héros interactif, jauges, waterfall
+  santé, treemap, brief repliable, KPI de situation, live 2 min. ✅ conforme.
+- **Opportunités** (§13-15) : screener 5 vues, ~18 filtres + préréglages, nuage
+  avantage×proba (zones/Kelly/no-trade), heat cliquable, distribution live, table
+  triable, plan de trade, espérance, grade, momentum, synchro URL. ✅ conforme.
+- **Options** (§16-22) : réparti sur /options (environnement, compteurs, vol charts,
+  scénarios, stratégies), /options/<sym> (chaîne, smile, structure par terme, cône),
+  /opportunities?view=options (scanner + simulation), /portfolio?view=options
+  (command center + payoff combiné moteur + drawer §20-22 + CALL/PUT + DTE). ✅
+  substantiel — créer 6 routes /options/* dupliquerait (interdit §0).
+- **Portefeuille** (§23) : cockpit KPI + treemap + cartes + risque réel + corrélation
+  (vue Risque) + exposition options. ✅ conforme (P1).
+- **Analyse** (§24) : fiche riche (candlestick + plan + décision + fondamental +
+  options + thèse moteur). ✅ largement conforme.
+- **Performance** (§25) : Progress Center (anneau, courbe fantôme, paliers) sans
+  assez de trades + stats réelles au-delà. ✅ conforme.
+- **Système** (§27) : santé, connexions, fraîcheur 7/7, jobs. ✅ honnête.
+
+## 8. Ce qui reste réellement ouvert (priorité si le chantier continue)
+
+1. **Inspecteur latéral global réutilisable** (§29) — aujourd'hui chaque page a
+   son propre drawer/panneau ; un composant `VertexInspectorDrawer` unifié
+   réduirait la duplication. *Refactor transverse, pas un manque fonctionnel.*
+2. **Data-Grid virtualisé** (§30) — les grandes tables sont bornées à 60-100 lignes
+   (pas de page de 15 000 px) mais sans virtualisation vraie ni colonnes
+   configurables/redimensionnables. *Améliration, pas un bug.*
+3. **Vues enregistrées** (§31) — les filtres persistent (localStorage + URL) mais
+   pas de « sauvegarder cette vue » nommée.
+4. **Suite de tests visuels dédiés** (§42) + captures Playwright multi-résolutions
+   (§43) — la vérification est faite en direct via le navigateur MCP à chaque
+   phase, mais non figée en tests de non-régression visuelle.
+
+*Chaque item ci-dessus est un chantier transverse substantiel, à ouvrir sur
+décision explicite — le socle fonctionnel et visuel est déjà conforme aux
+critères §44 les plus importants.*
