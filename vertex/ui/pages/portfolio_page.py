@@ -33,6 +33,21 @@ _CONTENT = """
 %%TABS%%
 <div class="vx-grid vx-mt4" id="pf-summary" aria-label="Synthèse portefeuille"></div>
 <div id="pf-body" class="vx-mt4">%%LOADING%%</div>
+<style>
+#vx-content .vx-cmd-strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+@media (max-width:1100px){#vx-content .vx-cmd-strip{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:640px){#vx-content .vx-cmd-strip{grid-template-columns:repeat(2,1fr)}}
+#vx-content .vx-cmd-k{padding:12px 14px;border-radius:12px;background:var(--vx-surface-0,#090c0a);
+  border:1px solid var(--vx-border,#26221e);border-left:3px solid transparent}
+#vx-content .vx-cmd-k[data-tone="pos"]{border-left-color:var(--vx-positive)}
+#vx-content .vx-cmd-k[data-tone="neg"]{border-left-color:var(--vx-negative)}
+#vx-content .vx-cmd-k-v{font:800 22px/1.15 var(--vx-font-mono,monospace);color:var(--vx-text-primary,#f1f5f1);font-variant-numeric:tabular-nums}
+#vx-content .vx-cmd-k-l{font-size:11px;color:var(--vx-text-muted,#848d85);text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+#vx-content .vx-cmd-k-s{font-size:11px;color:var(--vx-text-faint,#5d675f);margin-top:1px}
+#vx-content .vx-poscard{background:var(--vx-surface-0,#090c0a);border:1px solid var(--vx-border,#26221e);
+  border-radius:12px;padding:11px 13px;min-width:0;transition:border-color .15s,transform .15s}
+#vx-content .vx-poscard:hover{border-color:var(--vx-brand);transform:translateY(-1px)}
+</style>
 """
 
 _JS = r"""
@@ -208,6 +223,29 @@ function renderSummary(rich){
 }
 
 /* ── ÉQUIPE ── */
+/* Bandeau COMMAND CENTER (§23) : valeur, P&L, gagnants/perdants, capital engagé,
+   diversification RÉELLE du moteur de risque. Aucune valeur inventée. */
+async function pfCommandStrip(rich){
+  const host=$('pf-cmd-strip');if(!host)return;
+  const invested=rich.reduce((s,t)=>s+(t.invested||0),0);
+  const marked=rich.filter(t=>t.value!=null);
+  const value=marked.length===rich.length&&rich.length?rich.reduce((s,t)=>s+t.value,0):null;
+  const pl=value!=null&&invested?value-invested:null;
+  const plPct=pl!=null&&invested?pl/invested*100:null;
+  const winners=marked.filter(t=>t.pl>0).length,losers=marked.filter(t=>t.pl<0).length;
+  const tone=(v)=>v>0?'pos':v<0?'neg':'';
+  let risk=null;try{const cmd=await VX.fetch('/api/command',{ttl:60000});risk=cmd&&cmd.risk;}catch(e){}
+  const k=(label,val,sub,t)=>`<div class="vx-cmd-k" data-tone="${t||''}">
+    <div class="vx-cmd-k-v">${val}</div><div class="vx-cmd-k-l">${label}</div>${sub?`<div class="vx-cmd-k-s">${sub}</div>`:''}</div>`;
+  host.innerHTML=`<div class="vx-cmd-strip">
+    ${k('Valeur',value!=null?VX.fmt.price(value)+' $':VX.fmt.price(invested)+' $',value!=null?'au marché':'au coût')}
+    ${k('P&L latent',pl!=null?((pl>0?'+':'')+VX.fmt.price(pl)+' $'):'n/d',plPct!=null?(plPct>0?'+':'')+VX.fmt.num(plPct,1)+' %':'marques indispo.',tone(pl))}
+    ${k('Gagnantes / perdantes',winners+' / '+losers,marked.length+' marquées',winners>=losers?'pos':'neg')}
+    ${k('Capital engagé',VX.fmt.price(invested)+' $',rich.length+' position(s)')}
+    ${k('Diversification',risk&&risk.diversification!=null?Math.round(risk.diversification)+' %':'—',risk&&risk.max_corr!=null?'corr. max '+VX.fmt.num(risk.max_corr,2):'',risk&&risk.diversification>=70?'pos':risk&&risk.diversification<45?'neg':'')}
+    ${k('Nouveau risque',risk?(risk.no_new_risk?'BLOQUÉ':'autorisé'):'—',risk&&risk.max_sector_name?risk.max_sector_name+' '+Math.round(risk.max_sector||0)+' %':'',risk?(risk.no_new_risk?'neg':'pos'):'')}
+  </div>`;
+}
 async function renderTeam(){
   const pos=E().positions();
   if(!pos.length){
@@ -224,7 +262,8 @@ async function renderTeam(){
   const totalValue=rich.reduce((s,t)=>s+(t.value??t.invested),0);
   const sub={'Offensive':'Attaquants','Noyau':'Milieux','Défense / gardien':'Défenseurs & gardien',
     'Options tactiques':'HORS équipe — jamais gardien (max 3)'};
-  $('pf-body').innerHTML=`<section class="vx-card vx-mb3" aria-label="Allocation du portefeuille">
+  $('pf-body').innerHTML=`<div id="pf-cmd-strip" class="vx-mb3"></div>
+    <section class="vx-card vx-mb3" aria-label="Allocation du portefeuille">
       <div class="vx-chart-head"><span class="vx-chart-title">Allocation du portefeuille</span>
         <span class="vx-chart-question">Où est concentré le capital, et qui gagne/perd ?</span></div>
       <div id="pf-alloc-tree" style="height:260px"></div>
@@ -247,6 +286,7 @@ async function renderTeam(){
      lignes. Gagnants à droite, perdants à gauche. Repli honnête sans marque. */
   const withVal=rich.filter(t=>t.value!=null&&t.invested);
   const _pfx=(v)=>(v>=0?'+':'')+VX.fmt.price(v)+' $';
+  pfCommandStrip(rich);
   $('pf-contrib-body').innerHTML=withVal.length
     ?divBars(withVal.map(t=>({name:(t.sym+(t.type!=='STK'?' '+t.type:'')),val:(t.value-t.invested)})),{fmt:_pfx})
     :'<div class="vx-meta">Marques indisponibles (IBKR hors ligne) — aucun P&L affiché plutôt qu’un chiffre inventé.</div>';
@@ -255,16 +295,22 @@ async function renderTeam(){
       <div class="vx-card-header"><span class="vx-card-title">${role}</span>
         <span class="vx-meta">${sub[role]}</span>
         <span class="vx-meta vx-right">${list.length} position(s)</span></div>
-      ${list.length?list.map(t=>`
-        <div class="vx-flex" style="padding:8px 0;border-bottom:1px dashed var(--vx-border-soft)">
-          <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${t.sym}">${t.sym}</button>
-          <span class="vx-badge" ${t.type!=='STK'?'style="color:var(--vx-violet)"':''}>${t.type}${t.strike?' '+t.strike:''}</span>
-          <span class="vx-mono vx-meta">${totalValue?VX.fmt.num((t.value??t.invested)/totalValue*100,1)+' %':'—'}</span>
-          <span class="vx-grow vx-truncate vx-dim" style="font-size:12px">${esc((t.entrySnap&&t.entrySnap.thesis)||t.note||'—')}</span>
-          <span class="vx-num vx-mono ${t.pl>0?'vx-pos':t.pl<0?'vx-neg':'vx-muted'}">${t.pl!==null?VX.fmt.pct(t.pl,1):'n/d'}</span>
-          <span class="vx-mono vx-meta">stop ${VX.fmt.nd(t.entrySnap&&t.entrySnap.stop)}</span>
-          <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Actions ${t.sym}">⋯</button>
-        </div>`).join(''):'<div class="vx-meta">— vide —</div>'}
+      ${list.length?'<div class="vx-grid-auto" style="margin-top:8px">'+list.map(t=>{
+        const plCol=t.pl>0?'var(--vx-positive)':t.pl<0?'var(--vx-negative)':'var(--vx-stone)';
+        const wgt=totalValue?(t.value??t.invested)/totalValue*100:null;
+        const stop=t.entrySnap&&t.entrySnap.stop;
+        return `<div class="vx-poscard" style="border-left:3px solid ${plCol}">
+          <div class="vx-flex" style="justify-content:space-between;gap:6px;align-items:flex-start">
+            <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:15px;padding-left:0;font-weight:800" data-open-analysis="${t.sym}">${t.sym}</button>
+            <span class="vx-badge" ${t.type!=='STK'?'style="color:var(--vx-option)"':''}>${t.type}${t.strike?' '+t.strike:''}</span></div>
+          <div class="vx-mono" style="font-size:21px;font-weight:800;color:${plCol};line-height:1.1;margin-top:3px">${t.pl!==null?((t.pl>0?'+':'')+VX.fmt.num(t.pl,1)+' %'):'n/d'}</div>
+          <div class="vx-meta" style="margin-top:2px">${wgt!=null?'poids '+VX.fmt.num(wgt,1)+' %':'poids —'}${t.value!=null?' · '+VX.fmt.price(t.value)+' $':''}</div>
+          ${stop!=null?`<div class="vx-meta">stop ${VX.fmt.nd(stop)}</div>`:''}
+          ${(t.entrySnap&&t.entrySnap.thesis)||t.note?`<div class="vx-meta vx-truncate" style="margin-top:3px">${esc((t.entrySnap&&t.entrySnap.thesis)||t.note)}</div>`:''}
+          <div class="vx-flex" style="justify-content:flex-end;gap:.3rem;margin-top:6px">
+            <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyser</button>
+            <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Actions ${t.sym}">⋯</button></div>
+        </div>`;}).join('')+'</div>':'<div class="vx-meta" style="padding:6px 0">— aucune position dans ce rôle —</div>'}
     </section>`).join('');
   /* Treemap d'allocation (§20 — remplace le donut seul) : taille = poids, couleur = P&L */
   if(window.VXCharts&&VXCharts.treemap){
