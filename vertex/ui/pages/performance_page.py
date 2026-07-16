@@ -131,11 +131,20 @@ function stats(list){
   const pnls=list.map(e=>Number(e.pnl));
   const wins=pnls.filter(p=>p>0),losses=pnls.filter(p=>p<0);
   const gains=wins.reduce((a,b)=>a+b,0),pertes=Math.abs(losses.reduce((a,b)=>a+b,0));
+  const avgWin=wins.length?gains/wins.length:null,avgLoss=losses.length?-(pertes/losses.length):null;
+  /* Drawdown max chiffré : plus grand repli du cumul de P&L (ordre chronologique). */
+  let maxDD=0;{let cum=0,peak=0;list.slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')))
+    .forEach(e=>{cum+=Number(e.pnl)||0;peak=Math.max(peak,cum);maxDD=Math.min(maxDD,cum-peak);});}
   return {n:list.length,
     total:pnls.reduce((a,b)=>a+b,0),
     winRate:list.length?100*list.filter(e=>e.result==='WIN').length/list.length:null,
     profitFactor:pertes>0?gains/pertes:(gains>0?Infinity:null),
-    expectancy:pnls.length?pnls.reduce((a,b)=>a+b,0)/pnls.length:null};
+    expectancy:pnls.length?pnls.reduce((a,b)=>a+b,0)/pnls.length:null,
+    avgWin:avgWin,avgLoss:avgLoss,
+    ratio:(avgWin!=null&&avgLoss)?avgWin/Math.abs(avgLoss):null,
+    best:pnls.length?Math.max.apply(null,pnls):null,
+    worst:pnls.length?Math.min.apply(null,pnls):null,
+    maxDD:maxDD};
 }
 const JOURNAL_ACTION='<a class="vx-btn vx-btn-sm" href="/performance?view=journal">Ouvrir le journal</a>';
 function emptyCard(host,reason,action){
@@ -196,6 +205,11 @@ function loadKpis(){
     ['Taux de réussite',VX.fmt.num(s.winRate,0)+' %',s.winRate>=50?'vx-pos':'vx-neg'],
     ['Profit factor',pf,(s.profitFactor||0)>=1?'vx-pos':'vx-neg'],
     ['Espérance / trade',(s.expectancy>=0?'+':'')+VX.fmt.num(s.expectancy,0)+' $',s.expectancy>=0?'vx-pos':'vx-neg'],
+    ['Gain moyen',s.avgWin!=null?'+'+VX.fmt.num(s.avgWin,0)+' $':'—','vx-pos'],
+    ['Perte moyenne',s.avgLoss!=null?VX.fmt.num(s.avgLoss,0)+' $':'—','vx-neg'],
+    ['Ratio gain/perte',s.ratio!=null?VX.fmt.num(s.ratio,2):'—',(s.ratio||0)>=1?'vx-pos':'vx-neg'],
+    ['Drawdown max',s.maxDD<0?VX.fmt.num(s.maxDD,0)+' $':'—','vx-neg'],
+    ['Meilleur / pire',(s.best!=null?((s.best>=0?'+':'')+VX.fmt.num(s.best,0)):'—')+' / '+(s.worst!=null?VX.fmt.num(s.worst,0):'—')+' $','vx-muted'],
     ['Trades déclarés',String(s.n),'vx-muted'],
   ];
   $('vx-pf-kpis').innerHTML=cells.map(([label,val,cls])=>{
@@ -209,16 +223,32 @@ function loadKpis(){
       <div class="vx-meta" style="font-size:11.5px;margin-top:5px;line-height:1.4">Calculs arithmétiques sur VOS trades déclarés — aucun indicateur de marché.</div></div>`;
   return list;
 }
+/* Équité DÉRIVÉE du cumul des P&L de clôture déclarés (le stock myTradesEquity
+   n'est jamais alimenté par recordExit — s'y fier laissait la courbe vide). Base
+   = capital déclaré si présent, sinon 0 (courbe de P&L cumulé). Réel, arithmétique. */
+function derivedEquity(){
+  const cl=trades().slice().filter(e=>e.date).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  if(cl.length<2)return [];
+  const base=(E()&&E().capital&&E().capital())||0;
+  let cum=base;const eq=[];
+  cl.forEach(e=>{cum+=Number(e.pnl)||0;eq.push({d:e.date,v:Math.round(cum*100)/100});});
+  return eq;
+}
 function loadEquity(){
-  const eq=(E()?E().equity():[])||[];
+  const eq=derivedEquity();
   if(eq.length>=2){
+    /* equity-chart.js / drawdown-chart.js sont des scripts `defer` : garde-fou
+       si loadEquity court avant leur enregistrement (évite « equityCard is not a
+       function ») — on retente une fois tous les scripts chargés. */
+    if(!(window.VXCharts&&VXCharts.equityCard&&VXCharts.drawdownCard)){
+      window.addEventListener('load',loadEquity,{once:true});return;}
     const labels=eq.map(p=>p.d),values=eq.map(p=>Number(p.v));
     VXCharts.equityCard('vx-pf-equity',{
       title:'Courbe d’équité (déclarée)',timeframe:eq.length+' points',
       question:'Le capital déclaré progresse-t-il régulièrement ?',
       conclusion:values[values.length-1]>=values[0]?'Équité en progression sur la période.':'Équité en retrait sur la période.',
       labels,values,height:240,
-      source:'journal local (myTradesEquity)',timestamp:Date.now(),mode:'delayed',
+      source:'journal local (cumul des clôtures)',timestamp:Date.now(),mode:'delayed',
       explain:{shows:'La série d’équité issue de vos clôtures de positions déclarées.',
         why:'Une méthode saine produit une pente régulière, pas des à-coups.',
         confirm:'Nouveaux plus hauts d’équité avec drawdowns contenus.',
@@ -228,7 +258,7 @@ function loadEquity(){
       question:'Les pertes restent-elles contrôlées ?',
       conclusion:'Dérivé arithmétiquement de la courbe d’équité déclarée.',
       labels,values,height:240,
-      source:'journal local (myTradesEquity)',timestamp:Date.now(),mode:'delayed',
+      source:'journal local (cumul des clôtures)',timestamp:Date.now(),mode:'delayed',
       limits:'dérivé de la série déclarée — pas un indicateur de marché',
       explain:{shows:'L’écart en % entre l’équité et son dernier pic.',
         why:'La profondeur des drawdowns mesure la discipline de risque réelle.',
@@ -241,8 +271,15 @@ function loadEquity(){
 /* Heatmap mensuelle + distribution — agrégations arithmétiques sur VOS
    clôtures déclarées (jamais un indicateur de marché). */
 function loadMonthlyAndDist(){
+  /* Cartes issues de scripts `defer` (heatmap.js) : garde-fou tant qu'ils ne sont
+     pas enregistrés (évite un TypeError si l'orchestration court trop tôt). */
+  if(!(window.VXCharts&&VXCharts.heatmapCard&&VXCharts.card&&VXCharts.bars)){
+    window.addEventListener('load',loadMonthlyAndDist,{once:true});return;}
+  /* pnl_pct n'est jamais écrit par recordExit → le calculer depuis (exit−cost)/cost
+     (données réelles des clôtures déclarées). Sinon le filtre restait toujours vide. */
   const closed=(E()?E().closedPositions():[])||[];
-  const withPl=closed.filter(t=>t.pnl_pct!==undefined&&t.pnl_pct!==null&&t.closed);
+  const withPl=closed.filter(t=>t.closed&&t.cost).map(t=>Object.assign({},t,
+    {pnl_pct:Math.round((t.exit-t.cost)/t.cost*1000)/10}));
   if(withPl.length<3){
     emptyCard('vx-pf-monthly','Heatmap mensuelle disponible à partir de 3 clôtures datées.',JOURNAL_ACTION);
     emptyCard('vx-pf-dist','Distribution disponible à partir de 3 clôtures.');
