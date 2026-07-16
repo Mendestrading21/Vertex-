@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v67';   // v67 : Hyper Visual §31 — vues enregistrées nommées dans le screener (sauver/rappeler/supprimer un jeu de filtres)
+const CACHE='td-shell-v68';   // v68 : Élévation raffinée — tokens de profondeur, refine.css, thème clair commutable, compteur KPI
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

@@ -1,0 +1,51 @@
+/* Vertex — THEME LIGHT (chargé en DERNIER). Neutralise les littéraux sombres
+   codés en dur dans les couches tardives (que le remap de tokens n'atteint pas)
+   et ré-adapte les tokens de glow/relief définis par cockpit.css/control-surface.css.
+   Tout est scoppé sous :root[data-theme="light"] → le thème sombre reste identique.
+   Neutres chauds uniquement — aucune couleur bleue. */
+
+/* ── Re-mappage des tokens glow/relief (cockpit + control-surface) ── */
+:root[data-theme="light"]{
+  /* glows de texte colorés : néfastes sur fond clair → neutralisés */
+  --vx-glow-pos:none;
+  --vx-glow-neg:none;
+  --vx-glow-copper-soft:0 0 22px rgba(132,170,49,.12);
+  /* liseré/gradient de tuile : l'inset blanc est invisible sur papier */
+  --vx-tile-hi:none;
+  --vx-tile-grad:linear-gradient(180deg,rgba(28,32,24,.02),transparent 42%);
+  /* reliefs tactiles adaptés au clair */
+  --vx-shadow-raised:0 1px 0 rgba(255,255,255,.65) inset,0 1px 2px rgba(28,32,24,.10);
+  --vx-shadow-pressed:0 2px 6px rgba(28,32,24,.14) inset;
+  --vx-shadow-copper:0 4px 14px rgba(72,99,27,.20),0 1px 0 rgba(255,255,255,.5) inset;
+  --vx-shadow-floating:0 18px 48px rgba(28,32,24,.20);
+  --vx-cs-focus:0 0 0 2px rgba(100,133,37,.34);
+}
+
+/* ── Ambiance de fond : halo vert chaud, pas de vignette sombre ── */
+:root[data-theme="light"] body::before{
+  background:
+    radial-gradient(ellipse 900px 520px at 88% -12%,rgba(132,170,49,.06),transparent 62%),
+    radial-gradient(ellipse 700px 460px at -8% 108%,rgba(145,110,43,.045),transparent 60%),
+    radial-gradient(ellipse 140% 100% at 50% 50%,transparent 68%,rgba(28,32,24,.05) 100%)}
+
+/* ── Scrollbars claires ── */
+:root[data-theme="light"] *{scrollbar-color:#cfccc4 transparent}
+:root[data-theme="light"] *::-webkit-scrollbar-thumb{background:#cfccc4}
+
+/* ── Topbar / mobile-bar / scrims (littéraux sombres → clairs) ── */
+:root[data-theme="light"] .vx-topbar{background:rgba(247,245,240,.82)}
+:root[data-theme="light"] .vx-mobile-bar{background:rgba(247,245,240,.94)}
+:root[data-theme="light"] .vx-overlay{background:rgba(28,32,24,.32)}
+:root[data-theme="light"] .vx-palette{background:rgba(28,32,24,.38)}
+
+/* ── Survols « blanc sur sombre » → « encre sur clair » ── */
+:root[data-theme="light"] .vx-tab:hover{background:rgba(28,32,24,.045)}
+:root[data-theme="light"] .vx-badge-decision[data-decision]{background:rgba(28,32,24,.04)}
+:root[data-theme="light"] .vx-state[data-state="empty"] .vx-state-icon{
+  background:radial-gradient(circle,rgba(28,32,24,.045),transparent 70%)}
+
+/* ── Liseré interne clair : sur papier, un très léger inset sombre en haut ── */
+:root[data-theme="light"]{--vx-sheen-top:inset 0 1px 0 rgba(255,255,255,.7)}
+
+/* ── Badges d'entité : remonter le contraste des tons clairs sur papier ── */
+:root[data-theme="light"] .vx-badge-entity[data-kind="fav"]{color:#9a6a12}

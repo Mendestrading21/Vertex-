@@ -16,6 +16,25 @@
     app.dataset.sidebar = next;
     try { localStorage.setItem('vxSidebarState', next); } catch (e) {}
   });
+
+  /* ── Thème clair / sombre (préférence LOCALE de l'appareil, hors desk-sync)
+     L'init sans FOUC est faite par un <script> inline dans le <head>. Ici on
+     ne gère que la bascule + la couleur de barre système + l'événement de
+     re-rendu des graphiques. ────────────────────────────────────────── */
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  function applyThemeColor(mode) {
+    if (themeMeta) themeMeta.setAttribute('content', mode === 'light' ? '#f4f2ec' : '#080808');
+  }
+  applyThemeColor(document.documentElement.getAttribute('data-theme') || 'dark');
+  $('vx-theme-btn')?.addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('vxTheme', next); } catch (e) {}
+    applyThemeColor(next);
+    try { window.dispatchEvent(new CustomEvent('vx:themechange', { detail: { theme: next } })); } catch (e) {}
+    VX.bus?.emit?.('vx:themechange', { theme: next });
+  });
   /* Mobile drawer nav */
   const mobileNavBtn = $('vx-mobile-nav-btn');
   if (window.matchMedia('(max-width:640px)').matches && mobileNavBtn) mobileNavBtn.style.display = 'inline-flex';
