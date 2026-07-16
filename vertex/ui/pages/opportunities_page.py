@@ -278,8 +278,12 @@ async function renderScreener(){
   /* ── Squelette de la vue ── */
   $('op-body').innerHTML=demoBanner(scan)+`
     <div class="vx-screenbar" role="group" aria-label="Filtres du screener">
-      <span class="vx-meta" style="flex-basis:100%;font-weight:700;letter-spacing:.05em">PRÉRÉGLAGES
+      <span class="vx-meta" style="flex-basis:100%;font-weight:700;letter-spacing:.05em;display:flex;flex-wrap:wrap;gap:.4rem;align-items:center">PRÉRÉGLAGES
         ${Object.entries(PRESETS).map(([k,p2])=>`<button class="vx-chip" data-preset="${k}">${p2.label}</button>`).join(' ')}
+        <span style="width:8px"></span>
+        <select class="vx-select" id="op-views" style="width:auto" aria-label="Mes vues enregistrées"></select>
+        <button class="vx-btn vx-btn-sm vx-btn-ghost" id="op-save-view" title="Sauvegarder les filtres actuels">💾 Sauver la vue</button>
+        <button class="vx-btn vx-btn-sm vx-btn-ghost" id="op-del-view" title="Supprimer la vue sélectionnée">✕</button>
         <button class="vx-btn vx-btn-sm vx-btn-ghost" id="op-reset">Réinitialiser</button>
         <span class="vx-meta vx-right" id="op-count"></span></span>
       ${OUT.map(b=>`<button class="vx-chip" data-fk="bucket" data-fv="${b}" aria-pressed="${state.bucket===b}">${b}</button>`).join('')}
@@ -711,6 +715,44 @@ async function renderScreener(){
     VX.toast('Préréglage appliqué : '+p2.label,'success');}));
   document.querySelector('input[data-fk="setup"]').addEventListener('input',function(){state.setup=this.value.toUpperCase();persist();applyDebounced();});
   document.getElementById('op-reset').addEventListener('click',()=>resetFilters());
+  /* ── VUES ENREGISTRÉES (§31) : jeux de filtres nommés en localStorage ── */
+  function viewsGet(){try{return JSON.parse(localStorage.getItem('vxScreenViews')||'{}')}catch(e){return{}}}
+  function viewsSet(v){try{localStorage.setItem('vxScreenViews',JSON.stringify(v))}catch(e){}}
+  function refreshViewsSelect(sel){
+    const el=document.getElementById('op-views');if(!el)return;
+    const v=viewsGet();const names=Object.keys(v);
+    el.innerHTML='<option value="">— mes vues ('+names.length+') —</option>'
+      +names.map(n=>`<option ${n===sel?'selected':''}>${esc(n)}</option>`).join('');
+  }
+  refreshViewsSelect();
+  document.getElementById('op-save-view').addEventListener('click',()=>{
+    VX.shell.openModal('Enregistrer la vue',
+      '<div class="vx-field"><label>Nom de la vue</label><input class="vx-input" id="op-view-name" placeholder="ex. Élite tech" maxlength="40"></div>'
+      +'<div class="vx-help">Sauvegarde TES filtres actuels ('+filtered().length+' titres) — rappel en un clic. Stocké sur cet appareil.</div>',
+      '<button class="vx-btn vx-btn-primary" id="op-view-save-ok">Enregistrer</button>');
+    const inp=document.getElementById('op-view-name');inp&&inp.focus();
+    document.getElementById('op-view-save-ok').addEventListener('click',()=>{
+      const name=(document.getElementById('op-view-name').value||'').trim();
+      if(!name){VX.toast('Nom requis','error');return;}
+      const v=viewsGet();v[name]=JSON.parse(JSON.stringify(state));viewsSet(v);
+      refreshViewsSelect(name);VX.shell.closeModal();VX.toast('Vue « '+name+' » enregistrée','success');});
+  });
+  document.getElementById('op-views').addEventListener('change',function(){
+    const name=this.value;if(!name)return;
+    const v=viewsGet();if(!v[name])return;
+    resetFilters(true);Object.assign(state,v[name]);persist();
+    /* resynchronise l'UI complète */
+    document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>{const vv=state[r.dataset.fk]||0;r.value=vv;
+      const b=r.closest('label').querySelector('b');
+      if(r.dataset.fk==='maxPrice')b.textContent=vv>0?('$'+vv):'∞';else b.textContent=vv+(r.dataset.fk==='minPwin'?'%':r.dataset.fk==='minRR'?'×':'');});
+    document.querySelectorAll('.vx-screenbar [data-ft]').forEach(x=>x.setAttribute('aria-pressed',String(!!state[x.dataset.ft])));
+    ['sector','vehicle','mtf','grade'].forEach(k=>{const se=document.querySelector('select[data-fk="'+k+'"]');if(se)se.value=state[k]||'';});
+    const inp2=document.querySelector('input[data-fk="setup"]');if(inp2)inp2.value=state.setup||'';
+    syncBar();applyAll();VX.toast('Vue « '+name+' » appliquée','success');});
+  document.getElementById('op-del-view').addEventListener('click',()=>{
+    const el=document.getElementById('op-views');const name=el&&el.value;
+    if(!name){VX.toast('Choisis d’abord une vue','warning');return;}
+    const v=viewsGet();delete v[name];viewsSet(v);refreshViewsSelect();VX.toast('Vue supprimée');});
 
   paintFunnel();
   applyAll();
