@@ -147,6 +147,10 @@ _CONTENT = """
   /* Survol des tuiles indices : réaction visuelle (page vivante) */
   .vx-idx-tile{transition:border-color .15s ease,transform .15s ease}
   .vx-idx-tile:hover{border-color:var(--vx-brand,#84aa31);transform:translateY(-1px)}
+  /* Brief repliable : lecture confortable, la page reste équilibrée */
+  #vx-brief-clamp[data-clamped="1"]{max-height:560px;overflow:hidden;
+    -webkit-mask-image:linear-gradient(180deg,#000 80%,transparent);
+    mask-image:linear-gradient(180deg,#000 80%,transparent)}
   /* Brief : typographie de lecture */
   #vx-brief-body p{font-size:16px !important;line-height:1.85 !important}
   #vx-brief-body .vx-brief-lines{margin-top:.6rem}
@@ -526,15 +530,28 @@ async function loadBrief(){
         +(ed.news_available===false?'<span class="vx-badge" style="color:var(--vx-text-dim,#817d77)">Actualités indisponibles — brief data-only</span>':'')
         +'</div>':'')
       +'<div class="vx-divider vx-mt2"></div>'):'';
-    $('vx-brief-body').innerHTML= edBlock+
+    $('vx-brief-body').innerHTML= '<div id="vx-brief-clamp">'+edBlock+
       '<div class="vx-brief-lines">'+b.lines.map(l=>'<div class="bl">'+esc(l)+'</div>').join('')+'</div>'
       +(domSec?`<div class="vx-insight vx-mt3"><b>Actualité dominante</b><div class="vx-mt1">${esc(domSec.text)}</div></div>`:'')
+      +'</div>'
       +`<div class="vx-card-footer">
          ${VX.updateIndicator(b.as_of,(b.sources||[]).join(', '),b.demo?'fallback':'delayed')}
          <span class="vx-badge">${b.generator==='deterministic'?'Brief déterministe (moteurs)':'Brief IA validé'}</span>
          ${kindLabel?`<span class="vx-badge" style="color:var(--vx-amber)">${kindLabel}</span>`:''}
          <button class="vx-btn vx-btn-sm vx-btn-ghost vx-right" data-scrollto="markets">Voir les preuves ↓</button></div>`;
     $('vx-brief-meta').innerHTML=`<span class="vx-meta">${(daily.word_count||b.word_count)} mots</span>`;
+    /* Brief long → replié à ~560px avec fondu + « Lire la suite » (le texte
+       complet reste là, rien n'est tronqué côté données). */
+    const cl=$('vx-brief-clamp');
+    if(cl&&cl.scrollHeight>640){
+      cl.dataset.clamped='1';
+      cl.insertAdjacentHTML('afterend','<div style="text-align:center;margin-top:6px"><button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-brief-more">Lire la suite ↓</button></div>');
+      document.getElementById('vx-brief-more').addEventListener('click',function(){
+        const c=cl.dataset.clamped==='1';
+        cl.dataset.clamped=c?'0':'1';
+        this.textContent=c?'Réduire ↑':'Lire la suite ↓';
+      });
+    }
     /* Carte latérale : posture du comité (chiffres réels) + risque + opportunité + changements */
     const side=$('vx-brief-side-body');
     if(side){
@@ -649,7 +666,10 @@ function loadMainChart(scan){
     conclusion:(spx&&spx.price!=null?('S&P 500 '+VX.fmt.price(spx.price)+' ('+(spx.change>=0?'+':'')+VX.fmt.num(spx.change,2)+' %) · '):'')
       +({TREND:'tendance intacte',NEUTRAL:'marché neutre',CHOP:'sans direction',DOWN:'tendance baissière'}[m.spy_regime]||('régime '+(m.spy_regime||'n/d')))+(m.verdict?' — '+m.verdict:''),
     height:H_HERO,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
-    legend:[{label:hasSpy?'SPY':key,color:cc.brand},{label:'MM20',color:cc.amber},{label:'MM50',color:cc.beige},{label:'MM200',color:cc.neutral}],
+    legend:[{label:hasSpy?'SPY':key,color:cc.brand}]
+      .concat((S.ema20&&S.ema20.some(x=>x!=null))?[{label:'MM20',color:cc.amber}]:[])
+      .concat((S.sma50&&S.sma50.some(x=>x!=null))?[{label:'MM50',color:cc.beige}]:[])
+      .concat((S.sma200&&S.sma200.some(x=>x!=null))?[{label:'MM200',color:cc.neutral}]:[]),
     explain:{shows:'Les clôtures de la référence marché et ses moyennes mobiles 20/50/200 calculées par le scan.',
       why:'La Stratégie Vertex n’attaque qu’en environnement porteur : le régime module seuils et tailles.',
       confirm:'Clôtures au-dessus des MM50/MM200 ascendantes avec breadth > 55 %.',
@@ -1282,14 +1302,15 @@ async function loadEssential(scan){
   const bWord=br==null?'—':(br>=55?'PARTAGÉE':br>=45?'MOYENNE':'ÉTROITE');
   const bTone=br==null?'':(br>=55?'pos':br>=45?'':'neg');
   const bSub=br==null?'participation indisponible':(Math.round(br)+' % des titres > MM50');
-  const tile=(k,v,sub,tone)=>`<div class="vx-stat" data-tone="${tone||''}"><div class="vx-stat-k">${k}</div><div class="vx-stat-v" style="font-size:17px">${v}</div><div class="vx-stat-sub">${sub}</div></div>`;
+  const tile=(k,v,sub,tone,extra)=>`<div class="vx-stat" data-tone="${tone||''}"><div class="vx-stat-k">${k}</div><div class="vx-stat-v" style="font-size:17px">${v}</div><div class="vx-stat-sub">${sub}</div>${extra||''}</div>`;
+  const spxSpark=(spx.spark&&spx.spark.length>2)?sparkSvg(spx.spark,(chg==null?true:chg>=0)):'';
   const rows=(scan&&scan.rows)||[];
   const ups=rows.filter(r=>r.change>0).sort((a,b)=>b.change-a.change);
   const downs=rows.filter(r=>r.change<0).sort((a,b)=>a.change-b.change);
   const mv=(r,pos)=>r?`<button class="vx-chip" data-open-analysis="${esc(r.symbol)}" style="color:${pos?'var(--vx-positive)':'var(--vx-negative)'}"><b>${esc(r.symbol)}</b>&nbsp;${VX.fmt.pct(r.change,1)}</button>`:'';
   const lines=((ed&&ed.lines)||[]).slice(0,3);
   el.innerHTML=
-    `<div class="vx-statrow">${tile('Tendance',tWord,tSub,tTone)}${tile('Ambiance',aWord,aSub,aTone)}${tile('Volatilité',vWord,vSub,vTone)}${tile('Participation',bWord,bSub,bTone)}${tile('Secteur fort',bs?esc(bs):'—',bs?'meneur du jour':'lecture indisponible',bs?'brand':'')}</div>`
+    `<div class="vx-statrow">${tile('Tendance',tWord,tSub,tTone,spxSpark)}${tile('Ambiance',aWord,aSub,aTone)}${tile('Volatilité',vWord,vSub,vTone)}${tile('Participation',bWord,bSub,bTone)}${tile('Secteur fort',bs?esc(bs):'—',bs?'meneur du jour':'lecture indisponible',bs?'brand':'')}</div>`
     +(lines.length?`<div class="vx-mt3"><span class="vx-metric-k" style="display:block;margin-bottom:6px">À retenir</span>${lines.map(l=>`<div class="vx-flex" style="gap:8px;padding:4px 0;align-items:flex-start"><span style="flex:0 0 6px;height:6px;border-radius:99px;background:var(--vx-brand);margin-top:6px"></span><span class="vx-dim" style="font-size:13px">${esc(l)}</span></div>`).join('')}</div>`:'')
     +((ups.length||downs.length)?`<div class="vx-mt3"><span class="vx-metric-k" style="display:block;margin-bottom:6px">Mouvements du jour</span><div class="vx-flex vx-wrap" style="gap:.4rem">${mv(ups[0],1)}${mv(ups[1],1)}${mv(downs[0],0)}${mv(downs[1],0)}<button class="vx-btn vx-btn-sm vx-btn-ghost" data-scrollto="topflop">Tout voir ↓</button></div></div>`:'')
     +sessionLine(scan);
