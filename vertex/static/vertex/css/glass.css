@@ -190,6 +190,23 @@ body::before{
    ══════════════════════════════════════════════════════════════════ */
 .vx-fab{display:none!important} /* FAB (issu de NOVA) neutralisé si présent */
 
+/* ══════════════════════════════════════════════════════════════════
+   10) BARRES DE CONVICTION — segments façon référence (neutre / orange / rouge
+   selon le niveau). Réutilisable : <span class="vx-conviction" data-tone="warn">
+   <i class="on"></i>…</span> (les <i class="on"> sont remplis). Le ton code le
+   SENS : haut=argent, moyen=orange (incertitude), faible=rouge. ══════════════ */
+.vx-conviction{display:inline-flex;gap:3px;align-items:center;vertical-align:middle}
+.vx-conviction i{width:9px;height:6px;border-radius:2px;background:var(--vx-border-strong);flex:none}
+.vx-conviction i.on{background:var(--vx-silver)}
+.vx-conviction[data-tone="pos"] i.on{background:var(--vx-positive)}
+.vx-conviction[data-tone="warn"] i.on{background:var(--vx-warning)}
+.vx-conviction[data-tone="neg"] i.on{background:var(--vx-negative)}
+
+/* Tuile KPI façon référence : sous-label + grand nombre + mini-graphe (le
+   mini-graphe reste neutre sauf directionnel — géré par sparkSvg côté page). */
+.vx-kpi-sub{display:block;font-size:var(--vx-fs-meta);color:var(--vx-text-muted);margin-top:1px}
+.vx-kpi .vx-kpi-value{color:var(--vx-text-primary)}
+
 /* Scrollbars fines neutres */
 *{scrollbar-color:#2a2e34 transparent}
 *::-webkit-scrollbar-thumb{background:#2a2e34;border-radius:8px}
