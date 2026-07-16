@@ -172,6 +172,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/control-surface.css">
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
 <link rel="stylesheet" href="/static/vertex/css/premium.css">
+<link rel="stylesheet" href="/static/vertex/css/glass.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
