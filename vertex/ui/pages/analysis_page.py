@@ -532,12 +532,18 @@ $('an-fav').addEventListener('click',()=>{E().toggleFavorite(SYM);paintBadges();
 ['vx:favorites-changed','vx:watchlist-changed','vx:follow-changed','vx:position-changed','vx:alert-changed']
   .forEach(ev=>VX.bus.on(ev,paintBadges));
 
-/* Thèse (note utilisateur) */
+/* Thèse : note utilisateur si elle existe, sinon THÈSE MOTEUR (auto) — texte réel
+   des moteurs sur les données du scan, clairement étiqueté, éditable à tout moment. */
+let ENGINE_THESIS=null;
 function paintThesis(){
   const note=E()&&E().note(SYM);
   $('an-thesis').innerHTML=note?esc(note).replace(/\n/g,'<br>'):
-    VX.states.empty('Aucune thèse enregistrée sur ce titre.',
-      `<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${SYM}','note')">Écrire la thèse</button>`);
+    (ENGINE_THESIS
+      ?`<div class="vx-insight" data-tone="ai"><b>Thèse moteur (auto)</b> — ${esc(ENGINE_THESIS)}</div>
+        <div class="vx-meta vx-mt2">Générée par les moteurs sur les données du scan — écris ta propre thèse pour la remplacer.
+        <button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXEntities.openAddModal('${SYM}','note')">Écrire ma thèse</button></div>`
+      :VX.states.empty('Aucune thèse enregistrée sur ce titre.',
+        `<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${SYM}','note')">Écrire la thèse</button>`));
 }
 VX.bus.on('vx:thesis-changed',paintThesis);
 
@@ -550,6 +556,9 @@ async function loadDossier(){
   TICKER=t;
   const d=(t&&t.detail)||{};
   const demo=!!(window.__vxStatus&&window.__vxStatus.demo);
+  /* Thèse moteur (auto) — affichée tant que l'utilisateur n'a pas écrit la sienne. */
+  ENGINE_THESIS=(typeof d.thesis==='string'&&d.thesis)?d.thesis:null;
+  paintThesis();
   if(!t||!t.in_universe&&!d.price){
     $('an-stale').innerHTML='<div class="vx-error-banner">Titre hors du scan courant — dossier partiel. '
       +'<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a></div>';
@@ -769,8 +778,11 @@ async function loadDossier(){
         ${fresh?'':'<span class="vx-badge">rassis</span>'}
         <span class="vx-meta">${VX.fmt.ago((s.received_ts||0)*1000)}</span></span></div>`;}).join('')
       +'<div class="vx-meta vx-mt2">Un signal TradingView déclenche une réévaluation — jamais un ACHETER direct. La confluence est une lecture de cohérence, pas une décision.</div>'
-      :VX.states.empty('Aucun signal TradingView reçu pour ce titre.',
-        '<span class="vx-meta">Webhook : /api/tradingview/webhook (voir tradingview/README.md)</span>'))
+      :((tv.status&&(tv.status.state==='DISABLED'||tv.status.configured===false))
+        ?VX.states.empty('Webhook TradingView non configuré — signaux désactivés.',
+          '<span class="vx-meta">Définis <span class="vx-mono">TRADINGVIEW_WEBHOOK_SECRET</span> dans <span class="vx-mono">.env</span>, puis configure ton alerte — guide dans <a href="/system?view=connections">Système → Connexions</a>.</span>')
+        :VX.states.empty('Aucun signal TradingView reçu pour ce titre.',
+          '<span class="vx-meta">Webhook actif : /api/tradingview/webhook (voir tradingview/README.md)</span>')))
       +`<div class="vx-flex vx-mt2">
         <a class="vx-btn vx-btn-sm" target="_blank" rel="noopener" href="https://www.tradingview.com/chart/?symbol=${SYM}">Ouvrir dans TradingView ↗</a>
         <button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXEntities.openAddModal('${SYM}','alert')">Créer une alerte</button></div>`);
@@ -879,20 +891,23 @@ async function loadDossier(){
   /* 11. Options */
   try{
     const ob=await VX.fetch('/api/options-for/'+SYM+'?type=CALL',{ttl:180000});
-    const cs=(ob&&(ob.contracts||ob.list||ob.best))||ob||{};
-    const arr=Array.isArray(cs)?cs:(cs.contracts||[]);
+    /* Schéma serveur (reco.options_for_position) : {suggestions:[{role,strike,exp,
+       delta,premium,pop,score,grade,why}]} — les alias contracts/list/best couvrent
+       les anciens schémas. */
+    const cs=(ob&&(ob.suggestions||ob.contracts||ob.list||ob.best))||ob||{};
+    const arr=Array.isArray(cs)?cs:(cs.suggestions||cs.contracts||[]);
     body('an-options',arr.length?
       `<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
         <th>Contrat</th><th class="vx-num">Strike</th><th>Échéance</th><th class="vx-num">Delta</th>
-        <th class="vx-num">Prime</th><th class="vx-num">OI</th><th></th></tr></thead><tbody>${
-        arr.slice(0,3).map(c=>`<tr>
-          <td data-label="Contrat"><span class="vx-badge" style="color:var(--vx-violet)">CALL</span></td>
+        <th class="vx-num">Prime</th><th class="vx-num">PoP</th><th></th></tr></thead><tbody>${
+        arr.slice(0,3).map(c=>`<tr title="${esc(c.why||'')}">
+          <td data-label="Contrat"><span class="vx-badge" style="color:var(--vx-violet)">${esc(c.role||c.type||'CALL')}</span>${c.role_label?` <span class="vx-meta">${esc(c.role_label)}</span>`:''}</td>
           <td data-label="Strike" class="vx-num">${VX.fmt.nd(c.strike)}</td>
-          <td data-label="Échéance" class="vx-mono">${VX.fmt.nd(c.exp||c.expiry)}</td>
+          <td data-label="Échéance" class="vx-mono">${VX.fmt.nd(c.exp||c.expiry)}${c.dte!=null?` <span class="vx-meta">${c.dte} j</span>`:''}</td>
           <td data-label="Delta" class="vx-num">${VX.fmt.nd(c.delta)}</td>
           <td data-label="Prime" class="vx-num">${VX.fmt.nd(c.mid??c.premium??c.cost)}</td>
-          <td data-label="OI" class="vx-num">${VX.fmt.nd(c.oi??c.openInterest)}</td>
-          <td><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=options&sym=${SYM}">Analyser →</a></td></tr>`).join('')}
+          <td data-label="PoP" class="vx-num">${c.pop!=null?c.pop+' %':VX.fmt.nd(c.oi??c.openInterest)}</td>
+          <td><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/${SYM}">Analyser →</a></td></tr>`).join('')}
       </tbody></table></div>`
       :VX.states.empty('Aucun contrat CALL exploitable retourné par le moteur.',
         `<a class="vx-btn vx-btn-sm" href="/opportunities?view=options&sym=${SYM}">Ouvrir le desk options</a>`));

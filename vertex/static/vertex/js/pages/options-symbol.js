@@ -235,12 +235,23 @@
   }
 
   /* ── Boot : chaque section peint dès que sa donnée arrive ───────── */
-  get('/scan').then(function (scan) {
-    var board = (scan && scan.options_board) || [];
-    var det = scan && scan.detail && scan.detail[SYM];
-    var spot = (det && det.price) != null ? det.price : (board.find(function (c) { return c.sym === SYM; }) || {}).spot;
-    paintScorecard(board, spot);
-  }).catch(function () { document.getElementById('vx-osym-scorecard').innerHTML = empty('Scan injoignable.'); });
+  /* Chaîne dédiée (board ∪ fetch à la demande côté serveur) — un titre pas encore
+     couvert par la rotation du board obtient quand même son dossier. */
+  get('/api/options/chain/' + encodeURIComponent(SYM)).then(function (d) {
+    paintScorecard((d && d.contracts) || [], d && d.spot);
+    if (d && d.on_demand) {
+      var meta = document.getElementById('vx-osym-chain-meta');
+      if (meta) meta.textContent += ' · chaîne chargée à la demande';
+    }
+  }).catch(function () {
+    /* Repli : ancien chemin via /scan si l'endpoint chaîne est indisponible. */
+    get('/scan').then(function (scan) {
+      var board = (scan && scan.options_board) || [];
+      var det = scan && scan.detail && scan.detail[SYM];
+      var spot = (det && det.price) != null ? det.price : (board.find(function (c) { return c.sym === SYM; }) || {}).spot;
+      paintScorecard(board, spot);
+    }).catch(function () { document.getElementById('vx-osym-scorecard').innerHTML = empty('Scan injoignable.'); });
+  });
   get('/api/options/vol-charts/' + encodeURIComponent(SYM)).then(paintVol)
     .catch(function () { body('vx-osym-verdict', empty('Volatilité indisponible.')); });
   get('/api/options/scenarios/' + encodeURIComponent(SYM)).then(paintScenarios)

@@ -497,7 +497,7 @@ async function loadConnections(){
   if(live){
     const doms=live.domains||{};
     const names=Object.keys(doms);
-    const freshCount=names.filter(k=>doms[k].fresh||doms[k].state==='fresh'||doms[k].state==='live').length;
+    const freshCount=names.filter(k=>doms[k].fresh||['fresh','live','ok'].includes(doms[k].state)).length;
     const errs=(live.errors||[]);
     $('vx-conn-sync-badge').innerHTML=statusBadge(
       errs.length?'delayed':(freshCount===names.length&&names.length?'live':'delayed'),
@@ -621,7 +621,7 @@ async function loadData(){
     const doms=live.domains;
     /* Heatmap de fraîcheur (§37) : une tuile/domaine, couleur = état, chiffre = âge. */
     const tile=(k)=>{const d=doms[k]||{};
-      const fresh=d.fresh===true||d.state==='fresh'||d.state==='live';
+      const fresh=d.fresh===true||['fresh','live','ok'].includes(d.state);
       const off=d.state==='offline';
       const col=fresh?'--vx-positive':(off?'--vx-negative':'--vx-warning');
       const soft=fresh?'rgba(57,184,120,.13)':(off?'rgba(220,98,85,.13)':'rgba(204,137,44,.13)');
@@ -636,7 +636,7 @@ async function loadData(){
       <thead><tr><th>Domaine</th><th>&Eacute;tat</th><th class="vx-num">&Acirc;ge</th><th>D&eacute;tail</th></tr></thead><tbody>`
       +Object.keys(doms).map(k=>{
         const d=doms[k]||{};
-        const fresh=d.fresh===true||d.state==='fresh'||d.state==='live';
+        const fresh=d.fresh===true||['fresh','live','ok'].includes(d.state);
         const status=fresh?'live':(d.state==='offline'?'offline':'delayed');
         const age=d.age_s===null||d.age_s===undefined?'—'
           :(d.age_s<120?Math.round(d.age_s)+' s':Math.round(d.age_s/60)+' min');

@@ -132,8 +132,9 @@ def make_blueprint(*, scan_state, demo_mode):
         covered call/protective put pour un sous-jacent. Analyse uniquement."""
         held = (request.args.get('type') or 'STK').upper()
         held = 'STK' if held == 'STK' else 'OPT'
+        from vertex.options import on_demand as _od
         return jsonify(_reco.options_for_position(
-            sym.upper(), scan_state.get('options_board') or [], held_type=held))
+            sym.upper(), _od.board_with(sym.upper()), held_type=held))
 
     @bp.route('/api/brief')
     def brief_ep():

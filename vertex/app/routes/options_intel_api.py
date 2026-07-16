@@ -14,12 +14,19 @@ from vertex.app.config import DEMO_MODE
 from vertex.app.state import scan_state
 from vertex.options import overview as _ov
 from vertex.options import interpretation as _oi
+from vertex.options import on_demand as _od
 
 bp = Blueprint('options_intel_api', __name__)
 
 
 def _board():
     return scan_state.get('options_board') or []
+
+
+def _board_for(sym):
+    """Board ∪ chaîne à la demande pour `sym` — un titre pas encore couvert par la
+    rotation obtient quand même son dossier options (IBKR si TWS ouvert, sinon yfinance)."""
+    return _od.board_with(sym)
 
 
 def _as_of():
@@ -53,11 +60,32 @@ def options_environment():
                         'error': '%s: %s' % (type(e).__name__, e)}), 500
 
 
+@bp.route('/api/options/chain/<sym>')
+def options_chain(sym):
+    """Chaîne d'un titre : contrats du board ∪ fetch à la demande si absent.
+    Le dossier /options/<sym> (scorecard + chaîne) lit ICI plutôt que de filtrer
+    /scan côté client — un titre pas encore couvert par la rotation obtient
+    quand même sa chaîne (IBKR si TWS ouvert, repli yfinance)."""
+    sym = (sym or '').upper()[:12]
+    board = _board_for(sym)
+    contracts = [c for c in board if str(c.get('sym', '')).upper() == sym]
+    detail = (scan_state.get('detail') or {}).get(sym) or {}
+    spot = detail.get('price')
+    if spot is None:
+        spot = next((c.get('spot') for c in contracts if c.get('spot') is not None), None)
+    on_demand = bool(contracts) and not any(
+        str(c.get('sym', '')).upper() == sym
+        for c in (scan_state.get('options_board') or []))
+    return jsonify({'symbol': sym, 'spot': spot, 'contracts': contracts,
+                    'on_demand': on_demand, 'as_of': _as_of(),
+                    'source': (scan_state.get('options_source') or 'SCAN')})
+
+
 @bp.route('/api/options/volatility/<sym>')
 def options_volatility(sym):
     """Interprétation de la volatilité d'un sous-jacent (depuis le board/detail)."""
     sym = (sym or '').upper()[:12]
-    board = _board()
+    board = _board_for(sym)
     contracts = [c for c in board if str(c.get('sym', '')).upper() == sym]
     detail = (scan_state.get('detail') or {}).get(sym) or {}
     # IV courante = médiane des IV du board pour ce titre (en fraction)
@@ -81,7 +109,7 @@ def options_scenarios(sym):
     from vertex.options import scenario_pricer
     from vertex.options.models import UnderlyingSetup
     sym = (sym or '').upper()[:12]
-    contracts = sorted([c for c in _board()
+    contracts = sorted([c for c in _board_for(sym)
                         if str(c.get('sym', '')).upper() == sym and c.get('quality') is not None],
                        key=lambda c: c.get('quality', 0), reverse=True)
     if not contracts:
@@ -131,7 +159,7 @@ def options_vol_charts(sym):
     except (TypeError, ValueError):
         expiry = None
     try:
-        return jsonify(vol_charts.build(_board(), sym, as_of=_as_of(),
+        return jsonify(vol_charts.build(_board_for(sym), sym, as_of=_as_of(),
                                         source='SCAN', expiry=expiry))
     except Exception as e:
         return jsonify({'symbol': sym, 'empty': True,
@@ -142,7 +170,7 @@ def options_vol_charts(sym):
 def options_event_risk(sym):
     """Risque d'événement pour le meilleur contrat d'un titre."""
     sym = (sym or '').upper()[:12]
-    board = _board()
+    board = _board_for(sym)
     contracts = sorted([c for c in board if str(c.get('sym', '')).upper() == sym
                         and c.get('quality') is not None],
                        key=lambda c: c.get('quality', 0), reverse=True)

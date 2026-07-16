@@ -57,6 +57,60 @@ POSQ_TTL_S = 45          # fraîcheur d'une cotation de trade perso
 POSQ_MAX_POSITIONS = 24  # borne dure par requête
 
 
+def _scan_fallback_quote(p):
+    """Marque DIFFÉRÉE d'une position quand IBKR ne cote pas (TWS fermé).
+
+    Actions : prix du scan (yfinance différé). Options : mid du contrat
+    correspondant du board (sym + droit + strike, échéance par préfixe —
+    le desk stocke 'YYYY-MM', le board 'YYYY-MM-DD'). Étiquetée delayed:True
+    pour que l'UI l'affiche « différé » — un titre absent du scan reste sans
+    marque (aucun chiffre inventé).
+    """
+    from vertex.app.state import scan_state
+    sym = (p.get('sym') or '').upper()
+    if not sym:
+        return None
+    detail = (scan_state.get('detail') or {}).get(sym) or {}
+    spot = detail.get('price')
+    right = (p.get('right') or '').upper()
+    is_opt = bool(right or p.get('strike') is not None)
+    q = {}
+    if isinstance(spot, (int, float)) and spot > 0:
+        q['spot'] = spot
+    if is_opt:
+        want_type = 'PUT' if right.startswith('P') else 'CALL'
+        want_exp = str(p.get('exp') or '')
+        try:
+            want_strike = float(p.get('strike'))
+        except (TypeError, ValueError):
+            want_strike = None
+        for c in (scan_state.get('options_board') or []):
+            if (str(c.get('sym', '')).upper() == sym
+                    and c.get('type') == want_type
+                    and c.get('mid') is not None
+                    and want_strike is not None
+                    and abs(float(c.get('strike') or 0) - want_strike) < 0.01
+                    and (not want_exp or str(c.get('exp', '')).startswith(want_exp))):
+                q['mark'] = c.get('mid')
+                break
+        if 'mark' not in q and want_strike is not None:
+            # Le board n'a que les « meilleurs » strikes — cote le contrat EXACT
+            # détenu via la chaîne (cache TTL 15 min dans on_demand).
+            try:
+                from vertex.options import on_demand as _od
+                mk = _od.contract_mark(sym, want_exp, want_strike,
+                                       'P' if right.startswith('P') else 'C')
+                if mk is not None:
+                    q['mark'] = mk
+            except Exception:
+                pass
+    if not q:
+        return None
+    q['delayed'] = True
+    q['src'] = 'scan'
+    return q
+
+
 def make_blueprint(*, opt_job, ibkr_enabled):
     """Construit le Blueprint du desk.
 
@@ -162,6 +216,16 @@ def make_blueprint(*, opt_job, ibkr_enabled):
                 if v is not None:
                     posq_cache[k] = (now, v)
                     out[k] = v
+        # REPLI DIFFÉRÉ : TWS fermé (ou contrat non coté) → marque du scan/board,
+        # étiquetée delayed — le portefeuille garde un P&L honnête au lieu de
+        # « marques indisponibles ». Position hors scan : toujours rien d'inventé.
+        for p in todo:
+            k = p.get('key')
+            if k and k not in out:
+                fb = _scan_fallback_quote(p)
+                if fb:
+                    posq_cache[k] = (now, fb)
+                    out[k] = fb
         return jsonify({'results': out, 'live': bool(ibkr_enabled), 'ts': int(now)})
 
     return bp

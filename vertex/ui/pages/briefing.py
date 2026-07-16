@@ -292,9 +292,20 @@ async function loadStrip(){
   const list=(scan&&Array.isArray(scan.indices))?scan.indices:[];
   const byName={};list.forEach(i=>{byName[i.name]=i;});
   const pick=(n)=>{const i=byName[n]||{};return{last:i.price,change:i.change,series:i.spark};};
+  /* Taux & DXY vivent dans scan.macro (value/chg absolus), Pétrole/Or/Bitcoin dans
+     scan.commodities (price/change %) — PAS dans scan.indices. On mappe les vrais champs ;
+     un actif absent reste honnêtement à n/d. */
+  const byMacro={};((scan&&scan.macro)||[]).forEach(m=>{if(m&&m.name)byMacro[m.name]=m;});
+  const byCommo={};((scan&&scan.commodities)||[]).forEach(c=>{if(c&&c.name)byCommo[c.name]=c;});
+  const pickMacro=(n)=>{const m=byMacro[n];if(!m)return{};
+    const chgPct=(m.prev&&m.value!=null)?((m.value-m.prev)/Math.abs(m.prev))*100:null;
+    return{last:m.value,change:chgPct!=null?+chgPct.toFixed(2):null};};
+  const pickCommo=(n)=>{const c=byCommo[n];if(!c)return{};
+    return{last:c.price,change:c.change,series:c.spark};};
   const bySlug={sp:pick('S&P 500'),ndx:pick('Nasdaq'),dow:pick('Dow Jones'),
     rut:pick('Russell 2000'),vix:byName['VIX']?pick('VIX'):{last:sum&&sum.vix,change:sum&&sum.vix_chg},
-    tnx:pick('Taux 10 ans'),dxy:pick('DXY'),oil:pick('Pétrole'),gold:pick('Or'),btc:pick('Bitcoin')};
+    tnx:pickMacro('Taux 10 ans'),dxy:pickMacro('Dollar (DXY)'),
+    oil:pickCommo('WTI'),gold:pickCommo('Or'),btc:pickCommo('Bitcoin')};
   const mode=(scan&&scan.data_source==='demo')?'fallback':(scan&&scan.source==='ibkr'?'live':'delayed');
   const crossRows=CROSS.map(([label,slug])=>{
     const d=bySlug[slug]||{};const val=d.last??null;const chg=d.change??null;
@@ -670,7 +681,7 @@ async function loadPortfolio(){
       <span class="vx-grow vx-mono vx-meta">${t.qty} × ${VX.fmt.price(t.cost)}${t.exp?' · '+t.exp:''}</span>
       <span class="vx-num vx-mono ${pl>0?'vx-pos':pl<0?'vx-neg':'vx-muted'}">${pl!==null?VX.fmt.pct(pl,1):'n/d'}</span>
       <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Actions ${t.sym}">⋯</button></div>`;
-  }).join('')+`<div class="vx-card-footer">${pos.length} position(s) · marques ${Object.keys(quotes).length?'IBKR/desk':'indisponibles'}</div>`;
+  }).join('')+`<div class="vx-card-footer">${pos.length} position(s) · marques ${Object.keys(quotes).length?(Object.values(quotes).some(q=>q.delayed)?'différées (scan)':'IBKR/desk'):'indisponibles'}</div>`;
 }
 async function loadCalendar(){
   try{

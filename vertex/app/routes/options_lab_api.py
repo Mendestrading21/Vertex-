@@ -34,7 +34,8 @@ def api_options_strategies(sym):
     Analyse pure, lecture seule — aucun ordre. Donnée absente => available:false honnête."""
     sym = sym.upper()
     try:
-        board = scan_state.get('options_board') or []
+        from vertex.options import on_demand as _od
+        board = _od.board_with(sym)   # board ∪ chaîne à la demande si titre absent
         detail = (scan_state.get('detail') or {}).get(sym) or {}
         spot = detail.get('price')
         if not spot:

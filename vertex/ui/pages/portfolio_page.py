@@ -81,7 +81,7 @@ function enrich(pos,quotes){
     const value=mark!==null?(isOpt?mark*100*t.qty:mark*t.qty):null;
     const invested=t.cost||0;
     const pl=value!==null&&invested?((value-invested)/invested*100):null;
-    return Object.assign({},t,{mark,underSpot,value,invested,pl});
+    return Object.assign({},t,{mark,underSpot,value,invested,pl,delayed:!!q.delayed});
   });
 }
 function roleOf(t){
@@ -197,8 +197,8 @@ function renderSummary(rich){
       ${gauge?`<div class="vx-gaugecluster" style="flex-direction:column">${gauge}</div>`:''}
       <div class="vx-scorecard-side">
         <div class="vx-statrow">
-          ${tile('Valeur',value!==null?VX.fmt.price(value):VX.fmt.price(invested),value!==null?'marques live/desk':'au coût (marques indisponibles)')}
-          ${tile('P&L latent',pl!==null?((pl>=0?'+':'')+VX.fmt.price(pl)):'n/d',pl!==null?VX.fmt.pct(pl/invested*100,1):'IBKR hors ligne',pl>0?'pos':pl<0?'neg':'')}
+          ${tile('Valeur',value!==null?VX.fmt.price(value):VX.fmt.price(invested),value!==null?(rich.some(t=>t.delayed)?'marques différées (scan)':'marques live/desk'):'au coût (marques indisponibles)')}
+          ${tile('P&L latent',pl!==null?((pl>=0?'+':'')+VX.fmt.price(pl)):'n/d',pl!==null?VX.fmt.pct(pl/invested*100,1)+(rich.some(t=>t.delayed)?' · différé':''):'IBKR hors ligne',pl>0?'pos':pl<0?'neg':'')}
           ${tile('Équipe actions',stocks.length+' / 10',stocks.length>=10?'complet — remplacement obligatoire':'places disponibles')}
           ${tile('Options tactiques',opts.length+' / 3','CALLS '+opts.filter(t=>t.type==='CALL').length+' · PUTS '+opts.filter(t=>t.type==='PUT').length+' / 1 max')}
         </div>
@@ -397,7 +397,7 @@ async function renderOptions(){
       ${H('CALLS ouverts',calls.length,'direction principale (~90 %)')}
       ${H('PUTS tactiques',puts.length+' / 1',puts.length>1?'PLAFOND DÉPASSÉ':'rares, jamais « parce que ça baisse »',puts.length>1?'vx-neg':'')}
       ${H('Capital engagé',VX.fmt.price(engaged),'coût total déclaré')}
-      ${H('P&L options',plTot!==null?VX.fmt.price(plTot):'n/d',plTot!==null?VX.fmt.pct(plTot/engaged*100,1):'marques indisponibles (IBKR hors ligne)',plTot>0?'vx-pos':plTot<0?'vx-neg':'vx-muted')}
+      ${H('P&L options',plTot!==null?VX.fmt.price(plTot):'n/d',plTot!==null?VX.fmt.pct(plTot/engaged*100,1)+(rich.some(t=>t.delayed)?' · différé':''):'marques indisponibles (IBKR hors ligne)',plTot>0?'vx-pos':plTot<0?'vx-neg':'vx-muted')}
     </div>
     <div class="vx-grid vx-mb3">
       ${H('DTE moyen',dteAvg!==null?dteAvg+' j':'n/d','constitution : 60-270, préf. 90-210')}

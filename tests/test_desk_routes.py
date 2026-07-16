@@ -55,7 +55,10 @@ def test_watchlist_tv_exports_the_universe():
 
 # ─── /api/pos-quotes ───
 
-def test_pos_quotes_offline_returns_cache_only():
+def test_pos_quotes_offline_returns_cache_only(monkeypatch):
+    from vertex.app.state import scan_state
+    monkeypatch.setitem(scan_state, 'detail', {})
+    monkeypatch.setitem(scan_state, 'options_board', [])
     calls = []
 
     def job(kind, args, timeout):
@@ -63,7 +66,29 @@ def test_pos_quotes_offline_returns_cache_only():
         return {}
     j = _client(ibkr=False, opt_job=job).post(
         '/api/pos-quotes', json={'positions': [{'sym': 'AAPL'}]}).get_json()
+    # titre absent du scan → aucune marque inventée, aucun job IBKR
     assert j['live'] is False and j['results'] == {} and calls == []
+
+
+def test_pos_quotes_offline_falls_back_to_scan_marks(monkeypatch):
+    """TWS fermé mais titre dans le scan → marque DIFFÉRÉE honnête (delayed:True) :
+    action = prix du scan, option = mid du contrat correspondant du board."""
+    from vertex.app.state import scan_state
+    monkeypatch.setitem(scan_state, 'detail', {'MSFT': {'price': 500.0}})
+    monkeypatch.setitem(scan_state, 'options_board', [
+        {'sym': 'MSFT', 'type': 'CALL', 'strike': 520.0, 'exp': '2027-01-15', 'mid': 12.3},
+    ])
+    c = _client(ibkr=False, opt_job=lambda k, a, t: {})
+    j = c.post('/api/pos-quotes', json={'positions': [
+        {'sym': 'MSFT'},
+        {'sym': 'MSFT', 'exp': '2027-01', 'strike': 520, 'right': 'C'},
+        {'sym': 'ZZZZ'},
+    ]}).get_json()
+    stk = j['results']['MSFT|||']
+    assert stk['spot'] == 500.0 and stk['delayed'] is True and stk['src'] == 'scan'
+    opt = j['results']['MSFT|2027-01|520|C']
+    assert opt['mark'] == 12.3 and opt['delayed'] is True
+    assert 'ZZZZ|||' not in j['results']          # hors scan → rien d'inventé
 
 
 def test_pos_quotes_live_quotes_and_caches():
