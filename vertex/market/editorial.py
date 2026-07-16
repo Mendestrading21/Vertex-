@@ -9,6 +9,18 @@ d'actualité fabriqué. Si les actualités manquent, le brief reste factuel
 from __future__ import annotations
 
 
+_REGIME_FR = {'TREND': 'TENDANCE', 'TREND_UP': 'TENDANCE HAUSSIÈRE',
+              'TREND_DOWN': 'TENDANCE BAISSIÈRE', 'NEUTRAL': 'NEUTRE',
+              'CHOP': 'SANS DIRECTION', 'DOWN': 'BAISSIER', 'UP': 'HAUSSIER',
+              'UNKNOWN': 'INDÉTERMINÉ', 'RISK_ON': 'APPÉTIT POUR LE RISQUE',
+              'RISK_OFF': 'AVERSION AU RISQUE', 'PANIC': 'PANIQUE',
+              'MEAN_REVERSION': 'RETOUR À LA MOYENNE', 'TRANSITION': 'TRANSITION'}
+
+
+def _regime_fr(code):
+    return _REGIME_FR.get(str(code or '').upper(), code)
+
+
 def _num(x):
     try:
         return float(x)
@@ -47,7 +59,11 @@ def _indices(scan_state):
 
 def build_narrative(scan_state, news_state=None):
     """Rend un dict avec le narratif fluide + les blocs éditoriaux §10."""
-    m = scan_state.get('market') or scan_state.get('market_ctx') or {}
+    # Fusion market (horloge) ⊕ market_ctx (contexte) — cf. daily_brief.
+    m = {**(scan_state.get('market') or {}), **(scan_state.get('market_ctx') or {})}
+    _b = m.get('breadth')
+    if isinstance(_b, dict):
+        m = {**m, 'breadth': _b.get('above50', _b.get('above200'))}
     sectors = [s for s in (scan_state.get('sectors') or []) if isinstance(s, dict)]
     committee = scan_state.get('committee') or {}
     counts = committee.get('counts') or {}
@@ -79,7 +95,7 @@ def build_narrative(scan_state, news_state=None):
         sources.append('indices (scan)')
 
     # 4. Régime + appétit pour le risque.
-    regime = m.get('spy_regime') or m.get('regime')
+    regime = _regime_fr(m.get('spy_regime') or m.get('regime'))
     roro = m.get('roro')
     if regime or roro:
         s = 'Le régime de marché est %s' % (regime or 'indéterminé')
@@ -162,7 +178,7 @@ def build_narrative(scan_state, news_state=None):
                         'IV médiane : sélection de calls au cas par cas.')
 
     main_risk = None
-    if regime in (None, 'UNKNOWN', 'INCONNU'):
+    if regime in (None, 'UNKNOWN', 'INCONNU', 'INDÉTERMINÉ'):
         main_risk = 'Régime de marché indéterminé — aucun nouveau risque autorisé.'
     elif roro == 'RISK-OFF':
         main_risk = 'Contexte RISK-OFF — pas d\'achat offensif, protéger le capital.'
@@ -188,7 +204,7 @@ def build_narrative(scan_state, news_state=None):
 def _prices_mainly(m, vix, regime):
     """« Aujourd'hui, le marché prixe principalement… » — déduit du contexte réel."""
     roro = m.get('roro')
-    if regime in (None, 'UNKNOWN', 'INCONNU'):
+    if regime in (None, 'UNKNOWN', 'INCONNU', 'INDÉTERMINÉ'):
         return 'un régime indéterminé — le marché cherche une direction.'
     if roro == 'RISK-OFF':
         return 'l\'aversion au risque (RISK-OFF) et la protection du capital.'

@@ -34,12 +34,29 @@ def _idx(scan_state):
     return {i.get('name'): i for i in idx if isinstance(i, dict)}
 
 
+_REGIME_FR = {'TREND': 'TENDANCE', 'TREND_UP': 'TENDANCE HAUSSIÈRE',
+              'TREND_DOWN': 'TENDANCE BAISSIÈRE', 'NEUTRAL': 'NEUTRE',
+              'CHOP': 'SANS DIRECTION', 'DOWN': 'BAISSIER', 'UP': 'HAUSSIER',
+              'UNKNOWN': 'INDÉTERMINÉ', 'RISK_ON': 'APPÉTIT POUR LE RISQUE',
+              'RISK_OFF': 'AVERSION AU RISQUE', 'PANIC': 'PANIQUE',
+              'MEAN_REVERSION': 'RETOUR À LA MOYENNE', 'TRANSITION': 'TRANSITION'}
+
+
+def _regime_fr(code):
+    return _REGIME_FR.get(str(code or '').upper(), code)
+
+
 def build_daily_brief(scan_state: dict, news_state: dict | None = None,
                       portfolio_syms: list[str] | None = None,
                       kind: str | None = None) -> dict:
     """Brief complet : sections, texte principal, compact, sources, méta."""
     kind = kind or brief_kind()
-    m = scan_state.get('market') or scan_state.get('market_ctx') or {}
+    # market = horloge de séance ; le contexte (régime/vix/breadth) vit dans
+    # market_ctx — un simple `or` le masquait (régime 'n/d' permanent).
+    m = {**(scan_state.get('market') or {}), **(scan_state.get('market_ctx') or {})}
+    _b = m.get('breadth')
+    if isinstance(_b, dict):                     # market_ctx.breadth = objet
+        m = {**m, 'breadth': _b.get('above50', _b.get('above200'))}
     by = _idx(scan_state)
     sectors = scan_state.get('sectors') or []
     committee = (scan_state.get('committee') or {})
@@ -55,7 +72,7 @@ def build_daily_brief(scan_state: dict, news_state: dict | None = None,
     sections: list[tuple[str, str]] = []
 
     # 1. Situation générale
-    regime = m.get('spy_regime') or m.get('regime') or 'n/d'
+    regime = _regime_fr(m.get('spy_regime') or m.get('regime')) or 'n/d'
     roro = m.get('roro') or ''
     sections.append(('Situation générale',
                      f"Régime {regime}{' · ' + roro if roro else ''} — "
@@ -139,7 +156,8 @@ def build_daily_brief(scan_state: dict, news_state: dict | None = None,
         'what_changed': [f"{ev.get('title_fr') or ev['title']} ({ev['source']})"
                          for ev in top_events[:3]],
         'watching': [s.get('symbol') for s in decisions[:3] if s.get('symbol')],
-        'main_risk': ('Régime UNKNOWN — risque neuf bloqué' if regime in ('UNKNOWN', 'n/d')
+        'main_risk': ('Régime indéterminé — risque neuf bloqué'
+                      if regime in ('UNKNOWN', 'INDÉTERMINÉ', 'n/d')
                       else f'Invalidation du régime {regime}'),
         'main_opportunity': (prio.get('symbol') if prio else None),
         'sources': sources,
