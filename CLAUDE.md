@@ -15,6 +15,11 @@ Terminal d'ANALYSE de trading (Flask, port 5002). **Lecture seule : aucun ordre 
 - **État partagé** : `vertex/app/state.py` (`scan_state` muté en place — ne JAMAIS réassigner).
 - **Données perso utilisateur** : localStorage navigateur (`myTrades`, `myRecos`, `myFavs`, `vxJournal`, `vxAlerts`…) synchronisé serveur en blob `desk_data.json` (last-writer-wins + backup quotidien `desk_backup_*.json`).
 
+## Refonte « Black Glass Institutional » (kit installé)
+- Direction visuelle canonique = **Black Glass Institutional** : fond noir/graphite neutre, cartes en verre gris translucide, blanc/gris/argent en couleur structurelle, **sémantique stricte** (vert = positif, rouge = négatif/risque, orange = prudence/incertitude), **zéro bleu**, violet réservé aux options.
+- Contrats de référence : `docs/VERTEX_GLASS_REDESIGN_MASTER_PLAN.md` + `docs/claude/` (`VERTEX_GLASS_VISUAL_CONTRACT.md`, `VERTEX_CHART_CONTRACT.md`, `VERTEX_REFACTOR_RULES.md`, `VERTEX_PAGE_MATRIX.md`, `VERTEX_ACCEPTANCE_CHECKLIST.md`).
+- Skills d'orchestration : `.claude/skills/vertex-redesign-*` (orchestrator, foundations, une par espace, qa). Couche CSS = `vertex/static/vertex/css/glass.css` (chargée en dernier).
+
 ## Règles critiques (violations = données perdues ou app cassée)
 1. **Clés de sync desk** : toute nouvelle clé localStorage à synchroniser doit être ajoutée dans **LES 4 listes** (`__DESK_KEYS` terminal.py, sSyncPush/Pull, `vertex/ui/journal.py`, `DESK_KEYS` de `vx_kit.py`) — sinon un push l'efface côté serveur. Test gardien : `tests/test_production.py::test_desk_sync_keys_single_source_of_truth`.
 2. **Apostrophes françaises dans les chaînes JS** de terminal.py : toujours échapper (`aujourd\\'hui`) — deux SyntaxError silencieuses ont déjà vécu.
