@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v61';   // v61 : Hyper Visual F1 — tokens macro/teal + neutres (sand/steel/stone/plum), échelle typo étendue, grilles 12 col .vx-span/.vx-grid-N, skeletons enrichis, palette macroSeries
+const CACHE='td-shell-v62';   // v62 : Hyper Visual F2 — plein écran + vue tableau (données réelles) sur TOUS les graphiques VXCharts.card
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

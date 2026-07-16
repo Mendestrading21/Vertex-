@@ -160,7 +160,11 @@
       <div class="vx-chart-foot">
         ${VX.updateIndicator(opts.timestamp, opts.source, opts.mode)}
         ${opts.limits ? `<span class="vx-meta">${opts.limits}</span>` : ''}
-        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-explain-btn" data-explain="${id}">Comprendre ce graphique</button>
+        <span class="vx-chart-tools">
+          <button class="vx-btn vx-btn-sm vx-btn-ghost vx-chart-tbl" title="Voir les données en tableau" aria-label="Voir les données">Données</button>
+          <button class="vx-btn vx-btn-sm vx-btn-ghost vx-chart-fs" title="Agrandir en plein écran" aria-label="Plein écran">⤢ Agrandir</button>
+          <button class="vx-btn vx-btn-sm vx-btn-ghost vx-explain-btn" data-explain="${id}">Comprendre</button>
+        </span>
       </div>`;
     const canvas = el.querySelector('canvas');
     const chart = opts.render ? opts.render(canvas) : null;
@@ -174,7 +178,48 @@
         <div class="vx-divider"></div>
         <div class="vx-meta">Source : ${opts.source || 'n/d'} · ${VX.fmt.ago(opts.timestamp)}${opts.limits ? ' · ' + opts.limits : ''}</div>`);
     });
+    /* Plein écran / mode focus (§35) : la carte occupe le viewport, le graphique
+       se redimensionne (Chart.js maintainAspectRatio:false). Échap ou clic ferme. */
+    el.querySelector('.vx-chart-fs')?.addEventListener('click', () => C.toggleFullscreen(el, chart));
+    /* Vue tableau (§8) : les données RÉELLES du graphique en table, depuis
+       chart.data — aucune valeur inventée, exactement ce qui est tracé. */
+    el.querySelector('.vx-chart-tbl')?.addEventListener('click', () => C.showDataTable(opts.title, chart));
     return chart;
+  };
+
+  /* Bascule plein écran d'une carte graphique. */
+  C.toggleFullscreen = function (el, chart) {
+    const on = el.classList.toggle('vx-chart-fs');
+    document.body.classList.toggle('vx-fs-open', on);
+    let bd = document.getElementById('vx-chart-fs-backdrop');
+    if (on && !bd) {
+      bd = document.createElement('div'); bd.id = 'vx-chart-fs-backdrop';
+      bd.addEventListener('click', () => C.toggleFullscreen(el, chart));
+      document.body.appendChild(bd);
+    }
+    if (bd) bd.style.display = on ? 'block' : 'none';
+    const esc = (e) => { if (e.key === 'Escape') { C.toggleFullscreen(el, chart); document.removeEventListener('keydown', esc); } };
+    if (on) document.addEventListener('keydown', esc);
+    if (chart && chart.resize) setTimeout(() => { try { chart.resize(); } catch (e) {} }, 60);
+  };
+
+  /* Construit une table HTML à partir des données réellement tracées. */
+  C.showDataTable = function (title, chart) {
+    if (!chart || !chart.data) { VX.toast && VX.toast('Aucune donnée tabulable', 'warning'); return; }
+    const labels = chart.data.labels || [];
+    const ds = chart.data.datasets || [];
+    const fmt = (v) => (v == null || v === '') ? '—'
+      : (typeof v === 'object' ? (v.y != null ? VX.fmt.num(v.y, 2) : (v.x != null ? VX.fmt.num(v.x, 2) : '—')) : (isNaN(v) ? String(v) : VX.fmt.num(+v, 2)));
+    const n = Math.max(labels.length, ...ds.map(d => (d.data || []).length));
+    let head = '<th>#</th>' + ds.map(d => `<th class="vx-num">${(d.label || 'série')}</th>`).join('');
+    let body = '';
+    for (let i = 0; i < n; i++) {
+      body += `<tr><td class="vx-mono">${labels[i] != null ? labels[i] : (i + 1)}</td>`
+        + ds.map(d => `<td class="vx-num vx-mono">${fmt((d.data || [])[i])}</td>`).join('') + '</tr>';
+    }
+    VX.shell.openDrawer((title || 'Graphique') + ' — données',
+      `<div class="vx-table-wrap" style="max-height:70vh"><table class="vx-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>
+       <div class="vx-meta vx-mt2">${n} point(s) — valeurs réellement tracées, aucune estimation.</div>`);
   };
 
   /* ── Primitives réutilisées par tous les modules ─────────────────── */
