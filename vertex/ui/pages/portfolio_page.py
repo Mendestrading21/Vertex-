@@ -457,6 +457,7 @@ async function renderOptions(){
       <div id="pf-opt-tree" style="height:220px"></div>
       <div class="vx-card-foot"><span class="vx-meta">Taille = capital engagé (coût déclaré) · couleur = sens (CALL acier / PUT violet). Aucune valeur inventée.</span></div>
     </section>
+    <div id="pf-opt-mix" class="vx-grid vx-mb3"></div>
     <div id="pf-opt-combined" class="vx-grid vx-mb3"></div>
     <section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Positions options</span>
       <span class="vx-meta vx-right">analyse complète par position — aucune exécution</span></div>
@@ -491,6 +492,45 @@ async function renderOptions(){
   document.querySelectorAll('[data-opt-analyze]').forEach(b=>
     b.addEventListener('click',()=>openOptionDrawer(rich.find(t=>String(t.id)===b.dataset.optAnalyze))));
   renderCombinedOptions(rich);
+  renderOptMix(rich);
+}
+/* §19 : répartition CALL/PUT (donut) + distribution des échéances (DTE) — données
+   DÉCLARÉES uniquement (type, exp→dte) ; aucun greek estimé. */
+function renderOptMix(rich){
+  const host=document.getElementById('pf-opt-mix');if(!host)return;
+  const calls=rich.filter(t=>t.type==='CALL').length,puts=rich.filter(t=>t.type==='PUT').length;
+  host.innerHTML='<div class="vx-col-5" id="pf-opt-ring"></div>'
+    +'<section class="vx-card vx-col-7"><div class="vx-card-header">'
+    +'<span class="vx-card-title">Échéances de tes contrats</span>'
+    +'<span class="vx-chart-question">Suis-je exposé à une expiration proche ?</span></div>'
+    +'<div id="pf-opt-dte"></div>'
+    +'<div class="vx-card-foot"><span class="vx-meta">Jours avant échéance (DTE) par position déclarée · une barre courte = expiration proche.</span></div></section>';
+  if(window.VXCharts&&VXCharts.donutCard&&(calls||puts)){
+    VXCharts.donutCard('pf-opt-ring',{title:'CALL vs PUT',
+      question:'Le portefeuille options est-il directionnel ?',
+      conclusion:calls+' call(s) · '+puts+' put(s)',
+      labels:['CALL','PUT'],values:[calls,puts],colors:['var(--vx-neutral)','var(--vx-option)'],height:200,
+      source:'positions déclarées',timestamp:Date.now(),mode:window.__pfLive?'live':'fallback'});
+  }
+  const dtes=rich.map(t=>({sym:t.sym,strike:t.strike,type:t.type,
+      dte:t.exp?Math.round((new Date(t.exp)-Date.now())/86400000):null})).filter(x=>x.dte!=null)
+    .sort((a,b)=>a.dte-b.dte);
+  const de=document.getElementById('pf-opt-dte');
+  if(de){
+    if(dtes.length){
+      const mx=Math.max.apply(null,dtes.map(d=>d.dte))||1;
+      de.innerHTML='<div style="padding:6px 2px">'+dtes.map(d=>{
+        const w=Math.max(3,Math.round(d.dte/mx*100));
+        const soon=d.dte<=14,near=d.dte<=45;
+        const col=soon?'var(--vx-negative)':near?'var(--vx-warning)':'var(--vx-neutral)';
+        return `<div class="vx-flex" style="gap:8px;align-items:center;padding:3px 0">
+          <span class="vx-mono" style="flex:0 0 96px;font-size:11.5px">${esc(d.sym)} ${d.type==='PUT'?'P':'C'}${d.strike?' '+VX.fmt.nd(d.strike):''}</span>
+          <span style="flex:1;height:7px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden">
+            <i style="display:block;height:100%;width:${w}%;background:${col};border-radius:99px"></i></span>
+          <b class="vx-mono" style="flex:0 0 44px;text-align:right;font-size:11.5px;color:${col}">${d.dte} j</b></div>`;
+      }).join('')+'</div>';
+    }else de.innerHTML=VX.states.empty('Aucune échéance datée sur tes positions.');
+  }
 }
 
 /* Structure combinée par sous-jacent : analyse TES positions options réelles comme une
