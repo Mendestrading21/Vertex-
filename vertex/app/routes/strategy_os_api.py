@@ -101,7 +101,11 @@ def make_blueprint(scan_state: dict) -> Blueprint:
             'leadership': ('CYCLICAL' if roro == 'RISK-ON'
                            else 'DEFENSIVE' if roro == 'RISK-OFF' else None),
         }
-        return jsonify(classify_regime(inputs))
+        out = classify_regime(inputs)
+        # Fraîcheur RÉELLE : le régime dérive du scan — l'UI affiche cet horodatage
+        # plutôt qu'un Date.now() fabriqué côté client.
+        out['as_of'] = scan_state.get('scan_ts') or scan_state.get('updated')
+        return jsonify(out)
 
     @bp.route('/api/company/twin/<sym>')
     def company_twin_ep(sym):

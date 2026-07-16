@@ -487,7 +487,7 @@ async function loadRegime(){
       <div class="vx-kv"><span class="k">Nouveau risque</span><span class="v ${adj.new_risk_allowed?'vx-pos':'vx-neg'}">${adj.new_risk_allowed?'autorisé':'BLOQUÉ'}</span></div>
       <div class="vx-kv"><span class="k">Priorité setups</span><span class="v">${VX.fmt.nd(adj.setup_priority)}</span></div>
       <div class="vx-kv"><span class="k">Confirmations exigées</span><span class="v">${VX.fmt.nd(adj.confirmation_required)}</span></div>
-      <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')}
+      <div class="vx-card-footer">${VX.updateIndicator(r.as_of||Date.now(),'Moteur de régimes','delayed')}
       <button class="vx-btn vx-btn-sm vx-btn-ghost vx-right" data-scrollto="pulse">Pouls ↓</button></div>`;
     if(window.VXCharts&&VXCharts.gauge){
       const CO=(window.VXCharts&&VXCharts.colors)||{};
@@ -758,7 +758,7 @@ async function loadPulse(scan){
         <span ${st==='att'?'data-on="att"':''}>Attaque</span></div>`
       +'<div class="vx-meta vx-mt3">Régime <b>'+esc(r.regime||'n/d')+'</b> · confiance '+conf+' % · '
       +(allowed?'<span class="vx-pos">nouveau risque autorisé</span>':'<span class="vx-neg">nouveau risque BLOQUÉ</span>')+'</div>'
-      +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')+'</div>';
+      +'<div class="vx-card-footer">'+VX.updateIndicator(r.as_of||Date.now(),'Moteur de régimes','delayed')+'</div>';
   }catch(e){
     if($('vx-gauge-trend'))$('vx-gauge-trend').innerHTML=VX.states.empty('Régime non calculé.');
     if($('vx-regime-rail'))$('vx-regime-rail').innerHTML=VX.states.error('Positionnement indisponible');
