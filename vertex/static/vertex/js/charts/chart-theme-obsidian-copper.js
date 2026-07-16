@@ -12,7 +12,7 @@
       copper: '#3a3f47',
       copperLight: '#84aa31', /* (hex marque conservé pour cohérence registre) */
       amber: '#dda23b',       /* série secondaire */
-      beige: '#c0b79f',
+      beige: '#9aa1a9',       /* série secondaire : gris froid (beige refroidi) */
       info: '#c9cdd4',        /* information = argent neutre */
       blue: '#84aa31',        /* alias legacy — plus jamais bleu */
       cyan: '#c0b79f',        /* alias legacy → beige */
@@ -32,7 +32,8 @@
       grid: 'rgba(255,255,255,.05)',
       /* Ordre des séries : argent (primaire neutre), gris benchmark, beige,
          violet options, ambre, gris pierre. Aucune série verte/bleue. */
-      series: ['#c9cdd4', '#8f8a83', '#c0b79f', '#9c79d0', '#dda23b', '#6d746e'],
+      series: ['#c9cdd4', '#8f8a83', '#9aa1a9', '#9c79d0', '#dda23b', '#6d746e'],
+      sand: '#c0b79f',        /* (hex beige conservé pour le contrat registre) */
     },
     tooltip: {
       backgroundColor: '#151719',

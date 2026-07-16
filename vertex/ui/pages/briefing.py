@@ -477,11 +477,11 @@ function sparkSvg(vals,pos,neutral){
   /* neutral : VIX/taux/DXY — la direction ne code pas « bon/mauvais » */
   const col=neutral?'var(--vx-text-dim,#8f8a83)':(pos?'var(--vx-positive,#36c889)':'var(--vx-negative,#ed655c)');
   const gid='sg'+Math.abs((''+pts).split('').reduce((a,c)=>((a<<5)-a+c.charCodeAt(0))|0,0));
-  return `<svg viewBox="0 0 ${w} ${h+4}" preserveAspectRatio="none" width="100%" height="26" style="margin-top:6px;display:block" aria-hidden="true">
+  return `<svg viewBox="0 0 ${w} ${h+4}" preserveAspectRatio="none" width="100%" height="40" style="margin-top:8px;display:block;filter:drop-shadow(0 0 5px ${col})" aria-hidden="true">
     <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${col}" stop-opacity=".22"/><stop offset="100%" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+      <stop offset="0%" stop-color="${col}" stop-opacity=".26"/><stop offset="100%" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
     <polygon points="0,${h+3} ${pts} ${w},${h+3}" fill="url(#${gid})"/>
-    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
 /* Tuile KPI du bandeau (indice, matière, taux). deltaNeutral : la variation ne
    code pas « bon/mauvais » (VIX, taux, DXY) → neutre. */
