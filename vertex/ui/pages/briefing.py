@@ -1101,7 +1101,8 @@ async function loadOpportunities(){
         <div class="mv-chg" style="font-size:15px;color:var(--vx-text-primary)">${s.price!=null?VX.fmt.price(s.price):'—'}</div>
         <div class="vx-flex vx-wrap" style="gap:.3rem;margin:4px 0">${chips.join('')}</div>
         ${s.note?`<div class="mv-sub" style="white-space:normal;line-height:1.45;max-height:6.2em;overflow:hidden"><b style="color:var(--vx-text-secondary)">Pourquoi :</b> ${esc(s.note)}</div>`:''}
-        <div class="mv-sub" style="color:var(--vx-brand);margin-top:5px">Ouvrir le dossier complet →</div>
+        <div class="vx-flex" style="gap:.3rem;margin-top:6px"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-inspect="${esc(s.symbol)}" title="Aperçu rapide">Aperçu</button>
+          <span class="mv-sub" style="color:var(--vx-brand)">dossier complet →</span></div>
       </button>`;}).join('')+'</div>':VX.states.empty('Aucune opportunité action retenue par le comité.');
     /* Comparatif du comité : proba de gain + conviction par titre, en barres HTML
        (taille déterministe — remplace l'ancien graphique R:R illisible). */

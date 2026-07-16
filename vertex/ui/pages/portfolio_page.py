@@ -308,6 +308,7 @@ async function renderTeam(){
           ${stop!=null?`<div class="vx-meta">stop ${VX.fmt.nd(stop)}</div>`:''}
           ${(t.entrySnap&&t.entrySnap.thesis)||t.note?`<div class="vx-meta vx-truncate" style="margin-top:3px">${esc((t.entrySnap&&t.entrySnap.thesis)||t.note)}</div>`:''}
           <div class="vx-flex" style="justify-content:flex-end;gap:.3rem;margin-top:6px">
+            <button class="vx-btn vx-btn-sm vx-btn-ghost" data-inspect="${t.sym}" title="Aperçu rapide">Aperçu</button>
             <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyser</button>
             <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Actions ${t.sym}">⋯</button></div>
         </div>`;}).join('')+'</div>':'<div class="vx-meta" style="padding:6px 0">— aucune position dans ce rôle —</div>'}
