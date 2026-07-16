@@ -254,7 +254,6 @@
   });
   $('vx-global-search')?.addEventListener('focus', (e) => { e.target.blur(); openPalette(); });
   $('vx-global-search')?.addEventListener('click', openPalette);
-  $('vx-fab')?.addEventListener('click', openPalette);
 
   /* ── + Ajouter (§19) ─────────────────────────────────────────────── */
   $('vx-add-btn')?.addEventListener('click', () => window.VXEntities?.openAddModal());

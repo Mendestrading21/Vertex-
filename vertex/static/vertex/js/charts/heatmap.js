@@ -4,7 +4,7 @@
 function cellColor(v,min,max){
   if(v===null||v===undefined||!isFinite(v))return'var(--vx-surface-elevated)';
   const t=Math.max(-1,Math.min(1,(v-(min+max)/2)/((max-min)/2||1)));
-  return t>=0?`rgba(54,200,137,${.10+.4*t})`:`rgba(237,101,92,${.10+.4*(-t)})`;}
+  return t>=0?`rgba(34,199,122,${.10+.4*t})`:`rgba(239,83,80,${.10+.4*(-t)})`;}
 C.heatmapCard=function(host,opts){
   /* opts: rows[{label,cells[{value,label?,title?,onclick?}]}], columns[], min,max, fmt */
   const el=typeof host==='string'?document.getElementById(host):host;

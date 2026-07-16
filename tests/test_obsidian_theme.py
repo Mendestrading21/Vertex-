@@ -26,17 +26,9 @@ def _is_blueish(hexval: str) -> bool:
 
 
 def test_no_blue_primary_theme():
-    """La MARQUE reste verte. Le bleu/cyan est désormais autorisé UNIQUEMENT comme
-    accent décoratif (tokens `--vx-accent-*`) ; interdit partout ailleurs."""
     tokens = _read(VXCSS, 'tokens.css')
-    for m in re.finditer(r'(--vx-[a-z0-9-]+):\s*(#[0-9a-fA-F]{6})', tokens):
-        name, hexval = m.group(1), m.group(2)
-        if name.startswith('--vx-accent'):
-            continue  # accents décoratifs multi-couleurs : bleu/cyan permis
-        assert not _is_blueish(hexval), f'token bleu interdit hors accent : {m.group(0)}'
-    # garde-fou d'identité : la marque demeure le vert Signal
-    assert '--vx-signal-500:#84aa31' in tokens
-    assert '--vx-brand:var(--vx-signal-500)' in tokens
+    for m in re.finditer(r'--vx-[a-z0-9-]+:\s*(#[0-9a-fA-F]{6})', tokens):
+        assert not _is_blueish(m.group(1)), f'token bleu interdit : {m.group(0)}'
 
 
 def test_no_blue_primary_buttons():

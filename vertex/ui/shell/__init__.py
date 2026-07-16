@@ -172,7 +172,6 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/control-surface.css">
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
 <link rel="stylesheet" href="/static/vertex/css/premium.css">
-<link rel="stylesheet" href="/static/vertex/css/nova.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
@@ -186,7 +185,6 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 </div>
 </div>
 {mobile_bar}
-<button class="vx-fab" id="vx-fab" aria-label="Recherche et commandes (⌘K)" title="Recherche et commandes">{icon('search', 24)}</button>
 {_OVERLAYS}
 <script src="/static/chart.umd.min.js" defer></script>
 <script src="/static/vertex/js/vx-core.js"></script>
