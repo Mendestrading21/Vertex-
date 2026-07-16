@@ -8169,9 +8169,9 @@ function renderPal(){var host=document.getElementById('hmPal');if(!host)return;v
     +_palCard('📈 TOP · SEMAINE','#22C55E',PAL,'w',1)+_palCard('📉 FLOP · SEMAINE','#EF4444',PAL,'w',-1)
     +_palCard('📈 TOP · MOIS','#22C55E',PAL,'m',1)+_palCard('📉 FLOP · MOIS','#EF4444',PAL,'m',-1)+'</div>'
     +'<div style="'+g+'">'
-    +_palIdx('🏛️ TOP · DOW','#38BDF8',PAL,IDXSETS.dow)+_palIdx('💻 TOP · NASDAQ','#A78BFA',PAL,IDXSETS.ndx)
-    +_palIdx('📊 TOP · S&P 500','#F5B45B',PAL,IDXSETS.sp)+_palIdx('🇺🇸 TOP · RUSSELL','#34D399',PAL,IDXSETS.rut)
-    +_palIdx('🇪🇺 TOP · EUROPE','#60A5FA',PAL,IDXSETS.eu)+_palIdx('🌏 TOP · ASIE','#F472B6',PAL,IDXSETS.asia)+'</div>';}
+    +_palIdx('🏛️ TOP · DOW','#c9cdd4',PAL,IDXSETS.dow)+_palIdx('💻 TOP · NASDAQ','#c9cdd4',PAL,IDXSETS.ndx)
+    +_palIdx('📊 TOP · S&P 500','#c9cdd4',PAL,IDXSETS.sp)+_palIdx('🇺🇸 TOP · RUSSELL','#c9cdd4',PAL,IDXSETS.rut)
+    +_palIdx('🇪🇺 TOP · EUROPE','#c9cdd4',PAL,IDXSETS.eu)+_palIdx('🌏 TOP · ASIE','#c9cdd4',PAL,IDXSETS.asia)+'</div>';}
 function load(){fetch('/scan').then(function(r){return r.json()}).then(function(d){var fs=((d.fundamentals||{}).by_sym)||{},det=d.detail||{};
   ALL=(d.rows||[]).map(function(r){var f=fs[r.symbol]||{},dd=det[r.symbol]||{};return {symbol:r.symbol,change:r.change,score:r.score,sector:r.sector||f.sector||dd.sector||'—'};});
   IDXSETS=d.idx_sets||{};
