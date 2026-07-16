@@ -28,6 +28,15 @@
 .vx-skeleton-kpi{height:34px;width:60%}
 .vx-skeleton-line{height:12px}
 .vx-skeleton-chart{height:140px}
+.vx-skeleton-hero{height:320px}
+.vx-skeleton-gauge{height:130px;width:130px;border-radius:50%;margin:0 auto}
+.vx-skeleton-table{height:220px}
+.vx-skeleton-heatmap{height:200px}
+/* Grille de skeletons KPI prête (§34) */
+.vx-skeleton-kpirow{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.vx-skeleton-kpirow .vx-skeleton{height:64px}
+/* Réduction de mouvement : la brillance s'arrête */
+@media (prefers-reduced-motion:reduce){.vx-skeleton::after{animation:none}}
 
 /* Bannières d'état */
 .vx-stale-banner{display:flex;align-items:center;gap:8px;

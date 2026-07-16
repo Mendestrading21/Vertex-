@@ -98,11 +98,19 @@
   --vx-option-soft:rgba(156,121,208,.14);
   --vx-violet:#9c79d0;
   --vx-violet-soft:rgba(156,121,208,.14);
+  /* ── Macro / cross-asset (Hyper Visual §4) : teal distinct de la marque ── */
+  --vx-teal:#53b9ad;
+  --vx-teal-strong:#3a9c90;
+  --vx-teal-soft:rgba(83,185,173,.14);
+  --vx-plum:#8f698c;
+  --vx-plum-soft:rgba(143,105,140,.14);
 
   /* ── Séries neutres (benchmark / secondaire) ── */
   --vx-steel-1:#d4d8d2;
   --vx-steel-2:#a6ada5;
   --vx-steel-3:#747d75;
+  --vx-steel:#909b94;
+  --vx-stone:#6d746e;
   --vx-warm-grey:#9d978e;
   --vx-sand:#c0b79f;
   --vx-neutral-chart:#9d978e;
@@ -122,6 +130,10 @@
   --vx-fs-page:32px;--vx-fs-subtitle:14px;--vx-fs-section:19px;
   --vx-fs-card:13px;--vx-fs-body:13px;--vx-fs-meta:11px;
   --vx-fs-kpi:28px;--vx-fs-kpi-sm:20px;
+  /* Échelle étendue (Hyper Visual §5) : hero, KPI large, table */
+  --vx-fs-hero:24px;--vx-fs-hero-title:22px;--vx-fs-kpi-lg:34px;
+  --vx-fs-table:12.5px;--vx-fs-label:11.5px;
+  --vx-fw-medium:500;--vx-fw-semi:600;--vx-fw-bold:700;--vx-fw-black:800;
 
   /* ── Rayons ── */
   --vx-r-sm:8px;--vx-r:12px;--vx-r-lg:14px;--vx-r-modal:16px;

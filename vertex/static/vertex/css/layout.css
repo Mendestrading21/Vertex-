@@ -95,7 +95,24 @@ button.vx-nav-item{background:none;font:inherit;cursor:pointer;text-align:left;
 .vx-col-4{grid-column:span 4}.vx-col-5{grid-column:span 5}
 .vx-col-6{grid-column:span 6}.vx-col-7{grid-column:span 7}
 .vx-col-8{grid-column:span 8}.vx-col-9{grid-column:span 9}
+.vx-col-10{grid-column:span 10}.vx-col-11{grid-column:span 11}
 .vx-col-12{grid-column:span 12}
+/* Alias .vx-span-* (Hyper Visual §11) — même sémantique que .vx-col-* */
+.vx-span-2{grid-column:span 2}.vx-span-3{grid-column:span 3}
+.vx-span-4{grid-column:span 4}.vx-span-5{grid-column:span 5}
+.vx-span-6{grid-column:span 6}.vx-span-7{grid-column:span 7}
+.vx-span-8{grid-column:span 8}.vx-span-9{grid-column:span 9}
+.vx-span-12{grid-column:span 12}
+/* Grilles auto-fit prêtes (cartes égales) : remplacent les repeat() inline */
+.vx-grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--vx-s4)}
+.vx-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--vx-s4)}
+.vx-grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--vx-s4)}
+.vx-grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:var(--vx-s4)}
+@media (max-width:1200px){.vx-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .vx-grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:680px){.vx-grid-4,.vx-grid-3,.vx-grid-2{grid-template-columns:1fr}}
+/* Écran très large : exploiter la largeur (§11) */
+@media (min-width:1900px){.vx-content{max-width:1760px}}
 
 /* ── Densité ───────────────────────────────────────────────────────── */
 [data-density="compact"]{--vx-s4:12px;--vx-s5:16px;--vx-s6:18px}

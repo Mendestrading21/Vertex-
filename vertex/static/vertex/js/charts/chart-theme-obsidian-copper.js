@@ -17,6 +17,12 @@
       blue: '#84aa31',        /* alias legacy — plus jamais bleu */
       cyan: '#c0b79f',        /* alias legacy → beige */
       violet: '#9c79d0',      /* options & IA (limité) */
+      option: '#9c79d0',
+      teal: '#53b9ad',        /* macro / cross-asset / liquidité */
+      plum: '#8f698c',        /* série secondaire distincte */
+      sand: '#c0b79f',
+      steel: '#909b94',
+      stone: '#6d746e',
       positive: '#36c889',
       negative: '#ed655c',
       warning: '#dda23b',

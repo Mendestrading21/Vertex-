@@ -12,10 +12,14 @@
   const THEME = window.VXChartTheme || { colors: {}, tooltip: {} };
   C.colors = Object.assign({
     brand: '#84aa31', blue: '#84aa31', cyan: '#c0b79f', violet: '#9c79d0',
+    option: '#9c79d0', teal: '#53b9ad', plum: '#8f698c', sand: '#c0b79f',
+    steel: '#909b94', stone: '#6d746e',
     positive: '#36c889', negative: '#ed655c', warning: '#dda23b',
     info: '#84aa31', neutral: '#8f8a83',
     text: '#b7b3ad', muted: '#817d77', grid: 'rgba(255,255,255,.05)',
     series: ['#84aa31', '#c0b79f', '#8f8a83', '#9c79d0', '#dda23b', '#48631b'],
+    /* Palette macro/cross-asset : teal en tête (jamais confondu avec la marque) */
+    macroSeries: ['#53b9ad', '#c0b79f', '#8f698c', '#909b94', '#dda23b', '#6d746e'],
   }, THEME.colors);
 
   /* ── Rendu MODERNE (global) : dégradés, glow, barres arrondies, crosshair ──
