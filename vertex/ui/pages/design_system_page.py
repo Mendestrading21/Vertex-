@@ -6,7 +6,7 @@ tous rendus avec les VRAIS tokens (`/static/vertex/css/tokens.css`) et les
 VRAIES classes de composants (`components.css`, `buttons.css`, `states.css`).
 
 Strictement visuel : aucune donnée, aucun moteur, aucune connexion. Sert de
-source unique de vérité pour l'identité VERTEX OBSIDIAN COPPER.
+source unique de vérité pour l'identité VERTEX BLACK GLASS INSTITUTIONAL.
 """
 from __future__ import annotations
 
@@ -204,7 +204,7 @@ def _content() -> str:
 
     intro = ('<section class="vx-card vx-card--hero vx-col-12" aria-label="Design System">'
              '<div class="vx-card-body">'
-             '<div class="vx-kpi-label" style="color:var(--vx-brand-strong)">VERTEX OBSIDIAN COPPER · DESIGN SYSTEM</div>'
+             '<div class="vx-kpi-label" style="color:var(--vx-brand-strong)">VERTEX BLACK GLASS · DESIGN SYSTEM</div>'
              '<h1 style="font-size:30px;font-weight:750;letter-spacing:-.02em;margin:6px 0 8px;color:var(--vx-text-primary)">Référence visuelle unique</h1>'
              '<p class="ds-note">Tous les éléments ci-dessous sont rendus avec les <b>vrais tokens</b> '
              '(<code>tokens.css</code>) et les <b>vraies classes</b> de composants. Une couleur = une '

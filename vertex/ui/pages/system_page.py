@@ -29,7 +29,7 @@ def _tabs(active: str) -> str:
         for vid, label in VIEWS)
     # Référence visuelle (§50) — lien vers la page Design System, à droite.
     ds = ('<a class="vx-tab" href="/design-system" style="margin-left:auto;color:var(--vx-copper-light)" '
-          'title="Référence visuelle OBSIDIAN COPPER">Design System</a>')
+          'title="Référence visuelle BLACK GLASS">Design System</a>')
     return f'<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Système">{tabs}{ds}</nav>'
 
 

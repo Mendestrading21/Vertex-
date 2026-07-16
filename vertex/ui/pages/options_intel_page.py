@@ -1,10 +1,9 @@
 """vertex.ui.pages.options_intel_page — l'espace Options Intelligence (§18).
 
 Question : « Où est la meilleure convexité, à quel prix de volatilité, et
-quel événement la menace ? » Accessible via /options — PAS un 9e espace de
-navigation : la barre reste à huit espaces, cette page est un approfondissement
-d'Opportunités (le nav met « Opportunités » en actif). Sous-vues (?view=) :
-overview · volatility · radar · events.
+quel événement la menace ? » Accessible via /options — espace de PREMIÈRE
+CLASSE : c'est la 5e des huit entrées de PRIMARY_NAV (le nav met « Options »
+en actif). Sous-vues (?view=) : overview · volatility · radar · events.
 
 Le module Python n'invente aucun chiffre : il assemble le squelette + le
 script client ; toutes les données viennent de /api/options/* (moteurs purs
@@ -203,7 +202,7 @@ def render(view: str = 'overview') -> str:
                + _VIEW_CONTENT[view].replace('%%LOADING%%', _LOADING))
     return render_shell(
         title='Options Intelligence',
-        active='options',                  # espace principal Options (9e entrée nav)
+        active='options',                  # espace principal Options (5e des 8 entrées nav)
         space_label='Options',
         sub_label='Options Intelligence',
         page_label='options:%s' % view,

@@ -75,7 +75,10 @@
   --vx-copper:var(--vx-signal-700);
   --vx-copper-light:var(--vx-signal-500);
 
-  /* ── Marque : capsule graphite + liseré/texte Signal Green ── */
+  /* ── Marque (hex canonique historique = Signal Green, FIGÉ par les tests) ──
+     ⚠️ Vérité d'EXÉCUTION : glass.css (chargé en dernier) override --vx-brand
+     et la rampe signal en ARGENT #c9cdd4 — direction Black Glass, le vert est
+     réservé au positif. Ne PAS changer les hex ci-dessous (garde-fous tests). */
   --vx-brand:var(--vx-signal-500);
   --vx-brand-strong:var(--vx-signal-400);
   --vx-brand-hover:var(--vx-signal-400);

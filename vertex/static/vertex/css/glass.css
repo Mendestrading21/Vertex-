@@ -53,6 +53,19 @@
   --shadow-card:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.38);
   --shadow-float:0 20px 60px rgba(0,0,0,.55);
 
+  /* Alias nommés-contrat (VERTEX_GLASS_VISUAL_CONTRACT) — mêmes valeurs,
+     vocabulaire du contrat. Non destructif : les surfaces internes restent
+     pilotées par --vx-glass-1/2/3, ces alias servent aux classes .vx-glass-*. */
+  --vx-glass-subtle:rgba(255,255,255,.025);          /* fond quasi plat (sous-surface) */
+  --vx-glass-card:var(--vx-glass-1);                 /* carte principale */
+  --vx-glass-elevated:var(--vx-glass-2);             /* élevée / secondaire */
+  --vx-glass-hover:var(--vx-glass-3);                /* survol d'une surface interactive */
+  --vx-glass-critical:var(--vx-glass-3);             /* critique / sélectionnée */
+  --vx-glass-border-faint:rgba(222,227,237,.055);    /* bord argent très discret */
+  --vx-glass-blur-sm:var(--vx-blur-sm);
+  --vx-glass-blur-md:var(--vx-blur-md);
+  --vx-glass-blur-lg:24px;
+
   /* ── Neutralisation de la marque (argent) — le vert reste au positif ── */
   --vx-silver:#c9cdd4;
   --vx-silver-soft:rgba(201,205,212,.12);
@@ -122,6 +135,28 @@ body::before{
 .vx-card--premium::after,.vx-card--hero::before{background:linear-gradient(90deg,transparent,var(--vx-silver-line),transparent)!important}
 .vx-card--hero::after{display:none!important}
 .vx-card.vx-kpi{background-image:none!important}
+
+/* ── Classes utilitaires verre (vocabulaire du contrat) ──────────────
+   Surfaces verre réutilisables SANS passer par .vx-card : pour les blocs
+   qui ne sont pas des cartes (panneaux, sous-surfaces, éléments composés).
+   Même matière (translucide + blur + bord argent + reflet + ombre). */
+.vx-glass-subtle,.vx-glass-card,.vx-glass-elevated,.vx-glass-interactive,
+.vx-glass-selected,.vx-glass-critical{
+  border:1px solid var(--vx-glass-border);border-radius:var(--vx-r-lg);
+  -webkit-backdrop-filter:blur(var(--vx-glass-blur-md)) saturate(1.05);
+  backdrop-filter:blur(var(--vx-glass-blur-md)) saturate(1.05);
+  box-shadow:var(--vx-glass-sheen),var(--shadow-card)}
+.vx-glass-subtle{background:var(--vx-glass-subtle);border-color:var(--vx-glass-border-faint);
+  -webkit-backdrop-filter:blur(var(--vx-glass-blur-sm));backdrop-filter:blur(var(--vx-glass-blur-sm));box-shadow:none}
+.vx-glass-card{background:var(--vx-glass-card)}
+.vx-glass-elevated{background:var(--vx-glass-elevated)}
+.vx-glass-interactive{background:var(--vx-glass-card);cursor:pointer;
+  transition:border-color var(--vx-t),background var(--vx-t),transform var(--vx-t)}
+.vx-glass-interactive:hover{background:var(--vx-glass-hover);border-color:var(--vx-glass-border-strong)}
+.vx-glass-selected{background:var(--vx-glass-3);border-color:var(--vx-silver-line);
+  box-shadow:var(--vx-glass-sheen),var(--shadow-card),0 0 0 1px var(--vx-silver-line)}
+.vx-glass-critical{background:var(--vx-glass-critical);border-color:var(--vx-glass-border-strong)}
+@media (prefers-reduced-motion:no-preference){.vx-glass-interactive:hover{transform:translateY(-1px)}}
 
 /* ══════════════════════════════════════════════════════════════════
    4) OVERLAYS EN VERRE — drawer / modale / palette / context-menu / toasts

@@ -124,9 +124,9 @@ def make_blueprint(scan_state: dict) -> Blueprint:
         from vertex.ui.pages import design_system_demo
         return design_system_demo.render()
 
-    # ── Options Intelligence (§18) — approfondissement d'Opportunités.
-    # PAS un 9e espace : le nav reste à huit, cette page se rejoint depuis
-    # Opportunités (vue Options), Analyse et la palette.
+    # ── Options Intelligence (§18) — espace de première classe (5e des 8
+    # entrées PRIMARY_NAV, actif « Options »). Aussi rejoignable depuis
+    # Opportunités (vue Options), la fiche Analyse et la palette.
     @bp.route('/options')
     def options_intel_route():
         return options_intel_page.render(view=request.args.get('view', 'overview'))
