@@ -273,6 +273,34 @@ body::before{
 /* Skeletons cohérents verre */
 .vx-skeleton{background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.06),rgba(255,255,255,.03))}
 
+/* ══════════════════════════════════════════════════════════════════
+   12) SLIDERS (filtres screener) — piste neutre + poignée argent
+   ══════════════════════════════════════════════════════════════════ */
+input[type="range"]{-webkit-appearance:none;appearance:none;height:4px;border-radius:99px;
+  background:rgba(255,255,255,.09);outline:none;cursor:pointer}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--vx-silver);border:2px solid var(--vx-surface-base);
+  box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer}
+input[type="range"]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+  background:var(--vx-silver);border:2px solid var(--vx-surface-base);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+input[type="range"]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--vx-silver-soft)}
+
+/* Cohérence boutons : rayon uniforme, hover doux ; chips en verre */
+.vx-btn,.vx-btn-icon,.vx-btn-sm{border-radius:12px}
+.vx-btn-sm{border-radius:10px}
+.vx-chip{background:rgba(255,255,255,.03);border:1px solid var(--vx-glass-border);color:var(--vx-text-secondary)}
+.vx-chip:hover{border-color:var(--vx-glass-border-strong);color:var(--vx-text-primary)}
+/* Sélecteurs (secteur/véhicule/horizon) en verre */
+.vx-select,select.vx-input{background:rgba(255,255,255,.03);border:1px solid var(--vx-glass-border)}
+
+/* Bannière démo : verre ambre sobre */
+.vx-demo-banner{background:rgba(221,162,59,.08);border:1px solid rgba(221,162,59,.3);border-radius:var(--vx-r)}
+.vx-badge-demo{background:var(--vx-warning-soft);color:var(--vx-warning);border:1px solid rgba(221,162,59,.4)}
+
+/* Zone de sélection « élite » des scatters : teinte neutre discrète */
+/* (gérée côté chart-core ; ici on garde la cohérence des légendes de graphiques) */
+.vx-chart-legend i,.vx-swatch{border-radius:3px}
+
 /* Scrollbars fines neutres */
 *{scrollbar-color:#2a2e34 transparent}
 *::-webkit-scrollbar-thumb{background:#2a2e34;border-radius:8px}
