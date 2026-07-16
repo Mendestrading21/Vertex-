@@ -114,8 +114,9 @@ def _interpret_mix(board, calls, puts, avg_qual, *, as_of, source):
         status = ST_DEFAVORABLE
     else:
         status = ST_NEUTRE
-    reading = 'Tableau à biais %s ; exploitabilité %s.' % (
-        bias, 'bonne' if status == ST_FAVORABLE else
+    lean = ('penche %s' % bias) if bias != 'équilibré' else 'reste équilibré'
+    reading = 'Le tableau d\'options %s ; exploitabilité %s.' % (
+        lean, 'bonne' if status == ST_FAVORABLE else
         'limitée' if status == ST_DEFAVORABLE else 'moyenne')
     return interpretation(
         cid, q, reading, status,
