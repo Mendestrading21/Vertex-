@@ -27,14 +27,14 @@ def client():
 
 
 # ── Navigation (§10) ──────────────────────────────────────────────────
-def test_primary_navigation_has_nine_items():
-    """Options est un espace principal (§18 overhaul institutionnel)."""
-    assert len(PRIMARY_NAV) == 9
+def test_primary_navigation_has_eight_items():
+    """Marchés est FUSIONNÉ dans le Dashboard — plus d'entrée dédiée (§fusion)."""
+    assert len(PRIMARY_NAV) == 8
     assert [i['label'] for i in PRIMARY_NAV] == [
-        'Dashboard', 'Marchés', 'Opportunités', 'Portefeuille',
+        'Dashboard', 'Opportunités', 'Portefeuille',
         'Analyse', 'Options', 'Performance', 'Intelligence', 'Système']
     assert [i['href'] for i in PRIMARY_NAV] == [
-        '/', '/markets', '/opportunities', '/portfolio',
+        '/', '/opportunities', '/portfolio',
         '/analysis', '/options', '/performance', '/intelligence', '/system']
 
 
@@ -52,9 +52,18 @@ def test_every_primary_route_returns_200(client):
         assert b'vx-app' in r.data, item['href']
 
 
+def test_markets_redirects_to_dashboard_anchor(client):
+    """L'ancienne page /markets redirige vers l'ancre correspondante du Dashboard."""
+    for url, loc in (('/markets', '/'), ('/markets?view=sectors', '/#sectors'),
+                     ('/markets?view=macro', '/#markets'),
+                     ('/markets?view=breadth', '/#pulse'),
+                     ('/markets?view=volatility', '/#pulse')):
+        r = client.get(url)
+        assert r.status_code == 302 and r.headers['Location'] == loc, url
+
+
 def test_subviews_return_200(client):
-    for url in ('/markets?view=macro', '/markets?view=sectors', '/markets?view=breadth',
-                '/markets?view=volatility', '/opportunities?view=stocks',
+    for url in ('/opportunities?view=stocks',
                 '/opportunities?view=options', '/opportunities?view=anomalies',
                 '/opportunities?view=calendar', '/portfolio?view=positions',
                 '/portfolio?view=risk', '/portfolio?view=watchlist',
@@ -93,7 +102,7 @@ def test_single_analysis_route(client):
 
 # ── Shell unique ──────────────────────────────────────────────────────
 def test_app_shell_is_shared(client):
-    pages = ['/', '/markets', '/opportunities', '/portfolio', '/performance']
+    pages = ['/', '/opportunities', '/portfolio', '/performance']
     for p in pages:
         html = client.get(p).get_data(as_text=True)
         assert f'data-shell="{SHELL_VERSION}"' in html, p
@@ -103,10 +112,10 @@ def test_app_shell_is_shared(client):
 
 
 def test_active_nav_item_marked(client):
-    html = client.get('/markets').get_data(as_text=True)
-    assert re.search(r'href="/markets"[^>]*aria-current="page"', html) or \
-        re.search(r'aria-current="page"[^>]*href="/markets"', html) or \
-        'data-nav-id="markets" aria-current="page"' in html
+    html = client.get('/opportunities').get_data(as_text=True)
+    assert re.search(r'href="/opportunities"[^>]*aria-current="page"', html) or \
+        re.search(r'aria-current="page"[^>]*href="/opportunities"', html) or \
+        'data-nav-id="opportunities" aria-current="page"' in html
 
 
 def test_mobile_navigation_exists(client):
@@ -131,7 +140,7 @@ def test_no_duplicate_component_ids(client):
 def test_no_dead_links(client):
     """Tous les liens internes des pages rendues répondent 200/301."""
     seen = set()
-    for page in ('/', '/markets', '/opportunities', '/portfolio', '/system'):
+    for page in ('/', '/opportunities', '/portfolio', '/system'):
         html = client.get(page).get_data(as_text=True)
         for href in set(re.findall(r'href="(/[a-z0-9\-/?=&%]*)"', html)):
             if href in seen or href.startswith('/static') or href.startswith('/api'):
@@ -302,7 +311,7 @@ def test_service_worker_bumped(client):
     r = client.get('/sw.js')
     assert r.status_code == 200
     body = r.get_data(as_text=True)
-    assert 'td-shell-v52' in body, 'le shell a changé — la version du cache doit suivre'
+    assert 'td-shell-v53' in body, 'le shell a changé — la version du cache doit suivre'
     assert 'td-shell-v49' not in body
 
 

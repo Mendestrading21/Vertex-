@@ -24,8 +24,10 @@
     overlay(app.dataset.mobileNav === 'open');
   });
   $('vx-mobile-more')?.addEventListener('click', () => {
-    VX.shell.openDrawer('Navigation', ['analysis', 'intelligence', 'system'].map(id => {
-      const it = { analysis: ['Analyse', '/analysis'], intelligence: ['Intelligence', '/intelligence'], system: ['Système', '/system'] }[id];
+    /* Espaces ABSENTS de la barre mobile (briefing/opportunités/portefeuille/
+       analyse/performance y sont déjà) — Marchés est fusionné dans le Dashboard. */
+    VX.shell.openDrawer('Navigation', ['options', 'intelligence', 'system'].map(id => {
+      const it = { options: ['Options', '/options'], intelligence: ['Intelligence', '/intelligence'], system: ['Système', '/system'] }[id];
       return `<a class="vx-nav-item" href="${it[1]}">${it[0]}</a>`;
     }).join(''));
   });
@@ -70,7 +72,7 @@
   /* ── Retour contextuel (§15) ─────────────────────────────────────── */
   const backBtn = $('vx-back-btn');
   const ctx = VX.context.get();
-  const SPACE_LABELS = { '/': 'au briefing', '/markets': 'aux marchés', '/opportunities': 'aux opportunités', '/portfolio': 'au portefeuille', '/analysis': 'à l’analyse', '/performance': 'à la performance', '/intelligence': 'à l’intelligence', '/system': 'au système' };
+  const SPACE_LABELS = { '/': 'au dashboard', '/opportunities': 'aux opportunités', '/portfolio': 'au portefeuille', '/analysis': 'à l’analyse', '/performance': 'à la performance', '/intelligence': 'à l’intelligence', '/system': 'au système' };
   if (ctx && ctx.from && ctx.from !== location.pathname && backBtn) {
     const label = ctx.view === 'watchlist' ? 'Retour à la watchlist' : ('Retour ' + (SPACE_LABELS[ctx.from] || 'à ' + (ctx.label || ctx.from)));
     backBtn.querySelector('span').textContent = label;
@@ -170,8 +172,8 @@
 
   /* ── Command palette (§14) ───────────────────────────────────────── */
   const PAGES = [
-    ['Briefing', '/'], ['Marchés', '/markets'], ['Marchés · Secteurs', '/markets?view=sectors'],
-    ['Marchés · Volatilité', '/markets?view=volatility'], ['Marchés · Breadth', '/markets?view=breadth'],
+    ['Dashboard', '/'], ['Dashboard · Marchés', '/#markets'], ['Dashboard · Secteurs', '/#sectors'],
+    ['Dashboard · Pouls (volatilité & breadth)', '/#pulse'], ['Dashboard · Mouvements', '/#topflop'],
     ['Opportunités', '/opportunities'], ['Opportunités · Options', '/opportunities?view=options'],
     ['Opportunités · Anomalies', '/opportunities?view=anomalies'], ['Opportunités · Calendrier', '/opportunities?view=calendar'],
     ['Portefeuille', '/portfolio'], ['Portefeuille · Watchlist', '/portfolio?view=watchlist'],

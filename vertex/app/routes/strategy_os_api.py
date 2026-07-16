@@ -83,14 +83,23 @@ def make_blueprint(scan_state: dict) -> Blueprint:
 
     @bp.route('/api/market/regime')
     def market_regime():
-        market = scan_state.get('market') or {}
+        # market = horloge de séance (et/open/session) ; le CONTEXTE (régime,
+        # vix, breadth, roro) vit dans market_ctx — un `or` le masquait et le
+        # moteur classait UNKNOWN/0 % à tort. Fusion + normalisation des champs.
+        market = {**(scan_state.get('market') or {}),
+                  **(scan_state.get('market_ctx') or {})}
+        breadth = market.get('breadth')
+        if isinstance(breadth, dict):
+            breadth = breadth.get('above50', breadth.get('above200'))
+        regime = market.get('spy_regime') or market.get('regime')
+        roro = (market.get('roro') or market.get('risk') or '').upper().replace('_', '-')
         inputs = {
-            'index_trend': {'TREND': 'UP', 'CHOP': 'FLAT'}.get(market.get('regime'),
+            'index_trend': {'TREND': 'UP', 'CHOP': 'FLAT'}.get(regime,
                                                                market.get('spy_trend')),
-            'breadth_pct': market.get('breadth'),
+            'breadth_pct': breadth,
             'vix': market.get('vix'),
-            'leadership': ('CYCLICAL' if market.get('risk') == 'Risk-On'
-                           else 'DEFENSIVE' if market.get('risk') == 'Risk-Off' else None),
+            'leadership': ('CYCLICAL' if roro == 'RISK-ON'
+                           else 'DEFENSIVE' if roro == 'RISK-OFF' else None),
         }
         return jsonify(classify_regime(inputs))
 

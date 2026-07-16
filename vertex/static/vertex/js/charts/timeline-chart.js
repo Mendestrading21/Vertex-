@@ -10,6 +10,7 @@ window.VXCharts.timelineCard=function(host,opts){
     <span class="vx-grow" style="font-size:12.5px">${it.label}</span>
     ${it.sym?`<button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${it.sym}">${it.sym}</button>`:''}</div>`).join('');
   el.innerHTML=`<div class="vx-chart-head"><span class="vx-chart-title">${opts.title||''}</span>
+    ${opts.controlsHtml?`<span class="vx-chart-controls">${opts.controlsHtml}</span>`:''}
     ${opts.question?`<span class="vx-chart-question">${opts.question}</span>`:''}</div>
     ${items||VX.states.empty(opts.emptyText||'Aucun événement à venir.')}
     <div class="vx-chart-foot">${VX.updateIndicator(opts.timestamp,opts.source,opts.mode)}</div>`;};

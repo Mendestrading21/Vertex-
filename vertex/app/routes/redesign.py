@@ -11,7 +11,7 @@ from pathlib import Path
 from flask import Blueprint, jsonify, redirect, request, send_from_directory
 
 from vertex.ui.pages import (analysis_page, briefing, design_system_page,
-                             intelligence_page, markets_page, opportunities_page,
+                             intelligence_page, opportunities_page,
                              options_intel_page, performance_page, portfolio_page,
                              system_page, tracking_page)
 
@@ -21,7 +21,7 @@ LEGACY_REDIRECTS = {
     '/analyse': '/analysis',
     '/news': '/',
     '/calendar': '/opportunities?view=calendar',
-    '/semaine': '/markets',
+    '/semaine': '/',
     '/brief': '/',
     '/stocks': '/analysis',
     '/compare': '/analysis?view=compare',
@@ -37,8 +37,8 @@ LEGACY_REDIRECTS = {
     '/suivis': '/portfolio?view=watchlist',
     '/options-lab': '/opportunities?view=options',
     '/options-desk': '/opportunities?view=options',
-    '/sectors': '/markets?view=sectors',
-    '/heatmap': '/markets?view=sectors',
+    '/sectors': '/#sectors',
+    '/heatmap': '/#sectors',
     '/catalysts': '/opportunities?view=calendar',
     '/catalyseurs': '/opportunities?view=calendar',
     '/anomalies': '/opportunities?view=anomalies',
@@ -82,10 +82,12 @@ def make_blueprint(scan_state: dict) -> Blueprint:
 
     @bp.route('/markets')
     def markets_route():
-        view = request.args.get('view', 'sectors')
-        if view == 'overview':          # vue fusionnée dans le Dashboard (/)
-            return redirect('/', code=302)
-        return markets_page.render(view=view)
+        # Marchés est FUSIONNÉ dans le Dashboard (/) — redirection par ancre pour
+        # préserver les favoris (?view=sectors → /#sectors, etc.). Jamais de 404.
+        anchor = {'overview': '', 'sectors': '#sectors', 'macro': '#markets',
+                  'breadth': '#pulse', 'volatility': '#pulse'}
+        view = request.args.get('view', 'overview')
+        return redirect('/' + anchor.get(view, ''), code=302)
 
     @bp.route('/opportunities')
     def opportunities_route():
@@ -236,7 +238,13 @@ def make_blueprint(scan_state: dict) -> Blueprint:
             dest = target
             extra = request.query_string.decode()
             if extra:
-                dest += ('&' if '?' in dest else '?') + extra
+                # Une cible avec fragment (/#sectors) : la query s'insère AVANT
+                # le '#', sinon l'URL est malformée (/#sectors?x=1).
+                if '#' in dest:
+                    base, frag = dest.split('#', 1)
+                    dest = base + ('&' if '?' in base else '?') + extra + '#' + frag
+                else:
+                    dest += ('&' if '?' in dest else '?') + extra
             return redirect(dest, code=301)
         return _view
 

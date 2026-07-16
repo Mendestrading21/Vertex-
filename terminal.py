@@ -470,15 +470,28 @@ def scan():
         breadth = round(sum(1 for r in rows if r['verdict'] == 'BUY') / len(rows) * 100) if rows else 0
         spy = ({'price': round(float(bc.iloc[-1]), 2),
                 'change': round((float(bc.iloc[-1]) / float(bc.iloc[-2]) - 1) * 100, 2)} if len(bc) > 1 else None)
-        # INDICES PRINCIPAUX (bande du haut)
+        # INDICES PRINCIPAUX (bande du haut). Le S&P 500 porte en plus une série
+        # de 120 séances + MM20/50/200 calculées ICI (serveur) : c'est le graphique
+        # héros du Dashboard quand SPY n'est pas dans l'univers scanné — vraie
+        # série d'indice, jamais un titre proxy.
         indices = []
         for _tk, _nm in [('^GSPC', 'S&P 500'), ('^IXIC', 'Nasdaq'), ('^DJI', 'Dow Jones'), ('^RUT', 'Russell 2000'), ('^VIX', 'VIX')]:
             try:
                 _cc = data[_tk]['Close'].dropna()
-                indices.append({'name': _nm, 'price': round(float(_cc.iloc[-1]), 2),
-                                'change': round((float(_cc.iloc[-1]) / float(_cc.iloc[-2]) - 1) * 100, 2),
-                                'spark': [round(float(x), 2) for x in _cc.tail(24).values],
-                                'vix': _tk == '^VIX'})
+                _e = {'name': _nm, 'price': round(float(_cc.iloc[-1]), 2),
+                      'change': round((float(_cc.iloc[-1]) / float(_cc.iloc[-2]) - 1) * 100, 2),
+                      'spark': [round(float(x), 2) for x in _cc.tail(24).values],
+                      'vix': _tk == '^VIX'}
+                if _tk == '^GSPC':
+                    def _ser(s):
+                        return [None if x != x else round(float(x), 2)
+                                for x in s.tail(120).values]
+                    _e['series'] = _ser(_cc)
+                    _e['dates'] = [str(d.date()) for d in _cc.tail(120).index]
+                    _e['ema20'] = _ser(_cc.ewm(span=20, adjust=False).mean())
+                    _e['sma50'] = _ser(_cc.rolling(50).mean())
+                    _e['sma200'] = _ser(_cc.rolling(200).mean())
+                indices.append(_e)
             except Exception:
                 pass
         # MATIÈRES PREMIÈRES / CRYPTO (bande sous les indices)

@@ -9,10 +9,10 @@ from __future__ import annotations
 
 SHELL_VERSION = 'vx-shell-1'
 
-# Navigation principale — EXACTEMENT huit espaces (§10).
+# Navigation principale (§10). Marchés est FUSIONNÉ dans le Dashboard (/#markets) —
+# plus d'entrée dédiée : le Dashboard porte indices, taux, secteurs, breadth, VIX.
 PRIMARY_NAV = (
     {'id': 'briefing', 'label': 'Dashboard', 'href': '/', 'icon': 'home'},
-    {'id': 'markets', 'label': 'Marchés', 'href': '/markets', 'icon': 'globe'},
     {'id': 'opportunities', 'label': 'Opportunités', 'href': '/opportunities', 'icon': 'radar'},
     {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
     {'id': 'analysis', 'label': 'Analyse', 'href': '/analysis', 'icon': 'chart'},
@@ -101,7 +101,7 @@ def _topbar(space_label: str, sub_label: str = '') -> str:
 
 
 def _mobile_bar(active: str) -> str:
-    order = ('briefing', 'markets', 'opportunities', 'portfolio', 'performance')
+    order = ('briefing', 'opportunities', 'portfolio', 'analysis', 'performance')
     links = []
     for it in PRIMARY_NAV:
         if it['id'] not in order:

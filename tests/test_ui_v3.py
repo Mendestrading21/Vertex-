@@ -17,7 +17,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VXJS = os.path.join(ROOT, 'vertex', 'static', 'vertex', 'js')
 VXCSS = os.path.join(ROOT, 'vertex', 'static', 'vertex', 'css')
 
-PAGES = ['/', '/markets', '/opportunities', '/portfolio', '/analysis',
+PAGES = ['/', '/opportunities', '/portfolio', '/analysis',
          '/analysis/NVDA', '/performance', '/intelligence', '/system']
 
 
@@ -150,7 +150,7 @@ def test_every_widget_has_empty_state():
     js = _read(VXJS, 'vx-core.js')
     assert 'empty' in js and 'states' in js
     pages_dir = os.path.join(ROOT, 'vertex', 'ui', 'pages')
-    for f in ('briefing.py', 'markets_page.py', 'opportunities_page.py',
+    for f in ('briefing.py', 'opportunities_page.py',
               'portfolio_page.py', 'performance_page.py'):
         assert 'states.empty' in _read(pages_dir, f), f'{f} sans état vide'
 
@@ -226,7 +226,7 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v52' in body
+    assert 'td-shell-v53' in body
     assert 'td-shell-v49' not in body
 
 

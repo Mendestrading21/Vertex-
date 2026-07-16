@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v52';   // v52 : cross-asset réel (macro/commodities), chaîne options à la demande, marques différées, sync /system, thèse moteur
+const CACHE='td-shell-v53';   // v53 : FUSION Marchés→Dashboard (page unique, nav 8 espaces, graphique héros interactif, secteurs/quadrant, pouls complet)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
