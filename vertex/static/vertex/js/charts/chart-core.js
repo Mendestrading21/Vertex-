@@ -132,6 +132,13 @@
               legend:[{label,color}], render(canvas)->Chart} */
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;
+    /* Re-rendu d'une carte (filtres, périodes) : détruire l'ancien Chart AVANT
+       d'écraser le canvas — sinon les instances s'accumulent à chaque repaint. */
+    el.querySelectorAll('canvas').forEach(function (oldCv) {
+      const prev = registry.get(oldCv) || (window.Chart && Chart.getChart && Chart.getChart(oldCv));
+      if (prev) { try { prev.destroy(); } catch (e) { /* déjà détruit */ } }
+      registry.delete(oldCv);
+    });
     const id = 'vxch-' + (++uid);
     const legend = (opts.legend || []).map(l =>
       `<span><span class="vx-swatch" style="background:${l.color}"></span>${l.label}</span>`).join('');

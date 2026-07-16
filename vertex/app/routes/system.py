@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v59';   // v59 : screener max — préréglages, setups réels, MTF, exclusions, heat secteur×statut, IV×échéance, portefeuille en cartes + risque panier, anomalies filtrées
+const CACHE='td-shell-v60';   // v60 : audit — plan de trade sur cartes, espérance/Kelly/flags no-trade, MTF badges, options P(ITM)/P(obj)/rend.objectif/mouvement attendu, fix Chart.js leak + heatmap esc + responsive
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

@@ -66,6 +66,17 @@ _CONTENT = """
     border-radius:99px;background:var(--vx-beige,#c0b79f)}
   /* Mobile : la barre de filtres (haute une fois empilée) ne reste pas collante */
   @media (max-width:760px){.vx-screenbar{position:static}}
+  /* Grille de cartes opportunités : responsive PROPRE (fini le span 4 inline) */
+  .vx-opp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media (max-width:1100px){.vx-opp-grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:680px){.vx-opp-grid{grid-template-columns:1fr}}
+  .vx-opp-card{min-width:0}
+  .vx-opp-notrade{border-left:3px solid var(--vx-negative)!important;opacity:.92}
+  /* KPI : liseré sémantique comme les tuiles météo du Dashboard */
+  .vx-scr-kpis .k{border-left:3px solid transparent}
+  .vx-scr-kpis .k[data-tone="pos"]{border-left-color:var(--vx-positive)}
+  .vx-scr-kpis .k[data-tone="neg"]{border-left-color:var(--vx-negative)}
+  .vx-scr-kpis .k[data-tone="brand"]{border-left-color:var(--vx-brand)}
 </style>
 <div id="op-body" class="vx-mt3">%%LOADING%%</div>
 """
@@ -113,6 +124,9 @@ function bucketOf(r){
   return'Radar';
 }
 function metaMode(scan){return scan&&scan.data_source==='demo'?'fallback':'delayed';}
+/* Debounce : les curseurs tirent input en rafale — on repeint au calme (120 ms). */
+function debounce(fn,ms){let t=null;return function(){const a=arguments,c=this;
+  clearTimeout(t);t=setTimeout(()=>fn.apply(c,a),ms||120);};}
 function demoBanner(scan){return scan&&scan.data_source==='demo'?
   '<div class="vx-stale-banner">Mode DÉMO — données synthétiques, clairement identifiées.</div>':'';}
 function rowActions(sym){return `<div class="vx-row-actions">
@@ -141,6 +155,39 @@ function dimStrip(r){
         <span style="display:flex;align-items:flex-end;height:24px;width:100%"><i style="display:block;width:100%;height:${hh}px;border-radius:3px 3px 1px 1px;background:${col};opacity:${v==null?.35:.95}"></i></span>
         <b style="font:600 8.5px/1 var(--vx-font);color:var(--vx-text-faint)">${d[0]}</b></span>`;}).join('')+'</div>';
 }
+/* Drapeaux moteur → français lisible (vx_flags : raisons du no-trade / contexte) */
+const FLAG_FR={regime_chop:'Marché sans direction',regime_panic:'Marché en panique',
+  regime_risk_off:'Contexte risk-off',edge_incertain_et_risque_eleve:'Avantage incertain + risque élevé',
+  edge_faible:'Avantage faible',liquidite_faible:'Liquidité faible',correlation_elevee:'Trop corrélé au panier',
+  extension_excessive:'Titre trop étendu',fondamentaux_solides:'Fondamentaux solides',
+  fondamentaux_faibles:'Fondamentaux faibles',earnings_proche:'Résultats imminents',
+  volatilite_elevee:'Volatilité élevée',stop_trop_large:'Stop trop large'};
+function flagFr(k){return FLAG_FR[k]||String(k||'').replace(/_/g,' ');}
+/* Barre de niveaux : stop · cours · entrée · TP — situe le prix dans le plan moteur */
+function levelsBar(plan,price){
+  if(!plan||plan.entry==null||plan.stop==null)return '';
+  const tp=plan.tp3||plan.tp2||plan.tp1;if(tp==null)return '';
+  const lo=Math.min(plan.stop,plan.entry,price||plan.entry);
+  const hi=Math.max(tp,plan.entry,price||plan.entry);const rng=(hi-lo)||1;
+  const pc=(v)=>Math.max(0,Math.min(100,(v-lo)/rng*100));
+  const mk=(v,col,lbl,tt)=>v==null?'':`<i style="position:absolute;left:${pc(v)}%;top:-3px;width:2px;height:12px;background:${col}" title="${lbl} ${VX.fmt.price(v)}"></i>`;
+  const zEntry=pc(plan.entry),zStop=pc(plan.stop);
+  return `<div style="margin-top:8px" title="stop ${VX.fmt.price(plan.stop)} · entrée ${VX.fmt.price(plan.entry)} · objectif ${VX.fmt.price(tp)}">
+    <div class="vx-flex" style="justify-content:space-between;font-size:9px;color:var(--vx-text-dim)">
+      <span style="color:var(--vx-negative)">stop ${VX.fmt.price(plan.stop)}</span>
+      <span>entrée ${VX.fmt.price(plan.entry)}</span>
+      <span style="color:var(--vx-positive)">objectif ${VX.fmt.price(tp)}</span></div>
+    <div style="position:relative;height:6px;border-radius:99px;margin-top:3px;overflow:hidden;
+      background:linear-gradient(90deg,rgba(237,101,92,.35) 0%,rgba(237,101,92,.15) ${zStop}%,var(--vx-surface-0) ${zStop}%,var(--vx-surface-0) ${zEntry}%,rgba(54,200,137,.15) ${zEntry}%,rgba(54,200,137,.4) 100%)">
+      ${price!=null?`<i style="position:absolute;left:${pc(price)}%;top:-3px;width:9px;height:9px;margin-left:-4px;border-radius:99px;background:var(--vx-text-primary,#f2f5f1);box-shadow:0 0 0 2px var(--vx-surface-0)" title="cours ${VX.fmt.price(price)}"></i>`:''}
+    </div></div>`;
+}
+function mtfBadge(r){const st=(r&&r.mtf&&r.mtf.state)||'';const u=st.toUpperCase();
+  if(!u)return '';
+  const col=u.includes('ALIGNÉ')?'var(--vx-positive)':u.includes('REPLI')?'var(--vx-warning)':'var(--vx-text-dim)';
+  const short=u.includes('ALIGNÉ')?'MTF alignés':u.includes('REPLI')?'MTF repli':'MTF neutre';
+  return `<span class="vx-badge" style="color:${col}" title="${esc((r.mtf&&r.mtf.note)||st)}">${short}</span>`;}
+function noTradeBadge(r){return r&&r.vx_notrade?`<span class="vx-badge" style="color:var(--vx-negative)" title="dossier interdit par le moteur — voir les raisons">🚫 NO-TRADE</span>`:'';}
 function rail52(v){
   if(v==null||isNaN(v))return '—';
   const p=Math.max(0,Math.min(100,v));
@@ -270,10 +317,10 @@ async function renderScreener(){
     const bestSec=Object.entries(bySec).map(([s,v])=>[s,avg(v)]).sort((a,b)=>b[1]-a[1])[0];
     $('op-kpis').innerHTML=
       `<div class="k"><b>${f.length}</b><span>titres retenus</span></div>`
-      +`<div class="k"><b style="color:var(--vx-positive)">${buys}</b><span>signaux d’achat</span></div>`
-      +`<div class="k"><b>${avgScore!=null?Math.round(avgScore):'—'}</b><span>score moyen</span></div>`
-      +`<div class="k"><b>${avgPwin!=null?Math.round(avgPwin)+' %':'—'}</b><span>proba gain moyenne</span></div>`
-      +`<div class="k"><b style="font-size:15px;line-height:1.4">${bestSec?esc(bestSec[0]):'—'}</b><span>secteur le mieux noté</span></div>`
+      +`<div class="k" data-tone="${buys>0?'pos':''}"><b style="color:var(--vx-positive)">${buys}</b><span>signaux d’achat</span></div>`
+      +`<div class="k" data-tone="${avgScore>=60?'pos':avgScore<45?'neg':''}"><b>${avgScore!=null?Math.round(avgScore):'—'}</b><span>score moyen</span></div>`
+      +`<div class="k" data-tone="${avgPwin>=55?'pos':avgPwin<45?'neg':''}"><b>${avgPwin!=null?Math.round(avgPwin)+' %':'—'}</b><span>proba gain moyenne</span></div>`
+      +`<div class="k" data-tone="brand"><b style="font-size:15px;line-height:1.4">${bestSec?esc(bestSec[0]):'—'}</b><span>secteur le mieux noté</span></div>`
       +(function(){const al=f.filter(r=>mtfState(r).includes('ALIGNÉ')).length;
         return `<div class="k"><b>${f.length?Math.round(al/f.length*100)+' %':'—'}</b><span>journalier+hebdo alignés</span></div>`;})();
     $('op-count').textContent=f.length+' / '+rows.length+' titres';
@@ -286,8 +333,9 @@ async function renderScreener(){
     const pts=f.filter(r=>r.vx_edge!=null&&r.vx_pwin!=null).map(r=>({
       x:r.vx_edge,y:r.vx_pwin*100,sym:r.symbol,v:r.verdict,sector:r.sector||'',
       price:r.price,rr:r.rr,score:r.score,conv:r.st_conf,setup:pbText(r),noTrade:!!r.vx_notrade,
-      /* rayon = Kelly (taille de position que le moteur oserait) — repli conviction */
-      r:r.vx_kelly!=null?4+Math.min(10,Math.max(0,r.vx_kelly*100)):4+Math.min(9,Math.max(0,(r.st_conf||50)-40)/6)}));
+      ev:r.vx_ev,asym:r.vx_asym,kelly:r.vx_kelly,flags:r.vx_flags||[],
+      /* rayon = Kelly (déjà en %, 0-25) que le moteur oserait — repli conviction */
+      r:r.vx_kelly!=null?4+Math.min(11,Math.max(0,r.vx_kelly*0.7)):4+Math.min(9,Math.max(0,(r.st_conf||50)-40)/6)}));
     const host=$('op-scatter');
     if(!pts.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun titre du filtre ne porte à la fois un avantage (edge) et une proba de gain — élargis les filtres.')+'</div>';scatterChart=null;return;}
     const elite=pts.filter(p=>p.x>=60&&p.y>=60).length;
@@ -312,7 +360,8 @@ async function renderScreener(){
         options:{scales:{
           x:{title:{display:true,text:'Avantage statistique (edge) →'},min:0,max:100,grid:{color:'rgba(255,255,255,.05)'}},
           y:{title:{display:true,text:'Proba de gain % ↑'},min:0,max:100,grid:{color:'rgba(255,255,255,.05)'}}},
-          plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} · avantage ${Math.round(ctx.raw.x)} · proba ${Math.round(ctx.raw.y)} % · score ${VX.fmt.nd(ctx.raw.score)}`}}},
+          plugins:{tooltip:{callbacks:{label:(ctx)=>{const d2=ctx.raw;
+            return `${d2.sym} · avantage ${Math.round(d2.x)} · proba ${Math.round(d2.y)} %`+(d2.ev!=null?' · espérance '+(d2.ev>=0?'+':'')+VX.fmt.num(d2.ev,1)+' %':'')+(d2.noTrade&&d2.flags[0]?' · 🚫 '+flagFr(d2.flags[0]):'');}}}},
           onClick:(evt,els,chart)=>{const p=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
             if(p.length)selectSym(chart.data.datasets[0].data[p[0].index]);}},
         plugins:[{id:'opZones',beforeDatasetsDraw(chart){
@@ -328,15 +377,23 @@ async function renderScreener(){
           g.restore();}}]});return scatterChart;}});
   }
   function selectSym(d){
+    const plan=(detail[d.sym]&&detail[d.sym].plan)||null;
+    const flags=(d.flags||[]);
     $('op-radar-sel').innerHTML=
       `<div class="vx-flex"><span class="vx-ticker" style="font-size:16px">${esc(d.sym)}</span>${window.VXEntities?VXEntities.badges(d.sym):''}
          <span class="vx-badge vx-badge-decision vx-right" data-decision="${esc(d.v||'')}">${esc(VERD_FR[d.v]||d.v||'n/d')}</span></div>
+       ${d.noTrade?`<div class="vx-insight vx-mt2" data-tone="risk"><b>🚫 NO-TRADE moteur</b>${flags.length?'<div class="vx-mt1" style="font-size:12px">'+flags.map(flagFr).map(esc).join(' · ')+'</div>':''}</div>`:(flags.length?`<div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">${flags.slice(0,3).map(fl=>`<span class="vx-badge">${esc(flagFr(fl))}</span>`).join('')}</div>`:'')}
        <div class="vx-kv vx-mt2"><span class="k">Avantage (edge)</span><span class="v vx-mono">${VX.fmt.nd(Math.round(d.x))} / 100</span></div>
        <div class="vx-kv"><span class="k">Proba de gain</span><span class="v vx-mono">${VX.fmt.nd(Math.round(d.y))} %</span></div>
+       ${d.ev!=null?`<div class="vx-kv"><span class="k">Espérance / trade</span><span class="v vx-mono ${d.ev>0?'vx-pos':d.ev<0?'vx-neg':''}">${(d.ev>=0?'+':'')+VX.fmt.num(d.ev,1)} %</span></div>`:''}
+       ${d.asym!=null?`<div class="vx-kv"><span class="k">Asymétrie gain/perte</span><span class="v vx-mono">${VX.fmt.nd(d.asym)}</span></div>`:''}
+       ${d.kelly!=null?`<div class="vx-kv"><span class="k">Taille suggérée (Kelly)</span><span class="v vx-mono">${VX.fmt.num(d.kelly,1)} %</span></div>
+         <div style="height:5px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden;margin:-2px 0 4px"><i style="display:block;height:100%;width:${Math.max(3,Math.min(100,d.kelly/15*100))}%;background:var(--vx-brand);border-radius:99px"></i></div>`:''}
        <div class="vx-kv"><span class="k">Score</span><span class="v vx-mono">${VX.fmt.nd(d.score)}</span></div>
        <div class="vx-kv"><span class="k">Cours</span><span class="v vx-mono">${d.price!=null?VX.fmt.price(d.price):'n/d'}</span></div>
        <div class="vx-kv"><span class="k">Gain/risque</span><span class="v vx-mono">${d.rr!=null?VX.fmt.num(d.rr,1)+'×':'n/d'}</span></div>
-       ${d.setup?`<div class="vx-kv"><span class="k">Setup</span><span class="v">${esc(d.setup)}</span></div>`:''}
+       ${levelsBar(plan,d.price)}
+       ${d.setup?`<div class="vx-kv vx-mt2"><span class="k">Setup</span><span class="v">${esc(d.setup)}</span></div>`:''}
        ${d.sector?`<div class="vx-kv"><span class="k">Secteur</span><span class="v">${esc(d.sector)}</span></div>`:''}
        <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
          <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${esc(d.sym)}">Analyse</button>
@@ -391,7 +448,7 @@ async function renderScreener(){
     if(!ranked.length){el.innerHTML='';return;}
     el.innerHTML='<div class="vx-card-header" style="padding:0 0 8px"><span class="vx-card-title">Top des résultats — pourquoi eux</span>'
       +'<span class="vx-chart-question">Les 6 meilleurs candidats de TON filtre, avec leurs raisons.</span></div>'
-      +'<div class="vx-grid vx-mb2">'+ranked.map(function(r){const dec=r.verdict||'';
+      +'<div class="vx-opp-grid vx-mb2">'+ranked.map(function(r){const dec=r.verdict||'';
       const gauge=(window.VXCharts&&VXCharts.confidenceGaugeSVG&&r.score!=null)
         ?VXCharts.confidenceGaugeSVG(r.score,verdictDir(dec),{size:78,stroke:7,dirLabel:verdictWord(dec)}):'';
       const pb=pbText(r);const ic=pbIcon(r);
@@ -399,10 +456,15 @@ async function renderScreener(){
       const spark=sparkMini(ser&&ser.close);
       const chips=[];
       if(r.vx_pwin!=null)chips.push(`<span class="vx-badge" style="color:var(--vx-positive)">proba. gain ${Math.round(r.vx_pwin*100)} %</span>`);
+      if(r.vx_ev!=null)chips.push(`<span class="vx-badge" style="color:${r.vx_ev>0?'var(--vx-positive)':'var(--vx-negative)'}" title="espérance mathématique par trade">espérance ${(r.vx_ev>=0?'+':'')+VX.fmt.num(r.vx_ev,1)} %</span>`);
       if(r.vx_edge!=null)chips.push(`<span class="vx-badge">avantage ${Math.round(r.vx_edge)}</span>`);
       if(r.rr!=null)chips.push(`<span class="vx-badge">gain/risque ${VX.fmt.num(r.rr,1)}×</span>`);
+      if(r.vx_kelly!=null&&r.vx_kelly>0)chips.push(`<span class="vx-badge" title="taille de position suggérée">Kelly ${VX.fmt.num(r.vx_kelly,0)} %</span>`);
+      if(mtfBadge(r))chips.push(mtfBadge(r));
       if(r.rvol!=null&&r.rvol>=1.5)chips.push(`<span class="vx-badge" style="color:var(--vx-warning)">volume ×${VX.fmt.num(r.rvol,1)}</span>`);
-      return `<div class="vx-card vx-col-4 vx-card--premium" style="grid-column:span 4" aria-label="${r.symbol}">
+      if(r.vx_notrade)chips.push(noTradeBadge(r));
+      const planR=detail[r.symbol]&&detail[r.symbol].plan;
+      return `<div class="vx-card vx-opp-card vx-card--premium ${r.vx_notrade?'vx-opp-notrade':''}" aria-label="${r.symbol}">
         <div class="vx-flex" style="align-items:flex-start;gap:.6rem">
           <div style="min-width:0;flex:1">
             <div class="vx-flex" style="gap:.4rem"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px;padding-left:0" data-open-analysis="${r.symbol}">${r.symbol}</button>
@@ -414,6 +476,7 @@ async function renderScreener(){
         </div>
         ${dimStrip(r)}
         <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">${chips.join('')}</div>
+        ${levelsBar(planR,r.price)}
         ${pb?`<div class="vx-meta vx-mt1" style="white-space:normal;line-height:1.45">${ic?esc(ic)+' ':''}<b>Pourquoi :</b> ${esc(pb)}</div>`:''}
         <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
           <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${r.symbol}">Analyser</button>
@@ -425,6 +488,7 @@ async function renderScreener(){
 
   /* ── Table triable ── */
   const SORTS={score:{k:r=>r.score||0,label:'score'},pwin:{k:r=>(r.vx_pwin||0),label:'proba de gain'},
+    ev:{k:r=>(r.vx_ev==null?-999:r.vx_ev),label:'espérance'},
     edge:{k:r=>(r.vx_edge||0),label:'avantage'},rr:{k:r=>(r.rr||0),label:'gain/risque'},
     rvol:{k:r=>(r.rvol||0),label:'volume relatif'},chg:{k:r=>(r.change||0),label:'variation'},
     perfw:{k:r=>(r.perf_w||0),label:'perf. semaine'},pos52:{k:r=>(r.pos52||0),label:'position 52 sem.'}};
@@ -438,6 +502,7 @@ async function renderScreener(){
       <th>Titre</th><th>Statut</th><th>Verdict</th>
       <th class="vx-num" data-sort="score">Score</th>
       <th class="vx-num" data-sort="pwin">Proba gain</th>
+      <th class="vx-num" data-sort="ev">Espérance</th>
       <th class="vx-num" data-sort="edge">Avantage</th>
       <th class="vx-num" data-sort="rr">Gain/risque</th>
       <th class="vx-num" data-sort="rvol">Vol. rel.</th>
@@ -447,10 +512,11 @@ async function renderScreener(){
       <th>Setup</th><th>Secteur</th><th></th></tr></thead><tbody>
       ${sorted.slice(0,100).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
         <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
-        <td data-label="Statut"><span class="vx-badge">${bucketOf(r)}</span></td>
+        <td data-label="Statut"><span class="vx-badge">${bucketOf(r)}</span>${r.vx_notrade?' '+noTradeBadge(r):''}${mtfBadge(r)?' '+mtfBadge(r):''}</td>
         <td data-label="Verdict"><span class="vx-badge vx-badge-decision" data-decision="${esc(r.verdict||'')}">${esc(VERD_FR[r.verdict]||r.verdict||'')}</span></td>
         ${heatCell(r.score,{label:'Score',good:72,mid:56})}
         ${heatCell(r.vx_pwin!=null?r.vx_pwin*100:null,{label:'Proba',good:60,mid:45,fmt:v=>Math.round(v)+'%'})}
+        <td data-label="Espérance" class="vx-num ${r.vx_ev>0?'vx-pos':r.vx_ev<0?'vx-neg':''}">${r.vx_ev!=null?((r.vx_ev>=0?'+':'')+VX.fmt.num(r.vx_ev,1)+'%'):'—'}</td>
         ${heatCell(r.vx_edge,{label:'Avantage',good:60,mid:40})}
         ${heatCell(r.rr,{label:'G/R',max:3,good:2,mid:1,fmt:v=>VX.fmt.num(v,1)+'×'})}
         <td data-label="Vol." class="vx-num">${r.rvol!=null?'×'+VX.fmt.num(r.rvol,1):'—'}</td>
@@ -500,10 +566,12 @@ async function renderScreener(){
     const secs=[...new Set(f.map(r=>r.sector).filter(Boolean))];
     if(!secs.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun secteur dans les résultats.')+'</div>';return;}
     const cnt={};f.forEach(r=>{const k=(r.sector||'')+'|'+bucketOf(r);cnt[k]=(cnt[k]||0)+1;});
-    const rows2=secs.map(sec=>({label:esc(sec),cells:OUT.map(b=>{
+    /* on garde le secteur BRUT (raw) séparé du libellé échappé — le filtre matche
+       r.sector===raw, jamais la version HTML-échappée (bug « 0 titre » sur A&B). */
+    const rows2=secs.map(sec=>({raw:sec,label:esc(sec),cells:OUT.map(b=>{
       const v=cnt[sec+'|'+b]||0;
       return {value:v||null,label:v?String(v):'—',title:sec+' · '+b+' : '+v+' titre(s)'};})}))
-      .sort((a,b)=>{const t=(x)=>OUT.reduce((acc,bb,i)=>acc+(cnt[x.label+'|'+bb]||0)*(OUT.length-i),0);return t(b)-t(a);});
+      .sort((a,b)=>{const t=(x)=>OUT.reduce((acc,bb,i)=>acc+(cnt[x.raw+'|'+bb]||0)*(OUT.length-i),0);return t(b)-t(a);});
     VXCharts.heatmapCard('op-heat',{
       title:'Carte secteur × statut',question:'Dans quels secteurs vivent les dossiers les plus avancés ?',
       conclusion:'Colonne Actionnable = prêt · cliquer une cellule applique les deux filtres.',
@@ -516,8 +584,8 @@ async function renderScreener(){
       [...tr.querySelectorAll('td')].slice(1).forEach((td,ci)=>{
         td.style.cursor='pointer';
         td.addEventListener('click',()=>{
-          const sec=secs[ri]!==undefined?rows2[ri].label:'';
-          state.sector=state.sector===rows2[ri].label?'':rows2[ri].label;
+          const raw=rows2[ri]&&rows2[ri].raw;
+          state.sector=state.sector===raw?'':raw;
           state.bucket=state.bucket===OUT[ci]?'':OUT[ci];
           persist();syncBar();applyAll();});
       });});
@@ -565,12 +633,13 @@ async function renderScreener(){
   document.querySelector('select[data-fk="sector"]').addEventListener('change',function(){state.sector=this.value;persist();applyAll();});
   document.querySelector('select[data-fk="vehicle"]').addEventListener('change',function(){state.vehicle=this.value;persist();applyAll();});
   document.querySelector('select[data-fk="mtf"]').addEventListener('change',function(){state.mtf=this.value;persist();applyAll();});
+  const applyDebounced=debounce(applyAll,120);
   document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>r.addEventListener('input',function(){
     state[this.dataset.fk]=+this.value;
     const b=this.closest('label').querySelector('b');
     if(this.dataset.fk==='maxPrice')b.textContent=this.value>0?('$'+this.value):'∞';
     else b.textContent=this.value+(this.dataset.fk==='minPwin'?'%':this.dataset.fk==='minRR'?'×':'');
-    persist();applyAll();}));
+    persist();applyDebounced();}));
   document.querySelectorAll('.vx-screenbar [data-ft]').forEach(c=>c.addEventListener('click',()=>{
     state[c.dataset.ft]=!state[c.dataset.ft];
     c.setAttribute('aria-pressed',String(state[c.dataset.ft]));
@@ -590,7 +659,7 @@ async function renderScreener(){
     const mtfSel=document.querySelector('select[data-fk="mtf"]');if(mtfSel)mtfSel.value=state.mtf||'';
     syncBar();applyAll();
     VX.toast('Préréglage appliqué : '+p2.label,'success');}));
-  document.querySelector('input[data-fk="setup"]').addEventListener('input',function(){state.setup=this.value.toUpperCase();persist();applyAll();});
+  document.querySelector('input[data-fk="setup"]').addEventListener('input',function(){state.setup=this.value.toUpperCase();persist();applyDebounced();});
   document.getElementById('op-reset').addEventListener('click',()=>resetFilters());
 
   paintFunnel();
@@ -715,6 +784,9 @@ async function renderOptions(){
       +`<div class="k"><b>${qmax!=null?Math.round(qmax):'—'}</b><span>meilleure qualité</span></div>`
       +`<div class="k"><b>${pmax!=null?Math.round(pmax)+' %':'—'}</b><span>meilleure proba profit</span></div>`
       +`<div class="k"><b>${ivMed!=null?Math.round(ivMed)+' %':'—'}</b><span>IV médiane</span></div>`
+      +(function(){const ems=f.map(c=>c.em_pct).filter(x=>x!=null).sort((a,b)=>a-b);
+        const emMed=ems.length?ems[Math.floor(ems.length/2)]:null;
+        return `<div class="k"><b>${emMed!=null?'±'+VX.fmt.num(emMed,1)+' %':'—'}</b><span>mouvement attendu médian</span></div>`;})()
       +`<div class="k"><b>${stale}</b><span>hors séance (indicatif)</span></div>`;
     $('op-opt-count').textContent=f.length+' / '+board.length+' contrats';
   }
@@ -755,6 +827,7 @@ async function renderOptions(){
       <th>Sous-jacent</th><th>Type</th><th>Terme</th><th class="vx-num">Strike</th><th>Échéance</th>
       <th class="vx-num">DTE</th><th class="vx-num">Delta</th><th class="vx-num">IV</th>
       <th class="vx-num">Prime $</th><th class="vx-num">Théta/j</th><th class="vx-num">Proba profit</th>
+      <th class="vx-num">P(objectif)</th><th class="vx-num">Rend. si objectif</th>
       <th class="vx-num">Qualité</th><th>Danger</th><th></th></tr></thead>
       <tbody>${sorted.slice(0,60).map(c=>`<tr data-clickable data-ct="${board.indexOf(c)}" tabindex="0" role="button" aria-label="Simuler ${esc(c.sym)} ${VX.fmt.nd(c.strike)}">
         <td data-label="Sous-jacent"><span class="vx-ticker">${c.sym}</span></td>
@@ -768,6 +841,8 @@ async function renderOptions(){
         <td data-label="Prime" class="vx-num">${VX.fmt.nd(c.cost)}</td>
         <td data-label="Théta" class="vx-num">${c.theta_burn!=null?VX.fmt.num(c.theta_burn,1)+'%':'—'}</td>
         ${heatCell(c.pop,{label:'Proba',good:55,mid:40,fmt:v=>Math.round(v)+'%'})}
+        <td data-label="P(obj.)" class="vx-num">${c.p_tgt!=null?Math.round(c.p_tgt)+'%':'—'}</td>
+        <td data-label="Rend. obj." class="vx-num ${c.swing_ret>0?'vx-pos':''}">${c.swing_ret!=null?'+'+VX.fmt.num(c.swing_ret,0)+'%':'—'}${c.swing_ok?' <span class="vx-badge" style="color:var(--vx-positive)" title="contrat aligné sur le plan swing du sous-jacent">✓</span>':''}</td>
         ${heatCell(c.quality,{label:'Qualité',good:60,mid:45})}
         <td data-label="Danger"><span class="vx-badge" style="color:${{'Faible':'var(--vx-positive)','Modéré':'var(--vx-warning)','Élevé':'var(--vx-negative)','Extrême':'var(--vx-negative)'}[c.danger]||'var(--vx-text-dim)'}">${esc(c.danger||'—')}</span></td>
         <td>${rowActions(c.sym)}</td></tr>`).join('')}</tbody></table>`
@@ -829,17 +904,18 @@ async function renderOptions(){
     document.querySelectorAll(`.vx-screenbar [data-fk="${k}"]`).forEach(x=>
       x.setAttribute('aria-pressed',String(x.dataset.fv===state[k])));applyAll();}));
   document.querySelector('select[data-fk="danger"]').addEventListener('change',function(){state.danger=this.value;applyAll();});
+  const applyDebounced2=debounce(applyAll,120);
   document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>r.addEventListener('input',function(){
     state[this.dataset.fk]=+this.value;
     const b=this.closest('label').querySelector('b');
     if(this.dataset.fk==='maxDte')b.textContent=this.value>0?(this.value+' j'):'∞';
     else if(this.dataset.fk==='maxCost')b.textContent=this.value>0?('$'+this.value):'∞';
     else b.textContent=this.value+(this.dataset.fk==='minPop'?'%':'');
-    applyAll();}));
+    applyDebounced2();}));
   document.querySelectorAll('.vx-screenbar [data-ft]').forEach(c=>c.addEventListener('click',()=>{
     state[c.dataset.ft]=!state[c.dataset.ft];
     c.setAttribute('aria-pressed',String(state[c.dataset.ft]));applyAll();}));
-  document.querySelector('input[data-fk="sym"]').addEventListener('input',function(){state.sym=this.value.toUpperCase();applyAll();});
+  document.querySelector('input[data-fk="sym"]').addEventListener('input',function(){state.sym=this.value.toUpperCase();applyDebounced2();});
   async function openContract(c){
     if(!c)return;
     /* Les contrats du board ne portent pas toujours le spot : on le prend du
@@ -852,6 +928,10 @@ async function renderOptions(){
        <div class="vx-kv vx-mt2"><span class="k">Strike · échéance</span><span class="v vx-mono">${VX.fmt.nd(c.strike)} · ${esc(String(c.exp||'').slice(0,10))}</span></div>
        <div class="vx-kv"><span class="k">Prime</span><span class="v vx-mono">${VX.fmt.nd(c.cost)} $</span></div>
        <div class="vx-kv"><span class="k">Proba profit</span><span class="v vx-mono">${c.pop!=null?Math.round(c.pop)+' %':'n/d'}</span></div>
+       ${c.p_itm!=null?`<div class="vx-kv"><span class="k">Proba dans la monnaie</span><span class="v vx-mono">${Math.round(c.p_itm)} %</span></div>`:''}
+       ${c.p_tgt!=null?`<div class="vx-kv"><span class="k">Proba d’atteindre l’objectif</span><span class="v vx-mono">${Math.round(c.p_tgt)} %</span></div>`:''}
+       ${c.em_pct!=null?`<div class="vx-kv"><span class="k">Mouvement attendu</span><span class="v vx-mono">± ${VX.fmt.num(c.em_pct,1)} %</span></div>`:''}
+       ${c.swing_ret!=null?`<div class="vx-kv"><span class="k">Rendement si objectif</span><span class="v vx-mono ${c.swing_ret>0?'vx-pos':''}">+${VX.fmt.num(c.swing_ret,0)} %${c.swing_ok?' · aligné plan':''}</span></div>`:''}
        <div class="vx-kv"><span class="k">Qualité</span><span class="v vx-mono">${VX.fmt.nd(c.quality)}</span></div>
        <div class="vx-kv"><span class="k">Danger</span><span class="v">${esc(c.danger||'n/d')}</span></div>
        <div class="vx-kv"><span class="k">Décote temps</span><span class="v vx-mono">${c.theta_burn!=null?VX.fmt.num(c.theta_burn,2)+' % / jour':'n/d'}</span></div>
@@ -873,7 +953,9 @@ async function renderOptions(){
       question:'Que rapporte/coûte ce contrat à l’échéance ?',
       conclusion:`Breakeven ${VX.fmt.nd(c.be)} · prime ${VX.fmt.nd(c.cost)}`,
       spot:spot,strike:c.strike,premium:c.cost,right:c.type==='PUT'?'P':'C',breakeven:c.be,height:210,
+      expectedMovePct:c.em_pct,target:c.tgt,
       source:'board options',timestamp:Date.now(),mode:'delayed',
+      conclusion:(c.be!=null&&spot&&c.em_pct?('Breakeven '+VX.fmt.nd(c.be)+' · '+(Math.abs(c.be-spot)/spot*100<=c.em_pct?'DANS':'HORS')+' le mouvement attendu (±'+VX.fmt.num(c.em_pct,1)+' %)'):('Breakeven '+VX.fmt.nd(c.be))),
       explain:{shows:'Le P&L du contrat à l’échéance selon le prix du sous-jacent (arithmétique du contrat).',
         why:'Visualiser breakeven et asymétrie avant d’engager la prime.',
         confirm:'Sous-jacent au-delà du breakeven avant l’échéance.',
@@ -1019,8 +1101,8 @@ async function renderPortfolio(){
   const cd=$('op-pf-cands');
   cd.innerHTML='<div class="vx-card-header" style="padding:0 0 8px"><span class="vx-card-title">Candidats non détenus — signaux d’achat du moteur</span>'
     +'<span class="vx-chart-question">Qui mériterait une place, priorité aux secteurs déjà en portefeuille ?</span></div>'
-    +(candidates.length?'<div class="vx-grid">'+candidates.map(r=>`
-      <div class="vx-card vx-col-4" style="grid-column:span 4;border-left:3px solid var(--vx-positive)">
+    +(candidates.length?'<div class="vx-opp-grid">'+candidates.map(r=>`
+      <div class="vx-card" style="border-left:3px solid var(--vx-positive);min-width:0">
         <div class="vx-flex"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:15px;padding-left:0" data-open-analysis="${r.symbol}">${r.symbol}</button>
           <span class="vx-badge vx-badge-decision vx-right" data-decision="${esc(r.verdict)}">${esc(VERD_FR[r.verdict]||r.verdict)}</span></div>
         <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">
