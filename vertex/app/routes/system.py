@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v64';   // v64 : Hyper Visual P2 — options positions §19 (CALL/PUT ring + distribution DTE, données déclarées)
+const CACHE='td-shell-v65';   // v65 : Hyper Visual F3a — inspecteur latéral global VX.inspect (aperçu riche [data-inspect]) branché sur Opportunités
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

@@ -289,6 +289,9 @@
   document.addEventListener('click', (e) => {
     const trigger = e.target.closest('[data-entity-menu]');
     if (trigger) { e.preventDefault(); e.stopPropagation(); E.openMenu(trigger.dataset.entityMenu, trigger); return; }
+    /* Un bouton Aperçu ([data-inspect]) DANS une ligne cliquable : c'est
+       l'inspecteur qui gère, pas la navigation vers la fiche complète. */
+    if (e.target.closest('[data-inspect]')) return;
     const open = e.target.closest('[data-open-analysis]');
     if (open) { e.preventDefault(); VX.openAnalysis(open.dataset.openAnalysis); }
   });

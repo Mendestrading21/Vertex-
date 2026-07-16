@@ -130,6 +130,7 @@ function debounce(fn,ms){let t=null;return function(){const a=arguments,c=this;
 function demoBanner(scan){return scan&&scan.data_source==='demo'?
   '<div class="vx-stale-banner">Mode DÉMO — données synthétiques, clairement identifiées.</div>':'';}
 function rowActions(sym){return `<div class="vx-row-actions">
+  <button class="vx-btn vx-btn-sm vx-btn-ghost" data-inspect="${sym}" title="Aperçu rapide" aria-label="Aperçu ${sym}">Aperçu</button>
   <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${sym}">Analyse</button>
   <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${sym}" aria-label="Actions ${sym}">⋯</button></div>`;}
 function sparkMini(closes){
@@ -182,6 +183,22 @@ function levelsBar(plan,price){
       ${price!=null?`<i style="position:absolute;left:${pc(price)}%;top:-3px;width:9px;height:9px;margin-left:-4px;border-radius:99px;background:var(--vx-text-primary,#f2f5f1);box-shadow:0 0 0 2px var(--vx-surface-0)" title="cours ${VX.fmt.price(price)}"></i>`:''}
     </div></div>`;
 }
+/* Ruban de momentum : perf 1S · 1M · 3M · 1A en mini-barres divergentes.
+   Montre d'un coup si le titre accélère ou s'essouffle selon l'horizon. */
+function perfRibbon(r){
+  const H=[['1S',r.perf_w],['1M',r.perf_m],['3M',r.perf_q],['1A',r.perf_y]].filter(x=>x[1]!=null&&isFinite(x[1]));
+  if(!H.length)return '';
+  const mx=Math.max(6,...H.map(x=>Math.abs(x[1])));
+  return `<div class="vx-flex" style="gap:5px;margin-top:7px" role="img" aria-label="momentum multi-horizons">`
+    +H.map(([lbl,v])=>{const h=Math.max(3,Math.round(Math.abs(v)/mx*22));const up=v>=0;
+      return `<span title="${lbl} : ${v>=0?'+':''}${VX.fmt.num(v,1)} %" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+        <span style="display:flex;align-items:${up?'flex-end':'flex-start'};height:24px;width:100%">
+          <i style="display:block;width:100%;height:${h}px;border-radius:2px;background:${up?'var(--vx-positive)':'var(--vx-negative)'};opacity:.9"></i></span>
+        <b style="font:600 8px/1 var(--vx-font);color:var(--vx-text-faint)">${lbl}</b></span>`;}).join('')+'</div>';
+}
+function gradeBadge(g){if(!g)return '';
+  const col={S:'#36c889',A:'#84aa31',B:'#dda23b',C:'#ed655c',D:'#ed655c'}[String(g).toUpperCase()]||'var(--vx-text-dim)';
+  return `<span class="vx-badge" style="color:${col};border-color:${col}" title="note globale du moteur (S = élite)">${esc(g)}</span>`;}
 function mtfBadge(r){const st=(r&&r.mtf&&r.mtf.state)||'';const u=st.toUpperCase();
   if(!u)return '';
   const col=u.includes('ALIGNÉ')?'var(--vx-positive)':u.includes('REPLI')?'var(--vx-warning)':'var(--vx-text-dim)';
@@ -204,13 +221,26 @@ async function renderScreener(){
 
   /* État des filtres : URL (liens entrants) > localStorage > défauts. */
   let saved={};try{saved=JSON.parse(localStorage.getItem('vxScreenFilters')||'{}')}catch(e){}
-  const state=Object.assign({bucket:'',sector:'',vehicle:'',setup:'',mtf:'',
+  const state=Object.assign({bucket:'',sector:'',vehicle:'',setup:'',mtf:'',grade:'',
       minScore:0,minPwin:0,minRR:0,minRvol:0,maxPrice:0,
       setBreakout:false,setPullback:false,setSqueeze:false,setAccum:false,
       exclNoTrade:false,exclHeld:false,exclProxy:false},
     saved,{bucket:PARAMS.decision||saved.bucket||'',sector:PARAMS.sector||saved.sector||'',
            setup:(PARAMS.setup||saved.setup||'').toUpperCase()});
-  function persist(){try{localStorage.setItem('vxScreenFilters',JSON.stringify(state))}catch(e){}}
+  /* URL entrante > sauvegarde : un lien partagé impose ses filtres */
+  (function(){const u=new URLSearchParams(location.search);
+    ['bucket','sector','vehicle','mtf','grade','setup'].forEach(k=>{if(u.get(k))state[k]=u.get(k);});
+    ['minScore','minPwin','minRR','minRvol','maxPrice'].forEach(k=>{if(u.get(k))state[k]=+u.get(k)||0;});
+    ['setBreakout','setPullback','setSqueeze','setAccum','exclNoTrade','exclHeld','exclProxy'].forEach(k=>{if(u.get(k)==='1')state[k]=true;});})();
+  function persist(){
+    try{localStorage.setItem('vxScreenFilters',JSON.stringify(state))}catch(e){}
+    /* reflète les filtres non vides dans l'URL — lien partageable, retour fidèle */
+    try{const u=new URLSearchParams();
+      Object.keys(state).forEach(k=>{const v=state[k];
+        if(v===true)u.set(k,'1');else if(v&&v!==0&&v!=='')u.set(k,v);});
+      const qs=u.toString();
+      history.replaceState(null,'',location.pathname+(qs?'?'+qs:'')+location.hash);}catch(e){}
+  }
   const heldSyms=new Set(((window.VXEntities?VXEntities.positions():[])||[]).map(p=>String(p.sym).toUpperCase()));
   function vehicleOf(r){const v=r&&r.vehicle;return String((v&&v.reco)||v||'').toUpperCase();}
   function mtfState(r){const m=r&&r.mtf;return String((m&&m.state)||'').toUpperCase();}
@@ -220,6 +250,8 @@ async function renderScreener(){
     if(state.sector)f=f.filter(r=>r.sector===state.sector);
     if(state.vehicle)f=f.filter(r=>vehicleOf(r).includes(state.vehicle));
     if(state.mtf)f=f.filter(r=>mtfState(r).includes(state.mtf));
+    if(state.grade){const ord={S:4,A:3,B:2,C:1,D:0};const min=ord[state.grade];
+      f=f.filter(r=>(ord[String(r.grade||'').toUpperCase()]??-1)>=min);}
     if(state.setup)f=f.filter(r=>(pbText(r)||'').toUpperCase().includes(state.setup));
     if(state.setBreakout)f=f.filter(r=>r.breakout===true);
     if(state.setPullback)f=f.filter(r=>r.pullback===true);
@@ -262,6 +294,11 @@ async function renderScreener(){
         <option value="ALIGNÉ" ${state.mtf==='ALIGNÉ'?'selected':''}>Journalier + hebdo alignés</option>
         <option value="REPLI" ${state.mtf==='REPLI'?'selected':''}>Repli dans tendance</option>
         <option value="NEUTRE" ${state.mtf==='NEUTRE'?'selected':''}>Neutre</option></select>
+      <select class="vx-select" data-fk="grade" style="width:auto" aria-label="Note minimale">
+        <option value="">Toute note</option>
+        <option value="S" ${state.grade==='S'?'selected':''}>Note S seulement</option>
+        <option value="A" ${state.grade==='A'?'selected':''}>Note A et mieux</option>
+        <option value="B" ${state.grade==='B'?'selected':''}>Note B et mieux</option></select>
       <span class="vx-meta" style="flex-basis:100%;display:flex;flex-wrap:wrap;gap:.4rem;align-items:center">SETUPS
         <button class="vx-chip" data-ft="setBreakout" aria-pressed="${state.setBreakout}">🚀 Cassure</button>
         <button class="vx-chip" data-ft="setPullback" aria-pressed="${state.setPullback}">🎯 Repli</button>
@@ -322,7 +359,9 @@ async function renderScreener(){
       +`<div class="k" data-tone="${avgPwin>=55?'pos':avgPwin<45?'neg':''}"><b>${avgPwin!=null?Math.round(avgPwin)+' %':'—'}</b><span>proba gain moyenne</span></div>`
       +`<div class="k" data-tone="brand"><b style="font-size:15px;line-height:1.4">${bestSec?esc(bestSec[0]):'—'}</b><span>secteur le mieux noté</span></div>`
       +(function(){const al=f.filter(r=>mtfState(r).includes('ALIGNÉ')).length;
-        return `<div class="k"><b>${f.length?Math.round(al/f.length*100)+' %':'—'}</b><span>journalier+hebdo alignés</span></div>`;})();
+        return `<div class="k"><b>${f.length?Math.round(al/f.length*100)+' %':'—'}</b><span>journalier+hebdo alignés</span></div>`;})()
+      +(function(){const el=f.filter(r=>['S','A'].includes(String(r.grade||'').toUpperCase())).length;
+        return `<div class="k" data-tone="${el>0?'pos':''}"><b>${el}</b><span>notes S ou A (élite)</span></div>`;})();
     $('op-count').textContent=f.length+' / '+rows.length+' titres';
   }
 
@@ -393,6 +432,8 @@ async function renderScreener(){
        <div class="vx-kv"><span class="k">Cours</span><span class="v vx-mono">${d.price!=null?VX.fmt.price(d.price):'n/d'}</span></div>
        <div class="vx-kv"><span class="k">Gain/risque</span><span class="v vx-mono">${d.rr!=null?VX.fmt.num(d.rr,1)+'×':'n/d'}</span></div>
        ${levelsBar(plan,d.price)}
+       ${(function(){const r0=byId[d.sym];return r0?perfRibbon(r0):'';})()}
+       ${(function(){const cr=detail[d.sym]&&detail[d.sym].chart_read;return cr?`<div class="vx-meta vx-mt2" style="white-space:normal;line-height:1.45"><b>Lecture technique :</b> ${esc(cr)}</div>`:'';})()}
        ${d.setup?`<div class="vx-kv vx-mt2"><span class="k">Setup</span><span class="v">${esc(d.setup)}</span></div>`:''}
        ${d.sector?`<div class="vx-kv"><span class="k">Secteur</span><span class="v">${esc(d.sector)}</span></div>`:''}
        <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
@@ -467,10 +508,10 @@ async function renderScreener(){
       return `<div class="vx-card vx-opp-card vx-card--premium ${r.vx_notrade?'vx-opp-notrade':''}" aria-label="${r.symbol}">
         <div class="vx-flex" style="align-items:flex-start;gap:.6rem">
           <div style="min-width:0;flex:1">
-            <div class="vx-flex" style="gap:.4rem"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px;padding-left:0" data-open-analysis="${r.symbol}">${r.symbol}</button>
-              <span class="vx-badge">${bucketOf(r)}</span></div>
+            <div class="vx-flex" style="gap:.4rem;flex-wrap:wrap"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px;padding-left:0" data-open-analysis="${r.symbol}">${r.symbol}</button>
+              <span class="vx-badge">${bucketOf(r)}</span>${gradeBadge(r.grade)}</div>
             <div class="vx-mono vx-mt1" style="font-size:18px;font-weight:700;color:var(--vx-text-primary,#f4f1ec)">${r.price!=null?'$'+VX.fmt.price(r.price):'—'}</div>
-            ${spark}
+            ${spark}${perfRibbon(r)}
           </div>
           <div style="flex:0 0 auto">${gauge}</div>
         </div>
@@ -480,6 +521,7 @@ async function renderScreener(){
         ${pb?`<div class="vx-meta vx-mt1" style="white-space:normal;line-height:1.45">${ic?esc(ic)+' ':''}<b>Pourquoi :</b> ${esc(pb)}</div>`:''}
         <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
           <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${r.symbol}">Analyser</button>
+          <button class="vx-btn vx-btn-sm" data-inspect="${r.symbol}" title="Aperçu rapide">Aperçu</button>
           <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','follow')">Suivre</button>
           <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','alert')">Alerte</button>
           <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/${r.symbol}">Options</a>
@@ -491,7 +533,9 @@ async function renderScreener(){
     ev:{k:r=>(r.vx_ev==null?-999:r.vx_ev),label:'espérance'},
     edge:{k:r=>(r.vx_edge||0),label:'avantage'},rr:{k:r=>(r.rr||0),label:'gain/risque'},
     rvol:{k:r=>(r.rvol||0),label:'volume relatif'},chg:{k:r=>(r.change||0),label:'variation'},
-    perfw:{k:r=>(r.perf_w||0),label:'perf. semaine'},pos52:{k:r=>(r.pos52||0),label:'position 52 sem.'}};
+    perfw:{k:r=>(r.perf_w||0),label:'perf. semaine'},perfm:{k:r=>(r.perf_m||0),label:'perf. mois'},
+    pos52:{k:r=>(r.pos52||0),label:'position 52 sem.'},
+    grade:{k:r=>({S:4,A:3,B:2,C:1,D:0}[String(r.grade||'').toUpperCase()]||-1),label:'note'}};
   let sortKey='score',sortDir=-1;
   function paintTable(f){
     const s=SORTS[sortKey]||SORTS.score;
@@ -507,8 +551,10 @@ async function renderScreener(){
       <th class="vx-num" data-sort="rr">Gain/risque</th>
       <th class="vx-num" data-sort="rvol">Vol. rel.</th>
       <th class="vx-num" data-sort="chg">Var. jour</th>
-      <th class="vx-num" data-sort="perfw">Perf. sem.</th>
+      <th class="vx-num" data-sort="perfm">Perf. mois</th>
+      <th>Momentum</th>
       <th data-sort="pos52">52 sem.</th>
+      <th data-sort="grade">Note</th>
       <th>Setup</th><th>Secteur</th><th></th></tr></thead><tbody>
       ${sorted.slice(0,100).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
         <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
@@ -521,8 +567,10 @@ async function renderScreener(){
         ${heatCell(r.rr,{label:'G/R',max:3,good:2,mid:1,fmt:v=>VX.fmt.num(v,1)+'×'})}
         <td data-label="Vol." class="vx-num">${r.rvol!=null?'×'+VX.fmt.num(r.rvol,1):'—'}</td>
         <td data-label="Var." class="vx-num ${r.change>0?'vx-pos':r.change<0?'vx-neg':''}">${r.change!=null?VX.fmt.pct(r.change,1):'—'}</td>
-        <td data-label="Sem." class="vx-num ${r.perf_w>0?'vx-pos':r.perf_w<0?'vx-neg':''}">${r.perf_w!=null?VX.fmt.pct(r.perf_w,1):'—'}</td>
+        <td data-label="Mois" class="vx-num ${r.perf_m>0?'vx-pos':r.perf_m<0?'vx-neg':''}">${r.perf_m!=null?VX.fmt.pct(r.perf_m,1):'—'}</td>
+        <td data-label="Momentum">${perfRibbon(r)||'—'}</td>
         <td data-label="52s">${rail52(r.pos52)}</td>
+        <td data-label="Note">${gradeBadge(r.grade)||'—'}</td>
         <td data-label="Setup" class="vx-truncate" style="max-width:130px">${esc(pbText(r)||'—')}</td>
         <td data-label="Secteur" class="vx-truncate" style="max-width:110px">${esc(r.sector||'—')}</td>
         <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table>`
@@ -613,10 +661,11 @@ async function renderScreener(){
     const sec=document.querySelector('select[data-fk="sector"]');if(sec)sec.value=state.sector;
   }
   function resetFilters(silent){
-    Object.assign(state,{bucket:'',sector:'',vehicle:'',setup:'',mtf:'',
+    Object.assign(state,{bucket:'',sector:'',vehicle:'',setup:'',mtf:'',grade:'',
       minScore:0,minPwin:0,minRR:0,minRvol:0,maxPrice:0,
       setBreakout:false,setPullback:false,setSqueeze:false,setAccum:false,
       exclNoTrade:false,exclHeld:false,exclProxy:false});
+    const gs=document.querySelector('select[data-fk="grade"]');if(gs)gs.value='';
     persist();
     document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>{r.value=0;
       const b=r.closest('label').querySelector('b');
@@ -633,6 +682,7 @@ async function renderScreener(){
   document.querySelector('select[data-fk="sector"]').addEventListener('change',function(){state.sector=this.value;persist();applyAll();});
   document.querySelector('select[data-fk="vehicle"]').addEventListener('change',function(){state.vehicle=this.value;persist();applyAll();});
   document.querySelector('select[data-fk="mtf"]').addEventListener('change',function(){state.mtf=this.value;persist();applyAll();});
+  document.querySelector('select[data-fk="grade"]').addEventListener('change',function(){state.grade=this.value;persist();applyAll();});
   const applyDebounced=debounce(applyAll,120);
   document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>r.addEventListener('input',function(){
     state[this.dataset.fk]=+this.value;
