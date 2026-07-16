@@ -5,7 +5,8 @@
                  (⚠️ NE signifie PAS « hausse ») ·
    VERT ÉMERAUDE = gain / donnée positive · ROUGE CORAIL = perte / risque ·
    AMBRE = attente / avertissement / donnée retardée · VIOLET = options / IV / Greeks ·
-   ACIER & GRIS CHAUD = benchmark / neutre / indisponible. Ni bleu ni cyan en identité. */
+   ACIER & GRIS CHAUD = benchmark / neutre / indisponible.
+   BLEU / CYAN = accents DÉCORATIFS (--vx-accent-*) — pas l'identité marque (qui reste verte). */
 :root{
   /* ── Noirs & graphites (fond légèrement teinté vert) ── */
   --vx-black:#020302;
@@ -135,8 +136,8 @@
   --vx-fs-table:12.5px;--vx-fs-label:11.5px;
   --vx-fw-medium:500;--vx-fw-semi:600;--vx-fw-bold:700;--vx-fw-black:800;
 
-  /* ── Rayons ── */
-  --vx-r-sm:8px;--vx-r:12px;--vx-r-lg:14px;--vx-r-modal:16px;
+  /* ── Rayons (bump « big rounded » façon fintech premium) ── */
+  --vx-r-sm:8px;--vx-r:12px;--vx-r-lg:18px;--vx-r-modal:16px;--vx-r-card:20px;--vx-r-xl:24px;
 
   /* ── Espacements ── */
   --vx-s1:4px;--vx-s2:8px;--vx-s3:12px;--vx-s4:16px;--vx-s5:20px;
@@ -177,4 +178,42 @@
   --vx-negative-dim:var(--vx-negative-soft);
   --vx-warning-dim:var(--vx-warning-soft);
   --vx-copper-legacy:var(--vx-signal-400);
+
+  /* ═══════════════════════════════════════════════════════════════════
+     ACCENTS DÉCORATIFS (multi-couleurs) — cartes KPI / chips / mini-graphes
+     façon SevenTeen. Bleu & cyan AUTORISÉS comme accents décoratifs
+     (ce n'est plus l'identité marque, qui reste le vert Signal).
+     ═══════════════════════════════════════════════════════════════════ */
+  --vx-accent-green:#84aa31;
+  --vx-accent-emerald:#36c889;
+  --vx-accent-orange:#e8913c;
+  --vx-accent-amber:#dda23b;
+  --vx-accent-violet:#9c79d0;
+  --vx-accent-teal:#53b9ad;
+  --vx-accent-blue:#4c8dff;
+  --vx-accent-cyan:#3ec8d8;
+  /* variantes douces (fonds / halos d'angle) */
+  --vx-accent-green-soft:rgba(132,170,49,.14);
+  --vx-accent-emerald-soft:rgba(54,200,137,.14);
+  --vx-accent-orange-soft:rgba(232,145,60,.14);
+  --vx-accent-amber-soft:rgba(221,162,59,.14);
+  --vx-accent-violet-soft:rgba(156,121,208,.14);
+  --vx-accent-teal-soft:rgba(83,185,173,.14);
+  --vx-accent-blue-soft:rgba(76,141,255,.14);
+  --vx-accent-cyan-soft:rgba(62,200,216,.14);
+  /* accent « courant » d'une carte (posé par [data-accent], défaut = marque) */
+  --vx-accent:var(--vx-signal-500);
+  --vx-accent-soft:var(--vx-signal-soft);
+  --vx-accent-glow:rgba(163,202,66,.30);
+
+  /* ── Élévation en couches + liseré matériel (cartes glossy) ── */
+  --vx-elev-1:0 1px 1px rgba(0,0,0,.30),0 1px 2px rgba(0,0,0,.24);
+  --vx-elev-2:0 2px 6px rgba(0,0,0,.34),0 8px 22px rgba(0,0,0,.34);
+  --vx-elev-3:0 8px 20px rgba(0,0,0,.40),0 20px 48px rgba(0,0,0,.44);
+  --vx-sheen-top:inset 0 1px 0 rgba(255,255,255,.06);
+
+  /* ── Typo héros + tracking ── */
+  --vx-fs-display:40px;
+  --vx-ls-tight:-.015em;
+  --vx-ls-display:-.03em;
 }

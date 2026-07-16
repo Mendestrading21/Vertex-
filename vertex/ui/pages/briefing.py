@@ -146,7 +146,7 @@ _CONTENT = """
   @media (max-width:640px){#vx-ess-body .vx-statrow{grid-template-columns:repeat(2,1fr)}}
   /* Survol des tuiles indices : réaction visuelle (page vivante) */
   .vx-idx-tile{transition:border-color .15s ease,transform .15s ease}
-  .vx-idx-tile:hover{border-color:var(--vx-brand,#84aa31);transform:translateY(-1px)}
+  .vx-idx-tile:hover{border-color:var(--vx-accent,var(--vx-brand,#84aa31));transform:translateY(-1px)}
   /* Brief repliable : lecture confortable, la page reste équilibrée */
   #vx-brief-clamp[data-clamped="1"]{max-height:560px;overflow:hidden;
     -webkit-mask-image:linear-gradient(180deg,#000 80%,transparent);
@@ -196,13 +196,13 @@ _CONTENT = """
 <div data-block="essential" data-anchor-label="Situation">
 <div class="vx-sect"><b><i>01</i>Situation du jour</b><span>le marché en clair · régime · risque autorisé ou non</span></div>
 <div class="vx-grid vx-mt2">
-  <section class="vx-card vx-col-8 vx-card--premium" id="vx-essential" aria-label="L’essentiel du jour">
+  <section class="vx-card vx-col-8 vx-card--premium" id="vx-essential" data-accent="emerald" aria-label="L’essentiel du jour">
     <div class="vx-card-header"><span class="vx-card-title">L’essentiel du jour — en clair</span>
       <span class="vx-chart-question">Que fait le marché, sans jargon ?</span>
       <span class="vx-actions vx-meta" id="vx-ess-meta"></span></div>
     <div id="vx-ess-body">%%LOADING%%</div>
   </section>
-  <section class="vx-card vx-col-4" id="vx-regime" aria-label="Régime de marché">
+  <section class="vx-card vx-col-4" id="vx-regime" data-accent="violet" aria-label="Régime de marché">
     <div class="vx-card-header"><span class="vx-card-title">Régime de marché</span></div>
     <div id="vx-regime-body">%%LOADING%%</div>
   </section>
@@ -213,12 +213,12 @@ _CONTENT = """
 <div data-block="brief" data-anchor-label="Brief">
 <div class="vx-sect"><b><i>02</i>Brief du marché</b><span>la synthèse écrite du jour — composée uniquement des données moteur</span></div>
 <div class="vx-grid vx-mt2">
-  <section class="vx-card vx-card--hero vx-col-8" id="vx-brief" aria-label="Brief Vertex">
+  <section class="vx-card vx-card--hero vx-col-8" id="vx-brief" data-accent="blue" aria-label="Brief Vertex">
     <div class="vx-card-header"><span class="vx-card-title">Brief du marché — Vertex</span>
       <span class="vx-actions" id="vx-brief-meta"></span></div>
     <div id="vx-brief-body">%%LOADING%%</div>
   </section>
-  <section class="vx-card vx-col-4" id="vx-brief-side" aria-label="Ce qui compte aujourd’hui">
+  <section class="vx-card vx-col-4" id="vx-brief-side" data-accent="cyan" aria-label="Ce qui compte aujourd’hui">
     <div class="vx-card-header"><span class="vx-card-title">Ce qui compte</span></div>
     <div id="vx-brief-side-body">%%LOADING%%</div>
   </section>
@@ -229,7 +229,7 @@ _CONTENT = """
 <div data-block="news" data-anchor-label="Actus">
   <div class="vx-sect"><b><i>03</i>Actus &amp; catalyseurs</b><span>l’information du jour · économie &amp; résultats — les dates qui comptent</span></div>
   <div class="vx-grid vx-mt2">
-    <section class="vx-card vx-col-6" id="vx-news" aria-label="Actualités marquantes">
+    <section class="vx-card vx-col-6" id="vx-news" data-accent="teal" aria-label="Actualités marquantes">
       <div class="vx-card-header"><span class="vx-card-title">Actualités marquantes</span>
         <span class="vx-chart-question">Qu’est-ce qui fait bouger le marché aujourd’hui ?</span></div>
       <div id="vx-news-body" style="max-height:430px;overflow-y:auto">%%LOADING%%</div>
@@ -249,7 +249,7 @@ _CONTENT = """
   </div>
   <div class="vx-grid vx-mt4">
     <div class="vx-col-8" id="vx-yield"></div>
-    <section class="vx-card vx-col-4" id="vx-roro-card" aria-label="Appétit pour le risque">
+    <section class="vx-card vx-col-4" id="vx-roro-card" data-accent="orange" aria-label="Appétit pour le risque">
       <div class="vx-card-header"><span class="vx-card-title">Appétit pour le risque</span>
         <span class="vx-chart-question">Risk-on ou risk-off ?</span></div>
       <div id="vx-roro-body">%%LOADING%%</div>
@@ -276,12 +276,12 @@ _CONTENT = """
     </section>
   </div>
   <div class="vx-grid vx-mt4">
-    <section class="vx-card vx-col-6 vx-card--premium" id="vx-breadth-internals-card" aria-label="Breadth internals">
+    <section class="vx-card vx-col-6 vx-card--premium" id="vx-breadth-internals-card" data-accent="blue" aria-label="Breadth internals">
       <div class="vx-card-header"><span class="vx-card-title">Participation</span>
         <span class="vx-chart-question">La hausse est-elle portée par beaucoup de titres, ou par une poignée ?</span></div>
       <div id="vx-breadth-internals">%%LOADING%%</div>
     </section>
-    <section class="vx-card vx-col-6 vx-card--accent" id="vx-breadth-rings-card" aria-label="Composite de participation">
+    <section class="vx-card vx-col-6 vx-card--accent" id="vx-breadth-rings-card" data-accent="violet" aria-label="Composite de participation">
       <div class="vx-card-header"><span class="vx-card-title">Composite de participation</span></div>
       <div id="vx-breadth-rings">%%LOADING%%</div>
       <div class="vx-card-foot"><span class="vx-meta">Anneaux = part des titres au-dessus des moyennes et ratio d’avancées, sur l’univers scanné.</span></div>
@@ -289,7 +289,7 @@ _CONTENT = """
   </div>
   <div class="vx-grid vx-mt4">
     <div class="vx-col-6" id="vx-breadth-trend"></div>
-    <section class="vx-card vx-col-6" id="vx-score-dist-card" aria-label="Distribution des scores">
+    <section class="vx-card vx-col-6" id="vx-score-dist-card" data-accent="emerald" aria-label="Distribution des scores">
       <div class="vx-card-header"><span class="vx-card-title">Scores de l’univers</span>
         <span class="vx-chart-question">Le marché est-il globalement fort ou faible ?</span></div>
       <div id="vx-score-dist">%%LOADING%%</div>
@@ -297,7 +297,7 @@ _CONTENT = """
     </section>
   </div>
   <div class="vx-grid vx-mt4">
-    <section class="vx-card vx-col-12" id="vx-health-card" aria-label="Composition de la santé du marché">
+    <section class="vx-card vx-col-12" id="vx-health-card" data-accent="teal" aria-label="Composition de la santé du marché">
       <div class="vx-card-header"><span class="vx-card-title">Santé du marché</span>
         <span class="vx-chart-question">Quelles composantes portent (ou plombent) la santé du jour ?</span></div>
       <div id="vx-health-wf" style="height:230px">%%LOADING%%</div>
@@ -470,33 +470,38 @@ function crossAsset(scan){
     m[nm]={last:x.value,change:x.chg,unit:x.unit,deltaUnit:'pts',deltaNeutral:true};}});
   return m;
 }
-function sparkSvg(vals,pos,neutral){
+function sparkSvg(vals,pos,neutral,colOverride){
   if(!Array.isArray(vals)||vals.length<2)return '';
   const w=100,h=24,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=(mx-mn)||1;
   const pts=vals.map((v,i)=>(i/(vals.length-1)*w).toFixed(1)+','+(h-((v-mn)/rng)*(h-2)-1).toFixed(1)).join(' ');
-  /* neutral : VIX/taux/DXY — la direction ne code pas « bon/mauvais » */
-  const col=neutral?'var(--vx-text-dim,#8f8a83)':(pos?'var(--vx-positive,#36c889)':'var(--vx-negative,#ed655c)');
+  /* colOverride (accent de la carte) prioritaire ; sinon neutre/pos/neg */
+  const col=colOverride||(neutral?'var(--vx-text-dim,#8f8a83)':(pos?'var(--vx-positive,#36c889)':'var(--vx-negative,#ed655c)'));
   const gid='sg'+Math.abs((''+pts).split('').reduce((a,c)=>((a<<5)-a+c.charCodeAt(0))|0,0));
-  return `<svg viewBox="0 0 ${w} ${h+4}" preserveAspectRatio="none" width="100%" height="26" style="margin-top:6px;display:block" aria-hidden="true">
+  return `<svg class="vx-spark" viewBox="0 0 ${w} ${h+4}" preserveAspectRatio="none" width="100%" height="26" style="margin-top:6px;display:block;filter:drop-shadow(0 0 4px ${col})" aria-hidden="true">
     <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${col}" stop-opacity=".22"/><stop offset="100%" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+      <stop offset="0%" stop-color="${col}" stop-opacity=".24"/><stop offset="100%" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
     <polygon points="0,${h+3} ${pts} ${w},${h+3}" fill="url(#${gid})"/>
-    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
 /* Tuile KPI du bandeau (indice, matière, taux). deltaNeutral : la variation ne
    code pas « bon/mauvais » (VIX, taux, DXY) → neutre. */
-function kpiCell(label,d,scan,span){
+function kpiCell(label,d,scan,span,accent){
   const val=d&&(d.last??d.price??d.close);const chg=d?d.change:null;
   const dcls=(d&&d.deltaNeutral)?'vx-muted':(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted');
   const dtxt=(chg===null||chg===undefined)?'n/d'
     :((d&&d.deltaUnit)?((chg>0?'+':'')+VX.fmt.num(chg,2)+' '+d.deltaUnit):VX.fmt.pct(chg));
   const vtxt=(val===null||val===undefined)?'—':(VX.fmt.price(val)+((d&&d.unit)?' '+d.unit:''));
-  return `<div class="vx-card vx-card--compact vx-kpi vx-idx-tile" style="grid-column:span ${span||2}" aria-label="${esc(label)}">
+  const acc=accent?` data-accent="${accent}"`:'';
+  const sparkCol=accent?'var(--vx-accent)':null;
+  return `<div class="vx-card vx-card--compact vx-kpi vx-idx-tile" style="grid-column:span ${span||2}"${acc} aria-label="${esc(label)}">
     <span class="vx-kpi-label">${esc(label)}</span>
     <span class="vx-kpi-value" style="font-size:19px">${vtxt}</span>
     <span class="vx-kpi-delta ${dcls}">${dtxt}</span>
-    ${(d&&d.series)?sparkSvg(d.series,(chg==null?true:chg>=0),!!(d&&d.deltaNeutral)):''}</div>`;
+    ${(d&&d.series)?sparkSvg(d.series,(chg==null?true:chg>=0),!!(d&&d.deltaNeutral),sparkCol):''}</div>`;
 }
+/* Accent décoratif par instrument (look multi-couleurs façon fintech premium) */
+const KPI_ACCENT={'S&P 500':'emerald','Nasdaq':'blue','Dow Jones':'cyan','Russell 2000':'violet',
+  'VIX':'amber','Taux 10 ans':'teal','DXY':'violet','Pétrole':'teal','Or':'amber','Bitcoin':'orange'};
 async function loadStrip(){
   let scan=null;
   try{scan=await VX.fetch('/scan',{ttl:120000});}catch(e){}
@@ -506,9 +511,9 @@ async function loadStrip(){
   const ROW2=['DXY','Pétrole','Or','Bitcoin'];
   const strip=$('vx-market-strip'),cross=$('vx-cross-strip');
   const known1=ROW1.filter(n=>by[n]&&by[n].last!=null);
-  if(strip)strip.innerHTML=known1.length?known1.map(n=>kpiCell(n,by[n],scan,2)).join('')
+  if(strip)strip.innerHTML=known1.length?known1.map(n=>kpiCell(n,by[n],scan,2,KPI_ACCENT[n])).join('')
     :'<div class="vx-card vx-col-12">'+VX.states.empty('Indices indisponibles — lancer un scan depuis Système.','<a class="vx-btn vx-btn-sm" href="/system?view=data">Système / Données</a>')+'</div>';
-  if(cross)cross.innerHTML=ROW2.filter(n=>by[n]&&by[n].last!=null).map(n=>kpiCell(n,by[n],scan,3)).join('');
+  if(cross)cross.innerHTML=ROW2.filter(n=>by[n]&&by[n].last!=null).map(n=>kpiCell(n,by[n],scan,3,KPI_ACCENT[n])).join('');
   if(scan&&scan.data_source==='demo')
     $('vx-demo-banner').innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
   return scan;
