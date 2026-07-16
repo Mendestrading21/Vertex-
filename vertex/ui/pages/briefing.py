@@ -211,9 +211,53 @@ _CONTENT = """
 </div>
 </div>
 
-<!-- ═══ 2. BRIEF VERTEX + CE QUI COMPTE ═══ -->
+<!-- ═══ 2. OPPORTUNITÉS ACTIVES (décision-first) : actions · options · entonnoir ═══ -->
+<div data-block="opportunities" data-anchor-label="Opportunités">
+  <div class="vx-sect"><b><i>02</i>Opportunités actives</b><span>ce que le comité retient — avec le POURQUOI de chaque idée</span></div>
+  <div class="vx-grid vx-mt2">
+    <section class="vx-card vx-col-6" aria-label="Opportunités actions">
+      <div class="vx-card-header"><span class="vx-card-title">Opportunités actions</span>
+        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Tout voir →</a></span></div>
+      <div id="vx-opp-stocks">%%LOADING%%</div>
+      <div id="vx-opp-rr" class="vx-mt2"></div>
+    </section>
+    <section class="vx-card vx-col-6" aria-label="Opportunités options">
+      <div class="vx-card-header"><span class="vx-card-title">Opportunités options</span>
+        <span class="vx-badge" style="color:var(--vx-violet)">Vertex Dynamic Options</span>
+        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=options">Tout voir →</a></span></div>
+      <div id="vx-opp-options">%%LOADING%%</div>
+    </section>
+  </div>
+  <div class="vx-grid vx-mt4">
+    <section class="vx-card vx-col-4 vx-card--accent" aria-label="Entonnoir de sélection">
+      <div class="vx-card-header"><span class="vx-card-title">Entonnoir</span>
+        <span class="vx-chart-question">Combien de dossiers survivent au tri ?</span></div>
+      <div id="vx-opp-funnel">%%LOADING%%</div>
+    </section>
+    <div class="vx-col-8" id="vx-opp-posture"></div>
+  </div>
+</div>
+
+<!-- ═══ 3. PORTEFEUILLE + ALERTES (décision-first) ═══ -->
+<div data-block="portfolio" data-anchor-label="Portefeuille">
+  <div class="vx-sect"><b><i>03</i>Portefeuille</b><span>tes positions déclarées · tes alertes actives</span></div>
+  <div class="vx-grid vx-mt2">
+    <section class="vx-card vx-col-8" aria-label="Portefeuille">
+      <div class="vx-card-header"><span class="vx-card-title">Portefeuille — Équipe Vertex</span>
+        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></span></div>
+      <div id="vx-portfolio">%%LOADING%%</div>
+    </section>
+    <section class="vx-card vx-col-4" aria-label="Alertes prioritaires">
+      <div class="vx-card-header"><span class="vx-card-title">Alertes prioritaires</span>
+        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=radar">Radar →</a></span></div>
+      <div id="vx-alerts">%%LOADING%%</div>
+    </section>
+  </div>
+</div>
+
+<!-- ═══ 4. BRIEF VERTEX + CE QUI COMPTE ═══ -->
 <div data-block="brief" data-anchor-label="Brief">
-<div class="vx-sect"><b><i>02</i>Brief du marché</b><span>la synthèse écrite du jour — composée uniquement des données moteur</span></div>
+<div class="vx-sect"><b><i>04</i>Brief du marché</b><span>la synthèse écrite du jour — composée uniquement des données moteur</span></div>
 <div class="vx-grid vx-mt2">
   <section class="vx-card vx-card--hero vx-col-8" id="vx-brief" aria-label="Brief Vertex">
     <div class="vx-card-header"><span class="vx-card-title">Brief du marché — Vertex</span>
@@ -229,7 +273,7 @@ _CONTENT = """
 
 <!-- ═══ 4. ACTUS & CATALYSEURS ═══ -->
 <div data-block="news" data-anchor-label="Actus">
-  <div class="vx-sect"><b><i>03</i>Actus &amp; catalyseurs</b><span>l’information du jour · économie &amp; résultats — les dates qui comptent</span></div>
+  <div class="vx-sect"><b><i>05</i>Actus &amp; catalyseurs</b><span>l’information du jour · économie &amp; résultats — les dates qui comptent</span></div>
   <div class="vx-grid vx-mt2">
     <section class="vx-card vx-col-6" id="vx-news" aria-label="Actualités marquantes">
       <div class="vx-card-header"><span class="vx-card-title">Actualités marquantes</span>
@@ -242,7 +286,7 @@ _CONTENT = """
 
 <!-- ═══ 3. MARCHÉS (fusion) : indices · graphique héros · comparaison · taux ═══ -->
 <div data-block="markets" data-anchor-label="Marchés">
-  <div class="vx-sect"><b><i>04</i>Marchés</b><span>indices avec mini-courbes · devises, matières &amp; crypto · taux</span></div>
+  <div class="vx-sect"><b><i>06</i>Marchés</b><span>indices avec mini-courbes · devises, matières &amp; crypto · taux</span></div>
   <div class="vx-grid vx-mt2" id="vx-market-strip" aria-label="Indices"></div>
   <div class="vx-grid vx-mt2" id="vx-cross-strip" aria-label="Cross-asset"></div>
   <div class="vx-grid vx-mt4">
@@ -261,7 +305,7 @@ _CONTENT = """
 
 <!-- ═══ 7. POULS : jauges VIX/breadth/régime + posture + internals ═══ -->
 <div data-block="pulse" data-anchor-label="Pouls">
-  <div class="vx-sect"><b><i>05</i>Pouls du marché</b><span>volatilité · participation · santé — tous les indicateurs internes</span></div>
+  <div class="vx-sect"><b><i>07</i>Pouls du marché</b><span>volatilité · participation · santé — tous les indicateurs internes</span></div>
   <div class="vx-grid vx-mt2">
     <section class="vx-card vx-col-8 vx-card--accent" aria-label="Pouls du marché">
       <div class="vx-card-header"><span class="vx-card-title">Pouls du marché</span>
@@ -310,7 +354,7 @@ _CONTENT = """
 
 <!-- ═══ 5. MOUVEMENTS : top / flop de la séance ═══ -->
 <div data-block="topflop" data-anchor-label="Mouvements">
-  <div class="vx-sect"><b><i>06</i>Mouvements de la séance</b><span>plus fortes hausses et baisses de l’univers scanné</span></div>
+  <div class="vx-sect"><b><i>08</i>Mouvements de la séance</b><span>plus fortes hausses et baisses de l’univers scanné</span></div>
   <div class="vx-grid vx-mt2">
     <div class="vx-col-12" id="vx-move-summary"></div>
     <section class="vx-card vx-col-6" aria-label="Top de la séance">
@@ -326,36 +370,9 @@ _CONTENT = """
   </div>
 </div>
 
-<!-- ═══ 8. OPPORTUNITÉS : actions · options · entonnoir · posture ═══ -->
-<div data-block="opportunities" data-anchor-label="Opportunités">
-  <div class="vx-sect"><b><i>07</i>Opportunités</b><span>ce que le comité retient — avec le POURQUOI de chaque idée</span></div>
-  <div class="vx-grid vx-mt2">
-    <section class="vx-card vx-col-6" aria-label="Opportunités actions">
-      <div class="vx-card-header"><span class="vx-card-title">Opportunités actions</span>
-        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Tout voir →</a></span></div>
-      <div id="vx-opp-stocks">%%LOADING%%</div>
-      <div id="vx-opp-rr" class="vx-mt2"></div>
-    </section>
-    <section class="vx-card vx-col-6" aria-label="Opportunités options">
-      <div class="vx-card-header"><span class="vx-card-title">Opportunités options</span>
-        <span class="vx-badge" style="color:var(--vx-violet)">Vertex Dynamic Options</span>
-        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=options">Tout voir →</a></span></div>
-      <div id="vx-opp-options">%%LOADING%%</div>
-    </section>
-  </div>
-  <div class="vx-grid vx-mt4">
-    <section class="vx-card vx-col-4 vx-card--accent" aria-label="Entonnoir de sélection">
-      <div class="vx-card-header"><span class="vx-card-title">Entonnoir</span>
-        <span class="vx-chart-question">Combien de dossiers survivent au tri ?</span></div>
-      <div id="vx-opp-funnel">%%LOADING%%</div>
-    </section>
-    <div class="vx-col-8" id="vx-opp-posture"></div>
-  </div>
-</div>
-
 <!-- ═══ 6. SECTEURS & ROTATION ═══ -->
 <div data-block="sectors" data-anchor-label="Secteurs">
-  <div class="vx-sect"><b><i>08</i>Secteurs &amp; rotation</b><span>où va le capital — cliquer un secteur ouvre ses opportunités</span></div>
+  <div class="vx-sect"><b><i>09</i>Secteurs &amp; rotation</b><span>où va le capital — cliquer un secteur ouvre ses opportunités</span></div>
   <div class="vx-grid vx-mt2">
     <div class="vx-col-8" id="vx-sectors-quadrant"></div>
     <div class="vx-col-4" id="vx-rotation"></div>
@@ -373,22 +390,6 @@ _CONTENT = """
   </div>
 </div>
 
-<!-- ═══ 9. PORTEFEUILLE + ALERTES ═══ -->
-<div data-block="portfolio" data-anchor-label="Portefeuille">
-  <div class="vx-sect"><b><i>09</i>Portefeuille</b><span>tes positions déclarées · tes alertes actives</span></div>
-  <div class="vx-grid vx-mt2">
-    <section class="vx-card vx-col-8" aria-label="Portefeuille">
-      <div class="vx-card-header"><span class="vx-card-title">Portefeuille — Équipe Vertex</span>
-        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></span></div>
-      <div id="vx-portfolio">%%LOADING%%</div>
-    </section>
-    <section class="vx-card vx-col-4" aria-label="Alertes prioritaires">
-      <div class="vx-card-header"><span class="vx-card-title">Alertes prioritaires</span>
-        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=radar">Radar →</a></span></div>
-      <div id="vx-alerts">%%LOADING%%</div>
-    </section>
-  </div>
-</div>
 <button id="vx-backtop" aria-label="Remonter en haut">↑ Haut</button>
 
 """
@@ -413,10 +414,11 @@ function modeOf(scan){return scan&&scan.data_source==='demo'?'fallback':(scan&&s
 const H_CPT=160,H_STD=240,H_HERO=320;
 
 /* Personnalisation contrôlée des blocs (§43 — vxDashboardLayout.hidden) */
-const BLOCKS=[['essential','Situation du jour'],['brief','Brief du marché'],
+const BLOCKS=[['essential','Situation du jour'],['opportunities','Opportunités actives'],
+  ['portfolio','Portefeuille & alertes'],['brief','Brief du marché'],
   ['news','Actus & catalyseurs'],['markets','Marchés (indices · graphique · taux)'],
   ['pulse','Pouls du marché'],['topflop','Mouvements de la séance'],
-  ['opportunities','Opportunités'],['sectors','Secteurs & rotation'],['portfolio','Portefeuille & alertes']];
+  ['sectors','Secteurs & rotation']];
 function layoutGet(){try{return JSON.parse(localStorage.getItem('vxDashboardLayout')||'{}')}catch(e){return{}}}
 function layoutSet(l){try{localStorage.setItem('vxDashboardLayout',JSON.stringify(l))}catch(e){}}
 function applyBlocks(){
