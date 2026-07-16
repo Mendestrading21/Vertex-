@@ -103,7 +103,7 @@ def build_editorial(scan_state: dict) -> dict:
 
 _CONTENT = """
 <div class="vx-page-header">
-  <div><div class="vx-eyebrow">Cockpit d’analyse</div><h1>Dashboard</h1>
+  <div><h1>Dashboard</h1>
   <div class="vx-sub">Que dois-je comprendre et surveiller aujourd’hui ?</div></div>
   <div class="vx-actions">
     <button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-customize-btn">Personnaliser</button>

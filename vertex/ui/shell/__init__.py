@@ -41,7 +41,6 @@ _ICONS = {
     'back': '<path d="m15 18-6-6 6-6"/>',
     'star': '<path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/>',
     'bolt': '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
-    'theme': '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/>',
 }
 
 
@@ -95,8 +94,6 @@ def _topbar(space_label: str, sub_label: str = '') -> str:
       aria-label="Connexions" title="Connexions (IBKR, TradingView, Claude, sync)">{icon('plug')}</button>
     <button class="vx-btn vx-btn-icon vx-btn-ghost" id="vx-notifs-btn" style="position:relative"
       aria-label="Notifications">{icon('bell')}<span class="vx-notif-badge" id="vx-notif-badge" hidden>0</span></button>
-    <button class="vx-btn vx-btn-icon vx-btn-ghost" id="vx-theme-btn"
-      aria-label="Basculer le thème clair/sombre" title="Thème clair / sombre">{icon('theme')}</button>
     <button class="vx-btn vx-btn-icon vx-btn-ghost" id="vx-refresh-btn" data-state="ready"
       aria-label="Actualiser les données">{icon('refresh')}</button>
   </div>
@@ -159,7 +156,6 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
-<script>try{{var t=localStorage.getItem('vxTheme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}}catch(e){{}}</script>
 <link rel="stylesheet" href="/static/vertex/css/tokens.css">
 <link rel="stylesheet" href="/static/vertex/css/base.css">
 <link rel="stylesheet" href="/static/vertex/css/layout.css">
@@ -176,8 +172,6 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/control-surface.css">
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
 <link rel="stylesheet" href="/static/vertex/css/premium.css">
-<link rel="stylesheet" href="/static/vertex/css/refine.css">
-<link rel="stylesheet" href="/static/vertex/css/theme-light.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
@@ -197,7 +191,6 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <script src="/static/vertex/js/vx-entities.js"></script>
 <script src="/static/vertex/js/vx-shell.js"></script>
 <script src="/static/vertex/js/ui/inspector-drawer.js" defer></script>
-<script src="/static/vertex/js/ui/vx-motion.js" defer></script>
 <script src="/static/vertex/js/live-updates.js" defer></script>
 <script src="/static/vertex/js/charts/chart-theme-obsidian-copper.js" defer></script>
 <script src="/static/vertex/js/charts/chart-core.js" defer></script>
