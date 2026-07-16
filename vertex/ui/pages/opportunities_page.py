@@ -239,8 +239,9 @@ async function renderScreener(){
     const cc=VXCharts.colors;
     const pts=f.filter(r=>r.vx_edge!=null&&r.vx_pwin!=null).map(r=>({
       x:r.vx_edge,y:r.vx_pwin*100,sym:r.symbol,v:r.verdict,sector:r.sector||'',
-      price:r.price,rr:r.rr,score:r.score,conv:r.st_conf,setup:pbText(r),
-      r:4+Math.min(9,Math.max(0,(r.st_conf||50)-40)/6)}));
+      price:r.price,rr:r.rr,score:r.score,conv:r.st_conf,setup:pbText(r),noTrade:!!r.vx_notrade,
+      /* rayon = Kelly (taille de position que le moteur oserait) — repli conviction */
+      r:r.vx_kelly!=null?4+Math.min(10,Math.max(0,r.vx_kelly*100)):4+Math.min(9,Math.max(0,(r.st_conf||50)-40)/6)}));
     const host=$('op-scatter');
     if(!pts.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun titre du filtre ne porte à la fois un avantage (edge) et une proba de gain — élargis les filtres.')+'</div>';scatterChart=null;return;}
     const elite=pts.filter(p=>p.x>=60&&p.y>=60).length;
@@ -249,7 +250,7 @@ async function renderScreener(){
       question:'Quels titres combinent un vrai avantage statistique ET une bonne proba de réussite ?',
       conclusion:elite+' titre(s) en zone ÉLITE (avantage ≥ 60 et proba ≥ 60 %)',
       height:320,source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
-      limits:'avantage (edge 0-100) et proba de gain : moteur Vertex Monte-Carlo · taille de point = conviction',
+      limits:'avantage & proba : moteur Vertex Monte-Carlo · taille = Kelly (taille de position suggérée) · croix corail = NO-TRADE moteur',
       explain:{shows:'Chaque point est un titre filtré, placé par son avantage statistique (edge) et sa probabilité de gain simulée.',
         why:'Un bon dossier combine un avantage réel ET une proba favorable — l’un sans l’autre ne suffit pas.',
         confirm:'Un point qui migre vers le haut-droit en gardant sa conviction.',
@@ -257,9 +258,11 @@ async function renderScreener(){
       render:(cv)=>{scatterChart=VXCharts.mount(cv,{type:'scatter',
         data:{datasets:[{data:pts,
           pointRadius:(ctx)=>ctx.raw?ctx.raw.r:4,pointHoverRadius:(ctx)=>ctx.raw?ctx.raw.r+3:8,
+          /* croix = NO-TRADE moteur (dossier interdit malgré ses chiffres) */
+          pointStyle:(ctx)=>ctx.raw&&ctx.raw.noTrade?'crossRot':'circle',
           pointBackgroundColor:(ctx)=>{const v=ctx.raw&&ctx.raw.v;
             return v==='BUY'||v==='ACHETER'?cc.positive:(v==='AVOID'||v==='ÉVITER'?cc.negative:cc.neutral);},
-          pointBorderColor:'rgba(255,255,255,.22)',pointBorderWidth:1}]},
+          pointBorderColor:(ctx)=>ctx.raw&&ctx.raw.noTrade?cc.negative:'rgba(255,255,255,.22)',pointBorderWidth:(ctx)=>ctx.raw&&ctx.raw.noTrade?2:1}]},
         options:{scales:{
           x:{title:{display:true,text:'Avantage statistique (edge) →'},min:0,max:100,grid:{color:'rgba(255,255,255,.05)'}},
           y:{title:{display:true,text:'Proba de gain % ↑'},min:0,max:100,grid:{color:'rgba(255,255,255,.05)'}}},
@@ -485,8 +488,9 @@ async function renderOptions(){
   const scan=await VX.fetch('/scan',{ttl:120000});
   const board=(scan.options_board||[]);
   window.__opCompare=function(symWanted){
+    /* Plages NON chevauchantes : ≥0.45 défensif · 0.30-0.45 principal · 0.18-0.30 convexe */
     const catOf2=(c)=>{const d=Math.abs(c.delta||0);
-      if(d>=0.40&&d<=0.60)return'BALANCED';if(d>=0.28&&d<0.45)return'DYNAMIC';
+      if(d>=0.45&&d<=0.65)return'BALANCED';if(d>=0.30&&d<0.45)return'DYNAMIC';
       if(d>=0.18&&d<0.30)return'ULTRA_CONVEX';return'AUTRE';};
     let pool=board;
     if(symWanted)pool=pool.filter(c=>c.sym===symWanted);
@@ -512,7 +516,7 @@ async function renderOptions(){
       if((c.delta||0)>(m.delta||0))wins.push('delta plus élevé (plus défensif)');
       if((c.cost||1e9)<(m.cost||1e9))wins.push('prime plus faible (plus convexe)');
       if((c.oi||0)>(m.oi||0))wins.push('OI supérieur');
-      return `<li><b>${l}</b> : ${wins.length?('gagne sur '+wins.join(', ')):'ne domine sur aucune dimension clé'} — qualité globale ${VX.fmt.nd(c.quality)} vs ${VX.fmt.nd(m[1]?m[1].quality:'')}.</li>`;
+      return `<li><b>${l}</b> : ${wins.length?('gagne sur '+wins.join(', ')):'ne domine sur aucune dimension clé'} — qualité globale ${VX.fmt.nd(c.quality)} vs ${VX.fmt.nd(m?m.quality:null)}.</li>`;
     }).join('');
     VX.shell.openDrawer('Comparateur de contrats'+(symWanted?' — '+symWanted:''),
       `<div class="vx-table-wrap"><table class="vx-table"><thead><tr>
@@ -800,7 +804,7 @@ async function renderAnomalies(){
         <th>Titre</th><th>Anomalies</th><th class="vx-num">Intensité</th><th class="vx-num">Score</th><th></th></tr></thead><tbody>
         ${rows.slice(0,60).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
           <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
-          <td data-label="Anomalies">${(r.anomalies||[]).slice(0,4).map(a=>`<span class="vx-badge">${esc(typeof a==='string'?a:(a.code||''))}</span>`).join(' ')}</td>
+          <td data-label="Anomalies">${(r.anomalies||[]).slice(0,4).map(a=>`<span class="vx-badge" title="${esc(typeof a==='object'?(a.k||''):'')}">${esc(typeof a==='string'?a:(a.lbl||a.k||a.code||''))}</span>`).join(' ')}</td>
           <td data-label="Intensité" class="vx-num">${VX.fmt.nd(r.anomaly_score)}</td>
           <td data-label="Score" class="vx-num">${VX.fmt.nd(r.score)}</td>
           <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table></div>`
