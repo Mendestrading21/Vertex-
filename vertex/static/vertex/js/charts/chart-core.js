@@ -131,9 +131,11 @@
   /* ── ChartCard : contrat visuel §34 ─────────────────────────────── */
   let uid = 0;
   C.card = function (host, opts) {
-    /* opts: {title, question, conclusion, timeframe, controlsHtml, height,
+    /* opts: {title, question, conclusion, timeframe|period, unit, controlsHtml, height,
               source, timestamp, mode, limits, explain:{shows,why,confirm,invalidate},
-              legend:[{label,color}], render(canvas)->Chart} */
+              legend:[{label,color}], render(canvas)->Chart}
+       period = alias de timeframe (badge). unit = unité de l'axe (%, $, pts…),
+       affichée en pied et dans le tiroir « Comprendre » (contrat graphique §34). */
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;
     /* Re-rendu d'une carte (filtres, périodes) : détruire l'ancien Chart AVANT
@@ -150,7 +152,8 @@
     el.innerHTML = `
       <div class="vx-chart-head">
         <span class="vx-chart-title">${opts.title || ''}</span>
-        ${opts.timeframe ? `<span class="vx-badge">${opts.timeframe}</span>` : ''}
+        ${(opts.timeframe || opts.period) ? `<span class="vx-badge">${opts.timeframe || opts.period}</span>` : ''}
+        ${opts.unit ? `<span class="vx-badge vx-badge-unit" title="Unité de l'axe">${opts.unit}</span>` : ''}
         <span class="vx-chart-controls">${opts.controlsHtml || ''}</span>
         ${opts.question ? `<span class="vx-chart-question">${opts.question}</span>` : ''}
         ${opts.conclusion ? `<span class="vx-chart-conclusion">${opts.conclusion}</span>` : ''}
@@ -176,7 +179,7 @@
         <h3 class="vx-mt4 vx-mb2">Ce qui confirmerait</h3><p class="vx-dim">${ex.confirm || '—'}</p>
         <h3 class="vx-mt4 vx-mb2">Ce qui invaliderait</h3><p class="vx-dim">${ex.invalidate || '—'}</p>
         <div class="vx-divider"></div>
-        <div class="vx-meta">Source : ${opts.source || 'n/d'} · ${VX.fmt.ago(opts.timestamp)}${opts.limits ? ' · ' + opts.limits : ''}</div>`);
+        <div class="vx-meta">Source : ${opts.source || 'n/d'} · ${VX.fmt.ago(opts.timestamp)}${opts.unit ? ' · unité ' + opts.unit : ''}${(opts.period || opts.timeframe) ? ' · ' + (opts.period || opts.timeframe) : ''}${opts.limits ? ' · ' + opts.limits : ''}</div>`);
     });
     /* Plein écran / mode focus (§35) : la carte occupe le viewport, le graphique
        se redimensionne (Chart.js maintainAspectRatio:false). Échap ou clic ferme. */
