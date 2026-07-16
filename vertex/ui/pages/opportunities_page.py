@@ -78,6 +78,7 @@ _JS = r"""
 <script src="/static/vertex/js/charts/option-theta.js" defer></script>
 <script src="/static/vertex/js/charts/option-iv-sensitivity.js" defer></script>
 <script src="/static/vertex/js/charts/bar-chart.js" defer></script>
+<script src="/static/vertex/js/charts/donut-chart.js" defer></script>
 <script src="/static/vertex/js/charts/sector-chart.js" defer></script>
 <script>
 (function(){
@@ -156,26 +157,52 @@ async function renderScreener(){
 
   /* État des filtres : URL (liens entrants) > localStorage > défauts. */
   let saved={};try{saved=JSON.parse(localStorage.getItem('vxScreenFilters')||'{}')}catch(e){}
-  const state=Object.assign({bucket:'',sector:'',vehicle:'',setup:'',minScore:0,minPwin:0,minRR:0,minRvol:0},
+  const state=Object.assign({bucket:'',sector:'',vehicle:'',setup:'',mtf:'',
+      minScore:0,minPwin:0,minRR:0,minRvol:0,maxPrice:0,
+      setBreakout:false,setPullback:false,setSqueeze:false,setAccum:false,
+      exclNoTrade:false,exclHeld:false,exclProxy:false},
     saved,{bucket:PARAMS.decision||saved.bucket||'',sector:PARAMS.sector||saved.sector||'',
            setup:(PARAMS.setup||saved.setup||'').toUpperCase()});
   function persist(){try{localStorage.setItem('vxScreenFilters',JSON.stringify(state))}catch(e){}}
+  const heldSyms=new Set(((window.VXEntities?VXEntities.positions():[])||[]).map(p=>String(p.sym).toUpperCase()));
+  function vehicleOf(r){const v=r&&r.vehicle;return String((v&&v.reco)||v||'').toUpperCase();}
+  function mtfState(r){const m=r&&r.mtf;return String((m&&m.state)||'').toUpperCase();}
   function filtered(){
     let f=rows;
     if(state.bucket)f=f.filter(r=>bucketOf(r)===state.bucket);
     if(state.sector)f=f.filter(r=>r.sector===state.sector);
-    if(state.vehicle)f=f.filter(r=>String(r.vehicle||'').toUpperCase().includes(state.vehicle));
+    if(state.vehicle)f=f.filter(r=>vehicleOf(r).includes(state.vehicle));
+    if(state.mtf)f=f.filter(r=>mtfState(r).includes(state.mtf));
     if(state.setup)f=f.filter(r=>(pbText(r)||'').toUpperCase().includes(state.setup));
+    if(state.setBreakout)f=f.filter(r=>r.breakout===true);
+    if(state.setPullback)f=f.filter(r=>r.pullback===true);
+    if(state.setSqueeze)f=f.filter(r=>r.squeeze===true);
+    if(state.setAccum)f=f.filter(r=>r.accumulation===true);
+    if(state.exclNoTrade)f=f.filter(r=>!r.vx_notrade);
+    if(state.exclHeld)f=f.filter(r=>!heldSyms.has(r.symbol));
+    if(state.exclProxy)f=f.filter(r=>r.st_fproxy!==true);
     if(state.minScore)f=f.filter(r=>(r.score||0)>=state.minScore);
     if(state.minPwin)f=f.filter(r=>((r.vx_pwin||0)*100)>=state.minPwin);
     if(state.minRR)f=f.filter(r=>(r.rr||0)>=state.minRR);
     if(state.minRvol)f=f.filter(r=>(r.rvol||0)>=state.minRvol);
+    if(state.maxPrice)f=f.filter(r=>(r.price||0)<=state.maxPrice);
     return f;
   }
+  /* Préréglages : combinaisons réelles prêtes à l'emploi */
+  const PRESETS={
+    elite:{label:'⭐ Élite',apply:{minScore:70,minPwin:60,exclNoTrade:true}},
+    cassure:{label:'🚀 Cassure volumique',apply:{setBreakout:true,minRvol:1.5}},
+    repli:{label:'🎯 Repli en tendance',apply:{setPullback:true,mtf:'ALIGNÉ'}},
+    compression:{label:'🔒 Compression prête',apply:{setSqueeze:true}},
+  };
 
   /* ── Squelette de la vue ── */
   $('op-body').innerHTML=demoBanner(scan)+`
     <div class="vx-screenbar" role="group" aria-label="Filtres du screener">
+      <span class="vx-meta" style="flex-basis:100%;font-weight:700;letter-spacing:.05em">PRÉRÉGLAGES
+        ${Object.entries(PRESETS).map(([k,p2])=>`<button class="vx-chip" data-preset="${k}">${p2.label}</button>`).join(' ')}
+        <button class="vx-btn vx-btn-sm vx-btn-ghost" id="op-reset">Réinitialiser</button>
+        <span class="vx-meta vx-right" id="op-count"></span></span>
       ${OUT.map(b=>`<button class="vx-chip" data-fk="bucket" data-fv="${b}" aria-pressed="${state.bucket===b}">${b}</button>`).join('')}
       <select class="vx-select" data-fk="sector" style="width:auto" aria-label="Secteur">
         <option value="">Tous secteurs</option>${sectors.map(s=>`<option ${state.sector===s?'selected':''}>${s}</option>`).join('')}</select>
@@ -183,13 +210,26 @@ async function renderScreener(){
         <option value="">Action & option</option>
         <option value="ACTION" ${state.vehicle==='ACTION'?'selected':''}>Plutôt action</option>
         <option value="OPTION" ${state.vehicle==='OPTION'?'selected':''}>Plutôt option</option></select>
+      <select class="vx-select" data-fk="mtf" style="width:auto" aria-label="Multi-horizons">
+        <option value="">Tous horizons</option>
+        <option value="ALIGNÉ" ${state.mtf==='ALIGNÉ'?'selected':''}>Journalier + hebdo alignés</option>
+        <option value="REPLI" ${state.mtf==='REPLI'?'selected':''}>Repli dans tendance</option>
+        <option value="NEUTRE" ${state.mtf==='NEUTRE'?'selected':''}>Neutre</option></select>
+      <span class="vx-meta" style="flex-basis:100%;display:flex;flex-wrap:wrap;gap:.4rem;align-items:center">SETUPS
+        <button class="vx-chip" data-ft="setBreakout" aria-pressed="${state.setBreakout}">🚀 Cassure</button>
+        <button class="vx-chip" data-ft="setPullback" aria-pressed="${state.setPullback}">🎯 Repli</button>
+        <button class="vx-chip" data-ft="setSqueeze" aria-pressed="${state.setSqueeze}">🔒 Compression</button>
+        <button class="vx-chip" data-ft="setAccum" aria-pressed="${state.setAccum}">📥 Accumulation</button>
+        <span style="width:10px"></span>EXCLURE
+        <button class="vx-chip" data-ft="exclNoTrade" aria-pressed="${state.exclNoTrade}">🚫 no-trade moteur</button>
+        <button class="vx-chip" data-ft="exclHeld" aria-pressed="${state.exclHeld}">💼 mes positions</button>
+        <button class="vx-chip" data-ft="exclProxy" aria-pressed="${state.exclProxy}">≈ fondamental estimé</button></span>
       <label class="rng">score ≥ <input type="range" data-fk="minScore" min="0" max="90" step="5" value="${state.minScore}"><b>${state.minScore||'0'}</b></label>
       <label class="rng">proba gain ≥ <input type="range" data-fk="minPwin" min="0" max="90" step="5" value="${state.minPwin}"><b>${state.minPwin||'0'}%</b></label>
       <label class="rng">gain/risque ≥ <input type="range" data-fk="minRR" min="0" max="4" step="0.5" value="${state.minRR}"><b>${state.minRR||'0'}×</b></label>
       <label class="rng">volume ≥ <input type="range" data-fk="minRvol" min="0" max="3" step="0.5" value="${state.minRvol}"><b>×${state.minRvol||'0'}</b></label>
+      <label class="rng">prix ≤ <input type="range" data-fk="maxPrice" min="0" max="1000" step="25" value="${state.maxPrice}"><b>${state.maxPrice?('$'+state.maxPrice):'∞'}</b></label>
       <input class="vx-input" data-fk="setup" style="width:130px" placeholder="setup (BREAKOUT…)" value="${esc(state.setup)}" aria-label="Setup">
-      <button class="vx-btn vx-btn-sm vx-btn-ghost" id="op-reset">Réinitialiser</button>
-      <span class="vx-meta vx-right" id="op-count"></span>
     </div>
     <div class="vx-scr-kpis" id="op-kpis" aria-label="Résumé des résultats"></div>
     <div class="vx-grid vx-mt4">
@@ -207,6 +247,10 @@ async function renderScreener(){
         <div id="op-dist"></div>
         <div class="vx-card-foot"><span class="vx-meta" id="op-dist-meta"></span></div></section>
       <div class="vx-col-6" id="op-sectors"></div>
+    </div>
+    <div class="vx-grid vx-mt4">
+      <div class="vx-col-8" id="op-heat"></div>
+      <div class="vx-col-4" id="op-verdicts"></div>
     </div>
     <div id="op-topcards" class="vx-mt4"></div>
     <div class="vx-card vx-mt4"><div class="vx-card-header"><span class="vx-card-title">Tous les résultats</span>
@@ -229,7 +273,9 @@ async function renderScreener(){
       +`<div class="k"><b style="color:var(--vx-positive)">${buys}</b><span>signaux d’achat</span></div>`
       +`<div class="k"><b>${avgScore!=null?Math.round(avgScore):'—'}</b><span>score moyen</span></div>`
       +`<div class="k"><b>${avgPwin!=null?Math.round(avgPwin)+' %':'—'}</b><span>proba gain moyenne</span></div>`
-      +`<div class="k"><b style="font-size:15px;line-height:1.4">${bestSec?esc(bestSec[0]):'—'}</b><span>secteur le mieux noté</span></div>`;
+      +`<div class="k"><b style="font-size:15px;line-height:1.4">${bestSec?esc(bestSec[0]):'—'}</b><span>secteur le mieux noté</span></div>`
+      +(function(){const al=f.filter(r=>mtfState(r).includes('ALIGNÉ')).length;
+        return `<div class="k"><b>${f.length?Math.round(al/f.length*100)+' %':'—'}</b><span>journalier+hebdo alignés</span></div>`;})();
     $('op-count').textContent=f.length+' / '+rows.length+' titres';
   }
 
@@ -415,7 +461,7 @@ async function renderScreener(){
         <td data-label="Secteur" class="vx-truncate" style="max-width:110px">${esc(r.sector||'—')}</td>
         <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table>`
       :VX.states.empty('Aucun titre ne correspond aux filtres.','<button class="vx-btn vx-btn-sm" id="op-clear2">Effacer les filtres</button>');
-    document.getElementById('op-clear2')?.addEventListener('click',resetFilters);
+    document.getElementById('op-clear2')?.addEventListener('click',()=>resetFilters());
     document.querySelectorAll('#op-table th[data-sort]').forEach(th=>{
       if(th.dataset.sort===sortKey)th.dataset.dir=sortDir<0?'desc':'asc';
       th.addEventListener('click',()=>{
@@ -448,35 +494,104 @@ async function renderScreener(){
     }
   }
 
+  /* ── Heat secteur × statut : où vivent les résultats (clic = filtre combiné) ── */
+  function paintHeat(f){
+    const host=$('op-heat');if(!host||!window.VXCharts||!VXCharts.heatmapCard)return;
+    const secs=[...new Set(f.map(r=>r.sector).filter(Boolean))];
+    if(!secs.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun secteur dans les résultats.')+'</div>';return;}
+    const cnt={};f.forEach(r=>{const k=(r.sector||'')+'|'+bucketOf(r);cnt[k]=(cnt[k]||0)+1;});
+    const rows2=secs.map(sec=>({label:esc(sec),cells:OUT.map(b=>{
+      const v=cnt[sec+'|'+b]||0;
+      return {value:v||null,label:v?String(v):'—',title:sec+' · '+b+' : '+v+' titre(s)'};})}))
+      .sort((a,b)=>{const t=(x)=>OUT.reduce((acc,bb,i)=>acc+(cnt[x.label+'|'+bb]||0)*(OUT.length-i),0);return t(b)-t(a);});
+    VXCharts.heatmapCard('op-heat',{
+      title:'Carte secteur × statut',question:'Dans quels secteurs vivent les dossiers les plus avancés ?',
+      conclusion:'Colonne Actionnable = prêt · cliquer une cellule applique les deux filtres.',
+      columns:OUT,rows:rows2,min:0,max:Math.max(4,...Object.values(cnt)),
+      fmt:(v)=>v==null?'—':String(v),
+      source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
+      limits:'compte de titres par secteur et statut, sur TES filtres'});
+    /* clic cellule → filtre secteur+statut */
+    host.querySelectorAll('tbody tr').forEach((tr,ri)=>{
+      [...tr.querySelectorAll('td')].slice(1).forEach((td,ci)=>{
+        td.style.cursor='pointer';
+        td.addEventListener('click',()=>{
+          const sec=secs[ri]!==undefined?rows2[ri].label:'';
+          state.sector=state.sector===rows2[ri].label?'':rows2[ri].label;
+          state.bucket=state.bucket===OUT[ci]?'':OUT[ci];
+          persist();syncBar();applyAll();});
+      });});
+  }
+  /* ── Donut verdicts des résultats ── */
+  function paintVerdicts(f){
+    const host=$('op-verdicts');if(!host)return;
+    const cnt={};f.forEach(r=>{const v=VERD_FR[r.verdict]||r.verdict||'n/d';cnt[v]=(cnt[v]||0)+1;});
+    const ks=Object.keys(cnt);
+    if(!ks.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun verdict.')+'</div>';return;}
+    const tone={'ACHAT':'#36c889','SURVEILLER':'#c0b79f','ATTENDRE':'#dda23b','ÉVITER':'#ed655c'};
+    VXCharts.donutCard('op-verdicts',{title:'Verdicts des résultats',
+      question:'Que pense le moteur de TA sélection ?',
+      labels:ks,values:ks.map(k=>cnt[k]),colors:ks.map(k=>tone[k]||'#8f8a83'),height:200,
+      source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan)});
+  }
   /* ── Application globale des filtres ── */
   function applyAll(){
     const f=filtered();
-    paintKpis(f);paintScatter(f);paintDist(f);paintSectors(f);paintTopCards(f);paintTable(f);
+    paintKpis(f);paintScatter(f);paintDist(f);paintSectors(f);paintHeat(f);paintVerdicts(f);paintTopCards(f);paintTable(f);
   }
   function syncBar(){
     document.querySelectorAll('[data-fk="bucket"]').forEach(c=>
       c.setAttribute('aria-pressed',String(c.dataset.fv===state.bucket)));
     const sec=document.querySelector('select[data-fk="sector"]');if(sec)sec.value=state.sector;
   }
-  function resetFilters(){
-    Object.assign(state,{bucket:'',sector:'',vehicle:'',setup:'',minScore:0,minPwin:0,minRR:0,minRvol:0});
+  function resetFilters(silent){
+    Object.assign(state,{bucket:'',sector:'',vehicle:'',setup:'',mtf:'',
+      minScore:0,minPwin:0,minRR:0,minRvol:0,maxPrice:0,
+      setBreakout:false,setPullback:false,setSqueeze:false,setAccum:false,
+      exclNoTrade:false,exclHeld:false,exclProxy:false});
     persist();
-    document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>{r.value=0;r.closest('label').querySelector('b').textContent='0'+(r.dataset.fk==='minPwin'?'%':r.dataset.fk==='minRR'?'×':r.dataset.fk==='minRvol'?'':'');});
+    document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>{r.value=0;
+      const b=r.closest('label').querySelector('b');
+      b.textContent=r.dataset.fk==='maxPrice'?'∞':'0'+(r.dataset.fk==='minPwin'?'%':r.dataset.fk==='minRR'?'×':'');});
+    document.querySelectorAll('.vx-screenbar [data-ft]').forEach(x=>x.setAttribute('aria-pressed','false'));
     const inp=document.querySelector('input[data-fk="setup"]');if(inp)inp.value='';
     const veh=document.querySelector('select[data-fk="vehicle"]');if(veh)veh.value='';
-    syncBar();applyAll();
+    const mtfSel=document.querySelector('select[data-fk="mtf"]');if(mtfSel)mtfSel.value='';
+    if(!silent){syncBar();applyAll();}
   }
   /* Écouteurs de la barre */
   document.querySelectorAll('[data-fk="bucket"]').forEach(c=>c.addEventListener('click',()=>{
     state.bucket=state.bucket===c.dataset.fv?'':c.dataset.fv;persist();syncBar();applyAll();}));
   document.querySelector('select[data-fk="sector"]').addEventListener('change',function(){state.sector=this.value;persist();applyAll();});
   document.querySelector('select[data-fk="vehicle"]').addEventListener('change',function(){state.vehicle=this.value;persist();applyAll();});
+  document.querySelector('select[data-fk="mtf"]').addEventListener('change',function(){state.mtf=this.value;persist();applyAll();});
   document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>r.addEventListener('input',function(){
     state[this.dataset.fk]=+this.value;
-    this.closest('label').querySelector('b').textContent=this.value+(this.dataset.fk==='minPwin'?'%':this.dataset.fk==='minRR'?'×':'');
+    const b=this.closest('label').querySelector('b');
+    if(this.dataset.fk==='maxPrice')b.textContent=this.value>0?('$'+this.value):'∞';
+    else b.textContent=this.value+(this.dataset.fk==='minPwin'?'%':this.dataset.fk==='minRR'?'×':'');
     persist();applyAll();}));
+  document.querySelectorAll('.vx-screenbar [data-ft]').forEach(c=>c.addEventListener('click',()=>{
+    state[c.dataset.ft]=!state[c.dataset.ft];
+    c.setAttribute('aria-pressed',String(state[c.dataset.ft]));
+    persist();applyAll();}));
+  document.querySelectorAll('.vx-screenbar [data-preset]').forEach(c=>c.addEventListener('click',()=>{
+    const p2=PRESETS[c.dataset.preset];if(!p2)return;
+    resetFilters(true);
+    Object.assign(state,p2.apply);
+    persist();
+    /* resynchronise l'UI complète depuis l'état */
+    document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>{
+      const v=state[r.dataset.fk]||0;r.value=v;
+      const b=r.closest('label').querySelector('b');
+      if(r.dataset.fk==='maxPrice')b.textContent=v>0?('$'+v):'∞';
+      else b.textContent=v+(r.dataset.fk==='minPwin'?'%':r.dataset.fk==='minRR'?'×':'');});
+    document.querySelectorAll('.vx-screenbar [data-ft]').forEach(x=>x.setAttribute('aria-pressed',String(!!state[x.dataset.ft])));
+    const mtfSel=document.querySelector('select[data-fk="mtf"]');if(mtfSel)mtfSel.value=state.mtf||'';
+    syncBar();applyAll();
+    VX.toast('Préréglage appliqué : '+p2.label,'success');}));
   document.querySelector('input[data-fk="setup"]').addEventListener('input',function(){state.setup=this.value.toUpperCase();persist();applyAll();});
-  document.getElementById('op-reset').addEventListener('click',resetFilters);
+  document.getElementById('op-reset').addEventListener('click',()=>resetFilters());
 
   paintFunnel();
   applyAll();
@@ -531,7 +646,7 @@ async function renderOptions(){
        <div class="vx-help vx-mt2">Analyse uniquement — copier le contrat pour le consulter chez le broker.</div>`);
   };
   const symFilter=(PARAMS.sym||'').toUpperCase();
-  const state={type:'',bucket:'',danger:'',minQ:0,minPop:0,sym:symFilter};
+  const state={type:'',bucket:'',danger:'',minQ:0,minPop:0,maxDte:0,maxCost:0,exclStale:false,sym:symFilter};
   function filtered(){
     let f=board;
     if(state.sym)f=f.filter(c=>c.sym===state.sym);
@@ -540,6 +655,9 @@ async function renderOptions(){
     if(state.danger)f=f.filter(c=>c.danger===state.danger);
     if(state.minQ)f=f.filter(c=>(c.quality||0)>=state.minQ);
     if(state.minPop)f=f.filter(c=>(c.pop||0)>=state.minPop);
+    if(state.maxDte)f=f.filter(c=>(c.dte||0)<=state.maxDte);
+    if(state.maxCost)f=f.filter(c=>(c.cost||0)<=state.maxCost);
+    if(state.exclStale)f=f.filter(c=>!c.stale);
     return f;
   }
   const dangers=[...new Set(board.map(c=>c.danger).filter(Boolean))];
@@ -552,6 +670,9 @@ async function renderOptions(){
         <option value="">Tout danger</option>${dangers.map(d=>`<option>${esc(d)}</option>`).join('')}</select>
       <label class="rng">qualité ≥ <input type="range" data-fk="minQ" min="0" max="80" step="5" value="0"><b>0</b></label>
       <label class="rng">proba profit ≥ <input type="range" data-fk="minPop" min="0" max="70" step="5" value="0"><b>0%</b></label>
+      <label class="rng">échéance ≤ <input type="range" data-fk="maxDte" min="0" max="400" step="20" value="0"><b>∞</b></label>
+      <label class="rng">prime ≤ <input type="range" data-fk="maxCost" min="0" max="6000" step="250" value="0"><b>∞</b></label>
+      <button class="vx-chip" data-ft="exclStale" aria-pressed="false">⏸ exclure hors séance</button>
       <input class="vx-input" data-fk="sym" style="width:110px;text-transform:uppercase" placeholder="Ticker" value="${esc(state.sym)}">
       <button class="vx-btn vx-btn-sm vx-btn-soft" onclick="window.__opCompare&&window.__opCompare(document.querySelector('[data-fk=sym]').value.toUpperCase())">Comparer 3 contrats</button>
       <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options">Desk options →</a>
@@ -563,6 +684,13 @@ async function renderOptions(){
       <div class="vx-col-4"><div class="vx-card" id="op-opt-sel-card">
         <div class="vx-card-header"><span class="vx-card-title">Contrat sélectionné</span></div>
         <div id="op-opt-sel"><div class="vx-meta">Clique un point du nuage ou une ligne de la table pour simuler le contrat.</div></div></div></div>
+    </div>
+    <div class="vx-grid vx-mt4">
+      <div class="vx-col-6" id="op-ivdte"></div>
+      <section class="vx-card vx-col-6" id="op-mix-card"><div class="vx-card-header">
+        <span class="vx-card-title">Répartition du board</span>
+        <span class="vx-chart-question">Terme × sens — où vit l’offre de contrats ?</span></div>
+        <div id="op-mix"></div></section>
     </div>
     <div class="vx-card vx-mt4"><div class="vx-card-header"><span class="vx-card-title">Contrats du board</span>
       <span class="vx-chart-question">Cliquer une ligne simule le contrat (payoff, scénarios, décote temps).</span></div>
@@ -650,7 +778,52 @@ async function renderOptions(){
       tr.addEventListener('click',open);
       tr.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e);}});});
   }
-  function applyAll(){const f=filtered();paintKpis(f);paintScatter(f);paintTable(f);}
+  /* IV selon l'échéance : structure de vol du board filtré */
+  function paintIvDte(f){
+    const host=$('op-ivdte');if(!host)return;
+    const cc=VXCharts.colors;
+    const pts=f.filter(c=>c.iv!=null&&c.dte!=null).map(c=>({x:c.dte,y:c.iv,sym:c.sym,type:c.type,strike:c.strike,idx:board.indexOf(c)}));
+    if(!pts.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun contrat avec IV dans ce filtre.')+'</div>';return;}
+    VXCharts.card('op-ivdte',{
+      title:'IV selon l’échéance',question:'Payes-tu la volatilité plus cher sur le court ou le long terme ?',
+      conclusion:(function(){const sh=pts.filter(p2=>p2.x<=60),lg=pts.filter(p2=>p2.x>150);
+        const med=(a)=>{if(!a.length)return null;const v=a.map(x=>x.y).sort((m,n)=>m-n);return v[Math.floor(v.length/2)];};
+        const ms=med(sh),ml=med(lg);
+        return (ms!=null&&ml!=null)?('IV médiane : '+Math.round(ms)+' % court terme vs '+Math.round(ml)+' % long terme'):'structure partielle';})(),
+      height:240,source:scan.options_source||scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
+      explain:{shows:'Chaque contrat filtré placé par son échéance (jours) et son IV.',
+        why:'Une IV courte gonflée signale un événement price — acheter du temps peut coûter moins cher en annualisé.',
+        confirm:'IV courte < IV longue (structure normale).',invalidate:'Inversion : le court terme se paie plus cher.'},
+      render:(cv)=>VXCharts.mount(cv,{type:'scatter',
+        data:{datasets:[{data:pts,pointRadius:4,pointHoverRadius:7,
+          pointBackgroundColor:(ctx)=>ctx.raw&&ctx.raw.type==='PUT'?cc.violet:cc.positive,
+          pointBorderColor:'rgba(255,255,255,.18)',pointBorderWidth:1}]},
+        options:{scales:{x:{title:{display:true,text:'Échéance (jours) →'},grid:{color:'rgba(255,255,255,.05)'}},
+          y:{title:{display:true,text:'IV % ↑'},grid:{color:'rgba(255,255,255,.05)'}}},
+          plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} ${ctx.raw.type} ${ctx.raw.strike} · ${ctx.raw.x} j · IV ${Math.round(ctx.raw.y)} %`}}},
+          onClick:(evt,els,chart)=>{const p2=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+            if(p2.length){openContract(board[chart.data.datasets[0].data[p2[0].index].idx]);}}}})});
+  }
+  /* Répartition terme × type : barres empilées HTML */
+  function paintMix(f){
+    const el=$('op-mix');if(!el)return;
+    const B=['court','moyen','long'];
+    const cnt={};f.forEach(c=>{const k=(c.bucket||'?')+'|'+c.type;cnt[k]=(cnt[k]||0)+1;});
+    const tot=f.length||1;
+    if(!f.length){el.innerHTML=VX.states.empty('Aucun contrat.');return;}
+    el.innerHTML=B.map(b=>{
+      const ca=cnt[b+'|CALL']||0,pu=cnt[b+'|PUT']||0,t=ca+pu;
+      if(!t)return '';
+      return `<div class="vx-mt2"><div class="vx-flex" style="justify-content:space-between;font-size:11.5px">
+          <b>${b} terme</b><span class="vx-meta">${t} contrat(s) · ${Math.round(t/tot*100)} %</span></div>
+        <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--vx-surface-0);margin-top:4px"
+          role="img" aria-label="${b} : ${ca} calls, ${pu} puts">
+          ${ca?`<i style="width:${ca/t*100}%;background:var(--vx-positive)" title="${ca} CALL"></i>`:''}
+          ${pu?`<i style="width:${pu/t*100}%;background:var(--vx-violet)" title="${pu} PUT"></i>`:''}</div></div>`;
+    }).join('')
+    +'<div class="vx-stackbar-legend vx-mt2"><span><i style="background:var(--vx-positive)"></i>CALL</span><span><i style="background:var(--vx-violet)"></i>PUT</span></div>';
+  }
+  function applyAll(){const f=filtered();paintKpis(f);paintScatter(f);paintIvDte(f);paintMix(f);paintTable(f);}
   document.querySelectorAll('.vx-screenbar [data-fk="type"],.vx-screenbar [data-fk="bucket"]').forEach(c=>c.addEventListener('click',()=>{
     const k=c.dataset.fk;state[k]=state[k]===c.dataset.fv?'':c.dataset.fv;
     document.querySelectorAll(`.vx-screenbar [data-fk="${k}"]`).forEach(x=>
@@ -658,8 +831,14 @@ async function renderOptions(){
   document.querySelector('select[data-fk="danger"]').addEventListener('change',function(){state.danger=this.value;applyAll();});
   document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>r.addEventListener('input',function(){
     state[this.dataset.fk]=+this.value;
-    this.closest('label').querySelector('b').textContent=this.value+(this.dataset.fk==='minPop'?'%':'');
+    const b=this.closest('label').querySelector('b');
+    if(this.dataset.fk==='maxDte')b.textContent=this.value>0?(this.value+' j'):'∞';
+    else if(this.dataset.fk==='maxCost')b.textContent=this.value>0?('$'+this.value):'∞';
+    else b.textContent=this.value+(this.dataset.fk==='minPop'?'%':'');
     applyAll();}));
+  document.querySelectorAll('.vx-screenbar [data-ft]').forEach(c=>c.addEventListener('click',()=>{
+    state[c.dataset.ft]=!state[c.dataset.ft];
+    c.setAttribute('aria-pressed',String(state[c.dataset.ft]));applyAll();}));
   document.querySelector('input[data-fk="sym"]').addEventListener('input',function(){state.sym=this.value.toUpperCase();applyAll();});
   async function openContract(c){
     if(!c)return;
@@ -676,6 +855,15 @@ async function renderOptions(){
        <div class="vx-kv"><span class="k">Qualité</span><span class="v vx-mono">${VX.fmt.nd(c.quality)}</span></div>
        <div class="vx-kv"><span class="k">Danger</span><span class="v">${esc(c.danger||'n/d')}</span></div>
        <div class="vx-kv"><span class="k">Décote temps</span><span class="v vx-mono">${c.theta_burn!=null?VX.fmt.num(c.theta_burn,2)+' % / jour':'n/d'}</span></div>
+       ${c.quality_parts?`<div class="vx-metric-k vx-mt2" style="display:block">D’où vient la qualité ${VX.fmt.nd(c.quality)}</div>
+         ${Object.entries(c.quality_parts).map(([k2,v2])=>{
+           const got=Array.isArray(v2)?v2[0]:v2;const max2=Array.isArray(v2)?v2[1]:100;
+           const pc=max2?Math.round(got/max2*100):0;
+           return `<div class="vx-flex" style="gap:7px;align-items:center;padding:1.5px 0">
+             <span class="vx-meta" style="flex:0 0 76px">${esc(k2)}</span>
+             <span style="flex:1;height:5px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden">
+               <i style="display:block;height:100%;width:${Math.max(3,Math.min(100,pc))}%;background:${pc>=70?'var(--vx-positive)':pc>=40?'var(--vx-warning)':'var(--vx-negative)'};border-radius:99px"></i></span>
+             <b class="vx-mono" style="font-size:10px;flex:0 0 40px;text-align:right">${got}/${max2}</b></div>`;}).join('')}`:''}
        <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
          <a class="vx-btn vx-btn-sm vx-btn-primary" href="/options/${esc(c.sym)}">Dossier options</a>
          <button class="vx-btn vx-btn-sm" data-open-analysis="${esc(c.sym)}">Fiche action</button></div>`;
@@ -752,25 +940,82 @@ async function renderPortfolio(){
     ${toReview.length?`<div class="vx-insight vx-mt3" data-tone="risk"><b>⚠ ${toReview.length} position(s) contredite(s) par le moteur :</b>
       ${toReview.map(h=>`<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(h.p.sym)}">${esc(h.p.sym)}</button>`).join(' ')}
       — vérifier le dossier avant de décider (jamais de vente automatique).</div>`:''}
-    <div class="vx-card vx-mt3"><div class="vx-card-header"><span class="vx-card-title">Mes positions × le moteur</span>
+    <div class="vx-grid vx-mt3">
+      <section class="vx-card vx-col-6" id="op-pf-risk-card"><div class="vx-card-header">
+        <span class="vx-card-title">Risque du panier</span>
+        <span class="vx-chart-question">Mon portefeuille est-il réellement diversifié ?</span></div>
+        <div id="op-pf-risk"><div class="vx-skeleton" style="height:60px"></div></div></section>
+      <section class="vx-card vx-col-6" id="op-pf-sect-card"><div class="vx-card-header">
+        <span class="vx-card-title">Secteurs du portefeuille</span></div>
+        <div id="op-pf-sect"></div></section>
+    </div>
+    <div class="vx-card vx-mt4"><div class="vx-card-header"><span class="vx-card-title">Mes positions × le moteur</span>
       <span class="vx-chart-question">Le moteur confirme-t-il encore chacune de mes lignes ?</span></div>
-      <div class="vx-table-wrap vx-table-cards" id="op-pf-table"></div>
+      <div id="op-pf-cards"></div>
       <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.source,metaMode(scan))}
         · verdicts du moteur — analyse uniquement, aucune vente automatique</div></div>
     <div id="op-pf-cands" class="vx-mt4"></div>`;
-  $('op-pf-table').innerHTML=`<table class="vx-table"><thead><tr>
-    <th>Position</th><th>Type</th><th>Statut moteur</th><th class="vx-num">Score</th>
-    <th class="vx-num">Proba gain</th><th class="vx-num">Var. jour</th><th>52 sem.</th><th>Setup</th><th></th></tr></thead><tbody>
-    ${held.map(h=>{const r=h.r||{};return `<tr data-clickable data-open-analysis="${esc(h.p.sym)}">
-      <td data-label="Position"><span class="vx-ticker">${esc(h.p.sym)}</span></td>
-      <td data-label="Type"><span class="vx-badge" ${h.p.type!=='STK'?'style="color:var(--vx-violet)"':''}>${esc(h.p.type||'STK')}${h.p.strike?' '+esc(h.p.strike):''}</span></td>
-      <td data-label="Statut">${statusBadge[h.status]||''}</td>
-      ${heatCell(r.score,{label:'Score',good:72,mid:56})}
-      ${heatCell(r.vx_pwin!=null?r.vx_pwin*100:null,{label:'Proba',good:60,mid:45,fmt:v=>Math.round(v)+'%'})}
-      <td data-label="Var." class="vx-num ${r.change>0?'vx-pos':r.change<0?'vx-neg':''}">${r.change!=null?VX.fmt.pct(r.change,1):'—'}</td>
-      <td data-label="52s">${rail52(r.pos52)}</td>
-      <td data-label="Setup" class="vx-truncate" style="max-width:150px">${esc(pbText(r)||'—')}</td>
-      <td>${rowActions(h.p.sym)}</td></tr>`;}).join('')}</tbody></table>`;
+  /* Positions en CARTES design (liseré au statut, jauge de score, mini-courbe) */
+  const statusCol={confirmée:'var(--vx-positive)','à revoir':'var(--vx-negative)',
+    neutre:'var(--vx-warning)','hors scan':'var(--vx-text-dim)'};
+  $('op-pf-cards').innerHTML='<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">'
+    +held.map(h=>{const r=h.r||{};
+      const ser=(scan.detail||{})[h.p.sym]&&scan.detail[h.p.sym].series;
+      const gauge=(window.VXCharts&&VXCharts.scoreGaugeSVG&&r.score!=null)
+        ?VXCharts.scoreGaugeSVG(r.score,{size:64,stroke:6,label:'score'}):'';
+      return `<div class="vx-mover" role="group" style="cursor:default;border-left:3px solid ${statusCol[h.status]||'var(--vx-border)'}">
+      <div class="vx-flex" style="justify-content:space-between;gap:6px;align-items:flex-start">
+        <div style="min-width:0">
+          <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px;padding-left:0" data-open-analysis="${esc(h.p.sym)}">${esc(h.p.sym)}</button>
+          <span class="vx-badge" ${h.p.type!=='STK'?'style="color:var(--vx-violet)"':''}>${esc(h.p.type||'STK')}${h.p.strike?' '+esc(h.p.strike):''}</span>
+        </div>
+        <div style="flex:0 0 auto">${gauge}</div></div>
+      <div class="vx-mt1">${statusBadge[h.status]||''}</div>
+      <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">
+        ${r.vx_pwin!=null?`<span class="vx-badge" style="color:var(--vx-positive)">proba ${Math.round(r.vx_pwin*100)} %</span>`:''}
+        ${r.change!=null?`<span class="vx-badge ${r.change>0?'vx-pos':'vx-neg'}">${VX.fmt.pct(r.change,1)} auj.</span>`:''}
+        ${r.pos52!=null?`<span class="vx-badge" title="position dans la fourchette 52 semaines">52 sem. ${Math.round(r.pos52)} %</span>`:''}</div>
+      ${sparkMini(ser&&ser.close)}
+      ${pbText(r)?`<div class="vx-meta vx-mt1" style="white-space:normal;line-height:1.4">${esc(pbText(r))}</div>`:''}
+      <div class="vx-flex vx-mt2" style="gap:.3rem">
+        <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${esc(h.p.sym)}">Analyser</button>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/${esc(h.p.sym)}">Options</a>
+        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(h.p.sym)}" aria-label="Actions">⋯</button></div>
+    </div>`;}).join('')+'</div>';
+  /* Risque du panier — chiffres RÉELS du moteur de risque (/api/command.risk) */
+  try{
+    const cmd=await VX.fetch('/api/command',{ttl:60000});
+    const rk=(cmd&&cmd.risk)||null;
+    const el=$('op-pf-risk');
+    if(rk&&el){
+      const kv2=(k,v,cls)=>`<div class="vx-kv"><span class="k">${k}</span><span class="v vx-mono ${cls||''}">${v}</span></div>`;
+      el.innerHTML=
+        `<div id="op-pf-divgauge" class="vx-mb2"></div>`
+        +kv2('Corrélation moyenne',rk.avg_corr!=null?VX.fmt.num(rk.avg_corr,2):'n/d',rk.avg_corr>0.65?'vx-neg':'')
+        +kv2('Pire corrélation',rk.max_corr!=null?VX.fmt.num(rk.max_corr,2):'n/d')
+        +kv2('Secteur le plus lourd',(rk.max_sector_name?esc(rk.max_sector_name)+' · ':'')+(rk.max_sector!=null?Math.round(rk.max_sector)+' %':'n/d'),
+          rk.max_sector>((rk.limits&&rk.limits.max_sector)||40)?'vx-neg':'')
+        +kv2('Nouveau risque',rk.no_new_risk?'BLOQUÉ':'autorisé',rk.no_new_risk?'vx-neg':'vx-pos')
+        +((rk.flags&&rk.flags.length)?`<div class="vx-insight vx-mt2" data-tone="risk">${rk.flags.map(f2=>esc(f2)).join('<br>')}</div>`:'')
+        +`<div class="vx-card-footer"><span class="vx-meta">moteur de risque du panier — limites : ${(rk.limits&&rk.limits.max_pos)||'—'} positions max · ${(rk.limits&&rk.limits.max_sector)||'—'} % max par secteur</span></div>`;
+      if(window.VXCharts&&VXCharts.gauge&&rk.diversification!=null){
+        VXCharts.gauge('op-pf-divgauge',{value:rk.diversification,min:0,max:100,unit:' %',label:'Diversification',
+          reading:rk.diversification>=70?'Panier réellement diversifié':'Concentration à surveiller',
+          bands:[{to:40,color:VXCharts.colors.negative},{to:70,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.positive}]});
+      }
+    }else if(el){el.innerHTML=VX.states.empty('Moteur de risque indisponible pour ce panier.');}
+  }catch(e){const el=$('op-pf-risk');if(el)el.innerHTML=VX.states.empty('Moteur de risque indisponible.');}
+  /* Donut secteurs du portefeuille (positions réelles × secteur du scan) */
+  (function(){
+    const cnt={};held.forEach(h=>{const sec2=(h.r&&h.r.sector)||'Hors scan';cnt[sec2]=(cnt[sec2]||0)+1;});
+    const ks=Object.keys(cnt);
+    if(ks.length&&window.VXCharts&&VXCharts.donutCard){
+      VXCharts.donutCard('op-pf-sect-card',{title:'Secteurs du portefeuille',
+        question:'Suis-je concentré sur un seul thème ?',
+        labels:ks,values:ks.map(k=>cnt[k]),height:200,
+        source:'positions déclarées × scan',timestamp:Date.now(),mode:'delayed'});
+    }else{$('op-pf-sect').innerHTML=VX.states.empty('Aucun secteur identifiable.');}
+  })();
   const cd=$('op-pf-cands');
   cd.innerHTML='<div class="vx-card-header" style="padding:0 0 8px"><span class="vx-card-title">Candidats non détenus — signaux d’achat du moteur</span>'
     +'<span class="vx-chart-question">Qui mériterait une place, priorité aux secteurs déjà en portefeuille ?</span></div>'
@@ -793,51 +1038,114 @@ async function renderPortfolio(){
 /* ═════════ ANOMALIES ═════════ */
 async function renderAnomalies(){
   const scan=await VX.fetch('/scan',{ttl:120000});
-  const rows=(scan.rows||[]).filter(r=>(r.anomalies||[]).length);
+  const all=(scan.rows||[]).filter(r=>(r.anomalies||[]).length);
+  let lvl='';let q='';
   $('op-body').innerHTML=demoBanner(scan)+`
-    <div class="vx-filterbar">${['Actions','Données']
-      .map((g,i)=>`<button class="vx-chip" aria-pressed="${i===0}" data-ag="${g}">${g}</button>`).join('')}</div>
-    <div id="op-anom"></div>`;
-  function paint(group){
-    if(group==='Actions'){
-      $('op-anom').innerHTML=rows.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
-        <th>Titre</th><th>Anomalies</th><th class="vx-num">Intensité</th><th class="vx-num">Score</th><th></th></tr></thead><tbody>
-        ${rows.slice(0,60).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
-          <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
-          <td data-label="Anomalies">${(r.anomalies||[]).slice(0,4).map(a=>`<span class="vx-badge" title="${esc(typeof a==='object'?(a.k||''):'')}">${esc(typeof a==='string'?a:(a.lbl||a.k||a.code||''))}</span>`).join(' ')}</td>
-          <td data-label="Intensité" class="vx-num">${VX.fmt.nd(r.anomaly_score)}</td>
-          <td data-label="Score" class="vx-num">${VX.fmt.nd(r.score)}</td>
-          <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table></div>`
-        :VX.states.empty('Aucune anomalie action détectée sur le scan courant.');
-    }else{
-      VX.fetch('/api/data-quality',{ttl:60000}).then(dq=>{
-        $('op-anom').innerHTML=`<div class="vx-card">${Object.entries(dq.by_quality||{}).map(([k,v])=>
-          `<div class="vx-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}
-          <div class="vx-meta vx-mt2">${esc(dq.note||'')}</div></div>`;
-      }).catch(()=>{$('op-anom').innerHTML=VX.states.error('Qualité de données indisponible');});
-    }
+    <div class="vx-screenbar">
+      ${['ALERTE','ACTIF','CALME'].map(l=>`<button class="vx-chip" data-lvl="${l}" aria-pressed="false"
+        style="${l==='ALERTE'?'color:var(--vx-negative)':l==='ACTIF'?'color:var(--vx-warning)':''}">${l==='ALERTE'?'🔴':l==='ACTIF'?'🟠':'⚪'} ${l}</button>`).join('')}
+      <input class="vx-input" id="op-anom-q" style="width:110px;text-transform:uppercase" placeholder="Ticker">
+      <button class="vx-chip" data-ag="Données">Qualité des données</button>
+      <span class="vx-meta vx-right" id="op-anom-count"></span>
+    </div>
+    <div class="vx-scr-kpis" id="op-anom-kpis"></div>
+    <div class="vx-mt4" id="op-anom-types"></div>
+    <div id="op-anom" class="vx-mt4"></div>`;
+  function filtered(){
+    let f=all;
+    if(lvl)f=f.filter(r=>String(r.anomaly_lvl||'').toUpperCase()===lvl);
+    if(q)f=f.filter(r=>r.symbol.includes(q));
+    return f.slice().sort((a,b)=>(b.anomaly_score||0)-(a.anomaly_score||0));
   }
-  document.querySelectorAll('[data-ag]').forEach(b=>b.addEventListener('click',()=>{
-    document.querySelectorAll('[data-ag]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
-    paint(b.dataset.ag);}));
-  paint('Actions');
+  function paint(){
+    const f=filtered();
+    /* KPI par niveau (sur TOUT le scan, pas seulement le filtre) */
+    const c={ALERTE:0,ACTIF:0,CALME:0};all.forEach(r=>{const l=String(r.anomaly_lvl||'').toUpperCase();if(c[l]!=null)c[l]++;});
+    $('op-anom-kpis').innerHTML=
+      `<div class="k"><b>${all.length}</b><span>titres avec anomalies</span></div>`
+      +`<div class="k"><b style="color:var(--vx-negative)">${c.ALERTE}</b><span>en alerte</span></div>`
+      +`<div class="k"><b style="color:var(--vx-warning)">${c.ACTIF}</b><span>actifs</span></div>`
+      +`<div class="k"><b>${c.CALME}</b><span>calmes</span></div>`;
+    $('op-anom-count').textContent=f.length+' / '+all.length;
+    /* Top types d'anomalies (compte par libellé réel) */
+    const types={};f.forEach(r=>(r.anomalies||[]).forEach(a=>{
+      const l=(typeof a==='string')?a:(a.lbl||a.k||'');if(l)types[l]=(types[l]||0)+1;}));
+    const topT=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    $('op-anom-types').innerHTML=topT.length?
+      '<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Anomalies les plus fréquentes</span>'
+      +'<span class="vx-chart-question">Quel comportement inhabituel domine la séance ?</span></div>'
+      +topT.map(([l,n])=>{const w=Math.round(n/topT[0][1]*100);
+        return `<div class="vx-flex" style="gap:8px;align-items:center;padding:3px 0">
+          <span class="vx-meta" style="flex:0 0 46%;white-space:normal">${esc(l)}</span>
+          <span style="flex:1;height:7px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden">
+            <i style="display:block;height:100%;width:${Math.max(4,w)}%;background:var(--vx-brand);border-radius:99px"></i></span>
+          <b class="vx-mono" style="flex:0 0 26px;text-align:right">${n}</b></div>`;}).join('')+'</div>':'';
+    $('op-anom').innerHTML=f.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
+      <th>Titre</th><th>Niveau</th><th>Anomalies</th><th class="vx-num">Intensité</th><th class="vx-num">Score</th><th></th></tr></thead><tbody>
+      ${f.slice(0,60).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
+        <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
+        <td data-label="Niveau"><span class="vx-badge" style="color:${r.anomaly_lvl==='ALERTE'?'var(--vx-negative)':r.anomaly_lvl==='ACTIF'?'var(--vx-warning)':'var(--vx-text-dim)'}">${esc(r.anomaly_lvl||'—')}</span></td>
+        <td data-label="Anomalies">${(r.anomalies||[]).slice(0,3).map(a=>`<span class="vx-badge" title="${esc(typeof a==='object'?(a.k||''):'')}">${esc(typeof a==='string'?a:(a.lbl||a.k||''))}</span>`).join(' ')}</td>
+        ${heatCell(r.anomaly_score,{label:'Intensité',good:55,mid:25})}
+        ${heatCell(r.score,{label:'Score',good:72,mid:56})}
+        <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table></div>`
+      :VX.states.empty('Aucune anomalie ne correspond à ce filtre.');
+  }
+  document.querySelectorAll('[data-lvl]').forEach(b=>b.addEventListener('click',()=>{
+    lvl=lvl===b.dataset.lvl?'':b.dataset.lvl;
+    document.querySelectorAll('[data-lvl]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.lvl===lvl)));
+    paint();}));
+  document.getElementById('op-anom-q').addEventListener('input',function(){q=this.value.toUpperCase();paint();});
+  document.querySelector('[data-ag="Données"]').addEventListener('click',()=>{
+    VX.fetch('/api/data-quality',{ttl:60000}).then(dq=>{
+      VX.shell.openDrawer('Qualité des données',`${Object.entries(dq.by_quality||{}).map(([k,v])=>
+        `<div class="vx-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}
+        <div class="vx-meta vx-mt2">${esc(dq.note||'')}</div>`);
+    }).catch(()=>VX.toast('Qualité de données indisponible','error'));});
+  paint();
 }
 
 /* ═════════ CALENDRIER ═════════ */
 async function renderCalendar(){
   try{
     const cal=await VX.fetch('/cal-feed',{ttl:300000});
-    const positions=(window.VXEntities?window.VXEntities.positions():[]).map(p=>p.sym);
-    const items=[...(cal.macro||[]).map(m=>({when:m.date,kind:m.kind,label:esc(m.label)+(m.note?' — '+esc(m.note):'')+(m.approx?' (approx.)':'')})),
-      ...(cal.items||[]).map(it=>({when:it.date,kind:'Résultats',sym:it.sym,
-        label:`résultats dans ${it.dte} j · verdict moteur ${esc(VERD_FR[it.verdict]||it.verdict||'n/d')}`
-          +(positions.includes(it.sym)?' · <b class="vx-warn">position exposée</b>':'')}))]
-      .sort((a,b)=>String(a.when).localeCompare(String(b.when)));
-    $('op-body').innerHTML='<div id="op-cal"></div>';
-    VXCharts.timelineCard('op-cal',{title:'Calendrier des catalyseurs',
-      question:'Quels événements peuvent faire bouger les dossiers ?',
-      items:items.slice(0,30),source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
-      emptyText:'Aucun événement identifié sur l’horizon.'});
+    const positions=(window.VXEntities?window.VXEntities.positions():[]).map(p=>String(p.sym).toUpperCase());
+    let cat='',mine=false,horizon=0;
+    $('op-body').innerHTML=`
+      <div class="vx-screenbar">
+        ${[['','Tout'],['macro','Économie'],['earnings','Résultats']].map(([v,l])=>
+          `<button class="vx-chip" data-cat="${v}" aria-pressed="${v===''}">${l}</button>`).join('')}
+        ${[[0,'Tout l’horizon'],[7,'7 jours'],[14,'14 jours'],[30,'30 jours']].map(([v,l])=>
+          `<button class="vx-chip" data-hz="${v}" aria-pressed="${v===0}">${l}</button>`).join('')}
+        <button class="vx-chip" id="op-cal-mine" aria-pressed="false">💼 mes positions seulement</button>
+        <span class="vx-meta vx-right" id="op-cal-count"></span>
+      </div>
+      <div id="op-cal" class="vx-mt3"></div>`;
+    function paint(){
+      const items=[...(cal.macro||[]).map(m=>({when:m.date,dte:m.dte,cat:'macro',kind:m.kind||'Économie',
+          label:esc(m.label)+(m.note?' — '+esc(m.note):'')+(m.approx?' (approx.)':'')})),
+        ...(cal.items||[]).map(it=>({when:it.date,dte:it.dte,cat:'earnings',kind:'Résultats',sym:it.sym,
+          label:`résultats dans ${it.dte} j · verdict moteur ${esc(VERD_FR[it.verdict]||it.verdict||'n/d')}`
+            +(positions.includes(it.sym)?' · <b class="vx-warn">position exposée</b>':'')}))]
+        .filter(i=>!cat||i.cat===cat)
+        .filter(i=>!horizon||(i.dte!=null&&i.dte<=horizon))
+        .filter(i=>!mine||(i.sym&&positions.includes(i.sym))||(i.cat==='macro'&&positions.length))
+        .sort((a,b)=>String(a.when).localeCompare(String(b.when)));
+      document.getElementById('op-cal-count').textContent=items.length+' événement(s)';
+      VXCharts.timelineCard('op-cal',{title:'Calendrier des catalyseurs',
+        question:'Quels événements peuvent faire bouger les dossiers ?',
+        items:items.slice(0,40),source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
+        emptyText:'Aucun événement sur ce filtre.'});
+    }
+    document.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{
+      cat=b.dataset.cat;
+      document.querySelectorAll('[data-cat]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));paint();}));
+    document.querySelectorAll('[data-hz]').forEach(b=>b.addEventListener('click',()=>{
+      horizon=+b.dataset.hz;
+      document.querySelectorAll('[data-hz]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));paint();}));
+    document.getElementById('op-cal-mine').addEventListener('click',function(){
+      mine=!mine;this.setAttribute('aria-pressed',String(mine));paint();});
+    paint();
   }catch(e){$('op-body').innerHTML=VX.states.error('Calendrier indisponible');}
 }
 
