@@ -31,6 +31,40 @@
     schedulePush();
   }
 
+  /* ── Anti-doublon : le store ne contient JAMAIS de doublon ──────────
+     uniqBy garde la 1re occurrence par clé sémantique. */
+  function uniqBy(arr, keyFn) {
+    const seen = new Set(); const out = [];
+    (Array.isArray(arr) ? arr : []).forEach(x => {
+      let k; try { k = keyFn(x); } catch (e) { k = x; }
+      if (!seen.has(k)) { seen.add(k); out.push(x); }
+    });
+    return out;
+  }
+  const _posKey = t => [String(t.sym || '').toUpperCase(), t.type, t.strike, t.exp, t.right, t.qty, t.cost].join('|');
+  const _alertKey = a => [String(a.sym || '').toUpperCase(), a.cond, a.level, a.active].join('|');
+  const _followKey = r => (r.kind || 'STK') + ':' + String(r.sym || '').toUpperCase();
+  /* Nettoyage rétroactif SÛR (aucune perte) : dédup par clé sémantique des listes
+     où un doublon n'a aucun sens. Les POSITIONS ne sont PAS purgées (deux lots
+     identiques peuvent être légitimes) ; seul l'ajout d'un doublon EXACT est bloqué.
+     Écriture directe (pas de bump deskTs) → ne perturbe pas la sync last-writer-wins. */
+  function dedupeStore() {
+    try {
+      const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+      const favs0 = get('myFavs', []) || [];
+      const favs1 = uniqBy(favs0.map(s => String(s).toUpperCase()), s => s);
+      if (JSON.stringify(favs0) !== JSON.stringify(favs1)) put('myFavs', favs1);
+      const wl0 = get('vxWatchlist', []) || []; const wseen = {};
+      wl0.forEach(w => { if (w && w.sym) { w.sym = String(w.sym).toUpperCase(); wseen[w.sym] = w; } });
+      const wl1 = Object.keys(wseen).map(k => wseen[k]);
+      if (wl0.length !== wl1.length) put('vxWatchlist', wl1);
+      const rec0 = get('myRecos', []) || []; const rec1 = uniqBy(rec0, _followKey);
+      if (rec0.length !== rec1.length) put('myRecos', rec1);
+      const al0 = get('vxAlerts', []) || []; const al1 = uniqBy(al0, _alertKey);
+      if (al0.length !== al1.length) put('vxAlerts', al1);
+    } catch (e) {}
+  }
+
   /* ── Sync /api/desk (protocole historique inchangé) ─────────────── */
   let pushTimer = null;
   function schedulePush() { clearTimeout(pushTimer); pushTimer = setTimeout(() => { pushTimer = null; pushNow(); }, 1200); }
@@ -50,6 +84,7 @@
         if (d.ts > localTs) { /* serveur plus récent : ne jamais écraser du plus récent par du plus ancien */
           Object.entries(d.data).forEach(([k, v]) => { if (DESK_KEYS.includes(k)) try { localStorage.setItem(k, v); } catch (e) {} });
           try { localStorage.setItem('deskTs', String(d.ts)); } catch (e) {}
+          dedupeStore(); /* la sync peut ramener des doublons → on nettoie */
           VX.bus.emit('vx:data-refreshed', { reason: 'desk-pull' });
           ['vx:favorites-changed', 'vx:watchlist-changed', 'vx:follow-changed', 'vx:position-changed', 'vx:alert-changed'].forEach(ev => VX.bus.emit(ev, { source: 'sync' }));
         } else if (localTs > d.ts) pushNow();
@@ -58,7 +93,7 @@
       }
     } catch (e) {}
   }
-  pull(); setInterval(() => { if (!document.hidden) pull(); }, 120000);
+  dedupeStore(); pull(); setInterval(() => { if (!document.hidden) pull(); }, 120000);
   /* Flush du push au déchargement : une écriture suivie d'une navigation
      immédiate ne doit jamais se perdre (le débounce n'attend pas la page
      suivante — sendBeacon survit à l'unload). */
@@ -78,7 +113,7 @@
   const E = window.VXEntities = {
     DESK_KEYS,
     /* Favoris (étoile, accès rapide) */
-    favorites() { return get('myFavs', []); },
+    favorites() { return uniqBy((get('myFavs', []) || []).map(s => String(s).toUpperCase()), s => s); },
     isFavorite(sym) { return this.favorites().includes(String(sym).toUpperCase()); },
     toggleFavorite(sym) {
       sym = String(sym).toUpperCase();
@@ -91,7 +126,7 @@
       return i < 0;
     },
     /* Watchlist (surveillance active, riche) */
-    watchlist() { return get('vxWatchlist', []); },
+    watchlist() { return uniqBy(get('vxWatchlist', []) || [], w => String(w && w.sym || '').toUpperCase()); },
     inWatchlist(sym) { return this.watchlist().some(w => w.sym === String(sym).toUpperCase()); },
     addToWatchlist(sym, fields) {
       sym = String(sym).toUpperCase();
@@ -109,7 +144,7 @@
       VX.toast(`${sym} retiré de la watchlist`);
     },
     /* Suivis ⭐ (setup suivi — schéma myRecos historique) */
-    follows() { return get('myRecos', []); },
+    follows() { return uniqBy(get('myRecos', []) || [], _followKey); },
     isFollowed(sym) { return this.follows().some(r => r.sym === String(sym).toUpperCase() && r.kind === 'STK'); },
     followStock(sym, { entry_spot = null, stop = null, tgt = null, decision = '', score = null } = {}) {
       sym = String(sym).toUpperCase();
@@ -145,7 +180,13 @@
         entrySnap: {}, note: '' }, fields || {});
       t.sym = String(t.sym).toUpperCase();
       if (!t.sym || !(t.qty > 0)) { VX.toast('Position invalide (ticker/quantité)', 'error'); return null; }
-      const list = this.positions(); list.push(t); set('myTrades', list);
+      const list = this.positions();
+      /* Anti-doublon EXACT : bloque un ré-enregistrement identique (double-clic) ;
+         deux lots réellement distincts (qté/coût différents) restent permis. */
+      if (list.some(x => _posKey(x) === _posKey(t))) {
+        VX.toast(`Position ${t.sym} identique déjà enregistrée`, 'error'); return null;
+      }
+      list.push(t); set('myTrades', list);
       this._log(t.sym, 'OPEN', `${t.type} ${t.qty} @ ${t.cost}`, t.id);
       VX.bus.emit('vx:position-changed', { sym: t.sym, action: 'open' });
       VX.toast(`Position ${t.sym} enregistrée`, 'success');
@@ -186,11 +227,16 @@
       VX.toast(`Position ${t.sym} clôturée (journal mis à jour)`, 'success');
     },
     /* Alertes (schéma vxAlerts historique — évaluées côté serveur) */
-    alerts() { return get('vxAlerts', []); },
+    alerts() { return uniqBy(get('vxAlerts', []) || [], _alertKey); },
     hasAlert(sym) { return this.alerts().some(a => a.sym === String(sym).toUpperCase() && a.active); },
     addAlert(sym, cond, level, note) {
       sym = String(sym).toUpperCase();
       const list = this.alerts();
+      /* Anti-doublon : une alerte active identique (sym·condition·niveau) ne se crée pas deux fois. */
+      const _c = cond || 'above', _l = Number(level);
+      if (list.some(a => a.active && a.sym === sym && a.cond === _c && a.level === _l)) {
+        VX.toast(`Alerte identique déjà active sur ${sym}`, 'error'); return;
+      }
       list.push({ id: Date.now(), sym, cond: cond || 'above', level: Number(level),
         note: note || '', created: new Date().toISOString(), active: true });
       set('vxAlerts', list);
