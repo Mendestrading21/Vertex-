@@ -493,7 +493,7 @@
       const yTop = y(Math.max(b.from, b.to)), yBot = y(Math.min(b.from, b.to));
       const h = Math.max(2, yBot - yTop);
       const col = b.total ? C.colors.brand : (b.val >= 0 ? C.colors.positive : C.colors.negative);
-      svg += `<rect x="${x.toFixed(1)}" y="${yTop.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${col}" fill-opacity=".82"/>`;
+      svg += `<rect x="${x.toFixed(1)}" y="${yTop.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="3" fill="${col}" fill-opacity=".85" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))"/>`;
       if (i < bars.length - 1 && !bars[i + 1].total) {
         const yc = y(b.to), xn = gap + (i + 1) * (bw + gap);
         svg += `<line x1="${(x + bw).toFixed(1)}" y1="${yc.toFixed(1)}" x2="${xn.toFixed(1)}" y2="${yc.toFixed(1)}" stroke="rgba(255,255,255,.18)" stroke-dasharray="2,2"/>`;
