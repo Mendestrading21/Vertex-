@@ -41,6 +41,11 @@
 .vx-chart-card.vx-chart-fs .vx-chart-fs::after{content:" (fermer)"}
 body.vx-fs-open{overflow:hidden}
 .vx-sparkline{display:block}
+/* Heatmap « tuiles » : cellules arrondies, espacées, survol qui isole la cellule. */
+.vx-heat{border-collapse:separate;border-spacing:2px}
+.vx-heat td{border-radius:4px;transition:outline-color var(--vx-t-fast)}
+.vx-heat td[style*="background"]:hover{outline:1.5px solid var(--vx-silver-line,rgba(201,205,212,.28));
+  outline-offset:-1px;position:relative;z-index:1}
 /* Annotation de niveau sur les graphiques (entrée/stop/TP) */
 .vx-level-tag{display:inline-flex;align-items:center;gap:5px;
   font-family:var(--vx-font-mono);font-size:10.5px;padding:1px 7px;

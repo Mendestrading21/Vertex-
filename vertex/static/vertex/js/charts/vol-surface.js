@@ -11,5 +11,5 @@ C.volSurfaceCard=function(host,surface,opts){
       return{value:iv!=null?iv*100:null,label:iv!=null?(iv*100).toFixed(0)+'%':'—',
         title:`${e} · strike ${k}`};})}));
   C.heatmapCard(host,Object.assign({rows,columns:expiries.map(e=>e+' ('+(by[e].dte||'?')+'j)'),
-    min:15,max:90},opts||{}));};
+    min:15,max:90,scale:'sequential'},opts||{}));};
 })();
