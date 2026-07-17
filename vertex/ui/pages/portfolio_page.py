@@ -708,6 +708,12 @@ async function renderRisk(){
       <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Concentration</span></div>
         ${kv('Drawdown portefeuille',risk.drawdown_pct!==null&&risk.drawdown_pct!==undefined?risk.drawdown_pct+' %':'n/d (pic non renseigné)')}
         ${kv('HHI',risk.hhi)}${kv('Bêta pondéré',risk.beta)}
+        ${(function(){const ps=risk.per_stock_pl_pct||{};const ent=Object.keys(ps).map(k=>[k,ps[k]]).sort((a,b)=>a[1]-b[1]);
+          if(!ent.length)return '';
+          return '<div class="vx-mt2"><span class="vx-metric-k" style="display:block;margin-bottom:3px">P&amp;L par position (pire en tête)</span>'
+            +ent.map(function(e){var s=e[0],v=e[1];var col=v>0?'var(--vx-positive)':v<-20?'var(--vx-negative)':v<0?'var(--vx-warning)':'var(--vx-text-secondary)';
+              return '<div class="vx-flex" style="justify-content:space-between;font-size:11.5px;padding:2px 0"><span class="vx-mono">'+esc(s)+'</span><span class="vx-mono" style="color:'+col+'">'+(v>=0?'+':'')+VX.fmt.num(v,1)+' %'+(v<-20?' ⚠ drawdown':'')+'</span></div>';}).join('')
+            +'</div>';})()}
         <div id="pf-sector-donut" class="vx-mt2"><span class="vx-meta">Exposition sectorielle…</span></div></div>
       <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Greeks agrégés</span></div>
         ${greeksBlock(risk.options_exposure)}</div>
