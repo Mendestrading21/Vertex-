@@ -47,6 +47,14 @@ _CONTENT = """
   <div class="vx-col-6" id="vx-osym-smile"></div>
 </div>
 
+<!-- Max pain / murs d'OI : chaîne LARGE réelle IBKR (open interest par strike, avant filtrage board) -->
+<section class="vx-card vx-mt4 vx-card--premium" id="vx-osym-maxpain">
+  <div class="vx-card-header"><span class="vx-card-title">Aimant d'expiration — max pain &amp; murs d'open interest</span>
+    <span class="vx-chart-question">Vers quel strike la mécanique de l'open interest tire-t-elle %%SYM%% à l'échéance ?</span>
+    <span class="vx-actions vx-meta" id="vx-osym-mp-meta"></span></div>
+  <div data-body>%%LOADING%%</div>
+</section>
+
 <!-- Chaîne complète du titre -->
 <section class="vx-card vx-mt4 vx-card--premium" id="vx-osym-chain">
   <div class="vx-card-header"><span class="vx-card-title">Chaîne — contrats de %%SYM%% au tableau</span>

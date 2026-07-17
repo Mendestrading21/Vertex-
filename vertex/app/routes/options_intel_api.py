@@ -81,6 +81,64 @@ def options_chain(sym):
                     'source': (scan_state.get('options_source') or 'SCAN')})
 
 
+def _max_pain(sym):
+    """Max pain + murs d'OI + PCR RÉELS depuis la chaîne LARGE persistée
+    (scan_state['options_chain_full'], remplie par le worker IBKR). None honnête sinon."""
+    e = (scan_state.get('options_chain_full') or {}).get(str(sym).upper())
+    if not e:
+        return None
+    exps = [k for k in e if k not in ('spot', 'ts')]
+    spot = e.get('spot') or 0
+    out = []
+    for exp in sorted(exps):
+        calls = (e[exp] or {}).get('C') or {}
+        puts = (e[exp] or {}).get('P') or {}
+        strikes = sorted(set(calls) | set(puts))
+        if len(strikes) < 3:
+            continue
+        best_k, best_pay = None, None
+        for K in strikes:                     # payoff total aux détenteurs si règlement = K
+            pay = sum(calls.get(k, {}).get('oi', 0) * max(0.0, K - k) for k in strikes) \
+                + sum(puts.get(k, {}).get('oi', 0) * max(0.0, k - K) for k in strikes)
+            if best_pay is None or pay < best_pay:   # max pain = K qui MINIMISE le payoff
+                best_pay, best_k = pay, K
+        call_oi = sum(v.get('oi', 0) for v in calls.values())
+        put_oi = sum(v.get('oi', 0) for v in puts.values())
+        walls = sorted(({'strike': k, 'call_oi': calls.get(k, {}).get('oi', 0),
+                         'put_oi': puts.get(k, {}).get('oi', 0),
+                         'oi': calls.get(k, {}).get('oi', 0) + puts.get(k, {}).get('oi', 0)}
+                        for k in strikes), key=lambda w: -w['oi'])[:5]
+        out.append({'exp': exp, 'max_pain': best_k, 'call_oi': call_oi, 'put_oi': put_oi,
+                    'pcr': round(put_oi / call_oi, 2) if call_oi else None, 'walls': walls,
+                    'by_strike': [{'strike': k, 'call_oi': calls.get(k, {}).get('oi', 0),
+                                   'put_oi': puts.get(k, {}).get('oi', 0)} for k in strikes]})
+    if not out:
+        return None
+    tc = sum(x['call_oi'] for x in out)
+    tp = sum(x['put_oi'] for x in out)
+    return {'symbol': str(sym).upper(), 'spot': spot, 'ts': e.get('ts'),
+            'total_call_oi': tc, 'total_put_oi': tp,
+            'pcr': round(tp / tc, 2) if tc else None, 'expiries': out}
+
+
+@bp.route('/api/options/max-pain/<sym>')
+def options_max_pain(sym):
+    """Max pain / murs d'OI / PCR sur la chaîne LARGE réelle (IBKR). Déclenche un
+    fetch on-demand (qui persiste la chaîne via le worker) puis calcule. État vide
+    honnête si TWS fermé / hors séance / titre pas chargé — jamais inventé."""
+    sym = (sym or '').upper()[:12]
+    try:
+        _od.warm_chain(sym)      # lit C ET P des échéances proches → persiste la chaîne large
+    except Exception:
+        pass
+    mp = _max_pain(sym)
+    if mp is None:
+        return jsonify({'symbol': sym, 'available': False,
+                        'note': 'Chaîne large indisponible (TWS fermé, hors séance, ou titre pas encore chargé).'})
+    mp['available'] = True
+    return jsonify(mp)
+
+
 @bp.route('/api/options/volatility/<sym>')
 def options_volatility(sym):
     """Interprétation de la volatilité d'un sous-jacent (depuis le board/detail)."""

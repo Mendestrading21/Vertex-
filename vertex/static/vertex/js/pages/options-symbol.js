@@ -245,6 +245,78 @@
     });
   }
 
+  /* ── Max pain / murs d'OI (chaîne LARGE réelle IBKR) ───────────── */
+  function fmtOI(v) { return v == null ? '—' : Number(v).toLocaleString('fr-FR'); }
+  function dte(exp) { try { var d = Math.round((new Date(exp + 'T00:00:00') - Date.now()) / 864e5); return d >= 0 ? d : null; } catch (e) { return null; } }
+  function paintMaxPain(d) {
+    if (!d || d.available === false) {
+      body('vx-osym-maxpain', empty((d && d.note) || 'Open interest par strike indisponible (TWS fermé, hors séance, ou titre pas encore chargé).'));
+      return;
+    }
+    var exps = (d.expiries || []).filter(function (e) { return e && e.max_pain != null; });
+    if (!exps.length) { body('vx-osym-maxpain', empty('Open interest par strike insuffisant pour établir un max pain (chaîne trop courte).')); return; }
+    var spot = d.spot || 0;
+    var meta = document.getElementById('vx-osym-mp-meta');
+    if (meta) meta.textContent = 'chaîne réelle IBKR' + (d.ts ? ' · ' + new Date(d.ts * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '');
+    var pcr = d.pcr, near = exps[0];
+    var dist = (spot && near.max_pain) ? ((near.max_pain / spot - 1) * 100) : null;
+    var distTxt = dist == null ? '' : (dist >= 0 ? '+' : '') + dist.toFixed(1) + ' %';
+    var pcrTone = pcr == null ? 'neu' : (pcr > 1.15 ? 'neg' : (pcr < 0.85 ? 'pos' : 'warn'));
+    var pcrRead = pcr == null ? '' : (pcr > 1.1 ? 'puts dominants (couverture / prudence)' : (pcr < 0.9 ? 'calls dominants (appétit haussier)' : 'équilibré'));
+    var lead = spot && near.max_pain
+      ? 'À l’échéance <b>' + esc(near.exp) + '</b>, la masse d’open interest tire ' + SYM + ' vers <b class="vx-mono">$' + VXf.price(near.max_pain) + '</b>'
+        + (dist != null ? ' — soit <b>' + distTxt + '</b> ' + (Math.abs(dist) < 0.5 ? 'quasi sur le prix' : (dist < 0 ? 'sous le prix' : 'au-dessus du prix')) + ' (' + '$' + VXf.price(spot) + ').' : '.')
+      : 'Max pain établi sur la chaîne réelle IBKR.';
+
+    // Métriques agrégées
+    var head = '<p class="vx-lead" style="margin:0 0 var(--vx-s3)">' + lead + '</p>' +
+      '<div class="vx-metricgrid" style="grid-template-columns:repeat(4,1fr)">' +
+      '<div class="vx-metric" data-tone="' + (spot && near.max_pain ? (Math.abs(dist) < 0.5 ? 'warn' : (dist < 0 ? 'neg' : 'pos')) : 'neu') + '"><span class="vx-metric-k">Max pain proche</span><span class="vx-metric-v">' + (near.max_pain != null ? '$' + VXf.price(near.max_pain) : '—') + '</span><span class="vx-metric-u">' + (distTxt || 'vs prix') + '</span></div>' +
+      '<div class="vx-metric"><span class="vx-metric-k">OI CALL total</span><span class="vx-metric-v" style="color:' + VIOLET + '">' + fmtOI(d.total_call_oi) + '</span></div>' +
+      '<div class="vx-metric"><span class="vx-metric-k">OI PUT total</span><span class="vx-metric-v" style="color:var(--vx-silver-2,#9aa0a8)">' + fmtOI(d.total_put_oi) + '</span></div>' +
+      '<div class="vx-metric" data-tone="' + pcrTone + '"><span class="vx-metric-k">PCR (OI)</span><span class="vx-metric-v">' + (pcr == null ? '—' : pcr.toFixed(2)) + '</span><span class="vx-metric-u">' + esc(pcrRead) + '</span></div></div>';
+
+    // Tableau par échéance
+    var rows = exps.slice(0, 6).map(function (e) {
+      var dd = dte(e.exp), di = (spot && e.max_pain) ? ((e.max_pain / spot - 1) * 100) : null;
+      var w = (e.walls || [])[0] || {};
+      return '<tr>' +
+        '<td class="vx-mono">' + esc(e.exp) + (dd != null ? ' <span class="vx-meta">' + dd + 'j</span>' : '') + '</td>' +
+        '<td class="vx-mono" style="font-weight:700">$' + VXf.price(e.max_pain) + (di != null ? ' <span class="vx-meta" style="color:' + (di < 0 ? 'var(--vx-negative)' : 'var(--vx-positive)') + '">' + (di >= 0 ? '+' : '') + di.toFixed(1) + '%</span>' : '') + '</td>' +
+        '<td class="vx-mono" style="text-align:right;color:' + VIOLET + '">' + fmtOI(e.call_oi) + '</td>' +
+        '<td class="vx-mono" style="text-align:right">' + fmtOI(e.put_oi) + '</td>' +
+        '<td class="vx-mono" style="text-align:right;color:' + (e.pcr != null && e.pcr > 1.1 ? 'var(--vx-caution)' : (e.pcr != null && e.pcr < 0.9 ? 'var(--vx-positive)' : 'inherit')) + '">' + (e.pcr == null ? '—' : e.pcr.toFixed(2)) + '</td>' +
+        '<td class="vx-mono" style="text-align:right">' + (w.strike != null ? '$' + VXf.price(w.strike) + ' <span class="vx-meta">' + fmtOI(w.oi) + '</span>' : '—') + '</td>' +
+        '</tr>';
+    }).join('');
+    var table = '<div class="vx-table-wrap vx-mt3"><table class="vx-table"><thead><tr>' +
+      '<th>Échéance</th><th>Max pain</th><th style="text-align:right">OI call</th><th style="text-align:right">OI put</th><th style="text-align:right">PCR</th><th style="text-align:right">Mur d’OI n°1</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+
+    // Murs d'OI de l'échéance proche : barres call/put par strike (aimant + prix repérés)
+    var bs = (near.by_strike || []).slice().sort(function (a, b) { return b.strike - a.strike; });
+    var maxOI = bs.reduce(function (m, r) { return Math.max(m, r.call_oi || 0, r.put_oi || 0); }, 1);
+    var nearestK = null;                         // strike unique le plus proche du prix (repère ▸)
+    if (spot && bs.length) nearestK = bs.reduce(function (a, b) { return Math.abs(b.strike - spot) < Math.abs(a.strike - spot) ? b : a; }).strike;
+    var wallsHtml = '';
+    if (bs.length) {
+      wallsHtml = '<div class="vx-mt4"><div class="vx-meta vx-mb2">Murs d’open interest — échéance ' + esc(near.exp) + ' · <span style="color:' + VIOLET + '">■ calls</span> · <span style="color:var(--vx-silver-2,#9aa0a8)">■ puts</span> · ◆ max pain · ▸ prix</div>' +
+        bs.map(function (r) {
+          var cw = Math.round((r.call_oi || 0) / maxOI * 100), pw = Math.round((r.put_oi || 0) / maxOI * 100);
+          var isMP = near.max_pain != null && Math.abs(r.strike - near.max_pain) < 0.01;
+          var isSpot = nearestK != null && Math.abs(r.strike - nearestK) < 0.01;
+          return '<div style="display:flex;align-items:center;gap:8px;margin:2px 0' + (isMP ? ';background:rgba(156,121,208,.10);border-radius:6px' : '') + '">' +
+            '<span style="flex:0 0 34px;text-align:right"><span style="height:9px;display:inline-block;border-radius:2px;background:var(--vx-silver-2,#9aa0a8);width:' + pw + '%"></span></span>' +
+            '<span class="vx-mono" style="flex:0 0 96px;text-align:center;font-weight:' + (isMP ? '700' : '500') + '">' + (isMP ? '◆ ' : '') + '$' + VXf.price(r.strike) + (isSpot ? ' ▸' : '') + '</span>' +
+            '<span style="flex:1"><span style="height:9px;display:inline-block;border-radius:2px;background:' + VIOLET + ';width:' + cw + '%"></span></span>' +
+            '</div>';
+        }).join('') + '</div>';
+    }
+
+    body('vx-osym-maxpain', head + table + wallsHtml +
+      '<div class="vx-meta vx-mt3">Max pain = strike qui <b>minimise</b> le paiement total aux détenteurs d’options à l’échéance ; l’open interest tend à « aimanter » le cours vers ce niveau à l’approche du règlement. Open interest RÉEL par strike (chaîne large IBKR, 14 strikes/côté). Repère, pas une garantie.</div>');
+  }
+
   /* ── Boot : chaque section peint dès que sa donnée arrive ───────── */
   /* Chaîne dédiée (board ∪ fetch à la demande côté serveur) — un titre pas encore
      couvert par la rotation du board obtient quand même son dossier. */
@@ -269,4 +341,14 @@
     .catch(function () { body('vx-osym-scenarios', empty('Scénarios indisponibles.')); });
   get('/api/options/strategies/' + encodeURIComponent(SYM)).then(paintStrats)
     .catch(function () { body('vx-osym-strats', empty('Stratégies indisponibles.')); });
+  // Max pain : le serveur peut tirer la chaîne large en direct (IBKR, ~40-60 s) → état d'attente honnête, TTL long.
+  (function () {
+    var el = document.querySelector('#vx-osym-maxpain [data-body]');
+    if (el) el.innerHTML = '<div style="color:var(--vx-text-muted);padding:var(--vx-s2) 0" aria-busy="true">' +
+      '⟳ Lecture de l’open interest réel par strike (chaîne large IBKR, peut prendre ~1 min)…</div>';
+    ((window.VX && VX.fetch) ? VX.fetch('/api/options/max-pain/' + encodeURIComponent(SYM), { ttl: 300000 })
+      : fetch('/api/options/max-pain/' + encodeURIComponent(SYM)).then(function (r) { return r.json(); }))
+      .then(paintMaxPain)
+      .catch(function () { body('vx-osym-maxpain', empty('Max pain indisponible (chaîne large injoignable).')); });
+  })();
 })();

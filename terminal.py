@@ -1015,6 +1015,46 @@ def _opt_job(kind, args, timeout):
     return box.get('res')
 
 
+def _persist_chain_full(sym, exp, right, rows, spot):
+    """Persiste la chaîne LARGE (14 strikes/côté, AVANT le filtrage « finalistes » du
+    board) → débloque max pain / murs d'OI / strikes demandés / PCR RÉELS.
+    scan_state['options_chain_full'][SYM] = {exp: {'C'|'P': {strike: {oi,vol,iv}}}, 'spot':…, 'ts':…}.
+    Borné à ~200 symboles (purge LRU grossière). ⛔ lecture seule, best-effort, silencieux."""
+    sym = (sym or '').upper()
+    right = (right or 'C').upper()[:1]
+    if not sym or not rows:
+        return
+    by_strike = {}
+    for r in rows:
+        try:
+            k = round(float(r['strike']), 2)
+        except (TypeError, ValueError, KeyError):
+            continue
+        if k <= 0:
+            continue
+        oi = r.get('openInterest') or 0
+        vol = r.get('volume') or 0
+        iv = r.get('impliedVolatility')
+        by_strike[k] = {'oi': int(oi), 'vol': int(vol),
+                        'iv': (round(float(iv), 4) if iv else None)}
+    if not by_strike:
+        return
+    full = scan_state.setdefault('options_chain_full', {})
+    ent = full.get(sym)
+    if ent is None:
+        if len(full) >= 200:                              # borne mémoire : purge le plus ancien
+            oldest = min(full, key=lambda kk: (full[kk] or {}).get('ts') or 0)
+            full.pop(oldest, None)
+        ent = full[sym] = {}
+    ent.setdefault(exp, {})[right] = by_strike
+    ent['ts'] = time.time()
+    try:
+        if spot is not None and float(spot) > 0:
+            ent['spot'] = round(float(spot), 2)
+    except (TypeError, ValueError):
+        pass
+
+
 class _IbkrChainSide:
     """Résultat de option_chain(exp) : .calls/.puts PARESSEUX → on ne fetch que le côté demandé."""
     def __init__(self, sym, m, exp):
@@ -1023,6 +1063,11 @@ class _IbkrChainSide:
     def _df(self, right):
         sym, m, exp = self._a
         rows = _opt_job('chain', (sym, m, exp, right), timeout=75) or []
+        if rows:                                          # capte la chaîne large pour max pain / OI / PCR
+            try:
+                _persist_chain_full(sym, exp, right, rows, (m or {}).get('spot'))
+            except Exception:
+                pass
         return pd.DataFrame(rows, columns=['strike', 'impliedVolatility', 'openInterest',
                                            'volume', 'bid', 'ask', 'lastPrice'])
 

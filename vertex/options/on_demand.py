@@ -73,6 +73,34 @@ def fetch(sym):
     return contracts
 
 
+def warm_chain(sym, n_exp=3):
+    """Force la lecture C ET P des `n_exp` échéances les plus proches → PERSISTE la
+    chaîne LARGE (déclenche _df côté terminal) pour max pain / murs d'OI / PCR réels.
+    Best-effort, cache TTL (pas de martelage), silencieux. ⛔ lecture seule."""
+    sym = (sym or '').upper()
+    if not sym:
+        return
+    cache = scan_state.setdefault('options_warm_cache', {})
+    now = time.time()
+    if now - (cache.get(sym) or 0) < TTL_S:
+        return
+    try:
+        tk = legacy_engine.yf.Ticker(sym)
+        exps = list(tk.options or [])[:n_exp]
+        if not exps:
+            return                                # pipeline pas prêt → ne PAS poser le cache (retry)
+        for exp in exps:
+            ch = tk.option_chain(exp)
+            for side in ('calls', 'puts'):        # accéder aux 2 côtés → _df('C') et _df('P')
+                try:
+                    _ = getattr(ch, side)
+                except Exception:
+                    pass
+        cache[sym] = now                          # succès → throttle 15 min
+    except Exception:
+        pass
+
+
 def contract_mark(sym, exp_prefix, strike, right):
     """Mid RÉEL d'un contrat PRÉCIS via la chaîne (IBKR si TWS ouvert via le
     monkeypatch de legacy_engine.yf, sinon yfinance). Utilisé pour marquer les
