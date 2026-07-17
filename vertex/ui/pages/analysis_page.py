@@ -160,6 +160,7 @@ _SECTIONS = """
 <!-- 3. Graphique principal + sous-graphe RSII -->
 <div id="an-chart"></div>
 <div id="an-rsi" class="vx-mt2"></div>
+<div id="an-volume" class="vx-mt2"></div>
 
 <!-- 3-bis. Valorisation vs secteur (radar) + Financials — fondamentaux réels -->
 <div class="vx-grid vx-mt4">
@@ -694,9 +695,26 @@ async function loadDossier(){
             plugins:{tooltip:{callbacks:{label:function(ctx){return 'RSI '+VX.fmt.num(ctx.parsed.y,0);}}}}},
           plugins:[rsiBands]});}});
     }else{$('an-rsi').innerHTML='';}
+    /* Sous-graphe Volume — barres colorées selon le sens du jour (hausse/baisse).
+       Donnée RÉELLE (series.volume) ; « le mouvement est-il soutenu ? » */
+    const vol=tail(S.volume);
+    if(vol&&vol.some(x=>x!=null)){
+      const volCols=cut.map(function(c,i){return (i>0&&c<cut[i-1])?VXCharts.colors.negative:VXCharts.colors.positive;});
+      VXCharts.card('an-volume',{title:SYM+' — Volume',height:96,unit:'titres',
+        question:'Le mouvement est-il soutenu par le volume ?',
+        source:'scan',timestamp:Date.now(),mode:demo?'fallback':'delayed',
+        render:function(cv){return VXCharts.mount(cv,{type:'bar',
+          data:{labels:cut.map((_,i)=>i-cut.length),datasets:[{data:vol,
+            backgroundColor:volCols.map(function(c){return (VXCharts.rgba&&VXCharts.rgba(c,.5))||c;}),
+            borderRadius:1,maxBarThickness:6}]},
+          options:{scales:{x:{display:false},y:{position:'right',grid:{display:false},border:{display:false},
+            ticks:{maxTicksLimit:3,font:{size:9},color:VXCharts.colors.muted,padding:6,
+              callback:function(v){return v>=1e6?(v/1e6).toFixed(0)+'M':v>=1e3?(v/1e3).toFixed(0)+'k':v;}}}},
+            plugins:{tooltip:{callbacks:{label:function(ctx){return 'Volume '+VX.fmt.num(ctx.parsed.y,0);}}}}}});}});
+    }else{$('an-volume').innerHTML='';}
   }else{
     $('an-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Série de prix indisponible pour ce titre.')+'</div>';
-    $('an-rsi').innerHTML='';
+    $('an-rsi').innerHTML='';$('an-volume').innerHTML='';
   }
 
   /* 4. Fondamental */
