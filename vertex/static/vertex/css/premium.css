@@ -58,7 +58,7 @@
 .vx-statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));
   gap:10px;margin-top:8px}
 .vx-stat{position:relative;padding:12px 14px;border-radius:var(--vx-r);
-  background:radial-gradient(120% 140% at 0% 0%,rgba(163,202,66,.06),transparent 60%),var(--vx-surface-base);
+  background:radial-gradient(120% 140% at 0% 0%,rgba(201,205,212,.06),transparent 60%),var(--vx-surface-base);
   border:1px solid var(--vx-border-soft)}
 .vx-stat .vx-stat-k{font:600 10px/1.2 var(--vx-font);letter-spacing:.08em;
   text-transform:uppercase;color:var(--vx-text-muted);margin-bottom:6px}
@@ -127,9 +127,9 @@
 .vx-confgauge svg{overflow:visible;display:block}
 .vx-confgauge .vx-cg-track{stroke:var(--vx-surface-4);fill:none}
 .vx-confgauge .vx-cg-arc{fill:none;stroke-linecap:round;
-  filter:drop-shadow(0 0 5px var(--_glow,rgba(163,202,66,.5)));
+  filter:drop-shadow(0 0 5px var(--_glow,rgba(201,205,212,.38)));
   transition:stroke-dashoffset .7s var(--vx-ease)}
-.vx-confgauge .vx-cg-dir{font:800 12px/1 var(--vx-font);letter-spacing:.03em}
+.vx-confgauge .vx-cg-dir{font:700 12px/1 var(--vx-font);letter-spacing:.03em}
 .vx-confgauge .vx-cg-pct{font:700 15px/1 var(--vx-font-mono);fill:var(--vx-text-primary)}
 .vx-confgauge .vx-cg-lbl{font:600 9px/1 var(--vx-font);letter-spacing:.09em;
   text-transform:uppercase;fill:var(--vx-text-muted)}
@@ -170,8 +170,8 @@
 /* ── Scorecard « profil » : cluster de mini-jauges radiales au coup d'œil ── */
 .vx-scoregauge{display:flex;flex-direction:column;align-items:center;gap:4px}
 .vx-scoregauge svg{overflow:visible;display:block}
-.vx-scoregauge .vx-cg-arc{filter:drop-shadow(0 0 5px var(--_glow,rgba(163,202,66,.4)));transition:stroke-dasharray .7s var(--vx-ease)}
-.vx-sg-val{font:800 21px/1 var(--vx-font-mono);font-variant-numeric:tabular-nums}
+.vx-scoregauge .vx-cg-arc{filter:drop-shadow(0 0 5px var(--_glow,rgba(201,205,212,.30)));transition:stroke-dasharray .7s var(--vx-ease)}
+.vx-sg-val{font:700 21px/1 var(--vx-font-mono);font-variant-numeric:tabular-nums}
 .vx-sg-lbl{font:600 9.5px/1.15 var(--vx-font);letter-spacing:.05em;text-transform:uppercase;
   color:var(--vx-text-muted);text-align:center;max-width:84px}
 .vx-gaugecluster{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
@@ -203,7 +203,7 @@
 .vx-mover:hover{transform:translateY(-2px);border-color:var(--vx-border-default);
   box-shadow:0 8px 22px rgba(0,0,0,.42)}
 .vx-mover .mv-sym{font:700 13.5px/1 var(--vx-font-mono);color:var(--vx-text-primary);letter-spacing:.02em}
-.vx-mover .mv-chg{font:800 16.5px/1.1 var(--vx-font-mono);font-variant-numeric:tabular-nums;margin-top:5px}
+.vx-mover .mv-chg{font:700 16.5px/1.1 var(--vx-font-mono);font-variant-numeric:tabular-nums;margin-top:5px}
 .vx-mover .mv-sub{font:500 10.5px/1.35 var(--vx-font);color:var(--vx-text-faint);margin-top:4px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vx-mover .mv-sub b{color:var(--vx-text-secondary);font-weight:600}
@@ -211,7 +211,7 @@
 /* ── Halo premium opt-in sur une carte (accent discret en haut) ───────── */
 .vx-card--premium{position:relative;overflow:hidden}
 .vx-card--premium::after{content:"";position:absolute;inset:0 0 auto 0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(163,202,66,.45),transparent);
+  background:linear-gradient(90deg,transparent,rgba(201,205,212,.45),transparent);
   opacity:.7;pointer-events:none}
 .vx-card--premium:hover{border-color:var(--vx-border-default)}
 
@@ -232,7 +232,7 @@
    dégradé se superpose au fond de carte existant (spécificité .vx-card.vx-kpi
    + chargement tardif → gagne uniquement sur background-image). */
 .vx-card.vx-kpi{
-  background-image:radial-gradient(130% 140% at 0% 0%,rgba(163,202,66,.055),transparent 58%)}
+  background-image:radial-gradient(130% 140% at 0% 0%,rgba(201,205,212,.055),transparent 58%)}
 .vx-card.vx-kpi:hover{border-color:var(--vx-border-default);transform:translateY(-1px)}
 
 @media (max-width:640px){

@@ -55,7 +55,7 @@
                 pointRadius: 2, pointBackgroundColor: C.colors.neutral, pointBorderWidth: 0 },
               { label: symName, data: meScore,
                 borderColor: C.colors.brand, borderWidth: 2,
-                backgroundColor: 'rgba(132,170,49,.16)',
+                backgroundColor: (C.rgba && C.rgba(C.colors.brand, .16)) || 'rgba(201,205,212,.16)',
                 pointRadius: 3, pointBackgroundColor: C.colors.brand,
                 pointBorderColor: 'rgba(0,0,0,.35)', pointBorderWidth: 1,
                 pointHoverRadius: 5 },
@@ -66,8 +66,8 @@
             scales: {
               r: {
                 min: 0, max: 100, beginAtZero: true,
-                grid: { color: 'rgba(237,255,237,.07)' },
-                angleLines: { color: 'rgba(237,255,237,.07)' },
+                grid: { color: 'rgba(255,255,255,.06)' },
+                angleLines: { color: 'rgba(255,255,255,.06)' },
                 ticks: { display: false, stepSize: 25 },
                 pointLabels: {
                   color: C.colors.text, font: { size: 10.5, weight: '600' },

@@ -50,7 +50,7 @@ img{max-width:100%}
 [data-tip]:hover::after,[data-tip]:focus-visible::after{
  content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);
  background:#12151c;color:#eef2f8;border:1px solid rgba(255,255,255,.16);border-radius:9px;
- padding:7px 11px;font:600 11.5px/1.4 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+ padding:7px 11px;font:600 11.5px/1.4 var(--vx-font,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif);
  white-space:normal;width:max-content;max-width:260px;z-index:100000;pointer-events:none;
  box-shadow:0 10px 30px rgba(0,0,0,.45);animation:vxtipin .14s var(--vx-ease)}
 [data-tip]:hover::before,[data-tip]:focus-visible::before{

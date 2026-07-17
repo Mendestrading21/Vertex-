@@ -408,8 +408,8 @@ function renderCommittee(){
               pointBorderColor:function(ctx){return ctx.raw&&ctx.raw.contra?cc.warning:'rgba(0,0,0,.4)';},
               pointBorderWidth:function(ctx){return ctx.raw&&ctx.raw.contra?2:1;}}]},
             options:{scales:{
-              x:{min:0,max:100,title:{display:true,text:'Accord du comité'},grid:{color:'rgba(237,255,237,.06)'}},
-              y:{min:0,max:100,title:{display:true,text:'Conviction'},grid:{color:'rgba(237,255,237,.06)'}}},
+              x:{min:0,max:100,title:{display:true,text:'Accord du comité'},grid:{color:'rgba(255,255,255,.06)'}},
+              y:{min:0,max:100,title:{display:true,text:'Conviction'},grid:{color:'rgba(255,255,255,.06)'}}},
               onClick:function(evt,els,chart){var q=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
                 if(q.length){var d=chart.data.datasets[0].data[q[0].index];if(d&&d.sym)location.href='/analysis/'+d.sym;}},
               plugins:{tooltip:{callbacks:{label:function(it){var p=it.raw;return p.sym+' · '+p.dec+' — conviction '+Math.round(p.y)+', accord '+Math.round(p.x)+'%'+(p.contra?' (contradiction)':'');}}}}}});}

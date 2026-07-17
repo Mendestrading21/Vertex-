@@ -127,28 +127,28 @@ _CONTENT = """
   #vx-dash-anchors .vx-chip[aria-pressed="true"]{border-color:var(--vx-brand);color:var(--vx-brand-strong)}
   /* Têtes de section : rythme visuel de la page unique (fusion Marchés) */
   .vx-sect{display:flex;align-items:baseline;gap:.7rem;margin:26px 0 2px}
-  .vx-sect b{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--vx-brand,#84aa31)}
+  .vx-sect b{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--vx-brand,#c9cdd4)}
   .vx-sect b i{font-style:normal;opacity:.45;margin-right:.5rem;font-variant-numeric:tabular-nums}
   #vx-backtop{position:fixed;right:22px;bottom:76px;z-index:30;display:none;
     padding:9px 13px;border-radius:999px;border:1px solid var(--vx-border,#26221e);
     background:var(--vx-surface-1,#141513);color:var(--vx-text-secondary,#b7b3ad);
     font-size:12px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35)}
-  #vx-backtop:hover{border-color:var(--vx-brand,#84aa31);color:var(--vx-brand,#84aa31)}
+  #vx-backtop:hover{border-color:var(--vx-brand,#c9cdd4);color:var(--vx-brand,#c9cdd4)}
   /* Tuiles météo XL de la Situation : lisibles de loin, ton par liseré + halo */
   #vx-ess-body .vx-statrow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
   #vx-ess-body .vx-stat{padding:13px 15px;border-radius:12px;background:var(--vx-surface-0,#0d100e);
     border:1px solid var(--vx-border,#26221e);border-left-width:3px;min-width:0}
   #vx-ess-body .vx-stat[data-tone="pos"]{border-left-color:var(--vx-positive,#36c889);box-shadow:inset 0 0 26px rgba(54,200,137,.05)}
   #vx-ess-body .vx-stat[data-tone="neg"]{border-left-color:var(--vx-negative,#ed655c);box-shadow:inset 0 0 26px rgba(237,101,92,.05)}
-  #vx-ess-body .vx-stat[data-tone="brand"]{border-left-color:var(--vx-brand,#84aa31);box-shadow:inset 0 0 26px rgba(132,170,49,.06)}
-  #vx-ess-body .vx-stat-v{font-size:19px !important;font-weight:800;letter-spacing:.01em}
+  #vx-ess-body .vx-stat[data-tone="brand"]{border-left-color:var(--vx-brand,#c9cdd4);box-shadow:inset 0 0 26px rgba(201,205,212,.06)}
+  #vx-ess-body .vx-stat-v{font-size:19px !important;font-weight:700;letter-spacing:.01em}
   #vx-ess-body .vx-stat-sub{white-space:normal;line-height:1.4}
   @media (max-width:1100px){#vx-ess-body .vx-statrow{grid-template-columns:repeat(3,1fr)}}
   @media (max-width:640px){#vx-ess-body .vx-statrow{grid-template-columns:repeat(2,1fr)}}
   /* Survol des tuiles indices : réaction visuelle (page vivante) */
   .vx-idx-tile{transition:border-color .15s ease,transform .15s ease}
-  .vx-idx-tile:hover{border-color:var(--vx-brand,#84aa31);transform:translateY(-1px)}
+  .vx-idx-tile:hover{border-color:var(--vx-brand,#c9cdd4);transform:translateY(-1px)}
   /* Brief repliable : lecture confortable, la page reste équilibrée */
   #vx-brief-clamp[data-clamped="1"]{max-height:560px;overflow:hidden;
     -webkit-mask-image:linear-gradient(180deg,#000 80%,transparent);
@@ -157,19 +157,19 @@ _CONTENT = """
   #vx-brief-body p{font-size:16px !important;line-height:1.85 !important}
   #vx-brief-body .vx-brief-lines{margin-top:.6rem}
   #vx-brief-body .vx-brief-lines .bl{display:flex;gap:9px;padding:5px 0;align-items:flex-start;font-size:13.5px;line-height:1.6;color:var(--vx-text-secondary,#b7b3ad)}
-  #vx-brief-body .vx-brief-lines .bl::before{content:"";flex:0 0 6px;height:6px;border-radius:99px;background:var(--vx-brand,#84aa31);margin-top:8px}
+  #vx-brief-body .vx-brief-lines .bl::before{content:"";flex:0 0 6px;height:6px;border-radius:99px;background:var(--vx-brand,#c9cdd4);margin-top:8px}
   /* Actus : liseré sentiment par article */
   #vx-news-body article{border-left:2px solid transparent;padding-left:9px !important;transition:border-color .15s}
   #vx-news-body article[data-senti="1"]{border-left-color:var(--vx-positive,#36c889)}
   #vx-news-body article[data-senti="-1"]{border-left-color:var(--vx-negative,#ed655c)}
-  #vx-news-body article:hover{border-left-color:var(--vx-brand,#84aa31)}
+  #vx-news-body article:hover{border-left-color:var(--vx-brand,#c9cdd4)}
   /* Portefeuille : cartes design (fini les lignes) */
   #vx-portfolio .vx-pf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px}
   #vx-portfolio .vx-pf-card{background:var(--vx-surface-0,#0d100e);border:1px solid var(--vx-border,#26221e);
     border-radius:12px;padding:12px 13px;display:flex;flex-direction:column;gap:5px;min-width:0;
     transition:border-color .15s ease,transform .15s ease}
-  #vx-portfolio .vx-pf-card:hover{border-color:var(--vx-brand,#84aa31);transform:translateY(-1px)}
-  #vx-portfolio .vx-pf-card .pf-pl{font:800 21px/1.1 var(--vx-font-mono,monospace);font-variant-numeric:tabular-nums}
+  #vx-portfolio .vx-pf-card:hover{border-color:var(--vx-brand,#c9cdd4);transform:translateY(-1px)}
+  #vx-portfolio .vx-pf-card .pf-pl{font:700 21px/1.1 var(--vx-font-mono,monospace);font-variant-numeric:tabular-nums}
   #vx-portfolio .vx-pf-card .pf-sub{font-size:11.5px;color:var(--vx-text-dim,#817d77)}
   .vx-sect span{font-size:11.5px;color:var(--vx-text-dim,#817d77)}
   .vx-sect::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--vx-border,#26221e),transparent)}
@@ -687,7 +687,7 @@ function loadMainChart(scan){
       data:{labels,datasets:[
         {label:hasSpy?'SPY':key,data:closes,borderColor:cc.brand,borderWidth:1.9,pointRadius:0,tension:.22,fill:true,
          backgroundColor:(ctx)=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,ctx.chart.height||H_HERO);
-           g.addColorStop(0,(cc.brand||'#84aa31')+'33');g.addColorStop(1,(cc.brand||'#84aa31')+'00');return g;}},
+           g.addColorStop(0,(cc.brand||'#c9cdd4')+'33');g.addColorStop(1,(cc.brand||'#c9cdd4')+'00');return g;}},
         ...mm(S.ema20,'MM20',cc.amber,[]),...mm(S.sma50,'MM50',cc.beige,[5,3]),...mm(S.sma200,'MM200',cc.neutral,[2,3])]},
       options:{scales:VXCharts.axes({yFmt:(v)=>VX.fmt.price(v)}),interaction:{mode:'index',intersect:false},
         plugins:{legend:{display:false}}},
@@ -778,7 +778,7 @@ async function loadRoro(){
   const bar='<div style="position:relative;height:16px;background:var(--vx-surface-3);border-radius:6px;overflow:hidden;margin:10px 0 6px">'
     +'<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--vx-border-strong)"></div>'
     +(gap==null?'':'<div style="position:absolute;top:2px;bottom:2px;'+(pos?'left:50%':'right:50%')+';width:'+(mag/2).toFixed(0)+'%;background:'+(pos?'var(--vx-positive)':'var(--vx-negative)')+';border-radius:3px"></div>')+'</div>';
-  el.innerHTML='<div style="font-size:24px;font-weight:800;color:'+(pos?'var(--vx-positive)':'var(--vx-negative)')+'">'+esc(roro)+'</div>'+bar
+  el.innerHTML='<div style="font-size:24px;font-weight:700;color:'+(pos?'var(--vx-positive)':'var(--vx-negative)')+'">'+esc(roro)+'</div>'+bar
     +'<div class="vx-flex" style="justify-content:space-between"><span class="vx-meta">RISK-OFF</span><span class="vx-meta">écart '+(gap==null?'n/d':(gap>0?'+':'')+gap)+'</span><span class="vx-meta">RISK-ON</span></div>'
     +(s.vix_band?'<div class="vx-kv vx-mt3"><span class="k">Bande VIX</span><span class="v">'+esc(s.vix_band)+'</span></div>':'')
     +(s.regime?'<div class="vx-kv"><span class="k">Régime</span><span class="v">'+esc(s.regime)+'</span></div>':'')
@@ -1162,7 +1162,7 @@ async function loadOpportunities(){
             <span class="vx-chart-question">Comment se répartissent les verdicts aujourd’hui ?</span></div>
           <div class="vx-flex vx-wrap" style="gap:12px;margin:6px 0 12px">
             ${_ck.map(k=>`<div style="flex:1;min-width:110px;padding:11px 13px;border-radius:11px;background:var(--vx-surface-0);border:1px solid var(--vx-border);border-left:3px solid ${tone[k]||'var(--vx-text-dim)'}">
-              <div style="font:800 24px/1.1 var(--vx-font-mono,monospace);color:${tone[k]||'var(--vx-text-dim)'}">${counts[k]}</div>
+              <div style="font:700 24px/1.1 var(--vx-font-mono,monospace);color:${tone[k]||'var(--vx-text-dim)'}">${counts[k]}</div>
               <div class="vx-meta" style="margin-top:3px">${esc(k)}</div>
               <div class="vx-meta">${Math.round(counts[k]/total*100)} % des dossiers</div></div>`).join('')}
           </div>
@@ -1259,7 +1259,7 @@ async function loadPortfolio(){
     const wgt=Math.round((t.cost||0)/totCost*100);
     return `<div class="vx-pf-card" style="border-left:3px solid ${plCol}">
       <div class="vx-flex" style="justify-content:space-between;gap:6px">
-        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(t.sym)}" style="font-weight:800;padding:0 4px">${esc(t.sym)}</button>
+        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(t.sym)}" style="font-weight:700;padding:0 4px">${esc(t.sym)}</button>
         <span class="vx-badge" ${isOpt?'style="color:var(--vx-violet)"':''}>${esc(t.type)}${t.strike?' '+esc(t.strike):''}</span></div>
       <div class="pf-pl" style="color:${plCol}">${pl!==null?((pl>0?'+':'')+VX.fmt.num(pl,1)+' %'):'n/d'}</div>
       <div class="pf-sub">${esc(t.qty)} × ${VX.fmt.price(t.cost)} $${t.exp?' · éch. '+esc(t.exp):''}</div>

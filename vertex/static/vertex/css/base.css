@@ -5,22 +5,25 @@ body{margin:0;background:var(--vx-bg-1);color:var(--vx-text-primary);
   font-family:var(--vx-font);font-size:var(--vx-fs-body);line-height:1.5;
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
-/* Ambiance : halo orange diffus en coin + vignettage très léger.
+/* Ambiance : halo argenté diffus en coin + vignettage très léger (Black Glass neutre).
    Fixe, non animé, jamais derrière le texte principal (opacités < .06). */
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
   background:
-    radial-gradient(ellipse 900px 520px at 88% -12%,rgba(163,202,66,.045),transparent 62%),
-    radial-gradient(ellipse 700px 460px at -8% 108%,rgba(145,75,43,.032),transparent 60%),
+    radial-gradient(ellipse 900px 520px at 88% -12%,rgba(201,205,212,.040),transparent 62%),
+    radial-gradient(ellipse 700px 460px at -8% 108%,rgba(201,205,212,.022),transparent 60%),
     radial-gradient(ellipse 140% 100% at 50% 50%,transparent 62%,rgba(0,0,0,.28) 100%)}
 #vx-app{position:relative;z-index:1}
 
 h1,h2,h3,h4,p{margin:0}
 h1,h2,h3,h4{text-wrap:balance}
-h1{font-size:var(--vx-fs-page);font-weight:800;letter-spacing:-.6px}
+h1{font-size:var(--vx-fs-page);font-weight:var(--vx-fw-black);letter-spacing:-.6px}
 h2{font-size:var(--vx-fs-section);font-weight:700;letter-spacing:-.2px}
 p,.vx-sub,.vx-card-sub,.vx-help,.ds-note{text-wrap:pretty}
 h3{font-size:var(--vx-fs-card);font-weight:600;color:var(--vx-text-secondary);
   text-transform:uppercase;letter-spacing:.6px}
+/* <b>/<strong> = « bolder » dans la feuille UA → peut calculer 900 (faux-gras avec
+   General Sans, plafonné à 700). On fixe un gras absolu = 700. */
+b,strong{font-weight:var(--vx-fw-bold)}
 a{color:var(--vx-info);text-decoration:none}
 a:hover{text-decoration:underline}
 small,.vx-meta{font-size:var(--vx-fs-meta);color:var(--vx-text-muted)}

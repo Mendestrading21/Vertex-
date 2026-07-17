@@ -11,16 +11,24 @@
   /* Thème V3 unique (chart-theme.js) — repli sur les mêmes valeurs si absent */
   const THEME = window.VXChartTheme || { colors: {}, tooltip: {} };
   C.colors = Object.assign({
-    brand: '#84aa31', blue: '#84aa31', cyan: '#c0b79f', violet: '#9c79d0',
+    brand: '#c9cdd4', blue: '#c9cdd4', cyan: '#c0b79f', violet: '#9c79d0',
     option: '#9c79d0', teal: '#53b9ad', plum: '#8f698c', sand: '#c0b79f',
     steel: '#909b94', stone: '#6d746e',
     positive: '#36c889', negative: '#ed655c', warning: '#dda23b',
-    info: '#84aa31', neutral: '#8f8a83',
+    info: '#c9cdd4', neutral: '#8f8a83',
     text: '#b7b3ad', muted: '#817d77', grid: 'rgba(255,255,255,.05)',
-    series: ['#84aa31', '#c0b79f', '#8f8a83', '#9c79d0', '#dda23b', '#48631b'],
+    series: ['#c9cdd4', '#8f8a83', '#9aa1a9', '#9c79d0', '#dda23b', '#6d746e'],
     /* Palette macro/cross-asset : teal en tête (jamais confondu avec la marque) */
     macroSeries: ['#53b9ad', '#c0b79f', '#8f698c', '#909b94', '#dda23b', '#6d746e'],
   }, THEME.colors);
+
+  /* Police des labels dessinés au canvas (SVG hérite du body ; le canvas non).
+     Dérivée de --vx-font pour suivre la typo globale, mise en cache. */
+  let _labelFam = '';
+  C.labelFont = function (px) {
+    if (!_labelFam) _labelFam = (getComputedStyle(document.documentElement).getPropertyValue('--vx-font') || '').trim() || 'sans-serif';
+    return (px || 9) + 'px ' + _labelFam;
+  };
 
   /* ── Rendu MODERNE (global) : dégradés, glow, barres arrondies, crosshair ──
      Un seul endroit → tous les graphiques Chart.js de l'app en profitent. */
@@ -35,6 +43,9 @@
     if (m) { const p = m[1].split(',').slice(0, 3).map(s => s.trim()); return 'rgba(' + p.join(',') + ',' + a + ')'; }
     return null;
   }
+  /* Exposé : dériver une couleur du thème avec alpha (ex. heatmap → C.colors.positive).
+     Source unique → plus aucune divergence de teinte hors-thème. */
+  C.rgba = _rgba;
   /* Lueur douce sous chaque ligne (couleur de la série) — désactivée si l'OS
      demande moins d'animations (économie de peinture). */
   const _glowPlugin = {
@@ -44,7 +55,7 @@
       const ds = chart.data.datasets[args.index] || {};
       const col = typeof ds.borderColor === 'string' ? _rgba(ds.borderColor, .40) : null;
       const c = chart.ctx; c.save();
-      c.shadowColor = col || 'rgba(163,202,66,.25)';
+      c.shadowColor = col || 'rgba(201,205,212,.25)';
       c.shadowBlur = 6; c.shadowOffsetY = 1;
     },
     afterDatasetDraw(chart, args) { if (args.meta.type === 'line') chart.ctx.restore(); },
@@ -57,7 +68,7 @@
       const act = chart.tooltip && chart.tooltip.getActiveElements ? chart.tooltip.getActiveElements() : [];
       if (!act.length) return;
       const x = act[0].element.x, a = chart.chartArea, c = chart.ctx;
-      c.save(); c.strokeStyle = 'rgba(237,255,237,.14)'; c.lineWidth = 1; c.setLineDash([3, 3]);
+      c.save(); c.strokeStyle = 'rgba(255,255,255,.14)'; c.lineWidth = 1; c.setLineDash([3, 3]);
       c.beginPath(); c.moveTo(x, a.top); c.lineTo(x, a.bottom); c.stroke(); c.restore();
     },
   };
@@ -69,7 +80,7 @@
     d.font.size = 11;
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) d.animation = false;
-    else if (d.animation && typeof d.animation === 'object') d.animation.duration = 250;
+    else if (d.animation && typeof d.animation === 'object') { d.animation.duration = 260; d.animation.easing = 'easeOutQuart'; }
     d.plugins.legend.display = false;
     d.interaction = { mode: 'nearest', axis: 'xy', intersect: false };
     const tt = (window.VXChartTheme && window.VXChartTheme.tooltip) || {};
@@ -344,7 +355,7 @@
       <div class="vx-gauge" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
         <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:230px;display:block;margin:0 auto">
           ${track}${valArc}${needle}
-          <text x="${cx}" y="${cy - 20}" text-anchor="middle" fill="${valColor}" font-size="30" font-weight="800" style="font-variant-numeric:tabular-nums">${disp}</text>
+          <text x="${cx}" y="${cy - 20}" text-anchor="middle" fill="${valColor}" font-size="30" font-weight="700" style="font-variant-numeric:tabular-nums">${disp}</text>
           <text x="${cx}" y="${cy - 3}" text-anchor="middle" fill="var(--vx-text-muted,#817d77)" font-size="10" letter-spacing=".5">${(o.unit || '') + (o.label ? ' · ' + o.label : '')}</text>
         </svg>
         ${o.reading ? `<div class="vx-meta" style="text-align:center;margin-top:4px">${o.reading}</div>` : ''}
@@ -503,7 +514,7 @@
         const arrow = i < nodes.length - 1 ? '<span aria-hidden="true" style="align-self:center;color:var(--vx-text-muted,#817d77);padding:0 5px;font-size:13px">→</span>' : '';
         return '<div style="flex:0 0 auto;min-width:76px;text-align:center;padding:8px 10px;border-radius:9px;background:' + bg + ';border:1px solid ' + col + '55">'
           + '<div style="font-size:10.5px;color:var(--vx-text-secondary,#b7b2aa);text-transform:capitalize;white-space:nowrap">' + String(n.label) + '</div>'
-          + (n.count != null ? '<div style="font-size:15px;font-weight:800;color:' + col + ';font-variant-numeric:tabular-nums">' + n.count + '</div>' : '')
+          + (n.count != null ? '<div style="font-size:15px;font-weight:700;color:' + col + ';font-variant-numeric:tabular-nums">' + n.count + '</div>' : '')
           + (n.sub ? '<div style="font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--vx-text-muted,#817d77)">' + n.sub + '</div>' : '')
           + '</div>' + arrow;
       }).join('') + '</div>';
@@ -539,7 +550,7 @@
         <b class="vx-mono" style="color:${col}">${Number.isInteger(d.value) ? d.value : (+d.value).toFixed(1)}${o.unit || ' %'}</b></div>`;
     });
     const center = (o.centerValue != null)
-      ? `<text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="26" font-weight="800" fill="var(--vx-text-primary,#f3f1ed)" style="font-variant-numeric:tabular-nums">${o.centerValue}</text>
+      ? `<text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="26" font-weight="700" fill="var(--vx-text-primary,#f3f1ed)" style="font-variant-numeric:tabular-nums">${o.centerValue}</text>
          ${o.centerLabel ? `<text x="${cx}" y="${cy + 16}" text-anchor="middle" font-size="9.5" fill="var(--vx-text-muted,#817d77)">${o.centerLabel}</text>` : ''}`
       : '';
     const aria = (o.ariaLabel || 'anneaux') + ' : ' + items.map(d => d.label + ' ' + Math.round(d.value)).join(', ');
@@ -572,7 +583,7 @@
       const pct = Math.round(s.value / top * 100);
       rows += `<polygon points="${(cx - w0 / 2).toFixed(1)},${y} ${(cx + w0 / 2).toFixed(1)},${y} ${(cx + w1 / 2).toFixed(1)},${y + rowH} ${(cx - w1 / 2).toFixed(1)},${y + rowH}"
         fill="${col}" fill-opacity=".8"/>
-        <text x="${cx}" y="${y + rowH / 2 - 1}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="800" fill="#0b0b0c" style="font-variant-numeric:tabular-nums">${fmt(s.value)}</text>`;
+        <text x="${cx}" y="${y + rowH / 2 - 1}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="700" fill="#0b0b0c" style="font-variant-numeric:tabular-nums">${fmt(s.value)}</text>`;
       rows += `<text x="8" y="${y + rowH / 2}" dominant-baseline="middle" font-size="10.5" fill="var(--vx-text-secondary,#b7b2aa)">${String(s.label)}</text>
         <text x="${W - 6}" y="${y + rowH / 2}" text-anchor="end" dominant-baseline="middle" font-size="10" fill="var(--vx-text-muted,#817d77)" style="font-variant-numeric:tabular-nums">${pct}%</text>`;
     });
@@ -613,7 +624,7 @@
           ctx.save();
           ctx.strokeStyle = C.colors.warning; ctx.setLineDash([2, 3]);
           ctx.beginPath(); ctx.moveTo(x, chartArea.top); ctx.lineTo(x, chartArea.bottom); ctx.stroke();
-          ctx.fillStyle = C.colors.warning; ctx.font = '9px sans-serif';
+          ctx.fillStyle = C.colors.warning; ctx.font = C.labelFont(9);
           ctx.fillText(m.label || 'E', x + 2, chartArea.top + 9);
           ctx.restore();
         });

@@ -5,7 +5,7 @@
 /* ── Profondeur des cartes Hero : liseré cuivre supérieur + halo d'angle ── */
 .vx-card--hero{position:relative;overflow:hidden}
 .vx-card--hero::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;pointer-events:none;
-  background:linear-gradient(90deg,transparent,rgba(163,202,66,.5),transparent);opacity:.75}
+  background:linear-gradient(90deg,transparent,rgba(201,205,212,.5),transparent);opacity:.75}
 .vx-card--hero::after{content:"";position:absolute;top:-38%;right:-8%;width:440px;height:440px;pointer-events:none;
   background:radial-gradient(circle,rgba(146,88,56,.10),transparent 62%)}
 .vx-card--hero>*{position:relative}
@@ -39,7 +39,7 @@
 .vx-badge-decision[data-decision]{background:rgba(255,255,255,.035)}
 
 /* ── Barre KPI (indices/cross-asset) : contour un peu plus vivant au survol ── */
-a.vx-strip-item:hover{border-color:rgba(163,202,66,.28)}
+a.vx-strip-item:hover{border-color:rgba(201,205,212,.28)}
 
 /* ── États vides premium : icône fantôme + halo graphite discret ── */
 .vx-state[data-state="empty"]{padding:26px 18px}

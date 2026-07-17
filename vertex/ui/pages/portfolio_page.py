@@ -41,7 +41,7 @@ _CONTENT = """
   border:1px solid var(--vx-border,#26221e);border-left:3px solid transparent}
 #vx-content .vx-cmd-k[data-tone="pos"]{border-left-color:var(--vx-positive)}
 #vx-content .vx-cmd-k[data-tone="neg"]{border-left-color:var(--vx-negative)}
-#vx-content .vx-cmd-k-v{font:800 22px/1.15 var(--vx-font-mono,monospace);color:var(--vx-text-primary,#f1f5f1);font-variant-numeric:tabular-nums}
+#vx-content .vx-cmd-k-v{font:700 22px/1.15 var(--vx-font-mono,monospace);color:var(--vx-text-primary,#f1f5f1);font-variant-numeric:tabular-nums}
 #vx-content .vx-cmd-k-l{font-size:11px;color:var(--vx-text-muted,#848d85);text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
 #vx-content .vx-cmd-k-s{font-size:11px;color:var(--vx-text-faint,#5d675f);margin-top:1px}
 #vx-content .vx-poscard{background:var(--vx-surface-0,#090c0a);border:1px solid var(--vx-border,#26221e);
@@ -301,9 +301,9 @@ async function renderTeam(){
         const stop=t.entrySnap&&t.entrySnap.stop;
         return `<div class="vx-poscard" style="border-left:3px solid ${plCol}">
           <div class="vx-flex" style="justify-content:space-between;gap:6px;align-items:flex-start">
-            <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:15px;padding-left:0;font-weight:800" data-open-analysis="${t.sym}">${t.sym}</button>
+            <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:15px;padding-left:0;font-weight:700" data-open-analysis="${t.sym}">${t.sym}</button>
             <span class="vx-badge" ${t.type!=='STK'?'style="color:var(--vx-option)"':''}>${t.type}${t.strike?' '+t.strike:''}</span></div>
-          <div class="vx-mono" style="font-size:21px;font-weight:800;color:${plCol};line-height:1.1;margin-top:3px">${t.pl!==null?((t.pl>0?'+':'')+VX.fmt.num(t.pl,1)+' %'):'n/d'}</div>
+          <div class="vx-mono" style="font-size:21px;font-weight:700;color:${plCol};line-height:1.1;margin-top:3px">${t.pl!==null?((t.pl>0?'+':'')+VX.fmt.num(t.pl,1)+' %'):'n/d'}</div>
           <div class="vx-meta" style="margin-top:2px">${wgt!=null?'poids '+VX.fmt.num(wgt,1)+' %':'poids —'}${t.value!=null?' · '+VX.fmt.price(t.value)+' $':''}</div>
           ${stop!=null?`<div class="vx-meta">stop ${VX.fmt.nd(stop)}</div>`:''}
           ${(t.entrySnap&&t.entrySnap.thesis)||t.note?`<div class="vx-meta vx-truncate" style="margin-top:3px">${esc((t.entrySnap&&t.entrySnap.thesis)||t.note)}</div>`:''}

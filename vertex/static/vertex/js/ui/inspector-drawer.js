@@ -72,11 +72,11 @@
       var badges = window.VXEntities && VXEntities.badges ? VXEntities.badges(sym) : '';
       body.innerHTML =
         '<div class="vx-flex" style="justify-content:space-between;align-items:flex-start;gap:8px">'
-        + '<div style="min-width:0"><div class="vx-ticker" style="font-size:19px;font-weight:800">' + esc(sym) + '</div>'
+        + '<div style="min-width:0"><div class="vx-ticker" style="font-size:19px;font-weight:700">' + esc(sym) + '</div>'
         + (name ? '<div class="vx-meta vx-truncate" style="max-width:230px">' + esc(name) + '</div>' : '') + '</div>'
         + (verd ? '<span class="vx-badge vx-badge-decision" data-decision="' + esc(String(verd).replace('É', 'E')) + '">' + esc(VERD[verd] || verd) + '</span>' : '') + '</div>'
         + '<div class="vx-flex" style="gap:10px;align-items:baseline;margin-top:6px">'
-        + '<span class="vx-mono" style="font-size:24px;font-weight:800">' + (d.price != null ? VX.fmt.price(d.price) : '—') + '</span>'
+        + '<span class="vx-mono" style="font-size:24px;font-weight:700">' + (d.price != null ? VX.fmt.price(d.price) : '—') + '</span>'
         + '<span class="vx-mono ' + (chg > 0 ? 'vx-pos' : chg < 0 ? 'vx-neg' : 'vx-muted') + '">' + (chg != null ? VX.fmt.pct(chg, 1) : '—') + '</span>'
         + (badges ? '<span class="vx-right">' + badges + '</span>' : '') + '</div>'
         + spark(series.close)

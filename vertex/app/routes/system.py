@@ -208,8 +208,8 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v70';   // v70 : Black Glass Kit — alias/classes .vx-glass-*, incohérences nav corrigées, identité Black Glass
-self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
+const CACHE='td-shell-v71';   // v71 : polices auto-hébergées General Sans + JetBrains Mono (offline) + typo/thème graphique unifiés
+self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png','/static/vertex/css/fonts.css','/static/vertex/fonts/GeneralSans-Regular.woff2','/static/vertex/fonts/GeneralSans-Medium.woff2','/static/vertex/fonts/GeneralSans-Semibold.woff2','/static/vertex/fonts/GeneralSans-Bold.woff2','/static/vertex/fonts/JetBrainsMono-Regular.woff2','/static/vertex/fonts/JetBrainsMono-Medium.woff2','/static/vertex/fonts/JetBrainsMono-SemiBold.woff2','/static/vertex/fonts/JetBrainsMono-Bold.woff2']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
   const req=e.request; if(req.method!=='GET')return;

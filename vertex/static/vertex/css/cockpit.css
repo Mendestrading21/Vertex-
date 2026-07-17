@@ -7,7 +7,7 @@
 :root{
   --vx-glow-pos:0 0 15px rgba(54,200,137,.30);
   --vx-glow-neg:0 0 15px rgba(237,101,92,.30);
-  --vx-glow-copper-soft:0 0 24px rgba(163,202,66,.15);
+  --vx-glow-copper-soft:0 0 24px rgba(201,205,212,.15);
   --vx-tile-hi:inset 0 1px 0 rgba(255,255,255,.045);
   --vx-tile-grad:linear-gradient(180deg,rgba(255,255,255,.016),transparent 40%);
 }
@@ -27,8 +27,8 @@ a.vx-strip-item,.vx-strip-item{position:relative;overflow:hidden;
   border-radius:var(--vx-r);
   transition:transform var(--vx-t-fast),border-color var(--vx-t-fast),box-shadow var(--vx-t-fast)}
 .vx-strip-item::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;pointer-events:none;
-  background:linear-gradient(90deg,transparent,rgba(163,202,66,.42),transparent);opacity:.55}
-a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(163,202,66,.32)}
+  background:linear-gradient(90deg,transparent,rgba(201,205,212,.42),transparent);opacity:.55}
+a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(201,205,212,.32)}
 /* Grand chiffre net + delta directionnel appuyé, façon cockpit de référence */
 .vx-strip-item .vx-kpi-label{opacity:.85}
 .vx-strip-item .vx-kpi-value{font-size:23px!important;letter-spacing:-.02em;color:var(--vx-text-primary)}
@@ -44,7 +44,7 @@ a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(16
 .vx-kpi-value.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}
 
 /* ══ Utilitaire « grand chiffre » (hero KPI façon référence) ══ */
-.vx-stat-xl{font-family:var(--vx-font-mono);font-weight:800;font-size:44px;line-height:1;
+.vx-stat-xl{font-family:var(--vx-font-mono);font-weight:700;font-size:44px;line-height:1;
   letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--vx-text-primary)}
 .vx-stat-xl.vx-pos{color:var(--vx-positive);text-shadow:var(--vx-glow-pos)}
 .vx-stat-xl.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}

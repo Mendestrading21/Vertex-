@@ -410,8 +410,8 @@ function paintQuadrant(cf,sm,peers,demo){
       {data:med,pointStyle:'triangle',pointRadius:9,pointBackgroundColor:cc.warning,
        pointBorderColor:'rgba(0,0,0,.4)',pointBorderWidth:1}]},
     options:{scales:{
-      x:{title:{display:true,text:'Croissance CA (%)'},grid:{color:'rgba(237,255,237,.06)'}},
-      y:{title:{display:true,text:'ROE (%)'},grid:{color:'rgba(237,255,237,.06)'}}},
+      x:{title:{display:true,text:'Croissance CA (%)'},grid:{color:'rgba(255,255,255,.06)'}},
+      y:{title:{display:true,text:'ROE (%)'},grid:{color:'rgba(255,255,255,.06)'}}},
       plugins:{tooltip:{callbacks:{label:function(it){var p=it.raw;return p.sym+' — croissance '+p.x.toFixed(1)+'% · ROE '+p.y.toFixed(0)+'%';}}}}}};
   VXCharts.card('an-quadrant',{title:'Croissance × rentabilité vs pairs',
     question:'Le titre allie-t-il croissance ET rentabilité ?',
@@ -466,7 +466,7 @@ function paintQuarters(cf,demo){
       {type:'line',label:'Marge nette',data:qs.map(q=>(q.rev?q.ni/q.rev*100:null)),
        borderColor:cc.brand,backgroundColor:cc.brand,borderWidth:2,tension:.3,pointRadius:3,yAxisID:'y1',order:1}]},
     options:{scales:{
-      y:{position:'left',grid:{color:'rgba(237,255,237,.05)'},ticks:{callback:function(v){return B(v);}}},
+      y:{position:'left',grid:{color:'rgba(255,255,255,.05)'},ticks:{callback:function(v){return B(v);}}},
       y1:{position:'right',grid:{display:false},ticks:{callback:function(v){return v+' %';}}},
       x:{grid:{display:false}}},
       plugins:{tooltip:{callbacks:{label:_qtip}}}}};
@@ -517,7 +517,7 @@ async function paintProfile(d){
       +`<div class="pb-bar"><i style="width:${w.toFixed(0)}%;background:${col}"></i></div></div>`;}).join('');
   const mtf=d.mtf||{};
   const mtfTone=/HAUSS/i.test(mtf.state||'')?'ai':/BAISS/i.test(mtf.state||'')?'risk':'';
-  const side=(score!=null?`<div class="vx-flex" style="align-items:baseline;gap:8px"><span style="font:800 32px/1 var(--vx-font-mono);color:var(--vx-brand-strong)">${score}</span><span class="vx-meta">score composite Vertex</span></div>`:'')
+  const side=(score!=null?`<div class="vx-flex" style="align-items:baseline;gap:8px"><span style="font:700 32px/1 var(--vx-font-mono);color:var(--vx-brand-strong)">${score}</span><span class="vx-meta">score composite Vertex</span></div>`:'')
     +(pwin!=null?`<div><div class="vx-meter-row"><span>Probabilité de gain</span><b class="vx-mono">${pwin}%${rr!=null?' · R:R '+VX.fmt.num(rr,1):''}</b></div><div class="vx-meter"><i style="width:${Math.max(2,Math.min(100,pwin))}%"></i></div></div>`:'')
     +(pos52!=null&&!isNaN(pos52)?`<div><div class="vx-meter-row"><span>Position 52 sem.</span><b class="vx-mono">${Math.round(pos52)}%</b></div><div class="vx-meter"><i style="width:${Math.max(2,Math.min(100,pos52))}%;background:var(--vx-steel-3)"></i><b style="left:${Math.max(0,Math.min(100,pos52))}%"></b></div></div>`:'')
     +(mtf.state?`<div class="vx-insight" data-tone="${mtfTone}" style="font-size:12px"><b>MTF ${esc(mtf.state)}</b>${mtf.note?' — '+esc(mtf.note):''}</div>`:'');

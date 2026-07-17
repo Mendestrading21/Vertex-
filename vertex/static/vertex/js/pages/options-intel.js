@@ -272,8 +272,8 @@
         pointBackgroundColor: function (ctx) { var p = ctx.raw; return p && p.type === 'PUT' ? cc.violet : cc.neutral; },
         pointBorderColor: 'rgba(0,0,0,.4)', pointBorderWidth: 1 }] },
       options: { scales: {
-        x: { title: { display: true, text: 'Qualité du contrat' }, grid: { color: 'rgba(237,255,237,.06)' } },
-        y: { title: { display: true, text: 'Probabilité de profit (%)' }, grid: { color: 'rgba(237,255,237,.06)' } } },
+        x: { title: { display: true, text: 'Qualité du contrat' }, grid: { color: 'rgba(255,255,255,.06)' } },
+        y: { title: { display: true, text: 'Probabilité de profit (%)' }, grid: { color: 'rgba(255,255,255,.06)' } } },
         plugins: { tooltip: { callbacks: { label: function (it) { var p = it.raw;
           return p.sym + ' ' + (p.type || '') + ' — qualité ' + Math.round(p.x) + ' · PoP ' + Math.round(p.y) + '% · IV ' + (p.iv != null ? Math.round(p.iv) + '%' : 'n/d'); } } } } }
     };
@@ -343,7 +343,7 @@
   function chartTerm(VC, d) {
     var pts = (d.term_structure && d.term_structure.points) || [];
     if (pts.length < 2) { document.getElementById('vx-opt-term').innerHTML = '<div class="vx-card"><div class="vx-empty">Structure par terme : pas assez d’échéances.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#84aa31');
+    var brand = col(VC, 'brand', '#c9cdd4');
     var slope = d.term_structure.slope;
     var concl = slope == null ? '' : slope > 0.02 ? 'Contango — court terme meilleur marché' : slope < -0.02 ? 'Inversée — stress court terme' : 'Structure plate';
     var c = VC.card('vx-opt-term', {
@@ -368,7 +368,7 @@
   function chartCone(VC, d) {
     var pts = (d.expected_move_cone && d.expected_move_cone.points) || [];
     if (pts.length < 2) { document.getElementById('vx-opt-cone').innerHTML = '<div class="vx-card"><div class="vx-empty">Cône : pas assez d’échéances.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#84aa31'), copper = col(VC, 'copper', '#48631b');
+    var brand = col(VC, 'brand', '#c9cdd4'), copper = col(VC, 'copper', '#6d746e');
     var labels = pts.map(function (p) { return p.dte + ' j'; });
     var ds = function (key, w, fill, bg) {
       return { data: pts.map(function (p) { return p[key]; }), borderColor: w ? copper : 'transparent', borderWidth: w, pointRadius: 0, fill: fill, backgroundColor: bg, tension: .25 };
@@ -399,7 +399,7 @@
   function chartOI(VC, d) {
     var rows = (d.oi_by_strike && d.oi_by_strike.rows) || [];
     if (!rows.length) { document.getElementById('vx-opt-oi').innerHTML = '<div class="vx-card"><div class="vx-empty">Open interest indisponible.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#84aa31'), violet = col(VC, 'violet', '#9c79d0');
+    var brand = col(VC, 'brand', '#c9cdd4'), violet = col(VC, 'violet', '#9c79d0');
     var c = VC.card('vx-opt-oi', {
       title: 'Open interest par strike', question: 'Où se concentrent les positions ouvertes ?',
       conclusion: 'CALL vs PUT', height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
@@ -424,7 +424,7 @@
     var sm = d.iv_smile || {};
     var calls = sm.calls || [], puts = sm.puts || [];
     if (!calls.length && !puts.length) { document.getElementById('vx-opt-smile').innerHTML = '<div class="vx-card"><div class="vx-empty">Smile indisponible.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#84aa31'), beige = col(VC, 'beige', '#c0b79f');
+    var brand = col(VC, 'brand', '#c9cdd4'), beige = col(VC, 'beige', '#c0b79f');
     var strikes = {};
     calls.concat(puts).forEach(function (r) { strikes[r.strike] = 1; });
     var xs = Object.keys(strikes).map(Number).sort(function (a, b) { return a - b; });
@@ -522,10 +522,10 @@
         var pop = s.probability_of_profit != null ? s.probability_of_profit + ' %' : '—';
         var be = (s.breakevens && s.breakevens.length) ? s.breakevens.map(function (b) { return VXf.nd(b); }).join(' · ') : '—';
         var g = s.greeks;
-        var recoStyle = s.recommended ? ' style="border-color:var(--vx-signal-500,#84aa31);box-shadow:0 0 0 1px var(--vx-signal-500,#84aa31)"' : '';
+        var recoStyle = s.recommended ? ' style="border-color:var(--vx-signal-500,#c9cdd4);box-shadow:0 0 0 1px var(--vx-signal-500,#c9cdd4)"' : '';
         return '<section class="vx-card vx-col-6"' + recoStyle + '>' +
           '<div class="vx-card-header"><span class="vx-card-title">' + esc(s.label) + '</span>' +
-          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-signal-500,#84aa31);color:#0b0d0a;font-weight:700">★ Recommandée</span>' : '') +
+          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-signal-500,#c9cdd4);color:#0b0d0a;font-weight:700">★ Recommandée</span>' : '') +
           '<span class="vx-badge" style="color:var(--vx-' + (credit ? 'positive' : 'option') + ')">' + (credit ? 'crédit ' : 'débit ') + fmtUsd(Math.abs(s.net_premium)) + '</span></div>' +
           (s.fit_reason ? '<div class="vx-meta" style="margin:-2px 0 6px">' + esc(s.fit_reason) + '</div>' : '') +
           '<div id="strat-pf-' + i + '" style="height:150px"></div>' +

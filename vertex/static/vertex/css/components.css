@@ -8,7 +8,7 @@
 .vx-card:hover{border-color:var(--vx-border-default);box-shadow:var(--vx-shadow-1);transform:translateY(-1px)}
 .vx-card.vx-elevated{background:var(--vx-surface-2);box-shadow:var(--vx-shadow-1)}
 .vx-card.vx-accent{border-color:var(--vx-border-default)}
-.vx-card.vx-active{border-color:rgba(163,202,66,.35);box-shadow:var(--vx-glow-brand)}
+.vx-card.vx-active{border-color:rgba(201,205,212,.35);box-shadow:var(--vx-glow-brand)}
 /* LEVEL 1 — HERO : contenu principal, halo ambré discret */
 .vx-card--hero{background:var(--vx-hero-halo),var(--vx-surface-2);
   border-color:var(--vx-border-default);padding:var(--vx-s5);
@@ -35,7 +35,7 @@
 .vx-kpi{display:flex;flex-direction:column;gap:2px}
 .vx-kpi .vx-kpi-label{font-size:var(--vx-fs-meta);color:var(--vx-text-muted);
   text-transform:uppercase;letter-spacing:.5px}
-.vx-kpi .vx-kpi-value{font-size:var(--vx-fs-kpi);font-weight:800;
+.vx-kpi .vx-kpi-value{font-size:var(--vx-fs-kpi);font-weight:700;
   font-family:var(--vx-font-mono);font-variant-numeric:tabular-nums;
   letter-spacing:-.5px}
 .vx-kpi .vx-kpi-delta{font-size:12px;font-family:var(--vx-font-mono)}
@@ -180,7 +180,7 @@
 .vx-notif-item .vx-notif-body{flex:1;min-width:0}
 .vx-notif-badge{position:absolute;top:4px;right:4px;min-width:15px;height:15px;
   border-radius:99px;background:var(--vx-warning);color:#0b1220;font-size:9px;
-  font-weight:800;display:grid;place-items:center;padding:0 3px}
+  font-weight:700;display:grid;place-items:center;padding:0 3px}
 
 /* ── Insight / Risk panels ─────────────────────────────────────────── */
 .vx-insight{border-left:3px solid var(--vx-cyan);padding:var(--vx-s2) var(--vx-s3);

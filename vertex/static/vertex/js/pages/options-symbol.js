@@ -120,8 +120,8 @@
         conclusion: (d.term_structure.slope < 0 ? 'Inversée — stress court terme' : 'Normale — prime au temps long'), height: 220,
         source: 'scan', timestamp: Date.now(), mode: 'delayed',
         render: function (cv) { return VXCharts.mount(cv, { type: 'line',
-          data: { labels: ts.map(function (p) { return p.dte + ' j'; }), datasets: [{ data: ts.map(function (p) { return p.iv * 100; }), borderColor: cc.brand, backgroundColor: 'rgba(132,170,49,.12)', fill: true, tension: .3, pointRadius: 4, pointBackgroundColor: cc.brand }] },
-          options: { scales: { y: { ticks: { callback: function (v) { return v + ' %'; } }, grid: { color: 'rgba(237,255,237,.05)' } }, x: { grid: { display: false } } } } }); } });
+          data: { labels: ts.map(function (p) { return p.dte + ' j'; }), datasets: [{ data: ts.map(function (p) { return p.iv * 100; }), borderColor: cc.brand, backgroundColor: 'rgba(201,205,212,.12)', fill: true, tension: .3, pointRadius: 4, pointBackgroundColor: cc.brand }] },
+          options: { scales: { y: { ticks: { callback: function (v) { return v + ' %'; } }, grid: { color: 'rgba(255,255,255,.05)' } }, x: { grid: { display: false } } } } }); } });
       else document.getElementById('vx-osym-term').innerHTML = '';
       var cn = (d.expected_move_cone && d.expected_move_cone.points) || [];
       if (cn.length >= 2) {
@@ -132,29 +132,29 @@
           legend: [{ label: '1σ', color: cc.brand }, { label: '2σ', color: cc.neutral }],
           render: function (cv) { return VXCharts.mount(cv, { type: 'line',
             data: { labels: cn.map(function (p) { return p.dte + ' j'; }), datasets: [mk('hi2', cc.neutral, 1, [4, 4]), mk('hi1', cc.brand, 1.4), mk('mid', cc.positive, 2), mk('lo1', cc.brand, 1.4), mk('lo2', cc.neutral, 1, [4, 4])] },
-            options: { scales: { y: { grid: { color: 'rgba(237,255,237,.05)' } }, x: { grid: { display: false } } } } }); } });
+            options: { scales: { y: { grid: { color: 'rgba(255,255,255,.05)' } }, x: { grid: { display: false } } } } }); } });
       } else document.getElementById('vx-osym-cone').innerHTML = '';
       var oi = (d.oi_by_strike && d.oi_by_strike.rows) || [];
       if (oi.length) VXCharts.card('vx-osym-oi', {
         title: 'Open interest par strike', question: 'Où se concentrent les positions ouvertes ?',
         conclusion: 'CALL vs PUT · spot ' + VXf.price(d.spot), height: 220, source: 'scan', timestamp: Date.now(), mode: 'delayed',
-        legend: [{ label: 'CALL OI', color: '#84aa31' }, { label: 'PUT OI', color: '#9c79d0' }],
+        legend: [{ label: 'CALL OI', color: '#c9cdd4' }, { label: 'PUT OI', color: '#9c79d0' }],
         render: function (cv) { return VXCharts.mount(cv, { type: 'bar',
           data: { labels: oi.map(function (r) { return r.strike; }), datasets: [
-            { label: 'CALL', data: oi.map(function (r) { return r.call; }), backgroundColor: 'rgba(132,170,49,.8)' },
+            { label: 'CALL', data: oi.map(function (r) { return r.call; }), backgroundColor: 'rgba(201,205,212,.8)' },
             { label: 'PUT', data: oi.map(function (r) { return r.put; }), backgroundColor: 'rgba(156,121,208,.8)' }] },
-          options: { scales: { y: { grid: { color: 'rgba(237,255,237,.05)' } }, x: { grid: { display: false } } } } }); } });
+          options: { scales: { y: { grid: { color: 'rgba(255,255,255,.05)' } }, x: { grid: { display: false } } } } }); } });
       else document.getElementById('vx-osym-oi').innerHTML = '';
       var sm = d.iv_smile || {}; var smC = sm.calls || [], smP = sm.puts || [];
       if (smC.length + smP.length >= 2) VXCharts.card('vx-osym-smile', {
         title: 'Smile d’IV · ' + (sm.dte != null ? sm.dte + ' j' : ''), question: 'L’IV est-elle plus chère sur les puts (skew) ?',
         conclusion: 'Spot ' + VXf.price(sm.spot), height: 220, source: 'scan', timestamp: Date.now(), mode: 'delayed',
-        legend: [{ label: 'CALL IV', color: '#84aa31' }, { label: 'PUT IV', color: '#9c79d0' }],
+        legend: [{ label: 'CALL IV', color: '#c9cdd4' }, { label: 'PUT IV', color: '#9c79d0' }],
         render: function (cv) { return VXCharts.mount(cv, { type: 'scatter',
           data: { datasets: [
-            { data: smC.map(function (p) { return { x: p.strike, y: p.iv * 100 }; }), pointBackgroundColor: '#84aa31', pointRadius: 5 },
+            { data: smC.map(function (p) { return { x: p.strike, y: p.iv * 100 }; }), pointBackgroundColor: '#c9cdd4', pointRadius: 5 },
             { data: smP.map(function (p) { return { x: p.strike, y: p.iv * 100 }; }), pointBackgroundColor: '#9c79d0', pointRadius: 5 }] },
-          options: { scales: { y: { ticks: { callback: function (v) { return v + ' %'; } }, grid: { color: 'rgba(237,255,237,.05)' } }, x: { grid: { color: 'rgba(237,255,237,.04)' } } } } }); } });
+          options: { scales: { y: { ticks: { callback: function (v) { return v + ' %'; } }, grid: { color: 'rgba(255,255,255,.05)' } }, x: { grid: { color: 'rgba(255,255,255,.04)' } } } } }); } });
       else document.getElementById('vx-osym-smile').innerHTML = '<div class="vx-card">' + empty('Smile indisponible (trop peu de strikes cotés).') + '</div>';
     });
   }
@@ -190,14 +190,14 @@
         source: 'scenario_pricer', timestamp: Date.now(), mode: 'delayed',
         render: function (cv) { return VXCharts.mount(cv, { type: 'line',
           data: { labels: td.map(function (p) { return 'J+' + p.days; }), datasets: [{ data: td.map(function (p) { return p.value; }), borderColor: VXCharts.colors.warning, backgroundColor: 'rgba(221,162,59,.12)', fill: true, tension: .25, pointRadius: 2 }] },
-          options: { scales: { y: { grid: { color: 'rgba(237,255,237,.05)' } }, x: { grid: { display: false } } } } }); } });
+          options: { scales: { y: { grid: { color: 'rgba(255,255,255,.05)' } }, x: { grid: { display: false } } } } }); } });
       var iv = sim.iv_sensitivity || [];
       if (iv.length >= 2) VXCharts.card('vx-osym-ivsens', {
         title: 'Sensibilité à l’IV', question: 'Quel impact d’une variation d’implicite sur la prime ?', height: 200,
         source: 'scenario_pricer', timestamp: Date.now(), mode: 'delayed',
         render: function (cv) { return VXCharts.mount(cv, { type: 'bar',
           data: { labels: iv.map(function (p) { return (p.iv_shift_pct > 0 ? '+' : '') + p.iv_shift_pct + ' %'; }), datasets: [{ data: iv.map(function (p) { return p.pnl_pct; }), backgroundColor: iv.map(function (p) { return p.pnl_pct >= 0 ? 'rgba(54,200,137,.8)' : 'rgba(237,101,92,.8)'; }) }] },
-          options: { scales: { y: { ticks: { callback: function (v) { return v + ' %'; } }, grid: { color: 'rgba(237,255,237,.05)' } }, x: { grid: { display: false } } } } }); } });
+          options: { scales: { y: { ticks: { callback: function (v) { return v + ' %'; } }, grid: { color: 'rgba(255,255,255,.05)' } }, x: { grid: { display: false } } } } }); } });
     });
   }
 
@@ -229,7 +229,7 @@
         VXCharts.mount(host.querySelector('canvas'), { type: 'line',
           data: { labels: pts.map(function (p) { return p.price; }), datasets: [{ data: pts.map(function (p) { return p.pnl; }), borderColor: VXCharts.colors.neutral, borderWidth: 1.8, pointRadius: 0, fill: false,
             segment: { borderColor: function (ctx) { return ctx.p1.parsed.y >= 0 ? VXCharts.colors.positive : VXCharts.colors.negative; } } }] },
-          options: { scales: { y: { grid: { color: 'rgba(237,255,237,.05)' } }, x: { ticks: { maxTicksLimit: 6 }, grid: { display: false } } }, plugins: { tooltip: { callbacks: { label: function (it) { return 'P&L ' + VXf.price(it.parsed.y) + ' $ @ ' + it.label; } } } } } });
+          options: { scales: { y: { grid: { color: 'rgba(255,255,255,.05)' } }, x: { ticks: { maxTicksLimit: 6 }, grid: { display: false } } }, plugins: { tooltip: { callbacks: { label: function (it) { return 'P&L ' + VXf.price(it.parsed.y) + ' $ @ ' + it.label; } } } } } });
       });
     });
   }

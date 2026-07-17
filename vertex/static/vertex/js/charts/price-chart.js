@@ -18,7 +18,7 @@ C.priceCard=function(host,opts){
   return C.card(host,Object.assign({},opts,{render:(cv)=>{
     const extra=(opts.overlays||[]).map((o,i)=>({data:o.values,label:o.label,
       borderColor:o.color||C.colors.series[(i+2)%6],borderWidth:1,pointRadius:0,tension:.2,fill:false}));
-    const brand=C.colors.brand||'#84aa31';
+    const brand=C.colors.brand||'#c9cdd4';
     const chart=C.mount(cv,{type:'line',
       data:{labels:opts.labels,datasets:[{label:'Cours',data:opts.closes,borderColor:brand,
         borderWidth:1.7,pointRadius:0,tension:.15,fill:{target:'origin'},

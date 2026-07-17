@@ -46,17 +46,17 @@ _CONTENT = """
   .vx-screenbar .vx-chip[aria-pressed="true"]{border-color:var(--vx-brand);color:var(--vx-brand-strong,#a3ca42)}
   .vx-screenbar label.rng{display:flex;align-items:center;gap:6px;font-size:11px;
     color:var(--vx-text-dim,#817d77)}
-  .vx-screenbar label.rng input[type=range]{width:86px;accent-color:var(--vx-brand,#84aa31)}
+  .vx-screenbar label.rng input[type=range]{width:86px;accent-color:var(--vx-brand,#c9cdd4)}
   .vx-screenbar label.rng b{font-variant-numeric:tabular-nums;min-width:30px;color:var(--vx-text-secondary)}
   /* KPI du screener */
   .vx-scr-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}
   .vx-scr-kpis .k{padding:11px 13px;border-radius:11px;background:var(--vx-surface-0,#0d100e);
     border:1px solid var(--vx-border,#26221e)}
-  .vx-scr-kpis .k b{display:block;font:800 21px/1.15 var(--vx-font-mono,monospace);color:var(--vx-text-primary,#f2f5f1)}
+  .vx-scr-kpis .k b{display:block;font:700 21px/1.15 var(--vx-font-mono,monospace);color:var(--vx-text-primary,#f2f5f1)}
   .vx-scr-kpis .k span{font-size:10.5px;color:var(--vx-text-dim,#817d77);text-transform:uppercase;letter-spacing:.05em}
   /* Table triable */
   th[data-sort]{cursor:pointer;user-select:none;white-space:nowrap}
-  th[data-sort]:hover{color:var(--vx-brand,#84aa31)}
+  th[data-sort]:hover{color:var(--vx-brand,#c9cdd4)}
   th[data-sort][data-dir="desc"]::after{content:" ↓";color:var(--vx-brand)}
   th[data-sort][data-dir="asc"]::after{content:" ↑";color:var(--vx-brand)}
   /* Rail 52 semaines dans la table */
@@ -197,7 +197,7 @@ function perfRibbon(r){
         <b style="font:600 8px/1 var(--vx-font);color:var(--vx-text-faint)">${lbl}</b></span>`;}).join('')+'</div>';
 }
 function gradeBadge(g){if(!g)return '';
-  const col={S:'#36c889',A:'#84aa31',B:'#dda23b',C:'#ed655c',D:'#ed655c'}[String(g).toUpperCase()]||'var(--vx-text-dim)';
+  const col={S:'#36c889',A:'#c9cdd4',B:'#dda23b',C:'#ed655c',D:'#ed655c'}[String(g).toUpperCase()]||'var(--vx-text-dim)';
   return `<span class="vx-badge" style="color:${col};border-color:${col}" title="note globale du moteur (S = élite)">${esc(g)}</span>`;}
 function mtfBadge(r){const st=(r&&r.mtf&&r.mtf.state)||'';const u=st.toUpperCase();
   if(!u)return '';

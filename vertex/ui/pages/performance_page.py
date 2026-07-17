@@ -158,7 +158,7 @@ function progressRing(n,max){
   return '<svg viewBox="0 0 120 120" style="width:132px;height:132px" role="img" aria-label="'+n+' sur '+max+' trades clôturés">'
     +'<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="var(--vx-surface-3)" stroke-width="10"/>'
     +'<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+col+'" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+(frac*C).toFixed(1)+' '+C.toFixed(1)+'" transform="rotate(-90 60 60)"/>'
-    +'<text x="60" y="57" text-anchor="middle" font-size="32" font-weight="800" fill="var(--vx-text-primary)" style="font-variant-numeric:tabular-nums">'+n+'</text>'
+    +'<text x="60" y="57" text-anchor="middle" font-size="32" font-weight="700" fill="var(--vx-text-primary)" style="font-variant-numeric:tabular-nums">'+n+'</text>'
     +'<text x="60" y="78" text-anchor="middle" font-size="12" fill="var(--vx-text-muted)">/ '+max+' trades</text></svg>';
 }
 /* Aperçu FANTÔME de la courbe d'équité (§39) — forme déterministe, AUCUN chiffre :

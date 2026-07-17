@@ -153,9 +153,10 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/static/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/GeneralSans-Regular.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/GeneralSans-Medium.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/JetBrainsMono-Regular.woff2">
+<link rel="stylesheet" href="/static/vertex/css/fonts.css">
 <link rel="stylesheet" href="/static/vertex/css/tokens.css">
 <link rel="stylesheet" href="/static/vertex/css/base.css">
 <link rel="stylesheet" href="/static/vertex/css/layout.css">

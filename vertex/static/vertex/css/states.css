@@ -54,13 +54,13 @@
 
 /* Mode démo — clair, propre, sans ambiguïté */
 .vx-demo-banner{display:flex;align-items:center;gap:9px;
-  background:var(--vx-brand-soft);border:1px solid rgba(163,202,66,.3);
+  background:var(--vx-brand-soft);border:1px solid rgba(201,205,212,.3);
   color:var(--vx-brand-strong);border-radius:var(--vx-r-sm);
   padding:7px 12px;font-size:12px;font-weight:600;margin-bottom:var(--vx-s4)}
 .vx-badge-demo{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;
   border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.5px;
   text-transform:uppercase;background:var(--vx-brand-soft);
-  color:var(--vx-brand-strong);border:1px solid rgba(163,202,66,.3)}
+  color:var(--vx-brand-strong);border:1px solid rgba(201,205,212,.3)}
 
 /* Indicateurs live (§29) : live/delayed/frozen/fallback/offline */
 .vx-live-dot{width:7px;height:7px;border-radius:99px;flex:none;

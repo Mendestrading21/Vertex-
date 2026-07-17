@@ -1,0 +1,42 @@
+/* Vertex — fonts.css
+   Polices AUTO-HÉBERGÉES (aucune dépendance CDN → fonctionne hors-ligne).
+   General Sans (Fontshare/ITF, néo-grotesk institutionnel) = corps + titres.
+   JetBrains Mono (OFL) = chiffres, tickers, données numériques.
+   Fichiers : /static/vertex/fonts/*.woff2. Chargé EN TÊTE du <head>, avant tokens.css.
+   Aucune graisse > 700 (General Sans plafonne à Bold — voir --vx-fw-black dans tokens.css). */
+
+/* ── General Sans ── */
+@font-face{
+  font-family:'General Sans';font-style:normal;font-weight:400;font-display:swap;
+  src:url('/static/vertex/fonts/GeneralSans-Regular.woff2') format('woff2');
+}
+@font-face{
+  font-family:'General Sans';font-style:normal;font-weight:500;font-display:swap;
+  src:url('/static/vertex/fonts/GeneralSans-Medium.woff2') format('woff2');
+}
+@font-face{
+  font-family:'General Sans';font-style:normal;font-weight:600;font-display:swap;
+  src:url('/static/vertex/fonts/GeneralSans-Semibold.woff2') format('woff2');
+}
+@font-face{
+  font-family:'General Sans';font-style:normal;font-weight:700;font-display:swap;
+  src:url('/static/vertex/fonts/GeneralSans-Bold.woff2') format('woff2');
+}
+
+/* ── JetBrains Mono ── */
+@font-face{
+  font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:swap;
+  src:url('/static/vertex/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+}
+@font-face{
+  font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:swap;
+  src:url('/static/vertex/fonts/JetBrainsMono-Medium.woff2') format('woff2');
+}
+@font-face{
+  font-family:'JetBrains Mono';font-style:normal;font-weight:600;font-display:swap;
+  src:url('/static/vertex/fonts/JetBrainsMono-SemiBold.woff2') format('woff2');
+}
+@font-face{
+  font-family:'JetBrains Mono';font-style:normal;font-weight:700;font-display:swap;
+  src:url('/static/vertex/fonts/JetBrainsMono-Bold.woff2') format('woff2');
+}
