@@ -157,8 +157,9 @@ _SECTIONS = """
 <div class="vx-grid vx-mt4" id="an-workspace">
 <div class="vx-col-8">
 
-<!-- 3. Graphique principal -->
+<!-- 3. Graphique principal + sous-graphe RSII -->
 <div id="an-chart"></div>
+<div id="an-rsi" class="vx-mt2"></div>
 
 <!-- 3-bis. Valorisation vs secteur (radar) + Financials — fondamentaux réels -->
 <div class="vx-grid vx-mt4">
@@ -672,8 +673,30 @@ async function loadDossier(){
     document.querySelectorAll('[data-tf]').forEach(b=>b.addEventListener('click',()=>{TF=b.dataset.tf;loadDossier();}));
     const chartEl=document.querySelector('#an-chart .vx-lwc')||document.querySelector('#an-chart canvas');
     if(chartEl)chartEl.addEventListener('dblclick',()=>VXCharts.alertFromLevel(SYM,plan.entry||d.price));
+    /* Sous-graphe RSI (14) — momentum ; bandes 70 (suracheté) / 30 (survendu) / 50.
+       Donnée RÉELLE déjà calculée par le moteur (series.rsi), jamais trace vide. */
+    const rsi=tail(S.rsi);
+    if(rsi&&rsi.some(x=>x!=null)){
+      const rsiBands={id:'vxRsiBands',beforeDatasetsDraw:function(chart){
+        const a=chart.chartArea,sy=chart.scales.y,c=chart.ctx;if(!sy)return;c.save();
+        [[70,'rgba(237,101,92,.45)'],[30,'rgba(54,200,137,.45)'],[50,'rgba(255,255,255,.12)']].forEach(function(b){
+          const y=sy.getPixelForValue(b[0]);if(y<a.top||y>a.bottom)return;
+          c.strokeStyle=b[1];c.setLineDash(b[0]===50?[2,3]:[4,3]);c.lineWidth=1;
+          c.beginPath();c.moveTo(a.left,y);c.lineTo(a.right,y);c.stroke();});
+        c.setLineDash([]);c.restore();}};
+      VXCharts.card('an-rsi',{title:SYM+' — RSI (14)',height:118,unit:'RSI',
+        question:'Momentum : suracheté (>70) ou survendu (<30) ?',
+        conclusion:(d.rsi!=null?('RSI actuel '+VX.fmt.num(d.rsi,0)+(d.rsi>=70?' · suracheté':d.rsi<=30?' · survendu':' · neutre')):''),
+        source:'scan',timestamp:Date.now(),mode:demo?'fallback':'delayed',
+        render:function(cv){return VXCharts.mount(cv,{type:'line',
+          data:{labels:cut.map((_,i)=>i-cut.length),datasets:[{data:rsi,borderColor:VXCharts.colors.brand,borderWidth:1.5,pointRadius:0,tension:.25,fill:false}]},
+          options:{scales:{x:{display:false},y:{min:0,max:100,position:'right',grid:{display:false},border:{display:false},ticks:{stepSize:20,font:{size:10},color:VXCharts.colors.muted,padding:6}}},
+            plugins:{tooltip:{callbacks:{label:function(ctx){return 'RSI '+VX.fmt.num(ctx.parsed.y,0);}}}}},
+          plugins:[rsiBands]});}});
+    }else{$('an-rsi').innerHTML='';}
   }else{
     $('an-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Série de prix indisponible pour ce titre.')+'</div>';
+    $('an-rsi').innerHTML='';
   }
 
   /* 4. Fondamental */
