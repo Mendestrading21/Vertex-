@@ -172,6 +172,11 @@
 .vx-update[data-mode="delayed"] .vx-dot{background:var(--vx-warning)}
 .vx-update[data-mode="fallback"] .vx-dot{background:var(--vx-text-muted)}
 .vx-update[data-mode="error"] .vx-dot{background:var(--vx-negative)}
+/* Signal de vie discret : seul le point « live » pulse (respect reduced-motion). */
+@media (prefers-reduced-motion:no-preference){
+  .vx-update[data-mode="live"] .vx-dot{animation:vx-livepulse 2.4s ease-in-out infinite}
+}
+@keyframes vx-livepulse{0%{box-shadow:0 0 0 0 rgba(54,200,137,.5)}70%{box-shadow:0 0 0 4px rgba(54,200,137,0)}100%{box-shadow:0 0 0 0 rgba(54,200,137,0)}}
 
 /* ── Notification center ───────────────────────────────────────────── */
 .vx-notif-item{display:flex;gap:10px;padding:10px;border-radius:var(--vx-r-sm);

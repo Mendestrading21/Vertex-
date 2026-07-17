@@ -1,8 +1,14 @@
 /* Vertex Design System — charts.css : contrat visuel des graphiques (§34). */
 .vx-chart-card{display:flex;flex-direction:column;min-width:0}
 .vx-chart-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;
-  margin-bottom:var(--vx-s2)}
+  margin-bottom:var(--vx-s3);padding-bottom:var(--vx-s2);
+  border-bottom:1px solid var(--vx-border-faint)}
 .vx-chart-head .vx-chart-title{font-size:14px;font-weight:700;color:var(--vx-text)}
+.vx-chart-head .vx-badge-unit{font-family:var(--vx-font-mono);background:rgba(255,255,255,.04);
+  border:1px solid var(--vx-border-soft);color:var(--vx-text-secondary)}
+/* Élévation douce au survol de carte-graphique (sans translation — le graphe ne saute pas). */
+.vx-chart-card{transition:border-color var(--vx-t),box-shadow var(--vx-t)}
+.vx-chart-card:hover{box-shadow:var(--vx-shadow-2)}
 .vx-chart-head .vx-chart-controls{margin-left:auto;display:flex;gap:6px;align-items:center}
 .vx-chart-question{font-size:12px;color:var(--vx-text-muted);font-style:italic;
   width:100%}
@@ -27,7 +33,11 @@
   background:rgba(3,5,4,.82);backdrop-filter:blur(3px);display:none}
 .vx-chart-card.vx-chart-fs{position:fixed;inset:3vh 3vw;z-index:calc(var(--vx-z-modal,70) + 1);
   margin:0;max-width:none;box-shadow:var(--vx-shadow-modal);overflow:auto}
+.vx-chart-card.vx-chart-fs .vx-chart-head{position:sticky;top:0;z-index:1;
+  background:var(--vx-glass-2,#15171c);padding-top:4px}
+.vx-chart-card.vx-chart-fs .vx-chart-title{font-size:18px}
 .vx-chart-card.vx-chart-fs .vx-chart-body{height:auto!important;min-height:62vh;flex:1}
+.vx-chart-card.vx-chart-fs .vx-chart-fs{opacity:1;font-weight:600}
 .vx-chart-card.vx-chart-fs .vx-chart-fs::after{content:" (fermer)"}
 body.vx-fs-open{overflow:hidden}
 .vx-sparkline{display:block}

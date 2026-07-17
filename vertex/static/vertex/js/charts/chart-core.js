@@ -46,6 +46,16 @@
   /* Exposé : dériver une couleur du thème avec alpha (ex. heatmap → C.colors.positive).
      Source unique → plus aucune divergence de teinte hors-thème. */
   C.rgba = _rgba;
+  /* Arrondi de barre UNIQUE (cohérence de tous les graphes à barres). */
+  C.barRadius = 4;
+  /* Carte à état vide honnête (évite le canvas blanc) — tête + pied conservés. */
+  C.emptyCard = function (host, opts, reason) {
+    return C.card(host, Object.assign({}, opts, {
+      state: 'empty', emptyReason: reason || (opts && opts.emptyReason) || 'Aucune donnée disponible pour l’instant.',
+    }));
+  };
+  /* Longueur de données valides (>0 point non-nul) pour décider READY vs EMPTY. */
+  C.hasData = function (arr) { return Array.isArray(arr) && arr.some(v => v !== null && v !== undefined && !(typeof v === 'number' && isNaN(v))); };
   /* Lueur douce sous chaque ligne (couleur de la série) — désactivée si l'OS
      demande moins d'animations (économie de peinture). */
   const _glowPlugin = {
@@ -67,17 +77,32 @@
       if (!chart.scales || !chart.scales.x || !chart.chartArea) return;
       const act = chart.tooltip && chart.tooltip.getActiveElements ? chart.tooltip.getActiveElements() : [];
       if (!act.length) return;
-      const x = act[0].element.x, a = chart.chartArea, c = chart.ctx;
+      const el0 = act[0].element, x = el0.x, y = el0.y, a = chart.chartArea, c = chart.ctx;
       c.save(); c.strokeStyle = 'rgba(255,255,255,.14)'; c.lineWidth = 1; c.setLineDash([3, 3]);
-      c.beginPath(); c.moveTo(x, a.top); c.lineTo(x, a.bottom); c.stroke(); c.restore();
+      c.beginPath(); c.moveTo(x, a.top); c.lineTo(x, a.bottom); c.stroke();
+      if (typeof y === 'number' && y >= a.top && y <= a.bottom) {
+        c.beginPath(); c.moveTo(a.left, y); c.lineTo(a.right, y); c.stroke();
+      }
+      c.restore();
     },
   };
   function chartDefaults() {
     if (!window.Chart) return;
     const d = Chart.defaults;
-    d.color = C.colors.text;
     d.font.family = getComputedStyle(document.documentElement).getPropertyValue('--vx-font') || 'Inter,sans-serif';
     d.font.size = 11;
+    /* Couleurs sémantiques dérivées des tokens CSS (source unique → aucune divergence
+       canvas/CSS si un token change ; repli sur les hex du thème). */
+    try {
+      const cs = getComputedStyle(document.documentElement);
+      const tk = (n, f) => { const v = (cs.getPropertyValue(n) || '').trim(); return v || f; };
+      C.colors.positive = tk('--vx-positive', C.colors.positive);
+      C.colors.negative = tk('--vx-negative', C.colors.negative);
+      C.colors.warning = tk('--vx-warning', C.colors.warning);
+      C.colors.option = C.colors.violet = tk('--vx-option', C.colors.option);
+      C.colors.brand = tk('--vx-brand', C.colors.brand);
+    } catch (e) { /* garde les hex de repli */ }
+    d.color = C.colors.text;
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) d.animation = false;
     else if (d.animation && typeof d.animation === 'object') { d.animation.duration = 260; d.animation.easing = 'easeOutQuart'; }
@@ -91,6 +116,12 @@
     d.plugins.tooltip.cornerRadius = 8;
     d.plugins.tooltip.titleColor = tt.titleColor || '#f3f1ed';
     d.plugins.tooltip.bodyColor = tt.bodyColor || '#b7b3ad';
+    /* Tooltip enrichi (global) : pastilles rondes, espacement, typo explicite. */
+    d.plugins.tooltip.usePointStyle = true;
+    d.plugins.tooltip.boxWidth = 8; d.plugins.tooltip.boxHeight = 8; d.plugins.tooltip.boxPadding = 4;
+    d.plugins.tooltip.caretSize = 5; d.plugins.tooltip.bodySpacing = 4;
+    d.plugins.tooltip.titleFont = { weight: '600', size: 11.5 };
+    d.plugins.tooltip.bodyFont = { size: 11.5 };
     d.maintainAspectRatio = false;
     try { if (!reduced) Chart.register(_glowPlugin); Chart.register(_crossPlugin); } catch (e) { /* déjà enregistrés */ }
   }
@@ -106,16 +137,16 @@
       const t = ds.type || config.type;
       if (t === 'line' && ds.fill && typeof (ds.backgroundColor || '') === 'string') {
         const base = (typeof ds.borderColor === 'string' && _rgba(ds.borderColor, 1)) ? ds.borderColor : ds.backgroundColor;
-        const top = _rgba(base, .30), bottom = _rgba(base, .02);
+        const top = _rgba(base, .30), mid = _rgba(base, .12), bottom = _rgba(base, .02);
         if (top && bottom) ds.backgroundColor = function (c2) {
           const ch = c2.chart, area = ch.chartArea;
           if (!area) return bottom;
           const g = ch.ctx.createLinearGradient(0, area.top, 0, area.bottom);
-          g.addColorStop(0, top); g.addColorStop(1, bottom); return g;
+          g.addColorStop(0, top); if (mid) g.addColorStop(.55, mid); g.addColorStop(1, bottom); return g;
         };
       }
       if (t === 'bar') {
-        if (ds.borderRadius == null) ds.borderRadius = 5;
+        if (ds.borderRadius == null) ds.borderRadius = C.barRadius;
         if (ds.maxBarThickness == null) ds.maxBarThickness = 38;
       }
     });
@@ -132,10 +163,17 @@
     return chart;
   };
   C.axes = function ({ y = true, x = true, yFmt } = {}) {
+    /* Grille aérée : aucune bordure d'axe, aucune graduation, ticks discrets,
+       ligne du zéro plus marquée (repère de lecture P&L/variation). */
+    const gridZero = (ctx) => (ctx.tick && ctx.tick.value === 0) ? 'rgba(255,255,255,.16)' : C.colors.grid;
+    const tickBase = { padding: 6, color: C.colors.muted, font: { size: 10 } };
     return {
-      x: { display: x, grid: { color: C.colors.grid }, ticks: { maxTicksLimit: 8, maxRotation: 0 } },
-      y: { display: y, grid: { color: C.colors.grid }, position: 'right',
-           ticks: { maxTicksLimit: 6, callback: yFmt || undefined } },
+      x: { display: x, border: { display: false },
+           grid: { color: C.colors.grid, drawTicks: false, tickLength: 0 },
+           ticks: Object.assign({}, tickBase, { maxTicksLimit: 8, maxRotation: 0 }) },
+      y: { display: y, position: 'right', border: { display: false },
+           grid: { color: gridZero, drawTicks: false, tickLength: 0 },
+           ticks: Object.assign({}, tickBase, { maxTicksLimit: 6, callback: yFmt || undefined }) },
     };
   };
 
@@ -160,6 +198,14 @@
     const legend = (opts.legend || []).map(l =>
       `<span><span class="vx-swatch" style="background:${l.color}"></span>${l.label}</span>`).join('');
     el.classList.add('vx-card', 'vx-chart-card');
+    /* État de la carte : 'ready' (canvas) sinon loading/empty/error → on peint
+       VX.states DANS le corps (tête + pied conservés). Supprime les graphes blancs. */
+    const st = opts.state || (opts.render ? 'ready' : 'empty');
+    const bodyInner = (st === 'ready')
+      ? `<canvas id="${id}" role="img" aria-label="${opts.title || 'graphique'}"></canvas>`
+      : (st === 'loading' ? VX.states.loading(3)
+        : st === 'error' ? VX.states.error(opts.errorCause, opts.retry)
+        : VX.states.empty(opts.emptyReason, opts.emptyAction, opts.emptyOpts || {}));
     el.innerHTML = `
       <div class="vx-chart-head">
         <span class="vx-chart-title">${opts.title || ''}</span>
@@ -169,7 +215,7 @@
         ${opts.question ? `<span class="vx-chart-question">${opts.question}</span>` : ''}
         ${opts.conclusion ? `<span class="vx-chart-conclusion">${opts.conclusion}</span>` : ''}
       </div>
-      <div class="vx-chart-body" style="height:${opts.height || 200}px"><canvas id="${id}" role="img" aria-label="${opts.title || 'graphique'}"></canvas></div>
+      <div class="vx-chart-body" style="height:${opts.height || 200}px">${bodyInner}</div>
       ${legend ? `<div class="vx-chart-legend">${legend}</div>` : ''}
       <div class="vx-chart-foot">
         ${VX.updateIndicator(opts.timestamp, opts.source, opts.mode)}
@@ -181,7 +227,7 @@
         </span>
       </div>`;
     const canvas = el.querySelector('canvas');
-    const chart = opts.render ? opts.render(canvas) : null;
+    const chart = (st === 'ready' && opts.render && canvas) ? opts.render(canvas) : null;
     el.querySelector('[data-explain]')?.addEventListener('click', () => {
       const ex = opts.explain || {};
       VX.shell.openDrawer(opts.title || 'Graphique', `
@@ -268,7 +314,7 @@
       : C.axes({ yFmt });
     return C.mount(canvas, {
       type: 'bar',
-      data: { labels, datasets: [{ data: values, backgroundColor: cols, borderRadius: 3, maxBarThickness: 26 }] },
+      data: { labels, datasets: [{ data: values, backgroundColor: cols, borderRadius: C.barRadius, maxBarThickness: 26 }] },
       options: { indexAxis: horizontal ? 'y' : 'x', scales },
     });
   };

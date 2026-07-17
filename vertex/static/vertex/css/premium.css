@@ -128,9 +128,9 @@
 .vx-confgauge .vx-cg-track{stroke:var(--vx-surface-4);fill:none}
 .vx-confgauge .vx-cg-arc{fill:none;stroke-linecap:round;
   filter:drop-shadow(0 0 5px var(--_glow,rgba(201,205,212,.38)));
-  transition:stroke-dashoffset .7s var(--vx-ease)}
+  transition:stroke-dasharray .7s var(--vx-ease)}
 .vx-confgauge .vx-cg-dir{font:700 12px/1 var(--vx-font);letter-spacing:.03em}
-.vx-confgauge .vx-cg-pct{font:700 15px/1 var(--vx-font-mono);fill:var(--vx-text-primary)}
+.vx-confgauge .vx-cg-pct{font:700 15px/1 var(--vx-font-mono);fill:var(--vx-text-primary);font-variant-numeric:tabular-nums}
 .vx-confgauge .vx-cg-lbl{font:600 9px/1 var(--vx-font);letter-spacing:.09em;
   text-transform:uppercase;fill:var(--vx-text-muted)}
 
@@ -170,7 +170,7 @@
 /* ── Scorecard « profil » : cluster de mini-jauges radiales au coup d'œil ── */
 .vx-scoregauge{display:flex;flex-direction:column;align-items:center;gap:4px}
 .vx-scoregauge svg{overflow:visible;display:block}
-.vx-scoregauge .vx-cg-arc{filter:drop-shadow(0 0 5px var(--_glow,rgba(201,205,212,.30)));transition:stroke-dasharray .7s var(--vx-ease)}
+.vx-scoregauge .vx-cg-arc{stroke-linecap:round;filter:drop-shadow(0 0 5px var(--_glow,rgba(201,205,212,.30)));transition:stroke-dasharray .7s var(--vx-ease)}
 .vx-sg-val{font:700 21px/1 var(--vx-font-mono);font-variant-numeric:tabular-nums}
 .vx-sg-lbl{font:600 9.5px/1.15 var(--vx-font);letter-spacing:.05em;text-transform:uppercase;
   color:var(--vx-text-muted);text-align:center;max-width:84px}

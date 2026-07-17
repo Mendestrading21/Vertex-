@@ -69,7 +69,7 @@
     const modeLabel = { live: 'Live', delayed: 'Différé', fallback: 'Secours', error: 'Erreur' }[mode] || '';
     const parts = [VX.fmt.ago(ts)];
     if (source) parts.push(source + (modeLabel ? ' ' + modeLabel : ''));
-    return `<span class="vx-update" data-mode="${mode || 'fallback'}" title="${VX.fmt.isoFull(ts)}">` +
+    return `<span class="vx-update" data-mode="${mode || 'unknown'}" title="${VX.fmt.isoFull(ts)}">` +
       `<span class="vx-dot"></span>${parts.join(' · ')}</span>`;
   };
 
