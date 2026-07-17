@@ -117,10 +117,13 @@ def test_portfolio_command_strip_and_cards():
 
 
 # ── Vues enregistrées (§31) ───────────────────────────────────────────────
-def test_saved_views_in_screener():
+def test_screener_presets_removed():
+    """Préréglages & vues enregistrées RETIRÉS (demande produit : opportunités par
+    carte, sans préréglages). Le screener conserve les filtres, le tri et Réinitialiser."""
     src = _read(PAGES, 'opportunities_page.py')
-    for needle in ('vxScreenViews', 'op-save-view', 'op-views', 'op-del-view'):
-        assert needle in src, needle
+    for needle in ('vxScreenViews', 'op-save-view', 'op-views', 'op-del-view', 'data-preset'):
+        assert needle not in src, needle
+    assert 'op-reset' in src
 
 
 # ── Honnêteté : aucune donnée inventée introduite ─────────────────────────
