@@ -589,9 +589,18 @@ async function loadDossier(){
   const railD=$('an-rail-decision')&&$('an-rail-decision').querySelector('[data-body]');
   if(railD){
     const audit=(exec&&exec.audit_trail)||[];
+    /* Conseil DIRECT : chiffres-clés du plan (setup, R:R, stop) + phrase d'accroche
+       de la thèse moteur — tout est déjà calculé, aucune invention. */
+    const pl=d.plan||{};
+    const advice=[];
+    if(pl.setup_quality!=null)advice.push('setup '+VX.fmt.num(pl.setup_quality,0)+'/100');
+    if(pl.rr!=null||pl.rr_res!=null)advice.push('R:R '+VX.fmt.num(pl.rr!=null?pl.rr:pl.rr_res,1)+'×');
+    if(pl.stop!=null)advice.push('stop '+(pl.stop_type?esc(pl.stop_type)+' ':'')+VX.fmt.nd(pl.stop));
     railD.innerHTML=`<div class="vx-kpi vx-mb2">
         <span class="vx-kpi-value" style="font-size:24px"><span class="vx-badge vx-badge-decision" data-decision="${decision.replace('É','E')}" style="font-size:14px;padding:5px 14px">${decision}</span></span>
         <span class="vx-kpi-delta vx-muted">${exec&&exec.reason?esc(exec.reason):'moteur exécutif unique'}</span></div>`
+      +(advice.length?`<div class="vx-flex vx-wrap vx-mb2" style="gap:.3rem">${advice.map(a=>`<span class="vx-badge">${a}</span>`).join('')}</div>`:'')
+      +(d.thesis?`<div class="vx-insight vx-mb2" data-tone="ai" style="font-size:12px;line-height:1.5">${esc(String(d.thesis).split(/[.·]/)[0])}.</div>`:'')
       +(audit.length?`<details class="vx-mt1"><summary class="vx-meta" style="cursor:pointer">Audit trail (${audit.length})</summary>
         <ul style="margin:6px 0 0;padding-left:16px;font-size:11.5px" class="vx-dim">${audit.slice(0,8).map(a=>`<li>${esc(typeof a==='string'?a:JSON.stringify(a))}</li>`).join('')}</ul></details>`:'')
       +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'ExecutiveEngine',demo?'fallback':'delayed')}</div>`;
