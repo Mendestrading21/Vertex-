@@ -502,12 +502,26 @@ async function loadConnections(){
     $('vx-conn-sync-badge').innerHTML=statusBadge(
       errs.length?'delayed':(freshCount===names.length&&names.length?'live':'delayed'),
       freshCount+' / '+names.length+' domaines frais');
+    const liveOn=live.mode==='live';
+    const diagItem=(ok,title,detail)=>{
+      const c=ok===true?'var(--vx-positive)':ok===false?'var(--vx-negative)':'var(--vx-warning)';
+      const mark=ok===true?'✓':ok===false?'✕':'○';
+      return `<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px">`
+        +`<span style="color:${c};font-weight:700;flex:0 0 auto">${mark}</span>`
+        +`<div style="min-width:0"><div style="font-weight:600;color:var(--vx-text-secondary)">${title}</div>`
+        +`<div class="vx-meta">${detail}</div></div></div>`;};
     $('vx-conn-sync').innerHTML=
       kv('Mode',esc(live.mode||'—'))
       +kv('Derni&egrave;re synchro',VX.fmt.ago(live.last_refresh))
       +kv('Domaines',names.map(esc).join(', ')||'—')
       +(errs.length?`<div class="vx-error-banner vx-mt2">⚠ ${errs.map(e=>esc(e.domain+' : '+e.error)).join('<br>')}</div>`:'')
-      +`<div class="vx-card-footer">${VX.updateIndicator(live.generated?live.generated*1000:Date.now(),'/api/live/status','delayed')}
+      +`<div class="vx-mt3" style="border-top:1px solid var(--vx-border-faint);padding-top:10px">`
+      +`<div class="vx-meta" style="text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Passer en pleinement live — à vérifier côté ton compte IBKR</div>`
+      +diagItem(liveOn,'TWS / IB Gateway ouvert + API activée','Édition → Paramètres → API : « Enable ActiveX and Socket Clients », ports 7496/7497 (live) ou 7497/4002 (paper).')
+      +diagItem(null,'Abonnement Reuters (fondamentaux)','Coche « Reuters Worldwide Fundamentals » dans IBKR Market Data → lève l’erreur 10358 et remplace le repli yfinance par des fondamentaux temps réel.')
+      +diagItem(null,'Abonnement Nasdaq-100 (NDX)','Sans cet abonnement, le Nasdaq reste en différé (affiché honnêtement, jamais mélangé). Abonne-toi pour le temps réel homogène.')
+      +`<div class="vx-meta vx-mt2">Hors séance, les cotations IBKR passent en différé/frozen — c’est normal, pas une panne.</div></div>`
+      +`<div class="vx-card-footer">${VX.updateIndicator(live.generated?live.generated*1000:Date.now(),'/api/live/status',liveOn?'live':'delayed')}
         <a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/system?view=data">D&eacute;tail par domaine →</a></div>`;
   }else{
     $('vx-conn-sync').innerHTML=VX.states.error('Live Engine injoignable');
