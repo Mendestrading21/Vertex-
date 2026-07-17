@@ -131,8 +131,12 @@ _SECTIONS = """
       <button class="vx-btn vx-btn-sm" data-entity-menu="%%SYM%%">Actions ▾</button>
     </span>
   </div>
-  <div class="vx-flex vx-wrap vx-mt2" id="an-scores" aria-label="Scores"></div>
 </div>
+<!-- Scores + radar : SORTIS du hero collant → la barre d'identité (titre/prix/décision)
+     reste seule en haut au défilement, le reste de l'analyse défile librement. -->
+<section class="vx-card vx-mt3" id="an-scores-card">
+  <div class="vx-flex vx-wrap" id="an-scores" aria-label="Scores"></div>
+</section>
 
 <!-- 2. Thèse -->
 <section class="vx-card vx-mt4" id="an-thesis-card">
