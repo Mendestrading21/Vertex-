@@ -329,8 +329,9 @@ async function renderScreener(){
     </div>
     <div id="op-topcards" class="vx-mt4"></div>
     <div class="vx-card vx-mt4"><div class="vx-card-header"><span class="vx-card-title">Tous les résultats</span>
-      <span class="vx-chart-question">Trier par n’importe quelle colonne — cliquer une ligne ouvre la fiche.</span></div>
-      <div class="vx-table-wrap vx-table-cards" id="op-table"></div>
+      <span class="vx-chart-question">Chaque opportunité en carte — score, objectifs/stop, « pourquoi » ; un clic ouvre la fiche.</span>
+      <span class="vx-right vx-flex" style="gap:6px;align-items:center"><span class="vx-meta">Trier</span><select class="vx-select" id="op-sort" style="width:auto" aria-label="Trier les résultats"></select></span></div>
+      <div id="op-table"></div>
       <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.source,metaMode(scan))}
         · <span id="op-table-count"></span> · tri : <span id="op-sort-label">score</span></div></div>`;
 
@@ -471,7 +472,47 @@ async function renderScreener(){
         confirm:'Un secteur qui reste en tête quand tu durcis les filtres.',invalidate:'Un leadership qui dépend d’un seul titre.'}});
   }
 
-  /* ── Top cartes des résultats ── */
+  /* ── Carte d'opportunité RICHE (helper réutilisé : top + grille complète) ── */
+  function oppCard(r){
+    const dec=r.verdict||'';
+    const gauge=(window.VXCharts&&VXCharts.confidenceGaugeSVG&&r.score!=null)
+      ?VXCharts.confidenceGaugeSVG(r.score,verdictDir(dec),{size:78,stroke:7,dirLabel:verdictWord(dec)}):'';
+    const pb=pbText(r);const ic=pbIcon(r);
+    const ser=detail[r.symbol]&&detail[r.symbol].series;
+    const spark=sparkMini(ser&&ser.close);
+    const chips=[];
+    if(r.vx_pwin!=null)chips.push(`<span class="vx-badge" style="color:var(--vx-positive)">proba. gain ${Math.round(r.vx_pwin*100)} %</span>`);
+    if(r.vx_ev!=null)chips.push(`<span class="vx-badge" style="color:${r.vx_ev>0?'var(--vx-positive)':'var(--vx-negative)'}" title="espérance mathématique par trade">espérance ${(r.vx_ev>=0?'+':'')+VX.fmt.num(r.vx_ev,1)} %</span>`);
+    if(r.vx_edge!=null)chips.push(`<span class="vx-badge">avantage ${Math.round(r.vx_edge)}</span>`);
+    if(r.rr!=null)chips.push(`<span class="vx-badge">gain/risque ${VX.fmt.num(r.rr,1)}×</span>`);
+    if(r.vx_kelly!=null&&r.vx_kelly>0)chips.push(`<span class="vx-badge" title="taille de position suggérée">Kelly ${VX.fmt.num(r.vx_kelly,0)} %</span>`);
+    if(mtfBadge(r))chips.push(mtfBadge(r));
+    if(r.rvol!=null&&r.rvol>=1.5)chips.push(`<span class="vx-badge" style="color:var(--vx-warning)">volume ×${VX.fmt.num(r.rvol,1)}</span>`);
+    if(r.vx_notrade)chips.push(noTradeBadge(r));
+    const planR=detail[r.symbol]&&detail[r.symbol].plan;
+    return `<div class="vx-card vx-opp-card vx-card--premium ${r.vx_notrade?'vx-opp-notrade':''}" aria-label="${r.symbol}">
+      <div class="vx-flex" style="align-items:flex-start;gap:.6rem">
+        <div style="min-width:0;flex:1">
+          <div class="vx-flex" style="gap:.4rem;flex-wrap:wrap"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px;padding-left:0" data-open-analysis="${r.symbol}">${r.symbol}</button>
+            <span class="vx-badge">${bucketOf(r)}</span>${gradeBadge(r.grade)}</div>
+          <div class="vx-mono vx-mt1" style="font-size:18px;font-weight:700;color:var(--vx-text-primary,#f4f1ec)">${r.price!=null?'$'+VX.fmt.price(r.price):'—'}</div>
+          ${spark}${perfRibbon(r)}
+        </div>
+        <div style="flex:0 0 auto">${gauge}</div>
+      </div>
+      ${dimStrip(r)}
+      <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">${chips.join('')}</div>
+      ${levelsBar(planR,r.price)}
+      ${pb?`<div class="vx-meta vx-mt1" style="white-space:normal;line-height:1.45">${ic?esc(ic)+' ':''}<b>Pourquoi :</b> ${esc(pb)}</div>`:''}
+      <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
+        <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${r.symbol}">Analyser</button>
+        <button class="vx-btn vx-btn-sm" data-inspect="${r.symbol}" title="Aperçu rapide">Aperçu</button>
+        <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','follow')">Suivre</button>
+        <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','alert')">Alerte</button>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/${r.symbol}">Options</a>
+      </div></div>`;
+  }
+  /* ── Top cartes des résultats (highlight 6) ── */
   function paintTopCards(f){
     const el=$('op-topcards');if(!el)return;
     const prio=(r)=>bucketOf(r)==='Actionnable'?0:bucketOf(r)==='Proche'?1:bucketOf(r)==='À surveiller'?2:3;
@@ -480,43 +521,7 @@ async function renderScreener(){
     if(!ranked.length){el.innerHTML='';return;}
     el.innerHTML='<div class="vx-card-header" style="padding:0 0 8px"><span class="vx-card-title">Top des résultats — pourquoi eux</span>'
       +'<span class="vx-chart-question">Les 6 meilleurs candidats de TON filtre, avec leurs raisons.</span></div>'
-      +'<div class="vx-opp-grid vx-mb2">'+ranked.map(function(r){const dec=r.verdict||'';
-      const gauge=(window.VXCharts&&VXCharts.confidenceGaugeSVG&&r.score!=null)
-        ?VXCharts.confidenceGaugeSVG(r.score,verdictDir(dec),{size:78,stroke:7,dirLabel:verdictWord(dec)}):'';
-      const pb=pbText(r);const ic=pbIcon(r);
-      const ser=detail[r.symbol]&&detail[r.symbol].series;
-      const spark=sparkMini(ser&&ser.close);
-      const chips=[];
-      if(r.vx_pwin!=null)chips.push(`<span class="vx-badge" style="color:var(--vx-positive)">proba. gain ${Math.round(r.vx_pwin*100)} %</span>`);
-      if(r.vx_ev!=null)chips.push(`<span class="vx-badge" style="color:${r.vx_ev>0?'var(--vx-positive)':'var(--vx-negative)'}" title="espérance mathématique par trade">espérance ${(r.vx_ev>=0?'+':'')+VX.fmt.num(r.vx_ev,1)} %</span>`);
-      if(r.vx_edge!=null)chips.push(`<span class="vx-badge">avantage ${Math.round(r.vx_edge)}</span>`);
-      if(r.rr!=null)chips.push(`<span class="vx-badge">gain/risque ${VX.fmt.num(r.rr,1)}×</span>`);
-      if(r.vx_kelly!=null&&r.vx_kelly>0)chips.push(`<span class="vx-badge" title="taille de position suggérée">Kelly ${VX.fmt.num(r.vx_kelly,0)} %</span>`);
-      if(mtfBadge(r))chips.push(mtfBadge(r));
-      if(r.rvol!=null&&r.rvol>=1.5)chips.push(`<span class="vx-badge" style="color:var(--vx-warning)">volume ×${VX.fmt.num(r.rvol,1)}</span>`);
-      if(r.vx_notrade)chips.push(noTradeBadge(r));
-      const planR=detail[r.symbol]&&detail[r.symbol].plan;
-      return `<div class="vx-card vx-opp-card vx-card--premium ${r.vx_notrade?'vx-opp-notrade':''}" aria-label="${r.symbol}">
-        <div class="vx-flex" style="align-items:flex-start;gap:.6rem">
-          <div style="min-width:0;flex:1">
-            <div class="vx-flex" style="gap:.4rem;flex-wrap:wrap"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px;padding-left:0" data-open-analysis="${r.symbol}">${r.symbol}</button>
-              <span class="vx-badge">${bucketOf(r)}</span>${gradeBadge(r.grade)}</div>
-            <div class="vx-mono vx-mt1" style="font-size:18px;font-weight:700;color:var(--vx-text-primary,#f4f1ec)">${r.price!=null?'$'+VX.fmt.price(r.price):'—'}</div>
-            ${spark}${perfRibbon(r)}
-          </div>
-          <div style="flex:0 0 auto">${gauge}</div>
-        </div>
-        ${dimStrip(r)}
-        <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">${chips.join('')}</div>
-        ${levelsBar(planR,r.price)}
-        ${pb?`<div class="vx-meta vx-mt1" style="white-space:normal;line-height:1.45">${ic?esc(ic)+' ':''}<b>Pourquoi :</b> ${esc(pb)}</div>`:''}
-        <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
-          <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${r.symbol}">Analyser</button>
-          <button class="vx-btn vx-btn-sm" data-inspect="${r.symbol}" title="Aperçu rapide">Aperçu</button>
-          <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','follow')">Suivre</button>
-          <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','alert')">Alerte</button>
-          <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/${r.symbol}">Options</a>
-        </div></div>`;}).join('')+'</div>';
+      +'<div class="vx-opp-grid vx-mb2">'+ranked.map(oppCard).join('')+'</div>';
   }
 
   /* ── Table triable ── */
@@ -527,52 +532,29 @@ async function renderScreener(){
     perfw:{k:r=>(r.perf_w||0),label:'perf. semaine'},perfm:{k:r=>(r.perf_m||0),label:'perf. mois'},
     pos52:{k:r=>(r.pos52||0),label:'position 52 sem.'},
     grade:{k:r=>({S:4,A:3,B:2,C:1,D:0}[String(r.grade||'').toUpperCase()]||-1),label:'note'}};
-  let sortKey='score',sortDir=-1;
+  let sortKey='score',sortDir=-1,shownLimit=48;
+  function populateSortSelect(){
+    const sel=document.getElementById('op-sort');if(!sel||sel.dataset.ready)return;
+    sel.innerHTML=Object.entries(SORTS).map(([k,s])=>`<option value="${k}"${k===sortKey?' selected':''}>${s.label}</option>`).join('');
+    sel.dataset.ready='1';
+    sel.addEventListener('change',()=>{sortKey=sel.value;sortDir=-1;shownLimit=48;paintTable(filtered());});
+  }
+  /* « Tous les résultats » = GRILLE DE CARTES riches (plus de table) : chaque
+     opportunité en carte (score, objectifs/stop, pourquoi). Tri par sélecteur,
+     pagination « voir plus ». Un clic sur la carte ouvre la fiche. */
   function paintTable(f){
+    populateSortSelect();
     const s=SORTS[sortKey]||SORTS.score;
     const sorted=f.slice().sort((a,b)=>(s.k(b)-s.k(a))*(-sortDir));
-    $('op-sort-label').textContent=s.label+(sortDir<0?' ↓':' ↑');
-    $('op-table-count').textContent=Math.min(sorted.length,100)+' affichés sur '+f.length;
-    $('op-table').innerHTML=sorted.length?`<table class="vx-table"><thead><tr>
-      <th>Titre</th><th>Statut</th><th>Verdict</th>
-      <th class="vx-num" data-sort="score">Score</th>
-      <th class="vx-num" data-sort="pwin">Proba gain</th>
-      <th class="vx-num" data-sort="ev">Espérance</th>
-      <th class="vx-num" data-sort="edge">Avantage</th>
-      <th class="vx-num" data-sort="rr">Gain/risque</th>
-      <th class="vx-num" data-sort="rvol">Vol. rel.</th>
-      <th class="vx-num" data-sort="chg">Var. jour</th>
-      <th class="vx-num" data-sort="perfm">Perf. mois</th>
-      <th>Momentum</th>
-      <th data-sort="pos52">52 sem.</th>
-      <th data-sort="grade">Note</th>
-      <th>Setup</th><th>Secteur</th><th></th></tr></thead><tbody>
-      ${sorted.slice(0,100).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
-        <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
-        <td data-label="Statut"><span class="vx-badge">${bucketOf(r)}</span>${r.vx_notrade?' '+noTradeBadge(r):''}${mtfBadge(r)?' '+mtfBadge(r):''}</td>
-        <td data-label="Verdict"><span class="vx-badge vx-badge-decision" data-decision="${esc(r.verdict||'')}">${esc(VERD_FR[r.verdict]||r.verdict||'')}</span></td>
-        ${heatCell(r.score,{label:'Score',good:72,mid:56})}
-        ${heatCell(r.vx_pwin!=null?r.vx_pwin*100:null,{label:'Proba',good:60,mid:45,fmt:v=>Math.round(v)+'%'})}
-        <td data-label="Espérance" class="vx-num ${r.vx_ev>0?'vx-pos':r.vx_ev<0?'vx-neg':''}">${r.vx_ev!=null?((r.vx_ev>=0?'+':'')+VX.fmt.num(r.vx_ev,1)+'%'):'—'}</td>
-        ${heatCell(r.vx_edge,{label:'Avantage',good:60,mid:40})}
-        ${heatCell(r.rr,{label:'G/R',max:3,good:2,mid:1,fmt:v=>VX.fmt.num(v,1)+'×'})}
-        <td data-label="Vol." class="vx-num">${r.rvol!=null?'×'+VX.fmt.num(r.rvol,1):'—'}</td>
-        <td data-label="Var." class="vx-num ${r.change>0?'vx-pos':r.change<0?'vx-neg':''}">${r.change!=null?VX.fmt.pct(r.change,1):'—'}</td>
-        <td data-label="Mois" class="vx-num ${r.perf_m>0?'vx-pos':r.perf_m<0?'vx-neg':''}">${r.perf_m!=null?VX.fmt.pct(r.perf_m,1):'—'}</td>
-        <td data-label="Momentum">${perfRibbon(r)||'—'}</td>
-        <td data-label="52s">${rail52(r.pos52)}</td>
-        <td data-label="Note">${gradeBadge(r.grade)||'—'}</td>
-        <td data-label="Setup" class="vx-truncate" style="max-width:130px">${esc(pbText(r)||'—')}</td>
-        <td data-label="Secteur" class="vx-truncate" style="max-width:110px">${esc(r.sector||'—')}</td>
-        <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table>`
+    $('op-sort-label').textContent=s.label;
+    const shown=sorted.slice(0,shownLimit);
+    $('op-table-count').textContent=shown.length+' affichées sur '+f.length;
+    $('op-table').innerHTML=sorted.length
+      ?'<div class="vx-opp-grid">'+shown.map(oppCard).join('')+'</div>'
+        +(sorted.length>shown.length?`<div class="vx-mt3" style="text-align:center"><button class="vx-btn vx-btn-sm" id="op-more">Voir plus (${sorted.length-shown.length} restantes)</button></div>`:'')
       :VX.states.empty('Aucun titre ne correspond aux filtres.','<button class="vx-btn vx-btn-sm" id="op-clear2">Effacer les filtres</button>');
     document.getElementById('op-clear2')?.addEventListener('click',()=>resetFilters());
-    document.querySelectorAll('#op-table th[data-sort]').forEach(th=>{
-      if(th.dataset.sort===sortKey)th.dataset.dir=sortDir<0?'desc':'asc';
-      th.addEventListener('click',()=>{
-        if(sortKey===th.dataset.sort)sortDir=-sortDir;else{sortKey=th.dataset.sort;sortDir=-1;}
-        paintTable(filtered());});
-    });
+    document.getElementById('op-more')?.addEventListener('click',()=>{shownLimit+=48;paintTable(filtered());});
   }
 
   /* ── Entonnoir CLIQUABLE : chaque étage applique le filtre correspondant ── */
