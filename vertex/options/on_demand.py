@@ -101,6 +101,75 @@ def warm_chain(sym, n_exp=3):
         pass
 
 
+def _lookup_greeks(ent, exp, right, strike):
+    """Greeks RÉELS (modelGreeks IBKR persistés) d'un contrat PRÉCIS depuis la chaîne
+    large. Match STRICT : échéance (8 chiffres) + côté + strike exact. None si absent —
+    on ne substitue JAMAIS un autre strike/échéance (ce serait estimer). ⛔ lecture seule."""
+    if not ent:
+        return None
+    want = ''.join(ch for ch in str(exp or '') if ch.isdigit())[:8]
+    if not want:
+        return None
+    match_exp = None
+    for e in ent:
+        if e in ('spot', 'ts'):
+            continue
+        if ''.join(ch for ch in str(e) if ch.isdigit())[:8] == want:
+            match_exp = e
+            break
+    if match_exp is None:
+        return None
+    side = (ent.get(match_exp) or {}).get(right) or {}
+    row = side.get(strike) or side.get(round(strike, 2))
+    if not row:
+        return None
+    if row.get('delta') is None and row.get('vega') is None:
+        return None                                      # coté mais sans greeks broker
+    return row
+
+
+def desk_greeks(opt_positions):
+    """Greeks AGRÉGÉS du desk depuis les greeks BROKER (modelGreeks IBKR) persistés dans
+    scan_state['options_chain_full']. opt_positions : [{sym,exp,strike,right|type,qty}].
+    Multiplicateur 100/contrat. Greeks du broker UNIQUEMENT — jamais estimés ; une jambe
+    non cotée (hors fenêtre de strikes tirée, ou chaîne pas encore chargée) → greeks None
+    (agrégat partiel honnête). Ne bloque pas (lit le persisté, ne tire rien). ⛔ lecture seule."""
+    full = scan_state.get('options_chain_full') or {}
+    legs = []
+    for p in opt_positions or []:
+        sym = str(p.get('sym') or p.get('symbol') or '').upper()
+        r = str(p.get('right') or p.get('type') or 'C').upper()
+        right = 'P' if r.startswith('P') else 'C'
+        try:
+            strike = round(float(p.get('strike')), 2)
+            qty = float(p.get('qty') if p.get('qty') is not None else p.get('quantity') or 0)
+        except (TypeError, ValueError):
+            legs.append({'sym': sym, 'delta': None})
+            continue
+        g = _lookup_greeks(full.get(sym), p.get('exp'), right, strike)
+        if not g or not qty:
+            legs.append({'sym': sym, 'delta': None})
+            continue
+        mult = 100.0 * qty                               # 1 contrat = 100 actions
+        legs.append({
+            'sym': sym,
+            'delta': (round(g['delta'] * mult, 3) if g.get('delta') is not None else None),
+            'gamma': (round(g['gamma'] * mult, 4) if g.get('gamma') is not None else None),
+            'theta': (round(g['theta'] * mult, 3) if g.get('theta') is not None else None),
+            'vega': (round(g['vega'] * mult, 3) if g.get('vega') is not None else None)})
+
+    def _sum(name):
+        vals = [l[name] for l in legs if l.get(name) is not None]
+        return round(sum(vals), 3) if vals else None
+    priced = sum(1 for l in legs if l.get('delta') is not None)
+    vega_tot = _sum('vega')
+    return {'legs': legs, 'delta': _sum('delta'), 'gamma': _sum('gamma'),
+            'theta': _sum('theta'), 'vega': vega_tot,
+            'vega_usd': vega_tot,                        # $ P&L par point de vol (déjà ×100×qty)
+            'open_options': len(legs), 'priced': priced,
+            'greeks_partial': priced < len(legs)}
+
+
 def contract_mark(sym, exp_prefix, strike, right):
     """Mid RÉEL d'un contrat PRÉCIS via la chaîne (IBKR si TWS ouvert via le
     monkeypatch de legacy_engine.yf, sinon yfinance). Utilisé pour marquer les
@@ -158,4 +227,4 @@ def board_with(sym):
     return list(board) + extra if extra else board
 
 
-__all__ = ['fetch', 'board_with', 'contract_mark', 'TTL_S']
+__all__ = ['fetch', 'board_with', 'contract_mark', 'warm_chain', 'desk_greeks', 'TTL_S']

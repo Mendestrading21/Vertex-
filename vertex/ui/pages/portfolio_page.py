@@ -296,6 +296,7 @@ async function renderTeam(){
       const secOf=(s)=>{const d=scanT&&scanT.detail&&scanT.detail[s];return(d&&d.sector)||'';};
       const payload={positions:rich.filter(t=>t.type==='STK').map(t=>{const per=t.qty?t.cost/t.qty:t.cost;
         return {symbol:t.sym,quantity:t.qty,avg_cost:per,last_price:(t.mark!=null?t.mark:per),sector:secOf(t.sym)};}),
+        option_positions:rich.filter(t=>t.type!=='STK').map(t=>({sym:t.sym,exp:t.exp,strike:t.strike,right:t.type,qty:t.qty})),
         cash:E().capital()||0,simulated:false};
       const r=await fetch('/api/portfolio/team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       const team=((await r.json())||{}).team||{};
@@ -459,6 +460,13 @@ async function renderOptions(){
   const H=(l,v,d,cls)=>`<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3">
     <span class="vx-kpi-label">${l}</span><span class="vx-kpi-value" style="font-size:20px">${v}</span>
     ${d?`<span class="vx-kpi-delta ${cls||'vx-muted'}">${d}</span>`:''}</div>`;
+  /* Greeks RÉELS du broker (modelGreeks IBKR persistés) — jamais estimés. Jambe non cotée → n/d honnête. */
+  let og=null;try{og=await (await fetch('/api/portfolio/greeks',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({option_positions:rich.map(t=>({sym:t.sym,exp:t.exp,strike:t.strike,right:t.type,qty:t.qty}))})})).json();}catch(e){}
+  const gCov=og?`${og.priced}/${og.open_options} jambe(s) cotée(s)${og.greeks_partial?' · partiel':''}`:'greeks broker requis (IBKR)';
+  const gDelta=(og&&og.delta!=null)?((og.delta>0?'+':'')+VX.fmt.num(og.delta,0)):'n/d';
+  const gTheta=(og&&og.theta!=null)?(VX.fmt.num(og.theta,0)+' $/j'):'n/d';
+  const gVega=(og&&og.vega!=null)?('vega '+VX.fmt.num(og.vega,0)+' $/pt'):(og?'chaîne à charger':'IBKR requis');
   $('pf-body').innerHTML=
     `<div class="vx-grid vx-mb3">
       ${H('CALLS ouverts',calls.length,'direction principale (~90 %)')}
@@ -468,8 +476,8 @@ async function renderOptions(){
     </div>
     <div class="vx-grid vx-mb3">
       ${H('DTE moyen',dteAvg!==null?dteAvg+' j':'n/d','constitution : 60-270, préf. 90-210')}
-      ${H('Delta total','n/d','Greeks broker requis — jamais estimés sans IBKR')}
-      ${H('Theta quotidien','n/d','IBKR hors ligne')}
+      ${H('Delta total',gDelta,gCov,(og&&og.delta>0)?'vx-pos':(og&&og.delta<0)?'vx-neg':'')}
+      ${H('Theta quotidien',gTheta,gVega,(og&&og.theta<0)?'vx-neg':'')}
       ${H('Risque événementiel',rich.some(t=>t.entrySnap&&t.entrySnap.earnings_dte!=null)?'à vérifier':'—','earnings par position ci-dessous')}
     </div>
     <section class="vx-card vx-mb3" aria-label="Allocation du capital options">
@@ -678,6 +686,7 @@ async function renderRisk(){
      et concentration/bêta/stress corrompus. */
   const payload={positions:rich.filter(t=>t.type==='STK').map(t=>{const per=t.qty?t.cost/t.qty:t.cost;
       return {symbol:t.sym,quantity:t.qty,avg_cost:per,last_price:(t.mark!=null?t.mark:per),sector:sectorOf(t.sym)};}),
+    option_positions:rich.filter(t=>t.type!=='STK').map(t=>({sym:t.sym,exp:t.exp,strike:t.strike,right:t.type,qty:t.qty})),
     cash:E().capital()||0,simulated:false};
   try{
     const r=await fetch('/api/portfolio/team',{method:'POST',

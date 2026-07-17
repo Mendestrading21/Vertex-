@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v72';   // v72 : max pain / murs d'OI / PCR réels (chaîne large IBKR persistée) sur la fiche options
+const CACHE='td-shell-v73';   // v73 : greeks broker agrégés (delta/theta/vega réels IBKR) + stress vega au portefeuille
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png','/static/vertex/css/fonts.css','/static/vertex/fonts/GeneralSans-Regular.woff2','/static/vertex/fonts/GeneralSans-Medium.woff2','/static/vertex/fonts/GeneralSans-Semibold.woff2','/static/vertex/fonts/GeneralSans-Bold.woff2','/static/vertex/fonts/JetBrainsMono-Regular.woff2','/static/vertex/fonts/JetBrainsMono-Medium.woff2','/static/vertex/fonts/JetBrainsMono-SemiBold.woff2','/static/vertex/fonts/JetBrainsMono-Bold.woff2']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

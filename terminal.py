@@ -769,6 +769,9 @@ def _ibkr_opt_worker():
             ib.sleep(2.6)                                       # greeks + OI arrivent en ~2 s
             for c, t in zip(batch, tks):
                 mg = t.modelGreeks
+
+                def _g(v):                                      # greek IBKR propre (NaN → None)
+                    return float(v) if (v is not None and v == v) else None
                 iv = float(mg.impliedVol) if (mg and mg.impliedVol and mg.impliedVol == mg.impliedVol) else 0.0
                 oi = t.callOpenInterest if right == 'C' else t.putOpenInterest
                 last = t.last if (t.last and t.last == t.last) else (t.close if (t.close and t.close == t.close) else 0.0)
@@ -777,7 +780,12 @@ def _ibkr_opt_worker():
                              'volume': int(t.volume) if (t.volume and t.volume == t.volume) else 0,
                              'bid': float(t.bid) if (t.bid and t.bid == t.bid and t.bid > 0) else 0.0,
                              'ask': float(t.ask) if (t.ask and t.ask == t.ask and t.ask > 0) else 0.0,
-                             'lastPrice': float(last)})
+                             'lastPrice': float(last),
+                             # Greeks RÉELS du broker (modelGreeks IBKR) — jamais estimés.
+                             'delta': _g(mg.delta) if mg else None,
+                             'gamma': _g(mg.gamma) if mg else None,
+                             'theta': _g(mg.theta) if mg else None,
+                             'vega': _g(mg.vega) if mg else None})
             for c in batch:
                 try:
                     ib.cancelMktData(c)
@@ -1035,8 +1043,14 @@ def _persist_chain_full(sym, exp, right, rows, spot):
         oi = r.get('openInterest') or 0
         vol = r.get('volume') or 0
         iv = r.get('impliedVolatility')
+
+        def _rg(name, nd=4):                              # greek broker persisté (None honnête)
+            v = r.get(name)
+            return round(float(v), nd) if isinstance(v, (int, float)) else None
         by_strike[k] = {'oi': int(oi), 'vol': int(vol),
-                        'iv': (round(float(iv), 4) if iv else None)}
+                        'iv': (round(float(iv), 4) if iv else None),
+                        'delta': _rg('delta'), 'gamma': _rg('gamma'),
+                        'theta': _rg('theta'), 'vega': _rg('vega')}
     if not by_strike:
         return
     full = scan_state.setdefault('options_chain_full', {})

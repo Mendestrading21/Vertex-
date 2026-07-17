@@ -149,7 +149,12 @@ def make_blueprint(scan_state: dict) -> Blueprint:
             snap = _pmodels.PortfolioSnapshot(positions=positions, cash=cash,
                                               provenance='REAL', peak_equity=peak)
         profile = _profile()
-        risk = risk_engine.portfolio_risk(snap, profile)
+        # ── Greeks RÉELS du desk (modelGreeks IBKR persistés) — jamais estimés ──
+        from vertex.options import on_demand as _od
+        _greeks = _od.desk_greeks(body.get('option_positions') or [])
+        _legs = _greeks.get('legs') or []
+        risk = risk_engine.portfolio_risk(snap, profile,
+                                          options_greeks=_legs if _legs else None)
         # ── Enrichissement stress avec des données RÉELLES du scan (jamais inventées) ──
         # Secteur : réel (yfinance via le scan). Nasdaq : classification par secteur —
         # Technology + Communication Services = cœur tech/comm du NDX (hypothèse documentée,
@@ -163,7 +168,8 @@ def make_blueprint(scan_state: dict) -> Blueprint:
         _nasdaq_exposure = {p.symbol: (_sector_of.get(p.symbol) in _NDX_SECTORS)
                             for p in snap.positions}
         stress = stress_tests.run_stress_tests(
-            snap, profile, sector_of=_sector_of, nasdaq_exposure=_nasdaq_exposure)
+            snap, profile, sector_of=_sector_of, nasdaq_exposure=_nasdaq_exposure,
+            options_vega_value=_greeks.get('vega_usd'))
         # Le scan ne porte pas les dates de résultats → on n'affiche PAS un faux 0 :
         # le scénario « gap résultats » devient honnêtement « inconnu ».
         _has_earn = any(isinstance((_det.get(p.symbol) or {}).get('earnings_dte'), (int, float))
@@ -178,6 +184,19 @@ def make_blueprint(scan_state: dict) -> Blueprint:
         return jsonify({'team': team_view(snap, profile), 'risk': risk,
                         'guard': portfolio_guard.guard_rules(risk, profile),
                         'stress': stress})
+
+    @bp.route('/api/portfolio/greeks', methods=['POST'])
+    def portfolio_greeks():
+        """Greeks AGRÉGÉS du desk depuis les greeks BROKER (modelGreeks IBKR) persistés —
+        jamais estimés. POST {option_positions:[{sym,exp,strike,right,qty}]}. Jambe non cotée
+        (hors fenêtre tirée / chaîne pas chargée) → None honnête ; `priced`/`greeks_partial`
+        signalent la couverture. Lecture seule, non bloquant."""
+        from vertex.options import on_demand as _od
+        body = request.get_json(silent=True) or {}
+        g = _od.desk_greeks(body.get('option_positions') or [])
+        g['note'] = ('greeks du broker (IBKR) sur les jambes dont la chaîne est chargée ; '
+                     'ouvre la fiche options d’un titre pour charger sa chaîne')
+        return jsonify(g)
 
     @bp.route('/api/alerts/active')
     def alerts_active():
