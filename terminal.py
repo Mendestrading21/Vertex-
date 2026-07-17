@@ -1091,6 +1091,14 @@ def _publish_board(focus):
         scan_state['options_board'] = ob
         _attach_vehicle(scan_state.get('rows') or [], ob)   # rafraîchit le verdict véhicule
         _save_json('options_cache.json', {'board': ob, 'ts': time.time()})
+        # Push SSE (canal 'options') : le board a changé → les pages options se rafraîchissent.
+        try:
+            from vertex.services.live_stream import BROKER as _broker
+            _broker.publish('options', {'board_n': len(ob),
+                                        'coverage': scan_state.get('options_coverage'),
+                                        'source': scan_state.get('options_source')})
+        except Exception:
+            pass
 
 
 def _opt_loop():
@@ -10641,6 +10649,12 @@ def _alerts_loop():
                     for k in sorted(_ALERTS_FIRED, key=lambda k: _ALERTS_FIRED[k].get('ts', 0))[:-200]:
                         _ALERTS_FIRED.pop(k, None)
                 _save_json('alerts_fired.json', _ALERTS_FIRED)
+                # Push SSE (canal 'alerts') : une alerte vient de se déclencher.
+                try:
+                    from vertex.services.live_stream import BROKER as _broker
+                    _broker.publish('alerts', {'fired': len(_ALERTS_FIRED)})
+                except Exception:
+                    pass
         except Exception:
             pass
         try:
