@@ -835,8 +835,12 @@ async function loadDossier(){
   /* 8. Anomalies */
   try{
     const a=await VX.fetch('/api/anomalies/'+SYM,{ttl:120000});
-    body('an-anomalies',(a.anomalies&&a.anomalies.length)?
-      a.anomalies.map(x=>`<span class="vx-badge" title="${esc(x.impact||'')}" style="margin:2px">${x.code}</span>`).join('')
+    const anoms=(a.anomalies||[]).slice().sort((x,y)=>(y.blocking?1:0)-(x.blocking?1:0)||(y.severity||0)-(x.severity||0));
+    const sevCol=(s,blk)=>blk?'var(--vx-negative)':(s>=3?'var(--vx-negative)':s>=2?'var(--vx-warning)':'var(--vx-text-muted)');
+    body('an-anomalies',anoms.length?
+      anoms.map(x=>`<div class="vx-flex" style="gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+        <span class="vx-badge" style="color:${sevCol(x.severity,x.blocking)};flex:0 0 auto">${x.blocking?'⛔ ':''}${esc(x.code||'')}${x.severity?' · sev '+x.severity:''}</span>
+        <span class="vx-meta" style="flex:1;white-space:normal;line-height:1.4">${esc(x.impact||'')}${x.confidence!=null?` <span class="vx-dim">(${Math.round(x.confidence*100)} % conf.)</span>`:''}</span></div>`).join('')
       +`<div class="vx-meta vx-mt2">${esc(a.note||'')}</div>`
       :VX.states.empty('Aucune anomalie détectée sur la série disponible.'));
   }catch(e){body('an-anomalies',VX.states.error('Moteur d’anomalies injoignable'));}
