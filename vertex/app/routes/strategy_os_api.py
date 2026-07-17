@@ -150,9 +150,34 @@ def make_blueprint(scan_state: dict) -> Blueprint:
                                               provenance='REAL', peak_equity=peak)
         profile = _profile()
         risk = risk_engine.portfolio_risk(snap, profile)
+        # ── Enrichissement stress avec des données RÉELLES du scan (jamais inventées) ──
+        # Secteur : réel (yfinance via le scan). Nasdaq : classification par secteur —
+        # Technology + Communication Services = cœur tech/comm du NDX (hypothèse documentée,
+        # pas un chiffre inventé). Taux / vega / résultats : laissés à None → le moteur les
+        # marque « non estimé » plutôt que d'afficher un faux 0.
+        _det = scan_state.get('detail') or {}
+        _sector_of = {}
+        for p in snap.positions:
+            _sector_of[p.symbol] = (p.sector or (_det.get(p.symbol) or {}).get('sector') or 'Inconnu')
+        _NDX_SECTORS = {'Technology', 'Communication Services'}
+        _nasdaq_exposure = {p.symbol: (_sector_of.get(p.symbol) in _NDX_SECTORS)
+                            for p in snap.positions}
+        stress = stress_tests.run_stress_tests(
+            snap, profile, sector_of=_sector_of, nasdaq_exposure=_nasdaq_exposure)
+        # Le scan ne porte pas les dates de résultats → on n'affiche PAS un faux 0 :
+        # le scénario « gap résultats » devient honnêtement « inconnu ».
+        _has_earn = any(isinstance((_det.get(p.symbol) or {}).get('earnings_dte'), (int, float))
+                        for p in snap.positions)
+        if not _has_earn and 'EARNINGS_GAP_ADVERSE' in stress.get('scenarios', {}):
+            stress['scenarios']['EARNINGS_GAP_ADVERSE'] = {
+                'impact_pct': None,
+                'note': 'dates de résultats non disponibles dans le scan — non estimé'}
+            stress['worst_case_pct'] = min(
+                (v['impact_pct'] for v in stress['scenarios'].values()
+                 if v.get('impact_pct') is not None), default=None)
         return jsonify({'team': team_view(snap, profile), 'risk': risk,
                         'guard': portfolio_guard.guard_rules(risk, profile),
-                        'stress': stress_tests.run_stress_tests(snap, profile)})
+                        'stress': stress})
 
     @bp.route('/api/alerts/active')
     def alerts_active():
