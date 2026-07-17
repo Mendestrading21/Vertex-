@@ -724,6 +724,36 @@ async function loadDossier(){
           +'<span style="width:54px;text-align:right;font-size:10.5px;font-variant-numeric:tabular-nums" class="'+(neg?'vx-neg':'vx-pos')+'">'+(v>=0?'+':'')+VX.fmt.num(v,1)+'%</span></div>';
       }).join('')+'</div>';
   }
+  /* Checklist de signaux techniques (booléens RÉELS du moteur — jamais inventés). */
+  const SIGLABEL={above20:'Cours > MM20',above50:'Cours > MM50',above200:'Cours > MM200',
+    stacked:'MM empilées (20>50>200)',golden:'Golden cross',momCross:'Croisement momentum',
+    rsiBull:'RSI haussier',volUp:'Volume en hausse'};
+  function signalsGrid(d){
+    const s=d.signals; if(!s||typeof s!=='object')return '';
+    const items=Object.keys(SIGLABEL).filter(k=>k in s);
+    if(!items.length)return '';
+    const n=(d.sigcount!=null)?d.sigcount:items.filter(k=>s[k]).length;
+    return '<div class="vx-mt2" style="border-top:1px solid var(--vx-border);padding-top:8px">'
+      +'<div class="vx-meta vx-mb1" style="text-transform:uppercase;letter-spacing:.04em">Checklist de signaux ('+n+'/'+items.length+')</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px">'
+      +items.map(function(k){var on=!!s[k];return '<div style="display:flex;gap:6px;align-items:center;font-size:11.5px">'
+        +'<span style="flex:0 0 auto;font-weight:700;color:'+(on?'var(--vx-positive)':'var(--vx-text-faint)')+'">'+(on?'✓':'○')+'</span>'
+        +'<span style="color:var(--vx-text-'+(on?'secondary':'faint')+')">'+SIGLABEL[k]+'</span></div>';}).join('')
+      +'</div></div>';
+  }
+  /* Décomposition honnête du score : base → ajustements moteur → score final. */
+  function scoreDecomp(d){
+    if(d.base_score==null)return '';
+    const parts=[['Physique',d.phys_adj],['Multi-horizons',d.mtf_adj],['Structure',d.struct_adj]]
+      .filter(function(p){return p[1]!=null&&p[1]!==0;});
+    const fmt=function(v){return (v>0?'+':'')+VX.fmt.num(v,0);};
+    return '<div class="vx-mt2" style="border-top:1px solid var(--vx-border);padding-top:8px">'
+      +'<div class="vx-meta vx-mb1" style="text-transform:uppercase;letter-spacing:.04em">Décomposition du score</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11.5px;font-variant-numeric:tabular-nums">'
+      +'<span class="vx-mono">base '+VX.fmt.num(d.base_score,0)+'</span>'
+      +parts.map(function(p){return '<span class="vx-badge '+(p[1]>0?'vx-pos':'vx-neg')+'">'+p[0]+' '+fmt(p[1])+'</span>';}).join('')
+      +'<span class="vx-mono" style="font-weight:700">= '+VX.fmt.num(d.score,0)+'</span></div></div>';
+  }
   body('an-technical',
     kv('Score',d.score)+kv('Verdict technique (métadonnée)',d.verdict)
     +kv('Force relative',d.rs)+kv('RSI',d.rsi)
@@ -731,6 +761,8 @@ async function loadDossier(){
     +kv('Extension vs ATR',d.ext_atr,(d.ext_atr>=2.5?'vx-warn':''))
     +(ttm?kv('TTM Squeeze',ttm+ttmDir,(d.ttm_fired&&d.ttm_dir==='up'?'vx-pos':d.ttm_fired&&d.ttm_dir==='down'?'vx-neg':'')):'')
     +perfBars(d)
+    +signalsGrid(d)
+    +scoreDecomp(d)
     +`<div class="vx-meta vx-mt2">La décision finale unique reste ${decision} — les verdicts techniques sont des entrées du moteur exécutif.</div>`);
 
   /* 7. Sentiment + consensus analystes (données company déjà chargées → objectif de cours + potentiel) */
