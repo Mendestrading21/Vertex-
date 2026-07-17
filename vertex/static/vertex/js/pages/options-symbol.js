@@ -44,6 +44,13 @@
     var oiTot = mine.reduce(function (s, c) { return s + (c.oi || 0); }, 0);
     var dtes = mine.map(function (c) { return c.dte; }).filter(function (x) { return x != null; });
     var costs = mine.map(function (c) { return c.cost; }).filter(function (x) { return x != null; });
+    /* Demande par strike (OI cumulé) & contrats les plus risqués — sur les contrats
+       RÉELLEMENT disponibles (honnête : rien si aucun OI publié / hors séance). */
+    var oiByStrike = {};
+    mine.forEach(function (c) { if (c.oi) oiByStrike[c.strike] = (oiByStrike[c.strike] || 0) + c.oi; });
+    var topStrike = Object.keys(oiByStrike).map(function (k) { return [k, oiByStrike[k]]; }).sort(function (a, b) { return b[1] - a[1]; })[0];
+    var risky = mine.filter(function (c) { return (c.danger_n != null || c.danger != null); })
+      .slice().sort(function (a, b) { return (b.danger_n || b.danger || 0) - (a.danger_n || a.danger || 0); }).slice(0, 3);
     var G = window.VXCharts && VXCharts.scoreGaugeSVG;
     var gauges = G ? ('<div class="vx-gaugecluster">' +
       G(qmax, { label: 'meilleure qualité' }) +
@@ -58,6 +65,10 @@
       m('Open interest', oiTot ? oiTot.toLocaleString('fr-FR') : null) +
       m('DTE', dtes.length ? (Math.min.apply(null, dtes) + '–' + Math.max.apply(null, dtes)) : null, ' j') +
       m('Coût min', costs.length ? VXf.price(Math.min.apply(null, costs)) : null, ' $') +
+      m('Strike le + demandé', topStrike ? ('$' + topStrike[0]) : null, topStrike ? (' · OI ' + Number(topStrike[1]).toLocaleString('fr-FR')) : '') +
+      '</div>' +
+      '<div class="vx-mt2"><span class="vx-metric-k" style="display:block;margin-bottom:3px">Contrats les plus risqués</span>' +
+      (risky.length ? risky.map(function (c) { return '<span class="vx-badge" style="color:var(--vx-warning);margin:2px" title="danger ' + (c.danger_n || c.danger) + '">' + c.type + ' ' + c.strike + (c.exp ? ' · ' + esc(c.exp) : '') + '</span>'; }).join('') : '<span class="vx-meta">— aucun contrat à risque élevé —</span>') +
       '</div>' +
       '<div class="vx-stackbar-legend" style="justify-content:space-between;margin:10px 0 6px">' +
       '<span><i style="background:' + BRAND + '"></i>CALLS ' + calls + ' <b>' + cp + '%</b></span>' +
