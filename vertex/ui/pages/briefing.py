@@ -108,6 +108,7 @@ _CONTENT = """
   <div><h1>Dashboard</h1>
   <div class="vx-sub">Que dois-je comprendre et surveiller aujourd’hui ?</div></div>
   <div class="vx-actions">
+    <button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-context-btn" aria-pressed="false" title="Afficher/replier le contexte marché (Marchés · Pouls · Secteurs · Actus · Mouvements)">+ Contexte marché</button>
     <button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-customize-btn">Personnaliser</button>
     <div class="vx-segmented" role="group" aria-label="Densité">
       <button data-density-btn="compact" aria-pressed="false">Compact</button>
@@ -419,17 +420,33 @@ const BLOCKS=[['essential','Situation du jour'],['opportunities','Opportunités 
   ['news','Actus & catalyseurs'],['markets','Marchés (indices · graphique · taux)'],
   ['pulse','Pouls du marché'],['topflop','Mouvements de la séance'],
   ['sectors','Secteurs & rotation']];
+/* Dashboard = ESSENTIEL par défaut : la queue analytique (contexte marché) est
+   MASQUÉE au premier chargement, ré-affichable en un clic (« Contexte marché »)
+   ou finement via « Personnaliser ». Aucune donnée supprimée, seulement repliée. */
+const DEFAULT_HIDDEN=['news','markets','pulse','topflop','sectors'];
 function layoutGet(){try{return JSON.parse(localStorage.getItem('vxDashboardLayout')||'{}')}catch(e){return{}}}
 function layoutSet(l){try{localStorage.setItem('vxDashboardLayout',JSON.stringify(l))}catch(e){}}
+function effectiveHidden(){const l=layoutGet();return (l.hidden!==undefined)?l.hidden:DEFAULT_HIDDEN.slice();}
 function applyBlocks(){
-  const hidden=(layoutGet().hidden)||[];
+  const hidden=effectiveHidden();
   document.querySelectorAll('[data-block]').forEach(el=>{
     el.style.display=hidden.includes(el.dataset.block)?'none':'';});
   document.querySelectorAll('#vx-dash-anchors [data-anchor]').forEach(b=>{
     b.style.display=hidden.includes(b.dataset.anchor)?'none':'';});
+  const btn=document.getElementById('vx-context-btn');
+  if(btn){const tailHidden=DEFAULT_HIDDEN.some(b=>hidden.includes(b));
+    btn.textContent=tailHidden?'+ Contexte marché':'– Réduire au poste';
+    btn.setAttribute('aria-pressed',String(!tailHidden));}
 }
+document.getElementById('vx-context-btn')?.addEventListener('click',()=>{
+  const l=layoutGet(),hidden=effectiveHidden();
+  const tailHidden=DEFAULT_HIDDEN.some(b=>hidden.includes(b));
+  l.hidden=tailHidden?hidden.filter(b=>!DEFAULT_HIDDEN.includes(b))
+                     :Array.from(new Set([...hidden,...DEFAULT_HIDDEN]));
+  layoutSet(l);applyBlocks();
+});
 document.getElementById('vx-customize-btn')?.addEventListener('click',()=>{
-  const hidden=(layoutGet().hidden)||[];
+  const hidden=effectiveHidden();
   VX.shell.openModal('Personnaliser le Dashboard',
     BLOCKS.map(([id,label])=>`<label class="vx-checkbox" style="padding:5px 0">
       <input type="checkbox" data-blk="${id}" ${hidden.includes(id)?'':'checked'}> ${label}</label>`).join('')
@@ -1257,12 +1274,13 @@ async function loadPortfolio(){
     const plCol=pl>0?'var(--vx-positive)':pl<0?'var(--vx-negative)':'var(--vx-text-dim)';
     const totCost=pos.reduce((a,x)=>a+(x.cost||0),0)||1;
     const wgt=Math.round((t.cost||0)/totCost*100);
+    const dte=(isOpt&&t.exp)?Math.max(0,Math.round((new Date(t.exp).getTime()-Date.now())/864e5)):null;
     return `<div class="vx-pf-card" style="border-left:3px solid ${plCol}">
       <div class="vx-flex" style="justify-content:space-between;gap:6px">
         <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(t.sym)}" style="font-weight:700;padding:0 4px">${esc(t.sym)}</button>
         <span class="vx-badge" ${isOpt?'style="color:var(--vx-violet)"':''}>${esc(t.type)}${t.strike?' '+esc(t.strike):''}</span></div>
       <div class="pf-pl" style="color:${plCol}">${pl!==null?((pl>0?'+':'')+VX.fmt.num(pl,1)+' %'):'n/d'}</div>
-      <div class="pf-sub">${esc(t.qty)} × ${VX.fmt.price(t.cost)} $${t.exp?' · éch. '+esc(t.exp):''}</div>
+      <div class="pf-sub">${esc(t.qty)} × ${VX.fmt.price(t.cost)} $${t.exp?' · éch. '+esc(t.exp)+(dte!=null?' ('+dte+' j)':''):''}</div>
       <div class="pf-sub">${value!==null?('valeur '+VX.fmt.price(value)+' $'+(q.delayed?' · différé':'')):'marque indisponible'}</div>
       <div class="vx-flex" style="gap:6px;align-items:center"><span class="vx-meta" style="flex:0 0 auto;font-size:9.5px">poids</span><span style="flex:1;height:4px;border-radius:99px;background:var(--vx-surface-1)"><i style="display:block;height:100%;width:${Math.max(3,Math.min(100,wgt))}%;background:var(--vx-brand);border-radius:99px"></i></span><b class="vx-mono" style="font-size:10px">${wgt} %</b></div>
       <div class="vx-flex" style="justify-content:flex-end;margin-top:auto">
