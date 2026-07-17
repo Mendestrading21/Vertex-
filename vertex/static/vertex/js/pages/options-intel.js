@@ -513,7 +513,7 @@
       }
       var biasFr = { bullish: 'haussier', bearish: 'baissier', neutral: 'neutre' }[d.bias] || '—';
       var head = '<div class="vx-muted" style="margin-bottom:.6rem">' + esc(sym) + ' · spot ' + VXf.nd(d.spot) +
-        ' · échéance ' + esc(d.exp || '—') + ' (' + VXf.nd(d.dte) + ' j) · IV ' + (d.iv != null ? (d.iv * 100).toFixed(0) + ' %' : '—') +
+        ' · échéance ' + esc(d.exp || '—') + ' (' + VXf.nd(d.dte) + ' j) · IV ' + (d.iv != null ? d.iv.toFixed(1) + ' %' : '—') +
         ' · biais ' + biasFr + ' → stratégies classées par adéquation</div>';
       el.innerHTML = head + '<div class="vx-grid">' + d.strategies.map(function (s, i) {
         var credit = s.is_credit;

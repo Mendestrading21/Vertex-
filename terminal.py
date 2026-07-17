@@ -740,6 +740,12 @@ def _ibkr_opt_worker():
         p = ([x for x in params if x.exchange == 'SMART'] or params)
         if not p:
             return None
+        # Préférer la classe d'options STANDARD (tradingClass == symbole). Certains
+        # sous-jacents exposent AUSSI une classe AJUSTÉE (« 2MSFT », « 1GOOG »…, née d'un
+        # split ou dividende spécial) : ses strikes near-the-money n'existent pas → IBKR
+        # répond « Unknown contract » en masse et la chaîne ressort VIDE (bug MSFT & co).
+        std = [x for x in p if x.tradingClass == stk.symbol]
+        p = std or p
         _exps, _ks = set(), set()
         for x in p:                                   # union : un paramset SMART peut ne porter qu'une partie des échéances
             _exps |= set(x.expirations)
