@@ -771,7 +771,7 @@ async function renderOptions(){
     </div>
     <div class="vx-card vx-mt4"><div class="vx-card-header"><span class="vx-card-title">Contrats du board</span>
       <span class="vx-chart-question">Cliquer une ligne simule le contrat (payoff, scénarios, décote temps).</span></div>
-      <div class="vx-table-wrap vx-table-cards" id="op-opt-table"></div>
+      <div id="op-opt-table"></div>
       <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.options_source||scan.source,metaMode(scan))}</div></div>
     <div class="vx-grid vx-mt4" id="op-contract" hidden>
       <div class="vx-col-6" id="op-payoff"></div>
@@ -829,37 +829,39 @@ async function renderOptions(){
           onClick:(evt,els,chart)=>{const p=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
             if(p.length){const d=chart.data.datasets[0].data[p[0].index];openContract(board[d.idx]);}}}})});
   }
+  /* Carte CONTRAT (options en cartes, pas en liste) — strike/échéance/DTE en avant,
+     grecs & probas en chips ; clic → openContract (prix, évolution, payoff, scénarios). */
+  function optCard(c){
+    const idx=board.indexOf(c);
+    const typeCol=c.type==='PUT'?'var(--vx-violet)':'var(--vx-positive)';
+    const dgcol={'Faible':'var(--vx-positive)','Modéré':'var(--vx-warning)','Élevé':'var(--vx-negative)','Extrême':'var(--vx-negative)'}[c.danger]||'var(--vx-text-dim)';
+    return `<div class="vx-card vx-opp-card" data-ct="${idx}" tabindex="0" role="button" aria-label="Simuler ${esc(c.sym)} ${VX.fmt.nd(c.strike)}">
+      <div class="vx-flex" style="justify-content:space-between;gap:6px;align-items:flex-start">
+        <div class="vx-flex vx-wrap" style="gap:.35rem;align-items:center"><span class="vx-ticker" style="font-size:15px">${c.sym}</span>
+          <span class="vx-badge" style="color:${typeCol}">${c.type}</span><span class="vx-badge">${esc(c.bucket||'')}</span></div>
+        <span class="vx-badge" style="color:${dgcol}" title="risque">${esc(c.danger||'—')}</span></div>
+      <div class="vx-mono vx-mt1" style="font-size:16px;font-weight:700">Strike ${VX.fmt.nd(c.strike)}<span class="vx-meta" style="font-weight:400"> · éch. ${esc(String(c.exp||'').slice(0,10))}${c.dte!=null?' ('+c.dte+' j)':''}</span></div>
+      <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">
+        ${c.cost!=null?`<span class="vx-badge">prime ${VX.fmt.nd(c.cost)} $</span>`:''}
+        ${c.delta!=null?`<span class="vx-badge">Δ ${VX.fmt.nd(c.delta)}</span>`:''}
+        ${c.iv!=null?`<span class="vx-badge">IV ${Math.round(c.iv)}%</span>`:''}
+        ${c.pop!=null?`<span class="vx-badge" style="color:var(--vx-positive)">PoP ${Math.round(c.pop)}%</span>`:''}
+        ${c.p_tgt!=null?`<span class="vx-badge">P(obj) ${Math.round(c.p_tgt)}%</span>`:''}
+        ${c.swing_ret!=null?`<span class="vx-badge" style="color:${c.swing_ret>0?'var(--vx-positive)':'var(--vx-text-dim)'}" title="rendement si objectif atteint">rend. ${c.swing_ret>=0?'+':''}${VX.fmt.num(c.swing_ret,0)}%${c.swing_ok?' ✓':''}</span>`:''}
+        ${c.quality!=null?`<span class="vx-badge">qualité ${Math.round(c.quality)}</span>`:''}
+      </div>
+      <div class="vx-meta vx-mt2">Clic → prix actuel du sous-jacent, évolution, payoff & scénarios</div></div>`;
+  }
   function paintTable(f){
     const sorted=f.slice().sort((a,b)=>(b.quality||0)-(a.quality||0));
-    $('op-opt-table').innerHTML=sorted.length?`<table class="vx-table"><thead><tr>
-      <th>Sous-jacent</th><th>Type</th><th>Terme</th><th class="vx-num">Strike</th><th>Échéance</th>
-      <th class="vx-num">DTE</th><th class="vx-num">Delta</th><th class="vx-num">IV</th>
-      <th class="vx-num">Prime $</th><th class="vx-num">Théta/j</th><th class="vx-num">Proba profit</th>
-      <th class="vx-num">P(objectif)</th><th class="vx-num">Rend. si objectif</th>
-      <th class="vx-num">Qualité</th><th>Danger</th><th></th></tr></thead>
-      <tbody>${sorted.slice(0,60).map(c=>`<tr data-clickable data-ct="${board.indexOf(c)}" tabindex="0" role="button" aria-label="Simuler ${esc(c.sym)} ${VX.fmt.nd(c.strike)}">
-        <td data-label="Sous-jacent"><span class="vx-ticker">${c.sym}</span></td>
-        <td data-label="Type"><span class="vx-badge" style="color:${c.type==='PUT'?'var(--vx-violet)':'var(--vx-positive)'}">${c.type}</span></td>
-        <td data-label="Terme">${esc(c.bucket||'—')}</td>
-        <td data-label="Strike" class="vx-num">${VX.fmt.nd(c.strike)}</td>
-        <td data-label="Échéance" class="vx-mono">${esc(String(c.exp||'').slice(0,10))}</td>
-        <td data-label="DTE" class="vx-num">${VX.fmt.nd(c.dte)}</td>
-        <td data-label="Delta" class="vx-num">${VX.fmt.nd(c.delta)}</td>
-        <td data-label="IV" class="vx-num">${c.iv!=null?Math.round(c.iv)+'%':'—'}</td>
-        <td data-label="Prime" class="vx-num">${VX.fmt.nd(c.cost)}</td>
-        <td data-label="Théta" class="vx-num">${c.theta_burn!=null?VX.fmt.num(c.theta_burn,1)+'%':'—'}</td>
-        ${heatCell(c.pop,{label:'Proba',good:55,mid:40,fmt:v=>Math.round(v)+'%'})}
-        <td data-label="P(obj.)" class="vx-num">${c.p_tgt!=null?Math.round(c.p_tgt)+'%':'—'}</td>
-        <td data-label="Rend. obj." class="vx-num ${c.swing_ret>0?'vx-pos':''}">${c.swing_ret!=null?'+'+VX.fmt.num(c.swing_ret,0)+'%':'—'}${c.swing_ok?' <span class="vx-badge" style="color:var(--vx-positive)" title="contrat aligné sur le plan swing du sous-jacent">✓</span>':''}</td>
-        ${heatCell(c.quality,{label:'Qualité',good:60,mid:45})}
-        <td data-label="Danger"><span class="vx-badge" style="color:${{'Faible':'var(--vx-positive)','Modéré':'var(--vx-warning)','Élevé':'var(--vx-negative)','Extrême':'var(--vx-negative)'}[c.danger]||'var(--vx-text-dim)'}">${esc(c.danger||'—')}</span></td>
-        <td>${rowActions(c.sym)}</td></tr>`).join('')}</tbody></table>`
+    $('op-opt-table').innerHTML=sorted.length
+      ?'<div class="vx-opp-grid">'+sorted.slice(0,48).map(optCard).join('')+'</div>'
       :VX.states.empty(state.sym?'Aucun contrat pour '+state.sym+' dans ce filtre.':'Board options vide — le sélecteur ne force jamais une idée.',
         '<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a>');
-    document.querySelectorAll('[data-ct]').forEach(tr=>{
-      const open=(e)=>{if(e.target.closest('[data-open-analysis],[data-entity-menu]'))return;openContract(board[+tr.dataset.ct]);};
-      tr.addEventListener('click',open);
-      tr.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e);}});});
+    document.querySelectorAll('#op-opt-table [data-ct]').forEach(cd=>{
+      const open=(e)=>{if(e.target.closest('[data-open-analysis],[data-entity-menu]'))return;openContract(board[+cd.dataset.ct]);};
+      cd.addEventListener('click',open);
+      cd.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e);}});});
   }
   /* IV selon l'échéance : structure de vol du board filtré */
   function paintIvDte(f){
