@@ -278,6 +278,7 @@ async function renderTeam(){
       ${kv('Options ouvertes',rich.filter(t=>t.type!=='STK').length+' / 3 max',
         rich.filter(t=>t.type!=='STK').length>=3?'vx-warn':'')}
       ${kv('Règle','11e position = remplacement obligatoire')}
+      <div id="pf-team-issues" class="vx-mt2"></div>
       <div class="vx-meta vx-mt2"><a href="/opportunities">Chercher des candidats →</a></div></div>
       <div class="vx-card vx-mt3" id="pf-contrib"><div class="vx-card-header"><span class="vx-card-title">Contributeurs</span></div>
       <div id="pf-contrib-body"></div></div></div></div>`;
@@ -287,6 +288,25 @@ async function renderTeam(){
   const withVal=rich.filter(t=>t.value!=null&&t.invested);
   const _pfx=(v)=>(v>=0?'+':'')+VX.fmt.price(v)+' $';
   pfCommandStrip(rich);
+  /* Conformité de l’équipe : rôles & problèmes calculés par le moteur (team_view),
+     surfacés honnêtement (chaînes du moteur, aucun chiffre inventé). */
+  (async function(){
+    try{
+      let scanT=null;try{scanT=await VX.fetch('/scan',{ttl:300000});}catch(e){}
+      const secOf=(s)=>{const d=scanT&&scanT.detail&&scanT.detail[s];return(d&&d.sector)||'';};
+      const payload={positions:rich.filter(t=>t.type==='STK').map(t=>{const per=t.qty?t.cost/t.qty:t.cost;
+        return {symbol:t.sym,quantity:t.qty,avg_cost:per,last_price:(t.mark!=null?t.mark:per),sector:secOf(t.sym)};}),
+        cash:E().capital()||0,simulated:false};
+      const r=await fetch('/api/portfolio/team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const team=((await r.json())||{}).team||{};
+      const issues=team.issues||[];
+      const el=document.getElementById('pf-team-issues');if(!el)return;
+      el.innerHTML=issues.length
+        ?'<span class="vx-metric-k" style="display:block;margin-bottom:4px">Conformité de l’équipe</span>'
+          +issues.map(x=>`<div class="vx-insight" data-tone="risk" style="margin-bottom:4px">${esc(typeof x==='string'?x:(x.message||x.label||x.issue||''))}</div>`).join('')
+        :'<div class="vx-meta" style="color:var(--vx-positive)">✓ Composition d’équipe conforme.</div>';
+    }catch(e){}
+  })();
   $('pf-contrib-body').innerHTML=withVal.length
     ?divBars(withVal.map(t=>({name:(t.sym+(t.type!=='STK'?' '+t.type:'')),val:(t.value-t.invested)})),{fmt:_pfx})
     :'<div class="vx-meta">Marques indisponibles (IBKR hors ligne) — aucun P&L affiché plutôt qu’un chiffre inventé.</div>';
