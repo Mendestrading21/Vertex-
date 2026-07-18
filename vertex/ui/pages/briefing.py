@@ -315,6 +315,13 @@ _CONTENT = """
     background:linear-gradient(180deg,#131419,#0b0c10)}
   /* Opportunités options : cartes compactes */
   [data-block] #vx-opp-options .vx-mover{padding:11px 13px}
+
+  /* ── KPI MODERNE — prix + variation (flèche), sans mini-courbe ── */
+  [data-block] .vx-idx-tile{padding:15px 16px}
+  [data-block] #vx-market-grid .vx-idx-tile .vx-kpi-value{font-size:23px !important;margin-top:3px;line-height:1.1}
+  [data-block] .vx-idx-tile .vx-kpi-delta{display:inline-flex;align-items:center;gap:5px;
+    font-size:12.5px;font-weight:600;margin-top:4px}
+  [data-block] .vx-idx-tile .vx-arw{font-style:normal;font-size:8.5px;line-height:1;opacity:.9}
 </style>
 <nav id="vx-dash-anchors" aria-label="Sections du Dashboard"></nav>
 
@@ -682,15 +689,17 @@ function sparkSvg(vals,pos,neutral){
    code pas « bon/mauvais » (VIX, taux, DXY) → neutre. */
 function kpiCell(label,d,scan,span){
   const val=d&&(d.last??d.price??d.close);const chg=d?d.change:null;
-  const dcls=(d&&d.deltaNeutral)?'vx-muted':(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted');
+  const neu=!!(d&&d.deltaNeutral);
+  const dcls=neu?'vx-muted':(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted');
+  const arrow=(chg==null||neu)?'':(chg>0?'▲':chg<0?'▼':'');
   const dtxt=(chg===null||chg===undefined)?'n/d'
     :((d&&d.deltaUnit)?((chg>0?'+':'')+VX.fmt.num(chg,2)+' '+d.deltaUnit):VX.fmt.pct(chg));
   const vtxt=(val===null||val===undefined)?'—':(VX.fmt.price(val)+((d&&d.unit)?' '+d.unit:''));
+  /* KPI moderne : prix + variation (flèche), sans mini-courbe (page plus épurée). */
   return `<div class="vx-card vx-card--compact vx-kpi vx-idx-tile" style="grid-column:span ${span||2}" aria-label="${esc(label)}">
     <span class="vx-kpi-label">${esc(label)}</span>
-    <span class="vx-kpi-value" style="font-size:19px">${vtxt}</span>
-    <span class="vx-kpi-delta ${dcls}">${dtxt}</span>
-    ${(d&&d.series)?sparkSvg(d.series,(chg==null?true:chg>=0),!!(d&&d.deltaNeutral)):''}</div>`;
+    <span class="vx-kpi-value">${vtxt}</span>
+    <span class="vx-kpi-delta ${dcls}">${arrow?`<i class="vx-arw">${arrow}</i>`:''}${dtxt}</span></div>`;
 }
 async function loadStrip(){
   let scan=null;
@@ -1329,8 +1338,7 @@ function moversHtml(rows,dir,detail){
         ${r.score!==null&&r.score!==undefined?`<span class="vx-badge" title="Score Vertex">${VX.fmt.num(r.score,0)}</span>`:''}</div>
       <div class="mv-chg ${r.change>0?'vx-pos':'vx-neg'}">${VX.fmt.pct(r.change,1)}</div>
       <div class="mv-sub">${esc(r.sector||'—')}${r.price!==null&&r.price!==undefined?' · '+VX.fmt.price(r.price):''}${r.rvol!=null&&isFinite(r.rvol)?` · vol ×${VX.fmt.num(r.rvol,1)}`:''}</div>
-      ${sparkTile(ser&&ser.close,r.change>0)}
-      ${p52!=null?`<div class="vx-flex" style="gap:6px;align-items:center;margin-top:5px"><span class="vx-meta" style="flex:0 0 auto;font-size:9.5px">52 sem.</span><span style="flex:1;height:4px;border-radius:99px;background:var(--vx-surface-0);position:relative"><i style="position:absolute;left:${p52}%;top:-2px;width:8px;height:8px;margin-left:-4px;border-radius:99px;background:var(--vx-beige,#c0b79f)"></i></span></div>`:''}
+      ${p52!=null?`<div class="vx-flex" style="gap:6px;align-items:center;margin-top:7px"><span class="vx-meta" style="flex:0 0 auto;font-size:9.5px">52 sem.</span><span style="flex:1;height:4px;border-radius:99px;background:var(--vx-surface-0);position:relative"><i style="position:absolute;left:${p52}%;top:-2px;width:8px;height:8px;margin-left:-4px;border-radius:99px;background:var(--vx-beige,#c0b79f)"></i></span></div>`:''}
     </button>`;}).join('')+'</div>';
 }
 function loadTopFlop(scan){
