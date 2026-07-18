@@ -1392,15 +1392,15 @@ async function loadOpportunities(){
       if(s.rr!=null)chips.push(`<span class="vx-badge" title="rapport gain potentiel / risque">gain/risque ${VX.fmt.num(s.rr,1)}×</span>`);
       if(s.conviction!=null)chips.push(`<span class="vx-badge">conviction ${VX.fmt.num(s.conviction,0)}/100</span>`);
       return `
-      <button class="vx-mover" data-open-analysis="${esc(s.symbol)}" aria-label="Ouvrir ${esc(s.symbol)}" style="border-left:3px solid ${s.verdict==='ACHETER'||s.verdict==='RENFORCER'?'var(--vx-positive)':'var(--vx-warning)'}">
+      <div class="vx-mover" data-open-analysis="${esc(s.symbol)}" role="button" tabindex="0" aria-label="Ouvrir ${esc(s.symbol)}" style="border-left:3px solid ${s.verdict==='ACHETER'||s.verdict==='RENFORCER'?'var(--vx-positive)':'var(--vx-warning)'}">
         <div class="vx-flex" style="justify-content:space-between;gap:6px"><span class="mv-sym">${esc(s.symbol)}</span>
           <span class="vx-badge vx-badge-decision" data-decision="${esc(s.verdict||'')}">${esc(s.verdict||'')}</span></div>
         <div class="mv-chg" style="font-size:15px;color:var(--vx-text-primary)">${s.price!=null?VX.fmt.price(s.price):'—'}</div>
         <div class="vx-flex vx-wrap" style="gap:.3rem;margin:4px 0">${chips.join('')}</div>
         ${s.note?`<div class="mv-sub" style="white-space:normal;line-height:1.45;max-height:6.2em;overflow:hidden"><b style="color:var(--vx-text-secondary)">Pourquoi :</b> ${esc(s.note)}</div>`:''}
-        <div class="vx-flex" style="gap:.3rem;margin-top:6px"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-inspect="${esc(s.symbol)}" title="Aperçu rapide">Aperçu</button>
-          <span class="mv-sub" style="color:var(--vx-brand)">dossier complet →</span></div>
-      </button>`;}).join('')+'</div>':VX.states.empty('Aucune opportunité action retenue par le comité.');
+        <div class="vx-flex" style="gap:.4rem;margin-top:8px;align-items:center"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-inspect="${esc(s.symbol)}" title="Aperçu rapide">Aperçu</button>
+          <span class="mv-sub" style="color:var(--vx-brand);white-space:nowrap">Dossier →</span></div>
+      </div>`;}).join('')+'</div>':VX.states.empty('Aucune opportunité action retenue par le comité.');
     /* Comparatif du comité : proba de gain + conviction par titre, en barres HTML
        (taille déterministe — remplace l'ancien graphique R:R illisible). */
     const rrHost=$('vx-opp-rr');
