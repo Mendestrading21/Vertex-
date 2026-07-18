@@ -322,6 +322,20 @@ _CONTENT = """
   [data-block] .vx-idx-tile .vx-kpi-delta{display:inline-flex;align-items:center;gap:5px;
     font-size:12.5px;font-weight:600;margin-top:4px}
   [data-block] .vx-idx-tile .vx-arw{font-style:normal;font-size:8.5px;line-height:1;opacity:.9}
+
+  /* ═══════════ DESIGN DES MODULES — en-têtes de section & de carte ═══════════ */
+  /* En-tête de SECTION : le numéro devient une pastille encadrée (repère net) */
+  [data-block] .vx-sect{align-items:center;margin:32px 0 8px;gap:.7rem}
+  [data-block] .vx-sect b{display:inline-flex;align-items:center;gap:.6rem;color:#eef1f5;font-size:12px;letter-spacing:.13em}
+  [data-block] .vx-sect b i{font-style:normal;opacity:1;font-weight:600;font-size:10.5px;
+    display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 5px;border-radius:8px;
+    border:1px solid rgba(255,255,255,.15);background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+    color:var(--vx-text-secondary,#c2c7cf);margin-right:0;box-shadow:0 1px 0 rgba(255,255,255,.06) inset}
+  [data-block] .vx-sect span{font-size:11.5px;color:var(--vx-text-muted,#7c828c)}
+  [data-block] .vx-sect::after{height:1px;background:linear-gradient(90deg,rgba(255,255,255,.11),transparent)}
+  /* En-tête de CARTE : titre + accent argent net, méta/actions alignées à droite */
+  [data-block] .vx-card-header{align-items:center;gap:10px}
+  [data-block] .vx-card-header .vx-actions{margin-left:auto}
 </style>
 <nav id="vx-dash-anchors" aria-label="Sections du Dashboard"></nav>
 
