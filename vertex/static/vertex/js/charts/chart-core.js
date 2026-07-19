@@ -331,10 +331,10 @@
   C.area = function (canvas, labels, values, { color = C.colors.blue, yFmt, fill = true, extraDatasets = [] } = {}) {
     return C.mount(canvas, {
       type: 'line',
-      data: { labels, datasets: [{ data: values, borderColor: color, borderWidth: 1.6, pointRadius: 0, tension: .25, fill,
+      data: { labels, datasets: [{ data: values, borderColor: color, borderWidth: 2.1, pointRadius: 0, tension: .25, fill,
         backgroundColor: (ctx) => {
           const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height || 200);
-          g.addColorStop(0, color + '3D'); g.addColorStop(1, color + '00'); return g;
+          g.addColorStop(0, color + '52'); g.addColorStop(.5, color + '1F'); g.addColorStop(1, color + '00'); return g;
         } }, ...extraDatasets] },
       options: { scales: C.axes({ yFmt }), interaction: { mode: 'index', intersect: false } },
     });

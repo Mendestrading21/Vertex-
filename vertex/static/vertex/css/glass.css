@@ -503,3 +503,32 @@ input[type="range"]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var
   color:#f3f5f8;-webkit-text-fill-color:transparent;
   filter:drop-shadow(0 1px 18px rgba(255,255,255,.05))}
 #vx-content .vx-page-header .vx-sub{color:var(--vx-text-secondary);opacity:.92;max-width:74ch}
+
+/* ══════════════════════════════════════════════════════════════════
+   17) PLEIN ÉCRAN DES GRAPHES — mode focus premium. Fond flouté à vignette,
+   carte verre profond à grands coins + ombre flottante, entrée en zoom doux,
+   grand graphe centré. Surcharge les règles de base de charts.css (id + classe).
+   ══════════════════════════════════════════════════════════════════ */
+#vx-chart-fs-backdrop{
+  background:radial-gradient(120% 120% at 50% 28%,rgba(10,12,16,.70),rgba(3,4,6,.9))!important;
+  -webkit-backdrop-filter:blur(7px) saturate(1.05);backdrop-filter:blur(7px) saturate(1.05)}
+@media (prefers-reduced-motion:no-preference){
+  #vx-chart-fs-backdrop{animation:vx-fade-in .2s ease both}
+}
+#vx-content .vx-chart-card.vx-chart-fs{
+  position:fixed;z-index:calc(var(--vx-z-modal,70) + 1);
+  inset:4vh 5vw;border-radius:20px;
+  border:1px solid rgba(255,255,255,.15);
+  background:linear-gradient(180deg,#1b1d24 0%,#121319 100%);
+  box-shadow:0 40px 130px -28px #000,0 0 0 1px rgba(255,255,255,.04),inset 0 1px 0 rgba(255,255,255,.09);
+  padding:6px 22px 20px;display:flex;flex-direction:column}
+#vx-content .vx-chart-card.vx-chart-fs:hover{transform:none}
+#vx-content .vx-chart-card.vx-chart-fs::after{left:20px;right:20px;opacity:.5}
+@media (prefers-reduced-motion:no-preference){
+  #vx-content .vx-chart-card.vx-chart-fs{animation:vx-fs-zoom .26s cubic-bezier(.22,.61,.36,1) both}
+}
+@keyframes vx-fs-zoom{from{opacity:0;transform:scale(.976)}to{opacity:1;transform:none}}
+#vx-content .vx-chart-card.vx-chart-fs .vx-chart-head{
+  background:linear-gradient(180deg,#1b1d24,rgba(27,29,36,.55));padding:10px 0 12px;margin-bottom:6px}
+#vx-content .vx-chart-card.vx-chart-fs .vx-chart-title{font-size:19px;letter-spacing:.02em}
+#vx-content .vx-chart-card.vx-chart-fs .vx-chart-body{min-height:66vh}
