@@ -77,6 +77,40 @@ _CONTENT = """
   .vx-scr-kpis .k[data-tone="pos"]{border-left-color:var(--vx-positive)}
   .vx-scr-kpis .k[data-tone="neg"]{border-left-color:var(--vx-negative)}
   .vx-scr-kpis .k[data-tone="brand"]{border-left-color:var(--vx-brand)}
+
+  /* ═══════════ ARGENT LUMINEUX — harmonisation avec le Dashboard ═══════════ */
+  #vx-content .vx-card{position:relative;overflow:hidden;border-radius:16px;
+    border:1px solid rgba(255,255,255,.07);
+    background:linear-gradient(180deg,#14151a 0%,#0c0d11 100%);
+    box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 26px 56px -40px #000;
+    transition:border-color .18s ease,box-shadow .18s ease}
+  #vx-content .vx-card::after{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);opacity:.5;pointer-events:none}
+  #vx-content .vx-card:hover{border-color:rgba(255,255,255,.16)}
+  #vx-content .vx-card--premium,#vx-content .vx-card--accent{background:linear-gradient(180deg,#16171d 0%,#0d0e12 100%)}
+  #vx-content .vx-card-title{font-size:12.5px !important;font-weight:640;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--vx-text-secondary,#c2c7cf)}
+  #vx-content .vx-card-header{padding-bottom:9px;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.05)}
+  #vx-content .vx-chart-question{opacity:.66;font-size:11px;font-style:italic}
+  #vx-content .vx-meta{font-size:10.5px;color:var(--vx-text-muted,#7c828c)}
+  #vx-content .vx-card-footer,#vx-content .vx-card-foot{opacity:.72}
+  #vx-content .vx-num,#vx-content .vx-kpi-value,#vx-content .vx-mono{font-variant-numeric:tabular-nums}
+  /* Tables : lignes fines, en-têtes discrets, survol argent */
+  #vx-content .vx-table th{font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--vx-text-muted,#7c828c);font-weight:600}
+  #vx-content .vx-table td,#vx-content .vx-table th{border-color:rgba(255,255,255,.05) !important}
+  #vx-content .vx-table tbody tr{transition:background .12s}
+  #vx-content .vx-table tbody tr:hover{background:rgba(255,255,255,.025)}
+  /* Badges de contexte discrets (les colorés gardent leur force) */
+  #vx-content .vx-badge:not([style*="color"]){background:rgba(255,255,255,.03);
+    border-color:rgba(255,255,255,.07);color:var(--vx-text-muted,#7c828c)}
+  /* Chips : style argent net */
+  #vx-content .vx-chip{border-radius:9px;border:1px solid rgba(255,255,255,.09);
+    background:rgba(255,255,255,.025);color:var(--vx-text-secondary,#c2c7cf)}
+  #vx-content .vx-chip[aria-pressed="true"]{border-color:rgba(255,255,255,.34);color:#fff;background:rgba(255,255,255,.07)}
+  /* Cartes résultats : coins + survol */
+  #vx-content .vx-opp-card{border-radius:14px;transition:border-color .15s ease,transform .15s ease}
+  #vx-content .vx-opp-card:hover{border-color:rgba(255,255,255,.16);transform:translateY(-1px)}
 </style>
 <div id="op-body" class="vx-mt3">%%LOADING%%</div>
 """
