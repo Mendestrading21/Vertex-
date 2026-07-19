@@ -251,6 +251,7 @@ async function renderScreener(){
   const rows=(scan.rows||[]).filter(r=>r.score!==undefined);
   if(!rows.length){$('op-body').innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
   const detail=scan.detail||{};
+  const byId={};rows.forEach(r=>{if(r&&r.symbol)byId[r.symbol]=r;});   // index partagé (dossier express, revue…)
   const sectors=[...new Set(rows.map(r=>r.sector).filter(Boolean))].sort();
 
   /* État des filtres : URL (liens entrants) > localStorage > défauts. */
