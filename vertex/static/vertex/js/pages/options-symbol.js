@@ -356,6 +356,43 @@
       : fetch('/api/options/chain-grid/' + encodeURIComponent(SYM)).then(function (r) { return r.json(); }))
       .then(paintGrid).catch(function () { paintGrid(null); });
   });
+  // Surface de volatilité + skew par échéance (strikes × échéances) — chaîne large réelle
+  ready(function () {
+    var surf = document.getElementById('vx-osym-surface');
+    if (surf) surf.innerHTML = '<div class="vx-skeleton" style="height:120px"></div>';
+    function paintSurface(s) {
+      if (!window.VXCharts) return;
+      var ok = s && s.available !== false && s.by_expiry && Object.keys(s.by_expiry).length;
+      if (VXCharts.volSurfaceCard) {
+        VXCharts.volSurfaceCard('vx-osym-surface', ok ? s : {}, {
+          title: 'Surface de volatilité — strike × échéance',
+          question: 'Où l’IV est-elle riche ou pauvre selon le strike et l’échéance ?',
+          source: (s && s.source) || 'chaîne large', timestamp: s && s.as_of, mode: 'delayed' });
+      }
+      var skew = document.getElementById('vx-osym-skew');
+      if (!skew) return;
+      var by = (ok && s.by_expiry) || {}, sk = (ok && s.skew_by_expiry) || {};
+      var exps = Object.keys(by).sort(function (a, b) { return (by[a].dte || 0) - (by[b].dte || 0); });
+      var labels = exps.map(function (e) { return by[e].dte != null ? by[e].dte + ' j' : e; });
+      var vals = exps.map(function (e) { return sk[e] != null ? +(sk[e] * 100).toFixed(1) : null; });
+      if (!vals.some(function (v) { return v != null; }) || !VXCharts.card) { skew.innerHTML = ''; return; }
+      var cc = VXCharts.colors;
+      VXCharts.card('vx-osym-skew', {
+        title: 'Skew par échéance', question: 'Les puts de protection sont-ils chers vs l’ATM ?',
+        conclusion: 'Skew = IV put ~10 % OTM − IV ATM', unit: 'pts IV', height: 230,
+        source: s.source, timestamp: s.as_of, mode: 'delayed',
+        limits: 'skew positif = puts OTM demandés (protection chère) · lecture seule',
+        render: function (cv) {
+          return VXCharts.mount(cv, {
+            type: 'line',
+            data: { labels: labels, datasets: [{ data: vals, borderColor: cc.brand, borderWidth: 2.1, pointRadius: 3, pointBackgroundColor: cc.brand, tension: .25, fill: true, backgroundColor: 'rgba(201,205,212,.10)' }] },
+            options: { scales: VXCharts.axes({ yFmt: function (v) { return v + ' pts'; } }), plugins: { legend: { display: false } } } });
+        } });
+    }
+    ((window.VX && VX.fetch) ? VX.fetch('/api/options/surface/' + encodeURIComponent(SYM), { ttl: 300000 })
+      : fetch('/api/options/surface/' + encodeURIComponent(SYM)).then(function (r) { return r.json(); }))
+      .then(paintSurface).catch(function () { paintSurface(null); });
+  });
   // Max pain : le serveur peut tirer la chaîne large en direct (IBKR, ~40-60 s) → état d'attente honnête, TTL long.
   (function () {
     var el = document.querySelector('#vx-osym-maxpain [data-body]');

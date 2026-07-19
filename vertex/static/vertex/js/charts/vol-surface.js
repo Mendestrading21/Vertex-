@@ -5,8 +5,9 @@ C.volSurfaceCard=function(host,surface,opts){
   const expiries=Object.keys(by);
   if(!expiries.length){const el=typeof host==='string'?document.getElementById(host):host;
     if(el)el.innerHTML=VX.states.empty('Surface de volatilité indisponible.');return;}
-  const strikes=[...new Set(expiries.flatMap(e=>Object.keys(by[e].strikes||{})))].map(Number).sort((a,b)=>a-b);
-  const rows=strikes.map(k=>({label:VX.fmt.price(k),
+  // clés de strike gardées en CHAÎNE (les clés float JSON = "170.0" ≠ 170) — tri numérique.
+  const strikeKeys=[...new Set(expiries.flatMap(e=>Object.keys(by[e].strikes||{})))].sort((a,b)=>(+a)-(+b));
+  const rows=strikeKeys.map(k=>({label:VX.fmt.price(+k),
     cells:expiries.map(e=>{const iv=(by[e].strikes||{})[k];
       return{value:iv!=null?iv*100:null,label:iv!=null?(iv*100).toFixed(0)+'%':'—',
         title:`${e} · strike ${k}`};})}));

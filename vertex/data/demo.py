@@ -171,7 +171,9 @@ def _demo_chain_full(rows, detail):
                 if K <= 0:
                     continue
                 moneyness = math.log(K / spot)
-                iv = round(base_iv + 0.9 * moneyness * moneyness + 0.02 * (dte < 30), 4)  # smile
+                # smile (convexité) + skew put term-dépendant (plus pentu à court terme) + prime de front
+                skew_coef = 0.10 + 0.8 / math.sqrt(max(dte, 7))
+                iv = round(base_iv + 0.9 * moneyness * moneyness - skew_coef * moneyness + 0.02 * (dte < 30), 4)
                 for right, book in (('C', cc), ('P', pp)):
                     price, delta, gamma, theta, vega = _bs_greeks(spot, K, T, r_rate, iv, right)
                     if price < 0.02:

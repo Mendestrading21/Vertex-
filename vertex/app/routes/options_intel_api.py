@@ -202,6 +202,55 @@ def options_chain_grid(sym):
     return jsonify(g)
 
 
+def _surface(sym):
+    """Surface d'IV (strike × échéance) + skew + term structure depuis la chaîne
+    LARGE (iv en fraction, filtrée <=5 par build_surface). None honnête si vide."""
+    from vertex.options.vol_surface import build_surface
+    e = (scan_state.get('options_chain_full') or {}).get(str(sym).upper())
+    if not e:
+        return None
+    spot = e.get('spot') or 0
+    contracts = []
+    for exp in e:
+        if exp in ('spot', 'ts'):
+            continue
+        dte = _dte_from_exp(exp)
+        for right in ('C', 'P'):
+            for K, cell in (((e[exp] or {}).get(right)) or {}).items():
+                iv = (cell or {}).get('iv')
+                if iv is None:
+                    continue
+                contracts.append({'expiry': exp, 'dte': dte, 'strike': float(K),
+                                  'right': right, 'iv': float(iv)})
+    if not contracts or not spot:
+        return None
+    detail = (scan_state.get('detail') or {}).get(str(sym).upper()) or {}
+    closes = detail.get('closes') or detail.get('history') or None
+    surf = build_surface(str(sym).upper(), float(spot), contracts, closes=closes, as_of=_as_of())
+    d = surf.to_dict()
+    if not d.get('by_expiry'):
+        return None
+    d['available'] = True
+    d['source'] = ('DÉMO' if DEMO_MODE else 'courtier IBKR')
+    return d
+
+
+@bp.route('/api/options/surface/<sym>')
+def options_surface(sym):
+    """Surface de volatilité (strike × échéance) + skew + structure par terme sur
+    la chaîne large réelle. État vide honnête si TWS fermé / titre pas chargé."""
+    sym = (sym or '').upper()[:12]
+    try:
+        _od.warm_chain(sym)
+    except Exception:
+        pass
+    s = _surface(sym)
+    if s is None:
+        return jsonify({'symbol': sym, 'available': False,
+                        'note': 'Surface indisponible (chaîne large injoignable — TWS fermé / titre pas chargé).'})
+    return jsonify(s)
+
+
 @bp.route('/api/options/volatility/<sym>')
 def options_volatility(sym):
     """Interprétation de la volatilité d'un sous-jacent (depuis le board/detail)."""
