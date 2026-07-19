@@ -545,7 +545,8 @@ def scan():
                 return None   # un titre en échec est simplement ignoré (comportement historique)
 
         _t_compute = time.monotonic()   # LOT 0 : durée totale du calcul par symbole (télémétrie perf)
-        _workers = int(os.environ.get('VERTEX_SCAN_WORKERS', str(min(8, (os.cpu_count() or 2)))))
+        _workers = int(os.environ.get('VERTEX_SCAN_WORKERS',
+                                       str(min(8, max(1, (os.cpu_count() or 2) - 1)))))  # laisse 1 cœur au serveur web
         if _workers > 1 and len(syms_scan) > 1:
             # LOT 3 : calcul par titre EN PARALLÈLE (map-and-collect → zéro mutation partagée).
             # analyse()/research.* pures + RNG Monte-Carlo/bootstrap LOCAL ⇒ byte-identique au mode
