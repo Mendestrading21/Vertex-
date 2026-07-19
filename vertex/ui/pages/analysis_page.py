@@ -153,6 +153,16 @@ _SECTIONS = """
   <div data-body>%%LOADING%%</div>
 </section>
 
+<!-- Physique & probabilités (moteurs quant : Monte-Carlo, Kelly, structure statistique, MTF) -->
+<div class="vx-grid vx-mt4" id="an-physblock">
+  <div class="vx-col-7" id="an-mc"></div>
+  <div class="vx-col-5" id="an-physics"></div>
+</div>
+<div class="vx-grid vx-mt3" id="an-physblock2">
+  <div class="vx-col-5" id="an-kelly"></div>
+  <div class="vx-col-7" id="an-mtf"></div>
+</div>
+
 <!-- Workspace (§22) : colonne principale + rail sticky décisionnel -->
 <div class="vx-grid vx-mt4" id="an-workspace">
 <div class="vx-col-8">
@@ -561,6 +571,97 @@ function paintThesis(){
 }
 VX.bus.on('vx:thesis-changed',paintThesis);
 
+/* Physique & probabilités — trace la SORTIE des moteurs quant (aucun recalcul client).
+   Les couleurs viennent de C.colors mappées sur l'ÉTAT (jamais l'hex du moteur). */
+function stCol(state){
+  var cc=VXCharts.colors, s=String(state||'').toUpperCase();
+  if(/HAUSS|ALIGN|FRACTAL|PERSIST|TENDANCE/.test(s))return cc.positive;
+  if(/BAISS|CHAOS|STRESS|DEGRAD|DÉGRAD|CONTRARI|RISQUE/.test(s))return cc.negative;
+  if(/MOYENNE|RETOUR|RANGE|NEUTRE|MIXTE|PRUDEN|DIVERG/.test(s))return cc.warning;
+  return cc.neutral;
+}
+function physFoot(src,ts){return '<div class="vx-chart-foot">'+VX.updateIndicator(ts||Date.now(),src,'delayed')+'<span class="vx-meta">estimation moteur — lecture seule</span></div>';}
+function paintPhysics(d){
+  if(!window.VXCharts||!d)return;
+  var cc=VXCharts.colors,v=d.vertex||{},mc=v.mc||{},bs=v.bootstrap||{},kelly=v.kelly||{},ph=d.physics||{},mtf=d.mtf||{};
+  /* 1) Monte-Carlo / bootstrap : dispersion des rendements */
+  var mcEl=$('an-mc');
+  if(mcEl){
+    var p05=bs.p05,p50=(bs.p50!=null?bs.p50:(mc.edge_mean_bps!=null?+(mc.edge_mean_bps/100).toFixed(2):null)),p95=bs.p95;
+    if(p05==null&&p95==null){mcEl.innerHTML='';}
+    else{
+      var tp1f=mc.p_tp1_first,stopf=mc.p_stop_before_tp1;
+      VXCharts.card('an-mc',{
+        title:'Dispersion des rendements — Monte-Carlo & bootstrap',
+        question:'Quelle fourchette de rendement l’horizon peut-il produire ?',
+        conclusion:(p50!=null?'médian '+VX.fmt.pct(p50):'')+(bs.p_positive!=null?' · '+Math.round(bs.p_positive*100)+'% proba positive':''),
+        unit:'% horizon',height:232,source:'Monte-Carlo 1200 chemins (GBM) · bootstrap blocs',timestamp:d.updated||Date.now(),mode:'delayed',
+        limits:'MODEL_ESTIMATE · '+(bs.horizon||mc.days||'?')+' j'+(tp1f!=null?' · TP1 avant stop '+Math.round(tp1f*100)+'% vs stop '+Math.round((stopf||0)*100)+'%':''),
+        render:function(cv){return VXCharts.mount(cv,{type:'bar',
+          data:{labels:['Pessimiste P05','Médian P50','Optimiste P95'],datasets:[{data:[p05,p50,p95],backgroundColor:[cc.negative,cc.neutral,cc.positive],borderRadius:5,maxBarThickness:46}]},
+          options:{indexAxis:'y',scales:{x:{ticks:{callback:function(x){return x+'%';},color:cc.muted,font:{size:10}},grid:{color:cc.grid}},y:{grid:{display:false},ticks:{color:cc.text,font:{size:11}}}},plugins:{legend:{display:false}}}});}
+      });
+    }
+  }
+  /* 2) Physique du prix : radar structure statistique + demi-vie */
+  var phEl=$('an-physics');
+  if(phEl){
+    if(ph.hurst==null&&ph.efficiency==null){phEl.innerHTML='';}
+    else{
+      var col=stCol(ph.state);
+      phEl.classList.add('vx-card');
+      phEl.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Physique du prix — structure statistique</span>'
+        +'<span class="vx-chart-question">Tendance fractale, retour à la moyenne, ou chaos ?</span></div>'
+        +'<div class="vx-flex" style="gap:.4rem;flex-wrap:wrap;margin:2px 0 4px">'
+        +'<span class="vx-badge" style="color:'+col+';border-color:'+col+'55">'+esc(ph.state||'—')+'</span>'
+        +(ph.half_life!=null?'<span class="vx-badge" title="demi-vie de retour à la moyenne (Ornstein-Uhlenbeck)">demi-vie '+VX.fmt.num(ph.half_life,1)+' j</span>':'')
+        +(ph.hurst!=null?'<span class="vx-badge" title="exposant de Hurst">Hurst '+VX.fmt.num(ph.hurst,2)+'</span>':'')+'</div>'
+        +'<div id="an-physics-radar"></div>'
+        +(ph.note?'<div class="vx-meta" style="margin-top:4px">'+esc(ph.note)+'</div>':'')
+        +physFoot('regime_features (Hurst · entropie · Kaufman · OU)',d.updated);
+      if(VXCharts.radar){VXCharts.radar('an-physics-radar',{axes:[
+        {label:'Persistance',value:Math.max(0,Math.min(100,(ph.hurst||0)*100))},
+        {label:'Efficience',value:Math.max(0,Math.min(100,(ph.efficiency||0)*100))},
+        {label:'Ordre',value:Math.max(0,Math.min(100,(1-(ph.entropy||0))*100))}],
+        max:100,ariaLabel:'Physique '+SYM,color:col,width:250,height:186});}
+    }
+  }
+  /* 3) Kelly — jauge de taille suggérée (demi-Kelly capé) */
+  var kEl=$('an-kelly');
+  if(kEl){
+    if(kelly.pct==null){kEl.innerHTML='';}
+    else{
+      kEl.classList.add('vx-card');
+      kEl.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Taille suggérée — critère de Kelly</span>'
+        +'<span class="vx-chart-question">Quelle fraction du capital, au maximum ?</span></div><div id="an-kelly-g"></div>'
+        +'<div class="vx-meta" style="text-align:center;margin-top:2px">'+esc(kelly.note||'demi-Kelly capé · jamais automatique')+'</div>'
+        +physFoot('quant_engine · Kelly',d.updated);
+      if(VXCharts.gauge){VXCharts.gauge('an-kelly-g',{value:kelly.pct,min:0,max:15,unit:'%',label:'du capital',
+        reading:'plafond prudent 12 %',bands:[{to:6,color:cc.neutral},{to:12,color:cc.brand},{to:15,color:cc.warning}]});}
+    }
+  }
+  /* 4) MTF — alignement multi-horizons */
+  var mEl=$('an-mtf');
+  if(mEl){
+    if(!mtf.state&&mtf.weekly_above30==null){mEl.innerHTML='';}
+    else{
+      var col2=stCol(mtf.state),dailyUp=(d.ma50_rising===true)||(d.mom>0),wUp=mtf.weekly_above30&&mtf.weekly_rising;
+      mEl.classList.add('vx-card');
+      mEl.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Alignement multi-horizons (MTF)</span>'
+        +'<span class="vx-chart-question">Les horizons tirent-ils dans le même sens ?</span>'
+        +'<span class="vx-badge" style="color:'+col2+';border-color:'+col2+'55">'+esc(mtf.state||'—')+'</span></div>'
+        +'<div id="an-mtf-flow"></div>'
+        +(mtf.note?'<div class="vx-meta" style="margin-top:4px">'+esc(mtf.note)+'</div>':'')
+        +physFoot('timeframes (journalier × hebdo)',d.updated);
+      if(VXCharts.flow){VXCharts.flow('an-mtf-flow',{nodes:[
+        {label:'Journalier',sub:(dailyUp?'haussier':'prudent'),tone:dailyUp?'active':'idle'},
+        {label:'Hebdo',sub:(wUp?'haussier':'prudent'),tone:wUp?'active':'idle',count:(mtf.weekly_rsi!=null?Math.round(mtf.weekly_rsi):null)},
+        {label:'Conviction',sub:(mtf.adj!=null?(mtf.adj>0?'+'+mtf.adj:''+mtf.adj):''),tone:(col2===cc.positive?'active':(col2===cc.negative?'err':'idle'))}
+      ],ariaLabel:'MTF '+SYM});}
+    }
+  }
+}
+
 /* Dossier principal — /api/ticker + décision exécutive */
 let TF='6m'; let TICKER=null;
 async function loadDossier(){
@@ -637,6 +738,7 @@ async function loadDossier(){
     VXCharts.radar('an-scorecard-radar',{axes:scAxes.map(a=>({label:a[0],value:a[1]||0})),
       max:100,ariaLabel:'Scorecard '+SYM,color:VXCharts.colors.brand,width:240,height:190});
   }
+  paintPhysics(d);
 
   /* 3. Graphique principal — Trading Workspace (chandeliers réels + overlays MM) */
   const S=d.series||{};
