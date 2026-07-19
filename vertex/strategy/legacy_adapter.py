@@ -51,7 +51,16 @@ def _round_strike(S, k):
     return round(k / step) * step
 
 
+# Lot 9b : mémo du solveur de strike (fonction PURE). Clés = args EXACTS → byte-identique ;
+# hit quand prix/vol/échéance inchangés (hors séance), cassant la boucle ~90 itérations
+# × 12 legs × 6 picks appelée à chaque scan. Borné (garde-fou mémoire).
+_STRIKE_MEMO = {}
+
+
 def _strike_for_delta(S, T, sig, is_call, target):
+    key = (S, T, sig, is_call, target)
+    if key in _STRIKE_MEMO:
+        return _STRIKE_MEMO[key]
     best, bd = S, 9.9
     k = S * 0.55
     while k <= S * 1.45:
@@ -60,6 +69,9 @@ def _strike_for_delta(S, T, sig, is_call, target):
         if diff < bd:
             bd, best = diff, k
         k += S * 0.01
+    if len(_STRIKE_MEMO) > 20000:
+        _STRIKE_MEMO.clear()
+    _STRIKE_MEMO[key] = best
     return best
 
 
