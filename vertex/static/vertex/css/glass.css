@@ -339,3 +339,64 @@ input[type="range"]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var
 /* Scrollbars fines neutres */
 *{scrollbar-color:#2a2e34 transparent}
 *::-webkit-scrollbar-thumb{background:#2a2e34;border-radius:8px}
+
+/* ══════════════════════════════════════════════════════════════════
+   13) ARGENT LUMINEUX — GLOBAL. Promotion à TOUTE l'application du
+   traitement validé sur le Dashboard puis Opportunités : cartes en
+   dégradé profond + liseré supérieur lumineux, titres en petites
+   capitales argentées, en-têtes soulignés d'un filet, tableaux discrets,
+   chiffres tabulaires. Scopé #vx-content (l'id du <main>) : ne touche ni
+   la sidebar ni la topbar (déjà traitées §5). Spécificité id → prime sur
+   les règles de classe de components/cockpit/premium/glass sans !important.
+   Les blocs page-local du Dashboard/Opportunités restent gagnants là où
+   ils sont plus spécifiques : rendu identique, aucune régression.
+   ══════════════════════════════════════════════════════════════════ */
+#vx-content .vx-card{
+  position:relative;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(180deg,#14151a 0%,#0c0d11 100%);
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 26px 56px -40px #000;
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+/* liseré supérieur lumineux, encastré dans les coins arrondis (pas d'overflow:hidden) */
+#vx-content .vx-card::after{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  opacity:.55;pointer-events:none}
+#vx-content .vx-card:hover{border-color:rgba(255,255,255,.15);
+  background:linear-gradient(180deg,#16171d 0%,#0d0e12 100%)}
+#vx-content .vx-card.vx-active,#vx-content .vx-card--selected{
+  border-color:var(--vx-silver-line);
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 26px 56px -40px #000,0 0 0 1px var(--vx-silver-line)}
+#vx-content .vx-card--hero,#vx-content .vx-card.vx-elevated,
+#vx-content .vx-card--premium,#vx-content .vx-card--accent{
+  background:linear-gradient(180deg,#16171d 0%,#0d0e12 100%)}
+/* les KPI (.vx-card.vx-kpi) partagent le même verre profond */
+#vx-content .vx-card.vx-kpi{background:linear-gradient(180deg,#14151a 0%,#0c0d11 100%);background-image:none}
+
+/* Titres de carte : petites capitales argentées + en-tête souligné d'un filet */
+#vx-content .vx-card-title,#vx-content .vx-chart-title{
+  font-size:12.5px;font-weight:640;letter-spacing:.085em;text-transform:uppercase;
+  color:var(--vx-text-secondary)}
+#vx-content .vx-card-header,#vx-content .vx-chart-head{
+  padding-bottom:9px;margin-bottom:11px;border-bottom:1px solid rgba(255,255,255,.05)}
+#vx-content .vx-chart-question,#vx-content .vx-card-question{opacity:.7;font-style:italic}
+
+/* Chiffres tabulaires partout (KPI, prix, scores, cellules numériques) */
+#vx-content .vx-num,#vx-content .vx-kpi-value,#vx-content .vx-mono,#vx-content .vx-stat-v,
+#vx-content .vx-metric-v,#vx-content .vx-stat-xl,#vx-content .vx-cmd-v,#vx-content .vx-price,
+#vx-content .pf-pl,#vx-content .mv-chg,#vx-content .vx-sg-val,#vx-content .vx-table td{
+  font-variant-numeric:tabular-nums}
+
+/* Tables : en-têtes discrets en capitales, lignes au survol, bordures fines */
+#vx-content .vx-table th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--vx-text-muted);font-weight:600}
+#vx-content .vx-table td,#vx-content .vx-table th{border-color:rgba(255,255,255,.05)}
+#vx-content .vx-table tbody tr{transition:background .12s}
+#vx-content .vx-table tbody tr:hover{background:rgba(255,255,255,.028)}
+
+/* Chips / badges neutres par défaut — la couleur reste réservée au sémantique */
+#vx-content .vx-chip{border-radius:9px;border:1px solid rgba(255,255,255,.09);
+  background:rgba(255,255,255,.025);color:var(--vx-text-secondary)}
+#vx-content .vx-chip[aria-pressed="true"]{border-color:rgba(255,255,255,.32);color:#fff;
+  background:rgba(255,255,255,.07)}
