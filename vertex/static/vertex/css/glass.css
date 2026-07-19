@@ -105,9 +105,9 @@
 body{background:var(--vx-obsidian-950)}
 body::before{
   background:
-    radial-gradient(680px 420px at -6% -4%,rgba(222,227,237,.045),transparent 60%),
-    radial-gradient(900px 560px at 100% 0%,rgba(222,227,237,.02),transparent 62%),
-    radial-gradient(150% 100% at 50% 50%,transparent 58%,rgba(0,0,0,.5) 100%)!important;
+    radial-gradient(720px 440px at -5% -4%,rgba(222,227,237,.058),transparent 60%),
+    radial-gradient(940px 580px at 100% 0%,rgba(222,227,237,.028),transparent 62%),
+    radial-gradient(150% 100% at 50% 50%,transparent 56%,rgba(0,0,0,.52) 100%)!important;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -490,3 +490,16 @@ input[type="range"]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var
   color:var(--vx-text-muted)}
 .vx-state .vx-state-ghost{opacity:.5}
 .vx-state b{color:var(--vx-text-secondary)}
+
+/* ══════════════════════════════════════════════════════════════════
+   16) EN-TÊTE DE PAGE — le premier regard sur chaque écran. Grand titre à
+   dégradé argenté subtil (blanc → argent clair) + interlettrage resserré,
+   sous-titre affiné. Présent sur les 8 espaces via .vx-page-header.
+   ══════════════════════════════════════════════════════════════════ */
+#vx-content .vx-page-header h1{
+  letter-spacing:-.015em;line-height:1.03;
+  background:linear-gradient(174deg,#ffffff 0%,#d4d8df 116%);
+  -webkit-background-clip:text;background-clip:text;
+  color:#f3f5f8;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 1px 18px rgba(255,255,255,.05))}
+#vx-content .vx-page-header .vx-sub{color:var(--vx-text-secondary);opacity:.92;max-width:74ch}
