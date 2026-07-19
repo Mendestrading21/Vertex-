@@ -507,8 +507,12 @@ function paintQuarters(cf,demo){
 async function paintProfile(d){
   const el=document.querySelector('#an-profile [data-body]');if(!el)return;
   d=d||{};
-  let scan=null;try{scan=await VX.fetch('/scan',{ttl:120000});}catch(e){}
-  const row=((scan&&scan.rows)||[]).find(r=>r&&r.symbol===SYM)||{};
+  /* Lot 4b : les sous-scores du profil sont DÉJÀ dans le detail /api/ticker → inutile de
+     tirer le /scan complet (~8 Mo) pour lire une seule ligne. */
+  const _psub=d.sub||{}, _pvx=d.vertex||{};
+  const row={st_conf:_psub.confidence,st_mom:_psub.momentum,st_tech:_psub.technical,
+             st_fund:_psub.fundamental,st_risk:_psub.risk,score:d.score,
+             vx_pwin:_pvx.p_win,vx_rr:_pvx.rr};
   const G=(window.VXCharts&&VXCharts.scoreGaugeSVG)?VXCharts.scoreGaugeSVG:null;
   const dims=[['Conviction',row.st_conf,0],['Momentum',row.st_mom,0],['Technique',row.st_tech,0],
               ['Fondamental',row.st_fund,0],['Risque',row.st_risk,1]];
@@ -542,7 +546,7 @@ async function paintProfile(d){
     +`<div class="vx-scorecard-side">${side||'<span class="vx-meta">Métriques de décision indisponibles.</span>'}</div>`
     +(perfHtml?`<div class="vx-scorecard-side" style="grid-column:1/-1"><span class="vx-metric-k" style="display:block;margin-bottom:2px">Performance</span><div class="vx-perfbars">${perfHtml}</div></div>`:'')
     +`</div>`
-    +`<div class="vx-card-footer">${VX.updateIndicator((TICKER&&TICKER.detail&&TICKER.detail.updated)||Date.now(),(scan&&scan.source)||'scan',(window.__vxStatus&&window.__vxStatus.demo)?'fallback':'delayed')}</div>`;
+    +`<div class="vx-card-footer">${VX.updateIndicator((TICKER&&TICKER.detail&&TICKER.detail.updated)||Date.now(),(window.__vxStatus&&window.__vxStatus.source)||'scan',(window.__vxStatus&&window.__vxStatus.demo)?'fallback':'delayed')}</div>`;
 }
 
 VX.recentTickers.push(SYM);
@@ -665,6 +669,12 @@ function paintPhysics(d){
 /* Dossier principal — /api/ticker + décision exécutive */
 let TF='6m'; let TICKER=null;
 async function loadDossier(){
+  /* Lot 4 : préchauffe EN PARALLÈLE toutes les requêtes indépendantes du dossier —
+     les await plus bas récupèrent le résultat déjà en vol (coalescing VX.fetch par URL) :
+     une cascade de 5 allers-retours en série devient une seule vague concurrente. */
+  ['/api/ticker/'+SYM,'/api/strategy/decision/'+SYM,'/api/anomalies/'+SYM,
+   '/api/tradingview/signals?symbol='+SYM,'/api/options/chain/'+SYM]
+    .forEach(function(u){try{VX.fetch(u).catch(function(){});}catch(e){}});
   let t=null,exec=null,stale=false;
   try{t=await VX.fetch('/api/ticker/'+SYM,{ttl:60000});}catch(e){}
   try{exec=await VX.fetch('/api/strategy/decision/'+SYM,{ttl:60000});}catch(e){}
