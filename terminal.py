@@ -1761,7 +1761,38 @@ def _weekly_loop():
 
 
 # ─── options / GEX / earnings à la demande ───────────────────────────────
-def options_pack(sym):
+# LOT 8 : cache TTL par symbole du dossier options d'une fiche. _options_pack_build
+# refait ~8 allers-retours yfinance live (info, history 1 an, calendar, 2× chaîne + GEX,
+# news + IA) à chaque ouverture. On mémoïse le résultat complet ~3 min → réouverture
+# instantanée. Copie profonde en entrée/sortie (les appelants enrichissent leur réponse).
+# Données horodatées → honnêteté intacte. ?fresh=1 force le refetch. VERTEX_TICKER_TTL=0 off.
+_OPTPACK_CACHE = {}   # {sym: (ts, deepcopy(result))}
+
+
+def options_pack(sym, fresh=False):
+    try:
+        ttl = int(os.environ.get('VERTEX_TICKER_TTL', '180'))
+    except ValueError:
+        ttl = 180
+    if not fresh:
+        try:
+            fresh = request.args.get('fresh') in ('1', 'true')
+        except Exception:
+            fresh = False
+    now = time.time()
+    if ttl > 0 and not fresh:
+        ent = _OPTPACK_CACHE.get(sym)
+        if ent is not None and (now - ent[0]) < ttl:
+            return copy.deepcopy(ent[1])          # réouverture instantanée dans la fenêtre
+    result = _options_pack_build(sym)
+    if ttl > 0:
+        if len(_OPTPACK_CACHE) > 300:             # garde-fou mémoire (borne réaliste = univers)
+            _OPTPACK_CACHE.clear()
+        _OPTPACK_CACHE[sym] = (now, copy.deepcopy(result))
+    return result
+
+
+def _options_pack_build(sym):
     out = {'sym': sym, 'iv': None, 'ivrank': None, 'earnings': None, 'error': None,
            'name': None, 'sector': None, 'mcap': None, 'pe': None, 'beta': None,
            'news': [], 'news_why': None, 'contracts': [],
