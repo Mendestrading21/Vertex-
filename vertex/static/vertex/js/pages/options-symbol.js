@@ -341,6 +341,21 @@
     .catch(function () { body('vx-osym-scenarios', empty('Scénarios indisponibles.')); });
   get('/api/options/strategies/' + encodeURIComponent(SYM)).then(paintStrats)
     .catch(function () { body('vx-osym-strats', empty('Stratégies indisponibles.')); });
+  // Grille de chaîne (strikes × échéances) — greeks courtier IBKR (chaîne large réelle)
+  ready(function () {
+    var g = document.getElementById('vx-osym-grid');
+    if (g) g.innerHTML = '<div class="vx-skeleton" style="height:140px"></div>';
+    function paintGrid(d) {
+      if (!window.VXCharts || !VXCharts.optionChainGrid) return;
+      var ok = d && d.available !== false && (d.expiries || []).length;
+      VXCharts.optionChainGrid('vx-osym-grid', ok
+        ? { expiries: d.expiries, spot: d.spot, symbol: SYM, source: d.source, greeks_source: d.greeks_source, timestamp: d.ts, mode: 'delayed' }
+        : { expiries: [], symbol: SYM });
+    }
+    ((window.VX && VX.fetch) ? VX.fetch('/api/options/chain-grid/' + encodeURIComponent(SYM), { ttl: 300000 })
+      : fetch('/api/options/chain-grid/' + encodeURIComponent(SYM)).then(function (r) { return r.json(); }))
+      .then(paintGrid).catch(function () { paintGrid(null); });
+  });
   // Max pain : le serveur peut tirer la chaîne large en direct (IBKR, ~40-60 s) → état d'attente honnête, TTL long.
   (function () {
     var el = document.querySelector('#vx-osym-maxpain [data-body]');

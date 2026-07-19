@@ -118,9 +118,84 @@ def _demo_options_board(rows, detail):
     return board
 
 
-__all__ = ['demo_one', 'demo_universe', 'demo_options_board', 'DEMO_BASE']
+def _bs_greeks(S, K, T, r, sigma, right):
+    """Black-Scholes prix + greeks (par action) — sert UNIQUEMENT à rendre la
+    chaîne de DÉMO crédible et cohérente. Valeurs FICTIVES, étiquetées démo."""
+    if T <= 0 or sigma <= 0 or S <= 0 or K <= 0:
+        return (0.0, 0.0, 0.0, 0.0, 0.0)
+    sq = math.sqrt(T)
+    d1 = (math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * sq)
+    d2 = d1 - sigma * sq
+    Nd1 = 0.5 * (1 + math.erf(d1 / math.sqrt(2)))
+    Nd2 = 0.5 * (1 + math.erf(d2 / math.sqrt(2)))
+    nd1 = math.exp(-d1 * d1 / 2) / math.sqrt(2 * math.pi)
+    disc = math.exp(-r * T)
+    if right == 'C':
+        price = S * Nd1 - K * disc * Nd2
+        delta = Nd1
+        theta = (-(S * nd1 * sigma) / (2 * sq) - r * K * disc * Nd2) / 365.0
+    else:
+        price = K * disc * (1 - Nd2) - S * (1 - Nd1)
+        delta = Nd1 - 1
+        theta = (-(S * nd1 * sigma) / (2 * sq) + r * K * disc * (1 - Nd2)) / 365.0
+    gamma = nd1 / (S * sigma * sq)
+    vega = S * nd1 * sq / 100.0
+    return (price, delta, gamma, theta, vega)
+
+
+def _demo_chain_full(rows, detail):
+    """Chaîne LARGE synthétique (strikes × échéances × C/P) pour le mode VITRINE —
+    remplit scan_state['options_chain_full'] afin que la grille de chaîne, la
+    surface d'IV et le skew s'affichent sans TWS. Crédible mais FICTIF (démo).
+    Forme : {SYM: {expYYYYMMDD: {'C'|'P': {strike: {oi,vol,iv,delta,gamma,theta,vega,bid,ask,last}}}, 'spot':…, 'ts':…}}."""
+    import zlib
+    scored = [r for r in rows if r.get('score') is not None and r.get('price')]
+    top = sorted(scored, key=lambda r: r.get('score', 0), reverse=True)[:8]
+    out = {}
+    r_rate = 0.045
+    horizons = [14, 45, 90, 180]
+    for r in top:
+        sym = r['symbol']
+        spot = float(r.get('price') or 100.0)
+        rng = np.random.default_rng((zlib.crc32(sym.encode()) ^ 0xC0FFEE) & 0xffffffff)
+        d = detail.get(sym) or {}
+        base_iv = 0.24 + (d.get('rs') or 50) / 500.0 + rng.random() * 0.10   # ~0.26–0.44
+        ent = {'spot': round(spot, 2), 'ts': datetime.now().timestamp()}
+        step = max(0.5, round(spot * 0.025, 1))                              # ~2.5 % d'écart
+        for dte in horizons:
+            exp = (datetime.now() + timedelta(days=dte)).strftime('%Y%m%d')
+            T = dte / 365.0
+            cc, pp = {}, {}
+            for i in range(-6, 7):                                          # 13 strikes/côté
+                K = round((round(spot / step) + i) * step, 2)
+                if K <= 0:
+                    continue
+                moneyness = math.log(K / spot)
+                iv = round(base_iv + 0.9 * moneyness * moneyness + 0.02 * (dte < 30), 4)  # smile
+                for right, book in (('C', cc), ('P', pp)):
+                    price, delta, gamma, theta, vega = _bs_greeks(spot, K, T, r_rate, iv, right)
+                    if price < 0.02:
+                        continue
+                    spr = max(0.02, price * 0.04)
+                    liq = math.exp(-abs(moneyness) * 6)                      # OI concentré près de l'ATM
+                    oi = int(200 + liq * 22000 * (0.6 + rng.random()))
+                    book[K] = {
+                        'oi': oi, 'vol': int(oi * (0.05 + rng.random() * 0.2)),
+                        'iv': iv, 'delta': round(delta, 4), 'gamma': round(gamma, 4),
+                        'theta': round(theta, 4), 'vega': round(vega, 4),
+                        'bid': round(max(0.01, price - spr), 2),
+                        'ask': round(price + spr, 2), 'last': round(price, 2)}
+            if cc or pp:
+                ent[exp] = {'C': cc, 'P': pp}
+        if len(ent) > 2:                                                    # au moins 1 échéance
+            out[sym] = ent
+    return out
+
+
+__all__ = ['demo_one', 'demo_universe', 'demo_options_board', 'demo_chain_full', 'DEMO_BASE']
 
 DEMO_BASE = _DEMO_BASE
 demo_one = _demo_one
 demo_universe = _demo_universe
 demo_options_board = _demo_options_board
+demo_chain_full = _demo_chain_full

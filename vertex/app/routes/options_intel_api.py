@@ -8,6 +8,8 @@ jamais de chiffre inventé.
 """
 from __future__ import annotations
 
+import datetime as _dt
+
 from flask import Blueprint, jsonify, request
 
 from vertex.app.config import DEMO_MODE
@@ -137,6 +139,67 @@ def options_max_pain(sym):
                         'note': 'Chaîne large indisponible (TWS fermé, hors séance, ou titre pas encore chargé).'})
     mp['available'] = True
     return jsonify(mp)
+
+
+def _dte_from_exp(exp):
+    """Jours jusqu'à échéance depuis une clé d'expiration (YYYYMMDD ou ISO). None honnête."""
+    s = str(exp).replace('-', '').replace('T00:00:00', '')[:8]
+    try:
+        d = _dt.datetime.strptime(s, '%Y%m%d').date()
+        return max(0, (d - _dt.date.today()).days)
+    except (ValueError, TypeError):
+        return None
+
+
+def _chain_grid(sym):
+    """Grille strikes × échéances (call/put par strike) depuis la chaîne LARGE
+    persistée. Chaque cellule : iv (fraction), Δ/Γ/Θ/V, oi, vol, bid/ask. None honnête."""
+    e = (scan_state.get('options_chain_full') or {}).get(str(sym).upper())
+    if not e:
+        return None
+    spot = e.get('spot') or 0
+    exps = sorted(k for k in e if k not in ('spot', 'ts'))
+    greeks_src = 'none'
+    out_exps = []
+    for exp in exps:
+        calls = (e[exp] or {}).get('C') or {}
+        puts = (e[exp] or {}).get('P') or {}
+        strikes = sorted(set(calls) | set(puts))
+        if len(strikes) < 2:
+            continue
+        rows = []
+        for K in strikes:
+            c = calls.get(K)
+            p = puts.get(K)
+            if (c and c.get('delta') is not None) or (p and p.get('delta') is not None):
+                greeks_src = 'broker'
+            rows.append({'strike': K, 'call': c or None, 'put': p or None})
+        out_exps.append({'exp': exp, 'dte': _dte_from_exp(exp), 'strikes': rows})
+    if not out_exps:
+        return None
+    return {'symbol': str(sym).upper(), 'spot': spot, 'ts': e.get('ts'),
+            'source': ('DÉMO' if DEMO_MODE else 'courtier IBKR'),
+            'greeks_source': ('demo' if DEMO_MODE else greeks_src),
+            'expiries': out_exps}
+
+
+@bp.route('/api/options/chain-grid/<sym>')
+def options_chain_grid(sym):
+    """Grille de chaîne (strikes × échéances) RÉELLE depuis la chaîne large IBKR
+    (greeks courtier). Déclenche un fetch on-demand puis sérialise. État vide
+    honnête si TWS fermé / titre pas chargé — jamais inventé. En DÉMO : chaîne
+    synthétique clairement étiquetée."""
+    sym = (sym or '').upper()[:12]
+    try:
+        _od.warm_chain(sym)
+    except Exception:
+        pass
+    g = _chain_grid(sym)
+    if g is None:
+        return jsonify({'symbol': sym, 'available': False,
+                        'note': 'Chaîne large indisponible (TWS fermé, hors séance, ou titre pas encore chargé).'})
+    g['available'] = True
+    return jsonify(g)
 
 
 @bp.route('/api/options/volatility/<sym>')

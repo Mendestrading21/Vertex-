@@ -565,6 +565,7 @@ def scan():
                 _annotate_swing(_db, detail)
                 scan_state['options_board'] = _db
                 _attach_vehicle(rows, _db)
+                scan_state['options_chain_full'] = _demo.demo_chain_full(rows, detail)  # chaîne large synthétique (grille/surface/skew)
             except Exception:
                 pass
         try:
@@ -1053,10 +1054,15 @@ def _persist_chain_full(sym, exp, right, rows, spot):
         def _rg(name, nd=4):                              # greek broker persisté (None honnête)
             v = r.get(name)
             return round(float(v), nd) if isinstance(v, (int, float)) else None
+
+        def _q(name, nd=2):                               # cotation bid/ask/last (None honnête, >0)
+            v = r.get(name)
+            return round(float(v), nd) if isinstance(v, (int, float)) and float(v) > 0 else None
         by_strike[k] = {'oi': int(oi), 'vol': int(vol),
                         'iv': (round(float(iv), 4) if iv else None),
                         'delta': _rg('delta'), 'gamma': _rg('gamma'),
-                        'theta': _rg('theta'), 'vega': _rg('vega')}
+                        'theta': _rg('theta'), 'vega': _rg('vega'),
+                        'bid': _q('bid'), 'ask': _q('ask'), 'last': _q('lastPrice')}
     if not by_strike:
         return
     full = scan_state.setdefault('options_chain_full', {})

@@ -55,6 +55,15 @@ _CONTENT = """
   <div data-body>%%LOADING%%</div>
 </section>
 
+<!-- Grille de chaîne : strikes × échéances, greeks courtier IBKR -->
+<div class="vx-mt4" id="vx-osym-grid"></div>
+
+<!-- Surface de volatilité + skew (strikes × échéances) -->
+<div class="vx-grid vx-mt4">
+  <div class="vx-col-7" id="vx-osym-surface"></div>
+  <div class="vx-col-5" id="vx-osym-skew"></div>
+</div>
+
 <!-- Chaîne complète du titre -->
 <section class="vx-card vx-mt4 vx-card--premium" id="vx-osym-chain">
   <div class="vx-card-header"><span class="vx-card-title">Chaîne — contrats de %%SYM%% au tableau</span>
@@ -89,6 +98,8 @@ _LOADING = '<div class="vx-skeleton" style="height:64px"></div>'
 _PAGE_JS = (
     '<script src="/static/vertex/js/charts/bar-chart.js" defer></script>'
     '<script src="/static/vertex/js/charts/heatmap.js" defer></script>'
+    '<script src="/static/vertex/js/charts/option-chain-grid.js" defer></script>'
+    '<script src="/static/vertex/js/charts/vol-surface.js" defer></script>'
     '<script src="/static/vertex/js/pages/options-symbol.js" defer></script>'
 )
 
