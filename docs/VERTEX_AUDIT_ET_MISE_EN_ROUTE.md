@@ -51,6 +51,14 @@ Ce document = (1) état réel du projet, (2) **checklist de mise en live sur ta 
   (P05/P50/P95 + course TP1-avant-stop), radar structure statistique (Hurst/efficience/
   ordre) + demi-vie, jauge de Kelly (demi-Kelly capé, jamais automatique), flux
   d'alignement multi-horizons (MTF). Tout depuis `/api/ticker/<sym>` — aucune invention.
+- **Analyste IA branché** (`/intelligence?view=analyst`) : « Interroger l'analyste »
+  appelle désormais `GET /api/ai/analyst/<sym>` — Claude **interprète** le dossier RÉEL
+  des moteurs (verdict exécutif + physique + Monte-Carlo + bootstrap + Kelly + MTF +
+  anomalies) et répond à la question posée. **Claude ne décide jamais** : le verdict reste
+  au moteur exécutif. Sans `ANTHROPIC_API_KEY` → synthèse déterministe des moteurs (source
+  affichée franchement « IA indisponible — synthèse moteurs »), jamais de texte inventé.
+  Modèle résolu une seule fois (`VERTEX_AI_MODEL` > `ANTHROPIC_MODEL` > `claude-opus-4-8`)
+  — cohérent entre `/api/ai/status` et l'appel réel.
 - **Honnêteté (règle 4)** : le badge « IBKR temps réel » s'allume **uniquement** sur le
   socket réel (`/healthz` → `ibkr_live`), plus sur un flag de config.
 - **IBKR configurable** : `IBKR_HOST/PORT/CLIENT_ID` sont **enfin respectés** par les 4
@@ -107,7 +115,8 @@ IBKR_PORT=7496                            # 7496 réel · 7497 papier · 4001/40
 | `GET /healthz` | `ibkr_enabled:true`, **`ibkr_live:true`** quand TWS coté temps réel |
 | `GET /api/system/connections` | IBKR = **LIVE** (ou DELAYED) — vue honnête, jamais LIVE sans preuve |
 | `GET /api/live/status` | mode `live` / `delayed` par domaine |
-| `GET /api/ai/status` | Claude actif si clé valide, sinon `deterministic-fallback` |
+| `GET /api/ai/status` | `CONNECTED` + modèle si clé valide, sinon `MISSING` (jamais estimé) |
+| `GET /api/ai/analyst/<sym>` | `source:claude` + modèle si clé, sinon `deterministic-fallback` |
 | `GET /api/client-log` | **0 erreur** (doit le rester) |
 | Badge d'en-tête | 🟢 « IBKR temps réel » **seulement** si le socket est réellement live |
 | `/options/<sym>` | grille de chaîne + surface IV + skew peuplés (greeks courtier) |

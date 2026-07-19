@@ -58,3 +58,45 @@ def test_web_tool_is_read_only_search():
     """Le seul outil externe du cerveau est la recherche web (lecture)."""
     from vertex.ai import web_provider
     assert web_provider.WEB_TOOL_TYPE.startswith('web_search')
+
+
+# ─────────────────────────────── Analyste IA (§28) : dossier réel, jamais d'ordre
+def test_ai_analyst_unknown_symbol_is_honest():
+    import terminal
+    client = terminal.app.test_client()
+    d = client.get('/api/ai/analyst/ZZZZ').get_json()
+    assert d['available'] is False           # 200 + état honnête, jamais un faux verdict
+    assert 'content' not in d
+
+
+def test_ai_analyst_fallback_is_deterministic_and_schema_valid(monkeypatch):
+    from vertex.app import state
+    from vertex.ai.response_validator import validate_analysis
+    monkeypatch.setitem(state.scan_state, 'detail', {
+        'ACN': {'score': 72, 'rr': 3.0, 'sector': 'Technology', 'price': 200.0,
+                'vertex': {'rr': 3.0, 'mc': {}, 'bootstrap': {}, 'kelly': {'pct': 10},
+                           'asymmetry': 60, 'ev': 1.2},
+                'physics': {'hurst': 0.55}, 'mtf': {'state': 'ALIGNED'}, 'plan': {}}})
+    import terminal
+    d = terminal.app.test_client().get('/api/ai/analyst/ACN').get_json()
+    assert d['available'] is True
+    ok, errs = validate_analysis(d['content'])       # le fallback respecte le schéma strict
+    assert ok, errs
+    for k in ('order', 'orders', 'execute', 'trade_now', 'position_size_final'):
+        assert k not in d['content']                 # aucune clé d'ordre, jamais
+    if not os.environ.get('ANTHROPIC_API_KEY'):      # sans clé : honnêteté MISSING
+        assert d['source'] == 'deterministic-fallback'
+        assert d['health']['status'] == 'MISSING'
+        assert d['model'] is None
+
+
+def test_resolve_model_prefers_vertex_then_anthropic(monkeypatch):
+    """Une seule source de vérité modèle : VERTEX_AI_MODEL > ANTHROPIC_MODEL > défaut."""
+    from vertex.ai import health
+    monkeypatch.setenv('VERTEX_AI_MODEL', 'claude-opus-4-8')
+    monkeypatch.setenv('ANTHROPIC_MODEL', 'autre')
+    assert health.resolve_model() == 'claude-opus-4-8'
+    monkeypatch.delenv('VERTEX_AI_MODEL', raising=False)
+    assert health.resolve_model() == 'autre'
+    monkeypatch.delenv('ANTHROPIC_MODEL', raising=False)
+    assert health.resolve_model() == health.DEFAULT_MODEL

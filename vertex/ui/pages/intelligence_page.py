@@ -68,6 +68,13 @@ _VIEW_CONTENT = {
   </section>
 </div>
 <div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Interpr&eacute;tation de l&#8217;analyste IA">
+    <div class="vx-card-header"><span class="vx-card-title">Interpr&eacute;tation de l&#8217;analyste</span>
+      <span class="vx-actions" id="vx-analyst-ai-src"></span></div>
+    <div id="vx-analyst-ai">%%IDLE%%</div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
   <div class="vx-col-5" id="vx-analyst-scores"></div>
   <section class="vx-card vx-col-7" aria-label="Raisonnement et garde-fous">
     <div class="vx-card-header"><span class="vx-card-title">Raisonnement (audit trail)</span></div>
@@ -204,6 +211,7 @@ function initAnalyst(){
   const idle=VX.states.empty('Aucune analyse lanc&eacute;e — saisissez un ticker ci-contre.','');
   $('vx-analyst-verdict').innerHTML=idle;
   $('vx-analyst-audit').innerHTML=idle;
+  if($('vx-analyst-ai'))$('vx-analyst-ai').innerHTML=idle;
   /* Suggestions : exemples + tickers récents + raccourcis — rien d'inventé */
 (function(){
   const host=$('vx-analyst-suggestions');if(!host)return;
@@ -246,11 +254,56 @@ async function runAnalysis(sym,question){
       sym+' est absent du scan courant — impossible de d&eacute;cider sans donn&eacute;es.',
       '<a class="vx-btn vx-btn-sm" href="/system?view=data">Lancer un scan (Syst&egrave;me)</a>');
     $('vx-analyst-audit').innerHTML=VX.states.empty('Aucun raisonnement disponible sans dossier.');
+    if($('vx-analyst-ai'))$('vx-analyst-ai').innerHTML=VX.states.empty('Aucune interpr&eacute;tation sans dossier.');
     return;
   }
   renderVerdict(sym,question,strat,deci);
   renderAudit(strat,deci);
   renderScores(sym,strat);
+  renderAI(sym,question);
+}
+/* Analyste IA : Claude INTERPRÈTE le dossier réel des moteurs (jamais il ne décide).
+   Sans clé serveur → synthèse déterministe honnête, jamais de texte inventé. */
+async function renderAI(sym,question){
+  const host=$('vx-analyst-ai');const srcEl=$('vx-analyst-ai-src');
+  if(!host)return;
+  host.innerHTML=VX.states.loading(4);if(srcEl)srcEl.innerHTML='';
+  let d=null;
+  try{
+    d=await VX.fetch('/api/ai/analyst/'+encodeURIComponent(sym)
+      +(question?('?q='+encodeURIComponent(question)):''),{ttl:12000});
+  }catch(e){host.innerHTML=VX.states.error('Analyste indisponible ('+esc(e.message)+')');return;}
+  if(!d||d.available===false){
+    host.innerHTML=VX.states.empty(esc((d&&d.error)||'Dossier absent — aucune interpr&eacute;tation.'));return;}
+  const c=d.content||{};
+  const isClaude=d.source==='claude';
+  if(srcEl)srcEl.innerHTML='<span class="vx-badge '+(isClaude?'vx-pos':'vx-muted')+'">'
+    +(isClaude?('Claude actif&nbsp;· '+esc(d.model||'')):'IA indisponible — synth&egrave;se moteurs')+'</span>';
+  const contradictions=c.contradictions||[];
+  const questions=c.questions_for_user||[];
+  host.innerHTML=
+    (question?'<div class="vx-help vx-mb2">Question&nbsp;: &laquo; '+esc(question)+' &raquo;</div>':'')
+    +'<div style="font-size:14px;line-height:1.65" class="vx-mb3">'+esc(c.summary||'—')+'</div>'
+    +'<div class="vx-grid">'
+      +'<div class="vx-col-6"><div class="vx-meta vx-mb1">Th&egrave;se (haussier)</div>'
+        +'<div class="vx-pos" style="font-size:13px;line-height:1.55">'+esc(c.bull_case||'—')+'</div></div>'
+      +'<div class="vx-col-6"><div class="vx-meta vx-mb1">Avocat du diable (baissier)</div>'
+        +'<div class="vx-neg" style="font-size:13px;line-height:1.55">'+esc(c.bear_case||'—')+'</div></div>'
+    +'</div>'
+    +(contradictions.length?'<div class="vx-mt3"><div class="vx-meta vx-mb1">Contradictions entre moteurs</div>'
+      +'<ul style="margin:0;padding-left:18px;line-height:1.7;font-size:13px">'
+      +contradictions.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')
+    +(c.anomaly_reading?'<div class="vx-kv vx-mt3"><span class="k">Lecture des anomalies</span>'
+      +'<span class="v">'+esc(c.anomaly_reading)+'</span></div>':'')
+    +(c.catalyst_view?'<div class="vx-kv"><span class="k">Catalyseurs</span><span class="v">'+esc(c.catalyst_view)+'</span></div>':'')
+    +(c.scenario_comparison?'<div class="vx-kv"><span class="k">Sc&eacute;narios</span><span class="v">'+esc(c.scenario_comparison)+'</span></div>':'')
+    +(questions.length?'<div class="vx-mt3"><div class="vx-meta vx-mb1">Questions &agrave; creuser</div>'
+      +'<ul style="margin:0;padding-left:18px;line-height:1.7;font-size:13px">'
+      +questions.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')
+    +(c.confidence_comment?'<div class="vx-help vx-mt2">'+esc(c.confidence_comment)+'</div>':'')
+    +'<div class="vx-card-footer">'+VX.updateIndicator(d.as_of,
+      (isClaude?('interpr&eacute;tation Claude — '+esc(d.model||'')):'synth&egrave;se d&eacute;terministe des moteurs')
+      +' · le verdict reste au moteur ex&eacute;cutif','delayed')+'</div>';
 }
 function renderVerdict(sym,question,strat,deci){
   const decision=(strat&&strat.final_decision)||'ATTENDRE';

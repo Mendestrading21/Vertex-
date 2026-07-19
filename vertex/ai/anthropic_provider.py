@@ -7,18 +7,19 @@ from __future__ import annotations
 import json
 import os
 
+from .health import resolve_model
 from .provider import AIProvider
 
-MODEL = os.environ.get('VERTEX_AI_MODEL', 'claude-sonnet-5')
 MAX_TOKENS = 2000
 
 
 class AnthropicProvider(AIProvider):
     name = 'anthropic'
 
-    def __init__(self, api_key: str | None = None, model: str = MODEL) -> None:
+    def __init__(self, api_key: str | None = None, model: str | None = None) -> None:
         self.api_key = api_key or os.environ.get('ANTHROPIC_API_KEY', '')
-        self.model = model
+        # Résolution partagée avec /api/ai/status (VERTEX_AI_MODEL > ANTHROPIC_MODEL).
+        self.model = model or resolve_model()
         self._client = None
 
     def available(self) -> bool:

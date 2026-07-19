@@ -24,6 +24,50 @@ from vertex.strategy import executive_engine as _executive
 ALERTS = AlertEngine()
 
 
+def build_executive_decision(sym: str, scan_state: dict):
+    """Construit le packet moteur + rend la décision exécutive pour <sym>.
+
+    Source UNIQUE du verdict — réutilisée par l'API décision ET l'analyste IA,
+    pour qu'aucun verdict ne diverge entre le dossier et l'interprétation Claude.
+    Retourne (packet, resp) ou (None, None) si le titre est absent du scan.
+    """
+    sym = (sym or '').upper()
+    detail = (scan_state.get('detail') or {}).get(sym) or {}
+    if not detail:
+        return None, None
+    plan = detail.get('plan') or {}
+    source = scan_state.get('source') or ''
+    packet = {
+        'symbol': sym,
+        'fundamental': {'score': detail.get('st_fund') or detail.get('fund_score')},
+        'catalysts': {'score': 60 if detail.get('earnings_dte') is not None else None},
+        'technical': {'score': detail.get('score'),
+                      'reward_risk': detail.get('rr') or (plan.get('rr') if isinstance(plan, dict) else None),
+                      'timing_score': detail.get('st_timing'),
+                      'overextended': (detail.get('ext_atr') or 0) >= 2.5},
+        'sentiment': {'score': detail.get('rs')},
+        'anomalies': [],
+        'data_quality': {'overall': 'RECENT' if source and source != 'demo' else 'MISSING',
+                         'actionable_allowed': bool(source and source != 'demo')},
+        'reconciliation': {'actionable_allowed': True},
+        'guard': {'blocking_rules': [], 'mandatory_reviews': []},
+    }
+    try:
+        market = scan_state.get('market') or {}
+        inputs = {'index_trend': {'TREND': 'UP', 'CHOP': 'FLAT'}.get(market.get('regime'),
+                                                                     market.get('spy_trend')),
+                  'breadth_pct': market.get('breadth'), 'vix': market.get('vix')}
+        packet['market_regime'] = classify_regime(inputs)
+    except Exception:
+        packet['market_regime'] = {}
+    resp = _executive.decide(packet, _constitution.load_profile())
+    # Fraîcheur RÉELLE du scan (jamais l'heure du navigateur) — le verdict dérive de
+    # scan_state['detail'], aussi vieux que le dernier scan.
+    if isinstance(resp, dict):
+        resp['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+    return packet, resp
+
+
 def make_blueprint(scan_state: dict) -> Blueprint:
     bp = Blueprint('strategy_os', __name__)
 
@@ -40,45 +84,14 @@ def make_blueprint(scan_state: dict) -> Blueprint:
 
     @bp.route('/api/strategy/decision/<sym>')
     def strategy_decision(sym):
-        sym = sym.upper()
-        detail = (scan_state.get('detail') or {}).get(sym) or {}
-        if not detail:
+        packet, resp = build_executive_decision(sym, scan_state)
+        if packet is None:
             # 200 + available:false : état applicatif honnête (pas une erreur
             # transport) — un 404 pollue la console navigateur à chaque fiche.
             return jsonify({'available': False,
-                            'error': f'{sym} absent du scan courant',
+                            'error': f'{sym.upper()} absent du scan courant',
                             'final_decision': 'ATTENDRE',
                             'reason': 'aucune donnée — impossible de décider'}), 200
-        plan = detail.get('plan') or {}
-        source = scan_state.get('source') or ''
-        packet = {
-            'symbol': sym,
-            'fundamental': {'score': detail.get('st_fund') or detail.get('fund_score')},
-            'catalysts': {'score': 60 if detail.get('earnings_dte') is not None else None},
-            'technical': {'score': detail.get('score'),
-                          'reward_risk': detail.get('rr') or (plan.get('rr') if isinstance(plan, dict) else None),
-                          'timing_score': detail.get('st_timing'),
-                          'overextended': (detail.get('ext_atr') or 0) >= 2.5},
-            'sentiment': {'score': detail.get('rs')},
-            'anomalies': [],
-            'data_quality': {'overall': 'RECENT' if source and source != 'demo' else 'MISSING',
-                             'actionable_allowed': bool(source and source != 'demo')},
-            'reconciliation': {'actionable_allowed': True},
-            'guard': {'blocking_rules': [], 'mandatory_reviews': []},
-        }
-        try:
-            market = scan_state.get('market') or {}
-            inputs = {'index_trend': {'TREND': 'UP', 'CHOP': 'FLAT'}.get(market.get('regime'),
-                                                                         market.get('spy_trend')),
-                      'breadth_pct': market.get('breadth'), 'vix': market.get('vix')}
-            packet['market_regime'] = classify_regime(inputs)
-        except Exception:
-            packet['market_regime'] = {}
-        resp = _executive.decide(packet, _profile())
-        # Fraîcheur RÉELLE du scan (jamais l'heure du navigateur) — le verdict dérive de
-        # scan_state['detail'], aussi vieux que le dernier scan.
-        if isinstance(resp, dict):
-            resp['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
         return jsonify(resp)
 
     @bp.route('/api/market/regime')

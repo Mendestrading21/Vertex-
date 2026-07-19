@@ -26,7 +26,8 @@ def deterministic_analysis(packet: dict) -> AnalysisResult:
         bear.append('titre surétendu')
     blocking = packet.get('blocking_rules') or []
     if blocking:
-        bear.append(f'règles bloquantes actives: {blocking}')
+        bear.append('règles bloquantes actives: '
+                    + ' · '.join(str(b) for b in blocking))
     codes = [a.get('code') if isinstance(a, dict) else getattr(a, 'code', '?')
              for a in anomalies]
 
