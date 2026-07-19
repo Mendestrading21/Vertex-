@@ -11,6 +11,8 @@ Données :  yfinance (différé ~15 min — OK swing). Greeks/GEX = Black-Schole
 ⛔ ANALYSE ONLY — aucun ordre, aucune exécution. NOT FINANCIAL ADVICE.
 """
 import os
+import copy
+import hashlib
 import json
 import math
 import time
@@ -387,6 +389,29 @@ _annotate_swing = _swing.annotate
 
 
 
+# ── LOT 1 : mémoïsation du calcul déterministe par titre ──────────────────────
+# analyse() est une fonction PURE de (df, bench_ret, fund). Entre deux scans, tant
+# que la bougie du jour n'a pas bougé, le résultat est byte-identique — on évite de
+# relancer Monte-Carlo (1200 chemins) + bootstrap (1500) + physique par titre.
+# L'empreinte hashe l'OHLCV EXACT (pas seulement le dernier close) → capte les
+# restatements auto_adjust (dividende/split) et les colonnes High/Low/Volume lues
+# par ATR/ADX/anomalies. Une entrée par titre → borné à l'univers (~517).
+_ANALYSE_MEMO = {}
+
+
+def _analyse_fp(df, bench_ret, fund):
+    h = hashlib.blake2b(digest_size=16)
+    for col in ('Open', 'High', 'Low', 'Close', 'Volume'):
+        if col in df.columns:
+            h.update(df[col].to_numpy('float64', copy=False).tobytes())
+    h.update(('%d|%s|%r' % (len(df), df.index[-1], bench_ret)).encode())
+    try:
+        h.update(json.dumps(fund, sort_keys=True, default=str).encode())
+    except Exception:
+        h.update(repr(fund).encode())
+    return h.hexdigest()
+
+
 def scan():
     try:
         # En DÉMO : on ne scanne que 20 titres → rapide sur le CPU bridé du cloud,
@@ -420,8 +445,16 @@ def scan():
                           'sector_median_growth': _fsec.get('median_growth')} if _fsy else {})
                 # secteur GICS statique TOUJOURS injecté → profil offensif/défensif fiable même sans fondamentaux live
                 _fund.setdefault('sector', _GICS_SECTOR.get(sym) or _INDUSTRY_MAP.get(sym))
-                with METRICS.timer('scan.symbol'):
-                    d = analyse(df, bench_ret, fund=(_fund or None))   # vrais fondamentaux → score fondamental réel (sinon proxy)
+                _fp = _analyse_fp(df, bench_ret, _fund or None)
+                _memo = _ANALYSE_MEMO.get(sym)
+                if _memo is not None and _memo[0] == _fp:
+                    d = copy.deepcopy(_memo[1])   # hit : copie privée d'un calcul déjà identique (byte-identique)
+                    METRICS.inc('scan.memo_hits')
+                else:
+                    with METRICS.timer('scan.symbol'):
+                        d = analyse(df, bench_ret, fund=(_fund or None))   # vrais fondamentaux → score fondamental réel (sinon proxy)
+                    _ANALYSE_MEMO[sym] = (_fp, copy.deepcopy(d))   # stocke la sortie PURE (avant chart_read/thesis/perf ajoutés ci-dessous)
+                    METRICS.inc('scan.memo_miss')
                 d['chart_read'] = research.chart_read(d)   # analyse graphique FR (cartes Screener + modale)
                 d['thesis'] = research.thesis(d)            # synthèse Vertex décisive (fusion signaux + comment jouer)
                 d['sector'] = _GICS_SECTOR.get(sym)         # secteur GICS → contexte transversal / pairs (DecisionStack)
