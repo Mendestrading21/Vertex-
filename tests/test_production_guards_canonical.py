@@ -301,4 +301,4 @@ def test_mobile_action_bar(client):
 
 def test_service_worker_version(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v77' in body
+    assert 'td-shell-v78' in body
