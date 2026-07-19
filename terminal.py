@@ -58,6 +58,7 @@ from vertex.app.config import IBKR_ENABLED, DEMO_MODE  # noqa: F401
 from vertex.data import constants as _vconst
 from vertex.services import status_service as _status_svc
 from vertex.services import persist as _persist
+from vertex.observability.metrics import METRICS  # télémétrie perf (timers scan) — §37
 from vertex.services import live_engine as _live
 from vertex.services import news_plus as _news_plus
 from vertex.engines import decision_stack as _decision
@@ -393,17 +394,19 @@ def scan():
         syms_scan = UNIVERSE[:20] if DEMO_MODE else UNIVERSE
         _syms = (syms_scan + [BENCH, '^VIX', '^GSPC', '^IXIC', '^DJI', '^RUT']
                  + [c[0] for c in _COMMO] + [m[0] for m in _MACRO_TK])
-        if DEMO_MODE:
-            data = _demo_universe(_syms)
-            scan_state['source'] = 'demo'
-        else:
-            data = _download_universe(_syms)
+        with METRICS.timer('scan.download'):
+            if DEMO_MODE:
+                data = _demo_universe(_syms)
+                scan_state['source'] = 'demo'
+            else:
+                data = _download_universe(_syms)
         if BENCH not in data:
             scan_state['error'] = 'aucune donnée marché (yfinance + stooq indisponibles)'
             return
         bc = data[BENCH]['Close'].dropna()
         bench_ret = (float(bc.iloc[-1]) / float(bc.iloc[-63]) - 1) if len(bc) > 63 else 0.0
         rows, detail = [], {}
+        _t_compute = time.monotonic()   # LOT 0 : durée totale du calcul par symbole (télémétrie perf)
         for sym in syms_scan:
             try:
                 df = data[sym].dropna()
@@ -417,7 +420,8 @@ def scan():
                           'sector_median_growth': _fsec.get('median_growth')} if _fsy else {})
                 # secteur GICS statique TOUJOURS injecté → profil offensif/défensif fiable même sans fondamentaux live
                 _fund.setdefault('sector', _GICS_SECTOR.get(sym) or _INDUSTRY_MAP.get(sym))
-                d = analyse(df, bench_ret, fund=(_fund or None))   # vrais fondamentaux → score fondamental réel (sinon proxy)
+                with METRICS.timer('scan.symbol'):
+                    d = analyse(df, bench_ret, fund=(_fund or None))   # vrais fondamentaux → score fondamental réel (sinon proxy)
                 d['chart_read'] = research.chart_read(d)   # analyse graphique FR (cartes Screener + modale)
                 d['thesis'] = research.thesis(d)            # synthèse Vertex décisive (fusion signaux + comment jouer)
                 d['sector'] = _GICS_SECTOR.get(sym)         # secteur GICS → contexte transversal / pairs (DecisionStack)
@@ -466,6 +470,7 @@ def scan():
                              'st_conf': _sub.get('confidence'), 'st_fproxy': _sub.get('fundamental_is_proxy')})
             except Exception:
                 continue
+        METRICS.timing('scan.compute_all', (time.monotonic() - _t_compute) * 1000)  # LOT 0
         rows.sort(key=lambda x: x['score'], reverse=True)
         breadth = round(sum(1 for r in rows if r['verdict'] == 'BUY') / len(rows) * 100) if rows else 0
         spy = ({'price': round(float(bc.iloc[-1]), 2),
