@@ -18,21 +18,25 @@ def rsi(s, n=14):
     return (100 - 100 / (1 + up / dn.replace(0, np.nan))).fillna(100)
 
 
+def true_range(df):
+    """True Range (max des 3 mesures de Wilder) — brique commune ATR/ADX/chop/TTM.
+    Expression identique aux calculs inline historiques → réutilisation byte-identique."""
+    h, l, c = df['High'], df['Low'], df['Close']
+    return pd.concat([h - l, (h - c.shift()).abs(), (l - c.shift()).abs()], axis=1).max(axis=1)
+
+
 def atr(df, n=14):
     """Average True Range (volatilité), lissé façon Wilder."""
-    h, l, c = df['High'], df['Low'], df['Close']
-    tr = pd.concat([h - l, (h - c.shift()).abs(), (l - c.shift()).abs()], axis=1).max(axis=1)
-    return tr.ewm(alpha=1 / n, adjust=False).mean()
+    return true_range(df).ewm(alpha=1 / n, adjust=False).mean()
 
 
 def adx(df, n=14):
     """Force de tendance (ADX). Élevé = tendance directionnelle ; bas = range/bruit."""
-    h, l, c = df['High'], df['Low'], df['Close']
+    h, l = df['High'], df['Low']
     up, dn = h.diff(), -l.diff()
     plus = ((up > dn) & (up > 0)) * up
     minus = ((dn > up) & (dn > 0)) * dn
-    tr = pd.concat([h - l, (h - c.shift()).abs(), (l - c.shift()).abs()], axis=1).max(axis=1)
-    a = tr.ewm(alpha=1 / n, adjust=False).mean()
+    a = true_range(df).ewm(alpha=1 / n, adjust=False).mean()
     pdi = 100 * plus.ewm(alpha=1 / n, adjust=False).mean() / a
     mdi = 100 * minus.ewm(alpha=1 / n, adjust=False).mean() / a
     dx = 100 * (pdi - mdi).abs() / (pdi + mdi).replace(0, np.nan)

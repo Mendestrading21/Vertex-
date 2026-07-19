@@ -25,16 +25,19 @@ from vertex.engines import indicators
 def analyse(df, bench_ret, fund=None):
     c = df['Close'].dropna()
     last = float(c.iloc[-1])
-    e20 = float(c.ewm(span=20).mean().iloc[-1])
+    _ewm20 = c.ewm(span=20).mean()   # Lot 6 : calculé une fois, réutilisé pour la série graphique
+    e20 = float(_ewm20.iloc[-1])
     e50 = float(c.ewm(span=50).mean().iloc[-1])
     e200 = float(c.ewm(span=200).mean().iloc[-1])
     # SMA avec repli sur l'EWM quand l'historique est trop court (< 50/200 barres) :
     # évite les NaN qui casseraient le JSON de /scan pour les titres récemment cotés.
-    s50 = float(c.rolling(50).mean().iloc[-1]);  s50 = e50 if math.isnan(s50) else s50
-    s200 = float(c.rolling(200).mean().iloc[-1]);  s200 = e200 if math.isnan(s200) else s200
-    s50p = float(c.rolling(50).mean().iloc[-2]) if len(c) > 1 else s50
+    _sma50 = c.rolling(50).mean()    # Lot 6 : une passe, réutilisée (iloc[-1], iloc[-2], série)
+    _sma200 = c.rolling(200).mean()
+    s50 = float(_sma50.iloc[-1]);  s50 = e50 if math.isnan(s50) else s50
+    s200 = float(_sma200.iloc[-1]);  s200 = e200 if math.isnan(s200) else s200
+    s50p = float(_sma50.iloc[-2]) if len(c) > 1 else s50
     s50p = s50 if math.isnan(s50p) else s50p
-    s200p = float(c.rolling(200).mean().iloc[-2]) if len(c) > 1 else s200
+    s200p = float(_sma200.iloc[-2]) if len(c) > 1 else s200
     s200p = s200 if math.isnan(s200p) else s200p
     atr = float(indicators.atr(df).iloc[-1])
     rsi_s = indicators.rsi(c)
@@ -59,8 +62,9 @@ def analyse(df, bench_ret, fund=None):
 
     # RÉGIME : ADX (force de tendance) + Choppiness (bruit) → filtre les faux signaux en range
     adx = indicators.adx(df)
-    tr14 = pd.concat([df['High'] - df['Low'], (df['High'] - c.shift()).abs(),
-                      (df['Low'] - c.shift()).abs()], axis=1).max(axis=1).tail(14).sum()
+    _tr_full = pd.concat([df['High'] - df['Low'], (df['High'] - c.shift()).abs(),
+                          (df['Low'] - c.shift()).abs()], axis=1).max(axis=1)   # Lot 6 : TR calculé une fois
+    tr14 = _tr_full.tail(14).sum()
     rng14 = float(df['High'].tail(14).max() - df['Low'].tail(14).min())
     chop = float(100 * math.log10(tr14 / rng14) / math.log10(14)) if rng14 > 0 else 50.0
     regime = 'TREND' if adx >= 25 and chop < 50 else 'CHOP' if chop >= 60 else 'NEUTRAL'
@@ -79,7 +83,8 @@ def analyse(df, bench_ret, fund=None):
     # SQUEEZE DE VOLATILITÉ (Bollinger 20) : largeur de bande dans son plus-bas 6 mois
     # → compression = énergie qui s'accumule, cassure souvent imminente.
     bb_mid = c.rolling(20).mean()
-    bb_wid = (c.rolling(20).std() / bb_mid * 100).dropna()
+    _std20 = c.rolling(20).std()     # Lot 6 : écart-type 20 calculé une fois (Bollinger + TTM)
+    bb_wid = (_std20 / bb_mid * 100).dropna()
     bb_now = float(bb_wid.iloc[-1]) if len(bb_wid) else None
     bb_rank = round(float((bb_wid.tail(126) <= bb_now).mean() * 100)) if (bb_now is not None and len(bb_wid) >= 20) else None
     squeeze = bool(bb_rank is not None and bb_rank <= 20)
@@ -89,11 +94,9 @@ def analyse(df, bench_ret, fund=None):
     ttm_on = ttm_fired = False
     ttm_dir = None
     try:
-        _std = c.rolling(20).std()
+        _std = _std20                # Lot 6 : réutilise l'écart-type 20 déjà calculé
         _bbu, _bbl = bb_mid + 2 * _std, bb_mid - 2 * _std
-        _tr = pd.concat([df['High'] - df['Low'], (df['High'] - c.shift()).abs(),
-                         (df['Low'] - c.shift()).abs()], axis=1).max(axis=1)
-        _atr20 = _tr.rolling(20).mean()
+        _atr20 = _tr_full.rolling(20).mean()   # Lot 6 : réutilise le True Range déjà calculé
         _kcu, _kcl = bb_mid + 1.5 * _atr20, bb_mid - 1.5 * _atr20
         ttm_on = bool(_bbl.iloc[-1] > _kcl.iloc[-1] and _bbu.iloc[-1] < _kcu.iloc[-1])
         _prev_on = bool(_bbl.iloc[-2] > _kcl.iloc[-2] and _bbu.iloc[-2] < _kcu.iloc[-2])
@@ -268,9 +271,9 @@ def analyse(df, bench_ret, fund=None):
     # Toutes les moyennes/OHLC/volume proviennent des données RÉELLES (df), jamais
     # reconstituées côté UI. Une moyenne indisponible (fenêtre trop courte) → None.
     cc = c.tail(120)
-    ema20s = c.ewm(span=20).mean().tail(120)
-    sma50s = c.rolling(50).mean().tail(120)
-    sma200s = c.rolling(200).mean().tail(120)
+    ema20s = _ewm20.tail(120)        # Lot 6 : réutilise les séries déjà calculées (byte-identique)
+    sma50s = _sma50.tail(120)
+    sma200s = _sma200.tail(120)
     rsi120 = rsi_s.tail(120)
 
     def _clean(seq):
