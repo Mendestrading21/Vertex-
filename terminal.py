@@ -326,16 +326,49 @@ def _stooq_download(tickers):
     return {t: cache[t] for t in tickers if t in cache} if cache else out
 
 
+# ── LOT 2 : cache mémoire du téléchargement quotidien (TTL selon la séance) ────
+# La barre EOD ne change pas hors séance → re-télécharger 1 an × ~517 titres toutes
+# les 120 s est pur gaspillage (et déclenche les 429 de Yahoo). Cache par ticker :
+# séance ouverte = TTL court (barre intraday partielle fraîche) ; fermée = TTL long.
+# VERTEX_YF_TTL=0 désactive (comportement historique) ; N force un TTL fixe.
+_YF_CACHE = {}          # {ticker: (DataFrame, ts)}
+_YF_TTL_OPEN = 90       # < REFRESH_SEC=120 : garde la barre du jour fraîche en séance
+_YF_TTL_CLOSED = 900    # 15 min hors séance : barre figée, tue la tempête + les 429
+
+
+def _yf_ttl():
+    env = os.environ.get('VERTEX_YF_TTL')
+    if env is not None:
+        try:
+            return max(0, int(env))     # 0 = cache off ; N = TTL fixe manuel
+        except ValueError:
+            pass
+    try:
+        return _YF_TTL_OPEN if market_status().get('open') else _YF_TTL_CLOSED
+    except Exception:
+        return _YF_TTL_CLOSED
+
+
 def _download_universe(tickers, period='1y', chunk=50):
     """Télécharge l'univers PAR LOTS (plus robuste/rapide qu'un seul gros appel
     sur le plan gratuit). Renvoie un dict {ticker: DataFrame} ; un lot ou un
     ticker en échec est simplement ignoré (jamais de plantage global).
     Si yfinance échoue (ex: Yahoo bloque l'IP du serveur cloud), bascule
-    automatiquement sur Stooq pour les tickers manquants."""
+    automatiquement sur Stooq pour les tickers manquants.
+    Cache mémoire par ticker (Lot 2) : sert depuis le cache les tickers encore
+    frais selon la séance, ne télécharge que les périmés/manquants."""
+    ttl = _yf_ttl()
+    now = time.time()
     frames = {}
+    if ttl > 0:                                  # sert le frais depuis le cache
+        for t in tickers:
+            hit = _YF_CACHE.get(t)
+            if hit is not None and (now - hit[1]) < ttl:
+                frames[t] = hit[0]
+    todo = [t for t in tickers if t not in frames]
     bad_batches = 0
-    for i in range(0, len(tickers), chunk):
-        part = tickers[i:i + chunk]
+    for i in range(0, len(todo), chunk):
+        part = todo[i:i + chunk]
         try:
             dl = yf.download(part, period=period, interval='1d', progress=False,
                              auto_adjust=True, group_by='ticker', threads=True)
@@ -355,6 +388,8 @@ def _download_universe(tickers, period='1y', chunk=50):
                 df = dl if len(part) == 1 else dl[t]
                 if df is not None and not df.dropna().empty:
                     frames[t] = df
+                    if ttl > 0:
+                        _YF_CACHE[t] = (df, now)   # met en cache le frais
             except Exception:
                 continue
     # FILET DE SECOURS : tout ce que Yahoo n'a pas donné → Stooq (cloud-friendly)
