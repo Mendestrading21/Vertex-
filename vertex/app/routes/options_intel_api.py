@@ -83,12 +83,34 @@ def options_chain(sym):
                     'source': (scan_state.get('options_source') or 'SCAN')})
 
 
+# ── Lot 5a : cache des vues re-dérivées (grille / surface / max-pain) ──────────
+# Ces vues se recalculent à CHAQUE requête depuis la même chaîne large STATIQUE
+# (scan_state['options_chain_full'][sym]), qui ne change qu'à chaque warm (~15 min,
+# stamp `ts`). On mémoïse le résultat réussi par (vue, sym) tant que `ts` est inchangé
+# → byte-identique (même entrée figée → même sortie). Le vide n'est pas caché (retry).
+_VIEW_MISS = object()
+
+
+def _view_get(kind, sym, ts):
+    hit = scan_state.setdefault('options_view_cache', {}).get((kind, str(sym).upper()))
+    return hit[1] if (hit is not None and hit[0] == ts) else _VIEW_MISS
+
+
+def _view_put(kind, sym, ts, val):
+    scan_state.setdefault('options_view_cache', {})[(kind, str(sym).upper())] = (ts, val)
+    return val
+
+
 def _max_pain(sym):
     """Max pain + murs d'OI + PCR RÉELS depuis la chaîne LARGE persistée
     (scan_state['options_chain_full'], remplie par le worker IBKR). None honnête sinon."""
     e = (scan_state.get('options_chain_full') or {}).get(str(sym).upper())
     if not e:
         return None
+    _vts = e.get('ts')
+    _vc = _view_get('maxpain', sym, _vts)
+    if _vc is not _VIEW_MISS:
+        return _vc
     exps = [k for k in e if k not in ('spot', 'ts')]
     spot = e.get('spot') or 0
     out = []
@@ -118,9 +140,9 @@ def _max_pain(sym):
         return None
     tc = sum(x['call_oi'] for x in out)
     tp = sum(x['put_oi'] for x in out)
-    return {'symbol': str(sym).upper(), 'spot': spot, 'ts': e.get('ts'),
+    return _view_put('maxpain', sym, _vts, {'symbol': str(sym).upper(), 'spot': spot, 'ts': e.get('ts'),
             'total_call_oi': tc, 'total_put_oi': tp,
-            'pcr': round(tp / tc, 2) if tc else None, 'expiries': out}
+            'pcr': round(tp / tc, 2) if tc else None, 'expiries': out})
 
 
 @bp.route('/api/options/max-pain/<sym>')
@@ -157,6 +179,10 @@ def _chain_grid(sym):
     e = (scan_state.get('options_chain_full') or {}).get(str(sym).upper())
     if not e:
         return None
+    _vts = e.get('ts')
+    _vc = _view_get('grid', sym, _vts)
+    if _vc is not _VIEW_MISS:
+        return _vc
     spot = e.get('spot') or 0
     exps = sorted(k for k in e if k not in ('spot', 'ts'))
     greeks_src = 'none'
@@ -177,10 +203,10 @@ def _chain_grid(sym):
         out_exps.append({'exp': exp, 'dte': _dte_from_exp(exp), 'strikes': rows})
     if not out_exps:
         return None
-    return {'symbol': str(sym).upper(), 'spot': spot, 'ts': e.get('ts'),
+    return _view_put('grid', sym, _vts, {'symbol': str(sym).upper(), 'spot': spot, 'ts': e.get('ts'),
             'source': ('DÉMO' if DEMO_MODE else 'courtier IBKR'),
             'greeks_source': ('demo' if DEMO_MODE else greeks_src),
-            'expiries': out_exps}
+            'expiries': out_exps})
 
 
 @bp.route('/api/options/chain-grid/<sym>')
@@ -209,6 +235,10 @@ def _surface(sym):
     e = (scan_state.get('options_chain_full') or {}).get(str(sym).upper())
     if not e:
         return None
+    _vts = e.get('ts')
+    _vc = _view_get('surface', sym, _vts)
+    if _vc is not _VIEW_MISS:
+        return _vc
     spot = e.get('spot') or 0
     contracts = []
     for exp in e:
@@ -232,7 +262,7 @@ def _surface(sym):
         return None
     d['available'] = True
     d['source'] = ('DÉMO' if DEMO_MODE else 'courtier IBKR')
-    return d
+    return _view_put('surface', sym, _vts, d)
 
 
 @bp.route('/api/options/surface/<sym>')

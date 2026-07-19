@@ -13,10 +13,22 @@ chiffre inventé. ⛔ LECTURE SEULE.
 """
 from __future__ import annotations
 
+import threading
 import time
 
 from vertex.app.state import scan_state
 from vertex.options import legacy_engine
+
+# Lot 5b : un verrou PAR SYMBOLE pour casser le « thundering herd » — la fiche tire
+# grille + surface + max-pain en même temps, chacun appelant warm_chain : sans verrou,
+# les 3 passent le check TTL avant que le 1er écrive le cache → 3 pulls réseau identiques.
+_WARM_GUARD = threading.Lock()
+_WARM_LOCKS = {}
+
+
+def _warm_lock(sym):
+    with _WARM_GUARD:
+        return _WARM_LOCKS.setdefault(sym, threading.Lock())
 
 # TTL du cache à la demande : 15 min — assez frais pour l'analyse, assez long pour
 # ne pas refaire 3 appels de chaîne à chaque rafraîchissement de page.
@@ -81,24 +93,26 @@ def warm_chain(sym, n_exp=3):
     if not sym:
         return
     cache = scan_state.setdefault('options_warm_cache', {})
-    now = time.time()
-    if now - (cache.get(sym) or 0) < TTL_S:
-        return
-    try:
-        tk = legacy_engine.yf.Ticker(sym)
-        exps = list(tk.options or [])[:n_exp]
-        if not exps:
-            return                                # pipeline pas prêt → ne PAS poser le cache (retry)
-        for exp in exps:
-            ch = tk.option_chain(exp)
-            for side in ('calls', 'puts'):        # accéder aux 2 côtés → _df('C') et _df('P')
-                try:
-                    _ = getattr(ch, side)
-                except Exception:
-                    pass
-        cache[sym] = now                          # succès → throttle 15 min
-    except Exception:
-        pass
+    if time.time() - (cache.get(sym) or 0) < TTL_S:
+        return                                    # voie rapide : déjà frais, aucun verrou
+    with _warm_lock(sym):                          # un seul pull réel par symbole (anti-troupeau)
+        if time.time() - (cache.get(sym) or 0) < TTL_S:
+            return                                # re-check sous le verrou : les autres voient le frais
+        try:
+            tk = legacy_engine.yf.Ticker(sym)
+            exps = list(tk.options or [])[:n_exp]
+            if not exps:
+                return                            # pipeline pas prêt → ne PAS poser le cache (retry)
+            for exp in exps:
+                ch = tk.option_chain(exp)
+                for side in ('calls', 'puts'):    # accéder aux 2 côtés → _df('C') et _df('P')
+                    try:
+                        _ = getattr(ch, side)
+                    except Exception:
+                        pass
+            cache[sym] = time.time()              # succès → throttle 15 min
+        except Exception:
+            pass
 
 
 def _lookup_greeks(ent, exp, right, strike):
