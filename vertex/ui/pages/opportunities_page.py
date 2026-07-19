@@ -452,12 +452,12 @@ async function renderScreener(){
        <div class="vx-kv"><span class="k">Proba de gain</span><span class="v vx-mono">${VX.fmt.nd(Math.round(d.y))} %</span></div>
        ${d.ev!=null?`<div class="vx-kv"><span class="k">Espérance / trade</span><span class="v vx-mono ${d.ev>0?'vx-pos':d.ev<0?'vx-neg':''}">${(d.ev>=0?'+':'')+VX.fmt.num(d.ev,1)} %</span></div>`:''}
        ${d.asym!=null?`<div class="vx-kv"><span class="k">Asymétrie gain/perte</span><span class="v vx-mono">${VX.fmt.nd(d.asym)}</span></div>`:''}
-       ${d.kelly!=null?`<div class="vx-kv"><span class="k">Taille suggérée (Kelly)</span><span class="v vx-mono">${VX.fmt.num(d.kelly,1)} %</span></div>
-         <div style="height:5px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden;margin:-2px 0 4px"><i style="display:block;height:100%;width:${Math.max(3,Math.min(100,d.kelly/15*100))}%;background:var(--vx-brand);border-radius:99px"></i></div>`:''}
+       ${d.kelly!=null?`<div class="vx-kv"><span class="k">Taille suggérée (Kelly)</span><span class="v vx-mono">${VX.fmt.num(d.kelly,1)} %</span></div><div id="op-sel-kelly" style="margin:-4px 0 2px"></div>`:''}
        <div class="vx-kv"><span class="k">Score</span><span class="v vx-mono">${VX.fmt.nd(d.score)}</span></div>
        <div class="vx-kv"><span class="k">Cours</span><span class="v vx-mono">${d.price!=null?VX.fmt.price(d.price):'n/d'}</span></div>
        <div class="vx-kv"><span class="k">Gain/risque</span><span class="v vx-mono">${d.rr!=null?VX.fmt.num(d.rr,1)+'×':'n/d'}</span></div>
        ${levelsBar(plan,d.price)}
+       <div id="op-sel-mc" class="vx-mt2"></div>
        ${(function(){const r0=byId[d.sym];return r0?perfRibbon(r0):'';})()}
        ${(function(){const cr=detail[d.sym]&&detail[d.sym].chart_read;return cr?`<div class="vx-meta vx-mt2" style="white-space:normal;line-height:1.45"><b>Lecture technique :</b> ${esc(cr)}</div>`:'';})()}
        ${d.setup?`<div class="vx-kv vx-mt2"><span class="k">Setup</span><span class="v">${esc(d.setup)}</span></div>`:''}
@@ -467,6 +467,27 @@ async function renderScreener(){
          <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${esc(d.sym)}','follow')">Suivre</button>
          <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${esc(d.sym)}','alert')">Alerte</button>
          <a class="vx-btn vx-btn-sm" href="/options/${esc(d.sym)}">Options</a></div>`;
+    /* Visuels quant du tiroir (mêmes moteurs que la fiche Analyse — data déjà dans le scan) */
+    (function(){
+      if(!window.VXCharts)return;
+      const cc=VXCharts.colors,dd=detail[d.sym]||{},v=dd.vertex||{};
+      const kp=(v.kelly&&v.kelly.pct!=null)?v.kelly.pct:d.kelly;
+      if(kp!=null&&document.getElementById('op-sel-kelly')&&VXCharts.gauge){
+        VXCharts.gauge('op-sel-kelly',{value:kp,min:0,max:15,unit:'%',
+          bands:[{to:6,color:cc.neutral},{to:12,color:cc.brand},{to:15,color:cc.warning}]});
+      }
+      const mc=v.mc||{},bs=v.bootstrap||{},mcEl=document.getElementById('op-sel-mc');
+      if(mcEl&&bs.p05!=null&&bs.p95!=null&&VXCharts.card){
+        const tp1=mc.p_tp1_first,stopf=mc.p_stop_before_tp1;
+        VXCharts.card('op-sel-mc',{title:'Dispersion Monte-Carlo',
+          question:'Fourchette réaliste du rendement sur l’horizon ?',
+          conclusion:(tp1!=null?'TP1 avant stop '+Math.round(tp1*100)+'% · stop '+Math.round((stopf||0)*100)+'%':''),
+          height:150,source:'Monte-Carlo · bootstrap',timestamp:Date.now(),mode:'delayed',limits:'MODEL_ESTIMATE',
+          render:function(cv){return VXCharts.mount(cv,{type:'bar',
+            data:{labels:['P05','P50','P95'],datasets:[{data:[bs.p05,bs.p50,bs.p95],backgroundColor:[cc.negative,cc.neutral,cc.positive],borderRadius:4,maxBarThickness:26}]},
+            options:{indexAxis:'y',scales:{x:{ticks:{callback:function(x){return x+'%';},color:cc.muted,font:{size:9}},grid:{color:cc.grid}},y:{grid:{display:false},ticks:{color:cc.text,font:{size:10}}}},plugins:{legend:{display:false}}}});}});
+      }
+    })();
   }
 
   /* ── Distribution des scores (résultats filtrés) ── */
