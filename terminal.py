@@ -12,6 +12,7 @@ Données :  yfinance (différé ~15 min — OK swing). Greeks/GEX = Black-Schole
 """
 import os
 import copy
+import gzip
 import hashlib
 import json
 import math
@@ -1895,16 +1896,53 @@ def options_pack(sym):
     return out
 
 
+def _scan_payload():
+    return {**scan_state, 'ai_on': ai.available(),
+            'scan_age': _scan_age(),
+            'idx_sets': {'dow': _DOW30, 'ndx': _NDX100, 'sp': _SP500_SET,
+                         'rut': _RUT_SET, 'eu': _EU_SET, 'asia': _ASIA_SET},
+            # source HONNÊTE des données du scan (yfinance/stooq/demo) — le badge
+            # « LIVE IBKR » du header reste piloté par ibkr_enabled (overlay /quotes réel)
+            'data_source': (scan_state.get('source')
+                            or ('yfinance' if IBKR_ENABLED else 'cloud'))}
+
+
+# LOT 7 : cache de la réponse /scan. Le payload (~8 Mo, dominé par `detail`) était
+# re-sérialisé + re-gzippé À CHAQUE requête, sur ~20 pages. On le construit une fois
+# par publish de scan (clé = scan_ts) avec un plafond de 30 s (garde `scan_age` honnête
+# même si un scan cale). Octets IDENTIQUES au chemin non caché (mêmes bytes jsonify).
+_SCAN_RESP = {'key': None, 'ts': 0.0, 'raw': None, 'gz': None, 'etag': None}
+
+
 @app.route('/scan')
 def scan_ep():
-    return jsonify({**scan_state, 'ai_on': ai.available(),
-                   'scan_age': _scan_age(),
-                   'idx_sets': {'dow': _DOW30, 'ndx': _NDX100, 'sp': _SP500_SET,
-                                'rut': _RUT_SET, 'eu': _EU_SET, 'asia': _ASIA_SET},
-                   # source HONNÊTE des données du scan (yfinance/stooq/demo) — le badge
-                   # « LIVE IBKR » du header reste piloté par ibkr_enabled (overlay /quotes réel)
-                   'data_source': (scan_state.get('source')
-                                   or ('yfinance' if IBKR_ENABLED else 'cloud'))})
+    if os.environ.get('VERTEX_SCAN_CACHE') == '0':
+        return jsonify(_scan_payload())                       # cache désactivé (comportement historique)
+    now = time.time()
+    key = scan_state.get('scan_ts')
+    c = _SCAN_RESP
+    if c['raw'] is None or c['key'] != key or (now - c['ts']) >= 30:
+        raw = jsonify(_scan_payload()).get_data()             # bytes identiques au jsonify direct
+        try:
+            gz = gzip.compress(raw, 5)
+        except Exception:
+            gz = None
+        c.update({'key': key, 'ts': now, 'raw': raw, 'gz': gz,
+                  'etag': 'W/"scan-%d"' % int((key or 0) * 1000)})
+    etag = c['etag']
+    if request.headers.get('If-None-Match') == etag:          # revalidation → rien à renvoyer
+        r = app.response_class(status=304)
+        r.headers['ETag'] = etag
+        return r
+    if 'gzip' in (request.headers.get('Accept-Encoding') or '') and c['gz'] is not None:
+        r = app.response_class(c['gz'], mimetype='application/json')
+        r.headers['Content-Encoding'] = 'gzip'               # pré-gzippé → _gzip_response n'y touche pas
+        r.headers['Content-Length'] = str(len(c['gz']))
+        r.headers['Vary'] = 'Accept-Encoding'
+    else:
+        r = app.response_class(c['raw'], mimetype='application/json')
+    r.headers['ETag'] = etag
+    return r
 
 
 @app.route('/api/rescan', methods=['POST', 'GET'])
@@ -1954,6 +1992,8 @@ def _gzip_response(resp):
     try:
         if resp.status_code != 200 or resp.direct_passthrough:
             return resp
+        if resp.headers.get('Content-Encoding'):
+            return resp                      # déjà encodé (ex. /scan pré-gzippé) → jamais re-gzipper
         if 'gzip' not in (request.headers.get('Accept-Encoding') or ''):
             return resp
         ct = resp.content_type or ''
