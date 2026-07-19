@@ -228,7 +228,8 @@
         '<div class="vx-metric" data-tone="pos"><span class="vx-metric-k">Gain max</span><span class="vx-metric-v" style="font-size:15px">' + (s.max_profit_unbounded ? 'illimité' : (s.max_profit != null ? VXf.price(s.max_profit) + ' $' : '—')) + '</span></div>' +
         '<div class="vx-metric" data-tone="neg"><span class="vx-metric-k">Perte max</span><span class="vx-metric-v" style="font-size:15px">' + (s.max_loss != null ? VXf.price(s.max_loss) + ' $' : '—') + '</span></div>' +
         '<div class="vx-metric"><span class="vx-metric-k">Breakeven</span><span class="vx-metric-v" style="font-size:15px">' + ((s.breakevens || []).map(function (b) { return VXf.price(b); }).join(' · ') || '—') + '</span></div></div>' +
-        (s.greeks ? '<div class="vx-meta vx-mt1">Δ ' + VXf.num(s.greeks.delta, 2) + ' · Θ ' + VXf.num(s.greeks.theta, 2) + '/j · Vega ' + VXf.num(s.greeks.vega, 1) + '</div>' : '') +
+        (s.greeks ? '<div class="vx-meta vx-mt1">Δ ' + VXf.num(s.greeks.delta, 2) + ' · Θ ' + VXf.num(s.greeks.theta, 2) + '/j · Vega ' + VXf.num(s.greeks.vega, 1) + '</div>' +
+          '<div id="vx-osym-strat-gk-' + i + '" style="margin-top:2px"></div>' : '') +
         '</div>';
     }).join('') + '</div>' +
       '<div class="vx-meta vx-mt2">Payoff à l’échéance ; PoP = modèle lognormal risque-neutre — estimation, pas une promesse. <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options?view=scenarios">Constructeur complet →</a></div>';
@@ -241,6 +242,16 @@
           data: { labels: pts.map(function (p) { return p.price; }), datasets: [{ data: pts.map(function (p) { return p.pnl; }), borderColor: VXCharts.colors.neutral, borderWidth: 1.8, pointRadius: 0, fill: false,
             segment: { borderColor: function (ctx) { return ctx.p1.parsed.y >= 0 ? VXCharts.colors.positive : VXCharts.colors.negative; } } }] },
           options: { scales: { y: { grid: { color: 'rgba(255,255,255,.05)' } }, x: { ticks: { maxTicksLimit: 6 }, grid: { display: false } } }, plugins: { tooltip: { callbacks: { label: function (it) { return 'P&L ' + VXf.price(it.parsed.y) + ' $ @ ' + it.label; } } } } } });
+        // Radar de greeks (forme d'exposition) — valeurs brutes signées gardées dans les labels
+        var gk = s.greeks, gh = document.getElementById('vx-osym-strat-gk-' + i);
+        if (gk && gh && VXCharts.radar) {
+          var ax = [];
+          if (gk.delta != null) ax.push({ label: 'Δ ' + VXf.num(gk.delta, 2), value: Math.min(100, Math.abs(gk.delta) * 100) });
+          if (gk.gamma != null) ax.push({ label: 'Γ ' + VXf.num(gk.gamma, 3), value: Math.min(100, Math.abs(gk.gamma) / 0.1 * 100) });
+          if (gk.theta != null) ax.push({ label: 'Θ ' + VXf.num(gk.theta, 2), value: Math.min(100, Math.abs(gk.theta) / 0.5 * 100) });
+          if (gk.vega != null) ax.push({ label: 'V ' + VXf.num(gk.vega, 1), value: Math.min(100, Math.abs(gk.vega) / 2 * 100) });
+          if (ax.length >= 3) VXCharts.radar(gh, { axes: ax, max: 100, color: VIOLET, ariaLabel: 'Greeks ' + (s.label || ''), width: 210, height: 150 });
+        }
       });
     });
   }
