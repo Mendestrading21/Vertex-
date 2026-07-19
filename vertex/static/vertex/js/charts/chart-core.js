@@ -65,10 +65,36 @@
       const ds = chart.data.datasets[args.index] || {};
       const col = typeof ds.borderColor === 'string' ? _rgba(ds.borderColor, .40) : null;
       const c = chart.ctx; c.save();
-      c.shadowColor = col || 'rgba(201,205,212,.25)';
-      c.shadowBlur = 6; c.shadowOffsetY = 1;
+      c.shadowColor = col || 'rgba(201,205,212,.28)';
+      c.shadowBlur = 8; c.shadowOffsetY = 1;
     },
     afterDatasetDraw(chart, args) { if (args.meta.type === 'line') chart.ctx.restore(); },
+  };
+  /* Point de tête lumineux au bout de chaque ligne (réf. visuelle : bille blanche
+     glow). Ignoré sur les micro-sparklines (zone trop courte) et sur les lignes qui
+     affichent déjà leurs points, pour éviter l'encombrement. */
+  const _leadDotPlugin = {
+    id: 'vxleaddot',
+    afterDatasetsDraw(chart) {
+      const a = chart.chartArea;
+      if (!a || (a.bottom - a.top) < 46) return;
+      chart.data.datasets.forEach(function (ds, i) {
+        if (ds.pointRadius) return;
+        const meta = chart.getDatasetMeta(i);
+        if (!meta || meta.type !== 'line' || meta.hidden) return;
+        const pts = meta.data || [];
+        let p = null;
+        for (let k = pts.length - 1; k >= 0; k--) { const q = pts[k]; if (q && !q.skip && isFinite(q.x) && isFinite(q.y)) { p = q; break; } }
+        if (!p) return;
+        const col = typeof ds.borderColor === 'string' ? ds.borderColor : C.colors.brand;
+        const c = chart.ctx; c.save();
+        c.shadowColor = col; c.shadowBlur = 8;
+        c.beginPath(); c.arc(p.x, p.y, 3, 0, Math.PI * 2); c.fillStyle = col; c.fill();
+        c.shadowBlur = 0;
+        c.beginPath(); c.arc(p.x, p.y, 1.4, 0, Math.PI * 2); c.fillStyle = '#fff'; c.fill();
+        c.restore();
+      });
+    },
   };
   /* Crosshair pointillé vertical au survol (axes cartésiens uniquement). */
   const _crossPlugin = {
@@ -123,7 +149,16 @@
     d.plugins.tooltip.titleFont = { weight: '600', size: 11.5 };
     d.plugins.tooltip.bodyFont = { size: 11.5 };
     d.maintainAspectRatio = false;
-    try { if (!reduced) Chart.register(_glowPlugin); Chart.register(_crossPlugin); } catch (e) { /* déjà enregistrés */ }
+    /* Points (nuages/bulles) : liseré sombre discret pour détacher les points qui
+       se chevauchent + zone de survol confortable. Sans effet sur les lignes
+       (pointRadius:0 → non dessinés). */
+    try {
+      d.elements.point.borderWidth = 1;
+      d.elements.point.borderColor = 'rgba(8,9,11,.6)';
+      d.elements.point.hoverRadius = 6;
+      d.elements.point.hitRadius = 6;
+    } catch (e) { /* defaults absents */ }
+    try { if (!reduced) { Chart.register(_glowPlugin); Chart.register(_leadDotPlugin); } Chart.register(_crossPlugin); } catch (e) { /* déjà enregistrés */ }
   }
   if (window.Chart) chartDefaults(); else document.addEventListener('DOMContentLoaded', chartDefaults);
 
@@ -323,8 +358,10 @@
     const l = labels.slice(0, 5), v = values.slice(0, 5);
     return C.mount(canvas, {
       type: 'doughnut',
-      data: { labels: l, datasets: [{ data: v, backgroundColor: colors || C.colors.series, borderWidth: 0 }] },
-      options: { cutout: '68%', plugins: { legend: { display: true, position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } },
+      /* Donut « verre » : segments détachés (spacing) + bouts arrondis (borderRadius)
+         + léger décalage au survol → rendu glossy, réf. visuelle. */
+      data: { labels: l, datasets: [{ data: v, backgroundColor: colors || C.colors.series, borderWidth: 0, borderRadius: 5, spacing: 2, hoverOffset: 6 }] },
+      options: { cutout: '70%', plugins: { legend: { display: true, position: 'right', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, font: { size: 10 } } } } },
     });
   };
   C.multiLine = function (canvas, labels, datasets, { yFmt } = {}) {
@@ -391,9 +428,12 @@
     let valArc = '', needle = '', valColor = C.colors.neutral;
     if (v != null) {
       for (const b of bands) { if (v <= b.to) { valColor = b.color; break; } valColor = b.color; }
-      valArc = `<path d="${arc(ang(min), ang(v))}" stroke="${valColor}" stroke-width="9" fill="none" stroke-linecap="round" style="filter:drop-shadow(0 0 4px ${valColor})"/>`;
-      const [nx, ny] = pt(ang(v), r - 2);
-      needle = `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="4.5" fill="${valColor}"/>`;
+      valArc = `<path d="${arc(ang(min), ang(v))}" stroke="${valColor}" stroke-width="9" fill="none" stroke-linecap="round" style="filter:drop-shadow(0 0 6px ${valColor})"/>`;
+      const [nx, ny] = pt(ang(v), r);
+      // Bille lumineuse blanche (réf. visuelle) : halo teinté → bille blanche → cœur teinté
+      needle = `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="10" fill="${valColor}" opacity=".20"/>`
+        + `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="5.4" fill="#fff" style="filter:drop-shadow(0 0 5px ${valColor})"/>`
+        + `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="2.3" fill="${valColor}"/>`;
     }
     const disp = v == null ? '—' : (Number.isInteger(v) ? v : (+v).toFixed(1));
     const aria = `${o.label || 'jauge'} : ${v == null ? 'donnée indisponible' : disp + (o.unit || '')}${o.reading ? ' — ' + o.reading : ''}`;
@@ -537,7 +577,7 @@
     const dots = axes.map((a, i) => { const [px, py] = pt(i, R * clamp(a.value)); return `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.6" fill="${col}"/>`; }).join('');
     const aria = (o.ariaLabel || 'radar') + ' : ' + axes.map(a => a.label + ' ' + Math.round(a.value || 0)).join(', ');
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block;margin:0 auto" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
-      ${grid}${spokes}<polygon points="${vpts}" fill="${col}" fill-opacity=".18" stroke="${col}" stroke-width="1.8"/>${dots}${labels}</svg>`;
+      ${grid}${spokes}<polygon points="${vpts}" fill="${col}" fill-opacity=".20" stroke="${col}" stroke-width="1.8" style="filter:drop-shadow(0 0 4px ${col})"/>${dots}${labels}</svg>`;
     return el;
   };
 
@@ -589,7 +629,7 @@
       rings += `<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="none" stroke="${col}" stroke-opacity=".16" stroke-width="${sw.toFixed(1)}"/>`;
       rings += `<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw.toFixed(1)}" stroke-linecap="round"
         stroke-dasharray="${(circ * frac).toFixed(1)} ${(circ * (1 - frac) + circ).toFixed(1)}"
-        transform="rotate(-90 ${cx} ${cy})"/>`;
+        transform="rotate(-90 ${cx} ${cy})" style="filter:drop-shadow(0 0 3px ${col})"/>`;
       legend += `<div class="vx-flex" style="gap:6px;align-items:center;font-size:11px">
         <span style="width:9px;height:9px;border-radius:2px;background:${col};flex:0 0 auto"></span>
         <span class="vx-grow vx-truncate" style="color:var(--vx-text-secondary,#b7b2aa)">${String(d.label)}</span>
@@ -628,7 +668,8 @@
       const col = s.color || C.colors.series[i % C.colors.series.length];
       const pct = Math.round(s.value / top * 100);
       rows += `<polygon points="${(cx - w0 / 2).toFixed(1)},${y} ${(cx + w0 / 2).toFixed(1)},${y} ${(cx + w1 / 2).toFixed(1)},${y + rowH} ${(cx - w1 / 2).toFixed(1)},${y + rowH}"
-        fill="${col}" fill-opacity=".8"/>
+        fill="${col}" fill-opacity=".86" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))"/>
+        <line x1="${(cx - w0 / 2).toFixed(1)}" y1="${y + 0.5}" x2="${(cx + w0 / 2).toFixed(1)}" y2="${y + 0.5}" stroke="rgba(255,255,255,.20)" stroke-width="1"/>
         <text x="${cx}" y="${y + rowH / 2 - 1}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="700" fill="#0b0b0c" style="font-variant-numeric:tabular-nums">${fmt(s.value)}</text>`;
       rows += `<text x="8" y="${y + rowH / 2}" dominant-baseline="middle" font-size="10.5" fill="var(--vx-text-secondary,#b7b2aa)">${String(s.label)}</text>
         <text x="${W - 6}" y="${y + rowH / 2}" text-anchor="end" dominant-baseline="middle" font-size="10" fill="var(--vx-text-muted,#817d77)" style="font-variant-numeric:tabular-nums">${pct}%</text>`;
