@@ -466,46 +466,46 @@ def scan():
         bc = data[BENCH]['Close'].dropna()
         bench_ret = (float(bc.iloc[-1]) / float(bc.iloc[-63]) - 1) if len(bc) > 63 else 0.0
         rows, detail = [], {}
-        _t_compute = time.monotonic()   # LOT 0 : durée totale du calcul par symbole (télémétrie perf)
-        for sym in syms_scan:
-            try:
-                df = data[sym].dropna()
-                if len(df) < 60:
-                    continue
-                _fst = scan_state.get('fundamentals') or {}
-                _fsy = (_fst.get('by_sym') or {}).get(sym) or {}
-                _fsec = (_fst.get('by_sector') or {}).get(_fsy.get('sector')) or {}
-                _fund = ({**_fsy, 'sector_median_pe': _fsec.get('median_pe'),
-                          'sector_median_margin': _fsec.get('median_margin'),
-                          'sector_median_growth': _fsec.get('median_growth')} if _fsy else {})
-                # secteur GICS statique TOUJOURS injecté → profil offensif/défensif fiable même sans fondamentaux live
-                _fund.setdefault('sector', _GICS_SECTOR.get(sym) or _INDUSTRY_MAP.get(sym))
-                _fp = _analyse_fp(df, bench_ret, _fund or None)
-                _memo = _ANALYSE_MEMO.get(sym)
-                if _memo is not None and _memo[0] == _fp:
-                    d = copy.deepcopy(_memo[1])   # hit : copie privée d'un calcul déjà identique (byte-identique)
-                    METRICS.inc('scan.memo_hits')
-                else:
-                    with METRICS.timer('scan.symbol'):
-                        d = analyse(df, bench_ret, fund=(_fund or None))   # vrais fondamentaux → score fondamental réel (sinon proxy)
-                    _ANALYSE_MEMO[sym] = (_fp, copy.deepcopy(d))   # stocke la sortie PURE (avant chart_read/thesis/perf ajoutés ci-dessous)
-                    METRICS.inc('scan.memo_miss')
-                d['chart_read'] = research.chart_read(d)   # analyse graphique FR (cartes Screener + modale)
-                d['thesis'] = research.thesis(d)            # synthèse Vertex décisive (fusion signaux + comment jouer)
-                d['sector'] = _GICS_SECTOR.get(sym)         # secteur GICS → contexte transversal / pairs (DecisionStack)
-                detail[sym] = d
-                _clf = df['Close'].dropna()                # perf multi-horizons (Équipe semaine/mois/trim./année)
+        _funds = scan_state.get('fundamentals') or {}   # LOT 3 : snapshot unique (cohérent + thread-safe sous //)
 
-                def _pf(nn, _c=_clf):
-                    return round((float(_c.iloc[-1]) / float(_c.iloc[-1 - nn]) - 1) * 100, 1) if len(_c) > nn else None
-                d['perf_w'], d['perf_m'], d['perf_q'], d['perf_y'] = _pf(5), _pf(21), _pf(63), _pf(252)
-                d['hot'] = sym in TREND_SET   # badge 🔥 UI — NE PAS écraser d['trend'] (score 0-100 lu par engine/weekly)
-                _vx = d.get('vertex') or {}
-                _sub = d.get('sub') or {}
-                _kel = _vx.get('kelly') or {}
-                _mc = _vx.get('mc') or {}
-                _evb = _vx.get('ev') or {}
-                rows.append({'symbol': sym, 'price': d['price'], 'change': d['change'],
+        def _analyse_one(sym):
+            """Calcul complet d'UN titre — PUR (lit data/bench_ret/_funds en lecture seule,
+            écrit un objet local). Renvoie (row, sym, detail) ou None. Base du scan //."""
+            df = data[sym].dropna()
+            if len(df) < 60:
+                return None
+            _fsy = (_funds.get('by_sym') or {}).get(sym) or {}
+            _fsec = (_funds.get('by_sector') or {}).get(_fsy.get('sector')) or {}
+            _fund = ({**_fsy, 'sector_median_pe': _fsec.get('median_pe'),
+                      'sector_median_margin': _fsec.get('median_margin'),
+                      'sector_median_growth': _fsec.get('median_growth')} if _fsy else {})
+            # secteur GICS statique TOUJOURS injecté → profil offensif/défensif fiable même sans fondamentaux live
+            _fund.setdefault('sector', _GICS_SECTOR.get(sym) or _INDUSTRY_MAP.get(sym))
+            _fp = _analyse_fp(df, bench_ret, _fund or None)
+            _memo = _ANALYSE_MEMO.get(sym)
+            if _memo is not None and _memo[0] == _fp:
+                d = copy.deepcopy(_memo[1])   # hit : copie privée d'un calcul déjà identique (byte-identique)
+                METRICS.inc('scan.memo_hits')
+            else:
+                with METRICS.timer('scan.symbol'):
+                    d = analyse(df, bench_ret, fund=(_fund or None))   # vrais fondamentaux → score fondamental réel (sinon proxy)
+                _ANALYSE_MEMO[sym] = (_fp, copy.deepcopy(d))   # stocke la sortie PURE (avant enrichissements ci-dessous)
+                METRICS.inc('scan.memo_miss')
+            d['chart_read'] = research.chart_read(d)   # analyse graphique FR (cartes Screener + modale)
+            d['thesis'] = research.thesis(d)            # synthèse Vertex décisive (fusion signaux + comment jouer)
+            d['sector'] = _GICS_SECTOR.get(sym)         # secteur GICS → contexte transversal / pairs (DecisionStack)
+            _clf = df['Close'].dropna()                # perf multi-horizons (Équipe semaine/mois/trim./année)
+
+            def _pf(nn, _c=_clf):
+                return round((float(_c.iloc[-1]) / float(_c.iloc[-1 - nn]) - 1) * 100, 1) if len(_c) > nn else None
+            d['perf_w'], d['perf_m'], d['perf_q'], d['perf_y'] = _pf(5), _pf(21), _pf(63), _pf(252)
+            d['hot'] = sym in TREND_SET   # badge 🔥 UI — NE PAS écraser d['trend'] (score 0-100 lu par engine/weekly)
+            _vx = d.get('vertex') or {}
+            _sub = d.get('sub') or {}
+            _kel = _vx.get('kelly') or {}
+            _mc = _vx.get('mc') or {}
+            _evb = _vx.get('ev') or {}
+            row = {'symbol': sym, 'price': d['price'], 'change': d['change'],
                              'score': d['score'], 'grade': d['grade'], 'verdict': d['verdict'],
                              'perf_w': d.get('perf_w'), 'perf_m': d.get('perf_m'),
                              'perf_q': d.get('perf_q'), 'perf_y': d.get('perf_y'),
@@ -535,9 +535,32 @@ def scan():
                              # sous-scores SCORING (décompose pourquoi le score global = X)
                              'st_tech': _sub.get('technical'), 'st_mom': _sub.get('momentum'),
                              'st_fund': _sub.get('fundamental'), 'st_risk': _sub.get('risk'),
-                             'st_conf': _sub.get('confidence'), 'st_fproxy': _sub.get('fundamental_is_proxy')})
+                             'st_conf': _sub.get('confidence'), 'st_fproxy': _sub.get('fundamental_is_proxy')}
+            return (row, sym, d)
+
+        def _safe_one(sym):
+            try:
+                return _analyse_one(sym)
             except Exception:
+                return None   # un titre en échec est simplement ignoré (comportement historique)
+
+        _t_compute = time.monotonic()   # LOT 0 : durée totale du calcul par symbole (télémétrie perf)
+        _workers = int(os.environ.get('VERTEX_SCAN_WORKERS', str(min(8, (os.cpu_count() or 2)))))
+        if _workers > 1 and len(syms_scan) > 1:
+            # LOT 3 : calcul par titre EN PARALLÈLE (map-and-collect → zéro mutation partagée).
+            # analyse()/research.* pures + RNG Monte-Carlo/bootstrap LOCAL ⇒ byte-identique au mode
+            # série (repli VERTEX_SCAN_WORKERS=1). numpy/pandas relâchent le GIL ⇒ vrai parallélisme.
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=_workers) as _ex:
+                _results = list(_ex.map(_safe_one, syms_scan))
+        else:
+            _results = [_safe_one(s) for s in syms_scan]
+        for _r in _results:   # assemblage sur le thread principal (ordre préservé par map ; rows re-trié après)
+            if _r is None:
                 continue
+            _row, _sym, _d = _r
+            rows.append(_row)
+            detail[_sym] = _d
         METRICS.timing('scan.compute_all', (time.monotonic() - _t_compute) * 1000)  # LOT 0
         rows.sort(key=lambda x: x['score'], reverse=True)
         breadth = round(sum(1 for r in rows if r['verdict'] == 'BUY') / len(rows) * 100) if rows else 0

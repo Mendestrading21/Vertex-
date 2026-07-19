@@ -23,7 +23,7 @@ _CANONICAL = (
     ('STARTUP_HEALTH_CHECK', 'Vérification des connexions au démarrage', None),
     ('POSITION_REFRESH', 'Cotation des positions déclarées (pos-quotes)', 45),
     ('OPTION_POSITION_REFRESH', 'Chaînes options IBKR (lecture seule)', 300),
-    ('MARKET_DATA_REFRESH', 'Scan univers + indices + contexte marché', 360),
+    ('MARKET_DATA_REFRESH', 'Scan univers + indices + contexte marché', 120),  # = REFRESH_SEC (boucle réelle)
     ('PORTFOLIO_RECALCULATION', 'Risque portefeuille sur positions réelles', None),
     ('DECISION_RECALCULATION', 'Décisions exécutives (par requête/à la demande)', None),
     ('CATALYST_REFRESH', 'Calendrier earnings + macro', 3600),
