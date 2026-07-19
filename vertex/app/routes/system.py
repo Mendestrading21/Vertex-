@@ -32,6 +32,7 @@ def healthz():
         'build': BUILD,
         'data_source': scan_state.get('source'),
         'ibkr_enabled': IBKR_ENABLED,
+        'ibkr_live': bool(scan_state.get('ibkr_live')),   # socket RÉEL + temps réel (honnêteté §4, pas le flag de config)
         'universe': len(UNIVERSE),
         'scanned': scan_state.get('scanned_n'),
         'last_scan': scan_state.get('updated'),

@@ -699,6 +699,26 @@ import queue as _queue
 
 _optq = _queue.Queue()
 
+# ── Connexion IBKR configurable (honnêteté : les variables documentées dans
+#    .env.example sont désormais RÉELLEMENT respectées). IBKR_HOST/PORT/CLIENT_ID
+#    priment ; à défaut, sonde par défaut (REAL d'abord, cohérente entre workers). ──
+_IBKR_HOST = (os.environ.get('IBKR_HOST') or '127.0.0.1').strip() or '127.0.0.1'
+_IBKR_CID_BASE = (os.environ.get('IBKR_CLIENT_ID') or '').strip()
+
+
+def _ibkr_ports(default=(7496, 7497, 4001, 4002)):
+    """Ordre de sonde des ports : IBKR_PORT en tête si défini, sinon défaut REAL-first."""
+    p = (os.environ.get('IBKR_PORT') or '').strip()
+    if p.isdigit():
+        pi = int(p)
+        return [pi] + [x for x in default if x != pi]
+    return list(default)
+
+
+def _ibkr_cid(default, offset):
+    """clientId distinct par worker : base IBKR_CLIENT_ID + offset si défini, sinon défaut."""
+    return (int(_IBKR_CID_BASE) + offset) if _IBKR_CID_BASE.isdigit() else default
+
 
 def _ibkr_opt_worker():
     # Setup GARDÉ : si ib_async manque ou si l'init échoue, le worker répond None
@@ -723,9 +743,9 @@ def _ibkr_opt_worker():
     def conn():
         if ib.isConnected():
             return True
-        for port in (7496, 7497, 4001, 4002):
+        for port in _ibkr_ports():
             try:
-                ib.connect('127.0.0.1', port, clientId=41, readonly=True, timeout=6)
+                ib.connect(_IBKR_HOST, port, clientId=_ibkr_cid(41, 0), readonly=True, timeout=6)
                 ib.reqMarketDataType(1)              # temps réel (abonnement actif)
                 return True
             except Exception:
@@ -2185,9 +2205,9 @@ def _ibkr_worker(res):
         res['error'] = f'ib_async non disponible ({type(e).__name__})'
         return
     r = IBKRReader()
-    for port in (7497, 7496, 4002, 4001):                  # PAPER d'abord
+    for port in _ibkr_ports():                             # REAL d'abord (cohérent avec les autres workers)
         try:
-            r.ib.connect('127.0.0.1', port, clientId=17, readonly=True, timeout=2)
+            r.ib.connect(_IBKR_HOST, port, clientId=_ibkr_cid(17, 1), readonly=True, timeout=6)
             r.port = port
             break
         except Exception:
@@ -2299,9 +2319,9 @@ def _quotes_worker():
             from ib_async import IB, Stock
             ib = IB()
             ok = False
-            for port in (7496, 7497, 4001, 4002):
+            for port in _ibkr_ports():
                 try:
-                    ib.connect('127.0.0.1', port, clientId=18, readonly=True, timeout=4)
+                    ib.connect(_IBKR_HOST, port, clientId=_ibkr_cid(18, 2), readonly=True, timeout=6)
                     ok = True
                     break
                 except Exception:
@@ -2394,9 +2414,9 @@ def _indices_loop():
             from ib_async import IB, Index, CFD
             ib = IB()
             ok = False
-            for port in (7496, 7497, 4001, 4002):
+            for port in _ibkr_ports():
                 try:
-                    ib.connect('127.0.0.1', port, clientId=22, readonly=True, timeout=4)
+                    ib.connect(_IBKR_HOST, port, clientId=_ibkr_cid(22, 3), readonly=True, timeout=6)
                     ok = True
                     break
                 except Exception:
@@ -7546,7 +7566,7 @@ function expFav(){var data={myFavs:favs(),myNotes:notes()};var b=new Blob([JSON.
 function impFav(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(d.myFavs)localStorage.setItem('myFavs',JSON.stringify(d.myFavs));if(d.myNotes)localStorage.setItem('myNotes',JSON.stringify(d.myNotes));renderFav();alert('Favoris importes');}catch(e){alert('Fichier invalide');}};r.readAsText(f);}
 function resetFav(){if(confirm('Supprimer TOUS tes favoris ?')){localStorage.removeItem('myFavs');renderFav();}}
 function resetNotes(){if(confirm('Supprimer TOUTES tes notes ?')){localStorage.removeItem('myNotes');renderFav();}}
-fetch('/healthz').then(function(r){return r.json()}).then(function(h){var src=h.ibkr_enabled?'🟢 IBKR temps reel':(h.data_source==='demo'?'🎭 Demo':'🟡 yfinance differe ~15 min');document.getElementById('dataInfo').innerHTML='Source : <b style="color:#C9D2E0">'+src+'</b><br>Dernier scan : il y a <b style="color:#C9D2E0">'+(h.scan_age!=null?h.scan_age+'s':'—')+'</b>';}).catch(function(){});
+fetch('/healthz').then(function(r){return r.json()}).then(function(h){var src=h.ibkr_live?'🟢 IBKR temps reel':(h.data_source==='demo'?'🎭 Demo':(h.ibkr_enabled?'🟡 IBKR configure · donnees differees ~15 min':'🟡 yfinance differe ~15 min'));document.getElementById('dataInfo').innerHTML='Source : <b style="color:#C9D2E0">'+src+'</b><br>Dernier scan : il y a <b style="color:#C9D2E0">'+(h.scan_age!=null?h.scan_age+'s':'—')+'</b>';}).catch(function(){});
 renderD();renderFav();
 """
 
