@@ -24,8 +24,10 @@ polish · premium · responsive · states · tables · tokens · utilities`.
     (`options-symbol.js` `m()`, `options-intel.js` `mCell()`). Vérifié DEMO **visuellement identique** (diff
     avant/après = uniquement l'ajout inerte de `data-tone=""` ; 7/15/11 tuiles, 0 erreur, `/api/client-log`=0).
     SW `td-shell-v91`, gardien étendu.
-  - **Reste (phases suivantes)** : migrer les usages restants vers `VX.tile` — `analysis_page.py` `metric()`
-    (nécessite d'ajouter le chip `-cmp` au builder), `briefing.py` `tile()` (vx-stat + tailles inline),
+  - **✅ Phase 3 faite** : `VX.tile.metric` étendu (options additives `cmp`/`mid`/`kTitle`, OFF par défaut →
+    rétrocompatible) puis `analysis_page.py metric()` migré. Vérifié DEMO **byte-identique** (diff avant/après =
+    **0** sur `/analysis/ACN` **et** garde-fou options inchangé). SW `td-shell-v92`, 2 gardiens ajoutés.
+  - **Reste (phases suivantes)** : `briefing.py` `tile()` (vx-stat + tailles inline `#vx-ess-body`),
     `portfolio_page.py` `H`/`_rk` (**différé** : ton sur delta seulement + font-size 20/22px inline, non
     byte-identique) ; puis retirer `vx-stat-xl` (épinglé `test_cockpit.py:16`).
 - **DES-01 (P1) — Docs de design périmés.** `docs/claude/VERTEX_DESIGN_TOKENS.md` et `VERTEX_CHART_LIBRARY.md`
