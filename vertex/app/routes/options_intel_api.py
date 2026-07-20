@@ -357,17 +357,35 @@ def _wide_contracts(sym):
     e = (scan_state.get('options_chain_full') or {}).get(str(sym).upper())
     if not e:
         return []
+    from vertex.options import legacy_engine as _le
     spot = e.get('spot')
     out = []
     for exp in e:
         if exp in ('spot', 'ts'):
             continue
         dte = _dte_from_exp(exp)
+        T = (dte / 365.0) if dte else None
         for right, side in (e.get(exp) or {}).items():
             typ = 'CALL' if right == 'C' else 'PUT'
             for k, row in (side or {}).items():
+                iv = row.get('iv')
+                # IBKR sans greeks OU IV aberrante (stale de clôture : <1 % ou >300 %) →
+                # IV RECALCULÉE en Black-Scholes depuis le mid RÉEL (bid/ask persistés)
+                # → smile / surface / verdict corrects. None honnête si non calculable.
+                if not (iv and 0.01 <= iv <= 3.0):
+                    iv = None
+                    if T and spot:
+                        bid, ask, last = row.get('bid'), row.get('ask'), row.get('last')
+                        mid = (round((bid + ask) / 2.0, 2) if (bid and ask) else last)
+                        if mid:
+                            try:
+                                _civ = _le._iv_from_price(spot, k, T, mid, right == 'C')
+                                if _civ and 0.01 <= _civ <= 3.0:
+                                    iv = _civ
+                            except Exception:
+                                pass
                 out.append({'sym': str(sym).upper(), 'strike': k, 'type': typ,
-                            'dte': dte, 'iv': row.get('iv'), 'oi': row.get('oi'),
+                            'dte': dte, 'iv': iv, 'oi': row.get('oi'),
                             'delta': row.get('delta'), 'spot': spot})
     return out
 
