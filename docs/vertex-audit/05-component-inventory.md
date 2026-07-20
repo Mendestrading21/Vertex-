@@ -20,9 +20,14 @@ polish · premium · responsive · states · tables · tokens · utilities`.
     (non définis en CSS → tuiles **nues**) ; migrés vers `VX.tile.stat` (markup `-k`/`-v`) + alias CSS défensifs
     (`premium.css`, `glass.css`). Vérifié DEMO (Suivis : 5 tuiles stylées, `nakedLegacy=0`, 0 erreur console,
     `/api/client-log`=0) + test gardien `tests/test_tiles.py`. SW `td-shell-v90`.
-  - **Reste (phases suivantes)** : migrer les ~115 usages restants vers `VX.tile` (dont `portfolio_page.py`
-    `H`/`_rk` — **différé** : ton sur delta seulement + font-size 20/22px inline, migration non byte-identique) ;
-    puis retirer `vx-stat-xl` (épinglé `test_cockpit.py:16`).
+  - **✅ Phase 2 faite** : builders `vx-metric` des pages options migrés vers `VX.tile.metric`
+    (`options-symbol.js` `m()`, `options-intel.js` `mCell()`). Vérifié DEMO **visuellement identique** (diff
+    avant/après = uniquement l'ajout inerte de `data-tone=""` ; 7/15/11 tuiles, 0 erreur, `/api/client-log`=0).
+    SW `td-shell-v91`, gardien étendu.
+  - **Reste (phases suivantes)** : migrer les usages restants vers `VX.tile` — `analysis_page.py` `metric()`
+    (nécessite d'ajouter le chip `-cmp` au builder), `briefing.py` `tile()` (vx-stat + tailles inline),
+    `portfolio_page.py` `H`/`_rk` (**différé** : ton sur delta seulement + font-size 20/22px inline, non
+    byte-identique) ; puis retirer `vx-stat-xl` (épinglé `test_cockpit.py:16`).
 - **DES-01 (P1) — Docs de design périmés.** `docs/claude/VERTEX_DESIGN_TOKENS.md` et `VERTEX_CHART_LIBRARY.md`
   décrivent une palette **orange/bleu** abandonnée, contredisant `glass.css` (Black Glass, zéro bleu). Risque :
   induire un futur contributeur en erreur. **Action** : marquer ces docs « PÉRIMÉ — voir glass.css / references/
