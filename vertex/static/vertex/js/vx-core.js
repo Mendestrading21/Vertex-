@@ -82,15 +82,22 @@
   var _toneAttr = function (t) { return (['pos', 'neg', 'warn', 'brand', 'opt'].indexOf(t) >= 0 ? t : ''); };
   var _toneCls = function (t) { return ({ pos: 'vx-pos', neg: 'vx-neg', warn: 'vx-warn' }[t] || ''); };
   VX.tile = {
-    /* Métrique riche : label + valeur (+ unité) (+ mini-barre 0-100). */
+    /* Métrique riche : label (+ title) + valeur (+ unité) (+ chip de comparaison)
+       (+ mini-barre 0-100 avec repère médian optionnel). Les options additives
+       cmp / mid / kTitle sont OFF par défaut → rétrocompatible. */
     metric: function (o) {
       o = o || {};
+      var v = VX.fmt.nd(o.v);
+      var absent = (v === '—');
       var u = o.unit ? '<span class="vx-metric-u">' + VX.esc(o.unit) + '</span>' : '';
-      var bar = (o.bar != null && o.v != null)
-        ? '<div class="vx-metric-bar"><i style="width:' + Math.max(3, Math.min(100, o.bar)) + '%"></i></div>' : '';
-      return '<div class="vx-metric" data-tone="' + (o.v == null ? '' : _toneAttr(o.tone)) + '">'
-        + '<span class="vx-metric-k">' + VX.esc(o.k) + '</span>'
-        + '<span class="vx-metric-v">' + VX.fmt.nd(o.v) + u + '</span>' + bar + '</div>';
+      var cmp = (o.cmp && !absent) ? '<div class="vx-metric-cmp">' + o.cmp + '</div>' : '';
+      var mid = (o.mid != null) ? '<b style="left:' + (o.mid | 0) + '%"></b>' : '';
+      var bar = (o.bar != null && !absent)
+        ? '<div class="vx-metric-bar"><i style="width:' + Math.max(3, Math.min(100, o.bar)) + '%"></i>' + mid + '</div>' : '';
+      var kt = o.kTitle ? ' title="' + VX.esc(o.kTitle) + '"' : '';
+      return '<div class="vx-metric" data-tone="' + (absent ? '' : _toneAttr(o.tone)) + '">'
+        + '<span class="vx-metric-k"' + kt + '>' + VX.esc(o.k) + '</span>'
+        + '<span class="vx-metric-v">' + v + u + '</span>' + cmp + bar + '</div>';
     },
     /* Stat à halo : label + valeur (+ sous-légende) (+ extra, ex. sparkline SVG). */
     stat: function (o) {
