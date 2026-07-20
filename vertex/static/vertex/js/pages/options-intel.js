@@ -179,6 +179,8 @@
   // Cellule de métrique premium color-codée (kit .vx-metric). bar = valeur 0-100
   // pour la mini-barre (optionnelle). Repli « — » honnête.
   function mCell(k, v, unit, tone, bar) {
+    // Builder partagé (CMP-02) — markup .vx-metric canonique (data-tone + barre). Repli inline si VX.tile absent.
+    if (window.VX && VX.tile) return VX.tile.metric({ k: k, v: v, unit: unit, tone: tone, bar: bar });
     var barHtml = (bar != null && v != null) ? '<div class="vx-metric-bar"><i style="width:' + Math.max(3, Math.min(100, bar)) + '%"></i></div>' : '';
     return '<div class="vx-metric" data-tone="' + (v == null ? '' : (tone || '')) + '"><span class="vx-metric-k">' + esc(k) + '</span>' +
       '<span class="vx-metric-v">' + (v == null ? '—' : v) + (unit ? '<span class="vx-metric-u">' + unit + '</span>' : '') + '</span>' + barHtml + '</div>';

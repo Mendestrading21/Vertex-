@@ -57,7 +57,11 @@
       G(pmax, { label: 'meilleure PoP' }) +
       G(ivMed != null ? Math.min(100, ivMed) : null, { label: 'IV médiane %', invert: true }) +
       '</div>') : '';
-    var m = function (k, v, u) { return '<div class="vx-metric"><span class="vx-metric-k">' + k + '</span><span class="vx-metric-v">' + (v == null ? '—' : v) + (u ? '<span class="vx-metric-u">' + u + '</span>' : '') + '</span></div>'; };
+    var m = function (k, v, u) {
+      // Builder partagé (CMP-02) — markup .vx-metric canonique. Repli inline si VX.tile absent.
+      return (window.VX && VX.tile) ? VX.tile.metric({ k: k, v: v, unit: u })
+        : '<div class="vx-metric"><span class="vx-metric-k">' + k + '</span><span class="vx-metric-v">' + (v == null ? '—' : v) + (u ? '<span class="vx-metric-u">' + u + '</span>' : '') + '</span></div>';
+    };
     host.innerHTML = '<div class="vx-scorecard" style="grid-template-columns:auto minmax(0,1fr)">' + gauges +
       '<div class="vx-scorecard-side">' +
       '<div class="vx-metricgrid">' +

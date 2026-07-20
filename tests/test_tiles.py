@@ -42,6 +42,15 @@ def test_stat_tiles_are_styled_not_naked():
         assert 'class="vx-stat-value"' not in src, page + ' émet encore une tuile nue'
 
 
+def test_options_pages_use_shared_metric_builder():
+    """CMP-02 phase 2 : les builders vx-metric des pages options passent par
+    VX.tile.metric (source unique). Le repli inline reste toléré mais l'appel
+    au builder partagé doit exister."""
+    for page in ('options-symbol.js', 'options-intel.js'):
+        src = _read('vertex', 'static', 'vertex', 'js', 'pages', page)
+        assert 'VX.tile.metric' in src, page + ' n’utilise pas le builder partagé'
+
+
 def test_css_alias_covers_legacy_stat_tiles():
     """Filet défensif : si un émetteur legacy utilise encore -label/-value, le CSS
     les style (alias = -k/-v)."""
