@@ -109,6 +109,11 @@ $('an-search').focus();
 
 
 _SECTIONS = """
+<style>
+#an-scores-card .an-scorecard-grid{display:grid;grid-template-columns:minmax(206px,248px) 1fr;
+  gap:32px;align-items:center;width:100%}
+@media(max-width:760px){#an-scores-card .an-scorecard-grid{grid-template-columns:1fr;gap:14px}}
+</style>
 <div id="an-stale"></div>
 <!-- 1. Résumé décisionnel (header sticky géré en CSS local) -->
 <div class="vx-card vx-accent" id="an-hero" style="position:sticky;top:calc(var(--vx-topbar-h) + 8px);z-index:20">
@@ -135,7 +140,9 @@ _SECTIONS = """
 <!-- Scores + radar : SORTIS du hero collant → la barre d'identité (titre/prix/décision)
      reste seule en haut au défilement, le reste de l'analyse défile librement. -->
 <section class="vx-card vx-mt3" id="an-scores-card">
-  <div class="vx-flex vx-wrap" id="an-scores" aria-label="Scores"></div>
+  <div class="vx-card-header"><span class="vx-card-title">Scores du comité</span>
+    <span class="vx-chart-question">Conviction, risque, timing, asymétrie, qualité — en un regard</span></div>
+  <div id="an-scores" aria-label="Scores"></div>
 </section>
 
 <!-- 2. Thèse -->
@@ -740,13 +747,27 @@ async function loadDossier(){
   const sc=(exec&&exec.scores)||{};
   const scAxes=[['Conviction',sc.conviction],['Risque',sc.risk],['Timing',sc.timing],
     ['Asymétrie',sc.asymmetry],['Qualité',sc.data_quality]];
-  $('an-scores').innerHTML=scAxes.map(([k,v])=>
-    `<span class="vx-badge" title="${k}">${k} <b class="vx-mono">${VX.fmt.nd(v)}</b></span>`).join('')
-    +(demo?'<span class="vx-badge" style="color:var(--vx-warning)">DÉMO</span>':'')
-    +'<div id="an-scorecard-radar" style="flex:1 0 100%;max-width:240px;margin:8px auto 0"></div>';
-  if(window.VXCharts&&VXCharts.radar&&scAxes.some(a=>a[1]!==null&&a[1]!==undefined)){
-    VXCharts.radar('an-scorecard-radar',{axes:scAxes.map(a=>({label:a[0],value:a[1]||0})),
-      max:100,ariaLabel:'Scorecard '+SYM,color:VXCharts.colors.brand,width:240,height:190});
+  /* Scorecard PRO : radar à gauche + barres étiquetées à droite (équilibré, remplit la
+     largeur). Barres en argent neutre — la sémantique varie (risque haut = mauvais,
+     conviction haute = bon), on ne colore donc pas en vert/rouge pour ne pas induire. */
+  const scBar=(k,v)=>`<div style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--vx-border-faint,rgba(255,255,255,.05))">
+      <span style="flex:0 0 92px;font-size:12.5px;color:var(--vx-text-secondary)">${k}</span>
+      <span style="flex:1;min-width:60px;height:7px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden">
+        <i style="display:block;height:100%;width:${v==null?0:Math.max(3,Math.min(100,v))}%;background:var(--vx-brand);border-radius:99px;transition:width .4s ease"></i></span>
+      <b class="vx-mono" style="flex:0 0 30px;text-align:right;font-size:14px">${VX.fmt.nd(v)}</b></div>`;
+  $('an-scores').innerHTML=`<div class="an-scorecard-grid">
+      <div id="an-scorecard-radar" style="min-height:196px;display:flex;align-items:center;justify-content:center"></div>
+      <div style="min-width:0">${scAxes.map(([k,v])=>scBar(k,v)).join('')}${demo?'<div class="vx-badge vx-mt2" style="color:var(--vx-warning)">DONNÉES DÉMO</div>':''}</div>
+    </div>`;
+  if(scAxes.some(a=>a[1]!==null&&a[1]!==undefined)){
+    // Robuste : si exec vient du cache, les scores se peignent AVANT que VXCharts (script
+    // deferred) soit prêt → on réessaie jusqu'à ce qu'il le soit (sinon radar vide).
+    (function drawScRadar(n){
+      if(window.VXCharts&&VXCharts.radar){
+        VXCharts.radar('an-scorecard-radar',{axes:scAxes.map(a=>({label:a[0],value:a[1]||0})),
+          max:100,ariaLabel:'Scorecard '+SYM,color:VXCharts.colors.brand,width:236,height:200});
+      }else if(n<60){setTimeout(function(){drawScRadar(n+1);},80);}
+    })(0);
   }
   paintPhysics(d);
 
