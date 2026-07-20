@@ -13,8 +13,16 @@ polish · premium · responsive · states · tables · tokens · utilities`.
   (`.vx-card--metric`, `--decision`, `--chart`, `--compact`) ; `glass.css` ne porte que le vernis « verre ».
 - **CMP-02 (P1) — 4 systèmes de tuiles KPI concurrents** : `vx-kpi` (36 occ.), `vx-metric` (50), `vx-stat` (52),
   `vx-stat-xl` (6). Quatre grammaires pour le même besoin « chiffre + label + delta ». **Action** : fusionner en
-  un **MetricCard** unique (une classe + variantes de taille/état) ; migrer les pages progressivement ; garder un
-  alias temporaire pour ne rien casser.
+  un **MetricCard** unique ; migrer les pages progressivement.
+  - **✅ Phase 1 faite** : builder partagé **`VX.tile`** (`metric`/`stat`/`kpi`) posé dans `vx-core.js` (à côté de
+    `VX.fmt`, + `VX.esc`) — source unique du markup canonique, absence via `VX.fmt.nd` (« — », jamais 0), libellés
+    échappés. **Bug corrigé** : `tracking.js` & `options-intel.js` émettaient `.vx-stat-label`/`.vx-stat-value`
+    (non définis en CSS → tuiles **nues**) ; migrés vers `VX.tile.stat` (markup `-k`/`-v`) + alias CSS défensifs
+    (`premium.css`, `glass.css`). Vérifié DEMO (Suivis : 5 tuiles stylées, `nakedLegacy=0`, 0 erreur console,
+    `/api/client-log`=0) + test gardien `tests/test_tiles.py`. SW `td-shell-v90`.
+  - **Reste (phases suivantes)** : migrer les ~115 usages restants vers `VX.tile` (dont `portfolio_page.py`
+    `H`/`_rk` — **différé** : ton sur delta seulement + font-size 20/22px inline, migration non byte-identique) ;
+    puis retirer `vx-stat-xl` (épinglé `test_cockpit.py:16`).
 - **DES-01 (P1) — Docs de design périmés.** `docs/claude/VERTEX_DESIGN_TOKENS.md` et `VERTEX_CHART_LIBRARY.md`
   décrivent une palette **orange/bleu** abandonnée, contredisant `glass.css` (Black Glass, zéro bleu). Risque :
   induire un futur contributeur en erreur. **Action** : marquer ces docs « PÉRIMÉ — voir glass.css / references/

@@ -18,7 +18,10 @@ globale + logique trading + migration données + IBKR + nettoyage.
    + état vide `available:false`, vérifié DEMO). Résidu étroit (OI/vol au producteur IBKR live) à traiter **en
    local** (non testable en cloud) ; ne pas dégrader l'affichage honnête.
 2. **CMP-01 (P1)** — `.vx-card` canonique (une définition + modificateurs), retirer les 6 redéfinitions.
-3. **CMP-02 (P1)** — fusionner `vx-kpi`/`vx-metric`/`vx-stat`/`vx-stat-xl` en un **MetricCard**.
+3. **CMP-02 (P1) — ✅ Phase 1 faite** — builder partagé `VX.tile` (metric/stat/kpi) dans `vx-core.js` + **bug
+   des tuiles stat non stylées corrigé** (tracking/options-intel → `VX.tile.stat` + alias CSS). Vérifié DEMO +
+   test gardien + SW v90. Reste : migrer les ~115 usages restants par lots ; `portfolio_page` H/_rk différé (non
+   byte-identique) ; retrait `vx-stat-xl` (test-pinned).
 4. **DES-01 (P1)** — réaligner/étiqueter les docs de design périmés (orange/bleu) sur `glass.css`.
 5. **CHT-02 (P2)** — contrat de graphe appliqué (source/ts/question/conclusion/état vide) sur les graphes de décision.
 
