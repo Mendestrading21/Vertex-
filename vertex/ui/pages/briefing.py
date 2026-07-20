@@ -1426,21 +1426,34 @@ async function loadOpportunities(){
       } else rrHost.innerHTML='';
     }
     const opts=(c.top_options||[]).slice(0,6);
-    $('vx-opp-options').innerHTML=opts.length?'<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr))">'+opts.map(o=>{
+    $('vx-opp-options').innerHTML=opts.length?'<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fit,minmax(234px,1fr))">'+opts.map(o=>{
       const isPut=(o.dir||'').toUpperCase()==='PUT';
       const prob=(o.prob!=null&&isFinite(o.prob))?Math.round(o.prob):null;
+      /* Moneyness RÉELLE (spot vs strike). ITM = dans la monnaie. Rien inventé : si pas de spot → omis. */
+      let moneyTag='';
+      if(o.spot!=null&&o.strike!=null){
+        const itm=isPut?(o.spot<o.strike):(o.spot>o.strike);
+        const dist=Math.abs(o.spot/o.strike-1)*100;
+        moneyTag=`<span class="vx-badge" title="position du strike vs cours ${VX.fmt.nd(o.spot)}" style="color:${itm?'var(--vx-positive)':'var(--vx-text-muted)'}">${itm?'ITM':'OTM'} ${dist.toFixed(1)}%</span>`;
+      }
+      /* Ligne de faits : delta · DTE · point mort — uniquement les champs présents */
+      const facts=[];
+      if(o.delta!=null)facts.push(`Δ <b>${VX.fmt.num(o.delta,2)}</b>`);
+      if(o.dte!=null)facts.push(`<b>${o.dte}</b> j`);
+      if(o.breakeven!=null)facts.push(`point mort <b>${VX.fmt.nd(o.breakeven)}</b>`);
       return `
       <button class="vx-mover" onclick="location.href='/options/${esc(o.symbol)}'" aria-label="Dossier options ${esc(o.symbol)}" style="border-left:3px solid var(--vx-violet)">
-        <div class="vx-flex" style="justify-content:space-between;gap:6px"><span class="mv-sym">${esc(o.symbol)}</span>
+        <div class="vx-flex" style="justify-content:space-between;gap:6px;align-items:center"><span class="mv-sym">${esc(o.symbol)}</span>
           <span class="vx-badge" style="color:${isPut?'var(--vx-negative)':'var(--vx-positive)'}">${esc((o.dir||'CALL').toUpperCase())}</span>
-          <span class="vx-badge" style="color:var(--vx-violet)">${esc(o.label||'')}</span></div>
-        <div class="mv-sub" style="margin-top:6px">strike <b>${VX.fmt.nd(o.strike)}</b> · prime <b>${VX.fmt.nd(o.premium)} $</b></div>
-        ${prob!=null?`<div class="vx-flex" style="gap:7px;align-items:center;margin-top:6px">
+          <span class="vx-badge" style="color:var(--vx-violet)">${esc(o.label||'')}</span>${moneyTag}</div>
+        <div class="mv-sub" style="margin-top:7px;font-size:12px">strike <b style="color:var(--vx-text-secondary)">${VX.fmt.nd(o.strike)}</b> · prime <b style="color:var(--vx-text-secondary)">${VX.fmt.nd(o.premium)} $</b></div>
+        ${facts.length?`<div class="mv-sub vx-mono" style="margin-top:4px;font-size:11px;color:var(--vx-text-muted)">${facts.join(' · ')}</div>`:''}
+        ${prob!=null?`<div class="vx-flex" style="gap:7px;align-items:center;margin-top:8px">
           <span class="vx-meta" style="flex:0 0 auto">proba. profit</span>
           <span style="flex:1;height:6px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden">
             <i style="display:block;height:100%;width:${Math.max(3,Math.min(100,prob))}%;background:${prob>=50?'var(--vx-positive)':'var(--vx-warning)'};border-radius:99px"></i></span>
           <b class="vx-mono" style="font-size:11.5px">${prob} %</b></div>`:''}
-        <div class="mv-sub" style="color:var(--vx-violet);margin-top:6px">Dossier options →</div>
+        <div class="mv-sub" style="color:var(--vx-violet);margin-top:8px">Dossier options →</div>
       </button>`;}).join('')+'</div>':VX.states.empty('Aucun contrat retenu — le sélecteur ne force jamais une idée.');
     /* Posture du comité : gros compteurs + barre empilée (HTML sur mesure,
        taille déterministe — fini le donut qui prenait toute la page). */
