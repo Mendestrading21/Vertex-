@@ -221,8 +221,8 @@ _SECTIONS = """
 
 <!-- 11. Options : chaîne enrichie (greeks réels + BE/risque max/rendement) + bulle d'équilibre -->
 <div class="vx-grid vx-mt4">
-  <div class="vx-col-7" id="an-options-chain"></div>
-  <div class="vx-col-5" id="an-options-bubble"></div>
+  <div class="vx-col-12" id="an-options-chain"></div>
+  <div class="vx-col-12" id="an-options-bubble"></div>
 </div>
 <section class="vx-card vx-mt4" id="an-options" hidden>
   <div class="vx-card-header"><span class="vx-card-title">Options — Vertex Dynamic Options</span>
