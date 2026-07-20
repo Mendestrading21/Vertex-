@@ -885,12 +885,24 @@ async function loadDossier(){
   const cf=(t&&t.company&&t.company.fundamentals)||{};
   const me=Object.assign({pe:cf.pe,margin:cf.margin,rev_growth:cf.rev_growth,roe:cf.roe},
                          peers.find(p=>p.symbol===SYM)||{});
+  /* Formateur « gros montant » (capitalisation, cash-flow) : T$ / Md$ / M$. */
+  const fmtBig=(v)=>{if(v==null||isNaN(v))return null;const a=Math.abs(v);
+    return a>=1e12?(v/1e12).toFixed(2)+' T$':a>=1e9?(v/1e9).toFixed(1)+' Md$':a>=1e6?(v/1e6).toFixed(0)+' M$':VX.fmt.nd(v);};
+  const _kvif=(lab,val)=>val==null||val===''?'':kv(lab,val);
   body('an-fundamental',
     kv('Score fondamental moteur',d.st_fund??f.score)
+    +_kvif('Capitalisation',fmtBig(cf.mcap))
     +kv('Croissance CA',me.rev_growth!==undefined?VX.fmt.pct(me.rev_growth*100,0):null)
+    +_kvif('Croissance BPA',cf.eps_growth!=null?VX.fmt.pct(cf.eps_growth*100,0):null)
     +kv('Marge',me.margin!==undefined?VX.fmt.pct(me.margin*100,0):null)
-    +kv('P/E',me.pe!=null?(+me.pe).toFixed(1):null)+kv('ROE',me.roe!==undefined&&me.roe!==null?VX.fmt.pct(me.roe*100,0):null)
+    +kv('P/E',me.pe!=null?(+me.pe).toFixed(1):null)
+    +_kvif('P/E anticipé',cf.forward_pe!=null?(+cf.forward_pe).toFixed(1):null)
+    +_kvif('PEG',cf.peg!=null?(+cf.peg).toFixed(2):null)
+    +kv('ROE',me.roe!==undefined&&me.roe!==null?VX.fmt.pct(me.roe*100,0):null)
+    +_kvif('Dette / EBITDA',cf.debt_to_ebitda!=null?(+cf.debt_to_ebitda).toFixed(2)+'×':null)
+    +_kvif('Cash-flow libre',fmtBig(cf.fcf))
     +kv('Médiane sectorielle P/E',t&&t.sector_median&&(t.sector_median.median_pe??t.sector_median))
+    +_kvif('Prochains résultats',cf.earnings_date)
     +(peers.length>1?`<div class="vx-meta vx-mt2">Pairs : ${peers.filter(p=>p.symbol!==SYM).slice(0,4).map(p=>
       `<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${p.symbol}">${p.symbol}</button>`).join('')}</div>`:''));
 
