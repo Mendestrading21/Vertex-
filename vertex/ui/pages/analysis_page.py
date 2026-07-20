@@ -161,11 +161,11 @@ _SECTIONS = """
 </section>
 
 <!-- Physique & probabilités (moteurs quant : Monte-Carlo, Kelly, structure statistique, MTF) -->
-<div class="vx-grid vx-mt4" id="an-physblock">
+<div class="vx-grid vx-mt4" id="an-physblock" style="align-items:start">
   <div class="vx-col-7" id="an-mc"></div>
   <div class="vx-col-5" id="an-physics"></div>
 </div>
-<div class="vx-grid vx-mt3" id="an-physblock2">
+<div class="vx-grid vx-mt3" id="an-physblock2" style="align-items:start">
   <div class="vx-col-5" id="an-kelly"></div>
   <div class="vx-col-7" id="an-mtf"></div>
 </div>
@@ -621,6 +621,19 @@ function paintPhysics(d){
     else{
       var col=stCol(ph.state);
       phEl.classList.add('vx-card');
+      // Décomposition des mesures RÉELLES (remplit la carte + plus lisible qu'un simple radar).
+      var phRow=function(lab,val,hint){return val==null?'':
+        '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--vx-border-faint,rgba(255,255,255,.05))">'
+        +'<span style="font-size:12px;color:var(--vx-text-secondary)">'+lab+'</span>'
+        +'<span style="text-align:right"><b class="vx-mono" style="font-size:13px">'+val+'</b>'
+        +(hint?' <span class="vx-meta" style="font-size:10.5px">'+esc(hint)+'</span>':'')+'</span></div>';};
+      var hu=ph.hurst, ef=ph.efficiency, en=ph.entropy, hl=ph.half_life;
+      var phRows='<div class="vx-mt2">'
+        +phRow('Hurst (fractale)', hu!=null?VX.fmt.num(hu,2):null, hu==null?'':(hu<0.45?'anti-persistant · retour moyenne':(hu>0.55?'persistant · tendance':'aléatoire')))
+        +phRow('Efficience (Kaufman)', ef!=null?Math.round(ef*100)+' %':null, ef==null?'':(ef>0.55?'mouvement propre':'bruité'))
+        +phRow('Entropie (désordre)', en!=null?VX.fmt.num(en,2):null, en==null?'':(en>0.6?'chaotique':'ordonné'))
+        +phRow('Demi-vie (retour moy.)', hl!=null?VX.fmt.num(hl,1)+' j':null, hl==null?'':(hl<10?'rapide':'lente'))
+        +'</div>';
       phEl.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Physique du prix — structure statistique</span>'
         +'<span class="vx-chart-question">Tendance fractale, retour à la moyenne, ou chaos ?</span></div>'
         +'<div class="vx-flex" style="gap:.4rem;flex-wrap:wrap;margin:2px 0 4px">'
@@ -628,7 +641,8 @@ function paintPhysics(d){
         +(ph.half_life!=null?'<span class="vx-badge" title="demi-vie de retour à la moyenne (Ornstein-Uhlenbeck)">demi-vie '+VX.fmt.num(ph.half_life,1)+' j</span>':'')
         +(ph.hurst!=null?'<span class="vx-badge" title="exposant de Hurst">Hurst '+VX.fmt.num(ph.hurst,2)+'</span>':'')+'</div>'
         +'<div id="an-physics-radar"></div>'
-        +(ph.note?'<div class="vx-meta" style="margin-top:4px">'+esc(ph.note)+'</div>':'')
+        +phRows
+        +(ph.note?'<div class="vx-meta" style="margin-top:6px;line-height:1.5">'+esc(ph.note)+'</div>':'')
         +physFoot('regime_features (Hurst · entropie · Kaufman · OU)',d.updated);
       if(VXCharts.radar){VXCharts.radar('an-physics-radar',{axes:[
         {label:'Persistance',value:Math.max(0,Math.min(100,(ph.hurst||0)*100))},
