@@ -216,9 +216,12 @@
   function paintStrats(d) {
     var list = (d.strategies || []).filter(function (s) { return s && s.available !== false; });
     if (!list.length) { body('vx-osym-strats', empty(d.reason || 'Aucune stratégie constructible depuis le board pour ' + SYM + '.')); return; }
+    // Largeur adaptée au nombre de stratégies : 1 seule → pleine largeur (plus de vide
+    // à droite) ; 2+ → deux par ligne. Le graphe de payoff reste lisible.
+    var colCls = list.length === 1 ? 'vx-col-12' : 'vx-col-6';
     var html = '<div class="vx-grid">' + list.slice(0, 4).map(function (s, i) {
       var pop = s.probability_of_profit != null ? Math.round(s.probability_of_profit * (s.probability_of_profit <= 1 ? 100 : 1)) : null;
-      return '<div class="vx-card vx-col-6' + (s.recommended ? ' vx-active' : '') + '">' +
+      return '<div class="vx-card ' + colCls + (s.recommended ? ' vx-active' : '') + '">' +
         '<div class="vx-card-header"><span class="vx-card-title">' + esc(s.label || s.name || 'Stratégie') + '</span>' +
         (s.recommended ? '<span class="vx-badge" style="color:var(--vx-brand-strong)">★ Recommandée</span>' : '') +
         '<span class="vx-badge" style="color:' + VIOLET + '">' + (s.is_credit ? 'crédit' : 'débit') + ' ' + (s.net_premium != null ? VXf.price(Math.abs(s.net_premium)) + ' $' : '') + '</span></div>' +
