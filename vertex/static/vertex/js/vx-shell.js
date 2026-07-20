@@ -85,7 +85,17 @@
   }
   VX.context.restoreIfReturning();
 
-  /* ── Horloge & session marché (heure New York) ───────────────────── */
+  /* ── Horloge & session marché (heure New York) + compte à rebours ──── */
+  function untilNext(day, mins) {
+    // Séance régulière NYSE 09:30–16:00 (570–960 min). Renvoie l'événement suivant
+    // (ouverture/fermeture) et les minutes restantes — cohérent avec le marché réel.
+    if (day >= 1 && day <= 5 && mins >= 570 && mins < 960) return { ev: 'ferme', u: 960 - mins };
+    if (day >= 1 && day <= 5 && mins < 570) return { ev: 'ouvre', u: 570 - mins };
+    // Après la clôture ou week-end → prochaine ouverture d'un jour ouvré à 09:30.
+    let u = 1440 - mins, d = (day + 1) % 7;
+    while (d === 0 || d === 6) { u += 1440; d = (d + 1) % 7; }
+    return { ev: 'ouvre', u: u + 570 };
+  }
   function tickClock() {
     const el = $('vx-session'); if (!el) return;
     try {
@@ -96,7 +106,10 @@
       const pre = day >= 1 && day <= 5 && mins >= 240 && mins < 570;
       const label = open ? 'Marché ouvert' : (pre ? 'Pré-marché' : 'Marché fermé');
       const dotCol = open ? 'var(--vx-positive)' : (pre ? 'var(--vx-warning)' : 'var(--vx-text-faint)');
-      el.innerHTML = `<b><span class="vx-live-dot" style="display:inline-block;margin-right:5px;background:${dotCol}"></span>${label}</b><br><span class="vx-muted">New York ${ny}</span>`;
+      const nx = untilNext(day, mins), h = Math.floor(nx.u / 60), m = nx.u % 60;
+      const cd = (h >= 1 ? h + ' h ' : '') + (m < 10 ? '0' + m : m) + ' min';
+      el.innerHTML = `<b><span class="vx-live-dot" style="display:inline-block;margin-right:5px;background:${dotCol}"></span>${label}</b>`
+        + `<br><span class="vx-muted">New York ${ny} · ${nx.ev} dans ${cd}</span>`;
     } catch (e) { /* fuseaux non dispo */ }
   }
   tickClock(); setInterval(tickClock, 30000);
