@@ -113,6 +113,9 @@ _SECTIONS = """
 #an-scores-card .an-scorecard-grid{display:grid;grid-template-columns:minmax(206px,248px) 1fr;
   gap:32px;align-items:center;width:100%}
 @media(max-width:760px){#an-scores-card .an-scorecard-grid{grid-template-columns:1fr;gap:14px}}
+/* Cartes sœurs à leur HAUTEUR NATURELLE : quand l'une est plus courte, elle ne s'étire plus
+   pour matcher sa voisine → fini les grands vides (riskmap, fundamental, anomalies…). */
+#an-workspace .vx-grid{align-items:start}
 </style>
 <div id="an-stale"></div>
 <!-- 1. Résumé décisionnel (header sticky géré en CSS local) -->
