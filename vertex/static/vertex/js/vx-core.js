@@ -64,6 +64,55 @@
     },
   };
 
+  /* ── Échappement HTML (labels de tuiles, texte injecté en innerHTML) ── */
+  VX.esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+
+  /* ── Tuiles KPI partagées (CMP-02 : source UNIQUE du markup) ──────────
+     Émettent le markup CANONIQUE déjà stylé par premium.css / glass.css —
+     aucune classe visuelle nouvelle. Un seul argument `tone`
+     ('pos'|'neg'|'warn'|'brand'|'') mappé au bon mécanisme selon la forme
+     (data-tone pour metric/stat ; classe .vx-pos/.vx-neg pour kpi).
+     Valeurs via VX.fmt.nd → absence rendue « — », jamais 0 (règle n°4).
+     Les libellés sont échappés ; la valeur est passée telle quelle (déjà
+     formatée par l'appelant via VX.fmt). */
+  var _toneAttr = function (t) { return (['pos', 'neg', 'warn', 'brand', 'opt'].indexOf(t) >= 0 ? t : ''); };
+  var _toneCls = function (t) { return ({ pos: 'vx-pos', neg: 'vx-neg', warn: 'vx-warn' }[t] || ''); };
+  VX.tile = {
+    /* Métrique riche : label + valeur (+ unité) (+ mini-barre 0-100). */
+    metric: function (o) {
+      o = o || {};
+      var u = o.unit ? '<span class="vx-metric-u">' + VX.esc(o.unit) + '</span>' : '';
+      var bar = (o.bar != null && o.v != null)
+        ? '<div class="vx-metric-bar"><i style="width:' + Math.max(3, Math.min(100, o.bar)) + '%"></i></div>' : '';
+      return '<div class="vx-metric" data-tone="' + (o.v == null ? '' : _toneAttr(o.tone)) + '">'
+        + '<span class="vx-metric-k">' + VX.esc(o.k) + '</span>'
+        + '<span class="vx-metric-v">' + VX.fmt.nd(o.v) + u + '</span>' + bar + '</div>';
+    },
+    /* Stat à halo : label + valeur (+ sous-légende) (+ extra, ex. sparkline SVG). */
+    stat: function (o) {
+      o = o || {};
+      var sub = (o.sub != null && o.sub !== '') ? '<div class="vx-stat-sub">' + VX.esc(o.sub) + '</div>' : '';
+      return '<div class="vx-stat" data-tone="' + _toneAttr(o.tone) + '">'
+        + '<div class="vx-stat-k">' + VX.esc(o.k) + '</div>'
+        + '<div class="vx-stat-v">' + VX.fmt.nd(o.v) + '</div>' + sub + (o.extra || '') + '</div>';
+    },
+    /* KPI dans une carte compacte : label + valeur + delta (ton par classe). */
+    kpi: function (o) {
+      o = o || {};
+      var tc = _toneCls(o.tone);
+      var span = o.span ? ' style="grid-column:span ' + (o.span | 0) + '"' : '';
+      var delta = (o.delta != null && o.delta !== '')
+        ? '<span class="vx-kpi-delta ' + (tc || 'vx-muted') + '">' + o.delta + '</span>' : '';
+      return '<div class="vx-card vx-card--compact vx-kpi"' + span + '>'
+        + '<span class="vx-kpi-label">' + VX.esc(o.label) + '</span>'
+        + '<span class="vx-kpi-value' + (tc ? ' ' + tc : '') + '">' + VX.fmt.nd(o.value) + '</span>' + delta + '</div>';
+    },
+  };
+
   /* ── UpdateIndicator (§38) ───────────────────────────────────────── */
   VX.updateIndicator = function (ts, source, mode) {
     const modeLabel = { live: 'Live', delayed: 'Différé', fallback: 'Secours', error: 'Erreur' }[mode] || '';
