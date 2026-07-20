@@ -42,6 +42,20 @@ def test_stat_tiles_are_styled_not_naked():
         assert 'class="vx-stat-value"' not in src, page + ' émet encore une tuile nue'
 
 
+def test_metric_builder_supports_cmp_mid_ktitle():
+    """CMP-02 phase 3 : VX.tile.metric gère le chip de comparaison, le repère
+    médian et le title du label (options additives)."""
+    src = _read('vertex', 'static', 'vertex', 'js', 'vx-core.js')
+    for needle in ('vx-metric-cmp', 'o.cmp', 'o.mid', 'o.kTitle', 'vx-metric-bar'):
+        assert needle in src, needle
+
+
+def test_analysis_page_uses_shared_metric_builder():
+    """La fiche Analyse construit ses tuiles via le builder partagé."""
+    src = _read('vertex', 'ui', 'pages', 'analysis_page.py')
+    assert 'VX.tile.metric' in src, 'analysis_page n’utilise pas le builder partagé'
+
+
 def test_options_pages_use_shared_metric_builder():
     """CMP-02 phase 2 : les builders vx-metric des pages options passent par
     VX.tile.metric (source unique). Le repli inline reste toléré mais l'appel

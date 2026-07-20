@@ -284,6 +284,8 @@ function kv(k,v,cls){return `<div class="vx-kv"><span class="k">${k}</span><span
    pos/neg/warn/opt/'' ; bar∈[0..100] (position vs médiane, repère à 50). Une
    valeur nulle rend « — » (aucun chiffre inventé). */
 function metric(m){
+  // Builder partagé (CMP-02) — markup .vx-metric canonique (cmp/mid/kTitle). Repli inline si VX.tile absent.
+  if(window.VX&&VX.tile)return VX.tile.metric({k:m.k,kTitle:m.k,v:m.val,unit:m.unit,tone:m.tone,cmp:m.cmp,bar:m.bar,mid:50});
   const v=(m.val===null||m.val===undefined||m.val==='')?'—':m.val;
   const tone=v==='—'?'':(m.tone||'');
   const bar=(m.bar!=null&&v!=='—')?
