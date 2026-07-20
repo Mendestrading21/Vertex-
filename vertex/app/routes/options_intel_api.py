@@ -348,9 +348,34 @@ def _num(x):
         return None
 
 
+def _wide_contracts(sym):
+    """Chaîne LARGE persistée (options_chain_full) → contrats au format board
+    (sym/strike/type/dte/iv/oi/spot). Alimente les graphes de volatilité (OI par
+    strike, smile, structure par terme, cône) avec les VRAIES données — OI réel,
+    PUTS, 15 strikes/côté, 3 échéances — au lieu du board « finalistes » (souvent
+    calls-only, OI=0, spot absent). [] si la chaîne large n'est pas chargée."""
+    e = (scan_state.get('options_chain_full') or {}).get(str(sym).upper())
+    if not e:
+        return []
+    spot = e.get('spot')
+    out = []
+    for exp in e:
+        if exp in ('spot', 'ts'):
+            continue
+        dte = _dte_from_exp(exp)
+        for right, side in (e.get(exp) or {}).items():
+            typ = 'CALL' if right == 'C' else 'PUT'
+            for k, row in (side or {}).items():
+                out.append({'sym': str(sym).upper(), 'strike': k, 'type': typ,
+                            'dte': dte, 'iv': row.get('iv'), 'oi': row.get('oi'),
+                            'delta': row.get('delta'), 'spot': spot})
+    return out
+
+
 @bp.route('/api/options/vol-charts/<sym>')
 def options_vol_charts(sym):
-    """Jeux de données pour les graphiques de volatilité d'un titre (§15)."""
+    """Jeux de données pour les graphiques de volatilité d'un titre (§15).
+    Priorité à la chaîne LARGE réelle (OI/puts/strikes) ; repli sur le board."""
     from vertex.options import vol_charts
     sym = (sym or '').upper()[:12]
     expiry = request.args.get('dte')
@@ -359,8 +384,15 @@ def options_vol_charts(sym):
     except (TypeError, ValueError):
         expiry = None
     try:
-        return jsonify(vol_charts.build(_board_for(sym), sym, as_of=_as_of(),
-                                        source='SCAN', expiry=expiry))
+        _od.warm_chain(sym)          # persiste la chaîne large (OI + greeks réels)
+    except Exception:
+        pass
+    try:
+        wide = _wide_contracts(sym)
+        board = wide if wide else _board_for(sym)
+        src = 'chaîne large IBKR' if wide else 'SCAN'
+        return jsonify(vol_charts.build(board, sym, as_of=_as_of(),
+                                        source=src, expiry=expiry))
     except Exception as e:
         return jsonify({'symbol': sym, 'empty': True,
                         'error': '%s: %s' % (type(e).__name__, e)}), 500
