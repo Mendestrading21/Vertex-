@@ -23,8 +23,10 @@ Accès via `ib_async` (fork ib_insync). **Invariant : lecture seule.** Détail c
 - **IBK-02 (P1) — États complets exposés.** Mapper partout les 7 états : live / delayed / stale / disconnected /
   partial / estimated / unavailable. Aujourd'hui `connected`/`live` sont exposés ; `partial` (certains symboles)
   et `stale` méritent un rendu UI explicite.
-- **IBK-03 (P0, lié DAT-01) — Absence ≠ 0.** Une donnée IBKR absente doit devenir `unavailable`, jamais `0`
-  (chaîne d'options `terminal.py:~900-905`). Voir `06`.
+- **IBK-03 (révisé P2, lié DAT-01) — Absence ≠ 0.** Vérifié : la couche d'affichage est déjà honnête (chain-grid
+  `available:false`, normalisation `None` à `_persist_chain_full`). Résidu étroit : au producteur IBKR **live**
+  (`terminal.py:904-905`), OI/volume confondent NaN et vrai `0` — à distinguer **en local** (non testable en cloud).
+  Voir `06`.
 - **IBK-04 (P2) — Environnement cloud sans IBKR.** Le cloud ne joint pas TWS ; toute vérification live se fait en
   local. En cloud, exécuter/valider en **DEMO** (`DEMO=1 NO_IBKR=1`), sans jamais présenter la démo comme réelle.
 

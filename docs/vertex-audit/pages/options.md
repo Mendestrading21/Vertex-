@@ -21,9 +21,10 @@ Onglets `?view=overview|volatility|radar|scenarios|events`. Graphes `VXCharts` :
 `option-payoff`, `option-scenarios`, `option-theta`, `option-iv-sensitivity`, `vol-surface`, greeks radar.
 
 ## Problèmes identifiés (reliés à l'audit)
-- **RT-01 (P1) — Collision de route `/options/<sym>`** : JSON `opt_ep` (`terminal.py:2354`) **et** page HTML
-  `options_symbol_route` (`redesign.py:137`). Une des deux intentions est masquée selon l'ordre d'enregistrement.
-- **DAT-01 (P0)** — chaîne vide ne doit pas s'afficher `0` → `unavailable` (voir `../06-data-provenance.md`).
+- **RT-01 (P1) — ✅ RÉSOLU** : collision `/options/<sym>` (JSON vs page). JSON déplacé sous `/api/options/pack/<sym>`,
+  2 consommateurs corrigés, page réservée. Vérifié DEMO (`/api/options/pack/AAPL`→JSON, `/options/AAPL`→HTML) + 919 tests.
+- **DAT-01 (révisé P2)** — chaîne vide déjà honnête (`available:false`, cellules `None`) — vérifié DEMO ; résidu
+  étroit OI/vol au producteur live (voir `../06-data-provenance.md`).
 - **DAT / honnêteté greeks** — bien étiquetés `MODEL_ESTIMATE` vs broker ; vérifier le rendu du badge sur chaque tuile.
 - **CMP-02** — tuiles KPI à migrer vers MetricCard. **CHT-02** — contrat de graphe (source/ts/question/conclusion).
 

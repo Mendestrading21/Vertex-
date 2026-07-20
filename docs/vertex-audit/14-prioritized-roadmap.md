@@ -12,7 +12,11 @@ globale + logique trading + migration données + IBKR + nettoyage.
 - P0/P1 identifiés, roadmap séquencée. `pages/*` amorcées.
 
 ## Phase 2 — Fondations design/données (P0/P1 prioritaires)
-1. **DAT-01/IBK-03 (P0)** — supprimer le « 0-masquerade » (donnée absente → `unavailable`), test gardien.
+0. **RT-01 (P1) — ✅ FAIT** — `/options/<sym>` dédupliqué (JSON → `/api/options/pack/<sym>`, 2 consommateurs
+   corrigés, page réservée). Vérifié DEMO + 919 tests.
+1. **DAT-01/IBK-03 — révisé P2 après vérification** — la couche d'affichage est déjà honnête (normalisation `None`
+   + état vide `available:false`, vérifié DEMO). Résidu étroit (OI/vol au producteur IBKR live) à traiter **en
+   local** (non testable en cloud) ; ne pas dégrader l'affichage honnête.
 2. **CMP-01 (P1)** — `.vx-card` canonique (une définition + modificateurs), retirer les 6 redéfinitions.
 3. **CMP-02 (P1)** — fusionner `vx-kpi`/`vx-metric`/`vx-stat`/`vx-stat-xl` en un **MetricCard**.
 4. **DES-01 (P1)** — réaligner/étiqueter les docs de design périmés (orange/bleu) sur `glass.css`.
@@ -21,7 +25,7 @@ globale + logique trading + migration données + IBKR + nettoyage.
 ## Phase 3 — Shell unifié (P1)
 6. **IA-01 + CMP-03 (P1)** — une seule nav (`PRIMARY_NAV`) ; rediriger les routes legacy ; supprimer la sidebar
    inline orange (`terminal.py` ×4) une fois les dépendances confirmées ; **bump `td-shell-vN`** + 3 tests.
-7. **RT-01 (P1)** — dédupliquer `/options/<sym>` (JSON → `/api/options/<sym>`, page reste `/options/<sym>`).
+   _(RT-01 déjà résolu en Phase 2 — voir §0 ci-dessus.)_
 
 ## Phases 4-13 — Page par page (DoD par page)
 Dashboard → Portefeuille → Opportunités → Analyse → Options → **Préparation (prep/sim)** → Performance →

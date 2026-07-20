@@ -26,11 +26,11 @@ de **consolider, combler, polir**.
 | ID | Gravité | Sujet | Doc |
 |----|---------|-------|-----|
 | IA-01 | **P1** | Double navigation : `PRIMARY_NAV` (shell, 8 items canoniques) vs `vertex/ui/nav.py` (10 items legacy, routes `/stocks`,`/strategie`,`/journal`…) | 04 |
-| RT-01 | **P1** | Collision de route `/options/<sym>` : JSON `opt_ep` (`terminal.py:2354`) **et** page HTML `options_symbol_route` (`redesign.py:137`) | 02 |
+| RT-01 | ~~P1~~ **✅ RÉSOLU** | Collision `/options/<sym>` (JSON `opt_ep` vs page) → JSON déplacé sous `/api/options/pack/<sym>`, 2 consommateurs corrigés, vérifié DEMO + 919 tests | 02 |
 | CMP-01 | **P1** | `.vx-card` redéfini dans 6 feuilles CSS (base/cockpit/components/glass/polish/premium) | 05 |
 | CMP-02 | **P1** | 4 systèmes de tuiles KPI concurrents : `vx-kpi`(36) · `vx-metric`(50) · `vx-stat`(52) · `vx-stat-xl`(6) → fusionner en un MetricCard | 05 |
 | DES-01 | **P1** | Docs de design périmés (`VERTEX_DESIGN_TOKENS`, `VERTEX_CHART_LIBRARY` : palette orange/bleu abandonnée) contredisent `glass.css` | 05 |
-| DAT-01 | **P0** | Piège « 0-masquerade » : chaîne d'options vide risque de s'afficher `0` au lieu de `unavailable` (`terminal.py:~900-905`) | 06 |
+| DAT-01 | ~~P0~~ **P2 (révisé)** | Producteur brut émet `0`, mais normalisé en `None` avant affichage + état vide honnête (vérifié DEMO) ; résidu étroit OI/vol au producteur live | 06 |
 | DAT-02 | P2 | Enveloppe de provenance éclatée (`_live_meta`/`_live_quotes`/`marketDataType`) — pas de `ProvenancedValue` unique | 06 |
 
 ## Décisions structurantes actées

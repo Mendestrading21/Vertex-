@@ -7,9 +7,9 @@ Colonnes = axes de la Definition of Done (`references/page-definition-of-done.md
 |---|---|---|---|---|---|---|---|---|
 | Dashboard `/` | ✅ | 🟡 (DAT-03) | 🟡 | ⬜ (FCT-01) | 🟡 (CMP-02) | 🟡 (A11Y-01) | 🟡 | 🟡 |
 | Opportunités `/opportunities` | ✅ | 🟡 | 🟡 | ⬜ (FCT-01 filtres) | 🟡 | 🟡 | 🟡 | 🟡 |
-| Portefeuille `/portfolio` | ✅ | 🔴 (DAT-01/03 provenance) | 🟡 | ⬜ | 🟡 (CMP-02) | 🟡 | 🟡 | 🟡 |
+| Portefeuille `/portfolio` | ✅ | 🟡 (DAT-03 provenance ; DAT-01 révisé P2) | 🟡 | ⬜ | 🟡 (CMP-02) | 🟡 | 🟡 | 🟡 |
 | Analyse `/analysis/<sym>` | ✅ | 🟡 | ✅ (vides corrigés) | 🟡 | 🟡 | 🟡 | 🟡 (payload 8 Mo, PRF-01) | 🟡 |
-| Options `/options` (+`/<sym>`) | ✅ | 🟡 (greeks étiquetés ✅) | 🟡 | 🔴 (RT-01 route) | 🟡 (violet=options ✅) | 🟡 | 🟡 | 🔴 |
+| Options `/options` (+`/<sym>`) | ✅ | 🟡 (greeks étiquetés ✅) | ✅ (état vide honnête vérifié) | ✅ (RT-01 résolu) | 🟡 (violet=options ✅) | 🟡 | ✅ (919 + DEMO) | 🟡 |
 | Performance `/performance` | ✅ | 🟡 | 🟡 | ⬜ | 🟡 | 🟡 | 🟡 | 🟡 |
 | Intelligence `/intelligence` | ✅ | 🟡 | 🟡 | ⬜ | 🟡 | 🟡 | 🟡 | 🟡 |
 | Système `/system` | ✅ | ✅ (statut socket honnête) | 🟡 | ⬜ | 🟡 | 🟡 | 🟡 | 🟡 |
@@ -17,7 +17,8 @@ Colonnes = axes de la Definition of Done (`references/page-definition-of-done.md
 | Préparation (prep/sim) | ⬜ à créer | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ## Lecture
-- **🔴 prioritaires** : Shell (IA-01/CMP-03), Options (RT-01), Portefeuille (provenance/0-masquerade).
+- **🔴 prioritaire restant** : Shell (IA-01 double nav + CMP-03 sidebar orange inline). Options (RT-01) ✅ résolu ;
+  Portefeuille repassé 🟡 (DAT-01 révisé P2 après vérif ; reste DAT-03 provenance).
 - **🟡 majoritaire** : base fonctionnelle saine, dette de cohérence (cards/charts/provenance/a11y) à résorber par lots.
 - **⬜ Préparation** : nouveau sous-espace à bâtir en lecture seule (sizing/perte max/ticket), Phase 4-13.
 

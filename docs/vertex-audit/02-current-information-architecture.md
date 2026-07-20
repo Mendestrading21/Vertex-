@@ -16,10 +16,12 @@ via `ui/pages/*`. Onglets = pures URL `?view=` (pas d'état JS) — cohérent, c
 | 8 | Système | `/system` | connections · data · automations · settings · archive (+ design-system) | `system_page.py` |
 
 ## Findings
-- **RT-01 (P1) — Collision `/options/<sym>`.** Déclarée 2× : JSON `opt_ep` (`terminal.py:2354` → `options_pack`)
-  **et** page HTML `options_symbol_route` (`redesign.py:137` → `options_symbol_page.render`). Flask garde
-  l'enregistrement selon l'ordre ; l'une des deux intentions est masquée. **Action** : déplacer le JSON sous
-  `/api/options/<sym>` (ou un préfixe API), réserver `/options/<sym>` à la page. Dédupliquer, pas aggraver.
+- **RT-01 (P1) — ✅ RÉSOLU (Phase 2).** Collision `/options/<sym>` : JSON `opt_ep` (`terminal.py`) **et** page HTML
+  `options_symbol_route` (`redesign.py:137`). Vérifié empiriquement : la page (blueprint) masquait le JSON → les 2
+  consommateurs `fetch('/options/'+sym).json()` (`terminal.py:3880`, `4043`) recevaient du HTML (panneau « option
+  recommandée » silencieusement cassé). **Fix** : JSON déplacé sous `/api/options/pack/<sym>` ; `/options/<sym>`
+  réservé à la page ; les 2 consommateurs mis à jour. Vérif DEMO : `/api/options/pack/AAPL`→JSON,
+  `/options/AAPL`→HTML, `/api/client-log`=0, 919 tests verts. Les liens `href="/options/<sym>"` (navigations) inchangés.
 - **RT-02 (P2) — Routes legacy résiduelles** dans `terminal.py` (`/scan`, `/api/*`) mêlées aux blueprints :
   cartographier et migrer progressivement vers `app/routes/` (pas de big-bang).
 - **IA-02 (P2) — Correspondance mission → réalité.** La cible mission existe déjà en grande partie. « Desk /

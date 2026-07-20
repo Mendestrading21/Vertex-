@@ -42,6 +42,19 @@ isEstimated·isDelayed·isStale·error) portée du moteur au footer.
 **Raison.** Provenance aujourd'hui éclatée (DAT-02) ; règle produit n°4.
 **Conséquences.** Chantier Phase 2/6 ; ne rien afficher sans provenance ; absence ≠ 0 (DAT-01, P0).
 
+## D-08 — Vérifier avant de « corriger » : DAT-01 révisé, RT-01 corrigé (Phase 2)
+**Décision.** Avant tout changement, lire le vrai code + tester en DEMO. Résultat :
+- **DAT-01 (ex-P0) → P2.** La couche d'affichage des options est **déjà honnête** : `_persist_chain_full`
+  reconvertit les `0` bruts en `None` (`terminal.py:1178,1180`) et `/api/options/chain-grid` renvoie
+  `available:false` quand la chaîne manque (vérifié empiriquement AAPL + symbole bidon). Forcer un changement au
+  producteur IBKR **live** (non testable en cloud) aurait risqué de casser un pipeline déjà correct → **écarté**.
+- **RT-01 (P1) → corrigé.** La page masquait le JSON `/options/<sym>` ; 2 consommateurs `.json()` cassés. JSON
+  déplacé sous `/api/options/pack/<sym>`, consommateurs mis à jour, page réservée. Vérifié DEMO + 919 tests.
+**Raison.** Règle d'édition sûre : « lire le vrai code d'abord, ne pas réécrire aveuglément » ; preuves, jamais
+d'affirmation.
+**Conséquences.** L'audit est corrigé pour refléter la réalité vérifiée (gravité ajustée). On ne dégrade jamais
+une couche déjà honnête ; les corrections IBKR live se feront en local avec vérification réelle.
+
 ## D-07 — Sécurité de l'audit
 **Décision.** Aucun secret ni identifiant de compte dans les docs/captures ; identité modèle jamais commitée ;
 aucun nom personnel dans code/UI/docs.
