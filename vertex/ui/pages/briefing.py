@@ -165,7 +165,7 @@ _CONTENT = """
   #vx-news-body article[data-senti="-1"]{border-left-color:var(--vx-negative,#ed655c)}
   #vx-news-body article:hover{border-left-color:var(--vx-brand,#c9cdd4)}
   /* Portefeuille : cartes design (fini les lignes) */
-  #vx-portfolio .vx-pf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px}
+  #vx-portfolio .vx-pf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
   #vx-portfolio .vx-pf-card{background:var(--vx-surface-0,#0d100e);border:1px solid var(--vx-border,#26221e);
     border-radius:12px;padding:12px 13px;display:flex;flex-direction:column;gap:5px;min-width:0;
     transition:border-color .15s ease,transform .15s ease}
@@ -297,22 +297,26 @@ _CONTENT = """
   /* En-tête de carte : compact + filet fin (structure nette) */
   [data-block] .vx-card-header{padding-bottom:9px;margin-bottom:13px;
     border-bottom:1px solid rgba(255,255,255,.05)}
-  /* Movers (Top 10, opportunités) : cartes compactes, grille plus dense */
-  [data-block] .vx-movergrid{grid-template-columns:repeat(auto-fill,minmax(148px,1fr)) !important;gap:9px}
-  [data-block] .vx-mover{border-radius:12px;padding:11px 12px;
-    background:linear-gradient(180deg,#131419,#0b0c10);border:1px solid rgba(255,255,255,.06);
-    transition:border-color .15s ease,transform .15s ease}
-  [data-block] .vx-mover:hover{border-color:rgba(255,255,255,.2);transform:translateY(-1px)}
-  [data-block] .vx-mover .mv-sym{font-weight:680;font-size:13.5px;letter-spacing:.01em}
-  [data-block] .vx-mover .mv-chg{font-size:18px;font-weight:640;margin-top:2px;font-variant-numeric:tabular-nums}
-  [data-block] .vx-mover .mv-sub{font-size:10.5px;color:var(--vx-text-muted,#7c828c);margin-top:1px}
+  /* Movers (Top 10) & opportunités : cartes qui REMPLISSENT la largeur (auto-fit), plus grandes */
+  [data-block] .vx-movergrid{grid-template-columns:repeat(auto-fit,minmax(184px,1fr)) !important;gap:12px}
+  /* Opportunités : cartes nettement plus grandes (priorité id + !important sur la règle ci-dessus) */
+  [data-block] #vx-opp-stocks .vx-movergrid{grid-template-columns:repeat(auto-fit,minmax(262px,1fr)) !important}
+  [data-block] #vx-opp-options .vx-movergrid{grid-template-columns:repeat(auto-fit,minmax(234px,1fr)) !important}
+  [data-block] .vx-mover{border-radius:14px;padding:14px 15px;
+    background:linear-gradient(180deg,#14161c,#0b0c10);border:1px solid rgba(255,255,255,.07);
+    transition:border-color .15s ease,transform .15s ease,box-shadow .15s ease}
+  [data-block] .vx-mover:hover{border-color:rgba(255,255,255,.22);transform:translateY(-2px);
+    box-shadow:0 8px 22px -12px rgba(0,0,0,.7)}
+  [data-block] .vx-mover .mv-sym{font-weight:690;font-size:15px;letter-spacing:.01em}
+  [data-block] .vx-mover .mv-chg{font-size:21px;font-weight:660;margin-top:3px;font-variant-numeric:tabular-nums}
+  [data-block] .vx-mover .mv-sub{font-size:11px;color:var(--vx-text-muted,#7c828c);margin-top:2px}
   /* Tables : lignes denses, séparateurs fins */
   [data-block] table td{padding:9px 8px}
   [data-block] table tbody tr:first-child td{border-top:0}
   /* Cartes portefeuille : grille plus concentrée */
-  [data-block] #vx-portfolio .vx-pf-grid{grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:9px}
-  [data-block] #vx-portfolio .vx-pf-card{border-radius:12px;padding:11px 13px;
-    background:linear-gradient(180deg,#131419,#0b0c10)}
+  [data-block] #vx-portfolio .vx-pf-grid{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  [data-block] #vx-portfolio .vx-pf-card{border-radius:14px;padding:14px 16px;
+    background:linear-gradient(180deg,#14161c,#0b0c10)}
   /* Opportunités options : cartes compactes */
   [data-block] #vx-opp-options .vx-mover{padding:11px 13px}
 
