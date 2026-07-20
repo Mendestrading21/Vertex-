@@ -2351,7 +2351,11 @@ def strategy_os_page():
 app.register_blueprint(_decision_api.make_blueprint(scan_state=scan_state, demo_mode=DEMO_MODE))
 
 
-@app.route('/options/<sym>')
+# JSON options_pack par titre. Servi sous /api/options/pack/<sym> : la route
+# /options/<sym> est RÉSERVÉE à la page (blueprint redesign.options_symbol_route).
+# Auparavant déclarée sur /options/<sym>, elle était masquée par la page (le
+# blueprint gagne) → les consommateurs JSON recevaient du HTML. (audit RT-01)
+@app.route('/api/options/pack/<sym>')
 def opt_ep(sym):
     return jsonify(options_pack(sym.upper()))
 
@@ -3877,7 +3881,7 @@ async function renderActionDuJour(d){
   </div>${lvls}</div>`;
   if(window.__starSym!==top.symbol){
     window.__starSym=top.symbol;
-    try{window.__starOpt=await(await fetch('/options/'+top.symbol)).json();}catch(e){window.__starOpt=null;}
+    try{window.__starOpt=await(await fetch('/api/options/pack/'+top.symbol)).json();}catch(e){window.__starOpt=null;}
   }
   const o=window.__starOpt,so=document.getElementById('dStarOpt');
   if(so&&o&&o.best_pick){const bp=o.best_pick,sc=o.scenarios,qc=bp.quality>=78?'#22C55E':bp.quality>=62?'#F5B45B':'#EF4444';
@@ -4040,7 +4044,7 @@ async function loadDetail(sym){
   el.style.display='block';el.innerHTML='<div class="scard" style="padding:20px"><span class="muted">chargement '+sym+'…</span></div>';
   el.scrollIntoView({behavior:'smooth',block:'start'});
   try{
-    const o=await(await fetch('/options/'+sym)).json();
+    const o=await(await fetch('/api/options/pack/'+sym)).json();
     const d=((window.__lastD||{}).detail||{})[sym]||{};
     const dec=o.decision,dc=dec?(dec.tone==='strong'?'#22C55E':dec.tone==='buy'?'#4ade80':dec.tone==='watch'?'#FF7A18':dec.tone==='wait'?'#FFB23F':'#EF4444'):'#888';
     const lv=d.plan||{},bp=o.best_pick;
