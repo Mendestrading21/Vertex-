@@ -171,8 +171,9 @@
   }
 
   function stat(label, val) {
-    return '<div class="vx-stat"><span class="vx-stat-label">' + esc(label) +
-      '</span><span class="vx-stat-value">' + val + '</span></div>';
+    // Builder partagé (markup .vx-stat canonique stylé). Repli inline si VX.tile absent.
+    return (window.VX && VX.tile) ? VX.tile.stat({ k: label, v: val })
+      : '<div class="vx-stat"><div class="vx-stat-k">' + esc(label) + '</div><div class="vx-stat-v">' + val + '</div></div>';
   }
 
   // Cellule de métrique premium color-codée (kit .vx-metric). bar = valeur 0-100

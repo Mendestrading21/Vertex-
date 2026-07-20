@@ -18,8 +18,13 @@
   }
 
   function summaryHtml(s) {
-    function stat(l, v) { return '<div class="vx-stat"><span class="vx-stat-label">' + l + '</span><span class="vx-stat-value">' + v + '</span></div>'; }
-    return '<div class="vx-stats-row" style="display:flex;flex-wrap:wrap;gap:1.4rem">' +
+    // Tuile canonique via le builder partagé (markup .vx-stat/.vx-stat-k/-v stylé
+    // par premium.css/glass.css). Repli inline si VX.tile pas encore chargé.
+    function stat(l, v) {
+      return (window.VX && VX.tile) ? VX.tile.stat({ k: l, v: v })
+        : '<div class="vx-stat"><div class="vx-stat-k">' + esc(l) + '</div><div class="vx-stat-v">' + v + '</div></div>';
+    }
+    return '<div class="vx-statrow">' +
       stat('Actifs', VXf.nd(s.active)) + stat('Actions', VXf.nd(s.stocks)) +
       stat('Options', VXf.nd(s.options)) + stat('Clôturés', VXf.nd(s.stopped)) +
       stat('Réf. manquante', VXf.nd(s.data_required)) + '</div>';

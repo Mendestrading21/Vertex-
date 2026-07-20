@@ -263,7 +263,7 @@ body::before{
 .vx-metric::before{background:var(--_tone,var(--vx-silver-line))!important;opacity:.9}
 
 /* Grands chiffres : blanc net, mono, tabulaire */
-.vx-kpi-value,.vx-stat-v,.vx-metric-v,.vx-stat-xl,.vx-cmd-v,.vx-sg-val,.pf-pl,.mv-chg{
+.vx-kpi-value,.vx-stat-v,.vx-stat-value,.vx-metric-v,.vx-stat-xl,.vx-cmd-v,.vx-sg-val,.pf-pl,.mv-chg{
   color:var(--vx-text-primary)}
 .vx-stat[data-tone="pos"] .vx-stat-v,.vx-metric[data-tone="pos"] .vx-metric-v,.vx-pos{color:var(--vx-positive)}
 .vx-stat[data-tone="neg"] .vx-stat-v,.vx-metric[data-tone="neg"] .vx-metric-v,.vx-neg{color:var(--vx-negative)}
