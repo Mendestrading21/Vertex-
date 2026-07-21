@@ -2060,10 +2060,10 @@ app.register_blueprint(_feeds.bp)
 @app.route('/api/ticker/<sym>')
 def api_ticker(sym):
     sym = sym.upper()
-    try:
-        pack = options_pack(sym)
-    except Exception as e:
-        pack = {'sym': sym, 'error': f'{type(e).__name__}: {e}', 'contracts': []}
+    # PRF-01 : options_pack RETIRÉ d'ici — aucun consommateur ne lit `pack` depuis
+    # /api/ticker (la fiche OPTIONS lit /api/options/pack depuis RT-01). Ce build options
+    # lourd (fetch chaîne) bloquait l'ouverture de la fiche ACTION à froid (jusqu'au
+    # timeout, surtout worker options saturé en séance). La fiche action n'en a pas besoin.
     try:
         comp = _company.get(sym, demo=DEMO_MODE, brief=True)
     except Exception:
@@ -2096,7 +2096,7 @@ def api_ticker(sym):
         _risk = None
     return jsonify({'symbol': sym, 'in_universe': sym in UNIVERSE,
                     'detail': det_all.get(sym), 'peers_data': peers_data,
-                    'company': comp, 'pack': pack, 'sector_median': _sec_med,
+                    'company': comp, 'sector_median': _sec_med,
                     'risk_map': _risk})
 
 

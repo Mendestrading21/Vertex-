@@ -44,7 +44,12 @@ fonctionnalité (FCT-01), a11y (A11Y-*), MetricCard/charts unifiés. Fiche `docs
 
 ## Phase transverse — Trading & perf (au fil)
 - **ENG-01/04 (P1)** — plafonds testés + sémantique unique des verdicts.
-- **PRF-01 (P1)** — réduire le payload fiche ~8 Mo sans perte d'info. **PRF-03 (P2)** — tests byte-identiques des memos.
+- **PRF-01 (P1) — ✅ FAIT (vraie cause = latence, pas payload)** — mesuré : `/api/ticker` faisait **timeout ~40 s
+  à froid** (le payload 8 Mo d'origine = l'ancien `/scan`, déjà retiré). Cause : `api_ticker` calculait
+  `options_pack(sym)` (build chaîne options lourd) alors qu'AUCUN consommateur ne lit `pack` depuis `/api/ticker`
+  (la fiche OPTIONS lit `/api/options/pack` depuis RT-01). **Retiré** → `/api/ticker` passe de **~40 s → 3,2 s à
+  froid** (2,1 s chaud), sans perte d'info affichée (fiche action n'utilisait pas `pack`). 932 tests, 0 erreur.
+  **PRF-03 (P2)** — tests byte-identiques des memos.
 - **SEC-01 (P1) — ✅ FAIT (cœur)** — recensé : le contenu EXTERNE = la news (yfinance/RSS/IBKR/traduction) ;
   vérifié qu'elle passe par `sanitize_news()` aux 3 points de sortie (content.py + terminal.py ×2), que le nom/texte
   d'entreprise est rendu en `textContent`/`esc()` (sûr), et **ajouté un gardien** `tests/test_sanitize_news.py`
