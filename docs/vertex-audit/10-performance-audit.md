@@ -27,8 +27,13 @@ Objectif produit : calculs et chiffres **plus rapides**, **sans perdre d'informa
   fraîcheur = âge 7 j **ET** version de schéma, drapeau `stale` honnête. Gardien `tests/test_cache_freshness.py`.
 - **PRF-03 (P2) — Complétude des clés de memo.** Chaque memo doit inclure **toutes** les entrées qui changent la
   sortie (sinon valeur périmée silencieuse). Ajouter un test byte-identique par memo critique.
-- **PRF-04 (P3) — Course sur `scan_state`.** Sous parallélisation, `scan_state` reste muté en place (jamais
-  réassigné) ; confirmer l'absence de course sur les clés écrites concurremment.
+- **PRF-04 (P3) — Course sur `scan_state` — ✅ FAIT (confirmé sûr + gardien).** Le scan parallèle suit un modèle
+  map-and-collect : les workers `_analyse_one`/`_safe_one` sont PURS (lisent un snapshot `_funds` en lecture seule,
+  écrivent des objets locaux, renvoient un tuple), n'écrivent JAMAIS `scan_state` ; l'assemblage `rows`/`detail` +
+  la mutation de `scan_state` se font sur le thread principal. Seule écriture partagée sous threads : `_ANALYSE_MEMO[sym]`
+  (clé distincte par thread → pas de perte sous GIL). `scan_state` muté en place, jamais réassigné, identité partagée.
+  Gardien `tests/test_scan_state_race.py` (4 cas : pas de réassignation dans tout le dépôt, identité partagée,
+  mutation visible partout, worker parallèle sans `scan_state`).
 
 ## Méthode de mesure
 Isoler `METRICS._timings` par scan, comparer P50/P95, et prouver **byte-identique** (hash de scan) après chaque

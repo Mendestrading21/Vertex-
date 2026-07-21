@@ -69,6 +69,11 @@ fonctionnalité (FCT-01), a11y (A11Y-*), MetricCard/charts unifiés. Fiche `docs
   `not demo`) → la démo ne pollue jamais le cache réel ; fraîcheur = **âge (7 j) ET version de schéma**, drapeau
   `stale` honnête. Gardien `tests/test_cache_freshness.py` (6 cas : démo n'écrit/ne mute jamais, `stale` honnête sur
   âge+schéma, TTL séance resserré). **978 tests**.
+- **PRF-04 (P3) — ✅ FAIT (confirmé sûr + gardien)** — pas de course sur `scan_state`. Scan parallèle = map-and-collect :
+  workers PURS (snapshot lecture seule, écritures locales, renvoient un tuple), n'écrivent jamais `scan_state` ;
+  assemblage + mutation sur le thread principal ; seule écriture partagée `_ANALYSE_MEMO[sym]` (clé distincte/thread).
+  Gardien `tests/test_scan_state_race.py` (4 cas : jamais réassigné, identité partagée, mutation visible partout,
+  worker sans `scan_state`). **982 tests. Grappe PRF (01→04) fermée.**
 - **PRF-01 (P1) — ✅ FAIT (vraie cause = latence, pas payload)** — mesuré : `/api/ticker` faisait **timeout ~40 s
   à froid** (le payload 8 Mo d'origine = l'ancien `/scan`, déjà retiré). Cause : `api_ticker` calculait
   `options_pack(sym)` (build chaîne options lourd) alors qu'AUCUN consommateur ne lit `pack` depuis `/api/ticker`
