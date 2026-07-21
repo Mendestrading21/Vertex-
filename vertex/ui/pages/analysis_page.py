@@ -814,6 +814,10 @@ async function loadDossier(){
   if(cut.length>10){
     /* Chandeliers PRO (TradingView LWC) si OHLC daté dispo ; repli auto sur le
        candlestick Chart.js sinon. Même contrat de carte (contrôles TF, explain…). */
+    /* Attendre VXCharts (chart-core.js deferred) : un dossier servi du cache peut tourner
+       avant son chargement — meme garde retry que le radar plus haut (sinon ReferenceError). */
+    (function drawWorkspace(_n){
+    if(!(window.VXCharts&&VXCharts.mount)){ if(_n<60)setTimeout(function(){drawWorkspace(_n+1);},80); return; }
     const drawChart=(window.VXCharts&&VXCharts.lwCandlestickCard)||VXCharts.candlestickCard;
     drawChart('an-chart',{
       title:SYM+' — graphique principal',timeframe:TF,
@@ -873,6 +877,7 @@ async function loadDossier(){
               callback:function(v){return v>=1e6?(v/1e6).toFixed(0)+'M':v>=1e3?(v/1e3).toFixed(0)+'k':v;}}}},
             plugins:{tooltip:{callbacks:{label:function(ctx){return 'Volume '+VX.fmt.num(ctx.parsed.y,0);}}}}}});}});
     }else{$('an-volume').innerHTML='';}
+    })(0);
   }else{
     $('an-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Série de prix indisponible pour ce titre.')+'</div>';
     $('an-rsi').innerHTML='';$('an-volume').innerHTML='';
