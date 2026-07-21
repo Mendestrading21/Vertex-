@@ -29,7 +29,13 @@ globale + logique trading + migration données + IBKR + nettoyage.
    **rangée météo Dashboard** (`briefing tile()`) migrée, vérifié DEMO **diff DOM=0** (`/` + garde-fou
    `/tracking`), SW v93. Reste : `briefing` idx-tile (vx-kpi) + `vx-metric` (7×) ; `portfolio H/_rk` (différé) ;
    retrait `vx-stat-xl` (test-pinned).
-4. **DES-01 (P1)** — réaligner/étiqueter les docs de design périmés (orange/bleu) sur `glass.css`.
+4. **DES-01 (P1) — ✅ FAIT** — `docs/VERTEX_DESIGN_TOKENS.md` et `docs/VERTEX_CHART_LIBRARY.md` réalignés sur la
+   palette **Black Glass** canonique (`glass.css` / `tokens.css` / `chart-theme-obsidian-copper.js`) : bannière de
+   correctif en tête pointant la vérité runtime, table de couleurs corrigée (argent marque `#c9cdd4`, positif
+   `#36c889`, négatif `#ed655c`, attention `#dda23b`, options violet `#9c79d0`, teal macro `#53b9ad`, acier
+   benchmark `#909b94`), **zéro bleu/cyan/orange**, série de référence = `colors.series` réelle. Fin de la palette
+   « Dark Financial Luxury » (orange `#f68a3c` / bleu `#4ca6ff`) abandonnée. Docs uniquement, aucun code runtime
+   touché → tests inchangés.
 5. **CHT-02 (P2)** — contrat de graphe appliqué (source/ts/question/conclusion/état vide) sur les graphes de décision.
 
 ## Phase 3 — Shell unifié (P1)

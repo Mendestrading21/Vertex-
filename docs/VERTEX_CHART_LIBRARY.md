@@ -1,8 +1,14 @@
-# Vertex — Bibliothèque graphique (V3)
+# Vertex — Bibliothèque graphique (Black Glass Institutional)
+
+> **Vérité runtime = le thème `charts/chart-theme-obsidian-copper.js`** (palette
+> Black Glass) consommé par `charts/chart-core.js`. Ce document le RÉSUME ; en
+> cas de doute, le JS gagne. _(Correctif DES-01 : la palette orange/bleu
+> décrite ici auparavant est ABANDONNÉE — voir `.claude/rules/vertex-design-rules.md`.)_
 
 Moteur unique : **Chart.js** (`static/chart.umd.min.js`) — aucune librairie
-concurrente. Thème unique : `charts/chart-theme.js` (tokens V3) consommé
-par `charts/chart-core.js` (gardien `test_chart_theme_is_single`).
+concurrente. Thème unique : `charts/chart-theme-obsidian-copper.js` (palette
+Black Glass, dérivée des tokens `--vx-*`) consommé par `charts/chart-core.js`
+(gardien `test_chart_theme_is_single`).
 
 ## Contrat de carte graphique (§16)
 
@@ -42,13 +48,17 @@ Style commun : fond intégré, grille α .055, axes discrets, tooltip premium
 | factor-chart.js / geographic-exposure.js | expositions |
 | annotations.js | alerte depuis un niveau (double-clic graphe) |
 
-## Sémantique couleur (thème unique)
+## Sémantique couleur (thème unique — Black Glass)
 
-orange `#f68a3c` = série de référence & niveaux d'action · bleu `#4ca6ff` =
-information · cyan `#2cc9d8` = données/live · violet `#8b6df6` = options/IA ·
-vert `#2acb7f` = positif · rouge corail `#f05d55` = négatif · ambre
-`#f3a93b` = attention · gris `#738096` = benchmark. Séries multiples :
-`colors.series` (référence orange puis hues distinctes).
+**Zéro bleu.** argent `#c9cdd4` = série de référence / marque / structure ·
+vert `#36c889` = positif · rouge corail `#ed655c` = négatif/risque · ambre
+`#dda23b` = attention/série secondaire · violet `#9c79d0` = options/IV/Greeks
+(limité) · teal `#53b9ad` = macro/cross-asset/liquidité · gris pierre
+`#8f8a83` = benchmark/neutre. **Séries multiples** :
+`colors.series = ['#c9cdd4','#8f8a83','#9aa1a9','#9c79d0','#dda23b','#6d746e']`
+(argent puis neutres/violet/ambre distincts — aucune série verte ni bleue,
+le vert restant réservé à la sémantique `positive`). Une même sémantique =
+une même couleur sur toutes les pages et graphiques.
 
 ## Règles
 
