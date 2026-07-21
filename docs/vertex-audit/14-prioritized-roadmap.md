@@ -45,7 +45,11 @@ fonctionnalité (FCT-01), a11y (A11Y-*), MetricCard/charts unifiés. Fiche `docs
 ## Phase transverse — Trading & perf (au fil)
 - **ENG-01/04 (P1)** — plafonds testés + sémantique unique des verdicts.
 - **PRF-01 (P1)** — réduire le payload fiche ~8 Mo sans perte d'info. **PRF-03 (P2)** — tests byte-identiques des memos.
-- **SEC-01 (P1)** — sanitiser tout `innerHTML` alimenté par des sources externes.
+- **SEC-01 (P1) — ✅ FAIT (cœur)** — recensé : le contenu EXTERNE = la news (yfinance/RSS/IBKR/traduction) ;
+  vérifié qu'elle passe par `sanitize_news()` aux 3 points de sortie (content.py + terminal.py ×2), que le nom/texte
+  d'entreprise est rendu en `textContent`/`esc()` (sûr), et **ajouté un gardien** `tests/test_sanitize_news.py`
+  (neutralise script/img/onerror/onload, liens http-only, robustesse, + vérifie que les endpoints appellent
+  sanitize). Les ~649 autres `innerHTML` sont des chaînes INTERNES de confiance (non-externes). 932 tests.
 
 ## Phase 14 — Validation finale
 Parcours complet des 8 espaces en navigateur réel, 0 erreur, tous gardiens verts, matrice de pages à « OK »
