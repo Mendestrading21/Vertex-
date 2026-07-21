@@ -447,6 +447,10 @@ function paintQuadrant(cf,sm,peers,demo){
     height:320,legend:[{label:SYM,color:cc.brand},{label:'Pairs',color:cc.neutral},{label:'Médiane',color:cc.warning}],
     source:demo?'company (DÉMO)':'company (cache)',timestamp:Date.now(),mode:'delayed',
     limits:'X = croissance du CA · Y = ROE (rentabilité des fonds propres)',
+    explain:{shows:'Le titre positionné face à ses pairs sur deux axes : croissance du chiffre d’affaires (X) et rentabilité des fonds propres / ROE (Y).',
+      why:'Le cadran supérieur droit — croissance ET rentabilité au-dessus de la médiane sectorielle — est la zone de qualité durable ; un seul axe ne suffit pas.',
+      confirm:'Le point du titre se situe au-dessus des deux médianes, à l’écart du nuage des pairs.',
+      invalidate:'Le titre est en bas ou à gauche des médianes — croissance sans rentabilité, ou l’inverse.'},
     render:function(cv){return VXCharts.mount(cv,cfg);}});
 }
 
@@ -613,6 +617,10 @@ function paintPhysics(d){
         conclusion:(p50!=null?'médian '+VX.fmt.pct(p50):'')+(bs.p_positive!=null?' · '+Math.round(bs.p_positive*100)+'% proba positive':''),
         unit:'% horizon',height:232,source:'Monte-Carlo 1200 chemins (GBM) · bootstrap blocs',timestamp:d.updated||Date.now(),mode:'delayed',
         limits:'MODEL_ESTIMATE · '+(bs.horizon||mc.days||'?')+' j'+(tp1f!=null?' · TP1 avant stop '+Math.round(tp1f*100)+'% vs stop '+Math.round((stopf||0)*100)+'%':''),
+        explain:{shows:'La fourchette de rendement simulée sur l’horizon : scénario pessimiste (P05), médian (P50) et optimiste (P95), issus de 1200 chemins Monte-Carlo et d’un bootstrap par blocs.',
+          why:'Un seul objectif de prix masque le risque ; la dispersion montre l’éventail réellement possible et la probabilité que l’issue soit positive.',
+          confirm:'Médiane positive et P05 contenu (perte limitée dans le pire décile).',
+          invalidate:'P05 très négatif ou médiane sous zéro — asymétrie défavorable malgré un P95 attirant. Estimation de modèle, pas une prévision.'},
         render:function(cv){return VXCharts.mount(cv,{type:'bar',
           data:{labels:['Pessimiste P05','Médian P50','Optimiste P95'],datasets:[{data:[p05,p50,p95],backgroundColor:[cc.negative,cc.neutral,cc.positive],borderRadius:5,maxBarThickness:46}]},
           options:{indexAxis:'y',scales:{x:{ticks:{callback:function(x){return x+'%';},color:cc.muted,font:{size:10}},grid:{color:cc.grid}},y:{grid:{display:false},ticks:{color:cc.text,font:{size:11}}}},plugins:{legend:{display:false}}}});}
@@ -853,6 +861,10 @@ async function loadDossier(){
       VXCharts.card('an-rsi',{title:SYM+' — RSI (14)',height:118,unit:'RSI',
         question:'Momentum : suracheté (>70) ou survendu (<30) ?',
         conclusion:(d.rsi!=null?('RSI actuel '+VX.fmt.num(d.rsi,0)+(d.rsi>=70?' · suracheté':d.rsi<=30?' · survendu':' · neutre')):''),
+        explain:{shows:'Le RSI (14) sur la fenêtre affichée, avec les bandes 70 (suracheté), 30 (survendu) et 50 (équilibre).',
+          why:'Le RSI situe le momentum : les extrêmes signalent un mouvement potentiellement épuisé, le franchissement de 50 un changement de régime.',
+          confirm:'RSI qui repart au-dessus de 50 après un creux, sans divergence baissière.',
+          invalidate:'RSI >70 durable ou divergence prix/RSI — momentum en décalage avec le prix.'},
         source:'scan',timestamp:Date.now(),mode:demo?'fallback':'delayed',
         render:function(cv){return VXCharts.mount(cv,{type:'line',
           data:{labels:cut.map((_,i)=>i-cut.length),datasets:[{data:rsi,borderColor:VXCharts.colors.brand,borderWidth:1.5,pointRadius:0,tension:.25,fill:false}]},
@@ -867,6 +879,14 @@ async function loadDossier(){
       const volCols=cut.map(function(c,i){return (i>0&&c<cut[i-1])?VXCharts.colors.negative:VXCharts.colors.positive;});
       VXCharts.card('an-volume',{title:SYM+' — Volume',height:96,unit:'titres',
         question:'Le mouvement est-il soutenu par le volume ?',
+        conclusion:(function(){var a=vol.filter(function(x){return x!=null;});if(a.length<3)return '';
+          var last=a[a.length-1],avg=a.slice(0,-1).reduce(function(s,x){return s+x;},0)/(a.length-1);
+          if(!avg)return '';var r=last/avg;
+          return 'Dernière séance ×'+VX.fmt.num(r,2)+' vs moyenne — '+(r>=1.5?'nettement soutenu':r>=1?'au-dessus':'sous la moyenne');})(),
+        explain:{shows:'Le volume échangé par séance sur la fenêtre affichée, coloré selon le sens du jour (vert hausse, rouge baisse).',
+          why:'Un mouvement de prix porté par un volume supérieur à la moyenne est plus crédible qu’un mouvement sur faible volume.',
+          confirm:'Volume en expansion dans le sens de la tendance (cassure, accélération).',
+          invalidate:'Hausse du prix sur volume déclinant — mouvement peu soutenu, à risque d’essoufflement.'},
         source:'scan',timestamp:Date.now(),mode:demo?'fallback':'delayed',
         render:function(cv){return VXCharts.mount(cv,{type:'bar',
           data:{labels:cut.map((_,i)=>i-cut.length),datasets:[{data:vol,

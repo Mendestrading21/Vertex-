@@ -432,6 +432,12 @@ async function loadTrack(){
       if(window.VXCharts&&VXCharts.card&&VXCharts.bars&&_tv.some(x=>x!=null)){
         VXCharts.card('vx-pf-track-bar',{title:'Rendement moyen +20 séances par verdict',
           question:'Quels verdicts moteur ont le mieux tenu ?',height:200,
+          conclusion:(function(){var best=null,bi=-1;_tv.forEach(function(v,i){if(v!=null&&(best==null||v>best)){best=v;bi=i;}});
+            return bi>=0?('« '+_tl[bi]+' » en tête : '+VX.fmt.pct(best)+' à +20 séances'):'';})(),
+          explain:{shows:'Le rendement moyen réel, +20 séances après le signal, regroupé par verdict du moteur (verdicts résolus, n≥5).',
+            why:'C’est la mesure a posteriori de la valeur de chaque verdict : un verdict d’achat doit, en moyenne, avoir été suivi d’un gain.',
+            confirm:'Les verdicts positifs (acheter/renforcer) affichent une moyenne nettement au-dessus de zéro et des verdicts prudents.',
+            invalidate:'Un verdict d’achat à moyenne négative, ou l’absence de hiérarchie entre verdicts — le signal ne discrimine pas. Mesure historique, pas une promesse.'},
           source:'moteur track-record',timestamp:Date.now(),mode:'delayed',
           limits:'moyenne réelle des verdicts résolus (n≥5) — mesure, pas une promesse',
           render:(cv)=>VXCharts.bars(cv,_tl,_tv,{colors:_tv.map(v=>v==null?'#8f8a83':(v>=0?'#36c889':'#ed655c')),yFmt:(x)=>x+' %'})});

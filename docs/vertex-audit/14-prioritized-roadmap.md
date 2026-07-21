@@ -36,7 +36,14 @@ globale + logique trading + migration données + IBKR + nettoyage.
    benchmark `#909b94`), **zéro bleu/cyan/orange**, série de référence = `colors.series` réelle. Fin de la palette
    « Dark Financial Luxury » (orange `#f68a3c` / bleu `#4ca6ff`) abandonnée. Docs uniquement, aucun code runtime
    touché → tests inchangés.
-5. **CHT-02 (P2)** — contrat de graphe appliqué (source/ts/question/conclusion/état vide) sur les graphes de décision.
+5. **CHT-02 (P2) — ✅ FAIT** — contrat de graphe complété sur les **17 graphes de décision** (`VXCharts.card`) des
+   pages briefing/opportunities/analysis/performance/intelligence. Base (titre/question/source/timestamp) déjà
+   présente partout ; comblé les 2 seules **conclusions** manquantes (`an-volume` — volume relatif à la moyenne
+   calculé sur la série réelle ; `vx-pf-track-bar` — verdict en tête calculé sur les moyennes réelles) et ajouté le
+   tiroir **« Comprendre »** 4 champs (montre/pourquoi/confirme/invalide) aux 6 graphes qui ne l’avaient pas
+   (`an-quadrant`, `an-mc`, `an-rsi`, `an-volume`, `op-sel-mc`, `vx-pf-track-bar`). Contenu honnête et étiqueté
+   (MODEL_ESTIMATE conservé sur les Monte-Carlo, « mesure, pas une promesse » sur le track-record). Additif,
+   apostrophes typographiques `’` (pas d’échappement), 981 tests verts, pages parse OK.
 
 ## Phase 3 — Shell unifié (P1)
 6. **IA-01 + CMP-03 (P1)** — une seule nav (`PRIMARY_NAV`) ; rediriger les routes legacy ; supprimer la sidebar
