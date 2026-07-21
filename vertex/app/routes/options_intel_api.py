@@ -120,22 +120,28 @@ def _max_pain(sym):
         strikes = sorted(set(calls) | set(puts))
         if len(strikes) < 3:
             continue
+        # DAT-01 : l'OI persisté peut être None (absent) ≠ 0 (vrai zéro). _oi conserve la
+        # valeur honnête (affichage → « — » si None) ; _oin la coerce à 0 pour les CALCULS.
+        def _oi(side, k):
+            return (side.get(k) or {}).get('oi')
+
+        def _oin(side, k):
+            return _oi(side, k) or 0
         best_k, best_pay = None, None
         for K in strikes:                     # payoff total aux détenteurs si règlement = K
-            pay = sum(calls.get(k, {}).get('oi', 0) * max(0.0, K - k) for k in strikes) \
-                + sum(puts.get(k, {}).get('oi', 0) * max(0.0, k - K) for k in strikes)
+            pay = sum(_oin(calls, k) * max(0.0, K - k) for k in strikes) \
+                + sum(_oin(puts, k) * max(0.0, k - K) for k in strikes)
             if best_pay is None or pay < best_pay:   # max pain = K qui MINIMISE le payoff
                 best_pay, best_k = pay, K
-        call_oi = sum(v.get('oi', 0) for v in calls.values())
-        put_oi = sum(v.get('oi', 0) for v in puts.values())
-        walls = sorted(({'strike': k, 'call_oi': calls.get(k, {}).get('oi', 0),
-                         'put_oi': puts.get(k, {}).get('oi', 0),
-                         'oi': calls.get(k, {}).get('oi', 0) + puts.get(k, {}).get('oi', 0)}
+        call_oi = sum((v.get('oi') or 0) for v in calls.values())
+        put_oi = sum((v.get('oi') or 0) for v in puts.values())
+        walls = sorted(({'strike': k, 'call_oi': _oi(calls, k), 'put_oi': _oi(puts, k),
+                         'oi': _oin(calls, k) + _oin(puts, k)}
                         for k in strikes), key=lambda w: -w['oi'])[:5]
         out.append({'exp': exp, 'max_pain': best_k, 'call_oi': call_oi, 'put_oi': put_oi,
                     'pcr': round(put_oi / call_oi, 2) if call_oi else None, 'walls': walls,
-                    'by_strike': [{'strike': k, 'call_oi': calls.get(k, {}).get('oi', 0),
-                                   'put_oi': puts.get(k, {}).get('oi', 0)} for k in strikes]})
+                    'by_strike': [{'strike': k, 'call_oi': _oi(calls, k),
+                                   'put_oi': _oi(puts, k)} for k in strikes]})
     if not out:
         return None
     tc = sum(x['call_oi'] for x in out)

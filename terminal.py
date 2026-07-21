@@ -901,8 +901,10 @@ def _ibkr_opt_worker():
                 oi = t.callOpenInterest if right == 'C' else t.putOpenInterest
                 last = t.last if (t.last and t.last == t.last) else (t.close if (t.close and t.close == t.close) else 0.0)
                 rows.append({'strike': float(c.strike), 'impliedVolatility': iv,
-                             'openInterest': int(oi) if (oi and oi == oi) else 0,
-                             'volume': int(t.volume) if (t.volume and t.volume == t.volume) else 0,
+                             # DAT-01 : distinguer ABSENT (NaN → None) d'un vrai 0 reporté.
+                             # (x == x) est faux uniquement pour NaN ; un vrai 0 est donc conservé.
+                             'openInterest': (int(oi) if (oi is not None and oi == oi) else None),
+                             'volume': (int(t.volume) if (t.volume is not None and t.volume == t.volume) else None),
                              'bid': float(t.bid) if (t.bid and t.bid == t.bid and t.bid > 0) else 0.0,
                              'ask': float(t.ask) if (t.ask and t.ask == t.ask and t.ask > 0) else 0.0,
                              'lastPrice': float(last),
@@ -1165,8 +1167,8 @@ def _persist_chain_full(sym, exp, right, rows, spot):
             continue
         if k <= 0:
             continue
-        oi = r.get('openInterest') or 0
-        vol = r.get('volume') or 0
+        oi = r.get('openInterest')                        # DAT-01 : None honnête si absent, 0 si vrai 0
+        vol = r.get('volume')
         iv = r.get('impliedVolatility')
 
         def _rg(name, nd=4):                              # greek broker persisté (None honnête)
@@ -1176,7 +1178,8 @@ def _persist_chain_full(sym, exp, right, rows, spot):
         def _q(name, nd=2):                               # cotation bid/ask/last (None honnête, >0)
             v = r.get(name)
             return round(float(v), nd) if isinstance(v, (int, float)) and float(v) > 0 else None
-        by_strike[k] = {'oi': int(oi), 'vol': int(vol),
+        by_strike[k] = {'oi': (int(oi) if oi is not None else None),
+                        'vol': (int(vol) if vol is not None else None),
                         'iv': (round(float(iv), 4) if iv else None),
                         'delta': _rg('delta'), 'gamma': _rg('gamma'),
                         'theta': _rg('theta'), 'vega': _rg('vega'),

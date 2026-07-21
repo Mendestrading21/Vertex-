@@ -14,9 +14,10 @@ globale + logique trading + migration données + IBKR + nettoyage.
 ## Phase 2 — Fondations design/données (P0/P1 prioritaires)
 0. **RT-01 (P1) — ✅ FAIT** — `/options/<sym>` dédupliqué (JSON → `/api/options/pack/<sym>`, 2 consommateurs
    corrigés, page réservée). Vérifié DEMO + 919 tests.
-1. **DAT-01/IBK-03 — révisé P2 après vérification** — la couche d'affichage est déjà honnête (normalisation `None`
-   + état vide `available:false`, vérifié DEMO). Résidu étroit (OI/vol au producteur IBKR live) à traiter **en
-   local** (non testable en cloud) ; ne pas dégrader l'affichage honnête.
+1. **DAT-01/IBK-03 — ✅ FAIT (local, marché ouvert)** — le producteur `chain()` (`terminal.py:904`) distingue
+   désormais ABSENT (NaN → `None`) d'un vrai `0` reporté pour OI/volume ; `_persist_chain_full` préserve `None`
+   (plus de `or 0`) ; `_max_pain` rendu None-safe (`_oi` honnête pour l'affichage → « — », `_oin` coerce à 0 pour
+   les calculs) ; `oi_by_strike` skippe déjà les `None`. Affichage honnête non dégradé, 928 tests, 0 crash live.
 2. **CMP-01 (P1)** — `.vx-card` canonique (une définition + modificateurs), retirer les 6 redéfinitions.
 3. **CMP-02 (P1) — ✅ Phases 1-4 faites** — P1 : builder `VX.tile` + bug tuiles stat nues corrigé, SW v90.
    P2 : `vx-metric` options → `VX.tile.metric` (identique), SW v91. P3 : `VX.tile.metric` étendu
