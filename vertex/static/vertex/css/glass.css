@@ -113,12 +113,15 @@ body::before{
 /* ══════════════════════════════════════════════════════════════════
    3) CARTES EN VERRE — translucide + blur + bordure argent + reflet + ombre
    ══════════════════════════════════════════════════════════════════ */
+/* CMP-01 : définition CANONIQUE de .vx-card (une seule — glass.css charge en dernier).
+   padding/min-width intégrés ici (repris de l'ex-base components.css, désormais retirée). */
 .vx-card{
   background:var(--vx-glass-1);
   -webkit-backdrop-filter:blur(var(--vx-blur-md)) saturate(1.05);
   backdrop-filter:blur(var(--vx-blur-md)) saturate(1.05);
   border:1px solid var(--vx-glass-border);
   border-radius:var(--vx-r-lg);
+  padding:var(--vx-s4);min-width:0;
   box-shadow:var(--vx-glass-sheen),var(--shadow-card);
   transition:border-color var(--vx-t),box-shadow var(--vx-t),transform var(--vx-t),background var(--vx-t)}
 .vx-card:hover{border-color:var(--vx-glass-border-strong);background:var(--vx-glass-2)}

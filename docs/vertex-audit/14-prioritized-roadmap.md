@@ -18,7 +18,11 @@ globale + logique trading + migration données + IBKR + nettoyage.
    désormais ABSENT (NaN → `None`) d'un vrai `0` reporté pour OI/volume ; `_persist_chain_full` préserve `None`
    (plus de `or 0`) ; `_max_pain` rendu None-safe (`_oi` honnête pour l'affichage → « — », `_oin` coerce à 0 pour
    les calculs) ; `oi_by_strike` skippe déjà les `None`. Affichage honnête non dégradé, 928 tests, 0 crash live.
-2. **CMP-01 (P1)** — `.vx-card` canonique (une définition + modificateurs), retirer les 6 redéfinitions.
+2. **CMP-01 (P1) — ✅ FAIT** — base `.vx-card` CANONIQUE dans `glass.css` (padding/min-width intégrés depuis
+   l'ex-base `components.css`, redéfinition retirée). Vérifié par comparaison des **styles calculés AVANT/APRÈS**
+   (base/premium/compact : radius/padding/min-width/bordure/ombre **byte-identiques**) — `.vx-card` calculant
+   globalement, valable pour toutes les pages. SW v94, 928 tests, 0 erreur console. Reste (mineur) : modificateurs
+   `.vx-card.*` encore répartis (cockpit/polish/premium) — décoratifs, non-base, à regrouper au fil.
 3. **CMP-02 (P1) — ✅ Phases 1-4 faites** — P1 : builder `VX.tile` + bug tuiles stat nues corrigé, SW v90.
    P2 : `vx-metric` options → `VX.tile.metric` (identique), SW v91. P3 : `VX.tile.metric` étendu
    (`cmp`/`mid`/`kTitle`) + `analysis_page metric()` migré (diff=0), SW v92. P4 : `VX.tile.stat` étendu (`vfs`) +
