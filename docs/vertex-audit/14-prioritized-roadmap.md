@@ -43,7 +43,11 @@ Intelligence → Journal → Events → Watchlist → Settings. Pour chacune : p
 fonctionnalité (FCT-01), a11y (A11Y-*), MetricCard/charts unifiés. Fiche `docs/vertex-audit/pages/<route>.md`.
 
 ## Phase transverse — Trading & perf (au fil)
-- **ENG-01/04 (P1)** — plafonds testés + sémantique unique des verdicts.
+- **ENG-01 (P1) — ✅ FAIT** — plafonds vérifiés PAR TEST dans le code servi (`tests/test_engine_caps.py`) :
+  Kelly ≤ 12 % (`kelly_cap`, `_clamp(...,0,12)`) et p_win ∈ [0,05 ; 0,85] (`ml_calibration.predict`,
+  `min(0.85,...)`) tiennent sous entrées extrêmes ; + gardiens que les caps restent dans le code (inspection
+  source). 942 tests. **ENG-04 (P1, sémantique verdicts)** — reste : auditer `__VXVOCAB` vs libellés réels des
+  pages (déjà partiellement couvert par `test_single_decision_engine`/`test_single_decision_source`).
 - **PRF-01 (P1) — ✅ FAIT (vraie cause = latence, pas payload)** — mesuré : `/api/ticker` faisait **timeout ~40 s
   à froid** (le payload 8 Mo d'origine = l'ancien `/scan`, déjà retiré). Cause : `api_ticker` calculait
   `options_pack(sym)` (build chaîne options lourd) alors qu'AUCUN consommateur ne lit `pack` depuis `/api/ticker`
