@@ -99,13 +99,15 @@
         + '<span class="vx-metric-k"' + kt + '>' + VX.esc(o.k) + '</span>'
         + '<span class="vx-metric-v">' + v + u + '</span>' + cmp + bar + '</div>';
     },
-    /* Stat à halo : label + valeur (+ sous-légende) (+ extra, ex. sparkline SVG). */
+    /* Stat à halo : label + valeur (+ sous-légende) (+ extra, ex. sparkline SVG).
+       Option additive `vfs` (taille de valeur, px) OFF par défaut → rétrocompatible. */
     stat: function (o) {
       o = o || {};
+      var vstyle = o.vfs ? ' style="font-size:' + (o.vfs | 0) + 'px"' : '';
       var sub = (o.sub != null && o.sub !== '') ? '<div class="vx-stat-sub">' + VX.esc(o.sub) + '</div>' : '';
       return '<div class="vx-stat" data-tone="' + _toneAttr(o.tone) + '">'
         + '<div class="vx-stat-k">' + VX.esc(o.k) + '</div>'
-        + '<div class="vx-stat-v">' + VX.fmt.nd(o.v) + '</div>' + sub + (o.extra || '') + '</div>';
+        + '<div class="vx-stat-v"' + vstyle + '>' + VX.fmt.nd(o.v) + '</div>' + sub + (o.extra || '') + '</div>';
     },
     /* KPI dans une carte compacte : label + valeur + delta (ton par classe). */
     kpi: function (o) {
