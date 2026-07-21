@@ -61,6 +61,14 @@ fonctionnalité (FCT-01), a11y (A11Y-*), MetricCard/charts unifiés. Fiche `docs
   (join `\x00` avant hachage) → deux entrées distinctes ne peuvent plus jamais collisionner ; `fr_news` uniformisé.
   Gardien `tests/test_memo_keys.py` (8 cas : déterminisme byte-identique, non-collision, chaque partie change la
   clé, préfixes isolés, pas de fuite entre entrées ambiguës au niveau du memo). **972 tests**.
+- **PRF-02 (P2) — ✅ FAIT (audit + gardien, caches jugés freshness-safe)** — vérifié qu'aucun cache ne sert de
+  périmé comme live. `_YF_CACHE` : TTL relu à chaque lecture et **plus court en séance** (`_YF_TTL_OPEN <
+  _YF_TTL_CLOSED`) → l'ouverture force le refetch. `_OPTPACK_CACHE`/`_SCAN_RESP` : en mémoire, process-scopés,
+  mono-source, `DEMO_MODE` constant au runtime + bypass `fresh` → pas de mélange d'environnement. `company_cache.json`
+  (seul persisté, critique) : en `demo=True`, `get()` ne fait **ni réseau ni écriture** (écritures gardées
+  `not demo`) → la démo ne pollue jamais le cache réel ; fraîcheur = **âge (7 j) ET version de schéma**, drapeau
+  `stale` honnête. Gardien `tests/test_cache_freshness.py` (6 cas : démo n'écrit/ne mute jamais, `stale` honnête sur
+  âge+schéma, TTL séance resserré). **978 tests**.
 - **PRF-01 (P1) — ✅ FAIT (vraie cause = latence, pas payload)** — mesuré : `/api/ticker` faisait **timeout ~40 s
   à froid** (le payload 8 Mo d'origine = l'ancien `/scan`, déjà retiré). Cause : `api_ticker` calculait
   `options_pack(sym)` (build chaîne options lourd) alors qu'AUCUN consommateur ne lit `pack` depuis `/api/ticker`

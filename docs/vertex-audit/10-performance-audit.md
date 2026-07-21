@@ -20,8 +20,11 @@ Objectif produit : calculs et chiffres **plus rapides**, **sans perdre d'informa
 ## Findings restants
 - **PRF-01 (P1) — Payload fiche ~8 Mo.** `/analysis/<sym>` renvoie un très gros JSON. **Action** : trimmer les
   champs non consommés, paginer/paresser les séries lourdes, mesurer avant/après. Ne retirer aucun chiffre affiché.
-- **PRF-02 (P2) — Fraîcheur des caches vs live.** Vérifier qu'aucun cache (scan/options/yf) ne sert une valeur
-  périmée pendant que la source est devenue live (clé de cache doit inclure l'état de fraîcheur pertinent).
+- **PRF-02 (P2) — Fraîcheur des caches vs live — ✅ FAIT (audit + gardien).** Vérifié : `_YF_CACHE` relit son TTL
+  à chaque lecture, plus court en séance (`_YF_TTL_OPEN=90 < _YF_TTL_CLOSED=900`) → l'ouverture force le refetch ;
+  `_OPTPACK_CACHE`/`_SCAN_RESP` en mémoire, process-scopés, mono-source, `DEMO_MODE` constant + bypass `fresh` ;
+  `company_cache.json` (seul persisté) : la démo ne fait ni réseau ni écriture (jamais de mock persisté comme réel),
+  fraîcheur = âge 7 j **ET** version de schéma, drapeau `stale` honnête. Gardien `tests/test_cache_freshness.py`.
 - **PRF-03 (P2) — Complétude des clés de memo.** Chaque memo doit inclure **toutes** les entrées qui changent la
   sortie (sinon valeur périmée silencieuse). Ajouter un test byte-identique par memo critique.
 - **PRF-04 (P3) — Course sur `scan_state`.** Sous parallélisation, `scan_state` reste muté en place (jamais
