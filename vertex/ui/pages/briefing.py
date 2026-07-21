@@ -1671,7 +1671,9 @@ async function loadEssential(scan){
   const bWord=br==null?'—':(br>=55?'PARTAGÉE':br>=45?'MOYENNE':'ÉTROITE');
   const bTone=br==null?'':(br>=55?'pos':br>=45?'':'neg');
   const bSub=br==null?'participation indisponible':(Math.round(br)+' % des titres > MM50');
-  const tile=(k,v,sub,tone,extra)=>`<div class="vx-stat" data-tone="${tone||''}"><div class="vx-stat-k">${k}</div><div class="vx-stat-v" style="font-size:17px">${v}</div><div class="vx-stat-sub">${sub}</div>${extra||''}</div>`;
+  // Builder partagé (CMP-02) — tuile .vx-stat canonique (vfs=17). Repli inline si VX.tile absent.
+  const tile=(k,v,sub,tone,extra)=>(window.VX&&VX.tile)?VX.tile.stat({k:k,v:v,sub:sub,tone:tone,extra:extra,vfs:17})
+    :`<div class="vx-stat" data-tone="${tone||''}"><div class="vx-stat-k">${k}</div><div class="vx-stat-v" style="font-size:17px">${v}</div><div class="vx-stat-sub">${sub}</div>${extra||''}</div>`;
   const spxSpark=(spx.spark&&spx.spark.length>2)?sparkSvg(spx.spark,(chg==null?true:chg>=0)):'';
   const vixIdx=idx.find(i=>i&&i.name==='VIX')||{};
   const vixSpark=(vixIdx.spark&&vixIdx.spark.length>2)?sparkSvg(vixIdx.spark,true,true):'';

@@ -50,6 +50,18 @@ def test_metric_builder_supports_cmp_mid_ktitle():
         assert needle in src, needle
 
 
+def test_stat_builder_supports_vfs():
+    """CMP-02 phase 4 : VX.tile.stat gère l'option vfs (taille de valeur)."""
+    src = _read('vertex', 'static', 'vertex', 'js', 'vx-core.js')
+    assert 'o.vfs' in src, 'VX.tile.stat ne gère pas vfs'
+
+
+def test_briefing_uses_shared_stat_builder():
+    """La rangée météo du Dashboard construit ses tuiles via le builder partagé."""
+    src = _read('vertex', 'ui', 'pages', 'briefing.py')
+    assert 'VX.tile.stat' in src, 'briefing n’utilise pas le builder partagé'
+
+
 def test_analysis_page_uses_shared_metric_builder():
     """La fiche Analyse construit ses tuiles via le builder partagé."""
     src = _read('vertex', 'ui', 'pages', 'analysis_page.py')

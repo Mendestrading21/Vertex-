@@ -209,7 +209,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v92';   // v92 : CMP-02 — VX.tile.metric étendu (cmp/mid/kTitle) + fiche Analyse metric() migrée (vx-core.js/analysis_page.py)
+const CACHE='td-shell-v93';   // v93 : CMP-02 — VX.tile.stat étendu (vfs) + rangée météo du Dashboard tile() migrée (vx-core.js/briefing.py)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png','/static/vertex/css/fonts.css','/static/vertex/fonts/GeneralSans-Regular.woff2','/static/vertex/fonts/GeneralSans-Medium.woff2','/static/vertex/fonts/GeneralSans-Semibold.woff2','/static/vertex/fonts/GeneralSans-Bold.woff2','/static/vertex/fonts/JetBrainsMono-Regular.woff2','/static/vertex/fonts/JetBrainsMono-Medium.woff2','/static/vertex/fonts/JetBrainsMono-SemiBold.woff2','/static/vertex/fonts/JetBrainsMono-Bold.woff2']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
