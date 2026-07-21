@@ -27,9 +27,13 @@ polish · premium · responsive · states · tables · tokens · utilities`.
   - **✅ Phase 3 faite** : `VX.tile.metric` étendu (options additives `cmp`/`mid`/`kTitle`, OFF par défaut →
     rétrocompatible) puis `analysis_page.py metric()` migré. Vérifié DEMO **byte-identique** (diff avant/après =
     **0** sur `/analysis/ACN` **et** garde-fou options inchangé). SW `td-shell-v92`, 2 gardiens ajoutés.
-  - **Reste (phases suivantes)** : `briefing.py` `tile()` (vx-stat + tailles inline `#vx-ess-body`),
-    `portfolio_page.py` `H`/`_rk` (**différé** : ton sur delta seulement + font-size 20/22px inline, non
-    byte-identique) ; puis retirer `vx-stat-xl` (épinglé `test_cockpit.py:16`).
+  - **✅ Phase 4 faite** : `VX.tile.stat` étendu (option `vfs` = taille de valeur, OFF par défaut) puis la
+    **rangée météo du Dashboard** (`briefing.py tile()`, 5 tuiles) migrée. Vérifié DEMO **diff DOM = 0** sur `/`
+    **et** garde-fou `/tracking` inchangé ; 0 erreur console. Note : `sub` désormais échappé proprement par le
+    builder — rendu DOM identique (le navigateur normalise `&`/`>`), micro-durcissement XSS. SW `td-shell-v93`.
+  - **Reste (phases suivantes)** : `briefing.py` idx-tile (vx-kpi) + `vx-metric` (7×) ; `portfolio_page.py`
+    `H`/`_rk` (**différé** : ton sur delta seulement + font-size 20/22px inline, non byte-identique) ; puis
+    retirer `vx-stat-xl` (épinglé `test_cockpit.py:16`).
 - **DES-01 (P1) — Docs de design périmés.** `docs/claude/VERTEX_DESIGN_TOKENS.md` et `VERTEX_CHART_LIBRARY.md`
   décrivent une palette **orange/bleu** abandonnée, contredisant `glass.css` (Black Glass, zéro bleu). Risque :
   induire un futur contributeur en erreur. **Action** : marquer ces docs « PÉRIMÉ — voir glass.css / references/

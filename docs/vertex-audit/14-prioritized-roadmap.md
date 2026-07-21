@@ -18,10 +18,11 @@ globale + logique trading + migration données + IBKR + nettoyage.
    + état vide `available:false`, vérifié DEMO). Résidu étroit (OI/vol au producteur IBKR live) à traiter **en
    local** (non testable en cloud) ; ne pas dégrader l'affichage honnête.
 2. **CMP-01 (P1)** — `.vx-card` canonique (une définition + modificateurs), retirer les 6 redéfinitions.
-3. **CMP-02 (P1) — ✅ Phases 1-3 faites** — P1 : builder `VX.tile` + bug tuiles stat nues corrigé, SW v90.
+3. **CMP-02 (P1) — ✅ Phases 1-4 faites** — P1 : builder `VX.tile` + bug tuiles stat nues corrigé, SW v90.
    P2 : `vx-metric` options → `VX.tile.metric` (identique), SW v91. P3 : `VX.tile.metric` étendu
-   (`cmp`/`mid`/`kTitle` additifs) + `analysis_page metric()` migré, vérifié DEMO **byte-identique** (diff=0,
-   options inchangées), SW v92. Reste : `briefing tile()`, `portfolio H/_rk` (différé, non byte-identique) ;
+   (`cmp`/`mid`/`kTitle`) + `analysis_page metric()` migré (diff=0), SW v92. P4 : `VX.tile.stat` étendu (`vfs`) +
+   **rangée météo Dashboard** (`briefing tile()`) migrée, vérifié DEMO **diff DOM=0** (`/` + garde-fou
+   `/tracking`), SW v93. Reste : `briefing` idx-tile (vx-kpi) + `vx-metric` (7×) ; `portfolio H/_rk` (différé) ;
    retrait `vx-stat-xl` (test-pinned).
 4. **DES-01 (P1)** — réaligner/étiqueter les docs de design périmés (orange/bleu) sur `glass.css`.
 5. **CHT-02 (P2)** — contrat de graphe appliqué (source/ts/question/conclusion/état vide) sur les graphes de décision.
