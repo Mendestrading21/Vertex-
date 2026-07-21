@@ -17,7 +17,7 @@ DECISIONS = {
     'BUY':               ('Achat', 'green'),
     'BUY_PULLBACK':      ('Achat sur repli', 'blue'),
     'WATCH_BREAKOUT':    ('Surveiller la cassure', 'amber'),
-    'WAIT':              ('Attendre', 'blue'),
+    'WAIT':              ('Attendre', 'amber'),
     'TOO_LATE':          ('Trop tard', 'amber'),
     'AVOID':             ('Éviter', 'red'),
     'NO_NEW_RISK':       ('Pas de risque nouveau', 'red'),

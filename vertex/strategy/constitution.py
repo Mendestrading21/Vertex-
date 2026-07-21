@@ -23,6 +23,20 @@ STRATEGY_ID_RE = re.compile(r'^vertex_strategy_v(\d+)$')
 
 ALLOWED_FINAL_DECISIONS = ('ACHETER', 'RENFORCER', 'ATTENDRE', 'REDUIRE', 'REFUSER')
 
+# Libellé + polarité sémantique CANONIQUES de chaque décision finale — SOURCE UNIQUE.
+# La polarité applique le contrat visuel Black Glass (« zéro bleu ») : positif → vert,
+# prudence → ambre, négatif/risque → rouge. Tout affichage de verdict (badge, pill,
+# __VXVOCAB) dérive d'ici : un même verdict = un même mot + une même couleur PARTOUT.
+FINAL_DECISION_TONES = {
+    'ACHETER':   ('Acheter', 'green'),
+    'RENFORCER': ('Renforcer', 'green'),
+    'ATTENDRE':  ('Attendre', 'amber'),
+    'REDUIRE':   ('Réduire', 'red'),
+    'REFUSER':   ('Refuser', 'red'),
+}
+assert set(FINAL_DECISION_TONES) == set(ALLOWED_FINAL_DECISIONS), \
+    'FINAL_DECISION_TONES doit couvrir EXACTEMENT les décisions autorisées'
+
 ANALYSIS_ORDER = (
     'FUNDAMENTAL',
     'CATALYSTS',

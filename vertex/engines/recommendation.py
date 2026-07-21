@@ -15,6 +15,7 @@ Analyse uniquement — aucune exécution.
 import json
 
 from vertex.engines.decision_stack import DECISIONS  # vocab canonique "position neuve"
+from vertex.strategy.constitution import FINAL_DECISION_TONES  # libellé+polarité canoniques (source unique)
 
 # ─── Vocabulaire "gestion de position détenue" ─────────────────────────────
 HELD = {
@@ -38,14 +39,16 @@ TONE_CLS = {
 _ALIAS = {
     # config.verdict (EN)
     'BUY': 'green', 'WATCH': 'blue', 'WAIT': 'blue', 'AVOID': 'red',
-    # engine.decide (FR)
-    'ACHETER FORT': 'strong-green', 'ACHETER': 'green', 'SURVEILLER': 'blue',
-    'ATTENDRE': 'blue', 'ÉVITER': 'red', 'EVITER': 'red',
+    # engine.decide (FR) — variantes HISTORIQUES non canoniques uniquement.
+    # Les 5 décisions FINALES (libellé + tonalité) viennent de constitution.FINAL_DECISION_TONES
+    # (source unique, appliquée en autorité dans _labels_map) — elles ne sont PAS redéfinies ici.
+    'ACHETER FORT': 'strong-green', 'SURVEILLER': 'blue',
+    'ÉVITER': 'red', 'EVITER': 'red',
     # ibkr.verdict
     'ACCEPTÉ': 'green', 'ACCEPTE': 'green', 'ACCEPTÉ SUR REPLI': 'blue',
     'ACCEPTE SUR REPLI': 'blue', 'ATTENTE': 'blue', 'REFUSÉ': 'red', 'REFUSE': 'red',
     # committee / vertex
-    'RENFORCER': 'green', 'VERTEX BUY': 'green', 'VERTEX S+': 'strong-green',
+    'VERTEX BUY': 'green', 'VERTEX S+': 'strong-green',
     # gestion position (FR)
     'CONSERVER': 'blue', 'GARDER': 'blue', 'ALLÉGER': 'amber', 'ALLEGER': 'amber',
     'REMONTER LE STOP': 'amber', 'REMONTER STOP': 'amber', 'PRENDRE PROFITS': 'strong-green',
@@ -62,6 +65,12 @@ def _labels_map():
     for key, (label, tone) in HELD.items():
         out[key] = {'label': label, 'tone': tone, 'cls': TONE_CLS.get(tone, 'p-mut')}
         out[label.upper()] = {'label': label, 'tone': tone, 'cls': TONE_CLS.get(tone, 'p-mut')}
+    # décisions FINALES canoniques : libellé + tonalité font AUTORITÉ (source unique = constitution),
+    # elles écrasent toute cartographie historique divergente pour ces clés.
+    for key, (label, tone) in FINAL_DECISION_TONES.items():
+        cell = {'label': label, 'tone': tone, 'cls': TONE_CLS.get(tone, 'p-mut')}
+        out[key] = cell
+        out[label.upper()] = cell
     for raw, tone in _ALIAS.items():
         # label = forme jolie du canonique si connu, sinon Titre-case de l'alias
         out.setdefault(raw.upper(), {'label': raw.title(), 'tone': tone,

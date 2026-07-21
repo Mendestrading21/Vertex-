@@ -46,8 +46,14 @@ fonctionnalité (FCT-01), a11y (A11Y-*), MetricCard/charts unifiés. Fiche `docs
 - **ENG-01 (P1) — ✅ FAIT** — plafonds vérifiés PAR TEST dans le code servi (`tests/test_engine_caps.py`) :
   Kelly ≤ 12 % (`kelly_cap`, `_clamp(...,0,12)`) et p_win ∈ [0,05 ; 0,85] (`ml_calibration.predict`,
   `min(0.85,...)`) tiennent sous entrées extrêmes ; + gardiens que les caps restent dans le code (inspection
-  source). 942 tests. **ENG-04 (P1, sémantique verdicts)** — reste : auditer `__VXVOCAB` vs libellés réels des
-  pages (déjà partiellement couvert par `test_single_decision_engine`/`test_single_decision_source`).
+  source). 942 tests. **ENG-04 (P1, sémantique verdicts) — ✅ FAIT** — « un verdict = un mot + une couleur
+  PARTOUT ». Source UNIQUE créée : `constitution.FINAL_DECISION_TONES` (libellé + polarité canoniques des 5
+  décisions). `recommendation._labels_map` la consomme EN AUTORITÉ (écrase les cartographies historiques) et ne
+  redéfinit plus les canoniques dans `_ALIAS`. Corrigés : ATTENDRE `blue`→**ambre** (source réelle =
+  `decision_stack.WAIT`, réalignée), REDUIRE/REFUSER (manquantes → gris) → **rouge**. Résultat : ACHETER/RENFORCER
+  vert, ATTENDRE ambre, REDUIRE/REFUSER rouge — **zéro bleu, zéro gris** sur les finales. Gardien
+  `tests/test_verdict_semantics.py` (22 cas : polarité, zéro-bleu, non-gris, mot↔couleur, ET le badge CSS
+  `data-decision` raconte la même histoire que `__VXVOCAB`). `test_single_decision_source` reste vert. **964 tests**.
 - **PRF-01 (P1) — ✅ FAIT (vraie cause = latence, pas payload)** — mesuré : `/api/ticker` faisait **timeout ~40 s
   à froid** (le payload 8 Mo d'origine = l'ancien `/scan`, déjà retiré). Cause : `api_ticker` calculait
   `options_pack(sym)` (build chaîne options lourd) alors qu'AUCUN consommateur ne lit `pack` depuis `/api/ticker`
