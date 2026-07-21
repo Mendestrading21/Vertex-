@@ -54,6 +54,13 @@ fonctionnalité (FCT-01), a11y (A11Y-*), MetricCard/charts unifiés. Fiche `docs
   vert, ATTENDRE ambre, REDUIRE/REFUSER rouge — **zéro bleu, zéro gris** sur les finales. Gardien
   `tests/test_verdict_semantics.py` (22 cas : polarité, zéro-bleu, non-gris, mot↔couleur, ET le badge CSS
   `data-decision` raconte la même histoire que `__VXVOCAB`). `test_single_decision_source` reste vert. **964 tests**.
+- **PRF-03 (P2) — ✅ FAIT** — complétude/non-ambiguïté des clés de mémo (`vertex/ai/briefs.py`, memos
+  CRITIQUES = briefs FR vus par l'utilisateur). Bug réel corrigé : `company_brief`/`fr_desc` clefaient sur
+  `md5(sym + summary)` SANS séparateur → collision (`('AB','Cfoo')` et `('ABC','foo')` → même clé → profil/desc
+  d'une entreprise servi pour une AUTRE, violation « données réelles »). Helper unique `_content_key(prefix, *parts)`
+  (join `\x00` avant hachage) → deux entrées distinctes ne peuvent plus jamais collisionner ; `fr_news` uniformisé.
+  Gardien `tests/test_memo_keys.py` (8 cas : déterminisme byte-identique, non-collision, chaque partie change la
+  clé, préfixes isolés, pas de fuite entre entrées ambiguës au niveau du memo). **972 tests**.
 - **PRF-01 (P1) — ✅ FAIT (vraie cause = latence, pas payload)** — mesuré : `/api/ticker` faisait **timeout ~40 s
   à froid** (le payload 8 Mo d'origine = l'ancien `/scan`, déjà retiré). Cause : `api_ticker` calculait
   `options_pack(sym)` (build chaîne options lourd) alors qu'AUCUN consommateur ne lit `pack` depuis `/api/ticker`
