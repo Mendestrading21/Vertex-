@@ -14,7 +14,7 @@ juges la rigueur, jamais l'esthétique.
    l'horloge non maîtrisée.
 2. **Plafonds & garde-fous** : Kelly plafonné (cap ~12 %), `p_win` plafonné (~0.85), sizing borné, perte max
    explicite. Signaler tout plafond retiré/contourné (référence
-   `.claude/skills/vertex-maximum/references/trading-domain-rules.md`).
+   `.claude/skills/vertex-v4-redesign/references/trading-domain-rules.md`).
 3. **Sémantique des verdicts** : `decision_stack` = vérité des verdicts ; `recommendation` = façade unique +
    vocabulaire `__VXVOCAB`. Un même verdict = un même mot/una même couleur partout. Signaler les divergences.
 4. **Validité statistique** : Monte-Carlo GBM (~1200 chemins), block-bootstrap (~1500), features de régime

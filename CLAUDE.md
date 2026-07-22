@@ -1,42 +1,105 @@
-# VERTEX — Guide pour les sessions Claude (local & cloud)
+# VERTEX — Guide de travail Claude Code
 
-Terminal d'ANALYSE de trading (Flask, port 5002). **Lecture seule : aucun ordre n'est jamais passé** — invariant produit absolu (`READONLY=True` dans `vertex/app/config.py`).
+Vertex est un terminal d'analyse Flask local, en français, sur le port `5002`.
+Il est **strictement en lecture seule** : aucun ordre ne peut être envoyé.
 
-## Lancer & vérifier
-- App : `python terminal.py` (ou `.claude/launch.json` → serveur « vertex », port 5002). Windows : `Lancer_VERTEX.bat`.
-- Tests : `python -m pytest tests/ -q` → **doivent passer à 100 %** avant tout commit.
-- Santé : `GET /healthz` · erreurs JS clients : `GET /api/client-log` (doit rester à 0) · état live : `GET /api/live/status`.
-- Après un changement lourd : vérifier en vrai navigateur (pas seulement curl) + 0 erreur console.
+## Point de départ obligatoire
 
-## Architecture (la vraie)
-- **Monolithe** `terminal.py` (~10 500 lignes) : HTML/JS construits en chaînes Python. Pages extraites : `vertex/ui/*.py` (nav, options_lab, journal, vault, signals, sync_center, vx_kit, design_system).
-- **Moteurs** : `vertex/engines/` (decision_stack = vérité des verdicts, recommendation = façade unique + vocabulaire `__VXVOCAB`, options_lab, track_record, evidence…).
-- **Routes** : `vertex/app/routes/` (Blueprints) + routes restantes dans terminal.py.
-- **État partagé** : `vertex/app/state.py` (`scan_state` muté en place — ne JAMAIS réassigner).
-- **Données perso utilisateur** : localStorage navigateur (`myTrades`, `myRecos`, `myFavs`, `vxJournal`, `vxAlerts`…) synchronisé serveur en blob `desk_data.json` (last-writer-wins + backup quotidien `desk_backup_*.json`).
+Branche d'intégration V4 :
 
-## Refonte « Black Glass Institutional » (kit installé)
-- Direction visuelle canonique = **Black Glass Institutional** : fond noir/graphite neutre, cartes en verre gris translucide, blanc/gris/argent en couleur structurelle, **sémantique stricte** (vert = positif, rouge = négatif/risque, orange = prudence/incertitude), **zéro bleu**, violet réservé aux options.
-- Contrats de référence : `docs/VERTEX_GLASS_REDESIGN_MASTER_PLAN.md` + `docs/claude/` (`VERTEX_GLASS_VISUAL_CONTRACT.md`, `VERTEX_CHART_CONTRACT.md`, `VERTEX_REFACTOR_RULES.md`, `VERTEX_PAGE_MATRIX.md`, `VERTEX_ACCEPTANCE_CHECKLIST.md`).
-- Skills d'orchestration : `.claude/skills/vertex-redesign-*` (orchestrator, foundations, une par espace, qa). Couche CSS = `vertex/static/vertex/css/glass.css` (chargée en dernier).
+```text
+integration/vertex-v4-clean
+```
 
-## Règles critiques (violations = données perdues ou app cassée)
-1. **Clés de sync desk** : toute nouvelle clé localStorage à synchroniser doit être ajoutée dans **LES 4 listes** (`__DESK_KEYS` terminal.py, sSyncPush/Pull, `vertex/ui/journal.py`, `DESK_KEYS` de `vx_kit.py`) — sinon un push l'efface côté serveur. Test gardien : `tests/test_production.py::test_desk_sync_keys_single_source_of_truth`.
-2. **Apostrophes françaises dans les chaînes JS** de terminal.py : toujours échapper (`aujourd\\'hui`) — deux SyntaxError silencieuses ont déjà vécu.
-3. **Service worker** : tout changement de shell visible utilisateur → bump `td-shell-vN` dans `vertex/app/routes/system.py`.
-4. **Données RÉELLES uniquement** : jamais de chiffre inventé affiché comme réel. Donnée absente → `—`/`n/d` honnête. Le mot « démo » ne s'affiche que si le serveur le confirme.
-5. **News/textes externes** : toujours via `news_plus.sanitize_news()` avant de servir (XSS — rendus en innerHTML).
-6. **desk_data.json** : ne jamais l'écraser à la main ; en cas de doute, backups `desk_backup_*.json` + `/api/desk/restore`.
+Lire dans cet ordre avant toute modification :
 
-## Git
-- Branche de travail : `vertex-system-launch` (local) → push fast-forward sur `origin claude/vertex-system-launch-0bsizs`.
-- **`main` = version canonique** — la mettre à jour SEULEMENT avec accord explicite de l'utilisateur.
-- Données runtime (edge_ledger, desk_backup_*, track_meta, alerts_fired, .env, .vertex_secret) : gitignorées, jamais commitées.
+1. `CLAUDE.md`
+2. `docs/README.md`
+3. `docs/canonical/READONLY.md`
+4. `docs/canonical/DATA_CONTRACT.md`
+5. `docs/vertex-v4/VERTEX_V4_MASTER_SPEC.md`
+6. `docs/vertex-v4/DECISIONS.md`
+7. `docs/vertex-v4/STATUS.md`
+8. `.claude/skills/vertex-v4-redesign/SKILL.md`
 
-## Sécurité
-- Verrou d'accès : `VERTEX_CODE` dans `.env` (chargé automatiquement ; `.env.example` = modèle). `VERTEX_SECRET` indépendant sinon secret aléatoire persistant `.vertex_secret`.
-- Sans code d'accès, le serveur n'écoute que 127.0.0.1 (LAN/iPhone : définir `VERTEX_CODE`, ou `VERTEX_LAN=1` en connaissance de cause).
-- IBKR : `readonly=True` toujours ; worker unique avec `RequestTimeout=45` (ne pas retirer — anti-blocage).
+L'unique commande de refonte active est `/vertex-v4-redesign`. Les anciens
+programmes Black Glass, Signal Green et Obsidian Copper sont supprimés de la
+documentation active.
 
-## Utilisateur
-Trader francophone, interface en FR. Compte IBKR réel connecté via TWS (lecture seule). Préfère : données réelles partout, zéro erreur, tout synchronisé automatiquement au lancement. Aucun nom personnel ne doit apparaître dans le code, l'interface ou la documentation.
+## Invariants absolus
+
+- Conserver `READONLY=True` dans `vertex/app/config.py`.
+- Toute connexion IBKR reste `readonly=True`.
+- Ne créer aucun chemin d'ordre, même en paper trading.
+- Ne modifier aucun calcul, score, verdict, moteur ou contrat API dans un lot visuel.
+- Ne jamais fabriquer une donnée. Absence = `—`, `n/d` ou état vide honnête.
+- Préserver provenance, fraîcheur et statut LIVE/DELAYED/STALE/DEMO.
+- Aucun secret, identifiant de compte ou nom personnel dans le dépôt ou les captures.
+- Ne jamais travailler directement sur `main`.
+
+## Vérifier avant et après chaque lot
+
+```bash
+python -m compileall -q terminal.py vertex
+python -m pytest tests/ -q
+```
+
+Puis démarrer en mode contrôlé :
+
+```bash
+DEMO=1 NO_IBKR=1 python terminal.py
+```
+
+Contrôles requis :
+
+- `GET /healthz` doit être sain ;
+- `GET /api/client-log` doit rester sans erreur réelle ;
+- toutes les routes principales doivent répondre ;
+- vérification en navigateur desktop, tablette et mobile ;
+- aucune erreur console ni overflow horizontal.
+
+## Architecture actuelle
+
+- `terminal.py` : monolithe historique et orchestration restante ; ne pas le déplacer en bloc.
+- `vertex/app/routes/` : blueprints Flask.
+- `vertex/ui/shell/` et `vertex/ui/pages/` : shell et pages actuelles.
+- `vertex/engines/`, `vertex/options/`, `vertex/strategy/` : logique métier protégée.
+- `vertex/app/state.py` : `scan_state` doit être muté en place, jamais réassigné.
+- `vertex/static/vertex/` : CSS, JavaScript, graphiques et polices auto-hébergées.
+- `tests/` : contrats exécutables ; un test ne se désactive pas pour faire passer un lot.
+
+## Direction V4 canonique
+
+- Nom : **Vertex V4 — Obsidian Prism**.
+- Référence maître : `docs/vertex-v4/reference/00-master-obsidian-prism.jpg`.
+- Marque : violet, magenta et corail ; jamais pour signifier un gain ou une perte.
+- Sémantique : vert positif, rouge négatif/risque, ambre attente/incertitude.
+- Typographies : General Sans pour l'interface, JetBrains Mono pour les nombres.
+- Cible : neuf espaces, dont Marchés explicite.
+- Les CSS historiques encore chargés sont des dépendances de migration, pas des
+  sources de vérité. Suivre `docs/vertex-v4/MIGRATION_MAP.md`.
+
+## Pièges connus
+
+1. Les apostrophes françaises dans les chaînes JavaScript Python doivent être échappées.
+2. Toute modification du shell visible impose un bump `td-shell-vN` et ses tests.
+3. Toute nouvelle clé localStorage synchronisée doit être ajoutée aux registres canoniques.
+4. Les textes externes passent par `news_plus.sanitize_news()` avant `innerHTML`.
+5. `desk_data.json` ne se modifie jamais à la main ; utiliser les backups et l'API de restauration.
+6. Ne pas supprimer une couche CSS legacy avant preuve qu'aucun rendu ne la consomme encore.
+
+## Workflow Git
+
+- Un lot à la fois, avec périmètre annoncé.
+- Branche temporaire autorisée : `claude/v4-XX-description`.
+- Tests et captures avant commit.
+- Commit atomique `feat(v4-XX): ...` ou `fix(v4-qa): ...`.
+- Mise à jour obligatoire de `docs/vertex-v4/STATUS.md`.
+- PR brouillon vers la branche d'intégration pendant les lots.
+- Fusion vers `main` uniquement après QA finale et autorisation explicite.
+
+## Préférences produit
+
+Interface française, données réelles, raisonnement transparent, densité maîtrisée
+et zéro erreur silencieuse. Une bonne visualisation aide une décision précise ;
+sinon elle doit être simplifiée ou supprimée.

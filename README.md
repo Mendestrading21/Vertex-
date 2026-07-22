@@ -1,56 +1,79 @@
-# ▲ VERTEX — Terminal d'analyse (analyse only)
+# ▲ VERTEX — Terminal de décision en lecture seule
 
-> **🚀 Pour démarrer : ouvre [`DEMARRER_ICI.md`](DEMARRER_ICI.md)** — ou double-clic
-> sur **`Lancer_VERTEX.command`** (Mac) / **`Lancer_VERTEX.bat`** (Windows).
-> Tout s'installe et se lance tout seul, puis ça s'ouvre sur http://localhost:5002.
+Vertex est une application locale Python/Flask qui rassemble marché, opportunités,
+portefeuille, analyse, options, performance et intelligence dans un même cockpit.
 
----
+> **Invariant absolu : ANALYSIS ONLY.** Vertex ne passe aucun ordre. Toute connexion
+> IBKR impose `readonly=True`, et la CI bloque l'apparition d'un chemin d'exécution.
 
-Cockpit d'analyse trading **local** (Python/Flask) pour 57 leaders US : scoring,
-moteur de décision IBKR /40, options desk, cours **en direct via IBKR**, fiches
-entreprise complètes, plan du jour, watchlist poster.
+## Démarrage rapide
 
-> ⛔ **ANALYSE / LECTURE SEULE.** Aucun ordre n'est jamais passé. La connexion
-> IBKR est verrouillée en `readonly=True`. Ceci n'est pas un conseil financier.
-
-## Lancer
+Le guide utilisateur se trouve dans [`DEMARRER_ICI.md`](DEMARRER_ICI.md).
 
 ```bash
-pip install -r requirements.txt   # flask, yfinance, pandas, numpy, ib_async, anthropic…
+python -m venv .venv
+python -m pip install -r requirements.txt
 python terminal.py
 ```
 
-Puis ouvrir **http://localhost:5002**.
+Puis ouvrir <http://localhost:5002>.
 
-- `.env` (privé, ignoré par git) : copier `.env.example` → `.env` et y mettre sa clé
-  Anthropic (pour la traduction FR des news, optionnel).
-- **Cours en direct + compte** : lancer **TWS / IB Gateway**, activer l'API
-  (Configuration globale → API → Settings : *Enable Socket Clients* + *Read-Only API*,
-  port 7496/7497, IP de confiance `127.0.0.1`).
+Pour une démonstration hors ligne :
 
-## 📱 Accès depuis l'iPhone / une tablette (même WiFi maison)
+```bash
+DEMO=1 NO_IBKR=1 python terminal.py
+```
 
-Le serveur écoute déjà sur tout le réseau local (`host='0.0.0.0'`).
+Les lanceurs `Lancer_VERTEX*` proposent les mêmes modes sous Windows et macOS.
 
-1. Sur le PC, trouver son IP locale : `ipconfig` (ex. `192.168.x.x`).
-2. Autoriser le port 5002 dans le pare-feu Windows (une fois, en admin) :
-   ```powershell
-   New-NetFirewallRule -DisplayName "Trading Desk 5002" -Direction Inbound -LocalPort 5002 -Protocol TCP -Action Allow -Profile Private
-   ```
-3. Sur l'iPhone (même WiFi) : ouvrir **http://192.168.x.x:5002**
-   (le PC + TWS doivent rester allumés).
+## Espaces actuels
 
-## Pages
+| Espace | Route | Rôle |
+|---|---|---|
+| Briefing | `/` | Vue du jour, régime, alertes et marchés |
+| Opportunités | `/opportunities` | Actions, options, anomalies et calendrier |
+| Portefeuille | `/portfolio` | Positions, risque, équipe et watchlist |
+| Analyse | `/analysis` | Recherche et dossier complet par titre |
+| Options | `/options` | Volatilité, scénarios, événements et dossiers options |
+| Performance | `/performance` | Journal, track-record et apprentissages |
+| Intelligence | `/intelligence` | Analyste, comité, stratégie et mémoire |
+| Système | `/system` | Connexions, qualité des données et réglages |
 
-- `/` — cockpit live (plan du jour, recommandations IBKR /40, marché, positions, options)
-- `/titre/<TICKER>` — fiche entreprise complète (technique + fondamentaux + options + décision)
-- `/entreprises` — screener des 57 sociétés (cours live + fondamentaux, triable)
-- `/options` — options desk complet (LEAPS / Swing / Tactique, Option Quality /100)
-- `/watchlist` — poster « Daily Watchlist » imprimable
+La V4 fera de **Marchés** un neuvième espace explicite en réutilisant les vues et
+contrats existants, sans modifier les moteurs financiers.
 
-## Structure
+## Architecture
 
-- `terminal.py` — app Flask + toutes les pages + connexion IBKR + flux cours live
-- `vertex/quant`, `vertex/engines`, `vertex/options`… — moteurs : `scoring`, `decide` (décision), `scorecard` (verdict /40), `legacy_engine` (options),
-  `fundamentals`, `sectors`, `daily`, `anomalies`, `market`, `weekly`, `research`, `ai`
-- `ib_reader.py` — lecture IBKR (readonly, garde-fou anti-ordre)
+- `terminal.py` : point d'entrée historique, routes et orchestration encore en migration.
+- `vertex/app/` : configuration, état et blueprints Flask.
+- `vertex/ui/` : shell et pages componentisées.
+- `vertex/engines/`, `vertex/options/`, `vertex/strategy/` : logique analytique.
+- `vertex/static/vertex/` : CSS, JavaScript et graphiques.
+- `tests/` : garde-fous métier, données, sécurité et interface.
+- `docs/` : documentation indexée par statut.
+- `ib_reader.py` / `test_connection.py` : diagnostic IBKR local en lecture seule.
+
+La carte technique actuelle est dans
+[`docs/canonical/ARCHITECTURE.md`](docs/canonical/ARCHITECTURE.md).
+
+## Développement
+
+```bash
+python -m compileall -q terminal.py vertex
+python -m pytest tests/ -q
+```
+
+Toute modification visible doit aussi être vérifiée dans un vrai navigateur sur
+desktop, tablette et mobile, avec `/healthz` vert et `/api/client-log` sans erreur.
+
+## Vertex V4
+
+La seule direction visuelle active est **Obsidian Prism**. Commencer par :
+
+1. [`CLAUDE.md`](CLAUDE.md)
+2. [`docs/README.md`](docs/README.md)
+3. [`docs/vertex-v4/VERTEX_V4_MASTER_SPEC.md`](docs/vertex-v4/VERTEX_V4_MASTER_SPEC.md)
+4. [`docs/vertex-v4/STATUS.md`](docs/vertex-v4/STATUS.md)
+
+Branche d'intégration : `integration/vertex-v4-clean`. `main` ne doit jamais être
+modifiée directement.
