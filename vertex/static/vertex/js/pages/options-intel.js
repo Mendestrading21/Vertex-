@@ -170,6 +170,56 @@
     }).catch(function (e) { fail(hEl, 'Chargement overview: ' + e.message); if (cEl) cEl.innerHTML = ''; });
   }
 
+  /* Activité du marché options — agrégé depuis le TABLEAU RÉEL (/api/options).
+     Aucun chiffre inventé : échéances (contrats + OI), contrats les plus actifs
+     par OI, contrats les plus risqués par score danger moteur. */
+  function loadActivity() {
+    var el = document.getElementById('vx-opt-activity-body');
+    if (!el) return;
+    loading(el);
+    var esc = function (x) { return (window.VX && VX.esc) ? VX.esc(x) : String(x == null ? '' : x); };
+    var oiOf = function (c) { return c.oi != null ? c.oi : (c.openInterest != null ? c.openInterest : null); };
+    var dangerOf = function (c) { return c.danger != null ? c.danger : null; };
+    var sideOf = function (c) { return String(c.right || c.type || c.bucket || '').toUpperCase().indexOf('P') === 0 ? 'P' : 'C'; };
+    var expShort = function (e) { e = String(e || '').split('T')[0]; return e.length >= 10 ? e.slice(5) : e; };
+    var label = function (c) { return esc((c.sym || c.symbol || '—') + ' ' + (c.strike != null ? VXf.num(c.strike, c.strike >= 100 ? 0 : 1) : '—') + ' ' + sideOf(c)); };
+    var row = function (k, v, cls) { return '<div class="vx-kv"><span class="vx-kv-k vx-mono">' + k + '</span><span class="vx-kv-v vx-mono ' + (cls || '') + '">' + v + '</span></div>'; };
+    get('/api/options').then(function (d) {
+      var board = (d && d.board) || [];
+      if (!board.length) { el.innerHTML = (window.VX && VX.states) ? VX.states.empty('Aucun contrat dans le tableau (scan vide ou hors séance).') : 'Aucune donnée.'; return; }
+      var byExp = {};
+      board.forEach(function (c) {
+        var k = c.exp || ('DTE ' + (c.dte != null ? c.dte : '?'));
+        if (!byExp[k]) byExp[k] = { exp: k, dte: c.dte, n: 0, oi: 0 };
+        byExp[k].n++; var o = oiOf(c); if (o != null) byExp[k].oi += o;
+      });
+      var exps = Object.keys(byExp).map(function (k) { return byExp[k]; })
+        .sort(function (a, b) { return (a.dte == null ? 1e9 : a.dte) - (b.dte == null ? 1e9 : b.dte); }).slice(0, 6);
+      var active = board.filter(function (c) { return oiOf(c) != null; })
+        .sort(function (a, b) { return oiOf(b) - oiOf(a); }).slice(0, 6);
+      var risky = board.filter(function (c) { return dangerOf(c) != null; })
+        .sort(function (a, b) { return dangerOf(b) - dangerOf(a); }).slice(0, 6);
+      var expRows = exps.map(function (x) {
+        return row(esc(expShort(x.exp)) + (x.dte != null ? ' <span class="vx-dim">' + x.dte + ' j</span>' : ''),
+          x.n + ' · ' + VXf.num(x.oi, 0) + ' OI');
+      }).join('') || '<span class="vx-dim">—</span>';
+      var actRows = active.map(function (c) {
+        return row(label(c) + ' <span class="vx-dim">' + esc(expShort(c.exp)) + '</span>', VXf.num(oiOf(c), 0) + ' OI');
+      }).join('') || '<span class="vx-dim">contrats ouverts non disponibles</span>';
+      var riskRows = risky.map(function (c) {
+        var dv = dangerOf(c); var cls = dv >= 70 ? 'vx-neg' : dv >= 40 ? 'vx-warn' : '';
+        return row(label(c) + ' <span class="vx-dim">' + esc(expShort(c.exp)) + '</span>', 'danger ' + VXf.num(dv, 0), cls);
+      }).join('') || '<span class="vx-dim">score de risque non disponible</span>';
+      el.innerHTML = '<div class="vx-grid-3">'
+        + '<div><div class="vx-meta vx-mb1">Échéances (contrats · OI)</div>' + expRows + '</div>'
+        + '<div><div class="vx-meta vx-mb1">Contrats les plus actifs (OI)</div>' + actRows + '</div>'
+        + '<div><div class="vx-meta vx-mb1">Les plus risqués (danger)</div>' + riskRows + '</div>'
+        + '</div>'
+        + '<div class="vx-meta vx-mt2 vx-dim">Agrégé depuis le tableau d’options réel (' + board.length
+        + ' contrats) · OI = contrats ouverts · danger = score de risque moteur.</div>';
+    }).catch(function (e) { fail(el, 'Chargement activité: ' + e.message); });
+  }
+
   function stat(label, val) {
     // Builder partagé (markup .vx-stat canonique stylé). Repli inline si VX.tile absent.
     return (window.VX && VX.tile) ? VX.tile.stat({ k: label, v: val })
@@ -633,7 +683,7 @@
   function init() {
     bindExplain();
     var v = view();
-    if (v === 'overview') loadOverview();
+    if (v === 'overview') { loadOverview(); loadActivity(); }
     else if (v === 'radar') loadRadar();
     else if (v === 'volatility') {
       var g = document.getElementById('vx-opt-vol-go');
