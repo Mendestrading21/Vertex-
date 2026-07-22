@@ -12,8 +12,18 @@ les consomme. Leur nom historique ne leur donne aucun statut canonique.
 | `css/control-surface.css` | contrôles et états sélectionnés | `controls.css` + components | Lot 15 |
 | `css/cockpit.css` | mise en page cockpit | `layout.css` + pages | Lot 15 |
 | `css/premium.css` | overrides premium | components + pages | Lot 15 |
-| `css/glass.css` | vérité runtime historique chargée en dernier | tokens/components V4 | Lot 15 |
+| `css/glass.css` | ex-vérité runtime, désormais re-mappée sur les tokens V4 par le pont | tokens/components V4 | Lot 15 |
 | `js/charts/chart-theme-obsidian-copper.js` | thème global Chart.js | `chart-theme-v4.js` | Lot 04 |
+
+## Pont de compatibilité V4 (Lot 01)
+
+`css/tokens-v4-bridge.css` est **chargé en dernier** (après `glass.css`) et
+re-mappe les tokens `--vx-*` consommés par le runtime historique sur les valeurs
+canoniques `--vx-v4-*` de `tokens.css`. Il applique l'identité Obsidian Prism aux
+pages/shell/graphiques existants **sans les reconstruire**. Ce n'est pas une source
+de vérité : c'est une couche de migration transitoire, retirée au Lot 15 une fois
+`glass.css` et les couches legacy migrées et prouvées inutiles. Il n'introduit
+aucune règle métier.
 
 ## Condition de retrait d'un fichier
 

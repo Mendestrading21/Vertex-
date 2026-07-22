@@ -1,0 +1,119 @@
+/* ════════════════════════════════════════════════════════════════════
+   VERTEX V4 — OBSIDIAN PRISM · PONT DE COMPATIBILITÉ RUNTIME (Lot 01)
+   ────────────────────────────────────────────────────────────────────
+   Ce fichier est chargé EN DERNIER (après glass.css). Il ne crée aucun
+   composant : il re-mappe les tokens `--vx-*` consommés par le runtime
+   historique (Black Glass / glass.css) sur les valeurs canoniques V4
+   `--vx-v4-*` (définies dans tokens.css). Résultat : les pages, cartes,
+   shell et graphiques existants adoptent l'identité Obsidian Prism SANS
+   être reconstruits (interdit en Lot 01).
+
+   Source de vérité = les tokens `--vx-v4-*` de tokens.css. Ce pont n'est
+   PAS une source de vérité : c'est une couche de migration transitoire.
+   Retrait prévu = Lot 15, une fois les couches legacy migrées/supprimées
+   (voir docs/vertex-v4/MIGRATION_MAP.md). Aucune règle métier ici.
+   ════════════════════════════════════════════════════════════════════ */
+:root{
+  /* ── Canvas / fonds ───────────────────────────────────────────── */
+  --vx-obsidian-900:var(--vx-v4-obsidian);
+  --vx-obsidian-850:var(--vx-v4-canvas);
+  --vx-obsidian-800:var(--vx-v4-canvas);
+  --vx-graphite-900:var(--vx-v4-surface-1);
+  --vx-graphite-850:var(--vx-v4-surface-1);
+  --vx-graphite-800:var(--vx-v4-surface-2);
+  --vx-graphite-750:var(--vx-v4-surface-2);
+  --vx-graphite-700:var(--vx-v4-surface-3);
+  --vx-surface-0:var(--vx-v4-black);
+  --vx-surface-base:var(--vx-v4-canvas);
+  --vx-surface-raised:var(--vx-v4-surface-1);
+  --vx-surface-elevated:var(--vx-v4-surface-2);
+  --vx-surface-hover:var(--vx-v4-hover);
+  --vx-surface-4:var(--vx-v4-surface-3);
+  --vx-topbar:var(--vx-v4-glass);
+  --vx-bg-0:var(--vx-v4-black);
+  --vx-bg-1:var(--vx-v4-canvas);
+  --vx-bg-2:var(--vx-v4-surface-1);
+  --vx-bg-3:var(--vx-v4-surface-2);
+
+  /* ── Bordures ─────────────────────────────────────────────────── */
+  --vx-border-faint:var(--vx-v4-border-faint);
+  --vx-border-soft:var(--vx-v4-border-soft);
+  --vx-border-default:var(--vx-v4-border-default);
+  --vx-border-strong:var(--vx-v4-border-strong);
+
+  /* ── Texte ────────────────────────────────────────────────────── */
+  --vx-text-primary:var(--vx-v4-text);
+  --vx-text-secondary:var(--vx-v4-text-2);
+  --vx-text-muted:var(--vx-v4-text-3);
+  --vx-text-faint:var(--vx-v4-text-4);
+
+  /* ── Marque → violet / magenta / corail (jamais gain/perte) ───── */
+  --vx-brand:var(--vx-v4-brand-1);
+  --vx-brand-strong:var(--vx-v4-brand-2);
+  --vx-brand-hover:var(--vx-v4-brand-2);
+  --vx-brand-selected:var(--vx-v4-brand-1);
+  --vx-brand-soft:var(--vx-v4-brand-soft);
+  --vx-brand-gradient:var(--vx-v4-brand-gradient);
+  --vx-glow-brand:var(--vx-v4-brand-glow);
+  --vx-signal-glow:var(--vx-v4-brand-soft);
+  --vx-signal-soft:var(--vx-v4-brand-soft);
+  --vx-signal-400:var(--vx-v4-brand-2);
+  --vx-signal-700:var(--vx-v4-brand-1);
+  --vx-signal-950:var(--vx-v4-obsidian);
+
+  /* ── Argent / structure → neutres V4 ─────────────────────────── */
+  --vx-silver:var(--vx-v4-text-2);
+  --vx-silver-soft:var(--vx-v4-border-soft);
+  --vx-silver-line:var(--vx-v4-border-strong);
+
+  /* ── Cuivre / orange legacy → marque tiède / neutres ─────────── */
+  --vx-copper-dark:var(--vx-v4-surface-3);
+  --vx-copper-light:var(--vx-v4-brand-warm);
+  --vx-copper-legacy:var(--vx-v4-brand-2);
+  --vx-orange-950:var(--vx-v4-obsidian);
+  --vx-orange-850:var(--vx-v4-surface-2);
+  --vx-orange-700:var(--vx-v4-surface-3);
+  --vx-orange-500:var(--vx-v4-brand-2);
+  --vx-beige:var(--vx-v4-neutral-chart);
+
+  /* ── Sémantique financière ────────────────────────────────────── */
+  --vx-positive:var(--vx-v4-positive);
+  --vx-positive-soft:var(--vx-v4-positive-soft);
+  --vx-negative:var(--vx-v4-negative);
+  --vx-negative-soft:var(--vx-v4-negative-soft);
+  --vx-warning:var(--vx-v4-warning);
+  --vx-warning-soft:var(--vx-v4-warning-soft);
+  --vx-option:var(--vx-v4-option);
+  --vx-violet:var(--vx-v4-option);
+  --vx-violet-soft:var(--vx-v4-brand-soft);
+  --vx-neutral-chart:var(--vx-v4-neutral-chart);
+  --vx-info:var(--vx-v4-neutral-chart);        /* zéro bleu : info = neutre */
+  --vx-info-soft:var(--vx-v4-border-soft);
+
+  /* ── Verre (recoloré ; l'emplacement du glass reste géré ailleurs) ─ */
+  --vx-glass-1:var(--vx-v4-surface-1);
+  --vx-glass-2:var(--vx-v4-surface-2);
+  --vx-glass-3:var(--vx-v4-surface-3);
+  --vx-glass-card:var(--vx-v4-surface-1);
+  --vx-glass-elevated:var(--vx-v4-surface-2);
+  --vx-glass-critical:var(--vx-v4-surface-3);
+  --vx-glass-hover:var(--vx-v4-hover);
+  --vx-glass-subtle:var(--vx-v4-glass);
+  --vx-glass-border:var(--vx-v4-border-default);
+  --vx-glass-border-faint:var(--vx-v4-border-faint);
+  --vx-glass-border-strong:var(--vx-v4-border-strong);
+  --vx-hero-halo:radial-gradient(120% 120% at 15% 0%,rgba(138,82,255,.16),transparent 60%);
+}
+
+/* ── Foundation : focus visible (AA, base ; les composants gardent la main) ── */
+:focus-visible{outline:none;box-shadow:var(--vx-v4-focus-ring)}
+
+/* ── Foundation : respect de prefers-reduced-motion ── */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+    scroll-behavior:auto!important;
+  }
+}

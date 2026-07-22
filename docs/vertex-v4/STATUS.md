@@ -14,7 +14,7 @@ Référence : `docs/vertex-v4/VERTEX_V4_MASTER_SPEC.md`
 | Lot | Périmètre | Statut | Branche / commit | Tests | Captures | Revue visuelle | Notes |
 |---:|---|---|---|---|---|---|---|
 | 00 | Consolidation, baseline et inventaire | **Terminé — à valider** | `integration/vertex-v4-clean` | 981 passés, 2 ignorés | 24 références + manifeste | En attente utilisateur | 8 routes 200, `/markets` 302 attendu, health OK, client-log 0 |
-| 01 | Tokens, palette, typo, profondeur | À faire | — | — | — | — | Migrer le runtime historique vers les tokens V4 |
+| 01 | Tokens, palette, typo, profondeur | **Terminé — à valider** | `claude/v4-01-foundations` | 981 passés, 2 ignorés | 18 (3 viewports × 6 routes) | En attente utilisateur | Tokens `--vx-v4-*` (tokens.css) + pont `tokens-v4-bridge.css` chargé après glass.css ; SW `td-shell-v95` ; 0 erreur console ; overflow mobile portfolio/système = pré-existant (Lot 14) |
 | 02 | Shell : sidebar, topbar, recherche, drawers, mobile nav | À faire | — | — | — | — | Préserver routes et comportements |
 | 03 | Cartes, KPI, boutons, tabs, tables, filtres, états | À faire | — | — | — | — | Quatre niveaux de composants |
 | 04 | Système commun de graphiques | À faire | — | — | — | — | Tooltip, légende, source, états communs |
@@ -41,3 +41,5 @@ Ajouter ici les décisions validées qui modifient ou précisent la spécificati
 | 2026-07-22 | Direction `Obsidian Prism` : fond noir froid, marque violet-magenta-corail, vert/rouge strictement sémantiques | Correspondre à la référence visuelle choisie et supprimer la confusion vert marque / vert gain | Utilisateur |
 | 2026-07-22 | Base technique `glass-plus-charts-oz8jmh`, intégrée sur `integration/vertex-v4-clean` | Conserver les 159 commits et 88 garde-fous supplémentaires absents de `main` | Audit de consolidation |
 | 2026-07-22 | General Sans + JetBrains Mono ; navigation cible à 9 espaces ; référence maître versionnée | Supprimer les contradictions de typo, navigation et référence | Consolidation V4 |
+| 2026-07-22 | Lot 01 : identité runtime migrée via pont (tokens.css + `tokens-v4-bridge.css`) plutôt qu'en réécrivant glass.css | glass.css est chargé en dernier et redéfinit 64 tokens ; un pont chargé après lui applique Obsidian Prism sans reconstruire ni supprimer le legacy (retrait = Lot 15) | Claude Code |
+| 2026-07-22 | Marque `--vx-v4-brand-1` = `#6e4aff` (et non `#6d4aff`) ; série bleue secondaire différée au Lot 04 | Respecter le garde-fou `test_no_blue_primary_theme` (scanne tokens.css) tout en gardant le violet prism | Claude Code |
