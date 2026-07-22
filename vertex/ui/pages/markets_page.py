@@ -208,15 +208,30 @@ _JS = r"""
     var el=$('mk-sectors-body'); if(!el) return;
     var secs=(scan&&scan.sectors)||[];
     if(!secs.length){ el.innerHTML=VX.states.empty('Secteurs indisponibles — lancer un scan.'); return; }
-    var vals=secs.map(function(s){return s.perf!=null?s.perf:(s.change!=null?s.change:null);}).filter(function(v){return v!=null;});
+    /* Variation moyenne : avg_change (repli perf/change). Barre relative au max. */
+    var chOf=function(s){return s.avg_change!=null?s.avg_change:(s.perf!=null?s.perf:(s.change!=null?s.change:null));};
+    var vals=secs.map(chOf).filter(function(v){return v!=null;});
     var mx=vals.length?Math.max.apply(null,vals.map(Math.abs)):1;
-    el.innerHTML='<div class="vx-wbars vx-mt2">'+secs.slice(0,12).map(function(s){
-      var v=s.perf!=null?s.perf:(s.change!=null?s.change:null);
-      var w=v==null?0:Math.max(4,Math.min(100,Math.abs(v)/(mx||1)*100));
-      return '<div class="vx-wbar"><span class="wb-name">'+esc(s.name||s.sector||'—')+'</span>'
-        +'<span class="wb-track"><i style="width:'+w.toFixed(0)+'%" data-tone="'+tone(v)+'"></i></span>'
-        +'<span class="wb-val vx-mono '+(v>0?'vx-pos':v<0?'vx-neg':'vx-dim')+'">'+(v!=null?sign(v)+num(v,2)+' %':'n/d')+'</span></div>';
-    }).join('')+'</div>';
+    /* Trié du plus fort au plus faible : rotation lisible en un regard. */
+    var sorted=secs.slice().sort(function(a,b){return (chOf(b)==null?-1e9:chOf(b))-(chOf(a)==null?-1e9:chOf(a));});
+    el.innerHTML='<div class="vx-mt2">'+sorted.slice(0,14).map(function(s){
+      var v=chOf(s), w=v==null?0:Math.max(3,Math.min(100,Math.abs(v)/(mx||1)*100));
+      var ld=s.leader||{};
+      var counts=num(s.n_buy||0,0)+' / '+num(s.n_watch||0,0)+' / '+num(s.n_avoid||0,0);
+      return '<div style="padding:7px 0;border-bottom:1px solid var(--vx-v4-border-faint)">'
+        +'<div style="display:flex;justify-content:space-between;gap:.6rem;align-items:baseline">'
+          +'<span class="vx-mono" style="font-weight:600;min-width:0">'+esc(s.sector||s.name||'—')
+            +' <span class="vx-dim" style="font-weight:400">'+num(s.n||0,0)+' titres</span></span>'
+          +'<span class="vx-mono '+(v>0?'vx-pos':v<0?'vx-neg':'vx-dim')+'" style="white-space:nowrap">'
+            +(v!=null?sign(v)+num(v,2)+' %':'n/d')+' <span class="vx-dim">· score '+num(s.avg_score,0)+'</span></span>'
+        +'</div>'
+        +'<div style="display:flex;align-items:center;gap:.6rem;margin-top:4px">'
+          +'<span class="wb-track" style="flex:1;height:6px"><i style="width:'+w.toFixed(0)+'%" data-tone="'+tone(v)+'"></i></span>'
+          +'<span class="vx-dim vx-mono" style="font-size:11px;white-space:nowrap" title="Achat / Surveiller / Éviter">'
+            +counts+(ld.symbol?' · lead '+esc(ld.symbol):'')+'</span>'
+        +'</div></div>';
+    }).join('')+'</div>'
+    +'<div class="vx-meta vx-mt2 vx-dim">Par secteur : variation moyenne · score moteur · Achat / Surveiller / Éviter · leader. Trié par force.</div>';
   }
 
   function paintBreadth(sum,scan){
