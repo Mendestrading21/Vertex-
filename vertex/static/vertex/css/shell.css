@@ -1,0 +1,73 @@
+/* ════════════════════════════════════════════════════════════════════
+   VERTEX V4 — OBSIDIAN PRISM · SHELL (Lot 02)
+   ────────────────────────────────────────────────────────────────────
+   Restyle du shell existant (sidebar, topbar, recherche, item actif,
+   logo, nav mobile) vers la spécification V4 §4-5. Chargé EN DERNIER
+   (après tokens-v4-bridge.css) pour battre les règles shell historiques
+   de glass.css. AUCUNE structure/route/comportement modifié : uniquement
+   dimensions, couleurs (tokens V4) et profondeur. Couche de migration
+   transitoire → consolidée dans layout.css au Lot 15 (MIGRATION_MAP.md).
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Dimensions V4 (§4.1) : sidebar plus étroite, topbar plus fine ── */
+:root{
+  --vx-sidebar-w:180px;           /* 164-184 */
+  --vx-sidebar-w-collapsed:72px;  /* 64-72 */
+  --vx-topbar-h:58px;             /* 54-60 */
+  --vx-content-max:1680px;
+}
+
+/* ── Sidebar : verre obsidienne froide, bordure fine ── */
+.vx-sidebar{
+  background:linear-gradient(180deg,var(--vx-v4-sidebar),var(--vx-v4-black));
+  border-right:1px solid var(--vx-v4-border-soft);
+}
+.vx-sidebar-nav{padding:var(--vx-v4-space-3) var(--vx-v4-space-2)}
+
+/* ── Logo : jeton prism violet/magenta ── */
+.vx-logo-mark{
+  background:var(--vx-v4-brand-gradient)!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  color:#fff!important;
+  box-shadow:0 2px 12px rgba(109,74,255,.35),inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+
+/* ── Item de navigation actif : accent prism (bg + liseré violet) ── */
+.vx-nav-item[aria-current="page"]{
+  background:linear-gradient(90deg,var(--vx-v4-brand-soft),transparent 80%);
+  border-color:rgba(138,82,255,.28);
+  color:var(--vx-v4-text);
+}
+.vx-nav-item[aria-current="page"]::before{
+  background:linear-gradient(180deg,var(--vx-v4-brand-1),var(--vx-v4-brand-3))!important;
+  box-shadow:0 0 10px rgba(138,82,255,.5)!important;
+}
+.vx-nav-item[aria-current="page"] svg{stroke:var(--vx-v4-brand-2)}
+.vx-nav-item:hover{background:var(--vx-v4-hover)}
+
+/* ── Topbar : verre localisé, bordure fine ── */
+.vx-topbar{
+  background:var(--vx-v4-glass);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--vx-v4-border-soft);
+}
+
+/* ── Recherche globale : focus prism (plus de focus argent) ── */
+.vx-topbar-search input:focus{
+  border-color:rgba(138,82,255,.5)!important;
+  box-shadow:0 0 0 3px var(--vx-v4-brand-soft)!important;
+}
+
+/* ── Barre de navigation mobile : item actif violet ── */
+.vx-mobile-bar{
+  background:var(--vx-v4-glass);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  border-top:1px solid var(--vx-v4-border-soft);
+}
+.vx-mobile-bar a[aria-current="page"]{color:var(--vx-v4-brand-2)}
+
+/* ── Drawers / modales : verre cohérent (§4.3, glass localisé) ── */
+.vx-drawer,.vx-modal-box{
+  background:var(--vx-v4-surface-2);
+  border:1px solid var(--vx-v4-border-default);
+}

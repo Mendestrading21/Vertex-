@@ -14,8 +14,8 @@ Référence : `docs/vertex-v4/VERTEX_V4_MASTER_SPEC.md`
 | Lot | Périmètre | Statut | Branche / commit | Tests | Captures | Revue visuelle | Notes |
 |---:|---|---|---|---|---|---|---|
 | 00 | Consolidation, baseline et inventaire | **Terminé — à valider** | `integration/vertex-v4-clean` | 981 passés, 2 ignorés | 24 références + manifeste | En attente utilisateur | 8 routes 200, `/markets` 302 attendu, health OK, client-log 0 |
-| 01 | Tokens, palette, typo, profondeur | **Terminé — à valider** | `claude/v4-01-foundations` | 981 passés, 2 ignorés | 18 (3 viewports × 6 routes) | En attente utilisateur | Tokens `--vx-v4-*` (tokens.css) + pont `tokens-v4-bridge.css` chargé après glass.css ; SW `td-shell-v95` ; 0 erreur console ; overflow mobile portfolio/système = pré-existant (Lot 14) |
-| 02 | Shell : sidebar, topbar, recherche, drawers, mobile nav | À faire | — | — | — | — | Préserver routes et comportements |
+| 01 | Tokens, palette, typo, profondeur | **Validé (visuel utilisateur)** | `claude/v4-01-foundations` · PR #6 | 981 passés, 2 ignorés | 18 (3 viewports × 6 routes) | ✅ Utilisateur (Go) | Tokens `--vx-v4-*` (tokens.css) + pont `tokens-v4-bridge.css` chargé après glass.css ; SW `td-shell-v95` ; 0 erreur console ; overflow mobile portfolio/système = pré-existant (Lot 14) |
+| 02 | Shell : sidebar, topbar, recherche, drawers, mobile nav | **Terminé — à valider** | `claude/v4-02-shell` (empilé sur Lot 01) | 981 passés, 2 ignorés | 18 (3 viewports × 6 routes) | En attente utilisateur | `shell.css` chargé en dernier : sidebar 180px, topbar 58px glass, logo + item actif violet prism, focus recherche violet, nav mobile violette ; routes/comportements/nav (8) inchangés ; SW `td-shell-v96` ; 0 erreur console ; overflow mobile portfolio/système = pré-existant (Lot 14) |
 | 03 | Cartes, KPI, boutons, tabs, tables, filtres, états | À faire | — | — | — | — | Quatre niveaux de composants |
 | 04 | Système commun de graphiques | À faire | — | — | — | — | Tooltip, légende, source, états communs |
 | 05 | Briefing | À faire | — | — | — | — | Morning command center |

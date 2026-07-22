@@ -25,6 +25,16 @@ de vérité : c'est une couche de migration transitoire, retirée au Lot 15 une 
 `glass.css` et les couches legacy migrées et prouvées inutiles. Il n'introduit
 aucune règle métier.
 
+## Couche shell V4 (Lot 02)
+
+`css/shell.css` est **chargé en dernier** (après `tokens-v4-bridge.css`) et
+restyle le shell existant (sidebar, topbar, recherche, item de nav actif, logo,
+nav mobile, drawers) vers la spec V4 §4-5 : dimensions (sidebar 180px, topbar
+58px), verre localisé, accent prism violet sur l'item actif et le logo. Il bat
+les règles shell historiques de `glass.css` sans modifier structure, routes ni
+comportements. Couche de migration transitoire → consolidée dans `layout.css`
+au Lot 15 (mêmes conditions de retrait que ci-dessus). Aucune règle métier.
+
 ## Condition de retrait d'un fichier
 
 Un fichier ne peut être supprimé que si :

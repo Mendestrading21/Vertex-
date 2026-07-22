@@ -209,7 +209,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v95';   // v95 : v4-01 — pont Obsidian Prism (tokens-v4-bridge.css chargé après glass.css)
+const CACHE='td-shell-v96';   // v96 : v4-02 — shell Obsidian Prism (shell.css : sidebar/topbar/nav actif violet)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png','/static/vertex/css/fonts.css','/static/vertex/fonts/GeneralSans-Regular.woff2','/static/vertex/fonts/GeneralSans-Medium.woff2','/static/vertex/fonts/GeneralSans-Semibold.woff2','/static/vertex/fonts/GeneralSans-Bold.woff2','/static/vertex/fonts/JetBrainsMono-Regular.woff2','/static/vertex/fonts/JetBrainsMono-Medium.woff2','/static/vertex/fonts/JetBrainsMono-SemiBold.woff2','/static/vertex/fonts/JetBrainsMono-Bold.woff2']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
