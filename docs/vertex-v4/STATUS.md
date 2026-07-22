@@ -11,6 +11,14 @@ Référence : `docs/vertex-v4/VERTEX_V4_MASTER_SPEC.md`
 - Une case `Code terminé` ne signifie pas `Lot approuvé`.
 - La fusion vers `main` est interdite sans accord explicite.
 
+> **✅ FUSIONNÉ DANS `integration/vertex-v4-clean` (2026-07-22, commit `cf60597`).**
+> Sur autorisation utilisateur (« Fusionne »), les lots **01, 02, 03, 04, QA
+> conformité, 06 (Marchés + enrichissements)** et **10 (partiel : carte Activité
+> Options)** sont consolidés dans l'intégration. Les PR #6→#12 sont fermées
+> (leurs commits sont dans l'intégration). `main` n'est PAS touchée (D-010).
+> Les lignes ci-dessous conservent le détail par lot ; « Statut » = état au
+> moment du lot. Reste ouvert : 05, 07, 08, 09, 10 (workspace complet), 11-17.
+
 | Lot | Périmètre | Statut | Branche / commit | Tests | Captures | Revue visuelle | Notes |
 |---:|---|---|---|---|---|---|---|
 | 00 | Consolidation, baseline et inventaire | **Terminé — à valider** | `integration/vertex-v4-clean` | 981 passés, 2 ignorés | 24 références + manifeste | En attente utilisateur | 8 routes 200, `/markets` 302 attendu, health OK, client-log 0 |
@@ -43,3 +51,5 @@ Ajouter ici les décisions validées qui modifient ou précisent la spécificati
 | 2026-07-22 | General Sans + JetBrains Mono ; navigation cible à 9 espaces ; référence maître versionnée | Supprimer les contradictions de typo, navigation et référence | Consolidation V4 |
 | 2026-07-22 | Lot 01 : identité runtime migrée via pont (tokens.css + `tokens-v4-bridge.css`) plutôt qu'en réécrivant glass.css | glass.css est chargé en dernier et redéfinit 64 tokens ; un pont chargé après lui applique Obsidian Prism sans reconstruire ni supprimer le legacy (retrait = Lot 15) | Claude Code |
 | 2026-07-22 | Marque `--vx-v4-brand-1` = `#6e4aff` (et non `#6d4aff`) ; série bleue secondaire différée au Lot 04 | Respecter le garde-fou `test_no_blue_primary_theme` (scanne tokens.css) tout en gardant le violet prism | Claude Code |
+| 2026-07-22 | Fusion des lots 01-04 + QA + 06 + 10(partiel) dans `integration/vertex-v4-clean` (`cf60597`) ; PR #6-#12 fermées ; `main` intacte | Consolider le V4 livré sur autorisation utilisateur (« Fusionne ») ; retarget PR refusé (diff vide) → fermeture | Utilisateur |
+| 2026-07-22 | Marchés · vue Volatilité enrichie des implications du régime (adjustments `/api/market/regime`) | Rendre les sous-vues substantives avec données réelles déjà servies, sans nouveau moteur | Claude Code |
