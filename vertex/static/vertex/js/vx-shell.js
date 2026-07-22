@@ -25,9 +25,9 @@
   });
   $('vx-mobile-more')?.addEventListener('click', () => {
     /* Espaces ABSENTS de la barre mobile (briefing/opportunités/portefeuille/
-       analyse/performance y sont déjà) — Marchés est fusionné dans le Dashboard. */
-    VX.shell.openDrawer('Navigation', ['options', 'intelligence', 'system'].map(id => {
-      const it = { options: ['Options', '/options'], intelligence: ['Intelligence', '/intelligence'], system: ['Système', '/system'] }[id];
+       analyse/performance y sont déjà) — Marchés est un espace explicite (V4). */
+    VX.shell.openDrawer('Navigation', ['markets', 'options', 'intelligence', 'system'].map(id => {
+      const it = { markets: ['Marchés', '/markets'], options: ['Options', '/options'], intelligence: ['Intelligence', '/intelligence'], system: ['Système', '/system'] }[id];
       return `<a class="vx-nav-item" href="${it[1]}">${it[0]}</a>`;
     }).join(''));
   });
