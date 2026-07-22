@@ -198,10 +198,35 @@ _JS = r"""
       ['Régime SPY', ({TREND:'tendance',NEUTRAL:'neutre',CHOP:'sans direction',DOWN:'baissier'})[s.regime]||s.regime||r.regime||'n/d', ''],
       ['Risk-on / off', s.roro!=null?num(s.roro,0):'—', s.roro_gap!=null?('écart '+num(s.roro_gap,0)):'']
     ];
-    el.innerHTML='<div class="vx-mt2">'+rows.map(function(x){
+    var base='<div class="vx-mt2">'+rows.map(function(x){
       return '<div class="vx-kv"><span class="vx-kv-k">'+esc(x[0])+'</span>'
         +'<span class="vx-kv-v vx-mono">'+esc(x[1])+(x[2]?' <span class="vx-dim">'+esc(x[2])+'</span>':'')+'</span></div>';
     }).join('')+'</div>';
+    /* Ce que le régime IMPLIQUE pour la prise de risque — adjustements réels du
+       moteur de régime (aucune valeur inventée ; UNKNOWN honnête en démo). */
+    var adj=r.adjustments, extra='';
+    if(adj){
+      var spRaw=adj.setup_priority||'';
+      var spMap={ATTENDRE:'Attendre',ACHETER:'Acheter',RENFORCER:'Renforcer',REDUIRE:'Réduire',REFUSER:'Refuser',
+        BREAKOUT_PULLBACK:'Cassure / repli',BREAKOUT:'Cassure',PULLBACK:'Repli',TREND:'Tendance',MOMENTUM:'Momentum'};
+      var post=spMap[spRaw]||(spRaw?spRaw.charAt(0)+spRaw.slice(1).toLowerCase().replace(/_/g,' '):'—');
+      var postT=spRaw==='ATTENDRE'?'warn':(spRaw==='ACHETER'||spRaw==='RENFORCER')?'pos':(spRaw==='REDUIRE'||spRaw==='REFUSER')?'neg':'';
+      var impl=[
+        ['Setups prioritaires', post, postT],
+        ['Nouveau risque', adj.new_risk_allowed?'autorisé':'bloqué', adj.new_risk_allowed?'pos':'neg'],
+        ['Confirmations requises', adj.confirmation_required!=null?num(adj.confirmation_required,0):'—', ''],
+        ['Décalage de seuil', adj.score_threshold_shift!=null?(adj.score_threshold_shift>0?'+':'')+num(adj.score_threshold_shift,0):'—', adj.score_threshold_shift>0?'warn':''],
+        ['Facteur de taille', adj.size_factor_if_capital!=null?'×'+num(adj.size_factor_if_capital,2):'—', adj.size_factor_if_capital===0?'neg':'']
+      ];
+      extra='<div class="vx-mt3" style="border-top:1px solid var(--vx-v4-border-faint);padding-top:.6rem">'
+        +'<div class="vx-meta vx-mb1">Ce que le régime implique'
+        +(r.confidence!=null?' <span class="vx-dim">· confiance '+num(r.confidence*100,0)+' %</span>':'')+'</div>'
+        +impl.map(function(x){return '<div class="vx-kv"><span class="vx-kv-k">'+esc(x[0])+'</span>'
+          +'<span class="vx-kv-v vx-mono '+(x[2]==='pos'?'vx-pos':x[2]==='neg'?'vx-neg':x[2]==='warn'?'vx-warn':'')+'">'+esc(x[1])+'</span></div>';}).join('')
+        +((r.notes&&r.notes.length)?'<div class="vx-meta vx-mt2 vx-dim">'+esc(r.notes[0])+'</div>':'')
+        +'</div>';
+    }
+    el.innerHTML=base+extra;
   }
 
   function paintSectors(scan){
