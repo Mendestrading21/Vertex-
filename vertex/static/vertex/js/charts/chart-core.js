@@ -11,13 +11,13 @@
   /* Thème V3 unique (chart-theme.js) — repli sur les mêmes valeurs si absent */
   const THEME = window.VXChartTheme || { colors: {}, tooltip: {} };
   C.colors = Object.assign({
-    brand: '#c9cdd4', blue: '#c9cdd4', cyan: '#c0b79f', violet: '#9c79d0',
-    option: '#9c79d0', teal: '#53b9ad', plum: '#8f698c', sand: '#c0b79f',
-    steel: '#909b94', stone: '#6d746e',
-    positive: '#36c889', negative: '#ed655c', warning: '#dda23b',
-    info: '#c9cdd4', neutral: '#8f8a83',
-    text: '#b7b3ad', muted: '#817d77', grid: 'rgba(255,255,255,.05)',
-    series: ['#c9cdd4', '#8f8a83', '#9aa1a9', '#9c79d0', '#dda23b', '#6d746e'],
+    brand: '#9a5cff', blue: '#9a5cff', cyan: '#7e8798', violet: '#a875ff',
+    option: '#a875ff', teal: '#53b9ad', plum: '#8f698c', sand: '#c0b79f',
+    steel: '#7e8798', stone: '#6d746e',
+    positive: '#35d28b', negative: '#ff625f', warning: '#e6a846',
+    info: '#7e8798', neutral: '#7e8798',
+    text: '#bec5d2', muted: '#858e9f', grid: 'rgba(255,255,255,.06)',
+    series: ['#9a5cff', '#7e8798', '#d86cb7', '#53b9ad', '#e6a846', '#6d746e'],
     /* Palette macro/cross-asset : teal en tête (jamais confondu avec la marque) */
     macroSeries: ['#53b9ad', '#c0b79f', '#8f698c', '#909b94', '#dda23b', '#6d746e'],
   }, THEME.colors);
@@ -127,6 +127,7 @@
       C.colors.warning = tk('--vx-warning', C.colors.warning);
       C.colors.option = C.colors.violet = tk('--vx-option', C.colors.option);
       C.colors.brand = tk('--vx-brand', C.colors.brand);
+      C.colors.neutral = tk('--vx-neutral-chart', C.colors.neutral);
     } catch (e) { /* garde les hex de repli */ }
     d.color = C.colors.text;
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;

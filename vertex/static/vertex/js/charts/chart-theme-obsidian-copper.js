@@ -1,45 +1,48 @@
-/* Vertex Charts — chart-theme-obsidian-copper.js (§35-36)
-   Thème graphique unique OBSIDIAN COPPER DEEP, aligné sur tokens.css :
-   série principale = orange cuivré · benchmark = gris clair · série
-   secondaire = ambre/beige · positif = vert atténué · négatif = rouge
-   corail · options = violet sombre limité. AUCUNE série principale bleue,
-   aucune palette arc-en-ciel automatique. Chargé AVANT chart-core.js. */
+/* Vertex Charts — thème graphique unique (§35-36).
+   VERTEX V4 OBSIDIAN PRISM (Lot 04) : série principale = violet prism ·
+   benchmark = gris · magenta / teal / ambre = séries secondaires distinctes ·
+   options = violet · positif = vert · négatif = rouge corail. ZÉRO bleu
+   (garde-fous palette : test_no_blue_main_series + test_js_theme_matches_python_palette).
+   La série de comparaison bleue optionnelle (§6.2) reste différée. Cohérent avec
+   le registre central `vertex/visualization/palette.py`. Aligné sur `--vx-v4-*` ;
+   chart-core lit --vx-brand/positive/negative/warning/option au runtime.
+   (Nom de fichier historique conservé — rename → chart-theme-v4.js au Lot 15.)
+   Chargé AVANT chart-core.js. */
 (function () {
   'use strict';
   window.VXChartTheme = {
     colors: {
-      brand: '#c9cdd4',       /* série principale : ARGENT neutre (plus de vert identité) */
-      copper: '#3a3f47',
-      copperLight: '#84aa31', /* (hex marque conservé pour cohérence registre) */
-      amber: '#dda23b',       /* série secondaire */
-      beige: '#9aa1a9',       /* série secondaire : gris froid (beige refroidi) */
-      info: '#c9cdd4',        /* information = argent neutre */
-      blue: '#84aa31',        /* alias legacy — plus jamais bleu */
-      cyan: '#c0b79f',        /* alias legacy → beige */
-      violet: '#9c79d0',      /* options & IA (limité) */
-      option: '#9c79d0',
+      brand: '#9a5cff',       /* série principale : VIOLET prism (runtime = --vx-brand) */
+      copper: '#3a3f47',      /* surface neutre sombre (legacy) */
+      copperLight: '#9a5cff', /* alias marque → violet */
+      amber: '#e6a846',       /* série secondaire (attente/ambre) */
+      beige: '#858e9f',       /* série secondaire : gris froid */
+      info: '#7e8798',        /* information = gris neutre (jamais bleu) */
+      blue: '#9a5cff',        /* alias legacy → violet (defaults d'aire = prism, pas bleu) */
+      cyan: '#7e8798',        /* alias legacy → gris neutre */
+      violet: '#a875ff',      /* options & IA */
+      option: '#a875ff',
       teal: '#53b9ad',        /* macro / cross-asset / liquidité */
       plum: '#8f698c',        /* série secondaire distincte */
       sand: '#c0b79f',
-      steel: '#909b94',
+      steel: '#7e8798',
       stone: '#6d746e',
-      positive: '#36c889',
-      negative: '#ed655c',
-      warning: '#dda23b',
-      neutral: '#8f8a83',     /* benchmark */
-      text: '#b7b3ad',
-      muted: '#817d77',
-      grid: 'rgba(255,255,255,.05)',
-      /* Ordre des séries : argent (primaire neutre), gris benchmark, beige,
-         violet options, ambre, gris pierre. Aucune série verte/bleue. */
-      series: ['#c9cdd4', '#8f8a83', '#9aa1a9', '#9c79d0', '#dda23b', '#6d746e'],
-      sand: '#c0b79f',        /* (hex beige conservé pour le contrat registre) */
+      positive: '#35d28b',
+      negative: '#ff625f',
+      warning: '#e6a846',
+      neutral: '#7e8798',     /* benchmark gris */
+      text: '#bec5d2',
+      muted: '#858e9f',
+      grid: 'rgba(255,255,255,.06)',
+      /* Ordre des séries : violet prism (primaire), gris benchmark, magenta,
+         teal macro, ambre, gris pierre. Aucune série verte ni bleue. */
+      series: ['#9a5cff', '#7e8798', '#d86cb7', '#53b9ad', '#e6a846', '#6d746e'],
     },
     tooltip: {
-      backgroundColor: '#151719',
-      borderColor: 'rgba(255,255,255,.15)',
-      titleColor: '#f3f1ed',
-      bodyColor: '#b7b3ad',
+      backgroundColor: '#12161f',
+      borderColor: 'rgba(138,82,255,.25)',
+      titleColor: '#f5f7fb',
+      bodyColor: '#bec5d2',
     },
   };
 })();

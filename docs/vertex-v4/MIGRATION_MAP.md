@@ -13,7 +13,7 @@ les consomme. Leur nom historique ne leur donne aucun statut canonique.
 | `css/cockpit.css` | mise en page cockpit | `layout.css` + pages | Lot 15 |
 | `css/premium.css` | overrides premium | components + pages | Lot 15 |
 | `css/glass.css` | ex-vérité runtime, désormais re-mappée sur les tokens V4 par le pont | tokens/components V4 | Lot 15 |
-| `js/charts/chart-theme-obsidian-copper.js` | thème global Chart.js | `chart-theme-v4.js` | Lot 04 |
+| `js/charts/chart-theme-obsidian-copper.js` | thème global Chart.js — **contenu migré V4 (Lot 04)** ; rename fichier différé | `chart-theme-v4.js` | Lot 15 |
 
 ## Pont de compatibilité V4 (Lot 01)
 
