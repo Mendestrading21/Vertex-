@@ -2,6 +2,37 @@
 
 Terminal d'ANALYSE de trading (Flask, port 5002). **Lecture seule : aucun ordre n'est jamais passé** — invariant produit absolu (`READONLY=True` dans `vertex/app/config.py`).
 
+## Refonte visuelle V4 active
+
+La refonte visuelle validée se déroule exclusivement sur :
+
+```text
+redesign/vertex-v4-master
+```
+
+Documents obligatoires :
+
+```text
+docs/vertex-v4/VERTEX_V4_MASTER_SPEC.md
+docs/vertex-v4/STATUS.md
+.claude/skills/vertex-v4-redesign/SKILL.md
+```
+
+Commande Claude Code recommandée :
+
+```text
+/vertex-v4-redesign audit
+```
+
+Puis :
+
+```text
+/vertex-v4-redesign plan
+/vertex-v4-redesign execute 01
+```
+
+Règles V4 : un lot à la fois, captures desktop/tablette/mobile, tests à 100 %, arrêt pour revue visuelle après chaque lot. Aucun changement direct sur `main` et aucune fusion sans accord explicite.
+
 ## Lancer & vérifier
 - App : `python terminal.py` (ou `.claude/launch.json` → serveur « vertex », port 5002). Windows : `Lancer_VERTEX.bat`.
 - Tests : `python -m pytest tests/ -q` → **doivent passer à 100 %** avant tout commit.
@@ -17,14 +48,15 @@ Terminal d'ANALYSE de trading (Flask, port 5002). **Lecture seule : aucun ordre 
 
 ## Règles critiques (violations = données perdues ou app cassée)
 1. **Clés de sync desk** : toute nouvelle clé localStorage à synchroniser doit être ajoutée dans **LES 4 listes** (`__DESK_KEYS` terminal.py, sSyncPush/Pull, `vertex/ui/journal.py`, `DESK_KEYS` de `vx_kit.py`) — sinon un push l'efface côté serveur. Test gardien : `tests/test_production.py::test_desk_sync_keys_single_source_of_truth`.
-2. **Apostrophes françaises dans les chaînes JS** de terminal.py : toujours échapper (`aujourd\\'hui`) — deux SyntaxError silencieuses ont déjà vécu.
+2. **Apostrophes françaises dans les chaînes JS** de terminal.py : toujours échapper (`aujourd\'hui`) — deux SyntaxError silencieuses ont déjà vécu.
 3. **Service worker** : tout changement de shell visible utilisateur → bump `td-shell-vN` dans `vertex/app/routes/system.py`.
 4. **Données RÉELLES uniquement** : jamais de chiffre inventé affiché comme réel. Donnée absente → `—`/`n/d` honnête. Le mot « démo » ne s'affiche que si le serveur le confirme.
 5. **News/textes externes** : toujours via `news_plus.sanitize_news()` avant de servir (XSS — rendus en innerHTML).
 6. **desk_data.json** : ne jamais l'écraser à la main ; en cas de doute, backups `desk_backup_*.json` + `/api/desk/restore`.
 
 ## Git
-- Branche de travail : `vertex-system-launch` (local) → push fast-forward sur `origin claude/vertex-system-launch-0bsizs`.
+- Branche d’intégration V4 : `redesign/vertex-v4-master`.
+- Branches temporaires autorisées : `claude/v4-XX-nom-du-lot`.
 - **`main` = version canonique** — la mettre à jour SEULEMENT avec accord explicite de l'utilisateur.
 - Données runtime (edge_ledger, desk_backup_*, track_meta, alerts_fired, .env, .vertex_secret) : gitignorées, jamais commitées.
 
