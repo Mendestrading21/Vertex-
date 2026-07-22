@@ -222,16 +222,31 @@ _JS = r"""
   function paintBreadth(sum,scan){
     var el=$('mk-breadth-body'); if(!el) return;
     var s=sum||{};
-    var b=breadthPct(s.breadth);
+    var bo=s.breadth;                 /* objet {above50…} OU scalaire */
+    var b=breadthPct(bo);
     var scanned=s.scanned||(scan&&scan.scanned_n), uni=s.universe;
     if(b==null){ el.innerHTML=VX.states.empty('Participation indisponible.'); return; }
     var t=tone(b-50);
+    /* Détail réel quand l'API sert l'objet complet — aucune valeur inventée. */
+    var extra='';
+    if(bo&&typeof bo==='object'){
+      var rows=[];
+      if(bo.above50!=null) rows.push(['Titres > MM50', num(bo.above50,0)+' %', tone(bo.above50-50)]);
+      if(bo.above200!=null) rows.push(['Titres > MM200', num(bo.above200,0)+' %', tone(bo.above200-50)]);
+      if(bo.adv!=null||bo.dec!=null) rows.push(['Hausse / Baisse', num(bo.adv||0,0)+' / '+num(bo.dec||0,0), tone((bo.adv||0)-(bo.dec||0))]);
+      if(bo.nh!=null||bo.nl!=null) rows.push(['Nouv. hauts / bas', num(bo.nh||0,0)+' / '+num(bo.nl||0,0), tone((bo.nh||0)-(bo.nl||0))]);
+      if(rows.length) extra='<div class="vx-grid-2 vx-mt3">'+rows.map(function(r){
+        return '<div class="vx-stat" data-tone="'+r[2]+'"><div class="vx-stat-k">'+esc(r[0])+'</div>'
+          +'<div class="vx-stat-v vx-mono" style="font-size:18px">'+esc(r[1])+'</div></div>';
+      }).join('')+'</div>';
+    }
     el.innerHTML='<div class="vx-mt2" style="text-align:center">'
       +'<div class="vx-stat-v" style="font-size:34px" data-tone="'+t+'">'+num(b,0)+' %</div>'
       +'<div class="vx-dim">titres au-dessus de leur moyenne mobile</div>'
       +'<div class="vx-meter vx-mt2"><i style="width:'+Math.max(0,Math.min(100,b)).toFixed(0)+'%;background:var(--vx-'+(b>=55?'positive':b>=45?'warning':'negative')+')"></i></div>'
       +'<div class="vx-meta vx-mt2">'+(scanned!=null?esc(scanned)+(uni?' / '+esc(uni):'')+' titres scannés':'')+'</div>'
-      +'<div class="vx-meta vx-mt1 vx-dim">> 55 % = marché large · < 45 % = participation étroite</div></div>';
+      +'<div class="vx-meta vx-mt1 vx-dim">> 55 % = marché large · < 45 % = participation étroite</div></div>'
+      +extra;
   }
 
   async function boot(){
