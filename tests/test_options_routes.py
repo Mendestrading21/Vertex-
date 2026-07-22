@@ -99,8 +99,8 @@ def test_options_page_renders_as_primary_space(client):
     assert 'data-nav-id="options"' in html
     assert re.search(r'data-nav-id="options"[^>]*aria-current="page"', html) \
         or 'data-nav-id="options" aria-current="page"' in html
-    # huit espaces dans la nav principale (Marchés fusionné dans le Dashboard)
-    assert len(re.findall(r'class="vx-nav-item"', html)) == 8
+    # neuf espaces dans la nav principale (Marchés explicite, V4 D-005)
+    assert len(re.findall(r'class="vx-nav-item"', html)) == 9
 
 
 def test_options_page_subviews(client):

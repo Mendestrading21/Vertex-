@@ -13,6 +13,7 @@ SHELL_VERSION = 'vx-shell-1'
 # plus d'entrée dédiée : le Dashboard porte indices, taux, secteurs, breadth, VIX.
 PRIMARY_NAV = (
     {'id': 'briefing', 'label': 'Dashboard', 'href': '/', 'icon': 'home'},
+    {'id': 'markets', 'label': 'Marchés', 'href': '/markets', 'icon': 'globe'},
     {'id': 'opportunities', 'label': 'Opportunités', 'href': '/opportunities', 'icon': 'radar'},
     {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
     {'id': 'analysis', 'label': 'Analyse', 'href': '/analysis', 'icon': 'chart'},
