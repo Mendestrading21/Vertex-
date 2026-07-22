@@ -1,0 +1,51 @@
+/* ════════════════════════════════════════════════════════════════════
+   VERTEX V4 — OBSIDIAN PRISM · COMPOSANTS (Lot 03)
+   ────────────────────────────────────────────────────────────────────
+   Affine les composants partagés (cartes, onglets, chips/filtres,
+   segmented, boutons) vers la spec V4 §4.2-4.4, en battant les règles
+   historiques de glass.css. La SÉLECTION passe en violet prism (§4.3) ;
+   la sémantique pos/neg/warn des tuiles reste inchangée. Chargé après
+   shell.css. Aucune structure/donnée touchée. Retrait/consolidation Lot 15.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Cartes : rayon V4 ; les 4 niveaux (hero/analytique/tuile/inspecteur) ── */
+.vx-card{border-radius:var(--vx-v4-radius-card)}
+.vx-card--hero,.vx-card--compact{border-radius:14px}
+
+/* Carte sélectionnée / active → accent prism violet (au lieu de l'argent) */
+.vx-card.vx-active,.vx-card--selected{
+  border-color:rgba(138,82,255,.40)!important;
+  box-shadow:var(--vx-glass-sheen),var(--shadow-card),0 0 0 1px rgba(138,82,255,.35)!important;
+}
+/* Accent de tête hero/premium → dégradé prism discret (au lieu du liseré argent) */
+.vx-card--premium::after,.vx-card--hero::before{
+  background:linear-gradient(90deg,transparent,var(--vx-v4-brand-1),var(--vx-v4-brand-3),transparent)!important;
+}
+
+/* ── Onglets : soulignement actif violet prism ── */
+.vx-tab[aria-selected="true"]{
+  border-bottom-color:var(--vx-v4-brand-1)!important;
+  color:var(--vx-v4-text)!important;
+}
+
+/* ── Chips / filtres actifs → violet prism (scope #vx-content pour battre glass.css) ── */
+#vx-content .vx-chip[aria-pressed="true"],
+.vx-chip[aria-pressed="true"]{
+  background:var(--vx-v4-brand-soft)!important;
+  border-color:rgba(138,82,255,.45)!important;
+  color:var(--vx-v4-text)!important;
+}
+
+/* ── Contrôle segmenté : option active teintée prism ── */
+.vx-segmented button[aria-pressed="true"]{
+  background:var(--vx-v4-brand-soft);
+  color:var(--vx-v4-text);
+  box-shadow:inset 0 0 0 1px rgba(138,82,255,.30);
+}
+
+/* ── Boutons : rayon de contrôle V4 (7-10px) ── */
+.vx-btn,.vx-btn-icon,.vx-btn-sm{border-radius:var(--vx-v4-radius-control)}
+.vx-btn-primary:hover{box-shadow:var(--vx-v4-brand-glow)}
+
+/* ── Badges : rayon pilule cohérent, ton neutre conservé ── */
+.vx-badge{border-radius:var(--vx-v4-radius-pill)}

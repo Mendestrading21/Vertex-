@@ -35,6 +35,16 @@ les règles shell historiques de `glass.css` sans modifier structure, routes ni
 comportements. Couche de migration transitoire → consolidée dans `layout.css`
 au Lot 15 (mêmes conditions de retrait que ci-dessus). Aucune règle métier.
 
+## Couche composants V4 (Lot 03)
+
+`css/components-v4.css` est **chargé en dernier** (après `shell.css`) et affine
+les composants partagés (cartes 4 niveaux, onglets, chips/filtres, segmented,
+boutons) vers la spec V4 §4.2-4.4 : la **sélection** passe en violet prism
+(carte active, onglet actif, chip/filtre actif, option segmented), accent hero
+prism, rayons de contrôle V4. La sémantique pos/neg/warn des tuiles reste
+inchangée. Bat les règles composant historiques de `glass.css` sans modifier
+structure ni données. Consolidée dans `components.css` au Lot 15. Aucune règle métier.
+
 ## Condition de retrait d'un fichier
 
 Un fichier ne peut être supprimé que si :

@@ -176,6 +176,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/glass.css">
 <link rel="stylesheet" href="/static/vertex/css/tokens-v4-bridge.css">
 <link rel="stylesheet" href="/static/vertex/css/shell.css">
+<link rel="stylesheet" href="/static/vertex/css/components-v4.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
