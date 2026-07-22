@@ -113,6 +113,11 @@ _VIEW_CONTENT = {
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=radar">Tout voir →</a></span></div>
     <div id="vx-opt-radar-lite-body">%%LOADING%%</div>
   </section>
+  <section class="vx-card vx-col-12" id="vx-opt-activity" aria-label="Activité du marché options">
+    <div class="vx-card-header"><span class="vx-card-title">Activité du marché options</span>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=radar">Radar complet →</a></span></div>
+    <div id="vx-opt-activity-body">%%LOADING%%</div>
+  </section>
 </div>
 """,
     'volatility': """
