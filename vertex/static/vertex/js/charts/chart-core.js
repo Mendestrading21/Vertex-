@@ -58,28 +58,82 @@
 
   /* ── ChartCard : contrat visuel §34 ─────────────────────────────── */
   let uid = 0;
+
+  /* Badge de fraîcheur canonique — langage visuel unique de l'honnêteté.
+     freshness ∈ live | delayed | stale | demo | offline | missing. */
+  C.freshnessBadge = function (freshness) {
+    if (!freshness) return '';
+    const f = String(freshness).toLowerCase();
+    const map = {
+      live: ['live', 'Live'], delayed: ['delayed', 'Différé'],
+      stale: ['frozen', 'Périmé'], demo: ['fallback', 'Démo'],
+      offline: ['offline', 'Hors ligne'], missing: ['offline', 'Indisponible'],
+    };
+    const m = map[f] || ['fallback', freshness];
+    return `<span class="vx-freshness" data-live="${m[0]}" title="Fraîcheur : ${m[1]}">` +
+      `<span class="vx-live-dot"></span>${m[1]}</span>`;
+  };
+
+  /* Corps d'état honnête du Chart Shell : loading / empty / stale / error. */
+  C._stateBody = function (state, opts) {
+    const h = opts.height || 200;
+    const msg = opts.stateMessage;
+    if (state === 'loading')
+      return `<div class="vx-chart-body" style="height:${h}px" aria-busy="true">${VX.states.loading(3)}</div>`;
+    if (state === 'stale')
+      return `<div class="vx-stale-banner">⏱ Données périmées — ${msg || 'dernière valeur connue affichée.'}</div>` +
+        `<div class="vx-chart-body" style="height:${h}px"><div class="vx-state" data-state="stale"><div class="vx-state-icon">⏱</div><div><b>Périmé</b><br>${msg || 'Rafraîchir pour actualiser.'}</div></div></div>`;
+    if (state === 'error')
+      return `<div class="vx-chart-body" style="height:${h}px"><div class="vx-state" data-tone="error" data-state="error"><div class="vx-state-icon">!</div><div><b>Erreur</b><br>${msg || 'Impossible de charger ce graphique.'}</div></div></div>`;
+    /* empty (défaut) — assumé, jamais un rectangle vide */
+    return `<div class="vx-chart-body" style="height:${h}px"><div class="vx-state" data-state="empty"><div class="vx-state-icon">—</div><div><b>Donnée indisponible</b><br>${msg || opts.question || 'Aucune donnée à afficher.'}</div></div></div>`;
+  };
+
+  /* Raccourci : rendre un Chart Shell dans un état donné (sans canvas). */
+  C.cardState = function (host, opts) {
+    return C.card(host, Object.assign({}, opts, { state: (opts && opts.state) || 'empty' }));
+  };
+
   C.card = function (host, opts) {
-    /* opts: {title, question, conclusion, timeframe, controlsHtml, height,
-              source, timestamp, mode, limits, explain:{shows,why,confirm,invalidate},
-              legend:[{label,color}], render(canvas)->Chart} */
+    /* CHART SHELL CANONIQUE (§34). opts:
+       {title, question, conclusion, timeframe, unit, freshness, summary,
+        controlsHtml, height, source, timestamp, mode, limits,
+        explain:{shows,why,confirm,invalidate}, legend:[{label,color}],
+        state:'loading'|'empty'|'stale'|'error', stateMessage,
+        render(canvas)->Chart}
+       Contrat : titre · question · conclusion · période · unité · source ·
+       fraîcheur · légende · aide · résumé accessible · skeleton/vide/périmé/erreur. */
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;
     const id = 'vxch-' + (++uid);
     const legend = (opts.legend || []).map(l =>
       `<span><span class="vx-swatch" style="background:${l.color}"></span>${l.label}</span>`).join('');
     el.classList.add('vx-card', 'vx-chart-card');
-    el.innerHTML = `
+    const head = `
       <div class="vx-chart-head">
         <span class="vx-chart-title">${opts.title || ''}</span>
         ${opts.timeframe ? `<span class="vx-badge">${opts.timeframe}</span>` : ''}
+        ${opts.unit ? `<span class="vx-badge vx-badge-unit">${opts.unit}</span>` : ''}
+        ${C.freshnessBadge(opts.freshness)}
         <span class="vx-chart-controls">${opts.controlsHtml || ''}</span>
         ${opts.question ? `<span class="vx-chart-question">${opts.question}</span>` : ''}
         ${opts.conclusion ? `<span class="vx-chart-conclusion">${opts.conclusion}</span>` : ''}
-      </div>
-      <div class="vx-chart-body" style="height:${opts.height || 200}px"><canvas id="${id}" role="img" aria-label="${opts.title || 'graphique'}"></canvas></div>
-      ${legend ? `<div class="vx-chart-legend">${legend}</div>` : ''}
-      <div class="vx-chart-foot">
+      </div>`;
+
+    /* États honnêtes : pas de canvas, on rend l'état et on sort. */
+    if (opts.state && opts.state !== 'ready') {
+      el.innerHTML = head + C._stateBody(opts.state, opts);
+      return null;
+    }
+
+    const summary = opts.summary || opts.conclusion || opts.title || 'graphique';
+    el.innerHTML = head +
+      `<div class="vx-chart-body" style="height:${opts.height || 200}px"><canvas id="${id}" role="img" aria-label="${summary}"></canvas></div>` +
+      (opts.summary ? `<p class="vx-sr-only">${opts.summary}</p>` : '') +
+      (legend ? `<div class="vx-chart-legend">${legend}</div>` : '') +
+      `<div class="vx-chart-foot">
         ${VX.updateIndicator(opts.timestamp, opts.source, opts.mode)}
+        ${opts.unit ? `<span class="vx-meta">Unité : ${opts.unit}</span>` : ''}
         ${opts.limits ? `<span class="vx-meta">${opts.limits}</span>` : ''}
         <button class="vx-btn vx-btn-sm vx-btn-ghost vx-explain-btn" data-explain="${id}">Comprendre ce graphique</button>
       </div>`;
@@ -93,7 +147,7 @@
         <h3 class="vx-mt4 vx-mb2">Ce qui confirmerait</h3><p class="vx-dim">${ex.confirm || '—'}</p>
         <h3 class="vx-mt4 vx-mb2">Ce qui invaliderait</h3><p class="vx-dim">${ex.invalidate || '—'}</p>
         <div class="vx-divider"></div>
-        <div class="vx-meta">Source : ${opts.source || 'n/d'} · ${VX.fmt.ago(opts.timestamp)}${opts.limits ? ' · ' + opts.limits : ''}</div>`);
+        <div class="vx-meta">Source : ${opts.source || 'n/d'}${opts.unit ? ' · Unité : ' + opts.unit : ''} · ${VX.fmt.ago(opts.timestamp)}${opts.limits ? ' · ' + opts.limits : ''}</div>`);
     });
     return chart;
   };

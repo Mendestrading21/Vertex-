@@ -126,7 +126,7 @@ async function renderFunnel(){
   let f;try{f=await VX.fetch('/api/opportunities/funnel',{ttl:60000});}catch(e){return;}
   if(!f||!f.stages||!f.stages.length)return;
   const roleColor={'ATTAQUE':'var(--vx-positive,#36c889)','MILIEU':'var(--vx-beige,#c8ad8d)',
-    'DÉFENSE':'var(--vx-neutral,#8f8a83)','RÉSERVE':'var(--vx-text-dim,#817d77)'};
+    'DÉFENSE':'var(--vx-neutral,#9d978e)','RÉSERVE':'var(--vx-text-dim,#817d77)'};
   const roles=(f.roles||[]).map(function(r){
     return '<span class="vx-chip" style="border:1px solid '+ (roleColor[r.role]||'#555')
       +';color:'+(roleColor[r.role]||'#aaa')+'">'+esc(r.role)+' '+esc(r.count)+'</span>';

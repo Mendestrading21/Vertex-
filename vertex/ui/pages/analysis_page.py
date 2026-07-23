@@ -200,6 +200,14 @@ _SECTIONS = """
 """
 
 _JS = r"""
+<!-- Moteur de chandeliers : ÉCHELLE DE REPLI, pas un chargement concurrent.
+     Un SEUL moteur rend le graphique (cf. drawChart plus bas) :
+       1. VXCharts.lwCandlestickCard  → CANONIQUE (TradingView Lightweight Charts,
+          qualité pro : chandeliers nets, overlays MM + plan, zoom/pan natif).
+       2. VXCharts.candlestickCard    → repli Canvas si la lib LWC échoue.
+       3. VXCharts.priceCard          → repli ligne si les bougies sont invalides.
+     Vérifié navigateur : #an-chart contient un unique .vx-lwc (LWC actif).
+     Ne pas retirer les paliers 2-3 : ce sont les replis honnêtes, pas des doublons. -->
 <script src="/static/vertex/js/charts/price-chart.js" defer></script>
 <script src="/static/vertex/js/charts/candlestick-chart.js" defer></script>
 <script src="/static/vertex/js/vendor/lightweight-charts.standalone.production.js" defer></script>
@@ -316,7 +324,7 @@ async function loadDossier(){
   const overlays=[
     {label:'MM20',color:cc('amber','#ce8a29'),data:tail(S.ema20),dash:[]},
     {label:'MM50',color:cc('beige','#c8ad8d'),data:tail(S.sma50),dash:[5,3]},
-    {label:'MM200',color:cc('neutral','#8f8a83'),data:tail(S.sma200),dash:[2,3]},
+    {label:'MM200',color:cc('neutral','#9d978e'),data:tail(S.sma200),dash:[2,3]},
   ].filter(o=>o.data&&o.data.some(x=>x!=null));
   const events=[];
   if(d.earnings_dte!==null&&d.earnings_dte!==undefined&&d.earnings_dte>=0&&d.earnings_dte<=cut.length)

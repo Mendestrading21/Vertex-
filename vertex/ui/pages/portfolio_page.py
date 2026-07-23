@@ -351,7 +351,7 @@ async function renderOptions(){
     VXCharts.treemap(el,{width:w,height:220,
       items:rich.map(t=>({label:t.sym+' '+(t.strike||''),value:Math.max(1,t.invested||0),
         sub:(t.type==='PUT'?'PUT':'CALL')+(t.exp?' '+t.exp:''),
-        color:(t.type==='PUT'?(cc.violet||'#9c79d0'):(cc.neutral||'#8f8a83'))})),
+        color:(t.type==='PUT'?(cc.violet||'#9c79d0'):(cc.neutral||'#9d978e'))})),
       fmt:(v)=>VX.fmt.price(v)});
   }
   document.querySelectorAll('[data-opt-analyze]').forEach(b=>

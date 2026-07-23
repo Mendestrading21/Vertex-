@@ -520,7 +520,7 @@ async function loadOpportunities(){
           'ÉVITER':'#ed655c','AVOID':'#ed655c','ALLÉGER':'#ed655c','ALLEGER':'#ed655c'};
         VXCharts.donutCard('vx-opp-posture',{title:'Posture du comité',
           question:'Comment se répartissent les verdicts du comité aujourd’hui ?',
-          labels:_ck,values:_ck.map(k=>counts[k]),colors:_ck.map(k=>tone[k]||'#8f8a83'),height:172,
+          labels:_ck,values:_ck.map(k=>counts[k]),colors:_ck.map(k=>tone[k]||'#9d978e'),height:172,
           source:(c.data_source==='demo'?'démo':'comité'),timestamp:Date.now(),
           mode:(c.data_source==='demo'?'fallback':'delayed')});
       }

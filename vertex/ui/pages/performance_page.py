@@ -396,7 +396,7 @@ async function loadTrack(){
           question:'Quels verdicts moteur ont le mieux tenu ?',height:200,
           source:'moteur track-record',timestamp:Date.now(),mode:'delayed',
           limits:'moyenne réelle des verdicts résolus (n≥5) — mesure, pas une promesse',
-          render:(cv)=>VXCharts.bars(cv,_tl,_tv,{colors:_tv.map(v=>v==null?'#8f8a83':(v>=0?'#36c889':'#ed655c')),yFmt:(x)=>x+' %'})});
+          render:(cv)=>VXCharts.bars(cv,_tl,_tv,{colors:_tv.map(v=>v==null?'#9d978e':(v>=0?'#36c889':'#ed655c')),yFmt:(x)=>x+' %'})});
       }
     }catch(e){}
   }catch(e){$('vx-pf-track').innerHTML=VX.states.error('Track record moteur indisponible ('+esc(e.message)+')');}

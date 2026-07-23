@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v43';   // v43 : anti-débordement horizontal mobile (min-width:0 flex, en-têtes de carte wrap, libellés longs) + palette JS alignée sur palette.py
+const CACHE='td-shell-v44';   // v44 : PR Design n°1 — typo JetBrains Mono, Chart Shell (unité/fraîcheur/résumé/états), composants canoniques (Verdict/Scenario/Freshness/Insufficient), DATA_INSUFFICIENT honnête, purge couleurs inline
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
