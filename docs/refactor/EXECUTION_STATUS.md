@@ -31,7 +31,16 @@ Décisions utilisateur (2026-07-23) : identité = Obsidian Copper/Inter ; sortir
 
 - [x] C-02/C-11 palette source unique + test durci
 - [x] C-04 identité tranchée (docs alignés)
-- [ ] Hygiène git (untrack données)
-- [ ] C-07 data-quality démo étiquetée
-- [ ] C-08 décision données insuffisantes
-- [ ] Débordement horizontal mobile
+- [x] Hygiène git (untrack données)
+- [x] C-07 data-quality démo étiquetée (DEMO ≠ MISSING)
+- [x] C-08 requalifié (moteur déjà honnête) + garde-fou
+- [x] Débordement horizontal mobile éliminé (0/11, SW v43)
+
+**PR n°1 : GO** — tests 899/2, `/api/client-log` 0, voir `validation/PR-01.md`.
+
+## Prochaine étape
+
+Revue utilisateur de la PR n°1, puis PR n°2 (design system & chart system) :
+réconcilier « JetBrains Mono » (specs) vs « IBM Plex Mono » (tokens.css), traiter
+les doublons graphiques (jauges/secteurs), et — présentation — ne pas afficher le
+comité comme une conviction quand la décision est DATA_INSUFFICIENT.
