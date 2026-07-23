@@ -13,9 +13,9 @@
   C.colors = Object.assign({
     brand: '#84aa31', blue: '#84aa31', cyan: '#c0b79f', violet: '#9c79d0',
     positive: '#36c889', negative: '#ed655c', warning: '#dda23b',
-    info: '#84aa31', neutral: '#8f8a83',
+    info: '#84aa31', neutral: '#9d978e',
     text: '#b7b3ad', muted: '#817d77', grid: 'rgba(255,255,255,.05)',
-    series: ['#84aa31', '#c0b79f', '#8f8a83', '#9c79d0', '#dda23b', '#48631b'],
+    series: ['#84aa31', '#c0b79f', '#9d978e', '#9c79d0', '#dda23b', '#747d75'],
   }, THEME.colors);
 
   function chartDefaults() {
