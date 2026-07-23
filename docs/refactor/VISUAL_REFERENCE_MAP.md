@@ -20,13 +20,13 @@ cités en prose** (Apple, Linear, Vercel, Raycast, Arc, TradingView, Bloomberg,
 Stripe, Tesla UI, Notion, Obsidian), explicitement **à ne jamais copier
 littéralement** — seulement en étudier hiérarchie / densité / interactions.
 
-> ⚠️ **Contradiction de nommage** (voir `CONTRADICTIONS_REGISTER.md` C-04) :
-> « **Obsidian Prism** » et la police « **General Sans** » — prescrits par
-> `CLAUDE.md` et les règles `.claude/rules/design-v4.md` — **n'apparaissent nulle
-> part** dans le code ni les specs de cette branche. Les specs et le code réels
-> parlent de « **VERTEX OBSIDIAN COPPER** » et prescrivent **Inter + JetBrains
-> Mono / SF Mono**. Non inventé : si un doc « Prism / General Sans » est attendu,
-> il n'est pas sur cette branche.
+> ✅ **Identité tranchée** (voir `CONTRADICTIONS_REGISTER.md` C-04) : la mention
+> « Obsidian Prism / General Sans » venait du `CLAUDE.md` de la branche
+> d'intégration ; elle **n'existe pas** sur `agent/vertex-total-rebuild`.
+> L'identité canonique est **VERTEX OBSIDIAN COPPER**, polices **Inter** (UI) +
+> **IBM Plex Mono** (chiffres, `tokens.css:120-121`). Décision utilisateur :
+> conserver Obsidian Copper / Inter. (Écart mineur restant : les specs citent
+> « JetBrains Mono », le code utilise « IBM Plex Mono » — à réconcilier PR n°2.)
 
 ## Documents canoniques de direction visuelle (autorité décroissante)
 
@@ -90,6 +90,6 @@ La refonte **ne dispose pas d'images cibles** : elle doit s'appuyer sur les
 specs textuelles ci-dessus et sur les captures `obsidian/` comme meilleure
 approximation existante. Toute « référence visuelle » supplémentaire devra être
 fournie par l'utilisateur (captures d'inspiration) — elles ne sont pas dans le
-dépôt aujourd'hui. Avant d'engager la couche design (PR n°2), **clarifier
-l'identité canonique** : « Obsidian Copper » (code réel) vs « Obsidian Prism /
-General Sans » (CLAUDE.md) — les deux ne peuvent pas rester vrais.
+dépôt aujourd'hui. Identité canonique **tranchée** : « Obsidian Copper / Inter »
+(le code fait foi). Toute référence d'inspiration supplémentaire devra être
+fournie par l'utilisateur.

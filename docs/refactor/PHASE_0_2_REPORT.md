@@ -69,7 +69,7 @@ design-v4 §9.
 | 1 | Débordement horizontal mobile sur 8/11 pages (pire : Système 547px) | 🔴 | Baseline §5 |
 | 2 | Décision « confiante » sur ticker inexistant (`/api/decision/ZZZZZ` conf 56) | 🔴 | C-08 |
 | 3 | Qualité données démo = tout `MISSING` malgré scores affichés | 🔴 | C-07 |
-| 4 | Identité ambiguë : « Obsidian Prism / General Sans » (CLAUDE.md) vs « Obsidian Copper / Inter » (code) | 🔴 | C-04 |
+| 4 | Identité (✅ résolu : décision Obsidian Copper / Inter ; l'ambiguïté venait du CLAUDE.md d'intégration, absente de cette branche) | ✅ | C-04 |
 | 5 | Graphiques doublons massifs (secteurs ×4, jauges régime/breadth ×3, funnel & radar dupliqués) | 🟠 | C-09 |
 | 6 | 3 sources de couleurs divergentes non gardées (palette.py/JS/CSS, séries 2&5) | 🟠 | C-02/C-11 |
 | 7 | 2 moteurs de chandeliers chargés ensemble sur Analyse | 🟠 | C-05 |
@@ -79,7 +79,8 @@ design-v4 §9.
 
 ## 7. Contradictions critiques (rappel)
 
-🔴 C-04 (identité), C-07 (qualité démo), C-08 (décision sans données). Détails et
+🔴 C-07 (qualité démo), C-08 (décision sans données) ; C-04 (identité) **résolu**
+par décision (Obsidian Copper / Inter). Détails et
 sources dans `CONTRADICTIONS_REGISTER.md`. Chaque item cite **ses deux sources** et
 propose une source canonique.
 
@@ -143,9 +144,10 @@ propose une source canonique.
 4. **Nettoyage sûr, non destructif** — confirmer par test navigateur lequel des
    2 moteurs chandeliers rend (C-05) et retirer le redondant ; documenter la
    décision « 8 vs 9 espaces » sans changer le comportement (C-01).
-5. **Décision d'identité (bloquant design)** — trancher C-04 avec l'utilisateur
-   (« Obsidian Copper / Inter » vs « Obsidian Prism / General Sans ») **avant** la
-   PR n°2 (design system).
+5. **Décision d'identité** — ✅ tranchée : **Obsidian Copper / Inter** (le code
+   fait foi ; aucune trace de « Obsidian Prism / General Sans » sur cette branche).
+   Reste à réconcilier « JetBrains Mono » (specs) vs « IBM Plex Mono » (`tokens.css`)
+   dans la PR n°2.
 6. **Hygiène dépôt** — proposer le retrait du suivi git de `position_inventory.json`
    et `company_cache.json` (décision utilisateur ; **aucune suppression sans accord**).
 

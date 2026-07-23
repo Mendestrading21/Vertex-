@@ -49,19 +49,24 @@ maintenabilité) · 🟡 mineure (doc / nommage).
   thème pour refléter l'identité réelle (à coordonner avec C-04).
 - **Validation** : grep « cuivre/copper/orange » nul dans les commentaires actifs.
 
-## C-04 🔴 Identité produit : « Obsidian Prism / General Sans » (CLAUDE.md) vs « Obsidian Copper / Inter » (code)
+## C-04 ✅ RÉSOLU — Identité produit : Obsidian Copper / Inter (décision utilisateur)
 
-- **Source A** : `CLAUDE.md` (« Vertex V4 — Obsidian Prism », « General Sans pour
-  l'interface ») et `.claude/rules/design-v4.md`.
-- **Source B** : `.interface-design/system.md`, `docs/VERTEX_OBSIDIAN_COPPER_DEEP.md`,
-  `tokens.css` — identité « VERTEX OBSIDIAN COPPER », polices **Inter + JetBrains
-  Mono / SF Mono**. « Obsidian Prism » et « General Sans » **absents du dépôt**.
-- **Impact** : toute la refonte design part d'une identité ambiguë (deux noms,
-  deux systèmes typographiques).
-- **Canonique** : à **décider par l'utilisateur** avant la PR design. Le code et
-  les specs de craft pointent vers Obsidian Copper + Inter/JetBrains.
-- **Validation** : un seul nom d'identité et une seule pile typographique
-  documentés et implémentés.
+- **Origine du signalement** : le `CLAUDE.md` de la branche d'intégration
+  (`integration/vertex-v4-clean`, injecté au démarrage de session) parlait de
+  « Vertex V4 — Obsidian Prism » et « General Sans ».
+- **État réel sur `agent/vertex-total-rebuild`** : ces termes **n'existent pas**
+  (le `CLAUDE.md` de cette branche — 37 lignes — ne mentionne aucune identité
+  design ; « Obsidian Prism »/« General Sans » n'apparaissent que dans les
+  présents documents d'audit). L'identité est **déjà cohérente** dans le code et
+  les specs : « **VERTEX OBSIDIAN COPPER** » (39 fichiers), polices **Inter**
+  (UI, `tokens.css:120`) + **IBM Plex Mono** (chiffres, `tokens.css:121`).
+- **Décision utilisateur (2026-07-23)** : conserver **Obsidian Copper / Inter**
+  (le code actuel fait foi). **Aucun changement runtime nécessaire.**
+- **Reste mineur** : certaines specs (`docs/VERTEX_DESIGN_TOKENS.md`) citent
+  « JetBrains Mono » alors que `tokens.css` utilise **IBM Plex Mono** — écart de
+  nommage typographique à réconcilier dans la PR design (n°2), sans urgence.
+- **Validation** : grep « Obsidian Prism »/« General Sans » nul hors docs
+  d'audit ✔ ; `tokens.css` = Inter + IBM Plex Mono ✔.
 
 ## C-05 🟠 Deux moteurs de chandeliers chargés simultanément
 
@@ -156,7 +161,7 @@ maintenabilité) · 🟡 mineure (doc / nommage).
 | C-01 | 🟠 | 8 vs 9 espaces | code+test (9) | oui (IA) |
 | C-02 | 🟠 | séries palette divergentes | palette.py | oui (design) |
 | C-03 | 🟡 | commentaires cuivre/orange | — | non |
-| C-04 | 🔴 | Prism/General Sans vs Copper/Inter | **à décider (user)** | **oui (design)** |
+| C-04 | ✅ | identité (résolu : Obsidian Copper/Inter) | Obsidian Copper / Inter | non (réglé) |
 | C-05 | 🟠 | 2 moteurs chandeliers | LWC probable | oui (analyse) |
 | C-06 | 🟠 | 2 registres nav | PRIMARY_NAV | oui (nav) |
 | C-07 | 🔴 | data-quality tout MISSING en démo | état démo | non (mais honnêteté) |

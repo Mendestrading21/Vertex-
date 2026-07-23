@@ -21,12 +21,17 @@
 - 617 fichiers · 163 routes · 9 espaces · ~90 endpoints · ~55 graphiques.
 - Débordement mobile 390px sur **8 pages / 11** ; desktop propre.
 - `/api/client-log` : 0 erreur. États sans-IBKR/absent/démo honnêtement étiquetés.
-- 3 contradictions 🔴 : identité (C-04), qualité démo MISSING (C-07), décision sans données (C-08).
+- Contradictions 🔴 restantes : qualité démo MISSING (C-07), décision sans données
+  (C-08). C-04 (identité) **résolu** : Obsidian Copper / Inter (décision user).
 
-## Next action
+## PR n°1 en cours
 
-Arbitrer avec l'utilisateur : (1) identité canonique « Obsidian Copper/Inter » vs
-« Obsidian Prism/General Sans » (C-04) ; (2) hygiène `position_inventory.json` /
-`company_cache.json`. Puis exécuter **PR n°1 — Fondations honnêtes & responsive**
-(voir `PHASE_0_2_REPORT.md` §11). Aucune refonte massive des pages tant que la
-PR n°1 n'est pas validée.
+Décisions utilisateur (2026-07-23) : identité = Obsidian Copper/Inter ; sortir
+`position_inventory.json` + `company_cache.json` du suivi git ; lancer la PR n°1.
+
+- [x] C-02/C-11 palette source unique + test durci
+- [x] C-04 identité tranchée (docs alignés)
+- [ ] Hygiène git (untrack données)
+- [ ] C-07 data-quality démo étiquetée
+- [ ] C-08 décision données insuffisantes
+- [ ] Débordement horizontal mobile
