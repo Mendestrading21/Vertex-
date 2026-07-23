@@ -96,15 +96,16 @@ intelligence, system`. Elles servent de référence « avant » pour la refonte.
 | Badge démo | HTML rendu (briefing) | Texte `DÉMO/MOCK/SIMUL` présent et visible (`demo_badge_visible=True`) | **Honnête** ✅ |
 | Ticker absent | `GET /api/ticker/ZZZZZ` | HTTP 200, champs `null` partout (aucun chiffre inventé) | **Honnête** ✅ |
 | Qualité données démo | `GET /api/data-quality` | `by_quality = {MISSING: 20}` — **les 20 titres affichés sont notés `MISSING`** alors que les pages montrent scores/verdicts | ⚠️ **Incohérence** — voir `CONTRADICTIONS_REGISTER.md` C-07 |
-| Décision ticker absent | `GET /api/decision/ZZZZZ` | HTTP 200 + verdict comité avec `confidence:56`, `lean:38` pour un titre inexistant | ⚠️ **Anti-manifeste** (« Vertex peut dire je ne sais pas ») — voir C-08 |
+| Décision ticker absent | `GET /api/decision/ZZZZZ` | `final_decision:DATA_INSUFFICIENT`, `confidence:0` (le `56` est le `committee.confidence` imbriqué = vent de marché) | ✅ **Honnête au niveau décision** — nuance de présentation, voir C-08 |
 
 ## 8. Synthèse Phase 0
 
 - **Vert** : tests 100 % (893/895), compilation propre, démarrage sain, 0 erreur
   client réelle, états sans-IBKR/absent/démo honnêtement étiquetés.
 - **Rouge** : débordement horizontal mobile généralisé (8/11) ; incohérence
-  qualité-données en démo (tout `MISSING`) ; décision « confiante » sur ticker
-  inexistant.
+  qualité-données en démo (tout `MISSING`). *(La « décision confiante sur ticker
+  inexistant » signalée initialement s'est révélée un faux positif : le moteur
+  renvoie déjà DATA_INSUFFICIENT / confiance 0 — voir C-08.)*
 - Base solide côté données/tests ; le chantier prioritaire est **le responsive
   mobile** et **quelques honnêtetés de données** (voir registre des
   contradictions et rapport de synthèse).

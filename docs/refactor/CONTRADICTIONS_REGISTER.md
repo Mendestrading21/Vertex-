@@ -107,20 +107,28 @@ maintenabilité) · 🟡 mineure (doc / nommage).
 - **Validation** : `/api/data-quality` en démo renvoie un état cohérent avec le
   badge démo ; test dédié.
 
-## C-08 🔴 Décision « confiante » sur un ticker inexistant
+## C-08 🟡 Décision sur ticker inexistant — FAUX POSITIF au niveau décision (nuance de présentation)
 
-- **Source A** : `GET /api/decision/ZZZZZ` (ticker bidon) → HTTP 200,
-  `committee.confidence:56`, `lean:38`, verdict « Marché RISK-OFF ».
-- **Source B** : `GET /api/ticker/ZZZZZ` → tous champs `null` (aucune donnée).
-- **Problème** : viole le manifeste (« Vertex peut dire *je ne sais pas* ») et la
-  règle d'intégrité 6 — une confiance chiffrée est produite sans aucune donnée
-  titre.
-- **Canonique** : absence de données → état « indisponible / données
-  insuffisantes », pas un verdict chiffré.
-- **Décision** : `decision_stack` doit renvoyer un état explicite « insuffisant »
-  pour un symbole hors univers / sans données ; **exige un test rouge** avant
-  correction (règle SKILL de modification moteur).
-- **Validation** : test reproduisant le défaut + correction + non-régression.
+- **Vérification approfondie** : `GET /api/decision/ZZZZZ` renvoie en réalité, au
+  **niveau décision** : `final_decision = DATA_INSUFFICIENT`, label « Données
+  insuffisantes », **`confidence: 0`**, `conviction: 0`, `reasoning: null`,
+  `score_breakdown: null`. `decision_stack.evaluate` **gate déjà** sur
+  `data_quality.blocks_decision` (`decision_stack.py:274-278`).
+- **Mon signalement initial était erroné** : le `56` provenait du sous-objet
+  **`committee.confidence`** (vent de marché seul), lu sur une sortie curl
+  tronquée — pas de la confiance de décision. **Le moteur est honnête.**
+- **Nuance réelle restante (mineure)** : le sous-objet `committee` continue
+  d'exposer `confidence:56` / `view:"Prudent"` / membres même quand la décision
+  est `DATA_INSUFFICIENT`. Une page qui afficherait le panneau comité pourrait
+  donner une impression de confiance. Les pages consomment `final_decision` /
+  `confidence` (haut niveau), donc le risque est faible.
+- **Action prise** : **aucune modification moteur** (il serait faux de « corriger »
+  un comportement déjà honnête, et un test rouge n'existerait pas). Ajout d'un
+  **test de non-régression** `test_unknown_symbol_is_honestly_insufficient`
+  (`tests/test_decision_stack.py`) qui verrouille `DATA_INSUFFICIENT` +
+  `confidence 0` + absence de scénario/décomposition.
+- **Suivi PR n°2 (design)** : ne pas présenter le panneau comité comme une
+  conviction quand `final_decision == DATA_INSUFFICIENT`.
 
 ## C-09 🟠 Graphiques doublons (même histoire, plusieurs vues)
 
@@ -165,7 +173,7 @@ maintenabilité) · 🟡 mineure (doc / nommage).
 | C-05 | 🟠 | 2 moteurs chandeliers | LWC probable | oui (analyse) |
 | C-06 | 🟠 | 2 registres nav | PRIMARY_NAV | oui (nav) |
 | C-07 | 🔴 | data-quality tout MISSING en démo | état démo | non (mais honnêteté) |
-| C-08 | 🔴 | décision confiante sur ticker inexistant | état « insuffisant » | non (mais honnêteté) |
+| C-08 | 🟡 | décision ticker inexistant (faux positif ; moteur déjà honnête) | DATA_INSUFFICIENT (déjà en place) | non (test ajouté) |
 | C-09 | 🟠 | graphiques doublons | 1 par question/page | oui (par page) |
 | C-10 | 🟡 | API redondantes | 1 source/métrique | non |
 | C-11 | 🟠 | 3 sources de couleurs | 1 canonique | oui (design) |

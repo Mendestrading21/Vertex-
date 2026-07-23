@@ -51,8 +51,10 @@ absent → champs `null` (aucun chiffre inventé) ; 0 erreur client.
 ⚠️ **À corriger** :
 - **C-07** : en démo `/api/data-quality` renvoie **tout `MISSING`** (20/20) alors
   que les pages montrent scores/verdicts → message contradictoire.
-- **C-08** : `/api/decision/ZZZZZ` (ticker inexistant) renvoie un verdict comité
-  **confidence 56** au lieu de « données insuffisantes » → anti-manifeste.
+- **C-08 (corrigé après vérif)** : au niveau **décision**, `/api/decision/ZZZZZ`
+  renvoie déjà `DATA_INSUFFICIENT` / `confidence 0` — le moteur **est honnête**.
+  Le `56` était le `committee.confidence` imbriqué (vent de marché). Nuance
+  mineure de présentation à traiter en PR design ; test de non-régression ajouté.
 
 ## 5. Responsive — défaut le plus visible
 
@@ -67,8 +69,8 @@ design-v4 §9.
 | # | Problème | Sévérité | Réf. |
 |---|---|---|---|
 | 1 | Débordement horizontal mobile sur 8/11 pages (pire : Système 547px) | 🔴 | Baseline §5 |
-| 2 | Décision « confiante » sur ticker inexistant (`/api/decision/ZZZZZ` conf 56) | 🔴 | C-08 |
-| 3 | Qualité données démo = tout `MISSING` malgré scores affichés | 🔴 | C-07 |
+| 2 | Qualité données démo = tout `MISSING` malgré scores affichés | 🔴 | C-07 |
+| 3 | Comité présenté comme « Prudent » (conf 56) même quand la décision est DATA_INSUFFICIENT (nuance de présentation ; décision déjà honnête) | 🟡 | C-08 |
 | 4 | Identité (✅ résolu : décision Obsidian Copper / Inter ; l'ambiguïté venait du CLAUDE.md d'intégration, absente de cette branche) | ✅ | C-04 |
 | 5 | Graphiques doublons massifs (secteurs ×4, jauges régime/breadth ×3, funnel & radar dupliqués) | 🟠 | C-09 |
 | 6 | 3 sources de couleurs divergentes non gardées (palette.py/JS/CSS, séries 2&5) | 🟠 | C-02/C-11 |
@@ -79,8 +81,9 @@ design-v4 §9.
 
 ## 7. Contradictions critiques (rappel)
 
-🔴 C-07 (qualité démo), C-08 (décision sans données) ; C-04 (identité) **résolu**
-par décision (Obsidian Copper / Inter). Détails et
+🔴 C-07 (qualité démo). C-08 (décision sans données) **requalifié 🟡** après
+vérif — moteur déjà honnête (DATA_INSUFFICIENT/conf 0), simple nuance de
+présentation. C-04 (identité) **résolu** (Obsidian Copper / Inter). Détails et
 sources dans `CONTRADICTIONS_REGISTER.md`. Chaque item cite **ses deux sources** et
 propose une source canonique.
 
@@ -134,8 +137,9 @@ propose une source canonique.
    8 pages en 390 px. Ajouter un **test gardien** de non-débordement (sonde
    Playwright ou assert layout).
 2. **Honnêteté données** —
-   - C-08 : `decision_stack` renvoie un état « données insuffisantes » pour un
-     symbole hors univers (test rouge → correction → non-régression).
+   - C-08 : ✅ vérifié — `decision_stack` renvoie déjà `DATA_INSUFFICIENT` /
+     confiance 0 ; test de non-régression ajouté. Reste (design) : ne pas
+     présenter le comité comme une conviction quand la décision est insuffisante.
    - C-07 : `/api/data-quality` en démo étiquette `DEMO/SIMULATED` au lieu de
      `MISSING` (test dédié).
 3. **Palette : source unique** — désigner `palette.py` canonique, dériver JS/CSS,
