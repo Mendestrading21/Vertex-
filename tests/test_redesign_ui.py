@@ -1,6 +1,6 @@
 """Vertex Master Redesign — tests de l'architecture UI (§49).
 
-Navigation 8 espaces, redirections legacy, shell unique, fiche canonique,
+Navigation 9 espaces (Marchés explicite), redirections legacy, shell unique, fiche canonique,
 états de données, contrat graphique, clés de sync canoniques, mobile, SW.
 """
 import os
@@ -27,14 +27,14 @@ def client():
 
 
 # ── Navigation (§10) ──────────────────────────────────────────────────
-def test_primary_navigation_has_eight_items():
-    """Marchés est FUSIONNÉ dans le Dashboard — plus d'entrée dédiée (§fusion)."""
-    assert len(PRIMARY_NAV) == 8
+def test_primary_navigation_has_nine_items():
+    """Marchés est un espace EXPLICITE (9e, V4 D-005) réutilisant les données existantes."""
+    assert len(PRIMARY_NAV) == 9
     assert [i['label'] for i in PRIMARY_NAV] == [
-        'Dashboard', 'Opportunités', 'Portefeuille',
+        'Dashboard', 'Marchés', 'Opportunités', 'Portefeuille',
         'Analyse', 'Options', 'Performance', 'Intelligence', 'Système']
     assert [i['href'] for i in PRIMARY_NAV] == [
-        '/', '/opportunities', '/portfolio',
+        '/', '/markets', '/opportunities', '/portfolio',
         '/analysis', '/options', '/performance', '/intelligence', '/system']
 
 
@@ -52,14 +52,12 @@ def test_every_primary_route_returns_200(client):
         assert b'vx-app' in r.data, item['href']
 
 
-def test_markets_redirects_to_dashboard_anchor(client):
-    """L'ancienne page /markets redirige vers l'ancre correspondante du Dashboard."""
-    for url, loc in (('/markets', '/'), ('/markets?view=sectors', '/#sectors'),
-                     ('/markets?view=macro', '/#markets'),
-                     ('/markets?view=breadth', '/#pulse'),
-                     ('/markets?view=volatility', '/#pulse')):
-        r = client.get(url)
-        assert r.status_code == 302 and r.headers['Location'] == loc, url
+def test_markets_is_explicit_space(client):
+    """Marchés est un espace explicite (V4 D-005) : page réelle + sous-vues, plus de 302."""
+    r = client.get('/markets')
+    assert r.status_code == 200 and b'vx-app' in r.data
+    for view in ('overview', 'sectors', 'breadth', 'volatility', 'macro'):
+        assert client.get('/markets?view=' + view).status_code == 200, view
 
 
 def test_subviews_return_200(client):
@@ -311,7 +309,7 @@ def test_service_worker_bumped(client):
     r = client.get('/sw.js')
     assert r.status_code == 200
     body = r.get_data(as_text=True)
-    assert 'td-shell-v94' in body, 'le shell a changé — la version du cache doit suivre'
+    assert 'td-shell-v99' in body, 'le shell a changé — la version du cache doit suivre'
     assert 'td-shell-v49' not in body
 
 

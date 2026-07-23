@@ -181,3 +181,105 @@
   --vx-warning-dim:var(--vx-warning-soft);
   --vx-copper-legacy:var(--vx-signal-400);
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   VERTEX V4 — OBSIDIAN PRISM · FONDATIONS (Lot 01)
+   Source unique des tokens V4. Bloc ADDITIF : les tokens legacy ci-dessus
+   restent définis et consommés jusqu'au Lot 15. Le runtime historique est
+   re-mappé sur ces valeurs par `tokens-v4-bridge.css` (chargé en dernier).
+   Réf : docs/vertex-v4/VERTEX_V4_MASTER_SPEC.md §2-4 · DECISIONS.md D-002.
+   Marque = violet/magenta/corail (JAMAIS gain/perte). Vert=positif,
+   rouge=négatif/risque/erreur, ambre=attente/incertitude. Zéro bleu d'identité.
+   ════════════════════════════════════════════════════════════════════ */
+:root{
+  /* ── Canvas (froid, profond) ── */
+  --vx-v4-black:#030509;
+  --vx-v4-obsidian:#050810;
+  --vx-v4-canvas:#070b12;
+  --vx-v4-sidebar:#080b13;
+
+  /* ── Surfaces (carte dans carte) — rgba, verre localisé ── */
+  --vx-v4-surface-1:rgba(13,18,29,.88);
+  --vx-v4-surface-2:rgba(17,23,36,.92);
+  --vx-v4-surface-3:rgba(23,30,46,.94);
+  --vx-v4-glass:rgba(18,23,38,.72);
+  --vx-v4-hover:rgba(38,45,64,.72);
+
+  /* ── Bordures (fines, jamais de gros contour lumineux) ── */
+  --vx-v4-border-faint:rgba(255,255,255,.045);
+  --vx-v4-border-soft:rgba(255,255,255,.075);
+  --vx-v4-border-default:rgba(255,255,255,.115);
+  --vx-v4-border-strong:rgba(255,255,255,.18);
+
+  /* ── Texte (4 niveaux, contraste AA sur canvas) ── */
+  --vx-v4-text:#f5f7fb;
+  --vx-v4-text-2:#bec5d2;
+  --vx-v4-text-3:#858e9f;
+  --vx-v4-text-4:#596273;
+
+  /* ── Marque : violet / magenta / corail — JAMAIS gain/perte ── */
+  --vx-v4-brand-1:#6e4aff;            /* violet prism (r=110 : conforme garde-fou anti-bleu) */
+  --vx-v4-brand-2:#9a5cff;            /* violet clair */
+  --vx-v4-brand-3:#d86cb7;            /* magenta */
+  --vx-v4-brand-warm:#f08a62;         /* corail */
+  --vx-v4-brand-soft:rgba(138,82,255,.15);
+  --vx-v4-brand-gradient:linear-gradient(135deg,#6e4aff 0%,#9a5cff 45%,#d86cb7 100%);
+  --vx-v4-brand-glow:0 0 0 1px rgba(138,82,255,.22),0 8px 30px rgba(109,74,255,.18);
+
+  /* ── Sémantique financière (une couleur = une signification) ── */
+  --vx-v4-positive:#35d28b;
+  --vx-v4-positive-soft:rgba(53,210,139,.14);
+  --vx-v4-negative:#ff625f;           /* négatif / risque / erreur */
+  --vx-v4-negative-soft:rgba(255,98,95,.14);
+  --vx-v4-warning:#e6a846;            /* attente / incertitude / retardé */
+  --vx-v4-warning-soft:rgba(230,168,70,.14);
+
+  /* ── Options & séries de graphe neutres ── */
+  --vx-v4-option:#a875ff;             /* violet options */
+  --vx-v4-neutral-chart:#7e8798;      /* benchmark gris */
+  /* série de comparaison bleue secondaire : introduite au Lot 04 (charts) */
+
+  /* ── Typographie (familles auto-hébergées : fonts.css) ── */
+  --vx-v4-font:var(--vx-font);
+  --vx-v4-font-mono:var(--vx-font-mono);
+  --vx-v4-fs-page:27px;               /* titre de page 25-30 */
+  --vx-v4-fs-hero:40px;               /* grand nombre hero 34-46, tabular */
+  --vx-v4-fs-section:17px;            /* titre de section 16-19 */
+  --vx-v4-fs-card:13px;               /* titre de carte 12-14 */
+  --vx-v4-fs-body:13px;               /* corps 12.5-14 */
+  --vx-v4-fs-meta:11px;               /* métadonnées 10.5-11.5 */
+  --vx-v4-fw-regular:450;
+  --vx-v4-fw-medium:550;
+  --vx-v4-fw-semibold:650;
+  --vx-v4-fw-bold:750;
+  --vx-v4-num:tabular-nums;           /* nombres financiers tabulaires */
+
+  /* ── Espacements (échelle 4px) ── */
+  --vx-v4-space-1:4px;--vx-v4-space-2:8px;--vx-v4-space-3:12px;
+  --vx-v4-space-4:16px;--vx-v4-space-5:20px;--vx-v4-space-6:24px;
+  --vx-v4-space-7:32px;--vx-v4-space-8:40px;
+
+  /* ── Rayons ── */
+  --vx-v4-radius-card:12px;           /* 10-14 */
+  --vx-v4-radius-control:8px;         /* 7-10 */
+  --vx-v4-radius-pill:999px;
+
+  /* ── Profondeur / ombres (jamais de glow permanent généralisé) ── */
+  --vx-v4-shadow-1:0 1px 2px rgba(0,0,0,.35);
+  --vx-v4-shadow-2:0 8px 24px rgba(0,0,0,.42);
+  --vx-v4-shadow-3:0 24px 60px rgba(0,0,0,.55);
+
+  /* ── Motion (120-220 ms, ease-out, respect reduced-motion) ── */
+  --vx-v4-motion-fast:120ms;
+  --vx-v4-motion-base:160ms;
+  --vx-v4-motion-slow:220ms;
+  --vx-v4-ease:cubic-bezier(.22,.61,.36,1);
+
+  /* ── Focus visible (AA, sur canvas sombre) ── */
+  --vx-v4-focus:rgba(154,92,255,.7);
+  --vx-v4-focus-ring:0 0 0 2px var(--vx-v4-canvas),0 0 0 4px var(--vx-v4-focus);
+
+  /* ── z-index (échelle cohérente pour shell/drawers/modales) ── */
+  --vx-v4-z-base:1;--vx-v4-z-sidebar:90;--vx-v4-z-topbar:100;
+  --vx-v4-z-drawer:200;--vx-v4-z-modal:300;--vx-v4-z-toast:400;
+}

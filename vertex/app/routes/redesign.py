@@ -11,7 +11,7 @@ from pathlib import Path
 from flask import Blueprint, jsonify, redirect, request, send_from_directory
 
 from vertex.ui.pages import (analysis_page, briefing, design_system_page,
-                             intelligence_page, opportunities_page,
+                             intelligence_page, markets_page, opportunities_page,
                              options_intel_page, performance_page, portfolio_page,
                              system_page, tracking_page)
 
@@ -82,12 +82,10 @@ def make_blueprint(scan_state: dict) -> Blueprint:
 
     @bp.route('/markets')
     def markets_route():
-        # Marchés est FUSIONNÉ dans le Dashboard (/) — redirection par ancre pour
-        # préserver les favoris (?view=sectors → /#sectors, etc.). Jamais de 404.
-        anchor = {'overview': '', 'sectors': '#sectors', 'macro': '#markets',
-                  'breadth': '#pulse', 'volatility': '#pulse'}
-        view = request.args.get('view', 'overview')
-        return redirect('/' + anchor.get(view, ''), code=302)
+        # Marchés = 9e espace explicite (V4, D-005) : réutilise les données de
+        # marché existantes (/scan, /api/market/*, /api/command). Lecture seule.
+        return markets_page.render(view=request.args.get('view', 'overview'),
+                                   params=request.args)
 
     @bp.route('/opportunities')
     def opportunities_route():

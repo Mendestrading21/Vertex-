@@ -13,7 +13,7 @@ tu lis le vrai code et tu rends un diagnostic ancré (chemins:lignes).
    (que se passe-t-il ? pourquoi ? quelle exposition/risque/opportunité ? quelle décision ? quelle confiance ?
    quel scénario défavorable ? quelle taille ? quand sortir ? qu'est-ce qui invalide la thèse ? quel résultat ?
    qu'apprend Vertex ?) — ou est-ce de l'info « parce qu'elle est disponible » ? Référence :
-   `.claude/skills/vertex-maximum/references/product-vision.md`.
+   `.claude/skills/vertex-v4-redesign/references/product-vision.md`.
 2. **Anti-fausse-fonctionnalité (§25)** : bouton sans handler, `href="#"`, onglet mort, filtre qui ne filtre pas,
    graphe purement décoratif, statut « live » qui est un flag de config, fallback mock silencieux présenté comme
    réel. Chaque cas = preuve (fichier:ligne) + reproduction.

@@ -247,7 +247,7 @@ async function loadConnSummary(){
     return '<div style="display:grid;grid-template-columns:150px 130px 1fr;gap:.6rem;align-items:center;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.05)">'
       +'<b>'+esc(c.name)+'</b>'
       +'<span class="vx-badge" style="color:'+col[t]+';border:1px solid '+col[t]+'">'+esc(c.status)+'</span>'
-      +'<span class="vx-dim" style="font-size:12.5px">'+esc(c.detail||'')+(c.action?' <span style="color:var(--vx-orange-500,#cf6128)">→ '+esc(c.action)+'</span>':'')+'</span></div>';
+      +'<span class="vx-dim" style="font-size:12.5px;overflow-wrap:anywhere">'+esc(c.detail||'')+(c.action?' <span style="color:var(--vx-warning)">→ '+esc(c.action)+'</span>':'')+'</span></div>';
   }).join('');
   el.innerHTML=rows||'<div class="vx-empty">Aucun canal.</div>';
 }

@@ -13,6 +13,7 @@ SHELL_VERSION = 'vx-shell-1'
 # plus d'entrée dédiée : le Dashboard porte indices, taux, secteurs, breadth, VIX.
 PRIMARY_NAV = (
     {'id': 'briefing', 'label': 'Dashboard', 'href': '/', 'icon': 'home'},
+    {'id': 'markets', 'label': 'Marchés', 'href': '/markets', 'icon': 'globe'},
     {'id': 'opportunities', 'label': 'Opportunités', 'href': '/opportunities', 'icon': 'radar'},
     {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
     {'id': 'analysis', 'label': 'Analyse', 'href': '/analysis', 'icon': 'chart'},
@@ -174,6 +175,9 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
 <link rel="stylesheet" href="/static/vertex/css/premium.css">
 <link rel="stylesheet" href="/static/vertex/css/glass.css">
+<link rel="stylesheet" href="/static/vertex/css/tokens-v4-bridge.css">
+<link rel="stylesheet" href="/static/vertex/css/shell.css">
+<link rel="stylesheet" href="/static/vertex/css/components-v4.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>

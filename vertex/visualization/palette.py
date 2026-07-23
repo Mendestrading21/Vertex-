@@ -6,34 +6,38 @@ une intention (marque, benchmark, positif, négatif, option…). Le thème
 graphique JS (`chart-theme-obsidian-copper.js`) DOIT rester cohérent avec ce
 registre — un test le vérifie.
 
-Identité Vertex : Signal Terminal. Vert Signal = marque/série de référence
-(PAS « hausse »). Émeraude = positif. Zéro bleu dominant.
+Identité Vertex V4 : Obsidian Prism. Violet prism = marque/série de référence
+(PAS « hausse »). Vert = positif. Magenta/teal = séries secondaires. Zéro bleu
+dominant (le bleu de comparaison §6.2 reste différé, hors registre).
 """
 from __future__ import annotations
 
-# ── Couleurs de marque (série principale = VERT SIGNAL) ────────────────
-BRAND = '#84aa31'          # série principale Vertex (identité, pas « hausse »)
-COPPER = '#747d75'         # série neutre acier (ex-cuivre, purgé)
-COPPER_LIGHT = '#a3ca42'   # vert Signal clair (accents)
-AMBER = '#dda23b'          # série secondaire / attention
+# ── Couleurs de marque (série principale = VIOLET PRISM V4) ────────────
+BRAND = '#9a5cff'          # série principale Vertex — VIOLET prism (identité, pas « hausse »)
+COPPER = '#3a3f47'         # surface neutre sombre (legacy conservé)
+COPPER_LIGHT = '#a875ff'   # violet clair (accents)
+AMBER = '#e6a846'          # série secondaire / attente
 BEIGE = '#c0b79f'          # benchmark clair (sable)
+MAGENTA = '#d86cb7'        # série secondaire distincte (marque)
+TEAL = '#53b9ad'           # macro / cross-asset / liquidité
+STONE = '#6d746e'          # série neutre sombre
 
 # ── États (direction / statut réel uniquement) ────────────────────────
-POSITIVE = '#36c889'       # ÉMERAUDE — gain / donnée positive (distinct du vert marque)
-NEGATIVE = '#ed655c'       # corail — perte / risque
-WARNING = '#dda23b'
-NEUTRAL = '#9d978e'        # benchmark neutre (gris chaud)
-OPTION = '#9c79d0'         # violet contrôlé — RÉSERVÉ aux options / IV / Greeks
+POSITIVE = '#35d28b'       # vert — gain / donnée positive (distinct de la marque violette)
+NEGATIVE = '#ff625f'       # corail — perte / risque
+WARNING = '#e6a846'
+NEUTRAL = '#7e8798'        # benchmark neutre (gris froid)
+OPTION = '#a875ff'         # violet — RÉSERVÉ aux options / IV / Greeks
 #                            (identité déployée : tokens.css, chart-theme, chart-core)
 
 # ── Texte ──────────────────────────────────────────────────────────────
-TEXT = '#f2f5f1'
-TEXT_DIM = '#b8beb7'
-TEXT_MUTED = '#818980'
+TEXT = '#f5f7fb'
+TEXT_DIM = '#bec5d2'
+TEXT_MUTED = '#858e9f'
 
 # Palette de séries — ordre déterministe, jamais arc-en-ciel. La série 0 est
-# toujours la marque ; les suivantes descendent en neutralité.
-SERIES = (BRAND, BEIGE, NEUTRAL, OPTION, AMBER, COPPER)
+# toujours la marque ; les suivantes restent distinctes et neutres.
+SERIES = (BRAND, NEUTRAL, MAGENTA, TEAL, AMBER, STONE)
 
 # Rôle sémantique → couleur. C'est CE dictionnaire qui fait autorité.
 SEMANTIC = {
@@ -42,6 +46,9 @@ SEMANTIC = {
     'copper_light': COPPER_LIGHT,
     'amber': AMBER,
     'beige': BEIGE,
+    'magenta': MAGENTA,
+    'teal': TEAL,
+    'stone': STONE,
     'benchmark': NEUTRAL,
     'positive': POSITIVE,
     'negative': NEGATIVE,
@@ -95,8 +102,8 @@ def audit_no_blue() -> list:
 
 
 __all__ = [
-    'BRAND', 'COPPER', 'COPPER_LIGHT', 'AMBER', 'BEIGE', 'POSITIVE', 'NEGATIVE',
-    'WARNING', 'NEUTRAL', 'OPTION', 'TEXT', 'TEXT_DIM', 'TEXT_MUTED',
-    'SERIES', 'SEMANTIC', 'STATUS_COLOR', 'series_color', 'status_color',
-    'is_bluish', 'audit_no_blue',
+    'BRAND', 'COPPER', 'COPPER_LIGHT', 'AMBER', 'BEIGE', 'MAGENTA', 'TEAL',
+    'STONE', 'POSITIVE', 'NEGATIVE', 'WARNING', 'NEUTRAL', 'OPTION', 'TEXT',
+    'TEXT_DIM', 'TEXT_MUTED', 'SERIES', 'SEMANTIC', 'STATUS_COLOR',
+    'series_color', 'status_color', 'is_bluish', 'audit_no_blue',
 ]
