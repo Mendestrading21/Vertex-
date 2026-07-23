@@ -1,81 +1,76 @@
-# CLAUDE CODE — EXÉCUTION VERTEX TOTAL REBUILD
+# Claude Code — Vertex Total Rebuild
 
-## Instruction principale
+## Branche obligatoire
 
-Utilise obligatoirement le skill :
+Travaille sur :
 
-```text
-.claude/skills/vertex-total-rebuild/SKILL.md
+```bash
+git fetch origin
+git checkout agent/vertex-total-rebuild
+git pull --ff-only
 ```
 
-L'objectif n'est pas d'ajouter une nouvelle couche esthétique. L'objectif est de reconstruire Vertex avec une seule logique produit, une seule architecture visuelle, une seule grammaire graphique et des sources de données canoniques.
+Confirme ensuite :
 
-## Lot actuel autorisé
-
-Exécute uniquement les phases 0, 1 et 2 du skill :
-
-1. baseline mesurée ;
-2. inventaire exhaustif des fichiers ;
-3. cartographie pages/endpoints/moteurs/graphiques ;
-4. inventaire des références visuelles ;
-5. registre des contradictions et doublons.
-
-Ne commence pas encore la refonte massive des pages.
-
-## Travail obligatoire
-
-- Exécute réellement tous les tests.
-- Lance réellement Vertex en mode démo.
-- Inspecte toutes les routes dans le navigateur.
-- Vérifie console, réseau, responsive et états de données.
-- Inspecte tous les fichiers suivis par Git.
-- Recherche les anciens thèmes, composants, graphiques et styles locaux.
-- Identifie toutes les photos, captures et références visuelles présentes dans le dépôt.
-- Relie chaque graphique à son endpoint et à son moteur source.
-- Compare les métriques similaires afin de détecter les contradictions.
-- Ne supprime rien pendant ce premier lot.
-
-## Documents à produire
-
-```text
-docs/refactor/VERTEX_BASELINE_AUDIT.md
-docs/refactor/FILE_INVENTORY.md
-docs/refactor/PAGE_DATA_GRAPH_MATRIX.md
-docs/refactor/CONTRADICTIONS_REGISTER.md
-docs/refactor/CHART_INVENTORY.md
-docs/refactor/VISUAL_REFERENCE_MAP.md
+```bash
+git branch --show-current
+test -f .claude/FRAMEWORK.md
+test -f .claude/skills/vertex-total-rebuild/SKILL.md
+test -f .claude/manifesto/VERTEX.md
 ```
 
-## Résultat attendu
+## Lecture obligatoire
 
-Le rapport final doit donner :
+Lis intégralement, dans cet ordre :
 
-- commit et branche analysés ;
-- nombre exact de tests réussis/échoués ;
-- liste complète des routes ;
-- liste des pages et sous-vues ;
-- liste des endpoints et moteurs ;
-- liste complète des graphiques ;
-- sources de données de chaque graphique ;
-- contradictions critiques ;
-- doublons fonctionnels ;
-- fichiers legacy ou morts potentiels ;
-- références visuelles trouvées ;
-- graphiques à garder, modifier, fusionner, remplacer ou supprimer ;
-- dix problèmes prioritaires ;
-- plan précis de la PR suivante.
+1. `.claude/FRAMEWORK.md`
+2. `.claude/manifesto/VERTEX.md`
+3. `.claude/skills/vertex-total-rebuild/SKILL.md`
+4. `.claude/agents/product-auditor.md`
+5. `.claude/agents/graph-designer.md`
+6. `.claude/agents/ui-designer.md`
+7. `.claude/agents/trading-engine.md`
+8. `.claude/agents/qa-tester.md`
+9. les documents existants de `docs/refactor/`.
 
-## Exigence de preuve
+## Mission immédiate
 
-Ne réponds jamais uniquement « terminé ».
+Exécute uniquement les phases 0, 1 et 2 :
 
-Pour chaque constat, indique les fichiers, routes, fonctions, tests, captures ou commandes qui le prouvent.
+- baseline réelle ;
+- inventaire de tous les fichiers ;
+- cartographie routes, pages, endpoints et moteurs ;
+- inventaire de tous les graphiques ;
+- carte des références visuelles ;
+- registre des contradictions ;
+- liste des doublons et fichiers morts potentiels.
 
-## Garde-fous
+Ne commence pas encore la refonte massive du runtime.
 
-- IBKR READONLY est intouchable.
-- Aucune donnée ne doit être inventée.
-- Aucun moteur financier ne doit être modifié pour des raisons esthétiques.
-- Aucun fichier ne doit être supprimé sans preuve d'inutilisation.
-- Aucun calcul ne doit être changé sans test.
-- Aucune nouvelle dépendance ne doit être ajoutée pendant l'audit.
+## Exécution réelle
+
+Tu dois réellement lancer les tests, lancer Vertex en mode démo, inspecter toutes les routes dans le navigateur, relever les erreurs console et réseau, tester desktop/tablette/mobile et vérifier les états sans IBKR, données absentes et données périmées.
+
+## Livrables
+
+- `docs/refactor/VERTEX_BASELINE_AUDIT.md`
+- `docs/refactor/FILE_INVENTORY.md`
+- `docs/refactor/ROUTE_ENDPOINT_MAP.md`
+- `docs/refactor/PAGE_DATA_GRAPH_MATRIX.md`
+- `docs/refactor/CHART_INVENTORY.md`
+- `docs/refactor/CONTRADICTIONS_REGISTER.md`
+- `docs/refactor/VISUAL_REFERENCE_MAP.md`
+- `docs/refactor/PHASE_0_2_REPORT.md`
+
+## Contraintes absolues
+
+- IBKR reste strictement READONLY.
+- Aucun ordre ou chemin d’ordre.
+- Aucune donnée inventée.
+- Aucun fichier supprimé pendant l’audit.
+- Aucun moteur modifié pour une raison esthétique.
+- Ne déclare rien terminé sans preuves.
+
+## Rapport final attendu
+
+Présente la branche et le commit, les commandes exécutées, les résultats exacts des tests, le nombre de fichiers/routes/pages/endpoints/moteurs/graphiques, les dix problèmes principaux, les contradictions critiques, les graphiques à garder/fusionner/remplacer/supprimer, les fichiers legacy potentiels, les risques et le plan exact de la prochaine PR.
