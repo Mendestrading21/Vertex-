@@ -33,19 +33,23 @@ if not exist ".venv" (
   echo.
   echo Premiere installation ^(1 a 2 minutes, une seule fois^)...
   python -m venv .venv || ( echo [X] Echec creation environnement. & pause & exit /b 1 )
-  call ".venv\Scripts\python.exe" -m pip install --quiet --upgrade pip
-  call ".venv\Scripts\python.exe" -m pip install --quiet -r requirements.txt || ( echo [X] Echec installation dependances. & pause & exit /b 1 )
+  call ".venv\Scripts\python.exe" -m pip install --upgrade pip
+  call ".venv\Scripts\python.exe" -m pip install -r requirements.txt || ( echo. & echo [X] Echec installation des dependances ^(voir les erreurs ci-dessus^). & pause & exit /b 1 )
   echo Installation terminee.
 )
 
 echo.
-echo VERTEX demarre...  ^>  http://localhost:5002
-echo ^(le navigateur s'ouvre tout seul · Ctrl+C pour arreter^)
+echo VERTEX demarre...  GARDE CETTE FENETRE OUVERTE.
+echo Le navigateur s'ouvrira TOUT SEUL des que c'est pret ^(~10 a 30 s^).
+echo Sinon, ouvre toi-meme : http://localhost:5002     ^(Ctrl+C pour arreter^)
 echo.
 
-REM Ouvre le navigateur apres un court delai (sous-processus).
-start "" cmd /c "timeout /t 5 >nul & start http://localhost:5002"
+REM Ouvre le navigateur SEULEMENT quand le serveur repond vraiment (sonde /healthz).
+start "" powershell -NoProfile -WindowStyle Hidden -Command "for($i=0;$i -lt 120;$i++){try{$null=Invoke-WebRequest -UseBasicParsing 'http://localhost:5002/healthz' -TimeoutSec 2;Start-Process 'http://localhost:5002';break}catch{Start-Sleep -Seconds 1}}"
 
 REM Lancement. Par defaut : DIRECT (live si TWS ouvert, sinon differe).
 ".venv\Scripts\python.exe" terminal.py
+
+echo.
+echo VERTEX s'est arrete. Tu peux fermer cette fenetre.
 pause

@@ -16,8 +16,10 @@ Double-cliquer sur `Lancer_VERTEX.command`. La première fois, macOS peut demand
 un clic droit puis **Ouvrir**. Pour le mode hors ligne, utiliser
 `Lancer_VERTEX_DEMO.command`.
 
-Le navigateur s'ouvre sur <http://localhost:5002>. Au premier lancement,
-l'installation des dépendances peut prendre quelques minutes.
+**Garde la fenêtre noire ouverte.** Le navigateur s'ouvre **tout seul** sur
+<http://localhost:5002> **dès que le serveur est prêt** (le lanceur attend qu'il
+réponde — plus de « site inaccessible » dû à un navigateur ouvert trop tôt). Au
+premier lancement, l'installation des dépendances peut prendre 1 à 2 minutes.
 
 ## Mode démo
 
@@ -61,12 +63,23 @@ de compte.
 - **Intelligence** : raisonnement, comité et mémoire.
 - **Système** : connexions, données, automatisations et réglages.
 
-## Si Vertex ne démarre pas
+## Si Vertex ne démarre pas / « site inaccessible »
 
-- Installer Python 3.12 ou une version compatible et cocher **Add Python to PATH** sous Windows.
-- Attendre quelques secondes, puis ouvrir manuellement <http://localhost:5002>.
-- Si le port est occupé, fermer l'autre instance ou définir un autre `PORT`.
-- Pour recréer l'environnement local, supprimer uniquement `.venv`, puis relancer le lanceur.
+- **Le navigateur s'ouvre automatiquement une fois le serveur prêt** (~10 à 30 s,
+  plus au 1er lancement). Si tu ouvres la page toi-même trop tôt, **rafraîchis**
+  <http://localhost:5002> après quelques secondes — ce n'est pas cassé, ça démarre.
+- **Garde la fenêtre noire (terminal) OUVERTE** tant que tu utilises Vertex :
+  la fermer arrête le serveur.
+- **Python manquant** : installer Python 3.12 (ou compatible) et cocher
+  **Add Python to PATH** sous Windows, puis relancer le lanceur.
+- **Bon dossier / bonne version** : vérifier que tu es sur la branche
+  `integration/vertex-v4-clean` (`git checkout integration/vertex-v4-clean`
+  puis `git pull`) avant de double-cliquer le lanceur.
+- **Échec d'installation** : les erreurs pip s'affichent désormais dans la
+  fenêtre — les lire ; souvent il suffit de relancer (réseau) ou de mettre à
+  jour Python.
+- **Port occupé** : fermer l'autre instance de Vertex, ou définir un autre `PORT`.
+- Pour recréer l'environnement local, supprimer uniquement `.venv`, puis relancer.
 - Consulter `/healthz` et la console du terminal avant de modifier le code.
 
 Vertex fournit une analyse éducative et probabiliste. Il ne garantit aucune
