@@ -574,7 +574,8 @@ async function loadData(){
     const labels=Object.keys(byQ);
     const values=labels.map(k=>byQ[k]);
     const colByQ={FRESH:VXCharts.colors.positive,RECENT:VXCharts.colors.cyan,
-      STALE:VXCharts.colors.warning,EXPIRED:VXCharts.colors.negative,MISSING:VXCharts.colors.muted};
+      STALE:VXCharts.colors.warning,EXPIRED:VXCharts.colors.negative,MISSING:VXCharts.colors.muted,
+      DEMO:VXCharts.colors.violet};
     const dominant=labels.slice().sort((a,b)=>byQ[b]-byQ[a])[0];
     whenChartsReady(()=>VXCharts.donutCard('vx-data-quality-chart',{
       title:'Qualit&eacute; des donn&eacute;es ('+dq.total+' titres)',
