@@ -4,13 +4,13 @@
    néon / cuivre incandescent. Vert=gain, rouge=perte, ambre=attente, violet=
    options. AUCUN bleu identitaire. Glow uniquement sur live / actif / sélection.
 
-   PROTOTYPE : appliqué UNIQUEMENT à l'espace « Aujourd'hui »
-   (`.vx-content[data-space="briefing"]`) — aucun autre espace n'est touché
-   (pas de refonte big-bang). La migration page par page suivra après validation.
-   Aucun moteur, aucune donnée, aucun calcul modifié.
+   MIGRATION page par page (validée) : espaces couverts = Aujourd'hui + Marchés
+   (`.vx-content:is([data-space="briefing"],[data-space="markets"])`). Les 6 autres
+   espaces ne sont PAS touchés (Opportunités/Analyse/Portefeuille/Options/Journal/
+   Système) — pas de big-bang. Aucun moteur, aucune donnée, aucun calcul modifié.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.vx-content[data-space="briefing"]{
+.vx-content:is([data-space="briefing"],[data-space="markets"]){
   /* ── Fond : noir profond très légèrement bleuté ── */
   --ng-bg-0:#05070c;          /* le plus sombre */
   --ng-bg-1:#080b12;
@@ -48,7 +48,7 @@
 }
 
 /* ── Carte glass premium — chaque carte = un composant produit ── */
-.vx-content[data-space="briefing"] .vx-card{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card{
   background:linear-gradient(180deg, var(--ng-glass-raised), var(--ng-glass));
   -webkit-backdrop-filter:blur(var(--ng-blur)) saturate(1.15);
   backdrop-filter:blur(var(--ng-blur)) saturate(1.15);
@@ -57,98 +57,142 @@
   box-shadow:var(--ng-shadow);
   transition:transform var(--ng-motion),border-color var(--ng-motion),box-shadow var(--ng-motion);
 }
-.vx-content[data-space="briefing"] .vx-card:hover{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card:hover{
   border-color:var(--ng-border-strong);
   box-shadow:var(--ng-shadow-raised);
 }
 /* filet cuivre en tête de carte (hiérarchie + bord chaud, sans glow permanent) */
-.vx-content[data-space="briefing"] .vx-card::before{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card::before{
   content:"";position:absolute;left:16px;right:16px;top:0;height:1px;border-radius:1px;
   background:linear-gradient(90deg,transparent,rgba(255,122,30,.5),transparent);opacity:.5;
 }
-.vx-content[data-space="briefing"] .vx-card{position:relative;overflow:hidden}
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card{position:relative;overflow:hidden}
 
 /* Hero = carte premium (profondeur + halo cuivre discret, fonctionnel) */
-.vx-content[data-space="briefing"] .vx-card--hero{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card--hero{
   background:
     radial-gradient(120% 100% at 100% 0%, rgba(255,122,30,.10), transparent 55%),
     linear-gradient(180deg, var(--ng-glass-raised), var(--ng-glass));
   border-color:var(--ng-border-strong);
   box-shadow:var(--ng-shadow-raised);
 }
-.vx-content[data-space="briefing"] .vx-card--hero .vx-card-title{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card--hero .vx-card-title{
   color:var(--ng-neon-bright);letter-spacing:.02em;
 }
 
 /* ── KPI glass dynamiques ── */
-.vx-content[data-space="briefing"] .vx-kpi{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-kpi{
   background:var(--ng-glass);border:1px solid var(--ng-border-soft);border-radius:12px;
   transition:transform var(--ng-motion),border-color var(--ng-motion),background var(--ng-motion);
 }
-.vx-content[data-space="briefing"] .vx-kpi:hover{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-kpi:hover{
   transform:translateY(-2px);border-color:var(--ng-border-strong);background:var(--ng-glass-hover);
 }
-.vx-content[data-space="briefing"] .vx-kpi-value{color:var(--vx-text-primary)}
-.vx-content[data-space="briefing"] .vx-kpi-label{color:var(--vx-text-muted);letter-spacing:.04em}
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-kpi-value{color:var(--vx-text-primary)}
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-kpi-label{color:var(--vx-text-muted);letter-spacing:.04em}
 
 /* ── Boutons : action principale = orange néon ── */
-.vx-content[data-space="briefing"] .vx-btn-primary{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-btn-primary{
   background:linear-gradient(180deg,var(--ng-neon-bright),var(--ng-copper));
   border:1px solid rgba(255,122,30,.5);color:#160a02;font-weight:650;
   box-shadow:0 6px 18px -8px rgba(255,122,30,.6);
 }
-.vx-content[data-space="briefing"] .vx-btn-primary:hover{box-shadow:var(--ng-glow)}
-.vx-content[data-space="briefing"] .vx-ticker{color:var(--ng-neon-bright)}
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-btn-primary:hover{box-shadow:var(--ng-glow)}
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-ticker{color:var(--ng-neon-bright)}
 
 /* ── Freshness / live-dot : GLOW UNIQUEMENT quand live ── */
-.vx-content[data-space="briefing"] .vx-freshness{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-freshness{
   border:1px solid var(--ng-border-soft);border-radius:999px;background:rgba(0,0,0,.25);
 }
-.vx-content[data-space="briefing"] .vx-live-dot{box-shadow:none}
-.vx-content[data-space="briefing"] .vx-freshness[data-live="live"] .vx-live-dot,
-.vx-content[data-space="briefing"] .vx-live-dot[data-live="1"]{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-live-dot{box-shadow:none}
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-freshness[data-live="live"] .vx-live-dot,
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-live-dot[data-live="1"]{
   background:var(--vx-positive);
   box-shadow:0 0 0 3px rgba(54,200,137,.18),0 0 10px rgba(54,200,137,.55);
   animation:ng-pulse 1.8s ease-in-out infinite;
 }
 
 /* ── Micro-graphiques plus vivants : conteneur canvas en verre ── */
-.vx-content[data-space="briefing"] canvas{border-radius:10px}
-.vx-content[data-space="briefing"] #vx-regime-gauge,
-.vx-content[data-space="briefing"] #vx-calendar .vx-card{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) canvas{border-radius:10px}
+.vx-content:is([data-space="briefing"],[data-space="markets"]) #vx-regime-gauge,
+.vx-content:is([data-space="briefing"],[data-space="markets"]) #vx-calendar .vx-card{
   background:rgba(0,0,0,.18);border-radius:12px;
 }
 
 /* ── Badges sémantiques (le sens financier prime, jamais décoratif) ── */
-.vx-content[data-space="briefing"] .vx-badge{border-radius:999px;border:1px solid var(--ng-border-soft)}
-.vx-content[data-space="briefing"] .vx-pos{color:var(--vx-positive)}
-.vx-content[data-space="briefing"] .vx-neg{color:var(--vx-negative)}
-.vx-content[data-space="briefing"] .vx-warn{color:var(--vx-warning)}
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-badge{border-radius:999px;border:1px solid var(--ng-border-soft)}
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-pos{color:var(--vx-positive)}
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-neg{color:var(--vx-negative)}
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-warn{color:var(--vx-warning)}
 
 /* ── États honnêtes (loading/empty/stale/error/insufficient) — glass sobre ── */
-.vx-content[data-space="briefing"] .vx-skeleton{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-skeleton{
   background:linear-gradient(100deg,rgba(255,255,255,.03),rgba(255,255,255,.08),rgba(255,255,255,.03));
   background-size:200% 100%;border-radius:10px;animation:ng-shimmer 1.4s ease-in-out infinite;
 }
-.vx-content[data-space="briefing"] .vx-state[data-state="empty"],
-.vx-content[data-space="briefing"] .vx-demo-banner{
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-state[data-state="empty"],
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-demo-banner{
   border:1px dashed var(--ng-border-soft);border-radius:12px;background:rgba(0,0,0,.2);
 }
 
 /* ── Reveal des cartes (skeleton → contenu), 180ms, discret ── */
-.vx-content[data-space="briefing"] .vx-card{animation:ng-reveal var(--ng-motion) both}
+.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card{animation:ng-reveal var(--ng-motion) both}
 @keyframes ng-reveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes ng-pulse{0%,100%{opacity:1}50%{opacity:.55}}
 @keyframes ng-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 /* ── Accessibilité : mouvement réduit respecté ── */
 @media (prefers-reduced-motion: reduce){
-  .vx-content[data-space="briefing"] .vx-card,
-  .vx-content[data-space="briefing"] .vx-skeleton,
-  .vx-content[data-space="briefing"] .vx-live-dot{animation:none!important;transition:none!important}
+  .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card,
+  .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-skeleton,
+  .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-live-dot{animation:none!important;transition:none!important}
 }
 
 /* ── Responsive : le glass ne change rien à la grille (pas de débordement) ── */
 @media (max-width:768px){
-  .vx-content[data-space="briefing"]{--ng-blur:10px;--ng-radius:14px}
+  .vx-content:is([data-space="briefing"],[data-space="markets"]){--ng-blur:10px;--ng-radius:14px}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MARCHÉS — polish premium des pièces denses (RRG, heatmap, jauges, rails).
+   Aucun graphe recréé : on habille les composants existants (issue #14).
+   ═══════════════════════════════════════════════════════════════════════════ */
+.vx-content[data-space="markets"] .vx-tabs{
+  border-bottom:1px solid var(--ng-border-soft);
+}
+.vx-content[data-space="markets"] .vx-tab[aria-selected="true"]{
+  color:var(--ng-neon-bright);
+  box-shadow:inset 0 -2px 0 var(--ng-neon);      /* onglet actif = accent orange néon */
+}
+/* Conteneurs de graphes en verre interne (RRG, heatmap, jauges, courbes) */
+.vx-content[data-space="markets"] [id^="vx-mk-"] canvas,
+.vx-content[data-space="markets"] .vx-chart-body canvas{
+  background:rgba(0,0,0,.16);border-radius:10px;
+}
+/* Jauges (VIX/régime/breadth) : conteneur sobre, la bande garde son sens financier */
+.vx-content[data-space="markets"] [id$="-gauge"]{
+  background:rgba(0,0,0,.18);border-radius:12px;padding:4px 0;
+}
+/* Point actif RRG / sélection : GLOW réservé à l'actif (jamais permanent) */
+.vx-content[data-space="markets"] .vx-mk-rotation .vx-active,
+.vx-content[data-space="markets"] [data-selected="1"]{
+  filter:drop-shadow(0 0 6px rgba(255,122,30,.65));
+}
+/* Heatmap sectorielle : lisibilité du texte + cellules moins saturées */
+.vx-content[data-space="markets"] .vx-heat-cell,
+.vx-content[data-space="markets"] [class*="heat"] td{
+  text-shadow:0 1px 2px rgba(0,0,0,.55);
+}
+/* Rails de stress/volatilité : piste en verre, remplissage sémantique conservé */
+.vx-content[data-space="markets"] .vx-rail,
+.vx-content[data-space="markets"] [class*="rail"]{
+  background:rgba(0,0,0,.28)!important;border-radius:6px;
+}
+/* Mini-sparklines des tuiles KPI (sparkSvg inline) : trait plus vif */
+.vx-content[data-space="markets"] .vx-kpi svg path,
+.vx-content[data-space="markets"] [class*="spark"] path{
+  stroke-width:1.6px;
+}
+/* Sous-titre de vue (question principale) mis en avant */
+.vx-content[data-space="markets"] .vx-chart-question,
+.vx-content[data-space="markets"] .vx-sub{color:var(--vx-text-secondary)}

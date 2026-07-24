@@ -35,15 +35,20 @@ def test_neon_glass_css_exists_and_linked(client):
     assert 'data-space="briefing"' in html
 
 
-def test_prototype_scoped_to_briefing_only():
+def test_prototype_scoped_to_migrated_spaces_only():
+    """Migration page par page : couverts = briefing + markets. Les 6 autres
+    espaces ne doivent JAMAIS apparaître dans le scope (pas de big-bang)."""
     css = _read(CSS)
-    # tout est scopé à l'espace Aujourd'hui — pas de refonte globale
-    assert '.vx-content[data-space="briefing"]' in css
-    # aucune règle globale sur .vx-card SANS le scope briefing
+    assert 'data-space="briefing"' in css and 'data-space="markets"' in css
+    for not_migrated in ('opportunities', 'analysis', 'portfolio', 'options',
+                         'journal', 'system'):
+        assert f'data-space="{not_migrated}"' not in css, \
+            f'espace non migré peint (big-bang) : {not_migrated}'
+    # aucune règle .vx-card hors scope (toujours précédée du sélecteur .vx-content:is(...))
     for line in css.splitlines():
         s = line.strip()
-        if s.startswith('.vx-card') and 'data-space="briefing"' not in s:
-            raise AssertionError(f'règle .vx-card non scopée (big-bang) : {s}')
+        if s.startswith('.vx-card') and 'data-space=' not in s:
+            raise AssertionError(f'règle .vx-card non scopée : {s}')
 
 
 def test_neon_identity_no_blue():
@@ -75,11 +80,14 @@ def test_reduced_motion_respected():
     assert 'prefers-reduced-motion' in css and 'animation:none' in css.replace(' ', '')
 
 
-def test_other_spaces_untouched(client):
-    # une page hors briefing rend le lien CSS mais data-space != briefing
-    html = client.get('/markets').get_data(as_text=True)
-    assert 'data-space="markets"' in html
-    # le prototype ne peint QUE briefing (vérifié statiquement ci-dessus)
+def test_markets_migrated_and_others_untouched(client):
+    # Marchés est désormais migré (scope + attribut)
+    mk = client.get('/markets').get_data(as_text=True)
+    assert 'data-space="markets"' in mk
+    # un espace NON migré porte bien son attribut mais n'est pas dans le scope CSS
+    opp = client.get('/opportunities').get_data(as_text=True)
+    assert 'data-space="opportunities"' in opp
+    assert 'data-space="opportunities"' not in _read(CSS)
 
 
 def test_readonly_still_intact(client):
