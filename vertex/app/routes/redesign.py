@@ -131,7 +131,7 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     # plus de double rattachement ambigu à Opportunités.
     @bp.route('/options')
     def options_intel_route():
-        return options_intel_page.render(view=request.args.get('view', 'overview'))
+        return options_intel_page.render(view=request.args.get('view', 'structure'))
 
     # ── Suivis — approfondissement du Journal (idées suivies, hypothétiques),
     # joignable hors nav. Pas un 9e espace.

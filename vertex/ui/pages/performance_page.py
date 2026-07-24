@@ -115,7 +115,7 @@ _VIEW_CONTENT = {
     'track-record': """
 <div class="vx-mt3 vx-insight" role="note"><b>Deux mondes, jamais confondus.</b>
 « Signaux (théorique) » mesure la fiabilité des verdicts du moteur sur données de marché ;
-« Trades réels (journal) » reflète uniquement ce que vous avez déclaré avoir exécuté.
+« Trades réels (journal) » reflète uniquement ce que tu as déclaré avoir exécuté.
 Aucun chiffre de l’un n’alimente l’autre.</div>
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Signaux théoriques du moteur">
@@ -127,7 +127,7 @@ Aucun chiffre de l’un n’alimente l’autre.</div>
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Trades réels du journal">
     <div class="vx-card-header"><span class="vx-card-title">Trades réels (journal)</span>
-      <span class="vx-badge" style="color:var(--vx-cyan,#c8ad8d)">Vos déclarations</span>
+      <span class="vx-badge" style="color:var(--vx-cyan,#c8ad8d)">Tes déclarations</span>
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=journal">Ouvrir la timeline →</a></span></div>
     <div id="vx-pf-real">%%LOADING%%</div>
   </section>
@@ -249,7 +249,7 @@ function loadDist(){
     question:'Le profil est-il asymétrique (petites pertes, gains amples) ?',
     conclusion:withPl.length+' clôtures · l’asymétrie droite valide la gestion.',
     height:220,source:'journal local (clôtures)',timestamp:Date.now(),mode:'delayed',
-    explain:{shows:'Le décompte de vos trades clôturés par tranche de rendement (%).',
+    explain:{shows:'Le décompte de tes trades clôturés par tranche de rendement (%).',
       why:'La méthode vise des pertes tronquées (stops) et des gains étendus (TP échelonnés).',
       confirm:'Masse des pertes concentrée entre 0 et −10 %, queue droite étendue.',
       invalidate:'Queue gauche épaisse — les stops ne sont pas respectés.'},
@@ -265,7 +265,7 @@ function loadJournal(){
   const list=f?all.filter(e=>String(e.ticker||'').toUpperCase().includes(f)):all;
   if(!list.length){
     $('vx-pf-journal').innerHTML=VX.states.empty(
-      f?('Aucune entrée pour « '+esc(f)+' ».'):'Timeline vide — déclarez vos décisions pour mesurer votre exécution.',
+      f?('Aucune entrée pour « '+esc(f)+' ».'):'Timeline vide — déclare tes décisions pour mesurer ton exécution.',
       '<button class="vx-btn vx-btn-sm" id="vx-pf-add-empty">Ajouter une entrée</button>');
     $('vx-pf-add-empty')?.addEventListener('click',openEntryModal);
     return;
@@ -293,7 +293,7 @@ function loadMistakes(){
   const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
   $('vx-pf-mistakes').innerHTML=top.length?top.map(([m,n])=>
     `<div class="vx-kv"><span class="k">${esc(m)}</span><span class="v vx-mono">× ${n}</span></div>`).join('')
-    :VX.states.empty('Aucune erreur déclarée — renseignez le champ « erreur » à chaque sortie perdante.');
+    :VX.states.empty('Aucune erreur déclarée — renseigne le champ « erreur » à chaque sortie perdante.');
 }
 function openEntryModal(){
   const field=(id,label,type,ph)=>`<div class="vx-field"><label for="${id}">${label}</label>
@@ -340,7 +340,7 @@ function loadLearnings(){
   const lessons=[...new Set(all.map(e=>String(e.lesson||'').trim()).filter(Boolean))];
   $('vx-pf-lessons').innerHTML=lessons.length?
     '<ul style="margin:0;padding-left:18px;line-height:1.9">'+lessons.map(l=>`<li>${esc(l)}</li>`).join('')+'</ul>'
-    :VX.states.empty('Aucune leçon consignée — renseignez le champ « leçon » à chaque sortie de trade.',JOURNAL_ACTION);
+    :VX.states.empty('Aucune leçon consignée — renseigne le champ « leçon » à chaque sortie de trade.',JOURNAL_ACTION);
   const counts={};
   all.forEach(e=>{const m=String(e.mistake||'').trim();if(m)counts[m]=(counts[m]||0)+1;});
   const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
@@ -353,7 +353,7 @@ function loadLearnings(){
   const rows=Object.entries(emo).sort((a,b)=>b[1]-a[1]);
   const bh=$('vx-pf-biais');
   if(bh){
-    if(!rows.length){bh.innerHTML=VX.states.empty('Aucun état émotionnel déclaré — renseignez « état émotionnel » (calme, FOMO, peur…) pour révéler vos biais.');}
+    if(!rows.length){bh.innerHTML=VX.states.empty('Aucun état émotionnel déclaré — renseigne « état émotionnel » (calme, FOMO, peur…) pour révéler tes biais.');}
     else{
       const max=rows[0][1];
       bh.innerHTML='<div style="display:flex;flex-direction:column;gap:6px">'+rows.map(([m,n])=>
@@ -456,8 +456,8 @@ function loadReal(){
        <td class="vx-num vx-mono">${pf}</td>
        <td class="vx-num vx-mono ${s.expectancy>=0?'vx-pos':'vx-neg'}">${(s.expectancy>=0?'+':'')+VX.fmt.num(s.expectancy,0)} $</td>
      </tr></tbody></table>
-     <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'journal local (vos déclarations)','delayed')}
-       <span class="vx-meta">agrégations arithmétiques sur vos trades déclarés — indépendant des signaux moteur</span></div>`;
+     <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'journal local (tes déclarations)','delayed')}
+       <span class="vx-meta">agrégations arithmétiques sur tes trades déclarés — indépendant des signaux moteur</span></div>`;
 }
 
 /* ═══ Orchestration ═══ */
