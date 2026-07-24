@@ -91,118 +91,58 @@ def build_editorial(scan_state: dict) -> dict:
 
 _CONTENT = """
 <div class="vx-page-header">
-  <div><h1>Briefing</h1>
-  <div class="vx-sub">Que dois-je comprendre et surveiller aujourd’hui ?</div></div>
-  <div class="vx-actions">
-    <button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-customize-btn">Personnaliser</button>
-    <div class="vx-segmented" role="group" aria-label="Densité">
-      <button data-density-btn="compact" aria-pressed="false">Compact</button>
-      <button data-density-btn="confort" aria-pressed="true">Confort</button>
-      <button data-density-btn="dense" aria-pressed="false">Dense</button>
-    </div>
-  </div>
+  <div><h1>Aujourd&#8217;hui</h1>
+  <div class="vx-sub">Dois-je agir aujourd&#8217;hui, et sur quoi ?</div></div>
 </div>
 <div id="vx-demo-banner"></div>
 
-<!-- Rangée 1 (§18) : Brief Vertex hero (8) + Régime (4) -->
-<div class="vx-grid">
-  <section class="vx-card vx-card--hero vx-col-8" id="vx-brief" data-block="brief" aria-label="Brief Vertex">
-    <div class="vx-card-header"><span class="vx-card-title">Brief Vertex</span>
-      <span class="vx-actions" id="vx-brief-meta"></span></div>
-    <div id="vx-brief-body">%%LOADING%%</div>
+<!-- NIVEAU 1 — Réponse immédiate : Hero éditorial (la réponse en 10 s).
+     Aujourd'hui RÉSUME ; Marchés explique. Une donnée = un seul domicile. -->
+<section class="vx-card vx-card--hero" id="vx-hero" aria-label="Réponse du jour">
+  <div class="vx-card-header"><span class="vx-card-title">Brief Vertex</span>
+    <span class="vx-actions" id="vx-hero-fresh"></span></div>
+  <div id="vx-brief-body">%%LOADING%%</div>
+  <div class="vx-grid vx-mt3" id="vx-hero-kpis" aria-label="Résumé cliquable (chaque tuile pointe vers son domicile canonique)"></div>
+  <div class="vx-mt3" id="vx-hero-action"></div>
+</section>
+
+<!-- NIVEAU 2 — Justification (résumé, jamais la recopie de Marchés) -->
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-6" aria-label="Depuis la dernière visite">
+    <div class="vx-card-header"><span class="vx-card-title">Depuis ta dernière visite</span></div>
+    <div id="vx-diff">%%LOADING%%</div>
   </section>
-  <section class="vx-card vx-col-4" id="vx-regime" data-block="regime" aria-label="Régime de marché">
-    <div class="vx-card-header"><span class="vx-card-title">Régime de marché</span></div>
+  <section class="vx-card vx-col-6" aria-label="Régime de marché">
+    <div class="vx-card-header"><span class="vx-card-title">Régime</span>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/markets">Marchés →</a></span></div>
     <div id="vx-regime-body">%%LOADING%%</div>
   </section>
 </div>
 
-<!-- Rangée 2 : indices & marchés -->
-<div class="vx-grid vx-mt4" id="vx-market-strip" aria-label="Indices et marchés"></div>
-
-<!-- Rangée 2b : Pouls du marché — jauges radiales (VIX/Breadth/Régime) + rail de positionnement -->
-<div class="vx-grid vx-mt4" data-block="pulse">
-  <section class="vx-card vx-col-8 vx-card--accent" aria-label="Pouls du marché">
-    <div class="vx-card-header"><span class="vx-card-title">Pouls du marché</span>
-      <span class="vx-actions vx-meta" id="vx-pulse-meta"></span></div>
-    <div class="vx-flex vx-wrap" style="gap:1rem;align-items:flex-start;justify-content:space-around">
-      <div id="vx-gauge-vix" style="flex:1;min-width:150px">%%LOADING%%</div>
-      <div id="vx-gauge-breadth" style="flex:1;min-width:150px"></div>
-      <div id="vx-gauge-trend" style="flex:1;min-width:150px"></div>
-    </div>
-  </section>
-  <section class="vx-card vx-col-4 vx-card--accent" aria-label="Positionnement du régime">
-    <div class="vx-card-header"><span class="vx-card-title">Positionnement</span></div>
-    <div id="vx-regime-rail">%%LOADING%%</div>
-  </section>
-</div>
-
-<!-- Rangée 3 : marché (8) + breadth (4) -->
-<div class="vx-grid vx-mt4" data-block="market">
-  <div class="vx-col-8" id="vx-market-chart"></div>
-  <div class="vx-col-4" id="vx-breadth-chart"></div>
-</div>
-
-<!-- Rangée 3b : Top 10 / Flop 10 de la séance -->
-<div class="vx-grid vx-mt4" data-block="topflop">
-  <section class="vx-card vx-col-6" aria-label="Top 10 de la séance">
-    <div class="vx-card-header"><span class="vx-card-title">Top 10 de la séance</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Univers →</a></span></div>
-    <div id="vx-top10">%%LOADING%%</div>
-  </section>
-  <section class="vx-card vx-col-6" aria-label="Flop 10 de la séance">
-    <div class="vx-card-header"><span class="vx-card-title">Flop 10 de la séance</span>
-      <span class="vx-actions"><span class="vx-meta">plus fortes baisses · univers scanné</span></span></div>
-    <div id="vx-flop10">%%LOADING%%</div>
-  </section>
-</div>
-
-<!-- Rangée 4 : opportunités actions (6) + options (6) -->
 <div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-6" data-block="opportunities" aria-label="Opportunités actions">
-    <div class="vx-card-header"><span class="vx-card-title">Opportunités actions</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Tout voir →</a></span></div>
+  <section class="vx-card vx-col-6" aria-label="Meilleures opportunités">
+    <div class="vx-card-header"><span class="vx-card-title">Meilleures opportunités</span>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities">Toutes →</a></span></div>
     <div id="vx-opp-stocks">%%LOADING%%</div>
-    <div id="vx-opp-rr" class="vx-mt2"></div>
   </section>
-  <section class="vx-card vx-col-6" aria-label="Opportunités options">
-    <div class="vx-card-header"><span class="vx-card-title">Opportunités options</span>
-      <span class="vx-badge" style="color:var(--vx-violet)">Vertex Dynamic Options</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=options">Tout voir →</a></span></div>
-    <div id="vx-opp-options">%%LOADING%%</div>
-  </section>
-  <!-- Posture du comité : répartition réelle des verdicts (donut) — servie mais jusqu'ici invisible -->
-  <div class="vx-col-12" id="vx-opp-posture"></div>
-</div>
-
-<!-- Rangée 5 : rotation (7) + alertes (5) -->
-<div class="vx-grid vx-mt4" data-block="rotation">
-  <div class="vx-col-7" id="vx-rotation"></div>
-  <section class="vx-card vx-col-5" data-block="alerts" aria-label="Alertes prioritaires">
+  <section class="vx-card vx-col-6" aria-label="Alertes prioritaires">
     <div class="vx-card-header"><span class="vx-card-title">Alertes prioritaires</span>
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=radar">Radar →</a></span></div>
     <div id="vx-alerts">%%LOADING%%</div>
   </section>
 </div>
 
-<!-- Rangée 6 : portefeuille (7) + calendrier (5) -->
 <div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-7" data-block="portfolio" aria-label="Portefeuille">
-    <div class="vx-card-header"><span class="vx-card-title">Portefeuille — Équipe Vertex</span>
+  <div class="vx-col-6" id="vx-calendar"></div>
+  <section class="vx-card vx-col-6" aria-label="Portefeuille — ce qui a changé">
+    <div class="vx-card-header"><span class="vx-card-title">Portefeuille — ce qui a changé</span>
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></span></div>
     <div id="vx-portfolio">%%LOADING%%</div>
   </section>
-  <div class="vx-col-5" data-block="calendar" id="vx-calendar"></div>
 </div>
 """
 
 _JS = r"""
-<script src="/static/vertex/js/charts/sparkline.js" defer></script>
-<script src="/static/vertex/js/charts/line-area-chart.js" defer></script>
-<script src="/static/vertex/js/charts/breadth-chart.js" defer></script>
-<script src="/static/vertex/js/charts/sector-chart.js" defer></script>
-<script src="/static/vertex/js/charts/bar-chart.js" defer></script>
-<script src="/static/vertex/js/charts/donut-chart.js" defer></script>
 <script src="/static/vertex/js/charts/timeline-chart.js" defer></script>
 <script>
 (function(){
@@ -210,374 +150,175 @@ _JS = r"""
 const $=(id)=>document.getElementById(id);
 const E=()=>window.VXEntities;
 function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function freshBadge(m){const map={live:['live','Live'],delayed:['delayed','Différé'],demo:['fallback','Démo'],stale:['frozen','Périmé'],offline:['offline','Hors ligne'],missing:['offline','Indisponible']};
+  const x=map[m]||map.delayed;return '<span class="vx-freshness" data-live="'+x[0]+'"><span class="vx-live-dot"></span>'+x[1]+'</span>';}
+function num(x){return (x!==null&&x!==undefined&&!isNaN(x))?Number(x):null;}
+function breadthOf(sb){if(sb==null)return null;if(typeof sb==='object')return num(sb.above50)??num(sb.above200);return num(sb);}
 
-/* Personnalisation contrôlée des blocs (§43 — vxDashboardLayout.hidden) */
-const BLOCKS=[['brief','Brief Vertex'],['regime','Régime'],['pulse','Pouls du marché (jauges)'],
-  ['market','Marchés (graphiques)'],
-  ['topflop','Top 10 / Flop 10'],['opportunities','Opportunités'],['rotation','Rotation & alertes'],
-  ['portfolio','Portefeuille'],['calendar','Calendrier'],['alerts','Alertes']];
-function layoutGet(){try{return JSON.parse(localStorage.getItem('vxDashboardLayout')||'{}')}catch(e){return{}}}
-function layoutSet(l){try{localStorage.setItem('vxDashboardLayout',JSON.stringify(l))}catch(e){}}
-function applyBlocks(){
-  const hidden=(layoutGet().hidden)||[];
-  document.querySelectorAll('[data-block]').forEach(el=>{
-    el.style.display=hidden.includes(el.dataset.block)?'none':'';});
-}
-applyBlocks();
-document.getElementById('vx-customize-btn')?.addEventListener('click',()=>{
-  const hidden=(layoutGet().hidden)||[];
-  VX.shell.openModal('Personnaliser le Briefing',
-    BLOCKS.map(([id,label])=>`<label class="vx-checkbox" style="padding:5px 0">
-      <input type="checkbox" data-blk="${id}" ${hidden.includes(id)?'':'checked'}> ${label}</label>`).join('')
-    +'<div class="vx-help vx-mt2">Grille contrôlée — l’ordre des rangées reste fixe. Synchronisé sur cet appareil.</div>',
-    '<button class="vx-btn" id="vx-layout-reset">Réinitialiser</button>'
-    +'<button class="vx-btn vx-btn-primary" id="vx-layout-save">Enregistrer</button>');
-  document.getElementById('vx-layout-save').addEventListener('click',()=>{
-    const l=layoutGet();
-    l.hidden=[...document.querySelectorAll('[data-blk]')].filter(c=>!c.checked).map(c=>c.dataset.blk);
-    layoutSet(l);applyBlocks();VX.shell.closeModal();VX.toast('Briefing personnalisé','success');});
-  document.getElementById('vx-layout-reset').addEventListener('click',()=>{
-    const l=layoutGet();delete l.hidden;layoutSet(l);applyBlocks();VX.shell.closeModal();
-    VX.toast('Disposition réinitialisée');});
-});
-
-/* Densité (vxDashboardLayout §43) */
-(function(){
-  let layout={};try{layout=JSON.parse(localStorage.getItem('vxDashboardLayout')||'{}')}catch(e){}
-  const mode=layout.density||'confort';
-  if(mode!=='confort')document.body.dataset.density=mode==='compact'?'compact':'dense';
-  document.querySelectorAll('[data-density-btn]').forEach(b=>{
-    b.setAttribute('aria-pressed',String(b.dataset.densityBtn===mode));
-    b.addEventListener('click',()=>{
-      layout.density=b.dataset.densityBtn;
-      try{localStorage.setItem('vxDashboardLayout',JSON.stringify(layout))}catch(e){}
-      document.body.dataset.density=layout.density==='compact'?'compact':(layout.density==='dense'?'dense':'');
-      document.querySelectorAll('[data-density-btn]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
-    });
-  });
-})();
-
-/* ── Market strip (§22) ── */
-const STRIP=[['S&P 500','sp'],['Nasdaq','ndx'],['Dow Jones','dow'],['Russell 2000','rut'],
-  ['VIX','vix'],['Taux 10 ans','tnx']];
-const CROSS=[['DXY','dxy'],['Pétrole','oil'],['Or','gold'],['Bitcoin','btc']];
-async function loadStrip(){
-  let sum=null,scan=null;
-  try{sum=await VX.fetch('/api/market/summary',{ttl:60000});}catch(e){}
-  try{scan=await VX.fetch('/scan',{ttl:120000});}catch(e){}
-  const list=(scan&&Array.isArray(scan.indices))?scan.indices:[];
-  const byName={};list.forEach(i=>{byName[i.name]=i;});
-  const pick=(n)=>{const i=byName[n]||{};return{last:i.price,change:i.change,series:i.spark};};
-  const bySlug={sp:pick('S&P 500'),ndx:pick('Nasdaq'),dow:pick('Dow Jones'),
-    rut:pick('Russell 2000'),vix:byName['VIX']?pick('VIX'):{last:sum&&sum.vix,change:sum&&sum.vix_chg},
-    tnx:pick('Taux 10 ans'),dxy:pick('DXY'),oil:pick('Pétrole'),gold:pick('Or'),btc:pick('Bitcoin')};
-  const mode=(scan&&scan.data_source==='demo')?'fallback':(scan&&scan.source==='ibkr'?'live':'delayed');
-  const crossRows=CROSS.map(([label,slug])=>{
-    const d=bySlug[slug]||{};const val=d.last??null;const chg=d.change??null;
-    return `<div class="vx-kv"><span class="k">${label}</span>
-      <span class="v vx-mono ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}">${val!==null?VX.fmt.price(val):'n/d'}${chg!==null?' · '+VX.fmt.pct(chg):''}</span></div>`;
-  }).join('');
-  $('vx-market-strip').innerHTML=STRIP.map(([label,slug])=>{
-    const d=bySlug[slug]||{};
-    const val=d.last??d.price??d.close??null;const chg=d.change??null;
-    const target=slug==='vix'?'/markets?view=volatility':(['tnx','dxy','oil','gold','btc'].includes(slug)?'/markets?view=macro':'/markets?view=overview');
-    /* Grand chiffre coloré pour les indices actions (direction = hausse bonne) ;
-       VIX/taux restent neutres — colorer leur niveau induirait en erreur. */
-    const dirClass=(chg!==null&&!['vix','tnx'].includes(slug))?(chg>0?'vx-pos':chg<0?'vx-neg':''):'';
-    /* Même logique pour le delta : un VIX/taux en hausse ne doit PAS s'afficher en
-       émeraude « ça va bien » — niveau et variation restent neutres. */
-    const deltaClass=(chg!==null&&!['vix','tnx'].includes(slug))?(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'):'vx-muted';
-    return `<a class="vx-card vx-card--compact vx-kpi vx-strip-item" style="text-decoration:none;color:inherit" href="${target}" aria-label="${label}">
-      <span class="vx-kpi-label">${label}</span>
-      <span class="vx-kpi-value ${dirClass}" style="font-size:19px">${VX.fmt.nd(val!==null?VX.fmt.price(val):null)}</span>
-      <span class="vx-kpi-delta ${deltaClass}">${chg!==null?VX.fmt.pct(chg):'n/d'}</span>
-      <span data-spark="${slug}"></span>
-      ${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),scan&&scan.source,mode)}</a>`;
-  }).join('')
-  +`<div class="vx-card vx-card--compact vx-strip-item" aria-label="Cross-asset">
-     <span class="vx-kpi-label">Cross-asset</span>${crossRows}
-     <a class="vx-btn vx-btn-sm vx-btn-ghost vx-mt1" href="/markets?view=macro">Macro →</a></div>`;
-  STRIP.forEach(([_,slug])=>{const d=bySlug[slug]||{};
-    if(d.series&&window.VXCharts)VXCharts.sparklineInto(document.querySelector(`[data-spark="${slug}"]`),d.series);});
-  if(scan&&scan.data_source==='demo')
-    $('vx-demo-banner').innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
-  return scan;
+/* Tuile KPI résumé — cliquable, pointe vers son domicile canonique. */
+function kpiTile(label,value,cls,href){
+  return '<a class="vx-card vx-card--compact vx-kpi vx-col-3" style="text-decoration:none;color:inherit" href="'+href+'" aria-label="'+esc(label)+'">'
+    +'<span class="vx-kpi-label">'+esc(label)+'</span>'
+    +'<span class="vx-kpi-value '+(cls||'')+'" style="font-size:20px">'+value+'</span>'
+    +'<span class="vx-kpi-delta vx-muted">voir →</span></a>';
 }
 
-/* ── Brief Vertex (§21) ── */
+/* ── Hero éditorial : la réponse en 10 s ── */
 async function loadBrief(){
   try{
     const b=await VX.fetch('/api/briefing/editorial',{ttl:60000});
-    const changed=(b.changed_since_yesterday||[]).map(c=>`<li>${esc(c)}</li>`).join('');
-    const daily=b.daily||{};
-    const kindLabel={PRE_MARKET:'Pré-marché',INTRADAY:'Intraday',CLOSE:'Clôture',WEEKLY:'Hebdo'}[daily.kind]||'';
-    const news=(b.what_changed_today||[]).map(x=>`<li>${esc(x)}</li>`).join('');
-    const domSec=(daily.sections||[]).find(x=>x.label==='Actualité dominante');
+    const m=b.demo?'demo':'delayed';
+    $('vx-hero-fresh').innerHTML=freshBadge(m)+' <span class="vx-meta">'+esc((b.sources||[]).join(', '))+'</span>';
     const ed=b.editorial||{};
-    const edBlock=ed.narrative?(
-      '<p style="font-size:15.5px;line-height:1.8;color:var(--vx-text,#f1efeb);margin:0 0 .8rem">'+esc(ed.narrative)+'</p>'
-      +(ed.prices_mainly?'<div class="vx-insight vx-mt1"><b>Aujourd’hui, le marché prixe principalement</b><div class="vx-mt1">'+esc(ed.prices_mainly)+'</div></div>':'')
-      +((ed.calls_impact||ed.discipline)?'<div class="vx-flex vx-wrap vx-mt2" style="gap:.4rem">'
-        +(ed.calls_impact?'<span class="vx-badge" style="color:var(--vx-option,#85609f)">Calls : '+esc(ed.calls_impact)+'</span>':'')
-        +(ed.news_available===false?'<span class="vx-badge" style="color:var(--vx-text-dim,#817d77)">Actualités indisponibles — brief data-only</span>':'')
-        +'</div>':'')
-      +'<div class="vx-divider vx-mt2"></div>'):'';
-    $('vx-brief-body').innerHTML= edBlock+
-      '<div style="font-size:14px;line-height:1.75">'+b.lines.map(l=>esc(l)).join('<br>')+'</div>'
-      +(domSec?`<div class="vx-insight vx-mt3"><b>Actualité dominante</b><div class="vx-mt1">${esc(domSec.text)}</div></div>`:'')
-      +(news?`<div class="vx-insight vx-mt2"><b>Ce qui a changé (sourcé)</b><ul class="vx-mt1" style="margin:0;padding-left:18px">${news}</ul></div>`:'')
-      +(changed?`<div class="vx-insight vx-mt2"><b>Ce qui a changé depuis hier (moteurs)</b><ul class="vx-mt1" style="margin:0;padding-left:18px">${changed}</ul></div>`:'')
-      +((b.main_risk||b.main_opportunity)?`<div class="vx-flex vx-wrap vx-mt2">
-         ${b.main_risk?`<span class="vx-badge" style="color:var(--vx-negative)">Risque : ${esc(b.main_risk)}</span>`:''}
-         ${b.main_opportunity?`<span class="vx-badge" style="color:var(--vx-positive)">Opportunité : ${esc(b.main_opportunity)}</span>`:''}</div>`:'')
-      +`<div class="vx-card-footer">
-         ${VX.updateIndicator(b.as_of,(b.sources||[]).join(', '),b.demo?'fallback':'delayed')}
-         <span class="vx-badge">${b.generator==='deterministic'?'Brief déterministe (moteurs)':'Brief IA validé'}</span>
-         ${kindLabel?`<span class="vx-badge" style="color:var(--vx-amber)">${kindLabel}</span>`:''}
-         <a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets">Voir les preuves →</a></div>`;
-    $('vx-brief-meta').innerHTML=`<span class="vx-meta">${(daily.word_count||b.word_count)} mots</span>`;
+    const edBlock=ed.narrative?('<p style="font-size:15.5px;line-height:1.75;color:var(--vx-text);margin:0 0 .7rem">'+esc(ed.narrative)+'</p>'):'';
+    $('vx-brief-body').innerHTML=edBlock
+      +'<div style="font-size:14px;line-height:1.75">'+(b.lines||[]).map(l=>esc(l)).join('<br>')+'</div>'
+      +((b.main_risk||b.main_opportunity)?'<div class="vx-flex vx-wrap vx-mt2">'
+        +(b.main_risk?'<span class="vx-badge" style="color:var(--vx-negative)">Risque : '+esc(b.main_risk)+'</span>':'')
+        +(b.main_opportunity?'<span class="vx-badge" style="color:var(--vx-positive)">Opportunité : '+esc(b.main_opportunity)+'</span>':'')+'</div>':'')
+      +'<div class="vx-card-footer"><span class="vx-badge">'+(b.generator==='deterministic'?'Brief déterministe (moteurs)':'Brief IA validé')+'</span>'
+      +'<a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets">Voir les preuves →</a></div>';
+    if(b.demo)$('vx-demo-banner').innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
   }catch(e){$('vx-brief-body').innerHTML=VX.states.error('Brief indisponible ('+e.message+')');}
 }
 
-/* ── Régime (§20) ── */
+/* ── 4 KPI résumé cliquables (régime, breadth, VIX, meilleure opportunité) ── */
+async function loadSummary(){
+  let sum={},reg={},cmd={};
+  try{sum=await VX.fetch('/api/market/summary',{ttl:60000})||{};}catch(e){}
+  try{reg=await VX.fetch('/api/market/regime',{ttl:120000})||{};}catch(e){}
+  try{cmd=await VX.fetch('/api/command',{ttl:60000})||{};}catch(e){}
+  const conf=Math.round((reg.confidence||0)*100);
+  const br=breadthOf(sum.breadth);
+  let vix=num(sum.vix);
+  const best=(cmd.top_stocks||[])[0]||null;
+  const regHtml=reg.regime?esc(reg.regime):'n/d';
+  const brHtml=br!=null?(br+' %'):'n/d';
+  const brCls=br!=null?(br>=55?'vx-pos':'vx-warn'):'';
+  const vixHtml=vix!=null?vix:'n/d';
+  const bestHtml=best?esc(best.symbol):'—';
+  const kpis=[
+    kpiTile('Régime',regHtml+' <span class="vx-meta">('+conf+'%)</span>','','/markets'),
+    kpiTile('Breadth',brHtml,brCls,'/markets?view=breadth'),
+    kpiTile('VIX',vixHtml,'','/markets?view=volatility'),
+    best?kpiTile('Meilleure opp.',bestHtml,'','/analysis/'+encodeURIComponent(best.symbol)):kpiTile('Meilleure opp.','—','','/opportunities'),
+  ].join('');
+  $('vx-hero-kpis').innerHTML=kpis;
+  /* Action prioritaire : dérivée uniquement des données réelles. */
+  let action='';
+  if(best&&best.symbol){
+    action='<a class="vx-btn vx-btn-primary" data-open-analysis="'+esc(best.symbol)+'">Action : étudier le dossier '+esc(best.symbol)+' →</a>';
+  }else if(reg.regime){
+    action='<a class="vx-btn vx-btn-soft" href="/markets">Action : vérifier le régime dans Marchés →</a>';
+  }else{
+    action='<span class="vx-meta">Aucune action prioritaire dérivée des données disponibles.</span>';
+  }
+  $('vx-hero-action').innerHTML=action;
+  /* Diff honnête depuis la dernière visite. */
+  renderDiff({regime:reg.regime||null,breadth:br,vix:vix,best:best?best.symbol:null,
+    opp:(cmd.top_stocks||[]).length});
+}
+
+/* ── Diff « depuis ta dernière visite » — honnête (baseline locale) ── */
+function renderDiff(cur){
+  const host=$('vx-diff');if(!host)return;
+  let prev=null;try{prev=JSON.parse(localStorage.getItem('vxTodayBaseline')||'null');}catch(e){prev=null;}
+  const rows=[];
+  if(!prev||!prev.ts){
+    host.innerHTML='<div class="vx-state" data-state="empty"><div class="vx-state-icon">—</div>'
+      +'<div><b>Aucun historique de comparaison disponible.</b><br>'
+      +'<span class="vx-meta">La référence de cette visite est enregistrée ; les changements apparaîtront à la prochaine.</span></div></div>';
+  }else{
+    const fmtDelta=(a,b,unit)=>{if(a==null||b==null)return null;const d=Math.round((a-b)*10)/10;if(d===0)return null;
+      const cls=d>0?'vx-pos':'vx-neg';return '<span class="vx-mono '+cls+'">'+(d>0?'+':'')+d+(unit||'')+'</span>';};
+    if(prev.regime&&cur.regime&&prev.regime!==cur.regime)
+      rows.push('Régime : <b>'+esc(prev.regime)+'</b> → <b>'+esc(cur.regime)+'</b>');
+    const bd=fmtDelta(cur.breadth,prev.breadth,' pts');if(bd)rows.push('Breadth '+bd);
+    const vd=fmtDelta(cur.vix,prev.vix,'');if(vd)rows.push('VIX '+vd);
+    if((cur.opp||0)!==(prev.opp||0))rows.push('Opportunités : '+prev.opp+' → '+cur.opp);
+    if(cur.best&&prev.best&&cur.best!==prev.best)rows.push('Meilleure opp. : '+esc(prev.best)+' → '+esc(cur.best));
+    host.innerHTML=rows.length
+      ? '<ul style="margin:0;padding-left:18px;line-height:1.9;font-size:13px">'+rows.map(r=>'<li>'+r+'</li>').join('')+'</ul>'
+        +'<div class="vx-meta vx-mt2">Depuis '+esc(new Date(prev.ts).toLocaleString('fr-FR'))+'</div>'
+      : '<div class="vx-state" data-state="empty"><div class="vx-state-icon">=</div><div><b>Rien de significatif n’a changé</b><br><span class="vx-meta">depuis '+esc(new Date(prev.ts).toLocaleString('fr-FR'))+'</span></div></div>';
+  }
+  try{localStorage.setItem('vxTodayBaseline',JSON.stringify(Object.assign({},cur,{ts:Date.now()})));}catch(e){}
+}
+
+/* ── Régime : jauge de confiance (1 des 2 graphiques conservés) ── */
 async function loadRegime(){
   try{
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
     const adj=r.adjustments||{};
     const conf=Math.round((r.confidence||0)*100);
     $('vx-regime-body').innerHTML=
-      `<div id="vx-regime-gauge" class="vx-mb2"></div>
-      <div class="vx-kpi vx-mb3" style="text-align:center"><span class="vx-kpi-value" style="font-size:22px" data-regime="${r.regime}">${r.regime}</span>
-       <span class="vx-kpi-delta vx-muted">${(r.dimensions_used||[]).length} dimensions évaluées</span></div>
-      <div class="vx-kv"><span class="k">Nouveau risque</span><span class="v ${adj.new_risk_allowed?'vx-pos':'vx-neg'}">${adj.new_risk_allowed?'autorisé':'BLOQUÉ'}</span></div>
-      <div class="vx-kv"><span class="k">Priorité setups</span><span class="v">${VX.fmt.nd(adj.setup_priority)}</span></div>
-      <div class="vx-kv"><span class="k">Confirmations exigées</span><span class="v">${VX.fmt.nd(adj.confirmation_required)}</span></div>
-      <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')}
-      <a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets">Marchés →</a></div>`;
+      '<div id="vx-regime-gauge" class="vx-mb2"></div>'
+      +'<div class="vx-kv"><span class="k">Nouveau risque</span><span class="v '+(adj.new_risk_allowed?'vx-pos':'vx-neg')+'">'+(adj.new_risk_allowed?'autorisé':'BLOQUÉ')+'</span></div>'
+      +'<div class="vx-kv"><span class="k">Confirmations exigées</span><span class="v">'+VX.fmt.nd(adj.confirmation_required)+'</span></div>'
+      +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')
+      +'<a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets?view=breadth">Participation →</a></div>';
     if(window.VXCharts&&VXCharts.gauge){
       const CO=(window.VXCharts&&VXCharts.colors)||{};
       const reading=conf>=70?'Signal net — régime lisible':conf>=40?'Signal modéré — confirmations utiles':'Signal faible — prudence accrue';
-      VXCharts.gauge('vx-regime-gauge',{value:conf,min:0,max:100,unit:' %',label:'confiance',reading:reading,
+      VXCharts.gauge('vx-regime-gauge',{value:conf,min:0,max:100,unit:' %',label:esc(r.regime||'confiance'),reading:reading,
         bands:[{to:40,color:CO.negative},{to:70,color:CO.warning},{to:100,color:CO.positive}]});
     }
   }catch(e){$('vx-regime-body').innerHTML=VX.states.error('Régime indisponible');}
 }
 
-/* ── Graphique marché + breadth (rangée 3) ── */
-async function loadMarketCharts(scan){
-  scan=scan||{};const det=(scan.detail||{});
-  const spyd=det.SPY||det[Object.keys(det)[0]]||{};
-  const closes=(spyd.series&&spyd.series.close)||[];
-  // Fusion : market (statut) + market_ctx (régime/vix/breadth) — sinon le statut
-  // horaire masque tout le contexte via `||` (breadth/régime vides à tort).
-  const m=Object.assign({},scan.market||{},scan.market_ctx||{});
-  const mode=scan.data_source==='demo'?'fallback':'delayed';
-  if(closes.length>10){
-    VXCharts.areaCard('vx-market-chart',{
-      title:'Marché US — série de référence',timeframe:closes.length+' séances',
-      question:'La tendance de fond reste-t-elle exploitable ?',
-      conclusion:(m.spy_regime==='TREND'?'Tendance intacte':'Régime '+(m.spy_regime||'n/d'))+(m.verdict?' — '+m.verdict:''),
-      labels:closes.map((_,i)=>i-closes.length),values:closes,height:230,
-      source:scan.source||'scan',timestamp:scan.scan_ts||scan.updated,mode,
-      explain:{shows:'La série de clôtures de la référence marché calculée par le scan.',
-        why:'La Stratégie Vertex n’attaque qu’en environnement porteur : le régime module seuils et tailles.',
-        confirm:'Nouvelle clôture au-dessus des dernières résistances avec breadth > 55 %.',
-        invalidate:'Cassure des supports avec expansion de volatilité.'}});
-  }else{
-    $('vx-market-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Série marché indisponible — lancer un scan depuis Système.','<a class="vx-btn vx-btn-sm" href="/system?view=data">Système / Données</a>')+'</div>';
-  }
-  // breadth : objet {above50,above200,…} (market_ctx) ou nombre.
-  const bdRaw=m.breadth;
-  const breadth=(bdRaw&&typeof bdRaw==='object')?(bdRaw.above50??bdRaw.above200??null)
-               :(typeof bdRaw==='number'?bdRaw:((typeof scan.breadth==='number')?scan.breadth:null));
-  if(breadth!==null&&breadth!==undefined){
-    VXCharts.breadthCard('vx-breadth-chart',{
-      title:'Breadth / participation',question:'La hausse est-elle partagée ?',
-      conclusion:breadth>=55?'Participation saine.':'Participation étroite — sélectivité.',
-      labels:['> moyenne'],values:[breadth],height:190,
-      source:scan.source||'scan',timestamp:scan.scan_ts||scan.updated,mode,
-      limits:'breadth calculée sur les leaders scannés (univers partiel)',
-      explain:{shows:'Le pourcentage de titres au-dessus de leur moyenne (moteur de contexte marché).',
-        why:'Une hausse portée par 3 titres est fragile ; la breadth qualifie le régime.',
-        confirm:'Breadth > 60 % stable plusieurs séances.',invalidate:'Breadth < 40 % pendant que les indices montent.'}});
-  }else{$('vx-breadth-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Breadth non calculée par le dernier scan.')+'</div>';}
-}
-
-/* ── Pouls du marché (rangée 2b) — jauges radiales + rail de positionnement ── */
-async function loadPulse(scan){
-  scan=scan||{};
-  /* Les métriques marché vivent dans /api/market/summary (breadth, vix, régime),
-     pas dans scan.market (qui ne porte que la session). */
-  let sum={};try{sum=await VX.fetch('/api/market/summary',{ttl:60000})||{};}catch(e){}
-  const G=window.VXCharts&&VXCharts.gauge;const CO=(window.VXCharts&&VXCharts.colors)||{};
-  const mode=scan.data_source==='demo'?'fallback':'delayed';
-  /* VIX — niveau de volatilité (bas = calme). Source : summary, repli indice VIX. */
-  let vix=(sum.vix!=null&&!isNaN(sum.vix))?Number(sum.vix):null;
-  if(vix==null){const vi=(scan.indices||[]).find(i=>i&&i.name==='VIX');if(vi&&vi.price!=null)vix=Number(vi.price);}
-  if(G&&vix!=null){VXCharts.gauge('vx-gauge-vix',{value:vix,min:0,max:50,unit:'',label:'VIX',
-    reading:vix<15?'Calme':vix<25?'Normal':'Tendu',
-    bands:[{to:15,color:CO.positive},{to:25,color:CO.warning},{to:50,color:CO.negative}]});}
-  else $('vx-gauge-vix').innerHTML=VX.states.empty('VIX non calculé.');
-  /* Breadth — participation. summary.breadth = objet {above50,above200,...} ou nombre. */
-  let br=null;const sb=sum.breadth;
-  if(sb!=null&&typeof sb==='object')br=(sb.above50!=null)?Number(sb.above50):(sb.above200!=null?Number(sb.above200):null);
-  else if(sb!=null&&!isNaN(sb))br=Number(sb);
-  if(G&&br!=null){VXCharts.gauge('vx-gauge-breadth',{value:br,min:0,max:100,unit:' %',label:'Breadth',
-    reading:br>=55?'Participation saine':'Étroite',
-    bands:[{to:40,color:CO.negative},{to:55,color:CO.warning},{to:100,color:CO.positive}]});}
-  else $('vx-gauge-breadth').innerHTML=VX.states.empty('Breadth non calculée.');
-  /* Régime — confiance + rail de positionnement */
-  try{
-    const r=await VX.fetch('/api/market/regime',{ttl:120000});
-    const conf=Math.round((r.confidence||0)*100);
-    const allowed=r.adjustments&&r.adjustments.new_risk_allowed;
-    if(G){VXCharts.gauge('vx-gauge-trend',{value:conf,min:0,max:100,unit:' %',label:esc(r.regime||'Régime'),
-      reading:allowed?'Risque autorisé':'Risque bloqué',
-      bands:[{to:40,color:CO.negative},{to:70,color:CO.warning},{to:100,color:CO.positive}]});}
-    /* Position 0 (défense) → 100 (attaque) : autorisé pousse ≥55, bloqué plafonne à 45 */
-    const pos=allowed?Math.max(55,conf):Math.min(45,100-conf);
-    $('vx-regime-rail').innerHTML=
-      '<div class="vx-stat-xl-label">Défense ↔ Attaque</div>'
-      +'<div class="vx-rail vx-mt2" style="--vx-rail-pos:'+pos+'%"><span class="vx-rail-mark"></span></div>'
-      +'<div class="vx-rail-scale"><span>Défense</span><span>Neutre</span><span>Attaque</span></div>'
-      +'<div class="vx-meta vx-mt3">Régime <b>'+esc(r.regime||'n/d')+'</b> · '
-      +(allowed?'<span class="vx-pos">nouveau risque autorisé</span>':'<span class="vx-neg">nouveau risque BLOQUÉ</span>')+'</div>'
-      +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')
-      +'<a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets?view=volatility">Volatilité →</a></div>';
-  }catch(e){
-    if($('vx-gauge-trend'))$('vx-gauge-trend').innerHTML=VX.states.empty('Régime non calculé.');
-    if($('vx-regime-rail'))$('vx-regime-rail').innerHTML=VX.states.error('Positionnement indisponible');
-  }
-  $('vx-pulse-meta').innerHTML=VX.updateIndicator(scan.scan_ts||scan.updated,scan.source||'scan',mode);
-}
-
-/* ── Top 10 / Flop 10 de la séance (rangée 3b) ── */
-function moversHtml(rows,dir){
-  /* Filtre par SIGNE : « Flop » ne montre que des baisses, « Top » que des hausses —
-     sinon en séance très verte le Flop afficherait des hausses colorées en vert. */
-  const signed=rows.filter(r=>r.change!==null&&r.change!==undefined&&(dir==='top'?r.change>0:r.change<0));
-  const sorted=signed.slice().sort((a,b)=>dir==='top'?(b.change-a.change):(a.change-b.change)).slice(0,10);
-  if(!sorted.length)return VX.states.empty(dir==='top'?'Aucune hausse dans le dernier scan.':'Aucune baisse dans le dernier scan.');
-  return sorted.map(function(r){const chg=r.change;
-    return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
-      <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(r.symbol)}">${esc(r.symbol)}</button>
-      <span class="vx-num vx-mono ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}" style="width:62px;text-align:right;font-weight:700">${VX.fmt.pct(chg,1)}</span>
-      <span class="vx-grow vx-truncate vx-dim" style="font-size:11.5px">${esc(r.sector||'')}</span>
-      <span class="vx-num vx-mono vx-meta" style="width:64px;text-align:right">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):''}</span>
-      ${r.score!==null&&r.score!==undefined?`<span class="vx-badge" title="Score Vertex">${VX.fmt.num(r.score,0)}</span>`:''}
-      <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(r.symbol)}" aria-label="Actions ${esc(r.symbol)}">⋯</button>
-    </div>`;}).join('');
-}
-function loadTopFlop(scan){
-  const rows=(scan&&scan.rows)||[];
-  const t=$('vx-top10'),f=$('vx-flop10');
-  const mode=(scan&&scan.data_source==='demo')?'fallback':(scan&&scan.source==='ibkr'?'live':'delayed');
-  const foot=`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',mode)} · ${rows.length} titres scannés</div>`;
-  if(t)t.innerHTML=moversHtml(rows,'top')+foot;
-  if(f)f.innerHTML=moversHtml(rows,'flop')+foot;
-}
-
-/* ── Opportunités (rangée 4) ── */
+/* ── Meilleures opportunités (top 3, résumé) ── */
 async function loadOpportunities(){
   try{
     const c=await VX.fetch('/api/command',{ttl:60000});
-    const stocks=(c.top_stocks||[]).slice(0,5);
-    $('vx-opp-stocks').innerHTML=stocks.length?stocks.map(s=>`
-      <div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">
-        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(s.symbol)}">${esc(s.symbol)}</button>
-        <span class="vx-badge">${esc(s.verdict||'')}</span>
-        <span class="vx-grow vx-truncate vx-dim" style="font-size:12px">${esc(s.note||'')}</span>
-        <span class="vx-num vx-mono">${VX.fmt.nd(s.price)}</span>
-        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(s.symbol)}" aria-label="Actions ${esc(s.symbol)}">⋯</button>
-      </div>`).join(''):VX.states.empty('Aucune opportunité action retenue par le comité.');
-    /* Priorité de déploiement par R:R (champ réel top_stocks[].rr, jamais tracé jusqu'ici).
-       Émeraude = métrique positive ; repli honnête si aucun R:R servi. */
-    const rrRows=stocks.filter(s=>s.rr!=null);
-    const rrHost=$('vx-opp-rr');
-    if(rrHost){
-      if(rrRows.length&&window.VXCharts&&VXCharts.bars){
-        rrHost.innerHTML='<div class="vx-kpi-label vx-mb1">Priorité de déploiement — R:R</div><div style="height:'+Math.max(70,rrRows.length*24)+'px"><canvas></canvas></div>';
-        VXCharts.bars(rrHost.querySelector('canvas'),rrRows.map(s=>esc(s.symbol)),rrRows.map(s=>s.rr),{horizontal:true,colors:rrRows.map(()=>'#36c889'),yFmt:(v)=>v.toFixed(1)});
-      } else rrHost.innerHTML='';
-    }
-    const opts=(c.top_options||[]).slice(0,5);
-    $('vx-opp-options').innerHTML=opts.length?opts.map(o=>`
-      <div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">
-        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(o.symbol)}">${esc(o.symbol)}</button>
-        <span class="vx-badge" style="color:var(--vx-violet)">${esc(o.label||o.dir||'CALL')}</span>
-        <span class="vx-grow vx-num vx-mono vx-dim">strike ${VX.fmt.nd(o.strike)} · prime ${VX.fmt.nd(o.premium)}</span>
-        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(o.symbol)}" aria-label="Actions ${esc(o.symbol)}">⋯</button>
-      </div>`).join(''):VX.states.empty('Aucun contrat retenu — le sélecteur ne force jamais une idée.');
-    /* Posture du comité : répartition RÉELLE des verdicts (c.counts, même fetch) en donut.
-       Achat = émeraude · attente = ambre · éviter = corail — jamais le vert marque. */
-    const posture=$('vx-opp-posture');
-    if(posture){
-      const counts=c.counts||{};
-      const _ck=Object.keys(counts).filter(k=>counts[k]>0);
-      if(!_ck.length){posture.innerHTML='';}
-      else if(window.VXCharts&&VXCharts.donutCard){
-        const tone={'ACHETER':'#36c889','RENFORCER':'#36c889','ATTENDRE':'#dda23b','WAIT':'#dda23b',
-          'ÉVITER':'#ed655c','AVOID':'#ed655c','ALLÉGER':'#ed655c','ALLEGER':'#ed655c'};
-        VXCharts.donutCard('vx-opp-posture',{title:'Posture du comité',
-          question:'Comment se répartissent les verdicts du comité aujourd’hui ?',
-          labels:_ck,values:_ck.map(k=>counts[k]),colors:_ck.map(k=>tone[k]||'#9d978e'),height:172,
-          source:(c.data_source==='demo'?'démo':'comité'),timestamp:Date.now(),
-          mode:(c.data_source==='demo'?'fallback':'delayed')});
-      }
-    }
-  }catch(e){
-    $('vx-opp-stocks').innerHTML=VX.states.error('Opportunités indisponibles');
-    $('vx-opp-options').innerHTML=VX.states.error('Opportunités indisponibles');
-  }
+    const stocks=(c.top_stocks||[]).slice(0,3);
+    $('vx-opp-stocks').innerHTML=stocks.length?stocks.map(s=>
+      '<div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">'
+      +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(s.symbol)+'">'+esc(s.symbol)+'</button>'
+      +'<span class="vx-badge">'+esc(s.verdict||'')+'</span>'
+      +'<span class="vx-grow vx-truncate vx-dim" style="font-size:12px">'+esc(s.note||'')+'</span>'
+      +'<span class="vx-num vx-mono">'+VX.fmt.nd(s.price)+'</span>'
+      +'<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="'+esc(s.symbol)+'" aria-label="Actions">⋯</button></div>').join('')
+      :VX.states.empty('Aucune opportunité retenue par le comité.');
+  }catch(e){$('vx-opp-stocks').innerHTML=VX.states.error('Opportunités indisponibles');}
 }
 
-/* ── Rotation + alertes (rangée 5) ── */
-async function loadRotation(scan){
-  const sectors=(scan&&scan.sectors)||[];
-  if(sectors.length){
-    VXCharts.sectorCard('vx-rotation',{
-      title:'Rotation sectorielle',question:'Où va le capital en ce moment ?',
-      conclusion:'Leader : '+(sectors[0].sector||'n/d'),
-      labels:sectors.slice(0,9).map(s=>s.sector),
-      values:sectors.slice(0,9).map(s=>s.avg_score??s.score??0),height:230,
-      source:scan.source,timestamp:scan.scan_ts||scan.updated,
-      mode:scan.data_source==='demo'?'fallback':'delayed',
-      onSector:(name)=>{VX.context.save();location.href='/opportunities?view=stocks&sector='+encodeURIComponent(name);},
-      explain:{shows:'Score moyen par secteur (moteur de rotation).',
-        why:'La stratégie suit les secteurs qui attirent le capital.',
-        confirm:'Leadership stable sur plusieurs séances.',invalidate:'Rotation défensive brutale.'}});
-  }else $('vx-rotation').innerHTML='<div class="vx-card">'+VX.states.empty('Secteurs non calculés par le dernier scan.')+'</div>';
-}
+/* ── Alertes prioritaires (top 3) ── */
 async function loadAlerts(){
   try{
-    const [mine,fired,cmd]=await Promise.all([
+    const [mine,cmd]=await Promise.all([
       Promise.resolve((E()&&E().alerts())||[]),
-      VX.fetch('/api/alerts/status',{ttl:30000}).catch(()=>({fired:{}})),
       VX.fetch('/api/command',{ttl:30000}).catch(()=>({}))]);
-    const firedMap=fired.fired||{};
-    /* Alertes RÉELLES du risk-manager serveur (icône/label/message) AVANT les alertes
-       perso — ne JAMAIS afficher « aucune alerte » si le serveur en a. Texte serveur
-       rendu en innerHTML => esc(). */
-    const srv=((cmd&&cmd.alerts)||[]).map(a=>{
+    const srv=((cmd&&cmd.alerts)||[]).slice(0,3).map(a=>{
       const icon=a[0]||'⚠', danger=(icon==='🔴');
-      return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
-        <span aria-hidden="true">${esc(icon)}</span>
-        <span class="vx-grow vx-dim" style="font-size:12px">${esc(a[2]||a[1]||'')}</span>
-        <span class="vx-badge" style="color:var(--vx-${danger?'negative':'warning'})">${esc(a[1]||'alerte')}</span>
-      </div>`;}).join('');
-    const rows=mine.filter(a=>a.active).slice(0,6).map(a=>{
-      const hit=Object.values(firedMap).find(f=>f.id===a.id);
-      return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
-        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(a.sym)}">${esc(a.sym)}</button>
-        <span class="vx-grow vx-dim" style="font-size:12px">${a.cond==='above'?'franchit':'casse'} ${VX.fmt.price(a.level)} ${esc(a.note||'')}</span>
-        ${hit?'<span class="vx-badge" style="color:var(--vx-warning)">déclenchée</span>':'<span class="vx-badge">armée</span>'}
-      </div>`;}).join('');
+      return '<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">'
+        +'<span aria-hidden="true">'+esc(icon)+'</span>'
+        +'<span class="vx-grow vx-dim" style="font-size:12px">'+esc(a[2]||a[1]||'')+'</span>'
+        +'<span class="vx-badge" style="color:var(--vx-'+(danger?'negative':'warning')+')">'+esc(a[1]||'alerte')+'</span></div>';}).join('');
+    const rows=mine.filter(a=>a.active).slice(0,3).map(a=>
+      '<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">'
+      +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(a.sym)+'">'+esc(a.sym)+'</button>'
+      +'<span class="vx-grow vx-dim" style="font-size:12px">'+(a.cond==='above'?'franchit':'casse')+' '+VX.fmt.price(a.level)+'</span>'
+      +'<span class="vx-badge">armée</span></div>').join('');
     $('vx-alerts').innerHTML=(srv+rows)||VX.states.empty('Aucune alerte active.',
       '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'alert\')">Créer une alerte</button>');
   }catch(e){$('vx-alerts').innerHTML=VX.states.error('Alertes indisponibles');}
 }
 
-/* ── Portefeuille + calendrier (rangée 6) ── */
+/* ── Catalyseurs (timeline, 2e graphique conservé, ≤ 3) ── */
+async function loadCalendar(){
+  try{
+    const cal=await VX.fetch('/cal-feed',{ttl:300000});
+    const items=[...(cal.macro||[]).map(m=>({when:m.date,kind:m.kind,label:m.label+(m.note?' — '+m.note:'')})),
+      ...(cal.items||[]).slice(0,4).map(it=>({when:it.date,kind:'Earnings',label:'résultats dans '+it.dte+' j',sym:it.sym}))]
+      .sort((a,b)=>String(a.when).localeCompare(String(b.when))).slice(0,3);
+    VXCharts.timelineCard('vx-calendar',{title:'Catalyseurs imminents',question:'Quels catalyseurs arrivent ?',
+      conclusion:items.length?('Prochain : '+esc(items[0].label)):'',
+      items,source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
+      emptyText:'Aucun événement imminent identifié.'});
+  }catch(e){$('vx-calendar').innerHTML='<div class="vx-card">'+VX.states.error('Calendrier indisponible')+'</div>';}
+}
+
+/* ── Portefeuille : ce qui a changé (compact) ── */
 async function loadPortfolio(){
   const pos=(E()&&E().positions())||[];
   if(!pos.length){
@@ -587,56 +328,40 @@ async function loadPortfolio(){
   }
   let quotes={};
   try{
-    /* Contrat serveur : {positions:[...]} → résultats par clé 'SYM|exp|strike|RIGHT'. */
     const body=pos.map(t=>({sym:t.sym,exp:t.exp,strike:t.strike,right:t.right}));
     const r=await fetch('/api/pos-quotes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({positions:body})});
     const res=(await r.json()).results||{};
     pos.forEach(t=>{const key=[String(t.sym).toUpperCase(),t.exp||'',
-      (t.strike!==null&&t.strike!==undefined)?t.strike:'',
-      (t.right||'').toUpperCase()].join('|');
+      (t.strike!==null&&t.strike!==undefined)?t.strike:'',(t.right||'').toUpperCase()].join('|');
       if(res[key])quotes[t.id]=res[key];});
   }catch(e){}
-  $('vx-portfolio').innerHTML=pos.slice(0,6).map(t=>{
+  $('vx-portfolio').innerHTML=pos.slice(0,4).map(t=>{
     const q=quotes[t.id]||{};const isOpt=t.type!=='STK';
     const mark=isOpt?(q.mark??q.last??null):(q.spot??q.mark??q.last??null);
     const value=mark!==null?(isOpt?mark*100*t.qty:mark*t.qty):null;
     const pl=value!==null&&t.cost?((value-t.cost)/t.cost*100):null;
-    return `<div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">
-      <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${t.sym}">${t.sym}</button>
-      <span class="vx-badge" ${t.type!=='STK'?'style="color:var(--vx-violet)"':''}>${t.type}${t.strike?' '+t.strike:''}</span>
-      <span class="vx-grow vx-mono vx-meta">${t.qty} × ${VX.fmt.price(t.cost)}${t.exp?' · '+t.exp:''}</span>
-      <span class="vx-num vx-mono ${pl>0?'vx-pos':pl<0?'vx-neg':'vx-muted'}">${pl!==null?VX.fmt.pct(pl,1):'n/d'}</span>
-      <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Actions ${t.sym}">⋯</button></div>`;
-  }).join('')+`<div class="vx-card-footer">${pos.length} position(s) · marques ${Object.keys(quotes).length?'IBKR/desk':'indisponibles'}</div>`;
-}
-async function loadCalendar(){
-  try{
-    const cal=await VX.fetch('/cal-feed',{ttl:300000});
-    const items=[...(cal.macro||[]).map(m=>({when:m.date,kind:m.kind,label:m.label+(m.note?' — '+m.note:'')})),
-      ...(cal.items||[]).slice(0,6).map(it=>({when:it.date,kind:'Earnings',label:`résultats dans ${it.dte} j`,sym:it.sym}))]
-      .sort((a,b)=>String(a.when).localeCompare(String(b.when))).slice(0,8);
-    VXCharts.timelineCard('vx-calendar',{title:'Calendrier',question:'Quels catalyseurs arrivent ?',
-      items,source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
-      emptyText:'Aucun événement imminent identifié.'});
-  }catch(e){$('vx-calendar').innerHTML='<div class="vx-card">'+VX.states.error('Calendrier indisponible')+'</div>';}
+    return '<div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">'
+      +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+t.sym+'">'+t.sym+'</button>'
+      +'<span class="vx-badge" '+(t.type!=='STK'?'style="color:var(--vx-violet)"':'')+'>'+t.type+(t.strike?' '+t.strike:'')+'</span>'
+      +'<span class="vx-grow vx-mono vx-meta">'+t.qty+' × '+VX.fmt.price(t.cost)+'</span>'
+      +'<span class="vx-num vx-mono '+(pl>0?'vx-pos':pl<0?'vx-neg':'vx-muted')+'">'+(pl!==null?VX.fmt.pct(pl,1):'n/d')+'</span></div>';
+  }).join('')+'<div class="vx-card-footer">'+pos.length+' position(s) · marques '+(Object.keys(quotes).length?'IBKR/desk':'indisponibles')+'</div>';
 }
 
 /* ── Orchestration ── */
-async function boot(){
-  loadBrief();loadRegime();loadOpportunities();loadAlerts();loadPortfolio();loadCalendar();
-  const scan=await loadStrip();
-  loadPulse(scan);loadMarketCharts(scan);loadTopFlop(scan);loadRotation(scan);
+function boot(){
+  loadBrief();loadSummary();loadRegime();loadOpportunities();loadAlerts();loadCalendar();loadPortfolio();
 }
 function whenChartsReady(fn){
   if(window.VXCharts&&window.Chart)return fn();
   window.addEventListener('load',fn,{once:true});
 }
 whenChartsReady(boot);
-VX.refresh.register(loadStrip,120000,'strip');
+VX.refresh.register(loadSummary,120000,'today-summary');
 VX.refresh.register(loadAlerts,60000,'alerts');
 VX.bus.on('vx:position-changed',loadPortfolio);
 VX.bus.on('vx:alert-changed',loadAlerts);
-VX.bus.on('vx:data-refreshed',()=>{loadBrief();loadRegime();});
+VX.bus.on('vx:data-refreshed',()=>{loadBrief();loadSummary();loadRegime();});
 })();
 </script>
 """
@@ -645,6 +370,6 @@ VX.bus.on('vx:data-refreshed',()=>{loadBrief();loadRegime();});
 def render(scan_state: dict | None = None) -> str:
     content = _CONTENT.replace('%%LOADING%%',
                                '<div class="vx-skeleton" style="height:60px"></div>')
-    return render_shell(title='Briefing', active='briefing', space_label='Briefing',
-                        sub_label='Marchés US', content=content, page_js=_JS,
-                        page_label='Briefing')
+    return render_shell(title="Aujourd'hui", active='briefing', space_label="Aujourd'hui",
+                        sub_label='Résumé du jour', content=content, page_js=_JS,
+                        page_label="Aujourd'hui")
