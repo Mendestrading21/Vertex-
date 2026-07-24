@@ -214,3 +214,152 @@
 @media (max-width:768px){
   .vx-content[data-space="markets"] .vx-mk-hero-grid{grid-template-columns:1fr;gap:var(--vx-s4)}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MARCHÉS — COMPOSITION PASS (NEUE EMBER visual composition).
+   Profondeur par PRIORITÉ · widgets à identité forte · zéro zone morte ·
+   glass réellement translucide + reflet + bord intérieur fin. Aucun token
+   global touché : tout est scopé `.vx-content[data-space="markets"]`.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Profondeur par priorité (reflet supérieur + bord intérieur fin) ── */
+.vx-content[data-space="markets"] .vx-card{
+  box-shadow:var(--ng-shadow),inset 0 1px 0 rgba(255,255,255,.04);
+}
+.vx-content[data-space="markets"] .vx-card--hero{
+  box-shadow:var(--ng-shadow-raised),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.vx-content[data-space="markets"] .vx-card--compact{
+  background:linear-gradient(180deg,var(--ng-glass),rgba(22,19,22,.5));
+  box-shadow:0 6px 20px -14px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+/* ── Bandeau HERO régime : proportions premium (nom / jauge) ── */
+.vx-content[data-space="markets"] .vx-mk-hero-grid{align-items:center;gap:var(--vx-s6)}
+
+/* Hero régime — état INDÉTERMINÉ compact & éditorial (jamais 40 % de vide) :
+   on montre les signaux de marché RÉELLEMENT disponibles au lieu d'un grand vide. */
+.vx-content[data-space="markets"] .vx-mk-regime-compact{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:var(--vx-s3);
+}
+.vx-content[data-space="markets"] .vx-mk-regime-lead{
+  display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+}
+.vx-content[data-space="markets"] .vx-mk-regime-lead .tag{
+  font-size:var(--vx-fs-meta);font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--vx-warning);padding:3px 9px;border-radius:999px;
+  background:var(--vx-warning-soft);border:1px solid rgba(255,200,87,.28);
+}
+.vx-content[data-space="markets"] .vx-mk-regime-lead .txt{color:var(--vx-text-secondary);font-size:13.5px;line-height:1.55}
+/* Rangée de signaux réels (VIX / breadth / S&P / risk) — mini-cartes à rail */
+.vx-content[data-space="markets"] .vx-mk-sigrow{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;
+}
+.vx-content[data-space="markets"] .vx-mk-sig{
+  padding:10px 12px;border-radius:12px;background:var(--ng-glass);
+  border:1px solid var(--ng-border-soft);display:flex;flex-direction:column;gap:5px;
+}
+.vx-content[data-space="markets"] .vx-mk-sig .k{font-size:var(--vx-fs-meta);color:var(--vx-text-muted);letter-spacing:.04em}
+.vx-content[data-space="markets"] .vx-mk-sig .v{font-size:19px;font-weight:750;color:var(--vx-text-primary);font-variant-numeric:tabular-nums}
+.vx-content[data-space="markets"] .vx-mk-sig .v small{font-size:11px;font-weight:600;color:var(--vx-text-muted);margin-left:3px}
+.vx-content[data-space="markets"] .vx-mk-sig-rail{height:4px;border-radius:3px;background:rgba(0,0,0,.35);overflow:hidden}
+.vx-content[data-space="markets"] .vx-mk-sig-rail i{display:block;height:100%;border-radius:3px}
+
+/* ── INDEX CARDS premium (S&P/Nasdaq/Dow/Russell) : identité forte ── */
+.vx-content[data-space="markets"] .vx-mk-idx{
+  position:relative;overflow:hidden;padding:16px 16px 14px;border-radius:var(--vx-r-card);
+  display:flex;flex-direction:column;gap:9px;min-height:150px;
+  background:linear-gradient(180deg,var(--ng-glass-raised),var(--ng-glass));
+  border:1px solid var(--ng-border-soft);
+  box-shadow:var(--ng-shadow),inset 0 1px 0 rgba(255,255,255,.04);
+  transition:transform var(--ng-motion),border-color var(--ng-motion),box-shadow var(--ng-motion);
+}
+.vx-content[data-space="markets"] .vx-mk-idx:hover{
+  transform:translateY(-2px);border-color:var(--ng-border-strong);box-shadow:var(--ng-shadow-raised);
+}
+/* Accent latéral coloré selon la direction (sémantique, discret) */
+.vx-content[data-space="markets"] .vx-mk-idx::after{
+  content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:3px;
+  background:var(--vx-text-muted);opacity:.55;
+}
+.vx-content[data-space="markets"] .vx-mk-idx[data-dir="up"]::after{background:var(--vx-positive)}
+.vx-content[data-space="markets"] .vx-mk-idx[data-dir="down"]::after{background:var(--vx-negative)}
+.vx-content[data-space="markets"] .vx-mk-idx-top{display:flex;align-items:center;gap:9px}
+.vx-content[data-space="markets"] .vx-mk-mono{
+  width:34px;height:34px;flex:0 0 34px;border-radius:9px;display:grid;place-items:center;
+  font-size:11px;font-weight:800;letter-spacing:.02em;color:var(--vx-ember-400);
+  background:var(--vx-ember-soft);border:1px solid rgba(255,109,41,.22);
+}
+.vx-content[data-space="markets"] .vx-mk-idx-name{font-size:13px;font-weight:650;color:var(--vx-text-primary);line-height:1.15}
+.vx-content[data-space="markets"] .vx-mk-idx-rel{
+  margin-left:auto;font-size:10.5px;font-weight:650;letter-spacing:.02em;padding:3px 8px;border-radius:999px;
+  color:var(--vx-text-secondary);background:rgba(0,0,0,.3);border:1px solid var(--ng-border-soft);white-space:nowrap;
+}
+.vx-content[data-space="markets"] .vx-mk-idx-valrow{display:flex;align-items:baseline;gap:10px}
+.vx-content[data-space="markets"] .vx-mk-idx-val{
+  font-size:26px;font-weight:800;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;line-height:1;
+}
+.vx-content[data-space="markets"] .vx-mk-idx-chg{font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.vx-content[data-space="markets"] .vx-mk-idx-chg.up{color:var(--vx-positive)}
+.vx-content[data-space="markets"] .vx-mk-idx-chg.down{color:var(--vx-negative)}
+.vx-content[data-space="markets"] .vx-mk-idx-chg.flat{color:var(--vx-text-muted)}
+.vx-content[data-space="markets"] .vx-mk-area{margin-top:auto;height:40px}
+.vx-content[data-space="markets"] .vx-mk-area svg{display:block;width:100%;height:40px}
+.vx-content[data-space="markets"] .vx-mk-idx-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font-size:11px;color:var(--vx-text-muted);font-variant-numeric:tabular-nums;
+}
+.vx-content[data-space="markets"] .vx-mk-idx-foot b{color:var(--vx-text-secondary);font-weight:600}
+
+/* ── MACRO CARDS premium (taux/DXY/pétrole/or/BTC) : pas de demi-carte vide ── */
+.vx-content[data-space="markets"] .vx-mk-macro{
+  position:relative;overflow:hidden;padding:15px 16px;border-radius:var(--vx-r-card);
+  display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto auto;
+  column-gap:14px;row-gap:6px;align-items:baseline;min-height:118px;
+  background:linear-gradient(180deg,var(--ng-glass-raised),var(--ng-glass));
+  border:1px solid var(--ng-border-soft);box-shadow:var(--ng-shadow),inset 0 1px 0 rgba(255,255,255,.04);
+  transition:transform var(--ng-motion),border-color var(--ng-motion);
+}
+.vx-content[data-space="markets"] .vx-mk-macro:hover{transform:translateY(-2px);border-color:var(--ng-border-strong)}
+.vx-content[data-space="markets"] .vx-mk-macro .m-head{grid-column:1/2;display:flex;align-items:center;gap:8px}
+.vx-content[data-space="markets"] .vx-mk-macro .m-mono{
+  font-size:10px;font-weight:800;letter-spacing:.03em;color:var(--vx-ember-400);
+  padding:2px 7px;border-radius:7px;background:var(--vx-ember-soft);border:1px solid rgba(255,109,41,.2);
+}
+.vx-content[data-space="markets"] .vx-mk-macro .m-name{font-size:12px;color:var(--vx-text-secondary);letter-spacing:.03em}
+.vx-content[data-space="markets"] .vx-mk-macro .m-val{grid-column:1/2;font-size:24px;font-weight:800;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;line-height:1.1}
+.vx-content[data-space="markets"] .vx-mk-macro .m-chg{grid-column:1/2;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.vx-content[data-space="markets"] .vx-mk-macro .m-chg.up{color:var(--vx-positive)}
+.vx-content[data-space="markets"] .vx-mk-macro .m-chg.down{color:var(--vx-negative)}
+.vx-content[data-space="markets"] .vx-mk-macro .m-chg.flat{color:var(--vx-text-muted)}
+/* Aire occupant la colonne droite : plus jamais de demi-carte vide */
+.vx-content[data-space="markets"] .vx-mk-macro .m-area{
+  grid-column:2/3;grid-row:1/4;align-self:stretch;width:120px;display:flex;align-items:center;
+}
+.vx-content[data-space="markets"] .vx-mk-macro .m-area svg{width:120px;height:56px;display:block}
+.vx-content[data-space="markets"] .vx-mk-macro .m-note{grid-column:1/3;font-size:11px;color:var(--vx-text-muted);margin-top:2px}
+/* Variante FLAT (actif sans série) : plein-largeur, pas de colonne aire vide */
+.vx-content[data-space="markets"] .vx-mk-macro--flat{display:flex;flex-direction:column;gap:8px;justify-content:center}
+.vx-content[data-space="markets"] .vx-mk-macro--flat .mf-row{display:flex;align-items:baseline;gap:12px}
+.vx-content[data-space="markets"] .vx-mk-macro--flat .m-note{margin-top:auto}
+@media (max-width:520px){
+  .vx-content[data-space="markets"] .vx-mk-macro .m-area{width:88px}
+  .vx-content[data-space="markets"] .vx-mk-macro .m-area svg{width:88px}
+}
+
+/* Leadership sectoriel — classement visuel (barres d'intensité) */
+.vx-content[data-space="markets"] .vx-mk-lead-hero{margin-bottom:12px}
+.vx-content[data-space="markets"] .vx-mk-lead-top{display:block;font-size:20px;font-weight:800;color:var(--vx-text-primary);line-height:1.1}
+.vx-content[data-space="markets"] .vx-mk-lead-list{display:flex;flex-direction:column;gap:9px}
+.vx-content[data-space="markets"] .vx-mk-lead-row{display:grid;grid-template-columns:1fr 74px auto auto;align-items:center;gap:10px}
+.vx-content[data-space="markets"] .vx-mk-lead-name{font-size:12.5px;color:var(--vx-text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vx-content[data-space="markets"] .vx-mk-lead-bar{height:6px;border-radius:4px;background:rgba(0,0,0,.35);overflow:hidden}
+.vx-content[data-space="markets"] .vx-mk-lead-bar i{display:block;height:100%;border-radius:4px}
+.vx-content[data-space="markets"] .vx-mk-lead-sc{font-size:12px;font-weight:700;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;text-align:right;min-width:24px}
+
+/* Section titre léger (regroupement visuel, hiérarchie par poids) */
+.vx-content[data-space="markets"] .vx-mk-sectitle{
+  font-size:var(--vx-fs-meta);font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--vx-text-muted);margin:2px 2px 10px;display:flex;align-items:center;gap:10px;
+}
+.vx-content[data-space="markets"] .vx-mk-sectitle::after{content:"";flex:1;height:1px;background:var(--ng-border-soft)}

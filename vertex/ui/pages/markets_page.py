@@ -239,19 +239,42 @@ const SETUP_LABEL={BALANCED:'Équilibrée',BREAKOUT_PULLBACK:'Cassure / pullback
   MEAN_REVERSION:'Retour moyenne',MOMENTUM:'Momentum',QUALITY_DEFENSIVE:'Qualité défensive',
   CAPITAL_PRESERVATION:'Préservation capital',TAKE_PROFITS:'Prises de bénéfices',
   BREAKOUT_WATCH:'Veille de cassure',ATTENDRE:'Attendre'};
-async function loadRegime(){
+/* Mini-signal à rail (VIX / participation) pour l'état compact du hero régime. */
+function sigRail(k,vtxt,pct,col){
+  const w=(pct==null)?0:Math.max(0,Math.min(100,pct));
+  return `<div class="vx-mk-sig"><span class="k">${k}</span><span class="v">${vtxt}</span>`
+    +(pct==null?'':`<span class="vx-mk-sig-rail"><i style="width:${w.toFixed(0)}%;background:${col}"></i></span>`)+`</div>`;
+}
+function sigText(k,vtxt){return `<div class="vx-mk-sig"><span class="k">${k}</span><span class="v" style="font-size:15px">${vtxt}</span></div>`;}
+async function loadRegime(scan){
   try{
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
     const adj=r.adjustments||{};
     const conf=Math.round((r.confidence||0)*100);
     const dims=(r.dimensions_used||[]).length;
-    /* État honnête : moins de 3 dimensions → régime réellement INCONNU. On
-       n'affiche PAS un « UNKNOWN » géant à 0 % : on explique pourquoi. */
+    /* État honnête MAIS compact & éditorial : moins de 3 dimensions → régime
+       réellement INCONNU. On n'affiche PAS un « UNKNOWN » géant à 0 % NI 40 % de
+       vide : on explique, puis on montre les signaux de marché RÉELLEMENT
+       disponibles (VIX, participation, régime S&P, risk-on/off) issus du scan. */
     if(r.regime==='UNKNOWN'||!REGIME_LABEL[r.regime]){
-      $('vx-mk-regime-body').innerHTML=VX.states.empty(
-        'Régime indéterminé — le moteur dispose de moins de 3 dimensions de marché ('
-        +dims+' évaluée'+(dims>1?'s':'')+'). Par prudence, le nouveau risque reste bloqué.',
-        SCAN_ACTION);
+      const m=mkt(scan);const CO=(window.VXCharts&&VXCharts.colors)||{};
+      const sigs=[];
+      if(m.vix!=null&&!isNaN(m.vix)){const v=Number(m.vix);
+        sigs.push(sigRail('VIX',v.toFixed(1),(v-10)/30*100,v<15?CO.positive:v<25?CO.warning:CO.negative));}
+      if(m.breadth!=null&&!isNaN(m.breadth)){const b=Number(m.breadth);
+        sigs.push(sigRail('Participation &gt;MM50',Math.round(b)+' <small>%</small>',b,b>=55?CO.positive:b>=45?CO.warning:CO.negative));}
+      if(m.spy_regime)sigs.push(sigText('Régime S&amp;P 500',esc(m.spy_regime)));
+      if(m.roro)sigs.push(sigText('Risk-on / risk-off',esc(m.roro)));
+      $('vx-mk-regime-body').innerHTML=
+        `<div class="vx-mk-regime-compact">
+          <div class="vx-mk-regime-lead">
+            <span class="tag">Indéterminé</span>
+            <span class="txt">Moins de 3 dimensions qualifiées (${dims} évaluée${dims>1?'s':''}) — le moteur reste honnête et <b>bloque le nouveau risque</b>. Voici les signaux déjà disponibles :</span>
+          </div>
+          ${sigs.length?`<div class="vx-mk-sigrow">${sigs.join('')}</div>`:'<div class="vx-help">Aucun signal de marché fourni par le dernier scan.</div>'}
+          <div class="vx-flex" style="gap:8px;margin-top:2px">${SCAN_ACTION}
+            <span class="vx-meta" style="margin-left:auto">${VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')}</span></div>
+        </div>`;
       return;
     }
     const meta=REGIME_LABEL[r.regime];
@@ -305,13 +328,27 @@ function loadLeader(scan){
   }
   const top=sectors[0];
   const topLeader=top.leader&&(top.leader.symbol||((typeof top.leader==='string')?top.leader:null));
+  /* Classement visuel des secteurs meneurs : score en barre (hiérarchie par
+     intensité, pas arc-en-ciel) — remplit la carte et se lit d'un coup d'œil. */
+  const withScore=sectors.filter(s=>s.avg_score!=null);
+  const maxSc=Math.max(1,...withScore.map(s=>s.avg_score));
+  const rank=withScore.slice(0,5).map((s,i)=>{
+    const L=s.leader&&(s.leader.symbol||((typeof s.leader==='string')?s.leader:null));
+    const w=Math.max(6,Math.round((s.avg_score/maxSc)*100));
+    const col=i===0?'var(--vx-ember-500)':'var(--vx-warm-grey)';
+    return `<div class="vx-mk-lead-row">
+      <span class="vx-mk-lead-name" title="${esc(s.sector||'')}">${esc(s.sector||'n/d')}</span>
+      <span class="vx-mk-lead-bar"><i style="width:${w}%;background:${col}"></i></span>
+      <span class="vx-mk-lead-sc">${VX.fmt.nd(s.avg_score)}</span>
+      ${L?`<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(L)}" title="Leader ${esc(L)}">${esc(L)}</button>`:'<span class="vx-meta">—</span>'}
+    </div>`;}).join('');
   $('vx-mk-leader-body').innerHTML=
-    `<div class="vx-kpi vx-mb3"><span class="vx-kpi-value" style="font-size:20px">${esc(top.sector||'n/d')}</span>
-     <span class="vx-kpi-delta vx-muted">score moyen ${VX.fmt.nd(top.avg_score)}</span></div>`
-    +(topLeader?`<div class="vx-kv"><span class="k">Titre leader</span><span class="v">
-      <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(topLeader)}">${esc(topLeader)}</button>
-      <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(topLeader)}" aria-label="Actions ${esc(topLeader)}">⋯</button></span></div>`:'')
-    +`<div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.source||'scan',modeOf(scan))}</div>`;
+    `<div class="vx-mk-lead-hero">
+       <span class="vx-mk-lead-top">${esc(top.sector||'n/d')}</span>
+       <span class="vx-meta">secteur meneur · score moyen ${VX.fmt.nd(top.avg_score)}${topLeader?' · leader '+esc(topLeader):''}</span>
+     </div>
+     <div class="vx-mk-lead-list">${rank}</div>
+     <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.source||'scan',modeOf(scan))}</div>`;
 }
 function loadRisk(scan){
   const m=mkt(scan);
@@ -324,7 +361,6 @@ function loadRisk(scan){
     +(m.spy_regime?`<div class="vx-kv"><span class="k">Régime S&amp;P 500</span><span class="v">${esc(m.spy_regime)}</span></div>`:'')
     +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
 }
-const IDX=['S&P 500','Nasdaq','Dow Jones','Russell 2000','Taux 10 ans','DXY','Pétrole','Or','Bitcoin'];
 function idxByName(scan){
   const list=(scan&&Array.isArray(scan.indices))?scan.indices:[];
   const by={};list.forEach(i=>{if(i&&i.name)by[i.name]=i;});return by;
@@ -349,30 +385,92 @@ function sparkSvg(vals,pos){
   const col=pos?'var(--vx-positive,#2ED6A1)':'var(--vx-negative,#FF5F69)';
   return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" width="100%" height="22" style="margin-top:5px;display:block" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
-function kpiCell(label,d,scan,extraNote){
-  const val=d&&(d.last??d.price??d.close);const chg=d?d.change:null;
-  /* deltaNeutral : la variation ne code PAS « bon/mauvais » (taux, DXY — haut ≠ bien).
-     deltaUnit : variation en unité absolue (points) et non en %. unit : suffixe de niveau. */
-  const dcls=(d&&d.deltaNeutral)?'vx-muted':(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted');
-  const dtxt=(chg===null||chg===undefined)?'n/d'
-    :((d&&d.deltaUnit)?((chg>0?'+':'')+VX.fmt.num(chg,2)+' '+d.deltaUnit):VX.fmt.pct(chg));
-  const vtxt=(val===null||val===undefined)?'—':(VX.fmt.price(val)+((d&&d.unit)?' '+d.unit:''));
-  return `<div class="vx-card vx-kpi" style="grid-column:span 4" aria-label="${esc(label)}">
-    <span class="vx-kpi-label">${esc(label)}</span>
-    <span class="vx-kpi-value" style="font-size:19px">${vtxt}</span>
-    <span class="vx-kpi-delta ${dcls}">${dtxt}</span>
-    ${(d&&d.series)?sparkSvg(d.series,(chg==null?true:chg>=0)):''}
-    ${extraNote?`<span class="vx-meta">${extraNote}</span>`:''}
-    ${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
+/* Mini-area premium : ligne + remplissage dégradé + point actif final. `tone`
+   ∈ up|down|flat|tech pilote la couleur (sémantique). `uid` = id unique du gradient. */
+let _AREA=0;
+function sparkArea(vals,tone,h){
+  if(!Array.isArray(vals)||vals.length<2)return '<svg aria-hidden="true"></svg>';
+  h=h||40;const w=140,pad=2,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=(mx-mn)||1;
+  const uid='ar'+(++_AREA);
+  const X=i=>(i/(vals.length-1)*w).toFixed(1),Y=v=>(h-pad-((v-mn)/rng)*(h-2*pad)).toFixed(1);
+  const line=vals.map((v,i)=>X(i)+','+Y(v)).join(' ');
+  const area=`0,${h} `+line+` ${w},${h}`;
+  const col=tone==='up'?'var(--vx-positive)':tone==='down'?'var(--vx-negative)':tone==='tech'?'var(--vx-technical)':'var(--vx-warm-grey)';
+  const lx=X(vals.length-1),ly=Y(vals[vals.length-1]);
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" width="100%" height="${h}" aria-hidden="true">
+    <defs><linearGradient id="${uid}" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="${col}" stop-opacity=".28"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+    <polygon points="${area}" fill="url(#${uid})"/>
+    <polyline points="${line}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="${lx}" cy="${ly}" r="2.4" fill="${col}"/></svg>`;
 }
+const MONO={'S&P 500':'S&P','Nasdaq':'NDQ','Dow Jones':'DJIA','Russell 2000':'RUT',
+  'Taux 10 ans':'10Y','DXY':'DXY','Pétrole':'WTI','Or':'AU','Bitcoin':'BTC'};
+/* Position relative de la dernière valeur dans la plage de la série fournie
+   (transformation d'affichage — aucun point inventé). */
+function relInRange(vals){
+  if(!Array.isArray(vals)||vals.length<3)return null;
+  const mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=(mx-mn)||1;
+  const p=(vals[vals.length-1]-mn)/rng;return {pct:p,mn,mx};}
+/* Carte indice premium : monogramme · valeur · variation · mini-area · plage · état relatif. */
+function indexCard(label,d,scan){
+  const val=d&&(d.last??d.price??d.close);const chg=(d&&d.change!=null)?d.change:null;
+  const dir=chg>0?'up':chg<0?'down':'flat';
+  const chgTxt=chg==null?'n/d':(d&&d.deltaUnit?((chg>0?'+':'')+VX.fmt.num(chg,2)+' '+d.deltaUnit):VX.fmt.pct(chg));
+  const vtxt=(val==null)?'—':(VX.fmt.price(val)+((d&&d.unit)?' '+d.unit:''));
+  const ser=(d&&d.series&&d.series.length>2)?d.series:null;
+  const rel=ser?relInRange(ser):null;
+  const relTxt=rel?(rel.pct>=.66?'près du haut':rel.pct<=.33?'près du bas':'milieu de plage'):'';
+  const rangeTxt=rel?('plage '+VX.fmt.price(rel.mn)+'–'+VX.fmt.price(rel.mx)):'';
+  const tone=(d&&d.deltaNeutral)?'flat':dir;
+  return `<div class="vx-mk-idx" data-dir="${tone}" aria-label="${esc(label)}">
+    <div class="vx-mk-idx-top">
+      <span class="vx-mk-mono">${MONO[label]||esc(label).slice(0,3).toUpperCase()}</span>
+      <span class="vx-mk-idx-name">${esc(label)}</span>
+      ${relTxt?`<span class="vx-mk-idx-rel">${relTxt}</span>`:''}
+    </div>
+    <div class="vx-mk-idx-valrow">
+      <span class="vx-mk-idx-val">${vtxt}</span>
+      <span class="vx-mk-idx-chg ${tone}">${chgTxt}</span>
+    </div>
+    <div class="vx-mk-area">${ser?sparkArea(ser,tone,40):''}</div>
+    <div class="vx-mk-idx-foot"><b>${rangeTxt||'&nbsp;'}</b><span>${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</span></div>
+  </div>`;
+}
+/* Carte macro premium : aire à droite (plus de demi-carte vide) + relation clé. */
+function macroCard(label,d,scan,note){
+  const val=d&&(d.last??d.price??d.close);const chg=(d&&d.change!=null)?d.change:null;
+  const dir=chg>0?'up':chg<0?'down':'flat';const tone=(d&&d.deltaNeutral)?'flat':dir;
+  const chgTxt=chg==null?'n/d':(d&&d.deltaUnit?((chg>0?'+':'')+VX.fmt.num(chg,2)+' '+d.deltaUnit):VX.fmt.pct(chg));
+  const vtxt=(val==null)?'—':(VX.fmt.price(val)+((d&&d.unit)?' '+d.unit:''));
+  const ser=(d&&d.series&&d.series.length>2)?d.series:null;
+  const chgHtml=`<span class="m-chg ${tone}">${chgTxt}${(d&&d.deltaNeutral)?' <span style="color:var(--vx-text-muted);font-weight:600">· niveau</span>':''}</span>`;
+  /* Sans série : layout compact plein-largeur (JAMAIS de demi-carte vide). */
+  if(!ser){
+    return `<div class="vx-mk-macro vx-mk-macro--flat" aria-label="${esc(label)}">
+      <div class="m-head"><span class="m-mono">${MONO[label]||esc(label).slice(0,3).toUpperCase()}</span><span class="m-name">${esc(label)}</span></div>
+      <div class="mf-row"><span class="m-val">${vtxt}</span>${chgHtml}</div>
+      ${note?`<div class="m-note">${note}</div>`:''}
+    </div>`;
+  }
+  return `<div class="vx-mk-macro" aria-label="${esc(label)}">
+    <div class="m-head"><span class="m-mono">${MONO[label]||esc(label).slice(0,3).toUpperCase()}</span><span class="m-name">${esc(label)}</span></div>
+    <div class="m-val">${vtxt}</div>
+    ${chgHtml}
+    <div class="m-area">${sparkArea(ser,tone==='flat'?'tech':tone,56)}</div>
+    ${note?`<div class="m-note">${note}</div>`:''}
+  </div>`;
+}
+const IDX_MAIN=['S&P 500','Nasdaq','Dow Jones','Russell 2000'];
 function loadStrip(scan){
   const by=crossAsset(scan);
-  const known=IDX.filter(n=>by[n]&&(by[n].last!==null&&by[n].last!==undefined));
+  const known=IDX_MAIN.filter(n=>by[n]&&(by[n].last!==null&&by[n].last!==undefined));
   if(!known.length){
-    $('vx-mk-strip').innerHTML='<div class="vx-card vx-col-12">'+VX.states.empty('Indices indisponibles — lancer un scan depuis Système.',SCAN_ACTION)+'</div>';return;
+    $('vx-mk-strip').innerHTML='<div class="vx-col-12">'+VX.states.empty('Indices indisponibles — lancer un scan depuis Système.',SCAN_ACTION)+'</div>';return;
   }
-  $('vx-mk-strip').innerHTML=known.map(label=>
-    kpiCell(label,by[label],scan).replace('grid-column:span 4','grid-column:span 3')).join('');
+  $('vx-mk-strip').innerHTML=
+    '<div class="vx-col-12 vx-mk-sectitle">Indices actions</div>'
+    +known.map(label=>'<div class="vx-col-3">'+indexCard(label,by[label],scan)+'</div>').join('');
 }
 /* Comparaison multi-indices : chaque série rebasée à 0 % (transformation
    d'affichage des séries fournies — aucun point inventé). */
@@ -426,13 +524,24 @@ function loadSpyChart(scan){
 
 /* ═══ MACRO ═══ */
 const MACRO_NAMES=['Taux 10 ans','DXY','Pétrole','Or','Bitcoin'];
+/* Relation clé de chaque actif macro (contexte de lecture — texte, jamais un chiffre inventé). */
+const MACRO_NOTE={
+  'Taux 10 ans':'Coût de l’argent long — hausse = pression sur les valorisations.',
+  'DXY':'Dollar fort = vent de face pour actifs risqués et matières.',
+  'Pétrole':'Baromètre d’inflation et de demande cyclique.',
+  'Or':'Refuge — monte souvent quand l’aversion au risque grandit.',
+  'Bitcoin':'Actif risque à bêta élevé — proxy d’appétit spéculatif.'};
 function loadMacroKpis(scan){
   const by=crossAsset(scan);
   const known=MACRO_NAMES.filter(n=>by[n]&&by[n].last!==null&&by[n].last!==undefined);
   if(!known.length){
-    $('vx-mk-macro-kpis').innerHTML='<div class="vx-card vx-col-12">'+VX.states.empty('Données macro non fournies par le scan — rien d’inventé.',SCAN_ACTION)+'</div>';return;
+    $('vx-mk-macro-kpis').innerHTML='<div class="vx-col-12">'+VX.states.empty('Données macro non fournies par le scan — rien d’inventé.',SCAN_ACTION)+'</div>';return;
   }
-  $('vx-mk-macro-kpis').innerHTML=known.map(n=>kpiCell(n,by[n],scan)).join('');
+  /* Rangée dense d'actifs cross-asset : chaque carte est identitaire (monogramme,
+     relation, aire ou stat compacte) — aucune demi-carte vide, aucun clone. */
+  $('vx-mk-macro-kpis').innerHTML=
+    '<div class="vx-col-12 vx-mk-sectitle">Cross-asset — taux, dollar, matières &amp; crypto</div>'
+    +known.map(n=>'<div class="vx-col-4">'+macroCard(n,by[n],scan,MACRO_NOTE[n])+'</div>').join('');
 }
 /* Courbe des taux US — 4 maturités RÉELLES du scan (jamais interpolées) */
 function loadYield(scan){
@@ -750,7 +859,7 @@ async function loadVix(scan){
 async function boot(){
   const scan=await getScan();
   demoBanner(scan);
-  if(VIEW==='overview'){loadRegime();loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);loadMovers(scan);}
+  if(VIEW==='overview'){loadRegime(scan);loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);loadMovers(scan);}
   else if(VIEW==='macro'){loadMacroKpis(scan);loadMacroRegime();loadYield(scan);loadMacroCal();}
   else if(VIEW==='sectors'){loadSectors(scan);}
   else if(VIEW==='breadth'){loadBreadth(scan);}
