@@ -347,7 +347,13 @@ def strategies_for_symbol(board, sym, spot, iv_hint=None, bias='neutral'):
         'otm_call': ({'strike': otm_call_strike, 'call': prem(otm_call)} if otm_call else None),
         'otm_put': ({'strike': otm_put_strike, 'put': prem(otm_put)} if otm_put else None),
     }
-    iv = iv_hint if (iv_hint and iv_hint > 0) else ((atm_call or atm_put or {}).get('iv'))
+    # Le board porte `iv` en POURCENTAGE (ex. 40.4 = 40,4 %) ; analyze_strategy attend
+    # une volatilité DÉCIMALE. Sans conversion : PoP = 100 % (absurde) et delta de call
+    # ATM saturé à 1,0 (cf. tests/test_multileg_iv_units_06). On convertit au point de
+    # jonction (une valeur > 1,5 est nécessairement un pourcentage ; un iv_hint décimal
+    # est laissé intact). Le cœur `analyze_strategy` n'est pas modifié.
+    raw_iv = iv_hint if (iv_hint and iv_hint > 0) else ((atm_call or atm_put or {}).get('iv'))
+    iv = (raw_iv / 100.0) if (raw_iv and raw_iv > 1.5) else raw_iv
 
     out = []
     for kind in _STRATEGY_ORDER:

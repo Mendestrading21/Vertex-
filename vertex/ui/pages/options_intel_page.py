@@ -13,13 +13,23 @@ from __future__ import annotations
 
 from vertex.ui.shell import render_shell
 
+# Onglets VISIBLES (canoniques PR n°6) — Structure d'abord : la Carte-Verdict
+# Options répond « cette structure offre-t-elle une asymétrie suffisante ? ».
 _VIEWS = (
-    ('overview', 'Vue d’ensemble'),
+    ('structure', 'Structure'),
+    ('leaps', 'LEAPS'),
+    ('positions', 'Mes positions'),
     ('volatility', 'Volatilité'),
-    ('radar', 'Radar contrats'),
-    ('scenarios', 'Scénarios'),
     ('events', 'Événements'),
 )
+# Vues encore servies (routes 200, contenu intact) mais hors barre d'onglets :
+# overview/radar/scenarios restent accessibles/testées, absorbées par Structure.
+_LEGACY_VIEWS = (
+    ('overview', 'Vue d’ensemble'),
+    ('radar', 'Radar contrats'),
+    ('scenarios', 'Scénarios'),
+)
+_ALL_VIEWS = _VIEWS + _LEGACY_VIEWS
 
 
 def _tabs(view: str) -> str:
@@ -76,6 +86,15 @@ _STYLE = """
 #vx-content .vx-opt-chip{font-size:12px;padding:.25rem .6rem;border-radius:999px;background:var(--vx-surface-2,#1d1f22);color:var(--vx-text-dim,#b6b1aa)}
 #vx-content .vx-opt-chip b{color:var(--vx-text,#f1efeb);font-weight:600}
 @media(max-width:720px){#vx-content .vx-opt-hero-grid{grid-template-columns:1fr}}
+/* PR n°6 — Carte-Verdict Options, Greeks interprétés, matrice de comparaison */
+#vx-content .vx-greeks{display:flex;flex-direction:column;gap:.55rem}
+#vx-content .vx-greek{padding:.45rem .6rem;border:1px solid var(--vx-border-soft,#2a2620);border-radius:8px;background:var(--vx-surface-1,#141210)}
+#vx-content .vx-greek b{font-size:13px}
+#vx-content .vx-scenario-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.35rem}
+#vx-content tr.vx-row-hl{background:rgba(132,170,49,.08)}
+#vx-content tr.vx-row-hl td{border-top:1px solid rgba(132,170,49,.3);border-bottom:1px solid rgba(132,170,49,.3)}
+#vx-content .vx-verdict-card{padding:1.1rem 1.2rem}
+#vx-content .vx-eyebrow{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-dim,#8a837a)}
 </style>
 """
 
@@ -91,6 +110,59 @@ _HEADER = """
 _LOADING = '<div class="vx-skeleton" style="height:120px"></div>'
 
 _VIEW_CONTENT = {
+    'structure': """
+<div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-12" aria-label="Analyser une structure">
+    <div class="vx-card-header"><span class="vx-card-title">Cette structure offre-t-elle une asymétrie suffisante&nbsp;?</span>
+      <span class="vx-chart-question">Verdict, scénarios, payoff, sensibilités et comparaison — depuis le board réel. Aucun ordre.</span></div>
+    <div class="vx-card-body vx-flex vx-wrap" style="gap:.6rem;align-items:flex-end">
+      <label class="vx-field"><span>Sous-jacent</span>
+        <input id="vx-os-sym" class="vx-input" placeholder="ex. AAPL" maxlength="12" autocomplete="off"></label>
+      <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-os-go">Évaluer l'asymétrie</button>
+      <span id="vx-os-chips" class="vx-flex vx-wrap" style="gap:6px"></span>
+    </div>
+  </section>
+</div>
+<div id="vx-os-verdict" class="vx-mt3">%%LOADING%%</div>
+<div id="vx-os-scenarios" class="vx-mt3"></div>
+<div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-7" aria-label="Payoff à l'échéance">
+    <div class="vx-card-header"><span class="vx-card-title">Payoff à l'échéance</span>
+      <span class="vx-chart-question">Où gagne / perd la structure selon le cours ?</span></div>
+    <div id="vx-os-payoff"><div class="vx-empty">Choisis un sous-jacent présent dans le tableau d'options.</div></div>
+  </section>
+  <section class="vx-card vx-col-5" aria-label="Sensibilités">
+    <div class="vx-card-header"><span class="vx-card-title">Sensibilités (Greeks)</span></div>
+    <div id="vx-os-greeks"><div class="vx-empty">—</div></div>
+  </section>
+</div>
+<div id="vx-os-compare" class="vx-mt3"></div>
+""",
+    'leaps': """
+<div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-12" aria-label="Profil LEAPS">
+    <div class="vx-card-header"><span class="vx-card-title">Profil LEAPS — acheter du temps, une tendance, un catalyseur&nbsp;?</span>
+      <span class="vx-chart-question">Delta 0,70-0,90 · échéance 6-18 mois · OI élevé · spread faible · tendance + catalyseur.</span></div>
+    <div class="vx-card-body vx-flex vx-wrap" style="gap:.6rem;align-items:flex-end">
+      <label class="vx-field"><span>Sous-jacent</span>
+        <input id="vx-lp-sym" class="vx-input" placeholder="ex. NVDA" maxlength="12" autocomplete="off"></label>
+      <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-lp-go">Lire les LEAPS</button>
+      <span id="vx-lp-chips" class="vx-flex vx-wrap" style="gap:6px"></span>
+    </div>
+  </section>
+</div>
+<div id="vx-lp-out" class="vx-mt3"><div class="vx-empty">Choisis un sous-jacent pour lire ses contrats longue échéance.</div></div>
+""",
+    'positions': """
+<div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-12" aria-label="Domicile canonique des positions options">
+    <div class="vx-insight" data-tone="action"><b>Domicile canonique des positions options.</b>
+      Le détail (Greeks, échéances, payoff, catalyseurs, invalidations, liquidité) vit ici.
+      Le Portefeuille ne garde qu'un résumé d'exposition et un lien vers cette vue.</div>
+  </section>
+</div>
+<div id="vx-op-body" class="vx-mt3">%%LOADING%%</div>
+""",
     'overview': """
 <div class="vx-grid vx-mt3">
   <section class="vx-card vx-col-12 vx-opt-hero" id="vx-opt-hero" aria-label="Environnement options">
@@ -192,18 +264,19 @@ _PAGE_JS = (
     '<script src="/static/vertex/js/charts/option-theta.js" defer></script>'
     '<script src="/static/vertex/js/charts/option-iv-sensitivity.js" defer></script>'
     '<script src="/static/vertex/js/pages/options-intel.js" defer></script>'
+    '<script src="/static/vertex/js/pages/options-structure.js" defer></script>'
 )
 
 
-def render(view: str = 'overview') -> str:
-    view = view if view in dict(_VIEWS) else 'overview'
+def render(view: str = 'structure') -> str:
+    view = view if view in dict(_ALL_VIEWS) else 'structure'
     content = (_STYLE + _HEADER.replace('%%TABS%%', _tabs(view))
                + _VIEW_CONTENT[view].replace('%%LOADING%%', _LOADING))
     return render_shell(
         title='Options',
         active='options',                  # espace principal canonique (n°6 / 8)
         space_label='Options',
-        sub_label='Convexité & volatilité',
+        sub_label=dict(_ALL_VIEWS).get(view, 'Structure'),
         page_label='options:%s' % view,
         content=content,
         page_js=_PAGE_JS)

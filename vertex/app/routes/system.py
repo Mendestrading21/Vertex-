@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v48';   // v48 : refonte Portefeuille (Synthèse premier écran + tableau canonique état-de-thèse + garde-fou perdants + performance migrée depuis Journal)
+const CACHE='td-shell-v49';   // v49 : refonte Options (Carte-Verdict asymétrie + Carte-Scénario + payoff canonique multileg_lab + Greeks interprétés + LEAPS + positions canoniques + garde-fou perdants)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
