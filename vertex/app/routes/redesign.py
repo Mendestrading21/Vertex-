@@ -107,7 +107,7 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     # Portefeuille lors de la refonte de contenu. /performance redirige ici.
     @bp.route('/journal')
     def journal_route():
-        return performance_page.render(view=request.args.get('view', 'journal'),
+        return performance_page.render(view=request.args.get('view', 'overview'),
                                        params=request.args)
 
     # ── Intelligence — N'EST PLUS un espace principal (PR n°2). Son raisonnement
