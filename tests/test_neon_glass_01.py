@@ -36,13 +36,18 @@ def test_neon_glass_css_exists_and_linked(client):
 
 
 def test_prototype_scoped_to_migrated_spaces_only():
-    """Migration page par page : couverts = briefing + markets. Les 6 autres
-    espaces ne doivent JAMAIS apparaître dans le scope (pas de big-bang)."""
+    """Migration page par page : couverts = briefing + markets + opportunities.
+    Les 5 espaces restants ne doivent JAMAIS apparaître dans le scope de base
+    (pas de big-bang). On ignore le bloc de commentaire d'en-tête."""
     css = _read(CSS)
-    assert 'data-space="briefing"' in css and 'data-space="markets"' in css
-    for not_migrated in ('opportunities', 'analysis', 'portfolio', 'options',
+    assert ('data-space="briefing"' in css and 'data-space="markets"' in css
+            and 'data-space="opportunities"' in css)
+    # on retire le commentaire d'en-tête (qui cite les espaces non migrés en prose)
+    import re
+    code = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
+    for not_migrated in ('analysis', 'portfolio', 'options',
                          'journal', 'system'):
-        assert f'data-space="{not_migrated}"' not in css, \
+        assert f'data-space="{not_migrated}"' not in code, \
             f'espace non migré peint (big-bang) : {not_migrated}'
     # aucune règle .vx-card hors scope (toujours précédée du sélecteur .vx-content:is(...))
     for line in css.splitlines():
@@ -108,13 +113,26 @@ def test_reduced_motion_respected():
 
 
 def test_markets_migrated_and_others_untouched(client):
-    # Marchés est désormais migré (scope + attribut)
+    import re
+    # Marchés + Opportunités sont désormais migrés (scope + attribut)
     mk = client.get('/markets').get_data(as_text=True)
     assert 'data-space="markets"' in mk
-    # un espace NON migré porte bien son attribut mais n'est pas dans le scope CSS
     opp = client.get('/opportunities').get_data(as_text=True)
     assert 'data-space="opportunities"' in opp
-    assert 'data-space="opportunities"' not in _read(CSS)
+    assert 'data-space="opportunities"' in _read(CSS)  # Opportunités migré
+    # un espace NON migré porte bien son attribut mais n'est PAS dans le scope CSS
+    code = re.sub(r'/\*.*?\*/', '', _read(CSS), flags=re.S)
+    port = client.get('/portfolio').get_data(as_text=True)
+    assert 'data-space="portfolio"' in port
+    assert 'data-space="portfolio"' not in code
+
+
+def test_opportunities_widgets_present():
+    """Les widgets premium Opportunités existent (classes stables vx-op-*)."""
+    css = _read(CSS)
+    for cls in ('vx-op-dominant', 'vx-op-tk', 'vx-op-cmp', 'vx-op-hero-chips',
+                'vx-op-mono', 'vx-op-metric'):
+        assert cls in css, f'widget Opportunités manquant : {cls}'
 
 
 def test_readonly_still_intact(client):

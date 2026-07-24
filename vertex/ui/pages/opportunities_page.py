@@ -59,65 +59,119 @@ function rowActions(sym){return `<div class="vx-row-actions">
   <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${sym}">Analyse</button>
   <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${sym}" aria-label="Actions ${sym}">⋯</button></div>`;}
 
-/* ── CLASSEMENT : décomposition du score (§19.3) — barres de sous-scores moteur ── */
-function scoreBar(label,val,color){
-  if(val===null||val===undefined||isNaN(val))return `<div style="display:flex;align-items:center;gap:6px;margin:2px 0">
-    <span style="width:82px;font-size:10.5px;color:var(--vx-text-muted,#817d77)">${label}</span>
-    <span class="vx-muted" style="flex:1;font-size:10.5px">n/d</span></div>`;
-  const v=Math.max(0,Math.min(100,val));
-  return `<div style="display:flex;align-items:center;gap:6px;margin:2px 0" role="img" aria-label="${label} ${Math.round(v)} sur 100">
-    <span style="width:82px;font-size:10.5px;color:var(--vx-text-muted,#817d77)">${label}</span>
-    <span style="flex:1;height:6px;background:var(--vx-surface-3,#17191c);border-radius:4px;overflow:hidden">
-      <span style="display:block;height:100%;width:${v}%;background:${color};border-radius:4px"></span></span>
-    <span style="width:26px;text-align:right;font-size:10.5px;font-variant-numeric:tabular-nums;color:var(--vx-text-secondary,#b7b2aa)">${Math.round(v)}</span></div>`;
+/* ── Champs réels par ligne (jamais inventés) ── */
+function opGrade(r){const g=(r.grade||'').toString().trim();
+  if(g&&g!=='—')return g;return tierOf(r);}  /* moteur d'abord, sinon dérivé des buckets */
+function opActive(rows){return (rows||[]).filter(r=>r.verdict!=='AVOID'&&r.verdict!=='ÉVITER');}
+function opRanked(rows){const prio=(r)=>{const b=bucketOf(r);return b==='Actionnable'?0:b==='Proche'?1:b==='À surveiller'?2:3;};
+  return opActive(rows).slice().sort((a,b)=>prio(a)-prio(b)||(b.score||0)-(a.score||0));}
+function pctv(v){return (v==null||isNaN(v))?null:(v<=1?Math.round(v*100):Math.round(v));}
+/* Momentum multi-horizon (perf_w/m/q/y RÉELS) → mini-barres d'intensité */
+function momBars(r){
+  const H=[['1S',r.perf_w],['1M',r.perf_m],['1T',r.perf_q],['1A',r.perf_y]].filter(x=>x[1]!=null&&!isNaN(x[1]));
+  if(!H.length)return '';
+  const mx=Math.max(6,...H.map(x=>Math.abs(x[1])));
+  return '<div class="vx-op-mom" aria-label="momentum 1S/1M/1T/1A">'+H.map(function(x){
+    const h=Math.max(10,Math.round(Math.abs(x[1])/mx*100));const col=x[1]>=0?'var(--vx-positive)':'var(--vx-negative)';
+    return '<span class="b" title="'+x[0]+' '+VX.fmt.pct(x[1],1)+'"><i style="height:'+h+'%;background:'+col+'"></i><span>'+x[0]+'</span></span>';
+  }).join('')+'</div>';
 }
-/* Top Opportunities (§17) : cartes des meilleurs candidats — actionnables d'abord */
-function renderTopCards(rows){
-  const el=$('op-topcards');if(!el)return;
-  const prio=(r)=>bucketOf(r)==='Actionnable'?0:bucketOf(r)==='Proche'?1:bucketOf(r)==='À surveiller'?2:3;
-  const ranked=(rows||[]).filter(r=>r.verdict!=='AVOID'&&r.verdict!=='ÉVITER')
-    .slice().sort((a,b)=>prio(a)-prio(b)||(b.score||0)-(a.score||0)).slice(0,6);
-  if(!ranked.length){el.innerHTML='';return;}
-  el.innerHTML='<div class="vx-card-header" style="padding:0 0 8px"><span class="vx-card-title">Top opportunités — les mieux notées</span>'
-    +'<span class="vx-chart-question">Lesquelles méritent ton attention en premier ?</span></div>'
-    +'<div class="vx-grid vx-mb3">'+ranked.map(function(r){const dec=r.verdict||'';
-    return `<div class="vx-card vx-col-4" style="grid-column:span 4" aria-label="${r.symbol}">
-      <div class="vx-flex"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px" data-open-analysis="${r.symbol}">${r.symbol}</button>
-        <span class="vx-badge">${bucketOf(r)}</span><span class="vx-grow"></span>
-        <span class="vx-mono" style="font-size:22px;font-weight:800;color:var(--vx-text-primary,#f4f1ec)">${VX.fmt.nd(r.score)}</span></div>
-      <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">
-        ${dec?`<span class="vx-badge vx-badge-decision" data-decision="${esc(dec)}">${esc(dec)}</span>`:''}
-        ${r.rr!==null&&r.rr!==undefined?`<span class="vx-meta">R:R ${VX.fmt.nd(r.rr)}</span>`:''}
-        ${r.sector?`<span class="vx-meta vx-truncate" style="max-width:110px">${esc(r.sector)}</span>`:''}</div>
-      <div class="vx-kv vx-mt1"><span class="k">Cours</span><span class="v vx-mono">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):'—'}</span></div>
-      ${(r.playbook||r.profile)?`<div class="vx-meta vx-truncate">${esc(r.playbook||r.profile)}</div>`:''}
-      <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
-        <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${r.symbol}">Analyser</button>
-        <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','follow')">Suivre</button>
-        <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','alert')">Alerte</button>
-        <a class="vx-btn vx-btn-sm vx-btn-ghost" target="_blank" rel="noopener" href="https://www.tradingview.com/chart/?symbol=${r.symbol}">TV ↗</a>
-      </div></div>`;}).join('')+'</div>';
+/* ── CARTE OPPORTUNITÉ DOMINANTE (distincte, signature) ── */
+function renderDominant(rows,scan,catBySym){
+  const el=$('op-dominant');if(!el)return;
+  const best=opRanked(rows)[0];
+  if(!best){el.innerHTML='';return;}
+  const g=opGrade(best);const asym=best.vx_asym,pwin=pctv(best.vx_pwin),rr=best.vx_rr,edge=best.vx_edge;
+  const cat=catBySym&&catBySym[best.symbol];
+  const inval=(best.vx_stopfirst!=null)?('probabilité que le stop parte en premier : '+pctv(best.vx_stopfirst)+' % — stop structurel défini dans le dossier')
+    :'stop structurel défini dans le dossier (Analyse)';
+  const metric=(k,v,hot)=>`<div class="vx-op-metric${hot?' hot':''}"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  el.innerHTML=
+    `<div class="vx-op-dominant" aria-label="Opportunité dominante ${esc(best.symbol)}">
+      <div class="vx-op-dom-l">
+        <span class="vx-op-dom-badge">Opportunité dominante</span>
+        <div class="vx-op-dom-tk"><span class="sym vx-ticker" style="cursor:pointer" data-open-analysis="${esc(best.symbol)}">${esc(best.symbol)}</span>
+          <span class="vx-op-grade" data-g="${esc(g)}">${esc(g)}</span></div>
+        <div class="vx-op-dom-sub">${esc(best.sector||best.industry||'secteur n/d')} · ${best.price!=null?VX.fmt.price(best.price):'cours n/d'}
+          ${best.verdict?' · <b>'+esc(best.verdict)+'</b>':''}</div>
+        <div class="vx-op-dom-score"><span class="n">${VX.fmt.nd(best.score)}</span><span class="u">/100 · score Vertex</span></div>
+        ${momBars(best)?'<div style="margin-top:4px"><div class="vx-meta" style="margin-bottom:4px">Momentum 1S · 1M · 1T · 1A</div>'+momBars(best)+'</div>':''}
+      </div>
+      <div class="vx-op-dom-r">
+        <div class="vx-op-metrics">
+          ${metric('Asymétrie',asym!=null?VX.fmt.nd(asym):'n/d',asym!=null&&asym>=25)}
+          ${metric('Probabilité de gain',pwin!=null?pwin+' %':'n/d',pwin!=null&&pwin>=55)}
+          ${metric('R:R visé',rr!=null?VX.fmt.nd(rr):'n/d')}
+          ${metric('Edge composite',edge!=null?VX.fmt.nd(edge)+'/100':'n/d')}
+        </div>
+        <div class="vx-op-lines">
+          <div class="row"><span class="k">Catalyseur</span><span class="v">${cat?esc(cat):'aucun catalyseur daté à l’horizon du calendrier'}</span></div>
+          <div class="row"><span class="k">Invalidation</span><span class="v risk">${esc(inval)}</span></div>
+          <div class="row"><span class="k">Profil</span><span class="v">${esc((best.profile||'')+(best.profile_hint?' — '+best.profile_hint:''))||'n/d'}</span></div>
+        </div>
+        <div class="vx-flex vx-wrap" style="gap:.4rem;margin-top:auto">
+          <button class="vx-btn vx-btn-primary" data-open-analysis="${esc(best.symbol)}">Ouvrir le dossier ${esc(best.symbol)} →</button>
+          <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${esc(best.symbol)}','alert')">Alerte</button>
+          <span class="vx-grow"></span>
+          <span class="vx-meta">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',metaMode(scan))}</span>
+        </div>
+      </div>
+    </div>`;
 }
-function renderRanking(rows){
-  const el=$('op-ranking');if(!el||!window.VXCharts)return;
-  const cc=VXCharts.colors;
-  const top=(rows||[]).filter(r=>r.st_fund!=null||r.st_tech!=null||r.st_mom!=null)
-    .slice().sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,6);
-  if(!top.length){el.innerHTML='';return;}
-  el.innerHTML='<div class="vx-card"><div class="vx-chart-head"><span class="vx-chart-title">Classement — décomposition du score</span>'
-    +'<span class="vx-chart-question">Pourquoi ces titres sortent-ils du lot ?</span></div>'
-    +top.map(function(r){return '<div style="padding:9px 0;border-bottom:1px dashed var(--vx-border-soft,rgba(255,255,255,.065))">'
-      +'<div class="vx-flex"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+r.symbol+'">'+r.symbol+'</button>'
-      +'<span class="vx-badge">'+esc(r.verdict||'')+'</span>'
-      +(r.sector?'<span class="vx-meta vx-truncate" style="max-width:120px">'+esc(r.sector)+'</span>':'')
-      +'<span class="vx-grow"></span><span class="vx-mono" style="font-size:16px;font-weight:800;color:var(--vx-text-primary,#f3f1ed)">'+VX.fmt.nd(r.score)+'</span></div>'
-      +'<div class="vx-mt1">'
-        +scoreBar('Fondamental',r.st_fund,cc.positive)
-        +scoreBar('Technique',r.st_tech,cc.cyan)
-        +scoreBar('Momentum',r.st_mom,cc.warning)
-        +scoreBar('Risque',r.st_risk,cc.negative)
-      +'</div></div>';}).join('')
-    +'<div class="vx-card-foot"><span class="vx-meta">Sous-scores du moteur de scoring (technical/momentum/fundamental/risk) — aucune pondération inventée.</span></div></div>';
+/* ── SHORTLIST : 3 cartes ticker secondaires (identité, densité variable) ── */
+function renderShortlist(rows,scan,catBySym){
+  const el=$('op-shortlist');if(!el)return;
+  const list=opRanked(rows).slice(1,4);  /* après la dominante */
+  if(!list.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="vx-col-12 vx-op-sectitle">Shortlist — méritent une analyse</div>'
+    +list.map(function(r){const g=opGrade(r);const cat=catBySym&&catBySym[r.symbol];
+    return `<div class="vx-col-4"><div class="vx-op-tk" aria-label="${esc(r.symbol)}">
+      <div class="vx-op-tk-top">
+        <span class="vx-op-mono">${esc(r.symbol).slice(0,4)}</span>
+        <span class="vx-op-tk-name"><span class="sym vx-ticker" style="cursor:pointer" data-open-analysis="${esc(r.symbol)}">${esc(r.symbol)}</span>
+          <span class="sec">${esc(r.sector||r.industry||'')}</span></span>
+        <span class="vx-op-tk-grade" data-g="${esc(g)}">${esc(g)}</span>
+      </div>
+      <div class="vx-op-tk-row"><span class="vx-op-tk-score">${VX.fmt.nd(r.score)}</span>
+        <span class="vx-op-tk-asym">asym. ${r.vx_asym!=null?VX.fmt.nd(r.vx_asym):'n/d'} · R:R ${r.vx_rr!=null?VX.fmt.nd(r.vx_rr):'n/d'}${r.vx_pwin!=null?' · p '+pctv(r.vx_pwin)+'%':''}</span></div>
+      <div class="vx-meta vx-truncate" title="${esc(cat||'')}">${cat?esc(cat):(r.profile_hint?esc(r.profile_hint):'—')}</div>
+      ${momBars(r)}
+      <div class="vx-op-tk-foot"><button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${esc(r.symbol)}">Analyser →</button>
+        <span>${esc(r.verdict||'')}</span></div>
+    </div></div>`;}).join('');
+}
+/* ── MATRICE DE COMPARAISON (2-4 meilleurs candidats, barres/rails, meilleur mis en avant) ── */
+function renderCompare(rows){
+  const el=$('op-compare');if(!el)return;
+  const cand=opRanked(rows).slice(0,4);
+  if(cand.length<2){el.innerHTML='';return;}
+  /* métriques réelles : (clé, label, accessor, max pour le rail, higherIsBetter) */
+  const M=[
+    ['score','Score',r=>r.score,100,true],
+    ['asym','Asymétrie',r=>r.vx_asym,50,true],
+    ['pwin','Prob. gain %',r=>pctv(r.vx_pwin),100,true],
+    ['rr','R:R visé',r=>r.vx_rr,8,true],
+    ['edge','Edge',r=>r.vx_edge,100,true],
+    ['mom','Momentum 1M %',r=>r.perf_m,20,true],
+    ['tq','Qualité données',r=>r.vx_tq,100,true],
+  ];
+  const head='<tr><th>Critère</th>'+cand.map((r,i)=>`<th class="sym${i===0?' best':''}">${esc(r.symbol)}${i===0?' ★':''}</th>`).join('')+'</tr>';
+  const body=M.map(function(m){
+    const vals=cand.map(m[2]);
+    const nums=vals.map(v=>(v==null||isNaN(v))?null:v);
+    const valid=nums.filter(v=>v!=null);
+    const best=valid.length?(m[4]?Math.max.apply(null,valid):Math.min.apply(null,valid)):null;
+    const cells=cand.map(function(r,i){const v=nums[i];
+      const w=v==null?0:Math.max(6,Math.min(100,Math.abs(v)/m[3]*100));
+      const win=(v!=null&&best!=null&&v===best);
+      return `<td class="${i===0?'bestcol':''}"><div class="vx-op-cmp-cell${win?' win':''}">
+        <span class="rail"><i style="width:${w.toFixed(0)}%"></i></span>
+        <span class="n">${v==null?'n/d':VX.fmt.nd(v)}</span></div></td>`;}).join('');
+    return `<tr><td class="metric">${m[1]}</td>${cells}</tr>`;}).join('');
+  el.innerHTML='<div class="vx-card"><div class="vx-chart-head"><span class="vx-chart-title">Comparaison des meilleurs candidats</span>'
+    +'<span class="vx-chart-question">Lequel offre le meilleur couple asymétrie × probabilité ?</span></div>'
+    +'<div class="vx-table-wrap"><table class="vx-op-cmp">'+'<thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>'
+    +'<div class="vx-card-foot"><span class="vx-meta">Barres = intensité relative par critère ; orange = meilleur du critère. Champs moteur réels (score, asymétrie vx_asym, prob. gain vx_pwin, R:R vx_rr, edge, momentum, qualité) — aucune valeur inventée. ★ = tête de shortlist.</span></div></div>';
 }
 
 /* ── ENTONNOIR D'OPPORTUNITÉS (§11-12) : univers → … → actionnable ── */
@@ -131,13 +185,20 @@ async function renderFunnel(){
     return '<span class="vx-chip" style="border:1px solid '+ (roleColor[r.role]||'#555')
       +';color:'+(roleColor[r.role]||'#aaa')+'">'+esc(r.role)+' '+esc(r.count)+'</span>';
   }).join(' ');
-  el.innerHTML='<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Entonnoir d\'opportunités</span>'
-    +'<span class="vx-actions" style="display:flex;gap:.4rem;flex-wrap:wrap">'+roles+'</span></div>'
-    +'<div id="op-funnel-viz" style="margin-top:.4rem"></div>'
-    +(f.note?'<div class="vx-dim" style="font-size:12px;margin-top:.5rem">'+esc(f.note)+'</div>':'')
-    +(f.actionable_symbols&&f.actionable_symbols.length?'<div class="vx-dim" style="font-size:12px;margin-top:.5rem">Actionnables : '
-      +f.actionable_symbols.map(function(s){return '<b style="color:var(--vx-positive,#36c889)">'+esc(s)+'</b>';}).join(' · ')+'</div>':'')
-    +'</div>';
+  /* Conclusion : plus forte déperdition entre deux étages (donnée réelle). */
+  let concl='';const st=f.stages;
+  if(st.length>=2){let bi=0,bd=0;for(let i=1;i<st.length;i++){const d=(st[i-1].count||0)-(st[i].count||0);if(d>bd){bd=d;bi=i;}}
+    concl=bd>0?('Plus forte déperdition : '+esc(st[bi-1].label)+' → '+esc(st[bi].label)+' (−'+bd+').')
+      :'Entonnoir plat — peu de déperdition entre étages.';}
+  el.innerHTML='<section class="vx-card" aria-label="Entonnoir de sélection"><div class="vx-card-header"><span class="vx-card-title">Entonnoir de sélection</span>'
+    +'<span class="vx-chart-question">Que reste-t-il après filtrage ?</span></div>'
+    +'<div class="vx-flex vx-wrap" style="gap:.35rem;margin-bottom:.4rem">'+roles+'</div>'
+    +'<div id="op-funnel-viz"></div>'
+    +(concl?'<div class="vx-op-sectitle" style="margin:.6rem 2px 0;text-transform:none;letter-spacing:0;font-weight:600;color:var(--vx-text-secondary)">'+concl+'</div>':'')
+    +(f.note?'<div class="vx-dim" style="font-size:12px;margin-top:.4rem">'+esc(f.note)+'</div>':'')
+    +(f.actionable_symbols&&f.actionable_symbols.length?'<div class="vx-dim" style="font-size:12px;margin-top:.4rem">Actionnables : '
+      +f.actionable_symbols.map(function(s){return '<b style="color:var(--vx-positive)">'+esc(s)+'</b>';}).join(' · ')+'</div>':'')
+    +'</section>';
   /* Vrai entonnoir décroissant (trapèzes + % par étage) au lieu des colonnes texte —
      donnée réelle /api/opportunities/funnel, jamais inventée ; le composant gère
      lui-même le repli si < 2 étages. */
@@ -148,28 +209,44 @@ async function renderFunnel(){
 }
 
 /* ── RADAR (§24) : X qualité stratégique · Y timing · taille intensité ── */
+/* Catalyseurs datés RÉELS (résultats à venir) indexés par symbole, depuis le
+   calendrier moteur — jamais inventés ; absence → pas de catalyseur affiché. */
+async function opCatalysts(){
+  const by={};try{const cal=await VX.fetch('/cal-feed',{ttl:300000});
+    (cal.items||[]).forEach(it=>{if(it&&it.sym&&it.dte!=null)by[it.sym]='Résultats dans '+it.dte+' j'
+      +(it.verdict?' · '+it.verdict:'');});}catch(e){}
+  return by;
+}
 async function renderRadar(){
   const scan=await VX.fetch('/scan',{ttl:120000});
   const rows=(scan.rows||[]).filter(r=>r.score!==undefined);
   if(!rows.length){$('op-body').innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
-  $('op-body').innerHTML=demoBanner(scan)+'<div id="op-hero"></div><div id="op-topcards"></div><div id="op-funnel" class="vx-mb3"></div><div class="vx-grid"><div class="vx-col-8" id="op-scatter"></div>'
-    +'<div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Lecture du scatter</span></div>'
-    +'<div class="vx-dim" style="font-size:12.5px">X : qualité / conviction (score stratégique moteur).<br>'
-    +'Y : timing / momentum (timing technique moteur).<br>Taille : intensité du signal (anomalies).<br>'
-    +'Couleur : direction du verdict (émeraude = achat · corail = éviter · acier = neutre).<br>'
-    +'<b>Haut-droit</b> = qualité + timing (à étudier) · <b>bas-gauche</b> = à éviter.</div>'
-    +'<div id="op-scatter-sel" class="vx-mt3"></div></div></div>'
-    +'<div id="op-ranking" class="vx-mt4"></div>';
-  renderHero(rows,scan);
-  renderTopCards(rows);
+  const catBySym=await opCatalysts();
+  const best=opRanked(rows)[0];
+  $('op-body').innerHTML=demoBanner(scan)
+    +'<div id="op-hero"></div>'
+    +'<div class="vx-grid vx-mt4"><div class="vx-col-12" id="op-dominant"></div></div>'
+    +'<div class="vx-grid vx-mt4" id="op-shortlist"></div>'
+    +'<div class="vx-grid vx-mt4">'
+      +'<div class="vx-col-8"><div id="op-scatter"></div>'
+        +'<section class="vx-card vx-mt3" id="op-scatter-sel-card"><div class="vx-card-header"><span class="vx-card-title">Point sélectionné</span>'
+          +'<span class="vx-chart-question">Inspecte un titre du scatter</span></div>'
+          +'<div id="op-scatter-sel" class="vx-op-scatter-sel"><div class="vx-help">Clique un point du scatter pour l’inspecter'
+          +(best?', ou ouvre directement la meilleure opportunité : <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="'+esc(best.symbol)+'">Ouvrir '+esc(best.symbol)+' →</button>':'')+'.</div></div></section></div>'
+      +'<div class="vx-col-4" id="op-funnel"></div></div>'
+    +'<div id="op-compare" class="vx-mt4"></div>';
+  renderHero(rows,scan,best,catBySym);
+  renderDominant(rows,scan,catBySym);
   renderFunnel();
-  renderRanking(rows);
+  renderShortlist(rows,scan,catBySym);
+  renderCompare(rows);
+  const bestSym=best?best.symbol:null;
   VXCharts.card('op-scatter',{
     title:'Scatter d\'asymétrie — qualité × timing',
     question:'Où se trouvent les meilleurs couples qualité × timing ?',
     conclusion:(function(){const a=rows.filter(r=>bucketOf(r)==='Actionnable').length;
       return a?(a+' candidat(s) en zone actionnable (haut-droit)'):'Aucun candidat en zone actionnable — attendre reste valide';})(),
-    height:340,unit:'score 0-100',source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
+    height:360,unit:'score 0-100',source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
     summary:'Nuage de points des titres scannés : qualité stratégique en X, timing en Y ; les meilleures asymétries sont en haut à droite.',
     explain:{shows:'Chaque point est un titre scanné, placé par les scores moteur (qualité en X, timing en Y).',
       why:'La stratégie n’engage que lorsque qualité ET timing convergent (coin haut-droit).',
@@ -177,42 +254,48 @@ async function renderRadar(){
       invalidate:'Retour sous 55 en qualité stratégique.'},
     render:(cv)=>VXCharts.mount(cv,{type:'scatter',
       data:{datasets:[{data:rows.map(r=>{const _t=(r.st_tech??r.rs);return {x:r.strat_score??r.score,y:(_t??50),tOk:_t!=null,sym:r.symbol,
-          v:r.verdict,setup:r.playbook||r.profile||'',sector:r.sector||'',price:r.price,rr:r.rr,
-          r:4+Math.min(8,(r.anomaly_score||r.sigcount||0))};}),
-        pointRadius:(ctx)=>ctx.raw?ctx.raw.r:4,
-        pointBackgroundColor:(ctx)=>{const v=ctx.raw&&ctx.raw.v;const cc=VXCharts.colors;
+          v:r.verdict,setup:(r.profile||'')+(r.profile_hint?' — '+r.profile_hint:''),sector:r.sector||'',price:r.price,rr:r.vx_rr,asym:r.vx_asym,pwin:r.vx_pwin,score:r.score,
+          best:r.symbol===bestSym,r:5+Math.min(8,(r.anomaly_score||r.sigcount||0))};}),
+        pointRadius:(ctx)=>ctx.raw?ctx.raw.r:4,pointHoverRadius:(ctx)=>ctx.raw?ctx.raw.r+3:7,
+        pointBackgroundColor:(ctx)=>{const raw=ctx.raw;if(raw&&raw.best)return VXCharts.colors.brand;const v=raw&&raw.v;const cc=VXCharts.colors;
           return v==='BUY'||v==='ACHETER'?cc.positive:(v==='AVOID'||v==='ÉVITER'?cc.negative:cc.neutral);},
-        pointBorderColor:%%DEMO_BORDER%%,pointBorderWidth:1}]},
-      options:{scales:{x:{title:{display:true,text:'Qualité stratégique'},grid:{color:'rgba(255,255,255,.06)'}},
-        y:{title:{display:true,text:'Qualité du timing'},grid:{color:'rgba(255,255,255,.06)'}}},
+        pointBorderColor:(ctx)=>ctx.raw&&ctx.raw.best?VXCharts.colors.brand:%%DEMO_BORDER%%,
+        pointBorderWidth:(ctx)=>ctx.raw&&ctx.raw.best?2:1}]},
+      options:{scales:{x:{title:{display:true,text:'Qualité stratégique →'},grid:{color:'rgba(255,255,255,.06)'}},
+        y:{title:{display:true,text:'Qualité du timing ↑'},grid:{color:'rgba(255,255,255,.06)'}}},
         onClick:(evt,els,chart)=>{const pts=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
           if(pts.length){const d=chart.data.datasets[0].data[pts[0].index];
             document.getElementById('op-scatter-sel').innerHTML=
-              `<div class="vx-flex"><span class="vx-ticker" style="font-size:16px">${d.sym}</span>${window.VXEntities.badges(d.sym)}
+              `<div class="vx-flex"><span class="vx-ticker" style="font-size:18px" data-open-analysis="${d.sym}">${d.sym}</span>${window.VXEntities.badges(d.sym)}
                  <span class="vx-badge vx-badge-decision vx-right" data-decision="${d.v||''}">${d.v||'n/d'}</span></div>
-               <div class="vx-kv vx-mt2"><span class="k">Score stratégique</span><span class="v vx-mono">${VX.fmt.nd(d.x)}</span></div>
-               <div class="vx-kv"><span class="k">Timing</span><span class="v vx-mono">${d.tOk?VX.fmt.nd(d.y):'n/d'}</span></div>
-               <div class="vx-kv"><span class="k">Cours</span><span class="v vx-mono">${d.price!==undefined&&d.price!==null?VX.fmt.price(d.price):'n/d'}</span></div>
-               <div class="vx-kv"><span class="k">R:R plan</span><span class="v vx-mono">${VX.fmt.nd(d.rr)}</span></div>
-               ${d.setup?`<div class="vx-kv"><span class="k">Setup</span><span class="v">${d.setup}</span></div>`:''}
-               ${d.sector?`<div class="vx-kv"><span class="k">Secteur</span><span class="v">${d.sector}</span></div>`:''}
+               <div class="vx-op-metrics vx-mt2">
+                 <div class="vx-op-metric"><span class="k">Qualité strat.</span><span class="v">${VX.fmt.nd(d.x)}</span></div>
+                 <div class="vx-op-metric"><span class="k">Timing</span><span class="v">${d.tOk?VX.fmt.nd(d.y):'n/d'}</span></div>
+                 <div class="vx-op-metric"><span class="k">Asymétrie</span><span class="v">${VX.fmt.nd(d.asym)}</span></div>
+                 <div class="vx-op-metric"><span class="k">R:R visé</span><span class="v">${VX.fmt.nd(d.rr)}</span></div></div>
+               <div class="vx-kv vx-mt2"><span class="k">Cours</span><span class="v vx-mono">${d.price!==undefined&&d.price!==null?VX.fmt.price(d.price):'n/d'}</span></div>
+               ${d.sector?`<div class="vx-kv"><span class="k">Secteur</span><span class="v">${esc(d.sector)}</span></div>`:''}
                <div class="vx-flex vx-wrap vx-mt2">
-                 <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${d.sym}">Analyse</button>
-                 <button class="vx-btn vx-btn-sm" onclick="VXEntities.toggleFavorite('${d.sym}')">★ Favori</button>
+                 <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${d.sym}">Ouvrir le dossier</button>
                  <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${d.sym}','watchlist')">Watchlist</button>
-                 <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${d.sym}','follow')">Suivi</button>
                  <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${d.sym}','alert')">Alerte</button>
-                 <a class="vx-btn vx-btn-sm" href="/opportunities?view=options&sym=${d.sym}">Options</a>
-                 <button class="vx-btn vx-btn-sm vx-btn-ghost" data-entity-menu="${d.sym}">Plus ▾</button></div>`;}},
-        plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} · stratégie ${ctx.raw.x} · timing ${ctx.raw.tOk?ctx.raw.y:'n/d'}`}}}},
+                 <a class="vx-btn vx-btn-sm" href="/opportunities?view=options&sym=${d.sym}">Options</a></div>`;}},
+        plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} · qualité ${VX.fmt.nd(ctx.raw.x)} · timing ${ctx.raw.tOk?VX.fmt.nd(ctx.raw.y):'n/d'} · asym ${VX.fmt.nd(ctx.raw.asym)}`}}}},
       plugins:[{id:'opQuad',afterDatasetsDraw(chart){const a=chart.chartArea,sx=chart.scales.x,sy=chart.scales.y;
         const xc=sx.getPixelForValue(55),yc=sy.getPixelForValue(55);const g=chart.ctx;g.save();
         g.strokeStyle='rgba(255,255,255,.12)';g.setLineDash([4,4]);g.beginPath();
         if(xc>a.left&&xc<a.right){g.moveTo(xc,a.top);g.lineTo(xc,a.bottom);}
         if(yc>a.top&&yc<a.bottom){g.moveTo(a.left,yc);g.lineTo(a.right,yc);}g.stroke();g.setLineDash([]);
-        g.font='10px sans-serif';g.fillStyle='rgba(255,255,255,.34)';
-        g.fillText('À ÉTUDIER',a.right-62,a.top+14);g.fillText('TIMING SEUL',a.left+6,a.top+14);
-        g.fillText('QUALITÉ SEULE',a.right-78,a.bottom-8);g.fillText('À ÉVITER',a.left+6,a.bottom-8);
+        g.font='700 10px sans-serif';g.fillStyle='rgba(255,255,255,.30)';
+        g.fillText('À ÉTUDIER',a.right-64,a.top+14);g.fillText('TIMING SEUL',a.left+6,a.top+14);
+        g.fillText('QUALITÉ SEULE',a.right-82,a.bottom-8);g.fillText('À ÉVITER',a.left+6,a.bottom-8);
+        /* Étiquettes directes sur les meilleurs candidats (haut-droit) */
+        const ds=chart.getDatasetMeta(0).data,raw=chart.data.datasets[0].data;
+        const idx=raw.map((d,i)=>[d,i]).filter(x=>x[0].x>=55&&x[0].tOk&&x[0].y>=55)
+          .sort((p,q)=>(q[0].score||0)-(p[0].score||0)).slice(0,4);
+        g.font='700 11px sans-serif';
+        idx.forEach(([d,i])=>{const m=ds[i];if(!m)return;g.fillStyle=d.best?VXCharts.colors.brand:'rgba(248,245,243,.92)';
+          g.fillText(d.sym,Math.min(m.x+8,a.right-30),m.y-6);});
         g.restore();}}]})});
 }
 
@@ -227,32 +310,36 @@ function tierOf(r){
   if(b==='À surveiller')return 'B';
   return b==='Rejetée'?'ÉVITER':'—';
 }
-function renderHero(rows,scan){
+/* ── HERO éditorial COMPACT : compte S+/S/A, meilleure, asymétrie, catalyseur,
+      qualité des données, conclusion — jamais 40 % de vide, jamais inventé. ── */
+function renderHero(rows,scan,best,catBySym){
   const el=$('op-hero');if(!el)return;
-  const active=(rows||[]).filter(r=>r.verdict!=='AVOID'&&r.verdict!=='ÉVITER');
-  const cnt={'S+':0,'S':0,'A':0,'B':0};active.forEach(r=>{const t=tierOf(r);if(cnt[t]!=null)cnt[t]++;});
-  const ranked=active.slice().sort((a,b)=>(b.score||0)-(a.score||0));
-  const best=ranked[0]||null;
-  const m=scan&&scan.data_source==='demo'?'demo':'delayed';
-  const fresh='<span class="vx-freshness" data-live="'+(m==='demo'?'fallback':'delayed')+'"><span class="vx-live-dot"></span>'+(m==='demo'?'Démo':'Différé')+'</span>';
+  const active=opActive(rows);
+  const cnt={'S+':0,'S':0,'A':0,'B':0};active.forEach(r=>{const t=opGrade(r);if(cnt[t]!=null)cnt[t]++;});
+  const m=metaMode(scan);const dq=m==='fallback'?'Démo':m==='live'?'Temps réel':'Différé';
   /* Message éditorial — UNIQUEMENT à partir des données réelles. */
-  let msg;
-  if(cnt['S+']){msg=cnt['S+']+' opportunité(s) S+ exceptionnelle(s) détectée(s).';}
-  else if(cnt['S']){msg='Aucune opportunité S+ aujourd\'hui. '+cnt['S']+' dossier(s) S méritent une analyse.';}
-  else if(cnt['A']){msg='Aucune asymétrie exceptionnelle. '+cnt['A']+' dossier(s) A à surveiller.';}
-  else {msg='Aucune asymétrie exceptionnelle détectée. Attendre est une décision valide.';}
-  if(best){msg+=' '+esc(best.symbol)+' offre la meilleure note ('+VX.fmt.nd(best.score)+(best.rr!=null?', R:R '+VX.fmt.nd(best.rr):'')+').';}
-  const kpi=(label,val,href)=>'<a class="vx-card vx-card--compact vx-kpi vx-col-3" style="text-decoration:none;color:inherit" href="'+href+'"><span class="vx-kpi-label">'+label+'</span><span class="vx-kpi-value" style="font-size:20px">'+val+'</span><span class="vx-kpi-delta vx-muted">voir →</span></a>';
-  el.innerHTML='<section class="vx-card vx-card--hero"><div class="vx-card-header"><span class="vx-card-title">Ce qui mérite ton attention</span><span class="vx-actions">'+fresh+'</span></div>'
-    +'<p style="font-size:15.5px;line-height:1.7;margin:0 0 .6rem;color:var(--vx-text)">'+msg+'</p>'
-    +'<div class="vx-grid">'
-    +kpi('S+',String(cnt['S+']),'/opportunities?view=stocks')
-    +kpi('S',String(cnt['S']),'/opportunities?view=stocks')
-    +kpi('A',String(cnt['A']),'/opportunities?view=stocks')
-    +(best?kpi('Meilleure',esc(best.symbol),'/analysis/'+encodeURIComponent(best.symbol)):kpi('Meilleure','—','/opportunities'))
+  let msg,tone;
+  if(cnt['S+']){msg=cnt['S+']+' opportunité(s) S+ exceptionnelle(s) détectée(s).';tone='go';}
+  else if(cnt['S']){msg='Aucune opportunité S+ aujourd’hui. '+cnt['S']+' dossier(s) S méritent une analyse.';tone='go';}
+  else if(cnt['A']){msg='Aucune asymétrie exceptionnelle. '+cnt['A']+' dossier(s) A à surveiller.';tone='wait';}
+  else {msg='Aucune asymétrie exceptionnelle détectée. Attendre est une décision valide.';tone='wait';}
+  if(best){const cat=catBySym&&catBySym[best.symbol];
+    msg+=' '+esc(best.symbol)+' présente la meilleure asymétrie ('+(best.vx_asym!=null?'asym. '+VX.fmt.nd(best.vx_asym):'score '+VX.fmt.nd(best.score))+')'
+      +(cat?', mais '+esc(cat.toLowerCase())+' — risque événementiel à surveiller':'')+'.';}
+  const chip=(k,v,hot)=>'<div class="vx-op-chip"'+(hot?' data-hot="1"':'')+'><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
+  el.innerHTML='<section class="vx-card vx-card--hero"><div class="vx-card-header"><span class="vx-card-title">Ce qui mérite ton attention</span>'
+    +'<span class="vx-actions"><span class="vx-freshness" data-live="'+(m==='fallback'?'fallback':'delayed')+'"><span class="vx-live-dot"></span>'+dq+'</span></span></div>'
+    +'<div class="vx-op-hero-lead"><span class="tag" data-tone="'+tone+'">'+(cnt['S+']||cnt['S']?'À étudier':'Patience')+'</span>'
+      +'<span class="txt">'+msg+'</span></div>'
+    +'<div class="vx-op-hero-chips">'
+      +chip('S+',String(cnt['S+']),cnt['S+']>0)
+      +chip('S',String(cnt['S']),cnt['S']>0)
+      +chip('A',String(cnt['A']))
+      +chip('Meilleure',best?esc(best.symbol):'—',!!best)
+      +chip('Données',dq)
     +'</div>'
-    +(best?'<div class="vx-mt3"><a class="vx-btn vx-btn-primary" data-open-analysis="'+esc(best.symbol)+'">Étudier le dossier '+esc(best.symbol)+' →</a></div>':'')
-    +'</section><div class="vx-mt4"></div>';
+    +(best?'<div class="vx-mt3"><button class="vx-btn vx-btn-primary" data-open-analysis="'+esc(best.symbol)+'">Étudier le dossier '+esc(best.symbol)+' →</button></div>':'')
+    +'</section>';
 }
 
 /* ── ACTIONS ── */
@@ -526,7 +613,7 @@ def render(view: str = 'radar', params=None) -> str:
     js = (_JS.replace('%%VIEW%%', json.dumps(view))
           .replace('%%PARAMS%%', json.dumps(p))
           .replace('%%DEMO_BORDER%%',
-                   "(window.__vxStatus&&window.__vxStatus.demo)?'#dda23b':'rgba(255,255,255,.25)'"))
+                   "(window.__vxStatus&&window.__vxStatus.demo)?'#FFC857':'rgba(255,255,255,.25)'"))
     label = dict(_VIEWS)[view]
     return render_shell(title=f'Opportunités · {label}', active='opportunities',
                         space_label='Opportunités', sub_label=label,

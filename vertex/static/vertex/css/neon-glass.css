@@ -11,12 +11,13 @@
    partout, y compris hors `.vx-content`.
 
    MIGRATION page par page (validée) : espaces couverts = Aujourd'hui + Marchés
-   (`.vx-content:is([data-space="briefing"],[data-space="markets"])`). Les 6 autres
-   espaces ne sont PAS peints ici (Opportunités/Analyse/Portefeuille/Options/
+   + Opportunités
+   (`.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"])`).
+   Les 5 autres espaces ne sont PAS peints ici (Analyse/Portefeuille/Options/
    Journal/Système) — pas de big-bang. Aucun moteur, aucune donnée modifiés.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.vx-content:is([data-space="briefing"],[data-space="markets"]){
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]){
   /* ── Fond : canvas NEUE EMBER (très sombre, chaud) ── */
   --ng-bg-0:var(--vx-canvas);          /* le plus sombre (#05070C) */
   --ng-bg-1:var(--vx-shell);
@@ -50,7 +51,7 @@
 }
 
 /* ── Carte glass premium — chaque carte = un composant produit ── */
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card{
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-card{
   position:relative;
   overflow:visible;                    /* tooltips/menus jamais rognés (défaut) */
   background:linear-gradient(180deg, var(--ng-glass-raised), var(--ng-glass));
@@ -61,96 +62,96 @@
   box-shadow:var(--ng-shadow);
   transition:transform var(--ng-motion),border-color var(--ng-motion),box-shadow var(--ng-motion);
 }
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card:hover{
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-card:hover{
   border-color:var(--ng-border-strong);
   box-shadow:var(--ng-shadow-raised);
 }
 /* filet cuivre en tête de carte (hiérarchie + bord chaud, sans glow permanent) */
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card::before{
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-card::before{
   content:"";position:absolute;left:16px;right:16px;top:0;height:1px;border-radius:1px;
   pointer-events:none;                 /* purement décoratif : jamais capteur de clic */
   background:linear-gradient(90deg,transparent,var(--ng-neon-soft),transparent);opacity:.7;
 }
 
 /* Hero = carte premium (profondeur + halo cuivre discret, fonctionnel) */
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card--hero{
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-card--hero{
   background:
     radial-gradient(120% 100% at 100% 0%, rgba(255,109,41,.10), transparent 55%),
     linear-gradient(180deg, var(--ng-glass-raised), var(--ng-glass));
   border-color:var(--ng-border-strong);
   box-shadow:var(--ng-shadow-raised);
 }
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card--hero .vx-card-title{
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-card--hero .vx-card-title{
   color:var(--ng-neon-bright);letter-spacing:.02em;
 }
 
 /* ── KPI glass dynamiques ── */
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-kpi{
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-kpi{
   background:var(--ng-glass);border:1px solid var(--ng-border-soft);border-radius:12px;
   transition:transform var(--ng-motion),border-color var(--ng-motion),background var(--ng-motion);
 }
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-kpi:hover{
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-kpi:hover{
   transform:translateY(-2px);border-color:var(--ng-border-strong);background:var(--ng-glass-hover);
 }
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-kpi-value{color:var(--vx-text-primary)}
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-kpi-label{color:var(--vx-text-muted);letter-spacing:.04em}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-kpi-value{color:var(--vx-text-primary)}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-kpi-label{color:var(--vx-text-muted);letter-spacing:.04em}
 
 /* ── Boutons : action principale = orange néon (texte sombre, jamais blanc) ── */
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-btn-primary{
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-btn-primary{
   background:var(--vx-brand-gradient);
   border:1px solid rgba(255,109,41,.5);color:var(--vx-ember-ink);font-weight:650;
   box-shadow:0 6px 18px -8px rgba(255,109,41,.6);
 }
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-btn-primary:hover{box-shadow:var(--ng-glow)}
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-ticker{color:var(--ng-neon-bright)}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-btn-primary:hover{box-shadow:var(--ng-glow)}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-ticker{color:var(--ng-neon-bright)}
 
 /* ── Freshness / live-dot : GLOW UNIQUEMENT quand live ── */
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-freshness{
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-freshness{
   border:1px solid var(--ng-border-soft);border-radius:999px;background:rgba(0,0,0,.25);
 }
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-live-dot{box-shadow:none}
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-freshness[data-live="live"] .vx-live-dot,
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-live-dot[data-live="1"]{
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-live-dot{box-shadow:none}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-freshness[data-live="live"] .vx-live-dot,
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-live-dot[data-live="1"]{
   background:var(--vx-positive);
   box-shadow:0 0 0 3px rgba(46,214,161,.18),0 0 10px rgba(46,214,161,.55);
   animation:ng-pulse 1.8s ease-in-out infinite;
 }
 
 /* ── Micro-graphiques plus vivants : conteneur canvas en verre ── */
-.vx-content:is([data-space="briefing"],[data-space="markets"]) canvas{border-radius:10px}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) canvas{border-radius:10px}
 
 /* ── Badges sémantiques (le sens financier prime, jamais décoratif) ── */
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-badge{border-radius:999px;border:1px solid var(--ng-border-soft)}
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-pos{color:var(--vx-positive)}
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-neg{color:var(--vx-negative)}
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-warn{color:var(--vx-warning)}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-badge{border-radius:999px;border:1px solid var(--ng-border-soft)}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-pos{color:var(--vx-positive)}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-neg{color:var(--vx-negative)}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-warn{color:var(--vx-warning)}
 
 /* ── États honnêtes (loading/empty/stale/error/insufficient) — glass sobre ── */
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-skeleton{
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-skeleton{
   background:linear-gradient(100deg,rgba(255,255,255,.03),rgba(255,255,255,.08),rgba(255,255,255,.03));
   background-size:200% 100%;border-radius:10px;animation:ng-shimmer 1.4s ease-in-out infinite;
 }
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-state[data-state="empty"],
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-demo-banner{
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-state[data-state="empty"],
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-demo-banner{
   border:1px dashed var(--ng-border-soft);border-radius:12px;background:rgba(0,0,0,.2);
 }
 
 /* ── Reveal des cartes (skeleton → contenu), 180ms, discret ── */
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card{animation:ng-reveal var(--ng-motion) both}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-card{animation:ng-reveal var(--ng-motion) both}
 @keyframes ng-reveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes ng-pulse{0%,100%{opacity:1}50%{opacity:.55}}
 @keyframes ng-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 /* ── Accessibilité : mouvement réduit respecté ── */
 @media (prefers-reduced-motion: reduce){
-  .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card,
-  .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-skeleton,
-  .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-live-dot{animation:none!important;transition:none!important}
+  .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-card,
+  .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-skeleton,
+  .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-live-dot{animation:none!important;transition:none!important}
 }
 
 /* ── Responsive : le glass ne change rien à la grille (pas de débordement) ── */
 @media (max-width:768px){
-  .vx-content:is([data-space="briefing"],[data-space="markets"]){--ng-blur:10px;--ng-radius:14px}
+  .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]){--ng-blur:10px;--ng-radius:14px}
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -363,3 +364,141 @@
   color:var(--vx-text-muted);margin:2px 2px 10px;display:flex;align-items:center;gap:10px;
 }
 .vx-content[data-space="markets"] .vx-mk-sectitle::after{content:"";flex:1;height:1px;background:var(--ng-border-soft)}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   OPPORTUNITÉS — widgets premium (composition NEUE EMBER, patron Marchés).
+   « Qu'est-ce qui mérite réellement mon attention et mon capital ? »
+   Réduire le bruit, faire ressortir les rares asymétries fortes. Classes stables
+   vx-op-* scopées ; réutilise la profondeur glass et la sémantique des tokens.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.vx-content[data-space="opportunities"] .vx-mk-sectitle,
+.vx-content[data-space="opportunities"] .vx-op-sectitle{
+  font-size:var(--vx-fs-meta);font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--vx-text-muted);margin:2px 2px 10px;display:flex;align-items:center;gap:10px;
+}
+.vx-content[data-space="opportunities"] .vx-op-sectitle::after{content:"";flex:1;height:1px;background:var(--ng-border-soft)}
+
+/* Profondeur par priorité + reflet (comme Marchés) */
+.vx-content[data-space="opportunities"] .vx-card{box-shadow:var(--ng-shadow),inset 0 1px 0 rgba(255,255,255,.04)}
+.vx-content[data-space="opportunities"] .vx-card--hero{box-shadow:var(--ng-shadow-raised),inset 0 1px 0 rgba(255,255,255,.06)}
+
+/* ── HERO éditorial compact ── */
+.vx-content[data-space="opportunities"] .vx-op-hero-lead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.vx-content[data-space="opportunities"] .vx-op-hero-lead .tag{
+  font-size:var(--vx-fs-meta);font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;
+}
+.vx-content[data-space="opportunities"] .vx-op-hero-lead .tag[data-tone="go"]{color:var(--vx-positive);background:var(--vx-positive-soft);border:1px solid rgba(46,214,161,.28)}
+.vx-content[data-space="opportunities"] .vx-op-hero-lead .tag[data-tone="wait"]{color:var(--vx-warning);background:var(--vx-warning-soft);border:1px solid rgba(255,200,87,.28)}
+.vx-content[data-space="opportunities"] .vx-op-hero-lead .txt{color:var(--vx-text-secondary);font-size:14px;line-height:1.6}
+.vx-content[data-space="opportunities"] .vx-op-hero-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:var(--vx-s3)}
+.vx-content[data-space="opportunities"] .vx-op-chip{
+  display:flex;flex-direction:column;gap:2px;padding:8px 14px;min-width:74px;border-radius:12px;
+  background:var(--ng-glass);border:1px solid var(--ng-border-soft);
+}
+.vx-content[data-space="opportunities"] .vx-op-chip .k{font-size:var(--vx-fs-meta);color:var(--vx-text-muted);letter-spacing:.04em}
+.vx-content[data-space="opportunities"] .vx-op-chip .v{font-size:22px;font-weight:800;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;line-height:1}
+.vx-content[data-space="opportunities"] .vx-op-chip[data-hot="1"]{border-color:var(--ng-border-strong)}
+.vx-content[data-space="opportunities"] .vx-op-chip[data-hot="1"] .v{color:var(--vx-ember-400)}
+
+/* ── Carte OPPORTUNITÉ DOMINANTE (distincte, signature) ── */
+.vx-content[data-space="opportunities"] .vx-op-dominant{
+  position:relative;overflow:hidden;border-radius:var(--vx-r-card);padding:0;
+  border:1px solid var(--ng-border-strong);
+  background:
+    radial-gradient(120% 120% at 100% 0%,rgba(255,109,41,.12),transparent 55%),
+    linear-gradient(180deg,var(--ng-glass-raised),var(--ng-glass));
+  box-shadow:var(--ng-shadow-raised),inset 0 1px 0 rgba(255,255,255,.06);
+  display:grid;grid-template-columns:1.05fr 1.35fr;
+}
+.vx-content[data-space="opportunities"] .vx-op-dominant{grid-template-columns:minmax(260px,1fr) minmax(0,1.7fr)}
+.vx-content[data-space="opportunities"] .vx-op-dom-l{padding:18px 18px 16px;border-right:1px solid var(--ng-border-soft);display:flex;flex-direction:column;gap:10px;justify-content:center}
+.vx-content[data-space="opportunities"] .vx-op-dom-r{padding:18px;display:flex;flex-direction:column;gap:12px}
+.vx-content[data-space="opportunities"] .vx-op-dom-badge{font-size:var(--vx-fs-meta);font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--vx-ember-400)}
+.vx-content[data-space="opportunities"] .vx-op-dom-tk{display:flex;align-items:center;gap:12px}
+.vx-content[data-space="opportunities"] .vx-op-dom-tk .sym{font-size:34px;font-weight:850;letter-spacing:-.01em;color:var(--vx-text-primary);line-height:1}
+.vx-content[data-space="opportunities"] .vx-op-grade{
+  font-size:15px;font-weight:850;padding:4px 12px;border-radius:10px;color:var(--vx-ember-ink);
+  background:var(--vx-brand-gradient);box-shadow:0 4px 14px -6px rgba(255,109,41,.7);
+}
+.vx-content[data-space="opportunities"] .vx-op-grade[data-g="A"],
+.vx-content[data-space="opportunities"] .vx-op-grade[data-g="B"]{background:none;color:var(--vx-text-primary);border:1px solid var(--ng-border-strong);box-shadow:none}
+.vx-content[data-space="opportunities"] .vx-op-dom-sub{color:var(--vx-text-secondary);font-size:13px}
+.vx-content[data-space="opportunities"] .vx-op-dom-score{display:flex;align-items:baseline;gap:8px;margin-top:auto}
+.vx-content[data-space="opportunities"] .vx-op-dom-score .n{font-size:44px;font-weight:850;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;line-height:1}
+.vx-content[data-space="opportunities"] .vx-op-dom-score .u{font-size:13px;color:var(--vx-text-muted)}
+/* grille métriques */
+.vx-content[data-space="opportunities"] .vx-op-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:900px){.vx-content[data-space="opportunities"] .vx-op-metrics{grid-template-columns:1fr 1fr}}
+.vx-content[data-space="opportunities"] .vx-op-metric{padding:9px 12px;border-radius:11px;background:var(--ng-glass);border:1px solid var(--ng-border-soft)}
+.vx-content[data-space="opportunities"] .vx-op-metric .k{display:block;font-size:var(--vx-fs-meta);color:var(--vx-text-muted);letter-spacing:.03em}
+.vx-content[data-space="opportunities"] .vx-op-metric .v{font-size:19px;font-weight:750;color:var(--vx-text-primary);font-variant-numeric:tabular-nums}
+.vx-content[data-space="opportunities"] .vx-op-metric .v.pos{color:var(--vx-positive)}
+.vx-content[data-space="opportunities"] .vx-op-metric.hot{border-color:rgba(255,109,41,.4)}
+.vx-content[data-space="opportunities"] .vx-op-metric.hot .v{color:var(--vx-ember-400)}
+.vx-content[data-space="opportunities"] .vx-op-lines{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.vx-content[data-space="opportunities"] .vx-op-lines .row{display:flex;gap:8px}
+.vx-content[data-space="opportunities"] .vx-op-lines .row .k{color:var(--vx-text-muted);min-width:88px}
+.vx-content[data-space="opportunities"] .vx-op-lines .row .v{color:var(--vx-text-secondary);flex:1}
+.vx-content[data-space="opportunities"] .vx-op-lines .row .v.risk{color:var(--vx-negative)}
+@media (max-width:820px){.vx-content[data-space="opportunities"] .vx-op-dominant{grid-template-columns:1fr}
+  .vx-content[data-space="opportunities"] .vx-op-dom-l{border-right:none;border-bottom:1px solid var(--ng-border-soft)}}
+
+/* ── Cartes ticker secondaires (shortlist) ── */
+.vx-content[data-space="opportunities"] .vx-op-tk{
+  position:relative;overflow:hidden;padding:14px;border-radius:var(--vx-r-card);
+  display:flex;flex-direction:column;gap:9px;min-height:150px;
+  background:linear-gradient(180deg,var(--ng-glass-raised),var(--ng-glass));
+  border:1px solid var(--ng-border-soft);box-shadow:var(--ng-shadow),inset 0 1px 0 rgba(255,255,255,.04);
+  transition:transform var(--ng-motion),border-color var(--ng-motion),box-shadow var(--ng-motion);
+}
+.vx-content[data-space="opportunities"] .vx-op-tk:hover{transform:translateY(-2px);border-color:var(--ng-border-strong);box-shadow:var(--ng-shadow-raised)}
+.vx-content[data-space="opportunities"] .vx-op-tk-top{display:flex;align-items:center;gap:9px}
+.vx-content[data-space="opportunities"] .vx-op-mono{
+  width:32px;height:32px;flex:0 0 32px;border-radius:9px;display:grid;place-items:center;
+  font-size:10.5px;font-weight:800;color:var(--vx-ember-400);background:var(--vx-ember-soft);border:1px solid rgba(255,109,41,.22);
+}
+.vx-content[data-space="opportunities"] .vx-op-tk-name{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.vx-content[data-space="opportunities"] .vx-op-tk-name .sym{font-size:15px;font-weight:750;color:var(--vx-text-primary)}
+.vx-content[data-space="opportunities"] .vx-op-tk-name .sec{font-size:11px;color:var(--vx-text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
+.vx-content[data-space="opportunities"] .vx-op-tk-grade{margin-left:auto;font-size:12px;font-weight:800;padding:2px 9px;border-radius:8px;color:var(--vx-text-primary);border:1px solid var(--ng-border-strong)}
+.vx-content[data-space="opportunities"] .vx-op-tk-grade[data-g="S+"],
+.vx-content[data-space="opportunities"] .vx-op-tk-grade[data-g="S"]{color:var(--vx-ember-ink);background:var(--vx-brand-gradient);border:none}
+.vx-content[data-space="opportunities"] .vx-op-tk-row{display:flex;align-items:baseline;gap:10px}
+.vx-content[data-space="opportunities"] .vx-op-tk-score{font-size:26px;font-weight:800;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;line-height:1}
+.vx-content[data-space="opportunities"] .vx-op-tk-asym{font-size:11.5px;font-weight:650;color:var(--vx-text-secondary)}
+/* momentum multi-horizon (1W/1M/1Q/1Y) — barres d'intensité */
+.vx-content[data-space="opportunities"] .vx-op-mom{display:flex;gap:4px;align-items:flex-end;height:26px;margin-top:auto}
+.vx-content[data-space="opportunities"] .vx-op-mom .b{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.vx-content[data-space="opportunities"] .vx-op-mom .b i{width:100%;border-radius:2px 2px 0 0;min-height:2px}
+.vx-content[data-space="opportunities"] .vx-op-mom .b span{font-size:8px;color:var(--vx-text-faint)}
+.vx-content[data-space="opportunities"] .vx-op-tk-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--vx-text-muted)}
+
+/* ── Matrice de comparaison ── */
+.vx-content[data-space="opportunities"] .vx-op-cmp{width:100%;border-collapse:separate;border-spacing:0}
+.vx-content[data-space="opportunities"] .vx-op-cmp th,.vx-content[data-space="opportunities"] .vx-op-cmp td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--ng-border-soft)}
+.vx-content[data-space="opportunities"] .vx-op-cmp thead th{font-size:12px;color:var(--vx-text-muted);font-weight:600}
+.vx-content[data-space="opportunities"] .vx-op-cmp thead th.sym{color:var(--vx-text-primary);font-weight:750;font-size:14px}
+.vx-content[data-space="opportunities"] .vx-op-cmp thead th.best{color:var(--vx-ember-400)}
+.vx-content[data-space="opportunities"] .vx-op-cmp td.metric{color:var(--vx-text-secondary);font-size:12.5px}
+.vx-content[data-space="opportunities"] .vx-op-cmp-cell{display:flex;align-items:center;gap:8px}
+.vx-content[data-space="opportunities"] .vx-op-cmp-cell .rail{flex:1;height:6px;border-radius:4px;background:rgba(0,0,0,.35);overflow:hidden;min-width:40px}
+.vx-content[data-space="opportunities"] .vx-op-cmp-cell .rail i{display:block;height:100%;border-radius:4px;background:var(--vx-warm-grey)}
+.vx-content[data-space="opportunities"] .vx-op-cmp-cell.win .rail i{background:var(--vx-ember-500)}
+.vx-content[data-space="opportunities"] .vx-op-cmp-cell .n{font-size:12px;font-weight:700;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
+.vx-content[data-space="opportunities"] .vx-op-cmp-cell.win .n{color:var(--vx-ember-400)}
+.vx-content[data-space="opportunities"] .vx-op-cmp col.best,
+.vx-content[data-space="opportunities"] .vx-op-cmp td.bestcol{background:rgba(255,109,41,.05)}
+
+/* Conteneur de graphe en verre (scatter/funnel) */
+.vx-content[data-space="opportunities"] #op-scatter canvas{background:rgba(0,0,0,.14);border-radius:10px}
+.vx-content[data-space="opportunities"] #op-funnel-viz{background:rgba(0,0,0,.14);border-radius:10px;padding:6px}
+.vx-content[data-space="opportunities"] #op-funnel-viz svg{max-width:330px;margin:0 auto}
+
+/* Scatter : point sélectionné = glow réservé */
+.vx-content[data-space="opportunities"] .vx-op-scatter-sel .vx-ticker{color:var(--vx-ember-400)}
+
+@media (max-width:520px){
+  .vx-content[data-space="opportunities"] .vx-op-metrics{grid-template-columns:1fr 1fr}
+  .vx-content[data-space="opportunities"] .vx-op-dom-score .n{font-size:36px}
+}
