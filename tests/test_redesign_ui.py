@@ -176,13 +176,14 @@ def test_chart_core_contract():
 
 def test_chart_modules_exist():
     charts = STATIC / 'js' / 'charts'
+    # RC1 : correlation-matrix / factor-chart / geographic-exposure / vol-surface
+    # (0 référence) et breadth-chart / sector-chart (dormants) supprimés — cf.
+    # docs/refactor/validation/RC1-STABILIZATION.md.
     for name in ('chart-core', 'sparkline', 'price-chart', 'candlestick-chart',
                  'line-area-chart', 'bar-chart', 'donut-chart', 'heatmap',
-                 'breadth-chart', 'sector-chart', 'correlation-matrix',
-                 'factor-chart', 'equity-chart', 'drawdown-chart', 'option-payoff',
+                 'equity-chart', 'drawdown-chart', 'option-payoff',
                  'option-scenarios', 'option-theta', 'option-iv-sensitivity',
-                 'vol-surface', 'timeline-chart', 'geographic-exposure',
-                 'annotations'):
+                 'timeline-chart', 'annotations'):
         assert (charts / f'{name}.js').is_file(), name
 
 
@@ -193,7 +194,7 @@ def test_graph_level_can_create_alert():
 
 def test_no_fake_data_in_charts():
     """Les modules graphiques refusent les données manquantes au lieu d'inventer."""
-    for name in ('option-payoff', 'option-scenarios', 'candlestick-chart', 'vol-surface'):
+    for name in ('option-payoff', 'option-scenarios', 'candlestick-chart'):
         src = (STATIC / 'js' / 'charts' / f'{name}.js').read_text(encoding='utf-8')
         assert 'states.empty' in src or 'repli honnête' in src or 'indisponible' in src, name
 
