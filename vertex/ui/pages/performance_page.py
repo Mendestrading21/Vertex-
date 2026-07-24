@@ -46,14 +46,13 @@ _HEADER = """
 
 _VIEW_CONTENT = {
     'overview': """
-<div class="vx-grid vx-mt3" id="vx-pf-kpis" aria-label="Indicateurs de performance"><div class="vx-skeleton vx-skeleton-kpi vx-col-3" style="grid-column:span 3"></div></div>
+<div class="vx-insight vx-mt3" role="note"><b>Le Journal juge la méthode, pas le portefeuille.</b>
+  Discipline, taux de réussite, profit factor, asymétrie des trades et erreurs vivent ici.
+  La <b>performance de portefeuille</b> (courbe cumulée, drawdown, contribution, saisonnalité) a
+  son domicile unique dans <a href="/portfolio?view=performance">Portefeuille → Performance</a>.</div>
+<div class="vx-grid vx-mt3" id="vx-pf-kpis" aria-label="Indicateurs de méthode"><div class="vx-skeleton vx-skeleton-kpi vx-col-3" style="grid-column:span 3"></div></div>
 <div class="vx-grid vx-mt4">
-  <div class="vx-col-7" id="vx-pf-equity"></div>
-  <div class="vx-col-5" id="vx-pf-drawdown"></div>
-</div>
-<div class="vx-grid vx-mt4">
-  <div class="vx-col-7" id="vx-pf-monthly"></div>
-  <div class="vx-col-5" id="vx-pf-dist"></div>
+  <div class="vx-col-12" id="vx-pf-dist"></div>
 </div>
 """,
     'journal': """
@@ -112,9 +111,6 @@ Aucun chiffre de l’un n’alimente l’autre.</div>
 }
 
 _JS = r"""
-<script src="/static/vertex/js/charts/equity-chart.js" defer></script>
-<script src="/static/vertex/js/charts/drawdown-chart.js" defer></script>
-<script src="/static/vertex/js/charts/heatmap.js" defer></script>
 <script src="/static/vertex/js/charts/bar-chart.js" defer></script>
 <script>
 (function(){
@@ -169,7 +165,7 @@ function loadKpis(){
     const n=list.length;
     const milestones=[[5,'P&L, taux de réussite, profit factor, espérance'],
       [10,'Distribution gains/pertes, meilleurs & pires trades'],
-      [20,'Courbe d’équité vs SPY, drawdown, MAE / MFE'],
+      [20,'MAE / MFE, discipline des stops, meilleurs setups'],
       [30,'Rolling win rate & expectancy, perf par setup / régime']];
     const pct=Math.min(100,Math.round(n/5*100));
     const rows=milestones.map(function(m){const done=n>=m[0];
@@ -208,64 +204,16 @@ function loadKpis(){
       <span class="vx-meta" style="font-size:12px">Calculs arithmétiques sur VOS trades déclarés — aucun indicateur de marché.</span></div>`;
   return list;
 }
-function loadEquity(){
-  const eq=(E()?E().equity():[])||[];
-  if(eq.length>=2){
-    const labels=eq.map(p=>p.d),values=eq.map(p=>Number(p.v));
-    VXCharts.equityCard('vx-pf-equity',{
-      title:'Courbe d’équité (déclarée)',timeframe:eq.length+' points',
-      question:'Le capital déclaré progresse-t-il régulièrement ?',
-      conclusion:values[values.length-1]>=values[0]?'Équité en progression sur la période.':'Équité en retrait sur la période.',
-      labels,values,height:240,
-      source:'journal local (myTradesEquity)',timestamp:Date.now(),mode:'delayed',
-      explain:{shows:'La série d’équité issue de vos clôtures de positions déclarées.',
-        why:'Une méthode saine produit une pente régulière, pas des à-coups.',
-        confirm:'Nouveaux plus hauts d’équité avec drawdowns contenus.',
-        invalidate:'Série de plus bas d’équité — réduire la taille et revoir le process.'}});
-    VXCharts.drawdownCard('vx-pf-drawdown',{
-      title:'Drawdown depuis les pics',
-      question:'Les pertes restent-elles contrôlées ?',
-      conclusion:'Dérivé arithmétiquement de la courbe d’équité déclarée.',
-      labels,values,height:240,
-      source:'journal local (myTradesEquity)',timestamp:Date.now(),mode:'delayed',
-      limits:'dérivé de la série déclarée — pas un indicateur de marché',
-      explain:{shows:'L’écart en % entre l’équité et son dernier pic.',
-        why:'La profondeur des drawdowns mesure la discipline de risque réelle.',
-        confirm:'Drawdowns courts et peu profonds.',invalidate:'Drawdown qui s’aggrave pendant que vous continuez à trader.'}});
-  }else{
-    emptyCard('vx-pf-equity','Courbe d’équité indisponible — elle se construit au fil des clôtures de positions déclarées.',JOURNAL_ACTION);
-    emptyCard('vx-pf-drawdown','Drawdown indisponible sans courbe d’équité.');
-  }
-}
-/* Heatmap mensuelle + distribution — agrégations arithmétiques sur VOS
-   clôtures déclarées (jamais un indicateur de marché). */
-function loadMonthlyAndDist(){
+/* Distribution des rendements par trade — mesure de DISCIPLINE (asymétrie petites
+   pertes / gains amples). Reste au Journal ; la courbe cumulée/drawdown/saisonnalité
+   ont migré vers Portefeuille → Performance (un seul domicile, §6). */
+function loadDist(){
   const closed=(E()?E().closedPositions():[])||[];
   const withPl=closed.filter(t=>t.pnl_pct!==undefined&&t.pnl_pct!==null&&t.closed);
   if(withPl.length<3){
-    emptyCard('vx-pf-monthly','Heatmap mensuelle disponible à partir de 3 clôtures datées.',JOURNAL_ACTION);
-    emptyCard('vx-pf-dist','Distribution disponible à partir de 3 clôtures.');
+    emptyCard('vx-pf-dist','Distribution disponible à partir de 3 clôtures datées.',JOURNAL_ACTION);
     return;
   }
-  const byMonth={};
-  withPl.forEach(t=>{const m=String(t.closed).slice(0,7);
-    (byMonth[m]=byMonth[m]||[]).push(Number(t.pnl_pct));});
-  const months=Object.keys(byMonth).sort();
-  const years=[...new Set(months.map(m=>m.slice(0,4)))];
-  const MN=['01','02','03','04','05','06','07','08','09','10','11','12'];
-  const ML=['J','F','M','A','M','J','J','A','S','O','N','D'];
-  VXCharts.heatmapCard('vx-pf-monthly',{
-    title:'P&L moyen par mois (clôtures déclarées)',
-    question:'Y a-t-il des périodes où la méthode sur- ou sous-performe ?',
-    conclusion:months.length+' mois avec clôtures · moyenne simple des % par trade.',
-    columns:ML,
-    rows:years.map(y=>({label:y,cells:MN.map(mm=>{
-      const arr=byMonth[y+'-'+mm];
-      return arr?{value:arr.reduce((a,b)=>a+b,0)/arr.length,
-        title:arr.length+' clôture(s)'}:{value:null,label:'·'};})})),
-    min:-8,max:8,fmt:(v)=>v===null?'·':VX.fmt.pct(v,1),
-    source:'journal local (clôtures)',timestamp:Date.now(),mode:'delayed',
-    limits:'moyenne des % par trade — pas une performance composée'});
   const buckets=[[-1e9,-20],[-20,-10],[-10,-5],[-5,0],[0,5],[5,10],[10,20],[20,50],[50,1e9]];
   const labels=['<-20','-20/-10','-10/-5','-5/0','0/+5','+5/+10','+10/+20','+20/+50','>+50'];
   const counts=buckets.map(([a,b])=>withPl.filter(t=>t.pnl_pct>=a&&t.pnl_pct<b).length);
@@ -440,7 +388,7 @@ function loadLearnings(){
 
 /* ═══ Orchestration ═══ */
 function boot(){
-  if(VIEW==='overview'){loadKpis();loadEquity();loadMonthlyAndDist();}
+  if(VIEW==='overview'){loadKpis();loadDist();}
   else if(VIEW==='journal'){
     loadJournal();loadMistakes();
     $('vx-pf-add')?.addEventListener('click',openEntryModal);
