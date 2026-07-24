@@ -57,7 +57,7 @@ READONLY ; mesures de performance ; audit accessibilité ; validation responsive
 release. **Aucune nouvelle fonctionnalité.**
 
 ## Chiffres clés
-- Tests : **952** collectés (100 % verts).
+- Tests : **956** collectés (100 % verts).
 - Graphiques inter-pages : **−50 %** sur Aujourd'hui+Marchés.
-- Service worker : **v50**.
+- Service worker : **v51** (RC1 : purge du cache runtime pré-suppression).
 - IBKR : `readonly=True` codé en dur ; **0 endpoint d'ordre**.

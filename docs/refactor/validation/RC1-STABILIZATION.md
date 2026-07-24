@@ -128,7 +128,7 @@ aucune interaction hover-only critique.
 
 ## RC1-J — Tests
 - `python -m compileall -q terminal.py vertex` → **exit 0**.
-- `python -m pytest tests/ -q` → **950 passed, 2 skipped** (**952 collectés**).
+- `python -m pytest tests/ -q` → **954 passed, 2 skipped** (**956 collectés**).
 - Couverture des gardiens : routes 200, sous-vues, READONLY (×~20), démo, sans-IBKR,
   stale/missing/insufficient, options (IV/payoff/greeks/garde-fou), portefeuille
   (état-de-thèse/garde-fou), journal (discipline/hero honnête), système (readonly/hero),
@@ -144,7 +144,7 @@ aucune interaction hover-only critique.
   cohérents. Un seul terme anglais visible : « Watchlist » (financier standard).
 
 ## RC1-L — Service worker & cache
-- Version **`td-shell-v50`** ; `install` (skipWaiting + précache manifest/icône),
+- Version **`td-shell-v51`** (bump RC1 v50→v51 : purge du cache runtime pré-suppression) ; `install` (skipWaiting + précache manifest/icône),
   `activate` (suppression des caches ≠ version + `clients.claim`). **Pas de nouveau
   bump en RC1** (stabilisation, pas de changement de shell visible).
 - Gardiens : `vN` présent + `v(N-1)` absent (`test_ui_v3`, `test_redesign_ui`,
