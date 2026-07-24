@@ -320,7 +320,7 @@
   function chartCone(VC, d) {
     var pts = (d.expected_move_cone && d.expected_move_cone.points) || [];
     if (pts.length < 2) { document.getElementById('vx-opt-cone').innerHTML = '<div class="vx-card"><div class="vx-empty">Cône : pas assez d’échéances.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#84aa31'), copper = col(VC, 'copper', '#48631b');
+    var brand = col(VC, 'brand', '#84aa31'), copper = col(VC, 'copper', '#747d75');
     var labels = pts.map(function (p) { return p.dte + ' j'; });
     var ds = function (key, w, fill, bg) {
       return { data: pts.map(function (p) { return p[key]; }), borderColor: w ? copper : 'transparent', borderWidth: w, pointRadius: 0, fill: fill, backgroundColor: bg, tension: .25 };

@@ -23,7 +23,7 @@ def render_index(view: str = '') -> str:
             ('3', 'Timing technique — tendance, niveaux, R:R'),
             ('4', 'Sentiment & positionnement'),
             ('·', 'Anomalies & signaux TradingView'),
-            ('·', 'Scénarios Bull / Base / Bear'),
+            ('·', 'Scénarios pessimiste / probable / exceptionnel'),
             ('·', 'Options associées — convexité, IV, DTE'),
             ('★', 'Décision finale & plan de niveaux'),
         ])
@@ -110,7 +110,11 @@ $('an-search').focus();
 
 _SECTIONS = """
 <div id="an-stale"></div>
-<!-- 1. Résumé décisionnel (header sticky géré en CSS local) -->
+<!-- NIVEAU 1 — Carte-Verdict signature (verdict · score · confiance · entrée ·
+     invalidation · risque · catalyseur · prochaine action) puis Carte-Scénario. -->
+<div id="an-verdict">%%LOADING%%</div>
+<div id="an-scenarios" class="vx-mt4"></div>
+<!-- 1b. Barre compacte : prix + actions (le verdict prime, cf. Carte-Verdict) -->
 <div class="vx-card vx-accent" id="an-hero" style="position:sticky;top:calc(var(--vx-topbar-h) + 8px);z-index:20">
   <div class="vx-flex vx-wrap">
     <span class="vx-ticker" style="font-size:22px" id="an-sym">%%SYM%%</span>
@@ -145,6 +149,9 @@ _SECTIONS = """
 <!-- 3. Graphique principal -->
 <div id="an-chart"></div>
 
+<!-- 3b. Raisonnement du comité (intégré depuis Intelligence) -->
+<div id="an-committee" class="vx-mt4"></div>
+
 <!-- 4-8. Dimensions dans l'ordre imposé -->
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-6" id="an-fundamental"><div class="vx-card-header">
@@ -166,8 +173,7 @@ _SECTIONS = """
 </div>
 
 <!-- 9. Scénarios -->
-<section class="vx-card vx-mt4" id="an-scenarios"><div class="vx-card-header">
-  <span class="vx-card-title">Scénarios Bull / Base / Bear</span></div><div data-body>%%LOADING%%</div></section>
+<!-- Scénarios : domicile unique = Carte-Scénario en tête de page (an-scenarios). -->
 
 <!-- 11. Options -->
 <section class="vx-card vx-mt4" id="an-options">
@@ -200,6 +206,14 @@ _SECTIONS = """
 """
 
 _JS = r"""
+<!-- Moteur de chandeliers : ÉCHELLE DE REPLI, pas un chargement concurrent.
+     Un SEUL moteur rend le graphique (cf. drawChart plus bas) :
+       1. VXCharts.lwCandlestickCard  → CANONIQUE (TradingView Lightweight Charts,
+          qualité pro : chandeliers nets, overlays MM + plan, zoom/pan natif).
+       2. VXCharts.candlestickCard    → repli Canvas si la lib LWC échoue.
+       3. VXCharts.priceCard          → repli ligne si les bougies sont invalides.
+     Vérifié navigateur : #an-chart contient un unique .vx-lwc (LWC actif).
+     Ne pas retirer les paliers 2-3 : ce sont les replis honnêtes, pas des doublons. -->
 <script src="/static/vertex/js/charts/price-chart.js" defer></script>
 <script src="/static/vertex/js/charts/candlestick-chart.js" defer></script>
 <script src="/static/vertex/js/vendor/lightweight-charts.standalone.production.js" defer></script>
@@ -316,7 +330,7 @@ async function loadDossier(){
   const overlays=[
     {label:'MM20',color:cc('amber','#ce8a29'),data:tail(S.ema20),dash:[]},
     {label:'MM50',color:cc('beige','#c8ad8d'),data:tail(S.sma50),dash:[5,3]},
-    {label:'MM200',color:cc('neutral','#8f8a83'),data:tail(S.sma200),dash:[2,3]},
+    {label:'MM200',color:cc('neutral','#9d978e'),data:tail(S.sma200),dash:[2,3]},
   ].filter(o=>o.data&&o.data.some(x=>x!=null));
   const events=[];
   if(d.earnings_dte!==null&&d.earnings_dte!==undefined&&d.earnings_dte>=0&&d.earnings_dte<=cut.length)
@@ -465,23 +479,7 @@ async function loadDossier(){
         <button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXEntities.openAddModal('${SYM}','alert')">Créer une alerte</button></div>`);
   }catch(e){body('an-tv',VX.states.empty('Intégration TradingView non configurée — aucune donnée inventée.'));}
 
-  /* 9. Scénarios Bull/Base/Bear (plan moteur) */
-  const px=d.price;
-  if(plan.tp1||plan.stop){
-    body('an-scenarios',
-      `<div class="vx-grid" style="grid-template-columns:repeat(3,1fr);gap:10px">
-        <div class="vx-card" style="border-color:rgba(34,199,122,.3)"><div class="vx-kpi">
-          <span class="vx-kpi-label">Bull</span><span class="vx-kpi-value vx-pos" style="font-size:19px">${VX.fmt.nd(plan.tp2||plan.tp1)}</span>
-          <span class="vx-meta">${px&&(plan.tp2||plan.tp1)?VX.fmt.pct(((plan.tp2||plan.tp1)/px-1)*100,1):''}</span></div></div>
-        <div class="vx-card"><div class="vx-kpi">
-          <span class="vx-kpi-label">Base</span><span class="vx-kpi-value" style="font-size:19px">${VX.fmt.nd(plan.tp1)}</span>
-          <span class="vx-meta">${px&&plan.tp1?VX.fmt.pct((plan.tp1/px-1)*100,1):''}</span></div></div>
-        <div class="vx-card" style="border-color:rgba(239,83,80,.3)"><div class="vx-kpi">
-          <span class="vx-kpi-label">Bear</span><span class="vx-kpi-value vx-neg" style="font-size:19px">${VX.fmt.nd(plan.stop)}</span>
-          <span class="vx-meta">${px&&plan.stop?VX.fmt.pct((plan.stop/px-1)*100,1):''}</span></div></div>
-      </div>
-      <div class="vx-meta vx-mt2">Niveaux du plan moteur (structure de marché) — variations arithmétiques vs cours actuel.</div>`);
-  }else body('an-scenarios',VX.states.empty('Plan moteur indisponible — pas de scénarios chiffrés.'));
+  /* 9. Scénarios : domicile unique = Carte-Scénario en tête (loadDecisionStack). */
 
   /* 10. Plan — échelle Risk/Reward (§24.5) : niveaux du plan proportionnels au prix */
   function rrLadder(px,plan){
@@ -607,7 +605,7 @@ async function loadDossier(){
     +(jr.length?jr.map(j=>`<div class="vx-kv"><span class="k">${j.date} · ${esc(j.dir||'')}</span>
       <span class="v ${j.pnl>0?'vx-pos':j.pnl<0?'vx-neg':''}">${j.result||''} ${j.pnl!==undefined&&j.pnl!==''?VX.fmt.num(j.pnl):''}</span></div>`).join('')
       :VX.states.empty('Aucune entrée de journal sur ce titre.'))
-    +`<div class="vx-meta vx-mt2"><a href="/performance?view=journal&sym=${SYM}">Journal complet →</a></div>`);
+    +`<div class="vx-meta vx-mt2"><a href="/journal?view=journal&sym=${SYM}">Journal complet →</a></div>`);
   paintBadges();paintThesis();
   try{loadAnalyst();}catch(e){}
 }
@@ -650,8 +648,91 @@ async function loadAnalyst(){
   }
   if(sen){const el=$b('an-sentiment');if(el)el.innerHTML+=`<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">${sen}</div>`;}
 }
+/* ── Carte-Verdict + Carte-Scénario + Raisonnement du comité (decision stack) ── */
+function pctRet(entry,tgt){if(entry==null||tgt==null||!entry)return null;return (tgt-entry)/entry*100;}
+async function loadDecisionStack(){
+  let dec=null;
+  try{dec=await VX.fetch('/api/decision/'+SYM,{ttl:60000});}catch(e){}
+  const V=$('an-verdict'),SC=$('an-scenarios'),CO=$('an-committee');
+  if(!dec){if(V)V.innerHTML='<div class="vx-card">'+VX.states.error('Décision indisponible')+'</div>';return;}
+  /* DATA_INSUFFICIENT → état honnête, aucune conviction. */
+  if(dec.final_decision==='DATA_INSUFFICIENT'){
+    const miss=(dec.data_quality&&(dec.data_quality.missing_fields||[]).join(', '))||'données du titre absentes';
+    if(V)V.innerHTML='<section class="vx-card vx-verdict-card" data-tone="gray">'
+      +'<div class="vx-verdict-head"><span class="vx-verdict-label">Données insuffisantes</span>'
+      +'<span class="vx-verdict-score">confiance 0</span></div>'
+      +'<div class="vx-insufficient"><div class="vx-insufficient-icon">&mdash;</div>'
+      +'<div><b>Vertex ne tranche pas '+esc(SYM)+'.</b>'
+      +'<div class="vx-insufficient-why">Données insuffisantes ('+esc(miss)+'). Aucune conviction affichée tant que le dossier n\'est pas complet.</div></div></div>'
+      +'<div class="vx-mt3"><a class="vx-btn vx-btn-soft" href="/system?view=data">Prochaine action : vérifier les données →</a></div></section>';
+    if(SC)SC.innerHTML='';if(CO)CO.innerHTML='';
+    return;
+  }
+  const tone=dec.decision_tone||'gray';
+  const conf=(dec.confidence!=null)?dec.confidence:null;
+  const entry=dec.entry,inval=dec.invalidation!=null?dec.invalidation:dec.stop;
+  const tgts=dec.targets||{};
+  const dq=(dec.data_quality&&dec.data_quality.grade)?('données '+dec.data_quality.grade):'';
+  const cell=(k,v)=>'<div class="vx-verdict-cell"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
+  if(V)V.innerHTML='<section class="vx-card vx-verdict-card" data-tone="'+esc(tone)+'">'
+    +'<div class="vx-verdict-head"><span class="vx-verdict-label">'+esc(dec.decision_label||dec.final_decision)+'</span>'
+    +(dec.grade?'<span class="vx-badge">'+esc(dec.grade)+'</span>':'')
+    +(conf!=null?'<span class="vx-verdict-score">confiance '+conf+'/100</span>':'')
+    +'<span class="vx-actions">'+('<span class="vx-freshness" data-live="'+(demoState()?'fallback':'delayed')+'"><span class="vx-live-dot"></span>'+(demoState()?'Démo':'Différé')+'</span>')+'</span></div>'
+    +'<div class="vx-verdict-grid">'
+    +cell('Prix',(TICKER&&TICKER.detail&&TICKER.detail.price!=null)?VX.fmt.price(TICKER.detail.price):'—')
+    +cell('Entrée',entry!=null?VX.fmt.price(entry):'—')
+    +cell('Invalidation',inval!=null?VX.fmt.price(inval):'—')
+    +cell('Conviction',dec.conviction!=null?dec.conviction:'—')
+    +cell('Véhicule',esc(dec.vehicle||'—'))
+    +(dq?cell('Qualité',esc(dq)):'')
+    +'</div>'
+    +'<div class="vx-mt3 vx-flex vx-wrap vx-gap2">'
+    +'<a class="vx-btn vx-btn-primary" href="#an-scenarios">Voir les scénarios ↓</a>'
+    +'<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\''+SYM+'\',\'alert\')">Alerte sur l\'invalidation</button>'
+    +'<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\''+SYM+'\',\'note\')">Journaliser l\'hypothèse</button></div>'
+    +'</section>';
+  /* Carte-Scénario : pessimiste / probable / exceptionnel dérivés du plan réel
+     (entrée → invalidation / cibles). Aucune probabilité inventée. */
+  if(SC){
+    const rDown=pctRet(entry,inval),rBase=pctRet(entry,tgts.tp1!=null?tgts.tp1:tgts.tp2),rUp=pctRet(entry,tgts.tp3!=null?tgts.tp3:tgts.tp2);
+    const asym=(rDown!=null&&rUp!=null&&rDown!==0)?Math.abs(rUp/rDown):null;
+    const scen=(kind,k,tgt,ret,note)=>'<div class="vx-scenario" data-kind="'+kind+'"><span class="vx-scenario-k">'+k+'</span>'
+      +'<span class="vx-scenario-v">'+(ret!=null?(ret>0?'+':'')+ret.toFixed(1)+' %':'—')+'</span>'
+      +'<span class="vx-scenario-note">'+(tgt!=null?'cible '+VX.fmt.price(tgt):'cible n/d')+(note?' · '+note:'')+'</span></div>';
+    if(entry!=null&&(inval!=null||tgts.tp1!=null)){
+      SC.innerHTML='<section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Scénarios</span>'
+        +'<span class="vx-chart-question">Combien puis-je perdre, gagner probablement, gagner exceptionnellement ?</span></div>'
+        +'<div class="vx-scenario-grid">'
+        +scen('down','Pessimiste',inval,rDown,'invalidation')
+        +scen('base','Probable',tgts.tp1!=null?tgts.tp1:tgts.tp2,rBase,'cible 1')
+        +scen('up','Exceptionnel',tgts.tp3!=null?tgts.tp3:tgts.tp2,rUp,'cible étendue')
+        +'</div>'
+        +(asym!=null?'<div class="vx-kv vx-mt2"><span class="k">Asymétrie (gain exceptionnel / perte max)</span><span class="v vx-mono '+(asym>=2?'vx-pos':asym>=1?'':'vx-neg')+'">'+asym.toFixed(1)+'×</span></div>':'')
+        +'<div class="vx-card-foot"><span class="vx-meta">Scénarios dérivés du plan de niveaux moteur (entrée/invalidation/cibles) — aucune probabilité inventée.</span></div></section>';
+    }else{SC.innerHTML='<div class="vx-card">'+VX.states.empty('Plan de niveaux insuffisant pour construire les scénarios.')+'</div>';}
+  }
+  /* Raisonnement du comité (intégré depuis Intelligence) */
+  if(CO){
+    const com=dec.committee||{};
+    const pros=(dec.pros||[]).slice(0,4),cons=(dec.cons||[]).slice(0,4),unk=(dec.unknowns||[]).slice(0,3);
+    CO.innerHTML='<section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Raisonnement du comité</span>'
+      +(com.agreement!=null?'<span class="vx-actions"><span class="vx-badge">accord '+com.agreement+'/100</span></span>':'')+'</div>'
+      +(com.view?'<div class="vx-dim vx-mb2">Consensus : <b>'+esc(com.view)+'</b>'+(com.has_contradiction?' · <span class="vx-neg">contradictions internes exposées</span>':'')+'</div>':'')
+      +'<div class="vx-grid">'
+      +'<div class="vx-col-6"><div class="vx-meta vx-mb1">Facteurs positifs</div>'+(pros.length?pros.map(p=>'<div class="vx-pos" style="font-size:12px">+ '+esc(p)+'</div>').join(''):'<span class="vx-muted">—</span>')+'</div>'
+      +'<div class="vx-col-6"><div class="vx-meta vx-mb1">Facteurs négatifs</div>'+(cons.length?cons.map(c=>'<div class="vx-neg" style="font-size:12px">− '+esc(c)+'</div>').join(''):'<span class="vx-muted">—</span>')+'</div>'
+      +'</div>'
+      +(com.devils_advocate?'<div class="vx-insight vx-mt2" data-tone="risk"><b>Avocat du diable</b><div class="vx-mt1">'+esc(com.devils_advocate)+'</div></div>':'')
+      +(unk.length?'<div class="vx-kv vx-mt2"><span class="k">Ce que nous ne savons pas</span><span class="v vx-muted">'+unk.map(esc).join(' · ')+'</span></div>':'')
+      +'<div class="vx-card-foot"><span class="vx-meta">Comité déterministe (decision stack) — l\'IA explique, ne décide jamais.</span></div></section>';
+  }
+}
+function demoState(){return !!(window.__vxStatus&&window.__vxStatus.demo);}
 loadDossier();
+loadDecisionStack();
 VX.refresh.register(loadDossier,180000,'analysis');
+VX.refresh.register(loadDecisionStack,180000,'analysis-decision');
 })();
 </script>
 """

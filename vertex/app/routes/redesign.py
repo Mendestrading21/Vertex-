@@ -42,8 +42,8 @@ LEGACY_REDIRECTS = {
     '/catalysts': '/opportunities?view=calendar',
     '/catalyseurs': '/opportunities?view=calendar',
     '/anomalies': '/opportunities?view=anomalies',
-    '/journal': '/performance?view=journal',
-    '/decisions': '/performance?view=journal',
+    '/decisions': '/journal?view=journal',
+    '/performance': '/journal',
     '/review': '/intelligence?view=committee',
     '/research': '/intelligence?view=research',
     '/equipe': '/intelligence?view=strategy',
@@ -101,11 +101,18 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     def analysis_route(sym):
         return analysis_page.render(sym.upper())
 
-    @bp.route('/performance')
-    def performance_route():
+    # ── Journal (espace canonique n°7) — décisions, hypothèses, revues,
+    # erreurs, statistiques et apprentissage. Rendu par performance_page (mission
+    # « mesurer la méthode ») ; la performance de PORTEFEUILLE migrera vers
+    # Portefeuille lors de la refonte de contenu. /performance redirige ici.
+    @bp.route('/journal')
+    def journal_route():
         return performance_page.render(view=request.args.get('view', 'overview'),
                                        params=request.args)
 
+    # ── Intelligence — N'EST PLUS un espace principal (PR n°2). Son raisonnement
+    # de comité sera intégré à Analyse (refonte Analyse). Page conservée joignable
+    # hors nav le temps de la migration (aucune fonctionnalité perdue).
     @bp.route('/intelligence')
     def intelligence_route():
         return intelligence_page.render(view=request.args.get('view', 'analyst'))
@@ -119,14 +126,15 @@ def make_blueprint(scan_state: dict) -> Blueprint:
         from vertex.ui.pages import design_system_demo
         return design_system_demo.render()
 
-    # ── Options Intelligence (§18) — approfondissement d'Opportunités.
-    # PAS un 9e espace : le nav reste à huit, cette page se rejoint depuis
-    # Opportunités (vue Options), Analyse et la palette.
+    # ── Options (espace canonique n°6) — desk d'options AUTONOME (positions,
+    # LEAPS, stratégies, payoff, volatilité, Greeks). Espace principal unique :
+    # plus de double rattachement ambigu à Opportunités.
     @bp.route('/options')
     def options_intel_route():
-        return options_intel_page.render(view=request.args.get('view', 'overview'))
+        return options_intel_page.render(view=request.args.get('view', 'structure'))
 
-    # ── Suivis (§14-18) — approfondissement du Portefeuille, pas un 9e espace.
+    # ── Suivis — approfondissement du Journal (idées suivies, hypothétiques),
+    # joignable hors nav. Pas un 9e espace.
     @bp.route('/tracking')
     def tracking_route():
         return tracking_page.render()

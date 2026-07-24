@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v42';   // v42 : stratégies options MULTI-JAMBES (payoff/PoP/greeks, moteur natif READONLY) sur Options
+const CACHE='td-shell-v51';   // v51 (RC1) : purge le cache runtime pré-suppression (un client hors-ligne pouvait servir une ancienne page Marchés référençant les 6 graphes supprimés → 404). Le bump invalide tout cache != v51 à l'activation.
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

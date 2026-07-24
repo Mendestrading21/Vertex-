@@ -9,16 +9,20 @@ from __future__ import annotations
 
 SHELL_VERSION = 'vx-shell-1'
 
-# Navigation principale — EXACTEMENT huit espaces (§10).
+# Navigation principale — EXACTEMENT HUIT espaces canoniques (décision produit
+# PR n°2). Registre UNIQUE de la navigation du redesign. Ordre = parcours de
+# décision. Le DERNIER élément (Système) est épinglé en pied de sidebar.
+# Intelligence (→ Analyse) et Performance (→ Journal + Portefeuille) ne sont plus
+# des espaces autonomes ; leurs pages restent joignables hors nav le temps de la
+# refonte de contenu. Aucun 9e espace ne peut être ajouté sans fusion/suppression.
 PRIMARY_NAV = (
-    {'id': 'briefing', 'label': 'Briefing', 'href': '/', 'icon': 'home'},
+    {'id': 'briefing', 'label': "Aujourd'hui", 'href': '/', 'icon': 'home'},
     {'id': 'markets', 'label': 'Marchés', 'href': '/markets', 'icon': 'globe'},
     {'id': 'opportunities', 'label': 'Opportunités', 'href': '/opportunities', 'icon': 'radar'},
-    {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
     {'id': 'analysis', 'label': 'Analyse', 'href': '/analysis', 'icon': 'chart'},
+    {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
     {'id': 'options', 'label': 'Options', 'href': '/options', 'icon': 'bolt'},
-    {'id': 'performance', 'label': 'Performance', 'href': '/performance', 'icon': 'trend'},
-    {'id': 'intelligence', 'label': 'Intelligence', 'href': '/intelligence', 'icon': 'brain'},
+    {'id': 'journal', 'label': 'Journal', 'href': '/journal', 'icon': 'book'},
     {'id': 'system', 'label': 'Système', 'href': '/system', 'icon': 'settings'},
 )
 
@@ -41,6 +45,7 @@ _ICONS = {
     'back': '<path d="m15 18-6-6 6-6"/>',
     'star': '<path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/>',
     'bolt': '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
+    'book': '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13"/>',
 }
 
 
@@ -101,7 +106,9 @@ def _topbar(space_label: str, sub_label: str = '') -> str:
 
 
 def _mobile_bar(active: str) -> str:
-    order = ('briefing', 'markets', 'opportunities', 'portfolio', 'performance')
+    # 5 espaces prioritaires du parcours de décision quotidien ; le reste
+    # (Options, Journal, Système) via « Plus ». Conçu pour 390px sans débordement.
+    order = ('briefing', 'markets', 'opportunities', 'analysis', 'portfolio')
     links = []
     for it in PRIMARY_NAV:
         if it['id'] not in order:
@@ -155,7 +162,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/static/vertex/css/tokens.css">
 <link rel="stylesheet" href="/static/vertex/css/base.css">
 <link rel="stylesheet" href="/static/vertex/css/layout.css">

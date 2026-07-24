@@ -61,7 +61,8 @@ def make_blueprint(scan_state: dict) -> Blueprint:
                           'overextended': (detail.get('ext_atr') or 0) >= 2.5},
             'sentiment': {'score': detail.get('rs')},
             'anomalies': [],
-            'data_quality': {'overall': 'RECENT' if source and source != 'demo' else 'MISSING',
+            'data_quality': {'overall': ('DEMO' if source == 'demo'
+                                          else ('RECENT' if source else 'MISSING')),
                              'actionable_allowed': bool(source and source != 'demo')},
             'reconciliation': {'actionable_allowed': True},
             'guard': {'blocking_rules': [], 'mandatory_reviews': []},
@@ -155,10 +156,15 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     def data_quality():
         detail = scan_state.get('detail') or {}
         source = scan_state.get('source') or ''
+        is_demo = (source == 'demo')
+        # Démo : données synthétiques PRÉSENTES → statut DEMO honnête (≠ MISSING,
+        # qui signifie « absente »). Règle d'intégrité : la démo est étiquetée,
+        # jamais masquée en donnée réelle ni en absence.
+        overall = 'DEMO' if is_demo else ('RECENT' if source else 'MISSING')
+        warnings = ['données de démonstration (synthétiques)'] if is_demo else []
         packets = [{'symbol': s,
-                    'quality': {'overall': 'RECENT' if source and source != 'demo'
-                                else 'MISSING',
-                                'warnings': []}} for s in list(detail)[:200]]
+                    'quality': {'overall': overall, 'warnings': warnings}}
+                   for s in list(detail)[:200]]
         report = data_quality_report(packets)
         report['scan_source'] = source or 'aucune'
         report['note'] = ('qualité au niveau scan (source unique) — la provenance '

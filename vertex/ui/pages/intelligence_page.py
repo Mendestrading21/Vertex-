@@ -252,6 +252,24 @@ async function runAnalysis(sym,question){
   renderScores(sym,strat);
 }
 function renderVerdict(sym,question,strat,deci){
+  /* Données insuffisantes → état honnête, calme, explicite. JAMAIS une
+     apparence de conviction (pas de verdict coloré, pas de comité chiffré). */
+  if(deci&&deci.final_decision==='DATA_INSUFFICIENT'){
+    const miss=(deci.data_quality&&(deci.data_quality.missing_fields||[]).join(', '))||'données du titre absentes';
+    $('vx-analyst-verdict').innerHTML=
+      `<div class="vx-flex vx-mb3">
+        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${sym}">${sym}</button>
+        <span class="vx-badge" data-decision="INCONNU">Donn&eacute;es insuffisantes</span></div>
+      <div class="vx-insufficient"><div class="vx-insufficient-icon">&mdash;</div>
+        <div><b>Vertex ne tranche pas ce titre.</b>
+        <div class="vx-insufficient-why">Donn&eacute;es insuffisantes (${esc(miss)}). Aucune conviction n&#8217;est affich&eacute;e tant que le dossier n&#8217;est pas complet.</div></div></div>
+      ${question?`<div class="vx-help vx-mt2">Question : &laquo; ${esc(question)} &raquo;</div>`:''}
+      <div class="vx-flex vx-wrap vx-gap2 vx-mt3">
+        <button class="vx-btn vx-btn-sm" data-open-analysis="${sym}">Ouvrir l&#8217;analyse compl&egrave;te</button></div>
+      <div class="vx-card-footer">${VX.updateIndicator((strat&&strat.as_of),'decision stack','delayed')}</div>`;
+    $('vx-analyst-meta').innerHTML=`<span class="vx-meta">${esc(sym)}</span>`;
+    return;
+  }
   const decision=(strat&&strat.final_decision)||'ATTENDRE';
   const unknowns=(strat&&strat.unknowns)||[];
   const blocking=(strat&&strat.blocking_rules)||[];
@@ -507,7 +525,7 @@ async function initResearch(){
       $('vx-research-body').innerHTML=VX.states.empty(
         'Validation indisponible : '+esc(v.note||'historique insuffisant')+'. '
         +'Le validateur exige une courbe d&#8217;equity r&eacute;elle — rien n&#8217;est simul&eacute; pour combler.',
-        '<a class="vx-btn vx-btn-sm" href="/performance">Ouvrir Performance</a>');
+        '<a class="vx-btn vx-btn-sm" href="/journal">Ouvrir le Journal</a>');
       $('vx-research-chart').innerHTML='';
       return;
     }

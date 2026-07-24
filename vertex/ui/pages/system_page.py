@@ -47,6 +47,9 @@ def _header(active: str) -> str:
 
 _VIEW_CONTENT = {
     'connections': '''
+<section class="vx-card vx-card--hero vx-mt4" id="vx-sys-hero" aria-label="Verdict technique">
+  <div class="vx-skeleton" style="height:64px"></div>
+</section>
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-4" aria-label="Santé du système">
     <div class="vx-card-header"><span class="vx-card-title">Santé — moteurs</span>
@@ -401,6 +404,39 @@ async function loadConnections(){
     var _sym=(st&&st.scan&&st.scan.symbols); if(_sym==null&&diag&&diag.scan)_sym=diag.scan.rows;
     var _ai=(diag&&diag.ai)||{};
     var _pct=_eng.length?Math.round(_ok/_eng.length*100):null;
+    /* Hero technique (§ « Puis-je faire confiance à Vertex aujourd'hui ? ») —
+       synthèse honnête depuis les payloads réels ; aucun chiffre inventé. */
+    try{
+      var _delayed=_frK.length-_frOk;
+      var _ib=String((st&&(st.data_sources||{}).ibkr)||'inconnu');
+      var _ibTxt={'connected-live':['IBKR connecté · temps réel','pos'],
+        'connected-delayed':['IBKR connecté · différé','warn'],
+        'enabled-idle':['IBKR activé · aucune session confirmée','warn'],
+        'disabled':['IBKR désactivé','muted'],'inconnu':['IBKR état inconnu','muted']}[_ib]||['IBKR état inconnu','muted'];
+      var _demo=st&&st.mode&&String(st.mode).toLowerCase().indexOf('demo')>=0;
+      var _headline,_tone;
+      if(!_eng.length){_headline='État système en cours de lecture';_tone='muted';}
+      else if(_warn>0||_ok<_eng.length){_headline='Système partiellement dégradé';_tone='warn';}
+      else{_headline='Système opérationnel';_tone='pos';}
+      var _ro=(st&&st.readonly&&st.analysis_only);
+      var _line=[
+        _ibTxt[0],
+        (_delayed>0?(_delayed+' domaine(s) de données en différé/rassis'):(_frK.length?'toutes les données fraîches':'fraîcheur inconnue')),
+        (_warn===0?'aucune erreur critique':(_warn+' avertissement(s) à revoir')),
+        (_ro?'lecture seule confirmée (aucun ordre)':'lecture seule NON confirmée')
+      ];
+      var _hero=$('vx-sys-hero');
+      if(_hero)_hero.innerHTML='<div class="vx-flex vx-wrap" style="justify-content:space-between;align-items:flex-start;gap:10px">'
+        +'<div style="max-width:640px"><div class="vx-flex" style="gap:8px;align-items:center;margin-bottom:4px">'
+        +'<span class="vx-eyebrow">Confiance données</span>'
+        +'<span class="vx-freshness" data-state="'+(_tone==='pos'?'live':_tone==='warn'?'delayed':'stale')+'">'+esc(_headline)+'</span>'
+        +(_demo?'<span class="vx-badge-demo">DÉMO</span>':'')+(_ro?'<span class="vx-badge vx-pos">READONLY</span>':'')+'</div>'
+        +'<h2 style="margin:0 0 6px;font-size:21px" class="'+({pos:'vx-pos',warn:'vx-warn',muted:'vx-muted'}[_tone])+'">'+esc(_headline)+'</h2>'
+        +'<p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.6">'+_line.map(esc).join(' · ')+'.</p></div>'
+        +'<div class="vx-flex" style="gap:8px;flex-wrap:wrap">'
+        +'<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/system?view=data">Fraîcheur par domaine →</a>'
+        +'<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/system?view=automations">Diagnostics</a></div></div>';
+    }catch(e){}
     whenChartsReady(function(){ if(window.VXCharts&&VXCharts.gauge) VXCharts.gauge('vx-sys-gauge',{
       value:_pct,min:0,max:100,unit:'%',label:'Moteurs OK',
       reading:_eng.length?(_ok+'/'+_eng.length+' moteurs opérationnels'):'moteurs inconnus',
@@ -574,7 +610,8 @@ async function loadData(){
     const labels=Object.keys(byQ);
     const values=labels.map(k=>byQ[k]);
     const colByQ={FRESH:VXCharts.colors.positive,RECENT:VXCharts.colors.cyan,
-      STALE:VXCharts.colors.warning,EXPIRED:VXCharts.colors.negative,MISSING:VXCharts.colors.muted};
+      STALE:VXCharts.colors.warning,EXPIRED:VXCharts.colors.negative,MISSING:VXCharts.colors.muted,
+      DEMO:VXCharts.colors.violet};
     const dominant=labels.slice().sort((a,b)=>byQ[b]-byQ[a])[0];
     whenChartsReady(()=>VXCharts.donutCard('vx-data-quality-chart',{
       title:'Qualit&eacute; des donn&eacute;es ('+dq.total+' titres)',
@@ -623,9 +660,9 @@ async function loadData(){
       const soft=fresh?'rgba(57,184,120,.13)':(off?'rgba(220,98,85,.13)':'rgba(204,137,44,.13)');
       const age=d.age_s===null||d.age_s===undefined?'—':(d.age_s<120?Math.round(d.age_s)+' s':Math.round(d.age_s/60)+' min');
       const lbl=fresh?'frais':(off?'hors ligne':'différé');
-      return `<div role="img" aria-label="${esc(k)} ${lbl} ${age}" style="padding:10px 12px;border-radius:9px;display:flex;flex-direction:column;gap:1px;background:${soft};border:1px solid var(${col},#8f8a83)">
+      return `<div role="img" aria-label="${esc(k)} ${lbl} ${age}" style="padding:10px 12px;border-radius:9px;display:flex;flex-direction:column;gap:1px;background:${soft};border:1px solid var(${col},#9d978e)">
         <span style="font-size:11px;color:var(--vx-text-secondary,#b7b2aa);text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</span>
-        <span style="font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(${col},#8f8a83)">${age}</span>
+        <span style="font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(${col},#9d978e)">${age}</span>
         <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#817d77)">${lbl}</span></div>`;};
     const heat=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-bottom:14px" aria-label="Heatmap de fraîcheur des données">${Object.keys(doms).map(tile).join('')}</div>`;
     $('vx-data-fresh').innerHTML=heat+`<div style="overflow-x:auto"><table class="vx-table">

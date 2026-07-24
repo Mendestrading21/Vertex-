@@ -35,7 +35,7 @@ _COPPER = [('--vx-orange-950', '#3e1607'), ('--vx-orange-900', '#591f09'),
 _SEM = [('--vx-positive', '#38b879'), ('--vx-negative', '#dc5f52'),
         ('--vx-warning', '#ce8a29'), ('--vx-option', '#85609f'),
         ('--vx-amber', '#ce8a29'), ('--vx-beige', '#c8ad8d'),
-        ('--vx-neutral-chart', '#8f8a83'), ('--vx-info', 'cuivre clair')]
+        ('--vx-neutral-chart', '#9d978e'), ('--vx-info', 'cuivre clair')]
 _TEXT = [('--vx-text-primary', '#f3f1ed'), ('--vx-text-secondary', '#b7b3ad'),
          ('--vx-text-muted', '#817d77'), ('--vx-text-faint', '#5e5b56')]
 

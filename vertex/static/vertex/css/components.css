@@ -190,3 +190,70 @@
   background:var(--vx-warning-dim)}
 .vx-insight[data-tone="ai"]{border-left-color:var(--vx-violet);
   background:var(--vx-violet-dim)}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   COMPOSANTS CANONIQUES (PR Design n°1) — VERTEX OBSIDIAN / OBSIDIAN COPPER
+   Une seule version officielle. Ne pas dupliquer par page.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Freshness Badge — langage visuel unique de l'honnêteté ── */
+.vx-freshness{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;
+  border-radius:99px;font-size:10.5px;font-weight:600;letter-spacing:.3px;
+  color:var(--vx-text-muted);background:var(--vx-surface-2);
+  border:1px solid var(--vx-border-soft);white-space:nowrap}
+.vx-badge-unit{font-family:var(--vx-font-mono);letter-spacing:0}
+
+/* ── Verdict Card — hero de dossier (verdict + score/40 + confiance +
+      entrée + invalidation). Distinct du badge .vx-verdict. ── */
+.vx-verdict-card{display:grid;gap:var(--vx-s3);padding:var(--vx-s5);
+  background:var(--vx-hero-halo),var(--vx-surface-2);
+  border:1px solid var(--vx-border-default);border-radius:var(--vx-r-lg);
+  box-shadow:var(--vx-shadow-1)}
+.vx-verdict-card .vx-verdict-head{display:flex;align-items:center;
+  gap:var(--vx-s3);flex-wrap:wrap}
+.vx-verdict-card .vx-verdict-label{font-size:22px;font-weight:800;
+  letter-spacing:-.01em;line-height:1.1}
+.vx-verdict-card .vx-verdict-score{font-family:var(--vx-font-mono);
+  font-size:18px;font-weight:700;color:var(--vx-text-secondary);
+  font-variant-numeric:tabular-nums}
+.vx-verdict-card .vx-verdict-grid{display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:var(--vx-s3)}
+.vx-verdict-card .vx-verdict-cell{display:flex;flex-direction:column;gap:2px}
+.vx-verdict-card .vx-verdict-cell .k{font-size:10.5px;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--vx-text-muted)}
+.vx-verdict-card .vx-verdict-cell .v{font-family:var(--vx-font-mono);
+  font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;
+  color:var(--vx-text)}
+.vx-verdict-card[data-tone="strong-green"] .vx-verdict-label,
+.vx-verdict-card[data-tone="green"] .vx-verdict-label{color:var(--vx-positive)}
+.vx-verdict-card[data-tone="amber"] .vx-verdict-label{color:var(--vx-warning)}
+.vx-verdict-card[data-tone="red"] .vx-verdict-label{color:var(--vx-negative)}
+.vx-verdict-card[data-tone="gray"] .vx-verdict-label{color:var(--vx-text-muted)}
+
+/* ── Scenario Card — pessimiste / probable / exceptionnel ── */
+.vx-scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);
+  gap:var(--vx-s3)}
+.vx-scenario{display:flex;flex-direction:column;gap:4px;padding:var(--vx-s3);
+  border-radius:var(--vx-r);border:1px solid var(--vx-border-soft);
+  background:var(--vx-surface-1)}
+.vx-scenario .vx-scenario-k{font-size:10.5px;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--vx-text-muted)}
+.vx-scenario .vx-scenario-v{font-family:var(--vx-font-mono);font-size:18px;
+  font-weight:800;font-variant-numeric:tabular-nums;color:var(--vx-text)}
+.vx-scenario .vx-scenario-note{font-size:11px;color:var(--vx-text-muted)}
+.vx-scenario[data-kind="down"] .vx-scenario-v{color:var(--vx-negative)}
+.vx-scenario[data-kind="up"] .vx-scenario-v{color:var(--vx-positive)}
+@media (max-width:640px){.vx-scenario-grid{grid-template-columns:1fr}}
+
+/* ── État DATA_INSUFFICIENT — honnête, calme, jamais une fausse conviction ── */
+.vx-insufficient{display:flex;align-items:flex-start;gap:var(--vx-s3);
+  padding:var(--vx-s4);border-radius:var(--vx-r-lg);
+  background:var(--vx-surface-2);border:1px dashed var(--vx-border-default);
+  color:var(--vx-text-secondary)}
+.vx-insufficient .vx-insufficient-icon{width:34px;height:34px;flex:none;
+  border-radius:10px;display:grid;place-items:center;color:var(--vx-text-muted);
+  background:var(--vx-surface-3);border:1px solid var(--vx-border-soft);
+  font-size:17px}
+.vx-insufficient b{color:var(--vx-text-primary);font-weight:700}
+.vx-insufficient .vx-insufficient-why{font-size:12px;color:var(--vx-text-muted);
+  margin-top:2px}

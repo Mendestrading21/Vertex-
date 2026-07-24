@@ -28,6 +28,12 @@
   h1{font-size:24px}
   .vx-topbar{padding:0 var(--vx-s3);gap:var(--vx-s2)}
   .vx-breadcrumb .vx-crumb-root{display:none}
+  /* Anti-débordement dès la tablette (couvre 641-768) : en-têtes de carte et
+     lignes inline se replient, les enfants flex rétrécissent. */
+  .vx-content :where(section,article,div,header,ul,li){min-width:0}
+  .vx-card-header{flex-wrap:wrap;row-gap:var(--vx-s2)}
+  .vx-flex{flex-wrap:wrap}
+  .vx-dim,.vx-kpi-label,.vx-meta,.vx-status-detail{overflow-wrap:anywhere}
 }
 
 @media (max-width:640px){
@@ -53,6 +59,14 @@
   /* Cibles tactiles ≥ 40px */
   .vx-btn,.vx-tab,.vx-chip{min-height:40px}
   .vx-btn-sm{min-height:32px}
+  /* Anti-débordement mobile : rien ne doit forcer une largeur > écran.
+     Les conteneurs flex laissent leurs enfants rétrécir (min-width:0 lève le
+     min-width:auto par défaut qui empêche le retour à la ligne), les en-têtes
+     de carte passent à la ligne, les libellés/statuts longs se coupent. */
+  .vx-content :where(section,article,div,header,ul,li){min-width:0}
+  .vx-card-header{flex-wrap:wrap;row-gap:var(--vx-s2)}
+  .vx-flex{flex-wrap:wrap}   /* les lignes inline (ticker + badges…) se replient au lieu de déborder */
+  .vx-dim,.vx-kpi-label,.vx-meta,.vx-status-detail{overflow-wrap:anywhere}
 }
 /* Aucun débordement horizontal global */
 html,body{overflow-x:clip}

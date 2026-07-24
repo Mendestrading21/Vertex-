@@ -1,0 +1,464 @@
+/* options-structure.js — Options : Carte-Verdict + Scénarios + payoff canonique +
+   Greeks interprétés + comparaison (vue « structure »), lecture LEAPS (« leaps ») et
+   positions options canoniques (« positions »). PR n°6.
+
+   Moteur canonique de payoff : multileg_lab via /api/options/strategies/<sym> et
+   /api/options/analyze — un seul moteur (Constitution §6, LOT D). Aucune exécution
+   d'ordre : chaque action est analytique. Donnée absente => état honnête (jamais un
+   chiffre inventé, jamais une PoP fabriquée). */
+(function () {
+  'use strict';
+  var VX = window.VX, VC = window.VXCharts;
+  var Vf = (VX && VX.fmt) || {};
+  function view() { try { return new URLSearchParams(location.search).get('view') || 'structure'; } catch (e) { return 'structure'; } }
+  function esc(s) { return String(s == null ? '' : s).replace(/[<>&"]/g, function (c) { return { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]; }); }
+  function $(id) { return document.getElementById(id); }
+  function price(v) { return (Vf.price ? Vf.price(v) : ('$' + Number(v).toFixed(2))); }
+  function num(v, d) { return (Vf.num ? Vf.num(v, d) : Number(v).toFixed(d == null ? 2 : d)); }
+  function nd(v) { return (Vf.nd ? Vf.nd(v) : (v == null ? '—' : v)); }
+  var toneCls = function (t) { return ({ pos: 'vx-pos', neg: 'vx-neg', warn: 'vx-warn', muted: 'vx-muted' })[t] || 'vx-muted'; };
+
+  var _board = null;
+  function board() {
+    if (_board) return Promise.resolve(_board);
+    return VX.fetch('/api/options', { ttl: 120000 }).then(function (d) { _board = (d && d.board) || []; return _board; }).catch(function () { return []; });
+  }
+
+  /* ── Liquidité (LOT G) — état explicite, jamais un zéro pour un bid/ask absent ── */
+  function liqState(oi, vol, spreadPct) {
+    if (oi == null && spreadPct == null) return { key: 'insuffisante', label: 'Insuffisante', tone: 'neg', note: 'bid/ask ou OI absent — non évaluable' };
+    var o = oi || 0, s = (spreadPct == null ? 99 : spreadPct);
+    if (o >= 5000 && s <= 3) return { key: 'excellente', label: 'Excellente', tone: 'pos', note: 'OI ' + nd(oi) + ' · spread ' + num(s, 1) + ' %' };
+    if (o >= 1500 && s <= 6) return { key: 'acceptable', label: 'Acceptable', tone: 'pos', note: 'OI ' + nd(oi) + ' · spread ' + num(s, 1) + ' %' };
+    if (o >= 500 && s <= 10) return { key: 'mediocre', label: 'Médiocre', tone: 'warn', note: 'OI ' + nd(oi) + ' · spread ' + num(s, 1) + ' %' };
+    return { key: 'insuffisante', label: 'Insuffisante', tone: 'neg', note: 'OI ' + nd(oi) + ' · spread ' + num(s, 1) + ' %' };
+  }
+  function contractsFor(bd, sym, exp) {
+    return (bd || []).filter(function (c) { return c.sym === sym && (!exp || c.exp === exp); });
+  }
+  /* liquidité d'une stratégie = pire jambe (approchée depuis le board). */
+  function strategyLiquidity(bd, sym, exp, legs) {
+    var cs = contractsFor(bd, sym, exp);
+    if (!cs.length) { var near = contractsFor(bd, sym, null); if (!near.length) return liqState(null, null, null);
+      var oi0 = Math.min.apply(null, near.map(function (c) { return c.oi || 0; })); var sp0 = Math.max.apply(null, near.map(function (c) { return c.spread_pct == null ? 99 : c.spread_pct; }));
+      return liqState(oi0, null, sp0); }
+    var worst = null;
+    (legs || []).forEach(function (l) {
+      var t = (l.type || '').toUpperCase();
+      var c = cs.filter(function (x) { return x.type === t && Math.abs((x.strike || 0) - (l.strike || 0)) < 0.6; })[0]
+        || cs.filter(function (x) { return x.type === t; }).sort(function (a, b) { return Math.abs(a.strike - l.strike) - Math.abs(b.strike - l.strike); })[0];
+      if (!c) return;
+      var st = liqState(c.oi, c.vol, c.spread_pct);
+      var rank = { excellente: 3, acceptable: 2, mediocre: 1, insuffisante: 0 };
+      if (worst == null || rank[st.key] < rank[worst.key]) worst = st;
+    });
+    return worst || liqState(null, null, null);
+  }
+
+  /* ── Interpolation P&L à l'échéance depuis la courbe payoff ── */
+  function pnlAt(payoff, px) {
+    if (!payoff || !payoff.length) return null;
+    if (px <= payoff[0].price) return payoff[0].pnl;
+    if (px >= payoff[payoff.length - 1].price) return payoff[payoff.length - 1].pnl;
+    for (var i = 1; i < payoff.length; i++) {
+      if (px <= payoff[i].price) {
+        var a = payoff[i - 1], b = payoff[i], t = (px - a.price) / (b.price - a.price);
+        return a.pnl + t * (b.pnl - a.pnl);
+      }
+    }
+    return payoff[payoff.length - 1].pnl;
+  }
+  function expectedMove(spot, ivDec, dte) {
+    if (!spot || !ivDec || !dte) return null;
+    return spot * ivDec * Math.sqrt(dte / 365);
+  }
+
+  /* ── Verdict analytique (LOT A) — jamais une probabilité inventée ── */
+  function computeVerdict(s, liq, spot, capital, gainExc) {
+    var asym = (capital > 0 && gainExc != null) ? (gainExc / capital) : null;
+    var expensive = (spot && capital) ? (capital / (spot * 100) > 0.12) : false;
+    if (liq.key === 'insuffisante') return { label: 'Liquidité insuffisante', tone: 'neg', why: 'liquidité insuffisante — aucun verdict positif possible', dominant: true };
+    if (asym == null) return { label: 'Données insuffisantes', tone: 'muted', why: 'asymétrie non calculable' };
+    if (asym >= 3) return { label: 'Asymétrie excellente', tone: 'pos', why: 'gain exceptionnel ≈ ' + num(asym, 1) + '× la perte max' };
+    if (asym >= 1.8) return expensive
+      ? { label: 'Structure intéressante mais chère', tone: 'warn', why: 'asymétrie ' + num(asym, 1) + '× mais prime élevée (>12 % du notionnel)' }
+      : { label: 'Structure intéressante', tone: 'muted', why: 'asymétrie ' + num(asym, 1) + '× — correcte sans être exceptionnelle' };
+    if (s.days_to_exp != null && s.days_to_exp < 20) return { label: 'Risque/temps médiocre', tone: 'warn', why: 'échéance courte (' + s.days_to_exp + ' j) pour cette asymétrie' };
+    if (asym < 1.2) return { label: 'Risque/temps médiocre', tone: 'warn', why: 'asymétrie faible (' + num(asym, 1) + '×)' };
+    return { label: 'Attendre une meilleure entrée', tone: 'muted', why: 'asymétrie moyenne — patienter est une décision valide' };
+  }
+
+  /* ════════════════ VUE STRUCTURE ════════════════ */
+  function loadStructure(sym) {
+    var vHost = $('vx-os-verdict'); if (!vHost) return;
+    vHost.innerHTML = '<div class="vx-skeleton" style="height:150px"></div>';
+    $('vx-os-scenarios').innerHTML = ''; $('vx-os-compare').innerHTML = '';
+    $('vx-os-payoff').innerHTML = '<div class="vx-empty">Calcul…</div>'; $('vx-os-greeks').innerHTML = '';
+    Promise.all([VX.fetch('/api/options/strategies/' + encodeURIComponent(sym), { ttl: 60000 }), board()])
+      .then(function (r) {
+        var d = r[0], bd = r[1];
+        if (!d || !d.available || !(d.strategies || []).length) {
+          vHost.innerHTML = insufficientCard(sym, (d && d.reason) || 'aucune structure constructible depuis le board');
+          $('vx-os-payoff').innerHTML = '<div class="vx-empty">—</div>'; return;
+        }
+        var s = d.strategies.filter(function (x) { return x.recommended; })[0] || d.strategies[0];
+        var ivDec = d.iv;                               // décimale (moteur corrigé PR n°6)
+        var spot = d.spot, dte = s.days_to_exp, capital = Math.abs(s.max_loss || 0);
+        var em = expectedMove(spot, ivDec, dte);
+        /* orienter le mouvement « favorable » par le biais : baissier → vers le bas. */
+        var dir = (d.bias === 'bearish') ? -1 : 1;
+        var pProb = em ? spot + dir * em : null, pExc = em ? spot + dir * 2 * em : null;
+        var gainProb = pProb != null ? pnlAt(s.payoff, pProb) : null;
+        var gainExc = s.max_profit_unbounded ? (pExc != null ? pnlAt(s.payoff, pExc) : null) : s.max_profit;
+        var liq = strategyLiquidity(bd, sym, d.exp, s.legs);
+        var verdict = computeVerdict(s, liq, spot, capital, gainExc);
+        var asym = (capital > 0 && gainExc != null) ? (gainExc / capital) : null;
+        var cs = contractsFor(bd, sym, d.exp);
+        var catContract = cs[0];
+        vHost.innerHTML = verdictCard(d, s, {
+          spot: spot, dte: dte, capital: capital, gainProb: gainProb, gainExc: gainExc,
+          asym: asym, liq: liq, verdict: verdict, ivDec: ivDec, em: em
+        });
+        renderScenarios(d, s, { spot: spot, em: em, capital: capital, dte: dte });
+        renderPayoff(d, s, { spot: spot, capital: capital });
+        renderGreeks(s, ivDec);
+        renderCompare(d, bd);
+      })
+      .catch(function (e) { vHost.innerHTML = VX.states.error('Analyse indisponible : ' + esc(e.message)); });
+  }
+
+  function insufficientCard(sym, reason) {
+    return '<section class="vx-card vx-insufficient" role="note">'
+      + '<div class="vx-card-header"><span class="vx-card-title">Données insuffisantes</span></div>'
+      + '<p>Structure non évaluable pour <b>' + esc(sym) + '</b> : ' + esc(reason) + '.</p>'
+      + '<p class="vx-meta">Aucun verdict positif, aucune PoP ni Greek affichés comme fiables tant que primes/IV/OI manquent. '
+      + 'Prochaine action : choisir un sous-jacent présent dans le tableau d\'options, ou réessayer après un scan.</p></section>';
+  }
+
+  function verdictCard(d, s, m) {
+    var netLbl = s.is_credit ? ('Crédit ' + price(Math.abs(s.net_premium))) : ('Débit ' + price(Math.abs(s.net_premium)));
+    var gmax = s.max_profit_unbounded ? 'illimité (théorique)' : (s.max_profit != null ? price(s.max_profit) : '—');
+    var be = (s.breakevens && s.breakevens.length) ? s.breakevens.map(function (b) { return nd(b); }).join(' · ') : '—';
+    var g = s.greeks || null;
+    var cell = function (l, v, cls) { return '<div class="vx-kv"><span class="k">' + l + '</span><span class="v ' + (cls || '') + '">' + v + '</span></div>'; };
+    var fresh = '<span class="vx-freshness" data-state="' + (d.demo ? 'demo' : 'delayed') + '">' + (d.demo ? 'DÉMO' : 'DELAYED') + '</span>';
+    return '<section class="vx-verdict-card vx-card" aria-label="Verdict de la structure">'
+      + '<div class="vx-flex vx-wrap" style="justify-content:space-between;align-items:flex-start;gap:10px">'
+      + '<div><div class="vx-flex" style="gap:8px;align-items:center"><span class="vx-eyebrow">Verdict</span>' + fresh
+      + (m.liq ? '<span class="vx-badge ' + toneCls(m.liq.tone) + '">Liquidité : ' + m.liq.label + '</span>' : '') + '</div>'
+      + '<h2 class="' + toneCls(m.verdict.tone) + '" style="margin:4px 0 2px;font-size:22px">' + esc(m.verdict.label) + '</h2>'
+      + '<div class="vx-dim" style="font-size:13px">' + esc(d.sym) + ' · <b>' + esc(s.label) + '</b> · biais ' + esc(d.bias) + ' — ' + esc(m.verdict.why) + '</div></div>'
+      + '<div class="vx-flex" style="flex-direction:column;align-items:flex-end;gap:2px">'
+      + '<div class="vx-kpi-label">Ratio d\'asymétrie</div>'
+      + '<div class="' + (m.asym >= 3 ? 'vx-pos' : m.asym != null && m.asym < 1.2 ? 'vx-neg' : 'vx-warn') + '" style="font-size:26px;font-weight:700">' + (m.asym != null ? num(m.asym, 1) + '×' : 'n/d') + '</div>'
+      + '<div class="vx-meta">gain exceptionnel / perte max</div></div></div>'
+      + '<div class="vx-grid vx-mt3" style="grid-template-columns:repeat(4,1fr);gap:8px">'
+      + cell('Sous-jacent', esc(d.sym) + ' @ ' + price(m.spot))
+      + cell('Échéance', esc(d.exp ? String(d.exp).slice(0, 10) : '—') + ' · ' + (m.dte != null ? m.dte + ' j' : '—'))
+      + cell('Strikes', esc((s.legs || []).map(function (l) { return (l.type[0].toUpperCase()) + nd(l.strike); }).join(' / ')))
+      + cell('Prime nette', netLbl, s.is_credit ? 'vx-pos' : '')
+      + cell('Capital à risque', price(m.capital), 'vx-neg')
+      + cell('Perte maximale', price(-m.capital), 'vx-neg')
+      + cell('Gain probable (+1σ, échéance)', m.gainProb != null ? ((m.gainProb >= 0 ? '+' : '') + price(m.gainProb)) : 'n/d', m.gainProb >= 0 ? 'vx-pos' : 'vx-neg')
+      + cell('Gain exceptionnel', typeof m.gainExc === 'number' ? ('+' + price(m.gainExc)) : gmax, 'vx-pos')
+      + cell('Breakeven(s)', be)
+      + cell('Delta global', g ? num(g.delta, 1) : 'Insufficient', g ? '' : 'vx-muted')
+      + cell('Theta global', g ? num(g.theta, 2) + ' $/j' : 'Insufficient', g ? 'vx-neg' : 'vx-muted')
+      + cell('IV', m.ivDec != null ? num(m.ivDec * 100, 1) + ' %' : 'n/d')
+      + '</div>'
+      + '<div class="vx-card-foot vx-mt2"><span class="vx-meta">' + esc(s.model_note || '')
+      + ' · PoP ' + (s.probability_of_profit != null ? num(s.probability_of_profit, 0) + ' %' : 'n/d') + ' (modèle lognormal — estimation).'
+      + ' Payoff & greeks : moteur multileg_lab (board réel). Lecture seule — aucun ordre.</span></div>'
+      + '<div class="vx-flex vx-mt2" style="gap:8px;flex-wrap:wrap">'
+      + '<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/analysis/' + encodeURIComponent(d.sym) + '">Voir l\'analyse du sous-jacent →</a>'
+      + '<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options?view=volatility">La volatilité est-elle chère ?</a>'
+      + '<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options?view=events">Un événement menace-t-il l\'échéance ?</a></div>'
+      + '</section>';
+  }
+
+  /* Carte-Scénario (LOT C) — valeurs À L'ÉCHÉANCE (distinctes de la valeur avant échéance). */
+  function renderScenarios(d, s, m) {
+    var host = $('vx-os-scenarios'); if (!host) return;
+    if (!m.em) { host.innerHTML = '<section class="vx-card"><div class="vx-meta">Scénarios indisponibles : IV absente, mouvement attendu non calculable (aucune valeur inventée).</div></section>'; return; }
+    var up = (d.bias === 'bearish') ? -1 : 1;
+    var defs = [
+      { key: 'Pessimiste', px: m.spot - up * m.em, cond: 'mouvement contraire ~1σ', tone: 'neg' },
+      { key: 'Probable', px: m.spot + up * m.em, cond: 'mouvement attendu ~1σ (IV·√t)', tone: 'muted' },
+      { key: 'Exceptionnel', px: m.spot + up * 2 * m.em, cond: 'mouvement favorable ~2σ', tone: 'pos' }
+    ];
+    var cards = defs.map(function (x) {
+      var pnl = pnlAt(s.payoff, x.px);
+      var pct = m.capital > 0 ? (pnl / m.capital * 100) : null;
+      return '<div class="vx-scenario" data-kind="' + (x.key === 'Pessimiste' ? 'down' : x.key === 'Exceptionnel' ? 'up' : 'base') + '">'
+        + '<div class="vx-scenario-head"><b>' + x.key + '</b><span class="vx-meta">' + esc(x.cond) + '</span></div>'
+        + '<div class="vx-kv"><span class="k">Sous-jacent</span><span class="v vx-mono">' + price(x.px) + '</span></div>'
+        + '<div class="vx-kv"><span class="k">P&L (échéance)</span><span class="v vx-mono ' + (pnl >= 0 ? 'vx-pos' : 'vx-neg') + '">' + (pnl >= 0 ? '+' : '') + price(pnl) + '</span></div>'
+        + '<div class="vx-kv"><span class="k">P&L %</span><span class="v vx-mono ' + (pct >= 0 ? 'vx-pos' : 'vx-neg') + '">' + (pct != null ? (pct >= 0 ? '+' : '') + num(pct, 0) + ' %' : 'n/d') + '</span></div>'
+        + '<div class="vx-kv"><span class="k">Horizon</span><span class="v">' + (m.dte != null ? m.dte + ' j' : '—') + '</span></div>'
+        + '</div>';
+    }).join('');
+    host.innerHTML = '<section class="vx-card" aria-label="Scénarios de la structure">'
+      + '<div class="vx-card-header"><span class="vx-card-title">Scénarios — valeurs à l\'échéance</span>'
+      + '<span class="vx-chart-question">Perte probable · gain probable · gain exceptionnel (jamais confondus)</span></div>'
+      + '<div class="vx-scenario-grid">' + cards + '</div>'
+      + '<div class="vx-card-foot"><span class="vx-meta">Valeurs à l\'échéance (payoff). Avant l\'échéance, la valeur inclut la valeur-temps '
+      + '(theta) et l\'IV — non modélisée ici pour ne pas inventer un prix. Aucune probabilité affichée n\'est garantie.</span></div></section>';
+  }
+
+  /* Payoff canonique (LOT D) — moteur multileg_lab, Chart Shell, spot + breakevens. */
+  function renderPayoff(d, s, m) {
+    var host = $('vx-os-payoff'); if (!host) return;
+    var pts = s.payoff || [];
+    if (!VC || !window.Chart || pts.length < 2) { host.innerHTML = '<div class="vx-empty">Payoff indisponible (données insuffisantes).</div>'; return; }
+    var favorable = pts.filter(function (p) { return p.pnl >= 0; }).length;
+    var concl = (s.breakevens && s.breakevens.length)
+      ? ('Zone favorable au-delà de ' + s.breakevens.map(function (b) { return nd(b); }).join(' / ') + '. Perte plafonnée à ' + price(m.capital) + '.')
+      : ('Perte plafonnée à ' + price(m.capital) + '.');
+    host.innerHTML = '';
+    VC.card('vx-os-payoff', {
+      title: 'Payoff à l\'échéance — ' + esc(s.label), question: 'Où gagne / perd la structure ?',
+      conclusion: concl, unit: 'P&L $ (1 structure)', timeframe: (d.dte != null ? d.dte + ' j' : ''),
+      source: 'multileg_lab (board réel)', timestamp: Date.now(), mode: d.demo ? 'demo' : 'delayed',
+      summary: 'Courbe de P&L à l\'échéance selon le cours du sous-jacent ; spot ' + price(m.spot)
+        + ', breakeven(s) ' + ((s.breakevens || []).map(function (b) { return nd(b); }).join(', ') || '—')
+        + ', perte max ' + price(m.capital) + ', ' + favorable + ' points sur ' + pts.length + ' en zone favorable.',
+      height: 260,
+      render: function (cv) {
+        var spot = m.spot, bes = s.breakevens || [];
+        var refPlugin = {
+          id: 'osRefs', afterDraw: function (ch) {
+            var xa = ch.scales.x, ya = ch.scales.y, ctx = ch.ctx; if (!xa || !ya) return;
+            function vline(px, color, label) {
+              var xp = xa.getPixelForValue(px); if (isNaN(xp)) return;
+              ctx.save(); ctx.strokeStyle = color; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+              ctx.beginPath(); ctx.moveTo(xp, ya.top); ctx.lineTo(xp, ya.bottom); ctx.stroke();
+              ctx.setLineDash([]); ctx.fillStyle = color; ctx.font = '10px system-ui'; ctx.fillText(label, xp + 3, ya.top + 10); ctx.restore();
+            }
+            var y0 = ya.getPixelForValue(0);
+            if (!isNaN(y0)) { ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(xa.left, y0); ctx.lineTo(xa.right, y0); ctx.stroke(); ctx.restore(); }
+            vline(spot, 'rgba(200,173,141,.9)', 'spot');
+            bes.forEach(function (b) { vline(b, 'rgba(221,162,59,.9)', 'BE'); });
+          }
+        };
+        VC.mount(cv, {
+          type: 'line',
+          data: { labels: pts.map(function (p) { return p.price; }), datasets: [{ data: pts.map(function (p) { return p.pnl; }), borderWidth: 1.8, pointRadius: 0, fill: false, tension: 0, borderColor: VC.colors.neutral, segment: { borderColor: function (c) { return c.p1.parsed.y >= 0 ? VC.colors.positive : VC.colors.negative; } } }] },
+          options: {
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (c) { return 'P&L ' + price(c.parsed.y) + ' @ ' + nd(c.label); } } } },
+            scales: { x: { ticks: { maxTicksLimit: 7, callback: function (v) { return nd(this.getLabelForValue(v)); } }, grid: { display: false } }, y: { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { callback: function (v) { return price(v); } } } }
+          }
+        }, [refPlugin]);
+      }
+    });
+  }
+
+  /* Greeks interprétés (LOT E) — jamais un Greek sans interprétation. */
+  function greekRow(label, val, unit, interp, tone) {
+    return '<div class="vx-greek"><div class="vx-flex" style="justify-content:space-between"><b>' + label + '</b>'
+      + '<span class="vx-mono ' + (tone || '') + '">' + (val == null ? 'Insufficient' : num(val, 3) + (unit ? ' ' + unit : '')) + '</span></div>'
+      + '<div class="vx-meta">' + esc(interp) + '</div></div>';
+  }
+  function renderGreeks(s, ivDec) {
+    var host = $('vx-os-greeks'); if (!host) return;
+    var g = s.greeks;
+    if (!g) {
+      host.innerHTML = '<div class="vx-insufficient" role="note"><b>Greeks indisponibles.</b> '
+        + 'IV absente sur le board — aucun delta/theta/vega affiché comme fiable (pas d\'estimation inventée).</div>';
+      return;
+    }
+    var lvl1 = greekRow('Delta', g.delta, '$/pt', '≈ ' + num(g.delta, 1) + ' $ de P&L par +1 $ du sous-jacent. Risque principal : direction.', g.delta >= 0 ? 'vx-pos' : 'vx-neg')
+      + greekRow('Theta', g.theta, '$/jour', '≈ ' + num(g.theta, 2) + ' $/jour d\'érosion (toutes choses égales). Risque : le temps.', 'vx-neg')
+      + greekRow('Vega', g.vega, '$/pt IV', '≈ ' + num(g.vega, 2) + ' $ par +1 pt d\'IV. Risque : effondrement de volatilité post-événement.', '')
+      + greekRow('Gamma', g.gamma, '', 'Accélération du delta quand le cours bouge — plus élevé près du strike / de l\'échéance.', '');
+    var lvl2 = greekRow('Vanna', g.vanna, '', 'Sensibilité du delta à l\'IV (couplage direction × volatilité).', '')
+      + greekRow('Vomma', g.vomma, '', 'Sensibilité du vega à l\'IV (convexité de volatilité).', '');
+    host.innerHTML = '<div class="vx-greeks">' + lvl1 + '</div>'
+      + '<details class="vx-mt2"><summary class="vx-btn vx-btn-sm vx-btn-ghost">Greeks avancés</summary>'
+      + '<div class="vx-greeks vx-mt2">' + lvl2 + '</div></details>'
+      + '<div class="vx-card-foot"><span class="vx-meta">Greeks de position (moteur). Agrégés seulement si IV fiable — sinon Insufficient.</span></div>';
+  }
+
+  /* Comparaison de structures (LOT I) — matrice claire, pas un radar. */
+  function renderCompare(d, bd) {
+    var host = $('vx-os-compare'); if (!host) return;
+    var rows = d.strategies || []; if (rows.length < 2) { host.innerHTML = ''; return; }
+    var head = ['Structure', 'Coût/risque max', 'Gain max', 'Breakeven', 'Delta', 'Theta', 'Vega', 'PoP', 'DTE', 'Liquidité', 'Asymétrie', 'Adéquation'];
+    var body = rows.map(function (s) {
+      var cap = Math.abs(s.max_loss || 0);
+      var gmax = s.max_profit_unbounded ? '∞' : (s.max_profit != null ? price(s.max_profit) : '—');
+      var asym = (cap > 0 && s.max_profit != null && !s.max_profit_unbounded) ? (s.max_profit / cap) : (s.max_profit_unbounded ? null : null);
+      var g = s.greeks || {};
+      var liq = strategyLiquidity(bd, d.sym, d.exp, s.legs);
+      return '<tr' + (s.recommended ? ' class="vx-row-hl"' : '') + '>'
+        + '<td data-label="Structure">' + (s.recommended ? '★ ' : '') + esc(s.label) + '</td>'
+        + '<td data-label="Risque max" class="vx-num vx-neg">' + price(cap) + '</td>'
+        + '<td data-label="Gain max" class="vx-num vx-pos">' + gmax + '</td>'
+        + '<td data-label="Breakeven" class="vx-num">' + ((s.breakevens || []).map(function (b) { return nd(b); }).join(' · ') || '—') + '</td>'
+        + '<td data-label="Delta" class="vx-num">' + (g.delta != null ? num(g.delta, 1) : '—') + '</td>'
+        + '<td data-label="Theta" class="vx-num vx-neg">' + (g.theta != null ? num(g.theta, 2) : '—') + '</td>'
+        + '<td data-label="Vega" class="vx-num">' + (g.vega != null ? num(g.vega, 2) : '—') + '</td>'
+        + '<td data-label="PoP" class="vx-num">' + (s.probability_of_profit != null ? num(s.probability_of_profit, 0) + ' %' : '—') + '</td>'
+        + '<td data-label="DTE" class="vx-num">' + (s.days_to_exp != null ? s.days_to_exp + ' j' : '—') + '</td>'
+        + '<td data-label="Liquidité"><span class="' + toneCls(liq.tone) + '">' + liq.label + '</span></td>'
+        + '<td data-label="Asymétrie" class="vx-num">' + (asym != null ? num(asym, 1) + '×' : '—') + '</td>'
+        + '<td data-label="Adéquation" class="vx-num">' + (s.fit_score != null ? num(s.fit_score, 0) : '—') + '</td></tr>';
+    }).join('');
+    host.innerHTML = '<section class="vx-card" aria-label="Comparaison des structures">'
+      + '<div class="vx-card-header"><span class="vx-card-title">Comparer les structures</span>'
+      + '<span class="vx-chart-question">Quelle structure exprime le mieux la thèse avec le moins de risque inutile ?</span></div>'
+      + '<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>'
+      + head.map(function (h) { return '<th>' + h + '</th>'; }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div>'
+      + '<div class="vx-card-foot"><span class="vx-meta">★ = mieux adaptée au biais (adéquation = 45 % alignement + 30 % PoP + 25 % R:R — heuristique transparente, pas une promesse).</span></div></section>';
+  }
+
+  /* ════════════════ VUE LEAPS (LOT B) ════════════════ */
+  function leapsScore(c) {
+    /* Score de compatibilité EXPLICABLE (0-100) — uniquement sur données réelles.
+       Le temps seul n'est jamais une thèse : delta + liquidité pèsent le plus. */
+    var parts = [];
+    var delta = Math.abs(c.delta == null ? 0 : c.delta);
+    var dDelta = (delta >= 0.70 && delta <= 0.90) ? 30 : (delta >= 0.60 && delta < 0.95) ? 18 : 6;
+    parts.push({ k: 'Delta ' + (c.delta != null ? num(delta, 2) : 'n/d'), v: dDelta, max: 30, ok: dDelta >= 24 });
+    var mo = c.dte != null ? c.dte / 30 : null;
+    var dDte = (mo != null && mo >= 6 && mo <= 18) ? 25 : (mo != null && mo >= 4 && mo <= 22) ? 14 : 4;
+    parts.push({ k: 'Échéance ' + (mo != null ? num(mo, 0) + ' mois' : 'n/d'), v: dDte, max: 25, ok: dDte >= 20 });
+    var dOi = c.oi == null ? 0 : (c.oi >= 8000 ? 20 : c.oi >= 3000 ? 13 : c.oi >= 800 ? 6 : 2);
+    parts.push({ k: 'OI ' + nd(c.oi), v: dOi, max: 20, ok: dOi >= 13 });
+    var dSp = c.spread_pct == null ? 0 : (c.spread_pct <= 3 ? 15 : c.spread_pct <= 6 ? 9 : c.spread_pct <= 10 ? 4 : 0);
+    parts.push({ k: 'Spread ' + (c.spread_pct != null ? num(c.spread_pct, 1) + ' %' : 'n/d'), v: dSp, max: 15, ok: dSp >= 9 });
+    var dIv = c.iv == null ? 0 : (c.iv <= 45 ? 10 : c.iv <= 70 ? 6 : 2);
+    parts.push({ k: 'IV ' + (c.iv != null ? num(c.iv, 0) + ' %' : 'n/d'), v: dIv, max: 10, ok: dIv >= 6 });
+    var total = parts.reduce(function (a, p) { return a + p.v; }, 0);
+    return { total: total, parts: parts };
+  }
+  function loadLeaps(sym) {
+    var host = $('vx-lp-out'); if (!host) return;
+    host.innerHTML = '<div class="vx-skeleton" style="height:120px"></div>';
+    board().then(function (bd) {
+      var leaps = bd.filter(function (c) { return c.sym === sym && c.type === 'CALL' && c.dte != null && c.dte >= 150 && c.dte <= 560; })
+        .sort(function (a, b) { return leapsScore(b).total - leapsScore(a).total; });
+      if (!leaps.length) {
+        host.innerHTML = '<section class="vx-card vx-insufficient" role="note"><div class="vx-card-header"><span class="vx-card-title">Aucun LEAPS exploitable</span></div>'
+          + '<p>Pas de call longue échéance (6-18 mois) pour <b>' + esc(sym) + '</b> dans le tableau. '
+          + 'Un LEAPS exige delta 0,70-0,90, OI élevé et spread faible — non évaluable sans ces données.</p></section>';
+        return;
+      }
+      host.innerHTML = leaps.slice(0, 4).map(function (c) {
+        var sc = leapsScore(c), tone = sc.total >= 70 ? 'pos' : sc.total >= 50 ? 'warn' : 'neg';
+        var kind = (Math.abs(c.delta || 0) >= 0.7 ? 'Achat de tendance (delta directionnel)' : 'Achat de temps — le temps seul n\'est pas une thèse');
+        var bars = sc.parts.map(function (p) {
+          return '<div class="vx-opt-dim"><span class="vx-opt-dim-l">' + esc(p.k) + '</span>'
+            + '<span class="vx-opt-dim-bar"><i style="width:' + Math.round(p.v / p.max * 100) + '%;background:' + (p.ok ? 'var(--vx-positive,#39b878)' : 'var(--vx-warning,#dda23b)') + '"></i></span>'
+            + '<span class="vx-opt-dim-v">' + p.v + '/' + p.max + '</span></div>';
+        }).join('');
+        return '<section class="vx-card vx-mb3" aria-label="LEAPS ' + esc(c.sym) + '">'
+          + '<div class="vx-flex" style="justify-content:space-between;align-items:flex-start">'
+          + '<div><span class="vx-ticker">' + esc(c.sym) + '</span> <span class="vx-badge" style="color:var(--vx-option,#9c79d0)">CALL ' + nd(c.strike) + ' · ' + esc(String(c.exp).slice(0, 10)) + '</span>'
+          + '<div class="vx-meta vx-mt1">' + esc(kind) + '</div></div>'
+          + '<div style="text-align:right"><div class="vx-kpi-label">Compatibilité LEAPS</div>'
+          + '<div class="' + toneCls(tone) + '" style="font-size:28px;font-weight:700">' + sc.total + '<small style="font-size:14px">/100</small></div></div></div>'
+          + '<div class="vx-opt-dims vx-mt2">' + bars + '</div>'
+          + '<div class="vx-card-foot"><span class="vx-meta">Score explicable = somme des composantes réelles ci-dessus (aucun score opaque). '
+          + 'Un LEAPS ne se justifie que combiné à une tendance et un catalyseur — la durée ne remplace pas la thèse.</span></div></section>';
+      }).join('');
+    });
+  }
+
+  /* ════════════════ VUE POSITIONS (LOT J/K) — domicile canonique ════════════════ */
+  function hasConfirm(t) { var s = t.entrySnap || {}; return !!(s.validated || s.breakout || s.confirmed || s.revalidated); }
+  function optNextAction(t) {
+    /* GARDE-FOU (Constitution §18) : jamais « renforcer » une option perdante sans
+       confirmation positive explicite — et jamais parce que la prime a baissé. */
+    if (t.pl != null && t.pl < 0) {
+      if (!hasConfirm(t)) return { label: 'Renforcement interdit : aucune confirmation positive détectée', tone: 'neg' };
+      return { label: 'Confirmation détectée — renforcement possible seulement après revue (theta/thèse/liquidité)', tone: 'muted' };
+    }
+    if (t.pl == null) return { label: 'Marque indisponible — conserver, réévaluer avec IBKR', tone: 'muted' };
+    if (t.pl >= 100) return { label: 'Gain ≥ +100 % : sécuriser 25-50 % et laisser courir le reste (indicatif)', tone: 'pos' };
+    if (t.pl >= 75) return { label: 'Gain ≥ +75 % : réévaluation complète (thèse, catalyseur, theta)', tone: 'pos' };
+    if (t.pl >= 50) return { label: 'Gain ≥ +50 % : conserver tant que thèse et catalyseur tiennent', tone: 'pos' };
+    if (t.pl >= 30) return { label: 'Gain ≥ +30 % : réévaluer invalidation et risque de temps', tone: 'pos' };
+    if (t.pl >= 20) return { label: 'Gain ≥ +20 % : aucune action automatique', tone: 'muted' };
+    return { label: 'Conserver — thèse intacte, surveiller le theta', tone: 'muted' };
+  }
+  var _optQuotes = {};   /* cache marques par id — survit aux re-rendus (§ marques n/d honnêtes) */
+  function loadPositions() {
+    var host = $('vx-op-body'); if (!host) return;
+    var E = window.VXEntities;
+    var opts = E ? E.positions().filter(function (t) { return t.type !== 'STK'; }) : [];
+    if (!opts.length) {
+      host.innerHTML = VX.states.empty('Aucune position option déclarée — le sélecteur privilégie les CALLS (max 3, dont 1 PUT tactique).',
+        '<a class="vx-btn vx-btn-sm vx-btn-primary" href="/opportunities?view=options">Chercher un contrat</a>');
+      return;
+    }
+    var body = opts.map(function (t) {
+      var q = _optQuotes[t.id] || {}; var mark = q.mark != null ? q.mark : null;
+      var value = mark != null ? mark * 100 * t.qty : null;
+      var pl = (value != null && t.cost) ? (value - t.cost) / t.cost * 100 : null;
+      var tt = Object.assign({}, t, { pl: pl });
+      var dte = t.exp ? Math.round((new Date(t.exp) - Date.now()) / 86400000) : null;
+      var na = optNextAction(tt), s = t.entrySnap || {};
+      return '<tr>'
+        + '<td data-label="Contrat"><span class="vx-ticker">' + esc(t.sym) + '</span> <span class="vx-badge" style="color:var(--vx-option,#9c79d0)">' + esc(t.type) + ' ' + nd(t.strike) + ' ' + esc(t.exp || '') + '</span></td>'
+        + '<td data-label="Qté" class="vx-num">' + t.qty + '</td>'
+        + '<td data-label="Coût" class="vx-num">' + price(t.cost) + '</td>'
+        + '<td data-label="Marque" class="vx-num">' + (mark != null ? price(mark) : 'n/d') + '</td>'
+        + '<td data-label="P&L %" class="vx-num ' + (pl > 0 ? 'vx-pos' : pl < 0 ? 'vx-neg' : '') + '">' + (pl != null ? num(pl, 1) + ' %' : 'n/d') + '</td>'
+        + '<td data-label="DTE" class="vx-num ' + (dte != null && dte <= 7 ? 'vx-warn' : '') + '">' + (dte != null ? dte + ' j' : '—') + '</td>'
+        + '<td data-label="Invalidation" class="vx-num vx-neg">' + nd(s.stop) + '</td>'
+        + '<td data-label="Prochaine action" class="' + toneCls(na.tone) + '" style="max-width:230px;font-size:12px">' + esc(na.label) + '</td>'
+        + '<td><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options?view=structure&sym=' + encodeURIComponent(t.sym) + '">Structure</a></td></tr>';
+    }).join('');
+    host.innerHTML = '<div class="vx-insight vx-mb3" data-tone="risk"><b>Garde-fou perdants (Constitution §18).</b> '
+      + 'Une option en perte ne reçoit jamais « renforcer » sans confirmation positive du marché — jamais parce que la prime a baissé.</div>'
+      + '<section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Positions options — détail canonique</span>'
+      + '<span class="vx-meta vx-right">' + opts.length + ' · lecture seule — aucun ordre</span></div>'
+      + '<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>'
+      + '<th>Contrat</th><th class="vx-num">Qté</th><th class="vx-num">Coût</th><th class="vx-num">Marque</th><th class="vx-num">P&L %</th>'
+      + '<th class="vx-num">DTE</th><th class="vx-num">Invalidation</th><th>Prochaine action</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>'
+      + '<div class="vx-card-footer"><span class="vx-meta">Marques/Greeks live via IBKR (lecture seule) ; sans IBKR, « n/d » honnête — jamais estimés.</span></div></section>';
+    // marques serveur (best-effort, comme le desk)
+    fetch('/api/pos-quotes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ positions: opts.map(function (t) { return { sym: t.sym, exp: t.exp, strike: t.strike, right: t.right }; }) }) })
+      .then(function (r) { return r.json(); }).then(function (d) {
+        var res = d.results || {}, changed = false;
+        opts.forEach(function (t) { var k = [String(t.sym).toUpperCase(), t.exp || '', (t.strike != null ? t.strike : ''), (t.right || '').toUpperCase()].join('|'); if (res[k]) { _optQuotes[t.id] = res[k]; changed = true; } });
+        if (changed) loadPositions();
+      }).catch(function () {});
+  }
+
+  /* ── Auto-symbole depuis le board (chips) ── */
+  function chips(hostId, inputId, load) {
+    var host = $(hostId), input = $(inputId); if (!host || !input) return;
+    board().then(function (bd) {
+      var syms = Array.from(new Set(bd.map(function (c) { return c.sym; }))).slice(0, 8);
+      host.innerHTML = '<span class="vx-muted" style="font-size:11px">Depuis le tableau :</span> '
+        + syms.map(function (x) { return '<button type="button" class="vx-btn vx-btn-sm vx-btn-ghost" data-osym="' + esc(x) + '">' + esc(x) + '</button>'; }).join('');
+      host.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-osym]') : null; if (!b) return; input.value = b.getAttribute('data-osym'); load(input.value); });
+      var pre = null; try { pre = new URLSearchParams(location.search).get('sym'); } catch (e2) {}
+      if (!input.value && (pre || syms.length)) { input.value = (pre || syms[0]).toUpperCase(); load(input.value); }
+    });
+  }
+
+  function init() {
+    var v = view();
+    if (v === 'structure') {
+      var go = $('vx-os-go'), inp = $('vx-os-sym');
+      if (!go || !inp) return;
+      var run = function () { var s = (inp.value || '').trim().toUpperCase(); if (s) loadStructure(s); };
+      go.addEventListener('click', run);
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') run(); });
+      chips('vx-os-chips', 'vx-os-sym', function (s) { loadStructure(s); });
+    } else if (v === 'leaps') {
+      var g2 = $('vx-lp-go'), i2 = $('vx-lp-sym');
+      if (!g2 || !i2) return;
+      var run2 = function () { var s = (i2.value || '').trim().toUpperCase(); if (s) loadLeaps(s); };
+      g2.addEventListener('click', run2);
+      i2.addEventListener('keydown', function (e) { if (e.key === 'Enter') run2(); });
+      chips('vx-lp-chips', 'vx-lp-sym', function (s) { loadLeaps(s); });
+    } else if (v === 'positions') {
+      if (window.VXEntities) loadPositions(); else window.addEventListener('load', loadPositions, { once: true });
+      if (VX && VX.bus) VX.bus.on('vx:position-changed', loadPositions);
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();

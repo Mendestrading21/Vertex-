@@ -34,8 +34,19 @@ def test_is_bluish_flags_blue_but_not_green_or_violet():
     assert pal.is_bluish(pal.BRAND) is False     # orange
 
 
+def _js_series(src_lower):
+    """Extrait le tableau `series: [...]` (liste de hex) du thème JS."""
+    m = re.search(r'series\s*:\s*\[([^\]]*)\]', src_lower)
+    assert m, 'tableau series introuvable dans le thème JS'
+    return re.findall(r'#[0-9a-f]{6}', m.group(1))
+
+
 def test_js_theme_matches_python_palette():
-    """Le thème graphique JS doit rester cohérent avec le registre central."""
+    """Le thème graphique JS doit rester cohérent avec le registre central.
+
+    Source de vérité = `palette.py`. Le thème JS en est un MIROIR : la série
+    entière doit correspondre, pas seulement quelques couleurs (garde-fou C-02).
+    """
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     js = os.path.join(root, 'vertex/static/vertex/js/charts/chart-theme-obsidian-copper.js')
     with open(js, encoding='utf-8') as fh:
@@ -43,10 +54,27 @@ def test_js_theme_matches_python_palette():
     # les couleurs clés du registre doivent apparaître dans le thème JS
     for col in (pal.BRAND, pal.BEIGE, pal.OPTION):
         assert col.lower() in src, '%s absent du thème JS' % col
+    # LA SÉRIE ENTIÈRE doit être identique à palette.SERIES (ordre compris)
+    js_series = _js_series(src)
+    py_series = [c.lower() for c in pal.SERIES]
+    assert js_series == py_series, (
+        'série JS %s != palette.SERIES %s' % (js_series, py_series))
     # le thème JS ne doit contenir aucune couleur bleu-dominant en série
     hexes = re.findall(r'#[0-9a-f]{6}', src)
     blues = [h for h in hexes if pal.is_bluish(h)]
     assert blues == [], 'couleurs bleu dominant dans le thème JS : %s' % blues
+
+
+def test_chart_core_fallback_series_matches_palette():
+    """Le repli codé en dur de chart-core.js doit aussi refléter palette.SERIES
+    (3e copie de la palette — évite une dérive silencieuse)."""
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    js = os.path.join(root, 'vertex/static/vertex/js/charts/chart-core.js')
+    with open(js, encoding='utf-8') as fh:
+        src = fh.read().lower()
+    js_series = _js_series(src)
+    assert js_series == [c.lower() for c in pal.SERIES], (
+        'repli chart-core.js %s != palette.SERIES' % js_series)
 
 
 # ─────────────────────────────────────────────── chart_spec canonique (§5)

@@ -96,26 +96,17 @@ _VIEW_CONTENT = {
 </div>
 """,
     'sectors': """
+<!-- Deux vues secteurs MAXIMUM (PR n°3) : RRG décisionnel + heatmap de détail.
+     Le bar chart et le treemap redondants (mêmes scan.sectors) ont été retirés. -->
 <div class="vx-grid vx-mt3">
-  <div class="vx-col-7" id="vx-mk-sectors-chart"></div>
-  <section class="vx-card vx-col-5" aria-label="Leaders par secteur">
+  <div class="vx-col-8" id="vx-mk-rotation"></div>
+  <section class="vx-card vx-col-4" aria-label="Leaders par secteur">
     <div class="vx-card-header"><span class="vx-card-title">Leaders par secteur</span></div>
     <div id="vx-mk-sectors-leaders">%%LOADING%%</div>
   </section>
 </div>
 <div class="vx-grid vx-mt4">
   <div class="vx-col-12" id="vx-mk-sectors-heat"></div>
-</div>
-<div class="vx-grid vx-mt4">
-  <div class="vx-col-12" id="vx-mk-rotation"></div>
-</div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" aria-label="Poids et performance par secteur">
-    <div class="vx-chart-head"><span class="vx-chart-title">Poids &amp; performance par secteur</span>
-      <span class="vx-chart-question">Où se concentre l’univers, et qui performe ?</span></div>
-    <div id="vx-mk-sectors-tree" style="height:300px"></div>
-    <div class="vx-card-foot"><span class="vx-meta">Taille = nombre de titres scannés du secteur · couleur = variation moyenne du jour (vert entrant / rouge sortant).</span></div>
-  </section>
 </div>
 """,
     'breadth': """
@@ -129,18 +120,19 @@ _VIEW_CONTENT = {
     <div id="vx-mk-breadth-detail">%%LOADING%%</div>
   </section>
 </div>
+<!-- Breadth (PR n°3) : conserver UNE jauge de participation + UNE courbe de
+     tendance multi-séances. La barre unique (breadthCard) et les anneaux
+     redondants ont été retirés. -->
 <div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-5 vx-card--accent" aria-label="Entonnoir de sélection">
+  <div class="vx-col-12" id="vx-mk-breadth-trend"></div>
+</div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-6 vx-card--accent" aria-label="Entonnoir de sélection">
     <div class="vx-card-header"><span class="vx-card-title">Entonnoir de sélection</span>
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Dossiers →</a></span></div>
     <div id="vx-mk-funnel">%%LOADING%%</div>
   </section>
-  <div class="vx-col-7" id="vx-mk-breadth-chart"></div>
-  <div class="vx-col-12" id="vx-mk-breadth-trend"></div>
-</div>
-<div class="vx-grid vx-mt4">
-  <div class="vx-col-5" id="vx-mk-verdicts"></div>
-  <div class="vx-col-7" id="vx-mk-participation-rings"></div>
+  <div class="vx-col-6" id="vx-mk-verdicts"></div>
 </div>
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-5" id="vx-mk-internals-card" aria-label="Internals du marché" hidden>
@@ -178,12 +170,11 @@ _VIEW_CONTENT = {
     <div id="vx-mk-vix-body">%%LOADING%%</div>
   </section>
   <section class="vx-card vx-col-6 vx-card--accent" aria-label="Contexte de volatilité">
-    <div class="vx-card-header"><span class="vx-card-title">Contexte — régime &amp; participation</span></div>
-    <div class="vx-flex vx-wrap" style="gap:1rem;align-items:flex-start">
-      <div id="vx-mk-vol-regime" style="flex:1;min-width:150px">%%LOADING%%</div>
-      <div id="vx-mk-vol-breadth" style="flex:1;min-width:150px"></div>
-    </div>
-    <div id="vx-mk-vol-rail" class="vx-mt3"></div>
+    <div class="vx-card-header"><span class="vx-card-title">Contexte — régime</span></div>
+    <!-- Une seule lecture de volatilité (VIX à gauche). Les jauges régime &
+         breadth dupliquées ont été retirées ; le positionnement régime reste
+         en texte (domicile canonique : Breadth / Vue d'ensemble). -->
+    <div id="vx-mk-vol-rail">%%LOADING%%</div>
   </section>
 </div>
 <div class="vx-grid vx-mt4">
@@ -201,8 +192,6 @@ _VIEW_CONTENT = {
 _JS = r"""
 <script src="/static/vertex/js/charts/line-area-chart.js" defer></script>
 <script src="/static/vertex/js/charts/bar-chart.js" defer></script>
-<script src="/static/vertex/js/charts/breadth-chart.js" defer></script>
-<script src="/static/vertex/js/charts/sector-chart.js" defer></script>
 <script src="/static/vertex/js/charts/heatmap.js" defer></script>
 <script src="/static/vertex/js/charts/donut-chart.js" defer></script>
 <script src="/static/vertex/js/charts/timeline-chart.js" defer></script>
@@ -486,15 +475,6 @@ function loadSectors(scan){
   $('vx-mk-sectors-leaders').innerHTML=VX.states.empty('Secteurs non calculés par le dernier scan.');
     return;
   }
-  VXCharts.sectorCard('vx-mk-sectors-chart',{
-    title:'Rotation sectorielle',question:'Où va le capital en ce moment ?',
-    conclusion:'Leader : '+(sectors[0].sector||'n/d')+' · cliquer un secteur pour voir ses opportunités',
-    labels:sectors.map(s=>s.sector),values:sectors.map(s=>s.avg_score??s.score??0),height:Math.max(230,sectors.length*30),
-    source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
-    onSector:(name)=>{VX.context.save();location.href='/opportunities?view=stocks&sector='+encodeURIComponent(name);},
-    explain:{shows:'Le score moyen par secteur calculé par le moteur de rotation.',
-      why:'La stratégie suit les secteurs qui attirent le capital.',
-      confirm:'Leadership stable sur plusieurs séances.',invalidate:'Rotation défensive brutale.'}});
   VXCharts.heatmapCard('vx-mk-sectors-heat',{
     title:'Performance et momentum par secteur',
     question:'Quels secteurs attirent le capital aujourd’hui ?',
@@ -519,18 +499,6 @@ function loadSectors(scan){
       <td>${L?`<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(L)}" aria-label="Actions ${esc(L)}">⋯</button>`:''}</td>
     </tr>`;}).join('')+'</tbody></table>'
     +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
-  /* Treemap poids & performance par secteur (type réutilisable) */
-  if(window.VXCharts&&VXCharts.treemap){
-    const cc=VXCharts.colors;
-    const col=(ch)=>ch==null?cc.neutral:(ch>=0.3?cc.positive:ch<=-0.3?cc.negative:cc.warning);
-    const el=document.getElementById('vx-mk-sectors-tree');
-    const w=(el&&el.clientWidth)||900;
-    VXCharts.treemap(el,{width:w,height:300,
-      items:sectors.map(s=>({label:s.sector||'n/d',value:(s.n||s.avg_score||1),
-        sub:(s.avg_change!=null?((s.avg_change>=0?'+':'')+Number(s.avg_change).toFixed(1)+'%'):''),
-        color:col(s.avg_change)})),
-      fmt:(v)=>v+' titres'});
-  }
   /* Rotation sectorielle en quadrant (RRG-like) : force relative × momentum */
   if(window.VXCharts&&sectors.length>=2){
     const cc2=VXCharts.colors;
@@ -596,17 +564,6 @@ async function loadBreadth(scan){
         +`<div class="vx-help vx-mt2">Calculé sur l’univers des leaders scannés (partiel, pas tout le NYSE). Advance/decline cumulés multi-séances non fournis — non affichés plutôt qu’inventés.</div>`;
     }else dEl.innerHTML=VX.states.empty('Détail de participation non fourni par le dernier scan.');
   }
-  if(brNum!==null){
-    VXCharts.breadthCard('vx-mk-breadth-chart',{
-      title:'Breadth / participation',question:'La hausse est-elle partagée ?',
-      conclusion:brNum>=55?'Participation saine.':'Participation étroite — sélectivité obligatoire.',
-      labels:['> moyenne'],values:[brNum],height:200,
-      source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
-      limits:'breadth calculée sur les leaders scannés (univers partiel)',
-      explain:{shows:'Le pourcentage de titres au-dessus de leur moyenne (moteur de contexte marché).',
-        why:'Une hausse portée par 3 titres est fragile ; la breadth qualifie le régime.',
-        confirm:'Breadth > 60 % stable plusieurs séances.',invalidate:'Breadth < 40 % pendant que les indices montent.'}});
-  }else emptyCard('vx-mk-breadth-chart','Breadth non calculée par le dernier scan.',SCAN_ACTION);
   /* Tendance de participation : historique breadth RÉEL (internals.history : d/a50/a200/
      health) déjà servi mais jamais tracé — montre si la participation s'améliore ou se dégrade. */
   const H=(scan&&scan.internals&&scan.internals.history)||[];
@@ -654,19 +611,6 @@ async function loadBreadth(scan){
       const el=$('vx-mk-funnel');if(el)el.insertAdjacentHTML('beforeend',
         '<div class="vx-help vx-mt2">Chaque étape resserre l’univers scanné jusqu’aux verdicts d’achat du comité. Aucune idée n’est forcée : un entonnoir plat = marché hostile.</div>');
     }else emptyCard('vx-mk-funnel','Univers non scanné.',SCAN_ACTION);
-  }
-  /* Anneaux de participation : > MM50 / > MM200 / avancées (composite) */
-  if(window.VXCharts&&VXCharts.rings&&bo){
-    const advPct=(bo.adv!=null&&bo.dec!=null&&(bo.adv+bo.dec)>0)?Math.round(bo.adv/(bo.adv+bo.dec)*100):null;
-    const items=[];
-    if(bo.above50!=null)items.push({label:'Titres > MM50',value:Math.round(bo.above50),color:CO.brand});
-    if(bo.above200!=null)items.push({label:'Titres > MM200',value:Math.round(bo.above200),color:CO.cyan});
-    if(advPct!=null)items.push({label:'Avancées / total',value:advPct,color:CO.positive});
-    const host=$('vx-mk-participation-rings');
-    if(host&&items.length){
-      host.innerHTML='<section class="vx-card vx-card--accent"><div class="vx-card-header"><span class="vx-card-title">Composite de participation</span></div><div id="vx-mk-rings-svg"></div><div class="vx-card-foot"><span class="vx-meta">Anneaux = part des titres au-dessus des moyennes et ratio d’avancées, sur l’univers scanné.</span></div></section>';
-      VXCharts.rings('vx-mk-rings-svg',{items:items,size:180,centerValue:(brNum!=null?Math.round(brNum):'—'),centerLabel:'participation',ariaLabel:'Composite de participation'});
-    }
   }
   /* Waterfall : composition de la santé du marché (contributions pondérées de l'internals) */
   const inter=(scan&&scan.internals)||{};
@@ -739,29 +683,22 @@ async function loadVix(scan){
         bands:[{to:15,color:CO.positive},{to:25,color:CO.warning},{to:50,color:CO.negative}]});
     }
   }
-  /* Contexte : jauge participation (breadth) + jauge régime */
-  let br=null;const sb=sum.breadth;
-  if(sb!=null&&typeof sb==='object')br=(sb.above50!=null)?Number(sb.above50):(sb.above200!=null?Number(sb.above200):null);
-  else if(sb!=null&&!isNaN(sb))br=Number(sb);
-  if(G&&br!=null){VXCharts.gauge('vx-mk-vol-breadth',{value:br,min:0,max:100,unit:' %',label:'Breadth',
-    reading:br>=55?'Participation saine':'Étroite',
-    bands:[{to:40,color:CO.negative},{to:55,color:CO.warning},{to:100,color:CO.positive}]});}
-  else if($('vx-mk-vol-breadth'))$('vx-mk-vol-breadth').innerHTML=VX.states.empty('Breadth non calculée.');
+  /* Contexte régime — UNIQUEMENT en texte (une seule lecture de volatilité, la
+     jauge VIX ci-dessus). Les jauges régime & breadth dupliquées sont retirées. */
   try{
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
     const conf=Math.round((r.confidence||0)*100);
     const allowed=r.adjustments&&r.adjustments.new_risk_allowed;
-    if(G){VXCharts.gauge('vx-mk-vol-regime',{value:conf,min:0,max:100,unit:' %',label:esc(r.regime||'Régime'),
-      reading:allowed?'Risque autorisé':'Risque bloqué',
-      bands:[{to:40,color:CO.negative},{to:70,color:CO.warning},{to:100,color:CO.positive}]});}
     const pos=allowed?Math.max(55,conf):Math.min(45,100-conf);
     if($('vx-mk-vol-rail'))$('vx-mk-vol-rail').innerHTML=
       '<div class="vx-stat-xl-label">Positionnement — Défense ↔ Attaque</div>'
       +'<div class="vx-rail vx-mt2" style="--vx-rail-pos:'+pos+'%"><span class="vx-rail-mark"></span></div>'
       +'<div class="vx-rail-scale"><span>Défense</span><span>Neutre</span><span>Attaque</span></div>'
-      +'<div class="vx-meta vx-mt2">Régime <b>'+esc(r.regime||'n/d')+'</b> · '
-      +(allowed?'<span class="vx-pos">nouveau risque autorisé</span>':'<span class="vx-neg">nouveau risque BLOQUÉ</span>')+'</div>';
-  }catch(e){if($('vx-mk-vol-regime'))$('vx-mk-vol-regime').innerHTML=VX.states.empty('Régime non calculé.');}
+      +'<div class="vx-meta vx-mt2">Régime <b>'+esc(r.regime||'n/d')+'</b> · confiance '+conf+' % · '
+      +(allowed?'<span class="vx-pos">nouveau risque autorisé</span>':'<span class="vx-neg">nouveau risque BLOQUÉ</span>')+'</div>'
+      +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')
+      +'<a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="?view=breadth">Participation →</a></div>';
+  }catch(e){if($('vx-mk-vol-rail'))$('vx-mk-vol-rail').innerHTML=VX.states.error('Régime indisponible');}
 }
 
 /* ═══ Orchestration ═══ */

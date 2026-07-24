@@ -126,7 +126,7 @@ async function renderFunnel(){
   let f;try{f=await VX.fetch('/api/opportunities/funnel',{ttl:60000});}catch(e){return;}
   if(!f||!f.stages||!f.stages.length)return;
   const roleColor={'ATTAQUE':'var(--vx-positive,#36c889)','MILIEU':'var(--vx-beige,#c8ad8d)',
-    'DÉFENSE':'var(--vx-neutral,#8f8a83)','RÉSERVE':'var(--vx-text-dim,#817d77)'};
+    'DÉFENSE':'var(--vx-neutral,#9d978e)','RÉSERVE':'var(--vx-text-dim,#817d77)'};
   const roles=(f.roles||[]).map(function(r){
     return '<span class="vx-chip" style="border:1px solid '+ (roleColor[r.role]||'#555')
       +';color:'+(roleColor[r.role]||'#aaa')+'">'+esc(r.role)+' '+esc(r.count)+'</span>';
@@ -152,21 +152,26 @@ async function renderRadar(){
   const scan=await VX.fetch('/scan',{ttl:120000});
   const rows=(scan.rows||[]).filter(r=>r.score!==undefined);
   if(!rows.length){$('op-body').innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
-  $('op-body').innerHTML=demoBanner(scan)+'<div id="op-topcards"></div><div id="op-funnel" class="vx-mb3"></div><div class="vx-grid"><div class="vx-col-8" id="op-radar"></div>'
-    +'<div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Lecture</span></div>'
-    +'<div class="vx-dim" style="font-size:12.5px">X : qualité stratégique (score composite moteur).<br>'
-    +'Y : qualité du timing (timing technique moteur).<br>Taille : intensité du signal (anomalies).<br>'
-    +'Couleur : direction du verdict (émeraude = achat · corail = éviter · acier = neutre).<br>Bordure ambre : qualité de données dégradée (démo).</div>'
-    +'<div id="op-radar-sel" class="vx-mt3"></div></div></div>'
+  $('op-body').innerHTML=demoBanner(scan)+'<div id="op-hero"></div><div id="op-topcards"></div><div id="op-funnel" class="vx-mb3"></div><div class="vx-grid"><div class="vx-col-8" id="op-scatter"></div>'
+    +'<div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Lecture du scatter</span></div>'
+    +'<div class="vx-dim" style="font-size:12.5px">X : qualité / conviction (score stratégique moteur).<br>'
+    +'Y : timing / momentum (timing technique moteur).<br>Taille : intensité du signal (anomalies).<br>'
+    +'Couleur : direction du verdict (émeraude = achat · corail = éviter · acier = neutre).<br>'
+    +'<b>Haut-droit</b> = qualité + timing (à étudier) · <b>bas-gauche</b> = à éviter.</div>'
+    +'<div id="op-scatter-sel" class="vx-mt3"></div></div></div>'
     +'<div id="op-ranking" class="vx-mt4"></div>';
+  renderHero(rows,scan);
   renderTopCards(rows);
   renderFunnel();
   renderRanking(rows);
-  VXCharts.card('op-radar',{
-    title:'Radar des opportunités',question:'Où se trouvent les meilleurs couples stratégie × timing ?',
-    conclusion:rows.filter(r=>bucketOf(r)==='Actionnable').length+' candidat(s) en zone actionnable',
-    height:340,source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
-    explain:{shows:'Chaque point est un titre scanné, placé par les scores moteur.',
+  VXCharts.card('op-scatter',{
+    title:'Scatter d\'asymétrie — qualité × timing',
+    question:'Où se trouvent les meilleurs couples qualité × timing ?',
+    conclusion:(function(){const a=rows.filter(r=>bucketOf(r)==='Actionnable').length;
+      return a?(a+' candidat(s) en zone actionnable (haut-droit)'):'Aucun candidat en zone actionnable — attendre reste valide';})(),
+    height:340,unit:'score 0-100',source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
+    summary:'Nuage de points des titres scannés : qualité stratégique en X, timing en Y ; les meilleures asymétries sont en haut à droite.',
+    explain:{shows:'Chaque point est un titre scanné, placé par les scores moteur (qualité en X, timing en Y).',
       why:'La stratégie n’engage que lorsque qualité ET timing convergent (coin haut-droit).',
       confirm:'Un point qui migre vers le haut-droit avec volume.',
       invalidate:'Retour sous 55 en qualité stratégique.'},
@@ -182,7 +187,7 @@ async function renderRadar(){
         y:{title:{display:true,text:'Qualité du timing'},grid:{color:'rgba(255,255,255,.06)'}}},
         onClick:(evt,els,chart)=>{const pts=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
           if(pts.length){const d=chart.data.datasets[0].data[pts[0].index];
-            document.getElementById('op-radar-sel').innerHTML=
+            document.getElementById('op-scatter-sel').innerHTML=
               `<div class="vx-flex"><span class="vx-ticker" style="font-size:16px">${d.sym}</span>${window.VXEntities.badges(d.sym)}
                  <span class="vx-badge vx-badge-decision vx-right" data-decision="${d.v||''}">${d.v||'n/d'}</span></div>
                <div class="vx-kv vx-mt2"><span class="k">Score stratégique</span><span class="v vx-mono">${VX.fmt.nd(d.x)}</span></div>
@@ -199,7 +204,55 @@ async function renderRadar(){
                  <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${d.sym}','alert')">Alerte</button>
                  <a class="vx-btn vx-btn-sm" href="/opportunities?view=options&sym=${d.sym}">Options</a>
                  <button class="vx-btn vx-btn-sm vx-btn-ghost" data-entity-menu="${d.sym}">Plus ▾</button></div>`;}},
-        plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} · stratégie ${ctx.raw.x} · timing ${ctx.raw.tOk?ctx.raw.y:'n/d'}`}}}}})});
+        plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} · stratégie ${ctx.raw.x} · timing ${ctx.raw.tOk?ctx.raw.y:'n/d'}`}}}},
+      plugins:[{id:'opQuad',afterDatasetsDraw(chart){const a=chart.chartArea,sx=chart.scales.x,sy=chart.scales.y;
+        const xc=sx.getPixelForValue(55),yc=sy.getPixelForValue(55);const g=chart.ctx;g.save();
+        g.strokeStyle='rgba(255,255,255,.12)';g.setLineDash([4,4]);g.beginPath();
+        if(xc>a.left&&xc<a.right){g.moveTo(xc,a.top);g.lineTo(xc,a.bottom);}
+        if(yc>a.top&&yc<a.bottom){g.moveTo(a.left,yc);g.lineTo(a.right,yc);}g.stroke();g.setLineDash([]);
+        g.font='10px sans-serif';g.fillStyle='rgba(255,255,255,.34)';
+        g.fillText('À ÉTUDIER',a.right-62,a.top+14);g.fillText('TIMING SEUL',a.left+6,a.top+14);
+        g.fillText('QUALITÉ SEULE',a.right-78,a.bottom-8);g.fillText('À ÉVITER',a.left+6,a.bottom-8);
+        g.restore();}}]})});
+}
+
+/* ── HERO ÉDITORIAL : combien d'asymétries, laquelle domine, honnêteté ── */
+function tierOf(r){
+  /* Niveaux dérivés des seuils moteur existants (bucketOf) → langage S+/S/A/B.
+     Aucun score inventé : mappe les buckets réels. */
+  const b=bucketOf(r);
+  if(b==='Actionnable'&&(r.score||0)>=80)return 'S+';
+  if(b==='Actionnable')return 'S';
+  if(b==='Proche')return 'A';
+  if(b==='À surveiller')return 'B';
+  return b==='Rejetée'?'ÉVITER':'—';
+}
+function renderHero(rows,scan){
+  const el=$('op-hero');if(!el)return;
+  const active=(rows||[]).filter(r=>r.verdict!=='AVOID'&&r.verdict!=='ÉVITER');
+  const cnt={'S+':0,'S':0,'A':0,'B':0};active.forEach(r=>{const t=tierOf(r);if(cnt[t]!=null)cnt[t]++;});
+  const ranked=active.slice().sort((a,b)=>(b.score||0)-(a.score||0));
+  const best=ranked[0]||null;
+  const m=scan&&scan.data_source==='demo'?'demo':'delayed';
+  const fresh='<span class="vx-freshness" data-live="'+(m==='demo'?'fallback':'delayed')+'"><span class="vx-live-dot"></span>'+(m==='demo'?'Démo':'Différé')+'</span>';
+  /* Message éditorial — UNIQUEMENT à partir des données réelles. */
+  let msg;
+  if(cnt['S+']){msg=cnt['S+']+' opportunité(s) S+ exceptionnelle(s) détectée(s).';}
+  else if(cnt['S']){msg='Aucune opportunité S+ aujourd\'hui. '+cnt['S']+' dossier(s) S méritent une analyse.';}
+  else if(cnt['A']){msg='Aucune asymétrie exceptionnelle. '+cnt['A']+' dossier(s) A à surveiller.';}
+  else {msg='Aucune asymétrie exceptionnelle détectée. Attendre est une décision valide.';}
+  if(best){msg+=' '+esc(best.symbol)+' offre la meilleure note ('+VX.fmt.nd(best.score)+(best.rr!=null?', R:R '+VX.fmt.nd(best.rr):'')+').';}
+  const kpi=(label,val,href)=>'<a class="vx-card vx-card--compact vx-kpi vx-col-3" style="text-decoration:none;color:inherit" href="'+href+'"><span class="vx-kpi-label">'+label+'</span><span class="vx-kpi-value" style="font-size:20px">'+val+'</span><span class="vx-kpi-delta vx-muted">voir →</span></a>';
+  el.innerHTML='<section class="vx-card vx-card--hero"><div class="vx-card-header"><span class="vx-card-title">Ce qui mérite ton attention</span><span class="vx-actions">'+fresh+'</span></div>'
+    +'<p style="font-size:15.5px;line-height:1.7;margin:0 0 .6rem;color:var(--vx-text)">'+msg+'</p>'
+    +'<div class="vx-grid">'
+    +kpi('S+',String(cnt['S+']),'/opportunities?view=stocks')
+    +kpi('S',String(cnt['S']),'/opportunities?view=stocks')
+    +kpi('A',String(cnt['A']),'/opportunities?view=stocks')
+    +(best?kpi('Meilleure',esc(best.symbol),'/analysis/'+encodeURIComponent(best.symbol)):kpi('Meilleure','—','/opportunities'))
+    +'</div>'
+    +(best?'<div class="vx-mt3"><a class="vx-btn vx-btn-primary" data-open-analysis="'+esc(best.symbol)+'">Étudier le dossier '+esc(best.symbol)+' →</a></div>':'')
+    +'</section><div class="vx-mt4"></div>';
 }
 
 /* ── ACTIONS ── */
