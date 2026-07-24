@@ -53,11 +53,14 @@ def test_prototype_scoped_to_migrated_spaces_only():
 
 def test_neon_identity_no_blue():
     css = _read(CSS).lower()
-    # identité orange néon / cuivre présente
-    assert '--ng-neon' in css and 'ff7a1e' in css and '--ng-copper' in css
-    # aucun bleu comme couleur identitaire (--ng-neon/brand ne doit pas être bleu)
-    assert '--ng-neon:#' in css.replace(' ', '')
-    assert 'var(--ng-neon)' in css  # brand local pointe sur l'orange néon
+    # Identité orange néon / cuivre présente, SOURCÉE depuis les tokens NEUE EMBER
+    # (plus de littéral orange local : `--ng-neon` pointe sur `--vx-ember-500`).
+    flat = css.replace(' ', '')
+    assert '--ng-neon' in css and '--ng-copper' in css
+    assert '--ng-neon:var(--vx-ember-500)' in flat, 'identite depuis les tokens Ember'
+    assert 'var(--ng-neon)' in css  # brand local pointe sur l'orange Ember
+    # Aucun hex d'identité en dur dans la couche neon-glass.
+    assert '--ng-neon:#' not in flat, 'plus de littéral hex local pour l identite'
 
 
 def test_glass_premium_present():
@@ -65,6 +68,30 @@ def test_glass_premium_present():
     assert 'backdrop-filter' in css and 'blur(' in css
     # bordure fine chaude (cuivre)
     assert '--ng-border:rgba(255,150,70' in css.replace(' ', '')
+
+
+def test_cards_overflow_visible_no_tooltip_clip():
+    """Régression : les cartes glass ne rognent plus les tooltips/menus
+    (bug `overflow:hidden` corrigé → `overflow:visible` par défaut)."""
+    flat = _read(CSS).replace(' ', '').replace('\n', '')
+    assert 'overflow:visible' in flat, 'les cartes doivent laisser déborder les tooltips'
+    head = flat.split('MARCH')[0]
+    assert 'overflow:hidden}' not in head, 'aucune carte glass ne doit être en overflow:hidden'
+
+
+def test_decorative_before_not_clickable():
+    """Le filet cuivre décoratif (::before) ne doit jamais capter les clics."""
+    flat = _read(CSS).replace(' ', '')
+    assert 'pointer-events:none' in flat, 'le ::before décoratif doit être pointer-events:none'
+
+
+def test_markets_widgets_use_stable_classes():
+    """Widgets Marchés stylés via classes STABLES (`vx-mk-*`), pas de sélecteurs
+    d'attribut fragiles (`[class*="heat"]`, `[class*="rail"]`, `[id$="-gauge"]`…)."""
+    css = _read(CSS)
+    assert 'vx-mk-hero-grid' in css and 'vx-mk-chip' in css
+    for fragile in ('[class*="heat"]', '[class*="rail"]', '[class*="spark"]', '[id$="-gauge"]'):
+        assert fragile not in css, f'sélecteur fragile résiduel : {fragile}'
 
 
 def test_glow_only_on_live_active_hover():

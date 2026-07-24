@@ -1,5 +1,10 @@
 # VERTEX NEON GLASS — Graph System V2 (issue #14, Phase 1)
 
+> ⚠️ **SUPERSÉDÉ par [`VERTEX_NEUE_EMBER_SYSTEM.md`](VERTEX_NEUE_EMBER_SYSTEM.md).**
+> Ce document décrit la 1ʳᵉ passe (littéraux orange locaux `#ff7a1e`, scope CSS).
+> L'identité est désormais fixée **à la racine** (`tokens.css`) en **Orange Ember
+> `#FF6D29`** avec 3 miroirs graphiques synchronisés. Conservé pour l'historique.
+
 > Langage visuel officiel de la refonte : **fond noir profond légèrement bleuté**,
 > **cartes glass premium**, identité **orange néon / cuivre incandescent**. Terminal
 > institutionnel + application premium, **jamais casino**. Implémenté d'abord comme

@@ -17,7 +17,11 @@ def _read(rel):
 # ─────────────────────────────────────────────── Typographie officielle
 def test_official_typography_tokens():
     css = _read('vertex/static/vertex/css/tokens.css')
-    assert '--vx-font:Inter' in css, 'police UI officielle = Inter'
+    # NEUE EMBER : direction typographique Neue Montreal, fallback robuste Inter
+    # (aucune police licenciée embarquée — cf. VERTEX_NEUE_EMBER_SYSTEM.md).
+    # Inter reste la police UI réellement rendue tant que Neue Montreal n'est pas
+    # fournie ; le rendu doit rester correct sans téléchargement supplémentaire.
+    assert '--vx-font:' in css and 'Inter' in css, 'fallback UI officiel = Inter'
     assert '"JetBrains Mono"' in css, 'police mono officielle = JetBrains Mono'
     assert 'IBM Plex Mono' not in css, 'IBM Plex Mono ne doit plus être la mono officielle'
 

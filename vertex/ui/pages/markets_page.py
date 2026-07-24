@@ -45,15 +45,13 @@ _HEADER = """
 # ── Squelettes par sous-vue ──────────────────────────────────────────────
 _VIEW_CONTENT = {
     'overview': """
+<!-- Bandeau HERO : le régime du marché est la première réponse (question :
+     « le vent est-il dans le dos ou de face ? »). Risque du jour à ses côtés. -->
 <div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-4" id="vx-mk-regime" aria-label="Régime de marché">
-    <div class="vx-card-header"><span class="vx-card-title">Régime de marché</span></div>
+  <section class="vx-card vx-card--hero vx-col-8" id="vx-mk-regime" aria-label="Régime de marché">
+    <div class="vx-card-header"><span class="vx-card-title">Régime de marché</span>
+      <span class="vx-chart-question">Le vent est-il dans le dos ou de face ?</span></div>
     <div id="vx-mk-regime-body">%%LOADING%%</div>
-  </section>
-  <section class="vx-card vx-col-4" id="vx-mk-leader" aria-label="Leadership sectoriel">
-    <div class="vx-card-header"><span class="vx-card-title">Leadership sectoriel</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=sectors">Secteurs →</a></span></div>
-    <div id="vx-mk-leader-body">%%LOADING%%</div>
   </section>
   <section class="vx-card vx-col-4" id="vx-mk-risk" aria-label="Risque du jour">
     <div class="vx-card-header"><span class="vx-card-title">Risque du jour</span></div>
@@ -62,7 +60,12 @@ _VIEW_CONTENT = {
 </div>
 <div class="vx-grid vx-mt4" id="vx-mk-strip" aria-label="Indices et cross-asset"></div>
 <div class="vx-grid vx-mt4">
-  <div class="vx-col-12" id="vx-mk-spy"></div>
+  <div class="vx-col-8" id="vx-mk-spy"></div>
+  <section class="vx-card vx-col-4" id="vx-mk-leader" aria-label="Leadership sectoriel">
+    <div class="vx-card-header"><span class="vx-card-title">Leadership sectoriel</span>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=sectors">Secteurs →</a></span></div>
+    <div id="vx-mk-leader-body">%%LOADING%%</div>
+  </section>
 </div>
 <div class="vx-grid vx-mt4">
   <div class="vx-col-12" id="vx-mk-multi"></div>
@@ -217,18 +220,56 @@ function emptyCard(host,reason,action){
 const SCAN_ACTION='<a class="vx-btn vx-btn-sm" href="/system?view=data">Système / Données</a>';
 
 /* ═══ OVERVIEW ═══ */
+/* Étiquettes FR + tonalité sémantique des régimes du moteur (jamais un code brut
+   « UNKNOWN » affiché en grand : tonalité go=porteur, risk=défensif, ''=neutre). */
+const REGIME_LABEL={
+  TREND_UP:['Tendance haussière','go','Le vent est dans le dos — environnement porteur.'],
+  TREND_DOWN:['Tendance baissière','risk','Vent de face — priorité à la défense.'],
+  CHOP:['Sans direction','','Marché indécis — sélectivité et patience.'],
+  RISK_ON:['Risk-On — appétit','go','Appétit pour le risque — momentum favorisé.'],
+  RISK_OFF:['Risk-Off — aversion','risk','Aversion au risque — qualité et défense.'],
+  PANIC:['Panique','risk','Stress extrême — préservation du capital.'],
+  EUPHORIA:['Euphorie','','Excès haussier — prises de bénéfices, prudence.'],
+  VOLATILITY_EXPANSION:['Expansion de volatilité','risk','La volatilité s’étend — entrées agressives invalidées.'],
+  VOLATILITY_COMPRESSION:['Compression de volatilité','','Volatilité comprimée — surveiller les cassures.'],
+  MEAN_REVERSION:['Retour à la moyenne','','Les excès se corrigent — jouer les extrêmes.'],
+  TRANSITION:['Transition','','Le régime bascule — attendre confirmation.'],
+};
+const SETUP_LABEL={BALANCED:'Équilibrée',BREAKOUT_PULLBACK:'Cassure / pullback',DEFENSIVE:'Défensive',
+  MEAN_REVERSION:'Retour moyenne',MOMENTUM:'Momentum',QUALITY_DEFENSIVE:'Qualité défensive',
+  CAPITAL_PRESERVATION:'Préservation capital',TAKE_PROFITS:'Prises de bénéfices',
+  BREAKOUT_WATCH:'Veille de cassure',ATTENDRE:'Attendre'};
 async function loadRegime(){
   try{
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
     const adj=r.adjustments||{};
     const conf=Math.round((r.confidence||0)*100);
+    const dims=(r.dimensions_used||[]).length;
+    /* État honnête : moins de 3 dimensions → régime réellement INCONNU. On
+       n'affiche PAS un « UNKNOWN » géant à 0 % : on explique pourquoi. */
+    if(r.regime==='UNKNOWN'||!REGIME_LABEL[r.regime]){
+      $('vx-mk-regime-body').innerHTML=VX.states.empty(
+        'Régime indéterminé — le moteur dispose de moins de 3 dimensions de marché ('
+        +dims+' évaluée'+(dims>1?'s':'')+'). Par prudence, le nouveau risque reste bloqué.',
+        SCAN_ACTION);
+      return;
+    }
+    const meta=REGIME_LABEL[r.regime];
+    const allowed=adj.new_risk_allowed;
+    const chip=(k,v,st)=>`<div class="vx-mk-chip"${st?` data-state="${st}"`:''}><span class="k">${k}</span><span class="v">${v}</span></div>`;
     $('vx-mk-regime-body').innerHTML=
-      `<div id="vx-mk-regime-gauge" class="vx-mb2"></div>
-      <div class="vx-kpi vx-mb3" style="text-align:center"><span class="vx-kpi-value" style="font-size:22px" data-regime="${esc(r.regime)}">${esc(r.regime)}</span>
-       <span class="vx-kpi-delta vx-muted">${(r.dimensions_used||[]).length} dimensions évaluées</span></div>
-      <div class="vx-kv"><span class="k">Nouveau risque</span><span class="v ${adj.new_risk_allowed?'vx-pos':'vx-neg'}">${adj.new_risk_allowed?'autorisé':'BLOQUÉ'}</span></div>
-      <div class="vx-kv"><span class="k">Priorité setups</span><span class="v">${VX.fmt.nd(esc(adj.setup_priority))}</span></div>
-      <div class="vx-kv"><span class="k">Confirmations exigées</span><span class="v">${VX.fmt.nd(esc(adj.confirmation_required))}</span></div>
+      `<div class="vx-mk-hero-grid">
+        <div>
+          <div class="vx-mk-regime-name" data-tone="${meta[1]}" data-regime="${esc(r.regime)}">${meta[0]}</div>
+          <div class="vx-mk-regime-sub">${meta[2]} · ${dims} dimensions évaluées${(r.secondary&&r.secondary.length)?' · aussi '+esc(r.secondary[0]):''}</div>
+          <div class="vx-mk-chips">
+            ${chip('Nouveau risque',allowed?'Autorisé':'BLOQUÉ',allowed?'on':'off')}
+            ${chip('Priorité setups',VX.fmt.nd(SETUP_LABEL[adj.setup_priority]||adj.setup_priority))}
+            ${chip('Confirmations',VX.fmt.nd(adj.confirmation_required))}
+          </div>
+        </div>
+        <div style="text-align:center"><div id="vx-mk-regime-gauge"></div></div>
+      </div>
       <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')}</div>`;
     if(window.VXCharts&&VXCharts.gauge){
       const reading=conf>=70?'Signal net — régime lisible':conf>=40?'Signal modéré — confirmations utiles':'Signal faible — prudence accrue';
@@ -305,7 +346,7 @@ function sparkSvg(vals,pos){
   if(!Array.isArray(vals)||vals.length<2)return '';
   const w=100,h=22,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=(mx-mn)||1;
   const pts=vals.map((v,i)=>(i/(vals.length-1)*w).toFixed(1)+','+(h-((v-mn)/rng)*(h-2)-1).toFixed(1)).join(' ');
-  const col=pos?'var(--vx-positive,#39b878)':'var(--vx-negative,#dc6255)';
+  const col=pos?'var(--vx-positive,#2ED6A1)':'var(--vx-negative,#FF5F69)';
   return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" width="100%" height="22" style="margin-top:5px;display:block" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
 function kpiCell(label,d,scan,extraNote){
@@ -690,11 +731,15 @@ async function loadVix(scan){
     const conf=Math.round((r.confidence||0)*100);
     const allowed=r.adjustments&&r.adjustments.new_risk_allowed;
     const pos=allowed?Math.max(55,conf):Math.min(45,100-conf);
+    /* Étiquette honnête : UNKNOWN → « indéterminé » explicité, jamais un code brut. */
+    const known=REGIME_LABEL[r.regime];
+    const regTxt=known?('<b>'+esc(known[0])+'</b> · confiance '+conf+' %')
+      :'<b>indéterminé</b> — moins de 3 dimensions de marché';
     if($('vx-mk-vol-rail'))$('vx-mk-vol-rail').innerHTML=
       '<div class="vx-stat-xl-label">Positionnement — Défense ↔ Attaque</div>'
       +'<div class="vx-rail vx-mt2" style="--vx-rail-pos:'+pos+'%"><span class="vx-rail-mark"></span></div>'
       +'<div class="vx-rail-scale"><span>Défense</span><span>Neutre</span><span>Attaque</span></div>'
-      +'<div class="vx-meta vx-mt2">Régime <b>'+esc(r.regime||'n/d')+'</b> · confiance '+conf+' % · '
+      +'<div class="vx-meta vx-mt2">Régime '+regTxt+' · '
       +(allowed?'<span class="vx-pos">nouveau risque autorisé</span>':'<span class="vx-neg">nouveau risque BLOQUÉ</span>')+'</div>'
       +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')
       +'<a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="?view=breadth">Participation →</a></div>';

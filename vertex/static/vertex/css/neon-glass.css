@@ -1,54 +1,58 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   VERTEX NEON GLASS — Graph System V2 (issue #14)
-   Fond noir profond légèrement bleuté · cartes glass premium · identité orange
-   néon / cuivre incandescent. Vert=gain, rouge=perte, ambre=attente, violet=
-   options. AUCUN bleu identitaire. Glow uniquement sur live / actif / sélection.
+   VERTEX NEON GLASS ORANGE — Graph System V2 (issue #14)
+   Fond très sombre (canvas #05070C) · cartes glass premium · identité ORANGE
+   EMBER (#FF6D29) sourcée depuis tokens.css. Vert=gain, rouge=perte, ambre=
+   attente, violet=options, cyan=comparaison technique. AUCUN bleu identitaire.
+   Glow uniquement sur live / point actif / sélection / alerte.
+
+   Toute couleur d'identité vient des tokens `--vx-*` (source unique NEUE EMBER) :
+   ce fichier n'invente plus de littéral orange. Le fond Signal Green a été tué à
+   la racine (tokens.css) — le shell (sidebar/topbar/nav) est donc déjà orange
+   partout, y compris hors `.vx-content`.
 
    MIGRATION page par page (validée) : espaces couverts = Aujourd'hui + Marchés
    (`.vx-content:is([data-space="briefing"],[data-space="markets"])`). Les 6 autres
-   espaces ne sont PAS touchés (Opportunités/Analyse/Portefeuille/Options/Journal/
-   Système) — pas de big-bang. Aucun moteur, aucune donnée, aucun calcul modifié.
+   espaces ne sont PAS peints ici (Opportunités/Analyse/Portefeuille/Options/
+   Journal/Système) — pas de big-bang. Aucun moteur, aucune donnée modifiés.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .vx-content:is([data-space="briefing"],[data-space="markets"]){
-  /* ── Fond : noir profond très légèrement bleuté ── */
-  --ng-bg-0:#05070c;          /* le plus sombre */
-  --ng-bg-1:#080b12;
-  --ng-bg-2:#0b0f18;
-  /* ── Surfaces glass (transparence contrôlée sur le fond bleuté) ── */
-  --ng-glass:rgba(20,26,38,.55);
-  --ng-glass-raised:rgba(28,35,50,.62);
-  --ng-glass-hover:rgba(34,42,60,.72);
+  /* ── Fond : canvas NEUE EMBER (très sombre, chaud) ── */
+  --ng-bg-0:var(--vx-canvas);          /* le plus sombre (#05070C) */
+  --ng-bg-1:var(--vx-shell);
+  --ng-bg-2:var(--vx-surface);
+  /* ── Surfaces glass (transparence contrôlée, teinte chaude — jamais bleue) ── */
+  --ng-glass:rgba(29,24,25,.55);
+  --ng-glass-raised:rgba(37,29,27,.64);
+  --ng-glass-hover:rgba(46,35,31,.74);
   --ng-blur:14px;
-  /* ── Bordures fines chaudes (cuivre discret) ── */
+  /* ── Bordures fines chaudes (cuivre discret, depuis tokens) ── */
   --ng-border:rgba(255,150,70,.16);
-  --ng-border-soft:rgba(230,236,255,.07);
-  --ng-border-strong:rgba(255,150,70,.32);
-  /* ── Identité : orange néon / cuivre incandescent ── */
-  --ng-neon:#ff7a1e;          /* orange néon (identité, sélection, action) */
-  --ng-neon-bright:#ff934a;
-  --ng-copper:#c9631f;        /* cuivre incandescent (accents secondaires) */
-  --ng-neon-soft:rgba(255,122,30,.14);
-  --ng-glow:0 0 0 1px rgba(255,122,30,.35),0 0 18px -2px rgba(255,122,30,.45);
+  --ng-border-soft:var(--vx-border-soft);
+  --ng-border-strong:var(--vx-border-strong);
+  /* ── Identité : ORANGE EMBER (sourcé tokens — plus jamais un littéral local) ── */
+  --ng-neon:var(--vx-ember-500);       /* orange néon (identité, sélection, action) */
+  --ng-neon-bright:var(--vx-ember-400);
+  --ng-copper:var(--vx-ember-600);     /* cuivre incandescent (accents secondaires) */
+  --ng-neon-soft:var(--vx-ember-soft);
+  --ng-glow:var(--vx-glow-brand);
   /* ── Profondeur ── */
   --ng-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px -12px rgba(0,0,0,.7);
   --ng-shadow-raised:0 1px 0 rgba(255,255,255,.05) inset,0 18px 44px -14px rgba(0,0,0,.78);
-  --ng-radius:16px;
+  --ng-radius:var(--vx-r-card);
   --ng-motion:180ms cubic-bezier(.22,.61,.36,1);
-  /* ── Réécriture locale de quelques tokens produit (identité + fond) ── */
-  --vx-brand:var(--ng-neon);
-  --vx-brand-strong:var(--ng-neon-bright);
-  --vx-copper-light:var(--ng-neon);
 
   position:relative;
   background:
-    radial-gradient(120% 60% at 82% -8%, rgba(255,122,30,.10), transparent 60%),
-    radial-gradient(90% 50% at 8% 0%, rgba(90,120,200,.06), transparent 55%),
+    radial-gradient(120% 60% at 82% -8%, rgba(255,109,41,.10), transparent 60%),
+    radial-gradient(90% 50% at 8% 0%, rgba(255,109,41,.04), transparent 55%),
     linear-gradient(180deg, var(--ng-bg-1), var(--ng-bg-0));
 }
 
 /* ── Carte glass premium — chaque carte = un composant produit ── */
 .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card{
+  position:relative;
+  overflow:visible;                    /* tooltips/menus jamais rognés (défaut) */
   background:linear-gradient(180deg, var(--ng-glass-raised), var(--ng-glass));
   -webkit-backdrop-filter:blur(var(--ng-blur)) saturate(1.15);
   backdrop-filter:blur(var(--ng-blur)) saturate(1.15);
@@ -64,14 +68,14 @@
 /* filet cuivre en tête de carte (hiérarchie + bord chaud, sans glow permanent) */
 .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card::before{
   content:"";position:absolute;left:16px;right:16px;top:0;height:1px;border-radius:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,122,30,.5),transparent);opacity:.5;
+  pointer-events:none;                 /* purement décoratif : jamais capteur de clic */
+  background:linear-gradient(90deg,transparent,var(--ng-neon-soft),transparent);opacity:.7;
 }
-.vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card{position:relative;overflow:hidden}
 
 /* Hero = carte premium (profondeur + halo cuivre discret, fonctionnel) */
 .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-card--hero{
   background:
-    radial-gradient(120% 100% at 100% 0%, rgba(255,122,30,.10), transparent 55%),
+    radial-gradient(120% 100% at 100% 0%, rgba(255,109,41,.10), transparent 55%),
     linear-gradient(180deg, var(--ng-glass-raised), var(--ng-glass));
   border-color:var(--ng-border-strong);
   box-shadow:var(--ng-shadow-raised);
@@ -91,11 +95,11 @@
 .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-kpi-value{color:var(--vx-text-primary)}
 .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-kpi-label{color:var(--vx-text-muted);letter-spacing:.04em}
 
-/* ── Boutons : action principale = orange néon ── */
+/* ── Boutons : action principale = orange néon (texte sombre, jamais blanc) ── */
 .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-btn-primary{
-  background:linear-gradient(180deg,var(--ng-neon-bright),var(--ng-copper));
-  border:1px solid rgba(255,122,30,.5);color:#160a02;font-weight:650;
-  box-shadow:0 6px 18px -8px rgba(255,122,30,.6);
+  background:var(--vx-brand-gradient);
+  border:1px solid rgba(255,109,41,.5);color:var(--vx-ember-ink);font-weight:650;
+  box-shadow:0 6px 18px -8px rgba(255,109,41,.6);
 }
 .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-btn-primary:hover{box-shadow:var(--ng-glow)}
 .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-ticker{color:var(--ng-neon-bright)}
@@ -108,16 +112,12 @@
 .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-freshness[data-live="live"] .vx-live-dot,
 .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-live-dot[data-live="1"]{
   background:var(--vx-positive);
-  box-shadow:0 0 0 3px rgba(54,200,137,.18),0 0 10px rgba(54,200,137,.55);
+  box-shadow:0 0 0 3px rgba(46,214,161,.18),0 0 10px rgba(46,214,161,.55);
   animation:ng-pulse 1.8s ease-in-out infinite;
 }
 
 /* ── Micro-graphiques plus vivants : conteneur canvas en verre ── */
 .vx-content:is([data-space="briefing"],[data-space="markets"]) canvas{border-radius:10px}
-.vx-content:is([data-space="briefing"],[data-space="markets"]) #vx-regime-gauge,
-.vx-content:is([data-space="briefing"],[data-space="markets"]) #vx-calendar .vx-card{
-  background:rgba(0,0,0,.18);border-radius:12px;
-}
 
 /* ── Badges sémantiques (le sens financier prime, jamais décoratif) ── */
 .vx-content:is([data-space="briefing"],[data-space="markets"]) .vx-badge{border-radius:999px;border:1px solid var(--ng-border-soft)}
@@ -154,45 +154,63 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   MARCHÉS — polish premium des pièces denses (RRG, heatmap, jauges, rails).
-   Aucun graphe recréé : on habille les composants existants (issue #14).
+   MARCHÉS — widgets premium (classes STABLES, jamais de sélecteur fragile).
+   Le HTML de markets_page.py expose des classes dédiées `vx-mk-*` : on les
+   habille ici. Aucun graphe recréé ; identité et sémantique depuis les tokens.
    ═══════════════════════════════════════════════════════════════════════════ */
-.vx-content[data-space="markets"] .vx-tabs{
-  border-bottom:1px solid var(--ng-border-soft);
-}
+
+/* Onglets de sous-vue : actif = accent orange néon */
+.vx-content[data-space="markets"] .vx-tabs{border-bottom:1px solid var(--ng-border-soft)}
 .vx-content[data-space="markets"] .vx-tab[aria-selected="true"]{
   color:var(--ng-neon-bright);
-  box-shadow:inset 0 -2px 0 var(--ng-neon);      /* onglet actif = accent orange néon */
+  box-shadow:inset 0 -2px 0 var(--ng-neon);
 }
-/* Conteneurs de graphes en verre interne (RRG, heatmap, jauges, courbes) */
-.vx-content[data-space="markets"] [id^="vx-mk-"] canvas,
-.vx-content[data-space="markets"] .vx-chart-body canvas{
-  background:rgba(0,0,0,.16);border-radius:10px;
+
+/* Hero régime : bandeau premium (grille interne verdict / jauge / modulations) */
+.vx-content[data-space="markets"] .vx-mk-hero-grid{
+  display:grid;grid-template-columns:1.1fr .9fr;gap:var(--vx-s5);align-items:center;
 }
-/* Jauges (VIX/régime/breadth) : conteneur sobre, la bande garde son sens financier */
-.vx-content[data-space="markets"] [id$="-gauge"]{
-  background:rgba(0,0,0,.18);border-radius:12px;padding:4px 0;
+.vx-content[data-space="markets"] .vx-mk-regime-name{
+  font-size:clamp(26px,4vw,var(--vx-fs-display));font-weight:800;line-height:1.05;
+  letter-spacing:-.01em;color:var(--vx-text-primary);
 }
+.vx-content[data-space="markets"] .vx-mk-regime-name[data-tone="risk"]{color:var(--vx-negative)}
+.vx-content[data-space="markets"] .vx-mk-regime-name[data-tone="go"]{color:var(--vx-positive)}
+.vx-content[data-space="markets"] .vx-mk-regime-sub{color:var(--vx-text-secondary);margin-top:6px}
+
+/* Chips de modulation (glass sobre, lecture directe) */
+.vx-content[data-space="markets"] .vx-mk-chips{
+  display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--vx-s4);
+}
+.vx-content[data-space="markets"] .vx-mk-chip{
+  display:inline-flex;flex-direction:column;gap:2px;padding:8px 12px;
+  background:var(--ng-glass);border:1px solid var(--ng-border-soft);border-radius:12px;min-width:96px;
+}
+.vx-content[data-space="markets"] .vx-mk-chip .k{font-size:var(--vx-fs-meta);color:var(--vx-text-muted);letter-spacing:.03em}
+.vx-content[data-space="markets"] .vx-mk-chip .v{font-size:14px;font-weight:650;color:var(--vx-text-primary)}
+.vx-content[data-space="markets"] .vx-mk-chip[data-state="on"] .v{color:var(--vx-positive)}
+.vx-content[data-space="markets"] .vx-mk-chip[data-state="off"] .v{color:var(--vx-negative)}
+
 /* Point actif RRG / sélection : GLOW réservé à l'actif (jamais permanent) */
-.vx-content[data-space="markets"] .vx-mk-rotation .vx-active,
-.vx-content[data-space="markets"] [data-selected="1"]{
-  filter:drop-shadow(0 0 6px rgba(255,122,30,.65));
+.vx-content[data-space="markets"] [data-selected="1"],
+.vx-content[data-space="markets"] .vx-mk-active{
+  filter:drop-shadow(0 0 6px var(--vx-ember-glow));
 }
-/* Heatmap sectorielle : lisibilité du texte + cellules moins saturées */
-.vx-content[data-space="markets"] .vx-heat-cell,
-.vx-content[data-space="markets"] [class*="heat"] td{
-  text-shadow:0 1px 2px rgba(0,0,0,.55);
-}
-/* Rails de stress/volatilité : piste en verre, remplissage sémantique conservé */
-.vx-content[data-space="markets"] .vx-rail,
-.vx-content[data-space="markets"] [class*="rail"]{
-  background:rgba(0,0,0,.28)!important;border-radius:6px;
-}
-/* Mini-sparklines des tuiles KPI (sparkSvg inline) : trait plus vif */
-.vx-content[data-space="markets"] .vx-kpi svg path,
-.vx-content[data-space="markets"] [class*="spark"] path{
-  stroke-width:1.6px;
-}
-/* Sous-titre de vue (question principale) mis en avant */
+
+/* Heatmap sectorielle : lisibilité renforcée du texte des cellules */
+.vx-content[data-space="markets"] .vx-heat-cell{text-shadow:0 1px 2px rgba(0,0,0,.55)}
+
+/* Rails de stress / positionnement : piste en verre, remplissage sémantique conservé */
+.vx-content[data-space="markets"] .vx-rail{background:rgba(0,0,0,.28)!important;border-radius:6px}
+
+/* Mini-sparklines des tuiles KPI : trait plus vif */
+.vx-content[data-space="markets"] .vx-kpi svg path{stroke-width:1.7px}
+
+/* Sous-titre de vue / question principale mis en avant */
 .vx-content[data-space="markets"] .vx-chart-question,
 .vx-content[data-space="markets"] .vx-sub{color:var(--vx-text-secondary)}
+
+/* Densité mobile : le hero passe en pile (aucun débordement) */
+@media (max-width:768px){
+  .vx-content[data-space="markets"] .vx-mk-hero-grid{grid-template-columns:1fr;gap:var(--vx-s4)}
+}

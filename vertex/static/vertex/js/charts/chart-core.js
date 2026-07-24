@@ -11,11 +11,11 @@
   /* Thème V3 unique (chart-theme.js) — repli sur les mêmes valeurs si absent */
   const THEME = window.VXChartTheme || { colors: {}, tooltip: {} };
   C.colors = Object.assign({
-    brand: '#84aa31', blue: '#84aa31', cyan: '#c0b79f', violet: '#9c79d0',
-    positive: '#36c889', negative: '#ed655c', warning: '#dda23b',
-    info: '#84aa31', neutral: '#9d978e',
-    text: '#b7b3ad', muted: '#817d77', grid: 'rgba(255,255,255,.05)',
-    series: ['#84aa31', '#c0b79f', '#9d978e', '#9c79d0', '#dda23b', '#747d75'],
+    brand: '#FF6D29', blue: '#45D6E8', cyan: '#45D6E8', violet: '#9B7BFF',
+    positive: '#2ED6A1', negative: '#FF5F69', warning: '#FFC857',
+    info: '#45D6E8', neutral: '#BABABA',
+    text: '#BABABA', muted: '#8A8284', grid: 'rgba(255,255,255,.05)',
+    series: ['#FF6D29', '#c8bfae', '#BABABA', '#9B7BFF', '#FFC857', '#8A8284'],
   }, THEME.colors);
 
   function chartDefaults() {

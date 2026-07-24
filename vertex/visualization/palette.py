@@ -6,30 +6,31 @@ une intention (marque, benchmark, positif, négatif, option…). Le thème
 graphique JS (`chart-theme-obsidian-copper.js`) DOIT rester cohérent avec ce
 registre — un test le vérifie.
 
-Identité Vertex : Signal Terminal. Vert Signal = marque/série de référence
-(PAS « hausse »). Émeraude = positif. Zéro bleu dominant.
+Identité Vertex : NEUE EMBER / Neon Glass Orange. Orange néon = marque/série de
+référence (PAS « hausse »). Émeraude = positif. Zéro bleu dominant. Miroir strict
+de tokens.css (#FF6D29). Le cyan #45D6E8 = comparaison technique uniquement.
 """
 from __future__ import annotations
 
-# ── Couleurs de marque (série principale = VERT SIGNAL) ────────────────
-BRAND = '#84aa31'          # série principale Vertex (identité, pas « hausse »)
-COPPER = '#747d75'         # série neutre acier (ex-cuivre, purgé)
-COPPER_LIGHT = '#a3ca42'   # vert Signal clair (accents)
-AMBER = '#dda23b'          # série secondaire / attention
-BEIGE = '#c0b79f'          # benchmark clair (sable)
+# ── Couleurs de marque (série principale = ORANGE EMBER) ───────────────
+BRAND = '#FF6D29'          # série principale Vertex (identité, pas « hausse »)
+COPPER = '#8A8284'         # série neutre acier (gris chaud)
+COPPER_LIGHT = '#FF824B'   # orange Ember clair (accents hover)
+AMBER = '#FFC857'          # série secondaire / attention
+BEIGE = '#c8bfae'          # benchmark clair (sable)
 
 # ── États (direction / statut réel uniquement) ────────────────────────
-POSITIVE = '#36c889'       # ÉMERAUDE — gain / donnée positive (distinct du vert marque)
-NEGATIVE = '#ed655c'       # corail — perte / risque
-WARNING = '#dda23b'
-NEUTRAL = '#9d978e'        # benchmark neutre (gris chaud)
-OPTION = '#9c79d0'         # violet contrôlé — RÉSERVÉ aux options / IV / Greeks
+POSITIVE = '#2ED6A1'       # ÉMERAUDE — gain / donnée positive (distinct de la marque)
+NEGATIVE = '#FF5F69'       # corail — perte / risque
+WARNING = '#FFC857'
+NEUTRAL = '#BABABA'        # benchmark neutre (gris chaud)
+OPTION = '#9B7BFF'         # violet contrôlé — RÉSERVÉ aux options / IV / Greeks
 #                            (identité déployée : tokens.css, chart-theme, chart-core)
 
 # ── Texte ──────────────────────────────────────────────────────────────
-TEXT = '#f2f5f1'
-TEXT_DIM = '#b8beb7'
-TEXT_MUTED = '#818980'
+TEXT = '#F8F5F3'
+TEXT_DIM = '#BABABA'
+TEXT_MUTED = '#8A8284'
 
 # Palette de séries — ordre déterministe, jamais arc-en-ciel. La série 0 est
 # toujours la marque ; les suivantes descendent en neutralité.
@@ -76,8 +77,9 @@ def is_bluish(hex_color: str) -> bool:
     """Heuristique « bleu dominant » : b nettement > r et > g, b élevé, ET rouge
     FAIBLE (le bleu vrai a peu de rouge ; le violet en a beaucoup).
 
-    Sert au garde-fou zéro-bleu. Ne considère PAS le vert (#36c889) ni le
-    violet option (#9c79d0, r élevé) comme bleus."""
+    Sert au garde-fou zéro-bleu. Ne considère PAS l'émeraude (#2ED6A1) ni le
+    violet option (#9B7BFF, r élevé) ni le cyan de comparaison (#45D6E8, g élevé)
+    comme bleus identitaires."""
     h = str(hex_color or '').lstrip('#')
     if len(h) != 6:
         return False
