@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v44';   // v44 : PR Design n°1 — typo JetBrains Mono, Chart Shell (unité/fraîcheur/résumé/états), composants canoniques (Verdict/Scenario/Freshness/Insufficient), DATA_INSUFFICIENT honnête, purge couleurs inline
+const CACHE='td-shell-v45';   // v45 : PR n°2 — navigation à 8 espaces canoniques (Aujourd'hui/Marchés/Opportunités/Analyse/Portefeuille/Options/Journal/Système), Journal remplace Performance, Intelligence hors nav, Options autonome, palette ⌘K à jour
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

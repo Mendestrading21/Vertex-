@@ -94,13 +94,13 @@ def test_options_page_renders_as_primary_space(client):
     r = client.get('/options')
     assert r.status_code == 200
     html = r.get_data(as_text=True)
-    assert 'Options Intelligence' in html
-    # Options est désormais un espace PRINCIPAL (§18 overhaul) : le nav le marque actif
+    assert '<h1>Options</h1>' in html
+    # Options est un espace PRINCIPAL canonique (n°6/8) : le nav le marque actif
     assert 'data-nav-id="options"' in html
     assert re.search(r'data-nav-id="options"[^>]*aria-current="page"', html) \
         or 'data-nav-id="options" aria-current="page"' in html
-    # neuf espaces dans la nav principale (Options ajouté)
-    assert len(re.findall(r'class="vx-nav-item"', html)) == 9
+    # huit espaces canoniques dans la nav principale (PR n°2)
+    assert len(re.findall(r'class="vx-nav-item"', html)) == 8
 
 
 def test_options_page_subviews(client):

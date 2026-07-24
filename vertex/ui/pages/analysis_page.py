@@ -615,7 +615,7 @@ async function loadDossier(){
     +(jr.length?jr.map(j=>`<div class="vx-kv"><span class="k">${j.date} · ${esc(j.dir||'')}</span>
       <span class="v ${j.pnl>0?'vx-pos':j.pnl<0?'vx-neg':''}">${j.result||''} ${j.pnl!==undefined&&j.pnl!==''?VX.fmt.num(j.pnl):''}</span></div>`).join('')
       :VX.states.empty('Aucune entrée de journal sur ce titre.'))
-    +`<div class="vx-meta vx-mt2"><a href="/performance?view=journal&sym=${SYM}">Journal complet →</a></div>`);
+    +`<div class="vx-meta vx-mt2"><a href="/journal?view=journal&sym=${SYM}">Journal complet →</a></div>`);
   paintBadges();paintThesis();
   try{loadAnalyst();}catch(e){}
 }

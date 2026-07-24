@@ -32,13 +32,13 @@ def _tabs(view: str) -> str:
         sel = 'true' if vid == view else 'false'
         items.append(f'<a class="vx-tab" role="tab" href="?view={vid}" '
                      f'aria-selected="{sel}" data-view-tab="{vid}">{label}</a>')
-    return ('<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Performance">'
+    return ('<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Journal">'
             + ''.join(items) + '</nav>')
 
 
 _HEADER = """
 <div class="vx-page-header">
-  <div><h1>Performance</h1>
+  <div><h1>Journal</h1>
   <div class="vx-sub">La méthode fonctionne-t-elle et est-elle correctement exécutée ?</div></div>
 </div>
 %%TABS%%
@@ -137,7 +137,7 @@ function stats(list){
     profitFactor:pertes>0?gains/pertes:(gains>0?Infinity:null),
     expectancy:pnls.length?pnls.reduce((a,b)=>a+b,0)/pnls.length:null};
 }
-const JOURNAL_ACTION='<a class="vx-btn vx-btn-sm" href="/performance?view=journal">Ouvrir le journal</a>';
+const JOURNAL_ACTION='<a class="vx-btn vx-btn-sm" href="/journal?view=journal">Ouvrir le journal</a>';
 function emptyCard(host,reason,action){
   const el=$(host);if(el)el.innerHTML='<div class="vx-card">'+VX.states.empty(reason,action||'')+'</div>';
 }
@@ -184,7 +184,7 @@ function loadKpis(){
       </div>
       <div class="vx-help vx-mt3">Chaque trade clôturé (WIN/LOSS + P&amp;L) débloque des analyses. Aucune fausse performance n’est affichée avant d’avoir des données réelles — la méthode se juge sur des faits, pas des estimations.</div>
       <div class="vx-flex vx-mt3" style="gap:.5rem;flex-wrap:wrap">
-        <a class="vx-btn vx-btn-sm vx-btn-primary" href="/performance?view=journal">Ajouter une entrée au journal</a>
+        <a class="vx-btn vx-btn-sm vx-btn-primary" href="/journal?view=journal">Ajouter une entrée au journal</a>
         <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio?view=positions">Voir mes positions</a></div>
     </div>`;
     return list;
@@ -479,7 +479,7 @@ def render(view: str = 'overview', params: dict | None = None) -> str:
     content = content.replace('%%SYM%%', html.escape(sym)).replace(
         '%%LOADING%%', '<div class="vx-skeleton" style="height:60px"></div>')
     page_js = _JS.replace('%%VIEW%%', view)
-    return render_shell(title='Performance', active='performance',
-                        space_label='Performance', sub_label=label,
+    return render_shell(title='Journal', active='journal',
+                        space_label='Journal', sub_label=label,
                         content=content, page_js=page_js,
-                        page_label='Performance')
+                        page_label='Journal')

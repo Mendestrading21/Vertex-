@@ -1,10 +1,9 @@
 """vertex.ui.pages.options_intel_page — l'espace Options Intelligence (§18).
 
 Question : « Où est la meilleure convexité, à quel prix de volatilité, et
-quel événement la menace ? » Accessible via /options — PAS un 9e espace de
-navigation : la barre reste à huit espaces, cette page est un approfondissement
-d'Opportunités (le nav met « Opportunités » en actif). Sous-vues (?view=) :
-overview · volatility · radar · events.
+quel événement la menace ? » Accessible via /options — ESPACE PRINCIPAL
+CANONIQUE n°6 (le nav met « Options » en actif). Plus de double rattachement
+ambigu à Opportunités. Sous-vues (?view=) : overview · volatility · radar · events.
 
 Le module Python n'invente aucun chiffre : il assemble le squelette + le
 script client ; toutes les données viennent de /api/options/* (moteurs purs
@@ -82,9 +81,8 @@ _STYLE = """
 
 _HEADER = """
 <div class="vx-page-header">
-  <div><h1>Options Intelligence</h1>
+  <div><h1>Options</h1>
   <div class="vx-sub">Où est la meilleure convexité, à quel prix de volatilité, et quel événement la menace ?</div></div>
-  <div class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=options">← Opportunités · Options</a></div>
 </div>
 %%TABS%%
 <div id="vx-demo-banner"></div>
@@ -202,10 +200,10 @@ def render(view: str = 'overview') -> str:
     content = (_STYLE + _HEADER.replace('%%TABS%%', _tabs(view))
                + _VIEW_CONTENT[view].replace('%%LOADING%%', _LOADING))
     return render_shell(
-        title='Options Intelligence',
-        active='options',                  # espace principal Options (9e entrée nav)
+        title='Options',
+        active='options',                  # espace principal canonique (n°6 / 8)
         space_label='Options',
-        sub_label='Options Intelligence',
+        sub_label='Convexité & volatilité',
         page_label='options:%s' % view,
         content=content,
         page_js=_PAGE_JS)

@@ -18,7 +18,7 @@ VXJS = os.path.join(ROOT, 'vertex', 'static', 'vertex', 'js')
 VXCSS = os.path.join(ROOT, 'vertex', 'static', 'vertex', 'css')
 
 PAGES = ['/', '/markets', '/opportunities', '/portfolio', '/analysis',
-         '/analysis/NVDA', '/performance', '/intelligence', '/system']
+         '/analysis/NVDA', '/journal', '/options', '/system']
 
 
 @pytest.fixture(scope='module')
@@ -226,8 +226,8 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v44' in body
-    assert 'td-shell-v43' not in body
+    assert 'td-shell-v45' in body
+    assert 'td-shell-v44' not in body
 
 
 # ── Sécurité produit ─────────────────────────────────────────────────────

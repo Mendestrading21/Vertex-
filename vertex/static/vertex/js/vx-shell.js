@@ -24,8 +24,9 @@
     overlay(app.dataset.mobileNav === 'open');
   });
   $('vx-mobile-more')?.addEventListener('click', () => {
-    VX.shell.openDrawer('Navigation', ['analysis', 'intelligence', 'system'].map(id => {
-      const it = { analysis: ['Analyse', '/analysis'], intelligence: ['Intelligence', '/intelligence'], system: ['Système', '/system'] }[id];
+    /* Espaces hors barre mobile (5 prioritaires) : Options, Journal, Système. */
+    VX.shell.openDrawer('Navigation', ['options', 'journal', 'system'].map(id => {
+      const it = { options: ['Options', '/options'], journal: ['Journal', '/journal'], system: ['Système', '/system'] }[id];
       return `<a class="vx-nav-item" href="${it[1]}">${it[0]}</a>`;
     }).join(''));
   });
@@ -169,18 +170,21 @@
   $('vx-refresh-btn')?.addEventListener('click', function () { VX.refresh.runAll(this); });
 
   /* ── Command palette (§14) ───────────────────────────────────────── */
+  /* 8 espaces canoniques (PR n°2) + approfondissements joignables. */
   const PAGES = [
-    ['Briefing', '/'], ['Marchés', '/markets'], ['Marchés · Secteurs', '/markets?view=sectors'],
+    ["Aujourd'hui", '/'], ['Marchés', '/markets'], ['Marchés · Secteurs', '/markets?view=sectors'],
     ['Marchés · Volatilité', '/markets?view=volatility'], ['Marchés · Breadth', '/markets?view=breadth'],
     ['Opportunités', '/opportunities'], ['Opportunités · Options', '/opportunities?view=options'],
     ['Opportunités · Anomalies', '/opportunities?view=anomalies'], ['Opportunités · Calendrier', '/opportunities?view=calendar'],
+    ['Analyse', '/analysis'],
     ['Portefeuille', '/portfolio'], ['Portefeuille · Watchlist', '/portfolio?view=watchlist'],
-    ['Portefeuille · Risque', '/portfolio?view=risk'], ['Analyse', '/analysis'],
-    ['Performance', '/performance'], ['Performance · Journal', '/performance?view=journal'],
-    ['Performance · Track Record', '/performance?view=track-record'],
-    ['Intelligence', '/intelligence'], ['Intelligence · Comité', '/intelligence?view=committee'],
+    ['Portefeuille · Risque', '/portfolio?view=risk'],
+    ['Options', '/options'], ['Options · Volatilité', '/options?view=volatility'],
+    ['Journal', '/journal'], ['Journal · Décisions', '/journal?view=journal'],
+    ['Journal · Track Record', '/journal?view=track-record'], ['Journal · Suivis', '/tracking'],
+    ['Analyse · Comité', '/intelligence?view=committee'],
     ['Système', '/system'], ['Système · Connexions', '/system?view=connections'],
-    ['Système · Archive', '/system?view=archive'],
+    ['Système · Archive', '/system?view=archive'], ['Système · Design System', '/design-system'],
   ];
   const palette = $('vx-palette'), pInput = $('vx-palette-input'), pList = $('vx-palette-list');
   let pItems = [], pSel = 0, namesCache = null;

@@ -525,7 +525,7 @@ async function initResearch(){
       $('vx-research-body').innerHTML=VX.states.empty(
         'Validation indisponible : '+esc(v.note||'historique insuffisant')+'. '
         +'Le validateur exige une courbe d&#8217;equity r&eacute;elle — rien n&#8217;est simul&eacute; pour combler.',
-        '<a class="vx-btn vx-btn-sm" href="/performance">Ouvrir Performance</a>');
+        '<a class="vx-btn vx-btn-sm" href="/journal">Ouvrir le Journal</a>');
       $('vx-research-chart').innerHTML='';
       return;
     }

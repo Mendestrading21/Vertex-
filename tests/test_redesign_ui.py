@@ -27,15 +27,19 @@ def client():
 
 
 # ── Navigation (§10) ──────────────────────────────────────────────────
-def test_primary_navigation_has_nine_items():
-    """Options est un espace principal (§18 overhaul institutionnel)."""
-    assert len(PRIMARY_NAV) == 9
+def test_primary_navigation_has_eight_canonical_spaces():
+    """Décision produit PR n°2 : EXACTEMENT 8 espaces canoniques, registre unique.
+    Intelligence (→ Analyse) et Performance (→ Journal) ne sont plus autonomes."""
+    assert len(PRIMARY_NAV) == 8
     assert [i['label'] for i in PRIMARY_NAV] == [
-        'Briefing', 'Marchés', 'Opportunités', 'Portefeuille',
-        'Analyse', 'Options', 'Performance', 'Intelligence', 'Système']
+        "Aujourd'hui", 'Marchés', 'Opportunités', 'Analyse',
+        'Portefeuille', 'Options', 'Journal', 'Système']
     assert [i['href'] for i in PRIMARY_NAV] == [
-        '/', '/markets', '/opportunities', '/portfolio',
-        '/analysis', '/options', '/performance', '/intelligence', '/system']
+        '/', '/markets', '/opportunities', '/analysis',
+        '/portfolio', '/options', '/journal', '/system']
+    ids = [i['id'] for i in PRIMARY_NAV]
+    assert 'performance' not in ids and 'intelligence' not in ids
+    assert ids[-1] == 'system'  # Système épinglé en pied de sidebar
 
 
 def test_options_is_in_primary_navigation():
@@ -58,8 +62,8 @@ def test_subviews_return_200(client):
                 '/opportunities?view=options', '/opportunities?view=anomalies',
                 '/opportunities?view=calendar', '/portfolio?view=positions',
                 '/portfolio?view=risk', '/portfolio?view=watchlist',
-                '/performance?view=journal', '/performance?view=track-record',
-                '/performance?view=learnings', '/intelligence?view=committee',
+                '/journal?view=journal', '/journal?view=track-record',
+                '/journal?view=learnings', '/intelligence?view=committee',
                 '/intelligence?view=strategy', '/intelligence?view=research',
                 '/intelligence?view=memory', '/system?view=data',
                 '/system?view=settings', '/system?view=archive'):
@@ -76,8 +80,9 @@ def test_old_routes_redirect(client):
 def test_redirect_preserves_ticker_and_filters(client):
     r = client.get('/titre/NVDA')
     assert r.status_code == 301 and r.headers['Location'] == '/analysis/NVDA'
-    r2 = client.get('/journal?sym=NVDA')
-    assert 'sym=NVDA' in r2.headers['Location']
+    # une redirection legacy conserve les filtres (query string)
+    r2 = client.get('/decisions?sym=NVDA')
+    assert r2.status_code == 301 and 'sym=NVDA' in r2.headers['Location']
 
 
 def test_single_analysis_route(client):
@@ -93,7 +98,7 @@ def test_single_analysis_route(client):
 
 # ── Shell unique ──────────────────────────────────────────────────────
 def test_app_shell_is_shared(client):
-    pages = ['/', '/markets', '/opportunities', '/portfolio', '/performance']
+    pages = ['/', '/markets', '/opportunities', '/portfolio', '/journal']
     for p in pages:
         html = client.get(p).get_data(as_text=True)
         assert f'data-shell="{SHELL_VERSION}"' in html, p
@@ -302,8 +307,8 @@ def test_service_worker_bumped(client):
     r = client.get('/sw.js')
     assert r.status_code == 200
     body = r.get_data(as_text=True)
-    assert 'td-shell-v44' in body, 'le shell a changé — la version du cache doit suivre'
-    assert 'td-shell-v43' not in body
+    assert 'td-shell-v45' in body, 'le shell a changé — la version du cache doit suivre'
+    assert 'td-shell-v44' not in body
 
 
 # ── Lecture seule (rappel §1) ─────────────────────────────────────────

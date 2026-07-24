@@ -254,7 +254,7 @@
       { sep: true },
       { label: 'Ouvrir les options', run: () => { VX.context.save({ selectedSymbol: sym }); location.href = '/opportunities?view=options&sym=' + sym; } },
       { label: 'Ajouter une note / thèse', run: () => E.openAddModal(sym, 'note') },
-      { label: 'Ouvrir le journal', run: () => { VX.context.save(); location.href = '/performance?view=journal&sym=' + sym; } },
+      { label: 'Ouvrir le journal', run: () => { VX.context.save(); location.href = '/journal?view=journal&sym=' + sym; } },
       { label: 'Copier le ticker', run: () => { navigator.clipboard?.writeText(sym); VX.toast(sym + ' copié'); } },
       { label: 'Ouvrir TradingView ↗', run: () => window.open('https://www.tradingview.com/chart/?symbol=' + encodeURIComponent(sym), '_blank', 'noopener') },
     ];
