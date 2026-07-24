@@ -178,6 +178,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/polish.css">
 <link rel="stylesheet" href="/static/vertex/css/control-surface.css">
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
+<link rel="stylesheet" href="/static/vertex/css/neon-glass.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
@@ -185,7 +186,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 {_sidebar(active)}
 <div class="vx-main">
 {_topbar(space_label, sub_label)}
-<main class="vx-content" id="vx-content" data-page-label="{page_label or space_label}">
+<main class="vx-content" id="vx-content" data-space="{active}" data-page-label="{page_label or space_label}">
 {content}
 </main>
 </div>

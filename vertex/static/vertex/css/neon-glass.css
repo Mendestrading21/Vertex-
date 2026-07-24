@@ -1,0 +1,154 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   VERTEX NEON GLASS — Graph System V2 (issue #14)
+   Fond noir profond légèrement bleuté · cartes glass premium · identité orange
+   néon / cuivre incandescent. Vert=gain, rouge=perte, ambre=attente, violet=
+   options. AUCUN bleu identitaire. Glow uniquement sur live / actif / sélection.
+
+   PROTOTYPE : appliqué UNIQUEMENT à l'espace « Aujourd'hui »
+   (`.vx-content[data-space="briefing"]`) — aucun autre espace n'est touché
+   (pas de refonte big-bang). La migration page par page suivra après validation.
+   Aucun moteur, aucune donnée, aucun calcul modifié.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.vx-content[data-space="briefing"]{
+  /* ── Fond : noir profond très légèrement bleuté ── */
+  --ng-bg-0:#05070c;          /* le plus sombre */
+  --ng-bg-1:#080b12;
+  --ng-bg-2:#0b0f18;
+  /* ── Surfaces glass (transparence contrôlée sur le fond bleuté) ── */
+  --ng-glass:rgba(20,26,38,.55);
+  --ng-glass-raised:rgba(28,35,50,.62);
+  --ng-glass-hover:rgba(34,42,60,.72);
+  --ng-blur:14px;
+  /* ── Bordures fines chaudes (cuivre discret) ── */
+  --ng-border:rgba(255,150,70,.16);
+  --ng-border-soft:rgba(230,236,255,.07);
+  --ng-border-strong:rgba(255,150,70,.32);
+  /* ── Identité : orange néon / cuivre incandescent ── */
+  --ng-neon:#ff7a1e;          /* orange néon (identité, sélection, action) */
+  --ng-neon-bright:#ff934a;
+  --ng-copper:#c9631f;        /* cuivre incandescent (accents secondaires) */
+  --ng-neon-soft:rgba(255,122,30,.14);
+  --ng-glow:0 0 0 1px rgba(255,122,30,.35),0 0 18px -2px rgba(255,122,30,.45);
+  /* ── Profondeur ── */
+  --ng-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px -12px rgba(0,0,0,.7);
+  --ng-shadow-raised:0 1px 0 rgba(255,255,255,.05) inset,0 18px 44px -14px rgba(0,0,0,.78);
+  --ng-radius:16px;
+  --ng-motion:180ms cubic-bezier(.22,.61,.36,1);
+  /* ── Réécriture locale de quelques tokens produit (identité + fond) ── */
+  --vx-brand:var(--ng-neon);
+  --vx-brand-strong:var(--ng-neon-bright);
+  --vx-copper-light:var(--ng-neon);
+
+  position:relative;
+  background:
+    radial-gradient(120% 60% at 82% -8%, rgba(255,122,30,.10), transparent 60%),
+    radial-gradient(90% 50% at 8% 0%, rgba(90,120,200,.06), transparent 55%),
+    linear-gradient(180deg, var(--ng-bg-1), var(--ng-bg-0));
+}
+
+/* ── Carte glass premium — chaque carte = un composant produit ── */
+.vx-content[data-space="briefing"] .vx-card{
+  background:linear-gradient(180deg, var(--ng-glass-raised), var(--ng-glass));
+  -webkit-backdrop-filter:blur(var(--ng-blur)) saturate(1.15);
+  backdrop-filter:blur(var(--ng-blur)) saturate(1.15);
+  border:1px solid var(--ng-border);
+  border-radius:var(--ng-radius);
+  box-shadow:var(--ng-shadow);
+  transition:transform var(--ng-motion),border-color var(--ng-motion),box-shadow var(--ng-motion);
+}
+.vx-content[data-space="briefing"] .vx-card:hover{
+  border-color:var(--ng-border-strong);
+  box-shadow:var(--ng-shadow-raised);
+}
+/* filet cuivre en tête de carte (hiérarchie + bord chaud, sans glow permanent) */
+.vx-content[data-space="briefing"] .vx-card::before{
+  content:"";position:absolute;left:16px;right:16px;top:0;height:1px;border-radius:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,122,30,.5),transparent);opacity:.5;
+}
+.vx-content[data-space="briefing"] .vx-card{position:relative;overflow:hidden}
+
+/* Hero = carte premium (profondeur + halo cuivre discret, fonctionnel) */
+.vx-content[data-space="briefing"] .vx-card--hero{
+  background:
+    radial-gradient(120% 100% at 100% 0%, rgba(255,122,30,.10), transparent 55%),
+    linear-gradient(180deg, var(--ng-glass-raised), var(--ng-glass));
+  border-color:var(--ng-border-strong);
+  box-shadow:var(--ng-shadow-raised);
+}
+.vx-content[data-space="briefing"] .vx-card--hero .vx-card-title{
+  color:var(--ng-neon-bright);letter-spacing:.02em;
+}
+
+/* ── KPI glass dynamiques ── */
+.vx-content[data-space="briefing"] .vx-kpi{
+  background:var(--ng-glass);border:1px solid var(--ng-border-soft);border-radius:12px;
+  transition:transform var(--ng-motion),border-color var(--ng-motion),background var(--ng-motion);
+}
+.vx-content[data-space="briefing"] .vx-kpi:hover{
+  transform:translateY(-2px);border-color:var(--ng-border-strong);background:var(--ng-glass-hover);
+}
+.vx-content[data-space="briefing"] .vx-kpi-value{color:var(--vx-text-primary)}
+.vx-content[data-space="briefing"] .vx-kpi-label{color:var(--vx-text-muted);letter-spacing:.04em}
+
+/* ── Boutons : action principale = orange néon ── */
+.vx-content[data-space="briefing"] .vx-btn-primary{
+  background:linear-gradient(180deg,var(--ng-neon-bright),var(--ng-copper));
+  border:1px solid rgba(255,122,30,.5);color:#160a02;font-weight:650;
+  box-shadow:0 6px 18px -8px rgba(255,122,30,.6);
+}
+.vx-content[data-space="briefing"] .vx-btn-primary:hover{box-shadow:var(--ng-glow)}
+.vx-content[data-space="briefing"] .vx-ticker{color:var(--ng-neon-bright)}
+
+/* ── Freshness / live-dot : GLOW UNIQUEMENT quand live ── */
+.vx-content[data-space="briefing"] .vx-freshness{
+  border:1px solid var(--ng-border-soft);border-radius:999px;background:rgba(0,0,0,.25);
+}
+.vx-content[data-space="briefing"] .vx-live-dot{box-shadow:none}
+.vx-content[data-space="briefing"] .vx-freshness[data-live="live"] .vx-live-dot,
+.vx-content[data-space="briefing"] .vx-live-dot[data-live="1"]{
+  background:var(--vx-positive);
+  box-shadow:0 0 0 3px rgba(54,200,137,.18),0 0 10px rgba(54,200,137,.55);
+  animation:ng-pulse 1.8s ease-in-out infinite;
+}
+
+/* ── Micro-graphiques plus vivants : conteneur canvas en verre ── */
+.vx-content[data-space="briefing"] canvas{border-radius:10px}
+.vx-content[data-space="briefing"] #vx-regime-gauge,
+.vx-content[data-space="briefing"] #vx-calendar .vx-card{
+  background:rgba(0,0,0,.18);border-radius:12px;
+}
+
+/* ── Badges sémantiques (le sens financier prime, jamais décoratif) ── */
+.vx-content[data-space="briefing"] .vx-badge{border-radius:999px;border:1px solid var(--ng-border-soft)}
+.vx-content[data-space="briefing"] .vx-pos{color:var(--vx-positive)}
+.vx-content[data-space="briefing"] .vx-neg{color:var(--vx-negative)}
+.vx-content[data-space="briefing"] .vx-warn{color:var(--vx-warning)}
+
+/* ── États honnêtes (loading/empty/stale/error/insufficient) — glass sobre ── */
+.vx-content[data-space="briefing"] .vx-skeleton{
+  background:linear-gradient(100deg,rgba(255,255,255,.03),rgba(255,255,255,.08),rgba(255,255,255,.03));
+  background-size:200% 100%;border-radius:10px;animation:ng-shimmer 1.4s ease-in-out infinite;
+}
+.vx-content[data-space="briefing"] .vx-state[data-state="empty"],
+.vx-content[data-space="briefing"] .vx-demo-banner{
+  border:1px dashed var(--ng-border-soft);border-radius:12px;background:rgba(0,0,0,.2);
+}
+
+/* ── Reveal des cartes (skeleton → contenu), 180ms, discret ── */
+.vx-content[data-space="briefing"] .vx-card{animation:ng-reveal var(--ng-motion) both}
+@keyframes ng-reveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes ng-pulse{0%,100%{opacity:1}50%{opacity:.55}}
+@keyframes ng-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── Accessibilité : mouvement réduit respecté ── */
+@media (prefers-reduced-motion: reduce){
+  .vx-content[data-space="briefing"] .vx-card,
+  .vx-content[data-space="briefing"] .vx-skeleton,
+  .vx-content[data-space="briefing"] .vx-live-dot{animation:none!important;transition:none!important}
+}
+
+/* ── Responsive : le glass ne change rien à la grille (pas de débordement) ── */
+@media (max-width:768px){
+  .vx-content[data-space="briefing"]{--ng-blur:10px;--ng-radius:14px}
+}
