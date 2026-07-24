@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v46';   // v46 : refonte Aujourd'hui (Hero éditorial + résumé, 11→2 graphiques) et Marchés (secteurs 4→2, breadth -barre-rings, volatilité 3 jauges→1)
+const CACHE='td-shell-v47';   // v47 : refonte Opportunités (Hero éditorial + op-radar→op-scatter) et Analyse (Carte-Verdict + Carte-Scénario + raisonnement du comité intégré, DATA_INSUFFICIENT honnête)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
