@@ -314,6 +314,328 @@ def funnel(stages):
     return f'<svg viewBox="0 0 {W} {len(stages)*32}" width="100%" style="max-width:240px">{rows}</svg>'
 
 
+# ══ FORMES SIGNATURE — ART DIRECTION 02 ════════════════════════════════════
+# Palettes locales (l'orange reste réservé à l'identité/interaction/point actif).
+_EM = 'var(--vx-positive)'
+_RB = 'var(--vx-negative)'
+_AM = 'var(--vx-warning)'
+_VI = 'var(--vx-option)'
+_CY = 'var(--vx-technical)'
+_GY = 'var(--vx-warm-grey)'
+_LIME = '#B6F04A'
+_MAG = '#F06AC4'
+
+
+def horizon_band(tone, name, phase):
+    """HORIZON BAND — régime comme un horizon à changement de phase."""
+    col = {'go': _EM, 'risk': _RB, 'wait': _AM, 'off': _GY}[tone]
+    uid = _uid()
+    return f'''<div style="width:220px"><svg viewBox="0 0 220 110" width="220" height="110">
+  <defs><linearGradient id="{uid}" x1="0" x2="0" y1="0" y2="1">
+    <stop offset="0" stop-color="{col}" stop-opacity=".32"/><stop offset="60%" stop-color="{col}" stop-opacity=".06"/>
+    <stop offset="100%" stop-color="{col}" stop-opacity="0"/></linearGradient></defs>
+  <rect width="220" height="66" fill="url(#{uid})"/>
+  <circle cx="168" cy="52" r="16" fill="{col}" opacity=".85" class="wl-glow" style="--wl-acc:{col}"/>
+  <line x1="0" y1="66" x2="220" y2="66" stroke="{col}" stroke-width="1.5" opacity=".6"/>
+  <line x1="0" y1="66" x2="220" y2="66" stroke="var(--vx-ember-500)" stroke-width="0" />
+  <path d="M0,66 Q55,60 110,66 T220,66 L220,110 L0,110 Z" fill="rgba(0,0,0,.25)"/>
+  <text x="12" y="26" fill="var(--vx-text-primary)" font-size="15" font-weight="800">{name}</text>
+  <text x="12" y="88" fill="var(--vx-text-muted)" font-size="10">{phase}</text></svg></div>'''
+
+
+def pressure_field(name, tone, conf):
+    """PRESSURE FIELD — carte thermodynamique (iso-barres de pression)."""
+    col = {'go': _EM, 'risk': _RB, 'wait': _AM, 'off': _GY}[tone]
+    rings = ''.join(f'<circle cx="90" cy="82" r="{18+i*13}" fill="none" stroke="{col}" '
+                    f'stroke-opacity="{0.35-i*0.045:.2f}" stroke-width="{2.2-i*0.15:.1f}"/>' for i in range(6))
+    return f'''<div style="width:180px"><svg viewBox="0 0 180 150" width="180" height="150">
+  {rings}
+  <circle cx="90" cy="82" r="7" fill="{col}" class="wl-glow" style="--wl-acc:{col}"/>
+  <text x="90" y="20" text-anchor="middle" fill="var(--vx-text-primary)" font-size="13" font-weight="800">{name}</text>
+  <text x="90" y="142" text-anchor="middle" fill="var(--vx-text-muted)" font-size="9.5">pression {conf}% · haute={_ptone(tone)}</text></svg></div>'''
+
+
+def _ptone(t):
+    return {'go': 'porteur', 'risk': 'défensif', 'wait': 'transition', 'off': 'indéterminé'}[t]
+
+
+def regime_capsule(name, tone, tension):
+    """REGIME CAPSULE — pilule compacte à tension latérale."""
+    col = {'go': _EM, 'risk': _RB, 'wait': _AM, 'off': _GY}[tone]
+    return f'''<div style="display:flex;align-items:center;gap:12px;width:230px">
+  <div style="flex:1;padding:10px 14px;border-radius:999px;background:rgba(0,0,0,.3);border:1px solid var(--vx-border-soft)">
+    <div style="font-size:15px;font-weight:800;color:{col}">{name}</div>
+    <div style="font-size:10px;color:var(--vx-text-muted)">régime · tension {tension}%</div></div>
+  <div style="width:8px;height:56px;border-radius:5px;background:rgba(0,0,0,.35);overflow:hidden;display:flex;align-items:flex-end">
+    <i style="display:block;width:100%;height:{tension}%;background:{col}"></i></div></div>'''
+
+
+def signal_bloom(strength, tone):
+    """SIGNAL BLOOM / OPPORTUNITY BEACON — floraison radiale de pétales."""
+    col = {'go': _EM, 'brand': 'var(--vx-ember-500)', 'opt': _VI}[tone]
+    n = 12
+    petals = ''
+    for i in range(n):
+        a = i / n * 360
+        ln = 18 + strength / 100 * 34
+        x1, y1 = _pol(75, 75, 14, a)
+        x2, y2 = _pol(75, 75, 14 + ln, a)
+        op = 0.35 + 0.5 * (i % 3 == 0)
+        petals += f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="{col}" stroke-opacity="{op:.2f}" stroke-width="2.4" stroke-linecap="round"/>'
+    return f'''<div style="width:150px"><svg viewBox="0 0 150 150" width="150" height="150">
+  {petals}<circle cx="75" cy="75" r="10" fill="{col}" class="wl-glow" style="--wl-acc:{col}"/>
+  <text x="75" y="79" text-anchor="middle" fill="#161316" font-size="11" font-weight="800">{strength}</text></svg>
+  <div style="text-align:center;font-size:10px;color:var(--vx-text-muted);margin-top:2px">force du signal</div></div>'''
+
+
+def risk_crater(level):
+    """RISK CRATER — cratère : anneaux qui s'enfoncent vers un cœur rubis."""
+    rings = ''.join(f'<ellipse cx="80" cy="{40+i*7}" rx="{70-i*11}" ry="{20-i*3}" fill="none" '
+                    f'stroke="{_RB}" stroke-opacity="{0.18+i*0.13:.2f}" stroke-width="1.6"/>' for i in range(5))
+    return f'''<div style="width:170px"><svg viewBox="0 0 160 120" width="160" height="120">
+  {rings}<ellipse cx="80" cy="75" rx="16" ry="6" fill="{_RB}" class="wl-glow" style="--wl-acc:{_RB}"/>
+  <text x="80" y="16" text-anchor="middle" fill="var(--vx-text-primary)" font-size="13" font-weight="800">Risque {level}</text>
+  <text x="80" y="112" text-anchor="middle" fill="var(--vx-text-muted)" font-size="9.5">profondeur = sévérité</text></svg></div>'''
+
+
+def momentum_ribs(vals):
+    """MOMENTUM RIBS — cage thoracique : côtes courbes par horizon."""
+    labels = ['1S', '1M', '1T', '1A']
+    mx = max(6, max(abs(v) for v in vals))
+    ribs = ''
+    for i, (lab, v) in enumerate(zip(labels, vals)):
+        y = 22 + i * 22
+        w = 30 + abs(v) / mx * 90
+        col = _LIME if v >= 0 else _RB
+        ribs += (f'<path d="M20,{y} Q{20+w/2},{y-12} {20+w},{y}" fill="none" stroke="{col}" stroke-width="3" stroke-linecap="round" opacity=".9"/>'
+                 f'<text x="6" y="{y+3}" fill="var(--vx-text-muted)" font-size="9">{lab}</text>'
+                 f'<text x="{24+w}" y="{y+3}" fill="var(--vx-text-secondary)" font-size="9" style="font-variant-numeric:tabular-nums">{v:+.1f}</text>')
+    return f'<div style="width:200px"><svg viewBox="0 0 200 116" width="200" height="116"><line x1="20" y1="10" x2="20" y2="106" stroke="var(--vx-ember-500)" stroke-width="2" opacity=".7"/>{ribs}</svg></div>'
+
+
+def conviction_pillar(pct):
+    """CONVICTION PILLAR — pilier segmenté (distinct du Spine plein)."""
+    segs = 10
+    filled = round(pct / 100 * segs)
+    cells = ''.join(f'<div style="height:9px;border-radius:2px;background:{"linear-gradient(90deg,var(--vx-ember-500),var(--vx-ember-400))" if i < filled else "rgba(255,255,255,.06)"}"></div>'
+                    for i in range(segs - 1, -1, -1))
+    return f'''<div style="display:flex;align-items:flex-end;gap:12px">
+  <div style="display:flex;flex-direction:column;gap:3px;width:30px">{cells}</div>
+  <div style="display:flex;flex-direction:column;justify-content:flex-end"><b style="font-size:26px;font-weight:850;font-variant-numeric:tabular-nums">{pct}</b>
+    <span style="font-size:10px;color:var(--vx-text-muted)">conviction</span></div></div>'''
+
+
+def vol_rift(vol):
+    """VOLATILITY RIFT — faille/fissure dont l'ouverture = volatilité."""
+    w = 6 + vol / 40 * 30
+    col = _VI if vol < 20 else _RB
+    return f'''<div style="width:150px"><svg viewBox="0 0 150 130" width="150" height="130">
+  <path d="M75,6 L{75-w/2:.0f},40 L{75+w/3:.0f},66 L{75-w/2.2:.0f},96 L75,124" fill="none" stroke="{col}" stroke-width="2.5" class="wl-glow" style="--wl-acc:{col}"/>
+  <path d="M75,6 L{75+w/2:.0f},40 L{75-w/3:.0f},66 L{75+w/2.2:.0f},96 L75,124" fill="none" stroke="{col}" stroke-width="2.5" opacity=".7"/>
+  <text x="75" y="70" text-anchor="middle" fill="var(--vx-text-primary)" font-size="16" font-weight="800" style="font-variant-numeric:tabular-nums">{vol:g}</text></svg>
+  <div style="text-align:center;font-size:10px;color:var(--vx-text-muted)">faille de volatilité</div></div>'''
+
+
+def countdown_ring(dte, total=30, label='Résultats'):
+    """CATALYST COUNTDOWN RING — anneau de compte à rebours vers l'événement."""
+    r, c = 32, 2 * math.pi * 32
+    off = c * (dte / total)
+    col = _RB if dte <= 3 else _AM if dte <= 10 else _CY
+    return f'''<div style="width:120px;text-align:center"><svg viewBox="0 0 80 80" width="96" height="96">
+  <circle cx="40" cy="40" r="{r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="6"/>
+  <circle cx="40" cy="40" r="{r}" fill="none" stroke="{col}" stroke-width="6" stroke-linecap="round"
+    stroke-dasharray="{c:.1f}" stroke-dashoffset="{off:.1f}" transform="rotate(-90 40 40)"/>
+  <text x="40" y="38" text-anchor="middle" fill="var(--vx-text-primary)" font-size="19" font-weight="800">J-{dte}</text>
+  <text x="40" y="52" text-anchor="middle" fill="var(--vx-text-muted)" font-size="8">{label}</text></svg></div>'''
+
+
+def drawdown_canyon(series):
+    """DRAWDOWN CANYON — profil de creux « sous l'eau »."""
+    w, h = 200, 90
+    mx = min(series)
+    pts = ' '.join(f'{i/(len(series)-1)*w:.1f},{-v/mx*(h-10):.1f}' for i, v in enumerate(series))
+    area = f'0,0 {pts} {w},0'
+    return f'''<div style="width:{w}px"><svg viewBox="0 0 {w} {h}" width="{w}" height="{h}">
+  <line x1="0" y1="1" x2="{w}" y2="1" stroke="rgba(255,255,255,.2)" stroke-dasharray="3 3"/>
+  <polygon points="{area}" fill="{_RB}" fill-opacity=".16"/>
+  <polyline points="{pts}" fill="none" stroke="{_RB}" stroke-width="1.8"/>
+  <text x="4" y="{h-6}" fill="var(--vx-text-muted)" font-size="9">creux max {mx:g}%</text></svg></div>'''
+
+
+def constellation(points):
+    """PORTFOLIO CONSTELLATION — positions = étoiles reliées, taille = poids."""
+    w, h = 220, 130
+    stars = ''
+    links = ''
+    for i, (sym, x, y, r, pl) in enumerate(points):
+        px, py = 12 + x / 100 * (w - 24), 12 + y / 100 * (h - 24)
+        col = _EM if pl >= 0 else _RB
+        if i:
+            ppx, ppy = 12 + points[i - 1][1] / 100 * (w - 24), 12 + points[i - 1][2] / 100 * (h - 24)
+            links += f'<line x1="{ppx:.1f}" y1="{ppy:.1f}" x2="{px:.1f}" y2="{py:.1f}" stroke="rgba(231,226,218,.18)" stroke-width="1"/>'
+        stars += (f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{r}" fill="{col}" fill-opacity=".85"/>'
+                  f'<text x="{px+r+3:.1f}" y="{py+3:.1f}" fill="rgba(231,226,218,.8)" font-size="8.5">{sym}</text>')
+    return f'<div style="width:{w}px"><svg viewBox="0 0 {w} {h}" width="{w}" height="{h}">{links}{stars}</svg></div>'
+
+
+def greek_field():
+    """GREEK VECTOR FIELD — champ de flèches (delta/gamma/theta/vega)."""
+    W, H = 200, 120
+    arr = ''
+    import math as _m
+    for gx in range(5):
+        for gy in range(3):
+            cx, cy = 24 + gx * 40, 22 + gy * 34
+            ang = (gx - 2) * 22 + (gy - 1) * 14
+            ex, ey = cx + 13 * _m.cos(_m.radians(ang)), cy + 13 * _m.sin(_m.radians(ang))
+            col = _VI if gy != 1 else _RB
+            arr += f'<line x1="{cx}" y1="{cy}" x2="{ex:.1f}" y2="{ey:.1f}" stroke="{col}" stroke-width="1.8" stroke-opacity=".7"/><circle cx="{ex:.1f}" cy="{ey:.1f}" r="1.6" fill="{col}"/>'
+    return f'<div style="width:{W}px"><svg viewBox="0 0 {W} {H}" width="{W}" height="{H}">{arr}<text x="6" y="{H-4}" fill="var(--vx-text-muted)" font-size="9">Δ Γ Θ ν — champ de sensibilité</text></svg></div>'
+
+
+def payoff_terrain():
+    """PAYOFF TERRAIN — payoff comme relief (perte corail / gain émeraude)."""
+    W, H = 220, 110
+    be = 130
+    return f'''<div style="width:{W}px"><svg viewBox="0 0 {W} {H}" width="{W}" height="{H}">
+  <defs><linearGradient id="pl" x1="0" x2="1"><stop offset="0" stop-color="{_RB}" stop-opacity=".22"/><stop offset="1" stop-color="{_RB}" stop-opacity="0"/></linearGradient>
+    <linearGradient id="pg" x1="0" x2="1"><stop offset="0" stop-color="{_EM}" stop-opacity="0"/><stop offset="1" stop-color="{_EM}" stop-opacity=".28"/></linearGradient></defs>
+  <rect x="0" y="55" width="{be}" height="{H-55}" fill="url(#pl)"/><rect x="{be}" y="0" width="{W-be}" height="{H}" fill="url(#pg)"/>
+  <polyline points="0,80 {be},80 {W},18" fill="none" stroke="var(--vx-text-primary)" stroke-width="2"/>
+  <line x1="{be}" y1="0" x2="{be}" y2="{H}" stroke="var(--vx-ember-500)" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="{be+4}" y="14" fill="var(--vx-ember-400)" font-size="9">breakeven</text>
+  <text x="6" y="{H-6}" fill="{_RB}" font-size="9">perte max</text>
+  <text x="{W-6}" y="30" text-anchor="end" fill="{_EM}" font-size="9">gain</text></svg></div>'''
+
+
+def thesis_pulse(state):
+    """THESIS PULSE — battement ECG de la thèse (intacte/surveiller/invalidée)."""
+    col = {'ok': _EM, 'watch': _AM, 'ko': _RB}[state]
+    path = ('M0,30 L40,30 L48,30 L54,10 L60,50 L66,30 L90,30 L96,22 L102,38 L108,30 L200,30'
+            if state != 'ko' else 'M0,30 L60,30 L68,12 L76,48 L84,30 L120,30 L200,30')
+    lab = {'ok': 'thèse intacte', 'watch': 'à surveiller', 'ko': 'invalidée — plate'}[state]
+    return f'''<div style="width:210px"><svg viewBox="0 0 200 60" width="200" height="60">
+  <path d="{path}" fill="none" stroke="{col}" stroke-width="2" class="wl-glow" style="--wl-acc:{col}"/>
+  </svg><div style="font-size:10px;color:{col};text-align:center">{lab}</div></div>'''
+
+
+def confidence_lens(conf):
+    """CONFIDENCE LENS — diaphragme dont l'ouverture = confiance."""
+    open_r = 8 + conf / 100 * 26
+    blades = ''.join(f'<line x1="46" y1="46" x2="{_pol(46,46,40,i*60)[0]:.1f}" y2="{_pol(46,46,40,i*60)[1]:.1f}" stroke="rgba(255,255,255,.1)" stroke-width="6"/>' for i in range(6))
+    return f'''<div style="width:110px;text-align:center"><svg viewBox="0 0 92 92" width="100" height="100">
+  <circle cx="46" cy="46" r="40" fill="none" stroke="var(--vx-border-strong)" stroke-width="2"/>{blades}
+  <circle cx="46" cy="46" r="{open_r:.0f}" fill="var(--vx-ember-soft)" stroke="var(--vx-ember-500)" stroke-width="2"/>
+  <text x="46" y="50" text-anchor="middle" fill="var(--vx-text-primary)" font-size="15" font-weight="800">{conf}%</text></svg>
+  <div style="font-size:9.5px;color:var(--vx-text-muted)">confiance</div></div>'''
+
+
+def weather_tile(cond, icon, metric, sub, tone):
+    """MARKET WEATHER TILE — tuile météo de marché (Apple-like)."""
+    col = {'go': _EM, 'risk': _RB, 'wait': _AM, 'off': _GY}[tone]
+    return f'''<div style="width:150px;padding:14px;border-radius:14px;background:radial-gradient(120% 90% at 80% 0%,{col}22,transparent 60%),rgba(0,0,0,.2)">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <span style="font-size:11px;color:var(--vx-text-secondary)">{cond}</span><span style="font-size:22px">{icon}</span></div>
+  <div style="font-size:30px;font-weight:800;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;margin-top:6px">{metric}</div>
+  <div style="font-size:10px;color:{col}">{sub}</div></div>'''
+
+
+def scenario_triad():
+    """SCENARIO TRIAD — 3 volets proportionnels à la probabilité."""
+    return f'''<div style="display:flex;gap:6px;width:280px">
+  <div style="flex:1;padding:9px;border-radius:10px;background:rgba(255,95,105,.1);border:1px solid rgba(255,95,105,.25)">
+    <div style="font-size:9px;color:{_RB}">PESSIMISTE</div><b style="font-size:16px;color:{_RB}">−12 %</b><div style="font-size:9px;color:var(--vx-text-muted)">p≈20 %</div></div>
+  <div style="flex:1.6;padding:9px;border-radius:10px;background:rgba(255,109,41,.08);border:1px solid var(--vx-border-strong)">
+    <div style="font-size:9px;color:var(--vx-ember-400)">PROBABLE</div><b style="font-size:18px">+8 %</b><div style="font-size:9px;color:var(--vx-text-muted)">p≈55 %</div></div>
+  <div style="flex:1;padding:9px;border-radius:10px;background:rgba(46,214,161,.1);border:1px solid rgba(46,214,161,.25)">
+    <div style="font-size:9px;color:{_EM}">EXCEPTIONNEL</div><b style="font-size:16px;color:{_EM}">+34 %</b><div style="font-size:9px;color:var(--vx-text-muted)">p≈25 %</div></div></div>'''
+
+
+def score_decomp(parts):
+    """SCORE DECOMPOSITION — barre empilée des sous-scores."""
+    tot = sum(p[1] for p in parts)
+    segs = ''.join(f'<div class="wl-tip" data-tip="{k} {v}" style="width:{v/tot*100:.0f}%;background:{c}"></div>' for k, v, c in parts)
+    leg = ' '.join(f'<span style="font-size:9.5px;color:var(--vx-text-muted)"><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:{c};margin-right:3px"></i>{k}</span>' for k, v, c in parts)
+    return f'''<div style="width:220px"><div style="font-size:24px;font-weight:850;font-variant-numeric:tabular-nums">{tot}<span style="font-size:12px;color:var(--vx-text-muted)">/40</span></div>
+  <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;margin:8px 0;gap:1px">{segs}</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">{leg}</div></div>'''
+
+
+def committee(votes):
+    """COMMITTEE CONSENSUS — accord/désaccord des membres."""
+    dots = ''.join(f'<span class="wl-tip" data-tip="{n}" style="width:16px;height:16px;border-radius:50%;display:inline-grid;place-items:center;font-size:9px;background:{_EM if v=="+" else _RB if v=="-" else _GY};color:#161316;font-weight:800">{v}</span>' for n, v in votes)
+    agree = sum(1 for _, v in votes if v == '+')
+    return f'''<div style="width:200px"><div style="font-size:13px;font-weight:750;margin-bottom:8px">Consensus {agree}/{len(votes)} <span style="color:var(--vx-text-muted);font-size:11px">favorable</span></div>
+  <div style="display:flex;gap:5px">{dots}</div></div>'''
+
+
+def concentration_tower(weights):
+    """CONCENTRATION TOWER — tour empilée par poids (HHI)."""
+    cells = ''.join(f'<div class="wl-tip" data-tip="{k} {v}%" style="height:{v*1.6:.0f}px;background:{c};border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#161316;font-weight:700">{v}%</div>' for k, v, c in weights)
+    return f'''<div style="display:flex;align-items:flex-end;gap:14px">
+  <div style="display:flex;flex-direction:column-reverse;gap:2px;width:52px">{cells}</div>
+  <div><b style="font-size:20px">HHI 0,31</b><div style="font-size:10px;color:{_AM}">concentration modérée</div></div></div>'''
+
+
+def bias_heatmap():
+    """BIAS HEATMAP — carte des biais récurrents (jour × type)."""
+    import itertools
+    vals = [2, 0, 1, 3, 0, 1, 0, 2, 1, 0, 0, 1, 3, 1, 0, 2, 0, 1, 0, 1]
+    cells = ''
+    it = iter(vals)
+    for r in range(4):
+        for c in range(5):
+            v = next(it)
+            col = f'rgba(255,109,41,{0.08+v*0.22:.2f})' if v else 'rgba(255,255,255,.04)'
+            cells += f'<div class="wl-tip" data-tip="{v} occurrence(s)" style="width:20px;height:20px;border-radius:4px;background:{col}"></div>'
+    return f'<div style="width:130px"><div style="display:grid;grid-template-columns:repeat(5,20px);gap:4px">{cells}</div><div style="font-size:9px;color:var(--vx-text-muted);margin-top:6px">biais × jour · foncé = récurrent</div></div>'
+
+
+def freshness_matrix(sources):
+    """SOURCE FRESHNESS MATRIX — grille d'états de fraîcheur des sources."""
+    rows = ''
+    for name, state in sources:
+        col = {'live': _EM, 'delayed': _AM, 'frozen': _GY, 'off': _RB}[state]
+        rows += f'<div style="display:flex;align-items:center;gap:8px;font-size:11px"><span style="width:8px;height:8px;border-radius:50%;background:{col}"></span><span style="flex:1;color:var(--vx-text-secondary)">{name}</span><span style="color:var(--vx-text-muted);font-size:10px">{state}</span></div>'
+    return f'<div style="width:180px;display:flex;flex-direction:column;gap:7px">{rows}</div>'
+
+
+def engine_spine(engines):
+    """ENGINE STATUS SPINE — colonne des moteurs (santé)."""
+    rows = ''
+    for name, ok in engines:
+        col = _EM if ok else _RB
+        rows += f'<div style="display:flex;align-items:center;gap:8px"><span style="width:3px;height:22px;border-radius:2px;background:{col}"></span><span style="flex:1;font-size:11.5px">{name}</span><span style="font-size:10px;color:{col}">{"OK" if ok else "ERR"}</span></div>'
+    return f'<div style="width:180px;display:flex;flex-direction:column;gap:6px">{rows}</div>'
+
+
+def readonly_seal():
+    """READONLY SEAL — sceau de garantie lecture seule."""
+    return f'''<div style="width:120px;text-align:center"><svg viewBox="0 0 100 100" width="96" height="96">
+  <circle cx="50" cy="50" r="42" fill="none" stroke="var(--vx-ember-500)" stroke-width="2.5"/>
+  <circle cx="50" cy="50" r="34" fill="rgba(255,109,41,.06)" stroke="var(--vx-ember-500)" stroke-width="1" stroke-dasharray="2 3"/>
+  <text x="50" y="46" text-anchor="middle" fill="var(--vx-ember-400)" font-size="13" font-weight="850">READ</text>
+  <text x="50" y="62" text-anchor="middle" fill="var(--vx-ember-400)" font-size="13" font-weight="850">ONLY</text></svg>
+  <div style="font-size:9.5px;color:var(--vx-text-muted)">aucun ordre possible</div></div>'''
+
+
+def data_reactor(score):
+    """DATA INTEGRITY REACTOR — cœur de fiabilité + barres de qualité."""
+    return reactor(score, [('IBKR', 90 if score > 50 else 0, 40), ('Scan', 82, 30), ('IA', 70, 20), ('Cache', 60, 10)])
+
+
+def progress_ladder(levels):
+    """PROGRESS LADDER — échelons de progression (Journal)."""
+    rows = ''
+    for i, w in enumerate(levels):
+        col = _AM if i < 3 else _GY
+        rows += (f'<div style="display:flex;align-items:center;gap:8px">'
+                 f'<span style="width:20px;font-size:9px;color:var(--vx-text-muted)">N{i+1}</span>'
+                 f'<span style="flex:1;height:7px;border-radius:4px;background:rgba(0,0,0,.35);overflow:hidden">'
+                 f'<i style="display:block;height:100%;width:{w}%;background:{col}"></i></span></div>')
+    return f'<div style="display:flex;flex-direction:column-reverse;gap:4px;width:170px">{rows}</div>'
+
+
 # ── États honnêtes (bande d'états) ─────────────────────────────────────────
 def _state(kind):
     m = {
@@ -323,6 +645,8 @@ def _state(kind):
         'stale': ('Périmé · il y a 3 h', 'stale'),
         'demo': ('DÉMO — échantillon', 'demo'),
         'live': (live_pill('live'), 'live'),
+        'offline': ('Hors-ligne · dernière valeur il y a 12 min', 'offline'),
+        'error': ('Erreur moteur — réessayer', 'error'),
     }
     body, cls = m[kind]
     return f'<div class="wl-state wl-state--{cls}"><span class="lab">{kind}</span><div class="body">{body}</div></div>'
@@ -333,11 +657,13 @@ def _state(kind):
 def _benches():
     ALL_STATES = ['loading', 'empty', 'insufficient', 'stale', 'demo', 'live']
     return [
-        ('W01', 'Regime Aura', 'Régime', 'Dans quel régime, avec quelle confiance ?', [
-            ('V1 · halo', aura('Tendance haussière', 68, 'go')),
-            ('V2 · défensif', aura('Risk-Off', 44, 'risk')),
-            ('V3 · indéterminé', aura('Indéterminé', 0, 'off')),
-            ('V4 · compact', aura('Chop', 52, 'wait', 130)),
+        ('W01', 'Regime Aura', 'Régime', 'Dans quel régime, avec quelle confiance ? (variantes = concepts distincts)', [
+            ('V1 · halo atmosphérique', aura('Tendance haussière', 68, 'go'), 'smoked'),
+            ('V2 · horizon de phase', horizon_band('go', 'Tendance', 'phase haussière · vent porteur'), 'polished'),
+            ('V3 · brume indéterminée', aura('Indéterminé', 0, 'off'), 'frosted'),
+            ('V4 · capsule à tension', regime_capsule('Chop', 'wait', 52), 'metal'),
+            ('V5 · champ de pression', pressure_field('Risk-Off', 'risk', 44), 'deepblack'),
+            ('V6 · tuile météo', weather_tile('Environnement', '⛅', 'Chop', 'vent latéral · prudence', 'wait'), 'matte'),
         ], ALL_STATES),
         ('W04', 'Risk-of-Day Verdict (Slab)', 'Régime', 'Peut-on prendre du risque neuf ?', [
             ('V1', slab('RISK-OFF', 'risk', [('Régime', 'Tendance'), ('Participation', '50 % >MM50'), ('VIX', '12,7 · calme')])),
@@ -400,6 +726,112 @@ def _benches():
             ('V1 · hausse', f'<div class="wl-idx" data-dir="up"><div class="top"><span class="mono">S&P</span><span class="nm">S&P 500</span><span class="rel">près du haut</span></div><div class="vr"><span class="val">6 000</span><span class="chg pos">+1,67 %</span></div>{sparkline(SPARK_UP,"up",40,150)}<div class="ft"><b>plage 5 891–6 500</b></div></div>'),
             ('V2 · baisse', f'<div class="wl-idx" data-dir="down"><div class="top"><span class="mono">DJIA</span><span class="nm">Dow Jones</span><span class="rel">près du bas</span></div><div class="vr"><span class="val">44 000</span><span class="chg neg">−0,59 %</span></div>{sparkline(SPARK_DN,"down",40,150)}<div class="ft"><b>plage 39 069–45 325</b></div></div>'),
         ], ['loading', 'empty']),
+        ('W07b', 'Momentum Ribs', 'Momentum', 'Le momentum est-il cohérent entre horizons ?', [
+            ('V1 · côtes', momentum_ribs(MOM)),
+            ('V2 · retournement', momentum_ribs([4.2, -2.1, 9.2, -3.5])),
+        ], ['loading', 'empty']),
+        ('W23b', 'Volatility Rift', 'Volatilité', 'La volatilité menace-t-elle ?', [
+            ('V1 · comprimée', vol_rift(12.7)),
+            ('V2 · expansion', vol_rift(31)),
+        ], ['loading', 'empty']),
+        ('W-RC', 'Risk Crater', 'Volatilité', 'Quelle est la sévérité du risque ?', [
+            ('V1 · cratère', risk_crater('élevé')),
+        ], ['loading', 'insufficient']),
+        ('W-OB', 'Opportunity Beacon (Signal Bloom)', 'Opportunité', 'La force du signal justifie-t-elle l’attention ?', [
+            ('V1 · floraison', signal_bloom(72, 'go')),
+            ('V2 · identité', signal_bloom(58, 'brand')),
+            ('V3 · options', signal_bloom(64, 'opt')),
+        ], ['loading', 'empty', 'demo']),
+        ('W38b', 'Conviction Pillar', 'Opportunité', 'Quelle force de conviction ? (variante segmentée)', [
+            ('V1 · pilier', conviction_pillar(72)),
+            ('V2 · faible', conviction_pillar(28)),
+        ], ['loading', 'insufficient']),
+        ('W41', 'Catalyst Countdown Ring', 'Catalyseurs', 'Dans combien de temps le prochain catalyseur ?', [
+            ('V1 · imminent', countdown_ring(3)),
+            ('V2 · proche', countdown_ring(9)),
+            ('V3 · lointain', countdown_ring(22)),
+        ], ['loading', 'empty']),
+
+        # ═══ ANALYSE ═══
+        ('W44', 'Verdict Slab', 'Analyse', 'J’entre, j’attends ou j’évite ?', [
+            ('V1 · entrer', slab('ENTRER', 'go', [('Score', '32/40'), ('Niveau', 'S'), ('Confiance', '72 %'), ('Entrée', '198,4'), ('Invalidation', '188,0')])),
+            ('V2 · éviter', slab('ÉVITER', 'risk', [('Score', '14/40'), ('Niveau', 'B'), ('Confiance', '40 %'), ('Note', 'timing défavorable')])),
+        ], ['loading', 'insufficient', 'demo']),
+        ('W45', 'Scenario Triad', 'Analyse', 'Que risque-t-on, qu’attend-on, que peut-on gagner ?', [
+            ('V1 · triptyque', scenario_triad()),
+        ], ['loading', 'insufficient']),
+        ('W-TP', 'Thesis Pulse', 'Analyse', 'La thèse tient-elle ?', [
+            ('V1 · intacte', thesis_pulse('ok')),
+            ('V2 · surveiller', thesis_pulse('watch')),
+            ('V3 · invalidée', thesis_pulse('ko')),
+        ], ['loading', 'empty']),
+        ('W-SD', 'Score Decomposition', 'Analyse', 'D’où vient le score /40 ?', [
+            ('V1 · empilée', score_decomp([('Fonda', 11, _EM), ('Techn', 9, _CY), ('Momentum', 8, _AM), ('Risque', 4, _RB)])),
+        ], ['loading', 'insufficient']),
+        ('W-CC', 'Committee Consensus', 'Analyse', 'Le comité est-il d’accord ?', [
+            ('V1 · votes', committee([('Fonda', '+'), ('Tech', '+'), ('Momentum', '+'), ('Risque', '-'), ('Macro', '=')])),
+        ], ['loading', 'insufficient']),
+        ('W-CL', 'Confidence Lens', 'Analyse', 'Quelle confiance dans le verdict ?', [
+            ('V1 · diaphragme', confidence_lens(72)),
+            ('V2 · faible', confidence_lens(34)),
+        ], ['loading', 'insufficient']),
+
+        # ═══ PORTEFEUILLE ═══
+        ('W-PC', 'Allocation Constellation', 'Portefeuille', 'Où est concentré mon capital ?', [
+            ('V1 · constellation', constellation([('NVDA', 20, 30, 11, 1), ('AAPL', 45, 55, 8, 1), ('XOM', 68, 35, 6, -1), ('JPM', 82, 62, 5, 1), ('PFE', 55, 80, 4, -1)])),
+        ], ['loading', 'empty']),
+        ('W-CT', 'Concentration Tower', 'Portefeuille', 'Suis-je trop concentré ?', [
+            ('V1 · tour', concentration_tower([('NVDA', 32, 'var(--vx-ember-500)'), ('AAPL', 22, _GY), ('JPM', 16, _GY), ('Autres', 30, 'rgba(255,255,255,.1)')])),
+        ], ['loading', 'insufficient']),
+        ('W-DC', 'Drawdown Canyon', 'Portefeuille', 'À quel point suis-je descendu ?', [
+            ('V1 · canyon', drawdown_canyon([0, -2, -5, -9, -14, -11, -7, -12, -6, -3, -1, -4])),
+        ], ['loading', 'insufficient']),
+        ('W-WG', 'Winner / Loser Guardrails', 'Portefeuille', 'Gérer les gagnants, protéger contre les perdants', [
+            ('V1 · gagnant', f'<div style="width:210px"><div style="font-size:11px;color:{_EM};font-weight:700">GAGNANT · NVDA +48 %</div><div style="font-size:11px;color:var(--vx-text-secondary);margin:6px 0">Paliers : <b style="color:{_EM}">+20 +30 +50 +75 +100</b></div><div style="font-size:10px;color:var(--vx-text-muted)">Réévaluer selon la thèse — jamais vendre au seul motif du gain.</div></div>', 'polished'),
+            ('V2 · perdant', f'<div style="width:210px"><div style="font-size:11px;color:{_RB};font-weight:700">GARDE-FOU · perte −12 %</div><div style="font-size:12px;color:var(--vx-text-primary);margin:6px 0;font-weight:650">Ne pas renforcer une position perdante.</div><div style="font-size:10px;color:var(--vx-text-muted)">Invalidation atteinte → sortie disciplinée.</div></div>', 'deepblack'),
+        ], ['loading', 'empty']),
+
+        # ═══ OPTIONS ═══
+        ('W50', 'Payoff Terrain', 'Options', 'Que rapporte/coûte ce contrat ?', [
+            ('V1 · relief', payoff_terrain()),
+        ], ['loading', 'insufficient', 'demo']),
+        ('W51', 'Greek Vector Field', 'Options', 'Comment le contrat réagit-il ?', [
+            ('V1 · champ', greek_field()),
+        ], ['loading', 'insufficient']),
+        ('W-LL', 'Liquidity Lens', 'Options', 'Le contrat est-il liquide ?', [
+            ('V1 · spread', ring(78, unit='', sub='liquidité')),
+        ], ['loading', 'insufficient']),
+        ('W-TB', 'Theta Burn Track', 'Options', 'Combien coûte chaque jour d’attente ?', [
+            ('V1 · érosion', sparkline([60, 57, 53, 48, 42, 35, 27, 18], 'down', 44, 160)),
+        ], ['loading', 'insufficient']),
+
+        # ═══ JOURNAL ═══
+        ('W-DR', 'Discipline Ring', 'Journal', 'Est-ce que je suis mon process ?', [
+            ('V1 · anneau', ring(82, unit='', sub='discipline')),
+            ('V2 · pilier', conviction_pillar(82)),
+        ], ['loading', 'insufficient']),
+        ('W-BH', 'Bias Heatmap', 'Journal', 'Quels biais reviennent ?', [
+            ('V1 · carte', bias_heatmap()),
+        ], ['loading', 'empty']),
+        ('W-PL', 'Progress Ladder', 'Journal', 'Où en est ma progression ?', [
+            ('V1 · échelons', progress_ladder([100, 90, 70, 40, 15])),
+        ], ['loading', 'insufficient']),
+
+        # ═══ SYSTÈME ═══
+        ('W68', 'Data Integrity Reactor', 'Système', 'Puis-je faire confiance aux données ?', [
+            ('V1 · fiable', data_reactor(84)),
+            ('V2 · démo', data_reactor(30)),
+        ], ['loading', 'demo', 'offline']),
+        ('W-FM', 'Source Freshness Matrix', 'Système', 'Quelles sources sont fraîches ?', [
+            ('V1 · matrice', freshness_matrix([('IBKR (TWS)', 'delayed'), ('Scan moteur', 'live'), ('Actualités', 'live'), ('Calendrier', 'frozen')])),
+        ], ['loading', 'offline']),
+        ('W-ES', 'Engine Status Spine', 'Système', 'Les moteurs tournent-ils ?', [
+            ('V1 · colonne', engine_spine([('Scan', True), ('Décision', True), ('Options', True), ('Scénarios', False)])),
+        ], ['loading', 'error']),
+        ('W-RS', 'READONLY Seal', 'Système', 'Vertex peut-il passer un ordre ?', [
+            ('V1 · sceau', readonly_seal()),
+        ], ['live']),
+
         ('O-1', 'Primitives — KPI · Grade · Live · Delta', 'Primitives', 'Les briques atomiques', [
             ('KPI glass', kpi('S&P 500', '6 000', '+1,67 %', 'up', SPARK_UP)),
             ('KPI flat', kpi('Taux 10 ans', '3,00 %', '−0,02 pts', 'flat')),
@@ -407,6 +839,16 @@ def _benches():
             ('Live pills', live_pill('live') + ' ' + live_pill('delayed') + ' ' + live_pill('frozen') + ' ' + live_pill('fallback')),
         ], ['loading', 'empty']),
     ]
+
+
+# Accents de famille (mirroir du CSS wl-bench[data-fam]) pour les pastilles.
+FAM_ACCENT = {
+    'Régime': 'var(--vx-positive)', 'Momentum': '#B6F04A', 'Breadth': 'var(--vx-positive)',
+    'Rotation': 'var(--vx-warm-grey)', 'Volatilité': 'var(--vx-option)',
+    'Opportunité': 'var(--vx-positive)', 'Marchés': 'var(--vx-technical)',
+    'Analyse': 'var(--vx-warning)', 'Portefeuille': '#E7E2DA', 'Options': 'var(--vx-option)',
+    'Journal': 'var(--vx-warning)', 'Système': 'var(--vx-technical)', 'Primitives': 'var(--vx-warm-grey)',
+}
 
 
 # ── Page ───────────────────────────────────────────────────────────────────
@@ -418,15 +860,21 @@ def render() -> str:
             families.append(b[2])
     nav = ''.join(f'<a href="#fam-{i}" class="wl-navchip">{f}</a>' for i, f in enumerate(families))
 
+    # Matières cyclées si non spécifiées → chaque variante porte une matière distincte.
+    MATS = ['smoked', 'polished', 'deepblack', 'metal', 'frosted', 'matte']
     sections = ''
     last_fam = None
     for (wid, name, fam, q, variants, states) in benches:
         if fam != last_fam:
             fi = families.index(fam)
-            sections += f'<h2 id="fam-{fi}" class="wl-fam">{fam}</h2>'
+            sw = FAM_ACCENT.get(fam, 'var(--vx-warm-grey)')
+            sections += f'<h2 id="fam-{fi}" class="wl-fam">{fam}<span class="wl-fam-swatch" style="background:{sw}"></span></h2>'
             last_fam = fam
         tiles = ''
-        for vlabel, html in variants:
+        for vi, v in enumerate(variants):
+            vlabel, html = v[0], v[1]
+            mat = v[2] if len(v) > 2 else MATS[vi % len(MATS)]
+            live = ' data-live="1"' if 'live' in vlabel.lower() else ''
             vid = f'{wid}-{vlabel.split(" ")[0]}'
             tiles += f'''<div class="wl-tile" data-wid="{vid}">
       <div class="wl-tile-head"><span class="vlab">{vlabel}</span>
@@ -434,9 +882,9 @@ def render() -> str:
           <button data-v="official" title="Officiel">◎</button>
           <button data-v="reference" title="Référence">★</button>
           <button data-v="rejected" title="Rejeté">✕</button></span></div>
-      <div class="wl-stage">{html}</div></div>'''
+      <div class="wl-stage"><div class="wl-surf wl-surf--{mat}"{live}><span class="wl-mat-tag">{mat}</span>{html}</div></div></div>'''
         strip = ''.join(_state(s) for s in states)
-        sections += f'''<section class="wl-bench">
+        sections += f'''<section class="wl-bench" data-fam="{fam}">
     <div class="wl-bench-head"><span class="wl-id">{wid}</span><span class="wl-name">{name}</span>
       <span class="wl-q">{q}</span></div>
     <div class="wl-variants">{tiles}</div>
@@ -456,6 +904,7 @@ def render() -> str:
     <span class="wl-tag">Design System — source de vérité</span></div>
   <div class="wl-actions">
     <span class="wl-legend"><span class="official">◎ Officiel</span> <span class="reference">★ Référence</span> <span class="rejected">✕ Rejeté</span></span>
+    <button id="wl-mobile" class="wl-btn ghost">Aperçu mobile</button>
     <button id="wl-export" class="wl-btn">Exporter mes choix</button>
     <button id="wl-reset" class="wl-btn ghost">Réinitialiser</button></div>
 </header>
@@ -473,7 +922,8 @@ def render() -> str:
 _CSS = r'''
 *{box-sizing:border-box}
 .wl{margin:0;background:var(--vx-canvas);color:var(--vx-text-primary);
-  font-family:var(--vx-font);-webkit-font-smoothing:antialiased;line-height:1.5}
+  font-family:var(--vx-font);-webkit-font-smoothing:antialiased;line-height:1.5;
+  --wl-noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .wl-top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;
   padding:12px 22px;background:rgba(16,14,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--vx-border-soft)}
 .wl-brand{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--vx-text-secondary)}
@@ -517,8 +967,8 @@ _CSS = r'''
 .wl-tile[data-verdict="official"] .wl-verdict button[data-v="official"]{color:var(--vx-ember-400);border-color:var(--vx-ember-500)}
 .wl-tile[data-verdict="reference"] .wl-verdict button[data-v="reference"]{color:var(--vx-technical);border-color:var(--vx-technical)}
 .wl-tile[data-verdict="rejected"] .wl-verdict button[data-v="rejected"]{color:var(--vx-negative);border-color:var(--vx-negative)}
-.wl-stage{display:grid;place-items:center;min-height:120px;padding:8px;border-radius:9px;background:rgba(0,0,0,.16);overflow-x:auto}
-.wl-stage>*{max-width:100%}
+.wl-stage{display:grid;place-items:center;min-height:120px;overflow-x:auto}
+.wl-surf>*{max-width:100%}
 .wl-cmp{max-width:none}
 .wl-states-label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--vx-text-faint);margin:16px 0 8px}
 .wl-states{display:flex;flex-wrap:wrap;gap:8px}
@@ -528,6 +978,8 @@ _CSS = r'''
 .wl-state--demo .body{color:var(--vx-ember-400)}
 .wl-state--insufficient .body,.wl-state--empty .body{color:var(--vx-text-muted)}
 .wl-state--stale .body{color:var(--vx-warning)}
+.wl-state--offline .body{color:var(--vx-text-muted)}
+.wl-state--error .body{color:var(--vx-negative)}
 .wl-skel{width:100%;height:22px;border-radius:6px;background:linear-gradient(100deg,rgba(255,255,255,.03),rgba(255,255,255,.09),rgba(255,255,255,.03));
   background-size:200% 100%;animation:wlsh 1.4s ease-in-out infinite}
 @keyframes wlsh{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -624,6 +1076,70 @@ _CSS = r'''
 .wl-cmp .rail i{display:block;height:100%;background:var(--vx-warm-grey);border-radius:4px}.wl-cmp .cmp.win .rail i{background:var(--vx-ember-500)}
 .wl-cmp .n{font-size:11px;font-weight:700;min-width:28px;text-align:right;font-variant-numeric:tabular-nums}.wl-cmp .cmp.win .n{color:var(--vx-ember-400)}
 
+/* ═══ MATIÈRES (6 tiers) — chaque variante peut porter une matière distincte ═══ */
+.wl-surf{position:relative;border-radius:14px;padding:14px;width:100%;overflow:hidden;
+  border:1px solid var(--wl-eo,rgba(0,0,0,.55));
+  box-shadow:0 12px 30px -16px rgba(0,0,0,.75), inset 0 1px 0 var(--wl-ei,rgba(255,255,255,.05));
+  transition:transform .18s cubic-bezier(.23,1,.32,1),box-shadow .18s,border-color .18s}
+.wl-surf::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:var(--wl-noise);
+  background-size:140px;opacity:.035;mix-blend-mode:overlay}
+.wl-surf:hover{transform:translateY(-2px);box-shadow:0 18px 44px -18px rgba(0,0,0,.85),inset 0 1px 0 var(--wl-ei,rgba(255,255,255,.07))}
+.wl-surf:focus-within{box-shadow:0 22px 50px -18px rgba(0,0,0,.9),0 0 0 1px var(--wl-eo)}
+.wl-surf--matte{background:linear-gradient(180deg,#1b1719,#141012);--wl-ei:rgba(255,255,255,.04)}
+.wl-surf--smoked{background:linear-gradient(180deg,rgba(36,29,30,.62),rgba(20,17,19,.5));-webkit-backdrop-filter:blur(12px) saturate(1.12);backdrop-filter:blur(12px) saturate(1.12);--wl-ei:rgba(255,255,255,.06)}
+.wl-surf--polished{background:linear-gradient(180deg,rgba(44,35,33,.72),rgba(22,18,20,.6));--wl-ei:rgba(255,255,255,.10)}
+.wl-surf--polished::after{content:"";position:absolute;left:0;right:0;top:0;height:42%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),transparent)}
+.wl-surf--deepblack{background:radial-gradient(130% 100% at 50% -12%,rgba(44,26,18,.28),#07060a 68%);--wl-ei:rgba(255,255,255,.03);--wl-eo:#000}
+.wl-surf--metal{background:linear-gradient(115deg,#251e1c,#1a1517 38%,#241c1a 60%,#150f0e);--wl-ei:rgba(255,224,196,.09)}
+.wl-surf--metal::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,220,190,.05),transparent 30%,rgba(255,220,190,.04) 70%,transparent)}
+.wl-surf--frosted{background:linear-gradient(180deg,rgba(64,56,58,.34),rgba(30,26,30,.3));-webkit-backdrop-filter:blur(18px) saturate(1.2) brightness(1.05);backdrop-filter:blur(18px) saturate(1.2) brightness(1.05);--wl-ei:rgba(255,255,255,.13)}
+/* étiquette de matière + glow local sur la donnée active */
+.wl-mat-tag{position:absolute;top:8px;right:8px;z-index:2;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--vx-text-faint);background:rgba(0,0,0,.35);border:1px solid var(--vx-border-soft);border-radius:6px;padding:2px 6px}
+.wl-glow{filter:drop-shadow(0 0 5px var(--wl-acc,var(--vx-ember-glow)))}
+/* LIVE : léger balayage de matière */
+.wl-surf[data-live="1"]::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.05) 50%,transparent 70%);
+  background-size:250% 100%;animation:wlsheen 4s linear infinite}
+@keyframes wlsheen{0%{background-position:200% 0}100%{background-position:-60% 0}}
+
+/* ═══ PALETTES PAR FAMILLE (l'orange reste réservé à l'identité/interaction) ═══ */
+.wl-bench{--acc:var(--vx-warm-grey)}
+.wl-bench[data-fam="Régime"]{--acc:var(--vx-positive)}
+.wl-bench[data-fam="Momentum"]{--acc:#B6F04A}          /* vert citron — force */
+.wl-bench[data-fam="Breadth"]{--acc:var(--vx-positive)}
+.wl-bench[data-fam="Rotation"]{--acc:var(--vx-warm-grey)}
+.wl-bench[data-fam="Volatilité"]{--acc:var(--vx-option)} /* violet électrique */
+.wl-bench[data-fam="Opportunité"]{--acc:var(--vx-positive)}
+.wl-bench[data-fam="Marchés"]{--acc:var(--vx-technical)}
+.wl-bench[data-fam="Analyse"]{--acc:var(--vx-warning)}
+.wl-bench[data-fam="Portefeuille"]{--acc:#E7E2DA}        /* blanc cassé — constellation */
+.wl-bench[data-fam="Options"]{--acc:var(--vx-option)}
+.wl-bench[data-fam="Journal"]{--acc:var(--vx-warning)}
+.wl-bench[data-fam="Système"]{--acc:var(--vx-technical)}
+.wl-fam-swatch{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--acc);vertical-align:middle;margin-left:6px}
+
+/* ═══ MICRO-INTERACTIONS ═══ */
+.wl-more{max-height:0;opacity:0;overflow:hidden;transition:max-height .2s cubic-bezier(.23,1,.32,1),opacity .2s;
+  font-size:11px;color:var(--vx-text-muted)}
+.wl-surf:hover .wl-more,.wl-surf:focus-within .wl-more{max-height:60px;opacity:1;margin-top:6px}
+.wl-tip{position:relative}
+.wl-tip::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%) translateY(4px);
+  background:var(--vx-surface-elevated);color:var(--vx-text-secondary);border:1px solid var(--vx-border-strong);border-radius:9px;
+  padding:6px 9px;font-size:11px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .16s,transform .16s;z-index:9;
+  box-shadow:0 10px 26px -12px rgba(0,0,0,.8)}
+.wl-tip:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══ APERÇU MOBILE ═══ */
+.wl--mobile .wl-variants{flex-direction:column}
+.wl--mobile .wl-tile{width:390px;max-width:100%}
+.wl--mobile .wl-stage{min-height:auto}
+.wl--mobile .wl-mobonly{display:block}
+.wl-mobonly{display:none}
+.wl--mobile .wl-deskonly{display:none}
+
 /* reveal */
 .wl-stage>*{animation:wlrev .22s cubic-bezier(.23,1,.32,1) both}
 @keyframes wlrev{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -631,8 +1147,10 @@ _CSS = r'''
 #wl-modal::backdrop{background:rgba(0,0,0,.6)}
 #wl-modal textarea{width:100%;background:var(--vx-canvas);color:var(--vx-text-secondary);border:1px solid var(--vx-border-soft);border-radius:8px;padding:8px;font-family:var(--vx-font-mono);font-size:11px}
 .wl-modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.wl-actions{flex-wrap:wrap}
 @media (max-width:640px){.wl-dom{grid-template-columns:1fr}.wl-dom-l{border-right:none;border-bottom:1px solid var(--vx-border-soft)}
-  .wl-top{flex-direction:column;align-items:flex-start;gap:8px}.wl-subbar{top:96px}}
+  .wl-top{flex-direction:column;align-items:flex-start;gap:8px}.wl-subbar{top:auto;position:static}
+  .wl-actions{width:100%}.wl-legend{display:none}}
 @media (prefers-reduced-motion:reduce){.wl-stage>*,.wl-live .dot,.wl-skel{animation:none!important}}
 '''
 
@@ -665,6 +1183,11 @@ _JS = r'''
     setTimeout(function(){copyBtn.textContent='Copier';},1200);});
   var closeBtn=document.getElementById('wl-close');
   if(closeBtn)closeBtn.addEventListener('click',function(){document.getElementById('wl-modal').close();});
+  var mobBtn=document.getElementById('wl-mobile');
+  if(mobBtn)mobBtn.addEventListener('click',function(){
+    document.querySelector('.wl-main').classList.toggle('wl--mobile');
+    mobBtn.classList.toggle('active');
+    mobBtn.textContent=document.querySelector('.wl-main').classList.contains('wl--mobile')?'Aperçu desktop':'Aperçu mobile';});
   apply();
 })();
 '''

@@ -35,14 +35,34 @@ def test_route_ok_and_standalone(html):
 
 def test_benches_and_families_present(html):
     assert 'wl-bench' in html and 'wl-variants' in html
+    # 13 familles produit + Primitives (dont les 5 ajoutées en AD-02)
     for fam in ('Régime', 'Momentum', 'Breadth', 'Rotation', 'Opportunité',
-                'Volatilité', 'Marchés', 'Primitives'):
-        assert fam in html, f'famille manquante : {fam}'
-    # widgets signature attendus
+                'Volatilité', 'Marchés', 'Catalyseurs', 'Analyse', 'Portefeuille',
+                'Options', 'Journal', 'Système', 'Primitives'):
+        assert f'data-fam="{fam}"' in html or f'>{fam}<' in html, f'famille manquante : {fam}'
+    # widgets signature attendus (existants + AD-02)
     for w in ('Regime Aura', 'Momentum Comb', 'Breadth Tide', 'Stress Thermocline',
               'Health Reactor', 'Asymmetry Ledge', 'Opportunity Dominant Slab',
-              'Sector Rotation Orbit'):
+              'Sector Rotation Orbit', 'Verdict Slab', 'Scenario Triad', 'Payoff Terrain',
+              'Greek Vector Field', 'Data Integrity Reactor', 'READONLY Seal',
+              'Volatility Rift', 'Momentum Ribs', 'Catalyst Countdown Ring'):
         assert w in html, f'widget signature manquant : {w}'
+
+
+def test_material_tiers_present(html):
+    """AD-02 : plusieurs matières distinctes (pas des rectangles uniformes)."""
+    for mat in ('matte', 'smoked', 'polished', 'deepblack', 'metal', 'frosted'):
+        assert f'wl-surf--{mat}' in html, f'matière manquante : {mat}'
+    assert '--wl-noise' in html          # micro-texture
+    assert 'wl-mobile' in html           # aperçu mobile
+    assert 'wl-tip' in html              # tooltip micro-interaction
+
+
+def test_widget_count_ge_40(client):
+    """AD-02 exige ≥ 40 widgets réellement implémentés."""
+    from vertex.ui.pages import widget_lab
+    benches = widget_lab._benches()
+    assert len(benches) >= 40, f'seulement {len(benches)} widgets (< 40)'
 
 
 def test_variants_and_states(html):
