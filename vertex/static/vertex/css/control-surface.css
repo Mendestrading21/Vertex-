@@ -8,9 +8,9 @@
   --vx-control-xs:24px;--vx-control-sm:30px;--vx-control-md:36px;--vx-control-lg:42px;--vx-control-xl:48px;
   --vx-shadow-raised:0 1px 0 rgba(255,255,255,.05) inset,0 6px 14px rgba(0,0,0,.28);
   --vx-shadow-pressed:0 2px 7px rgba(0,0,0,.34) inset;
-  --vx-shadow-copper:0 6px 18px rgba(126,47,13,.24),0 1px 0 rgba(255,220,190,.10) inset;
+  --vx-shadow-copper:0 6px 18px rgba(0,0,0,.24),0 1px 0 rgba(255,220,190,.10) inset;
   --vx-shadow-floating:0 18px 48px rgba(0,0,0,.42);
-  --vx-cs-focus:0 0 0 2px rgba(196,90,37,.34);
+  --vx-cs-focus:0 0 0 2px rgba(255,255,255,.34);
   --vx-motion-fast:130ms;--vx-motion-standard:200ms;--vx-motion-slow:320ms;
 }
 
@@ -36,13 +36,13 @@
 .vx-chip{transition:background var(--vx-motion-fast),border-color var(--vx-motion-fast),box-shadow var(--vx-motion-fast),transform var(--vx-motion-fast)}
 @media (prefers-reduced-motion:no-preference){.vx-chip:hover{transform:translateY(-1px)}}
 .vx-chip:hover{border-color:var(--vx-border-strong,rgba(255,255,255,.16))}
-.vx-chip[aria-pressed="true"]{border-color:var(--vx-orange-500,#84aa31);
-  box-shadow:0 0 0 1px rgba(163,202,66,.18),0 4px 10px rgba(126,47,13,.16)}
+.vx-chip[aria-pressed="true"]{border-color:var(--vx-orange-500,#dbe1e8);
+  box-shadow:0 0 0 1px rgba(255,255,255,.18),0 4px 10px rgba(0,0,0,.16)}
 
 /* ── Onglets : actif surélevé + barre cuivre plus marquée ── */
 .vx-tab{transition:color var(--vx-motion-fast),background var(--vx-motion-fast),border-color var(--vx-motion-fast);border-radius:7px 7px 0 0}
 .vx-tab:hover{background:rgba(255,255,255,.03)}
-.vx-tab[aria-selected="true"]{background:rgba(163,202,66,.07);border-bottom-width:2.5px}
+.vx-tab[aria-selected="true"]{background:rgba(255,255,255,.06);border-bottom-width:2.5px}
 
 /* ── Segmented control : rail creusé, indicateur actif surélevé ── */
 .vx-segmented{box-shadow:var(--vx-shadow-pressed);gap:2px}

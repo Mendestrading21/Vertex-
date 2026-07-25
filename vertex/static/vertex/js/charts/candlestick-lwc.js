@@ -5,7 +5,7 @@
    pied source-date / bouton « Comprendre ce graphique »), mais rend un vrai graphique
    chandeliers interactif (crosshair, zoom/pan) à la place du canvas Chart.js.
    Bougies : hausse = émeraude (positif), baisse = corail (négatif) — JAMAIS le vert
-   marque (#3B82F6 = identité, pas « ça monte »). Volume + moyennes serveur + niveaux
+   marque (#DBE1E8 = identité, pas « ça monte »). Volume + moyennes serveur + niveaux
    du plan moteur superposés. Repli automatique sur candlestickCard si la lib ou les
    dates OHLC manquent. Attribution TradingView affichée (exigence de licence). */
 (function () {
@@ -128,7 +128,7 @@
 
       /* Niveaux du plan moteur en lignes de prix (entrée/stop/TP/résistance/support). */
       var plan = opts.plan || {};
-      [['entry', 'Entrée', cssv('--vx-brand', '#3B82F6')], ['stop', 'Stop', neg],
+      [['entry', 'Entrée', cssv('--vx-brand', '#DBE1E8')], ['stop', 'Stop', neg],
        ['tp1', 'TP1', pos], ['tp2', 'TP2', pos], ['tp3', 'TP3', pos],
        ['resistance', 'Résist.', cssv('--vx-steel-3', '#8A8284')], ['support', 'Support', cssv('--vx-steel-3', '#8A8284')]
       ].forEach(function (p) {

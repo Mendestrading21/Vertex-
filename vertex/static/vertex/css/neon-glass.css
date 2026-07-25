@@ -1,14 +1,15 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    VERTEX GLASS — Graph System V2 (issue #14)
-   Fond très sombre (canvas #05070C) · cartes glass premium · identité BLEU
-   ÉLECTRIQUE (#3B82F6) sourcée depuis tokens.css (--vx-ember-*). Vert=gain,
-   rouge=perte, ambre=attente, violet=options, cyan=comparaison technique.
-   Le bleu EST désormais la marque. Glow uniquement sur live / point actif /
+   Fond très sombre (canvas #05070C) · cartes glass premium · identité BLANC /
+   GRIS CLAIR EN VERRE (#DBE1E8) sourcée depuis tokens.css (--vx-ember-*).
+   Vert=gain, rouge=perte, jaune=attente, violet=options, cyan=comparaison.
+   L'accent d'interface (boutons/icônes/sélection) est un blanc légèrement gris
+   translucide, jamais coloré. Glow discret uniquement sur live / point actif /
    sélection / alerte.
 
    Toute couleur d'identité vient des tokens `--vx-*` (source unique NEUE EMBER) :
-   ce fichier n'invente plus de littéral orange. Le fond Signal Green a été tué à
-   la racine (tokens.css) — le shell (sidebar/topbar/nav) est donc déjà orange
+   ce fichier n'invente aucun littéral orange ni bleu. Le fond a été neutralisé à
+   la racine (tokens.css) — le shell (sidebar/topbar/nav) est donc déjà neutre
    partout, y compris hors `.vx-content`.
 
    MIGRATION page par page (validée) : espaces couverts = Aujourd'hui + Marchés
@@ -32,8 +33,8 @@
   --ng-border:rgba(255,255,255,.09);
   --ng-border-soft:var(--vx-border-soft);
   --ng-border-strong:rgba(255,255,255,.16);
-  /* ── Identité : BLEU (réservé aux accents/actions, PAS au fond des cartes) ── */
-  --ng-neon:var(--vx-ember-500);       /* bleu (identité, sélection, action) */
+  /* ── Identité : BLANC/GRIS EN VERRE (accents/actions, PAS le fond des cartes) ── */
+  --ng-neon:var(--vx-ember-500);       /* blanc-gris (identité, sélection, action) */
   --ng-neon-bright:var(--vx-ember-400);
   --ng-copper:var(--vx-ember-600);
   --ng-neon-soft:var(--vx-ember-soft);
@@ -98,14 +99,35 @@
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-kpi-value{color:var(--vx-text-primary)}
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-kpi-label{color:var(--vx-text-muted);letter-spacing:.04em}
 
-/* ── Boutons : action principale = orange néon (texte sombre, jamais blanc) ── */
+/* ── Boutons : action principale = VERRE blanc/gris translucide (jamais coloré,
+      jamais bleu). Texte clair, givré, léger halo blanc au survol seulement. ── */
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-btn-primary{
-  background:var(--vx-brand-gradient);
-  border:1px solid rgba(59,130,246,.5);color:var(--vx-ember-ink);font-weight:650;
-  box-shadow:0 6px 18px -8px rgba(59,130,246,.6);
+  background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.07));
+  -webkit-backdrop-filter:blur(14px) saturate(1.2);
+  backdrop-filter:blur(14px) saturate(1.2);
+  border:1px solid rgba(255,255,255,.22);color:var(--vx-text-primary);font-weight:650;
+  box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 8px 20px -12px rgba(0,0,0,.6);
 }
-.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-btn-primary:hover{box-shadow:var(--ng-glow)}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-btn-primary:hover{
+  background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.10));
+  border-color:rgba(255,255,255,.34);
+  box-shadow:0 1px 0 rgba(255,255,255,.24) inset,0 0 0 1px rgba(255,255,255,.16),0 10px 26px -14px rgba(0,0,0,.7);
+}
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-ticker{color:var(--ng-neon-bright)}
+
+/* ── Emojis / pastilles d'icône EN VERRE (givré blanc, jamais coloré) ──
+      Les chips porteurs d'emoji (contexte entité, filtres, états) prennent une
+      matière verre translucide ; l'emoji « flotte » dans un cartouche givré.
+      Sémantique conservée : le pos/neg/warning teinte le texte, pas le verre. */
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) :is(.vx-chip,.vx-state-icon){
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.045));
+  -webkit-backdrop-filter:blur(9px) saturate(1.2);backdrop-filter:blur(9px) saturate(1.2);
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 1px 0 rgba(255,255,255,.14) inset;
+}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-state-icon{
+  border-radius:12px;
+}
 
 /* ── Freshness / live-dot : GLOW UNIQUEMENT quand live ── */
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-freshness{
@@ -115,7 +137,7 @@
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-freshness[data-live="live"] .vx-live-dot,
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-live-dot[data-live="1"]{
   background:var(--vx-positive);
-  box-shadow:0 0 0 3px rgba(46,214,161,.18),0 0 10px rgba(46,214,161,.55);
+  box-shadow:0 0 0 3px rgba(43,190,144,.18),0 0 10px rgba(43,190,144,.55);
   animation:ng-pulse 1.8s ease-in-out infinite;
 }
 
@@ -251,7 +273,7 @@
 .vx-content[data-space="markets"] .vx-mk-regime-lead .tag{
   font-size:var(--vx-fs-meta);font-weight:700;letter-spacing:.08em;text-transform:uppercase;
   color:var(--vx-warning);padding:3px 9px;border-radius:999px;
-  background:var(--vx-warning-soft);border:1px solid rgba(235,210,78,.28);
+  background:var(--vx-warning-soft);border:1px solid rgba(217,190,60,.28);
 }
 .vx-content[data-space="markets"] .vx-mk-regime-lead .txt{color:var(--vx-text-secondary);font-size:13.5px;line-height:1.55}
 /* Rangée de signaux réels (VIX / breadth / S&P / risk) — mini-cartes à rail */
@@ -291,7 +313,10 @@
 .vx-content[data-space="markets"] .vx-mk-mono{
   width:34px;height:34px;flex:0 0 34px;border-radius:9px;display:grid;place-items:center;
   font-size:11px;font-weight:800;letter-spacing:.02em;color:var(--vx-ember-400);
-  background:var(--vx-ember-soft);border:1px solid rgba(59,130,246,.22);
+  background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.05));
+  -webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2);
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 1px 0 rgba(255,255,255,.16) inset,0 4px 12px -8px rgba(0,0,0,.6);
 }
 .vx-content[data-space="markets"] .vx-mk-idx-name{font-size:13px;font-weight:650;color:var(--vx-text-primary);line-height:1.15}
 .vx-content[data-space="markets"] .vx-mk-idx-rel{
@@ -327,7 +352,10 @@
 .vx-content[data-space="markets"] .vx-mk-macro .m-head{grid-column:1/2;display:flex;align-items:center;gap:8px}
 .vx-content[data-space="markets"] .vx-mk-macro .m-mono{
   font-size:10px;font-weight:800;letter-spacing:.03em;color:var(--vx-ember-400);
-  padding:2px 7px;border-radius:7px;background:var(--vx-ember-soft);border:1px solid rgba(59,130,246,.2);
+  padding:2px 7px;border-radius:7px;border:1px solid rgba(255,255,255,.2);
+  background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.05));
+  -webkit-backdrop-filter:blur(8px) saturate(1.2);backdrop-filter:blur(8px) saturate(1.2);
+  box-shadow:0 1px 0 rgba(255,255,255,.14) inset;
 }
 .vx-content[data-space="markets"] .vx-mk-macro .m-name{font-size:12px;color:var(--vx-text-secondary);letter-spacing:.03em}
 .vx-content[data-space="markets"] .vx-mk-macro .m-val{grid-column:1/2;font-size:24px;font-weight:800;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;line-height:1.1}
@@ -390,8 +418,8 @@
 .vx-content[data-space="opportunities"] .vx-op-hero-lead .tag{
   font-size:var(--vx-fs-meta);font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;
 }
-.vx-content[data-space="opportunities"] .vx-op-hero-lead .tag[data-tone="go"]{color:var(--vx-positive);background:var(--vx-positive-soft);border:1px solid rgba(46,214,161,.28)}
-.vx-content[data-space="opportunities"] .vx-op-hero-lead .tag[data-tone="wait"]{color:var(--vx-warning);background:var(--vx-warning-soft);border:1px solid rgba(235,210,78,.28)}
+.vx-content[data-space="opportunities"] .vx-op-hero-lead .tag[data-tone="go"]{color:var(--vx-positive);background:var(--vx-positive-soft);border:1px solid rgba(43,190,144,.28)}
+.vx-content[data-space="opportunities"] .vx-op-hero-lead .tag[data-tone="wait"]{color:var(--vx-warning);background:var(--vx-warning-soft);border:1px solid rgba(217,190,60,.28)}
 .vx-content[data-space="opportunities"] .vx-op-hero-lead .txt{color:var(--vx-text-secondary);font-size:14px;line-height:1.6}
 .vx-content[data-space="opportunities"] .vx-op-hero-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:var(--vx-s3)}
 .vx-content[data-space="opportunities"] .vx-op-chip{
@@ -421,7 +449,7 @@
 .vx-content[data-space="opportunities"] .vx-op-dom-tk .sym{font-size:34px;font-weight:850;letter-spacing:-.01em;color:var(--vx-text-primary);line-height:1}
 .vx-content[data-space="opportunities"] .vx-op-grade{
   font-size:15px;font-weight:850;padding:4px 12px;border-radius:10px;color:var(--vx-ember-ink);
-  background:var(--vx-brand-gradient);box-shadow:0 4px 14px -6px rgba(59,130,246,.7);
+  background:var(--vx-brand-gradient);box-shadow:0 4px 14px -6px rgba(255,255,255,.7);
 }
 .vx-content[data-space="opportunities"] .vx-op-grade[data-g="A"],
 .vx-content[data-space="opportunities"] .vx-op-grade[data-g="B"]{background:none;color:var(--vx-text-primary);border:1px solid var(--ng-border-strong);box-shadow:none}
@@ -436,7 +464,7 @@
 .vx-content[data-space="opportunities"] .vx-op-metric .k{display:block;font-size:var(--vx-fs-meta);color:var(--vx-text-muted);letter-spacing:.03em}
 .vx-content[data-space="opportunities"] .vx-op-metric .v{font-size:19px;font-weight:750;color:var(--vx-text-primary);font-variant-numeric:tabular-nums}
 .vx-content[data-space="opportunities"] .vx-op-metric .v.pos{color:var(--vx-positive)}
-.vx-content[data-space="opportunities"] .vx-op-metric.hot{border-color:rgba(59,130,246,.4)}
+.vx-content[data-space="opportunities"] .vx-op-metric.hot{border-color:rgba(255,255,255,.4)}
 .vx-content[data-space="opportunities"] .vx-op-metric.hot .v{color:var(--vx-ember-400)}
 .vx-content[data-space="opportunities"] .vx-op-lines{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
 .vx-content[data-space="opportunities"] .vx-op-lines .row{display:flex;gap:8px}
@@ -458,7 +486,10 @@
 .vx-content[data-space="opportunities"] .vx-op-tk-top{display:flex;align-items:center;gap:9px}
 .vx-content[data-space="opportunities"] .vx-op-mono{
   width:32px;height:32px;flex:0 0 32px;border-radius:9px;display:grid;place-items:center;
-  font-size:10.5px;font-weight:800;color:var(--vx-ember-400);background:var(--vx-ember-soft);border:1px solid rgba(59,130,246,.22);
+  font-size:10.5px;font-weight:800;color:var(--vx-ember-400);border:1px solid rgba(255,255,255,.22);
+  background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.05));
+  -webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2);
+  box-shadow:0 1px 0 rgba(255,255,255,.16) inset,0 4px 12px -8px rgba(0,0,0,.6);
 }
 .vx-content[data-space="opportunities"] .vx-op-tk-name{display:flex;flex-direction:column;line-height:1.15;min-width:0}
 .vx-content[data-space="opportunities"] .vx-op-tk-name .sym{font-size:15px;font-weight:750;color:var(--vx-text-primary)}
@@ -490,7 +521,7 @@
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell .n{font-size:12px;font-weight:700;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell.win .n{color:var(--vx-ember-400)}
 .vx-content[data-space="opportunities"] .vx-op-cmp col.best,
-.vx-content[data-space="opportunities"] .vx-op-cmp td.bestcol{background:rgba(59,130,246,.05)}
+.vx-content[data-space="opportunities"] .vx-op-cmp td.bestcol{background:rgba(255,255,255,.05)}
 
 /* Conteneur de graphe en verre (scatter/funnel) */
 .vx-content[data-space="opportunities"] #op-scatter canvas{background:rgba(0,0,0,.14);border-radius:10px}

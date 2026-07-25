@@ -28,10 +28,10 @@ def test_status_color_maps_all_statuses():
 
 
 def test_is_bluish_flags_blue_but_not_green_or_violet():
-    assert pal.is_bluish('#3b82f6') is True      # bleu franc
+    assert pal.is_bluish('#3b82f6') is True      # bleu franc (test de la fonction)
     assert pal.is_bluish(pal.POSITIVE) is False  # vert
     assert pal.is_bluish(pal.OPTION) is False    # violet option
-    assert pal.is_bluish(pal.BRAND) is True      # marque = bleu (identité)
+    assert pal.is_bluish(pal.BRAND) is False     # marque = blanc/gris neutre (plus de bleu)
 
 
 def _js_series(src_lower):

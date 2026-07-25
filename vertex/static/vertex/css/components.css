@@ -8,7 +8,7 @@
 .vx-card:hover{border-color:var(--vx-border-default);box-shadow:var(--vx-shadow-1);transform:translateY(-1px)}
 .vx-card.vx-elevated{background:var(--vx-surface-2);box-shadow:var(--vx-shadow-1)}
 .vx-card.vx-accent{border-color:var(--vx-border-default)}
-.vx-card.vx-active{border-color:rgba(163,202,66,.35);box-shadow:var(--vx-glow-brand)}
+.vx-card.vx-active{border-color:rgba(255,255,255,.35);box-shadow:var(--vx-glow-brand)}
 /* LEVEL 1 — HERO : contenu principal, halo ambré discret */
 .vx-card--hero{background:var(--vx-hero-halo),var(--vx-surface-2);
   border-color:var(--vx-border-default);padding:var(--vx-s5);
@@ -49,7 +49,7 @@
 .vx-badge-decision[data-decision="ACHETER"],.vx-badge-decision[data-decision="RENFORCER"]{
   background:var(--vx-positive-dim);color:var(--vx-positive);border-color:rgba(34,199,122,.4)}
 .vx-badge-decision[data-decision="ATTENDRE"]{
-  background:var(--vx-warning-dim);color:var(--vx-warning);border-color:rgba(245,158,66,.4)}
+  background:var(--vx-warning-dim);color:var(--vx-warning);border-color:rgba(217,190,60,.4)}
 .vx-badge-decision[data-decision="REDUIRE"],.vx-badge-decision[data-decision="REFUSER"]{
   background:var(--vx-negative-dim);color:var(--vx-negative);border-color:rgba(239,83,80,.4)}
 .vx-badge-risk[data-level="low"]{color:var(--vx-positive)}

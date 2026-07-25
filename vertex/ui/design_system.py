@@ -15,7 +15,7 @@ supérieure). C'est une base, pas une refonte.
 CSS = r"""
 /* ── Tokens Vertex canoniques (référence ; les composants VX les consomment) ── */
 :root{
- --vx-accent:#ff7a18;--vx-accent2:#ff9a3d;--vx-good:#22c55e;--vx-good2:#16d17a;
+ --vx-accent:#dbe1e8;--vx-accent2:#dbe1e8;--vx-good:#22c55e;--vx-good2:#16d17a;
  --vx-bad:#ef4444;--vx-info:#b9683d;--vx-warn:#f5b45b;--vx-neutral:#8794ab;
  --vx-ink:#eef2f8;--vx-ink2:#c9d2e0;--vx-mut:#8794ab;--vx-faint:#5c6577;
  --vx-hair:rgba(255,255,255,.08);--vx-hair2:rgba(255,255,255,.14);
@@ -32,7 +32,7 @@ CSS = r"""
 ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.28);background-clip:content-box}
 
 /* ── Sélection & focus clavier accessibles ── */
-::selection{background:rgba(255,122,24,.30);color:#fff}
+::selection{background:rgba(255,255,255,.30);color:#fff}
 :focus-visible{outline:2px solid var(--vx-accent);outline-offset:2px;border-radius:4px}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--vx-accent);outline-offset:2px}
 

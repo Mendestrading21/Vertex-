@@ -6,24 +6,24 @@ une intention (marque, benchmark, positif, négatif, option…). Le thème
 graphique JS (`chart-theme-obsidian-copper.js`) DOIT rester cohérent avec ce
 registre — un test le vérifie.
 
-Identité Vertex : BLEU ÉLECTRIQUE. Bleu = marque/série de référence (PAS
-« hausse »). Émeraude = positif. Le bleu de marque est la SEULE couleur bleue
-autorisée du registre (tout autre bleu dominant reste interdit). Miroir strict de
-tokens.css (#3B82F6). Le cyan #45D6E8 = comparaison technique uniquement.
+Identité Vertex : BLANC / GRIS CLAIR (en verre). Marque = blanc-gris neutre,
+série de référence (PAS « hausse »). Émeraude = positif. Plus AUCUN bleu ni
+orange identitaire ; tout bleu dominant reste interdit. Miroir strict de
+tokens.css (#DBE1E8). Le cyan #45D6E8 = comparaison technique uniquement.
 """
 from __future__ import annotations
 
-# ── Couleurs de marque (série principale = BLEU ÉLECTRIQUE) ────────────
-BRAND = '#3B82F6'          # série principale Vertex (identité, pas « hausse »)
+# ── Couleurs de marque (série principale = BLANC / GRIS CLAIR neutre) ──
+BRAND = '#DBE1E8'          # série principale Vertex (identité, pas « hausse »)
 COPPER = '#8A8284'         # série neutre acier (gris chaud)
-COPPER_LIGHT = '#5C9BFF'   # bleu clair de marque (accents hover)
-AMBER = '#EBD24E'          # série secondaire / attention
+COPPER_LIGHT = '#EEF1F5'   # blanc-gris clair de marque (accents hover)
+AMBER = '#D9BE3C'          # série secondaire / attention
 BEIGE = '#c8bfae'          # benchmark clair (sable)
 
 # ── États (direction / statut réel uniquement) ────────────────────────
-POSITIVE = '#2ED6A1'       # ÉMERAUDE — gain / donnée positive (distinct de la marque)
-NEGATIVE = '#FF5F69'       # corail — perte / risque
-WARNING = '#EBD24E'
+POSITIVE = '#2BBE90'       # ÉMERAUDE — gain / donnée positive (distinct de la marque)
+NEGATIVE = '#E9555F'       # corail — perte / risque
+WARNING = '#D9BE3C'
 NEUTRAL = '#BABABA'        # benchmark neutre (gris chaud)
 OPTION = '#9B7BFF'         # violet contrôlé — RÉSERVÉ aux options / IV / Greeks
 #                            (identité déployée : tokens.css, chart-theme, chart-core)
@@ -78,7 +78,7 @@ def is_bluish(hex_color: str) -> bool:
     """Heuristique « bleu dominant » : b nettement > r et > g, b élevé, ET rouge
     FAIBLE (le bleu vrai a peu de rouge ; le violet en a beaucoup).
 
-    Sert au garde-fou zéro-bleu. Ne considère PAS l'émeraude (#2ED6A1) ni le
+    Sert au garde-fou zéro-bleu. Ne considère PAS l'émeraude (#2BBE90) ni le
     violet option (#9B7BFF, r élevé) ni le cyan de comparaison (#45D6E8, g élevé)
     comme bleus identitaires."""
     h = str(hex_color or '').lstrip('#')
@@ -91,8 +91,8 @@ def is_bluish(hex_color: str) -> bool:
     return b > r + 30 and b > g + 30 and b > 90 and r < 110
 
 
-# Bleus AUTORISÉS = uniquement l'identité de marque (le bleu EST la marque).
-# Tout autre bleu dominant reste interdit (pas de bleu décoratif non-marque).
+# Couleurs de marque (blanc/gris neutre — plus aucune n'est réellement bleue).
+# Conservé comme liste d'exception du garde-fou ; tout bleu dominant reste interdit.
 BRAND_BLUES = {BRAND.lower(), COPPER_LIGHT.lower()}
 
 

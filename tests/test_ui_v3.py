@@ -226,8 +226,8 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v60' in body
-    assert 'td-shell-v59' not in body
+    assert 'td-shell-v61' in body
+    assert 'td-shell-v60' not in body
 
 
 # ── Sécurité produit ─────────────────────────────────────────────────────
@@ -252,14 +252,14 @@ def test_no_order_execution_path():
 
 
 def test_v3_tokens_are_canonical():
-    """Palette Vertex (identité BLEU électrique) — canonique et centralisée.
-    Bleu #3B82F6 = identité/marque (PAS « hausse ») · émeraude = positif distinct ·
-    corail = risque · violet = options · cyan = comparaison. Le token de marque
-    reste `--vx-ember-*` (source unique) mais sa valeur est désormais bleue."""
+    """Palette Vertex (identité NEUTRE blanc/gris) — canonique et centralisée.
+    Marque = blanc-gris #DBE1E8 (accent d'interface, jamais « hausse ») · émeraude
+    = positif · corail = risque · jaune = attente · violet = options · cyan =
+    comparaison. Le token de marque reste `--vx-ember-*` (valeur neutre désormais)."""
     tokens = _read(VXCSS, 'tokens.css')
-    for var in ('--vx-canvas:#05070C', '--vx-ember-500:#3B82F6',
-                '--vx-brand:var(--vx-ember-500)', '--vx-positive:#2ED6A1',
-                '--vx-negative:#FF5F69', '--vx-warning:#EBD24E',
+    for var in ('--vx-canvas:#05070C', '--vx-ember-500:#dbe1e8',
+                '--vx-brand:var(--vx-ember-500)', '--vx-positive:#2BBE90',
+                '--vx-negative:#E9555F', '--vx-warning:#D9BE3C',
                 '--vx-option:#9B7BFF', '--vx-neutral-chart:#BABABA'):
         assert var in tokens, f'token manquant : {var}'
     # Garde-fou anti-régression : le vert Signal ne doit plus être la marque.

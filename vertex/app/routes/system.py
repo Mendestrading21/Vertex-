@@ -174,11 +174,11 @@ def system_status_ep():
 @bp.route('/favicon.ico')
 @bp.route('/favicon.svg')
 def favicon_ep():
-    """Favicon Vertex : triangle bleu lumineux sur fond sombre, en SVG inline
+    """Favicon Vertex : triangle blanc/gris givré sur fond sombre, en SVG inline
     (aucune dépendance fichier → zéro 404 dans l'onglet du navigateur)."""
     svg = ("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>"
            "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>"
-           "<stop offset='0' stop-color='#5C9BFF'/><stop offset='1' stop-color='#2f6fd6'/>"
+           "<stop offset='0' stop-color='#eef1f5'/><stop offset='1' stop-color='#aab3bf'/>"
            "</linearGradient></defs>"
            "<rect width='64' height='64' rx='14' fill='#0b0e14'/>"
            "<path d='M32 15 L49 45 L15 45 Z' fill='url(#g)'/>"
@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v60';   // v60 (STABILISATION TEST) : fix débordement .vx-kv mobile (clé ellipsée / valeur repliable) — 8 pages x 3 viewports 0 débordement
+const CACHE='td-shell-v61';   // v61 (IDENTITÉ NEUTRE) : bleu → blanc/gris en verre (boutons/icônes/emojis frostés), favicon blanc-gris, semantics foncées+transparentes, zéro orange/bleu
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
