@@ -298,20 +298,42 @@ def comparison(rows):
     return f'<table class="wl-cmp"><thead>{head}</thead><tbody>{body}</tbody></table>'
 
 
-def funnel(stages):
-    top = max(s[1] for s in stages)
-    W = 200
+def funnel(stages=None):
+    """INVESTMENT PIPELINE — tuyau de sélection : rétention, exclusions, cause,
+    coût de filtration, honnêteté si zéro actionnable (P04, ex-Selection Funnel).
+    stages = [(label, count, cause_exclusion)]."""
+    stages = stages or [('Univers scanné', 512, ''), ('Éligibles (liquidité)', 148, 'spread/volume'),
+                        ('Qualité retenue', 46, 'bilan/marge'), ('Sur le radar', 12, 'timing'),
+                        ('Prioritaires', 4, 'conviction'), ('Actionnables', 2, 'invalidation nette')]
+    top = stages[0][1] or 1
     rows = ''
-    for i, (lab, val) in enumerate(stages):
-        w0 = 26 + (W - 26) * val / top
-        nxt = stages[i + 1][1] if i + 1 < len(stages) else val * 0.86
-        w1 = 26 + (W - 26) * nxt / top
-        col = 'var(--vx-positive)' if i == len(stages) - 1 else 'var(--vx-warm-grey)'
-        y = i * 32
-        rows += (f'<polygon points="{(W-w0)/2:.0f},{y} {(W+w0)/2:.0f},{y} {(W+w1)/2:.0f},{y+26} {(W-w1)/2:.0f},{y+26}" fill="{col}" fill-opacity=".8"/>'
-                 f'<text x="{W/2}" y="{y+17}" text-anchor="middle" fill="#161316" font-size="12" font-weight="800">{val}</text>'
-                 f'<text x="6" y="{y+17}" fill="var(--vx-text-secondary)" font-size="10">{lab}</text>')
-    return f'<svg viewBox="0 0 {W} {len(stages)*32}" width="100%" style="max-width:240px">{rows}</svg>'
+    for i, (lab, val, cause) in enumerate(stages):
+        w = 100 * val / top
+        drop = stages[i - 1][1] - val if i else 0
+        last = i == len(stages) - 1
+        col = _EM if last and val else (_RB if last else 'var(--vx-warm-grey)')
+        excl = (f'<span style="font-size:9px;color:var(--vx-text-faint)">−{drop} · {cause}</span>'
+                if drop and cause else '')
+        rows += (f'<div class="wl-tip" data-tip="{lab} : {val}{(" · exclus −"+str(drop)+" ("+cause+")") if drop and cause else ""}" '
+                 f'style="display:flex;align-items:center;gap:8px;padding:2px 0">'
+                 f'<span style="width:118px;font-size:10.5px;color:var(--vx-text-secondary)">{lab}</span>'
+                 f'<span style="flex:1;height:14px;border-radius:4px;background:rgba(0,0,0,.3);overflow:hidden;position:relative">'
+                 f'<i style="display:block;height:100%;width:{max(3,w):.0f}%;background:{col};opacity:.8"></i></span>'
+                 f'<span style="width:34px;text-align:right;font-size:12px;font-weight:800;color:#F0EBE4;font-variant-numeric:tabular-nums">{val}</span>'
+                 f'<span style="width:96px">{excl}</span></div>')
+    actionable = stages[-1][1]
+    kept = actionable / top * 100
+    if actionable == 0:
+        concl = _concl('Aucun dossier actionnable — patience, pas de forçage', 'wait')
+    elif kept < 1:
+        concl = _concl(f'{actionable} dossiers actionnables sur {top} — filtration sévère, exigence tenue', 'go')
+    else:
+        concl = _concl(f'{actionable} actionnables — élargir la sélection si la qualité tient', 'go')
+    return (f'<div style="width:400px;max-width:100%">{_hdr("Pipeline de sélection")}'
+            f'<div style="display:flex;flex-direction:column;gap:3px">{rows}</div>'
+            f'{concl}<div class="wl-more">coût de filtration {100-kept:.1f}% écartés · 6 étapes · '
+            f'exclusions : liquidité → qualité → timing → conviction</div>'
+            f'{_foot("scan · sélection", "il y a 2 min", "delayed")}</div>')
 
 
 # ══ FORMES SIGNATURE — ART DIRECTION 02 ════════════════════════════════════
@@ -577,18 +599,34 @@ def concentration_tower(weights):
   <div><b style="font-size:20px">HHI 0,31</b><div style="font-size:10px;color:{_AM}">concentration modérée</div></div></div>'''
 
 
-def bias_heatmap():
-    """BIAS HEATMAP — carte des biais récurrents (jour × type)."""
-    import itertools
-    vals = [2, 0, 1, 3, 0, 1, 0, 2, 1, 0, 0, 1, 3, 1, 0, 2, 0, 1, 0, 1]
-    cells = ''
-    it = iter(vals)
-    for r in range(4):
-        for c in range(5):
-            v = next(it)
-            col = f'rgba(255,109,41,{0.08+v*0.22:.2f})' if v else 'rgba(255,255,255,.04)'
-            cells += f'<div class="wl-tip" data-tip="{v} occurrence(s)" style="width:20px;height:20px;border-radius:4px;background:{col}"></div>'
-    return f'<div style="width:130px"><div style="display:grid;grid-template-columns:repeat(5,20px);gap:4px">{cells}</div><div style="font-size:9px;color:var(--vx-text-muted);margin-top:6px">biais × jour · foncé = récurrent</div></div>'
+def bias_heatmap(biases=None):
+    """BIAS COST LEDGER — registre du coût des biais : fréquence · coût P&L ·
+    récence · impact, avec lecture décisionnelle (P04, ex-Bias Heatmap).
+    biases = [(nom, fréquence, coût_pct, récence_jours)]."""
+    biases = biases or [('Vente prématurée gagnants', 9, -4.8, 2), ('Moyenner à la baisse', 5, -3.1, 6),
+                        ('FOMO sur cassure', 7, -2.2, 1), ('Stop ignoré', 3, -1.9, 11),
+                        ('Sur-trading news', 6, -0.7, 3)]
+    mx = max(abs(b[2]) for b in biases) or 1
+    ranked = sorted(biases, key=lambda b: b[2])          # coût le plus destructeur d'abord
+    rows = ''
+    for name, freq, cost, rec in ranked:
+        w = abs(cost) / mx * 100
+        fresh = _EM if rec > 7 else (_AM if rec > 3 else _RB)   # récent = rouge (chaud)
+        rows += (f'<div class="wl-tip" data-tip="{name} · {freq}× · {cost:+.1f}% · vu il y a {rec} j" '
+                 f'style="display:flex;align-items:center;gap:8px;padding:3px 0">'
+                 f'<span style="width:8px;height:8px;border-radius:50%;background:{fresh}" title="récence"></span>'
+                 f'<span style="width:150px;font-size:10.5px;color:var(--vx-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{name}</span>'
+                 f'<span style="width:22px;font-size:10px;color:var(--vx-text-muted);text-align:right">{freq}×</span>'
+                 f'<span style="flex:1;height:8px;border-radius:4px;background:rgba(0,0,0,.3);overflow:hidden">'
+                 f'<i style="display:block;height:100%;width:{w:.0f}%;background:{_RB};opacity:.75"></i></span>'
+                 f'<span style="width:42px;text-align:right;font-size:11px;font-weight:700;color:{_RB};font-variant-numeric:tabular-nums">{cost:+.1f}%</span></div>')
+    worst = ranked[0]
+    total = sum(b[2] for b in biases)
+    return (f'<div style="width:340px;max-width:100%">{_hdr("Coût des biais", f"{total:+.1f}%")}'
+            f'<div style="display:flex;flex-direction:column;gap:2px">{rows}</div>'
+            f'{_concl(f"« {worst[0]} » détruit le plus ({worst[2]:+.1f}%) — cible n°1 à corriger", "risk")}'
+            f'<div class="wl-more">● récent (&lt;3 j) ● surveillé ● ancien · coût cumulé {total:+.1f}% sur 30 j</div>'
+            f'{_foot("journal · décisions", "hier", "delayed")}</div>')
 
 
 def freshness_matrix(sources):
@@ -624,16 +662,36 @@ def data_reactor(score):
     return reactor(score, [('IBKR', 90 if score > 50 else 0, 40), ('Scan', 82, 30), ('IA', 70, 20), ('Cache', 60, 10)])
 
 
-def progress_ladder(levels):
-    """PROGRESS LADDER — échelons de progression (Journal)."""
-    rows = ''
-    for i, w in enumerate(levels):
-        col = _AM if i < 3 else _GY
-        rows += (f'<div style="display:flex;align-items:center;gap:8px">'
-                 f'<span style="width:20px;font-size:9px;color:var(--vx-text-muted)">N{i+1}</span>'
-                 f'<span style="flex:1;height:7px;border-radius:4px;background:rgba(0,0,0,.35);overflow:hidden">'
-                 f'<i style="display:block;height:100%;width:{w}%;background:{col}"></i></span></div>')
-    return f'<div style="display:flex;flex-direction:column-reverse;gap:4px;width:170px">{rows}</div>'
+def progress_ladder(series=None, errors=None):
+    """DISCIPLINE CURVE — courbe de respect de la méthode dans le temps, avec
+    erreurs marquées et qualité des décisions (P04, ex-Progress Ladder).
+    series = respect méthode % par décision ; errors = indices en entorse."""
+    series = series or [72, 78, 70, 84, 80, 88, 76, 90, 86, 92, 84, 94]
+    errors = errors or [2, 6]
+    W, H = 250, 96
+    n = len(series)
+    def X(i):
+        return i / (n - 1) * W
+    def Y(v):
+        return H - 8 - v / 100 * (H - 20)
+    line = ' '.join(f'{X(i):.1f},{Y(v):.1f}' for i, v in enumerate(series))
+    area = f'{X(0):.1f},{H} ' + line + f' {X(n-1):.1f},{H}'
+    marks = ''
+    for e in errors:
+        marks += (f'<circle class="wl-tip" data-tip="Entorse méthode — décision {e+1}" '
+                  f'cx="{X(e):.1f}" cy="{Y(series[e]):.1f}" r="3.5" fill="{_RB}" stroke="var(--vx-canvas)" stroke-width="1"/>')
+    avg = sum(series) / n
+    trend = series[-1] - series[0]
+    band = f'<line x1="0" y1="{Y(80):.1f}" x2="{W}" y2="{Y(80):.1f}" stroke="{_EM}" stroke-dasharray="3 3" stroke-opacity=".4"/>'
+    return (f'<div style="width:{W}px;max-width:100%">{_hdr("Respect de la méthode", f"{series[-1]}%", trend)}'
+            f'<svg viewBox="0 0 {W} {H}" width="100%" height="{H}" style="max-width:{W}px">'
+            f'<defs><linearGradient id="dc" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="{_AM}" stop-opacity=".28"/><stop offset="1" stop-color="{_AM}" stop-opacity="0"/></linearGradient></defs>'
+            f'<polygon points="{area}" fill="url(#dc)"/>{band}'
+            f'<polyline points="{line}" fill="none" stroke="{_AM}" stroke-width="1.8"/>'
+            f'<text x="2" y="{Y(80)-3:.0f}" fill="{_EM}" font-size="8" opacity=".7">seuil discipline 80%</text>{marks}</svg>'
+            f'{_concl(f"Discipline en progrès (moy. {avg:.0f}%) — {len(errors)} entorses à corriger" if trend >= 0 else f"Discipline en recul — {len(errors)} entorses récentes", "go" if trend >= 0 else "risk")}'
+            f'<div class="wl-more">qualité décisions {avg:.0f}% · {len(errors)} entorses / {n} décisions · '
+            f'seuil cible 80%</div>{_foot("journal · process", "aujourd’hui", "delayed")}</div>')
 
 
 # ══ GRAMMAIRE BOURSIÈRE — briques financières natives ══════════════════════
@@ -1050,9 +1108,12 @@ def _benches():
             ('V1', comparison([('Score', [84, 81, 74], 100), ('Asymétrie', [27, 20, 31], 50),
                                ('Prob. gain %', [60, 55, 61], 100), ('R:R', [6, 6, 9], 8)])),
         ], ['loading', 'insufficient']),
-        ('W36', 'Selection Funnel', 'Opportunité', 'Que reste-t-il après filtrage ?', [
-            ('V1', funnel([('Univers', 20), ('Éligibles', 20), ('Radar', 8), ('Prioritaires', 7), ('Actionnables', 2)])),
-        ], ['loading', 'insufficient']),
+        ('W36', 'Investment Pipeline', 'Opportunité', 'Que reste-t-il après filtrage, et à quel coût ?', [
+            ('V1 · pipeline', funnel(), 'deepblack'),
+            ('V2 · zéro actionnable', funnel([('Univers scanné', 512, ''), ('Éligibles (liquidité)', 120, 'spread/volume'),
+                                              ('Qualité retenue', 28, 'bilan/marge'), ('Sur le radar', 6, 'timing'),
+                                              ('Prioritaires', 1, 'conviction'), ('Actionnables', 0, 'invalidation floue')]), 'smoked'),
+        ], ['loading', 'insufficient', 'empty']),
         ('W29', 'Premium Index Card', 'Marchés', 'Où en est l’indice dans sa plage ?', [
             ('V1 · hausse', f'<div class="wl-idx" data-dir="up"><div class="top"><span class="mono">S&P</span><span class="nm">S&P 500</span><span class="rel">près du haut</span></div><div class="vr"><span class="val">6 000</span><span class="chg pos">+1,67 %</span></div>{sparkline(SPARK_UP,"up",40,150)}<div class="ft"><b>plage 5 891–6 500</b></div></div>'),
             ('V2 · baisse', f'<div class="wl-idx" data-dir="down"><div class="top"><span class="mono">DJIA</span><span class="nm">Dow Jones</span><span class="rel">près du bas</span></div><div class="vr"><span class="val">44 000</span><span class="chg neg">−0,59 %</span></div>{sparkline(SPARK_DN,"down",40,150)}<div class="ft"><b>plage 39 069–45 325</b></div></div>'),
@@ -1141,11 +1202,12 @@ def _benches():
             ('V1 · anneau', ring(82, unit='', sub='discipline')),
             ('V2 · pilier', conviction_pillar(82)),
         ], ['loading', 'insufficient']),
-        ('W-BH', 'Bias Heatmap', 'Journal', 'Quels biais reviennent ?', [
-            ('V1 · carte', bias_heatmap()),
-        ], ['loading', 'empty']),
-        ('W-PL', 'Progress Ladder', 'Journal', 'Où en est ma progression ?', [
-            ('V1 · échelons', progress_ladder([100, 90, 70, 40, 15])),
+        ('W-BH', 'Bias Cost Ledger', 'Journal', 'Quel biais détruit le plus de performance ?', [
+            ('V1 · registre', bias_heatmap(), 'deepblack'),
+        ], ['loading', 'empty', 'insufficient']),
+        ('W-PL', 'Discipline Curve', 'Journal', 'Est-ce que je respecte ma méthode dans le temps ?', [
+            ('V1 · courbe', progress_ladder(), 'smoked'),
+            ('V2 · recul', progress_ladder([88, 84, 80, 74, 70, 66, 72, 64, 60, 68, 58, 54], [4, 7, 10]), 'deepblack'),
         ], ['loading', 'insufficient']),
 
         # ═══ SYSTÈME ═══
@@ -1242,6 +1304,158 @@ FAM_ACCENT = {
 }
 
 
+# ══ CURATION PASS 04 — audit qualitatif /100 + statut de chaque widget ══════
+# 10 critères : reconnaissable · financier · <3s · vraie question · > graphe
+# classique · forme mémorable · hiérarchie · mobile · états honnêtes ·
+# candidat officiel. Aucun score gonflé ; aucun widget non classé.
+# Seuils : OFFICIEL ≥90 · RÉFÉRENCE 80-89 · À RETRAVAILLER 65-79 · REJETÉ <65.
+LAB_VERSION = 'P04-curation'
+
+CURATION = {
+    # ── 15 OFFICIELS (couvrent les 15 domaines exigés) ──
+    'W01': (92, 'Régime lisible + grammaire marché (SPX/MM200/VIX) ; halo mémorable, orange réservé.'),
+    'W-CAN': (94, 'Prix : chandeliers + volume + MM + niveaux + décision. Objet financier de référence.'),
+    'W-RSP': (90, 'Momentum : force relative vs indice, ligne zéro claire, divergence lisible.'),
+    'W-BF': (90, 'Breadth : champ de participation + A/D, réponse « hausse partagée » immédiate.'),
+    'W12': (91, 'Rotation : orbite sectorielle à comètes, leadership vs retard lisible en <3s.'),
+    'W33': (92, 'Opportunité : slab dominant score+preuves, la meilleure asymétrie saute aux yeux.'),
+    'W44': (93, 'Analyse : verdict entrer/attendre/éviter + preuves chiffrées. Colonne vertébrale.'),
+    'W-RRT': (91, 'Risque : terrain risk/reward, zones perte/gain + break-even, asymétrie visible.'),
+    'W-CR': (90, 'Catalyseur : piste de décollage DTE + impact, prochain événement priorisé.'),
+    'W-PHS': (91, 'Portefeuille : bande santé position P&L+thèse+catalyseur+invalidation+action.'),
+    'W-DC': (90, 'Drawdown : canyon de repli, profondeur et récupération lisibles.'),
+    'W50': (91, 'Options : relief de payoff, break-even et zones gain/perte clairs.'),
+    'W-VC': (90, 'Volatilité : cône vol vs enveloppe + percentile, « chère ou pas » en un regard.'),
+    'W-LD': (90, 'Liquidité : profondeur bid/ask + spread + OI, qualité d’exécution tranchée.'),
+    'W68': (90, 'Système : réacteur d’intégrité, confiance données décomposée et honnête.'),
+    # ── 20 RÉFÉRENCES ──
+    'W29': (88, 'Carte indice premium (plage, area, conclusion) — solide, un cran sous les signatures.'),
+    'W-PLD': (88, 'Échelle de prix nette ; redonde partiellement avec S/R Spine.'),
+    'W45': (87, 'Scénario triptyque risque/attendu/gain — clair, forme un peu sage.'),
+    'W-TP': (86, 'Thesis Pulse ECG — bonne métaphore, à durcir en grammaire.'),
+    'W-OFR': (86, 'Order-flow ribbon live — lisible, dépend d’une donnée temps réel rare.'),
+    'W37': (86, 'Matrice de comparaison — utile en Opportunités, densité à surveiller sur mobile.'),
+    'W-SRS': (85, 'Colonne supports/résistances — nette, proche du Price Ladder.'),
+    'W-PC': (85, 'Constellation d’allocation — belle, lecture chiffrée à renforcer.'),
+    'W-CANM': (85, 'Chandelier indice — réutilise le moteur officiel, sans plan.'),
+    'W36': (85, 'Pipeline d’investissement (retravaillé) — exclusions + coût de filtration honnêtes.'),
+    'W-SD': (84, 'Décomposition de score — pédagogique, forme classique.'),
+    'W51': (84, 'Greek vector field — juste, réservé à un public options averti.'),
+    'W-TAPE': (84, 'Bandeau de flux — vivant, plus contextuel que décisionnel.'),
+    'W-BH': (84, 'Bias Cost Ledger (retravaillé) — coût P&L + récence, lecture décisionnelle.'),
+    'W-EGM': (83, 'Earnings gap map — clair sur le risque événementiel, usage ciblé.'),
+    'W-CT': (83, 'Tour de concentration — répond « trop concentré ? », esthétique simple.'),
+    'W-CL': (82, 'Confidence lens diaphragme — élégant, sémantique à expliciter.'),
+    'W-CW': (82, 'Toile de corrélations — informatif, dense à petite taille.'),
+    'W-CANC': (82, 'Chandelier compact — utile en carte, moins riche que l’officiel.'),
+    'W-CC': (81, 'Consensus de comité — lisible, dépend du moteur intelligence.'),
+    # ── 20 À RETRAVAILLER ──
+    'W-PL': (79, 'Discipline Curve (retravaillé) — bonne base, densité mobile à affiner.'),
+    'W35': (78, 'Asymmetry Ledge scatter — pertinent, axes à mieux légender.'),
+    'W41': (77, 'Countdown ring catalyseur — redonde avec Catalyst Runway (officiel candidat).'),
+    'W21': (76, 'Health reactor — beau mais lecture financière à durcir.'),
+    'W-FM': (76, 'Freshness matrix — utile Système, forme générique.'),
+    'W-WG': (75, 'Winner/Loser guardrails — texte surtout, à visualiser davantage.'),
+    'W23': (75, 'Stress thermocline — métaphore ok, échelle à préciser.'),
+    'W04': (74, 'Risk-of-Day slab — redonde avec Verdict Slab officiel.'),
+    'W07b': (74, 'Momentum ribs — variante de Comb, choisir l’une des deux.'),
+    'W-ES': (74, 'Engine status spine — utilitaire, peu financier.'),
+    'W17': (73, 'Breadth tide — joli, supplanté par Breadth Field officiel.'),
+    'W-OB': (73, 'Opportunity beacon — décoratif, à recentrer sur le signal.'),
+    'W07': (72, 'Momentum comb — primitive, à fondre dans RS Path.'),
+    'W23b': (72, 'Volatility rift — supplanté par Volatility Cone officiel.'),
+    'W38b': (72, 'Conviction pillar — variante de Spine, doublon.'),
+    'O-1': (72, 'Primitives (KPI/Grade/Live) — briques utilitaires, pas des widgets décisionnels.'),
+    'W08': (70, 'Trend ribbon sparkline — trop générique seul.'),
+    'W38': (70, 'Conviction spine — primitive, peu autonome.'),
+    'W-DR': (70, 'Discipline ring — supplanté par Discipline Curve.'),
+    'W-RC': (68, 'Risk crater — impact visuel, faible contenu financier.'),
+    # ── 5 REJETÉS ──
+    'W-RS': (64, 'READONLY Seal — chrome système utile, mais pas un widget de donnée.'),
+    'W24': (62, 'Dial VIX — jauge générique, non signature.'),
+    'W-TB': (60, 'Theta burn — simple sparkline, non signature.'),
+    'W05': (60, 'Rail axe borné — primitive générique, redondante.'),
+    'W-LL': (58, 'Liquidity lens — simple anneau, supplanté par Liquidity Depth.'),
+}
+
+
+def _status(score):
+    if score >= 90:
+        return ('official', 'OFFICIEL')
+    if score >= 80:
+        return ('reference', 'RÉFÉRENCE')
+    if score >= 65:
+        return ('rework', 'À RETRAVAILLER')
+    return ('rejected', 'REJETÉ')
+
+
+# ── CONTRATS des 15 objets officiels (schéma normalisé P04 §5) ──────────────
+# Champs : nom · usage canonique · variantes (officielle/compacte/mobile) ·
+# API données attendue · pages autorisées · états · conclusion · unité · période.
+_SPACES = ['Aujourd’hui', 'Marchés', 'Opportunités', 'Analyse', 'Portefeuille',
+           'Options', 'Journal', 'Système']
+CONTRACTS = {
+    'W01': dict(usage='Bandeau de régime en tête d’Aujourd’hui / Marchés',
+                api=['regime.label', 'regime.confidence', 'spx.vs_ma200', 'breadth.pct', 'vix.level', 'regime.invalidation'],
+                pages=['Aujourd’hui', 'Marchés'], unit='% confiance', period='séance',
+                compact='halo + prix/% seuls', mobile='halo réduit + strip 3 métriques empilé'),
+    'W-CAN': dict(usage='Graphe prix canonique d’une fiche Analyse',
+                  api=['ohlc[]', 'plan.entry', 'plan.stop', 'plan.targets[]', 'levels.resistance', 'ma[]', 'events[]'],
+                  pages=['Analyse', 'Marchés', 'Opportunités'], unit='prix', period='22 séances',
+                  compact='mini-chandeliers + prix/% (carte)', mobile='chandeliers pleine largeur, niveaux repliés au tap'),
+    'W-RSP': dict(usage='Force relative d’un titre vs indice (Analyse / Momentum)',
+                  api=['rs_series[]', 'benchmark.symbol'], pages=['Analyse', 'Marchés'],
+                  unit='écart %', period='8 périodes', compact='ligne RS + dernier point',
+                  mobile='ligne pleine largeur, ligne zéro conservée'),
+    'W-BF': dict(usage='Participation du marché (Marchés / Aujourd’hui)',
+                 api=['breadth.above_ma50', 'breadth.above_ma200', 'adv', 'dec', 'new_highs', 'new_lows'],
+                 pages=['Aujourd’hui', 'Marchés'], unit='%', period='séance',
+                 compact='champ 40 points + %>MM50', mobile='grille points + A/D empilés'),
+    'W12': dict(usage='Rotation sectorielle (Marchés)',
+                api=['sectors[].symbol', 'sectors[].strength', 'sectors[].momentum', 'sectors[].state'],
+                pages=['Marchés'], unit='force', period='20 séances',
+                compact='orbite réduite, 4 secteurs leaders', mobile='liste secteurs triés par force'),
+    'W33': dict(usage='Meilleure opportunité mise en avant (Opportunités)',
+                api=['top.symbol', 'top.grade', 'top.score', 'top.metrics[]'], pages=['Opportunités'],
+                unit='/100', period='scan', compact='ticker + grade + score',
+                mobile='colonne unique, métriques 2×2'),
+    'W44': dict(usage='Verdict de décision d’une fiche (Analyse)',
+                api=['verdict', 'score', 'grade', 'confidence', 'entry', 'invalidation'],
+                pages=['Analyse', 'Opportunités'], unit='/40', period='scan',
+                compact='verdict + score seuls', mobile='verdict pleine largeur, preuves empilées'),
+    'W-RRT': dict(usage='Asymétrie d’un plan (Analyse / Opportunités)',
+                  api=['plan.max_loss', 'plan.prob_gain', 'plan.exceptional', 'plan.break_even'],
+                  pages=['Analyse', 'Opportunités'], unit='%', period='horizon plan',
+                  compact='barre R:R + ratio', mobile='terrain pleine largeur, légendes sous le graphe'),
+    'W-CR': dict(usage='Prochains catalyseurs d’un titre (Analyse / Opportunités)',
+                 api=['catalysts[].label', 'catalysts[].dte', 'catalysts[].impact'],
+                 pages=['Analyse', 'Opportunités', 'Aujourd’hui'], unit='jours (DTE)', period='30 j',
+                 compact='prochain catalyseur + J-n', mobile='piste horizontale scrollable'),
+    'W-PHS': dict(usage='Santé d’une position détenue (Portefeuille)',
+                  api=['pos.symbol', 'pos.pl_pct', 'pos.thesis', 'pos.next_catalyst', 'pos.invalidation'],
+                  pages=['Portefeuille'], unit='% P&L', period='temps réel',
+                  compact='ticker + P&L + thèse', mobile='bande pleine largeur, action en bas'),
+    'W-DC': dict(usage='Repli d’un portefeuille / titre (Portefeuille)',
+                 api=['drawdown_series[]'], pages=['Portefeuille', 'Journal'], unit='%', period='glissant',
+                 compact='canyon réduit + creux max', mobile='canyon pleine largeur'),
+    'W50': dict(usage='Payoff d’un contrat option (Options)',
+                api=['contract.strike', 'contract.premium', 'contract.right', 'spot', 'break_even'],
+                pages=['Options'], unit='$/contrat', period='échéance',
+                compact='relief + break-even', mobile='relief pleine largeur, zones colorées'),
+    'W-VC': dict(usage='Cherté de la volatilité implicite (Options / Volatilité)',
+                 api=['iv.current', 'iv.percentile', 'iv.cone[]'], pages=['Options', 'Marchés'],
+                 unit='% IV', period='3M/6M/1A', compact='cône + point actuel',
+                 mobile='cône pleine largeur, percentile sous le graphe'),
+    'W-LD': dict(usage='Liquidité / exécution d’un contrat (Options)',
+                 api=['bid', 'ask', 'volume', 'open_interest'], pages=['Options'], unit='prix',
+                 period='temps réel', compact='spread + volume', mobile='barres bid/ask empilées'),
+    'W68': dict(usage='Confiance dans les données (Système)',
+                api=['integrity.score', 'sources[].name', 'sources[].quality'], pages=['Système', 'Aujourd’hui'],
+                unit='/100', period='temps réel', compact='cœur + score',
+                mobile='cœur + barres qualité empilées'),
+}
+
+
 # ── Page ───────────────────────────────────────────────────────────────────
 def render() -> str:
     benches = _benches()
@@ -1250,6 +1464,15 @@ def render() -> str:
         if b[2] not in families:
             families.append(b[2])
     nav = ''.join(f'<a href="#fam-{i}" class="wl-navchip">{f}</a>' for i, f in enumerate(families))
+
+    # Récap de curation (bandeau) : compte par statut.
+    from collections import Counter
+    tally = Counter(_status(CURATION[b[0]][0])[0] for b in benches)
+    summary = (f'<span class="wl-sum official">{tally["official"]} Officiels</span>'
+               f'<span class="wl-sum reference">{tally["reference"]} Références</span>'
+               f'<span class="wl-sum rework">{tally["rework"]} À retravailler</span>'
+               f'<span class="wl-sum rejected">{tally["rejected"]} Rejetés</span>'
+               f'<span class="wl-sum total">{len(benches)} widgets · v{LAB_VERSION}</span>')
 
     # Matières cyclées si non spécifiées → chaque variante porte une matière distincte.
     MATS = ['smoked', 'polished', 'deepblack', 'metal', 'frosted', 'matte']
@@ -1261,6 +1484,8 @@ def render() -> str:
             sw = FAM_ACCENT.get(fam, 'var(--vx-warm-grey)')
             sections += f'<h2 id="fam-{fi}" class="wl-fam">{fam}<span class="wl-fam-swatch" style="background:{sw}"></span></h2>'
             last_fam = fam
+        score, note = CURATION[wid]
+        st_cls, st_lab = _status(score)
         tiles = ''
         for vi, v in enumerate(variants):
             vlabel, html = v[0], v[1]
@@ -1272,13 +1497,33 @@ def render() -> str:
         <span class="wl-verdict">
           <button data-v="official" title="Officiel">◎</button>
           <button data-v="reference" title="Référence">★</button>
-          <button data-v="rejected" title="Rejeté">✕</button></span></div>
+          <button data-v="rejected" title="Rejeté">✕</button>
+          <button data-note title="Note libre">✎</button></span></div>
       <div class="wl-stage"><div class="wl-surf wl-surf--{mat}"{live}><span class="wl-mat-tag">{mat}</span>{html}</div></div></div>'''
         strip = ''.join(_state(s) for s in states)
-        sections += f'''<section class="wl-bench" data-fam="{fam}">
+        # Panneau contrat pour les objets officiels (usage / API / pages / variantes).
+        contract = ''
+        if st_cls == 'official' and wid in CONTRACTS:
+            c = CONTRACTS[wid]
+            api = ''.join(f'<code>{a}</code>' for a in c['api'])
+            pages = ' · '.join(c['pages'])
+            contract = f'''<details class="wl-contract"><summary>Contrat officiel — usage, API, pages, variantes</summary>
+      <div class="wl-contract-body">
+        <div class="wl-cr"><span class="k">Usage canonique</span><span class="v">{c['usage']}</span></div>
+        <div class="wl-cr"><span class="k">API données</span><span class="v api">{api}</span></div>
+        <div class="wl-cr"><span class="k">Pages autorisées</span><span class="v">{pages}</span></div>
+        <div class="wl-cr"><span class="k">Unité · Période</span><span class="v">{c['unit']} · {c['period']}</span></div>
+        <div class="wl-cr"><span class="k">Variante compacte</span><span class="v">{c['compact']}</span></div>
+        <div class="wl-cr"><span class="k">Variante mobile</span><span class="v">{c['mobile']}</span></div>
+        <div class="wl-cr"><span class="k">États</span><span class="v">{' · '.join(states)}</span></div>
+      </div></details>'''
+        sections += f'''<section class="wl-bench" data-fam="{fam}" data-status="{st_cls}">
     <div class="wl-bench-head"><span class="wl-id">{wid}</span><span class="wl-name">{name}</span>
+      <span class="wl-status wl-status--{st_cls}" title="{note}">{st_lab} · {score}</span>
       <span class="wl-q">{q}</span></div>
+    <div class="wl-curnote">{note}</div>
     <div class="wl-variants">{tiles}</div>
+    {contract}
     <div class="wl-states-label">États</div>
     <div class="wl-states">{strip}</div></section>'''
 
@@ -1301,6 +1546,7 @@ def render() -> str:
 </header>
 <div class="wl-subbar">
   <div class="wl-nav">{nav}</div>
+  <div class="wl-summary">{summary}</div>
   <div class="wl-note">⚠️ Laboratoire de design — <b>toutes les valeurs sont des échantillons</b>, aucune donnée réelle, aucun moteur. N’appartient pas au produit Vertex.</div>
 </div>
 <main class="wl-main">{sections}</main>
@@ -1343,6 +1589,35 @@ _CSS = r'''
 .wl-id{font-size:11px;font-weight:800;color:var(--vx-ember-400);background:var(--vx-ember-soft);border:1px solid rgba(255,109,41,.25);padding:2px 8px;border-radius:7px}
 .wl-name{font-size:16px;font-weight:750}
 .wl-q{font-size:12.5px;color:var(--vx-text-muted);font-style:italic}
+/* ═══ CURATION P04 — statut, récap, note, contrat ═══ */
+.wl-summary{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px}
+.wl-sum{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid var(--vx-border-soft);color:var(--vx-text-secondary)}
+.wl-sum.official{color:var(--vx-ember-400);border-color:var(--vx-ember-500);background:var(--vx-ember-soft)}
+.wl-sum.reference{color:var(--vx-technical);border-color:var(--vx-technical)}
+.wl-sum.rework{color:var(--vx-warning);border-color:rgba(255,200,87,.4)}
+.wl-sum.rejected{color:var(--vx-negative);border-color:rgba(255,95,105,.4)}
+.wl-sum.total{color:var(--vx-text-muted)}
+.wl-status{font-size:10px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:7px;border:1px solid var(--vx-border-soft);white-space:nowrap}
+.wl-status--official{color:var(--vx-ember-ink);background:var(--vx-brand-gradient);border:none}
+.wl-status--reference{color:var(--vx-technical);border-color:var(--vx-technical)}
+.wl-status--rework{color:var(--vx-warning);border-color:rgba(255,200,87,.4)}
+.wl-status--rejected{color:var(--vx-negative);border-color:rgba(255,95,105,.4)}
+.wl-curnote{font-size:11px;color:var(--vx-text-muted);margin:-6px 2px 12px;max-width:720px}
+.wl-bench[data-status="official"]{border-color:rgba(255,109,41,.32);box-shadow:0 0 0 1px rgba(255,109,41,.12)}
+.wl-bench[data-status="rejected"]{opacity:.72}
+.wl-verdict button[data-note]{font-size:11px}
+.wl-tile[data-note-set] .wl-verdict button[data-note]{color:var(--vx-ember-400);border-color:var(--vx-ember-500)}
+.wl-contract{margin:12px 0 4px;border:1px solid var(--vx-border-soft);border-radius:11px;background:rgba(0,0,0,.22);overflow:hidden}
+.wl-contract summary{cursor:pointer;font-size:11.5px;font-weight:650;color:var(--vx-ember-400);padding:9px 13px;list-style:none}
+.wl-contract summary::-webkit-details-marker{display:none}
+.wl-contract summary::before{content:"▸ ";color:var(--vx-ember-500)}
+.wl-contract[open] summary::before{content:"▾ "}
+.wl-contract-body{padding:4px 13px 12px;display:flex;flex-direction:column;gap:6px}
+.wl-cr{display:grid;grid-template-columns:140px 1fr;gap:12px;font-size:11.5px;align-items:baseline}
+.wl-cr .k{color:var(--vx-text-muted);letter-spacing:.02em}
+.wl-cr .v{color:var(--vx-text-secondary)}
+.wl-cr .v.api{display:flex;flex-wrap:wrap;gap:5px}
+.wl-cr .v code{font-family:var(--vx-font-mono);font-size:10px;color:var(--vx-technical);background:rgba(69,214,232,.08);border:1px solid rgba(69,214,232,.2);border-radius:5px;padding:1px 6px}
 .wl-variants{display:flex;flex-wrap:wrap;gap:14px}
 .wl-tile{background:var(--vx-surface);border:1.5px solid var(--vx-border-soft);border-radius:13px;padding:10px;
   min-width:180px;transition:border-color .18s,box-shadow .18s}
@@ -1541,32 +1816,67 @@ _CSS = r'''
 .wl-actions{flex-wrap:wrap}
 @media (max-width:640px){.wl-dom{grid-template-columns:1fr}.wl-dom-l{border-right:none;border-bottom:1px solid var(--vx-border-soft)}
   .wl-top{flex-direction:column;align-items:flex-start;gap:8px}.wl-subbar{top:auto;position:static}
-  .wl-actions{width:100%}.wl-legend{display:none}}
+  .wl-actions{width:100%}.wl-legend{display:none}
+  .wl-cr{grid-template-columns:1fr;gap:2px}.wl-cr .k{font-size:10px;text-transform:uppercase;letter-spacing:.06em}}
+.wl--mobile .wl-cr{grid-template-columns:1fr;gap:2px}
 @media (prefers-reduced-motion:reduce){.wl-stage>*,.wl-live .dot,.wl-skel{animation:none!important}}
 '''
 
 _JS = r'''
 (function(){
-  var KEY='vxWidgetLabVerdicts';
-  var store={};try{store=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){}
+  var KEY='vxWidgetLabVerdicts', NKEY='vxWidgetLabNotes', VER='__LAB_VERSION__';
+  var store={},notes={};
+  try{store=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){}
+  try{notes=JSON.parse(localStorage.getItem(NKEY)||'{}');}catch(e){}
   function apply(){document.querySelectorAll('.wl-tile').forEach(function(t){
-    var v=store[t.dataset.wid];if(v)t.setAttribute('data-verdict',v);else t.removeAttribute('data-verdict');});}
-  function save(){localStorage.setItem(KEY,JSON.stringify(store));}
+    var w=t.dataset.wid;var v=store[w];
+    if(v)t.setAttribute('data-verdict',v);else t.removeAttribute('data-verdict');
+    if(notes[w])t.setAttribute('data-note-set','1');else t.removeAttribute('data-note-set');
+    var nb=t.querySelector('[data-note]');if(nb)nb.title=notes[w]?('Note : '+notes[w]):'Note libre';});}
+  function save(){localStorage.setItem(KEY,JSON.stringify(store));localStorage.setItem(NKEY,JSON.stringify(notes));}
   document.addEventListener('click',function(e){
-    var btn=e.target.closest('.wl-verdict button');
+    var nb=e.target.closest('.wl-verdict button[data-note]');
+    if(nb){var tl=nb.closest('.wl-tile');var w=tl.dataset.wid;
+      var cur=notes[w]||'';var r=prompt('Note libre pour '+w+' :',cur);
+      if(r!==null){if(r.trim()){notes[w]=r.trim();}else{delete notes[w];}save();apply();}return;}
+    var btn=e.target.closest('.wl-verdict button[data-v]');
     if(btn){var tile=btn.closest('.wl-tile');var wid=tile.dataset.wid;var v=btn.dataset.v;
       if(store[wid]===v){delete store[wid];}else{store[wid]=v;}
       save();apply();return;}
   });
+  function benchInfo(wid){
+    var base=wid.split('-V')[0].replace(/-[^-]*$/,'');
+    var sec=document.querySelector('.wl-tile[data-wid="'+wid+'"]')?
+      document.querySelector('.wl-tile[data-wid="'+wid+'"]').closest('.wl-bench'):null;
+    if(!sec)return{name:'',status:'',score:''};
+    return{name:(sec.querySelector('.wl-name')||{}).textContent||'',
+           status:(sec.querySelector('.wl-status')||{}).textContent||''};
+  }
+  function build(){
+    var groups={official:[],reference:[],rejected:[]};
+    Object.keys(store).forEach(function(w){if(groups[store[w]])groups[store[w]].push(w);});
+    var d=new Date().toISOString().slice(0,10);
+    var L=['VERTEX WIDGET LAB — export des choix de curation',
+           'version: '+VER+'   date: '+d,''];
+    [['official','◎ OFFICIELS'],['reference','★ RÉFÉRENCES'],['rejected','✕ REJETÉS']].forEach(function(g){
+      var arr=groups[g[0]].sort();L.push(g[1]+' ('+arr.length+')');
+      if(!arr.length){L.push('  —');}
+      arr.forEach(function(w){var i=benchInfo(w);
+        L.push('  '+w+'  '+i.name+'   ['+i.status+']'+(notes[w]?('   ✎ '+notes[w]):''));});
+      L.push('');});
+    var withNotesOnly=Object.keys(notes).filter(function(w){return !store[w];});
+    if(withNotesOnly.length){L.push('NOTES (sans verdict)');
+      withNotesOnly.sort().forEach(function(w){L.push('  '+w+'   ✎ '+notes[w]);});L.push('');}
+    if(!Object.keys(store).length&&!Object.keys(notes).length)L.push('(aucun choix ni note)');
+    return L.join('\n');
+  }
   var exportBtn=document.getElementById('wl-export');
   if(exportBtn)exportBtn.addEventListener('click',function(){
-    var lines=Object.keys(store).sort().map(function(k){return k+' → '+store[k];});
-    var out='VERTEX WIDGET LAB — choix\n'+(lines.length?lines.join('\n'):'(aucun choix)');
-    document.getElementById('wl-out').value=out;
+    document.getElementById('wl-out').value=build();
     var m=document.getElementById('wl-modal');if(m.showModal)m.showModal();});
   var resetBtn=document.getElementById('wl-reset');
   if(resetBtn)resetBtn.addEventListener('click',function(){
-    if(confirm('Réinitialiser tous les choix ?')){store={};save();apply();}});
+    if(confirm('Réinitialiser tous les choix et notes ?')){store={};notes={};save();apply();}});
   var copyBtn=document.getElementById('wl-copy');
   if(copyBtn)copyBtn.addEventListener('click',function(){
     var ta=document.getElementById('wl-out');ta.select();try{document.execCommand('copy');}catch(e){}
@@ -1581,4 +1891,4 @@ _JS = r'''
     mobBtn.textContent=document.querySelector('.wl-main').classList.contains('wl--mobile')?'Aperçu desktop':'Aperçu mobile';});
   apply();
 })();
-'''
+'''.replace('__LAB_VERSION__', LAB_VERSION)

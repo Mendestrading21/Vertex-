@@ -127,3 +127,77 @@ def test_identity_orange_no_blue(html):
 def test_no_order_path_readonly(html):
     for bad in ('placeOrder', 'place_order', 'submitOrder'):
         assert bad not in html, f'chemin d’ordre interdit : {bad}'
+
+
+# ═══ CURATION PASS 04 — chaque widget classé, 15 officiels max, contrats ═══
+def test_curation_every_widget_classified():
+    """Aucun widget non classé : tout bench a un score/statut."""
+    from vertex.ui.pages import widget_lab
+    ids = [b[0] for b in widget_lab._benches()]
+    for wid in ids:
+        assert wid in widget_lab.CURATION, f'widget non classé : {wid}'
+    # pas d'entrée orpheline
+    for wid in widget_lab.CURATION:
+        assert wid in ids, f'curation orpheline : {wid}'
+
+
+def test_curation_caps_and_distribution():
+    """≤ 15 Officiels, ≤ 20 Références ; tout le reste explicitement classé."""
+    from collections import Counter
+    from vertex.ui.pages import widget_lab
+    dist = Counter(widget_lab._status(s)[0] for s, _ in widget_lab.CURATION.values())
+    assert dist['official'] <= 15, f'{dist["official"]} officiels (> 15)'
+    assert dist['reference'] <= 20, f'{dist["reference"]} références (> 20)'
+    # somme = total, aucun non classé
+    assert sum(dist.values()) == len(widget_lab._benches())
+
+
+def test_official_contracts_complete():
+    """Chaque officiel a un contrat normalisé complet."""
+    from vertex.ui.pages import widget_lab
+    officials = [w for w, (s, _) in widget_lab.CURATION.items() if s >= 90]
+    assert len(officials) <= 15
+    fields = ('usage', 'api', 'pages', 'unit', 'period', 'compact', 'mobile')
+    for wid in officials:
+        c = widget_lab.CONTRACTS.get(wid)
+        assert c, f'officiel sans contrat : {wid}'
+        for f in fields:
+            assert c.get(f), f'contrat {wid} : champ manquant {f}'
+
+
+def test_official_domain_coverage():
+    """Les officiels couvrent les 15 domaines exigés (par famille/usage)."""
+    from vertex.ui.pages import widget_lab
+    benches = {b[0]: b for b in widget_lab._benches()}
+    officials = [w for w, (s, _) in widget_lab.CURATION.items() if s >= 90]
+    fams = {benches[w][2] for w in officials}
+    # domaines structurants présents parmi les officiels
+    for fam in ('Régime', 'Momentum', 'Breadth', 'Rotation', 'Opportunité',
+                'Analyse', 'Portefeuille', 'Options', 'Volatilité', 'Catalyseurs'):
+        assert fam in fams, f'domaine officiel non couvert : {fam}'
+
+
+def test_curation_ui_present(html):
+    """Statuts, récap et panneau contrat rendus dans le lab."""
+    assert 'wl-summary' in html and 'Officiels' in html
+    for st in ('official', 'reference', 'rework', 'rejected'):
+        assert f'wl-status--{st}' in html, f'statut UI manquant : {st}'
+    assert 'Contrat officiel' in html          # panneau contrat
+    assert 'API données' in html
+
+
+def test_reworked_widgets_renamed(html):
+    """Les 3 widgets faibles sont retravaillés (nouveaux noms, plus les anciens)."""
+    for new in ('Investment Pipeline', 'Bias Cost Ledger', 'Discipline Curve'):
+        assert new in html, f'widget retravaillé manquant : {new}'
+    for old in ('>Selection Funnel<', '>Bias Heatmap<', '>Progress Ladder<'):
+        assert old not in html, f'ancien nom persistant : {old}'
+    # honnêteté : pipeline sait dire zéro actionnable
+    assert 'Aucun dossier actionnable' in html
+
+
+def test_export_enriched(html):
+    """Export : statuts + notes + version + note libre par widget."""
+    assert 'vxWidgetLabNotes' in html          # persistance des notes
+    assert 'data-note' in html                 # bouton note par tuile
+    assert 'P04-curation' in html              # version du lab injectée
