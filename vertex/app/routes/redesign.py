@@ -147,6 +147,15 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     def design_system_page_route():
         return design_system_page.render()
 
+    # ── Widget Lab — LABORATOIRE du Design System (bibliothèque de widgets).
+    # Route AUTONOME hors produit : aucune donnée réelle, aucun moteur, pas dans
+    # la nav. Sert à voir/comparer/tester/choisir les widgets (V1…Vn + états).
+    # Source de vérité : docs/visual/VERTEX_WIDGET_LIBRARY.md.
+    @bp.route('/widget-lab')
+    def widget_lab_route():
+        from vertex.ui.pages import widget_lab
+        return widget_lab.render()
+
     # ── Brief éditorial (§21) : paquet structuré → 10 lignes ─────────
     @bp.route('/api/briefing/editorial')
     def briefing_editorial():
