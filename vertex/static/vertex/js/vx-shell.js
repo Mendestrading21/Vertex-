@@ -113,7 +113,7 @@
       VX.bus.emit('vx:connection-changed', st);
     } catch (e) { /* silencieux : bandeau par page */ }
   }
-  loadStatus(); VX.refresh.register(loadStatus, 90000, 'status');
+  loadStatus(); VX.refresh.register(loadStatus, 90000, 'status', { persistent: true });
 
   $('vx-connections-btn')?.addEventListener('click', async () => {
     let st = window.__vxStatus, diag = null;

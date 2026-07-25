@@ -22,9 +22,17 @@
 
   /* ── Event bus (§41) ─────────────────────────────────────────────── */
   const bus = new EventTarget();
+  let _pageBus = [];                    // abonnements de PAGE (purgés à la navigation)
   VX.bus = {
-    on(name, fn) { bus.addEventListener(name, fn); return () => bus.removeEventListener(name, fn); },
+    /* opts.persistent : abonnement de SHELL, survit aux navigations client.
+       Défaut = abonnement de page → retiré au teardown (évite les doublons). */
+    on(name, fn, opts) {
+      bus.addEventListener(name, fn);
+      if (!(opts && opts.persistent)) _pageBus.push({ name, fn });
+      return () => bus.removeEventListener(name, fn);
+    },
     emit(name, detail) { bus.dispatchEvent(new CustomEvent(name, { detail })); },
+    _clearPage() { _pageBus.forEach((h) => bus.removeEventListener(h.name, h.fn)); _pageBus = []; },
   };
   VX.EVENTS = ['vx:favorites-changed', 'vx:watchlist-changed', 'vx:follow-changed',
     'vx:position-changed', 'vx:alert-changed', 'vx:thesis-changed',
@@ -225,12 +233,20 @@
   };
   VX.refresh = {
     _tasks: [], _suspended: false,
-    register(fn, intervalMs, label) {
-      const task = { fn, intervalMs, label, id: null };
+    /* opts.persistent : tâche de SHELL (statut global…), survit aux navigations.
+       Défaut = tâche de page → intervalle arrêté au teardown (évite les doublons
+       de loaders et les fetch fantômes après changement de page). */
+    register(fn, intervalMs, label, opts) {
+      const task = { fn, intervalMs, label, id: null, persistent: !!(opts && opts.persistent) };
       const run = () => { if (!document.hidden) { try { fn(); } catch (e) { console.error('[vx-refresh]', label, e); } } };
       task.id = setInterval(run, intervalMs);
       this._tasks.push(task);
       return task;
+    },
+    _clearPage() {
+      const keep = [];
+      this._tasks.forEach((t) => { if (t.persistent) { keep.push(t); } else { clearInterval(t.id); } });
+      this._tasks = keep;
     },
     async runAll(btn) {
       if (btn) { btn.dataset.state = 'refreshing'; btn.disabled = true; }
@@ -241,6 +257,44 @@
         if (btn) { btn.dataset.state = 'success'; VX.toast('Données actualisées', 'success'); }
       } catch (e) { if (btn) btn.dataset.state = 'error'; }
       if (btn) setTimeout(() => { btn.dataset.state = 'ready'; btn.disabled = false; }, 900);
+    },
+  };
+
+  /* ── Cycle de vie de PAGE (navigation client persistante, LOT 2) ──────
+     Le routeur (vx-router.js) appelle VX.page._teardown() AVANT de remplacer
+     #vx-content : on arrête les tâches/abonnements de la page sortante et on
+     exécute ses nettoyages (onLeave). Le shell (statut, live-updates, entités)
+     est marqué persistant et n'est jamais touché. */
+  VX.page = {
+    _gen: 0,
+    _leave: [],
+    onLeave(fn) { if (typeof fn === 'function') this._leave.push(fn); },
+    _teardown() {
+      this._leave.forEach((fn) => { try { fn(); } catch (e) {} });
+      this._leave = [];
+      try { VX.refresh._clearPage(); } catch (e) {}
+      try { VX.bus._clearPage(); } catch (e) {}
+      this._gen++;
+    },
+  };
+
+  /* ── Store global minimal (LOT 2 — fondation ; SWR/dédup enrichis au LOT 3) ──
+     Vérité partagée du contexte applicatif : session active, ticker courant,
+     historique de navigation, prix live (source centrale à venir). Lecture seule
+     côté métier — aucun ordre, aucune donnée inventée. */
+  VX.store = {
+    _s: {
+      active_session_id: null, previous_session_id: null, session_status: null,
+      active_ticker: null, selected_timeframe: null,
+      nav_history: [], live_prices: {}, freshness_map: {},
+    },
+    get(k) { return this._s[k]; },
+    set(k, v) { this._s[k] = v; VX.bus.emit('vx:store-changed', { key: k, value: v }); return v; },
+    snapshot() { return Object.assign({}, this._s); },
+    pushNav(href) {
+      const h = this._s.nav_history;
+      if (h[h.length - 1] !== href) h.push(href);
+      if (h.length > 30) h.shift();
     },
   };
   /* Suspendre en arrière-plan, rafraîchir au retour. */

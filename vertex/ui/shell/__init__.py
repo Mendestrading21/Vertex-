@@ -148,11 +148,53 @@ _OVERLAYS = '''
 '''
 
 
+def _wants_fragment() -> bool:
+    """Vrai si la requête courante demande un FRAGMENT (navigation client persistante).
+
+    Progressive-enhancement : sans JS (ou en accès direct / deep link / refresh /
+    nouvel onglet) la requête est normale → document complet. Le routeur client
+    (vx-router.js) ajoute l'en-tête `X-Vertex-Fragment: 1` pour ne recevoir que le
+    contenu + les métadonnées, et ne remplacer que #vx-content sans reconstruire le
+    shell. Lecture seule ; jamais d'effet de bord."""
+    try:
+        from flask import request
+        return (request.headers.get('X-Vertex-Fragment') == '1'
+                or request.args.get('__frag') == '1')
+    except Exception:
+        return False
+
+
+def _render_fragment(*, title: str, active: str, space_label: str, sub_label: str,
+                     content: str, page_js: str, page_label: str, mobile_bar: str) -> str:
+    """Enveloppe de fragment : métadonnées + contenu + barre mobile + scripts de page.
+
+    Le contenu et la barre mobile sont dans des <template> (aucune ressource chargée,
+    aucun script exécuté à l'analyse) ; le routeur lit les data-* pour remettre à jour
+    le fil d'Ariane / la nav active / le titre, injecte le contenu, puis ré-exécute
+    `page_js` (src dédupliqués, inline en portée isolée). Voir vx-router.js."""
+    from html import escape
+    return (f'<div class="vx-fragment" data-title="{escape(title, quote=True)}" '
+            f'data-active="{escape(active, quote=True)}" '
+            f'data-space-label="{escape(space_label, quote=True)}" '
+            f'data-sub-label="{escape(sub_label, quote=True)}" '
+            f'data-page-label="{escape(page_label or space_label, quote=True)}"></div>\n'
+            f'<template class="vx-frag-content">{content}</template>\n'
+            f'<template class="vx-frag-mobile">{mobile_bar}</template>\n'
+            f'{page_js}')
+
+
 def render_shell(*, title: str, active: str, space_label: str, sub_label: str = '',
                  content: str, page_js: str = '', page_label: str = '',
                  mobile_actions: str = '') -> str:
-    """Assemble la page complète autour du contenu fourni."""
+    """Assemble la page complète autour du contenu fourni.
+
+    Si la requête demande un fragment (navigation client persistante), ne renvoie
+    QUE le contenu + métadonnées + scripts de page (shell conservé côté client)."""
     mobile_bar = mobile_actions or _mobile_bar(active)
+    if _wants_fragment():
+        return _render_fragment(title=title, active=active, space_label=space_label,
+                                sub_label=sub_label, content=content, page_js=page_js,
+                                page_label=page_label, mobile_bar=mobile_bar)
     return f'''<!doctype html><html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
@@ -162,7 +204,8 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"></noscript>
 <link rel="stylesheet" href="/static/vertex/css/tokens.css">
 <link rel="stylesheet" href="/static/vertex/css/base.css">
 <link rel="stylesheet" href="/static/vertex/css/layout.css">
@@ -197,6 +240,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <script src="/static/vertex/js/vx-core.js"></script>
 <script src="/static/vertex/js/vx-entities.js"></script>
 <script src="/static/vertex/js/vx-shell.js"></script>
+<script src="/static/vertex/js/vx-router.js"></script>
 <script src="/static/vertex/js/live-updates.js" defer></script>
 <script src="/static/vertex/js/charts/chart-theme-obsidian-copper.js" defer></script>
 <script src="/static/vertex/js/charts/chart-core.js" defer></script>
