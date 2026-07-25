@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v61';   // v61 (IDENTITÉ NEUTRE) : bleu → blanc/gris en verre (boutons/icônes/emojis frostés), favicon blanc-gris, semantics foncées+transparentes, zéro orange/bleu
+const CACHE='td-shell-v62';   // v62 (THÈME PLUS SOMBRE) : canvas quasi noir (#020305), surfaces + glass assombris (base noire sous le verre), halos de lumière réduits
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

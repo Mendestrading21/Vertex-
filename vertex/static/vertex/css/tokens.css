@@ -12,26 +12,26 @@
    L'accent d'interface est un blanc légèrement gris translucide, jamais coloré. */
 :root{
   /* ══ Fondation NEUE EMBER — surfaces chaudes très sombres ══ */
-  --vx-canvas:#05070C;             /* canvas global (Master Prompt) */
-  --vx-shell:#100E0F;              /* shell (sidebar / topbar / app) */
-  --vx-surface:#161316;            /* surface standard (carte) */
-  --vx-surface-elevated:#1D1819;   /* surface élevée */
-  --vx-surface-hover:#251D1B;      /* survol */
-  --vx-surface-selected:#2A1E1A;   /* sélection */
-  --vx-warm-depth:#453027;         /* profondeur chaude / halo localisé (8-12 % max) */
+  --vx-canvas:#020305;             /* canvas global — quasi noir */
+  --vx-shell:#070709;              /* shell (sidebar / topbar / app) */
+  --vx-surface:#0c0c0e;            /* surface standard (carte) */
+  --vx-surface-elevated:#121214;   /* surface élevée */
+  --vx-surface-hover:#181719;      /* survol */
+  --vx-surface-selected:#1d1c1f;   /* sélection */
+  --vx-warm-depth:#242327;         /* profondeur neutre / halo localisé (discret) */
 
   /* ── Compat noirs & graphites (repointés sur la fondation Ember) ── */
   --vx-black:#060405;
   --vx-obsidian-950:var(--vx-canvas);
   --vx-obsidian-900:var(--vx-shell);
   --vx-obsidian-850:var(--vx-shell);
-  --vx-obsidian-800:#161316;
-  --vx-graphite-900:#161316;
-  --vx-graphite-850:#1D1819;
-  --vx-graphite-800:#1D1819;
-  --vx-graphite-750:#251D1B;
-  --vx-graphite-700:#2A1E1A;
-  --vx-root:var(--vx-canvas);--vx-app:var(--vx-shell);--vx-sidebar:var(--vx-shell);--vx-topbar:rgba(16,14,15,.94);
+  --vx-obsidian-800:#0c0c0e;
+  --vx-graphite-900:#0c0c0e;
+  --vx-graphite-850:#121214;
+  --vx-graphite-800:#121214;
+  --vx-graphite-750:#181719;
+  --vx-graphite-700:#1d1c1f;
+  --vx-root:var(--vx-canvas);--vx-app:var(--vx-shell);--vx-sidebar:var(--vx-shell);--vx-topbar:rgba(7,7,9,.96);
 
   /* ── Fonds (compat V3 : bg-0..3) ── */
   --vx-bg-0:var(--vx-canvas);
@@ -144,7 +144,7 @@
 
   /* ── Dégradés (réservés aux éléments importants, fonctionnels) ── */
   --vx-brand-gradient:linear-gradient(135deg,var(--vx-ember-400) 0%,var(--vx-ember-600) 100%);
-  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(255,255,255,.06),transparent 68%);
+  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(255,255,255,.022),transparent 66%);
 
   /* ── Typographie ──
      Direction souhaitée : NEUE MONTREAL. AUCUN fichier Neue Montreal licencié n'est

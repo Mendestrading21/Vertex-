@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    VERTEX GLASS — Graph System V2 (issue #14)
-   Fond très sombre (canvas #05070C) · cartes glass premium · identité BLANC /
+   Fond quasi noir (canvas #020305) · cartes glass sombres · identité BLANC /
    GRIS CLAIR EN VERRE (#DBE1E8) sourcée depuis tokens.css (--vx-ember-*).
    Vert=gain, rouge=perte, jaune=attente, violet=options, cyan=comparaison.
    L'accent d'interface (boutons/icônes/sélection) est un blanc légèrement gris
@@ -21,14 +21,15 @@
 
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]){
   /* ── Fond : canvas NEUE EMBER (très sombre, chaud) ── */
-  --ng-bg-0:var(--vx-canvas);          /* le plus sombre (#05070C) */
+  --ng-bg-0:var(--vx-canvas);          /* le plus sombre (#020305) */
   --ng-bg-1:var(--vx-shell);
   --ng-bg-2:var(--vx-surface);
-  /* ── Surfaces glass (verre BLANC translucide, neutre — pas de teinte) ── */
-  --ng-glass:rgba(255,255,255,.03);
-  --ng-glass-raised:rgba(255,255,255,.05);
-  --ng-glass-hover:rgba(255,255,255,.08);
-  --ng-blur:20px;
+  /* ── Surfaces glass (verre sombre : base noire + fine pellicule blanche) ── */
+  --ng-glass:rgba(255,255,255,.018);
+  --ng-glass-raised:rgba(255,255,255,.032);
+  --ng-glass-hover:rgba(255,255,255,.055);
+  --ng-glass-ink:rgba(0,0,0,.34);      /* base sombre sous le verre (assombrit) */
+  --ng-blur:22px;
   /* ── Bordures fines blanches (fil clair discret, neutre) ── */
   --ng-border:rgba(255,255,255,.09);
   --ng-border-soft:var(--vx-border-soft);
@@ -49,7 +50,7 @@
 
   position:relative;
   background:
-    radial-gradient(120% 60% at 82% -8%, rgba(255,255,255,.022), transparent 60%),
+    radial-gradient(120% 60% at 82% -8%, rgba(255,255,255,.010), transparent 58%),
     linear-gradient(180deg, var(--ng-bg-1), var(--ng-bg-0));
 }
 
@@ -57,9 +58,11 @@
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-card{
   position:relative;
   overflow:visible;                    /* tooltips/menus jamais rognés (défaut) */
-  background:linear-gradient(180deg, var(--ng-glass-raised), var(--ng-glass));
-  -webkit-backdrop-filter:blur(var(--ng-blur)) saturate(1.15);
-  backdrop-filter:blur(var(--ng-blur)) saturate(1.15);
+  background:
+    linear-gradient(180deg, var(--ng-glass-raised), var(--ng-glass)),
+    var(--ng-glass-ink);               /* base sombre → carte franchement foncée */
+  -webkit-backdrop-filter:blur(var(--ng-blur)) saturate(1.05);
+  backdrop-filter:blur(var(--ng-blur)) saturate(1.05);
   border:1px solid var(--ng-border);
   border-radius:var(--ng-radius);
   box-shadow:var(--ng-shadow);

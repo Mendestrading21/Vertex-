@@ -226,8 +226,8 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v61' in body
-    assert 'td-shell-v60' not in body
+    assert 'td-shell-v62' in body
+    assert 'td-shell-v61' not in body
 
 
 # ── Sécurité produit ─────────────────────────────────────────────────────
@@ -257,7 +257,7 @@ def test_v3_tokens_are_canonical():
     = positif · corail = risque · jaune = attente · violet = options · cyan =
     comparaison. Le token de marque reste `--vx-ember-*` (valeur neutre désormais)."""
     tokens = _read(VXCSS, 'tokens.css')
-    for var in ('--vx-canvas:#05070C', '--vx-ember-500:#dbe1e8',
+    for var in ('--vx-canvas:#020305', '--vx-ember-500:#dbe1e8',
                 '--vx-brand:var(--vx-ember-500)', '--vx-positive:#2BBE90',
                 '--vx-negative:#E9555F', '--vx-warning:#D9BE3C',
                 '--vx-option:#9B7BFF', '--vx-neutral-chart:#BABABA'):
