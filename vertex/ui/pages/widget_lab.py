@@ -1017,6 +1017,293 @@ def catalyst_runway(events=None):
             f'<div class="wl-more">4 catalyseurs · fenêtre 26 j · 2 à fort impact</div>{_foot("calendrier", "aujourd’hui", "delayed")}</div>')
 
 
+# ══ GALERIE — OBJETS SIGNATURE (Design Director Pass 05) ════════════════════
+# Objets dessinés au niveau « pièce de design » : lumière interne (dégradés +
+# flou), matière, profondeur, nœud lumineux actif. Conçus pour flotter sur une
+# scène noir-chaud éclairée. Palette sémantique (vert/rouge/ambre/violet) ;
+# l'orange reste réservé à l'identité, l'interaction et le point actif.
+_GC = {'go': 'var(--gr-trading)', 'risk': 'var(--r-loss)', 'wait': 'var(--o-light)',
+       'opt': 'var(--vx-option)', 'info': 'var(--cy)', 'neutral': 'var(--g13)'}
+
+
+def _glowdefs(uid, col, blur=3.2):
+    """Filtre de halo doux + dégradé d'aire réutilisables."""
+    return (f'<filter id="{uid}g" x="-40%" y="-40%" width="180%" height="180%">'
+            f'<feGaussianBlur stdDeviation="{blur}"/></filter>'
+            f'<linearGradient id="{uid}a" x1="0" x2="0" y1="0" y2="1">'
+            f'<stop offset="0" stop-color="{col}" stop-opacity=".34"/>'
+            f'<stop offset="1" stop-color="{col}" stop-opacity="0"/></linearGradient>')
+
+
+def gx_aurora(tone='go', name='Régime porteur', conf=68):
+    """AURORA — le régime comme une atmosphère : bandes de lumière + arc de
+    confiance + horizon. Reconnaissable à sa lumière, sans texte ni couleur d'ID."""
+    u = _uid()
+    c = _GC[tone]
+    W, H = 380, 220
+    cx, cy = W / 2, H * 0.62
+    a0, a1 = 152, 152 + max(4, conf / 100 * 236)
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block">
+  <defs>
+    <radialGradient id="{u}h" cx="50%" cy="30%" r="70%">
+      <stop offset="0" stop-color="{c}" stop-opacity=".42"/>
+      <stop offset="42%" stop-color="{c}" stop-opacity=".10"/>
+      <stop offset="100%" stop-color="{c}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="{u}h2" cx="32%" cy="18%" r="55%">
+      <stop offset="0" stop-color="var(--o-light)" stop-opacity=".16"/>
+      <stop offset="100%" stop-color="var(--o-light)" stop-opacity="0"/></radialGradient>
+    <linearGradient id="{u}hz" x1="0" x2="1"><stop offset="0" stop-color="{c}" stop-opacity="0"/>
+      <stop offset=".5" stop-color="{c}" stop-opacity=".55"/><stop offset="1" stop-color="{c}" stop-opacity="0"/></linearGradient>
+    <filter id="{u}b"><feGaussianBlur stdDeviation="6"/></filter></defs>
+  <rect x="0" y="0" width="{W}" height="{H}" fill="url(#{u}h)"/>
+  <rect x="0" y="0" width="{W}" height="{H}" fill="url(#{u}h2)"/>
+  <ellipse cx="{cx}" cy="{cy-58}" rx="150" ry="30" fill="{c}" opacity=".14" filter="url(#{u}b)"/>
+  <ellipse cx="{cx}" cy="{cy-40}" rx="112" ry="16" fill="{c}" opacity=".18" filter="url(#{u}b)"/>
+  <line x1="34" y1="{cy}" x2="{W-34}" y2="{cy}" stroke="url(#{u}hz)" stroke-width="1.4"/>
+  <path d="{_arc(cx, cy, 74, 152, 388)}" fill="none" stroke="var(--g8)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="{_arc(cx, cy, 74, a0, a1)}" fill="none" stroke="var(--o-ember)" stroke-width="2.5" stroke-linecap="round" opacity=".95"/>
+  <circle cx="{cx}" cy="{cy - 74}" r="2.6" fill="var(--o-glow)"/>
+</svg>'''
+
+
+def gx_instrument(data=None, entry=118, stop=108, target=132):
+    """INSTRUMENT — chandeliers comme un instrument de précision : corps mats,
+    mèches fines, MM en filament lumineux, prix courant en ligne de lumière."""
+    data = data or OHLC
+    u = _uid()
+    W, H = 380, 210
+    highs = [d[1] for d in data]; lows = [d[2] for d in data]; closes = [d[3] for d in data]
+    vols = [d[4] for d in data]
+    mn, mx = min(lows), max(highs); rng = (mx - mn) or 1
+    pH, vH = 138, 26
+    n = len(data); cw = (W - 30) / n; bw = cw * 0.56
+    def Y(v):
+        return 14 + pH - (v - mn) / rng * (pH - 12)
+    body = ''
+    for i, (o, hi, lo, c, v) in enumerate(data):
+        x = 18 + i * cw + cw / 2
+        up = c >= o
+        col = 'var(--gr-trading)' if up else 'var(--r-loss)'
+        active = i == n - 1
+        body += f'<line x1="{x:.1f}" y1="{Y(hi):.1f}" x2="{x:.1f}" y2="{Y(lo):.1f}" stroke="{col}" stroke-width="1" opacity=".72"/>'
+        yb, yt = Y(min(o, c)), Y(max(o, c))
+        grad = f'{u}up' if up else f'{u}dn'
+        outline = ' stroke="var(--o-glow)" stroke-width="1"' if active else ''
+        body += (f'<rect x="{x-bw/2:.1f}" y="{yt:.1f}" width="{bw:.1f}" height="{max(1.4,yb-yt):.1f}" '
+                 f'rx="1.2" fill="url(#{grad})"{outline}/>')
+        vy = H - (v / max(vols)) * (vH - 4)
+        body += f'<rect x="{x-bw/2:.1f}" y="{vy:.1f}" width="{bw:.1f}" height="{H-vy:.1f}" rx="1" fill="{col}" opacity=".16"/>'
+    # MM20 filament
+    ma = []
+    for i in range(n):
+        seg = closes[max(0, i - 4):i + 1]
+        ma.append(f'{18+i*cw+cw/2:.1f},{Y(sum(seg)/len(seg)):.1f}')
+    last = closes[-1]; yl = Y(last)
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block">
+  <defs>
+    <linearGradient id="{u}up" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--gr-strength)"/><stop offset="1" stop-color="var(--gr-institution)"/></linearGradient>
+    <linearGradient id="{u}dn" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--r-loss)"/><stop offset="1" stop-color="var(--r-bear)"/></linearGradient>
+    <filter id="{u}f"><feGaussianBlur stdDeviation="2.4"/></filter></defs>
+  <line x1="0" y1="{yl:.1f}" x2="{W}" y2="{yl:.1f}" stroke="var(--o-glow)" stroke-width="1" stroke-dasharray="1 4" opacity=".5"/>
+  <polyline points="{" ".join(ma)}" fill="none" stroke="var(--o-light)" stroke-width="1.6" opacity=".5" filter="url(#{u}f)"/>
+  <polyline points="{" ".join(ma)}" fill="none" stroke="var(--o-light)" stroke-width="1.1" opacity=".9"/>
+  {body}
+  <circle cx="{18+(n-1)*cw+cw/2:.1f}" cy="{yl:.1f}" r="3" fill="var(--o-glow)"/>
+</svg>'''
+
+
+def gx_filament(series=None):
+    """FILAMENT — force relative comme un filament lumineux au-dessus du zéro."""
+    series = series or [-1.2, -0.5, 0.2, 0.7, 1.5, 1.9, 2.6, 3.1, 3.6]
+    u = _uid()
+    W, H = 380, 200
+    mn, mx = min(series), max(series); rng = (mx - mn) or 1
+    def X(i):
+        return 16 + i / (len(series) - 1) * (W - 32)
+    def Y(v):
+        return 16 + (mx - v) / rng * (H - 40)
+    pts = ' '.join(f'{X(i):.1f},{Y(v):.1f}' for i, v in enumerate(series))
+    area = f'{X(0):.1f},{Y(mn):.1f} ' + pts + f' {X(len(series)-1):.1f},{Y(mn):.1f}'
+    z = Y(0)
+    up = series[-1] >= 0
+    col = 'var(--gr-trading)' if up else 'var(--r-loss)'
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block">
+  <defs>{_glowdefs(u, col)}</defs>
+  <line x1="0" y1="{z:.1f}" x2="{W}" y2="{z:.1f}" stroke="var(--g11)" stroke-width="1" stroke-dasharray="2 5"/>
+  <polygon points="{area}" fill="url(#{u}a)"/>
+  <polyline points="{pts}" fill="none" stroke="{col}" stroke-width="3.4" opacity=".35" filter="url(#{u}g)"/>
+  <polyline points="{pts}" fill="none" stroke="{col}" stroke-width="1.9" stroke-linecap="round"/>
+  <circle cx="{X(len(series)-1):.1f}" cy="{Y(series[-1]):.1f}" r="4.4" fill="{col}" opacity=".4" filter="url(#{u}g)"/>
+  <circle cx="{X(len(series)-1):.1f}" cy="{Y(series[-1]):.1f}" r="2.6" fill="var(--o-glow)"/>
+</svg>'''
+
+
+def gx_cone(cur=18, pct=42):
+    """CONE — enveloppe de volatilité balayée par la lumière + point courant."""
+    u = _uid()
+    W, H = 380, 190
+    top = [(16, 70), (120, 50), (220, 40), (320, 34), (364, 32)]
+    bot = [(16, 70), (120, 92), (220, 108), (320, 120), (364, 124)]
+    tp = ' '.join(f'{x},{y}' for x, y in top)
+    bp = ' '.join(f'{x},{y}' for x, y in reversed(bot))
+    mid = ' '.join(f'{x},{(a[1]+b[1])/2:.0f}' for (x, a), b in zip(enumerate([p for p in top]), bot) for x in [top[x][0]]) if False else ''
+    cx = 150; cyv = 92 - (cur / 40) * 44
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block">
+  <defs>
+    <linearGradient id="{u}c" x1="0" x2="1"><stop offset="0" stop-color="var(--vx-option)" stop-opacity=".05"/>
+      <stop offset="1" stop-color="var(--vx-option)" stop-opacity=".26"/></linearGradient>
+    <filter id="{u}f"><feGaussianBlur stdDeviation="3"/></filter></defs>
+  <polygon points="{tp} {bp}" fill="url(#{u}c)" stroke="var(--vx-option)" stroke-opacity=".45" stroke-width="1"/>
+  <polyline points="16,70 120,71 220,74 320,77 364,78" fill="none" stroke="var(--g12)" stroke-width="1" stroke-dasharray="3 3"/>
+  <circle cx="{cx}" cy="{cyv:.0f}" r="6" fill="var(--o-glow)" opacity=".35" filter="url(#{u}f)"/>
+  <circle cx="{cx}" cy="{cyv:.0f}" r="3.2" fill="var(--o-glow)"/>
+</svg>'''
+
+
+def gx_terrain(be=0.52):
+    """TERRAIN — payoff sculpté : versant perte / versant gain + crête lumineuse."""
+    u = _uid()
+    W, H = 380, 190
+    bx = 40 + be * (W - 80)
+    ridge = f'20,150 {bx-30:.0f},150 {bx:.0f},128 {W-20},32'
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block">
+  <defs>
+    <linearGradient id="{u}l" x1="0" x2="1"><stop offset="0" stop-color="var(--r-loss)" stop-opacity=".24"/><stop offset="1" stop-color="var(--r-loss)" stop-opacity="0"/></linearGradient>
+    <linearGradient id="{u}g2" x1="0" x2="1"><stop offset="0" stop-color="var(--gr-trading)" stop-opacity="0"/><stop offset="1" stop-color="var(--gr-trading)" stop-opacity=".28"/></linearGradient>
+    <filter id="{u}f"><feGaussianBlur stdDeviation="2.6"/></filter></defs>
+  <rect x="20" y="20" width="{bx-20:.0f}" height="150" fill="url(#{u}l)"/>
+  <rect x="{bx:.0f}" y="20" width="{W-20-bx:.0f}" height="150" fill="url(#{u}g2)"/>
+  <line x1="{bx:.0f}" y1="16" x2="{bx:.0f}" y2="172" stroke="var(--o-glow)" stroke-width="1" stroke-dasharray="2 4" opacity=".65"/>
+  <polyline points="{ridge}" fill="none" stroke="var(--o-light)" stroke-width="3" opacity=".3" filter="url(#{u}f)"/>
+  <polyline points="{ridge}" fill="none" stroke="#F5EFE7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="{bx:.0f}" cy="128" r="2.6" fill="var(--o-glow)"/>
+</svg>'''
+
+
+def gx_field(pct=63):
+    """FIELD — participation du marché comme un paysage de points lumineux."""
+    u = _uid()
+    W, H = 380, 190
+    cols, rows = 16, 7
+    on = round(pct / 100 * cols * rows)
+    dots = ''
+    k = 0
+    for r in range(rows):
+        for c in range(cols):
+            x = 22 + c * ((W - 44) / (cols - 1))
+            y = 24 + r * ((H - 48) / (rows - 1))
+            lit = k < on
+            if lit:
+                dots += f'<circle cx="{x:.0f}" cy="{y:.0f}" r="3.4" fill="var(--gr-trading)" opacity="{0.5+0.5*(1-r/rows):.2f}"/>'
+            else:
+                dots += f'<circle cx="{x:.0f}" cy="{y:.0f}" r="2.2" fill="var(--g8)"/>'
+            k += 1
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block">
+  <defs><radialGradient id="{u}h" cx="30%" cy="20%" r="80%"><stop offset="0" stop-color="var(--gr-trading)" stop-opacity=".12"/><stop offset="100%" stop-color="var(--gr-trading)" stop-opacity="0"/></radialGradient></defs>
+  <rect x="0" y="0" width="{W}" height="{H}" fill="url(#{u}h)"/>{dots}
+</svg>'''
+
+
+def gx_constellation(nodes=None):
+    """CONSTELLATION — rotation sectorielle comme une carte du ciel : leaders
+    brillants, retardataires en veille, liens de gravité vers le centre."""
+    nodes = nodes or [('SW', 0.9, 1), ('BT', 0.4, 0), ('SE', -0.6, -1), ('EN', 0.7, 1),
+                      ('HC', -0.2, 0), ('FI', 0.3, 0), ('UT', -0.8, -1)]
+    u = _uid()
+    W, H = 380, 210
+    cx, cy = W / 2, H / 2
+    body = f'<circle cx="{cx}" cy="{cy}" r="4" fill="var(--o-glow)"/><circle cx="{cx}" cy="{cy}" r="10" fill="none" stroke="var(--o-ember)" stroke-opacity=".3"/>'
+    for i, (sym, strength, st) in enumerate(nodes):
+        a = i / len(nodes) * 360
+        rr = 58 + strength * 26
+        x, y = _pol(cx, cy, rr, a)
+        lead = st > 0
+        col = 'var(--gr-trading)' if lead else ('var(--r-loss)' if st < 0 else 'var(--g13)')
+        rad = 5 if lead else (3 if st == 0 else 2.4)
+        body += (f'<line x1="{cx}" y1="{cy}" x2="{x:.0f}" y2="{y:.0f}" stroke="{col}" stroke-opacity="{0.12+abs(strength)*0.25:.2f}" stroke-width="1"/>'
+                 f'<circle cx="{x:.0f}" cy="{y:.0f}" r="{rad+2}" fill="{col}" opacity="{0.3 if lead else 0}" filter="url(#{u}f)"/>'
+                 f'<circle cx="{x:.0f}" cy="{y:.0f}" r="{rad}" fill="{col}"/>')
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block">
+  <defs><filter id="{u}f"><feGaussianBlur stdDeviation="3"/></filter></defs>{body}
+</svg>'''
+
+
+def gx_canyon(series=None):
+    """CANYON — drawdown comme un relief creusé : profondeur, ombre, remontée."""
+    series = series or [0, -1.5, -4, -7, -11, -14, -12, -8, -10, -6, -3, -1.2]
+    u = _uid()
+    W, H = 380, 190
+    mn = min(series)
+    def X(i):
+        return 16 + i / (len(series) - 1) * (W - 32)
+    def Y(v):
+        return 18 + (0 - v) / (0 - mn) * (H - 46)
+    pts = ' '.join(f'{X(i):.1f},{Y(v):.1f}' for i, v in enumerate(series))
+    area = f'{X(0):.1f},18 ' + pts + f' {X(len(series)-1):.1f},18'
+    lowi = series.index(mn)
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block">
+  <defs>
+    <linearGradient id="{u}c" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--r-loss)" stop-opacity=".32"/><stop offset="1" stop-color="var(--r-bear)" stop-opacity=".04"/></linearGradient>
+    <filter id="{u}f"><feGaussianBlur stdDeviation="2.4"/></filter></defs>
+  <line x1="0" y1="18" x2="{W}" y2="18" stroke="var(--g11)" stroke-width="1" stroke-dasharray="2 5"/>
+  <polygon points="{area}" fill="url(#{u}c)"/>
+  <polyline points="{pts}" fill="none" stroke="var(--r-loss)" stroke-width="3" opacity=".3" filter="url(#{u}f)"/>
+  <polyline points="{pts}" fill="none" stroke="var(--r-loss)" stroke-width="1.7" stroke-linejoin="round"/>
+  <circle cx="{X(lowi):.1f}" cy="{Y(mn):.1f}" r="3" fill="var(--o-glow)"/>
+</svg>'''
+
+
+def gx_depth(bid=0.62):
+    """DEPTH — liquidité comme deux versants qui se rejoignent au mid lumineux."""
+    u = _uid()
+    W, H = 380, 190
+    mid = W / 2
+    steps = 6
+    body = ''
+    for i in range(steps):
+        h = 12 + i * 6
+        yb = 96 - i * 13
+        # bids left (green), asks right (red)
+        wl = (steps - i) / steps * (mid - 30) * (0.5 + bid)
+        wr = (steps - i) / steps * (mid - 30) * (1.4 - bid)
+        body += (f'<rect x="{mid-6-wl:.0f}" y="{yb:.0f}" width="{wl:.0f}" height="10" rx="2" fill="var(--gr-institution)" opacity="{0.85-i*0.1:.2f}"/>'
+                 f'<rect x="{mid+6:.0f}" y="{yb:.0f}" width="{wr:.0f}" height="10" rx="2" fill="var(--r-bear)" opacity="{0.85-i*0.1:.2f}"/>')
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block">
+  <defs><filter id="{u}f"><feGaussianBlur stdDeviation="3"/></filter></defs>
+  <rect x="{mid-1:.0f}" y="16" width="2" height="150" fill="var(--o-glow)" opacity=".3" filter="url(#{u}f)"/>
+  <line x1="{mid:.0f}" y1="18" x2="{mid:.0f}" y2="150" stroke="var(--o-glow)" stroke-width="1" opacity=".8"/>
+  {body}
+  <circle cx="{mid:.0f}" cy="102" r="3" fill="var(--o-glow)"/>
+</svg>'''
+
+
+def gx_beam(reward=3.2):
+    """BEAM — asymétrie risque/récompense comme une balance : le bras penche
+    vers le gain, la masse de risque contenue. Lisible sans un seul chiffre."""
+    u = _uid()
+    W, H = 380, 200
+    cx, cy = W / 2, 96
+    tilt = min(26, reward * 6)          # penche vers le gain (droite haute)
+    import math as _m
+    dx, dy = 120 * _m.cos(_m.radians(-tilt)), 120 * _m.sin(_m.radians(-tilt))
+    lx, ly = cx - dx, cy - dy           # côté risque (gauche, bas)
+    rx, ry = cx + dx, cy + dy * -1      # côté gain (droite, haut)
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block">
+  <defs>
+    <radialGradient id="{u}gg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--gr-trading)" stop-opacity=".9"/><stop offset="1" stop-color="var(--gr-institution)" stop-opacity=".2"/></radialGradient>
+    <radialGradient id="{u}rr" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--r-loss)" stop-opacity=".9"/><stop offset="1" stop-color="var(--r-bear)" stop-opacity=".2"/></radialGradient>
+    <filter id="{u}f"><feGaussianBlur stdDeviation="3.4"/></filter></defs>
+  <line x1="{cx}" y1="30" x2="{cx}" y2="{cy}" stroke="var(--g10)" stroke-width="2"/>
+  <line x1="{lx:.0f}" y1="{ly:.0f}" x2="{rx:.0f}" y2="{ry:.0f}" stroke="var(--g14)" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="{lx:.0f}" cy="{ly:.0f}" r="15" fill="var(--r-loss)" opacity=".28" filter="url(#{u}f)"/>
+  <circle cx="{lx:.0f}" cy="{ly:.0f}" r="9" fill="url(#{u}rr)"/>
+  <circle cx="{rx:.0f}" cy="{ry:.0f}" r="26" fill="var(--gr-trading)" opacity=".3" filter="url(#{u}f)"/>
+  <circle cx="{rx:.0f}" cy="{ry:.0f}" r="15" fill="url(#{u}gg)"/>
+  <circle cx="{cx}" cy="{cy}" r="3" fill="var(--o-glow)"/>
+  <polygon points="{cx-8},{cy+40} {cx+8},{cy+40} {cx},{cy+2}" fill="var(--g6)"/>
+</svg>'''
+
+
 # ── États honnêtes (bande d'états) ─────────────────────────────────────────
 def _state(kind):
     m = {
@@ -1463,7 +1750,8 @@ def render() -> str:
     for b in benches:
         if b[2] not in families:
             families.append(b[2])
-    nav = ''.join(f'<a href="#fam-{i}" class="wl-navchip">{f}</a>' for i, f in enumerate(families))
+    nav = '<a href="#gx-gallery" class="wl-navchip wl-navchip--gx">✦ Galerie</a>'
+    nav += ''.join(f'<a href="#fam-{i}" class="wl-navchip">{f}</a>' for i, f in enumerate(families))
 
     # Récap de curation (bandeau) : compte par statut.
     from collections import Counter
@@ -1527,7 +1815,8 @@ def render() -> str:
     <div class="wl-states-label">États</div>
     <div class="wl-states">{strip}</div></section>'''
 
-    css = _CSS
+    css = _CSS + _GALLERY_CSS
+    gallery = _gallery()
     js = _JS
     return f'''<!doctype html><html lang="fr" data-theme="dark"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1549,7 +1838,7 @@ def render() -> str:
   <div class="wl-summary">{summary}</div>
   <div class="wl-note">⚠️ Laboratoire de design — <b>toutes les valeurs sont des échantillons</b>, aucune donnée réelle, aucun moteur. N’appartient pas au produit Vertex.</div>
 </div>
-<main class="wl-main">{sections}</main>
+<main class="wl-main">{gallery}{sections}</main>
 <dialog id="wl-modal"><h3>Mes choix (à copier)</h3><textarea id="wl-out" rows="14" readonly></textarea>
   <div class="wl-modal-actions"><button id="wl-copy" class="wl-btn">Copier</button><button id="wl-close" class="wl-btn ghost">Fermer</button></div></dialog>
 <script>{js}</script>
@@ -1579,6 +1868,7 @@ _CSS = r'''
 .wl-navchip{font-size:11.5px;text-decoration:none;color:var(--vx-text-secondary);padding:4px 11px;border-radius:999px;
   border:1px solid var(--vx-border-soft);background:var(--vx-surface)}
 .wl-navchip:hover{border-color:var(--vx-ember-500);color:var(--vx-ember-400)}
+.wl-navchip--gx{color:var(--vx-ember-400);border-color:var(--vx-ember-500);background:var(--vx-ember-soft);font-weight:650}
 .wl-note{font-size:11px;color:var(--vx-warning)}
 .wl-main{max-width:1400px;margin:0 auto;padding:22px}
 .wl-fam{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--vx-text-muted);
@@ -1892,3 +2182,189 @@ _JS = r'''
   apply();
 })();
 '''.replace('__LAB_VERSION__', LAB_VERSION)
+
+
+# ══ GALERIE — mise en scène « musée » des objets signature (Pass 05) ════════
+# 10 plaques. Chaque objet flotte sur une scène noir-chaud éclairée, posé sur
+# une matière choisie. Espace négatif généreux, typographie fine, une question
+# justificative par objet. Données = échantillons de design (jamais réelles).
+_GALLERY = [
+    ('01', 'Aurora', 'Régime', 'soft-glass', 'go',
+     "Dans quelle atmosphère de marché est-ce que j’entre ?",
+     lambda: gx_aurora(), 'Régime porteur · confiance 68 %'),
+    ('02', 'Instrument', 'Prix', 'obsidian', 'go',
+     "Le prix confirme-t-il la cassure au-dessus de la résistance ?",
+     lambda: gx_instrument(), 'NVDA 125 · +1,63 % · cassure R 126'),
+    ('03', 'Filament', 'Momentum', 'carbon', 'go',
+     "L’actif surperforme-t-il vraiment son indice ?",
+     lambda: gx_filament(), 'Force relative +3,6 vs S&P 500'),
+    ('04', 'Cone', 'Volatilité', 'frosted', 'opt',
+     "La volatilité implicite est-elle chère à payer ?",
+     lambda: gx_cone(), 'IV 18 % · 42ᵉ percentile'),
+    ('05', 'Terrain', 'Options', 'anodized', 'go',
+     "Que rapporte, et que coûte, ce contrat ?",
+     lambda: gx_terrain(), 'Break-even 132 · asymétrie favorable'),
+    ('06', 'Field', 'Breadth', 'ceramic', 'go',
+     "La hausse est-elle vraiment partagée ?",
+     lambda: gx_field(), 'Participation 63 % · A/D 312/188'),
+    ('07', 'Constellation', 'Rotation', 'smoked', 'info',
+     "Quel secteur prend le leadership ?",
+     lambda: gx_constellation(), 'Software · Énergie en tête'),
+    ('08', 'Canyon', 'Drawdown', 'metal', 'risk',
+     "À quel point suis-je descendu, et est-ce que je remonte ?",
+     lambda: gx_canyon(), 'Creux −14 % · remontée amorcée'),
+    ('09', 'Beam', 'Risque / Récompense', 'brushed', 'go',
+     "L’asymétrie penche-t-elle en ma faveur ?",
+     lambda: gx_beam(), 'R:R 3,2 · le gain domine le risque'),
+    ('10', 'Depth', 'Liquidité', 'polished', 'go',
+     "Puis-je entrer et sortir proprement ?",
+     lambda: gx_depth(), 'Spread serré · profondeur saine'),
+]
+
+
+def _gallery():
+    plates = ''
+    for i, (num, title, dom, mat, tone, question, obj, read) in enumerate(_GALLERY):
+        side = 'L' if i % 2 == 0 else 'R'
+        acc = _GC.get(tone, 'var(--o-glow)')
+        plates += f'''<article class="gx-plate" data-side="{side}">
+      <div class="gx-stage">
+        <div class="gx-panel gx-mat--{mat}" style="--gx-acc:{acc}">
+          <span class="gx-mat-chip">{mat.replace('-', ' ')}</span>
+          <span class="gx-num-badge">{num}</span>
+          {obj()}
+        </div>
+      </div>
+      <div class="gx-editorial">
+        <span class="gx-domain">{dom}</span>
+        <h3 class="gx-obj-title">{title}</h3>
+        <p class="gx-question">{question}</p>
+        <div class="gx-read">{read}</div>
+      </div>
+    </article>'''
+    return f'''<section id="gx-gallery" class="gx-gallery">
+  <header class="gx-hero">
+    <span class="gx-eyebrow">Vertex — Galerie de design</span>
+    <h1 class="gx-h1">Dix objets.<br>Pas dix cartes.</h1>
+    <p class="gx-lead">Chaque instrument a une matière, une lumière, une profondeur.
+      Le luxe vient de la précision — pas de l’effet. Cachez les chiffres, le nom,
+      l’orange : l’objet reste reconnaissable.</p>
+  </header>
+  {plates}
+  <div class="gx-divider"><span>La bibliothèque complète</span></div>
+</section>'''
+
+
+_GALLERY_CSS = r'''
+/* ═══════════════════════════════════════════════════════════════════════════
+   GALERIE — Design Director Pass 05 : matière · lumière · palette · type
+   Tout est scopé .wl / .gx-* — les tokens produit (tokens.css) restent intacts.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.wl{
+  /* 20 gris CHAUDS (rouge > bleu) — du noir chaud au blanc ivoire */
+  --g0:#0a0807;--g1:#0e0b0a;--g2:#13100e;--g3:#181310;--g4:#1d1714;
+  --g5:#231c18;--g6:#2a211c;--g7:#312721;--g8:#392e27;--g9:#43362e;
+  --g10:#4f4036;--g11:#5c4b40;--g12:#6b594c;--g13:#7d6a5b;--g14:#93806f;
+  --g15:#a99684;--g16:#bfad9b;--g17:#d4c4b4;--g18:#e7dacd;--g19:#f5efe7;
+  /* Oranges — gamme complète */
+  --o-ember:#FF6D29;--o-copper:#C7743A;--o-glow:#FF8A4C;--o-light:#FFB27D;
+  --o-burn:#E8531B;--o-deep:#2a140a;
+  /* Verts — jamais fluo */
+  --gr-trading:#2ED6A1;--gr-institution:#1E9B76;--gr-profit:#37DDA0;
+  --gr-live:#46E08C;--gr-strength:#7FD87A;
+  /* Rouges — jamais saturés */
+  --r-risk:#F0616A;--r-loss:#E24E57;--r-critical:#FF454E;--r-bear:#B8434B;--r-stop:#A83840;
+  --cy:#45D6E8;
+  --gx-sans:'Neue Montreal','Neue Haas Grotesk Display','Inter',var(--vx-font),system-ui,sans-serif;
+}
+/* ── HERO ───────────────────────────────────────────────────────────────── */
+.gx-gallery{max-width:1240px;margin:0 auto;padding:8px 22px 20px;display:flex;flex-direction:column;gap:clamp(48px,7vw,92px)}
+.gx-hero{padding:clamp(40px,7vw,88px) 4px clamp(18px,3vw,36px);max-width:900px}
+.gx-eyebrow{font-family:var(--gx-sans);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--o-copper)}
+.gx-h1{font-family:var(--gx-sans);font-size:clamp(40px,7.2vw,82px);font-weight:300;letter-spacing:-.025em;line-height:.98;margin:.28em 0 .34em;color:var(--g19)}
+.gx-lead{font-family:var(--gx-sans);font-size:clamp(15px,1.5vw,18px);font-weight:350;line-height:1.62;color:var(--g14);max-width:52ch}
+/* ── PLAQUE (objet + éditorial) ─────────────────────────────────────────── */
+.gx-plate{display:grid;grid-template-columns:1.08fr .92fr;gap:clamp(28px,4vw,56px);align-items:center}
+.gx-plate[data-side="R"] .gx-stage{order:2}
+.gx-editorial{display:flex;flex-direction:column;padding:6px 4px}
+.gx-domain{font-family:var(--gx-sans);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--g13)}
+.gx-obj-title{font-family:var(--gx-sans);font-size:clamp(30px,3.6vw,44px);font-weight:300;letter-spacing:-.015em;line-height:1.02;margin:.2em 0 .04em;color:var(--g19)}
+.gx-question{font-family:var(--gx-sans);font-size:clamp(15px,1.5vw,17px);font-weight:350;line-height:1.55;color:var(--g15);max-width:34ch;margin:1em 0 1.2em}
+.gx-read{font-family:var(--gx-sans);font-size:12px;letter-spacing:.02em;color:var(--g13);font-variant-numeric:tabular-nums;padding-top:13px;border-top:1px solid var(--g6)}
+/* ── SCÈNE : lumière haute + occlusion basse, noir chaud ────────────────── */
+.gx-stage{position:relative;border-radius:26px;padding:clamp(22px,3vw,40px);isolation:isolate;
+  background:
+    radial-gradient(120% 80% at 26% 8%, rgba(255,178,125,.055), transparent 52%),
+    radial-gradient(140% 130% at 82% 116%, rgba(0,0,0,.55), transparent 58%),
+    linear-gradient(180deg,var(--g3),var(--g0));
+  box-shadow:inset 0 1px 0 rgba(255,238,222,.03), inset 0 0 0 1px rgba(0,0,0,.5), 0 44px 100px -55px #000}
+/* ── PANNEAU MATIÈRE : profondeur + lumière locale au survol ────────────── */
+.gx-panel{position:relative;border-radius:20px;padding:clamp(22px,2.4vw,34px);overflow:hidden;
+  display:flex;align-items:center;justify-content:center;min-height:clamp(220px,26vw,300px);
+  transition:transform .55s cubic-bezier(.2,.85,.25,1),box-shadow .55s}
+.gx-panel>svg{position:relative;z-index:2;width:100%}
+.gx-stage:hover .gx-panel{transform:translateY(-3px)}
+.gx-stage:hover .gx-panel::after{opacity:1}
+.gx-panel::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .55s;
+  background:radial-gradient(90% 70% at 50% 0%, color-mix(in srgb,var(--gx-acc) 16%,transparent), transparent 60%);z-index:1}
+.gx-mat-chip{position:absolute;top:13px;left:15px;z-index:3;font-family:var(--gx-sans);
+  font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--g13);opacity:.8}
+.gx-num-badge{position:absolute;top:11px;right:15px;z-index:3;font-family:var(--gx-sans);
+  font-size:10px;letter-spacing:.16em;color:var(--g11);font-weight:600}
+/* ── 11 MATIÈRES ────────────────────────────────────────────────────────── */
+.gx-mat--matte{background:linear-gradient(180deg,var(--g4),var(--g2));
+  box-shadow:inset 0 1px 0 rgba(255,240,225,.05),inset 0 0 0 1px rgba(0,0,0,.4),0 28px 56px -34px #000}
+.gx-mat--smoked{background:linear-gradient(180deg,rgba(42,33,28,.55),rgba(16,13,12,.5));
+  -webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1);
+  box-shadow:inset 0 1px 0 rgba(255,240,225,.06),inset 0 0 0 1px rgba(0,0,0,.35),0 30px 60px -34px #000}
+.gx-mat--frosted{background:linear-gradient(180deg,rgba(70,60,58,.32),rgba(28,24,26,.28));
+  -webkit-backdrop-filter:blur(22px) saturate(1.2) brightness(1.06);backdrop-filter:blur(22px) saturate(1.2) brightness(1.06);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.05),0 30px 60px -36px #000}
+.gx-mat--obsidian{background:radial-gradient(130% 110% at 50% -14%,rgba(52,30,20,.34),#06050a 66%);
+  box-shadow:inset 0 1px 0 rgba(255,235,220,.06),inset 0 0 0 1px #000,0 34px 70px -38px #000}
+.gx-mat--obsidian::before{content:"";position:absolute;left:0;right:0;top:0;height:46%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,240,230,.06),transparent);z-index:1}
+.gx-mat--carbon{background:
+  repeating-linear-gradient(45deg,rgba(255,255,255,.022) 0 2px,transparent 2px 5px),
+  repeating-linear-gradient(-45deg,rgba(255,255,255,.02) 0 2px,transparent 2px 5px),
+  linear-gradient(180deg,var(--g5),var(--g2));
+  box-shadow:inset 0 1px 0 rgba(255,240,225,.05),inset 0 0 0 1px rgba(0,0,0,.45),0 30px 60px -34px #000}
+.gx-mat--ceramic{background:linear-gradient(180deg,var(--g8),var(--g5) 60%,var(--g4));
+  box-shadow:inset 0 1.5px 0 rgba(255,246,236,.14),inset 0 -10px 24px -18px #000,0 30px 58px -34px #000}
+.gx-mat--ceramic::before{content:"";position:absolute;left:0;right:0;top:0;height:38%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,248,240,.10),transparent);z-index:1}
+.gx-mat--anodized{background:linear-gradient(118deg,#2a1c14,#1a1412 36%,#3a271b 58%,#160f0d);
+  box-shadow:inset 0 1px 0 rgba(255,196,150,.12),inset 0 0 0 1px rgba(0,0,0,.4),0 30px 60px -34px #000}
+.gx-mat--anodized::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:linear-gradient(118deg,rgba(255,150,90,.10),transparent 32%,rgba(255,150,90,.06) 68%,transparent);opacity:.7!important}
+.gx-mat--polished{background:linear-gradient(180deg,var(--g7),var(--g3));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(0,0,0,.4),0 32px 64px -34px #000}
+.gx-mat--polished::before{content:"";position:absolute;left:-20%;right:-20%;top:-40%;height:70%;pointer-events:none;z-index:1;
+  background:radial-gradient(60% 60% at 50% 100%,rgba(255,255,255,.10),transparent);transform:rotate(-6deg)}
+.gx-mat--brushed{background:
+  repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px 3px),
+  linear-gradient(180deg,var(--g7),var(--g3));
+  box-shadow:inset 0 1px 0 rgba(255,244,232,.09),inset 0 0 0 1px rgba(0,0,0,.4),0 30px 60px -34px #000}
+.gx-mat--metal{background:linear-gradient(115deg,#2b2320,#1b1618 40%,#2a211d 62%,#161010);
+  box-shadow:inset 0 1px 0 rgba(255,226,198,.10),inset 0 0 0 1px rgba(0,0,0,.4),0 30px 60px -34px #000}
+.gx-mat--metal::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:linear-gradient(115deg,rgba(255,222,192,.06),transparent 30%,rgba(255,222,192,.04) 70%,transparent)}
+.gx-mat--soft-glass{background:linear-gradient(180deg,rgba(60,52,54,.28),rgba(24,20,22,.24));
+  -webkit-backdrop-filter:blur(16px) saturate(1.15);backdrop-filter:blur(16px) saturate(1.15);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 40px -14px color-mix(in srgb,var(--gx-acc) 30%,transparent),0 30px 60px -36px #000}
+/* micro-texture partagée */
+.gx-panel::before{background-image:var(--wl-noise);background-size:150px;opacity:.03;mix-blend-mode:overlay}
+.gx-panel:not(.gx-mat--obsidian):not(.gx-mat--ceramic):not(.gx-mat--polished)::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background-image:var(--wl-noise);background-size:150px;opacity:.03;mix-blend-mode:overlay}
+/* ── DIVIDER vers la bibliothèque ───────────────────────────────────────── */
+.gx-divider{display:flex;align-items:center;gap:18px;margin:24px 2px 4px;color:var(--g12)}
+.gx-divider::before,.gx-divider::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--g7),transparent)}
+.gx-divider span{font-family:var(--gx-sans);font-size:11px;letter-spacing:.24em;text-transform:uppercase}
+/* ── MOBILE ─────────────────────────────────────────────────────────────── */
+@media (max-width:860px){
+  .gx-plate{grid-template-columns:1fr;gap:20px}
+  .gx-plate[data-side="R"] .gx-stage{order:0}
+  .gx-editorial{padding:0 2px}
+}
+@media (prefers-reduced-motion:reduce){.gx-panel{transition:none}.gx-panel::after{transition:none}}
+'''

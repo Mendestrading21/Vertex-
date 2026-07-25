@@ -201,3 +201,47 @@ def test_export_enriched(html):
     assert 'vxWidgetLabNotes' in html          # persistance des notes
     assert 'data-note' in html                 # bouton note par tuile
     assert 'P04-curation' in html              # version du lab injectée
+
+
+# ═══ GALERIE PASS 05 — matière · lumière · palette · 10 objets ═══
+def test_gallery_present(html):
+    """La galerie musée existe : hero + plaques + divider."""
+    assert 'gx-gallery' in html and 'gx-plate' in html
+    assert 'gx-hero' in html and 'gx-h1' in html
+    assert '✦ Galerie' in html                 # entrée de nav
+    assert 'gx-divider' in html                # transition vers la bibliothèque
+
+
+def test_gallery_ten_objects():
+    """Exactement 10 objets galerie, chacun rendu en SVG."""
+    from vertex.ui.pages import widget_lab
+    assert len(widget_lab._GALLERY) == 10
+    for entry in widget_lab._GALLERY:
+        svg = entry[6]()                       # le lambda générateur
+        assert svg.strip().startswith('<svg'), f'objet non-SVG : {entry[1]}'
+
+
+def test_material_library_11(html):
+    """Bibliothèque de 11 matières réelles (pas des rectangles gris)."""
+    for mat in ('matte', 'smoked', 'frosted', 'obsidian', 'carbon', 'ceramic',
+                'anodized', 'polished', 'brushed', 'soft-glass', 'metal'):
+        assert f'gx-mat--{mat}' in html, f'matière manquante : {mat}'
+
+
+def test_warm_palette_and_ramps(html):
+    """20 gris chauds + gammes orange/vert/rouge définies (scopé .wl)."""
+    assert '--g0:' in html and '--g19:' in html          # rampe de 20 gris
+    for tok in ('--o-ember', '--o-copper', '--o-glow', '--o-light', '--o-burn'):
+        assert tok in html, f'orange manquant : {tok}'
+    for tok in ('--gr-trading', '--gr-institution', '--gr-live'):
+        assert tok in html, f'vert manquant : {tok}'
+    for tok in ('--r-risk', '--r-loss', '--r-bear'):
+        assert tok in html, f'rouge manquant : {tok}'
+
+
+def test_gallery_light_and_type(html):
+    """Système de lumière (scène + glow local) et typographie de galerie."""
+    assert 'gx-stage' in html                  # scène éclairée
+    assert 'gx-panel' in html                  # panneau matière
+    assert 'Neue Montreal' in html             # référence typographique
+    assert 'Dix objets' in html                # manifeste éditorial
