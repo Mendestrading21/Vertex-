@@ -71,8 +71,8 @@ def test_neon_identity_no_blue():
 def test_glass_premium_present():
     css = _read(CSS)
     assert 'backdrop-filter' in css and 'blur(' in css
-    # bordure fine chaude (cuivre)
-    assert '--ng-border:rgba(255,150,70' in css.replace(' ', '')
+    # bordure fine froide (fil bleu discret — identité bleue)
+    assert '--ng-border:rgba(96,150,240' in css.replace(' ', '')
 
 
 def test_cards_overflow_visible_no_tooltip_clip():

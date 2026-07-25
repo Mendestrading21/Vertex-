@@ -23,19 +23,19 @@
   --ng-bg-0:var(--vx-canvas);          /* le plus sombre (#05070C) */
   --ng-bg-1:var(--vx-shell);
   --ng-bg-2:var(--vx-surface);
-  /* ── Surfaces glass (transparence contrôlée, teinte chaude — jamais bleue) ── */
-  --ng-glass:rgba(29,24,25,.55);
-  --ng-glass-raised:rgba(37,29,27,.64);
-  --ng-glass-hover:rgba(46,35,31,.74);
-  --ng-blur:14px;
-  /* ── Bordures fines chaudes (cuivre discret, depuis tokens) ── */
-  --ng-border:rgba(255,150,70,.16);
+  /* ── Surfaces glass (verre translucide, teinte froide — plus transparent) ── */
+  --ng-glass:rgba(22,27,38,.40);
+  --ng-glass-raised:rgba(28,34,48,.50);
+  --ng-glass-hover:rgba(38,46,66,.60);
+  --ng-blur:20px;
+  /* ── Bordures fines froides (fil bleu discret, depuis l'identité) ── */
+  --ng-border:rgba(96,150,240,.16);
   --ng-border-soft:var(--vx-border-soft);
   --ng-border-strong:var(--vx-border-strong);
-  /* ── Identité : ORANGE EMBER (sourcé tokens — plus jamais un littéral local) ── */
-  --ng-neon:var(--vx-ember-500);       /* orange néon (identité, sélection, action) */
+  /* ── Identité : BLEU (sourcé tokens — plus jamais un littéral local) ── */
+  --ng-neon:var(--vx-ember-500);       /* bleu (identité, sélection, action) */
   --ng-neon-bright:var(--vx-ember-400);
-  --ng-copper:var(--vx-ember-600);     /* cuivre incandescent (accents secondaires) */
+  --ng-copper:var(--vx-ember-600);     /* bleu profond (accents secondaires) */
   --ng-neon-soft:var(--vx-ember-soft);
   --ng-glow:var(--vx-glow-brand);
   /* ── Profondeur ── */
