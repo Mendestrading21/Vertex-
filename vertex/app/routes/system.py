@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v59';   // v59 (SANS ORANGE) : ambre warning #FFC857 -> jaune #EBD24E (zero orange dans tout le site)
+const CACHE='td-shell-v60';   // v60 (STABILISATION TEST) : fix débordement .vx-kv mobile (clé ellipsée / valeur repliable) — 8 pages x 3 viewports 0 débordement
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
