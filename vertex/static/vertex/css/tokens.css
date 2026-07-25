@@ -3,12 +3,12 @@
    espacements. Remplace Signal Green + Obsidian Copper + la palette locale Neon Glass.
 
    UNE COULEUR = UNE SIGNIFICATION :
-   ORANGE EMBER = identité / marque / action principale / sélection / focus
+   BLEU ÉLECTRIQUE = identité / marque / action principale / sélection / focus
                   (⚠️ NE signifie JAMAIS « hausse / achat / réussite ») ·
    ÉMERAUDE = gain / hausse / confirmation RÉELLE (« Marché ouvert » compris) ·
-   CORAIL = perte / risque RÉEL · AMBRE = attente / seuil / avertissement ·
+   CORAIL = perte / risque RÉEL · JAUNE = attente / seuil / avertissement ·
    CYAN = comparaison technique · VIOLET = options / volatilité ·
-   GRIS CHAUD = neutre / benchmark / indisponible. AUCUN vert de marque. AUCUN bleu de fond. */
+   GRIS CHAUD = neutre / benchmark / indisponible. AUCUN orange. Le bleu EST la marque. */
 :root{
   /* ══ Fondation NEUE EMBER — surfaces chaudes très sombres ══ */
   --vx-canvas:#05070C;             /* canvas global (Master Prompt) */
@@ -83,7 +83,7 @@
   --vx-brand-selected:var(--vx-surface-selected);
   --vx-brand-soft:var(--vx-ember-soft);
   --vx-brand-ink:var(--vx-ember-ink);
-  --vx-amber:#FFC857;
+  --vx-amber:#EBD24E;
   --vx-beige:#c8bfae;
 
   /* ── DEPRECATED — Signal Green (compat ; repointé sur Ember, N'EST PLUS la marque) ──
@@ -119,8 +119,8 @@
   --vx-negative:#FF5F69;           /* perte / risque réel */
   --vx-negative-strong:#e24853;
   --vx-negative-soft:rgba(255,95,105,.13);
-  --vx-warning:#FFC857;            /* attente / seuil / avertissement */
-  --vx-warning-soft:rgba(255,200,87,.13);
+  --vx-warning:#EBD24E;            /* attente / seuil / avertissement */
+  --vx-warning-soft:rgba(235,210,78,.13);
   --vx-option:#9B7BFF;             /* options / volatilité */
   --vx-option-strong:#7f5df0;
   --vx-option-soft:rgba(155,123,255,.13);

@@ -17,13 +17,13 @@ from __future__ import annotations
 BRAND = '#3B82F6'          # série principale Vertex (identité, pas « hausse »)
 COPPER = '#8A8284'         # série neutre acier (gris chaud)
 COPPER_LIGHT = '#5C9BFF'   # bleu clair de marque (accents hover)
-AMBER = '#FFC857'          # série secondaire / attention
+AMBER = '#EBD24E'          # série secondaire / attention
 BEIGE = '#c8bfae'          # benchmark clair (sable)
 
 # ── États (direction / statut réel uniquement) ────────────────────────
 POSITIVE = '#2ED6A1'       # ÉMERAUDE — gain / donnée positive (distinct de la marque)
 NEGATIVE = '#FF5F69'       # corail — perte / risque
-WARNING = '#FFC857'
+WARNING = '#EBD24E'
 NEUTRAL = '#BABABA'        # benchmark neutre (gris chaud)
 OPTION = '#9B7BFF'         # violet contrôlé — RÉSERVÉ aux options / IV / Greeks
 #                            (identité déployée : tokens.css, chart-theme, chart-core)

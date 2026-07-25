@@ -226,8 +226,8 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v58' in body
-    assert 'td-shell-v57' not in body
+    assert 'td-shell-v59' in body
+    assert 'td-shell-v58' not in body
 
 
 # ── Sécurité produit ─────────────────────────────────────────────────────
@@ -259,7 +259,7 @@ def test_v3_tokens_are_canonical():
     tokens = _read(VXCSS, 'tokens.css')
     for var in ('--vx-canvas:#05070C', '--vx-ember-500:#3B82F6',
                 '--vx-brand:var(--vx-ember-500)', '--vx-positive:#2ED6A1',
-                '--vx-negative:#FF5F69', '--vx-warning:#FFC857',
+                '--vx-negative:#FF5F69', '--vx-warning:#EBD24E',
                 '--vx-option:#9B7BFF', '--vx-neutral-chart:#BABABA'):
         assert var in tokens, f'token manquant : {var}'
     # Garde-fou anti-régression : le vert Signal ne doit plus être la marque.

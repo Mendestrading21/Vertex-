@@ -251,7 +251,7 @@
 .vx-content[data-space="markets"] .vx-mk-regime-lead .tag{
   font-size:var(--vx-fs-meta);font-weight:700;letter-spacing:.08em;text-transform:uppercase;
   color:var(--vx-warning);padding:3px 9px;border-radius:999px;
-  background:var(--vx-warning-soft);border:1px solid rgba(255,200,87,.28);
+  background:var(--vx-warning-soft);border:1px solid rgba(235,210,78,.28);
 }
 .vx-content[data-space="markets"] .vx-mk-regime-lead .txt{color:var(--vx-text-secondary);font-size:13.5px;line-height:1.55}
 /* Rangée de signaux réels (VIX / breadth / S&P / risk) — mini-cartes à rail */
@@ -391,7 +391,7 @@
   font-size:var(--vx-fs-meta);font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;
 }
 .vx-content[data-space="opportunities"] .vx-op-hero-lead .tag[data-tone="go"]{color:var(--vx-positive);background:var(--vx-positive-soft);border:1px solid rgba(46,214,161,.28)}
-.vx-content[data-space="opportunities"] .vx-op-hero-lead .tag[data-tone="wait"]{color:var(--vx-warning);background:var(--vx-warning-soft);border:1px solid rgba(255,200,87,.28)}
+.vx-content[data-space="opportunities"] .vx-op-hero-lead .tag[data-tone="wait"]{color:var(--vx-warning);background:var(--vx-warning-soft);border:1px solid rgba(235,210,78,.28)}
 .vx-content[data-space="opportunities"] .vx-op-hero-lead .txt{color:var(--vx-text-secondary);font-size:14px;line-height:1.6}
 .vx-content[data-space="opportunities"] .vx-op-hero-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:var(--vx-s3)}
 .vx-content[data-space="opportunities"] .vx-op-chip{

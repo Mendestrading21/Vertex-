@@ -62,7 +62,7 @@
 .vx-badge-status[data-status="offline"],.vx-badge-status[data-status="error"]{
   color:var(--vx-negative)}
 .vx-badge .vx-dot{width:7px;height:7px;border-radius:99px;background:currentColor;flex:none}
-.vx-badge-entity[data-kind="fav"]{color:#FFD27A}
+.vx-badge-entity[data-kind="fav"]{color:#EDDD8A}
 .vx-badge-entity[data-kind="watch"]{color:var(--vx-cyan)}
 .vx-badge-entity[data-kind="follow"]{color:var(--vx-information)}
 .vx-badge-entity[data-kind="position"]{color:var(--vx-positive)}
