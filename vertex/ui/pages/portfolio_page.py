@@ -473,7 +473,7 @@ async function renderPositions(){
     const wgt=total?( (t.value??t.invested??0)/total*100):null;
     return `<tr>
       <td data-label="Titre"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${t.sym}">${t.sym}</button> ${E().badges(t.sym)}</td>
-      <td data-label="Instrument">${t.type}${t.strike?' '+t.strike:''}${t.exp?' '+t.exp:''}</td>
+      <td data-label="Instrument">${/CALL|PUT/i.test(t.type||'')?'<span class="vx-violet">'+t.type+'</span>':t.type}${t.strike?' '+t.strike:''}${t.exp?' '+t.exp:''}</td>
       <td data-label="Qté" class="vx-num">${t.qty}</td>
       <td data-label="Prix moyen" class="vx-num">${perShare(t)!=null?VX.fmt.price(perShare(t)):'—'}</td>
       <td data-label="Prix actuel" class="vx-num">${t.mark!=null?VX.fmt.price(t.mark):'n/d'}</td>
@@ -733,10 +733,10 @@ async function renderRisk(){
         ${kv('HHI',risk.hhi)}${kv('Bêta pondéré',risk.beta)}
         <div id="pf-sector-donut" class="vx-mt2"><span class="vx-meta">Exposition sectorielle…</span></div></div>
       <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Greeks agrégés</span></div>
-        ${kv('Delta global',risk.options_exposure&&risk.options_exposure.delta)}
-        ${kv('Gamma global',risk.options_exposure&&risk.options_exposure.gamma)}
-        ${kv('Theta global',risk.options_exposure&&risk.options_exposure.theta)}
-        ${kv('Vega global',risk.options_exposure&&risk.options_exposure.vega)}
+        ${kv('Delta global',risk.options_exposure&&risk.options_exposure.delta,'vx-violet')}
+        ${kv('Gamma global',risk.options_exposure&&risk.options_exposure.gamma,'vx-violet')}
+        ${kv('Theta global',risk.options_exposure&&risk.options_exposure.theta,'vx-violet')}
+        ${kv('Vega global',risk.options_exposure&&risk.options_exposure.vega,'vx-violet')}
         <div class="vx-meta vx-mt2">Greeks broker requis — sans IBKR, non estimés (aucune invention).</div></div>
       <section class="vx-card vx-col-12"><div class="vx-card-header"><span class="vx-card-title">Stress tests (§26)</span>
         <span class="vx-chart-question">Combien perd le portefeuille dans chaque scénario ?</span></div>
@@ -753,7 +753,7 @@ async function renderRisk(){
         <div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Scénario</th>
         <th class="vx-num">Impact estimé</th><th>Note</th></tr></thead><tbody>
         ${Object.entries(stress).map(([k,v])=>`<tr><td>${k}</td>
-          <td class="vx-num ${v.impact_pct<0?'vx-neg':''}">${v.impact_pct!==null&&v.impact_pct!==undefined?VX.fmt.pct(v.impact_pct,1):'non estimé'}</td>
+          <td class="vx-num ${v.impact_pct!=null?(v.impact_pct<0?'vx-neg':v.impact_pct>0?'vx-pos':''):''}">${v.impact_pct!==null&&v.impact_pct!==undefined?VX.fmt.pct(v.impact_pct,1):'non estimé'}</td>
           <td class="vx-meta">${esc(v.note||'')}</td></tr>`).join('')}</tbody></table></div>
         <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'risk_engine (positions réelles)','live')}
         ${(risk.warnings||[]).length?'· '+risk.warnings.length+' avertissement(s)':''}</div></section></div>`;
@@ -794,6 +794,8 @@ async function renderWatchlist(){
   const statuses=['idee','a_etudier','en_attente','proche','declenchee','invalidee','archivee'];
   const labels={idee:'Idée',a_etudier:'À étudier',en_attente:'En attente',proche:'Proche',
     declenchee:'Déclenchée',invalidee:'Invalidée',archivee:'Archivée'};
+  /* cycle de vie watchlist → couleur (déclenchée=vert, proche/attente=jaune, invalidée=rouge) */
+  const wlCls=s=>s==='declenchee'?'vx-pos':(s==='proche'||s==='en_attente')?'vx-warn':s==='invalidee'?'vx-neg':'';
   $('pf-body').innerHTML=`
     <section class="vx-card vx-mb3"><div class="vx-card-header"><span class="vx-card-title">Watchlist (surveillance active)</span>
       <span class="vx-actions"><button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('','watchlist')">+ Ajouter</button></span></div>
@@ -802,11 +804,11 @@ async function renderWatchlist(){
         <th>Statut</th><th>Ajouté</th><th></th></tr></thead><tbody>
         ${wl.map(w=>`<tr>
           <td data-label="Titre"><span class="vx-ticker">${w.sym}</span> ${E().badges(w.sym)}</td>
-          <td data-label="Priorité"><span class="vx-badge">${esc(w.priority||'normale')}</span></td>
+          <td data-label="Priorité"><span class="vx-badge ${/haute|élevée|elevee/i.test(w.priority||'')?'vx-warn':''}">${esc(w.priority||'normale')}</span></td>
           <td data-label="Thèse" class="vx-truncate" style="max-width:200px">${esc(w.thesis||'—')}</td>
           <td data-label="Zone" class="vx-mono">${esc(w.zone||'—')}</td>
           <td data-label="Catalyseur">${esc(w.catalyst||'—')}</td>
-          <td data-label="Statut"><select class="vx-select" data-wl-status="${w.sym}" style="width:auto;padding:3px 24px 3px 8px">
+          <td data-label="Statut"><select class="vx-select ${wlCls(w.status)}" data-wl-status="${w.sym}" style="width:auto;padding:3px 24px 3px 8px">
             ${statuses.map(s=>`<option value="${s}" ${w.status===s?'selected':''}>${labels[s]}</option>`).join('')}</select></td>
           <td data-label="Ajouté" class="vx-mono vx-meta">${w.added||'—'}</td>
           <td><div class="vx-row-actions">

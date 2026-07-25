@@ -155,6 +155,11 @@ function freshBadge(m){const map={live:['live','Live'],delayed:['delayed','Diff�
   const x=map[m]||map.delayed;return '<span class="vx-freshness" data-live="'+x[0]+'"><span class="vx-live-dot"></span>'+x[1]+'</span>';}
 function num(x){return (x!==null&&x!==undefined&&!isNaN(x))?Number(x):null;}
 function breadthOf(sb){if(sb==null)return null;if(typeof sb==='object')return num(sb.above50)??num(sb.above200);return num(sb);}
+/* verdict → classe sémantique (achat=vert, attente=jaune, évite=rouge) */
+function vCls(v){var s=String(v||'').toLowerCase();if(!s)return'';
+  if(/(buy|achet|renforc|accumul|long\b|s\+)/.test(s))return'vx-pos';
+  if(/(avoid|évit|evit|refus|réduir|reduir|sell|vendre|rejet)/.test(s))return'vx-neg';
+  if(/(hold|attend|neutre|patience|surveil|watch)/.test(s))return'vx-warn';return'';}
 
 /* Tuile KPI résumé — cliquable, pointe vers son domicile canonique. */
 function kpiTile(label,value,cls,href){
@@ -281,7 +286,7 @@ async function loadOpportunities(){
     $('vx-opp-stocks').innerHTML=stocks.length?stocks.map(s=>
       '<div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">'
       +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(s.symbol)+'">'+esc(s.symbol)+'</button>'
-      +'<span class="vx-badge">'+esc(s.verdict||'')+'</span>'
+      +'<span class="vx-badge '+vCls(s.verdict)+'">'+esc(s.verdict||'')+'</span>'
       +'<span class="vx-grow vx-truncate vx-dim" style="font-size:12px">'+esc(s.note||'')+'</span>'
       +'<span class="vx-num vx-mono">'+VX.fmt.nd(s.price)+'</span>'
       +'<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="'+esc(s.symbol)+'" aria-label="Actions">⋯</button></div>').join('')
@@ -305,7 +310,7 @@ async function loadAlerts(){
       '<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">'
       +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(a.sym)+'">'+esc(a.sym)+'</button>'
       +'<span class="vx-grow vx-dim" style="font-size:12px">'+(a.cond==='above'?'franchit':'casse')+' '+VX.fmt.price(a.level)+'</span>'
-      +'<span class="vx-badge">armée</span></div>').join('');
+      +'<span class="vx-badge vx-warn">armée</span></div>').join('');
     $('vx-alerts').innerHTML=(srv+rows)||VX.states.empty('Aucune alerte active.',
       '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'alert\')">Créer une alerte</button>');
   }catch(e){$('vx-alerts').innerHTML=VX.states.error('Alertes indisponibles');}

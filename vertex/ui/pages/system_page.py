@@ -688,10 +688,12 @@ async function loadData(){
   if(dq){
     const worst=dq.degraded||[];
     $('vx-data-degraded').innerHTML=worst.length
-      ?'<div class="vx-flex vx-wrap vx-gap2">'+worst.map(w=>
-        `<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(w.symbol)}"
+      ?'<div class="vx-flex vx-wrap vx-gap2">'+worst.map(w=>{
+        const q=String(w.quality||'').toUpperCase();
+        const st=/EXPIR|MISSING|ABSEN|INVALID/.test(q)?'offline':/STALE|DELAY|RETARD|DEGRAD/.test(q)?'delayed':'delayed';
+        return `<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(w.symbol)}"
           title="${esc((w.warnings||[]).join(' · '))}">${esc(w.symbol)}
-          <span class="vx-badge vx-badge-status" data-status="delayed">${esc(w.quality)}</span></button>`).join('')+'</div>'
+          <span class="vx-badge vx-badge-status" data-status="${st}">${esc(w.quality)}</span></button>`;}).join('')+'</div>'
       :VX.states.empty('Aucun titre en qualit&eacute; d&eacute;grad&eacute;e — rien &agrave; signaler.');
   }else{
     $('vx-data-degraded').innerHTML=VX.states.error('Rapport de qualit&eacute; indisponible');

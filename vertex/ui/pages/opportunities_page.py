@@ -52,6 +52,21 @@ function bucketOf(r){
   if(r.score>=56)return'À surveiller';
   return'Radar';
 }
+/* verdict → classe sémantique (buy/achat=vert, attente/surveille=jaune, évite/refus=rouge) */
+function vCls(v){var s=String(v||'').toLowerCase();
+  if(!s)return'';
+  if(/(buy|achet|renforc|accumul|acheter|long\b|s\+)/.test(s))return'vx-pos';
+  if(/(avoid|évit|evit|refus|réduir|reduir|sell|vendre|rejet|short)/.test(s))return'vx-neg';
+  if(/(hold|attend|neutre|patience|surveil|proche|watch|radar)/.test(s))return'vx-warn';
+  return'';}
+/* bucket de statut → classe sémantique (actionnable=vert, proche/surveille=jaune, rejetée=rouge) */
+function bucketCls(b){var s=String(b||'').toLowerCase();
+  if(/actionnable/.test(s))return'vx-pos';
+  if(/(rejet|invalid)/.test(s))return'vx-neg';
+  if(/(proche|surveil|attente)/.test(s))return'vx-warn';
+  return'';}
+/* playbook peut être une chaîne OU un objet moteur → toujours une chaîne sûre */
+function pbStr(pb){return (pb&&typeof pb==='object')?(pb.name||pb.label||pb.key||pb.type||''):(pb||'');}
 function metaMode(scan){return scan&&scan.data_source==='demo'?'fallback':'delayed';}
 function demoBanner(scan){return scan&&scan.data_source==='demo'?
   '<div class="vx-stale-banner">Mode DÉMO — données synthétiques, clairement identifiées.</div>':'';}
@@ -93,7 +108,7 @@ function renderDominant(rows,scan,catBySym){
         <div class="vx-op-dom-tk"><span class="sym vx-ticker" style="cursor:pointer" data-open-analysis="${esc(best.symbol)}">${esc(best.symbol)}</span>
           <span class="vx-op-grade" data-g="${esc(g)}">${esc(g)}</span></div>
         <div class="vx-op-dom-sub">${esc(best.sector||best.industry||'secteur n/d')} · ${best.price!=null?VX.fmt.price(best.price):'cours n/d'}
-          ${best.verdict?' · <b>'+esc(best.verdict)+'</b>':''}</div>
+          ${best.verdict?' · <b class="'+vCls(best.verdict)+'">'+esc(best.verdict)+'</b>':''}</div>
         <div class="vx-op-dom-score"><span class="n">${VX.fmt.nd(best.score)}</span><span class="u">/100 · score Vertex</span></div>
         ${momBars(best)?'<div style="margin-top:4px"><div class="vx-meta" style="margin-bottom:4px">Momentum 1S · 1M · 1T · 1A</div>'+momBars(best)+'</div>':''}
       </div>
@@ -137,7 +152,7 @@ function renderShortlist(rows,scan,catBySym){
       <div class="vx-meta vx-truncate" title="${esc(cat||'')}">${cat?esc(cat):(r.profile_hint?esc(r.profile_hint):'—')}</div>
       ${momBars(r)}
       <div class="vx-op-tk-foot"><button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${esc(r.symbol)}">Analyser →</button>
-        <span>${esc(r.verdict||'')}</span></div>
+        <span class="${vCls(r.verdict)}">${esc(r.verdict||'')}</span></div>
     </div></div>`;}).join('');
 }
 /* ── MATRICE DE COMPARAISON (2-4 meilleurs candidats, barres/rails, meilleur mis en avant) ── */
@@ -352,7 +367,7 @@ async function renderStocks(){
     let f=rows;
     if(state.sector)f=f.filter(r=>r.sector===state.sector);
     if(state.bucket)f=f.filter(r=>bucketOf(r)===state.bucket);
-    if(state.setup)f=f.filter(r=>(r.playbook||r.profile||'').toUpperCase().includes(state.setup));
+    if(state.setup)f=f.filter(r=>(pbStr(r.playbook)||r.profile||'').toUpperCase().includes(state.setup));
     if(state.minScore)f=f.filter(r=>(r.score||0)>=state.minScore);
     f=f.slice().sort((a,b)=>(b.score||0)-(a.score||0));
     $('op-table').innerHTML=f.length?`<table class="vx-table"><thead><tr>
@@ -360,12 +375,12 @@ async function renderStocks(){
       <th class="vx-num">Cours</th><th class="vx-num">R:R</th><th>Setup</th><th>Secteur</th><th></th></tr></thead><tbody>
       ${f.slice(0,80).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
         <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
-        <td data-label="Statut"><span class="vx-badge">${bucketOf(r)}</span></td>
+        <td data-label="Statut"><span class="vx-badge ${bucketCls(bucketOf(r))}">${bucketOf(r)}</span></td>
         <td data-label="Score" class="vx-num">${VX.fmt.nd(r.score)}</td>
-        <td data-label="Décision"><span class="vx-badge">${esc(r.verdict||'')}</span></td>
+        <td data-label="Décision"><span class="vx-badge ${vCls(r.verdict)}">${esc(r.verdict||'')}</span></td>
         <td data-label="Cours" class="vx-num">${VX.fmt.nd(r.price!==undefined?VX.fmt.price(r.price):null)}</td>
         <td data-label="R:R" class="vx-num">${VX.fmt.nd(r.rr)}</td>
-        <td data-label="Setup" class="vx-truncate" style="max-width:130px">${esc(r.playbook||r.profile||'—')}</td>
+        <td data-label="Setup" class="vx-truncate" style="max-width:130px">${esc(pbStr(r.playbook)||r.profile||'—')}</td>
         <td data-label="Secteur">${esc(r.sector||'—')}</td>
         <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table>`
       :VX.states.empty('Aucun titre ne correspond aux filtres.','<button class="vx-btn vx-btn-sm" id="op-clear">Effacer les filtres</button>');
@@ -463,7 +478,7 @@ async function renderOptions(){
         <td data-label="Échéance" class="vx-mono">${VX.fmt.nd(c.exp)}</td>
         <td data-label="DTE" class="vx-num">${VX.fmt.nd(c.dte)}</td>
         <td data-label="Delta" class="vx-num">${VX.fmt.nd(c.delta)}</td>
-        <td data-label="IV" class="vx-num">${c.iv!=null?(c.iv*100).toFixed(0)+'%':'—'}</td>
+        <td data-label="IV" class="vx-num" style="color:var(--vx-option)">${c.iv!=null?(c.iv*100).toFixed(0)+'%':'—'}</td>
         <td data-label="Prime" class="vx-num">${VX.fmt.nd(c.cost)}</td>
         <td data-label="Spread" class="vx-num">${c.spread_pct!=null?c.spread_pct+'%':'—'}</td>
         <td data-label="Volume" class="vx-num">${VX.fmt.nd(c.vol)}</td>
@@ -554,7 +569,7 @@ async function renderAnomalies(){
         <th>Titre</th><th>Anomalies</th><th class="vx-num">Intensité</th><th class="vx-num">Score</th><th></th></tr></thead><tbody>
         ${rows.slice(0,60).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
           <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
-          <td data-label="Anomalies">${(r.anomalies||[]).slice(0,4).map(a=>`<span class="vx-badge">${esc(typeof a==='string'?a:(a.code||''))}</span>`).join(' ')}</td>
+          <td data-label="Anomalies">${(r.anomalies||[]).slice(0,4).map(a=>`<span class="vx-badge vx-warn">${esc(typeof a==='string'?a:(a.code||''))}</span>`).join(' ')}</td>
           <td data-label="Intensité" class="vx-num">${VX.fmt.nd(r.anomaly_score)}</td>
           <td data-label="Score" class="vx-num">${VX.fmt.nd(r.score)}</td>
           <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table></div>`

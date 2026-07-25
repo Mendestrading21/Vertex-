@@ -162,9 +162,9 @@
       + cell('Gain probable (+1σ, échéance)', m.gainProb != null ? ((m.gainProb >= 0 ? '+' : '') + price(m.gainProb)) : 'n/d', m.gainProb >= 0 ? 'vx-pos' : 'vx-neg')
       + cell('Gain exceptionnel', typeof m.gainExc === 'number' ? ('+' + price(m.gainExc)) : gmax, 'vx-pos')
       + cell('Breakeven(s)', be)
-      + cell('Delta global', g ? num(g.delta, 1) : 'Insufficient', g ? '' : 'vx-muted')
+      + cell('Delta global', g ? num(g.delta, 1) : 'Insufficient', g ? 'vx-violet' : 'vx-muted')
       + cell('Theta global', g ? num(g.theta, 2) + ' $/j' : 'Insufficient', g ? 'vx-neg' : 'vx-muted')
-      + cell('IV', m.ivDec != null ? num(m.ivDec * 100, 1) + ' %' : 'n/d')
+      + cell('IV', m.ivDec != null ? num(m.ivDec * 100, 1) + ' %' : 'n/d', m.ivDec != null ? 'vx-violet' : '')
       + '</div>'
       + '<div class="vx-card-foot vx-mt2"><span class="vx-meta">' + esc(s.model_note || '')
       + ' · PoP ' + (s.probability_of_profit != null ? num(s.probability_of_profit, 0) + ' %' : 'n/d') + ' (modèle lognormal — estimation).'
@@ -268,10 +268,10 @@
     }
     var lvl1 = greekRow('Delta', g.delta, '$/pt', '≈ ' + num(g.delta, 1) + ' $ de P&L par +1 $ du sous-jacent. Risque principal : direction.', g.delta >= 0 ? 'vx-pos' : 'vx-neg')
       + greekRow('Theta', g.theta, '$/jour', '≈ ' + num(g.theta, 2) + ' $/jour d\'érosion (toutes choses égales). Risque : le temps.', 'vx-neg')
-      + greekRow('Vega', g.vega, '$/pt IV', '≈ ' + num(g.vega, 2) + ' $ par +1 pt d\'IV. Risque : effondrement de volatilité post-événement.', '')
-      + greekRow('Gamma', g.gamma, '', 'Accélération du delta quand le cours bouge — plus élevé près du strike / de l\'échéance.', '');
-    var lvl2 = greekRow('Vanna', g.vanna, '', 'Sensibilité du delta à l\'IV (couplage direction × volatilité).', '')
-      + greekRow('Vomma', g.vomma, '', 'Sensibilité du vega à l\'IV (convexité de volatilité).', '');
+      + greekRow('Vega', g.vega, '$/pt IV', '≈ ' + num(g.vega, 2) + ' $ par +1 pt d\'IV. Risque : effondrement de volatilité post-événement.', 'vx-violet')
+      + greekRow('Gamma', g.gamma, '', 'Accélération du delta quand le cours bouge — plus élevé près du strike / de l\'échéance.', 'vx-violet');
+    var lvl2 = greekRow('Vanna', g.vanna, '', 'Sensibilité du delta à l\'IV (couplage direction × volatilité).', 'vx-violet')
+      + greekRow('Vomma', g.vomma, '', 'Sensibilité du vega à l\'IV (convexité de volatilité).', 'vx-violet');
     host.innerHTML = '<div class="vx-greeks">' + lvl1 + '</div>'
       + '<details class="vx-mt2"><summary class="vx-btn vx-btn-sm vx-btn-ghost">Greeks avancés</summary>'
       + '<div class="vx-greeks vx-mt2">' + lvl2 + '</div></details>'

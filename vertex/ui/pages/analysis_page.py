@@ -374,7 +374,7 @@ async function loadDossier(){
                          peers.find(p=>p.symbol===SYM)||{});
   body('an-fundamental',
     kv('Score fondamental moteur',d.st_fund??f.score)
-    +kv('Croissance CA',me.rev_growth!==undefined?VX.fmt.pct(me.rev_growth*100,0):null)
+    +kv('Croissance CA',me.rev_growth!==undefined?VX.fmt.pct(me.rev_growth*100,0):null,me.rev_growth==null?'':me.rev_growth>0?'vx-pos':me.rev_growth<0?'vx-neg':'')
     +kv('Marge',me.margin!==undefined?VX.fmt.pct(me.margin*100,0):null)
     +kv('P/E',me.pe!=null?(+me.pe).toFixed(1):null)+kv('ROE',me.roe!==undefined&&me.roe!==null?VX.fmt.pct(me.roe*100,0):null)
     +kv('Médiane sectorielle P/E',t&&t.sector_median&&(t.sector_median.median_pe??t.sector_median))

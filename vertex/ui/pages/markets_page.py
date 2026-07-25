@@ -579,7 +579,8 @@ async function loadMacroRegime(){
   var bar='<div style="position:relative;height:16px;background:var(--vx-surface-3);border-radius:6px;overflow:hidden;margin:6px 0">'
     +'<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--vx-border-strong)"></div>'
     +(gap==null?'':'<div style="position:absolute;top:2px;bottom:2px;'+(pos?'left:50%':'right:50%')+';width:'+(mag/2).toFixed(0)+'%;background:'+(pos?'var(--vx-positive)':'var(--vx-negative)')+';border-radius:3px"></div>')+'</div>';
-  var kp=function(l,v,d){return '<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value" style="font-size:22px">'+v+'</span>'+(d?'<span class="vx-kpi-delta vx-muted">'+d+'</span>':'')+'</div>';};
+  var kp=function(l,v,d,vc){return '<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value '+(vc||'')+'" style="font-size:22px">'+v+'</span>'+(d?'<span class="vx-kpi-delta vx-muted">'+d+'</span>':'')+'</div>';};
+  var brCls=function(x){return x==null?'':(x>=55?'vx-pos':x<=45?'vx-neg':'vx-warn');};
   el.innerHTML='<section class="vx-card vx-col-5" aria-label="Appétit pour le risque">'
     +'<div class="vx-card-header"><span class="vx-card-title">Appétit pour le risque</span><span class="vx-chart-question">Risk-on ou risk-off ?</span></div>'
     +'<div style="font-size:22px;font-weight:800;color:'+(pos?'var(--vx-positive)':'var(--vx-negative)')+'">'+esc(roro)+'</div>'+bar
@@ -588,8 +589,8 @@ async function loadMacroRegime(){
     +'<div class="vx-col-7"><div class="vx-grid">'
     +kp('Régime',esc(s.regime||'—'),'marché')
     +kp('VIX',s.vix!=null?s.vix:'—',esc(s.vix_band||''))
-    +kp('&gt; MM50',br.above50!=null?br.above50+' %':'—','participation')
-    +kp('&gt; MM200',br.above200!=null?br.above200+' %':'—','tendance long')
+    +kp('&gt; MM50',br.above50!=null?br.above50+' %':'—','participation',brCls(br.above50))
+    +kp('&gt; MM200',br.above200!=null?br.above200+' %':'—','tendance long',brCls(br.above200))
     +'</div></div>';
 }
 async function loadMacroCal(){

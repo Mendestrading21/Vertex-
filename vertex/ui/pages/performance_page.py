@@ -214,8 +214,8 @@ function loadDiscipline(){
     <span class="vx-meta">${sub}</span></div>`;
   $('vx-pf-kpis').innerHTML=
     cell('Respect de la méthode',pct(b.respectMethod),'décisions avec plan documenté',b.respectMethod>=80?'vx-pos':b.respectMethod!=null&&b.respectMethod<50?'vx-neg':'')
-    +cell('Qualité des entrées',pct(b.entryQuality),'avec raison d’entrée')
-    +cell('Qualité des sorties',pct(b.exitQuality),'clôtures avec leçon')
+    +cell('Qualité des entrées',pct(b.entryQuality),'avec raison d’entrée',b.entryQuality>=80?'vx-pos':b.entryQuality!=null&&b.entryQuality<50?'vx-neg':'')
+    +cell('Qualité des sorties',pct(b.exitQuality),'clôtures avec leçon',b.exitQuality>=80?'vx-pos':b.exitQuality!=null&&b.exitQuality<50?'vx-neg':'')
     +cell('Respect des invalidations',pct(b.invalRespect),'pertes sorties près du stop',b.invalRespect!=null&&b.invalRespect>=80?'vx-pos':b.invalRespect!=null&&b.invalRespect<50?'vx-neg':'');
 }
 
@@ -421,7 +421,7 @@ async function loadTrack(){
         <td class="vx-num vx-mono">${VX.fmt.nd(s.n)}</td>
         <td class="vx-num vx-mono ${s.avg_5j>0?'vx-pos':s.avg_5j<0?'vx-neg':'vx-muted'}">${s.avg_5j===null||s.avg_5j===undefined?'—':VX.fmt.pct(s.avg_5j)}</td>
         <td class="vx-num vx-mono ${s.avg_20j>0?'vx-pos':s.avg_20j<0?'vx-neg':'vx-muted'}">${s.avg_20j===null||s.avg_20j===undefined?'—':VX.fmt.pct(s.avg_20j)}</td>
-        <td class="vx-num vx-mono">${s.win_5j===null||s.win_5j===undefined?'—':VX.fmt.num(s.win_5j,0)+' %'}</td>
+        <td class="vx-num vx-mono ${s.win_5j==null?'':s.win_5j>=50?'vx-pos':'vx-neg'}">${s.win_5j===null||s.win_5j===undefined?'—':VX.fmt.num(s.win_5j,0)+' %'}</td>
         <td class="vx-num vx-mono">${s.tp1_rate===null||s.tp1_rate===undefined?'—':VX.fmt.num(s.tp1_rate,0)+' % ('+s.tp1_resolved+')'}</td>
       </tr>`).join('')+'</tbody></table>'
       +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'moteur track-record','delayed')}
@@ -451,7 +451,7 @@ function loadReal(){
      <th class="vx-num">P&amp;L total</th><th class="vx-num">Profit factor</th><th class="vx-num">Espérance / trade</th></tr></thead>
      <tbody><tr>
        <td class="vx-num vx-mono">${s.n}</td>
-       <td class="vx-num vx-mono">${VX.fmt.num(s.winRate,0)} %</td>
+       <td class="vx-num vx-mono ${s.winRate==null?'':s.winRate>=50?'vx-pos':'vx-neg'}">${VX.fmt.num(s.winRate,0)} %</td>
        <td class="vx-num vx-mono ${s.total>=0?'vx-pos':'vx-neg'}">${(s.total>=0?'+':'')+VX.fmt.num(s.total,0)} $</td>
        <td class="vx-num vx-mono">${pf}</td>
        <td class="vx-num vx-mono ${s.expectancy>=0?'vx-pos':'vx-neg'}">${(s.expectancy>=0?'+':'')+VX.fmt.num(s.expectancy,0)} $</td>
