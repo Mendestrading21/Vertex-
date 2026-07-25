@@ -58,11 +58,36 @@ def test_material_tiers_present(html):
     assert 'wl-tip' in html              # tooltip micro-interaction
 
 
-def test_widget_count_ge_40(client):
-    """AD-02 exige ≥ 40 widgets réellement implémentés."""
+def test_widget_count_ge_60(client):
+    """FINANCE NATIVE P03 exige ≥ 60 widgets réellement implémentés."""
     from vertex.ui.pages import widget_lab
     benches = widget_lab._benches()
-    assert len(benches) >= 40, f'seulement {len(benches)} widgets (< 40)'
+    assert len(benches) >= 60, f'seulement {len(benches)} widgets (< 60)'
+
+
+def test_finance_native_forms_present(html):
+    """P03 : objets de marché propriétaires (chandeliers + formes signature)."""
+    for w in ('Candlestick Snapshot', 'Support / Resistance Spine', 'Price Ladder',
+              'Market Tape', 'Market Correlation Web', 'Relative-Strength Path',
+              'Market Breadth Field', 'Volatility Cone', 'Order-Flow Ribbon',
+              'Risk / Reward Terrain', 'Position Health Strip', 'Liquidity Depth',
+              'Earnings Gap Map', 'Catalyst Runway'):
+        assert w in html, f'objet financier signature manquant : {w}'
+
+
+def test_finance_grammar_present(html):
+    """P03 : grammaire boursière native (prix, %, niveaux, conclusion, source)."""
+    from vertex.ui.pages import widget_lab
+    benches = widget_lab._benches()
+    # ≥ 20 widgets clairement financiers (chandeliers + formes marché natives).
+    fin_families = {'Marchés', 'Momentum', 'Breadth', 'Volatilité', 'Opportunité',
+                    'Analyse', 'Portefeuille', 'Options', 'Catalyseurs', 'Régime'}
+    fin = [b for b in benches if b[2] in fin_families]
+    assert len(fin) >= 20, f'seulement {len(fin)} widgets financiers'
+    # conclusion de décision + pied de source (couple verdict/preuve, honnêteté)
+    assert '▸' in html                                   # ligne de conclusion
+    assert 'entrée valide' in html or 'invalidation' in html  # grammaire décision
+    assert 'objectif' in html and 'stop' in html         # niveaux de trading
 
 
 def test_variants_and_states(html):

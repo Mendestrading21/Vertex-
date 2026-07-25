@@ -636,6 +636,329 @@ def progress_ladder(levels):
     return f'<div style="display:flex;flex-direction:column-reverse;gap:4px;width:170px">{rows}</div>'
 
 
+# ══ GRAMMAIRE BOURSIÈRE — briques financières natives ══════════════════════
+def _foot(source='scan', fresh='il y a 12 s', mode='delayed'):
+    """Pied financier universel : source · fraîcheur · mode (honnêteté §7)."""
+    dot = {'live': _EM, 'delayed': _AM, 'demo': 'var(--vx-ember-500)'}[mode]
+    return (f'<div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:9.5px;color:var(--vx-text-faint)">'
+            f'<span style="width:6px;height:6px;border-radius:50%;background:{dot}"></span>{source} · {fresh}</div>')
+
+
+def _concl(text, tone='go'):
+    """Conclusion de trading (couple Verdict+Preuve §8)."""
+    col = {'go': _EM, 'risk': _RB, 'wait': _AM, 'opt': _VI, 'neutral': _GY}[tone]
+    return f'<div style="margin-top:8px;font-size:11px;font-weight:650;color:{col}">▸ {text}</div>'
+
+
+def _hdr(name, price=None, chg=None):
+    """En-tête financier : nom + prix + variation (niveau 1)."""
+    ch = ''
+    if chg is not None:
+        c = _EM if chg >= 0 else _RB
+        ch = f'<span style="font-size:12px;font-weight:700;color:{c};font-variant-numeric:tabular-nums">{chg:+.2f}%</span>'
+    pr = f'<span style="font-size:16px;font-weight:800;color:#F0EBE4;font-variant-numeric:tabular-nums">{price}</span>' if price else ''
+    return (f'<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px">'
+            f'<span style="font-size:12px;font-weight:650;color:var(--vx-text-secondary)">{name}</span>'
+            f'<span style="display:flex;gap:8px;align-items:baseline">{pr}{ch}</span></div>')
+
+
+# Échantillon OHLC (design) : ~22 séances haussières avec un gap.
+OHLC = [(100, 103, 99, 102, 40), (102, 104, 100, 101, 38), (101, 102, 97, 98, 55),
+        (98, 100, 96, 99, 48), (99, 103, 98, 103, 60), (103, 106, 102, 105, 52),
+        (105, 107, 103, 104, 44), (104, 105, 100, 101, 58), (101, 104, 100, 103, 50),
+        (103, 108, 103, 107, 72), (110, 113, 109, 112, 95), (112, 114, 110, 111, 60),
+        (111, 113, 108, 109, 54), (109, 112, 108, 112, 66), (112, 116, 111, 115, 78),
+        (115, 118, 114, 117, 70), (117, 119, 115, 116, 50), (116, 120, 115, 119, 82),
+        (119, 122, 118, 121, 76), (121, 123, 119, 120, 58), (120, 124, 119, 123, 84),
+        (123, 126, 122, 125, 90)]
+
+
+def candles(data=OHLC, entry=118, stop=108, target=132, resistance=126,
+            ma=(5, 10), event_idx=10, gap_idx=10, w=280, h=140, compact=False,
+            name='NVDA', question='Le prix confirme-t-il la cassure ?'):
+    """CANDLESTICK SNAPSHOT — chandeliers compacts : corps/mèches + volume + MM +
+    niveaux entrée/stop/objectif/résistance + gap + événement + bougie active."""
+    highs = [d[1] for d in data]
+    lows = [d[2] for d in data]
+    closes = [d[3] for d in data]
+    vols = [d[4] for d in data]
+    lv = [x for x in (entry, stop, target, resistance) if x is not None]
+    mn = min(lows + lv)
+    mx = max(highs + lv)
+    rng = (mx - mn) or 1
+    volH = 0 if compact else 26
+    pH = h - volH - 6
+    n = len(data)
+    cw = (w - 6) / n
+    bw = cw * 0.62
+    def Y(v):
+        return 4 + pH - (v - mn) / rng * (pH - 8)
+    body = ''
+    # gap highlight
+    if gap_idx and not compact:
+        gx = 3 + gap_idx * cw
+        body += f'<rect x="{gx-cw:.1f}" y="4" width="{cw:.1f}" height="{pH}" fill="rgba(255,200,87,.06)"/>'
+    for i, (o, hi, lo, c, v) in enumerate(data):
+        x = 3 + i * cw + cw / 2
+        col = _EM if c >= o else _RB
+        active = i == n - 1
+        body += f'<line x1="{x:.1f}" y1="{Y(hi):.1f}" x2="{x:.1f}" y2="{Y(lo):.1f}" stroke="{col}" stroke-width="1"/>'
+        yb, yt = Y(min(o, c)), Y(max(o, c))
+        outline = 'stroke="var(--vx-ember-500)" stroke-width="1"' if active else ''
+        body += (f'<rect x="{x-bw/2:.1f}" y="{yt:.1f}" width="{bw:.1f}" height="{max(1,yb-yt):.1f}" '
+                 f'fill="{col}" {outline} rx="0.5"/>')
+        if volH:
+            vy = h - v / max(vols) * (volH - 4)
+            body += f'<rect x="{x-bw/2:.1f}" y="{vy:.1f}" width="{bw:.1f}" height="{h-vy:.1f}" fill="{col}" fill-opacity=".28"/>'
+    # MM
+    for period, mc in zip(ma, (_CY, _AM)):
+        pts = []
+        for i in range(n):
+            if i + 1 >= period:
+                seg = closes[i + 1 - period:i + 1]
+                pts.append(f'{3+i*cw+cw/2:.1f},{Y(sum(seg)/period):.1f}')
+        if pts:
+            body += f'<polyline points="{" ".join(pts)}" fill="none" stroke="{mc}" stroke-width="1.2" stroke-opacity=".8"/>'
+    # niveaux
+    def hline(val, col, lab):
+        y = Y(val)
+        return (f'<line x1="0" y1="{y:.1f}" x2="{w}" y2="{y:.1f}" stroke="{col}" stroke-width="1" stroke-dasharray="4 3" stroke-opacity=".7"/>'
+                f'<text x="{w-2}" y="{y-2:.1f}" text-anchor="end" fill="{col}" font-size="8">{lab} {val:g}</text>')
+    lvl = ''
+    if not compact:
+        if entry: lvl += hline(entry, 'var(--vx-ember-500)', 'entrée')
+        if stop: lvl += hline(stop, _RB, 'stop')
+        if target: lvl += hline(target, _EM, 'objectif')
+        if resistance: lvl += hline(resistance, _AM, 'R')
+    ev = ''
+    if event_idx is not None and not compact:
+        ex = 3 + event_idx * cw + cw / 2
+        ev = f'<path d="M{ex-4:.1f},{h-volH-3:.1f} L{ex+4:.1f},{h-volH-3:.1f} L{ex:.1f},{h-volH-9:.1f} Z" fill="{_VI}"/>'
+    last = closes[-1]
+    chg = (last / closes[-2] - 1) * 100
+    svg = f'<svg viewBox="0 0 {w} {h}" width="100%" height="{h}" style="max-width:{w}px">{body}{lvl}{ev}</svg>'
+    if compact:
+        return f'<div style="width:{w}px">{_hdr(name, f"{last:g}", chg)}{svg}</div>'
+    tgt = f'objectif +{(target-last)/last*100:.1f}%' if target else 'objectif n/d'
+    stp = f'stop −{(last-stop)/last*100:.1f}%' if stop else 'stop n/d'
+    more = (f'<div class="wl-more">MM5/MM10 · volume {vols[-1]} · gap J-{n-1-gap_idx if gap_idx else "—"} · '
+            f'{tgt} · {stp}</div>')
+    if resistance and stop:
+        concl = _concl('Cassure confirmée au-dessus de ' + str(resistance) + ' — entrée valide, invalidation ' + str(stop), 'go')
+    else:
+        concl = _concl(f'Tendance haussière — {n} clôtures au-dessus de la MM10', 'go')
+    return (f'<div style="width:{w}px">{_hdr(name+" · "+str(n)+" séances", f"{last:g}", chg)}{svg}'
+            f'{concl}{more}{_foot("scan · clôtures", "il y a 3 min", "delayed")}</div>')
+
+
+def price_ladder(price=119.2, entry=118, stop=108, targets=(126, 132), resistance=126):
+    """PRICE LADDER — échelle de prix : niveaux + distances en %."""
+    lv = sorted([('Objectif 2', targets[1], _EM), ('Objectif 1', targets[0], _EM),
+                 ('Résistance', resistance, _AM), ('Prix', price, 'var(--vx-ember-500)'),
+                 ('Entrée', entry, 'var(--vx-ember-400)'), ('Stop', stop, _RB)],
+                key=lambda x: -x[1])
+    rows = ''
+    for lab, val, col in lv:
+        d = (val - price) / price * 100
+        cur = 'font-weight:800;background:rgba(255,109,41,.1)' if lab == 'Prix' else ''
+        rows += (f'<div class="wl-tip" data-tip="{lab} {val:g} ({d:+.1f}%)" style="display:flex;align-items:center;gap:8px;padding:3px 6px;border-radius:5px;{cur}">'
+                 f'<span style="width:8px;height:8px;border-radius:2px;background:{col}"></span>'
+                 f'<span style="flex:1;font-size:11px;color:var(--vx-text-secondary)">{lab}</span>'
+                 f'<span style="font-size:12px;font-weight:700;color:#F0EBE4;font-variant-numeric:tabular-nums">{val:g}</span>'
+                 f'<span style="width:52px;text-align:right;font-size:10px;color:{"var(--vx-text-muted)" if lab=="Prix" else col};font-variant-numeric:tabular-nums">{d:+.1f}%</span></div>')
+    return (f'<div style="width:220px">{rows}'
+            f'{_concl("R:R "+f"{(targets[0]-entry)/(entry-stop):.1f}"+" — asymétrie favorable", "go")}</div>')
+
+
+def market_tape(items):
+    """MARKET TAPE — bandeau de flux : tickers · variation · volume."""
+    cells = ''
+    for sym, chg, vol in items:
+        col = _EM if chg >= 0 else _RB
+        cells += (f'<span style="display:inline-flex;align-items:center;gap:5px;padding:0 12px;border-right:1px solid var(--vx-border-soft)">'
+                  f'<b style="font-size:12px;color:var(--vx-ember-400)">{sym}</b>'
+                  f'<span style="font-size:11px;color:{col};font-variant-numeric:tabular-nums">{chg:+.1f}%</span>'
+                  f'<span style="font-size:9px;color:var(--vx-text-faint)">{vol}</span></span>')
+    return (f'<div style="width:260px;overflow:hidden"><div style="display:flex;white-space:nowrap;animation:wltape 18s linear infinite">{cells}{cells}</div></div>'
+            f'<style>@keyframes wltape{{0%{{transform:translateX(0)}}100%{{transform:translateX(-50%)}}}}@media(prefers-reduced-motion:reduce){{[style*=wltape]{{animation:none!important}}}}</style>')
+
+
+def orderflow_ribbon(buy=62, sell=38):
+    """ORDER-FLOW RIBBON — pression acheteurs/vendeurs + déséquilibre."""
+    imb = buy - sell
+    dom = 'acheteurs' if imb > 0 else 'vendeurs'
+    return (f'<div style="width:230px">{_hdr("Pression d’ordres")}'
+            f'<div style="display:flex;height:16px;border-radius:5px;overflow:hidden">'
+            f'<div class="wl-tip" data-tip="Acheteurs {buy}%" style="width:{buy}%;background:{_EM};display:flex;align-items:center;justify-content:flex-start;padding-left:6px;font-size:9px;color:#0a0a0a;font-weight:700">{buy}%</div>'
+            f'<div class="wl-tip" data-tip="Vendeurs {sell}%" style="width:{sell}%;background:{_RB};display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:9px;color:#0a0a0a;font-weight:700">{sell}%</div></div>'
+            f'{_concl(f"Déséquilibre +{imb} — dominance {dom}", "go" if imb>0 else "risk")}'
+            f'<div class="wl-more">liquidité 1,2 M · dominance stable 3 séances</div>{_foot("order-flow", "il y a 4 s", "live")}</div>')
+
+
+def vol_cone(current=18, pctile=42):
+    """VOLATILITY CONE — vol actuelle vs enveloppe historique + percentile."""
+    W, H = 220, 110
+    top = [(0, 30), (55, 45), (110, 55), (165, 62), (220, 66)]
+    bot = [(0, 30), (55, 20), (110, 16), (165, 14), (220, 13)]
+    tp = ' '.join(f'{x},{y}' for x, y in top)
+    bp = ' '.join(f'{x},{y}' for x, y in reversed(bot))
+    cx = 90
+    cy = 22 + (100 - current) / 100 * 40
+    return (f'<div style="width:{W}px">{_hdr("Volatilité implicite", f"{current}%")}'
+            f'<svg viewBox="0 0 {W} {H}" width="100%" height="{H}" style="max-width:{W}px">'
+            f'<polygon points="{tp} {bp}" fill="{_VI}" fill-opacity=".12" stroke="{_VI}" stroke-opacity=".4" stroke-width="1"/>'
+            f'<circle cx="{cx}" cy="{cy:.0f}" r="4" fill="var(--vx-ember-500)"/>'
+            f'<text x="{cx+7}" y="{cy+3:.0f}" fill="var(--vx-ember-400)" font-size="9">actuel</text>'
+            f'<text x="6" y="{H-4}" fill="var(--vx-text-muted)" font-size="9">3M · 6M · 1A</text></svg>'
+            f'{_concl(f"{pctile}ᵉ percentile — vol modérée, primes correctes", "opt")}</div>')
+
+
+def rs_path(series):
+    """RELATIVE-STRENGTH PATH — actif vs benchmark : accélération/divergence."""
+    W, H = 240, 100
+    mn, mx = min(series), max(series)
+    rng = (mx - mn) or 1
+    z = H - (0 - mn) / rng * H if mn < 0 < mx else H / 2
+    pts = ' '.join(f'{i/(len(series)-1)*W:.1f},{H-(v-mn)/rng*(H-6)-3:.1f}' for i, v in enumerate(series))
+    up = series[-1] > 0
+    return (f'<div style="width:{W}px">{_hdr("Force relative vs S&P 500")}'
+            f'<svg viewBox="0 0 {W} {H}" width="100%" height="{H}" style="max-width:{W}px">'
+            f'<line x1="0" y1="{z:.0f}" x2="{W}" y2="{z:.0f}" stroke="rgba(255,255,255,.18)" stroke-dasharray="3 3"/>'
+            f'<polyline points="{pts}" fill="none" stroke="{_CY}" stroke-width="1.8"/>'
+            f'<circle cx="{W}" cy="{H-(series[-1]-mn)/rng*(H-6)-3:.1f}" r="3" fill="var(--vx-ember-500)"/></svg>'
+            f'{_concl("Surperforme — RS croissante au-dessus de 0" if up else "Sous-performe — divergence baissière", "go" if up else "risk")}</div>')
+
+
+def rr_terrain(maxloss=-8, prob=12, exc=34, be=132):
+    """RISK/REWARD TERRAIN — perte max / gain probable / exceptionnel + zones."""
+    W, H = 240, 110
+    return (f'<div style="width:{W}px">{_hdr("Asymétrie du plan")}'
+            f'<svg viewBox="0 0 {W} {H}" width="100%" height="{H}" style="max-width:{W}px">'
+            f'<defs><linearGradient id="rrl" x1="0" x2="1"><stop offset="0" stop-color="{_RB}" stop-opacity=".22"/><stop offset="1" stop-color="{_RB}" stop-opacity="0"/></linearGradient>'
+            f'<linearGradient id="rrg" x1="0" x2="1"><stop offset="0" stop-color="{_EM}" stop-opacity="0"/><stop offset="1" stop-color="{_EM}" stop-opacity=".26"/></linearGradient></defs>'
+            f'<rect x="0" y="60" width="96" height="{H-60}" fill="url(#rrl)"/><rect x="96" y="0" width="{W-96}" height="{H}" fill="url(#rrg)"/>'
+            f'<polyline points="0,86 96,86 {W},20" fill="none" stroke="#F0EBE4" stroke-width="2"/>'
+            f'<line x1="96" y1="0" x2="96" y2="{H}" stroke="var(--vx-ember-500)" stroke-dasharray="3 3"/>'
+            f'<text x="4" y="{H-6}" fill="{_RB}" font-size="9">max {maxloss}%</text>'
+            f'<text x="{W-4}" y="30" text-anchor="end" fill="{_EM}" font-size="9">exc. +{exc}%</text>'
+            f'<text x="100" y="14" fill="var(--vx-ember-400)" font-size="9">BE {be}</text></svg>'
+            f'{_concl(f"Gain probable +{prob}% vs risque {maxloss}% — R:R "+f"{exc/abs(maxloss):.1f}", "go")}</div>')
+
+
+def position_health_strip(sym='AAPL', pl=8.4, thesis='intacte', catalyst='Résultats J-5', inval='185,0'):
+    """POSITION HEALTH STRIP — P&L · thèse · catalyseur · invalidation · action."""
+    tcol = {'intacte': _EM, 'surveiller': _AM, 'invalidée': _RB}[thesis]
+    plc = _EM if pl >= 0 else _RB
+    return (f'<div style="width:250px;display:flex;flex-direction:column;gap:6px">'
+            f'<div style="display:flex;align-items:center;gap:8px"><b style="font-size:14px;color:var(--vx-ember-400)">{sym}</b>'
+            f'<span style="font-size:15px;font-weight:800;color:{plc};font-variant-numeric:tabular-nums">{pl:+.1f}%</span>'
+            f'<span style="margin-left:auto;font-size:10px;padding:2px 8px;border-radius:999px;color:{tcol};border:1px solid {tcol}">thèse {thesis}</span></div>'
+            f'<div style="display:flex;gap:12px;font-size:11px;color:var(--vx-text-secondary)"><span>⚡ {catalyst}</span><span>⛔ inval. {inval}</span></div>'
+            f'<div style="display:flex;gap:8px"><button class="wl-tip" data-tip="Ouvrir le dossier" style="font:inherit;font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid var(--vx-ember-500);background:transparent;color:var(--vx-ember-400);cursor:pointer">Réévaluer →</button></div>'
+            f'{_concl("Gagnant sur thèse intacte — conserver, ne pas vendre au seul motif du gain", "go")}</div>')
+
+
+def breadth_field(a50=63, a200=51, adv=312, dec=188, nh=42, nl=9):
+    """MARKET BREADTH FIELD — champ de participation + adv/decline + divergence."""
+    dots = ''
+    on = round(a50 / 100 * 40)
+    for i in range(40):
+        col = _EM if i < on else 'rgba(255,255,255,.07)'
+        dots += f'<span style="width:8px;height:8px;border-radius:2px;background:{col}"></span>'
+    return (f'<div style="width:230px">{_hdr("Participation du marché")}'
+            f'<div style="display:grid;grid-template-columns:repeat(10,8px);gap:4px;margin-bottom:8px">{dots}</div>'
+            f'<div style="display:flex;gap:14px;font-size:11px;color:var(--vx-text-secondary);font-variant-numeric:tabular-nums">'
+            f'<span>&gt;MM50 <b style="color:#F0EBE4">{a50}%</b></span><span>&gt;MM200 <b style="color:#F0EBE4">{a200}%</b></span>'
+            f'<span>A/D <b style="color:{_EM}">{adv}</b>/<b style="color:{_RB}">{dec}</b></span></div>'
+            f'{_concl("Hausse partagée — participation saine >55%", "go")}'
+            f'<div class="wl-more">nouveaux hauts {nh} / bas {nl} · aucune divergence</div></div>')
+
+
+def liquidity_depth(bid=118.4, ask=118.6, vol=1250, oi=8400):
+    """LIQUIDITY DEPTH — bid/ask · spread · volume · OI · qualité d’exécution."""
+    spread = (ask - bid) / ((ask + bid) / 2) * 100
+    rows = ''
+    for lab, val, col in [('Ask', ask, _RB), ('', (ask + bid) / 2, 'var(--vx-ember-500)'), ('Bid', bid, _EM)]:
+        w = 40 + (val - bid) / (ask - bid) * 60 if ask != bid else 60
+        rows += (f'<div style="display:flex;align-items:center;gap:8px"><span style="width:26px;font-size:9px;color:var(--vx-text-muted)">{lab}</span>'
+                 f'<span style="flex:1;height:8px;background:rgba(0,0,0,.3);border-radius:3px;overflow:hidden"><i style="display:block;height:100%;width:{w:.0f}%;background:{col};opacity:.7"></i></span>'
+                 f'<span style="width:44px;text-align:right;font-size:10px;color:#F0EBE4;font-variant-numeric:tabular-nums">{val:g}</span></div>')
+    return (f'<div style="width:230px">{_hdr("Profondeur / liquidité")}{rows}'
+            f'<div style="display:flex;gap:14px;font-size:10px;color:var(--vx-text-secondary);margin-top:6px;font-variant-numeric:tabular-nums"><span>spread {spread:.2f}%</span><span>vol {vol}</span><span>OI {oi}</span></div>'
+            f'{_concl("Spread serré — exécution correcte" if spread < 0.4 else "Spread large — prudence", "go" if spread < 0.4 else "wait")}</div>')
+
+
+def correlation_web(nodes):
+    """MARKET CORRELATION WEB — corrélations entre actifs."""
+    W, H = 200, 140
+    cx, cy = W / 2, H / 2
+    body = f'<circle cx="{cx}" cy="{cy}" r="16" fill="var(--vx-ember-soft)" stroke="var(--vx-ember-500)"/><text x="{cx}" y="{cy+3}" text-anchor="middle" fill="var(--vx-ember-400)" font-size="9" font-weight="700">SPX</text>'
+    for i, (sym, corr) in enumerate(nodes):
+        a = i / len(nodes) * 360
+        x, y = _pol(cx, cy, 56, a)
+        col = _EM if corr > 0.3 else _RB if corr < -0.3 else _GY
+        op = 0.2 + abs(corr) * 0.6
+        body += (f'<line x1="{cx}" y1="{cy}" x2="{x:.0f}" y2="{y:.0f}" stroke="{col}" stroke-opacity="{op:.2f}" stroke-width="{1+abs(corr)*2:.1f}"/>'
+                 f'<circle cx="{x:.0f}" cy="{y:.0f}" r="12" fill="rgba(0,0,0,.4)" stroke="{col}"/>'
+                 f'<text x="{x:.0f}" y="{y+3:.0f}" text-anchor="middle" fill="#F0EBE4" font-size="8">{sym}</text>')
+    return (f'<div style="width:{W}px"><svg viewBox="0 0 {W} {H}" width="100%" height="{H}" style="max-width:{W}px">{body}</svg>'
+            f'{_concl("Corrélations élevées — diversification faible", "wait")}</div>')
+
+
+def earnings_gap_map(gaps):
+    """EARNINGS GAP MAP — historique des gaps post-résultats."""
+    bars = ''
+    mx = max(abs(g) for g in gaps)
+    for i, g in enumerate(gaps):
+        col = _EM if g >= 0 else _RB
+        h = abs(g) / mx * 34
+        y = 40 - h if g >= 0 else 40
+        bars += f'<rect class="wl-tip" data-tip="T{i+1}: {g:+.0f}%" x="{i*22+6}" y="{y:.0f}" width="14" height="{h:.0f}" fill="{col}" rx="2"/>'
+    return (f'<div style="width:{len(gaps)*22+12}px">{_hdr("Gaps post-résultats")}'
+            f'<svg viewBox="0 0 {len(gaps)*22+12} 84" width="100%" height="84"><line x1="0" y1="40" x2="{len(gaps)*22+12}" y2="40" stroke="rgba(255,255,255,.15)"/>{bars}</svg>'
+            f'{_concl("Réaction volatile aux résultats — risque événementiel élevé", "risk")}</div>')
+
+
+def sr_spine(price=119, levels=None):
+    """SUPPORT/RESISTANCE SPINE — colonne de niveaux techniques."""
+    levels = levels or [('R2', 132, _AM), ('R1', 126, _AM), ('Prix', 119, 'var(--vx-ember-500)'), ('S1', 112, _EM), ('S2', 105, _EM)]
+    mn = min(l[1] for l in levels)
+    mx = max(l[1] for l in levels)
+    rows = ''
+    for lab, val, col in sorted(levels, key=lambda x: -x[1]):
+        y = (mx - val) / (mx - mn) * 90
+        rows += (f'<div style="position:absolute;top:{y:.0f}px;left:0;right:0;display:flex;align-items:center;gap:6px">'
+                 f'<span style="width:22px;font-size:9px;color:{col}">{lab}</span>'
+                 f'<span style="flex:1;height:2px;background:{col};opacity:.6"></span>'
+                 f'<span style="font-size:10px;color:#F0EBE4;font-variant-numeric:tabular-nums">{val:g}</span></div>')
+    return (f'<div style="width:160px">{_hdr("Supports / résistances")}'
+            f'<div style="position:relative;height:104px">{rows}</div>'
+            f'{_concl("Prix coincé sous R1 126 — cassure = signal", "wait")}</div>')
+
+
+def catalyst_runway(events=None):
+    """CATALYST RUNWAY — piste de décollage des catalyseurs : DTE + impact."""
+    events = events or [('Résultats', 3, 'high'), ('Fed', 9, 'high'),
+                        ('Ex-div', 14, 'low'), ('Guidance', 26, 'med')]
+    horizon = max(e[1] for e in events) or 1
+    icol = {'high': _RB, 'med': _AM, 'low': _GY}
+    marks = ''
+    for lab, dte, imp in events:
+        left = dte / horizon * 100
+        c = icol[imp]
+        marks += (f'<div class="wl-tip" data-tip="{lab} · J-{dte} · impact {imp}" '
+                  f'style="position:absolute;left:{left:.0f}%;top:0;transform:translateX(-50%);text-align:center">'
+                  f'<span style="display:block;width:2px;height:26px;margin:0 auto;background:{c};opacity:.8"></span>'
+                  f'<span style="display:block;width:9px;height:9px;border-radius:50%;background:{c};margin:2px auto 0"></span>'
+                  f'<span style="display:block;font-size:8px;color:var(--vx-text-muted);margin-top:2px">J-{dte}</span></div>')
+    nxt = min(events, key=lambda e: e[1])
+    return (f'<div style="width:250px">{_hdr("Prochains catalyseurs")}'
+            f'<div style="position:relative;height:56px;border-left:2px solid var(--vx-ember-500)">'
+            f'<div style="position:absolute;left:0;right:0;top:12px;height:1px;background:rgba(255,255,255,.12)"></div>{marks}</div>'
+            f'{_concl(f"{nxt[0]} dans {nxt[1]} j — risque événementiel imminent" if nxt[1] <= 5 else f"{nxt[0]} dans {nxt[1]} j — fenêtre dégagée", "risk" if nxt[1] <= 5 else "go")}'
+            f'<div class="wl-more">4 catalyseurs · fenêtre 26 j · 2 à fort impact</div>{_foot("calendrier", "aujourd’hui", "delayed")}</div>')
+
+
 # ── États honnêtes (bande d'états) ─────────────────────────────────────────
 def _state(kind):
     m = {
@@ -658,7 +981,15 @@ def _benches():
     ALL_STATES = ['loading', 'empty', 'insufficient', 'stale', 'demo', 'live']
     return [
         ('W01', 'Regime Aura', 'Régime', 'Dans quel régime, avec quelle confiance ? (variantes = concepts distincts)', [
-            ('V1 · halo atmosphérique', aura('Tendance haussière', 68, 'go'), 'smoked'),
+            ('V1 · halo + grammaire', (
+                '<div style="width:210px">' + aura('Tendance haussière', 68, 'go') +
+                '<div style="display:flex;gap:10px;margin-top:6px;font-size:10px;color:var(--vx-text-secondary);font-variant-numeric:tabular-nums">'
+                '<span>SPX <b style="color:#F0EBE4">>MM200</b></span>'
+                '<span>Breadth <b style="color:var(--vx-positive)">63%</b></span>'
+                '<span>VIX <b style="color:#F0EBE4">14,6</b></span></div>' +
+                _concl('Régime porteur — risque neuf autorisé, invalidation SPX < MM50 (5 780)', 'go') +
+                '<div class="wl-more">RS marché +2,1% · 63% >MM50 · A/D 312/188 · aucune divergence</div>' +
+                _foot('scan · indices', 'il y a 20 s', 'delayed') + '</div>'), 'smoked'),
             ('V2 · horizon de phase', horizon_band('go', 'Tendance', 'phase haussière · vent porteur'), 'polished'),
             ('V3 · brume indéterminée', aura('Indéterminé', 0, 'off'), 'frosted'),
             ('V4 · capsule à tension', regime_capsule('Chop', 'wait', 52), 'metal'),
@@ -831,6 +1162,66 @@ def _benches():
         ('W-RS', 'READONLY Seal', 'Système', 'Vertex peut-il passer un ordre ?', [
             ('V1 · sceau', readonly_seal()),
         ], ['live']),
+
+        # ═══ FINANCE NATIVE (P03) — objets de marché propriétaires ═══
+        # Chandeliers : NON réservés à Analyse (présents Analyse/Marchés/Opportunité).
+        ('W-CAN', 'Candlestick Snapshot', 'Analyse', 'Le prix confirme-t-il la cassure au-dessus de la résistance ?', [
+            ('V1 · chandeliers + niveaux', candles(), 'deepblack'),
+            ('V2 · sans événement', candles(event_idx=None, gap_idx=None, name='ACN', resistance=124, target=130), 'smoked'),
+        ], ['loading', 'insufficient', 'stale', 'demo']),
+        ('W-CANM', 'Candlestick — Indice', 'Marchés', 'L’indice tient-il sa plage haussière ?', [
+            ('V1 · S&P 500', candles(name='S&P 500', entry=None, stop=None, target=None, resistance=None, event_idx=None), 'polished'),
+        ], ['loading', 'empty', 'stale']),
+        ('W-CANC', 'Candlestick — Carte compacte', 'Opportunité', 'Aperçu prix instantané (format carte) ?', [
+            ('V1 · compact', candles(compact=True, name='NVDA'), 'metal'),
+            ('V2 · compact baissier', candles(compact=True, name='PFE', data=list(reversed(OHLC))), 'smoked'),
+        ], ['loading', 'empty']),
+        ('W-SRS', 'Support / Resistance Spine', 'Analyse', 'Quels niveaux encadrent le prix ?', [
+            ('V1 · colonne', sr_spine()),
+        ], ['loading', 'insufficient']),
+        ('W-PLD', 'Price Ladder', 'Analyse', 'Où sont entrée, stop, objectifs vs prix ?', [
+            ('V1 · échelle', price_ladder()),
+        ], ['loading', 'insufficient', 'demo']),
+        ('W-TAPE', 'Market Tape', 'Marchés', 'Que fait le marché à l’instant ?', [
+            ('V1 · bandeau', market_tape([('SPX', 1.67, '3,1 Md'), ('NDX', 2.1, '2,4 Md'), ('AAPL', -0.6, '58 M'),
+                                          ('NVDA', 3.4, '112 M'), ('XOM', 0.4, '19 M'), ('VIX', -4.2, '—')])),
+        ], ['loading', 'empty', 'stale']),
+        ('W-CW', 'Market Correlation Web', 'Marchés', 'Mes actifs bougent-ils ensemble ?', [
+            ('V1 · toile', correlation_web([('NVDA', 0.82), ('AAPL', 0.61), ('XOM', -0.44), ('TLT', -0.7), ('GLD', 0.12)])),
+        ], ['loading', 'insufficient']),
+        ('W-RSP', 'Relative-Strength Path', 'Momentum', 'L’actif surperforme-t-il son indice ?', [
+            ('V1 · surperformance', rs_path([-1.2, -0.4, 0.3, 0.9, 1.6, 2.1, 2.8, 3.4])),
+            ('V2 · divergence', rs_path([1.1, 0.6, 0.2, -0.3, -0.9, -1.4, -1.8, -2.3])),
+        ], ['loading', 'insufficient']),
+        ('W-BF', 'Market Breadth Field', 'Breadth', 'La hausse est-elle partagée ?', [
+            ('V1 · champ', breadth_field()),
+            ('V2 · étroite', breadth_field(a50=41, a200=38, adv=180, dec=320, nh=12, nl=48)),
+        ], ['loading', 'insufficient', 'stale']),
+        ('W-VC', 'Volatility Cone', 'Volatilité', 'La vol implicite est-elle chère ?', [
+            ('V1 · cône', vol_cone()),
+            ('V2 · tendue', vol_cone(current=34, pctile=88)),
+        ], ['loading', 'insufficient']),
+        ('W-OFR', 'Order-Flow Ribbon', 'Opportunité', 'Qui domine, acheteurs ou vendeurs ?', [
+            ('V1 · live acheteurs', orderflow_ribbon(62, 38)),
+            ('V2 · vendeurs', orderflow_ribbon(41, 59)),
+        ], ['loading', 'empty', 'live']),
+        ('W-RRT', 'Risk / Reward Terrain', 'Opportunité', 'L’asymétrie penche-t-elle en ma faveur ?', [
+            ('V1 · relief', rr_terrain()),
+        ], ['loading', 'insufficient']),
+        ('W-PHS', 'Position Health Strip', 'Portefeuille', 'Cette position va-t-elle bien ?', [
+            ('V1 · gagnant', position_health_strip('AAPL', 8.4, 'intacte'), 'polished'),
+            ('V2 · surveiller', position_health_strip('XOM', -3.1, 'surveiller', 'Résultats J-2', '96,0'), 'metal'),
+        ], ['loading', 'empty', 'insufficient']),
+        ('W-LD', 'Liquidity Depth', 'Options', 'Puis-je exécuter proprement ?', [
+            ('V1 · profondeur', liquidity_depth()),
+            ('V2 · spread large', liquidity_depth(bid=4.1, ask=4.8, vol=120, oi=340)),
+        ], ['loading', 'insufficient']),
+        ('W-EGM', 'Earnings Gap Map', 'Catalyseurs', 'Le titre réagit-il violemment aux résultats ?', [
+            ('V1 · gaps', earnings_gap_map([6, -4, 9, 2, -7, 11, -3, 5])),
+        ], ['loading', 'insufficient', 'demo']),
+        ('W-CR', 'Catalyst Runway', 'Catalyseurs', 'Quel catalyseur arrive, et quand ?', [
+            ('V1 · piste', catalyst_runway()),
+        ], ['loading', 'empty', 'stale']),
 
         ('O-1', 'Primitives — KPI · Grade · Live · Delta', 'Primitives', 'Les briques atomiques', [
             ('KPI glass', kpi('S&P 500', '6 000', '+1,67 %', 'up', SPARK_UP)),
