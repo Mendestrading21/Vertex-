@@ -143,7 +143,8 @@ _CONTENT = """
 """
 
 _JS = r"""
-<script src="/static/vertex/js/charts/timeline-chart.js" defer></script>
+<script src="/static/vertex/js/charts/regime-aura.js" defer></script>
+<script src="/static/vertex/js/charts/catalyst-runway.js" defer></script>
 <script>
 (function(){
 'use strict';
@@ -245,23 +246,29 @@ function renderDiff(cur){
   try{localStorage.setItem('vxTodayBaseline',JSON.stringify(Object.assign({},cur,{ts:Date.now()})));}catch(e){}
 }
 
-/* ── Régime : jauge de confiance (1 des 2 graphiques conservés) ── */
+/* ── Régime : objet REGIME AURA (widget officiel W01) — atmosphère + confiance
+   + grammaire (marché/breadth/VIX) + verdict risque neuf, câblé aux moteurs. ── */
 async function loadRegime(){
   try{
-    const r=await VX.fetch('/api/market/regime',{ttl:120000});
-    const adj=r.adjustments||{};
-    const conf=Math.round((r.confidence||0)*100);
+    const [r,sum,ed]=await Promise.all([
+      VX.fetch('/api/market/regime',{ttl:120000}),
+      VX.fetch('/api/market/summary',{ttl:60000}).catch(()=>({})),
+      VX.fetch('/api/briefing/editorial',{ttl:60000}).catch(()=>({}))]);
+    const adj=(r&&r.adjustments)||{};
+    const inval=(ed&&(ed.main_risk||(ed.daily&&ed.daily.main_risk)))||'';
+    const grammar={roro:(sum&&sum.roro)||null,
+      breadth:(sum&&sum.breadth&&num(sum.breadth.above200)),
+      vix:num(sum&&sum.vix)};
     $('vx-regime-body').innerHTML=
-      '<div id="vx-regime-gauge" class="vx-mb2"></div>'
-      +'<div class="vx-kv"><span class="k">Nouveau risque</span><span class="v '+(adj.new_risk_allowed?'vx-pos':'vx-neg')+'">'+(adj.new_risk_allowed?'autorisé':'BLOQUÉ')+'</span></div>'
+      '<div id="vx-regime-object" class="vx-mb2"></div>'
       +'<div class="vx-kv"><span class="k">Confirmations exigées</span><span class="v">'+VX.fmt.nd(adj.confirmation_required)+'</span></div>'
-      +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')
-      +'<a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets?view=breadth">Participation →</a></div>';
-    if(window.VXCharts&&VXCharts.gauge){
-      const CO=(window.VXCharts&&VXCharts.colors)||{};
-      const reading=conf>=70?'Signal net — régime lisible':conf>=40?'Signal modéré — confirmations utiles':'Signal faible — prudence accrue';
-      VXCharts.gauge('vx-regime-gauge',{value:conf,min:0,max:100,unit:' %',label:esc(r.regime||'confiance'),reading:reading,
-        bands:[{to:40,color:CO.negative},{to:70,color:CO.warning},{to:100,color:CO.positive}]});
+      +'<div class="vx-card-footer"><a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets?view=breadth">Participation →</a></div>';
+    if(window.VXCharts&&VXCharts.regimeAura){
+      VXCharts.regimeAura('vx-regime-object',{regime:r&&r.regime,
+        confidence:Math.round(((r&&r.confidence)||0)*100),
+        newRisk:(adj.new_risk_allowed===undefined?null:!!adj.new_risk_allowed),
+        invalidation:inval,grammar:grammar,
+        source:'Moteur de régimes',timestamp:Date.now(),mode:'delayed'});
     }
   }catch(e){$('vx-regime-body').innerHTML=VX.states.error('Régime indisponible');}
 }
@@ -304,17 +311,18 @@ async function loadAlerts(){
   }catch(e){$('vx-alerts').innerHTML=VX.states.error('Alertes indisponibles');}
 }
 
-/* ── Catalyseurs (timeline, 2e graphique conservé, ≤ 3) ── */
+/* ── Catalyseurs : objet CATALYST RUNWAY (widget officiel W-CR) — piste DTE +
+   impact, prochain catalyseur priorisé, câblé au calendrier moteur. ── */
 async function loadCalendar(){
   try{
     const cal=await VX.fetch('/cal-feed',{ttl:300000});
-    const items=[...(cal.macro||[]).map(m=>({when:m.date,kind:m.kind,label:m.label+(m.note?' — '+m.note:'')})),
-      ...(cal.items||[]).slice(0,4).map(it=>({when:it.date,kind:'Earnings',label:'résultats dans '+it.dte+' j',sym:it.sym}))]
-      .sort((a,b)=>String(a.when).localeCompare(String(b.when))).slice(0,3);
-    VXCharts.timelineCard('vx-calendar',{title:'Catalyseurs imminents',question:'Quels catalyseurs arrivent ?',
-      conclusion:items.length?('Prochain : '+esc(items[0].label)):'',
-      items,source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
-      emptyText:'Aucun événement imminent identifié.'});
+    const events=[...(cal.macro||[]).map(m=>({label:m.label,dte:m.dte,
+        impact:(m.importance==='haute')?'high':(m.importance==='moyenne'?'med':'low')})),
+      ...(cal.items||[]).filter(it=>it&&it.dte!=null).slice(0,4).map(it=>({label:(it.sym||'Résultats'),dte:it.dte,impact:'high'}))]
+      .filter(e=>e.dte!=null&&!isNaN(e.dte));
+    VXCharts.catalystRunway('vx-calendar',{title:'Catalyseurs imminents',question:'Quels catalyseurs arrivent, et quand ?',
+      events,source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
+      emptyText:'Aucun catalyseur imminent identifié.'});
   }catch(e){$('vx-calendar').innerHTML='<div class="vx-card">'+VX.states.error('Calendrier indisponible')+'</div>';}
 }
 

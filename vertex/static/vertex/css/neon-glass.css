@@ -502,3 +502,26 @@
   .vx-content[data-space="opportunities"] .vx-op-metrics{grid-template-columns:1fr 1fr}
   .vx-content[data-space="opportunities"] .vx-op-dom-score .n{font-size:36px}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RECONSTRUCTION 01 — AUJOURD'HUI : objets validés Regime Aura (W01) +
+   Catalyst Runway (W-CR), réalisés en live. Scopé briefing. Glow réservé
+   au point actif ; verts/rouges/ambre sémantiques ; orange = identité.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.vx-content[data-space="briefing"] .vx-regime-aura{position:relative}
+.vx-content[data-space="briefing"] .vx-regime-aura svg{filter:drop-shadow(0 6px 22px rgba(0,0,0,.4))}
+.vx-content[data-space="briefing"] .vx-ra-grammar{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 8px;justify-content:center}
+.vx-content[data-space="briefing"] .vx-ra-chip{display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;border-radius:999px;border:1px solid var(--vx-border-soft);
+  background:rgba(0,0,0,.2);font-size:10.5px;color:var(--vx-text-secondary);font-variant-numeric:tabular-nums}
+.vx-content[data-space="briefing"] .vx-ra-chip .k{color:var(--vx-text-muted);letter-spacing:.02em}
+.vx-content[data-space="briefing"] .vx-ra-chip .v{color:var(--vx-text-primary);font-weight:700}
+.vx-content[data-space="briefing"] .vx-ra-verdict,
+.vx-content[data-space="briefing"] .vx-cr-verdict{font-size:12px;font-weight:650;line-height:1.4;margin:4px 2px 2px}
+.vx-content[data-space="briefing"] .vx-ra-verdict[data-tone="go"],
+.vx-content[data-space="briefing"] .vx-cr-verdict[data-tone="go"]{color:var(--vx-positive)}
+.vx-content[data-space="briefing"] .vx-ra-verdict[data-tone="risk"],
+.vx-content[data-space="briefing"] .vx-cr-verdict[data-tone="risk"]{color:var(--vx-negative)}
+.vx-content[data-space="briefing"] .vx-ra-verdict[data-tone="wait"]{color:var(--vx-warning)}
+.vx-content[data-space="briefing"] #vx-calendar svg{margin-top:2px}
+.vx-content[data-space="briefing"] #vx-calendar .vx-cr-verdict{padding:0 2px 4px}
