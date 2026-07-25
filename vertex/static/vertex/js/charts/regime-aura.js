@@ -80,8 +80,8 @@
           <ellipse cx="${cx}" cy="${cy - 52}" rx="128" ry="26" fill="${col}" opacity=".16" filter="url(#${uid}b)"/>
           <ellipse cx="${cx}" cy="${cy - 36}" rx="92" ry="14" fill="${col}" opacity=".20" filter="url(#${uid}b)"/>
           <line x1="30" y1="${cy}" x2="${W - 30}" y2="${cy}" stroke="url(#${uid}z)" stroke-width="1.3"/>
-          <path d="${track}" fill="none" stroke="var(--vx-border-strong,#3a2e27)" stroke-width="3" stroke-linecap="round"/>
-          <path d="${val}" fill="none" stroke="var(--vx-ember-500)" stroke-width="3" stroke-linecap="round"/>
+          <path d="${track}" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3" stroke-linecap="round"/>
+          <path d="${val}" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="3" stroke-linecap="round"/>
           <text x="${cx}" y="${cy - 10}" text-anchor="middle" fill="var(--vx-text,#f3f1ed)" font-size="17" font-weight="800">${o.regime}</text>
           <text x="${cx}" y="${cy + 8}" text-anchor="middle" fill="var(--vx-text-muted,#817d77)" font-size="10.5">${confTxt}</text>
         </svg>

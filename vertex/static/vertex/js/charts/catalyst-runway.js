@@ -59,7 +59,7 @@
       : `${nxt.label} dans ${nxt.dte} j — fenêtre dégagée`;
     const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block;margin:2px auto">
       <line x1="${x0}" y1="${axisY}" x2="${x1}" y2="${axisY}" stroke="var(--vx-border-soft,#2a211c)" stroke-width="1"/>
-      <line x1="${x0}" y1="${axisY - 5}" x2="${x0}" y2="${axisY + 5}" stroke="var(--vx-ember-500)" stroke-width="2"/>
+      <line x1="${x0}" y1="${axisY - 5}" x2="${x0}" y2="${axisY + 5}" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
       ${marks}</svg>`;
 
     el.innerHTML = head + svg +

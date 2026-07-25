@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v57';   // v57 (GLASS BLEU) : cartes glass plus transparentes/froides + orange résiduel retiré (bordures, fallbacks)
+const CACHE='td-shell-v58';   // v58 (GLASS BLANC) : verre blanc translucide neutre (bleu retiré du fond des cartes) + glass étendu aux 8 espaces
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

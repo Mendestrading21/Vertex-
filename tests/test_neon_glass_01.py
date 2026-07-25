@@ -35,20 +35,14 @@ def test_neon_glass_css_exists_and_linked(client):
     assert 'data-space="briefing"' in html
 
 
-def test_prototype_scoped_to_migrated_spaces_only():
-    """Migration page par page : couverts = briefing + markets + opportunities.
-    Les 5 espaces restants ne doivent JAMAIS apparaître dans le scope de base
-    (pas de big-bang). On ignore le bloc de commentaire d'en-tête."""
+def test_glass_covers_all_eight_spaces():
+    """Le verre glass est désormais UNIFIÉ sur les 8 espaces canoniques (site à
+    100 %). Chaque espace doit apparaître dans le scope CSS ; les règles .vx-card
+    restent scopées (jamais globales)."""
     css = _read(CSS)
-    assert ('data-space="briefing"' in css and 'data-space="markets"' in css
-            and 'data-space="opportunities"' in css)
-    # on retire le commentaire d'en-tête (qui cite les espaces non migrés en prose)
-    import re
-    code = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
-    for not_migrated in ('analysis', 'portfolio', 'options',
-                         'journal', 'system'):
-        assert f'data-space="{not_migrated}"' not in code, \
-            f'espace non migré peint (big-bang) : {not_migrated}'
+    for space in ('briefing', 'markets', 'opportunities', 'analysis',
+                  'portfolio', 'options', 'journal', 'system'):
+        assert f'data-space="{space}"' in css, f'espace non couvert par le glass : {space}'
     # aucune règle .vx-card hors scope (toujours précédée du sélecteur .vx-content:is(...))
     for line in css.splitlines():
         s = line.strip()
@@ -71,8 +65,8 @@ def test_neon_identity_no_blue():
 def test_glass_premium_present():
     css = _read(CSS)
     assert 'backdrop-filter' in css and 'blur(' in css
-    # bordure fine froide (fil bleu discret — identité bleue)
-    assert '--ng-border:rgba(96,150,240' in css.replace(' ', '')
+    # bordure fine blanche (verre neutre — bleu réservé aux accents)
+    assert '--ng-border:rgba(255,255,255' in css.replace(' ', '')
 
 
 def test_cards_overflow_visible_no_tooltip_clip():
@@ -112,19 +106,17 @@ def test_reduced_motion_respected():
     assert 'prefers-reduced-motion' in css and 'animation:none' in css.replace(' ', '')
 
 
-def test_markets_migrated_and_others_untouched(client):
-    import re
-    # Marchés + Opportunités sont désormais migrés (scope + attribut)
-    mk = client.get('/markets').get_data(as_text=True)
-    assert 'data-space="markets"' in mk
-    opp = client.get('/opportunities').get_data(as_text=True)
-    assert 'data-space="opportunities"' in opp
-    assert 'data-space="opportunities"' in _read(CSS)  # Opportunités migré
-    # un espace NON migré porte bien son attribut mais n'est PAS dans le scope CSS
-    code = re.sub(r'/\*.*?\*/', '', _read(CSS), flags=re.S)
-    port = client.get('/portfolio').get_data(as_text=True)
-    assert 'data-space="portfolio"' in port
-    assert 'data-space="portfolio"' not in code
+def test_all_spaces_carry_glass(client):
+    """Tous les espaces portent leur attribut ET sont couverts par le glass CSS
+    (unification site-wide — plus de « non migré »)."""
+    code = _read(CSS)
+    for path, space in (('/markets', 'markets'), ('/opportunities', 'opportunities'),
+                        ('/portfolio', 'portfolio'), ('/analysis', 'analysis'),
+                        ('/options', 'options'), ('/journal', 'journal'),
+                        ('/system', 'system')):
+        html = client.get(path).get_data(as_text=True)
+        assert f'data-space="{space}"' in html, f'{path} sans attribut d\'espace'
+        assert f'data-space="{space}"' in code, f'{space} absent du scope glass'
 
 
 def test_opportunities_widgets_present():
