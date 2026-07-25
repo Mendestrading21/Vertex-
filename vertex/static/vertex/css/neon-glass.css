@@ -132,6 +132,28 @@
   border-radius:12px;
 }
 
+/* ── SESSION D'ANALYSE (barre de commandement toujours ouverte, Aujourd'hui) ── */
+.vx-content[data-space="briefing"] .vx-asess{display:block;margin:0 0 14px}
+.vx-content[data-space="briefing"] .vx-ss-card{
+  background:var(--ng-glass-ink,rgba(0,0,0,.34));
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018)),rgba(0,0,0,.34);
+  -webkit-backdrop-filter:blur(20px) saturate(1.05);backdrop-filter:blur(20px) saturate(1.05);
+  border:1px solid var(--ng-border,rgba(255,255,255,.09));border-radius:14px;padding:12px 15px;
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 10px 30px -16px rgba(0,0,0,.7)}
+.vx-content[data-space="briefing"] .vx-ss-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.vx-content[data-space="briefing"] .vx-ss-title{font-size:12px;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-secondary)}
+.vx-content[data-space="briefing"] .vx-ss-state{font-size:11.5px;font-weight:650;color:var(--vx-text-muted)}
+.vx-content[data-space="briefing"] .vx-ss-card[data-state="ready"] .vx-ss-state{color:var(--vx-positive)}
+.vx-content[data-space="briefing"] .vx-ss-dot{width:8px;height:8px;border-radius:50%;background:var(--vx-text-muted);flex:0 0 auto}
+.vx-content[data-space="briefing"] .vx-ss-dot.live{background:var(--vx-positive);
+  box-shadow:0 0 0 3px rgba(43,190,144,.18),0 0 10px rgba(43,190,144,.55);animation:ng-pulse 1.8s ease-in-out infinite}
+.vx-content[data-space="briefing"] .vx-ss-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+.vx-content[data-space="briefing"] .vx-ss-chip{display:flex;flex-direction:column;gap:2px;min-width:0;
+  padding:7px 12px;border-radius:11px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)}
+.vx-content[data-space="briefing"] .vx-ss-chip .k{font-size:9.5px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted)}
+.vx-content[data-space="briefing"] .vx-ss-chip .v{font-size:14px;font-weight:750;color:var(--vx-text-primary);font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.vx-content[data-space="briefing"] .vx-ss-dot.live{animation:none}}
+
 /* ── Freshness / live-dot : GLOW UNIQUEMENT quand live ── */
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-freshness{
   border:1px solid var(--ng-border-soft);border-radius:999px;background:rgba(0,0,0,.25);

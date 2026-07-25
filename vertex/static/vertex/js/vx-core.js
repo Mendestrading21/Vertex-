@@ -247,4 +247,18 @@
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) VX.bus.emit('vx:data-refreshed', { reason: 'visibility' });
   });
+
+  /* ── PRÉCHAUFFAGE : au chargement du shell, on réchauffe les endpoints légers
+     (digest de session + résumé marché) dès que le navigateur est au repos, pour
+     que la première navigation vers Aujourd'hui / Marchés soit quasi instantanée.
+     Uniquement des GET de lecture, cache client partagé (VX.fetch). Aucun ordre. */
+  const _warm = () => {
+    ['/api/session/digest', '/api/market/summary'].forEach(u => {
+      try { VX.fetch(u, { ttl: 30000, priority: 'low' }).catch(() => {}); } catch (e) {}
+    });
+  };
+  const _schedule = () => (window.requestIdleCallback
+    ? requestIdleCallback(_warm, { timeout: 2500 }) : setTimeout(_warm, 900));
+  if (document.readyState === 'complete') _schedule();
+  else window.addEventListener('load', _schedule, { once: true });
 })();

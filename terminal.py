@@ -81,6 +81,7 @@ from vertex.engines import stats as _stats
 from vertex.app.state import scan_state, weekly_state, news_state, cal_state
 from vertex.app.routes import auth as _auth
 from vertex.app.routes import command as _command
+from vertex.app.routes import session_api as _session_api
 from vertex.app.routes import desk as _desk
 from vertex.app.routes import options_lab_api as _options_lab_api
 from vertex.app.routes import live_api as _live_api
@@ -1917,6 +1918,9 @@ app.register_blueprint(_analysis_api.bp)
 
 # ─── COMMAND CENTER (Blueprint) — /api/command · /api/portefeuille ───
 app.register_blueprint(_command.bp)
+
+# ─── SESSION D'ANALYSE (Blueprint) — /api/session/digest (digest toujours prêt) ───
+app.register_blueprint(_session_api.bp)
 
 # ─── OPTIONS RESEARCH CENTER (Blueprint) — /api/options-lab ───
 app.register_blueprint(_options_lab_api.bp)

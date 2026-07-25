@@ -96,6 +96,11 @@ _CONTENT = """
 </div>
 <div id="vx-demo-banner"></div>
 
+<!-- SESSION D'ANALYSE — toujours ouverte : digest de commandement peuplé
+     instantanément (instantané restauré au démarrage), puis rafraîchi en direct.
+     Assemblé côté serveur depuis l'état déjà calculé (aucun nouveau calcul). -->
+<section class="vx-asess" id="vx-asess" aria-label="Session d'analyse" aria-live="polite">%%LOADING%%</section>
+
 <!-- NIVEAU 1 — Réponse immédiate : Hero éditorial (la réponse en 10 s).
      Aujourd'hui RÉSUME ; Marchés explique. Une donnée = un seul domicile. -->
 <section class="vx-card vx-card--hero" id="vx-hero" aria-label="Réponse du jour">
@@ -361,8 +366,41 @@ async function loadPortfolio(){
   }).join('')+'<div class="vx-card-footer">'+pos.length+' position(s) · marques '+(Object.keys(quotes).length?'IBKR/desk':'indisponibles')+'</div>';
 }
 
+/* ── Session d'analyse (digest de commandement, toujours ouverte) ── */
+function sessAge(s){if(s==null)return'';if(s<60)return'il y a '+s+' s';if(s<3600)return'il y a '+Math.round(s/60)+' min';return'il y a '+Math.round(s/3600)+' h';}
+function sessRender(d){
+  const el=$('vx-asess');if(!el)return;
+  const st=d.state||'analyzing';
+  const live=st==='ready';
+  const stLabel=live?'Analyse à jour':st==='restored'?'Analyse restaurée · rafraîchissement…':'Analyse en cours…';
+  const reg=d.regime||{};const tone=reg.tone||'idle';
+  const regCls=tone==='go'?'vx-pos':tone==='risk'?'vx-neg':tone==='wait'?'vx-warn':'vx-muted';
+  const opp=d.opportunities||{};const cat=(d.catalysts||{}).next;const mk=d.market||{};
+  const chip=(k,v,cls)=>'<span class="vx-ss-chip"><span class="k">'+k+'</span><span class="v '+(cls||'')+'">'+v+'</span></span>';
+  let chips='';
+  chips+=chip('Climat',reg.label?esc(reg.label):'—',regCls);
+  chips+=chip('Opportunités',opp.actionable!=null?(opp.actionable+(opp.top&&opp.top.length?' · '+opp.top.map(esc).join(' '):'')):'—',opp.actionable>0?'vx-pos':'');
+  chips+=chip('Prochain catalyseur',cat&&cat.dte!=null?((cat.label?esc(cat.label)+' · ':'')+'J-'+cat.dte):'aucun daté',cat&&cat.dte!=null&&cat.dte<=5?'vx-warn':'');
+  chips+=chip('VIX',mk.vix!=null?VX.fmt.nd(mk.vix):'n/d','');
+  chips+=chip('Confiance données',d.confidence!=null?d.confidence+' %':'n/d',d.confidence!=null?(d.confidence>=70?'vx-pos':d.confidence<40?'vx-neg':'vx-warn'):'');
+  el.innerHTML='<div class="vx-ss-card" data-state="'+st+'">'
+    +'<div class="vx-ss-head"><span class="vx-ss-dot'+(live?' live':'')+'" aria-hidden="true"></span>'
+    +'<span class="vx-ss-title">Session d\'analyse</span>'
+    +'<span class="vx-ss-state">'+stLabel+'</span>'
+    +'<span class="vx-grow"></span>'
+    +'<span class="vx-meta">'+(d.as_of?esc(String(d.as_of)):sessAge(d.age_s))+(d.demo?' · démo':'')+'</span></div>'
+    +'<div class="vx-ss-chips">'+chips+'</div></div>';
+}
+async function loadSession(){
+  try{
+    const r=await fetch('/api/session/digest',{cache:'no-store'});
+    sessRender(await r.json());
+  }catch(e){const el=$('vx-asess');if(el)el.innerHTML='';}
+}
+
 /* ── Orchestration ── */
 function boot(){
+  loadSession();
   loadBrief();loadSummary();loadRegime();loadOpportunities();loadAlerts();loadCalendar();loadPortfolio();
 }
 function whenChartsReady(fn){
@@ -372,9 +410,10 @@ function whenChartsReady(fn){
 whenChartsReady(boot);
 VX.refresh.register(loadSummary,120000,'today-summary');
 VX.refresh.register(loadAlerts,60000,'alerts');
+VX.refresh.register(loadSession,45000,'session-digest');
 VX.bus.on('vx:position-changed',loadPortfolio);
 VX.bus.on('vx:alert-changed',loadAlerts);
-VX.bus.on('vx:data-refreshed',()=>{loadBrief();loadSummary();loadRegime();});
+VX.bus.on('vx:data-refreshed',()=>{loadSession();loadBrief();loadSummary();loadRegime();});
 })();
 </script>
 """
