@@ -1,9 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   VERTEX NEON GLASS ORANGE — Graph System V2 (issue #14)
-   Fond très sombre (canvas #05070C) · cartes glass premium · identité ORANGE
-   EMBER (#FF6D29) sourcée depuis tokens.css. Vert=gain, rouge=perte, ambre=
-   attente, violet=options, cyan=comparaison technique. AUCUN bleu identitaire.
-   Glow uniquement sur live / point actif / sélection / alerte.
+   VERTEX GLASS — Graph System V2 (issue #14)
+   Fond très sombre (canvas #05070C) · cartes glass premium · identité BLEU
+   ÉLECTRIQUE (#3B82F6) sourcée depuis tokens.css (--vx-ember-*). Vert=gain,
+   rouge=perte, ambre=attente, violet=options, cyan=comparaison technique.
+   Le bleu EST désormais la marque. Glow uniquement sur live / point actif /
+   sélection / alerte.
 
    Toute couleur d'identité vient des tokens `--vx-*` (source unique NEUE EMBER) :
    ce fichier n'invente plus de littéral orange. Le fond Signal Green a été tué à
@@ -45,8 +46,8 @@
 
   position:relative;
   background:
-    radial-gradient(120% 60% at 82% -8%, rgba(255,109,41,.10), transparent 60%),
-    radial-gradient(90% 50% at 8% 0%, rgba(255,109,41,.04), transparent 55%),
+    radial-gradient(120% 60% at 82% -8%, rgba(59,130,246,.10), transparent 60%),
+    radial-gradient(90% 50% at 8% 0%, rgba(59,130,246,.04), transparent 55%),
     linear-gradient(180deg, var(--ng-bg-1), var(--ng-bg-0));
 }
 
@@ -76,7 +77,7 @@
 /* Hero = carte premium (profondeur + halo cuivre discret, fonctionnel) */
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-card--hero{
   background:
-    radial-gradient(120% 100% at 100% 0%, rgba(255,109,41,.10), transparent 55%),
+    radial-gradient(120% 100% at 100% 0%, rgba(59,130,246,.10), transparent 55%),
     linear-gradient(180deg, var(--ng-glass-raised), var(--ng-glass));
   border-color:var(--ng-border-strong);
   box-shadow:var(--ng-shadow-raised);
@@ -99,8 +100,8 @@
 /* ── Boutons : action principale = orange néon (texte sombre, jamais blanc) ── */
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-btn-primary{
   background:var(--vx-brand-gradient);
-  border:1px solid rgba(255,109,41,.5);color:var(--vx-ember-ink);font-weight:650;
-  box-shadow:0 6px 18px -8px rgba(255,109,41,.6);
+  border:1px solid rgba(59,130,246,.5);color:var(--vx-ember-ink);font-weight:650;
+  box-shadow:0 6px 18px -8px rgba(59,130,246,.6);
 }
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-btn-primary:hover{box-shadow:var(--ng-glow)}
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"]) .vx-ticker{color:var(--ng-neon-bright)}
@@ -289,7 +290,7 @@
 .vx-content[data-space="markets"] .vx-mk-mono{
   width:34px;height:34px;flex:0 0 34px;border-radius:9px;display:grid;place-items:center;
   font-size:11px;font-weight:800;letter-spacing:.02em;color:var(--vx-ember-400);
-  background:var(--vx-ember-soft);border:1px solid rgba(255,109,41,.22);
+  background:var(--vx-ember-soft);border:1px solid rgba(59,130,246,.22);
 }
 .vx-content[data-space="markets"] .vx-mk-idx-name{font-size:13px;font-weight:650;color:var(--vx-text-primary);line-height:1.15}
 .vx-content[data-space="markets"] .vx-mk-idx-rel{
@@ -325,7 +326,7 @@
 .vx-content[data-space="markets"] .vx-mk-macro .m-head{grid-column:1/2;display:flex;align-items:center;gap:8px}
 .vx-content[data-space="markets"] .vx-mk-macro .m-mono{
   font-size:10px;font-weight:800;letter-spacing:.03em;color:var(--vx-ember-400);
-  padding:2px 7px;border-radius:7px;background:var(--vx-ember-soft);border:1px solid rgba(255,109,41,.2);
+  padding:2px 7px;border-radius:7px;background:var(--vx-ember-soft);border:1px solid rgba(59,130,246,.2);
 }
 .vx-content[data-space="markets"] .vx-mk-macro .m-name{font-size:12px;color:var(--vx-text-secondary);letter-spacing:.03em}
 .vx-content[data-space="markets"] .vx-mk-macro .m-val{grid-column:1/2;font-size:24px;font-weight:800;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;line-height:1.1}
@@ -406,7 +407,7 @@
   position:relative;overflow:hidden;border-radius:var(--vx-r-card);padding:0;
   border:1px solid var(--ng-border-strong);
   background:
-    radial-gradient(120% 120% at 100% 0%,rgba(255,109,41,.12),transparent 55%),
+    radial-gradient(120% 120% at 100% 0%,rgba(59,130,246,.12),transparent 55%),
     linear-gradient(180deg,var(--ng-glass-raised),var(--ng-glass));
   box-shadow:var(--ng-shadow-raised),inset 0 1px 0 rgba(255,255,255,.06);
   display:grid;grid-template-columns:1.05fr 1.35fr;
@@ -419,7 +420,7 @@
 .vx-content[data-space="opportunities"] .vx-op-dom-tk .sym{font-size:34px;font-weight:850;letter-spacing:-.01em;color:var(--vx-text-primary);line-height:1}
 .vx-content[data-space="opportunities"] .vx-op-grade{
   font-size:15px;font-weight:850;padding:4px 12px;border-radius:10px;color:var(--vx-ember-ink);
-  background:var(--vx-brand-gradient);box-shadow:0 4px 14px -6px rgba(255,109,41,.7);
+  background:var(--vx-brand-gradient);box-shadow:0 4px 14px -6px rgba(59,130,246,.7);
 }
 .vx-content[data-space="opportunities"] .vx-op-grade[data-g="A"],
 .vx-content[data-space="opportunities"] .vx-op-grade[data-g="B"]{background:none;color:var(--vx-text-primary);border:1px solid var(--ng-border-strong);box-shadow:none}
@@ -434,7 +435,7 @@
 .vx-content[data-space="opportunities"] .vx-op-metric .k{display:block;font-size:var(--vx-fs-meta);color:var(--vx-text-muted);letter-spacing:.03em}
 .vx-content[data-space="opportunities"] .vx-op-metric .v{font-size:19px;font-weight:750;color:var(--vx-text-primary);font-variant-numeric:tabular-nums}
 .vx-content[data-space="opportunities"] .vx-op-metric .v.pos{color:var(--vx-positive)}
-.vx-content[data-space="opportunities"] .vx-op-metric.hot{border-color:rgba(255,109,41,.4)}
+.vx-content[data-space="opportunities"] .vx-op-metric.hot{border-color:rgba(59,130,246,.4)}
 .vx-content[data-space="opportunities"] .vx-op-metric.hot .v{color:var(--vx-ember-400)}
 .vx-content[data-space="opportunities"] .vx-op-lines{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
 .vx-content[data-space="opportunities"] .vx-op-lines .row{display:flex;gap:8px}
@@ -456,7 +457,7 @@
 .vx-content[data-space="opportunities"] .vx-op-tk-top{display:flex;align-items:center;gap:9px}
 .vx-content[data-space="opportunities"] .vx-op-mono{
   width:32px;height:32px;flex:0 0 32px;border-radius:9px;display:grid;place-items:center;
-  font-size:10.5px;font-weight:800;color:var(--vx-ember-400);background:var(--vx-ember-soft);border:1px solid rgba(255,109,41,.22);
+  font-size:10.5px;font-weight:800;color:var(--vx-ember-400);background:var(--vx-ember-soft);border:1px solid rgba(59,130,246,.22);
 }
 .vx-content[data-space="opportunities"] .vx-op-tk-name{display:flex;flex-direction:column;line-height:1.15;min-width:0}
 .vx-content[data-space="opportunities"] .vx-op-tk-name .sym{font-size:15px;font-weight:750;color:var(--vx-text-primary)}
@@ -488,7 +489,7 @@
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell .n{font-size:12px;font-weight:700;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell.win .n{color:var(--vx-ember-400)}
 .vx-content[data-space="opportunities"] .vx-op-cmp col.best,
-.vx-content[data-space="opportunities"] .vx-op-cmp td.bestcol{background:rgba(255,109,41,.05)}
+.vx-content[data-space="opportunities"] .vx-op-cmp td.bestcol{background:rgba(59,130,246,.05)}
 
 /* Conteneur de graphe en verre (scatter/funnel) */
 .vx-content[data-space="opportunities"] #op-scatter canvas{background:rgba(0,0,0,.14);border-radius:10px}

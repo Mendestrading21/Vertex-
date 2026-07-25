@@ -6,16 +6,17 @@ une intention (marque, benchmark, positif, négatif, option…). Le thème
 graphique JS (`chart-theme-obsidian-copper.js`) DOIT rester cohérent avec ce
 registre — un test le vérifie.
 
-Identité Vertex : NEUE EMBER / Neon Glass Orange. Orange néon = marque/série de
-référence (PAS « hausse »). Émeraude = positif. Zéro bleu dominant. Miroir strict
-de tokens.css (#FF6D29). Le cyan #45D6E8 = comparaison technique uniquement.
+Identité Vertex : BLEU ÉLECTRIQUE. Bleu = marque/série de référence (PAS
+« hausse »). Émeraude = positif. Le bleu de marque est la SEULE couleur bleue
+autorisée du registre (tout autre bleu dominant reste interdit). Miroir strict de
+tokens.css (#3B82F6). Le cyan #45D6E8 = comparaison technique uniquement.
 """
 from __future__ import annotations
 
-# ── Couleurs de marque (série principale = ORANGE EMBER) ───────────────
-BRAND = '#FF6D29'          # série principale Vertex (identité, pas « hausse »)
+# ── Couleurs de marque (série principale = BLEU ÉLECTRIQUE) ────────────
+BRAND = '#3B82F6'          # série principale Vertex (identité, pas « hausse »)
 COPPER = '#8A8284'         # série neutre acier (gris chaud)
-COPPER_LIGHT = '#FF824B'   # orange Ember clair (accents hover)
+COPPER_LIGHT = '#5C9BFF'   # bleu clair de marque (accents hover)
 AMBER = '#FFC857'          # série secondaire / attention
 BEIGE = '#c8bfae'          # benchmark clair (sable)
 
@@ -90,10 +91,16 @@ def is_bluish(hex_color: str) -> bool:
     return b > r + 30 and b > g + 30 and b > 90 and r < 110
 
 
+# Bleus AUTORISÉS = uniquement l'identité de marque (le bleu EST la marque).
+# Tout autre bleu dominant reste interdit (pas de bleu décoratif non-marque).
+BRAND_BLUES = {BRAND.lower(), COPPER_LIGHT.lower()}
+
+
 def audit_no_blue() -> list:
-    """Rend la liste des couleurs du registre qui seraient « bleu dominant ».
-    Doit rester vide (identité Vertex sans bleu)."""
-    return [name for name, col in SEMANTIC.items() if is_bluish(col)]
+    """Rend la liste des couleurs du registre « bleu dominant » NON autorisées.
+    Le bleu de marque (identité) est admis ; tout autre bleu doit être vide."""
+    return [name for name, col in SEMANTIC.items()
+            if is_bluish(col) and str(col).lower() not in BRAND_BLUES]
 
 
 __all__ = [

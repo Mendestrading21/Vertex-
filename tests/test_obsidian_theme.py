@@ -1,7 +1,8 @@
-"""Tests du thème VERTEX OBSIDIAN COPPER DEEP (§30/§36/§53).
+"""Tests du thème VERTEX (identité BLEU ÉLECTRIQUE).
 
-Le bleu n'est plus une identité : aucun lien, bouton ou série principale
-bleue. Les hard gates stratégiques (§7/§9) sont verrouillés ici aussi.
+Le bleu EST désormais la marque (#3B82F6 / #5C9BFF) : c'est le SEUL bleu autorisé.
+Tout AUTRE bleu dominant (décoratif, non-marque) reste interdit. Les hard gates
+stratégiques (§7/§9) sont verrouillés ici aussi.
 """
 import os
 import re
@@ -9,6 +10,10 @@ import re
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VXCSS = os.path.join(ROOT, 'vertex', 'static', 'vertex', 'css')
 VXJS = os.path.join(ROOT, 'vertex', 'static', 'vertex', 'js')
+
+# Bleus de MARQUE autorisés (identité). Tout autre bleu dominant reste interdit.
+BRAND_BLUES = {'#3b82f6', '#5c9bff', '#2f6fd6', '#8fbaff', '#2456a3', '#1b3e78',
+               '#12294f', '#0b1d3a'}
 
 
 def _read(*p):
@@ -25,40 +30,46 @@ def _is_blueish(hexval: str) -> bool:
     return b > r + 30 and b > g + 30 and b > 90 and r < 110
 
 
+def _is_forbidden_blue(hexval: str) -> bool:
+    """Bleu dominant NON-marque (le bleu de marque est l'identité, donc admis)."""
+    return _is_blueish(hexval) and hexval.lower() not in BRAND_BLUES
+
+
 def test_no_blue_primary_theme():
     tokens = _read(VXCSS, 'tokens.css')
     for m in re.finditer(r'--vx-[a-z0-9-]+:\s*(#[0-9a-fA-F]{6})', tokens):
-        assert not _is_blueish(m.group(1)), f'token bleu interdit : {m.group(0)}'
+        assert not _is_forbidden_blue(m.group(1)), f'bleu non-marque interdit : {m.group(0)}'
 
 
 def test_no_blue_primary_buttons():
     css = _read(VXCSS, 'buttons.css')
     for m in re.finditer(r'#[0-9a-fA-F]{6}', css):
-        assert not _is_blueish(m.group(0)), f'bouton bleu interdit : {m.group(0)}'
-    assert 'var(--vx-brand-gradient)' in css   # CTA = orange/cuivre
+        assert not _is_forbidden_blue(m.group(0)), f'bleu non-marque interdit : {m.group(0)}'
+    assert 'var(--vx-brand-gradient)' in css   # CTA = marque (bleu)
 
 
 def test_no_blue_in_ui_pages():
-    """Zéro bleu jusque dans les pages bespoke (§36) — accents info/violet compris."""
+    """Aucun bleu NON-marque en dur dans les pages bespoke (§36)."""
     import glob
     offenders = []
     for path in glob.glob(os.path.join(ROOT, 'vertex', 'ui', '**', '*.py'), recursive=True):
         src = open(path, encoding='utf-8').read()
         for m in re.finditer(r'#[0-9a-fA-F]{6}', src):
-            if _is_blueish(m.group(0)):
+            if _is_forbidden_blue(m.group(0)):
                 offenders.append(f'{os.path.relpath(path, ROOT)}: {m.group(0)}')
-    assert not offenders, 'couleurs bleues interdites dans l\'UI : ' + ', '.join(offenders)
+    assert not offenders, 'bleus non-marque interdits dans l\'UI : ' + ', '.join(offenders)
 
 
 def test_no_blue_main_series():
+    """La série principale est le bleu de MARQUE ; aucun autre bleu dans la série."""
     theme = _read(VXJS, 'charts', 'chart-theme-obsidian-copper.js')
     series = re.search(r'series:\s*\[(.*?)\]', theme, re.S).group(1)
     for m in re.finditer(r'#[0-9a-fA-F]{6}', series):
-        assert not _is_blueish(m.group(0)), f'série bleue interdite : {m.group(0)}'
+        assert not _is_forbidden_blue(m.group(0)), f'bleu non-marque dans la série : {m.group(0)}'
     core = _read(VXJS, 'charts', 'chart-core.js')
     fallback = re.search(r'series:\s*\[(.*?)\]', core, re.S).group(1)
     for m in re.finditer(r'#[0-9a-fA-F]{6}', fallback):
-        assert not _is_blueish(m.group(0)), f'repli série bleue : {m.group(0)}'
+        assert not _is_forbidden_blue(m.group(0)), f'repli bleu non-marque : {m.group(0)}'
 
 
 def test_rr_gate_is_two():

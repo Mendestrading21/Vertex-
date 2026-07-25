@@ -59,19 +59,22 @@
   --vx-text-muted:#8A8284;
   --vx-text-faint:#655d5f;
 
-  /* ══ MARQUE — ORANGE EMBER (identité ; jamais « hausse ») ══
-     Contraste : #FF6D29 sur #161316 ≈ 6,56:1 (AA). CTA = texte sombre #161316. */
-  --vx-ember-950:#3a1607;
-  --vx-ember-900:#5c2410;
-  --vx-ember-800:#8a3813;
-  --vx-ember-700:#b74e18;
-  --vx-ember-600:#e85a19;          /* pressé */
-  --vx-ember-500:#FF6D29;          /* marque principale */
-  --vx-ember-400:#FF824B;          /* hover */
-  --vx-ember-300:#ff9a6d;
-  --vx-ember-soft:rgba(255,109,41,.12);
-  --vx-ember-glow:rgba(255,109,41,.22);
-  --vx-ember-ink:#161316;          /* texte sur bouton orange (jamais blanc) */
+  /* ══ MARQUE — BLEU ÉLECTRIQUE (identité ; jamais « hausse ») ══
+     Le bleu remplace l'orange Ember : accent unique (boutons, séries de
+     référence, sélection, liens, points actifs). Les noms de tokens restent
+     `--vx-ember-*` (source unique) ; leur valeur est désormais bleue. Texte sur
+     bouton bleu = blanc. Vert=gain, rouge=perte, violet=options, cyan=technique. */
+  --vx-ember-950:#0b1d3a;
+  --vx-ember-900:#12294f;
+  --vx-ember-800:#1b3e78;
+  --vx-ember-700:#2456a3;
+  --vx-ember-600:#2f6fd6;          /* pressé */
+  --vx-ember-500:#3B82F6;          /* marque principale (bleu) */
+  --vx-ember-400:#5C9BFF;          /* hover */
+  --vx-ember-300:#8FBAFF;
+  --vx-ember-soft:rgba(59,130,246,.12);
+  --vx-ember-glow:rgba(59,130,246,.22);
+  --vx-ember-ink:#ffffff;          /* texte sur bouton bleu = blanc */
 
   --vx-brand:var(--vx-ember-500);
   --vx-brand-strong:var(--vx-ember-400);
@@ -139,7 +142,7 @@
 
   /* ── Dégradés (réservés aux éléments importants, fonctionnels) ── */
   --vx-brand-gradient:linear-gradient(135deg,var(--vx-ember-400) 0%,var(--vx-ember-600) 100%);
-  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(255,109,41,.06),transparent 68%);
+  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(59,130,246,.06),transparent 68%);
 
   /* ── Typographie ──
      Direction souhaitée : NEUE MONTREAL. AUCUN fichier Neue Montreal licencié n'est
@@ -166,9 +169,9 @@
   /* ── Élévation (chaude, discrète) ── */
   --vx-shadow-1:0 1px 2px rgba(0,0,0,.5);
   --vx-shadow-2:0 4px 16px rgba(0,0,0,.5);
-  --vx-shadow-signal:0 8px 26px rgba(255,109,41,.12);
+  --vx-shadow-signal:0 8px 26px rgba(59,130,246,.12);
   --vx-shadow-modal:0 16px 48px rgba(0,0,0,.68);
-  --vx-glow-brand:0 0 0 1px rgba(255,109,41,.30),0 4px 20px rgba(255,109,41,.10);
+  --vx-glow-brand:0 0 0 1px rgba(59,130,246,.30),0 4px 20px rgba(59,130,246,.10);
 
   /* ── Transitions ── */
   --vx-ease-out:cubic-bezier(.23,1,.32,1);

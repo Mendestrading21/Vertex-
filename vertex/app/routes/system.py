@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v55';   // v55 (RECONSTRUCTION 01) : Aujourd'hui reconstruit avec widgets validés — Regime Aura (W01) + Catalyst Runway (W-CR) live
+const CACHE='td-shell-v56';   // v56 (IDENTITÉ BLEUE) : le bleu électrique #3B82F6 remplace l'orange Ember comme marque (tokens + thème graphique)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

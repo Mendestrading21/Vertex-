@@ -226,8 +226,8 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v55' in body
-    assert 'td-shell-v54' not in body
+    assert 'td-shell-v56' in body
+    assert 'td-shell-v55' not in body
 
 
 # ── Sécurité produit ─────────────────────────────────────────────────────
@@ -252,12 +252,12 @@ def test_no_order_execution_path():
 
 
 def test_v3_tokens_are_canonical():
-    """Palette Vertex NEUE EMBER (Neon Glass Orange) — canonique et centralisée.
-    Orange Ember #FF6D29 = identité/marque (PAS « hausse ») · émeraude = positif
-    distinct · corail = risque · violet = options · cyan = comparaison. Le Signal
-    Green n'est plus la marque : `--vx-signal-*` est repointé sur Ember (compat)."""
+    """Palette Vertex (identité BLEU électrique) — canonique et centralisée.
+    Bleu #3B82F6 = identité/marque (PAS « hausse ») · émeraude = positif distinct ·
+    corail = risque · violet = options · cyan = comparaison. Le token de marque
+    reste `--vx-ember-*` (source unique) mais sa valeur est désormais bleue."""
     tokens = _read(VXCSS, 'tokens.css')
-    for var in ('--vx-canvas:#05070C', '--vx-ember-500:#FF6D29',
+    for var in ('--vx-canvas:#05070C', '--vx-ember-500:#3B82F6',
                 '--vx-brand:var(--vx-ember-500)', '--vx-positive:#2ED6A1',
                 '--vx-negative:#FF5F69', '--vx-warning:#FFC857',
                 '--vx-option:#9B7BFF', '--vx-neutral-chart:#BABABA'):

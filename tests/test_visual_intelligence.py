@@ -28,10 +28,10 @@ def test_status_color_maps_all_statuses():
 
 
 def test_is_bluish_flags_blue_but_not_green_or_violet():
-    assert pal.is_bluish('#3b82f6') is True     # bleu franc
+    assert pal.is_bluish('#3b82f6') is True      # bleu franc
     assert pal.is_bluish(pal.POSITIVE) is False  # vert
     assert pal.is_bluish(pal.OPTION) is False    # violet option
-    assert pal.is_bluish(pal.BRAND) is False     # orange
+    assert pal.is_bluish(pal.BRAND) is True      # marque = bleu (identité)
 
 
 def _js_series(src_lower):
@@ -59,10 +59,12 @@ def test_js_theme_matches_python_palette():
     py_series = [c.lower() for c in pal.SERIES]
     assert js_series == py_series, (
         'série JS %s != palette.SERIES %s' % (js_series, py_series))
-    # le thème JS ne doit contenir aucune couleur bleu-dominant en série
+    # le thème JS ne doit contenir aucun bleu NON-marque (le bleu de marque est
+    # l'identité, donc admis ; tout autre bleu dominant reste interdit)
     hexes = re.findall(r'#[0-9a-f]{6}', src)
-    blues = [h for h in hexes if pal.is_bluish(h)]
-    assert blues == [], 'couleurs bleu dominant dans le thème JS : %s' % blues
+    allowed = pal.BRAND_BLUES
+    blues = [h for h in hexes if pal.is_bluish(h) and h not in allowed]
+    assert blues == [], 'bleus NON-marque dans le thème JS : %s' % blues
 
 
 def test_chart_core_fallback_series_matches_palette():
