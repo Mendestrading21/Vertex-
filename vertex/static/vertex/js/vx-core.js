@@ -359,6 +359,42 @@
     },
   };
 
+  /* ── Fraîcheur : identité visuelle unifiée des données (§8, LOT 5) ──────
+     Une SEULE table de seuils (résout l'incohérence des seuils de l'audit) : un
+     helper que chaque page adopte pour marquer live / snapshot / sauvegardé /
+     stale / recalcul / erreur / offline, de façon discrète et cohérente. */
+  VX.freshness = {
+    THRESH: { live: 20000, snapshot: 420000, stale: 1800000 },   // ms : 20 s / 7 min / 30 min
+    LABEL: {
+      live: 'Live', snapshot: 'Analyse', saved: 'Sauvegardé',
+      stale: 'À actualiser', refreshing: 'Recalcul…', error: 'Erreur', offline: 'Hors ligne',
+    },
+    assess(o) {
+      o = o || {};
+      if (o.offline) return this._r('offline');
+      if (o.error) return this._r('error');
+      if (o.refreshing) return this._r('refreshing');
+      if (o.saved) return this._r('saved');
+      const a = o.ageMs;
+      if (a == null) return { state: 'unknown', label: '—', tone: 'muted' };
+      if (o.live && a < this.THRESH.live) return this._r('live');
+      if (a < this.THRESH.snapshot) return this._r('snapshot');
+      return this._r('stale');
+    },
+    _r(state) {
+      const tone = { live: 'pos', snapshot: 'info', saved: 'muted', stale: 'warn',
+        refreshing: 'info', error: 'neg', offline: 'neg' }[state] || 'muted';
+      return { state: state, label: this.LABEL[state] || state, tone: tone };
+    },
+    /* Puce discrète prête à insérer (innerHTML). */
+    chip(a) {
+      a = a || {};
+      const dot = a.state === 'live' ? '<span class="vx-fresh-dot"></span>' : '';
+      return '<span class="vx-fresh-chip" data-state="' + a.state + '" title="' + (a.label || '') + '">' +
+        dot + (a.label || '') + '</span>';
+    },
+  };
+
   /* ── Store global minimal (LOT 2 — fondation ; SWR/dédup enrichis au LOT 3) ──
      Vérité partagée du contexte applicatif : session active, ticker courant,
      historique de navigation, prix live (source centrale à venir). Lecture seule

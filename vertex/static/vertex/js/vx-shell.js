@@ -101,9 +101,37 @@
   tickClock(); setInterval(tickClock, 30000);
 
   /* ── État global (sidebar footer) + connexions ───────────────────── */
+  /* ── Mode offline / dégradé (§13) : on ne montre JAMAIS un écran vide parce
+     qu'une source est indisponible. Hors ligne → on marque l'état, on garde les
+     dernières données (cache persistant LOT 3) et la navigation ; au retour, on
+     revalide. Bascule online/offline via les événements réseau ET l'échec des
+     requêtes de statut. ── */
+  function setNet(state) {
+    const prev = document.documentElement.getAttribute('data-net') || 'online';
+    document.documentElement.setAttribute('data-net', state);
+    if (VX.store) VX.store.set('connection_state', state);
+    if (prev === state) return;
+    const el = $('vx-global-status');
+    if (state === 'offline') {
+      if (el) {
+        const d = el.querySelector('.vx-dot'), l = el.querySelector('.vx-status-label');
+        if (d) d.style.background = 'var(--vx-negative)';
+        if (l) l.textContent = 'Hors ligne';
+      }
+      try { VX.toast('Hors ligne — dernières données conservées', 'warn', 3200); } catch (e) {}
+    } else {
+      try { VX.toast('Reconnecté', 'success', 2000); } catch (e) {}
+      VX.bus.emit('vx:data-refreshed', { reason: 'reconnect' });
+    }
+  }
+  try { setNet(navigator.onLine === false ? 'offline' : 'online'); } catch (e) {}
+  window.addEventListener('offline', function () { setNet('offline'); });
+  window.addEventListener('online', function () { setNet('online'); loadStatus(); });
+
   async function loadStatus() {
     try {
       const st = await VX.fetch('/api/live/status', { ttl: 60000 });
+      setNet('online');
       const el = $('vx-global-status'); if (!el) return;
       const demo = !!st.demo;
       const dot = el.querySelector('.vx-dot'); const label = el.querySelector('.vx-status-label');
@@ -111,7 +139,9 @@
       label.textContent = demo ? 'Mode démo' : 'Données actives';
       window.__vxStatus = st;
       VX.bus.emit('vx:connection-changed', st);
-    } catch (e) { /* silencieux : bandeau par page */ }
+    } catch (e) {
+      if (navigator.onLine === false) setNet('offline');   // échec réseau réel → dégradé
+    }
   }
   loadStatus(); VX.refresh.register(loadStatus, 90000, 'status', { persistent: true });
 
