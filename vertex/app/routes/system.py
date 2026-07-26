@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v72';   // v72 (AUDIT-FIX) : durcissement JS/securite (routeur anti-course, badges honnetes, esc/URL)
+const CACHE='td-shell-v73';   // v73 (SESSION-30MIN) : cadence de session d'analyse 30 min + seuils de fraicheur alignes
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

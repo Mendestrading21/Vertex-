@@ -16,12 +16,21 @@ R = 0.045
 BUILD = 'VERTEX-1.0'
 
 # Intervalle (secondes) entre deux scans complets de l'univers en boucle de fond.
-REFRESH_SEC = 120
+# MODÈLE « SESSION D'ANALYSE 30 MIN » : le premier scan (démarrage à froid) calcule
+# tout l'univers en ~2-3 min, puis la session reste STABLE 30 min — les verdicts et
+# chiffres ne bougent pas, les changements de page sont instantanés (aucun recalcul).
+# Toutes les 30 min, un nouveau scan republie → bascule atomique côté client
+# (session_id dérivé de scan_ts). Cadence voulue par l'utilisateur : une analyse
+# posée, pas un ticker qui clignote. (Le prix live éventuel IBKR reste un overlay séparé.)
+REFRESH_SEC = 1800          # 30 min : cadence de la session d'analyse
 
 # Seuils de fraîcheur des données (secondes) pour /api/system-status.
-STALE_SCAN_SEC = 900        # un scan de plus de 15 min est considéré « rassis »
-STALE_QUOTES_SEC = 120      # cotations live rassies au-delà de 2 min
-STALE_OPTIONS_SEC = 1800    # board d'options rassis au-delà de 30 min
+# Alignés sur la cadence de 30 min : une donnée n'est « rassise » que si le
+# rafraîchissement de session est EN RETARD (au-delà de la fenêtre de 30 min + marge),
+# jamais pendant la session courante — sinon le badge crierait « à actualiser » à tort.
+STALE_SCAN_SEC = 2100       # scan « rassis » seulement si le cycle 30 min est dépassé (>35 min)
+STALE_QUOTES_SEC = 120      # cotations live rassies au-delà de 2 min (overlay live, indépendant)
+STALE_OPTIONS_SEC = 2100    # board d'options rassis au-delà du cycle de session (>35 min)
 
 __all__ = ['BENCH', 'R', 'BUILD', 'REFRESH_SEC',
            'STALE_SCAN_SEC', 'STALE_QUOTES_SEC', 'STALE_OPTIONS_SEC']

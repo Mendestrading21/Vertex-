@@ -386,7 +386,7 @@
      helper que chaque page adopte pour marquer live / snapshot / sauvegardé /
      stale / recalcul / erreur / offline, de façon discrète et cohérente. */
   VX.freshness = {
-    THRESH: { live: 20000, snapshot: 420000, stale: 1800000 },   // ms : 20 s / 7 min / 30 min
+    THRESH: { live: 20000, snapshot: 1800000, stale: 2100000 },   // ms : 20 s / 30 min / 35 min — aligné sur la session d'analyse (cadence 30 min)
     LABEL: {
       live: 'Live', snapshot: 'Analyse', saved: 'Sauvegardé',
       stale: 'À actualiser', refreshing: 'Recalcul…', error: 'Erreur', offline: 'Hors ligne',
