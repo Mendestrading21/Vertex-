@@ -201,13 +201,55 @@
     },
   };
 
-  /* ── Refresh Manager (§40) ───────────────────────────────────────── */
+  /* ── Couche de données : cache persistant + SWR + dédup (§40, LOT 3) ──
+     Le cache survit désormais au reload (sessionStorage) → revenir sur une page
+     ne relance pas un chargement lourd. Déduplication in-flight, invalidation
+     ciblée, stale-while-revalidate (VX.swr), annulation propre. Lecture seule. */
   const cache = new Map();     // url -> {ts, data}
-  const inflight = new Map();  // url -> Promise
+  const inflight = new Map();  // url -> {p, ctl}
+  const PERSIST_KEY = 'vxDataCache';
+  const PERSIST_MAX_ENTRY = 200000;   // n'archive pas les gros payloads (ex. /scan ~8Mo)
+  const PERSIST_MAX = 60;             // nb d'entrées persistées
+
+  /* Hydrate le cache depuis la session au démarrage (revisite instantanée). */
+  (function hydrate() {
+    try {
+      const raw = sessionStorage.getItem(PERSIST_KEY);
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      Object.keys(obj).forEach((u) => { cache.set(u, obj[u]); });
+    } catch (e) {}
+  })();
+  let _persistTimer = null;
+  function schedulePersist() {
+    if (_persistTimer) return;
+    _persistTimer = setTimeout(() => {
+      _persistTimer = null;
+      try {
+        const out = {}; let n = 0;
+        // les plus récents d'abord, bornés en taille et en nombre
+        const entries = Array.from(cache.entries()).sort((a, b) => b[1].ts - a[1].ts);
+        for (const [u, v] of entries) {
+          if (n >= PERSIST_MAX) break;
+          let s; try { s = JSON.stringify(v); } catch (e) { continue; }
+          if (s.length > PERSIST_MAX_ENTRY) continue;   // trop gros → non persisté
+          out[u] = v; n++;
+        }
+        sessionStorage.setItem(PERSIST_KEY, JSON.stringify(out));
+      } catch (e) {}
+    }, 400);
+  }
+
+  function _store(url, data) {
+    cache.set(url, { ts: Date.now(), data });
+    if (cache.size > 120) cache.delete(cache.keys().next().value);
+    schedulePersist();
+  }
+
   VX.fetch = function (url, { ttl = 30000, priority = 'normal', signal } = {}) {
     const hit = cache.get(url);
     if (hit && Date.now() - hit.ts < ttl) return Promise.resolve(hit.data);
-    if (inflight.has(url)) return inflight.get(url);
+    if (inflight.has(url)) return inflight.get(url).p;
     const ctl = new AbortController();
     if (signal) signal.addEventListener('abort', () => ctl.abort());
     const p = (async () => {
@@ -217,8 +259,7 @@
           const r = await fetch(url, { signal: ctl.signal });
           if (!r.ok) throw new Error('HTTP ' + r.status);
           const data = await r.json();
-          cache.set(url, { ts: Date.now(), data });
-          if (cache.size > 80) cache.delete(cache.keys().next().value);
+          _store(url, data);
           return data;
         } catch (e) {
           lastErr = e;
@@ -228,9 +269,47 @@
       }
       throw lastErr;
     })().finally(() => inflight.delete(url));
-    inflight.set(url, p);
+    inflight.set(url, { p, ctl });
     return p;
   };
+
+  /* Lecture synchrone du cache (sans réseau) : donnée + fraîcheur, ou null. */
+  VX.fetch.peek = function (url) {
+    const hit = cache.get(url);
+    return hit ? { data: hit.data, age: Date.now() - hit.ts, ts: hit.ts } : null;
+  };
+  /* Invalidation CIBLÉE (clé exacte, préfixe, ou prédicat) — plus de cache.clear() aveugle. */
+  VX.fetch.invalidate = function (target) {
+    let pred;
+    if (typeof target === 'function') pred = target;
+    else if (typeof target === 'string') pred = (u) => u === target || u.indexOf(target) === 0;
+    else { cache.clear(); schedulePersist(); return; }
+    Array.from(cache.keys()).forEach((u) => { if (pred(u)) cache.delete(u); });
+    schedulePersist();
+  };
+
+  /* stale-while-revalidate : rend le cache TOUT DE SUITE (même périmé), puis
+     revalide en fond et rappelle onData si la donnée a changé. Ne vide JAMAIS
+     l'écran, ne remplace jamais du valide par du vide (erreur → garde l'ancien).
+     Retourne un annulateur : à appeler au changement de page/ticker (anti-hors-ordre). */
+  VX.swr = function (url, onData, opts) {
+    opts = opts || {};
+    const ttl = opts.ttl == null ? 30000 : opts.ttl;
+    let alive = true;
+    const hit = cache.get(url);
+    let servedStr = null;
+    if (hit) { servedStr = safeStr(hit.data); try { onData(hit.data, { stale: Date.now() - hit.ts >= ttl, cached: true }); } catch (e) {} }
+    const fresh = hit && Date.now() - hit.ts < ttl;
+    if (!fresh) {
+      VX.fetch(url, { ttl: 0 }).then((data) => {
+        if (!alive) return;                       // navigation/ticker changé → ignore (hors-ordre)
+        const s = safeStr(data);
+        if (s !== servedStr) { try { onData(data, { stale: false, cached: false }); } catch (e) {} }
+      }).catch(() => { /* garde l'ancien contenu, jamais de vide */ });
+    }
+    return function cancel() { alive = false; };
+  };
+  function safeStr(o) { try { return JSON.stringify(o); } catch (e) { return null; } }
   VX.refresh = {
     _tasks: [], _suspended: false,
     /* opts.persistent : tâche de SHELL (statut global…), survit aux navigations.
@@ -250,7 +329,7 @@
     },
     async runAll(btn) {
       if (btn) { btn.dataset.state = 'refreshing'; btn.disabled = true; }
-      cache.clear();
+      VX.fetch.invalidate();      // vide cache mémoire + persistance (rafraîchissement explicite)
       try {
         await Promise.allSettled(this._tasks.map(t => t.fn()));
         VX.bus.emit('vx:data-refreshed', {});
