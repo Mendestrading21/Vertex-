@@ -195,39 +195,47 @@ async function loadBrief(){
 
 /* ── 4 KPI résumé cliquables (régime, breadth, VIX, meilleure opportunité) ── */
 async function loadSummary(){
+  const paint=(sum,reg,cmd)=>{
+    sum=sum||{};reg=reg||{};cmd=cmd||{};
+    const conf=Math.round((reg.confidence||0)*100);
+    const br=breadthOf(sum.breadth);
+    let vix=num(sum.vix);
+    const best=(cmd.top_stocks||[])[0]||null;
+    const regHtml=reg.regime?esc(reg.regime):'n/d';
+    const brHtml=br!=null?(br+' %'):'n/d';
+    const brCls=br!=null?(br>=55?'vx-pos':'vx-warn'):'';
+    const vixHtml=vix!=null?vix:'n/d';
+    const bestHtml=best?esc(best.symbol):'—';
+    const kpis=[
+      kpiTile('Régime',regHtml+' <span class="vx-meta">('+conf+'%)</span>','','/markets'),
+      kpiTile('Breadth',brHtml,brCls,'/markets?view=breadth'),
+      kpiTile('VIX',vixHtml,'','/markets?view=volatility'),
+      best?kpiTile('Meilleure opp.',bestHtml,'','/analysis/'+encodeURIComponent(best.symbol)):kpiTile('Meilleure opp.','—','','/opportunities'),
+    ].join('');
+    $('vx-hero-kpis').innerHTML=kpis;
+    /* Action prioritaire : dérivée uniquement des données réelles. */
+    let action='';
+    if(best&&best.symbol){
+      action='<a class="vx-btn vx-btn-primary" data-open-analysis="'+esc(best.symbol)+'">Action : étudier le dossier '+esc(best.symbol)+' →</a>';
+    }else if(reg.regime){
+      action='<a class="vx-btn vx-btn-soft" href="/markets">Action : vérifier le régime dans Marchés →</a>';
+    }else{
+      action='<span class="vx-meta">Aucune action prioritaire dérivée des données disponibles.</span>';
+    }
+    $('vx-hero-action').innerHTML=action;
+    /* Diff honnête depuis la dernière visite. */
+    renderDiff({regime:reg.regime||null,breadth:br,vix:vix,best:best?best.symbol:null,
+      opp:(cmd.top_stocks||[]).length});
+  };
+  /* Stale-while-revalidate : peinture IMMÉDIATE depuis le cache (même périmé, ex.
+     au retour sur Aujourd'hui) puis revalidation en fond — jamais d'écran vide. */
+  const cs=VX.fetch.peek('/api/market/summary'),cr=VX.fetch.peek('/api/market/regime'),cc=VX.fetch.peek('/api/command');
+  if(cs||cr||cc) paint(cs&&cs.data,cr&&cr.data,cc&&cc.data);
   let sum={},reg={},cmd={};
   try{sum=await VX.fetch('/api/market/summary',{ttl:60000})||{};}catch(e){}
   try{reg=await VX.fetch('/api/market/regime',{ttl:120000})||{};}catch(e){}
   try{cmd=await VX.fetch('/api/command',{ttl:60000})||{};}catch(e){}
-  const conf=Math.round((reg.confidence||0)*100);
-  const br=breadthOf(sum.breadth);
-  let vix=num(sum.vix);
-  const best=(cmd.top_stocks||[])[0]||null;
-  const regHtml=reg.regime?esc(reg.regime):'n/d';
-  const brHtml=br!=null?(br+' %'):'n/d';
-  const brCls=br!=null?(br>=55?'vx-pos':'vx-warn'):'';
-  const vixHtml=vix!=null?vix:'n/d';
-  const bestHtml=best?esc(best.symbol):'—';
-  const kpis=[
-    kpiTile('Régime',regHtml+' <span class="vx-meta">('+conf+'%)</span>','','/markets'),
-    kpiTile('Breadth',brHtml,brCls,'/markets?view=breadth'),
-    kpiTile('VIX',vixHtml,'','/markets?view=volatility'),
-    best?kpiTile('Meilleure opp.',bestHtml,'','/analysis/'+encodeURIComponent(best.symbol)):kpiTile('Meilleure opp.','—','','/opportunities'),
-  ].join('');
-  $('vx-hero-kpis').innerHTML=kpis;
-  /* Action prioritaire : dérivée uniquement des données réelles. */
-  let action='';
-  if(best&&best.symbol){
-    action='<a class="vx-btn vx-btn-primary" data-open-analysis="'+esc(best.symbol)+'">Action : étudier le dossier '+esc(best.symbol)+' →</a>';
-  }else if(reg.regime){
-    action='<a class="vx-btn vx-btn-soft" href="/markets">Action : vérifier le régime dans Marchés →</a>';
-  }else{
-    action='<span class="vx-meta">Aucune action prioritaire dérivée des données disponibles.</span>';
-  }
-  $('vx-hero-action').innerHTML=action;
-  /* Diff honnête depuis la dernière visite. */
-  renderDiff({regime:reg.regime||null,breadth:br,vix:vix,best:best?best.symbol:null,
-    opp:(cmd.top_stocks||[]).length});
+  paint(sum,reg,cmd);
 }
 
 /* ── Diff « depuis ta dernière visite » — honnête (baseline locale) ── */
