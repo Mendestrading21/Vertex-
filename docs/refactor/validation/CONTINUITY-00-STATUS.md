@@ -27,14 +27,25 @@ tour, données conservées entre pages ET après reload, préchargement consomm�
 round-trip), session atomique + notification, offline sans écran vide. **1041 tests
 verts**, 0 erreur console, READONLY intact.
 
-## Reste à faire
+| **6** | **Observabilité** : `VX.fetch.stats()` + panneau « Continuité » dans Système (navigation/cache/session/connexion/prix) | `CONTINUITY-00` |
+| **5·2 (pilote)** | **Aujourd'hui** branché en stale-while-revalidate (peinture immédiate du cache puis revalidation) — modèle des autres pages | commit `ae75bd3` |
 
-- **LOT 5·2 — Intégration des pages** (le plus gros ; touche les 8 espaces) : brancher
-  chaque page sur `VX.swr` (rendu immédiat du cache) + `VX.freshness` (badges live/
-  snapshot/stale) + `VX.prices` (prix cohérent), et sur `session_id`. À faire page par
-  page avec validation navigateur (risque de régression le plus élevé).
-- **LOT 6 — Polish** : observabilité dans Système (métriques nav/cache/session/store,
-  §18), accessibilité, mesures finales, documentation, captures.
+**Acquis global** : grâce au cache mémoire partagé + persistant (LOT 3), TOUTES les pages
+bénéficient déjà de la revisite instantanée (les données déjà chargées ne sont pas
+re-téléchargées lors d'une navigation SPA), du shell persistant (LOT 2), du préchargement
+(LOT 4), de la bascule de session (LOT 5), du mode offline et de l'identité de fraîcheur.
 
-Les fondations (mécaniques + serveur) étant posées et validées, l'intégration des pages
-peut se faire sereinement, une page à la fois.
+## Reste — polish optionnel par page (piloté par l'usage)
+
+L'infrastructure est complète et validée (**1045 tests verts**). Le reste est de la
+finition par page, à prioriser après essai de l'app en conditions réelles :
+
+- Généraliser le pattern SWR d'Aujourd'hui (peinture immédiate) aux autres vues par
+  défaut (Portefeuille, Opportunités, Marchés) — gain marginal, le cache mémoire les
+  sert déjà instantanément en SPA.
+- Poser les **badges de fraîcheur** `VX.freshness` sur les en-têtes de widgets (live/
+  snapshot/stale) là où c'est utile.
+- Alimenter `VX.prices` depuis les pages par-ticker (Analyse, Portefeuille, Options) pour
+  la cohérence de prix visible (§9).
+
+Ces éléments sont indépendants et se posent widget par widget, sans risque structurel.
