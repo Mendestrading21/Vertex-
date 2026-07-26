@@ -257,6 +257,9 @@ async function loadDossier(){
   try{exec=await VX.fetch('/api/strategy/decision/'+SYM,{ttl:60000});}catch(e){}
   TICKER=t;
   const d=(t&&t.detail)||{};
+  /* Source de prix centrale (§9) : le prix de ce ticker devient cohérent partout
+     (shell, Portefeuille, Options, listes). Prix invalide ignoré, jamais inventé. */
+  try{ if(window.VX&&VX.prices&&d.price!=null){ VX.prices.setLive(SYM,d.price,d.change); VX.prices.setRef(SYM,d.price,(VX.store&&VX.store.get('active_session_id'))||null); } }catch(e){}
   const demo=!!(window.__vxStatus&&window.__vxStatus.demo);
   if(!t||!t.in_universe&&!d.price){
     $('an-stale').innerHTML='<div class="vx-error-banner">Titre hors du scan courant — dossier partiel. '
