@@ -45,6 +45,7 @@ _CONTENT = """
 <div class="vx-page-header"><div><h1>Portefeuille</h1>
 <div class="vx-sub">Où mon capital est-il exposé, et quelle position exige une décision ?</div></div>
 <div class="vx-actions">
+  <span id="pf-fresh" style="align-self:center"></span>
   <button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal('','position')">+ Position</button>
   <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('','watchlist')">+ Watchlist</button>
   <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/tracking">Suivis →</a>
@@ -840,7 +841,14 @@ async function renderWatchlist(){
 
 const RENDER={team:renderSynthese,positions:renderPositions,performance:renderPerformance,
   options:renderOptions,risk:renderRisk,watchlist:renderWatchlist};
-function boot(){(RENDER[VIEW]||renderSynthese)().catch(e=>{$('pf-body').innerHTML=VX.states.error(e.message);});}
+async function pfFresh(){try{
+  const el=$('pf-fresh');if(!el||!window.VX||!VX.freshness)return;
+  let pk=VX.fetch.peek('/api/session/manifest');
+  if(!pk){try{await VX.fetch('/api/session/manifest',{ttl:30000});pk=VX.fetch.peek('/api/session/manifest');}catch(e){}}
+  const live=!(window.__vxStatus&&window.__vxStatus.demo);
+  el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:pk?pk.age:null,live:live}));
+}catch(e){}}
+function boot(){pfFresh();(RENDER[VIEW]||renderSynthese)().catch(e=>{$('pf-body').innerHTML=VX.states.error(e.message);});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 ['vx:position-changed','vx:watchlist-changed','vx:follow-changed','vx:favorites-changed']
   .forEach(ev=>VX.bus.on(ev,(e)=>{if((e.detail||{}).source!=='sync')return boot();boot();}));

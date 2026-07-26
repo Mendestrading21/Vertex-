@@ -24,7 +24,7 @@ def _tabs(view: str) -> str:
 _CONTENT = """
 <div class="vx-page-header"><div><h1>Opportunités</h1>
 <div class="vx-sub">Quelles opportunités méritent réellement une analyse ?</div></div>
-<div class="vx-actions"><button class="vx-btn vx-btn-sm"
+<div class="vx-actions"><span id="op-fresh" style="align-self:center"></span><button class="vx-btn vx-btn-sm"
   onclick="VXEntities.openAddModal()">+ Ajouter</button></div></div>
 %%TABS%%
 <div id="op-body" class="vx-mt4">%%LOADING%%</div>
@@ -611,7 +611,14 @@ async function renderCalendar(){
 
 const RENDER={radar:renderRadar,stocks:renderStocks,options:renderOptions,
   anomalies:renderAnomalies,calendar:renderCalendar};
-function boot(){(RENDER[VIEW]||renderRadar)().catch(e=>{
+async function opFresh(){try{
+  const el=document.getElementById('op-fresh');if(!el||!window.VX||!VX.freshness)return;
+  let pk=VX.fetch.peek('/api/session/manifest');
+  if(!pk){try{await VX.fetch('/api/session/manifest',{ttl:30000});pk=VX.fetch.peek('/api/session/manifest');}catch(e){}}
+  const live=!(window.__vxStatus&&window.__vxStatus.demo);
+  el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:pk?pk.age:null,live:live}));
+}catch(e){}}
+function boot(){opFresh();(RENDER[VIEW]||renderRadar)().catch(e=>{
   $('op-body').innerHTML=VX.states.error('Chargement impossible : '+e.message);});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 })();
