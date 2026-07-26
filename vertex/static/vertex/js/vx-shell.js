@@ -115,6 +115,38 @@
   }
   loadStatus(); VX.refresh.register(loadStatus, 90000, 'status', { persistent: true });
 
+  /* ── Session d'analyse : détection de NOUVELLE session + bascule atomique ──
+     (CONTINUITY LOT 5) On surveille le manifest ; quand le session_id change (un
+     nouveau scan s'est publié), on bascule d'un coup : le store est mis à jour, le
+     cache instantané (snapshot) est invalidé, une notification discrète paraît, et
+     toutes les pages se rechargent via vx:data-refreshed. Aucun recalcul, lecture seule. */
+  let _lastSessionNotify = 0;
+  const SESSION_NOTIFY_THROTTLE = 600000;   // notification visible au plus toutes les 10 min
+  async function watchSession() {
+    let m;
+    try { m = await VX.fetch('/api/session/manifest', { ttl: 0 }); } catch (e) { return; }
+    if (!m || !m.session_id) return;
+    const prev = VX.store.get('active_session_id');
+    VX.store.set('session_status', m.status);
+    // suivi SILENCIEUX du session_id à chaque cycle (base des badges de fraîcheur)
+    VX.store.set('active_session_id', m.session_id);
+    if (prev == null || m.session_id === prev) return;   // 1re observation ou inchangée
+    VX.store.set('previous_session_id', prev);
+    VX.bus.emit('vx:session-changed', m);                // toujours émis (silencieux)
+    // ── BASCULE ATOMIQUE VISIBLE (throttlée pour ne pas spammer, ~10 min) ──
+    const now = Date.now();
+    if (now - _lastSessionNotify < SESSION_NOTIFY_THROTTLE) return;
+    _lastSessionNotify = now;
+    VX.fetch.invalidate((u) => u.indexOf('/api/desk') !== 0);   // rafraîchit le snapshot, garde le desk perso
+    const bits = ['Analyse mise à jour'];
+    if (m.as_of) bits.push('Session ' + m.as_of);
+    if (m.scanned) bits.push(m.scanned + ' sociétés');
+    if (m.quality_pct != null) bits.push('qualité ' + m.quality_pct + ' %');
+    try { VX.toast(bits.join(' · '), 'success', 4200); } catch (e) {}
+    VX.bus.emit('vx:data-refreshed', { reason: 'session-switch' });
+  }
+  watchSession(); VX.refresh.register(watchSession, 60000, 'session-watch', { persistent: true });
+
   $('vx-connections-btn')?.addEventListener('click', async () => {
     let st = window.__vxStatus, diag = null;
     try { diag = await VX.fetch('/api/system/diagnostics', { ttl: 30000 }); } catch (e) {}

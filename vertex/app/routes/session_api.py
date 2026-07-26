@@ -21,7 +21,7 @@ from flask import Blueprint, jsonify
 
 from vertex.app.state import scan_state, cal_state
 from vertex.app.config import DEMO_MODE
-from vertex.engines import session_digest
+from vertex.engines import session_digest, session_snapshot
 from vertex.services import persist
 
 bp = Blueprint('session_api', __name__)
@@ -54,6 +54,14 @@ def api_session_digest():
         return jsonify(restored)
 
     return jsonify(d)      # première session à froid, rien à restaurer → 'analyzing'
+
+
+@bp.route('/api/session/manifest')
+def api_session_manifest():
+    """Manifest de la session d'analyse : session_id + intégrité (couverture, qualité,
+    statut, fraîcheur). Le client s'en sert pour détecter une NOUVELLE session et
+    basculer atomiquement. Lecture seule ; jamais de donnée inventée."""
+    return jsonify(session_snapshot.build(scan_state))
 
 
 __all__ = ['bp']
