@@ -138,8 +138,8 @@ def main():
     except Exception as e:
         check('READONLY', False, e)
     rules = ' '.join(str(r) for r in terminal.app.url_map.iter_rules()).lower()
-    check('Aucune route de passage d\'ordre',
-          not any(w in rules for w in ('place_order', 'placeorder', 'submitorder', 'transmit_order')))
+    mots_interdits = ('place_order', 'placeorder', 'submitorder', 'transmit_order')  # noms interdits
+    check("Aucune route de passage d'ordre", not any(w in rules for w in mots_interdits))
 
     # ── 8. Service Worker ──
     section('8. Service Worker (version)')
