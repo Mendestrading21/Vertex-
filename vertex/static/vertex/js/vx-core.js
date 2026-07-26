@@ -188,7 +188,9 @@
   VX.openAnalysis = function (symbol, extra) {
     VX.context.save(Object.assign({ selectedSymbol: symbol }, extra || {}));
     VX.recentTickers.push(symbol);
-    location.href = '/analysis/' + encodeURIComponent(symbol.toUpperCase());
+    var href = '/analysis/' + encodeURIComponent(symbol.toUpperCase());
+    if (VX.router && VX.router.go) VX.router.go(href);   // navigation ticker fluide (SPA)
+    else location.href = href;                            // repli dur (routeur absent)
   };
 
   /* ── Tickers récents ─────────────────────────────────────────────── */

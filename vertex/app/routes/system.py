@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v66';   // v66 (CONTINUITY LOT 3) : cache client persistant (sessionStorage) + stale-while-revalidate + invalidation ciblee
+const CACHE='td-shell-v67';   // v67 (CONTINUITY LOT 4) : prechargement hover/idle + navigation ticker SPA + transitions
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

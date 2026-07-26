@@ -21,7 +21,8 @@
   var style = document.createElement('style');
   style.textContent =
     '.vx-navigating #vx-content{opacity:.55;transition:opacity .12s ease}' +
-    '#vx-content{transition:opacity .12s ease}';
+    '#vx-content{transition:opacity .12s ease}' +
+    '@media (prefers-reduced-motion: reduce){.vx-navigating #vx-content,#vx-content{transition:none}}';
   document.head.appendChild(style);
   function startBar() { document.documentElement.classList.add('vx-navigating'); }
   function endBar() { document.documentElement.classList.remove('vx-navigating'); }
@@ -106,17 +107,52 @@
     if (m && VX.store) VX.store.set('active_ticker', m[1].toUpperCase());
   }
 
+  /* ── Préchargement (LOT 4) : au survol / focus / idle, on récupère le fragment
+     de la page probable et on le garde prêt → clic quasi instantané. Concurrence
+     bornée, dédup, TTL court. Uniquement des GET de lecture. ── */
+  var PF = new Map();               // href -> {ts, text, url, redirected}
+  var PF_TTL = 30000, PF_MAX = 12, PF_CONC = 2;
+  var pfInflight = new Map(), pfActive = 0, pfQueue = [];
+  function rawFetch(href) {
+    return fetch(href, { headers: { 'X-Vertex-Fragment': '1' }, credentials: 'same-origin' })
+      .then(function (r) { return r.text().then(function (t) { return { ok: r.ok, text: t, url: r.url, redirected: r.redirected }; }); });
+  }
+  function prefetch(href) {
+    if (!href || href.indexOf('/') !== 0) return;
+    var e = PF.get(href); if (e && Date.now() - e.ts < PF_TTL) return;
+    if (pfInflight.has(href)) return;
+    var run = function () {
+      pfActive++;
+      var pr = rawFetch(href).then(function (res) {
+        if (res.ok && res.text.indexOf('vx-fragment') > -1) {
+          PF.set(href, { ts: Date.now(), text: res.text, url: res.url, redirected: res.redirected });
+          if (PF.size > PF_MAX) PF.delete(PF.keys().next().value);
+        }
+      }).catch(function () {}).then(function () {
+        pfActive--; pfInflight.delete(href);
+        if (pfQueue.length && pfActive < PF_CONC) pfQueue.shift()();
+      });
+      pfInflight.set(href, pr);
+    };
+    if (pfActive < PF_CONC) run(); else pfQueue.push(run);
+  }
+  function takeFragment(href) {
+    var e = PF.get(href);
+    if (e && Date.now() - e.ts < PF_TTL) { PF.delete(href); return e; }
+    return null;
+  }
+
   var seq = 0;
   function navigate(url, opts) {
     opts = opts || {};
     var href = url.pathname + url.search + url.hash;
     var myseq = ++seq;
     startBar();
-    fetch(href, { headers: { 'X-Vertex-Fragment': '1' }, credentials: 'same-origin' })
-      .then(function (r) {
-        if (!r.ok) throw new Error('http');
-        return r.text().then(function (t) { return { t: t, url: r.url, redirected: r.redirected }; });
-      })
+    var pf = takeFragment(href);
+    var got = pf
+      ? Promise.resolve({ t: pf.text, url: pf.url, redirected: pf.redirected })   // déjà préchargé → instantané
+      : rawFetch(href).then(function (r) { if (!r.ok) throw new Error('http'); return { t: r.text, url: r.url, redirected: r.redirected }; });
+    got
       .then(function (res) {
         if (myseq !== seq) return;                          // navigation supplantée
         var doc = new DOMParser().parseFromString(res.t, 'text/html');
@@ -171,6 +207,34 @@
   window.addEventListener('popstate', function () {
     navigate(new URL(location.href), { push: false });
   });
+
+  /* Déclencheurs de préchargement : survol (débounce), focus clavier, idle. */
+  var hoverT = null;
+  function linkOf(e) { return e.target && e.target.closest ? e.target.closest('a[href]') : null; }
+  function pfLink(a) { var u = internalURL(a); if (u) prefetch(u.pathname + u.search); }
+  document.addEventListener('mouseover', function (e) {
+    var a = linkOf(e); if (!a) return;
+    clearTimeout(hoverT); hoverT = setTimeout(function () { pfLink(a); }, 90);
+  });
+  document.addEventListener('focusin', function (e) { var a = linkOf(e); if (a) pfLink(a); });
+
+  /* Idle : précharge les pages probables depuis l'espace courant. */
+  var NEXT = {
+    briefing: ['/markets', '/opportunities', '/portfolio'],
+    opportunities: ['/analysis', '/markets'], portfolio: ['/analysis', '/options'],
+    analysis: ['/opportunities', '/options'], markets: ['/opportunities'], options: ['/analysis'],
+  };
+  function idlePrefetch() {
+    var c = contentEl(); var sp = c && c.getAttribute('data-space');
+    (NEXT[sp] || []).forEach(prefetch);
+  }
+  function scheduleIdle() {
+    if (window.requestIdleCallback) requestIdleCallback(idlePrefetch, { timeout: 3000 });
+    else setTimeout(idlePrefetch, 1200);
+  }
+  VX.bus.on('vx:navigated', scheduleIdle, { persistent: true });
+  if (document.readyState === 'complete') scheduleIdle();
+  else window.addEventListener('load', scheduleIdle, { once: true });
 
   /* API programmatique (utilisée par les navigations « location.href » migrables). */
   VX.router = {
