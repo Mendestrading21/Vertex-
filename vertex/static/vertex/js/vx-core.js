@@ -222,6 +222,15 @@
       Object.keys(obj).forEach((u) => { cache.set(u, obj[u]); });
     } catch (e) {}
   })();
+  // Ne JAMAIS archiver de données personnelles/compte en clair dans sessionStorage
+  // (positions réelles, IBKR, desk, compte) — confidentialité. Ces endpoints restent
+  // en cache mémoire (perdu au reload), mais ne sont pas persistés.
+  const PERSIST_DENY = ['/api/ibkr', '/api/positions', '/api/pos-quotes', '/api/desk',
+    '/api/account', '/api/tracking'];
+  function _persistable(url) {
+    for (let i = 0; i < PERSIST_DENY.length; i++) { if (url.indexOf(PERSIST_DENY[i]) === 0) return false; }
+    return true;
+  }
   let _persistTimer = null;
   function schedulePersist() {
     if (_persistTimer) return;
@@ -233,6 +242,7 @@
         const entries = Array.from(cache.entries()).sort((a, b) => b[1].ts - a[1].ts);
         for (const [u, v] of entries) {
           if (n >= PERSIST_MAX) break;
+          if (!_persistable(u)) continue;               // données perso/compte → jamais persistées
           let s; try { s = JSON.stringify(v); } catch (e) { continue; }
           if (s.length > PERSIST_MAX_ENTRY) continue;   // trop gros → non persisté
           out[u] = v; n++;
@@ -366,6 +376,7 @@
       this._leave = [];
       try { VX.refresh._clearPage(); } catch (e) {}
       try { VX.bus._clearPage(); } catch (e) {}
+      try { if (window.VXCharts && VXCharts.destroyAll) VXCharts.destroyAll(); } catch (e) {}
       this._gen++;
     },
   };

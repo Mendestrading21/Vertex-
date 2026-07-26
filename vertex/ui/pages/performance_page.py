@@ -143,7 +143,7 @@ _JS = r"""
 const VIEW='%%VIEW%%';
 const $=(id)=>document.getElementById(id);
 const E=()=>window.VXEntities;
-function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 function trades(){/* entrées avec un résultat déclaré et un P&L numérique */
   return (E()?E().journal():[]).filter(e=>(e.result==='WIN'||e.result==='LOSS')&&isFinite(Number(e.pnl)));
 }

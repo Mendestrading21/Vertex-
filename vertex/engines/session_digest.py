@@ -74,25 +74,24 @@ def build(scan_state, cal_state=None, demo=False):
     # Opportunités actionnables : MÊME critère que le Command Center (verdict comité).
     decisions = cm.get('decisions') or []
     actionable = [d.get('symbol') for d in decisions
-                  if d.get('verdict') in ('ACHETER', 'RENFORCER') and d.get('symbol')]
+                  if isinstance(d, dict) and d.get('verdict') in ('ACHETER', 'RENFORCER') and d.get('symbol')]
 
     # Catalyseurs imminents : depuis le calendrier moteur (dte croissant), jamais inventés.
+    # dte NON numérique ignoré (un seul dte texte ne doit PAS masquer tous les catalyseurs).
     items = ((cal_state or {}).get('items')) or []
-    dated = [c for c in items if isinstance(c, dict) and c.get('dte') is not None]
-    try:
-        dated.sort(key=lambda c: c.get('dte'))
-    except Exception:
-        dated = []
+    dated = [c for c in items if isinstance(c, dict) and isinstance(c.get('dte'), (int, float))
+             and not isinstance(c.get('dte'), bool)]
+    dated.sort(key=lambda c: c['dte'])
     nxt = dated[0] if dated else None
 
     # Confiance données : couverture réelle (titres scannés ayant un détail moteur).
-    covered = sum(1 for r in rows if detail.get(r.get('symbol'))) if rows else 0
+    covered = sum(1 for r in rows if isinstance(r, dict) and r.get('symbol') in detail) if rows else 0
     confidence = round(100 * covered / len(rows)) if rows else None
 
     return {
         'state': 'ready' if has_data else 'analyzing',
         'as_of': as_of,
-        'age_s': (round(time.time() - ts) if ts else None),
+        'age_s': (round(time.time() - ts) if isinstance(ts, (int, float)) and not isinstance(ts, bool) else None),
         'demo': bool(demo),
         'generator': 'deterministic',
         'regime': _regime(mc, has_data),

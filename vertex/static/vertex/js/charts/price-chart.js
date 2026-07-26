@@ -2,7 +2,7 @@
    moteurs + niveaux du PLAN moteur (entrée/stop/TP) + marqueurs earnings.
    L'UI ne recalcule AUCUN indicateur : les moyennes mobiles ne sont tracées
    que si le moteur les fournit (limitation documentée sinon). */
-(function(){const C=window.VXCharts,VX=window.VX;
+(function(){const C=window.VXCharts=window.VXCharts||{},VX=window.VX;
 C.priceCard=function(host,opts){
   /* opts: labels, closes, plan{entry,stop,tp1,tp2,tp3}, events[{index,label}],
            overlays[{label,values,color}] (fournis par le moteur uniquement) */

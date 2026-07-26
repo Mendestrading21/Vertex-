@@ -70,7 +70,7 @@ _JS = r"""
 const VIEW=%%VIEW%%;
 const $=(id)=>document.getElementById(id);
 const E=()=>window.VXEntities;
-function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 function kv(k,v,cls){return `<div class="vx-kv"><span class="k">${k}</span><span class="v ${cls||''}">${VX.fmt.nd(v)}</span></div>`;}
 const toneCls=(t)=>({pos:'vx-pos',neg:'vx-neg',warn:'vx-warn',muted:'vx-muted'}[t]||'vx-muted');
 
@@ -846,7 +846,10 @@ async function pfFresh(){try{
   let pk=VX.fetch.peek('/api/session/manifest');
   if(!pk){try{await VX.fetch('/api/session/manifest',{ttl:30000});pk=VX.fetch.peek('/api/session/manifest');}catch(e){}}
   const live=!(window.__vxStatus&&window.__vxStatus.demo);
-  el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:pk?pk.age:null,live:live}));
+  /* Âge HONNÊTE = ancienneté réelle de la session (manifest.age_s), pas l'âge de
+     l'entrée de cache : un manifest resservi doit refléter l'âge de la DONNÉE. */
+  const a=(pk&&pk.data&&typeof pk.data.age_s==='number')?pk.data.age_s*1000:null;
+  el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:a,live:live}));
 }catch(e){}}
 function boot(){pfFresh();(RENDER[VIEW]||renderSynthese)().catch(e=>{$('pf-body').innerHTML=VX.states.error(e.message);});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});

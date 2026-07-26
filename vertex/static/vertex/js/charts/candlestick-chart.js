@@ -6,7 +6,7 @@
    Tooltip index + crosshair Chart.js, niveaux du plan et marqueurs d'événements
    conservés. */
 (function () {
-  const C = window.VXCharts, VX = window.VX;
+  const C = window.VXCharts = window.VXCharts || {}, VX = window.VX;
 
   function shownOverlays(overlays) {
     return (overlays || []).filter(function (o) {

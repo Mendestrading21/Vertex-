@@ -1,6 +1,6 @@
 /* option-payoff.js — payoff à l'échéance depuis strike/prime FOURNIS.
    P&L par prix du sous-jacent = arithmétique du contrat (pas un modèle). */
-(function(){const C=window.VXCharts,VX=window.VX;
+(function(){const C=window.VXCharts=window.VXCharts||{},VX=window.VX;
 C.payoffCard=function(host,opts){
   /* opts: spot, strike, premium, right('C'|'P'), breakeven */
   const s0=opts.spot,K=opts.strike,prem=opts.premium,right=opts.right||'C';

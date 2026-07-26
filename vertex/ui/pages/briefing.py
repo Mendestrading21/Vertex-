@@ -155,7 +155,7 @@ _JS = r"""
 'use strict';
 const $=(id)=>document.getElementById(id);
 const E=()=>window.VXEntities;
-function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 function freshBadge(m){const map={live:['live','Live'],delayed:['delayed','Différé'],demo:['fallback','Démo'],stale:['frozen','Périmé'],offline:['offline','Hors ligne'],missing:['offline','Indisponible']};
   const x=map[m]||map.delayed;return '<span class="vx-freshness" data-live="'+x[0]+'"><span class="vx-live-dot"></span>'+x[1]+'</span>';}
 function num(x){return (x!==null&&x!==undefined&&!isNaN(x))?Number(x):null;}

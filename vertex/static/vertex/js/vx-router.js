@@ -50,12 +50,21 @@
     return false;
   }
 
-  /* Exécute les scripts du fragment DANS L'ORDRE : externes (une fois) puis inline. */
-  function runScripts(scripts, done) {
+  /* Exécute les scripts du fragment : externes D'ABORD (une fois, dédup) puis inline.
+     Garantir cet ordre — indépendamment de l'ordre du document — permet aux IIFE
+     inline de trouver leurs builders externes (VXCharts…) déjà chargés.
+     `alive()` coupe l'exécution dès qu'une navigation plus récente a pris la main :
+     sans ce garde, le JS d'une page supplantée pourrait s'exécuter sur le DOM d'une
+     autre (course de navigations rapides). */
+  function runScripts(scripts, alive, done) {
+    var ext = [], inl = [];
+    scripts.forEach(function (n) { (n.getAttribute('src') ? ext : inl).push(n); });
+    var ordered = ext.concat(inl);
     var i = 0;
     function next() {
-      if (i >= scripts.length) { done(); return; }
-      var node = scripts[i++];
+      if (alive && !alive()) return;                        // navigation supplantée → stop
+      if (i >= ordered.length) { done(); return; }
+      var node = ordered[i++];
       var src = node.getAttribute('src');
       if (src) {
         var abs = new URL(src, location.href).href;
@@ -67,10 +76,10 @@
         document.body.appendChild(s);
       } else {
         try {
-          var inl = document.createElement('script');
-          inl.textContent = node.textContent;               // IIFE → portée isolée
-          document.body.appendChild(inl);
-          inl.parentNode.removeChild(inl);                   // DOM propre
+          var inlN = document.createElement('script');
+          inlN.textContent = node.textContent;              // IIFE → portée isolée
+          document.body.appendChild(inlN);
+          inlN.parentNode.removeChild(inlN);                // DOM propre
         } catch (e) { /* une page cassée ne casse pas la nav */ }
         next();
       }
@@ -112,7 +121,7 @@
      bornée, dédup, TTL court. Uniquement des GET de lecture. ── */
   var PF = new Map();               // href -> {ts, text, url, redirected}
   var PF_TTL = 30000, PF_MAX = 12, PF_CONC = 2;
-  var pfInflight = new Map(), pfActive = 0, pfQueue = [];
+  var pfInflight = new Map(), pfActive = 0, pfQueue = [], pfQueued = new Set();
   function rawFetch(href) {
     return fetch(href, { headers: { 'X-Vertex-Fragment': '1' }, credentials: 'same-origin' })
       .then(function (r) { return r.text().then(function (t) { return { ok: r.ok, text: t, url: r.url, redirected: r.redirected }; }); });
@@ -120,8 +129,9 @@
   function prefetch(href) {
     if (!href || href.indexOf('/') !== 0) return;
     var e = PF.get(href); if (e && Date.now() - e.ts < PF_TTL) return;
-    if (pfInflight.has(href)) return;
+    if (pfInflight.has(href) || pfQueued.has(href)) return;   // déjà en vol OU déjà en file
     var run = function () {
+      pfQueued.delete(href);
       pfActive++;
       var pr = rawFetch(href).then(function (res) {
         if (res.ok && res.text.indexOf('vx-fragment') > -1) {
@@ -134,7 +144,7 @@
       });
       pfInflight.set(href, pr);
     };
-    if (pfActive < PF_CONC) run(); else pfQueue.push(run);
+    if (pfActive < PF_CONC) run(); else { pfQueued.add(href); pfQueue.push(run); }
   }
   function takeFragment(href) {
     var e = PF.get(href);
@@ -184,7 +194,7 @@
 
         if (opts.scrollY != null) window.scrollTo(0, opts.scrollY); else window.scrollTo(0, 0);
 
-        runScripts(scripts, function () {
+        runScripts(scripts, function () { return myseq === seq; }, function () {
           if (myseq !== seq) return;
           endBar();
           VX.bus.emit('vx:navigated', { href: finalHref });

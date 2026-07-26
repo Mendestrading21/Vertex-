@@ -235,7 +235,7 @@ const $=(id)=>document.getElementById(id);
 const E=()=>window.VXEntities;
 const ROOT=document.getElementById('vx-system');
 const VIEW=(ROOT&&ROOT.dataset.view)||'connections';
-function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 function whenChartsReady(fn){
   if(window.VXCharts&&window.Chart)return fn();
   window.addEventListener('load',fn,{once:true});

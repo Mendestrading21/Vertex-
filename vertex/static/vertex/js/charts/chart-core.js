@@ -48,6 +48,26 @@
     registry.set(canvas, chart);
     return chart;
   };
+  /* Détruit UNE instance sur un canvas donné (registre + registre interne Chart.js). */
+  function destroyOn(canvas) {
+    if (!canvas) return;
+    try {
+      const c = registry.get(canvas) || (window.Chart && Chart.getChart && Chart.getChart(canvas));
+      if (c) c.destroy();
+    } catch (e) {}
+    registry.delete(canvas);
+  }
+  /* Détruit TOUS les graphiques Chart.js montés (appelé au teardown de page — anti-fuite
+     sur navigation SPA : les canvas de la page sortante seraient sinon orphelins). */
+  C.destroyAll = function () {
+    try {
+      document.querySelectorAll('canvas').forEach(function (cv) {
+        const c = window.Chart && Chart.getChart && Chart.getChart(cv);
+        if (c) { try { c.destroy(); } catch (e) {} }
+      });
+    } catch (e) {}
+    registry.clear();
+  };
   C.axes = function ({ y = true, x = true, yFmt } = {}) {
     return {
       x: { display: x, grid: { color: C.colors.grid }, ticks: { maxTicksLimit: 8, maxRotation: 0 } },
@@ -105,6 +125,7 @@
        fraîcheur · légende · aide · résumé accessible · skeleton/vide/périmé/erreur. */
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;
+    destroyOn(el.querySelector('canvas'));   // anti-fuite : détruit le graphique du rendu précédent
     const id = 'vxch-' + (++uid);
     const legend = (opts.legend || []).map(l =>
       `<span><span class="vx-swatch" style="background:${l.color}"></span>${l.label}</span>`).join('');

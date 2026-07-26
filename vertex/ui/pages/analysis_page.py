@@ -90,14 +90,17 @@ $('an-favs').innerHTML=(Array.isArray(favs)&&favs.length?favs:[]).map(s=>
   `<button class="vx-btn vx-ticker" data-open-analysis="${s}">${s}</button>`).join('')
   ||'<span class="vx-muted">Aucun favori — marque un titre avec ★ depuis sa fiche.</span>';
 let names=null;
+/* Échappement local (ce bloc est une IIFE distincte du esc() principal) : les libellés
+   de /api/names sont rendus en innerHTML → on neutralise tout HTML/attribut. */
+const escN=s=>String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
 $('an-search').addEventListener('input',async function(){
   const q=this.value.trim().toUpperCase();
   if(!q){$('an-results').innerHTML='';return}
   try{ if(!names){const d=await VX.fetch('/api/names',{ttl:600000});names=d.names||d;} }catch(e){names={};}
   const hits=Object.entries(names).filter(([s,n])=>s.startsWith(q)||String(n).toUpperCase().includes(q)).slice(0,8);
   $('an-results').innerHTML=(hits.length?hits:( /^[A-Z.]{1,6}$/.test(q)?[[q,'ouvrir la fiche']]:[]))
-    .map(([s,n])=>`<button class="vx-btn" style="justify-content:flex-start" data-open-analysis="${s}">
-      <span class="vx-ticker" style="min-width:64px">${s}</span><span class="vx-dim">${n}</span></button>`).join('')
+    .map(([s,n])=>`<button class="vx-btn" style="justify-content:flex-start" data-open-analysis="${escN(s)}">
+      <span class="vx-ticker" style="min-width:64px">${escN(s)}</span><span class="vx-dim">${escN(n)}</span></button>`).join('')
     ||VX.states.empty('Aucun titre trouvé dans l’univers.');
 });
 $('an-search').focus();
@@ -226,7 +229,7 @@ _JS = r"""
 const SYM=%%SYM_JSON%%;
 const $=(id)=>document.getElementById(id);
 const E=()=>window.VXEntities;
-function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 function body(id,html){const el=document.querySelector('#'+id+' [data-body]');if(el)el.innerHTML=html;}
 function kv(k,v,cls){return `<div class="vx-kv"><span class="k">${k}</span><span class="v ${cls||''}">${VX.fmt.nd(v)}</span></div>`;}
 
@@ -254,8 +257,13 @@ VX.bus.on('vx:thesis-changed',paintThesis);
 let TF='6m'; let TICKER=null;
 async function loadDossier(){
   let t=null,exec=null,stale=false;
+  /* Anti-course ticker (§CONTINUITY) : on fige la génération de page à l'entrée. Si
+     l'utilisateur a navigué ailleurs pendant les fetch, _gen a changé → on abandonne
+     AVANT de peindre, pour ne jamais afficher le dossier d'un titre sur une autre page. */
+  const _g=(window.VX&&VX.page)?VX.page._gen:0;
   try{t=await VX.fetch('/api/ticker/'+SYM,{ttl:60000});}catch(e){}
   try{exec=await VX.fetch('/api/strategy/decision/'+SYM,{ttl:60000});}catch(e){}
+  if(window.VX&&VX.page&&VX.page._gen!==_g)return;   // page supplantée → ne rien peindre
   TICKER=t;
   const d=(t&&t.detail)||{};
   /* Source de prix centrale (§9) : le prix de ce ticker devient cohérent partout

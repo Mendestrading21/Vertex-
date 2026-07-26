@@ -131,7 +131,9 @@
   async function loadStatus() {
     try {
       const st = await VX.fetch('/api/live/status', { ttl: 60000 });
-      setNet('online');
+      // HONNÊTETÉ réseau : le statut peut être servi du cache persistant pendant une
+      // vraie coupure — ne JAMAIS annoncer « Reconnecté » si le navigateur est hors ligne.
+      if (navigator.onLine !== false) setNet('online');
       const el = $('vx-global-status'); if (!el) return;
       const demo = !!st.demo;
       const dot = el.querySelector('.vx-dot'); const label = el.querySelector('.vx-status-label');

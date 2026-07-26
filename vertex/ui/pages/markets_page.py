@@ -204,7 +204,7 @@ _JS = r"""
 'use strict';
 const VIEW='%%VIEW%%';
 const $=(id)=>document.getElementById(id);
-function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 function modeOf(scan){return scan&&scan.data_source==='demo'?'fallback':(scan&&scan.source==='ibkr'?'live':'delayed');}
 // Contexte de marché = market_ctx (régime/vix/breadth/verdict) FUSIONNÉ avec
 // market (statut horaire). Avant, `market` (et/open/session) masquait tout le
@@ -864,9 +864,11 @@ async function boot(){
     /* Badge de fraîcheur du snapshot (§8) : Live / Analyse / À actualiser. */
     try{
       if($('vx-mk-fresh')&&window.VX&&VX.freshness&&scan){
-        const pk=VX.fetch.peek('/scan');
+        /* Âge HONNÊTE = ancienneté réelle du scan (scan_age serveur), pas l'âge de
+           l'entrée de cache : un snapshot resservi doit refléter l'âge de la DONNÉE. */
+        const ageMs=(typeof scan.scan_age==='number')?scan.scan_age*1000:null;
         const live=scan.data_source!=='demo';
-        $('vx-mk-fresh').innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:pk?pk.age:null,live:live}));
+        $('vx-mk-fresh').innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:ageMs,live:live}));
       }
     }catch(e){}
     if(VIEW==='overview'){loadRegime(scan);loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);loadMovers(scan);}

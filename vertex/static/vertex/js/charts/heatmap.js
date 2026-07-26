@@ -1,6 +1,6 @@
 /* heatmap.js — heatmaps HTML/CSS (secteurs, corrélations, IV) : plus lisible
    et accessible qu'un canvas pour des grilles de petite taille. */
-(function(){const C=window.VXCharts,VX=window.VX;
+(function(){const C=window.VXCharts=window.VXCharts||{},VX=window.VX;
 function cellColor(v,min,max){
   if(v===null||v===undefined||!isFinite(v))return'var(--vx-surface-elevated)';
   const t=Math.max(-1,Math.min(1,(v-(min+max)/2)/((max-min)/2||1)));

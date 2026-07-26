@@ -43,7 +43,7 @@ _JS = r"""
 'use strict';
 const VIEW=%%VIEW%%;const PARAMS=%%PARAMS%%;
 const $=(id)=>document.getElementById(id);
-function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 const OUT=['Rejetée','Radar','À surveiller','Proche','Actionnable','Invalidée'];
 function bucketOf(r){
   if(r.verdict==='AVOID'||r.verdict==='ÉVITER')return'Rejetée';
@@ -616,7 +616,10 @@ async function opFresh(){try{
   let pk=VX.fetch.peek('/api/session/manifest');
   if(!pk){try{await VX.fetch('/api/session/manifest',{ttl:30000});pk=VX.fetch.peek('/api/session/manifest');}catch(e){}}
   const live=!(window.__vxStatus&&window.__vxStatus.demo);
-  el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:pk?pk.age:null,live:live}));
+  /* Âge HONNÊTE = ancienneté réelle de la session (manifest.age_s), pas l'âge de
+     l'entrée de cache : un manifest resservi doit refléter l'âge de la DONNÉE. */
+  const a=(pk&&pk.data&&typeof pk.data.age_s==='number')?pk.data.age_s*1000:null;
+  el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:a,live:live}));
 }catch(e){}}
 function boot(){opFresh();(RENDER[VIEW]||renderRadar)().catch(e=>{
   $('op-body').innerHTML=VX.states.error('Chargement impossible : '+e.message);});}

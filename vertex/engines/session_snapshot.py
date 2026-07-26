@@ -22,8 +22,11 @@ import time
 
 
 def session_id_for(scan_ts):
-    """Identifiant stable d'un cycle de scan (None si aucun scan publié)."""
-    return ('S%d' % int(scan_ts)) if scan_ts else None
+    """Identifiant stable d'un cycle de scan (None si aucun scan publié / horodatage
+    non numérique — jamais de crash sur un état inattendu)."""
+    if not isinstance(scan_ts, (int, float)) or isinstance(scan_ts, bool):
+        return None
+    return 'S%d' % int(scan_ts)
 
 
 def build(scan_state):
@@ -44,16 +47,16 @@ def build(scan_state):
     else:
         status = 'analyzing'         # démarrage à froid : scan pas encore publié
 
-    coverage = (round(100 * scanned / universe)
+    coverage = (min(100, round(100 * scanned / universe))     # jamais > 100 % (univers périmé)
                 if isinstance(scanned, (int, float)) and universe else None)
-    covered = sum(1 for r in rows if r.get('symbol') in detail) if rows else 0
+    covered = sum(1 for r in rows if isinstance(r, dict) and r.get('symbol') in detail) if rows else 0
     quality = round(100 * covered / len(rows)) if rows else None
 
     return {
         'session_id': session_id_for(ts),
         'status': status,
         'as_of': scan_state.get('scan_ts_h') or scan_state.get('updated'),
-        'age_s': (round(time.time() - ts) if ts else None),
+        'age_s': (round(time.time() - ts) if isinstance(ts, (int, float)) and not isinstance(ts, bool) else None),
         'universe': universe,
         'scanned': scanned,
         'coverage_pct': coverage,

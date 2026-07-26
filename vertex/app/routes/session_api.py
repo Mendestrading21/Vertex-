@@ -51,6 +51,10 @@ def api_session_digest():
     if snap:
         restored = dict(snap)
         restored['state'] = 'restored'
+        # HONNÊTETÉ : l'âge figé au build sous-estimerait la vraie ancienneté d'un
+        # instantané restauré (potentiellement d'une exécution précédente). On l'efface
+        # → le client n'affiche que l'horodatage absolu `as_of`, jamais un âge faussement frais.
+        restored['age_s'] = None
         return jsonify(restored)
 
     return jsonify(d)      # première session à froid, rien à restaurer → 'analyzing'
