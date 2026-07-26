@@ -414,6 +414,50 @@
       if (h.length > 30) h.shift();
     },
   };
+
+  /* ── Source de prix CENTRALE (§9, LOT 5) ──────────────────────────────
+     Un ticker = un prix partout (shell, Analyse, Portefeuille, Options, listes).
+     On distingue explicitement : prix LIVE, prix de RÉFÉRENCE du snapshot (session),
+     prix moyen d'ACHAT. On ne remplace JAMAIS silencieusement un prix de scénario/
+     référence par le live. Prix invalide → ignoré (jamais de chiffre inventé).
+     Les widgets lisent get()/subscribe() → cohérence garantie entre les pages. */
+  VX.prices = {
+    _m: {},        // SYM -> {live, chg, liveTs, ref, refSession, avgCost}
+    _subs: {},
+    get(sym) { return sym ? (this._m[String(sym).toUpperCase()] || null) : null; },
+    _ok(v) { return v != null && isFinite(v); },
+    setLive(sym, price, chg, ts) {
+      if (!sym || !this._ok(price)) return;              // jamais de prix inventé
+      sym = String(sym).toUpperCase();
+      const e = this._m[sym] || (this._m[sym] = {});
+      e.live = +price; if (this._ok(chg)) e.chg = +chg; e.liveTs = ts || Date.now();
+      try { VX.store._s.live_prices[sym] = e; } catch (x) {}
+      this._emit(sym);
+    },
+    setRef(sym, price, sessionId) {                       // prix figé du snapshot d'analyse
+      if (!sym) return;
+      sym = String(sym).toUpperCase();
+      const e = this._m[sym] || (this._m[sym] = {});
+      if (this._ok(price)) { e.ref = +price; e.refSession = sessionId || null; }
+      this._emit(sym);
+    },
+    setAvgCost(sym, price) {
+      if (!sym || !this._ok(price)) return;
+      sym = String(sym).toUpperCase();
+      (this._m[sym] || (this._m[sym] = {})).avgCost = +price;
+    },
+    subscribe(sym, cb) {
+      sym = String(sym).toUpperCase();
+      (this._subs[sym] || (this._subs[sym] = [])).push(cb);
+      if (this._m[sym]) { try { cb(this._m[sym]); } catch (e) {} }   // valeur courante tout de suite
+      return () => { this._subs[sym] = (this._subs[sym] || []).filter((f) => f !== cb); };
+    },
+    _emit(sym) {
+      (this._subs[sym] || []).forEach((cb) => { try { cb(this._m[sym]); } catch (e) {} });
+      VX.bus.emit('vx:price:' + sym, this._m[sym]);
+    },
+  };
+
   /* Suspendre en arrière-plan, rafraîchir au retour. */
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) VX.bus.emit('vx:data-refreshed', { reason: 'visibility' });
