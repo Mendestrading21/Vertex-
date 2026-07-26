@@ -39,3 +39,5 @@ desk_backup_*.json
 # Enrichissement Claude+web (runtime, jamais commité)
 ai_enrichment.json
 ai_enrichment_backup_*.json
+_v.log
+_verif.log
