@@ -37,6 +37,7 @@ _HEADER = """
 <div class="vx-page-header">
   <div><h1>Marchés</h1>
   <div class="vx-sub">Dans quel environnement la stratégie opère-t-elle ?</div></div>
+  <span id="vx-mk-fresh" class="vx-right"></span>
 </div>
 %%TABS%%
 <div id="vx-demo-banner"></div>
@@ -860,6 +861,14 @@ async function loadVix(scan){
 async function boot(){
   const render=(scan)=>{
     demoBanner(scan);
+    /* Badge de fraîcheur du snapshot (§8) : Live / Analyse / À actualiser. */
+    try{
+      if($('vx-mk-fresh')&&window.VX&&VX.freshness&&scan){
+        const pk=VX.fetch.peek('/scan');
+        const live=scan.data_source!=='demo';
+        $('vx-mk-fresh').innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:pk?pk.age:null,live:live}));
+      }
+    }catch(e){}
     if(VIEW==='overview'){loadRegime(scan);loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);loadMovers(scan);}
     else if(VIEW==='macro'){loadMacroKpis(scan);loadMacroRegime();loadYield(scan);loadMacroCal();}
     else if(VIEW==='sectors'){loadSectors(scan);}

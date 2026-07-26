@@ -121,6 +121,7 @@ _SECTIONS = """
     <span class="vx-dim" id="an-name">—</span>
     <span class="vx-kpi-value" style="font-size:22px" id="an-price">—</span>
     <span class="vx-mono" id="an-change">—</span>
+    <span id="an-fresh"></span>
     <span class="vx-badge vx-badge-decision" id="an-decision" data-decision="">—</span>
     <span id="an-badges"></span>
     <span class="vx-right vx-flex">
@@ -271,6 +272,17 @@ async function loadDossier(){
   const chg=d.change;
   $('an-change').textContent=chg!==undefined?VX.fmt.pct(chg):'n/d';
   $('an-change').className='vx-mono '+(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted');
+  /* Badge de fraîcheur du prix (§8) : Live / Analyse / À actualiser, honnête. */
+  try{
+    if($('an-fresh')&&window.VX&&VX.freshness){
+      if(d.price==null){$('an-fresh').innerHTML='';}
+      else{
+        const pk=VX.fetch.peek('/api/ticker/'+SYM);
+        const live=!(window.__vxStatus&&window.__vxStatus.demo);
+        $('an-fresh').innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:pk?pk.age:null,live:live}));
+      }
+    }
+  }catch(e){}
   const decision=(exec&&exec.final_decision)||'ATTENDRE';
   const db=$('an-decision');db.textContent=decision;db.dataset.decision=decision.replace('É','E');
   /* Rail décisionnel sticky */
