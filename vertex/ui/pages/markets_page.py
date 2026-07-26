@@ -858,13 +858,19 @@ async function loadVix(scan){
 
 /* ═══ Orchestration ═══ */
 async function boot(){
-  const scan=await getScan();
-  demoBanner(scan);
-  if(VIEW==='overview'){loadRegime(scan);loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);loadMovers(scan);}
-  else if(VIEW==='macro'){loadMacroKpis(scan);loadMacroRegime();loadYield(scan);loadMacroCal();}
-  else if(VIEW==='sectors'){loadSectors(scan);}
-  else if(VIEW==='breadth'){loadBreadth(scan);}
-  else if(VIEW==='volatility'){loadVix(scan);}
+  const render=(scan)=>{
+    demoBanner(scan);
+    if(VIEW==='overview'){loadRegime(scan);loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);loadMovers(scan);}
+    else if(VIEW==='macro'){loadMacroKpis(scan);loadMacroRegime();loadYield(scan);loadMacroCal();}
+    else if(VIEW==='sectors'){loadSectors(scan);}
+    else if(VIEW==='breadth'){loadBreadth(scan);}
+    else if(VIEW==='volatility'){loadVix(scan);}
+  };
+  /* Stale-while-revalidate : peinture IMMÉDIATE depuis le cache (revisite instantanée)
+     puis revalidation en fond — jamais d'écran vide. */
+  const pk=VX.fetch.peek('/scan');
+  if(pk&&pk.data) render(pk.data);
+  render(await getScan());
 }
 function whenChartsReady(fn){
   if(window.VXCharts&&window.Chart)return fn();
