@@ -137,6 +137,13 @@ _VIEW_CONTENT = {
     <div class="vx-card-header"><span class="vx-card-title">Titres en qualit&eacute; d&eacute;grad&eacute;e</span></div>
     <div id="vx-data-degraded">%%LOADING%%</div>
   </section>
+</div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Continuit&eacute;">
+    <div class="vx-card-header"><span class="vx-card-title">Continuit&eacute; &mdash; navigation &amp; donn&eacute;es</span>
+      <span class="vx-actions vx-meta">Session applicative continue (client)</span></div>
+    <div id="vx-continuity">%%LOADING%%</div>
+  </section>
 </div>''',
 
     'automations': '''
@@ -593,6 +600,39 @@ async function loadConnections(){
   }
 }
 
+/* ══ Continuité — observabilité navigation & données (§18) ══════════ */
+async function loadContinuity(){
+  const host=$('vx-continuity'); if(!host)return;
+  const s=(VX.fetch.stats&&VX.fetch.stats())||{};
+  const st=(VX.store&&VX.store.snapshot&&VX.store.snapshot())||{};
+  let man=null; try{ man=await VX.fetch('/api/session/manifest',{ttl:30000}); }catch(e){}
+  const net=document.documentElement.getAttribute('data-net')||'online';
+  const nPrices=(VX.prices&&VX.prices._m)?Object.keys(VX.prices._m).length:0;
+  const fr=(VX.freshness&&man)?VX.freshness.chip(VX.freshness.assess({ageMs:(man.age_s||0)*1000,
+      offline:net==='offline', error:man.error, refreshing:man.status==='analyzing'})):'';
+  const row=(k,v)=>'<div class="vx-kv"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
+  const nd=(v,suf)=>(v==null?'&mdash;':(''+v+(suf||'')));
+  host.innerHTML='<div class="vx-grid">'
+   +'<div class="vx-col-4"><div class="vx-subhead">Navigation</div>'
+     +row('Shell persistant','oui (SPA)')
+     +row('Historique',(st.nav_history?st.nav_history.length:0)+' pages')
+     +row('Ticker actif',nd(st.active_ticker))+'</div>'
+   +'<div class="vx-col-4"><div class="vx-subhead">Cache client</div>'
+     +row('Entrées',nd(s.entries))
+     +row('Taux de hits',nd(s.hit_rate,'&nbsp;%'))
+     +row('Dédup / requêtes en vol',nd(s.dedup)+' / '+nd(s.inflight))+'</div>'
+   +'<div class="vx-col-4"><div class="vx-subhead">Session d\'analyse '+fr+'</div>'
+     +row('Session',nd(man&&man.session_id))
+     +row('Couverture',nd(man&&man.coverage_pct,'&nbsp;%'))
+     +row('Qualité données',nd(man&&man.quality_pct,'&nbsp;%'))+'</div>'
+   +'<div class="vx-col-4"><div class="vx-subhead">Connexion</div>'
+     +row('Réseau',net==='offline'?'<span class="vx-neg">hors ligne</span>':'en ligne')
+     +row('Source',nd(man&&man.source))+'</div>'
+   +'<div class="vx-col-4"><div class="vx-subhead">Prix centraux</div>'
+     +row('Tickers suivis',nd(nPrices))+'</div>'
+   +'</div>';
+}
+
 /* ══ Vue DONNÉES ════════════════════════════════════════════════════ */
 async function loadData(){
   const [dqR,diagR,liveR]=await Promise.allSettled([
@@ -1007,8 +1047,10 @@ if(VIEW==='connections'){
   VX.refresh.register(loadConnections,60000,'connections');
 }else if(VIEW==='data'){
   loadData();
+  loadContinuity();
   $('vx-data-refresh').addEventListener('click',doRefresh);
   VX.refresh.register(loadData,60000,'data');
+  VX.refresh.register(loadContinuity,15000,'continuity');
 }else if(VIEW==='automations'){
   loadAutomations();
   VX.refresh.register(loadAutomations,60000,'automations');

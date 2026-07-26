@@ -248,10 +248,12 @@
     schedulePersist();
   }
 
+  const _stats = { hits: 0, misses: 0, dedup: 0 };   // observabilité (§18)
   VX.fetch = function (url, { ttl = 30000, priority = 'normal', signal } = {}) {
     const hit = cache.get(url);
-    if (hit && Date.now() - hit.ts < ttl) return Promise.resolve(hit.data);
-    if (inflight.has(url)) return inflight.get(url).p;
+    if (hit && Date.now() - hit.ts < ttl) { _stats.hits++; return Promise.resolve(hit.data); }
+    if (inflight.has(url)) { _stats.dedup++; return inflight.get(url).p; }
+    _stats.misses++;
     const ctl = new AbortController();
     if (signal) signal.addEventListener('abort', () => ctl.abort());
     const p = (async () => {
@@ -279,6 +281,15 @@
   VX.fetch.peek = function (url) {
     const hit = cache.get(url);
     return hit ? { data: hit.data, age: Date.now() - hit.ts, ts: hit.ts } : null;
+  };
+  /* Métriques de cache (observabilité §18) : hits / misses / dédup / entrées. */
+  VX.fetch.stats = function () {
+    const total = _stats.hits + _stats.misses;
+    return {
+      hits: _stats.hits, misses: _stats.misses, dedup: _stats.dedup,
+      hit_rate: total ? Math.round(100 * _stats.hits / total) : null,
+      entries: cache.size, inflight: inflight.size,
+    };
   };
   /* Invalidation CIBLÉE (clé exacte, préfixe, ou prédicat) — plus de cache.clear() aveugle. */
   VX.fetch.invalidate = function (target) {
