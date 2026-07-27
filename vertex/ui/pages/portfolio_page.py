@@ -489,8 +489,7 @@ async function renderPositions(){
       <td data-label="Prochaine action" class="${toneCls(na.tone)}" style="max-width:230px;font-size:12px">${esc(na.label)}</td>
       <td data-label="Actions"><div class="vx-row-actions">
         <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyse</button>
-        <button class="vx-btn vx-btn-sm vx-btn-ghost" data-journal-pos="${t.sym}">Journaliser</button>
-        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Plus ${t.sym}">⋯</button>
+        <button class="vx-btn vx-btn-sm vx-btn-ghost" data-position-menu="${t.id}" aria-label="Gérer la position ${t.sym} : modifier, clôturer, supprimer">Gérer ⋯</button>
       </div></td></tr>`;};
 
   const groups={Actions:rich.filter(t=>t.type==='STK'),Options:rich.filter(t=>t.type!=='STK')};
@@ -536,12 +535,6 @@ async function renderPositions(){
            yFmt:(v)=>VX.fmt.price(v)})});
     }
   }
-  document.querySelectorAll('[data-journal-pos]').forEach(b=>b.addEventListener('click',()=>{
-    const sym=b.dataset.journalPos;
-    if(E().addJournalEntry){/* pré-remplissage journal — déclaratif, aucun ordre */
-      window.location.href='/journal?view=journal&sym='+encodeURIComponent(sym);
-    }else{window.location.href='/journal?view=journal';}
-  }));
 }
 
 /* ═══ PERFORMANCE (LOT G — migrée depuis Journal, domicile unique) ═══ */
