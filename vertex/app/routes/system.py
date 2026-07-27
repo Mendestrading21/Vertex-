@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v75';   // v75 (SESSION-CACHE) : donnees de scan tenues en cache toute la session (navigation instantanee, zero rechargement)
+const CACHE='td-shell-v76';   // v76 (SESSION-CACHE-FIX) : cache aligne sur la session (jamais fige sur un demarrage vide)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

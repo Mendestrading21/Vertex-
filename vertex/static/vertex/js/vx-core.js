@@ -274,7 +274,12 @@
   function _effTtl(url, ttl) {
     if (ttl <= 0) return ttl;                                  // force-refresh explicite → réseau
     for (let i = 0; i < LIVE_TTL.length; i++) { if (url.indexOf(LIVE_TTL[i]) === 0) return ttl; }
-    return ttl > SESSION_TTL ? ttl : SESSION_TTL;              // données de scan → tenues toute la session
+    // On NE fige PAS tant que la session n'est pas « ready » : au démarrage à froid le
+    // scan se remplit encore (régime UNKNOWN, VIX n/d…) — garder le TTL court laisse les
+    // données arriver, au lieu de figer un écran vide 30 min. Une fois la session prête,
+    // on tient les données du scan toute la session (navigation instantanée).
+    try { if (!VX.store || VX.store.get('session_status') !== 'ready') return ttl; } catch (e) { return ttl; }
+    return ttl > SESSION_TTL ? ttl : SESSION_TTL;
   }
 
   const _stats = { hits: 0, misses: 0, dedup: 0 };   // observabilité (§18)

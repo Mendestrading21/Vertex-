@@ -157,25 +157,39 @@
   async function watchSession() {
     let m;
     try { m = await VX.fetch('/api/session/manifest', { ttl: 0 }); } catch (e) { return; }
-    if (!m || !m.session_id) return;
-    const prev = VX.store.get('active_session_id');
+    if (!m || !m.session_id) return;                     // scan pas encore publié → on ré-essaiera
     VX.store.set('session_status', m.status);
-    // suivi SILENCIEUX du session_id à chaque cycle (base des badges de fraîcheur)
-    VX.store.set('active_session_id', m.session_id);
-    if (prev == null || m.session_id === prev) return;   // 1re observation ou inchangée
-    VX.store.set('previous_session_id', prev);
-    VX.bus.emit('vx:session-changed', m);                // toujours émis (silencieux)
-    // ── BASCULE ATOMIQUE VISIBLE (throttlée pour ne pas spammer, ~10 min) ──
-    const now = Date.now();
-    if (now - _lastSessionNotify < SESSION_NOTIFY_THROTTLE) return;
-    _lastSessionNotify = now;
-    VX.fetch.invalidate((u) => u.indexOf('/api/desk') !== 0);   // rafraîchit le snapshot, garde le desk perso
-    const bits = ['Analyse mise à jour'];
-    if (m.as_of) bits.push('Session ' + m.as_of);
-    if (m.scanned) bits.push(m.scanned + ' sociétés');
-    if (m.quality_pct != null) bits.push('qualité ' + m.quality_pct + ' %');
-    try { VX.toast(bits.join(' · '), 'success', 4200); } catch (e) {}
-    VX.bus.emit('vx:data-refreshed', { reason: 'session-switch' });
+    VX.store.set('active_session_id', m.session_id);     // base des badges de fraîcheur
+
+    /* Le cache de données est ALIGNÉ sur la session courante (l'identifiant est
+       persisté avec le cache en sessionStorage). Dès que la session observée diffère
+       de celle du cache, on invalide et on recharge :
+       - 1re publication APRÈS un démarrage à froid (le cache tenait un état vide/partiel) ;
+       - nouveau scan (bascule 30 min).
+       → on ne reste JAMAIS figé sur un écran de démarrage vide (régime UNKNOWN / n/d).
+       Même session ⇒ on ne touche à rien ⇒ navigation instantanée. */
+    let aligned = null;
+    try { aligned = sessionStorage.getItem('vxCacheSession'); } catch (e) {}
+    if (m.session_id === aligned) return;                // session inchangée → cache valide
+    try { sessionStorage.setItem('vxCacheSession', m.session_id); } catch (e) {}
+    VX.store.set('previous_session_id', aligned);
+    // invalide le snapshot de scan ; garde le desk perso ET le manifest (toujours réseau)
+    VX.fetch.invalidate((u) => u.indexOf('/api/desk') !== 0 && u.indexOf('/api/session/manifest') !== 0);
+    VX.bus.emit('vx:session-changed', m);
+    VX.bus.emit('vx:data-refreshed', { reason: aligned == null ? 'session-ready' : 'session-switch' });
+    // Notification visible SEULEMENT pour une vraie bascule (pas le 1er alignement à froid),
+    // throttlée (~10 min) pour ne pas spammer.
+    if (aligned != null) {
+      const now = Date.now();
+      if (now - _lastSessionNotify >= SESSION_NOTIFY_THROTTLE) {
+        _lastSessionNotify = now;
+        const bits = ['Analyse mise à jour'];
+        if (m.as_of) bits.push('Session ' + m.as_of);
+        if (m.scanned) bits.push(m.scanned + ' sociétés');
+        if (m.quality_pct != null) bits.push('qualité ' + m.quality_pct + ' %');
+        try { VX.toast(bits.join(' · '), 'success', 4200); } catch (e) {}
+      }
+    }
   }
   watchSession(); VX.refresh.register(watchSession, 60000, 'session-watch', { persistent: true });
 
