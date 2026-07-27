@@ -258,8 +258,28 @@
     schedulePersist();
   }
 
+  /* ── TTL effectif : « chargé une fois, figé 30 min » ─────────────────────
+     Dans un cycle de session d'analyse (30 min), les données du scan ne changent
+     PAS. On les tient donc en cache toute la session → changer de page est
+     INSTANTANÉ, aucun rechargement, aucune ré-recherche. Sécurité :
+     - un TTL explicite ≤ 0 (SWR, /api/session/manifest, bouton « Rafraîchir »)
+       force toujours le réseau — jamais forcé long ;
+     - les endpoints LIVE / personnels (statut, cotations, IBKR, desk, compte)
+       gardent leur TTL court d'origine ;
+     - watchSession invalide le cache dès qu'un NOUVEAU scan publie (session_id) →
+       bascule atomique, donc jamais de donnée périmée servie au-delà de la session. */
+  const SESSION_TTL = 1800000;   // 30 min = REFRESH_SEC serveur (cadence de session)
+  const LIVE_TTL = ['/api/live/status', '/api/pos-quotes', '/api/ibkr', '/api/positions',
+    '/api/account', '/api/tracking', '/api/desk'];
+  function _effTtl(url, ttl) {
+    if (ttl <= 0) return ttl;                                  // force-refresh explicite → réseau
+    for (let i = 0; i < LIVE_TTL.length; i++) { if (url.indexOf(LIVE_TTL[i]) === 0) return ttl; }
+    return ttl > SESSION_TTL ? ttl : SESSION_TTL;              // données de scan → tenues toute la session
+  }
+
   const _stats = { hits: 0, misses: 0, dedup: 0 };   // observabilité (§18)
   VX.fetch = function (url, { ttl = 30000, priority = 'normal', signal } = {}) {
+    ttl = _effTtl(url, ttl);                                   // « figé 30 min » : cf. _effTtl
     const hit = cache.get(url);
     if (hit && Date.now() - hit.ts < ttl) { _stats.hits++; return Promise.resolve(hit.data); }
     if (inflight.has(url)) { _stats.dedup++; return inflight.get(url).p; }
