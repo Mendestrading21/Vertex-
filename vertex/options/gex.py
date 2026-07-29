@@ -1,0 +1,162 @@
+"""vertex/options/gex.py — EXPOSITION GAMMA DES DEALERS (GEX) · analyse d'options.
+
+Calcule, pour UN sous-jacent, le profil d'exposition gamma des teneurs de marché
+à partir de la chaîne d'options DÉJÀ chargée (options_board : OI + gamma + strike
+par contrat, données réelles IBKR/scan). AUCUN chiffre inventé : un contrat sans
+OI ou sans gamma exploitable est simplement ignoré ; chaîne vide → profil vide honnête.
+
+Rôle (comme les desks pro type GEX/dealer-positioning) :
+- GEX par strike : call GEX (+), put GEX (−), net GEX, GEX normalisé (% du |total|).
+- Net GEX total : positif = dealers LONG gamma (amortissent la volatilité, effet
+  d'aimant/pinning) ; négatif = dealers SHORT gamma (amplifient les mouvements).
+- Niveau de bascule (« zero-gamma flip ») : strike où le net GEX cumulé change de
+  signe — au-dessus, régime stabilisant ; en dessous, régime accélérateur.
+- Mur call / mur put : strikes de plus forte concentration (aimant / support).
+- Biais : concentration du GEX au-dessus vs sous le spot.
+
+Convention de signe (naïve, standard desk) : les dealers sont supposés SHORT les
+calls (+gamma) et LONG les puts (−gamma). Net GEX > 0 ⇒ gamma positif dominant.
+
+Invariants VERTEX : lecture seule, aucun ordre ; fonction pure (aucune I/O, aucun
+Flask) ; donnée absente → None honnête, jamais estimée. Le gamma consommé est celui
+DÉJÀ produit par le moteur (Black-Scholes / IBKR) — ce module ne recalcule aucun grec.
+"""
+from __future__ import annotations
+
+CONTRACT_MULTIPLIER = 100          # 1 contrat = 100 actions (equity options US)
+
+
+def _num(x):
+    """Nombre fini exploitable, sinon None (jamais de bool, jamais NaN/inf)."""
+    if isinstance(x, bool):
+        return None
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        return None
+    if v != v or v in (float('inf'), float('-inf')):   # NaN / inf
+        return None
+    return v
+
+
+def _spot_of(contracts, spot):
+    """Spot réel : argument explicite sinon 1er spot présent sur un contrat. Jamais inventé."""
+    s = _num(spot)
+    if s and s > 0:
+        return s
+    for c in contracts:
+        s = _num(c.get('spot'))
+        if s and s > 0:
+            return s
+    return None
+
+
+def _contract_gex(gamma, oi, spot, is_call):
+    """GEX $ d'un contrat (par mouvement de 1 % du sous-jacent), signé par la
+    convention dealer. Retourne None si une donnée réelle manque."""
+    g, o = _num(gamma), _num(oi)
+    if g is None or o is None or not spot:
+        return None
+    # gamma (par action) × OI × 100 × spot² × 1 % — exposition dollar au move de 1 %
+    mag = g * o * CONTRACT_MULTIPLIER * spot * spot * 0.01
+    return mag if is_call else -mag
+
+
+def compute(contracts, *, spot=None, symbol=None):
+    """Profil GEX d'un sous-jacent depuis ses contrats (liste d'items du board).
+
+    contracts : items {type:'CALL'|'PUT', strike, oi, gamma, spot?} — données réelles.
+    Retourne un dict JSON-sérialisable ; profil vide honnête si rien d'exploitable.
+    """
+    contracts = [c for c in (contracts or []) if isinstance(c, dict)]
+    sp = _spot_of(contracts, spot)
+
+    per_strike = {}          # strike -> {'call': gex, 'put': gex}
+    used = 0
+    for c in contracts:
+        k = _num(c.get('strike'))
+        if k is None:
+            continue
+        is_call = str(c.get('type', '')).upper() != 'PUT'
+        gx = _contract_gex(c.get('gamma'), c.get('oi'), sp, is_call)
+        if gx is None:
+            continue
+        slot = per_strike.setdefault(k, {'call': 0.0, 'put': 0.0})
+        slot['call' if is_call else 'put'] += gx
+        used += 1
+
+    if not per_strike or not sp:
+        return {
+            'symbol': (symbol or None), 'spot': sp, 'empty': True,
+            'contracts_used': used, 'strikes': [],
+            'net_gex_total': None, 'call_gex_total': None, 'put_gex_total': None,
+            'zero_gamma': None, 'call_wall': None, 'put_wall': None,
+            'bias': None, 'regime': None, 'generator': 'deterministic',
+            'reason': ('aucun spot réel' if not sp else
+                       'aucun contrat avec OI + gamma exploitables (données réelles absentes)'),
+        }
+
+    strikes = []
+    for k in sorted(per_strike):
+        call_gex = per_strike[k]['call']
+        put_gex = per_strike[k]['put']
+        strikes.append({'strike': k, 'call_gex': call_gex, 'put_gex': put_gex,
+                        'net_gex': call_gex + put_gex})
+
+    total_abs = sum(abs(s['net_gex']) for s in strikes) or None
+    for s in strikes:
+        s['normalized'] = round(100 * s['net_gex'] / total_abs, 2) if total_abs else None
+
+    call_total = sum(s['call_gex'] for s in strikes)
+    put_total = sum(s['put_gex'] for s in strikes)
+    net_total = call_total + put_total
+
+    # Mur call = plus forte concentration call GEX (aimant/résistance).
+    # Mur put  = plus forte concentration |put GEX| (support).
+    call_wall = max(strikes, key=lambda s: s['call_gex'])['strike'] if strikes else None
+    put_wall = min(strikes, key=lambda s: s['put_gex'])['strike'] if strikes else None
+
+    # Niveau de bascule (zero-gamma) : strike où le net GEX CUMULÉ (bas→haut) traverse 0.
+    zero_gamma = _zero_gamma(strikes)
+
+    # Biais directionnel : part du net GEX (positif) au-dessus vs sous le spot.
+    above = sum(s['net_gex'] for s in strikes if s['strike'] >= sp)
+    below = sum(s['net_gex'] for s in strikes if s['strike'] < sp)
+    if net_total > 0:
+        regime = 'stabilisant'      # dealers long gamma → volatilité amortie
+    elif net_total < 0:
+        regime = 'accelerateur'     # dealers short gamma → mouvements amplifiés
+    else:
+        regime = 'neutre'
+    if above > 0 and above >= abs(below):
+        bias = 'haussier'           # gamma positif concentré au-dessus → aimant haussier
+    elif below < 0 and abs(below) > abs(above):
+        bias = 'baissier'
+    else:
+        bias = 'neutre'
+
+    return {
+        'symbol': (symbol or None), 'spot': sp, 'empty': False,
+        'contracts_used': used, 'strikes': strikes,
+        'net_gex_total': net_total, 'call_gex_total': call_total, 'put_gex_total': put_total,
+        'zero_gamma': zero_gamma, 'call_wall': call_wall, 'put_wall': put_wall,
+        'gex_above_spot': above, 'gex_below_spot': below,
+        'bias': bias, 'regime': regime, 'generator': 'deterministic',
+    }
+
+
+def _zero_gamma(strikes):
+    """Niveau de bascule : interpolation linéaire du strike où le net GEX cumulé
+    (des strikes bas vers hauts) traverse zéro. None si pas de traversée nette."""
+    cum = 0.0
+    prev_k, prev_cum = None, None
+    for s in strikes:
+        cum += s['net_gex']
+        if prev_cum is not None and (prev_cum < 0) != (cum < 0) and (cum - prev_cum) != 0:
+            frac = -prev_cum / (cum - prev_cum)                 # position du zéro entre les 2 strikes
+            return round(prev_k + frac * (s['strike'] - prev_k), 2)
+        prev_k, prev_cum = s['strike'], cum
+    return None
+
+
+__all__ = ['compute']
