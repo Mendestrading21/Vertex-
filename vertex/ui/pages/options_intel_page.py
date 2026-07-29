@@ -17,6 +17,7 @@ from vertex.ui.shell import render_shell
 # Options répond « cette structure offre-t-elle une asymétrie suffisante ? ».
 _VIEWS = (
     ('structure', 'Structure'),
+    ('positioning', 'Positionnement'),
     ('leaps', 'LEAPS'),
     ('positions', 'Mes positions'),
     ('volatility', 'Volatilité'),
@@ -137,6 +138,34 @@ _VIEW_CONTENT = {
   </section>
 </div>
 <div id="vx-os-compare" class="vx-mt3"></div>
+""",
+    'positioning': """
+<div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-12" aria-label="Positionnement dealer (GEX)">
+    <div class="vx-card-header"><span class="vx-card-title">Positionnement dealer — où le gamma pousse-t-il le cours&nbsp;?</span>
+      <span class="vx-chart-question">Exposition gamma (GEX) par strike, murs, bascule zero-gamma, flux notable et thèse — depuis la chaîne réelle. Aucun ordre.</span></div>
+    <div class="vx-card-body vx-flex vx-wrap" style="gap:.6rem;align-items:flex-end">
+      <label class="vx-field"><span>Sous-jacent</span>
+        <input id="vx-gx-sym" class="vx-input" placeholder="ex. MSFT" maxlength="12" autocomplete="off"></label>
+      <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-gx-go">Analyser le positionnement</button>
+      <span id="vx-gx-chips" class="vx-flex vx-wrap" style="gap:6px"></span>
+    </div>
+  </section>
+</div>
+<div id="vx-gx-thesis" class="vx-mt3">%%LOADING%%</div>
+<div id="vx-gx-tiles" class="vx-mt3"></div>
+<div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-7" aria-label="GEX par strike">
+    <div class="vx-card-header"><span class="vx-card-title">GEX par strike</span>
+      <span class="vx-chart-question">Call GEX (+) vs Put GEX (−) — concentration de l'exposition gamma.</span></div>
+    <div id="vx-gx-bars"><div class="vx-empty">Choisis un sous-jacent présent dans le tableau d'options.</div></div>
+  </section>
+  <section class="vx-card vx-col-5" aria-label="Flux notable">
+    <div class="vx-card-header"><span class="vx-card-title">Flux notable</span>
+      <span class="vx-chart-question">Gros premium négocié du cycle (volume × prime) — pas un flux tick-par-tick.</span></div>
+    <div id="vx-gx-flow"><div class="vx-empty">—</div></div>
+  </section>
+</div>
 """,
     'leaps': """
 <div class="vx-grid vx-mt3">
@@ -265,6 +294,7 @@ _PAGE_JS = (
     '<script src="/static/vertex/js/charts/option-iv-sensitivity.js" defer></script>'
     '<script src="/static/vertex/js/pages/options-intel.js" defer></script>'
     '<script src="/static/vertex/js/pages/options-structure.js" defer></script>'
+    '<script src="/static/vertex/js/pages/options-gex.js" defer></script>'
 )
 
 

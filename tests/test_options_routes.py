@@ -184,3 +184,23 @@ def test_options_gex_route_empty_is_honest(client):
     d = r.get_json()
     assert d['gex']['empty'] is True
     assert d['synthesis']['empty'] is True
+
+
+def test_positioning_view_renders_and_is_wired(client):
+    """La vue « Positionnement dealer (GEX) » existe, câblée, honnête, sans ordre."""
+    r = client.get('/options?view=positioning')
+    assert r.status_code == 200
+    body = r.get_data(as_text=True)
+    assert 'Positionnement dealer' in body
+    assert 'vx-gx-sym' in body and 'vx-gx-go' in body           # champ + bouton câblés
+    assert 'options-gex.js' in body                              # builder inclus
+    assert 'tick-par-tick' in body or 'pas la chaîne complète' in body or 'GEX par strike' in body
+    # invariant READONLY : aucun verbe d'ordre dans la page
+    for verb in ('place_order', 'placeOrder', 'submit_order', 'transmit'):
+        assert verb not in body
+
+
+def test_positioning_tab_in_options_nav(client):
+    r = client.get('/options')
+    assert r.status_code == 200
+    assert 'data-view-tab="positioning"' in r.get_data(as_text=True)
