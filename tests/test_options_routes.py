@@ -149,3 +149,38 @@ def test_no_order_execution_path_in_new_modules():
             src = fh.read()
         m = call_or_def.search(src)
         assert not m, '%s : chemin d\'ordre interdit détecté (%s)' % (rel, m and m.group(1))
+
+
+def test_options_gex_route_real_numbers(client):
+    """L'endpoint GEX assemble profil + flux + thèse depuis un board réel semé."""
+    from vertex.app.state import scan_state
+    scan_state['options_board'] = [
+        {'sym': 'MSFT', 'type': 'CALL', 'strike': 460, 'gamma': 0.05, 'oi': 5000,
+         'vol': 500, 'cost': 2000, 'spot': 440, 'dte': 21, 'exp': '2026-08-21'},
+        {'sym': 'MSFT', 'type': 'PUT', 'strike': 420, 'gamma': 0.03, 'oi': 2000,
+         'vol': 100, 'cost': 800, 'spot': 440, 'dte': 21, 'exp': '2026-08-21'},
+    ]
+    scan_state.setdefault('detail', {})['MSFT'] = {'price': 440, 'earnings_in_days': 1}
+    try:
+        r = client.get('/api/options/gex/MSFT')
+        assert r.status_code == 200
+        d = r.get_json()
+        assert d['symbol'] == 'MSFT'
+        assert d['gex']['empty'] is False
+        assert d['gex']['call_wall'] == 460
+        assert d['synthesis']['empty'] is False
+        assert d['synthesis']['bias'] in ('haussier', 'baissier', 'neutre')
+        assert 'coverage' in d              # honnêteté : vue fenêtrée signalée
+        assert d['flow']['contracts'][0]['strike'] == 460
+    finally:
+        scan_state['options_board'] = []
+
+
+def test_options_gex_route_empty_is_honest(client):
+    from vertex.app.state import scan_state
+    scan_state['options_board'] = []
+    r = client.get('/api/options/gex/NOPE')
+    assert r.status_code == 200
+    d = r.get_json()
+    assert d['gex']['empty'] is True
+    assert d['synthesis']['empty'] is True

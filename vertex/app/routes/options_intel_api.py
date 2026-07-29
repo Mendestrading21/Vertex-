@@ -120,6 +120,40 @@ def _num(x):
         return None
 
 
+@bp.route('/api/options/gex/<sym>')
+def options_gex(sym):
+    """Positionnement dealer d'un sous-jacent : profil GEX + flux notable + thèse.
+    Données réelles du board (OI/gamma/volume) — jamais inventées. Vue FENÊTRÉE :
+    le board ne retient que les strikes du scan (±35 % du spot), pas la chaîne
+    entière — signalé honnêtement au client. Lecture seule, aucun ordre."""
+    from vertex.options import gex as _gex, flow as _flow, dealer_synthesis as _ds
+    sym = (sym or '').upper()[:12]
+    board = _board()
+    contracts = [c for c in board if str(c.get('sym', '')).upper() == sym]
+    detail = (scan_state.get('detail') or {}).get(sym) or {}
+    spot = None
+    for c in contracts:
+        spot = _num(c.get('spot'))
+        if spot:
+            break
+    if not spot:
+        spot = _num(detail.get('price'))
+    try:
+        profile = _gex.compute(contracts, spot=spot, symbol=sym)
+        flow = _flow.analyze(contracts, symbol=sym)
+        synth = _ds.build(profile, flow,
+                          earnings_in_days=detail.get('earnings_in_days'), symbol=sym)
+    except Exception as e:
+        return jsonify({'symbol': sym, 'empty': True,
+                        'error': '%s: %s' % (type(e).__name__, e)}), 500
+    return jsonify({
+        'symbol': sym, 'as_of': _as_of(), 'demo': bool(DEMO_MODE),
+        'contracts_available': len(contracts),
+        'coverage': 'fenêtre du scan (strikes ±35 % du spot) — pas la chaîne complète',
+        'gex': profile, 'flow': flow, 'synthesis': synth,
+    })
+
+
 @bp.route('/api/options/vol-charts/<sym>')
 def options_vol_charts(sym):
     """Jeux de données pour les graphiques de volatilité d'un titre (§15)."""
