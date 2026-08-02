@@ -63,6 +63,13 @@ _VIEW_CONTENT = {
   </section>
   <div class="vx-col-5" id="vx-pf-dist"></div>
 </div>
+<div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-12" aria-label="Post-mortem des trades clôturés">
+    <div class="vx-card-header"><span class="vx-card-title">Post-mortem — que disent mes sorties&nbsp;?</span>
+      <span class="vx-chart-question">Stats réelles + drapeaux de discipline dérivés des clôtures. Descriptif, pas un conseil.</span></div>
+    <div id="vx-pf-postmortem">%%LOADING%%</div>
+  </section>
+</div>
 """,
     'journal': """
 <div class="vx-grid vx-mt3">
@@ -461,8 +468,35 @@ function loadReal(){
 }
 
 /* ═══ Orchestration ═══ */
+async function loadPostmortem(){
+  const host=$('vx-pf-postmortem');if(!host)return;
+  let d=null;
+  try{d=await VX.fetch('/api/journal/postmortem',{ttl:60000});}catch(e){
+    host.innerHTML=VX.states.error('Post-mortem indisponible : '+e.message);return;}
+  if(!d||d.empty){
+    host.innerHTML=VX.states.empty(esc((d&&d.reason)||'Aucun trade clôturé pour l\'instant.'),
+      '<span class="vx-meta">Le post-mortem se construit avec tes clôtures (Portefeuille → Gérer → Clôturer).</span>');
+    return;}
+  const kpi=(l,v,cls)=>'<div class="vx-stat"><span class="vx-stat-label">'+l+'</span><span class="vx-stat-value '+(cls||'')+'">'+v+'</span></div>';
+  const money=(x)=>x==null?'n/d':((x>=0?'+':'')+VX.fmt.num(x,0));
+  host.innerHTML=
+    '<div class="vx-stats-row">'
+    +kpi('Trades',d.trades_n)
+    +kpi('Réussite',d.win_rate!=null?d.win_rate+' %':'n/d')
+    +kpi('P&L cumulé',money(d.total_pnl),d.total_pnl>0?'vx-pos':d.total_pnl<0?'vx-neg':'')
+    +kpi('Profit factor',d.profit_factor!=null?VX.fmt.num(d.profit_factor,2):'n/d',d.profit_factor>=1?'vx-pos':'vx-neg')
+    +kpi('Espérance/trade',money(d.expectancy),d.expectancy>0?'vx-pos':'vx-neg')
+    +kpi('Durée moy.',d.hold_days_avg!=null?d.hold_days_avg+' j':'n/d')
+    +'</div>'
+    +'<p class="vx-lead" style="font-size:14px">'+esc(d.narrative||'')+'</p>'
+    +((d.flags||[]).length?'<div class="vx-insight" data-tone="risk"><b>Drapeaux de discipline.</b><ul style="margin:.3rem 0 0;padding-left:1.1rem">'
+      +d.flags.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul></div>':'')
+    +((d.mistakes||[]).length?'<div class="vx-mt2 vx-muted">Erreurs notées : '
+      +d.mistakes.map(m=>esc((m.ticker||'')+' — '+m.mistake)).join(' · ')+'</div>':'')
+    +'<div class="vx-card-footer">Post-mortem descriptif (moteur déterministe, trades réels du desk) — pas un conseil.</div>';
+}
 function boot(){
-  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();}
+  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();loadPostmortem();}
   else if(VIEW==='journal'){
     loadJournal();loadMistakes();
     $('vx-pf-add')?.addEventListener('click',openEntryModal);

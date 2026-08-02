@@ -78,6 +78,24 @@ def build_context(scan_state, symbol=None):
         ctx['detail'] = {'price': detail.get('price'), 'score': detail.get('score'),
                          'earnings_in_days': detail.get('earnings_in_days')}
     ctx['positions'] = _positions_for(sym)
+    # Post-mortem du journal (résumé chiffré) : ancre les questions de discipline
+    # (« quelles sont mes erreurs récurrentes ? ») dans les trades RÉELS clôturés.
+    try:
+        blob = persist.load_json('desk_data.json', {}) or {}
+        data = blob.get('data') or {}
+
+        def _parse(key):
+            raw = data.get(key)
+            v = json.loads(raw) if isinstance(raw, str) else (raw or [])
+            return v if isinstance(v, list) else []
+        from vertex.engines import postmortem as _pm
+        pm = _pm.build(_parse('myTradesClosed'), _parse('vxJournal'))
+        if not pm.get('empty'):
+            ctx['postmortem'] = {k: pm.get(k) for k in (
+                'trades_n', 'win_rate', 'total_pnl', 'profit_factor', 'expectancy',
+                'repeat_losers', 'flags', 'best', 'worst')}
+    except Exception:
+        pass
     return ctx
 
 
