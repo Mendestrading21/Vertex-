@@ -96,7 +96,43 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         base = [p for p in load_positions(blob, ibkr) if p.get('status') != 'CLOSED']
         state = recalculate_all(scan_state, blob, _quotes(base), ibkr)
         fresh = ALERTS.evaluate(state['positions'])
-        return jsonify({'new': fresh, 'active': ALERTS.active()})
+        return jsonify({'new': fresh, 'active': ALERTS.active(),
+                        'gamma': _gamma_events(state['positions'])})
+
+    def _gamma_events(positions):
+        """SURVEILLANCE GAMMA (descriptive, lecture seule) : pour chaque titre en
+        position, signale depuis le profil GEX réel du board (a) un support de
+        positionnement cassé (spot < mur put) et (b) un régime accélérateur
+        (spot sous la bascule zero-gamma). Aucun état, aucun ordre — la liste
+        DÉCRIT le positionnement courant ; board vide → liste vide honnête."""
+        from vertex.options import gex as _gex
+        board = scan_state.get('options_board') or []
+        out, seen = [], set()
+        for p in positions or []:
+            sym = str(p.get('symbol') or '').upper()
+            if not sym or sym in seen:
+                continue
+            seen.add(sym)
+            contracts = [c for c in board if str(c.get('sym', '')).upper() == sym]
+            if not contracts:
+                continue
+            detail = (scan_state.get('detail') or {}).get(sym) or {}
+            prof = _gex.compute(contracts, spot=detail.get('price'), symbol=sym)
+            if prof.get('empty') or prof.get('spot') is None:
+                continue
+            spot = prof['spot']
+            pw, zg = prof.get('put_wall'), prof.get('zero_gamma')
+            if pw is not None and spot < pw:
+                out.append({'type': 'GAMMA_SUPPORT_BREAK', 'symbol': sym,
+                            'spot': spot, 'put_wall': pw,
+                            'detail': 'Spot sous le mur put (%s < %s) — le support de '
+                                      'positionnement a cédé.' % (spot, pw)})
+            if zg is not None and spot < zg:
+                out.append({'type': 'GAMMA_REGIME_ACCELERATING', 'symbol': sym,
+                            'spot': spot, 'zero_gamma': zg,
+                            'detail': 'Spot sous la bascule zero-gamma (%s < %s) — les '
+                                      'dealers amplifient les mouvements.' % (spot, zg)})
+        return out
 
     @bp.route('/api/positions/<position_id>/changes')
     def position_changes(position_id):

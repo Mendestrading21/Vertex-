@@ -458,9 +458,20 @@ async function renderPositions(){
       '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
     return;
   }
-  let ibkr=null,posState=null;
+  let ibkr=null,posState=null,alerts=null;
   try{ibkr=await VX.fetch('/api/ibkr/positions',{ttl:120000});}catch(e){}
   try{posState=await VX.fetch('/api/positions/state',{ttl:30000});}catch(e){}
+  try{alerts=await VX.fetch('/api/positions/alerts',{ttl:60000});}catch(e){}
+  /* Surveillance proactive (§29 + gamma) : invalidations/stops + événements de
+     positionnement dealer (support cassé, régime accélérateur). Descriptif, honnête. */
+  const survRows=[];
+  ((alerts&&alerts.active)||[]).forEach(a=>survRows.push({t:a.type,sym:a.symbol,txt:a.status||a.type}));
+  ((alerts&&alerts.gamma)||[]).forEach(g=>survRows.push({t:g.type,sym:g.symbol,txt:g.detail}));
+  const survHtml=survRows.length?`<div class="vx-insight vx-mb3" data-tone="risk">
+      <b>Surveillance — ${survRows.length} signal(aux) sur tes positions.</b>
+      <ul style="margin:.3rem 0 0;padding-left:1.1rem">${survRows.slice(0,6).map(r=>
+        `<li><span class="vx-ticker">${esc(r.sym||'')}</span> — ${esc(r.txt||'')}</li>`).join('')}</ul>
+      <div class="vx-meta vx-mt1">Signaux descriptifs (données réelles) — aucune action automatique, aucun ordre.</div></div>`:'';
   const perShare=(t)=>t.qty?(t.type==='STK'?t.cost/t.qty:t.cost/(t.qty*100)):null;
   const total=rich.reduce((s,t)=>s+(t.value??t.invested??0),0);
   const stBadge=(st)=>`<span class="vx-badge ${toneCls(st.tone)}" title="État de thèse">${esc(st.label)}</span>`;
@@ -494,7 +505,8 @@ async function renderPositions(){
 
   const groups={Actions:rich.filter(t=>t.type==='STK'),Options:rich.filter(t=>t.type!=='STK')};
   $('pf-body').innerHTML=
-    (posState?actionListHtml(posState):'')
+    survHtml
+    +(posState?actionListHtml(posState):'')
     +`<div class="vx-insight vx-mb3" data-tone="risk"><b>Garde-fou perdants (Constitution §18).</b>
        Une position en perte ne reçoit jamais de suggestion « renforcer » sans confirmation positive
        explicite du marché. Une thèse n’est « cassée » que si l’invalidation pré-définie est franchie —
