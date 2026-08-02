@@ -23,7 +23,10 @@ DÉJÀ produit par le moteur (Black-Scholes / IBKR) — ce module ne recalcule a
 """
 from __future__ import annotations
 
+import math
+
 CONTRACT_MULTIPLIER = 100          # 1 contrat = 100 actions (equity options US)
+_R = 0.045                         # taux sans risque (même valeur que constants.R)
 
 
 def _num(x):
@@ -51,6 +54,37 @@ def _spot_of(contracts, spot):
     return None
 
 
+def _iv_frac(iv):
+    """IV en fraction : accepte 32.5 (pour-cent) ou 0.325 (fraction). None si inexploitable."""
+    v = _num(iv)
+    if v is None or v <= 0:
+        return None
+    return v / 100.0 if v > 3 else v
+
+
+def _contract_vanna(strike, spot, iv, dte, oi, is_call):
+    """Exposition VANNA $ d'un contrat (variation du delta-dollar pour +1 pt d'IV),
+    Black-Scholes depuis les données réelles (spot/strike/IV/DTE/OI). Convention de
+    signe naïve IDENTIQUE au GEX (call +, put −). None si une donnée manque."""
+    k, s, o, d = _num(strike), _num(spot), _num(oi), _num(dte)
+    sig = _iv_frac(iv)
+    if None in (k, s, o, d) or sig is None or s <= 0 or k <= 0 or d <= 0:
+        return None
+    t = d / 365.0
+    srt = sig * math.sqrt(t)
+    if srt <= 0:
+        return None
+    try:
+        d1 = (math.log(s / k) + (_R + sig * sig / 2) * t) / srt
+    except ValueError:
+        return None
+    d2 = d1 - srt
+    pdf = math.exp(-d1 * d1 / 2) / math.sqrt(2 * math.pi)
+    vanna = -pdf * d2 / sig                                  # ∂Δ/∂σ (par action, par unité de vol)
+    mag = vanna * 0.01 * o * CONTRACT_MULTIPLIER * s         # $ de delta pour +1 pt d'IV
+    return mag if is_call else -mag
+
+
 def _contract_gex(gamma, oi, spot, is_call):
     """GEX $ d'un contrat (par mouvement de 1 % du sous-jacent), signé par la
     convention dealer. Retourne None si une donnée réelle manque."""
@@ -71,8 +105,9 @@ def compute(contracts, *, spot=None, symbol=None):
     contracts = [c for c in (contracts or []) if isinstance(c, dict)]
     sp = _spot_of(contracts, spot)
 
-    per_strike = {}          # strike -> {'call': gex, 'put': gex}
+    per_strike = {}          # strike -> {'call': gex, 'put': gex, 'vanna': $|None}
     used = 0
+    vanna_any = False
     for c in contracts:
         k = _num(c.get('strike'))
         if k is None:
@@ -81,8 +116,12 @@ def compute(contracts, *, spot=None, symbol=None):
         gx = _contract_gex(c.get('gamma'), c.get('oi'), sp, is_call)
         if gx is None:
             continue
-        slot = per_strike.setdefault(k, {'call': 0.0, 'put': 0.0})
+        slot = per_strike.setdefault(k, {'call': 0.0, 'put': 0.0, 'vanna': 0.0})
         slot['call' if is_call else 'put'] += gx
+        vn = _contract_vanna(k, sp, c.get('iv'), c.get('dte'), c.get('oi'), is_call)
+        if vn is not None:
+            slot['vanna'] += vn
+            vanna_any = True
         used += 1
 
     if not per_strike or not sp:
@@ -90,6 +129,7 @@ def compute(contracts, *, spot=None, symbol=None):
             'symbol': (symbol or None), 'spot': sp, 'empty': True,
             'contracts_used': used, 'strikes': [],
             'net_gex_total': None, 'call_gex_total': None, 'put_gex_total': None,
+            'net_vanna_total': None,
             'zero_gamma': None, 'call_wall': None, 'put_wall': None,
             'bias': None, 'regime': None, 'generator': 'deterministic',
             'reason': ('aucun spot réel' if not sp else
@@ -101,7 +141,8 @@ def compute(contracts, *, spot=None, symbol=None):
         call_gex = per_strike[k]['call']
         put_gex = per_strike[k]['put']
         strikes.append({'strike': k, 'call_gex': call_gex, 'put_gex': put_gex,
-                        'net_gex': call_gex + put_gex})
+                        'net_gex': call_gex + put_gex,
+                        'vanna': (per_strike[k]['vanna'] if vanna_any else None)})
 
     total_abs = sum(abs(s['net_gex']) for s in strikes) or None
     for s in strikes:
@@ -141,6 +182,10 @@ def compute(contracts, *, spot=None, symbol=None):
         'net_gex_total': net_total, 'call_gex_total': call_total, 'put_gex_total': put_total,
         'zero_gamma': zero_gamma, 'call_wall': call_wall, 'put_wall': put_wall,
         'gex_above_spot': above, 'gex_below_spot': below,
+        # VANNA nette ($ de delta pour +1 pt d'IV) — Black-Scholes sur IV/DTE réels,
+        # convention de signe naïve identique au GEX. None si IV/DTE indisponibles.
+        'net_vanna_total': (sum(s['vanna'] for s in strikes if s['vanna'] is not None)
+                            if vanna_any else None),
         'bias': bias, 'regime': regime, 'generator': 'deterministic',
     }
 

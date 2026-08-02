@@ -103,3 +103,24 @@ def test_pure_no_mutation_of_input():
     snapshot = dict(chain[0])
     gex.compute(chain)
     assert chain[0] == snapshot                # entrée non mutée (fonction pure)
+
+
+def test_vanna_computed_when_iv_dte_present():
+    """Vanna $ par strike + net total quand IV/DTE réels présents (BS, convention GEX)."""
+    prof = gex.compute([
+        {'type': 'CALL', 'strike': 105, 'gamma': 0.05, 'oi': 1000, 'spot': 100,
+         'iv': 30.0, 'dte': 30},
+        {'type': 'PUT', 'strike': 95, 'gamma': 0.04, 'oi': 2000, 'spot': 100,
+         'iv': 35.0, 'dte': 30},
+    ])
+    assert prof['net_vanna_total'] is not None
+    by_k = {s['strike']: s for s in prof['strikes']}
+    assert by_k[105]['vanna'] is not None
+    # OTM call (K>S) : d2<0 → vanna>0 → exposition call positive (convention)
+    assert by_k[105]['vanna'] > 0
+
+
+def test_vanna_none_when_iv_absent():
+    prof = gex.compute([{'type': 'CALL', 'strike': 105, 'gamma': 0.05, 'oi': 1000, 'spot': 100}])
+    assert prof['net_vanna_total'] is None
+    assert prof['strikes'][0]['vanna'] is None

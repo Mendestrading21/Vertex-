@@ -64,7 +64,67 @@
       + tile('Bascule 0-γ', f(g.zero_gamma), 'zero-gamma flip')
       + tile('Mur call', f(g.call_wall), 'aimant haussier')
       + tile('Mur put', f(g.put_wall), 'support')
+      + tile('Vanna nette', money(g.net_vanna_total), 'Δ$ pour +1 pt d’IV')
       + '</div></section>';
+  }
+
+  /* GEX quotidien — barres net GEX par jour (journal réel, comme le « Daily GEX »). */
+  function renderDaily(d) {
+    var host = $('vx-gx-daily');
+    if (!host) return;
+    var h = d.history || [];
+    if (h.length < 1) {
+      host.innerHTML = '<div class="vx-empty">L’historique se construit à chaque analyse — reviens demain pour la tendance.</div>';
+      return;
+    }
+    var W = 520, H = 190, pad = 26, n = h.length;
+    var maxAbs = 1;
+    h.forEach(function (e) { maxAbs = Math.max(maxAbs, Math.abs(e.net_gex || 0)); });
+    var bw = Math.max(3, Math.min(26, (W - 2 * pad) / n - 3));
+    var midY = H / 2;
+    var pos = 'var(--vx-positive,#38b879)', neg = 'var(--vx-negative,#dc5f52)';
+    var svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Net GEX quotidien">'];
+    svg.push('<line x1="' + pad + '" y1="' + midY + '" x2="' + (W - pad) + '" y2="' + midY + '" stroke="var(--vx-border,#3a332c)"/>');
+    h.forEach(function (e, i) {
+      var x = pad + i * ((W - 2 * pad) / n);
+      var v = e.net_gex || 0;
+      var bh = Math.abs(v) / maxAbs * (H / 2 - 18);
+      var y = v >= 0 ? midY - bh : midY;
+      svg.push('<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + Math.max(1, bh) + '" fill="' + (v >= 0 ? pos : neg) + '" opacity=".85"><title>' + esc(e.date) + ' : ' + money(v) + '</title></rect>');
+    });
+    var first = h[0], last = h[n - 1];
+    svg.push('<text x="' + pad + '" y="' + (H - 4) + '" font-size="9.5" fill="var(--vx-text-dim,#8a837a)">' + esc(first.date) + '</text>');
+    svg.push('<text x="' + (W - pad) + '" y="' + (H - 4) + '" font-size="9.5" text-anchor="end" fill="var(--vx-text-dim,#8a837a)">' + esc(last.date) + '</text>');
+    svg.push('</svg>');
+    var trend = (n >= 2 && last.net_gex != null && first.net_gex != null)
+      ? (last.net_gex > first.net_gex ? 'Le gamma s’empile à la hausse sur la période.'
+        : last.net_gex < first.net_gex ? 'Le gamma net se dégrade sur la période.' : 'Gamma net stable.')
+      : 'Un seul point pour l’instant — la tendance viendra avec les prochains jours.';
+    host.innerHTML = svg.join('')
+      + '<div class="vx-muted" style="margin-top:.3rem">' + esc(trend) + ' ' + n + ' jour(s) journalisé(s) — points réels uniquement.</div>';
+  }
+
+  /* Copilote : question → /api/copilot/ask (ancré dans les chiffres réels). */
+  function wireCopilot() {
+    var go = $('vx-cp-go'), q = $('vx-cp-q'), out = $('vx-cp-out');
+    if (!go || !q || !out) return;
+    function ask() {
+      var question = (q.value || '').trim();
+      if (!question) { VX.toast && VX.toast('Écris une question', 'warn'); return; }
+      var sym = ($('vx-gx-sym') && $('vx-gx-sym').value || '').trim().toUpperCase() || null;
+      out.innerHTML = '<div class="vx-empty">Le copilote analyse' + (sym ? ' ' + esc(sym) : '') + '…</div>';
+      fetch('/api/copilot/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: question, symbol: sym }) })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.ok) { out.innerHTML = '<div class="vx-error-banner">' + esc(d.error || 'réponse indisponible') + '</div>'; return; }
+          out.innerHTML = '<div class="vx-insight" data-tone="action" style="white-space:pre-wrap">' + esc(d.answer) + '</div>'
+            + '<div class="vx-muted" style="margin-top:.3rem">' + esc(d.label || '') + ' · lecture seule — aucun ordre.</div>';
+        })
+        .catch(function (e) { out.innerHTML = '<div class="vx-error-banner">Copilote injoignable : ' + esc(e.message) + '</div>'; });
+    }
+    go.addEventListener('click', ask);
+    q.addEventListener('keydown', function (e) { if (e.key === 'Enter') ask(); });
   }
 
   /* Barres GEX par strike — SVG inline (call vert vers la droite, put rouge vers la gauche). */
@@ -125,7 +185,7 @@
     if (!/^[A-Z.\-]{1,12}$/.test(sym)) { VX.toast && VX.toast('Ticker invalide', 'error'); return; }
     $('vx-gx-thesis').innerHTML = '<section class="vx-card"><div class="vx-empty">Analyse du positionnement de ' + esc(sym) + '…</div></section>';
     VX.fetch('/api/options/gex/' + encodeURIComponent(sym), { ttl: 120000 }).then(function (d) {
-      renderThesis(d); renderTiles(d); renderBars(d); renderFlow(d);
+      renderThesis(d); renderTiles(d); renderBars(d); renderFlow(d); renderDaily(d);
       try { VX.context && VX.context.save && VX.context.save({ selectedSymbol: sym }); } catch (e) {}
     }).catch(function (e) {
       $('vx-gx-thesis').innerHTML = '<section class="vx-card"><div class="vx-error-banner">Chargement impossible : ' + esc(e.message) + '</div></section>';
@@ -137,6 +197,7 @@
     go.addEventListener('click', function () { load(inp.value); });
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') load(inp.value); });
   }
+  wireCopilot();
   /* pré-remplissage : ticker actif du store, sinon un contrat du board via chips */
   var pre = '';
   try { pre = (VX.store && VX.store.get && VX.store.get('active_ticker')) || ''; } catch (e) {}

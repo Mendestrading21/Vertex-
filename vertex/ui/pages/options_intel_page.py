@@ -166,6 +166,23 @@ _VIEW_CONTENT = {
     <div id="vx-gx-flow"><div class="vx-empty">—</div></div>
   </section>
 </div>
+<div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-7" aria-label="GEX quotidien">
+    <div class="vx-card-header"><span class="vx-card-title">GEX quotidien — le gamma s'empile-t-il&nbsp;?</span>
+      <span class="vx-chart-question">Net GEX jour après jour (journal réel — un point par jour analysé, jamais inventé).</span></div>
+    <div id="vx-gx-daily"><div class="vx-empty">L'historique se construit à chaque analyse — reviens demain pour la tendance.</div></div>
+  </section>
+  <section class="vx-card vx-col-5" aria-label="Copilote d'analyse">
+    <div class="vx-card-header"><span class="vx-card-title">Copilote d'analyse</span>
+      <span class="vx-chart-question">Pose une question — réponse ancrée dans les chiffres réels. Lecture seule, aucun ordre.</span></div>
+    <div class="vx-card-body">
+      <label class="vx-field" style="max-width:100%"><span>Ta question</span>
+        <input id="vx-cp-q" class="vx-input" placeholder="ex. Que dit le positionnement sur ce titre ?" maxlength="500" autocomplete="off"></label>
+      <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-cp-go">Demander au copilote</button>
+      <div id="vx-cp-out" class="vx-mt2"></div>
+    </div>
+  </section>
+</div>
 """,
     'leaps': """
 <div class="vx-grid vx-mt3">

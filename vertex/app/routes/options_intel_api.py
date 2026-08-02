@@ -146,11 +146,19 @@ def options_gex(sym):
     except Exception as e:
         return jsonify({'symbol': sym, 'empty': True,
                         'error': '%s: %s' % (type(e).__name__, e)}), 500
+    # Journal quotidien du GEX (best-effort, réel seulement) → série « Daily GEX ».
+    history = []
+    try:
+        from vertex.options import gex_history as _gh
+        _gh.record(profile)
+        history = _gh.series(sym)
+    except Exception:
+        pass
     return jsonify({
         'symbol': sym, 'as_of': _as_of(), 'demo': bool(DEMO_MODE),
         'contracts_available': len(contracts),
         'coverage': 'fenêtre du scan (strikes ±35 % du spot) — pas la chaîne complète',
-        'gex': profile, 'flow': flow, 'synthesis': synth,
+        'gex': profile, 'flow': flow, 'synthesis': synth, 'history': history,
     })
 
 
