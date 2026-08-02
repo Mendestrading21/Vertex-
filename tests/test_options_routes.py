@@ -204,3 +204,29 @@ def test_positioning_tab_in_options_nav(client):
     r = client.get('/options')
     assert r.status_code == 200
     assert 'data-view-tab="positioning"' in r.get_data(as_text=True)
+
+
+def test_gex_radar_route(client):
+    """Le radar classe les titres du board par |net GEX| — données réelles semées."""
+    from vertex.app.state import scan_state
+    scan_state['options_board'] = [
+        {'sym': 'AAA', 'type': 'CALL', 'strike': 110, 'gamma': 0.06, 'oi': 8000, 'spot': 100},
+        {'sym': 'BBB', 'type': 'PUT', 'strike': 45, 'gamma': 0.05, 'oi': 4000, 'spot': 50},
+    ]
+    try:
+        d = client.get('/api/options/gex-radar').get_json()
+        assert d['empty'] is False
+        assert [r['symbol'] for r in d['rows']] == ['AAA', 'BBB']
+        assert d['rows'][0]['regime'] == 'stabilisant'
+        assert 'climate' in d
+    finally:
+        scan_state['options_board'] = []
+
+
+def test_positioning_view_has_radar_and_analysis_has_copilot(client):
+    body = client.get('/options?view=positioning').get_data(as_text=True)
+    assert 'vx-gx-radar' in body and 'Radar de positionnement' in body
+    body2 = client.get('/analysis/AAPL').get_data(as_text=True)
+    assert 'an-copilot' in body2 and 'an-cp-go' in body2      # copilote câblé sur la fiche
+    for verb in ('place_order', 'placeOrder', 'submit_order', 'transmit'):
+        assert verb not in body2

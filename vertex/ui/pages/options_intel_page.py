@@ -152,7 +152,14 @@ _VIEW_CONTENT = {
     </div>
   </section>
 </div>
-<div id="vx-gx-thesis" class="vx-mt3">%%LOADING%%</div>
+<div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-12" aria-label="Radar de positionnement">
+    <div class="vx-card-header"><span class="vx-card-title">Radar de positionnement — où les dealers poussent-ils&nbsp;?</span>
+      <span class="vx-chart-question">Tous les titres du tableau, classés par |net GEX|. Clique une ligne pour le détail.</span></div>
+    <div id="vx-gx-radar">%%LOADING%%</div>
+  </section>
+</div>
+<div id="vx-gx-thesis" class="vx-mt3"></div>
 <div id="vx-gx-tiles" class="vx-mt3"></div>
 <div class="vx-grid vx-mt3">
   <section class="vx-card vx-col-7" aria-label="GEX par strike">

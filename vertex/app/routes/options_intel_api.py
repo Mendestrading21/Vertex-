@@ -120,6 +120,21 @@ def _num(x):
         return None
 
 
+@bp.route('/api/options/gex-radar')
+def options_gex_radar():
+    """RADAR de positionnement : GEX de tous les sous-jacents du board, classés
+    par |net GEX|. « Où les dealers poussent-ils le plus fort ? » Lecture seule."""
+    from vertex.options import gex_scan as _gs
+    try:
+        d = _gs.scan(_board(), _detail_by_sym(), top=30)
+        d['as_of'] = _as_of()
+        d['demo'] = bool(DEMO_MODE)
+        return jsonify(d)
+    except Exception as e:
+        return jsonify({'empty': True, 'rows': [],
+                        'error': '%s: %s' % (type(e).__name__, e)}), 500
+
+
 @bp.route('/api/options/gex/<sym>')
 def options_gex(sym):
     """Positionnement dealer d'un sous-jacent : profil GEX + flux notable + thèse.

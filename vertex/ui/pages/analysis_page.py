@@ -204,6 +204,15 @@ _SECTIONS = """
     <span class="vx-card-title">Plan & niveaux clés</span></div><div data-body>%%LOADING%%</div></section>
   <section class="vx-card vx-card--compact" id="an-rail-risks"><div class="vx-card-header">
     <span class="vx-card-title">Risques identifiés</span></div><div data-body>—</div></section>
+  <section class="vx-card vx-card--compact" id="an-copilot" aria-label="Copilote d'analyse">
+    <div class="vx-card-header"><span class="vx-card-title">Copilote</span>
+      <span class="vx-chart-question">Question sur ce titre — réponse ancrée dans les chiffres réels.</span></div>
+    <div data-body>
+      <input id="an-cp-q" class="vx-input" placeholder="ex. Quel est le risque principal ici ?" maxlength="500" autocomplete="off" style="margin-bottom:.4rem" />
+      <button class="vx-btn vx-btn-sm vx-btn-primary" id="an-cp-go">Demander</button>
+      <div id="an-cp-out" class="vx-mt2"></div>
+      <div class="vx-meta vx-mt1">Lecture seule — aucun ordre.</div>
+    </div></section>
 </div>
 </aside>
 </div>
@@ -752,6 +761,25 @@ async function loadDecisionStack(){
   }
 }
 function demoState(){return !!(window.__vxStatus&&window.__vxStatus.demo);}
+/* Copilote du titre : question libre → /api/copilot/ask ancré sur SYM (chiffres réels). */
+(function(){
+  const go=$('an-cp-go'),q=$('an-cp-q'),out=$('an-cp-out');
+  if(!go||!q||!out)return;
+  function ask(){
+    const question=(q.value||'').trim();
+    if(!question){VX.toast&&VX.toast('Écris une question','warn');return;}
+    out.innerHTML='<div class="vx-empty">Le copilote analyse '+SYM+'…</div>';
+    fetch('/api/copilot/ask',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:question,symbol:SYM})})
+      .then(r=>r.json()).then(d=>{
+        if(!d.ok){out.innerHTML='<div class="vx-error-banner">'+esc(d.error||'réponse indisponible')+'</div>';return;}
+        out.innerHTML='<div class="vx-insight" data-tone="action" style="white-space:pre-wrap;font-size:12.5px">'+esc(d.answer)+'</div>'
+          +'<div class="vx-meta" style="margin-top:.3rem">'+esc(d.label||'')+'</div>';
+      }).catch(e=>{out.innerHTML='<div class="vx-error-banner">Copilote injoignable : '+esc(e.message)+'</div>';});
+  }
+  go.addEventListener('click',ask);
+  q.addEventListener('keydown',e=>{if(e.key==='Enter')ask();});
+})();
 loadDossier();
 loadDecisionStack();
 VX.refresh.register(loadDossier,180000,'analysis');
