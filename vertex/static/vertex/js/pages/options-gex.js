@@ -66,6 +66,8 @@
       + tile('Mur put', f(g.put_wall), 'support')
       + tile('Vanna nette', money(g.net_vanna_total), 'Δ$ pour +1 pt d’IV')
       + tile('Charm net', money(g.net_charm_total), 'Δ$ qui dérive par jour')
+      + tile('Max pain', f(g.max_pain), 'aimant d’expiration (OI)')
+      + tile('Skew IV', (typeof g.iv_skew_pts === 'number' ? (g.iv_skew_pts > 0 ? '+' : '') + f(g.iv_skew_pts, 1) + ' pts' : 'n/d'), g.iv_skew_pts > 0 ? 'prime de peur (puts chers)' : g.iv_skew_pts < 0 ? 'calls plus chers' : '')
       + '</div></section>';
   }
 

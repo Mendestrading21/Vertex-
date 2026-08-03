@@ -141,3 +141,42 @@ def test_charm_none_when_iv_absent():
     prof = gex.compute([{'type': 'CALL', 'strike': 105, 'gamma': 0.05, 'oi': 1000, 'spot': 100}])
     assert prof['net_charm_total'] is None
     assert prof['strikes'][0]['charm'] is None
+
+
+def test_max_pain_exact_hand_computed():
+    """Max pain = strike minimisant le payout total (calculé à la main = 100)."""
+    contracts = [
+        {'type': 'CALL', 'strike': 100, 'oi': 100},
+        {'type': 'CALL', 'strike': 110, 'oi': 50},
+        {'type': 'PUT', 'strike': 90, 'oi': 80},
+        {'type': 'PUT', 'strike': 100, 'oi': 120},
+    ]
+    # P=90 → puts K100 paient 1200 ; P=100 → 0 ; P=110 → calls K100 paient 1000.
+    assert gex.max_pain(contracts) == 100
+
+
+def test_max_pain_none_without_oi():
+    assert gex.max_pain([{'type': 'CALL', 'strike': 100, 'oi': None}]) is None
+    assert gex.max_pain([]) is None
+
+
+def test_iv_skew_positive_when_puts_richer():
+    contracts = [
+        {'type': 'PUT', 'strike': 90, 'iv': 40.0},     # put OTM plus cher
+        {'type': 'CALL', 'strike': 110, 'iv': 30.0},   # call OTM
+    ]
+    assert gex.iv_skew(contracts, 100) == 10.0          # +10 pts = prime de peur
+
+
+def test_iv_skew_none_if_one_side_missing():
+    assert gex.iv_skew([{'type': 'PUT', 'strike': 90, 'iv': 40.0}], 100) is None
+    assert gex.iv_skew([], 100) is None
+
+
+def test_compute_carries_max_pain_and_skew():
+    prof = gex.compute([
+        {'type': 'CALL', 'strike': 110, 'gamma': 0.03, 'oi': 100, 'spot': 100, 'iv': 30.0},
+        {'type': 'PUT', 'strike': 90, 'gamma': 0.03, 'oi': 100, 'spot': 100, 'iv': 42.0},
+    ])
+    assert prof['max_pain'] in (90, 110)                # grille réelle
+    assert prof['iv_skew_pts'] == 12.0

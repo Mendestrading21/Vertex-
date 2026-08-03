@@ -66,6 +66,14 @@ def build(gex, flow=None, *, earnings_in_days=None, symbol=None, em_pct=None):
         evidence.append('Mur put (support) à %s' % _f(put_wall))
     if flip is not None:
         evidence.append('Bascule zero-gamma ≈ %s' % _f(flip))
+    mp = gex.get('max_pain')
+    if mp is not None:
+        evidence.append('Max pain (aimant d\'expiration, OI) à %s' % _f(mp))
+    skew = gex.get('iv_skew_pts')
+    if isinstance(skew, (int, float)) and not isinstance(skew, bool):
+        evidence.append('Skew d\'IV %+.1f pts — %s' % (
+            skew, 'les puts se paient plus cher (prime de peur)' if skew > 0
+            else 'les calls se paient plus cher' if skew < 0 else 'équilibré'))
     if not flow.get('empty'):
         sk = flow.get('skew')
         if sk:

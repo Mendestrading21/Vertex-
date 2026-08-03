@@ -160,6 +160,7 @@ def compute(contracts, *, spot=None, symbol=None):
             'contracts_used': used, 'strikes': [],
             'net_gex_total': None, 'call_gex_total': None, 'put_gex_total': None,
             'net_vanna_total': None, 'net_charm_total': None,
+            'max_pain': None, 'iv_skew_pts': None,
             'zero_gamma': None, 'call_wall': None, 'put_wall': None,
             'bias': None, 'regime': None, 'generator': 'deterministic',
             'reason': ('aucun spot réel' if not sp else
@@ -221,8 +222,62 @@ def compute(contracts, *, spot=None, symbol=None):
         # même base Black-Scholes/convention. None si IV/DTE indisponibles.
         'net_charm_total': (sum(s['charm'] for s in strikes if s['charm'] is not None)
                             if charm_any else None),
+        # MAX PAIN (aimant d'expiration, OI réels) + SKEW D'IV put/call (prime de peur).
+        'max_pain': max_pain(contracts),
+        'iv_skew_pts': iv_skew(contracts, sp),
         'bias': bias, 'regime': regime, 'generator': 'deterministic',
     }
+
+
+def max_pain(contracts):
+    """MAX PAIN : le prix d'expiration qui MINIMISE le payout total aux détenteurs
+    d'options (calls: OI×max(0,P−K) ; puts: OI×max(0,K−P)) — l'« aimant d'expiration »
+    classique. Évalué sur la grille des strikes réels. None si OI/strikes absents."""
+    rows = []
+    for c in (contracts or []):
+        if not isinstance(c, dict):
+            continue
+        k, o = _num(c.get('strike')), _num(c.get('oi'))
+        if k is None or o is None or o <= 0:
+            continue
+        rows.append((k, o, str(c.get('type', '')).upper() != 'PUT'))
+    if not rows:
+        return None
+    grid = sorted({k for k, _, _ in rows})
+    best_k, best_pain = None, None
+    for p in grid:
+        pain = sum(o * (max(0.0, p - k) if is_call else max(0.0, k - p))
+                   for k, o, is_call in rows) * CONTRACT_MULTIPLIER
+        if best_pain is None or pain < best_pain:
+            best_k, best_pain = p, pain
+    return best_k
+
+
+def iv_skew(contracts, spot):
+    """SKEW D'IV put/call (points d'IV) : médiane des IV des PUTS OTM (K<spot) moins
+    médiane des IV des CALLS OTM (K>spot). Positif = les puts se paient plus cher
+    → prime de peur. None si un des deux côtés n'a pas d'IV réelle exploitable."""
+    sp = _num(spot)
+    if not sp or sp <= 0:
+        return None
+    puts, calls = [], []
+    for c in (contracts or []):
+        if not isinstance(c, dict):
+            continue
+        k = _num(c.get('strike'))
+        iv = _iv_frac(c.get('iv'))
+        if k is None or iv is None:
+            continue
+        if str(c.get('type', '')).upper() == 'PUT' and k < sp:
+            puts.append(iv)
+        elif str(c.get('type', '')).upper() != 'PUT' and k > sp:
+            calls.append(iv)
+    if not puts or not calls:
+        return None
+    puts.sort()
+    calls.sort()
+    med_p, med_c = puts[len(puts) // 2], calls[len(calls) // 2]
+    return round((med_p - med_c) * 100, 1)          # points d'IV
 
 
 def _zero_gamma(strikes):
@@ -239,4 +294,4 @@ def _zero_gamma(strikes):
     return None
 
 
-__all__ = ['compute']
+__all__ = ['compute', 'max_pain', 'iv_skew']
