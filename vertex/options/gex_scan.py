@@ -46,6 +46,7 @@ def scan(board, detail_by_sym=None, *, top=None):
             'zero_gamma': prof['zero_gamma'],
             'call_wall': prof['call_wall'],
             'put_wall': prof['put_wall'],
+            'max_pain': prof.get('max_pain'),
             'contracts_used': prof['contracts_used'],
         })
 

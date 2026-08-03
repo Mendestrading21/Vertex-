@@ -147,6 +147,18 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
                             'spot': spot, 'put_wall': pw,
                             'detail': 'Spot sous le mur put (%s < %s) — le support de '
                                       'positionnement a cédé.' % (spot, pw)})
+            # PIN RISK : spot collé au max pain (<1,5 %) avec une échéance proche (≤7 j)
+            # → l'OI tend à épingler le cours vers ce niveau à l'expiration.
+            mp = prof.get('max_pain')
+            dtes = [c.get('dte') for c in contracts
+                    if isinstance(c.get('dte'), (int, float)) and not isinstance(c.get('dte'), bool)]
+            if (mp is not None and spot and dtes and min(dtes) <= 7
+                    and abs(spot - mp) / spot * 100 <= 1.5):
+                out.append({'type': 'GAMMA_PIN_RISK', 'symbol': sym,
+                            'spot': spot, 'max_pain': mp, 'min_dte': int(min(dtes)),
+                            'detail': 'Spot collé au max pain (%s ~ %s) à J-%d de la plus '
+                                      'proche échéance — risque d\'épinglage (pinning) vers '
+                                      'ce niveau.' % (spot, mp, int(min(dtes)))})
             if zg is not None and spot < zg:
                 out.append({'type': 'GAMMA_REGIME_ACCELERATING', 'symbol': sym,
                             'spot': spot, 'zero_gamma': zg,

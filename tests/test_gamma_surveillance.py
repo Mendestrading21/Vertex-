@@ -57,3 +57,43 @@ def test_empty_board_is_honest(client):
     scan_state['options_board'] = []
     d = client.get('/api/positions/alerts').get_json()
     assert d.get('gamma') == []
+
+
+def test_pin_risk_detected_near_max_pain_short_dte(client):
+    """Spot collé au max pain (≤1,5 %) et échéance ≤7 j → GAMMA_PIN_RISK."""
+    persist.save_json('desk_data.json', {'ts': 1, 'data': {'myTrades': json.dumps([
+        {'id': 1, 'type': 'STK', 'sym': 'MSFT', 'qty': 10, 'cost': 4000,
+         'added': '2026-07-01', 'entrySnap': {}}])}})
+    scan_state['options_board'] = [
+        # max pain sera 450 (grille), spot 451 → 0,22 % ; dte 3 → pin risk
+        {'sym': 'MSFT', 'type': 'CALL', 'strike': 450, 'gamma': 0.05, 'oi': 3000,
+         'spot': 451, 'dte': 3},
+        {'sym': 'MSFT', 'type': 'PUT', 'strike': 450, 'gamma': 0.05, 'oi': 3000,
+         'spot': 451, 'dte': 3},
+    ]
+    scan_state.setdefault('detail', {})['MSFT'] = {'price': 451}
+    try:
+        d = client.get('/api/positions/alerts').get_json()
+        types = [g['type'] for g in d.get('gamma') or []]
+        assert 'GAMMA_PIN_RISK' in types
+        ev = next(g for g in d['gamma'] if g['type'] == 'GAMMA_PIN_RISK')
+        assert ev['max_pain'] == 450 and ev['min_dte'] == 3
+    finally:
+        scan_state['options_board'] = []
+
+
+def test_no_pin_risk_when_dte_far(client):
+    persist.save_json('desk_data.json', {'ts': 1, 'data': {'myTrades': json.dumps([
+        {'id': 1, 'type': 'STK', 'sym': 'MSFT', 'qty': 10, 'cost': 4000,
+         'added': '2026-07-01', 'entrySnap': {}}])}})
+    scan_state['options_board'] = [
+        {'sym': 'MSFT', 'type': 'CALL', 'strike': 450, 'gamma': 0.05, 'oi': 3000,
+         'spot': 451, 'dte': 60},          # échéance lointaine → pas d'épinglage
+    ]
+    scan_state.setdefault('detail', {})['MSFT'] = {'price': 451}
+    try:
+        d = client.get('/api/positions/alerts').get_json()
+        types = [g['type'] for g in d.get('gamma') or []]
+        assert 'GAMMA_PIN_RISK' not in types
+    finally:
+        scan_state['options_board'] = []

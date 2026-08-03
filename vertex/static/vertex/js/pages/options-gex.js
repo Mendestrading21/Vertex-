@@ -127,14 +127,15 @@
           + '<td><span class="vx-badge" data-tone="' + biasTone + '">' + esc(r.bias || '—') + '</span></td>'
           + '<td class="vx-num">' + f(r.zero_gamma) + '</td>'
           + '<td class="vx-num">' + f(r.call_wall) + '</td>'
-          + '<td class="vx-num">' + f(r.put_wall) + '</td></tr>';
+          + '<td class="vx-num">' + f(r.put_wall) + '</td>'
+          + '<td class="vx-num">' + f(r.max_pain) + '</td></tr>';
       }).join('');
       host.innerHTML =
         (d.climate ? '<div class="vx-muted" style="margin-bottom:.4rem">Climat : ' + esc(d.climate)
           + ' · ' + d.symbols_usable + '/' + d.symbols_scanned + ' titres exploitables.</div>' : '')
         + '<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>'
         + '<th>Titre</th><th class="vx-num">Spot</th><th class="vx-num">Net GEX</th><th>Régime</th>'
-        + '<th>Biais</th><th class="vx-num">Bascule 0-γ</th><th class="vx-num">Mur call</th><th class="vx-num">Mur put</th>'
+        + '<th>Biais</th><th class="vx-num">Bascule 0-γ</th><th class="vx-num">Mur call</th><th class="vx-num">Mur put</th><th class="vx-num">Max pain</th>'
         + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
       host.querySelectorAll('[data-gx-sym]').forEach(function (tr) {
         tr.addEventListener('click', function () {
