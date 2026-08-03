@@ -65,6 +65,7 @@
       + tile('Mur call', f(g.call_wall), 'aimant haussier')
       + tile('Mur put', f(g.put_wall), 'support')
       + tile('Vanna nette', money(g.net_vanna_total), 'Δ$ pour +1 pt d’IV')
+      + tile('Charm net', money(g.net_charm_total), 'Δ$ qui dérive par jour')
       + '</div></section>';
   }
 
@@ -167,6 +168,17 @@
     }
     go.addEventListener('click', ask);
     q.addEventListener('keydown', function (e) { if (e.key === 'Enter') ask(); });
+    /* Questions suggérées (1 clic) — remplissent et envoient. */
+    var sug = document.createElement('div');
+    sug.className = 'vx-flex vx-wrap'; sug.style.cssText = 'gap:6px;margin-top:.4rem';
+    ['Résume le positionnement dealer.', 'Quel est le risque principal ?',
+     'Le flux confirme-t-il le biais ?'].forEach(function (t) {
+      var b = document.createElement('button');
+      b.className = 'vx-btn vx-btn-sm vx-btn-ghost'; b.textContent = t;
+      b.addEventListener('click', function () { q.value = t; ask(); });
+      sug.appendChild(b);
+    });
+    out.parentNode.insertBefore(sug, out);
   }
 
   /* Barres GEX par strike — SVG inline (call vert vers la droite, put rouge vers la gauche). */

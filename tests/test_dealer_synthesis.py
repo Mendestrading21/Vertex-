@@ -53,3 +53,26 @@ def test_earnings_none_when_absent():
     g = _profile(bullish=True)
     t = ds.build(g, flow.analyze([]), earnings_in_days=None, symbol='MSFT')
     assert t['earnings_risk'] is None
+
+
+def test_magnet_vs_expected_move_within():
+    """Aimant à 4.5 % du spot, move attendu ±6 % → atteignable, dit dans le récit."""
+    g = _profile(bullish=True)                       # aimant 460, spot 440 → 4.5 %
+    t = ds.build(g, flow.analyze([]), symbol='MSFT', em_pct=6.0)
+    assert t['magnet_within_em'] is True
+    assert t['magnet_dist_pct'] == 4.5
+    assert 'DANS le move attendu' in t['narrative']
+
+
+def test_magnet_vs_expected_move_outside():
+    g = _profile(bullish=True)
+    t = ds.build(g, flow.analyze([]), symbol='MSFT', em_pct=2.0)   # ±2 % < 4.5 %
+    assert t['magnet_within_em'] is False
+    assert 'HORS du move attendu' in t['narrative']
+    assert 'sans catalyseur' in t['narrative']
+
+
+def test_em_absent_keeps_fields_none():
+    g = _profile(bullish=True)
+    t = ds.build(g, flow.analyze([]), symbol='MSFT')
+    assert t['em_pct'] is None and t['magnet_within_em'] is None

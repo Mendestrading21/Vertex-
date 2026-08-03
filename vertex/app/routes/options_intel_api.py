@@ -153,11 +153,16 @@ def options_gex(sym):
             break
     if not spot:
         spot = _num(detail.get('price'))
+    # Move attendu du cycle : médiane des em_pct RÉELS des contrats (jamais inventé).
+    ems = sorted(_num(c.get('em_pct')) for c in contracts
+                 if _num(c.get('em_pct')) is not None)
+    em_pct = ems[len(ems) // 2] if ems else None
     try:
         profile = _gex.compute(contracts, spot=spot, symbol=sym)
         flow = _flow.analyze(contracts, symbol=sym)
         synth = _ds.build(profile, flow,
-                          earnings_in_days=detail.get('earnings_in_days'), symbol=sym)
+                          earnings_in_days=detail.get('earnings_in_days'),
+                          symbol=sym, em_pct=em_pct)
     except Exception as e:
         return jsonify({'symbol': sym, 'empty': True,
                         'error': '%s: %s' % (type(e).__name__, e)}), 500

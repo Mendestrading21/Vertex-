@@ -124,3 +124,20 @@ def test_vanna_none_when_iv_absent():
     prof = gex.compute([{'type': 'CALL', 'strike': 105, 'gamma': 0.05, 'oi': 1000, 'spot': 100}])
     assert prof['net_vanna_total'] is None
     assert prof['strikes'][0]['vanna'] is None
+
+
+def test_charm_computed_and_negative_for_otm_call():
+    """Charm $ par strike + net : un call OTM a un delta qui fond → charm négatif."""
+    prof = gex.compute([
+        {'type': 'CALL', 'strike': 115, 'gamma': 0.03, 'oi': 1000, 'spot': 100,
+         'iv': 30.0, 'dte': 20},
+    ])
+    assert prof['net_charm_total'] is not None
+    assert prof['net_charm_total'] < 0            # OTM call : delta fond vers 0
+    assert prof['strikes'][0]['charm'] is not None
+
+
+def test_charm_none_when_iv_absent():
+    prof = gex.compute([{'type': 'CALL', 'strike': 105, 'gamma': 0.05, 'oi': 1000, 'spot': 100}])
+    assert prof['net_charm_total'] is None
+    assert prof['strikes'][0]['charm'] is None

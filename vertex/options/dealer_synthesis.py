@@ -24,7 +24,7 @@ def _pct_above(gex):
     return round(100 * a / tot) if tot else None
 
 
-def build(gex, flow=None, *, earnings_in_days=None, symbol=None):
+def build(gex, flow=None, *, earnings_in_days=None, symbol=None, em_pct=None):
     """Thèse de positionnement dealer. `gex` = sortie de gex.compute ; `flow` = flow.analyze."""
     gex = gex or {}
     flow = flow or {}
@@ -85,14 +85,31 @@ def build(gex, flow=None, *, earnings_in_days=None, symbol=None):
             earnings_risk = ('imminent (résultats J-%d)' % int(earnings_in_days)
                              if earnings_in_days <= 10 else 'résultats dans %d j' % int(earnings_in_days))
 
+    # Aimant vs MOVE ATTENDU (em_pct = move implicite du cycle, depuis le board réel) :
+    # un aimant hors du move attendu n'est pas atteignable sur ce cycle — dit honnêtement.
+    magnet_within_em = None
+    magnet_dist_pct = None
+    if (magnet is not None and spot and isinstance(em_pct, (int, float))
+            and not isinstance(em_pct, bool) and em_pct > 0):
+        magnet_dist_pct = round(abs(magnet - spot) / spot * 100, 1)
+        magnet_within_em = magnet_dist_pct <= em_pct
+        evidence.append('Aimant à %s %% du spot, move attendu ±%s %% → %s' % (
+            magnet_dist_pct, round(em_pct, 1),
+            'atteignable sur ce cycle' if magnet_within_em else 'HORS du move attendu'))
+
     headline = _headline(bias, regime, sym)
     narrative = _narrative(sym, spot, bias, regime, net, conc, magnet, support,
-                           flip, flow, earnings_risk)
+                           flip, flow, earnings_risk,
+                           em_pct=em_pct, magnet_dist_pct=magnet_dist_pct,
+                           magnet_within_em=magnet_within_em)
 
     return {
         'symbol': sym, 'empty': False, 'spot': spot,
         'bias': bias, 'regime': regime,
         'magnet': magnet, 'support': support, 'zero_gamma': flip,
+        'em_pct': (round(em_pct, 1) if isinstance(em_pct, (int, float))
+                   and not isinstance(em_pct, bool) else None),
+        'magnet_within_em': magnet_within_em, 'magnet_dist_pct': magnet_dist_pct,
         'horizon_dte': horizon, 'earnings_risk': earnings_risk,
         'headline': headline, 'narrative': narrative,
         'evidence': evidence, 'generator': 'deterministic',
@@ -114,7 +131,8 @@ def _headline(bias, regime, sym):
     return '%s%s — %s' % (b, ' ' + sym if sym else '', r) if r else b
 
 
-def _narrative(sym, spot, bias, regime, net, conc, magnet, support, flip, flow, earnings_risk):
+def _narrative(sym, spot, bias, regime, net, conc, magnet, support, flip, flow, earnings_risk,
+               em_pct=None, magnet_dist_pct=None, magnet_within_em=None):
     """Récit en français, fondé uniquement sur les nombres réels ci-dessus."""
     s = sym or 'le sous-jacent'
     parts = []
@@ -132,6 +150,12 @@ def _narrative(sym, spot, bias, regime, net, conc, magnet, support, flip, flow, 
     if magnet is not None:
         parts.append("Zone d'aimant gamma : %s (concentration d'exposition — un niveau "
                      "que le positionnement tend à attirer, PAS une prévision de prix)." % _f(magnet))
+        if magnet_within_em is True:
+            parts.append("Cet aimant est à %s %% du cours, DANS le move attendu (±%s %%) : "
+                         "atteignable sur ce cycle." % (_f(magnet_dist_pct), _f(round(em_pct, 1))))
+        elif magnet_within_em is False:
+            parts.append("Cet aimant est à %s %% du cours, HORS du move attendu (±%s %%) : "
+                         "peu probable sur ce cycle sans catalyseur." % (_f(magnet_dist_pct), _f(round(em_pct, 1))))
     if support is not None:
         parts.append("Support de positionnement (mur put) : %s." % _f(support))
     if flip is not None:

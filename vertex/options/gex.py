@@ -85,6 +85,31 @@ def _contract_vanna(strike, spot, iv, dte, oi, is_call):
     return mag if is_call else -mag
 
 
+def _contract_charm(strike, spot, iv, dte, oi, is_call):
+    """Exposition CHARM $ d'un contrat (dérive du delta-dollar PAR JOUR qui passe),
+    Black-Scholes depuis les données réelles. Convention de signe naïve IDENTIQUE
+    au GEX (call +, put −). None si une donnée manque. Charm négatif sur un call
+    OTM : son delta fond vers 0 avec le temps → les dealers rachètent/vendent le
+    sous-jacent chaque jour rien que par l'écoulement du temps."""
+    k, s, o, d = _num(strike), _num(spot), _num(oi), _num(dte)
+    sig = _iv_frac(iv)
+    if None in (k, s, o, d) or sig is None or s <= 0 or k <= 0 or d <= 0:
+        return None
+    t = d / 365.0
+    srt = sig * math.sqrt(t)
+    if srt <= 0:
+        return None
+    try:
+        d1 = (math.log(s / k) + (_R + sig * sig / 2) * t) / srt
+    except ValueError:
+        return None
+    d2 = d1 - srt
+    pdf = math.exp(-d1 * d1 / 2) / math.sqrt(2 * math.pi)
+    charm = -pdf * (2 * _R * t - d2 * srt) / (2 * t * srt)   # ∂Δ/∂t (par an, call)
+    mag = (charm / 365.0) * o * CONTRACT_MULTIPLIER * s      # $ de delta par JOUR
+    return mag if is_call else -mag
+
+
 def _contract_gex(gamma, oi, spot, is_call):
     """GEX $ d'un contrat (par mouvement de 1 % du sous-jacent), signé par la
     convention dealer. Retourne None si une donnée réelle manque."""
@@ -108,6 +133,7 @@ def compute(contracts, *, spot=None, symbol=None):
     per_strike = {}          # strike -> {'call': gex, 'put': gex, 'vanna': $|None}
     used = 0
     vanna_any = False
+    charm_any = False
     for c in contracts:
         k = _num(c.get('strike'))
         if k is None:
@@ -116,12 +142,16 @@ def compute(contracts, *, spot=None, symbol=None):
         gx = _contract_gex(c.get('gamma'), c.get('oi'), sp, is_call)
         if gx is None:
             continue
-        slot = per_strike.setdefault(k, {'call': 0.0, 'put': 0.0, 'vanna': 0.0})
+        slot = per_strike.setdefault(k, {'call': 0.0, 'put': 0.0, 'vanna': 0.0, 'charm': 0.0})
         slot['call' if is_call else 'put'] += gx
         vn = _contract_vanna(k, sp, c.get('iv'), c.get('dte'), c.get('oi'), is_call)
         if vn is not None:
             slot['vanna'] += vn
             vanna_any = True
+        ch = _contract_charm(k, sp, c.get('iv'), c.get('dte'), c.get('oi'), is_call)
+        if ch is not None:
+            slot['charm'] += ch
+            charm_any = True
         used += 1
 
     if not per_strike or not sp:
@@ -129,7 +159,7 @@ def compute(contracts, *, spot=None, symbol=None):
             'symbol': (symbol or None), 'spot': sp, 'empty': True,
             'contracts_used': used, 'strikes': [],
             'net_gex_total': None, 'call_gex_total': None, 'put_gex_total': None,
-            'net_vanna_total': None,
+            'net_vanna_total': None, 'net_charm_total': None,
             'zero_gamma': None, 'call_wall': None, 'put_wall': None,
             'bias': None, 'regime': None, 'generator': 'deterministic',
             'reason': ('aucun spot réel' if not sp else
@@ -142,7 +172,8 @@ def compute(contracts, *, spot=None, symbol=None):
         put_gex = per_strike[k]['put']
         strikes.append({'strike': k, 'call_gex': call_gex, 'put_gex': put_gex,
                         'net_gex': call_gex + put_gex,
-                        'vanna': (per_strike[k]['vanna'] if vanna_any else None)})
+                        'vanna': (per_strike[k]['vanna'] if vanna_any else None),
+                        'charm': (per_strike[k]['charm'] if charm_any else None)})
 
     total_abs = sum(abs(s['net_gex']) for s in strikes) or None
     for s in strikes:
@@ -186,6 +217,10 @@ def compute(contracts, *, spot=None, symbol=None):
         # convention de signe naïve identique au GEX. None si IV/DTE indisponibles.
         'net_vanna_total': (sum(s['vanna'] for s in strikes if s['vanna'] is not None)
                             if vanna_any else None),
+        # CHARM net ($ de delta qui dérive PAR JOUR par le seul écoulement du temps) —
+        # même base Black-Scholes/convention. None si IV/DTE indisponibles.
+        'net_charm_total': (sum(s['charm'] for s in strikes if s['charm'] is not None)
+                            if charm_any else None),
         'bias': bias, 'regime': regime, 'generator': 'deterministic',
     }
 
