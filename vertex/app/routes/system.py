@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v81';   // v81 (RADAR-GEX) : radar de positionnement multi-titres + copilote sur la fiche Analyse
+const CACHE='td-shell-v82';   // v82 (STRESS) : stress-scenarios du portefeuille (choc marche sur prix reels) dans la vue Risque
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

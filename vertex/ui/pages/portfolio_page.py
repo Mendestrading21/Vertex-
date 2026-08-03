@@ -795,6 +795,33 @@ async function renderRisk(){
 }
 
 /* ═══ WATCHLIST (+ suivis + favoris §18) ═══ */
+async function renderStress(){
+  /* Stress-scénarios (±X % marché) sur les actions déclarées, prix réels du scan.
+     Options exclues honnêtement (IBKR requis) — couverture affichée. */
+  let d=null;
+  try{d=await VX.fetch('/api/portfolio/stress',{ttl:120000});}catch(e){return;}
+  if(!d)return;
+  document.querySelectorAll('[aria-label="Stress-scénarios"]').forEach(n=>n.remove());   // idempotent (re-boots)
+  const host=document.createElement('section');
+  host.className='vx-card vx-mt3';host.setAttribute('aria-label','Stress-scénarios');
+  const money=(x)=>x==null?'n/d':((x>=0?'+':'')+VX.fmt.num(x,0));
+  if(d.empty){
+    host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Stress-scénarios — si le marché choque&nbsp;?</span></div>
+      ${VX.states.empty(esc((d.reason||'stress indisponible')+'.'))}`;
+  }else{
+    const tiles=(d.scenarios||[]).map(s=>`<div class="vx-stat">
+        <span class="vx-stat-label">Marché ${s.shock_pct>0?'+':''}${s.shock_pct} %</span>
+        <span class="vx-stat-value ${s.impact>0?'vx-pos':s.impact<0?'vx-neg':''}">${money(s.impact)}</span>
+        ${s.worst?`<span class="vx-muted">${esc(s.worst.sym)} ${money(s.worst.impact)}</span>`:''}</div>`).join('');
+    host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Stress-scénarios — si le marché choque&nbsp;?</span>
+        <span class="vx-chart-question">Impact P&L d'un choc uniforme sur tes actions (prix réels). Descriptif, pas une prévision.</span></div>
+      <div class="vx-stats-row">${tiles}</div>
+      <p class="vx-lead" style="font-size:13.5px">${esc(d.narrative||'')}</p>
+      ${(d.excluded||[]).length?`<div class="vx-muted">Exclues du chiffrage : ${d.excluded.map(e=>esc(e.sym+' ('+e.reason+')')).join(' · ')}</div>`:''}
+      <div class="vx-card-footer">Couverture ${d.coverage_pct!=null?d.coverage_pct+' %':'n/d'} du capital déclaré · lecture seule — aucun ordre.</div>`;
+  }
+  $('pf-body').appendChild(host);
+}
 async function renderWatchlist(){
   const wl=E().watchlist(),follows=E().follows(),favs=E().favorites();
   const statuses=['idee','a_etudier','en_attente','proche','declenchee','invalidee','archivee'];
@@ -845,7 +872,7 @@ async function renderWatchlist(){
 }
 
 const RENDER={team:renderSynthese,positions:renderPositions,performance:renderPerformance,
-  options:renderOptions,risk:renderRisk,watchlist:renderWatchlist};
+  options:renderOptions,risk:async function(){await renderRisk();await renderStress();},watchlist:renderWatchlist};
 async function pfFresh(){try{
   const el=$('pf-fresh');if(!el||!window.VX||!VX.freshness)return;
   let pk=VX.fetch.peek('/api/session/manifest');

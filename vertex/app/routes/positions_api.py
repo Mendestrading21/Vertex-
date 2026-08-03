@@ -85,6 +85,26 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         broker = [p for p in pos if p['source'] == 'IBKR']
         return jsonify(reconcile(local, broker, ibkr_online=bool(ibkr_enabled)))
 
+    @bp.route('/api/portfolio/stress')
+    def portfolio_stress():
+        """STRESS-SCÉNARIOS du book : ±X % appliqués aux positions actions déclarées,
+        valorisées au prix RÉEL du scan. Options exclues honnêtement (IBKR requis).
+        Descriptif — pas une prévision, aucun ordre."""
+        import json as _json
+        from vertex.engines import portfolio_stress as _stress
+        blob = _desk_blob()
+        data = (blob or {}).get('data') or {}
+        raw = data.get('myTrades')
+        try:
+            positions = _json.loads(raw) if isinstance(raw, str) else (raw or [])
+            if not isinstance(positions, list):
+                positions = []
+        except Exception:
+            positions = []
+        detail = scan_state.get('detail') or {}
+        prices = {s: (d or {}).get('price') for s, d in detail.items()}
+        return jsonify(_stress.build(positions, prices))
+
     @bp.route('/api/positions/alerts')
     def positions_alerts():
         """Alertes consolidées de positions (§29) — lecture seule."""
