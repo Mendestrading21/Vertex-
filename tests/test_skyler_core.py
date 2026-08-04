@@ -126,8 +126,8 @@ def test_unevaluable_gates_are_unknown_not_false():
     p = SK.build_packet('TST', _detail(), market=_market(), as_of='10:00:00')
     gates = SK.hard_gates(p, SK.score40(p))
     conc = next(g for g in gates if g['id'] == 'CONCENTRATION_EXCESSIVE')
-    assert conc['triggered'] is None                  # portefeuille non branché → inconnu honnête
-    assert 'lot' in conc['reason'] or 'branché' in conc['reason']
+    assert conc['triggered'] is None                  # portefeuille non fourni → inconnu honnête
+    assert 'non fourni' in conc['reason'] or 'branché' in conc['reason']
 
 
 # ─── Scénarios : jamais de probabilité sans modèle ──────────────────────────────
