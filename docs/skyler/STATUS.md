@@ -18,9 +18,9 @@ Commande initiale obligatoire :
 
 | Étape | Statut | Validation | Rapport |
 |---|---|---|---|
-| Audit convergence | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-audit-convergence`) | EN ATTENTE | `docs/skyler/BRANCH_CONVERGENCE_AUDIT.md` |
-| Lot 0 — Baseline | BLOQUÉ par validation de l’audit | — | `docs/skyler/BASELINE.md` |
-| Lot 1 — Correctness options | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-01.md` |
+| Audit convergence | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-audit-convergence`) | DIFFÉRÉE (fin de session, accord utilisateur) | `docs/skyler/BRANCH_CONVERGENCE_AUDIT.md` |
+| Lot 0 — Baseline | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-00-baseline`, 1154 tests verts, actif RC1 récupéré) | DIFFÉRÉE (fin de session) | `docs/skyler/BASELINE.md` |
+| Lot 1 — Correctness options | EN COURS | — | `docs/refactor/validation/SKYLER-LOT-01.md` |
 | Lot 2 — Constitution V2 | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-02.md` |
 | Lot 3 — Market Intelligence | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-03.md` |
 | Lot 4 — News/catalyseurs/anomalies | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-04.md` |

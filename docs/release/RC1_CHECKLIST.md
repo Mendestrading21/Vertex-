@@ -8,13 +8,13 @@
 - **Base intouchée** : `origin/main` = `2b4fa70`
 - **SHA RC1** : voir `git rev-parse HEAD` (tip de la stabilisation ; commits clés
   `6cfcb18` code mort, `f201528` cohérence/éditorial, + commits docs RC1)
-- **Service worker** : `td-shell-v50`
+- **Service worker** : `td-shell-v51`
 
 ## Critères GO / NO-GO
 | Critère | État | Preuve |
 |---|---|---|
 | compileall vert | ✅ | `python -m compileall -q terminal.py vertex` → exit 0 |
-| pytest complet vert | ✅ | **950 passed, 2 skipped** (952 collectés) |
+| pytest complet vert | ✅ | **954 passed, 2 skipped** (956 collectés) |
 | 0 endpoint d'ordre | ✅ | grep `def/place/submit/transmit/... order` → 0 def, 0 call ; seulement blocklist/labels/tests |
 | READONLY prouvé | ✅ | `readonly=True` codé en dur partout ; `config.READONLY=True` ; ~20 tests gardiens |
 | 0 erreur console applicative | ✅ | sweep navigateur (hors 404 transitoires corrigés) |
@@ -24,7 +24,7 @@
 | mode démo honnête | ✅ | badges DÉMO ; `DEMO=1` sert des données synthétiques étiquetées |
 | mode sans IBKR fonctionnel | ✅ | `NO_IBKR=1` ; marques `n/d`, Greeks « Insufficient » |
 | stale / missing / insufficient corrects | ✅ | gardiens + états premium |
-| service worker cohérent | ✅ | v50 ; install/activate/claim ; gardiens vN présent, v(N-1) absent |
+| service worker cohérent | ✅ | v51 ; install/activate/claim ; gardiens vN présent, v(N-1) absent |
 | documentation release complète | ✅ | 5 fichiers (voir §Docs) |
 | rollback documenté | ✅ | `RC1_ROLLBACK.md` |
 
@@ -32,7 +32,7 @@
 
 ## Tests
 - `python -m compileall -q terminal.py vertex`
-- `python -m pytest tests/ -q` → 950 passed, 2 skipped
+- `python -m pytest tests/ -q` → 954 passed, 2 skipped
 - Routes/API 200, READONLY (×~20), démo, sans-IBKR, stale/missing/insufficient,
   options, portefeuille, journal, système, service worker.
 
