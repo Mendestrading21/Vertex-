@@ -2,7 +2,7 @@
 
 > Branche d’intégration : `integration/vertex-skyler-v2`  
 > Base : `agent/vertex-neon-glass-graphs`  
-> Statut : gouvernance installée, aucun moteur modifié.
+> Statut : audit de convergence produit (2026-08-04) — en attente de validation humaine. Aucun moteur modifié.
 
 ## Source de vérité
 
@@ -18,8 +18,8 @@ Commande initiale obligatoire :
 
 | Étape | Statut | Validation | Rapport |
 |---|---|---|---|
-| Audit convergence | À FAIRE | — | `docs/skyler/BRANCH_CONVERGENCE_AUDIT.md` |
-| Lot 0 — Baseline | BLOQUÉ par audit | — | `docs/skyler/BASELINE.md` |
+| Audit convergence | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-audit-convergence`) | EN ATTENTE | `docs/skyler/BRANCH_CONVERGENCE_AUDIT.md` |
+| Lot 0 — Baseline | BLOQUÉ par validation de l’audit | — | `docs/skyler/BASELINE.md` |
 | Lot 1 — Correctness options | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-01.md` |
 | Lot 2 — Constitution V2 | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-02.md` |
 | Lot 3 — Market Intelligence | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-03.md` |
@@ -40,6 +40,16 @@ Commande initiale obligatoire :
 - Les calculs sont déterministes ; Claude rédige mais ne crée pas les chiffres.
 - IBKR reste strictement READONLY.
 
+## Résultats de l’audit (2026-08-04)
+
+- Neon Glass (`a802155`) est une **continuation directe** de la RC1 (bifurcation à `84fbdc5`) — pas une branche sœur ; aucune fusion croisée nécessaire.
+- `main` (`2b4fa70`) est contenue à 100 % dans les deux lignées ; 0 commit unique côté `main`.
+- `integration/vertex-skyler-v2` = Neon Glass + 9 commits **docs uniquement** (vérifié par diff).
+- **Risque n°2 confirmé** : le commit RC1 `28d1e4e` est absent de Neon — perte réelle limitée à `tests/test_sw_cache_safety_rc1.py`, `docs/release/RC1_HUMAN_ACCEPTANCE.md` et 8 lignes de checklist (bump SW v51 dépassé par v87). Plan de récupération au §7 de l’audit.
+- Branches V4/Prism : racine incompatible (494 commits de `main` absents) — références gelées, jamais une base.
+- Source canonique par domaine : voir §6 de `BRANCH_CONVERGENCE_AUDIT.md` (résumé : Neon Glass partout, sauf dossier d’acceptation RC1 côté `agent/vertex-total-rebuild` et gouvernance côté `integration/vertex-skyler-v2`).
+- Les risques de calcul (3 à 8 ci-dessous) sont **hors périmètre audit** (aucun runtime modifié) et restent à traiter aux lots 1, 2 et 4.
+
 ## Risques prioritaires à vérifier pendant l’audit
 
 1. divergence RC1/Neon Glass ;
@@ -55,6 +65,6 @@ Commande initiale obligatoire :
 
 ## Prochaine action unique
 
-Exécuter `/vertex-skyler-v2 audit` sur une branche de travail dédiée issue de `integration/vertex-skyler-v2`.
+Valider humainement l’audit (`docs/skyler/BRANCH_CONVERGENCE_AUDIT.md`, PR brouillon vers `integration/vertex-skyler-v2`), puis exécuter `/vertex-skyler-v2 lot-0`.
 
 **Ne pas commencer le Lot 0 avant validation de l’audit.**
