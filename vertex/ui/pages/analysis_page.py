@@ -213,6 +213,14 @@ _SECTIONS = """
       <div id="an-cp-out" class="vx-mt2"></div>
       <div class="vx-meta vx-mt1">Lecture seule — aucun ordre.</div>
     </div></section>
+  <section class="vx-card vx-card--compact" id="an-pretrade" aria-label="Ticket pré-trade">
+    <div class="vx-card-header"><span class="vx-card-title">Ticket pré-trade</span>
+      <span class="vx-chart-question">7 contrôles réels avant d'envisager ce titre. Descriptif — aucun ordre.</span></div>
+    <div data-body>
+      <input id="an-pt-amt" class="vx-input" type="number" min="1" step="any" placeholder="Montant envisagé (ex. 2000)" style="margin-bottom:.4rem" />
+      <button class="vx-btn vx-btn-sm vx-btn-primary" id="an-pt-go">Vérifier</button>
+      <div id="an-pt-out" class="vx-mt2"></div>
+    </div></section>
 </div>
 </aside>
 </div>
@@ -779,6 +787,31 @@ function demoState(){return !!(window.__vxStatus&&window.__vxStatus.demo);}
   }
   go.addEventListener('click',ask);
   q.addEventListener('keydown',e=>{if(e.key==='Enter')ask();});
+})();
+/* Ticket pré-trade : montant envisagé → 7 contrôles réels via /api/pretrade/check. */
+(function(){
+  const go=$('an-pt-go'),amt=$('an-pt-amt'),out=$('an-pt-out');
+  if(!go||!amt||!out)return;
+  const ICON={ok:'✓',attention:'⚠',defavorable:'✕',inconnu:'·'};
+  const CLS={ok:'vx-pos',attention:'vx-warn',defavorable:'vx-neg',inconnu:'vx-muted'};
+  function run(){
+    const a=Number(amt.value);
+    if(!(a>0)){VX.toast&&VX.toast('Montant envisagé requis','warn');return;}
+    out.innerHTML='<div class="vx-empty">Vérification de '+SYM+'…</div>';
+    fetch('/api/pretrade/check',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({symbol:SYM,amount:a})})
+      .then(r=>r.json()).then(d=>{
+        const tone=d.tone==='ok'?'pos':d.tone==='ko'?'neg':'neutral';
+        out.innerHTML='<div class="vx-flex vx-mb1" style="gap:.4rem;align-items:center">'
+          +'<span class="vx-badge" data-tone="'+tone+'">'+esc(d.overall||'—')+'</span>'
+          +'<span class="vx-meta">'+esc(d.symbol)+' · '+VX.fmt.num(d.amount,0)+'</span></div>'
+          +'<ul style="margin:.2rem 0;padding-left:0;list-style:none;font-size:12.5px">'
+          +(d.checks||[]).map(c=>'<li style="margin:.25rem 0"><span class="'+(CLS[c.status]||'vx-muted')+'" style="display:inline-block;width:16px">'+(ICON[c.status]||'·')+'</span><b>'+esc(c.label)+'</b> — '+esc(c.detail)+'</li>').join('')
+          +'</ul><div class="vx-meta">'+esc(d.narrative||'')+'</div>';
+      }).catch(e=>{out.innerHTML='<div class="vx-error-banner">Vérification impossible : '+esc(e.message)+'</div>';});
+  }
+  go.addEventListener('click',run);
+  amt.addEventListener('keydown',e=>{if(e.key==='Enter')run();});
 })();
 loadDossier();
 loadDecisionStack();

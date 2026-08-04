@@ -105,6 +105,45 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         prices = {s: (d or {}).get('price') for s, d in detail.items()}
         return jsonify(_stress.build(positions, prices))
 
+    @bp.route('/api/pretrade/check', methods=['POST'])
+    def pretrade_check():
+        """TICKET PRÉ-TRADE (le « ticket d'ordre », version analyse) : titre + montant
+        envisagé → 7 contrôles réels (comité, régime, GEX, résultats, concentration
+        résultante, plan, garde-fou perdants §18) et verdict DESCRIPTIF. Ne passe
+        JAMAIS d'ordre — Vertex analyse, la décision reste humaine."""
+        import json as _json
+        from vertex.engines import pretrade as _pt
+        from vertex.options import gex as _gex
+        b = request.get_json(force=True, silent=True) or {}
+        sym = str(b.get('symbol') or '').upper()[:12]
+        amount = b.get('amount')
+        # verdict comité (vérité des verdicts, jamais recalculé)
+        verdict = None
+        for dcn in ((scan_state.get('committee') or {}).get('decisions') or []):
+            if isinstance(dcn, dict) and str(dcn.get('symbol') or '').upper() == sym:
+                verdict = dcn.get('verdict')
+                break
+        mc = scan_state.get('market_ctx') or {}
+        detail = (scan_state.get('detail') or {}).get(sym) or {}
+        board = scan_state.get('options_board') or []
+        contracts = [c for c in board if str(c.get('sym', '')).upper() == sym]
+        prof = _gex.compute(contracts, spot=detail.get('price'), symbol=sym) if contracts else {}
+        blob = _desk_blob()
+        raw = ((blob or {}).get('data') or {}).get('myTrades')
+        try:
+            positions = _json.loads(raw) if isinstance(raw, str) else (raw or [])
+            if not isinstance(positions, list):
+                positions = []
+        except Exception:
+            positions = []
+        prices = {s: (d or {}).get('price') for s, d in (scan_state.get('detail') or {}).items()}
+        return jsonify(_pt.build(
+            sym, amount, verdict=verdict, roro=mc.get('roro'),
+            gex_bias=prof.get('bias'), gex_regime=prof.get('regime'),
+            earnings_in_days=detail.get('earnings_in_days'),
+            positions=positions, prices_by_sym=prices,
+            plan=detail.get('plan') or {}))
+
     @bp.route('/api/positions/alerts')
     def positions_alerts():
         """Alertes consolidées de positions (§29) — lecture seule."""
