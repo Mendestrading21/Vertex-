@@ -22,8 +22,8 @@ Commande initiale obligatoire :
 | Lot 0 — Baseline | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-00-baseline`, 1154 tests verts, actif RC1 récupéré) | DIFFÉRÉE (fin de session) | `docs/skyler/BASELINE.md` |
 | Lot 1 — Correctness options | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-01-options-correctness`, 1175 tests verts, 16 tests rouges→verts) | DIFFÉRÉE (fin de session) | `docs/refactor/validation/SKYLER-LOT-01.md` |
 | Lot 2 — Constitution V2 | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-02-constitution-v2`, V2 par versioning officiel, V1 intacte, 1189 tests verts) | DIFFÉRÉE (fin de session) | `docs/refactor/validation/SKYLER-LOT-02.md` |
-| Lot 3 — Market Intelligence | EN COURS | — | `docs/refactor/validation/SKYLER-LOT-03.md` |
-| Lot 4 — News/catalyseurs/anomalies | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-04.md` |
+| Lot 3 — Market Intelligence | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-03-market-context`, MarketContext canonique + /api/market/context, 1200 tests verts) | DIFFÉRÉE (fin de session) | `docs/refactor/validation/SKYLER-LOT-03.md` |
+| Lot 4 — News/catalyseurs/anomalies | EN COURS | — | `docs/refactor/validation/SKYLER-LOT-04.md` |
 | Lot 5 — Skyler Core | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-05.md` |
 | Lot 6 — Options Intelligence | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-06.md` |
 | Lot 7 — Portfolio Intelligence | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-07.md` |
