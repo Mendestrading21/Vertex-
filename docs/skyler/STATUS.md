@@ -25,8 +25,8 @@ Commande initiale obligatoire :
 | Lot 3 — Market Intelligence | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-03-market-context`, MarketContext canonique + /api/market/context, 1200 tests verts) | DIFFÉRÉE (fin de session) | `docs/refactor/validation/SKYLER-LOT-03.md` |
 | Lot 4 — News/catalyseurs/anomalies | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-04-events-ohlcv`, série canonique + dédup + timeline, OHLCV audité honnête, 1214 tests verts) | DIFFÉRÉE (fin de session) | `docs/refactor/validation/SKYLER-LOT-04.md` |
 | Lot 5 — Skyler Core | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-05-skyler-core`, packet+score/40+gates+scénarios+décision `/api/skyler/<sym>`, 1232 tests verts) | DIFFÉRÉE (fin de session) | `docs/refactor/validation/SKYLER-LOT-05.md` |
-| Lot 6 — Options Intelligence | BLOQUÉ (prochain) | — | `docs/refactor/validation/SKYLER-LOT-06.md` |
-| Lot 7 — Portfolio Intelligence | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-07.md` |
+| Lot 6 — Options Intelligence | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-06-options-intelligence`, scanners TACTICAL/SWING/LEAPS + doublement documenté + OptionsContext Skyler, 1248 tests verts) | DIFFÉRÉE (fin de session) | `docs/refactor/validation/SKYLER-LOT-06.md` |
+| Lot 7 — Portfolio Intelligence | BLOQUÉ (prochain) | — | `docs/refactor/validation/SKYLER-LOT-07.md` |
 | Lot 8 — Neon Glass | BLOQUÉ | — | rapports par espace |
 | Lot 9 — Calibration et RC | BLOQUÉ | — | `docs/refactor/validation/SKYLER-LOT-09.md` |
 

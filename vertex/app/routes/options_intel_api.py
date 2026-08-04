@@ -241,4 +241,25 @@ def chart_interpretation(chart_id):
                            source='SCAN'))
 
 
+@bp.route('/api/options/scanner/<universe>')
+def api_options_scanner(universe):
+    """SCANNERS PAR UNIVERS (SKYLER LOT 6) : TACTICAL / SWING / LEAPS strictement
+    séparés, mandat LEAPS V2 étiqueté par candidat, probabilité de doublement
+    (modèle documenté, ESTIMATED) sur les 5 meilleurs. Lecture seule."""
+    from flask import request
+    from vertex.options import double_prob as _dp, horizon_scanners as _hs
+    sym = (request.args.get('sym') or '').upper().strip() or None
+    res = _hs.scan(scan_state.get('options_board') or [], universe, sym=sym)
+    if res.get('available'):
+        for c in res['candidates'][:5]:
+            prem = (c.get('cost') / 100.0) if isinstance(c.get('cost'), (int, float)) else None
+            c['double_prob'] = _dp.double_probability(
+                spot=c.get('spot'), strike=c.get('strike'), premium=prem,
+                dte=c.get('dte'), iv=c.get('iv'), right=c.get('type') or 'CALL')
+    res['as_of'] = _as_of()
+    from vertex.app.config import DEMO_MODE as _demo
+    res['demo'] = _demo
+    return jsonify(res)
+
+
 __all__ = ['bp']
