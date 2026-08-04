@@ -33,7 +33,7 @@ def _profile():
 # ─── SkylerPacket ───────────────────────────────────────────────────────────────
 
 def build_packet(sym, detail, market=None, events=None, anomaly=None,
-                 as_of=None, demo=False):
+                 as_of=None, demo=False, options_ctx=None):
     """Agrège les sorties moteurs existantes en un packet typé — sans muter les
     sources, sans recalculer, sans inventer."""
     detail = detail or {}
@@ -62,8 +62,8 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
                                                           'reason': 'scan anomalies non fourni'},
         'fundamentals': {'available': False,
                          'reason': 'contexte fondamental non branché (lot ultérieur)'},
-        'options': {'available': False,
-                    'reason': 'OptionsContext non branché (lot 6)'},
+        'options': (options_ctx if options_ctx is not None else
+                    {'available': False, 'reason': 'OptionsContext non fourni'}),
         'portfolio': {'available': False,
                       'reason': 'PortfolioContext non branché (lot 7)'},
     }
@@ -175,7 +175,27 @@ def score40(packet):
               'R:R structurel vers la résistance = %.1f → %d/%d' % (rr, pts,
                                                                     cfg.get('asymmetry_scenarios', 6)))
 
-    block('options_quality', 0, 'INSUFFICIENT', 'OptionsContext non branché (lot 6)')
+    octx = ctx['options']
+    if not octx.get('available'):
+        block('options_quality', 0, 'INSUFFICIENT',
+              octx.get('reason') or 'OptionsContext indisponible')
+    else:
+        best = octx.get('best') or {}
+        q = best.get('quality')
+        if q is None:
+            block('options_quality', 1, 'PARTIAL',
+                  'candidat %s sans note de qualité — 1/%d' % (octx.get('universe'),
+                                                               cfg.get('options_quality', 6)))
+        else:
+            pts = round(q * cfg.get('options_quality', 6) / 100.0)
+            status = 'AVAILABLE'
+            basis = 'meilleur candidat %s qualité %s/100 → %d/%d' % (
+                octx.get('universe'), q, pts, cfg.get('options_quality', 6))
+            if not octx.get('best_in_mandate', True):
+                pts = min(pts, cfg.get('options_quality', 6) // 2)
+                status = 'PARTIAL'
+                basis += ' — plafonné : meilleur candidat HORS MANDAT'
+            block('options_quality', pts, status, basis)
 
     avail = sum(1 for name in ('technical', 'market', 'catalysts', 'anomalies')
                 if packet['contexts'][name].get('available', True) is not False)
@@ -281,9 +301,11 @@ def scenarios(detail):
 
 # ─── SkylerDecision (déterministe, sans Claude) ─────────────────────────────────
 
-def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None, demo=False):
+def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
+           demo=False, options_ctx=None):
     packet = build_packet(sym, detail, market=market, events=events,
-                          anomaly=anomaly, as_of=as_of, demo=demo)
+                          anomaly=anomaly, as_of=as_of, demo=demo,
+                          options_ctx=options_ctx)
     score = score40(packet)
     gates = hard_gates(packet, score)
     scen = scenarios(detail)

@@ -104,10 +104,14 @@ def api_skyler(sym):
     ev = _events.build(sym, news=news, earnings=earnings, macro=macro, anomaly=ano,
                        as_of=scan_state.get('scan_ts_h') or scan_state.get('updated'))
     as_of = scan_state.get('scan_ts_h') or scan_state.get('updated')
+    # OptionsContext (LOT 6) : meilleur candidat LEAPS du board réel, mandat étiqueté.
+    from vertex.options import horizon_scanners as _hs
+    octx = _hs.options_context(_hs.scan(scan_state.get('options_board') or [],
+                                        'LEAPS', sym=sym))
     decision = _sk.decide(sym, detail, market=market, events=ev, anomaly=ano,
-                          as_of=as_of, demo=_demo)
+                          as_of=as_of, demo=_demo, options_ctx=octx)
     packet = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
-                              as_of=as_of, demo=_demo)
+                              as_of=as_of, demo=_demo, options_ctx=octx)
     return jsonify({'symbol': sym, 'as_of': as_of, 'demo': _demo,
                     'packet': packet, 'decision': decision})
 
