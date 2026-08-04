@@ -2,6 +2,30 @@
 
 Terminal d'ANALYSE de trading (Flask, port 5002). **Lecture seule : aucun ordre n'est jamais passé** — invariant produit absolu (`READONLY=True` dans `vertex/app/config.py`).
 
+## SKYLER V2 — règle prioritaire
+
+Pour tout travail lié à l’analyse marché, aux actions, aux options, au portefeuille, aux anomalies, aux catalyseurs, à l’IA Skyler ou à la refonte associée, lire et appliquer en premier :
+
+```text
+.claude/skills/vertex-skyler-v2/SKILL.md
+```
+
+Branche d’intégration :
+
+```text
+integration/vertex-skyler-v2
+```
+
+Commande initiale obligatoire :
+
+```text
+/vertex-skyler-v2 audit
+```
+
+Une invocation exécute un seul lot. Claude doit produire les preuves, mettre à jour `docs/skyler/STATUS.md`, créer un rapport de validation et s’arrêter. Aucun lot suivant sans validation humaine explicite.
+
+Ne jamais travailler directement sur `main`. Les anciennes branches V4/Prism sont des références historiques et ne doivent pas devenir la base de Skyler V2.
+
 ## Lancer & vérifier
 - App : `python terminal.py` (ou `.claude/launch.json` → serveur « vertex », port 5002). Windows : `Lancer_VERTEX.bat`.
 - Tests : `python -m pytest tests/ -q` → **doivent passer à 100 %** avant tout commit.
@@ -24,8 +48,8 @@ Terminal d'ANALYSE de trading (Flask, port 5002). **Lecture seule : aucun ordre 
 6. **desk_data.json** : ne jamais l'écraser à la main ; en cas de doute, backups `desk_backup_*.json` + `/api/desk/restore`.
 
 ## Git
-- Branche de travail : `vertex-system-launch` (local) → push fast-forward sur `origin claude/vertex-system-launch-0bsizs`.
-- **`main` = version canonique** — la mettre à jour SEULEMENT avec accord explicite de l'utilisateur.
+- Pour Skyler V2, suivre exclusivement la gouvernance du skill `vertex-skyler-v2`.
+- **`main` = version canonique publiée** — la mettre à jour SEULEMENT avec accord explicite de l'utilisateur.
 - Données runtime (edge_ledger, desk_backup_*, track_meta, alerts_fired, .env, .vertex_secret) : gitignorées, jamais commitées.
 
 ## Sécurité
