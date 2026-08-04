@@ -8,14 +8,18 @@ from vertex.strategy import constitution as C
 
 
 def test_profile_loads_and_validates():
+    # Version-conscient depuis la Constitution V2 (SKYLER LOT 2) : la V1 garde
+    # 8–10 lignes ; la V2 élargit délibérément à 8–15 (mandat validé).
     p = C.load_profile()
     assert p.strategy_id == f'vertex_strategy_v{p.version}'
     assert p.display_name == 'Stratégie Vertex'
     assert p.portfolio_min_positions == 8
-    assert p.portfolio_max_positions == 10
+    assert p.portfolio_max_positions == (10 if p.version == 1 else 15)
     assert p.portfolio_max_drawdown_pct == -25
     assert p.stock_max_drawdown_pct == -20
     assert p.max_simultaneous_options == 3
+    p1 = C.load_profile(version=1)
+    assert p1.portfolio_max_positions == 10       # la V1 reste intacte
 
 
 def test_strategy_is_versioned():
@@ -48,12 +52,16 @@ def test_options_profile_forbids_selling():
 
 
 def test_dte_preferences():
+    # Version-conscient depuis la Constitution V2 (SKYLER LOT 2) : la borne
+    # absolue passe à 540 pour admettre les LEAPS ; la fenêtre préférée du
+    # profil global reste 90–210 (le mandat LEAPS vit dans sa catégorie).
     p = C.load_profile()
     dte = p.dte
     assert dte.preferred_minimum == 90
     assert dte.preferred_maximum == 210
     assert dte.absolute_minimum == 60
-    assert dte.absolute_maximum == 270
+    assert dte.absolute_maximum == (270 if p.version == 1 else 540)
+    assert C.load_profile(version=1).dte.absolute_maximum == 270  # V1 intacte
 
 
 def test_dynamic_delta_range():

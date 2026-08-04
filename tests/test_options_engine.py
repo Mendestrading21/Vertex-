@@ -131,13 +131,21 @@ def test_selector_max_one_per_category_and_single_primary():
 
 
 def test_dte_bounds_enforced():
+    # Bornes lues dans le PROFIL ACTIF (V1 : 60–270 ; V2 : 60–540, admission LEAPS
+    # — SKYLER LOT 2). Un 30 DTE reste toujours rejeté ; le 400 DTE n'est rejeté
+    # que si la borne absolue du profil l'exclut.
+    d = PROFILE.dte
     res = call_selector.select_calls(liquid_chain(), setup_long(), PROFILE,
                                      rate_curve=CURVE)
     for cat, sel in res['per_category'].items():
         if sel:
-            assert 60 <= sel['contract']['dte'] <= 270
+            assert d.absolute_minimum <= sel['contract']['dte'] <= d.absolute_maximum
     rejected_dtes = [r['contract']['dte'] for r in res['rejected']]
-    assert 30 in rejected_dtes and 400 in rejected_dtes
+    assert 30 in rejected_dtes
+    if d.absolute_maximum < 400:
+        assert 400 in rejected_dtes
+    else:
+        assert 400 not in rejected_dtes           # V2 : 400 DTE admissible (LEAPS)
 
 
 def test_ultra_convex_requirements():
