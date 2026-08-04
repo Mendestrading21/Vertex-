@@ -66,7 +66,11 @@ def options_volatility(sym):
     cur_iv = ivs[len(ivs) // 2] if ivs else None
     iv_low = min(ivs) if ivs else None
     iv_high = max(ivs) if ivs else None
-    closes = detail.get('closes') or detail.get('history') or None
+    # Série CANONIQUE du scan (LOT 4) — les formes legacy 'closes'/'history'
+    # n'avaient aucun producteur et ne sont plus admises.
+    from vertex.data import series as _series
+    closes, _closes_src = _series.closes(detail)
+    closes = closes or None
     d = _oi.interpret_volatility(sym, current_iv=cur_iv, iv_low=iv_low,
                                  iv_high=iv_high, closes=closes,
                                  source='SCAN', as_of=_as_of())

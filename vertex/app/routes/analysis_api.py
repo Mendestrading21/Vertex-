@@ -61,12 +61,47 @@ def api_anomalies(sym):
     """SCANNER D'ANOMALIES DE COURS : spikes |z|≥2, changement de régime de
     volatilité, séquences, extrêmes — sur la série de clôtures RÉELLE du scan.
     Constat statistique descriptif, jamais une prévision. Lecture seule."""
+    from vertex.data import series as _series
     from vertex.engines import anomaly as _an
     sym = (sym or '').upper()[:12]
     detail = (scan_state.get('detail') or {}).get(sym) or {}
-    closes = (((detail.get('series') or {}).get('close'))
-              or detail.get('closes') or detail.get('history') or [])
+    closes, src = _series.closes(detail)   # série CANONIQUE uniquement (LOT 4)
     d = _an.scan(closes)
     d['symbol'] = sym
+    d['series_source'] = src
     d['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+    return jsonify(d)
+
+
+@bp.route('/api/events/<sym>')
+def api_events(sym):
+    """TIMELINE D'ÉVÉNEMENTS NORMALISÉE (SKYLER LOT 4) : news assainies et
+    dédupliquées, earnings/macro du calendrier réel, anomalies statistiques —
+    faits distingués des interprétations, impact suggéré par mots-clés
+    transparents seulement. Lecture seule."""
+    from vertex.data import series as _series
+    from vertex.engines import anomaly as _an, events as _events
+    from vertex.services import news_plus as _np
+    sym = (sym or '').upper()[:12]
+    detail = (scan_state.get('detail') or {}).get(sym) or {}
+    closes, _src = _series.closes(detail)
+    ano = _an.scan(closes) if closes else None
+    earnings = []
+    try:
+        from vertex.app.state import cal_state
+        earnings = [e for e in (cal_state.get('items') or [])
+                    if str(e.get('sym', '')).upper() == sym]
+    except Exception:
+        earnings = []
+    macro = []
+    try:
+        from vertex.data import macro_calendar
+        macro = macro_calendar.events(horizon_days=30)
+    except Exception:
+        macro = []
+    # XSS : titres externes assainis AU POINT DE SORTIE (rendus innerHTML client).
+    news = _np.sanitize_news(detail.get('news') or [])
+    d = _events.build(sym, news=news, earnings=earnings, macro=macro, anomaly=ano,
+                      as_of=scan_state.get('scan_ts_h') or scan_state.get('updated'))
+    d['demo'] = bool(scan_state.get('source') == 'demo')
     return jsonify(d)

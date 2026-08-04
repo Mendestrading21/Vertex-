@@ -121,4 +121,24 @@ def sanitize_news(items):
     return out
 
 
-__all__ = ['sentiment', 'aggregate', 'parse_rss', 'rss_news', 'sanitize_news']
+def dedupe_news(items):
+    """Déduplication des news (SKYLER LOT 4) : même TITRE NORMALISÉ (casse,
+    ponctuation, espaces) ou même LIEN → un seul item conservé (le premier,
+    jamais réécrit). Ordre d'arrivée préservé ; entrées non-dict ignorées."""
+    out, seen_titles, seen_links = [], set(), set()
+    for it in (items or []):
+        if not isinstance(it, dict):
+            continue
+        title_key = re.sub(r'[^a-z0-9]+', ' ', str(it.get('title') or '').lower()).strip()
+        link = str(it.get('link') or '').strip()
+        if (title_key and title_key in seen_titles) or (link and link in seen_links):
+            continue
+        if title_key:
+            seen_titles.add(title_key)
+        if link:
+            seen_links.add(link)
+        out.append(it)
+    return out
+
+
+__all__ = ['sentiment', 'aggregate', 'parse_rss', 'rss_news', 'sanitize_news', 'dedupe_news']
