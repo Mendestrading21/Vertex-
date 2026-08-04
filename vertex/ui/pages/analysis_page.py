@@ -113,6 +113,11 @@ $('an-search').focus();
 
 _SECTIONS = """
 <div id="an-stale"></div>
+<section class="vx-card vx-mt3" aria-label="Scanner d'anomalies">
+  <div class="vx-card-header"><span class="vx-card-title">Scanner d'anomalies — qu'est-ce qui sort de l'ordinaire&nbsp;?</span>
+    <span class="vx-chart-question">Spikes |z|&ge;2, r&eacute;gime de volatilit&eacute;, s&eacute;quences, extr&ecirc;mes — sur les cl&ocirc;tures r&eacute;elles. Constat, pas une pr&eacute;vision.</span></div>
+  <div id="an-anomaly">%%LOADING%%</div>
+</section>
 <!-- NIVEAU 1 — Carte-Verdict signature (verdict · score · confiance · entrée ·
      invalidation · risque · catalyseur · prochaine action) puis Carte-Scénario. -->
 <div id="an-verdict">%%LOADING%%</div>
@@ -240,6 +245,7 @@ _JS = r"""
 <script src="/static/vertex/js/vendor/lightweight-charts.standalone.production.js" defer></script>
 <script src="/static/vertex/js/charts/candlestick-lwc.js" defer></script>
 <script src="/static/vertex/js/charts/annotations.js" defer></script>
+<script src="/static/vertex/js/charts/anomaly-scan.js" defer></script>
 <script>
 (function(){
 'use strict';
@@ -813,8 +819,18 @@ function demoState(){return !!(window.__vxStatus&&window.__vxStatus.demo);}
   go.addEventListener('click',run);
   amt.addEventListener('keydown',e=>{if(e.key==='Enter')run();});
 })();
+async function loadAnomalies(){
+  const host=$('an-anomaly');if(!host)return;
+  try{
+    const d=await VX.fetch('/api/anomalies/'+SYM,{ttl:120000});
+    if(window.VXCharts&&VXCharts.anomalyScan)VXCharts.anomalyScan('an-anomaly',d);
+    else host.innerHTML='<div class="vx-empty">Builder indisponible.</div>';
+  }catch(e){host.innerHTML='<div class="vx-error-banner">Scanner injoignable : '+esc(e.message)+'</div>';}
+}
 loadDossier();
 loadDecisionStack();
+loadAnomalies();
+VX.refresh.register(loadAnomalies,300000,'analysis-anomaly');
 VX.refresh.register(loadDossier,180000,'analysis');
 VX.refresh.register(loadDecisionStack,180000,'analysis-decision');
 })();

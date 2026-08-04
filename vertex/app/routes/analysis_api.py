@@ -54,3 +54,19 @@ def api_risk():
 
 
 __all__ = ['bp']
+
+
+@bp.route('/api/anomalies/<sym>')
+def api_anomalies(sym):
+    """SCANNER D'ANOMALIES DE COURS : spikes |z|≥2, changement de régime de
+    volatilité, séquences, extrêmes — sur la série de clôtures RÉELLE du scan.
+    Constat statistique descriptif, jamais une prévision. Lecture seule."""
+    from vertex.engines import anomaly as _an
+    sym = (sym or '').upper()[:12]
+    detail = (scan_state.get('detail') or {}).get(sym) or {}
+    closes = (((detail.get('series') or {}).get('close'))
+              or detail.get('closes') or detail.get('history') or [])
+    d = _an.scan(closes)
+    d['symbol'] = sym
+    d['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+    return jsonify(d)

@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v86';   // v86 (PRETRADE) : ticket pre-trade (7 controles reels avant d'envisager un titre) sur la fiche Analyse
+const CACHE='td-shell-v87';   // v87 (ANOMALY) : scanner d'anomalies de cours (z-scores, vol-shift, sequences, extremes) sur la fiche Analyse
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
