@@ -33,7 +33,7 @@ def _profile():
 # ─── SkylerPacket ───────────────────────────────────────────────────────────────
 
 def build_packet(sym, detail, market=None, events=None, anomaly=None,
-                 as_of=None, demo=False, options_ctx=None):
+                 as_of=None, demo=False, options_ctx=None, portfolio_ctx=None):
     """Agrège les sorties moteurs existantes en un packet typé — sans muter les
     sources, sans recalculer, sans inventer."""
     detail = detail or {}
@@ -64,8 +64,8 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
                          'reason': 'contexte fondamental non branché (lot ultérieur)'},
         'options': (options_ctx if options_ctx is not None else
                     {'available': False, 'reason': 'OptionsContext non fourni'}),
-        'portfolio': {'available': False,
-                      'reason': 'PortfolioContext non branché (lot 7)'},
+        'portfolio': (portfolio_ctx if portfolio_ctx is not None else
+                      {'available': False, 'reason': 'PortfolioContext non fourni'}),
     }
     audit.append({'step': 'contexts', 'result': {
         k: bool(v.get('available', True)) for k, v in contexts.items()}})
@@ -265,8 +265,36 @@ def hard_gates(packet, score):
             v = (tech.get('verdict') or '').upper()
             gate(gid, bool(v in _BULLISH and ext == 'low'),
                  'verdict %s vs extrême de fenêtre %s' % (v or 'n/d', ext or 'aucun'))
+        elif gid == 'LOSER_REINFORCEMENT':
+            pctx = packet['contexts']['portfolio']
+            cand = (pctx or {}).get('candidate') if pctx.get('available') else None
+            v = (tech.get('verdict') or '').upper()
+            if cand is None:
+                gate(gid, None, 'portefeuille non fourni — renforcement perdant non évaluable')
+            elif not cand.get('held'):
+                gate(gid, False, 'aucune position existante sur ce titre')
+            elif cand.get('is_loser') is None:
+                gate(gid, None, 'P&L inconnu (cote absente) — jamais supposé gagnant')
+            else:
+                gate(gid, bool(cand['is_loser'] and v in _BULLISH),
+                     'position %s (%+.1f %%) et verdict %s'
+                     % ('PERDANTE' if cand['is_loser'] else 'gagnante',
+                        cand.get('pnl_pct') or 0.0, v or 'n/d'))
+        elif gid == 'CONCENTRATION_EXCESSIVE':
+            pctx = packet['contexts']['portfolio']
+            cand = (pctx or {}).get('candidate') if pctx.get('available') else None
+            if cand is None:
+                gate(gid, None, 'portefeuille non fourni — concentration non évaluable')
+            else:
+                try:
+                    max_w = _profile().max_stock_weight_pct
+                except Exception:
+                    max_w = 15.0
+                gate(gid, bool((cand.get('weight_pct') or 0.0) >= max_w),
+                     'poids actuel %.1f %% (plafond %.0f %% par titre)'
+                     % (cand.get('weight_pct') or 0.0, max_w))
         else:
-            gate(gid, None, 'contexte requis non branché (lots 6-7) — porte non évaluable, jamais supposée fermée')
+            gate(gid, None, 'contexte requis non branché — porte non évaluable, jamais supposée fermée')
     return out
 
 
@@ -302,10 +330,10 @@ def scenarios(detail):
 # ─── SkylerDecision (déterministe, sans Claude) ─────────────────────────────────
 
 def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
-           demo=False, options_ctx=None):
+           demo=False, options_ctx=None, portfolio_ctx=None):
     packet = build_packet(sym, detail, market=market, events=events,
                           anomaly=anomaly, as_of=as_of, demo=demo,
-                          options_ctx=options_ctx)
+                          options_ctx=options_ctx, portfolio_ctx=portfolio_ctx)
     score = score40(packet)
     gates = hard_gates(packet, score)
     scen = scenarios(detail)
@@ -357,9 +385,13 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
 
     unknown_gates = sorted(g['id'] for g in gates if g['triggered'] is None)
 
+    pctx = packet['contexts']['portfolio']
+    sizing = pctx.get('sizing') if pctx.get('available') else None
+
     return {
         'symbol': sym, 'generator': 'deterministic', 'as_of': as_of,
         'decision': decision, 'capped_by_gate': capped_by,
+        'sizing': sizing,
         'score': score, 'level': score['level'],
         'gates': gates, 'scenarios': scen,
         'invalidation': stop, 'max_risk_pct': max_risk_pct,

@@ -108,10 +108,22 @@ def api_skyler(sym):
     from vertex.options import horizon_scanners as _hs
     octx = _hs.options_context(_hs.scan(scan_state.get('options_board') or [],
                                         'LEAPS', sym=sym))
+    # PortfolioContext (LOT 7) : positions canoniques du desk + cotes du scan.
+    pctx = None
+    try:
+        from vertex.engines import portfolio_context as _pc
+        from vertex.positions.repository import load_positions
+        from vertex.services import persist
+        pos = load_positions(persist.load_json('desk_data.json', {}) or {})
+        quotes = {s: (d or {}).get('price') for s, d in (scan_state.get('detail') or {}).items()
+                  if isinstance(d, dict) and d.get('price') is not None}
+        pctx = _pc.build(pos, quotes=quotes, sym=sym)
+    except Exception:
+        pctx = None
     decision = _sk.decide(sym, detail, market=market, events=ev, anomaly=ano,
-                          as_of=as_of, demo=_demo, options_ctx=octx)
+                          as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx)
     packet = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
-                              as_of=as_of, demo=_demo, options_ctx=octx)
+                              as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx)
     return jsonify({'symbol': sym, 'as_of': as_of, 'demo': _demo,
                     'packet': packet, 'decision': decision})
 
