@@ -73,6 +73,45 @@ def api_anomalies(sym):
     return jsonify(d)
 
 
+@bp.route('/api/skyler/<sym>')
+def api_skyler(sym):
+    """SKYLER CORE (LOT 5) : packet typé + décision canonique déterministe
+    (score /40, hard gates, scénarios sans probabilité inventée, audit trail).
+    Analyse READONLY — jamais un ordre."""
+    from vertex.data import series as _series
+    from vertex.engines import anomaly as _an, events as _events
+    from vertex.engines import market_context as _mcx, skyler_core as _sk
+    from vertex.services import news_plus as _np
+    from vertex.app.config import DEMO_MODE as _demo
+    sym = (sym or '').upper()[:12]
+    detail = (scan_state.get('detail') or {}).get(sym) or {}
+    closes, _src = _series.closes(detail)
+    ano = _an.scan(closes) if closes else None
+    market = _mcx.build(scan_state, demo=_demo)
+    earnings = []
+    try:
+        from vertex.app.state import cal_state
+        earnings = [e for e in (cal_state.get('items') or [])
+                    if str(e.get('sym', '')).upper() == sym]
+    except Exception:
+        pass
+    try:
+        from vertex.data import macro_calendar
+        macro = macro_calendar.events(horizon_days=30)
+    except Exception:
+        macro = []
+    news = _np.sanitize_news(detail.get('news') or [])
+    ev = _events.build(sym, news=news, earnings=earnings, macro=macro, anomaly=ano,
+                       as_of=scan_state.get('scan_ts_h') or scan_state.get('updated'))
+    as_of = scan_state.get('scan_ts_h') or scan_state.get('updated')
+    decision = _sk.decide(sym, detail, market=market, events=ev, anomaly=ano,
+                          as_of=as_of, demo=_demo)
+    packet = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
+                              as_of=as_of, demo=_demo)
+    return jsonify({'symbol': sym, 'as_of': as_of, 'demo': _demo,
+                    'packet': packet, 'decision': decision})
+
+
 @bp.route('/api/events/<sym>')
 def api_events(sym):
     """TIMELINE D'ÉVÉNEMENTS NORMALISÉE (SKYLER LOT 4) : news assainies et
