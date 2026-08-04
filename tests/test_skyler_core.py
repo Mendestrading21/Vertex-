@@ -218,3 +218,12 @@ def test_skyler_route():
         assert d['packet']['schema_version'] == 1
     finally:
         scan_state['detail'].pop('SKYX', None)
+
+
+def test_analysis_page_has_skyler_card():
+    """Gardien LOT 8a : la fiche Analyse expose la carte Skyler (décision canonique)."""
+    import terminal
+    body = terminal.app.test_client().get('/analysis/AAPL').get_data(as_text=True)
+    assert 'an-skyler' in body
+    assert 'Skyler' in body
+    assert 'loadSkyler' in body

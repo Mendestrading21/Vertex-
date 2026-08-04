@@ -118,6 +118,11 @@ _SECTIONS = """
     <span class="vx-chart-question">Spikes |z|&ge;2, r&eacute;gime de volatilit&eacute;, s&eacute;quences, extr&ecirc;mes — sur les cl&ocirc;tures r&eacute;elles. Constat, pas une pr&eacute;vision.</span></div>
   <div id="an-anomaly">%%LOADING%%</div>
 </section>
+<section class="vx-card vx-mt3" aria-label="Skyler — décision canonique">
+  <div class="vx-card-header"><span class="vx-card-title">Skyler — d&eacute;cision canonique</span>
+    <span class="vx-chart-question">Score /40 par blocs de la Constitution V2, hard gates prioritaires, sc&eacute;narios sur niveaux r&eacute;els — d&eacute;terministe, jamais un ordre.</span></div>
+  <div id="an-skyler">%%LOADING%%</div>
+</section>
 <!-- NIVEAU 1 — Carte-Verdict signature (verdict · score · confiance · entrée ·
      invalidation · risque · catalyseur · prochaine action) puis Carte-Scénario. -->
 <div id="an-verdict">%%LOADING%%</div>
@@ -827,9 +832,49 @@ async function loadAnomalies(){
     else host.innerHTML='<div class="vx-empty">Builder indisponible.</div>';
   }catch(e){host.innerHTML='<div class="vx-error-banner">Scanner injoignable : '+esc(e.message)+'</div>';}
 }
+/* Skyler — décision canonique : score /40 par blocs, hard gates, scénarios. */
+async function loadSkyler(){
+  const host=$('an-skyler');if(!host)return;
+  try{
+    const r=await VX.fetch('/api/skyler/'+SYM,{ttl:120000});
+    const d=r&&r.decision;if(!d){host.innerHTML='<div class="vx-empty">Décision indisponible.</div>';return;}
+    const tone=d.decision==='ACHETER'||d.decision==='RENFORCER'?'pos'
+      :d.decision==='REFUSER'||d.decision==='REDUIRE'?'neg':'neutral';
+    const sc=d.score||{},blocks=sc.blocks||{};
+    const LBL={fundamentals_quality:'Fondamentaux',catalysts:'Catalyseurs',
+      technical_timing:'Technique',institutions_flow_anomalies:'Flux/anomalies',
+      market_regime_sector:'Régime',asymmetry_scenarios:'Asymétrie',
+      options_quality:'Option',data_quality:'Données'};
+    const chips=Object.keys(LBL).filter(k=>blocks[k]).map(k=>{
+      const b=blocks[k];const cls=b.status==='INSUFFICIENT'?'vx-muted':(b.points>=b.max*0.66?'vx-pos':'vx-warn');
+      return '<span class="vx-badge" data-tone="neutral" title="'+esc(b.basis||'')+'" style="margin:.12rem .2rem .12rem 0"><span class="'+cls+'">'+esc(LBL[k])+' '+b.points+'/'+b.max+'</span></span>';
+    }).join('');
+    const gates=(d.gates||[]).filter(g=>g.triggered===true);
+    const unknown=(d.gates||[]).filter(g=>g.triggered===null).length;
+    const sn=d.scenarios||{};
+    const row=(s,lab)=>s?'<li style="margin:.2rem 0"><b>'+lab+'</b> — cible '+VX.fmt.num(s.target,2)
+      +' ('+(s.return_pct>0?'+':'')+s.return_pct+' %) · probabilité : non calibrée</li>':'';
+    host.innerHTML='<div class="vx-flex vx-mb1" style="gap:.45rem;align-items:center;flex-wrap:wrap">'
+      +'<span class="vx-badge" data-tone="'+tone+'">'+esc(d.decision||'—')+'</span>'
+      +'<b>'+(sc.total??'—')+'/40</b><span class="vx-meta">niveau '+esc(d.level||'—')
+      +(d.capped_by_gate?' · plafonnée par '+esc(d.capped_by_gate):'')+'</span></div>'
+      +'<div class="vx-mb1">'+chips+'</div>'
+      +(gates.length?'<div class="vx-mb1">'+gates.map(g=>'<div class="vx-neg" style="font-size:12.5px">✕ '+esc(g.id)+' — '+esc(g.reason)+'</div>').join('')+'</div>':'')
+      +(sn.available?'<ul style="margin:.2rem 0;padding-left:0;list-style:none;font-size:12.5px">'
+        +row(sn.bear,'Pessimiste')+row(sn.base,'Probable')+row(sn.bull,'Exceptionnel')+'</ul>':'')
+      +'<div class="vx-meta" style="margin-top:.3rem">'
+      +(d.catalyst?'Catalyseur : '+esc(d.catalyst)+' · ':'')
+      +(d.invalidation!=null?'Invalidation : '+VX.fmt.num(d.invalidation,2)+' · ':'')
+      +(d.max_risk_pct!=null?'Risque max : '+d.max_risk_pct+' % · ':'')
+      +(unknown?unknown+' porte(s) non évaluable(s) · ':'')
+      +'Objection : '+esc(d.strongest_objection||'—')+'</div>';
+  }catch(e){host.innerHTML='<div class="vx-error-banner">Skyler injoignable : '+esc(e.message)+'</div>';}
+}
 loadDossier();
 loadDecisionStack();
 loadAnomalies();
+loadSkyler();
+VX.refresh.register(loadSkyler,300000,'analysis-skyler');
 VX.refresh.register(loadAnomalies,300000,'analysis-anomaly');
 VX.refresh.register(loadDossier,180000,'analysis');
 VX.refresh.register(loadDecisionStack,180000,'analysis-decision');
