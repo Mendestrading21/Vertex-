@@ -19,12 +19,67 @@ from __future__ import annotations
 import math
 
 from vertex.engines.options_lab import _ncdf, _npdf
+from vertex.options import iv_units
 
-R_DEFAULT = 0.045  # taux sans risque annuel par défaut
+R_DEFAULT = 0.045  # taux sans risque annuel par défaut (traçé dans le bloc `model`)
+Q_DEFAULT = 0.0    # rendement de dividende annuel par défaut (traçé dans `model`)
+IV_MAX_DECIMAL = 3.0  # au-delà de 300 % : quasi certainement un POURCENTAGE non converti
 
 
 def _mult(leg):
     return 100.0 if leg.get('type') in ('call', 'put') else 1.0
+
+
+def _fin(x):
+    """float fini ou None — jamais NaN/inf dans un calcul financier."""
+    if isinstance(x, bool):
+        return None
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        return None
+    if math.isnan(v) or math.isinf(v):
+        return None
+    return v
+
+
+def _validate_inputs(legs, spot, iv, days_to_exp):
+    """Refus STRUCTURÉS (contrat OPTIONS_CORRECTNESS) : chaque entrée inutilisable
+    est nommée (field/value/why) — jamais un calcul sur du douteux."""
+    refusals = []
+
+    def bad(field, value, why):
+        refusals.append({'field': field, 'value': None if value is None else str(value), 'why': why})
+
+    s = _fin(spot)
+    if s is None or s <= 0:
+        bad('spot', spot, 'cours sous-jacent absent, non fini ou <= 0')
+    if days_to_exp is not None:
+        d = _fin(days_to_exp)
+        if d is None or d < 0:
+            bad('days_to_exp', days_to_exp, 'DTE non fini ou négatif')
+    if iv is not None:
+        v = _fin(iv)
+        if v is None or v < 0:
+            bad('iv', iv, 'IV non finie ou négative (décimale attendue)')
+        elif v > IV_MAX_DECIMAL:
+            bad('iv', iv, 'IV > 300 % — probablement un POURCENTAGE non converti ; '
+                          'le cœur exige une IV DÉCIMALE (vertex.options.iv_units)')
+    for i, leg in enumerate(legs):
+        t = leg.get('type')
+        if t in ('call', 'put'):
+            k = _fin(leg.get('strike'))
+            if k is None or k <= 0:
+                bad('strike', leg.get('strike'),
+                    'jambe %d (%s) : strike absent, non fini ou <= 0' % (i + 1, t))
+        p = leg.get('premium')
+        if p is not None:
+            pv = _fin(p)
+            if pv is None or pv < 0:
+                bad('premium', p, 'jambe %d : prime non finie ou négative' % (i + 1))
+        if _fin(leg.get('qty')) is None:
+            bad('qty', leg.get('qty'), 'jambe %d : quantité non finie' % (i + 1))
+    return refusals
 
 
 def _intrinsic(price, leg):
@@ -55,32 +110,38 @@ def _net_premium(legs):
                for leg in legs)
 
 
-def _leg_greeks(spot, leg, T, iv, r=R_DEFAULT):
-    """Greeks d'une jambe, déjà multipliés par qty et le multiplicateur (position)."""
-    q = leg.get('qty') or 0.0
+def _leg_greeks(spot, leg, T, iv, r=R_DEFAULT, q=Q_DEFAULT):
+    """Greeks d'une jambe, déjà multipliés par qty et le multiplicateur (position).
+    `q` = rendement de dividende annuel continu (0 par défaut → formules inchangées)."""
+    qty = leg.get('qty') or 0.0
     m = _mult(leg)
     if leg.get('type') == 'stock':
-        return {'delta': q * m, 'gamma': 0.0, 'theta': 0.0, 'vega': 0.0, 'vanna': 0.0, 'vomma': 0.0}
+        return {'delta': qty * m, 'gamma': 0.0, 'theta': 0.0, 'vega': 0.0, 'vanna': 0.0, 'vomma': 0.0}
     k = leg.get('strike') or 0.0
     right = 'CALL' if leg.get('type') == 'call' else 'PUT'
     if T <= 0 or iv <= 0 or spot <= 0 or k <= 0:
         return {'delta': 0.0, 'gamma': 0.0, 'theta': 0.0, 'vega': 0.0}
     sq = iv * math.sqrt(T)
-    d1 = (math.log(spot / k) + (r + iv * iv / 2.0) * T) / sq
+    d1 = (math.log(spot / k) + (r - q + iv * iv / 2.0) * T) / sq
     d2 = d1 - sq
     nd1 = _npdf(d1)
+    dq = math.exp(-q * T)                      # facteur dividende (1.0 si q=0)
     if right == 'CALL':
-        delta = _ncdf(d1)
-        theta_yr = -(spot * nd1 * iv) / (2.0 * math.sqrt(T)) - r * k * math.exp(-r * T) * _ncdf(d2)
+        delta = dq * _ncdf(d1)
+        theta_yr = (-(spot * dq * nd1 * iv) / (2.0 * math.sqrt(T))
+                    - r * k * math.exp(-r * T) * _ncdf(d2)
+                    + q * spot * dq * _ncdf(d1))
     else:
-        delta = _ncdf(d1) - 1.0
-        theta_yr = -(spot * nd1 * iv) / (2.0 * math.sqrt(T)) + r * k * math.exp(-r * T) * _ncdf(-d2)
-    gamma = nd1 / (spot * sq)
-    vega = spot * nd1 * math.sqrt(T)
+        delta = dq * (_ncdf(d1) - 1.0)
+        theta_yr = (-(spot * dq * nd1 * iv) / (2.0 * math.sqrt(T))
+                    + r * k * math.exp(-r * T) * _ncdf(-d2)
+                    - q * spot * dq * _ncdf(-d1))
+    gamma = dq * nd1 / (spot * sq)
+    vega = spot * dq * nd1 * math.sqrt(T)
     # Greeks d'ordre supérieur (identiques call/put par parité — dépendent de φ(d1)) :
-    vanna = -nd1 * d2 / iv                     # ∂vega/∂spot = ∂delta/∂vol
+    vanna = -dq * nd1 * d2 / iv                # ∂vega/∂spot = ∂delta/∂vol
     vomma = vega * d1 * d2 / iv                # ∂vega/∂vol (convexité de vol)
-    scale = q * m
+    scale = qty * m
     return {
         'delta': scale * delta,               # par $1 de sous-jacent
         'gamma': scale * gamma,
@@ -91,12 +152,12 @@ def _leg_greeks(spot, leg, T, iv, r=R_DEFAULT):
     }
 
 
-def _lognormal_pdf(price, spot, T, iv, r=R_DEFAULT):
-    """Densité risque-neutre du cours à l'échéance (S_T lognormal)."""
+def _lognormal_pdf(price, spot, T, iv, r=R_DEFAULT, q=Q_DEFAULT):
+    """Densité risque-neutre du cours à l'échéance (S_T lognormal, drift r−q)."""
     if price <= 0 or spot <= 0 or T <= 0 or iv <= 0:
         return 0.0
     sq = iv * math.sqrt(T)
-    mu = math.log(spot) + (r - iv * iv / 2.0) * T
+    mu = math.log(spot) + (r - q - iv * iv / 2.0) * T
     z = (math.log(price) - mu) / sq
     return _npdf(z) / (price * sq)
 
@@ -120,20 +181,33 @@ def _breakevens(legs, grid, pnls):
     return out
 
 
-def analyze_strategy(legs, spot, iv, days_to_exp, r=R_DEFAULT, name=None):
+def analyze_strategy(legs, spot, iv, days_to_exp, r=R_DEFAULT, name=None, q=Q_DEFAULT):
     """Analyse complète d'une stratégie multi-jambes.
 
-    Retourne un dict JSON-sérialisable ; toute donnée manquante => None honnête
-    (jamais un chiffre inventé). Renvoie {'available': False, ...} si l'entrée est
-    insuffisante pour un calcul honnête.
+    Contrat d'unités (OPTIONS_CORRECTNESS) : `iv` DÉCIMALE (0.404 = 40,4 % —
+    normaliser en amont via vertex.options.iv_units), `premium` PAR ACTION,
+    multiplicateur 100 appliqué ici, `r`/`q` annuels continus et TRAÇÉS dans le
+    bloc `model` de la sortie. Retourne un dict JSON-sérialisable ; toute donnée
+    manquante => None honnête (jamais un chiffre inventé). Entrée insuffisante ou
+    invalide => {'available': False, 'reason', 'refusals': [{field,value,why}]}.
     """
     legs = [l for l in (legs or []) if l and l.get('type') in ('call', 'put', 'stock')
             and (l.get('qty') or 0.0) != 0.0]
-    if not legs or not spot or spot <= 0:
-        return {'available': False, 'reason': 'jambes ou cours sous-jacent manquants.'}
+    if not legs or spot is None or (_fin(spot) or 0) == 0:
+        return {'available': False, 'reason': 'jambes ou cours sous-jacent manquants.',
+                'refusals': [{'field': 'legs' if not legs else 'spot', 'value': None,
+                              'why': 'jambes ou cours sous-jacent manquants'}]}
+    refusals = _validate_inputs(legs, spot, iv, days_to_exp)
+    if refusals:
+        return {'available': False,
+                'reason': 'entrée invalide — ' + ' ; '.join(x['why'] for x in refusals),
+                'refusals': refusals}
     # primes requises pour un P&L honnête (sinon on ne devine pas la prime)
-    if any(l.get('type') in ('call', 'put') and l.get('premium') is None for l in legs):
-        return {'available': False, 'reason': 'prime manquante sur une jambe — pas de P&L inventé.'}
+    missing = [l for l in legs if l.get('type') in ('call', 'put') and l.get('premium') is None]
+    if missing:
+        return {'available': False, 'reason': 'prime manquante sur une jambe — pas de P&L inventé.',
+                'refusals': [{'field': 'premium', 'value': None,
+                              'why': 'prime manquante sur une jambe option'}]}
 
     T = max(0.0, (days_to_exp or 0) / 365.0)
     strikes = [l['strike'] for l in legs if l.get('strike')]
@@ -142,13 +216,15 @@ def analyze_strategy(legs, spot, iv, days_to_exp, r=R_DEFAULT, name=None):
     grid = [hi * i / steps for i in range(steps + 1)]  # inclut 0
     pnls = [_pnl(p, legs) for p in grid]
 
-    max_profit = max(pnls)
-    max_loss = min(pnls)
-    # illimité vers le haut si la pente terminale (au-delà de tous les strikes) est > 0
+    # Pente TERMINALE au-delà de tous les strikes = exposition nette calls + actions.
     right_slope = sum((l.get('qty') or 0.0) * _mult(l)
                       for l in legs if l.get('type') in ('call', 'stock'))
-    profit_unbounded = right_slope > 1e-9
-    # perte : le cours ne peut pas descendre sous 0 => toujours bornée (P&L(0) inclus)
+    profit_unbounded = right_slope > 1e-9    # pente > 0 : gain → ∞ quand le cours monte
+    loss_unbounded = right_slope < -1e-9     # pente < 0 : PERTE → ∞ (net vendeur de calls)
+    max_profit = max(pnls)
+    # Vers le bas, le cours ne descend pas sous 0 (P&L(0) est dans la grille) ; vers le
+    # haut, le flag illimité PRIME sur tout minimum issu de la grille finie.
+    max_loss = None if loss_unbounded else min(pnls)
     breakevens = _breakevens(legs, grid, pnls)
 
     # Probabilité de profit : intègre la densité lognormale sur les zones P&L >= 0.
@@ -157,7 +233,7 @@ def analyze_strategy(legs, spot, iv, days_to_exp, r=R_DEFAULT, name=None):
         pgrid_hi = spot * math.exp(5.0 * iv * math.sqrt(T))
         pn = 1200
         pg = [pgrid_hi * i / pn for i in range(1, pn + 1)]  # évite 0
-        dens = [_lognormal_pdf(p, spot, T, iv, r) for p in pg]
+        dens = [_lognormal_pdf(p, spot, T, iv, r, q) for p in pg]
         step = pgrid_hi / pn
         total = sum(dens) * step
         if total > 0:
@@ -169,7 +245,7 @@ def analyze_strategy(legs, spot, iv, days_to_exp, r=R_DEFAULT, name=None):
     have_iv = bool(iv and iv > 0 and T > 0)
     if have_iv:
         for leg in legs:
-            lg = _leg_greeks(spot, leg, T, iv, r)
+            lg = _leg_greeks(spot, leg, T, iv, r, q)
             for k in g:
                 g[k] += lg[k]
         g = {k: round(v, 4) for k, v in g.items()}
@@ -177,6 +253,32 @@ def analyze_strategy(legs, spot, iv, days_to_exp, r=R_DEFAULT, name=None):
         g = None
 
     net = _net_premium(legs)
+
+    # Honnêteté d'exécution : les primes sont DÉCLARÉES ; un rendement exécutable
+    # dépend du spread. Si bid/ask sont fournis sur toutes les jambes option, on
+    # chiffre le rempli défavorable (achat à l'ask, vente au bid) ; sinon on le dit.
+    opt_legs = [l for l in legs if l.get('type') in ('call', 'put')]
+    have_ba = bool(opt_legs) and all(
+        _fin(l.get('bid')) is not None and _fin(l.get('ask')) is not None for l in opt_legs)
+    if have_ba:
+        adverse = 0.0
+        for l in legs:
+            lq = l.get('qty') or 0.0
+            if l.get('type') in ('call', 'put'):
+                px = float(l['ask']) if lq > 0 else float(l['bid'])
+            else:
+                px = l.get('premium') or 0.0
+            adverse += lq * _mult(l) * px
+        execution = {'spread_slippage_included': True,
+                     'net_premium_declared': round(net, 2),
+                     'net_premium_adverse': round(adverse, 2),
+                     'note': 'Rempli défavorable chiffré : achats à l’ask, ventes au bid (spread intégré).'}
+    else:
+        execution = {'spread_slippage_included': False,
+                     'net_premium_declared': round(net, 2),
+                     'net_premium_adverse': None,
+                     'note': 'Primes déclarées (mid/last) — le rendement exécutable dépend du '
+                             'spread bid/ask, non fourni ici.'}
     # Courbe payoff pour le tracé : ~80 points autour de la zone utile (0.4x → 1.8x spot).
     lo_c, hi_c = spot * 0.4, min(hi, spot * 1.8)
     cn = 80
@@ -196,11 +298,18 @@ def analyze_strategy(legs, spot, iv, days_to_exp, r=R_DEFAULT, name=None):
         'is_credit': net < 0,
         'max_profit': None if profit_unbounded else round(max_profit, 2),
         'max_profit_unbounded': profit_unbounded,
-        'max_loss': round(max_loss, 2),        # toujours borné (cours >= 0)
+        'max_loss': None if loss_unbounded else round(max_loss, 2),
+        'max_loss_unbounded': loss_unbounded,  # net vendeur de calls : perte → ∞ (flag prime)
         'breakevens': breakevens,
         'probability_of_profit': pop,          # % (modèle lognormal, estimation)
         'greeks': g,                           # position (delta $1, theta/jour, vega/1%IV)
         'payoff': payoff,
+        'execution': execution,                # spread/slippage : inclus ou honnêtement absent
+        'model': {                             # provenance du modèle — traçable, datée par l'appelant
+            'type': 'lognormal_risk_neutral', 'r': r, 'q': q,
+            'iv_unit': 'DECIMAL', 'premium_basis': 'declared',
+            'note': 'PoP risque-neutre — estimation, pas une fréquence historique.',
+        },
         'model_note': 'Payoff à l’échéance ; PoP = modèle lognormal risque-neutre — estimation, pas une promesse.',
     }
 
@@ -263,18 +372,63 @@ _FIT = {
 _BIAS_LABEL = {'bullish': 'haussier', 'bearish': 'baissier', 'neutral': 'neutre'}
 
 
-def rank_strategies(strategies, bias='neutral'):
+_MANDATE_CACHE = {'loaded': False, 'value': None}
+
+
+def _options_mandate():
+    """Règles options du PROFIL ACTIF (constitution V1) — chargées une fois.
+    None honnête si la constitution est indisponible (aucune règle inventée)."""
+    if not _MANDATE_CACHE['loaded']:
+        try:
+            from vertex.strategy.constitution import load_profile
+            p = load_profile()
+            op = getattr(p, 'options_profile', {}) or {}
+            dte = op.get('dte') or {}
+            _MANDATE_CACHE['value'] = {
+                'short_options': bool(op.get('short_options', False)),
+                'credit_spreads': bool(op.get('credit_spreads', False)),
+                'dte_min': dte.get('absolute_minimum'),
+                'dte_max': dte.get('absolute_maximum'),
+                'profile_version': getattr(p, 'version', None),
+            }
+        except Exception:
+            _MANDATE_CACHE['value'] = None
+        _MANDATE_CACHE['loaded'] = True
+    return _MANDATE_CACHE['value']
+
+
+def _mandate_reasons(s, mandate):
+    """Pourquoi une stratégie est HORS MANDAT (jamais recommandable). Le risque
+    illimité est bloquant même sans profil chargé (hard gate Skyler)."""
+    reasons = []
+    if s.get('max_loss_unbounded'):
+        reasons.append('perte théoriquement illimitée — jamais recommandable')
+    if mandate is not None:
+        has_short = any((l.get('qty') or 0) < 0 for l in (s.get('legs') or []))
+        if has_short and not mandate['short_options']:
+            reasons.append('jambe vendue — interdite par le profil actif (short_options=false)')
+        if s.get('is_credit') and not mandate['credit_spreads']:
+            reasons.append('stratégie à crédit — interdite par le profil actif (credit_spreads=false)')
+    return reasons
+
+
+def rank_strategies(strategies, bias='neutral', mandate=None):
     """Note et classe les stratégies par ADÉQUATION au contexte (heuristique TRANSPARENTE,
     aide à la décision — pas une promesse). Score = 45 % alignement directionnel +
-    30 % probabilité de profit + 25 % reward/risk. Marque la mieux adaptée `recommended`.
-    Modifie et renvoie la liste triée."""
+    30 % probabilité de profit + 25 % reward/risk. Filtre ensuite par le PROFIL ACTIF :
+    une stratégie hors mandat (jambe vendue, crédit, perte illimitée) reste analysable
+    en laboratoire mais n'est JAMAIS marquée `recommended`. Modifie et renvoie la liste."""
     bias = bias if bias in ('bullish', 'bearish', 'neutral') else 'neutral'
+    if mandate is None:
+        mandate = _options_mandate()
     for s in strategies:
         fit = _FIT.get(s.get('kind'), {}).get(bias, 0.4)
         pop = (s.get('probability_of_profit') or 0.0) / 100.0
-        # reward/risk normalisé (illimité → plafonné à 1) ; perte bornée
+        # reward/risk normalisé (gain illimité → plafonné à 1 ; perte illimitée → 0)
         loss = abs(s.get('max_loss') or 0.0)
-        if s.get('max_profit_unbounded'):
+        if s.get('max_loss_unbounded'):
+            rr = 0.0
+        elif s.get('max_profit_unbounded'):
             rr = 1.0
         elif loss > 0 and s.get('max_profit') is not None:
             rr = min(1.0, (s['max_profit'] / loss) / 2.0)
@@ -282,16 +436,26 @@ def rank_strategies(strategies, bias='neutral'):
             rr = 0.0
         score = 0.45 * fit + 0.30 * pop + 0.25 * rr
         s['fit_score'] = round(score * 100, 1)
+        reasons = _mandate_reasons(s, mandate)
+        s['hors_mandat'] = bool(reasons)
+        s['mandate_reasons'] = reasons
         bits = ['aligné ' + _BIAS_LABEL[bias] if fit >= 0.7 else
                 ('neutre au biais' if fit >= 0.4 else 'peu aligné au biais')]
         if s.get('probability_of_profit') is not None:
             bits.append('PoP %s%%' % s['probability_of_profit'])
         if rr >= 0.5:
             bits.append('R:R favorable')
+        if reasons:
+            bits.append('HORS MANDAT')
         s['fit_reason'] = ' · '.join(bits)
     strategies.sort(key=lambda s: s.get('fit_score', 0), reverse=True)
-    for i, s in enumerate(strategies):
-        s['recommended'] = (i == 0)
+    reco_done = False
+    for s in strategies:
+        if not reco_done and not s['hors_mandat']:
+            s['recommended'] = True
+            reco_done = True
+        else:
+            s['recommended'] = False
     return strategies
 
 
@@ -347,13 +511,11 @@ def strategies_for_symbol(board, sym, spot, iv_hint=None, bias='neutral'):
         'otm_call': ({'strike': otm_call_strike, 'call': prem(otm_call)} if otm_call else None),
         'otm_put': ({'strike': otm_put_strike, 'put': prem(otm_put)} if otm_put else None),
     }
-    # Le board porte `iv` en POURCENTAGE (ex. 40.4 = 40,4 %) ; analyze_strategy attend
-    # une volatilité DÉCIMALE. Sans conversion : PoP = 100 % (absurde) et delta de call
-    # ATM saturé à 1,0 (cf. tests/test_multileg_iv_units_06). On convertit au point de
-    # jonction (une valeur > 1,5 est nécessairement un pourcentage ; un iv_hint décimal
-    # est laissé intact). Le cœur `analyze_strategy` n'est pas modifié.
+    # IV : le contrat d'unité du board historique est mixte (%/décimal). La détection
+    # vit dans l'UNIQUE frontière documentée iv_units.from_legacy_board — étiquetée
+    # et propagée (iv_unit, avertissement), jamais silencieuse dans le cœur.
     raw_iv = iv_hint if (iv_hint and iv_hint > 0) else ((atm_call or atm_put or {}).get('iv'))
-    iv = (raw_iv / 100.0) if (raw_iv and raw_iv > 1.5) else raw_iv
+    iv, iv_detected_unit, iv_warning = iv_units.from_legacy_board(raw_iv)
 
     out = []
     for kind in _STRATEGY_ORDER:
@@ -365,8 +527,28 @@ def strategies_for_symbol(board, sym, spot, iv_hint=None, bias='neutral'):
             an['kind'] = kind
             an['label'] = STRATEGY_LABELS.get(kind, kind)
             out.append(an)
-    rank_strategies(out, bias)  # classe par adéquation au contexte, marque la recommandée
+    mandate = _options_mandate()
+    rank_strategies(out, bias, mandate)  # classe + filtre par le profil actif
+    # Mandat DTE du profil actif : signalé honnêtement (le labo analyse l'échéance
+    # la plus liquide ~35 DTE ; la séparation TACTICAL/SWING/LEAPS arrive au lot 6).
+    mandate_info = None
+    if mandate is not None:
+        dte_min, dte_max = mandate.get('dte_min'), mandate.get('dte_max')
+        dte_ok = None
+        if dte is not None and dte_min is not None and dte_max is not None:
+            dte_ok = bool(dte_min <= dte <= dte_max)
+        mandate_info = {
+            'profile_version': mandate.get('profile_version'),
+            'dte_ok': dte_ok, 'dte_bounds': [dte_min, dte_max],
+            'note': None if dte_ok else (
+                'Échéance analysée (%s DTE) hors du mandat DTE du profil actif (%s–%s) — '
+                'analyse de laboratoire, pas une proposition de mandat.' % (dte, dte_min, dte_max)),
+        }
+    warnings = [w for w in [iv_warning] if w]
     return {'available': bool(out), 'sym': sym, 'spot': round(spot, 2),
             'exp': exp, 'dte': dte, 'iv': round(iv, 4) if iv else None,
+            'iv_unit': ('DECIMAL' if iv else None),        # sortie toujours décimale
+            'iv_detected_from': iv_detected_unit,          # unité détectée à la frontière
             'bias': bias, 'atm_strike': atm_strike, 'strategies': out,
+            'mandate': mandate_info, 'warnings': warnings,
             'reason': None if out else 'primes insuffisantes dans le board pour construire une stratégie.'}
