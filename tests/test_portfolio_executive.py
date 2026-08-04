@@ -55,7 +55,8 @@ def test_team_view_roles_and_slots():
     snap = make_snapshot(9)
     view = team_view(snap, PROFILE)
     assert view['stock_count'] == 9
-    assert view['free_slots'] == 1
+    # slots libres = max du profil actif − 9 (V1 : 10−9=1 ; V2 : 15−9=6 — LOT 2)
+    assert view['free_slots'] == PROFILE.portfolio_max_positions - 9
     assert view['provenance'] == 'REAL'
     assert set(view['by_role']) == {'ATTACKER', 'MIDFIELDER', 'DEFENDER', 'GOALKEEPER'}
     assert view['by_role']['GOALKEEPER'], 'le cash doit apparaître comme gardien'
