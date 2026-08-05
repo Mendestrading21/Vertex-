@@ -116,6 +116,7 @@ _CONTENT = """
   <section class="vx-card vx-col-6" aria-label="Depuis la dernière visite">
     <div class="vx-card-header"><span class="vx-card-title">Depuis ta dernière visite</span></div>
     <div id="vx-diff">%%LOADING%%</div>
+    <div id="vx-mkt-diff" class="vx-mt2"></div>
   </section>
   <section class="vx-card vx-col-6" aria-label="Régime de marché">
     <div class="vx-card-header"><span class="vx-card-title">Régime</span>
@@ -409,13 +410,45 @@ async function loadSession(){
 /* ── Orchestration ── */
 function boot(){
   loadSession();
-  loadBrief();loadSummary();loadRegime();loadOpportunities();loadAlerts();loadCalendar();loadPortfolio();
+  loadBrief();loadSummary();loadRegime();loadOpportunities();loadAlerts();loadCalendar();loadPortfolio();loadMarketDiff();
 }
 function whenChartsReady(fn){
   if(window.VXCharts&&window.Chart)return fn();
   window.addEventListener('load',fn,{once:true});
 }
 whenChartsReady(boot);
+/* Diff MARCHÉ serveur (SKYLER LOT 8b) : MarketContext — transition de régime,
+   changements depuis la dernière session, conflits de sources. Vérité serveur,
+   jamais inventé : sans session précédente, on le dit. */
+async function loadMarketDiff(){
+  const host=$('vx-mkt-diff');if(!host)return;
+  try{
+    const d=await VX.fetch('/api/market/context',{ttl:120000});
+    const tr=(d.regime||{}).transition||{};
+    const changes=d.changes_since_prev||[];
+    const conflicts=d.conflicts||[];
+    let html='<div class="vx-eyebrow" style="margin-bottom:.25rem">Marché (serveur)</div>';
+    if(tr.changed===true){
+      html+='<div class="vx-mb1"><span class="vx-badge" data-tone="neutral">Régime : '
+        +esc(tr.from||'—')+' → '+esc(tr.to||'—')+'</span></div>';
+    }
+    if(changes.length){
+      html+='<ul style="margin:.2rem 0;padding-left:0;list-style:none;font-size:12.5px">'
+        +changes.map(c=>'<li style="margin:.2rem 0">· '+esc(c)+'</li>').join('')+'</ul>';
+    }else if(tr.changed===null){
+      html+='<div class="vx-muted" style="font-size:12.5px">Première session enregistrée — pas de comparaison disponible.</div>';
+    }else{
+      html+='<div class="vx-muted" style="font-size:12.5px">Aucun changement de marché depuis la dernière session.</div>';
+    }
+    if(conflicts.length){
+      html+='<div class="vx-warn" style="font-size:12.5px;margin-top:.25rem">⚠ '
+        +conflicts.map(c=>esc(c.dimension)+' : sources en désaccord ('+(c.values||[]).join(' vs ')+')').join(' · ')+'</div>';
+    }
+    html+='<div class="vx-meta" style="margin-top:.25rem">'+(d.as_of?('scan '+esc(d.as_of)+' · '):'')+'MarketContext déterministe</div>';
+    host.innerHTML=html;
+  }catch(e){host.innerHTML='<div class="vx-muted" style="font-size:12.5px">Diff marché injoignable.</div>';}
+}
+VX.refresh.register(loadMarketDiff,300000,'today-mkt-diff');
 VX.refresh.register(loadSummary,120000,'today-summary');
 VX.refresh.register(loadAlerts,60000,'alerts');
 VX.refresh.register(loadSession,45000,'session-digest');
