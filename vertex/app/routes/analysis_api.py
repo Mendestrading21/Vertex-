@@ -254,6 +254,72 @@ def api_skyler_memory():
     })
 
 
+def _kg_build():
+    """Assemble le Knowledge Graph depuis les sources réelles de l'état partagé :
+    univers scanné, watchlist sectorielle statique, séries canoniques, calendrier
+    earnings/macro, positions desk. Aucune relation inventée."""
+    from vertex.data import series as _series
+    from vertex.engines import knowledge_graph as _kg
+    from vertex.market.sectors import SECTOR_MAP
+    from vertex.app.config import DEMO_MODE as _demo
+    detail_all = scan_state.get('detail') or {}
+    symbols = sorted(detail_all.keys())
+    closes_by_sym = {}
+    for s in symbols:
+        closes, _src = _series.closes(detail_all.get(s) or {})
+        if closes:
+            closes_by_sym[s] = closes
+    events_by_sym = {}
+    try:
+        from vertex.app.state import cal_state
+        for e in (cal_state.get('items') or []):
+            s = str(e.get('sym', '')).upper()
+            if s and e.get('dte') is not None:
+                events_by_sym.setdefault(s, []).append(
+                    {'kind': 'earnings', 'label': 'Résultats %s' % s,
+                     'dte': e.get('dte'), 'source': 'calendar.earnings'})
+    except Exception:
+        pass
+    positions = None
+    try:
+        from vertex.positions.repository import load_positions
+        from vertex.services import persist
+        positions = load_positions(persist.load_json('desk_data.json', {}) or {})
+    except Exception:
+        positions = None
+    return _kg.build(symbols, sector_map=SECTOR_MAP, closes_by_sym=closes_by_sym,
+                     events_by_sym=events_by_sym, positions=positions,
+                     as_of=scan_state.get('scan_ts_h') or scan_state.get('updated'),
+                     demo=_demo)
+
+
+@bp.route('/api/skyler/graph')
+def api_skyler_graph():
+    """KNOWLEDGE GRAPH INSTITUTIONNEL (LOT 11) : sociétés, secteurs, catalyseurs
+    et portefeuille reliés uniquement par des sources réelles tracées — chaque
+    arête porte provenance et niveau de preuve ; dépendances cachées (≥ 2 liens
+    indépendants) et questions de recherche (relations non documentées, jamais
+    inventées). Lecture seule."""
+    return jsonify(_kg_build())
+
+
+@bp.route('/api/skyler/graph/<sym>')
+def api_skyler_graph_sym(sym):
+    """PROPAGATION D'IMPACT EXPLICABLE (LOT 11) : chemins depuis un titre,
+    chaque saut justifié par la relation et la base de l'arête. Lecture seule."""
+    from vertex.engines import knowledge_graph as _kg
+    sym = (sym or '').upper()[:12]
+    g = _kg_build()
+    return jsonify({'symbol': sym, 'generator': 'deterministic',
+                    'as_of': g['as_of'], 'demo': g['demo'],
+                    'engine_version': g['engine_version'],
+                    'paths': _kg.propagate(g, 'company:%s' % sym, max_hops=2),
+                    'hidden_dependencies': [d for d in g['hidden_dependencies']
+                                            if sym in d['symbols']],
+                    'research_questions': [q for q in g['research_questions']
+                                           if q['symbol'] == sym]})
+
+
 @bp.route('/api/events/<sym>')
 def api_events(sym):
     """TIMELINE D'ÉVÉNEMENTS NORMALISÉE (SKYLER LOT 4) : news assainies et

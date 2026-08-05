@@ -53,9 +53,9 @@ Références avancées ajoutées :
 
 | Étape | Statut | Objectif | Rapport attendu |
 |---|---|---|---|
-| Lot 10 — Mémoire et discipline décisionnelle | ✅ FAIT — en attente de validation humaine | décisions immuables, classification des erreurs, biais récurrents, amélioration humaine contrôlée | `docs/refactor/validation/SKYLER-LOT-10.md` |
-| Lot 11 — Knowledge Graph institutionnel | BLOQUÉ par validation du Lot 10 | relations sociétés/secteurs/thèmes/catalyseurs/risques, propagation explicable | `docs/refactor/validation/SKYLER-LOT-11.md` |
-| Lot 12 — Red-team et RC finale | BLOQUÉ par Lot 11 | stress adversarial, audit math/données/sécurité/UI, release candidate | `docs/refactor/validation/SKYLER-LOT-12.md` |
+| Lot 10 — Mémoire et discipline décisionnelle | ✅ FAIT — validé (« go sans validation humaine ») et fusionné | décisions immuables, classification des erreurs, biais récurrents, amélioration humaine contrôlée | `docs/refactor/validation/SKYLER-LOT-10.md` |
+| Lot 11 — Knowledge Graph institutionnel | ✅ FAIT — en attente de validation | relations sociétés/secteurs/catalyseurs/portefeuille prouvables, propagation explicable, questions de recherche | `docs/refactor/validation/SKYLER-LOT-11.md` |
+| Lot 12 — Red-team et RC finale | BLOQUÉ par validation du Lot 11 | stress adversarial, audit math/données/sécurité/UI, release candidate | `docs/refactor/validation/SKYLER-LOT-12.md` |
 
 ## Agents Institutional+
 
@@ -93,12 +93,22 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - interdictions respectées : pas de Knowledge Graph, pas d'UI, pas de
   modification automatique des poids/Constitution, `main` intacte, aucun ordre.
 
+## Lot 11 — livré (2026-08-05)
+
+- moteur `vertex/engines/knowledge_graph.py` : 4 relations prouvables
+  (secteur F1 sourcé, co-mouvement F2 fenêtré, catalyseur daté F1, détention
+  desk F1), provenance obligatoire par arête, propagation explicable saut par
+  saut, dépendances cachées ≥ 2 liens indépendants, questions de recherche
+  `NON_DOCUMENTE` — fournisseurs/clients/concurrents JAMAIS inventés ;
+- routes lecture seule : `GET /api/skyler/graph` + `GET /api/skyler/graph/<sym>` ;
+- 1350 tests verts / 2 skipped (+18) ; SW inchangé v94 (aucune UI touchée).
+
 ## Prochaine action unique
 
-Valider humainement le Lot 10 (PR brouillon `agent/skyler-v2-lot-10-decision-memory`), puis exécuter uniquement :
+Valider le Lot 11 (PR `agent/skyler-v2-lot-11-knowledge-graph`), puis exécuter uniquement :
 
 ```text
-/vertex-skyler-v2 lot-11
+/vertex-skyler-v2 lot-12
 ```
 
-**Arrêt après le Lot 10 — validation humaine requise.**
+**Arrêt après le Lot 11 — validation humaine requise.**
