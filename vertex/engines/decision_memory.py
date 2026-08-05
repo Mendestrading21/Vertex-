@@ -764,6 +764,51 @@ def recommendations(patterns, aggs):
     return out
 
 
+# ─── Restauration souveraine (LOT 45) ───────────────────────────────────────────
+
+def merge_memory(current, imported):
+    """RESTAURATION par REJEU APPEND-ONLY d'un ledger importé dans le ledger
+    courant : chaque décision repasse par `append_decision` (un decision_id
+    existant n'est JAMAIS remplacé — l'historique local gagne), chaque outcome
+    par `append_outcome` (monotone : seule une mesure couvrant strictement
+    plus de séances remplace). Entrées non-dict comptées, jamais fatales ;
+    import dégénéré → rien d'ajouté. Retourne (merged, stats)."""
+    merged = {'schema': (current or {}).get('schema', MEMORY_SCHEMA_VERSION),
+              'decisions': list((current or {}).get('decisions') or []),
+              'outcomes': list((current or {}).get('outcomes') or [])}
+    stats = {'added_decisions': 0, 'skipped_decisions': 0,
+             'added_outcomes': 0, 'skipped_outcomes': 0,
+             'corrupted_entries': 0}
+    imp = imported if isinstance(imported, dict) else {}
+    decs = imp.get('decisions')
+    outs = imp.get('outcomes')
+    for r in (decs if isinstance(decs, list) else []):
+        if not isinstance(r, dict):
+            stats['corrupted_entries'] += 1
+            continue
+        before = len(merged['decisions'])
+        merged = append_decision(merged, r)
+        if len(merged['decisions']) > before:
+            stats['added_decisions'] += 1
+        else:
+            stats['skipped_decisions'] += 1
+    for o in (outs if isinstance(outs, list) else []):
+        if not isinstance(o, dict):
+            stats['corrupted_entries'] += 1
+            continue
+        before = merged['outcomes']
+        merged = append_outcome(merged, o)
+        if merged['outcomes'] != before:
+            stats['added_outcomes'] += 1
+        else:
+            stats['skipped_outcomes'] += 1
+    if not isinstance(decs, list):
+        stats['corrupted_entries'] += 1 if decs not in (None, []) else 0
+    if not isinstance(outs, list):
+        stats['corrupted_entries'] += 1 if outs not in (None, []) else 0
+    return merged, stats
+
+
 # ─── Santé du ledger (LOT 35) ───────────────────────────────────────────────────
 
 def ledger_health(memory):
@@ -823,6 +868,6 @@ __all__ = ['freeze', 'empty_memory', 'append_decision', 'append_outcome',
            'aggregates', 'recommendations', 'calibration_factor',
            'calibration_by_context', 'calibration_factor_for',
            'find_decision', 'find_outcome', 'post_mortem', 'ledger_health',
-           'cell_decisions', 'CONTEXT_GROUPS',
+           'cell_decisions', 'CONTEXT_GROUPS', 'merge_memory',
            'ERROR_CLASSES', 'MEMORY_FILE', 'MAX_DECISIONS',
            'MEMORY_SCHEMA_VERSION', 'MIN_CALIBRATION_SAMPLE']
