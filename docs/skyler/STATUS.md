@@ -630,6 +630,22 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   SURVOL RÉEL (visée + point actif + tooltip + pastille lot 51 rendus,
   0 erreur console) ; moteur 0.9.0 inchangé.
 
+## Lot 53 — livré (2026-08-05, axe visuel — suite)
+
+- les trois primitives restantes de `chart-core.js` rejoignent la
+  signature 2026 (livraison centrale, zéro fork) : `C.sparkline`
+  (monotone + mini-aire dégradée, muette), `C.bars` (coins arrondis
+  complets, translucides → pleines au survol, alpha appliqué SEULEMENT
+  aux hex 6 digits — garde regex, jamais de couleur corrompue),
+  `C.donut` (arcs arrondis espacés, hoverOffset, cutout 70 %) ;
+- le tronc commun est maintenant ENTIÈREMENT sur la signature 2026
+  (area/multiLine/sparkline/bars/donut + vxGlow/vxLastDot/vxCrosshair) ;
+- preuves : 5 tests rouges→verts ; suite 1643/2 skipped ; RC outillée GO
+  0 défaut sous SW v110 (cycle souverain inclus) ; l'état démo n'affiche
+  ni donut ni bars (dit) → preuve par HARNAIS sur les primitives
+  réellement servies dans la vraie page (capture, 0 erreur console) ;
+  moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
