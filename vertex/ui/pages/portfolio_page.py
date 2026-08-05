@@ -811,11 +811,14 @@ async function renderHiddenDeps(){
       +esc((x.symbols||[]).join(' + '))+'</b> — '+esc(x.basis||'')
       +'<div class="vx-meta">'+(x.links||[]).map(l=>esc(l.relation)+' : '+esc(l.basis)).join(' · ')+'</div></div>').join('')
     :'<div class="vx-meta">Aucune paire avec au moins 2 liens indépendants — rien de caché dans les relations tracées à ce jour.</div>';
+  const groups=d.hidden_groups||[];
+  const grpHtml=groups.length?('<div class="vx-kpi-label vx-mt2">Groupes exposés (3 titres ou plus — composantes connexes)</div>'
+    +groups.map(g=>'<div class="vx-insight" data-tone="risk"><b>'+esc((g.symbols||[]).join(' + '))+'</b> — '+esc(g.basis||'')+'</div>').join('')):'';
   const qHtml=qs.length?('<div class="vx-kpi-label vx-mt2">Questions de recherche (relations non documentées — jamais inventées)</div>'
     +qs.map(x=>'<div class="vx-meta">· '+esc(x.symbol)+' — '+esc(x.question)+'</div>').join('')):'';
   host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Dépendances cachées (Knowledge Graph)</span>'
     +'<span class="vx-chart-question">Deux titres partagent-ils une exposition non évidente&nbsp;?</span></div>'
-    +depHtml+qHtml
+    +depHtml+grpHtml+qHtml
     +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'knowledge graph (secteur déclaré · co-mouvement · catalyseurs datés · desk)','delayed')
     +(d.demo?' · <span class="vx-badge" data-tone="neutral">DÉMO</span>':'')+'</div>';
   $('pf-body').appendChild(host);

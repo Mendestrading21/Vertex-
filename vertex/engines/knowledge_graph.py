@@ -60,6 +60,29 @@ def _pearson(xs, ys):
     return sxy / math.sqrt(sxx * syy)
 
 
+def _residual_vs_market(rets, mkt):
+    """Résidus de la régression OLS des rendements sur ceux du marché
+    (r_t − β·m_t) + part de variance expliquée (R²). Variance de marché nulle
+    → résidus = rendements bruts, R² = 0 (rien d'expliqué, rien d'inventé)."""
+    n = len(rets)
+    if n != len(mkt) or n < 2:
+        return None, None
+    mm = sum(mkt) / n
+    var_m = sum((m - mm) ** 2 for m in mkt)
+    if var_m <= 0:
+        return list(rets), 0.0
+    mr = sum(rets) / n
+    beta = sum((r - mr) * (m - mm) for r, m in zip(rets, mkt)) / var_m
+    resid = [r - beta * m for r, m in zip(rets, mkt)]
+    var_r = sum((r - mr) ** 2 for r in rets)
+    if var_r <= 0:
+        return resid, 0.0
+    mres = sum(resid) / n
+    var_res = sum((x - mres) ** 2 for x in resid)
+    r2 = max(0.0, min(1.0, 1.0 - var_res / var_r))
+    return resid, round(r2, 3)
+
+
 # ─── Construction ───────────────────────────────────────────────────────────────
 
 def build(symbols, sector_map=None, closes_by_sym=None, events_by_sym=None,
@@ -97,29 +120,61 @@ def build(symbols, sector_map=None, closes_by_sym=None, events_by_sym=None,
                       'basis': '%s déclaré dans le secteur %s par la watchlist du code' % (s, sec)})
 
     # Co-mouvement — corrélation des rendements log sur séries canoniques.
+    # Série SPY disponible → corrélation PARTIELLE sur les résidus de marché
+    # (deux titres qui suivent le marché ne co-bougent pas « en propre ») ;
+    # sinon corrélation brute, ÉTIQUETÉE — jamais un fallback silencieux.
     with_series = [s for s in symbols
                    if len([c for c in (closes_by_sym.get(s) or []) if _num(c) is not None]) >= MIN_POINTS]
     skipped = [s for s in symbols if closes_by_sym.get(s) and s not in with_series]
     if skipped:
         limits.append('co-mouvement non évalué pour %s : série < %d points — jamais deviné'
                       % (', '.join(skipped), MIN_POINTS))
-    for i, a in enumerate(with_series):
-        for b in with_series[i + 1:]:
+    spy = closes_by_sym.get('SPY')
+    residual_mode = ('SPY' in with_series and spy is not None)
+    if residual_mode:
+        pair_pool = [s for s in with_series if s != 'SPY']
+        limits.append('co-mouvement : méthode residual_vs_SPY (résidus de la régression '
+                      'sur SPY) — SPY exclu des paires (son co-mouvement avec le marché est trivial)')
+    else:
+        pair_pool = with_series
+        if with_series:
+            limits.append('série SPY absente — corrélation brute étiquetée `raw` '
+                          '(peut refléter le marché plutôt qu’un lien propre)')
+    for i, a in enumerate(pair_pool):
+        for b in pair_pool[i + 1:]:
             ca, cb = closes_by_sym[a], closes_by_sym[b]
-            L = min(len(ca), len(cb))
+            L = min(len(ca), len(cb), len(spy)) if residual_mode else min(len(ca), len(cb))
             ra, rb = _log_returns(ca[-L:]), _log_returns(cb[-L:])
             if ra is None or rb is None:
                 continue
+            r2 = None
+            if residual_mode:
+                rm = _log_returns(spy[-L:])
+                if rm is None:
+                    continue
+                ra, r2a = _residual_vs_market(ra, rm)
+                rb, r2b = _residual_vs_market(rb, rm)
+                if ra is None or rb is None:
+                    continue
+                r2 = {a: r2a, b: r2b}
             corr = _pearson(ra, rb)
             if corr is None or not math.isfinite(corr) or corr < CORR_STRONG:
                 continue
-            edges.append({'relation': 'CO_MOVES_WITH',
-                          'src': 'company:%s' % a, 'dst': 'company:%s' % b,
-                          'source': 'série canonique de clôtures (scan)',
-                          'evidence_level': 'F2',
-                          'value': round(corr, 3), 'window': L - 1,
-                          'basis': 'corrélation des rendements log %s/%s = %.2f sur %d points (seuil %.2f)'
-                                   % (a, b, corr, L - 1, CORR_STRONG)})
+            method = 'residual_vs_SPY' if residual_mode else 'raw'
+            edge = {'relation': 'CO_MOVES_WITH',
+                    'src': 'company:%s' % a, 'dst': 'company:%s' % b,
+                    'source': 'série canonique de clôtures (scan)',
+                    'evidence_level': 'F2', 'method': method,
+                    'value': round(corr, 3), 'window': L - 1,
+                    'basis': ('corrélation des résidus de marché %s/%s = %.2f sur %d points '
+                              '(seuil %.2f) — régression sur SPY, part expliquée retirée'
+                              % (a, b, corr, L - 1, CORR_STRONG)) if residual_mode else
+                             ('corrélation brute (méthode raw) des rendements log %s/%s = %.2f '
+                              'sur %d points (seuil %.2f) — SPY absent, marché non contrôlé'
+                              % (a, b, corr, L - 1, CORR_STRONG))}
+            if r2 is not None:
+                edge['r2'] = r2
+            edges.append(edge)
 
     # Catalyseurs — uniquement les événements DATÉS du calendrier réel (≤ 90 j).
     for s in symbols:
@@ -159,8 +214,40 @@ def build(symbols, sector_map=None, closes_by_sym=None, events_by_sym=None,
              'nodes': nodes, 'edges': edges,
              'limits': limits}
     graph['hidden_dependencies'] = _hidden_dependencies(graph, symbols, held)
+    graph['hidden_groups'] = _hidden_groups(graph['hidden_dependencies'])
     graph['research_questions'] = _research_questions(symbols, sector_map, events_by_sym)
     return graph
+
+
+def _hidden_groups(deps):
+    """Composantes connexes des paires de dépendances cachées — un GROUPE de
+    3 titres ou plus partage une exposition commune plus large qu'une paire."""
+    adj = {}
+    for d in deps or []:
+        a, b = d['symbols']
+        adj.setdefault(a, set()).add(b)
+        adj.setdefault(b, set()).add(a)
+    seen, groups = set(), []
+    for s in sorted(adj):
+        if s in seen:
+            continue
+        comp, stack = [], [s]
+        while stack:
+            x = stack.pop()
+            if x in seen:
+                continue
+            seen.add(x)
+            comp.append(x)
+            stack.extend(adj[x] - seen)
+        if len(comp) >= 3:
+            comp = sorted(comp)
+            n_links = sum(len(d['links']) for d in deps
+                          if set(d['symbols']) <= set(comp))
+            groups.append({'symbols': comp, 'n_links': n_links,
+                           'basis': '%d titres inter-reliés par %d lien(s) indépendant(s) — '
+                                    'exposition de groupe non évidente au premier regard'
+                                    % (len(comp), n_links)})
+    return groups
 
 
 # ─── Dépendances cachées (≥ 2 liens indépendants) ───────────────────────────────
