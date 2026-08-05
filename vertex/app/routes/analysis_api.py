@@ -285,6 +285,7 @@ def api_skyler_memory():
         'as_of': scan_state.get('scan_ts_h') or scan_state.get('updated'),
         'demo': _demo,
         'calibration_by_context': _dm.calibration_by_context(mem, _sk2.ENGINE_VERSION),
+        'ledger_health': _dm.ledger_health(mem),
         'n_decisions': len(mem['decisions']),
         'n_outcomes': len(mem['outcomes']),
         'decisions': mem['decisions'][-50:],
