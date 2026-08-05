@@ -65,6 +65,7 @@
 | 55 | `SKYLER-LOT-55.md` | Connexions entre pages : fil d'Ariane cliquable (serveur + SPA, source unique) + retour contextuel couvrant les 8 espaces | 0.9.0 | v112 | 1655 | GO |
 | 56 | `SKYLER-LOT-56.md` | Polish Aujourd'hui+Marchés : séries comparées contrastées (cyan technique, 3 miroirs alignés par la source) + crumb mobile sans slash orphelin | 0.9.0 | v113 | 1658 | GO |
 | 57 | `SKYLER-LOT-57.md` | Polish Opportunités+Analyse : libellés kv jamais tronqués (perte d'info corrigée) + littéral hors palette supprimé (étoile → token) | 0.9.0 | v114 | 1661 | GO |
+| 58 | `SKYLER-LOT-58.md` | Polish Portefeuille+Options : ancienne palette purgée (~28 fallbacks dont orange banni ; `--vx-text-dim` inexistant rendait un gris périmé) — balayage APRÈS : palette OK | 0.9.0 | v115 | 1666 | GO |
 
 ## Architecture atteinte
 
