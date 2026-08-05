@@ -32,7 +32,8 @@ SCHEMA_VERSION = 1
 # 0.5.0 : robustness MESURÉE par analyse de perturbation (liste fixe, déterministe)
 # 0.6.0 : calibration RÉELLE (scenario hit rate de la mémoire, par version, bornée)
 # 0.7.0 : calibration PAR CONTEXTE consommée (cellule du niveau courant si mesurée)
-ENGINE_VERSION = '0.7.0'
+# 0.8.0 : priorité étendue niveau → RÉGIME → global (régime figé dans la mémoire)
+ENGINE_VERSION = '0.8.0'
 
 PERTURBATIONS = ('score_technique_-10', 'score_technique_+10', 'rr_-0.5', 'rr_+0.5',
                  'regime_confidence_-0.2', 'regime_confidence_+0.2',

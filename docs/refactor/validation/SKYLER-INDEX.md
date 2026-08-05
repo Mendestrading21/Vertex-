@@ -29,6 +29,7 @@
 | 23 | `SKYLER-LOT-23.md` | Vue lisible du post-mortem (`/memory/<id>`, XSS échappé) + cet index | 0.7.0 | v98 | 1488 | GO |
 | 24 | `SKYLER-LOT-24.md` | Exposition sectorielle du portefeuille + concentration sectorielle des groupes | 0.7.0 | v99 | 1498 | GO |
 | 25 | `SKYLER-LOT-25.md` | Revue de simplification (docstrings 0.7.0, dédup calibration/mesure/red-team) — zéro changement de comportement | 0.7.0 | v99 | 1498 (identique) | GO |
+| 26 | `SKYLER-LOT-26.md` | Calibration par RÉGIME (régime figé, by_regime, priorité niveau → régime → global) | 0.8.0 | v100 | 1508 | GO |
 
 ## Architecture atteinte
 

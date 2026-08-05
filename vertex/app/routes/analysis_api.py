@@ -153,8 +153,10 @@ def api_skyler(sym):
         from vertex.services import persist as _pc
         _memc = _pc.load_json(_dmc.MEMORY_FILE, None) or _dmc.empty_memory()
         _score0 = _sk.score40(packet0)
+        _reg0 = ((market or {}).get('regime') or {}).get('label')
         calib = _dmc.calibration_factor_for(_memc, _sk.ENGINE_VERSION,
-                                            level=_score0.get('level'))
+                                            level=_score0.get('level'),
+                                            regime=_reg0)
     except Exception:
         calib = None
     decision = _sk.decide(sym, detail, market=market, events=ev, anomaly=ano,

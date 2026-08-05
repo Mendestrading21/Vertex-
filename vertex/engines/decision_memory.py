@@ -106,6 +106,8 @@ def freeze(decision, packet=None, price=None, closes=None, portfolio_ctx=None,
         'profile_version': p.get('profile_version'),
         'symbol': sym, 'as_of': as_of, 'recorded_at': now,
         'session_date': session_date,   # date d'observation réelle — None si inconnue
+        # régime de marché AU MOMENT de la décision (label du packet) — None honnête
+        'regime': (((p.get('contexts') or {}).get('market') or {}).get('regime') or {}).get('label'),
         'demo': bool(p.get('demo')),
         'price_at_decision': px,
         'tail_at_decision': tail,
@@ -565,7 +567,7 @@ def calibration_factor(memory, engine_version):
                 'basis': 'échantillon insuffisant (%d/%d mesure(s) pour le moteur %s) — '
                          'facteur plafonné à 0,50, jamais inventé'
                          % (n, MIN_CALIBRATION_SAMPLE, engine_version)}
-    hits = sum(1 for _, _, h in rows if h)
+    hits = sum(1 for _, _, _, h in rows if h)
     hit_rate = hits / n
     return {'value': _hit_factor(hit_rate),
             'n_measured': n, 'hit_rate': round(hit_rate, 3),
@@ -578,7 +580,9 @@ def calibration_factor(memory, engine_version):
 # ─── Calibration par contexte (LOT 22 — SCENARIO_CALIBRATION §13) ───────────────
 
 def _measured_hits(memory, engine_version):
-    """(niveau, décision, hit) pour chaque décision MESURÉE de cette version."""
+    """(niveau, décision, régime, hit) pour chaque décision MESURÉE de cette
+    version — le régime est celui FIGÉ au moment de la décision (None honnête
+    pour les anciens records)."""
     mem = memory or empty_memory()
     out = []
     for r in mem.get('decisions') or []:
@@ -587,7 +591,7 @@ def _measured_hits(memory, engine_version):
         cls = _measured_class(mem, r)
         if cls is None:
             continue
-        out.append((r.get('level'), r.get('decision'),
+        out.append((r.get('level'), r.get('decision'), r.get('regime'),
                     cls in ('DECISION_CORRECTE', 'VARIANCE_NORMALE')))
     return out
 
@@ -612,33 +616,44 @@ def calibration_by_context(memory, engine_version):
     propre hit rate SEULEMENT si son échantillon suffit ; sinon INSUFFISANT
     dit. Jamais de mélange de versions."""
     rows = _measured_hits(memory, engine_version)
-    by_level, by_decision = {}, {}
-    for lv, dec, hit in rows:
+    by_level, by_decision, by_regime = {}, {}, {}
+    for lv, dec, reg, hit in rows:
         if lv:
             by_level.setdefault(lv, []).append(hit)
         if dec:
             by_decision.setdefault(dec, []).append(hit)
+        if reg:                                      # régime inconnu ≠ cellule
+            by_regime.setdefault(reg, []).append(hit)
     return {'engine_version': engine_version,
             'n_measured_total': len(rows),
             'by_level': {lv: _context_cell(v, 'niveau=%s' % lv)
                          for lv, v in sorted(by_level.items())},
             'by_decision': {d: _context_cell(v, 'décision=%s' % d)
                             for d, v in sorted(by_decision.items())},
+            'by_regime': {r: _context_cell(v, 'régime=%s' % r)
+                          for r, v in sorted(by_regime.items())},
             'note': 'calibration par contexte (§13) — une cellule sous-échantillonnée '
                     'reste INSUFFISANTE, l’agrégat global est le secours'}
 
 
-def calibration_factor_for(memory, engine_version, level=None):
-    """Facteur de calibration à SERVIR au moteur : cellule du niveau courant si
-    mesurée, sinon agrégat global, sinon 0,50 — portée (`scope`) explicite."""
-    if level:
+def calibration_factor_for(memory, engine_version, level=None, regime=None):
+    """Facteur de calibration à SERVIR au moteur — priorité DOCUMENTÉE :
+    cellule du NIVEAU courant si mesurée → cellule du RÉGIME courant si
+    mesurée → agrégat global → 0,50. Portée (`scope`) explicite. Simple par
+    choix : pas de croisement niveau×régime (échantillons trop exigeants)."""
+    ctx = None
+    if level or regime:
         ctx = calibration_by_context(memory, engine_version)
-        cell = (ctx['by_level'] or {}).get(level)
+    for key, val, kind in (('by_level', level, 'level'),
+                           ('by_regime', regime, 'regime')):
+        if not val or ctx is None:
+            continue
+        cell = (ctx.get(key) or {}).get(val)
         if cell and cell['status'] == 'MESURE':
             return {'value': cell['value'], 'hit_rate': cell['hit_rate'],
                     'n_measured': cell['n_measured'],
                     'engine_version': engine_version,
-                    'scope': 'context:level=%s' % level,
+                    'scope': 'context:%s=%s' % (kind, val),
                     'basis': cell['basis'] + ' (moteur %s)' % engine_version}
     g = calibration_factor(memory, engine_version)
     g['scope'] = 'global'
