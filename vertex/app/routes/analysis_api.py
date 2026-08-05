@@ -458,19 +458,32 @@ def api_skyler_graph():
 
 @bp.route('/api/skyler/graph/<sym>')
 def api_skyler_graph_sym(sym):
-    """PROPAGATION D'IMPACT EXPLICABLE (LOT 11) : chemins depuis un titre,
-    chaque saut justifié par la relation et la base de l'arête. Lecture seule."""
+    """PROPAGATION D'IMPACT EXPLICABLE (LOT 11/28) : chemins depuis un titre,
+    chaque saut justifié. `?hops=1..3` optionnel (défaut 2, clampé) ; garde de
+    volume MAX_PATHS — troncature TOUJOURS DITE (`truncated`). Lecture seule."""
+    from flask import request
     from vertex.engines import knowledge_graph as _kg
     sym = (sym or '').upper()[:12]
+    try:
+        hops = max(1, min(3, int(request.args.get('hops', 2))))
+    except (TypeError, ValueError):
+        hops = 2
     g = _kg_build()
-    return jsonify({'symbol': sym, 'generator': 'deterministic',
-                    'as_of': g['as_of'], 'demo': g['demo'],
-                    'engine_version': g['engine_version'],
-                    'paths': _kg.propagate(g, 'company:%s' % sym, max_hops=2),
-                    'hidden_dependencies': [d for d in g['hidden_dependencies']
-                                            if sym in d['symbols']],
-                    'research_questions': [q for q in g['research_questions']
-                                           if q['symbol'] == sym]})
+    paths = _kg.propagate(g, 'company:%s' % sym, max_hops=hops)
+    truncated = len(paths) >= _kg.MAX_PATHS
+    out = {'symbol': sym, 'generator': 'deterministic',
+           'as_of': g['as_of'], 'demo': g['demo'],
+           'engine_version': g['engine_version'],
+           'hops': hops, 'truncated': truncated,
+           'paths': paths,
+           'hidden_dependencies': [d for d in g['hidden_dependencies']
+                                   if sym in d['symbols']],
+           'research_questions': [q for q in g['research_questions']
+                                  if q['symbol'] == sym]}
+    if truncated:
+        out['note'] = ('propagation tronquée à %d chemin(s) (garde de volume) — '
+                       'liste partielle DITE, jamais silencieuse' % _kg.MAX_PATHS)
+    return jsonify(out)
 
 
 @bp.route('/api/events/<sym>')

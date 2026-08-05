@@ -370,13 +370,20 @@ def _research_questions(symbols, sector_map, events_by_sym):
 
 # ─── Propagation d'impact explicable ────────────────────────────────────────────
 
-def propagate(graph, node_id, max_hops=2):
+MAX_PATHS = 200                  # garde de volume dure de la propagation
+
+
+def propagate(graph, node_id, max_hops=2, max_paths=None):
     """Chemins simples depuis un nœud (≤ max_hops), chaque saut expliqué par la
-    relation et la base de l'arête traversée. Nœud inconnu → liste vide."""
+    relation et la base de l'arête traversée. Nœud inconnu → liste vide.
+    GARDE DE VOLUME : jamais plus de `max_paths` chemins (MAX_PATHS par
+    défaut) — troncature DÉTERMINISTE (parcours trié) ; l'appelant compare
+    len(résultat) à la garde pour DIRE la troncature, jamais silencieuse."""
     g = graph or {}
     ids = {n['id'] for n in (g.get('nodes') or [])}
     if node_id not in ids:
         return []
+    limit = MAX_PATHS if max_paths is None else max(1, int(max_paths))
     adj = {}
     for e in (g.get('edges') or []):
         adj.setdefault(e['src'], []).append((e['dst'], e))
@@ -384,8 +391,12 @@ def propagate(graph, node_id, max_hops=2):
     paths = []
 
     def walk(path, hops):
+        if len(paths) >= limit:
+            return
         cur = path[-1]
         for nxt, e in sorted(adj.get(cur, []), key=lambda t: (t[0], t[1]['relation'])):
+            if len(paths) >= limit:
+                return
             if nxt in path:
                 continue
             hop = {'relation': e['relation'], 'basis': e['basis'],
@@ -399,4 +410,5 @@ def propagate(graph, node_id, max_hops=2):
 
 
 __all__ = ['build', 'propagate', 'RELATIONS', 'SCHEMA_VERSION',
-           'GRAPH_ENGINE_VERSION', 'MIN_POINTS', 'CORR_STRONG', 'MAX_DTE']
+           'GRAPH_ENGINE_VERSION', 'MIN_POINTS', 'CORR_STRONG', 'MAX_DTE',
+           'MAX_PATHS']

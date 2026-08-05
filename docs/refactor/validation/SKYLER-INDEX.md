@@ -31,6 +31,7 @@
 | 25 | `SKYLER-LOT-25.md` | Revue de simplification (docstrings 0.7.0, dédup calibration/mesure/red-team) — zéro changement de comportement | 0.7.0 | v99 | 1498 (identique) | GO |
 | 26 | `SKYLER-LOT-26.md` | Calibration par RÉGIME (régime figé, by_regime, priorité niveau → régime → global) | 0.8.0 | v100 | 1508 | GO |
 | 27 | `SKYLER-LOT-27.md` | RC courte du travail continu — audit complet 13 → 26 (aucun code moteur) | 0.8.0 | v100 | 1508 | GO AVEC RÉSERVES |
+| 28 | `SKYLER-LOT-28.md` | Découpe by_catalyst (observation) + propagation 1–3 sauts avec garde de volume dite | 0.8.0 | v100 | 1515 | GO |
 
 ## Architecture atteinte
 
