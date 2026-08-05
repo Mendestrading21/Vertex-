@@ -280,6 +280,17 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   dure MAX_PATHS=200 — troncature déterministe et TOUJOURS DITE ;
 - 1515 tests verts / 2 skipped (+7) ; SW v100 inchangé (API seulement).
 
+## Lot 29 — livré (2026-08-05, travail continu)
+
+- `GET /api/skyler/memory/export` : bundle JSON lecture seule (mémoire +
+  séances + journal + versions moteur/schéma, horodatage UTC réel,
+  `Content-Disposition` téléchargement) — l'historique décisionnel
+  devient SOUVERAIN (les fichiers runtime sont gitignorés/périssables) ;
+- lecture seule PROUVÉE (octets identiques avant/après l'appel) ;
+  magasins vides → formes vides honnêtes ;
+- bouton « Exporter → » dans la carte Mémoire (Performance) ; SW v101 ;
+- 1522 tests verts / 2 skipped (+7) ; moteur 0.8.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

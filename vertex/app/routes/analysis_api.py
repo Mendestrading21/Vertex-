@@ -295,6 +295,38 @@ def api_skyler_memory():
     })
 
 
+@bp.route('/api/skyler/memory/export')
+def api_skyler_memory_export():
+    """EXPORT SOUVERAIN (LOT 29) : sauvegarde LECTURE SEULE de tout l'état
+    runtime Skyler — mémoire décisionnelle, log de séances datées, journal de
+    calibration — avec les versions. Les fichiers runtime sont gitignorés et
+    périssables ; l'export rend l'historique des décisions souverain.
+    Aucun effet de bord, servi en téléchargement."""
+    import time as _time
+    from vertex.engines import decision_memory as _dm
+    from vertex.engines import session_log as _slog
+    from vertex.engines import skyler_journal as _sj
+    from vertex.engines import skyler_core as _sk
+    from vertex.services import persist as _persist
+    payload = {
+        'exported_at': _time.strftime('%Y-%m-%dT%H:%M:%SZ', _time.gmtime()),
+        'versions': {'decision_engine': _sk.ENGINE_VERSION,
+                     'memory_schema': _dm.MEMORY_SCHEMA_VERSION,
+                     'packet_schema': _sk.SCHEMA_VERSION},
+        'memory': _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory(),
+        'sessions': _persist.load_json(_slog.SESSIONS_FILE, None) or _slog.empty_log(),
+        'journal': _persist.load_json(_sj.JOURNAL_FILE, []) or [],
+        'note': 'Export lecture seule de l’état runtime Skyler — les décisions '
+                'historiques ne sont jamais réécrites ; ce fichier est la '
+                'sauvegarde souveraine de la mémoire du trader.',
+    }
+    resp = jsonify(payload)
+    resp.headers['Content-Disposition'] = (
+        'attachment; filename="skyler_export_%s.json"'
+        % _time.strftime('%Y%m%d', _time.gmtime()))
+    return resp
+
+
 @bp.route('/api/skyler/memory/<decision_id>')
 def api_skyler_memory_detail(decision_id):
     """DRILL-DOWN MÉMOIRE (LOT 20) : record figé complet + résultat mesuré +

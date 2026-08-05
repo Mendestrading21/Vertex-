@@ -80,7 +80,8 @@ _VIEW_CONTENT = {
 <div class="vx-grid vx-mt3">
   <section class="vx-card vx-col-12" aria-label="Mémoire décisionnelle">
     <div class="vx-card-header"><span class="vx-card-title">M&eacute;moire d&eacute;cisionnelle — Skyler apprend-il de ses d&eacute;cisions&nbsp;?</span>
-      <span class="vx-chart-question">Ledger immuable par version de moteur : d&eacute;cisions fig&eacute;es, biais surveill&eacute;s, erreurs class&eacute;es — jamais r&eacute;&eacute;crites.</span></div>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/api/skyler/memory/export" download>Exporter &rarr;</a></span>
+      <span class="vx-chart-question">Ledger immuable par version de moteur : d&eacute;cisions fig&eacute;es, biais surveill&eacute;s, erreurs class&eacute;es — jamais r&eacute;&eacute;crites. L&rsquo;export est ta sauvegarde souveraine.</span></div>
     <div id="vx-pf-memory">%%LOADING%%</div>
   </section>
 </div>
