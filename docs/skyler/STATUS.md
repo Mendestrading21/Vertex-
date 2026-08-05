@@ -55,7 +55,7 @@ Références avancées ajoutées :
 |---|---|---|---|
 | Lot 10 — Mémoire et discipline décisionnelle | ✅ FAIT — validé (« go sans validation humaine ») et fusionné | décisions immuables, classification des erreurs, biais récurrents, amélioration humaine contrôlée | `docs/refactor/validation/SKYLER-LOT-10.md` |
 | Lot 11 — Knowledge Graph institutionnel | ✅ FAIT — en attente de validation | relations sociétés/secteurs/catalyseurs/portefeuille prouvables, propagation explicable, questions de recherche | `docs/refactor/validation/SKYLER-LOT-11.md` |
-| Lot 12 — Red-team et RC finale | BLOQUÉ par validation du Lot 11 | stress adversarial, audit math/données/sécurité/UI, release candidate | `docs/refactor/validation/SKYLER-LOT-12.md` |
+| Lot 12 — Red-team et RC finale | ✅ FAIT — GO AVEC RÉSERVES (validation physique restante) | stress adversarial, audit math/données/sécurité, release candidate | `docs/refactor/validation/SKYLER-LOT-12.md` |
 
 ## Agents Institutional+
 
@@ -103,12 +103,27 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - routes lecture seule : `GET /api/skyler/graph` + `GET /api/skyler/graph/<sym>` ;
 - 1350 tests verts / 2 skipped (+18) ; SW inchangé v94 (aucune UI touchée).
 
+## Lot 12 — livré (2026-08-05)
+
+- règle red-team du comité appliquée par le moteur : S/S+ sans red-team
+  complétée = plafonné à A — `ENGINE_VERSION` 0.1.0 → **0.2.0** (règle changée
+  = version changée), historique 0.1.0 séparé en mémoire, Constitution
+  intouchée (proposition de gate profil V3 documentée, en attente humaine) ;
+- trouvaille adversariale corrigée : NaN/infini refusés par la mémoire ;
+- batterie adversariale : séries hostiles, prix extrêmes, attaque look-ahead,
+  déterminisme, labels hostiles, verbes d'ordre, fichiers runtime/secrets,
+  performance bornée — 17 tests ;
+- 1367 tests verts / 2 skipped (+17) ; SW v94 inchangé.
+
+## Programme Institutional+ — TERMINÉ (RC sur intégration)
+
+Les 12 lots + audit sont livrés sur `integration/vertex-skyler-v2`.
+Verdict RC : **GO AVEC RÉSERVES** — voir `SKYLER-LOT-12.md` §11.
+
 ## Prochaine action unique
 
-Valider le Lot 11 (PR `agent/skyler-v2-lot-11-knowledge-graph`), puis exécuter uniquement :
+Validation humaine de la RC sur appareil physique (TWS réel, pages, iPhone).
+Ensuite, avec accord explicite UNIQUEMENT, merge `integration/vertex-skyler-v2`
+→ `main`.
 
-```text
-/vertex-skyler-v2 lot-12
-```
-
-**Arrêt après le Lot 11 — validation humaine requise.**
+**Arrêt — validation humaine requise.**
