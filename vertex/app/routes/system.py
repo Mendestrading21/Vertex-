@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v89';   // v89 (SKYLER 8b) : diff marche serveur (MarketContext) sur Aujourd'hui
+const CACHE='td-shell-v90';   // v90 (SKYLER 8c) : scanner par univers (TACTICAL/SWING/LEAPS + mandat + doublement) sur la vue LEAPS
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

@@ -193,6 +193,23 @@ _VIEW_CONTENT = {
 """,
     'leaps': """
 <div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-12" aria-label="Scanner par univers">
+    <div class="vx-card-header"><span class="vx-card-title">Scanner par univers — quel horizon, quels contrats conformes&nbsp;?</span>
+      <span class="vx-chart-question">Fenêtres STRICTES du mandat V2 (TACTICAL 20-60 · SWING 60-180 · LEAPS 180-540 DTE) · hors-mandat étiqueté, jamais caché · probabilité de doublement ESTIMÉE (modèle non calibré).</span></div>
+    <div class="vx-card-body vx-flex vx-wrap" style="gap:.6rem;align-items:flex-end">
+      <span id="vx-sc-tabs" class="vx-flex" style="gap:6px">
+        <button class="vx-btn vx-btn-sm" data-universe="LEAPS">LEAPS</button>
+        <button class="vx-btn vx-btn-sm vx-btn-ghost" data-universe="SWING">SWING</button>
+        <button class="vx-btn vx-btn-sm vx-btn-ghost" data-universe="TACTICAL">TACTICAL</button>
+      </span>
+      <label class="vx-field"><span>Filtre titre (optionnel)</span>
+        <input id="vx-sc-sym" class="vx-input" placeholder="ex. NVDA" maxlength="12" autocomplete="off"></label>
+      <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-sc-go">Scanner</button>
+    </div>
+    <div id="vx-sc-out" class="vx-mt2">%%LOADING%%</div>
+  </section>
+</div>
+<div class="vx-grid vx-mt3">
   <section class="vx-card vx-col-12" aria-label="Profil LEAPS">
     <div class="vx-card-header"><span class="vx-card-title">Profil LEAPS — acheter du temps, une tendance, un catalyseur&nbsp;?</span>
       <span class="vx-chart-question">Delta 0,70-0,90 · échéance 6-18 mois · OI élevé · spread faible · tendance + catalyseur.</span></div>
@@ -319,6 +336,7 @@ _PAGE_JS = (
     '<script src="/static/vertex/js/pages/options-intel.js" defer></script>'
     '<script src="/static/vertex/js/pages/options-structure.js" defer></script>'
     '<script src="/static/vertex/js/pages/options-gex.js" defer></script>'
+    '<script src="/static/vertex/js/pages/options-scanner.js" defer></script>'
 )
 
 
