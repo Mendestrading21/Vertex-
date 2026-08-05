@@ -136,6 +136,16 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   insuffisants tant que les fondamentaux ne sont pas branchés (voulu) ;
 - 1398 tests verts / 2 skipped (+12).
 
+## Lot 15 — livré (2026-08-05, travail continu)
+
+- `vertex/engines/session_log.py` : UNE clôture par symbole et par jour de
+  scan RÉEL (date d'observation UTC, jamais inventée ; dédup par date ; borné ;
+  NaN/dates malformées refusés) — `skyler_sessions.json` runtime gitignoré ;
+- la mémoire fige `session_date` et les horizons 5/20/60 comptent des séances
+  RÉELLES (log autoritaire, empreinte de série en secours pour les anciens
+  records) — limite n° 1 du lot 10 levée ;
+- 1410 tests verts / 2 skipped (+12).
+
 ## Programme Institutional+ — TERMINÉ (RC sur intégration)
 
 Les 12 lots + audit sont livrés sur `integration/vertex-skyler-v2`.

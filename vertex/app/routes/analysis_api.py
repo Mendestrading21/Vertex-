@@ -169,12 +169,21 @@ def api_skyler(sym):
         import time as _time
         from vertex.engines import decision_memory as _dm
         from vertex.services import persist as _persist
+        today = _time.strftime('%Y-%m-%d', _time.gmtime())   # date d'observation réelle (UTC)
         mem = _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory()
         rec = _dm.freeze(decision, packet=packet, price=detail.get('price'),
-                         closes=closes, portfolio_ctx=pctx, now=round(_time.time()))
+                         closes=closes, portfolio_ctx=pctx, now=round(_time.time()),
+                         session_date=today)
         mem2 = _dm.append_decision(mem, rec)
         if mem2 != mem:
             _persist.save_json(_dm.MEMORY_FILE, mem2)
+        # Log de séances (LOT 15) : une clôture observée par jour réel de scan.
+        from vertex.engines import session_log as _slog
+        if detail.get('price') is not None:
+            slog = _persist.load_json(_slog.SESSIONS_FILE, None) or _slog.empty_log()
+            slog2 = _slog.record_close(slog, sym, today, detail.get('price'))
+            if slog2 != slog:
+                _persist.save_json(_slog.SESSIONS_FILE, slog2)
     except Exception:
         pass                                   # la mémoire ne casse jamais la décision
     return jsonify({'symbol': sym, 'as_of': as_of, 'demo': _demo,
@@ -230,13 +239,18 @@ def api_skyler_memory():
     from vertex.services import persist as _persist
     from vertex.app.config import DEMO_MODE as _demo
     mem = _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory()
-    # Passe de mesure : séances postérieures retrouvées par empreinte de série —
-    # série non alignée = non mesurable (dit), jamais deviné.
+    # Passe de mesure (LOT 15) : le log de séances DATÉES est autoritaire quand
+    # il couvre le titre (comptage de séances réel) ; l'empreinte de fin de
+    # série reste le secours pour les anciens records. Non mesurable = dit.
+    from vertex.engines import session_log as _slog
+    slog = _persist.load_json(_slog.SESSIONS_FILE, None)
     changed = False
     detail_all = scan_state.get('detail') or {}
     for r in mem['decisions']:
-        closes, _src = _series.closes(detail_all.get(r.get('symbol')) or {})
-        after = _dm.sessions_after(closes, r.get('tail_at_decision'))
+        after = _slog.closes_after_date(slog, r.get('symbol'), r.get('session_date'))
+        if after is None:                      # log muet sur ce titre → secours empreinte
+            closes, _src = _series.closes(detail_all.get(r.get('symbol')) or {})
+            after = _dm.sessions_after(closes, r.get('tail_at_decision'))
         if after:
             mem2 = _dm.append_outcome(mem, _dm.measure(r, after))
             if mem2 != mem:

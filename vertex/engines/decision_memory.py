@@ -54,7 +54,8 @@ def _num(x):
 
 # ─── Gel d'une décision (ledger immuable) ───────────────────────────────────────
 
-def freeze(decision, packet=None, price=None, closes=None, portfolio_ctx=None, now=None):
+def freeze(decision, packet=None, price=None, closes=None, portfolio_ctx=None,
+           now=None, session_date=None):
     """Construit le record immuable d'une décision canonique — uniquement depuis
     ce qui est connu AU MOMENT de la décision. Champs absents = None, jamais
     inventés."""
@@ -103,6 +104,7 @@ def freeze(decision, packet=None, price=None, closes=None, portfolio_ctx=None, n
         'engine_version': engine_version,
         'profile_version': p.get('profile_version'),
         'symbol': sym, 'as_of': as_of, 'recorded_at': now,
+        'session_date': session_date,   # date d'observation réelle — None si inconnue
         'demo': bool(p.get('demo')),
         'price_at_decision': px,
         'tail_at_decision': tail,
