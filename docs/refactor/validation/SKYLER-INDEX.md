@@ -39,6 +39,7 @@
 | 33 | `SKYLER-LOT-33.md` | by_catalyst/by_catalyst_type dans la carte Mémoire (même mécanique badges, « observation » dit) + RC courte GO | 0.9.0 | v102 | 1547 | GO |
 | 34 | `SKYLER-LOT-34.md` | Fuzz HTTP graphe/mémoire — 4 crashs 500 réels corrigés (magasin corrompu servi en refus honnête, jamais 500) | 0.9.0 | v102 | 1555 | GO |
 | 35 | `SKYLER-LOT-35.md` | Santé du ledger (`ledger_health` : doublons/orphelins/mélanges de versions/corruption — dit, jamais réparé) + badge UI | 0.9.0 | v103 | 1565 | GO |
+| 36 | `SKYLER-LOT-36.md` | Fuzz du cœur HTTP `/api/skyler/<sym>` — 0 défaut (route déjà robuste, contrat documenté par les tests) | 0.9.0 | v103 | 1572 | GO |
 
 ## Architecture atteinte
 

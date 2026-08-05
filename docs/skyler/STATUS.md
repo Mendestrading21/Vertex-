@@ -367,6 +367,20 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   client-log 0, v103 servi) ; vérif live : status SAIN ;
 - 1565 tests verts / 2 skipped (+10) ; moteur 0.9.0 inchangé.
 
+## Lot 36 — livré (2026-08-05, travail continu)
+
+- batterie de fuzz à listes FIXES sur `/api/skyler/<sym>` (le cœur
+  décisionnel HTTP) : 14 symboles dégénérés, 6 corruptions de magasins
+  (une par une puis simultanées, double appel dédupliqué), honnêteté du
+  titre inconnu (blocs INSUFFISANTS, jamais un achat sans données),
+  déterminisme, calibration fail-safe 0,50 — magasins réels jamais
+  touchés (fixture isolée) ;
+- **0 défaut produit** : la route était déjà robuste (gardes lots 31/34
+  + hooks fail-safe) ; le contrat de réponse `{symbol, decision:{…},
+  packet, red_team_review, demo}` est désormais DOCUMENTÉ par les tests ;
+- couverture HTTP adversariale complète des chemins Skyler ;
+- 1572 tests verts / 2 skipped (+7) ; moteur 0.9.0 et SW v103 inchangés.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
