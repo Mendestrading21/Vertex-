@@ -444,6 +444,20 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   client-log 0, v104 servi) ;
 - 1576 tests verts / 2 skipped (+4) ; moteur 0.9.0 inchangé.
 
+## Lot 39 — livré (2026-08-05, travail continu)
+
+- drill-down cellule de calibration : `decision_memory.cell_decisions` —
+  les décisions MESURÉES qui composent une cellule (id, titre, séance,
+  contextes figés, hit/miss), avec la règle d'appartenance extraite en
+  SOURCE UNIQUE (`_cell_key`, consommée par calibration_by_context ET le
+  drill-down — anti-divergence prouvée sur toutes les cellules
+  publiées) ;
+- route `GET /api/skyler/memory/cell/<group>/<key>` : 404 structurés
+  (groupe_inconnu avec liste des groupes, cellule_inconnue), résumé de
+  cellule joint, jamais 500 ; badges de la carte Mémoire cliquables ;
+- SW v104 → v105 + 4 gardiens ; RC courte GO (v105 servi) + 404 live
+  vérifiés ; 1586 tests verts / 2 skipped (+10) ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

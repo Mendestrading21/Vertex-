@@ -566,9 +566,10 @@ async function loadMemory(){
         [['by_level','niveau'],['by_regime','régime'],['by_decision','décision'],
          ['by_catalyst','catalyseur'],['by_catalyst_type','type']].forEach(([k,lbl])=>{
           Object.entries(cc[k]||{}).forEach(([name,c])=>{
-            cells.push('<span class="vx-badge" data-tone="'+(c.status==='MESURE'?'positive':'neutral')
-              +'" title="'+esc(c.basis||'')+'" style="margin:.12rem .25rem .12rem 0">'
-              +esc(lbl)+'='+esc(name)+' : '+(c.status==='MESURE'?(c.value+' ('+c.n_measured+' mesures)'):'insuffisant ('+c.n_measured+')')+'</span>');
+            cells.push('<a class="vx-badge" data-tone="'+(c.status==='MESURE'?'positive':'neutral')
+              +'" href="/api/skyler/memory/cell/'+encodeURIComponent(k)+'/'+encodeURIComponent(name)
+              +'" title="'+esc(c.basis||'')+' — clic : décisions mesurées de la cellule" style="margin:.12rem .25rem .12rem 0">'
+              +esc(lbl)+'='+esc(name)+' : '+(c.status==='MESURE'?(c.value+' ('+c.n_measured+' mesures)'):'insuffisant ('+c.n_measured+')')+'</a>');
           });
         });
         return cells.length?('<div class="vx-kpi-label vx-mt2">Calibration par contexte (niveau → régime → global · catalyseur/type = observation, jamais consommés)</div><div>'+cells.join('')+'</div>'):'';

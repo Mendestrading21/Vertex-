@@ -42,6 +42,7 @@
 | 36 | `SKYLER-LOT-36.md` | Fuzz du cœur HTTP `/api/skyler/<sym>` — 0 défaut (route déjà robuste, contrat documenté par les tests) | 0.9.0 | v103 | 1572 | GO |
 | 37 | `SKYLER-LOT-37.md` | Fraîcheur du ledger (dernière décision figée, J-N calendaire UTC) — défaut J-1 attrapé en preuve navigateur | 0.9.0 | v104 | 1576 | GO |
 | 38 | `SKYLER-LOT-38.md` | Bilan consolidé lots 29-37 en tête de STATUS (synthèse sourcée pour la validation humaine — documentaire) | 0.9.0 | v104 | 1576 | GO |
+| 39 | `SKYLER-LOT-39.md` | Drill-down cellule de calibration (`cell_decisions`, règle d'appartenance en source unique, badges cliquables) | 0.9.0 | v105 | 1586 | GO |
 
 ## Architecture atteinte
 

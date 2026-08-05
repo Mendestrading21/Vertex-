@@ -588,10 +588,9 @@ def calibration_factor(memory, engine_version):
 
 # ─── Calibration par contexte (LOT 22 — SCENARIO_CALIBRATION §13) ───────────────
 
-def _measured_hits(memory, engine_version):
-    """(niveau, décision, régime, catalyseur?, kind, hit) pour chaque décision
-    MESURÉE de cette version — régime et kind sont ceux FIGÉS au moment de la
-    décision (None honnête pour les anciens records)."""
+def _measured_records(memory, engine_version):
+    """[(record, hit)] pour chaque décision MESURÉE de cette version — jamais
+    de mélange de versions ; entrées non-dict (magasin corrompu) ignorées."""
     mem = memory if isinstance(memory, dict) else empty_memory()
     out = []
     for r in mem.get('decisions') or []:
@@ -602,10 +601,46 @@ def _measured_hits(memory, engine_version):
         cls = _measured_class(mem, r)
         if cls is None:
             continue
-        out.append((r.get('level'), r.get('decision'), r.get('regime'),
-                    bool(r.get('catalyst')), r.get('catalyst_kind'),
-                    cls in ('DECISION_CORRECTE', 'VARIANCE_NORMALE')))
+        out.append((r, cls in ('DECISION_CORRECTE', 'VARIANCE_NORMALE')))
     return out
+
+
+def _measured_hits(memory, engine_version):
+    """(niveau, décision, régime, catalyseur?, kind, hit) pour chaque décision
+    MESURÉE de cette version — régime et kind sont ceux FIGÉS au moment de la
+    décision (None honnête pour les anciens records)."""
+    return [(r.get('level'), r.get('decision'), r.get('regime'),
+             bool(r.get('catalyst')), r.get('catalyst_kind'), hit)
+            for r, hit in _measured_records(memory, engine_version)]
+
+
+CONTEXT_GROUPS = ('by_level', 'by_decision', 'by_regime',
+                  'by_catalyst', 'by_catalyst_type')
+
+
+def _cell_key(group, r):
+    """Clé de cellule d'un record pour un groupe de contexte — None si le
+    record n'appartient à aucune cellule du groupe. SOURCE UNIQUE de la règle
+    d'appartenance, consommée par `calibration_by_context` ET
+    `cell_decisions` (anti-divergence) ; contexte non-chaîne (magasin
+    corrompu) ≠ cellule, kind absent/non-chaîne → `inconnu`."""
+    if group == 'by_level':
+        v = r.get('level')
+        return v if isinstance(v, str) and v else None
+    if group == 'by_decision':
+        v = r.get('decision')
+        return v if isinstance(v, str) and v else None
+    if group == 'by_regime':
+        v = r.get('regime')
+        return v if isinstance(v, str) and v else None
+    if group == 'by_catalyst':
+        return 'avec_catalyseur' if r.get('catalyst') else 'sans_catalyseur'
+    if group == 'by_catalyst_type':
+        if not r.get('catalyst'):
+            return None
+        k = r.get('catalyst_kind')
+        return k if isinstance(k, str) and k else 'inconnu'
+    return None
 
 
 def _context_cell(rows, label):
@@ -627,42 +662,57 @@ def calibration_by_context(memory, engine_version):
     """Découpe la calibration par NIVEAU et par DÉCISION — chaque cellule a son
     propre hit rate SEULEMENT si son échantillon suffit ; sinon INSUFFISANT
     dit. Jamais de mélange de versions."""
-    rows = _measured_hits(memory, engine_version)
-    by_level, by_decision, by_regime, by_catalyst = {}, {}, {}, {}
-    by_catalyst_type = {}
-    for lv, dec, reg, cat, kind, hit in rows:
-        # contexte non-chaîne (magasin corrompu) ≠ cellule — refus honnête
-        if lv and isinstance(lv, str):
-            by_level.setdefault(lv, []).append(hit)
-        if dec and isinstance(dec, str):
-            by_decision.setdefault(dec, []).append(hit)
-        if reg and isinstance(reg, str):             # régime inconnu ≠ cellule
-            by_regime.setdefault(reg, []).append(hit)
-        by_catalyst.setdefault('avec_catalyseur' if cat else 'sans_catalyseur',
-                               []).append(hit)
-        if cat:                                      # type SEULEMENT si catalyseur
-            # kind absent (moteur < 0.9.0) ou non-chaîne (magasin corrompu)
-            # → bucket `inconnu`, jamais deviné
-            key = kind if isinstance(kind, str) and kind else 'inconnu'
-            by_catalyst_type.setdefault(key, []).append(hit)
-    return {'engine_version': engine_version,
-            'n_measured_total': len(rows),
-            'by_level': {lv: _context_cell(v, 'niveau=%s' % lv)
-                         for lv, v in sorted(by_level.items())},
-            'by_decision': {d: _context_cell(v, 'décision=%s' % d)
-                            for d, v in sorted(by_decision.items())},
-            'by_regime': {r: _context_cell(v, 'régime=%s' % r)
-                          for r, v in sorted(by_regime.items())},
-            # by_catalyst / by_catalyst_type : découpes d'OBSERVATION uniquement —
-            # jamais consommées par la sélection du facteur (aucune règle moteur).
-            'by_catalyst': {c: _context_cell(v, 'catalyseur=%s' % c)
-                            for c, v in sorted(by_catalyst.items())},
-            'by_catalyst_type': {k: _context_cell(v, 'type_catalyseur=%s' % k)
-                                 for k, v in sorted(by_catalyst_type.items())},
-            'note': 'calibration par contexte (§13) — une cellule sous-échantillonnée '
-                    'reste INSUFFISANTE, l’agrégat global est le secours ; '
-                    'by_catalyst et by_catalyst_type sont des découpes '
-                    'd’observation (non consommées)'}
+    rows = _measured_records(memory, engine_version)
+    # règle d'appartenance UNIQUE : `_cell_key` (partagée avec cell_decisions)
+    groups = {g: {} for g in CONTEXT_GROUPS}
+    for r, hit in rows:
+        for g in CONTEXT_GROUPS:
+            key = _cell_key(g, r)
+            if key is not None:
+                groups[g].setdefault(key, []).append(hit)
+    labels = {'by_level': 'niveau', 'by_decision': 'décision',
+              'by_regime': 'régime', 'by_catalyst': 'catalyseur',
+              'by_catalyst_type': 'type_catalyseur'}
+    out = {'engine_version': engine_version, 'n_measured_total': len(rows)}
+    # by_catalyst / by_catalyst_type : découpes d'OBSERVATION uniquement —
+    # jamais consommées par la sélection du facteur (aucune règle moteur).
+    for g in CONTEXT_GROUPS:
+        out[g] = {k: _context_cell(v, '%s=%s' % (labels[g], k))
+                  for k, v in sorted(groups[g].items())}
+    out['note'] = ('calibration par contexte (§13) — une cellule '
+                   'sous-échantillonnée reste INSUFFISANTE, l’agrégat global '
+                   'est le secours ; by_catalyst et by_catalyst_type sont des '
+                   'découpes d’observation (non consommées)')
+    return out
+
+
+def cell_decisions(memory, engine_version, group, key):
+    """DRILL-DOWN d'une cellule de calibration : les décisions MESURÉES qui la
+    composent (id, titre, séance, contextes figés, hit/miss) — MÊME règle
+    d'appartenance que `calibration_by_context` (`_cell_key`, source unique).
+    Groupe inconnu ou clé dégénérée → None (l'appelant dit le 404). Jamais
+    de mélange de versions ; lecture seule."""
+    if group not in CONTEXT_GROUPS or not isinstance(key, str) or not key:
+        return None
+    decisions = []
+    for r, hit in _measured_records(memory, engine_version):
+        if _cell_key(group, r) != key:
+            continue
+        decisions.append({'decision_id': r.get('decision_id'),
+                          'symbol': r.get('symbol'),
+                          'session_date': r.get('session_date'),
+                          'level': r.get('level'), 'decision': r.get('decision'),
+                          'regime': r.get('regime'),
+                          'catalyst': r.get('catalyst'),
+                          'catalyst_kind': r.get('catalyst_kind'),
+                          'hit': hit})
+    return {'group': group, 'key': key, 'engine_version': engine_version,
+            'n_measured': len(decisions),
+            'hits': sum(1 for x in decisions if x['hit']),
+            'decisions': decisions,
+            'note': 'décisions MESURÉES de la cellule — même règle '
+                    'd’appartenance que calibration_by_context (source '
+                    'unique), records immuables, lecture seule'}
 
 
 def calibration_factor_for(memory, engine_version, level=None, regime=None):
@@ -773,5 +823,6 @@ __all__ = ['freeze', 'empty_memory', 'append_decision', 'append_outcome',
            'aggregates', 'recommendations', 'calibration_factor',
            'calibration_by_context', 'calibration_factor_for',
            'find_decision', 'find_outcome', 'post_mortem', 'ledger_health',
+           'cell_decisions', 'CONTEXT_GROUPS',
            'ERROR_CLASSES', 'MEMORY_FILE', 'MAX_DECISIONS',
            'MEMORY_SCHEMA_VERSION', 'MIN_CALIBRATION_SAMPLE']
