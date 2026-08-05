@@ -498,6 +498,19 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   échantillons mesurés réels) ;
 - 1599 tests verts / 2 skipped (+6) ; moteur 0.9.0 et SW v106 inchangés.
 
+## Lot 43 — livré (2026-08-05, travail continu)
+
+- fuzz à listes FIXES des DEUX routes cellule (JSON + HTML, postérieures
+  à la batterie du lot 34 — trou de couverture fermé) : traversée
+  percent-encodée, 500 chars, XSS, unicode NFD, groupes dégénérés,
+  traversée brute ; **0 défaut** — gardes des lots 31/34/39/40 déjà
+  couvrantes ;
+- non-interférence prouvée (cellule réelle servie entre deux salves
+  hostiles) ; pas de normalisation cachée (clé NFD ≠ cellule NFC, 404) ;
+- l'affirmation « couverture adversariale HTTP complète » (lot 36) est
+  désormais exacte (lots 31/34/36/43) ;
+- 1606 tests verts / 2 skipped (+7) ; moteur 0.9.0 et SW v106 inchangés.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
