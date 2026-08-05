@@ -87,10 +87,16 @@
     next();
   }
 
-  function updateCrumb(spaceLabel, subLabel) {
+  function updateCrumb(spaceLabel, subLabel, active) {
     var el = document.querySelector('.vx-breadcrumb'); if (!el) return;
-    var h = '<span class="vx-crumb-root">Vertex</span><span aria-hidden="true">/</span><b></b>';
+    /* lot 55 : fil d'Ariane CLIQUABLE — le lien d'espace est dérivé du menu
+       latéral rendu (source unique, zéro duplication du registre nav). */
+    var navItem = active && document.querySelector('.vx-sidebar .vx-nav-item[data-nav-id="' + active + '"]');
+    var spaceHref = (navItem && navItem.getAttribute('href')) || '/';
+    var h = '<a class="vx-crumb-root" href="/">Vertex</a><span aria-hidden="true">/</span>' +
+      '<a class="vx-crumb-space"><b></b></a>';
     el.innerHTML = h;
+    el.querySelector('.vx-crumb-space').setAttribute('href', spaceHref);
     el.querySelector('b').textContent = spaceLabel;
     if (subLabel) {
       var sep = document.createElement('span'); sep.setAttribute('aria-hidden', 'true'); sep.textContent = '/';
@@ -183,7 +189,7 @@
         main.setAttribute('data-space', frag.getAttribute('data-active') || '');
         main.setAttribute('data-page-label', frag.getAttribute('data-page-label') || '');
         document.title = (frag.getAttribute('data-title') || 'Vertex') + ' · Vertex';
-        updateCrumb(frag.getAttribute('data-space-label') || '', frag.getAttribute('data-sub-label') || '');
+        updateCrumb(frag.getAttribute('data-space-label') || '', frag.getAttribute('data-sub-label') || '', frag.getAttribute('data-active') || '');
         updateActive(frag.getAttribute('data-active') || '');
 
         var finalHref = href;

@@ -662,6 +662,22 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   bougies lisibles échelle 95-115, visée + tooltip OHLC (capture) ;
   moteur 0.9.0 inchangé.
 
+## Lot 55 — livré (2026-08-05, arc « jusqu'au lot 60 » — connexions)
+
+- audit honnête d'abord : l'infrastructure de connexions était déjà bonne
+  (openAnalysis + délégation globale + contexte + tuiles KPI en liens) —
+  deux trous RÉELS trouvés et fermés centralement ;
+- fil d'Ariane CLIQUABLE : « Vertex » → `/`, segment d'espace → racine de
+  l'espace — rendu serveur (`_topbar`, href depuis PRIMARY_NAV) ET crumb
+  reconstruit par le routeur SPA (href dérivé du menu latéral rendu,
+  zéro duplication) ; CSS survol discret ;
+- retour contextuel §15 complété : les 8 espaces canoniques couverts
+  (`/options` et `/journal` manquaient — chemin brut affiché avant) ;
+- preuves : 5 tests rouges→verts ; suite 1655/2 skipped ; RC outillée GO
+  0 défaut sous SW v112 ; parcours navigateur RÉEL : fiche AAPL → clic
+  « Analyse » → /analysis ; crumb SPA (MSFT) garde ses liens ; 0 erreur
+  console ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
