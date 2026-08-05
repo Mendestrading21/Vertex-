@@ -71,5 +71,45 @@ def closes_after_date(log, sym, date):
     return [e['close'] for e in rows if e.get('date') and e['date'] > date]
 
 
-__all__ = ['empty_log', 'record_close', 'closes_after_date',
+def merge_log(current, imported):
+    """RESTAURATION par rejeu (LOT 46) : n'ajoute que les séances (symbole,
+    date) ABSENTES du log local — la clôture LOCALE gagne toujours (le scan
+    local est l'observation de référence, jamais remplacée par une archive).
+    Entrées invalides (date malformée, clôture non finie ou ≤ 0, non-dict,
+    liste manquante) comptées, jamais fatales. Retourne (merged, stats)."""
+    cur = current if isinstance(current, dict) else empty_log()
+    out = {'schema': cur.get('schema', SCHEMA),
+           'symbols': {k: list(v) for k, v in (cur.get('symbols') or {}).items()}}
+    stats = {'added_sessions': 0, 'skipped_sessions': 0, 'corrupted_entries': 0}
+    imp = imported if isinstance(imported, dict) else {}
+    symbols = imp.get('symbols')
+    if not isinstance(symbols, dict):
+        if symbols not in (None, {}):
+            stats['corrupted_entries'] += 1
+        return out, stats
+    for sym, rows in sorted(symbols.items()):
+        s = str(sym or '').upper()
+        if not s or not isinstance(rows, list):
+            stats['corrupted_entries'] += 1
+            continue
+        existing = {e.get('date') for e in out['symbols'].get(s, [])
+                    if isinstance(e, dict)}
+        for e in rows:
+            if not isinstance(e, dict):
+                stats['corrupted_entries'] += 1
+                continue
+            date, px = e.get('date'), _num(e.get('close'))
+            if not _valid_date(date) or px is None or px <= 0:
+                stats['corrupted_entries'] += 1
+                continue
+            if date in existing:
+                stats['skipped_sessions'] += 1
+                continue
+            out = record_close(out, s, date, px)
+            existing.add(date)
+            stats['added_sessions'] += 1
+    return out, stats
+
+
+__all__ = ['empty_log', 'record_close', 'closes_after_date', 'merge_log',
            'SESSIONS_FILE', 'MAX_SESSIONS']

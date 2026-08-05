@@ -376,15 +376,28 @@ def api_skyler_memory_import():
     if not isinstance(imported, dict):
         return jsonify({'ok': False, 'error': 'memoire_absente',
                         'note': 'le bundle ne contient pas de magasin mémoire'}), 400
+    from vertex.engines import session_log as _slog
+    from vertex.engines import skyler_journal as _sj
     current = _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory()
     merged, stats = _dm.merge_memory(current, imported)
     _persist.save_json(_dm.MEMORY_FILE, merged)
+    # LOT 46 : le même bundle restaure aussi les séances datées et le journal
+    # de calibration — la donnée LOCALE gagne toujours (rejeu honnête).
+    cur_slog = _persist.load_json(_slog.SESSIONS_FILE, None) or _slog.empty_log()
+    merged_slog, s_stats = _slog.merge_log(cur_slog, bundle.get('sessions'))
+    _persist.save_json(_slog.SESSIONS_FILE, merged_slog)
+    cur_j = _persist.load_json(_sj.JOURNAL_FILE, []) or []
+    merged_j, j_stats = _sj.merge_journal(cur_j, bundle.get('journal'))
+    _persist.save_json(_sj.JOURNAL_FILE, merged_j)
+    stats['sessions'] = s_stats
+    stats['journal'] = j_stats
     return jsonify({'ok': True, 'stats': stats,
                     'ledger_health': _dm.ledger_health(merged),
                     'versions_bundle': bundle.get('versions'),
-                    'note': 'restauration par rejeu append-only — l’historique '
-                            'local gagne toujours ; périmètre : ledger mémoire '
-                            'uniquement (séances et journal au backlog)'})
+                    'note': 'restauration par rejeu — l’historique local gagne '
+                            'toujours (décisions append-only, séances et journal '
+                            'jamais remplacés) ; périmètre complet : mémoire + '
+                            'séances + journal'})
 
 
 @bp.route('/api/skyler/memory/cell/<group>/<key>')
