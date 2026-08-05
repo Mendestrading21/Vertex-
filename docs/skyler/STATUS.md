@@ -381,6 +381,19 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - couverture HTTP adversariale complète des chemins Skyler ;
 - 1572 tests verts / 2 skipped (+7) ; moteur 0.9.0 et SW v103 inchangés.
 
+## Lot 37 — livré (2026-08-05, travail continu)
+
+- carte Mémoire : fraîcheur du ledger dans l'en-tête — « dernière
+  décision figée : YYYY-MM-DD (J-N) », trois états honnêtes (ledger vide
+  → « aucune décision figée », date absente → n/d, date réelle → J-N en
+  différence de dates calendaires UTC, J-0 = aujourd'hui) ;
+- **défaut réel attrapé par la preuve navigateur** : la première version
+  affichait J-1 pour une décision d'aujourd'hui (arrondi d'heures) —
+  corrigé en différence de minuits UTC, re-vérifié live « J-0 » ;
+- SW v103 → v104 + 4 gardiens ; RC courte GO (8 pages, 0 erreur,
+  client-log 0, v104 servi) ;
+- 1576 tests verts / 2 skipped (+4) ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
