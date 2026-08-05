@@ -146,6 +146,16 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   records) — limite n° 1 du lot 10 levée ;
 - 1410 tests verts / 2 skipped (+12).
 
+## Lot 16 — livré (2026-08-05, travail continu)
+
+- surfaçage UI : carte « Mémoire décisionnelle » sur Performance (ledger par
+  version de moteur, biais badgés, propositions en attente humaine, état vide
+  honnête) + section « Dépendances cachées » sur Portefeuille → Risque
+  (paires ≥ 2 liens, questions de recherche) ;
+- SW **v95** + 4 gardiens à jour ; preuve navigateur 390/1440 : 0 erreur
+  console, 0 overflow, captures `docs/skyler/baseline/lot16-*.png` ;
+- 1416 tests verts / 2 skipped (+6).
+
 ## Programme Institutional+ — TERMINÉ (RC sur intégration)
 
 Les 12 lots + audit sont livrés sur `integration/vertex-skyler-v2`.

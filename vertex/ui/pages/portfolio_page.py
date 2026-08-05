@@ -794,6 +794,33 @@ async function renderRisk(){
   }catch(e){$('pf-body').innerHTML=VX.states.error('Moteur de risque injoignable : '+e.message);}
 }
 
+/* Dépendances cachées (LOT 16) : knowledge graph — paires partageant AU MOINS
+   deux liens indépendants (secteur déclaré, co-mouvement, même catalyseur).
+   Lecture seule de /api/skyler/graph ; relations non documentées = questions
+   de recherche, jamais des arêtes inventées. */
+async function renderHiddenDeps(){
+  let d=null;
+  try{d=await VX.fetch('/api/skyler/graph',{ttl:180000});}catch(e){return;}
+  if(!d)return;
+  document.querySelectorAll('[aria-label="Dépendances cachées"]').forEach(n=>n.remove());
+  const host=document.createElement('section');
+  host.className='vx-card vx-mt3';host.setAttribute('aria-label','Dépendances cachées');
+  const deps=d.hidden_dependencies||[];
+  const qs=(d.research_questions||[]).slice(0,6);
+  const depHtml=deps.length?deps.map(x=>'<div class="vx-insight" data-tone="risk"><b>'
+      +esc((x.symbols||[]).join(' + '))+'</b> — '+esc(x.basis||'')
+      +'<div class="vx-meta">'+(x.links||[]).map(l=>esc(l.relation)+' : '+esc(l.basis)).join(' · ')+'</div></div>').join('')
+    :'<div class="vx-meta">Aucune paire avec au moins 2 liens indépendants — rien de caché dans les relations tracées à ce jour.</div>';
+  const qHtml=qs.length?('<div class="vx-kpi-label vx-mt2">Questions de recherche (relations non documentées — jamais inventées)</div>'
+    +qs.map(x=>'<div class="vx-meta">· '+esc(x.symbol)+' — '+esc(x.question)+'</div>').join('')):'';
+  host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Dépendances cachées (Knowledge Graph)</span>'
+    +'<span class="vx-chart-question">Deux titres partagent-ils une exposition non évidente&nbsp;?</span></div>'
+    +depHtml+qHtml
+    +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'knowledge graph (secteur déclaré · co-mouvement · catalyseurs datés · desk)','delayed')
+    +(d.demo?' · <span class="vx-badge" data-tone="neutral">DÉMO</span>':'')+'</div>';
+  $('pf-body').appendChild(host);
+}
+
 /* ═══ WATCHLIST (+ suivis + favoris §18) ═══ */
 async function renderStress(){
   /* Stress-scénarios (±X % marché) sur les actions déclarées, prix réels du scan.
@@ -901,7 +928,7 @@ async function renderDiscipline(){
   $('pf-body').appendChild(host);
 }
 const RENDER={team:renderSynthese,positions:renderPositions,performance:renderPerformance,
-  options:renderOptions,risk:async function(){await renderRisk();await renderStress();await renderDiscipline();},watchlist:renderWatchlist};
+  options:renderOptions,risk:async function(){await renderRisk();await renderStress();await renderDiscipline();await renderHiddenDeps();},watchlist:renderWatchlist};
 async function pfFresh(){try{
   const el=$('pf-fresh');if(!el||!window.VX||!VX.freshness)return;
   let pk=VX.fetch.peek('/api/session/manifest');
