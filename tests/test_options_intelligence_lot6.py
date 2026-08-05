@@ -181,3 +181,12 @@ def test_scanner_route():
             scan_state.pop('options_board', None)
         else:
             scan_state['options_board'] = saved
+
+
+def test_options_leaps_view_has_universe_scanner():
+    """Gardien LOT 8c : la vue LEAPS expose le scanner par univers."""
+    import terminal
+    body = terminal.app.test_client().get('/options?view=leaps').get_data(as_text=True)
+    assert 'vx-sc-out' in body
+    assert 'options-scanner.js' in body
+    assert 'TACTICAL' in body and 'SWING' in body
