@@ -7,7 +7,13 @@
  *     comme documenté au lot 27) ;
  *   - 0 pageerror (exception JS non rattrapée) ;
  *   - HTTP 200 par page ; /healthz ok ; /api/client-log à 0 ;
- *   - service worker courant servi (td-shell-vNNN affiché pour preuve).
+ *   - service worker courant servi (td-shell-vNNN affiché pour preuve) ;
+ *   - PARCOURS MÉMOIRE (LOT 41) : une décision démo est déclenchée
+ *     (/api/skyler/AAPL), puis la vue post-mortem /memory/<id> du record
+ *     figé est vérifiée en vrai navigateur (200, contenu, 0 erreur
+ *     console) et la vue cellule /memory/cell/… d'une cellule existante
+ *     si le magasin en publie une — sinon le 404 LISIBLE est vérifié et
+ *     DIT (jamais un état inventé).
  *
  * Usage : serveur démo lancé (DEMO=1 NO_IBKR=1 START_ON_IMPORT=1), puis
  *   NODE_PATH=/opt/node22/lib/node_modules node tools/rc_short_audit.js
@@ -80,6 +86,57 @@ const NOISE = [/net::ERR_ABORTED/, /fonts\.googleapis\.com/, /fonts\.gstatic\.co
   }, BASE);
   console.log(`sw.js           ${sw}`);
   if (!sw) defects.push('/sw.js → aucun td-shell-vNNN trouvé');
+
+  // ─── Parcours mémoire (LOT 41) : décision → record figé → cellule ───
+  const memInfo = await page.evaluate(async (base) => {
+    await fetch(base + '/api/skyler/AAPL');       // fige une décision démo
+    const r = await fetch(base + '/api/skyler/memory');
+    const d = await r.json();
+    const ds = d.decisions || [];
+    const last = ds.length ? ds[ds.length - 1] : null;
+    const cc = d.calibration_by_context || {};
+    let cell = null;
+    for (const g of ['by_level', 'by_decision', 'by_regime',
+                     'by_catalyst', 'by_catalyst_type']) {
+      const keys = Object.keys(cc[g] || {});
+      if (keys.length) { cell = g + '/' + encodeURIComponent(keys[0]); break; }
+    }
+    return { id: last ? last.decision_id : null, cell };
+  }, BASE);
+
+  async function visit(path, expect, mustContain) {
+    const errs = [];
+    const onC = (m) => {
+      if (m.type() === 'error' && !NOISE.some((r) => r.test(m.text()))) errs.push(m.text());
+    };
+    page.on('console', onC);
+    const resp = await page.goto(BASE + path, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.waitForTimeout(1200);
+    const status = resp ? resp.status() : 0;
+    const body = await page.evaluate(() => document.body.innerText);
+    page.off('console', onC);
+    console.log(`${path.slice(0, 40).padEnd(40)} HTTP ${status}  console_err=${errs.length}`);
+    if (status !== expect) defects.push(`${path} → HTTP ${status} (attendu ${expect})`);
+    // innerText reflète la casse AFFICHÉE (text-transform CSS) → comparaison
+    // insensible à la casse
+    if (mustContain && !body.toLowerCase().includes(mustContain.toLowerCase())) {
+      defects.push(`${path} → « ${mustContain} » absent`);
+    }
+    for (const e of errs) defects.push(`${path} → console: ${e}`);
+  }
+
+  if (memInfo.id) {
+    await visit('/memory/' + encodeURIComponent(memInfo.id), 200, 'Décision figée');
+  } else {
+    defects.push('/api/skyler/memory → aucun record figé après /api/skyler/AAPL');
+  }
+  if (memInfo.cell) {
+    await visit('/memory/cell/' + memInfo.cell, 200, 'Cellule');
+  } else {
+    // aucune cellule mesurée (honnête en démo) → le 404 LISIBLE est vérifié
+    await visit('/memory/cell/by_level/AUCUNE_CELLULE', 404, 'Cellule inconnue');
+    console.log('(aucune cellule mesurée publiée — 404 lisible vérifié à la place)');
+  }
 
   await browser.close();
   if (defects.length) {

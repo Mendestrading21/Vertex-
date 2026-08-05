@@ -472,6 +472,18 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - SW v105 → v106 + 4 gardiens ; RC courte GO (v106 servi) + 404 live ;
 - 1593 tests verts / 2 skipped (+7) ; moteur 0.9.0 inchangé.
 
+## Lot 41 — livré (2026-08-05, travail continu)
+
+- `tools/rc_short_audit.js` étendu au PARCOURS MÉMOIRE : après les
+  8 pages, l'audit fige une décision démo (/api/skyler/AAPL), vérifie
+  `/memory/<id>` en vrai navigateur (200, « Décision figée », 0 erreur
+  console) puis la vue cellule — cellule existante → 200, sinon le 404
+  LISIBLE est vérifié et DIT (démo : aucune cellule mesurée, honnête) ;
+- défaut d'OUTIL trouvé et corrigé : innerText reflète la casse CSS
+  (uppercase) → comparaison insensible à la casse, documentée ;
+- RC courte GO — 0 défaut produit ; 1593 tests verts / 2 skipped
+  (inchangé — outil seulement) ; moteur 0.9.0 et SW v106 inchangés.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
