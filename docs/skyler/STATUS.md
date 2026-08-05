@@ -53,8 +53,8 @@ Références avancées ajoutées :
 
 | Étape | Statut | Objectif | Rapport attendu |
 |---|---|---|---|
-| Lot 10 — Mémoire et discipline décisionnelle | **À EXÉCUTER** | décisions immuables, classification des erreurs, biais récurrents, amélioration humaine contrôlée | `docs/refactor/validation/SKYLER-LOT-10.md` |
-| Lot 11 — Knowledge Graph institutionnel | BLOQUÉ par Lot 10 | relations sociétés/secteurs/thèmes/catalyseurs/risques, propagation explicable | `docs/refactor/validation/SKYLER-LOT-11.md` |
+| Lot 10 — Mémoire et discipline décisionnelle | ✅ FAIT — en attente de validation humaine | décisions immuables, classification des erreurs, biais récurrents, amélioration humaine contrôlée | `docs/refactor/validation/SKYLER-LOT-10.md` |
+| Lot 11 — Knowledge Graph institutionnel | BLOQUÉ par validation du Lot 10 | relations sociétés/secteurs/thèmes/catalyseurs/risques, propagation explicable | `docs/refactor/validation/SKYLER-LOT-11.md` |
 | Lot 12 — Red-team et RC finale | BLOQUÉ par Lot 11 | stress adversarial, audit math/données/sécurité/UI, release candidate | `docs/refactor/validation/SKYLER-LOT-12.md` |
 
 ## Agents Institutional+
@@ -80,22 +80,25 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - Aucune note S/S+ sans red-team indépendante.
 - Aucune recalibration ou modification de Constitution automatique.
 
+## Lot 10 — livré (2026-08-05)
+
+- moteur `vertex/engines/decision_memory.py` : ledger immuable par version de
+  moteur (gel de 31 champs), anti-look-ahead par empreinte de série, résultats
+  aux horizons déclarés (5/20/60 séances, catalyseur estimé étiqueté, thèse et
+  option honnêtement NON_APPLICABLE), taxonomie d'erreurs déterministe,
+  10 biais surveillés, recommandations `EN_ATTENTE_VALIDATION_HUMAINE` ;
+- routes : gel fail-safe dans `/api/skyler/<sym>` + `GET /api/skyler/memory` ;
+- persistance runtime `skyler_memory.json` (gitignorée, bornée) ;
+- 1332 tests verts / 2 skipped (+32) ; SW inchangé v94 (aucune UI touchée) ;
+- interdictions respectées : pas de Knowledge Graph, pas d'UI, pas de
+  modification automatique des poids/Constitution, `main` intacte, aucun ordre.
+
 ## Prochaine action unique
 
-Exécuter uniquement :
+Valider humainement le Lot 10 (PR brouillon `agent/skyler-v2-lot-10-decision-memory`), puis exécuter uniquement :
 
 ```text
-/vertex-skyler-v2 lot-10
+/vertex-skyler-v2 lot-11
 ```
-
-Périmètre : mémoire décisionnelle, immutabilité, résultats par horizon, classification des erreurs et discipline comportementale.
-
-Interdictions du Lot 10 :
-
-- ne pas commencer le Knowledge Graph ;
-- ne pas refaire l’UI ;
-- ne pas modifier automatiquement les poids ou la Constitution ;
-- ne pas fusionner dans `main` ;
-- ne pas exécuter le Lot 11.
 
 **Arrêt après le Lot 10 — validation humaine requise.**

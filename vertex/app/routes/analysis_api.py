@@ -153,6 +153,21 @@ def api_skyler(sym):
             _persist.save_json(_sj.JOURNAL_FILE, j2)
     except Exception:
         pass                                   # le journal ne casse jamais la décision
+    # Mémoire décisionnelle institutionnelle (LOT 10) : chaque décision servie
+    # est FIGÉE avec sa version de moteur, ses données du moment et l'empreinte
+    # de série anti-look-ahead — append-only, jamais réécrite.
+    try:
+        import time as _time
+        from vertex.engines import decision_memory as _dm
+        from vertex.services import persist as _persist
+        mem = _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory()
+        rec = _dm.freeze(decision, packet=packet, price=detail.get('price'),
+                         closes=closes, portfolio_ctx=pctx, now=round(_time.time()))
+        mem2 = _dm.append_decision(mem, rec)
+        if mem2 != mem:
+            _persist.save_json(_dm.MEMORY_FILE, mem2)
+    except Exception:
+        pass                                   # la mémoire ne casse jamais la décision
     return jsonify({'symbol': sym, 'as_of': as_of, 'demo': _demo,
                     'packet': packet, 'decision': decision})
 
@@ -191,6 +206,52 @@ def api_skyler_calibration():
     from vertex.app.config import DEMO_MODE as _demo
     out['demo'] = _demo
     return jsonify(out)
+
+
+@bp.route('/api/skyler/memory')
+def api_skyler_memory():
+    """MÉMOIRE DÉCISIONNELLE INSTITUTIONNELLE (LOT 10) : décisions figées
+    (immuables, séparées par version de moteur), résultats mesurés UNIQUEMENT
+    aux horizons déclarés depuis les séances strictement postérieures (aucun
+    look-ahead), classification déterministe des erreurs, biais récurrents et
+    recommandations en attente de validation humaine. Lecture seule."""
+    from vertex.data import series as _series
+    from vertex.engines import decision_memory as _dm
+    from vertex.services import persist as _persist
+    from vertex.app.config import DEMO_MODE as _demo
+    mem = _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory()
+    # Passe de mesure : séances postérieures retrouvées par empreinte de série —
+    # série non alignée = non mesurable (dit), jamais deviné.
+    changed = False
+    detail_all = scan_state.get('detail') or {}
+    for r in mem['decisions']:
+        closes, _src = _series.closes(detail_all.get(r.get('symbol')) or {})
+        after = _dm.sessions_after(closes, r.get('tail_at_decision'))
+        if after:
+            mem2 = _dm.append_outcome(mem, _dm.measure(r, after))
+            if mem2 != mem:
+                mem, changed = mem2, True
+    if changed:
+        try:
+            _persist.save_json(_dm.MEMORY_FILE, mem)
+        except Exception:
+            pass
+    patterns = _dm.detect_patterns(mem)
+    aggs = _dm.aggregates(mem)
+    return jsonify({
+        'generator': 'deterministic',
+        'as_of': scan_state.get('scan_ts_h') or scan_state.get('updated'),
+        'demo': _demo,
+        'n_decisions': len(mem['decisions']),
+        'n_outcomes': len(mem['outcomes']),
+        'decisions': mem['decisions'][-50:],
+        'outcomes': mem['outcomes'][-50:],
+        'aggregates': aggs,
+        'patterns': patterns,
+        'recommendations': _dm.recommendations(patterns, aggs),
+        'note': 'Mémoire immuable — décisions historiques jamais réécrites, résultats '
+                'séparés par version de moteur, aucune recalibration automatique.',
+    })
 
 
 @bp.route('/api/events/<sym>')
