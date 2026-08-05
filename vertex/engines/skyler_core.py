@@ -1,20 +1,27 @@
-"""vertex/engines/skyler_core.py — SKYLER CORE (SKYLER LOT 5).
+"""vertex/engines/skyler_core.py — SKYLER CORE (LOT 5, étendu 0.2.0 → 0.7.0).
 
-Pipeline canonique (SKYLER_ARCHITECTURE.md) :
+Pipeline canonique (SKYLER_ARCHITECTURE.md + DECISION_ENGINE.md) :
 
-  contextes déjà calculés (technique, marché, catalyseurs, anomalies)
+  contextes déjà calculés (technique, marché, catalyseurs, anomalies, options,
+  portefeuille) + revue red-team produite (red_team.review)
     → SkylerPacket typé (contradictions, inconnues, freshness floor, audit trail)
     → hard gates (PRIORITAIRES — le score ne les contourne jamais)
-    → score /40 depuis les blocs de la Constitution V2
+    → score /40 (Constitution V2) plafonné par blocs insuffisants ET par
+      l'absence de red-team pour S/S+ (apply_red_team_rule)
     → scénarios (niveaux RÉELS du plan moteur ; probabilité None tant qu'aucun
       modèle calibré — jamais un chiffre arbitraire)
-    → SkylerDecision déterministe (vocabulaire canonique, sans Claude).
+    → SkylerDecision déterministe (vocabulaire canonique, sans Claude) +
+      état opérationnel dérivé (operational_state) +
+      confiance factorisée (confidence : data_quality × agreement ×
+      robustness mesurée par perturbation × calibration réelle par contexte).
 
 Règles d'honnêteté :
   - un contexte non branché est INSUFFISANT (0 point, listé), jamais rempli ;
   - Skyler CONSOMME le verdict canonique existant (decision_stack) et ne le
     contredit jamais vers le haut — désaccord = contradiction tracée + prudence ;
-  - chaque point de score porte sa justification (`basis`) ;
+  - chaque point de score et chaque facteur de confiance portent leur `basis` ;
+  - tout changement de règle bumpe ENGINE_VERSION (historique des décisions
+    figé PAR version dans la mémoire — jamais recalculé) ;
   - fonctions PURES, déterministes, JSON-sérialisables. Aucun ordre.
 """
 from __future__ import annotations
