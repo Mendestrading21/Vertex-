@@ -26,7 +26,8 @@
 | 20 | `SKYLER-LOT-20.md` | Drill-down + post-mortem par décision (containment des scénarios) | 0.6.0 | v97 | 1463 | GO |
 | 21 | `SKYLER-LOT-21.md` | Repricing spot×IV red-team (pricer BS canonique, F3 chiffré) | 0.6.0 | v97 | 1472 | GO |
 | 22 | `SKYLER-LOT-22.md` | Calibration PAR CONTEXTE (§13 — cellule niveau/décision, portée explicite) | 0.7.0 | v97 | 1481 | GO |
-| 23 | `SKYLER-LOT-23.md` | Vue lisible du post-mortem (`/memory/<id>`, XSS échappé) + cet index | 0.7.0 | v98 | (voir rapport) | GO |
+| 23 | `SKYLER-LOT-23.md` | Vue lisible du post-mortem (`/memory/<id>`, XSS échappé) + cet index | 0.7.0 | v98 | 1488 | GO |
+| 24 | `SKYLER-LOT-24.md` | Exposition sectorielle du portefeuille + concentration sectorielle des groupes | 0.7.0 | v99 | 1498 | GO |
 
 ## Architecture atteinte
 

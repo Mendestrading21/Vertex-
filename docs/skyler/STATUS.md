@@ -229,6 +229,15 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   10 → 23 (objectifs, versions moteur/SW, tests, verdicts) + architecture ;
 - 1488 tests verts / 2 skipped (+7).
 
+## Lot 24 — livré (2026-08-05, travail continu)
+
+- `sector_exposure` dans le graphe : positions réelles agrégées par secteur
+  déclaré, poids en % SEULEMENT si toutes les positions sont cotées (sinon
+  None avec raison — jamais estimé), hors watchlist étiqueté ; groupes cachés
+  mono-secteur flaggés **CONCENTRATION SECTORIELLE** ; affiché sur
+  Portefeuille → Risque ; SW **v99** ; navigateur prouvé (0 erreur console) ;
+- 1498 tests verts / 2 skipped (+10).
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
