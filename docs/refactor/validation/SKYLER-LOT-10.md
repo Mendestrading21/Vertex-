@@ -4,7 +4,7 @@
 > Branche : `agent/skyler-v2-lot-10-decision-memory`  
 > Base : `integration/vertex-skyler-v2`  
 > SHA avant : `d9b5221`  
-> SHA après : `2192691`  
+> SHA après : `f4e4183` (commit unique du lot)  
 > PR : brouillon vers `integration/vertex-skyler-v2`
 
 ## 1. Constat
