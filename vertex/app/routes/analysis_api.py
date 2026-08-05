@@ -144,9 +144,19 @@ def api_skyler(sym):
                                as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx)
     rt_review = _rt.review(packet0, _sk.score40(packet0))
     rt_input = {'complete': rt_review['complete'], 'basis': rt_review['basis']}
+    # Calibration RÉELLE (LOT 19) : facteur depuis les résultats mesurés de la
+    # mémoire pour CETTE version de moteur — fail-safe, jamais inventé.
+    calib = None
+    try:
+        from vertex.engines import decision_memory as _dmc
+        from vertex.services import persist as _pc
+        _memc = _pc.load_json(_dmc.MEMORY_FILE, None)
+        calib = _dmc.calibration_factor(_memc or _dmc.empty_memory(), _sk.ENGINE_VERSION)
+    except Exception:
+        calib = None
     decision = _sk.decide(sym, detail, market=market, events=ev, anomaly=ano,
                           as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
-                          red_team=rt_input)
+                          red_team=rt_input, calibration=calib)
     packet = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
                               as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
                               red_team=rt_input)

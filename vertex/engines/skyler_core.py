@@ -23,7 +23,8 @@ SCHEMA_VERSION = 1
 # 0.2.0 : règle red-team S/S+ · 0.3.0 : état opérationnel + confiance factorisée
 # 0.4.0 : la revue red-team PRODUITE (red_team.review) entre dans la décision
 # 0.5.0 : robustness MESURÉE par analyse de perturbation (liste fixe, déterministe)
-ENGINE_VERSION = '0.5.0'
+# 0.6.0 : calibration RÉELLE (scenario hit rate de la mémoire, par version, bornée)
+ENGINE_VERSION = '0.6.0'
 
 PERTURBATIONS = ('score_technique_-10', 'score_technique_+10', 'rr_-0.5', 'rr_+0.5',
                  'regime_confidence_-0.2', 'regime_confidence_+0.2',
@@ -59,7 +60,7 @@ def operational_state(decision, gates, plan):
     return 'SURVEILLER', 'décision %s — surveillance par défaut' % (decision or 'n/d')
 
 
-def confidence(packet, score, robustness=None):
+def confidence(packet, score, robustness=None, calibration=None):
     """DECISION_ENGINE §7 : confidence = data_quality × agreement × robustness ×
     calibration. Chaque facteur borné [0,1] avec base explicite ; plafonds
     obligatoires (régime UNKNOWN ≤ 0,55 ; conflit de sources ≤ 0,50 ;
@@ -88,9 +89,11 @@ def confidence(packet, score, robustness=None):
         'agreement': {'value': round(max(0.0, 1.0 - 0.2 * n_contra), 3),
                       'basis': '%d contradiction(s) tracée(s) — −0,20 chacune' % n_contra},
         'robustness': rob,
-        'calibration': {'value': 0.5,
-                        'basis': 'aucun historique de calibration — facteur plafonné à 0,50, '
-                                 'jamais supposé calibré'},
+        'calibration': ({'value': calibration['value'], 'basis': calibration['basis']}
+                        if calibration is not None and calibration.get('value') is not None else
+                        {'value': 0.5,
+                         'basis': 'aucun historique de calibration — facteur plafonné à 0,50, '
+                                  'jamais supposé calibré'}),
     }
     value = 1.0
     for f in factors.values():
@@ -535,7 +538,8 @@ def perturbation_analysis(base_decision, sym, detail, market=None, events=None,
 
 
 def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
-           demo=False, options_ctx=None, portfolio_ctx=None, red_team=None):
+           demo=False, options_ctx=None, portfolio_ctx=None, red_team=None,
+           calibration=None):
     packet = build_packet(sym, detail, market=market, events=events,
                           anomaly=anomaly, as_of=as_of, demo=demo,
                           options_ctx=options_ctx, portfolio_ctx=portfolio_ctx,
@@ -569,7 +573,7 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
                                  anomaly=anomaly, as_of=as_of, demo=demo,
                                  options_ctx=options_ctx, portfolio_ctx=portfolio_ctx,
                                  red_team=red_team)
-    conf = confidence(packet, score, robustness=pert)
+    conf = confidence(packet, score, robustness=pert, calibration=calibration)
     audit.append({'step': 'operational_state', 'result': op_state})
     audit.append({'step': 'perturbation', 'result': pert['value']})
     entry, stop = plan.get('entry'), plan.get('stop')

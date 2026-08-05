@@ -179,6 +179,15 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   −10 points techniques (fragilité détectée) ;
 - 1438 tests verts / 2 skipped (+11) ; SW v96 inchangé.
 
+## Lot 19 — livré (2026-08-05, travail continu)
+
+- moteur **0.6.0** : la boucle décision → mémoire → confiance est FERMÉE —
+  `calibration_factor` = scenario hit rate des résultats MESURÉS de la mémoire
+  pour la version courante uniquement (0,50 + 0,40 × hit rate, borné
+  [0,50, 0,90], jamais 1,0) ; échantillon < 20 mesures → 0,50 « insuffisant »,
+  jamais inventé ; route fail-safe ; versions jamais mélangées (testé) ;
+- 1450 tests verts / 2 skipped (+12) ; SW v96 inchangé.
+
 ## Programme Institutional+ — TERMINÉ (RC sur intégration)
 
 Les 12 lots + audit sont livrés sur `integration/vertex-skyler-v2`.
