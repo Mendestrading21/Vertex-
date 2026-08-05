@@ -303,6 +303,19 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   (non-consommation par la sélection prouvée par test) ;
 - 1531 tests verts / 2 skipped (+9) ; SW v101 inchangé (moteur/API).
 
+## Lot 31 — livré (2026-08-05, travail continu)
+
+- batterie de fuzz DÉTERMINISTE (listes fixes, zéro aléatoire) sur les
+  chemins des lots 26–30 : propagate, calibration (globale/contexte/
+  sélection), freeze + catalyst_kind, export souverain ;
+- **7 crashs réels trouvés** (TypeError unhashable, AttributeError sur
+  magasins corrompus) et corrigés en REFUS HONNÊTES : nœud/contexte/kind
+  non-chaîne → []/scope global/bucket `inconnu`, entrées de magasin
+  non-dict ignorées, garde MAX_PATHS jamais désactivée ;
+- aucun bump de version (aucune règle ne change sur données valides —
+  prouvé par la suite inchangée) ; SW v101 inchangé ;
+- 1543 tests verts / 2 skipped (+12).
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

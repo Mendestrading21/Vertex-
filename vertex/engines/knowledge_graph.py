@@ -378,12 +378,26 @@ def propagate(graph, node_id, max_hops=2, max_paths=None):
     relation et la base de l'arête traversée. Nœud inconnu → liste vide.
     GARDE DE VOLUME : jamais plus de `max_paths` chemins (MAX_PATHS par
     défaut) — troncature DÉTERMINISTE (parcours trié) ; l'appelant compare
-    len(résultat) à la garde pour DIRE la troncature, jamais silencieuse."""
+    len(résultat) à la garde pour DIRE la troncature, jamais silencieuse.
+    Entrées dégénérées (nœud non-chaîne, max_hops inexploitable ou < 1)
+    → [] honnête ; max_paths inexploitable → garde par défaut, JAMAIS
+    désactivée."""
     g = graph or {}
+    if not isinstance(node_id, str):
+        return []
+    try:
+        max_hops = int(max_hops)
+    except (TypeError, ValueError):
+        return []
+    if max_hops < 1:
+        return []
     ids = {n['id'] for n in (g.get('nodes') or [])}
     if node_id not in ids:
         return []
-    limit = MAX_PATHS if max_paths is None else max(1, int(max_paths))
+    try:
+        limit = MAX_PATHS if max_paths is None else max(1, int(max_paths))
+    except (TypeError, ValueError):
+        limit = MAX_PATHS
     adj = {}
     for e in (g.get('edges') or []):
         adj.setdefault(e['src'], []).append((e['dst'], e))
