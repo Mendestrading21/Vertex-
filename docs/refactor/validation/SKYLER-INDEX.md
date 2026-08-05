@@ -50,6 +50,7 @@
 | 44 | `SKYLER-LOT-44.md` | Bilan consolidé n°2 (29→43) en tête de STATUS + bascule dite vers RC périodiques espacées (backlog code épuisé) | 0.9.0 | v106 | 1606 | GO |
 | RC1 | `SKYLER-RC-PERIODIQUE-1.md` | RC périodique n°1 — suite complète + audit navigateur 8 pages + parcours mémoire : GO, 0 défaut, baseline tenue | 0.9.0 | v106 | 1606 | GO |
 | RC2 | `SKYLER-RC-PERIODIQUE-2.md` | RC périodique n°2 — suite complète + audit navigateur 8 pages + parcours mémoire : GO, 0 défaut, baseline tenue | 0.9.0 | v106 | 1606 | GO |
+| RC3 | `SKYLER-RC-PERIODIQUE-3.md` | RC périodique n°3 — suite complète + audit navigateur 8 pages + parcours mémoire : GO, 0 défaut, baseline tenue | 0.9.0 | v106 | 1606 | GO |
 
 ## Architecture atteinte
 
