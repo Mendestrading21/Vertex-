@@ -547,6 +547,18 @@ async function loadMemory(){
       +vRows+'</tbody></table></div>'
       +'<div class="vx-kpi-label vx-mt2">Biais surveillés</div><div>'+pats+'</div>'
       +(recs?'<div class="vx-kpi-label vx-mt2">Propositions</div>'+recs:'')
+      +(function(){
+        const last=(d.decisions||[]).slice(-5).reverse();
+        if(!last.length)return '';
+        return '<div class="vx-kpi-label vx-mt2">Dernières décisions figées</div>'
+          +'<div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Titre</th><th>Décision</th><th>Moteur</th><th>Séance</th><th>Post-mortem</th></tr></thead><tbody>'
+          +last.map(r=>'<tr><td data-label="Titre"><b>'+esc(r.symbol)+'</b></td>'
+            +'<td data-label="Décision">'+esc(r.decision)+'</td>'
+            +'<td data-label="Moteur" class="vx-mono">'+esc(r.engine_version||'n/d')+'</td>'
+            +'<td data-label="Séance">'+esc(r.session_date||'n/d')+'</td>'
+            +'<td data-label="Post-mortem"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/api/skyler/memory/'+encodeURIComponent(r.decision_id)+'" target="_blank" rel="noopener">détail →</a></td></tr>').join('')
+          +'</tbody></table></div>';
+      })()
       +'<div class="vx-meta" style="margin-top:.35rem">Ledger immuable — les décisions historiques ne sont jamais réécrites ; résultats séparés par version de moteur ; biais inobservables sans trades réels dits INSUFFISANT.</div>';
   }catch(e){host.innerHTML='<div class="vx-error-banner">Mémoire injoignable : '+esc(e.message)+'</div>';}
 }
