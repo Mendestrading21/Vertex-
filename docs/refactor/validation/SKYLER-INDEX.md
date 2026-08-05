@@ -47,6 +47,7 @@
 | 41 | `SKYLER-LOT-41.md` | RC courte étendue au parcours mémoire (décision → /memory/<id> → cellule ou 404 lisible dit) — GO, défaut d'outil (casse CSS) corrigé | 0.9.0 | v106 | 1593 | GO |
 | 42 | `SKYLER-LOT-42.md` | Intégrité de l'export souverain (ledger_health embarqué + content_sha256 canonique vérifiable hors ligne) | 0.9.0 | v106 | 1599 | GO |
 | 43 | `SKYLER-LOT-43.md` | Fuzz clés encodées des routes cellule (2 routes, 0 défaut — trou de couverture du lot 36 fermé, non-interférence prouvée) | 0.9.0 | v106 | 1606 | GO |
+| 44 | `SKYLER-LOT-44.md` | Bilan consolidé n°2 (29→43) en tête de STATUS + bascule dite vers RC périodiques espacées (backlog code épuisé) | 0.9.0 | v106 | 1606 | GO |
 
 ## Architecture atteinte
 
