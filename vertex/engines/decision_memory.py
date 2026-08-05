@@ -338,6 +338,8 @@ def classify_error(record, return_pct, horizon_label):
 def _measured_class(mem, r):
     """Classe d'erreur du record au plus long horizon séance mesuré, ou None."""
     for o in mem.get('outcomes') or []:
+        if not isinstance(o, dict):        # magasin corrompu → entrée ignorée
+            continue
         if o.get('decision_id') == r.get('decision_id'):
             for h in ('H60', 'H20', 'H5'):
                 hz = (o.get('horizons') or {}).get(h) or {}
@@ -585,9 +587,11 @@ def _measured_hits(memory, engine_version):
     """(niveau, décision, régime, catalyseur?, kind, hit) pour chaque décision
     MESURÉE de cette version — régime et kind sont ceux FIGÉS au moment de la
     décision (None honnête pour les anciens records)."""
-    mem = memory or empty_memory()
+    mem = memory if isinstance(memory, dict) else empty_memory()
     out = []
     for r in mem.get('decisions') or []:
+        if not isinstance(r, dict):        # magasin corrompu → entrée ignorée
+            continue
         if r.get('engine_version') != engine_version:
             continue
         cls = _measured_class(mem, r)
@@ -622,17 +626,20 @@ def calibration_by_context(memory, engine_version):
     by_level, by_decision, by_regime, by_catalyst = {}, {}, {}, {}
     by_catalyst_type = {}
     for lv, dec, reg, cat, kind, hit in rows:
-        if lv:
+        # contexte non-chaîne (magasin corrompu) ≠ cellule — refus honnête
+        if lv and isinstance(lv, str):
             by_level.setdefault(lv, []).append(hit)
-        if dec:
+        if dec and isinstance(dec, str):
             by_decision.setdefault(dec, []).append(hit)
-        if reg:                                      # régime inconnu ≠ cellule
+        if reg and isinstance(reg, str):             # régime inconnu ≠ cellule
             by_regime.setdefault(reg, []).append(hit)
         by_catalyst.setdefault('avec_catalyseur' if cat else 'sans_catalyseur',
                                []).append(hit)
         if cat:                                      # type SEULEMENT si catalyseur
-            # kind absent (moteur < 0.9.0) → bucket `inconnu`, jamais deviné
-            by_catalyst_type.setdefault(kind or 'inconnu', []).append(hit)
+            # kind absent (moteur < 0.9.0) ou non-chaîne (magasin corrompu)
+            # → bucket `inconnu`, jamais deviné
+            key = kind if isinstance(kind, str) and kind else 'inconnu'
+            by_catalyst_type.setdefault(key, []).append(hit)
     return {'engine_version': engine_version,
             'n_measured_total': len(rows),
             'by_level': {lv: _context_cell(v, 'niveau=%s' % lv)
@@ -663,7 +670,8 @@ def calibration_factor_for(memory, engine_version, level=None, regime=None):
         ctx = calibration_by_context(memory, engine_version)
     for key, val, kind in (('by_level', level, 'level'),
                            ('by_regime', regime, 'regime')):
-        if not val or ctx is None:
+        # contexte non-chaîne (entrée dégénérée) → jamais une clé de cellule
+        if not val or not isinstance(val, str) or ctx is None:
             continue
         cell = (ctx.get(key) or {}).get(val)
         if cell and cell['status'] == 'MESURE':
