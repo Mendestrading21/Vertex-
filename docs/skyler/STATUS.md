@@ -246,6 +246,17 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   (`_measured_hits`), fallbacks red-team dédupliqués ; dette restante
   documentée et assumée.
 
+## Lot 26 — livré (2026-08-05, travail continu)
+
+- moteur **0.8.0** : calibration par RÉGIME — le record mémoire fige le label
+  du régime au moment de la décision (None honnête, anciens records
+  compatibles) ; découpe `by_regime` (mêmes règles d'échantillon, régime
+  inconnu ≠ cellule) ; sélection prioritaire documentée niveau → régime →
+  global avec portée explicite ; route passe le régime courant ; badges de
+  calibration par contexte dans la carte Mémoire (masqués sans mesures —
+  honnête) ; SW **v100** ;
+- 1508 tests verts / 2 skipped (+10).
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

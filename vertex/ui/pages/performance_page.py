@@ -545,6 +545,18 @@ async function loadMemory(){
       +(d.demo?'<span class="vx-badge" data-tone="neutral">DÉMO</span>':'')+'</div>'
       +'<div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Moteur</th><th>Décisions</th><th>Répartition</th><th>Mesurées</th><th>Erreurs classées</th></tr></thead><tbody>'
       +vRows+'</tbody></table></div>'
+      +(function(){
+        const cc=d.calibration_by_context||{};
+        const cells=[];
+        [['by_level','niveau'],['by_regime','régime'],['by_decision','décision']].forEach(([k,lbl])=>{
+          Object.entries(cc[k]||{}).forEach(([name,c])=>{
+            cells.push('<span class="vx-badge" data-tone="'+(c.status==='MESURE'?'positive':'neutral')
+              +'" title="'+esc(c.basis||'')+'" style="margin:.12rem .25rem .12rem 0">'
+              +esc(lbl)+'='+esc(name)+' : '+(c.status==='MESURE'?(c.value+' ('+c.n_measured+' mesures)'):'insuffisant ('+c.n_measured+')')+'</span>');
+          });
+        });
+        return cells.length?('<div class="vx-kpi-label vx-mt2">Calibration par contexte (niveau → régime → global)</div><div>'+cells.join('')+'</div>'):'';
+      })()
       +'<div class="vx-kpi-label vx-mt2">Biais surveillés</div><div>'+pats+'</div>'
       +(recs?'<div class="vx-kpi-label vx-mt2">Propositions</div>'+recs:'')
       +(function(){
