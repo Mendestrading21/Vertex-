@@ -67,4 +67,4 @@ Commande initiale obligatoire :
 
 Test utilisateur en conditions réelles (TWS) pendant que le journal de calibration accumule ; RC finale du lot 9 (Brier calibré, MAE/MFE, benchmark) quand les données ex post existent. `main` ne bouge que sur accord explicite.
 
-**Skyler V2 livré et fusionné (PR #16–#30) ; extensions X1 (classement de l’univers) et X2 (laboratoire d’évidence) en PR brouillons #31–#32, en attente de validation.**
+**Skyler V2 INTÉGRALEMENT livré, validé et fusionné : PR #16–#32 (audit, lots 0–9, sous-lots 8a–8e, extensions X1 classement d’univers et X2 laboratoire d’évidence). 1300 tests verts, SW v94. Prochaine étape : test utilisateur réel avec TWS.**
