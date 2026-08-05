@@ -199,6 +199,15 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   SW **v97** + gardiens prospectifs ; navigateur 390/1440 : 0 erreur console ;
 - 1463 tests verts / 2 skipped (+13).
 
+## Lot 21 — livré (2026-08-05, travail continu)
+
+- red-team **1.1.0** : Q05 chiffrée (repricing Black-Scholes CANONIQUE du
+  candidat à IV −10 pts — en démo réelle : « IV 34 % → 24 % : −30,6 % », F3
+  avec modèle et hypothèses) ; Q08 en grille stop/TP2/TP3 × IV −10/0/+10 avec
+  convexité vs action ; fallbacks F2 et UNANSWERED intacts ; entrées invalides
+  jamais chiffrées ; cas manuel BS gardé par test (ATM 1 an vol 20 % ≈ 7,97 %) ;
+- 1472 tests verts / 2 skipped (+9) ; SW v97 inchangé.
+
 ## Programme Institutional+ — TERMINÉ (RC sur intégration)
 
 Les 12 lots + audit sont livrés sur `integration/vertex-skyler-v2`.

@@ -16,7 +16,32 @@ elle consomme `complete`. Lecture seule, aucun ordre.
 """
 from __future__ import annotations
 
-RED_TEAM_VERSION = '1.0.0'
+import math
+
+# 1.1.0 : Q05/Q08 chiffrées par repricing Black-Scholes canonique quand le
+# candidat est complet (F3, modèle et hypothèses étiquetés) — fallback
+# qualitatif F2 sinon, UNANSWERED sans IV (inchangé).
+RED_TEAM_VERSION = '1.1.0'
+
+_REPRICE_RATE = 0.045    # taux fixe documenté de la revue (hypothèse listée)
+
+
+def _fin(x):
+    return (isinstance(x, (int, float)) and not isinstance(x, bool)
+            and math.isfinite(x))
+
+
+def _reprice_inputs(best):
+    """Entrées de repricing VALIDES ou None — NaN/négatifs/DTE nul refusés,
+    jamais chiffré sur une entrée douteuse."""
+    b = best or {}
+    spot, strike, dte, iv = b.get('spot'), b.get('strike'), b.get('dte'), b.get('iv')
+    right = 'C' if str(b.get('type') or 'CALL').upper().startswith('C') else 'P'
+    if not (_fin(spot) and spot > 0 and _fin(strike) and strike > 0
+            and _fin(dte) and dte > 0 and _fin(iv) and 0 < iv < 4):
+        return None
+    return {'spot': float(spot), 'strike': float(strike),
+            't_years': float(dte) / 365.0, 'iv': float(iv), 'right': right}
 
 _QUESTIONS = (
     ('Q01', 'Qu’est-ce qui est déjà dans le prix ?'),
@@ -122,11 +147,37 @@ def review(packet, score):
                      'Aucun catalyseur daté connu — la thèse ne dépend d’aucune date ; '
                      'un retard ne change rien, mais rien ne force non plus le mouvement.', 'F1'))
 
-    # Q05 — IV −10 pts : exige une IV réelle.
-    iv = (octx.get('best') or {}).get('iv')
-    if iv is None:
+    # Q05 — IV −10 pts : CHIFFRÉ par repricing BS canonique quand le candidat
+    # est complet (F3, modèle + hypothèses) ; qualitatif F2 sinon ; sans IV,
+    # UNANSWERED — jamais chiffré sur une entrée douteuse.
+    best_c = octx.get('best') or {}
+    iv = best_c.get('iv')
+    rp = _reprice_inputs(best_c)
+    if iv is None or not _fin(iv):
         qs.append(_q('Q05', q['Q05'], 'UNANSWERED',
                      reason='aucune IV réelle disponible (OptionsContext absent ou sans IV) — impact non calculable'))
+    elif rp is not None:
+        from vertex.options.scenario_pricer import bs_price
+        v_now = bs_price(rp['spot'], rp['strike'], rp['t_years'], rp['iv'],
+                         _REPRICE_RATE, rp['right'])
+        v_down = bs_price(rp['spot'], rp['strike'], rp['t_years'],
+                          max(0.01, rp['iv'] - 0.10), _REPRICE_RATE, rp['right'])
+        if v_now > 0 and math.isfinite(v_now) and math.isfinite(v_down):
+            impact = (v_down / v_now - 1) * 100
+            item = _q('Q05', q['Q05'], 'ANSWERED',
+                      'IV %.0f %% → %.0f %% : valeur théorique du candidat %+.1f %% '
+                      '(spot et échéance inchangés). Black-Scholes européen, taux fixe '
+                      '%.1f %%, dividende non modélisé — ESTIMATION, jamais un prix broker.'
+                      % (rp['iv'] * 100, max(0.01, rp['iv'] - 0.10) * 100, impact,
+                         _REPRICE_RATE * 100), 'F3')
+            item['model'] = 'black_scholes_european'
+            qs.append(item)
+        else:
+            qs.append(_q('Q05', q['Q05'], 'ANSWERED',
+                         'IV du meilleur candidat : %.0f %% — une contraction de 10 points '
+                         'réduit la valeur extrinsèque (vega) ; le contrat doit survivre à ce '
+                         'scénario sans que la thèse sous-jacente change.' % (iv * 100 if iv < 3 else iv),
+                         'F2'))
     else:
         qs.append(_q('Q05', q['Q05'], 'ANSWERED',
                      'IV du meilleur candidat : %.0f %% — une contraction de 10 points '
@@ -158,11 +209,47 @@ def review(packet, score):
                      (pctx.get('n_positions') or 0, pctx.get('top_symbol') or 'n/d',
                       pctx.get('top_weight_pct') or 0.0, pctx.get('hhi') or 0.0), 'F1'))
 
-    # Q08 — option vs action : exige un candidat réel noté.
+    # Q08 — option vs action : GRILLE spot pessimiste/probable/exceptionnel ×
+    # IV −10/0/+10 depuis les niveaux RÉELS du plan quand tout est disponible
+    # (F3) ; qualitatif F2 sinon ; sans candidat noté, UNANSWERED.
     best = octx.get('best') or {}
+    targets = {'stop': plan.get('stop'), 'TP2': plan.get('tp2'), 'TP3': plan.get('tp3')}
+    grid_ok = (rp is not None and all(_fin(v) and v > 0 for v in targets.values()))
     if best.get('quality') is None:
         qs.append(_q('Q08', q['Q08'], 'UNANSWERED',
                      reason='aucun candidat option noté — la comparaison action/option n’a pas de base'))
+    elif grid_ok:
+        from vertex.options.scenario_pricer import bs_price
+        v_now = bs_price(rp['spot'], rp['strike'], rp['t_years'], rp['iv'],
+                         _REPRICE_RATE, rp['right'])
+        if v_now > 0 and math.isfinite(v_now):
+            cells = []
+            for name, tgt in targets.items():
+                for div_lbl, div in (('IV−10', -0.10), ('IV0', 0.0), ('IV+10', 0.10)):
+                    v = bs_price(float(tgt), rp['strike'], rp['t_years'],
+                                 max(0.01, rp['iv'] + div), _REPRICE_RATE, rp['right'])
+                    cells.append('%s/%s %+.0f %%' % (name, div_lbl,
+                                                     (v / v_now - 1) * 100)
+                                 if math.isfinite(v) else '%s/%s n/d' % (name, div_lbl))
+            stock_tp2 = (targets['TP2'] / rp['spot'] - 1) * 100
+            opt_tp2 = (bs_price(targets['TP2'], rp['strike'], rp['t_years'],
+                                rp['iv'], _REPRICE_RATE, rp['right']) / v_now - 1) * 100
+            item = _q('Q08', q['Q08'], 'ANSWERED',
+                      'Grille spot × IV (temps inchangé, theta non consommé) : %s. '
+                      'Au TP2, option %+.0f %% vs action %+.0f %% — la convexité %s '
+                      'l’action sur le scénario probable. Black-Scholes européen, taux '
+                      'fixe %.1f %% — ESTIMATION.'
+                      % (' · '.join(cells), opt_tp2, stock_tp2,
+                         'bat' if opt_tp2 > stock_tp2 else 'ne bat pas',
+                         _REPRICE_RATE * 100), 'F3')
+            item['model'] = 'black_scholes_european'
+            qs.append(item)
+        else:
+            qs.append(_q('Q08', q['Q08'], 'ANSWERED',
+                         'Meilleur candidat %s qualité %s/100 — l’option ne bat l’action que si '
+                         'la convexité paie son theta et son spread ; sinon l’action reste le '
+                         'véhicule par défaut.' % (octx.get('universe') or 'n/d', best.get('quality')),
+                         'F2'))
     else:
         qs.append(_q('Q08', q['Q08'], 'ANSWERED',
                      'Meilleur candidat %s qualité %s/100 — l’option ne bat l’action que si '
