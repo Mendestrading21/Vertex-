@@ -123,3 +123,49 @@ def test_route_serves_context(tmp_path, monkeypatch):
                 scan_state.pop(k, None)
             else:
                 scan_state[k] = v
+
+
+def test_today_page_has_market_diff_card():
+    """Gardien LOT 8b : Aujourd'hui expose le diff marché serveur (MarketContext)."""
+    import terminal
+    body = terminal.app.test_client().get('/').get_data(as_text=True)
+    assert 'vx-mkt-diff' in body
+    assert 'loadMarketDiff' in body
+
+
+def test_real_state_shapes_dict_breadth_and_string_roro():
+    """Régression LOT 8b : dans l'état RÉEL du scan, market['breadth'] est un dict
+    ({'above200': 45, ...}) et roro une chaîne — jamais de TypeError, valeurs
+    numériques extraites honnêtement (above200), le reste coercé ou None."""
+    state = {
+        'scan_ts': 1000000.0, 'scan_ts_h': '10:00:00', 'updated': '10:00:00',
+        'market': {'regime': 'TREND', 'vix': 12.7, 'risk': 'Risk-Off',
+                   'breadth': {'above200': 45, 'above50': 50, 'adv': 8}},
+        'market_ctx': {'vix': 12.7, 'vix_band': 'calme', 'roro': 'RISK-OFF'},
+        'rows': [{'symbol': 'AAA'}],
+    }
+    ctx = MC.build(state, now=1000010.0)
+    assert ctx['dimensions']['breadth_ma200_pct']['value'] == 45.0
+    assert ctx['dimensions']['vix']['value'] == 12.7
+    assert ctx['dimensions']['roro']['value'] == 'RISK-OFF'   # catégorie, pas un ratio inventé
+    assert ctx['dimensions']['roro']['unit'] == 'category'
+    # et un prev portant les mêmes formes ne casse pas le diff
+    ctx2 = MC.build(state, now=1000020.0, prev=ctx)
+    assert isinstance(ctx2['changes_since_prev'], list)
+
+
+def test_trend_and_leadership_from_real_market_ctx():
+    """Régression LOT 8b : régime dans market_ctx.spy_regime et roro catégorie
+    suffisent à classifier (jamais UNKNOWN à tort quand 3+ dimensions réelles)."""
+    state = {
+        'scan_ts': 1000000.0, 'scan_ts_h': '10:00:00', 'updated': '10:00:00',
+        'market': {},
+        'market_ctx': {'spy_regime': 'TREND', 'vix': 12.7, 'vix_band': 'calme',
+                       'roro': 'RISK-OFF', 'breadth': 45},
+        'rows': [{'symbol': 'AAA'}],
+    }
+    ctx = MC.build(state, now=1000010.0)
+    assert ctx['dimensions']['spy_trend']['value'] == 'UP'
+    assert ctx['dimensions']['leadership']['value'] == 'DEFENSIVE'
+    assert ctx['regime']['label'] != 'UNKNOWN'
+    assert len(ctx['regime']['dimensions_used']) >= 3

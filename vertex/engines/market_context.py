@@ -36,6 +36,18 @@ _UNITS_UNAVAILABLE = {'rates_curve': 'bps', 'dollar': 'index', 'credit_spreads':
                       'liquidity': 'score', 'cross_asset': 'composite'}
 
 
+def _num(x):
+    """Nombre fini ou None — l'état réel du scan porte parfois des dicts/chaînes
+    là où un nombre est attendu ; on extrait honnêtement, jamais de TypeError."""
+    if isinstance(x, bool) or x is None:
+        return None
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        return None
+    return v if v == v and v not in (float('inf'), float('-inf')) else None
+
+
 def _fact(value, unit, source, as_of, status, **extra):
     d = {'value': value, 'unit': unit, 'source': source, 'as_of': as_of, 'status': status}
     if extra:
@@ -72,14 +84,26 @@ def build(scan_state, prev=None, now=None, demo=False, stale_after_s=STALE_AFTER
         return _fact(value, unit, source, as_of if value is not None else None, st, **extra)
 
     # ── Dimensions réellement alimentées par le scan ────────────────────────────
-    trend = {'TREND': 'UP', 'CHOP': 'FLAT'}.get(market.get('regime'), market.get('spy_trend'))
-    breadth = market.get('breadth') if market.get('breadth') is not None else mc.get('breadth')
-    leadership = ('CYCLICAL' if market.get('risk') == 'Risk-On'
-                  else 'DEFENSIVE' if market.get('risk') == 'Risk-Off' else None)
+    # tendance : lens (`market.regime`) OU contexte réel (`market_ctx.spy_regime`).
+    raw_regime = market.get('regime') or mc.get('spy_regime')
+    trend = {'TREND': 'UP', 'CHOP': 'FLAT', 'UP': 'UP', 'DOWN': 'DOWN',
+             'FLAT': 'FLAT'}.get(raw_regime, market.get('spy_trend'))
+    # breadth : le lens réel sert un dict ({'above200': 45, ...}) — la dimension
+    # canonique est la part au-dessus de la MM200 ; un nombre nu reste accepté.
+    raw_breadth = market.get('breadth') if market.get('breadth') is not None else mc.get('breadth')
+    if isinstance(raw_breadth, dict):
+        breadth = _num(raw_breadth.get('above200'))
+    else:
+        breadth = _num(raw_breadth)
+    # leadership : `market.risk` OU la catégorie roro réelle ('RISK-ON'/'RISK-OFF').
+    risk_label = str(market.get('risk') or
+                     (mc.get('roro') if isinstance(mc.get('roro'), str) else '') or '').upper()
+    leadership = ('CYCLICAL' if 'RISK-ON' in risk_label
+                  else 'DEFENSIVE' if 'RISK-OFF' in risk_label else None)
 
     # VIX : deux sources réelles (lens marché + contexte marché) — un désaccord
     # matériel (> 1 pt) est CONFLICTED, jamais moyenné en silence.
-    vix_a, vix_b = market.get('vix'), mc.get('vix')
+    vix_a, vix_b = _num(market.get('vix')), _num(mc.get('vix'))
     conflicts = []
     vix_val = vix_b if vix_b is not None else vix_a
     vix_status_override = None
@@ -95,7 +119,11 @@ def build(scan_state, prev=None, now=None, demo=False, stale_after_s=STALE_AFTER
         'breadth_ma200_pct': dim(breadth, '%', 'scan.breadth'),
         'vix': dim(vix_val, 'index', 'scan.market_ctx', band=mc.get('vix_band')),
         'leadership': dim(leadership, 'category', 'scan.market'),
-        'roro': dim(mc.get('roro'), 'ratio', 'scan.market_ctx'),
+        # roro : ratio numérique OU catégorie ('RISK-OFF') selon la source réelle.
+        'roro': (dim(_num(mc.get('roro')), 'ratio', 'scan.market_ctx')
+                 if _num(mc.get('roro')) is not None else
+                 dim(mc.get('roro') if isinstance(mc.get('roro'), str) else None,
+                     'category', 'scan.market_ctx')),
     }
     if vix_status_override and dimensions['vix']['value'] is not None:
         dimensions['vix']['status'] = vix_status_override
@@ -126,14 +154,14 @@ def build(scan_state, prev=None, now=None, demo=False, stale_after_s=STALE_AFTER
     if prev:
         if prev_label and prev_label != regime['label']:
             changes.append('Régime : %s → %s' % (prev_label, regime['label']))
-        pv = pval('vix')
+        pv = _num(pval('vix'))
         if pv is not None and vix_val is not None and abs(vix_val - pv) >= 2.0:
             changes.append('VIX : %.1f → %.1f' % (pv, vix_val))
         pband = (pdims.get('vix') or {}).get('band')
         band = dimensions['vix'].get('band')
         if pband and band and pband != band:
             changes.append('Bande VIX : %s → %s' % (pband, band))
-        pb = pval('breadth_ma200_pct')
+        pb = _num(pval('breadth_ma200_pct'))
         if pb is not None and breadth is not None and abs(breadth - pb) >= 5.0:
             changes.append('Largeur (breadth MM200) : %.0f %% → %.0f %%' % (pb, breadth))
         pl = pval('leadership')
