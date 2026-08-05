@@ -13,7 +13,13 @@
  *     figé est vérifiée en vrai navigateur (200, contenu, 0 erreur
  *     console) et la vue cellule /memory/cell/… d'une cellule existante
  *     si le magasin en publie une — sinon le 404 LISIBLE est vérifié et
- *     DIT (jamais un état inventé).
+ *     DIT (jamais un état inventé) ;
+ *   - CYCLE SOUVERAIN (LOT 48) : le bundle d'export est téléchargé, une
+ *     copie ALTÉRÉE doit être REFUSÉE (empreinte_invalide dit), puis le
+ *     bundle INTACT est restauré via le VRAI bouton « Importer » de la
+ *     carte Mémoire (setInputFiles) — le message doit dire la
+ *     restauration et un ledger SAIN. Sauvegarde ET restauration sont
+ *     ainsi prouvées en navigateur à chaque RC.
  *
  * Usage : serveur démo lancé (DEMO=1 NO_IBKR=1 START_ON_IMPORT=1), puis
  *   NODE_PATH=/opt/node22/lib/node_modules node tools/rc_short_audit.js
@@ -136,6 +142,52 @@ const NOISE = [/net::ERR_ABORTED/, /fonts\.googleapis\.com/, /fonts\.gstatic\.co
     // aucune cellule mesurée (honnête en démo) → le 404 LISIBLE est vérifié
     await visit('/memory/cell/by_level/AUCUNE_CELLULE', 404, 'Cellule inconnue');
     console.log('(aucune cellule mesurée publiée — 404 lisible vérifié à la place)');
+  }
+
+  // ─── Cycle souverain (LOT 48) : export → altération refusée → import ───
+  const fs = require('fs');
+  const os = require('os');
+  const path = require('path');
+  const bundle = await page.evaluate(async (base) => {
+    const r = await fetch(base + '/api/skyler/memory/export');
+    return await r.json();
+  }, BASE);
+  if (!bundle || !bundle.content_sha256) {
+    defects.push('/api/skyler/memory/export → bundle sans content_sha256');
+  } else {
+    // 1. une copie ALTÉRÉE doit être refusée — empreinte dite
+    const refusal = await page.evaluate(async (args) => {
+      const tampered = JSON.parse(JSON.stringify(args.bundle));
+      tampered.note = (tampered.note || '') + ' ALTERATION';
+      const r = await fetch(args.base + '/api/skyler/memory/import', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tampered),
+      });
+      const d = await r.json();
+      return { status: r.status, error: d.error || null };
+    }, { base: BASE, bundle });
+    console.log(`import bundle altéré                     HTTP ${refusal.status}  (${refusal.error})`);
+    if (refusal.status !== 400 || refusal.error !== 'empreinte_invalide') {
+      defects.push('import altéré → attendu 400 empreinte_invalide, obtenu '
+        + refusal.status + '/' + refusal.error);
+    }
+    // 2. le bundle INTACT est restauré via le VRAI bouton Importer
+    const tmpFile = path.join(os.tmpdir(), 'rc_sovereign_bundle.json');
+    fs.writeFileSync(tmpFile, JSON.stringify(bundle), 'utf-8');
+    await page.goto(BASE + '/journal', { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.waitForTimeout(2000);
+    await page.setInputFiles('#vx-mem-import-file', tmpFile);
+    await page.waitForTimeout(2500);
+    const result = await page.evaluate(() => {
+      const el = document.getElementById('vx-mem-import-result');
+      return el ? el.innerText : 'ABSENT';
+    });
+    fs.unlinkSync(tmpFile);
+    const low = result.toLowerCase();
+    console.log(`import via bouton                        « ${result.slice(0, 70)}… »`);
+    if (!low.includes('restauration') || !low.includes('sain')) {
+      defects.push('import via bouton → message inattendu : ' + result.slice(0, 120));
+    }
   }
 
   await browser.close();
