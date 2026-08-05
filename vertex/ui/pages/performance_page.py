@@ -546,7 +546,18 @@ async function loadMemory(){
       +(d.demo?'<span class="vx-badge" data-tone="neutral">DÉMO</span>':'')
       +((d.ledger_health&&d.ledger_health.status==='ANOMALIES')
         ?'<span class="vx-badge" data-tone="negative" title="'+esc(d.ledger_health.basis||'')
-          +'">LEDGER : ANOMALIES</span>':'')+'</div>'
+          +'">LEDGER : ANOMALIES</span>':'')
+      +(function(){
+        const ds=d.decisions||[];
+        if(!ds.length)return '<span class="vx-meta">· aucune décision figée</span>';
+        const sd=(ds[ds.length-1]||{}).session_date||null;
+        if(!sd)return '<span class="vx-meta">· dernière décision figée : n/d</span>';
+        const now=new Date();
+        const todayUTC=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());
+        const days=Math.round((todayUTC-new Date(sd+'T00:00:00Z').getTime())/86400000);
+        const age=(isFinite(days)&&days>=0)?' (J-'+days+')':'';
+        return '<span class="vx-meta">· dernière décision figée : '+esc(sd)+age+'</span>';
+      })()+'</div>'
       +'<div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Moteur</th><th>Décisions</th><th>Répartition</th><th>Mesurées</th><th>Erreurs classées</th></tr></thead><tbody>'
       +vRows+'</tbody></table></div>'
       +(function(){
