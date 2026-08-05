@@ -572,6 +572,20 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   console ; RC courte GO (v107 servi) ;
 - 1627 tests verts / 2 skipped (+5) ; moteur 0.9.0 inchangé.
 
+## Lot 48 — livré (2026-08-05, développement continu)
+
+- CYCLE SOUVERAIN dans la RC outillée (`tools/rc_short_audit.js`) :
+  chaque RC exporte le bundle, prouve le REFUS d'une copie altérée
+  (400 empreinte_invalide exigé) puis la RESTAURATION via le VRAI
+  bouton « Importer » (setInputFiles — le chemin utilisateur, pas un
+  raccourci d'API), message « Restauration terminée … ledger SAIN »
+  exigé ;
+- rationale : le mécanisme le plus critique du desk (survie de
+  l'historique) est re-prouvé à CHAQUE RC — 2 défauts réels n'avaient
+  été visibles qu'en navigateur (J-1 lot 37, empreinte JS lot 47) ;
+- exécuté : GO — 0 défaut ; 1627 tests verts / 2 skipped (inchangé —
+  outil seulement) ; moteur 0.9.0 et SW v107 inchangés.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
