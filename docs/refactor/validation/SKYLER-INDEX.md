@@ -60,6 +60,7 @@
 | 50 | `SKYLER-LOT-50.md` | Profilage routes chaudes (toutes < 15 ms p95, double calcul vérifié : 0,7 ms/7,4 %) — NO-GO optimisation dit, baseline publiée | 0.9.0 | v107 | 1627 | GO |
 | 51 | `SKYLER-LOT-51.md` | Graphiques niveau app 2026 (lissage monotone jamais de faux extrêmes, dégradé 3 arrêts, glow, pastille dernier prix) — central `C.area`, zéro fork | 0.9.0 | v108 | 1633 | GO |
 | 52 | `SKYLER-LOT-52.md` | Crosshair app au survol (`vxCrosshair` : visée verticale + point actif, jamais hors survol) + `multiLine` harmonisé signature 2026 | 0.9.0 | v109 | 1638 | GO |
+| 53 | `SKYLER-LOT-53.md` | Sparkline/bars/donut sur la signature 2026 (mini-aire dégradée, barres arrondies pleines au survol, donut arcs espacés) — tronc commun complet | 0.9.0 | v110 | 1643 | GO |
 
 ## Architecture atteinte
 

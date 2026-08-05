@@ -174,13 +174,19 @@
   };
 
   /* ── Primitives réutilisées par tous les modules ─────────────────── */
-  C.sparkline = function (canvas, values, { color, positiveIsGood = true } = {}) {
+  C.sparkline = function (canvas, values, { color, positiveIsGood = true, fill = true } = {}) {
     if (!canvas || !values || values.length < 2) return null;
     const up = values[values.length - 1] >= values[0];
     const col = color || (up === positiveIsGood ? C.colors.positive : C.colors.negative);
+    /* signature 2026 (lot 53) : lissage monotone + mini-aire en dégradé —
+       le rendu watchlist des apps de courtage, muet (aucune interaction). */
     return C.mount(canvas, {
       type: 'line',
-      data: { labels: values.map((_, i) => i), datasets: [{ data: values, borderColor: col, borderWidth: 1.4, pointRadius: 0, fill: false, tension: .3 }] },
+      data: { labels: values.map((_, i) => i), datasets: [{ data: values, borderColor: col, borderWidth: 1.6, pointRadius: 0, cubicInterpolationMode: 'monotone', tension: .35, fill,
+        backgroundColor: (ctx) => {
+          const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height || 60);
+          g.addColorStop(0, col + '33'); g.addColorStop(1, col + '00'); return g;
+        } }] },
       options: { scales: { x: { display: false }, y: { display: false } }, plugins: { tooltip: { enabled: false } }, events: [] },
     });
   };
@@ -283,19 +289,24 @@
   };
   C.bars = function (canvas, labels, values, { colors, horizontal = false, yFmt } = {}) {
     const cols = colors || values.map(v => v >= 0 ? C.colors.positive : C.colors.negative);
+    /* signature 2026 (lot 53) : coins arrondis complets, barres légèrement
+       translucides qui deviennent PLEINES au survol. L'alpha n'est appliqué
+       qu'aux hex 6 digits — toute autre couleur passe inchangée. */
+    const soft = (c) => (typeof c === 'string' && /^#[0-9A-Fa-f]{6}$/.test(c)) ? c + 'D9' : c;
     return C.mount(canvas, {
       type: 'bar',
-      data: { labels, datasets: [{ data: values, backgroundColor: cols, borderRadius: 3, maxBarThickness: 26 }] },
+      data: { labels, datasets: [{ data: values, backgroundColor: cols.map(soft), hoverBackgroundColor: cols, borderRadius: 5, borderSkipped: false, maxBarThickness: 26 }] },
       options: { indexAxis: horizontal ? 'y' : 'x', scales: C.axes({ yFmt }) },
     });
   };
   C.donut = function (canvas, labels, values, { colors } = {}) {
-    /* §33 : un donut ≤ ~5 catégories */
+    /* §33 : un donut ≤ ~5 catégories · signature 2026 (lot 53) : arcs
+       arrondis espacés + léger décalage au survol. */
     const l = labels.slice(0, 5), v = values.slice(0, 5);
     return C.mount(canvas, {
       type: 'doughnut',
-      data: { labels: l, datasets: [{ data: v, backgroundColor: colors || C.colors.series, borderWidth: 0 }] },
-      options: { cutout: '68%', plugins: { legend: { display: true, position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } },
+      data: { labels: l, datasets: [{ data: v, backgroundColor: colors || C.colors.series, borderWidth: 0, borderRadius: 4, spacing: 2, hoverOffset: 6 }] },
+      options: { cutout: '70%', plugins: { legend: { display: true, position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } },
     });
   };
   C.multiLine = function (canvas, labels, datasets, { yFmt, crosshair = true } = {}) {
