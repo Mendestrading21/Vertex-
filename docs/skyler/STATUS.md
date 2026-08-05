@@ -270,6 +270,16 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   sur appareil physique ; bilan : +141 tests depuis le lot 12, moteur
   0.2.0 → 0.8.0, SW v94 → v100, 4/4 facteurs de confiance mesurés.
 
+## Lot 28 — livré (2026-08-05, travail continu)
+
+- `by_catalyst` dans la calibration par contexte : cellules avec/sans
+  catalyseur dérivées du ledger existant, mêmes règles d'échantillon —
+  découpe d'OBSERVATION uniquement, jamais consommée par la sélection
+  (aucun bump moteur, prouvé par test) ;
+- propagation du graphe 1–3 sauts (`?hops=`, clampé) avec garde de volume
+  dure MAX_PATHS=200 — troncature déterministe et TOUJOURS DITE ;
+- 1515 tests verts / 2 skipped (+7) ; SW v100 inchangé (API seulement).
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

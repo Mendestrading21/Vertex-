@@ -567,7 +567,7 @@ def calibration_factor(memory, engine_version):
                 'basis': 'échantillon insuffisant (%d/%d mesure(s) pour le moteur %s) — '
                          'facteur plafonné à 0,50, jamais inventé'
                          % (n, MIN_CALIBRATION_SAMPLE, engine_version)}
-    hits = sum(1 for _, _, _, h in rows if h)
+    hits = sum(1 for *_, h in rows if h)
     hit_rate = hits / n
     return {'value': _hit_factor(hit_rate),
             'n_measured': n, 'hit_rate': round(hit_rate, 3),
@@ -592,6 +592,7 @@ def _measured_hits(memory, engine_version):
         if cls is None:
             continue
         out.append((r.get('level'), r.get('decision'), r.get('regime'),
+                    bool(r.get('catalyst')),
                     cls in ('DECISION_CORRECTE', 'VARIANCE_NORMALE')))
     return out
 
@@ -616,14 +617,16 @@ def calibration_by_context(memory, engine_version):
     propre hit rate SEULEMENT si son échantillon suffit ; sinon INSUFFISANT
     dit. Jamais de mélange de versions."""
     rows = _measured_hits(memory, engine_version)
-    by_level, by_decision, by_regime = {}, {}, {}
-    for lv, dec, reg, hit in rows:
+    by_level, by_decision, by_regime, by_catalyst = {}, {}, {}, {}
+    for lv, dec, reg, cat, hit in rows:
         if lv:
             by_level.setdefault(lv, []).append(hit)
         if dec:
             by_decision.setdefault(dec, []).append(hit)
         if reg:                                      # régime inconnu ≠ cellule
             by_regime.setdefault(reg, []).append(hit)
+        by_catalyst.setdefault('avec_catalyseur' if cat else 'sans_catalyseur',
+                               []).append(hit)
     return {'engine_version': engine_version,
             'n_measured_total': len(rows),
             'by_level': {lv: _context_cell(v, 'niveau=%s' % lv)
@@ -632,8 +635,13 @@ def calibration_by_context(memory, engine_version):
                             for d, v in sorted(by_decision.items())},
             'by_regime': {r: _context_cell(v, 'régime=%s' % r)
                           for r, v in sorted(by_regime.items())},
+            # by_catalyst : découpe d'OBSERVATION uniquement — jamais consommée
+            # par la sélection du facteur (aucune règle moteur, aucun bump).
+            'by_catalyst': {c: _context_cell(v, 'catalyseur=%s' % c)
+                            for c, v in sorted(by_catalyst.items())},
             'note': 'calibration par contexte (§13) — une cellule sous-échantillonnée '
-                    'reste INSUFFISANTE, l’agrégat global est le secours'}
+                    'reste INSUFFISANTE, l’agrégat global est le secours ; '
+                    'by_catalyst est une découpe d’observation (non consommée)'}
 
 
 def calibration_factor_for(memory, engine_version, level=None, regime=None):
