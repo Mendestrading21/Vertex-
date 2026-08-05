@@ -330,6 +330,30 @@ def api_skyler_memory_export():
     return resp
 
 
+@bp.route('/api/skyler/memory/cell/<group>/<key>')
+def api_skyler_memory_cell(group, key):
+    """DRILL-DOWN CELLULE (LOT 39) : les décisions MESURÉES qui composent une
+    cellule de calibration par contexte — même règle d'appartenance que le
+    badge (source unique moteur). 404 structurés ; lecture seule."""
+    from vertex.engines import decision_memory as _dm
+    from vertex.engines import skyler_core as _sk
+    from vertex.services import persist as _persist
+    mem = _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory()
+    out = _dm.cell_decisions(mem, _sk.ENGINE_VERSION, group, key)
+    if out is None:
+        return jsonify({'ok': False, 'error': 'groupe_inconnu', 'group': group,
+                        'groups': list(_dm.CONTEXT_GROUPS)}), 404
+    ctx = _dm.calibration_by_context(mem, _sk.ENGINE_VERSION)
+    cell = (ctx.get(group) or {}).get(key)
+    if cell is None:
+        return jsonify({'ok': False, 'error': 'cellule_inconnue',
+                        'group': group, 'key': key,
+                        'note': 'aucune décision mesurée ne forme cette cellule '
+                                'pour le moteur courant'}), 404
+    out['cell'] = cell
+    return jsonify(out)
+
+
 @bp.route('/api/skyler/memory/<decision_id>')
 def api_skyler_memory_detail(decision_id):
     """DRILL-DOWN MÉMOIRE (LOT 20) : record figé complet + résultat mesuré +
