@@ -86,7 +86,7 @@ def _residual_vs_market(rets, mkt):
 # ─── Construction ───────────────────────────────────────────────────────────────
 
 def build(symbols, sector_map=None, closes_by_sym=None, events_by_sym=None,
-          positions=None, as_of=None, demo=False):
+          positions=None, quotes=None, as_of=None, demo=False):
     """Construit le graphe depuis les sources réelles fournies — chaque arête
     porte provenance, niveau de preuve et base ; rien n'est inventé."""
     symbols = sorted({str(s).upper() for s in (symbols or []) if s})
@@ -214,14 +214,62 @@ def build(symbols, sector_map=None, closes_by_sym=None, events_by_sym=None,
              'nodes': nodes, 'edges': edges,
              'limits': limits}
     graph['hidden_dependencies'] = _hidden_dependencies(graph, symbols, held)
-    graph['hidden_groups'] = _hidden_groups(graph['hidden_dependencies'])
+    graph['hidden_groups'] = _hidden_groups(graph['hidden_dependencies'], sector_map)
+    graph['sector_exposure'] = _sector_exposure(positions, sector_map, quotes)
     graph['research_questions'] = _research_questions(symbols, sector_map, events_by_sym)
     return graph
 
 
-def _hidden_groups(deps):
+# ─── Exposition sectorielle du portefeuille (LOT 24) ────────────────────────────
+
+def _sector_exposure(positions, sector_map, quotes):
+    """Agrège les positions RÉELLES par secteur déclaré. Poids en % seulement
+    si TOUTES les positions ont une cote (sinon None avec raison — un poids
+    partiel serait un mensonge). Titre hors watchlist → HORS_WATCHLIST."""
+    sector_map = sector_map or {}
+    quotes = quotes or {}
+    held = {}
+    for p in (positions or []):
+        s = str(p.get('symbol') or '').upper()
+        qty = p.get('quantity')
+        if not s or not isinstance(qty, (int, float)) or isinstance(qty, bool) or not qty:
+            continue
+        held[s] = held.get(s, 0.0) + float(qty)
+    if not held:
+        return {}
+    values, all_quoted = {}, True
+    for s, qty in held.items():
+        px = _num(quotes.get(s))
+        if px is None or px <= 0:
+            all_quoted = False
+            values[s] = None
+        else:
+            values[s] = qty * px
+    total = sum(v for v in values.values() if v is not None) if all_quoted else None
+    out = {}
+    for s in sorted(held):
+        sec = sector_map.get(s) or 'HORS_WATCHLIST'
+        cell = out.setdefault(sec, {'symbols': [], 'n_positions': 0,
+                                    'weight_pct': None, 'basis': ''})
+        cell['symbols'].append(s)
+        cell['n_positions'] += 1
+    for sec, cell in out.items():
+        if total and total > 0:
+            w = sum(values[s] for s in cell['symbols']) / total * 100
+            cell['weight_pct'] = round(w, 2)
+            cell['basis'] = ('%d position(s) — %.1f %% du portefeuille valorisé aux '
+                             'cotes réelles' % (cell['n_positions'], w))
+        else:
+            cell['basis'] = ('%d position(s) — poids n/d : cote absente pour au moins '
+                             'une position, jamais estimé' % cell['n_positions'])
+    return out
+
+
+def _hidden_groups(deps, sector_map=None):
     """Composantes connexes des paires de dépendances cachées — un GROUPE de
-    3 titres ou plus partage une exposition commune plus large qu'une paire."""
+    3 titres ou plus partage une exposition commune plus large qu'une paire.
+    Groupe entièrement dans un même secteur déclaré → CONCENTRATION SECTORIELLE."""
+    sector_map = sector_map or {}
     adj = {}
     for d in deps or []:
         a, b = d['symbols']
@@ -243,10 +291,17 @@ def _hidden_groups(deps):
             comp = sorted(comp)
             n_links = sum(len(d['links']) for d in deps
                           if set(d['symbols']) <= set(comp))
+            secs = {sector_map.get(s) for s in comp}
+            mono = len(secs) == 1 and None not in secs
             groups.append({'symbols': comp, 'n_links': n_links,
-                           'basis': '%d titres inter-reliés par %d lien(s) indépendant(s) — '
-                                    'exposition de groupe non évidente au premier regard'
-                                    % (len(comp), n_links)})
+                           'sector_concentration': mono,
+                           'sector': (next(iter(secs)) if mono else None),
+                           'basis': ('%d titres inter-reliés par %d lien(s) indépendant(s) — '
+                                     'exposition de groupe non évidente au premier regard'
+                                     % (len(comp), n_links))
+                                    + (' — CONCENTRATION SECTORIELLE : tout le groupe est '
+                                       'dans le secteur déclaré %s' % next(iter(secs))
+                                       if mono else '')})
     return groups
 
 

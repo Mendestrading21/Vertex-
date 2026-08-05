@@ -814,11 +814,19 @@ async function renderHiddenDeps(){
   const groups=d.hidden_groups||[];
   const grpHtml=groups.length?('<div class="vx-kpi-label vx-mt2">Groupes exposés (3 titres ou plus — composantes connexes)</div>'
     +groups.map(g=>'<div class="vx-insight" data-tone="risk"><b>'+esc((g.symbols||[]).join(' + '))+'</b> — '+esc(g.basis||'')+'</div>').join('')):'';
+  const se=d.sector_exposure||{};
+  const seKeys=Object.keys(se);
+  const seHtml=seKeys.length?('<div class="vx-kpi-label vx-mt2">Exposition sectorielle du portefeuille (secteurs déclarés)</div>'
+    +seKeys.map(k=>{const s=se[k];
+      return '<div class="vx-meta">· <b>'+esc(k)+'</b> — '+(s.symbols||[]).map(esc).join(', ')
+        +' ('+s.n_positions+' position(s)'
+        +(s.weight_pct!=null?(' · '+s.weight_pct+' %'):' · poids n/d — cote absente, jamais estimé')+')</div>';
+    }).join('')):'';
   const qHtml=qs.length?('<div class="vx-kpi-label vx-mt2">Questions de recherche (relations non documentées — jamais inventées)</div>'
     +qs.map(x=>'<div class="vx-meta">· '+esc(x.symbol)+' — '+esc(x.question)+'</div>').join('')):'';
   host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Dépendances cachées (Knowledge Graph)</span>'
     +'<span class="vx-chart-question">Deux titres partagent-ils une exposition non évidente&nbsp;?</span></div>'
-    +depHtml+grpHtml+qHtml
+    +depHtml+grpHtml+seHtml+qHtml
     +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'knowledge graph (secteur déclaré · co-mouvement · catalyseurs datés · desk)','delayed')
     +(d.demo?' · <span class="vx-badge" data-tone="neutral">DÉMO</span>':'')+'</div>';
   $('pf-body').appendChild(host);

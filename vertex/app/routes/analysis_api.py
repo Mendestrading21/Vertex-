@@ -435,8 +435,11 @@ def _kg_build():
         positions = load_positions(persist.load_json('desk_data.json', {}) or {})
     except Exception:
         positions = None
+    quotes = {s: (detail_all.get(s) or {}).get('price') for s in detail_all
+              if isinstance(detail_all.get(s), dict)
+              and (detail_all.get(s) or {}).get('price') is not None}
     return _kg.build(symbols, sector_map=SECTOR_MAP, closes_by_sym=closes_by_sym,
-                     events_by_sym=events_by_sym, positions=positions,
+                     events_by_sym=events_by_sym, positions=positions, quotes=quotes,
                      as_of=scan_state.get('scan_ts_h') or scan_state.get('updated'),
                      demo=_demo)
 
