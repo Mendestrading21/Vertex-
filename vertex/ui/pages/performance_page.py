@@ -152,7 +152,7 @@ Aucun chiffre de l’un n’alimente l’autre.</div>
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Trades réels du journal">
     <div class="vx-card-header"><span class="vx-card-title">Trades réels (journal)</span>
-      <span class="vx-badge" style="color:var(--vx-cyan,#c8ad8d)">Tes déclarations</span>
+      <span class="vx-badge" style="color:var(--vx-cyan,#45D6E8)">Tes déclarations</span>
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=journal">Ouvrir la timeline →</a></span></div>
     <div id="vx-pf-real">%%LOADING%%</div>
   </section>
@@ -383,7 +383,7 @@ function loadLearnings(){
       const max=rows[0][1];
       bh.innerHTML='<div style="display:flex;flex-direction:column;gap:6px">'+rows.map(([m,n])=>
         `<div style="display:flex;align-items:center;gap:8px"><span style="width:140px;font-size:12.5px;text-transform:capitalize" class="vx-dim">${esc(m)}</span>
-         <span style="flex:1;height:13px;background:var(--vx-surface-3,#17191c);border-radius:4px;overflow:hidden"><span style="display:block;height:100%;width:${Math.round(n/max*100)}%;background:var(--vx-brand,#84aa31);border-radius:4px"></span></span>
+         <span style="flex:1;height:13px;background:var(--vx-surface-3,#121214);border-radius:4px;overflow:hidden"><span style="display:block;height:100%;width:${Math.round(n/max*100)}%;background:var(--vx-brand,#DBE1E8);border-radius:4px"></span></span>
          <span class="vx-mono" style="width:34px;text-align:right">× ${n}</span></div>`).join('')+'</div>'
         +'<div class="vx-card-footer"><span class="vx-meta">Décompte déclaratif — un biais nommé est un biais qu’on peut corriger.</span></div>';
     }

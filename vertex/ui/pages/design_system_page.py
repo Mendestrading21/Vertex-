@@ -26,18 +26,18 @@ _BG = [('--vx-black', '#020202'), ('--vx-obsidian-950', '#050505'),
        ('--vx-obsidian-800', '#0f1011'), ('--vx-graphite-900', '#121315'),
        ('--vx-graphite-850', '#151719'), ('--vx-graphite-800', '#191b1e'),
        ('--vx-graphite-750', '#1e2024'), ('--vx-graphite-700', '#25282d')]
-_COPPER = [('--vx-orange-950', '#3e1607'), ('--vx-orange-900', '#591f09'),
-           ('--vx-orange-850', '#6e280c'), ('--vx-orange-800', '#843310'),
-           ('--vx-orange-700', '#9f4117'), ('--vx-orange-600', '#ba501e'),
-           ('--vx-orange-500', '#cf6128'), ('--vx-orange-400', '#df7739'),
-           ('--vx-copper-dark', '#66321c'), ('--vx-copper', '#914b2b'),
-           ('--vx-copper-light', '#b9683d')]
-_SEM = [('--vx-positive', '#38b879'), ('--vx-negative', '#dc5f52'),
-        ('--vx-warning', '#ce8a29'), ('--vx-option', '#85609f'),
-        ('--vx-amber', '#ce8a29'), ('--vx-beige', '#c8ad8d'),
-        ('--vx-neutral-chart', '#9d978e'), ('--vx-info', 'cuivre clair')]
-_TEXT = [('--vx-text-primary', '#f3f1ed'), ('--vx-text-secondary', '#b7b3ad'),
-         ('--vx-text-muted', '#817d77'), ('--vx-text-faint', '#5e5b56')]
+_COPPER = [('--vx-orange-950', '#14181e'), ('--vx-orange-900', '#1b2027'),
+           ('--vx-orange-850', '#272e37'), ('--vx-orange-800', '#272e37'),
+           ('--vx-orange-700', '#3a434e'), ('--vx-orange-600', '#aab3bf'),
+           ('--vx-orange-500', '#dbe1e8'), ('--vx-orange-400', '#eef1f5'),
+           ('--vx-copper-dark', '#272e37'), ('--vx-copper', '#3a434e'),
+           ('--vx-copper-light', '#dbe1e8')]
+_SEM = [('--vx-positive', '#2BBE90'), ('--vx-negative', '#E9555F'),
+        ('--vx-warning', '#D9BE3C'), ('--vx-option', '#9B7BFF'),
+        ('--vx-amber', '#D9BE3C'), ('--vx-beige', '#c8bfae'),
+        ('--vx-neutral-chart', '#BABABA'), ('--vx-info', '#45D6E8')]
+_TEXT = [('--vx-text-primary', '#F8F5F3'), ('--vx-text-secondary', '#BABABA'),
+         ('--vx-text-muted', '#8A8284'), ('--vx-text-faint', '#655d5f')]
 
 
 def _swatches(items):
@@ -214,7 +214,7 @@ def _content() -> str:
     return (_DS_CSS + '<div class="vx-grid vx-page-enter">'
             + intro
             + sec('Palette — noirs & graphites', 'fonds obsidienne', _swatches(_BG))
-            + sec('Palette — cuivre / orange brûlé', 'accent principal', _swatches(_COPPER))
+            + sec('Palette — rampe de marque (alias historiques)', 'blanc-gris en verre', _swatches(_COPPER))
             + sec('Palette — sémantiques', 'positif · négatif · warning · options', _swatches(_SEM), span='6')
             + sec('Palette — texte', 'blanc cassé + gris chauds', _swatches(_TEXT), span='6')
             + sec('Typographie', 'hiérarchie', type_rows)

@@ -723,6 +723,24 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   valeurs périmées recherchées sur tout #vx-content) : « palette OK »
   sur les deux pages, 0 erreur console ; moteur 0.9.0 inchangé.
 
+## Lot 59 — livré (2026-08-05, arc « jusqu'au lot 60 » — polish 4/4, transversal)
+
+- balayage du lot 58 GÉNÉRALISÉ : ~45 fallbacks d'anciennes palettes
+  purgés dans 7 pages (3 oranges bannis de plus sur Système, un
+  `--vx-brand,#84aa31` vert aberrant sur /journal, tracking, analysis,
+  markets, opportunities, design_system_demo) ;
+- 2e token INEXISTANT : `--vx-neutral` (Opportunités — son fallback
+  `#9d978e` se rendait) → `--vx-neutral-chart` ; gardien PROSPECTIF :
+  tout token référencé avec fallback doit exister dans les CSS ;
+- /design-system : étiquettes hex mensongères (valeurs de l'ancien
+  design à côté de pastilles LIVE justes) réalignées sur les valeurs
+  effectives, section retitrée honnêtement ; rrLadder : 3 fallbacks
+  runtime réalignés ;
+- vérifié SAIN (dit) : VX.states.empty/error sur les 8 pages ;
+- preuves : 4 tests rouges→verts ; suite 1670/2 skipped ; RC outillée GO
+  0 défaut sous SW v116 ; balayage APRÈS couleurs calculées : « palette
+  OK » sur /journal, /system, /design-system ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

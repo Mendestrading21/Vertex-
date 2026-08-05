@@ -53,7 +53,7 @@ def _bubbles_row():
     for d in dec:
         out += f'<span class="vx-badge vx-badge-decision" data-decision="{d}">{d}</span>'
     out += ('<span class="vx-badge">LIVE</span><span class="vx-badge" style="color:var(--vx-warning)">DELAYED</span>'
-            '<span class="vx-badge" style="color:var(--vx-option,#806095)">CALL</span>'
+            '<span class="vx-badge" style="color:var(--vx-option,#9B7BFF)">CALL</span>'
             '<span class="vx-badge">82 <b class="vx-mono">/100</b></span></div>')
     return out
 
@@ -99,10 +99,10 @@ _STYLE = """
 #vx-ds section.vx-card{margin-bottom:0}
 #vx-ds .vx-ds-block{margin-bottom:1.4rem}
 #vx-ds .vx-ds-block>.vx-meta{text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
-#vx-ds .vx-range{width:220px;accent-color:var(--vx-orange-500,#cf6128)}
-#vx-ds .vx-switch{width:40px;height:22px;border-radius:99px;background:var(--vx-surface-3,#17191b);
+#vx-ds .vx-range{width:220px;accent-color:var(--vx-orange-500,#DBE1E8)}
+#vx-ds .vx-switch{width:40px;height:22px;border-radius:99px;background:var(--vx-surface-3,#121214);
   border:1px solid var(--vx-border-soft,rgba(255,255,255,.08));position:relative;cursor:pointer;display:inline-block}
-#vx-ds .vx-switch[data-on="1"]{background:var(--vx-orange-500,#cf6128)}
+#vx-ds .vx-switch[data-on="1"]{background:var(--vx-orange-500,#DBE1E8)}
 #vx-ds .vx-switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:99px;
   background:#f4f1ec;transition:transform .16s ease}
 #vx-ds .vx-switch[data-on="1"]::after{transform:translateX(18px)}

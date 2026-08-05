@@ -348,9 +348,9 @@ async function loadDossier(){
     /* Carte des risques d'entreprise (§24) — fondamentaux réels. */
     const rm=t&&t.risk_map;
     if(rm&&rm.risks){
-      const col={'ÉLEVÉ':'var(--vx-negative,#dc6254)','MODÉRÉ':'var(--vx-warning,#cc892c)',
-        'FAIBLE':'var(--vx-positive,#39b879)','INCONNU':'var(--vx-text-dim,#817d77)'};
-      html+='<div class="vx-mt3" style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--vx-text-dim,#817d77)">Carte des risques ('
+      const col={'ÉLEVÉ':'var(--vx-negative,#E9555F)','MODÉRÉ':'var(--vx-warning,#D9BE3C)',
+        'FAIBLE':'var(--vx-positive,#2BBE90)','INCONNU':'var(--vx-text-muted,#8A8284)'};
+      html+='<div class="vx-mt3" style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--vx-text-muted,#8A8284)">Carte des risques ('
         +esc(rm.known_count)+'/'+esc(rm.total_count)+' mesurés)</div>'
         +rm.risks.map(r=>`<div style="display:flex;justify-content:space-between;gap:.5rem;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px">`
           +`<span>${esc(r.category)}</span><span style="color:${col[r.level]||'#888'};font-weight:600">${esc(r.level)}</span></div>`
@@ -451,14 +451,14 @@ async function loadDossier(){
     const rows=[['1 sem.',d.perf_w],['1 mois',d.perf_m],['1 trim.',d.perf_q],['1 an',d.perf_y]].filter(r=>r[1]!=null&&!isNaN(r[1]));
     if(!rows.length)return '';
     const maxAbs=Math.max(5,...rows.map(r=>Math.abs(r[1])));
-    return '<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">'
+    return '<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#30292B);padding-top:8px">'
       +'<div class="vx-meta vx-mb1" style="text-transform:uppercase;letter-spacing:.04em">Performance multi-horizons</div>'
       +rows.map(function(r){const v=r[1];const neg=v<0;const w=Math.min(50,Math.abs(v)/maxAbs*50);
         return '<div style="display:flex;align-items:center;gap:6px;margin:2px 0" role="img" aria-label="'+r[0]+' '+(v>=0?'+':'')+v+' %">'
-          +'<span style="width:52px;font-size:10.5px;color:var(--vx-text-muted,#817d77)">'+r[0]+'</span>'
-          +'<span style="flex:1;height:10px;position:relative;background:var(--vx-surface-3,#17191c);border-radius:3px;overflow:hidden">'
+          +'<span style="width:52px;font-size:10.5px;color:var(--vx-text-muted,#8A8284)">'+r[0]+'</span>'
+          +'<span style="flex:1;height:10px;position:relative;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden">'
             +'<span style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.16)"></span>'
-            +'<span style="position:absolute;top:0;bottom:0;'+(neg?('right:50%;width:'+w.toFixed(1)+'%'):('left:50%;width:'+w.toFixed(1)+'%'))+';background:'+(neg?'var(--vx-negative,#dc6255)':'var(--vx-positive,#39b878)')+'"></span></span>'
+            +'<span style="position:absolute;top:0;bottom:0;'+(neg?('right:50%;width:'+w.toFixed(1)+'%'):('left:50%;width:'+w.toFixed(1)+'%'))+';background:'+(neg?'var(--vx-negative,#E9555F)':'var(--vx-positive,#2BBE90)')+'"></span></span>'
           +'<span style="width:54px;text-align:right;font-size:10.5px;font-variant-numeric:tabular-nums" class="'+(neg?'vx-neg':'vx-pos')+'">'+(v>=0?'+':'')+VX.fmt.num(v,1)+'%</span></div>';
       }).join('')+'</div>';
   }
@@ -477,7 +477,7 @@ async function loadDossier(){
   const _up=(_tgt&&_px)?((_tgt/_px-1)*100):null;
   const _rl={strong_buy:'Achat fort',buy:'Achat',outperform:'Surperformance',hold:'Conserver',underperform:'Sous-performance',sell:'Vente'}[an.rating]||an.rating;
   const consensus=(an.rating||_tgt)?(
-    `<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">`
+    `<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#30292B);padding-top:8px">`
     +(an.rating?`<div class="vx-kv"><span class="k">Consensus analystes</span><span class="v">${esc(_rl||'—')}${an.rating_mean!=null?` (${(+an.rating_mean).toFixed(1)}/5)`:''}${an.n_analysts?` · ${an.n_analysts} analystes`:''}</span></div>`:'')
     +(_tgt?`<div class="vx-kv"><span class="k">Objectif moyen</span><span class="v">${VX.fmt.price(_tgt)}${_up!=null?` <span class="${_up>=0?'vx-pos':'vx-neg'}">(${_up>=0?'+':''}${_up.toFixed(1)}%)</span>`:''}</span></div>`:'')
     +((an.target_low&&an.target_high)?`<div class="vx-kv"><span class="k">Fourchette</span><span class="v vx-dim">${VX.fmt.price(an.target_low)} – ${VX.fmt.price(an.target_high)}</span></div>`:'')
@@ -541,10 +541,10 @@ async function loadDossier(){
   function rrLadder(px,plan){
     const VC=window.VXCharts||{colors:{}};const col=(n,f)=>(VC.colors&&VC.colors[n])||f;
     const lv=[];
-    if(plan.stop!=null)lv.push({k:'Stop',v:plan.stop,c:col('negative','#dc5f52')});
+    if(plan.stop!=null)lv.push({k:'Stop',v:plan.stop,c:col('negative','#E9555F')});
     const e=(plan.entry!=null?plan.entry:px);
-    if(e!=null)lv.push({k:'Entrée',v:e,c:col('info','#b9683d')});
-    [plan.tp1,plan.tp2,plan.tp3].forEach(function(t,i){if(t!=null)lv.push({k:'TP'+(i+1),v:t,c:col('positive','#38b879')});});
+    if(e!=null)lv.push({k:'Entrée',v:e,c:col('info','#45D6E8')});
+    [plan.tp1,plan.tp2,plan.tp3].forEach(function(t,i){if(t!=null)lv.push({k:'TP'+(i+1),v:t,c:col('positive','#2BBE90')});});
     if(lv.length<2)return '';
     const vals=lv.map(function(l){return l.v;});
     const min=Math.min.apply(null,vals),max=Math.max.apply(null,vals),rng=(max-min)||1;
@@ -558,7 +558,7 @@ async function loadDossier(){
     const rows=lv.map(function(l){const yy=y(l.v);const pct=(px&&l.v)?((l.v/px-1)*100):null;
       return '<line x1="'+axX+'" y1="'+yy.toFixed(1)+'" x2="'+(axX+8)+'" y2="'+yy.toFixed(1)+'" stroke="'+l.c+'" stroke-width="2"/>'
         +'<circle cx="'+axX+'" cy="'+yy.toFixed(1)+'" r="3" fill="'+l.c+'"/>'
-        +'<text x="'+(axX-8)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="var(--vx-text-secondary,#b7b2aa)">'+l.k+'</text>'
+        +'<text x="'+(axX-8)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="var(--vx-text-secondary,#BABABA)">'+l.k+'</text>'
         +'<text x="'+(axX+14)+'" y="'+(yy+3).toFixed(1)+'" font-size="10.5" fill="'+l.c+'" style="font-variant-numeric:tabular-nums">'+VX.fmt.nd(l.v)+(pct!=null?' ('+(pct>=0?'+':'')+pct.toFixed(1)+'%)':'')+'</text>';}).join('');
     const aria='Échelle risque/récompense : '+lv.map(function(l){return l.k+' '+VX.fmt.nd(l.v);}).join(', ')+(plan.rr?', R:R '+plan.rr:'');
     return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:'+W+'px;display:block;margin:0 auto 10px" role="img" aria-label="'+aria.replace(/"/g,'&quot;')+'">'
@@ -607,7 +607,7 @@ async function loadDossier(){
             +'<div><div class="vx-meta">R:R</div><b>'+(t.reward_risk!=null?t.reward_risk:'—')+'</b></div></div>'
             +(t.blocked?'<div class="vx-stale-banner vx-mt2">⛔ Préparation bloquée par la stratégie : '+warn.map(esc).join(' · ')+'</div>'
               :(warn.length?'<div class="vx-meta vx-mt2" style="color:var(--vx-warning)">'+warn.map(esc).join(' · ')+'</div>':''))
-            +'<pre id="ot-pre" style="white-space:pre-wrap;background:var(--vx-surface-2,#1d1f22);padding:.7rem;border-radius:8px;margin-top:.7rem;font-size:12px">'+esc(t.copy_text||'')+'</pre>'
+            +'<pre id="ot-pre" style="white-space:pre-wrap;background:var(--vx-surface-2,#121214);padding:.7rem;border-radius:8px;margin-top:.7rem;font-size:12px">'+esc(t.copy_text||'')+'</pre>'
             +'<button class="vx-btn vx-btn-sm vx-btn-ghost" id="ot-copy">Copier le ticket</button>'
             +'<div class="vx-meta vx-mt1">'+esc(t.disclaimer||'')+'</div></div>';
           const cp=document.getElementById('ot-copy');
@@ -690,7 +690,7 @@ async function loadAnalyst(){
       return `<div class="vx-kv"><span class="k">${esc(r.date)} · ${esc(r.firm)}</span><span class="v ${dir}">${esc(r.to||r.pt_action||r.action)}${tgt}</span></div>`;
     }).join('');
   }
-  if(cat){const el=$b('an-catalysts');if(el)el.innerHTML+=`<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">${cat}</div>`;}
+  if(cat){const el=$b('an-catalysts');if(el)el.innerHTML+=`<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#30292B);padding-top:8px">${cat}</div>`;}
   /* Sentiment : détention institutionnelle (13F) + initiés */
   let sen='';
   if(a.holders&&a.holders.length){
@@ -702,7 +702,7 @@ async function loadAnalyst(){
   if(a.insider){const ib=a.insider;
     sen+=kv('Initiés (récent)',`${ib.buys} achat(s) / ${ib.sells} vente(s)`,(ib.bias==='buy'?'vx-pos':ib.bias==='sell'?'vx-neg':''));
   }
-  if(sen){const el=$b('an-sentiment');if(el)el.innerHTML+=`<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">${sen}</div>`;}
+  if(sen){const el=$b('an-sentiment');if(el)el.innerHTML+=`<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#30292B);padding-top:8px">${sen}</div>`;}
 }
 /* ── Carte-Verdict + Carte-Scénario + Raisonnement du comité (decision stack) ── */
 function pctRet(entry,tgt){if(entry==null||tgt==null||!entry)return null;return (tgt-entry)/entry*100;}
