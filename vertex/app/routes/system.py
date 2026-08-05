@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v96';   // v96 (SKYLER LOT 17) : correlation partielle vs SPY + groupes de dependances >= 3 (Portefeuille/Risque)
+const CACHE='td-shell-v97';   // v97 (SKYLER LOT 20) : drill-down post-mortem par decision dans la carte Memoire (Performance)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

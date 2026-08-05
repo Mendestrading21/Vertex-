@@ -188,6 +188,17 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   jamais inventé ; route fail-safe ; versions jamais mélangées (testé) ;
 - 1450 tests verts / 2 skipped (+12) ; SW v96 inchangé.
 
+## Lot 20 — livré (2026-08-05, travail continu)
+
+- drill-down `GET /api/skyler/memory/<decision_id>` : record figé complet +
+  résultat mesuré + **post-mortem déterministe** (classification par horizon,
+  scénario ayant contenu le résultat : HORS_FOURCHETTE_BASSE / PESSIMISTE /
+  PROBABLE / EXCEPTIONNEL_ATTEINT, MFE/MAE, résumé) — honnête si rien n'est
+  mesuré, discipline jamais devinée ; 404 structuré sur id inconnu ;
+- carte Mémoire : tableau « Dernières décisions figées » avec lien détail ;
+  SW **v97** + gardiens prospectifs ; navigateur 390/1440 : 0 erreur console ;
+- 1463 tests verts / 2 skipped (+13).
+
 ## Programme Institutional+ — TERMINÉ (RC sur intégration)
 
 Les 12 lots + audit sont livrés sur `integration/vertex-skyler-v2`.

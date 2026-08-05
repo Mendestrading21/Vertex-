@@ -288,6 +288,27 @@ def api_skyler_memory():
     })
 
 
+@bp.route('/api/skyler/memory/<decision_id>')
+def api_skyler_memory_detail(decision_id):
+    """DRILL-DOWN MÉMOIRE (LOT 20) : record figé complet + résultat mesuré +
+    revue post-mortem déterministe (décision vs résultat, scénario contenant
+    le résultat, classification par horizon). Id inconnu → 404 structuré.
+    Lecture seule."""
+    from vertex.engines import decision_memory as _dm
+    from vertex.services import persist as _persist
+    mem = _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory()
+    rec = _dm.find_decision(mem, decision_id)
+    if rec is None:
+        return jsonify({'ok': False, 'error': 'decision_inconnue',
+                        'decision_id': decision_id,
+                        'note': 'aucune décision figée sous cet identifiant'}), 404
+    out = _dm.find_outcome(mem, decision_id)
+    return jsonify({'generator': 'deterministic',
+                    'record': rec, 'outcome': out,
+                    'post_mortem': _dm.post_mortem(rec, out),
+                    'note': 'record immuable — le post-mortem lit, ne réécrit jamais'})
+
+
 def _kg_build():
     """Assemble le Knowledge Graph depuis les sources réelles de l'état partagé :
     univers scanné, watchlist sectorielle statique, séries canoniques, calendrier

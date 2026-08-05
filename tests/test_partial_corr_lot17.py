@@ -146,8 +146,10 @@ def test_portfolio_risk_view_renders_hidden_groups():
     assert 'Groupes exposés' in body or 'Groupes expos&eacute;s' in body
 
 
-def test_service_worker_bumped_to_v96():
+def test_service_worker_bumped_to_at_least_v96():
+    import re
     import terminal
     body = terminal.app.test_client().get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v96' in body
+    m = re.search(r"td-shell-v(\d+)", body)
+    assert m and int(m.group(1)) >= 96
     assert 'td-shell-v95' not in body

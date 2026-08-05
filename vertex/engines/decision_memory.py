@@ -464,6 +464,79 @@ def aggregates(memory):
             'note': 'résultats séparés par version de moteur — jamais fusionnés'}
 
 
+# ─── Post-mortem par décision (LOT 20) ──────────────────────────────────────────
+
+def find_decision(memory, decision_id):
+    for r in (memory or {}).get('decisions') or []:
+        if r.get('decision_id') == decision_id:
+            return r
+    return None
+
+
+def find_outcome(memory, decision_id):
+    for o in (memory or {}).get('outcomes') or []:
+        if o.get('decision_id') == decision_id:
+            return o
+    return None
+
+
+def post_mortem(record, outcome):
+    """Revue POST-MORTEM déterministe (mode Post-Mortem du comité) — décision
+    vs résultat observé, scénario ayant CONTENU le résultat, classification par
+    horizon mesuré. Uniquement depuis les données figées ; rien de mesuré →
+    honnêtement indisponible. L'erreur de discipline reste inobservable sans
+    trades réels — dit, jamais deviné."""
+    r = record or {}
+    measured = []
+    for h in ('H5', 'H20', 'H60', 'CATALYSEUR'):
+        hz = ((outcome or {}).get('horizons') or {}).get(h) or {}
+        if hz.get('status') == 'MESURE' and _num(hz.get('return_pct')) is not None:
+            measured.append((h, float(hz['return_pct'])))
+    if not measured:
+        return {'available': False,
+                'reason': 'aucun horizon mesuré pour cette décision — post-mortem '
+                          'impossible, rien d’inventé'}
+
+    horizons = [{'horizon': h, 'return_pct': ret,
+                 'classification': classify_error(r, ret, h)}
+                for h, ret in measured]
+    longest, ret = measured[-1]
+
+    scen = r.get('scenarios') or {}
+    containing, scen_note = None, None
+    if scen.get('available'):
+        bear_r = _num((scen.get('bear') or {}).get('return_pct'))
+        base_r = _num((scen.get('base') or {}).get('return_pct'))
+        bull_r = _num((scen.get('bull') or {}).get('return_pct'))
+        if None not in (bear_r, base_r, bull_r):
+            if ret < bear_r:
+                containing = 'HORS_FOURCHETTE_BASSE'
+            elif ret < base_r:
+                containing = 'PESSIMISTE'
+            elif ret < bull_r:
+                containing = 'PROBABLE'
+            else:
+                containing = 'EXCEPTIONNEL_ATTEINT'
+        else:
+            scen_note = 'scénarios figés incomplets — containment non évaluable'
+    else:
+        scen_note = 'aucun scénario figé à la décision — containment non évaluable'
+
+    return {'available': True,
+            'longest_horizon': longest, 'return_pct': ret,
+            'horizons': horizons,
+            'scenario_containing': containing,
+            'scenario_note': scen_note,
+            'mfe_pct': (outcome or {}).get('mfe_pct'),
+            'mae_pct': (outcome or {}).get('mae_pct'),
+            'discipline_note': 'erreur de discipline inobservable sans trades réels '
+                               'liés à la décision — jamais devinée',
+            'summary': 'Décision %s (%s, moteur %s) — rendement observé %+.1f %% à %s, '
+                       'classé %s.' % (r.get('decision'), r.get('symbol'),
+                                       r.get('engine_version'), ret, longest,
+                                       horizons[-1]['classification']['class'])}
+
+
 # ─── Facteur de calibration réel (LOT 19) ───────────────────────────────────────
 
 MIN_CALIBRATION_SAMPLE = 20
@@ -529,5 +602,6 @@ def recommendations(patterns, aggs):
 __all__ = ['freeze', 'empty_memory', 'append_decision', 'append_outcome',
            'sessions_after', 'measure', 'classify_error', 'detect_patterns',
            'aggregates', 'recommendations', 'calibration_factor',
+           'find_decision', 'find_outcome', 'post_mortem',
            'ERROR_CLASSES', 'MEMORY_FILE', 'MAX_DECISIONS',
            'MEMORY_SCHEMA_VERSION', 'MIN_CALIBRATION_SAMPLE']
