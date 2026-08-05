@@ -48,6 +48,7 @@
 | 42 | `SKYLER-LOT-42.md` | Intégrité de l'export souverain (ledger_health embarqué + content_sha256 canonique vérifiable hors ligne) | 0.9.0 | v106 | 1599 | GO |
 | 43 | `SKYLER-LOT-43.md` | Fuzz clés encodées des routes cellule (2 routes, 0 défaut — trou de couverture du lot 36 fermé, non-interférence prouvée) | 0.9.0 | v106 | 1606 | GO |
 | 44 | `SKYLER-LOT-44.md` | Bilan consolidé n°2 (29→43) en tête de STATUS + bascule dite vers RC périodiques espacées (backlog code épuisé) | 0.9.0 | v106 | 1606 | GO |
+| RC1 | `SKYLER-RC-PERIODIQUE-1.md` | RC périodique n°1 — suite complète + audit navigateur 8 pages + parcours mémoire : GO, 0 défaut, baseline tenue | 0.9.0 | v106 | 1606 | GO |
 
 ## Architecture atteinte
 
