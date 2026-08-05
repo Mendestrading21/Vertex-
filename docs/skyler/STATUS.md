@@ -708,6 +708,21 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - preuves : 3 tests rouges→verts ; suite 1661/2 skipped ; RC outillée GO
   0 défaut sous SW v114 ; moteur 0.9.0 inchangé.
 
+## Lot 58 — livré (2026-08-05, arc « jusqu'au lot 60 » — polish 3/4)
+
+- défaut ACTIF trouvé sur /options : le token `--vx-text-dim` n'existe
+  pas dans tokens.css → son fallback `#8a837a` (ancienne palette chaude)
+  se rendait réellement sur tous les textes atténués ; ~28 fallbacks
+  périmés au total dont l'ORANGE BANNI `#cf6128` (tag démo) et le cuivre
+  `#b9683d` — tous réalignés sur les tokens réels et leurs valeurs
+  actuelles ; tag démo → var(--vx-warning) ;
+- /portfolio : 4 fallbacks périmés réalignés + `title` sur le libellé de
+  scénario ellipsé (info complète au survol, aria-label déjà présent) ;
+- preuves : 5 tests rouges→verts ; suite 1666/2 skipped ; RC outillée GO
+  0 défaut sous SW v115 ; balayage APRÈS des couleurs CALCULÉES (14
+  valeurs périmées recherchées sur tout #vx-content) : « palette OK »
+  sur les deux pages, 0 erreur console ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
