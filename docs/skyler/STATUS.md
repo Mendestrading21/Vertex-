@@ -156,6 +156,19 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   console, 0 overflow, captures `docs/skyler/baseline/lot16-*.png` ;
 - 1416 tests verts / 2 skipped (+6).
 
+## Lot 17 — livré (2026-08-05, travail continu)
+
+- co-mouvement du graphe en **corrélation partielle** (résidus OLS vs SPY,
+  `method: residual_vs_SPY` + R² par titre) — le faux co-mouvement « les deux
+  suivent le marché » est filtré (prouvé par test) ; sans SPY, fallback
+  `method: raw` ÉTIQUETÉ + limite dite, jamais silencieux ; SPY exclu des
+  paires ;
+- `hidden_groups` : composantes connexes ≥ 3 titres synthétisées dans l'API
+  et affichées sur Portefeuille → Risque ;
+- SW **v96** + gardiens (lot 16 rendu prospectif ≥ 95) ; navigateur 390/1440 :
+  0 erreur console, captures lot17-*.png ;
+- 1427 tests verts / 2 skipped (+11).
+
 ## Programme Institutional+ — TERMINÉ (RC sur intégration)
 
 Les 12 lots + audit sont livrés sur `integration/vertex-skyler-v2`.

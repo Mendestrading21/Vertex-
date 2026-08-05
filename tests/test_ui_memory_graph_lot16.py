@@ -51,9 +51,11 @@ def test_hidden_deps_only_on_portfolio_not_today():
     assert '/api/skyler/graph' not in body
 
 
-# ─── Service worker : shell visible changé → bump v95 ───────────────────────────
+# ─── Service worker : shell visible changé → bump ≥ v95 (prospectif) ────────────
 
-def test_service_worker_bumped_to_v95():
+def test_service_worker_bumped_to_at_least_v95():
+    import re
     body = _body('/sw.js')
-    assert 'td-shell-v95' in body
+    m = re.search(r"td-shell-v(\d+)", body)
+    assert m and int(m.group(1)) >= 95
     assert 'td-shell-v94' not in body
