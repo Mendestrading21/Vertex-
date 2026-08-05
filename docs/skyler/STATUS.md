@@ -257,6 +257,19 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   honnête) ; SW **v100** ;
 - 1508 tests verts / 2 skipped (+10).
 
+## Lot 27 — livré (2026-08-05, RC courte du travail continu)
+
+- AUDIT complet des lots 13 → 26 (aucun code moteur) : 8 espaces en 200 aux
+  deux tailles, 0 overflow, 0 erreur JS applicative (client-log = 0 ; les
+  resets du tour = requêtes coupées par la navigation + Google Fonts
+  injoignable dans la sandbox — investigué, documenté) ; 9 endpoints Skyler
+  en 200 avec versions cohérentes (décision 0.8.0, red-team 1.1.0 complète,
+  graphe 0.1.0 distinct) ; sécurité propre (no_orders, aucun runtime/secret
+  suivi, aucun verbe d'ordre, readonly intact) ;
+- verdict **GO AVEC RÉSERVES** — réserve n° 1 inchangée : validation humaine
+  sur appareil physique ; bilan : +141 tests depuis le lot 12, moteur
+  0.2.0 → 0.8.0, SW v94 → v100, 4/4 facteurs de confiance mesurés.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
