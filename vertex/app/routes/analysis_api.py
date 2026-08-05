@@ -300,29 +300,42 @@ def api_skyler_memory():
 
 @bp.route('/api/skyler/memory/export')
 def api_skyler_memory_export():
-    """EXPORT SOUVERAIN (LOT 29) : sauvegarde LECTURE SEULE de tout l'état
-    runtime Skyler — mémoire décisionnelle, log de séances datées, journal de
-    calibration — avec les versions. Les fichiers runtime sont gitignorés et
-    périssables ; l'export rend l'historique des décisions souverain.
+    """EXPORT SOUVERAIN (LOT 29, intégrité LOT 42) : sauvegarde LECTURE SEULE
+    de tout l'état runtime Skyler — mémoire décisionnelle, log de séances
+    datées, journal de calibration — avec les versions, la santé du ledger
+    AU MOMENT de l'export (l'archive se décrit elle-même) et une empreinte
+    sha256 du contenu canonique, vérifiable HORS LIGNE sans le serveur.
     Aucun effet de bord, servi en téléchargement."""
+    import hashlib as _hashlib
+    import json as _json
     import time as _time
     from vertex.engines import decision_memory as _dm
     from vertex.engines import session_log as _slog
     from vertex.engines import skyler_journal as _sj
     from vertex.engines import skyler_core as _sk
     from vertex.services import persist as _persist
+    mem = _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory()
     payload = {
         'exported_at': _time.strftime('%Y-%m-%dT%H:%M:%SZ', _time.gmtime()),
         'versions': {'decision_engine': _sk.ENGINE_VERSION,
                      'memory_schema': _dm.MEMORY_SCHEMA_VERSION,
                      'packet_schema': _sk.SCHEMA_VERSION},
-        'memory': _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory(),
+        'memory': mem,
         'sessions': _persist.load_json(_slog.SESSIONS_FILE, None) or _slog.empty_log(),
         'journal': _persist.load_json(_sj.JOURNAL_FILE, []) or [],
+        # l'archive dit elle-même si le ledger était cohérent à l'export —
+        # un magasin corrompu est fidèlement empreinté, jamais maquillé
+        'ledger_health': _dm.ledger_health(mem),
         'note': 'Export lecture seule de l’état runtime Skyler — les décisions '
                 'historiques ne sont jamais réécrites ; ce fichier est la '
-                'sauvegarde souveraine de la mémoire du trader.',
+                'sauvegarde souveraine de la mémoire du trader. Vérification '
+                'hors ligne : content_sha256 = sha256 du JSON canonique '
+                '(clés triées, séparateurs compacts) du bundle SANS ce champ.',
     }
+    canonical = _json.dumps(payload, sort_keys=True, ensure_ascii=False,
+                            separators=(',', ':'))
+    payload['content_sha256'] = _hashlib.sha256(
+        canonical.encode('utf-8')).hexdigest()
     resp = jsonify(payload)
     resp.headers['Content-Disposition'] = (
         'attachment; filename="skyler_export_%s.json"'

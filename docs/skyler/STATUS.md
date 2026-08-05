@@ -484,6 +484,20 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - RC courte GO — 0 défaut produit ; 1593 tests verts / 2 skipped
   (inchangé — outil seulement) ; moteur 0.9.0 et SW v106 inchangés.
 
+## Lot 42 — livré (2026-08-05, travail continu)
+
+- intégrité de l'export souverain : le bundle embarque `ledger_health`
+  calculé AU MOMENT de l'export (l'archive dit elle-même si le ledger
+  était cohérent — un magasin corrompu est fidèlement empreinté et son
+  incohérence DITE, jamais maquillée) et `content_sha256` (sha256 du
+  JSON canonique, clés triées — vérifiable HORS LIGNE sans le serveur,
+  méthode documentée dans la note du fichier même) ;
+- lecture seule stricte re-prouvée (octets identiques) ; gardiens de
+  l'export lot 29 verts inchangés ; biais par type de catalyseur
+  vérifié et REPORTÉ honnêtement (aucune information nouvelle sans
+  échantillons mesurés réels) ;
+- 1599 tests verts / 2 skipped (+6) ; moteur 0.9.0 et SW v106 inchangés.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
