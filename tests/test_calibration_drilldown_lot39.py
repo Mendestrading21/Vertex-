@@ -142,10 +142,12 @@ def test_route_corrupted_store_never_500(client):
 # ─── UI : badges cliquables + SW v105 ───────────────────────────────────────────
 
 def test_memory_card_badges_link_to_cells():
+    # depuis le lot 40, les badges visent la VUE LISIBLE /memory/cell/… ;
+    # l'API JSON /api/skyler/memory/cell reste servie (tests de route ci-dessus)
     import terminal
     body = terminal.app.test_client().get(
         '/journal', follow_redirects=True).get_data(as_text=True)
-    assert '/api/skyler/memory/cell/' in body
+    assert '/memory/cell/' in body
 
 
 def test_service_worker_bumped_to_at_least_v105():

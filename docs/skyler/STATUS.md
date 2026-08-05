@@ -458,6 +458,20 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - SW v104 → v105 + 4 gardiens ; RC courte GO (v105 servi) + 404 live
   vérifiés ; 1586 tests verts / 2 skipped (+10) ; moteur 0.9.0 inchangé.
 
+## Lot 40 — livré (2026-08-05, travail continu)
+
+- vue HTML lisible d'une cellule de calibration : `/memory/cell/<group>/
+  <key>` — résumé (facteur, hit rate, n, basis), table des décisions
+  MESURÉES avec hit/miss honnêtes et lien post-mortem par record,
+  404 lisibles ; markupsafe PROUVÉ sur contenu hostile figé (affiché
+  échappé, jamais exécuté ni caché) ; la vue lit `cell_decisions`
+  (source unique lot 39), ne recalcule rien ;
+- badges de la carte Mémoire → vue lisible (l'API JSON reste servie
+  pour l'audit) ; boucle complète : badge → cellule → record →
+  post-mortem ;
+- SW v105 → v106 + 4 gardiens ; RC courte GO (v106 servi) + 404 live ;
+- 1593 tests verts / 2 skipped (+7) ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
