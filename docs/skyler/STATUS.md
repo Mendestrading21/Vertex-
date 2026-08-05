@@ -4,6 +4,56 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — travail continu, lots 29 → 37 (2026-08-05)
+
+Synthèse des 9 lots livrés en mode continu (« go sans validation
+humaine ») depuis la RC du lot 27, à l'intention de la validation humaine.
+
+| Mesure | Avant (lot 28) | Après (lot 37) |
+|---|---|---|
+| Tests verts | 1 515 / 2 skipped | **1 576 / 2 skipped** (+61) |
+| Moteur décisionnel | 0.8.0 | **0.9.0** (catalyst_kind émis + figé) |
+| Service worker | v100 | **v104** (4 bumps, gardiens à jour) |
+| RC courtes navigateur | — | **3 × GO — 0 défaut** (lots 32/33/35/37) |
+
+### Capacités livrées
+
+- **Export souverain** (lot 29) : `GET /api/skyler/memory/export` —
+  sauvegarde lecture seule PROUVÉE (octets identiques) de tout l'état
+  runtime (mémoire + séances + journal + versions), bouton « Exporter » ;
+- **Type de catalyseur figé** (lot 30) : `catalyst_kind` émis par le
+  moteur (fait du moteur events, jamais re-parsé) + découpe
+  `by_catalyst_type` en OBSERVATION (non consommée, prouvé) ;
+- **Surfaçage UI** (lots 33/35/37) : badges catalyseur/type dans la
+  calibration par contexte, badge `LEDGER : ANOMALIES` conditionnel,
+  fraîcheur « dernière décision figée (J-N) » calendaire UTC ;
+- **Santé du ledger** (lot 35) : `ledger_health` — doublons, orphelins,
+  mélanges de versions, corruption — DIT, jamais réparé en silence ;
+- **RC courte outillée** (lot 32) : `tools/rc_short_audit.js` versionné,
+  ré-exécutable (8 pages, console, client-log, SW).
+
+### Robustesse prouvée (fuzz déterministe, zéro aléatoire)
+
+- **11 crashs réels corrigés** en refus honnêtes : 7 dans les moteurs
+  (lot 31 — propagate/calibration/mémoire sur entrées dégénérées) et
+  4 en HTTP 500 (lot 34 — magasin corrompu sur les routes mémoire) ;
+- couverture adversariale HTTP complète des chemins Skyler (lots
+  31/34/36 : moteurs, routes mémoire/graphe, cœur `/api/skyler/<sym>`) ;
+- **1 défaut UI attrapé par la preuve navigateur** (lot 37 : J-1 affiché
+  pour une décision du jour — corrigé, re-vérifié J-0 live).
+
+### Invariants tenus sur les 9 lots
+
+READONLY absolu · données réelles uniquement (absent → n/d) · `main`
+jamais touchée · fichiers runtime jamais commités · gardiens prospectifs
+· zéro aléatoire moteur · rouge d'abord quand le comportement change ·
+preuve navigateur à chaque changement de shell.
+
+### Réserve inchangée
+
+La validation sur appareil physique (TWS réel, pages, iPhone) reste
+l'étape HUMAINE — réserve n°1 de la RC du lot 27, toujours ouverte.
+
 ## Source de vérité
 
 Skill : `.claude/skills/vertex-skyler-v2/SKILL.md`
