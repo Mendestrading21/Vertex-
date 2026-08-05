@@ -575,6 +575,76 @@ def calibration_factor(memory, engine_version):
                      % (hits, n, hit_rate * 100, engine_version)}
 
 
+# ─── Calibration par contexte (LOT 22 — SCENARIO_CALIBRATION §13) ───────────────
+
+def _measured_hits(memory, engine_version):
+    """(niveau, décision, hit) pour chaque décision MESURÉE de cette version."""
+    mem = memory or empty_memory()
+    out = []
+    for r in mem.get('decisions') or []:
+        if r.get('engine_version') != engine_version:
+            continue
+        cls = _measured_class(mem, r)
+        if cls is None:
+            continue
+        out.append((r.get('level'), r.get('decision'),
+                    cls in ('DECISION_CORRECTE', 'VARIANCE_NORMALE')))
+    return out
+
+
+def _context_cell(rows, label):
+    n = len(rows)
+    if n < MIN_CALIBRATION_SAMPLE:
+        return {'status': 'INSUFFISANT', 'n_measured': n, 'hit_rate': None,
+                'value': None,
+                'basis': 'cellule %s : %d/%d mesure(s) — hit rate non calculé, '
+                         'jamais inventé' % (label, n, MIN_CALIBRATION_SAMPLE)}
+    hits = sum(1 for h in rows if h)
+    hr = hits / n
+    return {'status': 'MESURE', 'n_measured': n, 'hit_rate': round(hr, 3),
+            'value': round(0.5 + 0.4 * hr, 3),
+            'basis': 'cellule %s : hit rate %d/%d = %.0f %% — facteur borné [0,50, 0,90]'
+                     % (label, hits, n, hr * 100)}
+
+
+def calibration_by_context(memory, engine_version):
+    """Découpe la calibration par NIVEAU et par DÉCISION — chaque cellule a son
+    propre hit rate SEULEMENT si son échantillon suffit ; sinon INSUFFISANT
+    dit. Jamais de mélange de versions."""
+    rows = _measured_hits(memory, engine_version)
+    by_level, by_decision = {}, {}
+    for lv, dec, hit in rows:
+        if lv:
+            by_level.setdefault(lv, []).append(hit)
+        if dec:
+            by_decision.setdefault(dec, []).append(hit)
+    return {'engine_version': engine_version,
+            'n_measured_total': len(rows),
+            'by_level': {lv: _context_cell(v, 'niveau=%s' % lv)
+                         for lv, v in sorted(by_level.items())},
+            'by_decision': {d: _context_cell(v, 'décision=%s' % d)
+                            for d, v in sorted(by_decision.items())},
+            'note': 'calibration par contexte (§13) — une cellule sous-échantillonnée '
+                    'reste INSUFFISANTE, l’agrégat global est le secours'}
+
+
+def calibration_factor_for(memory, engine_version, level=None):
+    """Facteur de calibration à SERVIR au moteur : cellule du niveau courant si
+    mesurée, sinon agrégat global, sinon 0,50 — portée (`scope`) explicite."""
+    if level:
+        ctx = calibration_by_context(memory, engine_version)
+        cell = (ctx['by_level'] or {}).get(level)
+        if cell and cell['status'] == 'MESURE':
+            return {'value': cell['value'], 'hit_rate': cell['hit_rate'],
+                    'n_measured': cell['n_measured'],
+                    'engine_version': engine_version,
+                    'scope': 'context:level=%s' % level,
+                    'basis': cell['basis'] + ' (moteur %s)' % engine_version}
+    g = calibration_factor(memory, engine_version)
+    g['scope'] = 'global'
+    return g
+
+
 # ─── Recommandations (jamais auto-appliquées) ───────────────────────────────────
 
 def recommendations(patterns, aggs):
@@ -602,6 +672,7 @@ def recommendations(patterns, aggs):
 __all__ = ['freeze', 'empty_memory', 'append_decision', 'append_outcome',
            'sessions_after', 'measure', 'classify_error', 'detect_patterns',
            'aggregates', 'recommendations', 'calibration_factor',
+           'calibration_by_context', 'calibration_factor_for',
            'find_decision', 'find_outcome', 'post_mortem',
            'ERROR_CLASSES', 'MEMORY_FILE', 'MAX_DECISIONS',
            'MEMORY_SCHEMA_VERSION', 'MIN_CALIBRATION_SAMPLE']
