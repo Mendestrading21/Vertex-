@@ -204,6 +204,29 @@
       },
     };
   };
+  C.crosshairPlugin = function (color) {
+    /* ligne de visée verticale au survol (type app de courtage) — suit le
+       point ACTIF du tooltip (mode index) + point surligné ; jamais
+       dessinée hors survol. */
+    return {
+      id: 'vxCrosshair',
+      afterDatasetsDraw(chart) {
+        const tt = chart.tooltip;
+        if (!tt || !tt.getActiveElements) return;
+        const active = tt.getActiveElements();
+        if (!active.length || tt.opacity === 0) return;
+        const el = active[0].element, area = chart.chartArea, ctx = chart.ctx;
+        ctx.save();
+        ctx.strokeStyle = color + '59';
+        ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(el.x, area.top); ctx.lineTo(el.x, area.bottom); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.beginPath(); ctx.arc(el.x, el.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill();
+        ctx.restore();
+      },
+    };
+  };
   C.lastDotPlugin = function (color, yFmt) {
     /* pastille + halo sur le DERNIER point réel + pilule de prix au bord
        droit (lastValueLabel) — la donnée affichée est la vraie dernière
@@ -240,9 +263,10 @@
       },
     };
   };
-  C.area = function (canvas, labels, values, { color = C.colors.blue, yFmt, fill = true, extraDatasets = [], last = true, glow = true } = {}) {
+  C.area = function (canvas, labels, values, { color = C.colors.blue, yFmt, fill = true, extraDatasets = [], last = true, glow = true, crosshair = true } = {}) {
     const plugins = [];
     if (glow) plugins.push(C.glowPlugin(color));
+    if (crosshair) plugins.push(C.crosshairPlugin(color));
     if (last) plugins.push(C.lastDotPlugin(color, yFmt));
     return C.mount(canvas, {
       type: 'line',
@@ -274,12 +298,15 @@
       options: { cutout: '68%', plugins: { legend: { display: true, position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } },
     });
   };
-  C.multiLine = function (canvas, labels, datasets, { yFmt } = {}) {
+  C.multiLine = function (canvas, labels, datasets, { yFmt, crosshair = true } = {}) {
+    /* harmonisé sur la signature 2026 de C.area (lot 51) : lissage monotone
+       (jamais de faux extrêmes), ligne 2 px, même visée au survol. */
     return C.mount(canvas, {
       type: 'line',
-      data: { labels, datasets: datasets.map((d, i) => Object.assign({ borderColor: C.colors.series[i % 6], borderWidth: 1.5, pointRadius: 0, tension: .25, fill: false }, d)) },
+      data: { labels, datasets: datasets.map((d, i) => Object.assign({ borderColor: C.colors.series[i % 6], borderWidth: 2, pointRadius: 0, cubicInterpolationMode: 'monotone', tension: .35, fill: false }, d)) },
       options: { scales: C.axes({ yFmt }), interaction: { mode: 'index', intersect: false },
         plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } },
+      plugins: crosshair ? [C.crosshairPlugin(C.colors.brand)] : [],
     });
   };
   /* Annotations de niveaux (entrée/stop/TP…) — plugin ligne horizontale. */

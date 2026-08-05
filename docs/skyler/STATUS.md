@@ -615,6 +615,21 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   visuelle (capture /markets : pastille « 413,00 » rendue, roundRect
   supporté, 0 erreur console) ; moteur 0.9.0 inchangé.
 
+## Lot 52 — livré (2026-08-05, axe visuel — suite)
+
+- CROSSHAIR type app de courtage, central dans `chart-core.js` : plugin
+  `vxCrosshair` (ligne de visée verticale pointillée suivant le point
+  ACTIF du tooltip — jamais dessinée hors survol — + point surligné),
+  câblé par défaut dans `C.area`, désactivable ;
+- `C.multiLine` HARMONISÉ sur la signature 2026 du lot 51 : lissage
+  monotone (jamais de faux extrêmes), ligne 2 px, crosshair ;
+- palette : AUCUN littéral couleur nouveau (même gardien à inventaire
+  exact que lot 51) ; le crosshair ne fait que POINTER un point réel ;
+- preuves : 5 tests rouges→verts ; suite 1638/2 skipped ; RC outillée GO
+  0 défaut sous SW v109 (cycle souverain inclus) ; preuve navigateur au
+  SURVOL RÉEL (visée + point actif + tooltip + pastille lot 51 rendus,
+  0 erreur console) ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
