@@ -208,6 +208,16 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   jamais chiffrées ; cas manuel BS gardé par test (ATM 1 an vol 20 % ≈ 7,97 %) ;
 - 1472 tests verts / 2 skipped (+9) ; SW v97 inchangé.
 
+## Lot 22 — livré (2026-08-05, travail continu)
+
+- moteur **0.7.0** : calibration PAR CONTEXTE (§13) — découpe par niveau et
+  par décision, chaque cellule avec son propre hit rate seulement si ≥ 20
+  mesures (sinon INSUFFISANT dit, valeur None) ; sélection à portée explicite
+  contextuel → global → 0,50 ; la route sert la cellule du niveau courant
+  (prouvé bout en bout : cellule REFUS_WATCH 0,90 servie au moteur) ;
+  `/api/skyler/memory` expose la découpe ; versions jamais mélangées ;
+- 1481 tests verts / 2 skipped (+9) ; SW v97 inchangé.
+
 ## Programme Institutional+ — TERMINÉ (RC sur intégration)
 
 Les 12 lots + audit sont livrés sur `integration/vertex-skyler-v2`.

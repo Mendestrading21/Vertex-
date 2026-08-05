@@ -24,7 +24,8 @@ SCHEMA_VERSION = 1
 # 0.4.0 : la revue red-team PRODUITE (red_team.review) entre dans la décision
 # 0.5.0 : robustness MESURÉE par analyse de perturbation (liste fixe, déterministe)
 # 0.6.0 : calibration RÉELLE (scenario hit rate de la mémoire, par version, bornée)
-ENGINE_VERSION = '0.6.0'
+# 0.7.0 : calibration PAR CONTEXTE consommée (cellule du niveau courant si mesurée)
+ENGINE_VERSION = '0.7.0'
 
 PERTURBATIONS = ('score_technique_-10', 'score_technique_+10', 'rr_-0.5', 'rr_+0.5',
                  'regime_confidence_-0.2', 'regime_confidence_+0.2',

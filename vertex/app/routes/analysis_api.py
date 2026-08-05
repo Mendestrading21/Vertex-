@@ -144,14 +144,17 @@ def api_skyler(sym):
                                as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx)
     rt_review = _rt.review(packet0, _sk.score40(packet0))
     rt_input = {'complete': rt_review['complete'], 'basis': rt_review['basis']}
-    # Calibration RÉELLE (LOT 19) : facteur depuis les résultats mesurés de la
-    # mémoire pour CETTE version de moteur — fail-safe, jamais inventé.
+    # Calibration RÉELLE (LOT 19/22) : facteur depuis les résultats mesurés de
+    # la mémoire pour CETTE version — cellule du NIVEAU courant si mesurée
+    # (§13), agrégat global en secours. Fail-safe, jamais inventé.
     calib = None
     try:
         from vertex.engines import decision_memory as _dmc
         from vertex.services import persist as _pc
-        _memc = _pc.load_json(_dmc.MEMORY_FILE, None)
-        calib = _dmc.calibration_factor(_memc or _dmc.empty_memory(), _sk.ENGINE_VERSION)
+        _memc = _pc.load_json(_dmc.MEMORY_FILE, None) or _dmc.empty_memory()
+        _score0 = _sk.score40(packet0)
+        calib = _dmc.calibration_factor_for(_memc, _sk.ENGINE_VERSION,
+                                            level=_score0.get('level'))
     except Exception:
         calib = None
     decision = _sk.decide(sym, detail, market=market, events=ev, anomaly=ano,
@@ -272,10 +275,12 @@ def api_skyler_memory():
             pass
     patterns = _dm.detect_patterns(mem)
     aggs = _dm.aggregates(mem)
+    from vertex.engines import skyler_core as _sk2
     return jsonify({
         'generator': 'deterministic',
         'as_of': scan_state.get('scan_ts_h') or scan_state.get('updated'),
         'demo': _demo,
+        'calibration_by_context': _dm.calibration_by_context(mem, _sk2.ENGINE_VERSION),
         'n_decisions': len(mem['decisions']),
         'n_outcomes': len(mem['outcomes']),
         'decisions': mem['decisions'][-50:],
