@@ -124,8 +124,37 @@ def api_skyler(sym):
                           as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx)
     packet = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
                               as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx)
+    # Journal de calibration (LOT 9) : chaque décision servie est enregistrée
+    # (dédupliquée par scan) avec le prix du moment — base des résultats ex post.
+    try:
+        import time as _time
+        from vertex.engines import skyler_journal as _sj
+        from vertex.services import persist as _persist
+        j = _persist.load_json(_sj.JOURNAL_FILE, [])
+        j2 = _sj.record(j, decision, price=detail.get('price'), now=round(_time.time()))
+        if j2 != j:
+            _persist.save_json(_sj.JOURNAL_FILE, j2)
+    except Exception:
+        pass                                   # le journal ne casse jamais la décision
     return jsonify({'symbol': sym, 'as_of': as_of, 'demo': _demo,
                     'packet': packet, 'decision': decision})
+
+
+@bp.route('/api/skyler/calibration')
+def api_skyler_calibration():
+    """CALIBRATION EX POST (LOT 9) : comptages exacts du journal des décisions +
+    rendements réels depuis le prix enregistré. Brier honnêtement indisponible
+    tant qu'aucune probabilité calibrée n'existe. Lecture seule."""
+    from vertex.engines import skyler_journal as _sj
+    from vertex.services import persist as _persist
+    journal = _persist.load_json(_sj.JOURNAL_FILE, [])
+    quotes = {s: (d or {}).get('price') for s, d in (scan_state.get('detail') or {}).items()
+              if isinstance(d, dict) and d.get('price') is not None}
+    out = _sj.calibration(journal, quotes=quotes)
+    out['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+    from vertex.app.config import DEMO_MODE as _demo
+    out['demo'] = _demo
+    return jsonify(out)
 
 
 @bp.route('/api/events/<sym>')

@@ -42,3 +42,4 @@ ai_enrichment_backup_*.json
 _v.log
 _verif.log
 market_context_last.json
+skyler_decisions.json
