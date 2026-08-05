@@ -609,7 +609,41 @@ async function renderCalendar(){
   }catch(e){$('op-body').innerHTML=VX.states.error('Calendrier indisponible');}
 }
 
-const RENDER={radar:renderRadar,stocks:renderStocks,options:renderOptions,
+/* Classement Skyler (X1) : le moteur canonique sur TOUT l'univers scanné.
+   Gate plafonnante visible par ligne — jamais masquée. Idempotent (re-boots). */
+async function loadSkylerRank(){
+  let d=null;
+  try{d=await VX.fetch('/api/skyler/sweep',{ttl:120000});}catch(e){return;}
+  if(!d)return;
+  document.querySelectorAll('[aria-label="Classement Skyler"]').forEach(n=>n.remove());
+  const host=document.createElement('section');
+  host.className='vx-card vx-mt3';host.setAttribute('aria-label','Classement Skyler');
+  host.id='vx-skyler-rank';
+  if(!d.n){
+    host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span></div>
+      ${VX.states.empty(esc((d.reason||'classement indisponible')+'.'))}`;
+  }else{
+    const tone=x=>x==='ACHETER'||x==='RENFORCER'?'pos':x==='REFUSER'||x==='REDUIRE'?'neg':'neutral';
+    const rows=(d.rows||[]).map(r=>`<tr>
+      <td data-label="Titre"><button class="vx-link" data-open-analysis="${esc(r.symbol)}"><b>${esc(r.symbol)}</b></button></td>
+      <td data-label="Décision"><span class="vx-badge" data-tone="${tone(r.decision)}">${esc(r.decision||'—')}</span></td>
+      <td data-label="Score" class="vx-num"><b>${r.score_total??'—'}</b>/40</td>
+      <td data-label="Niveau">${esc(r.level||'—')}</td>
+      <td data-label="Gate">${r.capped_by_gate?'<span class="vx-neg" title="décision plafonnée par cette porte">✕ '+esc(r.capped_by_gate)+'</span>':'<span class="vx-muted">—</span>'}</td>
+      <td data-label="Catalyseur">${esc(r.catalyst||'—')}</td>
+      <td data-label="Invalidation" class="vx-num">${r.invalidation!=null?VX.fmt.num(r.invalidation,2):'—'}</td>
+    </tr>`).join('');
+    host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span>
+      <span class="vx-chart-question">Régime marché partagé : ${esc(d.market_regime||'n/d')} · gates visibles · un score ne déclenche jamais un ordre.</span></div>
+      <div class="vx-table-wrap"><table class="vx-table"><thead><tr>
+        <th>Titre</th><th>Décision</th><th>Score</th><th>Niveau</th><th>Gate</th><th>Catalyseur</th><th>Invalidation</th>
+      </tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="vx-meta" style="margin-top:.3rem">${d.n} titre(s) · ${esc(d.note||'')}${d.demo?' · DÉMO':''}</div>`;
+  }
+  $('op-body').appendChild(host);
+}
+const RENDER={radar:async function(){await renderRadar();await loadSkylerRank();},
+  stocks:renderStocks,options:renderOptions,
   anomalies:renderAnomalies,calendar:renderCalendar};
 async function opFresh(){try{
   const el=document.getElementById('op-fresh');if(!el||!window.VX||!VX.freshness)return;

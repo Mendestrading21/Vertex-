@@ -140,6 +140,25 @@ def api_skyler(sym):
                     'packet': packet, 'decision': decision})
 
 
+@bp.route('/api/skyler/sweep')
+def api_skyler_sweep():
+    """BALAYAGE SKYLER (X1) : le moteur canonique appliqué à tous les titres
+    scannés, classé par score /40 — gate plafonnante visible par ligne.
+    Ne journalise jamais. Lecture seule."""
+    from vertex.app.config import DEMO_MODE as _demo
+    from vertex.engines import skyler_sweep as _sw
+    earnings_by_sym = {}
+    try:
+        from vertex.app.state import cal_state
+        for e in (cal_state.get('items') or []):
+            s = str(e.get('sym', '')).upper()
+            if s:
+                earnings_by_sym.setdefault(s, []).append(e)
+    except Exception:
+        pass
+    return jsonify(_sw.sweep(scan_state, demo=_demo, earnings_by_sym=earnings_by_sym))
+
+
 @bp.route('/api/skyler/calibration')
 def api_skyler_calibration():
     """CALIBRATION EX POST (LOT 9) : comptages exacts du journal des décisions +
