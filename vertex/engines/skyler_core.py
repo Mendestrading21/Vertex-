@@ -21,7 +21,8 @@ from __future__ import annotations
 
 SCHEMA_VERSION = 1
 # 0.2.0 : règle red-team S/S+ · 0.3.0 : état opérationnel + confiance factorisée
-ENGINE_VERSION = '0.3.0'
+# 0.4.0 : la revue red-team PRODUITE (red_team.review) entre dans la décision
+ENGINE_VERSION = '0.4.0'
 
 _BULLISH = ('ACHETER', 'RENFORCER', 'BUY')
 

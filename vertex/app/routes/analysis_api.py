@@ -137,10 +137,19 @@ def api_skyler(sym):
         pctx = _pc.build(pos, quotes=quotes, sym=sym)
     except Exception:
         pctx = None
+    # Red-team PRODUITE (LOT 14) : les 10 questions du comité évaluées sur le
+    # packet réel — complete=True seulement si les 10 sont fondées.
+    from vertex.engines import red_team as _rt
+    packet0 = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
+                               as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx)
+    rt_review = _rt.review(packet0, _sk.score40(packet0))
+    rt_input = {'complete': rt_review['complete'], 'basis': rt_review['basis']}
     decision = _sk.decide(sym, detail, market=market, events=ev, anomaly=ano,
-                          as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx)
+                          as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
+                          red_team=rt_input)
     packet = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
-                              as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx)
+                              as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
+                              red_team=rt_input)
     # Journal de calibration (LOT 9) : chaque décision servie est enregistrée
     # (dédupliquée par scan) avec le prix du moment — base des résultats ex post.
     try:
@@ -169,7 +178,8 @@ def api_skyler(sym):
     except Exception:
         pass                                   # la mémoire ne casse jamais la décision
     return jsonify({'symbol': sym, 'as_of': as_of, 'demo': _demo,
-                    'packet': packet, 'decision': decision})
+                    'packet': packet, 'decision': decision,
+                    'red_team_review': rt_review})
 
 
 @bp.route('/api/skyler/sweep')

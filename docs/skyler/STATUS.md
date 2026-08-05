@@ -125,6 +125,17 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - le ledger mémoire fige désormais ces champs (31/31 champs vivants) ;
 - 1386 tests verts / 2 skipped (+19).
 
+## Lot 14 — livré (2026-08-05, travail continu)
+
+- moteur **0.4.0** + `vertex/engines/red_team.py` (1.0.0) : les 10 questions
+  d'ADVERSARIAL_COMMITTEE §8 évaluées depuis les données réelles du packet —
+  réponse fondée (F1/F2, données citées) ou UNANSWERED avec raison, jamais
+  inventée ; `complete=True` seulement à 10/10 ; revue servie dans
+  `/api/skyler/<sym>` (`red_team_review`) et injectée dans la décision ;
+- le chemin S/S+ a désormais sa clé — mais reste fermé par les blocs
+  insuffisants tant que les fondamentaux ne sont pas branchés (voulu) ;
+- 1398 tests verts / 2 skipped (+12).
+
 ## Programme Institutional+ — TERMINÉ (RC sur intégration)
 
 Les 12 lots + audit sont livrés sur `integration/vertex-skyler-v2`.
