@@ -271,7 +271,7 @@ VX.recentTickers.push(SYM);
 /* Header : badges entités + favori */
 function paintBadges(){
   $('an-badges').innerHTML=E()?E().badges(SYM):'';
-  $('an-fav').style.color=E()&&E().isFavorite(SYM)?'#FFD27A':'var(--vx-text-muted)';
+  $('an-fav').style.color=E()&&E().isFavorite(SYM)?'var(--vx-warning)':'var(--vx-text-muted)';
 }
 $('an-fav').addEventListener('click',()=>{E().toggleFavorite(SYM);paintBadges();});
 ['vx:favorites-changed','vx:watchlist-changed','vx:follow-changed','vx:position-changed','vx:alert-changed']
