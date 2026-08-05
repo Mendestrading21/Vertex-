@@ -57,6 +57,7 @@
 | 48 | `SKYLER-LOT-48.md` | Cycle souverain dans la RC outillée (export → altération refusée dite → restauration par le vrai bouton) — re-prouvé à chaque RC | 0.9.0 | v107 | 1627 | GO |
 | 49 | `SKYLER-LOT-49.md` | Bilan consolidé n°3 (29→48) en tête de STATUS + bascule en RC périodiques espacées (cycle souverain fermé) | 0.9.0 | v107 | 1627 | GO |
 | RC4 | `SKYLER-RC-PERIODIQUE-4.md` | RC périodique n°4 — première RC avec cycle souverain (altération refusée + restauration bouton) : GO, 0 défaut | 0.9.0 | v107 | 1627 | GO |
+| 50 | `SKYLER-LOT-50.md` | Profilage routes chaudes (toutes < 15 ms p95, double calcul vérifié : 0,7 ms/7,4 %) — NO-GO optimisation dit, baseline publiée | 0.9.0 | v107 | 1627 | GO |
 
 ## Architecture atteinte
 

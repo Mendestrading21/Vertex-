@@ -582,6 +582,22 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - exécuté : GO — 0 défaut ; 1627 tests verts / 2 skipped (inchangé —
   outil seulement) ; moteur 0.9.0 et SW v107 inchangés.
 
+## Lot 50 — livré (2026-08-05, axe optimisation — demande utilisateur)
+
+- profilage OUTILLÉ (`tools/profile_hot_routes.py`, reproductible) :
+  p50/p95 des 5 routes chaudes + 8 pages — **toutes sous 15 ms p95**
+  (seuil « RAS » fixé d'avance : 100 ms) ;
+- hypothèse du double build_packet/score40 dans `/api/skyler/<sym>` :
+  VÉRIFIÉE (0,667 ms/appel) puis RELATIVISÉE — 7,4 % d'un decide à
+  9 ms dont l'essentiel est l'analyse de perturbation PAR CONSTRUCTION
+  (robustesse mesurée, pas du gaspillage) ; route entière ~14 ms ;
+- **décision documentée : NO-GO pour le lot d'optimisation** (gain ~1 ms
+  imperceptible vs risque de toucher le cœur décisionnel) — l'axe
+  optimisation est épuisé en valeur réelle, baseline chiffrée publiée
+  pour re-mesurer si la latence réelle dégrade un jour ;
+- 1627 tests verts / 2 skipped (inchangé) ; moteur 0.9.0 et SW v107
+  inchangés ; retour aux RC périodiques espacées.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
