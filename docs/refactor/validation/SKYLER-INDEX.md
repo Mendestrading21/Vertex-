@@ -35,6 +35,7 @@
 | 29 | `SKYLER-LOT-29.md` | Export souverain de la mémoire (`/api/skyler/memory/export`, lecture seule prouvée, bouton Exporter) | 0.8.0 | v101 | 1522 | GO |
 | 30 | `SKYLER-LOT-30.md` | catalyst_kind figé au freeze (fait du moteur events, jamais re-parsé) + découpe by_catalyst_type (observation) | 0.9.0 | v101 | 1531 | GO |
 | 31 | `SKYLER-LOT-31.md` | Fuzz déterministe des chemins récents — 7 crashs réels trouvés et corrigés en refus honnêtes | 0.9.0 | v101 | 1543 | GO |
+| 32 | `SKYLER-LOT-32.md` | RC courte périodique outillée (`tools/rc_short_audit.js`) — 8 pages, 0 défaut, client-log 0, SW v101 servi | 0.9.0 | v101 | 1543 | GO |
 
 ## Architecture atteinte
 

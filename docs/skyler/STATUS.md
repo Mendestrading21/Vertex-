@@ -316,6 +316,19 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   prouvé par la suite inchangée) ; SW v101 inchangé ;
 - 1543 tests verts / 2 skipped (+12).
 
+## Lot 32 — livré (2026-08-05, travail continu)
+
+- RC courte OUTILLÉE : `tools/rc_short_audit.js` (Playwright, versionné,
+  ré-exécutable en périodique) — 8 espaces canoniques, 0 erreur console
+  au repos, 0 pageerror, HTTP 200 partout, `/healthz` 200,
+  `/api/client-log` à 0, SW `td-shell-v101` servi ;
+- vérification live du chemin neuf : `/api/skyler/memory/export` → 200 +
+  Content-Disposition téléchargement ;
+- verdict **GO — 0 défaut produit** ; la validation sur appareil physique
+  (TWS réel) reste l'étape humaine (réserve n°1 du lot 27, inchangée) ;
+- 1543 tests verts / 2 skipped (inchangé — audit sans changement de
+  comportement) ; SW v101 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
