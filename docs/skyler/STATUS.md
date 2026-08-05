@@ -4,6 +4,40 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — arc visuel & connexions, lots 51 → 60 (2026-08-05, bilan n°4)
+
+Arc exécuté sur directive utilisateur (« visuel app 2026, esprit IBKR,
+plus plus plus » puis « développe jusqu'au lot 60 et arrête-toi seule »).
+Chaque chiffre est traçable vers son rapport `SKYLER-LOT-XX.md` et sa
+ligne `SKYLER-INDEX.md`. **La boucle autonome est ARRÊTÉE après ce lot.**
+
+| Mesure | Avant (lot 50) | Après (lot 60) |
+|---|---|---|
+| Tests verts | 1 627 / 2 skipped | **1 670 / 2 skipped** (+43, rouges d'abord) |
+| Service worker | v107 | **v116** (9 bumps, 4 gardiens à chaque fois) |
+| PR fusionnées | — | **10** (#78 → #87) |
+| RC navigateur | — | **7 × GO — 0 défaut** (dont RC finale 8 pages × 3 viewports) |
+| Moteur décisionnel | 0.9.0 | **0.9.0 — JAMAIS touché** |
+
+### Livré sur l'arc
+
+- **Signature graphique « app 2026 »** centrale (lots 51-54) : lissage
+  monotone (jamais de faux extrêmes), dégradés riches, glow, pastille de
+  dernier prix, crosshair de visée, chandeliers lisibles (défaut réel
+  d'axe Y corrigé) — TOUT le tronc `chart-core.js` + prix d'Analyse ;
+- **Connexions simplifiées** (lot 55) : fil d'Ariane cliquable (serveur
+  + SPA, source unique), retour contextuel couvrant les 8 espaces ;
+- **Polish prouvé page par page** (lots 56-59) : séries comparées
+  contrastées (par la SOURCE palette.py), plus aucune info tronquée,
+  ~75 fallbacks d'anciennes palettes purgés (dont 6 oranges bannis et
+  2 tokens CSS inexistants qui rendaient RÉELLEMENT l'ancien thème),
+  doc /design-system honnête, gardiens PROSPECTIFS transversaux ;
+- **RC finale** (lot 60) : suite complète + audit outillé + responsive
+  8×3 : 0 défaut ; cycle souverain re-prouvé une dernière fois.
+
+Étapes restantes HUMAINES : validation physique (TWS réel, iPhone) ;
+merge vers `main` sur accord explicite uniquement.
+
 ## BILAN — travail continu, lots 29 → 48 (2026-08-05, bilan n°3)
 
 Synthèse des 20 lots + 3 RC périodiques livrés en mode continu (« go sans
