@@ -58,6 +58,7 @@
 | 49 | `SKYLER-LOT-49.md` | Bilan consolidé n°3 (29→48) en tête de STATUS + bascule en RC périodiques espacées (cycle souverain fermé) | 0.9.0 | v107 | 1627 | GO |
 | RC4 | `SKYLER-RC-PERIODIQUE-4.md` | RC périodique n°4 — première RC avec cycle souverain (altération refusée + restauration bouton) : GO, 0 défaut | 0.9.0 | v107 | 1627 | GO |
 | 50 | `SKYLER-LOT-50.md` | Profilage routes chaudes (toutes < 15 ms p95, double calcul vérifié : 0,7 ms/7,4 %) — NO-GO optimisation dit, baseline publiée | 0.9.0 | v107 | 1627 | GO |
+| 51 | `SKYLER-LOT-51.md` | Graphiques niveau app 2026 (lissage monotone jamais de faux extrêmes, dégradé 3 arrêts, glow, pastille dernier prix) — central `C.area`, zéro fork | 0.9.0 | v108 | 1633 | GO |
 
 ## Architecture atteinte
 

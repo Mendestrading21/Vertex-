@@ -184,15 +184,77 @@
       options: { scales: { x: { display: false }, y: { display: false } }, plugins: { tooltip: { enabled: false } }, events: [] },
     });
   };
-  C.area = function (canvas, labels, values, { color = C.colors.blue, yFmt, fill = true, extraDatasets = [] } = {}) {
+  /* ── Signature visuelle 2026 (LOT 51) — appliquée CENTRALEMENT à C.area ──
+     Courbe LISSE monotone (jamais de dépassement au-delà des données réelles),
+     dégradé riche 3 arrêts, glow subtil de la ligne, pastille de dernier prix
+     façon app de courtage. Palette : C.colors + suffixes alpha sur la couleur
+     reçue (même idiome que l'existant — aucun littéral nouveau). */
+  C.glowPlugin = function (color) {
+    return {
+      id: 'vxGlow',
+      beforeDatasetDraw(chart, args) {
+        if (args.index !== 0) return;
+        const ctx = chart.ctx;
+        ctx.save(); ctx.shadowColor = color + '59'; ctx.shadowBlur = 7;
+        ctx.shadowOffsetY = 1;
+      },
+      afterDatasetDraw(chart, args) {
+        if (args.index !== 0) return;
+        chart.ctx.restore();
+      },
+    };
+  };
+  C.lastDotPlugin = function (color, yFmt) {
+    /* pastille + halo sur le DERNIER point réel + pilule de prix au bord
+       droit (lastValueLabel) — la donnée affichée est la vraie dernière
+       valeur de la série, jamais interpolée. */
+    return {
+      id: 'vxLastDot',
+      afterDatasetsDraw(chart) {
+        const meta = chart.getDatasetMeta(0);
+        const data = (chart.data.datasets[0] || {}).data || [];
+        if (!meta || !meta.data || !meta.data.length || !data.length) return;
+        let i = data.length - 1;
+        while (i >= 0 && (data[i] === null || data[i] === undefined)) i--;
+        if (i < 0 || !meta.data[i]) return;
+        const pt = meta.data[i], ctx = chart.ctx, area = chart.chartArea;
+        ctx.save();
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, 7, 0, Math.PI * 2);
+        ctx.fillStyle = color + '22'; ctx.fill();               /* halo */
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill();                      /* point */
+        const raw = data[i];
+        const txt = (typeof yFmt === 'function') ? yFmt(raw)
+          : (window.VX && VX.fmt && VX.fmt.price ? VX.fmt.price(raw) : String(raw));
+        ctx.font = '600 10px ' + ((window.Chart && Chart.defaults.font.family) || 'Inter,sans-serif');
+        const w = ctx.measureText(txt).width + 12, h = 16, r = 8;
+        let x = Math.min(pt.x + 10, area.right - w), y = pt.y - h / 2;
+        y = Math.max(area.top, Math.min(y, area.bottom - h));
+        ctx.beginPath(); ctx.roundRect(x, y, w, h, r);
+        ctx.fillStyle = color; ctx.fill();
+        const tt = (window.VXChartTheme && VXChartTheme.tooltip) || {};
+        ctx.fillStyle = tt.backgroundColor || '#151719';        /* texte sur pilule */
+        ctx.textBaseline = 'middle';
+        ctx.fillText(txt, x + 6, y + h / 2 + 0.5);              /* lastValueLabel */
+        ctx.restore();
+      },
+    };
+  };
+  C.area = function (canvas, labels, values, { color = C.colors.blue, yFmt, fill = true, extraDatasets = [], last = true, glow = true } = {}) {
+    const plugins = [];
+    if (glow) plugins.push(C.glowPlugin(color));
+    if (last) plugins.push(C.lastDotPlugin(color, yFmt));
     return C.mount(canvas, {
       type: 'line',
-      data: { labels, datasets: [{ data: values, borderColor: color, borderWidth: 1.6, pointRadius: 0, tension: .25, fill,
+      data: { labels, datasets: [{ data: values, borderColor: color, borderWidth: 2, pointRadius: 0,
+        cubicInterpolationMode: 'monotone', tension: .35, fill,
         backgroundColor: (ctx) => {
           const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height || 200);
-          g.addColorStop(0, color + '3D'); g.addColorStop(1, color + '00'); return g;
+          g.addColorStop(0, color + '4D'); g.addColorStop(.45, color + '17');
+          g.addColorStop(1, color + '00'); return g;
         } }, ...extraDatasets] },
       options: { scales: C.axes({ yFmt }), interaction: { mode: 'index', intersect: false } },
+      plugins,
     });
   };
   C.bars = function (canvas, labels, values, { colors, horizontal = false, yFmt } = {}) {
