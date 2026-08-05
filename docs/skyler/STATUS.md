@@ -2,7 +2,7 @@
 
 > Branche d’intégration : `integration/vertex-skyler-v2`  
 > Base : `agent/vertex-neon-glass-graphs`  
-> Statut : audit + lots 0–7 + 8a VALIDÉS par l’utilisateur et fusionnés dans l’intégration (2026-08-04, PR #16–#25).
+> Statut : TOUS les lots (audit + 0–9) VALIDÉS par l’utilisateur et fusionnés dans l’intégration (PR #16–#25 le 2026-08-04, PR #26–#30 le 2026-08-05). Skyler V2 complet — 1283 tests verts, SW v92.
 
 ## Source de vérité
 
@@ -27,8 +27,8 @@ Commande initiale obligatoire :
 | Lot 5 — Skyler Core | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-05-skyler-core`, packet+score/40+gates+scénarios+décision `/api/skyler/<sym>`, 1232 tests verts) | ✅ VALIDÉE (utilisateur, 2026-08-04) | `docs/refactor/validation/SKYLER-LOT-05.md` |
 | Lot 6 — Options Intelligence | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-06-options-intelligence`, scanners TACTICAL/SWING/LEAPS + doublement documenté + OptionsContext Skyler, 1248 tests verts) | ✅ VALIDÉE (utilisateur, 2026-08-04) | `docs/refactor/validation/SKYLER-LOT-06.md` |
 | Lot 7 — Portfolio Intelligence | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-07-portfolio-intelligence`, PortfolioContext + portes perdant/concentration + sizing S+/S/A/B, 1265 tests verts) | ✅ VALIDÉE (utilisateur, 2026-08-04) | `docs/refactor/validation/SKYLER-LOT-07.md` |
-| Lot 8 — Neon Glass | **FAIT — 8a→8e (GO)** : Analyse → décision Skyler (v88) ; Aujourd’hui → diff marché + moteur durci (v89) ; Options → scanner par univers (v90) ; Portefeuille → Discipline V2 (v91) ; Journal → Calibration Skyler (v92, 1283 tests verts). Marchés/Opportunités/Système gardent leurs domiciles canoniques (pas de doublon) | ✅ VALIDÉE (utilisateur, 2026-08-04) | `docs/refactor/validation/SKYLER-LOT-08A.md` + rapports par espace |
-| Lot 9 — Calibration et RC | **INFRA FAITE — verdict GO** (2026-08-05, journal des décisions + Brier prêt honnête-vide + /api/skyler/calibration, 1279 tests verts) ; RC complète après accumulation de décisions réelles | EN ATTENTE (validation groupée) | `docs/refactor/validation/SKYLER-LOT-09.md` |
+| Lot 8 — Neon Glass | **FAIT — 8a→8e (GO)** : Analyse → décision Skyler (v88) ; Aujourd’hui → diff marché + moteur durci (v89) ; Options → scanner par univers (v90) ; Portefeuille → Discipline V2 (v91) ; Journal → Calibration Skyler (v92, 1283 tests verts). Marchés/Opportunités/Système gardent leurs domiciles canoniques (pas de doublon) | ✅ VALIDÉE (utilisateur, 2026-08-04 et 2026-08-05) | `docs/refactor/validation/SKYLER-LOT-08A.md`…`08E.md` |
+| Lot 9 — Calibration et RC | **INFRA FAITE — verdict GO** (2026-08-05, journal des décisions + Brier prêt honnête-vide + /api/skyler/calibration, 1279 tests verts) ; RC complète après accumulation de décisions réelles | ✅ VALIDÉE (utilisateur, 2026-08-05) | `docs/refactor/validation/SKYLER-LOT-09.md` |
 
 ## Décisions établies
 
@@ -65,6 +65,6 @@ Commande initiale obligatoire :
 
 ## Prochaine action unique
 
-Valider et fusionner la série #26–#30 (8b, 8c, 9, 8d, 8e), puis laisser le journal de calibration accumuler pendant le test utilisateur ; RC finale du lot 9 ensuite.
+Test utilisateur en conditions réelles (TWS) pendant que le journal de calibration accumule ; RC finale du lot 9 (Brier calibré, MAE/MFE, benchmark) quand les données ex post existent. `main` ne bouge que sur accord explicite.
 
-**Audit et lots 0–8a fusionnés ; série 8b→8e + 9 (infra) en PR brouillons #26–#30, en attente de validation groupée.**
+**Skyler V2 intégralement livré, validé et fusionné (PR #16–#30). Prochaine étape : test utilisateur réel.**
