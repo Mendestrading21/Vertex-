@@ -218,6 +218,21 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   `/api/skyler/memory` expose la découpe ; versions jamais mélangées ;
 - 1481 tests verts / 2 skipped (+9) ; SW v97 inchangé.
 
+## Lot 23 — livré (2026-08-05, travail continu)
+
+- vue lisible `GET /memory/<decision_id>` : record figé, résultat mesuré et
+  post-mortem rendus dans le shell produit — contenu de la mémoire ÉCHAPPÉ
+  serveur (XSS testé avec script hostile), états honnêtes, 404 lisible ;
+  lien de la carte Mémoire mis à jour ; SW **v98** ; parcours prouvé en
+  navigateur (clic carte → vue, 0 erreur console) ;
+- **`docs/refactor/validation/SKYLER-INDEX.md`** : index consolidé des lots
+  10 → 23 (objectifs, versions moteur/SW, tests, verdicts) + architecture ;
+- 1488 tests verts / 2 skipped (+7).
+
+## Index des lots
+
+Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
+
 ## Programme Institutional+ — TERMINÉ (RC sur intégration)
 
 Les 12 lots + audit sont livrés sur `integration/vertex-skyler-v2`.

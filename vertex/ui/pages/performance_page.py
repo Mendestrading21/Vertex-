@@ -556,7 +556,7 @@ async function loadMemory(){
             +'<td data-label="Décision">'+esc(r.decision)+'</td>'
             +'<td data-label="Moteur" class="vx-mono">'+esc(r.engine_version||'n/d')+'</td>'
             +'<td data-label="Séance">'+esc(r.session_date||'n/d')+'</td>'
-            +'<td data-label="Post-mortem"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/api/skyler/memory/'+encodeURIComponent(r.decision_id)+'" target="_blank" rel="noopener">détail →</a></td></tr>').join('')
+            +'<td data-label="Post-mortem"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/memory/'+encodeURIComponent(r.decision_id)+'">détail →</a></td></tr>').join('')
           +'</tbody></table></div>';
       })()
       +'<div class="vx-meta" style="margin-top:.35rem">Ledger immuable — les décisions historiques ne sont jamais réécrites ; résultats séparés par version de moteur ; biais inobservables sans trades réels dits INSUFFISANT.</div>';

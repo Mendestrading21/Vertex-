@@ -1,0 +1,49 @@
+# SKYLER V2 — INDEX DES LOTS INSTITUTIONAL+ ET DU TRAVAIL CONTINU
+
+> Branche d'intégration : `integration/vertex-skyler-v2` · `main` jamais touchée.  
+> Chaque lot : tests rouges d'abord → moteur → suite complète verte → rapport → PR fusionnée.  
+> Historique des versions de moteur : chaque changement de règle = bump ; les décisions figées restent liées à leur version (jamais recalculées).
+
+## Lots Institutional+ (10 → 12)
+
+| Lot | Rapport | Objectif | Moteur | SW | Tests (fin de lot) | Verdict |
+|---|---|---|---|---|---:|---|
+| 10 | `SKYLER-LOT-10.md` | Mémoire décisionnelle immuable (ledger 31 champs, anti-look-ahead, taxonomie d'erreurs, 10 biais) | 0.1.0 | v94 | 1332 | GO |
+| 11 | `SKYLER-LOT-11.md` | Knowledge Graph prouvable (4 relations sourcées, propagation explicable, questions de recherche) | 0.1.0 | v94 | 1350 | GO |
+| 12 | `SKYLER-LOT-12.md` | Red-team obligatoire S/S+, batterie adversariale, RC | 0.2.0 | v94 | 1367 | GO AVEC RÉSERVES |
+
+## Travail continu (13 → 23)
+
+| Lot | Rapport | Objectif | Moteur | SW | Tests | Verdict |
+|---|---|---|---|---|---:|---|
+| 13 | `SKYLER-LOT-13.md` | États opérationnels + confiance factorisée (plafonds §7) | 0.3.0 | v94 | 1386 | GO |
+| 14 | `SKYLER-LOT-14.md` | Producteur red-team déterministe (10 questions fondées ou UNANSWERED) | 0.4.0 | v94 | 1398 | GO |
+| 15 | `SKYLER-LOT-15.md` | Série datée par séance — horizons réels de la mémoire | 0.4.0 | v94 | 1410 | GO |
+| 16 | `SKYLER-LOT-16.md` | Surfaçage UI : carte Mémoire + Dépendances cachées | 0.4.0 | v95 | 1416 | GO |
+| 17 | `SKYLER-LOT-17.md` | Corrélation partielle vs SPY (résidus étiquetés) + groupes ≥ 3 | 0.4.0 | v96 | 1427 | GO |
+| 18 | `SKYLER-LOT-18.md` | Robustesse MESURÉE par 11 perturbations fixes | 0.5.0 | v96 | 1438 | GO |
+| 19 | `SKYLER-LOT-19.md` | Calibration réelle (scenario hit rate, seuil 20 mesures, borné [0,50, 0,90]) | 0.6.0 | v96 | 1450 | GO |
+| 20 | `SKYLER-LOT-20.md` | Drill-down + post-mortem par décision (containment des scénarios) | 0.6.0 | v97 | 1463 | GO |
+| 21 | `SKYLER-LOT-21.md` | Repricing spot×IV red-team (pricer BS canonique, F3 chiffré) | 0.6.0 | v97 | 1472 | GO |
+| 22 | `SKYLER-LOT-22.md` | Calibration PAR CONTEXTE (§13 — cellule niveau/décision, portée explicite) | 0.7.0 | v97 | 1481 | GO |
+| 23 | `SKYLER-LOT-23.md` | Vue lisible du post-mortem (`/memory/<id>`, XSS échappé) + cet index | 0.7.0 | v98 | (voir rapport) | GO |
+
+## Architecture atteinte
+
+```text
+Données réelles → moteurs déterministes → SkylerPacket (red-team produite 1.1.0)
+  → décision canonique 0.7.0
+      · état opérationnel dérivé (8 états, base explicite)
+      · confiance = data_quality × agreement × robustness(11 perturbations mesurées)
+                    × calibration(hit rate réel PAR CONTEXTE, seuil d'échantillon)
+        avec plafonds §7 — jamais 100 %
+  → mémoire immuable (31 champs, versions séparées, séances datées réelles)
+      → résultats par horizon → classification d'erreurs → biais → post-mortem
+      → calibration ← (la boucle se referme, avec preuves uniquement)
+  → knowledge graph prouvable (résidus vs SPY, groupes, questions de recherche)
+  → UI : Performance (Mémoire + post-mortem) · Portefeuille/Risque (dépendances)
+```
+
+Invariants tenus sur tous les lots : READONLY absolu, données réelles uniquement
+(absent → n/d), `main` intacte, aucune modification automatique de la
+Constitution, fichiers runtime gitignorés, gardiens de version prospectifs.

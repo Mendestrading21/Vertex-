@@ -135,7 +135,7 @@ def test_memory_detail_unknown_id_404(tmp_path, monkeypatch):
 def test_memory_card_has_postmortem_links():
     import terminal
     body = terminal.app.test_client().get('/journal', follow_redirects=True).get_data(as_text=True)
-    assert '/api/skyler/memory/' in body
+    assert '/memory/' in body                          # vue lisible (lot 23)
     assert 'Dernières décisions figées' in body or 'Derni&egrave;res d&eacute;cisions' in body
 
 
