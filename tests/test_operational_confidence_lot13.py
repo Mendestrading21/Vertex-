@@ -31,7 +31,9 @@ def _detail(verdict='ATTENDRE', score=70, plan=True):
 # ─── Version et énumération ─────────────────────────────────────────────────────
 
 def test_engine_version_bumped():
-    assert SK.ENGINE_VERSION == '0.3.0'
+    """États opérationnels + confiance sont entrés en 0.3.0 — jamais moins."""
+    parts = tuple(int(x) for x in SK.ENGINE_VERSION.split('.'))
+    assert parts >= (0, 3, 0)
 
 
 def test_operational_states_enum_canonical():
@@ -162,7 +164,7 @@ def test_memory_freezes_state_and_confidence_when_engine_provides():
     packet = SK.build_packet('MFX', _detail(), as_of='t')
     r = DM.freeze(decision=d, packet=packet, price=100.0, closes=None,
                   portfolio_ctx=None, now=0)
-    assert r['engine_version'] == '0.3.0'
+    assert r['engine_version'] == SK.ENGINE_VERSION
     assert r['operational_state'] == d['operational_state']
     assert r['confidence'] == d['confidence']['value']
     assert r['confidence_factors'] is not None
