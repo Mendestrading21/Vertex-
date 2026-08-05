@@ -200,3 +200,37 @@ def test_skyler_route_includes_portfolio_context(tmp_path, monkeypatch):
         assert pctx['candidate']['is_loser'] is True      # 90 < 100 (coût moyen)
     finally:
         scan_state['detail'].pop('PFX', None)
+
+
+def test_portfolio_context_route(tmp_path, monkeypatch):
+    """Route LOT 8d : /api/portfolio/context sert le contexte canonique du desk."""
+    import json as _json
+    import terminal
+    from vertex.services import persist
+    monkeypatch.setattr(persist, 'cache_path', lambda name: str(tmp_path / name))
+    persist.save_json('desk_data.json', {
+        'data': {'myTrades': _json.dumps([
+            {'id': 'T1', 'sym': 'PCX', 'type': 'STK', 'qty': 10, 'cost': 1000.0},
+            {'id': 'T2', 'sym': 'PCY', 'type': 'STK', 'qty': 5, 'cost': 500.0}])}})
+    d = terminal.app.test_client().get('/api/portfolio/context').get_json()
+    assert d['available'] is True
+    assert d['n_positions'] == 2
+    assert d['bounds'] == {'min': 8, 'max': 15}
+    assert 'PCX' in d['weights']
+
+
+def test_portfolio_context_route_empty_honest(tmp_path, monkeypatch):
+    import terminal
+    from vertex.services import persist
+    monkeypatch.setattr(persist, 'cache_path', lambda name: str(tmp_path / name))
+    d = terminal.app.test_client().get('/api/portfolio/context').get_json()
+    assert d['available'] is False and 'reason' in d
+
+
+def test_portfolio_risk_view_has_discipline_card():
+    """Gardien LOT 8d : la vue Risque expose la carte Discipline V2."""
+    import terminal
+    body = terminal.app.test_client().get('/portfolio?view=risk').get_data(as_text=True)
+    assert 'renderDiscipline' in body
+    assert '/api/portfolio/context' in body
+    assert 'Discipline du portefeuille' in body
