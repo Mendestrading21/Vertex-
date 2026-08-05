@@ -21,8 +21,11 @@ from vertex.engines import skyler_core as SK
 # ─── 1. Règle red-team (version du moteur bumpée) ───────────────────────────────
 
 def test_engine_version_bumped_for_red_team_rule():
-    """Changement de règle = changement de version (DECISION_ENGINE §13)."""
-    assert SK.ENGINE_VERSION == '0.2.0'
+    """Changement de règle = changement de version (DECISION_ENGINE §13) :
+    la règle red-team est entrée en 0.2.0 — la version ne peut plus être 0.1.x."""
+    parts = tuple(int(x) for x in SK.ENGINE_VERSION.split('.'))
+    assert parts >= (0, 2, 0)
+    assert callable(SK.apply_red_team_rule)
 
 
 def test_high_grade_capped_without_red_team():

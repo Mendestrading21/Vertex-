@@ -20,9 +20,77 @@ Règles d'honnêteté :
 from __future__ import annotations
 
 SCHEMA_VERSION = 1
-ENGINE_VERSION = '0.2.0'    # 0.2.0 : règle red-team S/S+ (changement de règle = version)
+# 0.2.0 : règle red-team S/S+ · 0.3.0 : état opérationnel + confiance factorisée
+ENGINE_VERSION = '0.3.0'
 
 _BULLISH = ('ACHETER', 'RENFORCER', 'BUY')
+
+OPERATIONAL_STATES = ('SURVEILLER', 'PREPARER', 'DECLENCHEMENT_CONDITIONNEL',
+                      'CONFIRMATION_REQUISE', 'SECURISATION_PARTIELLE', 'RUNNER',
+                      'THESE_A_REEVALUER', 'DONNEES_INSUFFISANTES')
+
+
+def operational_state(decision, gates, plan):
+    """DECISION_ENGINE §2.2 : état opérationnel analytique dérivé
+    DÉTERMINISTIQUEMENT — précise le contexte, ne devient jamais une décision
+    finale. Ordre des règles : données d'abord, thèse ensuite, puis le plan."""
+    trig = {g['id'] for g in (gates or []) if g.get('triggered') is True}
+    if 'DATA_QUALITY_CRITICAL' in trig:
+        return 'DONNEES_INSUFFISANTES', 'gate DATA_QUALITY_CRITICAL active — données critiques insuffisantes'
+    if 'THESIS_BROKEN' in trig:
+        return 'THESE_A_REEVALUER', 'gate THESIS_BROKEN active — la thèse doit être réévaluée'
+    if decision in ('ACHETER', 'RENFORCER'):
+        return 'PREPARER', 'décision %s — préparation analytique de l’entrée (jamais un ordre)' % decision
+    if decision == 'ATTENDRE':
+        if trig:
+            return 'CONFIRMATION_REQUISE', ('attente plafonnée par gate(s) %s — confirmation requise'
+                                            % ', '.join(sorted(trig)))
+        if plan and plan.get('entry') is not None and plan.get('tp2') is not None:
+            return 'DECLENCHEMENT_CONDITIONNEL', ('plan moteur présent (entrée %.2f) — déclenchement conditionnel'
+                                                  % plan['entry'])
+        return 'SURVEILLER', 'attente sans plan complet — simple surveillance'
+    return 'SURVEILLER', 'décision %s — surveillance par défaut' % (decision or 'n/d')
+
+
+def confidence(packet, score):
+    """DECISION_ENGINE §7 : confidence = data_quality × agreement × robustness ×
+    calibration. Chaque facteur borné [0,1] avec base explicite ; plafonds
+    obligatoires (régime UNKNOWN ≤ 0,55 ; conflit de sources ≤ 0,50 ;
+    contradiction ≤ 0,60) ; calibration plafonnée à 0,50 tant qu'aucun
+    historique n'existe. ESTIMATION (F3) à méthode documentée — jamais 100 %."""
+    dq_pts = (score['blocks'].get('data_quality') or {}).get('points', 0)
+    n_contra = len(packet['contradictions'])
+    n_insuf = len(score['insufficient_blocks'])
+    factors = {
+        'data_quality': {'value': round(dq_pts / 4.0, 3),
+                         'basis': 'bloc data_quality %d/4 du score' % dq_pts},
+        'agreement': {'value': round(max(0.0, 1.0 - 0.2 * n_contra), 3),
+                      'basis': '%d contradiction(s) tracée(s) — −0,20 chacune' % n_contra},
+        'robustness': {'value': round(max(0.0, 1.0 - n_insuf / 8.0), 3),
+                       'basis': '%d bloc(s) insuffisant(s) sur 8 — proxy de robustesse '
+                                '(aucune analyse de perturbation encore)' % n_insuf},
+        'calibration': {'value': 0.5,
+                        'basis': 'aucun historique de calibration — facteur plafonné à 0,50, '
+                                 'jamais supposé calibré'},
+    }
+    value = 1.0
+    for f in factors.values():
+        value *= f['value']
+    caps = []
+    reg = ((packet['contexts'].get('market') or {}).get('regime') or {})
+    if (reg.get('label') or 'UNKNOWN') == 'UNKNOWN':
+        value = min(value, 0.55)
+        caps.append('régime UNKNOWN — confiance plafonnée à 0,55')
+    if any(c['kind'] == 'sources_conflict' for c in packet['contradictions']):
+        value = min(value, 0.50)
+        caps.append('conflit de sources non résolu — confiance plafonnée à 0,50')
+    elif n_contra:
+        value = min(value, 0.60)
+        caps.append('contradiction non résolue — confiance plafonnée à 0,60')
+    return {'value': round(value, 3), 'factors': factors, 'caps_applied': caps,
+            'estimated': True,
+            'method': 'produit de facteurs déterministes documentés (F3), borné par '
+                      'les plafonds de DECISION_ENGINE §7 — pas une probabilité calibrée'}
 
 
 def apply_red_team_rule(level, red_team):
@@ -382,6 +450,9 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
     audit.append({'step': 'decision', 'result': decision})
 
     plan = (detail or {}).get('plan') or {}
+    op_state, op_basis = operational_state(decision, gates, plan)
+    conf = confidence(packet, score)
+    audit.append({'step': 'operational_state', 'result': op_state})
     entry, stop = plan.get('entry'), plan.get('stop')
     max_risk_pct = (round((entry - stop) / entry * 100, 2)
                     if entry and stop is not None and entry > 0 else None)
@@ -408,6 +479,8 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
     return {
         'symbol': sym, 'generator': 'deterministic', 'as_of': as_of,
         'decision': decision, 'capped_by_gate': capped_by,
+        'operational_state': op_state, 'operational_state_basis': op_basis,
+        'confidence': conf,
         'red_team': {'complete': bool((packet.get('red_team') or {}).get('complete')),
                      'required': score['level'] in ('S_PLUS', 'S'),
                      'basis': (packet.get('red_team') or {}).get('basis')
@@ -426,4 +499,5 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
 
 
 __all__ = ['build_packet', 'score40', 'hard_gates', 'scenarios', 'decide',
-           'apply_red_team_rule', 'SCHEMA_VERSION', 'ENGINE_VERSION']
+           'apply_red_team_rule', 'operational_state', 'confidence',
+           'OPERATIONAL_STATES', 'SCHEMA_VERSION', 'ENGINE_VERSION']

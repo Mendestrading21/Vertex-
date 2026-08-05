@@ -115,6 +115,16 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   performance bornée — 17 tests ;
 - 1367 tests verts / 2 skipped (+17) ; SW v94 inchangé.
 
+## Lot 13 — livré (2026-08-05, travail continu autorisé)
+
+- moteur **0.3.0** : `operational_state` déterministe (8 états DECISION_ENGINE
+  §2.2, base explicite, jamais une décision finale) + `confidence` factorisée
+  §7 (4 facteurs bornés avec base, plafonds UNKNOWN ≤ 0,55 / conflit ≤ 0,50 /
+  contradiction ≤ 0,60, calibration figée à 0,50 sans historique — jamais
+  100 %) ;
+- le ledger mémoire fige désormais ces champs (31/31 champs vivants) ;
+- 1386 tests verts / 2 skipped (+19).
+
 ## Programme Institutional+ — TERMINÉ (RC sur intégration)
 
 Les 12 lots + audit sont livrés sur `integration/vertex-skyler-v2`.
