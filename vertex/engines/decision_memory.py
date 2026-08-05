@@ -107,16 +107,24 @@ def freeze(decision, packet=None, price=None, closes=None, portfolio_ctx=None, n
         'price_at_decision': px,
         'tail_at_decision': tail,
         'decision': d.get('decision'),
-        'operational_state': None,   # le moteur actuel n'émet pas d'état opérationnel
-        'operational_state_note': 'non émis par le moteur %s — jamais inventé' % engine_version,
+        # figés SEULEMENT si le moteur les produit (0.3.0+) — sinon None honnête
+        'operational_state': d.get('operational_state'),
+        'operational_state_note': (d.get('operational_state_basis')
+                                   if d.get('operational_state') is not None else
+                                   'non émis par le moteur %s — jamais inventé' % engine_version),
         'capped_by_gate': d.get('capped_by_gate'),
         'score_total': sc.get('total'), 'score_max': sc.get('max'),
         'score_blocks': sc.get('blocks') or {},
         'level': d.get('level') or sc.get('level'),
         'insufficient_blocks': sc.get('insufficient_blocks') or [],
-        'confidence': None, 'confidence_factors': None,
-        'confidence_note': 'aucun modèle de confiance calibré (moteur %s) — jamais inventée'
-                           % engine_version,
+        'confidence': (d['confidence'].get('value')
+                       if isinstance(d.get('confidence'), dict) else None),
+        'confidence_factors': (d['confidence'].get('factors')
+                               if isinstance(d.get('confidence'), dict) else None),
+        'confidence_note': (d['confidence'].get('method')
+                            if isinstance(d.get('confidence'), dict) else
+                            'aucun modèle de confiance calibré (moteur %s) — jamais inventée'
+                            % engine_version),
         'thesis': d.get('main_reason'),
         'catalyst': d.get('catalyst'),
         'trigger': trigger,
