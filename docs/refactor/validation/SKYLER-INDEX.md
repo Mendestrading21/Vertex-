@@ -33,6 +33,7 @@
 | 27 | `SKYLER-LOT-27.md` | RC courte du travail continu — audit complet 13 → 26 (aucun code moteur) | 0.8.0 | v100 | 1508 | GO AVEC RÉSERVES |
 | 28 | `SKYLER-LOT-28.md` | Découpe by_catalyst (observation) + propagation 1–3 sauts avec garde de volume dite | 0.8.0 | v100 | 1515 | GO |
 | 29 | `SKYLER-LOT-29.md` | Export souverain de la mémoire (`/api/skyler/memory/export`, lecture seule prouvée, bouton Exporter) | 0.8.0 | v101 | 1522 | GO |
+| 30 | `SKYLER-LOT-30.md` | catalyst_kind figé au freeze (fait du moteur events, jamais re-parsé) + découpe by_catalyst_type (observation) | 0.9.0 | v101 | 1531 | GO |
 
 ## Architecture atteinte
 

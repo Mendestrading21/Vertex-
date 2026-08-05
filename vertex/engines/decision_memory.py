@@ -132,6 +132,8 @@ def freeze(decision, packet=None, price=None, closes=None, portfolio_ctx=None,
                             % engine_version),
         'thesis': d.get('main_reason'),
         'catalyst': d.get('catalyst'),
+        # kind EXPLICITE émis par le moteur (0.9.0+) — jamais re-parsé du label
+        'catalyst_kind': d.get('catalyst_kind'),
         'trigger': trigger,
         'invalidation': d.get('invalidation'),
         'max_risk_pct': d.get('max_risk_pct'),
@@ -580,9 +582,9 @@ def calibration_factor(memory, engine_version):
 # ─── Calibration par contexte (LOT 22 — SCENARIO_CALIBRATION §13) ───────────────
 
 def _measured_hits(memory, engine_version):
-    """(niveau, décision, régime, hit) pour chaque décision MESURÉE de cette
-    version — le régime est celui FIGÉ au moment de la décision (None honnête
-    pour les anciens records)."""
+    """(niveau, décision, régime, catalyseur?, kind, hit) pour chaque décision
+    MESURÉE de cette version — régime et kind sont ceux FIGÉS au moment de la
+    décision (None honnête pour les anciens records)."""
     mem = memory or empty_memory()
     out = []
     for r in mem.get('decisions') or []:
@@ -592,7 +594,7 @@ def _measured_hits(memory, engine_version):
         if cls is None:
             continue
         out.append((r.get('level'), r.get('decision'), r.get('regime'),
-                    bool(r.get('catalyst')),
+                    bool(r.get('catalyst')), r.get('catalyst_kind'),
                     cls in ('DECISION_CORRECTE', 'VARIANCE_NORMALE')))
     return out
 
@@ -618,7 +620,8 @@ def calibration_by_context(memory, engine_version):
     dit. Jamais de mélange de versions."""
     rows = _measured_hits(memory, engine_version)
     by_level, by_decision, by_regime, by_catalyst = {}, {}, {}, {}
-    for lv, dec, reg, cat, hit in rows:
+    by_catalyst_type = {}
+    for lv, dec, reg, cat, kind, hit in rows:
         if lv:
             by_level.setdefault(lv, []).append(hit)
         if dec:
@@ -627,6 +630,9 @@ def calibration_by_context(memory, engine_version):
             by_regime.setdefault(reg, []).append(hit)
         by_catalyst.setdefault('avec_catalyseur' if cat else 'sans_catalyseur',
                                []).append(hit)
+        if cat:                                      # type SEULEMENT si catalyseur
+            # kind absent (moteur < 0.9.0) → bucket `inconnu`, jamais deviné
+            by_catalyst_type.setdefault(kind or 'inconnu', []).append(hit)
     return {'engine_version': engine_version,
             'n_measured_total': len(rows),
             'by_level': {lv: _context_cell(v, 'niveau=%s' % lv)
@@ -635,13 +641,16 @@ def calibration_by_context(memory, engine_version):
                             for d, v in sorted(by_decision.items())},
             'by_regime': {r: _context_cell(v, 'régime=%s' % r)
                           for r, v in sorted(by_regime.items())},
-            # by_catalyst : découpe d'OBSERVATION uniquement — jamais consommée
-            # par la sélection du facteur (aucune règle moteur, aucun bump).
+            # by_catalyst / by_catalyst_type : découpes d'OBSERVATION uniquement —
+            # jamais consommées par la sélection du facteur (aucune règle moteur).
             'by_catalyst': {c: _context_cell(v, 'catalyseur=%s' % c)
                             for c, v in sorted(by_catalyst.items())},
+            'by_catalyst_type': {k: _context_cell(v, 'type_catalyseur=%s' % k)
+                                 for k, v in sorted(by_catalyst_type.items())},
             'note': 'calibration par contexte (§13) — une cellule sous-échantillonnée '
                     'reste INSUFFISANTE, l’agrégat global est le secours ; '
-                    'by_catalyst est une découpe d’observation (non consommée)'}
+                    'by_catalyst et by_catalyst_type sont des découpes '
+                    'd’observation (non consommées)'}
 
 
 def calibration_factor_for(memory, engine_version, level=None, regime=None):

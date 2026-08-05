@@ -33,7 +33,9 @@ SCHEMA_VERSION = 1
 # 0.6.0 : calibration RÉELLE (scenario hit rate de la mémoire, par version, bornée)
 # 0.7.0 : calibration PAR CONTEXTE consommée (cellule du niveau courant si mesurée)
 # 0.8.0 : priorité étendue niveau → RÉGIME → global (régime figé dans la mémoire)
-ENGINE_VERSION = '0.8.0'
+# 0.9.0 : catalyst_kind émis (kind EXPLICITE du même événement daté le plus
+#         proche que `catalyst` — fait du moteur events, jamais re-parsé)
+ENGINE_VERSION = '0.9.0'
 
 PERTURBATIONS = ('score_technique_-10', 'score_technique_+10', 'rr_-0.5', 'rr_+0.5',
                  'regime_confidence_-0.2', 'regime_confidence_+0.2',
@@ -592,6 +594,8 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
     dated = sorted([e for e in ((events or {}).get('events') or [])
                     if e.get('dte') is not None], key=lambda e: e['dte'])
     catalyst = ('%s (J-%d)' % (dated[0]['label'], dated[0]['dte'])) if dated else None
+    # kind du MÊME événement — source unique, jamais re-parsé depuis le label
+    catalyst_kind = (dated[0].get('kind') or None) if dated else None
 
     if packet['contradictions']:
         objection = packet['contradictions'][0]['detail']
@@ -621,7 +625,7 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
         'score': score, 'level': score['level'],
         'gates': gates, 'scenarios': scen,
         'invalidation': stop, 'max_risk_pct': max_risk_pct,
-        'catalyst': catalyst,
+        'catalyst': catalyst, 'catalyst_kind': catalyst_kind,
         'main_reason': main_reason, 'strongest_objection': objection,
         'unknowns': sorted(set(packet['unknowns'] + unknown_gates)),
         'contradictions': packet['contradictions'],
