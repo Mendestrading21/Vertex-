@@ -646,6 +646,22 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   réellement servies dans la vraie page (capture, 0 erreur console) ;
   moteur 0.9.0 inchangé.
 
+## Lot 54 — livré (2026-08-05, axe visuel — arc « jusqu'au lot 60 »)
+
+- `price-chart.js` (graphique PRINCIPAL de la fiche Analyse) : signature
+  2026 complète — monotone, 2 px, dégradé 3 arrêts, glow, visée,
+  pastille de dernier prix ; plan moteur et earnings conservés ;
+- `candlestick-chart.js` (repli honnête) : mèches 1 px, corps arrondis,
+  visée ; DÉFAUT RÉEL attrapé en preuve navigateur — axe Y forcé à 0
+  écrasait les bougies (échelle 0-150 pour des prix ~100) → corrigé
+  (`beginAtZero:false` + grace 5 %), test rouge figé ;
+- equity/drawdown héritent déjà via `C.area` (dit) ; candlestick-lwc
+  (moteur LWC pro) inchangé (dit) ; aucun littéral hex nouveau ;
+- preuves : 7 tests rouges→verts ; suite 1650/2 skipped ; RC outillée GO
+  0 défaut sous SW v111 ; harnais navigateur : pastille « 110,40 »,
+  bougies lisibles échelle 95-115, visée + tooltip OHLC (capture) ;
+  moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

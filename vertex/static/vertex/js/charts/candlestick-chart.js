@@ -46,22 +46,28 @@
     return C.card(host, Object.assign({}, opts, { legend: legend, render: function (cv) {
       return C.mount(cv, {
         type: 'bar',
+        /* signature 2026 (lot 54) : meches FINES 1 px, corps ARRONDIS. */
         data: { labels: opts.labels, datasets: [
           { label: 'wick', data: bars.map(function (b) { return [b.l, b.h]; }),
             backgroundColor: bars.map(function (b) { return (b.c >= b.o ? C.colors.positive : C.colors.negative) + '99'; }),
-            maxBarThickness: 1.5, grouped: false, order: 3 },
+            maxBarThickness: 1, grouped: false, order: 3 },
           { label: 'candle', data: bars.map(function (b) { return [Math.min(b.o, b.c), Math.max(b.o, b.c)]; }),
             backgroundColor: bars.map(function (b) { return b.c >= b.o ? C.colors.positive : C.colors.negative; }),
+            borderRadius: 2, borderSkipped: false,
             maxBarThickness: 7, grouped: false, order: 2 },
         ].concat(overlayLineDatasets(overlays)) },
-        options: { interaction: { mode: 'index', intersect: false }, scales: C.axes({}),
+        /* l'axe Y epouse la plage de prix REELLE (jamais force a 0 : des
+           bougies a 100 sur une echelle 0-150 seraient illisibles). */
+        options: { interaction: { mode: 'index', intersect: false },
+          scales: (function () { const s = C.axes({}); s.y = Object.assign({}, s.y, { beginAtZero: false, grace: '5%' }); return s; })(),
           plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) {
             if (ctx.dataset.type === 'line') return ctx.dataset.label + ' : ' + (ctx.parsed.y == null ? '—' : VX.fmt.price(ctx.parsed.y));
             if (ctx.dataset.label === 'wick') return null;
             const b = bars[ctx.dataIndex];
             return 'O ' + b.o + ' · H ' + b.h + ' · L ' + b.l + ' · C ' + b.c;
           } } } } },
-        plugins: [C.levelLines(opts.levels || []), C.eventMarkers(opts.events || [])],
+        plugins: [C.levelLines(opts.levels || []), C.eventMarkers(opts.events || []),
+          C.crosshairPlugin(C.colors.brand)],
       });
     } }));
   };

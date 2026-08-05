@@ -19,12 +19,16 @@ C.priceCard=function(host,opts){
     const extra=(opts.overlays||[]).map((o,i)=>({data:o.values,label:o.label,
       borderColor:o.color||C.colors.series[(i+2)%6],borderWidth:1,pointRadius:0,tension:.2,fill:false}));
     const brand=C.colors.brand||'#DBE1E8';
+    /* signature 2026 (lot 54) : monotone, 2 px, degrade 3 arrets, glow,
+       crosshair et pastille de dernier prix — plan moteur et earnings
+       conserves tels quels. */
     const chart=C.mount(cv,{type:'line',
       data:{labels:opts.labels,datasets:[{label:'Cours',data:opts.closes,borderColor:brand,
-        borderWidth:1.7,pointRadius:0,tension:.15,fill:{target:'origin'},
+        borderWidth:2,pointRadius:0,cubicInterpolationMode:'monotone',tension:.35,fill:{target:'origin'},
         backgroundColor:(ctx)=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,ctx.chart.height||260);
-          g.addColorStop(0,brand+'3A');g.addColorStop(1,brand+'00');return g;}},...extra]},
+          g.addColorStop(0,brand+'4D');g.addColorStop(.45,brand+'17');g.addColorStop(1,brand+'00');return g;}},...extra]},
       options:{scales:C.axes({yFmt:(v)=>VX.fmt.price(v)}),interaction:{mode:'index',intersect:false}},
-      plugins:[C.levelLines(levels),C.eventMarkers(opts.events||[])]});
+      plugins:[C.levelLines(levels),C.eventMarkers(opts.events||[]),
+        C.glowPlugin(brand),C.crosshairPlugin(brand),C.lastDotPlugin(brand,(v)=>VX.fmt.price(v))]});
     return chart;}}));};
 })();
