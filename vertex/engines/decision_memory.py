@@ -714,10 +714,64 @@ def recommendations(patterns, aggs):
     return out
 
 
+# ─── Santé du ledger (LOT 35) ───────────────────────────────────────────────────
+
+def ledger_health(memory):
+    """CONTRÔLE DE COHÉRENCE du ledger multi-versions — le contrôle DIT les
+    anomalies, il ne répare JAMAIS rien en silence (l'historique original
+    gagne toujours) : doublons de decision_id, outcomes orphelins (sans
+    décision), outcomes mesurés sous une AUTRE version que leur décision
+    (mélange interdit), entrées corrompues (non-dict). Déterministe."""
+    mem = memory if isinstance(memory, dict) else {}
+    decs_raw = mem.get('decisions') or []
+    outs_raw = mem.get('outcomes') or []
+    if not isinstance(decs_raw, list):
+        decs_raw = []
+    if not isinstance(outs_raw, list):
+        outs_raw = []
+    decs = [r for r in decs_raw if isinstance(r, dict)]
+    outs = [o for o in outs_raw if isinstance(o, dict)]
+    corrupted = (len(decs_raw) - len(decs)) + (len(outs_raw) - len(outs))
+
+    seen, dupes = set(), 0
+    version_by_id = {}
+    for r in decs:
+        rid = r.get('decision_id')
+        if rid in seen:
+            dupes += 1
+        elif rid is not None:
+            seen.add(rid)
+            version_by_id[rid] = r.get('engine_version')
+
+    orphans, mismatches = 0, 0
+    for o in outs:
+        oid = o.get('decision_id')
+        if oid not in version_by_id:
+            orphans += 1
+        elif o.get('engine_version') != version_by_id[oid]:
+            mismatches += 1
+
+    anomalies = dupes + orphans + mismatches + corrupted
+    status = 'SAIN' if anomalies == 0 else 'ANOMALIES'
+    return {'status': status,
+            'duplicate_decision_ids': dupes,
+            'orphan_outcomes': orphans,
+            'version_mismatches': mismatches,
+            'corrupted_entries': corrupted,
+            'n_decisions': len(decs), 'n_outcomes': len(outs),
+            'basis': ('ledger cohérent : %d décision(s), %d résultat(s), '
+                      '0 anomalie' % (len(decs), len(outs))) if status == 'SAIN'
+                     else ('%d anomalie(s) : %d doublon(s) d’id, %d résultat(s) '
+                           'orphelin(s), %d mélange(s) de versions, %d entrée(s) '
+                           'corrompue(s) — rien n’est réparé en silence, '
+                           'l’historique original gagne'
+                           % (anomalies, dupes, orphans, mismatches, corrupted))}
+
+
 __all__ = ['freeze', 'empty_memory', 'append_decision', 'append_outcome',
            'sessions_after', 'measure', 'classify_error', 'detect_patterns',
            'aggregates', 'recommendations', 'calibration_factor',
            'calibration_by_context', 'calibration_factor_for',
-           'find_decision', 'find_outcome', 'post_mortem',
+           'find_decision', 'find_outcome', 'post_mortem', 'ledger_health',
            'ERROR_CLASSES', 'MEMORY_FILE', 'MAX_DECISIONS',
            'MEMORY_SCHEMA_VERSION', 'MIN_CALIBRATION_SAMPLE']

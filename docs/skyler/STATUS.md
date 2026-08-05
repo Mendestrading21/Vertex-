@@ -354,6 +354,19 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - aucun bump de version (données valides inchangées) ; SW v102 inchangé ;
 - 1555 tests verts / 2 skipped (+8).
 
+## Lot 35 — livré (2026-08-05, travail continu)
+
+- `decision_memory.ledger_health` : contrôle de cohérence du ledger
+  multi-versions — doublons d'id, outcomes orphelins, mélanges de
+  versions décision/outcome, entrées corrompues ; statut SAIN/ANOMALIES
+  avec basis chiffrée ; le contrôle DIT, ne répare JAMAIS (l'historique
+  original gagne) ; robuste aux mémoires dégénérées d'entrée ;
+- servi dans `/api/skyler/memory` (`ledger_health`) ; badge rouge
+  « LEDGER : ANOMALIES » dans la carte Mémoire SEULEMENT si anomalie ;
+- SW v102 → v103 + 4 gardiens ; RC courte GO (8 pages, 0 erreur,
+  client-log 0, v103 servi) ; vérif live : status SAIN ;
+- 1565 tests verts / 2 skipped (+10) ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

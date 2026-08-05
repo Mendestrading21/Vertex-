@@ -543,7 +543,10 @@ async function loadMemory(){
       +esc(r.proposal)+' <span class="vx-meta">(en attente de validation humaine)</span></div>').join('');
     host.innerHTML='<div class="vx-flex vx-mb1" style="gap:.4rem;align-items:center;flex-wrap:wrap">'
       +'<b>'+d.n_decisions+'</b><span class="vx-meta">décision(s) figée(s) · '+(d.n_outcomes||0)+' résultat(s) mesuré(s)</span>'
-      +(d.demo?'<span class="vx-badge" data-tone="neutral">DÉMO</span>':'')+'</div>'
+      +(d.demo?'<span class="vx-badge" data-tone="neutral">DÉMO</span>':'')
+      +((d.ledger_health&&d.ledger_health.status==='ANOMALIES')
+        ?'<span class="vx-badge" data-tone="negative" title="'+esc(d.ledger_health.basis||'')
+          +'">LEDGER : ANOMALIES</span>':'')+'</div>'
       +'<div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Moteur</th><th>Décisions</th><th>Répartition</th><th>Mesurées</th><th>Erreurs classées</th></tr></thead><tbody>'
       +vRows+'</tbody></table></div>'
       +(function(){
