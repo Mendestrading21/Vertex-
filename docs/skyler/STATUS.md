@@ -329,6 +329,18 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - 1543 tests verts / 2 skipped (inchangé — audit sans changement de
   comportement) ; SW v101 inchangé.
 
+## Lot 33 — livré (2026-08-05, travail continu)
+
+- carte Mémoire : les découpes d'OBSERVATION `by_catalyst` et
+  `by_catalyst_type` rejoignent les badges de calibration par contexte —
+  MÊME mécanique que niveau/régime/décision (une seule boucle, gardé par
+  test), libellé explicite « catalyseur/type = observation, jamais
+  consommés » ;
+- SW v101 → v102 + 4 gardiens ; preuve navigateur : RC courte
+  (tools/rc_short_audit.js) GO — 8 pages, 0 erreur console, client-log 0,
+  v102 servi ; en démo 0 cellule mesurée → aucun badge (honnête, lot 26) ;
+- 1547 tests verts / 2 skipped (+4) ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
