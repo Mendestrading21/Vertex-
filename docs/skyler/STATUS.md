@@ -291,6 +291,18 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - bouton « Exporter → » dans la carte Mémoire (Performance) ; SW v101 ;
 - 1522 tests verts / 2 skipped (+7) ; moteur 0.8.0 inchangé.
 
+## Lot 30 — livré (2026-08-05, travail continu)
+
+- `catalyst_kind` émis par le moteur (0.9.0) : le `kind` EXPLICITE
+  (`earnings`/`macro`/`news`…) du même événement daté le plus proche qui
+  produit `catalyst` — fait du moteur events, source unique, jamais
+  re-parsé depuis le label ; figé au freeze (ancien record → None
+  honnête, jamais rétroactif) ;
+- découpe `by_catalyst_type` dans la calibration par contexte — mêmes
+  règles d'échantillon, bucket `inconnu` honnête, OBSERVATION uniquement
+  (non-consommation par la sélection prouvée par test) ;
+- 1531 tests verts / 2 skipped (+9) ; SW v101 inchangé (moteur/API).
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
