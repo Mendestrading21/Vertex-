@@ -871,8 +871,37 @@ async function renderWatchlist(){
     E().addToWatchlist(sel.dataset.wlStatus,Object.assign({},E().watchlist().find(w=>w.sym===sel.dataset.wlStatus),{status:sel.value}));}));
 }
 
+/* Discipline V2 (SKYLER LOT 8d) : bornes 8-15, concentration (top/HHI), plafond
+   par titre — PortfolioContext canonique, jamais un chiffre inventé. */
+async function renderDiscipline(){
+  let d=null;
+  try{d=await VX.fetch('/api/portfolio/context',{ttl:120000});}catch(e){return;}
+  if(!d)return;
+  document.querySelectorAll('[aria-label="Discipline V2"]').forEach(n=>n.remove());   // idempotent
+  const host=document.createElement('section');
+  host.className='vx-card vx-mt3';host.setAttribute('aria-label','Discipline V2');
+  if(d.available===false){
+    host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Discipline du portefeuille (Constitution V2)</span></div>
+      ${VX.states.empty(esc((d.reason||'contexte indisponible')+'.'))}`;
+  }else{
+    const b=d.bounds||{};
+    const inb=d.in_bounds?'<span class="vx-badge" data-tone="pos">dans les bornes</span>'
+      :`<span class="vx-badge" data-tone="neutral">${d.n_positions<b.min?'sous la cible':'au-dessus de la cible'}</span>`;
+    const topOver=(d.top_weight_pct||0)>15;
+    host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Discipline du portefeuille (Constitution V2)</span>
+      <span class="vx-chart-question">${b.min}-${b.max} lignes cibles · plafond 15&nbsp;% par titre · concentration HHI.</span></div>
+      <div class="vx-grid">
+        <div class="vx-stat vx-col-3"><span class="vx-stat-label">Lignes</span><span class="vx-stat-value">${d.n_positions}</span><span class="vx-meta">${inb}</span></div>
+        <div class="vx-stat vx-col-3"><span class="vx-stat-label">Plus gros titre</span><span class="vx-stat-value">${esc(d.top_symbol||'—')}</span><span class="vx-meta ${topOver?'vx-neg':''}">${VX.fmt.num(d.top_weight_pct,1)}&nbsp;% ${topOver?'· > plafond 15 %':''}</span></div>
+        <div class="vx-stat vx-col-3"><span class="vx-stat-label">Concentration (HHI)</span><span class="vx-stat-value">${VX.fmt.num(d.hhi,3)}</span><span class="vx-meta">1 = tout sur un titre</span></div>
+        <div class="vx-stat vx-col-3"><span class="vx-stat-label">Valeur suivie</span><span class="vx-stat-value">${VX.fmt.num(d.total_value,0)}</span><span class="vx-meta">${esc((d.provenance||[]).join(' + '))}</span></div>
+      </div>
+      <div class="vx-meta" style="margin-top:.35rem">${d.valuation_note?esc(d.valuation_note)+' · ':''}Bornes et plafonds = Constitution V2 — analyse, jamais un ordre.</div>`;
+  }
+  $('pf-body').appendChild(host);
+}
 const RENDER={team:renderSynthese,positions:renderPositions,performance:renderPerformance,
-  options:renderOptions,risk:async function(){await renderRisk();await renderStress();},watchlist:renderWatchlist};
+  options:renderOptions,risk:async function(){await renderRisk();await renderStress();await renderDiscipline();},watchlist:renderWatchlist};
 async function pfFresh(){try{
   const el=$('pf-fresh');if(!el||!window.VX||!VX.freshness)return;
   let pk=VX.fetch.peek('/api/session/manifest');

@@ -105,6 +105,21 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         prices = {s: (d or {}).get('price') for s, d in detail.items()}
         return jsonify(_stress.build(positions, prices))
 
+    @bp.route('/api/portfolio/context')
+    def portfolio_context_ep():
+        """PORTFOLIOCONTEXT canonique (SKYLER LOT 8d) : poids par titre, HHI,
+        bornes 8-15 du profil V2, plafond par titre, provenance. Positions
+        déclarées du desk + cotes réelles du scan. Lecture seule, aucun ordre."""
+        from vertex.engines import portfolio_context as _pc
+        from vertex.positions.repository import load_positions
+        pos = load_positions(_desk_blob())
+        detail = scan_state.get('detail') or {}
+        quotes = {s: (d or {}).get('price') for s, d in detail.items()
+                  if isinstance(d, dict) and d.get('price') is not None}
+        out = _pc.build(pos, quotes=quotes)
+        out['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+        return jsonify(out)
+
     @bp.route('/api/pretrade/check', methods=['POST'])
     def pretrade_check():
         """TICKET PRÉ-TRADE (le « ticket d'ordre », version analyse) : titre + montant
