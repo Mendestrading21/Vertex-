@@ -80,8 +80,11 @@ _VIEW_CONTENT = {
 <div class="vx-grid vx-mt3">
   <section class="vx-card vx-col-12" aria-label="Mémoire décisionnelle">
     <div class="vx-card-header"><span class="vx-card-title">M&eacute;moire d&eacute;cisionnelle — Skyler apprend-il de ses d&eacute;cisions&nbsp;?</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/api/skyler/memory/export" download>Exporter &rarr;</a></span>
-      <span class="vx-chart-question">Ledger immuable par version de moteur : d&eacute;cisions fig&eacute;es, biais surveill&eacute;s, erreurs class&eacute;es — jamais r&eacute;&eacute;crites. L&rsquo;export est ta sauvegarde souveraine.</span></div>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/api/skyler/memory/export" download>Exporter &rarr;</a>
+        <label class="vx-btn vx-btn-sm vx-btn-ghost" for="vx-mem-import-file" style="cursor:pointer">Importer &larr;</label>
+        <input type="file" id="vx-mem-import-file" accept="application/json,.json" style="display:none"></span>
+      <span class="vx-chart-question">Ledger immuable par version de moteur : d&eacute;cisions fig&eacute;es, biais surveill&eacute;s, erreurs class&eacute;es — jamais r&eacute;&eacute;crites. L&rsquo;export est ta sauvegarde souveraine ; l&rsquo;import restaure par rejeu (la donn&eacute;e locale gagne toujours).</span></div>
+    <div id="vx-mem-import-result"></div>
     <div id="vx-pf-memory">%%LOADING%%</div>
   </section>
 </div>
@@ -618,8 +621,49 @@ async function loadPostmortem(){
       +d.mistakes.map(m=>esc((m.ticker||'')+' — '+m.mistake)).join(' · ')+'</div>':'')
     +'<div class="vx-card-footer">Post-mortem descriptif (moteur déterministe, trades réels du desk) — pas un conseil.</div>';
 }
+function wireMemoryImport(){
+  const inp=$('vx-mem-import-file');const host=$('vx-mem-import-result');
+  if(!inp||!host||inp.dataset.wired)return;
+  inp.dataset.wired='1';
+  inp.addEventListener('change',()=>{
+    const f=inp.files&&inp.files[0];if(!f)return;
+    host.innerHTML='<div class="vx-insight" data-tone="neutral">Restauration en cours…</div>';
+    const rd=new FileReader();
+    rd.onload=async()=>{
+      let bundle=null;
+      try{bundle=JSON.parse(rd.result);}catch(e){
+        host.innerHTML='<div class="vx-insight" data-tone="negative">Fichier illisible : pas un JSON valide.</div>';
+        inp.value='';return;
+      }
+      try{
+        const r=await fetch('/api/skyler/memory/import',{method:'POST',
+          headers:{'Content-Type':'application/json'},body:JSON.stringify(bundle)});
+        const d=await r.json();
+        if(!r.ok||!d.ok){
+          // erreur serveur affichée TELLE QUELLE (empreinte invalide, etc.)
+          host.innerHTML='<div class="vx-insight" data-tone="negative">Import refus&eacute; — '
+            +esc(d.error||('HTTP '+r.status))+(d.note?' : '+esc(d.note):'')+'</div>';
+        }else{
+          const s=d.stats||{};const ses=s.sessions||{};const j=s.journal||{};
+          host.innerHTML='<div class="vx-insight" data-tone="positive">Restauration termin&eacute;e — '
+            +'d&eacute;cisions : '+(s.added_decisions||0)+' ajout&eacute;e(s), '+(s.skipped_decisions||0)+' d&eacute;j&agrave; pr&eacute;sente(s) (la donn&eacute;e locale gagne) · '
+            +'s&eacute;ances : '+(ses.added_sessions||0)+' ajout&eacute;e(s) · '
+            +'journal : '+(j.added_entries||0)+' ajout&eacute;e(s)'
+            +(((s.corrupted_entries||0)+(ses.corrupted_entries||0)+(j.corrupted_entries||0))>0
+              ?' · entr&eacute;es corrompues ignor&eacute;es : '+((s.corrupted_entries||0)+(ses.corrupted_entries||0)+(j.corrupted_entries||0)):'')
+            +' — ledger : '+esc((d.ledger_health||{}).status||'n/d')+'</div>';
+          loadMemory();
+        }
+      }catch(e){
+        host.innerHTML='<div class="vx-insight" data-tone="negative">Import impossible : '+esc(String(e))+'</div>';
+      }
+      inp.value='';
+    };
+    rd.readAsText(f);
+  });
+}
 function boot(){
-  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();loadPostmortem();loadCalibration();loadMemory();}
+  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();loadPostmortem();loadCalibration();loadMemory();wireMemoryImport();}
   else if(VIEW==='journal'){
     loadJournal();loadMistakes();
     $('vx-pf-add')?.addEventListener('click',openEntryModal);

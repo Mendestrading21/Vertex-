@@ -20,6 +20,22 @@ from vertex.engines import decision_memory as DM
 from vertex.engines import skyler_core as SK
 
 
+def _canonical(d):
+    """Recette de vérification HORS LIGNE (lots 42/47) : clés triées,
+    séparateurs compacts, flottants entiers normalisés (100.0 ≡ 100 — stable
+    au round-trip JSON.stringify des navigateurs)."""
+    def norm(o):
+        if isinstance(o, float) and o.is_integer():
+            return int(o)
+        if isinstance(o, dict):
+            return {k: norm(v) for k, v in o.items()}
+        if isinstance(o, list):
+            return [norm(v) for v in o]
+        return o
+    return json.dumps(norm(d), sort_keys=True, ensure_ascii=False,
+                      separators=(',', ':'))
+
+
 def _seed(tmp_path, monkeypatch, with_orphan=False):
     from vertex.services import persist
     monkeypatch.setattr(persist, 'cache_path', lambda name: str(tmp_path / name))
@@ -65,9 +81,7 @@ def test_export_checksum_verifiable_offline(tmp_path, monkeypatch):
     body = _export(tmp_path, monkeypatch).get_data(as_text=True)
     d = json.loads(body)
     claimed = d.pop('content_sha256')
-    canonical = json.dumps(d, sort_keys=True, ensure_ascii=False,
-                           separators=(',', ':'))
-    assert claimed == hashlib.sha256(canonical.encode('utf-8')).hexdigest()
+    assert claimed == hashlib.sha256(_canonical(d).encode('utf-8')).hexdigest()
 
 
 def test_export_note_documents_verification(tmp_path, monkeypatch):
@@ -100,7 +114,5 @@ def test_export_corrupted_store_checksum_still_valid(tmp_path, monkeypatch):
         '/api/skyler/memory/export').get_data(as_text=True)
     d = json.loads(body)
     claimed = d.pop('content_sha256')
-    canonical = json.dumps(d, sort_keys=True, ensure_ascii=False,
-                           separators=(',', ':'))
-    assert claimed == hashlib.sha256(canonical.encode('utf-8')).hexdigest()
+    assert claimed == hashlib.sha256(_canonical(d).encode('utf-8')).hexdigest()
     assert d['ledger_health']['status'] == 'ANOMALIES'

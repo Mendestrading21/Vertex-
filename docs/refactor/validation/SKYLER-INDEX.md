@@ -53,6 +53,7 @@
 | RC3 | `SKYLER-RC-PERIODIQUE-3.md` | RC périodique n°3 — suite complète + audit navigateur 8 pages + parcours mémoire : GO, 0 défaut, baseline tenue | 0.9.0 | v106 | 1606 | GO |
 | 45 | `SKYLER-LOT-45.md` | Restauration souveraine (`POST /api/skyler/memory/import` — empreinte vérifiée avant écriture, rejeu append-only, historique local gagne) | 0.9.0 | v106 | 1615 | GO |
 | 46 | `SKYLER-LOT-46.md` | Restauration étendue séances + journal (rejeu honnête, donnée locale gagne, triple de dédup en source unique, périmètre complet) | 0.9.0 | v106 | 1622 | GO |
+| 47 | `SKYLER-LOT-47.md` | Bouton Importer (flux fichier réel prouvé en navigateur) + empreinte stable au round-trip JS (défaut réel 100.0→100 corrigé) | 0.9.0 | v107 | 1627 | GO |
 
 ## Architecture atteinte
 

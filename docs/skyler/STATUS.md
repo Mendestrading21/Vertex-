@@ -554,6 +554,24 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   AUCUN des trois magasins écrit (prouvé) ; stats par magasin ;
 - 1622 tests verts / 2 skipped (+7) ; moteur 0.9.0 et SW v106 inchangés.
 
+## Lot 47 — livré (2026-08-05, développement continu)
+
+- bouton « Importer ← » à côté d'« Exporter → » dans la carte Mémoire :
+  FileReader → POST import → affichage HONNÊTE des deux chemins (stats
+  exactes par magasin avec « la donnée locale gagne », ou l'erreur
+  serveur telle quelle — jamais maquillée) ; XSS échappé, apostrophes
+  en entités ;
+- **DÉFAUT RÉEL attrapé par la preuve navigateur** : JSON.stringify
+  replie 100.0 → 100, l'empreinte canonique ne matchait plus au
+  round-trip JS (invisible aux tests Python) — corrigé par
+  `_canonical_bundle_json` (source unique export+import, flottants
+  entiers normalisés, recette documentée dans le bundle), test rouge
+  dédié simulant le round-trip ;
+- SW v106 → v107 + 4 gardiens ; preuve navigateur : upload du VRAI
+  fichier → « Restauration terminée … ledger : SAIN », 0 erreur
+  console ; RC courte GO (v107 servi) ;
+- 1627 tests verts / 2 skipped (+5) ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

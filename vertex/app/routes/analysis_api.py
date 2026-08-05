@@ -298,6 +298,27 @@ def api_skyler_memory():
     })
 
 
+def _canonical_bundle_json(payload):
+    """Forme CANONIQUE du bundle d'export pour l'empreinte sha256 (lots 42/47) :
+    clés triées, séparateurs compacts, et flottants ENTIERS normalisés en
+    entiers (100.0 ≡ 100) — JSON.stringify côté navigateur replie x.0 en x,
+    l'empreinte doit être STABLE au round-trip JS (défaut réel attrapé en
+    preuve navigateur, lot 47)."""
+    import json as _json
+
+    def norm(o):
+        if isinstance(o, float) and o.is_integer():
+            return int(o)
+        if isinstance(o, dict):
+            return {k: norm(v) for k, v in o.items()}
+        if isinstance(o, list):
+            return [norm(v) for v in o]
+        return o
+
+    return _json.dumps(norm(payload), sort_keys=True, ensure_ascii=False,
+                       separators=(',', ':'))
+
+
 @bp.route('/api/skyler/memory/export')
 def api_skyler_memory_export():
     """EXPORT SOUVERAIN (LOT 29, intégrité LOT 42) : sauvegarde LECTURE SEULE
@@ -330,10 +351,10 @@ def api_skyler_memory_export():
                 'historiques ne sont jamais réécrites ; ce fichier est la '
                 'sauvegarde souveraine de la mémoire du trader. Vérification '
                 'hors ligne : content_sha256 = sha256 du JSON canonique '
-                '(clés triées, séparateurs compacts) du bundle SANS ce champ.',
+                '(clés triées, séparateurs compacts, flottants entiers '
+                'normalisés en entiers : 100.0 ≡ 100) du bundle SANS ce champ.',
     }
-    canonical = _json.dumps(payload, sort_keys=True, ensure_ascii=False,
-                            separators=(',', ':'))
+    canonical = _canonical_bundle_json(payload)
     payload['content_sha256'] = _hashlib.sha256(
         canonical.encode('utf-8')).hexdigest()
     resp = jsonify(payload)
@@ -365,8 +386,7 @@ def api_skyler_memory_import():
         return jsonify({'ok': False, 'error': 'empreinte_absente',
                         'note': 'content_sha256 requis — un bundle sans '
                                 'empreinte n’est pas restaurable'}), 400
-    canonical = _json.dumps(bundle, sort_keys=True, ensure_ascii=False,
-                            separators=(',', ':'))
+    canonical = _canonical_bundle_json(bundle)
     actual = _hashlib.sha256(canonical.encode('utf-8')).hexdigest()
     if actual != claimed:
         return jsonify({'ok': False, 'error': 'empreinte_invalide',
