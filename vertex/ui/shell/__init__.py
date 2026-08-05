@@ -79,8 +79,20 @@ def _sidebar(active: str) -> str:
 </aside>'''
 
 
-def _topbar(space_label: str, sub_label: str = '') -> str:
-    crumb = f'<span class="vx-crumb-root">Vertex</span><span aria-hidden="true">/</span><b>{space_label}</b>'
+def _space_href(active: str) -> str:
+    """Racine de l'espace actif — depuis PRIMARY_NAV (source unique)."""
+    for it in PRIMARY_NAV:
+        if it['id'] == active:
+            return it['href']
+    return '/'
+
+
+def _topbar(space_label: str, sub_label: str = '', space_href: str = '/') -> str:
+    # Fil d'Ariane CLIQUABLE (lot 55) : « Vertex » ramène au briefing, le
+    # segment d'espace ramène à la racine de l'espace (utile depuis une fiche).
+    crumb = (f'<a class="vx-crumb-root" href="/">Vertex</a>'
+             f'<span aria-hidden="true">/</span>'
+             f'<a class="vx-crumb-space" href="{space_href}"><b>{space_label}</b></a>')
     if sub_label:
         crumb += f'<span aria-hidden="true">/</span><span>{sub_label}</span>'
     return f'''<header class="vx-topbar">
@@ -228,7 +240,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <div class="vx-app" id="vx-app" data-sidebar="expanded">
 {_sidebar(active)}
 <div class="vx-main">
-{_topbar(space_label, sub_label)}
+{_topbar(space_label, sub_label, _space_href(active))}
 <main class="vx-content" id="vx-content" data-space="{active}" data-page-label="{page_label or space_label}">
 {content}
 </main>

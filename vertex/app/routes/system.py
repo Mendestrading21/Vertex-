@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v111';   // v111 (SKYLER LOT 54) : prix Analyse + chandeliers repli sur la signature 2026
+const CACHE='td-shell-v112';   // v112 (SKYLER LOT 55) : fil d'Ariane cliquable + retour contextuel complet (8 espaces)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

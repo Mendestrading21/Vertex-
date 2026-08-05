@@ -57,6 +57,9 @@ button.vx-nav-item{background:none;font:inherit;cursor:pointer;text-align:left;
 .vx-breadcrumb{display:flex;align-items:center;gap:8px;min-width:0;
   font-size:13px;color:var(--vx-text-secondary);white-space:nowrap}
 .vx-breadcrumb b{color:var(--vx-text);font-weight:600}
+.vx-breadcrumb a{color:inherit;text-decoration:none;border-radius:var(--vx-r-sm)}
+.vx-breadcrumb a:hover{color:var(--vx-text)}
+.vx-breadcrumb a:hover b{text-decoration:underline;text-underline-offset:3px}
 .vx-back-btn{display:none;align-items:center;gap:6px;font-size:12.5px;
   color:var(--vx-information);cursor:pointer;background:none;border:none;
   padding:6px 8px;border-radius:var(--vx-r-sm);white-space:nowrap}

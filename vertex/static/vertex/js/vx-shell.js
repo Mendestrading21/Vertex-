@@ -71,7 +71,9 @@
   /* ── Retour contextuel (§15) ─────────────────────────────────────── */
   const backBtn = $('vx-back-btn');
   const ctx = VX.context.get();
-  const SPACE_LABELS = { '/': 'au briefing', '/markets': 'aux marchés', '/opportunities': 'aux opportunités', '/portfolio': 'au portefeuille', '/analysis': 'à l’analyse', '/performance': 'à la performance', '/intelligence': 'à l’intelligence', '/system': 'au système' };
+  /* lot 55 : les 8 espaces canoniques couverts (+ 2 anciennes routes encore
+     joignables) — plus jamais de chemin brut dans le libellé de retour. */
+  const SPACE_LABELS = { '/': 'au briefing', '/markets': 'aux marchés', '/opportunities': 'aux opportunités', '/portfolio': 'au portefeuille', '/analysis': 'à l’analyse', '/options': 'aux options', '/journal': 'au journal', '/system': 'au système', '/performance': 'à la performance', '/intelligence': 'à l’intelligence' };
   if (ctx && ctx.from && ctx.from !== location.pathname && backBtn) {
     const label = ctx.view === 'watchlist' ? 'Retour à la watchlist' : ('Retour ' + (SPACE_LABELS[ctx.from] || 'à ' + (ctx.label || ctx.from)));
     backBtn.querySelector('span').textContent = label;
