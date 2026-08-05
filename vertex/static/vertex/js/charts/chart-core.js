@@ -15,7 +15,10 @@
     positive: '#2BBE90', negative: '#E9555F', warning: '#D9BE3C',
     info: '#45D6E8', neutral: '#BABABA',
     text: '#BABABA', muted: '#8A8284', grid: 'rgba(255,255,255,.05)',
-    series: ['#DBE1E8', '#c8bfae', '#BABABA', '#9B7BFF', '#D9BE3C', '#8A8284'],
+    /* lot 56 : séries réordonnées pour un contraste réel entre courbes
+       comparées (marque, cyan, sable, violet, jaune, gris) — les trois
+       premiers étaient des blancs-gris indistinguables. Palette inchangée. */
+    series: ['#DBE1E8', '#45D6E8', '#c8bfae', '#9B7BFF', '#D9BE3C', '#8A8284'],
   }, THEME.colors);
 
   function chartDefaults() {

@@ -29,7 +29,7 @@
       grid: 'rgba(255,255,255,.05)',
       /* Ordre des séries = palette.SERIES : marque, sable, neutre, violet
          options, ambre, acier. Toute divergence casse le test de cohérence. */
-      series: ['#DBE1E8', '#c8bfae', '#BABABA', '#9B7BFF', '#D9BE3C', '#8A8284'],
+      series: ['#DBE1E8', '#45D6E8', '#c8bfae', '#9B7BFF', '#D9BE3C', '#8A8284'],
     },
     tooltip: {
       backgroundColor: '#1D1819',

@@ -63,6 +63,7 @@
 | 53 | `SKYLER-LOT-53.md` | Sparkline/bars/donut sur la signature 2026 (mini-aire dégradée, barres arrondies pleines au survol, donut arcs espacés) — tronc commun complet | 0.9.0 | v110 | 1643 | GO |
 | 54 | `SKYLER-LOT-54.md` | Prix d'Analyse (signature complète + pastille) & chandeliers 2026 (corps arrondis, mèches 1 px, visée) — défaut réel axe Y à 0 corrigé | 0.9.0 | v111 | 1650 | GO |
 | 55 | `SKYLER-LOT-55.md` | Connexions entre pages : fil d'Ariane cliquable (serveur + SPA, source unique) + retour contextuel couvrant les 8 espaces | 0.9.0 | v112 | 1655 | GO |
+| 56 | `SKYLER-LOT-56.md` | Polish Aujourd'hui+Marchés : séries comparées contrastées (cyan technique, 3 miroirs alignés par la source) + crumb mobile sans slash orphelin | 0.9.0 | v113 | 1658 | GO |
 
 ## Architecture atteinte
 
