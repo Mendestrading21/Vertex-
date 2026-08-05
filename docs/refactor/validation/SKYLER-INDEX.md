@@ -28,6 +28,7 @@
 | 22 | `SKYLER-LOT-22.md` | Calibration PAR CONTEXTE (§13 — cellule niveau/décision, portée explicite) | 0.7.0 | v97 | 1481 | GO |
 | 23 | `SKYLER-LOT-23.md` | Vue lisible du post-mortem (`/memory/<id>`, XSS échappé) + cet index | 0.7.0 | v98 | 1488 | GO |
 | 24 | `SKYLER-LOT-24.md` | Exposition sectorielle du portefeuille + concentration sectorielle des groupes | 0.7.0 | v99 | 1498 | GO |
+| 25 | `SKYLER-LOT-25.md` | Revue de simplification (docstrings 0.7.0, dédup calibration/mesure/red-team) — zéro changement de comportement | 0.7.0 | v99 | 1498 (identique) | GO |
 
 ## Architecture atteinte
 

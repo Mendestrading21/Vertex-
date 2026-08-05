@@ -16,10 +16,11 @@ Règles absolues du lot :
     jamais devinée ;
   - les résultats sont séparés PAR VERSION DE MOTEUR (jamais mélangés, jamais
     recalculés en douce sous une nouvelle version : autre version → autre id) ;
-  - horizons de mesure déclarés uniquement : 5/20/60 séances, horizon du
-    catalyseur (conversion jours→séances ÉTIQUETÉE estimée), horizon de thèse
-    et échéance option honnêtement NON_APPLICABLE tant que le moteur 0.1.0 ne
-    les déclare pas ;
+  - horizons de mesure déclarés uniquement : 5/20/60 séances (comptées en
+    séances RÉELLES via le log daté du lot 15, empreinte de série en secours),
+    horizon du catalyseur (conversion jours→séances ÉTIQUETÉE estimée),
+    horizon de thèse et échéance option honnêtement NON_APPLICABLE tant que le
+    moteur courant ne les déclare pas ;
   - la classification d'erreur est déterministe avec base explicite, et les
     recommandations restent EN_ATTENTE_VALIDATION_HUMAINE — ce module n'importe
     ni ne modifie jamais la Constitution, les poids ou les seuils.
@@ -542,32 +543,31 @@ def post_mortem(record, outcome):
 MIN_CALIBRATION_SAMPLE = 20
 
 
+def _hit_factor(hit_rate):
+    """Formule UNIQUE du facteur de calibration : 0,50 + 0,40 × hit rate —
+    borné [0,50, 0,90] par construction, jamais 1,0."""
+    return round(0.5 + 0.4 * hit_rate, 3)
+
+
 def calibration_factor(memory, engine_version):
     """Facteur `calibration` de la confiance depuis les résultats MESURÉS de la
     mémoire — pour CETTE version de moteur UNIQUEMENT (jamais mélangées).
     scenario hit rate = part des décisions mesurées dont le résultat était
     contenu par les scénarios (DECISION_CORRECTE ou VARIANCE_NORMALE) au plus
-    long horizon mesuré. Facteur = 0,50 + 0,40 × hit rate, borné [0,50, 0,90]
-    — jamais 1,0. Échantillon < MIN_CALIBRATION_SAMPLE → 0,50 avec raison
-    « échantillon insuffisant » : un facteur ne s'invente pas sur 3 mesures."""
-    mem = memory or empty_memory()
-    classes = []
-    for r in mem.get('decisions') or []:
-        if r.get('engine_version') != engine_version:
-            continue
-        cls = _measured_class(mem, r)
-        if cls is not None:
-            classes.append(cls)
-    n = len(classes)
+    long horizon mesuré. Facteur = `_hit_factor` — jamais 1,0. Échantillon <
+    MIN_CALIBRATION_SAMPLE → 0,50 avec raison « échantillon insuffisant » :
+    un facteur ne s'invente pas sur 3 mesures."""
+    rows = _measured_hits(memory, engine_version)
+    n = len(rows)
     if n < MIN_CALIBRATION_SAMPLE:
         return {'value': 0.5, 'n_measured': n, 'hit_rate': None,
                 'engine_version': engine_version,
                 'basis': 'échantillon insuffisant (%d/%d mesure(s) pour le moteur %s) — '
                          'facteur plafonné à 0,50, jamais inventé'
                          % (n, MIN_CALIBRATION_SAMPLE, engine_version)}
-    hits = sum(1 for c in classes if c in ('DECISION_CORRECTE', 'VARIANCE_NORMALE'))
+    hits = sum(1 for _, _, h in rows if h)
     hit_rate = hits / n
-    return {'value': round(0.5 + 0.4 * hit_rate, 3),
+    return {'value': _hit_factor(hit_rate),
             'n_measured': n, 'hit_rate': round(hit_rate, 3),
             'engine_version': engine_version,
             'basis': 'scenario hit rate %d/%d = %.0f %% pour le moteur %s — '
@@ -602,7 +602,7 @@ def _context_cell(rows, label):
     hits = sum(1 for h in rows if h)
     hr = hits / n
     return {'status': 'MESURE', 'n_measured': n, 'hit_rate': round(hr, 3),
-            'value': round(0.5 + 0.4 * hr, 3),
+            'value': _hit_factor(hr),
             'basis': 'cellule %s : hit rate %d/%d = %.0f %% — facteur borné [0,50, 0,90]'
                      % (label, hits, n, hr * 100)}
 

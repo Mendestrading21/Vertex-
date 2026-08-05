@@ -57,6 +57,24 @@ _QUESTIONS = (
 )
 
 
+def _q05_qualitative(q, iv):
+    """Réponse qualitative F2 de secours pour Q05 (candidat incomplet)."""
+    return _q('Q05', q, 'ANSWERED',
+              'IV du meilleur candidat : %.0f %% — une contraction de 10 points '
+              'réduit la valeur extrinsèque (vega) ; le contrat doit survivre à ce '
+              'scénario sans que la thèse sous-jacente change.'
+              % (iv * 100 if iv < 3 else iv), 'F2')
+
+
+def _q08_qualitative(q, octx, best):
+    """Réponse qualitative F2 de secours pour Q08 (grille impossible)."""
+    return _q('Q08', q, 'ANSWERED',
+              'Meilleur candidat %s qualité %s/100 — l’option ne bat l’action que si '
+              'la convexité paie son theta et son spread ; sinon l’action reste le '
+              'véhicule par défaut.' % (octx.get('universe') or 'n/d', best.get('quality')),
+              'F2')
+
+
 def _q(qid, question, status, answer=None, evidence_level=None, reason=None):
     out = {'id': qid, 'question': question, 'status': status}
     if status == 'ANSWERED':
@@ -173,17 +191,9 @@ def review(packet, score):
             item['model'] = 'black_scholes_european'
             qs.append(item)
         else:
-            qs.append(_q('Q05', q['Q05'], 'ANSWERED',
-                         'IV du meilleur candidat : %.0f %% — une contraction de 10 points '
-                         'réduit la valeur extrinsèque (vega) ; le contrat doit survivre à ce '
-                         'scénario sans que la thèse sous-jacente change.' % (iv * 100 if iv < 3 else iv),
-                         'F2'))
+            qs.append(_q05_qualitative(q['Q05'], iv))
     else:
-        qs.append(_q('Q05', q['Q05'], 'ANSWERED',
-                     'IV du meilleur candidat : %.0f %% — une contraction de 10 points '
-                     'réduit la valeur extrinsèque (vega) ; le contrat doit survivre à ce '
-                     'scénario sans que la thèse sous-jacente change.' % (iv * 100 if iv < 3 else iv),
-                     'F2'))
+        qs.append(_q05_qualitative(q['Q05'], iv))
 
     # Q06 — marché risk-off : exige un régime connu.
     label = reg.get('label')
@@ -245,17 +255,9 @@ def review(packet, score):
             item['model'] = 'black_scholes_european'
             qs.append(item)
         else:
-            qs.append(_q('Q08', q['Q08'], 'ANSWERED',
-                         'Meilleur candidat %s qualité %s/100 — l’option ne bat l’action que si '
-                         'la convexité paie son theta et son spread ; sinon l’action reste le '
-                         'véhicule par défaut.' % (octx.get('universe') or 'n/d', best.get('quality')),
-                         'F2'))
+            qs.append(_q08_qualitative(q['Q08'], octx, best))
     else:
-        qs.append(_q('Q08', q['Q08'], 'ANSWERED',
-                     'Meilleur candidat %s qualité %s/100 — l’option ne bat l’action que si '
-                     'la convexité paie son theta et son spread ; sinon l’action reste le '
-                     'véhicule par défaut.' % (octx.get('universe') or 'n/d', best.get('quality')),
-                     'F2'))
+        qs.append(_q08_qualitative(q['Q08'], octx, best))
 
     # Q09 — chemin vers la perte maximale : exige une invalidation réelle.
     entry, stop = plan.get('entry'), plan.get('stop')

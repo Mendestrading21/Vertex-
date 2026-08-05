@@ -238,6 +238,14 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   Portefeuille → Risque ; SW **v99** ; navigateur prouvé (0 erreur console) ;
 - 1498 tests verts / 2 skipped (+10).
 
+## Lot 25 — livré (2026-08-05, travail continu)
+
+- revue de simplification SANS changement de comportement (suite identique
+  1498/2, aucun test modifié) : docstrings resynchronisées sur 0.7.0,
+  formule de calibration unique (`_hit_factor`), boucle de mesure réutilisée
+  (`_measured_hits`), fallbacks red-team dédupliqués ; dette restante
+  documentée et assumée.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
