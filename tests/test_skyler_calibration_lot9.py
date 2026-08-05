@@ -121,3 +121,12 @@ def test_skyler_route_records_decision(tmp_path, monkeypatch):
         assert d['generator'] == 'deterministic'
     finally:
         scan_state['detail'].pop('CALX', None)
+
+
+def test_performance_page_has_calibration_card():
+    """Gardien LOT 8e : la vue Performance expose la carte Calibration Skyler."""
+    import terminal
+    body = terminal.app.test_client().get('/journal', follow_redirects=True).get_data(as_text=True)
+    assert 'vx-pf-calibration' in body
+    assert 'loadCalibration' in body
+    assert 'Calibration Skyler' in body

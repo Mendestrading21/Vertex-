@@ -27,7 +27,7 @@ Commande initiale obligatoire :
 | Lot 5 — Skyler Core | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-05-skyler-core`, packet+score/40+gates+scénarios+décision `/api/skyler/<sym>`, 1232 tests verts) | ✅ VALIDÉE (utilisateur, 2026-08-04) | `docs/refactor/validation/SKYLER-LOT-05.md` |
 | Lot 6 — Options Intelligence | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-06-options-intelligence`, scanners TACTICAL/SWING/LEAPS + doublement documenté + OptionsContext Skyler, 1248 tests verts) | ✅ VALIDÉE (utilisateur, 2026-08-04) | `docs/refactor/validation/SKYLER-LOT-06.md` |
 | Lot 7 — Portfolio Intelligence | **FAIT — verdict GO** (2026-08-04, branche `agent/skyler-v2-lot-07-portfolio-intelligence`, PortfolioContext + portes perdant/concentration + sizing S+/S/A/B, 1265 tests verts) | ✅ VALIDÉE (utilisateur, 2026-08-04) | `docs/refactor/validation/SKYLER-LOT-07.md` |
-| Lot 8 — Neon Glass | **EN COURS — 8a→8d FAITS (GO)** : Analyse → décision Skyler (v88) ; Aujourd’hui → diff marché + moteur durci (v89) ; Options → scanner par univers (v90) ; Portefeuille → carte Discipline V2 + /api/portfolio/context (v91, 1282 tests verts) | ✅ VALIDÉE (utilisateur, 2026-08-04) | `docs/refactor/validation/SKYLER-LOT-08A.md` + rapports par espace |
+| Lot 8 — Neon Glass | **FAIT — 8a→8e (GO)** : Analyse → décision Skyler (v88) ; Aujourd’hui → diff marché + moteur durci (v89) ; Options → scanner par univers (v90) ; Portefeuille → Discipline V2 (v91) ; Journal → Calibration Skyler (v92, 1283 tests verts). Marchés/Opportunités/Système gardent leurs domiciles canoniques (pas de doublon) | ✅ VALIDÉE (utilisateur, 2026-08-04) | `docs/refactor/validation/SKYLER-LOT-08A.md` + rapports par espace |
 | Lot 9 — Calibration et RC | **INFRA FAITE — verdict GO** (2026-08-05, journal des décisions + Brier prêt honnête-vide + /api/skyler/calibration, 1279 tests verts) ; RC complète après accumulation de décisions réelles | EN ATTENTE (validation groupée) | `docs/refactor/validation/SKYLER-LOT-09.md` |
 
 ## Décisions établies
@@ -65,6 +65,6 @@ Commande initiale obligatoire :
 
 ## Prochaine action unique
 
-Poursuivre le lot 8 (espaces restants : Aujourd’hui, Marchés, Opportunités, Portefeuille, Options, Journal, Système — une sous-PR par espace), puis lot 9 (calibration) après accumulation de décisions Skyler enregistrées.
+Valider et fusionner la série #26–#30 (8b, 8c, 9, 8d, 8e), puis laisser le journal de calibration accumuler pendant le test utilisateur ; RC finale du lot 9 ensuite.
 
-**Audit et lots 0–8a validés et fusionnés — la suite reprend au lot 8b.**
+**Audit et lots 0–8a fusionnés ; série 8b→8e + 9 (infra) en PR brouillons #26–#30, en attente de validation groupée.**

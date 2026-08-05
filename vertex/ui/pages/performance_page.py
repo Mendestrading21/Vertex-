@@ -70,6 +70,13 @@ _VIEW_CONTENT = {
     <div id="vx-pf-postmortem">%%LOADING%%</div>
   </section>
 </div>
+<div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-12" aria-label="Calibration Skyler">
+    <div class="vx-card-header"><span class="vx-card-title">Calibration Skyler — les d&eacute;cisions vieillissent-elles bien&nbsp;?</span>
+      <span class="vx-chart-question">Journal des d&eacute;cisions canoniques + rendements r&eacute;els depuis le prix enregistr&eacute;. Brier indisponible tant qu&rsquo;aucune probabilit&eacute; calibr&eacute;e n&rsquo;existe — dit tel quel.</span></div>
+    <div id="vx-pf-calibration">%%LOADING%%</div>
+  </section>
+</div>
 """,
     'journal': """
 <div class="vx-grid vx-mt3">
@@ -468,6 +475,38 @@ function loadReal(){
 }
 
 /* ═══ Orchestration ═══ */
+/* Calibration Skyler (LOT 8e) : journal des décisions + rendements ex post réels.
+   Brier honnêtement indisponible tant que rien de calibré. */
+async function loadCalibration(){
+  const host=$('vx-pf-calibration');if(!host)return;
+  try{
+    const d=await VX.fetch('/api/skyler/calibration',{ttl:120000});
+    if(!d||!d.n_decisions){
+      host.innerHTML='<div class="vx-empty">Aucune décision enregistrée pour le moment — le journal se remplit à chaque fiche Analyse consultée.</div>';
+      return;
+    }
+    const byDec=Object.entries(d.by_decision||{}).map(([k,v])=>'<span class="vx-badge" data-tone="neutral" style="margin-right:.25rem">'+esc(k)+' × '+v+'</span>').join('');
+    const oc=d.outcomes||{};
+    let rows='';
+    if(oc.available&&(oc.rows||[]).length){
+      rows='<div class="vx-table-wrap vx-mt1"><table class="vx-table"><thead><tr><th>Titre</th><th>Décision</th><th>Prix décision</th><th>Prix actuel</th><th>Rendement</th></tr></thead><tbody>'
+        +oc.rows.slice(-12).map(r=>{
+          const cls=r.return_pct>0?'vx-pos':r.return_pct<0?'vx-neg':'';
+          return '<tr><td data-label="Titre"><b>'+esc(r.symbol)+'</b></td><td data-label="Décision">'+esc(r.decision)+'</td>'
+            +'<td data-label="Prix décision" class="vx-num">'+VX.fmt.num(r.entry_price,2)+'</td>'
+            +'<td data-label="Prix actuel" class="vx-num">'+VX.fmt.num(r.current_price,2)+'</td>'
+            +'<td data-label="Rendement" class="vx-num '+cls+'">'+(r.return_pct>0?'+':'')+r.return_pct+' %</td></tr>';
+        }).join('')+'</tbody></table></div>';
+    }
+    host.innerHTML='<div class="vx-flex vx-mb1" style="gap:.4rem;align-items:center;flex-wrap:wrap">'
+      +'<b>'+d.n_decisions+'</b><span class="vx-meta">décision(s) journalisée(s)</span>'+byDec
+      +(d.demo?'<span class="vx-badge" data-tone="neutral">DÉMO</span>':'')+'</div>'
+      +rows
+      +'<div class="vx-meta" style="margin-top:.35rem">'
+      +(oc.available?oc.measured+' mesurée(s), '+(oc.unmeasured||0)+' non mesurée(s) (sans cote — jamais inventé) · ':'')
+      +'Brier : '+esc((d.brier&&d.brier.reason)||'indisponible')+'</div>';
+  }catch(e){host.innerHTML='<div class="vx-error-banner">Calibration injoignable : '+esc(e.message)+'</div>';}
+}
 async function loadPostmortem(){
   const host=$('vx-pf-postmortem');if(!host)return;
   let d=null;
@@ -496,7 +535,7 @@ async function loadPostmortem(){
     +'<div class="vx-card-footer">Post-mortem descriptif (moteur déterministe, trades réels du desk) — pas un conseil.</div>';
 }
 function boot(){
-  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();loadPostmortem();}
+  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();loadPostmortem();loadCalibration();}
   else if(VIEW==='journal'){
     loadJournal();loadMistakes();
     $('vx-pf-add')?.addEventListener('click',openEntryModal);
