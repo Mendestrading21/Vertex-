@@ -118,6 +118,11 @@ _SECTIONS = """
     <span class="vx-chart-question">Spikes |z|&ge;2, r&eacute;gime de volatilit&eacute;, s&eacute;quences, extr&ecirc;mes — sur les cl&ocirc;tures r&eacute;elles. Constat, pas une pr&eacute;vision.</span></div>
   <div id="an-anomaly">%%LOADING%%</div>
 </section>
+<section class="vx-card vx-mt3" aria-label="Laboratoire d'évidence">
+  <div class="vx-card-header"><span class="vx-card-title">Que s'est-il pass&eacute; apr&egrave;s&nbsp;? — &eacute;vidence historique</span>
+    <span class="vx-chart-question">Rendements r&eacute;els &agrave; 1/5/10 barres et MFE/MAE apr&egrave;s les spikes pass&eacute;s de CETTE s&eacute;rie. In-sample, descriptif — pas un backtest.</span></div>
+  <div id="an-evidence">%%LOADING%%</div>
+</section>
 <section class="vx-card vx-mt3" aria-label="Skyler — décision canonique">
   <div class="vx-card-header"><span class="vx-card-title">Skyler — d&eacute;cision canonique</span>
     <span class="vx-chart-question">Score /40 par blocs de la Constitution V2, hard gates prioritaires, sc&eacute;narios sur niveaux r&eacute;els — d&eacute;terministe, jamais un ordre.</span></div>
@@ -870,9 +875,38 @@ async function loadSkyler(){
       +'Objection : '+esc(d.strongest_objection||'—')+'</div>';
   }catch(e){host.innerHTML='<div class="vx-error-banner">Skyler injoignable : '+esc(e.message)+'</div>';}
 }
+/* Laboratoire d'évidence (X2) : stats ex post réelles après les spikes passés. */
+async function loadEvidence(){
+  const host=$('an-evidence');if(!host)return;
+  try{
+    const d=await VX.fetch('/api/evidence/'+SYM,{ttl:300000});
+    if(!d||d.available===false){
+      host.innerHTML='<div class="vx-empty">'+esc((d&&d.reason)||'évidence indisponible')+'.</div>';return;
+    }
+    if(!d.n_events){
+      host.innerHTML='<div class="vx-empty">Aucun spike historique sur la fenêtre ('+d.points+' clôtures) — rien à mesurer, rien d\'inventé.</div>';return;
+    }
+    const fm=(v)=>v==null?'—':((v>0?'+':'')+v+' %');
+    const cls=(v)=>v==null?'':v>0?'vx-pos':v<0?'vx-neg':'';
+    const row=(lab,b)=>b.n_measured?'<tr><td data-label="Direction"><b>'+lab+'</b> <span class="vx-meta">×'+b.n_measured+'</span></td>'
+      +'<td data-label="+1 barre" class="vx-num '+cls(b.median_fwd_1_pct)+'">'+fm(b.median_fwd_1_pct)+'</td>'
+      +'<td data-label="+5 barres" class="vx-num '+cls(b.median_fwd_5_pct)+'">'+fm(b.median_fwd_5_pct)+'</td>'
+      +'<td data-label="+10 barres" class="vx-num '+cls(b.median_fwd_10_pct)+'">'+fm(b.median_fwd_10_pct)+'</td>'
+      +'<td data-label="MFE" class="vx-num vx-pos">'+fm(b.median_mfe_pct)+'</td>'
+      +'<td data-label="MAE" class="vx-num vx-neg">'+fm(b.median_mae_pct)+'</td></tr>':'';
+    host.innerHTML='<div class="vx-table-wrap"><table class="vx-table"><thead><tr>'
+      +'<th>Après un spike…</th><th>+1 barre</th><th>+5 barres</th><th>+10 barres</th><th>MFE</th><th>MAE</th>'
+      +'</tr></thead><tbody>'+row('haussier',d.up)+row('baissier',d.down)+'</tbody></table></div>'
+      +'<div class="vx-meta" style="margin-top:.3rem">'+d.n_events+' spike(s) historique(s)'
+      +(d.n_unmeasurable?' · '+d.n_unmeasurable+' trop récent(s) non mesurable(s)':'')
+      +' · médianes exactes · '+esc(d.note||'')+'</div>';
+  }catch(e){host.innerHTML='<div class="vx-error-banner">Évidence injoignable : '+esc(e.message)+'</div>';}
+}
 loadDossier();
 loadDecisionStack();
 loadAnomalies();
+loadEvidence();
+VX.refresh.register(loadEvidence,300000,'analysis-evidence');
 loadSkyler();
 VX.refresh.register(loadSkyler,300000,'analysis-skyler');
 VX.refresh.register(loadAnomalies,300000,'analysis-anomaly');
