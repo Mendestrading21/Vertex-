@@ -4,72 +4,68 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
-## BILAN — travail continu, lots 29 → 43 (2026-08-05, bilan n°2)
+## BILAN — travail continu, lots 29 → 48 (2026-08-05, bilan n°3)
 
-Synthèse des 15 lots livrés en mode continu (« go sans validation
-humaine ») depuis la RC du lot 27, à l'intention de la validation
-humaine. Remplace le bilan n°1 (lots 29-37, livré au lot 38) — chaque
-chiffre reste traçable vers son rapport `SKYLER-LOT-XX.md` et sa ligne
-dans `SKYLER-INDEX.md`.
+Synthèse des 20 lots + 3 RC périodiques livrés en mode continu (« go sans
+validation humaine ») depuis la RC du lot 27, à l'intention de la
+validation humaine. Remplace le bilan n°2 (lots 29-43) — chaque chiffre
+reste traçable vers son rapport `SKYLER-LOT-XX.md` / `SKYLER-RC-…` et sa
+ligne dans `SKYLER-INDEX.md`.
 
-| Mesure | Avant (lot 28) | Après (lot 43) |
+| Mesure | Avant (lot 28) | Après (lot 48) |
 |---|---|---|
-| Tests verts | 1 515 / 2 skipped | **1 606 / 2 skipped** (+91) |
+| Tests verts | 1 515 / 2 skipped | **1 627 / 2 skipped** (+112) |
 | Moteur décisionnel | 0.8.0 | **0.9.0** (catalyst_kind émis + figé) |
-| Service worker | v100 | **v106** (6 bumps, gardiens à jour) |
-| RC courtes navigateur | — | **4 × GO — 0 défaut** (32/33/35/37/40-41) |
+| Service worker | v100 | **v107** (7 bumps, gardiens à jour) |
+| RC navigateur | — | **6 × GO — 0 défaut** (dont 3 périodiques) |
 
 ### Capacités livrées
 
-- **Export souverain INTÈGRE** (lots 29 + 42) : sauvegarde lecture seule
-  prouvée de tout l'état runtime, avec `ledger_health` embarqué (l'archive
-  dit elle-même si elle était cohérente) et `content_sha256` canonique
-  vérifiable HORS LIGNE ; bouton « Exporter » ;
+- **CYCLE SOUVERAIN COMPLET** (lots 29/42/45/46/47/48) : export intègre
+  (`content_sha256` vérifiable hors ligne + `ledger_health` embarqué),
+  RESTAURATION par rejeu append-only des TROIS magasins (l'historique
+  local gagne toujours, empreinte vérifiée avant toute écriture),
+  boutons Exporter/Importer côte à côte dans la carte Mémoire — et le
+  cycle entier (export → altération refusée → restauration par le vrai
+  bouton) est RE-PROUVÉ en navigateur À CHAQUE RC (lot 48) ;
 - **Type de catalyseur figé** (lot 30) : `catalyst_kind` émis par le
-  moteur (fait du moteur events, jamais re-parsé) + découpe
-  `by_catalyst_type` en OBSERVATION (non consommée, prouvé) ;
-- **Chaîne mémoire FERMÉE** (lots 39/40) : badge de calibration →
-  cellule (règle d'appartenance en SOURCE UNIQUE, anti-divergence
-  prouvée) → décisions mesurées hit/miss → post-mortem par record —
-  API JSON pour l'audit ET vue HTML lisible (markupsafe prouvé sur
-  contenu hostile) ;
-- **Surfaçage UI** (lots 33/35/37) : badges catalyseur/type, badge
-  `LEDGER : ANOMALIES` conditionnel, fraîcheur « dernière décision
-  figée (J-N) » calendaire UTC ;
-- **Santé du ledger** (lot 35) : doublons, orphelins, mélanges de
-  versions, corruption — DIT, jamais réparé en silence ;
-- **RC courte outillée** (lots 32 + 41) : `tools/rc_short_audit.js`
-  versionné — 8 pages + PARCOURS MÉMOIRE (décision → /memory/<id> →
-  cellule ou 404 lisible dit) à chaque exécution.
+  moteur + découpe `by_catalyst_type` en observation (non consommée) ;
+- **Chaîne mémoire fermée** (lots 39/40) : badge → cellule (source
+  unique d'appartenance) → décisions mesurées hit/miss → post-mortem —
+  API JSON + vue HTML lisible (markupsafe prouvé sur contenu hostile) ;
+- **Surfaçage UI** (lots 33/35/37) : badges contexte, `LEDGER :
+  ANOMALIES` conditionnel, fraîcheur « dernière décision figée (J-N) » ;
+- **Santé du ledger** (lot 35) : doublons/orphelins/mélanges de
+  versions/corruption — DIT, jamais réparé en silence ;
+- **RC courte outillée auto-prouvante** (lots 32/41/48) : 8 pages +
+  parcours mémoire + cycle souverain à chaque exécution.
 
-### Robustesse prouvée (fuzz déterministe, zéro aléatoire)
+### Robustesse prouvée
 
-- **11 crashs réels corrigés** en refus honnêtes : 7 moteurs (lot 31)
-  et 4 HTTP 500 (lot 34 — magasins corrompus) ;
-- couverture adversariale HTTP **complète et EXACTE** (lots 31/34/36/43 :
-  moteurs, routes mémoire/graphe, cœur `/api/skyler/<sym>`, routes
-  cellule — le trou des routes postérieures au lot 36 a été fermé au
-  lot 43) ; non-interférence et absence de normalisation cachée prouvées ;
-- **1 défaut UI** attrapé par la preuve navigateur (lot 37 : J-1 → J-0)
-  et **2 défauts d'outillage** corrigés et dits (lot 41 : casse CSS ;
-  lot 40 : test trivialement vert durci).
+- **11 crashs réels corrigés** en refus honnêtes (7 moteurs lot 31,
+  4 HTTP 500 lot 34) ; couverture adversariale HTTP complète et exacte
+  (lots 31/34/36/43) ;
+- **2 défauts réels attrapés UNIQUEMENT par la preuve navigateur** :
+  J-1 affiché pour une décision du jour (lot 37) et empreinte cassée au
+  round-trip JS `100.0 → 100` (lot 47) — tous deux corrigés avec test
+  rouge dédié ; **2 défauts d'outillage** corrigés et dits (lots 40/41).
 
-### Invariants tenus sur les 15 lots
+### Invariants tenus sur les 20 lots
 
 READONLY absolu · données réelles uniquement (absent → n/d) · `main`
 jamais touchée · fichiers runtime jamais commités · gardiens prospectifs
 · zéro aléatoire moteur · rouge d'abord quand le comportement change ·
-preuve navigateur à chaque changement de shell · reports honnêtes dits
-(biais par type de catalyseur reporté lot 42 faute d'échantillons réels).
+preuve navigateur à chaque changement de shell · reports honnêtes dits.
 
 ### Étape suivante — dit franchement
 
-La valeur marginale des lots code diminue : le backlog mémoire est
-livré, la couverture adversariale est complète. **La validation humaine
-physique (TWS réel, pages, iPhone — réserve n°1 de la RC du lot 27) est
-désormais l'étape la plus utile du programme.** En attendant, le mode
-continu bascule sur des RC courtes périodiques espacées (qualité avant
-volume), pas du code forcé.
+Le cycle souverain est FERMÉ et auto-prouvé ; le backlog code est épuisé
+en valeur réelle. **La validation humaine physique (TWS réel, pages,
+iPhone — réserve n°1 de la RC du lot 27) est l'étape décisive du
+programme.** Le mode continu bascule en RC périodiques espacées
+(~30 min) — chaque RC re-prouvant suite complète, 8 pages, parcours
+mémoire ET cycle souverain.
+
 
 ## Source de vérité
 

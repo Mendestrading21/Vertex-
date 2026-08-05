@@ -55,6 +55,7 @@
 | 46 | `SKYLER-LOT-46.md` | Restauration étendue séances + journal (rejeu honnête, donnée locale gagne, triple de dédup en source unique, périmètre complet) | 0.9.0 | v106 | 1622 | GO |
 | 47 | `SKYLER-LOT-47.md` | Bouton Importer (flux fichier réel prouvé en navigateur) + empreinte stable au round-trip JS (défaut réel 100.0→100 corrigé) | 0.9.0 | v107 | 1627 | GO |
 | 48 | `SKYLER-LOT-48.md` | Cycle souverain dans la RC outillée (export → altération refusée dite → restauration par le vrai bouton) — re-prouvé à chaque RC | 0.9.0 | v107 | 1627 | GO |
+| 49 | `SKYLER-LOT-49.md` | Bilan consolidé n°3 (29→48) en tête de STATUS + bascule en RC périodiques espacées (cycle souverain fermé) | 0.9.0 | v107 | 1627 | GO |
 
 ## Architecture atteinte
 
