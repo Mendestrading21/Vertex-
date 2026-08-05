@@ -19,6 +19,7 @@ COPPER = '#8A8284'         # série neutre acier (gris chaud)
 COPPER_LIGHT = '#EEF1F5'   # blanc-gris clair de marque (accents hover)
 AMBER = '#D9BE3C'          # série secondaire / attention
 BEIGE = '#c8bfae'          # benchmark clair (sable)
+TECHNICAL = '#45D6E8'      # cyan — comparaison technique UNIQUEMENT (doctrine §3)
 
 # ── États (direction / statut réel uniquement) ────────────────────────
 POSITIVE = '#2BBE90'       # ÉMERAUDE — gain / donnée positive (distinct de la marque)
@@ -34,8 +35,10 @@ TEXT_DIM = '#BABABA'
 TEXT_MUTED = '#8A8284'
 
 # Palette de séries — ordre déterministe, jamais arc-en-ciel. La série 0 est
-# toujours la marque ; les suivantes descendent en neutralité.
-SERIES = (BRAND, BEIGE, NEUTRAL, OPTION, AMBER, COPPER)
+# toujours la marque ; la série 1 TRANCHE (cyan de comparaison technique —
+# lot 56 : trois blancs-gris consécutifs étaient indistinguables sur un même
+# graphique comparé) ; les suivantes descendent en neutralité.
+SERIES = (BRAND, TECHNICAL, BEIGE, OPTION, AMBER, COPPER)
 
 # Rôle sémantique → couleur. C'est CE dictionnaire qui fait autorité.
 SEMANTIC = {
@@ -44,6 +47,7 @@ SEMANTIC = {
     'copper_light': COPPER_LIGHT,
     'amber': AMBER,
     'beige': BEIGE,
+    'technical': TECHNICAL,
     'benchmark': NEUTRAL,
     'positive': POSITIVE,
     'negative': NEGATIVE,
@@ -104,7 +108,7 @@ def audit_no_blue() -> list:
 
 
 __all__ = [
-    'BRAND', 'COPPER', 'COPPER_LIGHT', 'AMBER', 'BEIGE', 'POSITIVE', 'NEGATIVE',
+    'BRAND', 'COPPER', 'COPPER_LIGHT', 'AMBER', 'BEIGE', 'TECHNICAL', 'POSITIVE', 'NEGATIVE',
     'WARNING', 'NEUTRAL', 'OPTION', 'TEXT', 'TEXT_DIM', 'TEXT_MUTED',
     'SERIES', 'SEMANTIC', 'STATUS_COLOR', 'series_color', 'status_color',
     'is_bluish', 'audit_no_blue',

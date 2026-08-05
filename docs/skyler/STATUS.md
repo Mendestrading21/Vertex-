@@ -678,6 +678,23 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   « Analyse » → /analysis ; crumb SPA (MSFT) garde ses liens ; 0 erreur
   console ; moteur 0.9.0 inchangé.
 
+## Lot 56 — livré (2026-08-05, arc « jusqu'au lot 60 » — polish 1/4)
+
+- inspection réelle d'abord (captures 1440+390, audit débordements : 0,
+  0 erreur console) — deux défauts RÉELS corrigés, rien de gratuit ;
+- séries comparées : les 3 premiers gris-blancs de SERIES étaient
+  indistinguables sur « Indices — performance comparée » → réordonné
+  marque/cyan technique/sable/violet/jaune/gris via la SOURCE
+  (`palette.py`, constante TECHNICAL nommée) + miroirs thème JS et
+  chart-core alignés — le gardien de cohérence a attrapé l'essai
+  JS-seul, la source a été alignée, pas contournée ; zéro littéral
+  nouveau ; non-bleu vérifié pour le garde-fou ;
+- crumb mobile : slash orphelin (racine masquée, séparateur restant) →
+  séparateur adjacent masqué avec elle ;
+- preuves : 3 tests rouges→verts ; suite 1658/2 skipped ; RC outillée GO
+  0 défaut sous SW v113 ; captures APRÈS (4 séries distinctes, crumb
+  mobile propre vérifié programmatiquement) ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
