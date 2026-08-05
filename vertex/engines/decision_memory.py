@@ -464,6 +464,44 @@ def aggregates(memory):
             'note': 'résultats séparés par version de moteur — jamais fusionnés'}
 
 
+# ─── Facteur de calibration réel (LOT 19) ───────────────────────────────────────
+
+MIN_CALIBRATION_SAMPLE = 20
+
+
+def calibration_factor(memory, engine_version):
+    """Facteur `calibration` de la confiance depuis les résultats MESURÉS de la
+    mémoire — pour CETTE version de moteur UNIQUEMENT (jamais mélangées).
+    scenario hit rate = part des décisions mesurées dont le résultat était
+    contenu par les scénarios (DECISION_CORRECTE ou VARIANCE_NORMALE) au plus
+    long horizon mesuré. Facteur = 0,50 + 0,40 × hit rate, borné [0,50, 0,90]
+    — jamais 1,0. Échantillon < MIN_CALIBRATION_SAMPLE → 0,50 avec raison
+    « échantillon insuffisant » : un facteur ne s'invente pas sur 3 mesures."""
+    mem = memory or empty_memory()
+    classes = []
+    for r in mem.get('decisions') or []:
+        if r.get('engine_version') != engine_version:
+            continue
+        cls = _measured_class(mem, r)
+        if cls is not None:
+            classes.append(cls)
+    n = len(classes)
+    if n < MIN_CALIBRATION_SAMPLE:
+        return {'value': 0.5, 'n_measured': n, 'hit_rate': None,
+                'engine_version': engine_version,
+                'basis': 'échantillon insuffisant (%d/%d mesure(s) pour le moteur %s) — '
+                         'facteur plafonné à 0,50, jamais inventé'
+                         % (n, MIN_CALIBRATION_SAMPLE, engine_version)}
+    hits = sum(1 for c in classes if c in ('DECISION_CORRECTE', 'VARIANCE_NORMALE'))
+    hit_rate = hits / n
+    return {'value': round(0.5 + 0.4 * hit_rate, 3),
+            'n_measured': n, 'hit_rate': round(hit_rate, 3),
+            'engine_version': engine_version,
+            'basis': 'scenario hit rate %d/%d = %.0f %% pour le moteur %s — '
+                     'facteur 0,50 + 0,40 × hit rate, borné [0,50, 0,90]'
+                     % (hits, n, hit_rate * 100, engine_version)}
+
+
 # ─── Recommandations (jamais auto-appliquées) ───────────────────────────────────
 
 def recommendations(patterns, aggs):
@@ -490,5 +528,6 @@ def recommendations(patterns, aggs):
 
 __all__ = ['freeze', 'empty_memory', 'append_decision', 'append_outcome',
            'sessions_after', 'measure', 'classify_error', 'detect_patterns',
-           'aggregates', 'recommendations',
-           'ERROR_CLASSES', 'MEMORY_FILE', 'MAX_DECISIONS', 'MEMORY_SCHEMA_VERSION']
+           'aggregates', 'recommendations', 'calibration_factor',
+           'ERROR_CLASSES', 'MEMORY_FILE', 'MAX_DECISIONS',
+           'MEMORY_SCHEMA_VERSION', 'MIN_CALIBRATION_SAMPLE']
