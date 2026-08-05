@@ -77,6 +77,13 @@ _VIEW_CONTENT = {
     <div id="vx-pf-calibration">%%LOADING%%</div>
   </section>
 </div>
+<div class="vx-grid vx-mt3">
+  <section class="vx-card vx-col-12" aria-label="Mémoire décisionnelle">
+    <div class="vx-card-header"><span class="vx-card-title">M&eacute;moire d&eacute;cisionnelle — Skyler apprend-il de ses d&eacute;cisions&nbsp;?</span>
+      <span class="vx-chart-question">Ledger immuable par version de moteur : d&eacute;cisions fig&eacute;es, biais surveill&eacute;s, erreurs class&eacute;es — jamais r&eacute;&eacute;crites.</span></div>
+    <div id="vx-pf-memory">%%LOADING%%</div>
+  </section>
+</div>
 """,
     'journal': """
 <div class="vx-grid vx-mt3">
@@ -507,6 +514,42 @@ async function loadCalibration(){
       +'Brier : '+esc((d.brier&&d.brier.reason)||'indisponible')+'</div>';
   }catch(e){host.innerHTML='<div class="vx-error-banner">Calibration injoignable : '+esc(e.message)+'</div>';}
 }
+/* Mémoire décisionnelle (LOT 16) : ledger immuable + biais + erreurs par version.
+   Lecture seule de /api/skyler/memory — états vides honnêtes, rien inventé. */
+async function loadMemory(){
+  const host=$('vx-pf-memory');if(!host)return;
+  try{
+    const d=await VX.fetch('/api/skyler/memory',{ttl:120000});
+    if(!d||!d.n_decisions){
+      host.innerHTML='<div class="vx-empty">Aucune décision figée pour le moment — la mémoire se remplit à chaque fiche Analyse consultée.</div>';
+      return;
+    }
+    const agg=(d.aggregates&&d.aggregates.by_engine_version)||{};
+    const vRows=Object.entries(agg).map(([v,a])=>{
+      const errs=Object.entries(a.error_classes||{}).map(([k,n])=>esc(k)+' × '+n).join(' · ')||'aucune erreur classée (résultats en attente)';
+      const decs=Object.entries(a.by_decision||{}).map(([k,n])=>esc(k)+' × '+n).join(' · ');
+      return '<tr><td data-label="Moteur" class="vx-mono">'+esc(v)+'</td>'
+        +'<td data-label="Décisions" class="vx-num">'+a.n_decisions+'</td>'
+        +'<td data-label="Répartition">'+decs+'</td>'
+        +'<td data-label="Mesurées" class="vx-num">'+(a.measured||0)+'</td>'
+        +'<td data-label="Erreurs classées">'+errs+'</td></tr>';
+    }).join('');
+    const tone={DETECTE:'risk',ABSENT:'positive',INSUFFISANT:'neutral'};
+    const pats=(d.patterns||[]).map(p=>'<span class="vx-badge" data-tone="'+(tone[p.status]||'neutral')
+      +'" title="'+esc(p.basis||'')+'" style="margin:.12rem .25rem .12rem 0">'
+      +esc(String(p.pattern||'').replace(/_/g,' '))+' : '+esc(p.status)+'</span>').join('');
+    const recs=(d.recommendations||[]).map(r=>'<div class="vx-insight" data-tone="warning">'
+      +esc(r.proposal)+' <span class="vx-meta">(en attente de validation humaine)</span></div>').join('');
+    host.innerHTML='<div class="vx-flex vx-mb1" style="gap:.4rem;align-items:center;flex-wrap:wrap">'
+      +'<b>'+d.n_decisions+'</b><span class="vx-meta">décision(s) figée(s) · '+(d.n_outcomes||0)+' résultat(s) mesuré(s)</span>'
+      +(d.demo?'<span class="vx-badge" data-tone="neutral">DÉMO</span>':'')+'</div>'
+      +'<div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Moteur</th><th>Décisions</th><th>Répartition</th><th>Mesurées</th><th>Erreurs classées</th></tr></thead><tbody>'
+      +vRows+'</tbody></table></div>'
+      +'<div class="vx-kpi-label vx-mt2">Biais surveillés</div><div>'+pats+'</div>'
+      +(recs?'<div class="vx-kpi-label vx-mt2">Propositions</div>'+recs:'')
+      +'<div class="vx-meta" style="margin-top:.35rem">Ledger immuable — les décisions historiques ne sont jamais réécrites ; résultats séparés par version de moteur ; biais inobservables sans trades réels dits INSUFFISANT.</div>';
+  }catch(e){host.innerHTML='<div class="vx-error-banner">Mémoire injoignable : '+esc(e.message)+'</div>';}
+}
 async function loadPostmortem(){
   const host=$('vx-pf-postmortem');if(!host)return;
   let d=null;
@@ -535,7 +578,7 @@ async function loadPostmortem(){
     +'<div class="vx-card-footer">Post-mortem descriptif (moteur déterministe, trades réels du desk) — pas un conseil.</div>';
 }
 function boot(){
-  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();loadPostmortem();loadCalibration();}
+  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();loadPostmortem();loadCalibration();loadMemory();}
   else if(VIEW==='journal'){
     loadJournal();loadMistakes();
     $('vx-pf-add')?.addEventListener('click',openEntryModal);
