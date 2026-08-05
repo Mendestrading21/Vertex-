@@ -341,6 +341,19 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   v102 servi ; en démo 0 cellule mesurée → aucun badge (honnête, lot 26) ;
 - 1547 tests verts / 2 skipped (+4) ; moteur 0.9.0 inchangé.
 
+## Lot 34 — livré (2026-08-05, travail continu)
+
+- batterie de fuzz HTTP à listes FIXES sur les routes graphe/mémoire :
+  ?hops= dégénérés (clamp 1..3 toujours appliqué, troncature toujours
+  dite), symboles/ids dégénérés (404 structuré, jamais nu), traversée
+  (jamais un fichier système), XSS (id hostile jamais réfléchi brut) ;
+- **4 crashs 500 réels trouvés** sur magasin mémoire corrompu (passe de
+  mesure, find_decision/find_outcome, detect_patterns, aggregates) et
+  corrigés : entrées non-dict ignorées, entrées valides toujours
+  servies — refus honnête, jamais 500 ;
+- aucun bump de version (données valides inchangées) ; SW v102 inchangé ;
+- 1555 tests verts / 2 skipped (+8).
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

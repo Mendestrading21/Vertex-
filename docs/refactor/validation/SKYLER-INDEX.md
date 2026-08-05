@@ -37,6 +37,7 @@
 | 31 | `SKYLER-LOT-31.md` | Fuzz déterministe des chemins récents — 7 crashs réels trouvés et corrigés en refus honnêtes | 0.9.0 | v101 | 1543 | GO |
 | 32 | `SKYLER-LOT-32.md` | RC courte périodique outillée (`tools/rc_short_audit.js`) — 8 pages, 0 défaut, client-log 0, SW v101 servi | 0.9.0 | v101 | 1543 | GO |
 | 33 | `SKYLER-LOT-33.md` | by_catalyst/by_catalyst_type dans la carte Mémoire (même mécanique badges, « observation » dit) + RC courte GO | 0.9.0 | v102 | 1547 | GO |
+| 34 | `SKYLER-LOT-34.md` | Fuzz HTTP graphe/mémoire — 4 crashs 500 réels corrigés (magasin corrompu servi en refus honnête, jamais 500) | 0.9.0 | v102 | 1555 | GO |
 
 ## Architecture atteinte
 
