@@ -73,6 +73,23 @@ def api_anomalies(sym):
     return jsonify(d)
 
 
+@bp.route('/api/evidence/<sym>')
+def api_evidence(sym):
+    """LABORATOIRE D'ÉVIDENCE (X2) : que s'est-il RÉELLEMENT passé après les
+    spikes passés — rendements forward et MFE/MAE exacts sur la série
+    canonique. In-sample, descriptif, jamais un backtest. Lecture seule."""
+    from vertex.data import series as _series
+    from vertex.engines import evidence_lab as _ev
+    sym = (sym or '').upper()[:12]
+    detail = (scan_state.get('detail') or {}).get(sym) or {}
+    closes, src = _series.closes(detail)
+    d = _ev.study(closes)
+    d['symbol'] = sym
+    d['series_source'] = src
+    d['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+    return jsonify(d)
+
+
 @bp.route('/api/skyler/<sym>')
 def api_skyler(sym):
     """SKYLER CORE (LOT 5) : packet typé + décision canonique déterministe
