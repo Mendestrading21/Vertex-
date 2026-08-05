@@ -262,6 +262,8 @@ def api_skyler_memory():
     changed = False
     detail_all = scan_state.get('detail') or {}
     for r in mem['decisions']:
+        if not isinstance(r, dict):            # magasin corrompu → entrée ignorée
+            continue
         after = _slog.closes_after_date(slog, r.get('symbol'), r.get('session_date'))
         if after is None:                      # log muet sur ce titre → secours empreinte
             closes, _src = _series.closes(detail_all.get(r.get('symbol')) or {})

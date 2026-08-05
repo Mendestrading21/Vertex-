@@ -353,7 +353,8 @@ def detect_patterns(memory):
     depuis la mémoire figée ; un biais inobservable sans trades réels est
     honnêtement INSUFFISANT, jamais deviné."""
     mem = memory or empty_memory()
-    decs = mem.get('decisions') or []
+    # magasin corrompu → entrées non-dict ignorées (refus honnête, jamais 500)
+    decs = [r for r in (mem.get('decisions') or []) if isinstance(r, dict)]
     out = []
 
     def pat(name, status, basis):
@@ -429,6 +430,8 @@ def detect_patterns(memory):
     # Catalyseur mal évalué : horizon CATALYSEUR mesuré classé en erreur.
     cat_meas, cat_bad = 0, 0
     for o in mem.get('outcomes') or []:
+        if not isinstance(o, dict):        # magasin corrompu → entrée ignorée
+            continue
         hz = (o.get('horizons') or {}).get('CATALYSEUR') or {}
         if hz.get('status') != 'MESURE':
             continue
@@ -456,6 +459,8 @@ def aggregates(memory):
     mem = memory or empty_memory()
     by_v = {}
     for r in mem.get('decisions') or []:
+        if not isinstance(r, dict):        # magasin corrompu → entrée ignorée
+            continue
         v = r.get('engine_version') or 'unknown'
         b = by_v.setdefault(v, {'n_decisions': 0, 'by_decision': {}, 'by_level': {},
                                 'measured': 0, 'error_classes': {}})
@@ -475,14 +480,14 @@ def aggregates(memory):
 
 def find_decision(memory, decision_id):
     for r in (memory or {}).get('decisions') or []:
-        if r.get('decision_id') == decision_id:
+        if isinstance(r, dict) and r.get('decision_id') == decision_id:
             return r
     return None
 
 
 def find_outcome(memory, decision_id):
     for o in (memory or {}).get('outcomes') or []:
-        if o.get('decision_id') == decision_id:
+        if isinstance(o, dict) and o.get('decision_id') == decision_id:
             return o
     return None
 
