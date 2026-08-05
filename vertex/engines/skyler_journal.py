@@ -46,6 +46,35 @@ def record(journal, decision, price=None, now=None):
     return journal[-MAX_ENTRIES:]
 
 
+def merge_journal(current, imported):
+    """RESTAURATION par rejeu (LOT 46) : n'ajoute que les entrées ABSENTES du
+    journal local, identifiées par le MÊME triple de dédup que `record` —
+    (symbol, as_of, decision) — l'entrée LOCALE gagne toujours. Entrées
+    non-dict ou sans symbol/decision comptées, jamais fatales. Borné
+    MAX_ENTRIES. Retourne (merged, stats)."""
+    cur = list(current) if isinstance(current, list) else []
+    stats = {'added_entries': 0, 'skipped_entries': 0, 'corrupted_entries': 0}
+    if not isinstance(imported, list):
+        if imported not in (None, []):
+            stats['corrupted_entries'] += 1
+        return cur, stats
+    seen = {(e.get('symbol'), e.get('as_of'), e.get('decision'))
+            for e in cur if isinstance(e, dict)}
+    out = cur
+    for e in imported:
+        if not isinstance(e, dict) or not e.get('symbol') or not e.get('decision'):
+            stats['corrupted_entries'] += 1
+            continue
+        key = (e.get('symbol'), e.get('as_of'), e.get('decision'))
+        if key in seen:
+            stats['skipped_entries'] += 1
+            continue
+        out = out + [e]
+        seen.add(key)
+        stats['added_entries'] += 1
+    return out[-MAX_ENTRIES:], stats
+
+
 def brier(probs, outcomes):
     """Score de Brier = moyenne des (p − résultat)². Entrées invalides refusées."""
     if not probs or len(probs) != len(outcomes):

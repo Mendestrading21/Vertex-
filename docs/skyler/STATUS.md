@@ -540,6 +540,20 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   backlog, dit dans la réponse) ; round-trip export→import prouvé ;
 - 1615 tests verts / 2 skipped (+9) ; moteur 0.9.0 et SW v106 inchangés.
 
+## Lot 46 — livré (2026-08-05, développement continu)
+
+- restauration ÉTENDUE : le même bundle restaure désormais les TROIS
+  magasins (mémoire + séances + journal) — périmètre partiel du lot 45
+  complété, le mot « backlog » a disparu de la note (gardé par test) ;
+- `session_log.merge_log` : seules les séances (symbole, date) absentes
+  sont ajoutées — la clôture LOCALE n'est jamais remplacée (filtrage
+  AVANT rejeu, car record_close seul aurait laissé l'archive écraser) ;
+- `skyler_journal.merge_journal` : même triple de dédup que `record`
+  (source unique), l'entrée locale gagne, borné MAX_ENTRIES ;
+- empreinte vérifiée avant TOUTE écriture : falsification → 400 et
+  AUCUN des trois magasins écrit (prouvé) ; stats par magasin ;
+- 1622 tests verts / 2 skipped (+7) ; moteur 0.9.0 et SW v106 inchangés.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
