@@ -314,6 +314,94 @@ def api_skyler_memory_detail(decision_id):
                     'note': 'record immuable — le post-mortem lit, ne réécrit jamais'})
 
 
+@bp.route('/memory/<decision_id>')
+def memory_postmortem_view(decision_id):
+    """VUE LISIBLE DU POST-MORTEM (LOT 23) : rendu HTML serveur du record figé,
+    de son résultat mesuré et de la revue post-mortem — TOUT contenu de la
+    mémoire est ÉCHAPPÉ (XSS). États honnêtes ; id inconnu → 404 lisible.
+    Lecture seule."""
+    from markupsafe import escape as _e
+    from vertex.engines import decision_memory as _dm
+    from vertex.services import persist as _persist
+    from vertex.ui.shell import render_shell
+    mem = _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory()
+    rec = _dm.find_decision(mem, decision_id)
+    if rec is None:
+        return render_shell(
+            title='Décision inconnue', active='journal', space_label='Journal',
+            content='<section class="vx-card vx-mt3"><div class="vx-empty">'
+                    'Décision inconnue — aucun record figé sous cet identifiant.'
+                    '</div></section>'), 404
+    out = _dm.find_outcome(mem, decision_id)
+    pm = _dm.post_mortem(rec, out)
+
+    def _row(label, value):
+        return ('<tr><th style="text-align:left;white-space:nowrap;padding-right:1rem">%s</th>'
+                '<td>%s</td></tr>' % (_e(label), _e('n/d' if value is None else value)))
+
+    rec_rows = ''.join(_row(lbl, rec.get(f)) for lbl, f in (
+        ('Titre', 'symbol'), ('Décision', 'decision'), ('Niveau', 'level'),
+        ('Score /40', 'score_total'), ('Moteur', 'engine_version'),
+        ('Séance', 'session_date'), ('Mode démo', 'demo'),
+        ('Thèse', 'thesis'), ('Catalyseur', 'catalyst'),
+        ('Déclencheur', 'trigger'), ('Invalidation', 'invalidation'),
+        ('État opérationnel', 'operational_state'), ('Confiance', 'confidence'),
+        ('Objection adverse', 'strongest_objection'),
+        ('Opinion minoritaire', 'minority_opinion')))
+
+    if out:
+        hz_rows = ''.join(
+            '<tr><td>%s</td><td>%s</td><td class="vx-num">%s</td><td class="vx-meta">%s</td></tr>'
+            % (_e(h), _e(hz.get('status')),
+               _e('%+.1f %%' % hz['return_pct'] if hz.get('return_pct') is not None else 'n/d'),
+               _e(hz.get('basis') or ''))
+            for h, hz in sorted((out.get('horizons') or {}).items()))
+        outcome_html = ('<div class="vx-table-wrap"><table class="vx-table">'
+                        '<thead><tr><th>Horizon</th><th>Statut</th><th>Rendement</th><th>Base</th></tr></thead>'
+                        '<tbody>%s</tbody></table></div>'
+                        '<div class="vx-meta vx-mt1">%s séance(s) observée(s) · MFE %s · MAE %s</div>'
+                        % (hz_rows, _e(out.get('sessions_observed')),
+                           _e(out.get('mfe_pct')), _e(out.get('mae_pct'))))
+    else:
+        outcome_html = '<div class="vx-empty">Aucun résultat mesuré pour cette décision.</div>'
+
+    if pm.get('available'):
+        cls_rows = ''.join(
+            '<tr><td>%s</td><td class="vx-num">%s</td><td>%s</td><td class="vx-meta">%s</td></tr>'
+            % (_e(h['horizon']), _e('%+.1f %%' % h['return_pct']),
+               _e(h['classification']['class']), _e(h['classification']['basis']))
+            for h in pm['horizons'])
+        pm_html = ('<div class="vx-mb1"><b>Scénario contenant le résultat :</b> %s</div>'
+                   '<div class="vx-table-wrap"><table class="vx-table">'
+                   '<thead><tr><th>Horizon</th><th>Rendement</th><th>Classe</th><th>Base</th></tr></thead>'
+                   '<tbody>%s</tbody></table></div>'
+                   '<div class="vx-meta vx-mt1">%s</div>'
+                   '<div class="vx-meta">%s</div>'
+                   % (_e(pm.get('scenario_containing') or pm.get('scenario_note') or 'n/d'),
+                      cls_rows, _e(pm.get('summary') or ''), _e(pm.get('discipline_note') or '')))
+    else:
+        pm_html = '<div class="vx-empty">%s</div>' % _e(pm.get('reason') or 'aucun horizon mesuré')
+
+    content = ('<section class="vx-card vx-mt3" aria-label="Record figé">'
+               '<div class="vx-card-header"><span class="vx-card-title">Décision figée — %s</span>'
+               '<span class="vx-chart-question">Ledger immuable — ce record ne sera jamais réécrit.</span></div>'
+               '<div class="vx-table-wrap"><table class="vx-table"><tbody>%s</tbody></table></div>'
+               '</section>'
+               '<section class="vx-card vx-mt3" aria-label="Résultat mesuré">'
+               '<div class="vx-card-header"><span class="vx-card-title">Résultat mesuré</span></div>%s</section>'
+               '<section class="vx-card vx-mt3" aria-label="Post-mortem">'
+               '<div class="vx-card-header"><span class="vx-card-title">Post-mortem</span>'
+               '<span class="vx-chart-question">Que disent les scénarios figés face au résultat réel&nbsp;?</span></div>'
+               '%s<div class="vx-card-footer"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/journal">← Retour Performance</a>'
+               ' <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/api/skyler/memory/%s" target="_blank" rel="noopener">JSON brut →</a></div>'
+               '</section>'
+               % (_e(rec.get('symbol')), rec_rows, outcome_html, pm_html,
+                  _e(decision_id)))
+    return render_shell(title='Post-mortem %s' % rec.get('symbol'), active='journal',
+                        space_label='Journal', sub_label='Post-mortem',
+                        content=content)
+
+
 def _kg_build():
     """Assemble le Knowledge Graph depuis les sources réelles de l'état partagé :
     univers scanné, watchlist sectorielle statique, séries canoniques, calendrier
