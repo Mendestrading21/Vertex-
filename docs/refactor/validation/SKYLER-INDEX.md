@@ -43,6 +43,7 @@
 | 37 | `SKYLER-LOT-37.md` | Fraîcheur du ledger (dernière décision figée, J-N calendaire UTC) — défaut J-1 attrapé en preuve navigateur | 0.9.0 | v104 | 1576 | GO |
 | 38 | `SKYLER-LOT-38.md` | Bilan consolidé lots 29-37 en tête de STATUS (synthèse sourcée pour la validation humaine — documentaire) | 0.9.0 | v104 | 1576 | GO |
 | 39 | `SKYLER-LOT-39.md` | Drill-down cellule de calibration (`cell_decisions`, règle d'appartenance en source unique, badges cliquables) | 0.9.0 | v105 | 1586 | GO |
+| 40 | `SKYLER-LOT-40.md` | Vue HTML lisible de la cellule (`/memory/cell/…`, markupsafe prouvé sur contenu hostile, 404 lisibles, badges → vue) | 0.9.0 | v106 | 1593 | GO |
 
 ## Architecture atteinte
 

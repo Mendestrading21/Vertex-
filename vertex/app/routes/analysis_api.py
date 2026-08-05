@@ -375,6 +375,81 @@ def api_skyler_memory_detail(decision_id):
                     'note': 'record immuable — le post-mortem lit, ne réécrit jamais'})
 
 
+@bp.route('/memory/cell/<group>/<key>')
+def memory_cell_view(group, key):
+    """VUE LISIBLE D'UNE CELLULE DE CALIBRATION (LOT 40) : rendu HTML serveur
+    du résumé de cellule + table des décisions MESURÉES qui la composent,
+    chaque record lié à son post-mortem. TOUT contenu mémoire ÉCHAPPÉ
+    (markupsafe, même exigence que la vue post-mortem). 404 lisibles.
+    Lecture seule."""
+    from markupsafe import escape as _e
+    from vertex.engines import decision_memory as _dm
+    from vertex.engines import skyler_core as _sk
+    from vertex.services import persist as _persist
+    from vertex.ui.shell import render_shell
+    mem = _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory()
+    out = _dm.cell_decisions(mem, _sk.ENGINE_VERSION, group, key)
+    if out is None:
+        return render_shell(
+            title='Groupe inconnu', active='journal', space_label='Journal',
+            content='<section class="vx-card vx-mt3"><div class="vx-empty">'
+                    'Groupe de contexte inconnu — groupes valides : %s.'
+                    '</div></section>' % _e(', '.join(_dm.CONTEXT_GROUPS))), 404
+    ctx = _dm.calibration_by_context(mem, _sk.ENGINE_VERSION)
+    cell = (ctx.get(group) or {}).get(key)
+    if cell is None:
+        return render_shell(
+            title='Cellule inconnue', active='journal', space_label='Journal',
+            content='<section class="vx-card vx-mt3"><div class="vx-empty">'
+                    'Cellule inconnue — aucune décision mesurée ne la forme '
+                    'pour le moteur courant.</div></section>'), 404
+
+    if cell['status'] == 'MESURE':
+        summary = ('facteur %s · hit rate %s · %d mesure(s)'
+                   % (cell['value'], cell['hit_rate'], cell['n_measured']))
+    else:
+        summary = 'INSUFFISANT — %d mesure(s), facteur non calculé' % cell['n_measured']
+
+    dec_rows = ''.join(
+        '<tr><td data-label="Titre"><b>%s</b></td>'
+        '<td data-label="Séance">%s</td>'
+        '<td data-label="Décision">%s</td>'
+        '<td data-label="Niveau">%s</td>'
+        '<td data-label="Régime">%s</td>'
+        '<td data-label="Catalyseur">%s</td>'
+        '<td data-label="Résultat"><span class="vx-badge" data-tone="%s">%s</span></td>'
+        '<td data-label="Post-mortem"><a class="vx-btn vx-btn-sm vx-btn-ghost" '
+        'href="/memory/%s">détail →</a></td></tr>'
+        % (_e(x.get('symbol') or 'n/d'), _e(x.get('session_date') or 'n/d'),
+           _e(x.get('decision') or 'n/d'), _e(x.get('level') or 'n/d'),
+           _e(x.get('regime') or 'n/d'),
+           _e('%s (%s)' % (x['catalyst'], x.get('catalyst_kind') or 'inconnu')
+              if x.get('catalyst') else 'sans catalyseur'),
+           'positive' if x['hit'] else 'negative',
+           'contenu (hit)' if x['hit'] else 'hors scénarios (miss)',
+           _e(x.get('decision_id') or ''))
+        for x in out['decisions'])
+
+    content = (
+        '<section class="vx-card vx-mt3" aria-label="Cellule de calibration">'
+        '<div class="vx-card-header"><span class="vx-card-title">Cellule — %s</span></div>'
+        '<div class="vx-meta vx-mb1">%s</div>'
+        '<div class="vx-meta vx-mb1">%s</div>'
+        '<div class="vx-table-wrap"><table class="vx-table">'
+        '<thead><tr><th>Titre</th><th>Séance</th><th>Décision</th><th>Niveau</th>'
+        '<th>Régime</th><th>Catalyseur</th><th>Résultat</th><th>Post-mortem</th></tr></thead>'
+        '<tbody>%s</tbody></table></div>'
+        '<div class="vx-meta vx-mt1">%s</div>'
+        '<div class="vx-mt2"><a class="vx-btn vx-btn-sm vx-btn-ghost" '
+        'href="/journal">&larr; Retour Performance</a></div>'
+        '</section>'
+        % (_e(cell.get('basis', '').split(' : ')[0] or ('%s=%s' % (group, key))),
+           _e(summary), _e(cell.get('basis') or ''), dec_rows,
+           _e(out.get('note') or '')))
+    return render_shell(title='Cellule de calibration', active='journal',
+                        space_label='Journal', content=content)
+
+
 @bp.route('/memory/<decision_id>')
 def memory_postmortem_view(decision_id):
     """VUE LISIBLE DU POST-MORTEM (LOT 23) : rendu HTML serveur du record figé,
