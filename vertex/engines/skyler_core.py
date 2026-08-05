@@ -22,7 +22,13 @@ from __future__ import annotations
 SCHEMA_VERSION = 1
 # 0.2.0 : règle red-team S/S+ · 0.3.0 : état opérationnel + confiance factorisée
 # 0.4.0 : la revue red-team PRODUITE (red_team.review) entre dans la décision
-ENGINE_VERSION = '0.4.0'
+# 0.5.0 : robustness MESURÉE par analyse de perturbation (liste fixe, déterministe)
+ENGINE_VERSION = '0.5.0'
+
+PERTURBATIONS = ('score_technique_-10', 'score_technique_+10', 'rr_-0.5', 'rr_+0.5',
+                 'regime_confidence_-0.2', 'regime_confidence_+0.2',
+                 'sans_market', 'sans_events', 'sans_anomaly', 'sans_options',
+                 'sans_portfolio')
 
 _BULLISH = ('ACHETER', 'RENFORCER', 'BUY')
 
@@ -53,23 +59,35 @@ def operational_state(decision, gates, plan):
     return 'SURVEILLER', 'décision %s — surveillance par défaut' % (decision or 'n/d')
 
 
-def confidence(packet, score):
+def confidence(packet, score, robustness=None):
     """DECISION_ENGINE §7 : confidence = data_quality × agreement × robustness ×
     calibration. Chaque facteur borné [0,1] avec base explicite ; plafonds
     obligatoires (régime UNKNOWN ≤ 0,55 ; conflit de sources ≤ 0,50 ;
     contradiction ≤ 0,60) ; calibration plafonnée à 0,50 tant qu'aucun
-    historique n'existe. ESTIMATION (F3) à méthode documentée — jamais 100 %."""
+    historique n'existe. `robustness` MESURÉE par analyse de perturbation
+    (0.5.0) quand fournie — proxy blocs insuffisants en secours, dit.
+    ESTIMATION (F3) à méthode documentée — jamais 100 %."""
     dq_pts = (score['blocks'].get('data_quality') or {}).get('points', 0)
     n_contra = len(packet['contradictions'])
     n_insuf = len(score['insufficient_blocks'])
+    if robustness is not None and robustness.get('value') is not None:
+        rob = {'value': robustness['value'],
+               'basis': 'analyse de perturbation : %d/%d perturbation(s) laissent la '
+                        'décision inchangée%s' % (robustness.get('stable', 0),
+                                                  robustness.get('n_applicable', 0),
+                        ' — bascule sous : ' + ', '.join(f['perturbation']
+                                                         for f in robustness.get('flipped', []))
+                        if robustness.get('flipped') else '')}
+    else:
+        rob = {'value': round(max(0.0, 1.0 - n_insuf / 8.0), 3),
+               'basis': '%d bloc(s) insuffisant(s) sur 8 — proxy de robustesse '
+                        '(analyse de perturbation non applicable)' % n_insuf}
     factors = {
         'data_quality': {'value': round(dq_pts / 4.0, 3),
                          'basis': 'bloc data_quality %d/4 du score' % dq_pts},
         'agreement': {'value': round(max(0.0, 1.0 - 0.2 * n_contra), 3),
                       'basis': '%d contradiction(s) tracée(s) — −0,20 chacune' % n_contra},
-        'robustness': {'value': round(max(0.0, 1.0 - n_insuf / 8.0), 3),
-                       'basis': '%d bloc(s) insuffisant(s) sur 8 — proxy de robustesse '
-                                '(aucune analyse de perturbation encore)' % n_insuf},
+        'robustness': rob,
         'calibration': {'value': 0.5,
                         'basis': 'aucun historique de calibration — facteur plafonné à 0,50, '
                                  'jamais supposé calibré'},
@@ -414,6 +432,108 @@ def scenarios(detail):
 
 # ─── SkylerDecision (déterministe, sans Claude) ─────────────────────────────────
 
+def _decision_label(packet, score, gates, detail):
+    """Cœur du verdict (sans effet de bord) — PARTAGÉ entre decide() et
+    l'analyse de perturbation pour interdire toute divergence de règles.
+    Renvoie (décision, gate déclenchée ou None, plafonné par verdict canonique)."""
+    triggered = [g for g in gates if g['triggered'] is True]
+    verdict = ((detail or {}).get('verdict') or '').upper()
+    if triggered:
+        return ('REFUSER' if score['total'] < 24 else 'ATTENDRE'), triggered[0], False
+    if score['total'] >= 28:
+        decision = 'ACHETER'
+    elif score['total'] >= 24:
+        decision = 'ATTENDRE'
+    else:
+        decision = 'REFUSER'
+    capped_canonical = bool(decision == 'ACHETER' and verdict and verdict not in _BULLISH)
+    return ('ATTENDRE' if capped_canonical else decision), None, capped_canonical
+
+
+def perturbation_analysis(base_decision, sym, detail, market=None, events=None,
+                          anomaly=None, as_of=None, demo=False, options_ctx=None,
+                          portfolio_ctx=None, red_team=None):
+    """Robustesse MESURÉE (0.5.0) : re-décide sous une liste FIXE de variations
+    documentées des entrées et mesure la part des perturbations applicables qui
+    laissent la décision inchangée. Déterministe — aucun aléatoire ; une
+    perturbation sans donnée d'entrée est NON APPLICABLE, listée, exclue de la
+    fraction (jamais comptée stable par défaut)."""
+    def _label_for(d2, m2, e2, a2, o2, p2):
+        pk = build_packet(sym, d2, market=m2, events=e2, anomaly=a2, as_of=as_of,
+                          demo=demo, options_ctx=o2, portfolio_ctx=p2,
+                          red_team=red_team)
+        sc = score40(pk)
+        return _decision_label(pk, sc, hard_gates(pk, sc), d2)[0]
+
+    detail = detail or {}
+    plan = detail.get('plan') or {}
+    results, not_applicable = [], []
+    for name in PERTURBATIONS:
+        d2, m2, e2, a2 = detail, market, events, anomaly
+        o2, p2 = options_ctx, portfolio_ctx
+        if name.startswith('score_technique'):
+            if detail.get('score') is None:
+                not_applicable.append(name)
+                continue
+            delta = 10 if name.endswith('+10') else -10
+            d2 = dict(detail)
+            d2['score'] = max(0, min(100, detail['score'] + delta))
+        elif name.startswith('rr'):
+            if plan.get('rr_res') is None:
+                not_applicable.append(name)
+                continue
+            delta = 0.5 if name.endswith('+0.5') else -0.5
+            d2 = dict(detail)
+            d2['plan'] = dict(plan)
+            d2['plan']['rr_res'] = plan['rr_res'] + delta
+        elif name.startswith('regime_confidence'):
+            reg = (market or {}).get('regime') or {}
+            if reg.get('confidence') is None:
+                not_applicable.append(name)
+                continue
+            delta = 0.2 if name.endswith('+0.2') else -0.2
+            m2 = dict(market)
+            m2['regime'] = dict(reg)
+            m2['regime']['confidence'] = max(0.0, min(1.0, reg['confidence'] + delta))
+        elif name == 'sans_market':
+            if market is None:
+                not_applicable.append(name)
+                continue
+            m2 = None
+        elif name == 'sans_events':
+            if events is None:
+                not_applicable.append(name)
+                continue
+            e2 = None
+        elif name == 'sans_anomaly':
+            if anomaly is None:
+                not_applicable.append(name)
+                continue
+            a2 = None
+        elif name == 'sans_options':
+            if options_ctx is None:
+                not_applicable.append(name)
+                continue
+            o2 = None
+        elif name == 'sans_portfolio':
+            if portfolio_ctx is None:
+                not_applicable.append(name)
+                continue
+            p2 = None
+        results.append((name, _label_for(d2, m2, e2, a2, o2, p2)))
+
+    flipped = [{'perturbation': n, 'decision': l} for n, l in results
+               if l != base_decision]
+    n_app = len(results)
+    stable = n_app - len(flipped)
+    return {'value': (round(stable / n_app, 3) if n_app else None),
+            'n_applicable': n_app, 'stable': stable,
+            'flipped': flipped, 'not_applicable': not_applicable,
+            'basis': ('%d/%d perturbation(s) applicables laissent la décision inchangée '
+                      '— liste fixe déterministe' % (stable, n_app)) if n_app else
+                     'aucune perturbation applicable (entrées minimales) — robustesse non mesurable'}
+
+
 def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
            demo=False, options_ctx=None, portfolio_ctx=None, red_team=None):
     packet = build_packet(sym, detail, market=market, events=events,
@@ -429,22 +549,15 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
     audit.append({'step': 'hard_gates', 'result': [g['id'] for g in triggered]})
 
     verdict = ((detail or {}).get('verdict') or '').upper()
-    if triggered:
-        decision = 'REFUSER' if score['total'] < 24 else 'ATTENDRE'
-        capped_by = triggered[0]['id']
-        main_reason = 'Hard gate %s : %s' % (capped_by, triggered[0]['reason'])
+    decision, gate_hit, capped_canonical = _decision_label(packet, score, gates, detail)
+    if gate_hit is not None:
+        capped_by = gate_hit['id']
+        main_reason = 'Hard gate %s : %s' % (capped_by, gate_hit['reason'])
     else:
         capped_by = None
-        if score['total'] >= 28:
-            decision = 'ACHETER'
-        elif score['total'] >= 24:
-            decision = 'ATTENDRE'
-        else:
-            decision = 'REFUSER'
         main_reason = 'Score Skyler %d/40 (niveau %s)' % (score['total'], score['level'])
-        # Jamais plus agressif que le verdict canonique existant.
-        if decision == 'ACHETER' and verdict and verdict not in _BULLISH:
-            decision = 'ATTENDRE'
+        if capped_canonical:
+            # Jamais plus agressif que le verdict canonique existant.
             main_reason += ' — plafonné : le verdict canonique (%s) est prudent' % verdict
             packet['contradictions'].append({'kind': 'skyler_vs_canonical',
                                              'detail': 'Skyler favorable mais verdict canonique %s — décision plafonnée.' % verdict})
@@ -452,8 +565,13 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
 
     plan = (detail or {}).get('plan') or {}
     op_state, op_basis = operational_state(decision, gates, plan)
-    conf = confidence(packet, score)
+    pert = perturbation_analysis(decision, sym, detail, market=market, events=events,
+                                 anomaly=anomaly, as_of=as_of, demo=demo,
+                                 options_ctx=options_ctx, portfolio_ctx=portfolio_ctx,
+                                 red_team=red_team)
+    conf = confidence(packet, score, robustness=pert)
     audit.append({'step': 'operational_state', 'result': op_state})
+    audit.append({'step': 'perturbation', 'result': pert['value']})
     entry, stop = plan.get('entry'), plan.get('stop')
     max_risk_pct = (round((entry - stop) / entry * 100, 2)
                     if entry and stop is not None and entry > 0 else None)
@@ -481,7 +599,7 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
         'symbol': sym, 'generator': 'deterministic', 'as_of': as_of,
         'decision': decision, 'capped_by_gate': capped_by,
         'operational_state': op_state, 'operational_state_basis': op_basis,
-        'confidence': conf,
+        'confidence': conf, 'perturbation': pert,
         'red_team': {'complete': bool((packet.get('red_team') or {}).get('complete')),
                      'required': score['level'] in ('S_PLUS', 'S'),
                      'basis': (packet.get('red_team') or {}).get('basis')
@@ -501,4 +619,5 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
 
 __all__ = ['build_packet', 'score40', 'hard_gates', 'scenarios', 'decide',
            'apply_red_team_rule', 'operational_state', 'confidence',
+           'perturbation_analysis', 'PERTURBATIONS',
            'OPERATIONAL_STATES', 'SCHEMA_VERSION', 'ENGINE_VERSION']

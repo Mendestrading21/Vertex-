@@ -169,6 +169,16 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   0 erreur console, captures lot17-*.png ;
 - 1427 tests verts / 2 skipped (+11).
 
+## Lot 18 — livré (2026-08-05, travail continu)
+
+- moteur **0.5.0** : `robustness` MESURÉE par analyse de perturbation — 11
+  variations fixes documentées (score ±10, R:R ±0,5, régime ±0,2, un contexte
+  retiré à la fois), fraction stable bornée, bascules listées, non applicable
+  exclu (jamais compté stable) ; cœur de verdict partagé anti-divergence ;
+  aucun aléatoire (gardien) ; prouvé : un ACHETER frontière bascule sous
+  −10 points techniques (fragilité détectée) ;
+- 1438 tests verts / 2 skipped (+11) ; SW v96 inchangé.
+
 ## Programme Institutional+ — TERMINÉ (RC sur intégration)
 
 Les 12 lots + audit sont livrés sur `integration/vertex-skyler-v2`.

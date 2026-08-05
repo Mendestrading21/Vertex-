@@ -133,7 +133,9 @@ def test_review_deterministic():
 # ─── Intégration moteur 0.4.0 ───────────────────────────────────────────────────
 
 def test_engine_version_bumped_for_produced_red_team():
-    assert SK.ENGINE_VERSION == '0.4.0'
+    """La red-team produite est entrée en 0.4.0 — jamais moins (prospectif)."""
+    parts = tuple(int(x) for x in SK.ENGINE_VERSION.split('.'))
+    assert parts >= (0, 4, 0)
 
 
 def test_decide_carries_completed_red_team():
