@@ -22,6 +22,8 @@
 .vx-kv{display:flex;justify-content:space-between;align-items:baseline;gap:var(--vx-s3);
   padding:4px 0;border-bottom:1px dashed var(--vx-border-soft);font-size:12.5px}
 .vx-kv:last-child{border-bottom:none}
-.vx-kv .k{color:var(--vx-text-muted);flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* lot 57 : le libellé passe à la ligne au besoin — l'information n'est
+   JAMAIS tronquée par ellipse (« Politique par défaut » → « Politique … »). */
+.vx-kv .k{color:var(--vx-text-muted);flex:0 1 auto;min-width:0;overflow-wrap:anywhere}
 .vx-kv .v{font-family:var(--vx-font-mono);font-variant-numeric:tabular-nums;
   font-weight:600;text-align:right;flex:1 1 auto;min-width:0;overflow-wrap:anywhere}

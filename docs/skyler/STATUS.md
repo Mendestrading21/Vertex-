@@ -695,6 +695,19 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   0 défaut sous SW v113 ; captures APRÈS (4 séries distinctes, crumb
   mobile propre vérifié programmatiquement) ; moteur 0.9.0 inchangé.
 
+## Lot 57 — livré (2026-08-05, arc « jusqu'au lot 60 » — polish 2/4)
+
+- inspection réelle (6 captures, audit : 0 débordement, 0 erreur
+  console) — verdict honnête : pages SAINES (table mobile défile
+  conformément, pairs déjà cliquables, états vides honnêtes) ;
+- deux défauts réels de la fiche corrigés : libellés clé/valeur tronqués
+  par ellipse (« Politique … ») → retour à la ligne, information jamais
+  perdue (vérifié programmatiquement APRÈS) ; littéral hors palette
+  `#FFD27A` (étoile favori) → token `var(--vx-warning)` — le littéral
+  analogue de scorecard.py est côté MOTEUR, dit et non touché ;
+- preuves : 3 tests rouges→verts ; suite 1661/2 skipped ; RC outillée GO
+  0 défaut sous SW v114 ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
