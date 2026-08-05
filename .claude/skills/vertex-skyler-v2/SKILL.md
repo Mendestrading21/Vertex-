@@ -1,39 +1,53 @@
 ---
 name: vertex-skyler-v2
-description: Piloter la consolidation et le développement de Skyler V2 dans Vertex, lot par lot, avec preuves mathématiques, données traçables, analyse marché/actions/options/portefeuille et validation humaine obligatoire.
+description: Piloter la consolidation et le développement de Skyler V2, analyste en chef institutionnel de Vertex, lot par lot, avec comité contradictoire, décisions probabilistes, preuves mathématiques, données traçables et validation humaine obligatoire.
 ---
 
 # VERTEX — SKYLER V2 MASTER SKILL
 
 ## 1. Mission
 
-Tu construis **Skyler V2**, l’analyste en chef de Vertex.
+Tu construis **Skyler V2**, l’analyste en chef et président du comité d’investissement de Vertex.
 
-Skyler doit transformer les données réelles déjà disponibles dans Vertex en une décision analytique claire, probabiliste, traçable et réversible. Il doit relier :
+Skyler doit relier dans une seule décision traçable :
 
 - régime de marché et cross-asset ;
-- secteurs, breadth et leadership ;
+- secteurs, breadth, dispersion et leadership ;
 - fondamentaux, valorisation et révisions ;
-- technique, momentum et anomalies ;
-- actualités et catalyseurs ;
-- flux institutionnels et positionnement options ;
-- calls, puts, LEAPS, volatilité et Greeks ;
+- technique, momentum, prix et volume ;
+- actualités, événements et catalyseurs ;
+- anomalies et flux institutionnels ;
+- options calls/puts/LEAPS, volatilité et Greeks ;
+- GEX, Vanna, Charm, skew et term structure ;
 - portefeuille, concentration et budget de risque ;
-- journal, post-mortem et calibration.
+- discipline comportementale, journal et post-mortem ;
+- calibration historique des probabilités et décisions.
 
-Skyler ne passe jamais d’ordre. Il ne remplace jamais un moteur déterministe par une réponse libre d’un modèle linguistique.
+Skyler ne cherche pas à produire beaucoup de trades. Il cherche quelques opportunités dont l’asymétrie est réellement exceptionnelle.
 
-Principe absolu :
+Il ne passe jamais d’ordre. Il ne remplace jamais un moteur déterministe par une réponse libre d’un modèle linguistique.
 
-> Données réelles → moteurs déterministes → SkylerPacket structuré → décision canonique → Claude explique.
+Pipeline absolu :
+
+```text
+Données réelles
+→ normalisation et qualité
+→ moteurs déterministes
+→ comité spécialisé contradictoire
+→ SkylerPacket validé
+→ moteur de décision canonique
+→ Claude explique sans modifier la décision
+```
 
 Jamais :
 
-> Données brutes → Claude invente des chiffres, des probabilités, des objectifs ou une recommandation.
+```text
+Données brutes → prompt libre → chiffres/probabilités/recommandation inventés
+```
 
 ## 2. Invocation
 
-Utiliser ce skill avec une seule commande de lot à la fois :
+Une commande exécute une seule mission :
 
 - `/vertex-skyler-v2 audit`
 - `/vertex-skyler-v2 lot-0`
@@ -46,10 +60,17 @@ Utiliser ce skill avec une seule commande de lot à la fois :
 - `/vertex-skyler-v2 lot-7`
 - `/vertex-skyler-v2 lot-8`
 - `/vertex-skyler-v2 lot-9`
+- `/vertex-skyler-v2 lot-10`
+- `/vertex-skyler-v2 lot-11`
+- `/vertex-skyler-v2 lot-12`
+- `/vertex-skyler-v2 decision-review <SYMBOL>`
+- `/vertex-skyler-v2 red-team <SYMBOL>`
 - `/vertex-skyler-v2 status`
 - `/vertex-skyler-v2 verify`
 
-Une invocation exécute **un seul lot**. À la fin du lot, tu t’arrêtes et attends une validation humaine explicite. Tu ne commences jamais le lot suivant par anticipation.
+À la fin de chaque mission : rapport, PR brouillon, arrêt et validation humaine explicite.
+
+Ne jamais commencer un autre lot par anticipation.
 
 ## 3. Branche et gouvernance Git
 
@@ -69,74 +90,117 @@ Règles :
 
 1. Ne jamais travailler directement sur `main`.
 2. Ne jamais fusionner automatiquement vers `main`.
-3. Ne jamais réécrire l’historique avec un push forcé.
+3. Ne jamais utiliser de push forcé.
 4. Une branche de lot = `agent/skyler-v2-lot-XX-description`.
-5. Une PR de lot cible `integration/vertex-skyler-v2`.
-6. Une PR reste brouillon jusqu’à validation humaine.
-7. Ne pas mélanger changement de calcul, refonte visuelle et nettoyage massif dans la même PR.
-8. Les branches V4/Prism historiques sont des références, pas des bases de développement.
-9. Toute divergence entre la RC1 Total Rebuild et Neon Glass doit être documentée avant résolution.
-10. Ne jamais supprimer une branche, un fichier ou un endpoint sans preuve d’inutilisation et accord explicite si l’action est destructive.
+5. Chaque PR de lot cible `integration/vertex-skyler-v2`.
+6. Chaque PR reste brouillon jusqu’à validation humaine.
+7. Ne pas mélanger calcul, visuel et nettoyage massif dans une même PR.
+8. Les branches V4/Prism sont historiques, pas des bases de développement.
+9. Toute divergence RC1/Neon Glass est documentée avant résolution.
+10. Aucun fichier, route, branche ou endpoint supprimé sans preuve d’inutilisation.
+11. Un lot doit être réversible.
+12. Les données runtime et privées ne sont jamais commitées.
 
 ## 4. Sources de vérité
 
 Ordre d’autorité :
 
 1. `docs/refactor/VERTEX_CONSTITUTION.md`
-2. `.claude/skills/vertex-skyler-v2/SKILL.md`
-3. `.claude/skills/vertex-skyler-v2/references/TRADING_CONSTITUTION_V2.md`
-4. `.claude/skills/vertex-skyler-v2/references/SKYLER_ARCHITECTURE.md`
-5. `.claude/skills/vertex-skyler-v2/references/OPTIONS_CORRECTNESS.md`
-6. `.claude/skills/vertex-skyler-v2/references/LOT_RUNBOOK.md`
-7. `.claude/skills/vertex-skyler-v2/references/ACCEPTANCE_CHECKLIST.md`
-8. documents de validation du lot courant ;
-9. commentaires historiques du code.
+2. ce fichier `SKILL.md`
+3. `references/TRADING_CONSTITUTION_V2.md`
+4. `references/DECISION_ENGINE.md`
+5. `references/ADVERSARIAL_COMMITTEE.md`
+6. `references/DECISION_PACKET_SCHEMA.md`
+7. `references/SCENARIO_CALIBRATION.md`
+8. `references/OPTIONS_CORRECTNESS.md`
+9. `references/ANOMALY_INTELLIGENCE.md`
+10. `references/SKYLER_ARCHITECTURE.md`
+11. `references/LOT_RUNBOOK.md`
+12. `references/ACCEPTANCE_CHECKLIST.md`
+13. rapport de validation du lot courant ;
+14. commentaires historiques du code.
 
-Si le code contredit une règle supérieure, le code doit être corrigé. Ne jamais modifier la règle pour faire passer un comportement erroné.
+Si le code contredit une règle supérieure, corriger le code. Ne jamais affaiblir une règle pour faire passer un comportement erroné.
 
-## 5. Invariants absolus
+## 5. Agents spécialisés obligatoires
 
-### 5.1 Sécurité
+Utiliser les agents suivants lorsque leur domaine est concerné :
+
+- `.claude/agents/skyler-market-regime.md`
+- `.claude/agents/skyler-options-risk.md`
+- `.claude/agents/skyler-portfolio-risk.md`
+- `.claude/agents/skyler-data-auditor.md`
+- `.claude/agents/skyler-devils-advocate.md`
+- `.claude/agents/skyler-chair.md`
+
+Les autres agents métier Vertex peuvent compléter le comité.
+
+Règles :
+
+- aucun sous-agent ne produit `final_decision` ;
+- le Président Skyler est l’unique producteur du verdict final ;
+- les agents retournent des claims structurés, sources, fraîcheur, confiance et inconnues ;
+- plusieurs métriques issues de la même donnée ne comptent pas comme preuves indépendantes ;
+- une opinion minoritaire crédible est conservée ;
+- un veto qualité des données ne peut pas être annulé par vote majoritaire ;
+- toute note S/S+ exige une red-team indépendante.
+
+## 6. Invariants absolus
+
+### 6.1 READONLY et sécurité
 
 - IBKR reste `readonly=True`.
 - Aucun endpoint, bouton, service ou fonction d’exécution d’ordre.
-- Aucun appel `placeOrder`, `submitOrder`, `transmit`, `cancelOrder` ou équivalent dans le code Vertex.
+- Aucun appel `placeOrder`, `submitOrder`, `transmit`, `cancelOrder` ou équivalent.
 - Aucun secret, token, position réelle ou cache personnel commité.
-- Aucun envoi de données privées à Claude sans réduction et filtrage explicites.
+- Aucun envoi de données privées à Claude sans filtrage et réduction.
+- La couche Claude ne peut modifier aucun champ canonique de décision.
 
-### 5.2 Intégrité des données
+### 6.2 Intégrité des données
 
-- Toute donnée affiche ou transporte : valeur, unité, source, période, fraîcheur et statut.
-- `0`, absent, `None`, indisponible, périmé, estimé, démo et insuffisant sont des états distincts.
-- Une donnée manquante reste manquante.
-- Une estimation doit être étiquetée comme estimation.
-- Une probabilité doit préciser le modèle, les hypothèses et la date de calcul.
-- Un verdict ne doit jamais paraître plus frais que sa donnée la plus ancienne critique.
-- Une valeur du navigateur ne peut pas servir de timestamp de marché.
+Toute valeur critique transporte :
 
-### 5.3 Calculs
+- valeur ;
+- unité ;
+- source ;
+- champ source ;
+- période ;
+- timestamp ;
+- fraîcheur ;
+- mode réel/démo/simulé ;
+- statut disponible/manquant/insuffisant ;
+- caractère estimé ;
+- méthode lorsque calculée.
 
-- Toute modification de calcul commence par un test rouge reproduisant le défaut.
-- Toute unité d’entrée doit être explicite.
-- Aucun calcul financier critique ne dépend d’une heuristique silencieuse d’unité.
-- Les résultats extrêmes, NaN, infinis et entrées invalides doivent être refusés honnêtement.
-- Les calculs action et option doivent inclure le multiplicateur exact.
-- Les résultats doivent être validés par cas simples calculables à la main.
+`0`, absent, `None`, périmé, estimé, démo et insuffisant sont des états différents.
 
-### 5.4 Produit
+Une donnée manquante reste manquante. Un verdict ne paraît jamais plus frais que sa donnée critique la plus ancienne.
 
-- Une page = une mission.
-- Une section = une question.
-- Un graphique = une conclusion exploitable.
-- Réponse d’abord, justification ensuite, expertise à la demande.
-- Aucun doublon de métrique ou de graphique sans justification.
-- Aucun lot terminé avec tests rouges, erreur console, overflow critique ou contradiction non documentée.
+### 6.3 Calculs
 
-## 6. Philosophie d’investissement à implémenter
+- Toute correction commence par un test rouge.
+- Toute unité d’entrée est explicite.
+- Aucune heuristique silencieuse d’unité sur un calcul financier critique.
+- NaN, infinis et entrées invalides sont refusés.
+- Multiplicateurs actions/options exacts.
+- Validation par cas manuels et tests de propriété.
+- Les modèles sont versionnés.
+- Les résultats historiques restent liés à la version qui les a produits.
+- Aucun look-ahead dans les backtests ou calibrations.
 
-Skyler recherche l’asymétrie, pas la fréquence de trades.
+### 6.4 Produit
 
-Pour chaque opportunité, il doit répondre :
+- une page = une mission ;
+- une section = une question ;
+- un graphique = une conclusion ;
+- réponse d’abord, preuve ensuite, expertise à la demande ;
+- aucune donnée inventée pour remplir un écran ;
+- aucun doublon de métrique sans justification ;
+- aucun lot terminé avec tests rouges, erreur console, overflow ou contradiction non documentée.
+
+## 7. Philosophie d’investissement
+
+Pour chaque opportunité, Skyler répond :
 
 1. Pourquoi cette société peut-elle battre le marché ?
 2. Pourquoi maintenant ?
@@ -145,37 +209,58 @@ Pour chaque opportunité, il doit répondre :
 5. Le graphique confirme-t-il ?
 6. Quel est le risque maximum ?
 7. Une option directionnelle peut-elle raisonnablement doubler ?
+8. Pourquoi l’action ou l’option est-elle meilleure que l’alternative ?
+9. Qu’est-ce qui est déjà intégré dans le prix ?
+10. Quelle preuve ferait changer immédiatement la décision ?
 
-Scénarios obligatoires :
+Scénarios obligatoires : pessimiste, probable, exceptionnel.
 
-- pessimiste ;
-- probable ;
-- exceptionnel.
-
-Chaque scénario doit inclure : probabilité, horizon, déclencheur, cible, rendement, invalidation, hypothèses, inconnues et impact option lorsque pertinent.
+Chaque scénario inclut : probabilité, horizon, déclencheur, cible, rendement, invalidation, hypothèses, inconnues, impact action et impact option.
 
 Niveaux :
 
-- S+ : 36–40, allocation analytique 10–15 % maximum ;
-- S : 32–35, allocation analytique 7–10 % ;
-- A : 28–31, allocation analytique 3–5 % ;
-- B : 24–27, allocation analytique 1–2 % ;
-- <24 : refus ou surveillance.
+- S+ : 36–40, allocation analytique maximale 10–15 % ;
+- S : 32–35, 7–10 % ;
+- A : 28–31, 3–5 % ;
+- B : 24–27, 1–2 % ;
+- inférieur à 24 : refus ou surveillance.
 
-Ces allocations sont des plafonds analytiques. Elles ne déclenchent jamais un ordre.
+Les allocations sont des plafonds analytiques, jamais des ordres.
 
-Règles de position :
+Règles :
 
-- portefeuille idéal : 8 à 15 lignes ;
+- portefeuille idéal 8–15 lignes ;
 - ne jamais renforcer une position perdante ;
-- renforcer seulement après confirmation : cassure, résultats solides, révisions ou tendance validée ;
+- renforcer seulement après nouveau fait positif et confirmation ;
 - réévaluer les gagnants selon la thèse ;
 - ne pas vendre automatiquement à +100 % ;
-- sécurisation partielle indicative : 25 à 50 %, runner conservé si la thèse reste valide.
+- sécurisation partielle indicative 25–50 % si la thèse reste valide ;
+- conserver un runner lorsque l’asymétrie résiduelle reste exceptionnelle.
 
-## 7. Score Skyler /40
+## 8. Décision canonique
 
-Le score cible est :
+Décisions finales autorisées uniquement :
+
+- `ACHETER`
+- `RENFORCER`
+- `ATTENDRE`
+- `REDUIRE`
+- `REFUSER`
+
+États opérationnels possibles :
+
+- `SURVEILLER`
+- `PREPARER`
+- `DECLENCHEMENT_CONDITIONNEL`
+- `CONFIRMATION_REQUISE`
+- `SECURISATION_PARTIELLE`
+- `RUNNER`
+- `THESE_A_REEVALUER`
+- `DONNEES_INSUFFISANTES`
+
+Le score ne contourne jamais les hard gates.
+
+## 9. Score Skyler /40
 
 | Bloc | Points |
 |---|---:|
@@ -189,51 +274,78 @@ Le score cible est :
 | Qualité et fraîcheur des données | 4 |
 | **Total** | **40** |
 
-Le score ne contourne jamais les hard gates.
-
 Hard gates minimum :
 
-- R:R structurel inférieur à 2:1 ;
+- R:R inférieur à 2:1 ;
+- EV négative ;
 - invalidation absente ;
-- qualité des données critique insuffisante ;
+- donnée critique insuffisante ou unité ambiguë ;
 - désaccord de sources non résolu ;
-- spread option excessif ;
-- OI insuffisant ;
-- DTE incompatible avec le mandat ;
+- catalyseur non démontré ;
+- spread ou liquidité option insuffisants ;
+- DTE hors mandat ;
 - thèse cassée ;
-- position perdante proposée au renforcement ;
-- concentration portefeuille excessive ;
+- renforcement perdant ;
+- concentration excessive ;
 - quota options dépassé ;
-- risque théorique illimité non signalé ;
-- probabilité de doublement insuffisante pour une option directionnelle lorsque cette règle est activée.
+- perte illimitée non signalée ;
+- événement binaire non traité ;
+- red-team absente pour S/S+.
 
-## 8. Horizons options
+## 10. Confiance
 
-Séparer strictement :
+La confiance n’est jamais la moyenne des scores.
 
-| Univers | DTE |
+Elle combine :
+
+- qualité et complétude ;
+- fraîcheur ;
+- indépendance et accord des preuves ;
+- robustesse aux hypothèses ;
+- calibration historique ;
+- contradictions ;
+- dépendance à un événement binaire.
+
+Forme cible :
+
+```text
+confidence = data_quality × agreement × robustness × calibration
+```
+
+Plafonds obligatoires :
+
+- donnée critique estimée : maximum 70 % ;
+- régime `UNKNOWN` : maximum 55 % ;
+- contradiction majeure non résolue : maximum 50 % ;
+- données insuffisantes : décision non actionnable.
+
+## 11. Options
+
+Univers distincts :
+
+| Mandat | DTE |
 |---|---:|
 | TACTICAL | 20–60 |
 | SWING | 60–180 |
 | LEAPS | 180–540 |
 
-Profil LEAPS principal :
+Profil LEAPS :
 
-- delta privilégié : 0,70 à 0,90 ;
-- échéance : 6 à 18 mois ;
-- open interest élevé ;
+- delta 0,70–0,90 ;
+- échéance 6–18 mois ;
+- OI élevé ;
 - spread faible ;
 - catalyseur identifiable ;
-- liquidité suffisante ;
-- invalidation claire ;
-- coût total et perte maximale explicites ;
+- perte maximale et coût total explicites ;
 - scénarios spot × temps × IV ;
-- risque d’IV crush explicite ;
-- probabilité de doublement estimée et étiquetée.
+- risque IV crush ;
+- probabilité de doublement distincte de PoP.
 
-Les stratégies à jambes vendues ne peuvent jamais être recommandées si le profil actif les interdit. Elles peuvent être analysées en laboratoire uniquement, avec risque illimité explicitement signalé.
+Les stratégies à jambes vendues sont interdites à la recommandation si le profil actif les interdit. Elles peuvent être analysées en laboratoire avec risque explicite.
 
-## 9. Architecture Skyler obligatoire
+GEX, max pain, flow, walls, Vanna et Charm restent des modèles/conventions et ne sont jamais présentés comme certitudes.
+
+## 12. SkylerPacket
 
 Créer progressivement des contrats typés et testés :
 
@@ -245,181 +357,201 @@ Créer progressivement des contrats typés et testés :
 - `OptionsContext`
 - `PortfolioContext`
 - `DataQualityContext`
+- `EvidenceClaim`
+- `Contradiction`
 - `ScenarioSet`
+- `InstrumentCandidate`
 - `SkylerPacket`
 - `SkylerDecision`
 - `AuditTrail`
 
-Chaque fait chiffré doit idéalement respecter :
+Le packet est versionné, JSON-sérialisable, sans secret, sans NaN/Infinity et immuable après décision.
 
-```json
-{
-  "value": 42.5,
-  "unit": "%",
-  "source": "IBKR",
-  "as_of": "2026-08-04T20:15:00Z",
-  "status": "LIVE",
-  "estimated": false
-}
-```
+Claude reçoit uniquement un packet réduit. Il explique, compare et vulgarise. Il ne recalcule pas les probabilités, scores, Greeks ou risques.
 
-La couche Claude reçoit un packet réduit, sérialisable et dépourvu de secrets. Elle rédige, compare, explique et met en évidence les contradictions. Elle ne remplace pas le score, les probabilités, les Greeks ou le moteur de risque.
-
-## 10. Lots obligatoires
+## 13. Lots obligatoires
 
 ### AUDIT — Convergence réelle
 
-Objectif : comparer `main`, `agent/vertex-total-rebuild`, `agent/vertex-neon-glass-graphs` et `integration/vertex-skyler-v2`.
+Comparer `main`, RC1, Neon Glass et Skyler V2.
 
-Livrables :
+Livrable : `docs/skyler/BRANCH_CONVERGENCE_AUDIT.md`.
 
-- `docs/skyler/BRANCH_CONVERGENCE_AUDIT.md`
-- inventaire des commits uniques ;
-- inventaire des moteurs et pages divergents ;
-- risques de conflit ;
-- décision de source canonique par domaine ;
-- aucun changement runtime.
+Aucun changement runtime.
 
 ### LOT 0 — Gouvernance et baseline
 
-- confirmer branche et SHA ;
-- exécuter compileall et pytest ;
-- vérifier routes, console, responsive, READONLY ;
-- mesurer fichiers, routes, endpoints, moteurs, graphiques et tests ;
-- créer `docs/skyler/BASELINE.md` ;
-- créer `docs/skyler/STATUS.md`.
+- branche/SHA ;
+- compileall/pytest ;
+- routes, endpoints, moteurs, graphes ;
+- READONLY ;
+- console et responsive ;
+- baseline documentée.
 
 ### LOT 1 — Correctness options
 
-Périmètre exclusif : mathématiques, unités, validation et garde-fous.
+- perte illimitée ;
+- `max_loss_unbounded` ;
+- unités IV explicites ;
+- taux/dividende ;
+- validations ;
+- spread/slippage ;
+- profils autorisés ;
+- tests manuels et de propriété.
 
-Minimum :
+Aucun visuel ni scoring global dans ce lot.
 
-- corriger les pertes théoriquement illimitées des expositions nettes vendeuses de calls ;
-- ajouter `max_loss_unbounded` ;
-- rendre l’unité d’IV explicite ;
-- ajouter taux/dividende configurables et traçables ;
-- valider spot, strike, prime, quantité, DTE, IV ;
-- intégrer spread/slippage dans les analyses qui prétendent mesurer un rendement exécutable ;
-- filtrer les stratégies selon le profil actif ;
-- cas manuels et tests de propriété.
+### LOT 2 — Constitution V2
 
-Interdit dans ce lot : refonte page, nouveau thème, nouvelle news, nouveau scoring global.
-
-### LOT 2 — Constitution stratégique V2
-
-- créer une nouvelle version de profil ;
-- ne jamais modifier la V1 ;
-- intégrer niveaux S+/S/A/B ;
+- nouvelle version de profil ;
+- V1 immuable ;
+- S+/S/A/B ;
 - 8–15 positions ;
-- LEAPS 180–540 DTE et delta 0,70–0,90 ;
-- règles gagnants/perdants ;
-- versioning, diff et rollback testés.
+- LEAPS ;
+- gagnants/perdants ;
+- versioning/diff/rollback.
 
 ### LOT 3 — Market Intelligence
 
-- créer un `MarketContext` canonique ;
-- indices, breadth, VIX, terme de vol, taux, courbe, dollar, crédit, liquidité, dispersion, cross-asset et secteurs ;
+- `MarketContext` canonique ;
+- indices, breadth, VIX, terme de vol, taux, crédit, dollar, liquidité, dispersion, cross-asset, secteurs ;
 - transitions de régime ;
-- « ce qui a changé depuis la dernière session » ;
-- sources et fraîcheur par dimension.
+- changement depuis dernière session.
 
 ### LOT 4 — News, catalyseurs et anomalies
 
-- série OHLCV canonique ;
-- timeline d’événements ;
+- OHLCV canonique ;
+- timeline événements ;
 - déduplication news ;
-- classification impact/horizon/confiance ;
-- révisions analystes ;
-- anomalies prix, volume, options et fondamentales ;
-- aucun OHLCV artificiel présenté comme réel.
+- révisions ;
+- anomalies marché/secteur/action/options/fondamentaux ;
+- cycle de vie et confirmations.
 
 ### LOT 5 — Skyler Core
 
 - contrats typés ;
+- preuves ;
+- comité contradictoire ;
 - score /40 ;
 - hard gates ;
-- scénarios probabilistes ;
-- faits vs interprétations ;
-- audit trail ;
+- scénarios ;
 - contradiction detector ;
-- réponse déterministe même sans Claude.
+- décision déterministe sans Claude ;
+- audit trail.
 
 ### LOT 6 — Options Intelligence
 
-- scanners TACTICAL/SWING/LEAPS séparés ;
+- scanners TACTICAL/SWING/LEAPS ;
 - calls et puts longs ;
-- delta, gamma, theta, vega, vanna, vomma, charm ;
-- IV rank, IV percentile, skew, term structure ;
+- Greeks complets ;
+- IV rank/percentile/skew/term structure ;
 - expected move ;
-- GEX, walls et zero gamma ;
+- GEX/walls/zero gamma ;
 - spot × temps × IV ;
-- risque earnings et IV crush ;
-- probabilité de doublement avec modèle documenté.
+- earnings/IV crush ;
+- probabilité de doublement.
 
 ### LOT 7 — Portfolio Intelligence
 
-- sizing S+/S/A/B ;
+- sizing ;
 - budget de risque ;
-- corrélations et concentrations ;
-- compatibilité portefeuille ;
+- corrélations ;
 - remplacement ;
-- renforcement des gagnants seulement ;
+- ajout aux gagnants uniquement ;
 - sécurisation partielle ;
-- stress tests et drawdown.
+- stress tests ;
+- exposition Greeks portefeuille.
 
 ### LOT 8 — Expérience Neon Glass
 
-Ordre page par page :
+Ordre : Aujourd’hui, Marchés, Opportunités, Analyse, Portefeuille, Options, Journal, Système.
 
-1. Aujourd’hui
-2. Marchés
-3. Opportunités
-4. Analyse
-5. Portefeuille
-6. Options
-7. Journal
-8. Système
+Chaque page répond en moins de dix secondes : changement, importance, risque, invalidation, prochaine action analytique.
 
-Une page doit répondre en moins de dix secondes :
+### LOT 9 — Scénarios et calibration
 
-- qu’est-ce qui a changé ?
-- pourquoi est-ce important ?
-- quel est le risque ?
-- qu’est-ce qui invalide la thèse ?
-- quelle est la prochaine action analytique autorisée ?
-
-### LOT 9 — Calibration et release candidate
-
-- Brier score ;
-- calibration des probabilités ;
-- résultats par régime et niveau ;
+- ledger de décisions ;
+- probabilités versionnées ;
+- Brier score, log loss, calibration bins ;
 - MAE/MFE ;
-- dérive des scores ;
-- faux positifs ;
+- résultats par régime/niveau/instrument ;
 - benchmark SPY ;
-- audit sécurité/performance/accessibilité ;
-- documentation release et rollback.
+- absence de look-ahead.
 
-## 11. Procédure obligatoire pour chaque lot
+### LOT 10 — Mémoire et discipline décisionnelle
 
-1. Lire tous les fichiers de référence de ce skill.
-2. Confirmer la branche et le SHA.
-3. Vérifier que le lot précédent est validé.
-4. Produire un audit ciblé avant code.
+- figer chaque décision et sa version ;
+- comparer thèse initiale et résultat ;
+- détecter erreurs récurrentes ;
+- séparer erreur de modèle, erreur de données et erreur de discipline ;
+- recommandations d’amélioration soumises à validation humaine ;
+- aucune auto-modification de la Constitution.
+
+### LOT 11 — Knowledge Graph et recherche institutionnelle
+
+- relier sociétés, secteurs, thèmes, catalyseurs, fournisseurs, clients, concurrents et risques ;
+- propagation d’impact explicable ;
+- provenance de chaque relation ;
+- détection de dépendances cachées ;
+- questions de recherche automatiques, sans invention de relation.
+
+### LOT 12 — Red-team, sécurité et release candidate
+
+- red-team de tous les niveaux S/S+ ;
+- tests adversariaux ;
+- audit mathématique options ;
+- audit données et sécurité ;
+- audit performance/accessibilité ;
+- mode démo/sans IBKR/stale/offline ;
+- rollback ;
+- validation humaine sur appareil physique ;
+- aucun merge `main` sans accord explicite.
+
+## 14. `decision-review`
+
+Pour un symbole :
+
+1. construire le packet sans modifier le runtime ;
+2. exécuter les analystes ;
+3. produire les contradictions ;
+4. construire les scénarios ;
+5. comparer action/call/put/attendre ;
+6. consulter le portefeuille ;
+7. exécuter l’avocat du diable ;
+8. produire une décision déterministe ;
+9. séparer faits, estimations et interprétations ;
+10. ne jamais passer d’ordre.
+
+Cette commande est une analyse, pas une implémentation de lot.
+
+## 15. `red-team`
+
+Pour un symbole ou une décision :
+
+- construire le meilleur dossier adverse ;
+- tester choc marché, retard catalyseur, IV crush, spread, gap et corrélation ;
+- identifier la preuve la plus fragile ;
+- proposer les conditions exactes de dégradation du score ou de la confiance ;
+- conserver la décision initiale séparément ;
+- ne jamais réécrire silencieusement l’historique.
+
+## 16. Procédure obligatoire pour chaque lot
+
+1. Lire toutes les références.
+2. Confirmer branche et SHA.
+3. Vérifier validation du lot précédent.
+4. Auditer avant code.
 5. Écrire les tests rouges pour tout défaut de calcul.
 6. Implémenter le minimum nécessaire.
-7. Exécuter les validations du lot.
-8. Tester en navigateur lorsque l’UI change.
-9. Créer un rapport depuis `templates/LOT_REPORT.md`.
+7. Exécuter validations ciblées et suite complète.
+8. Tester navigateur si UI.
+9. Produire le rapport `templates/LOT_REPORT.md`.
 10. Mettre à jour `docs/skyler/STATUS.md`.
-11. Committer uniquement les fichiers du lot.
+11. Committer uniquement le lot.
 12. Ouvrir ou mettre à jour une PR brouillon.
 13. S’arrêter.
 
-## 12. Validation minimale
-
-À adapter au lot, mais ne jamais omettre :
+## 17. Validation minimale
 
 ```bash
 python -m compileall -q terminal.py vertex
@@ -427,34 +559,42 @@ python -m pytest tests/ -q
 python -m pytest tests/test_no_orders.py -q
 ```
 
-Puis :
+Puis vérifier :
 
 - `/healthz` ;
-- `/api/client-log` = 0 erreur applicative ;
-- mode `DEMO=1 NO_IBKR=1` ;
+- `/api/client-log` = 0 erreur ;
+- `DEMO=1 NO_IBKR=1` ;
 - mode sans IBKR ;
-- données absentes, stale, demo, insufficient et offline ;
-- 390, 768, 1440 et 1920 px si UI ;
-- clavier, focus et reduced-motion si UI ;
-- service worker bump si shell visible modifié ;
-- aucun secret ou fichier runtime ajouté au diff.
+- missing/stale/demo/insufficient/offline ;
+- 390/768/1440/1920 px si UI ;
+- clavier/focus/reduced-motion si UI ;
+- service worker bump si shell visible ;
+- aucun secret/runtime dans le diff ;
+- déterminisme des décisions ;
+- schéma packet valide ;
+- opinion minoritaire et audit trail conservés.
 
-## 13. Interdictions explicites
+## 18. Interdictions explicites
 
-- Ne pas faire une refonte big-bang.
-- Ne pas avancer plusieurs lots dans une seule session.
-- Ne pas modifier un moteur pour rendre un visuel plus séduisant.
-- Ne pas changer un test uniquement pour accepter un résultat faux.
-- Ne pas utiliser une valeur par défaut silencieuse pour masquer une absence critique.
-- Ne pas confondre force relative et sentiment.
-- Ne pas noter un catalyseur uniquement parce qu’une date de résultats existe.
-- Ne pas recommander une stratégie interdite par le profil actif.
-- Ne pas présenter GEX, max pain, flux ou dealer positioning comme une vérité certaine sans convention et limites.
-- Ne pas afficher une probabilité sans modèle et hypothèses.
-- Ne pas continuer après un échec de test critique.
-- Ne jamais déclarer « terminé » sans preuves.
+- pas de refonte big-bang ;
+- pas de plusieurs lots dans une session ;
+- pas de moteur modifié pour embellir un visuel ;
+- pas de test affaibli pour accepter un résultat faux ;
+- pas de fallback silencieux ;
+- pas de confusion force relative/sentiment ;
+- pas de score catalyseur basé uniquement sur une date ;
+- pas de stratégie contraire au profil ;
+- pas de GEX/flow/max pain présenté comme vérité ;
+- pas de probabilité sans méthode ;
+- pas de confiance à 100 % ;
+- pas d’auto-recalibration ;
+- pas d’auto-modification de Constitution ;
+- pas de disparition d’une contradiction ;
+- pas de décision S/S+ sans red-team ;
+- pas de continuation après échec critique ;
+- jamais « terminé » sans preuves.
 
-## 14. Format de rapport obligatoire
+## 19. Rapport obligatoire
 
 Chaque rapport contient :
 
@@ -463,23 +603,25 @@ Chaque rapport contient :
 - Décision ;
 - Implémentation ;
 - Fichiers modifiés ;
-- Tests exécutés et résultats exacts ;
+- Tests et résultats exacts ;
 - Validation navigateur ;
-- Invariants vérifiés ;
+- Invariants ;
+- Contradictions ;
+- Opinion minoritaire ;
 - Risques restants ;
-- Diff avec le lot précédent ;
-- Verdict `GO`, `GO AVEC RÉSERVES` ou `NO-GO` ;
+- Diff avec lot précédent ;
+- verdict `GO`, `GO AVEC RÉSERVES` ou `NO-GO` ;
 - prochaine étape autorisée ;
-- phrase explicite : `Arrêt après ce lot — validation humaine requise.`
+- phrase : `Arrêt après ce lot — validation humaine requise.`
 
-## 15. Première mission
+## 20. Première mission
 
-La première exécution doit être :
+La première exécution reste :
 
 ```text
 /vertex-skyler-v2 audit
 ```
 
-Elle ne modifie aucun moteur ni aucune page. Elle produit uniquement l’audit de convergence des branches, l’état exact de Skyler/Neon Glass/RC1 et la recommandation de branche canonique.
+Elle ne modifie aucun moteur ni page. Elle produit uniquement l’audit de convergence, la source canonique par domaine et le plan de Lot 0.
 
 Après validation humaine, exécuter `lot-0`, puis s’arrêter de nouveau.
