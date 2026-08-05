@@ -528,6 +528,18 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   désormais exacte (lots 31/34/36/43) ;
 - 1606 tests verts / 2 skipped (+7) ; moteur 0.9.0 et SW v106 inchangés.
 
+## Lot 45 — livré (2026-08-05, développement repris sur directive utilisateur)
+
+- restauration souveraine : `POST /api/skyler/memory/import` — l'export
+  a désormais un chemin de retour ; `content_sha256` VÉRIFIÉ AVANT toute
+  écriture (archive altérée → 400 dit, rien touché) ;
+- `merge_memory` : REJEU APPEND-ONLY — un decision_id existant n'est
+  JAMAIS remplacé (l'historique local gagne, prouvé contre archive
+  falsifiée), outcomes monotones, entrées corrompues comptées ;
+- périmètre honnête : ledger mémoire uniquement (séances/journal au
+  backlog, dit dans la réponse) ; round-trip export→import prouvé ;
+- 1615 tests verts / 2 skipped (+9) ; moteur 0.9.0 et SW v106 inchangés.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

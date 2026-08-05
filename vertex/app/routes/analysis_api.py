@@ -343,6 +343,50 @@ def api_skyler_memory_export():
     return resp
 
 
+@bp.route('/api/skyler/memory/import', methods=['POST'])
+def api_skyler_memory_import():
+    """RESTAURATION SOUVERAINE (LOT 45) : ré-importe un bundle d'export
+    (lots 29/42) par REJEU APPEND-ONLY — l'empreinte `content_sha256` est
+    VÉRIFIÉE AVANT toute écriture (archive altérée → 400 dit, rien touché) ;
+    un decision_id déjà présent n'est JAMAIS remplacé (l'historique local
+    gagne) ; les outcomes restent monotones. Périmètre : ledger mémoire ;
+    séances/journal restent au backlog (dit dans la note). Jamais 500."""
+    import hashlib as _hashlib
+    import json as _json
+    from flask import request
+    from vertex.engines import decision_memory as _dm
+    from vertex.services import persist as _persist
+    bundle = request.get_json(force=True, silent=True)
+    if not isinstance(bundle, dict):
+        return jsonify({'ok': False, 'error': 'bundle_invalide',
+                        'note': 'corps JSON objet attendu (bundle d’export)'}), 400
+    claimed = bundle.pop('content_sha256', None)
+    if not isinstance(claimed, str) or not claimed:
+        return jsonify({'ok': False, 'error': 'empreinte_absente',
+                        'note': 'content_sha256 requis — un bundle sans '
+                                'empreinte n’est pas restaurable'}), 400
+    canonical = _json.dumps(bundle, sort_keys=True, ensure_ascii=False,
+                            separators=(',', ':'))
+    actual = _hashlib.sha256(canonical.encode('utf-8')).hexdigest()
+    if actual != claimed:
+        return jsonify({'ok': False, 'error': 'empreinte_invalide',
+                        'note': 'l’archive a été altérée depuis son export — '
+                                'RIEN n’a été écrit'}), 400
+    imported = bundle.get('memory')
+    if not isinstance(imported, dict):
+        return jsonify({'ok': False, 'error': 'memoire_absente',
+                        'note': 'le bundle ne contient pas de magasin mémoire'}), 400
+    current = _persist.load_json(_dm.MEMORY_FILE, None) or _dm.empty_memory()
+    merged, stats = _dm.merge_memory(current, imported)
+    _persist.save_json(_dm.MEMORY_FILE, merged)
+    return jsonify({'ok': True, 'stats': stats,
+                    'ledger_health': _dm.ledger_health(merged),
+                    'versions_bundle': bundle.get('versions'),
+                    'note': 'restauration par rejeu append-only — l’historique '
+                            'local gagne toujours ; périmètre : ledger mémoire '
+                            'uniquement (séances et journal au backlog)'})
+
+
 @bp.route('/api/skyler/memory/cell/<group>/<key>')
 def api_skyler_memory_cell(group, key):
     """DRILL-DOWN CELLULE (LOT 39) : les décisions MESURÉES qui composent une

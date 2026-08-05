@@ -51,6 +51,7 @@
 | RC1 | `SKYLER-RC-PERIODIQUE-1.md` | RC périodique n°1 — suite complète + audit navigateur 8 pages + parcours mémoire : GO, 0 défaut, baseline tenue | 0.9.0 | v106 | 1606 | GO |
 | RC2 | `SKYLER-RC-PERIODIQUE-2.md` | RC périodique n°2 — suite complète + audit navigateur 8 pages + parcours mémoire : GO, 0 défaut, baseline tenue | 0.9.0 | v106 | 1606 | GO |
 | RC3 | `SKYLER-RC-PERIODIQUE-3.md` | RC périodique n°3 — suite complète + audit navigateur 8 pages + parcours mémoire : GO, 0 défaut, baseline tenue | 0.9.0 | v106 | 1606 | GO |
+| 45 | `SKYLER-LOT-45.md` | Restauration souveraine (`POST /api/skyler/memory/import` — empreinte vérifiée avant écriture, rejeu append-only, historique local gagne) | 0.9.0 | v106 | 1615 | GO |
 
 ## Architecture atteinte
 
