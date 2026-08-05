@@ -90,7 +90,7 @@ _VIEW_CONTENT = {
         <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-brain-refresh">Mettre &agrave; jour avec Claude</button></span></div>
     <div class="vx-help vx-mb2">Quand l&#8217;acc&egrave;s live manque, Claude va chercher les vraies donn&eacute;es du jour
       sur le web (cotations diff&eacute;r&eacute;es, actualit&eacute;s) &mdash; toujours <b>sourc&eacute;es</b> et &eacute;tiquet&eacute;es
-      <span class="vx-badge" style="color:var(--vx-orange-500,#cf6128);border:1px solid var(--vx-orange-500,#cf6128)">via Claude · web · diff&eacute;r&eacute;</span>,
+      <span class="vx-badge" style="color:var(--vx-orange-500,#DBE1E8);border:1px solid var(--vx-orange-500,#DBE1E8)">via Claude · web · diff&eacute;r&eacute;</span>,
       jamais d&eacute;guis&eacute;es en donn&eacute;e broker r&eacute;elle. Aucun chiffre invent&eacute;.</div>
     <div id="vx-brain-body">%%LOADING%%</div>
   </section>
@@ -251,13 +251,13 @@ async function loadConnSummary(){
   let d;try{d=await VX.fetch('/api/system/connections',{ttl:20000});}catch(e){el.innerHTML=VX.states.error('Connexions indisponibles');return;}
   const tone={LIVE:'pos',READY:'pos',DELAYED:'warn',DEGRADED:'warn',FALLBACK:'warn',STALE:'warn',
     OFFLINE:'neg',ERROR:'neg',BLOCKED:'neg',CONFIGURATION_MISSING:'neutral',NOT_IMPLEMENTED:'neutral',DEMO:'neutral',LOADING:'neutral'};
-  const col={pos:'var(--vx-positive,#39b879)',warn:'var(--vx-warning,#cc892c)',neg:'var(--vx-negative,#dc6254)',neutral:'var(--vx-text-dim,#817d77)'};
+  const col={pos:'var(--vx-positive,#2BBE90)',warn:'var(--vx-warning,#D9BE3C)',neg:'var(--vx-negative,#E9555F)',neutral:'var(--vx-text-muted,#8A8284)'};
   const rows=(d.connections||[]).map(function(c){
     const t=tone[c.status]||'neutral';
     return '<div style="display:grid;grid-template-columns:150px 130px 1fr;gap:.6rem;align-items:center;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.05)">'
       +'<b>'+esc(c.name)+'</b>'
       +'<span class="vx-badge" style="color:'+col[t]+';border:1px solid '+col[t]+'">'+esc(c.status)+'</span>'
-      +'<span class="vx-dim" style="font-size:12.5px">'+esc(c.detail||'')+(c.action?' <span style="color:var(--vx-orange-500,#cf6128)">→ '+esc(c.action)+'</span>':'')+'</span></div>';
+      +'<span class="vx-dim" style="font-size:12.5px">'+esc(c.detail||'')+(c.action?' <span style="color:var(--vx-orange-500,#DBE1E8)">→ '+esc(c.action)+'</span>':'')+'</span></div>';
   }).join('');
   el.innerHTML=rows||'<div class="vx-empty">Aucun canal.</div>';
 }
@@ -304,7 +304,7 @@ async function loadBrain(){
         const impactCls=n?({HAUSSIER:'vx-pos',BAISSIER:'vx-neg',NEUTRE:'vx-dim'}[n.impact]||'vx-dim'):'';
         return '<tr><td><b>'+esc(s)+'</b></td>'
           +'<td class="vx-num vx-mono">'+VX.fmt.num(q.value,2)+' '+esc(q.currency||'')+chg+'</td>'
-          +'<td><span class="vx-badge" style="color:var(--vx-warning,#dda23b);border:1px solid var(--vx-warning,#dda23b);font-size:11px">'+esc(q.source_label||'via Claude · web')+'</span>'+brainCitations(q.citations)+'</td>'
+          +'<td><span class="vx-badge" style="color:var(--vx-warning,#D9BE3C);border:1px solid var(--vx-warning,#D9BE3C);font-size:11px">'+esc(q.source_label||'via Claude · web')+'</span>'+brainCitations(q.citations)+'</td>'
           +'<td class="'+impactCls+'" style="font-size:12px">'+(n?esc(n.impact)+' — '+esc((n.headline||'').slice(0,64)):'<span class="vx-dim">—</span>')+'</td></tr>';
       }).join('')+'</tbody></table></div>';
   }else if(status==='MISSING'){
@@ -701,9 +701,9 @@ async function loadData(){
       const age=d.age_s===null||d.age_s===undefined?'—':(d.age_s<120?Math.round(d.age_s)+' s':Math.round(d.age_s/60)+' min');
       const lbl=fresh?'frais':(off?'hors ligne':'différé');
       return `<div role="img" aria-label="${esc(k)} ${lbl} ${age}" style="padding:10px 12px;border-radius:9px;display:flex;flex-direction:column;gap:1px;background:${soft};border:1px solid var(${col},#9d978e)">
-        <span style="font-size:11px;color:var(--vx-text-secondary,#b7b2aa);text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</span>
+        <span style="font-size:11px;color:var(--vx-text-secondary,#BABABA);text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</span>
         <span style="font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(${col},#9d978e)">${age}</span>
-        <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#817d77)">${lbl}</span></div>`;};
+        <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#8A8284)">${lbl}</span></div>`;};
     const heat=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-bottom:14px" aria-label="Heatmap de fraîcheur des données">${Object.keys(doms).map(tile).join('')}</div>`;
     $('vx-data-fresh').innerHTML=heat+`<div style="overflow-x:auto"><table class="vx-table">
       <thead><tr><th>Domaine</th><th>&Eacute;tat</th><th class="vx-num">&Acirc;ge</th><th>D&eacute;tail</th></tr></thead><tbody>`

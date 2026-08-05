@@ -383,7 +383,7 @@ function sparkSvg(vals,pos){
   if(!Array.isArray(vals)||vals.length<2)return '';
   const w=100,h=22,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=(mx-mn)||1;
   const pts=vals.map((v,i)=>(i/(vals.length-1)*w).toFixed(1)+','+(h-((v-mn)/rng)*(h-2)-1).toFixed(1)).join(' ');
-  const col=pos?'var(--vx-positive,#2ED6A1)':'var(--vx-negative,#FF5F69)';
+  const col=pos?'var(--vx-positive,#2BBE90)':'var(--vx-negative,#E9555F)';
   return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" width="100%" height="22" style="margin-top:5px;display:block" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
 /* Mini-area premium : ligne + remplissage dégradé + point actif final. `tone`
@@ -802,7 +802,7 @@ function loadBreadthInternals(scan){
       const col=i>=7?cc.positive:i<=2?cc.negative:cc.warning;
       return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px" role="img" aria-label="score ${i*10} à ${i*10+10} : ${n} titres">
         <span style="width:100%;height:120px;display:flex;align-items:flex-end"><span style="width:100%;height:${h}%;background:${col};border-radius:3px 3px 0 0;min-height:2px"></span></span>
-        <span style="font-size:9px;color:var(--vx-text-muted,#817b73);font-variant-numeric:tabular-nums">${i*10}</span></div>`;};
+        <span style="font-size:9px;color:var(--vx-text-muted,#8A8284);font-variant-numeric:tabular-nums">${i*10}</span></div>`;};
     $('vx-mk-dist').innerHTML='<div style="display:flex;gap:3px;align-items:flex-end;padding:6px 2px">'+dist.map(bar).join('')+'</div>';
   }else if(dCard){dCard.hidden=true;}
 }
