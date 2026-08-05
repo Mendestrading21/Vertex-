@@ -598,6 +598,23 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - 1627 tests verts / 2 skipped (inchangé) ; moteur 0.9.0 et SW v107
   inchangés ; retour aux RC périodiques espacées.
 
+## Lot 51 — livré (2026-08-05, axe visuel — direction utilisateur)
+
+- direction utilisateur : graphiques niveau app de courtage 2026 (esprit
+  app IBKR) — livré CENTRALEMENT dans `chart-core.js` (`C.area`) : toutes
+  les cartes `areaCard` upgradées d'un coup, zéro fork de renderer ;
+- signature : lissage `cubicInterpolationMode 'monotone'` (ne dépasse
+  JAMAIS les données réelles — pas de faux extrêmes), dégradé d'aire
+  3 arrêts, glow subtil (`vxGlow`), pastille de dernier prix (`vxLastDot` :
+  halo + point sur le dernier point RÉEL + pilule de prix au bord droit),
+  ligne 2 px, survol mode index ;
+- palette : AUCUN littéral couleur nouveau (gardien à inventaire exact) —
+  `C.colors` + suffixes alpha sur la couleur reçue (idiome existant) ;
+- preuves : 6 tests rouges→verts ; suite 1633/2 skipped ; RC outillée GO
+  0 défaut sous SW v108 (cycle souverain inclus) ; preuve navigateur
+  visuelle (capture /markets : pastille « 413,00 » rendue, roundRect
+  supporté, 0 erreur console) ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
