@@ -52,19 +52,9 @@ git merge-base A B
 
 `docs/skyler/BRANCH_CONVERGENCE_AUDIT.md`
 
-Inclure :
+Inclure : SHA, ancêtre commun, commits uniques, fichiers/moteurs/pages/tests divergents, risques, source canonique par domaine et plan de récupération.
 
-- SHA de chaque branche ;
-- ancêtre commun ;
-- commits uniques ;
-- fichiers divergents ;
-- moteurs divergents ;
-- pages divergentes ;
-- tests divergents ;
-- risques ;
-- source canonique par domaine ;
-- plan de récupération ;
-- aucune fusion automatique.
+Aucune fusion automatique.
 
 ### Fin
 
@@ -84,223 +74,269 @@ python -m pytest tests/ -q
 DEMO=1 NO_IBKR=1 python terminal.py
 ```
 
-Contrôler :
-
-- `/healthz`
-- `/api/client-log`
-- routes principales ;
-- 8 espaces ;
-- mode démo ;
-- sans IBKR ;
-- mobile 390 ;
-- desktop 1440/1920 ;
-- READONLY.
+Contrôler `/healthz`, `/api/client-log`, routes, huit espaces, démo, sans IBKR, mobile 390, desktop 1440/1920 et READONLY.
 
 ### Livrables
 
 - `docs/skyler/BASELINE.md`
 - `docs/skyler/STATUS.md`
-- captures baseline ;
-- aucun changement de moteur.
+- captures baseline
+- aucun changement moteur
 
 ## LOT 1 — Correctness options
 
 ### Audit ciblé
 
-Inspecter :
-
-- `vertex/engines/multileg_lab.py`
-- moteurs options ;
-- routes d’analyse ;
-- tests mathématiques ;
-- format du board ;
-- champs IV, prime, coût, quantité, multiplicateur ;
-- profils stratégiques.
+Inspecter moteurs options, routes, board, champs IV/primes/quantités/multiplicateurs, profils et tests mathématiques.
 
 ### Séquence
 
-1. écrire un test rouge pour short call illimité ;
-2. ajouter `max_loss_unbounded` sans casser les sorties existantes ;
-3. écrire les tests d’unités IV explicites ;
-4. créer la normalisation typée ;
-5. migrer les points de jonction ;
-6. filtrer les stratégies selon le profil ;
-7. ajouter refus structurés ;
-8. vérifier UI/API ;
-9. exécuter suite complète ;
-10. rapport `SKYLER-LOT-01.md` ;
+1. test rouge short call illimité ;
+2. `max_loss_unbounded` ;
+3. unités IV explicites ;
+4. normalisation typée ;
+5. migration des points de jonction ;
+6. filtrage profil ;
+7. refus structurés ;
+8. alignement UI/API ;
+9. suite complète ;
+10. rapport ;
 11. arrêt.
 
 ### Interdictions
 
-- pas de nouveau scoring global ;
-- pas de refonte visuelle ;
-- pas de nouvelles sources de marché ;
-- pas de Constitution V2 dans la même PR.
+Pas de scoring global, refonte visuelle, nouvelles sources ou Constitution V2.
 
 ## LOT 2 — Constitution V2
 
-### Séquence
-
-1. lire la V1 ;
-2. créer V2 par mécanisme de versioning ;
-3. ne jamais modifier V1 ;
+1. lire V1 ;
+2. créer V2 via versioning ;
+3. V1 immuable ;
 4. intégrer 8–15 positions, niveaux et LEAPS ;
-5. tests de validation ;
-6. tests de diff ;
-7. tests de rollback ;
-8. vérifier le moteur exécutif ;
-9. rapport ;
-10. arrêt.
+5. tests validation/diff/rollback ;
+6. vérifier moteur exécutif ;
+7. rapport ;
+8. arrêt.
 
 ## LOT 3 — Market Intelligence
 
-### Séquence
-
-1. inventorier les sources actuelles ;
-2. créer le schéma `MarketContext` ;
-3. normaliser source/fraîcheur ;
-4. connecter seulement les données réellement disponibles ;
-5. ajouter dimensions progressivement ;
-6. transition de régime ;
-7. diff depuis session précédente ;
+1. inventorier sources ;
+2. schéma `MarketContext` ;
+3. source/fraîcheur ;
+4. données réelles uniquement ;
+5. dimensions progressives ;
+6. transitions de régime ;
+7. diff session ;
 8. tests missing/stale/conflicted ;
 9. rapport ;
 10. arrêt.
 
-Ne jamais remplir une dimension absente avec une approximation non étiquetée.
-
 ## LOT 4 — News, catalyseurs et anomalies
 
-### Séquence
-
-1. choisir la série OHLCV canonique ;
-2. supprimer les reconstructions artificielles des chemins décisionnels ;
-3. créer événements normalisés ;
-4. dédupliquer les news ;
-5. distinguer fait, interprétation et impact ;
-6. ajouter révisions si source disponible ;
-7. tester anomalies sur vraies barres et données manquantes ;
-8. rapport ;
-9. arrêt.
+1. OHLCV canonique ;
+2. retirer reconstructions artificielles des chemins décisionnels ;
+3. événements normalisés ;
+4. déduplication news ;
+5. fait/interprétation/impact ;
+6. révisions si source disponible ;
+7. anomalies multi-domaines ;
+8. confirmation/persistance/faux positifs ;
+9. rapport ;
+10. arrêt.
 
 ## LOT 5 — Skyler Core
 
-### Séquence
-
 1. contrats typés ;
 2. builders purs ;
-3. contradiction detector ;
-4. hard gates ;
-5. score /40 ;
-6. scénarios ;
-7. audit trail ;
-8. réponse déterministe ;
-9. couche Claude limitée à la rédaction ;
-10. tests de déterminisme ;
-11. tests de non-invention ;
-12. rapport ;
-13. arrêt.
+3. claims structurés ;
+4. comité contradictoire ;
+5. contradiction detector ;
+6. hard gates ;
+7. score /40 ;
+8. scénarios ;
+9. audit trail ;
+10. réponse déterministe ;
+11. Claude limité à la rédaction ;
+12. tests déterminisme/non-invention ;
+13. rapport ;
+14. arrêt.
 
 ## LOT 6 — Options Intelligence
 
-### Séquence
-
-1. séparer TACTICAL/SWING/LEAPS ;
-2. scanner calls/puts autorisés ;
+1. TACTICAL/SWING/LEAPS ;
+2. calls/puts autorisés ;
 3. liquidité ;
 4. vol surface/term/skew ;
 5. Greeks avancés ;
-6. GEX/dealer avec conventions ;
-7. scénarios spot × temps × IV ;
+6. GEX/dealer et limites ;
+7. spot × temps × IV ;
 8. earnings/IV crush ;
-9. probabilité de doublement ;
-10. calibration/labels ;
+9. PoP et doublement séparés ;
+10. comparaison action/option ;
 11. rapport ;
 12. arrêt.
 
 ## LOT 7 — Portfolio Intelligence
 
-### Séquence
-
-1. contrat positions canonique ;
+1. positions canoniques ;
 2. budget de risque ;
-3. niveau et sizing ;
+3. niveau/sizing ;
 4. concentration/corrélation ;
 5. impact marginal ;
-6. replacement logic ;
-7. renforcement gagnant seulement ;
+6. remplacement ;
+7. renforcement gagnant uniquement ;
 8. sécurisation partielle ;
 9. stress ;
-10. tests de garde-fous ;
-11. rapport ;
-12. arrêt.
+10. Greeks portefeuille ;
+11. tests garde-fous ;
+12. rapport ;
+13. arrêt.
 
 ## LOT 8 — Neon Glass
 
 Une sous-PR par espace ou groupe validé.
 
-Pour chaque page :
+Pour chaque page : capture avant, mission, source canonique, hiérarchie réponse/preuve/expertise, composants réutilisés, suppression doublons, implémentation, responsive, accessibilité, console, capture après, rapport et arrêt.
 
-1. capture avant ;
-2. mission ;
-3. source canonique ;
-4. hiérarchie réponse/preuve/expertise ;
-5. composants existants réutilisés ;
-6. suppression des doublons ;
-7. implémentation ;
-8. desktop/tablette/mobile ;
-9. clavier/reduced-motion ;
-10. console ;
-11. capture après ;
-12. rapport ;
-13. arrêt avant page suivante si la validation humaine l’exige.
+## LOT 9 — Scénarios et calibration
 
-## LOT 9 — Calibration et RC
+1. geler fonctionnalités ;
+2. ledger de décisions ;
+3. probabilités versionnées ;
+4. Brier/log loss/calibration bins ;
+5. MAE/MFE ;
+6. résultats régime/niveau/instrument ;
+7. faux positifs ;
+8. benchmark ;
+9. tests look-ahead ;
+10. rapport ;
+11. arrêt.
+
+## LOT 10 — Mémoire et discipline décisionnelle
+
+### But
+
+Transformer le journal en mémoire institutionnelle sans auto-modification des règles.
 
 ### Séquence
 
-1. geler les fonctionnalités ;
-2. mesurer les probabilités ;
-3. Brier/calibration ;
-4. performance par régime/niveau ;
-5. MAE/MFE ;
-6. dérive ;
-7. faux positifs ;
-8. benchmark ;
-9. sécurité ;
-10. performance ;
-11. accessibilité ;
-12. responsive ;
-13. docs release/rollback ;
-14. RC brouillon ;
-15. arrêt avant `main`.
+1. figer les décisions historiques avec version moteur ;
+2. capturer thèse, déclencheur, invalidation et scénarios ;
+3. observer résultat aux horizons déclarés ;
+4. séparer erreur de modèle, erreur de données, erreur de discipline et variance normale ;
+5. détecter biais récurrents ;
+6. produire recommandations d’amélioration ;
+7. exiger validation humaine avant changement de règle ;
+8. tests immutabilité/versioning ;
+9. rapport ;
+10. arrêt.
+
+### Tests critiques
+
+- aucune décision historique réécrite ;
+- aucun résultat futur dans les données d’entrée ;
+- aucun ajustement automatique de Constitution ;
+- comparaison entre versions séparée.
+
+## LOT 11 — Knowledge Graph et recherche institutionnelle
+
+### But
+
+Relier les entités importantes pour détecter dépendances, propagation de catalyseurs et risques cachés.
+
+### Entités
+
+- sociétés ;
+- secteurs ;
+- industries ;
+- thèmes ;
+- fournisseurs ;
+- clients ;
+- concurrents ;
+- matières premières ;
+- régions ;
+- réglementations ;
+- catalyseurs ;
+- risques.
+
+### Séquence
+
+1. schéma relation typé ;
+2. provenance par relation ;
+3. date et confiance ;
+4. ingestion uniquement depuis sources disponibles ;
+5. interdiction d’inventer une relation ;
+6. propagation d’impact explicable ;
+7. questions de recherche ;
+8. détection de concentration cachée portefeuille ;
+9. tests cycles/doublons/provenance ;
+10. rapport ;
+11. arrêt.
+
+## LOT 12 — Red-team et release candidate
+
+### But
+
+Chercher activement les erreurs avant toute promotion.
+
+### Séquence
+
+1. red-team de chaque S/S+ ;
+2. chocs marché/secteur/volatilité/liquidité ;
+3. retard ou échec catalyseur ;
+4. IV crush et gap ;
+5. audit mathématique options indépendant ;
+6. audit données, sécurité et confidentialité ;
+7. audit READONLY ;
+8. audit déterminisme ;
+9. audit accessibilité/performance/responsive ;
+10. démo/sans IBKR/stale/offline ;
+11. documentation release/rollback ;
+12. validation appareil physique ;
+13. RC brouillon ;
+14. arrêt avant `main`.
+
+## `decision-review <SYMBOL>`
+
+Mission analytique sans changement de code :
+
+1. construire `SkylerPacket` ;
+2. exécuter analystes ;
+3. qualité et hard gates ;
+4. contradictions ;
+5. scénarios ;
+6. action/call/put/attendre ;
+7. portefeuille ;
+8. avocat du diable ;
+9. décision déterministe ;
+10. faits/estimations/interprétations séparés.
+
+Ne jamais passer d’ordre ou modifier le journal historique.
+
+## `red-team <SYMBOL|DECISION_ID>`
+
+1. préserver décision initiale ;
+2. meilleur dossier adverse ;
+3. choc marché ;
+4. retard catalyseur ;
+5. IV crush ;
+6. gap/liquidité ;
+7. corrélation portefeuille ;
+8. hypothèse fragile ;
+9. conditions de baisse score/confiance ;
+10. rapport séparé.
 
 ## Discipline de commit
 
-- commits courts et ciblés ;
+- commits ciblés ;
 - message `type(skyler): description` ;
-- ne pas utiliser `git add -A` si le worktree contient des changements étrangers ;
-- ne pas amender ou rebase une branche partagée sans accord ;
-- ne pas mélanger captures temporaires et code produit ;
-- vérifier le diff avant push.
+- pas de `git add -A` avec changements étrangers ;
+- pas d’amend/rebase partagé sans accord ;
+- pas de captures temporaires mélangées au code ;
+- diff relu avant push.
 
 ## Discipline de PR
 
-Le corps de PR doit préciser :
-
-- lot ;
-- objectif ;
-- périmètre ;
-- hors périmètre ;
-- défaut reproduit ;
-- solution ;
-- fichiers ;
-- tests exacts ;
-- invariants ;
-- captures ;
-- risques ;
-- rollback ;
-- validation humaine manquante.
+Le corps précise lot, objectif, périmètre/hors périmètre, défaut, solution, fichiers, tests, invariants, captures, contradictions, risques, rollback et validation humaine manquante.
 
 Toujours ouvrir en brouillon.
