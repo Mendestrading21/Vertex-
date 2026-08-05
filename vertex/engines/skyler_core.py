@@ -20,9 +20,19 @@ Règles d'honnêteté :
 from __future__ import annotations
 
 SCHEMA_VERSION = 1
-ENGINE_VERSION = '0.1.0'
+ENGINE_VERSION = '0.2.0'    # 0.2.0 : règle red-team S/S+ (changement de règle = version)
 
 _BULLISH = ('ACHETER', 'RENFORCER', 'BUY')
+
+
+def apply_red_team_rule(level, red_team):
+    """ADVERSARIAL_COMMITTEE §8 : une note S ou S+ sans red-team COMPLÉTÉE est
+    invalide — plafonnée à A avec raison explicite. Les autres niveaux passent
+    inchangés. Règle pure, déterministe."""
+    if level in ('S_PLUS', 'S') and not (red_team or {}).get('complete'):
+        return 'A', ('niveau %s plafonné à A : red-team absente ou incomplète '
+                     '(obligatoire pour S/S+)' % level)
+    return level, None
 
 
 def _profile():
@@ -33,7 +43,8 @@ def _profile():
 # ─── SkylerPacket ───────────────────────────────────────────────────────────────
 
 def build_packet(sym, detail, market=None, events=None, anomaly=None,
-                 as_of=None, demo=False, options_ctx=None, portfolio_ctx=None):
+                 as_of=None, demo=False, options_ctx=None, portfolio_ctx=None,
+                 red_team=None):
     """Agrège les sorties moteurs existantes en un packet typé — sans muter les
     sources, sans recalculer, sans inventer."""
     detail = detail or {}
@@ -94,6 +105,8 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
         'profile_version': getattr(prof, 'version', None),
         'symbol': sym, 'generated_as_of': as_of, 'freshness_floor': as_of,
         'demo': bool(demo), 'contexts': contexts,
+        'red_team': (red_team if red_team is not None else
+                     {'complete': False, 'basis': 'aucune red-team exécutée'}),
         'contradictions': contradictions, 'unknowns': unknowns,
         'audit_trail': audit,
     }
@@ -219,9 +232,12 @@ def score40(packet):
     # Constitution : S+ impossible si des blocs critiques manquent.
     if insufficient and level in ('S_PLUS', 'S'):
         level = 'A'
+    # ADVERSARIAL_COMMITTEE §8 : S/S+ sans red-team complétée = invalide.
+    level, rt_cap = apply_red_team_rule(level, packet.get('red_team'))
 
     return {'total': total, 'max': 40, 'blocks': blocks, 'level': level,
             'insufficient_blocks': insufficient,
+            'red_team_cap': rt_cap,
             'note': 'Le score ne contourne jamais les hard gates ; blocs non branchés = 0, jamais estimés.'}
 
 
@@ -330,10 +346,11 @@ def scenarios(detail):
 # ─── SkylerDecision (déterministe, sans Claude) ─────────────────────────────────
 
 def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
-           demo=False, options_ctx=None, portfolio_ctx=None):
+           demo=False, options_ctx=None, portfolio_ctx=None, red_team=None):
     packet = build_packet(sym, detail, market=market, events=events,
                           anomaly=anomaly, as_of=as_of, demo=demo,
-                          options_ctx=options_ctx, portfolio_ctx=portfolio_ctx)
+                          options_ctx=options_ctx, portfolio_ctx=portfolio_ctx,
+                          red_team=red_team)
     score = score40(packet)
     gates = hard_gates(packet, score)
     scen = scenarios(detail)
@@ -391,6 +408,10 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
     return {
         'symbol': sym, 'generator': 'deterministic', 'as_of': as_of,
         'decision': decision, 'capped_by_gate': capped_by,
+        'red_team': {'complete': bool((packet.get('red_team') or {}).get('complete')),
+                     'required': score['level'] in ('S_PLUS', 'S'),
+                     'basis': (packet.get('red_team') or {}).get('basis')
+                              or 'aucune red-team exécutée — S/S+ impossible sans elle'},
         'sizing': sizing,
         'score': score, 'level': score['level'],
         'gates': gates, 'scenarios': scen,
@@ -405,4 +426,4 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
 
 
 __all__ = ['build_packet', 'score40', 'hard_gates', 'scenarios', 'decide',
-           'SCHEMA_VERSION', 'ENGINE_VERSION']
+           'apply_red_team_rule', 'SCHEMA_VERSION', 'ENGINE_VERSION']

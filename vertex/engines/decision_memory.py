@@ -29,6 +29,7 @@ Fonctions pures (horloge injectée), JSON-sérialisables. Lecture seule, aucun o
 from __future__ import annotations
 
 import hashlib
+import math
 
 MEMORY_SCHEMA_VERSION = 1
 MEMORY_FILE = 'skyler_memory.json'
@@ -45,7 +46,10 @@ _BULLISH = ('ACHETER', 'RENFORCER')
 
 
 def _num(x):
-    return float(x) if isinstance(x, (int, float)) and not isinstance(x, bool) else None
+    """Nombre FINI ou None — NaN/infini refusés (jamais sérialisés ni mesurés)."""
+    if isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x):
+        return float(x)
+    return None
 
 
 # ─── Gel d'une décision (ledger immuable) ───────────────────────────────────────
@@ -103,7 +107,7 @@ def freeze(decision, packet=None, price=None, closes=None, portfolio_ctx=None, n
         'price_at_decision': px,
         'tail_at_decision': tail,
         'decision': d.get('decision'),
-        'operational_state': None,   # le moteur 0.1.0 n'émet pas d'état opérationnel
+        'operational_state': None,   # le moteur actuel n'émet pas d'état opérationnel
         'operational_state_note': 'non émis par le moteur %s — jamais inventé' % engine_version,
         'capped_by_gate': d.get('capped_by_gate'),
         'score_total': sc.get('total'), 'score_max': sc.get('max'),
