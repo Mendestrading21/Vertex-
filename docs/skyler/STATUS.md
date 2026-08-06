@@ -1429,6 +1429,26 @@ deux fois de nom — absorbé, repli encodé au canevas.
   DIRECTIVE ESTHÉTIQUE renforcée reçue : priorité aux dégradés
   propres, traits fins, points propres, moins de chiffres empilés,
   lecture éducative et efficace — chaque page développée au max.
+- **Lot 120 — livré** : amélioration graphique n°2 (Marchés) —
+  lignes ultra propres au CŒUR des charts (chart-core.js) :
+  endDotsPlugin (chaque série finit par un point net + son nom dans
+  sa couleur — fini l'aller-retour vers la légende), softGlowPlugin
+  (halo néon doux), traits affinés 1.6, dégradé area 4 arrêts.
+  Bénéfice transversal : toutes les pages qui utilisent
+  multiLine/area héritent de la finition. Gardien lot 52 mis à jour
+  vers la nouvelle signature (délibéré). SW v128 → v129 + 4
+  gardiens. Captures avant/après envoyées. Suite 1984/2, RC GO.
+
+### MINI-BILAN tournée 116-120
+
+5 lots (3 caractérisations + 2 graphiques), 24 tests, suite
+**1960 → 1984 passed / 2 skipped**, 0 défaut moteur, PR #149 → #153,
+SW v127 → v129 : event_engine (non confirmé jamais actionnable) ·
+factory (un beau backtest ne suffit jamais) · chart_read (la méfiance
+prime) · GRAPHIQUE Aujourd'hui (Catalyst Runway développé) · GRAPHIQUE
+Marchés (lignes ultra propres transversales). Pivot de la boucle vers
+l'esthétique sur directive utilisateur — chaque page au maximum,
+sans autorisation demandée.
 
 ### MINI-BILAN tournée 91-95
 

@@ -279,12 +279,15 @@
     if (last) plugins.push(C.lastDotPlugin(color, yFmt));
     return C.mount(canvas, {
       type: 'line',
-      data: { labels, datasets: [{ data: values, borderColor: color, borderWidth: 2, pointRadius: 0,
+      data: { labels, datasets: [{ data: values, borderColor: color, borderWidth: 1.8, pointRadius: 0,
         cubicInterpolationMode: 'monotone', tension: .35, fill,
+        /* LOT 120 : dégradé vertical à 4 arrêts — descente plus douce
+           (jamais un aplat), fin totalement transparente. */
         backgroundColor: (ctx) => {
           const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height || 200);
-          g.addColorStop(0, color + '4D'); g.addColorStop(.45, color + '17');
-          g.addColorStop(1, color + '00'); return g;
+          g.addColorStop(0, color + '59'); g.addColorStop(.3, color + '2E');
+          g.addColorStop(.62, color + '12'); g.addColorStop(1, color + '00');
+          return g;
         } }, ...extraDatasets] },
       options: { scales: C.axes({ yFmt }), interaction: { mode: 'index', intersect: false } },
       plugins,
@@ -312,15 +315,64 @@
       options: { cutout: '70%', plugins: { legend: { display: true, position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } },
     });
   };
+  /* LOT 120 — finition « ultra propre » des lignes multiples : chaque série
+     se termine par un POINT NET dans sa couleur (halo léger) et son NOM court
+     collé au bout de la ligne — l'œil suit une courbe jusqu'à son identité,
+     sans aller-retour avec la légende. Aucun littéral couleur nouveau. */
+  C.endDotsPlugin = function (withLabels) {
+    return {
+      id: 'vxEndDots',
+      afterDatasetsDraw(chart) {
+        const { ctx } = chart;
+        chart.data.datasets.forEach((d, i) => {
+          const meta = chart.getDatasetMeta(i);
+          if (!meta || meta.hidden || !meta.data || !meta.data.length) return;
+          const pt = meta.data[meta.data.length - 1];
+          if (!pt || pt.x == null) return;
+          const col = (typeof d.borderColor === 'string' && d.borderColor) || C.colors.series[i % 6];
+          ctx.save();
+          ctx.fillStyle = col;
+          ctx.globalAlpha = .22;
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2); ctx.fill();   /* halo */
+          ctx.globalAlpha = 1;
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, 2.6, 0, Math.PI * 2); ctx.fill(); /* point net */
+          if (withLabels && d.label) {
+            ctx.font = '600 9px ' + ((window.Chart && Chart.defaults.font.family) || 'Inter,sans-serif');
+            ctx.textBaseline = 'middle';
+            ctx.fillText(String(d.label).slice(0, 11), pt.x + 8, pt.y);
+          }
+          ctx.restore();
+        });
+      },
+    };
+  };
+  /* Halo néon très doux sous chaque trait — la matière Neon Glass sans bruit. */
+  C.softGlowPlugin = function () {
+    return {
+      id: 'vxSoftGlow',
+      beforeDatasetDraw(chart, args) {
+        const d = chart.data.datasets[args.index] || {};
+        chart.ctx.save();
+        if (typeof d.borderColor === 'string') {
+          chart.ctx.shadowColor = d.borderColor;
+          chart.ctx.shadowBlur = 4;
+        }
+      },
+      afterDatasetDraw(chart) { chart.ctx.restore(); },
+    };
+  };
   C.multiLine = function (canvas, labels, datasets, { yFmt, crosshair = true } = {}) {
-    /* harmonisé sur la signature 2026 de C.area (lot 51) : lissage monotone
-       (jamais de faux extrêmes), ligne 2 px, même visée au survol. */
+    /* signature 2026 affinée (lot 120) : traits FINS (1.6), halo néon doux,
+       point terminal net + nom de série en bout de ligne. Lissage monotone
+       conservé (jamais de faux extrêmes). */
     return C.mount(canvas, {
       type: 'line',
-      data: { labels, datasets: datasets.map((d, i) => Object.assign({ borderColor: C.colors.series[i % 6], borderWidth: 2, pointRadius: 0, cubicInterpolationMode: 'monotone', tension: .35, fill: false }, d)) },
+      data: { labels, datasets: datasets.map((d, i) => Object.assign({ borderColor: C.colors.series[i % 6], borderWidth: 1.6, pointRadius: 0, cubicInterpolationMode: 'monotone', tension: .35, fill: false }, d)) },
       options: { scales: C.axes({ yFmt }), interaction: { mode: 'index', intersect: false },
+        layout: { padding: { right: 54 } },
         plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } },
-      plugins: crosshair ? [C.crosshairPlugin(C.colors.brand)] : [],
+      plugins: [...(crosshair ? [C.crosshairPlugin(C.colors.brand)] : []),
+                C.softGlowPlugin(), C.endDotsPlugin(true)],
     });
   };
   /* Annotations de niveaux (entrée/stop/TP…) — plugin ligne horizontale. */
