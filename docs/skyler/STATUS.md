@@ -1418,6 +1418,17 @@ deux fois de nom — absorbé, repli encodé au canevas.
   NOUVELLE DIRECTIVE reçue : lots 119+ orientés amélioration
   visuelle des graphiques page par page (« plus propres, plus beaux,
   plus développés »), en alternance avec les caractérisations.
+- **Lot 119 — livré** : amélioration graphique n°1 (Aujourd'hui) —
+  Catalyst Runway développé : zone d'imminence ≤ 5 j teintée
+  (l'urgence se voit avant de se lire), points dimensionnés par
+  impact avec halo doux, anneau de focalisation sur le prochain
+  catalyseur, graduations hebdomadaires, bornes « aujourd'hui /
+  horizon » nommées, étiquettes élargies, anti-collision conservé,
+  tokens uniquement. SW v127 → v128 + 4 gardiens. Captures 1440
+  avant/après envoyées à l'utilisateur. Suite 1984/2 skipped, RC GO.
+  DIRECTIVE ESTHÉTIQUE renforcée reçue : priorité aux dégradés
+  propres, traits fins, points propres, moins de chiffres empilés,
+  lecture éducative et efficace — chaque page développée au max.
 
 ### MINI-BILAN tournée 91-95
 

@@ -35,7 +35,22 @@
     }
 
     const horizon = Math.max(events[events.length - 1].dte, 1);
-    const W = 320, H = 120, x0 = 12, x1 = W - 12, axisY = 52;
+    const W = 320, H = 132, x0 = 14, x1 = W - 14, axisY = 60;
+    const xOf = (dte) => x0 + (dte / horizon) * (x1 - x0);
+    /* LOT 119 — piste développée : zone d'imminence (≤ 5 j) teintée,
+       graduations hebdomadaires, départ « aujourd'hui » nommé. Tokens
+       uniquement — aucun littéral couleur nouveau. */
+    const dangerX = xOf(Math.min(5, horizon));
+    const zone = `<rect x="${x0}" y="${axisY - 14}" width="${(dangerX - x0).toFixed(1)}" height="28" rx="4"
+        fill="var(--vx-negative)" fill-opacity=".08"/>
+      <text x="${x0 + 2}" y="${axisY + 24}" fill="var(--vx-negative)" fill-opacity=".8" font-size="7.5">zone ≤ 5 j</text>`;
+    let ticks = '';
+    for (let d = 7; d < horizon; d += 7) {
+      const tx = xOf(d);
+      ticks += `<line x1="${tx.toFixed(1)}" y1="${axisY - 3}" x2="${tx.toFixed(1)}" y2="${axisY + 3}"
+        stroke="var(--vx-border-soft,#30292B)" stroke-width="1"/>
+        <text x="${tx.toFixed(1)}" y="${axisY + 13}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="7" opacity=".7">${d}j</text>`;
+    }
     /* anti-collision (lot 61) : DEUX rangées d'étiquettes par côté ; chaque
        étiquette prend la première rangée où il reste de la place (calculée
        sur la position BORNÉE au viewBox — la parité d'index posait parfois
@@ -44,22 +59,34 @@
     const MIN_GAP = 36;                          // ~largeur d'étiquette (viewBox)
     let lastTop0 = -Infinity, lastBot0 = -Infinity,
         lastTop1 = -Infinity, lastBot1 = -Infinity;
-    const marks = events.map((e) => {
-      const left = x0 + (e.dte / horizon) * (x1 - x0);
-      const col = IMPACT_COLOR[String(e.impact || '').toLowerCase()] || 'var(--vx-text-muted)';
+    const IMPACT_R = { high: 5, haute: 5, med: 4, moyenne: 4 };
+    const marks = events.map((e, i) => {
+      const left = xOf(e.dte);
+      const key = String(e.impact || '').toLowerCase();
+      const col = IMPACT_COLOR[key] || 'var(--vx-text-muted)';
+      const r = IMPACT_R[key] || 3;
       const lx = Math.min(Math.max(left, x0 + 16), x1 - 16);
       let top, outer;
       if (lx - lastTop0 >= MIN_GAP) { top = true; outer = false; lastTop0 = lx; }
       else if (lx - lastBot0 >= MIN_GAP) { top = false; outer = false; lastBot0 = lx; }
       else if (lx - lastTop1 >= MIN_GAP) { top = true; outer = true; lastTop1 = lx; }
       else { top = false; outer = true; lastBot1 = lx; }
-      const stemY2 = top ? axisY - 16 : axisY + 16;
-      const lblY = top ? (outer ? 10 : 30) : (outer ? axisY + 50 : axisY + 30);
+      const stemY2 = top ? axisY - 18 : axisY + 18;
+      const lblY = top ? (outer ? 10 : 30) : (outer ? axisY + 52 : axisY + 34);
       const label = (e.label || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      /* le PROCHAIN catalyseur porte un anneau — l'œil sait où regarder */
+      const focus = i === 0
+        ? `<circle cx="${left.toFixed(1)}" cy="${axisY}" r="${r + 3.5}" fill="none" stroke="${col}" stroke-opacity=".45" stroke-width="1.5"/>`
+        : '';
+      const halo = (r >= 5)
+        ? `<circle cx="${left.toFixed(1)}" cy="${axisY}" r="${r + 6}" fill="${col}" fill-opacity=".12"/>`
+        : '';
       return `<g>
+        ${halo}
         <line x1="${left.toFixed(1)}" y1="${axisY}" x2="${left.toFixed(1)}" y2="${stemY2}" stroke="${col}" stroke-opacity=".7" stroke-width="1.5"/>
-        <circle cx="${left.toFixed(1)}" cy="${axisY}" r="4" fill="${col}"/>
-        <text x="${lx.toFixed(1)}" y="${lblY}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="8.5">${label.slice(0, 12)}</text>
+        ${focus}
+        <circle cx="${left.toFixed(1)}" cy="${axisY}" r="${r}" fill="${col}"/>
+        <text x="${lx.toFixed(1)}" y="${lblY}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="8.5">${label.slice(0, 14)}</text>
         <text x="${lx.toFixed(1)}" y="${lblY + 11}" text-anchor="middle" fill="var(--vx-text,#F8F5F3)" font-size="9" font-weight="700">J-${e.dte}</text>
       </g>`;
     }).join('');
@@ -70,8 +97,12 @@
       ? `${nxt.label} dans ${nxt.dte} j — risque événementiel imminent`
       : `${nxt.label} dans ${nxt.dte} j — fenêtre dégagée`;
     const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${String(verdict).replace(/"/g, '&quot;').replace(/</g, '&lt;')}" style="max-width:${W}px;display:block;margin:2px auto">
+      ${zone}
       <line x1="${x0}" y1="${axisY}" x2="${x1}" y2="${axisY}" stroke="var(--vx-border-soft,#30292B)" stroke-width="1"/>
-      <line x1="${x0}" y1="${axisY - 5}" x2="${x0}" y2="${axisY + 5}" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+      ${ticks}
+      <line x1="${x0}" y1="${axisY - 6}" x2="${x0}" y2="${axisY + 6}" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+      <text x="${x0}" y="${H - 4}" fill="var(--vx-text-muted,#8A8284)" font-size="7.5">aujourd’hui</text>
+      <text x="${x1}" y="${H - 4}" text-anchor="end" fill="var(--vx-text-muted,#8A8284)" font-size="7.5">horizon J-${horizon}</text>
       ${marks}</svg>`;
 
     el.innerHTML = head + svg +
