@@ -1467,6 +1467,14 @@ sans autorisation demandée.
   analyste. SW v130 → v131 + 4 gardiens. Captures fiche ACN
   avant/après envoyées. Suite 1984/2, RC GO. (Démarré sur « Go »
   utilisateur sans attendre le réveil.)
+- **Lot 123 — livré** : amélioration graphique n°5 (Portefeuille) —
+  treemap matière VERRE dans chart-core : dégradé diagonal par tuile
+  (dense → doux ; même le neutre honnête des marques hors ligne
+  gagne de la profondeur), liseré fin de la couleur de la tuile au
+  lieu du trait noir épais, coins arrondis, part du TOTAL (%) sur
+  les grandes tuiles (le chiffre éducatif du treemap, aussi dans
+  l'aria). SW v131 → v132 + 4 gardiens. Captures avant/après
+  envoyées. Suite 1984/2, RC GO.
 
 ### MINI-BILAN tournée 91-95
 

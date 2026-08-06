@@ -489,19 +489,34 @@
     }
     if (row.length) layout(row);
     const fmt = o.fmt || ((v) => v);
-    const svg = rects.map(r => {
+    /* LOT 123 — matière VERRE : chaque tuile est un dégradé diagonal de sa
+       propre couleur (dense en haut-gauche → doux en bas-droit), liseré fin
+       de la couleur elle-même, part du total affichée en haut-droit sur les
+       grandes tuiles (LE chiffre éducatif du treemap). Aucun littéral
+       couleur nouveau — les couleurs viennent des données. */
+    const tid = 'vxTm-' + String(el.id || 't').replace(/[^a-zA-Z0-9_-]/g, '');
+    const tdefs = '<defs>' + rects.map((r, i) => {
+      const col = r.d.color || C.colors.neutral;
+      return `<linearGradient id="${tid}-${i}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="${col}" stop-opacity=".9"/>
+        <stop offset="1" stop-color="${col}" stop-opacity=".45"/>
+      </linearGradient>`;
+    }).join('') + '</defs>';
+    const svg = rects.map((r, i) => {
       const col = r.d.color || C.colors.neutral;
       const small = r.w < 54 || r.h < 30;
       const lbl = String(r.d.label || '');
-      const aria = `${lbl} : ${fmt(r.d.value)}${r.d.sub ? ' ' + r.d.sub : ''}`;
+      const share = Math.round(r.d.value / total * 100);
+      const aria = `${lbl} : ${fmt(r.d.value)}${r.d.sub ? ' ' + r.d.sub : ''} (${share} %)`;
       return `<g role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
-        <rect x="${r.x.toFixed(1)}" y="${r.y.toFixed(1)}" width="${Math.max(0, r.w - 1.5).toFixed(1)}" height="${Math.max(0, r.h - 1.5).toFixed(1)}"
-          rx="3" fill="${col}" fill-opacity=".82" stroke="var(--vx-bg-0,#050505)" stroke-width="1.5"/>
-        ${small ? '' : `<text x="${(r.x + 6).toFixed(1)}" y="${(r.y + 16).toFixed(1)}" fill="#f3f1ed" font-size="11" font-weight="700">${lbl.slice(0, Math.floor(r.w / 7))}</text>
-        <text x="${(r.x + 6).toFixed(1)}" y="${(r.y + 30).toFixed(1)}" fill="rgba(255,255,255,.82)" font-size="10" style="font-variant-numeric:tabular-nums">${fmt(r.d.value)}${r.d.sub ? ' · ' + r.d.sub : ''}</text>`}
+        <rect x="${r.x.toFixed(1)}" y="${r.y.toFixed(1)}" width="${Math.max(0, r.w - 2).toFixed(1)}" height="${Math.max(0, r.h - 2).toFixed(1)}"
+          rx="5" fill="url(#${tid}-${i})" stroke="${col}" stroke-opacity=".5" stroke-width="1"/>
+        ${small ? '' : `<text x="${(r.x + 7).toFixed(1)}" y="${(r.y + 17).toFixed(1)}" fill="#f3f1ed" font-size="11" font-weight="700">${lbl.slice(0, Math.floor(r.w / 7))}</text>
+        <text x="${(r.x + 7).toFixed(1)}" y="${(r.y + 31).toFixed(1)}" fill="rgba(255,255,255,.82)" font-size="10" style="font-variant-numeric:tabular-nums">${fmt(r.d.value)}${r.d.sub ? ' · ' + r.d.sub : ''}</text>
+        ${r.w > 90 ? `<text x="${(r.x + r.w - 8).toFixed(1)}" y="${(r.y + 17).toFixed(1)}" text-anchor="end" fill="rgba(255,255,255,.55)" font-size="10.5" font-weight="800" style="font-variant-numeric:tabular-nums">${share} %</text>` : ''}`}
       </g>`;
     }).join('');
-    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block">${svg}</svg>`;
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block">${tdefs}${svg}</svg>`;
     return el;
   };
 
