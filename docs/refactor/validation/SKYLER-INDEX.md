@@ -120,6 +120,7 @@
 | 104 | `SKYLER-LOT-104.md` | Boucle continue : environnement options figé (8 tests — formules exactes des 5 dimensions, IV rank inversé borné, event risk fraction ≤7 j, verdict 66/45, dimension inconnue exclue de la moyenne jamais zéro, confiance = connues/5) | 0.9.0 | v127 | 1872 | GO |
 | 105 | `SKYLER-LOT-105.md` | Boucle continue : démarrage figé + mini-bilan 101-105 (8 tests — ordre §10 exact, _step jamais bloquant détail 200, ibkr jamais CONNECTED sans preuve, tradingview MISSING/CONFIGURED honnête, rapport copie, ran False avant séquence ; bilan : 5 lots, 41 tests, 1839→1880) | 0.9.0 | v127 | 1880 | GO |
 | 106 | `SKYLER-LOT-106.md` | Boucle continue : score contextuel des contrats figé (8 tests — multiplicatif, R:R < 2 plafonné 10, non calculable plancher 5, liquidité ≤ ×1, IV rank ≥ 85 taxée malgré DTE long, ULTRA_CONVEX score 0 sans setup exceptionnel, prime minuscule ×0.3) | 0.9.0 | v127 | 1888 | GO |
+| 107 | `SKYLER-LOT-107.md` | Boucle continue : courbe de taux figée (8 tests — fallback plat documenté jamais présenté comme marché, interpolation linéaire exacte, clamp sans extrapolation, points triés, to_dict, rate_sensitivity ±50 bp avec plancher 0 et None honnête) | 0.9.0 | v127 | 1896 | GO |
 
 ## Architecture atteinte
 

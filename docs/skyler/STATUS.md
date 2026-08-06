@@ -1295,6 +1295,13 @@ zéro) · startup (ordre §10, démarrage jamais bloquant).
   long ou pas », ULTRA_CONVEX score 0 sans setup EXCEPTIONAL et
   moitié si convexité < 80 %, prime < 0.10 ×0.3). Moteur intact.
   Suite 1888/2 skipped.
+- **Lot 107 — livré** : courbe de taux figée (8 tests — RateCurve
+  servait de fixture partout sans test direct : repli plat 0.045 qui
+  SE DIT (jamais présenté comme du marché), interpolation linéaire
+  exacte, clamp aux extrémités sans extrapolation, points désordonnés
+  triés, tenor exact → taux exact, contrat to_dict, rate_sensitivity
+  ±50 bp exacte avec plancher 0 et None honnête). double_prob déjà
+  figé (dit). Moteur intact. Suite 1896/2 skipped.
 
 ### MINI-BILAN tournée 91-95
 
