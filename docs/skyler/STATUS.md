@@ -1101,6 +1101,11 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   cliqués en vrai sur 8 vues : l'ordre change, les vues basculent avec
   leur état visuel, 0 inerte, 0 erreur console. SAIN — outil
   tools/controls_audit.js versionné. Suite 1720/2 skipped.
+- **Lot 84 — livré** : cycle desk bout-en-bout. 6/6 en navigateur :
+  push (17 clés) → serveur porte le marqueur → pull restitue → 3
+  backups listés → restore PAR LA ROUTE → remise en état
+  last-writer-wins. Aucune perte possible constatée ; 4 listes de clés
+  alignées (gardien vert). 2 gardiens API. Suite 1722/2 skipped.
 
 ## Index des lots
 
