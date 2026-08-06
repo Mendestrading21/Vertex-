@@ -70,6 +70,7 @@
 | 60 | `SKYLER-LOT-60.md` | RC FINALE de l'arc (suite + audit + responsive 8×3 : 0 défaut) + bilan consolidé n°4 (51→60) + ARRÊT de la boucle | 0.9.0 | v116 | 1670 | GO |
 | 61 | `SKYLER-LOT-61.md` | Runway anti-collision (2 rangées/côté, déterministe, 0 chevauchement mesuré) + 25 fallbacks périmés purgés des charts JS (3e token fantôme) | 0.9.0 | v117 | 1675 | GO |
 | 62 | `SKYLER-LOT-62.md` | Purge finale des anciennes palettes (19 fallbacks JS de pages + tracking runtime) — gardien prospectif sur TOUT js/ : classe de défauts fermée | 0.9.0 | v118 | 1679 | GO |
+| 63 | `SKYLER-LOT-63.md` | Mini-aires de Marchés lissées monotone Fritsch-Carlson (jamais de faux extrêmes, 4/4 en courbes prouvé) + code mort sparkSvg supprimé | 0.9.0 | v119 | 1684 | GO |
 
 ## Architecture atteinte
 
