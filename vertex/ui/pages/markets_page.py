@@ -580,12 +580,12 @@ function loadYield(scan){
     conclusion:spread!=null?('Spread 10a-3m '+(spread>=0?'+':'')+spread.toFixed(2)+' pt — '+(spread<0?'INVERSÉE (signal de récession)':'pentue / normale')):'—',
     height:250,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
     limits:'4 maturités réelles (3M/5A/10A/30A)',
-    legend:[{label:'Actuelle',color:cc.brand},{label:'Séance préc.',color:cc.neutral}],
+    legend:[{label:'Actuelle',color:cc.info},{label:'Séance préc.',color:cc.neutral}],
     explain:{shows:'Le rendement du Trésor US par maturité (points réels du scan, non interpolés).',
       why:'Une courbe inversée (court > long) précède souvent les récessions et module l’appétit pour le risque.',
       confirm:'Repentification : le spread 10a-3m remonte durablement.',invalidate:'Inversion qui s’aggrave.'},
     render:(cv)=>VXCharts.multiLine(cv,labels,[
-      {label:'Actuelle',data:cur,borderColor:cc.brand,borderWidth:2.2,pointRadius:3,pointBackgroundColor:cc.brand,fill:false},
+      {label:'Actuelle',data:cur,borderColor:cc.info,borderWidth:2.2,pointRadius:3,pointBackgroundColor:cc.info,fill:false},
       {label:'Séance préc.',data:prev,borderColor:cc.neutral,borderWidth:1.4,borderDash:[4,3],pointRadius:0,fill:false}
     ],{yFmt:(v)=>v+' %'})});
 }

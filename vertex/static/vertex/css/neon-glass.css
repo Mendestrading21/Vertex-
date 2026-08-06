@@ -250,8 +250,11 @@
 /* Heatmap sectorielle : lisibilité renforcée du texte des cellules */
 .vx-content[data-space="markets"] .vx-heat-cell{text-shadow:0 1px 2px rgba(0,0,0,.55)}
 
-/* Rails de stress / positionnement : piste en verre, remplissage sémantique conservé */
-.vx-content[data-space="markets"] .vx-rail{background:rgba(0,0,0,.28)!important;border-radius:6px}
+/* Rails de stress / positionnement — LOT 129 : l'ancien override noir
+   (!important) écrasait le DÉGRADÉ SÉMANTIQUE du rail (calme→stress,
+   défense→attaque) — les rails étaient invisibles sur Marchés. Le rail
+   garde sa piste cockpit.css ; seul l'arrondi est harmonisé ici. */
+.vx-content[data-space="markets"] .vx-rail{border-radius:6px}
 
 /* Mini-sparklines des tuiles KPI : trait plus vif */
 .vx-content[data-space="markets"] .vx-kpi svg path{stroke-width:1.7px}
