@@ -1120,6 +1120,14 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   démo étiquetée, R:R absent ne punit pas, véhicule ACTION hors achat.
   Moteur 0.9.0 INTACT (diff = tests + docs). Suite 1735/2 skipped.
 
+- **Lot 87 — livré** : façade recommendation + __VXVOCAB figées. La
+  façade unique (212 lignes) n'avait AUCUN test dédié (homonyme testé
+  ailleurs) → 10 caractérisations nées vertes : vocabulaire client sans
+  trou (9 décisions + 7 verdicts de gestion), normalize honnête,
+  discipline -20 % action / -25 % option exacte, thêta ≤14 j, cible,
+  ADD/TRIM selon sous-jacent, board vide honnête. Moteur intact.
+  Suite 1745/2 skipped.
+
 ### MINI-BILAN tournée 81-85
 
 Polices auto-hébergées (0 requête externe prouvé) · offline RÉEL
