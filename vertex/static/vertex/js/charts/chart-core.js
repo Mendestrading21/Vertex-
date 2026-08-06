@@ -325,12 +325,38 @@
   };
   C.donut = function (canvas, labels, values, { colors } = {}) {
     /* §33 : un donut ≤ ~5 catégories · signature 2026 (lot 53) : arcs
-       arrondis espacés + léger décalage au survol. */
+       arrondis espacés + léger décalage au survol.
+       LOT 128 : LE chiffre éducatif du donut — la catégorie DOMINANTE et sa
+       part (%) affichées au CENTRE de l'anneau, dans la couleur de son arc.
+       L'œil lit la conclusion sans additionner de tête. Rien si total nul. */
     const l = labels.slice(0, 5), v = values.slice(0, 5);
+    const center = {
+      id: 'vxDonutCenter',
+      afterDatasetsDraw(chart) {
+        const total = v.reduce((a, b) => a + (Number(b) || 0), 0);
+        if (!(total > 0)) return;
+        let bi = 0; v.forEach((x, i) => { if (Number(x) > Number(v[bi])) bi = i; });
+        const meta = chart.getDatasetMeta(0);
+        if (!meta || !meta.data || !meta.data[0]) return;
+        const { x, y } = meta.data[0];
+        const cols = chart.data.datasets[0].backgroundColor || C.colors.series;
+        const { ctx } = chart;
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.fillStyle = cols[bi] || C.colors.brand;
+        ctx.font = '800 19px sans-serif';
+        ctx.fillText(Math.round(Number(v[bi]) / total * 100) + ' %', x, y - 2);
+        ctx.fillStyle = C.colors.muted;
+        ctx.font = '10px sans-serif';
+        ctx.fillText(String(l[bi] == null ? '' : l[bi]).slice(0, 14), x, y + 13);
+        ctx.restore();
+      },
+    };
     return C.mount(canvas, {
       type: 'doughnut',
       data: { labels: l, datasets: [{ data: v, backgroundColor: colors || C.colors.series, borderWidth: 0, borderRadius: 4, spacing: 2, hoverOffset: 6 }] },
       options: { cutout: '70%', plugins: { legend: { display: true, position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } },
+      plugins: [center],
     });
   };
   /* LOT 120 — finition « ultra propre » des lignes multiples : chaque série

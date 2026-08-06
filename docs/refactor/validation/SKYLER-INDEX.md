@@ -141,6 +141,7 @@
 | 125 | `SKYLER-LOT-125.md` | Amélioration graphique n°7 (Journal) : barres matière verre (dégradé dense→doux + liseré, toutes les barres héritent), famille .vx-stat enfin stylée (répare 5 pages — « Trades3 » collés), hex track record → tokens ; captures envoyées | 0.9.0 | v134 | 1984 | GO |
 | 126 | `SKYLER-LOT-126.md` | Amélioration graphique n°8 (Système — 1re tournée TERMINÉE 8/8) : jauge matière verre (dégradé + halo, toutes les jauges héritent), libellés kv protégés (fin des « Ét at »), badge canaux adaptatif ; captures envoyées | 0.9.0 | v135 | 1984 | GO |
 | 127 | `SKYLER-LOT-127.md` | Passe n°2 — heatmaps matière verre : tuiles dégradées sur tokens (les derniers rgba hors palette éliminés), liseré inset, grille aérée — matrice scénarios options, secteurs Marchés et P&L mensuel héritent ; captures envoyées | 0.9.0 | v136 | 1984 | GO |
+| 128 | `SKYLER-LOT-128.md` | Passe n°3 — donut : la catégorie dominante et sa part (« 55 % AVOID ») au CENTRE de l'anneau, dans la couleur de son arc (plugin vxDonutCenter, rien si total nul) — tous les donuts héritent ; captures envoyées | 0.9.0 | v137 | 1984 | GO |
 
 ## Architecture atteinte
 
