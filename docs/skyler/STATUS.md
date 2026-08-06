@@ -4,6 +4,42 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — programme AUDIT TOTAL, lots 66 → 70 (2026-08-06, bilan n°5)
+
+Programme demandé par l'utilisateur (« audit totalement complet, tout
+cohérent, tous les chiffres, chaque bouton, pousser au maximum ») —
+exécuté en 5 volets prouvés. **L'audit total est TERMINÉ : l'application
+est cohérente au maximum prouvable.**
+
+| Mesure | Avant (lot 65) | Après (lot 70) |
+|---|---|---|
+| Tests verts | 1 688 / 2 skipped | **1 694 / 2 skipped** (+6, rouges d'abord) |
+| Service worker | v121 | **v123** |
+| PR fusionnées | — | **5** (#96 → #100) |
+
+### Les 5 volets et leurs verdicts
+
+1. **Routes** (lot 66) : 137 routes GET balayées — 0×5xx, un seul 400
+   structuré ; **incohérence corrigée** : tuile Breadth du briefing sur
+   `above50` non étiqueté vs Marchés `>MM200` → canonicalisée + étiquetée
+   (preuve : 45 partout, nommé pareil) ;
+2. **Vues profondes** (lot 67) : 30 vues × 2 viewports = 60 chargements —
+   0 erreur, 0 débordement, 0 texte cassé (NaN/undefined) — SAIN ;
+3. **IBKR lecture seule** (lot 68) : 4 verrous indépendants (readonly EN
+   DUR, RequestTimeout=45, FORBIDDEN_TOOLS côté IA, config) + refus
+   honnêtes prouvés route→UI (« aucun chiffre inventé ») + 34 gardiens —
+   SAIN ;
+4. **Cohérence fiche ↔ Opportunités** (lot 69) : divergence des moteurs
+   DITE aux deux endroits (« un score ne déclenche jamais un ordre ») —
+   SAIN ; **lacune corrigée** : scores shortlist sans échelle → « /100 »
+   partout ;
+5. **États dégradés** (lot 70) : /markets sans scan (10 états vides avec
+   action), mémoire vide (branches honnêtes partout) — SAIN.
+
+Invariants tenus sur tout le programme : READONLY absolu, données réelles
+uniquement, moteur 0.9.0 jamais touché, `main` intacte. Retour aux RC
+périodiques espacées (~30 min).
+
 ## BILAN — arc visuel & connexions, lots 51 → 60 (2026-08-05, bilan n°4)
 
 Arc exécuté sur directive utilisateur (« visuel app 2026, esprit IBKR,

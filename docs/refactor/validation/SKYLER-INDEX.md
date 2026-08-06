@@ -80,6 +80,7 @@
 | 67 | `SKYLER-LOT-67.md` | AUDIT TOTAL volet 2 : 30 vues profondes × 2 viewports (60 chargements) — 0 erreur, 0 débordement, 0 texte cassé (NaN/undefined) — documentaire | 0.9.0 | v122 | 1692 | GO |
 | 68 | `SKYLER-LOT-68.md` | AUDIT TOTAL volet 3 : IBKR lecture seule SAIN — readonly en dur ×4 verrous, refus honnêtes prouvés route→UI, 34 gardiens verts — documentaire | 0.9.0 | v122 | 1692 | GO |
 | 69 | `SKYLER-LOT-69.md` | AUDIT TOTAL volet 4 : divergence des moteurs DITE aux deux endroits (sain) ; score shortlist portait pas d'échelle → « /100 » ajouté, prouvé | 0.9.0 | v123 | 1694 | GO |
+| 70 | `SKYLER-LOT-70.md` | AUDIT TOTAL volet 5 (final) : états dégradés SAINS (10 états vides avec action, mémoire honnête) + BILAN n°5 — programme TERMINÉ, retour RC espacées | 0.9.0 | v123 | 1694 | GO |
 
 ## Architecture atteinte
 
