@@ -99,6 +99,7 @@
 | 83 | `SKYLER-LOT-83.md` | Boucle continue : contrôles interactifs — 26 tris/onglets/selects cliqués en vrai sur 8 vues : 0 inerte, 0 erreur — SAIN, outil controls_audit.js versionné | 0.9.0 | v127 | 1720 | GO |
 | 84 | `SKYLER-LOT-84.md` | Boucle continue : cycle desk 6/6 (push→serveur→pull→backups→restore par la route→remise en état) — aucune perte possible, 4 listes de clés alignées, 2 gardiens | 0.9.0 | v127 | 1722 | GO |
 | 85 | `SKYLER-LOT-85.md` | Boucle continue : alertes 4/4 + SSE sain (2 faux positifs de sonde vérifiés au socket brut, dits) + mini-bilan tournée 81-85 — 3 gardiens | 0.9.0 | v127 | 1725 | GO |
+| 86 | `SKYLER-LOT-86.md` | Boucle continue : 10 cas limites du decision stack FIGÉS par caractérisation (None, score illisible, bornes 56/66/80, CHOP, distribution, démo…) — moteur intact, 0 défaut | 0.9.0 | v127 | 1735 | GO |
 
 ## Architecture atteinte
 
