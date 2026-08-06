@@ -101,6 +101,7 @@
 | 85 | `SKYLER-LOT-85.md` | Boucle continue : alertes 4/4 + SSE sain (2 faux positifs de sonde vérifiés au socket brut, dits) + mini-bilan tournée 81-85 — 3 gardiens | 0.9.0 | v127 | 1725 | GO |
 | 86 | `SKYLER-LOT-86.md` | Boucle continue : 10 cas limites du decision stack FIGÉS par caractérisation (None, score illisible, bornes 56/66/80, CHOP, distribution, démo…) — moteur intact, 0 défaut | 0.9.0 | v127 | 1735 | GO |
 | 87 | `SKYLER-LOT-87.md` | Boucle continue : façade recommendation + __VXVOCAB figées (10 tests — vocabulaire sans trou, discipline -20/-25 exacte, thêta, HOLD par défaut) — moteur intact | 0.9.0 | v127 | 1745 | GO |
+| 88 | `SKYLER-LOT-88.md` | Boucle continue : evidence + reasoning figés (10 tests — gather(None) honnête, clamp 0-100, bornes catalyseur, fondamental 0 = absent, contradictions Loi 14) | 0.9.0 | v127 | 1755 | GO |
 
 ## Architecture atteinte
 

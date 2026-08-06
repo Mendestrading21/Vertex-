@@ -1128,6 +1128,14 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   ADD/TRIM selon sous-jacent, board vide honnête. Moteur intact.
   Suite 1745/2 skipped.
 
+- **Lot 88 — livré** : evidence + reasoning figés. 24 tests dédiés
+  existants (nominal) + 10 caractérisations nées vertes sur les
+  limites : gather(None) honnête, analystes sans entrée → [], force
+  bornée 0-100, bornes catalyseur exactes, fondamental 0 = absent
+  (jamais puni), UNKNOWN prime, contradiction CHAOS+empilées exposée,
+  scénarios sans prix jamais un % inventé, comité absent sans biais,
+  invalidations plafonnées. Moteurs intacts. Suite 1755/2 skipped.
+
 ### MINI-BILAN tournée 81-85
 
 Polices auto-hébergées (0 requête externe prouvé) · offline RÉEL
