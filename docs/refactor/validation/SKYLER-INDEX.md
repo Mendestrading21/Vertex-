@@ -90,6 +90,7 @@
 | 74 | `SKYLER-LOT-74.md` | PROGRAMME 100 % : robustesse données limites — 0×5xx sur symboles/vues/POST malformés, 404 API JSON+nosniff, refus honnêtes — SAIN, 4 gardiens | 0.9.0 | v124 | 1706 | GO |
 | 75 | `SKYLER-LOT-75.md` | PROGRAMME 100 % (clôture) : RC FINALE — suite + audit + responsive + a11y 0 défaut sur base fraîche + BILAN n°6 — programme TERMINÉ, déclaration 100 % faite | 0.9.0 | v124 | 1706 | GO |
 | 76 | `SKYLER-LOT-76.md` | Boucle continue : hygiène JS/HTML — 0 debug/dup/TODO ; 1 défaut réel (onglets démo href="#") corrigé + gardiens « plus jamais » | 0.9.0 | v125 | 1708 | GO |
+| 77 | `SKYLER-LOT-77.md` | Boucle continue : sécurité en-têtes/contenu — 4 en-têtes partout, contenu 0 fuite ; défaut réel : blob desk perso sans Cache-Control → no-store gardé | 0.9.0 | v125 | 1710 | GO |
 
 ## Architecture atteinte
 
