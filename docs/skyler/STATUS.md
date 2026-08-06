@@ -1269,6 +1269,23 @@ SW v127) ; merge vers `main` sur accord explicite uniquement.
   incertitude, confiance = connues/5 ; 1 sonde corrigée (valeur non
   parsable = connue mais jamais imminente — réalité figée, dite).
   Moteur intact. Suite 1872/2 skipped.
+- **Lot 105 — livré** : séquence de démarrage figée (8 tests — ordre
+  §10 EXACT des 8 étapes, _step jamais bloquant (ERROR + détail 200 +
+  ms), ibkr jamais CONNECTED sans preuve, tradingview MISSING « 503
+  honnête » vs CONFIGURED, rapport readonly/disabled-by-design,
+  startup_report copie infalsifiable, ran False avant séquence).
+  interpretation/overview/pulse déjà couverts (dit). Moteur intact.
+  Suite 1880/2 skipped.
+
+### MINI-BILAN tournée 101-105
+
+5 lots, 41 tests, suite **1839 → 1880 passed / 2 skipped**, 0 défaut
+moteur trouvé (les moteurs tiennent), 2 sondes à moi corrigées (dites),
+SW v127 stable, skyler_core 0.9.0 intact, PR #134 → #138 : chain_loader
+(entonnoir §14 — jamais toute la chaîne au broker) · news_plus (gardien
+XSS règle n°5 enfin figé en direct) · liquidity (barème complet — OI
+inconnu < OI faible) · environment (5 dimensions exactes — inconnue ≠
+zéro) · startup (ordre §10, démarrage jamais bloquant).
 
 ### MINI-BILAN tournée 91-95
 

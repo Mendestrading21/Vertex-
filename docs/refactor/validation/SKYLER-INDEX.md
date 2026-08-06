@@ -118,6 +118,7 @@
 | 102 | `SKYLER-LOT-102.md` | Boucle continue : gardien XSS des news figé (9 tests — balises retirées puis échappement complet, balise cassée inerte, javascript:/data: supprimés, sentiment FR/EN, parse_rss sans exception, dedupe titre normalisé/lien) | 0.9.0 | v127 | 1856 | GO |
 | 103 | `SKYLER-LOT-103.md` | Boucle continue : barème de liquidité figé (8 tests — refus bid/ask nommé, pénalité dégressive 4-10 % sans grief, spread > 10 % jamais traitable, OI inconnu < OI faible, volume silencieux vs nommé, cumul exact 15) | 0.9.0 | v127 | 1864 | GO |
 | 104 | `SKYLER-LOT-104.md` | Boucle continue : environnement options figé (8 tests — formules exactes des 5 dimensions, IV rank inversé borné, event risk fraction ≤7 j, verdict 66/45, dimension inconnue exclue de la moyenne jamais zéro, confiance = connues/5) | 0.9.0 | v127 | 1872 | GO |
+| 105 | `SKYLER-LOT-105.md` | Boucle continue : démarrage figé + mini-bilan 101-105 (8 tests — ordre §10 exact, _step jamais bloquant détail 200, ibkr jamais CONNECTED sans preuve, tradingview MISSING/CONFIGURED honnête, rapport copie, ran False avant séquence ; bilan : 5 lots, 41 tests, 1839→1880) | 0.9.0 | v127 | 1880 | GO |
 
 ## Architecture atteinte
 
