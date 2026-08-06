@@ -69,6 +69,7 @@
 | 59 | `SKYLER-LOT-59.md` | Transversal : ~45 fallbacks périmés purgés (7 pages), 2e token inexistant (`--vx-neutral`), doc /design-system honnête, gardiens prospectifs | 0.9.0 | v116 | 1670 | GO |
 | 60 | `SKYLER-LOT-60.md` | RC FINALE de l'arc (suite + audit + responsive 8×3 : 0 défaut) + bilan consolidé n°4 (51→60) + ARRÊT de la boucle | 0.9.0 | v116 | 1670 | GO |
 | 61 | `SKYLER-LOT-61.md` | Runway anti-collision (2 rangées/côté, déterministe, 0 chevauchement mesuré) + 25 fallbacks périmés purgés des charts JS (3e token fantôme) | 0.9.0 | v117 | 1675 | GO |
+| 62 | `SKYLER-LOT-62.md` | Purge finale des anciennes palettes (19 fallbacks JS de pages + tracking runtime) — gardien prospectif sur TOUT js/ : classe de défauts fermée | 0.9.0 | v118 | 1679 | GO |
 
 ## Architecture atteinte
 

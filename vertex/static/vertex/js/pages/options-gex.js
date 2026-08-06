@@ -85,9 +85,9 @@
     h.forEach(function (e) { maxAbs = Math.max(maxAbs, Math.abs(e.net_gex || 0)); });
     var bw = Math.max(3, Math.min(26, (W - 2 * pad) / n - 3));
     var midY = H / 2;
-    var pos = 'var(--vx-positive,#38b879)', neg = 'var(--vx-negative,#dc5f52)';
+    var pos = 'var(--vx-positive,#2BBE90)', neg = 'var(--vx-negative,#E9555F)';
     var svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Net GEX quotidien">'];
-    svg.push('<line x1="' + pad + '" y1="' + midY + '" x2="' + (W - pad) + '" y2="' + midY + '" stroke="var(--vx-border,#3a332c)"/>');
+    svg.push('<line x1="' + pad + '" y1="' + midY + '" x2="' + (W - pad) + '" y2="' + midY + '" stroke="var(--vx-border,#30292B)"/>');
     h.forEach(function (e, i) {
       var x = pad + i * ((W - 2 * pad) / n);
       var v = e.net_gex || 0;
@@ -96,8 +96,8 @@
       svg.push('<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + Math.max(1, bh) + '" fill="' + (v >= 0 ? pos : neg) + '" opacity=".85"><title>' + esc(e.date) + ' : ' + money(v) + '</title></rect>');
     });
     var first = h[0], last = h[n - 1];
-    svg.push('<text x="' + pad + '" y="' + (H - 4) + '" font-size="9.5" fill="var(--vx-text-dim,#8a837a)">' + esc(first.date) + '</text>');
-    svg.push('<text x="' + (W - pad) + '" y="' + (H - 4) + '" font-size="9.5" text-anchor="end" fill="var(--vx-text-dim,#8a837a)">' + esc(last.date) + '</text>');
+    svg.push('<text x="' + pad + '" y="' + (H - 4) + '" font-size="9.5" fill="var(--vx-text-muted,#8A8284)">' + esc(first.date) + '</text>');
+    svg.push('<text x="' + (W - pad) + '" y="' + (H - 4) + '" font-size="9.5" text-anchor="end" fill="var(--vx-text-muted,#8A8284)">' + esc(last.date) + '</text>');
     svg.push('</svg>');
     var trend = (n >= 2 && last.net_gex != null && first.net_gex != null)
       ? (last.net_gex > first.net_gex ? 'Le gamma s’empile à la hausse sur la période.'
@@ -197,19 +197,19 @@
     rows.forEach(function (r) { maxAbs = Math.max(maxAbs, Math.abs(r.call_gex || 0), Math.abs(r.put_gex || 0)); });
     maxAbs = maxAbs || 1;
     var W = 520, mid = W / 2, rowH = 20, H = rows.length * rowH + 28, scale = (W / 2 - 60) / maxAbs;
-    var pos = 'var(--vx-positive,#38b879)', neg = 'var(--vx-negative,#dc5f52)';
+    var pos = 'var(--vx-positive,#2BBE90)', neg = 'var(--vx-negative,#E9555F)';
     var spotY = null;
     var svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="GEX par strike">'];
-    svg.push('<line x1="' + mid + '" y1="6" x2="' + mid + '" y2="' + (H - 16) + '" stroke="var(--vx-border,#3a332c)"/>');
+    svg.push('<line x1="' + mid + '" y1="6" x2="' + mid + '" y2="' + (H - 16) + '" stroke="var(--vx-border,#30292B)"/>');
     rows.forEach(function (r, i) {
       var y = 10 + i * rowH;
       if (spotY === null && g.spot != null && r.strike <= g.spot) spotY = y - 2;   // 1er strike ≤ spot
       var cw = Math.abs(r.call_gex || 0) * scale, pw = Math.abs(r.put_gex || 0) * scale;
       if (cw > 0.5) svg.push('<rect x="' + mid + '" y="' + y + '" width="' + cw + '" height="' + (rowH - 6) + '" fill="' + pos + '" opacity=".85"/>');
       if (pw > 0.5) svg.push('<rect x="' + (mid - pw) + '" y="' + y + '" width="' + pw + '" height="' + (rowH - 6) + '" fill="' + neg + '" opacity=".85"/>');
-      svg.push('<text x="' + (mid + 4) + '" y="' + (y + rowH - 9) + '" font-size="9.5" fill="var(--vx-text-dim,#8a837a)">' + f(r.strike, 0) + '</text>');
+      svg.push('<text x="' + (mid + 4) + '" y="' + (y + rowH - 9) + '" font-size="9.5" fill="var(--vx-text-muted,#8A8284)">' + f(r.strike, 0) + '</text>');
     });
-    if (spotY != null) svg.push('<line x1="10" y1="' + spotY + '" x2="' + (W - 10) + '" y2="' + spotY + '" stroke="var(--vx-orange-500,#cf6128)" stroke-dasharray="3 3"/>');
+    if (spotY != null) svg.push('<line x1="10" y1="' + spotY + '" x2="' + (W - 10) + '" y2="' + spotY + '" stroke="var(--vx-orange-500,#DBE1E8)" stroke-dasharray="3 3"/>');
     svg.push('</svg>');
     host.innerHTML = svg.join('')
       + '<div class="vx-muted" style="margin-top:.3rem">Vert = call GEX (+) · rouge = put GEX (−) · pointillé orange = spot ' + f(g.spot) + '. '

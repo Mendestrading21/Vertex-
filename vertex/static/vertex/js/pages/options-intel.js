@@ -180,11 +180,11 @@
     var t = (calls || 0) + (puts || 0); if (!t) return '';
     var cp = Math.round((calls || 0) / t * 100), pp = 100 - cp;
     return '<div style="margin-top:.8rem" role="img" aria-label="CALLS ' + (calls || 0) + ' contre PUTS ' + (puts || 0) + ', ' + cp + ' % calls">' +
-      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--vx-text-secondary,#bab4ac);margin-bottom:3px">' +
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--vx-text-secondary,#BABABA);margin-bottom:3px">' +
       '<span>CALLS ' + VXf.nd(calls) + ' (' + cp + ' %)</span><span>PUTS ' + VXf.nd(puts) + ' (' + pp + ' %)</span></div>' +
-      '<div style="height:14px;border-radius:5px;overflow:hidden;display:flex;background:var(--vx-surface-3,#17191b)">' +
-      '<span style="width:' + cp + '%;background:var(--vx-positive,#36c889)"></span>' +
-      '<span style="width:' + pp + '%;background:var(--vx-negative,#ed655c)"></span></div>' +
+      '<div style="height:14px;border-radius:5px;overflow:hidden;display:flex;background:var(--vx-surface-3,#121214)">' +
+      '<span style="width:' + cp + '%;background:var(--vx-positive,#2BBE90)"></span>' +
+      '<span style="width:' + pp + '%;background:var(--vx-negative,#E9555F)"></span></div>' +
       '<div class="vx-muted" style="font-size:11px;margin-top:4px">Dominante : ' + ((calls || 0) >= (puts || 0) ? 'CALLS' : 'PUTS') + ' — biais de la Stratégie Vertex : achat de calls (les puts restent tactiques). Volume/OI ≠ conviction certaine.</div></div>';
   }
 
@@ -449,8 +449,8 @@
   // ── Stratégies options MULTI-JAMBES (§19) — moteur multileg_lab, lecture seule ──
   function fmtUsd(v) { var n = Math.round(v); return (n < 0 ? '-$' : '$') + VXf.num(Math.abs(n), 0); }
   function stratKpi(l, v) {
-    return '<div class="vx-card--compact" style="padding:5px 7px;background:var(--vx-surface-2,#111315);border-radius:7px">' +
-      '<div style="font-size:10px;letter-spacing:.03em;color:var(--vx-text-muted,#817d77)">' + l + '</div>' +
+    return '<div class="vx-card--compact" style="padding:5px 7px;background:var(--vx-surface-2,#121214);border-radius:7px">' +
+      '<div style="font-size:10px;letter-spacing:.03em;color:var(--vx-text-muted,#8A8284)">' + l + '</div>' +
       '<div class="vx-mono" style="font-size:13px;font-weight:700">' + v + '</div></div>';
   }
   function loadStrategies(sym) {
