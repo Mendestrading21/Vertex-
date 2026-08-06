@@ -104,6 +104,7 @@
 | 88 | `SKYLER-LOT-88.md` | Boucle continue : evidence + reasoning figés (10 tests — gather(None) honnête, clamp 0-100, bornes catalyseur, fondamental 0 = absent, contradictions Loi 14) | 0.9.0 | v127 | 1755 | GO |
 | 89 | `SKYLER-LOT-89.md` | Boucle continue : track_record figé (6 tests — n<5 jamais publié, division par zéro impossible, TP1 non résolu honnête, mémo 30 min) — moteur intact | 0.9.0 | v127 | 1761 | GO |
 | 90 | `SKYLER-LOT-90.md` | Boucle continue : persist + connections figés (10 tests) + BILAN 86-90 — « moteurs blindés » complet : 46 caractérisations, 0 logique modifiée | 0.9.0 | v127 | 1771 | GO |
+| 91 | `SKYLER-LOT-91.md` | Boucle continue : decide.py figé (9 tests — {} → None refus honnête, hard gates stop/régime/R:R 2.0 exact, CHOP jamais d'achat, IV-crush ≤14 j) | 0.9.0 | v127 | 1780 | GO |
 
 ## Architecture atteinte
 
