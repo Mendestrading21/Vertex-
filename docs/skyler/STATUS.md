@@ -1337,6 +1337,15 @@ skew jamais inventé, dislocations nommées) · scheduler/registry
 sans OI). Note d'exploitation : lot 108 livré en avance sur
 « Continue » utilisateur ; renommage MCP absorbé.
 
+- **Lot 111 — livré** : validation de configuration figée (8 tests —
+  config_validation §11 n'avait aucun test direct : MISSING avec
+  conséquence exacte nommée, INVALID nommé, AUCUN secret jamais exposé
+  dans le rapport, alias historique TRADINGVIEW_SECRET accepté,
+  espaces = MISSING, enum broker insensible à la casse, compteurs
+  _summary exacts, aucune variable obligatoire — l'app démarre
+  toujours en mode sûr READONLY). Moteur intact. Suite 1928/2
+  skipped.
+
 ### MINI-BILAN tournée 91-95
 
 5 lots, 36 tests, suite 1771 → 1807, **1 défaut réel de moteur corrigé**
