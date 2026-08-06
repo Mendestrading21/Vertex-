@@ -1189,6 +1189,12 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   dit ; _pct jamais de division par zéro, _star qualité d'abord, _rr
   jamais inventé). Moteur intact. Suite 1814/2 skipped.
 
+- **Lot 97 — livré** : scoring pur figé (8 tests — tous les sous-scores
+  bornés 0-100, neutres exacts sur dict vide, ROC borné ±25, fondamental
+  réel vs proxy figés avec drapeau d'honnêteté, options_score(None) →
+  None jamais 0 inventé, −10 IV-crush exact, double peine court+IV
+  chère, confiance auto-cohérente). Moteur intact. Suite 1822/2 skipped.
+
 ### MINI-BILAN tournée 91-95
 
 5 lots, 36 tests, suite 1771 → 1807, **1 défaut réel de moteur corrigé**
