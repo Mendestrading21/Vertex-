@@ -122,6 +122,7 @@
 | 106 | `SKYLER-LOT-106.md` | Boucle continue : score contextuel des contrats figé (8 tests — multiplicatif, R:R < 2 plafonné 10, non calculable plancher 5, liquidité ≤ ×1, IV rank ≥ 85 taxée malgré DTE long, ULTRA_CONVEX score 0 sans setup exceptionnel, prime minuscule ×0.3) | 0.9.0 | v127 | 1888 | GO |
 | 107 | `SKYLER-LOT-107.md` | Boucle continue : courbe de taux figée (8 tests — fallback plat documenté jamais présenté comme marché, interpolation linéaire exacte, clamp sans extrapolation, points triés, to_dict, rate_sensitivity ±50 bp avec plancher 0 et None honnête) | 0.9.0 | v127 | 1896 | GO |
 | 108 | `SKYLER-LOT-108.md` | Boucle continue : surface de volatilité figée (8 tests — realized_vol 0 exact/None honnête, spot invalide refusé, IV pourries filtrées, ATM au strike le plus proche, skew jamais inventé, dislocations nommées, rank/percentile exacts, IV_SPIKE et rank None sur historique plat) | 0.9.0 | v127 | 1904 | GO |
+| 109 | `SKYLER-LOT-109.md` | Boucle continue : registre des jobs figé (8 tests — snapshot ordonné priorité produit, jamais exécuté sans ETA inventée, job non canonique jamais exposé, beat ok/erreur tronquée 200, ETA bornée jamais négative, snapshot copie infalsifiable) | 0.9.0 | v127 | 1912 | GO |
 
 ## Architecture atteinte
 

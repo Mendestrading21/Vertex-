@@ -1311,6 +1311,13 @@ zéro) · startup (ordre §10, démarrage jamais bloquant).
   rank/percentile exacts, IV_SPIKE > 1.3× médiane récente, historique
   plat → rank None jamais 0). horizon_scanners déjà couvert (dit).
   Moteur intact. Suite 1904/2 skipped.
+- **Lot 109 — livré** : registre des jobs figé (8 tests —
+  scheduler/registry §24 n'avait aucun test direct : snapshot ordonné
+  par priorité produit (positions avant univers), jamais exécuté →
+  aucune ETA inventée, job non canonique enregistré mais jamais
+  exposé en UI, beat ok/erreur tronquée à 200, ETA bornée jamais
+  négative (boucle en retard → 0), façade = délégation pure, snapshot
+  copie infalsifiable). Moteur intact. Suite 1912/2 skipped.
 
 ### MINI-BILAN tournée 91-95
 
