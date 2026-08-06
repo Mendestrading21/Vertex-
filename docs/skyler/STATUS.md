@@ -1318,6 +1318,24 @@ zéro) · startup (ordre §10, démarrage jamais bloquant).
   exposé en UI, beat ok/erreur tronquée à 200, ETA bornée jamais
   négative (boucle en retard → 0), façade = délégation pure, snapshot
   copie infalsifiable). Moteur intact. Suite 1912/2 skipped.
+- **Lot 110 — livré** : cas limites du flux figés (8 tests — repli
+  mid×100 avec cost prioritaire, clé volume alternative, NaN/inf
+  rejetés, OI absent → jamais un badge « frais », frontières skew
+  60/40 exactes, top borne l'affichage jamais le décompte, type
+  inconnu → CALL, non-dicts filtrés). Moteur intact. Suite 1920/2
+  skipped.
+
+### MINI-BILAN tournée 106-110
+
+5 lots, 40 tests, suite **1880 → 1920 passed / 2 skipped**, 0 défaut
+moteur trouvé, 2 sondes à moi ajustées (dites), SW v127 stable,
+skyler_core 0.9.0 intact, PR #139 → #143 : contract_scorer (score
+multiplicatif — rien ne rachète un défaut fatal) · rates (fallback
+documenté, jamais d'extrapolation) · vol_surface (ATM au plus proche,
+skew jamais inventé, dislocations nommées) · scheduler/registry
+(priorité produit, ETA jamais négative) · flow edges (jamais « frais »
+sans OI). Note d'exploitation : lot 108 livré en avance sur
+« Continue » utilisateur ; renommage MCP absorbé.
 
 ### MINI-BILAN tournée 91-95
 
