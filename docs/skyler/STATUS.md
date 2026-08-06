@@ -1015,7 +1015,12 @@ déclaration 100 % à l'utilisateur).
   délégation limitée au clic → tabindex+role sur les 3 gabarits +
   délégué clavier global Enter/Espace (vx-entities.js, prospectif).
   Balayage APRÈS : 0 défaut. Suite 1702/2 skipped, SW v124 + 4 gardiens.
-- Lot 74 : robustesse données limites.
+- **Lot 74 — livré** : robustesse données limites. Sondes réelles :
+  symboles invalides/injection/unicode/120 chars sur analysis+skyler,
+  vues inconnues sur 8 pages, POST malformés sur pos-quotes — 0×5xx
+  partout, 404 API JSON+nosniff (faux positif XSS de ma sonde vérifié
+  aux en-têtes, dit), refus honnêtes live:false+ts. SAIN — 4 gardiens
+  prospectifs. Suite 1706/2 skipped, SW v124.
 - Lot 75 : RC FINALE + BILAN n°6 → déclaration 100 %.
 
 ## Index des lots
