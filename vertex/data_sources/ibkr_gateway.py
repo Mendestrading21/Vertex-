@@ -2,7 +2,8 @@
 
 Invariant produit : `readonly=True` est codé en dur et non paramétrable.
 Aucune méthode d'ordre n'existe dans cette façade ; les tests de sécurité
-(tests/test_no_orders.py, tests/test_readonly_gateway.py) inspectent ce module.
+(tests/test_no_orders.py, tests/test_ibkr_honesty.py,
+tests/test_order_ticket.py) inspectent ce module.
 """
 from __future__ import annotations
 

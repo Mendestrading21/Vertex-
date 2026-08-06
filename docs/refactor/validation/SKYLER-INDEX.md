@@ -84,6 +84,7 @@
 | RC8 | `SKYLER-RC-PERIODIQUE-8.md` | RC périodique n°8 — première après l'AUDIT TOTAL : suite + audit + responsive 8×3 + cycle souverain : GO, 0 défaut, baseline tenue | 0.9.0 | v123 | 1694 | GO |
 | RC9 | `SKYLER-RC-PERIODIQUE-9.md` | RC périodique n°9 — suite + audit + responsive 8×3 + cycle souverain : GO, 0 défaut, baseline tenue | 0.9.0 | v123 | 1694 | GO |
 | RC10 | `SKYLER-RC-PERIODIQUE-10.md` | RC périodique n°10 — suite + audit + responsive 8×3 + cycle souverain : GO, 0 défaut, baseline tenue | 0.9.0 | v123 | 1694 | GO |
+| 71 | `SKYLER-LOT-71.md` | PROGRAMME 100 % (ouverture) : docstring gateway citait un gardien inexistant → corrigée + gardien prospectif « toute référence tests/ citée doit exister » | 0.9.0 | v123 | 1696 | GO |
 
 ## Architecture atteinte
 
