@@ -301,7 +301,7 @@ async function loadOpportunities(){
       '<div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">'
       +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(s.symbol)+'">'+esc(s.symbol)+'</button>'
       +'<span class="vx-badge '+vCls(s.verdict)+'">'+esc(s.verdict||'')+'</span>'
-      +'<span class="vx-grow vx-truncate vx-dim" style="font-size:12px">'+esc(s.note||'')+'</span>'
+      +'<span class="vx-grow vx-truncate vx-dim" style="font-size:12px" title="'+esc(s.note||'')+'">'+esc(s.note||'')+'</span>'
       +'<span class="vx-num vx-mono">'+VX.fmt.nd(s.price)+'</span>'
       +'<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="'+esc(s.symbol)+'" aria-label="Actions">⋯</button></div>').join('')
       :VX.states.empty('Aucune opportunité retenue par le comité.');

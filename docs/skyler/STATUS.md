@@ -816,6 +816,18 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   0 défaut sous SW v119 ; navigateur : 4/4 mini-aires en courbes
   cubiques, zéro polyligne, 0 erreur console ; moteur 0.9.0 inchangé.
 
+## Lot 64 — livré (2026-08-06, travail continu — tour d'inspection)
+
+- audit élargi 8 pages × 2 viewports (débordements 0, boutons sans nom
+  0, erreurs console 0) + nouveau critère : éléments RÉELLEMENT tronqués
+  sans `title` → 3 occurrences vues en navigateur, 8 points d'appel
+  `vx-truncate` sans title au grep (6 fichiers) — tous corrigés, le
+  texte entier reste lisible au survol (même échappement esc()) ;
+- gardien PROSPECTIF « vx-truncate ⇒ title » : classe fermée ;
+- preuves : 2 tests rouges→verts ; suite 1686/2 skipped ; RC outillée GO
+  0 défaut sous SW v120 ; re-balayage APRÈS : 0 élément tronqué sans
+  title (desktop + mobile) ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

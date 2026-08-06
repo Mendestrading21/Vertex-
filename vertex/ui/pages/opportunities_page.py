@@ -380,7 +380,7 @@ async function renderStocks(){
         <td data-label="Décision"><span class="vx-badge ${vCls(r.verdict)}">${esc(r.verdict||'')}</span></td>
         <td data-label="Cours" class="vx-num">${VX.fmt.nd(r.price!==undefined?VX.fmt.price(r.price):null)}</td>
         <td data-label="R:R" class="vx-num">${VX.fmt.nd(r.rr)}</td>
-        <td data-label="Setup" class="vx-truncate" style="max-width:130px">${esc(pbStr(r.playbook)||r.profile||'—')}</td>
+        <td data-label="Setup" class="vx-truncate" style="max-width:130px" title="${esc(pbStr(r.playbook)||r.profile||'—')}">${esc(pbStr(r.playbook)||r.profile||'—')}</td>
         <td data-label="Secteur">${esc(r.sector||'—')}</td>
         <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table>`
       :VX.states.empty('Aucun titre ne correspond aux filtres.','<button class="vx-btn vx-btn-sm" id="op-clear">Effacer les filtres</button>');

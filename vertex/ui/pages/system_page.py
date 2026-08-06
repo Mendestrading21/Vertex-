@@ -915,7 +915,7 @@ function renderVault(){
     +rows.map(e=>`<tr>
       <td><button class="vx-btn vx-btn-sm vx-btn-ghost" data-vault-open="${esc(String(e.id))}"
         style="font-weight:600">${esc(e.title||'(sans titre)')}</button>
-        <div class="vx-meta vx-truncate" style="max-width:420px">${esc(String(e.content||'').slice(0,120))}</div></td>
+        <div class="vx-meta vx-truncate" style="max-width:420px" title="${esc(String(e.content||'').slice(0,120))}">${esc(String(e.content||'').slice(0,120))}</div></td>
       <td><span class="vx-badge">${esc(e.type||'note')}</span>
         ${e.status?`<span class="vx-badge vx-muted">${esc(e.status)}</span>`:''}</td>
       <td class="vx-dim" style="font-size:12px">${(e.tags||[]).map(t=>'#'+esc(t)).join(' ')||'—'}</td>
