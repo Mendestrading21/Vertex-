@@ -130,6 +130,7 @@
 | 114 | `SKYLER-LOT-114.md` | Boucle continue : frontière d'unités IV figée (8 tests — unité inconnue = ValueError, NaN/inf rejetés, conversions exactes, legacy board détection étiquetée jamais muette, seuil 1.5 exact, ordure = triple None, exports limités aux deux portes) | 0.9.0 | v127 | 1952 | GO |
 | 115 | `SKYLER-LOT-115.md` | Boucle continue : backtest recherche figé + mini-bilan 111-115 (8 tests — rotation 0 = coût 0, chaque aller-retour se paie, vide = None honnête, avertissement walk-forward systématique, apply_costs formule exacte ; bilan : 5 lots, 40 tests, 1928→1960) | 0.9.0 | v127 | 1960 | GO |
 | 116 | `SKYLER-LOT-116.md` | Boucle continue : catalyseurs non-earnings figés (8 tests — non confirmé jamais actionnable, type inconnu dénoncé, horizon 0-30 inclusif trié, fenêtre earnings 45 j inclusive, next_events cap 3, avertissement nommé avec compte exact) | 0.9.0 | v127 | 1968 | GO |
+| 117 | `SKYLER-LOT-117.md` | Boucle continue : Research Factory figée (8 tests — transitions interdites refusées, RETIRED terminal, REJECTED renaît en IDEA, manquants nommés (11 champs/12 biais), « un beau backtest ne suffit jamais », embargo réel des splits, passed ≥ max(2, n−1)) | 0.9.0 | v127 | 1976 | GO |
 
 ## Architecture atteinte
 
