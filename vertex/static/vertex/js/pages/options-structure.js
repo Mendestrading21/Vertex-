@@ -225,29 +225,45 @@
       height: 260,
       render: function (cv) {
         var spot = m.spot, bes = s.breakevens || [];
+        /* LOT 133 : l'axe X est en CATEGORIES (labels = prix) — un repere doit
+           etre place par INDEX, pas par prix ; l'ancien getPixelForValue(prix)
+           tombait hors de l'axe et spot/BE n'etaient JAMAIS traces. */
+        function idxOf(px) {
+          var best = 0, bd = Infinity;
+          for (var i = 0; i < pts.length; i++) { var dd = Math.abs(pts[i].price - px); if (dd < bd) { bd = dd; best = i; } }
+          return best;
+        }
         var refPlugin = {
           id: 'osRefs', afterDraw: function (ch) {
             var xa = ch.scales.x, ya = ch.scales.y, ctx = ch.ctx; if (!xa || !ya) return;
             function vline(px, color, label) {
-              var xp = xa.getPixelForValue(px); if (isNaN(xp)) return;
+              var xp = xa.getPixelForValue(idxOf(px)); if (isNaN(xp)) return;
               ctx.save(); ctx.strokeStyle = color; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
               ctx.beginPath(); ctx.moveTo(xp, ya.top); ctx.lineTo(xp, ya.bottom); ctx.stroke();
               ctx.setLineDash([]); ctx.fillStyle = color; ctx.font = '10px system-ui'; ctx.fillText(label, xp + 3, ya.top + 10); ctx.restore();
             }
             var y0 = ya.getPixelForValue(0);
             if (!isNaN(y0)) { ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(xa.left, y0); ctx.lineTo(xa.right, y0); ctx.stroke(); ctx.restore(); }
-            vline(spot, 'rgba(200,173,141,.9)', 'spot');
-            bes.forEach(function (b) { vline(b, 'rgba(221,162,59,.9)', 'BE'); });
+            /* LOT 133 : reperes sur TOKENS (grammaire du payoff lot 124) —
+               spot en info, breakeven en warning ; plus aucun rgba orphelin. */
+            vline(spot, VC.colors.info, 'spot');
+            bes.forEach(function (b) { vline(b, VC.colors.warning, 'BE'); });
           }
         };
         VC.mount(cv, {
           type: 'line',
-          data: { labels: pts.map(function (p) { return p.price; }), datasets: [{ data: pts.map(function (p) { return p.pnl; }), borderWidth: 1.8, pointRadius: 0, fill: false, tension: 0, borderColor: VC.colors.neutral, segment: { borderColor: function (c) { return c.p1.parsed.y >= 0 ? VC.colors.positive : VC.colors.negative; } } }] },
+          data: { labels: pts.map(function (p) { return p.price; }), datasets: [{ data: pts.map(function (p) { return p.pnl; }), borderWidth: 1.6, pointRadius: 0, tension: 0, borderColor: VC.colors.neutral, segment: { borderColor: function (c) { return c.p1.parsed.y >= 0 ? VC.colors.positive : VC.colors.negative; } },
+            /* zones gain/perte teintees — on VOIT ou la structure gagne */
+            fill: { target: { value: 0 }, above: VC.colors.positive + '24', below: VC.colors.negative + '20' } }] },
           options: {
             plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (c) { return 'P&L ' + price(c.parsed.y) + ' @ ' + nd(c.label); } } } },
             scales: { x: { ticks: { maxTicksLimit: 7, callback: function (v) { return nd(this.getLabelForValue(v)); } }, grid: { display: false } }, y: { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { callback: function (v) { return price(v); } } } }
-          }
-        }, [refPlugin]);
+          },
+          /* LOT 133 : C.mount ne prend que (canvas, config) — l'ancien 3e
+             argument etait ignore et spot/BE n'apparaissaient JAMAIS. Les
+             plugins inline vivent au niveau racine de la config Chart.js. */
+          plugins: [refPlugin, VC.softGlowPlugin ? VC.softGlowPlugin() : { id: 'noop' }]
+        });
       }
     });
   }

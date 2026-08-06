@@ -146,6 +146,7 @@
 | 130 | `SKYLER-LOT-130.md` | Passe n°5 — fiche Analyse : « Performance multi-horizons » en matière verre (dégradé color-mix sur tokens, doux au zéro → dense à la valeur) + MINI-BILAN 126-130 ; captures envoyées | 0.9.0 | v139 | 1984 | GO |
 | 131 | `SKYLER-LOT-131.md` | Passe n°6 — Portefeuille/Risque : stress tests en matière verre (color-mix sur tokens) + le PIRE scénario mis en avant (libellé négatif gras, halo, aria) ; Performance vérifiée (états vides honnêtes) ; captures envoyées | 0.9.0 | v140 | 1984 | GO |
 | 132 | `SKYLER-LOT-132.md` | Passe n°7 — Opportunités : intensité des anomalies en mini-barre verre (fini le chiffre nu) + calendrier avec IMMINENCE (≤ 7 j = liseré + date warning, option urgent de timelineCard) ; captures envoyées | 0.9.0 | v141 | 1984 | GO |
+| 133 | `SKYLER-LOT-133.md` | Passe n°8 — payoff de structure Options : 2 BUGS préexistants tués (plugins ignorés par C.mount + index catégorie vs prix — spot/BE n'apparaissaient JAMAIS) ; repères sur tokens, zones gain/perte, halo ; captures + zoom envoyés | 0.9.0 | v142 | 1984 | GO |
 
 ## Architecture atteinte
 
