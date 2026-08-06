@@ -1408,6 +1408,16 @@ deux fois de nom — absorbé, repli encodé au canevas.
   suffit jamais »), transitions historisées, embargo réel des splits
   avec bornes exactes, passed ≥ max(2, n−1) folds positifs).
   Moteur intact. Suite 1976/2 skipped.
+- **Lot 118 — livré** : lecture graphique figée (8 tests —
+  chart_read (169 lignes) n'avait aucun test direct : {} → None
+  honnête (sonde corrigée, dite), hiérarchie de tendance, seuils RSI
+  78/60/48 exacts, indices chiffrés, accumulation prime sur
+  distribution, chart_verdict 4 issues, thesis où la MÉFIANCE prime
+  (distribution avant cassure), plays par profil + R:R + vent MTF).
+  Moteur intact. Suite 1984/2 skipped.
+  NOUVELLE DIRECTIVE reçue : lots 119+ orientés amélioration
+  visuelle des graphiques page par page (« plus propres, plus beaux,
+  plus développés »), en alternance avec les caractérisations.
 
 ### MINI-BILAN tournée 91-95
 
