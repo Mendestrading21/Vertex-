@@ -1353,6 +1353,15 @@ sans OI). Note d'exploitation : lot 108 livré en avance sur
   claude-sonnet-5 + override strip, clé espaces non configurée, la
   valeur de la clé jamais dans le rapport). Moteur intact. Suite
   1936/2 skipped.
+- **Lot 113 — livré** : types de provenance figés (8 tests —
+  data_sources/models n'avait aucun test direct : missing() honnête
+  par défaut, usable exige valeur ET qualité vivante (STALE reste
+  utilisable, EXPIRED/MISSING non, None jamais), 0.0/False = vraies
+  valeurs (piège falsy évité), to_dict complet, warnings jamais
+  partagés entre instances, AnalyticsPacket 5 familles + as_of ISO
+  auto, set_source stocke un snapshot dict, aucun état partagé entre
+  paquets). engines/backtest déjà couvert (dit). Moteur intact.
+  Suite 1944/2 skipped.
 
 ### MINI-BILAN tournée 91-95
 
