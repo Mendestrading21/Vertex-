@@ -44,8 +44,10 @@ def test_multiline_harmonized_on_2026_signature():
     src = _src()
     ml = src[src.index('C.multiLine ='):src.index('C.levelLines =')]
     assert "cubicInterpolationMode: 'monotone'" in ml   # jamais de faux extrêmes
-    assert 'borderWidth: 2' in ml                        # ligne 2 px (lot 51)
+    assert 'borderWidth: 1.6' in ml                      # traits fins (lot 120)
     assert 'C.crosshairPlugin' in ml                     # même visée au survol
+    assert 'C.endDotsPlugin(true)' in ml                 # point terminal + nom de série
+    assert 'C.softGlowPlugin()' in ml                    # halo néon doux
 
 
 def test_no_new_color_literals_outside_palette_and_fallbacks():
