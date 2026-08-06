@@ -105,6 +105,7 @@
 | 89 | `SKYLER-LOT-89.md` | Boucle continue : track_record figé (6 tests — n<5 jamais publié, division par zéro impossible, TP1 non résolu honnête, mémo 30 min) — moteur intact | 0.9.0 | v127 | 1761 | GO |
 | 90 | `SKYLER-LOT-90.md` | Boucle continue : persist + connections figés (10 tests) + BILAN 86-90 — « moteurs blindés » complet : 46 caractérisations, 0 logique modifiée | 0.9.0 | v127 | 1771 | GO |
 | 91 | `SKYLER-LOT-91.md` | Boucle continue : decide.py figé (9 tests — {} → None refus honnête, hard gates stop/régime/R:R 2.0 exact, CHOP jamais d'achat, IV-crush ≤14 j) | 0.9.0 | v127 | 1780 | GO |
+| 92 | `SKYLER-LOT-92.md` | Boucle continue : committee.py — DÉFAUT RÉEL : « DANS LA ZONE D'ACHAT » était du code mort (garde contradictoire) → fenêtre promise s'ouvre enfin ; 9 tests | 0.9.0 | v127 | 1789 | GO |
 
 ## Architecture atteinte
 

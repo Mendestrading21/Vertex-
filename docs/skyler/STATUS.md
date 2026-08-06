@@ -1154,6 +1154,14 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   CHOP jamais d'achat, sur-étendu → « attendre un repli », IV-crush
   ≤ 14 j cité. Moteur intact. Suite 1780/2 skipped.
 
+- **Lot 92 — livré** : committee.py — DÉFAUT RÉEL trouvé par la
+  caractérisation : la branche « DANS LA ZONE D'ACHAT » était du code
+  mort (le garde `ez < price` contredisait `in_zone`) — la fenêtre
+  promise par la note ne s'ouvrait JAMAIS au repli. Corrigé
+  minimalement (nominal inchangé, prouvé : 110 → ATTENDRE avec zone ;
+  100 → ACHETER « DANS LA ZONE »). skyler_core 0.9.0 non touché.
+  9 tests (le rouge + 8 caractérisations). Suite 1789/2 skipped.
+
 ### MINI-BILAN tournée 86-90 — « moteurs blindés » COMPLET
 
 5 lots, 46 caractérisations nées vertes, suite 1725 → 1771, 0 ligne de

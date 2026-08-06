@@ -71,10 +71,12 @@ def _evaluate_one(sym, d):
     res, stop, price = plan.get('resistance'), plan.get('stop'), d.get('price')
     entry_zone, in_zone = None, False
     if res and stop and price and res > stop:
-        ez = (res + 2 * stop) / 3.0
-        if ez < price:                      # zone de repli réaliste sous le cours
-            entry_zone = round(ez, 2)
-            in_zone = price <= entry_zone
+        # La zone est TOUJOURS calculée : au-dessus, on guette (in_zone False,
+        # affichage inchangé) ; dès que le cours entre dedans, R:R(prix) ≥ 2:1
+        # et la fenêtre promise s'ouvre. (L'ancien garde `ez < price` rendait
+        # la branche « DANS LA ZONE D'ACHAT » mathématiquement inatteignable.)
+        entry_zone = round((res + 2 * stop) / 3.0, 2)
+        in_zone = price <= entry_zone
 
     gates['structure'] = s_conf
 
