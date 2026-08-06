@@ -145,6 +145,7 @@
 | 129 | `SKYLER-LOT-129.md` | Passe n°4 — BUG visuel corrigé : rails CALME↔STRESS / DÉFENSE↔ATTAQUE invisibles (override noir !important) → dégradé sémantique rétabli ; courbe des taux « Actuelle » en cyan ; endDots anti-collision des étiquettes ; captures envoyées | 0.9.0 | v138 | 1984 | GO |
 | 130 | `SKYLER-LOT-130.md` | Passe n°5 — fiche Analyse : « Performance multi-horizons » en matière verre (dégradé color-mix sur tokens, doux au zéro → dense à la valeur) + MINI-BILAN 126-130 ; captures envoyées | 0.9.0 | v139 | 1984 | GO |
 | 131 | `SKYLER-LOT-131.md` | Passe n°6 — Portefeuille/Risque : stress tests en matière verre (color-mix sur tokens) + le PIRE scénario mis en avant (libellé négatif gras, halo, aria) ; Performance vérifiée (états vides honnêtes) ; captures envoyées | 0.9.0 | v140 | 1984 | GO |
+| 132 | `SKYLER-LOT-132.md` | Passe n°7 — Opportunités : intensité des anomalies en mini-barre verre (fini le chiffre nu) + calendrier avec IMMINENCE (≤ 7 j = liseré + date warning, option urgent de timelineCard) ; captures envoyées | 0.9.0 | v141 | 1984 | GO |
 
 ## Architecture atteinte
 

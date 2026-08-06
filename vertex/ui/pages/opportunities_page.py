@@ -570,12 +570,22 @@ async function renderAnomalies(){
     <div id="op-anom"></div>`;
   function paint(group){
     if(group==='Actions'){
+      /* LOT 132 : l'intensité n'est plus un chiffre nu — mini-barre de VERRE
+         (dégradé warning doux → dense via color-mix, aucun littéral) à côté
+         de la valeur ; l'œil classe les anomalies sans lire chaque nombre. */
+      const maxI=Math.max.apply(null,[1].concat(rows.map(r=>Number(r.anomaly_score)||0)));
+      const ibar=(v)=>{const n=Number(v);if(!isFinite(n))return VX.fmt.nd(v);
+        const w=Math.max(4,Math.min(100,n/maxI*100));
+        return '<span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">'
+          +'<span style="width:64px;height:8px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block">'
+          +'<span style="display:block;height:100%;width:'+w.toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,var(--vx-warning,#D9BE3C) 35%,transparent),var(--vx-warning,#D9BE3C));border-radius:3px"></span></span>'
+          +'<span style="font-variant-numeric:tabular-nums">'+VX.fmt.nd(n)+'</span></span>';};
       $('op-anom').innerHTML=rows.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
         <th>Titre</th><th>Anomalies</th><th class="vx-num">Intensité</th><th class="vx-num">Score</th><th></th></tr></thead><tbody>
         ${rows.slice(0,60).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
           <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
           <td data-label="Anomalies">${(r.anomalies||[]).slice(0,4).map(a=>`<span class="vx-badge vx-warn">${esc(typeof a==='string'?a:(a.code||''))}</span>`).join(' ')}</td>
-          <td data-label="Intensité" class="vx-num">${VX.fmt.nd(r.anomaly_score)}</td>
+          <td data-label="Intensité" class="vx-num">${ibar(r.anomaly_score)}</td>
           <td data-label="Score" class="vx-num">${VX.fmt.nd(r.score)}</td>
           <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table></div>`
         :VX.states.empty('Aucune anomalie action détectée sur le scan courant.');
@@ -601,8 +611,12 @@ async function renderCalendar(){
   try{
     const cal=await VX.fetch('/cal-feed',{ttl:300000});
     const positions=(window.VXEntities?window.VXEntities.positions():[]).map(p=>p.sym);
-    const items=[...(cal.macro||[]).map(m=>({when:m.date,kind:m.kind,label:esc(m.label)+(m.note?' — '+esc(m.note):'')+(m.approx?' (approx.)':'')})),
-      ...(cal.items||[]).map(it=>({when:it.date,kind:'Earnings',sym:it.sym,
+    /* LOT 132 : imminence — les événements à ≤ 7 jours sont marqués urgent
+       (liseré + date warning via timelineCard) ; dte réel pour les earnings,
+       écart de dates pour la macro. Aucune donnée inventée. */
+    const soonMacro=(dt)=>{const d=(new Date(dt+'T00:00:00')-Date.now())/864e5;return isFinite(d)&&d>=0&&d<=7;};
+    const items=[...(cal.macro||[]).map(m=>({when:m.date,kind:m.kind,urgent:soonMacro(m.date),label:esc(m.label)+(m.note?' — '+esc(m.note):'')+(m.approx?' (approx.)':'')})),
+      ...(cal.items||[]).map(it=>({when:it.date,kind:'Earnings',sym:it.sym,urgent:it.dte!=null&&it.dte<=7,
         label:`résultats dans ${it.dte} j · verdict moteur ${esc(it.verdict||'n/d')}`
           +(positions.includes(it.sym)?' · <b class="vx-warn">position exposée</b>':'')}))]
       .sort((a,b)=>String(a.when).localeCompare(String(b.when)));

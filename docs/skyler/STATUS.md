@@ -1495,6 +1495,15 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 132 — livré** : passe graphique n°7 — Opportunités : (a) la
+  table des ANOMALIES perd ses chiffres nus — l'intensité devient
+  une mini-barre de verre (dégradé warning via color-mix, échelle
+  relative au max du scan) + valeur tabulaire ; (b) le CALENDRIER
+  gagne l'IMMINENCE visuelle — tout événement à ≤ 7 jours porte un
+  liseré warning et sa date en warning gras (dte réel earnings,
+  écart de dates macro ; option `urgent` ajoutée au builder
+  timelineCard). SW v140 → v141 + 4 gardiens. Captures avant/après
+  envoyées. Suite 1984/2, RC GO.
 - **Lot 131 — livré** : passe graphique n°6 — Portefeuille/Risque :
   les barres des STRESS TESTS passent en matière VERRE (dégradé de
   leur propre couleur via color-mix sur tokens, doux au zéro → dense
