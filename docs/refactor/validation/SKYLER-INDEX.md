@@ -138,6 +138,7 @@
 | 122 | `SKYLER-LOT-122.md` | Amélioration graphique n°4 (Analyse) : radar en dégradé radial (centre transparent → bord de marque), points sommets + halo, grille en opacité dégressive, trait 1.6 — tous les radars héritent ; captures fiche ACN envoyées | 0.9.0 | v131 | 1984 | GO |
 | 123 | `SKYLER-LOT-123.md` | Amélioration graphique n°5 (Portefeuille) : treemap matière verre — dégradé diagonal par tuile (même le neutre honnête gagne de la profondeur), liseré fin de la couleur, part du total % sur les grandes tuiles ; captures envoyées | 0.9.0 | v132 | 1984 | GO |
 | 124 | `SKYLER-LOT-124.md` | Amélioration graphique n°6 (Options) : payoff éducatif — breakeven enfin tracé (« BE $X »), spot tracé, zones gain/perte sur tokens, trait 1.6 + halo doux, arithmétique inchangée ; captures envoyées | 0.9.0 | v133 | 1984 | GO |
+| 125 | `SKYLER-LOT-125.md` | Amélioration graphique n°7 (Journal) : barres matière verre (dégradé dense→doux + liseré, toutes les barres héritent), famille .vx-stat enfin stylée (répare 5 pages — « Trades3 » collés), hex track record → tokens ; captures envoyées | 0.9.0 | v134 | 1984 | GO |
 
 ## Architecture atteinte
 

@@ -1483,6 +1483,29 @@ sans autorisation demandée.
   contrat inchangée. SW v132 → v133 + 4 gardiens. Captures
   avant/après envoyées. Suite 1984/2, RC GO. (12 captures desktop
   de toutes les pages envoyées entre-temps sur demande.)
+- **Lot 125 — livré** : amélioration graphique n°7 (Journal) —
+  barres matière VERRE dans chart-core (chaque barre = dégradé de sa
+  propre couleur, dense à l'extrémité de la valeur → doux vers la
+  base, liseré fin, pleine au survol — TOUS les graphiques à barres
+  de Vertex héritent) ; famille `.vx-stat` enfin stylée dans
+  cockpit.css (les stats du Post-mortem s'affichaient COLLÉES —
+  « Trades3 » — car les classes utilisées par 5 pages n'avaient
+  aucun CSS : tuiles de verre, chiffres mono tabulaires, halo
+  positif/négatif) ; hex en dur du track record → tokens. Aucun
+  littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
+  avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
+
+### MINI-BILAN tournée 121-125
+
+5 lots graphiques (directive esthétique maximale), suite stable
+**1984 passed / 2 skipped**, PR #154 → #158, SW v129 → v134 :
+entonnoir monochrome + scatter teinté (Opportunités) · radar radial
+(Analyse) · treemap verre (Portefeuille) · payoff breakeven/spot
+(Options) · barres verre + stats stylées (Journal). Grammaire
+commune installée : dégradé dense → doux de la propre couleur de
+l'objet, liseré fin, UN chiffre éducatif par graphique, tokens
+uniquement. Reste : Système (lot 126), puis nouvelles passes
+(scénarios options, vol cone, heatmaps, gauges…).
 
 ### MINI-BILAN tournée 91-95
 

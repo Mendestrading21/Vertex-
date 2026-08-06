@@ -295,13 +295,31 @@
   };
   C.bars = function (canvas, labels, values, { colors, horizontal = false, yFmt } = {}) {
     const cols = colors || values.map(v => v >= 0 ? C.colors.positive : C.colors.negative);
-    /* signature 2026 (lot 53) : coins arrondis complets, barres légèrement
-       translucides qui deviennent PLEINES au survol. L'alpha n'est appliqué
-       qu'aux hex 6 digits — toute autre couleur passe inchangée. */
-    const soft = (c) => (typeof c === 'string' && /^#[0-9A-Fa-f]{6}$/.test(c)) ? c + 'D9' : c;
+    /* signature 2026 (lot 53) + LOT 125 : matière VERRE — chaque barre est un
+       dégradé de sa PROPRE couleur, dense à l'extrémité de la valeur et doux
+       vers la base (même grammaire que le treemap/l'aire), liseré fin de la
+       couleur, PLEINE au survol. L'alpha n'est appliqué qu'aux hex 6 digits —
+       toute autre couleur passe inchangée, jamais corrompue. */
+    const isHex = (c) => typeof c === 'string' && /^#[0-9A-Fa-f]{6}$/.test(c);
+    const glass = (ctx) => {
+      const c = cols[ctx.dataIndex % cols.length];
+      if (!isHex(c)) return c;
+      const area = ctx.chart.chartArea;
+      if (!area) return c + 'D9';
+      const neg = Number(ctx.raw) < 0;
+      const g = horizontal
+        ? ctx.chart.ctx.createLinearGradient(area.left, 0, area.right, 0)
+        : ctx.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
+      /* extrémité de la valeur = dense (E0), base = douce (55) */
+      if (horizontal ? neg : !neg) { g.addColorStop(0, c + 'E0'); g.addColorStop(1, c + '55'); }
+      else { g.addColorStop(0, c + '55'); g.addColorStop(1, c + 'E0'); }
+      return g;
+    };
     return C.mount(canvas, {
       type: 'bar',
-      data: { labels, datasets: [{ data: values, backgroundColor: cols.map(soft), hoverBackgroundColor: cols, borderRadius: 5, borderSkipped: false, maxBarThickness: 26 }] },
+      data: { labels, datasets: [{ data: values, backgroundColor: glass, hoverBackgroundColor: cols,
+        borderColor: cols.map(c => isHex(c) ? c + '80' : c), borderWidth: 1,
+        borderRadius: 5, borderSkipped: false, maxBarThickness: 26 }] },
       options: { indexAxis: horizontal ? 'y' : 'x', scales: C.axes({ yFmt }) },
     });
   };
