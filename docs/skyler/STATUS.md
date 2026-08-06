@@ -1112,6 +1112,14 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   bufferisé ; onmessage vs événements nommés), vérifiés au socket brut
   puis addEventListener, dits. 3 gardiens. Suite 1725/2 skipped.
 
+- **Lot 86 — livré** : cas limites du decision stack. 10 branches non
+  couvertes identifiées (lecture complète du moteur vs 21 tests
+  existants) et FIGÉES par caractérisation, nées vertes : detail=None
+  honnête, score illisible jamais inventé, bornes exactes 56/66/80,
+  verdict inconnu → WAIT, frontière rassis 900 s, CHOP, distribution,
+  démo étiquetée, R:R absent ne punit pas, véhicule ACTION hors achat.
+  Moteur 0.9.0 INTACT (diff = tests + docs). Suite 1735/2 skipped.
+
 ### MINI-BILAN tournée 81-85
 
 Polices auto-hébergées (0 requête externe prouvé) · offline RÉEL
