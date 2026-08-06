@@ -446,19 +446,28 @@
       track += `<path d="${arc(ang(prev), ang(b.to))}" stroke="${b.color}" stroke-opacity=".22" stroke-width="9" fill="none" stroke-linecap="butt"/>`;
       prev = b.to;
     });
-    let valArc = '', needle = '', valColor = C.colors.neutral;
+    let valArc = '', needle = '', defs = '', valColor = C.colors.neutral;
     if (v != null) {
       for (const b of bands) { if (v <= b.to) { valColor = b.color; break; } valColor = b.color; }
-      valArc = `<path d="${arc(ang(min), ang(v))}" stroke="${valColor}" stroke-width="9" fill="none" stroke-linecap="round"/>`;
+      /* LOT 126 — matière verre : l'arc de valeur est un dégradé de sa propre
+         couleur (doux au départ → dense à l'extrémité, comme les barres), posé
+         sur un halo large et léger ; le point de lecture gagne son halo. */
+      const gid = 'vxGg-' + ((el.id || 'g').replace(/[^\w-]/g, ''));
+      defs = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="${valColor}" stop-opacity=".45"/>
+        <stop offset="1" stop-color="${valColor}" stop-opacity="1"/></linearGradient></defs>`;
+      valArc = `<path d="${arc(ang(min), ang(v))}" stroke="${valColor}" stroke-opacity=".16" stroke-width="15" fill="none" stroke-linecap="round"/>`
+        + `<path d="${arc(ang(min), ang(v))}" stroke="url(#${gid})" stroke-width="9" fill="none" stroke-linecap="round"/>`;
       const [nx, ny] = pt(ang(v), r - 2);
-      needle = `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="4.5" fill="${valColor}"/>`;
+      needle = `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="8" fill="${valColor}" fill-opacity=".2"/>`
+        + `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="4.5" fill="${valColor}"/>`;
     }
     const disp = v == null ? '—' : (Number.isInteger(v) ? v : (+v).toFixed(1));
     const aria = `${o.label || 'jauge'} : ${v == null ? 'donnée indisponible' : disp + (o.unit || '')}${o.reading ? ' — ' + o.reading : ''}`;
     el.innerHTML = `
       <div class="vx-gauge" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
         <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:230px;display:block;margin:0 auto">
-          ${track}${valArc}${needle}
+          ${defs}${track}${valArc}${needle}
           <text x="${cx}" y="${cy - 20}" text-anchor="middle" fill="${valColor}" font-size="30" font-weight="800" style="font-variant-numeric:tabular-nums">${disp}</text>
           <text x="${cx}" y="${cy - 3}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="10" letter-spacing=".5">${(o.unit || '') + (o.label ? ' · ' + o.label : '')}</text>
         </svg>
