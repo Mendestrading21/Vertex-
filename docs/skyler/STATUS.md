@@ -863,6 +863,24 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   0 débordement, 0 erreur console ; moteur 0.9.0 et main intacts ;
   prochaine RC ~30 min.
 
+## Lot 66 — livré (2026-08-06, AUDIT TOTAL relancé par l'utilisateur)
+
+- programme utilisateur « audit totalement complet, tout cohérent,
+  pousser au maximum » traduit en volets PROUVABLES ; RC espacées
+  suspendues, développement continu relancé ;
+- volet routes : 137 routes GET balayées — 94×200, 41 redirections
+  voulues, un seul 400 STRUCTURÉ, AUCUN 5xx ;
+- volet cohérence : VIX et meilleure opportunité cohérents partout ;
+  UNE incohérence réelle — tuile Breadth du briefing sur `above50`
+  (50 %) NON étiquetée vs Marchés `>MM200` (45 %), et diff interne sur
+  above200 → canonicalisée >MM200 + ÉTIQUETTE de métrique sur la tuile ;
+  preuve APRÈS : 45 partout, nommé pareil ;
+- volet boutons/console : 0 non câblé, 0 erreur ;
+- preuves : 4 tests rouges→verts ; suite 1692/2 skipped ; RC outillée GO
+  0 défaut sous SW v122 ; moteur 0.9.0 inchangé ;
+- volets suivants (67+) : vues profondes (tous les onglets), couverture
+  IBKR lecture seule, cohérence fiche ↔ opportunités, états dégradés.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
