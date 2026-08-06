@@ -1245,6 +1245,13 @@ SW v127) ; merge vers `main` sur accord explicite uniquement.
   strike plausible jamais envoyée au broker, contrat d'entrée du
   plan). market_clock déjà figé (dit). Moteur intact. Suite 1847/2
   skipped.
+- **Lot 102 — livré** : gardien XSS des news figé (9 tests — la règle
+  n°5 n'était testée qu'au point de sortie d'une route : balises
+  retirées PUIS échappement complet, balise jamais fermée inerte,
+  javascript:/data: supprimés, http(s) seul (insensible casse),
+  quotes pourcent-encodées ; sentiment lexical FR/EN ; parse_rss sans
+  exception + suffixe éditeur retiré ; dedupe titre normalisé/lien
+  premier conservé). Moteur intact. Suite 1856/2 skipped.
 
 ### MINI-BILAN tournée 91-95
 
