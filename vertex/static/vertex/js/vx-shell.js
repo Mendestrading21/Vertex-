@@ -344,4 +344,13 @@
   window.addEventListener('pagehide', () => {
     if (!location.pathname.startsWith('/analysis/')) VX.context.save();
   });
+
+  /* ── Service worker : offline + précache (LOT 82) ──────────────────
+     Le shell canonique n'enregistrait JAMAIS /sw.js (seules les pages
+     legacy le faisaient) : aucun offline sur les 8 espaces. */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
 })();

@@ -1091,6 +1091,12 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   remplacés (shell + legacy), SW v126 précache les polices. Preuves :
   0 requête externe sur 8 pages, Inter/JBM chargées localement,
   parcours 14/14 avec 0 erreur console. Suite 1718/2 skipped.
+- **Lot 82 — livré** : offline RÉEL. Défaut majeur — le shell canonique
+  n'enregistrait JAMAIS le service worker (0 précache, offline = page
+  d'erreur sur les 8 espaces) → enregistrement dans vx-shell.js (pas
+  d'inline : gardien anti-reflet du fuzz 43, attrapé et dit). Preuve
+  APRÈS : reload OFFLINE rendu depuis le cache, Inter offline, états
+  honnêtes. Suite 1720/2 skipped, SW v127 + 4 gardiens.
 
 ## Index des lots
 

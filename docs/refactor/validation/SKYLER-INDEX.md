@@ -95,6 +95,7 @@
 | 79 | `SKYLER-LOT-79.md` | Boucle continue : fraîcheur — 2 passes navigateur, 5 signalements stricts tous faux positifs vérifiés (héritage d'en-tête + troncature) — SAIN + 2 gardiens | 0.9.0 | v125 | 1714 | GO |
 | 80 | `SKYLER-LOT-80.md` | Boucle continue : 5 parcours bout-en-bout 14/14 OK (outil versionné) ; constat réel — polices sur CDN Google, à auto-héberger (lot 81) | 0.9.0 | v125 | 1714 | GO |
 | 81 | `SKYLER-LOT-81.md` | Boucle continue : polices AUTO-HÉBERGÉES (2 woff2 variables locaux, 7 remplacements CDN, SW précache) — 0 requête externe prouvé, parcours 0 erreur console | 0.9.0 | v126 | 1718 | GO |
+| 82 | `SKYLER-LOT-82.md` | Boucle continue : défaut MAJEUR — le shell canonique n'enregistrait jamais le SW (0 offline sur les 8 espaces) → vx-shell.js + preuve reload offline rendu du cache | 0.9.0 | v127 | 1720 | GO |
 
 ## Architecture atteinte
 

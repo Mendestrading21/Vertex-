@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v126';   // v126 (SKYLER LOT 81) : polices auto-hebergees (0 requete externe, offline identique)
+const CACHE='td-shell-v127';   // v127 (SKYLER LOT 82) : le shell canonique enregistre enfin le service worker (offline reel 8 espaces)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png','/static/vertex/css/fonts.css','/static/vertex/fonts/inter-var.woff2','/static/vertex/fonts/jetbrains-mono-var.woff2']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
