@@ -1495,6 +1495,29 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 130 — livré** : passe graphique n°5 — fiche Analyse : le bloc
+  « Performance multi-horizons » (1 sem./1 mois/1 trim./1 an) passe
+  en matière VERRE — chaque barre est un dégradé de sa propre
+  couleur, doux au centre (zéro) → dense à l'extrémité de la valeur,
+  construit par color-mix sur les tokens (aucun littéral nouveau).
+  Reste de la fiche vérifié : radar, chandeliers+plan, runway,
+  price-chart, timeline déjà au niveau. SW v138 → v139 + 4 gardiens.
+  Captures avant/après envoyées. Suite 1984/2, RC GO.
+
+### MINI-BILAN tournée 126-130
+
+5 lots (fin de 1re tournée + 4 passes noyau), suite constante
+**1984 passed / 2 skipped**, PR #159 → #163, SW v134 → v139 :
+jauge verre + libellés kv protégés + badge adaptatif (126) ·
+heatmaps verre sur tokens — derniers rgba hors palette éliminés
+(127) · donut à chiffre central éducatif (128) · rails sémantiques
+rétablis + courbe des taux cyan + anti-collision endDots (129) ·
+multi-horizons verre de la fiche Analyse (130). Deux BUGS visuels
+réels tués : stats collées « Trades3 » (125) et rails invisibles
+sous override noir !important (129). Le noyau graphique (barres,
+jauges, heatmaps, donuts, lignes, aires, radar, treemap, entonnoir,
+payoff) est désormais ENTIÈREMENT en grammaire verre sur tokens.
+
 - **Lot 129 — livré** : passe graphique n°4 — **bug visuel réel
   corrigé** : les rails CALME↔STRESS et DÉFENSE↔ATTAQUE de Marchés
   étaient INVISIBLES (une règle neon-glass `background:rgba(0,0,0,.28)

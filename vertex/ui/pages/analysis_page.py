@@ -453,12 +453,17 @@ async function loadDossier(){
     const maxAbs=Math.max(5,...rows.map(r=>Math.abs(r[1])));
     return '<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#30292B);padding-top:8px">'
       +'<div class="vx-meta vx-mb1" style="text-transform:uppercase;letter-spacing:.04em">Performance multi-horizons</div>'
+      /* LOT 130 : matiere verre — la barre est un degrade de sa propre couleur,
+         doux au centre (zero) et DENSE a l'extremite de la valeur (meme
+         grammaire que C.bars), via color-mix sur les tokens (aucun litteral). */
       +rows.map(function(r){const v=r[1];const neg=v<0;const w=Math.min(50,Math.abs(v)/maxAbs*50);
+        const tok=neg?'var(--vx-negative,#E9555F)':'var(--vx-positive,#2BBE90)';
+        const grad='linear-gradient('+(neg?'270deg':'90deg')+',color-mix(in srgb,'+tok+' 35%,transparent),'+tok+')';
         return '<div style="display:flex;align-items:center;gap:6px;margin:2px 0" role="img" aria-label="'+r[0]+' '+(v>=0?'+':'')+v+' %">'
           +'<span style="width:52px;font-size:10.5px;color:var(--vx-text-muted,#8A8284)">'+r[0]+'</span>'
           +'<span style="flex:1;height:10px;position:relative;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden">'
             +'<span style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.16)"></span>'
-            +'<span style="position:absolute;top:0;bottom:0;'+(neg?('right:50%;width:'+w.toFixed(1)+'%'):('left:50%;width:'+w.toFixed(1)+'%'))+';background:'+(neg?'var(--vx-negative,#E9555F)':'var(--vx-positive,#2BBE90)')+'"></span></span>'
+            +'<span style="position:absolute;top:0;bottom:0;'+(neg?('right:50%;width:'+w.toFixed(1)+'%'):('left:50%;width:'+w.toFixed(1)+'%'))+';background:'+grad+';border-radius:2px"></span></span>'
           +'<span style="width:54px;text-align:right;font-size:10.5px;font-variant-numeric:tabular-nums" class="'+(neg?'vx-neg':'vx-pos')+'">'+(v>=0?'+':'')+VX.fmt.num(v,1)+'%</span></div>';
       }).join('')+'</div>';
   }
