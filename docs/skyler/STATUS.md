@@ -828,6 +828,19 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   0 défaut sous SW v120 ; re-balayage APRÈS : 0 élément tronqué sans
   title (desktop + mobile) ; moteur 0.9.0 inchangé.
 
+## Lot 65 — livré (2026-08-06, travail continu — bascule RC espacées)
+
+- angles NEUFS audités en navigateur : doublons d'id 0, liens internes
+  morts 0/13, focus clavier visible 8/8 sur chaque page, SVG informatifs
+  sans aria → 1 seul cas réel : le Catalyst Runway (le Regime Aura était
+  déjà couvert) — corrigé en une ligne (role img + aria-label reprenant
+  le verdict réel, échappé) ; re-balayage APRÈS : 0 restant ;
+- CONSTAT HONNÊTE : 7 tours de qualité consécutifs (58→65) ont fermé
+  toutes les classes par gardiens ; ce tour n'a produit qu'un
+  micro-défaut → BASCULE en RC périodiques espacées (~30 min), dit ;
+- preuves : 2 tests rouges→verts ; suite 1688/2 skipped ; RC outillée GO
+  0 défaut sous SW v121 ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

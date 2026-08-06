@@ -72,6 +72,7 @@
 | 62 | `SKYLER-LOT-62.md` | Purge finale des anciennes palettes (19 fallbacks JS de pages + tracking runtime) — gardien prospectif sur TOUT js/ : classe de défauts fermée | 0.9.0 | v118 | 1679 | GO |
 | 63 | `SKYLER-LOT-63.md` | Mini-aires de Marchés lissées monotone Fritsch-Carlson (jamais de faux extrêmes, 4/4 en courbes prouvé) + code mort sparkSvg supprimé | 0.9.0 | v119 | 1684 | GO |
 | 64 | `SKYLER-LOT-64.md` | Tour d'inspection : 8 usages vx-truncate sans title corrigés (info toujours lisible au survol) + gardien prospectif — re-balayage APRÈS : 0 restant | 0.9.0 | v120 | 1686 | GO |
+| 65 | `SKYLER-LOT-65.md` | Tour angles neufs (ids 0, liens morts 0/13, focus 8/8, aria) : seul défaut = aria du runway (corrigé) — bascule en RC espacées, dit | 0.9.0 | v121 | 1688 | GO |
 
 ## Architecture atteinte
 
