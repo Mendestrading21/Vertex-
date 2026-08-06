@@ -1076,6 +1076,11 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   sources : 0 anglais d'interface, 0 accent manquant, ponctuation
   conforme (l'espace avant « ; » est la norme FR — faux positif de la
   sonde, dit). SAIN — 2 gardiens prospectifs. Suite 1712/2 skipped.
+- **Lot 79 — livré** : fraîcheur des données affichées. 2 passes
+  navigateur : aucun chiffre marché sans fraîcheur accessible — les 5
+  signalements stricts étaient des faux positifs (héritage de
+  l'indicateur d'en-tête « Il y a X min · source » + troncature de
+  sonde), vérifiés un à un. SAIN — 2 gardiens. Suite 1714/2 skipped.
 
 ## Index des lots
 
