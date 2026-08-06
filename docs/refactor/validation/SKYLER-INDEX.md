@@ -93,6 +93,7 @@
 | 77 | `SKYLER-LOT-77.md` | Boucle continue : sécurité en-têtes/contenu — 4 en-têtes partout, contenu 0 fuite ; défaut réel : blob desk perso sans Cache-Control → no-store gardé | 0.9.0 | v125 | 1710 | GO |
 | 78 | `SKYLER-LOT-78.md` | Boucle continue : libellés FR — 0 anglais d'interface, 0 accent manquant, ponctuation conforme (espace avant ; = norme FR, faux positif dit) — SAIN + 2 gardiens | 0.9.0 | v125 | 1712 | GO |
 | 79 | `SKYLER-LOT-79.md` | Boucle continue : fraîcheur — 2 passes navigateur, 5 signalements stricts tous faux positifs vérifiés (héritage d'en-tête + troncature) — SAIN + 2 gardiens | 0.9.0 | v125 | 1714 | GO |
+| 80 | `SKYLER-LOT-80.md` | Boucle continue : 5 parcours bout-en-bout 14/14 OK (outil versionné) ; constat réel — polices sur CDN Google, à auto-héberger (lot 81) | 0.9.0 | v125 | 1714 | GO |
 
 ## Architecture atteinte
 

@@ -1081,6 +1081,11 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   signalements stricts étaient des faux positifs (héritage de
   l'indicateur d'en-tête « Il y a X min · source » + troncature de
   sonde), vérifiés un à un. SAIN — 2 gardiens. Suite 1714/2 skipped.
+- **Lot 80 — livré** : 5 parcours bout-en-bout « du réveil à la
+  décision » : 14 étapes, 0 échec (outil versionné
+  `tools/user_journeys.js`). Constat réel : polices sur CDN Google
+  (offline + vie privée) → lot 81 = auto-hébergement. Mini-bilan
+  76-80 : 2 défauts corrigés, 8 gardiens, suite 1706→1714.
 
 ## Index des lots
 
