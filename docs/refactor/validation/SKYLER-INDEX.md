@@ -136,6 +136,7 @@
 | 120 | `SKYLER-LOT-120.md` | Amélioration graphique n°2 (Marchés) + mini-bilan 116-120 : lignes ultra propres — endDotsPlugin (point net + nom de série en bout de ligne), softGlowPlugin (halo néon doux), traits 1.6, dégradé area 4 arrêts ; bénéfice transversal multiLine/area ; captures envoyées | 0.9.0 | v129 | 1984 | GO |
 | 121 | `SKYLER-LOT-121.md` | Amélioration graphique n°3 (Opportunités) : entonnoir monochrome dégradé brand→cyan (opacité = déperdition, un chiffre par étage, −N sur la plus forte perte) + zone actionnable du scatter teintée en dégradé positif ; captures envoyées | 0.9.0 | v130 | 1984 | GO |
 | 122 | `SKYLER-LOT-122.md` | Amélioration graphique n°4 (Analyse) : radar en dégradé radial (centre transparent → bord de marque), points sommets + halo, grille en opacité dégressive, trait 1.6 — tous les radars héritent ; captures fiche ACN envoyées | 0.9.0 | v131 | 1984 | GO |
+| 123 | `SKYLER-LOT-123.md` | Amélioration graphique n°5 (Portefeuille) : treemap matière verre — dégradé diagonal par tuile (même le neutre honnête gagne de la profondeur), liseré fin de la couleur, part du total % sur les grandes tuiles ; captures envoyées | 0.9.0 | v132 | 1984 | GO |
 
 ## Architecture atteinte
 

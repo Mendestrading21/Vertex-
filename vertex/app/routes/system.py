@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v131';   // v131 (SKYLER LOT 122) : radar degrade radial + grille degressive (fiches Analyse)
+const CACHE='td-shell-v132';   // v132 (SKYLER LOT 123) : treemap matiere verre (degrade diagonal, liseré fin, part du total)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png','/static/vertex/css/fonts.css','/static/vertex/fonts/inter-var.woff2','/static/vertex/fonts/jetbrains-mono-var.woff2']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
