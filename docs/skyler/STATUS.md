@@ -1495,6 +1495,14 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 128 — livré** : passe graphique n°3 — le donut gagne SON
+  chiffre éducatif : la catégorie dominante et sa part (« 55 % /
+  AVOID ») s'affichent au CENTRE de l'anneau, dans la couleur de son
+  arc (plugin vxDonutCenter ; rien si total nul — aucune donnée
+  inventée ; signature lot 53 intacte). Tous les donuts héritent.
+  Tour des autres builders : anomaly-scan, équité/drawdown,
+  sparkline déjà au niveau. SW v136 → v137 + 4 gardiens. Captures
+  avant/après envoyées. Suite 1984/2, RC GO.
 - **Lot 127 — livré** : passe graphique n°2 — heatmaps matière VERRE
   (`C.heatmapCard`) : les DERNIERS rgba verts/rouges hors palette du
   système graphique remplacés par les tokens (convertis en rgb à
