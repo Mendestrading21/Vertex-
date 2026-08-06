@@ -749,12 +749,19 @@ async function renderRisk(){
         ${(function(){const arr=Object.entries(stress).filter(([,v])=>v.impact_pct!=null);
           if(!arr.length)return '';
           const maxAbs=Math.max.apply(null,[1].concat(arr.map(([,v])=>Math.abs(v.impact_pct))));
+          /* LOT 131 : matiere verre — chaque barre est un degrade de sa propre
+             couleur (doux au zero -> dense a l'extremite), via color-mix sur les
+             tokens (aucun litteral) ; le PIRE scenario est mis en avant (halo +
+             libelle en negatif) : LE chiffre educatif d'un stress test. */
+          const worst=arr.reduce((a,[k,v])=>v.impact_pct<a.v?{k:k,v:v.impact_pct}:a,{k:null,v:0});
           return '<div class="vx-mb3">'+arr.map(([k,v])=>{const neg=v.impact_pct<0;
             const w=Math.min(100,Math.abs(v.impact_pct)/maxAbs*100);
-            return '<div style="display:flex;align-items:center;gap:8px;margin:3px 0" role="img" aria-label="'+esc(k)+' '+VX.fmt.pct(v.impact_pct,1)+'">'
-              +'<span title="'+esc(k)+'" style="width:150px;font-size:11px;color:var(--vx-text-secondary,#BABABA);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(k)+'</span>'
-              +'<span style="flex:1;height:13px;background:var(--vx-surface-3,#121214);border-radius:4px;overflow:hidden"><span style="display:block;height:100%;width:'+w.toFixed(0)+'%;background:'+(neg?'var(--vx-negative,#E9555F)':'var(--vx-positive,#2BBE90)')+';border-radius:4px"></span></span>'
-              +'<span style="width:58px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums" class="'+(neg?'vx-neg':'vx-pos')+'">'+VX.fmt.pct(v.impact_pct,1)+'</span></div>';
+            const tok=neg?'var(--vx-negative,#E9555F)':'var(--vx-positive,#2BBE90)';
+            const isWorst=neg&&k===worst.k;
+            return '<div style="display:flex;align-items:center;gap:8px;margin:3px 0" role="img" aria-label="'+esc(k)+' '+VX.fmt.pct(v.impact_pct,1)+(isWorst?' — pire scenario':'')+'">'
+              +'<span title="'+esc(k)+'" style="width:150px;font-size:11px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'+(isWorst?'color:var(--vx-negative,#E9555F);font-weight:700':'color:var(--vx-text-secondary,#BABABA)')+'">'+esc(k)+'</span>'
+              +'<span style="flex:1;height:13px;background:var(--vx-surface-3,#121214);border-radius:4px;overflow:hidden"><span style="display:block;height:100%;width:'+w.toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:4px'+(isWorst?';box-shadow:0 0 6px color-mix(in srgb,var(--vx-negative,#E9555F) 45%,transparent)':'')+'"></span></span>'
+              +'<span style="width:58px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums;'+(isWorst?'font-weight:700':'')+'" class="'+(neg?'vx-neg':'vx-pos')+'">'+VX.fmt.pct(v.impact_pct,1)+'</span></div>';
           }).join('')+'</div>';})()}
         <div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Scénario</th>
         <th class="vx-num">Impact estimé</th><th>Note</th></tr></thead><tbody>
