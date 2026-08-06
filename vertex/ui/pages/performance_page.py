@@ -255,7 +255,7 @@ function loadHypotheses(){
   const line=(e)=>`<div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft);gap:10px;align-items:center">
     <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(e.ticker||'')}">${esc(e.ticker||'—')}</button>
     <span class="vx-badge ${e.result==='WIN'?'vx-pos':e.result==='LOSS'?'vx-neg':'vx-muted'}">${e.result||'en cours'}</span>
-    <span class="vx-grow vx-truncate vx-dim" style="font-size:12.5px">${esc(e.reason||e.lesson||'—')}</span></div>`;
+    <span class="vx-grow vx-truncate vx-dim" style="font-size:12.5px" title="${esc(e.reason||e.lesson||'—')}">${esc(e.reason||e.lesson||'—')}</span></div>`;
   host.innerHTML=`<div class="vx-grid vx-mb3">
       ${chip('Validées',wins.length,'vx-pos')}${chip('Invalidées',losses.length,'vx-neg')}${chip('En cours',open.length,'vx-muted')}</div>`
     +j.slice().sort((a,b2)=>String(b2.date||'').localeCompare(String(a.date||''))).slice(0,6).map(line).join('')

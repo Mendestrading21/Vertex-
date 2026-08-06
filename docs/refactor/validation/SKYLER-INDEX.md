@@ -71,6 +71,7 @@
 | 61 | `SKYLER-LOT-61.md` | Runway anti-collision (2 rangées/côté, déterministe, 0 chevauchement mesuré) + 25 fallbacks périmés purgés des charts JS (3e token fantôme) | 0.9.0 | v117 | 1675 | GO |
 | 62 | `SKYLER-LOT-62.md` | Purge finale des anciennes palettes (19 fallbacks JS de pages + tracking runtime) — gardien prospectif sur TOUT js/ : classe de défauts fermée | 0.9.0 | v118 | 1679 | GO |
 | 63 | `SKYLER-LOT-63.md` | Mini-aires de Marchés lissées monotone Fritsch-Carlson (jamais de faux extrêmes, 4/4 en courbes prouvé) + code mort sparkSvg supprimé | 0.9.0 | v119 | 1684 | GO |
+| 64 | `SKYLER-LOT-64.md` | Tour d'inspection : 8 usages vx-truncate sans title corrigés (info toujours lisible au survol) + gardien prospectif — re-balayage APRÈS : 0 restant | 0.9.0 | v120 | 1686 | GO |
 
 ## Architecture atteinte
 

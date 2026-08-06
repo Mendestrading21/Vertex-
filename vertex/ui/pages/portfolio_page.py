@@ -386,7 +386,7 @@ async function renderSynthese(){
         <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${t.sym}">${t.sym}</button>
         <span class="vx-badge ${toneCls(x.st.tone)}">${esc(x.st.label)}</span>
         <span class="vx-num vx-mono ${t.pl>0?'vx-pos':t.pl<0?'vx-neg':'vx-muted'}">${t.pl!=null?VX.fmt.pct(t.pl,1):'n/d'}</span>
-        <span class="vx-grow vx-truncate ${toneCls(na.tone)}" style="font-size:12.5px">${esc(na.label)}</span>
+        <span class="vx-grow vx-truncate ${toneCls(na.tone)}" style="font-size:12.5px" title="${esc(na.label)}">${esc(na.label)}</span>
       </div>`;}).join('');}
   }
 }
@@ -496,7 +496,7 @@ async function renderPositions(){
       <td data-label="Conviction">${convOf(t)}</td>
       <td data-label="État de thèse">${stBadge(st)}</td>
       <td data-label="Invalidation" class="vx-num vx-neg">${VX.fmt.nd(s.stop)}</td>
-      <td data-label="Catalyseur" class="vx-truncate" style="max-width:150px">${cat?esc(cat):'—'}</td>
+      <td data-label="Catalyseur" class="vx-truncate" style="max-width:150px" title="${cat?esc(cat):'—'}">${cat?esc(cat):'—'}</td>
       <td data-label="Prochaine action" class="${toneCls(na.tone)}" style="max-width:230px;font-size:12px">${esc(na.label)}</td>
       <td data-label="Actions"><div class="vx-row-actions">
         <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyse</button>
@@ -876,7 +876,7 @@ async function renderWatchlist(){
         ${wl.map(w=>`<tr>
           <td data-label="Titre"><span class="vx-ticker">${w.sym}</span> ${E().badges(w.sym)}</td>
           <td data-label="Priorité"><span class="vx-badge ${/haute|élevée|elevee/i.test(w.priority||'')?'vx-warn':''}">${esc(w.priority||'normale')}</span></td>
-          <td data-label="Thèse" class="vx-truncate" style="max-width:200px">${esc(w.thesis||'—')}</td>
+          <td data-label="Thèse" class="vx-truncate" style="max-width:200px" title="${esc(w.thesis||'—')}">${esc(w.thesis||'—')}</td>
           <td data-label="Zone" class="vx-mono">${esc(w.zone||'—')}</td>
           <td data-label="Catalyseur">${esc(w.catalyst||'—')}</td>
           <td data-label="Statut"><select class="vx-select ${wlCls(w.status)}" data-wl-status="${w.sym}" style="width:auto;padding:3px 24px 3px 8px">
