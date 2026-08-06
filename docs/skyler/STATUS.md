@@ -1252,6 +1252,14 @@ SW v127) ; merge vers `main` sur accord explicite uniquement.
   quotes pourcent-encodées ; sentiment lexical FR/EN ; parse_rss sans
   exception + suffixe éditeur retiré ; dedupe titre normalisé/lien
   premier conservé). Moteur intact. Suite 1856/2 skipped.
+- **Lot 103 — livré** : barème de liquidité figé (8 tests —
+  liquidity.assess n'avait qu'un test superficiel : refus bid/ask
+  nommé score 0, contrat parfait 100 zéro grief, pénalité dégressive
+  4-10 % exacte sans grief, spread > 10 % jamais traitable même à
+  score ≥ 40, mid absent = prudence 100 %, OI inconnu (−15) < OI
+  faible (−30), volume None silencieux vs faible nommé, cumul exact
+  100−45−30−10=15). expected_move/event_risk déjà figés (dit).
+  Moteur intact. Suite 1864/2 skipped.
 
 ### MINI-BILAN tournée 91-95
 

@@ -116,6 +116,7 @@
 | 100 | `SKYLER-LOT-100.md` | BILAN CONSOLIDÉ n°7 — tournée 76-100 : 24 lots, +133 tests (1706→1839), 4 défauts réels corrigés (href=#, /api/desk no-store, SW jamais enregistré→offline réel, code mort committee), 2 chantiers (polices locales, PWA offline), 114 caractérisations « moteurs blindés » 86-99, SW v124→v127, PR #109→#132 | 0.9.0 | v127 | 1839 | GO |
 | 101 | `SKYLER-LOT-101.md` | Boucle continue : entonnoir de chaîne options figé (8 tests — bornes DTE inclusives, préférées d'abord triées au centre, fenêtre strikes ±35 % exacte, échantillonnage 14 gardant les 2 extrêmes, expiration sans strike jamais envoyée au broker) | 0.9.0 | v127 | 1847 | GO |
 | 102 | `SKYLER-LOT-102.md` | Boucle continue : gardien XSS des news figé (9 tests — balises retirées puis échappement complet, balise cassée inerte, javascript:/data: supprimés, sentiment FR/EN, parse_rss sans exception, dedupe titre normalisé/lien) | 0.9.0 | v127 | 1856 | GO |
+| 103 | `SKYLER-LOT-103.md` | Boucle continue : barème de liquidité figé (8 tests — refus bid/ask nommé, pénalité dégressive 4-10 % sans grief, spread > 10 % jamais traitable, OI inconnu < OI faible, volume silencieux vs nommé, cumul exact 15) | 0.9.0 | v127 | 1864 | GO |
 
 ## Architecture atteinte
 
