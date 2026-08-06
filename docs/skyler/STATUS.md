@@ -1106,6 +1106,19 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   backups listés → restore PAR LA ROUTE → remise en état
   last-writer-wins. Aucune perte possible constatée ; 4 listes de clés
   alignées (gardien vert). 2 gardiens API. Suite 1722/2 skipped.
+- **Lot 85 — livré** : alertes + flux live. Cycle alerte 4/4 (création
+  API client → localStorage → sync serveur → suppression propre) ; SSE
+  sain — mes 2 sondes initiales étaient des faux positifs (pipe
+  bufferisé ; onmessage vs événements nommés), vérifiés au socket brut
+  puis addEventListener, dits. 3 gardiens. Suite 1725/2 skipped.
+
+### MINI-BILAN tournée 81-85
+
+Polices auto-hébergées (0 requête externe prouvé) · offline RÉEL
+corrigé (défaut MAJEUR : le shell canonique n'enregistrait jamais le
+service worker) · 26 contrôles interactifs 0 inerte · cycle desk 6/6
+sans perte possible · alertes+SSE 4/4 sains. Suite 1714 → 1725,
+SW v125 → v127, 4 outils d'audit rejouables versionnés dans tools/.
 
 ## Index des lots
 
