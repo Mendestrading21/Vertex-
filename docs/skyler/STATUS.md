@@ -775,6 +775,20 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   0 défaut sous SW v116 ; balayage APRÈS couleurs calculées : « palette
   OK » sur /journal, /system, /design-system ; moteur 0.9.0 inchangé.
 
+## Lot 61 — livré (2026-08-06, reprise du travail continu)
+
+- Catalyst Runway (briefing) : les étiquettes se chevauchaient sur les
+  DTE proches (capture lot 56) — anti-collision DÉTERMINISTE à deux
+  rangées par côté, place calculée sur la position bornée au viewBox ;
+  le harnais de preuve (chevauchements MESURÉS par bounding boxes) a
+  attrapé un défaut résiduel au premier essai, corrigé avant livraison :
+  0 chevauchement, 0 hors-limites sur le calendrier dense ;
+- gardien anti-palette du lot 59 ÉTENDU aux JS de charts : 25 fallbacks
+  périmés purgés (chart-core, runway, anomaly-scan — `--vx-text-dim`
+  actif —, regime-aura) + 3e token fantôme `--vx-bg-app` → `--vx-bg-0` ;
+- preuves : 5 tests rouges→verts ; suite 1675/2 skipped ; RC outillée GO
+  0 défaut sous SW v117 ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

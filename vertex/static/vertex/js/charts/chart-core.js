@@ -390,7 +390,7 @@
         <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:230px;display:block;margin:0 auto">
           ${track}${valArc}${needle}
           <text x="${cx}" y="${cy - 20}" text-anchor="middle" fill="${valColor}" font-size="30" font-weight="800" style="font-variant-numeric:tabular-nums">${disp}</text>
-          <text x="${cx}" y="${cy - 3}" text-anchor="middle" fill="var(--vx-text-muted,#817d77)" font-size="10" letter-spacing=".5">${(o.unit || '') + (o.label ? ' · ' + o.label : '')}</text>
+          <text x="${cx}" y="${cy - 3}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="10" letter-spacing=".5">${(o.unit || '') + (o.label ? ' · ' + o.label : '')}</text>
         </svg>
         ${o.reading ? `<div class="vx-meta" style="text-align:center;margin-top:4px">${o.reading}</div>` : ''}
       </div>`;
@@ -444,7 +444,7 @@
       const aria = `${lbl} : ${fmt(r.d.value)}${r.d.sub ? ' ' + r.d.sub : ''}`;
       return `<g role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
         <rect x="${r.x.toFixed(1)}" y="${r.y.toFixed(1)}" width="${Math.max(0, r.w - 1.5).toFixed(1)}" height="${Math.max(0, r.h - 1.5).toFixed(1)}"
-          rx="3" fill="${col}" fill-opacity=".82" stroke="var(--vx-bg-app,#050505)" stroke-width="1.5"/>
+          rx="3" fill="${col}" fill-opacity=".82" stroke="var(--vx-bg-0,#050505)" stroke-width="1.5"/>
         ${small ? '' : `<text x="${(r.x + 6).toFixed(1)}" y="${(r.y + 16).toFixed(1)}" fill="#f3f1ed" font-size="11" font-weight="700">${lbl.slice(0, Math.floor(r.w / 7))}</text>
         <text x="${(r.x + 6).toFixed(1)}" y="${(r.y + 30).toFixed(1)}" fill="rgba(255,255,255,.82)" font-size="10" style="font-variant-numeric:tabular-nums">${fmt(r.d.value)}${r.d.sub ? ' · ' + r.d.sub : ''}</text>`}
       </g>`;
@@ -486,8 +486,8 @@
         const yc = y(b.to), xn = gap + (i + 1) * (bw + gap);
         svg += `<line x1="${(x + bw).toFixed(1)}" y1="${yc.toFixed(1)}" x2="${xn.toFixed(1)}" y2="${yc.toFixed(1)}" stroke="rgba(255,255,255,.18)" stroke-dasharray="2,2"/>`;
       }
-      svg += `<text x="${(x + bw / 2).toFixed(1)}" y="${(yTop - 4).toFixed(1)}" text-anchor="middle" font-size="10" fill="var(--vx-text-secondary,#b7b2aa)" style="font-variant-numeric:tabular-nums">${(b.val >= 0 && !b.total ? '+' : '') + fmt(b.val)}</text>`;
-      svg += `<text x="${(x + bw / 2).toFixed(1)}" y="${(H - 9).toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--vx-text-muted,#817d77)">${String(b.label).slice(0, Math.floor(bw / 6) + 2)}</text>`;
+      svg += `<text x="${(x + bw / 2).toFixed(1)}" y="${(yTop - 4).toFixed(1)}" text-anchor="middle" font-size="10" fill="var(--vx-text-secondary,#BABABA)" style="font-variant-numeric:tabular-nums">${(b.val >= 0 && !b.total ? '+' : '') + fmt(b.val)}</text>`;
+      svg += `<text x="${(x + bw / 2).toFixed(1)}" y="${(H - 9).toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--vx-text-muted,#8A8284)">${String(b.label).slice(0, Math.floor(bw / 6) + 2)}</text>`;
     });
     const aria = (o.ariaLabel || 'décomposition') + ' : ' + bars.map(b => b.label + ' ' + fmt(b.val)).join(', ');
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${svg}</svg>`;
@@ -517,7 +517,7 @@
       spokes += `<line x1="${cx}" y1="${cy}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="rgba(255,255,255,.06)"/>`;
       const [lx, ly] = pt(i, R + 13);
       const anchor = Math.abs(lx - cx) < 6 ? 'middle' : (lx > cx ? 'start' : 'end');
-      labels += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="9.5" fill="var(--vx-text-muted,#817d77)">${a.label}</text>`;
+      labels += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="9.5" fill="var(--vx-text-muted,#8A8284)">${a.label}</text>`;
     });
     const clamp = (v) => Math.max(0, Math.min(1, (v || 0) / max));
     const vpts = axes.map((a, i) => pt(i, R * clamp(a.value)).map(n => n.toFixed(1)).join(',')).join(' ');
@@ -544,12 +544,12 @@
       + nodes.map((n, i) => {
         const col = n.color || toneCol[n.tone] || C.colors.neutral;
         const active = n.tone === 'active' || (n.count > 0);
-        const bg = active ? 'rgba(57,184,120,.09)' : 'var(--vx-surface-2,#111315)';
-        const arrow = i < nodes.length - 1 ? '<span aria-hidden="true" style="align-self:center;color:var(--vx-text-muted,#817d77);padding:0 5px;font-size:13px">→</span>' : '';
+        const bg = active ? 'rgba(57,184,120,.09)' : 'var(--vx-surface-2,#121214)';
+        const arrow = i < nodes.length - 1 ? '<span aria-hidden="true" style="align-self:center;color:var(--vx-text-muted,#8A8284);padding:0 5px;font-size:13px">→</span>' : '';
         return '<div style="flex:0 0 auto;min-width:76px;text-align:center;padding:8px 10px;border-radius:9px;background:' + bg + ';border:1px solid ' + col + '55">'
-          + '<div style="font-size:10.5px;color:var(--vx-text-secondary,#b7b2aa);text-transform:capitalize;white-space:nowrap">' + String(n.label) + '</div>'
+          + '<div style="font-size:10.5px;color:var(--vx-text-secondary,#BABABA);text-transform:capitalize;white-space:nowrap">' + String(n.label) + '</div>'
           + (n.count != null ? '<div style="font-size:15px;font-weight:800;color:' + col + ';font-variant-numeric:tabular-nums">' + n.count + '</div>' : '')
-          + (n.sub ? '<div style="font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--vx-text-muted,#817d77)">' + n.sub + '</div>' : '')
+          + (n.sub ? '<div style="font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--vx-text-muted,#8A8284)">' + n.sub + '</div>' : '')
           + '</div>' + arrow;
       }).join('') + '</div>';
     return el;
@@ -580,12 +580,12 @@
         transform="rotate(-90 ${cx} ${cy})"/>`;
       legend += `<div class="vx-flex" style="gap:6px;align-items:center;font-size:11px">
         <span style="width:9px;height:9px;border-radius:2px;background:${col};flex:0 0 auto"></span>
-        <span class="vx-grow vx-truncate" style="color:var(--vx-text-secondary,#b7b2aa)">${String(d.label)}</span>
+        <span class="vx-grow vx-truncate" style="color:var(--vx-text-secondary,#BABABA)">${String(d.label)}</span>
         <b class="vx-mono" style="color:${col}">${Number.isInteger(d.value) ? d.value : (+d.value).toFixed(1)}${o.unit || ' %'}</b></div>`;
     });
     const center = (o.centerValue != null)
-      ? `<text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="26" font-weight="800" fill="var(--vx-text-primary,#f3f1ed)" style="font-variant-numeric:tabular-nums">${o.centerValue}</text>
-         ${o.centerLabel ? `<text x="${cx}" y="${cy + 16}" text-anchor="middle" font-size="9.5" fill="var(--vx-text-muted,#817d77)">${o.centerLabel}</text>` : ''}`
+      ? `<text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="26" font-weight="800" fill="var(--vx-text-primary,#F8F5F3)" style="font-variant-numeric:tabular-nums">${o.centerValue}</text>
+         ${o.centerLabel ? `<text x="${cx}" y="${cy + 16}" text-anchor="middle" font-size="9.5" fill="var(--vx-text-muted,#8A8284)">${o.centerLabel}</text>` : ''}`
       : '';
     const aria = (o.ariaLabel || 'anneaux') + ' : ' + items.map(d => d.label + ' ' + Math.round(d.value)).join(', ');
     el.innerHTML = `<div class="vx-flex vx-wrap" style="gap:14px;align-items:center;justify-content:center">
@@ -618,8 +618,8 @@
       rows += `<polygon points="${(cx - w0 / 2).toFixed(1)},${y} ${(cx + w0 / 2).toFixed(1)},${y} ${(cx + w1 / 2).toFixed(1)},${y + rowH} ${(cx - w1 / 2).toFixed(1)},${y + rowH}"
         fill="${col}" fill-opacity=".8"/>
         <text x="${cx}" y="${y + rowH / 2 - 1}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="800" fill="#0b0b0c" style="font-variant-numeric:tabular-nums">${fmt(s.value)}</text>`;
-      rows += `<text x="8" y="${y + rowH / 2}" dominant-baseline="middle" font-size="10.5" fill="var(--vx-text-secondary,#b7b2aa)">${String(s.label)}</text>
-        <text x="${W - 6}" y="${y + rowH / 2}" text-anchor="end" dominant-baseline="middle" font-size="10" fill="var(--vx-text-muted,#817d77)" style="font-variant-numeric:tabular-nums">${pct}%</text>`;
+      rows += `<text x="8" y="${y + rowH / 2}" dominant-baseline="middle" font-size="10.5" fill="var(--vx-text-secondary,#BABABA)">${String(s.label)}</text>
+        <text x="${W - 6}" y="${y + rowH / 2}" text-anchor="end" dominant-baseline="middle" font-size="10" fill="var(--vx-text-muted,#8A8284)" style="font-variant-numeric:tabular-nums">${pct}%</text>`;
     });
     const aria = (o.ariaLabel || 'entonnoir') + ' : ' + stages.map(s => s.label + ' ' + fmt(s.value)).join(' → ');
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${rows}</svg>`;

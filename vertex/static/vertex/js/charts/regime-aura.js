@@ -82,8 +82,8 @@
           <line x1="30" y1="${cy}" x2="${W - 30}" y2="${cy}" stroke="url(#${uid}z)" stroke-width="1.3"/>
           <path d="${track}" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3" stroke-linecap="round"/>
           <path d="${val}" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="3" stroke-linecap="round"/>
-          <text x="${cx}" y="${cy - 10}" text-anchor="middle" fill="var(--vx-text,#f3f1ed)" font-size="17" font-weight="800">${o.regime}</text>
-          <text x="${cx}" y="${cy + 8}" text-anchor="middle" fill="var(--vx-text-muted,#817d77)" font-size="10.5">${confTxt}</text>
+          <text x="${cx}" y="${cy - 10}" text-anchor="middle" fill="var(--vx-text,#F8F5F3)" font-size="17" font-weight="800">${o.regime}</text>
+          <text x="${cx}" y="${cy + 8}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="10.5">${confTxt}</text>
         </svg>
         ${chips.length ? `<div class="vx-ra-grammar">${chips.join('')}</div>` : ''}
         <div class="vx-ra-verdict" data-tone="${tone}">▸ ${verdict}${inval}</div>
