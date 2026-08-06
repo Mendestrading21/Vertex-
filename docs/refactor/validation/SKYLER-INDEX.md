@@ -89,6 +89,7 @@
 | 73 | `SKYLER-LOT-73.md` | PROGRAMME 100 % : a11y — tickers cliquables non focusables (4 défauts) → tabindex+role + délégation clavier Enter/Espace globale ; balayage APRÈS 0 défaut | 0.9.0 | v124 | 1702 | GO |
 | 74 | `SKYLER-LOT-74.md` | PROGRAMME 100 % : robustesse données limites — 0×5xx sur symboles/vues/POST malformés, 404 API JSON+nosniff, refus honnêtes — SAIN, 4 gardiens | 0.9.0 | v124 | 1706 | GO |
 | 75 | `SKYLER-LOT-75.md` | PROGRAMME 100 % (clôture) : RC FINALE — suite + audit + responsive + a11y 0 défaut sur base fraîche + BILAN n°6 — programme TERMINÉ, déclaration 100 % faite | 0.9.0 | v124 | 1706 | GO |
+| 76 | `SKYLER-LOT-76.md` | Boucle continue : hygiène JS/HTML — 0 debug/dup/TODO ; 1 défaut réel (onglets démo href="#") corrigé + gardiens « plus jamais » | 0.9.0 | v125 | 1708 | GO |
 
 ## Architecture atteinte
 

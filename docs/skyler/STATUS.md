@@ -1057,6 +1057,17 @@ déclaration 100 % à l'utilisateur).
   outillé GO, responsive 0 défaut, a11y 0 défaut) + BILAN n°6 en tête +
   déclaration 100 % faite à l'utilisateur. Retour RC espacées (~30 min).
 
+## BOUCLE CONTINUE — EN COURS (ré-ouverte au lot 76, 2026-08-06)
+
+Directive utilisateur : « Continue encore et encore ne t'arrête pas. »
+Cadence resserrée (~2 min), tournée d'inspection perpétuelle : chaque lot
+mesure un angle, corrige les défauts réels trouvés, garde la classe.
+
+- **Lot 76 — livré** : hygiène JS/HTML. Débogage/duplications/TODO : 0
+  partout ; 1 défaut réel — onglets démo design-system en `href="#"`
+  (saut en haut de page) → ancres non-navigantes + gardien « plus jamais
+  de href=# ». Suite 1708/2 skipped, SW v125 + 4 gardiens.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
