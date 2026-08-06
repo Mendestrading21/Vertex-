@@ -1260,6 +1260,15 @@ SW v127) ; merge vers `main` sur accord explicite uniquement.
   faible (−30), volume None silencieux vs faible nommé, cumul exact
   100−45−30−10=15). expected_move/event_risk déjà figés (dit).
   Moteur intact. Suite 1864/2 skipped.
+- **Lot 104 — livré** : environnement options figé (8 tests —
+  score_environment n'avait que 3 tests de surface : formules exactes
+  des 5 dimensions (IV médiane 20 %→100/60 %→0, IV rank inversé
+  borné, spread 1 %→100/8 %→0, event risk fraction ≤7 j), IV
+  textuelle jamais convertie en silence, verdict 66/45 exact,
+  dimension inconnue EXCLUE de la moyenne (jamais zéro) et NOMMÉE en
+  incertitude, confiance = connues/5 ; 1 sonde corrigée (valeur non
+  parsable = connue mais jamais imminente — réalité figée, dite).
+  Moteur intact. Suite 1872/2 skipped.
 
 ### MINI-BILAN tournée 91-95
 
