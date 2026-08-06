@@ -894,6 +894,23 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   documentaire, pas de bump SW ;
 - suite 1692/2 skipped tenue ; moteur 0.9.0 inchangé.
 
+## Lot 68 — livré (2026-08-06, AUDIT TOTAL volet 3 — IBKR lecture seule)
+
+- les 4 verrous READONLY en place : `readonly=True` EN DUR dans le
+  gateway (non paramétrable), `RequestTimeout=45` (gateway + scheduler),
+  registre IA `FORBIDDEN_TOOLS` (tous les verbes d'ordre bloqués),
+  `READONLY=True` config — aucun verbe d'ordre actif dans vertex/ ;
+- refus honnêtes prouvés sous NO_IBKR : /api/ibkr/positions ok:false +
+  erreur claire (jamais de position inventée), /api/pos-quotes
+  live:false + ts (fraîcheur toujours portée, cache borné purgé) ;
+- UI dégradée exemplaire : « P&L latent indisponible (marques IBKR hors
+  ligne — aucun chiffre inventé) », n/d partout, 0 erreur console ;
+- 34 gardiens dédiés verts (no_orders, ibkr_honesty, order_ticket) ;
+  note doc : la docstring du gateway cite un nom de fichier de test
+  obsolète (divergence documentaire, dite) ;
+- verdict : SAIN, aucun correctif — lot documentaire, suite 1692/2
+  skipped tenue, SW v122, moteur 0.9.0.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
