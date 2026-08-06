@@ -1287,6 +1287,15 @@ XSS règle n°5 enfin figé en direct) · liquidity (barème complet — OI
 inconnu < OI faible) · environment (5 dimensions exactes — inconnue ≠
 zéro) · startup (ordre §10, démarrage jamais bloquant).
 
+- **Lot 106 — livré** : score contextuel des contrats figé (8 tests —
+  contract_scorer §20 n'avait qu'une assertion de constante : score
+  MULTIPLICATIF (aucun facteur ne rachète un défaut fatal), R:R < 2
+  plafonné à 10, non calculable plancher 5, liquidité multiplicateur
+  ≤ 1, DTE hors fenêtre ×0.75 nommé, IV rank ≥ 85 taxée ×0.6 « DTE
+  long ou pas », ULTRA_CONVEX score 0 sans setup EXCEPTIONAL et
+  moitié si convexité < 80 %, prime < 0.10 ×0.3). Moteur intact.
+  Suite 1888/2 skipped.
+
 ### MINI-BILAN tournée 91-95
 
 5 lots, 36 tests, suite 1771 → 1807, **1 défaut réel de moteur corrigé**
