@@ -1345,6 +1345,14 @@ sans OI). Note d'exploitation : lot 108 livré en avance sur
   _summary exacts, aucune variable obligatoire — l'app démarre
   toujours en mode sûr READONLY). Moteur intact. Suite 1928/2
   skipped.
+- **Lot 112 — livré** : santé du runtime IA figée (8 tests —
+  ai/health §10 n'avait qu'un usage superficiel : sans clé MISSING
+  avec note honnête exacte, clé ≠ preuve (CONFIGURED jamais CONNECTED
+  sans appel réel), succès → CONNECTED, échec après succès → DEGRADED
+  tronqué 200, le dernier appel réel fait foi, modèle défaut
+  claude-sonnet-5 + override strip, clé espaces non configurée, la
+  valeur de la clé jamais dans le rapport). Moteur intact. Suite
+  1936/2 skipped.
 
 ### MINI-BILAN tournée 91-95
 
