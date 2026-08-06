@@ -1495,6 +1495,17 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 133 — livré** : passe graphique n°8 — payoff de structure du
+  desk Options : **2 bugs préexistants tués** — (a) le 3e argument
+  `[refPlugin]` passé à `C.mount` (qui n'en prend que 2) était
+  silencieusement ignoré : les repères spot/breakeven ne
+  s'affichaient JAMAIS ; (b) `getPixelForValue(prix)` sur un axe
+  catégorie attend un index → mapping prix→index ajouté. Repères
+  désormais sur tokens (spot info, BE warning — grammaire lot 124,
+  les rgba orphelins morts), zones gain/perte teintées, trait 1.6 +
+  halo. SW v141 → v142 + 4 gardiens. Captures avant/après + zoom
+  envoyées (BE 153.23 et spot 180 enfin visibles). Suite 1984/2,
+  RC GO.
 - **Lot 132 — livré** : passe graphique n°7 — Opportunités : (a) la
   table des ANOMALIES perd ses chiffres nus — l'intensité devient
   une mini-barre de verre (dégradé warning via color-mix, échelle
