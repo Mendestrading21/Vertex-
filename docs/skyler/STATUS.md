@@ -1169,6 +1169,13 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   repli repris confirmé, ATR 0 sans division par zéro. Moteur intact.
   Suite 1797/2 skipped.
 
+- **Lot 94 — livré** : contrat des routes POST figé. 12 routes sondées
+  avec payloads limites : 0×5xx, refus structurés honnêtes partout
+  (« symbol requis », « question vide », « scan pas encore prêt ») ;
+  télémétrie client bornée (troncatures 120/300/160 exactes, line
+  non-entier → None, tampon circulaire plafonné à 100). 4 tests.
+  Suite 1801/2 skipped.
+
 ### MINI-BILAN tournée 86-90 — « moteurs blindés » COMPLET
 
 5 lots, 46 caractérisations nées vertes, suite 1725 → 1771, 0 ligne de
