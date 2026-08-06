@@ -348,12 +348,12 @@
         var kind = (Math.abs(c.delta || 0) >= 0.7 ? 'Achat de tendance (delta directionnel)' : 'Achat de temps — le temps seul n\'est pas une thèse');
         var bars = sc.parts.map(function (p) {
           return '<div class="vx-opt-dim"><span class="vx-opt-dim-l">' + esc(p.k) + '</span>'
-            + '<span class="vx-opt-dim-bar"><i style="width:' + Math.round(p.v / p.max * 100) + '%;background:' + (p.ok ? 'var(--vx-positive,#39b878)' : 'var(--vx-warning,#dda23b)') + '"></i></span>'
+            + '<span class="vx-opt-dim-bar"><i style="width:' + Math.round(p.v / p.max * 100) + '%;background:' + (p.ok ? 'var(--vx-positive,#2BBE90)' : 'var(--vx-warning,#D9BE3C)') + '"></i></span>'
             + '<span class="vx-opt-dim-v">' + p.v + '/' + p.max + '</span></div>';
         }).join('');
         return '<section class="vx-card vx-mb3" aria-label="LEAPS ' + esc(c.sym) + '">'
           + '<div class="vx-flex" style="justify-content:space-between;align-items:flex-start">'
-          + '<div><span class="vx-ticker">' + esc(c.sym) + '</span> <span class="vx-badge" style="color:var(--vx-option,#9c79d0)">CALL ' + nd(c.strike) + ' · ' + esc(String(c.exp).slice(0, 10)) + '</span>'
+          + '<div><span class="vx-ticker">' + esc(c.sym) + '</span> <span class="vx-badge" style="color:var(--vx-option,#9B7BFF)">CALL ' + nd(c.strike) + ' · ' + esc(String(c.exp).slice(0, 10)) + '</span>'
           + '<div class="vx-meta vx-mt1">' + esc(kind) + '</div></div>'
           + '<div style="text-align:right"><div class="vx-kpi-label">Compatibilité LEAPS</div>'
           + '<div class="' + toneCls(tone) + '" style="font-size:28px;font-weight:700">' + sc.total + '<small style="font-size:14px">/100</small></div></div></div>'
@@ -399,7 +399,7 @@
       var dte = t.exp ? Math.round((new Date(t.exp) - Date.now()) / 86400000) : null;
       var na = optNextAction(tt), s = t.entrySnap || {};
       return '<tr>'
-        + '<td data-label="Contrat"><span class="vx-ticker">' + esc(t.sym) + '</span> <span class="vx-badge" style="color:var(--vx-option,#9c79d0)">' + esc(t.type) + ' ' + nd(t.strike) + ' ' + esc(t.exp || '') + '</span></td>'
+        + '<td data-label="Contrat"><span class="vx-ticker">' + esc(t.sym) + '</span> <span class="vx-badge" style="color:var(--vx-option,#9B7BFF)">' + esc(t.type) + ' ' + nd(t.strike) + ' ' + esc(t.exp || '') + '</span></td>'
         + '<td data-label="Qté" class="vx-num">' + t.qty + '</td>'
         + '<td data-label="Coût" class="vx-num">' + price(t.cost) + '</td>'
         + '<td data-label="Marque" class="vx-num">' + (mark != null ? price(mark) : 'n/d') + '</td>'

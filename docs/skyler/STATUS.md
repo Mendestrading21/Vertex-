@@ -789,6 +789,20 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - preuves : 5 tests rouges→verts ; suite 1675/2 skipped ; RC outillée GO
   0 défaut sous SW v117 ; moteur 0.9.0 inchangé.
 
+## Lot 62 — livré (2026-08-06, travail continu)
+
+- dernier angle mort de la classe « ancienne palette » fermé :
+  19 fallbacks périmés dans `js/pages/` (options-gex — orange banni +
+  `--vx-text-dim` ACTIF —, options-intel, options-structure) + 2
+  littéraux runtime de tracking.js réalignés ;
+- gardien prospectif ÉTENDU à TOUT `vertex/static/vertex/js/`
+  récursivement (vendor exclu) : fallback ∈ valeurs actuelles + token
+  existant + zéro orange banni — la classe de défauts est FERMÉE sur
+  tout le dépôt UI (pages Python lot 59, charts lot 61, reste lot 62) ;
+- preuves : 4 tests rouges→verts ; suite 1679/2 skipped ; RC outillée GO
+  0 défaut sous SW v118 ; balayage couleurs calculées « palette OK » sur
+  /options structure+gex et /tracking ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
