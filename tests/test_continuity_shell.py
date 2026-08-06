@@ -84,19 +84,13 @@ def test_router_script_included(client):
 
 
 def test_font_is_non_blocking(client):
-    """La police n'est plus un <link rel=stylesheet> bloquant : preload + swap + noscript."""
+    """Polices AUTO-HÉBERGÉES (lot 81) : fonts.css local + font-display:swap,
+    plus aucune requête externe (le CDN Google a été retiré du shell)."""
     html = client.get('/').get_data(as_text=True)
-    assert 'rel="preload" as="style"' in html and 'fonts.googleapis.com' in html
-    assert "this.rel='stylesheet'" in html
-    assert '<noscript><link rel="stylesheet" href="https://fonts.googleapis.com' in html
-    # plus AUCUN <link rel="stylesheet" ...googleapis...> bloquant hors noscript
-    import re
-    blocking = re.findall(r'<link rel="stylesheet" href="https://fonts\.googleapis[^>]*>', html)
-    # le seul autorisé est dans <noscript>
-    for m in blocking:
-        idx = html.find(m)
-        assert html.rfind('<noscript>', 0, idx) > html.rfind('</noscript>', 0, idx), \
-            'lien police bloquant hors <noscript>'
+    assert '/static/vertex/css/fonts.css' in html
+    assert 'fonts.googleapis.com' not in html and 'fonts.gstatic.com' not in html
+    css = open('vertex/static/vertex/css/fonts.css', encoding='utf-8').read()
+    assert 'font-display: swap' in css, 'swap = rendu jamais bloqué par la police'
 
 
 # ── Cycle de vie & store côté core ──────────────────────────────────────────

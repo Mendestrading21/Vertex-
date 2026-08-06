@@ -1086,6 +1086,11 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   `tools/user_journeys.js`). Constat réel : polices sur CDN Google
   (offline + vie privée) → lot 81 = auto-hébergement. Mini-bilan
   76-80 : 2 défauts corrigés, 8 gardiens, suite 1706→1714.
+- **Lot 81 — livré** : polices AUTO-HÉBERGÉES. 2 woff2 variables locaux
+  (78 kB, dédupliqués aux empreintes), fonts.css local, 7 blocs CDN
+  remplacés (shell + legacy), SW v126 précache les polices. Preuves :
+  0 requête externe sur 8 pages, Inter/JBM chargées localement,
+  parcours 14/14 avec 0 erreur console. Suite 1718/2 skipped.
 
 ## Index des lots
 

@@ -27,10 +27,14 @@ def test_official_typography_tokens():
 
 
 def test_shell_loads_official_fonts():
+    """Polices officielles (Inter + JetBrains Mono) désormais AUTO-HÉBERGÉES
+    (lot 81) : le shell charge fonts.css local, qui déclare les deux familles."""
     shell = _read('vertex/ui/shell/__init__.py')
-    assert 'JetBrains+Mono' in shell, 'le shell doit charger JetBrains Mono'
+    assert '/static/vertex/css/fonts.css' in shell
     assert 'IBM+Plex+Mono' not in shell, 'le shell ne doit plus charger IBM Plex Mono'
-    assert 'family=Inter' in shell
+    css = _read('vertex/static/vertex/css/fonts.css')
+    assert "font-family: 'Inter'" in css
+    assert "font-family: 'JetBrains Mono'" in css
 
 
 # ─────────────────────────────────────────────── Chart Shell canonique
