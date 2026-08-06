@@ -160,7 +160,15 @@ function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt
 function freshBadge(m){const map={live:['live','Live'],delayed:['delayed','Différé'],demo:['fallback','Démo'],stale:['frozen','Périmé'],offline:['offline','Hors ligne'],missing:['offline','Indisponible']};
   const x=map[m]||map.delayed;return '<span class="vx-freshness" data-live="'+x[0]+'"><span class="vx-live-dot"></span>'+x[1]+'</span>';}
 function num(x){return (x!==null&&x!==undefined&&!isNaN(x))?Number(x):null;}
-function breadthOf(sb){if(sb==null)return null;if(typeof sb==='object')return num(sb.above50)??num(sb.above200);return num(sb);}
+/* lot 66 : métrique CANONIQUE d'abord (above200 — celle de la grammaire de
+   régime et de Marchés), repli above50 — et la tuile porte l'ÉTIQUETTE de la
+   métrique réellement affichée (le même chiffre, nommé pareil, partout). */
+function breadthOf(sb){if(sb==null)return null;
+  if(typeof sb==='object'){
+    const a=num(sb.above200);if(a!=null)return{v:a,lbl:'>MM200'};
+    const b=num(sb.above50);if(b!=null)return{v:b,lbl:'>MM50'};
+    return null;}
+  const n=num(sb);return n==null?null:{v:n,lbl:''};}
 /* verdict → classe sémantique (achat=vert, attente=jaune, évite=rouge) */
 function vCls(v){var s=String(v||'').toLowerCase();if(!s)return'';
   if(/(buy|achet|renforc|accumul|long\b|s\+)/.test(s))return'vx-pos';
@@ -203,13 +211,13 @@ async function loadSummary(){
     let vix=num(sum.vix);
     const best=(cmd.top_stocks||[])[0]||null;
     const regHtml=reg.regime?esc(reg.regime):'n/d';
-    const brHtml=br!=null?(br+' %'):'n/d';
-    const brCls=br!=null?(br>=55?'vx-pos':'vx-warn'):'';
+    const brHtml=br!=null?(br.v+' %'):'n/d';
+    const brCls=br!=null?(br.v>=55?'vx-pos':'vx-warn'):'';
     const vixHtml=vix!=null?vix:'n/d';
     const bestHtml=best?esc(best.symbol):'—';
     const kpis=[
       kpiTile('Régime',regHtml+' <span class="vx-meta">('+conf+'%)</span>','','/markets'),
-      kpiTile('Breadth',brHtml,brCls,'/markets?view=breadth'),
+      kpiTile('Breadth'+(br&&br.lbl?' '+br.lbl:''),brHtml,brCls,'/markets?view=breadth'),
       kpiTile('VIX',vixHtml,'','/markets?view=volatility'),
       best?kpiTile('Meilleure opp.',bestHtml,'','/analysis/'+encodeURIComponent(best.symbol)):kpiTile('Meilleure opp.','—','','/opportunities'),
     ].join('');
@@ -225,7 +233,7 @@ async function loadSummary(){
     }
     $('vx-hero-action').innerHTML=action;
     /* Diff honnête depuis la dernière visite. */
-    renderDiff({regime:reg.regime||null,breadth:br,vix:vix,best:best?best.symbol:null,
+    renderDiff({regime:reg.regime||null,breadth:br?br.v:null,vix:vix,best:best?best.symbol:null,
       opp:(cmd.top_stocks||[]).length});
   };
   /* Stale-while-revalidate : peinture IMMÉDIATE depuis le cache (même périmé, ex.
