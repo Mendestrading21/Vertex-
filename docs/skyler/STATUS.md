@@ -1072,6 +1072,10 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   chemin/nom ; 1 défaut réel — `/api/desk` (données personnelles) sans
   Cache-Control → `no-store` par le middleware + gardiens. Suite 1710/2
   skipped, SW v125 (pas de bump — serveur).
+- **Lot 78 — livré** : libellés français. Texte affiché 8 pages +
+  sources : 0 anglais d'interface, 0 accent manquant, ponctuation
+  conforme (l'espace avant « ; » est la norme FR — faux positif de la
+  sonde, dit). SAIN — 2 gardiens prospectifs. Suite 1712/2 skipped.
 
 ## Index des lots
 

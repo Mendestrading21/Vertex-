@@ -91,6 +91,7 @@
 | 75 | `SKYLER-LOT-75.md` | PROGRAMME 100 % (clôture) : RC FINALE — suite + audit + responsive + a11y 0 défaut sur base fraîche + BILAN n°6 — programme TERMINÉ, déclaration 100 % faite | 0.9.0 | v124 | 1706 | GO |
 | 76 | `SKYLER-LOT-76.md` | Boucle continue : hygiène JS/HTML — 0 debug/dup/TODO ; 1 défaut réel (onglets démo href="#") corrigé + gardiens « plus jamais » | 0.9.0 | v125 | 1708 | GO |
 | 77 | `SKYLER-LOT-77.md` | Boucle continue : sécurité en-têtes/contenu — 4 en-têtes partout, contenu 0 fuite ; défaut réel : blob desk perso sans Cache-Control → no-store gardé | 0.9.0 | v125 | 1710 | GO |
+| 78 | `SKYLER-LOT-78.md` | Boucle continue : libellés FR — 0 anglais d'interface, 0 accent manquant, ponctuation conforme (espace avant ; = norme FR, faux positif dit) — SAIN + 2 gardiens | 0.9.0 | v125 | 1712 | GO |
 
 ## Architecture atteinte
 
