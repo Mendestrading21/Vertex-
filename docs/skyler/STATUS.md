@@ -1182,6 +1182,13 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   Repérage honnête : indicators/anomaly/events/call_selector déjà
   couverts (dit). Suite 1807/2 skipped.
 
+- **Lot 96 — livré** : socle math du lab options figé (7 tests —
+  _ncdf CDF de table, _bs dégénéré → intrinsèque jamais NaN, PARITÉ
+  PUT-CALL exacte à 1e-9, golden BS 10,19 recalculé à la main : mon
+  premier golden mémoire 10,27 était faux, LE MOTEUR AVAIT RAISON,
+  dit ; _pct jamais de division par zéro, _star qualité d'abord, _rr
+  jamais inventé). Moteur intact. Suite 1814/2 skipped.
+
 ### MINI-BILAN tournée 91-95
 
 5 lots, 36 tests, suite 1771 → 1807, **1 défaut réel de moteur corrigé**
