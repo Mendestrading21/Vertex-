@@ -1450,6 +1450,15 @@ Marchés (lignes ultra propres transversales). Pivot de la boucle vers
 l'esthétique sur directive utilisateur — chaque page au maximum,
 sans autorisation demandée.
 
+- **Lot 121 — livré** : amélioration graphique n°3 (Opportunités) —
+  entonnoir « ultra propre » dans chart-core (un seul ton de marque
+  en dégradé vertical brand → cyan, opacité qui décroît avec la
+  profondeur, UN chiffre par étage — les % doublés supprimés —, la
+  plus forte perte marquée −N discret) + zone actionnable du scatter
+  teintée en dégradé positif léger. Aucun littéral couleur nouveau.
+  SW v129 → v130 + 4 gardiens. Captures avant/après envoyées.
+  Suite 1984/2, RC GO.
+
 ### MINI-BILAN tournée 91-95
 
 5 lots, 36 tests, suite 1771 → 1807, **1 défaut réel de moteur corrigé**
