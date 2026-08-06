@@ -1458,6 +1458,15 @@ sans autorisation demandée.
   teintée en dégradé positif léger. Aucun littéral couleur nouveau.
   SW v129 → v130 + 4 gardiens. Captures avant/après envoyées.
   Suite 1984/2, RC GO.
+- **Lot 122 — livré** : amélioration graphique n°4 (Analyse) —
+  radar en dégradé RADIAL dans chart-core (centre quasi transparent
+  → bord de marque : la surface respire), points sommets nets avec
+  halo, grille en opacité dégressive (l'extérieur guide, l'intérieur
+  murmure), trait 1.6 jointures arrondies, id de dégradé unique par
+  hôte. Bénéficiaires : scorecard des fiches Analyse + dossier
+  analyste. SW v130 → v131 + 4 gardiens. Captures fiche ACN
+  avant/après envoyées. Suite 1984/2, RC GO. (Démarré sur « Go »
+  utilisateur sans attendre le réveil.)
 
 ### MINI-BILAN tournée 91-95
 

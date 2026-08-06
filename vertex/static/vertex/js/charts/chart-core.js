@@ -559,9 +559,11 @@
     const cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 26;
     const ang = (i) => -Math.PI / 2 + i * 2 * Math.PI / N;
     const pt = (i, r) => [cx + r * Math.cos(ang(i)), cy + r * Math.sin(ang(i))];
+    /* LOT 122 — grille en opacité DÉGRESSIVE (l'anneau extérieur guide,
+       l'intérieur murmure) : la profondeur se lit sans bruit. */
     let grid = '';
-    [0.25, 0.5, 0.75, 1].forEach(f => {
-      grid += `<polygon points="${axes.map((_, i) => pt(i, R * f).map(n => n.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1"/>`;
+    [[0.25, .035], [0.5, .05], [0.75, .065], [1, .09]].forEach(([f, op]) => {
+      grid += `<polygon points="${axes.map((_, i) => pt(i, R * f).map(n => n.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="rgba(255,255,255,${op})" stroke-width="1"/>`;
     });
     let spokes = '', labels = '';
     axes.forEach((a, i) => {
@@ -574,10 +576,22 @@
     const clamp = (v) => Math.max(0, Math.min(1, (v || 0) / max));
     const vpts = axes.map((a, i) => pt(i, R * clamp(a.value)).map(n => n.toFixed(1)).join(',')).join(' ');
     const col = o.color || C.colors.brand;
-    const dots = axes.map((a, i) => { const [px, py] = pt(i, R * clamp(a.value)); return `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.6" fill="${col}"/>`; }).join('');
+    /* LOT 122 — remplissage en dégradé RADIAL (centre transparent → bord
+       coloré) : la surface respire au lieu d'être un aplat. Points sommets
+       nets avec halo léger. Aucun littéral couleur nouveau. */
+    const rid = 'vxRad-' + String(el.id || 'r').replace(/[^a-zA-Z0-9_-]/g, '');
+    const rdefs = `<defs><radialGradient id="${rid}" cx="50%" cy="50%" r="65%">
+      <stop offset="0" stop-color="${col}" stop-opacity=".04"/>
+      <stop offset="1" stop-color="${col}" stop-opacity=".30"/>
+    </radialGradient></defs>`;
+    const dots = axes.map((a, i) => {
+      const [px, py] = pt(i, R * clamp(a.value));
+      return `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="5" fill="${col}" fill-opacity=".18"/>
+        <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.4" fill="${col}"/>`;
+    }).join('');
     const aria = (o.ariaLabel || 'radar') + ' : ' + axes.map(a => a.label + ' ' + Math.round(a.value || 0)).join(', ');
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block;margin:0 auto" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
-      ${grid}${spokes}<polygon points="${vpts}" fill="${col}" fill-opacity=".18" stroke="${col}" stroke-width="1.8"/>${dots}${labels}</svg>`;
+      ${rdefs}${grid}${spokes}<polygon points="${vpts}" fill="url(#${rid})" stroke="${col}" stroke-width="1.6" stroke-linejoin="round"/>${dots}${labels}</svg>`;
     return el;
   };
 
