@@ -1370,6 +1370,26 @@ sans OI). Note d'exploitation : lot 108 livré en avance sur
   (1.5 pile = décimal, 1.51 = pourcentage averti), ordure → triple
   None, exports limités aux deux portes). Moteur intact. Suite
   1952/2 skipped.
+- **Lot 115 — livré** : backtest recherche figé (8 tests —
+  research/backtest §29 + factory.apply_costs n'avaient aucun test
+  direct : rotation 0 = coût 0, chaque aller-retour se paie
+  (formule exacte (spread+slippage)/100 × rotation), position 0 =
+  équité plate, vide = None honnête, avertissement « walk-forward
+  requis » sur CHAQUE résultat, longueurs tronquées au plus court,
+  demi-position = moitié d'exposition). Moteur intact. Suite 1960/2
+  skipped.
+
+### MINI-BILAN tournée 111-115
+
+5 lots, 40 tests, suite **1928 → 1960 passed / 2 skipped**, 0 défaut
+moteur trouvé, 0 sonde corrigée (premier passage partout), SW v127
+stable, skyler_core 0.9.0 intact, PR #144 → #148 : config_validation
+(conséquence exacte par absence, secrets jamais exposés) · ai/health
+(clé ≠ preuve — jamais CONNECTED sans appel réel) · provenance models
+(STALE utilisable, 0/False vraies valeurs) · iv_units (unité devinée =
+bug, legacy étiquetée) · research/backtest (un backtest n'est jamais
+une preuve). Note d'exploitation : le serveur MCP des réveils a changé
+deux fois de nom — absorbé, repli encodé au canevas.
 
 ### MINI-BILAN tournée 91-95
 
