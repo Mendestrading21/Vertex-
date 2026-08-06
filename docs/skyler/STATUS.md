@@ -1201,6 +1201,14 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   certitude neutralisé, bornes grade exactes, CHOP jamais un BUY,
   poids = 100). option_anomalies déjà couvert (21 tests, dit).
   Moteurs intacts. Suite 1830/2 skipped.
+- **Lot 99 — livré** : broker SSE + états système figés (9 tests —
+  live_stream n'avait AUCUN test direct : canal inconnu reclassé
+  system, replay Last-Event-ID exact, tampon circulaire borné, client
+  lent jamais bloquant (501 événements), unsubscribe idempotent,
+  framing SSE nommé exact (leçon lot 85) ; status_service :
+  ok/warming/degraded, rassis = avertissement pas panne, pas de
+  timestamp → unknown honnête, mode demo>ibkr>cloud). Moteurs
+  intacts. Suite 1839/2 skipped.
 
 ### MINI-BILAN tournée 91-95
 
