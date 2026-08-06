@@ -1097,6 +1097,10 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   d'inline : gardien anti-reflet du fuzz 43, attrapé et dit). Preuve
   APRÈS : reload OFFLINE rendu depuis le cache, Inter offline, états
   honnêtes. Suite 1720/2 skipped, SW v127 + 4 gardiens.
+- **Lot 83 — livré** : contrôles interactifs. 26 tris/onglets/selects
+  cliqués en vrai sur 8 vues : l'ordre change, les vues basculent avec
+  leur état visuel, 0 inerte, 0 erreur console. SAIN — outil
+  tools/controls_audit.js versionné. Suite 1720/2 skipped.
 
 ## Index des lots
 
