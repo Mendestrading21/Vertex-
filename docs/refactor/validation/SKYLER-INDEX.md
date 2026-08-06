@@ -142,6 +142,7 @@
 | 126 | `SKYLER-LOT-126.md` | Amélioration graphique n°8 (Système — 1re tournée TERMINÉE 8/8) : jauge matière verre (dégradé + halo, toutes les jauges héritent), libellés kv protégés (fin des « Ét at »), badge canaux adaptatif ; captures envoyées | 0.9.0 | v135 | 1984 | GO |
 | 127 | `SKYLER-LOT-127.md` | Passe n°2 — heatmaps matière verre : tuiles dégradées sur tokens (les derniers rgba hors palette éliminés), liseré inset, grille aérée — matrice scénarios options, secteurs Marchés et P&L mensuel héritent ; captures envoyées | 0.9.0 | v136 | 1984 | GO |
 | 128 | `SKYLER-LOT-128.md` | Passe n°3 — donut : la catégorie dominante et sa part (« 55 % AVOID ») au CENTRE de l'anneau, dans la couleur de son arc (plugin vxDonutCenter, rien si total nul) — tous les donuts héritent ; captures envoyées | 0.9.0 | v137 | 1984 | GO |
+| 129 | `SKYLER-LOT-129.md` | Passe n°4 — BUG visuel corrigé : rails CALME↔STRESS / DÉFENSE↔ATTAQUE invisibles (override noir !important) → dégradé sémantique rétabli ; courbe des taux « Actuelle » en cyan ; endDots anti-collision des étiquettes ; captures envoyées | 0.9.0 | v138 | 1984 | GO |
 
 ## Architecture atteinte
 

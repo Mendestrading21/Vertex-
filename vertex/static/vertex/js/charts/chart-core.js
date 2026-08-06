@@ -368,6 +368,21 @@
       id: 'vxEndDots',
       afterDatasetsDraw(chart) {
         const { ctx } = chart;
+        /* LOT 129 : anti-collision des noms de série — deux lignes qui
+           finissent à la même hauteur (ex. courbe des taux « Actuelle » /
+           « Séance préc. ») écartent leurs étiquettes d'au moins 11 px au
+           lieu de s'écrire l'une sur l'autre. */
+        const placed = [];
+        const labelY = (y) => {
+          let yy = y;
+          for (let g = 0; g < 8; g++) {
+            const hit = placed.find(p => Math.abs(p - yy) < 11);
+            if (!hit) break;
+            yy = hit + 11;
+          }
+          placed.push(yy);
+          return yy;
+        };
         chart.data.datasets.forEach((d, i) => {
           const meta = chart.getDatasetMeta(i);
           if (!meta || meta.hidden || !meta.data || !meta.data.length) return;
@@ -383,7 +398,7 @@
           if (withLabels && d.label) {
             ctx.font = '600 9px ' + ((window.Chart && Chart.defaults.font.family) || 'Inter,sans-serif');
             ctx.textBaseline = 'middle';
-            ctx.fillText(String(d.label).slice(0, 11), pt.x + 8, pt.y);
+            ctx.fillText(String(d.label).slice(0, 11), pt.x + 8, labelY(pt.y));
           }
           ctx.restore();
         });

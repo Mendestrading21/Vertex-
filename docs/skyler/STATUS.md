@@ -1495,6 +1495,16 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 129 — livré** : passe graphique n°4 — **bug visuel réel
+  corrigé** : les rails CALME↔STRESS et DÉFENSE↔ATTAQUE de Marchés
+  étaient INVISIBLES (une règle neon-glass `background:rgba(0,0,0,.28)
+  !important` écrasait le dégradé sémantique — vérifié au navigateur,
+  backgroundImage:none) → override supprimé, dégradés rétablis.
+  Courbe des taux US : « Actuelle » passe en cyan (elle se détache
+  enfin de l'ombre grise de la veille). C.endDotsPlugin : anti-
+  collision des noms de série (≥ 11 px d'écart — toutes les
+  multiLine héritent). SW v137 → v138 + 4 gardiens. Captures
+  avant/après envoyées (Volatilité + Macro). Suite 1984/2, RC GO.
 - **Lot 128 — livré** : passe graphique n°3 — le donut gagne SON
   chiffre éducatif : la catégorie dominante et sa part (« 55 % /
   AVOID ») s'affichent au CENTRE de l'anneau, dans la couleur de son
