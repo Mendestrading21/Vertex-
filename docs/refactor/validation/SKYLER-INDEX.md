@@ -137,6 +137,7 @@
 | 121 | `SKYLER-LOT-121.md` | Amélioration graphique n°3 (Opportunités) : entonnoir monochrome dégradé brand→cyan (opacité = déperdition, un chiffre par étage, −N sur la plus forte perte) + zone actionnable du scatter teintée en dégradé positif ; captures envoyées | 0.9.0 | v130 | 1984 | GO |
 | 122 | `SKYLER-LOT-122.md` | Amélioration graphique n°4 (Analyse) : radar en dégradé radial (centre transparent → bord de marque), points sommets + halo, grille en opacité dégressive, trait 1.6 — tous les radars héritent ; captures fiche ACN envoyées | 0.9.0 | v131 | 1984 | GO |
 | 123 | `SKYLER-LOT-123.md` | Amélioration graphique n°5 (Portefeuille) : treemap matière verre — dégradé diagonal par tuile (même le neutre honnête gagne de la profondeur), liseré fin de la couleur, part du total % sur les grandes tuiles ; captures envoyées | 0.9.0 | v132 | 1984 | GO |
+| 124 | `SKYLER-LOT-124.md` | Amélioration graphique n°6 (Options) : payoff éducatif — breakeven enfin tracé (« BE $X »), spot tracé, zones gain/perte sur tokens, trait 1.6 + halo doux, arithmétique inchangée ; captures envoyées | 0.9.0 | v133 | 1984 | GO |
 
 ## Architecture atteinte
 
