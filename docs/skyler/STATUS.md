@@ -1195,6 +1195,13 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   None jamais 0 inventé, −10 IV-crush exact, double peine court+IV
   chère, confiance auto-cohérente). Moteur intact. Suite 1822/2 skipped.
 
+- **Lot 98 — livré** : earnings + barème stratégie figés (8 tests —
+  date inconnue honnête, réaction ≤2 j vs drift, run-up avec sortie
+  avant annonce, refus avec chaque exigence NOMMÉE, langage de
+  certitude neutralisé, bornes grade exactes, CHOP jamais un BUY,
+  poids = 100). option_anomalies déjà couvert (21 tests, dit).
+  Moteurs intacts. Suite 1830/2 skipped.
+
 ### MINI-BILAN tournée 91-95
 
 5 lots, 36 tests, suite 1771 → 1807, **1 défaut réel de moteur corrigé**

@@ -111,6 +111,7 @@
 | 95 | `SKYLER-LOT-95.md` | Boucle continue : filtres durs options figés (6 tests — DTE inclusif, delta inconnu jamais classé, refus documentés) + MINI-BILAN 91-95 (1 défaut moteur corrigé) | 0.9.0 | v127 | 1807 | GO |
 | 96 | `SKYLER-LOT-96.md` | Boucle continue : socle math du lab figé (7 tests — parité put-call 1e-9, golden BS recalculé à la main : le moteur avait raison, mon golden mémoire faux dit) | 0.9.0 | v127 | 1814 | GO |
 | 97 | `SKYLER-LOT-97.md` | Boucle continue : scoring pur figé (8 tests — neutres exacts, ROC borné, proxy toujours signalé, −10 IV-crush exact, confiance auto-cohérente) | 0.9.0 | v127 | 1822 | GO |
+| 98 | `SKYLER-LOT-98.md` | Boucle continue : earnings + barème figés (8 tests — modes post-earnings exacts, refus jamais muet, langage de certitude neutralisé, bornes grade 90/80/72/60/45) | 0.9.0 | v127 | 1830 | GO |
 
 ## Architecture atteinte
 
