@@ -1136,6 +1136,13 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   scénarios sans prix jamais un % inventé, comité absent sans biais,
   invalidations plafonnées. Moteurs intacts. Suite 1755/2 skipped.
 
+- **Lot 89 — livré** : track_record figé. Le moteur d'auto-notation
+  (181 lignes) n'avait aucun test dédié → 6 caractérisations nées
+  vertes (ledger simulé, fichiers runtime jamais touchés) : record sans
+  lignes → 0, bords _fwd/_hit_tp1 honnêtes, ledger vide → zéros,
+  n<5 jamais publié, division par zéro impossible, mémo 30 min.
+  Moteur intact. Suite 1761/2 skipped.
+
 ### MINI-BILAN tournée 81-85
 
 Polices auto-hébergées (0 requête externe prouvé) · offline RÉEL
