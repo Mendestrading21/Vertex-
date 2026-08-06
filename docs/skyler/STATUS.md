@@ -1302,6 +1302,15 @@ zéro) · startup (ordre §10, démarrage jamais bloquant).
   triés, tenor exact → taux exact, contrat to_dict, rate_sensitivity
   ±50 bp exacte avec plancher 0 et None honnête). double_prob déjà
   figé (dit). Moteur intact. Suite 1896/2 skipped.
+- **Lot 108 — livré** : surface de volatilité figée (8 tests —
+  vol_surface n'avait que 3 tests d'intégration : realized_vol 0
+  exact sur prix constants et None sur série courte, spot invalide →
+  surface vide + note, IV pourries filtrées, ATM = strike le plus
+  proche du spot, skew jamais inventé sans put ~10 % OTM,
+  STRIKE_IV_DISLOCATION + SMILE_DISCONTINUITY nommées, IV
+  rank/percentile exacts, IV_SPIKE > 1.3× médiane récente, historique
+  plat → rank None jamais 0). horizon_scanners déjà couvert (dit).
+  Moteur intact. Suite 1904/2 skipped.
 
 ### MINI-BILAN tournée 91-95
 
