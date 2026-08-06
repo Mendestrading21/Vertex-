@@ -1399,6 +1399,15 @@ deux fois de nom — absorbé, repli encodé au canevas.
   avertissement nommé avec compte exact « jamais utilisés pour tenir
   une position à travers un événement »). Moteur intact. Suite
   1968/2 skipped.
+- **Lot 117 — livré** : Research Factory figée (8 tests —
+  factory §29 n'avait que 2 tests nominaux : transitions interdites
+  refusées (IDEA ne saute jamais DEFINED, APPROVED ne redevient
+  jamais une idée, RETIRED terminal), REJECTED renaît en IDEA, état
+  inconnu nommé, DEFINED exige 11 champs nommés, APPROVED exige les
+  12 contrôles de biais nommés + walk-forward (« un beau backtest ne
+  suffit jamais »), transitions historisées, embargo réel des splits
+  avec bornes exactes, passed ≥ max(2, n−1) folds positifs).
+  Moteur intact. Suite 1976/2 skipped.
 
 ### MINI-BILAN tournée 91-95
 
