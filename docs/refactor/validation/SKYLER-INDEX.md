@@ -144,6 +144,7 @@
 | 128 | `SKYLER-LOT-128.md` | Passe n°3 — donut : la catégorie dominante et sa part (« 55 % AVOID ») au CENTRE de l'anneau, dans la couleur de son arc (plugin vxDonutCenter, rien si total nul) — tous les donuts héritent ; captures envoyées | 0.9.0 | v137 | 1984 | GO |
 | 129 | `SKYLER-LOT-129.md` | Passe n°4 — BUG visuel corrigé : rails CALME↔STRESS / DÉFENSE↔ATTAQUE invisibles (override noir !important) → dégradé sémantique rétabli ; courbe des taux « Actuelle » en cyan ; endDots anti-collision des étiquettes ; captures envoyées | 0.9.0 | v138 | 1984 | GO |
 | 130 | `SKYLER-LOT-130.md` | Passe n°5 — fiche Analyse : « Performance multi-horizons » en matière verre (dégradé color-mix sur tokens, doux au zéro → dense à la valeur) + MINI-BILAN 126-130 ; captures envoyées | 0.9.0 | v139 | 1984 | GO |
+| 131 | `SKYLER-LOT-131.md` | Passe n°6 — Portefeuille/Risque : stress tests en matière verre (color-mix sur tokens) + le PIRE scénario mis en avant (libellé négatif gras, halo, aria) ; Performance vérifiée (états vides honnêtes) ; captures envoyées | 0.9.0 | v140 | 1984 | GO |
 
 ## Architecture atteinte
 

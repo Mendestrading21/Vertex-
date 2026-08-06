@@ -1495,6 +1495,15 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 131 — livré** : passe graphique n°6 — Portefeuille/Risque :
+  les barres des STRESS TESTS passent en matière VERRE (dégradé de
+  leur propre couleur via color-mix sur tokens, doux au zéro → dense
+  à l'impact) et le PIRE scénario est mis en avant (libellé négatif
+  gras + halo + aria « pire scenario ») — le chiffre éducatif d'un
+  stress test. Vue Performance vérifiée : états vides honnêtes en
+  démo, jauge HHI et donut sectoriel héritent déjà du noyau.
+  SW v139 → v140 + 4 gardiens. Captures avant/après envoyées.
+  Suite 1984/2, RC GO.
 - **Lot 130 — livré** : passe graphique n°5 — fiche Analyse : le bloc
   « Performance multi-horizons » (1 sem./1 mois/1 trim./1 an) passe
   en matière VERRE — chaque barre est un dégradé de sa propre
