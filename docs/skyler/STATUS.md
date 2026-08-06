@@ -1391,6 +1391,15 @@ bug, legacy étiquetée) · research/backtest (un backtest n'est jamais
 une preuve). Note d'exploitation : le serveur MCP des réveils a changé
 deux fois de nom — absorbé, repli encodé au canevas.
 
+- **Lot 116 — livré** : catalyseurs non-earnings figés (8 tests —
+  event_engine §21/§23 n'avait aucun test : non confirmé JAMAIS dans
+  l'horizon actionnable même à 5 j, type inconnu reclassé OTHER et
+  dénoncé, horizon 0-30 j bornes incluses trié par proximité, fenêtre
+  earnings 45 j incluse/46 exclue/passé exclu, next_events cap 3,
+  avertissement nommé avec compte exact « jamais utilisés pour tenir
+  une position à travers un événement »). Moteur intact. Suite
+  1968/2 skipped.
+
 ### MINI-BILAN tournée 91-95
 
 5 lots, 36 tests, suite 1771 → 1807, **1 défaut réel de moteur corrigé**
