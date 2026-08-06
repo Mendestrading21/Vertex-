@@ -88,6 +88,7 @@
 | 72 | `SKYLER-LOT-72.md` | PROGRAMME 100 % : audit performance — DCL <300 ms, 0 doublon, vendor lazy sur /analysis seul, budgets 64 kB gardés — SAIN, mesures publiées | 0.9.0 | v123 | 1699 | GO |
 | 73 | `SKYLER-LOT-73.md` | PROGRAMME 100 % : a11y — tickers cliquables non focusables (4 défauts) → tabindex+role + délégation clavier Enter/Espace globale ; balayage APRÈS 0 défaut | 0.9.0 | v124 | 1702 | GO |
 | 74 | `SKYLER-LOT-74.md` | PROGRAMME 100 % : robustesse données limites — 0×5xx sur symboles/vues/POST malformés, 404 API JSON+nosniff, refus honnêtes — SAIN, 4 gardiens | 0.9.0 | v124 | 1706 | GO |
+| 75 | `SKYLER-LOT-75.md` | PROGRAMME 100 % (clôture) : RC FINALE — suite + audit + responsive + a11y 0 défaut sur base fraîche + BILAN n°6 — programme TERMINÉ, déclaration 100 % faite | 0.9.0 | v124 | 1706 | GO |
 
 ## Architecture atteinte
 

@@ -4,6 +4,38 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — PROGRAMME 100 %, lots 71 → 75 (2026-08-06, bilan n°6)
+
+Directive utilisateur : « Continue à tout développer et quand t'as tout à
+100 tu me dis. » — exécuté en 5 lots prouvés, cadence resserrée.
+**Le PROGRAMME 100 % est TERMINÉ : tout ce qui est prouvable est prouvé,
+gardé par la suite, et vert. Déclaration 100 % faite à l'utilisateur.**
+
+| Mesure | Avant (lot 70) | Après (lot 75) |
+|---|---|---|
+| Tests verts | 1 694 / 2 skipped | **1 706 / 2 skipped** (+12) |
+| Service worker | v123 | **v124** |
+| PR fusionnées | — | **5** (#104 → #108) |
+
+### Les 5 lots et leurs verdicts
+
+1. **Hygiène des références** (lot 71) : docstring du gateway IBKR
+   citait un gardien INEXISTANT → corrigée (3 vrais gardiens READONLY)
+   + contrat « toute référence tests/ citée existe » gardé à vie ;
+2. **Performance** (lot 72) : mesures publiées — DCL < 300 ms, 0 doublon,
+   vendor 160 kB lazy sur /analysis seul — SAIN + budgets 64 kB gardés ;
+3. **Accessibilité** (lot 73) : 4 défauts réels — tickers cliquables
+   inutilisables au clavier → tabindex+role + délégué clavier GLOBAL
+   Enter/Espace ; re-balayage : 0 défaut sur 8 pages ;
+4. **Robustesse** (lot 74) : entrées limites (injection, unicode, 120
+   chars, POST malformés) → 0×5xx, 404 API JSON+nosniff, refus honnêtes
+   live:false+ts — SAIN, contrat gardé ;
+5. **RC FINALE** (lot 75) : suite + audit outillé + responsive + a11y
+   re-prouvés sur base fraîche — 0 défaut partout.
+
+Étapes humaines restantes : validation physique (TWS réel, iPhone —
+vider le cache pour SW v124) ; merge vers `main` sur accord explicite.
+
 ## BILAN — programme AUDIT TOTAL, lots 66 → 70 (2026-08-06, bilan n°5)
 
 Programme demandé par l'utilisateur (« audit totalement complet, tout
@@ -990,7 +1022,7 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - aucune bascule en lot corrélatif — baseline intacte, moteur 0.9.0,
   `main` intacte ; RC n°11 armée (~30 min).
 
-## PROGRAMME 100 % — EN COURS (ouvert au lot 71, 2026-08-06)
+## PROGRAMME 100 % — TERMINÉ (lots 71 → 75, voir bilan n°6 en tête)
 
 Directive utilisateur : « Continue à tout développer et quand t'as tout à
 100 tu me dis. » → sortie de la surveillance espacée, cadence resserrée
@@ -1021,7 +1053,9 @@ déclaration 100 % à l'utilisateur).
   partout, 404 API JSON+nosniff (faux positif XSS de ma sonde vérifié
   aux en-têtes, dit), refus honnêtes live:false+ts. SAIN — 4 gardiens
   prospectifs. Suite 1706/2 skipped, SW v124.
-- Lot 75 : RC FINALE + BILAN n°6 → déclaration 100 %.
+- **Lot 75 — livré** : RC FINALE sur base fraîche (suite 1706/2, audit
+  outillé GO, responsive 0 défaut, a11y 0 défaut) + BILAN n°6 en tête +
+  déclaration 100 % faite à l'utilisateur. Retour RC espacées (~30 min).
 
 ## Index des lots
 
