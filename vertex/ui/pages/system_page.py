@@ -254,9 +254,11 @@ async function loadConnSummary(){
   const col={pos:'var(--vx-positive,#2BBE90)',warn:'var(--vx-warning,#D9BE3C)',neg:'var(--vx-negative,#E9555F)',neutral:'var(--vx-text-muted,#8A8284)'};
   const rows=(d.connections||[]).map(function(c){
     const t=tone[c.status]||'neutral';
-    return '<div style="display:grid;grid-template-columns:150px 130px 1fr;gap:.6rem;align-items:center;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.05)">'
+    /* LOT 126 : la colonne du badge s'adapte au statut (max-content) — fini
+       CONFIGURATION_MISSING qui debordait sur le texte voisin. */
+    return '<div style="display:grid;grid-template-columns:150px minmax(110px,max-content) 1fr;gap:.6rem;align-items:center;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.05)">'
       +'<b>'+esc(c.name)+'</b>'
-      +'<span class="vx-badge" style="color:'+col[t]+';border:1px solid '+col[t]+'">'+esc(c.status)+'</span>'
+      +'<span class="vx-badge" style="color:'+col[t]+';border:1px solid '+col[t]+';justify-self:start">'+esc(c.status)+'</span>'
       +'<span class="vx-dim" style="font-size:12.5px">'+esc(c.detail||'')+(c.action?' <span style="color:var(--vx-orange-500,#DBE1E8)">→ '+esc(c.action)+'</span>':'')+'</span></div>';
   }).join('');
   el.innerHTML=rows||'<div class="vx-empty">Aucun canal.</div>';

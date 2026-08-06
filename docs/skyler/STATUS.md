@@ -1495,6 +1495,17 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 126 — livré** : amélioration graphique n°8 (Système) — **1re
+  tournée esthétique TERMINÉE (8 pages / 8)**. Jauge `C.gauge` en
+  matière VERRE (arc de valeur = dégradé de sa propre couleur, doux →
+  dense, posé sur un halo large ; point de lecture avec halo — toutes
+  les jauges héritent : Santé moteurs, Participation Marchés…) ;
+  libellés clé/valeur protégés dans utilities.css (une valeur longue
+  n'écrase plus le libellé en « Ét at » — gardien lot 57 respecté) ;
+  badge des canaux en colonne adaptative (CONFIGURATION_MISSING
+  s'affiche entier). Aucun littéral couleur nouveau. SW v134 → v135
+  + 4 gardiens. Captures avant/après envoyées. Suite 1984/2, RC GO.
+
 ### MINI-BILAN tournée 121-125
 
 5 lots graphiques (directive esthétique maximale), suite stable

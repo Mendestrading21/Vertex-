@@ -139,6 +139,7 @@
 | 123 | `SKYLER-LOT-123.md` | Amélioration graphique n°5 (Portefeuille) : treemap matière verre — dégradé diagonal par tuile (même le neutre honnête gagne de la profondeur), liseré fin de la couleur, part du total % sur les grandes tuiles ; captures envoyées | 0.9.0 | v132 | 1984 | GO |
 | 124 | `SKYLER-LOT-124.md` | Amélioration graphique n°6 (Options) : payoff éducatif — breakeven enfin tracé (« BE $X »), spot tracé, zones gain/perte sur tokens, trait 1.6 + halo doux, arithmétique inchangée ; captures envoyées | 0.9.0 | v133 | 1984 | GO |
 | 125 | `SKYLER-LOT-125.md` | Amélioration graphique n°7 (Journal) : barres matière verre (dégradé dense→doux + liseré, toutes les barres héritent), famille .vx-stat enfin stylée (répare 5 pages — « Trades3 » collés), hex track record → tokens ; captures envoyées | 0.9.0 | v134 | 1984 | GO |
+| 126 | `SKYLER-LOT-126.md` | Amélioration graphique n°8 (Système — 1re tournée TERMINÉE 8/8) : jauge matière verre (dégradé + halo, toutes les jauges héritent), libellés kv protégés (fin des « Ét at »), badge canaux adaptatif ; captures envoyées | 0.9.0 | v135 | 1984 | GO |
 
 ## Architecture atteinte
 
