@@ -108,6 +108,7 @@
 | 92 | `SKYLER-LOT-92.md` | Boucle continue : committee.py — DÉFAUT RÉEL : « DANS LA ZONE D'ACHAT » était du code mort (garde contradictoire) → fenêtre promise s'ouvre enfin ; 9 tests | 0.9.0 | v127 | 1789 | GO |
 | 93 | `SKYLER-LOT-93.md` | Boucle continue : pivots/structure figé (8 tests — cassure fraîche vs étendue, repli repris, piège baissier, measured move exact, ATR 0 sans crash) | 0.9.0 | v127 | 1797 | GO |
 | 94 | `SKYLER-LOT-94.md` | Boucle continue : contrat POST figé — 12 routes sondées 0×5xx refus structurés + télémétrie client bornée (troncatures exactes, tampon 100) — 4 tests | 0.9.0 | v127 | 1801 | GO |
+| 95 | `SKYLER-LOT-95.md` | Boucle continue : filtres durs options figés (6 tests — DTE inclusif, delta inconnu jamais classé, refus documentés) + MINI-BILAN 91-95 (1 défaut moteur corrigé) | 0.9.0 | v127 | 1807 | GO |
 
 ## Architecture atteinte
 

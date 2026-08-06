@@ -1176,6 +1176,20 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   non-entier → None, tampon circulaire plafonné à 100). 4 tests.
   Suite 1801/2 skipped.
 
+- **Lot 95 — livré** : filtres durs options figés (6 caractérisations
+  directes — bornes DTE inclusives, delta inconnu jamais classé, refus
+  documentés, PUT hors périmètre, annotations _liquidity/_anomalies).
+  Repérage honnête : indicators/anomaly/events/call_selector déjà
+  couverts (dit). Suite 1807/2 skipped.
+
+### MINI-BILAN tournée 91-95
+
+5 lots, 36 tests, suite 1771 → 1807, **1 défaut réel de moteur corrigé**
+(committee : fenêtre « DANS LA ZONE D'ACHAT » = code mort → s'ouvre
+enfin), skyler_core jamais touché : decide figé (9) · committee défaut
+réel + 9 · pivots figé (8) · contrat POST figé (4) · filtres durs
+options figés (6).
+
 ### MINI-BILAN tournée 86-90 — « moteurs blindés » COMPLET
 
 5 lots, 46 caractérisations nées vertes, suite 1725 → 1771, 0 ligne de
