@@ -102,6 +102,7 @@
 | 86 | `SKYLER-LOT-86.md` | Boucle continue : 10 cas limites du decision stack FIGÉS par caractérisation (None, score illisible, bornes 56/66/80, CHOP, distribution, démo…) — moteur intact, 0 défaut | 0.9.0 | v127 | 1735 | GO |
 | 87 | `SKYLER-LOT-87.md` | Boucle continue : façade recommendation + __VXVOCAB figées (10 tests — vocabulaire sans trou, discipline -20/-25 exacte, thêta, HOLD par défaut) — moteur intact | 0.9.0 | v127 | 1745 | GO |
 | 88 | `SKYLER-LOT-88.md` | Boucle continue : evidence + reasoning figés (10 tests — gather(None) honnête, clamp 0-100, bornes catalyseur, fondamental 0 = absent, contradictions Loi 14) | 0.9.0 | v127 | 1755 | GO |
+| 89 | `SKYLER-LOT-89.md` | Boucle continue : track_record figé (6 tests — n<5 jamais publié, division par zéro impossible, TP1 non résolu honnête, mémo 30 min) — moteur intact | 0.9.0 | v127 | 1761 | GO |
 
 ## Architecture atteinte
 
