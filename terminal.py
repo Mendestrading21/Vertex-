@@ -1716,6 +1716,10 @@ def _security_headers(resp):
     resp.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
     resp.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
     resp.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+    # Données personnelles (blob desk : trades, positions, journal) : jamais
+    # stockées par un cache intermédiaire ou partagé.
+    if request.path.startswith('/api/desk'):
+        resp.headers['Cache-Control'] = 'no-store'
     if request.is_secure or request.headers.get('X-Forwarded-Proto') == 'https':
         resp.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
     return resp

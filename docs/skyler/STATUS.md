@@ -1067,6 +1067,11 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   partout ; 1 défaut réel — onglets démo design-system en `href="#"`
   (saut en haut de page) → ancres non-navigantes + gardien « plus jamais
   de href=# ». Suite 1708/2 skipped, SW v125 + 4 gardiens.
+- **Lot 77 — livré** : sécurité en-têtes/contenu servi. 4 en-têtes
+  présents partout (pages, API, statiques), contenu 0 email/secret/
+  chemin/nom ; 1 défaut réel — `/api/desk` (données personnelles) sans
+  Cache-Control → `no-store` par le middleware + gardiens. Suite 1710/2
+  skipped, SW v125 (pas de bump — serveur).
 
 ## Index des lots
 
