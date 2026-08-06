@@ -1148,6 +1148,12 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   connecté », jamais LIVE sans preuve, READONLY dit même en LIVE,
   démo étiquetée partout). Suite 1771/2 skipped.
 
+- **Lot 91 — livré** : decide.py figé (9 caractérisations — un seul
+  test existait, le gate R:R). {} → None refus honnête (hypothèse de ma
+  sonde corrigée, dit), hard gates stop/régime/R:R borne 2.0 exacte,
+  CHOP jamais d'achat, sur-étendu → « attendre un repli », IV-crush
+  ≤ 14 j cité. Moteur intact. Suite 1780/2 skipped.
+
 ### MINI-BILAN tournée 86-90 — « moteurs blindés » COMPLET
 
 5 lots, 46 caractérisations nées vertes, suite 1725 → 1771, 0 ligne de
