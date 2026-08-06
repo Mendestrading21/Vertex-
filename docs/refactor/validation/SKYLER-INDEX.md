@@ -127,6 +127,7 @@
 | 111 | `SKYLER-LOT-111.md` | Boucle continue : validation de configuration figée (8 tests — MISSING avec conséquence exacte, INVALID nommé, aucun secret jamais exposé, alias historique accepté, espaces = MISSING, enum insensible casse, compteurs exacts, aucune variable obligatoire) | 0.9.0 | v127 | 1928 | GO |
 | 112 | `SKYLER-LOT-112.md` | Boucle continue : santé du runtime IA figée (8 tests — MISSING note honnête, clé ≠ preuve (CONFIGURED jamais CONNECTED sans appel réel), DEGRADED/reconnexion au dernier appel, modèle défaut+override, clé jamais dans le rapport) | 0.9.0 | v127 | 1936 | GO |
 | 113 | `SKYLER-LOT-113.md` | Boucle continue : types de provenance figés (8 tests — missing() honnête, usable exige valeur ET qualité vivante (STALE utilisable, EXPIRED non), 0/False = vraies valeurs, warnings jamais partagés, AnalyticsPacket 5 familles + snapshot dict, aucun état partagé) | 0.9.0 | v127 | 1944 | GO |
+| 114 | `SKYLER-LOT-114.md` | Boucle continue : frontière d'unités IV figée (8 tests — unité inconnue = ValueError, NaN/inf rejetés, conversions exactes, legacy board détection étiquetée jamais muette, seuil 1.5 exact, ordure = triple None, exports limités aux deux portes) | 0.9.0 | v127 | 1952 | GO |
 
 ## Architecture atteinte
 

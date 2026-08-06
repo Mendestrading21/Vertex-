@@ -1362,6 +1362,14 @@ sans OI). Note d'exploitation : lot 108 livré en avance sur
   auto, set_source stocke un snapshot dict, aucun état partagé entre
   paquets). engines/backtest déjà couvert (dit). Moteur intact.
   Suite 1944/2 skipped.
+- **Lot 114 — livré** : frontière d'unités IV figée (8 tests —
+  iv_units (né du grand défaut IV %/décimal) n'avait que 4
+  assertions : unité inconnue = ValueError (une unité devinée est un
+  bug), NaN/inf/≤0 → None dans les deux unités, conversions exactes,
+  porte legacy DÉTECTÉE ET ÉTIQUETÉE jamais muette, seuil 1.5 exact
+  (1.5 pile = décimal, 1.51 = pourcentage averti), ordure → triple
+  None, exports limités aux deux portes). Moteur intact. Suite
+  1952/2 skipped.
 
 ### MINI-BILAN tournée 91-95
 
