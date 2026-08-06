@@ -1210,6 +1210,33 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   timestamp → unknown honnête, mode demo>ibkr>cloud). Moteurs
   intacts. Suite 1839/2 skipped.
 
+### BILAN CONSOLIDÉ n°7 — tournée « continue encore et encore » (76-100)
+
+24 lots, PR #109 → #132 (une par lot, squash, `main` intacte),
+suite **1706 → 1839 passed / 2 skipped** (+133 tests), SW v124 → v127,
+skyler_core 0.9.0 JAMAIS touché, RC outillée GO à chaque lot.
+
+- **4 défauts réels corrigés** : onglets démo `href="#"` (76) ·
+  `/api/desk` sans Cache-Control → `no-store` (77) · **DÉFAUT MAJEUR :
+  le shell n'enregistrait JAMAIS le service worker** — zéro offline
+  depuis toujours → enregistrement vx-shell.js + précache, reload
+  hors-ligne prouvé (82) · code mort « DANS LA ZONE D'ACHAT » de
+  committee — seule modification moteur de la tournée (92).
+- **2 chantiers** : polices auto-hébergées, 0 requête externe (81) ·
+  PWA offline réel (82).
+- **Programme « moteurs blindés » 86-99 : 114 caractérisations** figeant
+  toute la chaîne — decision_stack, recommendation/__VXVOCAB, evidence,
+  track_record, persist/connections, decide, committee, pivots, routes
+  POST, contract_filter, math Black-Scholes du lab, scoring,
+  earnings+barème, broker SSE + états système.
+- Leçons encodées : couverture réelle = grep du NOM de module ; golden
+  recalculés à la main ; sondes SSE au socket brut + événements nommés ;
+  aucun `<script>` inline (fuzz anti-XSS).
+
+Détail complet : `docs/refactor/validation/SKYLER-LOT-100.md`. Étapes
+humaines restantes : validation physique TWS réel + iPhone (cache vidé,
+SW v127) ; merge vers `main` sur accord explicite uniquement.
+
 ### MINI-BILAN tournée 91-95
 
 5 lots, 36 tests, suite 1771 → 1807, **1 défaut réel de moteur corrigé**

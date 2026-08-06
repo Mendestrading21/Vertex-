@@ -113,6 +113,7 @@
 | 97 | `SKYLER-LOT-97.md` | Boucle continue : scoring pur figé (8 tests — neutres exacts, ROC borné, proxy toujours signalé, −10 IV-crush exact, confiance auto-cohérente) | 0.9.0 | v127 | 1822 | GO |
 | 98 | `SKYLER-LOT-98.md` | Boucle continue : earnings + barème figés (8 tests — modes post-earnings exacts, refus jamais muet, langage de certitude neutralisé, bornes grade 90/80/72/60/45) | 0.9.0 | v127 | 1830 | GO |
 | 99 | `SKYLER-LOT-99.md` | Boucle continue : broker SSE + états système figés (9 tests — canal inconnu reclassé, replay Last-Event-ID, tampon borné, client lent jamais bloquant, framing SSE nommé exact, ok/warming/degraded, fraîcheur unknown honnête, mode demo>ibkr>cloud) | 0.9.0 | v127 | 1839 | GO |
+| 100 | `SKYLER-LOT-100.md` | BILAN CONSOLIDÉ n°7 — tournée 76-100 : 24 lots, +133 tests (1706→1839), 4 défauts réels corrigés (href=#, /api/desk no-store, SW jamais enregistré→offline réel, code mort committee), 2 chantiers (polices locales, PWA offline), 114 caractérisations « moteurs blindés » 86-99, SW v124→v127, PR #109→#132 | 0.9.0 | v127 | 1839 | GO |
 
 ## Architecture atteinte
 
