@@ -309,6 +309,15 @@
     const open = e.target.closest('[data-open-analysis]');
     if (open) { e.preventDefault(); VX.openAnalysis(open.dataset.openAnalysis); }
   });
+  /* Clavier : Enter/Espace activent les contrôles délégués non natifs
+     (tickers role="button", menus d'entité) — même chemin que le clic. */
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const el = e.target.closest && e.target.closest('[data-open-analysis],[data-entity-menu],[data-position-menu]');
+    if (!el) return;
+    if (['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)) return;
+    e.preventDefault(); el.click();
+  });
 
   /* ── + Ajouter : formulaire progressif (§19) ─────────────────────── */
   E.openAddModal = function (presetSym, presetDest, contract) {

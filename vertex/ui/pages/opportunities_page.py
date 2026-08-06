@@ -105,7 +105,7 @@ function renderDominant(rows,scan,catBySym){
     `<div class="vx-op-dominant" aria-label="Opportunité dominante ${esc(best.symbol)}">
       <div class="vx-op-dom-l">
         <span class="vx-op-dom-badge">Opportunité dominante</span>
-        <div class="vx-op-dom-tk"><span class="sym vx-ticker" style="cursor:pointer" data-open-analysis="${esc(best.symbol)}">${esc(best.symbol)}</span>
+        <div class="vx-op-dom-tk"><span class="sym vx-ticker" style="cursor:pointer" role="button" tabindex="0" data-open-analysis="${esc(best.symbol)}">${esc(best.symbol)}</span>
           <span class="vx-op-grade" data-g="${esc(g)}">${esc(g)}</span></div>
         <div class="vx-op-dom-sub">${esc(best.sector||best.industry||'secteur n/d')} · ${best.price!=null?VX.fmt.price(best.price):'cours n/d'}
           ${best.verdict?' · <b class="'+vCls(best.verdict)+'">'+esc(best.verdict)+'</b>':''}</div>
@@ -143,7 +143,7 @@ function renderShortlist(rows,scan,catBySym){
     return `<div class="vx-col-4"><div class="vx-op-tk" aria-label="${esc(r.symbol)}">
       <div class="vx-op-tk-top">
         <span class="vx-op-mono">${esc(r.symbol).slice(0,4)}</span>
-        <span class="vx-op-tk-name"><span class="sym vx-ticker" style="cursor:pointer" data-open-analysis="${esc(r.symbol)}">${esc(r.symbol)}</span>
+        <span class="vx-op-tk-name"><span class="sym vx-ticker" style="cursor:pointer" role="button" tabindex="0" data-open-analysis="${esc(r.symbol)}">${esc(r.symbol)}</span>
           <span class="sec">${esc(r.sector||r.industry||'')}</span></span>
         <span class="vx-op-tk-grade" data-g="${esc(g)}">${esc(g)}</span>
       </div>
@@ -281,7 +281,7 @@ async function renderRadar(){
         onClick:(evt,els,chart)=>{const pts=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
           if(pts.length){const d=chart.data.datasets[0].data[pts[0].index];
             document.getElementById('op-scatter-sel').innerHTML=
-              `<div class="vx-flex"><span class="vx-ticker" style="font-size:18px" data-open-analysis="${d.sym}">${d.sym}</span>${window.VXEntities.badges(d.sym)}
+              `<div class="vx-flex"><span class="vx-ticker" style="font-size:18px" role="button" tabindex="0" data-open-analysis="${d.sym}">${d.sym}</span>${window.VXEntities.badges(d.sym)}
                  <span class="vx-badge vx-badge-decision vx-right" data-decision="${d.v||''}">${d.v||'n/d'}</span></div>
                <div class="vx-op-metrics vx-mt2">
                  <div class="vx-op-metric"><span class="k">Qualité strat.</span><span class="v">${VX.fmt.nd(d.x)}</span></div>
