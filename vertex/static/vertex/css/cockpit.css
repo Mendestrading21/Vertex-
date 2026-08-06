@@ -43,6 +43,22 @@ a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(25
 .vx-kpi-value.vx-pos{color:var(--vx-positive);text-shadow:var(--vx-glow-pos)}
 .vx-kpi-value.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}
 
+/* ══ Rangée de stats compactes (post-mortem, fiches) — LOT 125 ══
+   .vx-stats-row/.vx-stat étaient utilisées par 5 pages SANS style : les
+   libellés et valeurs s'affichaient collés (« Trades3 »). Tuiles de verre
+   sobres, chiffres tabulaires, uniquement des tokens. */
+.vx-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));
+  gap:10px;margin:2px 0 12px}
+.vx-stat{display:flex;flex-direction:column;gap:3px;padding:10px 12px;
+  background:linear-gradient(160deg,var(--vx-surface-2),transparent 70%);
+  border:1px solid var(--vx-border-soft);border-radius:10px;min-width:0}
+.vx-stat-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.55px;
+  color:var(--vx-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vx-stat-value{font-family:var(--vx-font-mono);font-weight:700;font-size:19px;
+  line-height:1.15;font-variant-numeric:tabular-nums;color:var(--vx-text-primary)}
+.vx-stat-value.vx-pos{color:var(--vx-positive);text-shadow:var(--vx-glow-pos)}
+.vx-stat-value.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}
+
 /* ══ Utilitaire « grand chiffre » (hero KPI façon référence) ══ */
 .vx-stat-xl{font-family:var(--vx-font-mono);font-weight:800;font-size:44px;line-height:1;
   letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--vx-text-primary)}
