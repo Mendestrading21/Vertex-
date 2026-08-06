@@ -21,9 +21,9 @@
     const px = (i) => padL + i / (n - 1) * (W - padL - padR);
     const py = (v) => padT + (1 - (v - mn) / rg) * (H - padT - padB);
     const up = cl[n - 1] >= cl[0];
-    const line = up ? 'var(--vx-positive,#38b879)' : 'var(--vx-negative,#dc5f52)';
-    const neg = 'var(--vx-negative,#dc5f52)', warn = 'var(--vx-warning,#e0a458)';
-    const dim = 'var(--vx-text-dim,#8a837a)';
+    const line = up ? 'var(--vx-positive,#2BBE90)' : 'var(--vx-negative,#E9555F)';
+    const neg = 'var(--vx-negative,#E9555F)', warn = 'var(--vx-warning,#D9BE3C)';
+    const dim = 'var(--vx-text-muted,#8A8284)';
     const svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Scanner d\'anomalies">'];
 
     // Bande de régime de volatilité (5 derniers points) si détecté.
