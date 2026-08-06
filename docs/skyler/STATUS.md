@@ -881,6 +881,19 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - volets suivants (67+) : vues profondes (tous les onglets), couverture
   IBKR lecture seule, cohérence fiche ↔ opportunités, états dégradés.
 
+## Lot 67 — livré (2026-08-06, AUDIT TOTAL volet 2 — vues profondes)
+
+- inventaire COMPLET des vues depuis les registres `_VIEWS` (source de
+  vérité) : 30 vues (Marchés ×5, Opportunités ×5, Options ×9 dont
+  3 legacy servies, Journal ×5, + 6 pages/fiches) × 2 viewports =
+  60 chargements ;
+- critères : 0 erreur console, 0 débordement, AUCUN texte cassé
+  (NaN/undefined/[object]/null — proxy de donnée mal branchée) ;
+- résultat : **0 défaut sur 60 chargements** — constat honnête, aucun
+  correctif requis (effet des gardiens des lots 51→66) ; lot
+  documentaire, pas de bump SW ;
+- suite 1692/2 skipped tenue ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
