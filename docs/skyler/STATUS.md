@@ -1009,7 +1009,12 @@ déclaration 100 % à l'utilisateur).
   erreur, vendor 160 kB lazy sur /analysis seul, plus gros fichiers 39-46
   kB — SAIN. 3 gardiens prospectifs de budget (64 kB/fichier, vendor
   jamais dans le shell). Suite 1699/2 skipped.
-- Lot 73 : accessibilité — angles restants.
+- **Lot 73 — livré** : accessibilité, angles restants. Balayage outillé
+  8 pages (noms accessibles, labels, focusabilité) : 4 défauts réels sur
+  /opportunities — tickers cliquables non focusables au clavier et
+  délégation limitée au clic → tabindex+role sur les 3 gabarits +
+  délégué clavier global Enter/Espace (vx-entities.js, prospectif).
+  Balayage APRÈS : 0 défaut. Suite 1702/2 skipped, SW v124 + 4 gardiens.
 - Lot 74 : robustesse données limites.
 - Lot 75 : RC FINALE + BILAN n°6 → déclaration 100 %.
 

@@ -86,6 +86,7 @@
 | RC10 | `SKYLER-RC-PERIODIQUE-10.md` | RC périodique n°10 — suite + audit + responsive 8×3 + cycle souverain : GO, 0 défaut, baseline tenue | 0.9.0 | v123 | 1694 | GO |
 | 71 | `SKYLER-LOT-71.md` | PROGRAMME 100 % (ouverture) : docstring gateway citait un gardien inexistant → corrigée + gardien prospectif « toute référence tests/ citée doit exister » | 0.9.0 | v123 | 1696 | GO |
 | 72 | `SKYLER-LOT-72.md` | PROGRAMME 100 % : audit performance — DCL <300 ms, 0 doublon, vendor lazy sur /analysis seul, budgets 64 kB gardés — SAIN, mesures publiées | 0.9.0 | v123 | 1699 | GO |
+| 73 | `SKYLER-LOT-73.md` | PROGRAMME 100 % : a11y — tickers cliquables non focusables (4 défauts) → tabindex+role + délégation clavier Enter/Espace globale ; balayage APRÈS 0 défaut | 0.9.0 | v124 | 1702 | GO |
 
 ## Architecture atteinte
 
