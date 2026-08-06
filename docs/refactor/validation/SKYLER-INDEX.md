@@ -109,6 +109,7 @@
 | 93 | `SKYLER-LOT-93.md` | Boucle continue : pivots/structure figé (8 tests — cassure fraîche vs étendue, repli repris, piège baissier, measured move exact, ATR 0 sans crash) | 0.9.0 | v127 | 1797 | GO |
 | 94 | `SKYLER-LOT-94.md` | Boucle continue : contrat POST figé — 12 routes sondées 0×5xx refus structurés + télémétrie client bornée (troncatures exactes, tampon 100) — 4 tests | 0.9.0 | v127 | 1801 | GO |
 | 95 | `SKYLER-LOT-95.md` | Boucle continue : filtres durs options figés (6 tests — DTE inclusif, delta inconnu jamais classé, refus documentés) + MINI-BILAN 91-95 (1 défaut moteur corrigé) | 0.9.0 | v127 | 1807 | GO |
+| 96 | `SKYLER-LOT-96.md` | Boucle continue : socle math du lab figé (7 tests — parité put-call 1e-9, golden BS recalculé à la main : le moteur avait raison, mon golden mémoire faux dit) | 0.9.0 | v127 | 1814 | GO |
 
 ## Architecture atteinte
 
