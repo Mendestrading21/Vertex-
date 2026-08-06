@@ -103,6 +103,7 @@
 | 87 | `SKYLER-LOT-87.md` | Boucle continue : façade recommendation + __VXVOCAB figées (10 tests — vocabulaire sans trou, discipline -20/-25 exacte, thêta, HOLD par défaut) — moteur intact | 0.9.0 | v127 | 1745 | GO |
 | 88 | `SKYLER-LOT-88.md` | Boucle continue : evidence + reasoning figés (10 tests — gather(None) honnête, clamp 0-100, bornes catalyseur, fondamental 0 = absent, contradictions Loi 14) | 0.9.0 | v127 | 1755 | GO |
 | 89 | `SKYLER-LOT-89.md` | Boucle continue : track_record figé (6 tests — n<5 jamais publié, division par zéro impossible, TP1 non résolu honnête, mémo 30 min) — moteur intact | 0.9.0 | v127 | 1761 | GO |
+| 90 | `SKYLER-LOT-90.md` | Boucle continue : persist + connections figés (10 tests) + BILAN 86-90 — « moteurs blindés » complet : 46 caractérisations, 0 logique modifiée | 0.9.0 | v127 | 1771 | GO |
 
 ## Architecture atteinte
 

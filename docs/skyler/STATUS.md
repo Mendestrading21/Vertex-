@@ -1143,6 +1143,20 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   n<5 jamais publié, division par zéro impossible, mémo 30 min.
   Moteur intact. Suite 1761/2 skipped.
 
+- **Lot 90 — livré** : persist + connections figés (10 tests — persist
+  tolérant/fidèle sans toucher au runtime ; connections « configuré ≠
+  connecté », jamais LIVE sans preuve, READONLY dit même en LIVE,
+  démo étiquetée partout). Suite 1771/2 skipped.
+
+### MINI-BILAN tournée 86-90 — « moteurs blindés » COMPLET
+
+5 lots, 46 caractérisations nées vertes, suite 1725 → 1771, 0 ligne de
+logique modifiée, fichiers runtime jamais touchés. Toute la chaîne
+« données → preuves (evidence) → décision (stack) → affichage
+(recommendation/__VXVOCAB) → auto-notation (track_record) → persistance
+(persist) → états (connections) » est figée par la suite : tout
+changement futur de sémantique cassera les tests.
+
 ### MINI-BILAN tournée 81-85
 
 Polices auto-hébergées (0 requête externe prouvé) · offline RÉEL
