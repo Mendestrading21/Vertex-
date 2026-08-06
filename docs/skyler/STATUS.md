@@ -962,6 +962,16 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - preuves : 2 tests rouges→verts ; suite 1694/2 skipped ; RC outillée GO
   0 défaut sous SW v123 ; moteur 0.9.0 inchangé.
 
+## RC périodique n°8 — GO (2026-08-06, surveillance espacée)
+
+- première RC après la clôture de l'AUDIT TOTAL (bilan n°5) : suite
+  1694/2 skipped tenue, compileall exit 0, audit outillé GO 0 défaut
+  (8 pages, client-log 0, SW v123 servi, 404 lisible, cycle souverain :
+  altération refusée 400 + restauration bouton), responsive 8×3 = 24
+  chargements 0 débordement 0 erreur ;
+- aucune bascule en lot corrélatif — baseline intacte, moteur 0.9.0,
+  `main` intacte ; RC n°9 armée (~30 min).
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
