@@ -1004,7 +1004,11 @@ déclaration 100 % à l'utilisateur).
   1 seule vraie divergence, le reste = faux positifs chemins d'URL).
   Suite 1696/2 skipped (+2 rouges d'abord), RC outillée GO, SW v123
   (pas de bump — rien de visible).
-- Lot 72 : audit PERFORMANCE (poids pages, scripts, temps mesurés).
+- **Lot 72 — livré** : audit PERFORMANCE. Mesures réelles 8 pages (cache
+  froid) : DCL < 300 ms en régime établi, 0 doublon, 0 ressource en
+  erreur, vendor 160 kB lazy sur /analysis seul, plus gros fichiers 39-46
+  kB — SAIN. 3 gardiens prospectifs de budget (64 kB/fichier, vendor
+  jamais dans le shell). Suite 1699/2 skipped.
 - Lot 73 : accessibilité — angles restants.
 - Lot 74 : robustesse données limites.
 - Lot 75 : RC FINALE + BILAN n°6 → déclaration 100 %.
