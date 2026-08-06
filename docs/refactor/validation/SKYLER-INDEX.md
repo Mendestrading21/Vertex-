@@ -132,6 +132,7 @@
 | 116 | `SKYLER-LOT-116.md` | Boucle continue : catalyseurs non-earnings figés (8 tests — non confirmé jamais actionnable, type inconnu dénoncé, horizon 0-30 inclusif trié, fenêtre earnings 45 j inclusive, next_events cap 3, avertissement nommé avec compte exact) | 0.9.0 | v127 | 1968 | GO |
 | 117 | `SKYLER-LOT-117.md` | Boucle continue : Research Factory figée (8 tests — transitions interdites refusées, RETIRED terminal, REJECTED renaît en IDEA, manquants nommés (11 champs/12 biais), « un beau backtest ne suffit jamais », embargo réel des splits, passed ≥ max(2, n−1)) | 0.9.0 | v127 | 1976 | GO |
 | 118 | `SKYLER-LOT-118.md` | Boucle continue : lecture graphique figée (8 tests — {} → None honnête, hiérarchie de tendance, seuils RSI 78/60/48, accumulation prime sur distribution, chart_verdict 4 issues, thesis la méfiance prime, plays par profil) | 0.9.0 | v127 | 1984 | GO |
+| 119 | `SKYLER-LOT-119.md` | Amélioration graphique n°1 (Aujourd'hui) : Catalyst Runway développé — zone d'imminence ≤ 5 j teintée, points dimensionnés par impact + halo, anneau sur le prochain, graduations hebdo, bornes nommées ; captures avant/après envoyées | 0.9.0 | v128 | 1984 | GO |
 
 ## Architecture atteinte
 
