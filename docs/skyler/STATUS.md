@@ -1237,6 +1237,15 @@ Détail complet : `docs/refactor/validation/SKYLER-LOT-100.md`. Étapes
 humaines restantes : validation physique TWS réel + iPhone (cache vidé,
 SW v127) ; merge vers `main` sur accord explicite uniquement.
 
+- **Lot 101 — livré** : entonnoir de chaîne options figé (8 tests —
+  chain_loader n'avait qu'UN test indirect : bornes DTE constitution
+  INCLUSIVES, préférées d'abord triées par distance au centre 150,
+  _dist jamais fui, fenêtre strikes ±35 % exacte, spot ≤ 0 → [],
+  échantillonnage à 14 pile gardant les 2 extrêmes, expiration sans
+  strike plausible jamais envoyée au broker, contrat d'entrée du
+  plan). market_clock déjà figé (dit). Moteur intact. Suite 1847/2
+  skipped.
+
 ### MINI-BILAN tournée 91-95
 
 5 lots, 36 tests, suite 1771 → 1807, **1 défaut réel de moteur corrigé**
