@@ -990,6 +990,25 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - aucune bascule en lot corrélatif — baseline intacte, moteur 0.9.0,
   `main` intacte ; RC n°11 armée (~30 min).
 
+## PROGRAMME 100 % — EN COURS (ouvert au lot 71, 2026-08-06)
+
+Directive utilisateur : « Continue à tout développer et quand t'as tout à
+100 tu me dis. » → sortie de la surveillance espacée, cadence resserrée
+(~2 min entre lots), clôture prévue au lot 75 (RC finale + BILAN n°6 +
+déclaration 100 % à l'utilisateur).
+
+- **Lot 71 — livré** : hygiène des références. Docstring du gateway IBKR
+  citait un gardien inexistant (`test_readonly_gateway`) → corrigée (cite
+  les 3 vrais gardiens READONLY) + gardien prospectif « toute référence
+  `tests/test_*.py` citée dans vertex/ doit exister » (balayage complet :
+  1 seule vraie divergence, le reste = faux positifs chemins d'URL).
+  Suite 1696/2 skipped (+2 rouges d'abord), RC outillée GO, SW v123
+  (pas de bump — rien de visible).
+- Lot 72 : audit PERFORMANCE (poids pages, scripts, temps mesurés).
+- Lot 73 : accessibilité — angles restants.
+- Lot 74 : robustesse données limites.
+- Lot 75 : RC FINALE + BILAN n°6 → déclaration 100 %.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
