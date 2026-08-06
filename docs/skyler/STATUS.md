@@ -1162,6 +1162,13 @@ mesure un angle, corrige les défauts réels trouvés, garde la classe.
   100 → ACHETER « DANS LA ZONE »). skyler_core 0.9.0 non touché.
   9 tests (le rouge + 8 caractérisations). Suite 1789/2 skipped.
 
+- **Lot 93 — livré** : pivots/structure figé (8 caractérisations — il
+  nourrit committee et la zone d'achat du lot 92, aucun test dédié
+  n'existait). Cassure fraîche confirmée avec measured move exact,
+  cassure étendue jamais poursuivie, rebond baissier = piège refusé,
+  repli repris confirmé, ATR 0 sans division par zéro. Moteur intact.
+  Suite 1797/2 skipped.
+
 ### MINI-BILAN tournée 86-90 — « moteurs blindés » COMPLET
 
 5 lots, 46 caractérisations nées vertes, suite 1725 → 1771, 0 ligne de
