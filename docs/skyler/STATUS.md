@@ -803,6 +803,19 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
   0 défaut sous SW v118 ; balayage couleurs calculées « palette OK » sur
   /options structure+gex et /tracking ; moteur 0.9.0 inchangé.
 
+## Lot 63 — livré (2026-08-06, travail continu)
+
+- écart de cohérence réel (capture lot 56) : mini-aires des cartes
+  d'indices en POLYLIGNES anguleuses au-dessus du grand C.area lissé →
+  `sparkArea` trace désormais un chemin lissé MONOTONE Fritsch-Carlson
+  (jamais de dépassement des données, points exacts, déterministe),
+  dégradé + point actif conservés ; le langage visuel 2026 est uniforme
+  sur tous les graphiques (Chart.js + SVG locaux) ;
+- `sparkSvg` : zéro consommateur (grep) — code mort supprimé ;
+- preuves : 5 tests rouges→verts ; suite 1684/2 skipped ; RC outillée GO
+  0 défaut sous SW v119 ; navigateur : 4/4 mini-aires en courbes
+  cubiques, zéro polyligne, 0 erreur console ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.

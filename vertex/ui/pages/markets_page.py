@@ -379,30 +379,47 @@ function crossAsset(scan){
     m[nm]={last:x.value,change:x.chg,unit:x.unit,deltaUnit:'pts',deltaNeutral:true};}});
   return m;
 }
-function sparkSvg(vals,pos){
-  if(!Array.isArray(vals)||vals.length<2)return '';
-  const w=100,h=22,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=(mx-mn)||1;
-  const pts=vals.map((v,i)=>(i/(vals.length-1)*w).toFixed(1)+','+(h-((v-mn)/rng)*(h-2)-1).toFixed(1)).join(' ');
-  const col=pos?'var(--vx-positive,#2BBE90)':'var(--vx-negative,#E9555F)';
-  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" width="100%" height="22" style="margin-top:5px;display:block" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+/* Lissage MONOTONE (Fritsch-Carlson) — même principe que le 'monotone' des
+   graphiques Chart.js (lot 51) : la courbe ne dépasse JAMAIS les données
+   réelles, les points restent exacts, calcul déterministe. */
+function monotonePath(xs,ys){
+  const n=xs.length;
+  if(n<3)return 'M'+xs.map((x,i)=>x.toFixed(1)+','+ys[i].toFixed(1)).join(' L');
+  const dx=[],m=[],t=new Array(n);
+  for(let i=0;i<n-1;i++){dx.push(xs[i+1]-xs[i]);m.push((ys[i+1]-ys[i])/(dx[i]||1));}
+  t[0]=m[0];t[n-1]=m[n-2];
+  for(let i=1;i<n-1;i++)t[i]=(m[i-1]*m[i]<=0)?0:(m[i-1]+m[i])/2;
+  for(let i=0;i<n-1;i++){
+    if(m[i]===0){t[i]=0;t[i+1]=0;continue;}
+    const a=t[i]/m[i],b=t[i+1]/m[i],s=a*a+b*b;
+    if(s>9){const k=3/Math.sqrt(s);t[i]=k*a*m[i];t[i+1]=k*b*m[i];}
+  }
+  let d='M'+xs[0].toFixed(1)+','+ys[0].toFixed(1);
+  for(let i=0;i<n-1;i++){const g=dx[i]/3;
+    d+=' C'+(xs[i]+g).toFixed(1)+','+(ys[i]+g*t[i]).toFixed(1)
+      +' '+(xs[i+1]-g).toFixed(1)+','+(ys[i+1]-g*t[i+1]).toFixed(1)
+      +' '+xs[i+1].toFixed(1)+','+ys[i+1].toFixed(1);}
+  return d;
 }
-/* Mini-area premium : ligne + remplissage dégradé + point actif final. `tone`
-   ∈ up|down|flat|tech pilote la couleur (sémantique). `uid` = id unique du gradient. */
+/* Mini-area premium : chemin lissé monotone + remplissage dégradé + point
+   actif final (signature 2026, lot 63 — même langage que C.area). `tone`
+   ∈ up|down|flat|tech pilote la couleur (sémantique). */
 let _AREA=0;
 function sparkArea(vals,tone,h){
   if(!Array.isArray(vals)||vals.length<2)return '<svg aria-hidden="true"></svg>';
   h=h||40;const w=140,pad=2,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=(mx-mn)||1;
   const uid='ar'+(++_AREA);
-  const X=i=>(i/(vals.length-1)*w).toFixed(1),Y=v=>(h-pad-((v-mn)/rng)*(h-2*pad)).toFixed(1);
-  const line=vals.map((v,i)=>X(i)+','+Y(v)).join(' ');
-  const area=`0,${h} `+line+` ${w},${h}`;
+  const xs=vals.map((_,i)=>i/(vals.length-1)*w);
+  const ys=vals.map(v=>h-pad-((v-mn)/rng)*(h-2*pad));
+  const line=monotonePath(xs,ys);
+  const area=line+' L'+w+','+h+' L0,'+h+' Z';
   const col=tone==='up'?'var(--vx-positive)':tone==='down'?'var(--vx-negative)':tone==='tech'?'var(--vx-technical)':'var(--vx-warm-grey)';
-  const lx=X(vals.length-1),ly=Y(vals[vals.length-1]);
+  const lx=xs[xs.length-1].toFixed(1),ly=ys[ys.length-1].toFixed(1);
   return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" width="100%" height="${h}" aria-hidden="true">
     <defs><linearGradient id="${uid}" x1="0" x2="0" y1="0" y2="1">
       <stop offset="0" stop-color="${col}" stop-opacity=".28"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
-    <polygon points="${area}" fill="url(#${uid})"/>
-    <polyline points="${line}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <path d="${area}" fill="url(#${uid})"/>
+    <path d="${line}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
     <circle cx="${lx}" cy="${ly}" r="2.4" fill="${col}"/></svg>`;
 }
 const MONO={'S&P 500':'S&P','Nasdaq':'NDQ','Dow Jones':'DJIA','Russell 2000':'RUT',
