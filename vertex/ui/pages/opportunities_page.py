@@ -147,7 +147,7 @@ function renderShortlist(rows,scan,catBySym){
           <span class="sec">${esc(r.sector||r.industry||'')}</span></span>
         <span class="vx-op-tk-grade" data-g="${esc(g)}">${esc(g)}</span>
       </div>
-      <div class="vx-op-tk-row"><span class="vx-op-tk-score">${VX.fmt.nd(r.score)}</span>
+      <div class="vx-op-tk-row"><span class="vx-op-tk-score">${VX.fmt.nd(r.score)}<span class="vx-meta" style="font-size:11px;font-weight:600"> /100</span></span>
         <span class="vx-op-tk-asym">asym. ${r.vx_asym!=null?VX.fmt.nd(r.vx_asym):'n/d'} · R:R ${r.vx_rr!=null?VX.fmt.nd(r.vx_rr):'n/d'}${r.vx_pwin!=null?' · p '+pctv(r.vx_pwin)+'%':''}</span></div>
       <div class="vx-meta vx-truncate" title="${esc(cat||'')}">${cat?esc(cat):(r.profile_hint?esc(r.profile_hint):'—')}</div>
       ${momBars(r)}

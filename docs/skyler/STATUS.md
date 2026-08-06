@@ -911,6 +911,21 @@ Aucun sous-agent ne peut publier `final_decision`. Le Président Skyler est l’
 - verdict : SAIN, aucun correctif — lot documentaire, suite 1692/2
   skipped tenue, SW v122, moteur 0.9.0.
 
+## Lot 69 — livré (2026-08-06, AUDIT TOTAL volet 4 — fiche ↔ Opportunités)
+
+- croisement réel ACN/AOS/MMM (endpoints ↔ Opportunités ↔ fiche) : les
+  deux moteurs divergent LÉGITIMEMENT (command ACHETER/RENFORCER vs
+  Skyler canonique REFUSER 18-19/40 — gates honnêtes) et la hiérarchie
+  est DITE aux deux endroits (« un score ne déclenche jamais un ordre » ;
+  « la décision finale unique reste REFUSER — les verdicts techniques
+  sont des entrées du moteur exécutif ») ; aucun même champ à deux
+  valeurs — SAIN, vérifié ;
+- UNE lacune de traçabilité corrigée : score shortlist nu → « /100 »
+  (preuve APRÈS : 81 /100, 74 /100, 73 /100) — tout score affiché porte
+  son échelle, partout ;
+- preuves : 2 tests rouges→verts ; suite 1694/2 skipped ; RC outillée GO
+  0 défaut sous SW v123 ; moteur 0.9.0 inchangé.
+
 ## Index des lots
 
 Voir `docs/refactor/validation/SKYLER-INDEX.md` — tableau complet 10 → 23.
