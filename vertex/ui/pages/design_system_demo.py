@@ -62,7 +62,7 @@ def _tabs_row():
     tabs = ['Vue d’ensemble', 'Macro', 'Secteurs', 'Breadth', 'Volatilité']
     out = '<nav class="vx-tabs" role="tablist" aria-label="Démo onglets">'
     for i, t in enumerate(tabs):
-        out += f'<a class="vx-tab" role="tab" aria-selected="{"true" if i == 0 else "false"}" href="#">{t}</a>'
+        out += f'<a class="vx-tab" role="tab" aria-selected="{"true" if i == 0 else "false"}">{t}</a>'
     out += '</nav>'
     return out
 
