@@ -77,6 +77,7 @@
 | RC6 | `SKYLER-RC-PERIODIQUE-6.md` | RC périodique n°6 — suite + audit + responsive 8×3 + cycle souverain : GO, 0 défaut, baseline tenue | 0.9.0 | v121 | 1688 | GO |
 | RC7 | `SKYLER-RC-PERIODIQUE-7.md` | RC périodique n°7 — suite + audit + responsive 8×3 + cycle souverain : GO, 0 défaut, baseline tenue | 0.9.0 | v121 | 1688 | GO |
 | 66 | `SKYLER-LOT-66.md` | AUDIT TOTAL volet 1 : 137 routes (0×5xx), cohérence des chiffres — tuile Breadth incohérente (above50 non étiqueté vs >MM200) corrigée et étiquetée | 0.9.0 | v122 | 1692 | GO |
+| 67 | `SKYLER-LOT-67.md` | AUDIT TOTAL volet 2 : 30 vues profondes × 2 viewports (60 chargements) — 0 erreur, 0 débordement, 0 texte cassé (NaN/undefined) — documentaire | 0.9.0 | v122 | 1692 | GO |
 
 ## Architecture atteinte
 
