@@ -1475,6 +1475,14 @@ sans autorisation demandée.
   les grandes tuiles (le chiffre éducatif du treemap, aussi dans
   l'aria). SW v131 → v132 + 4 gardiens. Captures avant/après
   envoyées. Suite 1984/2, RC GO.
+- **Lot 124 — livré** : amélioration graphique n°6 (Options) —
+  payoff éducatif : le BREAKEVEN est enfin tracé (ligne warning
+  « BE $X » — le chiffre éducatif d'un payoff), le SPOT aussi (ligne
+  info), zones gain/perte migrées des hex en dur vers les tokens,
+  trait 1.6 + halo doux (softGlowPlugin réutilisé). Arithmétique du
+  contrat inchangée. SW v132 → v133 + 4 gardiens. Captures
+  avant/après envoyées. Suite 1984/2, RC GO. (12 captures desktop
+  de toutes les pages envoyées entre-temps sur demande.)
 
 ### MINI-BILAN tournée 91-95
 
