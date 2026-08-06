@@ -97,6 +97,7 @@
 | 81 | `SKYLER-LOT-81.md` | Boucle continue : polices AUTO-HÉBERGÉES (2 woff2 variables locaux, 7 remplacements CDN, SW précache) — 0 requête externe prouvé, parcours 0 erreur console | 0.9.0 | v126 | 1718 | GO |
 | 82 | `SKYLER-LOT-82.md` | Boucle continue : défaut MAJEUR — le shell canonique n'enregistrait jamais le SW (0 offline sur les 8 espaces) → vx-shell.js + preuve reload offline rendu du cache | 0.9.0 | v127 | 1720 | GO |
 | 83 | `SKYLER-LOT-83.md` | Boucle continue : contrôles interactifs — 26 tris/onglets/selects cliqués en vrai sur 8 vues : 0 inerte, 0 erreur — SAIN, outil controls_audit.js versionné | 0.9.0 | v127 | 1720 | GO |
+| 84 | `SKYLER-LOT-84.md` | Boucle continue : cycle desk 6/6 (push→serveur→pull→backups→restore par la route→remise en état) — aucune perte possible, 4 listes de clés alignées, 2 gardiens | 0.9.0 | v127 | 1722 | GO |
 
 ## Architecture atteinte
 
