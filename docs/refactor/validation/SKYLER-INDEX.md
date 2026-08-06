@@ -94,6 +94,7 @@
 | 78 | `SKYLER-LOT-78.md` | Boucle continue : libellés FR — 0 anglais d'interface, 0 accent manquant, ponctuation conforme (espace avant ; = norme FR, faux positif dit) — SAIN + 2 gardiens | 0.9.0 | v125 | 1712 | GO |
 | 79 | `SKYLER-LOT-79.md` | Boucle continue : fraîcheur — 2 passes navigateur, 5 signalements stricts tous faux positifs vérifiés (héritage d'en-tête + troncature) — SAIN + 2 gardiens | 0.9.0 | v125 | 1714 | GO |
 | 80 | `SKYLER-LOT-80.md` | Boucle continue : 5 parcours bout-en-bout 14/14 OK (outil versionné) ; constat réel — polices sur CDN Google, à auto-héberger (lot 81) | 0.9.0 | v125 | 1714 | GO |
+| 81 | `SKYLER-LOT-81.md` | Boucle continue : polices AUTO-HÉBERGÉES (2 woff2 variables locaux, 7 remplacements CDN, SW précache) — 0 requête externe prouvé, parcours 0 erreur console | 0.9.0 | v126 | 1718 | GO |
 
 ## Architecture atteinte
 
