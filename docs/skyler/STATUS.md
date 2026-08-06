@@ -1495,6 +1495,16 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 127 — livré** : passe graphique n°2 — heatmaps matière VERRE
+  (`C.heatmapCard`) : les DERNIERS rgba verts/rouges hors palette du
+  système graphique remplacés par les tokens (convertis en rgb à
+  l'exécution), chaque cellule devient une tuile de verre (dégradé
+  diagonal de sa propre couleur, liseré inset, coins arrondis),
+  grille aérée (border-spacing 3px). Héritent : matrice scénarios
+  options (Stop/Flat/TP × temps), heatmap secteurs Marchés, P&L
+  mensuel Portefeuille. Theta et sensibilité IV vérifiés — ils
+  héritaient déjà des lots 120/125. SW v135 → v136 + 4 gardiens.
+  Captures avant/après envoyées. Suite 1984/2, RC GO.
 - **Lot 126 — livré** : amélioration graphique n°8 (Système) — **1re
   tournée esthétique TERMINÉE (8 pages / 8)**. Jauge `C.gauge` en
   matière VERRE (arc de valeur = dégradé de sa propre couleur, doux →
