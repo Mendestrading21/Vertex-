@@ -659,22 +659,39 @@
     const top = Math.max(...stages.map(s => s.value), 1);
     const W = o.width || 320, rowH = 34, gap = 6, H = stages.length * (rowH + gap);
     const cx = W / 2, minW = 26;
+    /* LOT 121 — entonnoir « ultra propre » : UN SEUL ton de marque en dégradé
+       vertical, opacité qui décroît avec la profondeur (la matière raconte la
+       déperdition), UN chiffre par étage, la plus forte perte marquée d'un
+       −N discret. Fini l'arc-en-ciel et les pourcentages doublés. */
+    const gid = 'vxFnl-' + String(el.id || 'f').replace(/[^a-zA-Z0-9_-]/g, '');
+    const defs = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${C.colors.brand}"/>
+      <stop offset="1" stop-color="${C.colors.cyan}"/>
+    </linearGradient></defs>`;
+    let worstDrop = 0, worstIdx = -1;
+    stages.forEach((s, i) => {
+      const next = stages[i + 1];
+      if (next && (s.value - next.value) > worstDrop) { worstDrop = s.value - next.value; worstIdx = i; }
+    });
     let rows = '';
     stages.forEach((s, i) => {
       const w0 = minW + (W - minW) * (Math.max(0, s.value) / top);
       const next = stages[i + 1];
       const w1 = next ? minW + (W - minW) * (Math.max(0, next.value) / top) : w0 * 0.86;
       const y = i * (rowH + gap);
-      const col = s.color || C.colors.series[i % C.colors.series.length];
-      const pct = Math.round(s.value / top * 100);
+      const depth = stages.length > 1 ? i / (stages.length - 1) : 0;
+      const op = (0.88 - depth * 0.55).toFixed(2);
       rows += `<polygon points="${(cx - w0 / 2).toFixed(1)},${y} ${(cx + w0 / 2).toFixed(1)},${y} ${(cx + w1 / 2).toFixed(1)},${y + rowH} ${(cx - w1 / 2).toFixed(1)},${y + rowH}"
-        fill="${col}" fill-opacity=".8"/>
-        <text x="${cx}" y="${y + rowH / 2 - 1}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="800" fill="#0b0b0c" style="font-variant-numeric:tabular-nums">${fmt(s.value)}</text>`;
-      rows += `<text x="8" y="${y + rowH / 2}" dominant-baseline="middle" font-size="10.5" fill="var(--vx-text-secondary,#BABABA)">${String(s.label)}</text>
-        <text x="${W - 6}" y="${y + rowH / 2}" text-anchor="end" dominant-baseline="middle" font-size="10" fill="var(--vx-text-muted,#8A8284)" style="font-variant-numeric:tabular-nums">${pct}%</text>`;
+        fill="url(#${gid})" fill-opacity="${op}" stroke="${C.colors.brand}" stroke-opacity=".25" stroke-width="1"/>
+        <text x="${cx}" y="${y + rowH / 2 - 1}" text-anchor="middle" dominant-baseline="middle" font-size="12.5" font-weight="800" fill="var(--vx-text,#F8F5F3)" style="font-variant-numeric:tabular-nums">${fmt(s.value)}</text>`;
+      rows += `<text x="8" y="${y + rowH / 2}" dominant-baseline="middle" font-size="10.5" fill="var(--vx-text-secondary,#BABABA)">${String(s.label)}</text>`;
+      if (i === worstIdx && worstDrop > 0) {
+        rows += `<text x="${W - 6}" y="${y + rowH + gap / 2 + 3}" text-anchor="end" font-size="9.5" font-weight="700"
+          fill="${C.colors.negative}" fill-opacity=".85" style="font-variant-numeric:tabular-nums">−${fmt(worstDrop)}</text>`;
+      }
     });
     const aria = (o.ariaLabel || 'entonnoir') + ' : ' + stages.map(s => s.label + ' ' + fmt(s.value)).join(' → ');
-    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${rows}</svg>`;
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${defs}${rows}</svg>`;
     return el;
   };
 

@@ -298,6 +298,11 @@ async function renderRadar(){
         plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} · qualité ${VX.fmt.nd(ctx.raw.x)} · timing ${ctx.raw.tOk?VX.fmt.nd(ctx.raw.y):'n/d'} · asym ${VX.fmt.nd(ctx.raw.asym)}`}}}},
       plugins:[{id:'opQuad',afterDatasetsDraw(chart){const a=chart.chartArea,sx=chart.scales.x,sy=chart.scales.y;
         const xc=sx.getPixelForValue(55),yc=sy.getPixelForValue(55);const g=chart.ctx;g.save();
+        /* LOT 121 : la zone actionnable (haut-droit) est TEINTÉE d'un dégradé
+           positif très léger — on voit la cible avant de lire les axes. */
+        if(xc<a.right&&yc>a.top){const gz=g.createLinearGradient(xc,yc,a.right,a.top);
+          gz.addColorStop(0,VXCharts.colors.positive+'00');gz.addColorStop(1,VXCharts.colors.positive+'22');
+          g.fillStyle=gz;g.fillRect(xc,a.top,a.right-xc,yc-a.top);}
         g.strokeStyle='rgba(255,255,255,.12)';g.setLineDash([4,4]);g.beginPath();
         if(xc>a.left&&xc<a.right){g.moveTo(xc,a.top);g.lineTo(xc,a.bottom);}
         if(yc>a.top&&yc<a.bottom){g.moveTo(a.left,yc);g.lineTo(a.right,yc);}g.stroke();g.setLineDash([]);
