@@ -7,13 +7,13 @@ Terminal d'**analyse** de marché. **Lecture seule — ne passe jamais d'ordre.*
 ## 🚀 Lancer en 1 clic
 
 ### Sur Mac
-1. Ouvre le dossier `IBKT-DASHBORD-`.
+1. Ouvre le dossier du projet (`Vertex-`).
 2. **Double-clic sur `Lancer_VERTEX.command`**.
    - *La 1ʳᵉ fois, macOS peut bloquer :* clic droit → **Ouvrir** → **Ouvrir**.
 3. Le navigateur s'ouvre sur **http://localhost:5002**. C'est prêt.
 
 ### Sur Windows
-1. Ouvre le dossier `IBKT-DASHBORD-`.
+1. Ouvre le dossier du projet (`Vertex-`).
 2. **Double-clic sur `Lancer_VERTEX.bat`**.
    - *Si SmartScreen s'affiche :* **Informations complémentaires** → **Exécuter quand même**.
 3. Le navigateur s'ouvre sur **http://localhost:5002**. C'est prêt.
@@ -40,7 +40,8 @@ VERTEX lit tes cours et positions IBKR **en lecture seule**. Pour l'activer :
    - ☑ **Read-Only API** *(le verrou anti-ordre — indispensable)*
    - **Trusted IP** : `127.0.0.1`
    - Port : `7496` (réel) ou `7497` (paper) — Gateway : `4001` / `4002`
-3. Lance `Lancer_VERTEX`. En haut à droite, le badge passe à **🟢 LIVE IBKR**.
+3. Lance `Lancer_VERTEX`. Dans le panneau d'état (et l'espace
+   **Système**), la source IBKR passe à **Live**.
 
 > Sans TWS ouvert, VERTEX marche quand même : cours **différés** (~15 min) via
 > le filet de secours. Le badge indique alors **🟡 DIFFÉRÉ**.
@@ -64,13 +65,14 @@ Sur ton iPhone (même WiFi) : `http://<IP-de-ton-ordi>:5002`.
 
 | Espace | À quoi ça sert |
 |--------|----------------|
-| 📊 **Overview** | le marché du jour en un coup d'œil |
-| 🌅 **Matinal** | le brief du comité : les meilleurs setups du jour |
-| 🏛️ **Comité** | tout l'univers passé en revue, filtrable |
-| 🔬 **Recherche** | tes hypothèses, questions ouvertes, notes |
-| 📝 **Décisions** | fige un verdict, reviens dessus, apprends |
-| 🩺 **Santé** | état des moteurs et fraîcheur des données |
-| 📈 **Fiche titre** | la **Salle du Comité** : prisme marché → contexte → 9 analystes → avocat du diable → décomposition du score → scénarios ↔ invalidations |
+| 🌅 **Aujourd'hui** (`/`) | le brief du jour : régime, KPI, action prioritaire |
+| 📊 **Marchés** | indices, breadth, VIX, rotation |
+| 🎯 **Opportunités** | le radar : shortlist, comparaison, funnel |
+| 🔬 **Analyse** | le plan d'analyse complet d'un titre |
+| 💼 **Portefeuille** | synthèse, thèses, risque, performance |
+| 🧮 **Options** | contrats, payoff, Greeks, positionnement |
+| 📝 **Journal** | discipline : décisions, hypothèses, revues |
+| 🩺 **Système** | santé des moteurs, sources, fraîcheur, sync |
 
 ---
 

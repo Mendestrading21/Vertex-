@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 258 — livré** : DEMARRER_ICI.md ↔ RÉALITÉ (suite de l'audit
+  des portes d'entrée). **3 défauts corrigés** : nom de dossier périmé
+  `IBKT-DASHBORD-` (×2) → `Vertex-` ; table des espaces PRÉ-REFONTE
+  (Overview/Matinal/Comité/Recherche/Décisions/Santé/Fiche titre) →
+  les 8 espaces canoniques réels ; « badge 🟢 LIVE IBKR en haut à
+  droite » inexistant → l'état de source réel « Live/Différé/Hors
+  ligne » du panneau d'état (vx-shell.js L205-209, vérifié AVANT de
+  trancher). **`.env.example` audité ligne par ligne : EXACT, non
+  touché** (sémantique VERTEX_CODE conforme au comportement gardé lot
+  218 ; READONLY énoncé ; sections à jour). Lanceurs DEMO vérifiés
+  existants — section conservée. Les 3 portes d'entrée du dépôt
+  (README lot 257, DEMARRER_ICI, .env.example) sont désormais alignées
+  sur la réalité. Docs seulement, pas de bump. Suite **2486 passed /
+  2 skipped**.
+
 - **Lot 257 — livré** : README ↔ RÉALITÉ — la vitrine du dépôt n'avait
   jamais été auditée contre les faits mesurés. **4 défauts corrigés,
   dont 1 de SÉCURITÉ** : le README affirmait « le serveur écoute déjà
