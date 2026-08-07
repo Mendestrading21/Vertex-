@@ -1495,6 +1495,12 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 264 — livré** : VEILLE ACTIVE, cycle 2 — état IDENTIQUE au
+  cycle 1 (0 doublon trigger, integration à jour, 0 PR oubliée, arbre
+  propre, suite 2486/2). Aucun code produit changé, aucun signal, rien
+  à toucher. Rapport minimal conformément au régime de veille. Pas de
+  bump.
+
 - **Lot 263 — livré** : VEILLE ACTIVE, cycle 1. État vérifié : 1 seul
   trigger actif (0 doublon), integration à jour (lot 262 fusionné),
   0 PR oubliée, arbre propre, suite **2486 passed / 2 skipped**.
