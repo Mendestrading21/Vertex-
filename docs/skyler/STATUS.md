@@ -1495,6 +1495,15 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 141 — livré** : passe graphique n°16 — fiche Analyse,
+  section Sentiment : la FOURCHETTE des objectifs analystes n'est
+  plus du texte nu — RAIL de verre low → high avec deux repères
+  halotés : le COURS en cyan et l'OBJECTIF MOYEN en warning. On
+  voit d'un coup d'œil où le prix vit dans la fourchette (cours 198
+  AU-DESSUS de l'objectif 179 → potentiel négatif expliqué).
+  Repères clampés aux bords, bornes affichées, title au survol.
+  SW v149 → v150 + 4 gardiens. Captures + zoom envoyés.
+  Suite 1984/2, RC GO.
 - **Lot 140 — livré** : passe graphique n°15 — Top/Flop 10 de la Vue
   d'ensemble Marchés : chaque variation gagne sa mini-barre SIGNÉE
   de verre (positive → verte depuis la gauche, négative → rouge

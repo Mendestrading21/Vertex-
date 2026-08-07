@@ -485,7 +485,21 @@ async function loadDossier(){
     `<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#30292B);padding-top:8px">`
     +(an.rating?`<div class="vx-kv"><span class="k">Consensus analystes</span><span class="v">${esc(_rl||'—')}${an.rating_mean!=null?` (${(+an.rating_mean).toFixed(1)}/5)`:''}${an.n_analysts?` · ${an.n_analysts} analystes`:''}</span></div>`:'')
     +(_tgt?`<div class="vx-kv"><span class="k">Objectif moyen</span><span class="v">${VX.fmt.price(_tgt)}${_up!=null?` <span class="${_up>=0?'vx-pos':'vx-neg'}">(${_up>=0?'+':''}${_up.toFixed(1)}%)</span>`:''}</span></div>`:'')
-    +((an.target_low&&an.target_high)?`<div class="vx-kv"><span class="k">Fourchette</span><span class="v vx-dim">${VX.fmt.price(an.target_low)} – ${VX.fmt.price(an.target_high)}</span></div>`:'')
+    +((an.target_low&&an.target_high)?(function(){
+      /* LOT 141 : la fourchette d'objectifs n'est plus du texte nu — RAIL de
+         verre low -> high avec le COURS (cyan) et l'OBJECTIF MOYEN (warning)
+         en reperes halotes : on voit ou le prix vit dans la fourchette des
+         analystes. Reperes clampes aux bords (jamais inventes). */
+      const lo=an.target_low,hi=an.target_high,span=(hi-lo)||1;
+      const pos=(v)=>Math.max(2,Math.min(98,(v-lo)/span*100));
+      const mk=(v,tok,lbl)=>v==null?'':'<span title="'+lbl+' '+VX.fmt.price(v)+'" style="position:absolute;left:'+pos(v).toFixed(1)+'%;top:-2px;bottom:-2px;width:2px;background:'+tok+';border-radius:1px;box-shadow:0 0 5px color-mix(in srgb,'+tok+' 55%,transparent)"></span>';
+      return '<div class="vx-kv"><span class="k">Fourchette</span><span class="v" style="display:inline-flex;align-items:center;gap:8px;min-width:0">'
+        +'<span class="vx-dim" style="font-size:11px">'+VX.fmt.price(lo)+'</span>'
+        +'<span style="position:relative;flex:1;min-width:70px;height:7px;background:linear-gradient(90deg,color-mix(in srgb,var(--vx-brand,#DBE1E8) 12%,transparent),color-mix(in srgb,var(--vx-brand,#DBE1E8) 30%,transparent));border-radius:3px">'
+        +mk(_px,'var(--vx-cyan,#45D6E8)','cours')
+        +mk(_tgt,'var(--vx-warning,#D9BE3C)','objectif moyen')
+        +'</span><span class="vx-dim" style="font-size:11px">'+VX.fmt.price(hi)+'</span></span></div>';
+    })():'')
     +`</div>`):'';
   body('an-sentiment',
     kv('Force relative vs univers',d.rs)
