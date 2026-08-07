@@ -708,7 +708,7 @@ def render(view: str = 'radar', params=None) -> str:
     js = (_JS.replace('%%VIEW%%', json.dumps(view))
           .replace('%%PARAMS%%', json.dumps(p))
           .replace('%%DEMO_BORDER%%',
-                   "(window.__vxStatus&&window.__vxStatus.demo)?'#FFC857':'rgba(255,255,255,.25)'"))
+                   "(window.__vxStatus&&window.__vxStatus.demo)?VXCharts.colors.warning:'rgba(255,255,255,.25)'"))
     label = dict(_VIEWS)[view]
     return render_shell(title=f'Opportunités · {label}', active='opportunities',
                         space_label='Opportunités', sub_label=label,

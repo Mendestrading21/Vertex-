@@ -715,7 +715,7 @@ function loadSectors(scan){
           g.font='10px sans-serif';g.fillStyle='rgba(255,255,255,.32)';
           g.fillText('LEADING',a.right-58,a.top+14);g.fillText('IMPROVING',a.left+6,a.top+14);
           g.fillText('WEAKENING',a.right-66,a.bottom-8);g.fillText('LAGGING',a.left+6,a.bottom-8);
-          g.fillStyle='#bab4ac';g.font='9px sans-serif';
+          g.fillStyle=(window.VXCharts&&VXCharts.colors&&VXCharts.colors.muted)||'#8A8284';g.font='9px sans-serif';
           chart.data.datasets[0].data.forEach((d,i)=>{const m=chart.getDatasetMeta(0).data[i];if(m)g.fillText(String(d.label).slice(0,11),m.x+9,m.y+3);});
           g.restore();}}]})});
   }
