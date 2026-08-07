@@ -1495,6 +1495,25 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 194 — livré** : TOURNÉE TV — la HEATMAP alignée (builder
+  partagé C.heatmapCard — hérité par secteurs Marchés, P&L mensuel
+  Portefeuille, scénarios/IV Options) : (1) le texte de chaque
+  cellule porte la COULEUR de son intensité (alpha fondu .45 → 1 sur
+  |t|, gras 700) — la grille se lit sans regarder les fonds, comme
+  les cartes secteurs TV ; (2) la cellule DOMINANTE de TOUTE la
+  grille (|t| max, une seule) en évidence — liseré appuyé 1.6 px +
+  gras 800, les autres adoucies (même langage que la barre dominante
+  du consensus lot 191). TREEMAP (chart-core) : la part « x % » des
+  grandes tuiles passe du texte translucide au chip tvEdgeChip
+  pleine couleur de la tuile (texte sombre) — grammaire des chips de
+  bord. Tuiles verre, cellules nulles et navigation inchangées.
+  Constat démo honnête : tuiles treemap neutres (P&L absent — la
+  couleur ne s'invente pas). SW v157 → v158 + 5 gardiens. Captures
+  heatmap secteurs (+1,28 % vert / −1,58 % rouge, dominante liserée)
+  + treemap (chips 65 %/35 %) + 1440 + 390 envoyées, 0 erreur
+  console. Suite 2461 passed / 2 skipped. Inventaire TV : heatmap ✔,
+  treemap ✔.
+
 - **Lot 193 — livré** : TOURNÉE TV — catalystRunway (Aujourd'hui)
   aligné sur la grammaire : (1) piste DTE en dégradé CONTINU
   (imminence rouge → jaune ancré à la frontière ≤ 5 j réelle →

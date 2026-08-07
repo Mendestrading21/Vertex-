@@ -616,7 +616,7 @@
           rx="5" fill="url(#${tid}-${i})" stroke="${col}" stroke-opacity=".5" stroke-width="1"/>
         ${small ? '' : `<text x="${(r.x + 7).toFixed(1)}" y="${(r.y + 17).toFixed(1)}" fill="#f3f1ed" font-size="11" font-weight="700">${lbl.slice(0, Math.floor(r.w / 7))}</text>
         <text x="${(r.x + 7).toFixed(1)}" y="${(r.y + 31).toFixed(1)}" fill="rgba(255,255,255,.82)" font-size="10" style="font-variant-numeric:tabular-nums">${fmt(r.d.value)}${r.d.sub ? ' · ' + r.d.sub : ''}</text>
-        ${r.w > 90 ? `<text x="${(r.x + r.w - 8).toFixed(1)}" y="${(r.y + 17).toFixed(1)}" text-anchor="end" fill="rgba(255,255,255,.55)" font-size="10.5" font-weight="800" style="font-variant-numeric:tabular-nums">${share} %</text>` : ''}`}
+        ${r.w > 90 ? C.tvEdgeChip(r.x + r.w - 7, r.y + 15, share + ' %', col, { fontSize: 9 }) : ''}`}
       </g>`;
     }).join('');
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block">${tdefs}${svg}</svg>`;
