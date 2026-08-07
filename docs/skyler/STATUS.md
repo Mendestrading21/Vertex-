@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 270 — livré** : SMOKE-CHECK PÉRIODIQUE COMPLET (échéance
+  annoncée depuis le lot 263, honorée) + MINI-BILAN 266-270. Protocole
+  du lot 251 rejoué : **8 pages racines × HTTP 200, 0 erreur
+  console/pageerror, /api/client-log count:0, healthz ok (8
+  moteurs)** — résultat IDENTIQUE au lot 251 (±1 caractère
+  d'horodatage) → 0 défaut, 0 changement de code. Bilan de tranche :
+  cycles de veille 3-6 (266-269, rapports minimaux, 0 travail
+  fabriqué) + cette échéance ; défauts produit 0 (38 lots depuis le
+  232) ; code produit 0 ligne (25 lots, 246-270) ; suite 2486/2 et SW
+  v173 inchangés ; 5 PR (#299→#303). Le régime de veille TIENT :
+  cycles courts entre les échéances, échéance honorée avec une vraie
+  mesure navigateur. Prochaine échéance périodique ~lot 280. Pas de
+  bump.
+
 - **Lot 269 — livré** : VEILLE ACTIVE, cycle 6 — état IDENTIQUE aux
   cycles 1-5 (0 doublon trigger, integration à jour, 0 PR oubliée,
   arbre propre, suite 2486/2). Rien à toucher, rapport minimal.
