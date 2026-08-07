@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 193 — livré** : TOURNÉE TV — catalystRunway (Aujourd'hui)
+  aligné sur la grammaire : (1) piste DTE en dégradé CONTINU
+  (imminence rouge → jaune ancré à la frontière ≤ 5 j réelle →
+  horizon éteint — le risque temporel est dans la matière de la
+  piste) ; (2) zone ≤ 5 j HACHURÉE (tvHatch — la texture
+  estimation/risque commune au cône lot 190 et au payoff lot 192) ;
+  (3) le PROCHAIN catalyseur porte son échéance en chip tvEdgeChip
+  pleine couleur d'impact (texte sombre), les suivants en texte.
+  Anti-collision lot 61, anneau de focus, verdict tonal et état vide
+  honnête STRICTEMENT inchangés ; helpers TV gardés par test
+  d'existence. SW v156 → v157 + 5 gardiens. Capture piste (chip J-0
+  rouge Emploi US, J-3/J-5/J-6/J-7) + 1440 + 390 envoyées, 0 erreur
+  console. Suite 2461 passed / 2 skipped. Inventaire TV : runway ✔.
+
 - **Lot 192 — livré** : TOURNÉE TV — deux graphiques alignés. (1)
   regimeAura (Aujourd'hui) rejoint la grammaire TV : l'arc de
   confiance ENTIER en dégradé continu de la tonalité du régime
