@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 166 — livré** : caractérisation de la COUCHE IA OPTIONNELLE
+  `ai/briefs.py` (178 lignes — traduction FR des news, mini-profils,
+  descriptions ; dégradation IA → Google gratuit → texte d'origine).
+  10 tests entièrement HORS LIGNE (_google_fr monkeypatché selon son
+  contrat) : available exige une clé RÉELLE (absence, placeholder
+  sk-ant-xxxx et mauvais préfixe rejetés) ; fr_news sans clé →
+  repli Google avec CACHE (aucun second appel pour les mêmes
+  titres), désalignement de lignes → titres anglais d'origine
+  (fidélité > traduction), échec réseau → origine ; company_brief
+  sans clé/résumé → {} (jamais un profil inventé) ; fr_label et
+  fr_desc cachés avec repli sur l'origine (jamais un texte perdu).
+  Aucun code modifié, pas de bump SW. Suite 2271 → 2281 passed /
+  2 skipped.
 - **Lot 165 — livré** : caractérisation du MOTEUR DE RISQUE du
   portefeuille RÉEL `risk_engine.py` (§26, servi par strategy_os —
   la chaîne du risque est désormais COMPLÈTE : correlation +
