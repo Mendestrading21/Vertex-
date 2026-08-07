@@ -167,6 +167,7 @@
 | 151 | `SKYLER-LOT-151.md` | Caractérisation `regime_features.py` (cerveau physique, 0 test — modifie le score Vertex) : 15 tests — Hurst persistant/anti + limite droite pure sans exposant, entropie 0/[0,1], efficience 1.0/0.0/None, demi-vie OU (tendance → None), états TF/RM/NEUTRE, score_adjust exact (+7/-9 extrêmes réels) | 0.9.0 | v151 | 2113 | GO |
 | 152 | `SKYLER-LOT-152.md` | Caractérisation `sectors.py` (rotation, comité+Analyse) + `ml_calibration.py` (proba de gain, quant_engine) : 13 tests — agrégats exacts, risk_band 3/5, delta veille, défauts neutres ; point neutre edge 54 → 0.5, calibration 86→0.736/30→0.317, bornes humbles [0.05, 0.85], limites None/edge illisible | 0.9.0 | v151 | 2126 | GO |
 | 153 | `SKYLER-LOT-153.md` | Caractérisation `context.py` (météo marché : régime SPY/VIX/RORO/breadth/verdict, 0 test) : 15 tests — robustesse 5×None avec verdict « ?% » honnête, bandes VIX exactes 16/22, bornes RORO ±8, breadth nh/nl 98/5, verdict complet composé | 0.9.0 | v151 | 2141 | GO |
+| 154 | `SKYLER-LOT-154.md` | Caractérisation `news_impact.py` + `news_pipeline.py` (actualités §15, 0 test) : 20 tests — priorité premier match + limite sous-chaîne ('ai' dans mountain) documentée, importance exacte base 30/plafonds, seuils ±0.15 + confiance ≤0.7, rejets comptés, doublon → corroborations 2 → importance 80 | 0.9.0 | v151 | 2161 | GO |
 
 ## Architecture atteinte
 

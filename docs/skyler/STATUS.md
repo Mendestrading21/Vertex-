@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 154 — livré** : caractérisation des ACTUALITÉS (§15) —
+  `news_impact.py` (classement par mots-clés + importance +
+  direction potentielle) et `news_pipeline.py` (validation/dédup/
+  tri), deux modules zéro-test servis par daily_brief. 20 tests
+  figent : la priorité du PREMIER match (MACRO gagne sur RESULTATS)
+  et le défaut ENTREPRISE ; une LIMITE documentée — matching par
+  SOUS-CHAÎNE, le mot-clé 'ai' matche dans « mountain »/« rain » →
+  SECTEUR (passer aux frontières de mots = décision explicite) ;
+  l'arithmétique d'importance EXACTE (base 30, corroborations
+  plafonnées +30, portefeuille +25, bonus catégorie, plafond 100) ;
+  les seuils de direction ±0.15 EXACTS avec confiance plafonnée
+  0.7 (humble, jamais une causalité affirmée) ; les rejets du
+  pipeline COMPTÉS jamais masqués ; le doublon fusionné en
+  corroborations (2 → importance 80 recomposée) ; sym en
+  majuscules, fr vide → None, tri décroissant, état vide honnête.
+  L'assainissement XSS reste chez news_plus (déjà couvert). Aucun
+  code modifié, pas de bump SW. Suite 2141 → 2161 passed /
+  2 skipped.
 - **Lot 153 — livré** : caractérisation du CONTEXTE MARCHÉ
   `context.py` (105 lignes, 0 test — la « météo » du jour servie
   par decision_api et terminal : régime du SPY lui-même, bandes
