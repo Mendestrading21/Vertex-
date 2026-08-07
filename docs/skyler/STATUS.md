@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 246 — livré** : PARCOURS JOURNAL D'UN TRAIT — le dernier flux
+  d'ÉCRITURE du produit prouvé de bout en bout. /journal?view=journal
+  → bouton « Ajouter une entrée » → formulaire de décision →
+  NVDA + Enregistrer → **1 entrée dans vxJournal local** → NVDA
+  présent dans le blob /api/desk (push VXEntities) → rechargement :
+  l'entrée **persiste et s'affiche** → nettoyage PAR LE PROTOCOLE
+  (retirée du store, poussée, absente du serveur — desk_data.json
+  jamais édité à la main). 0 erreur console. Calibrage honnête : deux
+  fausses pistes écartées — le jTicker/jSave de vertex/ui/journal.py
+  appartient à la page Journal HÉRITÉE (PAGE_JOURNAL de terminal.py,
+  plus servie par /journal — candidate connue à la purge en attente
+  d'accord) ; le VRAI produit passe par performance_page
+  (j-ticker/j-confirm, store VXEntities) — c'est lui qui est prouvé.
+  Les QUATRE parcours sont prouvés : les 3 lectures (analyse 241,
+  contrat 242, GEX 243) ET l'écriture (journal 246). Constat honnête,
+  aucun code touché, pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 245 — livré** : MINI-BILAN 241-245. Tranche de 5 lots
   (PR #274 → #278) : suite **2486 / 2 skipped stable**, SW **v173
   STABLE** (0 bump — 5 lots de preuve pure). Réalisations : les
