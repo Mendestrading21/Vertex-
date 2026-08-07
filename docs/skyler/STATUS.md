@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 201 — livré** : TOURNÉE TV — le RADAR de scores (C.radar,
+  scorecard de la fiche Analyse) reçoit la règle « dominante en
+  évidence » : le sommet à la valeur MAXIMALE réelle porte un anneau
+  de focus (couleur, opacité .55) et sa valeur en CHIP pleine couleur
+  (tvEdgeChip, texte sombre) posé VERS LE CENTRE le long du rayon —
+  jamais sur les libellés d'axes. Grille dégressive, remplissage
+  radial, points et libellés inchangés ; chip = valeur réelle
+  arrondie (« 100 » sur l'axe Risque d'ACN en démo). JAUGE
+  ENVIRONNEMENT OPTIONS : ✔ par héritage STRUCTUREL — mountEnvGauge
+  appelle VXCharts.gauge directement (chemin unique vers la jauge TV
+  lot 189) ; en démo l'hôte n'est pas rendu (données environnement
+  absentes → état honnête), héritage prouvé par le code. SW v164 →
+  v165 + 5 gardiens. Capture radar ACN + Analyse 1440/390 envoyées,
+  0 erreur console. Suite 2461 passed / 2 skipped. Inventaire TV :
+  radar ✔, jauge env. options ✔.
+
 - **Lot 200 — livré** : TOURNÉE TV — la SÉRIE DE RÉFÉRENCE de
   Marchés (120 séances, SPY ou proxy honnête) reçoit les chips
   Max/Min : passthrough `extremes` de C.areaCard vers C.area (opt-in

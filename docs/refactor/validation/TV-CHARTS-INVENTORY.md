@@ -45,7 +45,10 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
   (entrée/stop/TP1-3 du moteur → éventail min/moy/max avec
   tvEdgeChip, style prix cible TV — données RÉELLES du plan, jamais
   un consensus inventé)
-- ☐ radar de scores · jauge environnement options (options-intel)
+- ✔ lot 201 : radar de scores — sommet DOMINANT en évidence (anneau
+  de focus + valeur en chip tvEdgeChip vers le centre)
+- ✔ lot 201 : jauge environnement options — héritage STRUCTUREL du
+  C.gauge TV lot 189 (appel direct, hôte non rendu en démo — honnête)
 - ☐ vol cone / IV term structure (vol_charts)
 
 ### Portefeuille (portfolio_page.py)
