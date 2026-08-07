@@ -479,6 +479,20 @@ async function renderPositions(){
     if(tr)return `${tr.tier} · ${VX.fmt.nd(s.score)}`;
     return s.verdict?esc(s.verdict):'—';};
 
+  /* LOT 137 : le poids n'est plus un chiffre nu — mini-barre de VERRE avec
+     REPERE DU PLAFOND (le tick à 60 % du rail = plafond du tier, ex. 15 %) :
+     sous 80 % du plafond -> positive, proche -> warning, AU-DESSUS -> negative
+     avec halo. Le chiffre educatif d'un poids, c'est sa distance au plafond. */
+  const wgtBar=(w,cap)=>{if(w==null)return '—';
+    const over=cap!=null&&w>cap,near=cap!=null&&!over&&w>=cap*0.8;
+    const tok=over?'var(--vx-negative,#E9555F)':near?'var(--vx-warning,#D9BE3C)':'var(--vx-positive,#2BBE90)';
+    const width=cap!=null?Math.max(4,Math.min(100,w/cap*60)):Math.max(4,Math.min(100,w));
+    return '<span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">'
+      +'<span style="width:64px;height:8px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block;position:relative">'
+      +(cap!=null?'<span style="position:absolute;left:60%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.3)"></span>':'')
+      +'<span style="display:block;height:100%;width:'+width.toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:3px'
+      +(over?';box-shadow:0 0 6px color-mix(in srgb,var(--vx-negative,#E9555F) 45%,transparent)':'')+'"></span></span>'
+      +'<span style="font-variant-numeric:tabular-nums">'+VX.fmt.num(w,1)+' %'+(cap!=null?'<span class="vx-meta"> / '+cap+' %</span>':'')+'</span></span>';};
   const rowHtml=(t)=>{const st=thesisState(t),na=nextAction(t),tr=tierOf(t);
     const s=t.entrySnap||{};
     const cat=s.catalyst||(s.earnings_dte!=null?('résultats ~'+s.earnings_dte+' j'):'');
@@ -492,7 +506,7 @@ async function renderPositions(){
       <td data-label="Valeur marché" class="vx-num">${t.value!=null?VX.fmt.price(t.value):'n/d'}</td>
       <td data-label="P&L" class="vx-num ${t.plAbs>0?'vx-pos':t.plAbs<0?'vx-neg':''}">${t.plAbs!=null?((t.plAbs>=0?'+':'')+VX.fmt.price(t.plAbs)):'n/d'}</td>
       <td data-label="P&L %" class="vx-num ${t.pl>0?'vx-pos':t.pl<0?'vx-neg':''}">${t.pl!=null?VX.fmt.pct(t.pl,1):'n/d'}</td>
-      <td data-label="Poids" class="vx-num ${(wgt!=null&&tr&&wgt>tr.max*1.5)?'vx-warn':''}">${wgt!=null?VX.fmt.num(wgt,1)+' %':'—'}${tr?'<span class="vx-meta"> / '+tr.max+' %</span>':''}</td>
+      <td data-label="Poids" class="vx-num ${(wgt!=null&&tr&&wgt>tr.max*1.5)?'vx-warn':''}">${wgtBar(wgt,tr?tr.max:null)}</td>
       <td data-label="Conviction">${convOf(t)}</td>
       <td data-label="État de thèse">${stBadge(st)}</td>
       <td data-label="Invalidation" class="vx-num vx-neg">${VX.fmt.nd(s.stop)}</td>

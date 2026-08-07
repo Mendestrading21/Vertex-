@@ -150,6 +150,7 @@
 | 134 | `SKYLER-LOT-134.md` | Passe n°9 — radar de positionnement Options : le net GEX devient une mini-barre SIGNÉE de verre depuis l'axe zéro (stabilisant → droite positive, accélérateur → gauche negative, échelle relative) — fini les 18 lignes de chiffres nus ; captures envoyées | 0.9.0 | v143 | 1984 | GO |
 | 135 | `SKYLER-LOT-135.md` | Passe n°10 — scan Actions : le score devient une mini-barre verre GRADUÉE (≥ 70 positive, 40-69 warning, < 40 negative — seuils réels du moteur) + MINI-BILAN 131-135 ; captures envoyées | 0.9.0 | v144 | 1984 | GO |
 | 136 | `SKYLER-LOT-136.md` | Passe n°11 — Radar Opportunités : comparaison des candidats en verre (dégradé + halo du MEILLEUR par critère) + score Skyler /40 en mini-barre graduée ; Watchlist vérifiée (états vides honnêtes) ; captures envoyées | 0.9.0 | v145 | 1984 | GO |
+| 137 | `SKYLER-LOT-137.md` | Passe n°12 — Positions : le poids devient une mini-barre de verre avec REPÈRE DU PLAFOND du tier (proche → warning, au-dessus → negative + halo ; sans tier : échelle simple, aucun plafond inventé) ; captures envoyées | 0.9.0 | v146 | 1984 | GO |
 
 ## Architecture atteinte
 

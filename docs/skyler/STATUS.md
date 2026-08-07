@@ -1495,6 +1495,14 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 137 — livré** : passe graphique n°12 — Positions
+  Portefeuille : le POIDS de chaque position devient une mini-barre
+  de verre avec REPÈRE DU PLAFOND du tier (tick à 60 % du rail =
+  plafond, ex. 15 % Constitution ; sous 80 % → positive, proche →
+  warning, au-dessus → negative + halo). Sans tier connu : échelle
+  simple, aucun plafond inventé. Le chiffre éducatif d'un poids,
+  c'est sa distance au plafond. SW v145 → v146 + 4 gardiens.
+  Captures avant/après envoyées. Suite 1984/2, RC GO.
 - **Lot 136 — livré** : passe graphique n°11 — Radar Opportunités :
   (a) la Comparaison des meilleurs candidats passe en VERRE — chaque
   barre est un dégradé de sa propre couleur et le MEILLEUR du
