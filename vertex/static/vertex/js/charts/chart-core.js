@@ -272,11 +272,54 @@
       },
     };
   };
-  C.area = function (canvas, labels, values, { color = C.colors.blue, yFmt, fill = true, extraDatasets = [], last = true, glow = true, crosshair = true } = {}) {
+  /* GRAMMAIRE TV (lot 195) : chips Max/Min posés sur les extrêmes RÉELS de la
+     série — équivalent canvas du tvEdgeChip SVG (fond plein, texte sombre).
+     which : undefined = les deux · 'max' | 'min' = un seul. */
+  C.tvExtremesPlugin = function (color, yFmt, which) {
+    const lbl = (v) => (typeof yFmt === 'function') ? yFmt(v)
+      : (window.VX && VX.fmt && VX.fmt.price ? VX.fmt.price(v) : String(v));
+    return {
+      id: 'vxTvExtremes',
+      afterDatasetsDraw(chart) {
+        const meta = chart.getDatasetMeta(0);
+        const data = (chart.data.datasets[0] || {}).data || [];
+        if (!meta || !meta.data || !meta.data.length || !data.length) return;
+        let iMax = -1, iMin = -1;
+        data.forEach((v, i) => {
+          if (v === null || v === undefined || isNaN(v)) return;
+          if (iMax < 0 || v > data[iMax]) iMax = i;
+          if (iMin < 0 || v < data[iMin]) iMin = i;
+        });
+        if (iMax < 0 || iMax === iMin) return;
+        const ctx = chart.ctx, area = chart.chartArea;
+        const tt = (window.VXChartTheme && VXChartTheme.tooltip) || {};
+        const chip = (i, tag) => {
+          const pt = meta.data[i]; if (!pt) return;
+          const txt = tag + ' ' + lbl(data[i]);
+          ctx.save();
+          ctx.font = '700 9px ' + ((window.Chart && Chart.defaults.font.family) || 'Inter,sans-serif');
+          const w = ctx.measureText(txt).width + 10, h = 14;
+          const x = Math.max(area.left, Math.min(pt.x - w / 2, area.right - w));
+          let y = tag === 'Max' ? pt.y - h - 6 : pt.y + 6;
+          y = Math.max(area.top, Math.min(y, area.bottom - h));
+          ctx.beginPath(); ctx.roundRect(x, y, w, h, 7);
+          ctx.fillStyle = color; ctx.fill();
+          ctx.fillStyle = tt.backgroundColor || '#151719';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(txt, x + 5, y + h / 2 + 0.5);
+          ctx.restore();
+        };
+        if (which !== 'min') chip(iMax, 'Max');
+        if (which !== 'max') chip(iMin, 'Min');
+      },
+    };
+  };
+  C.area = function (canvas, labels, values, { color = C.colors.blue, yFmt, fill = true, extraDatasets = [], last = true, glow = true, crosshair = true, extremes = false } = {}) {
     const plugins = [];
     if (glow) plugins.push(C.glowPlugin(color));
     if (crosshair) plugins.push(C.crosshairPlugin(color));
     if (last) plugins.push(C.lastDotPlugin(color, yFmt));
+    if (extremes) plugins.push(C.tvExtremesPlugin(color, yFmt, extremes === true ? undefined : extremes));
     return C.mount(canvas, {
       type: 'line',
       data: { labels, datasets: [{ data: values, borderColor: color, borderWidth: 1.8, pointRadius: 0,

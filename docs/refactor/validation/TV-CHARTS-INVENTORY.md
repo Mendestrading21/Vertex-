@@ -47,7 +47,9 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 - ✔ jauge risque (pf-risk-gauge)
 - ✔ lot 194 : treemap — part du total en chip tvEdgeChip pleine
   couleur sur les grandes tuiles
-- ☐ equity curve (equity-chart) · drawdown
+- ✔ lot 195 : equity curve + drawdown — chips Max/Min sur les
+  extrêmes RÉELS (C.tvExtremesPlugin, opt-in `extremes` de C.area ;
+  drawdown = chip Min seul, le pire creux)
 - ☐ barres S+/S/A/B (concentration)
 
 ### Options (options_intel_page.py)
