@@ -1495,6 +1495,17 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 290 — livré** : ÉCHÉANCE PÉRIODIQUE — smoke-check complet
+  SAIN (4e mesure, protocole lot 251) : 8 pages × HTTP 200, 0 erreur
+  console/pageerror, client-log count:0, healthz ok. 7 tailles sur 8
+  STRICTEMENT identiques aux mesures 251/270/280 ; /system 3897→4124
+  (+227) EXPLIQUÉ : la vue par défaut de /system est `connections`,
+  seule vue modifiée depuis (carte « Verrou d'accès », lot 283) —
+  écart = fonctionnalité livrée, base saine. Nouvelle référence
+  /system = 4124. Suite 2498/2. Prochaine échéance ~lot 300. Docs
+  seulement, pas de bump. É1 : GO acquis, toujours en attente de
+  déblocage permissions.
+
 - **Lot 289 — livré** : LOT PRODUIT — cible TACTILE du champ de
   recherche. Suite directe du lot 288 : le champ est LE chemin
   tactile vers la palette, or il mesurait 33px de haut à 390px, sous
