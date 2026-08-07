@@ -180,6 +180,7 @@
 | 164 | `SKYLER-LOT-164.md` | Caractérisation `legacy_basket_risk.py` (risque de panier VIVANT, 0 test) : 8 tests — gardes panier/40 pts, drapeau corrélation 0.92 + top_pair, 3 LIMITES documentées (cap infaisable → somme n×cap, concentration non détectée petit panier, FAIL-OPEN sur erreur), _cap_weights somme 1 | 0.9.0 | v151 | 2263 | GO |
 | 165 | `SKYLER-LOT-165.md` | Caractérisation `risk_engine.py` (risque du portefeuille RÉEL §26 — chaîne du risque COMPLÈTE) : 8 tests — provenance SCANNER refusée, surpoids/HHI/secteur/bêta pondéré exacts, bornes -25 %/-20 % INCLUSES, plafond d'options, greeks honnêtes (None jamais 0, partial signalé) + MINI-BILAN 161-165 | 0.9.0 | v151 | 2271 | GO |
 | 166 | `SKYLER-LOT-166.md` | Caractérisation `ai/briefs.py` (couche IA optionnelle, hors ligne) : 10 tests — clé réelle exigée (placeholder rejeté), repli Google avec cache, désalignement → titres d'origine (fidélité), company_brief → {} propre, fr_label/fr_desc avec ordre de dégradation, jamais un texte perdu | 0.9.0 | v151 | 2281 | GO |
+| 167 | `SKYLER-LOT-167.md` | Caractérisation étendue `ai/copilot.py` (Anthropic mocké) : 8 tests — positions desk cap 20 + stop du snapshot, contexte sans symbole réduit, post-mortem inclus, chemin Claude étiqueté « estimation », texte vide/exception → repli déterministe, contexte mort → erreur honnête sans réponse inventée | 0.9.0 | v151 | 2289 | GO |
 
 ## Architecture atteinte
 

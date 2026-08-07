@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 167 — livré** : caractérisation étendue du COPILOTE
+  D'ANALYSE `ai/copilot.py` (159 lignes — répond en français ancré
+  dans les nombres réels ; Anthropic entièrement mocké). 8 tests
+  figent les LACUNES des 5 tests existants : les positions du desk
+  (cap 20, filtre par symbole, stop repris du snapshot d'entrée,
+  desk illisible → [] jamais inventé) ; le contexte sans symbole
+  réduit à digest + positions ; le post-mortem chiffré inclus
+  quand des trades clôturés existent ; le symbole normalisé
+  (majuscules, 12 max) ; le chemin Claude mocké — succès étiqueté
+  « estimation, pas une donnée broker » readonly True, texte vide
+  ou exception API → repli déterministe étiqueté (jamais
+  d'exception propagée) ; contexte indisponible → ok False avec
+  erreur honnête et answer None. Aucun code modifié, pas de bump
+  SW. Suite 2281 → 2289 passed / 2 skipped.
 - **Lot 166 — livré** : caractérisation de la COUCHE IA OPTIONNELLE
   `ai/briefs.py` (178 lignes — traduction FR des news, mini-profils,
   descriptions ; dégradation IA → Google gratuit → texte d'origine).
