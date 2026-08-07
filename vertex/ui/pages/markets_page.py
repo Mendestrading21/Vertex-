@@ -857,6 +857,8 @@ async function loadVix(scan){
       /* Rail calme ↔ stress : VIX 10→40 projeté sur 0→100 % */
       +`<div class="vx-stat-xl-label vx-mt3">Calme ↔ Stress</div>`
       +`<div class="vx-rail vx-rail--stress vx-mt2" style="--vx-rail-pos:${Math.max(0,Math.min(100,(vix-10)/30*100)).toFixed(0)}%"><span class="vx-rail-mark"></span></div>`
+      /* GRAMMAIRE TV (lot 198) : la valeur RÉELLE en chip sur le pointeur */
+      +`<div class="vx-rail-chipline" style="--vx-rail-pos:${Math.max(0,Math.min(100,(vix-10)/30*100)).toFixed(0)}%"><span class="vx-rail-chip">${VX.fmt.nd(vix)}</span></div>`
       +`<div class="vx-rail-scale"><span>10</span><span>25</span><span>40+</span></div>`
       +`<div class="vx-help vx-mt2">Un VIX bas comprime les primes d’options ; un VIX en expansion invalide les entrées agressives.</div>`
       +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
@@ -880,6 +882,7 @@ async function loadVix(scan){
     if($('vx-mk-vol-rail'))$('vx-mk-vol-rail').innerHTML=
       '<div class="vx-stat-xl-label">Positionnement — Défense ↔ Attaque</div>'
       +'<div class="vx-rail vx-mt2" style="--vx-rail-pos:'+pos+'%"><span class="vx-rail-mark"></span></div>'
+      +'<div class="vx-rail-chipline" style="--vx-rail-pos:'+pos+'%"><span class="vx-rail-chip">'+(known?conf+' %':'n/d')+'</span></div>'
       +'<div class="vx-rail-scale"><span>Défense</span><span>Neutre</span><span>Attaque</span></div>'
       +'<div class="vx-meta vx-mt2">Régime '+regTxt+' · '
       +(allowed?'<span class="vx-pos">nouveau risque autorisé</span>':'<span class="vx-neg">nouveau risque BLOQUÉ</span>')+'</div>'

@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 198 — livré** : TOURNÉE TV — les RAILS de Marchés reçoivent
+  le chip de valeur : nouvelle classe réutilisable
+  .vx-rail-chipline/.vx-rail-chip (cockpit.css) — chip posé au-dessus
+  du pointeur du rail, fond clair/texte sombre/gras 800/chiffres
+  tabulaires (le même langage que le pointeur blanc des jauges lot
+  189 et les chips de bord), positionné par --vx-rail-pos et BORNÉ
+  aux extrémités (clamp) pour ne jamais déborder. Calme↔Stress : la
+  valeur RÉELLE du VIX (12.7 en démo) à sa position sur l'échelle
+  10→40 ; Défense↔Attaque : la confiance réelle du régime en %, et
+  « n/d » HONNÊTE quand le régime est indéterminé — jamais un
+  pourcentage inventé sur UNKNOWN. Dégradés des rails et flèches
+  inchangés. SW v161 → v162 + 5 gardiens. Captures carte VIX (jauge +
+  rail + chip 12.7) + rail positionnement (chip n/d) + 1440 + 390
+  envoyées, 0 erreur console. Suite 2461 passed / 2 skipped.
+  Inventaire TV : bandes linéaires ✔.
+
 - **Lot 197 — livré** : TOURNÉE TV — le THÉTA Options assume sa
   texture de PROJECTION : nouveau C.hatchPattern (chart-core) =
   équivalent canvas du tvHatch (teinte .08 + rayures 45° .38),

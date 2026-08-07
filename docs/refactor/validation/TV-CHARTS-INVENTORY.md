@@ -31,8 +31,9 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
   par intensité + cellule dominante en évidence (hérite : secteurs
   Marchés, P&L mensuel Portefeuille, scénarios/IV Options)
 - ☐ barres leadership
-- ☐ bandes CALME↔STRESS / DÉFENSE↔ATTAQUE (linéaires — déjà
-  dégradées, à aligner sur la grammaire chip/aiguille)
+- ✔ lot 198 : bandes CALME↔STRESS / DÉFENSE↔ATTAQUE — chip de valeur
+  RÉELLE sur le pointeur (.vx-rail-chip réutilisable ; VIX réel,
+  confiance % — « n/d » honnête sur régime indéterminé)
 
 ### Analyse (analysis_page.py + options-intel.js)
 - ☐ price-chart (chandeliers lightweight-charts + niveaux)
