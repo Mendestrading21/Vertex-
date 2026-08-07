@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 178 — livré** : FILET DE SÉCURITÉ DU DESK — backup quotidien
+  + /api/desk/restore de `desk.py` (règle critique n°6 ; le candidat
+  auth.py s'est révélé déjà très couvert — 15 tests force-brute/
+  open-redirect — constat honnête, repli sur la vraie lacune).
+  8 tests figent : le snapshot quotidien créé au PREMIER écrasement
+  du jour avec le contenu d'AVANT le push, jamais réécrit par les
+  pushs suivants (le snapshot du matin protège la journée), rotation
+  à 7 (les plus vieux purgés) ; le restore qui refuse TOUT nom hors
+  motif strict (../../etc/passwd, date incomplète, suffixe — le
+  path traversal est impossible), introuvable → 404, illisible →
+  500 SANS toucher le desk courant, réussi → données du snapshot
+  avec un ts DE MAINTENANT (gagne le last-writer-wins sur tous les
+  appareils) ; la liste triée du plus récent au plus ancien. Aucun
+  code modifié, pas de bump SW. Suite 2389 → 2397 passed /
+  2 skipped.
 - **Lot 177 — livré** : GARDIEN XSS DE BOUT EN BOUT (règle critique
   n°5 : « tout texte externe passe par sanitize_news avant d'être
   servi »). Le lot 102 figeait la FONCTION ; rien ne prouvait que
