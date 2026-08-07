@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 203 — livré** : TOURNÉE TV — la volatilité et le
+  positionnement Options. (1) CÔNE DE MOUVEMENT ATTENDU : les bandes
+  1σ (brand) et 2σ (copper) sont une estimation lognormale
+  (σ = spot·IV_ATM·√(DTE/365)) → remplissages HACHURÉS
+  (C.hatchPattern lot 197 — la texture commune au cône de projection,
+  au payoff et au théta), repli translucide propre si le helper est
+  absent ; médiane, tooltips et légende inchangés. (2) GEX PAR
+  STRIKE : les deux niveaux que le trader cherche — MUR CALL (max
+  call GEX) et MUR PUT (max |put GEX|), calculés seulement s'il y a
+  ≥ 2 strikes — deviennent les dominantes : barre pleine intensité
+  (1 vs .55) + valeur RÉELLE en chip pleine couleur (texte sombre,
+  borné au viewBox) au bout de la barre ; axe, strikes, spot
+  pointillé et pied honnête inchangés. SW v166 → v167 + 5 gardiens.
+  Captures cône hachuré (spot 180) + GEX ACN (chips « 15.59 M$ » /
+  « −6.24 M$ ») + Volatilité 1440/390 envoyées, 0 erreur console.
+  Suite 2461 passed / 2 skipped. Inventaire TV : vol cone ✔, GEX ✔.
+
 - **Lot 202 — livré** : TOURNÉE TV — le PRICE-CHART d'Analyse.
   CONSTAT sur le canonique : le graphique principal est rendu par
   TradingView Lightweight Charts et ses niveaux du plan sont DÉJÀ des
