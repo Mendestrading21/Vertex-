@@ -333,13 +333,17 @@ function loadLeader(scan){
      intensité, pas arc-en-ciel) — remplit la carte et se lit d'un coup d'œil. */
   const withScore=sectors.filter(s=>s.avg_score!=null);
   const maxSc=Math.max(1,...withScore.map(s=>s.avg_score));
+  /* LOT 139 : barres en VERRE — degrade de leur propre couleur (doux -> dense,
+     patron 130-138) et le MENEUR garde l'ember avec un halo doux. */
   const rank=withScore.slice(0,5).map((s,i)=>{
     const L=s.leader&&(s.leader.symbol||((typeof s.leader==='string')?s.leader:null));
     const w=Math.max(6,Math.round((s.avg_score/maxSc)*100));
-    const col=i===0?'var(--vx-ember-500)':'var(--vx-warm-grey)';
+    const tok=i===0?'var(--vx-ember-500)':'var(--vx-warm-grey)';
+    const fill='background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 40%,transparent),'+tok+')'
+      +(i===0?';box-shadow:0 0 6px color-mix(in srgb,var(--vx-ember-500) 45%,transparent)':'');
     return `<div class="vx-mk-lead-row">
       <span class="vx-mk-lead-name" title="${esc(s.sector||'')}">${esc(s.sector||'n/d')}</span>
-      <span class="vx-mk-lead-bar"><i style="width:${w}%;background:${col}"></i></span>
+      <span class="vx-mk-lead-bar"><i style="width:${w}%;${fill}"></i></span>
       <span class="vx-mk-lead-sc">${VX.fmt.nd(s.avg_score)}</span>
       ${L?`<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(L)}" title="Leader ${esc(L)}">${esc(L)}</button>`:'<span class="vx-meta">—</span>'}
     </div>`;}).join('');
