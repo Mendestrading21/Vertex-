@@ -116,13 +116,31 @@
         host.innerHTML = '<div class="vx-empty">' + esc((d.reason || 'radar indisponible') + '.') + '</div>';
         return;
       }
+      /* LOT 134 : le net GEX n'est plus un chiffre nu — mini-barre SIGNEE de
+         verre depuis l'axe zero (positif -> droite en positive, negatif ->
+         gauche en negative ; degrade doux au zero -> dense a la valeur via
+         color-mix sur tokens ; echelle relative au max du radar). L'oeil voit
+         qui stabilise et qui accelere sans lire chaque nombre. */
+      var maxG = 1;
+      d.rows.forEach(function (r) { maxG = Math.max(maxG, Math.abs(r.net_gex || 0)); });
+      function gexBar(v) {
+        if (v == null || !isFinite(v)) return money(v);
+        var neg = v < 0, w = Math.max(3, Math.abs(v) / maxG * 50);
+        var tok = neg ? 'var(--vx-negative,#E9555F)' : 'var(--vx-positive,#2BBE90)';
+        return '<span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">'
+          + '<span style="width:76px;height:8px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block;position:relative">'
+          + '<span style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.16)"></span>'
+          + '<span style="position:absolute;top:0;bottom:0;' + (neg ? ('right:50%;width:' + w.toFixed(0) + '%') : ('left:50%;width:' + w.toFixed(0) + '%'))
+          + ';background:linear-gradient(' + (neg ? '270deg' : '90deg') + ',color-mix(in srgb,' + tok + ' 35%,transparent),' + tok + ');border-radius:2px"></span></span>'
+          + '<span>' + money(v) + '</span></span>';
+      }
       var rows = d.rows.map(function (r) {
         var regTone = r.regime === 'stabilisant' ? 'pos' : r.regime === 'accelerateur' ? 'neg' : 'neutral';
         var biasTone = r.bias === 'haussier' ? 'pos' : r.bias === 'baissier' ? 'neg' : 'neutral';
         return '<tr data-gx-sym="' + esc(r.symbol) + '" style="cursor:pointer">'
           + '<td><span class="vx-ticker">' + esc(r.symbol) + '</span></td>'
           + '<td class="vx-num">' + f(r.spot) + '</td>'
-          + '<td class="vx-num ' + (r.net_gex > 0 ? 'vx-pos' : r.net_gex < 0 ? 'vx-neg' : '') + '">' + money(r.net_gex) + '</td>'
+          + '<td class="vx-num ' + (r.net_gex > 0 ? 'vx-pos' : r.net_gex < 0 ? 'vx-neg' : '') + '">' + gexBar(r.net_gex) + '</td>'
           + '<td><span class="vx-badge" data-tone="' + regTone + '">' + esc(r.regime || '—') + '</span></td>'
           + '<td><span class="vx-badge" data-tone="' + biasTone + '">' + esc(r.bias || '—') + '</span></td>'
           + '<td class="vx-num">' + f(r.zero_gamma) + '</td>'

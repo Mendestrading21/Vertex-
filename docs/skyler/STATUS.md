@@ -1495,6 +1495,14 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 134 — livré** : passe graphique n°9 — radar de positionnement
+  du desk Options : le net GEX n'est plus un nombre nu — mini-barre
+  SIGNÉE de verre depuis l'axe zéro (positif → droite en positive =
+  stabilisant ; négatif → gauche en negative = accélérateur ;
+  dégradé color-mix sur tokens, échelle relative au max du radar,
+  valeur M$ conservée à côté). L'œil voit qui pousse où et avec
+  quelle force. Vue LEAPS vérifiée (rien de plat). SW v142 → v143
+  + 4 gardiens. Captures avant/après envoyées. Suite 1984/2, RC GO.
 - **Lot 133 — livré** : passe graphique n°8 — payoff de structure du
   desk Options : **2 bugs préexistants tués** — (a) le 3e argument
   `[refPlugin]` passé à `C.mount` (qui n'en prend que 2) était
