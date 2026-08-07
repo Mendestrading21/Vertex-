@@ -65,6 +65,10 @@
   .vx-strip-item{grid-column:span 6}
   .vx-strip-item .vx-kpi-value{font-size:17px!important}
   .vx-topbar-search{max-width:none}
+  /* lot 288 : ⌘K est une affordance CLAVIER — mensongère au tactile (le tap
+     sur le champ ouvre la palette) et elle mangeait ~30px d'un champ mesuré
+     à 93px sur 390px. */
+  .vx-topbar-search .vx-kbd{display:none}
   .vx-page-header .vx-actions{width:100%;justify-content:flex-start;
     overflow-x:auto;scrollbar-width:none}
   .vx-kpi .vx-kpi-value{font-size:22px}
