@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 230 — livré** : MINI-BILAN 226-230. Tranche de 5 lots
+  (PR #259 → #263) : suite 2482 → **2486** / 2 skipped (+4), SW
+  **v172 STABLE** (0 bump — 5 lots de constat/garde, rien à
+  déployer). Réalisations : (1) budgets JS mesurés — chart-core.js
+  57,2/64 kB (89 %, marge 6,8 kB, +18 kB coût légitime de la tournée
+  TV), calibration du gardien recalibrée + consigne « discuter le
+  budget AVANT de le crever » (226) ; (2) dette TODO : 0 marqueur
+  dans tout le code produit + perf serveur : 16 routes, médianes
+  1,2-2,9 ms (227) ; (3) mémoire de la boucle GARDÉE : 218 références
+  d'index → 0 morte, périmètre 01-09 enfin écrit, gardien
+  index↔rapports — le rituel est un invariant testé (228) ; (4) cycle
+  drawer/modal au clavier prouvé comportementalement — focus revenu
+  au déclencheur, closeAll referme les deux (229). Doctrine : tranche
+  100 % « mesurer avant de toucher » — 0 ligne de code produit
+  modifiée, 1 gardien neuf, 2 recalibrations de vérité, chaque
+  constat chiffré. Docs seulement, pas de bump.
+  Suite **2486 passed / 2 skipped**.
+
 - **Lot 229 — livré** : CYCLE DRAWER/MODAL AU CLAVIER — le constat
   COMPORTEMENTAL qui manquait aux lots 209/210 (eux prouvaient les
   attributs, celui-ci déroule le vrai parcours). Protocole Playwright
