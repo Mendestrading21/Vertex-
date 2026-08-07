@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 168 — livré** : caractérisation de la STRATÉGIE OPTIONS
+  PERSONNALISÉE `legacy_adapter.py` (272 lignes, 0 test — VIVANTE :
+  servie par command et terminal ; échelle 1/2/3/6/9/12 mois,
+  mark-to-market Black-Scholes en cours de route, constructeur de
+  portefeuille). 21 tests figent : le régime (mots-clés + seuils
+  exacts 60/40, {} → neutral) ; les briques (IV bornée [0.22,
+  1.10], pas de strike 1/2.5/5/10, détention ~1/3 bornée 5-45 j) ;
+  la jambe d'option (breakeven call = strike+prime / put =
+  strike−prime, sorties EXACTES +50 %/−50 %, alerte théta clampée,
+  scénarios ORDONNÉS pess < prob < except, cible technique du plan
+  valorisée en route) ; le RÉGIME DANGEREUX qui impose le PUT même
+  sur conviction haussière (défense d'abord) ; le portefeuille
+  cœur×3/satellites×2 à arithmétique FERMÉE (cash = capital −
+  déployé, maxloss = déployé, risque/position ~10 % borné) et le
+  portefeuille vide honnête sans candidats. Aucun code modifié,
+  pas de bump SW. Suite 2289 → 2310 passed / 2 skipped.
 - **Lot 167 — livré** : caractérisation étendue du COPILOTE
   D'ANALYSE `ai/copilot.py` (159 lignes — répond en français ancré
   dans les nombres réels ; Anthropic entièrement mocké). 8 tests

@@ -181,6 +181,7 @@
 | 165 | `SKYLER-LOT-165.md` | Caractérisation `risk_engine.py` (risque du portefeuille RÉEL §26 — chaîne du risque COMPLÈTE) : 8 tests — provenance SCANNER refusée, surpoids/HHI/secteur/bêta pondéré exacts, bornes -25 %/-20 % INCLUSES, plafond d'options, greeks honnêtes (None jamais 0, partial signalé) + MINI-BILAN 161-165 | 0.9.0 | v151 | 2271 | GO |
 | 166 | `SKYLER-LOT-166.md` | Caractérisation `ai/briefs.py` (couche IA optionnelle, hors ligne) : 10 tests — clé réelle exigée (placeholder rejeté), repli Google avec cache, désalignement → titres d'origine (fidélité), company_brief → {} propre, fr_label/fr_desc avec ordre de dégradation, jamais un texte perdu | 0.9.0 | v151 | 2281 | GO |
 | 167 | `SKYLER-LOT-167.md` | Caractérisation étendue `ai/copilot.py` (Anthropic mocké) : 8 tests — positions desk cap 20 + stop du snapshot, contexte sans symbole réduit, post-mortem inclus, chemin Claude étiqueté « estimation », texte vide/exception → repli déterministe, contexte mort → erreur honnête sans réponse inventée | 0.9.0 | v151 | 2289 | GO |
+| 168 | `SKYLER-LOT-168.md` | Caractérisation `legacy_adapter.py` (stratégie options perso VIVANTE, 0 test) : 21 tests — bias mots-clés + seuils 60/40, IV bornée, pas de strike, détention 5-45 j, BE call/put, sorties ±50 %, scénarios ordonnés, PUT imposé en régime dangereux, portefeuille cœur/satellites à arithmétique fermée | 0.9.0 | v151 | 2310 | GO |
 
 ## Architecture atteinte
 
