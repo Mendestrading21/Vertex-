@@ -1495,6 +1495,25 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 174 — livré** : honnêteté HTTP du TICKET DE PRÉPARATION
+  D'ORDRE `vertex/app/routes/planning_api.py` (/api/planning/ticket
+  — la route la plus sensible au READONLY : elle prépare un texte à
+  COPIER dans IBKR sans jamais transmettre) et de la RECHERCHE
+  /api/search de feeds.py. 10 tests figent : sans symbole → 400 ;
+  le plan du scan repris tel quel avec dimensionnement EXACT
+  (100 k × 1 % = 1 000, risque unitaire 5 → 200 actions, rr 3.0
+  transmis) ; la CONCENTRATION qui bloque même avec un budget de
+  risque correct (poids projeté 20 % > 15 % → blocked + blocker
+  explicite) ; le body qui prime sur le plan du scan ; les refus
+  honnêtes (sans compte → sizing None sans blocage, stop au-dessus
+  de l'entrée → « risque non défini », option sans prime → « prime
+  indisponible ») ; l'option dimensionnée sur la prime (250 par
+  contrat → 4) ; l'INVARIANT PRODUIT : chaque copy_text COMMENCE
+  par « PRÉPARATION UNIQUEMENT — Vertex est en lecture seule et ne
+  transmet aucun ordre » et le stop y est « (référence, non
+  transmis) » ; la recherche (vide → [], insensible à la casse,
+  plafond dur 20). Aucun code modifié, pas de bump SW.
+  Suite 2357 → 2367 passed / 2 skipped.
 - **Lot 173 — livré** : honnêteté HTTP du moteur de SUIVI
   `vertex/app/routes/tracking_api.py` (le cycle de vie
   /api/tracking/<id>, /performance, /stop, /restart, /history était
