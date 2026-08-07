@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 208 — livré** : INVENTAIRE MESURÉ DE COHÉRENCE (option 2 de
+  la proposition lot 205) : script d'analyse des builders charts +
+  pages sur 4 axes — (1) police des chips : tvEdgeChip fontSize 9
+  PARTOUT, chips canvas 700 9px uniformes, libellés de zones 8.5 sur
+  viewBox denses ; (2) hachures : alphas IDENTIQUES SVG/canvas
+  (.08/.38), tuiles 6 vs 8 et traits 1.6 vs 1.4 = équivalence
+  visuelle voulue entre userSpace SVG et pixels canvas ; (3) rayons
+  ≈ h/2 partout (coins pleinement arrondis cohérents) ; (4) pieds de
+  cartes : 3 classes à 3 RÔLES distincts (vx-chart-foot = pied
+  graphique avec fraîcheur, vx-meta = note, vx-muted = secondaire) —
+  une sémantique, pas une divergence. Seul point suspect vérifié :
+  fontSize 11 de candlestick-lwc = config d'AXES de Lightweight
+  Charts (faux positif de grep). VERDICT : toutes les divergences
+  sont JUSTIFIÉES → AUCUNE retouche (harmoniser serait un changement
+  gratuit — risque sans gain). Option 2 SOLDÉE par constat. AUCUN
+  code touché, AUCUN bump SW. Suite 2461 passed / 2 skipped.
+
 - **Lot 207 — livré** : TOUR RESPONSIVE 2/2 (mesuré, même protocole
   que le 206) : /portfolio, /options, /journal, /system,
   /intelligence × 5 viewports — 0 px de débordement de page sur les
