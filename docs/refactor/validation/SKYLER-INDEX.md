@@ -285,6 +285,7 @@
 | 265 | `SKYLER-LOT-265.md` | MINI-BILAN tranche 261-265 — « la boucle atterrit en veille » : 261 ordre de mission périmé neutralisé (6 .md racine sains), 262 constat pistes épuisées → VEILLE ACTIVE + inventaire 277 branches mortes, 263-264 deux cycles de veille prouvés (courts, honnêtes, 0 travail fabriqué), 265 bilan. Défauts produit 0 (33 lots) ; 0 ligne de code produit (20 lots, 246-265) ; suite 2486/2 et SW v173 inchangés ; 5 PR (#294→#298). Récap complet de ce qui attend l'humain : GO purge é1 (dossier exécutable), nettoyage branches (commande prête), bouton verrouillage, validation physique, merge main. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
 | 266 | `SKYLER-LOT-266.md` | VEILLE ACTIVE, cycle 3 — état IDENTIQUE aux cycles 1-2 : 0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2 ; rien à toucher, rapport minimal. Smoke-check périodique prévu ~lot 270. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
 | 267 | `SKYLER-LOT-267.md` | VEILLE ACTIVE, cycle 4 — état IDENTIQUE aux cycles 1-3 : 0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2 ; rien à toucher, rapport minimal. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
+| 268 | `SKYLER-LOT-268.md` | VEILLE ACTIVE, cycle 5 — état IDENTIQUE aux cycles 1-4 : 0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2 ; rien à toucher, rapport minimal. Smoke-check complet dans 2 lots (~270). Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
 
 ## Architecture atteinte
 
