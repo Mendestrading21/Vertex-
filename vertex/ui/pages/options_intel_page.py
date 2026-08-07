@@ -115,7 +115,7 @@ _VIEW_CONTENT = {
 <div class="vx-grid vx-mt3">
   <section class="vx-card vx-col-12" aria-label="Analyser une structure">
     <div class="vx-card-header"><span class="vx-card-title">Cette structure offre-t-elle une asymétrie suffisante&nbsp;?</span>
-      <span class="vx-chart-question">Verdict, scénarios, payoff, sensibilités et comparaison — depuis le board réel. Aucun ordre.</span></div>
+      <span class="vx-chart-question">Verdict, scénarios, payoff, sensibilités et comparaison — depuis le board d&#8217;options. Aucun ordre.</span></div>
     <div class="vx-card-body vx-flex vx-wrap" style="gap:.6rem;align-items:flex-end">
       <label class="vx-field"><span>Sous-jacent</span>
         <input id="vx-os-sym" class="vx-input" placeholder="ex. AAPL" maxlength="12" autocomplete="off"></label>
@@ -301,7 +301,7 @@ _VIEW_CONTENT = {
   </section>
   <section class="vx-card vx-col-12" id="vx-opt-strat" aria-label="Stratégies multi-jambes">
     <div class="vx-card-header"><span class="vx-card-title">Stratégies multi-jambes</span>
-      <span class="vx-chart-question">Spreads, straddle, iron condor — payoff, probabilité de profit, gain/perte max & greeks (depuis le board réel, aucun ordre)</span></div>
+      <span class="vx-chart-question">Spreads, straddle, iron condor — payoff, probabilité de profit, gain/perte max & greeks (depuis le board d&#8217;options, aucun ordre)</span></div>
     <div id="vx-opt-strategies"><div class="vx-empty">Choisis un symbole pour construire les stratégies depuis le board.</div></div>
   </section>
 </div>
