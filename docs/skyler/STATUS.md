@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 144 — livré** : retour aux caractérisations moteur —
+  `timeframes.py` (confluence journalier × hebdo, contribue ±5 au
+  score Vertex, drapeau `mtf` du scan) n'avait AUCUN test direct.
+  13 tests figent : les 5 états et leurs contributions exactes
+  (ALIGNÉ HAUSSIER +5 · REPLI DANS TENDANCE +3 · REBOND
+  CONTRE-TENDANCE -4 · ALIGNÉ BAISSIER -5 · NEUTRE 0, cette
+  dernière branche construite empiriquement : prix > EMA30 hebdo
+  mais EMA10 qui se retourne) ; gardes < 32 semaines → None et
+  entrée non ré-échantillonnable → None ; contrat de sortie 9 clés
+  typées ; comportement limite série plate DOCUMENTÉ (ALIGNÉ
+  BAISSIER, RSI 100 — pathologique, le changer = décision
+  explicite). Aucun code moteur/UI modifié, pas de bump SW.
+  Suite 1984 → 1997 passed / 2 skipped.
 - **Lot 143 — livré** : tournée de VÉRIFICATION transversale des
   8 espaces (clôture de la directive esthétique maximale) : 8
   captures desktop 1440 fraîches (une par espace, 0 erreur console
