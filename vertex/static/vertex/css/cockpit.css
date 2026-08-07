@@ -81,6 +81,15 @@ a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(25
   border-top:7px solid var(--vx-text-primary);filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
 .vx-rail-scale{display:flex;justify-content:space-between;font-size:10px;color:var(--vx-text-faint);
   margin-top:5px;letter-spacing:.4px;text-transform:uppercase}
+/* GRAMMAIRE TV (lot 198) : chip de VALEUR posé au-dessus du pointeur du rail —
+   fond clair, texte sombre (même langage que le pointeur blanc des jauges et
+   les chips de bord). Positionné par --vx-rail-pos, borné aux extrémités. */
+.vx-rail-chipline{position:relative;height:18px;margin-top:6px}
+.vx-rail-chip{position:absolute;left:clamp(18px,var(--vx-rail-pos,50%),calc(100% - 18px));
+  transform:translateX(-50%);background:var(--vx-text-primary,#F8F5F3);
+  color:var(--vx-graphite-850,#121214);font-weight:800;font-size:10.5px;
+  padding:1px 8px;border-radius:7px;font-variant-numeric:tabular-nums;
+  white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.45)}
 
 /* ══ Liseré supérieur cuivre sur les cartes phares marquées .vx-card--accent ══ */
 .vx-card--accent{position:relative}
