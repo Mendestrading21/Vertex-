@@ -1495,6 +1495,25 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 225 — livré** : MINI-BILAN 221-225. Tranche de 5 lots
+  (PR #254 → #258) : suite **2482 / 2 skipped stable**, SW v171 →
+  **v172** (1 seul bump, porté par le SEUL correctif réel de la
+  tranche). Le balayage NAVIGATEUR systématique du produit est
+  SOLDÉ — l'audit a porté là où pytest ne voit rien (DOM hydraté,
+  contexte de navigation) et la méthode a payé : (1) liens/boutons —
+  31 liens internes × HTTP 200, 177 boutons tous câblés (221) ;
+  (2) 2 débordements RÉELS du topbar mobile trouvés et soldés — crumb
+  /tracking 433px + bouton retour /portfolio 403px INTERMITTENT
+  (reproduit en navigation) → ellipse scopée ≤768px, bump v172
+  (222) ; (3) pages secondaires 390 en navigation : 6 pages 0 défaut
+  (223) ; (4) tablette 768 au point de rupture exact du media query :
+  8 pages 0 défaut (224). Couverture navigateur cumulée depuis 219 :
+  états vides ✔, liens ✔, boutons ✔, 390 principal + secondaires ✔,
+  768 ✔. Doctrine tenue : 4 lots sans code produit dits honnêtement ;
+  le seul correctif mesuré, minimal, vérifié dans le contexte
+  défaillant rejoué. Docs seulement, pas de bump.
+  Suite **2482 passed / 2 skipped**.
+
 - **Lot 224 — livré** : RESPONSIVE 768px (TABLETTE) — chasse aux
   cousins des défauts topbar du lot 222, au point de rupture EXACT du
   media query du correctif (max-width:768px — là où un défaut de bord
