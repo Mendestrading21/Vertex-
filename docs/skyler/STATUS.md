@@ -1495,6 +1495,27 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 247 — livré** : GRANDE SYNTHÈSE DE LA CAMPAGNE DE PREUVE
+  (lots 214 → 246, 33 lots, PR #247 → #279). Après la clôture de la
+  tournée graphique TV (204), la boucle a basculé de « construire » à
+  « PROUVER ». Chiffres : suite 2472 → **2486** (+14), SW v171 →
+  **v173** (2 bumps, chacun porté par un correctif réel), **6
+  gardiens neufs**, **3 correctifs produit** (tous
+  mesurés-minimaux-vérifiés), ~30 protocoles navigateur. PROUVÉ :
+  les 8 invariants CLAUDE.md (8/8 tenus, 3 lacunes de garde
+  comblées) ; le rendu honnête (0 NaN affiché) ; la navigation
+  (31 liens, 177 boutons) ; le responsive COMPLET (3 débordements
+  réels corrigés, 0 faux correctif) ; le shell interactif entier ;
+  l'infrastructure (SW réel — doctrine bump=déploiement prouvée,
+  desk sync round-trip client) ; les 4 PARCOURS métier (analyse,
+  contrat, GEX, journal-écriture). **0 défaut produit depuis le lot
+  232 : le produit est MESURÉ correct, du pixel au blob de sync.**
+  RESTE EN ATTENTE HUMAINE : (1) purge de terminal.py (~25-30 % mort
+  cartographié, dont la page Journal héritée) — accord explicite
+  requis ; (2) validation physique TWS réel + iPhone (vider le cache
+  pour SW v173) ; (3) merge vers main — accord explicite requis.
+  Docs seulement, pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 246 — livré** : PARCOURS JOURNAL D'UN TRAIT — le dernier flux
   d'ÉCRITURE du produit prouvé de bout en bout. /journal?view=journal
   → bouton « Ajouter une entrée » → formulaire de décision →
