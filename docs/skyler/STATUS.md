@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 220 — livré** : MINI-BILAN 216-220. Tranche de 5 lots
+  (PR #249 → #253) : suite 2472 → **2482** / 2 skipped (+10 : 3+4+3),
+  SW **v171 STABLE** — 5 lots sans bump (doctrine des constats : rien
+  à déployer, dit honnêtement). Réalisations : (1) AUDIT D'INVARIANTS
+  CLAUDE.md TERMINÉ — 8 invariants vérifiés par constat mesuré, 0
+  violation ; (2) 3 gardiens NEUFS sur lacunes réelles (invariants
+  documentés mais épinglés par aucun test) : RequestTimeout=45
+  anti-blocage IBKR (216), scan_state jamais réassigné — scan AST des
+  3 formes interdites (217), écoute réseau 127.0.0.1 sans code (218) ;
+  (3) audit navigateur des états vides honnêtes (219, piste jamais
+  réalisée) : 8 pages, 0 marqueur malhonnête, 0 erreur console ;
+  (4) doctrine tenue — aucun code produit modifié sur toute la
+  tranche, calibrage avant de toucher. Docs seulement, pas de bump.
+  Suite **2482 passed / 2 skipped**.
+
 - **Lot 219 — livré** : ÉTATS VIDES HONNÊTES EN DÉMO — l'audit
   NAVIGATEUR jamais réalisé (le DOM après hydratation JS est hors de
   portée du test_client — c'est là que NaN/undefined apparaîtraient).
