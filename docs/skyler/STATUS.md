@@ -1495,6 +1495,33 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 210 — livré** : PREUVE NAVIGATEUR du cycle a11y du MODAL et
+  du chemin closeAll (complément du 209 qui n'avait prouvé que le
+  drawer) : modal fermé {aria-hidden:true, inert} → ouvert {retirés}
+  → refermé {reposés} ; closeAll (Échap/overlay) avec modal + drawer
+  ouverts ensemble → les DEUX reposent leurs attributs (délégation à
+  panelClose par construction) ; 0 erreur console. AUCUN code à
+  changer — ce lot prouve au lieu de supposer. Docs seulement, pas
+  de bump. + MINI-BILAN 206-210 (ci-dessous).
+  Suite 2466 passed / 2 skipped (inchangée).
+
+### MINI-BILAN tranche 206-210
+
+5 lots, PR #239 → #243, suite 2461 → 2466 (+5 gardiens a11y),
+SW v167 → v168 (un seul bump — le vecteur de déploiement du correctif
+a11y, pas un bump cosmétique). Tranche d'APRÈS-TOURNÉE, entièrement
+dans la doctrine « mesurer avant de toucher » : tour responsive
+complet MESURÉ (lots 206-207 — 9 espaces × 5 viewports = 45/45
+cellules sans débordement ni erreur console, 0 correctif nécessaire),
+cohérence de la grammaire TV vérifiée par INVENTAIRE mesuré (208 —
+divergences toutes justifiées, 0 retouche gratuite), accessibilité
+des panneaux hors-canvas CORRIGÉE et gardée (209 — aria-hidden +
+inert + 5 gardiens ; 210 — cycle prouvé modal + closeAll). Trois lots
+sur cinq n'ont pas touché une ligne de code produit : le produit
+était déjà droit, et la boucle l'a prouvé au lieu de le décorer.
+EN ATTENTE de directive : purge terminal.py (~25-30 % mort,
+cartographié, accord humain requis) ; sinon entretien continu.
+
 - **Lot 209 — livré** : ACCESSIBILITÉ des panneaux hors-canvas
   (l'observation du lot 206 corrigée) : le drawer d'entité et le
   modal FERMÉS portent désormais aria-hidden="true" + inert dans le
