@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 241 — livré** : PARCOURS D'ANALYSE COMPLET — le cœur métier
+  de Vertex (voir un titre → ouvrir son analyse → lire le plan)
+  prouvé d'UN SEUL trait en navigateur, alors que les pages n'avaient
+  été validées qu'isolément. Parcours réel : clic sur le menu
+  d'entité ACN depuis / → « Ouvrir l'analyse » → navigation vers
+  /analysis/ACN → **plan complet rendu** : verdict, niveaux
+  (entrée/stop/objectif), conviction, comité, scénario/cône —
+  **8 canvas LWC** (le vendor chargé par cette seule page) +
+  **32 graphiques SVG** hydratés, 0 marqueur malhonnête, 32 états
+  honnêtes —/n/d, /api/client-log count 0, 0 erreur console. Capture
+  du plan envoyée. Le chemin de valeur quotidien — délégué de clic →
+  navigation → vendor → hydratation → plan lisible — est prouvé de
+  bout en bout. Constat honnête, aucun code touché, pas de bump.
+  Suite **2486 passed / 2 skipped**.
+
 - **Lot 240 — livré** : MINI-BILAN 236-240. Tranche de 5 lots
   (PR #269 → #273) : suite **2486 / 2 skipped stable**, SW **v173
   STABLE** (0 bump — 5 lots de preuve pure, rien à déployer).
