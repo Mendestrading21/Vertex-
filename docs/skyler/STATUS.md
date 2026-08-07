@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 234 — livré** : MENU CONTEXTUEL D'ENTITÉ — le dernier
+  composant interactif jamais testé en navigateur, avec vérif
+  READONLY explicite. Calibrage instructif : les déclencheurs
+  [data-entity-menu] vivent dans le DOM hydraté de / (3) et /markets
+  (20) — pas sur /opportunities en démo. Parcours réel sur / (bouton
+  ACN) : menu ouvert (11 actions, focus DANS le menu, entièrement
+  dans le viewport) ; flèches ↓↓ suivies (data-active + focus sur
+  l'item actif) ; clic-dehors ferme. **READONLY vérifié : 0 action
+  d'ordre** — balayage des libellés contre {acheter, vendre, ordre,
+  buy, sell, transmettre, passer} → vide ; « Ajouter une position »
+  est un ENREGISTREMENT au journal personnel (localStorage/desk
+  sync), pas un ordre — l'invariant tient jusque dans le vocabulaire.
+  0 erreur console. TOUS les composants interactifs du shell sont
+  désormais prouvés en conditions réelles (drawer/modal 229, palette
+  231, menu 234). Constat honnête, aucun code touché, pas de bump.
+  Suite **2486 passed / 2 skipped**.
+
 - **Lot 233 — livré** : DERNIÈRES VUES À 390px — la couverture
   responsive navigateur est COMPLÈTE. Les 3 vues jamais balayées
   (/journal?view=journal, /journal?view=track-record,
