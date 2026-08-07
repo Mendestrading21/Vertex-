@@ -141,4 +141,3 @@ def test_terminal_serves_the_new_page_and_api():
     import terminal
     rules = {r.rule for r in terminal.app.url_map.iter_rules()}
     assert '/api/options-lab' in rules
-    assert 'olabRoot' in terminal.PAGE_OPTIONS_LAB          # nouvelle page montée

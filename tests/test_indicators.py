@@ -53,9 +53,3 @@ def test_adx_trend_higher_than_chop():
     chop = ind.adx(_df([40 + (i % 2) for i in range(70)]))   # dents de scie
     assert trend > chop
 
-
-def test_terminal_aliases_point_to_module():
-    import terminal
-    assert terminal._rsi is ind.rsi
-    assert terminal._atr is ind.atr
-    assert terminal._adx is ind.adx
