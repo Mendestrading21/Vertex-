@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 243 — livré** : PARCOURS GEX D'UN TRAIT — le 3e parcours
+  métier prouvé de bout en bout. /options?view=positioning → radar
+  de positionnement rendu (**18/18 titres exploitables** : SPOT,
+  NET GEX en M$, régime stabilisant/accélérateur, biais, bascule Ø-Γ
+  avec **« n/d » honnête** quand inconnue — jamais un chiffre
+  inventé —, murs call/put, max pain) → saisie ACN dans #vx-gx-sym →
+  détail GEX rendu : murs call/put, gamma, flip, spot, 10 barres,
+  chips de valeurs — cohérent avec la ligne ACN du radar
+  (bascule 192,92 · mur call 198,2 · mur put 189,4). 0 marqueur
+  malhonnête (texte DOM ET texte SVG balayés — leçon du lot 242),
+  client-log 0, 0 erreur console. Capture envoyée. Les TROIS parcours
+  métier sont prouvés d'un trait : plan d'analyse actions (241),
+  contrat options (242), positionnement GEX (243). Constat honnête,
+  aucun code touché, pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 242 — livré** : PARCOURS CONTRAT OPTIONS D'UN TRAIT — le 2e
   cœur métier prouvé de bout en bout. /opportunities?view=options →
   radar rendu (**50 contrats**) → clic sur un contrat → détail
