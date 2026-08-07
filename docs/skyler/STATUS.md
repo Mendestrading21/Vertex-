@@ -1495,6 +1495,15 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 136 — livré** : passe graphique n°11 — Radar Opportunités :
+  (a) la Comparaison des meilleurs candidats passe en VERRE — chaque
+  barre est un dégradé de sa propre couleur et le MEILLEUR du
+  critère gagne un halo doux ember (le gagnant se voit sans lire
+  les nombres) ; (b) le score canonique /40 du Classement Skyler
+  gagne sa mini-barre graduée (≥ 28 positive, 16-27 warning, < 16
+  negative). Watchlist vérifiée : états vides honnêtes en démo.
+  SW v144 → v145 + 4 gardiens. Captures avant/après envoyées.
+  Suite 1984/2, RC GO.
 - **Lot 135 — livré** : passe graphique n°10 — scan Actions
   (Opportunités) : le SCORE n'est plus un chiffre nu — mini-barre de
   verre GRADUÉE 0-100 (≥ 70 positive = actionnable, 40-69 warning =
