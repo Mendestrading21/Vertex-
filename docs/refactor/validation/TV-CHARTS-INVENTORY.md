@@ -30,7 +30,7 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 
 ### Analyse (analysis_page.py + options-intel.js)
 - ☐ price-chart (chandeliers lightweight-charts + niveaux)
-- ☐ CANDIDAT PHARE lot 190 : CÔNE DE PROJECTION du plan de trade
+- ✔ lot 190 : CÔNE DE PROJECTION du plan de trade (projection-cone.js, branché dans an-plan)
   (entrée/stop/TP1-3 du moteur → éventail min/moy/max avec
   tvEdgeChip, style prix cible TV — données RÉELLES du plan, jamais
   un consensus inventé)

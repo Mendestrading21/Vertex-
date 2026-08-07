@@ -1495,6 +1495,41 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 190 — livré** : TOURNÉE TV — le CÔNE DE PROJECTION
+  (charts/projection-cone.js, nouveau builder VXCharts.projectionCone)
+  — la signature « prix cible » TradingView nourrie par les niveaux
+  RÉELS du plan moteur : trait blanc des clôtures réelles → point
+  actuel, éventail HAUSSIER hachuré (tvHatch) entre TP1 et TP3 avec
+  médiane pointillée TP2, faisceau de RISQUE vers le stop, frontière
+  « PROJECTION — plan moteur », chips de bord tvEdgeChip (TP3 +x %,
+  TP2, TP1, Actuel, Stop −x % — pourcentages CALCULÉS). Sans plan
+  complet → état vide honnête ; pied « une carte de risque, pas une
+  prévision de marché ». Branché en tête de la carte « Plan &
+  niveaux clés » de la fiche Analyse. Marge chips ajustée après la
+  1re capture. SW v153 → v154 + gardiens. Captures /analysis/ACN
+  1440+390 + carte cadrée envoyées, 0 erreur console.
+  Suite 2461 passed / 2 skipped. Inventaire TV : cône ✔.
+
+### MINI-BILAN tournée 186-190
+
+5 lots, PR #219 → #223, suite 2450 → 2461 passed, SW v152 → v154.
+Bascule en cours de tranche : après les gardiens transverses (186 :
+31 fichiers JS src= node --check + ≥40 assets 0 lien mort + 0
+externe ; 188 : 54 endpoints d'API fetchés 0 mort) et un DÉFAUT RÉEL
+corrigé (187 : le design-system affichait des hex périmés → hex
+DÉRIVÉS de tokens.css, la double source a disparu), la DIRECTIVE
+UTILISATEUR a ouvert la TOURNÉE GRAPHIQUE TV (« que tout Vertex
+ressemble à ça — fluide, beau, parfait ») : fondation livrée (189 —
+inventaire complet, grammaire tvHatch/tvEdgeChip, JAUGE TV à arc
+dégradé continu et pointeur blanc héritée par 6 appelants) puis la
+première grande signature (190 — le cône de projection du plan sur
+la fiche Analyse). Doctrine tenue : données RÉELLES uniquement (pas
+de plan → vide honnête, jamais un consensus inventé), tokens
+uniquement (les gardiens couleur ont refusé 2 fallbacks — corrigés),
+captures envoyées à chaque lot. Suite de l'inventaire : consensus
+comité, regimeAura, payoff hachuré, treemap, equity/drawdown,
+heatmap, GEX.
+
 - **Lot 189 — livré** : TOURNÉE GRAPHIQUE TV — FONDATION (directive
   confirmée par l'utilisateur en cours de lot : « que tout Vertex
   ressemble à ça — fluide, beau, parfait »). Inventaire complet des
