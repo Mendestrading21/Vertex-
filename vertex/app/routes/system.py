@@ -208,7 +208,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v151';   // v151 (SKYLER LOT 142) : fraicheur par domaine — age en barre de staleness relative (le plus rassis saute aux yeux)
+const CACHE='td-shell-v152';   // v152 (SKYLER LOT 187) : hex du design-system dérivés de tokens.css (fin des étiquettes périmées) ; v151 (SKYLER LOT 142) : fraicheur par domaine — age en barre de staleness relative (le plus rassis saute aux yeux)
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png','/static/vertex/css/fonts.css','/static/vertex/fonts/inter-var.woff2','/static/vertex/fonts/jetbrains-mono-var.woff2']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{
