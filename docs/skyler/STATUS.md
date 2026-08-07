@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **MINI-BILAN 256-260 (lot 260)** : tranche « mesurer le neuf,
+  aligner les portes d'entrée ». 256 : baseline perf serveur jamais
+  chiffrée (import 11,68 s à froid / ~2 s à chaud ; TTFB 8 pages
+  1,3-1,9 ms — le coût du mort est à l'IMPORT, métrique avant/après
+  purge) ; 257-259 : audit systématique des docs d'ACCUEIL contre le
+  code — **10 défauts corrigés (4 README + 3 DEMARRER_ICI + 3
+  SECURITE), dont 2 touchant la sécurité** (« écoute 0.0.0.0 »
+  prétendue ; bouton de déconnexion fantôme dans une page orpheline) ;
+  .env.example audité EXACT. Défauts produit : 0 (28 lots depuis le
+  232) ; 0 ligne de code produit touchée (15 lots, 246-260) ; suite
+  2486/2 et SW v173 inchangés ; 5 PR (#289→#293) ; 1 redémarrage
+  worker (256) repris sans perte. LEÇON : les docs d'accueil dérivent
+  silencieusement jusqu'à contredire la sécurité réelle — l'audit
+  « affirmation par affirmation, tracée vers la ligne de code » les a
+  remis au vrai. ATTEND L'HUMAIN : « GO purge étape 1 » (dossier
+  complet avec baseline de gain) ; bouton de verrouillage visible sur
+  demande ; validation physique TWS/iPhone ; merge main sur accord.
+
 - **Lot 259 — livré** : SECURITE.md ↔ RÉALITÉ (dernier .md racine
   d'accueil non audité). VRAI et vérifié dans la source : cookie 30 j
   httponly/SameSite=Lax (terminal.py L133-134), comparaison à temps
