@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 244 — livré** : VUES SYSTÈME INTERNES — les deux dernières
+  vues jamais balayées du produit (/system?view=connections et
+  /system?view=archive), au protocole discriminant, à 390 px ET
+  1440 px, en contexte navigation. RÉSULTAT : **4/4 propres** —
+  0 overflowX, 0 dépassement droit, 0 marqueur malhonnête (texte DOM
+  et SVG balayés), 0 erreur console. La couverture des VUES est
+  désormais EXHAUSTIVE : 8 pages racines (390+768) + 6 secondaires +
+  15 vues internes — auxquelles s'ajoutent états vides (219),
+  liens/boutons (221), composants et flux du shell (229-236), SW
+  (237), sync (239) et les 3 parcours métier (241-243). Constat
+  honnête, aucun code touché, pas de bump.
+  Suite **2486 passed / 2 skipped**.
+
 - **Lot 243 — livré** : PARCOURS GEX D'UN TRAIT — le 3e parcours
   métier prouvé de bout en bout. /options?view=positioning → radar
   de positionnement rendu (**18/18 titres exploitables** : SPOT,
