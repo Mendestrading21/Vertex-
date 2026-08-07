@@ -45,10 +45,19 @@
     const conf = (o.confidence == null || isNaN(o.confidence)) ? null : Math.max(0, Math.min(100, o.confidence));
     const uid = 'ra' + Math.round((o.confidence || 0) + (o.regime || '').length * 7);
     const W = 320, H = 150, cx = W / 2, cy = 96;
-    /* arc de confiance : 152° → 152°+span (max 236°) */
-    const span = conf == null ? 4 : Math.max(4, conf / 100 * 236);
+    /* GRAMMAIRE TV (lot 192) : arc de confiance ENTIER en dégradé continu de la
+       tonalité (fondu gauche→droite), POINTEUR blanc court posé sur l'arc à la
+       position de la confiance — même langage que C.gauge (lot 189). */
     const track = arc(cx, cy, 62, 152, 388);
-    const val = arc(cx, cy, 62, 152, 152 + span);
+    const aConf = (152 + (conf == null ? 0 : conf / 100 * 236)) * Math.PI / 180;
+    const raPt = (rr) => [cx + rr * Math.cos(aConf), cy + rr * Math.sin(aConf)];
+    let pointer = '';
+    if (conf != null) {
+      const [px0, py0] = raPt(50), [px1, py1] = raPt(60), [phx, phy] = raPt(62);
+      pointer = `<circle cx="${phx.toFixed(1)}" cy="${phy.toFixed(1)}" r="7" fill="${col}" fill-opacity=".3"/>`
+        + `<line x1="${px0.toFixed(1)}" y1="${py0.toFixed(1)}" x2="${px1.toFixed(1)}" y2="${py1.toFixed(1)}" stroke="var(--vx-text,#F8F5F3)" stroke-width="3" stroke-linecap="round"/>`
+        + `<circle cx="${px0.toFixed(1)}" cy="${py0.toFixed(1)}" r="2.2" fill="var(--vx-text,#F8F5F3)"/>`;
+    }
     const g = o.grammar || {};
     const chip = (label, value) =>
       `<span class="vx-ra-chip"><span class="k">${label}</span><span class="v">${value}</span></span>`;
@@ -75,15 +84,19 @@
               <stop offset="0" stop-color="${col}" stop-opacity="0"/>
               <stop offset=".5" stop-color="${col}" stop-opacity=".5"/>
               <stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient>
+            <linearGradient id="${uid}a" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="${col}" stop-opacity=".18"/>
+              <stop offset=".55" stop-color="${col}" stop-opacity=".55"/>
+              <stop offset="1" stop-color="${col}" stop-opacity=".95"/></linearGradient>
             <filter id="${uid}b"><feGaussianBlur stdDeviation="6"/></filter></defs>
           <rect x="0" y="0" width="${W}" height="${H}" fill="url(#${uid}h)"/>
           <ellipse cx="${cx}" cy="${cy - 52}" rx="128" ry="26" fill="${col}" opacity=".16" filter="url(#${uid}b)"/>
           <ellipse cx="${cx}" cy="${cy - 36}" rx="92" ry="14" fill="${col}" opacity=".20" filter="url(#${uid}b)"/>
           <line x1="30" y1="${cy}" x2="${W - 30}" y2="${cy}" stroke="url(#${uid}z)" stroke-width="1.3"/>
-          <path d="${track}" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3" stroke-linecap="round"/>
-          <path d="${val}" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="3" stroke-linecap="round"/>
+          <path d="${track}" fill="none" stroke="url(#${uid}a)" stroke-opacity="${conf == null ? '.3' : '.95'}" stroke-width="5" stroke-linecap="round"/>
+          ${pointer}
           <text x="${cx}" y="${cy - 10}" text-anchor="middle" fill="var(--vx-text,#F8F5F3)" font-size="17" font-weight="800">${o.regime}</text>
-          <text x="${cx}" y="${cy + 8}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="10.5">${confTxt}</text>
+          <text x="${cx}" y="${cy + 8}" text-anchor="middle" fill="${conf == null ? 'var(--vx-text-muted,#8A8284)' : col}" font-size="10.5" font-weight="${conf == null ? '400' : '800'}">${confTxt}</text>
         </svg>
         ${chips.length ? `<div class="vx-ra-grammar">${chips.join('')}</div>` : ''}
         <div class="vx-ra-verdict" data-tone="${tone}">▸ ${verdict}${inval}</div>
