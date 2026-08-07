@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 173 — livré** : honnêteté HTTP du moteur de SUIVI
+  `vertex/app/routes/tracking_api.py` (le cycle de vie
+  /api/tracking/<id>, /performance, /stop, /restart, /history était
+  à ZÉRO test — seuls la liste et la création étaient couverts).
+  10 tests figent : les refus explicites (404 « suivi introuvable »
+  sur les 5 sous-routes, 400 « symbol requis ») ; la création
+  honnête (action inconnue du scan → 201 mais DATA_REQUIRED avec
+  reference_price None — JAMAIS un prix inventé ; action cotée →
+  référence LAST/« scan » tracée, benchmark SPY, is_hypothetical
+  True ; option → MID exact du body) ; la performance au prix
+  courant RÉEL du scan avec l'étiquette IMPOSÉE « Suivi
+  HYPOTHÉTIQUE : aucune position réelle… », l'option exigeant son
+  mark en paramètre (sans mark → None, jamais un chiffre sans
+  source) ; le stop qui GÈLE le résultat (final_price/return/MFE/MAE
+  exacts) ; le restart à identifiant NEUF laissant l'ancien suivi
+  gelé ; aucun verbe d'ordre. Aucun code modifié, pas de bump SW.
+  Suite 2347 → 2357 passed / 2 skipped.
 - **Lot 172 — livré** : honnêteté HTTP des DÉCISIONS DE POSITION
   `vertex/app/routes/decision_api.py` (deux endpoints à ZÉRO test :
   /api/position-decision/<sym> et /api/options-for/<sym> — les
