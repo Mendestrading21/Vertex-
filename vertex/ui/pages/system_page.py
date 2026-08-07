@@ -228,6 +228,20 @@ _VIEW_CONTENT = {
       (positions, journal, alertes, coffre&hellip;). L&#8217;import demande confirmation avant
       toute &eacute;criture — aucune cl&eacute; n&#8217;est renomm&eacute;e, le protocole de sync reste intact.</div>
   </section>
+</div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Application">
+    <div class="vx-card-header"><span class="vx-card-title">Application</span>
+      <span class="vx-badge" id="vx-app-shell-badge"></span></div>
+    <div id="vx-app-info">%%LOADING%%</div>
+    <div class="vx-flex vx-wrap vx-gap2 vx-mt3">
+      <button class="vx-btn vx-btn-primary" id="vx-app-update">Forcer la mise &agrave; jour de l&#8217;app</button>
+    </div>
+    <div class="vx-help vx-mt2">Vide le cache hors-ligne (service worker) puis recharge la page —
+      utile sur iPhone/tablette quand une nouvelle version du shell vient d&#8217;&ecirc;tre publi&eacute;e
+      et que l&#8217;ancienne reste affich&eacute;e. <b>Aucune donn&eacute;e desk n&#8217;est touch&eacute;e</b>
+      (positions, journal, alertes&hellip; restent intactes).</div>
+  </section>
 </div>''',
 
     'archive': '''
@@ -808,6 +822,39 @@ async function doRefresh(){
 }
 
 /* ══ Vue RÉGLAGES ═══════════════════════════════════════════════════ */
+/* Carte Application (lot 284) : version du shell RÉELLE lue des caches du
+   navigateur (jamais un numéro codé en dur) + mise à jour forcée — vide le
+   cache SW puis recharge. Ne touche JAMAIS localStorage (données desk). */
+async function renderAppInfo(){
+  let ver='n/d';
+  try{
+    const ks=await caches.keys();
+    const m=ks.map(k=>/^td-shell-v(\d+)$/.exec(k)).filter(Boolean);
+    if(m.length)ver='td-shell-v'+Math.max.apply(null,m.map(x=>Number(x[1])));
+  }catch(e){}
+  const sw=('serviceWorker' in navigator)
+    ?(navigator.serviceWorker.controller?'actif (hors-ligne prêt)':'installé, pas encore aux commandes')
+    :'indisponible';
+  const el=$('vx-app-info');
+  if(el)el.innerHTML=kv('Version du shell (cache local)',ver)+kv('Service worker',sw);
+  const badge=$('vx-app-shell-badge');
+  if(badge)badge.textContent=ver;
+}
+async function forceAppUpdate(){
+  const btn=$('vx-app-update');
+  if(btn){btn.disabled=true;btn.textContent='Mise à jour…';}
+  try{
+    if('serviceWorker' in navigator){
+      const regs=await navigator.serviceWorker.getRegistrations();
+      for(const r of regs){try{await r.unregister();}catch(e){}}
+    }
+    if(window.caches){
+      const ks=await caches.keys();
+      for(const k of ks){try{await caches.delete(k);}catch(e){}}
+    }
+  }catch(e){}
+  location.reload();
+}
 function initSettings(){
   /* Densité (vxDashboardLayout.density) */
   let layout={};try{layout=JSON.parse(localStorage.getItem('vxDashboardLayout')||'{}')}catch(e){}
@@ -847,6 +894,13 @@ function initSettings(){
   renderDeskSummary();
   $('vx-desk-export').addEventListener('click',exportDesk);
   $('vx-desk-import-file').addEventListener('change',importDesk);
+  if($('vx-app-update')){
+    $('vx-app-update').addEventListener('click',forceAppUpdate);
+    renderAppInfo();
+    /* Au premier chargement le SW installe encore son cache : re-lire quand il est prêt. */
+    if('serviceWorker' in navigator&&navigator.serviceWorker.ready)
+      navigator.serviceWorker.ready.then(()=>setTimeout(renderAppInfo,600)).catch(()=>{});
+  }
   VX.bus.on('vx:data-refreshed',renderDeskSummary);
 }
 function deskKeys(){
