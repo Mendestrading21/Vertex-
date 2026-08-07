@@ -803,9 +803,24 @@
       return `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="5" fill="${col}" fill-opacity=".18"/>
         <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.4" fill="${col}"/>`;
     }).join('');
+    /* GRAMMAIRE TV (lot 201) : le SOMMET DOMINANT (valeur max réelle) porte
+       un anneau de focus + sa valeur en chip pleine couleur (tvEdgeChip),
+       posé vers le centre pour ne pas gêner les libellés d'axes. */
+    let domMark = '';
+    let domI = -1;
+    axes.forEach((a, i) => {
+      if (a.value != null && !isNaN(a.value) && (domI < 0 || Number(a.value) > Number(axes[domI].value))) domI = i;
+    });
+    if (domI >= 0 && C.tvEdgeChip) {
+      const [dx, dy] = pt(domI, R * clamp(axes[domI].value));
+      const [ix, iy] = pt(domI, Math.max(R * clamp(axes[domI].value) - 20, 14));
+      const txt = String(Math.round(axes[domI].value || 0));
+      domMark = `<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="6.5" fill="none" stroke="${col}" stroke-opacity=".55" stroke-width="1.5"/>`
+        + C.tvEdgeChip(ix - (txt.length * 9 * 0.62 + 12) / 2, iy, txt, col, { align: 'left', fontSize: 9 });
+    }
     const aria = (o.ariaLabel || 'radar') + ' : ' + axes.map(a => a.label + ' ' + Math.round(a.value || 0)).join(', ');
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block;margin:0 auto" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
-      ${rdefs}${grid}${spokes}<polygon points="${vpts}" fill="url(#${rid})" stroke="${col}" stroke-width="1.6" stroke-linejoin="round"/>${dots}${labels}</svg>`;
+      ${rdefs}${grid}${spokes}<polygon points="${vpts}" fill="url(#${rid})" stroke="${col}" stroke-width="1.6" stroke-linejoin="round"/>${dots}${domMark}${labels}</svg>`;
     return el;
   };
 
