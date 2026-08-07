@@ -177,6 +177,7 @@
 | 161 | `SKYLER-LOT-161.md` | Caractérisation `data/constituents.py` (univers au démarrage, 0 test) : 9 tests sans réseau — normalisation BRK.B→BRK-B, filtrage/dédup, intégrité du snapshot statique, ORDRE DE RÉSOLUTION cache→live→cache-stale→static (démarrage jamais bloqué, repli par indice), garde-fou parsing 400/80/25 | 0.9.0 | v151 | 2239 | GO |
 | 162 | `SKYLER-LOT-162.md` | Caractérisation trio `ai/audit.py` + `ai/strategy_context.py` + `portfolio/team_roles.py` (0 test) : 8 tests — journal borné 200/erreurs tronquées 5, contrat du contexte + 4 rappels d'invariants READONLY figés mot pour mot, rôles cohérents avec ROLE_TARGETS | 0.9.0 | v151 | 2247 | GO |
 | 163 | `SKYLER-LOT-163.md` | Caractérisation `factor_exposure.py` + `replacement_engine.py` (0 test, research/ monkeypatché) : 8 tests — pondération poids réels, couverture partielle signalée, value None jamais 0, remplacement = proposition avec décision humaine requise, pool global si rôle vide + VÉRIF legacy : les deux VIVANTS (3 et 2 appelants) | 0.9.0 | v151 | 2255 | GO |
+| 164 | `SKYLER-LOT-164.md` | Caractérisation `legacy_basket_risk.py` (risque de panier VIVANT, 0 test) : 8 tests — gardes panier/40 pts, drapeau corrélation 0.92 + top_pair, 3 LIMITES documentées (cap infaisable → somme n×cap, concentration non détectée petit panier, FAIL-OPEN sur erreur), _cap_weights somme 1 | 0.9.0 | v151 | 2263 | GO |
 
 ## Architecture atteinte
 
