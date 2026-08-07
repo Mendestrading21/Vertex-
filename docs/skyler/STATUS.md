@@ -1495,6 +1495,28 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 188 — livré** : gardien des LIENS D'API des pages vivantes
+  (54 endpoints fetchés par les 11 pages servies — 0 mort, motifs
+  paramétrés gérés) + invariants d'intelligence_page (662 l, la
+  moins gardée) : 6 vues 200 avec UN SEUL onglet actif le bon, vue
+  inconnue → défaut jamais cassée, 0 id dupliqué, ≥ 12 VX.states,
+  page saine. 5 tests. Suite 2456 → 2461 passed / 2 skipped.
+
+## ⚡ DIRECTIVE UTILISATEUR ACTIVE (reçue au lot 188) — TOURNÉE GRAPHIQUE TV
+
+L'utilisateur (captures TradingView SKHY à l'appui) demande la
+REFONTE DE TOUS LES GRAPHIQUES de Vertex, lot par lot, un par un,
+dans le langage visuel TradingView : jauges semi-circulaires
+DÉGRADÉES à aiguille (Strong sell → Strong buy), cône de projection
+prix cible min/moy/max en éventail, barres de consensus analystes,
+zones d'ESTIMATION hachurées sur les barres de prévision, doubles
+axes annotés, tableaux réels vs estimations — « moderne, équilibré,
+voyant, beau, structuré au mieux ». Chaque graphique, chaque widget.
+Protocole par lot : grammaire commune d'abord (chart-core), puis 1-2
+builders refaits par lot AVEC serveur DEMO + captures navigateur +
+SendUserFile + SW bump + gardiens. Données RÉELLES uniquement
+(absent → n/d), tokens seulement, aucun littéral couleur nouveau.
+
 - **Lot 187 — livré** : DÉFAUT RÉEL CORRIGÉ sur la page de référence
   /design-system (254 l, zéro test dédié) — elle affichait des hex
   PÉRIMÉS recopiés à la main : 10+ étiquettes divergeaient de
