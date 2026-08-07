@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 253 — livré** : ANNEXE É1 — la liste EXACTE des retraits de
+  l'Étape 1, générée et triée (`ANNEXE-E1-RETRAITS.md`, **0 purge**).
+  Mode `--e1` ajouté à l'outil officiel : 82 défs du périmètre borne
+  basse (spans de lignes, tailles) + fichiers de tests impactés,
+  régénérable à volonté. Triage en 3 catégories d'action : A retrait
+  sec ; B retrait avec les tests de caractérisation (lot183/184/185 +
+  épingles — écrits POUR ce moment) ; **C re-cibler le test PUIS
+  retirer l'alias** — découverte du lot : `_rsi`/`_atr`/`_adx`/
+  `_demo_one`/`_vehicle_of`/`_swing_project` sont des alias de
+  compatibilité vers des moteurs VIVANTS (vertex/engines/indicators,
+  vertex/data/demo, strategy_fit, swing) — les tests fonctionnels qui
+  les importent gardent leur valeur, seul l'import change. 2 faux
+  positifs de grep (`home` : fonction locale d'un test + mot de
+  commentaire) vérifiés dans la source et marqués à ignorer. Dossier
+  de décision mis à jour (ligne É1 → annexe). Aucun code produit
+  touché, pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 252 — livré** : ROBUSTESSE de l'outil de décision
   `tools/purge_e2_sizing.py` (l'instrument officiel du chiffrage,
   rejoué à É1/É2). Défaut PROUVÉ avant de toucher : lancé depuis

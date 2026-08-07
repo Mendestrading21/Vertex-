@@ -76,7 +76,7 @@ cartographiées :
 
 | Étape | Contenu | Filet |
 |---|---|---|
-| **É1** | Retirer les 21 fonctions orphelines + les constantes `PAGE_*` qu'elles sont seules à consommer + adapter/retirer les tests de caractérisation devenus sans objet (lot 183 & épingles associées — ils existaient POUR ce moment) | pytest 100 % + serveur DEMO + balayage navigateur 8 pages + 0 erreur console ; PR séparée, revert trivial |
+| **É1** | Retirer les 21 fonctions orphelines + les constantes `PAGE_*` qu'elles sont seules à consommer + adapter/retirer les tests de caractérisation devenus sans objet (lot 183 & épingles associées — ils existaient POUR ce moment). **Liste exacte des 82 défs + triage A/B/C : `ANNEXE-E1-RETRAITS.md` (lot 253, régénérable par `tools/purge_e2_sizing.py --e1`)** — dont catégorie C : alias de compatibilité (`_rsi`, `_demo_one`, …) où le test fonctionnel est RE-CIBLÉ vers le moteur vivant avant retrait de l'alias | pytest 100 % + serveur DEMO + balayage navigateur 8 pages + 0 erreur console ; PR séparée, revert trivial |
 | **É2** | Retirer les blocs BODY/CSS/JS devenus non référencés après É1 — chiffrage DÉJÀ fait (lot 249, § 1c : 31,4 % → 48,7 % selon le sort des boucles d'injection § 1d) ; l'outil `tools/purge_e2_sizing.py` se rejoue après É1 pour la liste exacte | idem É1 |
 | **É3** | Dépendances croisées : `PAGE_DAILY` ↔ `home_art.py` / `vault.py` **et** `PAGE_ENTREPRISES` → `_OPP_BRIEF_JS` → `PAGE_DAILY` (§ 1d) — décider leur sort (hérités eux aussi) | idem, décision humaine dédiée |
 

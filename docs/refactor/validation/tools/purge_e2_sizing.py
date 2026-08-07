@@ -170,3 +170,37 @@ print(f'BORNE HAUTE (boucles d\'injection retirées avec) : {len(dead)} défs, '
       f'{dl} lignes ({dl/total_lines:.1%}) / {db} octets ({db/total_bytes:.1%})')
 rescued = sorted(dead - dead2)
 print(f'Défs sauvées uniquement par une réf-chaîne : {rescued}')
+
+# --- 6. Mode --e1 : liste EXACTE des retraits de l'Étape 1 (lot 253) --------
+# Périmètre É1 = la borne BASSE (dead2) : injoignable SANS toucher aux
+# boucles d'injection par chaîne. Émet un markdown prêt pour l'annexe.
+if '--e1' in sys.argv:
+    print()
+    print('<!-- généré par tools/purge_e2_sizing.py --e1 — rejouable -->')
+    print()
+    print('## Liste exacte des retraits É1 (borne basse, %d défs)' % len(dead2))
+    print()
+    print('| Définition | Genre | Lignes (spans) | Taille |')
+    print('|---|---|---|---|')
+    for sz, nm in sorted(((sum(b - a + 1 for a, b in defs[n]['spans']), n)
+                          for n in dead2), reverse=True):
+        spans = ', '.join(f'{a}-{b}' for a, b in sorted(defs[nm]['spans']))
+        print(f'| `{nm}` | {defs[nm]["kind"]} | {spans} | {sz} l. |')
+    print()
+    print('## Fichiers de tests référençant ces définitions (à adapter/retirer)')
+    print()
+    import collections
+    hits = collections.Counter()
+    tout = subprocess.run(['grep', '-rlE', '--include=*.py',
+                           '|'.join(rf'\b{n}\b' for n in sorted(dead2)),
+                           'tests/'], capture_output=True, text=True).stdout
+    for path in sorted(set(tout.splitlines())):
+        names = set()
+        body = open(path, encoding='utf-8').read()
+        for n in dead2:
+            if re.search(rf'\b{re.escape(n)}\b', body):
+                names.add(n)
+        if names:
+            print(f'- `{path}` — {len(names)} réf(s) : '
+                  + ', '.join(f'`{x}`' for x in sorted(names)[:8])
+                  + (' …' if len(names) > 8 else ''))
