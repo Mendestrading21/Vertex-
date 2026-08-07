@@ -322,6 +322,11 @@
     if (pts.length < 2) { document.getElementById('vx-opt-cone').innerHTML = '<div class="vx-card"><div class="vx-empty">Cône : pas assez d’échéances.</div></div>'; return; }
     var brand = col(VC, 'brand', '#DBE1E8'), copper = col(VC, 'copper', '#8A8284');
     var labels = pts.map(function (p) { return p.dte + ' j'; });
+    /* GRAMMAIRE TV (lot 203) : les bandes 1σ/2σ sont une ESTIMATION
+       lognormale → remplissage HACHURÉ (C.hatchPattern, lot 197) comme le
+       cône de projection et le payoff. Repli translucide si absent. */
+    var h1 = VC.hatchPattern ? VC.hatchPattern(brand) : brand + '20';
+    var h2 = VC.hatchPattern ? VC.hatchPattern(copper) : copper + '18';
     var ds = function (key, w, fill, bg) {
       return { data: pts.map(function (p) { return p[key]; }), borderColor: w ? copper : 'transparent', borderWidth: w, pointRadius: 0, fill: fill, backgroundColor: bg, tension: .25 };
     };
@@ -336,10 +341,10 @@
           type: 'line',
           data: { labels: labels, datasets: [
             ds('hi2', 0, false, 'transparent'),
-            Object.assign(ds('hi1', 1, '-1', copper + '18'), {}),
-            Object.assign(ds('mid', 2, '-1', brand + '20'), { borderColor: brand }),
-            Object.assign(ds('lo1', 1, '-1', brand + '20'), {}),
-            Object.assign(ds('lo2', 1, '-1', copper + '18'), {}) ] },
+            Object.assign(ds('hi1', 1, '-1', h2), {}),
+            Object.assign(ds('mid', 2, '-1', h1), { borderColor: brand }),
+            Object.assign(ds('lo1', 1, '-1', h1), {}),
+            Object.assign(ds('lo2', 1, '-1', h2), {}) ] },
           options: { interaction: { mode: 'index', intersect: false },
             plugins: { tooltip: { callbacks: { label: function (ctx) { return ['2σ+', '1σ+', 'médian', '1σ−', '2σ−'][ctx.datasetIndex] + ' : ' + VXf.num(ctx.parsed.y, 2); } } } },
             scales: { y: { ticks: { callback: function (v) { return VXf.num(v, 0); } } } } } });

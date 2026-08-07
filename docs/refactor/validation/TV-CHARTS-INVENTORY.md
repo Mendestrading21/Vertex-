@@ -51,7 +51,9 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
   de focus + valeur en chip tvEdgeChip vers le centre)
 - ✔ lot 201 : jauge environnement options — héritage STRUCTUREL du
   C.gauge TV lot 189 (appel direct, hôte non rendu en démo — honnête)
-- ☐ vol cone / IV term structure (vol_charts)
+- ✔ lot 203 : cône de mouvement attendu — bandes 1σ/2σ HACHURÉES
+  (C.hatchPattern — estimation lognormale assumée) ; term structure
+  saine (ligne simple, données réelles)
 
 ### Portefeuille (portfolio_page.py)
 - ✔ jauge risque (pf-risk-gauge)
@@ -71,7 +73,9 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
   heatmap TV lot 194 (constaté en navigateur)
 - ✔ lot 199 : sensibilité IV — par HÉRITAGE du C.bars TV (barre
   dominante : liseré appuyé + valeur en chip, constaté en navigateur)
-- ☐ GEX (barres par strike) · double probabilité
+- ✔ lot 203 : GEX barres par strike — MURS call/put en dominantes
+  (pleine intensité + valeur réelle en chip), autres adoucies
+- ☐ double probabilité
 
 ### Journal (journal pages)
 - ✔ lot 200 : barres de discipline/stats — par HÉRITAGE structurel du

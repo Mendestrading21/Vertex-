@@ -216,6 +216,22 @@
     maxAbs = maxAbs || 1;
     var W = 520, mid = W / 2, rowH = 20, H = rows.length * rowH + 28, scale = (W / 2 - 60) / maxAbs;
     var pos = 'var(--vx-positive,#2BBE90)', neg = 'var(--vx-negative,#E9555F)';
+    /* GRAMMAIRE TV (lot 203) : les MURS (plus gros call GEX / plus gros put
+       GEX — s'il y a ≥ 2 strikes) sont les dominantes — barre pleine
+       intensité + valeur RÉELLE en chip pleine couleur (texte sombre) au
+       bout de la barre ; les autres restent adoucies (.55). */
+    var iCall = -1, iPut = -1;
+    if (rows.length >= 2) rows.forEach(function (r, i) {
+      if ((r.call_gex || 0) > 0 && (iCall < 0 || (r.call_gex || 0) > (rows[iCall].call_gex || 0))) iCall = i;
+      if (Math.abs(r.put_gex || 0) > 0 && (iPut < 0 || Math.abs(r.put_gex || 0) > Math.abs(rows[iPut].put_gex || 0))) iPut = i;
+    });
+    function chip(x, y, txt, colr, alignLeft) {
+      var w = txt.length * 5.4 + 8, h = 12;
+      var ax = alignLeft ? x : x - w;
+      ax = Math.max(2, Math.min(ax, W - w - 2));
+      return '<rect x="' + ax.toFixed(1) + '" y="' + (y - 1) + '" width="' + w.toFixed(1) + '" height="' + h + '" rx="6" fill="' + colr + '"/>'
+        + '<text x="' + (ax + w / 2).toFixed(1) + '" y="' + (y + 8) + '" text-anchor="middle" font-size="8.5" font-weight="800" fill="var(--vx-graphite-850,#121214)">' + txt + '</text>';
+    }
     var spotY = null;
     var svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="GEX par strike">'];
     svg.push('<line x1="' + mid + '" y1="6" x2="' + mid + '" y2="' + (H - 16) + '" stroke="var(--vx-border,#30292B)"/>');
@@ -223,8 +239,10 @@
       var y = 10 + i * rowH;
       if (spotY === null && g.spot != null && r.strike <= g.spot) spotY = y - 2;   // 1er strike ≤ spot
       var cw = Math.abs(r.call_gex || 0) * scale, pw = Math.abs(r.put_gex || 0) * scale;
-      if (cw > 0.5) svg.push('<rect x="' + mid + '" y="' + y + '" width="' + cw + '" height="' + (rowH - 6) + '" fill="' + pos + '" opacity=".85"/>');
-      if (pw > 0.5) svg.push('<rect x="' + (mid - pw) + '" y="' + y + '" width="' + pw + '" height="' + (rowH - 6) + '" fill="' + neg + '" opacity=".85"/>');
+      if (cw > 0.5) svg.push('<rect x="' + mid + '" y="' + y + '" width="' + cw + '" height="' + (rowH - 6) + '" fill="' + pos + '" opacity="' + (i === iCall ? '1' : '.55') + '"/>');
+      if (pw > 0.5) svg.push('<rect x="' + (mid - pw) + '" y="' + y + '" width="' + pw + '" height="' + (rowH - 6) + '" fill="' + neg + '" opacity="' + (i === iPut ? '1' : '.55') + '"/>');
+      if (i === iCall && cw > 0.5) svg.push(chip(mid + cw + 4, y, money(r.call_gex), pos, true));
+      if (i === iPut && pw > 0.5) svg.push(chip(mid - pw - 4, y, money(r.put_gex), neg, false));
       svg.push('<text x="' + (mid + 4) + '" y="' + (y + rowH - 9) + '" font-size="9.5" fill="var(--vx-text-muted,#8A8284)">' + f(r.strike, 0) + '</text>');
     });
     if (spotY != null) svg.push('<line x1="10" y1="' + spotY + '" x2="' + (W - 10) + '" y2="' + spotY + '" stroke="var(--vx-orange-500,#DBE1E8)" stroke-dasharray="3 3"/>');
