@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 217 — livré** : INVARIANT scan_state « muté en place — ne
+  JAMAIS réassigner » (state.py / CLAUDE.md) — constat mesuré + gardien
+  AST. Scan du code produit (terminal.py + vertex/**, trois formes
+  interdites : réassignation module-level hors state.py, affectation
+  d'attribut .scan_state, global scan_state) → **0 offenseur** ; les 5
+  `scan_state = scan_state or {}` des moteurs sont des rebinds LOCAUX
+  de paramètres (ils ne touchent pas l'objet partagé — légitimes).
+  Lacune : AUCUN des ~30 fichiers de tests utilisant scan_state ne
+  vérifiait CET invariant, alors que le casser est silencieux et grave
+  (boucle de fond et routes garderaient des objets différents — pages
+  figées sans erreur). Livré : test_scan_state_invariant_lot217
+  (4 tests — scan AST, domicile unique documenté, gardien-du-gardien
+  sur exemple synthétique qui prouve que le scanner détecte bien les 3
+  formes, et non-faux-positif sur le rebind local). Tests seulement,
+  pas de bump. Suite **2479 passed / 2 skipped** (2475 + 4).
+
 - **Lot 216 — livré** : INVARIANTS n° 2 + IBKR (suite de l'audit du
   lot 214) — constat mesuré + UN gardien neuf sur lacune réelle.
   (1) Règle n° 2 (JS généré valide / apostrophes) : TENUE et déjà
