@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 176 — livré** : CLÔTURE de la tournée « honnêteté des
+  routes » — les trois lacunes minces restantes en un lot
+  (opportunities_api, ai_api /api/copilot/ask POST, live_api).
+  8 tests figent : les 7 étages EXACTS de l'entonnoir (universe →
+  … → positions) et son chemin d'erreur fail-honest (moteur en
+  panne → 500 avec structure VIDE + erreur nommée, jamais un
+  entonnoir à moitié inventé) ; le copilote qui n'explose JAMAIS
+  (body vide OU JSON corrompu → 200 ok False « question vide ») et
+  son repli sans clé DOUBLEMENT étiqueté (le label ET l'étiquette
+  dans la réponse elle-même — le contenu varie selon le scan,
+  l'étiquette jamais) ; le contrat du rapport live {lines,
+  requested, ts}, le parsing des domaines (espaces/vides purgés,
+  ordre gardé), le domaine inconnu → rien relancé mais demande
+  tracée ; aucun verbe d'ordre dans les 3 modules. Leçon encodée :
+  figer les INVARIANTS stables (parsing, étiquettes), pas les états
+  transitoires (kicked dépend de l'état du moteur). Aucun code
+  modifié, pas de bump SW. Suite 2375 → 2383 passed / 2 skipped.
 - **Lot 175 — livré** : honnêteté HTTP de la SESSION D'ANALYSE
   `vertex/app/routes/session_api.py` (la logique de RESTAURATION de
   /api/session/digest était la lacune — moteur digest et manifest
