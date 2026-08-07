@@ -707,6 +707,22 @@ async function loadData(){
         <span style="font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(${col},#9d978e)">${age}</span>
         <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#8A8284)">${lbl}</span></div>`;};
     const heat=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-bottom:14px" aria-label="Heatmap de fraîcheur des données">${Object.keys(doms).map(tile).join('')}</div>`;
+    /* LOT 142 : l'age n'est plus un chiffre nu — mini-barre de VERRE de
+       STALENESS relative (echelle = age max connu ; frais -> positive
+       courte, differe -> warning, hors ligne -> negative) : le domaine le
+       plus rassis saute aux yeux. Sans age connu : pas de barre (honnete). */
+    const maxAge=Math.max(1,...Object.keys(doms).map(k=>Number((doms[k]||{}).age_s)||0));
+    const ageBar=(d,ageTxt)=>{
+      if(d.age_s===null||d.age_s===undefined)return ageTxt;   /* pas d'age -> pas de barre */
+      const a=Number(d.age_s);
+      if(!isFinite(a))return ageTxt;
+      const fresh=d.fresh===true||d.state==='fresh'||d.state==='live';
+      const tok=fresh?'var(--vx-positive,#2BBE90)':(d.state==='offline'?'var(--vx-negative,#E9555F)':'var(--vx-warning,#D9BE3C)');
+      const w=Math.max(4,Math.min(100,a/maxAge*100));
+      return '<span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">'
+        +'<span style="width:56px;height:7px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block">'
+        +'<span style="display:block;height:100%;width:'+w.toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:3px"></span></span>'
+        +'<span>'+ageTxt+'</span></span>';};
     $('vx-data-fresh').innerHTML=heat+`<div style="overflow-x:auto"><table class="vx-table">
       <thead><tr><th>Domaine</th><th>&Eacute;tat</th><th class="vx-num">&Acirc;ge</th><th>D&eacute;tail</th></tr></thead><tbody>`
       +Object.keys(doms).map(k=>{
@@ -717,7 +733,7 @@ async function loadData(){
           :(d.age_s<120?Math.round(d.age_s)+' s':Math.round(d.age_s/60)+' min');
         return `<tr><td><b>${esc(k)}</b></td>
           <td>${statusBadge(status,fresh?'frais':(d.state||'rassis'))}</td>
-          <td class="vx-num vx-mono">${age}</td>
+          <td class="vx-num vx-mono">${ageBar(d,age)}</td>
           <td class="vx-dim" style="font-size:12px">${esc(d.detail||'—')}</td></tr>`;
       }).join('')+'</tbody></table></div>';
     $('vx-data-fresh-meta').innerHTML=VX.updateIndicator(
