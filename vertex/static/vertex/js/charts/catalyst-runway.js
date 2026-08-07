@@ -41,8 +41,19 @@
        graduations hebdomadaires, départ « aujourd'hui » nommé. Tokens
        uniquement — aucun littéral couleur nouveau. */
     const dangerX = xOf(Math.min(5, horizon));
+    /* GRAMMAIRE TV (lot 193) : piste en dégradé CONTINU (imminence rouge →
+       moyen terme jaune → horizon éteint) + zone ≤ 5 j HACHURÉE (tvHatch =
+       risque événementiel estimé) + chip tvEdgeChip sur le PROCHAIN. */
+    const gid = 'vxCr-' + ((el.id || 'r').replace(/[^\w-]/g, ''));
+    const frac5 = Math.min(5, horizon) / horizon;
+    const defs = `<defs><linearGradient id="${gid}" x1="${x0}" y1="0" x2="${x1}" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="var(--vx-negative)"/>
+        <stop offset="${Math.min(0.96, Math.max(0.04, frac5)).toFixed(3)}" stop-color="var(--vx-warning)"/>
+        <stop offset="1" stop-color="var(--vx-border-soft,#30292B)"/></linearGradient>
+      ${C.tvHatch ? C.tvHatch(gid + '-h', 'var(--vx-negative)') : ''}</defs>`;
     const zone = `<rect x="${x0}" y="${axisY - 14}" width="${(dangerX - x0).toFixed(1)}" height="28" rx="4"
         fill="var(--vx-negative)" fill-opacity=".08"/>
+      ${C.tvHatch ? `<rect x="${x0}" y="${axisY - 14}" width="${(dangerX - x0).toFixed(1)}" height="28" rx="4" fill="url(#${gid}-h)"/>` : ''}
       <text x="${x0 + 2}" y="${axisY + 24}" fill="var(--vx-negative)" fill-opacity=".8" font-size="7.5">zone ≤ 5 j</text>`;
     let ticks = '';
     for (let d = 7; d < horizon; d += 7) {
@@ -81,13 +92,18 @@
       const halo = (r >= 5)
         ? `<circle cx="${left.toFixed(1)}" cy="${axisY}" r="${r + 6}" fill="${col}" fill-opacity=".12"/>`
         : '';
+      /* le PROCHAIN porte son J-x en CHIP pleine couleur (tvEdgeChip, lot 189) */
+      const jTxt = 'J-' + e.dte;
+      const jLabel = (i === 0 && C.tvEdgeChip)
+        ? C.tvEdgeChip(lx - (jTxt.length * 9 * 0.62 + 12) / 2, lblY + 7, jTxt, col, { align: 'left', fontSize: 9 })
+        : `<text x="${lx.toFixed(1)}" y="${lblY + 11}" text-anchor="middle" fill="var(--vx-text,#F8F5F3)" font-size="9" font-weight="700">${jTxt}</text>`;
       return `<g>
         ${halo}
         <line x1="${left.toFixed(1)}" y1="${axisY}" x2="${left.toFixed(1)}" y2="${stemY2}" stroke="${col}" stroke-opacity=".7" stroke-width="1.5"/>
         ${focus}
         <circle cx="${left.toFixed(1)}" cy="${axisY}" r="${r}" fill="${col}"/>
         <text x="${lx.toFixed(1)}" y="${lblY}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="8.5">${label.slice(0, 14)}</text>
-        <text x="${lx.toFixed(1)}" y="${lblY + 11}" text-anchor="middle" fill="var(--vx-text,#F8F5F3)" font-size="9" font-weight="700">J-${e.dte}</text>
+        ${jLabel}
       </g>`;
     }).join('');
 
@@ -97,8 +113,8 @@
       ? `${nxt.label} dans ${nxt.dte} j — risque événementiel imminent`
       : `${nxt.label} dans ${nxt.dte} j — fenêtre dégagée`;
     const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${String(verdict).replace(/"/g, '&quot;').replace(/</g, '&lt;')}" style="max-width:${W}px;display:block;margin:2px auto">
-      ${zone}
-      <line x1="${x0}" y1="${axisY}" x2="${x1}" y2="${axisY}" stroke="var(--vx-border-soft,#30292B)" stroke-width="1"/>
+      ${defs}${zone}
+      <line x1="${x0}" y1="${axisY}" x2="${x1}" y2="${axisY}" stroke="url(#${gid})" stroke-width="2.5" stroke-linecap="round" stroke-opacity=".85"/>
       ${ticks}
       <line x1="${x0}" y1="${axisY - 6}" x2="${x0}" y2="${axisY + 6}" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
       <text x="${x0}" y="${H - 4}" fill="var(--vx-text-muted,#8A8284)" font-size="7.5">aujourd’hui</text>

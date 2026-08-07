@@ -19,7 +19,9 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 ### Aujourd'hui (briefing.py)
 - ✔ lot 192 : regimeAura aligné grammaire TV — arc de confiance en
   dégradé continu de tonalité + pointeur blanc court (langage C.gauge)
-- ☐ catalystRunway (catalyst-runway.js) — piste DTE
+- ✔ lot 193 : catalystRunway — piste DTE en dégradé continu
+  (rouge→jaune→éteint), zone ≤ 5 j hachurée (tvHatch), chip tvEdgeChip
+  J-x sur le prochain catalyseur
 - ☐ sparklines des tuiles KPI (chart-core sparkline)
 
 ### Marchés (markets_page.py)
