@@ -1495,6 +1495,38 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 160 — livré** : caractérisation de la famille RISQUE
+  PORTEFEUILLE — `correlation.py` (consommé par risk_engine →
+  drapeau du Command Center) et `stress_tests.py` (route
+  strategy_os, §26), deux modules zéro-test. 11 tests figent :
+  bornes ±1.0 exactes, gardes (< 30 points / variance nulle →
+  None), paires triées, seuils high_pairs ≥ 0.8 et avertissement
+  ≥ 0.7, matrice vide honnête ; côté stress : l'hypothèse
+  DOCUMENTÉE bêta inconnu = 1.0 (SPY -5 % → -4.17 % exact), le
+  secteur dominant, CORRELATIONS_TO_ONE qui ne choque QUE les
+  actions (le cash protège), la sensibilité taux inconnue → None
+  honnête, le REFUS des stress sans équité calculable, le
+  worst_case et l'alerte drawdown, les 10 scénarios déclarés
+  présents. Aucun code modifié, pas de bump SW.
+  Suite 2219 → 2230 passed / 2 skipped.
+
+### MINI-BILAN tournée 156-160
+
+5 lots, PR #189 → #193, suite 2178 → 2230 passed (+52 tests), SW
+stable v151 (tournée tests pure). Couverts : la structure par
+pivots (les 5 signaux du plan, anti-chasse 1.2 ATR), les
+indicateurs techniques purs (quatre philosophies de trous de
+données DOCUMENTÉES : SMA se réinitialise, EMA traverse, ATR
+recopie, VWAP resservi ; RSI golden Wilder 70.5), la règle de
+fraîcheur du Live Engine (bornes STRICTES des 7 domaines — à la
+borne on bascule déjà), l'horloge de marché (borne 4h00, limite
+jours fériés documentée), et la famille risque portefeuille
+(corrélations + stress tests : bêta inconnu = 1.0, le cash protège,
+refus honnête sans équité). Le nouveau périmètre ai/data/strategy/
+portfolio est inventorié : 11 modules zéro-test, file publiée au
+lot 159. Tout changement futur de ces sémantiques fera échouer la
+suite et devra être assumé explicitement.
+
 - **Lot 159 — livré** : complément de l'HORLOGE DE MARCHÉ
   `market_clock.py` (5 tests : borne pré-marché 4h00 exacte,
   vendredi 20h00 → fermé jusqu'au lundi, format « 09:05 ET »
