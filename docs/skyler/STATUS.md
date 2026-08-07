@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 171 — livré** : NOUVELLE DIRECTION « honnêteté des routes » —
+  caractérisation de la couche HTTP Position Intelligence
+  `vertex/app/routes/positions_api.py` (249 lignes ; survey préalable :
+  options/ et research/ déjà couverts, mais 4 endpoints à ZÉRO test —
+  /api/positions/state, /report, /audit, /reconcile — alors que les
+  moteurs sous-jacents ont 41 tests directs). 10 tests figent : le
+  desk vide → live False DIT, P&L/delta/theta None (jamais un 0
+  inventé) ; la position réelle recalculée au prix RÉEL du scan
+  ((200−150)×10 = 500), cible dépassée → action DESCRIPTIVE
+  « SÉCURISER » mais décision ATTENDRE (Vertex n'exécute jamais) ;
+  IBKR hors ligne → « aucune clôture automatique », 0 réparation ;
+  desk corrompu → 200 + vide honnête (state ET stress) ; introuvable
+  → HTTP 200 + erreur explicite DOCUMENTÉ tel quel (pas 404) ; le
+  diff « ce qui a changé » (baseline puis +5 % → MAJOR, snapshot
+  persisté) ; aucun verbe d'ordre dans la source. Aucun code modifié,
+  pas de bump SW. Suite 2328 → 2338 passed / 2 skipped.
 - **Lot 170 — livré** : caractérisation de l'UNIVERS
   `data/universe.py` (324 lignes — données pures : l'univers scanné,
   la watchlist, les cartographies GICS/industrie ; DERNIER module de
