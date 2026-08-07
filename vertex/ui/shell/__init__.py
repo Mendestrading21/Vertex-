@@ -135,12 +135,12 @@ def _mobile_bar(active: str) -> str:
 
 _OVERLAYS = '''
 <div class="vx-overlay" id="vx-overlay" data-open="0"></div>
-<aside class="vx-drawer" id="vx-drawer" data-open="0" role="dialog" aria-modal="true" aria-label="Panneau contextuel">
+<aside class="vx-drawer" id="vx-drawer" data-open="0" role="dialog" aria-modal="true" aria-label="Panneau contextuel" aria-hidden="true" inert>
   <div class="vx-drawer-header"><h2 id="vx-drawer-title">—</h2>
     <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-drawer aria-label="Fermer">✕</button></div>
   <div class="vx-drawer-body" id="vx-drawer-body"></div>
 </aside>
-<div class="vx-modal" id="vx-modal" data-open="0" role="dialog" aria-modal="true">
+<div class="vx-modal" id="vx-modal" data-open="0" role="dialog" aria-modal="true" aria-hidden="true" inert>
   <div class="vx-modal-box">
     <div class="vx-modal-header"><h2 id="vx-modal-title">—</h2>
       <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-modal aria-label="Fermer">✕</button></div>
