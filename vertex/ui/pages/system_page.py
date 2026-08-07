@@ -695,6 +695,13 @@ async function loadData(){
   if(live&&live.domains&&Object.keys(live.domains).length){
     const doms=live.domains;
     /* Heatmap de fraîcheur (§37) : une tuile/domaine, couleur = état, chiffre = âge. */
+    /* GRAMMAIRE TV (lot 196) : le domaine le PLUS RASSIS (âge max connu,
+       si ≥ 2 âges connus) est la DOMINANTE — tuile au liseré appuyé + âge
+       en CHIP pleine couleur dans la table (grammaire tvEdgeChip), les
+       autres restent adoucis. Comptes réels uniquement. */
+    const knownAges=Object.keys(doms).filter(k=>{const a=(doms[k]||{}).age_s;return a!==null&&a!==undefined&&isFinite(Number(a));});
+    let worstKey=null;
+    if(knownAges.length>=2)worstKey=knownAges.reduce((a,b)=>Number(doms[a].age_s)>=Number(doms[b].age_s)?a:b);
     const tile=(k)=>{const d=doms[k]||{};
       const fresh=d.fresh===true||d.state==='fresh'||d.state==='live';
       const off=d.state==='offline';
@@ -702,7 +709,7 @@ async function loadData(){
       const soft=fresh?'rgba(57,184,120,.13)':(off?'rgba(220,98,85,.13)':'rgba(204,137,44,.13)');
       const age=d.age_s===null||d.age_s===undefined?'—':(d.age_s<120?Math.round(d.age_s)+' s':Math.round(d.age_s/60)+' min');
       const lbl=fresh?'frais':(off?'hors ligne':'différé');
-      return `<div role="img" aria-label="${esc(k)} ${lbl} ${age}" style="padding:10px 12px;border-radius:9px;display:flex;flex-direction:column;gap:1px;background:${soft};border:1px solid var(${col},#9d978e)">
+      return `<div role="img" aria-label="${esc(k)} ${lbl} ${age}" style="padding:10px 12px;border-radius:9px;display:flex;flex-direction:column;gap:1px;background:${soft};border:${k===worstKey?'1.6px':'1px'} solid var(${col},#9d978e)">
         <span style="font-size:11px;color:var(--vx-text-secondary,#BABABA);text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</span>
         <span style="font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(${col},#9d978e)">${age}</span>
         <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#8A8284)">${lbl}</span></div>`;};
@@ -712,17 +719,21 @@ async function loadData(){
        courte, differe -> warning, hors ligne -> negative) : le domaine le
        plus rassis saute aux yeux. Sans age connu : pas de barre (honnete). */
     const maxAge=Math.max(1,...Object.keys(doms).map(k=>Number((doms[k]||{}).age_s)||0));
-    const ageBar=(d,ageTxt)=>{
+    const ageBar=(d,ageTxt,isWorst)=>{
       if(d.age_s===null||d.age_s===undefined)return ageTxt;   /* pas d'age -> pas de barre */
       const a=Number(d.age_s);
       if(!isFinite(a))return ageTxt;
       const fresh=d.fresh===true||d.state==='fresh'||d.state==='live';
       const tok=fresh?'var(--vx-positive,#2BBE90)':(d.state==='offline'?'var(--vx-negative,#E9555F)':'var(--vx-warning,#D9BE3C)');
       const w=Math.max(4,Math.min(100,a/maxAge*100));
+      /* le PLUS RASSIS porte son age en CHIP pleine couleur (texte sombre) */
+      const ageHtml=isWorst
+        ?'<span style="background:'+tok+';color:var(--vx-graphite-850,#121214);font-weight:800;padding:1px 7px;border-radius:6px;font-size:11px">'+ageTxt+'</span>'
+        :'<span>'+ageTxt+'</span>';
       return '<span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">'
         +'<span style="width:56px;height:7px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block">'
         +'<span style="display:block;height:100%;width:'+w.toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:3px"></span></span>'
-        +'<span>'+ageTxt+'</span></span>';};
+        +ageHtml+'</span>';};
     $('vx-data-fresh').innerHTML=heat+`<div style="overflow-x:auto"><table class="vx-table">
       <thead><tr><th>Domaine</th><th>&Eacute;tat</th><th class="vx-num">&Acirc;ge</th><th>D&eacute;tail</th></tr></thead><tbody>`
       +Object.keys(doms).map(k=>{
@@ -733,7 +744,7 @@ async function loadData(){
           :(d.age_s<120?Math.round(d.age_s)+' s':Math.round(d.age_s/60)+' min');
         return `<tr><td><b>${esc(k)}</b></td>
           <td>${statusBadge(status,fresh?'frais':(d.state||'rassis'))}</td>
-          <td class="vx-num vx-mono">${ageBar(d,age)}</td>
+          <td class="vx-num vx-mono">${ageBar(d,age,k===worstKey)}</td>
           <td class="vx-dim" style="font-size:12px">${esc(d.detail||'—')}</td></tr>`;
       }).join('')+'</tbody></table></div>';
     $('vx-data-fresh-meta').innerHTML=VX.updateIndicator(

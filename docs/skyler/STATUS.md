@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 196 — livré** : TOURNÉE TV — FRAÎCHEUR PAR DOMAINE (Système,
+  vue Données) : la règle « dominante en évidence » appliquée à la
+  staleness — le domaine le PLUS RASSIS (âge max connu, calculé
+  seulement s'il y a ≥ 2 âges connus, jamais un « pire » inventé sur
+  un singleton) porte : tuile de la heatmap de fraîcheur au liseré
+  appuyé (1.6 px) dans sa couleur d'état, et âge en CHIP pleine
+  couleur (texte sombre, gras 800 — grammaire tvEdgeChip) à côté de
+  sa barre dans la table. Les autres domaines restent adoucis ;
+  domaine sans âge → ni barre ni chip (honnêteté du lot 142
+  préservée). Âges/états strictement réels (/api/live/status), aucun
+  seuil inventé. SW v159 → v160 + 5 gardiens. Capture : « companies »
+  (20 952 min hors ligne) en chip rouge + tuile liserée, domaines à
+  22 s adoucis — 1440 + 390 envoyées, 0 erreur console.
+  Suite 2461 passed / 2 skipped. Inventaire TV : staleness ✔.
+
 - **Lot 195 — livré** : TOURNÉE TV — ÉQUITÉ & DRAWDOWN (Portefeuille)
   avec chips Max/Min sur les extrêmes RÉELS : nouveau
   C.tvExtremesPlugin (chart-core) — chips canvas dans la grammaire
