@@ -36,21 +36,49 @@ pas `PAGE_JOURNAL`.
   par `vertex/ui/home_art.py` et `vertex/ui/vault.py` (modules
   eux-mêmes hérités) → dépendance croisée, étape dédiée.
 
-### 1c. Volume
+### 1c. Volume — CHIFFRÉ au lot 249 (outillé, reproductible)
 
-terminal.py = **10 743 lignes**. La cartographie historique estime
-**25-30 % de mort** (fonctions orphelines + constantes PAGE_* + les
-blocs BODY/CSS/JS géants qu'elles sont seules à consommer). Le chiffrage
-exact par bloc sera fait à l'Étape 1 (le retrait des consommateurs
-révèle mécaniquement les blocs devenus non référencés).
+terminal.py = **10 743 lignes / 1 222 911 octets**. Mark-and-sweep sur
+l'AST (outil : `tools/purge_e2_sizing.py` — racines vivantes = fonctions
+routées mesurées en runtime + fonctions décorées + code module-level +
+références externes) :
+
+- **Borne BASSE certaine : 3 370 lignes mortes (31,4 %) / 408 168
+  octets (33,4 %)** — 82 définitions top-level injoignables même en
+  comptant vivantes toutes les références par chaîne.
+- **Borne HAUTE : 5 236 lignes (48,7 %) / 692 382 octets (56,6 %)** —
+  107 définitions, si les boucles d'injection module-level
+  (`globals()['PAGE_…']`, lignes ~6537-6588) partent avec les 12
+  constantes PAGE_* qu'elles traitent et leurs blocs JS/CSS nourriciers
+  (_PORTSIM_JS 495 l., _TRADES_JS 439 l., _DESK_COCKPIT_JS 427 l.,
+  _SI_JS 360 l., …).
+
+L'écart entre les deux bornes est EXACTEMENT la machinerie d'injection
+par chaîne — d'où la découverte 1d ci-dessous.
+
+### 1d. Piège mesuré : références par CHAÎNE (invisibles au grep de noms)
+
+Deux mécaniques module-level compliquent l'Étape 2 et sont maintenant
+cartographiées :
+
+1. **Boucles d'injection** `for _pg in ('PAGE_DAILY', 'PAGE_WATCHLIST',
+   …): globals()[_pg] = …` (nav unique, kit VX) — 12 constantes PAGE_*
+   n'apparaissent qu'en chaînes ; les retirer sans adapter ces boucles
+   = `KeyError` à l'import.
+2. **Dépendance croisée supplémentaire (en plus de PAGE_DAILY ↔
+   home_art/vault)** : `_OPP_BRIEF_JS` est EXTRAIT de
+   `PAGE_ENTREPRISES` à l'import puis injecté dans `PAGE_DAILY`
+   (lignes ~6088-6097, avec assert). PAGE_ENTREPRISES est donc une
+   dépendance de build de la page vivante → à traiter en Étape 3, pas
+   avant.
 
 ## 2. Le plan — par étapes SÛRES, une PR par étape, rollback = revert
 
 | Étape | Contenu | Filet |
 |---|---|---|
 | **É1** | Retirer les 21 fonctions orphelines + les constantes `PAGE_*` qu'elles sont seules à consommer + adapter/retirer les tests de caractérisation devenus sans objet (lot 183 & épingles associées — ils existaient POUR ce moment) | pytest 100 % + serveur DEMO + balayage navigateur 8 pages + 0 erreur console ; PR séparée, revert trivial |
-| **É2** | Chiffrer puis retirer les blocs BODY/CSS/JS devenus non référencés après É1 (mesure outillée, pas d'estimation) | idem É1 |
-| **É3** | Dépendances croisées : `PAGE_DAILY` ↔ `home_art.py` / `vault.py` — décider leur sort (hérités eux aussi) | idem, décision humaine dédiée |
+| **É2** | Retirer les blocs BODY/CSS/JS devenus non référencés après É1 — chiffrage DÉJÀ fait (lot 249, § 1c : 31,4 % → 48,7 % selon le sort des boucles d'injection § 1d) ; l'outil `tools/purge_e2_sizing.py` se rejoue après É1 pour la liste exacte | idem É1 |
+| **É3** | Dépendances croisées : `PAGE_DAILY` ↔ `home_art.py` / `vault.py` **et** `PAGE_ENTREPRISES` → `_OPP_BRIEF_JS` → `PAGE_DAILY` (§ 1d) — décider leur sort (hérités eux aussi) | idem, décision humaine dédiée |
 
 Invariants pendant TOUTE la purge : READONLY intact, moteurs intacts,
 desk sync intact (les 4 listes de clés ne bougent pas), `main` jamais

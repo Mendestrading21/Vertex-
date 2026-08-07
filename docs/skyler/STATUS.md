@@ -1495,6 +1495,26 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 249 — livré** : CHIFFRAGE OUTILLÉ de l'Étape 2 de la purge —
+  **AUCUNE purge**, l'estimation « 25-30 % » du dossier devient une
+  FOURCHETTE MESURÉE. Outil commité (`docs/refactor/validation/tools/
+  purge_e2_sizing.py`, mark-and-sweep AST : racines = 14 fonctions
+  routées mesurées en runtime + 18 décorées + 26 module-level +
+  externes ; 2 passes). Résultat sur terminal.py (10 743 l.) : borne
+  BASSE certaine **3 370 lignes mortes (31,4 %) / 408 ko (33,4 %)**
+  (82 défs) ; borne HAUTE **5 236 lignes (48,7 %) / 692 ko (56,6 %)**
+  (107 défs) si les boucles d'injection partent avec. DEUX PIÈGES
+  mesurés et gravés au dossier (§ 1d) : 12 constantes PAGE_*
+  référencées par CHAÎNE via `globals()[_pg]` (l. ~6537-6588 — retrait
+  sans adaptation = KeyError à l'import) ; dépendance croisée NOUVELLE
+  `PAGE_ENTREPRISES` → `_OPP_BRIEF_JS` → injecté dans `PAGE_DAILY`
+  (l. ~6088-6097) → Étape 3, pas avant. Doctrine tenue : 1er passage à
+  49,2 % avec 4 faux positifs (fonctions décorées after_request/
+  errorhandler) — vérifiés dans la source, script corrigé AVANT
+  publication du chiffre. Décision inchangée : « GO purge étape 1 »
+  attendue. Docs + outil seulement, pas de bump. Suite
+  **2486 passed / 2 skipped**.
+
 - **Lot 248 — livré** : DOSSIER DE DÉCISION DE PURGE de terminal.py
   (TERMINAL-PURGE-DECISION.md) — **0 code touché**, tout est preuve
   et plan. PREUVE DÉCISIVE mesurée ce lot : croisement runtime
