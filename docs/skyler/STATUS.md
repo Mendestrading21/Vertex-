@@ -1495,6 +1495,77 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 205 — livré** : BILANS — mini-bilan 201-205 + BILAN DE
+  CLÔTURE de la tournée graphique TV (ci-dessous) + proposition de
+  suite chiffrée (décision humaine). Aucun code produit touché —
+  vérification visuelle des dernières captures sans défaut évident,
+  donc pas de changement gratuit ni de bump SW. Suite 2461 passed /
+  2 skipped (inchangée).
+
+### MINI-BILAN tournée 201-205
+
+5 lots, PR #234 → #238, suite stable 2461 passed / 2 skipped,
+SW v164 → v167 (stable depuis le 204 — deux lots de constats sans
+changement visible, la règle de bump respectée dans les deux sens).
+Réalisations : radar à sommet dominant (201), price-chart — canonique
+LWC constaté TV natif + repli levelLines en chips au bord droit
+(202), cône de mouvement σ hachuré + murs GEX en dominantes à chips
+(203), dernier balayage en 3 constats honnêtes et INVENTAIRE 100 %
+TRAITÉ (204), bilans et passation (205).
+
+### ★ BILAN DE CLÔTURE — TOURNÉE GRAPHIQUE TV (lots 189 → 204)
+
+Directive utilisateur (lot 188) : « que tout Vertex ressemble à ça —
+fluide, beau, parfait » (langage visuel TradingView). Livré en
+16 lots (189-204), PR #222 → #237, SW v153 → v167, suite verte
+2461/2 à CHAQUE lot, 0 erreur console à chaque capture.
+
+**Grammaire commune créée (chart-core & co)** :
+- jauge TV : arc ENTIER en dégradé continu + pointeur blanc court
+  (189) — héritée par 6+ jauges (santé, VIX, breadth, comité, risque,
+  environnement options) ;
+- `tvHatch` (SVG) + `hatchPattern` (canvas) : la texture « estimation,
+  pas un réel » (189/197) — cône de projection, payoff, théta, cône σ ;
+- `tvEdgeChip` + chips canvas : étiquettes pleine couleur à texte
+  sombre (189) — bords du cône, treemap, niveaux du plan, extrêmes,
+  barres dominantes, murs GEX, rails, radar, runway ;
+- `tvExtremesPlugin` : chips Max/Min sur les extrêmes RÉELS (195) —
+  équité, drawdown, série de référence ;
+- `.vx-rail-chip` : chip de valeur sur pointeur de rail (198).
+
+**Règles transverses appliquées partout** :
+- DOMINANTE EN ÉVIDENCE (jamais sur singleton) : consensus, heatmap,
+  staleness, barres, radar, GEX, stress tests (préexistant) ;
+- ESTIMATION HACHURÉE : toute projection assume sa texture ;
+- CHIPS DE VALEURS RÉELLES : les chiffres clés se lisent sur le
+  graphique, pas à côté.
+
+**Héritages gratuits constatés** (un builder aligné = ses pages
+alignées) : scénarios Options (via heatmap), discipline Journal +
+sensibilité IV + leadership + movers (via C.bars), jauges (via
+C.gauge), équité/drawdown/série de référence (via C.area).
+
+**Honnêteté tenue de bout en bout** : constats démo rapportés sans
+agir (prime aberrante, tuiles sans P&L, movers/journal vides, env
+options absent), « n/d » sur régime indéterminé, pas de sparkline
+sans série, pas de dominante inventée. Un correctif structurel au
+passage : __VXVOCAB injecté par le shell (191).
+
+### Proposition de suite (décision humaine — rien n'est lancé)
+
+1. **Tour responsive complet post-tournée** : 8 espaces × 5 viewports
+   (390→1920), vérification visuelle des nouveaux chips/hachures aux
+   petites tailles, corrections des débordements trouvés
+   (~2-3 lots). ← choix par défaut de la boucle si rien n'est dit.
+2. **Polish transverse de cohérence** : uniformiser les pieds de
+   cartes, les tailles de chips et les densités de hachures entre
+   pages (~2 lots).
+3. **PURGE de terminal.py** : ~25-30 % du monolithe mort cartographié
+   et figé par tests (lots 183-185) — EN ATTENTE D'ACCORD HUMAIN
+   EXPLICITE, jamais lancée sans.
+4. **Attente de directive** : la boucle continue sur des lots
+   d'entretien (gardiens, honnêteté, petites dettes).
+
 - **Lot 204 — livré** : TOURNÉE TV — DERNIER BALAYAGE de
   l'inventaire (lot de CONSTATS, aucun code produit modifié) :
   (1) « double probabilité » = la colonne P(doubler) du scanner
