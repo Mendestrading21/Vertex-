@@ -727,7 +727,7 @@
       return `<g role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
         <rect x="${r.x.toFixed(1)}" y="${r.y.toFixed(1)}" width="${Math.max(0, r.w - 2).toFixed(1)}" height="${Math.max(0, r.h - 2).toFixed(1)}"
           rx="5" fill="url(#${tid}-${i})" stroke="${col}" stroke-opacity=".5" stroke-width="1"/>
-        ${small ? '' : `<text x="${(r.x + 7).toFixed(1)}" y="${(r.y + 17).toFixed(1)}" fill="#f3f1ed" font-size="11" font-weight="700">${lbl.slice(0, Math.floor(r.w / 7))}</text>
+        ${small ? '' : `<text x="${(r.x + 7).toFixed(1)}" y="${(r.y + 17).toFixed(1)}" fill="var(--vx-text-primary,#F8F5F3)" font-size="11" font-weight="700">${lbl.slice(0, Math.floor(r.w / 7))}</text>
         <text x="${(r.x + 7).toFixed(1)}" y="${(r.y + 31).toFixed(1)}" fill="rgba(255,255,255,.82)" font-size="10" style="font-variant-numeric:tabular-nums">${fmt(r.d.value)}${r.d.sub ? ' · ' + r.d.sub : ''}</text>
         ${r.w > 90 ? C.tvEdgeChip(r.x + r.w - 7, r.y + 15, share + ' %', col, { fontSize: 9 }) : ''}`}
       </g>`;

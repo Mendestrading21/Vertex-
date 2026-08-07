@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 213 — livré** : GARDIEN HEX NU ÉTENDU AUX BUILDERS JS
+  (charts/*.js + pages/*.js — test_no_bare_hex_static_js_lot213,
+  3 tests), calibré AVANT d'écrire : 49 occurrences → 40 =
+  DÉFINITIONS de palette (le bloc C.colors de chart-core + le thème
+  obsidian-copper entier — la source des tokens doit bien porter les
+  hex quelque part ; exemptions BORNÉES par leurs marqueurs exacts et
+  testées : si les bornes bougent, le test casse au lieu de scanner à
+  côté), 8 = lookups col(VC,'n','#hex') légitimes, et 1 littéral
+  RÉELLEMENT nu soldé : le texte des tuiles du treemap
+  (fill="#f3f1ed" → var(--vx-text-primary,#F8F5F3), SVG var() natif,
+  repli d'inventaire sûr). Avec le lot 212, la chaîne COMPLÈTE est
+  couverte (pages Python + builders JS) — plus aucun endroit où un
+  hex nu peut se glisser sans casser la suite. Bump SW v170 → v171 +
+  5 gardiens (le texte des tuiles change subtilement — déploiement).
+  Capture treemap envoyée, 0 erreur console.
+  Suite **2472 passed** / 2 skipped (2469 + 3).
+
 - **Lot 212 — livré** : GARDIEN « AUCUN HEX NU DANS LES PAGES » —
   le balayage des lots 211-212 pérennisé en pytest
   (test_no_bare_hex_pages_lot212, 3 tests) : tout hex quoté dans
