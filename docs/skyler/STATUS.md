@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 219 — livré** : ÉTATS VIDES HONNÊTES EN DÉMO — l'audit
+  NAVIGATEUR jamais réalisé (le DOM après hydratation JS est hors de
+  portée du test_client — c'est là que NaN/undefined apparaîtraient).
+  Protocole : serveur DEMO (healthz data_source:demo), Playwright
+  1440×900 (domcontentloaded + 4500 ms) sur les 8 espaces ; par page :
+  recherche des marqueurs malhonnêtes affichés (NaN, undefined, null,
+  Infinity), comptage des états honnêtes (—/n/d), étiquette démo,
+  erreurs console. RÉSULTAT : **0 marqueur malhonnête sur les 8
+  pages**, états honnêtes présents partout (1 à 21 par page),
+  étiquette démo confirmée serveur sur les 8, **0 erreur console**,
+  /api/client-log count:0 après balayage complet. Invariant n° 4
+  (« jamais de chiffre inventé affiché comme réel ») TENU — constat
+  honnête, aucun code touché, pas de bump.
+  Suite **2482 passed / 2 skipped** (référence maintenue).
+
 - **Lot 218 — livré** : FIN DE L'AUDIT D'INVARIANTS CLAUDE.md (lots
   214/216/217/218). (1) Filet desk_data.json : TENU et déjà gardé par
   test_desk_backup_lot178 (8 tests — snapshot quotidien créé AVANT le
