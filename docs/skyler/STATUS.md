@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 296 — livré** : LOT PRODUIT — HONNÊTETÉ des données. Audit
+  des lignes source/fraîcheur des 8 pages en DEMO : étiquette démo
+  visible partout, toutes les lignes .vx-update renseignées, 0
+  placeholder — SAUF un mensonge : /options affichait « À l'instant
+  · multileg_lab (board réel) » en plein mode DEMO (étiquette codée
+  EN DUR dans options-structure.js, alors que d.demo était connu
+  juste à côté). Corrigé sur 4 sites : source du payoff + pied de
+  Carte-Verdict → ternaires démo/réel ; 2 textes statiques
+  d'options_intel_page (servis identiques dans les deux modes) →
+  « depuis le board d'options », sans revendiquer « réel ». Gardien
+  neuf test_options_board_label_lot296 (2 tests ; 1er run rouge sur
+  mon propre décompte — corrigé, re-prouvé). Preuves : « board
+  démo » affiché en DEMO, « board réel » absent, 0 erreur, capture
+  envoyée. Bump SW v182 → v183 + 5 gardiens. Suite **2508 passed /
+  2 skipped (+2)**. É1 : GO acquis, toujours en attente de
+  déblocage permissions.
+
 - **Lot 295 — livré** : LOT PRODUIT — balayage tactile TERMINÉ. Les
   12 vues profondes restantes sondées à 390 (rotation, indices,
   shortlist, positions, performance, journal, hypotheses, lab,

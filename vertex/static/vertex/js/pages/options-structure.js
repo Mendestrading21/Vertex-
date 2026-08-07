@@ -168,7 +168,7 @@
       + '</div>'
       + '<div class="vx-card-foot vx-mt2"><span class="vx-meta">' + esc(s.model_note || '')
       + ' · PoP ' + (s.probability_of_profit != null ? num(s.probability_of_profit, 0) + ' %' : 'n/d') + ' (modèle lognormal — estimation).'
-      + ' Payoff & greeks : moteur multileg_lab (board réel). Lecture seule — aucun ordre.</span></div>'
+      + ' Payoff & greeks : moteur multileg_lab (board ' + (d.demo ? 'démo' : 'réel') + '). Lecture seule — aucun ordre.</span></div>'
       + '<div class="vx-flex vx-mt2" style="gap:8px;flex-wrap:wrap">'
       + '<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/analysis/' + encodeURIComponent(d.sym) + '">Voir l\'analyse du sous-jacent →</a>'
       + '<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options?view=volatility">La volatilité est-elle chère ?</a>'
@@ -218,7 +218,7 @@
     VC.card('vx-os-payoff', {
       title: 'Payoff à l\'échéance — ' + esc(s.label), question: 'Où gagne / perd la structure ?',
       conclusion: concl, unit: 'P&L $ (1 structure)', timeframe: (d.dte != null ? d.dte + ' j' : ''),
-      source: 'multileg_lab (board réel)', timestamp: Date.now(), mode: d.demo ? 'demo' : 'delayed',
+      source: d.demo ? 'multileg_lab (board démo)' : 'multileg_lab (board réel)', timestamp: Date.now(), mode: d.demo ? 'demo' : 'delayed',
       summary: 'Courbe de P&L à l\'échéance selon le cours du sous-jacent ; spot ' + price(m.spot)
         + ', breakeven(s) ' + ((s.breakevens || []).map(function (b) { return nd(b); }).join(', ') || '—')
         + ', perte max ' + price(m.capital) + ', ' + favorable + ' points sur ' + pts.length + ' en zone favorable.',
