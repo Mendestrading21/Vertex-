@@ -151,6 +151,7 @@
 | 135 | `SKYLER-LOT-135.md` | Passe n°10 — scan Actions : le score devient une mini-barre verre GRADUÉE (≥ 70 positive, 40-69 warning, < 40 negative — seuils réels du moteur) + MINI-BILAN 131-135 ; captures envoyées | 0.9.0 | v144 | 1984 | GO |
 | 136 | `SKYLER-LOT-136.md` | Passe n°11 — Radar Opportunités : comparaison des candidats en verre (dégradé + halo du MEILLEUR par critère) + score Skyler /40 en mini-barre graduée ; Watchlist vérifiée (états vides honnêtes) ; captures envoyées | 0.9.0 | v145 | 1984 | GO |
 | 137 | `SKYLER-LOT-137.md` | Passe n°12 — Positions : le poids devient une mini-barre de verre avec REPÈRE DU PLAFOND du tier (proche → warning, au-dessus → negative + halo ; sans tier : échelle simple, aucun plafond inventé) ; captures envoyées | 0.9.0 | v146 | 1984 | GO |
+| 138 | `SKYLER-LOT-138.md` | Passe n°13 — Synthèse : la tuile Concentration gagne sa barre de verre avec le REPÈRE prudent ~15 % (< 15 positive, 15-25 warning, > 25 negative + halo) — la donnée et son seuil se parlent enfin ; captures envoyées | 0.9.0 | v147 | 1984 | GO |
 
 ## Architecture atteinte
 

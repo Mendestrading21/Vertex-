@@ -1495,6 +1495,14 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 138 — livré** : passe graphique n°13 — Synthèse
+  Portefeuille : la tuile KPI CONCENTRATION n'est plus un chiffre
+  nu — mini-barre de verre avec le REPÈRE prudent (~15 % par titre,
+  celui cité par le Risque dominant) au tick : < 15 % positive,
+  15-25 warning, > 25 negative + halo. Le 65 % d'ACN vire au rouge,
+  la donnée et son seuil se parlent enfin. n/d honnête conservé.
+  SW v146 → v147 + 4 gardiens. Captures avant/après envoyées.
+  Suite 1984/2, RC GO.
 - **Lot 137 — livré** : passe graphique n°12 — Positions
   Portefeuille : le POIDS de chaque position devient une mini-barre
   de verre avec REPÈRE DU PLAFOND du tier (tick à 60 % du rail =

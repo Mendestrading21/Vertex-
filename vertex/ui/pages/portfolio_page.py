@@ -341,9 +341,25 @@ async function renderSynthese(){
     ${kpi('P&L latent total',m.plAbs!=null?((m.plAbs>=0?'+':'')+VX.fmt.price(m.plAbs)):'n/d',
       m.plAbs!=null?(VX.fmt.pct(m.grossVal-m.plAbs?m.plAbs/(m.grossVal-m.plAbs)*100:0,1)+' · marques '+(window.__pfLive?'live':'desk')):'IBKR hors ligne',
       m.plAbs>0?'vx-pos':m.plAbs<0?'vx-neg':'vx-muted')}
-    ${kpi('Concentration',m.top1?VX.fmt.num(m.top1.w,0)+' %':'n/d',
-      m.top1?('Top 1 '+m.top1.sym+' · Top 3 '+VX.fmt.num(m.top3,0)+' %'):'poids indisponibles',
-      (m.top1&&m.top1.w>25)?'vx-warn':'')}
+    ${(function(){
+      /* LOT 138 : la concentration n'est plus un chiffre nu — mini-barre de
+         VERRE avec le REPERE prudent (~15 % par titre, celui du Risque
+         dominant) au tick : sous 15 % positive, 15-25 warning, > 25
+         negative + halo. La distance au repere se VOIT. */
+      if(!m.top1)return kpi('Concentration','n/d','poids indisponibles','');
+      const w=m.top1.w,over=w>25,near=!over&&w>=15;
+      const tok=over?'var(--vx-negative,#E9555F)':near?'var(--vx-warning,#D9BE3C)':'var(--vx-positive,#2BBE90)';
+      const width=Math.max(4,Math.min(100,w/25*60));
+      const bar='<span style="display:inline-flex;align-items:center;gap:7px">'
+        +'<span style="width:70px;height:8px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block;position:relative">'
+        +'<span style="position:absolute;left:36%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.3)"></span>'
+        +'<span style="display:block;height:100%;width:'+width.toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:3px'
+        +(over?';box-shadow:0 0 6px color-mix(in srgb,var(--vx-negative,#E9555F) 45%,transparent)':'')+'"></span></span>'
+        +'<span>'+VX.fmt.num(w,0)+' %</span></span>';
+      return kpi('Concentration',bar,
+        'Top 1 '+m.top1.sym+' · Top 3 '+VX.fmt.num(m.top3,0)+' % · repère ~15 %',
+        over?'vx-warn':'');
+    })()}
     ${kpi('Exposition',m.optPct!=null?('options '+VX.fmt.num(m.optPct,0)+' %'):'n/d',
       m.cashPct!=null?('cash '+VX.fmt.num(m.cashPct,0)+' % · actions '+VX.fmt.num(m.stkPct,0)+' %'):'—',
       (m.optPct!=null&&m.optPct>25)?'vx-warn':'')}
