@@ -322,7 +322,7 @@ async function loadBrain(){
   if(window.VXCharts&&VXCharts.barCard&&movers.length){
     VXCharts.barCard('vx-brain-movers',{title:'Plus forts mouvements du jour',
       labels:movers,values:movers.map(s=>quotes[s].change_pct),
-      colors:movers.map(s=>quotes[s].change_pct>=0?'#36c889':'#ed655c'),
+      colors:movers.map(s=>quotes[s].change_pct>=0?VXCharts.colors.positive:VXCharts.colors.negative),
       horizontal:true,yFmt:(v)=>v+'%',source:'via Claude · web',
       timestamp:(snap&&snap.as_of)?Date.parse(snap.as_of):Date.now(),mode:'delayed'});
   }
