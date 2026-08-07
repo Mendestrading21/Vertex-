@@ -1495,6 +1495,38 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 150 — livré** : caractérisation du DIGEST DE SESSION
+  `session_digest.py` (116 lignes, ratio 0.80 — dernier de la file
+  des moteurs minces ; servi par /api/session/digest, affiché en
+  tête d'Aujourd'hui). 8 tests figent : la garde RISK-ON + S&P en
+  CHOP → NEUTRE (un risk-on dans un marché haché n'est pas un feu
+  vert) ; RISK-OFF prioritaire même seul ; le score /100 branché
+  sur l'unique source market_lens.climate (93 — jamais réinventé) ;
+  les dte booléens/texte ignorés sans masquer les catalyseurs
+  valides (tri croissant) ; scan_ts booléen → âge None (même garde
+  que le lot 142 côté UI) ; build(None, None) honnêtement
+  'analyzing' ; top borné à 3 avec compte complet ; contrat de
+  sortie exact. Aucun code modifié, pas de bump SW.
+  Suite 2090 → 2098 passed / 2 skipped.
+
+### MINI-BILAN tournée 146-150
+
+5 lots, PR #179 → #183, suite 2033 → 2098 passed (+65 tests), SW
+stable v151 (aucun changement de shell — tournée moteur pure). La
+file des moteurs par couverture croissante est ÉPUISÉE : analysis
+(ratio 0.19), strategy_fit (0.35), postmortem (0.61), market_lens
+(0.66), stats (0.77), session_digest (0.80) — tous caractérisés
+sur leurs branches, gardes, bornes exactes et comportements
+limites. Découvertes clés désormais VERROUILLÉES par des tests :
+divergence des seuils FAVORABLE (62 au climat market_lens vs 65 au
+tilt strategy_fit — même formule) ; Spearman à rangs ordinaux (une
+série constante « corrèle » à 1.0) ; break-even classé perte ;
+profit factor None jamais infini ; booléens rejetés par toutes les
+gardes numériques ; Socle défensif exige un ext_atr explicite ;
+l'inconnu n'est jamais investissable (plancher scorecard 18/40 <
+seuil B). Tout changement futur de sémantique sur ces points fera
+échouer la suite et devra être assumé explicitement.
+
 - **Lot 149 — livré** : caractérisation du PRISME MARCHÉ
   `market_lens.py` (77 lignes — source unique du score marché /100,
   servie par feeds/decision_api/command) + `stats.py` (Spearman de
