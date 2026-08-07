@@ -1495,6 +1495,18 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 292 — livré** : AUDIT TACTILE du shell (390, navigateur
+  réel) — après la complétion du parcours palette (288/289/291), les
+  3 autres parcours tactiles calibrés avec l'intention d'y livrer
+  une amélioration : « Plus » (tiroir 3 espaces, liens 357×40,
+  navigation réelle /options vérifiée), « Connexions » (contenu
+  honnête : IBKR Hors ligne, DÉMO étiquetée), « Notifications »
+  (état vide honnête). Fermetures tactiles OK, 0 erreur,
+  0 débordement. **Verdict : les 3 sont SAINS — aucun changement
+  fait** (un changement gratuit est pire que pas de changement).
+  Capture envoyée. Suite 2500/2. Docs seulement, pas de bump. É1 :
+  GO acquis, toujours en attente de déblocage permissions.
+
 - **Lot 291 — livré** : LOT PRODUIT — la palette se ferme d'un TAP
   SUR LE FOND. Les lots 288/289 avaient soigné l'entrée tactile ; le
   calibrage de la SORTIE a montré un piège : `.vx-palette` plein
