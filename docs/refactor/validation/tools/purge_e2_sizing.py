@@ -4,6 +4,13 @@
 # Tout nom top-level non atteignable depuis ces racines = candidat mort.
 import ast, os, re, subprocess, sys
 
+# Rejouable depuis n'importe quel cwd (lot 252) : l'outil vit dans
+# docs/refactor/validation/tools/ → la racine du dépôt est 4 niveaux
+# au-dessus ; tout (open, grep, import terminal) est relatif à elle.
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))))))
+os.chdir(_ROOT)
+
 os.environ.setdefault('DEMO', '1')
 os.environ.setdefault('NO_IBKR', '1')
 

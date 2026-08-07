@@ -1495,6 +1495,16 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 252 — livré** : ROBUSTESSE de l'outil de décision
+  `tools/purge_e2_sizing.py` (l'instrument officiel du chiffrage,
+  rejoué à É1/É2). Défaut PROUVÉ avant de toucher : lancé depuis
+  `docs/` → FileNotFoundError (open/grep/import relatifs au cwd).
+  Correctif minimal : racine du dépôt ancrée sur `__file__` +
+  `os.chdir`. Preuve : rejoué depuis docs/ ET depuis la racine —
+  chiffres identiques entre eux et IDENTIQUES au lot 249 (5 236 l. /
+  48,7 % ; 107 défs) → la mesure est STABLE et reproductible. Aucun
+  code produit touché, pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 251 — livré** : SMOKE-CHECK santé post-tranche en conditions
   réelles. Après les 5 merges docs-only (246-250), re-mesure en vrai
   navigateur (serveur DEMO, Playwright 1440×900, écoute console +
