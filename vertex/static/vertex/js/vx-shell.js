@@ -340,6 +340,9 @@
   });
   $('vx-global-search')?.addEventListener('focus', (e) => { e.target.blur(); openPalette(); });
   $('vx-global-search')?.addEventListener('click', openPalette);
+  /* Lot 291 : la palette est un fond plein écran sans Échap au tactile —
+     le tap sur le fond (hors boîte) ferme, comme tout dialogue. */
+  palette?.addEventListener('click', (e) => { if (e.target === palette) palette.dataset.open = '0'; });
 
   /* ── + Ajouter (§19) ─────────────────────────────────────────────── */
   $('vx-add-btn')?.addEventListener('click', () => window.VXEntities?.openAddModal());
