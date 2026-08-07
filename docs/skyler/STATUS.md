@@ -1495,6 +1495,26 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 240 — livré** : MINI-BILAN 236-240. Tranche de 5 lots
+  (PR #269 → #273) : suite **2486 / 2 skipped stable**, SW **v173
+  STABLE** (0 bump — 5 lots de preuve pure, rien à déployer).
+  Réalisations : (1) modal d'ajout 3 étapes prouvé, écriture réelle
+  au store + READONLY affirmé dans l'UI même — « Vertex n'envoie
+  JAMAIS un ordre » (236) ; (2) service worker v173 prouvé en vrai —
+  actif, seul cache présent (nettoyage prouvé), 32/32 statiques
+  servies du cache en 2e visite : la doctrine bump=déploiement est
+  prouvée (237) ; (3) docs : 0 référence morte sur 94 fichiers, les
+  17 signalements d'heuristique tous résolus individuellement (238) ;
+  (4) desk sync round-trip côté client réel — push au ts exact, pull
+  au boot qui restaure tout après localStorage.clear (239). FAIT
+  MARQUANT : **la preuve du shell est TOTALE** — composants (229/231/
+  234), flux (236), infrastructure (237/239), navigation et
+  responsive (219-233) : chaque mécanisme de l'expérience quotidienne
+  déroulé en conditions réelles, 0 défaut trouvé sur la tranche — le
+  produit tient. Doctrine : 5 lots, 0 ligne de code produit, 0 bump,
+  et chaque lot a produit du SAVOIR vérifié. Docs seulement, pas de
+  bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 239 — livré** : DESK SYNC ROUND-TRIP CÔTÉ CLIENT RÉEL —
   l'invariant n° 1 (17 clés / 4 listes) et la préférence utilisateur
   centrale (« tout synchronisé automatiquement au lancement ») sont
