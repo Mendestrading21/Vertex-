@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 248 — livré** : DOSSIER DE DÉCISION DE PURGE de terminal.py
+  (TERMINAL-PURGE-DECISION.md) — **0 code touché**, tout est preuve
+  et plan. PREUVE DÉCISIVE mesurée ce lot : croisement runtime
+  app.url_map × fonctions retournant PAGE_* → **21 fonctions de rendu
+  héritées trouvées, 0 routée, 21 ORPHELINES** — aucun utilisateur ne
+  peut les atteindre (cohérent avec les 43 « route migrée » et le
+  constat du lot 246). Les 32 constantes PAGE_* ne sont référencées
+  hors terminal.py QUE par les tests de caractérisation écrits POUR
+  ce moment (lot 183 + épingles). Une exception cartographiée :
+  PAGE_DAILY ↔ home_art.py/vault.py (hérités eux-mêmes) → étape
+  dédiée. PLAN en 3 étapes sûres — É1 fonctions orphelines + PAGE_*
+  + tests de caractérisation sans objet ; É2 blocs BODY/CSS/JS
+  révélés non référencés (chiffrage outillé) ; É3 dépendances
+  croisées — une PR par étape, rollback = revert, pytest 100 % +
+  navigateur 8 pages à chaque étape. **DÉCISION DEMANDÉE À L'HUMAIN :
+  « GO purge étape 1 » — rien ne sera purgé sans.** Docs seulement,
+  pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 247 — livré** : GRANDE SYNTHÈSE DE LA CAMPAGNE DE PREUVE
   (lots 214 → 246, 33 lots, PR #247 → #279). Après la clôture de la
   tournée graphique TV (204), la boucle a basculé de « construire » à
