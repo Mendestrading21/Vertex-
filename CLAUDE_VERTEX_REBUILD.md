@@ -1,5 +1,15 @@
 # Claude Code — Vertex Total Rebuild
 
+> ## ⚠️ DOCUMENT HISTORIQUE — NE PLUS SUIVRE (constat lot 261)
+>
+> Cet ordre de mission appartient à l'ère « Total Rebuild » (terminée).
+> La gouvernance ACTUELLE est celle de `CLAUDE.md` : skill
+> `.claude/skills/vertex-skyler-v2/SKILL.md`, branche d'intégration
+> `integration/vertex-skyler-v2`. La branche `agent/vertex-total-rebuild`
+> et les instructions ci-dessous sont des références historiques — ne pas
+> les prendre comme base de travail. Conservé car référencé par les
+> audits d'époque (`docs/refactor/*`).
+
 ## Branche obligatoire
 
 Travaille sur :

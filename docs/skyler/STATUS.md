@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 261 — livré** : CLAUDE_VERTEX_REBUILD.md NEUTRALISÉ. Le
+  dernier .md racine non audité n'était pas une doc d'accueil mais un
+  ORDRE DE MISSION pour Claude datant de l'ère Total Rebuild, resté
+  actif à la racine : « travaille sur agent/vertex-total-rebuild » +
+  livrables d'époque — en CONTRADICTION directe avec la gouvernance
+  CLAUDE.md (skill vertex-skyler-v2, branche integration, anciennes
+  branches = références historiques). Risque réel : une future session
+  pouvait suivre l'ancien ordre. Calibrage avant de trancher : fichiers
+  pointés existants, branche encore sur origin, document référencé par
+  les audits d'époque → PAS de suppression — bannière d'obsolescence
+  en tête qui neutralise l'ordre et redirige vers la gouvernance
+  actuelle. **Les 6 .md racine sont désormais tous audités et sains.**
+  Docs seulement, pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **MINI-BILAN 256-260 (lot 260)** : tranche « mesurer le neuf,
   aligner les portes d'entrée ». 256 : baseline perf serveur jamais
   chiffrée (import 11,68 s à froid / ~2 s à chaud ; TTFB 8 pages
