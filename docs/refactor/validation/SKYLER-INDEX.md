@@ -297,6 +297,7 @@
 | 277 | `SKYLER-LOT-277.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2) ; rien à toucher, rapport minimal. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
 | 278 | `SKYLER-LOT-278.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2) ; rien à toucher, rapport minimal. Échéance périodique dans 2 lots. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
 | 279 | `SKYLER-LOT-279.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2) ; rien à toucher, rapport minimal. Prochain lot (280) : ÉCHÉANCE PÉRIODIQUE (smoke-check complet + mini-bilan 276-280). Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
+| 280 | `SKYLER-LOT-280.md` | ÉCHÉANCE PÉRIODIQUE honorée : SMOKE-CHECK complet SAIN — 8 pages × HTTP 200, 0 erreur console/pageerror, client-log count:0, healthz ok, valeurs STRICTEMENT identiques au lot 270 (3 mesures périodiques 251/270/280 → 3 résultats identiques : base STABLE). + MINI-BILAN 276-280 : 4 cycles de veille (rapports minimaux, 0 travail fabriqué) + cette échéance ; défauts produit 0 (48 lots), code produit 0 ligne (35 lots), suite 2486/2, SW v173, 5 PR (#309→#313). Prochaine échéance ~lot 290. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
 
 ## Architecture atteinte
 
