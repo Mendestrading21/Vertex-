@@ -532,7 +532,11 @@
   };
   /* Annotations de niveaux (entrée/stop/TP…) — plugin ligne horizontale. */
   C.levelLines = function (levels) {
-    /* levels: [{value,label,kind:'entry'|'stop'|'tp'|'support'|'resistance'}] */
+    /* levels: [{value,label,kind:'entry'|'stop'|'tp'|'support'|'resistance'}]
+       GRAMMAIRE TV (lot 202) : chaque niveau du PLAN porte son étiquette en
+       CHIP pleine couleur au BORD DROIT (texte sombre) — comme les étiquettes
+       de l'échelle de prix TradingView — avec anti-collision verticale
+       (empilement) et bornage à la zone de tracé. Ligne pointillée inchangée. */
     const colByKind = { entry: C.colors.info, stop: C.colors.negative, tp: C.colors.positive,
       support: C.colors.cyan, resistance: C.colors.warning };
     return {
@@ -540,18 +544,31 @@
       afterDatasetsDraw(chart) {
         const { ctx, chartArea, scales } = chart;
         if (!scales.y) return;
+        const drawn = [];
+        const tt = (window.VXChartTheme && VXChartTheme.tooltip) || {};
         (levels || []).forEach(lv => {
           if (lv.value === null || lv.value === undefined) return;
           const y = scales.y.getPixelForValue(lv.value);
           if (y < chartArea.top || y > chartArea.bottom) return;
+          const col = colByKind[lv.kind] || C.colors.muted;
           ctx.save();
-          ctx.strokeStyle = colByKind[lv.kind] || C.colors.muted;
+          ctx.strokeStyle = col;
           ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
           ctx.beginPath(); ctx.moveTo(chartArea.left, y); ctx.lineTo(chartArea.right, y); ctx.stroke();
           ctx.setLineDash([]);
-          ctx.fillStyle = colByKind[lv.kind] || C.colors.muted;
-          ctx.font = '10px ' + (Chart.defaults.font.family || 'monospace');
-          ctx.fillText(`${lv.label || lv.kind} ${VX.fmt.price(lv.value)}`, chartArea.left + 4, y - 3);
+          const txt = `${lv.label || lv.kind} ${VX.fmt.price(lv.value)}`;
+          ctx.font = '700 9px ' + ((window.Chart && Chart.defaults.font.family) || 'monospace');
+          const w = ctx.measureText(txt).width + 10, h = 14;
+          let cy = y;
+          while (drawn.some(d => Math.abs(d - cy) < h + 2)) cy += h + 2;
+          cy = Math.max(chartArea.top + h / 2, Math.min(cy, chartArea.bottom - h / 2));
+          drawn.push(cy);
+          const x = chartArea.right - w - 2;
+          ctx.beginPath(); ctx.roundRect(x, cy - h / 2, w, h, 7);
+          ctx.fillStyle = col; ctx.fill();
+          ctx.fillStyle = tt.backgroundColor || '#151719';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(txt, x + 5, cy + 0.5);
           ctx.restore();
         });
       },
