@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 256 — livré** : BASELINE de performance SERVEUR avant-purge
+  (jamais chiffrée formellement — le lot 72 mesurait le client).
+  Import de terminal.py : **11,68 s à froid, ~2 s à chaud** (3
+  passes) ; TTFB des 8 pages racines : **1,3-1,9 ms** (3 mesures
+  chacune, HTML 22-86 ko) ; healthz 3 ms. Lecture honnête : le
+  SERVICE est instantané (pages = chaînes préconstruites — rien à
+  corriger) ; le coût du code mort est à l'IMPORT, payé à chaque
+  démarrage pour construire notamment des pages héritées jamais
+  servies — c'est LA métrique que la purge devrait améliorer, à
+  re-mesurer avec le même protocole après É1/É2. Reprise après
+  redémarrage du worker en début de lot (état vérifié : lot 255
+  fusionné, 0 trigger actif — rien perdu). 0 changement de code,
+  docs seulement, pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **MINI-BILAN 251-255 (lot 255)** : tranche « consolider sans
   fabriquer ». 251 : smoke-check santé post-merges SAIN (8 pages ×
   200, 0 erreur console, client-log 0) ; 252 : outil de chiffrage
