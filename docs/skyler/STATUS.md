@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 216 — livré** : INVARIANTS n° 2 + IBKR (suite de l'audit du
+  lot 214) — constat mesuré + UN gardien neuf sur lacune réelle.
+  (1) Règle n° 2 (JS généré valide / apostrophes) : TENUE et déjà
+  gardée en entier par test_js_syntax_sweep_lot182 (chaque bloc
+  <script> inline de 16 routes au vrai parseur node --check + chaînes
+  JS des modules + garde-fou de volume ≥12 blocs) — rien à ajouter.
+  (2) IBKR : readonly=True TENU, codé en dur (READONLY = True +
+  connect readonly=True) et gardé par 3 tests (test_no_orders balayage
+  dépôt, strategy_os_final_guards, data_sources). MAIS lacune RÉELLE
+  mesurée : grep RequestTimeout tests/ → 0 occurrence — l'invariant
+  CLAUDE.md « RequestTimeout=45 (ne pas retirer — anti-blocage) »
+  n'était épinglé par AUCUN test. Livré :
+  test_ibkr_timeout_lot216 (3 tests) — valeur 45, les DEUX bornes
+  appliquées dans la façade readonly (ib.RequestTimeout + timeout du
+  connect), et scheduler DEFAULT_TIMEOUT_S aligné sur le gateway (si
+  l'un bouge sans l'autre, le test casse). Tests seulement, pas de
+  bump. Suite **2475 passed / 2 skipped** (2472 + 3).
+
 - **Lot 215 — livré** : MINI-BILAN 211-215 + vérif cohérence SW.
   Tranche de 5 lots (PR #244 → #248) : suite 2466 → **2472** / 2
   skipped (+6), SW v168 → **v171** (bumps 211/212/213 ; 214/215 =
