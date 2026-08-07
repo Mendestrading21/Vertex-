@@ -272,6 +272,21 @@
       },
     };
   };
+  /* GRAMMAIRE TV (lot 197) : motif hachuré 45° réutilisable — équivalent
+     CANVAS du tvHatch SVG (teinte faible + rayures fines) : la texture qui
+     dit « estimation/projection, pas un réel » sur les remplissages. */
+  C.hatchPattern = function (color) {
+    const t = document.createElement('canvas'); t.width = 8; t.height = 8;
+    const g = t.getContext('2d');
+    g.globalAlpha = .08; g.fillStyle = color; g.fillRect(0, 0, 8, 8);
+    g.globalAlpha = .38; g.strokeStyle = color; g.lineWidth = 1.4;
+    g.beginPath();
+    g.moveTo(-2, 10); g.lineTo(10, -2);
+    g.moveTo(-2, 2); g.lineTo(2, -2);
+    g.moveTo(6, 10); g.lineTo(10, 6);
+    g.stroke();
+    return g.createPattern(t, 'repeat');
+  };
   /* GRAMMAIRE TV (lot 195) : chips Max/Min posés sur les extrêmes RÉELS de la
      série — équivalent canvas du tvEdgeChip SVG (fond plein, texte sombre).
      which : undefined = les deux · 'max' | 'min' = un seul. */
@@ -314,7 +329,7 @@
       },
     };
   };
-  C.area = function (canvas, labels, values, { color = C.colors.blue, yFmt, fill = true, extraDatasets = [], last = true, glow = true, crosshair = true, extremes = false } = {}) {
+  C.area = function (canvas, labels, values, { color = C.colors.blue, yFmt, fill = true, extraDatasets = [], last = true, glow = true, crosshair = true, extremes = false, hatch = false } = {}) {
     const plugins = [];
     if (glow) plugins.push(C.glowPlugin(color));
     if (crosshair) plugins.push(C.crosshairPlugin(color));
@@ -325,8 +340,10 @@
       data: { labels, datasets: [{ data: values, borderColor: color, borderWidth: 1.8, pointRadius: 0,
         cubicInterpolationMode: 'monotone', tension: .35, fill,
         /* LOT 120 : dégradé vertical à 4 arrêts — descente plus douce
-           (jamais un aplat), fin totalement transparente. */
-        backgroundColor: (ctx) => {
+           (jamais un aplat), fin totalement transparente.
+           LOT 197 (tournée TV) : hatch=true → remplissage HACHURÉ
+           (C.hatchPattern) = la texture « estimation/projection ». */
+        backgroundColor: hatch ? C.hatchPattern(color) : (ctx) => {
           const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height || 200);
           g.addColorStop(0, color + '59'); g.addColorStop(.3, color + '2E');
           g.addColorStop(.62, color + '12'); g.addColorStop(1, color + '00');
