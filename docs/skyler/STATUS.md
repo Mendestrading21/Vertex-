@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 289 — livré** : LOT PRODUIT — cible TACTILE du champ de
+  recherche. Suite directe du lot 288 : le champ est LE chemin
+  tactile vers la palette, or il mesurait 33px de haut à 390px, sous
+  la règle des cibles ≥40px que responsive.css impose déjà aux
+  boutons → min-height:40px + icône loupe recentrée (calée en absolu
+  pour 33px), bloc ≤640px seulement — topbar 62px inchangé, desktop
+  intact. Gardien neuf test_search_touch_target_lot289 (2 tests).
+  Preuves : 390 champ 40px + icône centrée (écart 0px) + palette au
+  tap (12 items), 1440 inchangé (33px), 0 débordement, 0 erreur,
+  capture envoyée. Bump SW v177 → v178 + 5 gardiens. Suite
+  **2498 passed / 2 skipped (+2)**. É1 : GO acquis, toujours en
+  attente de déblocage permissions.
+
 - **Lot 288 — livré** : LOT PRODUIT — palette de commandes au
   TACTILE. Le calibrage navigateur a montré que le chemin existe
   déjà (tap sur le champ de recherche → openPalette ; vérifié à
