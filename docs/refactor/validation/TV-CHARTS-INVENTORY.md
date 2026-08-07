@@ -26,7 +26,9 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 
 ### Marchés (markets_page.py)
 - ✔ jauge régime/confiance · jauge breadth (>MM50) · jauge VIX
-- ☐ aires indices (line-area) + série de référence 120 séances
+- ✔ lot 200 : série de référence 120 séances — chips Max/Min sur les
+  extrêmes RÉELS (passthrough `extremes` de areaCard) + pilule
+  dernière valeur (déjà héritée)
 - ✔ lot 194 : heatmap (builder partagé) — texte des cellules coloré
   par intensité + cellule dominante en évidence (hérite : secteurs
   Marchés, P&L mensuel Portefeuille, scénarios/IV Options)
@@ -67,7 +69,8 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 - ☐ GEX (barres par strike) · double probabilité
 
 ### Journal (journal pages)
-- ☐ barres de discipline · stats comportementales
+- ✔ lot 200 : barres de discipline/stats — par HÉRITAGE structurel du
+  C.bars TV lot 199 (appels directs VXCharts.bars, chemin unique)
 
 ### Intelligence (intelligence_page.py)
 - ☐ jauge comité (vx-committee-gauge — hérite déjà du ✔ C.gauge)

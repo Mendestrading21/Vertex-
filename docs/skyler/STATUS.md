@@ -1495,6 +1495,41 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 200 — livré** : TOURNÉE TV — la SÉRIE DE RÉFÉRENCE de
+  Marchés (120 séances, SPY ou proxy honnête) reçoit les chips
+  Max/Min : passthrough `extremes` de C.areaCard vers C.area (opt-in
+  — aucun autre appelant modifié) + activation sur la carte de
+  référence — les bornes RÉELLES de la période (Max 443,69 /
+  Min 351,41 en démo) se lisent sur la courbe avec la pilule de
+  dernière valeur, comme sur TV. DISCIPLINE Journal : ✔ par HÉRITAGE
+  STRUCTUREL — les barres du Journal/Performance appellent
+  VXCharts.bars directement (3 sites) → elles ont reçu le lot 199
+  (dominante liserée + chip) sans modification ; journal démo vide →
+  états vides honnêtes, héritage prouvé par le chemin de code
+  unique. SW v163 → v164 + 5 gardiens. Captures série de référence +
+  Marchés 1440/390 + Journal envoyées, 0 erreur console.
+  Suite 2461 passed / 2 skipped. Inventaire TV : aires de référence ✔,
+  discipline ✔.
+
+### MINI-BILAN tournée 196-200
+
+5 lots, PR #229 → #233, suite stable 2461 passed / 2 skipped,
+SW v159 → v164. La tranche a rendu TRANSVERSES les règles de la
+grammaire TV : « dominante en évidence » appliquée à la staleness
+Système (196 — tuile liserée + âge en chip du plus rassis), aux
+barres partagées C.bars (199 — liseré + valeur en chip, hérité par
+6 familles) ; texture « estimation » hachurée généralisée
+(C.hatchPattern + option hatch de C.area, 197 — théta Options) ;
+chips de valeur sur les pointeurs de rails (198 — VIX réel, « n/d »
+honnête sur régime indéterminé) ; chips Max/Min sur les extrêmes
+réels des aires (200 — série de référence Marchés). Deux ✔ par
+HÉRITAGE constaté sans code : scénarios Options (197, via heatmap
+194) et discipline Journal (200, via C.bars 199) — la grammaire
+paye : chaque builder partagé aligné aligne ses pages gratuitement.
+Honnêteté tenue partout (movers/journal vides rapportés, jamais de
+dominante sur singleton). Reste à l'inventaire : price-chart
+niveaux, radar, vol cone, GEX, double probabilité, sparklines KPI.
+
 - **Lot 199 — livré** : TOURNÉE TV — les BARRES du builder partagé
   C.bars reçoivent la règle « dominante en évidence » : la barre au
   |valeur| max (calculée seulement s'il y a ≥ 2 barres — jamais une
