@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 159 — livré** : complément de l'HORLOGE DE MARCHÉ
+  `market_clock.py` (5 tests : borne pré-marché 4h00 exacte,
+  vendredi 20h00 → fermé jusqu'au lundi, format « 09:05 ET »
+  zéro-paddé, et une LIMITE documentée — pas de calendrier de
+  jours fériés : le 1er janvier en semaine est affiché « open »,
+  ajouter un calendrier NYSE = décision explicite que ce test
+  rendra visible) + INVENTAIRE du nouveau périmètre
+  (vertex/ai/, data/, strategy/, portfolio/) : 11 modules à ZÉRO
+  test découverts, dont la FAMILLE RISQUE PORTEFEUILLE
+  (correlation 42 l, factor_exposure 29 l, replacement_engine
+  36 l, stress_tests 85 l) priorisée pour le lot 160, puis
+  data/constituents (112 l), ai/audit, ai/strategy_context, et
+  deux legacy à vérifier (legacy_basket_risk, legacy_adapter).
+  Aucun code modifié, pas de bump SW. Suite 2214 → 2219 passed /
+  2 skipped.
 - **Lot 158 — livré** : caractérisation de la RÈGLE DE FRAÎCHEUR du
   LIVE ENGINE `live_engine.py` (258 lignes — le moteur de
   synchronisation dont dépendent toutes les pages ; les 13 tests

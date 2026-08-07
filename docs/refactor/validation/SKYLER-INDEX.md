@@ -172,6 +172,7 @@
 | 156 | `SKYLER-LOT-156.md` | Caractérisation `pivots.py` (structure S/R du plan, ratio 0.65) : 8 tests — les 5 signaux par zigzags déterministes (BREAKOUT anti-chasse ≤1.2 ATR avec cible extension, REPLI_REPRIS ≤1.8 ATR, REFUS piège, EN_TENDANCE sans entrée, RANGE), gardes None, repli ATR 1 %, contrat 16 clés | 0.9.0 | v151 | 2186 | GO |
 | 157 | `SKYLER-LOT-157.md` | Caractérisation `market/indicators.py` (SMA/EMA/RSI/ATR/Bollinger/VWAP purs §12) : 9 tests — asymétries de trous DOCUMENTÉES (SMA se réinitialise, EMA traverse, ATR recopie, VWAP resservi), RSI golden Wilder 70.5, robustesse non-numérique/fenêtre nulle, longueurs tronquées au min | 0.9.0 | v151 | 2195 | GO |
 | 158 | `SKYLER-LOT-158.md` | Caractérisation `live_engine.py` (règle unique de fraîcheur du Sync Center) : 19 tests — bornes STRICTES des 7 domaines (à la borne on bascule déjà), défauts domaine inconnu, bascules de libellés s/min/h/j, âge None honnête, wait_force consommé + Event partagé | 0.9.0 | v151 | 2214 | GO |
+| 159 | `SKYLER-LOT-159.md` | Complément `market_clock.py` (5 tests — borne 4h00, vendredi soir, format ET, limite jours fériés DOCUMENTÉE) + INVENTAIRE du périmètre ai/data/strategy/portfolio : 11 modules zéro-test découverts, famille risque portefeuille priorisée | 0.9.0 | v151 | 2219 | GO |
 
 ## Architecture atteinte
 
