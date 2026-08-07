@@ -1495,6 +1495,42 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 165 — livré** : caractérisation du MOTEUR DE RISQUE du
+  portefeuille RÉEL `risk_engine.py` (§26, servi par strategy_os —
+  la chaîne du risque est désormais COMPLÈTE : correlation +
+  stress_tests + basket_risk + risk_engine). 8 tests figent : la
+  garde de provenance (snapshot 'SCANNER' → ValueError — le risque
+  ne se calcule JAMAIS sur les candidats du scanner) ; les agrégats
+  exacts (surpoids 66.67 % > 15 %, HHI 0.4623, secteur 80 % > 40 %
+  averti, bêta pondéré 1.07 ; aucun bêta connu → None jamais un
+  1.0 inventé) ; les règles de discipline aux bornes INCLUSES
+  (drawdown -25 % pile → no_new_risk True « AUCUN nouveau risque » ;
+  titre -23.1 % ≤ -20 % → revue obligatoire) ; le plafond d'options
+  (4 > 3 → blocage) avec agrégat de greeks HONNÊTE (somme des seuls
+  connus, gamma absent → None pas un 0, greeks_partial signalé) ;
+  le contrat 14 clés. Aucun code modifié, pas de bump SW.
+  Suite 2263 → 2271 passed / 2 skipped.
+
+### MINI-BILAN tournée 161-165
+
+5 lots, PR #194 → #198, suite 2239 → 2271 passed (+32 tests), SW
+stable v151 (tournée tests pure). Couverts : les constituants
+d'indices (« le démarrage n'est jamais bloqué » désormais PROUVÉ
+par l'ordre de résolution cache → live → stale → static) ; le trio
+audit/contexte/rôles (le journal IA borné, et les 4 RAPPELS
+D'INVARIANTS READONLY injectés dans chaque analyse IA figés mot
+pour mot) ; l'exposition factorielle et le moteur de remplacement
+(« décision humaine requise » — jamais une exécution) ; la
+vérification de vie des deux legacy (TOUS DEUX VIVANTS — aucun code
+mort) ; le risque de panier (cap infaisable → somme n × cap,
+concentration non détectée sur petit panier, FAIL-OPEN sur erreur
+— trois limites documentées) ; et le moteur de risque réel (chaîne
+du risque complète, bornes de discipline incluses, provenance
+gardée). Le périmètre ai/data/strategy/portfolio n'a plus que
+briefs/copilot/company/universe (couvertures partielles) et
+legacy_adapter en file. Tout changement futur de ces sémantiques
+fera échouer la suite.
+
 - **Lot 164 — livré** : caractérisation du RISQUE DE PANIER
   `legacy_basket_risk.py` (99 lignes, 0 test — VIVANT malgré son
   nom : servi par analysis_api, command et risk_engine ; le
