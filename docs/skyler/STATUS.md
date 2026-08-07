@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 206 — livré** : TOUR RESPONSIVE post-tournée 1/2 (mesuré,
+  option par défaut de la proposition du lot 205) : 4 espaces
+  (Aujourd'hui, Marchés, Opportunités, Analyse) × 5 viewports
+  (390/768/1024/1440/1920), mesure Playwright de (a) débordement
+  horizontal de page, (b) éléments hors viewport (hors défilement
+  voulu et fixed), (c) erreurs console. VERDICT : 0 défaut réel —
+  débordement de page 0 px sur les 20 cellules, 0 erreur console ;
+  tous les éléments signalés sont des panneaux hors-canvas VOULUS
+  (sidebar mobile repliée à gauche à 390, drawer d'entité fermé par
+  translateX à 768+ — vérifiés au style calculé). Les habits TV de
+  la tournée (chips, hachures, dégradés, dominantes) passent
+  proprement du mobile au 1920. Observation rapportée sans agir :
+  le drawer fermé n'a pas d'aria-hidden (piste accessibilité, pas un
+  défaut de layout). AUCUN code touché, AUCUN bump SW. Captures de
+  contrôle 1920 + 390 envoyées. Suite 2461 passed / 2 skipped.
+
 - **Lot 205 — livré** : BILANS — mini-bilan 201-205 + BILAN DE
   CLÔTURE de la tournée graphique TV (ci-dessous) + proposition de
   suite chiffrée (décision humaine). Aucun code produit touché —
