@@ -27,7 +27,10 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 ### Marchés (markets_page.py)
 - ✔ jauge régime/confiance · jauge breadth (>MM50) · jauge VIX
 - ☐ aires indices (line-area) + série de référence 120 séances
-- ☐ heatmap secteurs (heatmap.js) · barres leadership
+- ✔ lot 194 : heatmap (builder partagé) — texte des cellules coloré
+  par intensité + cellule dominante en évidence (hérite : secteurs
+  Marchés, P&L mensuel Portefeuille, scénarios/IV Options)
+- ☐ barres leadership
 - ☐ bandes CALME↔STRESS / DÉFENSE↔ATTAQUE (linéaires — déjà
   dégradées, à aligner sur la grammaire chip/aiguille)
 
@@ -42,7 +45,9 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 
 ### Portefeuille (portfolio_page.py)
 - ✔ jauge risque (pf-risk-gauge)
-- ☐ treemap poids · equity curve (equity-chart) · drawdown
+- ✔ lot 194 : treemap — part du total en chip tvEdgeChip pleine
+  couleur sur les grandes tuiles
+- ☐ equity curve (equity-chart) · drawdown
 - ☐ barres S+/S/A/B (concentration)
 
 ### Options (options_intel_page.py)
