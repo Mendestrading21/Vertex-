@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 189 — livré** : TOURNÉE GRAPHIQUE TV — FONDATION (directive
+  confirmée par l'utilisateur en cours de lot : « que tout Vertex
+  ressemble à ça — fluide, beau, parfait »). Inventaire complet des
+  graphiques vivants (TV-CHARTS-INVENTORY.md, statuts + plan des
+  lots), grammaire TV dans chart-core (tvHatch « estimation »,
+  tvEdgeChip d'étiquette de bord) et PREMIÈRE SIGNATURE refaite : la
+  JAUGE passe au style TradingView — arc entier en dégradé CONTINU
+  (couleurs des bandes fondues, rouge→jaune→vert), pointeur blanc
+  court posé sur l'arc (ajusté après 1re capture pour ne jamais
+  couvrir le texte), état coloré en évidence sous l'arc. API 100 %
+  compatible : les 6 appelants (Marchés ×3, Portefeuille, Système,
+  Intelligence, options-intel) héritent sans changement. Les
+  gardiens couleur ont refusé 2 fallbacks hors inventaire →
+  conformes (#121214). Captures Breadth/Volatilité 1440+390
+  envoyées, 0 erreur console. SW v152 → v153 + gardiens.
+  Suite 2461 passed / 2 skipped.
 - **Lot 188 — livré** : gardien des LIENS D'API des pages vivantes
   (54 endpoints fetchés par les 11 pages servies — 0 mort, motifs
   paramétrés gérés) + invariants d'intelligence_page (662 l, la

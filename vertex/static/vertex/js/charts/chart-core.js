@@ -461,10 +461,32 @@
       },
     };
   };
-  /* ── Jauge radiale (SVG, sans Chart.js) — régime, risk score, VIX, options env ──
+  /* ── GRAMMAIRE TV (tournée graphique, lot 189) ─────────────────────────────
+     Helpers partagés par les builders refaits au style TradingView :
+     hachures d'ESTIMATION (zones prévisionnelles) et chip d'ÉTIQUETTE DE BORD
+     (Max/Moy/Min collés au bord droit, comme le cône de prix cible TV). */
+  C.tvHatch = function (id, color) {
+    // <defs> réutilisable : rayures diagonales fines = « estimation, pas un réel »
+    return `<pattern id="${id}" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="${color}" fill-opacity=".08"/>
+      <line x1="0" y1="0" x2="0" y2="6" stroke="${color}" stroke-opacity=".38" stroke-width="1.6"/></pattern>`;
+  };
+  C.tvEdgeChip = function (x, y, text, color, opts) {
+    // chip SVG valeur/étiquette collée au bord (fond plein couleur, texte sombre)
+    const o = opts || {}; const fs = o.fontSize || 10;
+    const w = o.width || (text.length * fs * 0.62 + 12), h = fs + 8;
+    const anchor = o.align === 'left' ? x : x - w;
+    return `<g role="presentation"><rect x="${anchor.toFixed(1)}" y="${(y - h / 2).toFixed(1)}" width="${w.toFixed(1)}" height="${h}" rx="3" fill="${color}"/>
+      <text x="${(anchor + w / 2).toFixed(1)}" y="${(y + fs * 0.36).toFixed(1)}" text-anchor="middle" fill="var(--vx-graphite-850,#121214)" font-size="${fs}" font-weight="800" style="font-variant-numeric:tabular-nums">${text}</text></g>`;
+  };
+
+  /* ── Jauge TV (SVG, sans Chart.js) — régime, risk score, VIX, options env ──
+     STYLE TRADINGVIEW (lot 189) : arc UNIQUE en dégradé continu construit sur
+     les couleurs des bandes (rouge→jaune→vert…), AIGUILLE blanche depuis le
+     pivot, libellés de zones au fil de l'arc, état (reading) affiché
+     en évidence dans la couleur de la zone courante.
      opts: {value, min=0, max=100, unit, label, reading,
-            bands:[{to, color}], // zones colorées de gauche→droite (ordre croissant)
-            positiveIsLow=false} // n/u : la couleur vient des bandes
+            bands:[{to, color, label?}]}  // zones gauche→droite (ordre croissant)
      Accessible : role=img + aria-label chiffré. Aucune animation permanente. */
   C.gauge = function (host, opts) {
     const el = typeof host === 'string' ? document.getElementById(host) : host;
@@ -472,7 +494,7 @@
     const o = opts || {};
     const min = o.min != null ? o.min : 0, max = o.max != null ? o.max : 100;
     const v = (o.value == null || isNaN(o.value)) ? null : Math.max(min, Math.min(max, o.value));
-    const W = 200, H = 118, cx = 100, cy = 104, r = 84;
+    const W = 220, H = 132, cx = 110, cy = 112, r = 86;
     const ang = (t) => Math.PI * (1 - (Math.max(min, Math.min(max, t)) - min) / (max - min)); // 180°→0°
     const pt = (a, rr = r) => [cx + rr * Math.cos(a), cy - rr * Math.sin(a)];
     const arc = (a0, a1, rr = r) => {
@@ -481,38 +503,51 @@
       return `M ${x0.toFixed(1)} ${y0.toFixed(1)} A ${rr} ${rr} 0 ${large} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
     };
     const bands = o.bands && o.bands.length ? o.bands : [{ to: max, color: C.colors.neutral }];
-    // pistes de fond colorées par bande (contexte), puis arc de valeur par-dessus
-    let track = '', prev = min;
-    bands.forEach(b => {
-      track += `<path d="${arc(ang(prev), ang(b.to))}" stroke="${b.color}" stroke-opacity=".22" stroke-width="9" fill="none" stroke-linecap="butt"/>`;
+    const gid = 'vxGg-' + ((el.id || 'g').replace(/[^\w-]/g, ''));
+    // Dégradé CONTINU le long de l'axe des valeurs : un stop au début et à la
+    // fin de chaque bande (les couleurs fondent à la frontière, comme TV).
+    const span = max - min;
+    let stops = '', prev = min;
+    bands.forEach((b, i) => {
+      const p0 = ((prev - min) / span), p1 = ((Math.min(b.to, max) - min) / span);
+      stops += `<stop offset="${(p0 + 0.04).toFixed(3)}" stop-color="${b.color}"/>`
+        + `<stop offset="${Math.max(p0, p1 - 0.04).toFixed(3)}" stop-color="${b.color}"/>`;
       prev = b.to;
     });
-    let valArc = '', needle = '', defs = '', valColor = C.colors.neutral;
+    const defs = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="0">${stops}</linearGradient>${C.tvHatch(gid + '-h', C.colors.muted)}</defs>`;
+    // piste : l'arc ENTIER en dégradé (léger si pas de valeur, franc sinon)
+    const track = `<path d="${arc(ang(min), ang(max))}" stroke="url(#${gid})" stroke-opacity="${v == null ? '.28' : '.9'}" stroke-width="10" fill="none" stroke-linecap="round"/>`;
+    // libellés de zones (si fournis) au milieu de chaque bande, hors de l'arc
+    let zoneLabels = ''; prev = min;
+    bands.forEach(b => {
+      if (b.label) {
+        const [zx, zy] = pt(ang((prev + Math.min(b.to, max)) / 2), r + 14);
+        zoneLabels += `<text x="${zx.toFixed(1)}" y="${zy.toFixed(1)}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="9" letter-spacing=".4">${b.label}</text>`;
+      }
+      prev = b.to;
+    });
+    let needle = '', valColor = C.colors.neutral;
     if (v != null) {
       for (const b of bands) { if (v <= b.to) { valColor = b.color; break; } valColor = b.color; }
-      /* LOT 126 — matière verre : l'arc de valeur est un dégradé de sa propre
-         couleur (doux au départ → dense à l'extrémité, comme les barres), posé
-         sur un halo large et léger ; le point de lecture gagne son halo. */
-      const gid = 'vxGg-' + ((el.id || 'g').replace(/[^\w-]/g, ''));
-      defs = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stop-color="${valColor}" stop-opacity=".45"/>
-        <stop offset="1" stop-color="${valColor}" stop-opacity="1"/></linearGradient></defs>`;
-      valArc = `<path d="${arc(ang(min), ang(v))}" stroke="${valColor}" stroke-opacity=".16" stroke-width="15" fill="none" stroke-linecap="round"/>`
-        + `<path d="${arc(ang(min), ang(v))}" stroke="url(#${gid})" stroke-width="9" fill="none" stroke-linecap="round"/>`;
-      const [nx, ny] = pt(ang(v), r - 2);
-      needle = `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="8" fill="${valColor}" fill-opacity=".2"/>`
-        + `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="4.5" fill="${valColor}"/>`;
+      // AIGUILLE TV : pointeur blanc COURT posé sur l'arc (jamais sur le texte
+      // central) + halo de la couleur de zone au bout.
+      const a = ang(v);
+      const [x1, y1] = pt(a, r - 24), [x2, y2] = pt(a, r - 2);
+      const [hx, hy] = pt(a, r);
+      needle = `<circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="8" fill="${valColor}" fill-opacity=".3"/>`
+        + `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="var(--vx-text-primary,#F8F5F3)" stroke-width="3.5" stroke-linecap="round"/>`
+        + `<circle cx="${x1.toFixed(1)}" cy="${y1.toFixed(1)}" r="2.4" fill="var(--vx-text-primary,#F8F5F3)"/>`;
     }
     const disp = v == null ? '—' : (Number.isInteger(v) ? v : (+v).toFixed(1));
     const aria = `${o.label || 'jauge'} : ${v == null ? 'donnée indisponible' : disp + (o.unit || '')}${o.reading ? ' — ' + o.reading : ''}`;
     el.innerHTML = `
       <div class="vx-gauge" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
-        <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:230px;display:block;margin:0 auto">
-          ${defs}${track}${valArc}${needle}
-          <text x="${cx}" y="${cy - 20}" text-anchor="middle" fill="${valColor}" font-size="30" font-weight="800" style="font-variant-numeric:tabular-nums">${disp}</text>
-          <text x="${cx}" y="${cy - 3}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="10" letter-spacing=".5">${(o.unit || '') + (o.label ? ' · ' + o.label : '')}</text>
+        <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:250px;display:block;margin:0 auto">
+          ${defs}${track}${zoneLabels}${needle}
+          <text x="${cx}" y="${cy - 34}" text-anchor="middle" fill="var(--vx-text-primary,#F8F5F3)" font-size="26" font-weight="800" style="font-variant-numeric:tabular-nums">${disp}<tspan font-size="12" font-weight="600" fill="var(--vx-text-muted,#8A8284)">${o.unit || ''}</tspan></text>
+          <text x="${cx}" y="${cy - 18}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="9.5" letter-spacing=".5">${o.label || ''}</text>
         </svg>
-        ${o.reading ? `<div class="vx-meta" style="text-align:center;margin-top:4px">${o.reading}</div>` : ''}
+        ${o.reading ? `<div style="text-align:center;margin-top:2px;font-size:14px;font-weight:800;color:${valColor}">${o.reading}</div>` : ''}
       </div>`;
     return el;
   };
