@@ -544,6 +544,8 @@ function loadSpyChart(scan){
       question:'La tendance de fond reste-t-elle exploitable ?',
       conclusion:(m.spy_regime==='TREND'?'Tendance intacte':'Régime '+(m.spy_regime||'n/d'))+(m.verdict?' — '+m.verdict:''),
       labels:closes.map((_,i)=>i-closes.length),values:closes,height:260,
+      /* GRAMMAIRE TV (lot 200) : chips Max/Min = les bornes RÉELLES de la série */
+      extremes:true,
       source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
       explain:{shows:(hasSpy?'Les clôtures de SPY':'Les clôtures de '+key+' (proxy : SPY non incluse dans ce scan)')+' telles que fournies par le scan (aucun indicateur recalculé côté UI).',
         why:'La Stratégie Vertex n’attaque qu’en environnement porteur : le régime module seuils et tailles.',
