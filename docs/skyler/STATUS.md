@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 295 — livré** : LOT PRODUIT — balayage tactile TERMINÉ. Les
+  12 vues profondes restantes sondées à 390 (rotation, indices,
+  shortlist, positions, performance, journal, hypotheses, lab,
+  screener, connections, health, /tracking) : 10/12 SAINES ;
+  2 défauts réels : boutons tickers `.vx-link` de la shortlist à
+  **21px** (cibles principales de la table, classe sans aucun CSS) →
+  min-height:40px ; lien nu `.vx-dim a` (Journal → Hypothèses,
+  16px) → même padding que `.vx-meta a` (règle séparée, gardien 293
+  intact). Re-balayage : plus AUCUNE cible <32px, 0 erreur,
+  0 débordement, 0 texte cassé — **18 vues profondes couvertes au
+  total (lots 293/294/295)**. Gardien neuf
+  test_ticker_links_touch_lot295 (2 tests). Capture envoyée. Bump
+  SW v181 → v182 + 5 gardiens. Suite **2506 passed / 2 skipped
+  (+2)**. É1 : GO acquis, toujours en attente de déblocage
+  permissions.
+
 - **Lot 294 — livré** : LOT PRODUIT — vues profondes : contrôles
   segmentés TAPPABLES. Sondeur du lot 293 réutilisé sur 6 vues
   ?view= à 390 (breadth, calendar, risk, track-record, positions,
