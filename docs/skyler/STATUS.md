@@ -1495,6 +1495,11 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 271 — livré** : VEILLE ACTIVE — état vérifié (0 doublon
+  trigger, integration à jour, 0 PR oubliée, arbre propre, suite
+  2486/2). Rien à toucher (échéance périodique honorée au lot
+  précédent), rapport minimal. Pas de bump.
+
 - **Lot 270 — livré** : SMOKE-CHECK PÉRIODIQUE COMPLET (échéance
   annoncée depuis le lot 263, honorée) + MINI-BILAN 266-270. Protocole
   du lot 251 rejoué : **8 pages racines × HTTP 200, 0 erreur
