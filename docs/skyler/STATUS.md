@@ -1495,6 +1495,41 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 175 — livré** : honnêteté HTTP de la SESSION D'ANALYSE
+  `vertex/app/routes/session_api.py` (la logique de RESTAURATION de
+  /api/session/digest était la lacune — moteur digest et manifest
+  déjà couverts). 8 tests figent : le démarrage à froid → 'analyzing'
+  servi tel quel ; le digest prêt → servi, mémorisé ET persisté ;
+  l'écriture disque THROTTLÉE (2 appels < 30 s → 1 écriture) ; le
+  scan retombé « pas prêt » → instantané 'restored' avec l'as_of
+  absolu conservé mais l'ÂGE EFFACÉ (jamais un âge faussement
+  frais) ; la restauration sert une COPIE (le mémo reste 'ready') ;
+  session_id_for refuse bool et chaîne ; la couverture plafonnée à
+  100 % sur univers périmé (600/517 → 100, jamais 116) ; aucun
+  verbe d'ordre. Aucun code modifié, pas de bump SW.
+  Suite 2367 → 2375 passed / 2 skipped.
+
+### MINI-BILAN tournée 171-175 — « honnêteté des routes »
+
+5 lots, PR #204 → #208, suite 2338 → 2375 passed (+47 tests, dont
+les 10 du lot 171 déjà comptés dans 2338 : tranche réelle 2328 →
+2375), SW stable v151 (tournée tests pure). La NOUVELLE DIRECTION
+ouverte au lot 171 a figé la couche HTTP des routes les plus
+sensibles — les moteurs étaient couverts, le câblage ne l'était
+pas : positions_api (desk vide/corrompu honnête, IBKR hors ligne ne
+clôture JAMAIS, introuvable → 200 + erreur documenté) ·
+decision_api (params corrompus avalés, seuils -20/-25 % intacts par
+HTTP, pas de covered call sans actions) · tracking_api (DATA_REQUIRED
+sans prix inventé, étiquette HYPOTHÉTIQUE imposée, stop gèle,
+restart n'écrase pas) · planning_api (le ticket d'ordre COMMENCE
+par le disclaimer READONLY, stop « non transmis », la concentration
+bloque même à budget correct) · session_api (instantané restauré à
+l'âge EFFACÉ, throttle disque). Fil rouge prouvé partout : état
+vide → réponse honnête, entrée corrompue → jamais un crash, donnée
+absente → jamais inventée, AUCUN verbe d'ordre dans aucun module de
+routes. Reste mince : opportunities funnel, copilot/ask POST,
+live report — à balayer ou clore au lot 176.
+
 - **Lot 174 — livré** : honnêteté HTTP du TICKET DE PRÉPARATION
   D'ORDRE `vertex/app/routes/planning_api.py` (/api/planning/ticket
   — la route la plus sensible au READONLY : elle prépare un texte à
