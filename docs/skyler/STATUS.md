@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 169 — livré** : caractérisation du PROFIL D'ENTREPRISE
+  `data/company.py` (340 lignes — cache hebdo + couche curée hors
+  ligne + fetch yfinance côté utilisateur ; testé HORS LIGNE,
+  _fetch_profile monkeypatché). 9 tests figent : l'INVARIANT des
+  segments curés (les 20 répartitions somment toutes à 100 %) ; la
+  démo qui sert la couche curée avec stale True SIGNALÉ ; le
+  symbole inconnu → squelette honnête (None partout, jamais
+  inventé) ; l'ordre cache/fetch/curé (fetch réussi → cache écrit,
+  second appel sans réseau, schéma antérieur → re-fetch
+  automatique, fetch mort → secours curé « jamais de page vide ») ;
+  les pairs de la même industrie (soi-même exclu, cap 4) ; les
+  médianes sectorielles (seuil 3 membres, PE < 250 strict,
+  conversions en %, memo qui tient même vide — le cache 1.4 Mo
+  n'est pas reparsé). Aucun code modifié, pas de bump SW.
+  Suite 2310 → 2319 passed / 2 skipped.
 - **Lot 168 — livré** : caractérisation de la STRATÉGIE OPTIONS
   PERSONNALISÉE `legacy_adapter.py` (272 lignes, 0 test — VIVANTE :
   servie par command et terminal ; échelle 1/2/3/6/9/12 mois,
