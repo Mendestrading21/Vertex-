@@ -170,6 +170,7 @@
 | 154 | `SKYLER-LOT-154.md` | Caractérisation `news_impact.py` + `news_pipeline.py` (actualités §15, 0 test) : 20 tests — priorité premier match + limite sous-chaîne ('ai' dans mountain) documentée, importance exacte base 30/plafonds, seuils ±0.15 + confiance ≤0.7, rejets comptés, doublon → corroborations 2 → importance 80 | 0.9.0 | v151 | 2161 | GO |
 | 155 | `SKYLER-LOT-155.md` | Caractérisation `editorial.py` (brief narratif §10 d'Aujourd'hui, ratio 0.34) : 17 tests — seuils indices ±0.15, leadership >0.2 strict, phrases VIX 18/25, breadth 55, risques priorisés (RISK-OFF > breadth <45 strict), titre borné 180, sources triées + MINI-BILAN 151-155 | 0.9.0 | v151 | 2178 | GO |
 | 156 | `SKYLER-LOT-156.md` | Caractérisation `pivots.py` (structure S/R du plan, ratio 0.65) : 8 tests — les 5 signaux par zigzags déterministes (BREAKOUT anti-chasse ≤1.2 ATR avec cible extension, REPLI_REPRIS ≤1.8 ATR, REFUS piège, EN_TENDANCE sans entrée, RANGE), gardes None, repli ATR 1 %, contrat 16 clés | 0.9.0 | v151 | 2186 | GO |
+| 157 | `SKYLER-LOT-157.md` | Caractérisation `market/indicators.py` (SMA/EMA/RSI/ATR/Bollinger/VWAP purs §12) : 9 tests — asymétries de trous DOCUMENTÉES (SMA se réinitialise, EMA traverse, ATR recopie, VWAP resservi), RSI golden Wilder 70.5, robustesse non-numérique/fenêtre nulle, longueurs tronquées au min | 0.9.0 | v151 | 2195 | GO |
 
 ## Architecture atteinte
 
