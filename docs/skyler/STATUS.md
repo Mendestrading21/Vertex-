@@ -1495,6 +1495,40 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 170 — livré** : caractérisation de l'UNIVERS
+  `data/universe.py` (324 lignes — données pures : l'univers scanné,
+  la watchlist, les cartographies GICS/industrie ; DERNIER module de
+  la file du périmètre ai/data/strategy/portfolio). 9 tests figent
+  les INVARIANTS DE COHÉRENCE : univers dédupliqué ≥ 400 tickers,
+  LIVE_SYMBOLS == UNIVERSE == INDEX_MEMBERS['union'] (une seule
+  vérité), INDEX_SOURCE ∈ {live, cache, cache-stale, static} ;
+  normalisation yfinance (AUCUN point dans l'univers US ni la
+  watchlist — BRK-B ; les suffixes de place vivent exclusivement
+  dans _EUROPE/_ASIA, toutes suffixées) ; _GICS exactement 11
+  secteurs miroir des 11 ETF ; AUCUN ticker dans deux secteurs ni
+  deux industries, aplatis couvrant exactement les déclarés ;
+  watchlist 57 sans doublon ; TREND_SET == set(_TREND_EXTRA).
+  Aucun code modifié, pas de bump SW.
+  Suite 2319 → 2328 passed / 2 skipped.
+
+### MINI-BILAN tournée 166-170
+
+5 lots, PR #199 → #203, suite 2271 → 2328 passed (+57 tests), SW
+stable v151 (tournée tests pure). Couverts : la couche IA optionnelle
+(briefs — dégradation IA → Google → texte d'origine, jamais un texte
+perdu, clé réelle exigée) ; le copilote d'analyse (chemin Claude
+mocké, réponse étiquetée « estimation, pas une donnée broker »,
+contexte mort → erreur honnête) ; la stratégie options personnalisée
+legacy_adapter (VIVANTE — PUT imposé en régime dangereux, sorties
+±50 %, portefeuille à arithmétique fermée) ; le profil d'entreprise
+(segments curés sommant 100 %, schéma _v force le re-fetch, « jamais
+de page vide ») ; et l'univers (une seule vérité par ticker, une
+seule liste servie au live). La file du périmètre est ÉPUISÉE : tous
+les modules de vertex/engines, market, quant, services, ai, data,
+strategy et portfolio ont désormais des tests directs — plus aucun
+moteur sans caractérisation. Prochaine direction à choisir au lot
+171 (honnêteté des routes, sécurité, options/, research/).
+
 - **Lot 169 — livré** : caractérisation du PROFIL D'ENTREPRISE
   `data/company.py` (340 lignes — cache hebdo + couche curée hors
   ligne + fetch yfinance côté utilisateur ; testé HORS LIGNE,
