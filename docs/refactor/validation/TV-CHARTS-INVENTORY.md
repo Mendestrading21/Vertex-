@@ -69,7 +69,8 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 
 ### Système (system_page.py)
 - ✔ jauge santé (vx-sys-gauge — hérite du C.gauge)
-- ☐ barres de fraîcheur par domaine (staleness)
+- ✔ lot 196 : fraîcheur par domaine — le plus rassis en DOMINANTE
+  (tuile liserée + âge en chip pleine couleur), les autres adoucis
 
 ## Prochains lots proposés
 1. Lot 190 : cône de projection du plan (Analyse) + zones hachurées
