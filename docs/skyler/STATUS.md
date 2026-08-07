@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 231 — livré** : PALETTE DE COMMANDE — le constat
+  comportemental complet d'un composant JAMAIS testé en navigateur
+  (seuls des littéraux de source étaient gardés). Parcours réel en
+  démo : **Ctrl+K** ouvre (input focusé, 11 items en 3 groupes
+  Positions/Pages/Actions — la position réelle ACN du store y figure :
+  le câblage VXEntities est vivant, pas décoratif) ; filtre « march »
+  → 4 items ; **flèches** ↓↓↑ suivies par aria-selected (idx 0→2→1) ;
+  **Échap** ferme ; le clic sur la barre de recherche ouvre aussi
+  (blur→openPalette) ; « archive » + **Entrée** → navigation RÉELLE
+  vers /system?view=archive, palette fermée. 0 erreur console.
+  Constat honnête, aucun code touché, pas de bump.
+  Suite **2486 passed / 2 skipped**.
+
 - **Lot 230 — livré** : MINI-BILAN 226-230. Tranche de 5 lots
   (PR #259 → #263) : suite 2482 → **2486** / 2 skipped (+4), SW
   **v172 STABLE** (0 bump — 5 lots de constat/garde, rien à
