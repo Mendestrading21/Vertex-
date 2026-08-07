@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 229 — livré** : CYCLE DRAWER/MODAL AU CLAVIER — le constat
+  COMPORTEMENTAL qui manquait aux lots 209/210 (eux prouvaient les
+  attributs, celui-ci déroule le vrai parcours). Protocole Playwright
+  sur `/` : clic RÉEL sur Notifications → drawer ouvert (attributs
+  levés, overlay, focus DANS le panneau) → Échap → fermé, attributs
+  reposés, **focus revenu au déclencheur** (vx-notifs-btn) ; modal
+  via le chemin produit VX.shell.openModal → même cycle impeccable ;
+  les DEUX ouverts + UN SEUL Échap → les deux reposent
+  aria-hidden/inert (focus → body : closeAll ne peut pas choisir un
+  déclencheur — limitation connue, pas un défaut). Observation
+  classée : le modal s'ouvre SANS l'overlay partagé — VOULU (son
+  conteneur est plein écran fixed inset:0 ; l'overlay sert au
+  drawer). 0 erreur console. Le retour de focus lastFocus posé au 209
+  est prouvé en conditions réelles. Constat honnête, aucun code
+  touché, pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 228 — livré** : INTÉGRITÉ SKYLER-INDEX ↔ RAPPORTS — la
   mémoire de la boucle vérifiée puis GARDÉE. Mesure : 218 références
   citées dans l'index → **0 morte** (tous les rapports existent) ;
