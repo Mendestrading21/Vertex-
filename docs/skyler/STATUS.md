@@ -1495,6 +1495,11 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 266 — livré** : VEILLE ACTIVE, cycle 3 — état IDENTIQUE aux
+  cycles 1-2 (0 doublon trigger, integration à jour, 0 PR oubliée,
+  arbre propre, suite 2486/2). Rien à toucher, rapport minimal.
+  Smoke-check périodique prévu ~lot 270. Pas de bump.
+
 - **MINI-BILAN 261-265 (lot 265)** : tranche « la boucle atterrit en
   veille ». 261 : CLAUDE_VERTEX_REBUILD.md neutralisé (dernier risque
   documentaire — un ordre de mission périmé pouvait détourner une
