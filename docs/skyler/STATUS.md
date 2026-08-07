@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 233 — livré** : DERNIÈRES VUES À 390px — la couverture
+  responsive navigateur est COMPLÈTE. Les 3 vues jamais balayées
+  (/journal?view=journal, /journal?view=track-record,
+  /intelligence?view=committee) au protocole discriminant, en
+  contexte navigation : **3/3 propres** (0 overflowX, 0 dépassement
+  droit, 0 marqueur malhonnête, 0 erreur console). CAMPAGNE SOLDÉE :
+  8 pages racines (390 au lot 222 + 768 au lot 224) + 6 pages
+  secondaires (223) + 13 vues internes (232 + 233) — tout le produit
+  navigable balayé. Bilan de la campagne : **3 défauts réels trouvés
+  et corrigés** (crumb /tracking 433px, bouton retour /portfolio
+  403px intermittent, ligne de fraîcheur knowledge graph 591px),
+  2 bumps SW justifiés (v172, v173), 0 faux correctif. Constat
+  honnête, aucun code touché, pas de bump.
+  Suite **2486 passed / 2 skipped**.
+
 - **Lot 232 — livré** : VUES INTERNES À 390px — le protocole
   discriminant du 222 appliqué aux 10 vues à onglets JAMAIS balayées
   (opportunités options/anomalies/calendrier, options volatilité/
