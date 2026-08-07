@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 235 — livré** : MINI-BILAN 231-235. Tranche de 5 lots
+  (PR #264 → #268) : suite **2486 / 2 skipped stable**, SW v172 →
+  **v173** (1 seul bump, porté par le seul correctif réel de la
+  tranche). Réalisations : (1) palette de commande prouvée
+  comportementalement — Ctrl+K, filtre, flèches, Entrée navigue,
+  câblage VXEntities vivant (231) ; (2) vues internes 390 balayées,
+  1 débordement réel soldé — .vx-update REPLIE, ellipse refusée sur
+  une info d'honnêteté (232) ; (3) couverture responsive COMPLÈTE :
+  8 racines (390+768) + 6 secondaires + 13 vues — campagne totale
+  3 défauts réels corrigés, 2 bumps justifiés, 0 faux correctif
+  (233) ; (4) menu contextuel prouvé + READONLY vérifié — 0 action
+  d'ordre dans les libellés (234). FAIT MARQUANT : TOUS les
+  composants interactifs du shell sont prouvés en conditions réelles
+  (drawer/modal 229, palette 231, menu 234) — le shell n'est plus
+  supposé correct, il est MESURÉ correct. Doctrine : 4 lots de
+  constat sans code produit, 1 correctif mesuré-minimal-vérifié.
+  Docs seulement, pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 234 — livré** : MENU CONTEXTUEL D'ENTITÉ — le dernier
   composant interactif jamais testé en navigateur, avec vérif
   READONLY explicite. Calibrage instructif : les déclencheurs
