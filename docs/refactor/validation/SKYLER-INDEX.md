@@ -182,6 +182,7 @@
 | 166 | `SKYLER-LOT-166.md` | Caractérisation `ai/briefs.py` (couche IA optionnelle, hors ligne) : 10 tests — clé réelle exigée (placeholder rejeté), repli Google avec cache, désalignement → titres d'origine (fidélité), company_brief → {} propre, fr_label/fr_desc avec ordre de dégradation, jamais un texte perdu | 0.9.0 | v151 | 2281 | GO |
 | 167 | `SKYLER-LOT-167.md` | Caractérisation étendue `ai/copilot.py` (Anthropic mocké) : 8 tests — positions desk cap 20 + stop du snapshot, contexte sans symbole réduit, post-mortem inclus, chemin Claude étiqueté « estimation », texte vide/exception → repli déterministe, contexte mort → erreur honnête sans réponse inventée | 0.9.0 | v151 | 2289 | GO |
 | 168 | `SKYLER-LOT-168.md` | Caractérisation `legacy_adapter.py` (stratégie options perso VIVANTE, 0 test) : 21 tests — bias mots-clés + seuils 60/40, IV bornée, pas de strike, détention 5-45 j, BE call/put, sorties ±50 %, scénarios ordonnés, PUT imposé en régime dangereux, portefeuille cœur/satellites à arithmétique fermée | 0.9.0 | v151 | 2310 | GO |
+| 169 | `SKYLER-LOT-169.md` | Caractérisation `data/company.py` (profil hebdo, hors ligne) : 9 tests — segments curés somment 100 %, démo → couche curée + stale signalé, inconnu → squelette honnête, ordre cache/fetch/curé + schéma _v force refetch, peers même industrie, médianes seuil 3/PE<250/memo même vide | 0.9.0 | v151 | 2319 | GO |
 
 ## Architecture atteinte
 
