@@ -1495,6 +1495,41 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 180 — livré** : caractérisation des DONNÉES ANALYSTES
+  PROFONDES `vertex/data_sources/analyst_deep.py` (226 lignes, ZÉRO
+  test, servi par la fiche titre — scheduler/live_stream déjà
+  couverts lots 109/99, traces/logging dormants sans appelant :
+  écartés à dessein). 10 tests HORS LIGNE (faux ticker pandas, faux
+  yfinance injecté dans sys.modules, cache isolé) figent : le NaN
+  écarté (jamais un chiffre fantôme) ; les révisions BPA (net30 +
+  tendance, repli '0y' → '0q') ; les surprises (le trimestre À VENIR
+  séparé en `next`, beats 2/3 + moyenne 5.6 exacte) ; les notes
+  d'analystes (récentes d'abord, cap 6, firm bornée 40) ; les
+  initiés (solde + biais, non classable → None) ; et la politique de
+  cache — cache FRAIS servi sans AUCUN appel réseau (faux yfinance
+  qui explose si touché : prouvé), yfinance mort → le cache PÉRIMÉ
+  servi plutôt que rien, échec TOTAL jamais persisté. Aucun code
+  modifié, pas de bump SW. Suite 2406 → 2416 passed / 2 skipped.
+
+### MINI-BILAN tournée 176-180 — « surfaces de sécurité »
+
+5 lots, PR #209 → #213, suite 2375 → 2416 passed (+41 tests), SW
+stable v151 (tournée tests pure). Après la clôture des routes
+(lot 176 : funnel fail-honest, copilot jamais une 500, live
+parsing), la tranche a durci les surfaces de sécurité : le gardien
+XSS DE BOUT EN BOUT (lot 177 — payload injecté dans les états,
+neutralisé à CHAQUE sortie HTTP, + gardien statique ≥ 6 sites
+sanitize_news) ; le filet du desk (lot 178 — snapshot quotidien
+jamais réécrit, rotation 7, restore anti-traversal, ts neuf qui
+gagne le LWW) ; l'observabilité bornée en mémoire (lot 179 —
+percentiles exacts, anneau 200, timer qui propage) ; et les données
+analystes (lot 180 — périmé plutôt que rien, échec jamais caché,
+zéro réseau prouvé). Constats honnêtes en série : auth.py (15
+tests), webhook TradingView (12), config (secrets jamais renvoyés,
+lot 111), startup (lot 105), client-log (lot 94) étaient DÉJÀ
+blindés — les surfaces de sécurité du produit sont désormais toutes
+gardées par des tests. Prochaine direction au survey du lot 181.
+
 - **Lot 179 — livré** : caractérisation de l'OBSERVABILITÉ du
   Strategy OS (§37) — `vertex/observability/metrics.py` (ZÉRO test
   direct) et les sections de `diagnostics.py` (le webhook TradingView,
