@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 238 — livré** : LIENS .md DANS docs/ HORS VALIDATION — la
+  piste proposée cinq fois, enfin prise. 94 fichiers .md balayés
+  (validation/ exclu — déjà gardé au lot 228) : 1 lien markdown
+  formel → valide ; 162 mentions backticks → 17 signalées par
+  l'heuristique de chemin, puis CHAQUE signalement vérifié par
+  recherche du nom dans tout le dépôt : 14 fichiers EXISTANTS
+  ailleurs (docs/refactor/, docs/release/,
+  .claude/skills/vertex-skyler-v2/references/, .claude/FRAMEWORK.md)
+  et 3 gabarits/raccourcis de prose (placeholder SKYLER-LOT-XX,
+  plage « 08A.md à 08E.md »). **0 référence réellement morte** — pas
+  un seul « mort » déclaré sur la foi d'une heuristique de chemin.
+  Gardien non pertinent ici (les mentions par nom seul sont un usage
+  légitime ; la zone à risque est gardée depuis le 228). Constat
+  honnête, aucun code touché, pas de bump.
+  Suite **2486 passed / 2 skipped**.
+
 - **Lot 237 — livré** : SERVICE WORKER v173 VÉRIFIÉ EN NAVIGATEUR
   RÉEL — le SW est bumpé et gardé depuis 173 versions mais son
   comportement n'avait JAMAIS été vérifié en vrai (littéraux de
