@@ -176,6 +176,7 @@
 | 160 | `SKYLER-LOT-160.md` | Caractérisation famille RISQUE portefeuille : `correlation.py` + `stress_tests.py` (0 test, servis par risk_engine et strategy_os) : 11 tests — bornes ±1, gardes 30 pts/variance nulle, seuils 0.8/0.7, bêta inconnu = 1.0 documenté, cash protège CORRELATIONS_TO_ONE, taux inconnus → None, stress refusés sans équité, alerte drawdown + MINI-BILAN 156-160 | 0.9.0 | v151 | 2230 | GO |
 | 161 | `SKYLER-LOT-161.md` | Caractérisation `data/constituents.py` (univers au démarrage, 0 test) : 9 tests sans réseau — normalisation BRK.B→BRK-B, filtrage/dédup, intégrité du snapshot statique, ORDRE DE RÉSOLUTION cache→live→cache-stale→static (démarrage jamais bloqué, repli par indice), garde-fou parsing 400/80/25 | 0.9.0 | v151 | 2239 | GO |
 | 162 | `SKYLER-LOT-162.md` | Caractérisation trio `ai/audit.py` + `ai/strategy_context.py` + `portfolio/team_roles.py` (0 test) : 8 tests — journal borné 200/erreurs tronquées 5, contrat du contexte + 4 rappels d'invariants READONLY figés mot pour mot, rôles cohérents avec ROLE_TARGETS | 0.9.0 | v151 | 2247 | GO |
+| 163 | `SKYLER-LOT-163.md` | Caractérisation `factor_exposure.py` + `replacement_engine.py` (0 test, research/ monkeypatché) : 8 tests — pondération poids réels, couverture partielle signalée, value None jamais 0, remplacement = proposition avec décision humaine requise, pool global si rôle vide + VÉRIF legacy : les deux VIVANTS (3 et 2 appelants) | 0.9.0 | v151 | 2255 | GO |
 
 ## Architecture atteinte
 

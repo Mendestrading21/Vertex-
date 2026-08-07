@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 163 — livré** : caractérisation de l'EXPOSITION FACTORIELLE
+  `factor_exposure.py` et du MOTEUR DE REMPLACEMENT
+  `replacement_engine.py` (§25, zéro-test, dépendances research/
+  monkeypatchées) + VÉRIFICATION DE VIE des deux legacy : TOUS
+  DEUX VIVANTS (legacy_basket_risk → analysis_api + command +
+  risk_engine ; legacy_adapter → command + terminal) — aucun code
+  mort à signaler, candidats à caractérisation future. 8 tests
+  figent : la pondération par les poids RÉELS (1.5 exact), la
+  couverture partielle SIGNALÉE (« exposition indicative »),
+  value None sans donnée (jamais un zéro inventé), les 10 facteurs
+  toujours présents ; côté remplacement : place disponible → rien,
+  bloqué → la plus faible du rôle avec « décision humaine
+  requise » (jamais une exécution), candidat moins bon →
+  « déconseillé », rôle sans membre → pool global documenté, sans
+  scores → départage au défaut 50 mais score affiché None. Aucun
+  code modifié, pas de bump SW. Suite 2247 → 2255 passed /
+  2 skipped.
 - **Lot 162 — livré** : caractérisation du TRIO zéro-test —
   `ai/audit.py` (journal des appels IA servi par strategy_os),
   `ai/strategy_context.py` (contexte injecté dans chaque analyse
