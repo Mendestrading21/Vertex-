@@ -286,6 +286,7 @@
 | 266 | `SKYLER-LOT-266.md` | VEILLE ACTIVE, cycle 3 — état IDENTIQUE aux cycles 1-2 : 0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2 ; rien à toucher, rapport minimal. Smoke-check périodique prévu ~lot 270. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
 | 267 | `SKYLER-LOT-267.md` | VEILLE ACTIVE, cycle 4 — état IDENTIQUE aux cycles 1-3 : 0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2 ; rien à toucher, rapport minimal. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
 | 268 | `SKYLER-LOT-268.md` | VEILLE ACTIVE, cycle 5 — état IDENTIQUE aux cycles 1-4 : 0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2 ; rien à toucher, rapport minimal. Smoke-check complet dans 2 lots (~270). Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
+| 269 | `SKYLER-LOT-269.md` | VEILLE ACTIVE, cycle 6 — état IDENTIQUE aux cycles 1-5 : 0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2 ; rien à toucher, rapport minimal. Prochain lot (270) : smoke-check périodique COMPLET + mini-bilan 266-270. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
 
 ## Architecture atteinte
 
