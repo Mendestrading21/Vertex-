@@ -1495,6 +1495,17 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 280 — livré** : ÉCHÉANCE PÉRIODIQUE honorée — SMOKE-CHECK
+  complet SAIN (protocole lot 251 : 8 pages × HTTP 200, 0 erreur
+  console/pageerror, client-log count:0, healthz ok) avec des valeurs
+  STRICTEMENT identiques au lot 270 — trois mesures périodiques
+  (251, 270, 280), trois résultats identiques : la base intégrée est
+  STABLE. + MINI-BILAN 276-280 : 4 cycles de veille (276-279,
+  rapports minimaux, 0 travail fabriqué) + cette échéance ; défauts
+  produit 0 (48 lots depuis le 232) ; code produit 0 ligne (35 lots,
+  246-280) ; suite 2486/2 ; SW v173 ; 5 PR (#309→#313). Prochaine
+  échéance périodique ~lot 290. Pas de bump.
+
 - **Lot 279 — livré** : VEILLE ACTIVE — état identique (0 doublon
   trigger, integration à jour, 0 PR oubliée, arbre propre, suite
   2486/2). Rien à toucher, rapport minimal. Prochain lot (280) :
