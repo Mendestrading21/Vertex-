@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 156 — livré** : caractérisation de la STRUCTURE PAR PIVOTS
+  `pivots.py` (124 lignes, ratio 0.65 — structure() appelée par
+  analysis.py : sommets/creux fractals, tendance, logique d'entrée,
+  stop STRUCTUREL du plan). 8 tests figent, chacun par un zigzag
+  déterministe : les 5 signaux — EN_TENDANCE (milieu de mouvement →
+  pas d'entrée), REFUS_DOWNTREND (rebond en baisse = piège, aucun
+  niveau émis), RANGE (cassure confirmée exigée), BREAKOUT
+  (franchissement RÉCENT ≤ 1.2 ATR anti-chasse → stop sous le
+  dernier creux, cible = extension measured-move, rr cohérent),
+  REPLI_REPRIS (repli ≤ 1.8 ATR sur le creux PUIS reprise → cible
+  le sommet) ; les gardes (série courte / entrée invalide → None) ;
+  le repli ATR à 1 % du cours (jamais de ÷0) ; le contrat 16 clés
+  avec fenêtres swing bornées à 4. Aucun code modifié, pas de bump
+  SW. Suite 2178 → 2186 passed / 2 skipped.
 - **Lot 155 — livré** : caractérisation du BRIEF ÉDITORIAL
   `editorial.py` (202 lignes, ratio 0.34 — le narratif de séance
   §10 en tête d'Aujourd'hui ; scoring.py écarté car déjà couvert
