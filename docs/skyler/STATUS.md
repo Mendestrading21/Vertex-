@@ -1495,6 +1495,14 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 251 — livré** : SMOKE-CHECK santé post-tranche en conditions
+  réelles. Après les 5 merges docs-only (246-250), re-mesure en vrai
+  navigateur (serveur DEMO, Playwright 1440×900, écoute console +
+  pageerror) : **8 pages racines × HTTP 200, 0 erreur console,
+  /api/client-log count:0, healthz ok** (8 moteurs, scan démo 20/517).
+  Verdict SAIN → 0 changement de code. Docs seulement, pas de bump.
+  Suite **2486 passed / 2 skipped**.
+
 - **MINI-BILAN 246-250 (lot 250)** : tranche « du prouver au préparer
   la décision ». 246 : 4e parcours métier (journalisation d'une
   décision d'un trait, écriture réelle prouvée) ; 247 : grande synthèse
