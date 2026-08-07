@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 149 — livré** : caractérisation du PRISME MARCHÉ
+  `market_lens.py` (77 lignes — source unique du score marché /100,
+  servie par feeds/decision_api/command) + `stats.py` (Spearman de
+  l'edge, médianes secteur). 13 tests figent : les bornes EXACTES
+  des bandes du climat (FAVORABLE ≥62, DANGEREUX <40) avec une
+  DIVERGENCE réelle documentée (même formule que le tilt
+  strategy_fit mais seuil 62 ici contre 65 là-bas) ; climat sur
+  None ET {} → None (pas de climat inventé) ; le tiers supérieur
+  porteur (n=2 → seul le rang 1) ; le score de secteur non
+  numérique classé dernier avec avg_score None honnête ; la
+  frontière titre fort à 70 STRICTE ; « 2 verts dont le titre » →
+  partiellement aligné (pas contre-courant) ; la frontière Spearman
+  8 points ; une LIMITE documentée — rangs ordinaux sans rangs
+  fractionnaires : une série constante « corrèle » à 1.0
+  (pathologique en réel, la changer = décision explicite) ; les
+  bornes strictes 0 < PE < 250 et l'exclusion des secteurs sans
+  valorisation. Aucun code modifié, pas de bump SW.
+  Suite 2077 → 2090 passed / 2 skipped.
 - **Lot 148 — livré** : caractérisation étendue du POST-MORTEM du
   Journal `postmortem.py` (151 lignes, ratio 0.61 — fonction pure
   servie par /api/journal/postmortem, affichée dans

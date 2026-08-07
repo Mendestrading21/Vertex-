@@ -162,6 +162,7 @@
 | 146 | `SKYLER-LOT-146.md` | Caractérisation étendue `analysis.py` (cœur analytique — couverture la plus mince, ratio 0.19) : 17 tests — robustesse sans Volume/historique court, profils DÉFENSIF/ÉQUILIBRÉ, radar d'anomalies + formule figée, cassure/CHOP, invariants du plan 1R/2R/3R, score == clamp(base+struct_adj) | 0.9.0 | v151 | 2050 | GO |
 | 147 | `SKYLER-LOT-147.md` | Caractérisation étendue `strategy_fit.py` (couche stratégie source unique, ratio 0.35) : 17 tests — AU CHOIX/IV chère, défauts exacts du strat_score (50/22/0), priorité des 6 playbooks + limite Socle défensif documentée, meilleur CALL (PUT ignoré), rr_ok ≥2 strict, 3 bandes du tilt à l'arithmétique exacte | 0.9.0 | v151 | 2067 | GO |
 | 148 | `SKYLER-LOT-148.md` | Caractérisation étendue `postmortem.py` (Journal/Discipline, ratio 0.61) : 10 tests — bool rejeté par _num, break-even classé perte, PF None (jamais ∞), drapeau wr élevé/P&L négatif, récidives triées, dates abs/None exclues, 8 dernières erreurs à 140 car., contrat plein/vide identique | 0.9.0 | v151 | 2077 | GO |
+| 149 | `SKYLER-LOT-149.md` | Caractérisation `market_lens.py` (source unique score marché, 3 routes) + `stats.py` : 13 tests — bornes exactes 62/40 (divergence vs tilt 65 documentée), climat {} → None, tiers porteur, frontière titre 70 stricte, Spearman 8 pts + limite série constante 1.0 documentée, bornes PE strictes | 0.9.0 | v151 | 2090 | GO |
 
 ## Architecture atteinte
 
