@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 297 — livré** : LOT PRODUIT — HONNÊTETÉ des 18 vues
+  profondes. Sondeur du lot 296 étendu (étiquette démo, .vx-update,
+  chasse aux revendications « réel » en DEMO) : ~30 occurrences
+  triées, presque toutes légitimes. UN défaut de la même classe que
+  le 296 : /portfolio?view=risk affichait « risk_engine (positions
+  réelles) · Live » en plein DEMO — le mode « live » était codé EN
+  DUR (portfolio_page.py L801) alors que les 4 cartes jumelles
+  suivent window.__pfLive. Corrigé (live/fallback selon
+  /api/pos-quotes) ; « positions réelles » conservé (vocabulaire
+  établi : positions déclarées vs candidats du scanner). Gardien
+  neuf test_risk_footer_mode_lot297 (2 tests — plus aucun ,'live')
+  en dur dans la page). Preuves : « Secours » affiché en DEMO
+  (__pfLive:false), 0 erreur, capture envoyée. Bump SW v183 → v184
+  + 5 gardiens. Suite **2510 passed / 2 skipped (+2)**. É1 : GO
+  acquis, toujours en attente de déblocage permissions.
+
 - **Lot 296 — livré** : LOT PRODUIT — HONNÊTETÉ des données. Audit
   des lignes source/fraîcheur des 8 pages en DEMO : étiquette démo
   visible partout, toutes les lignes .vx-update renseignées, 0

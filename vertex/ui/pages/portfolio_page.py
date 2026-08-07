@@ -798,7 +798,7 @@ async function renderRisk(){
         ${Object.entries(stress).map(([k,v])=>`<tr><td>${k}</td>
           <td class="vx-num ${v.impact_pct!=null?(v.impact_pct<0?'vx-neg':v.impact_pct>0?'vx-pos':''):''}">${v.impact_pct!==null&&v.impact_pct!==undefined?VX.fmt.pct(v.impact_pct,1):'non estimé'}</td>
           <td class="vx-meta">${esc(v.note||'')}</td></tr>`).join('')}</tbody></table></div>
-        <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'risk_engine (positions réelles)','live')}
+        <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'risk_engine (positions réelles)',window.__pfLive?'live':'fallback')}
         ${(risk.warnings||[]).length?'· '+risk.warnings.length+' avertissement(s)':''}</div></section></div>`;
     try{
       var _hhi=(risk.hhi!=null)?Math.round(risk.hhi*100):null;
