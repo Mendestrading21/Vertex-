@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 148 — livré** : caractérisation étendue du POST-MORTEM du
+  Journal `postmortem.py` (151 lignes, ratio 0.61 — fonction pure
+  servie par /api/journal/postmortem, affichée dans
+  Journal/Discipline). 10 tests figent : la coercition numérique
+  (cost=True REJETÉ — bool est un int, un flag ne devient jamais
+  un coût ; chaînes numériques OK ; inf/0/négatif inexploitables) ;
+  deux limites DOCUMENTÉES — break-even classé PERTE (win_rate 0,
+  PF None sans ÷0) et échantillon 100 % gagnant → PF None (indéfini
+  honnête, PAS infini) avec narrative sans phrase PF ; le drapeau
+  « win rate élevé mais P&L négatif » ; les récidives triées par
+  nombre de pertes décroissant ; les dates inversées (abs) et non
+  parsables (None exclu de la moyenne — pas de 0 inventé) ; les 8
+  dernières erreurs du journal tronquées à 140 ; le contrat de
+  sortie identique plein/vide avec generator déterministe. Aucun
+  code modifié, pas de bump SW. Suite 2067 → 2077 passed / 2
+  skipped.
 - **Lot 147 — livré** : caractérisation étendue de la COUCHE
   STRATÉGIE `strategy_fit.py` (161 lignes, ratio 0.35 — source
   unique : terminal.py délègue vehicle_of / attach_vehicle /
