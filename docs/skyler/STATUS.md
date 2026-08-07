@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 158 — livré** : caractérisation de la RÈGLE DE FRAÎCHEUR du
+  LIVE ENGINE `live_engine.py` (258 lignes — le moteur de
+  synchronisation dont dépendent toutes les pages ; les 13 tests
+  existants couvrent les flux, ce lot fige les BORNES de la partie
+  pure). 19 tests : les bornes STRICTES des 7 domaines (à la borne
+  exacte on bascule déjà — age == frais → stale, age == rassis →
+  offline ; seuils figés : prices 5 min/30 min, options 1 h/6 h,
+  companies 48 h/8 j, news 2 h/12 h, calendar 1 j/4 j, weekly
+  8 j/15 j, ai 5 min/30 min) ; les défauts du domaine inconnu
+  (600/3600) ; les bascules de libellés EXACTES (59s → « 59s »,
+  60 → « 1 min », 3600 → « 1 h », 86400 → « 1 j ») ; l'âge None →
+  « jamais synchronisé » honnête ; le forçage de cycle (wait_force
+  réveillé → True et l'événement CONSOMMÉ ; force_event rend le
+  même objet par domaine). Aucun code modifié, pas de bump SW.
+  Suite 2195 → 2214 passed / 2 skipped.
 - **Lot 157 — livré** : caractérisation des INDICATEURS TECHNIQUES
   purs `market/indicators.py` (155 lignes, §12 — SMA/EMA/RSI/ATR/
   Bollinger/VWAP sans pandas ; seules les LACUNES des 11 tests
