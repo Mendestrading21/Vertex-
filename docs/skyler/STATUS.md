@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 152 — livré** : caractérisation combinée de la ROTATION
+  SECTORIELLE `sectors.py` (83 lignes, 0 test — servie par le
+  comité et la fiche Analyse) et de la CALIBRATION ML
+  `ml_calibration.py` (92 lignes, 0 test — probabilité de gain
+  consommée par quant_engine). 13 tests figent : agrégats exacts
+  (avg_score, pct_buy, breadth depuis les signaux), tri décroissant,
+  symbole hors mapping exclu, bornes risk_band exactes (<3 Low,
+  3-5 Med, >5 High), delta vs veille (scores None ignorés, sans
+  baseline → None), défauts neutres sans détail moteur ; côté ML :
+  point NEUTRE edge 54 → 0.500, calibration annoncée figée
+  (86 → 0.736, 30 → 0.317), bornes HUMBLES [0.05, 0.85] (jamais
+  une promesse), ajustement Monte-Carlo first-touch, et deux
+  limites documentées — bloc None → proba neutre 0.468 mais edge
+  NON NUMÉRIQUE → prédiction entière None (pas de repli partiel).
+  Aucun code modifié, pas de bump SW. Suite 2113 → 2126 passed /
+  2 skipped.
 - **Lot 151 — livré** : NOUVELLE DIRECTION — modules minces HORS
   engines/. Inventaire par ratio : six modules à ZÉRO test direct
   (market/context, news_impact, news_pipeline, regime_features,

@@ -165,6 +165,7 @@
 | 149 | `SKYLER-LOT-149.md` | Caractérisation `market_lens.py` (source unique score marché, 3 routes) + `stats.py` : 13 tests — bornes exactes 62/40 (divergence vs tilt 65 documentée), climat {} → None, tiers porteur, frontière titre 70 stricte, Spearman 8 pts + limite série constante 1.0 documentée, bornes PE strictes | 0.9.0 | v151 | 2090 | GO |
 | 150 | `SKYLER-LOT-150.md` | Caractérisation `session_digest.py` (digest /api/session/digest, dernier de la file des minces) : 8 tests — RISK-ON+CHOP→NEUTRE, RISK-OFF prioritaire, score branché market_lens, dte bool/texte ignorés, âge jamais fantôme, top borné à 3, contrat stable + MINI-BILAN 146-150 | 0.9.0 | v151 | 2098 | GO |
 | 151 | `SKYLER-LOT-151.md` | Caractérisation `regime_features.py` (cerveau physique, 0 test — modifie le score Vertex) : 15 tests — Hurst persistant/anti + limite droite pure sans exposant, entropie 0/[0,1], efficience 1.0/0.0/None, demi-vie OU (tendance → None), états TF/RM/NEUTRE, score_adjust exact (+7/-9 extrêmes réels) | 0.9.0 | v151 | 2113 | GO |
+| 152 | `SKYLER-LOT-152.md` | Caractérisation `sectors.py` (rotation, comité+Analyse) + `ml_calibration.py` (proba de gain, quant_engine) : 13 tests — agrégats exacts, risk_band 3/5, delta veille, défauts neutres ; point neutre edge 54 → 0.5, calibration 86→0.736/30→0.317, bornes humbles [0.05, 0.85], limites None/edge illisible | 0.9.0 | v151 | 2126 | GO |
 
 ## Architecture atteinte
 
