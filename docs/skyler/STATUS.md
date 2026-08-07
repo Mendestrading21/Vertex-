@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 291 — livré** : LOT PRODUIT — la palette se ferme d'un TAP
+  SUR LE FOND. Les lots 288/289 avaient soigné l'entrée tactile ; le
+  calibrage de la SORTIE a montré un piège : `.vx-palette` plein
+  écran ne se fermait que par Échap (inexistant au tactile) ou en
+  choisissant un item — le clic vx-overlay ferme aussi mais cet
+  overlay n'est jamais affiché pour la palette. Correctif standard :
+  `e.target===palette → close` dans vx-shell.js. Gardien neuf
+  test_palette_backdrop_close_lot291 (2 tests). Preuves 390 tactile
+  + 1440 : ouverture → tap fond → fermée → réouverture → tap item →
+  fermée ; 0 erreur, 0 débordement, capture envoyée. Bump SW
+  v178 → v179 + 5 gardiens. Suite **2500 passed / 2 skipped (+2)**.
+  É1 : GO acquis, toujours en attente de déblocage permissions.
+
 - **Lot 290 — livré** : ÉCHÉANCE PÉRIODIQUE — smoke-check complet
   SAIN (4e mesure, protocole lot 251) : 8 pages × HTTP 200, 0 erreur
   console/pageerror, client-log count:0, healthz ok. 7 tailles sur 8
