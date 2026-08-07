@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 262 — livré** : CONSTAT D'ÉTAT — les pistes autonomes sont
+  ÉPUISÉES (produit mesuré correct depuis le lot 232, invariants tous
+  audités, 6 .md racine sains, baseline perf posée, dossier de purge
+  complet et exécutable) → la boucle passe en **VEILLE ACTIVE** :
+  entretien espacé, constats courts, toute directive exécutée
+  immédiatement. Mesure du lot (jamais faite) : **303 branches
+  distantes**, dont 266 `agent/skyler-v2-lot-*` fusionnées squash +
+  11 rc-periodique = **277 branches mortes sûres à supprimer** (leur
+  contenu vit dans integration et les PR #1→#294) — nettoyage
+  PROPOSÉ, PAS exécuté (action de masse sur l'infra partagée →
+  déclenchable sur demande : « Nettoie les branches de lots »).
+  Vérifications légères : 1 seul trigger actif (0 doublon),
+  integration à jour, aucune PR ouverte oubliée. Docs seulement, pas
+  de bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 261 — livré** : CLAUDE_VERTEX_REBUILD.md NEUTRALISÉ. Le
   dernier .md racine non audité n'était pas une doc d'accueil mais un
   ORDRE DE MISSION pour Claude datant de l'ère Total Rebuild, resté
