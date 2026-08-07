@@ -652,10 +652,18 @@ async function loadSkylerRank(){
       ${VX.states.empty(esc((d.reason||'classement indisponible')+'.'))}`;
   }else{
     const tone=x=>x==='ACHETER'||x==='RENFORCER'?'pos':x==='REFUSER'||x==='REDUIRE'?'neg':'neutral';
+    /* LOT 136 : le score canonique /40 gagne sa mini-barre de verre graduee
+       (patron lot 135) — >= 28 positive, 16-27 warning, < 16 negative. */
+    const skBar=(v)=>{const n=Number(v);if(!isFinite(n))return '<b>—</b>/40';
+      const tok=n>=28?'var(--vx-positive,#2BBE90)':n>=16?'var(--vx-warning,#D9BE3C)':'var(--vx-negative,#E9555F)';
+      return '<span style="display:inline-flex;align-items:center;gap:6px">'
+        +'<span style="width:48px;height:7px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block">'
+        +'<span style="display:block;height:100%;width:'+Math.max(4,Math.min(100,n/40*100)).toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:3px"></span></span>'
+        +'<span><b>'+n+'</b>/40</span></span>';};
     const rows=(d.rows||[]).map(r=>`<tr>
       <td data-label="Titre"><button class="vx-link" data-open-analysis="${esc(r.symbol)}"><b>${esc(r.symbol)}</b></button></td>
       <td data-label="Décision"><span class="vx-badge" data-tone="${tone(r.decision)}">${esc(r.decision||'—')}</span></td>
-      <td data-label="Score" class="vx-num"><b>${r.score_total??'—'}</b>/40</td>
+      <td data-label="Score" class="vx-num">${skBar(r.score_total)}</td>
       <td data-label="Niveau">${esc(r.level||'—')}</td>
       <td data-label="Gate">${r.capped_by_gate?'<span class="vx-neg" title="décision plafonnée par cette porte">✕ '+esc(r.capped_by_gate)+'</span>':'<span class="vx-muted">—</span>'}</td>
       <td data-label="Catalyseur">${esc(r.catalyst||'—')}</td>

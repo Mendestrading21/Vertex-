@@ -544,8 +544,14 @@
 .vx-content[data-space="opportunities"] .vx-op-cmp td.metric{color:var(--vx-text-secondary);font-size:12.5px}
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell{display:flex;align-items:center;gap:8px}
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell .rail{flex:1;height:6px;border-radius:4px;background:rgba(0,0,0,.35);overflow:hidden;min-width:40px}
-.vx-content[data-space="opportunities"] .vx-op-cmp-cell .rail i{display:block;height:100%;border-radius:4px;background:var(--vx-warm-grey)}
-.vx-content[data-space="opportunities"] .vx-op-cmp-cell.win .rail i{background:var(--vx-ember-500)}
+/* LOT 136 : matière verre — chaque barre est un dégradé de sa propre couleur
+   (doux au départ → dense à la valeur, patron des lots 130-135) et le
+   MEILLEUR du critère gagne un halo doux : le gagnant se voit sans lire. */
+.vx-content[data-space="opportunities"] .vx-op-cmp-cell .rail i{display:block;height:100%;border-radius:4px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--vx-warm-grey) 40%,transparent),var(--vx-warm-grey))}
+.vx-content[data-space="opportunities"] .vx-op-cmp-cell.win .rail i{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--vx-ember-500) 40%,transparent),var(--vx-ember-500));
+  box-shadow:0 0 6px color-mix(in srgb,var(--vx-ember-500) 45%,transparent)}
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell .n{font-size:12px;font-weight:700;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell.win .n{color:var(--vx-ember-400)}
 .vx-content[data-space="opportunities"] .vx-op-cmp col.best,
