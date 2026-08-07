@@ -173,6 +173,7 @@
 | 157 | `SKYLER-LOT-157.md` | Caractérisation `market/indicators.py` (SMA/EMA/RSI/ATR/Bollinger/VWAP purs §12) : 9 tests — asymétries de trous DOCUMENTÉES (SMA se réinitialise, EMA traverse, ATR recopie, VWAP resservi), RSI golden Wilder 70.5, robustesse non-numérique/fenêtre nulle, longueurs tronquées au min | 0.9.0 | v151 | 2195 | GO |
 | 158 | `SKYLER-LOT-158.md` | Caractérisation `live_engine.py` (règle unique de fraîcheur du Sync Center) : 19 tests — bornes STRICTES des 7 domaines (à la borne on bascule déjà), défauts domaine inconnu, bascules de libellés s/min/h/j, âge None honnête, wait_force consommé + Event partagé | 0.9.0 | v151 | 2214 | GO |
 | 159 | `SKYLER-LOT-159.md` | Complément `market_clock.py` (5 tests — borne 4h00, vendredi soir, format ET, limite jours fériés DOCUMENTÉE) + INVENTAIRE du périmètre ai/data/strategy/portfolio : 11 modules zéro-test découverts, famille risque portefeuille priorisée | 0.9.0 | v151 | 2219 | GO |
+| 160 | `SKYLER-LOT-160.md` | Caractérisation famille RISQUE portefeuille : `correlation.py` + `stress_tests.py` (0 test, servis par risk_engine et strategy_os) : 11 tests — bornes ±1, gardes 30 pts/variance nulle, seuils 0.8/0.7, bêta inconnu = 1.0 documenté, cash protège CORRELATIONS_TO_ONE, taux inconnus → None, stress refusés sans équité, alerte drawdown + MINI-BILAN 156-160 | 0.9.0 | v151 | 2230 | GO |
 
 ## Architecture atteinte
 
