@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **MINI-BILAN 246-250 (lot 250)** : tranche « du prouver au préparer
+  la décision ». 246 : 4e parcours métier (journalisation d'une
+  décision d'un trait, écriture réelle prouvée) ; 247 : grande synthèse
+  de la campagne 214-246 (produit MESURÉ correct) ; 248 : dossier de
+  décision de purge (21 fonctions héritées / 0 routée / 21 orphelines) ;
+  249 : chiffrage outillé É2 (fourchette 31,4-48,7 % de terminal.py
+  mort, outil commité, 2 pièges gravés) ; 250 : ce bilan. **0 ligne de
+  code produit touchée sur les 5 lots** — le produit est prouvé et la
+  règle « jamais de changement gratuit » a tenu. Suite 2486/2 et SW
+  v173 inchangés ; 5 PR (#279→#283) ; 3 faux positifs d'outils
+  attrapés avant conclusion. État honnête : les pistes autonomes
+  s'amincissent ; le seul gros chantier restant (purge chiffrée) est
+  bloqué PAR CONCEPTION sur « GO purge étape 1 » — la boucle continue
+  en entretien utile sans fabriquer du travail.
+
 - **Lot 249 — livré** : CHIFFRAGE OUTILLÉ de l'Étape 2 de la purge —
   **AUCUNE purge**, l'estimation « 25-30 % » du dossier devient une
   FOURCHETTE MESURÉE. Outil commité (`docs/refactor/validation/tools/
