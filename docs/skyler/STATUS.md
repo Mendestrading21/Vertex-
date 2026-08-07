@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 228 — livré** : INTÉGRITÉ SKYLER-INDEX ↔ RAPPORTS — la
+  mémoire de la boucle vérifiée puis GARDÉE. Mesure : 218 références
+  citées dans l'index → **0 morte** (tous les rapports existent) ;
+  231 rapports sur disque → 13 sans ligne d'index = les lots 01-09
+  (batch correctness pré-Institutional+), hors champ PAR CONSTRUCTION
+  (l'index commence au lot 10, STATUS retrace le début) — mais ce
+  périmètre n'était écrit nulle part. Livré : (1) périmètre documenté
+  dans l'en-tête de l'index ; (2) gardien
+  test_skyler_index_integrity_lot228 (4 tests — références mortes
+  cassent la suite, rapports orphelins cassent la suite (exemption
+  01-09 bornée par regex), périmètre documenté, anti-vide ≥ 200
+  références réellement vérifiées). Le rituel « rapport + ligne
+  d'index à chaque lot » n'est plus une habitude : c'est un invariant
+  TESTÉ. Docs/tests seulement, pas de bump. (Lot repris proprement
+  après un redémarrage du worker en début d'exécution.)
+  Suite **2486 passed / 2 skipped** (2482 + 4).
+
 - **Lot 227 — livré** : DETTE TODO + PERF SERVEUR — double constat
   mesuré, 0 défaut. (1) Balayage TODO/FIXME/XXX/HACK (mot entier) sur
   TOUT le code produit (terminal.py + vertex/** py/js/css, vendor

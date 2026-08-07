@@ -1,5 +1,9 @@
 # SKYLER V2 — INDEX DES LOTS INSTITUTIONAL+ ET DU TRAVAIL CONTINU
 
+> Périmètre : lots **10 et suivants**. Les rapports antérieurs
+> (`SKYLER-LOT-01` → `09`, batch correctness pré-Institutional+) vivent
+> dans ce même dossier et sont retracés par `docs/skyler/STATUS.md` —
+> ils n'ont pas de ligne ici, par construction (gardien lot 228).  
 > Branche d'intégration : `integration/vertex-skyler-v2` · `main` jamais touchée.  
 > Chaque lot : tests rouges d'abord → moteur → suite complète verte → rapport → PR fusionnée.  
 > Historique des versions de moteur : chaque changement de règle = bump ; les décisions figées restent liées à leur version (jamais recalculées).
@@ -241,6 +245,7 @@
 | 225 | `SKYLER-LOT-225.md` | MINI-BILAN 221-225 (5 lots, PR #254→#258, suite 2482 stable, SW v171→v172 — 1 seul bump porté par le SEUL correctif réel) : le balayage NAVIGATEUR systématique du produit est SOLDÉ — liens 31×200 + 177 boutons câblés (221) ; 2 débordements RÉELS du topbar mobile trouvés et soldés, crumb 433px + bouton retour 403px intermittent → ellipse ≤768px (222) ; secondaires 390 en navigation 6 pages 0 défaut (223) ; tablette 768 au point de rupture exact 8 pages 0 défaut (224). Doctrine tenue : 4 lots sans code produit, dits honnêtement ; le seul correctif mesuré, minimal, vérifié en contexte défaillant rejoué. Docs seulement, pas de bump | 0.9.0 | v172 | 2482 | GO |
 | 226 | `SKYLER-LOT-226.md` | BUDGETS JS/CSS STATIQUES (piste enfin prise) : gardien lot 72 VERT, aucune violation — mais dérive réelle mesurée et documentée : chart-core.js 39→57,2 kB (+18 kB, coût légitime de la tournée TV 189-213) = 89 % du budget 64 kB, marge restante 6,8 kB ; neon-glass.css 47 kB (73 %) ; vendor 160 kB toujours isolé sur /analysis. Contre-vérité corrigée : le commentaire de calibration du gardien disait encore « 39 kB » — recalibré aux valeurs mesurées + consigne « discuter le budget AVANT de le crever ». Tests/docs seulement, pas de bump | 0.9.0 | v172 | 2482 | GO |
 | 227 | `SKYLER-LOT-227.md` | DETTE TODO + PERF SERVEUR — double constat mesuré : (1) balayage TODO/FIXME/XXX/HACK sur TOUT le code produit (terminal.py + vertex/** py/js/css, vendor exclu) → 0 occurrence, la dette connue vit dans les rapports (purge en attente d'accord), pas en commentaires ; (2) chronométrage réel des 8 routes HTML + 8 API critiques (5 passes/route, DEMO chaud) → 16/16 en 200, médianes 1,2-2,9 ms, pire cas 8 ms — la génération serveur est négligeable devant le budget DCL<300ms, le coût est côté navigateur (déjà budgété/gardé 72+226). Constat honnête, aucun code touché, pas de bump | 0.9.0 | v172 | 2482 | GO |
+| 228 | `SKYLER-LOT-228.md` | INTÉGRITÉ SKYLER-INDEX ↔ RAPPORTS (la mémoire de la boucle) : 218 références citées → 0 morte ; 231 rapports sur disque → 13 sans ligne = lots 01-09 pré-Institutional+, hors champ PAR CONSTRUCTION mais périmètre écrit nulle part → désormais documenté dans l'en-tête + gardien test_skyler_index_integrity_lot228 (4 tests : références mortes, orphelins hors exemption bornée, périmètre documenté, anti-vide ≥200). Le rituel rapport+ligne d'index est désormais VÉRIFIÉ par la suite. Docs/tests seulement, pas de bump | 0.9.0 | v172 | 2486 | GO |
 
 ## Architecture atteinte
 
