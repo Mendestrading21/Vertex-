@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 162 — livré** : caractérisation du TRIO zéro-test —
+  `ai/audit.py` (journal des appels IA servi par strategy_os),
+  `ai/strategy_context.py` (contexte injecté dans chaque analyse
+  IA) et `portfolio/team_roles.py` (rôles §25). 8 tests figent :
+  le journal BORNÉ à 200 entrées avec erreurs tronquées à 5 (pas
+  de fuite verbeuse), les stats ok/fallbacks, le journal neuf
+  honnêtement vide ; le contrat 10 clés du contexte avec bornes
+  cohérentes ET les 4 RAPPELS D'INVARIANTS figés mot pour mot
+  (« lecture seule absolue: aucun ordre », « moteur exécutif
+  déterministe », « aucune promesse de performance », « jamais
+  inventer » — les affaiblir cassera ce test) ; les 4 rôles dans
+  l'ordre terrain, cohérents avec ROLE_TARGETS (une seule vérité
+  d'effectifs), DEFENDER/GOALKEEPER sans horizon. Aucun code
+  modifié, pas de bump SW. Suite 2239 → 2247 passed / 2 skipped.
 - **Lot 161 — livré** : caractérisation des CONSTITUANTS D'INDICES
   `data/constituents.py` (112 lignes, 0 test — nourrit l'univers
   des titres au démarrage : Wikipedia + cache disque + snapshot
