@@ -158,6 +158,7 @@
 | 142 | `SKYLER-LOT-142.md` | Passe n°17 — Système/Données : l'âge par domaine en barre de STALENESS relative (le plus rassis saute aux yeux ; sans âge → pas de barre, garde null avant Number) ; Automatisations vérifiée ; captures envoyées | 0.9.0 | v151 | 1984 | GO |
 | 143 | `SKYLER-LOT-143.md` | Tournée de vérification transversale des 8 espaces : AUCUN défaut restant — tournée esthétique (124→143) COMPLÈTE ; lot documentaire, pas de bump SW ; 8 captures preuves envoyées | 0.9.0 | v151 | 1984 | GO |
 | 144 | `SKYLER-LOT-144.md` | Caractérisation moteur `timeframes.py` (confluence multi-horizons, 0 test direct avant) : 13 tests — 5 états et adj exacts (+5/+3/-4/-5/0), gardes None, contrat 9 clés, limite série plate documentée | 0.9.0 | v151 | 1997 | GO |
+| 145 | `SKYLER-LOT-145.md` | Caractérisation moteur `scorecard.py` (score /40 servi par le scan, dernier moteur à 0 test) : 36 tests — grille S+/S/A/B exacte, 4 raisons no-chase, 6 états timing, plancher neutre 18/40 rejeté, somme composantes == score40, robustesse | 0.9.0 | v151 | 2033 | GO |
 
 ## Architecture atteinte
 
