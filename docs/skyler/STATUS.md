@@ -1495,6 +1495,18 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **MINI-BILAN 271-275 (lot 275)** : tranche « la veille en régime de
+  croisière » — première tranche entièrement en veille après
+  l'échéance du lot 270. 4 cycles identiques (271-274 : état vérifié
+  à chaque fois, rapports minimaux, 0 travail fabriqué) + ce bilan.
+  Défauts produit : 0 (43 lots depuis le 232) ; code produit :
+  0 ligne (30 lots, 246-275) ; suite 2486/2 vérifiée à chaque cycle ;
+  SW v173 ; 5 PR (#304→#308). Prochaine échéance périodique :
+  smoke-check complet ~lot 280. ATTENDENT L'HUMAIN (inchangé) :
+  « GO purge étape 1 » (dossier exécutable), « Nettoie les branches
+  de lots » (277), bouton verrouillage (sur demande), validation
+  physique TWS/iPhone, merge main.
+
 - **Lot 274 — livré** : VEILLE ACTIVE — état identique (0 doublon
   trigger, integration à jour, 0 PR oubliée, arbre propre, suite
   2486/2). Rien à toucher, rapport minimal. Mini-bilan 271-275 au
