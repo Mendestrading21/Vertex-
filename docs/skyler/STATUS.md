@@ -1495,6 +1495,25 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 202 — livré** : TOURNÉE TV — le PRICE-CHART d'Analyse.
+  CONSTAT sur le canonique : le graphique principal est rendu par
+  TradingView Lightweight Charts et ses niveaux du plan sont DÉJÀ des
+  étiquettes natives de l'échelle de prix (TP1 206.37 vert, Entrée
+  198.00, Résistance, Stop 189.63 rouge, dernier prix, volume —
+  vérifié navigateur sur /analysis/ACN) : le langage TV d'origine.
+  REPLI Chart.js ALIGNÉ : C.levelLines (chart-core) passe du texte
+  plat à gauche aux CHIPS pleine couleur au BORD DROIT (texte sombre
+  gras, anti-collision verticale par empilement quand deux niveaux se
+  chevauchent, bornage à la zone de tracé) — l'échelle de repli
+  (bougies invalides → priceCard) parle désormais la même langue que
+  le canonique. Lignes pointillées et couleurs par kind inchangées ;
+  gardiens lot 52/54 (C.levelLines/multiLine) toujours verts. Note
+  honnête : le repli n'est pas capturable en démo (le canonique
+  fonctionne) — preuve par le code + suite. SW v165 → v166 +
+  5 gardiens. Capture chandeliers ACN + Analyse 1440/390 envoyées,
+  0 erreur console. Suite 2461 passed / 2 skipped. Inventaire TV :
+  price-chart ✔.
+
 - **Lot 201 — livré** : TOURNÉE TV — le RADAR de scores (C.radar,
   scorecard de la fiche Analyse) reçoit la règle « dominante en
   évidence » : le sommet à la valeur MAXIMALE réelle porte un anneau

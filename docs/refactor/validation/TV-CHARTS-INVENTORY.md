@@ -40,7 +40,9 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
   confiance % — « n/d » honnête sur régime indéterminé)
 
 ### Analyse (analysis_page.py + options-intel.js)
-- ☐ price-chart (chandeliers lightweight-charts + niveaux)
+- ✔ lot 202 : price-chart — canonique LWC DÉJÀ TV natif (étiquettes de
+  niveaux sur l'échelle de prix, constaté) ; repli Chart.js ALIGNÉ
+  (levelLines → chips pleine couleur au bord droit + anti-collision)
 - ✔ lot 190 : CÔNE DE PROJECTION du plan de trade (projection-cone.js, branché dans an-plan)
   (entrée/stop/TP1-3 du moteur → éventail min/moy/max avec
   tvEdgeChip, style prix cible TV — données RÉELLES du plan, jamais
