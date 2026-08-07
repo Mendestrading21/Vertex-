@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 212 — livré** : GARDIEN « AUCUN HEX NU DANS LES PAGES » —
+  le balayage des lots 211-212 pérennisé en pytest
+  (test_no_bare_hex_pages_lot212, 3 tests) : tout hex quoté dans
+  vertex/ui/pages/*.py est REFUSÉ hors formes de repli légitimes
+  (var(--…,#hex), cc/col/cssv('…','#hex'), lookup||'#hex'), avec
+  exemption DOCUMENTÉE et testée de widget_lab.py (bibliothèque
+  design FIGÉE, palette de mise en scène délibérée). CORRECTION
+  HONNÊTE au passage : le « balayage complet » du lot 211 était
+  incomplet — la calibration a trouvé 2 littéraux nus de plus,
+  soldés : étiquettes RRG de Marchés ('#bab4ac' →
+  VXCharts.colors.muted||'#8A8284', repli dans l'inventaire sûr) et
+  bordure démo d'Opportunités ('#FFC857' → VXCharts.colors.warning).
+  Calibré contre l'état réel avant commit : 10 occurrences → 2
+  réelles (soldées) + 8 widget_lab (exemptées) → gardien vert à 0.
+  Bump SW v169 → v170 + 5 gardiens (deux pages visibles changent
+  subtilement — déploiement). Captures RRG + Opportunités envoyées,
+  0 erreur console. Suite **2469 passed** / 2 skipped (2466 + 3).
+
 - **Lot 211 — livré** : ENTRETIEN — deux choses. (1) Le constat
   « movers absents en démo » du lot 199 ré-examiné et CLOS : pas un
   trou silencieux — l'hôte n'est créé que si movers.length, et
