@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 239 — livré** : DESK SYNC ROUND-TRIP CÔTÉ CLIENT RÉEL —
+  l'invariant n° 1 (17 clés / 4 listes) et la préférence utilisateur
+  centrale (« tout synchronisé automatiquement au lancement ») sont
+  gardés côté serveur depuis longtemps, mais le CHEMIN CLIENT n'avait
+  jamais été prouvé en navigateur. Protocole (avec sauvegarde
+  préalable de desk_data.json et nettoyage PAR LE PROTOCOLE — règle
+  n° 6, jamais d'édition à la main) : (1) écriture locale
+  toggleFavorite('TSLA') ; (2) push débouncé 1200 ms → **ts serveur =
+  ts client à la milliseconde près** et TSLA dans myFavs du blob ;
+  (3) localStorage.clear() + rechargement (« appareil neuf ») → le
+  pull au boot **restaure TSLA, deskTs et 5 clés desk** ;
+  (4) nettoyage : favori retiré → push → TSLA retiré du serveur.
+  La chaîne écriture → débounce → POST /api/desk → persistance →
+  pull → réhydratation fonctionne exactement comme conçue. 0 erreur
+  console. Constat honnête, aucun code touché, pas de bump.
+  Suite **2486 passed / 2 skipped**.
+
 - **Lot 238 — livré** : LIENS .md DANS docs/ HORS VALIDATION — la
   piste proposée cinq fois, enfin prise. 94 fichiers .md balayés
   (validation/ exclu — déjà gardé au lot 228) : 1 lien markdown
