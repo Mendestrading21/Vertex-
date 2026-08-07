@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 293 — livré** : LOT PRODUIT — fiche Analyse : liens
+  d'approfondissement TAPPABLES. Calibrage du parcours profond le
+  plus central (/analysis/AAPL, sondeur complet) : sain partout SAUF
+  « Calendrier complet → », « Risque complet → », « Journal
+  complet → » à **15px de haut** à 390 — quasi intappables au pouce
+  (4 sites du motif `.vx-meta > a`). Correctif mobile ≤640px :
+  `.vx-meta a{display:inline-block;padding:13px 0}` → cible 41px,
+  ligne inline, desktop intact. Gardien neuf
+  test_meta_links_touch_lot293 (2 tests). Preuves : les 3 liens
+  sortis de la liste <32px, 0 erreur, 0 texte cassé, 0 débordement,
+  capture envoyée. Bump SW v179 → v180 + 5 gardiens. Suite
+  **2502 passed / 2 skipped (+2)**. É1 : GO acquis, toujours en
+  attente de déblocage permissions.
+
 - **Lot 292 — livré** : AUDIT TACTILE du shell (390, navigateur
   réel) — après la complétion du parcours palette (288/289/291), les
   3 autres parcours tactiles calibrés avec l'intention d'y livrer
