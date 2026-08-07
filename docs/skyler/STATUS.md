@@ -1495,6 +1495,17 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 143 — livré** : tournée de VÉRIFICATION transversale des
+  8 espaces (clôture de la directive esthétique maximale) : 8
+  captures desktop 1440 fraîches (une par espace, 0 erreur console
+  chacune) inspectées à la recherche des derniers défauts — chiffres
+  nus, chevauchements, barres plates, badges débordants, étiquettes
+  coupées. Constat honnête : AUCUN défaut restant ; les fixes des
+  lots 125/129/133/142 tiennent tous ; le treemap Portefeuille
+  neutre est l'honnêteté (marques IBKR indisponibles), pas un
+  défaut. Lot documentaire — aucun code modifié, PAS de bump SW
+  (v151 courante). La tournée esthétique 124 → 143 est COMPLÈTE.
+  Suite 1984/2, RC GO, parcours 14/14, responsive 0 défaut.
 - **Lot 142 — livré** : passe graphique n°17 — Système/Données :
   l'ÂGE de la fraîcheur par domaine n'est plus un texte nu —
   mini-barre de verre de STALENESS relative (échelle = âge max
