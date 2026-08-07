@@ -306,9 +306,19 @@ function moversRows(rows,dir){
   const sorted=(rows||[]).filter(r=>r.change!==null&&r.change!==undefined).slice()
     .sort((a,b)=>dir==='top'?(b.change-a.change):(a.change-b.change)).slice(0,10);
   if(!sorted.length)return VX.states.empty('Aucune variation exploitable dans le dernier scan.');
+  /* LOT 140 : l'ampleur de chaque variation gagne sa mini-barre de VERRE
+     signee (echelle relative au max de la liste, patron 132-139) — la
+     hierarchie des mouvements se voit sans lire les pourcentages. */
+  const maxAbs=Math.max(0.1,...sorted.map(r=>Math.abs(r.change)));
+  const chgBar=(chg)=>{const neg=chg<0;
+    const tok=neg?'var(--vx-negative,#E9555F)':'var(--vx-positive,#2BBE90)';
+    const w=Math.max(5,Math.abs(chg)/maxAbs*100);
+    return '<span style="width:44px;height:7px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block;flex:none">'
+      +'<span style="display:block;height:100%;width:'+w.toFixed(0)+'%;background:linear-gradient('+(neg?'270deg':'90deg')+',color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:3px'+(neg?';margin-left:auto':'')+'"></span></span>';};
   return sorted.map(function(r){const chg=r.change;
     return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
       <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(r.symbol)}">${esc(r.symbol)}</button>
+      ${chgBar(chg)}
       <span class="vx-num vx-mono ${chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted'}" style="width:62px;text-align:right;font-weight:700">${VX.fmt.pct(chg,1)}</span>
       <span class="vx-grow vx-truncate vx-dim" style="font-size:11.5px" title="${esc(r.sector||'')}">${esc(r.sector||'')}</span>
       <span class="vx-num vx-mono vx-meta" style="width:64px;text-align:right">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):''}</span>

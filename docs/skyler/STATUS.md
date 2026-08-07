@@ -1495,6 +1495,27 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 140 — livré** : passe graphique n°15 — Top/Flop 10 de la Vue
+  d'ensemble Marchés : chaque variation gagne sa mini-barre SIGNÉE
+  de verre (positive → verte depuis la gauche, négative → rouge
+  alignée à droite ; échelle relative au max de la liste) — la
+  hiérarchie des mouvements se lit sans les pourcentages (ABT -6,3 %
+  pèse visiblement 3× ALGN -1,3 %). SW v148 → v149 + 4 gardiens.
+  Captures avant/après envoyées. Suite 1984/2, RC GO.
+
+### MINI-BILAN tournée 136-140
+
+5 lots, suite constante **1984 passed / 2 skipped**, PR #169 → #173,
+SW v144 → v149 : comparaison des candidats en verre + score Skyler
+/40 en barre graduée (136) · poids de position avec repère du
+plafond de tier (137) · concentration avec repère prudent ~15 %
+(138) · leadership sectoriel avec halo du meneur (139) · Top/Flop
+10 en barres signées (140). Le patron « mini-barre de verre
+color-mix sur tokens » est GÉNÉRALISÉ — plus un seul chiffre nu
+structurant sur les 8 espaces ; chaque barre porte désormais soit
+une graduation (seuils moteur), soit un signe (axe zéro), soit un
+repère (plafond/seuil prudent), soit un halo (meilleur/pire/meneur).
+
 - **Lot 139 — livré** : passe graphique n°14 — Vue d'ensemble
   Marchés : le Leadership sectoriel passe en VERRE — chaque barre
   est un dégradé de sa propre couleur (color-mix) et le secteur
