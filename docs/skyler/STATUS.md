@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 197 — livré** : TOURNÉE TV — le THÉTA Options assume sa
+  texture de PROJECTION : nouveau C.hatchPattern (chart-core) =
+  équivalent canvas du tvHatch (teinte .08 + rayures 45° .38),
+  réutilisable par tous les builders Chart.js via la nouvelle option
+  `hatch` de C.area (opt-in — défaut inchangé, aucun graphique
+  modifié sans opt-in). option-theta : hatch + chip Min — la
+  décroissance temps vient du scenario_pricer (un MODÈLE), l'aire est
+  hachurée comme le payoff (192) et le cône (190), le chip Min marque
+  le point le plus bas de la projection. SCÉNARIOS Options : ✔ par
+  HÉRITAGE constaté (option-scenarios passe par C.heatmapCard → il a
+  reçu le lot 194 sans modification — texte coloré par intensité,
+  pire cellule −66 % en dominante, pied « estimation modèle, pas une
+  promesse »). SW v160 → v161 + 5 gardiens. Captures théta hachuré
+  (chip « Min 23,3 ») + matrice scénarios + 1440 + 390 envoyées,
+  0 erreur console. Suite 2461 passed / 2 skipped. Inventaire TV :
+  théta ✔, scénarios ✔. (Lot exécuté immédiatement sur ordre
+  utilisateur — trigger annulé puis réarmé pour le 198.)
+
 - **Lot 196 — livré** : TOURNÉE TV — FRAÎCHEUR PAR DOMAINE (Système,
   vue Données) : la règle « dominante en évidence » appliquée à la
   staleness — le domaine le PLUS RASSIS (âge max connu, calculé

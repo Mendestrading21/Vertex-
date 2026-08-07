@@ -55,8 +55,11 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 ### Options (options_intel_page.py)
 - ✔ lot 192 : payoff (option-payoff) — zones GAIN/PERTE hachurées
   (équivalent canvas du tvHatch) + libellés de zones au breakeven
-- ☐ scénarios (option-scenarios) · théta (option-theta) ·
-  sensibilité IV (option-iv-sensitivity)
+- ✔ lot 197 : théta (option-theta) — aire HACHURÉE (hatch de C.area,
+  la projection modèle assume sa texture) + chip Min
+- ✔ lot 197 : scénarios (option-scenarios) — par HÉRITAGE de la
+  heatmap TV lot 194 (constaté en navigateur)
+- ☐ sensibilité IV (option-iv-sensitivity)
 - ☐ GEX (barres par strike) · double probabilité
 
 ### Journal (journal pages)
