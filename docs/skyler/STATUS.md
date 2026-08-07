@@ -1495,6 +1495,25 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 284 — livré** : LOT PRODUIT — carte **« Application »** dans
+  Système → Réglages. Comble la douleur documentée à chaque rapport
+  (« iPhone : vider le cache à la main pour recevoir SW vNNN ») :
+  **version du shell RÉELLE** lue des caches du navigateur
+  (caches.keys() → td-shell-vN, jamais un numéro codé en dur — le
+  gardien interdit tout td-shell-vN en dur dans le JS de page) + état
+  du service worker + **bouton « Forcer la mise à jour de l'app »**
+  (désinscrit le SW, vide CacheStorage, recharge — NE TOUCHE JAMAIS
+  localStorage : les données desk survivent, gardien le fige). Bug de
+  timing trouvé au navigateur (première lecture « n/d » pendant que
+  le SW installait encore son cache) → cause VÉRIFIÉE avant correctif
+  (le cache s'appelait bien td-shell-v175) → re-render sur
+  serviceWorker.ready. Preuves : « td-shell-v175 · actif (hors-ligne
+  prêt) » affichés, clic RÉEL testé (reload, caches vidés puis SW
+  réinstallé), 0 débordement 1440/390, 0 erreur console, capture
+  envoyée. Gardien neuf test_app_update_card_lot284 (3 tests).
+  **Bump SW v174 → v175** + 5 gardiens. Suite **2492 passed /
+  2 skipped (+3)**.
+
 - **Lot 283 — livré** : DIRECTIVE « Continue à développer encore » →
   sortie de veille, LOT PRODUIT. Carte **« Verrou d'accès »** dans
   Système → Connexions — la seule amélioration produit en attente
