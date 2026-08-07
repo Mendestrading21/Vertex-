@@ -295,6 +295,7 @@
 | 275 | `SKYLER-LOT-275.md` | MINI-BILAN tranche 271-275 — « la veille en régime de croisière » : 4 cycles identiques post-échéance (271-274, rapports minimaux, 0 travail fabriqué) + bilan. Défauts produit 0 (43 lots) ; code produit 0 ligne (30 lots, 246-275) ; suite 2486/2 vérifiée à chaque cycle ; SW v173 ; 5 PR (#304→#308). Prochaine échéance périodique : smoke-check complet ~lot 280. Attendent l'humain (inchangé) : GO purge é1, nettoyage 277 branches, bouton verrouillage, validation physique, merge main. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
 | 276 | `SKYLER-LOT-276.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2) ; rien à toucher, rapport minimal. Échéance périodique ~lot 280. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
 | 277 | `SKYLER-LOT-277.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2) ; rien à toucher, rapport minimal. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
+| 278 | `SKYLER-LOT-278.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour, 0 PR oubliée, arbre propre, suite 2486/2) ; rien à toucher, rapport minimal. Échéance périodique dans 2 lots. Docs seulement, pas de bump | 0.9.0 | v173 | 2486 | GO |
 
 ## Architecture atteinte
 
