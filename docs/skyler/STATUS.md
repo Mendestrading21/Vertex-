@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 151 — livré** : NOUVELLE DIRECTION — modules minces HORS
+  engines/. Inventaire par ratio : six modules à ZÉRO test direct
+  (market/context, news_impact, news_pipeline, regime_features,
+  sectors, quant/ml_calibration). Choisi : `regime_features.py`
+  (179 lignes) — le CERVEAU PHYSIQUE importé par analysis.py, dont
+  la rétroaction score_adjust MODIFIE le score Vertex. 15 tests
+  figent : Hurst persistant > 0.56 / anti-persistant < 0.2 + LIMITE
+  documentée (une droite PURE n'a pas d'exposant — différences
+  décalées constantes → None, d'où analyze(droite) = NEUTRE malgré
+  efficience 1.0) ; entropie (constants → 0.0, concentré < dispersé,
+  garde 30 points) ; efficience de Kaufman (monotone → 1.0 exact,
+  aller-retour → 0.0, plat → None) ; demi-vie OU (rappel fort →
+  courte, tendance → None honnête) ; états TENDANCE
+  FRACTALE/RETOUR MOYENNE avec notes ; rétroaction EXACTE (+4/+7,
+  -7, -3/-6, -2 entropie extrême — extrêmes réels +7/-9, marge
+  sous les bornes [-10,+8]) ; physique absente → (0, ''). Séries
+  déterministes à graines fixes (PCG64 stable). Aucun code modifié,
+  pas de bump SW. Suite 2098 → 2113 passed / 2 skipped.
 - **Lot 150 — livré** : caractérisation du DIGEST DE SESSION
   `session_digest.py` (116 lignes, ratio 0.80 — dernier de la file
   des moteurs minces ; servi par /api/session/digest, affiché en
