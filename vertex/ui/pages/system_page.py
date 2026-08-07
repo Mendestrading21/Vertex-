@@ -826,19 +826,31 @@ async function doRefresh(){
    navigateur (jamais un numéro codé en dur) + mise à jour forcée — vide le
    cache SW puis recharge. Ne touche JAMAIS localStorage (données desk). */
 async function renderAppInfo(){
-  let ver='n/d';
+  /* Deux versions RÉELLES : locale (caches de cet appareil) et publiée
+     (lue de /sw.js servi à l'instant) → verdict à jour / mise à jour. */
+  let local=null,server=null;
   try{
     const ks=await caches.keys();
     const m=ks.map(k=>/^td-shell-v(\d+)$/.exec(k)).filter(Boolean);
-    if(m.length)ver='td-shell-v'+Math.max.apply(null,m.map(x=>Number(x[1])));
+    if(m.length)local=Math.max.apply(null,m.map(x=>Number(x[1])));
   }catch(e){}
+  try{
+    const t=await (await fetch('/sw.js',{cache:'no-store'})).text();
+    const m=/td-shell-v(\d+)/.exec(t);
+    if(m)server=Number(m[1]);
+  }catch(e){}
+  const fmt=v=>v==null?'n/d':'td-shell-v'+v;
   const sw=('serviceWorker' in navigator)
     ?(navigator.serviceWorker.controller?'actif (hors-ligne prêt)':'installé, pas encore aux commandes')
     :'indisponible';
   const el=$('vx-app-info');
-  if(el)el.innerHTML=kv('Version du shell (cache local)',ver)+kv('Service worker',sw);
+  if(el)el.innerHTML=kv('Version locale (cache de cet appareil)',fmt(local))
+    +kv('Version publiée (serveur)',fmt(server))
+    +kv('Service worker',sw);
   const badge=$('vx-app-shell-badge');
-  if(badge)badge.textContent=ver;
+  if(badge)badge.textContent=(local!=null&&server!=null)
+    ?(server>local?'mise à jour disponible':'à jour')
+    :fmt(local);
 }
 async function forceAppUpdate(){
   const btn=$('vx-app-update');
