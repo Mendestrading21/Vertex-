@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 215 — livré** : MINI-BILAN 211-215 + vérif cohérence SW.
+  Tranche de 5 lots (PR #244 → #248) : suite 2466 → **2472** / 2
+  skipped (+6), SW v168 → **v171** (bumps 211/212/213 ; 214/215 =
+  constats sans bump). Réalisations : (1) chasse aux hex nus COMPLÈTE
+  — 5 littéraux soldés sur 4 sites (movers Système, étiquettes RRG,
+  bordure démo Opportunités, texte des tuiles treemap) ; (2) 2
+  gardiens pérennes BORNÉS verrouillent la chaîne entière (pages
+  Python lot 212 + builders JS lot 213) — plus aucun endroit où un
+  hex nu peut se glisser sans casser la suite ; (3) invariants
+  CLAUDE.md vérifiés par constat mesuré (desk sync 17 clés/4 listes,
+  sanitize_news 6 sorties SANITIZED + faux positif écarté) ;
+  (4) doctrine tenue — 2 lots de constat sans code produit, dits
+  honnêtement. Entretien du lot : cohérence SW vérifiée —
+  td-shell-v171 identique dans system.py L211 ET les 5 gardiens,
+  aucune dérive de version. Docs seulement, pas de bump.
+  Suite **2472 passed / 2 skipped**.
+
 - **Lot 214 — livré** : AUDIT D'INVARIANTS CLAUDE.md par CONSTAT
   MESURÉ (pas sur parole). (1) Desk sync (règle n° 1) : gardien
   test_desk_sync_keys_single_source_of_truth relancé → 1 passed ;
