@@ -1495,6 +1495,17 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **MINI-BILAN 281-286 (lot 287, rattrapage)** : tranche « la boucle
+  repart en développement ». 281-282 : veille ; 283 : carte Verrou
+  d'accès (v174) ; 284 : carte Application (v175) ; 285 : **GO PURGE
+  É1 reçu** — tests faits et poussés, retrait terminal.py bloqué par
+  le classifieur de permissions (3 approches refusées, utilisateur
+  informé) ; 286 : verdict de version (v176). Suite 2486→2494 (+8) ;
+  3 cartes réelles = 3 bumps ; 0 défaut produit ; 1 bug de timing
+  attrapé avant livraison. É1 : GO ACQUIS, travail PRÊT, blocage
+  ENVIRONNEMENTAL — à la reprise : re-générer la table des spans,
+  appliquer, prouver, une PR. Docs seulement, pas de bump.
+
 - **Lot 286 — livré** : LOT PRODUIT — la carte Application porte
   désormais un VERDICT DE VERSION : version locale (caches de
   l'appareil) vs **version publiée lue de /sw.js servi à l'instant**
