@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 259 — livré** : SECURITE.md ↔ RÉALITÉ (dernier .md racine
+  d'accueil non audité). VRAI et vérifié dans la source : cookie 30 j
+  httponly/SameSite=Lax (terminal.py L133-134), comparaison à temps
+  constant (auth.py L127 hmac.compare_digest), anti-force-brute
+  5 essais → verrou progressif min(300, 15×(n-4)) s (auth.py L133).
+  **3 corrections** : le « bouton Se déconnecter & verrouiller dans
+  Paramètres » est un BOUTON FANTÔME — il ne vit que dans
+  PAGE_SETTINGS (terminal.py L7477), page héritée orpheline (0 routée,
+  preuve lot 248) → doc corrigée vers la route /logout qui, elle,
+  fonctionne ; « désactiver le verrou → l'app redevient ouverte »
+  omettait le repli 127.0.0.1 sans code (lot 218) → précisé ; liste
+  des pages publiques complétée sur la vraie PUBLIC_PATHS (auth.py
+  L28-30 : + /logout, /api/healthz, webhook TradingView signé).
+  CONSTAT à l'humain : le bouton de verrouillage n'a jamais été
+  recâblé dans la nouvelle UI — /logout couvre le besoin ; bouton
+  visible dans Système = petit lot produit SUR DEMANDE. Docs
+  seulement, pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 258 — livré** : DEMARRER_ICI.md ↔ RÉALITÉ (suite de l'audit
   des portes d'entrée). **3 défauts corrigés** : nom de dossier périmé
   `IBKT-DASHBORD-` (×2) → `Vertex-` ; table des espaces PRÉ-REFONTE
