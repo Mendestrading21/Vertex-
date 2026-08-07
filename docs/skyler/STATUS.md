@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 164 — livré** : caractérisation du RISQUE DE PANIER
+  `legacy_basket_risk.py` (99 lignes, 0 test — VIVANT malgré son
+  nom : servi par analysis_api, command et risk_engine ; le
+  « no-trade de concentration »). 8 tests figent : les gardes
+  (panier < 2 séries → note honnête sans blocage, série < 40
+  points exclue) ; le drapeau de corrélation (paire clonée 0.92 →
+  no_new_risk True + top_pair expliquée ; panier diversifié →
+  aucun drapeau) ; TROIS LIMITES documentées — cap infaisable
+  (n × 15 % < 100 % → somme des poids = n × cap, pas de
+  renormalisation), concentration sectorielle NON détectée sur
+  petit panier (2 titres mono-secteur capés à 30 % restent sous le
+  seuil 40 %), et FAIL-OPEN sur erreur (entrée illisible →
+  no_new_risk False, l'analyse ne bloque pas quand elle ne peut
+  pas conclure) ; la redistribution _cap_weights (somme 1 quand
+  faisable). Aucun code modifié, pas de bump SW.
+  Suite 2255 → 2263 passed / 2 skipped.
 - **Lot 163 — livré** : caractérisation de l'EXPOSITION FACTORIELLE
   `factor_exposure.py` et du MOTEUR DE REMPLACEMENT
   `replacement_engine.py` (§25, zéro-test, dépendances research/
