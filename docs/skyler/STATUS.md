@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 242 — livré** : PARCOURS CONTRAT OPTIONS D'UN TRAIT — le 2e
+  cœur métier prouvé de bout en bout. /opportunities?view=options →
+  radar rendu (**50 contrats**) → clic sur un contrat → détail
+  COMPLET : payoff canvas hachuré zones PERTE/GAIN avec **chip
+  BE 136.98** et ligne spot (« Breakeven 136.98 · prime 3812 ») ;
+  matrice R:R simulé 7 scénarios × J+0→J+28 avec la mention
+  d'honnêteté « MODEL_ESTIMATE — estimation modèle, pas une
+  promesse » ; décomposition temps hachurée + chip Min ; sensibilité
+  IV avec dominante en chip. 0 vocabulaire d'ordre, client-log 0,
+  0 erreur console. NOTE DE MÉTHODE honnête : le premier passage
+  textuel déclarait « payoff absent » — FAUX POSITIF de l'outil (les
+  libellés d'un canvas ne vivent pas dans innerText) ; la
+  vérification VISUELLE a corrigé le classement avant toute
+  conclusion (réflexe du lot 238 : jamais déclarer un défaut sur une
+  heuristique). Capture envoyée. Les DEUX cœurs métier (analyse
+  actions 241, contrat options 242) sont prouvés. Constat honnête,
+  aucun code touché, pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 241 — livré** : PARCOURS D'ANALYSE COMPLET — le cœur métier
   de Vertex (voir un titre → ouvrir son analyse → lire le plan)
   prouvé d'UN SEUL trait en navigateur, alors que les pages n'avaient
