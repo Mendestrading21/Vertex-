@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 147 — livré** : caractérisation étendue de la COUCHE
+  STRATÉGIE `strategy_fit.py` (161 lignes, ratio 0.35 — source
+  unique : terminal.py délègue vehicle_of / attach_vehicle /
+  strat_score ; c'est elle qui choisit ACTION vs OPTION et oriente
+  les playbooks). 17 tests figent : la branche AU CHOIX et le
+  message « IV chère » ; les défauts EXACTS du strat_score (score
+  seul → 50, ligne vide → 22, clamp 0) ; la PRIORITÉ des 6
+  playbooks (Momentum avant Qualité) + limite documentée (Socle
+  défensif exige un ext_atr explicite — le calme non prouvé n'est
+  pas calme) ; attach_vehicle (meilleur CALL par qualité, PUT
+  ignoré, board vide → ACTION) ; le seuil rr_ok ≥ 2 STRICT (1.99
+  échoue) avec repli plan → vx_rr et R:R inconnu honnête ; les 3
+  bandes du tilt à l'arithmétique exacte (93 FAVORABLE / 50 NEUTRE
+  avec round bancaire / DANGEREUX). Aucun code modifié, pas de
+  bump SW. Suite 2050 → 2067 passed / 2 skipped.
 - **Lot 146 — livré** : caractérisation étendue du CŒUR analytique
   `analysis.py` (333 lignes — la couverture la plus mince de
   vertex/engines/, ratio tests/moteur 0.19 : le golden figeait UN
