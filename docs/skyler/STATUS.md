@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 283 — livré** : DIRECTIVE « Continue à développer encore » →
+  sortie de veille, LOT PRODUIT. Carte **« Verrou d'accès »** dans
+  Système → Connexions — la seule amélioration produit en attente
+  (lot 259 : le bouton de verrouillage ne vivait que dans
+  PAGE_SETTINGS, page héritée jamais routée). Rendu dynamique selon
+  l'état RÉEL du verrou (AUTH_ON, lu à la requête) : actif → badge +
+  faits vérifiés (session 30 j, anti-force-brute, temps constant) +
+  bouton « 🔓 Se déconnecter & verrouiller cet appareil » → /logout ;
+  inactif → état honnête SANS bouton (repli 127.0.0.1, marche à
+  suivre VERTEX_CODE/.env). Classes existantes uniquement, 0 littéral
+  couleur, HTML entités (pas d'apostrophe nue). Gardien neuf
+  test_lock_card_lot283 (3 tests : les 2 états + domicile unique).
+  Preuves navigateur (DEMO) : carte visible, badge « inactif »,
+  bouton absent comme attendu, 0 débordement 1440/390, 0 erreur
+  console, capture envoyée. **Bump SW v173 → v174** + 5 gardiens.
+  Suite **2489 passed / 2 skipped (+3)**.
+
 - **Lot 282 — livré** : VEILLE ACTIVE — état identique (0 doublon
   trigger, integration à jour, 0 PR oubliée, arbre propre, suite
   2486/2). Rien à toucher, rapport minimal. Pas de bump.

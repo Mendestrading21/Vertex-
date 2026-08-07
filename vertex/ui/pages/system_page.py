@@ -10,6 +10,7 @@ Invariant produit affirmé partout : READONLY — aucun ordre possible
 """
 from __future__ import annotations
 
+from vertex.app.config import AUTH_ON
 from vertex.ui.shell import render_shell
 
 VIEWS = (
@@ -20,6 +21,30 @@ VIEWS = (
     ('archive', 'Archive'),
 )
 _DEFAULT_VIEW = 'connections'
+
+
+def _lock_card(auth_on: bool) -> str:
+    """Carte « Verrou d'accès » (vue Connexions) — l'état RÉEL du verrou.
+
+    Seul bouton de verrouillage atteignable de l'UI : l'ancien vivait dans
+    la page Paramètres héritée, jamais routée. Sans code actif, état honnête
+    (pas de bouton — il n'y a rien à verrouiller) + rappel du repli 127.0.0.1.
+    """
+    if auth_on:
+        body = ('<div class="vx-help vx-mb2">Code d&#8217;entr&eacute;e exig&eacute; sur tous les appareils '
+                '&mdash; session sign&eacute;e 30 jours, anti-force-brute, comparaison &agrave; temps constant.</div>'
+                '<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/logout" id="vx-lock-btn">'
+                '&#128275; Se d&eacute;connecter &amp; verrouiller cet appareil</a>')
+        badge = '<span class="vx-badge" id="vx-lock-badge">actif</span>'
+    else:
+        body = ('<div class="vx-help">Aucun code d&#8217;entr&eacute;e d&eacute;fini &mdash; par s&eacute;curit&eacute;, '
+                'le serveur n&#8217;&eacute;coute que <b>127.0.0.1</b> (pas d&#8217;acc&egrave;s WiFi/LAN). '
+                'Pour prot&eacute;ger et ouvrir l&#8217;acc&egrave;s (iPhone, tablette) : d&eacute;finir '
+                '<b>VERTEX_CODE</b> dans <b>.env</b> &mdash; voir SECURITE.md.</div>')
+        badge = '<span class="vx-badge" id="vx-lock-badge">inactif</span>'
+    return ('<div class="vx-grid vx-mt4"><section class="vx-card vx-col-12" aria-label="Verrou d&#8217;acc&egrave;s">'
+            '<div class="vx-card-header"><span class="vx-card-title">Verrou d&#8217;acc&egrave;s</span>'
+            + badge + '</div>' + body + '</section></div>')
 
 
 def _tabs(active: str) -> str:
@@ -107,6 +132,7 @@ _VIEW_CONTENT = {
     <div id="vx-conn-store">%%LOADING%%</div>
   </section>
 </div>
+%%LOCKCARD%%
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Moteurs">
     <div class="vx-card-header"><span class="vx-card-title">Moteurs</span>
@@ -1097,7 +1123,8 @@ VX.context.restoreIfReturning();
 def render(view: str = 'connections') -> str:
     view = view if view in dict(VIEWS) else _DEFAULT_VIEW
     body = _VIEW_CONTENT[view].replace(
-        '%%LOADING%%', '<div class="vx-skeleton" style="height:60px"></div>')
+        '%%LOADING%%', '<div class="vx-skeleton" style="height:60px"></div>').replace(
+        '%%LOCKCARD%%', _lock_card(AUTH_ON))
     content = (_header(view)
                + f'<div id="vx-system" data-view="{view}">' + body + '</div>')
     sub = dict(VIEWS)[view]
