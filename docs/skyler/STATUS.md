@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 179 — livré** : caractérisation de l'OBSERVABILITÉ du
+  Strategy OS (§37) — `vertex/observability/metrics.py` (ZÉRO test
+  direct) et les sections de `diagnostics.py` (le webhook TradingView,
+  candidat prévu, s'est révélé complet avec 12 tests — constat
+  honnête, repli sur la vraie lacune). 9 tests figent : les
+  compteurs qui CUMULENT vs les jauges qui ÉCRASENT ; les
+  percentiles EXACTS (100 mesures 1..100 → p50 51.0/p95 95.0/max
+  100.0, échantillon unique → confondus) ; l'anneau de 200 mesures
+  (250 envoyées → fenêtre 51..250, p50 151.0 — bornage mémoire) ;
+  le timer contextuel qui mesure ET propage l'exception (jamais
+  avalée, durée enregistrée quand même) ; le snapshot COPIE isolée ;
+  les sections de system_diagnostics STRICTEMENT optionnelles (sans
+  dépendance → {metrics} seul, rien d'inventé) ; data_quality_report
+  qui compte TOUS les paquets mais borne les dégradés à 20 et les
+  warnings à 3. Aucun code modifié, pas de bump SW.
+  Suite 2397 → 2406 passed / 2 skipped.
 - **Lot 178 — livré** : FILET DE SÉCURITÉ DU DESK — backup quotidien
   + /api/desk/restore de `desk.py` (règle critique n°6 ; le candidat
   auth.py s'est révélé déjà très couvert — 15 tests force-brute/
