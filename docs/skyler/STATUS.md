@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 177 — livré** : GARDIEN XSS DE BOUT EN BOUT (règle critique
+  n°5 : « tout texte externe passe par sanitize_news avant d'être
+  servi »). Le lot 102 figeait la FONCTION ; rien ne prouvait que
+  chaque ROUTE applique l'assainissement. 6 tests injectent un
+  payload malveillant (script, img onerror, lien javascript:) dans
+  les états partagés et vérifient chaque point de sortie :
+  /news-feed sert le titre SANS balise avec quotes échappées, la
+  traduction vidée, le lien javascript: supprimé et le lien https
+  %-encodé (sûr en href ET window.open) ; le filtre serveur ?sym=
+  ne contourne PAS l'assainissement ; /api/events/<sym> et
+  /api/skyler/<sym> ne servent JAMAIS le payload brut (le texte
+  survit neutralisé à travers evidence/events) ; un gardien
+  statique compte les sites d'appel sanitize_news( en production
+  (≥ 6 — content, analysis_api ×2, skyler_sweep, terminal ×2) :
+  retirer un assainissement fait échouer la suite. Aucun code
+  modifié, pas de bump SW. Suite 2383 → 2389 passed / 2 skipped.
 - **Lot 176 — livré** : CLÔTURE de la tournée « honnêteté des
   routes » — les trois lacunes minces restantes en un lot
   (opportunities_api, ai_api /api/copilot/ask POST, live_api).
