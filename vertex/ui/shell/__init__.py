@@ -202,6 +202,8 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 
     Si la requête demande un fragment (navigation client persistante), ne renvoie
     QUE le contenu + métadonnées + scripts de page (shell conservé côté client)."""
+    from vertex.engines.recommendation import vocab_js as _vjs
+    vocab = _vjs()   # vocabulaire des verdicts — source unique (__VXVOCAB)
     mobile_bar = mobile_actions or _mobile_bar(active)
     if _wants_fragment():
         return _render_fragment(title=title, active=active, space_label=space_label,
@@ -246,6 +248,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 {mobile_bar}
 {_OVERLAYS}
 <script src="/static/chart.umd.min.js" defer></script>
+<script id="vx-vocab">window.__VXVOCAB={vocab};</script>
 <script src="/static/vertex/js/vx-core.js"></script>
 <script src="/static/vertex/js/vx-entities.js"></script>
 <script src="/static/vertex/js/vx-shell.js"></script>

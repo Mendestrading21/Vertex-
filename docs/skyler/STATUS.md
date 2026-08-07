@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 191 — livré** : TOURNÉE TV — les BARRES DE CONSENSUS du
+  comité (charts/consensus-bars.js, nouveau builder
+  VXCharts.consensusBars) — le « Note des analystes » TradingView
+  nourri par les comptes RÉELS des verdicts du comité : libellé à
+  gauche, barre pleine à bout arrondi proportionnelle au max, compte
+  à droite ; la barre DOMINANTE en pleine intensité et gras 800, les
+  autres adoucies (.45) ; total honnête en pied (« N dossiers passés
+  en revue — comptes réels ») ; vide → état vide honnête. CORRECTIF
+  STRUCTUREL découvert par la 1re capture : __VXVOCAB n'était injecté
+  que par l'ancien pipeline mort → désormais injecté par le SHELL de
+  la refonte (`<script id="vx-vocab">` — l'id satisfait le gardien
+  anti-XSS du lot 43), libellés FR (« Éviter », « Surveiller la
+  cassure », « Attendre ») disponibles sur TOUTES les pages. Branché
+  vue Comité d'Intelligence (remplace le tally ad hoc). SW v154 →
+  v155 + 5 gardiens. Captures /intelligence?view=committee 1440+390
+  + carte cadrée envoyées, 0 erreur console.
+  Suite 2461 passed / 2 skipped. Inventaire TV : consensus ✔.
+
 - **Lot 190 — livré** : TOURNÉE TV — le CÔNE DE PROJECTION
   (charts/projection-cone.js, nouveau builder VXCharts.projectionCone)
   — la signature « prix cible » TradingView nourrie par les niveaux

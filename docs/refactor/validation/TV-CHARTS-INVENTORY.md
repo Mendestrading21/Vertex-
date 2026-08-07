@@ -53,8 +53,8 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 
 ### Intelligence (intelligence_page.py)
 - ☐ jauge comité (vx-committee-gauge — hérite déjà du ✔ C.gauge)
-- ☐ barres de consensus du comité (STYLE TV : barres horizontales
-  Strong Buy/Buy/Hold à compter des verdicts RÉELS du comité)
+- ✔ lot 191 : barres de consensus du comité (consensus-bars.js —
+  verdicts RÉELS en FR via __VXVOCAB désormais injecté par le shell)
 
 ### Système (system_page.py)
 - ✔ jauge santé (vx-sys-gauge — hérite du C.gauge)
