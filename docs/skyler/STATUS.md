@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 214 — livré** : AUDIT D'INVARIANTS CLAUDE.md par CONSTAT
+  MESURÉ (pas sur parole). (1) Desk sync (règle n° 1) : gardien
+  test_desk_sync_keys_single_source_of_truth relancé → 1 passed ;
+  comptage direct : __DESK_KEYS (terminal.py) = 17 clés, DESK_KEYS
+  (vx_kit.py) = 17 identiques, et journal.py porte les 17 inline dans
+  le JS jvSyncPush — exactement ce que le gardien vérifie. TENU.
+  (2) sanitize_news (règle n° 5) : cartographie exhaustive — les 6
+  points de sortie de contenu news (content.py, api_skyler, api_events,
+  skyler_sweep.py, terminal.py ×2) passent TOUS par sanitize_news ; le
+  signalement system_status_ep écarté comme FAUX POSITIF après lecture
+  du corps réel (le champ 'news' y est un seuil de fraîcheur interne —
+  thresholds 3600 s, et build_system_status ne sert que age_s + enum
+  _freshness : aucun texte externe ne transite). Gardien XSS lot 177
+  relancé → 6 passed. TENU. Docs seulement, pas de bump (doctrine des
+  lots de constat). Suite **2472 passed / 2 skipped**.
+
 - **Lot 213 — livré** : GARDIEN HEX NU ÉTENDU AUX BUILDERS JS
   (charts/*.js + pages/*.js — test_no_bare_hex_static_js_lot213,
   3 tests), calibré AVANT d'écrire : 49 occurrences → 40 =
