@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 227 — livré** : DETTE TODO + PERF SERVEUR — double constat
+  mesuré, 0 défaut. (1) Balayage TODO/FIXME/XXX/HACK (mot entier) sur
+  TOUT le code produit (terminal.py + vertex/** py/js/css, vendor
+  exclu) : **0 occurrence** — aucune dette auto-documentée éparpillée ;
+  la dette CONNUE vit où elle doit (rapports de purge, en attente
+  d'accord humain). (2) Chronométrage réel (urllib, 5 passes/route,
+  DEMO chaud) des 8 routes HTML + 8 API critiques : **16/16 en 200,
+  médianes 1,2 à 2,9 ms, pire cas 8 ms** (premier hit de /) — la
+  génération serveur (HTML en chaînes Python) est négligeable devant
+  le budget DCL < 300 ms du lot 72 ; le coût du chargement est côté
+  navigateur, déjà budgété et gardé (72 + dérive mesurée au 226).
+  Constat honnête, aucun code touché, pas de bump.
+  Suite **2482 passed / 2 skipped**.
+
 - **Lot 226 — livré** : BUDGETS JS/CSS STATIQUES — la piste proposée
   trois fois, enfin prise. Mesure de vertex/static/** contre les
   gardiens du lot 72 (64 kB/fichier première partie, vendor isolé).
