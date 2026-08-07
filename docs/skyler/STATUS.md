@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 236 — livré** : MODAL D'AJOUT D'ENTITÉ — le dernier flux
+  interactif du shell jamais testé en navigateur, avec la vérif
+  READONLY la plus sensible (c'est le SEUL endroit du produit où
+  l'utilisateur saisit une « position »). Parcours réel : bouton + →
+  modal « Ajouter » (barre d'étapes 1/0/0) → NVDA + Continuer → 6
+  destinations (1/1/0) → Watchlist → formulaire priorité/zone/thèse/
+  catalyseur (1/1/1) → Confirmer → modal fermé et **NVDA réellement
+  écrit dans la watchlist du store** (VXEntities.watchlist() le
+  contient). READONLY : texte des 3 étapes balayé, y compris le
+  formulaire Position → **0 vocabulaire d'ordre** ET la mention
+  « Registre déclaratif — Vertex n'envoie JAMAIS un ordre » est
+  affirmée DANS l'interface, au seul endroit où la confusion serait
+  possible. 0 erreur console. TOUS les flux interactifs du shell sont
+  prouvés (drawer/modal 229, palette 231, menu 234, ajout 236).
+  Constat honnête, aucun code touché, pas de bump.
+  Suite **2486 passed / 2 skipped**.
+
 - **Lot 235 — livré** : MINI-BILAN 231-235. Tranche de 5 lots
   (PR #264 → #268) : suite **2486 / 2 skipped stable**, SW v172 →
   **v173** (1 seul bump, porté par le seul correctif réel de la
