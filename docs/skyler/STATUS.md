@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 172 — livré** : honnêteté HTTP des DÉCISIONS DE POSITION
+  `vertex/app/routes/decision_api.py` (deux endpoints à ZÉRO test :
+  /api/position-decision/<sym> et /api/options-for/<sym> — les
+  moteurs servis sont couverts par le lot 87, la lacune était le
+  câblage HTTP). 9 tests figent : le symbole inconnu → HOLD avec
+  sous-jacent étiqueté DATA_INSUFFICIENT (jamais inventé) ; le stop
+  touché via query params → EXIT 78 ; les paramètres corrompus
+  (entry=abc, dte=) avalés en None — JAMAIS un crash ; les seuils de
+  discipline traversant la couche HTTP intacts (action -20 % EXIT,
+  option -20 % HOLD, -25 % EXIT) ; le thêta qui commande à ≤14 j ;
+  le board vide → note explicite sans contrat inventé ; les 5 rôles
+  exacts pour une position action (CALL/PUT/LEAPS/COVERED_CALL/
+  PROTECTIVE_PUT) réduits à 3 pour une option détenue (pas de call
+  couvert sans actions) ; jamais un contrat d'un autre titre ; aucun
+  verbe d'ordre. Aucun code modifié, pas de bump SW.
+  Suite 2338 → 2347 passed / 2 skipped.
 - **Lot 171 — livré** : NOUVELLE DIRECTION « honnêteté des routes » —
   caractérisation de la couche HTTP Position Intelligence
   `vertex/app/routes/positions_api.py` (249 lignes ; survey préalable :
