@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 232 — livré** : VUES INTERNES À 390px — le protocole
+  discriminant du 222 appliqué aux 10 vues à onglets JAMAIS balayées
+  (opportunités options/anomalies/calendrier, options volatilité/
+  positionnement, marchés secteurs/volatilité/breadth, portefeuille
+  watchlist/risque), en contexte navigation. RÉSULTAT : 9/10 propres,
+  **1 débordement RÉEL** trouvé — /portfolio?view=risk : la ligne de
+  fraîcheur/source .vx-update du knowledge graph (nowrap, 562px)
+  finissait à 591px, 201px coupés hors écran. Correctif MINIMAL scopé
+  ≤768px : .vx-update REPLIE (white-space:normal + overflow-wrap) —
+  l'ellipse REFUSÉE délibérément : c'est une info d'HONNÊTETÉ (la
+  traçabilité de la source doit rester entièrement lisible). Vérifié :
+  ligne repliée à 361px ≤ 390, les 10 vues rejouées → 0 défaut,
+  0 erreur console. Captures avant/après envoyées. Bump SW
+  **v172 → v173** + 5 gardiens (composant de toutes les cartes — le
+  correctif doit se déployer). Suite **2486 passed / 2 skipped**.
+
 - **Lot 231 — livré** : PALETTE DE COMMANDE — le constat
   comportemental complet d'un composant JAMAIS testé en navigateur
   (seuls des littéraux de source étaient gardés). Parcours réel en
