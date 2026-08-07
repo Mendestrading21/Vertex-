@@ -69,6 +69,12 @@
      sur le champ ouvre la palette) et elle mangeait ~30px d'un champ mesuré
      à 93px sur 390px. */
   .vx-topbar-search .vx-kbd{display:none}
+  /* lot 289 : le champ de recherche est LE chemin tactile vers la palette —
+     il mesurait 33px de haut, sous la règle des cibles tactiles ≥40px
+     imposée plus bas aux boutons. L'icône, calée pour un champ de 33px,
+     se recentre. */
+  .vx-topbar-search input{min-height:40px}
+  .vx-topbar-search svg{top:50%;transform:translateY(-50%)}
   .vx-page-header .vx-actions{width:100%;justify-content:flex-start;
     overflow-x:auto;scrollbar-width:none}
   .vx-kpi .vx-kpi-value{font-size:22px}
