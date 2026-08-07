@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 245 — livré** : MINI-BILAN 241-245. Tranche de 5 lots
+  (PR #274 → #278) : suite **2486 / 2 skipped stable**, SW **v173
+  STABLE** (0 bump — 5 lots de preuve pure). Réalisations : les
+  3 PARCOURS MÉTIER prouvés d'un trait — (1) plan d'analyse actions :
+  clic ACN → /analysis/ACN, plan complet, 8 canvas LWC + 32 SVG
+  (241) ; (2) contrat options : radar 50 → détail payoff/R:R/théta/IV
+  avec « estimation modèle, pas une promesse », note de méthode
+  canvas∉innerText gravée (242) ; (3) positionnement GEX : radar
+  18/18 avec « n/d » honnête → détail cohérent (243) ; (4) vues
+  Système internes 4/4 → couverture des vues EXHAUSTIVE (244). FAIT
+  MARQUANT : **le produit ENTIER est mesuré correct** — après le
+  shell (236-240), ce sont les chemins de VALEUR qui sont prouvés ;
+  3 tranches de preuve sans un seul défaut produit depuis le lot
+  232 : le socle est sain et DÉMONTRÉ tel. Doctrine : 5 lots, 0 ligne
+  de code produit, 0 bump, chaque faux positif d'outil corrigé avant
+  conclusion. Docs seulement, pas de bump.
+  Suite **2486 passed / 2 skipped**.
+
 - **Lot 244 — livré** : VUES SYSTÈME INTERNES — les deux dernières
   vues jamais balayées du produit (/system?view=connections et
   /system?view=archive), au protocole discriminant, à 390 px ET
