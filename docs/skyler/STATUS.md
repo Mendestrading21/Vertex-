@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 146 — livré** : caractérisation étendue du CŒUR analytique
+  `analysis.py` (333 lignes — la couverture la plus mince de
+  vertex/engines/, ratio tests/moteur 0.19 : le golden figeait UN
+  scénario, aucune branche de détection couverte). 17 tests
+  figent : robustesse aux flux sans Volume (indices/ETF) et à
+  l'historique court (repli SMA→EWM, JSON sans NaN) ; profils
+  DÉFENSIF et ÉQUILIBRÉ ; radar d'anomalies (gap, pic de volume)
+  avec FORMULE du score figée (min(100, Σ sév × 16)) et niveaux
+  cohérents ; cassure confirmée (volume ≥1.5× exigé) ; régime
+  CHOP ; invariants du plan (stop sous l'entrée, échelle exacte
+  1R/2R/3R, setup_quality borné) ; transparence du score
+  (score == clamp(base + struct_adj [-12,+10])) ; checklist des
+  9 signaux + sigcount. Aucun code modifié, pas de bump SW.
+  Suite 2033 → 2050 passed / 2 skipped.
 - **Lot 145 — livré** : caractérisation du moteur `scorecard.py`
   (254 lignes) — vérifié VIVANT : importé par terminal.py (alias
   `ibkr`), `verdict()` appelé pendant le scan ; produit le score
