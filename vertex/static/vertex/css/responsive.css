@@ -75,6 +75,10 @@
      se recentre. */
   .vx-topbar-search input{min-height:40px}
   .vx-topbar-search svg{top:50%;transform:translateY(-50%)}
+  /* lot 293 : les liens d'approfondissement (« … complet → ») dans les
+     lignes vx-meta mesuraient 15px de haut — quasi intappables au pouce.
+     Padding vertical → cible ≥40px, la ligne reste inline. */
+  .vx-meta a{display:inline-block;padding:13px 0}
   .vx-page-header .vx-actions{width:100%;justify-content:flex-start;
     overflow-x:auto;scrollbar-width:none}
   .vx-kpi .vx-kpi-value{font-size:22px}
