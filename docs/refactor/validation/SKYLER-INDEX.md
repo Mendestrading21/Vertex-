@@ -183,6 +183,7 @@
 | 167 | `SKYLER-LOT-167.md` | Caractérisation étendue `ai/copilot.py` (Anthropic mocké) : 8 tests — positions desk cap 20 + stop du snapshot, contexte sans symbole réduit, post-mortem inclus, chemin Claude étiqueté « estimation », texte vide/exception → repli déterministe, contexte mort → erreur honnête sans réponse inventée | 0.9.0 | v151 | 2289 | GO |
 | 168 | `SKYLER-LOT-168.md` | Caractérisation `legacy_adapter.py` (stratégie options perso VIVANTE, 0 test) : 21 tests — bias mots-clés + seuils 60/40, IV bornée, pas de strike, détention 5-45 j, BE call/put, sorties ±50 %, scénarios ordonnés, PUT imposé en régime dangereux, portefeuille cœur/satellites à arithmétique fermée | 0.9.0 | v151 | 2310 | GO |
 | 169 | `SKYLER-LOT-169.md` | Caractérisation `data/company.py` (profil hebdo, hors ligne) : 9 tests — segments curés somment 100 %, démo → couche curée + stale signalé, inconnu → squelette honnête, ordre cache/fetch/curé + schéma _v force refetch, peers même industrie, médianes seuil 3/PE<250/memo même vide | 0.9.0 | v151 | 2319 | GO |
+| 170 | `SKYLER-LOT-170.md` | Caractérisation `data/universe.py` (données pures — DERNIER de la file du périmètre) : 9 tests — univers dédupliqué ≥400 == LIVE_SYMBOLS == INDEX_MEMBERS['union'], INDEX_SOURCE ∈ 4 états, aucun point US (BRK-B), GICS 11 == 11 ETF, aucun ticker multi-secteur/industrie, watchlist 57, TREND_SET == _TREND_EXTRA, Europe/Asie toutes suffixées + MINI-BILAN 166-170 | 0.9.0 | v151 | 2328 | GO |
 
 ## Architecture atteinte
 
