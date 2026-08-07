@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 221 — livré** : LIENS INTERNES + BOUTONS — balayage
+  NAVIGATEUR des 8 pages en démo (DOM hydraté — les gardiens
+  existants ne voient que la source servie). Protocole : serveur DEMO
+  (healthz ok/demo), Playwright 1440×900, extraction des a[href]
+  internes dédupliqués + GET réel sur chaque cible, et inventaire des
+  button avec détection de câblage (onclick, data-* des délégués
+  globaux, submit, aria-controls). RÉSULTAT : **31 liens internes
+  uniques → 31 × HTTP 200 (0 lien mort)** ; **177 boutons
+  (18+55+39+12+10+20+13+10) → 0 sans câblage détectable**. Cohérent
+  avec l'architecture des délégués clavier/clic posés aux lots
+  précédents. Constat honnête, aucun code touché, pas de bump.
+  Suite **2482 passed / 2 skipped** (référence maintenue).
+
 - **Lot 220 — livré** : MINI-BILAN 216-220. Tranche de 5 lots
   (PR #249 → #253) : suite 2472 → **2482** / 2 skipped (+10 : 3+4+3),
   SW **v171 STABLE** — 5 lots sans bump (doctrine des constats : rien
