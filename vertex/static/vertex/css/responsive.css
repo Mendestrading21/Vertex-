@@ -79,6 +79,11 @@
      lignes vx-meta mesuraient 15px de haut — quasi intappables au pouce.
      Padding vertical → cible ≥40px, la ligne reste inline. */
   .vx-meta a{display:inline-block;padding:13px 0}
+  /* lot 295 : même famille — lien nu dans une ligne vx-dim (Journal →
+     Hypothèses) mesuré 16px, et boutons tickers .vx-link (shortlist
+     Opportunités) mesurés 21px. */
+  .vx-dim a{display:inline-block;padding:13px 0}
+  .vx-link{min-height:40px}
   .vx-page-header .vx-actions{width:100%;justify-content:flex-start;
     overflow-x:auto;scrollbar-width:none}
   .vx-kpi .vx-kpi-value{font-size:22px}
