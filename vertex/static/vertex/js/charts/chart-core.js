@@ -375,12 +375,48 @@
       else { g.addColorStop(0, c + '55'); g.addColorStop(1, c + 'E0'); }
       return g;
     };
+    /* GRAMMAIRE TV (lot 199) : la barre DOMINANTE (|valeur| max, si ≥ 2
+       barres) porte un liseré appuyé + sa VALEUR en chip pleine couleur
+       (texte sombre) au bout de la barre — même langage que la barre
+       dominante du consensus (191) et la cellule dominante de la heatmap
+       (194). Les autres barres gardent leur matière verre inchangée. */
+    const domI = values.length >= 2
+      ? values.reduce((b, v, i) => Math.abs(Number(v) || 0) > Math.abs(Number(values[b]) || 0) ? i : b, 0)
+      : -1;
+    const domPlugin = {
+      id: 'vxBarDominant',
+      afterDatasetsDraw(chart) {
+        if (domI < 0) return;
+        const meta = chart.getDatasetMeta(0);
+        const pt = meta && meta.data && meta.data[domI]; if (!pt) return;
+        const v = Number(values[domI]); if (!isFinite(v)) return;
+        const col = cols[domI % cols.length];
+        const txt = (typeof yFmt === 'function') ? yFmt(v) : String(v);
+        const ctx = chart.ctx, area = chart.chartArea;
+        ctx.save();
+        ctx.font = '700 9px ' + ((window.Chart && Chart.defaults.font.family) || 'Inter,sans-serif');
+        const w = ctx.measureText(txt).width + 10, h = 14;
+        let x, y;
+        if (horizontal) { x = v >= 0 ? pt.x + 4 : pt.x - w - 4; y = pt.y - h / 2; }
+        else { x = pt.x - w / 2; y = v >= 0 ? pt.y - h - 4 : pt.y + 4; }
+        x = Math.max(area.left, Math.min(x, area.right - w));
+        y = Math.max(area.top, Math.min(y, area.bottom - h));
+        ctx.beginPath(); ctx.roundRect(x, y, w, h, 7);
+        ctx.fillStyle = (typeof col === 'string') ? col : C.colors.neutral; ctx.fill();
+        const tt = (window.VXChartTheme && VXChartTheme.tooltip) || {};
+        ctx.fillStyle = tt.backgroundColor || '#151719'; ctx.textBaseline = 'middle';
+        ctx.fillText(txt, x + 5, y + h / 2 + 0.5);
+        ctx.restore();
+      },
+    };
     return C.mount(canvas, {
       type: 'bar',
       data: { labels, datasets: [{ data: values, backgroundColor: glass, hoverBackgroundColor: cols,
-        borderColor: cols.map(c => isHex(c) ? c + '80' : c), borderWidth: 1,
+        borderColor: cols.map((c, i) => isHex(c) ? (i === domI ? c : c + '80') : c),
+        borderWidth: values.map((_, i) => i === domI ? 1.6 : 1),
         borderRadius: 5, borderSkipped: false, maxBarThickness: 26 }] },
       options: { indexAxis: horizontal ? 'y' : 'x', scales: C.axes({ yFmt }) },
+      plugins: [domPlugin],
     });
   };
   C.donut = function (canvas, labels, values, { colors } = {}) {
