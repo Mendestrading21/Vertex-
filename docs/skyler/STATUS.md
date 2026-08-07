@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 218 — livré** : FIN DE L'AUDIT D'INVARIANTS CLAUDE.md (lots
+  214/216/217/218). (1) Filet desk_data.json : TENU et déjà gardé par
+  test_desk_backup_lot178 (8 tests — snapshot quotidien créé AVANT le
+  premier écrasement du jour, jamais réécrit ensuite, rotation 7 j,
+  validation stricte du restore) — rien à ajouter. (2) Écoute réseau
+  (« sans code d'accès, le serveur n'écoute que 127.0.0.1 ») : règle
+  TENUE dans _start_app (lan_ok = AUTH_ON ou VERTEX_LAN=1 ou $PORT →
+  0.0.0.0 ; sinon 127.0.0.1) MAIS gardée par AUCUN test (grep lan_ok/
+  0.0.0.0/VERTEX_LAN dans tests/ → 0) — on pouvait exposer le desk à
+  tout le Wi-Fi sans casser la suite. Livré :
+  test_network_binding_lot218 (3 tests — source épinglée, table de
+  vérité sur la même expression avec VERTEX_LAN=0 ≠ opt-in, message
+  config honnête). BILAN DE L'AUDIT : 8 invariants vérifiés par
+  constat, 3 lacunes de garde réelles comblées (RequestTimeout=45,
+  scan_state, écoute réseau), 0 violation. Tests seulement, pas de
+  bump. Suite **2482 passed / 2 skipped** (2479 + 3).
+
 - **Lot 217 — livré** : INVARIANT scan_state « muté en place — ne
   JAMAIS réassigner » (state.py / CLAUDE.md) — constat mesuré + gardien
   AST. Scan du code produit (terminal.py + vertex/**, trois formes
