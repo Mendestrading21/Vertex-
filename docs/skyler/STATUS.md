@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 184 — livré** : vie/mort des COUCHES JS/CSS du monolithe
+  (extension du lot 183, rien supprimé). Par AST + recoupement
+  empirique : les 35 chaînes _*_JS/_*_CSS de terminal.py ne
+  nourrissent QUE les 25 pages mortes — chaque assignation qui les
+  consomme vise une PAGE_* morte ou une autre couche ; _vpage (20
+  appels module-niveau, tous vers des pages mortes) et _rail (défini
+  mais appelé NULLE PART — helper mort) sont les seuls à les
+  toucher ; les marqueurs signés (hmHost, artBoard) sont absents des
+  11 pages réellement servies. 5 tests figent l'inventaire exact et
+  ces preuves. Bilan cumulé du poids mort de terminal.py : 25 pages
+  + 35 couches + 2 helpers (~2 265+ lignes) — purge = décision
+  humaine (question ouverte depuis le lot 183). Aucun code modifié,
+  pas de bump SW. Suite 2435 → 2440 passed / 2 skipped.
 - **Lot 183 — livré** : VÉRIFICATION DE VIE des pages legacy de
   terminal.py — CONSTAT STRUCTUREL documenté, rien supprimé : par
   introspection des vues Flask ACTIVES, les 25 blobs PAGE_*
