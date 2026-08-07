@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 207 — livré** : TOUR RESPONSIVE 2/2 (mesuré, même protocole
+  que le 206) : /portfolio, /options, /journal, /system,
+  /intelligence × 5 viewports — 0 px de débordement de page sur les
+  25 cellules, 0 erreur console, seuls les panneaux hors-canvas
+  voulus signalés (mécanisme translateX déjà vérifié).
+  ★ VERDICT GLOBAL DU TOUR (lots 206-207) : 9 espaces × 5 viewports
+  = **45/45 cellules propres** — aucune page de Vertex ne défile
+  horizontalement entre 390 et 1920 px, aucune erreur console, tous
+  les habits TV de la tournée tiennent à toutes les tailles.
+  L'option 1 de la proposition du lot 205 est SOLDÉE en 2 lots sans
+  un seul correctif nécessaire — la discipline responsive des
+  refontes précédentes a tenu. AUCUN code touché, AUCUN bump SW.
+  Captures de contrôle Portefeuille 1920 + Intelligence 390
+  envoyées. Suite 2461 passed / 2 skipped.
+
 - **Lot 206 — livré** : TOUR RESPONSIVE post-tournée 1/2 (mesuré,
   option par défaut de la proposition du lot 205) : 4 espaces
   (Aujourd'hui, Marchés, Opportunités, Analyse) × 5 viewports
