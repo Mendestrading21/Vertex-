@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 223 — livré** : PAGES SECONDAIRES À 390px — le protocole
+  discriminant du lot 222 étendu aux pages JAMAIS balayées en
+  responsive, et en CONTEXTE DE NAVIGATION (2 pages visitées avant →
+  bouton retour visible — précisément le contexte qui piégeait
+  /portfolio au 222). Balayage : /titre/AAPL, /company/AAPL,
+  /analysis/ACN, /intelligence, /login, /design-system. RÉSULTAT :
+  **0 défaut sur les 6 pages** — overflowX 0, 0 dépassement droit
+  d'élément visible, 0 marqueur malhonnête (NaN/undefined/Infinity),
+  0 erreur console. Le correctif du 222 (fil d'Ariane + bouton retour
+  en ellipse, shell partagé) couvre bien ces pages. Constat honnête,
+  aucun code touché, pas de bump.
+  Suite **2482 passed / 2 skipped** (référence maintenue).
+
 - **Lot 222 — livré** : RESPONSIVE 390px — 2 DÉBORDEMENTS RÉELS du
   topbar trouvés et SOLDÉS (le spot-check navigateur a enfin payé).
   Mesure : overflowX document = 0 partout (les gardes tiennent), MAIS
