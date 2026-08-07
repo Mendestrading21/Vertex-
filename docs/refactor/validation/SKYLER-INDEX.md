@@ -159,6 +159,7 @@
 | 143 | `SKYLER-LOT-143.md` | Tournée de vérification transversale des 8 espaces : AUCUN défaut restant — tournée esthétique (124→143) COMPLÈTE ; lot documentaire, pas de bump SW ; 8 captures preuves envoyées | 0.9.0 | v151 | 1984 | GO |
 | 144 | `SKYLER-LOT-144.md` | Caractérisation moteur `timeframes.py` (confluence multi-horizons, 0 test direct avant) : 13 tests — 5 états et adj exacts (+5/+3/-4/-5/0), gardes None, contrat 9 clés, limite série plate documentée | 0.9.0 | v151 | 1997 | GO |
 | 145 | `SKYLER-LOT-145.md` | Caractérisation moteur `scorecard.py` (score /40 servi par le scan, dernier moteur à 0 test) : 36 tests — grille S+/S/A/B exacte, 4 raisons no-chase, 6 états timing, plancher neutre 18/40 rejeté, somme composantes == score40, robustesse | 0.9.0 | v151 | 2033 | GO |
+| 146 | `SKYLER-LOT-146.md` | Caractérisation étendue `analysis.py` (cœur analytique — couverture la plus mince, ratio 0.19) : 17 tests — robustesse sans Volume/historique court, profils DÉFENSIF/ÉQUILIBRÉ, radar d'anomalies + formule figée, cassure/CHOP, invariants du plan 1R/2R/3R, score == clamp(base+struct_adj) | 0.9.0 | v151 | 2050 | GO |
 
 ## Architecture atteinte
 
