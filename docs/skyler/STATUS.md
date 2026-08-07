@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 288 — livré** : LOT PRODUIT — palette de commandes au
+  TACTILE. Le calibrage navigateur a montré que le chemin existe
+  déjà (tap sur le champ de recherche → openPalette ; vérifié à
+  390px : 12 items, 0 erreur) → aucun bouton ajouté, changement
+  gratuit évité. Vrai défaut mesuré : à 390px le champ ne fait que
+  93px et la pastille « ⌘K » s'affiche quand même — affordance
+  CLAVIER mensongère au tactile (~30px mangés) → masquée en ≤640px
+  (responsive.css), desktop intact. Gardien neuf
+  test_palette_touch_lot288 (2 tests : tap câblé + ⌘K masqué en
+  mobile). Preuves : 390 pastille masquée + palette au tap, 1440
+  pastille visible + palette au clic, 0 débordement, 0 erreur,
+  capture envoyée. Bump SW v176 → v177 + 5 gardiens. Suite
+  **2496 passed / 2 skipped (+2)**. É1 : GO acquis, toujours en
+  attente de déblocage permissions.
+
 - **MINI-BILAN 281-286 (lot 287, rattrapage)** : tranche « la boucle
   repart en développement ». 281-282 : veille ; 283 : carte Verrou
   d'accès (v174) ; 284 : carte Application (v175) ; 285 : **GO PURGE
