@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 237 — livré** : SERVICE WORKER v173 VÉRIFIÉ EN NAVIGATEUR
+  RÉEL — le SW est bumpé et gardé depuis 173 versions mais son
+  comportement n'avait JAMAIS été vérifié en vrai (littéraux de
+  source seulement). Protocole : 1re visite / (enregistrement,
+  activation, caches), 2e visite /markets (nouvelle page, même
+  contexte). RÉSULTAT : SW enregistré + ACTIF (scope /) ;
+  **td-shell-v173 est le SEUL cache présent** — le nettoyage des
+  caches périmés à l'activation est prouvé ; precache 5 entrées
+  (coquille : manifest, icône, fonts) ; 2e visite : page CONTRÔLÉE
+  par le SW et **32/32 ressources statiques servies du cache**
+  (transferSize=0) — le cache runtime fait exactement le travail
+  conçu (hasShellJs=false au precache n'est PAS un défaut : les JS
+  entrent au cache à la 1re requête). La doctrine « bump =
+  déploiement » qui gouverne la boucle depuis 173 versions est
+  désormais PROUVÉE, pas supposée. 0 erreur console. Constat honnête,
+  aucun code touché, pas de bump. Suite **2486 passed / 2 skipped**.
+
 - **Lot 236 — livré** : MODAL D'AJOUT D'ENTITÉ — le dernier flux
   interactif du shell jamais testé en navigateur, avec la vérif
   READONLY la plus sensible (c'est le SEUL endroit du produit où
