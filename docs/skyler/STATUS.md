@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 157 — livré** : caractérisation des INDICATEURS TECHNIQUES
+  purs `market/indicators.py` (155 lignes, §12 — SMA/EMA/RSI/ATR/
+  Bollinger/VWAP sans pandas ; seules les LACUNES des 11 tests
+  existants sont figées). 9 tests : robustesse (non-numérique →
+  None traversant, fenêtre nulle → tout None) ; les ASYMÉTRIES de
+  trous de données DOCUMENTÉES — SMA se réinitialise (honnêteté de
+  fenêtre), EMA traverse (pas de fenêtre à invalider), ATR recopie
+  la dernière valeur, VWAP resservi sur volume nul — deux
+  philosophies assumées, les unifier = décision explicite ;
+  longueurs H/L/C tronquées au minimum ; la valeur GOLDEN du RSI
+  sur la série classique de Wilder (70.5 — prouve le lissage de
+  Wilder, pas une SMA) ; le multiplicateur Bollinger à écart
+  symétrique exact. Aucun code modifié, pas de bump SW.
+  Suite 2186 → 2195 passed / 2 skipped.
 - **Lot 156 — livré** : caractérisation de la STRUCTURE PAR PIVOTS
   `pivots.py` (124 lignes, ratio 0.65 — structure() appelée par
   analysis.py : sommets/creux fractals, tendance, logique d'entrée,
