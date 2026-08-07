@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 181 — livré** : caractérisation de la COUCHE ARTISTIQUE de
+  l'accueil `vertex/ui/home_art.py` (171 lignes, ZÉRO test —
+  VIVANTE : appliquée sur PAGE_DAILY et PAGE_STRATEGIE ; survey
+  honnête : ibkr_scheduler/source_router couverts par 22 tests,
+  quant_engine par 17, swing/events aussi). 8 tests figent :
+  l'injection pure (apply() → <style>+<script> UNE fois avant
+  </body>, sans </body> → no-op silencieux ; apply_desk() → CSS
+  SEUL) ; la syntaxe JS RÉELLE validée par node --check (règle
+  critique n°2 — deux SyntaxError silencieuses ont déjà vécu, un
+  vrai parseur garde désormais cette couche) ; le progressive
+  enhancement (catch → tout visible, arrêt propre sans #ovMarket,
+  reduced-motion dans les deux CSS) ; le contrat de données
+  (fetch /api/market/summary, rafraîchi 90 s SEULEMENT onglet
+  visible, chiffres fr-FR, bandes narratives VIX ≤14/≥22 distinctes
+  des bandes de données 16/22 du lot 153, VIX absent → tiret
+  honnête) ; le câblage réel prouvé (artBoard dans PAGE_DAILY,
+  DESK_CSS dans PAGE_STRATEGIE qui reste sans script). Aucun code
+  modifié, pas de bump SW. Suite 2416 → 2424 passed / 2 skipped.
 - **Lot 180 — livré** : caractérisation des DONNÉES ANALYSTES
   PROFONDES `vertex/data_sources/analyst_deep.py` (226 lignes, ZÉRO
   test, servi par la fiche titre — scheduler/live_stream déjà
