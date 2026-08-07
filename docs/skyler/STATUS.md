@@ -1495,6 +1495,29 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 286 — livré** : LOT PRODUIT — la carte Application porte
+  désormais un VERDICT DE VERSION : version locale (caches de
+  l'appareil) vs **version publiée lue de /sw.js servi à l'instant**
+  (fetch no-store — donnée réelle, aucun endpoint nouveau) → badge
+  « à jour » / « mise à jour disponible » (n/d honnête si une lecture
+  manque). Preuves navigateur : « locale td-shell-v176 · publiée
+  td-shell-v176 · à jour », 0 erreur console, 0 débordement, capture
+  envoyée. Gardien neuf test_app_version_check_lot286 (2 tests).
+  Bump SW v175 → v176 + 5 gardiens. Suite **2494 passed / 2 skipped
+  (+2)**.
+
+- **Lot 285 — PURGE É1 : GO reçu, moitié 1/2 faite, moitié 2/2
+  BLOQUÉE (permissions)** : le « Go » utilisateur a lancé l'Étape 1.
+  Tests adaptés (cat. B : 3 fichiers de caractérisation supprimés +
+  épingles retirées ; cat. C : asserts d'alias supprimés retirés, les
+  alias vivants gardent les leurs) — commit b8d3842 poussé sur
+  `agent/skyler-v2-lot-285`, PAS de PR (une PR = l'étape complète).
+  Le retrait des 82 défs / 5 236 lignes dans terminal.py (spans prêts,
+  table de l'outil commité) a été refusé 3 fois par le classifieur de
+  permissions du mode auto → utilisateur informé (déblocage : règle
+  Bash, mode interactif, ou « réessaie »). LE GO RESTE ACQUIS — la
+  purge s'exécute en priorité dès déblocage.
+
 - **Lot 284 — livré** : LOT PRODUIT — carte **« Application »** dans
   Système → Réglages. Comble la douleur documentée à chaque rapport
   (« iPhone : vider le cache à la main pour recevoir SW vNNN ») :
