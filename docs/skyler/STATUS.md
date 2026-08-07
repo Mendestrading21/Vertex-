@@ -1495,6 +1495,36 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 145 — livré** : caractérisation du moteur `scorecard.py`
+  (254 lignes) — vérifié VIVANT : importé par terminal.py (alias
+  `ibkr`), `verdict()` appelé pendant le scan ; produit le score
+  /40, les niveaux S+/S/A/B + allocations, l'entry timing, le
+  no-chase et le verdict affichés dans Opportunités ; c'était le
+  DERNIER moteur à zéro référence dans tests/. 36 tests figent :
+  grille des niveaux à bornes exactes (36/32/28/22 + allocations),
+  les 4 raisons no-chase isolées, les 6 états d'entry timing, le
+  plancher neutre 18/40 → rejeté (l'inconnu n'est jamais
+  investissable), la fenêtre catalyseur earnings (7-45 j idéale),
+  verdict({}) → None (falsy — pas de données, pas de verdict),
+  somme des composantes == score40 (une seule vérité), robustesse
+  aux valeurs pourries. Aucun code modifié, pas de bump SW.
+  Suite 1997 → 2033 passed / 2 skipped.
+
+### MINI-BILAN tournée 141-145
+
+5 lots, PR #174 → #178, SW stable v150 → v151 : fourchette
+analystes en rail à repères (141) · staleness par domaine en barre
+relative + garde Number(null) (142) · tournée de vérification
+transversale : AUCUN défaut restant, l'esthétique 124-143 est
+déclarée COMPLÈTE sur preuves (143) · pivot vers les
+caractérisations moteur : timeframes.py figé en 13 tests (144) ·
+scorecard.py — le dernier moteur à zéro test — figé en 36 tests
+(145). Suite 1984 → 2033 passed / 2 skipped : plus AUCUN moteur de
+vertex/engines/ sans test direct ; les deux contributeurs au score
+(confluence ±5, scorecard /40) ont désormais leurs contrats,
+gardes et planchers neutres verrouillés par des tests qui rendent
+tout changement de sémantique explicite.
+
 - **Lot 144 — livré** : retour aux caractérisations moteur —
   `timeframes.py` (confluence journalier × hebdo, contribue ±5 au
   score Vertex, drapeau `mtf` du scan) n'avait AUCUN test direct.
