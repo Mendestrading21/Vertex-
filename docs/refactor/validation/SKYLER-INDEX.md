@@ -155,6 +155,7 @@
 | 139 | `SKYLER-LOT-139.md` | Passe n°14 — Vue d'ensemble Marchés : leadership sectoriel en verre (dégradé par barre + halo ember du secteur MENEUR, hiérarchie par intensité conservée) ; Aujourd'hui vérifiée (Aura/Runway au niveau, tuiles gardées) ; captures envoyées | 0.9.0 | v148 | 1984 | GO |
 | 140 | `SKYLER-LOT-140.md` | Passe n°15 — Top/Flop 10 : chaque variation en mini-barre SIGNÉE de verre (échelle relative au max de la liste) — la hiérarchie des mouvements sans lire les % + MINI-BILAN 136-140 ; captures envoyées | 0.9.0 | v149 | 1984 | GO |
 | 141 | `SKYLER-LOT-141.md` | Passe n°16 — fiche Analyse/Sentiment : la fourchette des analystes devient un RAIL de verre avec cours (cyan) et objectif moyen (warning) en repères halotés — on voit où le prix vit dans la fourchette ; captures + zoom envoyés | 0.9.0 | v150 | 1984 | GO |
+| 142 | `SKYLER-LOT-142.md` | Passe n°17 — Système/Données : l'âge par domaine en barre de STALENESS relative (le plus rassis saute aux yeux ; sans âge → pas de barre, garde null avant Number) ; Automatisations vérifiée ; captures envoyées | 0.9.0 | v151 | 1984 | GO |
 
 ## Architecture atteinte
 

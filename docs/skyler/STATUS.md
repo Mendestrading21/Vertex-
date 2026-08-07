@@ -1495,6 +1495,16 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 142 — livré** : passe graphique n°17 — Système/Données :
+  l'ÂGE de la fraîcheur par domaine n'est plus un texte nu —
+  mini-barre de verre de STALENESS relative (échelle = âge max
+  connu) : les domaines frais restent discrets, le plus rassis
+  (companies, 20 481 min) saute aux yeux en pleine barre negative.
+  Couleur par état ; sans âge connu → pas de barre (garde
+  d.age_s == null AVANT Number(), car Number(null) = 0).
+  Automatisations vérifiée (badges + honnêteté déjà corrects).
+  SW v150 → v151 + 4 gardiens. Captures avant/après envoyées.
+  Suite 1984/2, RC GO.
 - **Lot 141 — livré** : passe graphique n°16 — fiche Analyse,
   section Sentiment : la FOURCHETTE des objectifs analystes n'est
   plus du texte nu — RAIL de verre low → high avec deux repères
