@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 294 — livré** : LOT PRODUIT — vues profondes : contrôles
+  segmentés TAPPABLES. Sondeur du lot 293 réutilisé sur 6 vues
+  ?view= à 390 (breadth, calendar, risk, track-record, positions,
+  settings) : 5/6 SAINES ; défaut réel sur /system?view=settings —
+  les 7 contrôles segmentés (densité, navigation latérale,
+  animations) mesuraient 26px, `.vx-segmented button` échappant à la
+  règle tactile mobile faute de classe vx-btn → min-height:40px en
+  ≤640px, aligné sur la règle existante, desktop intact. Gardien
+  neuf test_segmented_touch_lot294 (2 tests). Preuves : les 7
+  boutons sortis de la liste <32px, 0 erreur, 0 débordement, les 5
+  autres vues re-balayées saines, capture envoyée. Bump SW
+  v180 → v181 + 5 gardiens. Suite **2504 passed / 2 skipped (+2)**.
+  É1 : GO acquis, toujours en attente de déblocage permissions.
+
 - **Lot 293 — livré** : LOT PRODUIT — fiche Analyse : liens
   d'approfondissement TAPPABLES. Calibrage du parcours profond le
   plus central (/analysis/AAPL, sondeur complet) : sain partout SAUF
