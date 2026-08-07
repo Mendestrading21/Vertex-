@@ -30,7 +30,9 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 - ✔ lot 194 : heatmap (builder partagé) — texte des cellules coloré
   par intensité + cellule dominante en évidence (hérite : secteurs
   Marchés, P&L mensuel Portefeuille, scénarios/IV Options)
-- ☐ barres leadership
+- ✔ lot 199 : barres (C.bars partagé) — dominante en évidence :
+  liseré appuyé + valeur en chip pleine couleur (héritent : leadership,
+  S+/S/A/B, discipline, movers, recherche, sensibilité IV)
 - ✔ lot 198 : bandes CALME↔STRESS / DÉFENSE↔ATTAQUE — chip de valeur
   RÉELLE sur le pointeur (.vx-rail-chip réutilisable ; VIX réel,
   confiance % — « n/d » honnête sur régime indéterminé)
@@ -60,7 +62,8 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
   la projection modèle assume sa texture) + chip Min
 - ✔ lot 197 : scénarios (option-scenarios) — par HÉRITAGE de la
   heatmap TV lot 194 (constaté en navigateur)
-- ☐ sensibilité IV (option-iv-sensitivity)
+- ✔ lot 199 : sensibilité IV — par HÉRITAGE du C.bars TV (barre
+  dominante : liseré appuyé + valeur en chip, constaté en navigateur)
 - ☐ GEX (barres par strike) · double probabilité
 
 ### Journal (journal pages)

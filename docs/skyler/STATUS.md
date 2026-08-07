@@ -1495,6 +1495,25 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 199 — livré** : TOURNÉE TV — les BARRES du builder partagé
+  C.bars reçoivent la règle « dominante en évidence » : la barre au
+  |valeur| max (calculée seulement s'il y a ≥ 2 barres — jamais une
+  dominante sur singleton) porte un liseré appuyé (couleur pleine
+  1.6 px vs alpha 80 / 1 px pour les autres) et sa VALEUR en chip
+  pleine couleur (texte sombre — plugin canvas dans la grammaire
+  tvEdgeChip, posé au bout de la barre, borné à la zone de tracé,
+  vertical et horizontal gérés). Hérité par TOUS les appelants :
+  sensibilité IV (Options), S+/S/A/B (Portefeuille), leadership
+  (Marchés), discipline (Journal), movers (Système), recherche
+  (Intelligence). Matière verre, survol, axes et formats inchangés ;
+  la valeur du chip est la donnée RÉELLE formatée par le yFmt de
+  l'appelant. Constat honnête : #vx-brain-movers ne se rend pas en
+  démo (pas de mouvements) — rapporté sans agir. SW v162 → v163 +
+  5 gardiens. Capture sensibilité IV GOOGL (chip rouge « −23.4 % »
+  sur le choc −20 %, liseré appuyé) + Système 1440 + 390 envoyées,
+  0 erreur console. Suite 2461 passed / 2 skipped. Inventaire TV :
+  barres ✔ (sensibilité IV ✔ par héritage constaté).
+
 - **Lot 198 — livré** : TOURNÉE TV — les RAILS de Marchés reçoivent
   le chip de valeur : nouvelle classe réutilisable
   .vx-rail-chipline/.vx-rail-chip (cockpit.css) — chip posé au-dessus
