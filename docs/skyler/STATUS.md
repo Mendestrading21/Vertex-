@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 183 — livré** : VÉRIFICATION DE VIE des pages legacy de
+  terminal.py — CONSTAT STRUCTUREL documenté, rien supprimé : par
+  introspection des vues Flask ACTIVES, les 25 blobs PAGE_*
+  (~2 265 lignes de HTML/JS) ne sont plus servis par AUCUNE route —
+  la refonte (vertex/ui/pages + redesign) a tout repris, les 39
+  anciennes URLs redirigent vers les 8 espaces canoniques, et aucun
+  module n'importe terminal.PAGE_* (mortes ET orphelines). 5 tests
+  figent : l'inventaire EXACT des 25 mortes (ressusciter ou
+  supprimer = mise à jour explicite de l'inventaire) ; l'orphelinat
+  prouvé ; les 39 redirections vers leur cible exacte ; les
+  destinations = les 8 espaces canoniques, toutes 200 (aucun vieux
+  lien ne tombe dans le vide) ; aucune chaîne de redirections.
+  QUESTION OUVERTE à l'utilisateur : autoriser un futur lot de
+  PURGE de ces ~2 265 lignes mortes ? Aucun code modifié, pas de
+  bump SW. Suite 2430 → 2435 passed / 2 skipped.
 - **Lot 182 — livré** : GARDIEN GLOBAL DE SYNTAXE JS — la règle
   critique n°2 (« tout JS généré depuis Python doit être valide —
   deux SyntaxError silencieuses ont déjà vécu ») SYSTÉMATISÉE
