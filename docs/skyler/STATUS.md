@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 222 — livré** : RESPONSIVE 390px — 2 DÉBORDEMENTS RÉELS du
+  topbar trouvés et SOLDÉS (le spot-check navigateur a enfin payé).
+  Mesure : overflowX document = 0 partout (les gardes tiennent), MAIS
+  en discriminant off-canvas voulu / dépassement droit réel :
+  (1) /tracking — le crumb « Approfondissement du Portefeuille »
+  (nowrap 213px) finissait à 433px, texte passant SOUS les boutons ;
+  (2) /portfolio en NAVIGATION — le libellé du bouton retour (nowrap
+  155px) poussait le cluster droit à 403px (refresh coupé de 13px) ;
+  intermittent car le bouton retour n'apparaît qu'en navigation —
+  reproduit en visitant 3 pages avant. Correctif MINIMAL scopé ≤768px
+  (responsive.css) : .vx-breadcrumb flex:1/overflow hidden + enfants
+  min-width:0/ellipsis ; .vx-back-btn span idem — fil et libellé
+  TRONQUENT au lieu de passer dessous. Vérifié : contexte défaillant
+  rejoué → cluster à 378px ≤ 390 ✔ ; balayage 8 pages → 0 dépassement,
+  0 erreur console ; captures avant/après envoyées. Bump SW
+  **v171 → v172** + 5 gardiens (CSS du shell — le correctif doit se
+  déployer). Suite **2482 passed / 2 skipped**.
+
 - **Lot 221 — livré** : LIENS INTERNES + BOUTONS — balayage
   NAVIGATEUR des 8 pages en démo (DOM hydraté — les gardiens
   existants ne voient que la source servie). Protocole : serveur DEMO
