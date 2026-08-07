@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 186 — livré** : GARDIEN DES JS STATIQUES et des liens
+  d'assets (extension du lot 182 : le sweep couvrait l'inline, pas
+  les fichiers src=). 5 tests figent : les 31 fichiers JS du
+  produit (chart-core, regime-aura, catalyst-runway, vx-shell…)
+  parsent TOUS par node --check (seul exclu documenté : la
+  bibliothèque tierce minifiée vendor) ; les ≥ 40 assets référencés
+  par les 13 routes servies résolvent TOUS en 200 — aucun lien
+  mort ; AUCUN asset http(s) externe (l'autonomie hors-ligne des
+  lots 81-85 est désormais gardée en continu) ; chaque builder
+  charts s'enregistre sur VXCharts (exception documentée : le thème
+  → VXChartTheme, miroir de palette.py déjà gardé). Constat : état
+  présent sain — 0 invalide, 0 lien mort, 0 externe. Aucun code
+  modifié, pas de bump SW. Suite 2445 → 2450 passed / 2 skipped.
 - **Lot 185 — livré** : cartographie de mort, volet FONCTIONS
   (clôture 183-185, rien supprimé). Méthode PRUDENTE (un doute =
   vivant ; racines = décorées, référencées au module, vues actives,
