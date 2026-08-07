@@ -38,24 +38,28 @@
     const focusables = container.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
     if (focusables.length) focusables[0].focus();
   }
+  /* A11y (lot 209) : un panneau FERMÉ est invisible aux lecteurs d'écran et
+     infocusable — aria-hidden + inert posés fermé, retirés à l'ouverture. */
+  function panelOpen(el) { el.dataset.open = '1'; el.removeAttribute('aria-hidden'); el.removeAttribute('inert'); }
+  function panelClose(el) { el.dataset.open = '0'; el.setAttribute('aria-hidden', 'true'); el.setAttribute('inert', ''); }
   const shell = VX.shell = {
     openDrawer(title, html) {
       lastFocus = document.activeElement;
       $('vx-drawer-title').textContent = title;
       $('vx-drawer-body').innerHTML = html;
-      $('vx-drawer').dataset.open = '1'; overlay(true);
+      panelOpen($('vx-drawer')); overlay(true);
       trapFocus($('vx-drawer'));
     },
-    closeDrawer() { $('vx-drawer').dataset.open = '0'; overlay(false); lastFocus?.focus?.(); },
+    closeDrawer() { panelClose($('vx-drawer')); overlay(false); lastFocus?.focus?.(); },
     openModal(title, bodyHtml, footerHtml) {
       lastFocus = document.activeElement;
       $('vx-modal-title').textContent = title;
       $('vx-modal-body').innerHTML = bodyHtml;
       $('vx-modal-footer').innerHTML = footerHtml || '';
-      $('vx-modal').dataset.open = '1';
+      panelOpen($('vx-modal'));
       trapFocus($('vx-modal'));
     },
-    closeModal() { $('vx-modal').dataset.open = '0'; lastFocus?.focus?.(); },
+    closeModal() { panelClose($('vx-modal')); lastFocus?.focus?.(); },
     closeAll() {
       shell.closeDrawer(); shell.closeModal();
       $('vx-palette').dataset.open = '0';

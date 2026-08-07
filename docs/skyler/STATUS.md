@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 209 — livré** : ACCESSIBILITÉ des panneaux hors-canvas
+  (l'observation du lot 206 corrigée) : le drawer d'entité et le
+  modal FERMÉS portent désormais aria-hidden="true" + inert dans le
+  markup servi par le shell, et vx-shell.js les bascule proprement
+  (panelOpen retire les deux attributs, panelClose les repose — même
+  chemin pour les deux panneaux, retour de focus préservé). Sidebar
+  mobile laissée hors périmètre en connaissance de cause : visible
+  sur desktop, repli piloté par media query CSS — un aria-hidden JS
+  risquerait une régression desktop pour un gain nul (rapporté).
+  Cycle PROUVÉ en navigateur : fermé {aria-hidden:true, inert} →
+  ouvert {retirés} → refermé {reposés}, 0 erreur console. Gardien
+  test_a11y_drawer_lot209.py (5 tests : HTML servi, source JS,
+  identité dialogue, focus). Bump SW v167 → v168 + 5 gardiens —
+  JUSTIFIÉ : le HTML du shell change, sans bump les clients en cache
+  ne recevraient jamais le correctif (le bump est le vecteur de
+  déploiement). Suite **2466 passed** / 2 skipped (2461 + 5).
+
 - **Lot 208 — livré** : INVENTAIRE MESURÉ DE COHÉRENCE (option 2 de
   la proposition lot 205) : script d'analyse des builders charts +
   pages sur 4 axes — (1) police des chips : tvEdgeChip fontSize 9
