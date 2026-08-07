@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **MINI-BILAN 261-265 (lot 265)** : tranche « la boucle atterrit en
+  veille ». 261 : CLAUDE_VERTEX_REBUILD.md neutralisé (dernier risque
+  documentaire — un ordre de mission périmé pouvait détourner une
+  future session ; les 6 .md racine sont sains) ; 262 : constat
+  honnête d'épuisement des pistes → VEILLE ACTIVE + inventaire jamais
+  fait (303 branches distantes dont 277 mortes, nettoyage proposé sur
+  demande) ; 263-264 : deux cycles de veille prouvés — courts,
+  honnêtes, zéro travail fabriqué ; 265 : ce bilan. Défauts produit :
+  0 (33 lots depuis le 232) ; code produit : 0 ligne (20 lots,
+  246-265) ; suite 2486/2 et SW v173 inchangés ; 5 PR (#294→#298).
+  RÉCAP de ce qui attend l'humain : « GO purge étape 1 » (dossier
+  complet exécutable avec baseline de gain) ; « Nettoie les branches
+  de lots » (277, commande prête) ; bouton de verrouillage visible
+  (sur demande) ; validation physique TWS/iPhone (SW v173) ; merge
+  main (accord explicite).
+
 - **Lot 264 — livré** : VEILLE ACTIVE, cycle 2 — état IDENTIQUE au
   cycle 1 (0 doublon trigger, integration à jour, 0 PR oubliée, arbre
   propre, suite 2486/2). Aucun code produit changé, aucun signal, rien
