@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 187 — livré** : DÉFAUT RÉEL CORRIGÉ sur la page de référence
+  /design-system (254 l, zéro test dédié) — elle affichait des hex
+  PÉRIMÉS recopiés à la main : 10+ étiquettes divergeaient de
+  tokens.css (--vx-black affiché #020202, réel #060405 ; les tokens
+  devenus alias var() montraient l'ancienne valeur). Correctif
+  STRUCTUREL minimal : les hex sont désormais DÉRIVÉS de tokens.css
+  à l'import (alias résolus) — la double source a disparu, la page
+  LIT la vérité et ne peut plus mentir. 6 tests : preuve rouge/vert
+  (≥ 30 swatches, 0 divergence), variables toutes existantes (un
+  renommage CSS fait échouer la référence), alias montrés résolus,
+  ids uniques + littéraux interdits absents + data-ds-copy ≥ 20 +
+  état vide au libellé produit exact. SW v151 → v152 (changement
+  visible) + 4 gardiens de version mis à jour. Moteurs intacts.
+  Suite 2450 → 2456 passed / 2 skipped.
 - **Lot 186 — livré** : GARDIEN DES JS STATIQUES et des liens
   d'assets (extension du lot 182 : le sweep couvrait l'inline, pas
   les fichiers src=). 5 tests figent : les 31 fichiers JS du

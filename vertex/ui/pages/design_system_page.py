@@ -13,35 +13,55 @@ from __future__ import annotations
 from vertex.ui.shell import render_shell
 
 
-def _swatch(var: str, hexv: str = '', label: str = '') -> str:
+def _load_tokens() -> dict:
+    """Valeurs RÉELLES de tokens.css (source unique de vérité). Les alias
+    var(--x) sont résolus un niveau — la page de référence ne peut plus
+    afficher un hex périmé : elle LIT la vérité au lieu de la recopier."""
+    import os
+    import re
+    path = os.path.join(os.path.dirname(__file__), '..', '..', 'static',
+                        'vertex', 'css', 'tokens.css')
+    try:
+        css = open(path, encoding='utf-8').read()
+    except OSError:
+        return {}
+    toks = dict(re.findall(r'(--vx-[a-z0-9-]+)\s*:\s*([^;]+);', css))
+    out = {}
+    for k, v in toks.items():
+        v = v.strip()
+        m = re.fullmatch(r'var\((--vx-[a-z0-9-]+)\)', v)
+        if m:
+            v = toks.get(m.group(1), v).strip()
+        out[k] = v
+    return out
+
+
+_TOKENS = _load_tokens()
+
+
+def _swatch(var: str, label: str = '') -> str:
     name = label or var
+    hexv = _TOKENS.get(var, '')
     meta = f'<span class="ds-hex">{hexv}</span>' if hexv else ''
     return (f'<div class="ds-sw"><span class="ds-chip" style="background:var({var})"></span>'
             f'<code>{name}</code>{meta}</div>')
 
 
-# ── Groupes de palette (tokens réels de tokens.css) ────────────────────────
-_BG = [('--vx-black', '#020202'), ('--vx-obsidian-950', '#050505'),
-       ('--vx-obsidian-900', '#080808'), ('--vx-obsidian-850', '#0b0b0c'),
-       ('--vx-obsidian-800', '#0f1011'), ('--vx-graphite-900', '#121315'),
-       ('--vx-graphite-850', '#151719'), ('--vx-graphite-800', '#191b1e'),
-       ('--vx-graphite-750', '#1e2024'), ('--vx-graphite-700', '#25282d')]
-_COPPER = [('--vx-orange-950', '#14181e'), ('--vx-orange-900', '#1b2027'),
-           ('--vx-orange-850', '#272e37'), ('--vx-orange-800', '#272e37'),
-           ('--vx-orange-700', '#3a434e'), ('--vx-orange-600', '#aab3bf'),
-           ('--vx-orange-500', '#dbe1e8'), ('--vx-orange-400', '#eef1f5'),
-           ('--vx-copper-dark', '#272e37'), ('--vx-copper', '#3a434e'),
-           ('--vx-copper-light', '#dbe1e8')]
-_SEM = [('--vx-positive', '#2BBE90'), ('--vx-negative', '#E9555F'),
-        ('--vx-warning', '#D9BE3C'), ('--vx-option', '#9B7BFF'),
-        ('--vx-amber', '#D9BE3C'), ('--vx-beige', '#c8bfae'),
-        ('--vx-neutral-chart', '#BABABA'), ('--vx-info', '#45D6E8')]
-_TEXT = [('--vx-text-primary', '#F8F5F3'), ('--vx-text-secondary', '#BABABA'),
-         ('--vx-text-muted', '#8A8284'), ('--vx-text-faint', '#655d5f')]
+# ── Groupes de palette (les VALEURS viennent de tokens.css, jamais recopiées) ─
+_BG = ['--vx-black', '--vx-obsidian-950', '--vx-obsidian-900', '--vx-obsidian-850',
+       '--vx-obsidian-800', '--vx-graphite-900', '--vx-graphite-850',
+       '--vx-graphite-800', '--vx-graphite-750', '--vx-graphite-700']
+_COPPER = ['--vx-orange-950', '--vx-orange-900', '--vx-orange-850', '--vx-orange-800',
+           '--vx-orange-700', '--vx-orange-600', '--vx-orange-500', '--vx-orange-400',
+           '--vx-copper-dark', '--vx-copper', '--vx-copper-light']
+_SEM = ['--vx-positive', '--vx-negative', '--vx-warning', '--vx-option',
+        '--vx-amber', '--vx-beige', '--vx-neutral-chart', '--vx-info']
+_TEXT = ['--vx-text-primary', '--vx-text-secondary', '--vx-text-muted',
+         '--vx-text-faint']
 
 
 def _swatches(items):
-    return '<div class="ds-sw-grid">' + ''.join(_swatch(v, h) for v, h in items) + '</div>'
+    return '<div class="ds-sw-grid">' + ''.join(_swatch(v) for v in items) + '</div>'
 
 
 _DS_CSS = """
