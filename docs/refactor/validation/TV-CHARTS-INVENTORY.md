@@ -17,7 +17,8 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 ## Par page (ordre de visibilité produit)
 
 ### Aujourd'hui (briefing.py)
-- ☐ regimeAura (regime-aura.js) — halo + arc de confiance
+- ✔ lot 192 : regimeAura aligné grammaire TV — arc de confiance en
+  dégradé continu de tonalité + pointeur blanc court (langage C.gauge)
 - ☐ catalystRunway (catalyst-runway.js) — piste DTE
 - ☐ sparklines des tuiles KPI (chart-core sparkline)
 
@@ -43,7 +44,8 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 - ☐ barres S+/S/A/B (concentration)
 
 ### Options (options_intel_page.py)
-- ☐ payoff (option-payoff) — ajouter zones hachurées perte/gain
+- ✔ lot 192 : payoff (option-payoff) — zones GAIN/PERTE hachurées
+  (équivalent canvas du tvHatch) + libellés de zones au breakeven
 - ☐ scénarios (option-scenarios) · théta (option-theta) ·
   sensibilité IV (option-iv-sensitivity)
 - ☐ GEX (barres par strike) · double probabilité

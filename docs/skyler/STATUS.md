@@ -1495,6 +1495,25 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 192 — livré** : TOURNÉE TV — deux graphiques alignés. (1)
+  regimeAura (Aujourd'hui) rejoint la grammaire TV : l'arc de
+  confiance ENTIER en dégradé continu de la tonalité du régime
+  (fondu .18 → .95), POINTEUR blanc court posé sur l'arc à la
+  position de la confiance (même langage que l'aiguille C.gauge du
+  lot 189), « x % confiance » en évidence colorée gras 800 — halo,
+  chips de grammaire et verdict inchangés, état honnête intact
+  (sans régime → vide). (2) PAYOFF Options hachuré : _hatch(color) =
+  équivalent CANVAS du tvHatch SVG (teinte .08 + rayures 45° .38),
+  zones gain/perte du payoff en motifs hachurés (le payoff à
+  l'échéance est une ESTIMATION) + libellés « GAIN »/« PERTE » de
+  part et d'autre du breakeven selon C/P — arithmétique du contrat
+  STRICTEMENT inchangée, contrat incomplet → vide honnête. Constat
+  démo rapporté sans agir : prime GOOGL aberrante (3812) → P&L
+  ≈ −100 % partout, rendu honnête des chiffres fournis. SW v155 →
+  v156 + 5 gardiens. Captures Aujourd'hui 1440+390 + carte aura +
+  carte payoff envoyées, 0 erreur console.
+  Suite 2461 passed / 2 skipped. Inventaire TV : aura ✔, payoff ✔.
+
 - **Lot 191 — livré** : TOURNÉE TV — les BARRES DE CONSENSUS du
   comité (charts/consensus-bars.js, nouveau builder
   VXCharts.consensusBars) — le « Note des analystes » TradingView
