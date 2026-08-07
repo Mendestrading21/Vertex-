@@ -152,6 +152,7 @@
 | 136 | `SKYLER-LOT-136.md` | Passe n°11 — Radar Opportunités : comparaison des candidats en verre (dégradé + halo du MEILLEUR par critère) + score Skyler /40 en mini-barre graduée ; Watchlist vérifiée (états vides honnêtes) ; captures envoyées | 0.9.0 | v145 | 1984 | GO |
 | 137 | `SKYLER-LOT-137.md` | Passe n°12 — Positions : le poids devient une mini-barre de verre avec REPÈRE DU PLAFOND du tier (proche → warning, au-dessus → negative + halo ; sans tier : échelle simple, aucun plafond inventé) ; captures envoyées | 0.9.0 | v146 | 1984 | GO |
 | 138 | `SKYLER-LOT-138.md` | Passe n°13 — Synthèse : la tuile Concentration gagne sa barre de verre avec le REPÈRE prudent ~15 % (< 15 positive, 15-25 warning, > 25 negative + halo) — la donnée et son seuil se parlent enfin ; captures envoyées | 0.9.0 | v147 | 1984 | GO |
+| 139 | `SKYLER-LOT-139.md` | Passe n°14 — Vue d'ensemble Marchés : leadership sectoriel en verre (dégradé par barre + halo ember du secteur MENEUR, hiérarchie par intensité conservée) ; Aujourd'hui vérifiée (Aura/Runway au niveau, tuiles gardées) ; captures envoyées | 0.9.0 | v148 | 1984 | GO |
 
 ## Architecture atteinte
 

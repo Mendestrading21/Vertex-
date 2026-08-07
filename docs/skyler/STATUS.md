@@ -1495,6 +1495,14 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 139 — livré** : passe graphique n°14 — Vue d'ensemble
+  Marchés : le Leadership sectoriel passe en VERRE — chaque barre
+  est un dégradé de sa propre couleur (color-mix) et le secteur
+  MENEUR garde l'ember avec un halo doux (le leadership se voit
+  avant de lire le score). Hiérarchie par intensité conservée.
+  Aujourd'hui vérifiée : Aura, Runway, listes et tuiles KPI déjà
+  au niveau (tuiles gardées — non touchées). SW v147 → v148 +
+  4 gardiens. Captures avant/après envoyées. Suite 1984/2, RC GO.
 - **Lot 138 — livré** : passe graphique n°13 — Synthèse
   Portefeuille : la tuile KPI CONCENTRATION n'est plus un chiffre
   nu — mini-barre de verre avec le REPÈRE prudent (~15 % par titre,
