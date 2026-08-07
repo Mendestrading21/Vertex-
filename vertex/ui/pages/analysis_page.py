@@ -256,6 +256,7 @@ _JS = r"""
 <script src="/static/vertex/js/charts/candlestick-lwc.js" defer></script>
 <script src="/static/vertex/js/charts/annotations.js" defer></script>
 <script src="/static/vertex/js/charts/anomaly-scan.js" defer></script>
+<script src="/static/vertex/js/charts/projection-cone.js" defer></script>
 <script>
 (function(){
 'use strict';
@@ -584,7 +585,8 @@ async function loadDossier(){
       +'<line x1="'+axX+'" y1="'+padT+'" x2="'+axX+'" y2="'+(H-padB)+'" stroke="rgba(255,255,255,.12)"/>'+bands+rows+'</svg>';
   }
   body('an-plan',
-    rrLadder(d.price,plan)
+    `<div id="an-cone" class="vx-mb2"></div>`
+    +rrLadder(d.price,plan)
     +kv('Entrée',plan.entry)+kv('Stop (invalidation sous-jacent)',plan.stop,'vx-neg')
     +kv('TP1',plan.tp1,'vx-pos')+kv('TP2',plan.tp2,'vx-pos')+kv('TP3',plan.tp3,'vx-pos')
     +kv('R:R structurel',plan.rr)
@@ -594,6 +596,10 @@ async function loadDossier(){
       <button class="vx-btn vx-btn-sm vx-btn-soft" onclick="window.__prepOrder&&window.__prepOrder('${SYM}')">Préparer l’ordre (copier IBKR)</button>
     </div>
     <div id="an-order-ticket" class="vx-mt2"></div>`);
+  if(window.VXCharts&&VXCharts.projectionCone){
+    VXCharts.projectionCone('an-cone',{spot:d.price,stop:plan.stop,tp1:plan.tp1,tp2:plan.tp2,tp3:plan.tp3,
+      history:(S.close||[]).slice(-60),horizonLabel:'plan moteur'+(plan.rr?' · R:R '+plan.rr:'')});
+  }
   window.__prepOrder=function(sym){
     const host=document.getElementById('an-order-ticket');if(!host)return;
     const av=Number(localStorage.getItem('vxAccountValue')||'')||null;
