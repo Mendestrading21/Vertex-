@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 161 — livré** : caractérisation des CONSTITUANTS D'INDICES
+  `data/constituents.py` (112 lignes, 0 test — nourrit l'univers
+  des titres au démarrage : Wikipedia + cache disque + snapshot
+  statique). 9 tests SANS réseau (fetch monkeypatché, cache isolé) :
+  normalisation yfinance (BRK.B → BRK-B), filtrage des tickers
+  implausibles avec dédup ordonnée, intégrité du snapshot statique
+  (≥ 400/80/25 ET déjà normalisé), et surtout l'ORDRE DE RÉSOLUTION
+  complet — sans cache + réseau mort → static (démarrage JAMAIS
+  bloqué), cache frais prioritaire (aucun appel réseau), force=True
+  qui retente puis retombe sur cache-stale, liste vide dans le
+  cache → repli statique PAR INDICE, fetch réussi → live + cache
+  persisté ; garde-fou parsing (listes < 400/80/25 → ValueError
+  explicite). Aucun code modifié, pas de bump SW.
+  Suite 2230 → 2239 passed / 2 skipped.
 - **Lot 160 — livré** : caractérisation de la famille RISQUE
   PORTEFEUILLE — `correlation.py` (consommé par risk_engine →
   drapeau du Command Center) et `stress_tests.py` (route
