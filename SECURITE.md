@@ -26,15 +26,21 @@ Il suffit de définir la variable **`VERTEX_CODE`** avec ton mot de passe.
    > `.env` est dans `.gitignore` : il n'est **jamais** envoyé sur GitHub.
 
 ## Désactiver le verrou
-Supprime la variable `VERTEX_CODE` (ou laisse-la vide). L'app redevient ouverte.
+Supprime la variable `VERTEX_CODE` (ou laisse-la vide). L'app ne demande
+plus de code — **et par sécurité, sans code, le serveur n'écoute plus que
+`127.0.0.1`** (plus d'accès depuis le WiFi/LAN, sauf `VERTEX_LAN=1` posé
+en connaissance de cause).
 
 ## Comment ça marche
 - Session par **cookie signé** (httponly, SameSite=Lax), valable **30 jours** :
   tu entres le code une fois par appareil.
 - **Anti-force-brute** : après 5 essais ratés, blocage progressif par IP (jusqu'à 5 min).
 - Comparaison du code à **temps constant** (pas de fuite d'information).
-- Bouton **« Se déconnecter & verrouiller »** dans *Paramètres*.
-- Pages publiques (pas de code requis) : `/login`, `/healthz`, favicon, manifeste, service worker.
+- Pour verrouiller un appareil : visiter **`/logout`** (la session du
+  cookie est révoquée, le code sera redemandé).
+- Pages publiques (pas de code requis) : `/login`, `/logout`, `/healthz`,
+  `/api/healthz`, favicon, manifeste, service worker, et le webhook
+  TradingView (qui porte sa propre authentification par secret signé).
 
 ## Conseils
 - Choisis un mot de passe **long et pas évident** (évite les noms + 123).
