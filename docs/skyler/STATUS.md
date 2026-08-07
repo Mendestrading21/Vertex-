@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 226 — livré** : BUDGETS JS/CSS STATIQUES — la piste proposée
+  trois fois, enfin prise. Mesure de vertex/static/** contre les
+  gardiens du lot 72 (64 kB/fichier première partie, vendor isolé).
+  VERDICT : gardien VERT, aucune violation — mais dérive réelle
+  documentée : **chart-core.js 39 → 57,2 kB** (+18 kB, coût LÉGITIME
+  de la tournée TV 189-213 : jauge, hachures, chips, extrêmes, radar
+  dominant, levelLines) soit **89 % du budget**, marge restante
+  6,8 kB ; options-intel 39,1 kB (61 %) ; neon-glass.css 47 kB
+  (73 %) ; vendor 160 kB toujours chargé par /analysis seule (gardien
+  d'isolement vert). CONTRE-VÉRITÉ corrigée : le commentaire de
+  calibration du gardien affirmait encore « chart-core 39 kB » —
+  recalibré aux valeurs mesurées, avec consigne explicite : au
+  prochain palier, discuter le budget AVANT de le crever (pas de
+  hausse en douce — c'est la dérive que le gardien ferme).
+  Tests/docs seulement, pas de bump.
+  Suite **2482 passed / 2 skipped**.
+
 - **Lot 225 — livré** : MINI-BILAN 221-225. Tranche de 5 lots
   (PR #254 → #258) : suite **2482 / 2 skipped stable**, SW v171 →
   **v172** (1 seul bump, porté par le SEUL correctif réel de la
