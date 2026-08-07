@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 298 — livré** : GARDIEN TRANSVERSAL — plus jamais un
+  « live » menteur. La leçon des lots 296/297 (mode de fraîcheur
+  codé en dur pour des données qui ont un repli/une variante démo)
+  codifiée à l'échelle de l'app : inventaire complet (`,'live')` +
+  `mode:'live'` sur terminal.py + vertex/ui/** + static/js/**) → 2
+  sites restants dans system_page, jugés HONNÊTES (état interne du
+  serveur : registre des jobs, rapport de démarrage — ni repli ni
+  variante démo possible). Gardien neuf
+  test_freshness_mode_guard_lot298 (2 tests) avec exceptions
+  DOCUMENTÉES (system_page + widget_lab, bibliothèque figée =
+  spécimens d'exposition). 1er run rouge — le gardien a attrapé
+  widget_lab, exception ajoutée avec justification. Suite
+  **2512 passed / 2 skipped (+2)**. Tests seuls, pas de bump. É1 :
+  GO acquis, toujours en attente de déblocage permissions.
+
 - **Lot 297 — livré** : LOT PRODUIT — HONNÊTETÉ des 18 vues
   profondes. Sondeur du lot 296 étendu (étiquette démo, .vx-update,
   chasse aux revendications « réel » en DEMO) : ~30 occurrences
