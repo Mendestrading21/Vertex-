@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 254 — livré** : AUDIT de l'invariant « fichiers runtime jamais
+  commités » (règle Git de CLAUDE.md — le seul invariant jamais audité
+  formellement). 3 volets mesurés : `git ls-files` × motifs interdits
+  → **0 fichier runtime traqué** (unique match : un fichier de TEST au
+  nom similaire) ; `ls-files -ci` → **0 incohérence** traqué/ignoré ;
+  croisement .gitignore ↔ sites d'écriture RÉELS de l'app →
+  **couverture 100 %** (skyler_memory/sessions/decisions.json +
+  alerts_fired.json listés nommément ; les 3 caches couverts par
+  `*_cache.json` ; les jokers du rituel de nettoyage = ceinture-
+  bretelles, aucun fichier réel ne correspond aux variantes).
+  INVARIANT TENU → 0 correctif. Docs seulement, pas de bump. Suite
+  **2486 passed / 2 skipped**.
+
 - **Lot 253 — livré** : ANNEXE É1 — la liste EXACTE des retraits de
   l'Étape 1, générée et triée (`ANNEXE-E1-RETRAITS.md`, **0 purge**).
   Mode `--e1` ajouté à l'outil officiel : 82 défs du périmètre borne
