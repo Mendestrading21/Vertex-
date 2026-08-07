@@ -148,6 +148,7 @@
 | 132 | `SKYLER-LOT-132.md` | Passe n°7 — Opportunités : intensité des anomalies en mini-barre verre (fini le chiffre nu) + calendrier avec IMMINENCE (≤ 7 j = liseré + date warning, option urgent de timelineCard) ; captures envoyées | 0.9.0 | v141 | 1984 | GO |
 | 133 | `SKYLER-LOT-133.md` | Passe n°8 — payoff de structure Options : 2 BUGS préexistants tués (plugins ignorés par C.mount + index catégorie vs prix — spot/BE n'apparaissaient JAMAIS) ; repères sur tokens, zones gain/perte, halo ; captures + zoom envoyés | 0.9.0 | v142 | 1984 | GO |
 | 134 | `SKYLER-LOT-134.md` | Passe n°9 — radar de positionnement Options : le net GEX devient une mini-barre SIGNÉE de verre depuis l'axe zéro (stabilisant → droite positive, accélérateur → gauche negative, échelle relative) — fini les 18 lignes de chiffres nus ; captures envoyées | 0.9.0 | v143 | 1984 | GO |
+| 135 | `SKYLER-LOT-135.md` | Passe n°10 — scan Actions : le score devient une mini-barre verre GRADUÉE (≥ 70 positive, 40-69 warning, < 40 negative — seuils réels du moteur) + MINI-BILAN 131-135 ; captures envoyées | 0.9.0 | v144 | 1984 | GO |
 
 ## Architecture atteinte
 

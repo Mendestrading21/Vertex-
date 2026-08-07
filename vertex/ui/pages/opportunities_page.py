@@ -375,13 +375,22 @@ async function renderStocks(){
     if(state.setup)f=f.filter(r=>(pbStr(r.playbook)||r.profile||'').toUpperCase().includes(state.setup));
     if(state.minScore)f=f.filter(r=>(r.score||0)>=state.minScore);
     f=f.slice().sort((a,b)=>(b.score||0)-(a.score||0));
+    /* LOT 135 : le score n'est plus un chiffre nu — mini-barre de verre
+       graduée 0-100 (>=70 positive, 40-69 warning, <40 negative ; dégradé
+       doux → dense via color-mix sur tokens). L'œil classe le scan. */
+    const scoreBar=(v)=>{const n=Number(v);if(!isFinite(n))return VX.fmt.nd(v);
+      const tok=n>=70?'var(--vx-positive,#2BBE90)':n>=40?'var(--vx-warning,#D9BE3C)':'var(--vx-negative,#E9555F)';
+      return '<span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">'
+        +'<span style="width:56px;height:8px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block">'
+        +'<span style="display:block;height:100%;width:'+Math.max(3,Math.min(100,n)).toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:3px"></span></span>'
+        +'<span style="font-variant-numeric:tabular-nums">'+VX.fmt.nd(n)+'</span></span>';};
     $('op-table').innerHTML=f.length?`<table class="vx-table"><thead><tr>
       <th>Titre</th><th>Statut</th><th class="vx-num" data-sortable>Score</th><th>Décision moteur</th>
       <th class="vx-num">Cours</th><th class="vx-num">R:R</th><th>Setup</th><th>Secteur</th><th></th></tr></thead><tbody>
       ${f.slice(0,80).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
         <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
         <td data-label="Statut"><span class="vx-badge ${bucketCls(bucketOf(r))}">${bucketOf(r)}</span></td>
-        <td data-label="Score" class="vx-num">${VX.fmt.nd(r.score)}</td>
+        <td data-label="Score" class="vx-num">${scoreBar(r.score)}</td>
         <td data-label="Décision"><span class="vx-badge ${vCls(r.verdict)}">${esc(r.verdict||'')}</span></td>
         <td data-label="Cours" class="vx-num">${VX.fmt.nd(r.price!==undefined?VX.fmt.price(r.price):null)}</td>
         <td data-label="R:R" class="vx-num">${VX.fmt.nd(r.rr)}</td>
