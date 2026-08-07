@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **MINI-BILAN 251-255 (lot 255)** : tranche « consolider sans
+  fabriquer ». 251 : smoke-check santé post-merges SAIN (8 pages ×
+  200, 0 erreur console, client-log 0) ; 252 : outil de chiffrage
+  rendu rejouable de partout (1 défaut d'OUTILLAGE prouvé puis corrigé,
+  chiffres identiques au lot 249) ; 253 : annexe É1 — liste exacte des
+  82 défs triée A/B/C, le « GO » devient exécutable sans
+  reconstruction ; 254 : audit invariant « fichiers runtime jamais
+  commités » TENU (0 traqué, 0 incohérence, .gitignore 100 % des
+  sites d'écriture) ; 255 : ce bilan. **10 lots consécutifs (246-255)
+  sans toucher au code produit** — chaque lot une mesure ou un outil,
+  jamais du remplissage. Suite 2486/2 et SW v173 inchangés ; 5 PR
+  (#284→#288) ; défauts produit : 0 (23 lots consécutifs). État : la
+  purge est PRÊTE (preuves + fourchette 31,4-48,7 % + outil robuste +
+  liste triée) et bloquée PAR CONCEPTION sur « GO purge étape 1 » ;
+  les pistes autonomes restantes sont de l'entretien périodique que la
+  boucle ESPACE plutôt que d'en fabriquer.
+
 - **Lot 254 — livré** : AUDIT de l'invariant « fichiers runtime jamais
   commités » (règle Git de CLAUDE.md — le seul invariant jamais audité
   formellement). 3 volets mesurés : `git ls-files` × motifs interdits
