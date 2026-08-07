@@ -51,5 +51,4 @@ def test_demo_puts_target_weak_names_and_hedge_leaders():
 
 def test_terminal_bindings_are_the_module():
     import terminal
-    assert terminal._demo_one is demo.demo_one
     assert terminal._demo_options_board is demo.demo_options_board

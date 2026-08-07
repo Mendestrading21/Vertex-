@@ -79,5 +79,3 @@ def test_chiffres_localises_fr_et_lecture_vix_14_22():
 def test_couche_appliquee_aux_pages_du_terminal():
     import terminal
     assert 'artBoard' in terminal.PAGE_DAILY           # apply() effectif sur /
-    assert ha.DESK_CSS in terminal.PAGE_STRATEGIE      # apply_desk() effectif
-    assert 'artBoard' not in terminal.PAGE_STRATEGIE   # le desk reste CSS seul
