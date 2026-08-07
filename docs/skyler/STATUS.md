@@ -1495,6 +1495,18 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 224 — livré** : RESPONSIVE 768px (TABLETTE) — chasse aux
+  cousins des défauts topbar du lot 222, au point de rupture EXACT du
+  media query du correctif (max-width:768px — là où un défaut de bord
+  serait le plus probable), protocole discriminant en contexte
+  navigation sur les 8 espaces. RÉSULTAT : **0 défaut partout** —
+  overflowX 0, 0 dépassement droit d'élément visible, 0 erreur
+  console. Le correctif 222 s'applique bien à 768 inclus (fil
+  d'Ariane et bouton retour tronquent aussi en tablette) et aucune
+  autre famille de défauts n'apparaît à ce viewport. Constat honnête,
+  aucun code touché, pas de bump. (Lot exécuté sur ordre « continue »,
+  trigger réarmé.) Suite **2482 passed / 2 skipped**.
+
 - **Lot 223 — livré** : PAGES SECONDAIRES À 390px — le protocole
   discriminant du lot 222 étendu aux pages JAMAIS balayées en
   responsive, et en CONTEXTE DE NAVIGATION (2 pages visitées avant →
