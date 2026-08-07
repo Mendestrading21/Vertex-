@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 257 — livré** : README ↔ RÉALITÉ — la vitrine du dépôt n'avait
+  jamais été auditée contre les faits mesurés. **4 défauts corrigés,
+  dont 1 de SÉCURITÉ** : le README affirmait « le serveur écoute déjà
+  sur tout le réseau local (0.0.0.0) » alors que la réalité durcie et
+  GARDÉE (test_network_binding_lot218) est l'écoute 127.0.0.1 par
+  défaut, LAN seulement via VERTEX_CODE (verrou) ou VERTEX_LAN=1 →
+  section réécrite avec la vraie procédure ; liste de pages
+  pré-refonte (/titre, /entreprises, /watchlist) → les 8 espaces
+  canoniques + note de redirection ; « 57 leaders US » → univers réel
+  S&P 500 ∪ Nasdaq 100 ∪ Dow (~500 titres, healthz 517) ; structure
+  périmée → routes/pages/moteurs actuels. Calibrage AVANT correction :
+  ib_reader.py vérifié réel et branché (sa ligne était correcte —
+  conservée), fichiers pointés tous existants, 0 test n'épingle le
+  README. Docs seulement, pas de bump. Suite **2486 passed / 2
+  skipped**.
+
 - **Lot 256 — livré** : BASELINE de performance SERVEUR avant-purge
   (jamais chiffrée formellement — le lot 72 mesurait le client).
   Import de terminal.py : **11,68 s à froid, ~2 s à chaud** (3
