@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 182 — livré** : GARDIEN GLOBAL DE SYNTAXE JS — la règle
+  critique n°2 (« tout JS généré depuis Python doit être valide —
+  deux SyntaxError silencieuses ont déjà vécu ») SYSTÉMATISÉE
+  (survey honnête : tracking_page/vault/sync_center ont leurs
+  gardiens de contenu, la lacune était transverse). 6 tests : les
+  16 routes HTML canoniques répondent toutes 200 et CHAQUE bloc
+  <script> inline de chaque page est validé par node --check —
+  0 erreur tolérée (une apostrophe française non échappée fait
+  désormais échouer la suite) ; garde anti-vide (≥ 12 blocs
+  réellement contrôlés — le gardien ne peut pas passer en tournant
+  à vide) ; sync_center.JS et le _HEATMAP_JS du vault validés AVANT
+  injection ; l'extracteur lui-même testé unitairement (src/json
+  ignorés, inline gardé). Constat : tout l'état présent parse — le
+  gardien empêche la régression. Aucun code modifié, pas de bump
+  SW. Suite 2424 → 2430 passed / 2 skipped.
 - **Lot 181 — livré** : caractérisation de la COUCHE ARTISTIQUE de
   l'accueil `vertex/ui/home_art.py` (171 lignes, ZÉRO test —
   VIVANTE : appliquée sur PAGE_DAILY et PAGE_STRATEGIE ; survey
