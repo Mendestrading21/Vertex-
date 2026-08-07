@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 211 — livré** : ENTRETIEN — deux choses. (1) Le constat
+  « movers absents en démo » du lot 199 ré-examiné et CLOS : pas un
+  trou silencieux — l'hôte n'est créé que si movers.length, et
+  l'absence de cotations est déjà couverte par l'état honnête de la
+  table (« Aucune cotation web pour l'instant… »). (2) Dette RÉELLE
+  trouvée dans le même bloc et soldée : les barres movers coloraient
+  en HEX NUS ('#36c889'/'#ed655c') — le DERNIER littéral couleur nu
+  des pages (balayage complet : toutes les autres occurrences sont
+  des lookups de tokens avec fallback, motif légitime) → remplacés
+  par VXCharts.colors.positive/negative (VXCharts garanti présent
+  par la garde de la branche). Bump SW v168 → v169 + 5 gardiens : le
+  rendu peut changer subtilement (hex figé → vraie valeur du token)
+  et le correctif doit atteindre les clients en cache. Note honnête :
+  pas de capture possible (movers exigent des cotations web,
+  absentes en démo) — preuve par code + balayage.
+  Suite 2466 passed / 2 skipped.
+
 - **Lot 210 — livré** : PREUVE NAVIGATEUR du cycle a11y du MODAL et
   du chemin closeAll (complément du 209 qui n'avait prouvé que le
   drawer) : modal fermé {aria-hidden:true, inert} → ouvert {retirés}
