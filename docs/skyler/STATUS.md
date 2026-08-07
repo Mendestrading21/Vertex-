@@ -1495,6 +1495,36 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 185 — livré** : cartographie de mort, volet FONCTIONS
+  (clôture 183-185, rien supprimé). Méthode PRUDENTE (un doute =
+  vivant ; racines = décorées, référencées au module, vues actives,
+  références externes) : 29 des 91 fonctions top-niveau de
+  terminal.py sont mortes — 62 lignes seulement, QUE des stubs de
+  vues legacy (≤ 4 lignes : return PAGE_* morte, redirection ou
+  render migré) + _rail + _legacy_pages_redirect ; AUCUNE logique
+  métier morte. Les 9 boucles de fond sont CLASSÉES VIVANTES (garde
+  anti-faux-positif testée). 5 tests figent l'inventaire, la garde,
+  la nature des stubs, le recoupement endpoints et le poids chiffré.
+  Aucun code modifié, pas de bump SW.
+  Suite 2440 → 2445 passed / 2 skipped.
+
+### MINI-BILAN tournée 181-185 — « UI vivante + cartographie de mort »
+
+5 lots, PR #214 → #218, suite 2416 → 2445 passed (+29 tests), SW
+stable v151 (tournée tests pure). Deux fils : (1) les couches UI
+VIVANTES gardées — home_art caractérisée (injection, progressive
+enhancement, VIX narratif) et la règle critique n°2 SYSTÉMATISÉE
+(chaque bloc <script> inline de chaque page servie passe au vrai
+parseur node --check, garde anti-vide) ; (2) la CARTOGRAPHIE DE MORT
+de terminal.py, prudente et prouvée (AST + introspection Flask +
+recoupement empirique) : 25 pages (~2 265 l) + 35 couches JS/CSS +
+29 fonctions stubs (62 l) + 2 helpers — morts, orphelins,
+inventaires EXACTS figés par tests (ressusciter ou supprimer =
+décision explicite), aucun vieux lien utilisateur ne tombe dans le
+vide (39 redirections vérifiées). AUCUNE logique métier morte — le
+poids mort est du HTML/JS d'anciennes pages. DÉCISION HUMAINE EN
+ATTENTE : autoriser le lot de purge (≈ 25-30 % du monolithe) ?
+
 - **Lot 184 — livré** : vie/mort des COUCHES JS/CSS du monolithe
   (extension du lot 183, rien supprimé). Par AST + recoupement
   empirique : les 35 chaînes _*_JS/_*_CSS de terminal.py ne
