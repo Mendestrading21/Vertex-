@@ -87,6 +87,9 @@
   /* Cibles tactiles ≥ 40px */
   .vx-btn,.vx-tab,.vx-chip{min-height:40px}
   .vx-btn-sm{min-height:32px}
+  /* lot 294 : les contrôles segmentés (réglages Système) mesuraient 26px —
+     hors de la règle ci-dessus car sans classe vx-btn. */
+  .vx-segmented button{min-height:40px}
   /* Anti-débordement mobile : rien ne doit forcer une largeur > écran.
      Les conteneurs flex laissent leurs enfants rétrécir (min-width:0 lève le
      min-width:auto par défaut qui empêche le retour à la ligne), les en-têtes
