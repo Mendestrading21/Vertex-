@@ -1495,6 +1495,28 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 135 — livré** : passe graphique n°10 — scan Actions
+  (Opportunités) : le SCORE n'est plus un chiffre nu — mini-barre de
+  verre GRADUÉE 0-100 (≥ 70 positive = actionnable, 40-69 warning =
+  à surveiller, < 40 negative = rejeté — les seuils réels du
+  moteur), dégradé color-mix sur tokens, valeur tabulaire conservée.
+  La hiérarchie de la liste de travail quotidienne se lit d'un coup
+  d'œil. SW v143 → v144 + 4 gardiens. Captures avant/après
+  envoyées. Suite 1984/2, RC GO.
+
+### MINI-BILAN tournée 131-135
+
+5 lots (passes noyau → widgets faits main), suite constante
+**1984 passed / 2 skipped**, PR #164 → #168, SW v139 → v144 :
+stress tests verre + pire scénario mis en avant (131) · anomalies
+en mini-barres + calendrier avec imminence ≤ 7 j (132) · payoff de
+structure Options — 2 bugs préexistants tués, spot/BE enfin tracés
+(133) · net GEX en barre signée depuis l'axe zéro (134) · score du
+scan en barre graduée (135). Le patron « mini-barre de verre
+color-mix sur tokens » est devenu la réponse standard aux chiffres
+nus ; 3 bugs visuels réels tués sur la tournée (stats collées,
+rails invisibles, plugins payoff jamais exécutés).
+
 - **Lot 134 — livré** : passe graphique n°9 — radar de positionnement
   du desk Options : le net GEX n'est plus un nombre nu — mini-barre
   SIGNÉE de verre depuis l'axe zéro (positif → droite en positive =
