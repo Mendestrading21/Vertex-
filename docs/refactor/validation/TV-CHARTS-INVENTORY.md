@@ -22,7 +22,9 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 - ✔ lot 193 : catalystRunway — piste DTE en dégradé continu
   (rouge→jaune→éteint), zone ≤ 5 j hachurée (tvHatch), chip tvEdgeChip
   J-x sur le prochain catalyseur
-- ☐ sparklines des tuiles KPI (chart-core sparkline)
+- ✔ lot 204 : sparklines KPI — CONSTAT honnête : aucun payload ne
+  fournit de série par KPI → pas de sparkline inventée (reporté à une
+  évolution moteur, jamais à une invention UI)
 
 ### Marchés (markets_page.py)
 - ✔ jauge régime/confiance · jauge breadth (>MM50) · jauge VIX
@@ -62,7 +64,9 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 - ✔ lot 195 : equity curve + drawdown — chips Max/Min sur les
   extrêmes RÉELS (C.tvExtremesPlugin, opt-in `extremes` de C.area ;
   drawdown = chip Min seul, le pire creux)
-- ☐ barres S+/S/A/B (concentration)
+- ✔ lot 204 : barres S+/S/A/B / stress tests — CONSTAT : déjà
+  conformes (lot 131 : pire scénario en dominante rouge gras + halo ;
+  lot 138 : concentration en mini-barre à repère ~15 %)
 
 ### Options (options_intel_page.py)
 - ✔ lot 192 : payoff (option-payoff) — zones GAIN/PERTE hachurées
@@ -75,14 +79,16 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
   dominante : liseré appuyé + valeur en chip, constaté en navigateur)
 - ✔ lot 203 : GEX barres par strike — MURS call/put en dominantes
   (pleine intensité + valeur réelle en chip), autres adoucies
-- ☐ double probabilité
+- ✔ lot 204 : double probabilité — CONSTAT : colonne P(doubler) du
+  scanner, estimation déjà ÉTIQUETÉE « EST. » avec définition en pied
+  (pas un graphique à refaire)
 
 ### Journal (journal pages)
 - ✔ lot 200 : barres de discipline/stats — par HÉRITAGE structurel du
   C.bars TV lot 199 (appels directs VXCharts.bars, chemin unique)
 
 ### Intelligence (intelligence_page.py)
-- ☐ jauge comité (vx-committee-gauge — hérite déjà du ✔ C.gauge)
+- ✔ jauge comité (vx-committee-gauge — hérite du ✔ C.gauge lot 189)
 - ✔ lot 191 : barres de consensus du comité (consensus-bars.js —
   verdicts RÉELS en FR via __VXVOCAB désormais injecté par le shell)
 
@@ -91,11 +97,12 @@ Statuts : ☐ à faire · ◐ partiel · ✔ refait TV.
 - ✔ lot 196 : fraîcheur par domaine — le plus rassis en DOMINANTE
   (tuile liserée + âge en chip pleine couleur), les autres adoucis
 
-## Prochains lots proposés
-1. Lot 190 : cône de projection du plan (Analyse) + zones hachurées
-   sur les aires de prévision — les deux signatures TV les plus
-   fortes. + MINI-BILAN 186-190.
-2. Lot 191 : barres de consensus comité (Intelligence) + regimeAura
-   aligné (Aujourd'hui).
-3. Lot 192+ : payoff hachuré, treemap, equity/drawdown, heatmap,
-   GEX, sparklines, discipline.
+## CLÔTURE (lot 204)
+
+INVENTAIRE 100 % TRAITÉ — toutes les lignes sont ✔ (refaites TV,
+héritées d'un builder partagé aligné, ou constatées déjà conformes /
+honnêtement sans donnée). Tournée lots 189 → 204 : grammaire commune
+(gauge dégradée-aiguille, tvHatch, tvEdgeChip, hatchPattern,
+tvExtremesPlugin, rail-chip), règle « dominante en évidence »
+transverse, textures d'estimation sur toutes les projections, chips de
+valeurs/extrêmes/niveaux partout. Bilan de clôture : STATUS.md (lot 205).

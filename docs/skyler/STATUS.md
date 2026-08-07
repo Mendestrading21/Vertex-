@@ -1495,6 +1495,25 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 204 — livré** : TOURNÉE TV — DERNIER BALAYAGE de
+  l'inventaire (lot de CONSTATS, aucun code produit modifié) :
+  (1) « double probabilité » = la colonne P(doubler) du scanner
+  d'options, une estimation DÉJÀ étiquetée « EST. » avec sa
+  définition en pied — la doctrine de la tournée y était ; (2) barres
+  S+/S/A/B et stress tests Portefeuille DÉJÀ conformes — vérifié
+  navigateur : le pire scénario (TOP_SECTOR_MINUS_15, −15 %) porte
+  la dominante (libellé rouge gras + halo) depuis le lot 131, la
+  concentration sa mini-barre à repère (lot 138) ; (3) sparklines
+  des tuiles KPI d'Aujourd'hui : AUCUN payload ne fournit de série
+  par KPI → pas de sparkline inventée, constat honnête (reporté à
+  une évolution moteur, jamais à une invention UI).
+  → **TV-CHARTS-INVENTORY.md : 100 % des lignes traitées** (refaites,
+  héritées ou constatées conformes/honnêtes). Décision fidèle aux
+  règles : AUCUN bump SW (aucun changement de shell visible).
+  Captures stress tests (dominante) + tuiles KPI + risque 1440
+  envoyées, 0 erreur console. Suite 2461 passed / 2 skipped
+  (inchangée — docs seulement).
+
 - **Lot 203 — livré** : TOURNÉE TV — la volatilité et le
   positionnement Options. (1) CÔNE DE MOUVEMENT ATTENDU : les bandes
   1σ (brand) et 2σ (copper) sont une estimation lognormale
