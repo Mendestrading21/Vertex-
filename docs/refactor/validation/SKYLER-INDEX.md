@@ -156,6 +156,7 @@
 | 140 | `SKYLER-LOT-140.md` | Passe n°15 — Top/Flop 10 : chaque variation en mini-barre SIGNÉE de verre (échelle relative au max de la liste) — la hiérarchie des mouvements sans lire les % + MINI-BILAN 136-140 ; captures envoyées | 0.9.0 | v149 | 1984 | GO |
 | 141 | `SKYLER-LOT-141.md` | Passe n°16 — fiche Analyse/Sentiment : la fourchette des analystes devient un RAIL de verre avec cours (cyan) et objectif moyen (warning) en repères halotés — on voit où le prix vit dans la fourchette ; captures + zoom envoyés | 0.9.0 | v150 | 1984 | GO |
 | 142 | `SKYLER-LOT-142.md` | Passe n°17 — Système/Données : l'âge par domaine en barre de STALENESS relative (le plus rassis saute aux yeux ; sans âge → pas de barre, garde null avant Number) ; Automatisations vérifiée ; captures envoyées | 0.9.0 | v151 | 1984 | GO |
+| 143 | `SKYLER-LOT-143.md` | Tournée de vérification transversale des 8 espaces : AUCUN défaut restant — tournée esthétique (124→143) COMPLÈTE ; lot documentaire, pas de bump SW ; 8 captures preuves envoyées | 0.9.0 | v151 | 1984 | GO |
 
 ## Architecture atteinte
 
