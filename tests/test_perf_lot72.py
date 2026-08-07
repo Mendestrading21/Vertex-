@@ -12,8 +12,11 @@ ou le vendor qui fuit dans le shell casseront ces tests.
 """
 import os
 
-BUDGET_JS_KB = 64      # plus gros actuel : chart-core/options-intel 39 kB
-BUDGET_CSS_KB = 64     # plus gros actuel : neon-glass.css 46 kB
+BUDGET_JS_KB = 64      # plus gros actuel (recalibré lot 226) : chart-core 57 kB
+                       # (89 % du budget — la tournée TV lots 189-213 a coûté
+                       # +18 kB de builders ; prochain palier = discuter le
+                       # budget AVANT de le crever, pas le monter en douce)
+BUDGET_CSS_KB = 64     # plus gros actuel : neon-glass.css 47 kB
 
 
 def _walk(ext, base='vertex/static'):
