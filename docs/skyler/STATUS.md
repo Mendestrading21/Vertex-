@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 153 — livré** : caractérisation du CONTEXTE MARCHÉ
+  `context.py` (105 lignes, 0 test — la « météo » du jour servie
+  par decision_api et terminal : régime du SPY lui-même, bandes
+  VIX, Risk-On/Off cycliques vs défensifs, breadth des leaders,
+  verdict du jour). 15 tests figent : la robustesse totale (5 ×
+  None → contrat complet, verdict quand même émis avec
+  « participation ?% » honnête — limite documentée) ; le régime
+  SPY (rampe → TREND ADX 100, oscillation → CHOP) ; les bandes VIX
+  à bornes EXACTES (15.9 calme / 16.0 normal / 21.9 normal / 22.0
+  stress ; 1 seul point → None) ; la breadth réelle (nh pos52 ≥ 98,
+  nl ≤ 5) ; les bornes RORO EXACTES ±8 (gap 8 RISK-ON, 7 NEUTRE,
+  -8 RISK-OFF ; sans secteurs → 50/50 NEUTRE) ; le verdict complet
+  composé. Aucun code modifié, pas de bump SW.
+  Suite 2126 → 2141 passed / 2 skipped.
 - **Lot 152 — livré** : caractérisation combinée de la ROTATION
   SECTORIELLE `sectors.py` (83 lignes, 0 test — servie par le
   comité et la fiche Analyse) et de la CALIBRATION ML
