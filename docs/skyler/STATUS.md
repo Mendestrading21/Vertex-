@@ -1495,6 +1495,44 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 195 — livré** : TOURNÉE TV — ÉQUITÉ & DRAWDOWN (Portefeuille)
+  avec chips Max/Min sur les extrêmes RÉELS : nouveau
+  C.tvExtremesPlugin (chart-core) — chips canvas dans la grammaire
+  tvEdgeChip (fond plein, texte sombre), Max au-dessus du point, Min
+  en dessous, bornés à la zone de tracé ; opt-in `extremes` de
+  C.area (true | 'max' | 'min') — AUCUN autre graphique modifié sans
+  opt-in. equity-chart : Max + Min (les deux chiffres du drawdown se
+  lisent sur la courbe) ; drawdown-chart : Min seul = le PIRE creux
+  réel. Pilule de dernière valeur, glow, crosshair, arithmétique et
+  états vides honnêtes intacts. Preuve : série d'exemple semée
+  LOCALEMENT dans le navigateur de test (add_init_script, jamais
+  commitée) — la page reste honnêtement vide sans clôtures
+  déclarées. SW v158 → v159 + 5 gardiens. Captures chips
+  « Max 11510 »/« Min 10040 » et « Min −4 % » + 1440 + 390 envoyées,
+  0 erreur console. Suite 2461 passed / 2 skipped. Inventaire TV :
+  equity ✔, drawdown ✔.
+
+### MINI-BILAN tournée 191-195
+
+5 lots, PR #224 → #228, suite stable 2461 passed / 2 skipped,
+SW v154 → v159. Tranche entièrement consacrée à la TOURNÉE GRAPHIQUE
+TV (directive utilisateur du lot 188) : 9 signatures livrées —
+barres de consensus du comité (191, style « Note des analystes »),
+regimeAura aligné + payoff hachuré GAIN/PERTE (192), catalystRunway
+en piste dégradée hachurée à chip J-x (193), heatmap à texte
+d'intensité + cellule dominante et treemap à chips de part (194,
+builders partagés → héritage large), équité/drawdown à chips
+Max/Min sur extrêmes réels (195, opt-in). Un CORRECTIF STRUCTUREL
+au passage : __VXVOCAB injecté par le shell de la refonte (191) —
+libellés FR sur toutes les pages, gardien anti-XSS respecté.
+Doctrine tenue : dégradés fondus, hachures = estimation, chips de
+bord = chiffres clés, dominante en évidence ; données RÉELLES
+uniquement (les constats démo — prime aberrante, tuiles sans P&L —
+sont rendus honnêtement et RAPPORTÉS sans agir). Reste à l'inventaire :
+sparklines KPI, aires indices, barres leadership, price-chart,
+radar, vol cone, barres S+/S/A/B, GEX/scénarios/théta/IV options,
+discipline Journal, staleness Système.
+
 - **Lot 194 — livré** : TOURNÉE TV — la HEATMAP alignée (builder
   partagé C.heatmapCard — hérité par secteurs Marchés, P&L mensuel
   Portefeuille, scénarios/IV Options) : (1) le texte de chaque
