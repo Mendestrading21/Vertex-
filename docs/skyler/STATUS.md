@@ -1495,6 +1495,38 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 155 — livré** : caractérisation du BRIEF ÉDITORIAL
+  `editorial.py` (202 lignes, ratio 0.34 — le narratif de séance
+  §10 en tête d'Aujourd'hui ; scoring.py écarté car déjà couvert
+  finement par le lot 97). 17 tests figent : les seuils EXACTS des
+  phrases d'indices (±0.15), le leadership technologique à écart
+  STRICT > 0.2 (0.2 pile ne déclenche pas) et la rotation
+  cyclique ; les trois phrases VIX aux bornes 18/25 ; la frontière
+  breadth 55 (saine/sélectivité) ; la PRIORITÉ des risques
+  (RISK-OFF avant breadth étroite ; breadth < 45 strict, 45 pile →
+  aucun risque déclaré) ; la branche calls IV chère ; le titre
+  « À la une » borné à 180 caractères ; les sources triées et
+  dédupliquées ; l'opportunité prioritaire qui saute les REFUSER.
+  Aucun code modifié, pas de bump SW. Suite 2161 → 2178 passed /
+  2 skipped.
+
+### MINI-BILAN tournée 151-155
+
+5 lots, PR #184 → #188, suite 2098 → 2178 passed (+80 tests), SW
+stable v151 (tournée tests pure). Les modules minces HORS engines/
+sont couverts : les SIX à zéro test (regime_features — le cerveau
+physique qui modifie le score, sectors, ml_calibration, context,
+news_impact, news_pipeline) plus editorial (0.34). Découvertes clés
+désormais VERROUILLÉES par des tests : une droite pure n'a pas
+d'exposant de Hurst (analyze(droite) = NEUTRE malgré efficience
+1.0) ; les bornes humbles de la probabilité de gain [0.05, 0.85]
+(jamais une promesse) ; le verdict météo « participation ?% »
+honnête ; la limite de sous-chaîne du classement d'actualités
+('ai' matche dans « mountain ») ; les bandes VIX 16/22 (données)
+vs 18/25 (narratif) ; les bornes RORO ±8 ; la hiérarchie des
+risques éditoriaux (régime indéterminé > RISK-OFF > breadth < 45).
+Tout changement futur de ces sémantiques fera échouer la suite.
+
 - **Lot 154 — livré** : caractérisation des ACTUALITÉS (§15) —
   `news_impact.py` (classement par mots-clés + importance +
   direction potentielle) et `news_pipeline.py` (validation/dédup/
