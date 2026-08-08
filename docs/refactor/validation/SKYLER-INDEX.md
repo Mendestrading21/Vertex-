@@ -410,6 +410,8 @@
 
 | 357 | `SKYLER-LOT-357.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour e19305a, arbre propre, suite 2501/2) ; aucun signal, aucune piste calibrée nouvelle ; pas de re-mesure (aucun octet n'a bougé depuis le lot 350). Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
 
+| 358 | `SKYLER-LOT-358.md` | SORTIES DE NEWS — la règle n°5 décrivait UNE famille, il y en a DEUX : `/api/ai/enrichment` (cerveau Claude+web) sert le titre non neutralisé et n'était couvert par aucun gardien ; sûr en fait (rendu unique via `esc()`, citations filtrées http(s), forme bornée) mais rien ne le figeait — `sanitize_news` y double-échapperait. Gardien neuf `test_ai_news_exit_lot358.py` (5 tests, preuve ROUGE sur les 3 défenses) + règle n°5 de `CLAUDE.md` corrigée. Aucun octet servi, pas de bump | 0.9.0 | v187 | 2506 | GO |
+
 ## Architecture atteinte
 
 ```text

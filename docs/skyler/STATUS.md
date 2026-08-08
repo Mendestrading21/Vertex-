@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 358 — livré** : SORTIES DE NEWS — la règle critique n°5 décrivait
+  UNE famille de sorties ; il y en a **deux**. `/api/ai/enrichment`
+  (cerveau Claude+web) sert le titre d'actualité **non neutralisé**
+  (mesuré : `<script>alert(1)</script>Titre`) et n'était couvert par
+  aucun gardien. Ce n'est pas un trou — son unique rendu
+  (`system_page.py::loadBrain`) échappe via `esc()`, les citations sont
+  filtrées http(s), la forme est reconstruite et bornée — mais rien ne
+  figeait ces trois propriétés, et y ajouter `sanitize_news`
+  **double-échapperait** les titres légitimes. Livré : gardien neuf
+  `tests/test_ai_news_exit_lot358.py` (5 tests, preuve ROUGE sur les
+  3 défenses, fichiers restaurés MD5 identique) + règle n°5 de
+  `CLAUDE.md` corrigée (deux familles, deux contrats, leurs gardiens).
+  Première rédaction du gardien `esc()` **ne mordait pas** (fenêtre de
+  30 caractères) → refaite en analyse des appels englobants, re-prouvée.
+  Aucun octet servi modifié → pas de bump (`td-shell-v187`).
+  Suite **2501 → 2506 / 2 skipped** verte.
+
 - **Lot 357 — livré** : VEILLE ACTIVE — état identique (0 doublon
   trigger, integration à jour e19305a, arbre propre, suite **2501 / 2**
   verte) ; aucun signal, aucune piste calibrée nouvelle ; pas de
