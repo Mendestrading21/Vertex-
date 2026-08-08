@@ -1495,6 +1495,17 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 320 — livré** : ÉCHÉANCE PÉRIODIQUE (7e mesure) — SMOKE
+  PARFAIT (2e consécutif) : 8×200, 0 erreur, client-log 0, **les 8
+  tailles STRICTEMENT identiques aux références 300/310** — la base
+  sert des octets stables sur 3 échéances ; suite 2516/2. MINI-BILAN
+  310-319 : « régime de croisière » — 1 smoke parfait (310) + 9
+  cycles de veille active honnête (311-319), suite 2516/2 constante,
+  SW v186 constant, 10 PR fusionnées (#342→#351), 0 changement,
+  0 défaut. Prochaine échéance ~lot 330. Docs seulement, pas de
+  bump. É1 : GO acquis, toujours en attente de déblocage
+  permissions.
+
 - **Lot 319 — livré** : VEILLE ACTIVE — état identique (0 doublon
   trigger, integration à jour d9b23d5, arbre propre, suite 2516/2
   verte) ; aucun signal, aucune piste nouvelle ; rapport minimal.
