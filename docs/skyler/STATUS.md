@@ -1559,6 +1559,45 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 383 — livré** : audit des gardiens par mutation, **troisième
+  passe** — et cette fois **aucun trou**. C'est un résultat, pas une
+  absence de résultat. **Mordent** : apostrophes déséchappées dans un
+  bloc JS **servi** · nom personnel injecté dans une page servie ·
+  `scan_state` réassigné dans un **consommateur** · **recul** de version
+  du cœur (0.9.0 → 0.8.0). Le **témoin négatif** ne mord pas, comme
+  attendu.
+  **Deux « AUCUN GARDIEN » qui accusaient à tort.** (a) Ma première
+  mutation `scan_state` visait `vertex/app/state.py` — or c'est le
+  `HOME` déclaré du gardien, **exclu du scan par conception** puisque
+  c'est le domicile légitime de l'affectation ; rejouée dans un
+  consommateur, la violation tombe immédiatement. (b) Passer
+  `demo_mode=DEMO_MODE` à `False` ne change **aucun octet servi** —
+  `/system` rend le même MD5 (73e917c0f2d0, 82 837 o) — alors que
+  `DEMO_MODE` vaut bien `True` au runtime : la mutation était effective
+  dans la source mais n'atteint pas la page. Mutation invalide, pas un
+  trou. Deux fois sur trois le « AUCUN » initial était faux : *un cas
+  qui ne mord pas accuse d'abord la mutation*.
+  **Seul écart relevé : un PLANCHER, pas une égalité.** « skyler_core
+  0.9.0 intact » suggère l'égalité ; le gardien impose `>= (0, 9, 0)` —
+  un recul échoue, un bond en avant passe. C'est la catégorie « gardien
+  plus étroit que l'énoncé » du lot 383, **mais ici la règle réelle est
+  la bonne** : monter est légitime, régresser ne l'est pas. Rien à
+  corriger dans le code ; l'énoncé gagne à être dit précisément, et le
+  gardien le fixe.
+  **Un faux gardien écarté avant livraison.** Ma première version
+  testait la parité des quotes simples dans le JS servi : elle échouait
+  sur **5 pages sur 8** alors que le code est sain (les quotes vivent
+  aussi dans des chaînes doubles, des regex, des commentaires). Un
+  gardien qui accuse du code sain finit désactivé — remplacé par la
+  vérification que le vrai parseur `node --check` couvre encore les
+  8 pages servies. Le bon outil existait déjà.
+  Gardien `tests/test_invariants_reellement_imposes_lot383.py`
+  (14 tests) ; preuve ROUGE ×3, dont un cas d'abord **non mordant parce
+  que j'avais muté mon propre fichier de test** au lieu du gardien
+  historique. Aucun fichier de production touché. Suite 2779 → **2793** /
+  2 skipped. SW v187. **Bilan de la veine : deux écarts sur trois lots,
+  et zéro ici — si un lot de plus ne trouve rien, changer de veine.**
+
 - **Lot 382 — livré** : audit des gardiens par mutation, **seconde
   passe**, protocole durci après les trois mutations fautives du 381
   (ancre unique, mutation vérifiée effective, code muté vérifié SERVI).
