@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 305 — livré** : ROUND-TRIP DESK prouvé de bout en bout
+  (dernier angle d'audit) — par le chemin RÉEL du store :
+  VXEntities.toggleFavorite → localStorage → push débouncé → serveur
+  /api/desk data.myFavs=["AAPL"] (6 clés intactes) →
+  localStorage.clear + reload → **le pull au boot RESTAURE le
+  favori** → nettoyage → serveur []. 0 erreur ; 2 imprécisions de MA
+  sonde corrigées en route. Verdict SAIN — le contrat desk
+  (last-writer-wins) tient. **CAMPAGNE D'AUDITS CLOSE (292-305)** :
+  tactile, honnêteté, a11y, clavier, robustesse API, textes FR,
+  performance, écriture locale — tous sains après 8 défauts corrigés
+  et 3 sondeurs outillés → retour aux améliorations produit
+  calibrées. Suite **2516 passed / 2 skipped**. Docs seulement, pas
+  de bump. É1 : GO acquis, toujours en attente de déblocage
+  permissions.
+
 - **Lot 304 — livré** : PERFORMANCE PERÇUE mesurée (pas supposée) —
   DCL 264-341 ms sur les 8 pages (baseline lot 72 <300 ms tenue,
   /system 311 marginal ; le 630 ms initial de / était un artefact de
