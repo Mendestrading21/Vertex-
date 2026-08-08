@@ -1495,6 +1495,14 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 331 — livré** : VEILLE ACTIVE — état identique (0 doublon
+  trigger, integration à jour 5e6809e, arbre propre, suite **2501 / 2**
+  verte) ; aucun signal, aucune piste calibrée nouvelle. Pas de
+  re-mesure : le lot 330 vient de mesurer l'état complet et aucun octet
+  n'a bougé depuis — re-mesurer serait du bruit, pas une preuve. Docs
+  seulement, pas de bump. Quatre dossiers toujours en attente de
+  décision humaine (É2, É3, les 24 fonctions, les 5 modules reliques).
+
 - **Lot 330 — livré** : **ÉCHÉANCE PÉRIODIQUE (8e mesure) + BILAN
   320-329**. Smoke complet : **8×200, 0 erreur console/pageerror,
   client-log 0** ; 7 tailles sur 8 identiques aux références.

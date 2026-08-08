@@ -356,6 +356,8 @@
 
 | 330 | `SKYLER-LOT-330.md` | ÉCHÉANCE PÉRIODIQUE (8e mesure) : **8×200, 0 erreur console, client-log 0** ; 7 tailles sur 8 identiques aux références ; **`/journal` 3 690 vs 2 676 EXPLIQUÉ, pas masqué** — le desk_data.json local porte les 3 trades de la sonde du lot 305 (le texte rendu le dit : « 3 trade(s) clôturé(s) : 33 % de réussite, P&L cumulé -700 ») et **le MD5 du HTML servi est INCHANGÉ** (243699ace2d5) : l'écart naît de l'hydratation, pas du serveur. **Les 8 MD5 conformes** (dont /system 73e917c0f2d0) ; /sw.js sert v187 ; suite 2501/2. + **MINI-BILAN 320-329 : « la tranche qui a enfin coupé »** — purge É1 (-33 % de terminal.py), hygiène imports (terminal.py puis tout vertex/, 2 gardiens AST), 3 pistes instruites, CLAUDE.md remis au vrai, libellé périmé corrigé. Suite 2516 → 2501 (les 17 tests retirés étaient écrits POUR la purge), SW v186 → v187, **10 PR #352→#361**. Leçon de fond : trois fois le réflexe évident aurait été une erreur (BROKER-diagnostic, façades IBKR, ma propre règle du 323) — un compteur ne distingue pas le mort de l'endormi. Prochaine échéance ~lot 340. Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
 
+| 331 | `SKYLER-LOT-331.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 5e6809e, arbre propre, suite 2501/2) ; aucun signal, aucune piste calibrée nouvelle ; les filons « code mort » et « textes périmés » sont épuisés. Pas de re-mesure : le lot 330 vient de tout mesurer, aucun octet n'a bougé depuis — re-mesurer serait du bruit, pas une preuve. Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
+
 ## Architecture atteinte
 
 ```text
