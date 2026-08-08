@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 303 — livré** : DOUBLE AUDIT sain. (1) Clavier PROFOND :
+  Entrée sur un bouton ticker de la shortlist → navigation réelle
+  vers /analysis/ABNB (vrais boutons, activation native) ; délégués
+  d'Aujourd'hui tous tabbables ; pairs de la fiche câblés (le seul
+  sous-test ambigu = flake de sonde sur re-rendu, pas un défaut).
+  (2) Qualité des textes FR (jamais balayé) : motifs typos sur le
+  texte servi de 10 pages — 9 occurrences remontées, TOUTES fausses
+  au tri (« réécrites »/« réévaluation » = français correct ;
+  frontières d'éléments innerText ; artefact DEMO ticker=nom).
+  0 défaut sur les deux angles → 0 changement (gratuit refusé).
+  Suite **2516 passed / 2 skipped**. Docs seulement, pas de bump.
+  É1 : GO acquis, toujours en attente de déblocage permissions.
+
 - **Lot 302 — livré** : LOT PRODUIT — CLAVIER desktop (jamais
   balayé). Sondeur 25 tabulations sur / : skip-link premier arrêt et
   fonctionnel, focus visible 100 %, ordre logique — MAIS le Tab sur
