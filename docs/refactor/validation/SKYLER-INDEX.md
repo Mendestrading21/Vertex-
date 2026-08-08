@@ -424,6 +424,8 @@
 
 | 364 | `SKYLER-LOT-364.md` | AUTO-RÉFÉRENCES (suite du lot 71) — modules cités : **0 mort** ; routes `/api/` citées : **29, toutes réelles** ; mais **7 références de tests inexistants, toutes dans `docs/`**. Enquête git : 3 gardiens (lots 183/184/185) **supprimés par la purge É1 du lot 323 elle-même**, comme le plan le prévoyait, sans que rien ne l'écrive — `ANNEXE-E1-RETRAITS.md`, document de PREUVE de la purge, laissait sa piste rompue. Statut d'exécution ajouté à l'annexe (rapports historiques non touchés) + gardien `test_references_vivantes_lot364.py` (7 tests : contrat du lot 71 étendu à `terminal.py`, chemins de modules, et « citer un gardien disparu = le dire » dans les docs vivants). Preuve ROUGE ×2. Aucun octet servi, pas de bump | 0.9.0 | v187 | 2527 | GO |
 
+| 365 | `SKYLER-LOT-365.md` | IDENTIFIANTS CITÉS EN PROSE (piste (a) du lot 364) — **23 appels cités, 0 mort** ; 117 constantes, 16 « introuvables » examinées une par une = contrats de gouvernance, notation math `S_T`, nom de document, codes d'anomalie en majuscules. **Une divergence réelle** : `thesis_health.py` annonçait 7 dimensions dont **PORTFOLIO_FIT**, son code n'en évalue que 5 sections — **aucune ligne ne regarde l'adéquation au portefeuille**, alors que `portfolio_fit` existe ailleurs (scanner/stages, executive_engine), ce qui rendait la confusion facile. Docstring corrigée (dit ce qu'il évalue ET ce qu'il n'évalue pas) ; **aucune dimension ajoutée** — inventer un calcul dans un verdict de santé serait pire. Gardien `test_thesis_health_dimensions_lot365.py`, preuve ROUGE ×2 dont la faute rejouée. **MD5 8/8 identiques** (fichier de production touché → preuve exigée), pas de bump | 0.9.0 | v187 | 2530 | GO |
+
 ## Architecture atteinte
 
 ```text

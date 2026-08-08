@@ -1495,6 +1495,42 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 365 — livré** : IDENTIFIANTS CITÉS EN PROSE (piste (a) laissée
+  ouverte par le lot 364). Extraction depuis les docstrings/commentaires
+  de `vertex/` + `terminal.py` de deux formes calibrées (constantes
+  `CAPS_SNAKE`, appels `nom()`), confrontées au code réel du dépôt :
+  **23 appels cités, 0 mort** ; 117 constantes citées dont 16
+  « introuvables » — examinées **une par une** et toutes légitimes :
+  noms de contrats de gouvernance (`SKYLER_ARCHITECTURE`,
+  `ADVERSARIAL_COMMITTEE`, `OPTIONS_CORRECTNESS`,
+  `SCENARIO_CALIBRATION`, présents dans le SKILL et les rapports),
+  notation mathématique (`S_T`), nom de document
+  (`VERTEX_WIDGET_LIBRARY.md`, qui **existe** — ma première vérification
+  cherchait la chaîne dans le CONTENU des docs, pas dans les noms de
+  fichiers ; faux positif corrigé en cours de lot et signalé), et codes
+  d'anomalie écrits en majuscules alors que le moteur émet
+  `'vol_shift'` (convention, pas divergence). **UNE divergence réelle** :
+  `vertex/positions/thesis_health.py` annonçait **7 dimensions** dont
+  **PORTFOLIO_FIT**, alors que son code (97 lignes, vérification
+  exhaustive) n'a que **5 sections** — `# FUNDAMENTAL`, `# CATALYST`,
+  `# TECHNICAL`, `# SENTIMENT`, `# RISK / DATA_QUALITY` : **aucune ligne
+  ne regarde l'adéquation au portefeuille**. Piège aggravant :
+  `portfolio_fit` existe vraiment ailleurs (`scanner/stages.py`,
+  `strategy/executive_engine.py`), donc on pouvait croire que la santé
+  de thèse — qui alimente l'état de thèse affiché sur Portefeuille — en
+  tenait compte. Correctif : la docstring dit désormais ce que le module
+  évalue ET ce qu'il n'évalue pas, avec le renvoi vers les modules qui
+  produisent réellement `portfolio_fit`. **Aucune dimension ajoutée** :
+  implémenter à la volée une adéquation au portefeuille aurait mis un
+  chiffre inventé dans un verdict de santé — c'est une décision produit,
+  en attente de GO. Gardien `tests/test_thesis_health_dimensions_lot365.py`
+  (3 tests, dont « PORTFOLIO_FIT reste écrit comme non évalué » qui
+  réclamera sa mise à jour le jour où il sera implémenté) ; preuve ROUGE
+  ×2 dont **la faute rejouée**. Un fichier de production ayant changé
+  (docstring seule), preuve exigée : serveur DEMO + **MD5 des 8 pages,
+  0 écart / 8** → pas de bump (`td-shell-v187`). Suite 2527 →
+  **2530 / 2 skipped** verte.
+
 - **Lot 364 — livré** : AUTO-RÉFÉRENCES — « ce que le projet dit de
   lui-même est-il vrai ? », suite du lot 71 (qui avait trouvé une
   docstring citant un gardien inexistant et posé le contrat pour
