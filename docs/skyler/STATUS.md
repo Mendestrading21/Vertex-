@@ -1495,6 +1495,52 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 379 — livré** : les 46 `except: pass` **jugés** — le lot 378 les
+  avait comptés en déclarant explicitement ne pas les juger — **plus les
+  matériaux du bilan 380**. Classement par ce que le `try` ENTOURE :
+  3 nettoyage, 5 journal/persistance, 38 lus un par un (imports
+  optionnels, lecture du `.env`, écritures de cache, calculs métier).
+  Mon classificateur automatique en laissait 38 sur 46 « à lire » : il
+  n'a pas fait le travail, et je le dis plutôt que de maquiller le
+  résultat. Les cinq blocs de `market/context.py` n'écrivent que dans
+  `out[...]` et des locales → un échec produit une **absence**, jamais
+  une valeur périmée servie.
+  **Hypothèse sérieuse formée, puis RÉFUTÉE par la mesure.**
+  `analysis.py:229` recalcule `grade` après que `score` a été ajusté,
+  sous `except: pass` : en cas d'échec, un grade calculé sur l'ANCIEN
+  score serait servi à côté du NOUVEAU — deux champs incohérents, qu'aucun
+  gardien existant n'attraperait. Vérification : `config.grade` ne lève
+  pour **aucun** nombre (0, 1, 50, 99, 100, −5, 105, 50.5, NaN, ∞) et la
+  ligne 228 garantit un `int` : **le handler est inatteignable**,
+  l'incohérence ne peut pas se produire.
+  **Et la sonde a trouvé à côté ce qui vaut plus que la piste.** En
+  vérifiant que `context()` dégrade bien par absence, j'ai mesuré son
+  comportement sur univers vide : il est **mixte**. `vix`, `vix_band`,
+  `vix_chg`, `spy_regime`, `spy_adx`, `spy_trend_txt` valent `None` —
+  honnête. Mais `roro` affirme **'NEUTRE'**, `roro_gap` vaut **0**,
+  `breadth` sort tout à zéro et `verdict` annonce « MARCHÉ · NEUTRE ·
+  participation 0% au-dessus MM50 ». Ce n'est PAS un `except` qui
+  avale : le bloc **réussit**, parce que ses propres défauts
+  (`ro = np.mean(…) if any(…) else 50`) le font aboutir sur zéro donnée.
+  Sur un univers vide, l'application **affirme** donc un régime au lieu
+  de dire qu'elle ne sait pas. **Caractérisation GELÉE, pas corrigée** —
+  toucher au moteur de contexte sans accord serait le changement gratuit
+  que la boucle s'interdit, et la question est **jumelle du dossier
+  ouvert au lot 363**. Versée aux dossiers en attente.
+  **Verdict : sain, rien touché.** Gardien
+  `tests/test_pass_et_contexte_lot379.py` (24 tests : périmètre,
+  anti-vide et borne de dérive, écriture dans `out[...]` seulement,
+  `config.grade` total sur 10 valeurs, anti-dérive de la garantie `int`,
+  6 champs honnêtes en `None`, 4 champs affirmatifs gelés) ; preuve
+  ROUGE ×4 — le premier cas d'abord **non mordant**, mais c'était **ma
+  mutation** qui était inopérante (définition écrasée par la vraie), pas
+  le gardien : *un cas qui ne mord pas accuse d'abord la preuve*.
+  Aucun fichier de production touché. Suite 2730 → **2754** / 2 skipped.
+  SW v187 inchangé. **Matériaux du bilan 380 consignés** : tableau des
+  dix lots, +144 tests sur la tranche, 9 gardiens, 1 seule faille réelle
+  (372) et 1 seul lot touchant la production (MD5 0/8), SW v187 sur les
+  dix lots, et le fil rouge des **douze fois où l'outil était en cause**.
+
 - **Lot 378 — livré** : les **exceptions comme convention de refus**,
   angle mort déclaré au lot 377. Risque produit : un `except` qui avale
   une erreur transforme une donnée manquante en **blanc muet**, ou pire
