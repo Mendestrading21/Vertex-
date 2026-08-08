@@ -1559,6 +1559,48 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 384 — livré** : audit des gardiens par mutation, **quatrième et
+  dernière passe — 6 sur 6, aucun trou**, et la veine se ferme sur ce
+  résultat. **Mordent** : snapshot quotidien du desk désactivé ·
+  garde-fou de taille du snapshot neutralisé · redirection héritée
+  `/heatmap` supprimée · entrée Options retirée de `PRIMARY_NAV` ·
+  `/healthz` vidé de son contenu réel · collecte de `/api/client-log`
+  neutralisée. Le **témoin négatif** (commentaire reformulé) reste muet,
+  ce qui donne son sens au 6/6.
+  **Bilan honnête de la veine, quatre lots, ~27 mutations utiles** :
+  381 → 1 trou + 1 constat · 382 → 1 écart · 383 → 0 · 384 → 0. **Les
+  deux trouvailles sont concentrées dans les deux premiers lots**, avec
+  un protocole pourtant plus rigoureux à chaque passe : c'est le signal
+  convenu au 383, **la veine est épuisée, je la ferme plutôt que de m'y
+  acharner**.
+  **L'actif réel** : dix-sept invariants sont désormais **prouvés tenus
+  par mutation**, non plus supposés — READONLY, service worker (recul de
+  version ET fichier `static` sans bump), les trois listes de clés de
+  sync, `sanitize_news` sur deux sorties, filet desk (rotation, snapshot,
+  garde-fou), navigation (redirection héritée, registre), observabilité
+  (`/healthz`, `/api/client-log`), vocabulaire des verdicts, apostrophes
+  françaises servies, nom personnel, `scan_state`, plancher de version du
+  cœur. Avant cette tranche, aucun de ces énoncés n'avait été vérifié
+  autrement que par la présence d'un test au vert — **et un test au vert
+  qui ne mesure rien est plus dangereux qu'un test absent**.
+  **Rien touché, délibérément** : aucun fichier de production, **aucun
+  test ajouté** — il n'y a rien à corriger, et ajouter un gardien là où
+  6 mutations sur 6 sont déjà attrapées serait le changement gratuit que
+  la boucle s'interdit. Un seul item mineur **volontairement différé** :
+  le commentaire « MIROIR EXACT de `__DESK_KEYS` (terminal.py) » en tête
+  de `vx-entities.js`, faux depuis la purge É1 — le corriger changerait
+  un octet **servi**, donc imposerait bump SW, invalidation de cache,
+  `_EMPREINTE` et preuve MD5 complète. Disproportionné pour un
+  commentaire.
+  **Portée** : 27 mutations sur 2 793 tests restent un **sondage**.
+  « MORD » = « attrape CETTE faute-là ». Ce que je conclus, c'est que
+  *cibler les invariants critiques ne rend plus rien*, pas que la suite
+  entière est saine. Suite **2793 / 2 skipped inchangée**. SW v187.
+  **Le vrai goulot reste les quinze dossiers en attente de décision
+  humaine** — 604 Ko de HTML mort assemblés à chaque import, le filet
+  desk qui perd le travail de la journée, les deux questions d'honnêteté
+  jumelles (363 et 379), `vx_kit.JS` servi nulle part.
+
 - **Lot 383 — livré** : audit des gardiens par mutation, **troisième
   passe** — et cette fois **aucun trou**. C'est un résultat, pas une
   absence de résultat. **Mordent** : apostrophes déséchappées dans un
