@@ -1495,6 +1495,43 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 369 — livré** : ÉTIQUETTES DU SHELL — suite directe de la faille
+  du lot 368. Audit de **tous** les appels `render_shell` : **44
+  étiquettes constantes** (sûres par construction) et **18
+  interpolées**, tracées **une par une** jusqu'à leur source →
+  **18/18 sûres** : `analysis_page` filtre explicitement les caractères
+  (`safe = ''.join(ch for ch in sym if ch.isalnum() or ch in '.-')`),
+  toutes les autres lisent `label`/`sub` dans un **dict de vues** après
+  normalisation, et `options_intel` normalise `view` dès la première
+  ligne. **La faille du lot 368 était isolée.** Asymétrie structurelle
+  documentée : le chemin **fragment** échappe les 4 étiquettes
+  (`escape(…, quote=True)`), le chemin **page complète** n'en échappe
+  **aucune** — `<title>{title}`, `<b>{space_label}</b>`,
+  `<span>{sub_label}</span>` et surtout
+  `data-page-label="{page_label or space_label}"`, **dans un attribut**,
+  où un simple guillemet suffirait à sortir. Cause identifiée :
+  `from html import escape` est un import **local à
+  `_render_fragment`** — l'échappement n'existe que là où l'import
+  existe. **Le dossier en attente de GO est désormais CHIFFRÉ** :
+  durcissement appliqué temporairement puis restauré (MD5 du fichier
+  vérifié) → **7 pages sur 8 inchangées à l'octet près**, seule `/`
+  bouge parce que son titre est `"Aujourd'hui"` et que l'apostrophe
+  devient `&#x27;` — **visuellement identique**, coût réel = un bump SW
+  + une nouvelle référence MD5 pour `/`. **Rien engagé** : la décision
+  reste vôtre, mais avec le chiffre. **Correction de méthode (encore
+  une)** : ma première mesure annonçait « 8/8 pages changeraient » avec
+  le **même MD5 sur les 8** — absurde pour 8 pages différentes ; c'était
+  une page d'erreur (`NameError`, `escape` hors de la portée de son
+  import local). Sans ce doute, j'aurais rapporté un chiffre faux et
+  peut-être fait renoncer à un durcissement quasi gratuit. Gardien
+  `tests/test_etiquettes_shell_lot369.py` (**27 tests**) : 3 charges ×
+  7 routes via `?view=` et via le segment, `<title>` reste unique et
+  clos, aucun `data-page-label` ne contient `"` ni `<`, plus deux tests
+  de contrat (le fragment échappe ; la page complète reste le seul
+  chemin non échappé — à mettre à jour le jour du durcissement). Aucun
+  fichier de production touché → pas de preuve MD5 requise, pas de bump
+  (`td-shell-v187`). Suite 2578 → **2605 / 2 skipped** verte (+27).
+
 - **Lot 368 — livré** : SEGMENTS DE CHEMIN — **une vraie faille XSS
   trouvée et corrigée**. Jumelle du lot 367, mais sur les segments
   (`/analysis/<sym>`, `/memory/<id>`), du texte libre donc plus exposé.
