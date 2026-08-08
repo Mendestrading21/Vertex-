@@ -1495,6 +1495,16 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 307 — livré** : VEILLE ACTIVE — état vérifié : 0 doublon
+  trigger, integration à jour (51e3874), arbre propre, suite 2516/2
+  verte sur base fraîche, PR ouvertes = uniquement les 3 brouillons
+  intentionnels historiques (#15/#13/#5). Posture assumée : audits
+  292-305 clos + cartographie moteur→UI complète → veille honnête
+  plutôt que travail fabriqué (œil sur déblocage É1, signaux
+  d'usage, échéance périodique ~lot 310). Docs seulement, pas de
+  bump. É1 : GO acquis, toujours en attente de déblocage
+  permissions.
+
 - **Lot 306 — livré** : CARTOGRAPHIE moteur → UI (calibrage strict :
   payloads réels des API en DEMO vs code des pages). 6 pistes
   « donnée servie mais non affichée » vérifiées : adjustments du
