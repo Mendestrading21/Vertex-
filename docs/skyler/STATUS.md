@@ -1495,6 +1495,44 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 376 — livré** : les docstrings qui décrivent leur retour **en
+  prose** — angle mort déclaré au lot 375. Consigne appliquée :
+  **mesurer le volume AVANT de promettre un verdict**, précisément parce
+  que le lot 375 s'était fait piéger par un « 0 » sans dénominateur.
+  Mesure : 1321 fonctions, 674 avec docstring, 51 parlant de retour,
+  6 structurées (lot 375), **45 en prose**, dont **2 seulement**
+  mécaniquement vérifiables — et **les deux sont de faux positifs** :
+  `premium`, `model`, `iv` sont des **paramètres d'entrée**, `cost` un
+  champ du board ; mon heuristique prenait tout mot entre backticks pour
+  une clé de retour. **11ᵉ fois de la boucle que l'outil est le premier
+  suspect, et 4ᵉ d'affilée où mon détecteur accuse du code sain.** Une
+  docstring en prose ne marque pas ce qu'elle décrit : **piste close par
+  la mesure**, pas par un vert de complaisance.
+  **Mais la lecture a exhibé un contrat autrement plus utile, et lui
+  parfaitement décidable** : `analyze_strategy` promet « entrée
+  insuffisante ou invalide => `{'available': False, 'reason',
+  'refusals': [{field, value, why}]}` ». C'est **l'invariant produit n°4
+  de Vertex sous sa forme code** — donnée absente → motif honnête,
+  jamais un blanc. Un `available: False` sans motif est un refus
+  **muet** : l'interface affiche un vide que l'utilisateur risque de
+  lire « rien à signaler » au lieu de « je ne sais pas ». Mesuré :
+  **13 refus dans le paquet, 13 motivés, 0 muet**, et confirmé sur
+  **valeurs réelles** (leçon du lot 374) — motifs français explicites,
+  dont « prime manquante sur une jambe — pas de P&L inventé ».
+  **Verdict : sain, rien touché** ; ce que le lot ajoute, c'est
+  l'invariant : aucun refus futur ne pourra être muet. Gardien
+  `tests/test_refus_honnete_lot376.py` (9 tests : périmètre, anti-vide
+  avec dénominateur explicite, la propriété avec un message d'échec qui
+  dit POURQUOI c'est grave, 4 refus provoqués en réel avec exigence d'un
+  motif d'au moins 12 caractères et non numérique, anti-dérive de la
+  docstring qui fait de ce comportement une promesse, pas-trop-strict
+  avec anti-péremption) ; preuve ROUGE ×4, restauration identique à
+  l'octet — le cas décisif étant le **motif vidé en chaîne vide**, qui
+  passe un contrôle de présence de clé et n'est attrapé que par le test
+  sur valeurs réelles. Aucun fichier de production touché, donc pas de
+  preuve MD5 requise. Suite 2703 → **2712** / 2 skipped. SW v187
+  inchangé.
+
 - **Lot 375 — livré** : les promesses des docstrings de **FONCTIONS** —
   le gardien du lot 366 ne couvrait que celles des **modules**. Même
   veine que les lots 365 (PORTFOLIO_FIT annoncé, jamais évalué) et 368
