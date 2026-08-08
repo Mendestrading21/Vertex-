@@ -1495,6 +1495,37 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 366 — livré** : GÉNÉRALISATION DU LOT 365 — la trouvaille
+  (`thesis_health` annonçant PORTFOLIO_FIT sans le calculer) était-elle
+  isolée ou un motif ? Les **110 modules** de `vertex/engines`,
+  `positions`, `options`, `scanner`, `strategy` et `ai` passés à la même
+  question. **Verdict : ISOLÉE**, aucune autre promesse non tenue. Les
+  10 candidats triés : contrats de gouvernance (`SKYLER_ARCHITECTURE`,
+  `ADVERSARIAL_COMMITTEE`, `OPTIONS_CORRECTNESS` — vérifiés présents
+  dans le SKILL et les rapports), notation mathématique (`S_T`),
+  constantes produites par un **module frère** (`ULTRA_CONVEX` et
+  `MODEL_ESTIMATE` viennent d'`options/models.py`, via `CALL_CATEGORIES`
+  et `GREEKS_MODEL`), et la note du lot 365 elle-même. **Deux erreurs de
+  méthode payées comptant et signalées** : (1) un premier filtre « tout
+  jeton majuscule ≥4 lettres » a produit **139 faux suspects** noyés
+  dans les mots français en capitales — corrigé en exigeant un
+  **souligné** (identifiant machine, pas prose) : 139 → 10 ; (2) chercher
+  l'identifiant dans le **seul module** qui l'annonce produit des faux
+  positifs — la recherche doit couvrir le **paquet**. **Rien touché**
+  (« sain » est un verdict, pas un aveu). Ce qui manquait n'était pas un
+  correctif mais la **permanence** de la vérification, deux lots l'ayant
+  posée avec un script jetable : gardien
+  `tests/test_promesses_docstrings_lot366.py` (3 tests, dont « une
+  tolérance de gouvernance sans justification dans le SKILL ou les
+  rapports est un trou »), dont le message d'échec rappelle la règle du
+  lot 365 — corriger la DOC, jamais implémenter à la volée. Preuve ROUGE
+  ×2, dont la faute du lot 365 **transplantée dans `anomaly.py`**
+  (anomalie `GAP_RUPTURE` annoncée, jamais produite) : attrapée.
+  Limite dite : une promesse en un seul mot majuscule échappe au filtre,
+  et les docstrings de fonctions ne sont pas balayées. Aucun fichier de
+  production touché → pas de preuve MD5 requise, pas de bump
+  (`td-shell-v187`). Suite 2530 → **2533 / 2 skipped** verte.
+
 - **Lot 365 — livré** : IDENTIFIANTS CITÉS EN PROSE (piste (a) laissée
   ouverte par le lot 364). Extraction depuis les docstrings/commentaires
   de `vertex/` + `terminal.py` de deux formes calibrées (constantes
