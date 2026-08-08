@@ -7,6 +7,23 @@
 > chaîne. **Rien n'est purgé** : ce document rend le « GO purge
 > étape 1 » exécutable sans ambiguïté.
 
+## Statut d'exécution — FAIT au lot 323 (ajouté au lot 364)
+
+Ce document est un **plan écrit avant la purge** ; il a été **exécuté** le
+lot 323 (commit `80a1729`, PR #355 — 82 définitions retirées, terminal.py
+10 743 → 7 164 lignes). Les fichiers de tests cités plus bas en catégorie B
+« retrait avec leurs tests » ont donc été **supprimés par cette purge**, comme
+prévu. Ils n'existent plus sur le disque :
+
+- `tests/test_dead_functions_lot185.py` — **RETIRÉ** au lot 323 (créé au lot 185)
+- `tests/test_legacy_layers_life_lot184.py` — **RETIRÉ** au lot 323 (créé au lot 184)
+- `tests/test_legacy_pages_life_lot183.py` — **RETIRÉ** au lot 323 (créé au lot 183)
+
+Sans cette note, un lecteur cherchant ces gardiens pour vérifier les preuves de
+la purge ne les trouvait pas et ne savait pas pourquoi (constat du lot 364). Les
+rapports `SKYLER-LOT-183/184/185.md` les citent aussi : ce sont des **archives
+historiques**, elles décrivent l'état de leur époque et ne sont pas corrigées.
+
 ## Triage des 82 défs en 3 catégories d'action
 
 | Cat. | Action É1 | Contenu |
