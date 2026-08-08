@@ -1495,6 +1495,21 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 300 — livré** : ÉCHÉANCE PÉRIODIQUE (5e mesure) — SMOKE-CHECK
+  SAIN + MINI-BILAN 288-299. Smoke : 8×200, 0 erreur, client-log 0,
+  healthz ok ; 5 tailles identiques, 3 écarts EXPLIQUÉS (/options
+  +5 = lot 296 « board d'options » ; / +1 = calendrier daté DEMO ;
+  /system 4124↔4126 = bruit d'horodatage) ; mesuré 2 fois — la 1re
+  mesure était partie avant la fin du scan, refaite à conditions
+  égales. Bilan de tranche : « le terminal devient utilisable au
+  pouce et ne ment plus » — palette tactile complète (288/289/291),
+  audit shell sain (292), 18 vues sans cible <32px (293-295), 2
+  mensonges corrigés + gardien transversal (296-298), a11y 26 vues
+  (299) ; suite 2496→2514 (+18, 9 gardiens neufs), SW v177→v185 (8
+  bumps réels), 12 PR (#320→#331), 0 changement gratuit. Prochaine
+  échéance ~lot 310. Docs seulement, pas de bump. É1 : GO acquis,
+  toujours en attente de déblocage permissions.
+
 - **Lot 299 — livré** : LOT PRODUIT — A11Y. Balayage des noms
   accessibles sur 26 vues (8 racines + 18 profondes ; dernier
   balayage a11y = lot 73) : 25/26 PARFAITES (0 bouton/lien/champ
