@@ -398,6 +398,8 @@
 
 | 351 | `SKYLER-LOT-351.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 843b21a, arbre propre, suite 2501/2) ; aucun signal, aucune piste calibrée nouvelle ; pas de re-mesure (le lot 350 vient de tout mesurer, aucun octet n'a bougé). Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
 
+| 352 | `SKYLER-LOT-352.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 51ff1ec, arbre propre, suite 2501/2) ; aucun signal, aucune piste calibrée nouvelle ; pas de re-mesure (aucun octet n'a bougé depuis le lot 350). Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
+
 ## Architecture atteinte
 
 ```text
