@@ -358,6 +358,8 @@
 
 | 331 | `SKYLER-LOT-331.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 5e6809e, arbre propre, suite 2501/2) ; aucun signal, aucune piste calibrée nouvelle ; les filons « code mort » et « textes périmés » sont épuisés. Pas de re-mesure : le lot 330 vient de tout mesurer, aucun octet n'a bougé depuis — re-mesurer serait du bruit, pas une preuve. Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
 
+| 332 | `SKYLER-LOT-332.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 9f466cd, arbre propre, suite 2501/2) ; aucun signal, aucune piste calibrée nouvelle ; pas de re-mesure (aucun octet n'a bougé depuis le lot 330). Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
+
 ## Architecture atteinte
 
 ```text
