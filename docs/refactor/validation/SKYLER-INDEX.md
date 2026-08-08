@@ -326,6 +326,7 @@
 | 306 | `SKYLER-LOT-306.md` | CARTOGRAPHIE moteur → UI (calibrage strict : payloads réels vs code des pages) — 6 pistes « donnée servie non affichée » vérifiées : adjustments AFFICHÉS (Marchés+Aujourd'hui), notes[] vides en régime connu / éditorialisées en inconnu, top_stocks+vertex AFFICHÉS (Opportunités), vx_* AFFICHÉS, validation DSR/PBO AFFICHÉE (Intelligence), portfolio_score consommé UNIQUEMENT par les pages legacy orphelines (argument de plus pour É1). **Couverture complète — aucune lacune ne justifie un changement.** Suite **2516/2**. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
 | 307 | `SKYLER-LOT-307.md` | VEILLE ACTIVE — état vérifié : 0 doublon trigger, integration à jour (51e3874), arbre propre, suite 2516/2 verte, PR ouvertes = les 3 brouillons intentionnels historiques seulement (#15/#13/#5). Posture assumée : audits clos + cartographie complète → veille honnête plutôt que travail fabriqué (œil sur déblocage É1, échéance ~310). Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
 | 308 | `SKYLER-LOT-308.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour ca944e1, arbre propre, suite 2516/2) ; aucun signal, aucune piste nouvelle ; rapport minimal. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
+| 309 | `SKYLER-LOT-309.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour c38c903, arbre propre, suite 2516/2) ; aucun signal, aucune piste nouvelle ; rapport minimal. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
 
 ## Architecture atteinte
 
