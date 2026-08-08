@@ -1495,6 +1495,33 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 330 — livré** : **ÉCHÉANCE PÉRIODIQUE (8e mesure) + BILAN
+  320-329**. Smoke complet : **8×200, 0 erreur console/pageerror,
+  client-log 0** ; 7 tailles sur 8 identiques aux références.
+  **`/journal` à 3 690 au lieu de 2 676 — expliqué, pas masqué** : le
+  `desk_data.json` local porte les 3 trades laissés par la sonde du lot
+  305, et le texte rendu le dit mot pour mot (« 3 trade(s) clôturé(s) :
+  33 % de réussite, P&L cumulé -700 »). Preuve que ce n'est pas une
+  régression : **le MD5 du HTML servi pour `/journal` est INCHANGÉ**
+  (243699ace2d5) — le serveur envoie les mêmes octets, tout l'écart
+  naît de l'hydratation locale. **Les 8 MD5 conformes** (dont `/system`
+  73e917c0f2d0) ; `/sw.js` sert `td-shell-v187` ; suite **2501 / 2**.
+  **BILAN de la tranche — « celle qui a enfin coupé »** : après dix lots
+  de croisière, le blocage de permissions est tombé et la tranche est
+  passée au travail de fond — purge É1 (**-33 % de terminal.py**, 82
+  défs), hygiène des imports (terminal.py puis les 183 modules de
+  vertex/, 2 gardiens AST posés), 3 pistes instruites dont une laissée à
+  l'humain, `CLAUDE.md` remis au vrai avec correction de ma propre
+  erreur du 323, libellé périmé corrigé avec bump SW assumé, puis
+  vérification que c'était un cas isolé. Chiffres : suite **2516 →
+  2501** (les 17 tests retirés étaient écrits POUR la purge), SW **v186
+  → v187**, **10 PR fusionnées (#352 → #361)**, terminal.py **-3 590
+  lignes**. Leçon de fond : **trois fois le réflexe évident aurait été
+  une erreur** (l'import `BROKER` qui EST un diagnostic, les 24 façades
+  IBKR qui sont le chemin de lecture du compte réel, ma propre règle qui
+  citait un fichier mort) — un compteur ne distingue pas le mort de
+  l'endormi. Prochaine échéance ~lot 340. Pas de bump.
+
 - **Lot 329 — livré** : LE LOT 328 ÉTAIT-IL UN CAS ISOLÉ ? **Oui — SAIN,
   rien touché.** Après le retrait de 82 définitions, d'autres libellés
   pouvaient citer des noms qui n'existent plus. La mesure est faite
