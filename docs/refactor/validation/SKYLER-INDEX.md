@@ -376,6 +376,8 @@
 
 | 340 | `SKYLER-LOT-340.md` | ÉCHÉANCE PÉRIODIQUE (9e mesure) : **8×200, 0 erreur console, client-log 0** ; 6 tailles sur 8 identiques ; **les 2 écarts EXPLIQUÉS** — `/journal` 3 690 (desk local, MD5 servi inchangé, cf. lot 330) et **`/system` 4 123 : conséquence attendue du lot 328** (les 2 caractères `__` retirés du libellé) → **nouvelle fourchette de référence 4 122-4 124**, la référence n'avait pas été rebasée. **Les 8 MD5 conformes** ; /sw.js sert v187 ; suite 2501/2. + **MINI-BILAN 330-339 : « le retour au régime de croisière »** — 1 échéance + 9 cycles de veille, structurés par une règle : **ne pas re-mesurer ce qui n'a pas bougé** (refaire le smoke à chaque réveil = du bruit déguisé en preuve). Suite **2501 constante sur 10 lots**, SW v187 constant, terminal.py inchangé à 7 153 l., **10 PR #362→#371**, 0 changement produit, 0 défaut. Prochaine échéance ~lot 350. Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
 
+| 341 | `SKYLER-LOT-341.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 0b37527, arbre propre, suite 2501/2) ; aucun signal, aucune piste calibrée nouvelle ; pas de re-mesure (le lot 340 vient de tout mesurer, aucun octet n'a bougé). Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
+
 ## Architecture atteinte
 
 ```text
