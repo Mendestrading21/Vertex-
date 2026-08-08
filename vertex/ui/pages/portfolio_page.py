@@ -24,9 +24,8 @@ INVARIANTS ABSOLUS (Constitution §17-22) :
 """
 from __future__ import annotations
 
-import json
 
-from vertex.ui.shell import render_shell
+from vertex.ui.shell import json_for_script, render_shell
 
 _VIEWS = (('team', 'Synthèse'), ('positions', 'Positions'),
           ('performance', 'Performance'), ('risk', 'Risque'),
@@ -1003,5 +1002,5 @@ def render(view: str = 'team') -> str:
     label = dict(_VIEWS)[view]
     return render_shell(title=f'Portefeuille · {label}', active='portfolio',
                         space_label='Portefeuille', sub_label=label,
-                        content=content, page_js=_JS.replace('%%VIEW%%', json.dumps(view)),
+                        content=content, page_js=_JS.replace('%%VIEW%%', json_for_script(view)),
                         page_label=f'Portefeuille {label}')
