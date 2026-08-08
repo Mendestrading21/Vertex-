@@ -1495,6 +1495,24 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 359 — livré** : GARDIENS JS — même question qu'au lot 358 appliquée
+  à la règle critique n°2 (« tout JS généré doit être syntaxiquement
+  valide ») : ses gardiens (lots 182 et 186) travaillent sur une **liste
+  de routes figée**. Inventaire complet de l'`url_map` (chaque règle GET
+  appelée sans suivre les redirections) : les 40 routes hors liste sont
+  des **301** vers des pages canoniques, mais **`/analysis`** (index,
+  `analysis_page.render_index` — fonction distincte de `render(sym)` qui
+  sert `/analysis/<sym>`) est une **page HTML 200 servie, 22 248 o,
+  2 blocs `<script>` inline**, absente des DEUX gardiens. Sa syntaxe JS
+  et ses liens d'assets n'ont jamais été vérifiés — alors qu'elle est
+  l'une des 8 pages de la référence smoke. Ajoutée aux deux listes.
+  Preuve ROUGE en rejouant le bug historique de la règle n°2 (apostrophe
+  française non échappée dans une chaîne JS simple) : **ancienne liste
+  0 erreur — totalement aveugle ; nouvelle liste attrape**, fichier
+  restauré MD5 identique. Aucune faute n'existait : le lot ferme une
+  fenêtre de non-détection, il ne répare rien. Aucun octet servi modifié
+  → pas de bump (`td-shell-v187`). Suite **2506 / 2 skipped** verte.
+
 - **Lot 358 — livré** : SORTIES DE NEWS — la règle critique n°5 décrivait
   UNE famille de sorties ; il y en a **deux**. `/api/ai/enrichment`
   (cerveau Claude+web) sert le titre d'actualité **non neutralisé**

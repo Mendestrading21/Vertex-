@@ -18,7 +18,10 @@ import terminal
 
 _ROUTES = ('/', '/markets', '/opportunities', '/portfolio', '/journal',
            '/options', '/system', '/tracking', '/intelligence',
-           '/titre/AAPL', '/analysis/AAPL', '/widget-lab', '/design-system')
+           '/analysis', '/titre/AAPL', '/analysis/AAPL', '/widget-lab',
+           '/design-system')
+# `/analysis` (index) ajouté au lot 359 — ses liens d'assets n'étaient couverts
+# ni ici ni par le lot 182 (voir SKYLER-LOT-359.md).
 
 
 def _js_files():
