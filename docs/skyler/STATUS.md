@@ -1495,6 +1495,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 325 — livré** : L'AUDIT D'IMPORTS ÉTENDU À TOUT `vertex/`
+  (183 modules). Premier chiffre trompeur : 192 « orphelins », dont
+  **180 sont `from __future__ import annotations`** — une directive du
+  compilateur, jamais référencée par un nom. Faux positif écarté ; il
+  restait **12 suspects**, chacun vérifié individuellement (0 ré-import
+  ailleurs, 1 seule occurrence dans son fichier).
+  **1 des 12 n'était pas mort** : `from vertex.services.live_stream
+  import BROKER` dans `services/startup.py` — **l'import EST le
+  diagnostic** : s'il échoue, l'étape de démarrage bascule en DEGRADED.
+  Le retirer aurait produit un « READY » inconditionnel, donc un
+  mensonge sur l'état du flux SSE. Conservé, marqué `# noqa: F401` et
+  commenté pour qu'aucun nettoyage futur ne le reprenne. C'est le seul
+  intérêt réel du lot : la différence entre un import mort et un import
+  qui travaille sans être lu ne se voit pas dans un compteur.
+  **11 retraits** effectifs (SEV_INFO, time, Iterable, os,
+  CATEGORY_BALANCED, CATEGORY_BEARISH_TACTICAL, vol, np,
+  LifecycleError, any_blocking, STATUSES) — tous ces symboles restent
+  définis et utilisés ailleurs. **MD5 des 8 pages identiques aux lots
+  323/324** → zéro octet servi modifié, **pas de bump SW** ; smoke
+  8×200, 0 erreur console, client-log 0. **Gardien étendu** :
+  `test_no_orphan_imports_in_vertex_package`, exclusions minimales et
+  documentées (`import *`, `# noqa`, `annotations`, `__init__.py`).
+  Suite **2501 / 2 skipped**.
+
 - **Lot 324 — livré** : HYGIÈNE POST-PURGE. Une purge de -33 % laisse
   des résidus : audit AST de `terminal.py` → **11 imports orphelins**
   (10 créés par É1 — leurs consommateurs étaient dans les 82 défs

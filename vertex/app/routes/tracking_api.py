@@ -7,7 +7,6 @@ l'horloge de requête (le repository reste, lui, déterministe).
 """
 from __future__ import annotations
 
-import time
 import uuid
 import datetime as _dt
 

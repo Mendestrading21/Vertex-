@@ -12,8 +12,7 @@ catégorie — multiplicatif pour qu'aucun facteur ne « rachète » un défaut 
 """
 from __future__ import annotations
 
-from .models import (ScoredContract, CATEGORY_BALANCED, CATEGORY_DYNAMIC,
-                     CATEGORY_ULTRA_CONVEX, CATEGORY_BEARISH_TACTICAL)
+from .models import ScoredContract, CATEGORY_DYNAMIC, CATEGORY_ULTRA_CONVEX
 
 # R:R minimal pour qu'un contrat soit présentable (aligné constitution, unique).
 MIN_REWARD_RISK = 2.0

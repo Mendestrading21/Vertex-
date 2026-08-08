@@ -14,7 +14,6 @@ Aucune promesse, que du mesuré. Analyse only.
 """
 
 import json
-import os
 import time
 from datetime import datetime
 
