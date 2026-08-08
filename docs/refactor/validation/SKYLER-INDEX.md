@@ -390,6 +390,8 @@
 
 | 347 | `SKYLER-LOT-347.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 72c13c7, arbre propre, suite 2501/2) ; aucun signal, aucune piste calibrée nouvelle ; pas de re-mesure (aucun octet n'a bougé depuis le lot 340). Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
 
+| 348 | `SKYLER-LOT-348.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 09246b2, arbre propre, suite 2501/2) ; aucun signal, aucune piste calibrée nouvelle ; pas de re-mesure (aucun octet n'a bougé depuis le lot 340). Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
+
 ## Architecture atteinte
 
 ```text
