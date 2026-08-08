@@ -1495,6 +1495,29 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 350 — livré** : **ÉCHÉANCE PÉRIODIQUE (10e mesure) + BILAN
+  340-349**. Smoke complet : **8×200, 0 erreur console/pageerror,
+  client-log 0** — et pour la première fois **les 8 tailles de texte
+  tombent TOUTES dans leurs références**, y compris les deux qui avaient
+  demandé une explication au lot 340 : `/journal` 3 690 (desk local de
+  la session) et **`/system` 4 123**, qui confirme par une seconde
+  observation la fourchette rebasée (4 122-4 124). Le rebasage du lot
+  340 n'était pas un ajustement de confort : il décrivait la réalité.
+  **Les 8 MD5 conformes** ; `/sw.js` sert `td-shell-v187` ; suite
+  **2501 / 2**.
+  **BILAN de la tranche — « la croisière tenue »** : dix lots, **zéro
+  changement produit, zéro défaut détecté**, et c'est le résultat
+  correct, pas un aveu d'inaction — les filons « code mort » et « textes
+  périmés » ont été épuisés dans la tranche précédente, et fabriquer du
+  travail pour remplir un rapport aurait été la seule vraie faute
+  possible. 340 = échéance 9e mesure + bilan 330-339 avec le **rebasage
+  de la fourchette `/system`** (le lot 328 avait retiré deux caractères,
+  la référence ne l'avait jamais enregistré) ; 341-349 = neuf cycles de
+  veille, règle appliquée sans exception : **ne pas re-mesurer ce qui
+  n'a pas bougé**. Chiffres : suite **2501 constante sur les 10 lots**,
+  SW **v187 constant**, terminal.py **inchangé à 7 153 l.**, **10 PR
+  fusionnées (#372 → #381)**. Prochaine échéance ~lot 360. Pas de bump.
+
 - **Lot 349 — livré** : VEILLE ACTIVE — état identique (0 doublon
   trigger, integration à jour 30f62ec, arbre propre, suite **2501 / 2**
   verte) ; aucun signal, aucune piste calibrée nouvelle ; pas de
