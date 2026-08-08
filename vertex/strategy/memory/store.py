@@ -10,7 +10,7 @@ import threading
 import time
 from pathlib import Path
 
-from .schemas import ACTIVE_STATUS, STATUSES, STORAGE_KEYS, validate_status
+from .schemas import ACTIVE_STATUS, STORAGE_KEYS, validate_status
 
 
 class MemoryStore:

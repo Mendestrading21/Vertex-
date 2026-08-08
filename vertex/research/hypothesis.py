@@ -1,5 +1,5 @@
 """vertex.research.hypothesis — définition d'hypothèse (§29). Voir factory.py."""
-from .factory import REQUIRED_DEFINITION, LifecycleError
+from .factory import REQUIRED_DEFINITION
 
 
 def validate_definition(definition: dict) -> list[str]:

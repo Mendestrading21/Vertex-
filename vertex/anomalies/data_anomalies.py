@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import datetime as _dt
 
-from .models import Anomaly, SEV_INFO, SEV_WARN, SEV_BLOCK
+from .models import Anomaly, SEV_WARN, SEV_BLOCK
 from vertex.data_sources.provenance import parse_iso
 
 STALE_AFTER_S = 3600          # cotation intrajournalière sans mise à jour

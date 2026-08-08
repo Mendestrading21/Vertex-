@@ -10,7 +10,6 @@ d'entrée rigoureuse :
 Stop = sous le dernier creux (structure). Cible = prochain sommet / extension.
 ⛔ ANALYSE ÉDUCATIVE — jamais un ordre.
 """
-import numpy as np
 
 
 def _pivots(arr, k, kind):

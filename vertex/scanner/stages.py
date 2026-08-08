@@ -7,8 +7,6 @@ et l'étage passe en mode dégradé documenté (score None) ou refuse.
 """
 from __future__ import annotations
 
-from vertex.anomalies.models import any_blocking
-
 
 def _res(passed, score=None, reasons=None, missing=None):
     return {'passed': bool(passed), 'score': score,
