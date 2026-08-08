@@ -62,17 +62,24 @@ def test_ibkr_readonly():
 
 
 def test_all_sync_keys_match():
-    """Les 4 listes de clés de sync desk sont identiques (règle critique n°1)."""
-    terminal = (ROOT / 'terminal.py').read_text(encoding='utf-8', errors='ignore')
-    m = re.search(r'__DESK_KEYS\s*=\s*\[([^\]]+)\]', terminal)
-    assert m, '__DESK_KEYS introuvable dans terminal.py'
-    desk_keys = set(re.findall(r"'([^']+)'", m.group(1)))
+    """Les listes de clés de sync desk sont identiques (règle critique n°1).
+
+    Source de vérité depuis la purge É1 : vx_kit (DESK_KEYS) ; journal.py et
+    vx-entities.js doivent porter exactement les mêmes clés. terminal.py n'en
+    héberge plus aucune copie.
+    """
     # vx_kit : liste nommée DESK_KEYS ; journal : liste inline dans jvSyncPush.
     text = (ROOT / 'vertex/ui/vx_kit.py').read_text(encoding='utf-8', errors='ignore')
     m2 = re.search(r"DESK_KEYS\s*=\s*\[([^\]]+)\]", text)
     assert m2, 'liste de clés absente de vertex/ui/vx_kit.py'
-    keys = set(re.findall(r"'([^']+)'", m2.group(1)))
-    assert keys == desk_keys, f'vx_kit: clés désynchronisées {keys ^ desk_keys}'
+    desk_keys = set(re.findall(r"'([^']+)'", m2.group(1)))
+    assert 'vxWatchlist' in desk_keys and 'vxAlerts' in desk_keys
+    ent = (ROOT / 'vertex/static/vertex/js/vx-entities.js').read_text(
+        encoding='utf-8', errors='ignore')
+    m3 = re.search(r"DESK_KEYS\s*=\s*\[([^\]]+)\]", ent)
+    assert m3, 'DESK_KEYS absent de vx-entities.js'
+    ent_keys = set(re.findall(r"'([^']+)'", m3.group(1)))
+    assert ent_keys == desk_keys, f'vx-entities: clés désynchronisées {ent_keys ^ desk_keys}'
     journal = (ROOT / 'vertex/ui/journal.py').read_text(encoding='utf-8', errors='ignore')
     for key in desk_keys:
         assert f"'{key}'" in journal, f'journal.py: clé de sync manquante {key}'

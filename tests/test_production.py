@@ -58,20 +58,28 @@ def test_oversized_desk_payload_is_rejected():
 
 
 def test_desk_sync_keys_single_source_of_truth():
-    """Toutes les listes de clés de sync (desk, journal, watchlist) sont identiques."""
+    """Toutes les listes de clés de sync (desk, journal, watchlist) sont identiques.
+
+    Depuis la purge É1, terminal.py n'héberge plus AUCUNE liste de clés :
+    les copies qu'il portait vivaient dans le JS des pages mortes retirées.
+    La source de vérité servie est vx_kit (kit global, présent sur toutes les
+    pages) ; journal.py porte la même liste inline.
+    """
     full = ("['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed',"
             "'myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes',"
             "'vxJournal','myTradeLog','vxVault','vxAlerts','vxWatchlist']")
+    from vertex.ui import vx_kit
     src = open('terminal.py', encoding='utf-8').read()
     assert full in journal.JS                       # journal
-    assert src.count(full) >= 3                     # desk (__DESK_KEYS) + suivi push/pull
-    # aucune ancienne liste partielle ne subsiste
-    assert "'myNotes','myCapital']" not in src.replace(full, '')
-    assert "'myTradeLog','vxVault']" not in src     # liste SANS vxAlerts = perte d'alertes
-    assert "'vxAlerts']" not in src.replace(full, '')  # liste SANS vxWatchlist = perte watchlist
-    # le kit global (vx_kit) référence les mêmes clés + vxAlerts
-    from vertex.ui import vx_kit
-    assert "'vxAlerts'" in vx_kit.JS
+    assert full in vx_kit.JS                        # kit global (DESK_KEYS)
+    # terminal.py ne doit pas ressusciter de liste de clés (source unique)
+    assert 'DESK_KEYS' not in src
+    # aucune ancienne liste partielle ne subsiste dans le JS servi
+    served = vx_kit.JS + journal.JS
+    rest = served.replace(full, '')
+    assert "'myNotes','myCapital']" not in rest
+    assert "'myTradeLog','vxVault']" not in served  # liste SANS vxAlerts = perte d'alertes
+    assert "'vxAlerts']" not in rest                # liste SANS vxWatchlist = perte watchlist
 
 
 def test_shell_has_accessibility_rules():

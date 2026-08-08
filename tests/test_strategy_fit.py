@@ -52,5 +52,4 @@ def test_attach_mutates_rows():
 
 def test_terminal_bindings_are_the_module():
     import terminal
-    assert terminal._vehicle_of is sf.vehicle_of
     assert terminal._strat_tilt is sf.strat_tilt

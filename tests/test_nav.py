@@ -10,7 +10,7 @@ from vertex.ui import nav
 
 
 _INLINE_PAGES = ['PAGE_DAILY', 'PAGE_WATCHLIST', 'PAGE_OPTIONS_DESK',
-                 'PAGE_ME', 'PAGE_ENTREPRISES', 'PAGE_TITRE']
+                 'PAGE_ME', 'PAGE_ENTREPRISES']
 
 
 def test_items_wellformed_and_unique():

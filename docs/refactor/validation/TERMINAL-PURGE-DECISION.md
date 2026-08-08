@@ -98,3 +98,45 @@ touchée, service worker bumpé seulement si un octet servi change.
 **GO Étape 1 ?** — Répondre « GO purge étape 1 » (ou équivalent) dans
 la conversation. Sans cet accord explicite, la boucle continue son
 entretien sans toucher au code hérité.
+
+---
+
+## 5. Étape 1 — FAITE (lot 323, 2026-08-08)
+
+`GO purge étape 1` reçu, retrait appliqué en deux moitiés :
+
+- **1/2 — tests** (commit `502d6c3`, préparé au lot 285) : tests de
+  caractérisation retirés, épingles et alias re-ciblés vers les moteurs
+  vivants.
+- **2/2 — code** (ce lot) : les **82 définitions** de la borne BASSE
+  retirées de `terminal.py` — **10 743 → 7 164 lignes (-3 579, -33,3 %)**,
+  1 222 911 → 807 338 octets (**-415 573**, -34,0 %).
+
+Preuves :
+
+- `tools/purge_e2_sizing.py` rejoué après retrait → **BORNE BASSE : 0 défs
+  mortes, 0 lignes** (É1 complète et close ; les 25 défs restantes sont
+  celles sauvées par une réf-chaîne = périmètre É2).
+- `compileall` exit 0 ; suite **2499 passed / 2 skipped**.
+- **Équivalence octet-pour-octet** : les 8 pages servies ont un MD5
+  IDENTIQUE avant/après purge (`/` fc15688d1af6 · `/markets` c0bb91c6971a ·
+  `/opportunities` 6a22a6abbd03 · `/analysis` 113827718e99 · `/portfolio`
+  f1b41b665d4a · `/options` 6387210de785 · `/journal` 243699ace2d5 ·
+  `/system` 85d1cb065d2e). Aucun octet servi ne change → **pas de bump SW**.
+- Navigateur (`tools/probe_smoke.py`, scan terminé) : 8 × HTTP 200,
+  **0 erreur console/pageerror**, `client-log count: 0`.
+- Import à chaud : 1 805 ms (avant) vs 1 981 ms (après), 3 mesures chacune —
+  **aucun gain mesurable**, l'import est dominé par les dépendances
+  (pandas/yfinance). Le gain est de lisibilité, pas de vitesse : dire le
+  contraire serait un chiffre inventé.
+
+Effet de bord assumé et documenté : les copies de la liste de clés de sync
+desk que `terminal.py` portait (`__DESK_KEYS`, `sSyncPush`/`sSyncPull`)
+vivaient dans le JS des pages mortes — elles partent avec. La sync réelle
+est inchangée : `vx_kit.py` (`DESK_KEYS`, servi sur toutes les pages),
+`journal.py`, `vx-entities.js`. Règle n°1 de `CLAUDE.md` mise à jour
+(4 listes → 3 listes servies) et gardiens re-ciblés.
+
+**Reste à faire** : É2 (25 défs, 1 866 lignes, nécessite d'adapter les
+boucles d'injection par chaîne) et É3 (dépendances croisées) — chacune sur
+décision humaine dédiée.

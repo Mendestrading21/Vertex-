@@ -40,7 +40,7 @@ Ne jamais travailler directement sur `main`. Les anciennes branches V4/Prism son
 - **Données perso utilisateur** : localStorage navigateur (`myTrades`, `myRecos`, `myFavs`, `vxJournal`, `vxAlerts`…) synchronisé serveur en blob `desk_data.json` (last-writer-wins + backup quotidien `desk_backup_*.json`).
 
 ## Règles critiques (violations = données perdues ou app cassée)
-1. **Clés de sync desk** : toute nouvelle clé localStorage à synchroniser doit être ajoutée dans **LES 4 listes** (`__DESK_KEYS` terminal.py, sSyncPush/Pull, `vertex/ui/journal.py`, `DESK_KEYS` de `vx_kit.py`) — sinon un push l'efface côté serveur. Test gardien : `tests/test_production.py::test_desk_sync_keys_single_source_of_truth`.
+1. **Clés de sync desk** : toute nouvelle clé localStorage à synchroniser doit être ajoutée dans **LES 3 listes servies** (`DESK_KEYS` de `vertex/ui/vx_kit.py` = source de vérité, liste inline de `vertex/ui/journal.py`, `DESK_KEYS` de `vertex/static/vertex/js/vx-entities.js`) — sinon un push l'efface côté serveur. Depuis la purge É1, terminal.py n'héberge plus aucune copie (les siennes vivaient dans le JS des pages mortes retirées). Tests gardiens : `tests/test_production.py::test_desk_sync_keys_single_source_of_truth` et `tests/test_strategy_os_final_guards.py::test_all_sync_keys_match`.
 2. **Apostrophes françaises dans les chaînes JS** de terminal.py : toujours échapper (`aujourd\\'hui`) — deux SyntaxError silencieuses ont déjà vécu.
 3. **Service worker** : tout changement de shell visible utilisateur → bump `td-shell-vN` dans `vertex/app/routes/system.py`.
 4. **Données RÉELLES uniquement** : jamais de chiffre inventé affiché comme réel. Donnée absente → `—`/`n/d` honnête. Le mot « démo » ne s'affiche que si le serveur le confirme.
