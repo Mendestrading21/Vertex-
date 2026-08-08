@@ -1495,6 +1495,13 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 308 — livré** : VEILLE ACTIVE — état identique (0 doublon
+  trigger, integration à jour ca944e1, arbre propre, suite 2516/2
+  verte) ; aucun signal utilisateur, aucune piste calibrée nouvelle ;
+  rapport minimal. Docs seulement, pas de bump. É1 : GO acquis,
+  toujours en attente de déblocage permissions. Prochain jalon :
+  échéance périodique au lot 310.
+
 - **Lot 307 — livré** : VEILLE ACTIVE — état vérifié : 0 doublon
   trigger, integration à jour (51e3874), arbre propre, suite 2516/2
   verte sur base fraîche, PR ouvertes = uniquement les 3 brouillons
