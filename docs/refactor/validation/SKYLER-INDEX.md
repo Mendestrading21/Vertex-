@@ -428,6 +428,8 @@
 
 | 366 | `SKYLER-LOT-366.md` | GÉNÉRALISATION DU LOT 365 — **110 moteurs** passés à « annonces-tu une sortie que tu ne produis pas ? ». **La trouvaille du lot 365 était ISOLÉE** : les 10 candidats sont des contrats de gouvernance (vérifiés dans le SKILL/rapports), de la notation math (`S_T`), des constantes d'un module frère (`ULTRA_CONVEX`, `MODEL_ESTIMATE` viennent d'`options/models.py`) et la note du lot 365 elle-même. **Deux erreurs de méthode corrigées en cours** : filtre trop large (139 faux « suspects » = mots français en capitales → souligné exigé, 139→10) et périmètre trop étroit (chercher dans le seul module ≠ dans le paquet). Rien touché ; gardien neuf `test_promesses_docstrings_lot366.py` (3 tests, dont « une tolérance sans justification est un trou »). Preuve ROUGE ×2 dont la faute du lot 365 transplantée. Aucun fichier de production, pas de bump | 0.9.0 | v187 | 2533 | GO |
 
+| 367 | `SKYLER-LOT-367.md` | VARIANTES `?view=` — 37 découvertes depuis le HTML servi (mon grep du code n'en voyait que 25), servant **16 blocs inline absents des routes nues**. Ressemblait à un trou 4× celui du lot 359 — **le diff l'a démenti** : 2 lignes d'écart (`const VIEW="team"` → `"risk"`), le JS est identique, une faute s'y verrait sur la route nue déjà balayée. **Pas de trou.** Constat utile ailleurs : ce paramètre atteint les octets servis (constante JS ×4 pages, `data-view` ×2), sa sûreté tient à une **liste blanche que rien ne testait**. Sondé avec 3 charges hostiles × 8 routes : aucune fuite. Gardien `test_vues_parametre_lot367.py` (33 tests) + preuve ROUGE (liste blanche retirée). Aucun fichier de production, pas de bump | 0.9.0 | v187 | 2566 | GO |
+
 ## Architecture atteinte
 
 ```text

@@ -1495,6 +1495,39 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 367 — livré** : VARIANTES `?view=` — les gardiens JS ne balayent
+  que les routes **nues** ; les variantes servent-elles du JS jamais
+  parsé (le trou du lot 359, en plus grand) ? **37 variantes découvertes
+  en lisant les onglets du HTML servi** — ma liste tirée d'un grep du
+  code n'en voyait que **25** (elle manquait `?view=learnings`,
+  `progression`, `events`, `positioning`, `impacts`, `macro`) :
+  première correction de méthode, **découvrir depuis le servi, pas
+  depuis la source**. Ces variantes servent **16 blocs `<script>`
+  inline absents des routes nues** — soit un trou 4× celui du lot 359.
+  **Puis le diff a démenti la piste** : entre une route nue et sa
+  variante, **2 lignes d'écart** — `const VIEW="team"` → `const
+  VIEW="risk"` — le JavaScript est identique au reste près. Une faute de
+  syntaxe s'y verrait sur la route nue, déjà balayée par le lot 182.
+  **Il n'y a pas de trou** ; un gardien qui reparse 16 quasi-doublons
+  aurait coûté du temps pour rien. (`/intelligence`, `/system`,
+  `/options` servent même des blocs strictement identiques entre leurs
+  vues.) **Le constat utile est ailleurs** : ce paramètre d'URL atteint
+  les octets servis — constante `const VIEW=…` dans le JS de 4 pages,
+  attribut `data-view` sur 2 autres — et sa sûreté ne tient qu'à une
+  **liste blanche serveur que rien ne testait**. Sondée avec 3 charges
+  hostiles (sortie de chaîne JS, sortie d'attribut, fermeture de
+  `<script>`) × 8 routes : **aucune fuite**, la valeur inconnue retombe
+  partout sur la vue par défaut. Livré : gardien
+  `tests/test_vues_parametre_lot367.py` (**33 tests**, dont un anti-vide
+  exigeant qu'une vue légitime change bien la page), preuve ROUGE en
+  retirant la liste blanche de Portefeuille. Aucune vulnérabilité
+  trouvée : le lot ferme une **fenêtre de non-détection sur un chemin
+  d'injection**, il ne répare rien. Aucun fichier de production touché →
+  pas de preuve MD5 requise, pas de bump (`td-shell-v187`). Suite
+  2533 → **2566 / 2 skipped** verte (+33). **La conclusion la plus utile
+  est négative** : sans le diff, ce lot aurait posé un gardien inutile
+  et annoncé une faille imaginaire.
+
 - **Lot 366 — livré** : GÉNÉRALISATION DU LOT 365 — la trouvaille
   (`thesis_health` annonçant PORTFOLIO_FIT sans le calculer) était-elle
   isolée ou un motif ? Les **110 modules** de `vertex/engines`,
