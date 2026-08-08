@@ -1495,6 +1495,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 360 — livré** : CHECKPOINT de la tranche 350-359. Serveur DEMO
+  (`/scan` 20 lignes) : **les 8 MD5 sont identiques aux références** —
+  aucun octet servi n'a bougé depuis le lot 350. Navigateur réel
+  (Chromium, 1440×900, après hydratation) : **0 erreur console** sur les
+  8 pages. Toutes les tailles smoke sauf `/analysis` (923, exact)
+  s'écartaient : deux vérifications avant de conclure. (a) La mesure hors
+  navigateur n'est pas comparable (les pages s'hydratent côté client :
+  `/` 510 en HTML brut). (b) **À MD5 identique, le smoke bouge** — deux
+  passes à 90 s d'écart : `/` 3367 → 3385 (**+18 caractères, MD5
+  stable**), les 5 autres pages à delta 0. Les libellés de fraîcheur
+  changent de longueur. Conclusion d'instrument : **le MD5 est la seule
+  preuve stricte inter-sessions ; le smoke mesure le contenu hydraté**
+  (horloge, jeu DEMO régénéré par session, `desk_data.json` local) et
+  est donc requalifié en **plage indicative**, jamais opposable au MD5.
+  Chaque écart tracé dans le rapport : `/markets` +20 et
+  `/opportunities` −93 = jeu DEMO de la session (stables en session) ;
+  `/system` +2/+3 = plage du lot 340 structurellement trop étroite pour
+  une page qui imprime des âges ; `/journal` +1010 = sondes locales du
+  lot 305 (documenté depuis le lot 330). Bilan de tranche : 8 lots
+  « sain, rien touché », 2 trouvailles (358 : 2ᵉ famille de sorties de
+  news ; 359 : `/analysis` hors gardiens JS) — les deux nées de la même
+  question, « la règle écrite décrit-elle vraiment le code servi ? ».
+  Suite 2501 → **2506 / 2 skipped**, SW `td-shell-v187` inchangé sur
+  toute la tranche, 10 PR fusionnées (#382 → #391), `main` intacte.
+
 - **Lot 359 — livré** : GARDIENS JS — même question qu'au lot 358 appliquée
   à la règle critique n°2 (« tout JS généré doit être syntaxiquement
   valide ») : ses gardiens (lots 182 et 186) travaillent sur une **liste
