@@ -1495,6 +1495,49 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 374 — livré** : les blocs `<script>` **assemblés par
+  concaténation** — l'angle mort que le lot 373 avait lui-même déclaré.
+  **Il existe bel et bien** : 15 chaînes littérales déséquilibrées, soit
+  4 points de concaténation. Trois n'assemblent que des constantes de
+  module (`_OPP_BRIEF_JS`, `_sync_ui.JS`, `_VX_JS_FULL`, `ART_JS`) ; le
+  quatrième — `terminal.py::_vpage`, qui fait
+  `'…</div><script>' + js + '</script>…'` — est le seul à recevoir un
+  **paramètre**. **Verdict : sain, rien touché — mais pour une raison de
+  ROUTAGE, pas de code.** Ses 7 appelants passent tous une constante
+  évaluée à l'import, et surtout **les 7 pages ainsi construites ne sont
+  plus servies** : `/bordel`, `/review`, `/research`, `/heatmap`,
+  `/equipe`, `/settings`, `/health` renvoient un **301** vers les pages
+  du redesign (table `_LEGACY` de `redesign.py`). Contrôle croisé sur
+  les octets servis : balises équilibrées sur les 8 pages (10 à
+  18 paires). Comme la sûreté dépend d'un fait de routage et non d'une
+  propriété du code, le gardien **ancre explicitement ce fait**.
+  **Deux corrections de méthode, et les deux portaient sur MON PROPRE
+  GARDIEN** (8ᵉ et 9ᵉ de la boucle). Ma première version exigeait que
+  `js` soit un littéral : elle accusait `_BORDEL_JS`, qui concatène en
+  fait trois constantes de module — détecteur trop étroit, corrigé en
+  résolution transitive. Toujours rouge : deux de ces constantes sont
+  produites par `_extract(PAGE_DAILY, …)`, donc constantes **à
+  l'import** mais pas littérales au sens statique. J'ai alors compris
+  que l'invariant syntaxique était le **mauvais outil** — la propriété
+  qui protège n'est pas « `js` est un littéral » mais « **la valeur de
+  `js` ne contient pas de balise fermante** », vérifiée sur les valeurs
+  réelles. Les deux fois, mon gardien accusait du code sain : l'erreur
+  **symétrique** de celle qu'on redoute d'habitude, et tout aussi
+  coûteuse — un gardien qui crie au loup finit désactivé. **Constat de
+  poids mort, mesuré et NON engagé** : ces 7 constantes représentent
+  **618 527 octets (604 Ko) de HTML assemblés à chaque import** de
+  `terminal.py` pour n'être jamais renvoyés (import : 1,91 s) —
+  candidat naturel pour les purges É2/É3, **dossier en attente de GO**.
+  Gardien `tests/test_script_concatene_lot374.py` (21 tests : 3
+  anti-vide, la vraie propriété sur les valeurs réelles, complément
+  statique interdisant un `js` calculé par requête, équilibre des
+  balises sur les 8 pages servies avec exigence de ≥ 8 blocs, le fait de
+  routage dont dépend le verdict, anti-péremption si la purge a lieu) ;
+  preuve ROUGE ×4, restauration identique à l'octet — avec la précision
+  honnête que le cas 2 remonte en **erreur de collecte**, pas en échec
+  d'assertion. Aucun fichier de production touché, donc pas de preuve
+  MD5 requise. Suite 2672 → **2693** / 2 skipped. SW v187 inchangé.
+
 - **Lot 373 — livré** : la faute du lot 372 sous ses **autres habillages**
   — f-strings, `%`-format, et tous les producteurs de HTML, pas seulement
   les gabarits `%%…%%` de trois pages. **Verdict : aucune faille
