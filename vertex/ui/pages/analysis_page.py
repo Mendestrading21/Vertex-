@@ -8,9 +8,8 @@ Tout ticker, partout dans l'app, ouvre CETTE fiche.
 """
 from __future__ import annotations
 
-import json
 
-from vertex.ui.shell import render_shell
+from vertex.ui.shell import json_for_script, render_shell
 
 
 def render_index(view: str = '') -> str:
@@ -960,7 +959,7 @@ def render(sym: str) -> str:
                'méritent-elles du capital maintenant ?</div></div></div>'
                + _SECTIONS.replace('%%SYM%%', safe)
                .replace('%%LOADING%%', '<div class="vx-skeleton" style="height:48px"></div>'))
-    js = _JS.replace('%%SYM_JSON%%', json.dumps(safe))
+    js = _JS.replace('%%SYM_JSON%%', json_for_script(safe))
     return render_shell(title=f'{safe} · Analyse', active='analysis',
                         space_label='Analyse', sub_label=safe, content=content,
                         page_js=js, page_label=f'Analyse {safe}',

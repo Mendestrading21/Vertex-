@@ -1495,6 +1495,41 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 372 — livré** : les **interpolations serveur** dans le `page_js`
+  des pages, dernière grande surface non auditée de la veine sécurité.
+  **VRAIE FAILLE XSS TROUVÉE ET CORRIGÉE — la plus grave de la boucle.**
+  Audit AST : 35 interpolations dans les `render*`, dont 4 envoient du
+  JSON dans un bloc `<script>`. `/opportunities` reçoit
+  `params=request.args` et n'en filtre que les **CLÉS** (`sym`, `sector`,
+  `setup`, `decision`) ; les **VALEURS** partaient nues dans
+  `json.dumps`, qui échappe `"` et `\` mais **ni `<` ni `/`**. Donc
+  `?sym=</script><img src=x onerror=…>` **ferme le script et injecte du
+  HTML actif** : 8 injections confirmées sur un rendu réel (4 clés ×
+  2 charges, HTTP 200, pages de 66 Ko). Contrairement à la faille du
+  lot 368 — qui exigeait que le moteur produise un symbole hostile —
+  celle-ci est **déclenchable à distance par un simple lien**, dans une
+  session qui a accès au desk local. Les 6 autres pages recevant des
+  paramètres d'URL : aucune fuite. Corrigé par
+  `vertex.ui.shell.json_for_script` (`<`, `>`, `&` → `\uXXXX`, relus à
+  l'identique par un moteur JS, donc comportement client inchangé),
+  appliqué aux **4** sites pour rendre le contrat vérifiable
+  statiquement ; sonde rejouée **16/16 saines**. **6ᵉ correction de
+  méthode** de la boucle : mon premier détecteur comptait comme
+  « actif » un `<img>` resté **à l'intérieur** d'un `<script>` non
+  refermé — où il est inerte — et gonflait le résultat. Gardien
+  `tests/test_json_script_lot372.py` (35 tests : anti-vide, charges ×
+  clés, préservation du comportement, gardien pas-trop-strict, contrat
+  statique dont un test qui vérifie que le détecteur mord) ; preuve
+  ROUGE ×2 (faute historique rejouée, correctif affaibli), restauration
+  identique à l'octet. **MD5 0/8 divergence** malgré 3 fichiers de
+  production touchés ; navigateur réel 0 erreur console sur filtre
+  légitime, filtre secteur et charge hostile. Tranché au passage : les
+  plages « smoke » de ces scripts mesurent le **DOM hydraté** (4662 pour
+  `/opportunities`) alors que le script mesure le **HTML brut** (410) —
+  deux grandeurs sans rapport ; ce smoke n'a jamais rien prouvé, seul le
+  MD5 porte la preuve. Suite 2610 → **2645** / 2 skipped. SW v187
+  inchangé.
+
 - **Lot 371 — livré** : `/memory/cell/<group>/<key>`, la **route sœur**
   de la faille du lot 368 — même fichier, même auteur, même motif de
   rendu, donc forte probabilité du même défaut. **Verdict : SAINE, et

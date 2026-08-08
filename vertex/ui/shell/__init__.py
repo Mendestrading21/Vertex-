@@ -49,6 +49,27 @@ _ICONS = {
 }
 
 
+def json_for_script(value) -> str:
+    """Sérialise `value` pour un bloc `<script>` inline — JAMAIS `json.dumps` nu.
+
+    `json.dumps` échappe `"` et `\\` mais NI `<` NI `/` : une valeur contenant
+    `</script>` ferme la balise côté analyseur HTML et tout ce qui suit devient
+    du HTML ACTIF. C'était le cas de `/opportunities?sym=…`, dont les valeurs de
+    paramètres d'URL n'étaient pas filtrées (constat du lot 372 — seules les
+    CLÉS étaient sur liste blanche).
+
+    On neutralise `<`, `>` et `&` en échappements `\\uXXXX`. Un moteur JS les
+    relit à l'identique dans un littéral de chaîne : le comportement client est
+    inchangé, seul l'analyseur HTML ne peut plus voir de balise fermante.
+
+    Gardien : `tests/test_json_script_lot372.py`.
+    """
+    import json as _json
+    return (_json.dumps(value)
+            .replace('<', '\\u003c').replace('>', '\\u003e')
+            .replace('&', '\\u0026'))
+
+
 def icon(name: str, size: int = 18) -> str:
     return (f'<svg viewBox="0 0 24 24" width="{size}" height="{size}" fill="none" '
             f'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" '

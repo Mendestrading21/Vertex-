@@ -5,9 +5,8 @@ Sous-vues : radar, stocks, options, anomalies, calendar.
 """
 from __future__ import annotations
 
-import json
 
-from vertex.ui.shell import render_shell
+from vertex.ui.shell import json_for_script, render_shell
 
 _VIEWS = (('radar', 'Radar'), ('stocks', 'Actions'), ('options', 'Options'),
           ('anomalies', 'Anomalies'), ('calendar', 'Calendrier'))
@@ -705,8 +704,11 @@ def render(view: str = 'radar', params=None) -> str:
          ('sym', 'sector', 'setup', 'decision')}
     content = (_CONTENT.replace('%%TABS%%', _tabs(view))
                .replace('%%LOADING%%', '<div class="vx-skeleton" style="height:120px"></div>'))
-    js = (_JS.replace('%%VIEW%%', json.dumps(view))
-          .replace('%%PARAMS%%', json.dumps(p))
+    # `p` ne filtre que les CLÉS : les VALEURS viennent brutes de l'URL et
+    # entrent dans un bloc <script>. `json_for_script` interdit la sortie de
+    # balise (faille du lot 372).
+    js = (_JS.replace('%%VIEW%%', json_for_script(view))
+          .replace('%%PARAMS%%', json_for_script(p))
           .replace('%%DEMO_BORDER%%',
                    "(window.__vxStatus&&window.__vxStatus.demo)?VXCharts.colors.warning:'rgba(255,255,255,.25)'"))
     label = dict(_VIEWS)[view]
