@@ -338,6 +338,7 @@
 | 318 | `SKYLER-LOT-318.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 48a44f5, arbre propre, suite 2516/2) ; aucun signal, aucune piste nouvelle ; rapport minimal. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
 | 319 | `SKYLER-LOT-319.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour d9b23d5, arbre propre, suite 2516/2) ; aucun signal, aucune piste nouvelle ; rapport minimal. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
 | 320 | `SKYLER-LOT-320.md` | ÉCHÉANCE PÉRIODIQUE (7e mesure) : SMOKE PARFAIT (2e consécutif) — 8×200, 0 erreur, client-log 0, **les 8 tailles STRICTEMENT identiques aux références 300/310** (octets stables sur 3 échéances) ; suite 2516/2. + MINI-BILAN 310-319 : « régime de croisière » — 1 smoke parfait + 9 cycles de veille honnête, suite 2516/2 constante, SW v186 constant, 10 PR #342→#351, 0 changement, 0 défaut. Prochaine échéance ~lot 330. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
+| 321 | `SKYLER-LOT-321.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 2e5c14b, arbre propre, suite 2516/2) ; aucun signal, aucune piste nouvelle ; rapport minimal. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
 
 ## Architecture atteinte
 
