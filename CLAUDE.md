@@ -44,7 +44,9 @@ Ne jamais travailler directement sur `main`. Les anciennes branches V4/Prism son
 2. **Apostrophes françaises dans les chaînes JS** de terminal.py : toujours échapper (`aujourd\\'hui`) — deux SyntaxError silencieuses ont déjà vécu.
 3. **Service worker** : tout changement de shell visible utilisateur → bump `td-shell-vN` dans `vertex/app/routes/system.py`.
 4. **Données RÉELLES uniquement** : jamais de chiffre inventé affiché comme réel. Donnée absente → `—`/`n/d` honnête. Le mot « démo » ne s'affiche que si le serveur le confirme.
-5. **News/textes externes** : toujours via `news_plus.sanitize_news()` avant de servir (XSS — rendus en innerHTML).
+5. **News/textes externes** : **deux** familles de sorties, deux contrats — ne pas les mélanger (lot 358).
+   - *Sortie assainie au serveur* : `/news-feed`, `/api/events/<sym>`, `/api/skyler/<sym>` → **toujours** via `news_plus.sanitize_news()` avant de servir, car leurs consommateurs injectent le titre **brut** en innerHTML. Gardien : `tests/test_xss_exits_lot177.py`.
+   - *Sortie échappée au rendu* : `/api/ai/enrichment` (`vertex/ai/enrichment.py::parse_news`, cerveau Claude+web) n'appelle **pas** `sanitize_news` et ne le doit pas — son unique rendu (`system_page.py::loadBrain`) échappe déjà via `esc()`, et un assainissement serveur double-échapperait les titres légitimes. Sa sûreté tient à 3 propriétés : citations filtrées http(s) (`provenance._safe_url`), forme reconstruite et bornée (4 champs), rendu via `esc()`. Gardien : `tests/test_ai_news_exit_lot358.py`.
 6. **desk_data.json** : ne jamais l'écraser à la main ; en cas de doute, backups `desk_backup_*.json` + `/api/desk/restore`.
 
 ## Git
