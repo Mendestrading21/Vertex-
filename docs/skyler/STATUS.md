@@ -1495,6 +1495,50 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 375 — livré** : les promesses des docstrings de **FONCTIONS** —
+  le gardien du lot 366 ne couvrait que celles des **modules**. Même
+  veine que les lots 365 (PORTFOLIO_FIT annoncé, jamais évalué) et 368
+  (promesse d'échappement fausse). **Deux volets, deux résultats
+  différents — et le second est le plus instructif.**
+  **Volet 1, les promesses de forme de retour : SAINES, prouvé.** Six
+  fonctions portent un contrat `Retourne {…}` ; sur **toutes** leurs
+  branches `return {littéral}` — 14 au total — **aucune clé annoncée ne
+  manque**. La collecte statique de CHAQUE branche s'est révélée plus
+  forte qu'un test d'exécution : `assess` a une **sortie anticipée**
+  (bid/ask absent) qui renvoie 3 clés là où le chemin normal en renvoie
+  4 — un appel unique n'aurait jamais visité cette branche, et c'est
+  précisément elle que la preuve ROUGE fait échouer. Trois
+  sous-déclarations relevées (`spread_pct`, `entry`, et `delta` dans la
+  forme imbriquée de `pack()`) et **volontairement non corrigées** : ce
+  sont des enrichissements, pas des promesses fausses. Le gardien
+  n'exige donc PAS l'égalité exacte — l'imposer le rendrait intenable
+  dès qu'une branche d'erreur renvoie le socle minimal, et un gardien
+  qui crie au loup finit désactivé (leçon du lot 374).
+  **Volet 2, les promesses en un seul mot majuscule : NON DÉCIDABLES.**
+  359 mots majuscules distincts cités en docstring de fonction, **0
+  introuvable** dans le paquet — mais ce zéro est **vide de sens** :
+  l'échantillon (`ACHETER`, `ATTENDRE`, `ATTAQUE`, `ARBITRAIRE`) montre
+  que sans underscore, un mot majuscule dans une docstring française est
+  presque toujours une **emphase**, pas un identifiant, et le filet les
+  déclare tous « trouvés ». Le lot 366 avait heurté le même mur dans
+  l'autre sens (139 faux positifs). Annoncer « 0 problème » ici serait
+  un faux vert : **piste close par la mesure**, pas par un vert.
+  **10ᵉ correction de méthode, et 3ᵉ d'affilée où c'est MON détecteur
+  qui accuse du code sain** : `ast.walk` descendait dans la fonction
+  imbriquée `pack()` et attribuait ses 13 clés à
+  `options_for_position`, qui en annonce 4 — une violation de trois clés
+  entièrement imaginaire. Règle retenue : quand un audit signale une
+  faute grossière dans du code mûr, **l'outil est le premier suspect**.
+  Gardien `tests/test_promesses_retour_lot375.py` (10 tests : périmètre,
+  2 anti-vide, la propriété, pas-trop-strict avec anti-péremption,
+  **anti-ré-attribution verrouillant ma propre faute**, 4 contrats
+  épinglés nommément contre la dérive silencieuse d'une docstring) ;
+  preuve ROUGE ×4, restauration identique à l'octet — le premier cas
+  d'abord **sauté** faute de motif, signalé par le script puis corrigé
+  sur la vraie ligne. Aucun fichier de production touché, donc pas de
+  preuve MD5 requise. Suite 2693 → **2703** / 2 skipped. SW v187
+  inchangé.
+
 - **Lot 374 — livré** : les blocs `<script>` **assemblés par
   concaténation** — l'angle mort que le lot 373 avait lui-même déclaré.
   **Il existe bel et bien** : 15 chaînes littérales déséquilibrées, soit
