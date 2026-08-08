@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 299 — livré** : LOT PRODUIT — A11Y. Balayage des noms
+  accessibles sur 26 vues (8 racines + 18 profondes ; dernier
+  balayage a11y = lot 73) : 25/26 PARFAITES (0 bouton/lien/champ
+  sans nom — l'hygiène des lots 73/209 a tenu). 2 défauts réels sur
+  la fiche Analyse : #an-cp-q (question du copilote) et #an-pt-amt
+  (montant du ticket pré-trade) n'avaient qu'un placeholder — pas
+  une étiquette (disparaît à la saisie, lecture inconstante par les
+  lecteurs d'écran) → aria-label FR sur les deux. Gardien neuf
+  test_analysis_inputs_a11y_lot299 (2 tests). Preuves : aria-labels
+  lus dans le DOM, 0 champ sans étiquette restant, 0 erreur,
+  capture envoyée. Bump SW v184 → v185 + 5 gardiens. Suite
+  **2514 passed / 2 skipped (+2)**. É1 : GO acquis, toujours en
+  attente de déblocage permissions.
+
 - **Lot 298 — livré** : GARDIEN TRANSVERSAL — plus jamais un
   « live » menteur. La leçon des lots 296/297 (mode de fraîcheur
   codé en dur pour des données qui ont un repli/une variante démo)
