@@ -1559,6 +1559,51 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 385 — livré** : **le recensement des replis s'arrêtait à
+  `vertex/`**. Parti compter les 38 `except: pass` « autres » du lot 379,
+  je suis tombé sur la frontière avant de tomber sur les handlers. Le
+  gardien 378 tient l'invariant n°4 — *un `except` qui renvoie un nombre
+  substitue une valeur plausible à une donnée manquante* — avec un
+  `RACINE = 'vertex'` en dur. **Mesure : 254 handlers dans `vertex/`,
+  113 hors, dont 101 dans `terminal.py`** : **31 % des handlers de
+  production hors du filet**, dont tout le monolithe qui sert encore des
+  routes.
+  **Trou prouvé, et distingué d'un gardien inutile.** Un
+  `except: return 50` NEUF dans `terminal.py` — exactement ce que la
+  propriété 378 interdit — passe les 2 793 tests. Le témoin seul ne
+  suffisait pas (deux « AUCUN » côte à côte pourraient vouloir dire que
+  le gardien ne sert à rien) : **contrôle décisif**, le même défaut mot
+  pour mot dans `vertex/engines/stats.py` **MORD**. Le gardien fait donc
+  précisément ce que son code dit — **ce n'est pas une myopie, c'est sa
+  frontière**, la catégorie exacte du trou du lot 381.
+  **Les trois replis existants de `terminal.py` sont honnêtes, pour deux
+  raisons différentes.** `_seed_fund_from_company` → `0` est un compteur
+  exact (le nombre EST la mesure). `_i` → `0` et `_f` → `0.0` sont de
+  vrais substituts — vérifié sur valeurs réelles,
+  `_i(None) = _i('abc') = _i(NaN) = 0` — mais **le site d'appel les
+  écarte** : `if iv <= 0 or oi <= 0: continue`. **C'est ce garde-fou, et
+  non la coercition, qui tient l'invariant** ; s'il disparaissait, un
+  repli entrerait dans la médiane d'IV ATM et le GEX **servis**. C'est la
+  seule pièce fragile des trois, désormais verrouillée — ainsi que le
+  fait que les coercitions n'aient pas essaimé, puisque toute la
+  démonstration repose là-dessus.
+  Gardien `tests/test_replis_racine_lot385.py` (13 tests) : dénominateur
+  d'abord, LA propriété portée hors `vertex/`, anti-péremption, borne de
+  dérive **fixée À la mesure** (38), **anti-rot du périmètre** forçant la
+  décision sur tout nouveau module racine, exclusions vérifiées non
+  importées par la production. Preuve ROUGE ×3, toutes sur le **vrai
+  fichier de production** — la faute du lot 383 ne s'est pas reproduite.
+  **Un risque de test évité** : ma première version appelait
+  `_seed_fund_from_company()`, sans écriture ici *parce que le cache est
+  plein sur cette machine* ; sur un cache incomplet elle aurait sauvegardé
+  un fichier runtime depuis un test. `_save_json` est interceptée et le
+  test échoue si une écriture est tentée.
+  Aucun fichier de production touché, aucun fichier runtime muté
+  (`fund_cache.json` inchangé, vérifié par `mtime`). Suite 2793 →
+  **2806** / 2 skipped. SW v187. Suite : les 38 `except: pass` de
+  `terminal.py` lus un par un, seule piste fine portant encore une
+  question d'honnêteté non tranchée.
+
 - **Lot 384 — livré** : audit des gardiens par mutation, **quatrième et
   dernière passe — 6 sur 6, aucun trou**, et la veine se ferme sur ce
   résultat. **Mordent** : snapshot quotidien du desk désactivé ·
