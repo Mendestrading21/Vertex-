@@ -350,6 +350,8 @@
 
 | 327 | `SKYLER-LOT-327.md` | **`CLAUDE.md` REDEVIENT VRAI** — 3 affirmations vérifiées, 3 fausses depuis la purge. (1) « ~10 500 lignes » → **7 153** (avec l'historique 10 743). (2) « Pages extraites » listait 8 modules `vertex/ui/` : vérification consommateur par consommateur → `nav`/`vx_kit`/`sync_center`/`design_system`/`home_art` servis, mais **`options_lab`, `journal`, `vault`, `signals`, `strategy_os` ont 0 consommateur en production** (reliques, non supprimées → dossier ouvert). (3) **Correction de MON erreur du lot 323** : j'avais annoncé `journal.py` comme l'une des 3 listes de clés servies — il **n'est pas servi** ; les vraies sont vx_kit (source de vérité), vx-entities.js, et **le repli `deskKeys()` de `system_page.py`** qui n'était cité nulle part. Aucune donnée en jeu (vxJournal est géré par vx-entities). Mis en réserve : le libellé « contrat `__DESK_KEYS` » affiché par la page Système cite un symbole disparu → lot dédié avec bump assumé. Suite 2501/2. Docs seulement, pas de bump | 0.9.0 | v186 | 2501 | GO |
 
+| 328 | `SKYLER-LOT-328.md` | HONNÊTETÉ D'AFFICHAGE — la page Système annonçait « contrat **`__DESK_KEYS`** », symbole **disparu avec la purge É1** : le contrat réel s'appelle `DESK_KEYS` (vx_kit + vx-entities). Pas faux sur le fond, mais nommait à l'utilisateur un symbole introuvable dans le code → invariant n°4. Corrigé (1 chaîne). Preuve chirurgicale : **7 MD5 identiques, seul `/system` change** (85d1cb065d2e → **73e917c0f2d0**, nouvelle référence) ; HTML servi : `contrat DESK_KEYS` présent, **0 occurrence de `__DESK_KEYS`** ; smoke 8×200, 0 erreur console, client-log 0. **Bump SW v186 → v187** + les 5 gardiens SW mis à jour. Suite 2501/2 | 0.9.0 | **v187** | 2501 | GO |
+
 ## Architecture atteinte
 
 ```text
