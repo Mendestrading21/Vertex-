@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 310 — livré** : ÉCHÉANCE PÉRIODIQUE (6e mesure) — SMOKE
+  PARFAIT : 8×200, 0 erreur console/pageerror, client-log 0, **les 8
+  tailles STRICTEMENT identiques aux références du lot 300** (outil
+  commité probe_smoke.py, scan terminé avant mesure — piège du froid
+  évité, vertex_ready=20) ; suite 2516/2. MINI-BILAN 300-309 :
+  « prouver que tout est sain, puis assumer la veille » — robustesse
+  outillée (301), fix clavier topbar SW v186 (302), première
+  baseline « contenu utile » (304), round-trip desk + CAMPAGNE
+  D'AUDITS CLOSE (305), cartographie moteur→UI complète (306),
+  veille honnête (307-309). 10 PR fusionnées (#332→#341), 1 défaut
+  réel corrigé, 3 outils de validation commités, 0 changement
+  gratuit. Prochaine échéance ~lot 320. Docs seulement, pas de bump.
+  É1 : GO acquis, toujours en attente de déblocage permissions.
+
 - **Lot 309 — livré** : VEILLE ACTIVE — état identique (0 doublon
   trigger, integration à jour c38c903, arbre propre, suite 2516/2
   verte) ; aucun signal, aucune piste nouvelle ; rapport minimal.
