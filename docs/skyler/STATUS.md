@@ -1495,6 +1495,19 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 304 — livré** : PERFORMANCE PERÇUE mesurée (pas supposée) —
+  DCL 264-341 ms sur les 8 pages (baseline lot 72 <300 ms tenue,
+  /system 311 marginal ; le 630 ms initial de / était un artefact de
+  FROID, re-mesuré isolément 341/300/188 ms) ; **PREMIÈRE baseline
+  « temps avant contenu utile »** : 362-1055 ms selon la page (méthode
+  : texte ≥60 % du final ET 0 squelette, échantillonnage 250 ms) ;
+  0 squelette visible à 1 s partout. Verdict SAIN → 0 changement
+  produit ; livrable = outil commité tools/probe_perceived_perf.py
+  (usage, piège du froid, baselines en en-tête — les prochaines
+  mesures ont un point de comparaison). compileall vert. Suite
+  **2516 passed / 2 skipped**. Pas de bump. É1 : GO acquis, toujours
+  en attente de déblocage permissions.
+
 - **Lot 303 — livré** : DOUBLE AUDIT sain. (1) Clavier PROFOND :
   Entrée sur un bouton ticker de la shortlist → navigation réelle
   vers /analysis/ABNB (vrais boutons, activation native) ; délégués
