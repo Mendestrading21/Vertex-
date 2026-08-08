@@ -59,5 +59,19 @@ Ne jamais travailler directement sur `main`. Les anciennes branches V4/Prism son
 - Sans code d'accès, le serveur n'écoute que 127.0.0.1 (LAN/iPhone : définir `VERTEX_CODE`, ou `VERTEX_LAN=1` en connaissance de cause).
 - IBKR : `readonly=True` toujours ; worker unique avec `RequestTimeout=45` (ne pas retirer — anti-blocage).
 
+## Couleurs — la règle réellement tenue (mesuré au lot 382)
+
+L'énoncé « tokens/VXChartTheme uniquement, **aucun littéral couleur** » était
+**faux** : `vertex/ui/**` contient **265 littéraux `#RRGGBB` distincts, dont 53
+atteignent une page servie**. La règle que le code respecte et qu'un gardien
+impose réellement est plus étroite : **aucun bleu NON-MARQUE en dur**
+(`tests/test_obsidian_theme.py::test_no_blue_in_ui_pages`, vérifié par mutation —
+un `#1e6fd9` échoue, un `#ff00ff` passe).
+
+Pour tout NOUVEAU travail : préférer les tokens. Ce qui est verrouillé :
+`tests/test_litteraux_couleur_servis_lot382.py` interdit la **croissance** du
+nombre de littéraux servis (borne fixée à la mesure) et vérifie l'absence de bleu
+non-marque **dans les octets servis**, pas seulement dans les sources.
+
 ## Utilisateur
 Trader francophone, interface en FR. Compte IBKR réel connecté via TWS (lecture seule). Préfère : données réelles partout, zéro erreur, tout synchronisé automatiquement au lancement. Aucun nom personnel ne doit apparaître dans le code, l'interface ou la documentation.

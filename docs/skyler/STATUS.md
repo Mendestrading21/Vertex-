@@ -1559,6 +1559,43 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 382 — livré** : audit des gardiens par mutation, **seconde
+  passe**, protocole durci après les trois mutations fautives du 381
+  (ancre unique, mutation vérifiée effective, code muté vérifié SERVI).
+  J'ai ajouté un **témoin négatif** — une modification anodine qui ne
+  doit PAS faire tomber la suite — pour que les « MORD » veuillent dire
+  quelque chose : il se comporte comme attendu.
+  **Quatre protections lourdes tiennent** : `sanitize_news` retiré de
+  `/news-feed` **et** de la construction des événements, rotation des
+  sauvegardes desk ramenée à 0, et un fichier `vertex/static` modifié
+  **sans bump d'empreinte** — tous mordent.
+  **Un trou** : un `#ff00ff` en dur dans le shell **servi** passe les
+  2 767 tests. Tentation immédiate d'accuser le gardien couleur de
+  myopie — **vérifié avant d'accuser**, par mutation ciblée : `#1e6fd9`
+  (bleu non-marque) MORD, `#ff00ff` et `#c0392b` passent. Le gardien
+  balaie bien `vertex/ui/**`, shell compris, et fait **exactement ce que
+  son nom annonce**. Ce n'est pas lui qui ment : c'est `CLAUDE.md` qui
+  annonçait « tokens/VXChartTheme uniquement, **aucun littéral
+  couleur** ».
+  **Mesure : 265 littéraux `#RRGGBB` distincts dans `vertex/ui/**`, dont
+  53 atteignent une page SERVIE** (répartis sur une dizaine de modules).
+  L'énoncé était donc faux depuis longtemps, et exiger zéro casserait la
+  suite sans rien améliorer. **Verdict : le code respecte la règle
+  réelle — c'est l'énoncé qui était faux, et le contrat qui n'était
+  verrouillé nulle part.**
+  Livré : gardien `tests/test_litteraux_couleur_servis_lot382.py`
+  (12 tests — anti-vide avec dénominateur, **borne de dérive fixée À la
+  mesure** (55 pour 53), règle réelle vérifiée sur les **octets servis**
+  là où le gardien historique lit les sources, anti-péremption du
+  périmètre) ; plus une section « Couleurs — la règle réellement tenue »
+  dans `CLAUDE.md`, chiffres à l'appui. Preuve ROUGE ×4 — les quatre
+  fautes passaient toutes la suite avant ce lot. Aucun fichier de
+  production touché. Suite 2767 → **2779** / 2 skipped. SW v187.
+  **Deux lots, deux écarts doc/réalité au même endroit** : les
+  invariants annoncés dans `CLAUDE.md`. La piste suivante s'impose —
+  vérifier systématiquement chaque règle critique contre ce qu'un
+  gardien impose vraiment.
+
 - **Lot 381 — livré** : ouverture de la veine décidée au bilan 380 —
   **auditer les GARDIENS eux-mêmes, par mutation**. 291 fichiers de test,
   2 756 tests dont nul n'avait vérifié qu'ils voient ce qu'ils prétendent.
