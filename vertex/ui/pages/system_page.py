@@ -925,7 +925,7 @@ function renderDeskSummary(){
   let present=0,bytes=0;
   keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null){present++;bytes+=v.length;}});
   $('vx-settings-desk').innerHTML=
-    kv('Cl&eacute;s synchronis&eacute;es',keys.length+' (contrat __DESK_KEYS — aucune cl&eacute; renomm&eacute;e)')
+    kv('Cl&eacute;s synchronis&eacute;es',keys.length+' (contrat DESK_KEYS — aucune cl&eacute; renomm&eacute;e)')
     +kv('Cl&eacute;s pr&eacute;sentes localement',String(present))
     +kv('Taille locale',VX.fmt.num(bytes/1024,1)+' Ko')
     +kv('Derni&egrave;re &eacute;criture locale',VX.fmt.ago(Number(localStorage.getItem('deskTs')||0)||null));

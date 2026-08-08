@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 328 — livré** : HONNÊTETÉ D'AFFICHAGE. La page Système annonçait
+  à l'utilisateur « Clés synchronisées — 17 (contrat **`__DESK_KEYS`** —
+  aucune clé renommée) ». Ce symbole a **disparu avec la purge É1** : il
+  nommait la liste qui vivait dans le JS des pages mortes. Le contrat
+  existe toujours, il s'appelle `DESK_KEYS` (vx_kit + vx-entities).
+  L'affirmation n'était pas fausse sur le fond, mais elle nommait un
+  symbole **introuvable dans le code** — un trader qui irait vérifier ne
+  trouverait rien. Invariant n°4. Repéré au lot 327, mis en réserve
+  parce qu'il change un octet servi ; traité ici avec le protocole
+  complet. Correctif = **une chaîne**. Preuve chirurgicale : **7 MD5
+  identiques, seul `/system` change** (85d1cb065d2e → **73e917c0f2d0**,
+  nouvelle référence) ; le HTML servi contient `contrat DESK_KEYS` et
+  **0 occurrence de `__DESK_KEYS`** ; smoke 8×200, 0 erreur console,
+  client-log 0. **Bump SW `td-shell-v186` → `td-shell-v187`** + les
+  5 gardiens SW mis à jour. Suite **2501 / 2 skipped**.
+
 - **Lot 327 — livré** : **`CLAUDE.md` REDEVIENT VRAI**. Les lots 323-325
   ont retiré 33 % de terminal.py ; la documentation de pilotage — le
   fichier que chaque session lit en premier — décrivait encore l'état
