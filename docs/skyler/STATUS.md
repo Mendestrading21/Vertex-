@@ -1495,6 +1495,54 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 378 — livré** : les **exceptions comme convention de refus**,
+  angle mort déclaré au lot 377. Risque produit : un `except` qui avale
+  une erreur transforme une donnée manquante en **blanc muet**, ou pire
+  en **chiffre plausible**. Mesure : **254 handlers** — 124 replis nus
+  (48,8 %), 66 autres, **46 `except: pass`**, 17 marqués, 1 avec trace.
+  Le chiffre de 124 fait peur mais mon classement confondait deux choses
+  opposées : ce que le handler **renvoie** tranche — **`None` 70**
+  (contrat « valeur ou None » : parfaitement HONNÊTE, l'appelant affiche
+  `—`), et seulement **12 NOMBRES**, seule famille qui menace
+  l'invariant n°4.
+  **Première correction, et elle est d'un genre nouveau.** Deux des
+  douze renvoient **50** (`quant_engine.entry_quality`). J'allais les
+  innocenter : 50 est le point de départ de la fonction (`s = 50.0`) et
+  le défaut de ses entrées, donc « le neutre déclaré de l'échelle ».
+  **Exécution faite, c'est FAUX** : à entrée vide la fonction rend
+  **76**, pas 50. `s = 50.0` est un point de départ interne, pas une
+  sortie naturelle — le repli est bien un score plausible,
+  **indiscernable d'une mesure**. C'est la **première fois de la boucle
+  que la vérification sur valeurs réelles m'empêche d'INNOCENTER du
+  code** ; d'habitude elle m'empêche d'en accuser.
+  **Verdict : CARACTÉRISATION, pas de faute prouvée.** Le chemin est
+  défensif (il exige un `d` non-dict, alors que les appelants passent
+  des lignes de scan) et je n'ai trouvé aucune entrée réelle qui
+  l'atteigne — modifier un moteur de scoring sur un défaut non démontré
+  serait le changement gratuit que la boucle s'interdit. Ce que le lot
+  livre, c'est le **recensement gelé** : aucun nouveau repli numérique
+  ne pourra apparaître en silence.
+  **Seconde correction, sur mon propre gardien.** La preuve ROUGE a
+  d'abord répondu **NE MORD PAS** au cas « `raise` privé de son
+  message » : ma tolérance de 3 muets reposait sur un chiffre annoncé de
+  2, quand la mesure au critère du gardien donne **39 `raise`, 1 seul
+  muet**. Borne ramenée à la mesure. **Une borne qui absorbe la première
+  régression n'est pas une borne** — c'est la même illusion de confort
+  que la myopie découverte au lot 377.
+  Observation versée aux dossiers : `opportunities_api._followed_count`
+  et `_positions_count` renvoient `0` sur exception, rendant « desk
+  illisible » et « desk vide » indiscernables (portée limitée : la route
+  consommatrice marque bien ses propres erreurs, 500 + `error`).
+  Gardien `tests/test_replis_exception_lot378.py` (9 tests : périmètre,
+  anti-vide, recensement gelé et justifié, anti-péremption, bornes de
+  dérive qui rendent visible sans juger, caractérisation vérifiée **en
+  exécution**, `raise` muets ≤ 1) ; preuve ROUGE ×5, restauration
+  identique à l'octet — deux cas d'abord **sautés** puis corrigés sur
+  les vraies lignes, un troisième d'abord **non mordant**, ce qui a
+  révélé la borne trop lâche. Aucun fichier de production touché, donc
+  pas de preuve MD5 requise. Suite 2721 → **2730** / 2 skipped. SW v187
+  inchangé.
+
 - **Lot 377 — livré** : les autres conventions de refus — **et la
   découverte que le gardien du lot 376 n'en voyait qu'un TIERS.**
   Volume mesuré sur 1321 fonctions : `return None` **242** (absence de
