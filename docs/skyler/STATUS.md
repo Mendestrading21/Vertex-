@@ -1495,6 +1495,37 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 364 — livré** : AUTO-RÉFÉRENCES — « ce que le projet dit de
+  lui-même est-il vrai ? », suite du lot 71 (qui avait trouvé une
+  docstring citant un gardien inexistant et posé le contrat pour
+  `vertex/`). Deux angles morts restaient : `terminal.py` et les
+  documents. Mesure : **0** chemin de module `vertex/**.py` mort,
+  **0** route sur les **29** routes `/api/…` citées en commentaire
+  (toutes dans l'`url_map`), mais **7 références de tests inexistants,
+  toutes dans `docs/`**. Enquête git : trois gardiens créés aux
+  lots 183/184/185 ont été **supprimés par la purge É1 du lot 323**
+  (`80a1729`, PR #355) — comme le plan le prévoyait, sa catégorie B
+  s'appelant littéralement « retrait avec leurs tests » — mais **rien
+  ne l'écrivait**. `ANNEXE-E1-RETRAITS.md`, qui est le document de
+  PREUVE de la purge, laissait donc sa piste de vérification rompue :
+  un lecteur cherchant ces gardiens ne les trouvait pas et ignorait
+  pourquoi. **C'est mon propre travail (lot 323) qui a créé l'écart.**
+  La 7ᵉ référence est la citation historique du défaut du lot 71
+  lui-même, légitime. Livré : **statut d'exécution** ajouté à l'annexe
+  (commit, PR, ampleur, les 3 gardiens marqués RETIRÉ avec leur lot de
+  création) — les rapports `SKYLER-LOT-183/184/185.md` ne sont PAS
+  touchés, ce sont des archives et les réécrire falsifierait
+  l'histoire ; et gardien `tests/test_references_vivantes_lot364.py`
+  (7 tests) : contrat du lot 71 **étendu à `terminal.py`**, même
+  contrat sur les chemins de modules, et pour les **documents vivants**
+  — citer un gardien disparu est permis **à condition de dire qu'il a
+  été retiré** sur la ligne qui le nomme. Preuve ROUGE ×2, dont la
+  faute historique du lot 71 rejouée dans le fichier que son gardien ne
+  regardait pas ; fichiers restaurés MD5 identique. Aucun code n'était
+  faux : le défaut était une piste de preuve rompue. Aucun octet servi
+  → pas de bump (`td-shell-v187`). Suite 2520 → **2527 / 2 skipped**
+  verte.
+
 - **Lot 363 — livré** : RÈGLE N°4 (« données RÉELLES uniquement ; le mot
   démo ne s'affiche que si le serveur le confirme ») — **SAINE, et
   prouvé plutôt que supposé**. (1) Les données DEMO sont bien

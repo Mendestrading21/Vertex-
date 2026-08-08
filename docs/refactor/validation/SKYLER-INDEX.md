@@ -422,6 +422,8 @@
 
 | 363 | `SKYLER-LOT-363.md` | RÈGLE N°4 — **SAINE, prouvé** : données DEMO bien synthétiques (`source='demo'`, taux 3 mois à 35,6 %) et les 8 pages préviennent en navigateur après hydratation ; recensement des étiquettes de provenance : **31 dérivées, 59 constantes, 0 affirmant réel/live** (tous `delayed`/`index` ou un nom de moteur). Mais la règle s'était déjà perdue 2 fois (296 « board réel », 297 chip « Live ») : gardien neuf `test_honnetete_provenance_lot363.py` (4 tests), **les 2 fautes historiques rejouées sont attrapées**. Observation laissée : « points réels du scan » sur `/markets` (méthode, pas provenance) — rien changé. Aucun octet servi, pas de bump | 0.9.0 | v187 | 2520 | GO |
 
+| 364 | `SKYLER-LOT-364.md` | AUTO-RÉFÉRENCES (suite du lot 71) — modules cités : **0 mort** ; routes `/api/` citées : **29, toutes réelles** ; mais **7 références de tests inexistants, toutes dans `docs/`**. Enquête git : 3 gardiens (lots 183/184/185) **supprimés par la purge É1 du lot 323 elle-même**, comme le plan le prévoyait, sans que rien ne l'écrive — `ANNEXE-E1-RETRAITS.md`, document de PREUVE de la purge, laissait sa piste rompue. Statut d'exécution ajouté à l'annexe (rapports historiques non touchés) + gardien `test_references_vivantes_lot364.py` (7 tests : contrat du lot 71 étendu à `terminal.py`, chemins de modules, et « citer un gardien disparu = le dire » dans les docs vivants). Preuve ROUGE ×2. Aucun octet servi, pas de bump | 0.9.0 | v187 | 2527 | GO |
+
 ## Architecture atteinte
 
 ```text
