@@ -1495,6 +1495,43 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 377 — livré** : les autres conventions de refus — **et la
+  découverte que le gardien du lot 376 n'en voyait qu'un TIERS.**
+  Volume mesuré sur 1321 fonctions : `return None` **242** (absence de
+  valeur ordinaire, PAS un refus — non décidable, et je ne prétends pas
+  le trancher), `return []` 28, `return {}` 13,
+  `{available: False}` 13, `{ok: False}` 4.
+  **Le vrai défaut n'était pas dans le code mais dans le PÉRIMÈTRE du
+  gardien précédent.** Il ne regardait que `return <Dict>` ; or la
+  majorité des refus d'API sont **enveloppés** —
+  `return jsonify({...})`, souvent `jsonify({...}), 400` — donc portés
+  par un `Call` ou un `Tuple`, jamais un `Dict`. Ils étaient **tous**
+  invisibles : **13 vus sur 39 réels, soit 33 % de couverture**. Et les
+  26 manquants sont précisément **les plus exposés** : les refus servis
+  en JSON au navigateur, ceux que l'interface montre à l'utilisateur.
+  **12ᵉ fois de la boucle que le périmètre de l'outil ment, et la
+  première où c'est un gardien DÉJÀ FUSIONNÉ qui se révèle myope** — le
+  code était sain, le test au vert, et le vert ne voulait pas dire ce
+  qu'on croyait. Un gardien myope est plus dangereux qu'une absence de
+  gardien, puisqu'il rassure. Périmètre corrigé : **39 refus,
+  39 motivés, 0 muet**, confirmé sur les réponses réellement servies
+  (`error='question vide'`, `err='nom invalide'`). Cas voisin vérifié
+  avant de crier au loup : `/api/skyler/<sym>` répond 200 sans clé
+  d'état pour un symbole inconnu, mais sert une décision complète avec
+  un `audit_trail` énumérant ce qui manquait — **la traçabilité EST le
+  motif**, pas un refus muet. Discipline des contrats à deux visages
+  mesurée avec son dénominateur : **37 fonctions mixtes existent, 0 ne
+  porte de clé d'état** dans sa branche riche. **Verdict : sain, rien
+  touché** — ce que ce lot corrige, c'est la **couverture**. Gardien
+  `tests/test_refus_api_lot377.py` (9 tests, dont celui qui verrouille
+  la leçon : **le déballage doit voir strictement plus que le détecteur
+  naïf, écart ≥ 10** — si l'écart tombe, c'est le gardien qui est
+  redevenu myope, pas le code qui a changé) ; preuve ROUGE ×5,
+  restauration identique à l'octet, dont **la myopie elle-même rejouée**
+  en retirant le déballage. Aucun fichier de production touché, donc pas
+  de preuve MD5 requise. Suite 2712 → **2721** / 2 skipped. SW v187
+  inchangé.
+
 - **Lot 376 — livré** : les docstrings qui décrivent leur retour **en
   prose** — angle mort déclaré au lot 375. Consigne appliquée :
   **mesurer le volume AVANT de promettre un verdict**, précisément parce
