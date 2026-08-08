@@ -1559,6 +1559,57 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 386 — livré** : **les 38 `except: pass` de `terminal.py`, lus un
+  par un** — le lot 379 l'avait fait pour les 46 de `vertex/`, le 385 avait
+  montré que le recensement s'arrêtait à cette frontière. Classement par ce
+  que le `try` ENTOURE : nettoyage/fermeture 6 · journal/persistance 10 ·
+  import/config optionnel 2 · infra thread 2 · **absence honnête 16** ·
+  examinés de près 2. Les trente-six premiers sont sans danger pour
+  l'invariant n°4 : un échec y produit une **absence**, jamais une valeur
+  inventée.
+  **L621 — l'overlay IBKR : honnête au moteur, muet au produit.**
+  `_apply_ibkr_indices()` écrase les indices différés yfinance par les
+  valeurs temps réel et marque chaque entrée `src = 'ibkr'` — le
+  commentaire dit même « provenance temps réel (honnêteté §4) ». Le
+  mécanisme est complet et correct. **Mais il n'atteint aucune surface
+  servie** : mesuré, `markets_page.py` et `briefing.py` lisent
+  `.price/.change/.spark` et **jamais `.src`** ; le seul rendu de « TEMPS
+  RÉEL IBKR » vs « yfinance différé » du dépôt est dans `PAGE_ME`,
+  **l'une des 7 constantes `PAGE_*` MORTES du lot 374** ; et
+  `indices_live` part au client via `/scan` mais **aucun code ne le lit**.
+  Ce n'est pas une malhonnêteté — un cours différé reste un cours réel —
+  c'est la catégorie du lot 382 : **un énoncé du code plus large que ce
+  que le produit délivre**. La pièce réellement fragile est **la fenêtre
+  de fraîcheur de 75 s** : l'élargir servirait des valeurs périmées comme
+  du temps réel. Verrouillée, avec le marqueur, pour qu'un affichage
+  futur ait quelque chose de vrai à lire.
+  **L1342 — `bret = 0.0` : mesuré, pas excusé.** J'allais l'innocenter en
+  disant que 0 est le neutre. `analysis.py:54` dit le contraire :
+  `rs = clip(50 + (sym_ret − bench_ret) × 200, 0, 100)` → 40 devient 70,
+  16 devient 40, 50 devient 90. **La force RELATIVE devient une
+  performance ABSOLUE** — exactement le piège du lot 378 avec
+  `entry_quality`. Trois faits l'empêchent d'être une faute : `0.0` est le
+  défaut **déclaré** (atteint aussi sans exception si `bi <= 63`), le
+  chemin de scan **vivant** passe un `bench_ret` réel, et aucune page
+  servie ne lit `scan_state['edge']`. **Caractérisation, pas correction**
+  — jumelle du dossier `context()` du 379.
+  Gardien `tests/test_pass_terminal_lot386.py` (11 tests) ; preuve
+  ROUGE ×5. **Un test creux démasqué par sa propre preuve ROUGE** : mon
+  anti-dérive testait `'< 75' in src`, or la chaîne apparaît **4 fois**
+  dans `terminal.py` — élargir la fenêtre à une heure laissait le test
+  vert. Réécrit pour lire la constante **dans le corps de la fonction,
+  par AST**.
+  **Trouvaille adjacente — la suite de tests écrit dans les données du
+  desk.** Mesuré : `desk_data.json` est **réécrit** par la suite complète
+  (md5 f30f5d7da49a → c6beebcf97f0). **Aucune donnée perdue** — 6 clés
+  avant et après, `data` byte-identique, seul `ts` change. Mais le lot 362
+  a montré qu'un push **partiel** remplace le blob entier et qu'un push
+  `data: {}` est **accepté** : un futur test effacerait des clés en
+  silence, et le filet ne rendrait que l'état d'avant la première écriture
+  du jour. **16ᵉ dossier**, non engagé — et piste recommandée pour le 387.
+  Aucun fichier de production touché. Suite 2806 → **2817** / 2 skipped.
+  SW v187.
+
 - **Lot 385 — livré** : **le recensement des replis s'arrêtait à
   `vertex/`**. Parti compter les 38 `except: pass` « autres » du lot 379,
   je suis tombé sur la frontière avant de tomber sur les handlers. Le
