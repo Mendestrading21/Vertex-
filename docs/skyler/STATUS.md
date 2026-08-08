@@ -1495,6 +1495,46 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 373 — livré** : la faute du lot 372 sous ses **autres habillages**
+  — f-strings, `%`-format, et tous les producteurs de HTML, pas seulement
+  les gabarits `%%…%%` de trois pages. **Verdict : aucune faille
+  exploitable, rien touché — mais un danger latent trouvé et verrouillé.**
+  **7ᵉ correction de méthode de la boucle, et la plus instructive** : ma
+  première passe listait les fichiers avec `os.listdir`, qui **ne descend
+  pas dans les sous-dossiers**. `vertex/ui/shell/__init__.py` — le
+  producteur HTML **central**, celui qui assemble les 8 pages — n'a
+  jamais été lu, et c'est exactement là que se trouvait la trouvaille.
+  Première fois que c'est mon **périmètre de balayage**, et non ma
+  logique, qui mentait. Passe corrigée en `os.walk` :
+  `vertex.engines.recommendation.vocab_js()` est un `json.dumps` **nu**
+  injecté dans `<script id="vx-vocab">window.__VXVOCAB={…}</script>`,
+  donc **sur les 8 pages** — l'endroit le plus exposé de l'application.
+  Il ne tient aujourd'hui que parce que `_labels_map()` n'assemble que
+  des tables littérales du module (`DECISIONS`, `HELD`, `_ALIAS`) : les
+  3 689 octets servis ne contiennent **ni `<`, ni `>`, ni `&`**, et
+  **rien ne le vérifiait**. Une seule étiquette future avec un `<`
+  ferait sortir le script sur les huit pages à la fois. **Durcissement
+  mesuré puis écarté avec raison** : `vocab_js` sérialise en
+  `ensure_ascii=False` alors que `json_for_script` laisse la valeur par
+  défaut — l'appliquer transformerait tous les accents en `\uXXXX`,
+  changerait les octets servis sur les 8 pages et imposerait un bump SW,
+  pour **zéro gain** puisque le contenu n'a aucun caractère de balise.
+  C'est l'**invariant** qui protège ici, pas le durcissement. Les deux
+  `%%VIEW%%` restés bruts (`markets_page`, `performance_page`) vivent
+  dans `const VIEW='%%VIEW%%'` — une chaîne JS entre apostrophes, dont
+  une charge s'échapperait — mais tiennent par la **liste blanche
+  appliquée avant la substitution** ; sondés 4 charges × 2 routes sur
+  des rendus réels de 55-70 Ko : 0 fuite, `VIEW='overview'` partout.
+  Gardien `tests/test_contexte_js_lot373.py` (27 tests : anti-vide,
+  **anti-angle-mort verrouillant la faute de mon propre outil**,
+  exceptions justifiées **et** anti-péremption, invariant vocab sur les
+  8 pages, gardien pas-trop-strict) ; preuve ROUGE ×3 (étiquette avec
+  `<`, liste blanche retirée, `json_for_script` remplacé par un
+  `json.dumps` nu), restauration identique à l'octet — le 1ᵉʳ cas a
+  d'abord été **sauté** faute de motif correspondant, signalé plutôt que
+  tu. Aucun fichier de production touché, donc pas de preuve MD5
+  requise. Suite 2645 → **2672** / 2 skipped. SW v187 inchangé.
+
 - **Lot 372 — livré** : les **interpolations serveur** dans le `page_js`
   des pages, dernière grande surface non auditée de la veine sécurité.
   **VRAIE FAILLE XSS TROUVÉE ET CORRIGÉE — la plus grave de la boucle.**
