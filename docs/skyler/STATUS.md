@@ -1495,6 +1495,34 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 370 — livré** : CHECKPOINT de la tranche 360-369. Serveur DEMO
+  (`/scan` 20 lignes, `source=demo`) : **les 8 MD5 sont identiques aux
+  références** — aucun octet servi n'a bougé de toute la tranche,
+  cohérent avec dix lots dont **un seul** a touché un fichier de
+  production (lot 368, une ligne d'échappement, dans une route hors des
+  8 pages). Navigateur réel (Chromium 1194, 1440×900, après
+  hydratation) : **0 erreur console, 0 `pageerror`** sur les 8 pages.
+  **Unique écart, et c'est ma plage qui était fausse** : `/markets`
+  mesure **2794**, soit exactement la **référence historique** — la
+  plage `2795-2835` que j'avais construite autour des 2814 du lot 360
+  excluait la référence elle-même. Erreur de construction, pas une
+  régression (le MD5 identique le prouve) ; plage corrigée en
+  **2790-2835**. Au passage, cela reconfirme la conclusion du lot 360 :
+  le smoke dépend du jeu DEMO régénéré par session (2814 puis 2794 pour
+  des octets identiques). **Bilan de tranche** : **1 vraie faille XSS
+  trouvée et corrigée** (368 — titre du post-mortem non échappé), 3 trous
+  (361 périmètre du SW, 364 gardiens emportés par la purge É1, 367 liste
+  blanche non gardée), 1 divergence doc-vs-code (365 PORTFOLIO_FIT), et
+  **3 verdicts « sain » étayés** (363 règle n°4 prouvée en navigateur,
+  366 isolée sur 110 moteurs, 369 18/18 étiquettes sûres).
+  **9 gardiens neufs**, suite **2530 → 2605 / 2 skipped (+75)**,
+  **10 PR fusionnées** (#392 → #401), SW **`td-shell-v187` inchangé**
+  toute la tranche, `main` jamais touchée. **Leçon dominante** :
+  vérifier l'outil avant de conclure a changé le résultat **quatre
+  fois** (367 le diff, 368 les charges avec `/` bloquées en 404
+  Werkzeug, 369 la page d'erreur au même MD5, et ce lot-ci la plage mal
+  construite).
+
 - **Lot 369 — livré** : ÉTIQUETTES DU SHELL — suite directe de la faille
   du lot 368. Audit de **tous** les appels `render_shell` : **44
   étiquettes constantes** (sûres par construction) et **18

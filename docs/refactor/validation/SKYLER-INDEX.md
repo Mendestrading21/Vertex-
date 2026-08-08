@@ -434,6 +434,8 @@
 
 | 369 | `SKYLER-LOT-369.md` | ÉTIQUETTES DU SHELL — audit de **tous** les `render_shell` : 44 constantes, **18 interpolées tracées une par une → 18/18 sûres** (filtre de caractères sur `analysis_page`, dicts de vues normalisés ailleurs). La faille du lot 368 était isolée. Asymétrie documentée : le chemin **fragment** échappe les 4 étiquettes, le chemin **page complète** aucune (cause : `from html import escape` est un import LOCAL à `_render_fragment`) ; `data-page-label="{…}"` est le plus exposé (un guillemet suffirait). **Dossier en attente de GO désormais chiffré** : durcissement appliqué temporairement → **7 pages sur 8 inchangées à l'octet près**, seule `/` bouge (apostrophe de « Aujourd'hui » → `&#x27;`, visuellement identique). 1ʳᵉ mesure fausse (même MD5 sur 8 pages = page d'erreur, `NameError`) corrigée et dite. Gardien `test_etiquettes_shell_lot369.py` (27 tests). Aucun fichier de production, pas de bump | 0.9.0 | v187 | 2605 | GO |
 
+| 370 | `SKYLER-LOT-370.md` | CHECKPOINT tranche 360-369 — serveur DEMO (`/scan` 20 lignes) : **8/8 MD5 identiques**, navigateur réel **0 erreur console** sur les 8 pages. Unique « hors plage » : `/markets` à 2794 = **la référence historique** — c'est **ma plage** (2795-2835, construite autour des 2814 du lot 360) qui l'excluait à tort ; corrigée en 2790-2835. Bilan : **1 vraie faille XSS trouvée et corrigée** (368), 3 trous (361, 364, 367-liste blanche), 1 trouvaille doc-vs-code (365), 3 verdicts « sain » étayés (363, 366, 369) ; **9 gardiens neufs**, suite **2530 → 2605** (+75), 10 PR (#392→#401), SW `td-shell-v187` inchangé, **1 seul fichier de production modifié en 10 lots**. Docs seulement, pas de bump | 0.9.0 | v187 | 2605 | GO |
+
 ## Architecture atteinte
 
 ```text
