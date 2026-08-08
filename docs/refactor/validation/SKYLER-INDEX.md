@@ -414,6 +414,8 @@
 
 | 359 | `SKYLER-LOT-359.md` | GARDIENS JS — inventaire complet de l'`url_map` : 40 routes hors liste sont des 301, mais `/analysis` (index, `render_index`, distinct de `/analysis/<sym>`) est une **page HTML 200 servie, 2 blocs JS inline, absente des deux gardiens** (182 syntaxe, 186 liens d'assets). Ajoutée aux deux listes. Preuve ROUGE avec le bug historique de la règle n°2 (apostrophe française non échappée) : ancienne liste **0 erreur**, nouvelle liste **attrape**. Aucun octet servi, pas de bump | 0.9.0 | v187 | 2506 | GO |
 
+| 360 | `SKYLER-LOT-360.md` | CHECKPOINT tranche 350-359 — serveur DEMO, `/scan` 20 lignes : **8/8 MD5 identiques** aux références, **0 erreur console** en navigateur réel sur les 8 pages. Les écarts smoke expliqués un par un : preuve que le smoke **n'est pas** un invariant d'octets (`/` +18 car. en 90 s à MD5 identique), donc requalifié en plage **indicative** ; `/journal` +1010 = sondes locales du lot 305. Bilan : 8 lots « sain », 2 trouvailles (358 news, 359 `/analysis`), SW v187 inchangé, 10 PR (#382→#391) | 0.9.0 | v187 | 2506 | GO |
+
 ## Architecture atteinte
 
 ```text
