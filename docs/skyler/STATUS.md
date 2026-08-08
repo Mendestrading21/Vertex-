@@ -1495,6 +1495,36 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 371 — livré** : `/memory/cell/<group>/<key>`, la **route sœur**
+  de la faille du lot 368 — même fichier, même auteur, même motif de
+  rendu, donc forte probabilité du même défaut. **Verdict : SAINE, et
+  prouvé sur des cellules réelles.** **Correction de méthode d'abord
+  (la 5ᵉ de la boucle)** : ma première sonde écrivait les résultats sous
+  la forme `{'hit': bool}` → **aucune cellule formée**, 404 partout,
+  donc des « non » rassurants et **vides** — exactement le piège du
+  lot 368. La vraie forme d'un résultat mesuré est
+  `{'horizons': {'H5'|'H20'|'H60': {'status': 'MESURE', 'return_pct'}}}`
+  (cf. `_measured_class`) ; sans horizon MESURE, aucune cellule n'existe.
+  Sonde corrigée : **4 cellules rendues en 200 (~19 Ko)** avec des
+  records hostiles, dont `by_regime` **dont la clé EST la charge**
+  — elle traverse alors **à la fois l'URL et la donnée** : 0 charge
+  brute, 0 balise active, `<title>` unique et clos, version échappée
+  présente. **Pourquoi cette route tient là où l'autre a cédé** : son
+  `title=` est une **constante** (`'Cellule de calibration'`) alors que
+  la faille du lot 368 venait d'un titre nourri par la donnée, et chaque
+  valeur du corps passe par `markupsafe.escape`, y compris la clé
+  reconstruite. **Rien touché.** Gardien
+  `tests/test_memoire_cellule_lot371.py` (5 tests) sur une mémoire
+  **temporaire** — dont un **anti-vide** qui exige ≥4 cellules formées,
+  pour que la fixture ne puisse plus tourner à vide en silence — et un
+  test qui exige que le titre **reste** une constante. Preuve ROUGE ×2,
+  dont la faute du lot 368 **transplantée** dans cette route (titre
+  nourri par la donnée → 3 tests rouges). Aucun fichier de production
+  touché → pas de preuve MD5 requise, pas de bump (`td-shell-v187`).
+  Suite 2605 → **2610 / 2 skipped** verte (+5). Piste (a) — les
+  interpolations serveur dans le `content=` de chaque page — reste
+  ouverte et demande son propre lot.
+
 - **Lot 370 — livré** : CHECKPOINT de la tranche 360-369. Serveur DEMO
   (`/scan` 20 lignes, `source=demo`) : **les 8 MD5 sont identiques aux
   références** — aucun octet servi n'a bougé de toute la tranche,

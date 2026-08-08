@@ -436,6 +436,8 @@
 
 | 370 | `SKYLER-LOT-370.md` | CHECKPOINT tranche 360-369 — serveur DEMO (`/scan` 20 lignes) : **8/8 MD5 identiques**, navigateur réel **0 erreur console** sur les 8 pages. Unique « hors plage » : `/markets` à 2794 = **la référence historique** — c'est **ma plage** (2795-2835, construite autour des 2814 du lot 360) qui l'excluait à tort ; corrigée en 2790-2835. Bilan : **1 vraie faille XSS trouvée et corrigée** (368), 3 trous (361, 364, 367-liste blanche), 1 trouvaille doc-vs-code (365), 3 verdicts « sain » étayés (363, 366, 369) ; **9 gardiens neufs**, suite **2530 → 2605** (+75), 10 PR (#392→#401), SW `td-shell-v187` inchangé, **1 seul fichier de production modifié en 10 lots**. Docs seulement, pas de bump | 0.9.0 | v187 | 2605 | GO |
 
+| 371 | `SKYLER-LOT-371.md` | `/memory/cell/<group>/<key>` — la **route sœur** de la faille du lot 368 (même fichier, même motif). **Saine, prouvé** : 4 cellules rendues en 200 (~19 Ko) avec des records hostiles, dont une dont la **clé elle-même est la charge** (traverse l'URL ET la donnée) — 0 charge brute, 0 balise active, `<title>` unique. Elle tient parce que son `title=` est une **constante** et que tout le corps passe par `markupsafe.escape`. **5ᵉ correction de méthode de la boucle** : la 1ʳᵉ sonde écrivait les résultats en `{'hit': bool}` → **aucune cellule formée**, 404 partout, « non » vides ; la vraie forme est `{'horizons': {H5: {status: MESURE, return_pct}}}`. Gardien `test_memoire_cellule_lot371.py` (5 tests dont un anti-vide) ; preuve ROUGE ×2 dont la faute du lot 368 **transplantée**. Aucun fichier de production, pas de bump | 0.9.0 | v187 | 2610 | GO |
+
 ## Architecture atteinte
 
 ```text
