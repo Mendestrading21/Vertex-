@@ -338,8 +338,18 @@
   document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
   });
-  $('vx-global-search')?.addEventListener('focus', (e) => { e.target.blur(); openPalette(); });
+  /* Lot 302 : ne JAMAIS ouvrir au focus — le Tab clavier traversait le champ
+     et la palette s'ouvrait de force (les boutons du topbar devenaient
+     inatteignables au clavier). Ouverture : clic/tap (inchangé) ou FRAPPE
+     dans le champ (le caractère saisi amorce la recherche de la palette). */
   $('vx-global-search')?.addEventListener('click', openPalette);
+  $('vx-global-search')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'Enter' || e.key === 'ArrowDown' || e.key.length === 1) {
+      e.preventDefault(); openPalette();
+      if (e.key.length === 1) { pInput.value = e.key; renderPalette(e.key); }
+    }
+  });
   /* Lot 291 : la palette est un fond plein écran sans Échap au tactile —
      le tap sur le fond (hors boîte) ferme, comme tout dialogue. */
   palette?.addEventListener('click', (e) => { if (e.target === palette) palette.dataset.open = '0'; });
