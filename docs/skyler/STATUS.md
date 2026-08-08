@@ -1495,6 +1495,28 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 323 — livré** : **PURGE É1 FAITE** — le blocage de permissions
+  qui durait depuis le lot 285 est levé (il visait la commande
+  composée, pas le retrait). Les **82 définitions mortes** sont
+  retirées de `terminal.py` : **10 743 → 7 164 lignes (-3 579,
+  -33,3 %)**, **-415 573 octets**, diff **100 % soustractif**.
+  Preuves : outil de chiffrage rejoué → **borne basse 0 déf / 0 ligne**
+  (É1 close) ; **MD5 des 8 pages servies IDENTIQUES avant/après** —
+  zéro octet servi modifié, donc **pas de bump SW** ; smoke navigateur
+  8×200, 0 erreur console, client-log 0 ; `compileall` 0 ; import à
+  chaud 1 805 → 1 981 ms = **aucun gain mesurable, dit honnêtement**
+  (l'import est dominé par pandas/yfinance ; le gain est de
+  lisibilité). Effet de bord traité : les 3 copies de la liste de clés
+  de sync desk que `terminal.py` portait vivaient dans le JS des pages
+  mortes → parties avec ; la sync réelle est intacte (vx_kit /
+  journal / vx-entities), règle critique n°1 de CLAUDE.md passée de
+  « 4 listes » à « 3 listes servies », **5 gardiens re-ciblés et
+  durcis** (dont un qui exige désormais que terminal.py ne ressuscite
+  aucune liste). Nouvelle référence de suite : **2499 / 2 skipped**
+  (-17 = tests de caractérisation retirés par la moitié 1/2, écrits
+  pour ce moment). Reste É2 (25 défs, 1 866 l., boucles d'injection
+  par chaîne) et É3 (dépendances croisées) — décisions humaines.
+
 - **Lot 322 — livré** : VEILLE ACTIVE — état identique (0 doublon
   trigger, integration à jour 5ced46e, arbre propre, suite 2516/2
   verte) ; aucun signal, aucune piste nouvelle ; rapport minimal.

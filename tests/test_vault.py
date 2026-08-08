@@ -53,4 +53,7 @@ def test_vault_types_and_actions():
 
 def test_vault_synced_via_desk_contract():
     assert "'vxVault'" in vault.JS
-    assert "vxVault" in open('terminal.py', encoding='utf-8').read()
+    # Le coffre est synchronisé par le kit global (DESK_KEYS), plus par une
+    # copie de liste dans terminal.py (retirée en purge É1).
+    from vertex.ui import vx_kit
+    assert "'vxVault'" in vx_kit.JS

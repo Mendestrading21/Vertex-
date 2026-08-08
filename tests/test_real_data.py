@@ -128,6 +128,12 @@ def test_ibkr_positions_offline_is_honest():
 def test_worker_and_desk_button_wired():
     src = open('terminal.py', encoding='utf-8').read()
     assert "elif kind == 'positions':" in src                 # worker lecture seule
-    assert 'dkImportIBKR' in src                              # bouton Desk
-    assert 'importé TWS (réel)' in src                        # note sur les positions importées
-    assert 'long only' in src                                 # les shorts sont ignorés, pas déformés
+    # Le bouton d'import vivait sur la page Desk (retirée en purge É1) : la
+    # surface servie aujourd'hui est Portefeuille → /api/ibkr/positions.
+    from vertex.app.routes import desk as desk_routes
+    route_src = open(desk_routes.__file__, encoding='utf-8').read()
+    assert "@bp.route('/api/ibkr/positions')" in route_src
+    assert 'LECTURE SEULE' in route_src                       # invariant readonly
+    pf = open('vertex/ui/pages/portfolio_page.py', encoding='utf-8').read()
+    assert '/api/ibkr/positions' in pf                        # consommée par Portefeuille
+    assert 'importe depuis IBKR (lecture seule)' in pf        # libellé honnête

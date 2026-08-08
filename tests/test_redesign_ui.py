@@ -216,15 +216,20 @@ def test_update_indicator_formats():
 
 # ── Synchronisation (§47) ─────────────────────────────────────────────
 def test_all_sync_keys_are_canonical():
-    """vx-entities.js DOIT porter exactement les mêmes clés que __DESK_KEYS."""
+    """vx-entities.js DOIT porter exactement les mêmes clés que le kit global.
+
+    Référence : vertex/ui/vx_kit.py (DESK_KEYS) depuis la purge É1 — terminal.py
+    n'héberge plus de copie de la liste.
+    """
     ent = (STATIC / 'js' / 'vx-entities.js').read_text(encoding='utf-8')
     m = re.search(r"DESK_KEYS\s*=\s*\[([^\]]+)\]", ent)
     assert m, 'DESK_KEYS absent de vx-entities.js'
     entity_keys = set(re.findall(r"'([^']+)'", m.group(1)))
-    src = (ROOT / 'terminal.py').read_text(encoding='utf-8')
-    m2 = re.search(r'__DESK_KEYS\s*=\s*\[([^\]]+)\]', src)
-    terminal_keys = set(re.findall(r"'([^']+)'", m2.group(1)))
-    assert entity_keys == terminal_keys, entity_keys ^ terminal_keys
+    kit = (ROOT / 'vertex/ui/vx_kit.py').read_text(encoding='utf-8')
+    m2 = re.search(r'DESK_KEYS\s*=\s*\[([^\]]+)\]', kit)
+    assert m2, 'DESK_KEYS absent de vertex/ui/vx_kit.py'
+    kit_keys = set(re.findall(r"'([^']+)'", m2.group(1)))
+    assert entity_keys == kit_keys, entity_keys ^ kit_keys
     assert 'vxWatchlist' in entity_keys
 
 
