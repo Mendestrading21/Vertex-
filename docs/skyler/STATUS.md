@@ -1495,6 +1495,22 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 329 — livré** : LE LOT 328 ÉTAIT-IL UN CAS ISOLÉ ? **Oui — SAIN,
+  rien touché.** Après le retrait de 82 définitions, d'autres libellés
+  pouvaient citer des noms qui n'existent plus. La mesure est faite
+  **dans le navigateur, sur le texte RENDU** (`document.body.innerText`)
+  et non sur le HTML brut — une bonne part des libellés est écrite par
+  le JS après hydratation. **16 vues** balayées : les 8 racines, la
+  fiche `/analysis/NVDA`, les 3 sous-vues Système (données, réglages,
+  archive), Marchés → ampleur, Opportunités → anomalies, Portefeuille →
+  risque, Journal → track-record. Extraction des jetons ressemblant à un
+  identifiant technique (snake_case, noms de fichiers), puis
+  confrontation au code réel : **30 identifiants affichés, 0
+  introuvable**. `__DESK_KEYS` était bien un cas isolé, corrigé au lot
+  328. MD5 des 8 pages identiques aux références (dont `/system`
+  73e917c0f2d0), `/sw.js` sert `td-shell-v187`, suite **2501 / 2
+  skipped**. Pas de bump.
+
 - **Lot 328 — livré** : HONNÊTETÉ D'AFFICHAGE. La page Système annonçait
   à l'utilisateur « Clés synchronisées — 17 (contrat **`__DESK_KEYS`** —
   aucune clé renommée) ». Ce symbole a **disparu avec la purge É1** : il

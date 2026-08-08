@@ -352,6 +352,8 @@
 
 | 328 | `SKYLER-LOT-328.md` | HONNÊTETÉ D'AFFICHAGE — la page Système annonçait « contrat **`__DESK_KEYS`** », symbole **disparu avec la purge É1** : le contrat réel s'appelle `DESK_KEYS` (vx_kit + vx-entities). Pas faux sur le fond, mais nommait à l'utilisateur un symbole introuvable dans le code → invariant n°4. Corrigé (1 chaîne). Preuve chirurgicale : **7 MD5 identiques, seul `/system` change** (85d1cb065d2e → **73e917c0f2d0**, nouvelle référence) ; HTML servi : `contrat DESK_KEYS` présent, **0 occurrence de `__DESK_KEYS`** ; smoke 8×200, 0 erreur console, client-log 0. **Bump SW v186 → v187** + les 5 gardiens SW mis à jour. Suite 2501/2 | 0.9.0 | **v187** | 2501 | GO |
 
+| 329 | `SKYLER-LOT-329.md` | LE LOT 328 ÉTAIT-IL ISOLÉ ? **OUI — SAIN, rien touché.** Après le retrait de 82 défs, d'autres libellés pouvaient citer des noms disparus. Mesure faite **dans le navigateur sur le texte RENDU** (`document.body.innerText`, pas le HTML brut : beaucoup de libellés sont écrits par le JS après hydratation), sur **16 vues** (8 racines + /analysis/NVDA + 3 sous-vues Système + ampleur/anomalies/risque/track-record). Extraction des jetons de type identifiant technique (snake_case, `.py`/`.js`/`.json`) puis confrontation au code réel : **30 identifiants affichés, 0 introuvable**. `__DESK_KEYS` était bien un cas isolé, corrigé au lot 328. MD5 des 8 pages identiques aux références (dont /system 73e917c0f2d0) ; /sw.js sert v187 ; suite 2501/2. Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
+
 ## Architecture atteinte
 
 ```text
