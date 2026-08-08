@@ -16,7 +16,6 @@ import math
 import time
 import threading
 from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
@@ -31,8 +30,8 @@ except Exception:
 
 # Moteurs migrés depuis l'ancien package personnel (audit : 5 modules importés
 # mais jamais utilisés ici — scoring, pivots, régime physique, timeframes,
-# noyau quant — ne sont volontairement plus importés par le monolithe).
-from vertex.strategy import config
+# noyau quant — ne sont volontairement plus importés par le monolithe ;
+# `strategy.config` les a rejoints au lot 324, il n'était plus consommé).
 from vertex.options import legacy_engine as options
 from vertex.ai import briefs as ai
 from vertex.scanner import daily, weekly
@@ -55,24 +54,16 @@ WEEKLY_PATH = os.path.join(os.path.dirname(__file__), 'weekly_snapshot.json')  #
 from vertex.data.universe import *  # noqa: F401,F403  (tickers, indices, secteurs, industries)
 from vertex.data.constants import BENCH, R, BUILD, REFRESH_SEC  # noqa: F401
 from vertex.app.config import IBKR_ENABLED, DEMO_MODE  # noqa: F401
-from vertex.data import constants as _vconst
-from vertex.services import status_service as _status_svc
 from vertex.services import persist as _persist
 from vertex.services import live_engine as _live
 from vertex.services import news_plus as _news_plus
-from vertex.engines import decision_stack as _decision
 from vertex.ui import nav as _nav
-from vertex.ui import options_lab as _olab_ui
-from vertex.ui import journal as _tj_ui
 from vertex.ui import home_art as _home_art
-from vertex.ui import signals as _sg_ui
-from vertex.ui import vault as _av_ui
 from vertex.ui import sync_center as _sync_ui
 from vertex.ui import vx_kit as _vx
 from vertex.ui import design_system as _ds
 from vertex.engines import recommendation as _reco
 from vertex.engines import track_record as _track
-from vertex.engines import indicators as _indicators
 from vertex.engines import analysis as _analysis
 from vertex.engines import backtest as _backtest
 from vertex.engines import swing as _swing
@@ -2023,7 +2014,6 @@ app.register_blueprint(_tv_webhooks.make_blueprint(on_signal=_on_tv_signal))
 # ─── VERTEX STRATEGY OS (Blueprint + page) — constitution · décision unique ·
 #     régime · anomalies · équipe · diagnostics · qualité de données ───
 from vertex.app.routes import strategy_os_api as _strategy_os_api
-from vertex.ui import strategy_os as _strategy_os_ui
 app.register_blueprint(_strategy_os_api.make_blueprint(scan_state=scan_state))
 
 

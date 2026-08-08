@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 324 — livré** : HYGIÈNE POST-PURGE. Une purge de -33 % laisse
+  des résidus : audit AST de `terminal.py` → **11 imports orphelins**
+  (10 créés par É1 — leurs consommateurs étaient dans les 82 défs
+  retirées — et 1 antérieur, `strategy.config`). Retirés après trois
+  vérifications faites AVANT de toucher : aucun effet de bord d'import
+  perdu (les 5 modules `vertex/ui/*` concernés sont des bibliothèques
+  de rendu pures, sans route ni blueprint), **0 consommateur en
+  production** (les tests les importent directement), et les 4 modules
+  moteur/service restent importés ailleurs dans `vertex/`. Les
+  ré-exports déclarés (`import *`, `# noqa: F401`) sont volontairement
+  épargnés — y toucher serait un pari. terminal.py 7 164 → **7 153
+  lignes**. **MD5 des 8 pages identiques au lot 323** → zéro octet
+  servi modifié, **pas de bump SW** ; smoke 8×200, 0 erreur console,
+  client-log 0. **Gardien neuf** : `test_terminal_imports_lot324.py`
+  (AST — le monolithe ne réaccumulera plus d'imports morts en
+  silence). Suite **2500 / 2 skipped**.
+
 - **Lot 323 — livré** : **PURGE É1 FAITE** — le blocage de permissions
   qui durait depuis le lot 285 est levé (il visait la commande
   composée, pas le retrait). Les **82 définitions mortes** sont
