@@ -420,6 +420,8 @@
 
 | 362 | `SKYLER-LOT-362.md` | RÈGLE N°6 — chaîne de sauvegarde SAINE (snapshot quotidien, rotation 7, restore strictement validé) et client bien protégé (push après hydratation seulement). Mais 3 faits mesurés que la règle ne disait pas : un push `data: {}` est **accepté** (validation de type seule), le last-writer-wins est **total** (push partiel efface les clés absentes), et **aucun snapshot supplémentaire** n'est pris → le restore rend l'état d'avant la 1ʳᵉ sync du jour et **perd la journée**, profondeur 7 jours. Gardien de caractérisation `test_desk_perte_lot362.py` (5 tests) + règle n°6 corrigée. Rien durci : 3 options (A snapshot avant perte — recommandée, B refus 409, C fusion par clé) en attente de GO. Aucun octet servi, pas de bump | 0.9.0 | v187 | 2516 | GO |
 
+| 363 | `SKYLER-LOT-363.md` | RÈGLE N°4 — **SAINE, prouvé** : données DEMO bien synthétiques (`source='demo'`, taux 3 mois à 35,6 %) et les 8 pages préviennent en navigateur après hydratation ; recensement des étiquettes de provenance : **31 dérivées, 59 constantes, 0 affirmant réel/live** (tous `delayed`/`index` ou un nom de moteur). Mais la règle s'était déjà perdue 2 fois (296 « board réel », 297 chip « Live ») : gardien neuf `test_honnetete_provenance_lot363.py` (4 tests), **les 2 fautes historiques rejouées sont attrapées**. Observation laissée : « points réels du scan » sur `/markets` (méthode, pas provenance) — rien changé. Aucun octet servi, pas de bump | 0.9.0 | v187 | 2520 | GO |
+
 ## Architecture atteinte
 
 ```text

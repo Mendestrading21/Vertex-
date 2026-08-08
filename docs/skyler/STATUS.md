@@ -1495,6 +1495,35 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 363 — livré** : RÈGLE N°4 (« données RÉELLES uniquement ; le mot
+  démo ne s'affiche que si le serveur le confirme ») — **SAINE, et
+  prouvé plutôt que supposé**. (1) Les données DEMO sont bien
+  synthétiques et le serveur le dit (`_demo_universe`,
+  `scan_state['source']='demo'` ; mesuré : taux 3 mois à **35,6 %**,
+  manifestement fabriqué). (2) Les **8 pages préviennent** en navigateur
+  réel après hydratation : « DÉMO — Données synthétiques clairement
+  identifiées, jamais présentées comme réelles » sur `/`, `/markets`,
+  `/opportunities`, `/portfolio`, `/journal` ; « board démo » sur
+  `/options` (correctif du lot 296, toujours en place) ; « Mode global
+  demo » sur `/system`. `/analysis` n'a que le chip de nav — c'est une
+  page de **recherche** sans donnée de marché, cohérent. (3) Recensement
+  des couples `source:`/`mode:` servis, seul endroit où une chaîne peut
+  mentir sur la réalité d'un chiffre : **31 dérivés du serveur,
+  59 constants, 0 affirmant réel/live** — les constants valent `delayed`
+  / `index` ou nomment un moteur. Mais la règle s'était **déjà perdue
+  deux fois** (lot 296 « board réel » en dur, lot 297 chip « Live » en
+  dur) et rien n'empêchait une troisième : gardien neuf
+  `tests/test_honnetete_provenance_lot363.py` (4 tests, dont un
+  anti-vide). **Preuve ROUGE : les deux fautes historiques rejouées sont
+  attrapées**, fichiers restaurés MD5 identique. Observation laissée
+  telle quelle : « 4 maturités réelles » / « points réels du scan » sur
+  `/markets` parlent de méthode, pas de provenance — ambigu à côté d'un
+  badge démo, mais pas faux ; reformuler serait un octet servi modifié
+  pour du style, décision humaine. Aucun octet servi → pas de bump
+  (`td-shell-v187`). Suite 2516 → **2520 / 2 skipped** verte.
+  **Bilan des 5 règles passées à la question : 4 trouvailles** (n°2, n°3,
+  n°5 = trous ; n°6 = promesse plus étroite ; n°4 = saine).
+
 - **Lot 362 — livré** : RÈGLE N°6 (celle qui protège les données réelles
   de l'utilisateur) passée à la même question. **Sain** : la chaîne de
   sauvegarde tient (snapshot quotidien avant écrasement, rotation à 7,
