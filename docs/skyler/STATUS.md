@@ -1495,6 +1495,48 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 368 — livré** : SEGMENTS DE CHEMIN — **une vraie faille XSS
+  trouvée et corrigée**. Jumelle du lot 367, mais sur les segments
+  (`/analysis/<sym>`, `/memory/<id>`), du texte libre donc plus exposé.
+  **Correction de méthode d'abord** : ma première sonde envoyait des
+  charges contenant `/` — Werkzeug refuse `%2F` dans un segment et rend
+  son 404 par défaut (701 octets), la charge n'atteignait **jamais** le
+  rendu ; 28 lignes de « non » rassurants et vides. Refaite sans barre
+  oblique : 18 requêtes sur 42 rendent alors une vraie page.
+  **(1) Le symbole est sain, doublement protégé** :
+  `/analysis/"><img src=x onerror=alert(1)>` → 200, 75 216 octets,
+  `const SYM="IMGS"` (non-alphanumériques **retirés** avant injection JS)
+  et texte **échappé** (`&lt;`, `&quot;`, `&gt;`) ; redirections
+  `/titre/` et `/company/` **relatives** (pas de redirection ouverte) ;
+  CRLF refusé par Werkzeug. 0 fuite sur 6 charges × 7 gabarits.
+  **(2) `/memory/<decision_id>` : FAILLE RÉELLE.** La page (200,
+  19 371 o, 1 bloc inline qui parse, 35 `id` sans doublon) est celle que
+  le lot 359 signalait comme non couverte. Sa docstring promet « TOUT
+  contenu de la mémoire est ÉCHAPPÉ (XSS) » — **c'était faux pour le
+  titre** : le corps utilisait bien `markupsafe.escape`, l'argument
+  `title=` de `render_shell` l'avait oublié. Mesuré : un symbole
+  `</title><script>alert(1)</script>` **sort de la balise** et injecte
+  un **`<script>` actif dans le `<head>`**. **Portée dite franchement** :
+  le `symbol` vient du moteur de décision (univers contrôlé), pas d'une
+  saisie utilisateur ; l'exploitation suppose d'écrire dans
+  `skyler_memory.json`, fichier local — **pas exploitable à distance**,
+  mais défense en profondeur absente et **promesse fausse dans la doc du
+  code**. **Corrigé en une ligne** (`_e(rec.get('symbol'))` dans le
+  titre) : ce n'est pas implémenter une fonctionnalité manquante
+  (règle du lot 365), c'est faire tenir au code une promesse qu'il
+  affichait déjà. Gardien `tests/test_segments_url_lot368.py`
+  (**12 tests**, record hostile injecté dans une mémoire **temporaire** —
+  le vrai `skyler_memory.json` jamais touché) ; **une assertion du
+  gardien était elle-même trop stricte** (elle refusait `onerror=alert`
+  même échappé, donc inerte) → corrigée pour ne viser que la forme
+  exécutable. Preuve ROUGE sur la faute réelle (correctif retiré →
+  2 tests rouges). Fichier de production modifié → preuve exigée :
+  **MD5 des 8 pages, 0 écart / 8** → pas de bump (`td-shell-v187`).
+  Suite 2566 → **2578 / 2 skipped** verte (+12). Piste ouverte : auditer
+  **tous** les `render_shell(title=…)`, même classe de défaut ; le
+  durcissement de fond (échapper le titre dans `render_shell`) toucherait
+  toutes les pages servies — en attente de GO.
+
 - **Lot 367 — livré** : VARIANTES `?view=` — les gardiens JS ne balayent
   que les routes **nues** ; les variantes servent-elles du JS jamais
   parsé (le trou du lot 359, en plus grand) ? **37 variantes découvertes

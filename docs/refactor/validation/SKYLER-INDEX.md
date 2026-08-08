@@ -430,6 +430,8 @@
 
 | 367 | `SKYLER-LOT-367.md` | VARIANTES `?view=` — 37 découvertes depuis le HTML servi (mon grep du code n'en voyait que 25), servant **16 blocs inline absents des routes nues**. Ressemblait à un trou 4× celui du lot 359 — **le diff l'a démenti** : 2 lignes d'écart (`const VIEW="team"` → `"risk"`), le JS est identique, une faute s'y verrait sur la route nue déjà balayée. **Pas de trou.** Constat utile ailleurs : ce paramètre atteint les octets servis (constante JS ×4 pages, `data-view` ×2), sa sûreté tient à une **liste blanche que rien ne testait**. Sondé avec 3 charges hostiles × 8 routes : aucune fuite. Gardien `test_vues_parametre_lot367.py` (33 tests) + preuve ROUGE (liste blanche retirée). Aucun fichier de production, pas de bump | 0.9.0 | v187 | 2566 | GO |
 
+| 368 | `SKYLER-LOT-368.md` | SEGMENTS DE CHEMIN — **VRAIE FAILLE TROUVÉE ET CORRIGÉE**. Le symbole est sain (non-alphanumériques retirés → `const SYM="IMGS"`, texte échappé, redirections relatives, CRLF refusé par Werkzeug ; 0 fuite sur 6 charges × 7 gabarits). Mais `/memory/<id>` promettait « TOUT contenu de la mémoire est ÉCHAPPÉ » et **le titre ne l'était pas** : un symbole contenant `</title><script>alert(1)</script>` **sort de la balise et injecte un script actif dans le `<head>`**. Corrigé en une ligne (`_e(...)` sur le titre) — pas exploitable à distance (le symbole vient du moteur, pas d'une saisie), mais promesse fausse dans la doc du code. Gardien `test_segments_url_lot368.py` (12 tests, mémoire temporaire), preuve ROUGE sur la faute réelle. Correction de méthode : 1ʳᵉ sonde invalide (charges avec `/` → 404 Werkzeug, jamais rendues). **MD5 8/8 identiques**, pas de bump | 0.9.0 | v187 | 2578 | GO |
+
 ## Architecture atteinte
 
 ```text
