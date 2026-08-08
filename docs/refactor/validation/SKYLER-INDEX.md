@@ -396,6 +396,8 @@
 
 | 350 | `SKYLER-LOT-350.md` | ÉCHÉANCE PÉRIODIQUE (10e mesure) : **8×200, 0 erreur console, client-log 0**, et pour la première fois **les 8 tailles tombent TOUTES dans leurs références** — dont `/system` **4 123**, qui confirme par une 2e observation la fourchette rebasée au lot 340 (4 122-4 124) : le rebasage décrivait bien la réalité. **Les 8 MD5 conformes** ; /sw.js sert v187 ; suite 2501/2. + **MINI-BILAN 340-349 : « la croisière tenue »** — 10 lots, **0 changement produit, 0 défaut**, et c'est le résultat correct : les filons sont épuisés depuis la tranche précédente, fabriquer du travail aurait été la seule vraie faute. Suite **2501 constante sur 10 lots**, SW v187 constant, terminal.py inchangé 7 153 l., **10 PR #372→#381**. Prochaine échéance ~lot 360. Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
 
+| 351 | `SKYLER-LOT-351.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 843b21a, arbre propre, suite 2501/2) ; aucun signal, aucune piste calibrée nouvelle ; pas de re-mesure (le lot 350 vient de tout mesurer, aucun octet n'a bougé). Docs seulement, pas de bump | 0.9.0 | v187 | 2501 | GO |
+
 ## Architecture atteinte
 
 ```text
