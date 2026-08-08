@@ -1559,6 +1559,48 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 381 — livré** : ouverture de la veine décidée au bilan 380 —
+  **auditer les GARDIENS eux-mêmes, par mutation**. 291 fichiers de test,
+  2 756 tests dont nul n'avait vérifié qu'ils voient ce qu'ils prétendent.
+  Protocole : muter le code protégé puis lancer **toute la suite** — la
+  question n'est pas « ce gardien-ci mord-il ? » mais « **un** gardien
+  mord-il ? ». Sept sondages sur les gardiens que `CLAUDE.md` nomme comme
+  protégeant les règles critiques.
+  **Bonne nouvelle d'abord** : **READONLY**, le **service worker**, le
+  **vocabulaire des verdicts** et **DESK_KEYS de vx_kit** mordent tous.
+  Les invariants lourds sont réellement tenus, et ce n'était pas acquis.
+  **Mais un trou, sur la règle critique n°1** — celle dont `CLAUDE.md`
+  dit « sinon un push l'efface côté serveur » : retirer `vxAlerts` du
+  **repli servi** de `/system` passe **les 2 754 tests**.
+  **Et en cherchant pourquoi, le constat le plus grave.** Mesure page par
+  page : **`vx_kit.JS` (21 727 octets) n'est servi sur AUCUNE des
+  8 pages**, alors que la doc le décrivait comme « kit global présent sur
+  toutes les pages » et **source de vérité** des clés. Tableau réel : sur
+  les **deux listes réellement servies** — `vx-entities.js` (statique,
+  32 464 o, chargé par les 8 pages) et le repli inline de `/system` —
+  **une seule était gardée** ; les deux autres listes gardées (`vx_kit`,
+  `journal`) n'atteignent pas le navigateur. La chaîne tient encore par
+  comparaison, mais elle est **ancrée sur un module candidat à la
+  purge** : le jour où il part, la référence s'en va et la liste servie
+  non gardée reste.
+  **Trois fausses pistes en chemin, toutes de mon fait** : `.replace(…,1)`
+  a frappé la mauvaise occurrence deux fois, et une mutation visait un
+  bloc **servi nulle part**. Dans un lot dont le sujet est « les gardiens
+  mentent-ils ? », c'est l'outil qui a menti trois fois — *un cas qui ne
+  mord pas accuse d'abord la mutation*. La passe corrigée exige une ancre
+  **unique** et vérifie que la ligne visée a changé.
+  **Livré** : gardien `tests/test_desk_keys_servies_lot381.py` (13 tests)
+  qui garde les listes **par ce qu'elles SERVENT** (contrat complet et
+  aucune clé inventée dans le repli, `vx-entities.js` vérifié tel que
+  servi, les 8 pages le chargent, les deux listes servies identiques, et
+  le fait `vx_kit` non servi **ancré**) ; plus la **correction de la
+  règle n°1 de `CLAUDE.md`**, qui annonçait trois listes servies dont
+  deux ne le sont pas. Preuve ROUGE ×4 — les quatre fautes passaient
+  toutes la suite avant ce lot ; un cas d'abord **sauté** (espaces après
+  virgules), signalé puis corrigé. Aucun fichier de production touché
+  (`CLAUDE.md` est de la documentation, non servie) : pas de preuve MD5
+  requise, pas de bump. Suite 2754 → **2767** / 2 skipped. SW v187.
+
 - **Lot 379 — livré** : les 46 `except: pass` **jugés** — le lot 378 les
   avait comptés en déclarant explicitement ne pas les juger — **plus les
   matériaux du bilan 380**. Classement par ce que le `try` ENTOURE :
