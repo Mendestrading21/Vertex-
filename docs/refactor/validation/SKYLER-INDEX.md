@@ -330,6 +330,7 @@
 | 310 | `SKYLER-LOT-310.md` | ÉCHÉANCE PÉRIODIQUE (6e mesure) : SMOKE PARFAIT — 8×200, 0 erreur, client-log 0, **les 8 tailles STRICTEMENT identiques aux références lot 300** (scan terminé avant mesure, piège du froid évité) ; suite 2516/2. + MINI-BILAN 300-309 : « prouver que tout est sain, puis assumer la veille » — robustesse outillée (301), fix clavier topbar v186 (302), baseline contenu utile (304), round-trip desk + audits clos (305), cartographie complète (306), veille honnête (307-309) ; 10 PR #332→#341, 1 défaut corrigé, 3 outils commités, 0 changement gratuit. Prochaine échéance ~lot 320. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
 | 311 | `SKYLER-LOT-311.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 286a506, arbre propre, suite 2516/2) ; aucun signal, aucune piste nouvelle ; rapport minimal. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
 | 312 | `SKYLER-LOT-312.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour b366fae, arbre propre, suite 2516/2) ; aucun signal, aucune piste nouvelle ; rapport minimal. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
+| 313 | `SKYLER-LOT-313.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 7441a7b, arbre propre, suite 2516/2) ; aucun signal, aucune piste nouvelle ; rapport minimal. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
 
 ## Architecture atteinte
 
