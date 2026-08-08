@@ -1495,6 +1495,12 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 346 — livré** : VEILLE ACTIVE — état identique (0 doublon
+  trigger, integration à jour 26e1910, arbre propre, suite **2501 / 2**
+  verte) ; aucun signal, aucune piste calibrée nouvelle ; pas de
+  re-mesure (aucun octet n'a bougé depuis le lot 340). Docs seulement,
+  pas de bump. Quatre dossiers toujours en attente de décision humaine.
+
 - **Lot 345 — livré** : VEILLE ACTIVE — état identique (0 doublon
   trigger, integration à jour 59dcdf6, arbre propre, suite **2501 / 2**
   verte) ; aucun signal, aucune piste calibrée nouvelle ; pas de
