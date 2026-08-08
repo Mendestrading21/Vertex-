@@ -412,6 +412,8 @@
 
 | 358 | `SKYLER-LOT-358.md` | SORTIES DE NEWS — la règle n°5 décrivait UNE famille, il y en a DEUX : `/api/ai/enrichment` (cerveau Claude+web) sert le titre non neutralisé et n'était couvert par aucun gardien ; sûr en fait (rendu unique via `esc()`, citations filtrées http(s), forme bornée) mais rien ne le figeait — `sanitize_news` y double-échapperait. Gardien neuf `test_ai_news_exit_lot358.py` (5 tests, preuve ROUGE sur les 3 défenses) + règle n°5 de `CLAUDE.md` corrigée. Aucun octet servi, pas de bump | 0.9.0 | v187 | 2506 | GO |
 
+| 359 | `SKYLER-LOT-359.md` | GARDIENS JS — inventaire complet de l'`url_map` : 40 routes hors liste sont des 301, mais `/analysis` (index, `render_index`, distinct de `/analysis/<sym>`) est une **page HTML 200 servie, 2 blocs JS inline, absente des deux gardiens** (182 syntaxe, 186 liens d'assets). Ajoutée aux deux listes. Preuve ROUGE avec le bug historique de la règle n°2 (apostrophe française non échappée) : ancienne liste **0 erreur**, nouvelle liste **attrape**. Aucun octet servi, pas de bump | 0.9.0 | v187 | 2506 | GO |
+
 ## Architecture atteinte
 
 ```text

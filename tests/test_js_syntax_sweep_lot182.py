@@ -22,8 +22,12 @@ from vertex.ui import sync_center
 
 ROUTES = ('/', '/markets', '/opportunities', '/portfolio', '/journal',
           '/options', '/system', '/tracking', '/intelligence',
-          '/titre/AAPL', '/company/AAPL', '/analysis/AAPL',
+          '/analysis', '/titre/AAPL', '/company/AAPL', '/analysis/AAPL',
           '/login', '/widget-lab', '/design-system', '/system/design-system')
+# `/analysis` (index, `analysis_page.render_index`) ajouté au lot 359 : c'était
+# la SEULE page HTML 200 servie absente de ce balayage — `/analysis/<sym>`
+# (`render`) est une autre fonction, ses 2 blocs inline n'étaient jamais parsés.
+# Audit : les 40 autres routes hors liste sont des 301 vers les pages ci-dessus.
 
 _INLINE = re.compile(r'<script(?![^>]*\bsrc=)([^>]*)>(.*?)</script>', re.S)
 
