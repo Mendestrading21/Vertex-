@@ -416,6 +416,8 @@
 
 | 360 | `SKYLER-LOT-360.md` | CHECKPOINT tranche 350-359 — serveur DEMO, `/scan` 20 lignes : **8/8 MD5 identiques** aux références, **0 erreur console** en navigateur réel sur les 8 pages. Les écarts smoke expliqués un par un : preuve que le smoke **n'est pas** un invariant d'octets (`/` +18 car. en 90 s à MD5 identique), donc requalifié en plage **indicative** ; `/journal` +1010 = sondes locales du lot 305. Bilan : 8 lots « sain », 2 trouvailles (358 news, 359 `/analysis`), SW v187 inchangé, 10 PR (#382→#391) | 0.9.0 | v187 | 2506 | GO |
 
+| 361 | `SKYLER-LOT-361.md` | RÈGLE N°3 — le SW met en cache **tout `/static`** (54 fichiers) + les navigations, pas « le shell » ; il est *network-first*, donc le bump ne sert pas à faire voir l'interface mais à **purger le repli hors-ligne**. Historique : **27 commits / 144** touchant `vertex/static` sans bump — conformes à la règle écrite, hors du périmètre réel. Gardien neuf `test_sw_cache_scope_lot361.py` (5 tests : sémantique du SW + contrat empreinte assets ↔ version, daté d'aujourd'hui) + règle n°3 corrigée. Preuve ROUGE ×4. Aucun octet servi, pas de bump | 0.9.0 | v187 | 2511 | GO |
+
 ## Architecture atteinte
 
 ```text

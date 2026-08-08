@@ -1495,6 +1495,33 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 361 — livré** : RÈGLE N°3 passée à la question qui a donné les
+  lots 358 et 359. La règle disait « tout changement de **shell visible
+  utilisateur** → bump `td-shell-vN` ». Le service worker, lui, met en
+  cache **tout `/static`** (54 fichiers servis : 34 JS, 17 CSS,
+  2 polices) **plus** les navigations et le manifeste ; il est
+  *network-first* (`Promise.race([fetch, timeout 4500])`), le cache ne
+  sert qu'en repli ; `activate` supprime tous les caches dont la clé
+  diffère. Deux vérités absentes de la règle : le périmètre est **plus
+  large que « le shell »**, et le bump ne sert pas à « faire voir » la
+  nouvelle interface (le network-first s'en charge) mais à **purger la
+  copie de repli hors-ligne**. Fenêtre d'exposition : visiteur déjà
+  venu, hors-ligne ou réseau > 4,5 s, servi depuis un cache assemblé au
+  fil de visites différentes. Mesure de l'historique : **27 commits sur
+  144** touchant `vertex/static` sans bump — **conformes à la règle
+  écrite**, donc le défaut est dans la règle, pas dans la discipline.
+  Livré : gardien `tests/test_sw_cache_scope_lot361.py` (5 tests —
+  sémantique du SW figée + contrat empreinte SHA-256 des assets ↔
+  version enregistrée, daté d'aujourd'hui, ne juge pas l'historique) et
+  règle n°3 corrigée dans `CLAUDE.md`. Preuve ROUGE sur les 4
+  propriétés, fichiers restaurés MD5 identique. Aucun bug utilisateur
+  observé (en ligne le frais gagne toujours) : le lot rend la règle
+  exacte et applicable, au prix d'une **friction assumée** (tout
+  changement d'asset exigera un bump + 2 constantes). Solution de fond
+  non engagée : empreinte dans les URL d'assets — demande un GO humain.
+  Aucun octet servi modifié → pas de bump (`td-shell-v187`). Suite
+  2506 → **2511 / 2 skipped** verte.
+
 - **Lot 360 — livré** : CHECKPOINT de la tranche 350-359. Serveur DEMO
   (`/scan` 20 lignes) : **les 8 MD5 sont identiques aux références** —
   aucun octet servi n'a bougé depuis le lot 350. Navigateur réel
