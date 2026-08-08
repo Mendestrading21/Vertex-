@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 306 — livré** : CARTOGRAPHIE moteur → UI (calibrage strict :
+  payloads réels des API en DEMO vs code des pages). 6 pistes
+  « donnée servie mais non affichée » vérifiées : adjustments du
+  régime AFFICHÉS (Marchés chips + Aujourd'hui), notes[] toujours
+  vides en régime connu / déjà éditorialisées en inconnu,
+  top_stocks + bloc vertex (p_win, edge) AFFICHÉS (Opportunités),
+  vx_* AFFICHÉS, validation (DSR/PBO/dégradation) AFFICHÉE
+  (Intelligence), portfolio_score consommé UNIQUEMENT par les pages
+  legacy ORPHELINES de terminal.py — un argument de PLUS pour la
+  purge É1 (données calculées pour du code mort). **Couverture
+  moteur → UI complète — aucune lacune ne justifie un changement.**
+  Suite **2516 passed / 2 skipped**. Docs seulement, pas de bump.
+  É1 : GO acquis, toujours en attente de déblocage permissions.
+
 - **Lot 305 — livré** : ROUND-TRIP DESK prouvé de bout en bout
   (dernier angle d'audit) — par le chemin RÉEL du store :
   VXEntities.toggleFavorite → localStorage → push débouncé → serveur
