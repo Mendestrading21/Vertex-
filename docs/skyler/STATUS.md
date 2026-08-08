@@ -1495,6 +1495,34 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 362 — livré** : RÈGLE N°6 (celle qui protège les données réelles
+  de l'utilisateur) passée à la même question. **Sain** : la chaîne de
+  sauvegarde tient (snapshot quotidien avant écrasement, rotation à 7,
+  restore au nom strictement validé — traversée refusée, `ts` neuf pour
+  que tous les appareils re-tirent), et le client se protège bien
+  (`vx_kit.py` ne pousse qu'après hydratation réussie, s'abstient si
+  `bootSync` échoue, re-remplit toute clé absente). **Trois faits
+  mesurés** que la règle ne disait pas, sonde isolée dans un dossier
+  temporaire (le vrai `desk_data.json` jamais touché) : (1) un push
+  `data: {}` est **accepté en 200** et vide le blob — la validation
+  porte sur le TYPE, `{}` est un dict, donc l'écrasement n'a pas besoin
+  d'être « à la main » ; (2) le last-writer-wins est **total**, un push
+  partiel efface les clés absentes ; (3) **aucun snapshot
+  supplémentaire** n'est pris à ce moment-là → un restore rend l'état
+  d'**avant la 1ʳᵉ sync du jour** et **perd le travail de la journée**,
+  avec au plus **7 jours** de profondeur. Scénario résiduel réaliste :
+  navigateur dont l'écriture localStorage échoue en silence (navigation
+  privée, quota). Livré : gardien de **caractérisation**
+  `tests/test_desk_perte_lot362.py` (5 tests, messages d'échec = « mettre
+  à jour ce gardien ») + règle n°6 corrigée dans `CLAUDE.md`. Preuve que
+  le gardien ALERTE : durcissement simulé (refus du push vide) → ROUGE,
+  fichier restauré MD5 identique, 5 verts après restauration.
+  **Rien durci** — refuser un push vide changerait le contrat de sync
+  assumé ; 3 options en attente de GO humain (A : snapshot
+  supplémentaire avant perte, **recommandée**, purement additive ;
+  B : refus 409 ; C : fusion par clé). Aucun octet servi modifié → pas
+  de bump (`td-shell-v187`). Suite 2511 → **2516 / 2 skipped** verte.
+
 - **Lot 361 — livré** : RÈGLE N°3 passée à la question qui a donné les
   lots 358 et 359. La règle disait « tout changement de **shell visible
   utilisateur** → bump `td-shell-vN` ». Le service worker, lui, met en
