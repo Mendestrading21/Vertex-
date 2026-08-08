@@ -623,7 +623,10 @@ def memory_postmortem_view(decision_id):
                '</section>'
                % (_e(rec.get('symbol')), rec_rows, outcome_html, pm_html,
                   _e(decision_id)))
-    return render_shell(title='Post-mortem %s' % rec.get('symbol'), active='journal',
+    # `title` va dans <title> SANS échappement par le shell : un symbole
+    # contenant `</title>` sortirait de la balise et injecterait du HTML actif
+    # (constaté au lot 368 — le corps était échappé, pas le titre).
+    return render_shell(title='Post-mortem %s' % _e(rec.get('symbol')), active='journal',
                         space_label='Journal', sub_label='Post-mortem',
                         content=content)
 
