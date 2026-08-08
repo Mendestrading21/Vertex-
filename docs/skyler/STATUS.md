@@ -1495,6 +1495,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 340 — livré** : **ÉCHÉANCE PÉRIODIQUE (9e mesure) + BILAN
+  330-339**. Smoke complet : **8×200, 0 erreur console/pageerror,
+  client-log 0** ; 6 tailles sur 8 identiques aux références. Les deux
+  écarts sont expliqués, pas arrondis : `/journal` 3 690 (le desk local
+  porte les trades de la sonde du lot 305 ; MD5 du HTML servi inchangé
+  — tranché au lot 330) et **`/system` 4 123 au lieu de 4 124-4 126 :
+  conséquence attendue du lot 328**, qui a retiré les deux caractères
+  `__` du libellé `__DESK_KEYS`. La référence n'avait pas été rebasée →
+  **nouvelle fourchette 4 122-4 124**. Ce n'est pas une dérive, c'est le
+  lot 328 qui devient enfin visible dans la mesure de taille.
+  **Les 8 MD5 conformes** ; `/sw.js` sert `td-shell-v187` ; suite
+  **2501 / 2**.
+  **BILAN de la tranche — « le retour au régime de croisière »** : une
+  échéance (330) puis neuf cycles de veille (331-339) où le travail
+  consistait surtout à **ne pas en inventer**. Une règle les a
+  structurés : **ne pas re-mesurer ce qui n'a pas bougé** — le lot 330
+  avait tout mesuré, aucun octet n'a changé ensuite ; refaire le smoke à
+  chaque réveil aurait produit neuf pages de chiffres identiques, du
+  bruit déguisé en preuve. Les rapports le disent au lieu de faire
+  semblant d'avoir vérifié. Chiffres : suite **2501 constante sur les
+  10 lots**, SW **v187 constant**, terminal.py **inchangé à 7 153 l.**,
+  **10 PR fusionnées (#362 → #371)**, 0 changement produit, 0 défaut
+  détecté. Prochaine échéance ~lot 350. Pas de bump.
+
 - **Lot 339 — livré** : VEILLE ACTIVE — état identique (0 doublon
   trigger, integration à jour ea14e1d, arbre propre, suite **2501 / 2**
   verte) ; aucun signal, aucune piste calibrée nouvelle ; pas de
