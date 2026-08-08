@@ -4,6 +4,70 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — veille active, lots 370 → 379 (2026-08-08, bilan n°7)
+
+Dix lots de veille autonome sur la veine **sécurité & honnêteté des données**.
+Vérifié au lot 380 : **MD5 8/8 identiques** aux références et **0 erreur console**
+sur les 8 pages en navigateur réel — *les octets servis n'ont pas bougé d'un bit
+sur toute la tranche*. Les **9 gardiens ajoutés ont été rejoués un par un avec une
+faute réelle : les 9 mordent encore.**
+
+### Ce que la tranche a apporté
+
+- **Une vraie faille, sérieuse** (lot 372) : `/opportunities` laissait passer les
+  valeurs de paramètres d'URL dans un bloc `<script>` via un `json.dumps` nu —
+  XSS **déclenchable à distance par un simple lien**, dans une session ayant accès
+  au desk local. Trouvée, corrigée, prouvée MD5-neutre, verrouillée.
+- **Un danger latent verrouillé** (373) : `vocab_js`, `json.dumps` nu sur les
+  8 pages, sûr seulement parce que son contenu est constant — désormais un
+  invariant le garantit, sans durcissement inutile.
+- **Une myopie de gardien corrigée** (377) : le gardien du 376 ne voyait que
+  **13 refus sur 39** — il manquait tous les `return jsonify({...})`, c'est-à-dire
+  les refus servis au navigateur. 33 % de couverture, au vert.
+- **Deux pistes fermées par la mesure** (375, 376) plutôt que par un faux vert.
+- **Chiffres** : suite **2610 → 2754** (+144 tests), jamais rouge · 9 gardiens ·
+  **1 seul lot touchant la production** · SW `td-shell-v187` inchangé · 10 PR
+  (#402→#411) · `main` jamais touchée.
+
+### Le fil rouge — douze fois où l'outil était en cause, sous cinq formes
+
+1. **L'outil accuse du code sain** (374 ×2, 375, 376) — *un gardien qui crie au
+   loup finit désactivé*.
+2. **Le périmètre de l'outil ment** (373 : `os.listdir` masquait le producteur
+   HTML central ; 377 : `return <Dict>` manquait tous les `jsonify`) — *sous
+   quelle ENVELOPPE la chose cherchée se présente-t-elle ?*
+3. **L'outil empêche d'INNOCENTER** (378 : `s = 50.0` n'était pas le neutre, la
+   fonction rend 76 à vide) — *le raisonnement élégant se vérifie sur valeurs
+   réelles, dans les deux sens*.
+4. **La borne trop lâche** (378) — *une borne qui absorbe la première régression
+   n'est pas une borne*.
+5. **La preuve elle-même est fautive** (379) — *un cas qui ne mord pas accuse
+   d'abord la preuve*.
+
+### Jugement franc — et il n'est pas flatteur partout
+
+Après le lot 372, **sept lots n'ont trouvé aucune nouvelle faille exploitable** :
+uniquement des dangers latents, des caractérisations et des « sain, rien touché ».
+Sur la veine sécurité prise seule, **le rendement décroît nettement** — 1 faille
+sur 6 lots, puis 0 sur 7. La creuser encore au même rythme donnerait des lots
+honnêtes mais maigres.
+
+Ce qui s'est révélé fertile, c'est le **méta-audit** : le lot 377 n'a pas audité
+le code mais un **gardien déjà fusionné**. La suite compte **2 754 tests dont
+personne n'a vérifié qu'ils voient ce qu'ils prétendent voir** ; un test au vert
+qui ne mesure rien est plus dangereux qu'un test absent. C'est la piste
+prioritaire de la tranche suivante.
+
+### Le vrai goulot : quatorze dossiers attendent une décision humaine
+
+Plusieurs sont chiffrés à l'unité — **604 Ko de HTML mort assemblés à chaque
+import** (374), le **filet desk qui perd le travail de la journée** (362,
+option A recommandée), et **deux questions d'honnêteté d'affichage jumelles**
+(363 et 379 : sur univers vide, l'application affirme « NEUTRE » et
+« participation 0 % » au lieu de dire qu'elle ne sait pas). Ce sont des décisions
+produit : l'agent les a mesurées et documentées, il ne peut pas les trancher.
+**Ce n'est plus le manque de pistes qui limite, c'est l'attente de ces GO.**
+
 ## BILAN — PROGRAMME 100 %, lots 71 → 75 (2026-08-06, bilan n°6)
 
 Directive utilisateur : « Continue à tout développer et quand t'as tout à
