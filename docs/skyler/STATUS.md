@@ -1495,6 +1495,23 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 302 — livré** : LOT PRODUIT — CLAVIER desktop (jamais
+  balayé). Sondeur 25 tabulations sur / : skip-link premier arrêt et
+  fonctionnel, focus visible 100 %, ordre logique — MAIS le Tab sur
+  le champ de recherche ouvrait la palette DE FORCE (gestionnaire
+  focus → blur+openPalette) : les 4 boutons du topbar (Ajouter,
+  Connexions, Notifications, Actualiser) étaient INATTEIGNABLES au
+  clavier. Corrigé dans vx-shell.js : plus d'ouverture au focus ;
+  clic/tap inchangé (chemin tactile lot 288 préservé) + FRAPPE dans
+  le champ (caractère/Entrée/↓) → palette ouverte et AMORCÉE avec le
+  caractère saisi. Gardien 288 évolué (documenté) + gardien neuf
+  test_keyboard_topbar_lot302 (2 tests). Preuves : 24 tabs sans
+  ouverture forcée, les 4 boutons ATTEINTS, frappe « a » → palette
+  amorcée « a », tap 390 OK (non-régression), 0 erreur, capture
+  envoyée. Bump SW v185 → v186 + 5 gardiens. Suite **2516 passed /
+  2 skipped (+2)**. É1 : GO acquis, toujours en attente de
+  déblocage permissions.
+
 - **Lot 301 — livré** : ROBUSTESSE (angle neuf) — 7 cas « API coupée
   en vol » (abort réseau + 9 s d'attente) : **SAIN partout**. États
   honnêtes quand la donnée manque (« indisponible », « ERREUR »),

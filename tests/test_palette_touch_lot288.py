@@ -20,8 +20,12 @@ def _read(path):
 def test_search_field_opens_palette_on_tap():
     js = _read(SHELL_JS)
     assert "$('vx-global-search')?.addEventListener('click', openPalette)" in js
-    # Le focus (clavier/lecteur d'écran) mène au même endroit.
-    assert "addEventListener('focus'" in js.split("vx-global-search", 2)[1]
+    # Lot 302 : le focus n'ouvre PLUS (le Tab clavier traversait le champ et
+    # la palette s'ouvrait de force — boutons du topbar inatteignables).
+    # Le clavier ouvre par la FRAPPE (caractère amorcé) ou Entrée.
+    assert "e.target.blur(); openPalette();" not in js
+    assert "$('vx-global-search')?.addEventListener('keydown'" in js
+    assert "pInput.value = e.key; renderPalette(e.key);" in js
 
 
 def test_kbd_hint_hidden_on_mobile():
