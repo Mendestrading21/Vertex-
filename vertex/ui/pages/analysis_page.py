@@ -223,7 +223,7 @@ _SECTIONS = """
     <div class="vx-card-header"><span class="vx-card-title">Copilote</span>
       <span class="vx-chart-question">Question sur ce titre — réponse ancrée dans les chiffres réels.</span></div>
     <div data-body>
-      <input id="an-cp-q" class="vx-input" placeholder="ex. Quel est le risque principal ici ?" maxlength="500" autocomplete="off" style="margin-bottom:.4rem" />
+      <input id="an-cp-q" class="vx-input" aria-label="Question sur ce titre" placeholder="ex. Quel est le risque principal ici ?" maxlength="500" autocomplete="off" style="margin-bottom:.4rem" />
       <button class="vx-btn vx-btn-sm vx-btn-primary" id="an-cp-go">Demander</button>
       <div id="an-cp-out" class="vx-mt2"></div>
       <div class="vx-meta vx-mt1">Lecture seule — aucun ordre.</div>
@@ -232,7 +232,7 @@ _SECTIONS = """
     <div class="vx-card-header"><span class="vx-card-title">Ticket pré-trade</span>
       <span class="vx-chart-question">7 contrôles réels avant d'envisager ce titre. Descriptif — aucun ordre.</span></div>
     <div data-body>
-      <input id="an-pt-amt" class="vx-input" type="number" min="1" step="any" placeholder="Montant envisagé (ex. 2000)" style="margin-bottom:.4rem" />
+      <input id="an-pt-amt" class="vx-input" type="number" min="1" step="any" aria-label="Montant envisag&eacute; en dollars" placeholder="Montant envisagé (ex. 2000)" style="margin-bottom:.4rem" />
       <button class="vx-btn vx-btn-sm vx-btn-primary" id="an-pt-go">Vérifier</button>
       <div id="an-pt-out" class="vx-mt2"></div>
     </div></section>
