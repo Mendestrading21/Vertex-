@@ -334,6 +334,7 @@
 | 314 | `SKYLER-LOT-314.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour b7debb0, arbre propre, suite 2516/2) ; aucun signal, aucune piste nouvelle ; rapport minimal. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
 | 315 | `SKYLER-LOT-315.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 05d06a4, arbre propre, suite 2516/2) ; aucun signal, aucune piste nouvelle ; rapport minimal. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
 | 316 | `SKYLER-LOT-316.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour 3eeca4d, arbre propre, suite 2516/2) ; aucun signal, aucune piste nouvelle ; rapport minimal. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
+| 317 | `SKYLER-LOT-317.md` | VEILLE ACTIVE — état identique (0 doublon trigger, integration à jour b692aac, arbre propre, suite 2516/2) ; aucun signal, aucune piste nouvelle ; rapport minimal. Docs seulement, pas de bump | 0.9.0 | v186 | 2516 | GO |
 
 ## Architecture atteinte
 
