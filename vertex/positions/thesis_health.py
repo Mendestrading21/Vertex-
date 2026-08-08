@@ -1,8 +1,15 @@
 """vertex.positions.thesis_health — santé de la thèse (§16).
 
-Dimensions : FUNDAMENTAL, CATALYST, TECHNICAL, SENTIMENT, PORTFOLIO_FIT,
-RISK, DATA_QUALITY — évaluées depuis ce que les moteurs FOURNISSENT
+Dimensions RÉELLEMENT évaluées ici : FUNDAMENTAL, CATALYST, TECHNICAL,
+SENTIMENT, RISK / DATA_QUALITY — depuis ce que les moteurs FOURNISSENT
 (scan detail + plan + qualité). Sans thèse écrite : THESIS_REQUIRED.
+
+⚠ PORTFOLIO_FIT n'est PAS évalué ici (constat du lot 365 : la docstring
+l'annonçait, aucune ligne ne le calculait). L'adéquation au portefeuille est
+produite ailleurs — `vertex/scanner/stages.py` et
+`vertex/strategy/executive_engine.py` (champ `portfolio_fit` du packet). La
+santé de thèse ne la prend donc pas en compte : ne pas le supposer.
+Gardien : `tests/test_thesis_health_dimensions_lot365.py`.
 Une microvariation intraday ne bascule jamais un statut (matérialité).
 """
 from __future__ import annotations
