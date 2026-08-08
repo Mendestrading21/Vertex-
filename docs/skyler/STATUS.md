@@ -1495,6 +1495,32 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 327 — livré** : **`CLAUDE.md` REDEVIENT VRAI**. Les lots 323-325
+  ont retiré 33 % de terminal.py ; la documentation de pilotage — le
+  fichier que chaque session lit en premier — décrivait encore l'état
+  d'avant. Trois affirmations vérifiées, trois fausses.
+  (1) « Monolithe ~10 500 lignes » → **7 153** (historique 10 743
+  conservé pour que le chiffre reste interprétable).
+  (2) « Pages extraites : nav, options_lab, journal, vault, signals,
+  sync_center, vx_kit, design_system » — vérification consommateur par
+  consommateur : `nav`, `vx_kit`, `sync_center`, `design_system` et
+  `home_art` sont servis ; **`options_lab`, `journal`, `vault`,
+  `signals` et `strategy_os` ont 0 consommateur en production**. Ce sont
+  des reliques — **non supprimées**, elles rejoignent le dossier ouvert
+  du lot 326.
+  (3) **Correction de ma propre erreur du lot 323** : j'y avais annoncé
+  `vertex/ui/journal.py` comme l'une des « 3 listes servies » de clés de
+  sync desk. Il **n'est pas servi** — je l'avais repris du gardien sans
+  vérifier. Les listes réellement servies sont `vx_kit.py` (source de
+  vérité), `vx-entities.js`, et **le repli `deskKeys()` de
+  `system_page.py`** — cette troisième n'était citée nulle part, c'est
+  celle qu'on aurait pu oublier. Aucune donnée utilisateur en jeu :
+  `vxJournal` est géré en production par `vx-entities.js`.
+  Mis en réserve pour un lot dédié : la page Système affiche « contrat
+  `__DESK_KEYS` », symbole disparu avec la purge É1 — le corriger change
+  un octet servi, donc bump SW + 5 gardiens assumés.
+  Suite **2501 / 2 skipped**, pas de bump (docs seulement).
+
 - **Lot 326 — livré** : TROIS PISTES INSTRUITES, **aucun code touché**.
   (a) Fichiers statiques : 51 CSS/JS, chacun cherché par nom dans tout
   le dépôt → **0 non référencé**, SAIN. (b) Routes : **186 routes**
