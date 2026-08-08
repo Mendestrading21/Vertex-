@@ -1495,6 +1495,25 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 326 — livré** : TROIS PISTES INSTRUITES, **aucun code touché**.
+  (a) Fichiers statiques : 51 CSS/JS, chacun cherché par nom dans tout
+  le dépôt → **0 non référencé**, SAIN. (b) Routes : **186 routes**
+  d'`app.url_map`, préfixe statique cherché dans le JS servi et les
+  modules qui construisent l'UI → **0 orpheline**, SAIN.
+  (c) Fonctions top-level jamais citées ailleurs (décorateurs exclus) :
+  **24 fonctions / 258 lignes** — data_sources 9, research 5, scanner 1,
+  anomalies 2, observability 3, strategy 4. **DOSSIER OUVERT, rien
+  retiré** : le gros est constitué des façades d'intégration IBKR
+  (`fetch_positions`, `fetch_snapshot`, `fetch_daily_bars`,
+  `fetch_expirations`, `qualify_stock`…), c'est-à-dire le chemin de
+  lecture du compte réel via TWS. « Jamais citée » ne veut pas dire
+  « morte » : ça peut vouloir dire « porte d'une intégration pas encore
+  recâblée », et supprimer serait détruire du travail d'intégration, pas
+  nettoyer. C'est la leçon du lot 325 (`BROKER`) à plus grande échelle :
+  **un compteur ne distingue pas le mort de l'endormi.** Trancher demande
+  une décision produit — elle appartient à l'utilisateur, comme É2 et É3.
+  Suite **2501 / 2 skipped**, pas de bump.
+
 - **Lot 325 — livré** : L'AUDIT D'IMPORTS ÉTENDU À TOUT `vertex/`
   (183 modules). Premier chiffre trompeur : 192 « orphelins », dont
   **180 sont `from __future__ import annotations`** — une directive du

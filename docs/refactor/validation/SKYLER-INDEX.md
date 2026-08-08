@@ -346,6 +346,8 @@
 
 | 325 | `SKYLER-LOT-325.md` | AUDIT D'IMPORTS ÉTENDU à tout `vertex/` (183 modules). 192 « orphelins » bruts → **180 sont `from __future__ import annotations`** (faux positif, directive du compilateur), reste 12 suspects. **1 des 12 n'était PAS mort** : `BROKER` dans `services/startup.py` — l'import EST le diagnostic SSE (son échec bascule l'étape en DEGRADED) ; le retirer aurait produit un READY mensonger → conservé, `# noqa: F401` + commentaire. **11 retraits réels** (SEV_INFO, time, Iterable, os, CATEGORY_BALANCED, CATEGORY_BEARISH_TACTICAL, vol, np, LifecycleError, any_blocking, STATUSES) — tous vérifiés : 0 ré-import ailleurs, 1 seule occurrence dans leur fichier. **MD5 des 8 pages identiques aux lots 323/324** → pas de bump. Smoke 8×200, 0 erreur console, client-log 0. **Gardien étendu** : `test_no_orphan_imports_in_vertex_package` (exclusions minimales et documentées). Suite **2501/2** | 0.9.0 | v186 | 2501 | GO |
 
+| 326 | `SKYLER-LOT-326.md` | TROIS PISTES INSTRUITES, **aucun code touché**. (a) Assets statiques : 51 fichiers CSS/JS, **0 non référencé** — SAIN. (b) Routes : **186 routes**, **0 jamais citée** dans le code servi — SAIN. (c) Fonctions top-level jamais citées : **24 fn / 258 l.** trouvées (data_sources 9, research 5, scanner 1, anomalies 2, observability 3, strategy 4) → **DOSSIER OUVERT, rien retiré** : le gros est constitué des façades d'intégration IBKR (fetch_positions, fetch_snapshot, fetch_daily_bars…), chemin de lecture du compte réel via TWS — « jamais citée » ≠ « morte ». Décision produit, pas analyse statique (leçon lot 325 à l'échelle). Suite 2501/2. Docs seulement, pas de bump | 0.9.0 | v186 | 2501 | GO |
+
 ## Architecture atteinte
 
 ```text
