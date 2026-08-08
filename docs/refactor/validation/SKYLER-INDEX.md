@@ -418,6 +418,8 @@
 
 | 361 | `SKYLER-LOT-361.md` | RÈGLE N°3 — le SW met en cache **tout `/static`** (54 fichiers) + les navigations, pas « le shell » ; il est *network-first*, donc le bump ne sert pas à faire voir l'interface mais à **purger le repli hors-ligne**. Historique : **27 commits / 144** touchant `vertex/static` sans bump — conformes à la règle écrite, hors du périmètre réel. Gardien neuf `test_sw_cache_scope_lot361.py` (5 tests : sémantique du SW + contrat empreinte assets ↔ version, daté d'aujourd'hui) + règle n°3 corrigée. Preuve ROUGE ×4. Aucun octet servi, pas de bump | 0.9.0 | v187 | 2511 | GO |
 
+| 362 | `SKYLER-LOT-362.md` | RÈGLE N°6 — chaîne de sauvegarde SAINE (snapshot quotidien, rotation 7, restore strictement validé) et client bien protégé (push après hydratation seulement). Mais 3 faits mesurés que la règle ne disait pas : un push `data: {}` est **accepté** (validation de type seule), le last-writer-wins est **total** (push partiel efface les clés absentes), et **aucun snapshot supplémentaire** n'est pris → le restore rend l'état d'avant la 1ʳᵉ sync du jour et **perd la journée**, profondeur 7 jours. Gardien de caractérisation `test_desk_perte_lot362.py` (5 tests) + règle n°6 corrigée. Rien durci : 3 options (A snapshot avant perte — recommandée, B refus 409, C fusion par clé) en attente de GO. Aucun octet servi, pas de bump | 0.9.0 | v187 | 2516 | GO |
+
 ## Architecture atteinte
 
 ```text
