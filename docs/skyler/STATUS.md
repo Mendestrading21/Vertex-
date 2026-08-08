@@ -1495,6 +1495,20 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 301 — livré** : ROBUSTESSE (angle neuf) — 7 cas « API coupée
+  en vol » (abort réseau + 9 s d'attente) : **SAIN partout**. États
+  honnêtes quand la donnée manque (« indisponible », « ERREUR »),
+  0 squelette éternel, 0 texte cassé, 0 erreur console inattendue.
+  2 faits d'architecture mesurés : /markets n'appelle PAS
+  /api/market/summary au chargement ; /opportunities privée de
+  /scan reste complète (le radar vit de /api/command) — résilience
+  par endpoint réel. Aucun défaut → 0 changement produit ; livrable
+  = sondeurs OUTILLÉS et commités (tools/probe_smoke.py protocole
+  251 + tools/probe_error_states.py, en-têtes d'usage + références
+  — le scratchpad s'efface entre conteneurs). compileall vert.
+  Suite **2514 passed / 2 skipped**. Pas de bump. É1 : GO acquis,
+  toujours en attente de déblocage permissions.
+
 - **Lot 300 — livré** : ÉCHÉANCE PÉRIODIQUE (5e mesure) — SMOKE-CHECK
   SAIN + MINI-BILAN 288-299. Smoke : 8×200, 0 erreur, client-log 0,
   healthz ok ; 5 tailles identiques, 3 écarts EXPLIQUÉS (/options
