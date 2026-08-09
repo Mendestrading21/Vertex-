@@ -2213,6 +2213,50 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 448 — livré** : **« simulation impossible : 'NoneType' object has no
+  attribute 'spot' » — une exception Python s'affiche sur `/options` comme motif à
+  l'utilisateur.** 30ᵉ lot. Dernier gros champ non ouvert : **`reason`**, 7
+  phrases, **sept producteurs différents**. **Classées par nature** : **3 vidages
+  d'exception** (`options_intel_api:113`, `options_lab_api:57` et `:72`), 1 refus
+  de validation, 1 refus de config, **2 claims chiffrés** (`anomaly:56`,
+  `evidence_lab:59`). **L'affichage d'abord** (leçon 447), payload identifié par
+  sa forme : **établi** pour `evidence_lab:59` (route `/analysis` à paramètre),
+  `anomaly:56` (`anomaly-scan.js:15`) et `options_intel_api:113`
+  (**`options-intel.js:413`, page `/options`**) ; **non établi** pour les quatre
+  autres — **nommées, non comptées**, et je ne conclus **ni** qu'elles sont
+  affichées **ni** qu'elles ne le sont pas. **Les deux claims chiffrés sont
+  exacts** :
+
+  ```text
+  clôtures    0    5   20   21   30   40   41   60
+  annoncé     0    5   20   21   30   40    —    —      (= réel à chaque fois)
+  available   F    F    F    F    F    F    T    T      (bascule EXACTE au seuil 41)
+  ```
+
+  **Point levé puis écarté** : la garde est un `or` — la forme qui au **418**
+  testait le repli ; ici saine, `anomaly.scan` n'ayant **qu'une branche `empty`**
+  (`< 21`), donc `empty` ⟹ `points < 41`. Les seuils **21** et **41** diffèrent
+  volontairement et **chaque module affiche le sien**. **La trouvaille** :
+  `options_intel_api:113` renvoie `'simulation impossible: %s' % e` et
+  `options-intel.js:413` le rend en état vide. **Mesuré sur une exception réelle
+  de `scenario_pricer.simulate`** : **« simulation impossible: 'NoneType' object
+  has no attribute 'spot' »** — trois fois sur trois ; les deux autres routes
+  donnent **« KeyError: 'x' »**. **Rang 2** : **pas** une affirmation fausse (donc
+  pas rang 1), **pas** sans conséquence (affiché en texte visible, donc pas rang
+  4), et **déroge à la norme du dépôt** — le contre-exemple est **le champ voisin
+  du même corpus**. Correction : journaliser côté serveur, rendre un motif écrit.
+  **Aucun GO. Aucun gardien.** **Ce que le lot dit du contraste** : les deux
+  phrases qui **affirment un chiffre** sont **exactes** ; le défaut est d'une
+  **autre nature** — **les moteurs disent vrai, ce sont les chemins d'exception
+  qui ne disent rien d'utile**. **Portée** : 3 sur 7 établies ; l'exception est
+  **réelle** mais son formatage est **la ligne de la route recopiée**, pas la
+  route exécutée (**une reproduction n'est pas une exécution**) ; **je n'ai pas
+  cherché** d'exceptions plus révélatrices ; **aucun navigateur** ; **93 des 110
+  phrases du 444 restent fermées**. Comptes séparés inchangés : faux **arrêtés
+  20**, **publiés puis corrigés 1**. Aucun fichier touché · SW `td-shell-v187` ·
+  écart runtime **aucun** · suite **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-448.md`.
+
 - **Lot 447 — livré** : **« max pain à J-3 de la plus proche échéance » — l'aimant
   annoncé est celui de TOUTES les échéances mélangées, et la phrase s'affiche en
   clair sur le portefeuille.** 29ᵉ lot. **L'affichage d'abord** (leçon 446) :
