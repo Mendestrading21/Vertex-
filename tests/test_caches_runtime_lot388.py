@@ -69,8 +69,15 @@ import pytest
 NB_CACHES_PRODUCTION = 12
 
 # Le test qui exerce une route journalisante doit rediriger son stockage.
+# Étendu au lot 389 : `/api/skyler/<sym>` journalise une séance dans
+# `skyler_sessions.json`. Périmètre établi en rejouant les 8 fichiers candidats
+# un par un — **2 seulement** écrivaient, les 6 autres ne faisaient que
+# mentionner les tickers.
 TESTS_A_REDIRIGER = {
     'tests/test_options_routes.py': ['test_options_gex_route_real_numbers'],
+    'tests/test_skyler_core.py': ['test_skyler_route'],
+    'tests/test_xss_exits_lot177.py': [
+        'test_skyler_packet_ne_sert_jamais_le_payload_brut'],
 }
 
 
@@ -124,6 +131,44 @@ def test_la_route_gex_journalise_toujours():
         '/api/options/* ne journalise plus l\'historique GEX — la redirection '
         'exigée au lot 388 n\'a plus d\'objet : revérifier ce que les tests '
         'écrivent réellement avant de retirer ce gardien')
+
+
+def test_la_route_skyler_journalise_toujours_une_seance():
+    """Anti-vide jumeau, ajouté au lot 389 : si les routes cessaient de
+    journaliser une séance, exiger une redirection dans les deux tests
+    concernés ne protégerait plus rien.
+
+    Première version : `'SESSIONS_FILE' in src`. **Creuse** — la preuve ROUGE
+    l'a démasquée : la chaîne apparaît **6 fois** dans le fichier alors qu'il
+    n'y a que **2 sites d'écriture**, donc en retirer un laissait le test vert.
+    C'est mot pour mot la faute que le lot 386 avait déjà corrigée ailleurs.
+    On compte désormais les sites par AST.
+    """
+    arbre = ast.parse(open('vertex/app/routes/analysis_api.py', encoding='utf-8').read())
+    sites = [n for n in ast.walk(arbre)
+             if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+             and n.func.attr == 'save_json' and n.args
+             and isinstance(n.args[0], ast.Attribute)
+             and n.args[0].attr == 'SESSIONS_FILE']
+    assert len(sites) == 2, (
+        '%d sites de journalisation de séance dans analysis_api, 2 mesurés au '
+        'lot 389 — si la journalisation disparaît, les redirections exigées '
+        'n\'ont plus d\'objet ; si elle se multiplie, vérifier les nouveaux '
+        'chemins' % len(sites))
+
+
+def test_l_historique_des_seances_garde_sa_borne():
+    """`MAX_SESSIONS` borne l'accumulation par symbole. Sans elle, un ticker
+    semé chaque jour par un test croîtrait sans fin."""
+    arbre = ast.parse(open('vertex/engines/session_log.py', encoding='utf-8').read())
+    bornes = {n.targets[0].id: n.value.value
+              for n in arbre.body
+              if isinstance(n, ast.Assign) and len(n.targets) == 1
+              and isinstance(n.targets[0], ast.Name)
+              and isinstance(n.value, ast.Constant)
+              and isinstance(n.value.value, int)}
+    assert bornes.get('MAX_SESSIONS') == 400, \
+        'borne des séances modifiée : %s' % bornes
 
 
 def test_l_historique_gex_garde_ses_bornes_anti_croissance():

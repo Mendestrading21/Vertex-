@@ -78,7 +78,12 @@ def test_events_ne_sert_jamais_le_payload_brut(client):
     assert 'alert(1)Résultats &quot;record&quot;' in blob   # le texte survit, neutralisé
 
 
-def test_skyler_packet_ne_sert_jamais_le_payload_brut(client):
+def test_skyler_packet_ne_sert_jamais_le_payload_brut(client, tmp_path, monkeypatch):
+    """⚠ `/api/skyler/<sym>` journalise une séance dans `skyler_sessions.json` :
+    sans redirection, ce test y semait un point par jour sur le ticker
+    SYNTHÉTIQUE TSTQ (lot 389)."""
+    from vertex.services import persist
+    monkeypatch.setattr(persist, '_BASE_DIR', str(tmp_path))
     _inject_detail()
     blob = json.dumps(client.get('/api/skyler/TSTQ').get_json(), ensure_ascii=False)
     assert '<script>' not in blob

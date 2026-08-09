@@ -207,9 +207,15 @@ def test_conservative_when_canonical_verdict_prudent():
 
 # ─── Route ──────────────────────────────────────────────────────────────────────
 
-def test_skyler_route():
+def test_skyler_route(tmp_path, monkeypatch):
+    """⚠ `/api/skyler/<sym>` journalise une séance dans `skyler_sessions.json`.
+    Sans redirection, ce test y semait un point par jour sur le ticker
+    SYNTHÉTIQUE SKYX (lot 389). Stockage redirigé vers un dossier temporaire —
+    mécanisme `_BASE_DIR`, comme `test_desk_routes.py` et le lot 388."""
     import terminal
     from vertex.app.state import scan_state
+    from vertex.services import persist
+    monkeypatch.setattr(persist, '_BASE_DIR', str(tmp_path))
     scan_state.setdefault('detail', {})['SKYX'] = _detail()
     try:
         d = terminal.app.test_client().get('/api/skyler/SKYX').get_json()
