@@ -4,6 +4,90 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — veille active, lots 390 → 399 (2026-08-09, bilan n°9)
+
+Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
+re-mesurés dans le dépôt, rien repris de mémoire.
+
+**Ce qu'est cette tranche, sans enjoliver : elle n'a rien construit.** Elle a
+vérifié, mesuré, et réparé quelques défauts de son propre outillage.
+
+```text
+lots ayant ajouté un gardien            3   (391, 392, 393 — 27 tests)
+lots ayant réparé un fichier de test    3   (394, 398, 399)
+lots n'ayant produit qu'une ligne       2   (390 bilan, 397)
+lots n'ayant touché aucun fichier       2   (395, 396)
+──────────────────────────────────────────
+lots ayant modifié la PRODUCTION        0     ← mesuré, pas affirmé
+```
+
+| | |
+|---|---|
+| Suite | **2 835 / 2 skipped → 2 864 / 0 skipped** (+29, −2 skips) |
+| Tests ajoutés | 27 gardiens + 2 réveillés = **29** — exactement le delta |
+| PR | #422 → #431, toutes fusionnées en squash |
+| Service worker | `td-shell-v187`, **inchangé sur les 10 lots** |
+| `main` | jamais touchée |
+
+Tranche précédente : **+81** tests. Le rythme est divisé par près de trois —
+cohérent avec une tranche de vérification, et dit plutôt que caché.
+
+**Les six trouvailles réelles.** **391** — un scan de DÉMO écrit dans
+`breadth_history.json` : 16 points strictement identiques, site d'écriture
+**inconditionnel** qui **écrase** le point du jour, servi sur `/markets` comme
+« historique breadth RÉEL », et le point persisté ne porte **aucune provenance**
+alors que `market_context_last.json` en porte une (reproduit au 396). **392** —
+l'angle mort du 377 est **propre** : 30 routes, 12 refus, 12 motivés, 0 muet ;
+et une sonde a **créé** un 22ᵉ fichier runtime. **394** — une docstring
+**fausse** dans le gardien historique des clés desk, périmée depuis le lot 381.
+**397** — un chiffre affirmé dans l'index **sans source** dans le rapport, que
+rien d'autre n'aurait révélé. **398** — deux tests **morts depuis leur
+création**, réveillés après preuve par mutation ; suite passée à **0 skipped**.
+**399** — un test écrivait `desc_cache.json` **à la racine du dépôt de
+l'utilisateur** ; doublement invisible, car le réseau échoue ici **et** parce que
+l'écriture est conditionnée à la RÉUSSITE du fetch ; + un 23ᵉ fichier runtime
+identifié (`constituents_cache.json`, gitignoré, vérifié).
+
+**Six veines closes par la mesure** (392, 393, 394, 395, 396, 397). Une veine
+close est un résultat honnête — **ce n'est pas une livraison.**
+
+**Les leçons de méthode portent toutes sur l'INSTRUMENT, pas sur le code
+mesuré** — c'est le motif dominant de la tranche : compter les occurrences avant
+de muter (391) · un dénominateur non trié exagère le trou — 393 « angles morts »
+dont 359 sont des aides internes (392) · quand un rapport réclame « un analyseur
+d'un autre ordre », demander d'abord si l'**exécution** tranche (393) · *une
+ancre absente n'est pas un résultat* (394) · *un énoncé faux se corrige
+immédiatement là où c'est gratuit, et se verse aux dossiers là où cela coûte au
+produit* (395) · *un détecteur qui ne connaît qu'UNE forme du document cherché
+fabrique de faux manquants* (397) · *une écriture conditionnelle au réseau
+échappe à un recensement fait hors ligne*, et *c'est le témoin positif qui donne
+sa valeur à un « 0 »* (399) · **et aujourd'hui même, un `cd` oublié m'a fait
+croire six commandes durant que `CLAUDE.md` avait disparu du dépôt : il n'avait
+jamais bougé — l'instrument, cette fois, c'était le shell.**
+
+**L'état du produit n'a pas bougé.** Vérifié dans le dépôt : depuis le correctif
+XSS du lot **372** (4 fichiers de `vertex/ui/`), la seule modification hors tests
+et documentation est **deux corrections de `CLAUDE.md`**, aux lots 381 et 382.
+**Sur la tranche 390-399 : zéro.** MD5 des 8 pages servies re-prouvé identique
+aux lots **390** et **396**. Dit franchement : **la boucle entretient et vérifie,
+elle ne construit plus.**
+
+**LA QUESTION DE FOND, REPOSÉE.** *Aucun GO n'est arrivé depuis le lot 388.* Les
+dossiers du **rang 1** — ceux où l'utilisateur voit du faux dans son terminal —
+sont tous à l'arrêt : 7 points MSFT fabriqués (388) · scan de démo dans
+`breadth_history` (391) · `context()` sur univers vide (379) et « points réels du
+scan » (363) · replis `0` de `_followed_count`/`_positions_count` (378) · badge
+de provenance IBKR jamais affiché (386). Trois issues :
+**(a)** continuer les lots courts — rendement décroissant, et c'est mesuré : deux
+des six derniers n'ont trouvé strictement rien ;
+**(b) un GO groupé sur le rang 1, puis exécution — RECOMMANDÉ**, en commençant
+par la purge des 7 points MSFT (coût quasi nul, risque nul, seule ligne où un
+chiffre inventé est aujourd'hui servi comme une mesure) ;
+**(c)** arrêter la boucle et attendre — défendable, rien ne se dégrade.
+Ce qui ne serait **pas** honnête, c'est de continuer indéfiniment en (a) en
+laissant croire que le travail avance sur ce qui compte. Il n'avance pas :
+**il attend une décision.**
+
 ## BILAN — veille active, lots 380 → 389 (2026-08-09, bilan n°8)
 
 Dix lots. **Vérification refaite, pas rappelée** : **MD5 8/8 identiques** aux
