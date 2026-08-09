@@ -188,9 +188,21 @@ def test_un_refus_servi_dit_toujours_pourquoi(client, url, methode):
 
 # ── 3. Une absence reste une absence — rien n'est inventé ──────────────────
 
-def test_un_symbole_inconnu_ne_recoit_pas_une_description_inventee(client):
+def test_un_symbole_inconnu_ne_recoit_pas_une_description_inventee(client, tmp_path,
+                                                                   monkeypatch):
     """`/desc/<sym>` ne porte aucune clé de motif : ce n'est pas un refus, mais
-    il ne doit pas non plus fabriquer un contenu plausible."""
+    il ne doit pas non plus fabriquer un contenu plausible.
+
+    ⚠ Lot 399 — sur une machine EN LIGNE, cette route interroge yfinance puis
+    **écrit `desc_cache.json` à la racine du dépôt** (terminal.py L1983). Le
+    défaut était invisible ici (le réseau échoue) et invisible au recensement du
+    lot 389 (l'écriture est conditionnée à la RÉUSSITE du fetch). Le cache
+    mémoire et le chemin disque sont donc isolés : la route reste la vraie,
+    seule sa destination change.
+    """
+    import terminal
+    monkeypatch.setattr(terminal, '_DESC_PATH', str(tmp_path / 'desc_cache.json'))
+    monkeypatch.setattr(terminal, '_desc_cache', {})
     corps = json.loads(client.get('/desc/ZZZZINEXISTANT').get_data(as_text=True))
     for champ in ('summary', 'industry', 'country'):
         assert corps.get(champ) == '', (

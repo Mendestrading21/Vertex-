@@ -160,7 +160,13 @@ def test_claude_outage_uses_fallback():
     assert 'déterministe' in h['fallback']
 
 
-def test_company_twin_never_invents():
+def test_company_twin_never_invents(monkeypatch):
+    """⚠ Lot 399 — `company_twin` appelle `_fetch_profile`, qui sort sur yfinance.
+    Le profil n'entre dans AUCUNE des assertions ci-dessous ; la sortie réseau
+    ne rendait donc le test que lent et dépendant de la connexion. Neutralisée :
+    hors ligne le fetch échouait déjà, le verdict est identique."""
+    from vertex.data import company as _company
+    monkeypatch.setattr(_company, '_fetch_profile', lambda sym: None)
     from vertex.companies import company_twin
     t = company_twin('ZZZZ', {})
     assert t['fundamentals'] is None and t['scan'] is None

@@ -1636,6 +1636,53 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 399 — livré** : **qui, dans la suite, sort sur Internet ?** Le lot 398
+  avait neutralisé deux sorties réseau au passage, sans savoir s'il en restait.
+  Ce lot mesure au lieu de supposer.
+  **L'instrument, validé avant emploi.** Plugin pytest à deux capteurs : un
+  **faux proxy local** — `HTTPS_PROXY` pointe dessus pendant la session, donc
+  tout `CONNECT` y atterrit, **y compris ceux de libcurl/`curl_cffi`**, le
+  transport de yfinance, qu'un patch de `socket` **ne verrait pas** — plus un
+  patch de `socket.connect` pour les connexions directes. Réponse `502`, aucun
+  blocage : la sortie échoue comme hors ligne, le verdict des tests ne change
+  pas. **Témoin positif obligatoire** : yfinance capté, `requests` capté, test
+  sans réseau muet. *Sans ce contrôle, un « 0 sortie » n'aurait rien valu.*
+  **Mesure : 3 sorties sur 2 864 tests.** Test le plus lent : 1,52 s, aucun
+  au-delà — mais c'est parce que le proxy échoue vite ; sur une machine
+  connectée, les trois aboutissent.
+  **(1) `en.wikipedia.org`, à l'IMPORT** — `vertex/data/universe.py` L16 appelle
+  `get_index_members()` au niveau module ; sans cache frais, `constituents.py`
+  va chercher 3 listes d'indices (**15 s de timeout par requête**) et écrit
+  `constituents_cache.json`, soit un **23ᵉ fichier runtime**. Vérifié : couvert
+  par `*_cache.json` dans `.gitignore`, **aucun risque de commit**. C'est un
+  comportement de **produit**, voulu et documenté — mais il s'applique aussi à
+  `pytest`. Je ne touche pas à la production de ma propre initiative :
+  **classé en dossier (rang 4)**.
+  **(2) `test_company_twin_never_invents`** → yfinance via `_fetch_profile`,
+  **qui n'entre dans aucune de ses assertions**. Sortie inutile : neutralisée,
+  verdict identique (hors ligne le fetch échouait déjà).
+  **(3) `/desc` — le test écrivait dans le dépôt de l'utilisateur.** Et c'est un
+  test que **j'ai écrit moi-même au lot 392**. `terminal.py` L1983 : quand le
+  fetch yfinance **réussit**, la route écrit `desc_cache.json` **à la racine du
+  dépôt** ; le test appelle cette route à chaque passe. Le défaut était
+  **doublement invisible** — le réseau échoue ici, et le recensement du lot 389
+  ne pouvait pas le voir parce que **l'écriture est conditionnée à la RÉUSSITE
+  du fetch** : un recensement statique fait hors ligne ne pouvait pas la relier
+  à ce test. *Une écriture conditionnelle au réseau échappe à un recensement
+  fait hors ligne.* **Preuve directe sans réseau** (`yf.Ticker` remplacé par un
+  faux qui réussit) : sans isolation → racine écrite ; avec l'isolation du
+  399 → tmp seulement, racine intacte ; le fichier créé par la sonde a été
+  supprimé par la sonde.
+  **Corrigé** : `_DESC_PATH` et `_desc_cache` isolés dans ce seul test — la
+  route reste la vraie, seule sa destination change. La sortie réseau est
+  **conservée délibérément** : ce test existe pour vérifier qu'une réponse
+  yfinance réelle sur un symbole inexistant ne remplit aucun champ ; la
+  supprimer le réduirait à sa branche hors ligne.
+  **Résultat : sorties réseau 3 → 2, écritures dans le dépôt depuis la suite
+  1 → 0.** Suite **2864 passed / 0 skipped**, inchangée — aucun test ajouté, et
+  c'est délibéré. Aucun fichier de production touché ; SW `td-shell-v187` ;
+  écart runtime final aucun.
+
 - **Lot 398 — livré** : **les 2 tests skippés étaient morts depuis leur
   naissance.** Quatrième lot court. Point de contrôle **jamais examiné en
   26 lots** : la suite affiche `2 skipped` depuis des dizaines de rapports —
