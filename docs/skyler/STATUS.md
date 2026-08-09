@@ -2054,6 +2054,46 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 438 — livré** : **six contrats rompus, six faux positifs — trois objets
+  différents s'appellent `scan`, et `cal.ts` reste seul.** Vingt et unième lot,
+  **bornage du 437**. **Instrument** : la question du 437 inversée — pour chaque
+  route à receveur **distinctif**, comparer les champs LUS aux champs SERVIS.
+
+  ```text
+  /api/command  cmd       2/10   aucun absent
+  /scan         scan     18/24   SIX absents
+  /cal-feed     cal       3/3    ts          ← témoin positif (trouvaille du 437)
+  diagnostics   diag      4/5    aucun
+  positions     posState  0/4    aucun
+  ```
+
+  **Les six sont faux. Tous les six.** Cause unique : **trois objets différents
+  s'appellent `scan`** — `last_scan_ts`, `options_source`, `source` sont à
+  **`diag.scan`** ; `symbols` est à **`st.scan`** (`/api/system-status`) ;
+  `market` et `scan_ts` sont écrits dans `scan_state` (`terminal.py:520/522`,
+  `:615/617`) et manquent **parce qu'aucun scan n'a tourné**. Et
+  `system_page.py` écrit en toutes lettres le repli du seul cas ambigu :
+  `if(_sym==null&&diag&&diag.scan)_sym=diag.scan.rows;` — **le code avait prévu
+  l'absence, mon détecteur ne savait pas de quel `scan` il parlait**. Le piège de
+  l'**état unique**, répété depuis le 425, m'a eu quand même. **Résultat : sur le
+  périmètre mesurable, `cal.ts` reste le SEUL contrat rompu** — la veine du 437 ne
+  s'étend pas. **Bornage négatif**, et utile : il empêche de transformer une
+  trouvaille isolée en motif d'architecture sur la foi d'un compteur.
+  **Une hypothèse, marquée comme telle** : `/api/system-status` émet bien un `ts`
+  que `system_page.py` lit correctement ; il est **plausible** que le `cal.ts` du
+  437 soit cette forme recopiée — **non testé** (règle 421). **Ce que le lot dit
+  de l'instrument** : **dix lignes propres et fausses en cinq lots** (430,
+  434 ×2, 435, 437 ×3, 438 ×3) ; cause nouvelle — une **collision de noms entre
+  payloads**, qu'un instrument indexant par nom d'identifiant ne peut pas séparer.
+  Ce qui les a arrêtées : **l'invraisemblance** (règle 414, 3ᵉ application, juste
+  la 3ᵉ fois). **Aucun défaut nouveau, rien à classer.** **Portée** : 5 routes sur
+  8, les trois à receveur d'une lettre **hors d'atteinte** ; champs de **premier
+  niveau** seulement — un contrat rompu sur un sous-objet échappe et **n'a pas été
+  quantifié** ; mesure sur le scan vide du démarrage. MD5 des 8 pages remesurés :
+  **8/8 identiques**. Aucun fichier touché, aucun bump, SW `td-shell-v187`. Suite
+  **2864 passed / 0 skipped**.
+  Rapport : `docs/refactor/validation/SKYLER-LOT-438.md`.
+
 - **Lot 437 — livré** : **le test de consommation ne se généralise pas (trois
   instruments, trois contrôles) — mais il a trouvé une carte qui se déclare
   fraîche « à l'instant », toujours.** Vingtième lot, **bornage du 436**.
