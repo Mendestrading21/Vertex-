@@ -2213,6 +2213,56 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 441 — livré** : **la page d'analyse que la boucle n'avait jamais servie —
+  `/analysis/<sym>` fait 75 829 octets, porte 20 graphiques et 12 routes, et aucun
+  des zéros publiés ne bouge.** 23ᵉ lot, premier de la tranche. Le 439 laissait
+  `/analysis` en **piste** ; ce lot l'ouvre. **`/analysis` est un LANCEUR** :
+
+  ```text
+                       octets   VXCharts   vx-card   routes /api
+  /analysis (index)    22 359          0        17             1
+  /analysis/AAPL       75 829         20        77            12
+  ```
+
+  **La piste est refermée dans le sens NÉGATIF** : l'index n'est pas une
+  exception, c'est un écran de saisie ; le contenu vit à `/analysis/<sym>`.
+  `render(sym)` est un **pur assembleur de chaînes** — `/analysis/AAPL` et
+  `/analysis/MSFT` font **exactement la même taille**, tout est hydraté côté
+  client. **Le corpus des 95 objets était incomplet** : aucune route à paramètre
+  n'y figurait, il y en a **sept**, mais **une seule vraie page** (`+2 %` du
+  corpus) — les autres sont deux redirections, deux fragments et deux 404.
+  **Aucun zéro publié n'en est affecté** : les quatre jetons du 435 rendent **0**,
+  et `/api/command` n'est **jamais appelé** depuis cette page (436). **Piège
+  évité** : `.decision` ×8 sur cette page appartient à `/api/decision/` et
+  `/api/strategy/decision/`, pas au champ du 436 — *un nom d'identifiant peut
+  désigner plusieurs payloads* (438), appliquée **avant** la faute. **Une
+  trouvaille qui n'en était pas — le quinzième instrument** : le recensement
+  rendait `confirm` **sans `invalidate`** sur la page qui demande « méritent-elles
+  du capital maintenant ? » — **faux**, `analysis_page.py:414` porte
+  `invalidate:` en **littéral gabarit**, invisible à un motif à guillemets
+  simples. Arrêté par la lecture de la source brute. **La zone d'ombre enfin
+  chiffrée : 3,2 %** (90 simples · 0 doubles · **3 gabarits** · total **93**),
+  témoin positif `/journal` = **8**, exactement le chiffre du 439 — **réelle et
+  petite**, mais les trois rattrapées **interpolent une donnée vivante** et l'une
+  d'elles **est le dossier 422** : *3,2 % en nombre, pas 3,2 % en risque*. **Un
+  chiffre du 439 corrigé** : « 22 248 octets » pour `/analysis` est en fait
+  **22 359 octets** — 22 248 est le nombre de **caractères** (md5 `113827718e99`
+  inchangé) ; confirmé sur `/analysis/AAPL` (**75 829 o pour 75 216 caractères**).
+  **Unité mal étiquetée, deuxième récidive après le « quatorze » du 440.**
+  **Témoin positif involontaire** : la suite lancée **avant** l'insertion de la
+  ligne d'index a fait **échouer**
+  `test_skyler_index_integrity_lot228::test_tout_rapport_du_perimetre_a_sa_ligne_d_index`
+  — exactement ce qu'il promet ; relancée après les trois documents : **2864
+  passed**. Ce gardien mord réellement, ce qu'aucun lot n'avait vérifié.
+  **Aucun défaut de produit nouveau** — rien à ajouter aux dossiers, rien à
+  retirer. **Portée** : HTML de page seulement (les 35 affirmations du JS
+  `/static` de `/options` **ne sont pas dans les 93**) · **aucune des 5
+  affirmations de `/analysis/<sym>` ouverte** · mesure sur le **squelette servi**,
+  12 routes non appelées · `/options/<sym>` classé **fragment** · **aucun
+  navigateur ouvert**. Aucun fichier touché · SW `td-shell-v187` · écart runtime
+  **aucun** · suite **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-441.md`.
+
 - **Lot 440 — livré** : **BILAN n°13 (tranche 430 → 439)** — voir le bilan en
   tête de ce document. Traité **sur pièces** : dix rapports relus, chiffres
   vérifiés dans le dépôt, **aucune trouvaille rejouée**, aucun serveur DEMO, aucun
