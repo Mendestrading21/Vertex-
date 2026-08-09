@@ -2720,6 +2720,48 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 472 — livré** : **LE DEVIS, SECONDE TRANCHE — six dossiers chiffrés (6 à
+  11 du classement), et le résultat structurant n'est aucun des six.** Contrôle
+  sur un cas **doublement** connu (`catOf`, publié au 458 puis remesuré au 461) :
+  retrouvé à `opportunities_page.py:475-477`, quatre `return` collés, rendu
+  `:489` — **passé avant tout chiffrage**. **428 (rang 1)** : `markets_page.py:786-787`,
+  **2 lignes**, et un piège que le correctif naturel aurait déclenché — mettre le
+  prédicat « en anglais » est **faux**, le repli `|| r.decision` est alimenté en
+  français par `terminal.py:596` ; **les deux vocabulaires doivent coexister**.
+  **437 (rang 1)** : **trois clients** (`briefing.py:351`, `markets_page.py:637`,
+  `opportunities_page.py:634`) et **deux producteurs** (`terminal.py:1200`, `:1220`) ;
+  `content.py:40` sert `{**cal_state}`, donc **une clé ajoutée est servie sans
+  toucher la route** ; variante (a) 3 lignes supprime l'affirmation **et** la
+  fraîcheur, variante **(b) 5 lignes** la rend réelle — **seul des onze dossiers
+  où la variante chère est la bonne**. **456 (rang 2)** : le plafond tient en
+  **une ligne**, `strategy_os_api.py:167` `[:200]` — personne ne ment, un seul
+  tronque ; deux correctifs, et **le choix est une décision**. **463 (rang 2)** :
+  `record()` prend **un seul paramètre** et **quatre tests l'appellent ainsi** —
+  un second paramètre **positionnel** les casserait ; il faut `demo=False`,
+  mot-clé à valeur par défaut. **4 lignes**, moteur touché mais sur une **garde
+  d'entrée** ; et **le correctif n'achète que l'avenir** (`_MAX_DAYS=120`, quatre
+  mois de rétention). **Découverte de cadrage : la conclusion « `_EMPREINTE`
+  jamais » du 471 n'était vraie que de ses cinq dossiers** — `options-gex.js` vit
+  sous `vertex/static/vertex/js/pages/`, donc `_EMPREINTE` **et** `_SW_VERSION`
+  seraient à mettre à jour ; je restreins la conclusion du 471 explicitement.
+  **425 (rang 1)** : **trois sites, pas un** (`:93-94` HTML statique, `:598`
+  `limits`, `:580` commentaire) alors que `:586` trace dès 2 points — la leçon
+  « compter les sites » **double le chiffrage** ; contrainte : `:93-94` ne peut
+  pas lire `pts`. **458 (rang 2)** : **seul dossier des onze dont le correctif
+  complet est impossible** — les catégories de la Constitution se chevauchent sur
+  le delta ; le devis recommande de **renommer** la colonne (1 ligne) plutôt que
+  de prétendre la résoudre (4 à 6 lignes). **Total seconde tranche : 6 fichiers ·
+  15 à 18 lignes · 6 gardiens · 3 rangs 1. Total des onze : 25 à 30 lignes · 10
+  gardiens · 6 rangs 1 · un seul bump SW.** **Mutualisation plus forte qu'au
+  471** : `markets_page.py` porte **trois** dossiers dont deux rang 1, et sur les
+  deux tranches **sept des onze tiennent dans trois fichiers**. Gardiens existants
+  sur les six sites : quasi nuls. **Fait de méthode** : au 471 la relecture
+  corrigeait des **faits**, ici elle révèle des **contraintes d'exécution** — qui
+  ne se lisent dans aucun rapport de mesure et n'apparaissent qu'en préparant le
+  geste. Aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  snapshot runtime 21 fichiers, écart final aucun · suite **2864 passed /
+  0 skipped**. Comptes **inchangés** : 40 · 5 · 3 — les quatre pièges sont des
+  contraintes découvertes, pas des erreurs corrigées.
 - **Lot 471 — livré** : **LE DEVIS — cinq dossiers chiffrés ligne par ligne, et
   l'exercice invalide DEUX affirmations publiées.** Premier lot de la tranche
   470-479 et premier lot d'un genre nouveau : le bilan n°16 ayant constaté le
