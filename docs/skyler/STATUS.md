@@ -1940,6 +1940,58 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 423 — livré** : **« clôture sous $None (structure) » — le comité sait dire
+  « — », sauf sur son invalidation ; et la chaîne referme le dossier.** Septième
+  lot dans la veine des moteurs, cible `vertex/engines/committee.py` (verdicts
+  ACHETER/RENFORCER/ATTENDRE/ÉVITER, thèse, plan et **invalidation**, affichés sur
+  « Aujourd'hui »). **Aucun défaut produit — c'est le résultat, pour la deuxième
+  fois dans cette veine.**
+  **La règle que le fichier respecte** : il sait déjà remplacer une donnée absente
+  par un tiret — mesuré, `grade=None` → *« score 70, — »*, `rs` absent → *« force
+  rel. — »*.
+  **L'endroit où il ne la tient pas**, une ligne plus bas — la phrase qui dit au
+  trader à quel prix sa thèse est morte :
+  ```python
+  invalidation = f"clôture sous ${plan.get('stop')} ({plan.get('stop_type', 'structure')})"
+  ```
+  ```text
+  plan complet (stop 92, type ATR)     « clôture sous $92.0 (ATR) »
+  stop_type ABSENT                     « clôture sous $92.0 (structure) »   ← type INVENTÉ
+  stop ABSENT / plan VIDE / plan absent « clôture sous $None (structure) »
+  ```
+  Deux choses distinctes : le prix devient le mot **`None`** à l'écran, et le
+  **type de stop est affirmé** alors qu'il n'a jamais été calculé. *Le second est
+  plus grave que le premier : `$None` se voit, « structure » se croit.*
+  **Le détail le plus fin — dans une seule ligne.** Mon témoin a révélé mieux que
+  ce que je cherchais :
+  ```text
+  d.get('mom', '—')  avec mom = None   →  « momentum None/100 »
+  d.get('rs',  '—')  avec rs  ABSENT   →  « force rel. — »
+  ```
+  **Même f-string, même forme, deux comportements** : `d.get(clé, '—')` ne protège
+  que de la **clé absente**, jamais d'une **valeur présente valant `None`**.
+  C'est l'instance la plus resserrée du motif de la veine — la bonne pratique et
+  sa faille sur la même ligne.
+  **La chaîne referme le dossier.** Le seul producteur du `detail`
+  (`analysis.py:260-263` et `:304`) remplit `plan.stop`, `plan.stop_type` et `mom`
+  **inconditionnellement et jamais `None`** ; unique appelant `terminal.py:608`.
+  **Les cas mesurés sont inatteignables aujourd'hui.** **Rang 4** — pièges
+  latents, aucune conséquence actuelle, même nature qu'au 421. **Aucun GO.**
+  **Cadence, dit sans arrondir.** Séquence de la veine : **416 ✓ · 417 ✓ · 418 ✓ ·
+  419 ✓ · 421 ✗ · 422 ✓ · 423 ✗**. Ce n'est **pas** deux négatifs d'affilée, le
+  compteur repart de 1. Mais le signal utile n'est pas le compteur : **les deux
+  lots négatifs ont la même forme** — un défaut réel dans le code, rendu inoffensif
+  par un producteur unique qui remplit tout. Les moteurs sont honnêtes **sur leurs
+  entrées réelles** ; ce qui reste est dans des branches que rien n'atteint. **Si
+  le 424 rend une troisième fois ce verdict, la veine devra être déclarée
+  épuisée** — non parce qu'elle ne trouve rien, mais parce qu'elle ne trouve plus
+  que de l'inatteignable.
+  **Portée** : une seule fonction (`_evaluate_one`) et son unique chaîne
+  d'alimentation ; les branches de verdict n'ont pas été rejouées une par une —
+  celle du RSI l'avait été au 416.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ; SW
+  `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 422 — livré** : **le R:R affiché repose sur un mouvement attendu que le
   moteur s'invente, et c'est le seul repli qu'il n'étiquette pas.** Sixième lot
   dans la veine des moteurs. Cible : `vertex/options/scenario_pricer.py`, qui
