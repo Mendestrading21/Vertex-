@@ -4,6 +4,212 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — veille active, lots 450 → 459 (2026-08-09, bilan n°15)
+
+Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
+vérifiés dans le dépôt, **aucune trouvaille rejouée**. Aucun serveur DEMO, aucun
+moteur rouvert. **Une seule mesure fraîche — les MD5 — et elle est dite comme
+telle.**
+
+### Ce que la tranche a déposé — mesuré
+
+**Base résolue explicitement avant tout chiffre** (leçon 430/440/450) :
+`3fc9045` **est** le lot 449, `1b23377` **est** le lot 459, et l'intervalle donne
+bien **dix commits** — vérifié avant publication.
+
+```text
+base 3fc9045 (lot 449 fusionné) → tête 1b23377 (lot 459 fusionné)
+
+commits                                    10
+fichiers modifiés                          12
+   docs/refactor/validation                11   (10 rapports + SKYLER-INDEX.md)
+   docs/skyler                              1   (STATUS.md)
+fichiers HORS docs/                          0
+lignes                        +2 893 / −0        (addition pure, rien supprimé)
+
+terminal.py + vertex/** touchés               0 fichier
+rapports / index / blocs STATUS          10/10, 10/10, 10/10
+volume des dix rapports                 104 212 octets
+MD5 des 8 pages remesurés                     8/8 identiques
+SW enregistré                           td-shell-v187
+```
+
+### Une correction de référence que je publie : le SHA du lot 399 était faux
+
+Les bilans précédents écrivaient « depuis le lot 399 (`29f4435`) ». **Mesuré :
+`29f4435` n'est PAS un ancêtre de la tête** — c'est le commit côté branche,
+remplacé par le squash `20a917f` (« Lot 399 … (#431) »), vrai point de fusion sur
+l'intégration.
+
+```text
+depuis 20a917f : 60 commits · 63 fichiers
+   HORS docs/     1   tests/test_skyler_sweep_x1.py   (lot 401)
+   PRODUCTION     0   — AUCUN
+```
+
+**Le chiffre publié ne change pas** — 0 fichier de production, 1 hors `docs/` —
+**mais la référence était fausse** et l'intervalle était calculé à travers un
+point de fourche. Quatrième fois que « résoudre la base avant tout chiffre » paie.
+
+### Ce que les dix lots ont produit
+
+```text
+450  BILAN n°14                                                          —
+451  4 phrases `source` jamais produites · 269 lignes mortes testées     ✗ rang 4 + 3
+452  85 modules injoignables · COLLISION /api/anomalies/<sym>            ✓ rang 1 (+2, +3)
+453  contrats de route : 26 candidats, 25 faux — BORNE le 452            ✗ (+ rang 4)
+454  6 phrases `action` jamais lues · 6 routes feeds.py sans citation    ✗ rang 4 + 3
+455  veine des phrases REFERMÉE · synthèse pré-trade sans les INCONNUS   ✓ rang 2
+456  fractions affichées · plafond 200 · camembert constant              ✓ rang 2 + 3
+457  BORNE V1 FIGÉE sur /portfolio · veine des fractions REFERMÉE        ✓ rang 1
+458  classeur `catOf` aveugle au type — BORNE le 457 (14 contre 1)       ✓ rang 2
+459  deux dettes SOLDÉES : gex_scan rang 4 → rang 2 ; 458 resserré       ✓ rang 2
+
+      2 rang 1 · 5 rang 2 · 4 rang 3 · 5 rang 4 · 2 veines refermées
+      3 bornages · 1 retrait d'interprétation · 1 bilan
+```
+
+**Note d'instrument** : compter les occurrences du mot « rang 1 » dans les
+rapports **ne mesure rien** — le 450, qui est un bilan, en contient 13 parce
+qu'il cite d'autres dossiers. Le tableau est relu **verdict par verdict**.
+
+### Le rendement, recompté — et il faut deux lectures
+
+```text
+                        rang 1 PAR LOT      rang 1 PAR DOSSIER DISTINCT
+tranche 420 → 429             4                        4
+tranche 430 → 439             4                        3
+tranche 440 → 449             3                        2
+tranche 450 → 459             2                        2
+
+DÉFAUTS AFFICHÉS (rang 1 + rang 2, par dossier distinct)
+tranche 430 → 439     5
+tranche 440 → 449     5
+tranche 450 → 459     7      ← +2
+```
+
+**Le rang 1 reste au plancher : deux tranches de suite à 2.** Je ne l'enjolive
+pas. Mais les cinq rang 2 de la tranche sont **distincts** — phrase
+`/opportunities` (452), synthèse pré-trade (455), plafond de 200 (456),
+`symbols_usable` plafonné (456 → requalifié au 459), classeur `catOf` (458).
+
+**Lecture honnête : la cadence des rang 1 ne se redresse pas, mais le volume de
+défauts affichés augmente.** La tranche a trouvé **plus** de choses fausses à
+l'écran que les deux précédentes — simplement moins graves en moyenne.
+
+### Le fait nouveau : une chaîne de relais — et je dis d'où elle vient
+
+Cinq lots consécutifs se sont passé le relais **par la forme du défaut trouvé**,
+non par le sujet :
+
+```text
+455  « un dénominateur total avec des numérateurs partiels »
+       ↓ désigne
+456  LES FRACTIONS AFFICHÉES                    → rang 2 + rang 3, au premier essai
+       ↓ désigne (un plafond présenté comme une population)
+457  LES LITTÉRAUX PÉRIMÉS DE L'INTERFACE       → rang 1
+       ↓ désigne (un littéral qui duplique la Constitution)
+458  LES LITTÉRAUX QUI DUPLIQUENT LA CONFIG     → rang 2 + bornage du 457
+       ↓ laisse deux dettes
+459  SOLDE PAR EXÉCUTION                        → une requalification vers le haut
+```
+
+C'est une règle **distincte** : **416** est une règle d'**arrêt**, **425/446**
+sont des règles de **sélection à l'intérieur d'une famille**, celle-ci est une
+règle de **SUCCESSION** — elle dit **quelle famille ouvrir ensuite**.
+
+**La réserve, et elle est sérieuse : les quatre relais ont été proposés dans les
+orientations de réveil, pas découverts par la boucle.** Je les ai exécutés et ils
+ont payé, mais je ne peux pas m'attribuer la sélection. Ce que la tranche
+établit, c'est que **la règle fonctionne quand on l'applique** — pas que la
+boucle sait la trouver seule.
+
+### Mes comptes d'erreurs, recomptés — et il y en a un troisième
+
+**Arrêtés avant publication : 25 → 26.** Recompte sur la tranche : 453 (**+4**),
+454 (**+1**), **459 (+1)**. Le +1 du 459 est d'un genre nouveau : sur la première
+grille, la mesure rendait « delta max 0,684 → branche inatteignable ». C'était
+faux, et cela aurait **enterré un défaut réel**. L'instrument n'était pas bogué —
+il était **trop étroit**. **Je le compte. Total : 26.**
+
+**Publiés puis corrigés : 3, inchangé.** Aucun fait publié dans cette tranche n'a
+dû être démenti.
+
+**Un troisième compte s'impose, et je l'ouvre : interprétations retirées = 1.**
+Au 458 j'avais rangé « LEAPS → AUTRE » parmi les divergences ; le 459 a montré
+que la Constitution **n'a aucune catégorie entre 0,60 et 0,70**. **Le fait publié
+restait vrai ; l'insinuation était de trop.** Ce n'est ni un faux arrêté ni un
+faux publié — c'est une troisième chose.
+
+**Bornages publiés dans la tranche : 3** (453 borne le 452 · 458 borne le 457 ·
+459 requalifie le 456 vers le haut).
+
+### Ce que les dix rapports NE prouvent PAS
+
+- **Aucune trouvaille constatée sur des données réelles** — tous les bancs sur
+  entrées **fabriquées**.
+- **Aucun navigateur ouvert de toute la tranche.** Dix lots, zéro rendu observé.
+- **Plusieurs formatages sont reproduits, pas exécutés** (`catOf`, gabarits de
+  fraction).
+- Les bancs établissent le **comportement du code**, jamais la **fréquence** des
+  cas réels.
+- **La distribution réelle d'IV n'est pas bornée** : 0,781 est une propriété de
+  **ma grille**, pas du produit.
+
+### Classement coût/risque — 16 dossiers
+
+Ordre **par coût et risque croissants** ; le rang de gravité est rappelé mais
+**ne dicte pas l'ordre**.
+
+```text
+#   dossier                        geste                                       surface        risque
+1   457 borne V1 figée             lire d.bounds.max — DÉJÀ REÇU par la page   1 expression   très faible   rang 1
+2   455 synthèse pré-trade         ajouter statuses.count(UNKNOWN)             1 ligne        très faible   rang 2
+3   434 renderAnomalies            copier la garde écrite 20 lignes plus haut  3 lignes JS    très faible
+4   427 légende multi-indices      bâtir la légende depuis `sets`              1 ligne JS     très faible
+5   428 entonnoir de sélection     accepter les deux vocabulaires              2 lignes JS    très faible
+6   437 « Catalyseurs imminents »  retirer `|| Date.now()` (3 pages)           3 lignes JS    très faible
+7   456 titre « 200 titres »       dire le plafond, ou lever la troncature     1 chaîne       très faible   rang 2
+8   448+449 trois vidages          journaliser, rendre un motif écrit          3 blocs except très faible
+9   425 « 4 maturités réelles »    compte dynamique `${pts.length}`            2 chaînes      très faible
+10  458 classeur `catOf`           ajouter le type au prédicat                 3 lignes JS    faible        rang 2
+11  447 max pain multi-échéances   filtrer sur l'échéance la plus proche       1 filtre       faible        rang 1
+12  432+433 synthèses /portfolio   conditionner sur `allMarked` DÉJÀ CALCULÉ   3 branches     faible
+13  442+443 les trois R:R          afficher `rr_res` + nommer chaque référence 4 rendus       faible
+14  452 collision de route         retirer la règle masquée OU lire les clés   1 règle        faible        rang 1
+15  424 thesis_health              UNKNOWN quand les 2 listes sont vides       1 branche      faible
+16  422 expected-move muet         l'ajouter à la liste de limites             1 chaîne       faible
+```
+
+**Le n°1 est le rang 1 le moins cher que la boucle ait jamais classé** : la page
+**reçoit déjà** `d.bounds` et **affiche déjà** « 8-15 lignes cibles » trois
+cartes plus bas. **Les neuf premiers ne touchent aucun moteur.** Les dossiers
+lourds (406/407/408/409/411, 388, 417, 416, 436, 391/396) ne sont **pas**
+classés : ils demandent une **décision de produit**. **Aucun GO n'est demandé,
+rien n'est engagé.**
+
+### Portée de ce bilan
+
+Il mesure ce que la tranche a **déposé** et ce que les dix rapports
+**affirment**. Il ne rejoue rien : **si un rapport s'est trompé sur un fait qu'il
+présente comme mesuré, ce bilan reprend l'erreur.** Le classement des rangs est
+**attribué par moi-même** — ce n'est pas une métrique indépendante. **La seule
+mesure fraîche prise ici est celle des MD5 : 8/8 identiques.**
+
+### Orientation pour le 461
+
+Le critère posé était : **(b) un lot « devis » si et seulement si la cadence des
+trouvailles baisse ; sinon (a) continuer les lots de mesure.** Elle ne baisse
+pas — **les défauts affichés passent de 5 à 7** — **je recommande donc (a)**. Et
+je dis ce qui plaide contre : si l'on ne regardait que le **rang 1**, la réponse
+serait **(b)**, deux tranches au plancher et **quinze tranches sans une seule
+correction**. **Au premier bilan où les défauts affichés reculeront, (b) devient
+la bonne réponse.**
+
+**Quinzième tranche à se terminer sans qu'un seul des défauts prouvés ait été
+corrigé. Sept bilans — n°9 à n°15 — attendent une réponse.**
+
+
 ## BILAN — veille active, lots 440 → 449 (2026-08-09, bilan n°14)
 
 Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
@@ -2364,6 +2570,47 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 460 — livré** : **BILAN n°15 (tranche 450 → 459) — sept défauts affichés
+  au lieu de cinq, mais le rang 1 reste au plancher, et la « chaîne de relais »
+  qui a porté la tranche n'est pas de moi.** Quinzième bilan, fait **sur
+  pièces** : dix rapports relus, chiffres vérifiés dans le dépôt, **aucune
+  trouvaille rejouée**, aucun serveur DEMO, aucun moteur rouvert ; **une seule
+  mesure fraîche, les MD5**. **Base résolue avant tout chiffre** : `3fc9045`
+  (lot 449) → `1b23377` (lot 459), **10 commits** ; **12 fichiers**, 11 dans
+  `docs/refactor/validation`, 1 dans `docs/skyler`, **0 hors `docs/`**,
+  **+2 893 / −0**, **0 fichier de production** ; rapports/index/STATUS
+  **10/10** ; **104 212 octets** ; MD5 **8/8** ; SW `td-shell-v187`.
+  **Correction de référence publiée : le SHA du lot 399 était faux** —
+  **`29f4435` n'est PAS un ancêtre de la tête**, c'est le commit côté branche,
+  remplacé par le squash **`20a917f`** ; depuis `20a917f` : 60 commits, 63
+  fichiers, **1 hors `docs/`** (`tests/test_skyler_sweep_x1.py`, lot 401),
+  **0 production**. Le chiffre publié ne change pas, **la référence était
+  fausse**. **Bilan des dix lots** : **2 rang 1 · 5 rang 2 · 4 rang 3 · 5 rang 4
+  · 2 veines refermées · 3 bornages · 1 retrait d'interprétation**.
+  **Rendement recompté, deux lectures** : rang 1 par lot 4 → 4 → 3 → **2** ; par
+  dossier distinct 4 → 3 → 2 → **2** — **le rang 1 reste au plancher**. Mais les
+  **défauts affichés** (rang 1 + rang 2, dossiers distincts) passent de **5 → 5
+  → 7**. **Fait nouveau : une chaîne de relais** — 455 → 456 → 457 → 458 → 459
+  se sont passé le relais **par la FORME du défaut**, quatre passages, quatre
+  lots qui paient ; règle de **SUCCESSION**, distincte du 416 (arrêt) et du
+  425/446 (sélection). **Réserve sérieuse : les quatre relais ont été proposés
+  dans les orientations de réveil, pas découverts par la boucle** — la règle
+  fonctionne quand on l'applique, ce n'est pas la preuve que la boucle sait la
+  trouver seule. **Comptes d'erreurs** : arrêtés avant publication **25 → 26**
+  (le +1 du 459 : la première grille aurait publié « inatteignable » et
+  **enterré un défaut réel** — instrument non bogué mais **trop étroit**) ;
+  publiés puis corrigés **3, inchangé** ; **troisième compte ouvert :
+  interprétations retirées = 1** (le 459 retirant l'insinuation du 458 sur
+  « AUTRE »). **Classement coût/risque à 16 dossiers**, le **n°1 étant le rang 1
+  le moins cher jamais classé** (lire `d.bounds.max`, déjà reçu par la page) et
+  **les neuf premiers ne touchant aucun moteur**. **Orientation 461 : (a)
+  continuer les lots de mesure** — le critère posé (« (b) si la cadence baisse »)
+  n'est pas rempli, les défauts affichés montent de 5 à 7 — **mais la bascule est
+  posée à voix haute : au premier bilan où ils reculeront, (b), le lot devis,
+  devient la bonne réponse**. **Aucun code, aucun gardien, aucun test ; aucun
+  GO demandé, rien d'engagé.** Anti-doublon `total 100 · actifs 0` ; aucun
+  fichier de production touché ; MD5 8/8 ; snapshot runtime 21 fichiers, écart
+  final **aucun** ; suite **2864 passed / 0 skipped**.
 - **Lot 459 — livré** : **les deux dettes de la tranche soldées PAR EXÉCUTION —
   le plafond du radar GEX monte au rang 2, la branche « AUTRE » est bel et bien
   atteignable, et ma borne d'atteignabilité a bougé trois fois avant que je la
