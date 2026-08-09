@@ -2720,6 +2720,42 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 476 — livré** : **le devis clos, la mesure reprend — le 417 est CLASSÉ
+  RANG 1 et chiffré à 5 lignes.** Contrôle sur cas connu (`track_record.py:52-59`)
+  **passé**. **Choix motivé** : la forme « un dénominateur qui n'est pas le
+  dénominateur » est **déjà calibrée** par les 456 et 457, donc j'ai un étalon ; le
+  devis avait déjà ouvert `track_record.py` ; et l'enjeu est le plus élevé des
+  dix-huit — c'est la page qui dit **à quel point le moteur est fiable**. **Écarté
+  sciemment : le 416**, trop proche du genre que je viens de nommer au 475 — se
+  méfier d'aller rechercher ce qu'on vient d'inventer (leçon 463). **Le
+  mécanisme** : `n` compte les entrées résolues à **au moins un** horizon, `f20` ne
+  se remplit que si +20 séances existent, et le filtre `n >= 5` protège **le
+  paquet, pas chaque nombre**. **Et `agg()` (`:163-166`) n'expose pas les vrais
+  dénominateurs** — le moteur sait, et ne dit pas. **Témoin positif dans la même
+  ligne** : quatre colonnes chiffrées, **une seule** (`TP1 avant stop`, `:450`)
+  affiche son dénominateur — motif exact du 457. **Atteignabilité mesurée par
+  exécution, et elle a failli me tromper** : `GET /performance` rend **301**, mais
+  `redesign.py:108-111` monte `/journal` sur `performance_page.render()`, et
+  `GET /journal` contient bien « Rdt +20 séances » et « tp1_resolved ».
+  **Quatorzième récurrence des homonymes, forme neuve : `vertex/ui/journal.py` est
+  MORT et `/journal` est rendu par `performance_page.py`** — le fichier qui porte
+  le nom est mort, celui qui rend la page porte un autre nom. **Rang 1** : page
+  servie, biais **structurel** (51 % de `N` sur 40 séances, mesuré au 417), et la
+  page sait faire mieux une colonne sur quatre ; **pas plus** car aucun nombre
+  n'est fabriqué — c'est une **attribution de dénominateur**, même famille que le
+  447, rang 1 lui aussi. **Chiffrage : 5 lignes, 2 fichiers** (`agg()` +2 clés, la
+  page +3 suffixes) ; **ne pas** durcir `n>=5`, ce serait cacher au lieu de
+  qualifier. Régression **faible à moyen** — un `assert set(d.keys())` casserait,
+  **à vérifier avant correction, je le nomme comme un point et non comme un fait**.
+  **Mutualisation avec le lot B mesurée et partielle** : même fichier, deux
+  fonctions, deux gestes ; à faire ensemble quand même, **mais le lot B perd son
+  « aucun bump »**. **Feuille : 17 dossiers · 45 à 53 lignes · 17 gardiens · douze
+  rang 1.** Portée : **le banc du 417 n'a pas été rejoué**, ses chiffres sont cités
+  comme siens ; ce lot mesure que **les sites tiennent** et que **les dénominateurs
+  ne sont pas exposés**. **Fait de méthode** : *quand une question porte sur ce que
+  le produit FAIT, l'exécution tranche et la lecture propose* — deuxième fois en
+  trois lots. Aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8**
+  · suite **2864 passed / 0 skipped**. Comptes : **43 (+1)** · 5 · 3 · 0.
 - **Lot 475 — livré** : **LE DERNIER DOSSIER — seize fichiers cachaient SIX
   sources, dont deux fonctions homonymes `_rr` et surtout UNE CONSTANTE.**
   Contrôle sur réponse connue mot pour mot (`pretrade.py:161`) : **passé**.
