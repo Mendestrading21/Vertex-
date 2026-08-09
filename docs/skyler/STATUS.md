@@ -2213,6 +2213,49 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 444 — livré** : **235 phrases écrites par le serveur, jamais recensées
+  depuis le 427 — et la première fois qu'un résultat faux m'a échappé jusqu'au
+  rapport publié.** 26ᵉ lot. Le 443 avait ouvert la classe sans la quantifier ;
+  ce lot la quantifie **et retire l'exemple sur lequel le 443 fondait sa règle**.
+  **Instrument par AST** (pas par motif) : 299 fichiers Python, toute f-string ou
+  `%`-format **interpolant une valeur** et rangée sous un nom de champ →
+  **74 champs, 235 phrases**. Témoin positif : `invalidation`
+  (`committee.py:133`) ressort bien. **125 phrases sur 235 sont NON CONCLUANTES**
+  — 36 noms trop génériques pour être distingués dans du JS (`note` 31, `error`
+  16, `src` 7, `label` 6…), leçon 437 généralisée aux noms communs : **je les
+  nomme et je ne les compte pas**. **Périmètre concluant : 38 champs, 110
+  phrases, 13 atteignent un écran** — `reason` 4 écrans · `detail` 4 · `source` 4
+  · `narrative` 4 · `basis` 3 (28 phrases) · `action` 3 · `impact` 3 · … ; **25
+  champs distinctifs lus par aucun écran**. **LA CORRECTION — mon 443 s'est
+  trompé deux fois sur la même ligne.** Il publie « `invalidation` est lu par
+  cinq écrans, 12 fois » : **(1)** le « cinq » comptait des **mots français** —
+  `/portfolio` 9 occurrences, **0 lecture de champ** (« Cassée — invalidation
+  atteinte » est un libellé) ; strictement, **2 écrans** ; **(2)** et ces deux-là
+  lisent **un autre `invalidation`** — `skyler_core:433/627` émet
+  `'invalidation': stop`, **un nombre**, formaté par `VX.fmt.num`. **La phrase du
+  comité n'est lue par aucun écran.** **Troisième occurrence du piège « un nom,
+  plusieurs payloads »** (438 `scan`, 441 `.decision`) — **et la première à ne pas
+  avoir été arrêtée avant publication.** Les deux comptes restent séparés :
+  **arrêtés avant publication 18** (inchangé), **publiés puis corrigés 1** (de 0).
+  **Le verdict « `stop_type` atteint un écran » est RETIRÉ** ; le reste du 443
+  (douze champs du plan, trois R:R, correction du 442) **n'est pas touché**.
+  **La règle survit, avec un vrai exemple** : **`basis`**, 28 phrases composées
+  (`decision_memory` 16, `knowledge_graph` 6, `skyler_core` 5, `red_team` 1), lu
+  par `/portfolio`, `/journal`, la route `/analysis` à paramètre et
+  `performance_page` — et **porteuses de chiffres** (« corrélation des résidus de
+  marché = %.2f sur %d points », « %d contradiction(s) tracée(s) — −0,20
+  chacune », « bloc data_quality %d/4 du score »). **Où elles s'affichent** :
+  surtout en attributs **`title=`**, visibles au **survol** — ce qui explique
+  qu'aucun recensement de la boucle (texte visible ou littéraux du client) ne les
+  ait jamais croisées. **Aucun défaut de produit nouveau** ; **les 110 phrases
+  concluantes sont recensées, NON OUVERTES** — vivier du lot suivant. **Portée** :
+  une phrase composée sans nom échappe (**non quantifié**) ; les 125 génériques
+  sont **hors mesure, pas hors existence** ; déstructuration et variable
+  intermédiaire échappent (limite du 436) ; **aucun navigateur**, infobulles non
+  observées. Aucun fichier touché · SW `td-shell-v187` · écart runtime **aucun** ·
+  suite **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-444.md`.
+
 - **Lot 443 — livré** : **trois R:R différents sur la même page, et le seul
   honnête n'apparaît que pour se plaindre — le test du 442 généralisé aux douze
   champs du plan.** 25ᵉ lot. **Instrument à deux témoins intégrés** : pour chacun
