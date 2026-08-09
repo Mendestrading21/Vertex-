@@ -2570,6 +2570,70 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 466 — livré** : **les routes qui travaillent pour personne — entre 22 et
+  37 des 189 règles déclarées n'ont aucun consommateur atteignable, et 15
+  d'entre elles ne sont citées que depuis du JS de `terminal.py` qui n'atteint
+  plus aucune page.** 46ᵉ lot, sixième de la tranche. Le 465 a nommé « du code
+  complet et correct qui n'est pas servi » ; ce lot attaque la classe entière.
+  **Calibrage** : trois classes posées d'avance (**K1** cité dans les 42 objets
+  servis · **K2** appelé par un module serveur · **K3** page de navigation), et
+  **la règle qui décide de tout — appariement sur le PRÉFIXE STATIQUE**, une
+  route paramétrée n'apparaissant jamais littéralement dans les octets servis.
+  **Trois corrections d'instrument, et les trois sur LA MÊME confusion : du
+  texte destiné au CLIENT, écrit dans un fichier PYTHON, n'est pas du code
+  SERVEUR.**
+
+  ```text
+  1  vertex/ui/**.py dans le corpus K2  → LE CONTRÔLE A ÉCHOUÉ au premier tir
+     (/api/alerts/status, orpheline connue du 465, ressortait « interne »)
+  2  aucune classe pour les redirect(…, 301) → 12 fausses orphelines
+     leur NON-CITATION est leur RAISON D'ÊTRE  → K4
+  3  les chaînes JS de terminal.py encore dans K2 — révélé par /news-feed
+  ```
+
+  Faux arrêtés : **34 → 37**.
+
+  ```text
+  189 règles déclarées (hors static)
+     98  K1 consommée par un objet SERVI
+     43  K2 « serveur interne »            ← borne HAUTE
+      9  K3 navigation
+     12  K4 redirection 301
+      5  E3 infrastructure
+     22  ORPHELINES
+  ```
+
+  **K2 est contaminée et je la BORNE au lieu de la réparer** : **15 des 43** sont
+  citées **uniquement depuis `terminal.py`** et **absentes des octets servis** —
+  `/titre/<sym>` **53 citations**, `/settings` **22**, `/bordel` **20**,
+  `/catalysts` 15, `/entreprises` 13, `/ma-page` 11. **Cinquante-trois citations
+  et pas un octet servi** : c'est la mesure des pages mortes du monolithe.
+  **Le compte est donc un INTERVALLE : 22 plancher ferme, 37 plafond — 12 % à
+  20 % de la surface HTTP.** Les quinze **ne sont pas tranchées une par une**.
+  **Le coût est faible** : **1 écrit** (`/desc/<sym>`), **2 coûtent du réseau**
+  (`/desc/<sym>`, `/api/correlations/<sym>`), **20 sont inertes**. Surface de
+  maintenance, **aucun mensonge à l'écran → rang 4** : la valeur du lot est la
+  **mesure**.
+  **Fait nommé** : le CLAUDE.md justifie l'assainissement de trois sorties
+  « car leurs consommateurs injectent le titre brut en innerHTML » ; mesuré,
+  **`/api/skyler/` est citée par 4 objets, `/api/events/` et `/news-feed` par
+  AUCUN**. L'assainissement reste **juste et utile** (sûreté gratuite, gardien
+  vert) ; **c'est la JUSTIFICATION consignée qui est inexacte** — même famille
+  que la correction du SHA du lot 399 au 460. **Nommé, non classé.**
+  **Homonymes, dixième récurrence, évitée par construction** : `/api/live/events`
+  EST servi, `/api/events/` non — une recherche naïve du mot « events »
+  (27 occurrences) aurait conclu l'inverse.
+  **Portée** : intervalle et non nombre · K1 par **préfixe** — une URL assemblée
+  autrement serait faussement orpheline (**non quantifié**) · « écrit »/« réseau »
+  par **motifs dans la source de la vue**, donc **coût sous-estimé** ·
+  **aucune route appelée** · **aucun navigateur**.
+  **Huitième bornage consécutif.** Genre confirmé : **UNE ROUTE QUI TRAVAILLE
+  POUR PERSONNE**, variante **UNE CITATION QUI NE SORT JAMAIS DU DÉPÔT**.
+  **Aucun code, aucun gardien, aucun test ; aucun GO demandé, rien d'engagé.**
+  Anti-doublon `total 100 · actifs 0` ; aucun fichier touché ; MD5 **8/8** ;
+  snapshot runtime 21 fichiers, écart final **aucun** ; suite **2864 passed /
+  0 skipped**. Comptes : arrêtés **37**, publiés puis corrigés **3**,
+  interprétations retirées **1**.
 - **Lot 465 — livré** : **les deux dettes du 464 soldées, toutes deux en
   NÉGATIF — l'élargissement du détecteur ne trouve AUCUN nouvel accumulateur, et
   l'alerte déclenchée par un prix de démo n'atteint aucun écran parce que son
