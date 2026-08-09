@@ -2054,6 +2054,46 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 435 — livré** : **la décision du jour est calculée sur zéro titre, et
+  personne ne la lit — je referme le point laissé « non conclu » au 434.**
+  Dix-huitième lot de la veine. **Ce que `/api/command` rend quand rien n'a été
+  scanné** (appel réel via `test_client`, lecture seule) :
+
+  ```text
+  top_stocks   []
+  decision     {'action': 'ATTENDRE / SÉLECTIF',
+                'msg': "Peu d'avantage statistique — n'acheter que l'exceptionnel, garder du cash."}
+  risk         {'n': 0, 'note': 'panier trop petit pour une analyse de corrélation'}
+  validation   {'ok': False, 'note': 'historique trop court pour valider'}
+  ```
+
+  **Trois champs, trois attitudes** : `risk` et `validation` **avouent** manquer
+  de matière, chacun avec sa phrase écrite exprès ; `decision` **tranche** — une
+  affirmation sur l'avantage statistique du marché produite à partir de **zéro
+  observation**. `command.py:93-104` : scan vide → `n_act=0`, `score=None` → le
+  `else` final ; **aucune branche « je ne peux pas décider »**, alors que les deux
+  champs voisins en ont une. **Mais est-ce affiché ? — et la réponse renverse le
+  lot** : « ATTENDRE / SÉLECTIF », « ATTAQUER », « RÉDUIRE / DÉFENSIF » et « Peu
+  d'avantage statistique » → **aucun octet servi** ; `/api/command` est appelé
+  depuis `/` sur **4 sites** qui lisent `cmd.top_stocks` et `cmd.alerts`, et
+  **« decision » est absent de `paint`**. **Le champ n'est lu par aucun
+  consommateur servi** — calculé, sérialisé, envoyé, **jamais rendu**. **Rang 4**,
+  règle 411/424 appliquée contre moi-même sur la phrase la plus spectaculaire
+  trouvée depuis plusieurs lots. **La question du 434 est refermée** : « Aucune
+  opportunité retenue par le comité. » est rendue quand `top_stocks` est vide,
+  donc **aussi sans scan** ; le voisinage de la carte ne porte **aucun compte de
+  titres scannés** → **pas d'atténuation**, mais la phrase ne prétend pas qu'une
+  détection a eu lieu → **rang 2**. **Un troisième instrument fautif en deux lots,
+  et je le dis** : ma première mesure a rendu « 0 appel à `/api/command` » — faux,
+  il y en a **16** ; cause, un motif `.{170}` **sans `DOTALL`**. Et **une fois de
+  plus le faux résultat allait dans le sens de ma thèse**. **Aucun gardien.**
+  **Aucun GO.** **Portée** : 39 des 47 phrases non vérifiées ; **un seul champ**
+  de `/api/command` ouvert (`counts`, `exposure`, `regime`, `portfolio_score`,
+  `alerts` servis et non vérifiés) ; la bascule vers `ATTAQUER` est **lue dans le
+  code, pas exécutée**. MD5 des 8 pages remesurés : **8/8 identiques**. Aucun
+  fichier touché, aucun bump, SW `td-shell-v187`. Suite **2864 passed / 0
+  skipped**. Rapport : `docs/refactor/validation/SKYLER-LOT-435.md`.
+
 - **Lot 434 — livré** : **« Aucune anomalie détectée sur le scan courant » quand
   il n'y a pas de scan — et la garde correcte est vingt lignes plus haut, dans le
   même fichier.** Dix-septième lot de la veine. Le 433 avait laissé 43 des 47
