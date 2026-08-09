@@ -2364,6 +2364,82 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 455 — livré** : **la veine des phrases composées refermée — 11 dernières
+  phrases tranchées, et la toute dernière cache un défaut affiché : « 0 contrôle
+  défavorable, 1 à surveiller, sur 6 » quand 5 des 6 sont INCONNUS.** 36ᵉ lot,
+  5ᵉ de la tranche. Le 454 avait conclu que la veine rendait surtout du poids
+  mort ; ce lot la **solde** en un balayage, avec l'instrument déjà validé
+  (détecteur AST **aux quatre formes dès la 1ʳᵉ passe**, corpus des **42 objets
+  servis**, payload identifié par sa **forme**).
+
+  ```text
+  impact     options_lab.py:788                  NON AFFICHÉE — /api/options-lab citée nulle part
+  summary    ai/fallback.py:34                   JAMAIS PRODUITE — module non atteignable (452)
+  summary    decide.py:128                       NON LUE — payload de l'`action` du 454
+  summary    decision_memory.py:546              NON LUE
+  summary    analysis_api.py:498, :501           NON ÉTABLIES (2) — branche MESURE non atteinte
+  summary    widget_lab.py:1759                  AFFICHÉE — bandeau de /widget-lab
+  question   knowledge_graph.py:355/360/366      AFFICHÉES (3) — carte de /portfolio
+  narrative  pretrade.py:163                     AFFICHÉE — carte pré-trade de /analysis
+     11 tranchées · 5 affichées · 4 non affichées ou jamais produites · 2 non établies
+  ```
+
+  Les deux `summary` de `analysis_api` sont **non établies, pas absentes** : la
+  route `/memory/cell/<g>/<k>` rend **404** au démarrage, mais son 404 est une
+  **page honnête** ; les phrases vivent sur la branche `MESURE`. **Leçon 438 : je
+  les nomme et je ne les compte pas.** **Neuvième récidive du piège de nom, et
+  massive** : `.impact` lu 4 fois, `.summary` 4 fois, **`.question` 6 fois dont 5
+  sont le contrat de carte VXCharts**, `.narrative` 6 fois — **une seule** lecture
+  correspond à la forme de `knowledge_graph`. **C'est la forme qui tranche, jamais
+  le nom.** **Les trois `question` sont exactes** : deux impriment littéralement
+  leur garde (lecture, pas mesure — 447), la troisième est inconditionnelle et
+  **vérifiée vraie** (aucune source de chaîne de valeur n'existe dans le dépôt).
+  **La trouvaille** — `pretrade.py:163` fait `n_ko = statuses.count(KO)` et
+  `n_warn = statuses.count(WARN)`, puis rend « … %d défavorable(s), %d à
+  surveiller, **sur %d** » : **aucun `statuses.count(UNKNOWN)` n'existe**, le
+  dénominateur est le total mais les numérateurs ne couvrent que **deux statuts
+  sur quatre**. Rendue sur `/analysis/<sym>` par `analysis_page.py:850`. **Banc
+  sur le moteur réel, cas dégradé et cas sain côte à côte** :
+
+  ```text
+  A. état du démarrage   inconnu 5 · attention 1   badge MITIGÉ
+     phrase  « 0 contrôle(s) défavorable(s), 1 à surveiller, sur 6. »
+     le lecteur soustrait 6 − 0 − 1 = 5 « qui vont bien »
+     ils sont en réalité 5 IMPOSSIBLES À ÉVALUER
+
+  C. tout branché        ok 3 · attention 2 · defavorable 1
+     phrase  « 1 défavorable, 2 à surveiller, sur 6. »   → les 3 sont VRAIMENT ok
+  ```
+
+  Le cas sain **tombe juste** ; le même gabarit, dans le cas A, invite à conclure
+  l'inverse. Et **le cas A n'est pas un cas de bord** : `scan_state` vide au
+  démarrage rend comité, régime, GEX, résultats et concentration tous `inconnu`.
+  **Rang 2, et je dis pourquoi pas rang 1** : famille 432/433 (l'inconnu rangé
+  avec le sain, du côté qui rassure) qui y valait rang 1 — mais ici
+  l'information honnête est **co-visible**, les six contrôles étant rendus juste
+  au-dessus avec leur icône et un détail qui **nomme ce qui manque**.
+  **L'atténuation n'efface pas** (442) : la phrase est la **conclusion** de la
+  carte. `n_ko` et `n_warn` sont **exacts** — **c'est une omission, rien de faux
+  n'est affiché**. Correction pressentie : **une ligne**, ajouter le compte des
+  inconnus. **Aucun GO. Aucun gardien** ne compare la phrase aux statuts.
+  **État de la veine** : **tous les champs annoncés à 3 écrans ou plus sont
+  tranchés** ; restent `volume` et `spread_pct` (1 phrase, 1 écran chacun) ; **72
+  des 110 phrases du 444 restent fermées**. Bilan des 8 champs ouverts : **2 rang
+  1, 2 rang 2, 1 famille saine, le reste en poids mort** — la veine s'éteint sur
+  un rang 2 trouvé au dernier lot. **Enseignement, qui contredit à moitié le
+  454** : la veine rendait du poids mort **parce que les champs étaient choisis
+  par leur nombre d'écrans ANNONCÉ**, un chiffre qui **compte des homonymes** — le
+  défaut était dans le champ annoncé à 4 écrans dont 5 lectures sur 6 sont des
+  homonymes. **Portée** : `/api/options-lab` non appelée (conclusion sur l'URL
+  littérale dans les octets servis, méthode 454) ; le banc établit le
+  comportement du **code**, mais le cas A **reproduit l'état effectif du
+  démarrage** ; déstructuration et crochets **échappent** (436), non quantifiés ;
+  **aucun navigateur**. Aucun fichier touché · SW `td-shell-v187` ·
+  **`/options/<sym>`, `/api/analyst/`, `/api/correlations/` volontairement NON
+  appelées** · **MD5 8/8 identiques** · écart runtime **aucun** · suite
+  **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-455.md`.
+
 - **Lot 454 — livré** : **les six phrases `action` sont des ordres d'entrée
   chiffrés, calculés à chaque scan, sérialisés, envoyés au navigateur — et lus
   par personne.** 35ᵉ lot, 4ᵉ de la tranche. Trois balayages structurels
