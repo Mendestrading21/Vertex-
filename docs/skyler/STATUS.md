@@ -1824,6 +1824,61 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 413 — livré** : **les 156 chemins que le client peut demander — aucun ne
+  pointe dans le vide.** Un chemin d'API mal écrit côté client ne casse rien de
+  visible : la requête part, le serveur répond 404, la carte reste sur son état
+  vide — **honnête en apparence, mais pour une mauvaise raison**. Personne
+  n'avait vérifié la correspondance.
+  **Périmètre = les octets servis**, pas les sources : les 8 pages demandées au
+  serveur en mémoire (8 × HTTP 200), puis **chaque `<script src>` demandé au
+  serveur à son tour**.
+  ```text
+  pages 8 · scripts externes servis 26 · blocs inline 15 · corpus 1 243 931 octets
+  résolution par app.url_map.match() → les 190 routes réellement enregistrées
+  ```
+  **L'instrument s'est trompé deux fois, et c'est mesuré.** (1) Les 26 fichiers
+  `/static` n'étaient pas dans le corpus — recherche disque avec un chemin faux :
+  `515 108` octets / 42 chemins, contre `798 881` / 52 une fois **demandés au
+  serveur**. (2) Le détecteur ne connaissait que `fetch(`, alors que
+  `options-intel.js:466` appelle `get('/api/options/strategies/'+sym)` via une
+  **aide locale** — **répétition exacte de la leçon du lot 409**, avec une autre
+  enveloppe. (3) Trois faux morts par normalisation : la concaténation **en
+  queue** (`'/api/options/gex/' + encodeURIComponent(sym)`) est désormais
+  reconnue comme segment dynamique.
+  **Témoins** : route réelle → OK · route inventée → `NotFound` · segment
+  dynamique → OK ; et **de bout en bout** sur les trois formes d'écriture (appel
+  direct, aide locale, concaténation en queue), les trois chemins sont retrouvés.
+  Un `fetch('/api/reco-inexistante-413')` déposé dans un fichier servi **serait**
+  rapporté.
+  ```text
+  chemins distincts confrontés à l'url_map     156
+     résolvent                                 149   (dont 8 par segment dynamique)
+     ne résolvent pas                            7   ← ouverts un par un
+  appels /api distincts                          55   tous résolus
+  ```
+  **Les 7 sont 7 faux positifs de l'extracteur, aucune requête** : `/1%IV` et
+  `/100` (unités affichées), `/api` et `/static` (tests de préfixe,
+  `vx-router.js:42`), `/api/ibkr`, `/api/positions`, `/api/account` (préfixes de
+  politique de cache, `vx-core.js:228/272`). **Zéro chemin mort**, et le zéro est
+  **substantiel** : 156 littéraux confrontés à un `url_map` exécuté, les 7
+  restants lus dans leur ligne.
+  **Trouvaille annexe, triviale — dite comme telle.** `/api/account` figure dans
+  **les deux** listes de cache du client (`PERSIST_DENY`, `LIVE_TTL`) alors que
+  **0 route sur 190**, **0 appel sur 55** et **0 occurrence ailleurs dans le
+  dépôt** ne lui correspondent : **entrée morte**, elle ne dénie rien et ne
+  raccourcit aucun TTL. **Aucune conséquence visible pour le trader** — classée
+  **rang 4**, non corrigée : ce serait exactement le « changement gratuit » que la
+  boucle s'interdit. Les 5 autres préfixes **mordent**, ce qui rend le `0` lisible.
+  **Portée mesurée, pas affirmée** : l'extraction est statique, donc un chemin
+  entièrement calculé lui échapperait — sur **91** appels `fetch(` du corpus
+  servi, **85** ont un littéral en premier argument et **6** une variable
+  (`url`, `u`, `href`) ; les 6 sont ouverts : ce sont **les tuyaux eux-mêmes**
+  (implémentation de `VX.fetch`, `fetch` de fragment du routeur), qui reçoivent
+  les URL construites aux 85 sites littéraux — **aucun endpoint distinct ne s'y
+  cache**. Le lot établit que les routes **existent**, pas ce qu'elles renvoient.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** (la
+  sonde vit dans le scratchpad) ; SW `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 412 — livré** : **le gardien de la règle n°3 détecte le changement
   d'asset, mais n'impose pas le bump.** La règle critique n°3 protège le **repli
   hors-ligne** : si un octet de `/static` change sans bump du service worker, un
