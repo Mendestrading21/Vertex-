@@ -2054,6 +2054,52 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 439 — livré** : **les trois pages jamais ouvertes — `/journal` est
+  exemplaire, `/options` cache ses affirmations dans son JS, `/analysis` n'en a
+  aucune — et six instruments ont été jetés pour l'établir.** Vingt-deuxième lot,
+  **dernier de la tranche**. **Phrases rassurantes** : `/journal` **7, toutes
+  honnêtes** — chacune **nomme l'entrée manquante** (« Aucune erreur déclarée —
+  renseigne le champ « erreur » à chaque sortie perdante », « Aucune leçon
+  consignée… ») ; `/analysis` 1 ; `/options` 0. **`/journal` est le meilleur
+  exemple du dépôt** : c'est exactement la garde qui manquait à `/portfolio`
+  (432, 433) et à `renderAnomalies` (434). **Affirmations rendues** :
+
+  ```text
+                HTML de page   JS de page   TOTAL
+  /journal            8            —           8   dont 2 chiffrées
+  /analysis           0            0           0
+  /options            0           35          35
+  ```
+
+  **`/options` ne cache rien, mes premiers comptages si.** **`/analysis` n'a
+  aucune affirmation nulle part** : **22 248 octets** servis (la plus petite des
+  huit), **0 `<canvas>`, 0 `VXCharts`, 0 vue**, 17 coques `vx-card`, un seul appel
+  réseau (`/api/names`). **Je ne conclus pas** qu'elle n'affiche jamais de
+  graphique — elle est pilotée à la demande ; ce qui est mesuré, c'est qu'**au
+  chargement elle ne porte ni moteur de graphique ni contrat d'explication**.
+  **Une confirmation, pas une trouvaille** : « moyenne réelle des verdicts résolus
+  (n≥5) » est le **dossier 417**, désormais **confirmé servi sur `/journal`**.
+  **Six instruments, six contrôles, et une mesure abandonnée** : je voulais
+  mesurer la couverture du **contrat de carte** — v1 plafond `len(opts)>6000`
+  (`/opportunities` 0 alors que le comptage littéral en trouve 7) · v2 JS de page
+  non rattaché · v3 **`VC.card(...)`, un alias local — 4ᵉ récidive de « compter
+  sans les enveloppes »** (409, 413, 414) · v4 la carte est rendue **par un
+  builder** qui reçoit `question:` de son appelant. **La métrique elle-même est
+  mal définie : aucun taux de couverture n'est annoncé.** Quatrième contrôle
+  « invraisemblance » de la boucle — **il a mordu quatre fois sur quatre**.
+  **Aucun défaut nouveau** : trois faits mesurés et un aveu ; `/analysis` reste
+  une **piste**, pas un constat. **Portée** : littéraux de 10 à 200 caractères
+  seulement, **phrases dynamiques toujours hors recensement** ; les 35
+  affirmations de `/options` **recensées, non vérifiées** ; `/analysis` **non
+  ouverte avec un symbole**. **Le compte des instruments fautifs atteint QUATORZE
+  en six lots** (430, 434 ×2, 435, 437 ×3, 438 ×3, 439 ×4), tous arrêtés avant
+  publication — **statistique la plus utile de la tranche : la boucle passe
+  désormais plus d'effort à vérifier ses instruments qu'à mesurer le produit**, et
+  le bilan n°13 devra la regarder en face. MD5 des 8 pages remesurés : **8/8
+  identiques**. Aucun fichier touché, aucun bump, SW `td-shell-v187`. Suite
+  **2864 passed / 0 skipped**.
+  Rapport : `docs/refactor/validation/SKYLER-LOT-439.md`.
+
 - **Lot 438 — livré** : **six contrats rompus, six faux positifs — trois objets
   différents s'appellent `scan`, et `cal.ts` reste seul.** Vingt et unième lot,
   **bornage du 437**. **Instrument** : la question du 437 inversée — pour chaque
