@@ -2720,6 +2720,42 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 473 — livré** : **LE DEVIS, TROISIÈME TRANCHE — le rang 1 le plus utile
+  chiffré à 6 lignes, mais QUATRE dossiers sur cinq ne sont pas devisables en
+  l'état**, et c'est le résultat du lot : leurs sites publiés ne contiennent plus
+  ce qu'ils annoncent, et chiffrer par-dessus aurait produit un devis **propre et
+  faux**. **Le contrôle échoue au premier jet** (2ᵉ fois de la veine, après 467) :
+  le témoin du 464 annoncé en `decision_memory.py:54` est un `return None` ; le
+  vrai est en **`:111`** — la référence venait de **mon propre réveil**, pas du
+  rapport. Et il rend mieux que prévu : `:71-73` montre que le drapeau `demo`
+  entre **dans le hash d'identité** de la décision. **464 (rang 1) chiffré :
+  6 lignes, 3 fichiers** — `skyler_journal` 2 l. (aucun test ne l'appelle),
+  `session_log` 2 l. avec **mot-clé à défaut obligatoire** (huit appels de test à
+  quatre positionnels), `track_record` 2 l. **sans changement de signature mais
+  avec un import**, car `scan_state` ne porte ni `source` ni `demo`. **Aucun octet
+  servi, aucun bump.** N'achète que l'avenir (`edge_ledger` est append-only).
+  **Atteignabilité failli publiée fausse** : mon grep donnait « aucun appelant en
+  production » pour `track_record.record()` — l'appel existe **sous un alias
+  d'import** (`terminal.py:66` puis `:1430`) ; **quatorzième récurrence du piège
+  du détecteur à une seule forme, cette fois sur la forme d'un APPEL**.
+  **Non devisables** : **447** (le mot `max_pain` n'apparaît dans aucun des deux
+  fichiers cités), **452** (`:929` est l'invocation, le corps est en **`:856`**),
+  **432+433** (les lignes citées sont les mécanismes, pas les phrases),
+  **442+443** (seize fichiers, deux rapports croisés — un lot entier). **Feuille
+  de décision : douze dossiers · 31 à 37 lignes · 12 gardiens · sept rang 1 · un
+  seul bump · `_EMPREINTE` une seule fois.** `markets_page.py` porte **4 dossiers
+  dont 3 rang 1 pour 6 lignes** ; **dix des douze tiennent dans quatre fichiers**.
+  **Six lots de travail autonomes (A à F)**, le A (« /markets », 427+428+425) étant
+  le meilleur rapport valeur/risque. Nommé et non chiffré : les quatre dossiers
+  ci-dessus et **dix-huit dossiers jamais classés** — douze sur une trentaine
+  ouverts. **Fait de méthode** : *un rapport de mesure établit qu'un défaut
+  EXISTE ; il n'établit pas OÙ il est d'une façon qui survive au temps* — et
+  quarante-neuf lots de veille n'avaient produit que le premier. Aucun fichier de
+  production touché · SW `td-shell-v187` · **MD5 8/8** · snapshot runtime 21
+  fichiers, écart final aucun · suite **2864 passed / 0 skipped**. Comptes :
+  arrêtés avant publication **42 (+2)** · publiés puis corrigés **5** ·
+  interprétations retirées **3** · **nouveau compteur : 4 dossiers en attente de
+  re-localisation**.
 - **Lot 472 — livré** : **LE DEVIS, SECONDE TRANCHE — six dossiers chiffrés (6 à
   11 du classement), et le résultat structurant n'est aucun des six.** Contrôle
   sur un cas **doublement** connu (`catOf`, publié au 458 puis remesuré au 461) :
