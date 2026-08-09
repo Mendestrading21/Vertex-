@@ -2798,6 +2798,44 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 492 — livré** : **les deux barèmes réellement peints, tracés jusqu'au
+  producteur — « accord /100 » est SAIN, « confiance /100 » plafonne à 95, et les
+  DEUX bornes du garde-fou du comité sont MORTES.**
+- **Vérification d'abord** (leçon 491, appliquée **au début**) : la chaîne
+  `analysis_page:735` → `/api/decision/<sym>` → `decision_stack` est établie
+  **avant** de mesurer. Module **sans aucune écriture**, vérifié.
+- **Le brief était incomplet deux fois** : il omettait `- dq.confidence_penalty`
+  et le garde-fou propre du comité `max(20, min(95, …))` ; **c'est justement le
+  garde-fou omis qui porte la trouvaille**.
+- **Trouvaille** : `agreement ∈ [0,1]` par construction, donc
+  `45 + agreement×45 − 15×contradiction` parcourt **[30, 90]**. Énumération
+  **complète** : **`max(20,…)` et `min(95,…)` ne mordent JAMAIS.** Le code
+  exprime une échelle 20-95 **qui n'existe pas**.
+- **Le chiffre affiché ne peut jamais atteindre 100** : maximum absolu **95**.
+  Banc réel : `d.confidence` absent → **72** · `=90` → **90** · `=100` → **95**.
+  **« accord 100/100 » atteint : témoin POSITIF du lot.**
+- **Hypothèse à moi réfutée** : je croyais `base_conf` toujours à la constante
+  55 — **faux**, `quant/scoring.py:139` le produit vraiment ([40,100] par
+  formule, **[40,73] sur ma grille** — propriété de la grille, dite comme telle).
+- **Je refuse de gonfler : aucun rang posé.** Cinq points inatteignables sur cent
+  sur une grandeur heuristique n'est pas du même ordre que le 484-B (27,5 % hors
+  d'atteinte sur la carte de décision) → **observation**. Les bornes mortes sont
+  **internes**, donc **nommées, non classées** (règle 486/491).
+- **Second contrôle** (cas exclu : la pénalité de qualité) : scan rassis →
+  **38/100 contre 72**. **Une pénalité de 15 fait chuter de 34 points**, car
+  `stale` modifie aussi les preuves — **l'effet n'est pas additif et rien ne le
+  dit**. Et **la borne basse `max(0,…)`, elle, EST atteignable** : un garde-fou
+  mort en haut, un vivant en bas, dans la même expression.
+- **Deux faux arrêtés** : (1) mon premier banc mesurait la branche
+  `DATA_INSUFFICIENT` et rendait 0 trois fois — **diagnostiqué, pas conclu** ;
+  (2) mon scan AST disait que `compose()` ne renvoie pas `confidence`, **l'exécution
+  a répondu l'inverse**. **57 → 59.**
+- **Deuxième lot consécutif sans nouveau dossier — ce n'est pas une panne, c'est
+  une veine correctement mesurée qui se vide.**
+- Feuille **inchangée** : 24 dossiers · quatorze rang 1 · huit rang 2 · trois rang 3.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  runtime 21 fichiers, écart **AUCUN** · suite **2864 passed / 0 skipped**.
+
 - **Lot 491 — livré** : **les 7 barèmes non tracés — la liste du 486 confondait
   TROIS échelles homonymes, et la confiance plafonnée à 50/100 que j'ai mesurée
   n'est affichée NULLE PART.**
