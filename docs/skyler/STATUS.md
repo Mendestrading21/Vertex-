@@ -1940,6 +1940,70 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 424 — livré** : **« Thèse INTACT, confiance 0.0 » — le titre médian reçoit
+  un verdict sans une seule preuve.** Huitième lot dans la veine des moteurs,
+  cible `vertex/positions/thesis_health.py`, choisi selon la consigne du 423 :
+  **entrées utilisateur donc réellement variables**, et **chaîne vérifiée avant
+  d'investir dans la mesure**.
+  **La règle que le fichier respecte — et il la respecte beaucoup.** C'est l'un
+  des modules les plus honnêtes du dépôt : compteur d'**inconnues** dimension par
+  dimension, `confidence = connu / (connu + inconnues)`, docstring portant la
+  correction du lot 365, et un statut `UNKNOWN` réellement utilisé.
+  ```text
+  thèse absente                          UNKNOWN         conf 0.0   unk 1
+  thèse écrite, AUCUNE donnée            UNKNOWN         conf 0.0   unk 4
+  preuves positives (fond 70, rs 65)     STRENGTHENING   conf 1.0   pos 2
+  preuves négatives (fond 30, rs 20)     AT_RISK         conf 1.0   neg 2
+  ```
+  Quatre témoins, deux de chaque côté : **le moteur sait dire qu'il ne sait pas.**
+  **L'endroit où il ne la tient pas.** Chaque dimension n'émet une preuve **qu'aux
+  extrêmes** — fondamental ≥ 60 ou < 45 · force relative ≥ 60 ou < 40 · R:R restant
+  ≥ 2 ou < 1 · résultats dans 0-30 jours. **Entre les deux : ni preuve, ni
+  inconnue.** Le titre traverse les quatre dimensions sans laisser de trace et
+  tombe dans le `else` final :
+  ```text
+  fond 52 · rs 50 · R:R 1.4 · earnings J+60   →   statut INTACT · conf 0.0
+                                                  pos 0 · neg 0 · unk 0
+  ```
+  **Zéro preuve positive, zéro preuve négative, zéro inconnue — et le verdict est
+  « thèse INTACTE ».** La contradiction est **dans le même dictionnaire** : le
+  statut affirme, la confiance dit qu'il n'y a rien derrière. `UNKNOWN` est
+  réservé aux données **manquantes**, jamais aux données **non concluantes**,
+  alors que c'est le même aveu d'ignorance.
+  **Ce n'est pas un cas de bord** : les quatre conditions décrivent **le titre
+  médian**. Contrairement aux lots 421 et 423, les entrées sont **ordinaires et
+  atteignables**.
+  **Mais je m'applique la règle du 411 : est-ce affiché ?**
+  ```text
+  recalculator.py:76-78     p['thesis_health'] = assess(...)['overall_status']
+  positions_api.py:54-62    /api/positions/state  → jsonify(state)        ← SERVI
+  portfolio_page.py:478/538 posState → actionListHtml → colonne « Statut »
+  recalculator.py:105       'thesis_invalidated': … == 'INVALIDATED'
+  ```
+  Le champ est **calculé et servi au client**, mais la seule consommation tracée
+  dans les moteurs est un **booléen `INVALIDATED`**, pour lequel `INTACT` et
+  `UNKNOWN` sont équivalents — et **je n'ai pas établi** que la colonne « Statut »
+  rende `thesis_health` plutôt que le statut de cycle de vie. **Défaut réel, sur
+  des entrées ordinaires, servi — affichage non prouvé, et je l'écris ainsi
+  plutôt que de le supposer.**
+  **Rang 2** : ni le 422 (affiché, rang 1) ni les 421/423 (inatteignables, rang 4).
+  Correction pressentie, dans l'esprit du fichier : quand `pos_ev` **et** `neg_ev`
+  sont vides, rendre `UNKNOWN` — le statut existe déjà, et `confidence` vaut déjà
+  0.0. **Aucun GO, rien d'engagé.**
+  **Décision de veine, prise.** Le critère « troisième défaut inatteignable »
+  **n'est pas rempli** — le cas mesuré ici est parfaitement atteignable. Mais la
+  pente est nette : **422 affiché · 423 inatteignable · 424 servi, affichage non
+  prouvé** — la conséquence s'amincit à chaque lot. **Critère durci pour le 425 :
+  si le lot suivant ne produit pas un défaut dont la valeur est PROUVÉE AFFICHÉE,
+  la veine des moteurs sera déclarée épuisée et la famille changera au 426.** Le
+  compteur ne porte plus sur « trouver », mais sur « atteindre l'écran ».
+  **Portée** : une seule fonction (`assess`) ; la colonne « Statut »
+  d'`actionListHtml` n'a pas été suivie jusqu'à sa source — c'est la limite
+  déclarée ; le gardien `test_thesis_health_dimensions_lot365.py` n'a pas été
+  ouvert.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ; SW
+  `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 423 — livré** : **« clôture sous $None (structure) » — le comité sait dire
   « — », sauf sur son invalidation ; et la chaîne referme le dossier.** Septième
   lot dans la veine des moteurs, cible `vertex/engines/committee.py` (verdicts
