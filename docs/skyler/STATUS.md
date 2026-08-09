@@ -2213,6 +2213,59 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 443 — livré** : **trois R:R différents sur la même page, et le seul
+  honnête n'apparaît que pour se plaindre — le test du 442 généralisé aux douze
+  champs du plan.** 25ᵉ lot. **Instrument à deux témoins intégrés** : pour chacun
+  des 12 champs, valeurs distinctes sur 6 marchés × occurrences servies ×
+  moteurs — **il doit retrouver seul les deux trouvailles du 442, et il les
+  retrouve** (`rr` → 1 valeur distincte, `rr_res` → 5 distinctes / 0 servi) ;
+  **0 déstructuration, 0 accès par crochet**. **Sept champs sur douze atteignent
+  un écran, un seul est totalement mort.** **Trois verdicts faux arrêtés avant
+  publication** — mon premier tableau annonçait **six** « jamais servis » :
+  **`resistance`** est lu par `price-chart.js:16` et rendu comme niveau
+  « Résistance » — consommé **dans un builder** (*6ᵉ récidive* de « compter sans
+  les enveloppes ») ; **`setup_quality`** existe à **deux niveaux** du payload
+  (`analysis.py:264` et `:316`), les cinq moteurs lisent le second (leçon 438
+  appliquée aux **niveaux** d'un même objet) ; **`stop_type`** est **fondu dans
+  une phrase composée au serveur** — `committee.py:133` bâtit
+  `invalidation = "clôture sous $X (structure)"`, et `invalidation` est lu par
+  **cinq écrans**, **12 fois** sur la route `/analysis` à paramètre. **Règle
+  nouvelle** : *un champ peut atteindre l'écran à l'intérieur d'une phrase
+  composée au serveur — une recherche par nom de champ ne le verra jamais.*
+  **Seul champ vraiment mort** : `stop_dist_atr`, aucun lecteur nulle part —
+  **rang 4**. **Correction due à mon propre 442** : « `rr_res` n'est affiché nulle
+  part » était **trop fort** — mesuré via `build_ticket()`, il apparaît en
+  **message de blocage** (« R:R 0.4 < 2.0 (minimum stratégie) ») **uniquement
+  sous 2,0** ; à 3,5 ou 4,7 il n'est montré nulle part. **Le R:R honnête
+  n'apparaît que lorsqu'il est mauvais.** **Ce que le balayage a trouvé de
+  neuf** : `pretrade.py:130` **recalcule un troisième R:R** depuis le prix live,
+  et `/api/pretrade/check` est l'une des douze routes de la page :
+
+  ```text
+  cas                carte plan   rr_res   pré-trade au prix d'entrée   à +3 %
+  haussier calme          3.0:1      0.4                        1.0:1    0.2:1
+  baissier                3.0:1      1.1                        1.0:1    0.3:1
+  court (120 barres)      3.0:1      4.7                        1.0:1        —
+  ```
+
+  Le pré-trade rend **1,0:1 au prix d'entrée pour tous les titres** — structurel
+  (`tp1 = entrée + risque`) : **un second constant par construction**. **Et il est
+  étiqueté comme une faute** (« (< 2:1 — Constitution) »). **La même page peut
+  donc afficher, au même instant, « R:R structurel 3 » et « R:R 1.0:1 (< 2:1 —
+  Constitution) »** — l'un dit que le plan est bon, l'autre qu'il viole le
+  minimum de la stratégie ; **aucun des deux n'annonce contre quel objectif il
+  compte**, et **aucun n'est celui que les neuf moteurs utilisent**. **Rang 1, et
+  il AGGRAVE le 442.** Correction pressentie : nommer la référence de chaque R:R
+  et afficher `rr_res`. **Aucun GO. Aucun gardien.** **Portée** : le R:R du
+  pré-trade est **reproduit depuis la formule**, pas obtenu en appelant la route
+  (POST exigeant un `scan_state` peuplé) ; banc **synthétique** ; **l'instrument
+  est aveugle aux phrases composées au serveur** et je **n'ai pas quantifié**
+  combien d'autres champs passent par là ; `atr` et `setup_quality` sont **« non
+  observé », pas « absent »** ; **aucun navigateur**. Compte des résultats faux
+  arrêtés : **dix-huit**. Aucun fichier touché · SW `td-shell-v187` · écart
+  runtime **aucun** · suite **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-443.md`.
+
 - **Lot 442 — livré** : **« R:R structurel 3 » — le seul R:R affiché sur la page
   d'analyse vaut 3 sur tous les marchés, et celui qui varie, lu par huit moteurs,
   n'est affiché nulle part.** 24ᵉ lot. Le 441 avait recensé 5 affirmations sur la
