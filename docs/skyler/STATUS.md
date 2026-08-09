@@ -1720,6 +1720,52 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 403 — livré** : **les tests qui n'affirment rien — deux, et tous deux
+  légitimes.** Point de contrôle **peu coûteux** délibérément choisi après les
+  35 minutes du lot 402 : un balayage AST, quelques secondes. Question : la
+  suite contient-elle des tests qui **ne peuvent pas échouer** ?
+  Trois familles cherchées : **A** test sans aucune assertion (ni `assert`, ni
+  `pytest.raises`, ni appel à une aide locale qui assère) · **B** `assert` sur un
+  littéral toujours vrai (`assert True`, `assert 1`) · **C** `assert (cond,
+  'message')` — **le tuple**. Un tuple non vide est toujours vrai : la
+  parenthèse de trop **annule l'assertion**, et le code se lit comme correct.
+  C'est la plus dangereuse des trois.
+  **Instrument validé avant emploi** : quatre fautes plantées, toutes détectées ;
+  **trois témoins légitimes muets** — un `assert` normal, un test qui délègue à
+  une aide assérante, un test à `pytest.raises`. Le détecteur suit **un niveau
+  d'indirection**, sans quoi tout test délégant sa vérification aurait été
+  faussement accusé.
+  ```text
+  fonctions test_* analysées                    2 563
+     A. sans AUCUNE assertion                       2
+     B. assert sur un littéral toujours vrai        0
+     C. assert sur un TUPLE                         0
+  ```
+  **Zéro `assert True`, zéro assertion annulée par une parenthèse.** Résultat
+  négatif, mais dénominateur mesuré et instrument prouvé.
+  *Note de dénominateur* : 2 563 fonctions pour **2 864** tests collectés —
+  l'écart vient des **55 fonctions paramétrées** (59 décorateurs `parametrize`,
+  33 à liste littérale soit 152 cas, et **26 dont les cas sont calculés**, non
+  énumérables sans exécuter). Je ne prétends pas reconstituer 2 864 par
+  l'analyse statique ; je dis d'où vient l'écart.
+  **Les deux tests sans assertion** — `test_save_failure_is_silent` et
+  `test_save_failure_is_silent_by_contract` — vérifient que `persist.save_json`
+  **ne lève pas** quand l'écriture échoue. L'assertion est implicite et
+  légitime. Mais ils ont un **angle mort** : ils passeraient aussi si
+  `save_json` devenait un **no-op**. Plutôt que de l'affirmer, mesuré —
+  `save_json` remplacé par un `return` nu : les **2 tests passent** (aveugles,
+  confirmé) tandis que **leurs voisins de fichier tombent**
+  (`test_round_trip`, `test_save_load_roundtrip_faithful`). L'angle mort est
+  **réel et couvert dans le même fichier** : les durcir n'ajouterait aucune
+  protection que la suite n'ait déjà. *Un test sans assertion n'est pas
+  nécessairement creux — encore faut-il vérifier qui couvre ce qu'il ne voit
+  pas.* Production restaurée à l'octet.
+  **Portée** : le détecteur voit les assertions écrites dans le fichier, avec un
+  seul niveau d'indirection ; et « 0 littéral toujours vrai » ne dit rien des
+  assertions fausses mais non littérales — `assert x == x` passerait au travers.
+  Suite **2864 passed / 0 skipped**, inchangée. Aucun fichier touché — ni
+  production, ni test ; SW `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 402 — livré** : **les 300 fichiers rejoués seuls — la suite ne dépend
   pas de son ordre.** Le lot 401 avait prouvé qu'**une** dépendance d'ordre
   existait et l'avait corrigée ; il n'avait pas dit s'il y en avait d'autres.
