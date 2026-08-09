@@ -1636,6 +1636,47 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 393 — livré** : **les promesses de retour imbriquées — il ne fallait
+  pas d'analyseur.** Dernier angle mort déclaré du lot 375, qui écrivait :
+  *« vérifier les formes IMBRIQUÉES demanderait un analyseur d'un autre
+  ordre »*. **C'était chercher du mauvais côté** : une promesse de retour se
+  vérifie en **appelant** la fonction — l'exécution tranche ce que l'analyse
+  statique ne sait pas suivre. C'est la vraie trouvaille du lot, et elle porte
+  sur la méthode plutôt que sur le code.
+  **Dénominateur** : 7 fonctions portent une promesse « Retourne {…} », dont
+  **5 couvertes par le 375** (au moins un retour littéral) et **2 déléguées**.
+  Le trou déclaré était réel mais **étroit** — le dire évite de faire passer un
+  lot mince pour une percée.
+  **Verdict, prouvé par exécution** avec les fixtures de la suite et non des
+  entrées fabriquées : `grade_packet` promet `{overall, warnings,
+  actionable_allowed}` et les rend toutes · `select_calls` promet
+  `{per_category, primary, rejected, notes}` et les rend toutes. **Zéro clé
+  manquante.**
+  **Troisième cas, déjà connu, re-mesuré** : `options_for_position` énumère
+  **12 identifiants nus** et son `pack()` interne en rend **13** — `delta` non
+  déclaré : **sous-déclaration, pas promesse fausse**. Identique au 375.
+  Détail de méthode : ma première extraction cherchait des clés **entre
+  quotes** alors que la docstring les écrit **nues** — l'instrument avant le
+  code, encore.
+  Gardien `tests/test_promesses_imbriquees_lot393.py` (6 tests) : dénominateur
+  (si une promesse perdait son retour littéral, elle basculerait dans l'angle
+  mort du 375 sans signal) · les deux déléguées **par exécution** · la
+  troisième **statiquement** · anti-péremption de la sous-déclaration. ROUGE
+  ×3, et **le témoin vaut plus que les trois** : déclarer `delta` — la
+  correction que quelqu'un fera un jour — **ne casse pas le gardien**. *Un
+  gardien qui punit la correction est pire qu'aucun gardien.*
+  **Portée** : lot mince, assumé. Il ne prouve rien sur les promesses formulées
+  autrement, et la vérification par exécution ne couvre **qu'un chemin par
+  fonction**.
+  **Les pistes fines sont épuisées** : refus API littéraux (377) et en variable
+  (392), écritures runtime par la suite (389), promesses de retour littérales
+  (375) et imbriquées (393) — toutes closes. Ne restent que la concaténation à
+  constantes (374, sans enjeu d'honnêteté) et le commentaire périmé de
+  `vx-entities.js` (différé : un octet servi pour un gain nul). **Aucune ne
+  mérite un lot** ; la matière utile est dans les dossiers du rang 1, en
+  attente de décision.
+  Suite 2856 → **2862** / 2 skipped. SW v187.
+
 - **Lot 392 — livré** : **les refus construits en variable — l'angle mort
   déclaré du lot 377, mesuré, et PROPRE.** Le détecteur du 377 déballe
   `jsonify(...)` puis exige un dict **littéral** : une réponse assemblée dans
