@@ -151,8 +151,19 @@ def test_no_order_execution_path_in_new_modules():
         assert not m, '%s : chemin d\'ordre interdit détecté (%s)' % (rel, m and m.group(1))
 
 
-def test_options_gex_route_real_numbers(client):
-    """L'endpoint GEX assemble profil + flux + thèse depuis un board réel semé."""
+def test_options_gex_route_real_numbers(client, tmp_path, monkeypatch):
+    """L'endpoint GEX assemble profil + flux + thèse depuis un board réel semé.
+
+    ⚠ La route journalise le profil dans `gex_history_cache.json` : sans
+    redirection, ce test écrivait un point FABRIQUÉ par jour dans l'historique
+    GEX réel, que `/api/options/gex-radar` sert ensuite comme une mesure
+    (invariant n°4). Mesuré au lot 388 : 8 points MSFT strictement identiques
+    accumulés, un par exécution de la suite. Le stockage est redirigé vers un
+    dossier temporaire — le mécanisme `_BASE_DIR`, déjà employé par
+    `test_desk_routes.py`.
+    """
+    from vertex.services import persist
+    monkeypatch.setattr(persist, '_BASE_DIR', str(tmp_path))
     from vertex.app.state import scan_state
     scan_state['options_board'] = [
         {'sym': 'MSFT', 'type': 'CALL', 'strike': 460, 'gamma': 0.05, 'oi': 5000,
