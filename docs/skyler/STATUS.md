@@ -1636,6 +1636,32 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 396 — livré** : **les octets servis n'ont pas bougé.** Deuxième lot
+  court consécutif — aucun code, aucun gardien, aucun test — et c'est encore
+  le bon résultat.
+  **Point de contrôle différent de celui du 395**, conformément à la règle
+  *un constat se vérifie, il ne se répète pas* : la preuve la plus forte de la
+  boucle, non refaite depuis le **lot 390** — le MD5 des 8 pages servies.
+  **8/8 IDENTIQUES.** Six lots plus tard, dont deux ayant modifié des fichiers
+  de test et un ayant corrigé une docstring, **pas un octet servi n'a bougé**.
+  La discipline « aucun fichier de production touché depuis le lot 372 » est
+  désormais vérifiée par la mesure, pas seulement affirmée.
+  **La sonde a reproduit le dossier de rang 1 du 391 à l'identique** : lancer
+  le serveur DEMO pour ce contrôle a ajouté un **17ᵉ point** à
+  `breadth_history.json` — `2026-08-09`, `a50 50 · a200 45 · net −4 ·
+  health 37`, mêmes valeurs que les seize précédentes. **Le dossier n'est pas
+  théorique : il se reproduit à chaque démarrage en mode démo**, y compris
+  celui de l'agent. Restauré à l'octet (retour à 16 points).
+  Trois fichiers runtime touchés cette fois contre huit au lot 390 — l'écart
+  tient à la durée du scan, pas à un changement de comportement ; je ne
+  l'interprète pas plus loin.
+  **Portée** : le MD5 prouve que le HTML servi est identique, il ne dit rien
+  des fichiers `/static` (couverts par l'empreinte du gardien SW, rejouée au
+  394), et il vaut pour l'état du dépôt, pas pour ce qu'un utilisateur a en
+  cache.
+  Serveur arrêté (port 5002 fermé), écart runtime final aucun, arbre propre.
+  Suite **2862 / 2 skipped, inchangée**. SW v187.
+
 - **Lot 395 — livré** : **rien à faire, vérifié.** Aucun code, aucun gardien,
   aucun test ajouté — **c'est le résultat, pas un défaut d'exécution**.
   Le 393 a constaté l'épuisement des pistes fines, le 394 l'a confirmé en
