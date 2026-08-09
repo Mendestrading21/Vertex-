@@ -1636,6 +1636,37 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 397 — livré** : **le registre confronté à lui-même.** Troisième lot
+  court — aucun code, aucun gardien, aucun test ; une seule ligne corrigée dans
+  un rapport.
+  **Point de contrôle jamais fait en 25 lots** : la mémoire de la boucle
+  elle-même. Rien ne vérifie le registre, et c'est pourtant lui qu'on relit
+  pour décider — une omission y serait **invisible autrement**.
+  **Présence : 25 sur 25.** Chaque lot 372→396 a son rapport, sa ligne d'index
+  et son bloc STATUS. Mon premier détecteur en signalait **deux manquants** —
+  **faux** : les lots 380 et 390 sont des **bilans**, dont le bloc prend la
+  forme `## BILAN — veille active, lots N → M` et non `**Lot N — livré**`. Le
+  détecteur ne connaissait qu'une forme. *Encore l'instrument avant le
+  document.*
+  **Exactitude : un écart réel.** La présence ne dit rien de la justesse. La
+  chaîne des 25 comptes de suite est **strictement monotone et exacte** — 2645
+  au lot 372, 2862 aujourd'hui — sans une seule erreur de transcription en
+  25 lots de tenue de registre ; c'est la première fois que c'est vérifié
+  plutôt que supposé. Mais **le lot 394 : l'index affirme `v187` alors que le
+  rapport ne l'écrit nulle part**, quand les 24 autres l'enregistrent dans
+  leurs « Vérifications du cycle ». L'assertion du registre n'était **adossée à
+  rien** — vraie par ailleurs, puisque le lot n'a touché aucun octet servi,
+  mais invérifiable depuis sa source. **Cette fois ce n'était pas le
+  détecteur** : la ligne manquait réellement. Corrigée → **0 écart sur 25**.
+  L'écart trouvé est du genre le plus discret qui soit : *un chiffre affirmé
+  dans le registre sans source dans le rapport*. Ni la suite, ni les gardiens,
+  ni une relecture ne l'auraient révélé, puisque la valeur était juste.
+  **Portée** : deux des quatre colonnes confrontées (suite, SW) ; la version du
+  cœur est constante et le verdict est déclaratif. Et le contrôle porte sur la
+  **concordance interne** du registre, pas sur sa fidélité aux faits.
+  Aucun fichier de production touché, écart runtime aucun. Suite **2862 /
+  2 skipped, inchangée**. SW v187.
+
 - **Lot 396 — livré** : **les octets servis n'ont pas bougé.** Deuxième lot
   court consécutif — aucun code, aucun gardien, aucun test — et c'est encore
   le bon résultat.

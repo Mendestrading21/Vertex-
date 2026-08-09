@@ -88,6 +88,9 @@ service worker.
   (leçon du 392) : écart final **aucun**.
 - Suite : **2862 passed / 2 skipped**, **inchangée** — aucun test ajouté, et
   c'est délibéré.
+- SW : `td-shell-v187` *(ligne ajoutée au lot 397 : ce rapport était le seul des
+  25 de la tranche à ne pas enregistrer la version du service worker, alors que
+  l'index l'affirmait — l'assertion du registre n'était adossée à rien)*.
 
 ## Portée
 
