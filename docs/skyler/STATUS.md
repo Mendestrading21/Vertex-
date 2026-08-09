@@ -1940,6 +1940,53 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 429 — livré** : **trois vocabulaires de décision coexistent
+  légitimement — 13 porteurs sur 14 prennent le bon, un seul se trompe.**
+  Treizième lot de la veine, **bornage du 428**, dernier lot de mesure de la
+  tranche. **Instrument** : sur le corpus **servi** (95 objets, 3 829 722 o),
+  toute comparaison d'un porteur à un **jeton de vocabulaire** (littéral
+  MAJUSCULE). Le premier passage ne connaissait qu'une forme
+  (`.champ === 'JETON'`) et **manquait `u !== 'ÉVITER'`, la moitié même du défaut
+  du 428** — un second passage a été ajouté pour les **identifiants nus**
+  (leçon 414). **27 + 17 = 44 couples · 18 porteurs.** Témoin positif : les deux
+  moitiés du défaut du 428 apparaissent bien. **Découverte structurelle** : le
+  dépôt n'a pas un vocabulaire de décision, il en a **trois**, tous légitimes —
+
+  ```text
+  lignes du scan     BUY · WATCH · WAIT · AVOID                strategy/config.py:51
+  comité             ACHETER · RENFORCER · ATTENDRE · ÉVITER   engines/committee.py
+  Skyler canonique   ACHETER · ATTENDRE · REFUSER              engines/skyler_core.py
+  ```
+
+  **Le défaut du 428 se re-décrit plus précisément** : ce n'est pas « du français
+  contre de l'anglais », c'est **le vocabulaire du COMITÉ appliqué aux lignes du
+  SCAN**. **Confrontation porteur par porteur**, chacun remonté à son producteur :
+  `name` VIX/WTI, `verdict`/`v` (accepte les deux), `x = r.decision`
+  (`skyler_core`, 2 jetons morts), `type`/`typ`/`kind`, `result` WIN/LOSS
+  (`<option value>` servi), `status` ANOMALIES / MESURE / MISSING-OK, `state`
+  ACTIVE/DISABLED, `label` HOSTILE/PORTEUR, `level` ACTIONABLE, `regime`
+  UNKNOWN, `spy_regime` TREND → **14 confrontés · 13 exacts · 1 défectueux**
+  (celui du 428). **Deux résultats fins** : **(a) une alerte LEVÉE par la
+  chaîne** — `regime_engine` n'émet jamais `'TREND'` tout court, mais
+  `spy_regime` a un **autre producteur** (`market/context.py:46` →
+  TREND/CHOP/NEUTRAL) : deux champs, deux vocabulaires, chaque consommateur prend
+  le bon ; **(b) un producteur plus riche que son consommateur, correctement
+  traité** — `tradingview_signal_store` émet trois états, `system_page.py:538-540`
+  les traite **tous les trois** par table avec repli : **le contre-exemple exact
+  du 428**. **Ce qui échappe encore, quantifié** : jetons **minuscules**
+  (44 couples · 27 porteurs) et lecture par **table `{…}[champ]`** (15 porteurs),
+  **non confrontés** — le « 13 sur 14 » vaut pour les vocabulaires MAJUSCULES
+  comparés explicitement, pas pour tout le dépôt. **Verdict : négatif, et c'est le
+  bon résultat** — le défaut du 428 est une **exception**, pas un symptôme ; le
+  bornage **renforce** le 428 : un seul site se trompe, et c'est celui qui
+  affiche au trader comment interpréter son propre résultat. **Portée** : aucune
+  exécution, aucune valeur calculée ni observée sur données réelles ;
+  producteurs identifiés par lecture des énumérations, moteurs non exécutés.
+  Runtime : 3 fichiers ré-horodatés **restaurés à l'octet près et revérifiés**,
+  écart aucun. Aucun fichier touché, aucun bump, SW `td-shell-v187`. Suite
+  **2864 passed / 0 skipped**.
+  Rapport : `docs/refactor/validation/SKYLER-LOT-429.md`.
+
 - **Lot 428 — livré** : **l'entonnoir du scan est plat par construction — il
   cherche des verdicts en français dans un moteur qui répond en anglais.**
   Douzième lot de la veine, quatrième mené depuis l'écran. **Affirmation
