@@ -1636,6 +1636,54 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 392 — livré** : **les refus construits en variable — l'angle mort
+  déclaré du lot 377, mesuré, et PROPRE.** Le détecteur du 377 déballe
+  `jsonify(...)` puis exige un dict **littéral** : une réponse assemblée dans
+  une variable lui échappe. Il le disait ; ce lot le mesure.
+  **Dénominateur resserré par la mesure.** 417 retours littéraux couverts par
+  le 377 · **393 par variable** dans l'angle mort — mais **359 sont des aides
+  internes** : seuls **34 sont dans une route**, **31 servis**, soit **30
+  routes**. *Un dénominateur non trié aurait fait croire à un trou deux fois
+  plus grand qu'il n'est.*
+  **Verdict prouvé à l'exécution.** Les 30 routes sollicitées avec des entrées
+  que le serveur doit refuser — symbole inexistant, corps vide, identifiant
+  inconnu — et c'est la **réponse réellement servie** qui est lue, pas le
+  code : **12 refus, 12 motivés, 0 MUET**. Les motifs prennent plusieurs
+  formes honnêtes (`reason`, `error`, `available: false`, `empty` +
+  `generator`, `audit_trail`). Trois réponses sans clé de motif ne sont **pas**
+  des refus et n'inventent rien : `/desc` rend des chaînes vides et
+  `employees: null`, `/api/positions/state` des zéros avec la note « jamais
+  estimés en agrégat », `/api/desk` un `{}`. Une absence rendue comme une
+  absence.
+  **Deux fois l'instrument en cause.** (a) Ma sonde accusait
+  `run_startup_sequence` d'être un refus muet — son motif vit **entièrement
+  dans `steps`**, chaque étape portant son statut et son message ; ma liste de
+  clés ne contenait pas `steps`. Neuvième fois de la tranche. (b) **Trois
+  mutations fautives** sur la preuve ROUGE : `greeks_note` vit dans
+  `recalculator.py` et non `positions_api`, `reason` ne vient pas
+  d'`analysis_api`, et pour `/desc` j'avais muté une branche **non atteinte**
+  — sans réseau, `yf.Ticker` échoue et le chemin servi est l'initialisation du
+  dict.
+  **Et la mutation corrigée a sali un cache.** Elle a écrit une description
+  inventée dans `desc_cache.json`, que le code restauré relisait ensuite : la
+  suite restait rouge après restauration. *Restaurer le code ne suffit pas
+  quand la mutation a écrit sur disque — il faut vérifier l'état runtime, pas
+  seulement l'arbre git.* Fichier supprimé (il n'existait pas avant), écart
+  final aucun.
+  **Un 22ᵉ fichier runtime découvert par cet incident** : `desc_cache.json`
+  n'apparaît qu'après une récupération réussie et manquait aux 21 inventoriés
+  depuis le 388. Le gardien livré ne l'écrit pas (avec le code sain, `summary`
+  reste vide). Versé aux dossiers.
+  Gardien `tests/test_refus_variable_lot392.py` (14 tests) : dénominateur ·
+  anti-double-emploi avec le 377 · **LA propriété vérifiée à l'exécution sur la
+  réponse servie**, avec une liste large de clés de motif pour ne pas accuser
+  un simple renommage (leçon du 383) · rien n'est inventé. ROUGE ×4.
+  **Portée** : les 10 routes testées sont celles **prouvées refuser
+  aujourd'hui** ; les 20 autres ne sont couvertes que par le dénominateur. Et
+  « 0 muet » vaut pour les entrées invalides choisies — un refus déclenché par
+  une panne réseau ou l'absence d'IBKR n'a pas été sollicité.
+  Suite 2842 → **2856** / 2 skipped. SW v187.
+
 - **Lot 391 — livré** : **un scan de démo écrit dans l'historique breadth
   réel, et servi.** Piste ouverte par une observation non engagée du lot 390.
   **Les données parlaient avant toute manipulation** : `breadth_history.json`
