@@ -4,6 +4,83 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — veille active, lots 380 → 389 (2026-08-09, bilan n°8)
+
+Dix lots. **Vérification refaite, pas rappelée** : **MD5 8/8 identiques** aux
+références sur les 8 pages servies · navigateur réel, 8 pages hydratées,
+**0 erreur console** · **les 7 gardiens de la tranche rejoués avec une faute
+réelle : 7 sur 7 mordent encore**, témoin négatif muet.
+
+### Les chiffres
+
+Suite **2 754 → 2 835** (+81, soit exactement les 81 tests des 7 gardiens
+ajoutés) · PR **#412 → #421** toutes fusionnées en squash · SW `td-shell-v187`
+**inchangé sur les dix lots** · `main` jamais touchée · **zéro fichier de
+production modifié**.
+
+### Cinq trouvailles réelles
+
+1. **381** — le repli de `deskKeys()` **servi** par `/system` n'était couvert par
+   aucun test : y retirer une clé passait les 2 754 tests. Constat joint :
+   `vx_kit.JS` (21 727 o) n'atteint aucune des 8 pages.
+2. **382** — « aucun littéral couleur » était **faux** : 265 littéraux distincts
+   dans `vertex/ui/**`, **53 atteignent une page servie**. La règle réellement
+   tenue (aucun bleu non-marque) est la bonne ; la doc mentait.
+3. **385** — le recensement des replis numériques s'arrêtait à `vertex/` :
+   **31 % des handlers de production hors filet**, dont les 101 de `terminal.py`.
+4. **387** — **un test pouvait effacer les notes du trader.** `myNotes` est une
+   clé synchronisée ; le round-trip desk l'écrasait et restaurait **sans
+   `finally`**. Une assertion en échec laissait `{"guard": "lot84-guard-…"}`
+   **définitivement**.
+5. **388** — **un point GEX fabriqué par jour sur MSFT**, un vrai titre, dans
+   `gex_history_cache.json` que `/api/options/gex-radar` **sert**.
+
+Les deux dernières sont d'une autre gravité : elles touchent les **données
+réelles de l'utilisateur**, pas la documentation ni la couverture.
+
+### Deux veines fermées par la mesure
+
+**Audit des gardiens par mutation** (381-384) : 27 mutations, 2 trouvailles,
+toutes deux dans les 2 premiers lots — fermée sur le rendement, pas la fatigue.
+**Écritures runtime** (386-389) : 2 trouvailles ; 5 fichiers touchés au départ,
+**4 à l'arrivée, tous sur un simple horodatage** (vérifié feuille à feuille).
+
+### Le fil rouge — huit fois, la faute était dans MES instruments
+
+Périmètre `vertex/` seulement (385) · chaîne présente 4× (386) · périmètre
+4 → 15 → 17 fichiers **et un gardien accusant 2 fichiers sains** (387) ·
+mutation portant sur le **message** de l'assertion (387) · exemption au fichier
+(387) · détecteur rendant « ? », **8 sites comptés pour 12 réels** (388) ·
+8 candidats pour **2 écrivains réels**, et **l'anti-vide creux REFAIT** (389) ·
+mutation injectée dans une clé de nav jamais rendue (390).
+
+**Avoir la règle écrite ne suffit pas à ne pas la re-violer** — le 389 a refait
+mot pour mot la faute du 386. Ce qui l'attrape n'est pas la mémoire, **c'est la
+preuve ROUGE**. Et le témoin a une valeur symétrique : au 389 il a mordu, et
+c'était lui qui avait tort.
+
+### Ce que la tranche n'a PAS prouvé
+
+Les 81 tests sont **statiques** (ils lisent le code, n'observent pas
+l'exécution) · les caractérisations sont **datées** · aucune couverture
+exhaustive n'est démontrée · la **pollution historique n'est pas nettoyée**
+(7 points MSFT, points SKYX/TSTQ) — donnée utilisateur, décision à prendre.
+
+### Le vrai goulot — 18 dossiers, classés
+
+**Rang 1, l'utilisateur voit du faux** : purge des points MSFT (388) ·
+`context()` sur univers vide (379) + « points réels du scan » (363) · replis `0`
+de `_followed_count`/`_positions_count` (378) · badge de provenance IBKR (386).
+**Rang 2, risque de données** : filet desk option A (362).
+**Rang 3, poids mort chiffré** : 604 Ko de `PAGE_*` (374, à trancher **avec** le
+badge — elles contiennent son seul rendu) · `vx_kit.JS` (381) · purges É2/É3 et
+fonctions de tête.
+**Rang 4** : cosmétique, plus `vocab_js` (373) **déconseillé en l'état**.
+
+**Si un seul GO : la purge des points MSFT** — coût quasi nul, risque nul, et
+c'est la seule ligne où un chiffre inventé est aujourd'hui servi comme une
+mesure.
+
 ## BILAN — veille active, lots 370 → 379 (2026-08-08, bilan n°7)
 
 Dix lots de veille autonome sur la veine **sécurité & honnêteté des données**.
