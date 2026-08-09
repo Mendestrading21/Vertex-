@@ -2364,6 +2364,46 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 451 — livré** : **les quatre phrases `source` ne sont jamais produites —
+  `build_surface` n'a aucun appelant, et la liste blanche d'outils de l'IA non
+  plus.** 32ᵉ lot, premier de la tranche. **D'abord une erreur de plan, que je
+  publie** : l'orientation supposait que `source` était une **étiquette de
+  provenance** ; dans `vol_surface.py` c'est un **localisateur d'anomalie**
+  (`f'{symbol} {exp} {k}'`). Le « 4 écrans » du 444 concerne un **autre**
+  `source`. **Cinquième récidive du piège « un nom, plusieurs payloads »** — et
+  **la première fois qu'il égare le PLAN, avant toute mesure**. **Le péage du 446
+  a mordu à l'étape 1.** **Ces phrases n'atteignent aucun écran parce qu'elles ne
+  sont JAMAIS PRODUITES** :
+
+  ```text
+  vol_surface.build_surface()          0 appelant hors module
+  vol_surface.relative_value_zones()   0 appelant
+  vertex/ai/tool_registry.py           0 appelant dans vertex/
+  ```
+
+  Les quatre `Anomaly(...)` sont toutes construites **dans** `build_surface()`.
+  Les seules mentions hors module sont **une chaîne** dans une liste blanche et
+  **le mot dans une phrase française**. **269 lignes** (210 + 59) qu'aucun chemin
+  servi n'atteint. **Ce que cela ne veut PAS dire** : `FORBIDDEN_TOOLS` contient
+  `place_order` — mais **l'invariant READONLY n'en dépend pas** : hors ce module,
+  la recherche rend **une seule ligne**, `order_ticket.py:175`
+  `'transmitted': False`. **Il n'existe aucun chemin d'ordre à garder.** **Les
+  gardiens sont là, sur du code non appelé** — `test_ai_runtime.py`,
+  `test_production_guards_canonical.py`, `test_vol_surface_lot108.py` : motif
+  exact du **436**, un périmètre qui s'étend **au-delà du produit**. **Rang 4**
+  pour les phrases jamais produites, **rang 3** pour les 269 lignes de poids mort
+  figées par les tests. **Ce n'est pas un défaut de sécurité — mesuré, et répété
+  pour que le classement ne soit pas sur-lu.** Correction = **décision de
+  produit**. **Aucun GO.** **Portée** : appelants mesurés dans `vertex/` et
+  `terminal.py` ; un dispatch **dynamique** échapperait (**non quantifié**, mais
+  `register()` est lui-même sans appelant) ; **`realized_vol()` et `_median()` du
+  même fichier ont 2 et 8 appelants** — le fichier n'est **pas entièrement mort**,
+  et c'est le **témoin positif** de la mesure ; **aucun navigateur** ; **89 des
+  110 phrases du 444 restent fermées**. Comptes inchangés : faux **arrêtés 20**,
+  **publiés puis corrigés 3**. Aucun fichier touché · SW `td-shell-v187` · écart
+  runtime **aucun** · suite **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-451.md`.
+
 - **Lot 450 — livré** : **BILAN n°14 (tranche 440 → 449)** — voir le bilan en
   tête de ce document. Fait **sur pièces**, aucune trouvaille rejouée ; **une
   seule mesure fraîche**, les MD5 (**8/8 identiques**). **Base résolue
