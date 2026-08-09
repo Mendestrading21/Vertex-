@@ -1559,6 +1559,55 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 387 — livré** : **un test pouvait effacer les notes du trader.**
+  Le 16ᵉ dossier ouvert au lot 386 est traité — et son verdict prudent
+  (« la suite réécrit `desk_data.json` mais sans perte ») était incomplet.
+  **Le dénominateur a été trois fois trop étroit avant d'être juste** :
+  `grep desk/push` → 4 fichiers, `grep desk_data` → 15, et c'est **mon
+  propre gardien** qui en a trouvé **17** (les deux manquants postent sur
+  `/api/desk` sans jamais nommer `desk_data`). Mesure empirique, chaque
+  fichier rejoué depuis un état de référence restauré à l'octet :
+  **16 sur 17 n'écrivent pas** dans le vrai desk — 12 redirigent
+  (`persist.cache_path` **ou** `persist._BASE_DIR`), 1 pousse 3 Mo rejetés
+  en 413 avant la route, 3 ne font que lire — et **un seul écrit**.
+  **La faute.** `test_desk_roundtrip_is_faithful` lit le desk réel,
+  **écrase `myNotes`** par un marqueur, pousse, vérifie, puis restaure.
+  `myNotes` n'est pas une clé de test : c'est une **clé synchronisée**,
+  `{"NVDA": "note"}`, les **notes par titre du trader**, présente dans les
+  trois listes de sync avec ses accesseurs. La restauration n'était **pas**
+  protégée. Prouvé par mutation, l'assertion de fidélité inversée :
+  `note rendue = False`, contenu laissé `{"guard": "lot84-guard-…"}` —
+  **définitivement**, et le filet ne rattraperait rien puisque le lot 362 a
+  établi que le snapshot quotidien est pris avant la première écriture,
+  créneau que la suite consomme.
+  **Pourquoi le lot 386 n'avait rien vu** : l'utilisateur n'a **aujourd'hui
+  aucune note** (6 clés, `myNotes` absente). Le chemin de perte existait
+  sans matière à perdre. *Un « aucune perte constatée » ne vaut que si l'on
+  vérifie qu'il y avait quelque chose à perdre* — le pendant exact de la
+  règle du dénominateur.
+  **Correction** : un `try/finally` dans `tests/test_desk_cycle_lot84.py`
+  — **fichier de test, aucune production touchée**.
+  Gardien `tests/test_desk_ecritures_lot387.py` (9 tests) : dénominateur ·
+  aucune écriture du vrai desk sans redirection · anti-péremption ·
+  **`finally` verrouillé par AST** et remise en état devant repousser `d0` ·
+  exemption **vérifiable et bornée au nombre de sites** · `myNotes` doit
+  rester une clé servie. Preuve ROUGE ×4 + témoin muet.
+  **Trois fois l'outil était en cause.** (a) Ma première mutation ne mordait
+  pas : `assert cond, ('msg' and False)` — le `and False` portait sur le
+  **message**, pas la condition. (b) Mon premier gardien **accusait deux
+  fichiers sains** — `test_desk_routes.py` redirige par `_BASE_DIR`, un
+  second mécanisme valide que mon détecteur ignorait, et
+  `test_production.py` est rejeté en 413 avant la route ; *un gardien qui
+  accuse du code sain finit désactivé*. (c) Mon exemption portait sur le
+  **fichier** : la preuve ROUGE a montré qu'un écrivain ajouté après coup y
+  passait — resserrée au **nombre de sites**, gelé à la mesure.
+  **Portée** : le risque était conditionnel (assertion en échec **et**
+  utilisateur ayant des notes) ; aucune perte réelle n'a eu lieu. Ce lot
+  supprime le **chemin**, pas un dégât constaté. Le gardien est **statique**
+  — il lit le code des tests, il n'observe pas leurs écritures.
+  Desk vérifié après la suite : `data` **identique à la référence**, seul
+  `ts` diffère. Suite 2817 → **2826** / 2 skipped. SW v187.
+
 - **Lot 386 — livré** : **les 38 `except: pass` de `terminal.py`, lus un
   par un** — le lot 379 l'avait fait pour les 46 de `vertex/`, le 385 avait
   montré que le recensement s'arrêtait à cette frontière. Classement par ce
