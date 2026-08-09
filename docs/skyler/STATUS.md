@@ -1720,6 +1720,53 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 408 — livré** : **le `|| 0` du lot 407 est isolé, pas une famille.**
+  Question laissée ouverte par le 407 : cas isolé ou premier d'une famille ? La
+  réponse change la **taille du dossier de rang 1**, donc la décision.
+  **Recensement brut** — périmètre servi (`vertex/**` `.py`+`.js` et
+  `terminal.py`, les six modules reliques exclus) :
+  ```text
+  lignes portant `|| 0` / `?? 0` / `or 0`      440   (dans 70 fichiers)
+  occurrences (plusieurs par ligne possible)   606
+     dont terminal.py                          206
+  ```
+  Instrument validé : le site du 407 est retrouvé, un fichier sans motif ne rend
+  rien. **Ce chiffre ne prouve rien et n'est pas présenté comme un problème** :
+  `(r.get('change') or 0)` dans une somme est un choix de modélisation. Un
+  `|| 0` n'est un défaut que si l'opérande peut être **absent** *et* que le zéro
+  est ensuite **présenté comme une mesure**.
+  **Le filtre décisif — les charges utiles envoyées aux moteurs.** C'est
+  exactement la forme du 407 : un `null` transformé en `0`, transmis à une API et
+  **déclaré réel**.
+  ```text
+  appels POST sur chemin servi                          25
+     dont un `|| 0` / `?? 0` dans la charge utile        1
+  ```
+  **Un seul — celui du 407.** Aucune autre page n'envoie une absence maquillée en
+  zéro à un moteur. **Le défaut est isolé** : le dossier reste un site, une page,
+  une décision.
+  **Le filtre de forme, et ce qu'il vaut vraiment.** Un `|| 0` sur un **appel**
+  dont le résultat est, ailleurs dans le même fichier, comparé à `null` : 128
+  appels, **53 candidats**. **Ce ne sont pas des trouvailles, c'est un vivier
+  d'hypothèses** — montré plutôt qu'affirmé en ouvrant le candidat le plus
+  sensible, celui qui toucherait le P&L d'une position IBKR :
+  `positions/repository.py:63` — `'cost': (raw.get('avgCost') or 0) * (qty or 0)
+  if raw.get('avgCost') is not None and qty else None`. **Il est sain** : le
+  `or 0` est gardé, `cost` vaut `None` quand `avgCost` manque. Faux positif de
+  forme, résolu en le lisant. *Un vivier trié par la forme ne devient une liste
+  de défauts qu'après lecture, un par un ; publier les 53 comme des trouvailles
+  aurait été malhonnête.*
+  **Conséquence pratique pour la décision** : corriger 406/407 ne demande **pas
+  une campagne** — un seul site à changer, une seule cause (`myCapital` jamais
+  écrit).
+  **Portée** : le filtre décisif ne voit que les payloads construits à moins de
+  12 lignes d'un `method:'POST'` ; une charge utile assemblée plus loin
+  échapperait au comptage. Le recensement large est purement textuel : il ne
+  distingue pas un opérande qui peut manquer d'un compteur qui vaut réellement
+  zéro. C'est dit, pas contourné.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ; SW
+  `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 407 — livré** : **le `|| 0` qui fabrique une alerte de concentration.**
   Le lot 406 avait trouvé deux clés lues mais jamais écrites, et suivi **une**
   conséquence (la courbe d'équité qui ne s'affiche jamais). Ce lot suit **la
