@@ -2720,6 +2720,51 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 485 — livré** : **la dette du 484 soldée PAR EXÉCUTION — le rang 1 est
+  confirmé (0 niveau S ou S+ sur 3 072 combinaisons) et mon propre chiffre publié
+  la veille est FAUX : le plafond n'est pas 35/40, il est 29/40.**
+- **Sûreté d'abord** : `skyler_core` ne contient **aucune écriture** (vérifié) ;
+  les écrivains cités au 484 sont appelés par `analysis_api.py`, pas par le
+  moteur. `persist` redirigé **et vérifié** malgré tout.
+- **Calibration écrite dans le banc** : paquet vide → 0 / `REFUS_WATCH` ; score
+  technique 100→0 → **−6 exactement**, le poids du bloc. Sortie si échec.
+- **Paquet parfait** : `0/5 · 2/5 · 6/6 · 1/4 · 4/4 · 6/6 · 6/6 · 4/4` →
+  **TOTAL 29/40, level A**. **648 combinaisons : la borne ne bouge pas.**
+- **CONFIRMÉ** : sur **3 072 combinaisons**, `REFUS_WATCH 2952 · B 112 · A 8 ·
+  S 0 · S_PLUS 0`. **Jamais un niveau S ou S+.** Le rang 1 passe de « par
+  lecture » à **« par exécution »**. Et **pire que prévu** : A n'apparaît que
+  **8 fois sur 3 072 (0,26 %)** — **A tient sur deux points de marge**.
+- **RÉFUTÉ** : **11 points inatteignables, pas 5** ; **trois blocs bridés, pas
+  un** — `fundamentals_quality` 0/5, `catalysts` 2/5, `institutions_flow…` 1/4.
+  Les deux manqués **ne sont pas figés à zéro**, et c'est pourquoi l'AST du 484
+  les a laissés passer : il testait « ce bloc marque-t-il **quelque chose** ? »,
+  pas « atteint-il **son propre maximum** ? ».
+- **Fait de méthode — j'avais posé la bonne question la veille, à un autre
+  objet** : dans le MÊME lot 484, sur le barème LEAPS, j'ai vérifié que chaque
+  dimension atteint son maximum — puis j'ai découvert le barème du score /40 et
+  **je ne lui ai pas appliqué le test que je venais d'appliquer**. **Un test
+  appliqué à un objet de l'enquête doit l'être à tous les objets de même genre,
+  y compris à celui qu'on vient de trouver.** **Publiés puis corrigés 8 → 9.**
+- **Second contrôle, trois cas exclus par le banc** : (a) V1 **n'a aucun
+  `skyler_score.blocks`** — sous V1 le score entier serait 0/40 ; V2 est le
+  profil actif, **conclusion bornée à V2 et je le dis** ; (b) `decide()` vérifié
+  ligne à ligne — il ne fait que **lire** `total` et `level`, aucune réécriture ;
+  (c) **les deux blocs bridés déclarent leur propre plafond** dans leur `basis`
+  (« plafonné 2/5 », « plafonné 1/4 »), rendu en `title` — **au survol, pas
+  affiché** ; la puce visible montre « Catalyseurs 2/5 », **qui invite à croire
+  que 3 points restent à gagner**.
+- **Rangs** : **484-A rang 1 CONFIRMÉ** par exécution ; **484-B reste rang 2**
+  avec ses chiffres corrigés — le défaut est plus grave, mais l'atténuation est
+  plus forte aussi, et **une aggravation est aussi fragile qu'une atténuation**.
+- **Observation non classée** : `red_team.required` est **toujours `False`**
+  (`level` est déjà rabattu à l'intérieur de `score40`) — drapeau mort, et
+  `red_team` n'atteint aucune surface servie.
+- **Portée** : paquet **fabriqué à la main**, `build_packet()` non exercé — le
+  banc établit ce que `score40` **peut** rendre, pas la distribution en usage ;
+  neuf axes discrétisés ; **aucun navigateur**.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  runtime 21 fichiers restaurés, écart **aucun** · suite **2864 passed / 0 skipped**.
+
 - **Lot 484 — livré** : **retour au produit, et il paie au premier lot — la carte
   de décision de `/analysis` affiche un score « /40 » dont 5 points sont
   STRUCTURELLEMENT inatteignables, et les deux plus hauts niveaux de conviction
