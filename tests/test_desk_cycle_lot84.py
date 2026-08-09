@@ -24,18 +24,26 @@ def client():
 
 
 def test_desk_roundtrip_is_faithful(client):
+    """⚠ Ce test écrit dans le VRAI desk de l'utilisateur (`myNotes` est une clé
+    synchronisée : les notes par titre). La remise en état est OBLIGATOIREMENT
+    dans un `finally` — lot 387 : sans lui, une assertion en échec laissait les
+    notes du trader remplacées par le marqueur du test, définitivement. Prouvé
+    par mutation ; le gardien `test_desk_ecritures_lot387` verrouille ce
+    `finally`."""
     d0 = client.get('/api/desk').get_json()
     data = dict(d0.get('data') or {})
     marker = f'lot84-guard-{int(time.time())}'
     data['myNotes'] = json.dumps({'guard': marker})
-    r = client.post('/api/desk', json={'ts': int(time.time() * 1000), 'data': data})
-    assert r.status_code == 200
-    d1 = client.get('/api/desk').get_json()
-    assert (d1.get('data') or {}).get('myNotes') == data['myNotes'], (
-        'le blob desk doit être restitué au bit près (données personnelles)')
-    # remise en état honnête
-    client.post('/api/desk', json={'ts': int(time.time() * 1000) + 1,
-                                   'data': d0.get('data') or {}})
+    try:
+        r = client.post('/api/desk', json={'ts': int(time.time() * 1000), 'data': data})
+        assert r.status_code == 200
+        d1 = client.get('/api/desk').get_json()
+        assert (d1.get('data') or {}).get('myNotes') == data['myNotes'], (
+            'le blob desk doit être restitué au bit près (données personnelles)')
+    finally:
+        # remise en état honnête — quoi qu'il arrive au-dessus
+        client.post('/api/desk', json={'ts': int(time.time() * 1000) + 1,
+                                       'data': d0.get('data') or {}})
 
 
 def test_desk_backups_listed(client):
