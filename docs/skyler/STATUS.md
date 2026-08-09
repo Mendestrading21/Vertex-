@@ -1824,6 +1824,71 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 417 — livré** : **« Rendement +20 séances » — le N affiché n'est pas le N
+  du calcul.** Deuxième lot dans la veine des moteurs. Cible :
+  `vertex/engines/track_record.py`, **le moteur qui note Vertex lui-même**, dont
+  le docstring annonce *« Aucune promesse, que du mesuré »* — d'où la question :
+  le mesuré est-il présenté avec son échantillon ?
+  **Le mécanisme.** `evaluate()` ne publie un paquet que si `b['n'] >= 5`, mais
+  `n` compte les entrées résolues **à au moins un horizon**, alors que chaque
+  statistique se calcule sur sa propre liste. Un verdict émis il y a 6 séances
+  alimente `n` et `f5`, **pas** `f20`. Le filtre protège le **paquet**, pas
+  chaque **nombre publié**.
+  **Mesuré — moteur exécuté en mémoire** (ledger fabriqué, `persist._BASE_DIR`
+  redirigé, mémo réinitialisé) :
+  ```text
+  TÉMOIN −  4 entrées                        AUCUN PAQUET (filtre n≥5)   ✔
+  TÉMOIN +  5 entrées anciennes              n=5 win_1j=100 win_5j=100 win_20j=100 avg_20j=15.73
+  CAS       1 ancienne + 4 à horizon court   n=5 win_1j=20  win_5j=20  win_20j=100 avg_20j=20.0
+  ```
+  Troisième ligne : le terminal annonce **N = 5**, **20 % de gagnants à 1 et 5
+  séances**, et dans la même ligne **100 % de gagnants et +20,0 % de rendement
+  moyen à 20 séances** — **assis sur une seule observation**.
+  **Ce n'est pas un cas de bord : c'est l'état normal du registre.** Un registre
+  qui tourne contient toujours des verdicts trop récents pour +20. Sur un cas
+  réaliste — un verdict par séance sur les 40 dernières :
+  ```text
+  N annoncé                                     39
+  observations derrière « +1 séance »           39   (100 % de N)
+  observations derrière « +5 séances »          35   ( 90 % de N)
+  observations derrière « +20 séances »         20   ( 51 % de N)
+  ```
+  La colonne « +20 séances » repose **structurellement** sur un sous-ensemble
+  strict de `N`, proportion **jamais affichée**. Le cas à une observation est
+  l'extrême ; le biais est **permanent**.
+  **Où ça s'affiche, et la phrase qui promet ce que le chiffre n'a pas.** Dans la
+  **même ligne** de `performance_page.py:443`, `TP1 avant stop` **affiche son
+  dénominateur entre parenthèses** (`tp1_resolved`) tandis que `Rdt +20 s`
+  n'expose rien et se lit sous le `N` de la ligne — **la bonne pratique existe
+  déjà, appliquée à une métrique sur quatre**. Et la légende du graphique dont
+  c'est le sujet (L459) déclare *« moyenne réelle des verdicts résolus **(n≥5)**
+  — mesure, pas une promesse »* : **faux pour ce chiffre**, `n≥5` filtre le
+  paquet, pas l'échantillon de la moyenne à 20 séances. **La phrase promet
+  exactement la garantie qui manque.**
+  **Le gardien.** `test_evaluate_min_sample_and_no_division_by_zero` (lot 89)
+  vérifie le minimum **du paquet** ; sa fixture n'a que **7 cours**, donc `f5` et
+  `f20` valent `None` partout et **le cas « un horizon a moins d'observations que
+  n » n'est jamais exercé**. À son crédit, il assert `tp1_resolved == 0` : le
+  dénominateur est surveillé **là où il est exposé**.
+  **Rang 1, sans le gonfler.** Contrairement au 407, **le nombre n'est pas faux**
+  — c'est une moyenne réelle d'observations réelles. Ce qui est faux, c'est
+  l'**échantillon suggéré** et la **légende**. Défaut d'**honnêteté de
+  présentation**, sur la page dont le sujet est la confiance accordée au moteur.
+  Correction pressentie, petite : publier le compte par horizon comme le moteur
+  le fait **déjà** pour TP1, l'afficher entre parenthèses comme le fait **déjà**
+  la colonne TP1, corriger la légende. **Aucun GO, rien d'engagé.**
+  **Portée** : un seul moteur, une seule fonction. **`edge_ledger.jsonl` n'existe
+  pas sur ce poste** — rien n'est dit de l'ampleur sur les données réelles de
+  l'utilisateur ; les proportions viennent d'un registre fabriqué, réaliste mais
+  fabriqué.
+  **Motif des deux lots de la veine** : dans les deux cas, le code contenait
+  **déjà la bonne pratique à côté du défaut** — 416, `pos = 50.0` quand
+  `hi == lo` trois lignes plus bas ; 417, `tp1_resolved` dans le même
+  dictionnaire. Le défaut n'est pas l'ignorance de la règle, c'est son
+  **application incomplète**.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ; SW
+  `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 416 — livré** : **un titre qui n'a pas bougé affiche « RSI 100 », et le
   gardien qui dit « neutre » accepte l'extrême.** **Changement de famille
   assumé** : après trois lots sur la couverture des gardiens (413-415), descente
