@@ -4,6 +4,120 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — veille active, lots 420 → 429 (2026-08-09, bilan n°12)
+
+Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
+vérifiés dans le dépôt, **aucune trouvaille rejouée**. Aucun serveur DEMO, aucun
+moteur rouvert, aucun nouveau point de contrôle.
+
+### Ce que la tranche a déposé — mesuré
+
+```text
+base 0676d78 (lot 419 fusionné) → tête 1ac8446 (lot 429 fusionné)
+
+commits                                    10
+fichiers modifiés                          12
+   docs/refactor/validation                11   (10 rapports + SKYLER-INDEX.md)
+   docs/skyler                              1   (STATUS.md)
+fichiers HORS docs/                          0
+lignes                        +2 231 / −0        (addition pure, rien supprimé)
+
+terminal.py + vertex/** touchés               0 fichier
+rapports 420→429 présents                    10 / 10
+lignes d'index 420→429                       10 / 10
+volume des dix rapports                  78 145 octets
+```
+
+### Une correction sur une affirmation que je répétais
+
+La consigne de boucle porte depuis plusieurs lots la phrase « la production n'a
+pas bougé depuis le lot 399 ». **Vérifiée : vraie sur le fond, fausse à la
+lettre.** Entre le lot 399 (`29f4435`) et la tête : **31 commits**, **1 fichier
+hors `docs/`** — `tests/test_skyler_sweep_x1.py`, corrigé au **lot 401** (un
+gardien qui passait selon l'ordre d'exécution) — et **0 fichier de production**.
+Formulation exacte substituée : **aucun octet de production n'a changé depuis le
+lot 399**.
+
+**Et comment je l'ai su** : ma première commande a rendu « aucun fichier », ce
+qui confirmait commodément l'affirmation. Elle était **fausse** — le
+`git log --grep` n'avait rien trouvé, la variable de base était vide, et
+`git diff ..HEAD` comparait la tête à elle-même. *Une commande peut rendre une
+ligne propre, alignée et fausse* (leçon 415). Contrôle refait avec le commit
+résolu explicitement.
+
+### Ce que les dix lots ont produit
+
+```text
+420  BILAN n°11 (tranche 410 → 419)
+421  scoring.compose — hypothèse d'inversion RÉFUTÉE par la mesure          ✗
+422  scenario_pricer — repli MUET de l'expected-move, absent des limites     ✓ rang 1
+423  committee — « $None (structure) », chaîne remontée → inatteignable      ✗ rang 4
+424  thesis_health — INTACT avec confiance 0.0, affichage NON PROUVÉ         ~ rang 2
+425  « 4 maturités réelles » en dur, courbe tracée dès 2 points              ✓ rang 1
+426  bornage — 6 affirmations de méthode sur 6 EXACTES                       ✗
+427  vivier 17 → 118 ; légende multi-indices sur liste fixe                  ✓ rang 1
+428  entonnoir de sélection PLAT PAR CONSTRUCTION                            ✓ rang 1
+429  bornage — trois vocabulaires légitimes, 13 porteurs exacts sur 14       ✗
+
+      4 trouvailles de rang 1 · 1 de rang 2 · 1 de rang 4
+      3 bornages négatifs · 1 hypothèse réfutée · 1 bilan
+```
+
+### Trois acquis de méthode, qui comptent plus que le compte
+
+**(1) Partir de l'écran** (425) : trois lots partis du moteur butaient sur des
+branches inatteignables ; renverser l'ordre a produit une trouvaille en une seule
+mesure. **(2) Exécuter les octets servis** (427/428) : extraction par appariement
+d'accolades + Node — ce qui a permis d'affirmer « 60 → 60 → 60 → 0 quel que soit
+le marché » comme une **mesure**. **(3) Le recensement lui-même peut être la
+limite** (427) : le vivier était sept fois plus grand qu'annoncé.
+
+### Ce que les dix rapports NE prouvent PAS
+
+- **Aucune trouvaille constatée sur des données réelles** — scan et board vides
+  au démarrage, aucun payload persisté avec `rows` ni `indices`. Les défauts sont
+  démontrés par construction ou par exécution sur payloads fabriqués, avec leur
+  porte d'entrée établie.
+- **Aucun navigateur ouvert** ; rendus SVG non exécutés (valeurs passées aux
+  graphiques, pas pixels).
+- **116 des 118 affirmations rendues non vérifiées** ; phrases dynamiques
+  toujours hors recensement.
+- **MD5 des 8 pages non remesurés** depuis les lots 390/396 : leur constance est
+  une **inférence**, pas une mesure fraîche.
+- Le « 13 sur 14 » du 429 ne vaut que pour les vocabulaires MAJUSCULES comparés
+  explicitement.
+
+### La question, et un classement coût/risque
+
+La boucle mesure de mieux en mieux et **ne corrige rien**. Les bilans n°9, n°10
+et n°11 posaient déjà cette question et **ne sont pas reformulés ici** — s'y
+reporter. Ce qui a changé depuis le n°11 : il y avait deux chiffres faux
+affichés, il y a maintenant **quatre familles de défauts prouvés à l'écran**,
+dont deux qui **égarent activement la lecture** — une carte qui explique comment
+lire une platitude qu'elle fabrique, une légende qui nomme une courbe par le nom
+d'une autre.
+
+Options inchangées : **(a)** continuer à mesurer · **(b)** GO sur les rang 1 les
+moins coûteux · **(c)** arrêter la boucle et attendre.
+
+```text
+#  dossier                     geste                                    surface       risque
+1  427 légende multi-indices   bâtir la légende depuis `sets`           1 ligne JS    très faible
+2  428 entonnoir               accepter les deux vocabulaires           2 lignes JS   très faible
+3  425 « 4 maturités »         compte dynamique `${pts.length}`         2 chaînes     très faible
+4  424 thesis_health           UNKNOWN quand les 2 listes sont vides    1 branche     faible
+5  422 expected-move muet      l'ajouter à la liste de limites          1 chaîne      faible
+```
+
+**Les trois premiers touchent le MÊME fichier** (`vertex/ui/pages/markets_page.py`)
+et **aucun moteur** : un seul lot, un seul bump de service worker, une seule
+preuve navigateur. Les dossiers plus lourds (406/407/408/409/411, 388, 417, 416)
+ne sont **pas** classés ici : ils demandent une décision de produit.
+
+**Portée** : ce bilan mesure ce que la tranche a déposé dans le dépôt et ce que
+les dix rapports affirment ; il ne rejoue pas les trouvailles. Écart runtime
+final **aucun**. Suite **2864 passed / 0 skipped**.
+
 ## BILAN — veille active, lots 410 → 419 (2026-08-09, bilan n°11)
 
 Dix lots. Bilan **sur pièces** : les dix rapports relus, les chiffres re-mesurés
@@ -1939,6 +2053,24 @@ sans autorisation demandée.
   positif/négatif) ; hex en dur du track record → tokens. Aucun
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
+
+- **Lot 430 — livré** : **BILAN n°12 (tranche 420 → 429)** — voir le bilan en
+  tête de ce fichier. Mesures du bilan : `0676d78..1ac8446` → **10 commits, 12
+  fichiers, tous sous `docs/`, +2 231 / −0 lignes, 0 fichier de production** ;
+  10/10 rapports, 10/10 lignes d'index, 78 145 octets. **Correction publiée** :
+  la phrase « la production n'a pas bougé depuis le lot 399 » est vraie sur le
+  fond mais fausse à la lettre — 1 fichier hors `docs/` a changé
+  (`tests/test_skyler_sweep_x1.py`, lot 401), 0 fichier de production ; et ma
+  **première commande de vérification était fausse** (variable de base vide,
+  `git diff ..HEAD` comparant la tête à elle-même), refaite avec le commit
+  résolu. Bilan des dix lots : **4 trouvailles de rang 1** (422, 425, 427, 428),
+  1 de rang 2, 1 de rang 4, 3 bornages négatifs, 1 hypothèse réfutée. Trois
+  acquis de méthode : partir de l'écran, exécuter les octets servis, le
+  recensement lui-même peut être la limite. Classement coût/risque des rang 1 les
+  moins chers publié — les trois premiers touchent le même fichier et aucun
+  moteur. **Aucun GO demandé.** Aucun fichier de production touché, aucun bump,
+  SW `td-shell-v187`. Suite **2864 passed / 0 skipped**.
+  Rapport : `docs/refactor/validation/SKYLER-LOT-430.md`.
 
 - **Lot 429 — livré** : **trois vocabulaires de décision coexistent
   légitimement — 13 porteurs sur 14 prennent le bon, un seul se trompe.**
