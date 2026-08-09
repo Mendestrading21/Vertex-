@@ -1559,6 +1559,52 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 388 — livré** : **la suite écrivait un point fabriqué par jour dans
+  l'historique GEX réel.** Le lot 387 avait traité `desk_data.json` et
+  n'avait regardé que celui-là. Ce lot applique la même méthode aux **vingt**
+  fichiers runtime du dépôt — pas aux quatre supposés.
+  **Mesure : 7 sur 20 touchés par la suite.** Trois horodatages seuls
+  (`ai_enrichment`, `session_digest_cache`, `weekly_snapshot`) ·
+  `desk_data.json` (connu du 387, `data` byte-identique) ·
+  **`desk_backup_20260809.json` CRÉÉ** — ce que le 387 n'avait qu'annoncé
+  (« la suite consomme le créneau quotidien ») est désormais **mesuré** ·
+  `skyler_sessions.json` (tickers synthétiques) · et
+  **`gex_history_cache.json`, sur MSFT — un VRAI titre**.
+  **La faute.** `test_options_gex_route_real_numbers` sème un board
+  d'options **fabriqué** (MSFT, strikes 460/420, spot 440) puis appelle
+  `/api/options/gex/MSFT` ; la route **journalise le profil** via
+  `gex_history.record()` dans le vrai fichier, la fixture ne redirigeant
+  rien. Mesuré : **8 points MSFT strictement identiques** (net_gex
+  36 784 000, spot 440.0, zero_gamma 429.6), un par exécution de la suite —
+  alors qu'ACN et ADBE portent des valeurs variées et n'ont pas bougé. La
+  comparaison interne au fichier suffit à distinguer le fabriqué du mesuré.
+  **Ce fichier est SERVI** : `options_intel_api.py` le lit pour
+  `/api/options/gex-radar`. Des chiffres de test étaient donc rendus comme un
+  historique mesuré, **sur un titre réellement détenu** — invariant n°4, cette
+  fois sur un vrai symbole et non un ticker de test.
+  **Correction** : redirection de `persist._BASE_DIR` vers un dossier
+  temporaire dans **le seul test concerné** — périmètre établi en rejouant
+  les 19 tests du fichier **un par un** depuis un état restauré à l'octet,
+  pas par intuition. **Aucune production touchée.**
+  **Effet vérifié : 7 → 5 fichiers runtime touchés, MSFT 7 → 7 points.**
+  Gardien `tests/test_caches_runtime_lot388.py` (5 tests) : anti-vide sur la
+  journalisation (sinon la redirection n'a plus d'objet), bornes
+  anti-croissance (`_MAX_SYMBOLS` évince les plus anciens : un symbole
+  réinjecté en boucle chasserait un vrai symbole), propriété de redirection,
+  anti-péremption, **recensement des 12 sites de production**. ROUGE ×4 +
+  témoin muet.
+  **Un recensement opaque ne recense rien** : mon premier détecteur rendait
+  « ? » pour toute cible non triviale et comptait **8** sites ; rendu
+  explicite il en trouve **12**, et surtout il nomme `SESSIONS_FILE` — le
+  fichier même qui accumule les tickers de test. Borne fixée sur la vraie
+  mesure. Même leçon qu'aux 385 et 387 : *un dénominateur mesuré par un outil
+  myope est un faux dénominateur.*
+  **Non corrigé, versé aux dossiers** : SKYX/TSTQ dans `skyler_sessions.json`
+  (8 fichiers, tickers synthétiques non confondables, bornés à 400 — dégât
+  d'une autre nature) et la **purge des 7 points MSFT pollués**, qui est une
+  décision de l'utilisateur et non un effet de bord de lot.
+  Suite 2826 → **2831** / 2 skipped. SW v187.
+
 - **Lot 387 — livré** : **un test pouvait effacer les notes du trader.**
   Le 16ᵉ dossier ouvert au lot 386 est traité — et son verdict prudent
   (« la suite réécrit `desk_data.json` mais sans perte ») était incomplet.
