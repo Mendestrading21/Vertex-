@@ -2364,6 +2364,82 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 453 — livré** : **j'ai tenté de généraliser le contrat rompu du 452 ; le
+  balayage rend 26 candidats, tous faux sauf celui du 452, et il a fallu corriger
+  l'instrument QUATRE fois pour pouvoir le dire.** 34ᵉ lot, 3ᵉ de la tranche.
+  Question posée : le contrat rompu du 452 est-il **un genre ou un cas** ?
+  **Réponse : un cas.** C'est un **bornage**, annoncé dès le titre.
+  **Instrument** — combien de lectures `receveur.champ` dans le JS **servi**
+  portent sur des clés que la route interrogée ne rend jamais :
+
+  ```text
+  corpus            58 sources servies (25 pages/ui inline + 33 JS statiques)
+                    1 exclu : vendor minifié (leçon 437)
+  appels VX.fetch                          87
+  liaisons receveur ↔ URL reconnues        72   (83 %)
+  lignes échappées, toutes nommées         15   (17 %)
+  routes distinctes 47 · 200 JSON 46 · non concluante 1
+  ```
+
+  **Quatre corrections, chacune avec sa cause** : **(1)** couverture **32 → 72**
+  — la première passe ratait l'affectation nue, `Promise.all` et
+  `Promise.allSettled`, soit **37 % de l'usage** : huitième récidive du piège des
+  enveloppes ; **(2)** **fenêtre de lecture contaminée** — 80 lignes après la
+  liaison avalaient les lectures d'un **autre** receveur du même nom
+  (`analysis_page.py:859` lie `d` à `/api/anomalies/`, `:869` rebinde
+  `const d=r&&r.decision`), corrigé en arrêtant la fenêtre à **toute
+  réaffectation** (médiane 34 lignes) ; **(3)** **les enveloppes
+  `Promise.allSettled` ne sont pas la charge utile** — `.status`/`.value` sont
+  les propriétés du wrapper : **17 couples** ; **(4)** **une classe de caractères
+  contenant `\s` FRANCHIT le retour à la ligne** — mon extracteur d'imports a
+  capturé `'series as _series\n    from vertex'` et **avalé l'instruction
+  suivante** : **miroir exact de la leçon 435**. **Faux arrêtés avant
+  publication : 20 → 24.** **Le crible** :
+
+  ```text
+  72 sites : 40 SAINS · 24 écart · 7 passe-plat · 1 non concluant
+  78 couples (site, clé) en écart
+     17 enveloppes allSettled            artefact
+      2 clé écrite dans la vue           optionnelle
+     26 chaîne de repli  X.a || X.b      lecture tolérante
+     33 candidats → 7 expliqués par le module délégué → 26 SURVIVANTS
+  ```
+
+  **Les 40 sites sains sont le témoin positif intégré** — sans eux, un instrument
+  rendant « tout est rompu » serait indistinguable d'un instrument juste.
+  **Les 26 survivants, tranchés un par un — 25 sont faux** : **1**
+  `/api/anomalies/` `a.anomalies` = **le défaut du 452, retrouvé** ; **7**
+  `/api/analyst/` → `data_sources/analyst_deep.py` **les écrit 7/7**, route
+  dépendante du **réseau** (yfinance), GET refusé par le proxy donc charge utile
+  vide ; **5** `/api/evidence/` → `engines/evidence_lab.py:72-75` **les écrit
+  5/5**, manqués par la correction n°4 ; **13** `/api/validator` → la vue rend
+  `validator.build(eq)` **si** `scan_state['portfolio']` existe, or il vaut
+  **None** au démarrage, donc la réponse servie est le repli **honnête**
+  `{'ok': False, 'note': 'backtest indisponible (univers/historique
+  insuffisant)'}` — **la leçon 438 dans sa forme pure** ; **1**
+  `/api/ai/enrichment` `snap.as_of` → écrit par `ai/enrichment.py`.
+  **Ce que le lot établit** : sur 72 sites couvrant 46 routes, **un seul** survit
+  à quatre cribles et à l'examen à la main, et c'est celui déjà publié. **Cela
+  BORNE le rang 1 du 452 au lieu de l'élargir.** **Le contrôle 443 et son coût** :
+  la variante « écrivain n'importe où dans la **clôture d'imports** » classait
+  `a.anomalies` comme optionnelle (car `analysis.py:314` et `skyler_core.py:173`
+  portent une clé `'anomalies'` dans un **autre** dictionnaire) → **règle 443 non
+  tenue, variante rejetée** ; la variante « clé littérale **dans la fonction de
+  vue** + délégation à 1 niveau » la fait survivre. **Nouvelle règle : chercher un
+  écrivain « quelque part dans la clôture d'imports » ne prouve rien — la clé doit
+  être écrite dans LE dictionnaire RENDU ; la clôture d'imports, excellente pour
+  l'ATTEIGNABILITÉ au 452, est le MAUVAIS OUTIL pour un CONTRAT DE CHARGE UTILE.**
+  **Sous-produit rang 4** : **26 couples lus dans une chaîne de repli**
+  (`ob.contracts||ob.list||ob.best`, `exec.blocking_anomalies||exec.blocking`) —
+  **branches de repli mortes**, rien de faux à l'écran. **Portée** : 83 % mesurés,
+  17 % nommés ; clés servies relevées **avec `scan_state` vide** — ce sont des
+  **contrats observés au démarrage, pas prouvés** ; le GET sur `/api/analyst/AAPL`
+  a **tenté un appel réseau sortant** refusé par le proxy, **aucune écriture** ;
+  déstructuration et crochets **échappent** (436), non quantifiés ; **aucun
+  navigateur**. Aucun fichier touché · SW `td-shell-v187` · écart runtime
+  **aucun** · suite **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-453.md`.
+
 - **Lot 452 — livré** : **85 modules sur 299 sont injoignables depuis
   `terminal.py`, et le balayage tombe sur une COLLISION DE ROUTE : la carte
   « Anomalies » de `/analysis` lit le contrat d'une route masquée, donc elle
