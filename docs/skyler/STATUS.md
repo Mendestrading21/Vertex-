@@ -2054,6 +2054,53 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 434 — livré** : **« Aucune anomalie détectée sur le scan courant » quand
+  il n'y a pas de scan — et la garde correcte est vingt lignes plus haut, dans le
+  même fichier.** Dix-septième lot de la veine. Le 433 avait laissé 43 des 47
+  phrases rassurantes non vérifiées ; ce lot ouvre les candidates nommées.
+  **Un instrument écarté, et je le dis** : deux versions d'un détecteur de garde
+  ont rendu des lignes **propres, alignées et fausses** — la première cherchait la
+  garde dans **toute la page** au lieu de **la fonction**, la seconde remontait à
+  la **mauvaise fonction englobante**. **Les deux confirmaient commodément ce que
+  j'attendais.** Balayage jeté, mesure par **exécution**.
+  **Mesure** (`renderAnomalies`, 3 523 o extraits du marquage servi, Node 22) :
+
+  ```text
+  3 titres, 2 anomalies              → tableau des anomalies          ← témoin positif
+  2 titres RÉELS, aucune anomalie    → « Aucune anomalie action…»     ← phrase LÉGITIME
+  AUCUN SCAN (rows vide)             → MÊME PHRASE
+  /scan indisponible                 → idem
+  ```
+
+  **Trois états distincts, une seule phrase** — qui affirme qu'une **détection** a
+  eu lieu et qu'il existe un **scan courant**. **La garde correcte est dans le même
+  fichier** : `renderRadar` (7 652 o, même page, même source) porte
+  `if(!rows.length){ … 'Aucun titre scanné — lancer un scan depuis Système.'; return; }`.
+  Mesuré par extraction : garde **présente dans `renderRadar`, absente de
+  `renderAnomalies`**. Ce n'est plus un contre-exemple sur une autre page (433) :
+  **même fichier, même page, même donnée.** **Conséquence de bord qui réduit ma
+  propre liste** : la vue radar étant protégée, « Aucune asymétrie exceptionnelle
+  détectée » et « Aucun candidat en zone actionnable » sont **inatteignables sans
+  scan** → **elles sortent du dossier**. **Un troisième comportement nuance** :
+  `moversRows` (`/markets`) n'a pas de garde, mais son appelant affiche
+  `${rows.length} titres scannés` **juste en dessous** — la confusion est dans la
+  phrase, l'information honnête est **à côté** ; la vue anomalies, elle, n'affiche
+  **aucun compte**. **Trois comportements sur la même donnée** : garde explicite ✓ ·
+  pas de garde mais compte affiché ~ · pas de garde, aucun compte **✗**.
+  **Autres candidates** : « Aucune alerte active » → données utilisateur, honnête ·
+  « Aucun catalyseur imminent identifié » → `catch` distinct pour l'échec, honnête ·
+  « Aucune opportunité retenue par le comité » → **non conclu, non compté**.
+  **Rang 1**, famille 432/433, moins lourd (une carte, vue secondaire) mais **même
+  sens : elle rassure**. Correction pressentie **déjà écrite vingt lignes plus
+  haut**. **Aucun gardien.** **Aucun GO.** **Portée** : 7 candidates sur 47, **40
+  non vérifiées** ; sur les 7 → **1 défaut, 1 atténuée, 2 retirées, 2 honnêtes, 1
+  non conclue** ; application sans scan **non observée** en navigateur. **Bornage
+  qui TRIE** — ni « exception » ni « motif de page » : la famille du 432 existe mais
+  est **moins large que ce que le 433 pouvait laisser croire**. MD5 des 8 pages
+  remesurés : **8/8 identiques**. Aucun fichier touché, aucun bump, SW
+  `td-shell-v187`. Suite **2864 passed / 0 skipped**.
+  Rapport : `docs/refactor/validation/SKYLER-LOT-434.md`.
+
 - **Lot 433 — livré** : **le portefeuille calcule `allMarked`, s'en sert pour une
   classe CSS, et l'ignore dans les trois phrases qui rassurent.** Seizième lot de
   la veine, **bornage du 432**. **Pool** : sur le corpus servi, les littéraux
