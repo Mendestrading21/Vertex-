@@ -2364,6 +2364,67 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 457 — livré** : **« Actions 10 / 10 — complet, remplacement obligatoire » :
+  le portefeuille affiche la limite de la Constitution V1 alors que le produit
+  tourne sur la V2, qui en autorise 15 — et la bonne borne est affichée trois
+  cartes plus bas.** 38ᵉ lot, 7ᵉ de la tranche. Le 456 avait laissé **7 fractions
+  sur 12 non tracées** ; ce lot **solde la dette** (modèle 449/455).
+  **Six des sept sont saines**, pour la même raison : numérateur et dénominateur
+  posés **dans le même objet** ou dérivés de **la même liste** — `sm.beats/total`,
+  `diag.ai.ok/total`, `b.points/b.max` (profil : 8 blocs, **somme exactement 40**),
+  `p.v/p.max` (barème), `rating_mean/5` (échelle yfinance 1-5),
+  `favorable/pts.length`. **Nuance nommée et NON classée** : `total` compte chaque
+  trimestre publié mais `beats` exige `surp is not None` — un trimestre à surprise
+  inconnue compte au dénominateur seul ; c'est la forme du 455 mais **honnête**.
+  **La trouvaille — trois dénominateurs sur une carte, deux exacts, un périmé** :
+
+  ```text
+  affiché      Constitution V2 réellement chargée (vertex_strategy_v2)   verdict
+  « / 3 »      max_simultaneous_options            = 3                   EXACT
+  « 1 max »    max_simultaneous_bearish_positions  = 1                   EXACT
+  « / 10 »     portfolio_target_positions {min 8, max 15}                FAUX — c'est 15
+  ```
+
+  **D'où vient le 10** : `test_constitution_v2.py:24` → `load_profile(version=1)`
+  donne **10** ; `:69` → `load_profile()` donne **15**. **C'est la borne de la V1,
+  restée figée dans l'interface quand les moteurs sont passés en V2.**
+  **Banc — les deux cartes se contredisent sur la même page** :
+
+  ```text
+   n | moteur in_bounds · libres | carte « Lignes »      | KPI « Actions »
+   7 | False ·  8                | sous la cible         | places disponibles     d'accord
+   9 | True  ·  6                | dans les bornes       | places disponibles     d'accord
+  10 | True  ·  5                | dans les bornes       | COMPLET                CONTRADICTION
+  12 | True  ·  3                | dans les bornes       | COMPLET                CONTRADICTION
+  15 | True  ·  0                | dans les bornes       | COMPLET                CONTRADICTION
+  16 | False ·  0                | au-dessus de la cible | COMPLET                d'accord
+  ```
+
+  **Les deux cas sains tombent juste** — la contradiction n'occupe que la fenêtre
+  **10-15**, exactement l'écart entre les deux Constitutions. **Et la bonne borne
+  est déjà à l'écran** : `portfolio_page.py:966` rend `${b.min}-${b.max} lignes
+  cibles` avec `b = d.bounds` = **{min 8, max 15}** — la page affiche « 8-15
+  lignes cibles » **trois cartes sous** un KPI qui déclare le book complet à 10.
+  **Famille 433 aggravée : l'information honnête n'est pas seulement déjà
+  calculée, elle est déjà AFFICHÉE.** **Rang 1** — ce n'est pas une étiquette
+  approximative mais une **consigne d'action fausse** : à 10 lignes le terminal
+  dit *pour acheter, vends d'abord*, alors que la stratégie autorise cinq lignes
+  de plus. Correction pressentie : lire `d.bounds.max`, **déjà reçu par la page**.
+  **Aucun GO.** **Le gardien est vert** — `test_constitution_v2.py:69` vérifie 15
+  **côté profil** ; **aucun test ne compare le littéral de la page au profil**
+  (périmètre qui s'arrête avant l'interface, motif 381/385/414/415). **Réserve** :
+  le KPI compte les seules lignes `STK` quand le moteur compte tous les symboles
+  ouverts — cela ne sauve pas le dénominateur, 10 n'étant la borne d'aucune des
+  deux lectures sous la V2. **État de la veine : 12 / 12 tranchées, VEINE DES
+  FRACTIONS AFFICHÉES REFERMÉE** — 1 rang 1, 1 rang 2, 1 rang 3, 1 rang 4 par
+  lecture, **8 fractions saines**. **Portée** : la dette `gex_scan` du 456 **reste
+  ouverte** (rang 4 par lecture) ; le banc établit le comportement du **code**,
+  pas la taille réelle du book ; les limites options sont vérifiées **par lecture
+  du profil chargé** ; **aucun navigateur**. Aucun fichier touché · SW
+  `td-shell-v187` · **MD5 8/8 identiques** · écart runtime **aucun** · suite
+  **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-457.md`.
+
 - **Lot 456 — livré** : **les fractions affichées — la carte « Qualité des
   données » de `/system` plafonne son dénominateur à 200 pour un univers de 517,
   et son camembert ne peut afficher qu'une seule part à 100 %.** 37ᵉ lot, 6ᵉ de
