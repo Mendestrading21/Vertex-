@@ -2720,6 +2720,38 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 481 — livré** : **les six rangs orphelins du 480 sont UN SEUL, et il était
+  déjà soldé — mon détecteur d'hier gagnait en précision et perdait en rappel, et
+  le lot qui l'a posé n'a mesuré que le premier effet.** Lot de soldes, **et il
+  travaille contre le lot précédent**. Portée : aucune conclusion ne porte sur
+  Vertex. Contrôle sur réponse connue du 480 (le 407 n'a aucune section
+  « Classement ») : **passé** — et c'est ce contrôle réussi qui rend la suite
+  embarrassante, car **le fait du 480 est exact mais sa conclusion ne l'est pas**.
+  **Mesuré : cinq des six déclarent bien leur rang**, mais partout sauf dans une
+  section nommée « Classement » — dans un titre de sous-section (455), une puce
+  (456), un bilan de veine, une phrase liminaire (406, 407, 463). **Seul orphelin
+  réel : le 378**, et il était **déjà soldé au 477** (rang 2, trois critères
+  absolus). **Rangs sans justification : 6 → 0.** **Publiés puis corrigés 7 → 8 —
+  et cette fois ce n'est pas un compte du réveil, c'est la trouvaille principale
+  de mon propre lot d'hier.** **Genre neuf : une restriction qui supprime des faux
+  positifs en créant des faux négatifs, et le lot qui la pose ne mesure que le
+  bénéfice.** Corollaire sévère : **un contrôle choisi parmi les cas que
+  l'instrument voit ne teste jamais ce qu'il ne voit pas** — la règle du 467 est
+  insuffisante, il faut y ajouter « et un cas que la restriction exclut ».
+  **Corollaire qui corrige une phrase du 480** : le tableau du plan **a repris** ce
+  que les rapports disaient, il ne l'a pas inventé. **Et un fait qui renforce le
+  479** : le 407 se déclarait bien rang 1 lui-même, donc le 478 l'a fait descendre
+  **contre une déclaration explicite**, pas contre une case de tableau. **Les six
+  portent un critère absolu ; aucun rang ne bouge.** **Seconde dette résolue** : le
+  418 tient sur trois critères propres, la comparaison n'y est qu'un appoint —
+  **c'est une phrase qui est périmée, pas un classement** ; **incohérences de
+  rang 1 → 0**. **Dette neuve, ouverte plutôt que masquée** : **huit rangs relatifs
+  non re-vérifiés**. **Observation de cadence** : trois lots d'introspection
+  d'affilée ont chacun corrigé le précédent — ce n'est pas une dérive, mais **cela
+  fixe une limite que j'écris : le prochain lot doit revenir au produit.** Aucun
+  fichier de production touché · SW `td-shell-v187` · **MD5 8/8** · suite **2864
+  passed / 0 skipped** · **feuille INCHANGÉE**. Comptes : 46 · **8 (+1)** · 3 · 0 ·
+  0 · **8 (dette neuve)**.
 - **Lot 480 — livré** : **l'audit des rangs relatifs — NEUF sur vingt-quatre, UN
   SEUL est affecté, et il n'est pas dans le plan ; mais l'audit trouve autre
   chose : CINQ des vingt dossiers du plan portent un rang que leur propre rapport
