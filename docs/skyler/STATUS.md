@@ -2364,6 +2364,74 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 459 — livré** : **les deux dettes de la tranche soldées PAR EXÉCUTION —
+  le plafond du radar GEX monte au rang 2, la branche « AUTRE » est bel et bien
+  atteignable, et ma borne d'atteignabilité a bougé trois fois avant que je la
+  publie.** 40ᵉ lot, **dernier lot de mesure de la tranche**. Un dernier lot
+  solde au lieu d'ouvrir (modèle 449) ; les deux dettes « établies par lecture »
+  sont soldées **par exécution**, et elles vont **en sens opposés**.
+  **Dette (i) — `gex_scan` du 456.** Cause des deux échecs, trouvée en lisant le
+  moteur : **la clé du board est `sym`** (j'écrivais `symbol`) **et l'open
+  interest se lit `oi`** (j'écrivais `open_interest`).
+
+  ```text
+  board |  sans cap   |  AVEC top=30 (valeur de la route)
+     29 |  29/29      |  29/29     concordent
+     30 |  30/30      |  30/30     concordent
+     31 |  31/31      |  30/31   ← le plafond mord EXACTEMENT à 31
+    120 | 120/120     |  30/120
+  ```
+
+  **Atteignable, et c'est le cas nominal** : `_publish_board()`
+  (`terminal.py:1033-1044`) publie **FOCUS ∪ ROTATION** et annonce couvrir
+  « tout l'univers optionable (~700 titres US) ». **Requalification : rang 4 par
+  lecture → RANG 2 par exécution.**
+  **Dette (ii) — la branche « AUTRE » du 458.** Le seul sélecteur du board est
+  `best_for_symbol` (focus `:1073` et rotation `:1586`), filtrant par
+  **moneyness** ; delta par `legacy_engine._greeks`. **Trois grilles, trois
+  réponses, et je publie les trois** :
+
+  ```text
+  A. iv ≥ 0.20                        delta max 0,684   « inatteignable »
+  B. iv ≥ 0.15, pas 0.004             delta max 0,715   atteignable, marginal
+  C. iv ≥ 0.10, pas 0.001, 2 000 pts  delta max 0,781   ATTEIGNABLE (40,3 % de
+                                                        la bande LEAPS)
+  ```
+
+  **La grille A m'aurait fait publier « inatteignable » — c'était faux.**
+  **Leçon neuve : une borne d'atteignabilité mesurée sur une grille est une
+  propriété de la GRILLE tant qu'on n'a pas borné les entrées réelles.**
+  **Ce que « AUTRE » recouvre vraiment** (étiquetage de tout l'espace atteignable,
+  reproduction du prédicat) :
+
+  ```text
+  CALL  |delta| 0,005–0,715   BALANCED 49,8 % · AUTRE 24,8 % · DYNAMIC 16,8 %
+                              · ULTRA_CONVEX 8,6 %
+  PUT   |delta| 0,000–0,569   DYNAMIC 34,2 % · ULTRA_CONVEX 28,6 % · AUTRE 26,7 %
+                              · BALANCED 10,5 %
+  ```
+
+  **Deux conclusions qui RESSERRENT le 458** : **(1) « AUTRE » est largement
+  HONNÊTE** — il couvre surtout des deltas que **la Constitution ne catégorise
+  pas** (rien sous 0,18, **aucune catégorie entre 0,60 et 0,70**) ; **je retire
+  l'insinuation que « AUTRE » serait en soi un défaut** ; **(2) ce qui tient
+  entièrement, c'est l'aveuglement au TYPE** — **73,3 % de l'espace de put
+  atteignable reçoit un badge de catégorie HAUSSIÈRE**, alors que `c.type` est
+  dans le même objet. **Le rang 2 du 458 est confirmé sur UN front, pas deux, et
+  désormais chiffré.** **Les deux dettes de la tranche sont CLOSES** : le bilan
+  n°15 héritera de comptes nets, plus aucun « établi par lecture » en suspens.
+  **Portée** : `catOf` **reproduit, pas exécuté** ; les pourcentages décrivent
+  **l'espace que le sélecteur peut produire**, pas la fréquence réelle ; **la
+  distribution d'IV n'est pas bornée**, donc **0,781 est le chiffre d'une grille,
+  pas une borne du produit** ; le banc `gex_scan` fabrique un board synthétique ;
+  **aucun navigateur**. **Le fait de méthode le plus utile de la tranche, et il
+  est inconfortable** : la première grille m'aurait fait **enterrer un défaut
+  réel** ; la parade est de **faire varier la grille jusqu'à ce que la réponse
+  cesse de bouger** — ce qu'elle n'a pas encore fait ici, et je l'écris.
+  Aucun fichier touché · SW `td-shell-v187` · **MD5 8/8 identiques** · écart
+  runtime **aucun** · suite **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-459.md`.
+
 - **Lot 458 — livré** : **les littéraux de l'interface contre la Constitution —
   l'échelle de conviction est copiée à la valeur près, mais le classeur de
   catégories d'options est aveugle au type et ne connaît que 3 des 5
