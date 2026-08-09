@@ -1720,6 +1720,51 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 402 — livré** : **les 300 fichiers rejoués seuls — la suite ne dépend
+  pas de son ordre.** Le lot 401 avait prouvé qu'**une** dépendance d'ordre
+  existait et l'avait corrigée ; il n'avait pas dit s'il y en avait d'autres.
+  Ce lot balaie le périmètre entier : **chaque fichier de test rejoué seul**,
+  dans un interpréteur neuf. Aucun code, aucun gardien, aucun test — résultat
+  **négatif et mesuré**.
+  ```text
+  fichiers rejoués SEULS                    300 / 300
+     échecs                                   0
+     skips                                    0
+     tests exécutés en isolation          2 864
+     tests de la suite complète           2 864   ← identique
+  ```
+  L'égalité des deux totaux est le contrôle qui compte : elle prouve qu'aucun
+  test n'a été **perdu** en chemin (fichier non collecté, import silencieusement
+  cassé). Chaque test a tourné dans les deux régimes, même verdict.
+  **L'instrument a échoué une fois — et je l'ai vu avant de conclure.** Le
+  premier balayage, lancé en `nohup … &`, n'était **pas mort** quand j'ai cru
+  l'avoir arrêté ; un second a écrit dans le même fichier de sortie →
+  **339 lignes pour 195 fichiers distincts sur 300**. Un rapport écrit à ce
+  moment-là aurait annoncé « 0 échec » sur un périmètre **incomplet de 35 %**,
+  en le présentant comme complet. Ce qui l'a révélé n'est pas une intuition mais
+  un **contrôle de cohérence interne** : lignes, fichiers distincts et
+  dénominateur attendu devaient coïncider — ils ne coïncidaient pas.
+  *Un « 0 » n'a de valeur que si le dénominateur est vérifié, pas supposé.*
+  Bénéfice secondaire de l'incident : les 202 fichiers passés deux fois donnent
+  une mesure gratuite de reproductibilité — **202 verdicts identiques sur 202**.
+  Harnais validé avant emploi par un **témoin positif** (fichier délibérément
+  faux → `1 failed`).
+  **Portée assumée** : ce balayage teste UNE direction — *un fichier a-t-il
+  besoin des autres pour passer ?* Il ne teste pas l'inverse (*un fichier
+  casse-t-il les suivants ?*, celle du 401, trouvée par un autre chemin), ni les
+  ordres intermédiaires. Établi exactement : **isolation complète → vert
+  partout**, **ordre nominal → vert**.
+  **Un chiffre trouvé en chemin.** Les 300 exécutions isolées tournent avec un
+  `persist._BASE_DIR` **réel** — la redirection accidentelle du lot 392 ne
+  s'applique pas hors de son module. Effet mesuré :
+  `skyler_decisions.json` **11 → 18 entrées**, soit **7 décisions journalisées
+  dans le journal réel de l'utilisateur** pour une passe isolée complète ;
+  `skyler_memory.json` réécrit, taille stable. Ce n'est pas une piste nouvelle :
+  c'est le **dossier de rang 2 du lot 401, désormais chiffré**. Restauré à
+  l'octet.
+  Suite **2864 passed / 0 skipped**, inchangée. Aucun fichier touché — ni
+  production, ni test ; SW `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 401 — livré** : **un gardien qui passait selon l'ordre d'exécution.**
   Point de contrôle **jamais balayé** : les tests qui mutent un état global sans
   le remettre en état. Le lot 387 en avait trouvé **un**, par hasard ; le
