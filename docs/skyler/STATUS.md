@@ -1824,6 +1824,78 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 418 — livré** : **le multiplicateur d'option vaut 100 partout, et le seul
+  contrôle qui le surveille ne peut pas mordre.** Troisième lot dans la veine des
+  moteurs. Cible : `vertex/positions/calculator.py`, dont le docstring pose une
+  règle testable — *« donnée absente → None (jamais 0) »*.
+  **La règle est tenue partout, sauf sur un champ.** Moteur exécuté en mémoire,
+  mêmes entrées, seul le multiplicateur change :
+  ```text
+  multiplicateur          market_value   P&L      delta   theta   data_quality  issues
+  ABSENT / = 100 / = 0       1000.0     +100.0   110.0   -16.0        OK          []
+  = 10  (mini-option)         100.0     -800.0    11.0    -1.6        OK          []
+  = 22  (ajusté après split)  220.0     -680.0    24.2    -3.52       OK          []
+  ```
+  Même position : **P&L +100 avec l'hypothèse 100, −800 avec le vrai
+  multiplicateur** — changement de signe sur l'argent, Greeks divisés par dix, et
+  `data_quality` reste **OK** sans la moindre alerte. **Témoins dans le même
+  fichier** : Greeks absents → `delta = None` · `cost_basis = 0` →
+  `unrealized_pnl_pct = None` · `mark` absent → `market_value = None` +
+  `MISSING_MARK`. **La règle est appliquée partout sauf sur le seul champ qui
+  multiplie tout le reste.**
+  **Mais la chaîne resserre le diagnostic.**
+  ```text
+  ibkr_positions.fetch_positions   ne lit QUE symbol, position, avgCost, secType, currency
+                                   → `contract.multiplier` n'est JAMAIS demandé à IBKR
+  repository.load_positions        construit le dict IBKR sans clé `multiplier`
+  models.option_position           `_f(trade.get('multiplier')) or 100.0`  ← le vrai défaut
+  calculator.enrich_option         `p.get('multiplier') or 100.0`          ← repli sur un défaut
+  ```
+  Toute position arrivant au calculateur porte **déjà** 100 : ce n'est pas
+  improvisé, c'est une **convention produit assumée**, écrite dans le docstring
+  d'`option_position` (« cost = qty × prime × 100 »). Ce que la chaîne montre
+  vraiment : **le multiplicateur réel n'est jamais demandé au courtier**. Pour un
+  contrat non standard — mini-option, contrat ajusté après un split — le coût
+  moyen, la valeur, le P&L et les quatre Greeks sont faux, **sans signal**. Or le
+  système **connaît** ce risque : `reconciliation.py:134` lève
+  `MULTIPLIER_MISMATCH` (sévérité 3) dès qu'un contrat annonce autre chose que
+  100 — mais ce détecteur travaille sur les **contrats**, jamais sur les
+  **positions**.
+  **Le contrôle qui ne peut pas mordre.** `audit.py:30` :
+  `if (p.get('multiplier') or 100) <= 0: errs.append('MULTIPLIER_INVALID')`.
+  Exécuté sur toutes les valeurs invalides :
+  ```text
+  ABSENT → rien · None → rien · 0 → rien (la valeur même que « <= 0 » vise)
+  0.0 → rien · -100 → MULTIPLIER_INVALID   ← seul cas qui mord
+  ```
+  Cause : `or 100` remplace `None` **et** `0` (tous deux falsy) **avant** la
+  comparaison — **le contrôle teste son propre repli, pas la donnée**. **Le
+  témoin est deux lignes plus haut** : `if p.get('quantity') is None or
+  (p.get('quantity') or 0) <= 0` — le `is None` explicite y est, et
+  `QUANTITY_INVALID` **mord** (vérifié par exécution), comme `STRIKE_MISSING` et
+  `COST_BASIS_INVALID`. **Deux lignes d'écart, la même forme, une seule écrite
+  correctement.** Et `MULTIPLIER_INVALID` **n'apparaît dans aucun test** — zéro
+  occurrence sur `tests/**`.
+  **Classement calibré, pas gonflé — moins grave que le 416 et le 417** :
+  l'hypothèse « multiplicateur = 100 » est **juste pour l'écrasante majorité** des
+  contrats américains, et elle est **documentée**. **Rang 2** : le multiplicateur
+  réel n'est jamais lu chez le courtier alors que le système sait le contrôler
+  ailleurs — erreur **silencieuse et multiplicative**, bornée aux contrats non
+  standard. **Rang 4** : `MULTIPLIER_INVALID` ne détecte ni l'absence ni le zéro,
+  et ne peut de toute façon jamais se déclencher puisque la valeur est fixée à
+  100 en amont — **contrôle mort, deux fois**. **Aucun GO, rien d'engagé.**
+  **Portée** : un seul moteur, plus la chaîne d'alimentation nécessaire pour
+  savoir si le défaut est atteignable — ce parcours a **réduit** le diagnostic.
+  `fetch_positions` ne transmet ni `right`, ni `strike`, ni `exp` ; ce qui en
+  résulte n'a **pas** été mesuré ici.
+  **Motif confirmé sur trois lots** : la bonne pratique est écrite **à quelques
+  lignes du défaut** — 416 `pos = 50.0` quand `hi == lo` ; 417 `tp1_resolved` dans
+  le même dictionnaire ; 418 le `is None` explicite deux lignes au-dessus.
+  *Chercher la règle que le fichier respecte ailleurs, puis l'endroit où il
+  l'oublie* est la méthode la plus rentable trouvée depuis le lot 398.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ; SW
+  `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 417 — livré** : **« Rendement +20 séances » — le N affiché n'est pas le N
   du calcul.** Deuxième lot dans la veine des moteurs. Cible :
   `vertex/engines/track_record.py`, **le moteur qui note Vertex lui-même**, dont
