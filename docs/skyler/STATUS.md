@@ -2720,6 +2720,41 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 478 — livré** : **406 et 407 sont UN SEUL dossier, classé RANG 2 — deux
+  clés du contrat de synchronisation que le produit LIT sans que rien ne les
+  ÉCRIVE.** Contrôle sur réponse connue du 477 : **passé**. **Le lot en absorbe
+  deux** : les non classés passent de 16 à 15 pendant que le plan ne gagne qu'un
+  dossier — la fusion est un gain de lisibilité, pas une perte de contenu.
+  **Cause prouvée** : `myCapital` et `myTradesEquity` sont déclarées dans
+  `DESK_KEYS`, lues par `capital()` et `equity()` (`vx-entities.js:235-236`), et
+  **aucune ligne du dépôt ne les écrit** — `capital()` rend **toujours `null`**,
+  en permanence. **Le compte de sites triple le dossier** : le 407 citait un
+  `||0` (`:718`), il y en a **trois** — `:200` et `:208` dans `computeMetrics`,
+  plus en amont que le site publié. **Témoin positif dix lignes plus bas** :
+  `:604` se tait honnêtement quand `myTradesEquity` manque, alors que `myCapital`
+  absent devient `0`. **Atteignabilité prouvée par exécution** : les deux
+  accesseurs sont dans les octets servis de `/portfolio`. **Rang 2, et les trois
+  arguments contre le rang 1 jouent tous contre moi** : l'erreur va dans le sens
+  **prudent** (elle sur-alerte), `myCapital` **n'est écrivable par personne**, et
+  une **lecture alternative** rend le calcul correct avec un libellé fautif —
+  **je ne tranche pas, et le rang 2 survit aux deux lectures**. **Mutualisation
+  forte** : `computeMetrics` (`:194-208`) est appelée juste avant `dominantRisk`
+  (`:298`) — **les quatre dossiers du lot C tiennent dans une quinzaine de lignes
+  consécutives**. **Chiffrage : 4 lignes, 1 fichier, aucun moteur** ; régression
+  **faible**, la plus basse des dix-neuf. La variante ambitieuse (ouvrir un champ
+  « capital » dans le desk) est **nommée et non chiffrée** : c'est une
+  fonctionnalité, versée aux dossiers de décision. **Feuille : 19 dossiers · 52 à
+  60 lignes · 19 gardiens · douze rang 1 · sept rang 2**, lot C porté à 14 lignes.
+  Portée : **les bancs des 406 et 407 n'ont pas été rejoués** ; le « ×170 » est
+  leur chiffre, sur des positions fabriquées. **Premier dossier classé dont le
+  rapport d'origine ne contient aucune atténuation à démentir — à son crédit.**
+  **Fait de méthode : un dossier peut être RÉDUIT par la mesure autant
+  qu'aggravé.** J'ai commencé en pensant tenir un rang 1 ; trois mesures l'ont
+  ramené à un rang 2. Pendant exact de l'observation du 477 : **la boucle doit se
+  méfier autant des phrases par lesquelles elle aggrave que de celles par
+  lesquelles elle minimise.** Aucun fichier de production touché · SW
+  `td-shell-v187` · **MD5 8/8** · suite **2864 passed / 0 skipped**. Comptes :
+  **44 (+1)** · 6 · 3 · 0.
 - **Lot 477 — livré** : **le 378 classé RANG 2 — deux replis `0` atteignent bien
   l'entonnoir de `/opportunities`, et l'atténuation que le 378 avait publiée est
   RÉFUTÉE.** Contrôle sur réponse connue du lot précédent : **passé**. **Choix
