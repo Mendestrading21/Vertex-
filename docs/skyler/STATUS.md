@@ -1940,6 +1940,70 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 422 — livré** : **le R:R affiché repose sur un mouvement attendu que le
+  moteur s'invente, et c'est le seul repli qu'il n'étiquette pas.** Sixième lot
+  dans la veine des moteurs. Cible : `vertex/options/scenario_pricer.py`, qui
+  produit le **R:R du plan** et le **gain attendu** affichés sur `/options`,
+  `/analysis` et `/opportunities`.
+  **La règle est écrite partout dans ce fichier.** Le docstring l'annonce
+  (*« honnêteté §6.8 : … ESTIMATION … étiquetée MODEL_ESTIMATE, jamais présentée
+  comme vérité broker »*) et le corps la tient **trois fois** : données
+  insuffisantes → **simulation refusée** (« pas de chiffre inventé ») · IV
+  absente → recalculée **et** `limitations.append('IV recalculée depuis le mid
+  (FALLBACK_ESTIMATE)')` **et** `model_source = 'FALLBACK_ESTIMATE'` ·
+  `worst_planned_loss_pct` calculé **seulement** `if stop:`, jamais sur un stop
+  inventé.
+  **Trois lignes au-dessus du repli IV étiqueté, un quatrième repli — muet :**
+  ```python
+  em_pct = setup.expected_move_pct
+  if em_pct is None:
+      em_pct = iv * math.sqrt(holding_days / 365.0) * 100     # aucune limitation ajoutée
+  ```
+  **Ce n'est pas un cas de bord : c'est le seul chemin.** Les **deux**
+  constructeurs d'`UnderlyingSetup` du dépôt (`options_intel_api.py:107` et
+  `redesign.py:226`) **omettent le champ** — `expected_move_pct` vaut donc `None`
+  **à chaque simulation**, et le mouvement attendu est **toujours fabriqué par le
+  moteur lui-même**.
+  **Mesuré**, contrat identique, seul le mouvement varie :
+  ```text
+                                      gain BASE    pire perte    R:R
+  expected_move_pct = None (PROD)       145.7 %      -40.8 %     3.57
+  expected_move_pct =  3.0 %            104.7 %      -40.8 %     2.57
+  expected_move_pct =  8.0 %            213.7 %      -40.8 %     5.24
+  expected_move_pct = 12.0 %            309.6 %      -40.8 %     7.59
+  ```
+  Le moteur fabrique **4,97 %**, d'où le R:R de **3,57**. Le même contrat
+  afficherait **2,57** ou **7,59** selon l'hypothèse : **le R:R du plan est
+  entièrement déterminé par une hypothèse que le moteur prend pour lui-même.**
+  Et les limitations servies sont exactement les trois constantes du fichier (BS
+  européen, dividendes, smile) — **aucune ne mentionne le mouvement attendu**,
+  vérifié sur la liste servie.
+  **Où ça s'affiche** : `analysis_page.py:631` (« R:R ») ·
+  `opportunities_page.py:553` (« R:R simulé … perte planifiée ») ·
+  `options-intel.js:439` (« R:R du plan »). Et `options-intel.js:431` **rend la
+  liste « Limites méthodologiques »** : **la carte affiche ses limites, et
+  celle-là n'y figure pas.** Le trader lit une méthodologie qui se présente comme
+  complète.
+  **Classement — famille du 417, pas du 407.** Ce n'est **pas un chiffre faux** :
+  un mouvement attendu déduit de l'IV est l'estimation standard, probablement la
+  meilleure disponible. Ce qui manque, c'est **l'étiquette** — dans un fichier
+  dont c'est le sujet, à trois lignes d'un repli qui, lui, est étiqueté et dégrade
+  `model_source`. **Rang 1** ; correction pressentie minuscule et déjà écrite
+  juste au-dessus : une ligne de limitation, et au choix la dégradation de
+  `model_source`. **Aucun GO, rien d'engagé.**
+  **Portée** : la question de ce lot est l'**étiquetage**, pas la formule — je n'ai
+  pas vérifié que le mouvement déduit de l'IV soit numériquement le bon
+  estimateur. `capital_free_analysis` n'a pas été ouvert au-delà d'un constat : il
+  applique lui aussi un **multiplicateur 100 en dur** (`mid * 100`), même
+  hypothèse qu'au lot 418 dans un autre fichier — **signalé, non mesuré ici**.
+  **Motif de la veine vérifié une cinquième fois, sous sa forme la plus nette** :
+  le fichier étiquette un repli, refuse une simulation faute de données, garde un
+  calcul derrière un vrai stop — **et laisse passer le seul repli qui s'exécute à
+  chaque appel**. Le compteur annoncé au 421 (deux négatifs d'affilée → le dire ;
+  trois → changer de famille) **repart à zéro**.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ; SW
+  `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 421 — livré** : **le scoring note un dict vide « D, confiance 58 » — mais
   la mesure a réfuté mon hypothèse, et la chaîne a fermé le dossier.** Cinquième
   lot dans la veine des moteurs, cible `vertex/quant/scoring.py` (score global,
