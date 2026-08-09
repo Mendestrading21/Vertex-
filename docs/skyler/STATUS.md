@@ -4,6 +4,122 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — veille active, lots 410 → 419 (2026-08-09, bilan n°11)
+
+Dix lots. Bilan **sur pièces** : les dix rapports relus, les chiffres re-mesurés
+dans le dépôt. Serveur DEMO non lancé.
+
+**La tranche a deux moitiés nettes.**
+
+```text
+410        bilan n°10
+411 → 415  LES OCTETS SERVIS   provenances · cache SW · chemins client
+                               · boutons · identifiants dupliqués
+416 → 419  LES MOTEURS         RSI · track_record · multiplicateur · bornage
+```
+
+**Première moitié — produit sain, filet court.** Zéro défaut produit sur cinq
+contrôles : 59 provenances dont 25 littéraux exacts (411) · 156 chemins client,
+aucun mort (413) · 167 boutons servis, aucun sans écouteur (414) · 288
+identifiants, aucun doublon (415). Mais **trois fois sur cinq, le gardien censé
+protéger l'invariant s'arrête avant la fin** : le 412 **détecte sans imposer**, le
+414 couvre **149 boutons sur 167**, le 415 visite **3 pages sur 8**.
+
+**Seconde moitié — quatre lots, quatre trouvailles** : RSI = 100 sur série plate
+(416) · `track_record`, le N affiché n'est pas le N du calcul, jusqu'à une seule
+observation (417) · multiplicateur d'option assumé à 100 et `MULTIPLIER_INVALID`
+mort deux fois (418) · bornage — 4 sites de détection sur 22 replis, et un **RSI
+de 0 effacé** (419).
+
+**Le fait le plus important : le changement de famille a payé immédiatement.**
+
+```text
+veine « octets servis »   5 lots   0 défaut produit, 3 filets courts
+veine « moteurs »         4 lots   4 défauts produit
+```
+
+La note de cadence du 416 — *si le lot rend une quatrième fois « produit sain,
+gardien à périmètre court », changer de famille* — était **le bon appel**, et la
+décision est **reproductible : quand trois lots d'affilée rendent le même
+diagnostic de forme, changer de famille.**
+
+**Le motif technique, vérifié quatre fois** : la bonne pratique est écrite **à
+quelques lignes du défaut** — 416 `pos = 50.0` quand `hi == lo`, trois lignes plus
+bas · 417 `tp1_resolved` dans le même dictionnaire · 418 le `is None` explicite de
+`quantity`, deux lignes plus haut · 419 le `is not None` du coût moyen, quatre
+lignes plus haut. Le défaut n'est jamais l'ignorance de la règle : c'est son
+**application incomplète**. *Chercher la règle que le fichier respecte ailleurs,
+puis l'endroit où il l'oublie* — méthode la plus rentable depuis le lot 398, et
+désormais formulable comme une **procédure**.
+
+**Le résultat le plus parlant — deux fautes opposées sur le même indicateur :**
+
+```text
+416   RSI FABRIQUÉ à 100   série plate → 0/0 indéfini, rendu comme l'extrême
+419   RSI EFFACÉ à 0       `float(d.get('rsi') or 50)` → 0.0 est falsy → neutre 50
+```
+
+Une seule cause : **traiter une valeur extrême légitime comme une donnée
+manquante**. Dans un cas on invente, dans l'autre on gomme, et les deux se lisent
+comme des mesures.
+
+**Les gravités, distinguées et non gonflées** : un NOMBRE FAUX (407, hors
+tranche) ≠ un ÉCHANTILLON MAL PRÉSENTÉ (417) ≠ une HYPOTHÈSE DOCUMENTÉE NON
+VÉRIFIÉE (418) ≠ un TEXTE D'EXPLICATION INCOMPLET (419). **Trois lots ont resserré
+leur propre diagnostic quand la mesure les contredisait** (416, 418, 419).
+
+**L'instrument pris en défaut : 7 fois sur 10 lots**, toujours attrapé **avant
+publication** — 413 deux fois (`/static` hors corpus ; `fetch(` sans ses
+enveloppes), 414 deux fois (55 faux « boutons morts » ; 231 comptés au lieu de
+167), 415 deux fois (heuristique de proximité 9→1 ; test d'englobement rendant
+des lignes propres, alignées et fausses), 417 une fois. **La leçon des enveloppes
+a été refaite trois fois — 409 `emptyCard`, 413 `get(…)`, 414 `$(…)` :** une règle
+écrite ne suffit pas, c'est le témoin qui l'attrape ; la parade est structurelle
+— exiger la **proximité** d'un accesseur quelconque.
+
+**Ce qui n'a pas bougé, mesuré :**
+
+```console
+$ git diff --name-only bbd5f86..HEAD | grep -v '^docs/'
+  (aucun)
+```
+
+| | |
+|---|---|
+| Fichiers de production modifiés | **0** |
+| Fichiers de test modifiés | **0** (la tranche précédente en avait 1) |
+| Tests ajoutés | **0** — délibérément |
+| Suite | **2 864 / 0 skipped**, identique aux dix lots |
+| PR | **#442 → #451**, toutes fusionnées en squash |
+| Service worker | `td-shell-v187`, servi et enregistré, inchangé |
+
+MD5 des 8 pages : prouvé aux lots **390** et **396**, **pas re-mesuré depuis** —
+aucun octet de production n'ayant bougé, il est réputé inchangé : **inférence,
+pas mesure fraîche.**
+
+**La question, plus pressante qu'au bilan n°10.** Le rang 1 contient maintenant
+**six dossiers**, dont **deux chiffres faux affichés comme réels** : HHI d'un
+facteur 170 avec alerte fabriquée (407) et RSI = 100 sur un titre immobile (416) ;
+plus la consigne impossible (406/409), l'échantillon mal présenté sur la page qui
+parle de confiance (417), les 7 points MSFT fabriqués (388) et les replis `0`
+(378). **Aucun GO n'est arrivé depuis le lot 388 — trente-deux lots.**
+
+- **(a)** continuer les lots courts. La veine des moteurs paie encore (4/4) — mais
+  elle produit des **constats**, pas des corrections.
+- **(b) GO groupé sur le rang 1, puis exécution. ← recommandé.** Purge des 7
+  points MSFT (coût et risque quasi nuls), puis `myCapital`, puis le RSI (deux
+  lignes, deux moteurs).
+- **(c)** arrêter la boucle et attendre. Défendable : rien ne se dégrade, la
+  production n'a pas bougé depuis le lot 399.
+
+Les bilans n°9 et n°10 posaient déjà cette question et **ne sont pas reformulés
+ici** — s'y reporter. La seule chose qui a changé depuis le n°10 et qui compte :
+**il y a désormais deux chiffres faux affichés, pas un.**
+
+**Portée** : ce bilan mesure ce que la tranche a **déposé dans le dépôt** et ce
+que les dix rapports affirment ; il ne rejoue pas les trouvailles une à une.
+Aucun serveur DEMO lancé, aucun moteur rouvert. Écart runtime final **aucun**.
+
 ## BILAN — veille active, lots 400 → 409 (2026-08-09, bilan n°10)
 
 Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
