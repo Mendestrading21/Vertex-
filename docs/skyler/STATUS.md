@@ -2720,6 +2720,62 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 484 — livré** : **retour au produit, et il paie au premier lot — la carte
+  de décision de `/analysis` affiche un score « /40 » dont 5 points sont
+  STRUCTURELLEMENT inatteignables, et les deux plus hauts niveaux de conviction
+  de la Constitution, S et S+, ne peuvent être atteints par AUCUN titre.**
+  **Direction choisie** : tracer les 7 gabarits de fraction que le 456 avait
+  nommés mais laissés « ni comptés, ni conclus » — **et y inclure les trois qu'il
+  avait pré-classés « barèmes » PAR LECTURE**, puisque la leçon 481 dit qu'une
+  restriction qui écarte des faux positifs fabrique des faux négatifs. **C'est
+  exactement là que la trouvaille était.**
+- **Deux contrôles** : le premier calibré dans le code du détecteur (un site sain
+  connu, un site plafonné connu) — passé ; le second sur **l'angle mort que le 456
+  avait lui-même nommé** (fractions construites par un helper) — exclusion
+  **justifiée cette fois**, et bornée à quatre formes cherchées.
+- **Deux témoins positifs** : G4 `p.v/p.max` (maxima 30+25+20+15+10 = 100, chacun
+  atteint par la branche haute de son ternaire) et G6 `favorable / pts.length`
+  (numérateur filtré du dénominateur lui-même).
+- **La trouvaille, établie par AST après un premier détecteur FAUX** : mon `grep`
+  rendait huit blocs figés à zéro — sept avaient un zéro dans une *branche*.
+  Refait par AST : **un seul bloc, `fundamentals_quality`, un site d'appel,
+  littéral `0`, hors condition, statut `INSUFFICIENT` en dur**. Les 8 poids somment
+  à 40, le dénominateur est écrit en dur → **plafond réel 35/40**. Et
+  `skyler_core.py:333-334` rabat S/S+ vers A **dès qu'un bloc est insuffisant** :
+  **S et S+ sont donc inatteignables pour tous les symboles**, avec leurs bandes
+  d'allocation 7-10 % et 10-15 %.
+- **Vérifié dans les octets servis** (`/analysis/AAPL`, 75 216 o) : « Score /40 »
+  présent, `/40` présent, puce `b.points/b.max` présente, **`insufficient_blocks`
+  ABSENT**, **mention d'un plafond de NIVEAU ABSENTE**. **Faux positif arrêté sur
+  place** : le mot `plafonn` est bien là, mais c'est `capped_by_gate` — le plafond
+  de hard gate, pas celui des blocs. **Arrêté avant publication 48 → 49.**
+- **Ce qui atténue** : la puce « Fondamentaux 0/5 » EST affichée, grisée, avec son
+  motif en `title`. Co-visible sur le bloc, muette sur le reste.
+- **Classement, critères absolus** : **(A) S et S+ inatteignables en silence →
+  rang 1** (servi, conséquence sur une décision, **aucune information co-visible**) ;
+  **(B) « /40 » dont le plafond est 35 → rang 2** (la puce 0/5 est co-visible —
+  exactement ce qui a maintenu le 456 (i) au rang 2).
+- **Les trois autres, non gonflés** : G1 — la fraction est défendable mais
+  **`avg = acc/total` divise des surprises CONNUES par TOUS les trimestres** →
+  moyenne diluée ; **accessibilité non établie → rang 3**. G2 — `deque(maxlen=200)` :
+  dénominateur = fenêtre glissante, pas un cumul → observation. G5 — **le dépôt
+  n'encode nulle part le sens de `recommendationMean`** ; je **ne** conclus **pas**
+  que l'échelle est inversée, faute de source → observation. G7 — « 1 max » ne
+  concerne que les puts alors que la chaîne couvre calls et puts → observation.
+- **Mutualisation cherchée, partiellement trouvée** : deux plafonds de même genre,
+  **trois fichiers, aucun correctif commun** — la famille est réelle, la
+  mutualisation ne l'est pas.
+- **Portée** : **aucun banc sur `skyler_core`** — établi par lecture de deux lignes
+  et par AST ; `decide()` non exécuté, et ce banc monterait la preuve d'un cran.
+  Profil V2 seul. **Aucun navigateur** : présence établie sur les octets servis.
+- **Fait de méthode, prolongement de la 481** : *un lot qui écarte une catégorie
+  « par nature » sans la tracer ne l'a pas mesurée — il l'a supposée.* Le 456 a eu
+  raison sur deux barèmes sur trois, et **tort sur celui qui portait le défaut le
+  plus grave**.
+- Feuille : **+2 dossiers → 23 · treize rang 1 · huit rang 2 · trois rang 3**.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  runtime 21 fichiers restaurés, écart **aucun** · suite **2864 passed / 0 skipped**.
+
 - **Lot 483 — livré** : **les six dernières entrées « à classer » lues une par
   une — UNE SEULE l'était encore, deux étaient déjà classées et mal rangées,
   quatre ne portent aucun défaut propre, et AUCUNE des six n'est une
