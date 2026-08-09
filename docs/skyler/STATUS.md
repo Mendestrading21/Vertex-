@@ -2720,6 +2720,53 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 488 — livré** : **la règle du 487 appliquée à TOUTES les atténuations
+  qui ont fait descendre un rang — les trois autres TIENNENT, vérifiées à
+  l'écran, aucun rang ne bouge ; et la boucle avait déjà la méthode aux lots 442
+  et 471 avant de la perdre au 486.**
+- **Recensement** : 490 rapports balayés sur le vocabulaire d'atténuation ;
+  calibration dans le code (le 486, réfuté au 487, **doit** sortir — trouvé).
+  **Population brute 30**, et **la lecture corrige l'instrument** : **douze ne
+  portent « note honnête » qu'au sens d'un état vide**. **Quatre atténuations
+  ont réellement fait descendre un rang** : 455, 456 (i), 484-B, 486-A (réfutée).
+- **Une lecture qui tranche avant le navigateur** : la note du 456 passe au Chart
+  Shell comme `limits`. Le 442 avait établi que le **tiroir** ne rend que
+  `shows/why/confirm/invalidate`. Mesuré : `chart-core.js` **L161 rend `limits`
+  dans `vx-chart-foot`, le pied VISIBLE de la carte** (L174 n'en est qu'une
+  répétition dans le tiroir). **Le pied, pas le tiroir.**
+- **Au navigateur, les trois tiennent** (test : une même carte rendue contient-elle
+  le défaut ET l'atténuation ?). **456** `/system?view=data` : la note « qualité
+  au niveau scan (source unique)… » est dans le pied de la carte, **sans clic** →
+  même carte. **455** : les six contrôles, avec icônes de statut et détail de ce
+  qui manque, sont dans la **même carte** que la narration. **484-B** : « REFUSER
+  8/40 … Fondamentaux 0/5 Catalyseurs 2/5 … » → même carte.
+- **Deux mesures antérieures confirmées à l'écran, sans être recomptées** :
+  « Catalyseurs 2/5 » et « Flux/anomalies 0/4 » (blocs bridés du 485) ;
+  « Dominante : DEMO (20 / 20) » (camembert à une seule part du 456 (ii)).
+- **Un faux arrêté en chemin** : mon premier passage a rendu « CARTE ABSENTE »
+  sur `/system` nu — **j'allais conclure l'atténuation invérifiable** ; la carte
+  vit sur **`/system?view=data`**, une vue **serveur** distincte. **Diagnostiqué,
+  pas conclu. 52 → 53.**
+- **Second contrôle — un cas exclu par le recensement** : le **442**, dont le
+  rang 2 est justifié autrement. Il écrit « atténué par une légende honnête **non
+  co-visible** » et repose sur une **accessibilité non établie**. **Exclusion
+  justifiée, pour la bonne raison.**
+- **Fait de méthode** : le **442** distinguait déjà co-visible et non co-visible ;
+  le **471** mesurait la co-visibilité **vue par vue** (« sur `risque`, et là
+  seulement ») — **exactement la règle du 487** ; le **486** l'a affirmée sans
+  vérifier la vue. **Une règle peut être appliquée avant d'être nommée, et
+  oubliée après l'avoir été.** Le 487 croyait poser du neuf ; **il redécouvrait**.
+- **Résultat de bornage, publié tel quel** : le 487 avait trouvé une atténuation
+  fausse ; combien d'autres ? **Aucune.** La feuille est **inchangée**.
+- **Portée** : les défauts eux-mêmes **non rejoués**, seules leurs atténuations ;
+  **le plafond de 200 du 456 ne mordait pas** (scan DEMO à 20 titres) — **le cas
+  fautif n'a pas été observé à l'écran** ; **un seul viewport**, pas de mobile ;
+  douze rapports écartés par lecture, comptés dans aucun total ;
+  `/analysis/AAPL` **écrit** — su, assumé, **restauré à l'octet**.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  serveur DEMO **arrêté et vérifié** · runtime 21 fichiers, écart **AUCUN** ·
+  suite **2864 passed / 0 skipped**.
+
 - **Lot 487 — livré** : **la dette du 486 soldée AU NAVIGATEUR — le défaut est
   confirmé à l'écran, le mécanisme s'allume dès qu'on remplit le champ, et
   l'atténuation qui maintenait le rang 2 est RÉFUTÉE : l'alerte et la barre ne
