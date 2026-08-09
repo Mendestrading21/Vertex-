@@ -2364,6 +2364,65 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 456 — livré** : **les fractions affichées — la carte « Qualité des
+  données » de `/system` plafonne son dénominateur à 200 pour un univers de 517,
+  et son camembert ne peut afficher qu'une seule part à 100 %.** 37ᵉ lot, 6ᵉ de
+  la tranche. La veine des phrases composées étant close, le 455 avait désigné la
+  famille suivante — **un compte affiché dont les numérateurs ne couvrent pas tout
+  le dénominateur** ; ce lot attaque la classe entière.
+  **Instrument, partir de l'écran par construction** : balayage des **42 objets
+  servis** (841 916 caractères) à la recherche des gabarits qui **affichent** une
+  fraction. **12 relevés · 5 tracés (2 plafonnés, 3 sains) · 7 nommés et NON
+  tracés**, donc comptés dans aucun total (règle 448) : `sm.beats/sm.total`,
+  `diag.ai.ok/total`, `b.points/b.max`, `p.v/p.max`, `rating_mean/5` (**barèmes**),
+  `favorable/pts.length`, `CALLS/1 max`.
+  **Témoin positif — trois fractions saines** : `environment.py:122-123` et
+  `risk_map.py:137-138` (`known = [x for x in L if x['known']]` → **même liste**)
+  et `markets_page.py` (« X titre(s) sur `rows.length` », **même tableau**).
+  **La trouvaille** — `strategy_os_api.py:165-168` construit les paquets sur
+  `list(detail)[:200]` et `diagnostics.py:44` rend `'total': len(packets)` :
+
+  ```text
+  detail   5 → total   5      detail 150 → total 150     detail 200 → total 200
+  detail 260 → total 200 ←    detail 517 → total 200 ←   le plafond mord dès 201
+  by_quality : {'RECENT': 200} · {'DEMO': 200} · {'MISSING': 200}
+  len(UNIVERSE) = 517
+  ```
+
+  Route **réellement exécutée en GET**, `scan_state['detail']` peuplé en mémoire
+  **puis restauré** (0 → 0 entrée, `source` `None` → `None`, aucune écriture).
+  **Deux défauts distincts sur la même carte** (`system_page.py:699-701`) :
+  **(i)** le titre « Qualité des données (**200** titres) » présente un **plafond
+  d'échantillon comme un compte de titres** — pas un chiffre faux, un
+  **échantillon présenté comme la population** (famille 417), et **le plafond
+  n'est mentionné nulle part à l'écran** → **rang 2** ; **(ii)** le camembert ne
+  peut afficher **qu'une seule part, toujours à 100 %**, parce que la route
+  calcule **une seule** qualité au niveau du scan puis l'estampille sur chaque
+  symbole — `by_quality` n'a **jamais qu'une clé**, la conclusion est **toujours**
+  « Dominante : X (200 / 200) », **une répartition qui ne peut pas se répartir**
+  (constant par construction, famille 442) → **rang 3**. **Ce qui atténue, et que
+  je dis** : la note servie à côté est **honnête et co-visible** — « qualité au
+  niveau scan (source unique) … » — elle **avoue le point (ii)** mais **ne dit
+  rien du plafond de 200**, d'où (i) en rang 2 et (ii) en rang 3.
+  **Seconde fraction plafonnée, établie par LECTURE et non par exécution** :
+  `gex_scan.py:53-55` tronque `rows` à `top` **trois lignes avant**
+  `'symbols_usable': len(rows)`, et la route passe **`top=30`**
+  (`options_intel_api.py:133`) ; `options-gex.js` rend « … X/Y **titres
+  exploitables** » — au-delà de 30 exploitables, **le numérateur est le plafond
+  d'affichage, pas une mesure d'exploitabilité**. **Deux bancs ont échoué** (le
+  premier fabriquait la clé `symbol` alors que le module lit **`sym`** ; le
+  second, corrigé, rend `symbols_scanned` mais `symbols_usable = 0` car
+  `gex.compute` rejette mes contrats) → **rang 4 en l'état, à requalifier si un
+  banc l'exécute**. Je préfère le dire que gonfler le résultat.
+  **Genre nouveau : UN PLAFOND D'ÉCHANTILLON AFFICHÉ COMME UNE POPULATION.**
+  **Portée** : 7 fractions non tracées, nommées, hors total ; les fractions
+  construites par un helper ou par déstructuration **échappent** (436), non
+  quantifiées ; le banc établit le comportement du **code**, pas la taille réelle
+  du scan en usage ; **aucun navigateur**. Aucun fichier touché · SW
+  `td-shell-v187` · **MD5 8/8 identiques** · écart runtime **aucun** · suite
+  **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-456.md`.
+
 - **Lot 455 — livré** : **la veine des phrases composées refermée — 11 dernières
   phrases tranchées, et la toute dernière cache un défaut affiché : « 0 contrôle
   défavorable, 1 à surveiller, sur 6 » quand 5 des 6 sont INCONNUS.** 36ᵉ lot,
