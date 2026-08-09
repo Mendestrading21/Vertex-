@@ -1940,6 +1940,62 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 425 — livré** : **« 4 maturités réelles » — le compte est écrit en dur, la
+  courbe se trace dès 2 points.** Neuvième lot de la veine, et le premier mené
+  **dans l'autre sens** : partir d'une phrase **réellement rendue**, puis remonter
+  au code. C'était la consigne, après trois lots dont la conséquence s'arrêtait
+  avant l'écran.
+  **Point de départ.** Les 8 pages et leurs scripts demandés au serveur (méthode
+  du 413), puis extraction des **affirmations littérales** rendues par les cartes
+  (`limits:` / `conclusion:`) → **17**, dont « σ = spot · IV_ATM · √(DTE/365) »,
+  « moyenne des % par trade — pas une performance composée », « historique breadth
+  de l'univers scanné (partiel) »… La seule **affirmation de compte** — donc
+  vérifiable — a été ouverte.
+  **Preuve d'affichage, sur les octets servis :**
+  ```text
+  vue          panneau statique dans le MARQUAGE   chaîne limits servie
+  overview               non                              oui
+  macro                  OUI                              oui
+  sectors / breadth / volatility   non                    oui
+  ```
+  Sur `/markets?view=macro`, le marquage servi contient *« Courbe tracée sur les
+  **4 maturités réelles** du scan (3M · 5A · 10A · 30A). Les maturités
+  intermédiaires ne sont pas fournies par les moteurs — **non affichées plutôt
+  qu'inventées**. »* Et sur **les cinq vues**, la carte porte
+  `limits:'4 maturités réelles (3M/5A/10A/30A)'`. **Les deux sont des chaînes
+  fixes : aucune n'est conditionnelle.**
+  **Ce que le code fait réellement.** Client, `markets_page.py:584-586` : `mats`
+  liste 4 tickers, `pts = mats.filter(… value != null)`, puis
+  `if (pts.length < 2) { emptyCard(); return; }` — **la courbe se trace dès deux
+  points**. Serveur, `terminal.py:478-480` : `if _v is None: continue` — **une
+  maturité indisponible est omise du payload**. Le seuil `< 2` existe précisément
+  parce que « moins de 4 » est un état prévu.
+  **Une courbe tracée sur 2 ou 3 maturités porte donc, en toutes lettres,
+  « 4 maturités réelles ».**
+  **La règle est dans la même phrase.** Le panneau se déclare fier de « non
+  affichées plutôt qu'inventées » **deux propositions plus loin** : jusqu'ici la
+  bonne pratique et son oubli étaient à quelques lignes d'écart — ici ils
+  partagent **la même phrase**.
+  **Ce que je n'ai pas observé, et que je dis** : le payload `macro` présent au
+  démarrage porte **4 maturités sur 4**. Le décalage est **démontré par
+  construction, pas constaté sur des données réelles** — la différence est en
+  faveur du produit.
+  **Rang 1, famille du 422** : les **valeurs** affichées sont réelles, aucune
+  maturité n'est inventée ; c'est le **compte** qui devient faux quand une source
+  manque, dans une phrase qui se présente comme une déclaration de limites.
+  Correction pressentie, minuscule : compte **dynamique** et formulation sans
+  nombre fixe. **Aucun GO, rien d'engagé.**
+  **Décision de veine : le critère durci du 424 est REMPLI** — la phrase a été
+  extraite du **marquage servi**, pas d'un fichier source. La veine reste
+  **ouverte**. Et le **changement d'ordre est validé** : partir de l'écran a
+  produit en une mesure ce que trois lots partis du moteur n'avaient pas atteint.
+  **Portée** : **une** affirmation ouverte sur 17 ; les seize autres sont
+  **listées, non vérifiées** — notamment les deux affirmations de **méthode**. Le
+  recensement ne couvre que les littéraux de 15 à 150 caractères ; une
+  affirmation construite dynamiquement lui échappe.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ; SW
+  `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 424 — livré** : **« Thèse INTACT, confiance 0.0 » — le titre médian reçoit
   un verdict sans une seule preuve.** Huitième lot dans la veine des moteurs,
   cible `vertex/positions/thesis_health.py`, choisi selon la consigne du 423 :
