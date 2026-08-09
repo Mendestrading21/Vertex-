@@ -2720,6 +2720,41 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 474 — livré** : **RE-LOCALISATION — trois dossiers sur quatre retrouvés
+  et chiffrés, la collision de route du 452 prouvée par le routeur lui-même, et le
+  433 tombe dans la fonction que le devis du 461 vise déjà.** Contrôle sur réponse
+  déjà connue : **passé** (`analysis_page.py:856`). **447 (rang 1) retrouvé,
+  tient, chiffré** : producteur `gex.py:232` (aucun filtre d'échéance), site du
+  dossier `positions_api.py:206-215`, cinq consommateurs ; **le 447 citait
+  `portfolio_page.py:484` et il avait raison — `:484` rend `g.detail`, chaîne
+  construite trois fichiers plus loin.** **Fait de méthode neuf : un site de rendu
+  générique ne porte pas le vocabulaire du défaut qu'il affiche** — le 473 en avait
+  conclu « site introuvable » là où il fallait conclure « référence indirecte ».
+  **1 à 2 lignes, chez l'appelant** ; ne surtout pas toucher `gex.max_pain()`, dont
+  quatre autres consommateurs dépendent. **Seul dossier du devis déjà couvert par
+  des tests** (4 + 4) → risque moyen. **452 (rang 1) retrouvé, tient, chiffré** :
+  la collision est **prouvée par `app.url_map`** — deux règles vivantes pour
+  `/api/anomalies/<sym>` (`analysis_api.py:59` et `strategy_os_api.py:104`), la
+  seconde inatteignable, **et c'est la route morte qui porte l'avertissement
+  d'honnêteté sur ses propres limites**. 1 ligne, mais une **décision de produit**
+  préalable : laquelle doit vivre. **Gardien le plus rentable des quinze** —
+  « aucune URL deux fois dans le routeur » protège les 189 règles, et c'est **le
+  seul du devis dont l'échec est établi par exécution**. **432+433 (rang 1)
+  retrouvé, tient** : les trois phrases sont `:231`, `:244`, `:398` (+ `:742`,
+  `:744`), à conditionner à `allMarked` déjà calculé en `:197` — **3 lignes (+2)**,
+  zéro gardien existant. **Mutualisation la plus forte du devis : le 461 (`:221`)
+  et le 433 (`:231`) sont dans la MÊME fonction `dominantRisk`**, à dix lignes
+  d'écart ; aucun des deux rapports ne pouvait le savoir, écrits à trente lots
+  d'écart — **seul le devis, qui regarde les lignes et non les défauts, pouvait le
+  voir**. **442+443 borné et renvoyé au 475** (onzième bornage). **Feuille de
+  décision : quinze dossiers · 36 à 44 lignes · 15 gardiens · dix rang 1 · un seul
+  bump.** Treize des quinze tiennent dans cinq emplacements ; **sept lots de
+  travail**, dont le nouveau **F « les routes » (447+452+456, 4 lignes, 2 rang 1,
+  aucun octet servi)** — avec sa réserve : seul lot touchant un site déjà testé et
+  seul exigeant une décision de produit. Aucun fichier de production touché · SW
+  `td-shell-v187` · **MD5 8/8** · snapshot runtime 21 fichiers, écart final aucun ·
+  suite **2864 passed / 0 skipped**. Comptes : 42 · 5 · 3 · **re-localisation
+  4 → 1**.
 - **Lot 473 — livré** : **LE DEVIS, TROISIÈME TRANCHE — le rang 1 le plus utile
   chiffré à 6 lignes, mais QUATRE dossiers sur cinq ne sont pas devisables en
   l'état**, et c'est le résultat du lot : leurs sites publiés ne contiennent plus
