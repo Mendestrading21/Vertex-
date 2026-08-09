@@ -1720,6 +1720,51 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 405 — livré** : **aucun octet mort dans `/static` — 54 sur 54 réellement
+  référencés.** Balayage textuel, quelques secondes.
+  **Pourquoi ça compte** : le service worker met en cache **tout `/static`**
+  (règle n°3). Un fichier statique mort n'est donc pas du poids de dépôt — ce
+  sont des **octets téléchargés et conservés sur l'appareil de l'utilisateur**,
+  plus une entrée de plus dans l'empreinte que le gardien du lot 361 doit
+  suivre. Périmètre : **54 fichiers · 824 Ko** (34 `.js`, 17 `.css`, 2 `.woff2`,
+  1 `.md`).
+  **Instrument validé avant emploi** : recherche du **nom de base** dans tout le
+  texte du dépôt (1 218 fichiers), volontairement **large** — `<script src>`,
+  `url()` CSS, `@import`, chaîne Python composant le chemin ; chercher un chemin
+  exact aurait fabriqué de faux morts. **Témoin positif** :
+  `zz-temoin-mort-405.css` déposé dans `vertex/static/vertex/css/` → **seul
+  signalé**, aucun des 54 fichiers réels. Témoin supprimé aussitôt, arbre
+  vérifié propre.
+  **Le zéro rendu substantiel plutôt que décoratif — trois filtres** :
+  ```text
+  fichiers statiques                                        54
+     cités depuis la PRODUCTION (vertex/**, terminal.py)    54
+     cités seulement depuis un AUTRE fichier static          0
+     cités seulement dans docs/ ou tests/                    0
+     cités NULLE PART                                        0
+  ```
+  Puis le **contrôle de second ordre**, celui qui distingue vraiment : un fichier
+  référencé uniquement par un module lui-même mort est mort par transitivité.
+  `CLAUDE.md` et les lots 327/381 nomment six modules `vertex/ui/` sans aucun
+  consommateur en production. Sur **302 modules de production examinés (dont 6
+  connus morts)** : **0 fichier statique n'est cité que par un module mort**.
+  Les 54 sont donc tous atteints depuis du code vivant.
+  **Ce que ce lot dit du dossier « code mort »** : le poids mort est **dans le
+  monolithe Python** — 604 Ko de `PAGE_*` jamais servis (374), `vx_kit.JS` qui
+  n'atteint aucune page (381), cinq modules reliques (327) — **pas dans les
+  octets servis**. `/static` est propre ; inutile d'y chercher un gain de poids
+  en arbitrant les dossiers de rang 3.
+  **Portée** : recherche **textuelle par nom de base**. Elle prouve qu'un nom
+  apparaît dans du code vivant, pas que la ligne qui le contient soit
+  **exécutée**. Aller plus loin supposerait de relever les requêtes réelles d'un
+  navigateur sur les 8 pages — donc de lancer le serveur DEMO, donc de fabriquer
+  un point dans `breadth_history.json` : coût non justifié pour confirmer un
+  zéro déjà filtré trois fois.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** — le
+  témoin créé par la sonde a été supprimé par la sonde, `git status` vide de
+  bout en bout ; empreinte SW inchangée ; SW `td-shell-v187` ; écart runtime
+  final aucun.
+
 - **Lot 404 — livré** : **les assertions avalées par un `except` — zéro, et le
   zéro est substantiel.** Symétrique exact du lot 403 : celui-ci cherchait les
   tests qui **n'affirment rien**, celui-là ceux qui **affirment, mais dont
