@@ -1720,6 +1720,63 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 407 — livré** : **le `|| 0` qui fabrique une alerte de concentration.**
+  Le lot 406 avait trouvé deux clés lues mais jamais écrites, et suivi **une**
+  conséquence (la courbe d'équité qui ne s'affiche jamais). Ce lot suit **la
+  seconde — et elle est plus grave**.
+  **D'abord borner.** `vx-entities.js` lit **11** clés et en écrit **9** :
+  **exactement deux orphelines**, `myCapital` et `myTradesEquity`, pas une de
+  plus. Et sur les 8 pages servies, **un seul module** les consomme —
+  `portfolio_page.py` (L296, L586, L718). Le périmètre du dossier 406 est
+  **confirmé et clos** : 2 accesseurs, 1 page.
+  **La conséquence non suivie.** L718 envoie
+  `cash: E().capital() || 0` avec `simulated: false`. Or `capital()` vaut
+  **toujours `null`** : le `|| 0` **convertit silencieusement une donnée absente
+  en un zéro**, transmis à `/api/portfolio/team` et **déclaré réel**
+  (`provenance='REAL'`). Trois lignes plus bas, le fichier écrit lui-même la
+  règle qu'il enfreint : *« Manquant/insuffisant n'est jamais présenté comme
+  zéro. »*
+  **Ce que ce zéro change, mesuré** — moteur exécuté deux fois sur les **mêmes**
+  positions :
+  ```text
+  mesure          cash = 0        cash = 50 000    verdict
+  equity          4 100           54 100           DIFFÈRE
+  hhi             0.5003          0.0029           DIFFÈRE  (×170)
+  issue_gardien   True            False            DIFFÈRE
+  ```
+  `hhi` est calculé sur l'équité **cash compris** ; envoyer 0 gonfle la
+  concentration de deux ordres de grandeur. Et la page **affiche** ce chiffre :
+  `if (risk.hhi >= 0.66) → « Concentration très élevée (HHI …) »`.
+  **Le seuil est-il franchi ? Oui, mesuré** :
+  ```text
+  1 position    HHI cash=0  1.0     → ALERTE       | cash=50k 0.0015 → aucune   ★ FABRIQUÉE
+  2 positions   HHI cash=0  0.5003  → aucune       | cash=50k 0.0029 → aucune
+  4 positions   HHI cash=0  0.3019  → aucune       | cash=50k 0.0073 → aucune
+  ```
+  **Avec une seule position déclarée, le terminal affiche « Concentration très
+  élevée (HHI 1) » — un artefact du `|| 0`, pas une lecture du portefeuille.**
+  Le blob actuel porte 2 positions, donc l'alerte ne part pas aujourd'hui ; mais
+  **le HHI affiché reste faux d'un facteur ~170** et servi comme mesure réelle.
+  **Une conséquence qui, elle, n'atteint pas l'écran — dite quand même.**
+  `team_view` conclut **toujours** « pas de gardien (cash/monétaire) »
+  (`ROLE_TARGETS[GOALKEEPER] = (1,1)`, `if snapshot.cash > 0` jamais vrai). Mais
+  la page **ne consomme pas** `d.team` — `team` n'y désigne que le nom de la vue
+  « Synthèse ». Vérifié : calculé, **pas affiché**. Je le dis plutôt que de
+  grossir le dossier.
+  **Trois issues, aucune engagée** (toutes touchent un octet servi ou un moteur) :
+  (1) ne pas envoyer un zéro pour une absence ; (2) **alimenter `myCapital`** —
+  même décision que le volet 1 du 406, elle règle les deux d'un coup,
+  **RECOMMANDÉ** ; (3) a minima masquer le HHI et son alerte quand le cash est
+  inconnu.
+  **Portée** : les chiffres viennent d'une exécution directe de `risk_engine` et
+  `stress_tests` sur des positions **fabriquées pour la mesure** — c'est la
+  méthode qui est démontrée, pas le portefeuille du trader ; `beta` et
+  `pire_stress` ressortent `None` faute d'entrées, leur sensibilité au cash
+  **n'est pas affirmée**.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ;
+  moteurs exécutés en mémoire, sans serveur ; SW `td-shell-v187` ; écart runtime
+  final aucun.
+
 - **Lot 406 — livré** : **sept clés synchronisées que rien n'écrit, et une
   promesse intenable sur `/portfolio`.** Après trois lots négatifs (403, 404,
   405), celui-ci trouve — et c'est **visible par l'utilisateur**.
