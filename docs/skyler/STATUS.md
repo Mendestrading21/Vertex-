@@ -2570,6 +2570,77 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 464 — livré** : **le ledger qui produit le track record affiché ne peut
+  pas distinguer un verdict de DÉMO d'un verdict réel — trois écrivains
+  append-only sur quatre ont perdu la provenance, et le quatrième la garde.**
+  44ᵉ lot, quatrième de la tranche. Le 463 a nommé « une promesse de provenance
+  que le journal perpétue » ; ce lot attaque **les écrivains de fichiers runtime
+  et leur garde de provenance**.
+  **Calibrage, DEUX critères posés avant la première mesure** : **(1)** seul ce
+  qui est **dérivé d'une donnée de marché** entre dans la population (utilisateur
+  / config / méta : exclus, nommés) ; **(2)** trouvé en lisant la liste —
+  **ÉCRASER N'EST PAS ACCUMULER** : un cache réécrit à chaque cycle **ne
+  perpétue rien**, un journal accumule. **Ce critère BORNE rétroactivement le
+  463.**
+
+  ```text
+  28 sites d'écriture · 21 fichiers runtime distincts
+     14 ÉCRASENT (caches)          un mensonge de démo n'y survit pas
+      3 SANS OBJET                 desk_data ×2 · track_meta
+      7 ACCUMULENT du marché       ← la population
+  ```
+
+  **Correction d'instrument, quatrième de la série et d'une forme neuve** : le
+  détecteur AST cherchait `save_json` et **a manqué `track_record.record()`, qui
+  écrit par un `open(…, 'a')` brut** — piège du détecteur à une seule forme
+  **transposé aux écritures**. Révélé par la **lecture**, pas par la taille.
+  Faux arrêtés : **32 → 33**.
+  **Les sept accumulateurs** : `breadth_history` (**connu 391/396**) ·
+  `gex_history_cache` (**connu 463**) · **`skyler_memory` → `'demo'` STOCKÉ,
+  GARDÉ ← témoin** · **`edge_ledger.jsonl` NON GARDÉ** · **`skyler_decisions`
+  provenance PERDUE** · **`skyler_sessions` provenance IMPOSSIBLE** ·
+  `alerts_fired` (pressenti au 462, nommé non tranché).
+  **Le témoin positif** : `decision_memory.freeze()` stocke `'demo'` comme champ
+  **lisible** et le fait entrer dans le hachage de `decision_id` — deux décisions
+  identiques, l'une démo l'autre réelle, **coexistent séparément**. **Sur le même
+  chemin de code, dans les mêmes `try`, quatre écritures append-only : une seule
+  retient la provenance que la route a calculée.**
+  **La trouvaille** : `analysis_api.py:102` lit `DEMO_MODE` et le passe aux
+  moteurs — **la décision SAIT qu'elle est de démo** — puis
+  `skyler_journal.record()` écrit 8 champs et **mesuré, `'demo' in entrée` →
+  False : le drapeau est reçu puis JETÉ** ; `session_log.record_close(log, sym,
+  date, close)` **n'a aucun paramètre de provenance** ; et
+  `track_record.record(state)` écrit en **append-only** 12 champs **sans aucune
+  provenance**. **Banc** (persist redirigé, `cache_path` vérifié) : 2 lignes
+  écrites, aucun champ de provenance, `evaluate()` lit le ledger et **ne filtre
+  pas**. **L'appelant ne garde pas** : `terminal.py:1430`, toutes les 6 h, **sans
+  condition sur `DEMO_MODE`** — alors que le fichier le teste **seize** fois
+  ailleurs.
+  **Ce que l'écran en fait** : `/journal` affiche « moyenne réelle des verdicts
+  résolus (n≥5) — **mesure, pas une promesse** », calculée sur ce ledger.
+  **RANG 1, et je dis sur quel critère : le CONSOMMATEUR.** Une frise GEX fausse
+  désinforme ; un track record contaminé **change ce que l'utilisateur croit que
+  le moteur vaut**. Trois aggravations : **append-only** (aucune purge),
+  **indétectable** (aucun champ), **définitive** (« Ledger immuable » affiché).
+  **Précondition dite franchement** : il faut avoir tourné en DEMO — mais la
+  démo est le **défaut dès que `NO_IBKR=1`**, donc à tout lancement sans TWS.
+  Correction pressentie : passer `demo` à `record()`, **déjà dans la portée de
+  l'appelant**, comme `decision_memory` le fait. **Aucun gardien** ; le dossier
+  417 porte sur les **dénominateurs**, pas la provenance — **pas de recoupement**.
+  **Portée** : banc sur état **fabriqué** — établit **l'absence de garde**, pas
+  la proportion réelle ; **`edge_ledger.jsonl` n'a pas été ouvert** ; DEMO établi
+  **par lecture** ; **une écriture par un chemin encore différent échapperait —
+  c'est arrivé une fois dans ce lot même**, reste **non quantifié** ;
+  `alerts_fired` **non tranché** ; **aucun navigateur**.
+  **Premier rang 1 depuis le 457, et rendu en BORNANT : sixième bornage
+  consécutif.** Fait de méthode confirmé : **c'est en LISANT la liste, pas en la
+  comptant, que le défaut de l'instrument se voit** — quatrième détecteur
+  consécutif faux à la première écriture.
+  **Aucun code, aucun gardien, aucun test ; aucun GO demandé, rien d'engagé.**
+  Anti-doublon `total 100 · actifs 0` ; aucun fichier touché ; MD5 **8/8** ;
+  snapshot runtime 21 fichiers, écart final **aucun** ; suite **2864 passed /
+  0 skipped**. Comptes : arrêtés **33**, publiés puis corrigés **3**,
+  interprétations retirées **1**.
 - **Lot 463 — livré** : **les promesses de provenance — l'historique GEX
   journalise les profils de DÉMO dans un fichier de 120 jours et les ressert sous
   la légende « points réels uniquement », la seule promesse qui SURVIT au retour
