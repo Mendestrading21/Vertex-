@@ -1824,6 +1824,62 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 414 — livré** : **les 167 boutons servis sont tous câblés ; un bouton
+  mort fabriqué par le JS servi ne serait vu par aucun test.** Un bouton qui ne
+  fait rien est le défaut le plus banal d'une interface, et le plus humiliant :
+  le trader clique, rien ne se passe, il ne sait pas si c'est l'application ou
+  lui. Trois tests déclarent l'invariant ; personne n'avait mesuré ce qu'ils
+  couvrent **des octets servis**.
+  ```text
+  boutons dans le HTML rendu (scripts retirés)   85
+  boutons fabriqués par le JS servi              82   (inline de page 64 · /static 18)
+  total                                         167
+  ```
+  **Correction de cohérence interne** : une première passe annonçait **231** — 
+  elle comptait deux fois les boutons vivant dans un `<script>` inline.
+  **Verdict, avec un critère durci** (l'id doit être un **littéral cité** ET à
+  moins de 70 caractères d'un accesseur) : **inline 18 · id 87 · `data-*` 62 ·
+  SANS ÉCOUTEUR 0**. Les 62 `data-*` ont été **ouverts** : 16 attributs
+  distincts, chacun avec son site de consommation nommé (`data-open-analysis` 53,
+  `data-entity-menu` 10, `data-close-drawer`/`data-close-modal`,
+  `data-filter-key`, `data-i` → `btns.forEach(b => b.addEventListener(…))`).
+  **Cinq témoins** : bouton nu, `data-zzz-lot414` inconnu, id inexistant → morts ;
+  `onclick` réel et `id="vx-collapse-btn"` (accroché via l'aide `$()`) → câblés.
+  **L'instrument s'est encore trompé, et c'est la même faute.** Un premier
+  durcissement exigeant `getElementById('id')` donnait **55 boutons « morts »**,
+  dont `vx-collapse-btn` et `vx-notifs-btn` — manifestement vivants. Cause :
+  `vx-shell.js` accroche par une **aide locale**, `$('vx-collapse-btn')`.
+  **Troisième répétition** (409 `emptyCard`, 413 `get(…)`, 414 `$(…)`) → le
+  critère est devenu agnostique à l'accesseur.
+  **Ce que les trois gardiens couvrent, mesuré par mutation.** Un bouton mort
+  déposé **dans le shell** : `test_every_button_has_handler` **MORD** ;
+  `test_ui_v3::test_no_dead_buttons` **passe**, car il **court-circuite** dès
+  qu'un attribut `data-` existe — ce qui **exempte 62 des 167 boutons** ; le
+  troisième passe aussi. Le même bouton déposé **dans un fichier JS servi**
+  (`vx-entities.js`) : **les trois passent**, et la suite complète ne rend
+  **qu'un** échec — **l'empreinte `/static` du 361**, qui ne dit rien du bouton.
+  Empreinte mise à jour comme le flux de travail l'impose de toute façon :
+  ```text
+  octet /static modifié · empreinte mise à jour · bouton mort servi
+  suite complète →  2864 passed
+  ```
+  **Entièrement verte, avec un bouton inerte servi sur les 8 pages.** Raison :
+  `test_every_button_has_handler` balaie `vertex/ui/pages/*.py` et le shell,
+  **pas `vertex/static/**/*.js`** — où vivent **18 des 167** boutons. Même défaut
+  de périmètre que le **385** (recensement s'arrêtant à `vertex/`) et le **381**
+  (liste gardée qui n'est pas celle qui est servie), sur un troisième objet.
+  **Bilan : le produit est sain (0 mort sur 167), le filet ne couvre que
+  149/167.** Trou **non comblé** : livrer un gardien « parce qu'un trou existe »
+  est interdit depuis le 384, et l'invariant n'est pas violé aujourd'hui.
+  **Classé rang 3** — élargir le périmètre demande d'accepter la délégation
+  inter-fichiers, c'est une décision de conception.
+  **Portée** : le contrôle établit qu'un écouteur **existe**, pas que le clic
+  produise le bon effet ; l'analyse est statique, et un attribut calculé au vol
+  échapperait — mesuré à **0** occurrence dans le corpus servi.
+  Suite **2864 passed / 0 skipped**, inchangée. Sondes **restaurées à l'octet**
+  et vérifiées **par l'instrument lui-même** (361 → 5 passed, `git status`
+  vide) ; SW `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 413 — livré** : **les 156 chemins que le client peut demander — aucun ne
   pointe dans le vide.** Un chemin d'API mal écrit côté client ne casse rien de
   visible : la requête part, le serveur répond 404, la carte reste sur son état
