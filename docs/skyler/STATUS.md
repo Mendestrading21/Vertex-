@@ -2720,6 +2720,57 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 487 — livré** : **la dette du 486 soldée AU NAVIGATEUR — le défaut est
+  confirmé à l'écran, le mécanisme s'allume dès qu'on remplit le champ, et
+  l'atténuation qui maintenait le rang 2 est RÉFUTÉE : l'alerte et la barre ne
+  sont jamais sur la même vue. 486-A passe au RANG 1.**
+- **Banc** : Chromium préinstallé lancé par `executable_path` (1194 sur disque,
+  Playwright réclamait 1228 — **`playwright install` non lancé**) ; **synchro
+  desk coupée en lecture ET en écriture** au niveau réseau ; positions semées en
+  `localStorage` avant hydratation (poids 40/30/30 %).
+- **Deux calibrations, la première a ÉCHOUÉ** : en ne bloquant que le POST,
+  l'alerte affichait « ACN = 65 % » — **un symbole non semé** : la page
+  s'hydratait depuis le desk serveur. **Aucun résultat de ce passage n'a été lu.**
+  Corrigé en coupant le GET → « AAA = 40 % », le poids exact. Seconde
+  calibration (les 3 symboles semés dans le tableau) : passée.
+- **Découverte de structure** : le tableau des poids **n'est pas sur la vue par
+  défaut**. `/portfolio` ouvre sur **Synthèse** (0 cellule Poids) ; le tableau
+  vit sur **Positions**. Sans ce clic, le banc mesurait une page sans l'objet.
+- **CONFIRMÉ par exécution** : `AAA 40,0 %` → **barre verte**, tick absent,
+  suffixe absent, `vx-warn` false, Conviction « — ». Une position à 40 % du
+  portefeuille affiche une barre verte. Le repli « — » de `convOf` est **honnête**.
+- **Second contrôle — un cas que le produit n'exerce jamais** : avec
+  `entrySnap.score = 30` injecté, la même ligne donne `40,0 % / 5 %`, barre
+  **rouge**, tick **présent**, suffixe **présent**, `vx-warn` **true**,
+  « A · 30 ». **Le mécanisme fonctionne : le code n'est pas cassé, il attend une
+  donnée que personne n'écrit.** Le contrôle confirme la **cause**, pas seulement
+  le symptôme.
+- **RÉFUTÉ — mon propre classement** : Synthèse → alerte présente, **0 cellule
+  Poids** ; Positions → 3 barres vertes, **« Concentration élevée » absente**.
+  **Jamais à l'écran en même temps.** Ma « co-visibilité » venait des **octets
+  servis**, pas du **rendu** — la leçon que le 486 avait lui-même publiée, que
+  j'avais appliquée au défaut **et pas à mon atténuation**.
+- **Contrepoids donné** : l'alerte est sur la vue **par défaut**, donc vue en
+  premier. Cela ne restaure pas le rang 2 : la vue Positions est celle dont le
+  métier est le risque **ligne par ligne**, et rien n'y signale le plafond.
+  **486-A : rang 2 → RANG 1.** **Publiés puis corrigés 9 → 10.**
+- **Fait de méthode** : **le test d'accessibilité doit être appliqué à
+  l'ATTÉNUATION autant qu'au DÉFAUT.** J'ai cru mon atténuation sur parole parce
+  qu'elle m'arrangeait — elle faisait descendre un rang.
+- **Portée** : exclusivité des onglets établie sur **deux passages**, pas une
+  seule session (deux bascules en session ont échoué ; **la mesure inutilisable a
+  été écartée, non lue**). Poids **semés**, un seul viewport, pas de mobile.
+  **`/api/client-log` = 0 erreur** ; l'unique erreur console est **mon propre
+  blocage de `/api/desk`**, non comptée. Le **latent** du 486 reste latent — le
+  banc l'a contourné en injectant un score déjà sur /40.
+- **Le contrôle d'apparition a attrapé ma propre pollution** : `l487_res.json`
+  écrit à la racine du dépôt par un script du banc. Supprimé, restauration
+  revérifiée : **21 fichiers, écart AUCUN**. `breadth_history` et `daily_prev`
+  touchés par le serveur DEMO (reproduction du 391), **restaurés à l'octet**.
+- Feuille : **24 dossiers · quatorze rang 1 · huit rang 2 · trois rang 3**.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  serveur DEMO **arrêté et vérifié** · suite **2864 passed / 0 skipped**.
+
 - **Lot 486 — livré** : **le test du 485 appliqué à TOUS les barèmes — le score
   /40 est affiché sur DEUX pages et non une, et la trouvaille vient du cas que
   mon recensement EXCLUAIT : la barre de poids de `/portfolio` est TOUJOURS
