@@ -2570,6 +2570,75 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 463 — livré** : **les promesses de provenance — l'historique GEX
+  journalise les profils de DÉMO dans un fichier de 120 jours et les ressert sous
+  la légende « points réels uniquement », la seule promesse qui SURVIT au retour
+  en mode réel.** 43ᵉ lot, troisième de la tranche. Le 462 avait signalé hors
+  calibrage une phrase affirmant une propriété qu'un repli dément ; ce lot prend
+  la piste.
+  **Calibrage posé AVANT la première mesure** : une promesse de provenance porte
+  du texte visible, contient un marqueur d'une **liste fermée**, et **AFFIRME**
+  au lieu de **NOMMER** — « Connexions (IBKR, …) » nomme, « points réels
+  uniquement » affirme.
+  **Correction d'instrument, troisième de la série 461-462-463** : première
+  mesure **88 phrases**, **le contrôle passait**, et c'est la **lecture de la
+  liste** qui a trahi l'instrument (`live` appariait `live-updates.js` et
+  `connected-live` ; `ibkr` appariait `vx-conn-ibkr-badge` et
+  `/api/ibkr/positions`) — **le critère « affirmer, pas nommer » était posé dans
+  le calibrage mais imposé nulle part dans le code**. **88 → 31.** Faux arrêtés :
+  **31 → 32**. **Leçon : la taille détecte le bavardage GROSSIER ; le bavardage
+  MODÉRÉ ne se voit qu'en lisant la liste.**
+  **Ce que la famille contient — elle re-surface surtout du connu** : 31
+  promesses, **22 tranchées**, **9 nommées non tracées** (exclues de tout total).
+
+  ```text
+  branches d'ABSENCE (« rien d’inventé »)      11   promesse TENUE
+  CONDITIONNELLES (`demo ? … : …`)              5   honnêtes par construction
+  dossiers DÉJÀ OUVERTS                         4   425 · 363 · 407 · 386/431
+  vérifiée au 462 (« moyenne réelle … n≥5 »)    1   concorde
+  NOUVELLE TROUVAILLE                           1
+  ```
+
+  **Le bornage demandé est rendu : la famille ne creuse pas de terrain neuf.**
+  **La trouvaille** — `gex_history.py` promet dans sa docstring « QUE des profils
+  **réels** **non vides** » ; **la garde n'en couvre qu'UNE**. Mesuré :
+  `record(profile)`, **aucun paramètre de provenance** ; seule garde = non vide.
+  **Banc** (persist redirigé vers un tempdir) : `record()` sur un profil
+  synthétique → **True**, fichier écrit, `series()` le relit et le sert.
+  L'appelant ne garde pas non plus — son commentaire dit « réel seulement » et la
+  **même fonction** sert `'demo': bool(DEMO_MODE)` dans la même réponse.
+  **Et la légende est inconditionnelle** : `options-gex.js:32` écrit
+  `d.demo ? '…DÉMO…' : ''` — **la page SAIT** — et **75 lignes plus bas**,
+  `:107`, elle affirme « points réels uniquement » sans consulter ce drapeau.
+  Famille 433/457 portée à son degré le plus net : l'information honnête est
+  **déjà utilisée soixante-quinze lignes plus haut**.
+  **Ce qui en fait un défaut DISTINCT et non le 391/396 redit** : en DEMO tout
+  l'affichage du scan est synthétique — **compter chaque phrase « réelle » comme
+  un défaut séparé gonflerait le résultat de quinze cas imaginaires, je ne le
+  fais pas**. Ce qui distingue celui-ci : **il PERSISTE**. Le point écrit en démo
+  au jour D−30 reste **120 jours** ; au jour D en réel, `d.demo` vaut `false`,
+  **l'étiquette DÉMO disparaît**, et la frise mêle démo et réel sous « points
+  réels uniquement », **sans aucun signal**. **Second site du genre 391/396**
+  (qui porte, lui, sur `breadth_history.json`). **Rang 2** — il faut avoir tourné
+  en DEMO, et cela n'inverse pas une décision d'entrée comme au 457.
+  **Le gardien existe et couvre l'AUTRE promesse** : `test_gex_history.py`
+  verrouille « non vides » ; **rien ne verrouille « réels »**. Une garde sur la
+  bonne fonction, **sur la mauvaise propriété**.
+  **Portée** : 9 promesses non tracées ; liste de tournures **fermée**
+  (**non quantifié**) ; le banc établit **l'absence de garde**, pas la fréquence
+  réelle ; **`gex_history_cache.json` n'a PAS été ouvert** ; atteignabilité du
+  mode DEMO **par lecture** ; **aucun navigateur**.
+  **Fait de méthode** : troisième détecteur consécutif faux à la première
+  écriture — **la seule parade efficace trois fois sur trois est de LIRE la liste
+  avant de la compter**. **Un mensonge affiché se corrige en rafraîchissant ; un
+  mensonge JOURNALISÉ se corrige en purgeant un fichier.**
+  **Genre neuf : UNE PROMESSE DE PROVENANCE QUE LE JOURNAL PERPÉTUE.**
+  **Cinquième bornage consécutif.**
+  **Aucun code, aucun gardien, aucun test ; aucun GO demandé, rien d'engagé.**
+  Anti-doublon `total 100 · actifs 0` ; aucun fichier touché ; MD5 **8/8** ;
+  snapshot runtime 21 fichiers, écart final **aucun** ; suite **2864 passed /
+  0 skipped**. Comptes : arrêtés **32**, publiés puis corrigés **3**,
+  interprétations retirées **1**.
 - **Lot 462 — livré** : **les phrases-seuil servies — 26 sur 28 citent EXACTEMENT
   le seuil que le code applique, le défaut du 461 est un accident isolé, et la
   seule autre divergence porte sur une branche INATTEIGNABLE.** 42ᵉ lot, deuxième
