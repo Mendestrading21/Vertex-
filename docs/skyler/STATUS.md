@@ -2570,6 +2570,65 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 467 — livré** : **l'intervalle [22, 37] du 466 se résout à 28 — neuf des
+  quinze suspectes étaient des redirections de compatibilité, et mon CONTRÔLE
+  obligatoire était lui-même mal spécifié : il rejetait un instrument juste.**
+  47ᵉ lot, septième de la tranche. Le 466 avait publié un intervalle faute
+  d'avoir tranché quinze routes citées uniquement depuis `terminal.py`.
+  **Calibrage** : chaque citation classée par sa **position syntaxique** (`ast`)
+  — **A** déclaration (`@…route`) · **B** appel Python (`redirect`, `url_for`,
+  `client.get`…) · **C** texte client. **Une seule citation B suffit à déclarer
+  la route consommée.**
+  **LE FAIT DE MÉTHODE — mon contrôle était faux** : il a rendu « 0 citation B →
+  AVEUGLE AUX APPELS, VERDICT NUL ». **Le classeur n'était pas aveugle** : le
+  contrôle cherchait un B **parmi les suspectes**, or c'est **le résultat
+  cherché**, pas une preuve. Refait en deux volets :
+
+  ```text
+  V1 fixture synthétique  route→A · redirect→B · href→C · client.get→B   SAIN
+  V2 témoin réel /analysis/   A=1 B=2 C=2
+     B → redesign.py:256  redirect(f'/analysis/{sym}', code=301)      VOYANT
+  ```
+
+  **Jusqu'ici mes contrôles n'attrapaient que des faux POSITIFS ; celui-ci a
+  produit un faux NÉGATIF. Le contrôle peut être faux dans les DEUX sens.**
+  **Cinquième correction** : le témoin V2 a révélé que `/titre/<sym>` est une
+  **redirection 301** — le 466 avait bâti K4 depuis le **dictionnaire**
+  `LEGACY_REDIRECTS` et ne voyait pas celles **déclarées par décorateur**.
+  Reclassement **par le corps de la vue** → **9 redirections** parmi les 37.
+  **Verdict des quinze : 9 redirections · 6 orphelines confirmées · 0
+  consommée.** Aucune n'était un appel serveur — mais **neuf n'étaient pas
+  mortes pour autant**.
+
+  ```text
+  189 règles = 98 K1 + 28 K2 + 9 K3 + 21 K4 + 5 E3 + 28 ORPHELINES
+                                            28 / 189 = 14,8 %
+  ```
+
+  **L'intervalle se résout à 28 ; le plafond de 37 était gonflé de NEUF.**
+  **Deux corrections d'unité** : les « 53 citations de `/titre/<sym>` » du 466
+  étaient des **occurrences de sous-chaîne**, pas des sites — **12 littéraux
+  distincts** par nœud `ast` ; et ces douze pointent vers une redirection **qui
+  fonctionne**, donc **pas des liens cassés**.
+  **Lignes mortes de `terminal.py`** : `/desc/<sym>` 30 · `/api/correlations/`
+  26 · `/weekly-regen` 13 · `/api/company/` 6 · `/api/rescan` 5 ·
+  `/api/alerts/status` 3 → **83 sur 7 154, soit 1,2 %**. **Limite** : ne couvre
+  que les handlers ; les 18 citations « texte client » vivent **au niveau
+  module** et **ne sont pas dans les 83 lignes**.
+  **Portée** : classe B sur **liste fermée d'appelants** — un dispatch dynamique
+  gonflerait le compte · le test K4 (« contient `redirect(` et rien d'autre »)
+  est **grossier**, même si les neuf ont un corps identique · **compte exact
+  pour la méthode, pas absolu** · **aucune route appelée** · **aucun navigateur**.
+  **Neuvième bornage consécutif**, et le neuvième **réduit** encore ce que la
+  boucle croyait avoir trouvé.
+  **Règle : un contrôle doit porter sur un cas dont on connaît DÉJÀ la réponse ;
+  un contrôle qui porte sur la question posée ne contrôle rien.**
+  **Aucun code, aucun gardien, aucun test ; aucun GO demandé, rien d'engagé.**
+  Anti-doublon `total 100 · actifs 0` ; aucun fichier touché ; MD5 **8/8** ;
+  snapshot runtime 21 fichiers, écart final **aucun** ; suite **2864 passed /
+  0 skipped**. Comptes : arrêtés **39**, publiés puis corrigés **3**,
+  interprétations retirées **1**, + **une correction d'unité** sur un chiffre
+  du 466.
 - **Lot 466 — livré** : **les routes qui travaillent pour personne — entre 22 et
   37 des 189 règles déclarées n'ont aucun consommateur atteignable, et 15
   d'entre elles ne sont citées que depuis du JS de `terminal.py` qui n'atteint
