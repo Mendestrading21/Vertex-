@@ -1720,6 +1720,65 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 406 — livré** : **sept clés synchronisées que rien n'écrit, et une
+  promesse intenable sur `/portfolio`.** Après trois lots négatifs (403, 404,
+  405), celui-ci trouve — et c'est **visible par l'utilisateur**.
+  **La question** : le contrat `DESK_KEYS` (règle critique n°1) liste **17 clés**
+  synchronisées. Jamais posée : ces 17 clés sont-elles réellement **produites**
+  par le client ? Une clé listée que rien n'écrit, c'est la synchronisation d'un
+  fantôme.
+  **L'instrument s'est trompé d'abord.** Première passe : « 13 clés sur 17 sans
+  écrivain », dont `myTrades` — la clé des positions du trader. Absurde. J'avais
+  exclu `vx-entities.js` du corpus parce qu'il porte la **liste** `DESK_KEYS`,
+  sans voir qu'il porte aussi **les écrivains** (`set('myTrades', list)` et
+  quinze autres). *Exclure un fichier pour ce qu'il déclare, c'est se priver de
+  ce qu'il fait.* Corrigé : exclusion des **lignes** de déclaration, pas des
+  fichiers. Témoin négatif : une clé inventée ne trouve aucun site.
+  ```text
+  clés du contrat DESK_KEYS                              17
+     avec au moins un site d'écriture en production      10
+     SANS aucun site d'écriture                           7
+  ```
+  Les sept : `myTradesEquity` · `myRecosClosed` · `myCapital` · `simCash` ·
+  `simStart` · `simTrades` · `simClosed`. Vérification exhaustive des écritures
+  littérales sur tout `vertex/**` et `terminal.py` : **aucune** ne les vise.
+  Blob desk **réel** : **6 clés sur 17** portent des données, **aucune des sept**
+  n'y figure, et aucune clé hors contrat.
+  **LE DÉFAUT VISIBLE.** `portfolio_page.py` L296/L586/L718 lisent
+  `E().capital()` et `E().equity()`, soit `myCapital` et `myTradesEquity` —
+  **jamais écrits**. Donc `eq` vaut **toujours `[]`** : la branche
+  `if(eq.length>=2…)` est **inatteignable**, la **courbe d'équité** et le
+  **drawdown** ne peuvent **jamais** s'afficher, et `cash` vaut toujours
+  `null`/`0`.
+  **Le problème n'est pas la carte vide — c'est ce qu'elle promet** : « *Courbe
+  d'équité indisponible — elle se construit au fil des clôtures de positions
+  déclarées.* » Or clôturer une position exécute `set('myTrades', list);
+  set('myTradesClosed', closed);` (`vx-entities.js:171`) — **jamais**
+  `myTradesEquity`. Le trader peut déclarer autant de clôtures qu'il veut : la
+  courbe n'apparaîtra pas. **L'état vide donne une consigne qui ne peut pas
+  aboutir** — pas un chiffre inventé, mais son cousin : une promesse que le code
+  ne peut pas tenir.
+  **L'« évidence » à NE SURTOUT PAS FAIRE.** Élaguer `DESK_KEYS` de 17 à 10
+  serait une **perte de données**, pas un nettoyage : le push desk est
+  **last-writer-wins total** (mécanisme du lot 362), et un profil de navigateur
+  détenant encore `simCash`/`simTrades`/`simClosed` (l'ère du simulateur) les
+  verrait **cesser d'être synchronisées puis disparaître du serveur** au premier
+  push suivant. Le blob mesuré ici ne les contient pas — mais il ne dit rien des
+  autres profils, et il n'y a pas de retour en arrière.
+  **Dossier de rang 1, deux volets, aucun engagé** : (1) **la promesse de
+  `/portfolio`** — soit alimenter `myTradesEquity` à la clôture (le comportement
+  que le texte promet), soit réécrire l'état vide ; **les deux touchent un octet
+  servi** (bump SW, MD5, gardiens), c'est une décision. (2) **Les 7 clés** —
+  recommandation : **les garder** (coût nul, le push n'envoie que les clés
+  réellement présentes ; le retrait, lui, est irréversible).
+  **Portée** : la recherche porte sur les écritures **littérales** ; les 53 sites
+  `set(<variable>, …)` du dépôt ont été vérifiés — aucun ne concerne le magasin
+  desk. Et « présente dans le blob » vaut pour **un** profil, celui de cette
+  machine — c'est précisément pourquoi l'élagage est déconseillé.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ;
+  `desk_data.json` **lu seulement**, jamais écrit ; SW `td-shell-v187` ; écart
+  runtime final aucun.
+
 - **Lot 405 — livré** : **aucun octet mort dans `/static` — 54 sur 54 réellement
   référencés.** Balayage textuel, quelques secondes.
   **Pourquoi ça compte** : le service worker met en cache **tout `/static`**
