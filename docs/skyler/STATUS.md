@@ -2054,6 +2054,53 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 433 — livré** : **le portefeuille calcule `allMarked`, s'en sert pour une
+  classe CSS, et l'ignore dans les trois phrases qui rassurent.** Seizième lot de
+  la veine, **bornage du 432**. **Pool** : sur le corpus servi, les littéraux
+  commençant par *Aucun/Aucune/Rien/Pas de/Tout* → **47 phrases rassurantes**. La
+  majorité décrit une **absence d'entrée** (honnête par construction) ; la classe
+  dangereuse affirme une **absence de problème** après une évaluation qui n'a
+  peut-être pas eu lieu — **trois vivent sur `/portfolio`**.
+  **Mesure par exécution des octets servis** (Node 22) :
+
+  ```text
+  cas                        allMarked   risque dominant                     liste de décision
+  TÉMOIN POSITIF, 1 cassée     true      « 1 position(s) sous invalidation » 1 position(s)
+  4 positions SANS marque      false     « Aucun risque critique détecté —   « Aucune position urgente —
+                                           concentration et invalidations      toutes les thèses sont intactes
+                                           dans les repères »                  ou en surveillance normale. »
+  1 seule position, sans marque false     « Concentration élevée : 100 % »   idem
+  ```
+
+  Le troisième cas **nuance mon propre constat** : la branche « concentration »
+  mord quand même (les poids se replient sur le coût investi) — seule la partie
+  « invalidations » est aveugle. **Ce qui rend ce lot différent du 432 :
+  l'information EXISTE, calculée, à portée.** `computeMetrics` (`:197`, servi)
+  calcule `allMarked` ; mesuré, elle apparaît **cinq fois** dans les octets
+  servis — elle conditionne `plAbs`, elle est exportée dans `m`, elle pose **une
+  classe `vx-warn`**, elle garde une écriture `localStorage` — **et elle ne
+  conditionne aucune des trois phrases**, alors que `m` est le second argument de
+  `dominantRisk`. Le fichier sait dire « je n'ai pas toutes les marques » : **il
+  le dit avec une couleur, jamais avec une phrase.** **Contre-exemple mesuré** :
+  `/system` distingue « Aucun titre scanné — **la qualité ne peut pas être
+  mesurée** » de « Aucun titre en qualité dégradée — rien à signaler ». **Le dépôt
+  sait faire la différence, et il l'écrit — sur une autre page.** **Compte du
+  bornage** : 47 phrases · **3 ouvertes, toutes sur `/portfolio`** (`dominantRisk`,
+  liste de décision, `priorityAction` du 432) · 1 contre-exemple · **43 non
+  ouvertes**. **Le défaut du 432 n'était pas isolé : c'est un motif de page** — les
+  trois synthèses tombent ensemble, sur le même déclencheur, et **aucun test ne
+  mentionne `dominantRisk`**. **Rang 1**, identique au 432, mais conséquence plus
+  lourde : les trois phrases occupent le **haut de la page** et disent la même
+  chose **en chœur**. Correction pressentie, déjà écrite ailleurs dans le fichier :
+  conditionner à `m.allMarked`. **Aucun GO.** **Portée** : 43 des 47 phrases non
+  ouvertes, classées par leur **forme** et non vérifiées ; une phrase rassurante
+  **construite dynamiquement** échappe toujours au recensement ; portefeuille réel
+  sans cotations **non observé**. **Première fois qu'un bornage AGGRAVE** — les
+  précédents disaient « exception, pas symptôme » (426, 429) ou levaient une
+  alerte (431). MD5 des 8 pages remesurés : **8/8 identiques**. Aucun fichier
+  touché, aucun bump, SW `td-shell-v187`. Suite **2864 passed / 0 skipped**.
+  Rapport : `docs/refactor/validation/SKYLER-LOT-433.md`.
+
 - **Lot 432 — livré** : **« Aucune décision urgente — laisser courir les thèses
   intactes », dit la carte, alors que le moteur vient de classer chaque position
   « Données insuffisantes ».** Quinzième lot de la veine. Point de contrôle : la
