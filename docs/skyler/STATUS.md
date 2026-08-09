@@ -2054,6 +2054,52 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 431 — livré** : **`modeOf` ne peut jamais rendre « Live » — le jeton
+  `ibkr` n'existe nulle part dans le vocabulaire qu'il interroge, et j'annule mon
+  propre rang 1.** Quatorzième lot de la veine, premier après le bilan n°12.
+  Point de contrôle : la **piste ouverte au 429 et jamais consommée**, les
+  vocabulaires en **minuscules**. **Pool trié par RÔLE** (leçon 419) sur le
+  corpus servi : **53 porteurs · 119 couples** → **22 vocabulaires** (≥ 2 jetons)
+  et **31 drapeaux** écartés d'emblée. **Alerte la plus prometteuse, levée par la
+  chaîne** : `bias` comparé à `haussier`, `baissier` **et** `bearish` — forme
+  exacte du 428 — mais ce sont **deux champs distincts**
+  (`options-gex.js:139` ← `gex_scan.py:45` ; `options-structure.js:109` ←
+  `multileg_lab.py:421`). **Troisième alerte levée** après 426 et 429.
+  **La trouvaille** : `/markets`, octets servis —
+
+  ```javascript
+  function modeOf(scan){ return scan.data_source==='demo' ? 'fallback'
+                       : (scan.source==='ibkr' ? 'live' : 'delayed'); }
+  ```
+
+  or `terminal.py:352`/`:373` ne produit que **quatre valeurs — `yfinance`,
+  `stooq`, `yfinance+stooq`, `demo` — jamais `ibkr`** (même champ servi par
+  `/healthz`). **Mesure par exécution des octets servis** : les quatre valeurs
+  réelles rendent `delayed`/`fallback` ; **témoin positif `ibkr` → `live`**, la
+  branche existe et fonctionne. Libellés de `vx-core.js` :
+  `{live:'Live',delayed:'Différé',fallback:'Secours'}`. **Une des trois issues est
+  inatteignable, et c'est « Live »** ; **16 cartes** de `markets_page.py` passent
+  `mode:modeOf(scan)`. **Périmètre — le contrôle qui empêche de surestimer** :
+  deux autres sites portent la même comparaison (`gnavFresh` « 🟢 LIVE IBKR »,
+  `_srcb` « 🟢 IBKR live ») et **aucun n'est servi** (constantes `PAGE_*` mortes,
+  dossier 374). **J'annule mon propre rang 1** : le libellé rendu n'est **pas
+  faux** — `scan_state['source']` décrit la provenance des **séries de cours**,
+  qui viennent réellement de yfinance/stooq. Restent : **(a)** une **branche
+  morte** (rang 4, aucune conséquence à l'écran) ; **(b)** une **sous-estimation**
+  — quand IBKR est connecté, `_apply_ibkr_indices()` écrase les prix des indices
+  en place et le pied de carte annonce quand même « Différé » : l'étiquette est
+  **conservatrice**, et l'invariant interdit d'annoncer MIEUX, pas moins.
+  **Recoupement du dossier 386**, deuxième porte : 386 = champ jamais lu ; ici =
+  champ lu, comparé **au mauvais niveau** (`scan.source` au lieu de
+  `scan.indices_live.source`, écrit juste à côté en `terminal.py:2257`).
+  **Verdict négatif au sens du produit**, rang 4. **Aucun GO.** **Portée** : 1
+  porteur ouvert sur 22, **21 non confrontés** ; les 15 porteurs lus par table
+  `{…}[champ]` toujours pas ouverts ; IBKR **non observé**, la sous-estimation est
+  établie par lecture de la chaîne. **MD5 des 8 pages REMESURÉS : 8/8 identiques**
+  aux références des lots 390/396 — **l'inférence devient une mesure**. Aucun
+  fichier touché, aucun bump, SW `td-shell-v187`. Suite **2864 passed / 0
+  skipped**. Rapport : `docs/refactor/validation/SKYLER-LOT-431.md`.
+
 - **Lot 430 — livré** : **BILAN n°12 (tranche 420 → 429)** — voir le bilan en
   tête de ce fichier. Mesures du bilan : `0676d78..1ac8446` → **10 commits, 12
   fichiers, tous sous `docs/`, +2 231 / −0 lignes, 0 fichier de production** ;
