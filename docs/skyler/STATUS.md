@@ -2570,6 +2570,87 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 461 — livré** : **la carte « Risque dominant » de `/portfolio` déclare
+  « Aucun risque critique détecté » entre 15 % et 25 % de concentration — alors
+  qu'elle cite elle-même le repère de 15 % et que deux cartes voisines sont déjà
+  en alerte.** 41ᵉ lot, premier de la tranche 460-469. Le bilan n°15 recommandait
+  **(a)** : désigner la famille suivante par la forme du dernier défaut. Le
+  458/459 avait nommé une **taxonomie amputée et aveugle à une dimension** → ce
+  lot attaque **la classe entière des CLASSEURS SERVIS**.
+  **Calibrage posé AVANT la première mesure** : un classeur servi rend **≥ 2
+  étiquettes textuelles** à partir d'**≥ 1 comparaison numérique** ; **quatre
+  formes** reconnues ; exclus et nommés — couleur/classe CSS, nombre, table de
+  correspondance, classeur sur chaîne.
+  **TROIS corrections d'instrument, toutes révélées par le même contrôle —
+  exiger que le détecteur retrouve le cas CONNU du 458 (`catOf`)** :
+
+  ```text
+  1  `return\s+` exigeait un ESPACE ; les octets servis écrivent
+     `return'BALANCED'`            → le cas du 458 INTROUVABLE : ZÉRO FAUX
+  2  les `return` des fonctions IMBRIQUÉES attribués à la PARENTE (piège 453)
+  3  plafond de 44 puis 60 caractères par étiquette → `winnerRule` (~78 c.)
+     SILENCIEUSEMENT absent de la population
+  ```
+
+  **Le n°3 répète la leçon du 459 : une BORNE D'INSTRUMENT décidait de la
+  population mesurée.** Trois faux arrêtés : **26 → 29**.
+  **Population** : 42 objets servis, 841 916 caractères → **28 candidats**,
+  **13 retenus**, **15 exclus nommés**.
+  **Verdict, et il BORNE le 458** : **9 classeurs sains sur 13** — `bucketOf`,
+  `tierOf` ×2, `roleOf`, `thesisState`, `nextAction`, `liqState`,
+  `computeVerdict`, `optNextAction` ; **2 aveugles au type** (`catOf` et
+  **`catOf2`**) ; **1 rang 3** (`winnerRule`) ; **1 rang 2** (`dominantRisk`).
+  **L'aveuglement du 458 touche DEUX SITES — le même prédicat dupliqué — pas une
+  pratique générale.** Fait neuf : **`catOf2`**, copie conforme dans
+  `window.__opCompare`, **que le 458 n'avait pas signalée**.
+  **La trouvaille** — `portfolio_page.py:216-226`, rendu en **KPI de tête**
+  (`:324-326`) : le prédicat se déclenche à **25** et le repère que **sa propre
+  phrase invoque est 15** ; la Constitution chargée pose
+  `max_stock_weight_pct = 15.0`. Reproduction des trois prédicats servis
+  (règle 443) :
+
+  ```text
+  poids Top 1 | KPI Concentration | carte Discipline V2 | carte RISQUE DOMINANT
+      14,9 %  | POSITIVE          | sous le plafond     | Aucun risque critique
+      15,0 %  | WARNING           | sous le plafond     | Aucun risque  ← CONTRA.
+      20,0 %  | WARNING           | > plafond 15 % rouge| Aucun risque  ← CONTRA.
+      25,0 %  | WARNING           | > plafond 15 % rouge| Aucun risque  ← CONTRA.
+      25,1 %  | NEGATIVE (halo)   | > plafond 15 % rouge| Concentration élevée
+  ```
+
+  **Fenêtre exacte au pas de 0,1 point : 15,0 % → 25,0 %**, les deux cas sains
+  encadrant juste. **Ce qui rend le résultat serré : le KPI (`:349`) et la carte
+  (`:222`) lisent LA MÊME expression `m.top1.w`** — aucune question de
+  dénominateur. La carte « Discipline V2 » (`:964-969`, `> 15` → rouge)
+  **corrobore sans prouver** : grandeur **serveur** distincte, leçon 458.
+  **Rang 2, et je dis pourquoi pas rang 1** : c'est un KPI de tête qui énonce une
+  absence de risque fausse, mais **l'utilisateur n'est pas sans signal** (KPI
+  voisin jaune, carte Discipline rouge) — **fausse quiétude**, pas consigne
+  d'action fausse comme au 457. Correction pressentie : lire
+  `max_stock_weight_pct`, **déjà calculé** (`portfolio_context.py:64`).
+  **Aucun gardien** : `dominantRisk` dans aucun test ; le plafond est vérifié
+  côté profil et côté moteur (**qui avertit dès 15 %**), jamais contre le
+  littéral de la page — motif 381/385/414/415/457.
+  **Rang 3** : `/portfolio` délègue à **`winnerRule(t.pl)` qui ne reçoit qu'un
+  NOMBRE**, le type étant perdu à l'appel, alors que `/options` a un frère
+  conscient du type ; à +60 % la page dit « **relever le stop sous le prix** »
+  pour une **option**. **Les cinq paliers sont identiques : rien n'est faux.**
+  **Portée** : prédicats **reproduits, pas exécutés** ; la branche concentration
+  est la **deuxième** (les invalidations passent avant) ; la contradiction
+  prouvée est **intra-page** ; les 13 valent **pour les quatre formes**, un
+  classeur bâti par helper échapperait (**non quantifié**) ; `roleOf` porte une
+  **liste de 6 tickers défensifs en dur sans source de configuration** — nommé,
+  **non classé** ; **aucun navigateur**.
+  **Fait de méthode, et il devient une règle : une BORNE D'INSTRUMENT décide de
+  la POPULATION mesurée — un détecteur qui ne retrouve pas le défaut d'hier ne
+  mesure rien aujourd'hui.** Genre neuf : **UN CLASSEUR QUI CITE UN SEUIL ET EN
+  APPLIQUE UN AUTRE**. Chaîne de relais : **cinquième fois**, réserve du bilan
+  n°15 rappelée (la famille a été **proposée**, pas trouvée seule).
+  **Aucun code, aucun gardien, aucun test ; aucun GO demandé, rien d'engagé.**
+  Anti-doublon `total 100 · actifs 0` ; aucun fichier touché ; MD5 **8/8** ;
+  snapshot runtime 21 fichiers, écart final **aucun** ; suite **2864 passed /
+  0 skipped**. Comptes : arrêtés **29**, publiés puis corrigés **3**,
+  interprétations retirées **1**.
 - **Lot 460 — livré** : **BILAN n°15 (tranche 450 → 459) — sept défauts affichés
   au lieu de cinq, mais le rang 1 reste au plancher, et la « chaîne de relais »
   qui a porté la tranche n'est pas de moi.** Quinzième bilan, fait **sur
