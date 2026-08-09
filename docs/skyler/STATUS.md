@@ -1824,6 +1824,66 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 416 — livré** : **un titre qui n'a pas bougé affiche « RSI 100 », et le
+  gardien qui dit « neutre » accepte l'extrême.** **Changement de famille
+  assumé** : après trois lots sur la couverture des gardiens (413-415), descente
+  dans les **moteurs de calcul**.
+  **La prémisse, mesurée et fausse.** Le docstring de
+  `vertex/engines/indicators.py:13` justifie son choix : *« dn==0 → 100, jamais
+  NaN (casserait le JSON) »*. Or :
+  ```text
+  jsonify({'x': float('nan'), 'y': float('inf')})  →  {"x":null,"y":null}
+  ```
+  **Flask assainit déjà** — `null` est du JSON valide, que le client rend en
+  `—`/`n/d`. *Le témoin a fermé la sonde prévue avant même la mesure.*
+  **Ce que rend le moteur, en mémoire** :
+  ```text
+  série NORMALE (marche aléatoire)            RSI  63.1
+  baisse MONOTONE                             RSI   0.0
+  hausse MONOTONE (aucune baisse)             RSI 100.0   ← Wilder, CORRECT
+  série PLATE (aucun mouvement)               RSI 100.0   ← 0/0 rendu comme l'extrême
+  ```
+  Deux situations opposées, **même valeur** : un titre halté ou illiquide est
+  présenté aussi suracheté qu'une envolée sans un jour de repli. Même choix dans
+  la seconde implémentation, `vertex/market/indicators.py:85` (`else 100.0`).
+  **Où la valeur arrive** : `analysis.py:40` calcule, L304 place `'rsi':
+  round(r)`, `analysis_page.py:472` affiche `kv('RSI', d.rsi)` — **le 100 est
+  montré tel quel**.
+  **Ce que la mesure a corrigé dans mon propre diagnostic.** `committee.py:97`
+  produit la phrase « *Timing défavorable : RSI 100 (suracheté). On patiente.* ».
+  Mesuré, elle **est** atteignable sur un plateau de 3 à 45 jours (`dernier >
+  MM50` vrai, RSI 100) — **mais dans ces séries il n'y a aucun jour de baisse
+  depuis le début**, et « aucune baisse ⇒ 100 » **est** la définition de Wilder :
+  contre-intuitif, pas faux. Sonde : neutraliser le seul cas `up == 0 ET dn == 0`
+  laisse le plateau-après-hausse à 100, la moyenne des hausses gardant la mémoire
+  de la montée. **Le défaut est donc plus étroit que je ne l'ai cru** — titre
+  **plat depuis toujours** : RSI indéfini rendu **100**, faux et **affiché** ;
+  plateau après hausse : **correct**. Et sur une série parfaitement plate
+  `dernier > MM50` est faux, donc la phrase dit « sous la MM50 » : **le nombre
+  ment à l'écran, la phrase non.**
+  **Le gardien.** `tests/test_calculations_golden.py:193` s'appelle
+  `test_rsi_flat_series_is_neutral_not_zero` et assert `30 <= val <= 100` : le
+  **nom** promet la neutralité, l'**assertion** admet l'extrême. Il garde contre
+  le `0` (baissier extrême), pas contre le `100`. **Il ne bloque pas la
+  correction** : sonde rendant `50.0` sur le cas sans mouvement → **31 tests
+  golden passent**.
+  **Classé rang 1**, mais **nettement moins grave que le 407** : là le HHI était
+  faux d'un facteur 170 dans le cas *nominal* ; ici la valeur est juste dans le
+  cas dominant et fausse au bord. Correction pressentie : rendre `None` quand il
+  n'y a **ni hausse ni baisse** sur la fenêtre — 2 lignes, 2 moteurs, plus le nom
+  du gardien à accorder à son assertion. **Aucun GO, rien d'engagé.**
+  **Portée** : **un seul** indicateur ouvert. Le recensement statique donne
+  **641 divisions dans `vertex/**` hors UI, dont 481 à dénominateur non constant
+  et non protégé** — c'est un **vivier trié par la forme**, pas une liste de
+  défauts (leçon du 408) ; **aucune campagne lancée**, rien mesuré sur les 480
+  autres.
+  **Note de cadence tranchée** : la veine « couverture des gardiens sur les
+  octets servis » reste **close en rendement** ; celle des **moteurs de calcul**
+  vient de s'ouvrir et paie mieux.
+  Suite **2864 passed / 0 skipped**, inchangée. Sonde **restaurée à l'octet** et
+  moteur ré-interrogé après restauration ; SW `td-shell-v187` ; écart runtime
+  final aucun.
+
 - **Lot 415 — livré** : **288 identifiants servis, aucun doublon ; le gardien
   n'en surveille que 3 pages sur 8.** Deux éléments qui portent le même `id`,
   c'est un défaut **silencieux** : `getElementById` rend **le premier**, le
