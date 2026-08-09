@@ -2720,6 +2720,38 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 475 — livré** : **LE DERNIER DOSSIER — seize fichiers cachaient SIX
+  sources, dont deux fonctions homonymes `_rr` et surtout UNE CONSTANTE.**
+  Contrôle sur réponse connue mot pour mot (`pretrade.py:161`) : **passé**.
+  **442+443 (rang 1) TIENT, et plus fort que ses deux rapports ne le disaient.**
+  **Six sources** mesurées, pas seize : `analysis.py:262` `'rr': 3.0`
+  **constante** · `:264` `rr_res` · `scenario_pricer.py:173` `gain/abs(loss)` ·
+  `order_ticket.py:92 _rr()` · `options_lab.py:70 _rr()` · `terminal.py:432`
+  `vx_rr`. **Treizième récurrence des homonymes sous une forme neuve : deux
+  FONCTIONS du même nom dans deux modules**, dont l'une calcule un potentiel
+  rapporté à une prime — unité différente. **Trois sources seulement atteignent
+  l'écran**, toutes trois sous le libellé « R:R » ; la cinquième vit dans une page
+  morte, donc **l'homonyme le plus dangereux est inatteignable**. **Le cœur** :
+  `tp3` est défini comme `last + 3*risk`, donc « R:R structurel 3.0 » vaut **3 par
+  construction, pour tout titre, dans tout régime** — le nombre est exact et
+  n'informe de rien. **Genre neuf : UNE TAUTOLOGIE AFFICHÉE COMME UN RÉSULTAT.**
+  **Chiffrage : 4 lignes, 1 fichier, aucun moteur** — et il ne faut **pas** toucher
+  `analysis.py:262`, cohérent avec `tp3`. Deux variantes à coût identique ; la
+  recommandée **(b)** remplace la tautologie par `rr_res`, **déjà calculée et déjà
+  transmise dans le même dictionnaire**. Zéro gardien existant ; risque faible.
+  **Deux sites retirés du dossier** : `ai/fallback.py:24` (non atteignable, mesuré
+  au 455) et la source en page morte. **LE DEVIS EST CLOS — feuille de décision
+  finale : seize dossiers · 40 à 48 lignes · 16 gardiens · onze de rang 1 · un
+  seul bump · `_EMPREINTE` une seule fois.** **Huit lots de travail**, dont quatre
+  ne touchant qu'un fichier chacun ; **quatorze des seize tiennent dans six
+  emplacements**. Restent explicitement hors devis les trois dossiers de
+  **décision** (469, 468, 466/467) et dix-huit dossiers jamais classés — **seize
+  sur une trentaine**. **Fait de méthode qui clôt la série** : *un défaut peut être
+  exact, servi, et vide ; la veine a passé cinquante lots à chercher des nombres
+  FAUX, celui-ci est VRAI et n'informe de rien.* Aucun fichier de production
+  touché · SW `td-shell-v187` · **MD5 8/8** · snapshot runtime 21 fichiers, écart
+  final aucun · suite **2864 passed / 0 skipped**. Comptes : 42 · 5 · 3 ·
+  **re-localisation 1 → 0**.
 - **Lot 474 — livré** : **RE-LOCALISATION — trois dossiers sur quatre retrouvés
   et chiffrés, la collision de route du 452 prouvée par le routeur lui-même, et le
   433 tombe dans la fonction que le devis du 461 vise déjà.** Contrôle sur réponse
