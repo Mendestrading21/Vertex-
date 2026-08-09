@@ -1940,6 +1940,59 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 426 — livré** : **les affirmations de méthode confrontées à leur code —
+  6 exactes sur 6, et une septième portée par une carte qui ne s'affiche
+  jamais.** Dixième lot de la veine, deuxième mené **depuis l'écran**. Le 425
+  avait recensé **17 affirmations littérales rendues** et n'en avait ouvert
+  **qu'une** ; celui-ci en ouvre **six de plus** — les plus testables, celles qui
+  énoncent une **formule** ou une **méthode**. **Aucun défaut : c'est un
+  bornage.**
+  ```text
+  1. « σ = spot · IV_ATM · √(DTE/365) »          vol_charts.py:73    EXACTE terme pour terme
+  2. « IV ATM = contrat le plus proche du spot »  vol_charts.py:52-55 EXACTE
+  3. « moyenne des % par trade, pas composée »    portfolio_page:643  EXACTE
+  4. « P&L latent absolu (valeur − coût) »        portfolio_page:104  EXACTE
+  5. « force = score moyen · momentum = var. moy. » sectors.py:51/68  EXACTE (2 axes)
+  6. « historique breadth partiel, pas tout le NYSE »                 EXACTE
+  ```
+  **Une vérification annexe aurait pu mordre** : le `iv / 100.0` de
+  `vol_charts.py` est **inconditionnel** alors que `options_intel_api.py:105`
+  normalise **conditionnellement** (`iv/100 if iv > 3`) — deux conventions pour
+  le même champ. Chaîne remontée : le producteur du board écrit
+  `round(float(mg.impliedVol) * 100, 1)` (`terminal.py:897`), donc **en
+  pourcentage** ; la division inconditionnelle est **correcte**, et le second
+  producteur est sur la même échelle. **L'alerte était légitime, la mesure l'a
+  levée.**
+  **La septième, seul point à signaler.** « Dérivé arithmétiquement de la courbe
+  d'équité » et « dérivé de la série déclarée — pas un indicateur de marché »
+  (`portfolio_page.py:616/618`) sont **justes sur le fond**. Mais le lot 406 a
+  mesuré que `myTradesEquity` **n'a aucun écrivain**, et le 411 en a tiré que
+  **cette carte n'est jamais rendue** : deux affirmations correctes portées par
+  une carte que personne ne voit. **Recoupement du dossier 406/411, pas une
+  trouvaille.**
+  ```text
+  affirmations littérales rendues (recensées au 425)        17
+     ouvertes au 425                                         1   → FAUSSE
+     ouvertes ici                                            6   → 6 EXACTES
+     portée par une carte inatteignable                      1   → recoupement 406/411
+     non ouvertes                                            9
+  ```
+  **Sur sept affirmations confrontées à leur code, six sont exactes et une est
+  fausse.** Le contrat d'honnêteté des cartes tient donc largement, et le défaut
+  du 425 en ressort mieux caractérisé : **une exception dans un ensemble
+  rigoureux**, pas le symptôme d'un texte négligé.
+  **Portée** : les neuf restantes ne sont **pas** vérifiées (conventions
+  d'affichage, un conseil, périmètres déjà couverts) ; le recensement reste borné
+  aux littéraux `limits:`/`conclusion:` de 15 à 150 caractères — `question:`,
+  `explain.shows` et phrases dynamiques échappent et **n'ont pas été comptés** ;
+  et pour la confrontation n°1 la mesure est **statique** (board vide au
+  démarrage) — la formule a été comparée au **code**, pas à une sortie.
+  **La méthode « partir de l'écran » reste la bonne** : une trouvaille (425) puis
+  un bornage propre (426) en deux lots, là où trois lots partis du moteur
+  butaient sur l'inatteignable.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ; SW
+  `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 425 — livré** : **« 4 maturités réelles » — le compte est écrit en dur, la
   courbe se trace dès 2 points.** Neuvième lot de la veine, et le premier mené
   **dans l'autre sens** : partir d'une phrase **réellement rendue**, puis remonter
