@@ -58,12 +58,24 @@ def test_oversized_desk_payload_is_rejected():
 
 
 def test_desk_sync_keys_single_source_of_truth():
-    """Toutes les listes de clés de sync (desk, journal, watchlist) sont identiques.
+    """Les listes de clés de sync de `vx_kit` et `journal` sont identiques.
 
     Depuis la purge É1, terminal.py n'héberge plus AUCUNE liste de clés :
     les copies qu'il portait vivaient dans le JS des pages mortes retirées.
-    La source de vérité servie est vx_kit (kit global, présent sur toutes les
-    pages) ; journal.py porte la même liste inline.
+
+    ⚠ PÉRIMÈTRE — corrigé au lot 394. Ce test compare `vx_kit.JS` et
+    `journal.JS`, et **aucun des deux n'est servi** : le lot 381 a mesuré que
+    `vx_kit.JS` (21 727 o) n'atteint aucune des 8 pages, et `journal.py` est un
+    module mort. La phrase « la source de vérité servie est vx_kit (kit global,
+    présent sur toutes les pages) » figurait ici et **était fausse**.
+
+    Ce que les 8 pages chargent réellement, c'est
+    `vertex/static/vertex/js/vx-entities.js`, plus le repli inline de
+    `system_page.py`. Retirer une clé de l'un ou l'autre laisse CE test au vert
+    (vérifié par mutation au lot 394) — c'est `tests/test_desk_keys_servies_lot381.py`
+    qui garde les listes SERVIES. Les deux sont complémentaires : celui-ci
+    verrouille l'ancre de comparaison, celui du 381 verrouille ce que le
+    navigateur reçoit.
     """
     full = ("['myTrades','myTradesClosed','myTradesEquity','myRecos','myRecosClosed',"
             "'myCapital','simCash','simStart','simTrades','simClosed','myFavs','myNotes',"

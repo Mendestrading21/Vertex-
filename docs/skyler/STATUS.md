@@ -1636,6 +1636,47 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 394 — livré** : **les gardiens anciens, jamais rejoués — 7 sur 8
+  mordent encore.** Une vérification plutôt qu'une piste : le lot 393 ayant
+  constaté l'épuisement des pistes fines, ce lot répond à une question laissée
+  ouverte par le **bilan n°8** — *« les gardiens non ciblés restent non
+  vérifiés »*. **Aucun gardien ajouté**, une seule correction, dans un fichier
+  de test.
+  **Le dénominateur** : sur 300 fichiers de test, **290 n'ont jamais été
+  confrontés à une faute réelle** (179 estampillés d'un lot < 380, 111 sans
+  numéro) ; seuls les 10 de la tranche 380-393 l'avaient été au lot 390.
+  **L'échantillon, choisi par un critère et non au hasard** : les gardiens que
+  `CLAUDE.md` désigne nommément pour ses règles critiques — si l'un d'eux a
+  pourri, c'est une règle du produit qui n'est plus tenue. **Mordent** : clé
+  retirée de l'ancre `vx_kit` · JS servi rendu syntaxiquement invalide ·
+  fichier `/static` modifié sans bump d'empreinte · `sanitize_news` retiré de
+  la sortie IBKR · filtre d'URL de la sortie IA neutralisé · rotation des
+  sauvegardes desk à 0 · bleu non-marque injecté dans un octet servi. Témoin
+  muet, état runtime sans écart.
+  **Le huitième ne mord pas — et ce n'est pas un gardien pourri.**
+  `test_desk_sync_keys_single_source_of_truth` compare `vx_kit.JS` et
+  `journal.JS` et **n'a jamais regardé le fichier statique servi**. Le lot 381
+  avait déjà comblé ce trou de couverture avec
+  `test_desk_keys_servies_lot381.py`. Ce qu'il n'avait **pas** corrigé, c'est
+  la **docstring**, qui affirmait « la source de vérité servie est vx_kit (kit
+  global, présent sur toutes les pages) » — **faux depuis le 381**, qui a
+  mesuré que ces 21 727 o n'atteignent aucune des 8 pages et que `journal.py`
+  est un module mort. Un lecteur ouvrant ce test pour comprendre la règle n°1 y
+  lisait le contraire de ce que le dépôt fait. **Corrigée** : elle dit
+  désormais ce que le test couvre, ce qu'il ne couvre pas, et renvoie au
+  gardien du 381 — les deux sont complémentaires, l'un verrouille l'ancre de
+  comparaison, l'autre ce que le navigateur reçoit.
+  **Deux ancres fautives corrigées avant de conclure** : `--vx-radius`
+  n'existe pas dans `tokens.css`, la première tentative sur la règle n°3 n'a
+  donc rien mesuré ; rejouée sur `--vx-canvas`, elle mord. *Une ancre absente
+  n'est pas un résultat : c'est une mesure qui n'a pas eu lieu.* Sans cette
+  reprise j'aurais annoncé un trou sur le service worker.
+  **Portée** : 8 gardiens sur 290, c'est un **sondage**. Ce que le lot établit
+  précisément : les gardiens des règles critiques n'ont pas pourri, et le seul
+  écart trouvé est une **documentation périmée**, pas une protection perdue.
+  Suite **2862 / 2 skipped, inchangée** — aucun test ajouté, délibérément.
+  SW v187.
+
 - **Lot 393 — livré** : **les promesses de retour imbriquées — il ne fallait
   pas d'analyseur.** Dernier angle mort déclaré du lot 375, qui écrivait :
   *« vérifier les formes IMBRIQUÉES demanderait un analyseur d'un autre
