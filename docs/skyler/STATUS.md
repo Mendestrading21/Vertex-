@@ -2798,6 +2798,46 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 491 — livré** : **les 7 barèmes non tracés — la liste du 486 confondait
+  TROIS échelles homonymes, et la confiance plafonnée à 50/100 que j'ai mesurée
+  n'est affichée NULLE PART.**
+- **Calibration** : `score40` du paquet parfait = 29 (485), facteur `calibration`
+  = 0,50 (docstring) — les deux OK.
+- **Le banc** : `confidence()` = `1.0 × 1.0 × 0.875 × 0.5` = **0,438 → 44/100**.
+  Le plafond **n'est pas structurel** : 100/100 est atteint **si** une
+  calibration réelle est fournie.
+- **Est-elle fournie ? Non** : le fichier runtime porte **29 décisions et 0
+  résultat mesuré** ; `calibration_factor_for` rend **0,50** partout, base
+  « échantillon insuffisant (**0/20** mesures) ». Et le balayage
+  `/opportunities` **ne passe aucune calibration**.
+- **Le retournement** : ce chiffre **n'atteint aucune surface servie**. Sur les
+  **15 occurrences** de `confidence` dans `vertex/ui/` + `static/`, **aucune** ne
+  lit celle de `skyler_core` ; le balayage n'expose même pas le champ.
+  **Famille du 486 : exact, produit, jamais peint. Je le nomme, je ne le classe
+  pas** — un chiffre non affiché ne trompe personne.
+- **Le vrai résultat** : `agreement` existe en **facteur [0,1] non servi**
+  (`skyler_core:100`) **et** en `×100` affiché (`decision_stack:251`) ;
+  `confidence` de même. **Dix-neuvième récurrence de l'homonyme, et la plus
+  coûteuse — j'ai benché un objet qui n'est pas celui qu'on voit.** Le 484 avait
+  signalé le même piège ; **la leçon existait, je ne l'ai pas appliquée avant de
+  choisir ma cible.**
+- **Second contrôle** : distinguer un `/100` barème d'un `/100` pourcentage.
+  Trouvé — `briefing.py:402` « Confiance données … % » est un **pourcentage de
+  fraîcheur**, pas un barème. **La liste des « 7 » n'était pas une population
+  propre.**
+- **Deux faux arrêtés** : (1) sonde **mal étiquetée** — elle annonçait « plafonné
+  à 0,50 » et ne testait que `plafonn` ; vérifié, **« 0,50 » est ABSENT des
+  octets servis** ; (2) j'allais attribuer le plafond au chiffre affiché, qui
+  vient du **decision_stack**. **55 → 57.**
+- **Portée** : **aucun rang posé** — le lot **nettoie une population et empêche
+  une fausse publication**. `decision_stack.confidence` et `.agreement`, **les
+  deux barèmes réellement peints, restent non tracés** : dette nommée. Le
+  « 0/20 » est un **état**, pas une propriété permanente. **Aucun navigateur.**
+- Feuille **inchangée** : 24 dossiers · quatorze rang 1 · huit rang 2 · trois
+  rang 3.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  runtime 21 fichiers, écart **AUCUN** · suite **2864 passed / 0 skipped**.
+
 - **Lot 490 — livré** : **BILAN n°17 de la tranche 480-489** (voir le bloc de
   bilan en tête). **Le taux d'auto-correction n'a pas monté — il a plafonné à 3**
   (460-469 : 1 · 470-479 : 3 · 480-489 : 3), et **les trois auto-corrections sont
