@@ -1636,6 +1636,41 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 398 — livré** : **les 2 tests skippés étaient morts depuis leur
+  naissance.** Quatrième lot court. Point de contrôle **jamais examiné en
+  26 lots** : la suite affiche `2 skipped` depuis des dizaines de rapports —
+  personne n'a jamais regardé **lesquels**.
+  Ce sont les deux tests de `tests/test_cross_page_consistency.py`, créé le
+  **2026-07-12** (`fa234ca`) et **jamais modifié depuis**. Leurs skips sont
+  **structurels, pas environnementaux** : `/scan` sérialise `scan_state`, vide
+  sous pytest parce qu'**aucun test de la suite ne déclenche de scan** —
+  mesure : ce fichier est le **seul des 300** à appeler `/scan`, et ses deux
+  appels sont dans le test skippé lui-même. Même mécanique pour
+  `options_board`. **Ces deux tests n'ont jamais tourné une seule fois** ; ils
+  étaient comptés dans la suite et ne protégeaient rien.
+  **Valaient-ils d'être réveillés ?** Mesuré avant de toucher quoi que ce soit,
+  par trois mutations de **production** + un témoin, rejouées dans
+  l'environnement pytest réel sur le fichier final : filtre `CALL → CALLS` de
+  `pulse.py` — le filtre est écrit **deux fois**, `overview.py` L42 et
+  `pulse.py` L34, sur le même board → **T2 mord** ; `/api/ticker` servant un
+  prix autre que le `detail` du scan → **T1 mord (A)** ; `/scan` transformant
+  `rows` sans transformer `detail` → **T1 mord (B)** ; témoin (docstring
+  reformulée) → muet. Production restaurée à l'octet entre chaque.
+  **Réparés** : une fixture alimente `scan_state` **en place** puis restaure
+  dans un `finally` (convention de `test_options_intelligence_lot6.py`, leçon
+  du 387) ; les `pytest.skip` conditionnels deviennent des **assertions** — une
+  entrée manquante est désormais un échec, plus un silence. Deux effets de bord
+  neutralisés dans T1 par `monkeypatch` : `options_pack` (**sortie réseau**) et
+  `_company.get` (**écriture de `company_cache.json` depuis la suite**) —
+  aucun des deux ne participe à l'invariant, et les laisser aurait réintroduit
+  le défaut fermé au lot 389.
+  **Résultat : 2862 passed / 2 skipped → 2864 passed / 0 skipped.** La suite
+  n'a plus un seul test inerte. Aucun fichier de production touché ; snapshot
+  runtime 22 fichiers, écart final aucun ; SW `td-shell-v187`.
+  *Limite assumée : T1 tourne sur une entrée injectée — il prouve que les
+  routes ne déforment pas ce que le scan produit, pas que le scan produise des
+  prix justes.*
+
 - **Lot 397 — livré** : **le registre confronté à lui-même.** Troisième lot
   court — aucun code, aucun gardien, aucun test ; une seule ligne corrigée dans
   un rapport.
