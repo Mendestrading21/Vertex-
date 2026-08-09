@@ -1940,6 +1940,69 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 427 — livré** : **la légende annonce quatre indices, le graphique en
+  trace trois — les couleurs glissent d'un cran.** Onzième lot de la veine,
+  troisième mené **depuis l'écran**. Le 426 avait conclu que le vivier était
+  quasi épuisé ; la consigne était de **l'élargir**. **Recensement élargi, même
+  corpus servi** (52 pages et vues, 43 fichiers `/static`, 3 829 722 octets) : le
+  filtre du 425 ne prenait que `limits:`/`conclusion:` de 15 à 150 caractères →
+  **17** ; les huit familles donnent **118 affirmations distinctes**
+  (`question` 32 · `why` 22 · `confirm` 15 · `invalidate` 15 · `shows` 14 ·
+  `limits` 11 · `conclusion` 8 · `note` 1). **Le vivier était sept fois plus
+  grand que ce qui avait été recensé**, dont 17 porteuses d'un chiffre.
+  **Affirmation ouverte** : carte « Indices — performance comparée »
+  (`/markets`, `vx-mk-multi`), `explain.shows:'Les mêmes séries d'indices que le
+  bandeau, rebasées à 0 %…'` — une affirmation d'**identité** entre deux objets
+  de la même page. **Mesure par EXÉCUTION des octets servis** : `loadMultiIndex`
+  (1 432 o), `loadStrip`, `crossAsset`, `idxByName` extraits du **marquage
+  servi** par appariement d'accolades, puis **exécutés sous Node 22** avec
+  `VXCharts` stubé — ni lecture ni transcription. **Le défaut** :
+  `legend: wanted.map((n,i)=>({label:n,color:series[i%6]}))` est bâti sur une
+  **liste fixe de 4**, alors que les données sont
+  `sets = wanted.map(…).filter(x=>x.spark.length>5)` — **filtrées** ; et
+  `chart-core.js:526` colore chaque courbe par son **rang dans `sets`**.
+
+  ```text
+  nominal (4 indices)      0 courbe mal nommée   ← témoin positif
+  Nasdaq absent            2
+  Dow Jones absent         1
+  S&P 500 absent           3
+  Russell 2000 seul        1
+  ```
+
+  Cas « Nasdaq absent » : la pastille annonçant **« Nasdaq »** porte la courbe du
+  **Dow Jones**, celle annonçant **« Dow Jones »** porte **Russell 2000**, et la
+  légende annonce un **quatrième indice qui n'est pas tracé du tout**.
+  **L'affirmation de départ est elle aussi conditionnelle** : bandeau et
+  graphique n'appliquent pas le même filtre (`last != null` contre
+  `spark.length > 5`) → bandeau 4 / graphique 3 puis 2. **Preuve d'affichage sur
+  les octets servis** : `chart-core.js` rend `<div class="vx-chart-legend">` avec
+  pastille `background:${l.color}` + libellé, et `charts.css` la rend visible.
+  **Détail aggravant** : `multiLine` réactive par-dessus la légende native de
+  Chart.js, construite **à partir des jeux de données** — la carte porte donc
+  **deux légendes qui se contredisent**. **Ce que je n'ai pas observé, et que je
+  dis** : aucun payload persisté ne contient de clé `indices`, le scan est vide
+  au démarrage — **pas de graphique décalé constaté sur données réelles** ; la
+  porte d'entrée est établie (`terminal.py:449-457`, `try/except: pass` par
+  ticker → indice omis, mécanisme du 425). **Bornage** : 2 sites seulement
+  construisent une `legend:` sur mesure dans `vertex/ui/**` — celui-ci, et la
+  courbe des taux, dont les deux jeux viennent du même `pts`, jamais filtrés :
+  **1 défectueux sur 2** ; **aucun test** ne mentionne `vx-mk-multi`,
+  `loadMultiIndex` ni `vx-chart-legend` — **aucun gardien**. **Rang 1**, famille
+  des 422/425 : les **valeurs** tracées sont réelles, c'est le **nom attaché à la
+  couleur** qui devient faux, sur une carte dont le rôle est de comparer les
+  indices entre eux. Correction pressentie : bâtir la légende depuis `sets` —
+  corrige du même geste le décalage et l'indice fantôme. **Aucun GO.**
+  **Portée** : 1 ouverte sur 118 ; le recensement reste borné aux littéraux de 10
+  à 200 caractères, **les phrases dynamiques lui échappent toujours** ; Chart.js
+  n'a pas été exécuté. **Runtime caractérisé au lieu d'être supposé** : suite
+  lancée **deux fois** avec copie intermédiaire → `ai_enrichment.json` ne change
+  que son `as_of`, `desk_data.json` que son `ts`, `weekly_snapshot.json` que son
+  `generated_at` — **aucune donnée utilisateur modifiée** ; 21 fichiers runtime
+  (rotation `desk_backup_*` sur 7 jours). Aucun fichier touché, aucun bump,
+  SW `td-shell-v187`. Suite **2864 passed / 0 skipped**, deux fois.
+  Rapport : `docs/refactor/validation/SKYLER-LOT-427.md`.
+
 - **Lot 426 — livré** : **les affirmations de méthode confrontées à leur code —
   6 exactes sur 6, et une septième portée par une carte qui ne s'affiche
   jamais.** Dixième lot de la veine, deuxième mené **depuis l'écran**. Le 425
