@@ -2720,6 +2720,35 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 482 — livré** : **retour au produit — QUATRE des dix « dossiers en
+  attente » ne sont pas des dossiers ; la liste tombe de dix à six.** Le 481 avait
+  fixé la consigne, ce lot mesure l'inventaire réel des défauts de Vertex.
+  **Les deux contrôles de la règle neuve du 481** : le premier sur un cas connu du
+  478 **passé** ; **le second sur un cas que la restriction du réveil exclurait —
+  et il montre que le réveil est FAUX** : `drawdownCard` est à
+  `portfolio_page.py:614`, **pas** dans `performance_page.py`. **La règle a payé
+  dès son premier emploi.** **Mesuré, et chaque rapport le dit lui-même** : le
+  **408** BORNE le 407 (« isolé, pas une famille », 25 POST examinés), le **409**
+  BORNE le 406 (« unique sur les 8 pages servies »), le **411** est un RECOUPEMENT
+  qui **atténue** de lui-même, et le **426** se déclare mot pour mot
+  « recoupement, pas trouvaille » — **cinquante-six lots avant que je ne le lui
+  demande**. **Six numéros de rapport, un seul dossier** : le 478 en avait fusionné
+  deux, ce lot en rattache quatre de plus, et le tout est **déjà classé rang 2 et
+  chiffré à 4 lignes**. **Aucun classement à poser, et c'est le résultat** —
+  aucune des quatre ne prétend à un défaut. **Précision de produit appliquant la
+  leçon 477** : le littéral « clôtures déclarées (myTradesEquity) » est **servi
+  mais jamais peint** (garde `eq.length>=2` en `:604`), donc la formulation des
+  411/426 est exacte ; et la garde est **honnête** — sans série, la page rend un
+  état vide motivé. **Portée** : les mesures des quatre lots **n'ont pas été
+  rejouées**, leurs chiffres sont les leurs ; **je ne les retire pas de
+  l'historique**, seulement de la liste des dossiers en attente — un bornage qui
+  empêche une campagne inutile reste un résultat. **Fait de méthode : une liste de
+  dossiers en attente n'est pas une liste de défauts — elle accumule des numéros
+  de lot, et un lot peut n'avoir rien trouvé.** Les compter comme des dossiers,
+  c'était confondre le travail et son objet, et cela durait depuis soixante-dix
+  lots. Aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  suite **2864 passed / 0 skipped** · **feuille INCHANGÉE**. Comptes :
+  **47 (+1)** · 8 · 3 · 0 · 0 · 8.
 - **Lot 481 — livré** : **les six rangs orphelins du 480 sont UN SEUL, et il était
   déjà soldé — mon détecteur d'hier gagnait en précision et perdait en rappel, et
   le lot qui l'a posé n'a mesuré que le premier effet.** Lot de soldes, **et il
