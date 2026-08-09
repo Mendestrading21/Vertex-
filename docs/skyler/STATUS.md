@@ -2213,6 +2213,45 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 447 — livré** : **« max pain à J-3 de la plus proche échéance » — l'aimant
+  annoncé est celui de TOUTES les échéances mélangées, et la phrase s'affiche en
+  clair sur le portefeuille.** 29ᵉ lot. **L'affichage d'abord** (leçon 446) :
+  trois phrases du champ `detail` viennent de `positions_api.py:202/213/219`,
+  servies par `/api/positions/alerts` — route citée par `/portfolio`, dont
+  `portfolio_page.py:484` lit `g.detail` sur `alerts.gamma` et `:488` le rend en
+  **texte visible** dans la carte « Surveillance ». **Première fois de cette veine
+  que des phrases serveur sont trouvées affichées en clair**, pas en infobulle.
+  **Deux phrases sur trois** : l'inégalité imprimée **est** la condition testée
+  (« Spot sous le mur put (%s < %s) », « Spot sous la bascule zero-gamma ») —
+  **dit comme une lecture, pas comme une mesure**. **La troisième, mesurée** :
+  `gex.max_pain(contracts)` **parcourt tous les contrats et ne groupe jamais par
+  échéance**, quand sa docstring parle de « l'aimant d'expiration » au singulier.
+
+  ```text
+  A. cas sain — une seule échéance      max_pain(J-3) = 100.0 = max_pain(board)   ACCORD
+  B. cas réel — deux échéances          max_pain(J-3) = 100.0   max_pain(board) = 130.0
+  C. phrase rendue (spot 129,0)         « max pain (129.0 ~ 130.0) à J-3 … »
+  ```
+
+  **La phrase nomme une échéance et lui attribue une statistique qui n'est pas la
+  sienne** — écart de 30 points sur le banc. **Ce n'est pas un cas de bord** : le
+  board est **multi-échéances par conception** (LEAPS `dte >= 300`, buckets
+  court/moyen/long), et la condition `min(dtes) <= 7` exige une échéance proche
+  **pendant** que le board en porte de lointaines. **Rang 1** — texte visible, sur
+  les **positions réelles**, et un trader qui lit « max pain 130 à J-3 » en déduit
+  une force d'épinglage qui sur cette échéance **n'existe pas**. Correction
+  pressentie : **filtrer sur l'échéance la plus proche avant `max_pain`** — ce que
+  la docstring promet déjà. **Aucun GO. Aucun gardien.** **Détail relevé, non
+  classé** : `int(min(dtes))` tronque (6,9 j → « J-6 »), une troncature n'est pas
+  une affirmation fausse. **Portée** : banc sur board **fabriqué** — la
+  **fréquence des divergences réelles n'est pas mesurée** ; **aucun navigateur** ;
+  **3 phrases ouvertes sur les 19** des champs à quatre écrans, `reason`, `source`
+  et `narrative` **non ouverts** ; **100 des 110 phrases du 444 restent fermées**.
+  Comptes séparés inchangés : faux **arrêtés 20**, **publiés puis corrigés 1**.
+  Aucun fichier touché · SW `td-shell-v187` · écart runtime **aucun** · suite
+  **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-447.md`.
+
 - **Lot 446 — livré** : **« clôture séance +5 » compte les séances OBSERVÉES, pas
   les séances de marché — le contraste moteurs/pages du 445 est nuancé, pas
   confirmé.** 28ᵉ lot, **bornage du 445**. Troisième producteur indépendant :
