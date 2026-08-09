@@ -2213,6 +2213,49 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 445 — livré** : **j'ouvre les phrases que le serveur écrit, et elles sont
+  justes — 15 accords sur 16, le seizième sur un état inatteignable.** 27ᵉ lot.
+  Le 444 avait livré la carte (110 phrases, **aucune vérifiée**) ; ce lot ouvre
+  les **28 phrases de `basis`**. **Banc** : `confidence()` appelée sur des paquets
+  fabriqués, chaque `basis` confronté à la valeur du même appel.
+
+  ```text
+  dq_pts 0→4     « bloc data_quality N/4 du score »            0.0 → 1.0    5 accords
+  n_contra 0→5   « N contradiction(s) — −0,20 chacune »        1.0 → 0.0    6 accords
+  n_insuf 0/2/4/8 « N bloc(s) insuffisant(s) sur 8 »           1.0 → 0.0    4 accords
+                                                        accord phrase/valeur : 15/16
+  ```
+
+  **Dénominateurs exacts** : `block(...)` est appelé sous **8 noms distincts** ;
+  le profil servi donne bien `"data_quality": 4`. **Le seizième cas** : à
+  `n_contra = 6` l'écrêtage rend le coût marginal 0,00 et la phrase serait fausse
+  — **j'ai failli le publier**, car `skyler_core.py:197` est une **boucle**. En
+  remontant, `market_context.py:107-114` n'a **qu'un seul `if`** : au plus **un**
+  conflit, donc **4 contradictions maximum**, donc **l'écrêtage n'est jamais
+  atteint**. *Une boucle n'est pas une preuve de multiplicité — il faut remonter
+  à ce qu'elle parcourt.* **Dix-neuvième résultat faux arrêté avant
+  publication.** **`knowledge_graph`** : **deux phrases pour deux méthodes**, le
+  repli explicitement étiqueté « SPY absent, marché non contrôlé » (ce qui
+  manquait au dossier **422**), **`L-1` points** — le compte exact, aucune
+  inflation du n — et le seuil affiché ; les trois autres `basis` nomment leur
+  provenance (« par la watchlist du code », « date déclarée », « position réelle
+  déclarée »), chaque arête porte un `evidence_level`, et le fichier ajoute
+  lui-même « relations jamais inventées ». **Aucun défaut — et c'est le
+  résultat** : **six phrases ouvertes, six exactes**. **Première famille
+  d'affirmations que la boucle mesure et trouve SAINE**, en contraste net avec
+  427→443 côté interface : **les phrases écrites par les moteurs tiennent mieux
+  que celles écrites dans les pages.** **Rang 4** à surveiller : le `4` en dur du
+  dénominateur `data_quality`, **dans la phrase et dans le calcul**, alors que le
+  bloc lit la valeur du profil — aucun écart aujourd'hui, un changement de profil
+  en créerait un **des deux côtés à la fois**. **Portée** : **6 phrases sur 28**,
+  **104 des 110 phrases concluantes du 444 restent fermées** ; banc = paquets
+  fabriqués ; **je n'ai pas vérifié que `_pearson` calcule une vraie corrélation**
+  — seulement que **la phrase dit ce que le code fait**, pas que le code fait ce
+  qu'il faut ; **aucun navigateur**. Comptes séparés : faux **arrêtés 19**,
+  **publiés puis corrigés 1**. Aucun fichier touché · SW `td-shell-v187` · écart
+  runtime **aucun** · suite **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-445.md`.
+
 - **Lot 444 — livré** : **235 phrases écrites par le serveur, jamais recensées
   depuis le 427 — et la première fois qu'un résultat faux m'a échappé jusqu'au
   rapport publié.** 26ᵉ lot. Le 443 avait ouvert la classe sans la quantifier ;
