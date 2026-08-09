@@ -2720,6 +2720,41 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 477 — livré** : **le 378 classé RANG 2 — deux replis `0` atteignent bien
+  l'entonnoir de `/opportunities`, et l'atténuation que le 378 avait publiée est
+  RÉFUTÉE.** Contrôle sur réponse connue du lot précédent : **passé**. **Choix
+  motivé** : le 378 est **le seul des dix-sept qui contredit une règle écrite**
+  (« donnée absente → `—` honnête »), il s'était **arrêté à mi-chemin** (verdict
+  « caractérisation, pas de faute prouvée »), et sa forme est **neuve** dans le
+  classement. **Chaîne remontée jusqu'à l'écran** : `opportunities_api.py:22`
+  et `:34` (`except Exception: return 0`) → `funnel.py:102-103` (étages
+  « Suivis » et « Positions ») → `opportunities_page.py:194` puis `:220`.
+  **Atteignabilité prouvée par exécution dans les deux sens** : une seule page
+  servie cite la route, et `GET /api/opportunities/funnel` rend **200, sept zéros,
+  aucune clé `error`**. **L'atténuation est réfutée** : le `try/except` interne
+  capture **avant** celui de la route, donc le `500 + error` protège tout **sauf**
+  les deux fonctions que le 378 prétendait couvrir par lui. **Publiés puis
+  corrigés : 5 → 6.** **Témoin positif dans le même objet** : `funnel.py:111-113`
+  marque explicitement un zéro légitime — **pour un étage sur sept**. **Rang 2** :
+  affiché, servi, contraire à une règle écrite, et la marque était possible ;
+  **mais** le chemin fautif est celui de l'**exception** (sur le chemin normal, `0`
+  est exact), **la fréquence n'a pas été mesurée**, et l'entonnoir décrit sans
+  prescrire. **Mutualisation cherchée et absente** — le dossier est isolé.
+  **Chiffrage** : (a) recommandée, **3 lignes, 2 fichiers** (`return None` +
+  marqueur d'étage) ; (b) 2 lignes, un drapeau `degraded`, **mais le « 0 » reste à
+  l'écran**. **Régression la plus élevée des dix-huit** : changer le type d'un
+  champ consommé par **au moins quatre fichiers de test** — moyen à élevé, à
+  relire avant correction. Aucun octet servi, donc aucun bump. **Feuille : 18
+  dossiers · 48 à 56 lignes · 18 gardiens · douze rang 1 · six rang 2**, avec un
+  nouveau lot I « l'entonnoir ». Hors devis, en plus des seize non classés : **les
+  dix autres replis numériques du 378**, ni tracés ni classés — nommés, non
+  comptés. **Genre neuf : une protection qui existe, mais pas sur le chemin qu'on
+  croit couvert** — pendant de la leçon 471. **Observation notée sans en faire une
+  règle : sur les six derniers lots, cinq atténuations publiées ont été démenties
+  par la vérification, alors que les défauts tiennent presque toujours ; ce que la
+  boucle publie de plus fragile, ce sont les phrases par lesquelles elle minimise.**
+  Aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** · suite
+  **2864 passed / 0 skipped**. Comptes : 43 · **6 (+1)** · 3 · 0.
 - **Lot 476 — livré** : **le devis clos, la mesure reprend — le 417 est CLASSÉ
   RANG 1 et chiffré à 5 lignes.** Contrôle sur cas connu (`track_record.py:52-59`)
   **passé**. **Choix motivé** : la forme « un dénominateur qui n'est pas le
