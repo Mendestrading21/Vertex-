@@ -4,6 +4,156 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — veille active, lots 460 → 469 (2026-08-09, bilan n°16)
+
+Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
+vérifiés dans le dépôt, **aucune trouvaille rejouée**. Aucun serveur DEMO, aucun
+moteur rouvert. **Une seule mesure fraîche — les MD5.**
+
+### Ce que la tranche a déposé — mesuré
+
+**Base résolue AVANT tout chiffre** (leçon 430/440/450/460, cinq fois payée) :
+seul candidat « lot 459 » = `1b23377`, **ancêtre de la tête vérifié**, pas
+supposé.
+
+```text
+base 1b23377 (lot 459) → tête c44ef80
+
+commits                                    10
+fichiers modifiés                          12
+   docs/refactor/validation                11   (10 rapports + SKYLER-INDEX.md)
+   docs/skyler                              1   (STATUS.md)
+fichiers HORS docs/                          0
+lignes                        +3 047 / −0        (addition pure)
+
+terminal.py + vertex/** touchés               0 fichier
+rapports / index / blocs STATUS          10/10, 10/10, 10/10
+volume des dix rapports                 114 435 octets
+MD5 des 8 pages remesurés                     8/8 identiques
+SW                                      td-shell-v187
+
+depuis 20a917f (lot 399) : 70 commits · 73 fichiers · 1 hors docs/ · 0 PRODUCTION
+```
+
+### Une correction de comptes que je publie contre mon propre réveil
+
+L'orientation que j'avais rédigée au 469 annonçait « arrêtés avant publication
+**32 → 40** ». **Faux sur deux points** : le départ était **26** (clôture du
+bilan n°15), et l'énumération **omettait 465 et 467**.
+
+```text
+26 → 461 +3 → 29 → 462 +2 → 31 → 463 +1 → 32 → 464 +1 → 33 → 465 +1 → 34
+   → 466 +3 → 37 → 467 +2 → 39 → 468 +1 → 40 → 469 +0 → 40      soit +14
+```
+
+La chaîne lot par lot est cohérente ; **c'est mon résumé qui ne l'était pas.**
+
+### Ce que les dix lots ont produit
+
+```text
+460  BILAN n°15                                                          —
+461  dominantRisk « aucun risque » dans 15-25 % · winnerRule type perdu  ✓ rang 2 + 3
+462  phrases-seuil : 26/28 concordent — le 461 est un ACCIDENT ISOLÉ     ✗ bornage
+463  gex_history journalise la démo 120 j sous « points réels »          ✓ rang 2
+464  edge_ledger + 2 journaux sans provenance : le track record affiché  ✓ RANG 1
+465  les deux dettes du 464 soldées — 0 nouvel accumulateur              ✗ bornage
+466  28 orphelines sur 189 règles, publiées en INTERVALLE [22, 37]       ~ rang 4
+467  l'intervalle RÉSOLU à 28 — 9 des 15 étaient des redirections        ✗ bornage
+468  19 seuils concordants, 0 divergence neuve · 6 concepts sans loi     ~ rang 4
+469  le board sélectionne SOUS le minimum absolu de la Constitution      ✓ rang 3
+
+      1 rang 1 · 2 rang 2 · 2 rang 3 · 2 rang 4 · 6 lots sur 10 BORNENT
+```
+
+### Le rendement — et cette fois il baisse franchement
+
+```text
+                     rang 1 PAR LOT   PAR DOSSIER   DÉFAUTS AFFICHÉS
+tranche 420 → 429          4               4               —
+tranche 430 → 439          4               3               5
+tranche 440 → 449          3               2               5
+tranche 450 → 459          2               2               7
+tranche 460 → 469          1               1               3      ← −4
+```
+
+**Les deux lectures vont dans le même sens pour la première fois depuis le
+bilan n°12.** La tranche a consacré six lots sur dix à borner ou solder — c'est
+sa qualité — **mais le critère porte sur le résultat, pas sur l'effort.**
+
+### Le critère bascule, et je le suis
+
+Le bilan n°15 écrivait : « **au premier bilan où les défauts affichés
+reculeront, (b) devient la bonne réponse.** » **Ils reculent : 7 → 3.**
+
+**Je recommande (b) : un lot DEVIS.** Première fois en sept bilans que la
+recommandation change — **non parce que j'ai changé d'avis, mais parce que le
+chiffre choisi d'avance a franchi le seuil fixé d'avance.**
+
+### Le fait de méthode dominant, et il est dérangeant
+
+**Dans huit des neuf lots de mesure, l'instrument était faux au premier jet** —
+et la parade a changé de nature à chaque fois : le contrôle (461), la taille
+(462), **la lecture de la liste** (463, 464, 466), **le contrôle lui-même faux**
+(467), un chemin trop court (468), **une atteignabilité supposée** (469).
+**Treize corrections d'instrument, deux erreurs de raisonnement.**
+
+**La conclusion honnête n'est pas « la boucle s'améliore » : si l'instrument est
+faux au premier jet presque à chaque fois, tout lot qui N'A PAS attrapé son
+instrument est suspect.** Argument de plus pour (b) : **un devis se vérifie en le
+lisant, une mesure ne se vérifie qu'en la refaisant.**
+
+### L'atteignabilité — ce qu'elle a coûté
+
+```text
+462  « cible 1 »      inatteignable   VÉRIFIÉE    tient
+465  alerte de démo   non servi       VÉRIFIÉE    tient
+468  seuil DTE        « probable »    SUPPOSÉE    FAUX  (corrigé au 469)
+```
+
+**Deux sur trois mesurés, un supposé — et c'est celui-là qui était faux.** Le
+filtre est excellent quand on le mesure, dangereux quand on l'invoque.
+
+### Mes comptes
+
+```text
+arrêtés avant publication      26 → 40      +14
+publiés puis corrigés           3 →  4       +1
+interprétations retirées        1 →  2       +1
+```
+
+Le +1 de la deuxième ligne vient d'une phrase **hedgée et non classée**. Je
+maintiens : *un lecteur qui repart avec une croyance fausse a été mal informé.*
+
+### Classement coût/risque — 19 dossiers
+
+Les cinq premiers : **457** borne V1 (rang 1, une expression) · **455** synthèse
+pré-trade · **461** `dominantRisk` · **434** `renderAnomalies` · **427** légende.
+Le **n°12** est le rang 1 le plus utile : **464**, passer `demo` à `record()` —
+`DEMO_MODE` est **déjà en portée** et **`decision_memory` fait déjà exactement ce
+qu'il faut**. **Les onze premiers ne touchent aucun moteur.** Les **trois
+derniers** (469, 468, 466/467) **ne sont pas des correctifs** : ils demandent
+qu'on **décide**.
+
+### Portée
+
+Le bilan reprend les erreurs des rapports s'il y en a — et la tranche vient de
+démontrer que cela arrive. **Le classement des rangs est attribué par moi-même**
+et le constat de baisse en dépend : en classant le DTE du 469 en rang 2, les
+défauts affichés seraient **4 et non 3** — la conclusion tiendrait, moins
+nettement. **Seule mesure fraîche : les MD5.**
+
+### Orientation pour le 471
+
+**(b) — le lot DEVIS.** Chiffrer sans rien corriger : fichier, ligne, nombre de
+lignes, gardien à écrire, risque de régression ; et pour les trois dossiers qui
+n'en sont pas, **la question à trancher**. **Ce qui plaide contre** : un devis ne
+mesure rien de neuf, et quinze bilans n'ont pas obtenu une décision. **Mais
+c'est le geste qui manque, et le seul jamais tenté.**
+
+**Seizième tranche sans qu'un seul défaut prouvé ait été corrigé. Huit bilans —
+n°9 à n°16 — attendent une réponse.**
+
+
 ## BILAN — veille active, lots 450 → 459 (2026-08-09, bilan n°15)
 
 Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
@@ -2570,6 +2720,61 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 470 — livré** : **BILAN n°16 (tranche 460 → 469) — la cadence baisse
+  pour la première fois de façon nette, le critère que j'avais posé bascule, et
+  il faut le suivre.** Seizième bilan, **sur pièces**, aucune trouvaille rejouée,
+  **une seule mesure fraîche (les MD5)**.
+  **Base résolue AVANT tout chiffre** : `1b23377` **ancêtre vérifié** → `c44ef80`,
+  **10 commits** ; **12 fichiers**, **0 hors `docs/`**, **+3 047 / −0**, **0
+  fichier de production** ; 10/10 partout ; **114 435 octets** ; **MD5 8/8**.
+  Depuis `20a917f` : 70 commits, 73 fichiers, 1 hors docs, **0 production**.
+  **Correction publiée contre mon propre réveil** : il annonçait « arrêtés
+  32 → 40 » — **faux**, le départ était **26** et l'énumération omettait 465 et
+  467. **Mesuré : 26 → 40, +14.**
+  **Bilan des dix lots** : **1 rang 1 · 2 rang 2 · 2 rang 3 · 2 rang 4 · six
+  lots sur dix qui BORNENT**.
+
+  ```text
+                       rang 1 PAR LOT   PAR DOSSIER   DÉFAUTS AFFICHÉS
+  420-429                    4               4               —
+  430-439                    4               3               5
+  440-449                    3               2               5
+  450-459                    2               2               7
+  460-469                    1               1               3      ← −4
+  ```
+
+  **LE CRITÈRE BASCULE.** Le bilan n°15 avait écrit : « au premier bilan où les
+  défauts affichés reculeront, (b) devient la bonne réponse ». **Ils reculent,
+  7 → 3. Je recommande (b), le lot DEVIS** — première fois en sept bilans que la
+  recommandation change, **non parce que j'ai changé d'avis mais parce que le
+  chiffre choisi d'avance a franchi le seuil fixé d'avance**.
+  **Fait de méthode dominant, et il dérange : dans HUIT des NEUF lots de mesure,
+  l'instrument était FAUX au premier jet** — contrôle (461), taille (462),
+  **lecture de la liste** (463/464/466), **contrôle lui-même faux** (467), chemin
+  trop court (468), **atteignabilité supposée** (469). Treize corrections
+  d'instrument, deux erreurs de raisonnement. **La conclusion honnête n'est pas
+  « la boucle s'améliore » : tout lot qui n'a pas attrapé son instrument est
+  SUSPECT.** Argument de plus pour (b) — **un devis se vérifie en le lisant, une
+  mesure ne se vérifie qu'en la refaisant.**
+  **L'atteignabilité** : trois candidats tués, **deux vérifiés (tiennent), un
+  SUPPOSÉ (faux, corrigé au 469)**. Excellent quand on le mesure, dangereux
+  quand on l'invoque.
+  **Comptes** : arrêtés **26 → 40 (+14)** · publiés puis corrigés **3 → 4** ·
+  interprétations retirées **1 → 2**. Le +1 vient d'une phrase **hedgée et non
+  classée** — je maintiens qu'elle comptait.
+  **Classement à 19 dossiers** ; le **n°12** est le rang 1 le plus utile (**464**,
+  passer `demo` à `record()` : `DEMO_MODE` **déjà en portée**, et
+  `decision_memory` **fait déjà exactement ce qu'il faut**) ; **les onze premiers
+  ne touchent aucun moteur** ; **les trois derniers ne sont pas des correctifs**,
+  ils demandent qu'on **décide**.
+  **Portée** : le bilan reprend les erreurs des rapports, et la tranche vient de
+  démontrer que cela arrive ; **le classement est attribué par moi-même** — en
+  classant le DTE du 469 en rang 2, les défauts affichés seraient 4 et non 3, la
+  conclusion tiendrait mais **moins nettement** ; **seule mesure fraîche, les
+  MD5**.
+  **Seizième tranche sans qu'un seul défaut prouvé ait été corrigé.**
+  **Aucun code, aucun gardien, aucun test ; aucun GO demandé, rien d'engagé.**
+  Suite **2864 passed / 0 skipped** ; écart runtime **aucun**.
 - **Lot 469 — livré** : **les deux dettes du 468 soldées, et l'une CONTRE ma
   propre inclinaison — le board sélectionne bien des contrats sous le minimum
   absolu de la Constitution, par une SECONDE source de configuration qui la
