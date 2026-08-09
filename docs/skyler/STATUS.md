@@ -1720,6 +1720,54 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 404 — livré** : **les assertions avalées par un `except` — zéro, et le
+  zéro est substantiel.** Symétrique exact du lot 403 : celui-ci cherchait les
+  tests qui **n'affirment rien**, celui-là ceux qui **affirment, mais dont
+  l'affirmation ne peut pas les faire tomber** parce qu'un `except` l'attrape
+  (`try: assert … except Exception: pass`). Balayage AST, quelques secondes.
+  **Le détecteur** ne signale un `assert` que si les trois conditions tiennent :
+  il est dans le **`body`** d'un `try` ; un handler attrape `AssertionError`
+  (`except:` nu, `Exception`, `BaseException`, `AssertionError`, ou un tuple en
+  contenant un) ; ce handler ne **relance pas** et n'appelle pas `pytest.fail`.
+  Exclus à dessein : `except ValueError`, handler qui relance, `try/finally`
+  sans handler, `assert` situé **dans** le handler. **Témoin avant emploi** :
+  3 fautes plantées signalées, **6 cas légitimes muets**.
+  ```text
+                          assert au total   dans un `try`   AVALÉS
+  tests/                          5 663             91         0
+  vertex/                             2              0         0
+  terminal.py                         1              0         0
+  ```
+  **Côté tests, le zéro est substantiel** : 91 assertions vivent réellement dans
+  un `try`, et la répartition est sans exception — **91 en `try/finally` SANS
+  handler**, le motif de remise en état imposé depuis le lot 387, **0** sous un
+  handler attrapant `AssertionError`. Aucun `except` de la suite n'est en
+  position de bâillonner une assertion.
+  **Côté production, le zéro est trivial — et il faut le dire** : `vertex/`
+  contient **2** `assert` en tout, `terminal.py` **1**. Un « 0 avalé » sur
+  3 assertions ne prouve presque rien ; le présenter comme un succès serait un
+  zéro décoratif.
+  **Ce que font ces 3 assertions**, puisqu'on les a comptées : extraction de
+  l'Opportunity Brief JS vérifiée à l'import (`terminal.py:5887`) · précondition
+  direction LONG (`call_selector.py:21`) · **`assert decision in
+  FINAL_DECISIONS`** (`executive_engine.py:161`), qui garde le **vocabulaire
+  canonique du verdict final**. Or un `assert` **disparaît** sous `python -O`.
+  Vérifié plutôt que supposé : **aucun lanceur n'utilise `-O`** et
+  `PYTHONOPTIMIZE` n'apparaît nulle part dans le dépôt — les trois sont actives
+  sur tous les chemins de lancement documentés. Ce n'est pas un défaut mais une
+  **fragilité latente** ; **classée rang 4**, non corrigée : ajouter une garde
+  ici serait le changement gratuit que la boucle s'interdit depuis le 384.
+  **Portée** : le détecteur raisonne sur la structure syntaxique — une assertion
+  neutralisée par un `xfail`, un `contextlib.suppress` ou une aide capturant
+  l'exception ne serait pas vue ; et rien n'est dit de la **justesse** des
+  5 663 assertions, seulement qu'aucune n'est muselée.
+  Avec le 403, la question « la suite peut-elle échouer ? » est traitée sous ses
+  deux angles — assertions **absentes** et assertions **muselées** — les deux
+  réponses négatives, les deux dénominateurs mesurés.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** — ni
+  production, ni test, `git status` vide de bout en bout ; SW `td-shell-v187` ;
+  écart runtime final aucun.
+
 - **Lot 403 — livré** : **les tests qui n'affirment rien — deux, et tous deux
   légitimes.** Point de contrôle **peu coûteux** délibérément choisi après les
   35 minutes du lot 402 : un balayage AST, quelques secondes. Question : la
