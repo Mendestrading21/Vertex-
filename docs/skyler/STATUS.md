@@ -2570,6 +2570,72 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 462 — livré** : **les phrases-seuil servies — 26 sur 28 citent EXACTEMENT
+  le seuil que le code applique, le défaut du 461 est un accident isolé, et la
+  seule autre divergence porte sur une branche INATTEIGNABLE.** 42ᵉ lot, deuxième
+  de la tranche. Le 461 a nommé le genre « un classeur qui cite un seuil et en
+  applique un autre » ; ce lot attaque **la classe entière** : les phrases
+  servies qui citent un nombre à côté d'un prédicat.
+  **Calibrage posé AVANT la première mesure** : une phrase-seuil est destinée à
+  l'affichage, contient un nombre, **et porte elle-même un mot de comparaison**
+  (`plafond`, `repère`, `seuil`, `au-delà`, `≥`, `≤`, chevron + chiffre…).
+  **Le critère du mot de comparaison est le cœur du calibrage** — sans lui,
+  contamination par homonymes (leçon des 28 valeurs exclues du 458).
+  **DEUX corrections d'instrument, et le contrôle du 461 PASSAIT dans les deux
+  versions fausses** :
+
+  ```text
+  1  la regex `'…'` appariait le guillemet FERMANT d'un littéral avec
+     l'OUVRANT du suivant → elle capturait le CODE entre les deux
+     (`,opp.actionable>0?`)  — même famille que le 453
+  2  `<` et `>` NUS dans la liste des mots de comparaison → tout le
+     BALISAGE HTML entrait dans la population
+                              186 phrases  →  30   (facteur SIX)
+  ```
+
+  **Un contrôle qui passe ne prouve pas que l'instrument est juste ; il prouve
+  seulement qu'il n'est pas aveugle.** Faux arrêtés : **29 → 31**.
+  **Population** : 42 objets servis, 841 916 caractères → **30 phrases-seuil**
+  (279 E1 habillage, 319 E2 descriptif, 1 E3 interpolé) ; **2 écartées à la
+  lecture** (en-têtes de tableau) → **28 tranchées**.
+  **Résultat : 26 CONCORDENT** — « 3 clôtures datées » ← `length < 3` ·
+  « minimum 5 par verdict » et « n≥5 » ← `n >= 5` · « <-20 » et « >+50 » ←
+  bornes de bucket · « breadth > 55 % » ← 55 appliqué deux fois sur la page ·
+  « max 5 catégories » ← `slice(0,5)` · les **5 paliers** « Gain ≥ +N % » de
+  `winnerRule` **et** les **5** d'`optNextAction` · « ≤ 7 j » ← `<= 7` (deux
+  sites) · « max 3, dont 1 PUT » ← Constitution 3 et 1 · « plafond 15 % par
+  titre » ← `> 15` · « /40 » ← 8 blocs sommant 40 · « zone ≤ 5 j » ←
+  `xOf(min(5, horizon))` · « >12 % du notionnel » ← `> 0.12` ·
+  « P(valeur terminale ≥ 2× coût) » ← `S_T ≥ K + 2×prime`, **la même condition
+  sous une autre forme** · « toutes les 60 s » ← `time.sleep(60)`.
+  **1 DIVERGE** : « ~15 % pour un titre » ← `> 25`, le cas du 461.
+  **1 BORNÉE** : `analysis_page.py:788` — « cible 1 » peut afficher `tp2`, et si
+  `tp1` et `tp3` manquaient ensemble les cartes « Probable » et « Exceptionnel »
+  montreraient le **même** chiffre ; **mais la branche est INATTEIGNABLE** :
+  `analysis.py:261`, unique producteur de `dec.targets`, écrit les trois cibles
+  **dans la même expression**. **Règle 442/445 — je ne la classe pas.**
+  **Le défaut du 461 n'est pas la pointe d'un massif : c'est un accident isolé.
+  Quatrième bornage consécutif — 453 sur 452, 458 sur 457, 461 sur 458, 462 sur
+  461.**
+  **Deux observations nommées, non classées** : le libellé `>+50` couvre
+  `[50, 1e9]` (un trade à +50 % pile y est compté — cosmétique) ; et, **hors
+  calibrage**, la bulle qui porte le « 60 s » exact affirme aussi « sur données
+  réelles » alors que `_alert_price` retombe sur le détail du scan, synthétique
+  en DEMO — genre du dossier ouvert 391/396, **nommé, non compté**.
+  **Portée** : liste de mots de comparaison **fermée** (une phrase sans mot de
+  comparaison échapperait — **non quantifié**) ; les **319 E2 n'ont pas été
+  relues une par une**, elles sont écartées **par construction** ; concordances
+  établies **par lecture**, **aucun banc monté** ; **aucun navigateur**.
+  **Fait de méthode — corollaire de la règle du 461 : le contrôle par un cas
+  connu détecte la CÉCITÉ de l'instrument, jamais son BAVARDAGE ; pour le
+  bavardage, le signal est la TAILLE de la population.**
+  **Lot à résultat NÉGATIF, et c'est son utilité : le défaut d'hier tient, mais
+  il ne se généralise pas — le dire borne le dossier au lieu de l'enfler.**
+  **Aucun code, aucun gardien, aucun test ; aucun GO demandé, rien d'engagé.**
+  Anti-doublon `total 100 · actifs 0` ; aucun fichier touché ; MD5 **8/8** ;
+  snapshot runtime 21 fichiers, écart final **aucun** ; suite **2864 passed /
+  0 skipped**. Comptes : arrêtés **31**, publiés puis corrigés **3**,
+  interprétations retirées **1**.
 - **Lot 461 — livré** : **la carte « Risque dominant » de `/portfolio` déclare
   « Aucun risque critique détecté » entre 15 % et 25 % de concentration — alors
   qu'elle cite elle-même le repère de 15 % et que deux cartes voisines sont déjà
