@@ -2720,6 +2720,55 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 489 — livré** : **la dette du 488 soldée en MOBILE — les trois
+  atténuations survivent à 390 × 844, mais la mesure trouve autre chose : un
+  genre neuf, l'ATTÉNUATION CONDITIONNELLE, qui tombe sous ~730 px de hauteur
+  d'écran.**
+- **Banc calibré par construction** : les deux viewports dans le même script, la
+  calibration étant le 1440 lui-même — « même carte = OUI » retrouvé trois fois.
+  À 390 × 844 les trois survivent (`display:block`, `visibility:visible`, taille
+  non nulle, aucun rognage).
+- **Mon instrument était incomplet, attrapé en lisant sa sortie** : le premier
+  banc mesurait la position de **l'atténuation seule** et allait me faire publier
+  « en mobile l'atténuation du 455 sort de l'écran » — **vrai et sans intérêt**,
+  car au 1440 elle en sort aussi, et le défaut est tout aussi bas. **La quantité
+  qui décide est la DISTANCE entre le défaut et son atténuation. 53 → 54.**
+- **Mesure refaite — distance défaut ↔ atténuation** : 1440 → 510 / 81 / 620 px
+  (écran 1400) : 3 co-visibles · 390×844 → 406 / 119 / **681** : 3 co-visibles ·
+  **375×667 → 455 : NON** · **360×640 → 455 : NON**. **La distance du 455 se fige
+  à 681 px** sur les trois largeurs : seule la **hauteur** décide (règle 459, la
+  réponse a cessé de bouger).
+- **456 et 484-B tiennent partout** (484-B le plus robuste : 81 à 137 px).
+  **Le 455 tient sur un grand téléphone et tombe sur un petit** — il faut alors
+  **défiler entre le défaut et ce qui le corrige**.
+- **Ce que j'en fais** : **je ne promeus PAS le 455 au rang 1** — au 487 le
+  486-A a été promu parce que son atténuation était sur une **autre vue**, jamais
+  simultanée sur **aucun** appareil ; ici elle l'est sur l'appareil le plus
+  probable, et promouvoir sans savoir serait une **aggravation non fondée**.
+  **Mais je ne le confirme pas sans réserve** : son rang 2 devient
+  **CONDITIONNEL**, condition écrite — *hauteur de viewport ≥ ~730 px*.
+  **Je ne sais pas de quel côté de la borne se trouve l'utilisateur** et je ne
+  l'invente pas.
+- **Genre neuf** : *une atténuation peut être **conditionnelle** — vraie sur un
+  appareil, fausse sur un autre ; un rang qui en dépend doit **porter sa
+  condition**.* Troisième affinement consécutif : le 487 a exigé la même **vue**,
+  le 488 la même **carte**, le 489 ajoute la **distance** et l'**écran**.
+- **Second contrôle** : `innerText` ignore `display:none` mais **pas** un texte
+  rogné par `overflow:hidden`. Mesuré sur les six cas — **rien trouvé**. **Ce
+  n'est pas la même chose que de l'avoir validé sur un cas positif**, et je le
+  dis plutôt que de compter le contrôle comme concluant.
+- **Portée** : trois atténuations, quatre viewports — **pas la matrice complète** ;
+  la distance du 455 vaut pour **AAPL et 2 000 $** ; le seuil ~730 px est
+  **déduit**, non dichotomisé ; **aucune capture d'écran** — verdicts issus de
+  `getBoundingClientRect`, un texte visible mais illisible échapperait.
+- **Fait de méthode** : **mon premier banc posait la mauvaise question.** *Une
+  mesure exacte peut répondre à côté — seule la lecture de sa sortie le révèle.*
+- Feuille : **rangs inchangés (24 · 14 · 8 · 3)**, avec **une condition neuve
+  inscrite au rang 2 du 455**.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  serveur DEMO **arrêté et vérifié** · runtime 21 fichiers, écart **AUCUN** ·
+  suite **2864 passed / 0 skipped**.
+
 - **Lot 488 — livré** : **la règle du 487 appliquée à TOUTES les atténuations
   qui ont fait descendre un rang — les trois autres TIENNENT, vérifiées à
   l'écran, aucun rang ne bouge ; et la boucle avait déjà la méthode aux lots 442
