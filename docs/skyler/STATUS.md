@@ -2570,6 +2570,68 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 465 — livré** : **les deux dettes du 464 soldées, toutes deux en
+  NÉGATIF — l'élargissement du détecteur ne trouve AUCUN nouvel accumulateur, et
+  l'alerte déclenchée par un prix de démo n'atteint aucun écran parce que son
+  consommateur n'est pas servi.** 45ᵉ lot, cinquième de la tranche. Un lot qui
+  solde vaut un lot qui ouvre (modèle 449/455/457/459).
+  **Calibrage** : les deux critères du 464 reposés (**donnée de marché** ·
+  **écraser n'est pas accumuler**) ; huit mécanismes d'écriture nommés d'avance ;
+  **`persist.py` exclu — c'est la PRIMITIVE, pas un écrivain**.
+  **Dette (ii)** : détecteur du 464 **28 sites** → élargi **46 sites, +18**.
+  Contrôle double passé dès la première exécution : `track_record.record`
+  retrouvé **par ses deux mécanismes** (`open(…,'a')` ET `save_json`),
+  `gex_history.record` retrouvé.
+
+  ```text
+  les 18 sites manqués = 11 écrivains distincts, lus un par un
+     1  déjà trouvé au 464      track_record.record
+     3  SANS OBJET              .vertex_secret · backup desk · Constitution
+     4  CACHES (écrasent)       company · constituents · analyst_deep · desc_ep
+     1  FENÊTRE 2 JOURS         daily.save_state (cur + prev)
+     1  ÉCRASE (os.replace)     weekly.save_snapshot
+     1  JAMAIS INSTANCIÉ        strategy/memory/store
+     ──
+     0 NOUVEL ACCUMULATEUR DE DONNÉE DE MARCHÉ
+  ```
+
+  **Le compte du 464 — sept accumulateurs — TIENT.** C'est le meilleur résultat
+  qu'une dette d'instrument puisse rendre : la mesure précédente était
+  **complète pour ce qu'elle prétendait mesurer**.
+  **Deux faits nommés** : `strategy/memory/store` **n'est instancié nulle part en
+  production** (aucun `MemoryStore(` hors tests) — écrivain **mort** — et il porte
+  pourtant une **garde exemplaire** (`add()` refuse l'actif sans
+  `confirmed_by_human=True`, `active()` ne rend que `CONFIRMED`) : **second témoin
+  positif, mais de CONCEPTION et sur l'ACTIVATION, pas la provenance — non
+  compté** ; `daily.save_state` garde `prev`, donc un jour de démo survit **un
+  jour** dans le Diff de `/` — borné, **pas de la perpétuation, non classé**.
+  **Dette (i)** — `alerts_fired.json` : `_alert_price` retombe sur
+  `scan_state['detail']`, donc **un prix synthétique en DEMO** ; l'entrée écrite
+  n'a **aucun champ de provenance** ; le fichier **accumule** (200, sans
+  expiration) ; et `if aid in _ALERTS_FIRED: continue` fait qu'**une alerte
+  déclenchée n'est plus jamais réévaluée**. **Sur le papier, un rang 1** :
+  `vx_kit.py:292` écrit `al.fired=true; al.active=false; al.firedPrice=f.price`.
+  **Et c'est faux** — recherche de l'**URL littérale** dans les 42 objets servis :
+  `/api/alerts/status` **AUCUN OBJET SERVI**, `firedPrice` **aucun**, `al.fired`
+  **aucun** ; seules `/api/alerts/active` et `/api/positions/alerts` sont citées.
+  `vx_kit.py` est le module qui **n'atteint aucune des 8 pages**. **NON GARDÉ,
+  mais la conséquence n'atteint aucun écran — règle 442/445, non classé.**
+  **Le faux arrêté à une inférence de la publication** : j'avais la chaîne
+  complète et la ligne du client ; **il ne manquait que la vérification de l'URL
+  servie**. La règle 454/455 a payé, **contre moi**. Faux arrêtés : **33 → 34**.
+  **Portée** : classement **par lecture**, pas par cycle réel ; huit mécanismes
+  seulement — un neuvième échapperait (**non quantifié**, mais la marge se
+  réduit) ; **aucun fichier runtime ouvert** ; **aucun navigateur**.
+  **Fait de méthode, le plus inconfortable de la tranche, et il porte sur MOI :
+  le détecteur était juste du premier coup, c'est le RAISONNEMENT qui allait
+  publier. Une chaîne causale complète DANS LE CODE n'est pas une chaîne causale
+  DANS LE PRODUIT tant qu'on n'a pas prouvé que le consommateur est SERVI.**
+  **Septième bornage consécutif.**
+  **Aucun code, aucun gardien, aucun test ; aucun GO demandé, rien d'engagé.**
+  Anti-doublon `total 100 · actifs 0` ; aucun fichier touché ; MD5 **8/8** ;
+  snapshot runtime 21 fichiers, écart final **aucun** ; suite **2864 passed /
+  0 skipped**. Comptes : arrêtés **34**, publiés puis corrigés **3**,
+  interprétations retirées **1**.
 - **Lot 464 — livré** : **le ledger qui produit le track record affiché ne peut
   pas distinguer un verdict de DÉMO d'un verdict réel — trois écrivains
   append-only sur quatre ont perdu la provenance, et le quatrième la garde.**
