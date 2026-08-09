@@ -2720,6 +2720,51 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 471 — livré** : **LE DEVIS — cinq dossiers chiffrés ligne par ligne, et
+  l'exercice invalide DEUX affirmations publiées.** Premier lot de la tranche
+  470-479 et premier lot d'un genre nouveau : le bilan n°16 ayant constaté le
+  recul des défauts affichés (7 → 3) et le critère posé d'avance au n°15 étant
+  rempli, ce lot exécute la recommandation **(b)** — chiffrer le coût de
+  correction **sans rien corriger**. **Contrôle sur un cas dont la réponse était
+  DÉJÀ connue (leçon 467), passé AVANT tout chiffrage** : le devis retrouve
+  `portfolio_page.py:266`, littéral `' / 10'`, exactement là où le 457 l'avait
+  publié. **Parade posée avant la première mesure** — relire chaque ligne citée
+  dans le fichier réel avant de la chiffrer ; **elle a servi quatre fois**.
+  **457 (rang 1)** : trois lignes portent le 10 (`:266`, `:267`, `:268`) ; la
+  correction pressentie du 457 est **RÉFUTÉE** — `renderSummary` (l.248) ne
+  reçoit que `rich`, les 2 seules occurrences de `bounds` (l.961-962) vivent dans
+  `renderDiscipline` (l.950) ; co-visibilité mesurée **sur 1 vue / 4** (le KPI est
+  sur quatre vues, la carte des bornes sur la seule vue Risque, et sur la Synthèse
+  le KPI n'apparaît pas) ; **troisième récurrence de la leçon 468 en direct** —
+  `portfolio_target_positions` **n'existe pas** sur l'objet, c'est
+  `portfolio_max_positions` (15), `portfolio_min_positions` (8),
+  `max_stock_weight_pct` (15.0), et la V1 donne bien **10** ; trois chemins
+  chiffrés, **(a) injection serveur ≈ 5 lignes retenu** car le mécanisme est déjà
+  dans le fichier (`json_for_script`, `%%VIEW%%` l.1005). **455 (rang 2)** :
+  `pretrade.py:161-166`, gabarit à trois `%d`, **2 lignes** — et correction de
+  l'attendu du réveil, **un des cinq touche bien un moteur** (`vertex/engines/`),
+  mais sur une f-string ; **seul des cinq à ne pas exiger de bump**. **461
+  (rang 2)** : `:221`, **1 à 2 lignes**, et un piège que seule la relecture
+  montre — **deux littéraux `>25` dans la même fonction** (l.221 concentration,
+  l.228 options), douzième récurrence des homonymes. **434 (rang 1)** : 1 ligne,
+  et **le chiffre du 434 est faux** — la garde n'est pas « vingt lignes plus
+  haut » mais **362** (l.237 vs l.599) ; la substance tient. **427 (rang 1)** :
+  1 ligne, `legend:wanted.map` → `sets`, et le même geste corrige les deux
+  défauts. **Total : 4 fichiers · 10 à 12 lignes · 4 gardiens à écrire · 3 rangs 1
+  · UN SEUL bump SW · `_EMPREINTE` jamais** (mesuré : elle n'agrège que
+  `vertex/static`, qu'aucun des cinq ne touche). **Gardiens existants sur les cinq
+  sites : ZÉRO.** Le fait le plus utile est la **mutualisation** : 457 et 461
+  partagent fichier et profil — faits ensemble, le second ne coûte plus qu'une
+  ligne. **Quatre relectures, quatre écarts**, dont trois qui auraient envoyé un
+  correcteur au mauvais endroit et un droit dans une exception ; aucun ne renverse
+  un classement. **Genre neuf : une correction pressentie qui désigne une variable
+  hors de portée — juste au niveau de la PAGE, faux au niveau de la FONCTION.**
+  Les trois dossiers qui ne sont pas des correctifs (469, 468, 466/467) sont
+  nommés et **laissés hors de tout devis** : on ne devise pas ce que personne n'a
+  décidé de corriger. Aucun fichier de production touché · SW `td-shell-v187` ·
+  **MD5 8/8** · snapshot runtime 21 fichiers, écart final aucun · suite **2864
+  passed / 0 skipped**. Comptes : arrêtés avant publication **40** · publiés puis
+  corrigés **5** (+1) · interprétations retirées **3** (+1).
 - **Lot 470 — livré** : **BILAN n°16 (tranche 460 → 469) — la cadence baisse
   pour la première fois de façon nette, le critère que j'avais posé bascule, et
   il faut le suivre.** Seizième bilan, **sur pièces**, aucune trouvaille rejouée,
