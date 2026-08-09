@@ -1720,6 +1720,61 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 401 — livré** : **un gardien qui passait selon l'ordre d'exécution.**
+  Point de contrôle **jamais balayé** : les tests qui mutent un état global sans
+  le remettre en état. Le lot 387 en avait trouvé **un**, par hasard ; le
+  périmètre entier n'avait jamais été mesuré.
+  **Deux instruments, tous deux corrigés avant de servir.** Statique (AST) :
+  3 034 fonctions, 50 mutent un global, 36 protégées (`monkeypatch`/`finally`/
+  teardown), **14 nues** — mais ce ne sont que des **hypothèses**, une fonction
+  d'aide mutante pouvant être appelée depuis un test protégé. Exécution :
+  empreinte de l'état global avant/après **chaque** test. Première version :
+  **84 « fuites » dont 42 fausses**, parce que `pytest_runtest_teardown`
+  s'exécute **avant** les finalizers de `monkeypatch` — corrigé en enveloppant
+  `pytest_runtest_protocol`. Témoin négatif qui mordait aussi :
+  `PYTEST_CURRENT_TEST` est réécrit à chaque phase, exclu de l'empreinte. Et le
+  premier témoin « monkeypatch » écrivait une **valeur déjà présente** —
+  écriture idempotente, donc invisible, donc concluante à tort (leçon du 389) :
+  rejoué avec une valeur réellement différente et une assertion prouvant la
+  mutation effective. **84 → 8 fuites réelles sur 2 864 tests.**
+  **La trouvaille.** `test_skyler_sweep_x1.py::test_sweep_route_and_no_journaling`
+  restaurait avec `if v is None: scan_state.pop(k, None)`. Or
+  `vertex/app/state.py` initialise `'market_ctx': None` : **la clé existe et sa
+  valeur légitime EST `None`**. La remise en état la **supprimait** donc du dict
+  partagé, pour tout le reste de la session. Prouvé par la plus petite
+  reproduction possible — **deux fichiers** : `pytest test_skyler_sweep_x1.py
+  test_state.py` → **1 failed**, chacun seul → vert ; idem sur la queue de
+  66 fichiers (1 failed / 664 passed). Le test qui tombe est
+  `test_scan_state_has_expected_keys` — **le gardien dont le métier est
+  exactement de vérifier que les 8 clés documentées existent**. Son verdict
+  dépendait de l'ordre d'exécution.
+  *Une hypothèse testée et écartée* : j'ai cru que la suite complète passait
+  grâce à une seconde fuite laissant `market_ctx` non-`None` ; placer ce fichier
+  devant laisse l'échec. Je ne sais pas quel test recrée la clé dans la suite
+  complète, et je le dis plutôt que de l'inventer.
+  **Corrigé** en mémorisant la **présence** de la clé et non sa vérité. Rouge →
+  vert sur les deux périmètres ; **témoin** : ancienne logique remise → rouge à
+  nouveau, c'est bien elle qui décidait.
+  **Les 7 autres fuites** (gamma_surveillance ×3, market_context, options_routes,
+  portfolio_stress, pretrade) : vérifié qu'**aucune ne retire une clé
+  documentée** — rejouées ensemble puis suivies du gardien, `72 passed`.
+  Pollutions **latentes**, pas défauts actifs ; les corriger à l'aveugle
+  changerait ce qu'elles mesurent. **Classées.**
+  **Un dossier ouvert, non exécuté (rang 2).** La fixture de portée module de
+  `test_refus_variable_lot392.py` — mon propre lot 392 — assigne
+  `persist._BASE_DIR = tempfile.mkdtemp(...)` **sans restaurer** : la
+  persistance est redirigée pour **678 tests**, 24 % de la suite. Et ce défaut
+  **protège** aujourd'hui : rejouée seule avec un `_BASE_DIR` réel, cette queue
+  écrit dans `skyler_decisions.json` et `skyler_memory.json`. **Restaurer
+  naïvement réintroduirait des écritures réelles dans le stockage de
+  l'utilisateur.** Le bon correctif est de décider **où** la persistance doit
+  pointer pendant la suite — et ce n'est pas neutre :
+  `test_funnel_positions_match_desk` lit délibérément le **vrai**
+  `desk_data.json`. Décision, pas réparation.
+  Suite **2864 passed / 0 skipped**, inchangée — aucun test ajouté, délibérément.
+  Un seul fichier de test modifié ; aucune production ; SW `td-shell-v187` ;
+  écart runtime final aucun.
+
 - **Lot 399 — livré** : **qui, dans la suite, sort sur Internet ?** Le lot 398
   avait neutralisé deux sorties réseau au passage, sans savoir s'il en restait.
   Ce lot mesure au lieu de supposer.
