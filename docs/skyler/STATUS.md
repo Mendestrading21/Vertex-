@@ -2364,6 +2364,82 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 454 — livré** : **les six phrases `action` sont des ordres d'entrée
+  chiffrés, calculés à chaque scan, sérialisés, envoyés au navigateur — et lus
+  par personne.** 35ᵉ lot, 4ᵉ de la tranche. Trois balayages structurels
+  d'affilée, le dernier refermé négativement : **la règle du 416 s'applique,
+  changer de famille** — retour aux moteurs et aux phrases.
+  **Étape 0, un détecteur qui a failli mentir** : première passe AST sur les
+  **dictionnaires littéraux** seuls → `action` **0 phrase composée**, 19 valeurs
+  littérales (`'ATTAQUER'`, `'BUY'`, `'HOLD'`, `'DATA_REPAIR_REQUIRED'`…).
+  **J'allais publier un zéro faux.** Élargi à quatre formes d'écriture :
+
+  ```text
+  action   6 composées   [dict 0 · d[k]= 0 · kwarg 0 · variable 6]
+     engines/decide.py:115, :119                 f-string
+     engines/scorecard.py:233, :235, :237, :239  f-string
+  ```
+
+  Les six sont des **affectations de variable nues**, la seule forme ignorée par
+  la première passe — **neuvième récidive du piège « un détecteur qui ne connaît
+  qu'UNE forme fabrique de faux manquants »**, arrêtée avant publication.
+  **Faux arrêtés : 24 → 25.** **Le sens du champ, vérifié avant tout plan
+  (leçon 451)** : ce sont des **consignes d'entrée chiffrées** — « Entrée vers
+  $X, stop $Y ($stop_type), objectifs $tp1 / $tp2 / $tp3. » — la famille la plus
+  engageante du dépôt sur un terminal en lecture seule ; et **`action` désigne au
+  moins quatre charges utiles** (recommandation, réconciliation, note d'analyste,
+  connexion) : **septième récidive du piège de nom**.
+  **Étape 1, l'affichage d'abord** : les deux moteurs sont **atteignables**
+  (instrument 452) ; corpus **42 objets servis**. Les deux seules lectures
+  `.action` servies portent sur d'**autres** payloads (`portfolio_page.py:459`
+  réconciliation, `analysis_page.py:714` note d'analyste) ; **`decision.action`,
+  `dec.action`, `v.action` : cités nulle part**.
+  **Étape 2, où vont les six phrases** : les quatre de `scorecard.verdict()`
+  entrent dans `scan_state['recommendations']` (`terminal.py:591-598`, `:614`) et
+  `/scan` transporte la clé — mais « recommendations » n'apparaît **qu'une fois**
+  dans les 42 objets servis, sur `/journal`, et c'est un **autre payload**
+  (`analysis_api.py:295`, lu comme `r.proposal`) : **huitième récidive**. Les deux
+  de `decide.decide()` entrent dans `options_pack()` (`:1595`), servi par
+  `/options/<sym>` et `/api/ticker/<sym>` ; `/api/ticker/` **est** consommé — l'un
+  des 40 sites sains du 453 — mais il lit `company`, `detail`, `in_universe`,
+  `risk_map`, **pas `decision`**. **Témoin positif** :
+
+  ```text
+  champ de la ligne `recs`   lu dans les octets servis
+     niveau    OUI   markets · analysis · portfolio · journal · system · 6 builders
+     raison    OUI   accueil · markets · opportunités · portefeuille · options · journal
+     alloc     OUI   portefeuille
+     action    NON   (les 2 occurrences sont d'autres payloads)
+     score40   NON
+  ```
+
+  L'instrument distingue **dans le même dictionnaire** les champs lus des autres.
+  **Classement : rang 4** — famille 411/424/435/436/446, *calculé, sérialisé,
+  envoyé, jamais affiché*. **Rien de faux n'est montré. Ce que cela ne réveille
+  PAS** : la phrase de `decide.py` fond `stop_type` et `resistance` dans son
+  texte, **cela ne rétablit pas** le verdict retiré au 444 — la phrase n'atteint
+  aucun écran. **Trouvaille annexe, rang 3** : dans `feeds.py`, **6 routes sur 9
+  ne sont citées nulle part** dans les octets servis (`/api/cockpit`,
+  `/api/watchlist`, `/api/search`, `/api/weekly`, `/api/strategie`,
+  `/api/comite`), tandis que `/api/market/summary`, `/api/market/context` et
+  `/api/options` le sont — **témoin positif dans le même fichier** ;
+  `/api/cockpit` est **maintenue vivante par deux fichiers de tests**, dont un qui
+  vérifie `'/api/cockpit' in rules` : **un gardien qui impose une route qu'aucun
+  écran n'appelle** (motif 436/451). **Correction d'instrument** : le crible du
+  453 aurait rangé `/api/options` parmi les non-consommées (appel en
+  `.then(function (d){…})`, forme échappée) — la recherche de l'URL littérale dans
+  les **octets servis** n'a pas cet angle mort. **Portée** : déstructuration,
+  crochets et helpers à paramètre **échappent** (436), non quantifiés ; une route
+  non citée reste **appelable à la main** ; `scan_state` vide au démarrage donc
+  les six phrases ont été **lues à la source**, pas exécutées — **ce lot établit
+  où va la valeur, pas ce qu'elle vaut**, et je n'ai pas fabriqué de banc pour
+  faire nombre ; **aucun navigateur** ; **83 des 110 phrases du 444 restent
+  fermées**. **Troisième lot d'affilée** (449, 451, 454) où la phrase examinée
+  n'atteint aucun écran : la veine rend maintenant surtout du poids mort.
+  Aucun fichier touché · SW `td-shell-v187` · **MD5 8/8 identiques** · écart
+  runtime **aucun** · suite **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-454.md`.
+
 - **Lot 453 — livré** : **j'ai tenté de généraliser le contrat rompu du 452 ; le
   balayage rend 26 candidats, tous faux sauf celui du 452, et il a fallu corriger
   l'instrument QUATRE fois pour pouvoir le dire.** 34ᵉ lot, 3ᵉ de la tranche.
