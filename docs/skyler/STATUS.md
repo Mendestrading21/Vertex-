@@ -2570,6 +2570,68 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 468 — livré** : **les seuils décisionnels contre la Constitution —
+  dix-neuf valeurs concordent, aucune divergence NEUVE, et la vraie trouvaille
+  est que la moitié des seuils des classeurs n'a AUCUNE source de
+  configuration.** 48ᵉ lot, huitième et **dernier lot d'ouverture** de la
+  tranche (le 469 solde, le 470 est le bilan n°16). Seule piste de la liste
+  jamais ouverte : les seuils en dur des 13 classeurs du 461.
+  **Calibrage** : le 462 avait tranché les **phrases** qui citent un seuil ; ici
+  **les seuils eux-mêmes**. Critère décisif — **seuil de STRATÉGIE** (décide un
+  verdict produit → devrait venir de la Constitution) contre **seuil de
+  PRÉSENTATION** (exclu, nommé). **Deux passes** : config → code, et code →
+  config.
+  **Deux contrôles sur des cas connus (leçon 467)** : le **457** (« Actions / 10 »
+  contre `maximum = 15`) ressort **SOURCÉ DIVERGENT** ; le **458** (échelle de
+  conviction) ressort **SOURCÉ CONCORDANT**. Les deux passent.
+  **Correction d'instrument attrapée par la passe A** : elle a déclaré
+  `max_simultaneous_bearish_positions` et `target_call_share_pct` « clé absente »
+  alors qu'elles vivent sous `.options_profile.` — **un « absent » qui n'était
+  qu'un chemin trop court**. Faux arrêtés : **39 → 40**.
+
+  ```text
+  SOURCÉ CONCORDANT                                   19 valeurs
+     échelle de conviction  8   ·  bandes de delta   6
+     paliers de gain        4   ·  plancher OI 500   1
+  SOURCÉ DIVERGENT                                     2 — TOUS DÉJÀ CONNUS
+     « Actions n / 10 » vs 15 (457) · dominantRisk >25 vs 15 (461)
+  ```
+
+  **Aucune divergence NEUVE. Dixième bornage consécutif.**
+  **Fait neuf** : sur les **cinq** paliers de gain servis, **quatre concordent**
+  avec `review_thresholds_gain_pct = [30, 50, 75, 100]` — **le palier +20 % n'a
+  aucune source**.
+  **La vraie trouvaille — SIX concepts n'ont AUCUNE clé dans tout le profil** :
+  la **liste de 6 tickers défensifs** de `roleOf` · la **prime « > 12 % du
+  notionnel »** · la **proximité du stop × 1,04** · l'**asymétrie 3 / 1,8 / 1,2**
+  · les **gradations de spread 3 / 6 / 10** · le **palier +20 %**. **Pour ces six,
+  le littéral EST la Constitution** : ils décident « Défense / gardien »,
+  « Structure intéressante mais chère », « Fragilisée », « Asymétrie
+  excellente », « Liquidité acceptable » — **et rien ne les gouverne, ni version,
+  ni test**. Pas un mensonge à l'écran : une **surface de décision hors
+  Constitution**. **Rang 4**, la valeur du lot est la mesure.
+  **Le contraste rend le résultat lisible : là où une clé existe, le code la
+  respecte 19 fois sur 21. Le problème n'est pas la désobéissance, c'est
+  l'absence de loi sur la moitié du terrain.**
+  **Deux candidats NON classés** : `liqState` tolère 6 % de spread quand
+  `LEAPS.spread_pct_max = 5.0` — **portées différentes** (clé par catégorie,
+  classeur générique), leçon 458, **nommé non classé** ; et `computeVerdict` ne
+  signale une échéance courte qu'**en dessous de 20 j** quand le minimum absolu
+  est **60** — **mais `chain_loader.py:24` et `contract_filter.py:18` filtrent
+  déjà sur [60, 540]**, chaîne non établie de bout en bout → **règle 442/445,
+  non classé**. **Troisième candidat sérieux de la tranche tué par
+  l'atteignabilité** (après 462 et 465) : c'est le filtre dominant.
+  **Portée** : liste de limites **fermée** (six clés) · passe B héritant du
+  périmètre des 13 classeurs · `bucketOf`/`tierOf` en **/100** contre une
+  Constitution en **/40** — équivalence **non prouvée, non comptée** ·
+  « aucune clé » établi par balayage sur mots-clés · **aucun banc, aucun
+  navigateur**.
+  **Genre neuf : UN SEUIL QUI DÉCIDE SANS LOI.**
+  **Aucun code, aucun gardien, aucun test ; aucun GO demandé, rien d'engagé.**
+  Anti-doublon `total 100 · actifs 0` ; aucun fichier touché ; MD5 **8/8** ;
+  snapshot runtime 21 fichiers, écart final **aucun** ; suite **2864 passed /
+  0 skipped**. Comptes : arrêtés **40**, publiés puis corrigés **3**,
+  interprétations retirées **1**.
 - **Lot 467 — livré** : **l'intervalle [22, 37] du 466 se résout à 28 — neuf des
   quinze suspectes étaient des redirections de compatibilité, et mon CONTRÔLE
   obligatoire était lui-même mal spécifié : il rejetait un instrument juste.**
