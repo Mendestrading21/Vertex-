@@ -4,6 +4,157 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — veille active, lots 440 → 449 (2026-08-09, bilan n°14)
+
+Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
+vérifiés dans le dépôt, **aucune trouvaille rejouée**. Aucun serveur DEMO, aucun
+moteur rouvert. Une seule mesure fraîche — les MD5.
+
+### Ce que la tranche a déposé — mesuré
+
+**Base résolue explicitement avant tout chiffre** (leçon 430/440, deux fois
+payée) : `d400bf2` **est** le lot 439, `3fc9045` **est** le lot 449, et
+l'intervalle donne bien **dix commits** — vérifié avant publication.
+
+```text
+base d400bf2 (lot 439 fusionné) → tête 3fc9045 (lot 449 fusionné)
+
+commits                                    10
+fichiers modifiés                          12
+   docs/refactor/validation                11   (10 rapports + SKYLER-INDEX.md)
+   docs/skyler                              1   (STATUS.md)
+fichiers HORS docs/                          0
+lignes                        +2 552 / −0        (addition pure, rien supprimé)
+
+terminal.py + vertex/** touchés               0 fichier
+rapports / index / blocs STATUS          10/10, 10/10, 10/10
+volume des dix rapports                  98 591 octets
+MD5 des 8 pages remesurés                     8/8 identiques
+```
+
+Depuis le lot 399 : **1 fichier hors `docs/`** (`tests/test_skyler_sweep_x1.py`,
+lot 401) et **0 fichier de production**.
+
+### Ce que les dix lots ont produit
+
+```text
+440  BILAN n°13                                                          —
+441  piste /analysis refermée · corpus incomplet · unité corrigée        ✗
+442  « R:R structurel » constant à 3, rr_res invisible                   ✓ rang 1 (+ rang 2)
+443  TROIS R:R contradictoires — aggrave le 442                          ✓ rang 1 (+ rang 4)
+444  recensement AST de 235 phrases + CORRECTION publiée du 443          ✗
+445  6 phrases de `basis` TOUTES EXACTES — première famille saine        ✗
+446  horizon « séance +N » sur séances OBSERVÉES, non affiché            ~ rang 4
+447  max pain multi-échéances, TEXTE VISIBLE sur /portfolio              ✓ rang 1
+448  exception Python affichée comme motif sur /options                  ✓ rang 2
+449  veine `reason` refermée 7/7 — le rang 2 du 448 TRIPLE               ✓
+
+      3 rang 1 · 2 rang 2 · 4 rang 4 · 3 bornages · 3 corrections publiées
+```
+
+### Le fait nouveau : le tri par affichage
+
+**Lecture A** — ce serait le **425 renommé** : « partir de l'écran » disait déjà
+de commencer par le rendu.
+
+**Lecture B** — c'est une **règle distincte et plus forte** : le 425 dit **où
+chercher**, le 446 dit **s'il vaut la peine de dépenser la mesure**. Et la
+différence se lit dans les résultats — aux lots **435, 436, 446**, la boucle a
+mesuré entièrement puis découvert que personne n'affichait : **trois
+rétrogradations au rang 4**. Aux lots **447, 448, 449**, l'ordre est inversé :
+**trois lots productifs d'affilée**.
+
+**Je tranche : règle distincte, la plus rentable depuis le 425.** Le 425 choisit
+l'objet ; le 446 pose un **péage avant la dépense**.
+
+**Réserve** : trois lots est un petit échantillon, et le rendement des 447-449
+doit une part de son succès à **la carte du 444** — quels champs sont lus par
+combien d'écrans. **La règle est bonne parce qu'une carte existait.**
+
+### Le rendement, recompté — et il baisse
+
+Recompté, pas hérité (leçon 440), et en **deux conventions**, car un même dossier
+peut occuper deux lots :
+
+```text
+                        rang 1 PAR LOT      rang 1 PAR DOSSIER DISTINCT
+tranche 420 → 429             4                     4     (422, 425, 427, 428)
+tranche 430 → 439             4                     3     (432+433 = même famille)
+tranche 440 → 449             3                     2     (442+443 = même famille ; 447)
+```
+
+**La cadence baisse dans les deux conventions — je ne l'enjolive pas.** Mais le
+compte des **défauts affichés** (rang 1 + rang 2) **tient** : **5** au 430-439,
+**5** au 440-449. **Le volume tient, la gravité moyenne descend** — deux des cinq
+ne sont pas des mensonges (un message technique, une promesse de courbes).
+
+### Mes deux comptes d'erreurs — dont un était trop flatteur
+
+**Arrêtés avant publication : 20.** Recompté sur la tranche — 441 ×1, 443 ×3,
+445 ×1, 446 ×1 = **+6**, de 14 à 20. Le chiffre hérité est **confirmé**.
+
+**Publiés puis corrigés : 3, et non 1.** Le recompte dément le chiffre que je
+transportais depuis le 444 :
+
+```text
+439  « 22 248 octets » pour /analysis      → CARACTÈRES, pas octets      corrigé au 441
+442  « rr_res n'est affiché nulle part »   → visible en BLOCAGE < 2,0    corrigé au 443
+443  « invalidation lu par 5 écrans »      → 2, et un AUTRE payload      corrigé au 444
+     « stop_type atteint un écran »        → RETIRÉ
+```
+
+Je ne comptais que la troisième parce que le 444 l'avait nommée « la première
+fois » — **c'était déjà la deuxième**. **Ce que l'écart signifie** : 20 contre 3,
+un filtre qui retient **environ sept erreurs sur huit**. Et les trois qui sont
+passées ont **toutes la même cause** — un chiffre ou une portée annoncés **sans
+identifier le payload par sa forme**, la règle que le 448 a fini par écrire.
+
+### Ce que les dix rapports NE prouvent PAS
+
+- **Aucune trouvaille sur des données réelles** : scan, board et `detail` vides
+  au démarrage pendant toute la tranche ; **tous les bancs sur entrées
+  fabriquées**.
+- **Aucun navigateur ouvert de toute la tranche.**
+- **93 des 110 phrases concluantes du 444 restent fermées** — la carte est
+  dressée, le territoire non.
+- **Plusieurs formatages sont recopiés, pas exécutés** (443, 448, 449).
+- Les bancs établissent le **comportement du code**, jamais la **fréquence** des
+  cas réels (200 barres du 442, trous de log du 446, échéances du 447, entrées
+  mal typées du 449).
+
+### Classement coût/risque — mis à jour avec 442+443, 447, 448+449
+
+```text
+#   dossier                        geste                                        surface        risque
+1   434 renderAnomalies            copier la garde écrite 20 lignes plus haut   3 lignes JS    très faible
+2   427 légende multi-indices      bâtir la légende depuis `sets`               1 ligne JS     très faible
+3   428 entonnoir de sélection     accepter les deux vocabulaires               2 lignes JS    très faible
+4   437 « Catalyseurs imminents »  retirer `|| Date.now()` (3 pages)            3 lignes JS    très faible
+5   448+449 trois vidages          journaliser, rendre un motif écrit           3 blocs except très faible
+6   425 « 4 maturités réelles »    compte dynamique `${pts.length}`             2 chaînes      très faible
+7   447 max pain multi-échéances   filtrer sur l'échéance la plus proche        1 filtre       faible
+8   432+433 synthèses /portfolio   conditionner sur `allMarked` DÉJÀ CALCULÉ    3 branches     faible
+9   442+443 les trois R:R          afficher `rr_res` + nommer chaque référence  4 rendus       faible
+10  424 thesis_health              UNKNOWN quand les 2 listes sont vides        1 branche      faible
+11  422 expected-move muet         l'ajouter à la liste de limites              1 chaîne       faible
+```
+
+**Les six premiers ne touchent aucun moteur** — cinq fichiers
+(`opportunities_page.py`, `markets_page.py`, `briefing.py`,
+`options_intel_api.py`, `options_lab_api.py`). **Le n°5 est le moins risqué du
+lot** : trois blocs `except`, et **le modèle est déjà écrit dans
+`horizon_scanners`, sur la même page**. **Le n°7 est le seul rang 1 de la tranche
+dont la correction tient en un geste.** Les dossiers lourds (406/407/408/409/411,
+388, 417, 416, 436) ne sont **pas** classés : décision de produit. **Aucun GO,
+rien n'est engagé.**
+
+**Portée** : ce bilan mesure ce que la tranche a déposé et ce que les rapports
+affirment ; il ne rejoue rien — **si un rapport s'est trompé sur un fait présenté
+comme mesuré, ce bilan reprend l'erreur**, et la tranche vient de montrer que
+cela arrive. Le classement des rangs est **attribué par moi-même** : d'où les
+deux conventions plutôt qu'un chiffre unique. Écart runtime final **aucun**.
+Suite **2864 passed / 0 skipped**.
+
 ## BILAN — veille active, lots 430 → 439 (2026-08-09, bilan n°13)
 
 Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
@@ -2212,6 +2363,46 @@ sans autorisation demandée.
   positif/négatif) ; hex en dur du track record → tokens. Aucun
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
+
+- **Lot 450 — livré** : **BILAN n°14 (tranche 440 → 449)** — voir le bilan en
+  tête de ce document. Fait **sur pièces**, aucune trouvaille rejouée ; **une
+  seule mesure fraîche**, les MD5 (**8/8 identiques**). **Base résolue
+  explicitement** (leçon 430/440) : `d400bf2..3fc9045` = **10 commits, vérifié
+  avant publication**. **Déposé** : 12 fichiers, **0 hors `docs/`**,
+  **+2 552 / −0**, **0 fichier de production**, 10/10 partout, **98 591 octets**.
+  **Bilan des dix lots** : **3 rang 1 · 2 rang 2 · 4 rang 4 · 3 bornages · 3
+  corrections publiées**. **Le fait nouveau — le tri par affichage** : deux
+  lectures (le 425 renommé / une règle distincte), et **je tranche pour la
+  seconde** — le 425 dit **où chercher**, le 446 dit **s'il vaut la peine de
+  dépenser la mesure** ; **trois rétrogradations au rang 4** (435, 436, 446)
+  avant le péage, **trois lots productifs** (447, 448, 449) après. **Réserve** :
+  petit échantillon, et le rendement doit une part à **la carte du 444** — la
+  règle est bonne **parce qu'une carte existait**. **Le rendement, recompté — il
+  BAISSE** : rang 1 **par lot** 4 / 4 / **3**, **par dossier distinct** 4 / 3 /
+  **2** ; mais les **défauts affichés** (rang 1 + rang 2) **tiennent à 5** —
+  **le volume tient, la gravité moyenne descend**. **Mes deux comptes d'erreurs,
+  dont un était trop flatteur** : **arrêtés avant publication 20** (recompté,
+  +6 dans la tranche, hérité **confirmé**) mais **publiés puis corrigés 3, et non
+  1** — le 439 (« 22 248 octets » = caractères) corrigé au 441, le 442
+  (« `rr_res` n'est affiché nulle part ») corrigé au 443, le 443
+  (« `invalidation` lu par 5 écrans » + « `stop_type` atteint un écran »)
+  corrigé au 444. **Je ne comptais que la troisième parce que le 444 l'avait
+  nommée « la première fois » — c'était déjà la deuxième.** Le filtre retient
+  **sept erreurs sur huit**, et **les trois qui sont passées ont toutes la même
+  cause** : une portée annoncée **sans identifier le payload par sa forme**.
+  **Ne prouvent pas** : aucune donnée réelle (bancs sur entrées **fabriquées**) ·
+  **aucun navigateur de toute la tranche** · **93 des 110 phrases du 444 restent
+  fermées** · plusieurs formatages **recopiés, pas exécutés** · comportement du
+  **code**, jamais **fréquence** des cas réels. **Classement coût/risque mis à
+  jour** avec **447** (7ᵉ — 1 filtre avant `max_pain`, **seul rang 1 de la
+  tranche corrigible en un geste**), **448+449** (5ᵉ — 3 blocs `except`, **le
+  modèle est déjà dans `horizon_scanners`, même page** : le moins risqué) et
+  **442+443** (9ᵉ) ; **les six premiers ne touchent aucun moteur**. **Aucun GO.**
+  **Quatorzième tranche sans qu'un seul des onze défauts classés — dont six à
+  moins de dix lignes et sans moteur — ait été corrigé.** Aucun fichier de
+  production touché · SW `td-shell-v187` · écart runtime **aucun** · suite
+  **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-450.md`.
 
 - **Lot 449 — livré** : **la veine `reason` refermée — 7 phrases sur 7 tranchées,
   le rang 2 du 448 passe d'une route à trois, et une phrase n'est jamais
