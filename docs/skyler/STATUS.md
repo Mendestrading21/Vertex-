@@ -2213,6 +2213,51 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 442 — livré** : **« R:R structurel 3 » — le seul R:R affiché sur la page
+  d'analyse vaut 3 sur tous les marchés, et celui qui varie, lu par huit moteurs,
+  n'est affiché nulle part.** 24ᵉ lot. Le 441 avait recensé 5 affirmations sur la
+  route `/analysis` à paramètre **sans en ouvrir aucune** ; ce lot en ouvre une et
+  en trouve une autre en chemin. **Ce que je cherchais** : `analysis_page.py:414`
+  annonce « moyennes mobiles 20/50/200 » dans le tiroir, et `:389` les **filtre**
+  — le moteur le documente (`analysis.py:266-268`). **Mesuré sur le moteur
+  réel** :
+
+  ```text
+  barres    11    30    60   120   199   200   400
+  MM tracées 1     1     2     2     2     3     3      (« 20/50/200 » annoncées à chaque fois)
+  ```
+
+  Seuil **exactement 200 barres**, carte tracée **dès 11**. Famille du **425**.
+  **Atténuation réelle mais non co-visible** : la légende (`candlestick-lwc.js:69`)
+  n'affiche que les courbes tracées, mais le tiroir (`chart-core.js:167-175`) ne
+  rend **ni légende ni limites**. **Rang 2.** **Non établi** : aucun titre réel à
+  moins de 200 barres observé — la **fréquence du cas n'est pas mesurée**.
+  **Ce que j'ai trouvé en chemin** : `plan.rr` a **un seul écrivain**,
+  `analysis.py:262` → `'rr': 3.0`, **un littéral** — le R:R affiché est la
+  **définition de `tp3`** relue à l'envers. **Mesuré sur six marchés très
+  différents** : entrée 113,51 → 30,28, stop 107,83 → 27,00, tp3 130,56 → 40,13
+  (**témoin positif : le moteur réagit**) et **« R:R structurel » = 3.0 dans les
+  six**, tandis que **`rr_res` prend [0.4, 0.7, 1.1, 3.5, 4.7]**. **Et `rr_res`
+  n'est affiché nulle part** : lu par **huit moteurs** (`committee`,
+  `decision_stack` ×2, `decide`, `evidence`, `skyler_core`, `chart_read`,
+  `planning_api`→`order_ticket`), il compte **0 occurrence** dans les octets
+  servis, quand `plan.rr` en compte **7** (4 rendus : conclusion de carte,
+  `aria-label`, ligne de carte plan, libellé du cône). **Le R:R qui décide n'est
+  jamais montré ; le R:R montré ne peut pas varier.** **Rang 1** — atténuation
+  dite d'abord (« structurel » peut se lire « par construction », le chiffre
+  **n'est pas faux**), mais la ligne siège **dans une liste de cinq valeurs par
+  titre qui varient toutes**, rien ne signale la tautologie, et la vraie
+  différence (0,4 contre 4,7) **n'atteint pas l'écran**. Croisement de **428** et
+  **433** ; le contre-exemple est **une ligne plus bas**. Correction pressentie :
+  afficher `rr_res`, déjà calculé et déjà servi. **Aucun GO.** **Aucun gardien.**
+  **Une hypothèse écartée** : le repli `—` du stop (`vx-core.js:43`) **n'est pas
+  atteignable** — `plan.stop` est toujours un nombre réel de 11 à 250 barres.
+  **Portée** : moteur réel mais séries **synthétiques** — un **banc**, pas le
+  marché ; **aucun navigateur** ; **4 des 5 affirmations restent non vérifiées**.
+  Aucun fichier touché · SW `td-shell-v187` · écart runtime **aucun** · suite
+  **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-442.md`.
+
 - **Lot 441 — livré** : **la page d'analyse que la boucle n'avait jamais servie —
   `/analysis/<sym>` fait 75 829 octets, porte 20 graphiques et 12 routes, et aucun
   des zéros publiés ne bouge.** 23ᵉ lot, premier de la tranche. Le 439 laissait
