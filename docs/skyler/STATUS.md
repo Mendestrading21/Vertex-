@@ -1824,6 +1824,62 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 415 — livré** : **288 identifiants servis, aucun doublon ; le gardien
+  n'en surveille que 3 pages sur 8.** Deux éléments qui portent le même `id`,
+  c'est un défaut **silencieux** : `getElementById` rend **le premier**, le
+  second n'est jamais mis à jour — carte figée, aucune erreur en console. Le
+  trader voit une donnée qui ne bouge plus et n'a aucun moyen de le savoir.
+  Périmètre : les octets servis (8 pages + 26 scripts), `<script>` **retirés du
+  marquage** — une chaîne dans du JS n'est pas un nœud.
+  ```text
+  1. doublon dans le marquage servi        288 identifiants → 0 doublon
+  2. collision marquage × gabarit JS       1 candidat  → ouvert
+  3. id littéral émis DANS une répétition  1 sur 113   → ouvert
+  ```
+  **Le candidat n°2** (`#op-compare`, `/opportunities`) : les deux porteurs sont
+  dans des **vues mutuellement exclusives** — `renderRadar()` (L240) émet
+  `<div id="op-compare">`, `renderOptions()` (L509) émet
+  `<button id="op-compare">`, et **les deux écrasent le même
+  `$('op-body').innerHTML`**. Ils ne coexistent jamais. Mieux : `renderCompare()`
+  n'a **qu'un seul appelant**, L256, dans `renderRadar` — la fonction qui vient
+  de créer le `div`. **Aucune conséquence.** (L'`id` du bouton n'est cherché par
+  personne, son handler est un `onclick` inline : nom en double sans effet,
+  rang 4.)
+  **Le candidat n°3** est la forme qui fabrique vraiment des doublons — un `id`
+  fixe dans un gabarit passé à `.map()`. Ouvert : `'<div id="strat-pf-' + i + '"'`,
+  relu par `getElementById('strat-pf-' + i)` — **interpolé avec l'indice de
+  boucle**, unique par élément, code correct ; mon extracteur tronquait au `+`.
+  **Zéro doublon réel sur les trois classes.**
+  **L'instrument, deux fois.** Une heuristique de proximité (« un `.map(` dans
+  les 700 caractères précédents ») donnait **9 candidats** ; remplacée par un
+  vrai **appariement de parenthèses** — le `.map(` doit se **fermer** après
+  l'identifiant → **1**. Témoins des deux côtés : un `id` dans un `.map()`
+  fabriqué est détecté, un `id` hors `.map()` ne l'est pas. Et une version
+  intermédiaire du test d'englobement remontait jusqu'au premier guillemet
+  rencontré : elle tombait sur `class="` et jugeait le mauvais contexte. Elle
+  produisait des lignes propres, alignées, et fausses. Jetée.
+  **Ce que le filet couvre, mesuré par mutation.** `test_no_duplicate_ids` ne
+  visite que **3 pages sur 8** (`/`, `/portfolio`, `/system`) :
+  ```text
+  doublon posé sur /markets  (page NON visitée)  →  suite complète : 2864 passed
+  doublon posé sur /         (page visitée)      →  test_no_duplicate_ids : FAILED
+  ```
+  **Le gardien mord — là où il regarde.** Sur `/markets`, `/opportunities`,
+  `/analysis`, `/options`, `/journal`, un identifiant dupliqué serait servi au
+  navigateur sans qu'aucun des 2 864 tests ne le signale. **Non comblé**
+  (invariant non violé, mesuré 8/8 ; gardien-pour-faire-un-lot interdit depuis le
+  384) — **rang 3**. **Avertissement pour qui étendra** : la regex du gardien,
+  `id="([^"]+)"`, **ne retire pas les `<script>`** et compte donc les
+  identifiants des gabarits JS comme des nœuds ; élargir sans corriger ce point
+  ferait remonter des doublons qui n'existent pas dans le DOM — exactement le
+  `#op-compare` ci-dessus.
+  **Portée** : identifiants **statiquement observables** ; un `id` entièrement
+  calculé échapperait, et le DOM final n'a pas été rejoué en navigateur — la
+  classe 3 est une **borne statique**, pas une observation.
+  Suite **2864 passed / 0 skipped**, inchangée. Sondes **restaurées à l'octet**
+  (`git status` vide, suite de référence rejouée après restauration) ; SW
+  `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 414 — livré** : **les 167 boutons servis sont tous câblés ; un bouton
   mort fabriqué par le JS servi ne serait vu par aucun test.** Un bouton qui ne
   fait rien est le défaut le plus banal d'une interface, et le plus humiliant :
