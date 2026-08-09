@@ -2054,6 +2054,48 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 436 — livré** : **`/api/command` sert dix champs, le produit en lit deux —
+  95 % du payload ne va nulle part, et la suite en défend une partie.**
+  Dix-neuvième lot de la veine. **Leçon du 435 appliquée d'abord** : la
+  consommation avant le contenu, et **comptage littéral avant tout regex**.
+  **Mesure**, accès `X.champ` dans les 3 829 722 octets servis :
+
+  ```text
+  top_stocks 12 LU · alerts 4 LU
+  counts · decision · exposure · portfolio_score · regime · risk ·
+  top_options · validation           →  0 accès, JAMAIS LUS
+  → 2 champs sur 10 lus, 8 calculés/sérialisés/envoyés et jamais lus
+  ```
+
+  **Témoin positif** : l'instrument détecte les deux champs dont la lecture était
+  établie au 435. **Durcissement** : déstructuration **0**, accès par crochet **6
+  formes** (carte d'échappement + internes Chart.js), itération **2** (Chart.js +
+  `/api/system/config`) → **rien n'échappe**. **Le poids** : 628 octets sur scan
+  vide, **596 jamais lus (95 %)** ; et `risk` déclenche `portfolio_risk.build`
+  (`:105`), `validation` déclenche `validator.build` (`:117`) — **deux moteurs
+  tournent à chaque appel pour un résultat que personne ne lit**.
+  **`exposure` n'est même pas un calcul** : `command.py:123` porte
+  `{'actions':'70-90%','options':'10-20%','etf':'tampon / cash'}`, **un littéral
+  inline**, invariant. Ma présomption d'entrée était **juste sur le fond et trop
+  généreuse sur la forme** : pas un calcul discutable, une **constante** — et
+  personne ne la lit. **Rang 4.** **Le point à signaler : la suite défend
+  l'inutilisé** — `tests/test_command_routes.py:39`, `:47`, `:68` portent **trois
+  assertions sur deux champs qu'aucun consommateur servi ne lit**. Ce n'est pas un
+  gardien faux : c'est un gardien dont le **périmètre est AU-DELÀ du produit**,
+  l'inverse du motif habituel (381/414/415). **Rang 3** : aucun mensonge à
+  l'écran — c'est le problème, **rien n'atteint l'écran** ; ce qui reste est du
+  **poids mort servi**. Correction pressentie : **décision de produit**, pas
+  correction de deux lignes. **Aucun GO.** **Portée** : mesure sur les **octets
+  servis uniquement** — un consommateur externe échapperait à l'instrument ; je
+  considère la mesure représentative mais **c'est une appréciation, pas une
+  preuve** ; le poids est mesuré sur le scan vide, **le rapport 2/10 ne dépend pas
+  de l'état** ; le coût des deux moteurs est **constaté par lecture, pas
+  chronométré**. **Deux lots de suite qui descendent leur propre trouvaille** —
+  `/api/command` est une route dont le produit a cessé de se servir sans que
+  personne l'écrive. MD5 des 8 pages remesurés : **8/8 identiques**. Aucun fichier
+  touché, aucun bump, SW `td-shell-v187`. Suite **2864 passed / 0 skipped**.
+  Rapport : `docs/refactor/validation/SKYLER-LOT-436.md`.
+
 - **Lot 435 — livré** : **la décision du jour est calculée sur zéro titre, et
   personne ne la lit — je referme le point laissé « non conclu » au 434.**
   Dix-huitième lot de la veine. **Ce que `/api/command` rend quand rien n'a été
