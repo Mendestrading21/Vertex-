@@ -2720,6 +2720,41 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 479 — livré** : **le 416 DESCEND de rang 1 à rang 3, par transitivité avec
+  ma propre mesure du 478 — et « les quinze jamais classés » est un compte FAUX.**
+  Contrôle sur réponse connue du 478 : **passé**. **Premier résultat** : mesuré
+  rapport par rapport, **trois des quatorze portent déjà un rang** (416 et 422
+  rang 1, 431 rang 4) ; « jamais classés » confondait **ne pas être rangé** et
+  **ne pas être chiffré**. Le travail restant est **onze classements et quatorze
+  devis**, pas quinze classements — le chiffre venait de **mon propre réveil**.
+  **Choix du 416** : seul candidat dont le rang peut être **testé par
+  transitivité**, puisqu'il se compare explicitement au 407 que je viens de
+  re-mesurer. **Deux formes syntaxiques** du même choix (`.fillna(100)` et
+  `if avg_l > 0 else 100.0`) — **quinzième récurrence du détecteur à une seule
+  forme**, mon premier grep n'en voyait qu'une. **Atteignabilité prouvée par
+  exécution et plus précise que le rapport** : `kv('RSI'` est absent de
+  `/analysis` et présent dans `/analysis/AAPL`. **Témoin positif treize lignes
+  plus haut** : la série de RSI mappe `NaN → None`, le scalaire non ; réserve
+  honnête, **je n'ai pas mesuré si cette garde tire jamais**. **Rang 3** : le 416
+  se déclarait « nettement moins grave que le 407 », et le 478 a mesuré le 407 en
+  rang 2 — **le 416 n'a pas changé, c'est son étalon qui a bougé** ; la mesure
+  directe concorde (cas de bord strict, convention de Wilder correcte dans le cas
+  dominant). **Pas rang 4** : affiché, servi, indiscernable d'une mesure.
+  **Chiffrage : 3 lignes, 2 fichiers, aucune ligne de rendu** — mais **premier
+  dossier du plan dont la correction touche un vrai calcul de moteur**, donc à
+  traiter seul. Régression **moyenne** : cinq fichiers de test touchent les
+  indicateurs, et le 416 signale lui-même un gardien à relire avant. Mutualisation
+  **absente**, mesurée. **Feuille : 20 dossiers · 55 à 63 lignes · 20 gardiens ·
+  douze rang 1 · sept rang 2 · un rang 3**, avec un nouveau lot J isolé.
+  **Fait de méthode neuf : un rang est RELATIF — quand une référence bouge, tout
+  ce qui s'est classé par rapport à elle doit bouger aussi.** Question posée et
+  **non résolue** : combien d'autres rangs ont été posés par comparaison à un
+  dossier dont le rang a bougé depuis ? Je la nomme plutôt que de la taire.
+  **Et une observation à ma charge : les deux derniers lots ont réduit un dossier
+  après vingt lots où la mesure aggravait — instrument qui se calibre ou juge qui
+  se fatigue, je ne sais pas encore, et je préfère l'écrire.** Aucun fichier de
+  production touché · SW `td-shell-v187` · **MD5 8/8** · suite **2864 passed /
+  0 skipped**. Comptes : **45 (+1)** · **7 (+1)** · 3 · 0.
 - **Lot 478 — livré** : **406 et 407 sont UN SEUL dossier, classé RANG 2 — deux
   clés du contrat de synchronisation que le produit LIT sans que rien ne les
   ÉCRIVE.** Contrôle sur réponse connue du 477 : **passé**. **Le lot en absorbe
