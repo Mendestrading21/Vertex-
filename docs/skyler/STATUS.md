@@ -2054,6 +2054,59 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 432 — livré** : **« Aucune décision urgente — laisser courir les thèses
+  intactes », dit la carte, alors que le moteur vient de classer chaque position
+  « Données insuffisantes ».** Quinzième lot de la veine. Point de contrôle : la
+  **seconde piste ouverte au 429**, la lecture par **table `{…}[champ]`**, avec la
+  bonne question — *le repli implicite est-il honnête ou invente-t-il ?*
+  **Pool apparié** (accolades ET crochets, leçon 415) : **19 lectures** → 4 cartes
+  d'échappement HTML, 2 internes Chart.js, **13 tables produit**. Classées par ce
+  que leur repli **fait** : **9 honnêtes** (`d.bias`→`'—'`, `_ib`→`['IBKR état
+  inconnu']`, `mode`→`''`, `t`→`'vx-muted'`, `st2.status`→`'frozen'`…), 3 sans
+  objet, **1 qui range l'inconnu avec le sain**. **12 sur 13 sont honnêtes.**
+  **La trouvaille** : `/portfolio`, `priorityAction` —
+
+  ```javascript
+  const rank = {cassee:3, fragilisee:2, surveiller:0,
+                insuffisant:0, intacte:0, renforcee:0}[st.key] || 0;
+  … .filter(x => x.rank > 0)
+  ```
+
+  **Le repli `|| 0` est inatteignable** (`thesisState` produit exactement six
+  clés, la table les liste toutes) : **le défaut n'est pas une clé manquante,
+  c'est la VALEUR donnée à `insuffisant`** — une position « Données
+  insuffisantes » n'est pas classée bas, elle est **retirée du tri**.
+  **Mesure par exécution des octets servis** (Node 22) :
+
+  ```text
+  témoin positif — 1 thèse cassée        → « AAA — Réévaluer la sortie, invalidation atteinte »
+  4 positions SANS marque (IBKR off)     → « Aucune décision urgente — laisser courir les thèses INTACTES »
+  3 sans marque + 1 réellement intacte   → idem
+  ```
+
+  **La règle est écrite trois lignes plus haut** : docstring de `thesisState`
+  (`portfolio_page.py:130`) — *« Sans marque → « données insuffisantes » (jamais
+  un verdict) »*. La couche d'état la tient ; la couche d'action la casse et
+  prononce **exactement** le verdict interdit, en le nommant. Huitième instance du
+  motif, et parente directe du 424 — mais cette fois **du côté affiché**.
+  **Atteignable et pas au bord** : le producteur des cotations est un
+  `try { fetch('/api/pos-quotes') } catch(e) { return {}; }` — un échec rend un
+  objet vide, **aucune position n'a de marque**. **Prouvé affiché** : la carte
+  « Action prioritaire » est rendue dans le marquage servi, `${esc(act.label)}`
+  sans condition. **Rang 1** : aucune valeur n'est inventée, les états sont
+  corrects un par un — c'est la **synthèse** qui est fausse, et dans le sens le
+  plus coûteux : elle **rassure** quand elle devrait dire qu'elle ne sait pas.
+  Correction pressentie : compter les `insuffisant` et rendre un libellé qui
+  l'avoue. **Aucun gardien** ne mentionne `priorityAction`. **Aucun GO.**
+  **Portée** : 13 tables ouvertes sur 19, les 6 autres écartées **par rôle** ; un
+  `switch`/`case` échappe toujours ; portefeuille réel sans cotations **non
+  observé**. **Leçon de rang** : le 431 avait annulé son rang 1 parce que
+  l'étiquette était **conservatrice** ; ici elle **rassure** — même forme, sens
+  inverse, **c'est le sens de l'erreur qui décide du rang**. MD5 des 8 pages
+  remesurés : **8/8 identiques**. Aucun fichier touché, aucun bump, SW
+  `td-shell-v187`. Suite **2864 passed / 0 skipped**.
+  Rapport : `docs/refactor/validation/SKYLER-LOT-432.md`.
+
 - **Lot 431 — livré** : **`modeOf` ne peut jamais rendre « Live » — le jeton
   `ibkr` n'existe nulle part dans le vocabulaire qu'il interroge, et j'annule mon
   propre rang 1.** Quatorzième lot de la veine, premier après le bilan n°12.
