@@ -1636,6 +1636,40 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 395 — livré** : **rien à faire, vérifié.** Aucun code, aucun gardien,
+  aucun test ajouté — **c'est le résultat, pas un défaut d'exécution**.
+  Le 393 a constaté l'épuisement des pistes fines, le 394 l'a confirmé en
+  allant vérifier ailleurs. Toutes les veines sont closes **par la mesure** :
+  audit des gardiens par mutation (384, 27 mutations → 2 trouvailles) ·
+  écritures runtime par la suite (389, 2 trouvailles) · refus API littéraux
+  (377, 39 refus / 39 motivés) et construits en variable (392, 30 routes,
+  0 muet) · promesses de retour littérales (375) et imbriquées (393, 0 fausse)
+  · rejeu des gardiens anciens (394, 7/8 mordent, l'écart était une docstring).
+  Un gardien de plus serait le changement gratuit que la boucle s'interdit
+  depuis le 384.
+  **Mais un constat se vérifie, il ne se répète pas.** Reprendre la liste des
+  pistes sans la contrôler serait exactement la faute commise huit fois dans
+  cette tranche : faire confiance à ce qu'on transporte. Les deux items
+  restants ont donc été re-mesurés. Le commentaire
+  « MIROIR EXACT de `__DESK_KEYS` (terminal.py) » est **toujours présent**
+  (`vx-entities.js:18`) et **toujours faux** — `__DESK_KEYS` n'existe plus
+  depuis la purge É1. Les sites de concaténation sont **conformes** au
+  décompte du 374 (4 appels `_extract(PAGE_DAILY, …)`, dont 3 à constantes).
+  Aucune dérive entre la mémoire de la boucle et le dépôt.
+  **Une asymétrie assumée plutôt que cachée.** Le lot 394 vient de corriger une
+  docstring fausse dans un fichier de test ; ce commentaire-ci, du même genre,
+  reste différé. La raison n'est pas le coût d'édition mais **l'invalidation de
+  cache** : `vx-entities.js` est SERVI, donc le corriger impose un bump de
+  service worker, la mise à jour de `_EMPREINTE`, et purge la copie hors-ligne
+  de l'utilisateur. Pour un commentaire, c'est disproportionné — et c'est une
+  décision, pas un effet de bord de lot. **Règle qui en sort : un énoncé faux
+  se corrige immédiatement là où c'est gratuit, et se verse aux dossiers là où
+  cela coûte au produit.**
+  Arbre propre, **aucun fichier touché** (ni production ni test), écart runtime
+  aucun. Suite **2862 / 2 skipped, inchangée**. SW v187.
+  **La matière utile n'est plus technique, elle est décisionnelle** : purge des
+  7 points MSFT (388) et scan de démo dans `breadth_history` (391) en tête.
+
 - **Lot 394 — livré** : **les gardiens anciens, jamais rejoués — 7 sur 8
   mordent encore.** Une vérification plutôt qu'une piste : le lot 393 ayant
   constaté l'épuisement des pistes fines, ce lot répond à une question laissée
