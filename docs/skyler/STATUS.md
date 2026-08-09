@@ -1940,6 +1940,66 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 428 — livré** : **l'entonnoir du scan est plat par construction — il
+  cherche des verdicts en français dans un moteur qui répond en anglais.**
+  Douzième lot de la veine, quatrième mené depuis l'écran. **Affirmation
+  ouverte, et elle est exacte** : `explain.shows:'Le décompte des verdicts
+  moteur sur l'univers scanné (max 5 catégories)'` — le code tronque bien
+  (`slice(0,5)`) et le vocabulaire moteur est **fermé à quatre valeurs**
+  (`vertex/strategy/config.py:51` : BUY / WATCH / WAIT / AVOID) → **le `slice` ne
+  coupe jamais : l'affirmation est vraie mais ne mord jamais**, dit tel quel.
+  **Ce que la même mesure a révélé chez la voisine** : juste sous le donut,
+  l'**entonnoir de sélection** —
+  `isBuy = v=>['ACHETER','RENFORCER'].includes(v.toUpperCase())` et
+  `isAct = v=>u && u!=='ÉVITER' && u!=='EVITER'`. **Les deux prédicats
+  interrogent un vocabulaire FRANÇAIS ; le champ `verdict` des lignes du scan ne
+  contient que de l'ANGLAIS.** Le repli `|| r.decision` ne rattrape rien (clé
+  française portée par `recs`, `terminal.py:596`, pas par les `rows` du `/scan`,
+  `:412`). **Mesure par exécution des octets servis** (bloc de 1 148 o, Node 22,
+  `VXCharts.funnel` stubé) :
+
+  ```text
+  30 BUY · 20 WATCH · 10 AVOID     60 → 60 → 60 → 0
+   2 BUY ·  8 WATCH · 50 AVOID     60 → 60 → 60 → 0
+  100 % AVOID                      60 → 60 → 60 → 0
+  TÉMOIN vocabulaire français      60 → 60 → 50 → 30
+  ```
+
+  **Le marché le plus porteur et l'univers entièrement rejeté produisent le même
+  entonnoir** ; le témoin positif prouve que la logique fonctionne — c'est le
+  vocabulaire qui ne se rencontre pas. Trois étages sur quatre sont constants.
+  **Ce qui fait basculer le lot au rang 1 — la phrase rendue** : dans le marquage
+  servi de `/markets?view=breadth`, sous l'entonnoir, *« Chaque étape resserre
+  l'univers scanné jusqu'aux verdicts d'achat du comité. Aucune idée n'est
+  forcée : un entonnoir plat = marché hostile. »* — **la phrase donne la clé de
+  lecture d'un entonnoir plat, et l'entonnoir est plat par construction,
+  toujours** : un décalage de vocabulaire présenté comme un signal de marché.
+  Conteneur présent dans **1 vue sur les 8 mesurées**. **Bornage sur les octets
+  servis** : `/opportunities` accepte les **deux** vocabulaires sur le même champ
+  (3 fragments) — **le dépôt sait que le champ peut porter les deux** ;
+  `/markets` est le seul site servi qui n'accepte que le français → **1
+  défectueux sur 2**. `analysis_page.py:524` porte un regex acceptant les deux,
+  mais **cette chaîne n'apparaît dans aucun octet servi** — mesuré, non
+  interprété. **Le gardien existe et il est vert** :
+  `tests/test_cockpit.py::test_breadth_selection_funnel_real_data` — son **nom**
+  promet « alimenté par les données réelles du scan », ses **assertions**
+  vérifient la présence de 4 chaînes dans le source ; il n'exerce **pas une seule
+  ligne de scan** (motif des 416/417). **Ce que je n'ai pas observé** : scan vide
+  au démarrage, aucun payload persisté avec `rows` — **pas d'entonnoir plat
+  constaté sur un scan réel** ; vocabulaire lu dans la source de vérité et
+  corroboré par 3 autres consommateurs (`terminal.py:445`, `:1460-1462`,
+  `:5512`). **Rang 1**, famille des 422/425/427 : les valeurs du scan sont
+  réelles, ce sont les **comptes dérivés** qui sont faux — « Achats » vaut 0 en
+  permanence, « Dossiers actionnables » compte les titres rejetés. Correction
+  pressentie : accepter les deux vocabulaires comme le fait déjà
+  `/opportunities`. **Aucun GO.** **Portée** : 2 affirmations ouvertes sur 118,
+  116 non vérifiées ; la phrase d'aide a été trouvée par **voisinage**, pas par le
+  recensement ; `VXCharts.funnel` stubé, rendu SVG non exécuté. Runtime :
+  snapshot **avec copie du contenu**, 3 fichiers ré-horodatés **restaurés à
+  l'octet près et revérifiés** — écart final aucun. Aucun fichier touché, aucun
+  bump, SW `td-shell-v187`. Suite **2864 passed / 0 skipped**.
+  Rapport : `docs/refactor/validation/SKYLER-LOT-428.md`.
+
 - **Lot 427 — livré** : **la légende annonce quatre indices, le graphique en
   trace trois — les couleurs glissent d'un cran.** Onzième lot de la veine,
   troisième mené **depuis l'écran**. Le 426 avait conclu que le vivier était
