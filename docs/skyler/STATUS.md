@@ -4,6 +4,165 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — veille active, lots 430 → 439 (2026-08-09, bilan n°13)
+
+Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
+vérifiés dans le dépôt, **aucune trouvaille rejouée**. Aucun serveur DEMO, aucun
+moteur rouvert. Une seule mesure fraîche a été prise — les MD5 — et elle est dite
+comme telle.
+
+### Ce que la tranche a déposé — mesuré
+
+```text
+base 1ac8446 (lot 429 fusionné) → tête d400bf2 (lot 439 fusionné)
+
+commits                                    10
+fichiers modifiés                          12
+   docs/refactor/validation                11   (10 rapports + SKYLER-INDEX.md)
+   docs/skyler                              1   (STATUS.md)
+fichiers HORS docs/                          0
+lignes                        +2 133 / −0        (addition pure, rien supprimé)
+
+terminal.py + vertex/** touchés               0 fichier
+rapports 430→439 présents                    10 / 10
+lignes d'index 430→439                       10 / 10
+blocs STATUS par lot 430→439                 10 / 10
+volume des dix rapports                  80 011 octets
+```
+
+**La base a été résolue explicitement** (leçon du 430) : ma première tentative
+prenait `e62fecb` comme base — mais `e62fecb` **est** le commit du lot 430, si
+bien que l'intervalle ne couvrait que 431→439, **neuf commits**. Corrigé avant
+publication. Contrôle refait depuis le lot 399 (`29f4435..d400bf2`) : **1 fichier
+hors `docs/`** — `tests/test_skyler_sweep_x1.py`, lot 401 — et **0 fichier de
+production**. **Aucun octet de production n'a changé depuis le lot 399.**
+
+### Ce que les dix lots ont produit
+
+```text
+430  BILAN n°12 + correction d'une affirmation que je répétais           —
+431  modeOf ne peut jamais rendre « Live » — J'ANNULE MON PROPRE RANG 1  ✗ rang 4
+432  priorityAction range l'INCONNU avec le SAIN                         ✓ rang 1
+433  bornage AGGRAVANT — les trois synthèses de /portfolio tombent       ✓ rang 1
+434  renderAnomalies sans la garde écrite VINGT LIGNES PLUS HAUT         ✓ rang 1
+435  la décision du jour, calculée sur zéro titre — et jamais lue        ~ rang 4 (+ rang 2)
+436  /api/command : 2 champs lus sur 10, et la suite défend le reste     ~ rang 3
+437  « Catalyseurs imminents » se déclare fraîche « à l'instant », TOUJOURS ✓ rang 1
+438  bornage NÉGATIF — six contrats rompus, six faux positifs            ✗
+439  trois pages ouvertes, aucun défaut nouveau, une métrique abandonnée ✗
+
+      4 trouvailles de rang 1 · 1 de rang 2 · 1 de rang 3 · 2 de rang 4
+      3 bornages (1 aggravant, 2 négatifs) · 1 annulation de soi-même · 1 bilan
+```
+
+### Le fait nouveau : quatorze instruments jetés en six lots
+
+```text
+430   git diff comparant la tête à elle-même (base vide)                        1
+434   détecteur de garde v1 (page entière) puis v2 (mauvaise fonction)          2
+435   motif sans DOTALL → « 0 appel » là où il y en a 16                        1
+437   passe 1 (motif large) · passe 2 (0/4 invraisemblable) · passe 3 (bouillie) 3
+438   trois lignes fausses issues d'une collision de noms de payloads           3
+439   compteur de contrat de carte, v1 → v4, métrique abandonnée                4
+                                                                             ─────
+                                                                               14
+```
+
+**Tous arrêtés avant publication**, par trois contrôles seulement : **témoin
+positif**, **invraisemblance**, **lecture de la sortie brute**.
+
+**Et le chiffre-titre lui-même n'est pas homogène — je le corrige.** Sur les lots
+437 et 439 l'unité comptée est une **version d'instrument écartée** ; sur le 438,
+c'est une **ligne fausse produite par un seul et même instrument**. Par version :
+**12**. Par résultat faux produit : **14**. Le « quatorze » publié au 439 mélange
+les deux — il n'est faux dans aucune des deux conventions, il est **inconstant**.
+Convention retenue pour la suite : **résultat faux produit, donc 14**. C'est la
+règle du 437 (*ne jamais publier un total dont les lignes ne se comptent pas de la
+même façon*) appliquée à ma propre comptabilité.
+
+### Durcissement ou rendement décroissant — les deux lectures, puis la réponse
+
+**Rendement décroissant** : quatorze instruments jetés en six lots, c'est plus
+d'effort dépensé à se contrôler qu'à mesurer le produit ; deux des trois derniers
+lots ne rendent **aucun défaut nouveau**, et le 439 finit sur un aveu.
+
+**Méthode qui se durcit** : les quatorze ont **tous** été arrêtés **avant**
+publication, par des contrôles qui coûtent quelques secondes. Et les questions ont
+changé de nature — jusqu'au 433 la boucle lisait **une fonction** ; à partir du 434
+elle balaie **3 829 722 octets servis**. Un balayage de corpus casse plus souvent
+qu'une lecture de fonction : c'est attendu, pas dégradé.
+
+**Ce qui tranche — le rendement, lui, n'a pas bougé :**
+
+```text
+tranche 420 → 429     4 trouvailles de rang 1 sur 10 lots
+tranche 430 → 439     4 trouvailles de rang 1 sur 10 lots
+```
+
+**Identique**, et les quatre de cette tranche sont prouvées sur les octets servis,
+dont une (437) affichée sur **trois pages** à la fois. **Réponse : durcissement,
+pas rendement décroissant.** Le nombre d'instruments jetés monte parce que **la
+portée des questions monte**, pas parce que les trouvailles se raréfient.
+
+**Deux réserves.** *(1)* Le « quatorze en six lots » est **en partie un artefact
+de comptage** : la boucle ne journalisait pas ses instruments écartés avant le 434.
+On ne conclut pas à une **tendance** depuis une série qui commence quand on se met
+à compter — des instruments fautifs, il y en avait avant (414, 415, 429), mais je
+**n'ai pas** de recomptage rétrospectif à coût égal et je ne le fabrique pas.
+*(2)* Cette lecture juge la boucle sur ce qu'elle **trouve**, pas sur ce qu'elle
+**change** ; sur ce second critère le rendement est **nul depuis treize bilans**.
+
+### Ce que les dix rapports NE prouvent PAS
+
+- **Aucune trouvaille constatée sur des données réelles** : les lots 435 à 439
+  mesurent tous **sur le scan vide du démarrage**. Le 438 l'a payé — deux de ses
+  six faux positifs venaient de là.
+- **Aucun navigateur ouvert** de toute la tranche ; rendus SVG non exécutés.
+- **Vivier très peu ouvert** : 118 affirmations recensées, 47 phrases triées au
+  433, **35 de `/options` recensées non vérifiées** ; phrases dynamiques toujours
+  hors recensement.
+- **Cinq routes sur huit non conclues** au test de consommation (437).
+- **Aucun taux de couverture du contrat de carte** (439) — la métrique elle-même
+  est mal définie, et c'est un aveu.
+
+**Une limite du n°12 est levée** : il y listait « MD5 non remesurés — leur
+constance est une **inférence** ». Les neuf rapports 431→439 les remesurent, et
+je les ai remesurés pour ce bilan : **8/8 identiques**. C'est désormais **une
+mesure**.
+
+### Classement coût/risque — mis à jour avec 432+433, 434 et 437
+
+Ordre **par coût et risque croissants**, comme au 430.
+
+```text
+#  dossier                          geste                                      surface        risque
+1  434 renderAnomalies              copier la garde écrite 20 lignes plus haut 3 lignes JS    très faible
+2  427 légende multi-indices        bâtir la légende depuis `sets`             1 ligne JS     très faible
+3  428 entonnoir de sélection       accepter les deux vocabulaires             2 lignes JS    très faible
+4  437 « Catalyseurs imminents »    retirer `|| Date.now()` (3 pages)          3 lignes JS    très faible
+5  425 « 4 maturités réelles »      compte dynamique `${pts.length}`           2 chaînes      très faible
+6  432+433 synthèses /portfolio     conditionner sur `allMarked` DÉJÀ CALCULÉ  3 branches     faible
+7  424 thesis_health                UNKNOWN quand les 2 listes sont vides      1 branche      faible
+8  422 expected-move muet           l'ajouter à la liste de limites            1 chaîne       faible
+```
+
+**Les six premiers ne touchent aucun moteur** — quatre fichiers de page
+(`markets_page.py`, `opportunities_page.py`, `briefing.py`, `portfolio_page.py`) :
+**un seul lot, un seul bump de service worker, une seule preuve navigateur**
+suffiraient. Le **n°1 a son propre modèle dans son propre fichier** (la garde est
+écrite vingt lignes plus haut, dans `renderRadar`) ; le **n°6 n'invente rien non
+plus** — `allMarked` est déjà calculé, il sert une couleur et jamais une phrase.
+Les dossiers lourds (406/407/408/409/411, 388, 417, 416, 436) ne sont **pas**
+classés : ils demandent une **décision de produit**. **Aucun GO, rien n'est
+engagé.**
+
+**Portée** : ce bilan mesure ce que la tranche a déposé et ce que les dix rapports
+affirment ; il ne rejoue rien — **si un rapport s'est trompé sur un fait qu'il
+présente comme mesuré, ce bilan reprend l'erreur**. La comparaison de rendement
+porte sur un **classement que j'attribue moi-même**, pas une métrique
+indépendante : le 431 montre qu'il bouge. Écart runtime final **aucun**. Suite
+**2864 passed / 0 skipped**.
+
 ## BILAN — veille active, lots 420 → 429 (2026-08-09, bilan n°12)
 
 Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
@@ -2053,6 +2212,51 @@ sans autorisation demandée.
   positif/négatif) ; hex en dur du track record → tokens. Aucun
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
+
+- **Lot 440 — livré** : **BILAN n°13 (tranche 430 → 439)** — voir le bilan en
+  tête de ce document. Traité **sur pièces** : dix rapports relus, chiffres
+  vérifiés dans le dépôt, **aucune trouvaille rejouée**, aucun serveur DEMO, aucun
+  moteur rouvert ; **une seule mesure fraîche**, les MD5. **Déposé
+  (`1ac8446..d400bf2`)** : **10 commits · 12 fichiers · 0 hors `docs/` ·
+  +2 133 / −0 · `terminal.py` + `vertex/**` : 0 fichier** ; 10/10 rapports, 10/10
+  lignes d'index, 10/10 blocs STATUS, **80 011 octets**. **Base résolue
+  explicitement** (leçon 430) : `e62fecb` **est** le lot 430, l'intervalle ne
+  couvrait que 431→439 — corrigé avant publication. **Bilan des dix lots** : 4
+  trouvailles de **rang 1** (432, 433, 434, 437) · 1 rang 2 · 1 rang 3 · 2 rang 4
+  · 3 bornages · **1 annulation de mon propre rang 1** (431). **Le fait nouveau —
+  quatorze instruments jetés en six lots** (430 ×1, 434 ×2, 435 ×1, 437 ×3, 438
+  ×3, 439 ×4), **tous arrêtés avant publication** par trois contrôles : témoin
+  positif, invraisemblance, lecture de la sortie brute. **Et je corrige le
+  chiffre-titre lui-même** : sur 437 et 439 l'unité est une **version
+  d'instrument**, sur 438 une **ligne fausse d'un seul instrument** → **12 par
+  version, 14 par résultat faux** ; le « quatorze » du 439 mélange les deux — il
+  n'est faux dans aucune convention, il est **inconstant**. Convention retenue :
+  **résultat faux produit, 14**. **Durcissement ou rendement décroissant — les
+  deux lectures, puis la réponse** : ce qui tranche, c'est que **le rendement n'a
+  pas bougé — 4 rang 1 sur 10 lots au 420-429, 4 rang 1 sur 10 lots au 430-439** ;
+  le nombre d'instruments jetés monte parce que **la portée des questions monte**
+  (jusqu'au 433 la boucle lisait une fonction, depuis le 434 elle balaie 3 829 722
+  octets servis). **Réponse : durcissement.** **Deux réserves assumées** : le
+  « 14 en six lots » est **en partie un artefact de comptage** (la boucle ne
+  journalisait pas ses instruments écartés avant le 434 — *on ne conclut pas à une
+  tendance depuis une série qui commence quand on se met à compter*), et cette
+  lecture juge la boucle sur ce qu'elle **trouve**, pas sur ce qu'elle **change**,
+  où le rendement est **nul depuis treize bilans**. **Une limite du n°12 levée** :
+  les MD5 des 8 pages, remesurés ici encore, sont **8/8 identiques** — leur
+  constance est désormais **une mesure**, plus une inférence. **Classement
+  coût/risque mis à jour** avec 432+433, 434 et 437 : 1 · 434 `renderAnomalies`
+  (copier la garde écrite 20 lignes plus haut) · 2 · 427 légende multi-indices ·
+  3 · 428 entonnoir · 4 · 437 « Catalyseurs imminents » (retirer `|| Date.now()`
+  sur 3 pages) · 5 · 425 « 4 maturités » · 6 · 432+433 les trois synthèses
+  `/portfolio` (conditionner sur `allMarked` **déjà calculé**) · 7 · 424
+  `thesis_health` · 8 · 422 expected-move muet — **les six premiers ne touchent
+  aucun moteur** (quatre fichiers de page : un lot, un bump SW, une preuve
+  navigateur). **Aucun GO, rien n'est engagé.** **Portée** : le bilan ne rejoue
+  rien — **si un rapport s'est trompé sur un fait présenté comme mesuré, ce bilan
+  reprend l'erreur** ; la comparaison de rendement porte sur un **classement que
+  j'attribue moi-même**. Aucun fichier de production touché · SW `td-shell-v187`
+  inchangé · écart runtime **aucun** · suite **2864 passed / 0 skipped** ·
+  rapport `docs/refactor/validation/SKYLER-LOT-440.md`.
 
 - **Lot 439 — livré** : **les trois pages jamais ouvertes — `/journal` est
   exemplaire, `/options` cache ses affirmations dans son JS, `/analysis` n'en a
