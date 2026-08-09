@@ -1636,6 +1636,51 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 391 — livré** : **un scan de démo écrit dans l'historique breadth
+  réel, et servi.** Piste ouverte par une observation non engagée du lot 390.
+  **Les données parlaient avant toute manipulation** : `breadth_history.json`
+  portait **16 points strictement identiques** — `a50 50 · a200 45 · net −4 ·
+  health 37` — du 21/07 au 08/08. La participation réelle d'un marché ne
+  reste pas figée seize séances de suite : **signature exacte de la pollution
+  GEX du lot 388**, sur un autre fichier.
+  **Lien causal prouvé** : scan DEMO → 16 puis 17 points, date ajoutée
+  `2026-08-09`, valeurs identiques aux seize précédentes. Le site d'écriture
+  est **inconditionnel** — aucun test de `DEMO_MODE` — et il ne fait pas
+  qu'ajouter : `if _bh[-1]['d'] == _today: _bh[-1] = _snap` **écrase** le
+  point du jour. Une démo lancée après un scan réel **remplace la mesure du
+  jour**.
+  **Et c'est servi** : `/scan` rend 17 points dans `internals.history`, que
+  `markets_page.py` consomme pour « Tendance de participation » — dont le
+  commentaire du code dit « historique breadth **RÉEL** ». Pendant une
+  session de démo l'utilisateur est prévenu (`vx-demo-banner`,
+  `source = 'demo'`), **mais le point persisté ne porte aucune provenance** :
+  lors d'une session réelle ultérieure, sans bannière, les points de démo
+  sont servis au milieu des vrais, indistinguables. Le contre-exemple honnête
+  existe dans le dépôt : `market_context_last.json` **est** écrit avec un
+  champ `demo`.
+  **Aucun fichier de production modifié, délibérément.** Mesuré : **aucune**
+  persistance du dépôt ne garde `DEMO_MODE`. Ajouter ce garde serait une
+  **décision de conception** — ne pas persister en démo, marquer le point, ou
+  assumer que la démo peuple l'historique — pas la réparation d'une
+  incohérence. Le dossier part au **rang 1**. La purge des 16 points déjà
+  accumulés relève de la même décision.
+  **Une part de cette pollution vient de la boucle** : ses vérifications de
+  tranche lancent le serveur DEMO. Le rituel de copie de sûreté et de
+  restauration adopté aux lots 388-390 **a arrêté cette contribution** — le
+  point du 09/08 créé par la mesure a été restauré, retour à 16 points. Ce qui
+  demeure n'en dépend pas.
+  Gardien `tests/test_persistance_demo_lot391.py` (7 tests) : il verrouille
+  les **mécanismes de distinction qui existent** — jamais le défaut, car un
+  gardien figeant l'absence de marqueur accuserait la correction future
+  (leçon du 383). ROUGE ×6, et **le témoin est le test le plus important du
+  lot** : ajouter `'demo': DEMO_MODE` au point persisté — *la correction
+  probable* — **ne casse pas le gardien**. Une ancre a dû être corrigée
+  (`vx-demo-banner` apparaît 4×).
+  **Portée** : le gardien est statique ; les autres caches touchés par une
+  démo (`daily_prev`, `skyler_memory`) **n'ont pas été analysés** — ce lot
+  traite le cas le plus grave, pas la famille.
+  Suite 2835 → **2842** / 2 skipped. SW v187.
+
 - **Lot 389 — livré** : **les deux dernières écritures de test, et une
   mesure qui piégeait.** Deux questions laissées ouvertes au 388.
   **(1) Vérifier mon propre énoncé.** J'avais écrit que les 3 fichiers
