@@ -2720,6 +2720,42 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 480 — livré** : **l'audit des rangs relatifs — NEUF sur vingt-quatre, UN
+  SEUL est affecté, et il n'est pas dans le plan ; mais l'audit trouve autre
+  chose : CINQ des vingt dossiers du plan portent un rang que leur propre rapport
+  n'a jamais déclaré.** Réponse à la question posée sans réponse au 479. **Portée
+  posée d'emblée : aucune conclusion ne porte sur Vertex, toutes portent sur mes
+  propres rapports.** Calibration écrite **dans le code** ; contrôle sur cas connu
+  (le 416) **passé**. **Population** : 482 rapports, 81 déclarent un rang, **371
+  déclarations** — l'instrument comptait les rangs **cités**, pas **posés**. Puis
+  deux défauts de plus, vus en lisant : **« Classement coût/risque » est le tableau
+  du plan, pas un rang propre** (seizième récurrence des homonymes), et **le regex
+  prenait le premier rang, donc « pourquoi pas rang 1 » l'emportait sur le
+  verdict**. Corrigé : **24 rangs propres**, dont **9 relatifs (37,5 %)**, formant
+  une **chaîne de sept dossiers** suspendus à un seul étalon. **Mouvements de rang
+  mesurés indépendamment** : 459 → 456 (**hausse**, rang 4 → 2), 478 → 407
+  (baisse), 479 → 416 (baisse). **Le réveil se trompe une quatrième fois** : il
+  listait 469, 465 et 462 qui ne sont pas des mouvements, et **omettait la
+  requalification 459 → 456**. **Croisement : seul le 418 est affecté** — rang 2
+  « moins grave que le 416 », or le 416 est passé à rang 3 : **inversion**. Je le
+  **nomme sans le reclasser** : il n'est pas dans le plan. **Bornage : la feuille
+  de décision ne change pas — c'est le résultat de l'audit, pas son absence.**
+  **Raison mesurée à cette robustesse : le 422 s'était explicitement dissocié de
+  son étalon (« famille du 417, pas du 407 »), cinquante-sept lots avant que le
+  problème n'existe.** **Trouvaille non cherchée et plus grave que la question** :
+  **six rangs orphelins de justification** (378, 406, 407, 455, 456, 463) — leur
+  classement vient du tableau des bilans, jamais d'un rapport ; **et le 407 est
+  l'étalon du 416**. **Règle posée parce que la mesure la porte : un rang doit
+  porter au moins un critère absolu ; la comparaison est un appoint, jamais le
+  seul.** **L'autre question du 479 tranchée** : trois révisions, deux baisses une
+  hausse, **et les trois dans des lots de ré-examination** — ni calibrage ni
+  fatigue, **un changement de tâche** ; mais **trois est trop peu pour exclure un
+  biais faible, et je le dis**. **Portée** : le détecteur de mouvements est une
+  heuristique — **il a trouvé le 459 que j'ignorais mais raté le 478**, donc les
+  trois mouvements ne sont **pas** un total exhaustif. Aucun fichier de production
+  touché · SW `td-shell-v187` · **MD5 8/8** · suite **2864 passed / 0 skipped**.
+  Comptes : **46 (+1)** · 7 · 3 · **incohérences de rang 1** · **rangs sans
+  justification 6**.
 - **Lot 479 — livré** : **le 416 DESCEND de rang 1 à rang 3, par transitivité avec
   ma propre mesure du 478 — et « les quinze jamais classés » est un compte FAUX.**
   Contrôle sur réponse connue du 478 : **passé**. **Premier résultat** : mesuré
