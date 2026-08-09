@@ -2570,6 +2570,72 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 469 — livré** : **les deux dettes du 468 soldées, et l'une CONTRE ma
+  propre inclinaison — le board sélectionne bien des contrats sous le minimum
+  absolu de la Constitution, par une SECONDE source de configuration qui la
+  contredit.** 49ᵉ lot, **dernier de la tranche 460-469** : un dernier lot solde
+  et n'ouvre pas de front.
+  **Dette (a) — ATTEIGNABLE, je m'étais trompé.** Le 468 écrivait qu'un contrat
+  sous 60 jours « n'atteint probablement jamais le board ». **Faux.** Chaîne
+  remontée jusqu'au bout : `best_for_symbol` va chercher sa chaîne **lui-même**
+  chez le fournisseur (`yf.Ticker().option_chain()`) — **il ne passe ni par
+  `chain_loader`, ni par `contract_filter`**, les deux modules qui appliquent
+  `dte_within_constitution` (ils servent `call_selector` et `bearish_tactical`,
+  pas le board).
+
+  ```text
+  OPTION_BUCKETS (vertex/strategy/config.py:31)
+     court  min  25 · CIBLE  45 · max  75      ← sous le plancher
+     moyen  min  75 · cible  90 · max 135
+     long   min 150 · cible 210 · max 400
+  Constitution  options_profile.dte.absolute_minimum = 60
+  computeVerdict  n'avertit qu'en dessous de 20
+
+  les QUATRE écrivains du board passent buckets=('court', …) :
+     terminal.py:1073 · terminal.py:1586 · legacy_engine.py:336 · weekly.py:222
+  ```
+
+  **La cible du bucket court est 45 : ce n'est pas un cas limite, c'est la zone
+  visée.** **Mais la borne de 60 n'est affichée NULLE PART** (« DTE absolu »,
+  « absolute_minimum », « 60-540 » → aucun objet servi ; le seul rendu qui
+  l'affiche appartient à un module non servi). **Aucun nombre faux à l'écran.**
+  **Rang 3** — pas plus, rien de faux à l'écran ; pas moins, la politique de
+  sélection réelle diffère du document que le reste de l'app traite comme
+  faisant autorité. Le commentaire de `config.py:29` **assume** le choix, mais
+  **il est dans un commentaire, pas dans la Constitution**, qui pose 60 **sans
+  exception** et est verrouillée par `test_constitution_v2.py`.
+  **Genre neuf : DEUX SOURCES DE CONFIGURATION QUI SE CONTREDISENT, ET LE CODE
+  SUIT CELLE QUI N'EST PAS LA CONSTITUTION.** Fait net : **le dépôt a un
+  sélecteur qui respecte la Constitution et un qui l'ignore — c'est le second
+  qui remplit le board.**
+  **Dette (b) — RÉFUTÉE.** `analysis.py:228` rend un score **/100** ;
+  `skyler_score.blocks` somme **40** et `conviction_levels` est en **/40**.
+  **Deux moteurs, deux grandeurs** : les 72/66/56 de `bucketOf` et les 36/32/28
+  de la Constitution ne mesurent pas la même chose. **L'insinuation du 468 est
+  retirée**, et la conversion `sc<=40?sc:round(sc/2.5)` confirme que le dépôt
+  connaît la dualité. **Onzième récurrence des homonymes, forme nouvelle : un
+  même NOM DE CHAMP (`score`) pour deux grandeurs de deux moteurs.**
+  **Mes comptes, et celui-ci n'est pas confortable** : le 468 a **publié**,
+  hedgé et non classé, que la branche était « probablement inatteignable » — **un
+  lecteur en serait reparti avec une croyance fausse. Je le compte : publiés
+  puis corrigés 3 → 4.** Ne pas l'avoir classé **n'efface pas de l'avoir
+  écrit** ; ce qui a sauvé le dossier, c'est d'avoir écrit « non tranché » **dans
+  le verdict**.
+  **Portée** : chaîne établie **par lecture**, **aucun réseau appelé** ;
+  proportion réelle de contrats courts **non mesurée** (board vide) ; **je ne
+  juge pas le choix du bucket**, je mesure qu'il contredit la Constitution ;
+  **aucun navigateur**.
+  **Fait de méthode, écrit à la veille du bilan : l'atteignabilité a tué trois
+  candidats dans cette tranche (462, 465, 468) et j'en ai fait un RÉFLEXE. Le
+  quatrième cas en montre le prix — j'ai SUPPOSÉ l'inatteignabilité au lieu de
+  la MESURER. L'atteignabilité est un TEST, pas une intuition ; une chaîne
+  « probablement filtrée » qui n'a pas été remontée jusqu'au fournisseur n'est
+  pas filtrée du tout.**
+  **Aucun code, aucun gardien, aucun test ; aucun GO demandé, rien d'engagé.**
+  Anti-doublon `total 100 · actifs 0` ; aucun fichier touché ; MD5 **8/8** ;
+  snapshot runtime 21 fichiers, écart final **aucun** ; suite **2864 passed /
+  0 skipped**. Comptes : arrêtés **40**, publiés puis corrigés **4**,
+  interprétations retirées **2**.
 - **Lot 468 — livré** : **les seuils décisionnels contre la Constitution —
   dix-neuf valeurs concordent, aucune divergence NEUVE, et la vraie trouvaille
   est que la moitié des seuils des classeurs n'a AUCUNE source de
