@@ -1720,6 +1720,57 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 409 — livré** : **les 8 pages balayées — une seule consigne impossible,
+  celle du 406.** Le lot 406 avait trouvé **un** état vide qui donne au trader une
+  consigne que le code ne peut pas honorer ; les 8 pages n'avaient pas été
+  balayées.
+  **L'instrument s'est trompé, et le témoin l'a montré.** Premier détecteur :
+  compter les appels `states.empty(` → 85 trouvés, **mais pas le site du 406**.
+  Raison : `portfolio_page.py` et `performance_page.py` passent par une **aide
+  locale** (`emptyCard(host, reason, action)`) et mon détecteur comptait la
+  **définition** de l'aide, jamais ses appels. *Compter les appels d'une fonction
+  sans compter ceux de ses enveloppes, c'est mesurer la mécanique et rater
+  l'usage.* Corrigé :
+  ```text
+  sites d'état vide réellement affichés   88   (direct 83 · via une aide 5)
+  ```
+  Témoin après correction : `portfolio_page.py:623` **est retrouvé**.
+  **Le filtre** : un état vide qui **décrit** une absence (« VIX non fourni par le
+  dernier scan ») n'est pas un état vide qui **promet**. Le défaut du 406 a une
+  forme précise — *le message dit de faire quelque chose, et le faire ne produira
+  pas le résultat annoncé*. Sur tournures d'instruction (« se construit »,
+  « renseigne », « marque une », « ajoutez », « créez », « lancer un scan », « au
+  fil des »…) : **12 / 88**.
+  **Les 12 vérifiés un par un**, mécanisme cherché dans le code et non supposé :
+  ```text
+  « lancer un scan depuis Système » ×3     /api/rescan (7 réf.)            TENABLE
+  « Marque une idée Suivre »               followStock() + bouton servi    TENABLE
+  « créez un suivi depuis une analyse »    followStock(entry/stop/tgt)     TENABLE
+  « ajoutez les titres à surveiller »      set('vxWatchlist') ×2           TENABLE
+  « ouvrir une analyse pour le détail »    route /analysis                 TENABLE
+  « le flux se remplit au rythme… »        flux d'événements live          TENABLE
+  « renseigne le champ erreur »            j-mistake → e.mistake           TENABLE
+  « renseigne le champ leçon »             j-lesson  → e.lesson            TENABLE
+  « renseigne état émotionnel »            j-emo     → e.emo               TENABLE
+  « elle se construit au fil des clôtures » set('myTradesEquity') → 0 site ★ IMPOSSIBLE
+  ```
+  Les trois consignes du Journal méritaient l'examen car elles nomment des champs
+  précis : vérifié, `performance_page.py` L338-341 construit `j-lesson`,
+  `j-mistake`, `j-emo` **et** L355 les écrit dans l'entrée. Le trader peut les
+  renseigner ; les cartes se rempliront.
+  **Une seule consigne est impossible sur les 8 pages : celle du 406.** Comme le
+  408 pour le `|| 0` du 407, ce lot **borne** le dossier au lieu de l'élargir —
+  la correction reste **un texte ou un mécanisme, sur une seule carte**. Le zéro
+  est **substantiel** : 12 promesses examinées une par une, pas un comptage
+  global.
+  **Portée** : le filtre repose sur une liste de tournures françaises, écrite
+  dans le rapport pour qu'elle soit contestable ; une consigne formulée
+  autrement passerait au travers. Et « TENABLE » signifie *le mécanisme existe et
+  écrit la donnée lue* — pas que le parcours soit ergonomique.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ; SW
+  `td-shell-v187` ; écart runtime final aucun. **Prochaine échéance : bilan n°10
+  au lot 410.**
+
 - **Lot 408 — livré** : **le `|| 0` du lot 407 est isolé, pas une famille.**
   Question laissée ouverte par le 407 : cas isolé ou premier d'une famille ? La
   réponse change la **taille du dossier de rang 1**, donc la décision.
