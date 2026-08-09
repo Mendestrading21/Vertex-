@@ -2720,6 +2720,59 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 486 — livré** : **le test du 485 appliqué à TOUS les barèmes — le score
+  /40 est affiché sur DEUX pages et non une, et la trouvaille vient du cas que
+  mon recensement EXCLUAIT : la barre de poids de `/portfolio` est TOUJOURS
+  VERTE, quel que soit le poids.**
+- **Instrument** : population construite **depuis l'écran** — 42 objets servis,
+  841 916 caractères, six motifs. **Calibration sur les deux réponses connues**
+  (LEAPS sain, score /40 bridé à 29), sortie si l'une manque : les deux trouvées.
+  **66 relevés sur 15 objets.**
+- **Un second SITE, pas un second défaut** : `/opportunities` sert « Classement
+  Skyler — score canonique /40 », tracé jusqu'à `skyler_sweep.py:50`
+  `_sk.decide(...)` — **le moteur plafonné à 29**. Conséquences neuves : la barre
+  **ne peut jamais dépasser 72,5 %** de son rail, le seuil vert `>=28` est une
+  **fenêtre de deux points**, la colonne `Niveau` ne peut afficher ni S ni S+.
+  **Le dossier 484/485 passe de 1 à 2 pages servies** — chiffrage changé, rang
+  inchangé.
+- **Le second contrôle est celui qui trouve.** Mon recensement exige un maximum
+  **déclaré** : il exclut les **jauges muettes**. Contrôle sur `wgtBar`, appelée
+  une seule fois avec `tr = tierOf(t)`, et `tierOf` lit **`entrySnap.score`**.
+  Mesuré dans les octets servis : **18 occurrences — 15 lectures, 3 écritures**,
+  toutes dans `vx-entities.js`, **aucune n'écrivant `score`** ; le seul site qui
+  le pourrait est `vx_kit.py:185`, **mort** (lot 381).
+- **Donc `tierOf` rend `null` pour toute position** : tick de plafond jamais
+  dessiné, suffixe « / cap % » jamais écrit, `over`/`near` toujours faux →
+  **barre toujours verte**, et `vx-warn` jamais déclenchée. **Les trois chemins
+  sont bien servis — vérifié — ils ne sont jamais pris. Exact, servi,
+  inatteignable.**
+- **Ce qui atténue** : `dominantRisk` (`:221`) alerte bien sur Top1 > 25 %, et
+  c'est **servi**. Le risque est signalé au niveau du portefeuille ; c'est la
+  barre **par ligne** qui ne le signale pas. → **486-A rang 2**, et c'est ce
+  seul point qui l'empêche d'être rang 1.
+- **Défaut LATENT nommé sans être classé** : `n = sc<=40 ? sc : round(sc/2.5)` —
+  un score /100 ≤ 40 est lu comme un /40, donc `40/100` (faible) donne **S+ /
+  15 %** quand `78/100` (bon) donne **S / 10 %** ; et `roleOf:111` lit **le même
+  champ à l'autre échelle** (`>= 78`). **Rien n'écrivant `score`, c'est latent :
+  aucun rang, pas compté dans la feuille.**
+- **Mutualisation réelle, la première depuis le 478** : 486-A et le latent ont
+  **une seule cause**, `entrySnap.score` jamais écrit — **un seul correctif**.
+  Famille du 406/407, **pas le même site** : je ne fusionne pas.
+- **Deux faux arrêtés avant publication** : (1) le recensement allait conclure
+  « rien de neuf » — sa restriction excluait précisément la jauge fautive ;
+  (2) ma sonde a rendu « ABSENT » sur une chaîne mal recopiée — revérifiée,
+  **PRÉSENT** : j'allais affaiblir mon propre constat. **49 → 51.**
+- **Portée** : **aucune exécution de moteur** — c'est du JS client ;
+  l'inatteignabilité vient du recensement des écritures servies, pas d'un rendu.
+  **Dette nommée : un navigateur la solderait.** Six motifs littéraux ;
+  **7 barèmes nommés non tracés** ; « `vx_kit.py` mort » repris du 381.
+- **Fait de méthode** : trois lots de suite, **le résultat est venu du BORD de
+  l'instrument, pas de son centre**. *Le défaut se loge là où la définition de la
+  population s'arrête.*
+- Feuille : **+1 dossier → 24 · treize rang 1 · neuf rang 2 · trois rang 3**.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  runtime 21 fichiers restaurés, écart **aucun** · suite **2864 passed / 0 skipped**.
+
 - **Lot 485 — livré** : **la dette du 484 soldée PAR EXÉCUTION — le rang 1 est
   confirmé (0 niveau S ou S+ sur 3 072 combinaisons) et mon propre chiffre publié
   la veille est FAUX : le plafond n'est pas 35/40, il est 29/40.**
