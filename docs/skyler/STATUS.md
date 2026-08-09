@@ -2364,6 +2364,69 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 458 — livré** : **les littéraux de l'interface contre la Constitution —
+  l'échelle de conviction est copiée à la valeur près, mais le classeur de
+  catégories d'options est aveugle au type et ne connaît que 3 des 5
+  catégories.** 39ᵉ lot, 8ᵉ de la tranche. Règle 455 → 456 appliquée : **la
+  famille suivante est désignée par la FORME du défaut du lot précédent**.
+  **Calibrage posé AVANT la première mesure** — c'est lui qui rend le lot
+  publiable :
+
+  ```text
+  valeurs numériques du profil V2                    126 · 49 distinctes
+     à chemin UNIQUE, retenues                        21
+     à chemins MULTIPLES, EXCLUES et nommées          28   (aucun total ne les inclut)
+  présentes dans les octets servis                    19  ·  absentes 2
+  coïncidences écartées après lecture du contexte      8   (7, 120, 150, 200, 240,
+                                                            365, 500, -20, 31)
+  valeurs DÉCIDABLES                                  11
+  ```
+
+  **Témoin positif n°1 — l'échelle de conviction est exacte**
+  (`portfolio_page.py:185-189`) : seuils **36 / 32 / 28** = `score_min` du profil,
+  plafonds **15 / 10 / 5 / 2** = `allocation_pct[1]` de S_PLUS / S / A / B —
+  **8 valeurs sur 8 concordantes, sur la page même où le 457 a trouvé une borne
+  périmée**. **Témoin n°2** : `0.40/0.60`, `0.28/0.45`, `0.18/0.30` sont
+  **exactement** les bornes de BALANCED, DYNAMIC et ULTRA_CONVEX.
+  **La trouvaille** — `opportunities_page.py:475-477`, rendu dans la colonne
+  « Catégorie » du tableau options (`:489`) :
+
+  ```text
+  catégorie du profil   delta          étiquette rendue
+  BALANCED              0.40–0.60      BALANCED                   CONCORDE
+  DYNAMIC               0.28–0.45      BALANCED / DYNAMIC         DIVERGE
+  ULTRA_CONVEX          0.18–0.30      DYNAMIC / ULTRA_CONVEX     DIVERGE
+  LEAPS                 0.70–0.90      « AUTRE »                  DIVERGE
+  BEARISH_TACTICAL      0.30–0.55      BALANCED / DYNAMIC         DIVERGE
+  ```
+
+  **Trois faits mesurés** : **(1)** les catégories du profil **se chevauchent**,
+  donc un classeur fondé sur le **seul delta ne peut pas** reproduire la
+  taxonomie — **grandeur insuffisante**, pas bug d'implémentation ; **(2)** le
+  prédicat **ignore le type** alors que `c.type` **est dans le même objet**
+  (`legacy_engine.py:291`) — `put −0.45 → « BALANCED »`, `call +0.45 →
+  « BALANCED »`, `put −0.25 → « ULTRA_CONVEX »`, quand la Constitution pose
+  `primary_direction: LONG_CALL`, `target_call_share_pct: 90` et une catégorie
+  **BEARISH_TACTICAL** distincte (`RARE`, max 1) ; **(3)** le board **contient
+  des puts** (`build_board()` → `sells` en AVOID → `best_for_symbol(..., 'put')`),
+  la branche est donc **atteignable**. **Rang 2** : étiquette fausse **affichée**
+  dans une colonne, alors que l'information qui la corrigerait est dans le même
+  objet ; rien n'est inventé — c'est une **taxonomie amputée et aveugle à la
+  direction**. **Aucun GO. Aucun gardien.** **Non établi** : qu'un delta ≥ 0.70
+  atteigne ce board — `best_for_symbol` filtre par **moneyness** (calls
+  0,98×–1,18× spot) et **exclut le deep-ITM**, donc « AUTRE » pourrait être rare
+  ou inatteignable pour les calls ; **je ne le tranche pas** (442/445).
+  **La réponse à la question du réveil — le 457 n'était pas isolé en GENRE, mais
+  il l'est en GRAVITÉ** : **14 valeurs concordantes contre 1 divergente** (plus
+  une taxonomie incomplète non chiffrée). **L'interface recopie la Constitution
+  correctement dans 14 cas mesurés sur 15** — le rang 1 du 457 est un **relief
+  isolé, pas la pointe d'un massif** ; ce lot **borne** le dossier au lieu de
+  l'élargir. **Portée** : classeur **reproduit, pas exécuté** ; atteignabilité du
+  put établie **par lecture** ; **aucun navigateur**. Aucun fichier touché · SW
+  `td-shell-v187` · **MD5 8/8 identiques** · écart runtime **aucun** · suite
+  **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-458.md`.
+
 - **Lot 457 — livré** : **« Actions 10 / 10 — complet, remplacement obligatoire » :
   le portefeuille affiche la limite de la Constitution V1 alors que le produit
   tourne sur la V2, qui en autorise 15 — et la bonne borne est affichée trois
