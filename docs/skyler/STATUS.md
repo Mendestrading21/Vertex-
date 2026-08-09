@@ -1940,6 +1940,56 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 421 — livré** : **le scoring note un dict vide « D, confiance 58 » — mais
+  la mesure a réfuté mon hypothèse, et la chaîne a fermé le dossier.** Cinquième
+  lot dans la veine des moteurs, cible `vertex/quant/scoring.py` (score global,
+  note, confiance). **Lot négatif sur le produit, et c'est le résultat.**
+  **La règle que le fichier respecte, et où il ne la tient qu'à moitié.** Ligne
+  136 : `out['fundamental_is_proxy'] = not fund_real  # honnêteté : signale si le
+  fondamental est un proxy`. Le fichier **sait** qu'un sous-score peut être une
+  hypothèse plutôt qu'une mesure, et il le **déclare** — **pour un sous-score sur
+  quatre**. Les trois autres prennent des défauts silencieux (`rsi=50`,
+  `volx=1.0`, `atr_pct=2.0`) sans aucun drapeau.
+  **Mesuré :**
+  ```text
+  compose({})   global=40  grade=D  confidence=58
+                technical=18  momentum=50  fundamental=45  risk=64
+                fundamental_is_proxy=True     ← le seul drapeau, et il est correct
+  ```
+  Un verdict complet, noté et chiffré, **sur rien du tout**. Points gagnés par
+  les seules valeurs par défaut : `technical_score({}) = 18` (rsi 50 → +12 dans
+  la bande 45-70 · volx 1.0 → +6), contre **0.0** avec les mêmes clés fournies au
+  pire réel. Booléens tous `False` dans les deux cas :
+  ```text
+  mesures RÉELLES au pire (rsi 10, roc −25, rs 0, atr 10 %)   global=11  tech=0   mom=0   risk=42
+  mesures ABSENTES (clés retirées)                            global=40  tech=18  mom=50  risk=64
+  ```
+  **L'absence de mesure vaut 29 points de plus que la pire mesure réelle.**
+  **Mon hypothèse était que la confiance s'inversait. La mesure l'a réfutée.**
+  Je supposais que `confidence = 100 − min(std × 2.5, 60)` serait **maximale** sur
+  un dict vide, les défauts étant peu dispersés. Mesuré : **aucune donnée 58 ·
+  cas réel cohérent 66 · cas réel contradictoire 40**. La confiance se comporte
+  **correctement**. **Je ne publie donc pas ce défaut, parce qu'il n'existe pas.**
+  *Une hypothèse d'explication doit être testée, pas narrée* — la règle a coûté
+  ici une trouvaille annoncée.
+  **La chaîne ferme le dossier.** Un **seul appelant** dans tout le dépôt,
+  `vertex/engines/analysis.py:203`, et le `ind` construit deux lignes plus haut
+  porte **les douze clés, toujours**, calculées inconditionnellement depuis la
+  série de prix. **Les valeurs par défaut de `scoring.py` ne sont jamais utilisées
+  en production** : le comportement mesuré est **inatteignable aujourd'hui**.
+  **Ce qui reste est une caractérisation, pas un défaut.** Le module se présente
+  comme **pur et réutilisable** (« Pures = testables », liste des clés attendues
+  en tête) — une invitation à un second appelant, qui recevrait une note sans
+  savoir qu'elle repose sur des défauts. **Classé rang 4**, piège latent, aucune
+  conséquence actuelle. **Aucun GO, rien d'engagé.**
+  **Portée** : la vérification de chaîne établit que les douze clés sont
+  **toujours présentes**, pas qu'elles soient **numériquement saines** ;
+  `options_score` n'a pas été ouvert (il reçoit `None` sur ce chemin).
+  **Troisième fois d'affilée dans cette veine que la mesure RÉDUIT ce que j'allais
+  écrire (416, 418, 419) — et la première où elle l'ANNULE.**
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ; SW
+  `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 419 — livré** : **la forme du 418 bornée — 22 replis, 18 légitimes, 4
   aveuglants, et un RSI de 0 effacé.** Dernier lot de mesure de la tranche : il
   **borne** au lieu d'ouvrir. Le 418 avait trouvé une condition de validation qui
