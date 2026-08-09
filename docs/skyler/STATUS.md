@@ -2054,6 +2054,46 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 437 — livré** : **le test de consommation ne se généralise pas (trois
+  instruments, trois contrôles) — mais il a trouvé une carte qui se déclare
+  fraîche « à l'instant », toujours.** Vingtième lot, **bornage du 436**.
+  **Trois instruments, trois contrôles qui mordent** : **passe 1** (`.champ` sur
+  tout le corpus) → 86 % de champs lus, **propre, aligné et FAUX** — le **témoin
+  positif** annonçait `/api/command` 5/10 alors que le 436 avait établi 2/10 ;
+  **passe 2** (`ident.champ`, `ident` recevant la réponse) → témoin **retombe
+  juste**, mais `/api/positions/state` à **0/4** est invraisemblable (*un pool qui
+  mord sur un objet sain accuse l'instrument*, 414) ; **passe 3** (payloads
+  transmis **en bloc**) → trouve le vrai cas `actionListHtml(posState)` **et une
+  bouillie** (`Bo`, `Number`, `fillText`), les receveurs d'une ou deux lettres
+  étant indistinguables du Chart.js minifié.
+
+  ```text
+  /api/command             2/10   CONCLUANT      /api/positions/state  INCONCLUANT
+  /api/system/diagnostics  4/5    CONCLUANT      /scan          12/24   BORNE BASSE
+  /cal-feed                2/3    CONCLUANT      summary · regime · sweep  INUTILISABLES
+  ```
+
+  **3 routes sur 8 concluantes** ; `/api/command` à **20 %** se détache de
+  `/api/system/diagnostics` (80 %) et `/cal-feed` (67 %). **Le 436 n'est pas
+  généralisé, il est indiqué** — la méthode ne se déploie pas à coût constant.
+  **La trouvaille, sortie du bornage** : `/cal-feed` sert `items`, `macro`,
+  `updated` ; le client lit `timestamp: cal.ts || Date.now()` — **et `cal.ts`
+  n'existe pas**. Le repli s'applique **toujours**, et `VX.updateIndicator` rend
+  `VX.fmt.ago(ts)` : **la carte « Catalyseurs imminents » annonce en permanence
+  que ses données datent de l'instant présent**, sur **trois pages**. **Le contrat
+  n'a jamais existé des deux côtés** : `cal_state['updated']` est une **chaîne
+  d'affichage** (`strftime('%H:%M %d/%m')`), inexploitable par un `ago()` — le
+  serveur émet un libellé, le client attend un horodatage. **Rang 1** :
+  affirmation de fraîcheur, affichée, toujours fausse, et penchant du côté qui
+  **rassure**. **Aucun gardien.** **Aucun GO.** **Portée** : 5 routes sur 8 non
+  conclues et **non comptées** ; le taux de 51 % de la passe 2 est **une borne
+  basse contaminée, non publiée comme chiffre** ; carte non observée en
+  navigateur. **Sept instruments fautifs en quatre lots** (430, 434 ×2, 435,
+  437 ×3) — ici **les trois ont été arrêtés par leurs propres contrôles avant
+  d'entrer dans le rapport**. MD5 des 8 pages remesurés : **8/8 identiques**.
+  Aucun fichier touché, aucun bump, SW `td-shell-v187`. Suite **2864 passed / 0
+  skipped**. Rapport : `docs/refactor/validation/SKYLER-LOT-437.md`.
+
 - **Lot 436 — livré** : **`/api/command` sert dix champs, le produit en lit deux —
   95 % du payload ne va nulle part, et la suite en défend une partie.**
   Dix-neuvième lot de la veine. **Leçon du 435 appliquée d'abord** : la
