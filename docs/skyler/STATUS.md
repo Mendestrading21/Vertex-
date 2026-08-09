@@ -2213,6 +2213,45 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 449 — livré** : **la veine `reason` refermée — 7 phrases sur 7 tranchées,
+  le rang 2 du 448 passe d'une route à trois, et une phrase n'est jamais
+  produite.** 31ᵉ lot, **dernier de la tranche 440-449** : il **solde la dette**
+  du 448 (4 phrases non établies) au lieu d'ouvrir un front. **Étape A — route
+  puis lecteur** : `options_lab_api:57` → `/api/options/strategies/<sym>` →
+  `options-structure.js:101` (**ligne exacte** : le fetch est **quatre lignes plus
+  haut**, `:97`) et `options-intel.js:468` (**niveau fichier**, les appels passent
+  par un helper — **je ne prétends pas mieux**) · `options_lab_api:72` →
+  `/api/options/analyze` → `options-structure.js:101` · `horizon_scanners:47` →
+  `/api/options/scanner/<universe>` → `options-scanner.js:32` ·
+  `tradingview_signal_store:52` → **aucune route**. **La quatrième n'est pas « non
+  affichée » : elle n'est jamais produite** — `SIGNAL_STORE.record()` **n'a aucun
+  appelant** dans tout `vertex/`. Chemin mort, **rang 4**. **Étape B — banc sur
+  les moteurs réels** :
+
+  ```text
+  /api/options/strategies/<sym>   board mal typé → « AttributeError: 'str' object has no attribute 'get' »
+  /api/options/analyze            leg mal typé   → « AttributeError: 'str' object has no attribute 'get' »
+  /api/options/scanner/<univers>  « univers inconnu : 'INCONNU' (attendu ['LEAPS','SWING','TACTICAL']) »
+                                  « aucun contrat SWING dans la fenêtre [60, 180] pour ce filtre »
+  ```
+
+  **Le rang 2 du 448 TRIPLE** : trois routes de `/options` rendent une
+  `AttributeError` Python dans une carte d'état vide. **Et le témoin positif est
+  sur la même page** : `horizon_scanners` rend, **même champ, même page, même
+  chemin de rendu**, un refus qui **nomme la valeur reçue et l'ensemble attendu**.
+  **Le défaut n'est donc une propriété ni de la page ni du champ — mais des blocs
+  `except`.** **Veine refermée** : 7/7 tranchées · **6 affichées · 3 exactes · 3
+  vidages · 1 morte** ; **aucune ligne « non établie »**. **Aucun GO. Aucun
+  gardien** ; la correction pressentie est **écrite dans `horizon_scanners`**.
+  **Portée** : exceptions **réelles** mais formatage **recopié**, pas exécuté ;
+  **une seule famille d'entrées mal formées** ; **`board None` et `spot None` ne
+  lèvent pas** — le vidage n'apparaît que sur une entrée **mal typée**, dont **la
+  fréquence réelle n'est pas mesurée** ; **aucun navigateur** ; **93 des 110
+  phrases du 444 restent fermées, ce lot n'en ouvre aucune**. Comptes séparés
+  inchangés : faux **arrêtés 20**, **publiés puis corrigés 1**. Aucun fichier
+  touché · SW `td-shell-v187` · écart runtime **aucun** · suite **2864 passed /
+  0 skipped** · rapport `docs/refactor/validation/SKYLER-LOT-449.md`.
+
 - **Lot 448 — livré** : **« simulation impossible : 'NoneType' object has no
   attribute 'spot' » — une exception Python s'affiche sur `/options` comme motif à
   l'utilisateur.** 30ᵉ lot. Dernier gros champ non ouvert : **`reason`**, 7
