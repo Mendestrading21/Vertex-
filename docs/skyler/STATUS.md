@@ -2720,6 +2720,71 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 483 — livré** : **les six dernières entrées « à classer » lues une par
+  une — UNE SEULE l'était encore, deux étaient déjà classées et mal rangées,
+  quatre ne portent aucun défaut propre, et AUCUNE des six n'est une
+  correction.** Suite directe du 482, avec **deux épreuves** : ce que le rapport
+  DIT être, **et** si son site de code existe encore aujourd'hui (leçon 473).
+  **Les deux contrôles du 481** : le premier calibré **dans le code du
+  détecteur** — passé ; **le second sur un cas que l'instrument EXCLUT** — mon
+  instrument lit la liste **par ses étiquettes**, et « 388 (MSFT) » masque le
+  second volet du 388 (SKYX/TSTQ dans `skyler_sessions.json`) ; mesuré,
+  **3 sources touchent le journal de sessions et les 3 redirigent — 0 sans
+  redirection, volet SOLDÉ**. Je l'écris « sans conséquence *cette fois* », pas
+  « justifiée » : l'exclusion l'a été par chance, pas par construction.
+  **Les six** : **363** « points réels du scan » → **non-dossier**, le rapport
+  titre lui-même « Une observation, pas un défaut » (le mot qualifie une
+  *méthode*, pas une provenance) ; **386** marqueur `src='ibkr'` →
+  **non-dossier, décision produit** — `indices_live` et `['src']` à **0
+  occurrence** dans `vertex/ui/` + `static/js`, et les trois rendus « TEMPS RÉEL
+  IBKR » tombent **tous** dans des constantes `PAGE_*` **mortes** ; son second
+  volet `bret=0.0` est une caractérisation déjà gelée ; **388** les 7 points
+  MSFT fabriqués sont **encore là** mais la cause de code est corrigée depuis le
+  388 — reste une **purge de données utilisateur** ; **396** → **recoupement**
+  du 391 (« Aucun code. Aucun gardien. Aucun test ajouté. ») ; **391** →
+  dossier réel portant **déjà un rang 1** (classement du 390), site vérifié
+  `terminal.py:503-512`, **aucune garde DEMO** ; **456+459** → dossier portant
+  **déjà un rang 2 établi par exécution** au 459 — **il n'était pas à classer,
+  il était à CHIFFRER**. **379** (`context()` sur univers vide) est **le seul
+  encore à classer**, et le seul comportement **réexécuté** : verdict
+  « MARCHÉ · NEUTRE · participation 0 % » sur zéro donnée, **identique
+  64 lots plus tard** ; et ce lot ajoute ce que le 379 n'avait pas établi —
+  **la chaîne jusqu'à l'écran** : `terminal.py:558` (scan vivant) → `:612`
+  `scan_state['market_ctx']` → **trois pages servies** le lisent (`briefing`,
+  `markets`, `intelligence`). **Rang 3**, sur trois critères **absolus** et
+  aucune comparaison : sortie servie (établi), affirmation au lieu d'abstention
+  contre l'invariant n°4 (établi), **cas déclencheur non établi** — ce
+  troisième point, et lui seul, l'empêche de monter. **Dossiers en attente de
+  classement : 6 → 0, la liste est close.** **Résultat le plus net : tout ce qui
+  survit est une DÉCISION** — conception (391), moteur (379), produit (386),
+  données (388), style (363) : la liste « à classer » n'attendait pas un
+  classement, elle attendait **sept arbitrages humains et un chiffrage**.
+  **Mutualisation cherchée et absente, et c'est une trouvaille** : le 379 se dit
+  « jumeau du 363 », le 386 « jumelle du `context()` du 379 » — mesuré, la
+  parenté est de **famille**, pas de **site** (trois fichiers, trois mécanismes,
+  **aucun correctif commun**) ; fusionner sur le mot « jumeau », comme le 478
+  l'a fait **à raison** pour 406+407 qui partageaient une *cause*, serait ici
+  une erreur. **Fait de méthode : « jumeau » dans un rapport affirme une
+  FAMILLE, pas un SITE** — dix-septième récurrence de l'homonyme, sous une forme
+  neuve : un même mot désignant tantôt une ressemblance, tantôt une identité.
+  **Défaut de mon propre instrument attrapé en lisant sa sortie** : le
+  localisateur de constantes `PAGE_*` indexait les intervalles **par nom**, et
+  les **huit** affectations `PAGE_DAILY` s'écrasaient — la ligne 3807 ressortait
+  « hors constante » ; corrigé en liste de triplets (18 → **18 intervalles
+  distincts**) et recalibré sur une réponse connue. **Écraser n'est pas
+  accumuler, troisième récurrence après 464 et 465. Arrêté avant publication
+  47 → 48.** **Portée** : mesures internes des six **non rejouées** (deux
+  épreuves, pas trois) ; seul `context()` réexécuté ; **les numéros de ligne des
+  386 et 456 sont périmés** (L621 → 2249, L165-168 → 167) — sites retrouvés par
+  **motif**, confirmation directe de la leçon 473 ; « `PAGE_*` mortes » **repris
+  du 374** ; **aucun navigateur**. **Feuille : le 379 entre au rang 3 → 21
+  dossiers · douze rang 1 · sept rang 2 · deux rang 3 ; lignes et gardiens
+  inchangés (55-63 · 20), le 379 étant une décision non chiffrée ; dix lots A à
+  J inchangés.** Cycle : aucun fichier de production touché · SW
+  `td-shell-v187` · **MD5 8/8** · `persist` redirigé **et vérifié** · runtime
+  21 fichiers restaurés, écart **aucun** · suite **2864 passed / 0 skipped**
+  lancée **après** les trois documents.
+
 - **Lot 482 — livré** : **retour au produit — QUATRE des dix « dossiers en
   attente » ne sont pas des dossiers ; la liste tombe de dix à six.** Le 481 avait
   fixé la consigne, ce lot mesure l'inventaire réel des défauts de Vertex.
