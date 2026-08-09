@@ -2213,6 +2213,45 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 446 — livré** : **« clôture séance +5 » compte les séances OBSERVÉES, pas
+  les séances de marché — le contraste moteurs/pages du 445 est nuancé, pas
+  confirmé.** 28ᵉ lot, **bornage du 445**. Troisième producteur indépendant :
+  `decision_memory`, 16 phrases jamais ouvertes. **Banc sur `measure()`**, log
+  construit par le vrai producteur `record_close()` :
+
+  ```text
+  terminal ouvert tous les jours   10 séances   « séance +5 »   5.0 %   ← témoin positif, ACCORD
+  4 jours sans scan                 6 séances   « séance +5 »   8.0 %   ← réel à +5 séances : 5.0 %
+  ```
+
+  **Le module le documente lui-même** : « aucun jour sans scan n'est comblé — un
+  trou dans le log reste un trou ». Le log n'écrit qu'aux jours de scan, et
+  `closes_after_date()` rend une liste **compactée**. **Le trou vient de l'usage,
+  pas de la donnée** — `record_close()` et `series.closes()` refusent les entrées
+  invalides. **Deux conventions dans la même fonction** : la branche EN_ATTENTE
+  dit « séance(s) postérieure(s) **observée(s)** », la branche MESURE, **dix
+  lignes plus bas**, dit « clôture séance **+5** » — famille **426** appliquée aux
+  deux branches d'une seule fonction, contre-exemple compris. **Mais la
+  conséquence n'atteint aucun écran** : `horizons`, `H5`/`H20`/`H60`,
+  `sessions_observed`, `mfe_pct`/`mae_pct` → **0 écran** ; les deux lectures de
+  `return_pct` appartiennent à **d'autres payloads** (une cible de scénario, une
+  ligne de calibration). **Quatrième occurrence du piège « un nom, plusieurs
+  payloads » — arrêtée avant publication : vingtième résultat faux arrêté.**
+  **Rang 4** — défaut réel dans le moteur, sans conséquence à l'écran aujourd'hui.
+  **Réserve** : si ces horizons sont un jour affichés, le défaut devient sérieux
+  **et il flatte** (mesurer la 5ᵉ séance *observée* allonge la période réelle) ;
+  correction déjà écrite dix lignes plus haut — dire « observée » des deux côtés.
+  **Aucun gardien.** **Réponse au 445 : nuancée, pas confirmée** — le contraste
+  moteurs/pages tient sur les **conséquences affichées**, pas sur la **justesse du
+  vocabulaire** ; **mon échantillon du 445 était favorable sur cet axe, et je le
+  dis**. **Portée** : **1 phrase ouverte sur 16**, **103 des 110 phrases du 444
+  restent fermées** ; banc = log **fabriqué**, la **fréquence réelle des trous
+  n'est pas mesurée** ; `H20`, `H60`, `CATALYSEUR` **non vérifiés** (même
+  fonction, mesuré une seule fois) ; **aucun navigateur**. Comptes séparés : faux
+  **arrêtés 20**, **publiés puis corrigés 1**. Aucun fichier touché · SW
+  `td-shell-v187` · écart runtime **aucun** · suite **2864 passed / 0 skipped** ·
+  rapport `docs/refactor/validation/SKYLER-LOT-446.md`.
+
 - **Lot 445 — livré** : **j'ouvre les phrases que le serveur écrit, et elles sont
   justes — 15 accords sur 16, le seizième sur un état inatteignable.** 27ᵉ lot.
   Le 444 avait livré la carte (110 phrases, **aucune vérifiée**) ; ce lot ouvre
