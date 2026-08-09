@@ -1824,6 +1824,64 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 419 — livré** : **la forme du 418 bornée — 22 replis, 18 légitimes, 4
+  aveuglants, et un RSI de 0 effacé.** Dernier lot de mesure de la tranche : il
+  **borne** au lieu d'ouvrir. Le 418 avait trouvé une condition de validation qui
+  teste son propre repli ; **ce site est-il isolé ?**
+  **Recensement par AST** (`vertex/**/*.py` + `terminal.py`) :
+  ```text
+  comparaisons de `if` contenant un repli `or CONSTANTE`      25
+     dont SANS garde `is None` dans la même condition         22
+  ```
+  **Témoins, les trois passent** : le site du 418 est retrouvé · la ligne
+  `quantity` du même fichier est vue par le détecteur · **et écartée** grâce à
+  son `is None`. Le détecteur distingue la forme fautive de la forme correcte
+  écrite deux lignes plus haut.
+  **Les 22 ouverts un par un, triés par RÔLE et non par forme** : **18 =
+  sélection/classement, repli honnête** (« absent → 0 » veut dire « ne qualifie
+  pas » : `(fund.get('score') or 0) >= 65`, `(c.get('quality') or 0) > (best…)`,
+  comparaisons de chaînes, `or 'UNKNOWN'` volontaire…) ; **4 =
+  détection/validation**, où le repli masque ce qu'on cherche.
+  **La trouvaille — `vertex/scanner/daily.py:62`, un RSI de 0 est EFFACÉ.**
+  `if float(d.get('rsi') or 50) < 45: bits.append('momentum faible')` — `0.0` est
+  *falsy*, donc la valeur la plus baissière qui existe devient le neutre **50**.
+  Mesuré sur `_avoid_reason`, toutes autres entrées identiques :
+  ```text
+  rsi = 40  (momentum faible)      → « … · momentum faible »
+  rsi = 1   (quasi extrême bas)    → « … · momentum faible »
+  rsi = 0   (extrême bas RÉEL)     → « … »        ← la raison DISPARAÎT
+  rsi ABSENT                       → « … »        ← même sortie que rsi = 0
+  ```
+  Le trader reçoit **la même explication** pour « je n'ai pas la donnée » et pour
+  « le momentum est au plus bas possible » — et la fonction est **non monotone à
+  sa propre frontière** (listée à 1, absente à 0). **Ironie avec le 416** : le
+  même indicateur y était **fabriqué à 100** là où il est indéfini ; il est ici
+  **effacé à 0** là où il est réel. Deux fautes opposées, une seule cause :
+  traiter un extrême légitime comme une donnée manquante.
+  **Les deux autres.** `reconciler.py:82` compare
+  `(loc.get('multiplier') or 100)` à `(b.get('multiplier') or 100)` ; le 418
+  ayant mesuré que le côté courtier ne porte **jamais** de multiplicateur, la
+  comparaison oppose toujours le local à un **100 fabriqué** — cohérent avec le
+  418, pas un dossier neuf. Le contraste est **quatre lignes plus haut, même
+  bloc** : le coût moyen est gardé par `is not None` **et** un dénominateur non
+  nul. `portfolio_guard.py:19` compte une exposition **inconnue** comme **zéro**,
+  donc `MAX_OPTIONS_REACHED` ne se déclenche pas — **lu, pas mesuré**, et dit
+  comme tel.
+  **Ce que le lot établit** : la forme du 418 est **rare et le plus souvent
+  inoffensive** — 4 sites de détection sur 22 replis, dont 1 défaut réel nouveau,
+  1 déjà connu, 1 conséquence d'un défaut connu, 1 signalé sans mesure. **Aucune
+  campagne à lancer, et c'était la question.**
+  Le nouveau défaut est **rang 2** : la conséquence est un **texte d'explication
+  incomplet**, pas un chiffre faux, et seulement sur un RSI exactement nul —
+  lequel, mesuré au 416, demande une baisse sans un seul jour de hausse. Rare,
+  mais c'est le cas où l'avertissement compte le plus. **Aucun GO.**
+  **Portée** : le détecteur ne voit que les replis **littéraux dans une
+  comparaison de `if`** ; un repli passé par une variable intermédiaire lui
+  échappe et **n'a pas été quantifié**. Les 18 « légitimes » sont classés par
+  lecture du rôle, pas par exécution.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ; SW
+  `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 418 — livré** : **le multiplicateur d'option vaut 100 partout, et le seul
   contrôle qui le surveille ne peut pas mordre.** Troisième lot dans la veine des
   moteurs. Cible : `vertex/positions/calculator.py`, dont le docstring pose une
