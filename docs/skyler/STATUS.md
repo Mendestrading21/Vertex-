@@ -4,6 +4,84 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — veille active, lots 480 → 489 (2026-08-09, bilan n°17)
+
+Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
+vérifiés dans le dépôt, **aucune trouvaille rejouée**. Seule mesure fraîche :
+les MD5. Calibration écrite dans le code sur le compteur « publiés puis
+corrigés » (487 = 10, 488 = 10) — les deux OK.
+
+### Les chiffres
+
+| | |
+|---|---|
+| suite | **2864 passed / 0 skipped** sur les dix, jamais rouge |
+| service worker | **`td-shell-v187`** sur les dix |
+| MD5 des 8 pages | **8/8** à chaque lot, remesuré 8/8 aujourd'hui |
+| production touchée | **zéro fois** |
+| gardiens ajoutés | **zéro** — aucun `tests/*lot48*`, total inchangé à 301 |
+| PR | dix, **#512 → #521** (huit vérifiées au journal, #512 et #513 non re-vérifiées) |
+
+### Le fil rouge — trois auto-corrections : force ou dérive ?
+
+Incréments exacts du compteur : **469 · 471 · 477 · 479 · 481 · 485 · 487**.
+
+```text
+460-469 → 1        470-479 → 3        480-489 → 3
+```
+
+**Le taux n'a PAS monté entre les deux dernières tranches : il a plafonné.** Le
+saut réel a eu lieu entre 460-469 et 470-479.
+
+**La mesure confirme le 480** : il avait tranché que les révisions se groupent
+dans les lots dont le travail est la **ré-examination**. Vérifié — les trois sont
+**481** (ré-examen du 480), **485** (du 484), **487** (du 486), sans exception.
+
+**Ce que je ne maquille pas** : 3 sur 10 = **30 % des lots corrigent un
+prédécesseur**, contre 10 % avant. Le plateau est réel mais **haut**, et les
+trois corrections portaient sur des **chiffres publiés** — 6 orphelins → 1,
+plafond 35 → 29, rang 2 → rang 1.
+
+### Le rendement, dit franchement
+
+**Cinq lots ont mesuré la boucle** (480, 481, 482, 483, 488), **cinq le produit**
+(484, 485, 486, 487, 489) — et sur ces cinq, **deux seulement ont trouvé du
+neuf**. Défauts ajoutés : **484-A** (rang 1), **484-B** (rang 2), **486-A**
+(rang 1 après le 487). **Dix lots pour trois défauts neufs.**
+
+À sa décharge : les trois sont substantiels, et les cinq lots de vérification ont
+**empêché trois publications fausses de survivre**.
+
+### Ce que la tranche a coûté — question posée, pas tranchée
+
+**0 correction engagée · 0 gardien · 0 octet servi modifié.** Feuille **20 → 24
+dossiers (+4)**. Dettes : à chiffrer 6 · arbitrages humains 7 · observations non
+classées 5 · barèmes non tracés 7 · rangs relatifs non re-vérifiés 8.
+
+**La boucle produit des dossiers plus vite qu'elle n'en solde**, et n'en solde
+aucun sans GO. **Est-ce soutenable ? Je pose la question et je ne réponds pas à
+la place de l'utilisateur.** La valeur est réelle et mesurée — elle est
+**entièrement immobilisée**.
+
+### Deux chiffres du réveil corrigés
+
+- « la feuille a grossi de **2** dossiers » → **FAUX, +4** (20 → 21 → 23 → 24).
+- « PR **#513 → #521** » → **incomplet** : neuf numéros pour dix lots ; la
+  tranche est **#512 → #521**, sous réserve des deux premières non re-vérifiées.
+
+**Troisième réveil consécutif porteur d'une erreur factuelle** (480, 482, 490) :
+**le brief est une source comme une autre et doit être vérifié comme telle.**
+
+### Où va la boucle
+
+Trois défauts et une méthode — et la méthode est devenue l'objet principal. Les
+règles accumulées sont bonnes, toutes payées par une erreur réelle. **Mais une
+boucle qui passe la moitié de son temps à s'auditer, qui ne peut rien corriger,
+et dont la liste ne cesse de croître, a atteint la limite de ce qu'elle peut
+apporter seule.** Ce n'est pas un échec : **il manque une décision.**
+
+**Neuf bilans — n°9 à n°17 — attendent une réponse.**
+
 ## BILAN — veille active, lots 460 → 469 (2026-08-09, bilan n°16)
 
 Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
@@ -2719,6 +2797,21 @@ sans autorisation demandée.
   positif/négatif) ; hex en dur du track record → tokens. Aucun
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
+
+- **Lot 490 — livré** : **BILAN n°17 de la tranche 480-489** (voir le bloc de
+  bilan en tête). **Le taux d'auto-correction n'a pas monté — il a plafonné à 3**
+  (460-469 : 1 · 470-479 : 3 · 480-489 : 3), et **les trois auto-corrections sont
+  des lots de RÉ-EXAMINATION**, ce qui confirme la thèse du 480 avec dix lots de
+  plus. **La moitié de la tranche a mesuré la boucle, pas le produit** : dix lots
+  pour **trois défauts neufs**. **0 correction engagée, 0 gardien, 0 octet servi
+  modifié**, feuille **20 → 24**. **Deux chiffres du réveil corrigés** : la
+  feuille a grossi de **+4** et non +2 ; la tranche couvre **#512 → #521** et non
+  #513 → #521. **Troisième réveil consécutif fautif (480, 482, 490) — le brief
+  est une source comme une autre.** **Défaut de mon instrument** : je cherchais
+  « N dossiers » dans les rapports alors que le chiffre vit dans les **lignes
+  d'index**. **Arrêtés avant publication 54 → 55.** Cycle : aucun fichier de
+  production touché · SW `td-shell-v187` · **MD5 8/8** · runtime 21 fichiers,
+  écart **AUCUN** · suite **2864 passed / 0 skipped**.
 
 - **Lot 489 — livré** : **la dette du 488 soldée en MOBILE — les trois
   atténuations survivent à 390 × 844, mais la mesure trouve autre chose : un
