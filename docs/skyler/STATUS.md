@@ -4,6 +4,110 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — veille active, lots 400 → 409 (2026-08-09, bilan n°10)
+
+Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
+re-mesurés dans le dépôt.
+
+**Cette tranche n'est pas la précédente.** Le bilan n°9 disait de la 390-399
+qu'« elle n'a rien construit ». Celle-ci a **trouvé deux défauts visibles par
+l'utilisateur**, puis les a **bornés**.
+
+```text
+lots ayant TROUVÉ un défaut             3   (401, 406, 407)
+lots ayant BORNÉ une trouvaille         3   (402, 408, 409)
+lots revenus NÉGATIFS                   3   (403, 404, 405)
+bilan                                   1   (400)
+──────────────────────────────────────────
+lots ayant modifié la PRODUCTION        0     ← mesuré
+```
+
+Un seul fichier non documentaire modifié en dix lots :
+`tests/test_skyler_sweep_x1.py`, le correctif du 401.
+
+| | |
+|---|---|
+| Suite | **2 864 / 0 skipped**, identique aux 10 lots |
+| Tests ajoutés | **0** — délibérément (tranche précédente : +29) |
+| PR | **#432 → #441**, toutes fusionnées en squash |
+| Service worker | `td-shell-v187`, inchangé |
+
+**Les trois trouvailles.** **401** — `test_sweep_route_and_no_journaling`
+restaurait avec `if v is None: scan_state.pop(k)` ; or `market_ctx` est
+initialisée à `None`, donc la clé **existe** et sa valeur légitime **est**
+`None` : la remise en état la **supprimait** du dict partagé, et le gardien des
+8 clés documentées tombait selon l'ordre d'exécution (repro à **deux fichiers**).
+**406** — sur les 17 clés du contrat `DESK_KEYS`, **7 n'ont aucun écrivain** ;
+deux sont **lues par `/portfolio`** (`myTradesEquity`, `myCapital`) → **courbe
+d'équité et drawdown jamais affichables**, et l'état vide promet « *elle se
+construit au fil des clôtures* » alors que clôturer n'écrit jamais cette clé.
+Piège évité : élaguer `DESK_KEYS` serait une **perte de données** (last-writer-wins
+total, mécanisme du 362). **407** — `cash: E().capital() || 0` envoyé avec
+`simulated: false`, donc **déclaré réel** : `hhi` **0.5003 contre 0.0029** avec
+un cash réel, **un facteur 170** ; et avec **une seule position** HHI = **1.0**,
+donc le terminal affiche « **Concentration très élevée** » là où un portefeuille
+réel n'aurait aucune alerte. Trois lignes plus bas, le fichier écrit la règle
+qu'il enfreint : *« Manquant/insuffisant n'est jamais présenté comme zéro. »*
+
+**Les trois bornages — aussi utiles que les trouvailles.** Savoir si un défaut
+est isolé ou général **change la décision** :
+
+```text
+402   dépendance d'ordre     300 / 300 fichiers verts en isolation   → 401 était la seule
+408   `|| 0` fautif          1 sur 25 charges utiles POST            → 407 est isolé
+409   consigne impossible    1 sur 12 promesses (sur 88 états vides) → 406 est unique
+```
+
+Sans eux, la correction aurait pu passer pour une campagne. **Ce n'en est pas
+une : une cause, un site, une carte.**
+
+**Les trois lots négatifs** — 403 (2 tests sans assertion sur 2 563, tous deux
+légitimes), 404 (0 assertion avalée sur 91 candidates), 405 (0 asset mort sur 54)
+— sont des **résultats**, pas des échecs : dénominateur mesuré, instrument
+prouvé. Mais ils **coûtent**, et leur rendement décroît ; trois d'affilée avaient
+justifié de le dire au 405.
+
+**LE POINT PRINCIPAL DE LA TRANCHE.** **L'instrument — ou son interprétation — a
+été pris en défaut dans 6 lots sur 10**, dont **deux fois dans le même** (401),
+et **chaque fois avant publication** :
+
+```text
+400   un `cd` oublié → j'ai cru six commandes durant que CLAUDE.md avait disparu
+401   hook pytest mesurant AVANT les finalizers → 84 « fuites » dont 42 fausses
+401   témoin `monkeypatch` écrivant une valeur DÉJÀ présente → idempotent, muet à tort
+402   `nohup … &` → deux passes concurrentes, 195 fichiers couverts sur 300 annoncés
+406   fichier exclu pour ce qu'il DÉCLARE → « 13 clés sans écrivain », dont `myTrades`
+408   vivier trié par la FORME (53) pris pour une liste → le 1ᵉʳ candidat ouvert est sain
+409   compter la DÉFINITION d'une aide au lieu de ses APPELS → le site du 406 introuvable
+```
+
+Ce n'est pas que la méthode soit mauvaise : c'est que **le contrôle de
+l'instrument est la partie du travail qui rapporte le plus**. Chacune de ces
+erreurs aurait produit un rapport faux, présenté avec les mêmes tableaux et la
+même assurance.
+
+**L'état du produit n'a pas bougé** : aucun fichier de production modifié sur la
+tranche. Le MD5 des 8 pages a été re-prouvé identique aux lots **390** et
+**396**, et **pas re-mesuré depuis** — c'est une inférence, pas une mesure
+fraîche, et c'est écrit comme telle.
+
+**LA QUESTION, PLUS COURTE QUE CELLE DU BILAN n°9.** Le rang 1 ne contient plus
+seulement des inexactitudes discrètes. Il contient **un chiffre FAUX affiché
+comme RÉEL** (HHI ×170, alerte de concentration fabriquée dès une seule
+position), **une consigne que le trader ne peut pas suivre**, et depuis le 388
+**7 points MSFT fabriqués** servis comme des mesures. La correction est **bornée
+et petite** — une cause (`myCapital` jamais écrit), un site
+(`portfolio_page.py:718`), une carte — et les lots 408 et 409 l'ont vérifié
+exprès pour que la décision soit facile.
+**Aucun GO depuis le lot 388 : vingt-deux lots.**
+**(a)** continuer les lots courts — rendement décroissant, mesuré ;
+**(b) GO groupé sur le rang 1, puis exécution — RECOMMANDÉ**, en commençant par
+la purge des 7 points MSFT puis `myCapital` ;
+**(c)** arrêter la boucle et attendre — défendable, rien ne se dégrade.
+Ce qui ne serait pas honnête : continuer en (a) en laissant croire que le travail
+avance sur ce qui compte. **Depuis le 406, il ne s'agit plus d'hygiène — un
+chiffre faux est affiché comme réel.**
+
 ## BILAN — veille active, lots 390 → 399 (2026-08-09, bilan n°9)
 
 Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
