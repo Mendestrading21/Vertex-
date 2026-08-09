@@ -85,7 +85,14 @@ def test_sweep_route_and_no_journaling(tmp_path, monkeypatch):
     from vertex.services import persist
     from vertex.app.state import scan_state
     monkeypatch.setattr(persist, 'cache_path', lambda name: str(tmp_path / name))
-    saved = {k: scan_state.get(k) for k in ('detail', 'market', 'market_ctx')}
+    # ⚠ Lot 401 — on mémorise la PRÉSENCE de la clé, pas sa vérité. L'ancienne
+    # forme (`if v is None: pop`) confondait « valeur None » et « clé absente » :
+    # `market_ctx` vaut `None` à l'initialisation de `scan_state`, la remise en
+    # état le SUPPRIMAIT donc du dict partagé, et
+    # `test_state.py::test_scan_state_has_expected_keys` — le gardien des 8 clés
+    # documentées — tombait selon l'ordre d'exécution.
+    saved = {k: (k in scan_state, scan_state.get(k))
+             for k in ('detail', 'market', 'market_ctx')}
     scan_state.update(_state())
     try:
         d = terminal.app.test_client().get('/api/skyler/sweep').get_json()
@@ -93,11 +100,11 @@ def test_sweep_route_and_no_journaling(tmp_path, monkeypatch):
         # le balayage ne journalise JAMAIS (pas 20 entrées par affichage)
         assert persist.load_json('skyler_decisions.json', []) == []
     finally:
-        for k, v in saved.items():
-            if v is None:
-                scan_state.pop(k, None)
-            else:
+        for k, (presente, v) in saved.items():
+            if presente:
                 scan_state[k] = v
+            else:
+                scan_state.pop(k, None)
 
 
 def test_opportunities_radar_has_skyler_ranking_card():
