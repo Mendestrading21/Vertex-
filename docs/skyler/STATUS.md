@@ -2364,6 +2364,106 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 452 — livré** : **85 modules sur 299 sont injoignables depuis
+  `terminal.py`, et le balayage tombe sur une COLLISION DE ROUTE : la carte
+  « Anomalies » de `/analysis` lit le contrat d'une route masquée, donc elle
+  affiche « Aucune anomalie détectée » quoi qu'il arrive.** 33ᵉ lot, 2ᵉ de la
+  tranche. Le 451 avait trouvé 269 lignes mortes **sans les chercher** ; ce lot
+  généralise. **Instrument** : graphe d'imports par **AST** (299 modules
+  `vertex/`, 609 fichiers `.py`, **0 échec de parse**) puis **clôture transitive
+  depuis la seule vraie entrée produit, `terminal.py`** — le compte des
+  importeurs directs ne suffit pas, un module mort qui en importe un autre le
+  ferait passer pour vivant. **Cinq contrôles avant tout chiffre** :
+
+  ```text
+  14/14 modules de page servis          ATTEIGNABLES
+  21/21 blueprints de app/routes        ATTEIGNABLES
+   7/7  moteurs canoniques CLAUDE.md    ATTEIGNABLES
+   5/5  reliques du lot 327             MORTS   (attendu)
+   2/2  modules du lot 451              MORTS   (retrouvés SEULS — règle 443)
+  ```
+
+  **Ce qui échappe, mesuré** : deux fichiers seulement portent
+  `importlib`/`__import__`, un seul en production — `vertex/data/company.py:231`
+  `__import__('datetime')`, **bibliothèque standard**. **Aucun module `vertex/`
+  n'est importé dynamiquement** : l'angle mort existe, il est vide.
+  **Recensement** :
+
+  ```text
+  atteignables 214 · NON ATTEIGNABLES 85 · 6 192 lignes
+     dont couverts par un test   55   4 869 lignes
+     dont sans aucun test        30   1 323 lignes
+  fichiers de tests concernés    33 / 301   (4 433 lignes)
+  research 23 · data_sources 12 · options 9 · strategy 8 · ai 7 · ui 5 · autres 21
+  ```
+
+  **Le 451 n'était pas isolé** : ses 269 lignes sont **4,3 %** du total, et son
+  motif — *du code mort figé par ses propres gardiens* — porte sur **55 modules
+  et 33 fichiers de tests**. **Ce que le chiffre ne dit PAS** : non atteignable
+  ≠ à supprimer (`research/` ressemble à une bibliothèque en attente) ; la
+  mesure porte sur des **modules**, jamais sur des **fonctions**.
+  **Où le balayage a mené (rang 2)** : `option_anomalies` et `vol_surface` sont
+  **tous deux morts**, or `/opportunities` les nomme en **texte visible** —
+  « ouvrir une analyse pour le détail (moteurs option_anomalies / vol_surface /
+  portefeuille) ». Servi : **200, 67 278 o, md5 6a22a6abbd03 identique**, phrase
+  présente 1 fois, **six** puces ; `Actions` et `Données` rendent proprement,
+  **les quatre autres tombent dans le `else`**. **Témoin positif sur le même
+  écran** : `Actions` est servie par `stock_anomalies`, **atteignable**
+  (`terminal.py:38`). **La trouvaille (rang 1)** — en vérifiant cette promesse :
+
+  ```text
+  /api/anomalies/<sym>   2 règles GET
+     analysis_api.api_anomalies    ← résolue par Flask (mesuré)
+     strategy_os.anomalies_for     ← MASQUÉE
+
+  gagnante  : as_of closes empty events extreme generator n_spikes narrative
+              points reason series_source streak symbol vol_ratio
+              → PAS de 'anomalies', PAS de 'note'
+  masquée   : {'symbol', 'anomalies', 'note'}
+
+  analysis_page.py:512-517 lit  a.anomalies  et  a.note
+  ```
+
+  Vérifié par lecture exhaustive : `engines/anomaly.py` n'a que **deux `return`**
+  et **aucun** ne porte `anomalies` ; la route n'ajoute que
+  `symbol`/`series_source`/`as_of`. La carte est dans `loadDossier()`, appelée au
+  chargement (`:929`) et rafraîchie toutes les 180 s (`:937`). **Elle affiche donc
+  EN TOUTES CIRCONSTANCES « Aucune anomalie détectée sur la série disponible. »**
+  **Banc, cas sain et cas dégradé côte à côte** : 81 clôtures avec choc +16 % →
+  `n_spikes 1`, `vol_ratio 11.84`, narratif « +16.0 %, z=8.4 … ×11.8 la normale »
+  — **la carte dit « Aucune anomalie détectée »** ; 10 clôtures (sous
+  `MIN_POINTS=21`) → `empty True` + `reason` honnête — **même texte**. La carte
+  **confond trois états**. **Témoin positif sur la MÊME page** : `/analysis/<sym>`
+  porte **deux** cartes servies par la **même requête** — `an-anomaly` (rendue par
+  `charts/anomaly-scan.js`, lit `d.closes`/`d.events`/`d.narrative`/`d.reason`)
+  est **honnête** ; `an-anomalies` lit deux clés jamais présentes. Les deux sont
+  dans les octets servis de `/analysis/AAPL` (200, **75 829 o**). **Témoin négatif
+  gratuit** : **4** URL portent deux règles, **une seule** oppose deux `GET` —
+  `/api/client-log` (GET+POST), `/api/tracking` (GET+POST),
+  `/api/tracking/<id>` (GET+PATCH) sont légitimes. **Les gardiens : deux verts, un
+  de chaque côté de la collision** — `test_strategy_os_routes.py::test_anomalies_route`
+  monte un **Flask nu** avec le seul blueprint `strategy_os` (**pas de collision**)
+  et valide `isinstance(data['anomalies'], list)` ; `test_anomaly_engine.py::test_anomalies_route_reads_real_series`
+  utilise `terminal.app` **réel** et valide `n_spikes >= 1`, **sans jamais
+  comparer** ; `test_analysis_page_has_anomaly_card` n'assure que `'an-anomaly'`,
+  la carte **singulier**, l'honnête. **Aucun des trois ne peut voir le défaut** —
+  motif 381/385/414/415 dans sa forme la plus nette ; **aucun test ne compte les
+  règles d'une même URL**. **Classement** : carte toujours vide → **rang 1**
+  (affirmation fausse affichée, qui ment **du côté qui rassure**, famille
+  432/433) ; **collision de route** → cause, **genre nouveau** : *deux routes GET
+  sur la même URL, la consommatrice lisant le contrat de la perdante* ; phrase
+  `/opportunities` → **rang 2** ; **85 modules / 6 192 lignes / 33 fichiers de
+  tests** → **rang 3**. **Aucun GO, rien n'est engagé.** **Portée** :
+  atteignabilité **statique** depuis `terminal.py` **seul** — `verifier_vertex.py`,
+  `ib_reader.py`, `test_connection.py` volontairement exclus des entrées ; banc sur
+  **moteur réel** et série **fabriquée** (comportement du code, pas fréquence
+  réelle ; `scan_state['detail']` vide au démarrage) ; **aucun navigateur** ;
+  **modules et non fonctions** ; **89 des 110 phrases du 444 restent fermées** —
+  ce lot change de veine. Comptes inchangés : faux **arrêtés 20**, **publiés puis
+  corrigés 3**. Aucun fichier touché · SW `td-shell-v187` · **MD5 8/8 identiques**
+  · écart runtime **aucun** · suite **2864 passed / 0 skipped** · rapport
+  `docs/refactor/validation/SKYLER-LOT-452.md`.
+
 - **Lot 451 — livré** : **les quatre phrases `source` ne sont jamais produites —
   `build_surface` n'a aucun appelant, et la liste blanche d'outils de l'IA non
   plus.** 32ᵉ lot, premier de la tranche. **D'abord une erreur de plan, que je
