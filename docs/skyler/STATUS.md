@@ -1559,6 +1559,55 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 389 — livré** : **les deux dernières écritures de test, et une
+  mesure qui piégeait.** Deux questions laissées ouvertes au 388.
+  **(1) Vérifier mon propre énoncé.** J'avais écrit que les 3 fichiers
+  restants « ne changent qu'un horodatage » — contrôlé seulement au
+  **premier niveau de clés**. Diff **feuille à feuille** (aplatissement
+  récursif) après la suite complète : **exactement une feuille modifiée
+  par fichier** — `.as_of`, `.ts`, `.age_s`, `.generated_at` — aucune
+  perdue, aucune ajoutée. L'énoncé tient ; il repose désormais sur la
+  bonne mesure.
+  **(2) Le piège.** `skyler_sessions.json` **n'a pas bougé** de
+  l'exécution. Conclusion tentante : « personne n'écrit ». **Fausse.** Le
+  point du jour existait déjà : l'écriture est **idempotente**, et la
+  croissance est d'un point **par JOUR**, pas par exécution. En retirant
+  le point du jour avant chaque essai, elle redevient observable — la
+  règle du 387 appliquée à l'envers : *« rien ne bouge » ne vaut que si
+  l'on s'assure qu'il y avait quelque chose à observer.*
+  **Le périmètre était encore quatre fois trop large** : 8 fichiers
+  mentionnent SKYX/TSTQ, **2 seulement écrivent** — `test_skyler_core` et
+  `test_xss_exits_lot177`, tous deux via `/api/skyler/<sym>` qui
+  journalise une séance. Corriger les 8 aurait été six changements
+  gratuits.
+  **Correction** : redirection de `persist._BASE_DIR` dans les deux tests
+  concernés. **Aucune production touchée.** Effet vérifié : **5 → 4
+  fichiers runtime touchés**, `skyler_sessions.json` sort de la liste ; les
+  4 restants sont exactement ceux dont le diff récursif prouve qu'ils ne
+  changent qu'un horodatage.
+  **Gardien étendu, pas dupliqué** : `test_caches_runtime_lot388.py`
+  passe de 5 à **9 tests** — même propriété qu'au 388, un fichier jumeau
+  aurait été du bruit. Ajouts : les 2 entrées au recensement, un anti-vide
+  sur la journalisation de séance, et la borne `MAX_SESSIONS = 400`.
+  ROUGE ×4 + témoin muet.
+  **Deux fois l'outil en cause.** (a) **Mon témoin a mordu** : je
+  renommais `SESSIONS_FILE` en croyant faire un changement anodin — c'est
+  une `AttributeError` en production, et le recensement l'a signalée comme
+  un **13ᵉ site**. Le gardien avait raison, le témoin était faux. (b)
+  **Mon anti-vide était creux — la faute du lot 386, refaite** :
+  `'SESSIONS_FILE' in src` alors que la chaîne apparaît **6 fois** pour
+  **2 sites** d'écriture ; en retirer un laissait le test vert. Réécrit
+  par AST. *Avoir la règle écrite ne suffit pas à ne pas la re-violer ;
+  c'est la preuve ROUGE qui l'attrape.*
+  **Portée** : les 4 fichiers encore touchés le sont **aujourd'hui** sur un
+  horodatage — caractérisation datée, rien ne l'impose au code. La
+  pollution historique (7 points MSFT, points SKYX/TSTQ déjà accumulés)
+  n'est **pas** nettoyée : donnée runtime de l'utilisateur, sa purge est
+  une décision.
+  **La veine « écritures runtime par la suite » est close** : ouverte au
+  386, mesurée au 387, élargie au 388, terminée ici — deux trouvailles
+  réelles sur trois lots. Suite 2831 → **2835** / 2 skipped. SW v187.
+
 - **Lot 388 — livré** : **la suite écrivait un point fabriqué par jour dans
   l'historique GEX réel.** Le lot 387 avait traité `desk_data.json` et
   n'avait regardé que celui-là. Ce lot applique la même méthode aux **vingt**
