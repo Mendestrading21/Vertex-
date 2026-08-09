@@ -1824,6 +1824,49 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 411 — livré** : **les 59 provenances déclarées — 2 nomment une origine
+  sans producteur, et elles ne s'affichent jamais.** Chaque carte de Vertex
+  déclare sa provenance (`source:`) : c'est le contrat d'honnêteté visible par le
+  trader — *d'où vient ce que je regarde ?* Personne n'avait vérifié que
+  l'étiquette corresponde à la donnée réellement tracée.
+  ```text
+  champs `source:`                          59   (dans 26 fichiers)
+     EXPRESSION (variable, ternaire)        32   ← propage la provenance réelle
+     LITTÉRAL (chaîne fixe)                 27   ← peut dériver
+  ```
+  Les 32 expressions sont **honnêtes par construction** : elles transportent ce
+  que le serveur a déclaré. Seuls les 27 littéraux peuvent mentir. **Témoin de
+  l'instrument** : les deux étiquettes connues du 407 sont bien retrouvées parmi
+  eux.
+  **Les 27 confrontés un par un** à l'existence **et** au producteur de l'origine
+  nommée : `scenario_pricer` ×6 (module présent) · `SCAN` ×5 — l'étiquette du
+  client **duplique la déclaration du serveur** (`source='SCAN'`, 3 sites) au
+  lieu d'en inventer une · `board options` · `calendrier moteur` ×3 (`/cal-feed`,
+  7 réf.) · `moteur track-record` · `Moteur de régimes` · `journal local` ×2
+  (`set('vxJournal')` ×2) · « clôtures déclarées » L642 (`set('myTradesClosed')`,
+  carte **rendue**, étiquette exacte). **→ 25 sur 27 exactes**, et les **2**
+  seules sans producteur sont celles du dossier 406/407.
+  **Le détail qui change la description du dossier.** Trois cartes de
+  `/portfolio` portent « clôtures déclarées », et elles ne se valent pas :
+  ```text
+  L610  equityCard    ← E().equity() → myTradesEquity → 0 écrivain → JAMAIS rendue
+  L617  drawdownCard  ← même série                                 → JAMAIS rendue
+  L642  heatmapCard   ← withPl (myTradesClosed)                    → RENDUE, exacte
+  ```
+  Donc **ces deux étiquettes ne sont jamais affichées** : elles vivent sur une
+  branche inatteignable. Le préjudice du 406/407 est bien **le graphique absent
+  et la consigne impossible**, *pas* une provenance mensongère à l'écran. C'est
+  une précision, pas une atténuation — **le HHI faux du 407, lui, est affiché**.
+  **Quatrième bornage consécutif** (402, 408, 409, 411). Le zéro est
+  **substantiel** : 27 littéraux confrontés un par un, pas comptés.
+  **Portée** : le contrôle porte sur la correspondance étiquette ↔ origine
+  nommée (existe-t-elle, produit-elle) ; il ne dit rien de la **justesse de la
+  valeur** tracée. Et les 32 expressions n'ont pas été suivies jusqu'à leur
+  source : elles sont réputées honnêtes parce qu'elles propagent — raisonnement
+  de conception, pas mesure.
+  Suite **2864 passed / 0 skipped**, inchangée. **Aucun fichier touché** ; SW
+  `td-shell-v187` ; écart runtime final aucun.
+
 - **Lot 409 — livré** : **les 8 pages balayées — une seule consigne impossible,
   celle du 406.** Le lot 406 avait trouvé **un** état vide qui donne au trader une
   consigne que le code ne peut pas honorer ; les 8 pages n'avaient pas été
