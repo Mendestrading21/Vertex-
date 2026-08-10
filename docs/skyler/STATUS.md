@@ -2880,6 +2880,32 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 550 — livré** : **la profondeur du filet, enfin mesurée — 112
+  points d'entrée sur 141 vérifiés au CONTENU, 29 au statut seul, ZÉRO au
+  néant.** Choix (u) : les 548 et 549 avaient écrit deux fois que « couvert »
+  ne veut pas dire « bien testé » sans jamais le mesurer. **L'arrêt du lot** :
+  le crible a rendu **15 appels dont le résultat n'est jamais lu**, et publier
+  « quinze appels ne vérifient rien » aurait été une accusation. Lecture de
+  trois cas avant publication : l'assertion porte sur un **effet de bord**
+  (bornage du capital côté serveur, nombre d'écritures de cache) ou l'appel est
+  une **remise en état dans un `finally`**. **Mon échelle ne voit que la
+  réponse.** Mesuré plutôt que retiré à la main : sur 15, **11** sont suivis
+  d'assertions, **4** sans — dont **3 rendus par une aide** et **1** expliqué
+  par lecture. **Zéro appel faible sur 437.** Mesure : 437 appels suivis — 375
+  CONTENU, 47 CODE, 15 non lus — et **437 = 415 + 22**, les trois lots
+  s'additionnent. Par point d'entrée : 141 atteints (112 CONTENU, 29 CODE, 0
+  RIEN), 43 non atteints — **exactement le même ensemble que les 43 du 549,
+  zéro écart**. **La vraie trouvaille** : parmi les 29 au statut seul, 14 sont
+  des redirections héritées, mais **cinq sont des routes de flux que les pages
+  consomment** (`cockpit`, `comité`, `options`, `stratégie`, `weekly`) — une
+  réponse vide passerait. Constat **non arbitré**, rien corrigé. Second
+  contrôle : **0** résultat transmis à une fonction, **vérifié** — le seul
+  candidat reçoit un objet moteur, pas une réponse HTTP. Règles **550-A** une
+  assertion peut porter ailleurs que sur la réponse · **550-B** un seau nommé
+  « rien » est une accusation · **550-C** deux instruments qui tombent sur le
+  même ensemble valent mieux qu'un total. Cycle : aucun fichier de production
+  touché, SW `td-shell-v187`, **MD5 8/8**, snapshot 22 fichiers ; **3 modifiés pendant le lot** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, aucun fichier apparu ni disparu, **2864 passed / 0 skipped**, lancée **après** les documents.
+  Arrêtés **170 (+1)**.
 - **Lot 549 — livré** : **l'angle mort tombe de 67 à 43**, et le témoin
   négatif du brief était faux. Choix (t) : résoudre les 90 appels à chemin
   construit que le 548 avait laissés de côté. **L'arrêt du lot** : le brief
