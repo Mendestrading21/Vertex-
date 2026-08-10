@@ -2880,6 +2880,36 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 546 — livré** : **les « 72 identifiants jamais servis » n'existent
+  pas — 51 des 72 sont servis.** Choix (o) : d'où viennent-ils, et lesquels
+  appartiennent à un module sans consommateur ? **Deux arrêts.** Le premier :
+  **le témoin du brief est faux pour la deuxième fois de suite** — les cinq
+  reliques de CLAUDE.md (`journal`, `options_lab`, `vault`, `signals`,
+  `strategy_os`) portent **zéro `vx-skeleton`** et ne peuvent contribuer à aucun
+  des 72. Le second annule le chiffre : `vx-hero` et `vx-demo-banner`,
+  que CLAUDE.md cite comme présents sur `/`, figuraient parmi les « jamais
+  servis » ; ouverture des octets des 44 URL → **51 sont servis, 21 seulement
+  sont absents**. Cause lue dans `briefing.py` : `id="vx-hero"` est suivi
+  **197 caractères plus loin** du `%%LOADING%%` de `vx-brief-body` — **la
+  fenêtre de 400 caractères attribue le squelette du voisin**. Le critère côté
+  source est une **heuristique de proximité**, pas un compte de conteneurs :
+  les 150 et les 87 du 544, puis le 72 du 545, en héritent. **L'arithmétique
+  était juste, l'étiquette « jamais servis » était fausse** ; les rapports 544
+  et 545 ne sont pas réécrits, la correction est au 546. **Le 63 tient** — il
+  est mesuré sur les octets par deux chemins. Ce qui reste : **21
+  identifiants, trois cas exactement** — 15 de `intelligence_page.py` (route
+  `/intelligence`), 5 de `tracking_page.py` (route `/tracking`), 1 =
+  `pf-risk-gauge`, déjà démasqué au 544 comme vivant dans une chaîne
+  JavaScript. **L'hypothèse « code mort » est réfutée** : les 10 fichiers sont
+  tous importés par `redesign.py`, zéro sans importeur. Second contrôle : 190
+  règles d'URL, 137 GET sans paramètre, **129 hors corpus — mon corpus couvre
+  8 routes sur 137** ; `/intelligence` et `/tracking` ne sont pas appelées,
+  elles ne sont pas dans la liste des routes sûres. Règles **546-A** deux
+  prédicats différents ne se soustraient pas · **546-B** une fenêtre de N
+  caractères attribue le voisin · **546-C** un nom connu dans une liste
+  d'inconnus est une alarme. Cycle : aucun fichier de production touché, SW
+  `td-shell-v187`, **MD5 8/8**, snapshot 22 fichiers ; **4 modifiés pendant le lot** (`ai_enrichment.json`, `daily_prev.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, aucun fichier apparu ni disparu, **2864 passed / 0 skipped**, lancée **après** les documents. Arrêtés
+  **166 (+2)**, publiés puis corrigés **23 (+1)**.
 - **Lot 545 — livré** : **la page que personne n'avait jamais mesurée —
   `/analysis/<symbole>` porte 15 conteneurs à squelette, ZÉRO muet, et 4 zones
   de contenu qui se remplissent après une attente sans rien annoncer.** Choix
