@@ -2880,6 +2880,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 569 — livré** : **les 123 clauses `catch` du 568, enfin lues —
+  41 font quelque chose, 13 signalent l'échec par un canal que le 541 ne
+  connaissait pas** — et **le piège que j'avais écrit généralisait à partir d'un
+  seul témoin**. Choix (oo) : premier objet neuf après la clôture des sept
+  chiffres lourds. Reproduction exacte (539 / 522 / 369 / 123 / 82), deux témoins
+  lus dans le code servi. **Ce que font les 123** : vide 82 · repli 21 · appelle
+  10 · écrit-DOM 7 · relance 1 · journalise 1 · autre 1. **Second constat** :
+  7 appellent un canal lu (`VX.toast`, `emptyCard`, `setStatus`, `setNet`), 5
+  écrivent un contenu dans le DOM, 1 marque un bouton en erreur — **13 clauses
+  signalent l'échec hors de l'instrument du 541** ; 2 autres écrivent une chaîne
+  vide, comptées à part (effacer n'est pas dire). **L'arrêt du lot** : j'avais
+  écrit « un `catch` vide n'est pas une faute », témoin `localStorage` à l'appui.
+  Relevé : **20 des 82** portent un accès `localStorage` ; le premier appelé est
+  **`VX.fetch`, dans 18 gardes**. Le motif du témoin couvre moins d'un quart —
+  un garde-fou non mesuré devient un préjugé rassurant. **Troisième constat** :
+  **11 clauses portent plusieurs traits** ; la classe est une priorité écrite,
+  pas une nature, et les traits bruts sont publiés à côté. Second contrôle :
+  `chart.umd.min.js` ne porte qu'**une** clause distincte, là où la même
+  restriction écartait 25 atténuations au 565. Règles **569-A** un témoin prouve
+  un cas, pas une catégorie · **569-B** une classification par priorité n'est pas
+  une partition naturelle · **569-C** « sans état mesuré » n'est pas « sans
+  état ». Cycle : aucun fichier de production touché, SW `td-shell-v187`, MD5
+  **8 / 8**, snapshot 22 fichiers ; **3 modifiés par la suite de tests** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, **2864 passed / 0 skipped**. Arrêtés **195 (+1)**. **Les 82 corps
+  vides sont comptés et situés, NON jugés.**
 - **Lot 568 — livré** : **septième et dernier chiffre lourd — 103 est un
   cumul par page, les états distincts sont 91** ; **les douze doublons sont tous
   dans le seau que le 541 n'a pas lu** ; et **le piège que j'avais écrit d'avance
