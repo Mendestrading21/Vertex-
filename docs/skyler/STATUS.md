@@ -2880,6 +2880,32 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 558 — livré** : **les « 35 accès imbriqués » enfin nommés** —
+  presque la moitié n'étaient pas des lectures de contrat mais des **méthodes
+  JavaScript**. Choix (dd) : le 553 comptait 35 accès imbriqués et quatre lots
+  les ont laissés à l'état de nombre ; le 557-A dit qu'un tel chiffre est une
+  dette. **L'arrêt du lot** : sur 30 chaînes relevées, **14 ont pour second
+  niveau un `.map`, `.forEach`, `.filter`, `.length` ou `.toLowerCase`** — et
+  **16 seulement une vraie sous-clé**. Publier « 30 accès imbriqués au contrat »
+  aurait surestimé de quatorze. **L'alarme 557-C levée par la mesure** : 30
+  contre 35, un total qui baisse est un signal ; en reproduisant **la convention
+  du 553 elle-même**, le compte **monte de 35 à 43** — ce n'était pas une perte
+  mais un changement d'unité (chaînes entières non ambiguës, 10 ambiguës mises à
+  part). **Les 16 sous-clés** : `surfaces.quotes`/`surfaces.news`,
+  `daily.main_risk`, `adjustments.new_risk_allowed`, `breadth.above200`,
+  `brier.reason`, `ledger_health.status`/`.basis`, `aggregates.by_engine_version`,
+  `scan.symbols`, `ai.ok`, `ai.total`, `scan.rows`, `tradingview.stored` —
+  **11 gardées, 5 nues**. **Le croisement** : seules **4** ont une route au
+  contrat mesuré, et **les 4 ont leur tête servie, zéro divergence** ; **12
+  portent sur des routes dont je n'ai jamais mesuré le contrat** — nommées, non
+  appelées. Le second niveau n'est **pas** croisable : le 552 n'a relevé que le
+  premier. Second contrôle : **0** chaîne de profondeur ≥ 3, **0** chemin
+  construit, 10 ambiguës comptées à part. Règles **558-A** un accès au second
+  niveau n'est pas forcément une lecture de contrat · **558-B** une alarme se
+  lève par reproduction, pas par raisonnement · **558-C** ce qui n'a pas de
+  contrat mesuré ne peut pas être confronté. Cycle : aucun fichier de production
+  touché, SW `td-shell-v187`, MD5 8 / 8 identiques, snapshot 22 fichiers ; 3 modifies par la suite de tests (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), restaures — ecart final AUCUN, aucun fichier apparu ni disparu, suite **2864 passed / 0 skipped**.
+  Arrêtés **183 (+1)**.
 - **Lot 557 — livré** : **`Promise.allSettled` était invisible à trois de
   mes bancs** — la moitié de la « quatrième cellule » était un artefact, et le
   contrat non gardé passe de 19 à 35. Choix (cc) : les 8 clés qu'un test nomme
