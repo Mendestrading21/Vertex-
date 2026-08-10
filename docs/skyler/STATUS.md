@@ -2880,6 +2880,28 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 543 — livré** : **bilan sur pièces des dix lots de mesure (533 → 542)
+  — la chaîne des arrêts s'additionne sur neuf transitions sans un écart, la
+  série des rangs s'allonge d'exactement un par lot (30 → 39), et les 8 MD5
+  mesurés aujourd'hui confirment ce que les dix rapports annoncent.** Choix
+  (k) : dix angles, **un seul dossier — 531-A, immobile en cinq mesures**.
+  **Deux arrêts, le second le plus instructif de la série** : le gras des
+  rapports enveloppe la phrase et non le chiffre, ce qui rendait plusieurs
+  extractions nulles ; et surtout **ma chaîne imprimait « OK » en sautant ses
+  paires incomplètes — un contrôle qui saute ses données manquantes rend un OK
+  creux**, et celui-là aurait été publié comme une preuve. Témoin positif :
+  MD5 8/8 et SW `td-shell-v187` mesurés **aujourd'hui**, valeurs uniques dans
+  les dix rapports, comme le **2864 passed**. Témoin négatif : « 999 » absent
+  partout. **Trente règles de méthode, trois par lot, sans exception.** Les
+  chiffres lourds (63 conteneurs, 112 atténuations, 103 états, 53 refus…) sont
+  marqués **NON RECOMPTÉ** — ni confirmés ni infirmés. **Le produit n'a pas
+  bougé d'un octet sur dix lots.** Règles **543-A** un contrôle qui saute ses
+  données manquantes rend un OK creux · **543-B** le gras n'est pas à
+  l'endroit qu'on croit · **543-C** un bilan ne confirme que ce qu'il
+  recompte. Aucun fichier de production touché · SW `td-shell-v187` · MD5
+  **8/8** · snapshot **écart AUCUN** · **2864 passed / 0 skipped**. Arrêtés
+  **160 (+2)** · publiés puis corrigés **22**.
+
 - **Lot 542 — livré** : **le pendant serveur du 541 — 53 refus JSON, 53
   expliqués, zéro nu**, sous une définition étroite comme sous une définition
   large, donc ce n'est pas une estimation. Leçon du 541 appliquée : le
