@@ -2880,6 +2880,29 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 540 — livré** : **les dix-sept atténuations qui atteignent un écran
+  ont toutes été lues — aucune n'invente un chiffre.** Choix (h) : fermer la
+  réserve du 539 (106 racines inconnues). **Point fixe de la provenance**,
+  mécanique du 536 appliquée au flux de données, avec une sur-approximation
+  assumée et à sens unique. **Résultat inattendu : 156 variables classées
+  serveur contre 6 au 539, et zéro atténuation reclassée** — la couche réseau
+  et la couche des compteurs sont séparées, et c'est mesuré. **« Racine
+  inconnue » n'est pas une réponse** : 50 paramètres, 37 calculs locaux, 10
+  appels locaux, 5 objets reconstruits, 4 non déclarées. **Le vrai résultat :
+  les 13 atténuations affichées restantes, lues une par une** — onze sur
+  `/journal` sont des compteurs d'opération initialisés à zéro côté serveur
+  (compte rendu d'une restauration : afficher 0 ajout est vrai), et les
+  corrompues ne s'affichent que si la somme dépasse zéro ; deux sur `/system`,
+  dont un compteur d'exécutions au-dessus duquel le code **distingue
+  explicitement `null` de `0`** (`j.last_run === null ? 'jamais exécuté'`).
+  Réserve nommée : **les 95 atténuations non affichées**, hors sujet par
+  définition. Règles **540-A** un point fixe peut ne rien changer, et c'est un
+  résultat · **540-B** « racine inconnue » n'est pas une réponse · **540-C** ce
+  qui compte n'est pas la provenance mais l'affichage. Aucun fichier de
+  production touché · SW `td-shell-v187` · MD5 **8/8** · snapshot **écart
+  AUCUN** · **2864 passed / 0 skipped**. Arrêtés **154** · publiés puis
+  corrigés **22**.
+
 - **Lot 539 — livré** : **« données réelles uniquement », mesuré de bout en
   bout pour la première fois — 112 atténuations `|| 0` dans le JS servi, quatre
   seulement touchent une valeur du serveur ET s'affichent, et les quatre sont
