@@ -2880,6 +2880,51 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 525 — livré** : **la borne basse du 522 resserrée d'un facteur
+  quatre — 4 lots exposés → 16 — et le chiffre du dossier 518-A ENCADRÉ, ni
+  confirmé ni réfuté.** Choix (d) : l'axe du français peint est mesuré et ne
+  rapporte plus ; **dire qu'un axe s'épuise est un résultat**. **L'instrument se
+  déplace d'un cran** : non pas « y a-t-il une regex » mais **« sur quoi
+  porte-t-elle »** — lire le code source expose un chiffre, lire une réponse de
+  route n'expose rien. Calibré sur `l514_controle2.py` (EXPOSÉ, il a produit le
+  « 253 » faux) et `l521_garde.py` (NON exposé). **133 bancs aujourd'hui** (115
+  au 522, +18 depuis), **31 dont une regex lit le code source, sur 16 lots**,
+  dont **14 non comptés par le 522**. **Ce que je ne publie pas** : le « 3 » du
+  522 portait sur les seuls scripts mixtes, mon 31 sur tous les bancs —
+  annoncer « 3 → 31 » aurait été un faux rapprochement, **arrêt** ; et ce « 3 »
+  n'est pas re-dérivable du banc conservé, la règle 522-D valant aussi pour le
+  522. **Le chiffre du 518-A recompté par AST** — registres lus par AST, URL des
+  tests reconstruites depuis l'arbre avec substitution des variables de boucle
+  littérales, calibré sur les **35 vues** (troisième confirmation, troisième
+  chemin), sur `/portfolio?view=risk` (positif) et sur une paire fabriquée
+  (négatif). **29 vues sur 35 sont requêtées.** Mais **le chiffre refuse de se
+  laisser recompter** : tout dépend de ce que veut dire « un test regarde le
+  contenu », **et le 518 ne l'a jamais défini** — définition large **57 % sans
+  assertion**, publié **77 %**, définition stricte **94 %**. **Le chiffre publié
+  tombe à l'intérieur : ENCADRÉ.** **J'avais d'abord écrit « RÉFUTÉ »** sur la
+  seule définition large ; publier cela aurait été choisir la définition qui
+  m'arrangeait — **arrêt**. La stricte se justifie : `test_subviews_return_200`
+  parcourt **21 vues à lui seul**, et leur attribuer une assertion unique, c'est
+  **agréger en perdant une dimension**, le piège que le 518 avait nommé.
+  **518-A survit et sa direction est plus solide** — sous les trois définitions
+  la majorité des vues n'a pas de protection ; **c'est l'ampleur qui n'est pas
+  établie**. Ce que le dépôt fait bien : **29 vues sur 35 réellement
+  requêtées**, six non requêtées là où le 518 en annonçait **onze** — l'AST, qui
+  résout les boucles au lieu de les deviner, **voit que la suite couvre plus que
+  le motif ne montrait**. **Second contrôle** : sur 590 appels `.get(…)` des
+  tests, **525 URL reconstruites (89 %) et 65 non résolues (11 %)** — le « six »
+  est donc une **borne haute** ; et mon crible mesure par script, pas par
+  chiffre, donc **seize lots est une borne HAUTE** quand le « quatre » du 522
+  était une borne BASSE : la vérité est encadrée entre les deux. Portée : un
+  seul chiffre recompté ; aucun dossier retiré ni ajouté ; aucune route appelée.
+  Aucun code, aucun gardien, aucun test, aucun fichier de production touché ;
+  rien supprimé. MD5 8/8 · snapshot 22 fichiers écart AUCUN · SW
+  `td-shell-v187` · 2864 passed / 0 skipped. Feuille inchangée : 37 dossiers.
+  Série 1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0. Trois
+  règles neuves : **525-A un chiffre sans définition écrite n'est pas
+  recomptable** · **525-B deux définitions qui encadrent un chiffre ne le
+  tranchent pas** · **525-C une borne basse et une borne haute se mesurent
+  séparément**. Rapport : `docs/refactor/validation/SKYLER-LOT-525.md`.
 - **Lot 524 — livré** : **la borne du 523 est levée — 62 % → 81 % des
   chargeurs peignent — et les dix-sept libérés n'apportent AUCUN défaut.**
   Choix (b) : le 523 mesurait 55 chargeurs sur 89, 34 muets, cause dominante
