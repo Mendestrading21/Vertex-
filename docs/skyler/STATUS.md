@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 575 — livré** : **les 35 vues n'ajoutent 141 octets — le vrai trou
+  était `/analysis` sans symbole**. Choix (uu). **Correction du 574** :
+  `analysis_page.py` n'a **aucun registre de vues** ; le témoin
+  (`'Montant envisagé requis'`) est absent des 35 vues et présent dans
+  `/analysis/AAPL`. La borne est celle des **URL sans paramètre**, et le
+  paramètre qui compte est un **symbole**. **L'arrêt du lot** : dédupliquées par
+  empreinte md5 exacte, les vues rendaient « 17 programmes neufs / 879 280
+  octets » — or trois d'entre eux diffèrent de **deux octets**. Mesuré par
+  préfixe/suffixe communs : **141 octets réellement différents (0,01 %)**, et
+  ces 141 octets sont la valeur de `const VIEW='…'`. La page sert tout le
+  JavaScript de ses vues dès l'URL de base ; **aucun chiffre de 539 à 574 ne
+  bouge pour cette raison**. **Un banc qui échoue est une mesure** : l'arrêt sur
+  `/options` a révélé que cette page **ne sert aucun script de page**, ni à son
+  URL de base ni à aucune de ses 9 vues. **Le vrai trou** : `/analysis` passe de
+  1 735 à **50 557** octets d'inline avec un symbole, plus **8 programmes neufs
+  (241 516 octets)**. Mesuré avec l'instrument du 570 tel quel : **11 sites du
+  canal jamais vus** (3 appels nommés + 8 bannières) — **le plancher du canal
+  passe de 90 à au moins 101**, et **le « 10 bannières sur 10 » du 572 avait un
+  dénominateur plus petit que le produit**. Second contrôle : DÉMO sans IBKR —
+  ce relevé est lui aussi un plancher. Règles **575-A** une empreinte exacte ne
+  déduplique pas les quasi-doublons · **575-B** la borne d'un corpus n'est pas
+  celle qu'on a nommée la veille · **575-C** un banc qui échoue est une mesure.
+  Cycle : aucun fichier de production touché, SW `td-shell-v187`, MD5 8 / 8 identiques,
+  snapshot 22 fichiers, 4 modifies (ai_enrichment, daily_prev, desk_data, weekly_snapshot — daily_prev touche par le scan() des bancs), restaures, ecart final AUCUN, 2864 passed / 0 skipped. Arrêtés **202 (+1)**, **publiés puis corrigés
+  37 (+1)**.
 - **Lot 574 — livré** : **les refus de saisie — deux nombres égaux, deux
   ensembles différents**, et un corpus qui n'a jamais vu **les 35 vues**. Choix
   (tt). **L'arrêt du lot** : le second témoin, lu dans `analysis_page.py`
