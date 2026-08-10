@@ -2880,6 +2880,43 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 526 — livré** : **la feuille ne s'additionne pas.** Choix (f) —
+  écrire les définitions des chiffres portant les cinq dossiers de rang 4.
+  **Premier geste, retrouver ces cinq dossiers sans les deviner** : crible
+  calibré, témoin positif OK (`518-A` ressort rang 4), témoin négatif OK, mais
+  **témoin de TOTAL en ÉCHEC** — 34 dossiers retrouvés et une répartition
+  18/6/1/9 là où la feuille annonce 37 et 16/12/5/5 ; et l'attribution dérape,
+  le crible rangeant « 511-A » sous le lot 512. **Un instrument qui ne retrouve
+  pas le total de sa propre référence ne mesure rien : je n'ai pas publié la
+  liste des cinq. Arrêt.** **Alors j'ai retourné la question sur la feuille** —
+  une addition suffit. **Douze occurrences de la ligne de feuille, ZÉRO
+  cohérente, écart +1 dans les douze cas** : lot 513 « 34 » pour 35, lots
+  515-517 « 35 » pour 36, lots 520 à 525 « 37 » pour **38**. **Le chiffre de
+  tête que je republie à chaque lot se contredit lui-même, et personne, moi le
+  premier, ne l'avait additionné. Publiés puis corrigés : 17 → 18.** **Lequel
+  est faux ? On ne peut pas le savoir** : aucune liste canonique n'existe — sur
+  662 documents markdown, 44 identifiants `NNN-A` distincts, ni 37 ni 38, et
+  pour une raison qui invalide le compte : **`NNN-A` désigne tantôt un dossier,
+  tantôt une règle de méthode**. Conformément à 525-B, je ne choisis pas le
+  nombre qui m'arrange. **Ce que je change et qui ne coûte rien** : la ligne de
+  feuille s'écrira désormais **« 37 ou 38 dossiers — total et répartition se
+  contredisent, désaccord non tranché »**. C'est moins beau et c'est vrai.
+  **Second contrôle** : 104 rapports mentionnent une répartition, mon motif
+  n'en attrape que 12, **92 n'ont pas été vérifiés** — « depuis le lot 511 » est
+  une propriété de mon motif, pas une date. Ce que le dépôt fait bien : **la
+  trace existe** (INDEX 44 identifiants, STATUS 38) — ce n'est pas la mémoire
+  qui manque, c'est l'agrégat qui a dérivé ; et **Vertex n'est pas en cause**,
+  le défaut est dans ma comptabilité. Portée : la feuille n'est pas fausse, elle
+  est **incohérente avec elle-même** ; on ne sait pas depuis quand ; on ne sait
+  pas quel nombre est juste ; **le travail annoncé n'a pas été fait**. Aucun
+  code, aucun gardien, aucun test, aucun fichier de production touché ; rien
+  supprimé ; aucune route appelée. MD5 8/8 · snapshot 22 fichiers écart AUCUN ·
+  SW `td-shell-v187` · 2864 passed / 0 skipped. Série 1, 2, 2, 3, 3, 0, 0, 4, 4,
+  4, 2, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0. Trois règles neuves : **526-A une
+  feuille doit s'additionner** · **526-B un agrégat reporté de lot en lot n'est
+  vérifié par personne** · **526-C un identifiant partagé par deux populations
+  ne compte ni l'une ni l'autre**. Rapport :
+  `docs/refactor/validation/SKYLER-LOT-526.md`.
 - **Lot 525 — livré** : **la borne basse du 522 resserrée d'un facteur
   quatre — 4 lots exposés → 16 — et le chiffre du dossier 518-A ENCADRÉ, ni
   confirmé ni réfuté.** Choix (d) : l'axe du français peint est mesuré et ne
