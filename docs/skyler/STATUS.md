@@ -2880,6 +2880,35 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 549 — livré** : **l'angle mort tombe de 67 à 43**, et le témoin
+  négatif du brief était faux. Choix (t) : résoudre les 90 appels à chemin
+  construit que le 548 avait laissés de côté. **L'arrêt du lot** : le brief
+  donnait `/bordel` comme route qu'aucun test n'atteint ; lecture du code avant
+  d'écrire l'instrument — `tests/test_smoke.py:49` porte
+  `for path in ["/", "/brief", … "/bordel", "/settings"]` puis
+  `c.get(path, follow_redirects=True)`. **`/bordel` est appelé**, via une
+  **variable de boucle** que le crible du 548 classait « chemin construit » —
+  et c'est exactement le motif qui appelle les redirections héritées.
+  **Correction d'une phrase du 548** : « aucun test ne vérifie qu'elles
+  redirigent » est **faux pour seize** des 36 redirections ; le chiffre 67
+  restait juste, protégé par son étiquette de borne haute, **mais pas la
+  phrase**. Deux mécanismes tenus séparés : **22** appels **résolus
+  exactement** (boucle sur littéraux, appariés par la règle) et **31**
+  seulement **atteints par préfixe** (borne haute de couverture) ; **7**
+  préfixes écartés par la garde 548-A, **33** appels sans liaison lisible. Les
+  boucles livrent **83 chemins littéraux** et **54 points d'entrée**. **La
+  garde a été mesurée** : les 7 préfixes écartés désignent 4 points d'entrée,
+  **zéro** parmi les 43 — elle n'a rien coûté. Résultat : **24 des 67 étaient
+  couverts** (certain), **0 incertain**, **43 restent** — les deux bornes
+  coïncident. Par famille : 20 redirections héritées, 19 points `/api/…`, 4
+  autres. Nuance dite : **`/intelligence` et `/tracking` sont appelés par la
+  suite** ; ce que je n'ai jamais fait, c'est mesurer leurs octets servis
+  moi-même. Portée : **43 reste une borne haute**, 33 appels irrésolus ne sont
+  jamais convertis en couverture. Règles **549-A** une variable de boucle n'est
+  pas un chemin inconnu · **549-B** un chiffre prudent ne protège pas la phrase
+  qui l'entoure · **549-C** une garde se mesure aussi. Cycle : aucun fichier de
+  production touché, SW `td-shell-v187`, **MD5 8/8**, snapshot 22 fichiers ; **3 modifiés pendant le lot** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, aucun fichier apparu ni disparu,
+  **2864 passed / 0 skipped**, lancée **après** les documents. Arrêtés **169 (+1)**, publiés puis corrigés **24 (+1)**.
 - **Lot 548 — livré** : **l'angle mort total, mesuré pour la première
   fois — 67 points d'entrée sur 184 ne sont appelés ni par la suite ni par
   moi.** Choix (r) : mesure entièrement statique, lecture des 301 fichiers de
