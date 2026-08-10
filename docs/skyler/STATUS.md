@@ -2880,6 +2880,51 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 523 — livré** : **le français que le produit PEINT, mesuré par
+  EXÉCUTION et non par motif.** Choix (b), dette du 516 ouverte depuis sept lots
+  — « le français construit en JavaScript », 336 occurrences mal discriminées.
+  La raison de l'immobilité est nommable : le seul instrument d'alors était un
+  **grep**, la famille que le 522 vient de disqualifier. Le harnais node du 520
+  extrait une fonction du **JS SERVI**, l'exécute, et **capture le texte
+  réellement écrit dans le DOM**. **Réparation préalable du harnais** : le 520
+  **stubait** `VX.states` et `Vf`, or les deux sont **servis** (`vx-core.js`
+  L42/L85) — il mesurait son propre balisage. Les deux objets sont ici extraits
+  du JS servi (1 814 et 2 918 car.) et évalués. **Crible calibré avant tout** :
+  F1 accord numérique brisé (« 1 jours ») et F2 fuite technique (`undefined`,
+  `NaN`, `[object Object]`) ; POSITIF 7/7 bien formées passent, NÉGATIF 6/6
+  fautives signalées ; harnais et appareil calibrés eux aussi. **Balayage : 105
+  fonctions inventoriées, 89 ciblées, 267 exécutions (3 régimes), 161 peignent,
+  55 fonctions sur 89.** Aucun réseau : `VX.fetch` stubé, `globalThis.fetch`
+  lève « RESEAU INTERDIT ». **F1 : zéro faute — sur CINQ occasions seulement**
+  (« 1 titre », « 1 PUT » ×2, « 1 erreur », « 1 Fondamental ») ; zéro défaut sur
+  cinq tirages est une preuve **mince**, pas un quitus. **F2 : trois candidats,
+  TROIS RÉFUTÉS** — `loadTrack` (j'avais aliasé `entries` sur un tableau, le
+  moteur rend un nombre), `loadPostmortem` (`trades_n` toujours rendu),
+  `renderDiscipline` (`/api/portfolio/context` rend `available: False`, branche
+  honnête ; `bounds` et `n_positions` toujours fournis sinon). **Les trois
+  venaient de MA charge. 121 → 125.** **Le chiffre du 520 recompté avec
+  l'appareil réel** : `/system?view=automations` A 2208 → 2031 o, B 329 →
+  1987 o, C 182 → 734 o — **l'état vide réel est six fois plus gros** que
+  mesuré. Les conclusions du 520 tiennent (les messages sont bien du produit) ;
+  **ce sont les octets qui étaient à moi. Publiés puis corrigés : 16 → 17.** Ce
+  que le dépôt fait bien et que le 520 ne pouvait pas voir : l'état vide réel
+  **nomme la situation** avant d'en donner la raison, et la bannière d'erreur
+  **offre une sortie** (« Réessayer », « Ouvrir Système ») ; **zéro défaut sur
+  les 37 URL servies** (25 454 caractères) ; les registres relus par AST donnent
+  exactement **35 vues**, confirmant le 518 par un chemin indépendant. **Second
+  contrôle** : mes slugs de vues étaient **faux**, écrits de mémoire — une vue
+  inexistante retombe silencieusement sur la vue par défaut ; corrigé en lisant
+  les registres par AST (arrêt n° 125). Et **34 chargeurs sur 89 (38 %) n'ont
+  jamais peint**, cause dominante mienne (constantes de module absentes).
+  Portée : deux familles seulement ; charges fabriquées ; 38 % non mesurés.
+  Aucun code, aucun gardien, aucun test, aucun fichier de production touché ;
+  rien supprimé. MD5 8/8 · snapshot 22 fichiers écart AUCUN · SW
+  `td-shell-v187` · 2864 passed / 0 skipped. Feuille inchangée : 37 dossiers.
+  Série 1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2, 0, 0, 0, 4, 4, 0, 0, 0, 0. Quatre
+  règles neuves : **523-A ne pas stuber ce qui est servi** · **523-B un crible
+  sans occasion ne prouve rien** · **523-C lire les slugs dans le registre** ·
+  **523-D une fuite sous charge fabriquée n'est pas un défaut**. Rapport :
+  `docs/refactor/validation/SKYLER-LOT-523.md`.
 - **Lot 522 — livré** : **audit de mes propres chiffres, par la MÉTHODE et
   non par la prose.** Choix (a), dette du 515 — deux lots consécutifs ont montré
   que mes chiffres issus de motifs textuels sont faux avec régularité : le 515
