@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 554 — livré** : **24 routes que le produit appelle à chaque
+  chargement et que je n'ai jamais appelées** — 17 déjà couvertes par la suite,
+  3 sous prudence, **zéro interdite**, et **7 que personne ne teste**. Choix
+  (z) : les pages atteignent 36 routes par un `VX.fetch` littéral, je n'en ai
+  appelé que 23. Mesure **entièrement statique — aucune de ces routes n'a été
+  appelée**. **L'arrêt du lot** : le témoin du brief était faux pour la
+  quatrième fois — il exigeait `/api/ticker/` parmi les 36, alors que la page
+  l'écrit `VX.fetch('/api/ticker/' + SYM)`, une **concaténation** que le crible
+  du 553 rejette par définition. **Le témoin faux désignait exactement l'angle
+  mort du second contrôle.** Les 14 candidates à rejoindre le périmètre sont
+  nommées (`/api/command`, `/scan`, `/api/market/context`, `/api/names`…) et
+  **aucune n'est appelée** : l'élargissement est une décision, pas une
+  conséquence. Les 7 sans filet : `/api/alerts/active`, `/api/options`,
+  `/api/system/automations`, `/api/system/config`,
+  `/api/system/startup-report`, `/api/track-record`,
+  `/api/tradingview/signals` — elles figuraient déjà parmi les 43 « couverts
+  par personne » du 549, **mais on sait maintenant que les pages les
+  demandent**. Second contrôle : 4 appels à argument construit (tous
+  `/api/options/…`), 3 préfixes illisibles, **0 préfixe interdit** ; et
+  `/api/ticker/` est appelé **uniquement par `analysis_page.py:297`**, hors du
+  corpus des 8 pages. Règles **554-A** un témoin faux peut désigner l'angle
+  mort · **554-B** « hors de mon périmètre » n'est pas « sans filet » ·
+  **554-C** une liste de candidates n'est pas une décision. Cycle : aucun
+  fichier de production touché, SW `td-shell-v187`, **MD5 8/8**, snapshot
+  22 fichiers ; **4 modifiés pendant le lot** (`ai_enrichment.json`, `daily_prev.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, aucun fichier apparu ni disparu, **2864 passed / 0 skipped**, lancée **après** les documents. Arrêtés **175 (+1)**.
 - **Lot 553 — livré** : **le contrat de la page — 19 clés que le produit
   LIT et qu'aucun test ne nomme**, dont `vix`, `breadth`, `regime` et
   `confidence`. Choix (y) : le 552 avait mesuré 128 clés servies non nommées ;
