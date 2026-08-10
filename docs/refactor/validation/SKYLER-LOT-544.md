@@ -168,7 +168,7 @@ erreur, c'était d'en inventer une.** J'avais un « écart », un coupable dési
 cela était faux, et rien ne l'aurait empêché de partir en rapport si je n'avais
 pas ouvert le document servi à la position 63 865.
 
-Trois règles neuves :
+Quatre règles neuves :
 
 - **544-A · UN IDENTIFIANT DANS UNE CHAÎNE JAVASCRIPT N'EST PAS UN CONTENEUR
   SERVI** — `pf-risk-gauge` vit dans 65 923 octets de script en ligne.
