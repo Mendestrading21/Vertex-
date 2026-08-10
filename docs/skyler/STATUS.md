@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 537 — livré** : **les 51 appels non protégés du 534, exécutés un par
+  un — neuf chargeurs peignent, quatre se taisent, et les quatre sont ceux
+  qu'on connaît déjà.** Choix (z) : la dette produit la plus lourde restante.
+  Les 33 entrées se répartissent en 8 appels hors de toute fonction et **25
+  fonctions nommées**. **Trois arrêts, le premier le plus grave de la série** :
+  mon filtre de limite d'instrument ne retenait que « X is not defined », or
+  `navigate` — le routeur, sur les huit pages — échoue sur « Cannot read
+  properties of undefined » ; **j'allais publier huit routeurs comme chargeurs
+  muets**. La bonne règle est l'inverse : la seule erreur légitime est celle
+  qu'on **injecte**. Puis `chips`, muette parce que le harnais l'appelait **sans
+  argument** — avec ses arguments elle peint 19 caractères. Puis `loadLeaps`,
+  dont la **lecture** réfute mon instrument : `board()` fait
+  `.catch(() => [])`, il ne rejette jamais, le `.then` s'exécute toujours et
+  écrit « Aucun LEAPS exploitable ». **Feuille : 9 peignent · 4 muettes · 12
+  limites d'instrument · total 25, OK.** Les quatre muettes sont
+  `renderRadar`, `renderStocks`, `renderOptions`, `renderAnomalies`, toutes sur
+  `/opportunities` et toutes à zéro paramètre : **531-A garde son ampleur,
+  quatrième mesure indépendante.** Deux dettes fermées : `loadLeaps` et
+  `loadStructure`. Règles **537-A** un harnais qui appelle tout sans argument
+  mesure un état dégénéré · **537-B** la seule erreur légitime est celle qu'on
+  injecte · **537-C** un helper qui rattrape sa propre panne désamorce ses
+  appelants. Aucun fichier de production touché · SW `td-shell-v187` · MD5
+  **8/8** · snapshot **écart AUCUN** · **2864 passed / 0 skipped**. Arrêtés
+  **152 (+3)** · publiés puis corrigés **22**.
+
 - **Lot 536 — livré** : **la réserve du 535 est fermée — 96 des 132 sélecteurs
   construits sont suivis jusqu'à leurs appelants, et les 63 conteneurs sont
   couverts SANS réserve.** Choix (b) : la dette la plus fraîche. Le lot suit le
