@@ -2880,6 +2880,48 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 503 — livré** : **la dette des huit rangs relatifs payée — aucun ne tient
+  SEUL par comparaison, et le « NEUF sur vingt-quatre » du 480 est FAUX : il y en a
+  QUINZE.** Choix (a) : la plus ancienne dette de fond encore ouverte (nommée au
+  481), et la seule où le **bilan n°18 avait publié une affirmation non mesurée**
+  (« le stock vieillit bien »). **Réponse à la question posée : 15 / 15 des sections
+  comparatives portent un critère ABSOLU dans la même section — zéro exception.**
+  **Trouvaille non cherchée** : mon premier banc a **reproduit le neuf du 480 à
+  l'identique**, ce qui aurait dû alerter — deux instruments écrits à trois lots
+  d'écart peuvent partager la même erreur. Le second banc (règle 481, sur ce que le
+  premier EXCLUT) a rendu dix, puis quinze. Deux défauts, **tous deux dans mon
+  camp** : (1) découpage en phrases AVANT la jonction des lignes markdown — le 433
+  écrit « la conséquence est plus\nlourde qu'au 432 » ; (2) lexique exigeant
+  `famille DE/DU/DES`, ratant « **la famille** 411/424/… » (454), « **au-dessus du
+  463** » (464), « **comme celle du 457** » (461), « **ni le 422 … ni le 421/423 …
+  entre les deux** » (424), « **différent du 407** » (417). **Le 424 est le plus
+  embarrassant : le rang le plus purement relatif de la veine — son rang 2 est
+  construit en encadrant deux dossiers — et c'est celui que le 480 a manqué.**
+  Population **9 → 15 (62,5 %), six ajoutés, ZÉRO perdu** (sur-ensemble strict).
+  **CALIB 3 est le vrai test** — élargir un lexique fait monter un compte trop
+  facilement : les cinq sections citant un lot pour une MÉTHODE (437, 446, 457,
+  458, 478), exclues explicitement par le 480, **restent non comparatives, 0 / 5**.
+  Le zéro de la dette **contrôlé et non publié tel quel** (leçon 501) : densité des
+  marqueurs absolus **4,17 / 1 000 car.** en « Classement » contre **0,00 sur 24/24**
+  en « Vérifications du cycle » témoin — puis **les quinze sections lues en entier**,
+  parce que le régime compte aussi les occurrences NIÉES. **Correction publiée : la
+  phrase du 480 « 37,5 % des rangs sont JUSTIFIÉS par comparaison » se trompe deux
+  fois**, sur le chiffre et sur le verbe — dans 12 / 15 la comparaison NOMME la
+  famille pendant qu'un critère absolu porte le rang ; dans 3 seulement (424, 461,
+  464) elle est porteuse, et même là un critère absolu l'accompagne. **Second
+  contrôle : le bornage du 480 re-croisé sur les quinze, et il TIENT** — seul ajout
+  concerné le 417, qui ne casse rien car sa comparaison **différencie** au lieu
+  d'**ordonner**. « Un seul rang relatif affecté » **CONFIRMÉ sur une population
+  67 % plus grande**. Limites dites : le 417 satisfait la LETTRE du 480 mais pas son
+  ESPRIT (**sans lui, quatorze**) ; ce lot contrôle la **FORME** des justifications,
+  **pas la VÉRITÉ** des défauts ; **la règle 491 n'est appliquée à aucun des
+  quinze** ; étalons mobiles repris du 480, non re-mesurés ; **quinze est un
+  plancher**. Aucun code, aucun test, aucun fichier de production touché, rien
+  supprimé. MD5 **8/8** · snapshot 22 fichiers écart **AUCUN** · SW `td-shell-v187`
+  · **2864 passed / 0 skipped**. Arrêtés avant publication **80 → 81** ; publiés
+  puis corrigés **11 → 12**. Feuille inchangée : 26 dossiers. **Dette des huit rangs
+  relatifs CLOSE** ; restent l'espion au troisième niveau et un retour au produit
+  sur une surface jamais auditée.
 - **Lot 502 — livré** : **la dette du coût de démarrage payée — les 4 369 lignes
   mortes coûtent NEUF MILLISECONDES et 1,49 Mo. Le devis de purge gagne son
   dernier chiffre, et ce chiffre lui RETIRE un argument.**
