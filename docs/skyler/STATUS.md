@@ -2880,6 +2880,47 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 515 — livré** : **la dette du 514 est close par un ZÉRO MESURÉ — les 38
+  divisions entières du dépôt sont toutes légitimes. Mais le 514 avait publié
+  253, faux d'un facteur 6,7, et j'ai attrapé TROIS artefacts de banc dans ce
+  seul lot. Aucun dossier neuf (rang 0).** Choix (a), la dette créée par le 514.
+  **Le chiffre du 514 était faux** : son `grep -rnE '[^/]//[^/]'` tournait **sans
+  `--include=*.py`** — 253 lignes dont 17 avec « :// » (URLs) et 129 seulement
+  dans un .py, le reste étant du **JS et du CSS où « // » est un COMMENTAIRE** ;
+  et même dans les .py l'essentiel vit **dans des chaînes Python qui construisent
+  du JavaScript**. Compté par **AST** : **`//` 253 → 38**, **`%` numérique
+  82 → 16**, plus **688 formatages `'%d' % x` écartés**. **Publiés puis corrigés :
+  13 → 14.** **Résultat : zéro défaut.** Les 38 classées — **19 médiane/index**
+  (un index doit être entier), **9 seuil de tranche**, **5 quantité de contrats**
+  (plancher **conservateur pour le risque**), **3 libellé de durée**, 2 autres.
+  **Deux cas examinés et écartés** : le **libellé de durée** tronque toujours dans
+  le sens « plus frais qu'en réalité », mais c'est la **convention** de tous les
+  formateurs de temps relatifs et surtout **l'état `ok`/`stale`/`offline` est
+  calculé sur `age_s` brut, pas sur le libellé** ; le **« tiers supérieur »** de
+  `market_lens.py:46` vaut 27 % à 11 secteurs et 100 % à 1 secteur, mais
+  **`market_lens` apparaît 0 fois dans le corpus servi** (seul lecteur :
+  `intelligence_page.py`, **page non servie**) — **nouvelle instance de 512-A, pas
+  un dossier neuf**. **Second contrôle, et deux artefacts de plus** : le JS servi
+  donnait 103 `Math.floor(`, 15 `parseInt(`, 44 `| 0` ; ma séparation du vendor
+  **ratait `chart.umd.min.js`** (205 ko de Chart.js, sans « vendor » dans le
+  chemin) — refaite **par attribution fichier par fichier** : vendor **101 floor**,
+  code applicatif servi **2**, les 9 pages **0**. Et **le `| 0` était un
+  homonyme** : il capture la fin de `|| 0`, la coalescence — **43 des 44**.
+  **Trentième récurrence de la famille homonyme.** Les **6** vraies troncatures du
+  code servi, lues une par une, sont toutes innocentes (libellé tronqué à la
+  largeur en pixels, numéro de mois, couleur hexadécimale, n° de ligne d'erreur).
+  **Trois arrêts avant publication : 107 → 110**, tous dus à mes propres bancs.
+  **Ce que le lot vaut, franchement** : troisième rang 0 de la veine — il **ferme**
+  la dette par un zéro **mesuré**, **corrige un chiffre que j'avais publié**, et
+  établit que **le dépôt fait juste** sur toute cette famille. Portée : le crible
+  ne couvre que Python, les 6 sites JS ont été **lus** et non criblés ; aucun scan
+  de production, aucun navigateur, aucun POST. Aucun fichier de production touché.
+  MD5 8/8 · snapshot 22 fichiers écart AUCUN · SW `td-shell-v187` · **2864 passed
+  / 0 skipped**. Feuille **inchangée : 35 dossiers**. Série **1, 2, 2, 3, 3, 0, 0,
+  4, 4, 4, 2, 0**. **L'enseignement : trois de mes propres chiffres faux dans un
+  seul lot, tous par la même cause — un motif TEXTUEL appliqué sans vérifier ce
+  qu'il capture. L'AST n'a commis aucune de ces erreurs.**
+
 - **Lot 514 — livré** : **le schéma du 513-A a une COPIE, et elle est SERVIE —
   sur la fiche d'un titre, en facteur positif d'un ACHAT FORT : « Parmi les
   meilleurs de l'univers scanné (top 0 %) ». Dossier 514-A, RANG 2, premier
