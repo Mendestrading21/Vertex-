@@ -2880,6 +2880,56 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 513 — livré** : **la règle 507-A retournée contre mon propre dossier
+  d'hier — 512-A survit (phrase non vide 100 % du temps), mais à l'échelle de
+  production elle annonce « Top 0 % de l'univers » au meilleur titre du scan.
+  Dossier 513-A, rang 4.** Choix (c) : le 512 proposait d'afficher
+  `context.headline` ; ma propre règle exige de mesurer l'atteignabilité avant de
+  classer. **Premier résultat — 512-A tient, et mieux que publié** : sur les 20
+  titres du scan DÉMO, **20 phrases non vides (100 %)**, 0 vide, **19 phrases
+  distinctes sur 20** (pas une tautologie, règle 496) ; la partie secteur manque
+  une fois sur deux uniquement parce que le DÉMO éparpille 20 titres sur 10
+  secteurs — à n = 50, 100 et 517 elle est présente **100 %** du temps, mon 50 %
+  est une **borne basse**. **Second contrôle (règle 481)** : `terminal.py:368`
+  scanne `UNIVERSE[:20]` en DÉMO mais **UNIVERSE entier — 517 titres** en
+  production, soit un univers **26 fois plus grand**. `_pct_rank` étant un
+  mid-rank, `pct(max) = round(100 − 50k/n)` : dès que `50k/n < 0,5` l'arrondi rend
+  100 et la phrase écrit **« Top 0 % »**. Mesuré : n=20 → Top 2 % (le chiffre cité
+  par le 512) · **n=100 → bascule** · **n=517 → Top 0 % / Bas 0 %**. **Troisième
+  contrôle — il réfute partiellement le second, et je le publie** : mon 2ᵉ banc
+  imposait des scores tous distincts, or les vrais scores sont des **entiers**
+  (20 scores, 17 valeurs distinctes) ; avec des ex aequo l'absurdité peut
+  disparaître. **Le « Top 0 % » n'est PAS systématique** — condition exacte
+  vérifiée point par point : **k ≤ 5 (= n/100) → Top 0 % ; k ≥ 6 → Top 1 %**. Et
+  **ma « distribution réelle étirée » est elle-même un artefact** (étirer 20
+  valeurs sur 517 fentes multiplie chaque ex aequo par 26). Ce que je peux
+  affirmer : dans le scan DÉMO le score max (84) est **unique**, `k = 1`, et un
+  sommet unique est le cas ordinaire. Ce que je ne peux pas affirmer : que la
+  production ait `k ≤ 5` — il faudrait un scan réel de 517 titres, donc du réseau
+  interdit. **Deux arrêts avant publication** : j'allais écrire « absurdité
+  systématique » (faux) ; et ma première vérification de la condition était
+  **fausse** (`range(0, n-k)` fabriquait des valeurs > 100, donc « le maximum »
+  n'en était pas un). **Ce que cela fait au 512-A** : sa correction pressentie
+  — afficher la phrase — n'est **pas applicable en l'état**, elle livrerait
+  « Top 0 % de l'univers » au meilleur titre, contre l'invariant « données réelles
+  uniquement ». **Le 512 avait raison sur le fond et tort sur la marche à
+  suivre.** **Rang 4** parce que rien de faux n'est montré aujourd'hui et que le
+  seul environnement exécutable (DÉMO, n=20) rend « Top 2 % », sensé — **le défaut
+  est invisible partout où je peux le faire tourner** ; mais le jour où la phrase
+  est affichée il devient un chiffre faux peint, soit rang 2 : **dossier
+  conditionné à sa propre correction, cas nouveau**. **Quand le dépôt fait bien,
+  le dire (509-C)** : `_standing` utilise le même percentile et reste correct à
+  toutes les tailles ; les `pct_universe`/`pct_sector` sérialisés sont justes —
+  seul le `100 - pct` de `_headline` détruit l'information. Correction pressentie
+  : plancher « Top 1 % » ou ordinal « 1ᵉʳ sur 517 ». **Aucun GO, rien supprimé.**
+  Portée : **aucun scan de production lancé**, tout ce qui concerne n=517 vient de
+  cartes fabriquées en mémoire ; aucun navigateur, aucun POST, aucune route
+  interdite. Aucun fichier de production touché. MD5 8/8 · snapshot 22 fichiers
+  écart AUCUN · SW `td-shell-v187` · **2864 passed / 0 skipped**. Arrêtés avant
+  publication **103 → 105**. Feuille **34 dossiers · trois rang 4**. Série
+  **1, 2, 2, 3, 3, 0, 0, 4, 4, 4** — trois rangs 4 d'affilée, mais celui-ci
+  **corrige la correction proposée par le lot précédent**.
+
 - **Lot 512 — livré** : **les 41 routes muettes lues une par une — le brief se
   trompait : `/api/comite` ne cache rien (0 chaîne inédite sur 67). Mais un
   MOTEUR ENTIER, `context.py`, n'atteint l'écran sous AUCUNE formulation. Dossier
