@@ -2880,6 +2880,34 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 567 — livré** : **sixième chiffre lourd — 53 n'est PAS un cumul
+  par page, la prédiction tient** — **mais c'est un cumul par RÈGLE : onze refus
+  comptés deux fois, 42 distincts**. Choix (mm), avec prédiction écrite d'avance :
+  les cinq chiffres précédents portaient sur le JS servi (cumul structurel), le 53
+  est du **Python lu une fois par fichier**. **Prédiction tenue** : 53 signatures
+  pour 53 entrées, 22 chemins distincts — le défaut ne se transpose pas.
+  **Premier constat** : le prédicat du 542 remplit sa liste par **deux branches**
+  d'un même `ast.walk` — un `Return (jsonify, code ≥ 400)` et un `jsonify` à
+  drapeau négatif — et `ast.walk` visite le `Return` **puis** le `Call` qu'il
+  contient. Mesuré par **contenance réelle** (identité de nœud, plus un témoin de
+  21 cas non marqués) : A = 32, B = 21, **11 couples prouvés, 42 distincts**.
+  Vérifié dans le code : `desk.py:77` porte drapeau **et** code 400. **Sens de
+  l'erreur vérifié** : les deux bornes rétrécissent ensemble, « 53 sur 53 »
+  devient « 42 sur 42 » et **la conclusion tient — zéro refus JSON muet**. Ce qui
+  bouge : `analysis_api.py` 17 → 10, `desk.py` 10 → 6, alors que le 542 vantait
+  « dix refus » pour `desk.py`. **L'arrêt du lot** : mon premier appariement se
+  faisait par **intervalle de lignes** et donnait déjà 11 — bon chiffre, mauvaise
+  preuve, indistinguable d'un faux. **Second arrêt** : mon attente sur le
+  vocabulaire était fausse — le relevé brut rend **7** noms, pas 4 ; le rapport
+  publie l'intersection avec une liste écrite à la main, dans une section
+  intitulée « relevé et non deviné ». Second contrôle : 101 `jsonify` dont 21
+  refus, et **4 refus non-JSON** cités mais jamais chiffrés. Règles **567-A** une
+  prédiction juste ne protège pas du défaut voisin · **567-B** deux règles sur un
+  même parcours se recouvrent si rien ne l'interdit · **567-C** la proximité de
+  ligne n'est pas la contenance. Cycle : aucun fichier de production touché, SW
+  `td-shell-v187`, MD5 **8 / 8**, snapshot 22 fichiers ; **3 modifiés par la suite de tests** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, **2864 passed / 0 skipped**. Arrêtés
+  **193 (+1)**, **publiés puis corrigés 32 (+1)**, **interprétations retirées
+  10 (+1)**. **Un chiffre lourd reste.**
 - **Lot 566 — livré** : **cinquième chiffre lourd — 156 se reproduit,
   c'est un cumul par page, les variables distinctes sont 79** — et **le
   « vingt-six fois plus » du 540 divise deux objets différents**. Choix (ll) :
