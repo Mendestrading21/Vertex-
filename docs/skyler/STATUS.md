@@ -2880,6 +2880,46 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 522 — livré** : **audit de mes propres chiffres, par la MÉTHODE et
+  non par la prose.** Choix (a), dette du 515 — deux lots consécutifs ont montré
+  que mes chiffres issus de motifs textuels sont faux avec régularité : le 515
+  en a corrigé trois (253→38, 82→16, 44→1), le 521 trois autres. **Six chiffres
+  faux en deux lots, dont un publié.** Chercher la réponse dans la PROSE des
+  rapports aurait rejoué le travers audité : **la méthode d'un chiffre est dans
+  le SCRIPT qui l'a produit**, et tous mes bancs sont encore là. Classement des
+  115 bancs par nature de mesure (AST / ROUTE / NODE / MOTIF), calibré sur deux
+  réponses connues (`l515_divent.py` doit ressortir AST — OK ;
+  `l514_controle2.py`, qui a produit le 253 faux, doit ressortir MOTIF — OK) :
+  **23 purement immunes · 31 mixtes · 13 reposant UNIQUEMENT sur un motif**, sur
+  huit lots dont **quatre sans aucune autre mesure : 490, 491, 500, 509**. Les
+  490 et 500 sont des bilans ; restent deux affirmations vérifiables sur le
+  code. **Le chiffre du 509 recompté par AST** — « `_strat_tilt` est une copie
+  quasi mot pour mot de `climate` », affirmation qui avait **doublé la portée du
+  dossier 508-A** : identité 100 % / témoin négatif 27 % / **mesure 54 % de
+  squelette, 69 % de constantes, 46 % de texte brut**. **Verdict PARTIEL.** Ce
+  qui tient : **34 constantes communes sur 54** — mêmes seuils, mêmes étiquettes,
+  mêmes clés ; **le défaut du 508-A est bien dupliqué et sa portée doublée reste
+  juste**. Ce qui ne tient pas : « quasi mot pour mot » — `_strat_tilt` fait
+  presque le double et ajoute ses propres playbooks ; c'est un **noyau de scoring
+  partagé dans une fonction plus large**. **Le dossier survit, le qualificatif
+  était gonflé. Publiés puis corrigés : 15 → 16.** Le « 7 barèmes » du 491 n'est
+  **pas re-vérifiable** (sortie non conservée ; rejouer un banc à motif ne
+  confirme rien — règle 503) : laissé ouvert plutôt que blanchi. **Second
+  contrôle** : la classification porte sur des SCRIPTS, pas sur des CHIFFRES —
+  **31 scripts mixtes sur 16 lots**, donc **« quatre lots » est une BORNE BASSE
+  de l'exposition**. Ce que la boucle fait bien : **23 bancs sur 115 purement
+  immunes**, et **quatre des huit lots à motif doublaient déjà leur mesure** —
+  le réflexe du second contrôle jouait la moitié du temps avant même la règle
+  515-A. Portée : **un seul chiffre recompté** ; la classification dit quels
+  chiffres sont **exposés**, pas lesquels sont faux ; un motif n'est pas faux
+  par principe (515-C). Aucun code, aucun gardien, aucun test, aucun fichier de
+  production touché ; rien supprimé. MD5 8/8 · snapshot 22 fichiers écart AUCUN
+  · SW `td-shell-v187` · 2864 passed / 0 skipped. Feuille inchangée : 37
+  dossiers. Série 1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2, 0, 0, 0, 4, 4, 0, 0, 0.
+  **Je n'incrémente pas le compteur d'arrêts : je n'ai arrêté aucun résultat
+  faux ce lot-ci, j'en ai corrigé un déjà publié — gonfler ce compteur serait
+  exactement le travers que le lot dénonce.** Rapport :
+  `docs/refactor/validation/SKYLER-LOT-522.md`.
 - **Lot 521 — livré** : **trois instruments, trois échecs de calibration sur le
   MÊME témoin — on ne prouve pas statiquement qu'une route ne sort pas sur le
   réseau. Voilà pourquoi cette dette dort depuis NEUF lots. Alors j'ai construit
