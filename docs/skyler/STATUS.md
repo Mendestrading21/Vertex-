@@ -2880,6 +2880,39 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 529 — livré** : **retour au produit — deux chiffres de rang 4
+  confirmés, un juste avec un mot faux, un non reproductible.** Choix (k), et
+  changement d'axe assumé : quatre lots d'affilée avaient mesuré ma
+  comptabilité, **la suite demande une décision humaine que je n'ai pas**.
+  **513-A CONFIRMÉ au chiffre près** — n = 20 mesuré, minimum observé **Top
+  2 %** (ACN) : c'est le seul dossier de rang 4 dont la définition était
+  **écrite**, et le seul qui se vérifie exactement. **512-A CONFIRMÉ après un
+  piège** — la phrase est produite (« Top 43% de l'univers · #1/3 dans
+  Healthcare ») et les **8 occurrences de « headline » dans les octets servis
+  sont toutes des HOMONYMES** (`s.headline` d'une charge GEX, `_headline`
+  variable locale, `n.headline` titre de nouvelle) : j'ai failli publier une
+  réfutation. **132 → 133.** **519-A : le chiffre est juste, le mot est faux** —
+  358 lignes ✓, 3 vues ✓, mais le fichier fait **21 808 octets** et non 21 621 ;
+  le fichier n'a pas changé depuis le lot 296, et la cause est trouvée :
+  `len(texte)` = 21 621, **le 519 comptait des CARACTÈRES et les a appelés
+  octets**, les 187 d'écart étant les accents. **Publiés puis corrigés : 19 →
+  20.** **511-A NON REPRODUCTIBLE** — quatre prédicats plausibles donnent 173,
+  164, 102 et 99 routes, **aucun ne rend 103** ; **mais sa conclusion est
+  RENFORCÉE**, la part jamais citée valant 43 % à 54 % contre 39,8 % publiés :
+  **le dossier n'était pas gonflé, il était prudent**. Bilan : **deux dossiers
+  sur cinq ont un chiffre exactement vérifiable, et les deux avaient leur
+  définition écrite.** Ce que le dépôt fait bien : `context.headline` produit
+  une phrase correcte, en français, sans chiffre inventé — **ce n'est pas la
+  phrase qui est en défaut, c'est l'absence de consommateur**. Portée : 512-A
+  vérifié en DÉMO et par recherche textuelle ; 511-A non tranché ; **aucune
+  correction engagée**. Aucun code, aucun gardien, aucun test, aucun fichier de
+  production touché ; aucune route interdite. MD5 8/8 · snapshot 22 fichiers
+  écart AUCUN · SW `td-shell-v187` · 2864 passed / 0 skipped. Série 1, 2, 2, 3,
+  3, 0, 0, 4, 4, 4, 2, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0. Trois règles
+  neuves : **529-A un chiffre juste peut porter un mot faux** · **529-B un
+  dossier dont la définition est écrite se vérifie** · **529-C chercher un nom
+  dans les octets servis trouve ses homonymes**. Rapport :
+  `docs/refactor/validation/SKYLER-LOT-529.md`.
 - **Lot 528 — livré** : **la lacune de couverture ne se lève pas par un
   motif — trois des huit « nouveaux dossiers » étaient des CITATIONS d'autres
   lots, et la « confirmation des cinq rangs 4 » du 527 était un artefact.**

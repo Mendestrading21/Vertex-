@@ -215,3 +215,33 @@ La feuille annonce « 37 ou 38 » ; le relevé strict en compte 35 ; cinq
 candidats ambigus s'y ajoutent peut-être. **Seule une décision humaine peut
 clore ce compte.**
 
+
+---
+
+# Complément du lot 529 — les chiffres porteurs, VÉRIFIÉS sur le code
+
+| dossier | chiffre porteur | verdict après vérification |
+|---|---|---|
+| **513-A** | « Top 2 % », DÉMO n = 20 | **CONFIRMÉ au chiffre près** — n = 20 mesuré, minimum observé Top 2 %. **Sa définition était écrite.** |
+| **512-A** | phrase calculée, jamais consommée | **CONFIRMÉ** — produite (« Top 43% de l'univers · #1/3 dans Healthcare »), et les 8 occurrences de « headline » dans les octets servis sont **toutes homonymes**. |
+| **519-A** | 3 vues · 358 lignes · 21 621 « octets » | **JUSTE, MOT FAUX** — 358 lignes ✓, 3 vues ✓, mais le fichier fait **21808 octets** ; 21 621 est un compte de **CARACTÈRES** (187 d'écart = les accents). |
+| **511-A** | 41 / 103 · 39,8 % | **NON REPRODUCTIBLE** — quatre prédicats plausibles donnent 173, 164, 102, 99 routes, **aucun ne rend 103**. |
+| **518-A** | 77 % | **ENCADRÉ** 57 %–94 %, établi au lot 525. |
+
+**Deux dossiers sur cinq ont un chiffre exactement vérifiable, et les deux avaient leur définition ÉCRITE.**
+
+## 511-A — la part jamais citée, sous quatre lectures
+
+```text
+prédicat                       total   jamais citées   part
+toutes GET hors /static         173            89    51.4 %
+hors les 9 pages                164            88    53.7 %
+/api + feeds                    102            45    44.1 %
+/api seul                        99            43    43.4 %
+publié au 511                    103            41    39.8 %
+```
+
+**La conclusion du 511 tient et se trouve RENFORCÉE** : la part réelle est
+partout **supérieure** à celle qu'il a publiée. Le dossier n'était pas
+gonflé, il était prudent. **Seul son corpus n'est pas retrouvable.**
+
