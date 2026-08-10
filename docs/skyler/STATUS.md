@@ -2880,6 +2880,45 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 505 — livré** : **`/journal?view=progression`, sous-vue jamais auditée —
+  sous « Mes erreurs récurrentes diminuent-elles ? », la page écrit « la
+  discipline progresse » sur une série STRICTEMENT PLATE, et « Vigilance » après
+  DIX MOIS SANS UNE SEULE ERREUR. Dossier 505-A, rang 2.** Choix (b), le candidat
+  désigné par le 504. **Sous-produit : les quatre empreintes qui manquaient à la
+  boucle** — `journal` `87b254ef362f` · `learnings` `6a7e51204b30` ·
+  `progression` `3c02ad9be276` · `track-record` `d9d406cc9135` (la référence
+  connue `243699ace2d5` ne couvrait que `overview`). **La phrase** compare les
+  DEUX BORNES de la série (`byMonth[dernier] <= byMonth[premier]`) : ce n'est pas
+  une tendance, et le `<=` annonce l'égalité comme un progrès. **Cinq formes
+  fausses sur sept** : plate 5→5→5, V inversé 2→20→2, creux puis pic 9→1→9, deux
+  mois égaux 3→3 → « progresse » ; **pic puis chute 1→20→2 → « Vigilance » alors
+  que c'est une amélioration massive**. **Règle 504 appliquée d'avance : le défaut
+  n'est pas orienté, il flatte ET accuse.** Sur une série monotone la phrase est
+  juste — les deux témoins le montrent et le dossier ne l'accuse pas là. **Le
+  second contrôle (481) trouve le pire, deuxième lot d'affilée où il produit le
+  résultat principal** : `byMonth` n'est incrémenté que si `e.mistake` est non
+  vide, donc **un mois sans erreur n'existe pas dans la série**. Mesuré : 206
+  décisions, 12 mois d'activité, **dix mois parfaits (200 décisions, zéro erreur)
+  → l'axe ne porte que 2 mois sur 12**, valeurs [3,3] → « progresse » ; avec des
+  bornes 5 puis 6, « Vigilance » malgré les mêmes dix mois parfaits. **Ce que le
+  contrôle a fait retirer** : j'allais accuser l'axe de masquer les trous — les
+  étiquettes NOMMENT les mois, accusation retirée. **Un point où la page a raison,
+  mesuré et dit** : sous deux mois porteurs d'erreur, `VXCharts.card` n'est pas
+  appelée et la page écrit « Aucune progression fabriquée avant d'avoir des
+  faits ». **« Servi mais jamais pris » écarté** : `loadProgression()` extraite des
+  octets servis et exécutée sous node, `card` appelée sur `vx-pf-prog-chart`, 857
+  caractères écrits dans `#vx-pf-prog`. **Aucun gardien** : les trois assertions
+  qui nomment `progression` vérifient que la vue existe, que la fonction existe et
+  que la route rend 200. **Rang 2 et pas rang 1** : ce n'est pas la vue par défaut,
+  le graphique est affiché à côté avec les vraies étiquettes (motif du 461), et la
+  page s'abstient honnêtement quand les faits manquent. **Portée : `desk_data.json`
+  jamais ouvert, journaux fabriqués en mémoire, la « vérité » de chaque ligne est
+  mon jugement (les témoins monotones fixent les bornes indiscutables), aucun
+  navigateur, trois sous-vues encore non auditées.** Aucun code, aucun test, aucun
+  fichier de production touché, rien supprimé, rien corrigé. MD5 **8/8** · snapshot
+  22 fichiers écart **AUCUN** · SW `td-shell-v187` · **2864 passed / 0 skipped**.
+  Arrêtés avant publication **82 → 83** ; publiés puis corrigés **12**. Feuille
+  **27 → 28 dossiers · dix rang 2**.
 - **Lot 504 — livré** : **retour au PRODUIT après vingt lots de moteurs — sur
   `/journal`, page jamais auditée, le KPI « Respect des invalidations » affiche
   100 % EN VERT sur des entrées qui ne portent AUCUN stop, et 0 % EN ROUGE sur une
