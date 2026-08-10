@@ -2880,6 +2880,49 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 508 — livré** : **`/markets`, dernière page jamais auditée — `climate()`
+  note l'ABSENCE de donnée comme une donnée MOYENNE : un objet marché avec une
+  seule clé non pertinente rend un verdict complet, score 46 « NEUTRE ». Dossier
+  508-A, rang 3.** Avec ce lot, **les huit pages produit ont toutes été auditées
+  au moins une fois**. **Le barème** : régime CHOP **6** mais **ABSENT 14** ; roro
+  RISK-OFF **2** mais **ABSENT 12** ; vix stress **2** mais **ABSENT 8** ;
+  `above50` absente → **50 substitué**. **L'absence est notée au-dessus de la pire
+  réalité mesurable, sur la même échelle** : `climate({'foo':1})` → **46
+  « NEUTRE »** quand le pire marché réel score **11 « DANGEREUX »** et le meilleur
+  99. Seul `climate({})` est honnête (`None`). C'est l'invariant « donnée absente →
+  n/d honnête ». **Atteignabilité** : `market_context._num()` documente rendre
+  **None** pour une donnée manquante — `None` est la forme CHOISIE de l'absence,
+  et c'est celle que `climate()` note moyenne ; **mais je n'ai pas observé l'état
+  dégradé** (le scan DEMO remplit ses dix clés) et je le dis. **Le gardien teste
+  exactement le cas qui marche** : `test_market_lens.py:20 assert climate(None) is
+  None`. **Trois de mes quatre pistes se sont effondrées sous leurs propres
+  contrôles**, et chacune aurait fait un dossier faux : (1) **le waterfall
+  réconcilie** — poids et noms de clés identiques au moteur, et le clamp ne peut
+  jamais mordre puisque les poids somment à 1,00 → retiré ; (2) **les deux seuils
+  pour la même étiquette** (62 chez `climate`, 65 à l'endpoint) sont
+  **invisibles** — « climate » a zéro occurrence dans 473 509 caractères servis et
+  `label` n'est pas dans la réponse → retiré ; (3) **la jauge « > MM50 » qui
+  affiche `above200`** est réelle et spectaculaire (71 sous l'étiquette MM50 avec
+  « Participation SAINE » pendant que le détail juste en dessous écrit « Titres >
+  MM200 : 71 % » — **le même écran se contredit**), **mais `above50` est toujours
+  présente** dans la charge utile mesurée : **ma propre règle 507-A l'interdit** →
+  ancré, non classé. Contrôle 504 appliqué : le repli **n'est pas orienté**
+  (rassure 42→71, accuse 78→22). **Rang 3**, entre le 432 (rang 1) et le 454
+  (rang 4) : au-dessus du 454 parce que **quelque chose de faux est montré** ; pas
+  plus haut parce que l'état dégradé n'est **pas démontré en production** — la
+  limite même qui m'a fait refuser un dossier au 507 — et parce que le cas vide est
+  honnête. **Ce que `/markets` fait bien, mesuré** : le waterfall réconcilie ; la
+  carte de détail étiquette correctement et n'affiche que les lignes fournies ;
+  elle écrit sa limite (« non affichés plutôt qu'inventés ») ; `climate({})` rend
+  `None`. **Portée : état dégradé non observé ; charges utiles fabriquées ; aucun
+  navigateur (`loadBreadth` extraite des octets servis et exécutée sous node) ;
+  aucun POST ; quatre sous-vues de `/markets` non auditées.** Aucun code, aucun
+  test, aucun fichier de production touché, rien supprimé, rien corrigé. MD5
+  **8/8** · snapshot 22 fichiers écart **AUCUN** · SW `td-shell-v187` · **2864
+  passed / 0 skipped**. Arrêtés avant publication **89 → 92** ; publiés puis
+  corrigés **13**. Feuille **30 → 31 dossiers · cinq rang 3**. **Le tour des huit
+  pages est fini ; les rangs décroissent (1, 2, 2, 3, 3) — la veine des surfaces
+  vierges s'épuise, et il faudra décider de changer de registre.**
 - **Lot 507 — livré** : **`/options`, desk jamais audité — `iv_units` promet une
   détection d'unité « JAMAIS MUETTE » et le moteur tient parole, mais l'interface
   n'en lit AUCUN champ. Dossier 507-A, rang 3.** Choix (a)/`options`.
