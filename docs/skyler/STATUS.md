@@ -2880,6 +2880,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 562 — livré** : **le premier des sept chiffres lourds — 178 se
+  reproduit exactement, mais c'est un cumul par page ; les sites d'appel
+  distincts sont 94**. Choix (hh) : on n'en prend qu'un. **Le banc du 534 existe
+  toujours** — reproduction, pas reconstruction. Vérifié à la source : le 534
+  publie « appels au total 178 » et son banc en donne la définition littérale ;
+  **reproduction exacte, 183 − 5 = 178**. Ce que le chiffre ne dit pas : un
+  fichier JS **statique** servi sur les huit pages est analysé huit fois. Mesure :
+  **178 en cumul, 94 distincts, 12 signatures partagées, 84 unités en double** —
+  les douze nommées (`VX.swr`, `_warm`, `loadStatus`, `navigate`, `run`, `tick`,
+  `tickerMatches`, `watchSession`, `(programme)` ×4). **178 n'est pas faux**,
+  mais « 178 appels » se lit comme 178 endroits dans le code alors qu'il y en a
+  94. **L'arrêt du lot** : le brief demandait de recompter avec les corrections
+  des 555-560 ; la lecture des champs d'une entrée montre **aucun champ décrivant
+  la valeur rendue** — le 534 compte des **sites d'appel**, ces corrections
+  portent toutes sur le **marquage de la valeur rendue**. Les appliquer par
+  analogie aurait produit un chiffre faux. Ce que le dépôt fait bien : le banc
+  est rejouable **vingt-huit lots plus tard**, zéro erreur d'analyse sur 113
+  programmes ; et la comparaison 120 contre 178 reste valide, même convention des
+  deux côtés. Règles **562-A** un compteur de sites n'est pas un compteur de
+  valeurs · **562-B** un corpus qui ne dédoublonne pas multiplie les partagés ·
+  **562-C** une dette peut se solder sans qu'un chiffre change. Cycle : aucun
+  fichier de production touché, SW `td-shell-v187`, MD5 8 / 8 identiques, snapshot
+  22 fichiers ; 3 modifies par la suite de tests (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), restaures — ecart final AUCUN, aucun fichier apparu ni disparu, suite **2864 passed / 0 skipped**. Arrêtés **188 (+1)**, interprétations retirées **6
+  (+1)**. **Six chiffres lourds restent.**
 - **Lot 561 — livré** : **le plancher du 551 recalculé par vérification
   et non par soustraction — 367 devient 380**. Choix (gg) : la dette créée par
   le 559 et laissée intacte par le 560. Vérifié à la source : le 551 publie bien
