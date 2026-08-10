@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 568 — livré** : **septième et dernier chiffre lourd — 103 est un
+  cumul par page, les états distincts sont 91** ; **les douze doublons sont tous
+  dans le seau que le 541 n'a pas lu** ; et **le piège que j'avais écrit d'avance
+  était faux**. Choix (nn). Le JSON du 541 ne portait pas la position : un banc
+  neuf relit le corpus avec le même prédicat, sans toucher la preuve.
+  Reproduction exacte (103 = 28 + 75, causes 8 / 17 / 1 / 2, 15 littérales
+  courtes). **Premier constat** : 6 signatures partagées, 12 unités en double,
+  **91 distinctes** — le plus faible taux des sept. **Second constat** : `error`
+  **28 → 28**, `empty` **75 → 63** ; le seau lu une par une ne bouge pas, les
+  doublons sont tous dans l'autre — comme au 565, mais deux fois n'est pas une
+  loi. **L'arrêt du lot** : j'avais écrit que le « 5 » de 28 − 8 − 15 ne
+  désignait rien ; la mesure dit **8 + 15 + 3 + 2 = 28**, donc il désigne
+  quelque chose — mais **une fusion** de deux catégories que le 541 sépare
+  exprès (les non lisibles, « jamais rangées parmi les pauvres »). Publier « 5 »
+  aurait défait cet arrêt. Second contrôle : **539 clauses `catch`** dans le
+  corpus, **123 distinctes sans aucun état du vocabulaire mesuré, dont 82 au
+  corps vide** — nommées pour ce qu'elles sont, pas « échecs silencieux ».
+  **La liste des sept est close** : 178→94, 25→18, 11→4, 112→84, 156→79, 53→42,
+  103→91 — sept reproductions exactes, sept chiffres qui rétrécissent, **zéro
+  conclusion renversée**. Règles **568-A** une différence peut être
+  arithmétiquement juste et sémantiquement fausse · **568-B** le piège écrit
+  avant la mesure se vérifie comme le reste · **568-C** le même motif deux fois
+  n'est pas une loi. Cycle : aucun fichier de production touché, SW
+  `td-shell-v187`, MD5 **8 / 8**, snapshot 22 fichiers ; **3 modifiés par la suite de tests** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, **2864 passed / 0 skipped**. Arrêtés
+  **194 (+1)**, **publiés puis corrigés 33 (+1)**.
 - **Lot 567 — livré** : **sixième chiffre lourd — 53 n'est PAS un cumul
   par page, la prédiction tient** — **mais c'est un cumul par RÈGLE : onze refus
   comptés deux fois, 42 distincts**. Choix (mm), avec prédiction écrite d'avance :
