@@ -2880,6 +2880,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 561 — livré** : **le plancher du 551 recalculé par vérification
+  et non par soustraction — 367 devient 380**. Choix (gg) : la dette créée par
+  le 559 et laissée intacte par le 560. Vérifié à la source : le 551 publie bien
+  388 (somme sur 141 points d'entrée) et le 552 bien « 367 est le plancher ».
+  **L'arrêt du lot** : le brief proposait de retirer 13 au lieu de 21, soit
+  375 — **le même geste avec un autre nombre**. Soustraire suppose que chaque
+  cas ambigu ait apporté exactement une unité au corpus ; vérification couple par
+  couple : **8 seulement sont réellement comptés dans les 388**, et les 8
+  viennent d'une réponse HTTP. **La fourchette se resserre de 21 points à 8 :
+  380 ≤ champs ≤ 388.** Publier 375 aurait été faux. Correction du plancher du
+  552 en ajout, sans réécrire le rapport. **Une seconde imprécision, dans le 551
+  lui-même** : sa ligne 121 dit « 388 champs JSON **distincts** », or 388 est la
+  somme **par point d'entrée** et les noms globalement distincts sont **257** —
+  le nombre reste, le mot « distincts » est retiré. Second contrôle : **0**
+  chaîne issue d'un appel direct dans les 388, **0** doublon — le banc du 552
+  mélangeait deux natures, **le corpus du 551 non**, ce qui confirme la mesure du
+  560 (le 551 marque par fonction). Cinq cas de réponse n'apportent aucune unité
+  (`'RISK-OFF'`, `'PCX'`, `'IBKR'`…) : **constaté, non expliqué**. Règles
+  **561-A** une borne se vérifie par appartenance, jamais par soustraction ·
+  **561-B** « distincts » et « cumulés » ne sont pas le même nombre · **561-C**
+  un corpus propre se constate, il ne se présume pas. Cycle : aucun fichier de
+  production touché, SW `td-shell-v187`, MD5 8 / 8 identiques, snapshot 22 fichiers ; 3 modifies par la suite de tests (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), restaures — ecart final AUCUN, aucun fichier apparu ni disparu,
+  suite **2864 passed / 0 skipped**. Arrêtés **187 (+1)**, publiés puis corrigés **30 (+1)**,
+  interprétations retirées **5 (+1)**.
 - **Lot 560 — livré** : **le marquage par fichier ne s'est pas
   propagé** — un seul banc sur sept était touché, et le mécanisme partagé sort
   à **353 sites d'appel, zéro mal attribué**. Choix (ff) : après le 559,
