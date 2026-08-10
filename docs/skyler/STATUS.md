@@ -2880,6 +2880,27 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 571 — livré** : **le canal que j'avais appelé « d'erreur » — 33
+  de ses 90 sites signalent un échec, 23 toasts sont des confirmations** — et
+  **le plancher du 570 était sous-compté : 90, pas 89**. Choix (qq), un lot qui
+  porte contre moi : j'avais nommé ce canal sur la foi de quatre toasts lus dans
+  des `catch`, puis inventorié 89 sites sous ce nom **sans lire l'argument de
+  ton**. **La calibration a échoué deux fois** : mon banc neuf perdait d'abord
+  une bannière écrite dans la branche de repli d'un ternaire, puis en trouvait
+  une que le 570 n'avait jamais vue — un ternaire au **milieu** d'une chaîne `+`,
+  lu dans `system_page.py:594`. **Le plancher monte à 90**, exactement dans le
+  sens annoncé. **Le ton, relevé** : `success` 24 · `error` 22 · `warn` 2 ·
+  `warning` 1 · `info` 1 ; 48 littéraux, 6 absents, 1 ternaire compté des deux
+  côtés, **zéro ton illisible**. **Le canal réellement d'erreur compte 33
+  sites** — 22 toasts + 10 bannières + 1 marqueur — contre **57 qui ne signalent
+  pas un échec**. Le nom était trop large d'un facteur trois : c'est un **canal
+  de notification**. Les trois appels sans ton (`emptyCard`, `setStatus`,
+  `setNet`) sont **relevés et non classés** — `setStatus` porte quatre états
+  nommés. Règles **571-A** un nom est une mesure qui s'ignore · **571-B** une
+  réimplémentation du même prédicat n'est pas le même prédicat · **571-C** un
+  plancher qui monte confirme qu'il était un plancher. Cycle : aucun fichier de
+  production touché, SW `td-shell-v187`, MD5 **8 / 8**, snapshot 22 fichiers ; **3 modifiés par la suite de tests** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**,
+  **2864 passed / 0 skipped**. Arrêtés **197 (+1)**, **publiés puis corrigés 34 (+1)**.
 - **Lot 570 — livré** : **le second canal d'erreur, inventorié — 89 sites
   au PLANCHER**, et **79 d'entre eux vivent hors de toute clause `catch`**. Choix
   (pp). Les noms du canal venant d'un échantillon de 41 clauses, **deux relevés
