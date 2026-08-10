@@ -2880,6 +2880,35 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 556 — livré** : **la portée ne réduit pas le contrat non gardé —
+  elle exhume un point d'entrée entier que l'espace de noms plat avait
+  affamé**. Choix (bb) : recompter les trois seaux du 553 avec la portée du
+  555, à prédicat identique — le banc reproduit d'abord exactement 17 / 19 / 20
+  avant de recompter. **L'arrêt du lot** : les trois seaux du 553 **ne
+  partitionnent pas** — une clé nommée par un test mais non lue par la page
+  n'entrait dans aucun d'eux. Cette quatrième cellule valait **déjà 5** ; le 553
+  a publié « 56 clés servies », **le vrai total est 61** (correction portée dans
+  le rapport 556, en ajout — le 553 n'est pas réécrit). **La mesure** : 9 → 10
+  points d'entrée · A 17 → 17 · B 19 → 22 · C 20 → 23 · D 5 → 8. **Le total A
+  inchangé est une coïncidence** : sur les 9 points d'entrée d'origine la portée
+  donne A 15 · B 19 · C 20 · D 7, et le 10ᵉ exhumé ajoute A 2 · B 3 · C 3 · D 1.
+  **Sur le périmètre d'origine, B et C ne bougent pas** — **zéro** des 20
+  candidates était un artefact de collision. **Ce que le plat cachait** : une
+  absorption totale — `/api/portfolio/context` 27 → 11, `/api/journal/postmortem`
+  27 → 11, `/api/system/automations` 8 → 1, pendant que **six routes affichaient
+  zéro clé lue** alors qu'elles en lisent 5, 6, 9, 1, 1 et 5. Une seule est aussi
+  servie parmi les 23 du 552 — `/api/skyler/calibration` — d'où le point d'entrée
+  supplémentaire, avec 3 clés d'un contrat non gardé jamais comptées. **Le 553 ne
+  disait pas qu'elle n'était pas lue : il ne la voyait pas.** Second contrôle : 0
+  point d'entrée vidé, **3 ombres** (`paint=(sum,reg,cmd)=>` redéclare les trois
+  noms — le témoin positif du lot tient par cette ombre), **8** appels
+  `VX.fetch.peek` dont l'enveloppe `{data, age, ts}` n'est pas la charge utile
+  (effet mesuré **nul**, donc pas un arrêt). Règles **556-A** une collision
+  affame autant qu'elle absorbe · **556-B** des seaux qui ne partitionnent pas
+  mentent sur leur total · **556-C** un total inchangé peut cacher deux
+  mouvements égaux. Cycle : aucun fichier de production touché, SW
+  `td-shell-v187`, MD5 8 / 8 identiques, snapshot 22 fichiers ; 3 modifies par la suite de tests (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), restaures — ecart final AUCUN, aucun fichier apparu ni disparu, suite **2864 passed / 0 skipped**. Arrêtés **180
+  (+1)**, publiés puis corrigés **26 (+1)**.
 - **Lot 555 — livré** : **les 7 routes sans filet tiennent leur
   contrat** — 12 clés lues en portée, **12 confirmées, zéro divergence**. Choix
   (aa) : le 554 avait nommé 7 routes que le produit appelle au chargement et
