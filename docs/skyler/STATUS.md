@@ -2880,6 +2880,47 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 519 — livré** : **les 7 vues sans test FONCTIONNENT toutes. Mais 3 vues
+  servies sur 35 ne sont liées depuis AUCUNE barre d'onglets — trois écrans
+  complets, câblés, au contenu ENTIÈREMENT DISTINCT, qu'on n'atteint qu'en tapant
+  l'URL. Dossier 519-A, rang 4.** Choix (b), suite directe du 518 : il avait
+  mesuré une absence de garde, pas un contenu — **répondre 200 n'est pas afficher
+  quelque chose**. **Premier résultat** : bloc propre extrait pour chaque vue,
+  conteneurs recensés, chargeurs vérifiés dans le JS servi → **7 examinées, 0 au
+  bloc vide, 0 sans conteneur, 0 ORPHELINE**. L'exposition du 518 est aujourd'hui
+  **théorique**. **Ma calibration de variété a ÉCHOUÉ** (aucune orpheline parmi
+  les sept) : la discrimination du crible reste **non démontrée sur ce lot**, et
+  je le publie (509-A). **Le second contrôle a corrigé un chiffre que j'allais
+  publier** : les **7 conteneurs « non visés »** sont **7 sur 7 des ENVELOPPES**
+  dont le jumeau `…-body` est visé — motif « carte + corps hydraté », code normal ;
+  mon crible comparait le mauvais niveau de l'arbre. **Orphelins réels : 0.
+  115 → 116.** **Le dossier** : « branchée » n'est pas « atteignable ». Sur les 35
+  vues servies, **32 sont liées** et **3 ne le sont depuis aucune barre** — les
+  trois `_LEGACY_VIEWS` d'`options_intel_page` (`overview`, `radar`, `scenarios`).
+  **Contrôle interne solide** : sur la même page, les six vues de `_VIEWS`
+  ressortent liées et les trois legacy non. **Et ce ne sont pas des doublons** :
+  Jaccard **0,00**, **zéro conteneur partagé** avec les vues visibles. Famille du
+  **512-A** transposée du niveau route au niveau **vue**, du côté **occasion
+  manquée** plutôt que déchet. **Ce que les deux lots disent ensemble** : **deux
+  des trois vues inatteignables sont parmi les sept sans test** — ce qui **réduit
+  la portée du 518-A à cinq vues**. Un lot qui rétrécit sa thèse de la veille en
+  vaut un qui en ouvre une (507-C). **Rang 4** : rien de faux n'est montré, c'est
+  **une surface de produit sans porte d'entrée** ; ce qui le distingue d'une
+  curiosité, c'est que ces vues sont **maintenues et servies à chaque requête**.
+  Correction pressentie : **décider entre les LIER et les retirer** — le contenu
+  étant unique, **les lier est au moins aussi défendable**. **Aucun GO, ne rien
+  supprimer.** **Ce que le dépôt fait bien** : les 7 vues fonctionnent ; le motif
+  enveloppe/corps est propre et systématique ; 32 vues sur 35 correctement liées ;
+  et les trois legacy sont **explicitement rangées** dans `_LEGACY_VIEWS` — le
+  dépôt ne les cache pas. Portée : **« câblée » n'est pas « peinte »** (chargeurs
+  non exécutés — dette neuve) ; le test « liée » cherche `?view=` littéral ;
+  mesuré en DÉMO. Aucun fichier de production touché. MD5 8/8 · snapshot 22
+  fichiers écart AUCUN · SW `td-shell-v187` · **2864 passed / 0 skipped**. Feuille
+  **37 dossiers · cinq rang 4**. Série **1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2, 0, 0, 0,
+  4, 4**. **Deux lots de suite sur l'axe du produit servi, deux dossiers : le
+  changement d'axe tient ses promesses — modestement, mais deux constats que
+  personne n'avait mesurés.**
+
 - **Lot 518 — livré** : **la dette la plus ancienne, enfin mesurée — ce ne sont
   pas « 29 vues sans empreinte » mais 27 VUES SERVIES SUR 35 dont aucun test ne
   regarde le contenu. Et mon premier banc disait le contraire. Dossier 518-A,
