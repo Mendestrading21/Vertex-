@@ -245,3 +245,24 @@ publié au 511                    103            41    39.8 %
 partout **supérieure** à celle qu'il a publiée. Le dossier n'était pas
 gonflé, il était prudent. **Seul son corpus n'est pas retrouvable.**
 
+
+---
+
+# Complément du lot 531 — un dossier NEUF : `531-A`, rang 3
+
+| dossier | lot | ce qu il dit | chiffre porteur et DEFINITION |
+|---|---|---|---|
+| **531-A** | 531 | Deux vues d Opportunites laissent un squelette de chargement **perpetuel** quand la requete echoue. | **2 vues sur 22 mesurees peignent 0 caractere en regime d echec** — definition : le chargeur est execute sous le harnais node v3, `VX.fetch` levant une erreur HTTP 500, et l on compte les caracteres de texte ecrits dans le DOM factice. `renderRadar` et `renderStocks` n ont **ni try ni catch** ; `op-body` est servi avec un `vx-skeleton`. |
+
+**La definition est ECRITE des la publication** — regle 529-B appliquee a
+chaud.
+
+## Ce qui borne ce dossier
+
+- il faut une **panne de la requete** pour l atteindre, et `VX.fetch`
+  **retente deux fois** avant de lever ;
+- en marche normale la vue peint **1 526 caracteres** ;
+- **aucun chiffre faux** n est affiche — ce qui l empeche d etre rang 2 ;
+- mais **un etat de chargement faux** est montre — ce qui l empeche d etre
+  rang 4.
+

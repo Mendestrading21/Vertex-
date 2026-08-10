@@ -2880,6 +2880,42 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 531 — livré** : **531-A, rang 3 — deux vues d'Opportunités
+  laissent un squelette de chargement PERPÉTUEL si la requête échoue.**
+  **Premier dossier depuis le 514**, et le premier visible depuis bien plus
+  longtemps. Choix (p), fermer la moitié restante du 530. La carte vue →
+  chargeurs n'est **pas uniforme** : chaînes `if(VIEW===…)`, table `RENDER`, et
+  pour `/options` un dispatch **dans une clôture** — **ses 9 vues ne sont pas
+  couvertes et je le dis**. Calibré à **cinq** étages, dont un **témoin de
+  peinture** (1 940 caractères). **Trois arrêts** : le harnais rendait **39
+  caractères** (extrait du mauvais fichier — les 24 vues ressortaient muettes,
+  témoin compris) ; mon témoin calibrait la **carte** et non la **peinture**,
+  donc rien n'arrêtait une exécution cassée ; et « deux vues ne peignent rien »
+  était **faux** — `PARAMS is not defined`, la limite exacte du résolveur nommée
+  au 524. **134 → 137.** **Résultat : 22 vues sur 22 peignent en régime
+  nominal.** Deux peignent **zéro** en régime d'échec :
+  `/opportunities?view=radar` (1 526 → 143 → **0**) et `?view=anomalies` (122 →
+  122 → **0**). Vérifié dans le code : **`renderRadar` et `renderStocks` n'ont
+  ni try ni catch**, `VX.fetch` lève après deux tentatives, la fonction
+  s'interrompt et **rien n'est écrit** — or `op-body` est servi avec un
+  `vx-skeleton`. **L'utilisateur voit une barre de chargement qui ne s'arrêtera
+  jamais**, alors que le reste du produit affiche « … indisponible : HTTP 500 ».
+  **Rang 3** : aucun chiffre faux (donc pas rang 2), mais un **état de
+  chargement faux** est montré (donc pas rang 4). Correction pressentie, **non
+  engagée** : le même `try/catch` que leurs deux voisines, à quelques lignes
+  dans le même fichier. Ce que le dépôt fait bien : **trois vues sur cinq
+  d'`/opportunities` ont déjà le bon motif** ; la dégradation est graduelle et
+  honnête là où elle est gérée ; deux vues sans chargeur sont entièrement
+  servies. Portée : 9 vues d'`/options` non mesurées, 2 bloquées par `PARAMS`,
+  régime d'échec = levée, charges fabriquées, aucun navigateur, aucun réseau.
+  Aucun code, aucun gardien, aucun test, aucun fichier de production touché.
+  MD5 8/8 · snapshot 22 fichiers écart AUCUN · SW `td-shell-v187` · 2864 passed
+  / 0 skipped. Série 1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2, 0, 0, 0, 4, 4, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 3. Trois règles neuves : **531-A un témoin doit porter
+  sur la dernière étape** · **531-B un outil qui en extrait un autre n'est pas
+  sa source** · **531-C une limite connue de l'instrument doit être recherchée
+  avant d'être réinterprétée**. Rapport :
+  `docs/refactor/validation/SKYLER-LOT-531.md`.
 - **Lot 530 — livré** : **les 35 vues servies tiennent — aucune n'est
   une coquille vide, 31 sur 35 annoncent leur chargement, et les 4 restantes
   n'ont aucun conteneur muet.** Choix (m), rester sur le produit. Le 523 avait
