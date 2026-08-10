@@ -2880,6 +2880,55 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 514 — livré** : **le schéma du 513-A a une COPIE, et elle est SERVIE —
+  sur la fiche d'un titre, en facteur positif d'un ACHAT FORT : « Parmi les
+  meilleurs de l'univers scanné (top 0 %) ». Dossier 514-A, RANG 2, premier
+  dossier VISIBLE depuis le 508.** Choix (c), règle 509-B (« chercher la copie »)
+  appliquée au dossier du 513. **L'instrument et sa première calibration
+  ÉCHOUÉE** : 1 140 arrondis dans le dépôt, donc crible **AST** à trois étages
+  (imbriqué / variable locale / CHAMP). Calibration obligatoire — le 513-A doit
+  être retrouvé : **premier jet NON**, parce que je définissais un « producteur
+  d'arrondi » comme une fonction dont TOUS les `return` sont arrondis, alors que
+  `_pct_rank` commence par `return None`, la garde d'absence honnête — **ma
+  définition excluait exactement les producteurs bien écrits**. Corrigée :
+  calibration 4/4. **Résultat** : 155 sites signalés sur 1 140 → **F1 « 100 - X »
+  : 4** (dont 2 le même site de `demo.py` compté deux fois, complément légitime),
+  F2 : **0**, F3 : 24, reste 127. **Deux vrais sites** : `context.py:98` (le
+  513-A) et **`evidence.py:151`**. **Piège d'homonyme, 29ᵉ récurrence, sur un nom
+  de MODULE** : j'ai d'abord cru la copie servie via `/api/evidence/<sym>` —
+  **faux**, cette route utilise `evidence_lab`, un autre module. La vraie chaîne :
+  `relative_analyst` ← `evidence.gather` ← `decision_stack.evaluate(context=…)` ←
+  **`/api/decision/<sym>`** ← page **`/analysis/<sym>`** (route citée, établie au
+  511). **Mesuré de bout en bout** sur une carte de 517 titres fabriquée en
+  mémoire : n=20 → « top 2 % » sensé · **n=100 → bascule** · **n=517 → « top
+  0 % »** ; décision complète **STRONG_BUY, grade A, `blocks_decision` False**, et
+  les `pros` contiennent la phrase — **ce n'est pas un état dégradé** ; la page
+  peint bien ces lignes sous « Facteurs positifs ». **Rang 2** : chiffre absurde
+  peint sur une page servie dans une ligne d'aide à la décision ; **pas rang 1**
+  car l'affirmation qualitative reste vraie et aucune décision ne bascule ; **pas
+  rang 3/4** car ce n'est pas latent. **Second contrôle** : mon crible est
+  **Python** et ne voit rien du JS — mesuré, 154 `Math.round(` et 213 `toFixed(`
+  dans les octets servis, **24 contextes adjacents à une arithmétique, tous
+  l'idiome de précision `Math.round(x*p)/p`, presque tous vendor : aucun n'est le
+  schéma destructeur**. Angle mort mesuré et vide, mais **253 `//` et 82 `%`
+  jamais criblés** — le « 4 en F1 » est un compte PYTHON, pas du dépôt (510-B).
+  **Le crible a aussi retrouvé le 507-A tout seul** (conversions IV) : confirmation
+  faible mais réelle, non recomptée. **Deux arrêts avant publication** : sans la
+  calibration à réponse connue je publiais « le 513-A est isolé » (faux) ; et
+  j'allais donner une fausse raison au caractère servi de la copie. Correction
+  pressentie : la même qu'au 513 — **deux sites à traiter ensemble, pas un**.
+  **Aucun GO, rien supprimé.** Portée : aucun scan de production lancé ; la
+  condition `k ≤ n/100` reste non vérifiée sur données réelles ; en DÉMO la phrase
+  est correcte, **le défaut est invisible dans le seul environnement exécutable** ;
+  `_standing`, les percentiles bruts et « Leader de son secteur » restent corrects
+  à toutes les tailles (509-C). Aucun fichier de production touché. MD5 8/8 ·
+  snapshot 22 fichiers écart AUCUN · SW `td-shell-v187` · **2864 passed /
+  0 skipped**. Arrêtés avant publication **105 → 107**. Feuille **35 dossiers ·
+  douze rang 2**. Série **1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2** — **la veine repart** :
+  trois lots latents m'avaient fait écrire que la chasse ne rendait plus rien,
+  c'était vrai de l'instrument, pas du dépôt. **Le 513-A était la moitié du
+  dossier.**
+
 - **Lot 513 — livré** : **la règle 507-A retournée contre mon propre dossier
   d'hier — 512-A survit (phrase non vide 100 % du temps), mais à l'échelle de
   production elle annonce « Top 0 % de l'univers » au meilleur titre du scan.
