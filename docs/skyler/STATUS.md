@@ -2880,6 +2880,29 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 535 — livré** : **aucune barre de chargement éternelle — les 63
+  conteneurs qui portent un `vx-skeleton` ont tous du code qui les remplit.**
+  Choix (x) : se servir de l'analyseur du 534 sur une question que lui seul
+  tranche. Le 530 avait compté 31 vues sur 35 portant un squelette ; personne
+  n'avait vérifié qu'un code existe pour les remplir. Un squelette orphelin
+  tournerait **en marche normale**, sans panne. **Deux vrais analyseurs** :
+  acorn pour le JS, `html.parser` pour le HTML — le conteneur d'un squelette
+  est le plus proche ancêtre portant un `id`. 43 URL servies (8 pages + 35
+  vues, slugs lus dans les registres). **Premier arrêt : `$` n'est pas
+  toujours le `$` du produit** — `/static/chart.umd.min.js` déclare
+  `function $(t){return t*(C/180)}`, ce qui gonflait le compte des sélecteurs
+  construits de 132 à 220 ; un analyseur n'en protège pas, il a fallu résoudre
+  `$` par programme. **Second arrêt : la restriction nommée d'avance a
+  disculpé mes deux seuls coupables** — `vx-mk-breadth-gauge` et
+  `vx-sys-gauge` sont **confiés** à `VXCharts.gauge('id', …)`, qui les résout
+  lui-même ; le dossier était là et la règle 481 l'a arrêté. **Mesure : 63
+  conteneurs · 61 visés directement et tous ÉCRITS · 2 confiés · 0
+  introuvable.** Règles **535-A** un identifiant peut être confié, pas visé ·
+  **535-B** `$` n'est pas toujours le `$` du produit · **535-C** le HTML aussi
+  mérite un analyseur. Aucun fichier de production touché · SW `td-shell-v187`
+  · MD5 **8/8** · snapshot **écart AUCUN** · **2864 passed / 0 skipped**.
+  Arrêtés **148 (+2)** · publiés puis corrigés **22**.
+
 - **Lot 534 — livré** : **un vrai analyseur JavaScript était déjà dans la
   machine — acorn 8.15.0, EMBARQUÉ dans Node 22, rien installé.** Choix (v) :
   neuf arrêts en trois lots sur la même famille (collisions de noms, cribles
