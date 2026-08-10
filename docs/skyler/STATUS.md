@@ -2880,6 +2880,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 536 — livré** : **la réserve du 535 est fermée — 96 des 132 sélecteurs
+  construits sont suivis jusqu'à leurs appelants, et les 63 conteneurs sont
+  couverts SANS réserve.** Choix (b) : la dette la plus fraîche. Le lot suit le
+  **paramètre** : si `f(host)` écrit dans `$(host)`, tout appel `f('un-id', …)`
+  remplit `un-id`. **Le témoin imposé a échoué au premier essai et il avait
+  raison** : `C.gauge` enveloppe son accès dans un ternaire
+  (`const el = typeof host === 'string' ? document.getElementById(host) :
+  host;`) et mon détecteur exigeait un parent direct ; corrigé en remontant les
+  nœuds neutres. **Résolution par CHEMIN** : `C.gauge` et `VXCharts.gauge` sont
+  la même fonction parce que `const C = window.VXCharts` — correspondre sur le
+  seul nom `gauge` aurait été la 521-B. **Mesure : 61 visés directement · 2
+  atteints par paramètre · 0 orphelin.** Les deux « confiés » du 535 sont
+  désormais **prouvés**. Feuille : 132 accès non littéraux = 96 suivis + 36 non
+  suivis, en cinq formes nommées ; 279 `querySelector` = 255 littéraux (dont 0
+  de forme `#id`) + 24 construits. **Le vrai résultat est logique : la réserve
+  du 535 était à sens unique** — ce que l'instrument ne voyait pas ne pouvait
+  qu'ajouter un écrivain, jamais en retirer ; la conclusion « zéro orphelin »
+  était donc déjà robuste, et c'est maintenant démontré. Règles **536-A** une
+  réserve peut être à sens unique · **536-B** un nœud neutre coupe une liaison ·
+  **536-C** résoudre une méthode par son chemin, pas par son nom. Aucun fichier
+  de production touché · SW `td-shell-v187` · MD5 **8/8** · snapshot **écart
+  AUCUN** · **2864 passed / 0 skipped**. Arrêtés **149 (+1)** · publiés puis
+  corrigés **22**.
+
 - **Lot 535 — livré** : **aucune barre de chargement éternelle — les 63
   conteneurs qui portent un `vx-skeleton` ont tous du code qui les remplit.**
   Choix (x) : se servir de l'analyseur du 534 sur une question que lui seul
