@@ -2880,6 +2880,26 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 542 — livré** : **le pendant serveur du 541 — 53 refus JSON, 53
+  expliqués, zéro nu**, sous une définition étroite comme sous une définition
+  large, donc ce n'est pas une estimation. Leçon du 541 appliquée : le
+  gestionnaire réel a été **lu avant** d'écrire l'instrument — le serveur
+  répond 200 et dit pourquoi. **Trois arrêts** : ma liste de noms de clé avait
+  oublié `err` et `note`, ce qui transformait les dix refus de `desk.py` en
+  refus muets — **la faute 521-B, produisant cette fois une accusation** ; la
+  correction a sur-corrigé (`final_decision`, `label`, `login`), d'où la
+  publication des **deux bornes** ; et j'allais croiser `.ok`, homonyme de la
+  propriété standard d'une réponse `fetch`. **Vocabulaire relevé et non
+  deviné : `reason`, `error`, `err`, `note` — quatre noms pour la même idée**,
+  seule irrégularité mesurée. Les 21 routes sûres répondent 200 en DÉMO : c'est
+  le contrat **nominal** qui est mesuré, le contrat d'échec n'étant lisible que
+  dans le code. Le client lit `.reason` 33 fois : les deux moitiés se
+  répondent. Règles **542-A** un synonyme manquant accuse à tort · **542-B**
+  quand une définition est discutable, publier les deux bornes · **542-C** ne
+  pas croiser des homonymes. Aucun fichier de production touché · SW
+  `td-shell-v187` · MD5 **8/8** · snapshot **écart AUCUN** · **2864 passed / 0
+  skipped**. Arrêtés **158 (+3)** · publiés puis corrigés **22**.
+
 - **Lot 541 — livré** : **ce que l'utilisateur lit quand ça casse — 103 états
   explicites, dont 28 erreurs ; huit disent le POURQUOI, quinze ne disent que
   le QUOI.** Choix (i) : appliquer la leçon du 540, compter d'abord ce qui
