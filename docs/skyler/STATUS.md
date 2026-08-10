@@ -2880,6 +2880,42 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 502 — livré** : **la dette du coût de démarrage payée — les 4 369 lignes
+  mortes coûtent NEUF MILLISECONDES et 1,49 Mo. Le devis de purge gagne son
+  dernier chiffre, et ce chiffre lui RETIRE un argument.**
+- **Choix (a)**, sans hésiter : dette nommée au 498, non payée au 499, 500, 501.
+  **Trois reports, c'est le seuil où le 498 avait décidé d'arrêter de reporter.**
+  (b) l'espion au 3ᵉ niveau et (c) les huit rangs relatifs **restent nommées**.
+  **Rien supprimé.**
+- **La réponse** : compilation **3,8 – 4,3 ms** · allocation à l'exécution
+  **0,00 ms** · injections sur 1,43 Mo **4,50 ms** (borne inférieure) → **total
+  ≈ 8 – 9 ms**, **1,49 Mo résident**, **0,7 % de l'exec de `terminal.py`**.
+  **La performance n'est pas une raison de purger.**
+- **La compilation est payée à CHAQUE démarrage** : `CLAUDE.md` documente
+  `python terminal.py`, et le module **principal** n'est jamais mis en cache
+  bytecode — **vérifié par exécution** (2 lancements comme `__main__` → aucun
+  `__pycache__` ; 1 import → un `.pyc`). Deux mesures indépendantes concordent
+  (écart 4,3 ms · sous-ensemble seul 3,77 ms), l'écart étant **significatif mais
+  du même ordre que le bruit** (3,3 ms).
+- **Le zéro de l'allocation a été VÉRIFIÉ, pas publié tel quel** (leçon 501) :
+  témoin — copier 650 000 o prend 0,3 µs, donc le chronomètre voit la
+  microseconde ; les littéraux sont des **constantes du code compilé**. **Le zéro
+  est physique. 79 → 80.**
+- **La tentative ratée a rapporté plus que la mesure réussie** : exécuter
+  `terminal.py` neutralisé en mémoire **échoue** sur `terminal.py:5884` —
+  le fichier **s'auto-vérifie sur le contenu de `PAGE_ENTREPRISES`** dont il
+  extrait le Morning Opportunity Brief. **Une purge ferait échouer le module au
+  démarrage tant que cette assertion n'est pas traitée** : ligne ajoutée au devis,
+  que le 498 n'avait pas vue.
+- **Second contrôle** : le coût **par requête est nul et c'est structurel** ; le
+  **démarrage de processus complet** vaut **1,44 – 2,20 s**, donc la part morte y
+  tombe à **0,4 – 0,6 %** — **le 0,7 % est la borne HAUTE** ; savoir si 1,49 Mo
+  comptent sur la machine cible est **un arbitrage humain**, pas une mesure.
+- Feuille **inchangée : 26 dossiers**.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  `persist` redirigé **et vérifié dans chaque sous-processus** · runtime
+  **22 fichiers, écart AUCUN** · suite **2864 passed / 0 skipped**.
+
 - **Lot 501 — livré** : **l'espion d'exécution étendu aux HUIT sous-objets du
   détail — ZÉRO clé absente. Le bornage du 499 tient un niveau plus bas ; les deux
   « manques » apparents sont, l'un mon propre banc, l'autre un garde qui
