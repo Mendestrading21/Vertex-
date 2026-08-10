@@ -2880,6 +2880,36 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 533 — livré** : **le crible élargi à cinq helpers ajoute 27
+  appels et 15 fonctions non protégées — et ZÉRO nouveau squelette perpétuel.**
+  Choix (t) : fermer les deux bornes du 532. Helpers trouvés **par lecture** :
+  `board`, `get`, `getScan`, `rawFetch`, `VX.fetch`. **Quatre arrêts** : mon
+  extracteur ne gardait que la **première** définition par nom (homonyme
+  **dans** une page, le témoin positif échouait) · « helper » était trop large
+  et ramassait `reportError` qui poste un log (**213 appels dont 101 nus**) ·
+  **`\bget\s*\(` attrape tous les `.get(`** — **la faute 521-B refaite deux
+  lots après l'avoir écrite en règle** (**195 appels dont 85 nus**) · quatre
+  chargeurs d'`/options` « muets » sont des **artefacts** (mauvais `get`
+  fourni par mon extracteur). **139 → 143.** **Mesure : 102 fonctions, 120
+  appels, 28 non protégés sur 22 fonctions** (532 : 76 / 93 / 12 / 7). **Et le
+  résultat qui compte : toujours 6 squelettes perpétuels, ZÉRO nouveau** — les
+  quinze fonctions supplémentaires écrivent dans des conteneurs **sans
+  squelette**. **531-A garde son ampleur de quatre chargeurs ; l'élargissement
+  ne l'aggrave pas.** **`/options` mesurée pour la première fois**, preuve de
+  sûreté réseau montrée avant exécution : `loadScenarios` 18 car.,
+  `loadStructure` 7, `loadPositions` 131, `renderVolCharts` 123, `loadLeaps` un
+  conteneur sans texte (**candidat nommé, non promu**). Aucune URL envoyée. Ce
+  que le dépôt fait bien : le défaut reste **circonscrit à une page** ; cinq
+  chargeurs d'`/options` sur neuf peignent sur panne ; **cinq helpers seulement
+  pour 120 appels**, donc une couche d'accès concentrée et corrigible en peu
+  d'endroits. Portée : 4 chargeurs non mesurés, `loadLeaps` non tranché, crible
+  limité aux helpers nommés, **aucune correction engagée**. Aucun code, aucun
+  gardien, aucun test, aucun fichier de production touché. MD5 8/8 · snapshot 22
+  fichiers écart AUCUN · SW `td-shell-v187` · 2864 passed / 0 skipped. Série …,
+  3, 0, 0. Trois règles neuves : **533-A un helper de récupération est celui qui
+  rend la donnée** · **533-B `\b` ne protège pas d'un appel pointé** · **533-C
+  corriger un homonyme à un endroit ne le corrige pas partout**. Rapport :
+  `docs/refactor/validation/SKYLER-LOT-533.md`.
 - **Lot 532 — livré** : **531-A double de taille — quatre chargeurs
   d'Opportunités sur cinq laissent un squelette perpétuel, pas deux — et le
   crible statique désignait six coupables dont l'exécution en disculpe deux.**
