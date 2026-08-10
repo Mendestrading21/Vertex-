@@ -2880,6 +2880,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 553 — livré** : **le contrat de la page — 19 clés que le produit
+  LIT et qu'aucun test ne nomme**, dont `vix`, `breadth`, `regime` et
+  `confidence`. Choix (y) : le 552 avait mesuré 128 clés servies non nommées ;
+  restait la seule question qui compte pour l'utilisateur — le JavaScript du
+  produit les lit-il ? Corpus : le JS servi des 8 pages, **41 programmes,
+  798 883 octets, zéro erreur d'analyse, 36 routes** atteintes par un
+  `VX.fetch` ; **9 points d'entrée** à la fois servis et lus, **56 clés**.
+  Trois seaux : **17 lues et nommées**, **19 lues non nommées — contrat non
+  gardé**, **20 candidates** (le mot « morte » n'est pas employé). Les 19
+  comprennent **sept clés du climat de marché** (`vix`, `vix_band`, `vix_chg`,
+  `breadth`, `regime`, `roro`, `roro_gap`) et **trois du moteur de régimes** —
+  exactement ce que `briefing.py` verse dans l'objet Regime Aura : **un
+  renommage serveur passerait la suite au vert et viderait le haut de la page
+  d'accueil**. Constat **non arbitré**, rien corrigé. Un défaut d'instrument a
+  été trouvé et corrigé — les `VX.fetch` d'un `Promise.all` n'étaient pas
+  suivis — **sans effet sur les trois seaux** ; il n'est donc **pas compté
+  comme un arrêt**. Second contrôle : **0** accès construit sur une valeur de
+  route, 9 valeurs non suivies, 35 accès imbriqués ; ce zéro ne contredit pas
+  les 132 accès non littéraux du 536, qui portaient sur des identifiants du
+  DOM. **Premier lot sans arrêt depuis le 540.** Règles **553-A** un contrat
+  non gardé est un fait mesurable · **553-B** un défaut corrigé sans effet
+  n'est pas un arrêt · **553-C** un zéro se lit dans son prédicat. Cycle :
+  aucun fichier de production touché, SW `td-shell-v187`, **MD5 **8/8****,
+  snapshot 22 fichiers ; **4 modifiés pendant le lot** (`ai_enrichment.json`, `daily_prev.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, aucun fichier apparu ni disparu, **2864 passed / 0 skipped**, lancée **après** les documents. Arrêtés **174 (+0)**.
 - **Lot 552 — livré** : **le contrat servi contre le contrat testé — 171
   clés servies, 43 nommées et servies, 128 servies sans être nommées à ce
   niveau.** Choix (x) : les lots 548 à 551 avaient mesuré ce que la suite
