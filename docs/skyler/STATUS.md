@@ -2880,6 +2880,52 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 524 — livré** : **la borne du 523 est levée — 62 % → 81 % des
+  chargeurs peignent — et les dix-sept libérés n'apportent AUCUN défaut.**
+  Choix (b) : le 523 mesurait 55 chargeurs sur 89, 34 muets, cause dominante
+  **mienne** (le résolveur reprenait les fonctions voisines mais pas les
+  déclarations de module). **Extracteur calibré avant tout usage, quatre
+  étages** : `SCAN_ACTION` rendue **caractère pour caractère** (retrouver le nom
+  ne suffit pas, c'est la valeur qui compte — 516-A) · une constante fabriquée
+  ne rend rien · 5/5 déclarations sont du JS valide chargé par node · variété
+  des formes (chaîne, tableau, objet). **Gain mesuré à charge identique : 55/89
+  → 72/89, +17, aucun perdu** ; 67 reprises sur 10 noms distincts ; texte peint
+  7 553 → 11 410 caractères (× 1,5). **Les dix-sept apportent 0 défaut et 1
+  seule occasion F1.** Accord numérique : **six occasions au total, six accords
+  justes** — une de plus qu'au 523 ; l'élargissement n'a presque pas épaissi la
+  preuve, **le français à compteur est rare dans ce produit** et la preuve reste
+  mince. Fuite technique : **les trois mêmes fonctions qu'au 523, déjà réfutées
+  comme artefacts**, reproduites à l'identique. **L'arrêt du lot** : en
+  recopiant la charge du 523 j'avais **perdu l'alias `entries`** ; sans lui
+  `loadTrack` cessait de peindre `[object Object]` et j'aurais annoncé que le
+  résolveur avait fait disparaître un défaut — **deux choses changeaient à la
+  fois**. Charge réalignée, balayage refait. **125 → 126.** **Second contrôle
+  (famille 521-B)** : 2 977 déclarations en début de ligne, **729 ambiguës**
+  (`el` ×25, `t` ×14…), mais **sur les 10 noms réellement repris, zéro
+  ambigu** — le risque est réel et chiffré, il ne s'est pas réalisé ; et le
+  résolveur n'est piloté par aucune liste de noms. Précision honnête : mon motif
+  accepte l'indentation, les 2 977 ne sont donc pas toutes « de premier
+  niveau ». **Troisième contrôle : le résidu a changé de propriétaire** — sur
+  les 34 muets du 523, **17 parlent, 2 relèvent encore du résolveur** (`PARAMS`,
+  déclarée en seconde instruction d'une ligne) **et 15 relèvent de ma charge ou
+  de mes stubs**. **Les quatre chargeurs silencieux, vérifiés durement, ne
+  donnent aucun dossier** : `loadBreadthInternals` **masque** son conteneur
+  (honnête) ; les trois autres font un **retour sec**, mais
+  `/api/opportunities/funnel` rend 7 étages et une clé
+  `zero_actionable_is_valid` — le cas zéro est **explicitement traité** — et
+  `vx-calendar` est servi **vide sans squelette**, donc pas de barre de
+  chargement éternelle. Candidat nommé, non promu. Ce que le dépôt fait bien :
+  masquer plutôt que laisser un rectangle vide, et traiter « zéro opportunité »
+  comme un cas pensé. Portée : 19 % des chargeurs restent muets ; six occasions
+  F1 seulement ; deux familles seulement ; charges fabriquées. Aucun code,
+  aucun gardien, aucun test, aucun fichier de production touché ; rien supprimé.
+  MD5 8/8 · snapshot 22 fichiers écart AUCUN · SW `td-shell-v187` · 2864 passed
+  / 0 skipped. Feuille inchangée : 37 dossiers. Série 1, 2, 2, 3, 3, 0, 0, 4, 4,
+  4, 2, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0. Quatre règles neuves : **524-A une seule
+  chose doit changer entre deux passages** · **524-B un risque quantifié n'est
+  pas un risque réalisé** · **524-C mesurer le résidu par cause, pas par
+  nombre** · **524-D un `id` du HTML servi peut vivre dans un gabarit JS**.
+  Rapport : `docs/refactor/validation/SKYLER-LOT-524.md`.
 - **Lot 523 — livré** : **le français que le produit PEINT, mesuré par
   EXÉCUTION et non par motif.** Choix (b), dette du 516 ouverte depuis sept lots
   — « le français construit en JavaScript », 336 occurrences mal discriminées.
