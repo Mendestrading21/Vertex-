@@ -2798,6 +2798,61 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 495 — livré** : **la veine des barèmes close — les « cinq » n'étaient
+  que DEUX ; et en la fermant, la mesure trouve un DOSSIER RANG 1 : le moteur
+  exécutif décide en aveugle sur QUATRE de ses entrées, dont le score
+  fondamental.** **Premier dossier neuf depuis cinq lots**, et ce n'était pas la
+  cible.
+- **Choix (a)** : dette de MESURE nommée depuis le 491. L'audit `PAGE_*` reste
+  une dette nommée.
+- **La liste était sale, pour la deuxième fois** (après le 491) : `best.score` et
+  `r.score` sont **le MÊME producteur** (`row.score`, deux sites de rendu) ;
+  `rating_mean/5` est le **consensus analystes yfinance**, échelle EXTERNE ;
+  `count / 10 max` est un **compte contre un plafond de portefeuille**.
+  **Cinq entrées → deux barèmes réels.**
+- **Le barème mesuré** : 691 200 combinaisons × 3 jeux de fondamentaux,
+  calibration écrite dans le banc (`technical_score` tout allumé = 100, tout
+  éteint = 0). **`risk_score` plafonne à 72** sur une échelle documentée
+  « 0-100 » ; `compose()['global']` plafonne à **95**, et la borne analytique
+  coïncide exactement — **cause unique : `risk ≤ 72`**.
+- **Mais le chiffre AFFICHÉ n'est pas plafonné** : `analysis.py:228` ajoute
+  `struct_adj ∈ [−12,+10]`, donc 100 est atteint — **jamais par la composition,
+  seulement par le bonus**. → **observation, pas dossier** (règle 492). Garde
+  mort de plus : `min(8, …)` dans `score_adjust` ne mord jamais (max +7).
+- **DOSSIER 495-A, RANG 1** : `terminal.py:440` pose `st_fund` **sur la ROW** ;
+  le DÉTAIL ne le porte pas (il porte `sub.fundamental`). Quatre lecteurs le
+  cherchent pourtant sur un DÉTAIL (`strategy_os_api.py:56`,
+  `recalculator.py:99`, `thesis_health.py:37`, `analysis_page.py:432`).
+  **Vérifié à l'exécution** : `detail.st_fund = None` quand
+  `detail.sub.fundamental = 83` **dans le même objet** ; `st_timing` écrit
+  **nulle part** ; `earnings_dte` jamais posé sur le détail ; `fund_score`
+  inexistant. **Quatre entrées du paquet exécutif nulles en permanence.**
+- **Mesuré par A/B sur les 20 titres DEMO** : en remplissant **la seule clé
+  `st_fund`**, « fundamental » quitte `unknowns` **20/20** et **la décision
+  affichée en tête d'`/analysis` change 4 fois sur 20** (ACN, ALL, AOS, LNT —
+  toutes **REFUSER → ATTENDRE**). **Aucune atténuation** : le champ `unknowns`
+  du paquet exécutif **n'est affiché nulle part**.
+- **Ce que je ne dis pas** : les 20 % viennent du scan DEMO — **taux de
+  démonstration, pas fréquence de production**. Le mécanisme, lui, est certain
+  (AST + exécution), et la direction est **restrictive**.
+- **Second contrôle** : généralisation à toutes les lectures `detail.get('X')`,
+  calibrée (positif `st_fund`, négatif `score`). 33 lectures sortent — **je n'en
+  publie pas 33** : dans `decision_memory`/`skyler_journal`/`skyler_sweep` le `d`
+  est un dict de décision. **Tri à la lecture → quatre certaines.** Le contrôle a
+  **élargi le défaut de un à quatre** et **failli faire publier 29 faux**.
+- **Trois faux arrêtés** : les 33 lectures brutes ; **`dec.unknowns` qui vient du
+  `decision_stack`, pas du moteur exécutif — 23ᵉ homonyme**, le piège même du
+  491 ; et l'ouverture du navigateur sur `/analysis`, annulée parce que la page
+  fetche `/api/ticker/<sym>` → `options_pack` → `yf.Ticker` **sans garde DEMO**.
+  **65 → 68.**
+- **Le brief était incomplet, 3ᵉ fois** (490, 492, 495) : sa liste réseau **omet
+  `/api/ticker/<sym>`**.
+- **Dette nommée** : `edge /100` **non mesuré** — la veine est close **à un
+  barème près**.
+- Feuille : **24 → 25 dossiers · quinze rang 1** · huit rang 2 · trois rang 3.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  runtime **22 fichiers, écart AUCUN** · suite **2864 passed / 0 skipped**.
+
 - **Lot 494 — livré** : **la dette du 493 soldée aux DEUX bouts — le second
   score /40 monte à 40/40 et atteint S+, mais il n'est affiché NULLE PART ;
   le /40 qu'on VOIT plafonne à 29 et n'atteint jamais S ni S+.**
