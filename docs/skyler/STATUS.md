@@ -2880,6 +2880,48 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 517 — livré** : **l'instrument du 516 est RÉPARÉ — il retrouve enfin son
+  propre cas de référence. La zone aveugle contenait EXACTEMENT UN cas, et c'est
+  le 513-A déjà connu. Le « 8 » du 516 devient 9. Aucun dossier neuf (rang 0).**
+  Choix (a), la dette la plus embarrassante du 516 : mon recensement ratait **mon
+  propre dossier 513-A**, `context._headline` s'assemblant morceau par morceau
+  (plus long fragment « de l'univers », 13 caractères, sous le seuil). Règle
+  516-A : le 516 a borné, **le 517 répare**. **Instrument neuf — l'unité n'est
+  plus l'expression mais la FONCTION** : repérer les assembleuses
+  (`x.append(…)` / `x += …` puis `join`), agréger tous leurs fragments et tester
+  la prose sur l'**agrégat**. **La réparation a échoué au premier jet** :
+  `parts.append(A if cond else B)` — l'argument est un **ternaire (`ast.IfExp`)
+  qui contient** le `%`, et mon extracteur n'y descendait pas. Corrigé par
+  récursion dans `IfExp`/`BoolOp`/arguments d'appel. **Sans la calibration à
+  réponse connue je publiais « la famille assemblée ne contient rien » avec un
+  extracteur cassé** — deuxième fois en quatre lots qu'un crible rate le défaut
+  dont il est né. **112 → 113.** **Résultat, modeste et dit comme tel** : 38
+  fonctions assembleuses, **11 atteignent l'écran**, **1 seule porte un nombre
+  construit — le 513-A**. Total corrigé : **8 + 1 = 9**. Le « 8 » était une borne
+  basse **d'exactement un**, et ce un n'est pas une découverte. **Second contrôle**
+  : l'assemblage **entre fonctions** (7 jointures) et surtout les **tables de
+  libellés au niveau module** — ~30 tables, **380 libellés français** hors de
+  toute fonction, **mais un seul des 380 porte un gabarit, et c'est du balisage**.
+  **Point décisif** : un libellé sans gabarit ne peut pas porter un nombre
+  construit — **l'angle mort est réel pour le comptage des phrases et VIDE pour
+  celui qui m'intéresse. Le 9 tient.** Compter 380 échappées et conclure « mon
+  chiffre est très sous-estimé » aurait été faux d'un **raisonnement**, pas d'une
+  mesure. **Ce que le dépôt fait bien** : les 380 libellés en tables sont un bon
+  schéma (texte utilisateur regroupé, séparé de la logique), et c'est parce qu'il
+  est bien rangé qu'il est statique donc sans risque ; sur les 11 phrases
+  assemblées atteintes, **dix ne portent aucun nombre**. Portée : aucun dossier
+  neuf ; « atteint » = octets servis **ou** charge d'une route appelée, **peint
+  reste distinct** ; crible Python, le JS non traité ; scan DÉMO, **20 titres
+  interrogés**. Aucun fichier de production touché. MD5 8/8 · snapshot 22 fichiers
+  écart AUCUN · SW `td-shell-v187` · **2864 passed / 0 skipped**. Feuille
+  **inchangée : 35 dossiers**. Série **1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2, 0, 0, 0**.
+  **Trois lots consécutifs sans dossier neuf, et je ne l'habille pas** : 515, 516
+  et 517 ont tous servi à **réparer ou borner mon propre appareil de mesure**.
+  L'hygiène était nécessaire (quinze chiffres publiés puis corrigés), mais trois
+  lots de suite à mesurer mes instruments plutôt que le produit méritent d'être
+  dits sans détour : **la veine d'audit sur cet axe est épuisée**. Je ne décide
+  pas seule de changer de registre — je constate.
+
 - **Lot 516 — livré** : **recensement — 457 phrases calculées, 75 atteignent
   l'écran (16 %), 8 portent un nombre construit. Et une correction du 514 : la
   liste est COUPÉE À CINQ, si bien que la phrase « top X % » que j'avais montrée
