@@ -2880,6 +2880,35 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 566 — livré** : **cinquième chiffre lourd — 156 se reproduit,
+  c'est un cumul par page, les variables distinctes sont 79** — et **le
+  « vingt-six fois plus » du 540 divise deux objets différents**. Choix (ll) :
+  suite directe du 565, même corpus. **Périmètre vérifié à la réception** : 113
+  parties des deux côtés, **zéro écart** — le 540 n'a pas hérité d'un périmètre
+  amputé. Le JSON du 540 ne garde le point fixe qu'en **scalaire** : rien n'était
+  vérifiable sans rejouer, ce qu'un banc neuf fait avec le même prédicat, sans
+  toucher la preuve. Reproduction exacte, sous-seaux compris (50 + 37 + 10 + 5 +
+  4 = 106). **Premier constat** : 156 marquages pour **79 signatures
+  distinctes** — onze signatures chargées par les 8 pages valent 77 unités en
+  double. **L'arrêt du lot** : le « 6 » du dénominateur n'a **jamais** été un
+  compte de variables, c'était le nombre d'**atténuations** à racine serveur du
+  539 ; la règle de base seule marque en réalité **125 marquages / 55 variables
+  distinctes**. Rapports honnêtes : **1,25** (cumul/cumul) et **1,44**
+  (distinct/distinct) — **le point fixe a multiplié par ~1,3, pas par 26**. La
+  mesure « 0 atténuation reclassée » et la règle 540-A **tiennent** ; c'est la
+  preuve qui les accompagnait qui était surdimensionnée d'un facteur vingt.
+  **Second arrêt** : mon propre banc affichait déjà « 13,2 » — le même défaut
+  réparé à moitié ; publier cela aurait remplacé un faux par un autre. **Troisième
+  constat** : les 6 atténuations serveur reposent sur **5** variables (deux
+  `/journal` partagent `tr`) — pas une correction du 565, qui comptait des
+  atténuations. Second contrôle : sur 79 variables serveur, **5** sont racine d'un
+  `|| 0` et **74** d'aucun — le coût, enfin chiffré, de la sur-approximation à
+  sens unique. Règles **566-A** un ratio se vérifie par ses deux termes ·
+  **566-B** un chiffre sauvegardé en scalaire est un souvenir · **566-C** corriger
+  un chiffre faux peut en produire un autre. Cycle : aucun fichier de production
+  touché, SW `td-shell-v187`, MD5 **8 / 8**, snapshot 22 fichiers ; **3 modifiés par la suite de tests** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, **2864 passed / 0 skipped**.
+  Arrêtés **192 (+1)**, **publiés puis corrigés 31 (+1)**. **Deux chiffres lourds
+  restent.**
 - **Lot 565 — livré** : **quatrième chiffre lourd — 112 se reproduit à
   l'identique, c'est un cumul par page, les atténuations distinctes sont 84** —
   et **les 28 unités en double sont TOUTES dans le seau que personne n'a jamais
