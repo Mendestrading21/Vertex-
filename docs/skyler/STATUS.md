@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 552 — livré** : **le contrat servi contre le contrat testé — 171
+  clés servies, 43 nommées et servies, 128 servies sans être nommées à ce
+  niveau.** Choix (x) : les lots 548 à 551 avaient mesuré ce que la suite
+  vérifie ; personne n'avait vérifié l'inverse. Périmètre strict : **23 routes
+  JSON déjà sûres**, appelées en DÉMO, aucune route neuve. **L'arrêt du lot :
+  le croisement a désigné le défaut tout seul.** Parmi les « champs nommés »
+  absents du premier niveau servi figuraient `<`, `Fed`, `NVDA`, `fr` ;
+  lecture : `assert 'Fed' in j['items'][0]['title']` — une **sous-chaîne dans
+  une feuille de chaîne JSON**, pas un nom de champ. Le 551 avait corrigé
+  `'x' in <corps texte>` mais pas sa version un niveau plus bas — **551-C
+  appliqué à moi-même**. Mesuré : **35** tests de membre sur la racine (vrais
+  champs) contre **21** sur un accès imbriqué (**ambigus**). **Les 388 champs
+  du 551 deviennent une borne haute, 367 le plancher.** Les 23 routes
+  répondent toutes 200 et rendent toutes un objet, pour **171 clés de premier
+  niveau** — et **`/api/weekly` rend un objet vide en DÉMO** (constat non
+  arbitré). Croisement : 76 champs nommés, **43 nommés et servis**, **128
+  servis non nommés**, **33 nommés absents du premier niveau** — expliqués par
+  la profondeur (les clés d'une position) ou par mon propre compteur. Témoin
+  tenu **en appelant** : le manifeste rend bien ses six clés. Second contrôle :
+  148 clés imbriquées servies, **non comparables** aux 85 accès imbriqués du
+  551. Règles **552-A** un croisement avec le serveur révèle les défauts du
+  crible · **552-B** une faute corrigée à un niveau survit au niveau du dessous
+  · **552-C** « non nommé » n'est pas « non testé ». Cycle : aucun fichier de
+  production touché, SW `td-shell-v187`, **MD5 8/8**, snapshot 22 fichiers ; **4 modifiés pendant le lot** (`ai_enrichment.json`, `daily_prev.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, aucun fichier apparu ni disparu,
+  **2864 passed / 0 skipped**, lancée **après** les documents. Arrêtés **174 (+1)**, publiés puis corrigés **25 (+1)**.
 - **Lot 551 — livré** : **l'étendue du filet — médiane 2 champs JSON
   nommés, 388 au total, 29 au maximum**, et **trois arrêts, tous dans mon
   instrument**. Choix (w) : lever la limite que le 550 s'était imposée.
