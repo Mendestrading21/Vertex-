@@ -2898,9 +2898,14 @@ sans autorisation demandée.
   63. Règles **544-A** un identifiant dans une chaîne JavaScript n'est pas un
   conteneur servi · **544-B** une « troncature » peut être une lecture
   correcte · **544-C** quand deux chemins divergent, le plus naïf est souvent
-  le fautif. Aucun fichier de production touché · SW `td-shell-v187` · MD5
-  **8/8** · snapshot **écart AUCUN** · **2864 passed / 0 skipped**. Arrêtés
-  **161 (+1)** · publiés puis corrigés **22**.
+  le fautif · **544-D** une phrase de vérification écrite avant la vérification
+  est un mensonge en attente. **Second incident, attrapé par la sonde et non
+  par moi** : un script de diagnostic avait écrit `l544_troncature.json` dans
+  la racine du dépôt, faute de chemin absolu (incident 487) ; fichier déplacé,
+  jamais commité, contrôle re-passé à 22 fichiers écart AUCUN — mais la
+  première version du rapport annonçait déjà « écart AUCUN ». Aucun fichier de
+  production touché · SW `td-shell-v187` · MD5 **8/8** · **2864 passed / 0
+  skipped**. Arrêtés **162 (+2)** · publiés puis corrigés **22**.
 
 - **Lot 543 — livré** : **bilan sur pièces des dix lots de mesure (533 → 542)
   — la chaîne des arrêts s'additionne sur neuf transitions sans un écart, la

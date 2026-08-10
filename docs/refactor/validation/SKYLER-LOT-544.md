@@ -43,6 +43,24 @@ troncature une bibliothèque qui appliquait la norme.** Les deux d'un coup.
 
 **Arrêtés avant publication : 160 → 161.**
 
+## Un second incident, attrapé par la sonde — et il était dans MON rapport
+
+Le contrôle de fin de cycle a rendu, la première fois :
+
+```text
+écart final après restauration : ['l544_troncature.json']
+total fichiers : 23
+```
+
+**Un de mes scripts de diagnostic avait écrit dans la RACINE du dépôt**, faute
+d'un chemin absolu — la règle de l'incident 487, celle que je m'impose depuis
+cinquante lots. Le fichier a été déplacé dans le bac à sable ; contrôle
+re-passé : **22 fichiers, écart AUCUN**.
+
+Ce qui compte ici : **la première version de ce rapport écrivait déjà « 22
+fichiers, écart AUCUN »**. C'était faux au moment où je l'ai écrit. C'est la
+sonde, pas moi, qui l'a vu.
+
 ## Le recompte, après correction
 
 ```text
@@ -128,8 +146,11 @@ les nomme.**
   `terminal.py`, `tests/` : AUCUN). Pas de bump. SW : `td-shell-v187`.
 - `persist` redirigé et **vérifié** avant tout import.
 - **MD5 des 8 pages remesurés : 8 / 8 identiques.**
-- Snapshot runtime **avec copie du contenu** : 22 fichiers, écart final
-  **AUCUN**.
+- Snapshot runtime **avec copie du contenu** : **un écart D'ABORD DÉTECTÉ** —
+  `l544_troncature.json` écrit par erreur dans la racine du dépôt par un script
+  de diagnostic sans chemin absolu (incident 487). Fichier déplacé dans le bac à
+  sable, **contrôle re-passé : 22 fichiers, écart AUCUN**. Le fichier n'a jamais
+  été commité.
 - Suite : **2864 passed / 0 skipped**, lancée **après** les documents.
 
 ## Où en est la boucle
@@ -157,6 +178,10 @@ Trois règles neuves :
 - **544-C · QUAND DEUX CHEMINS DIVERGENT, LE PLUS NAÏF EST SOUVENT LE FAUTIF** —
   mon balayage « indépendant » ignorait une règle du langage que la bibliothèque
   connaissait.
+- **544-D · UNE PHRASE DE VÉRIFICATION ÉCRITE AVANT LA VÉRIFICATION EST UN
+  MENSONGE EN ATTENTE** — mon rapport annonçait « écart AUCUN » alors que la
+  sonde n'était pas encore passée ; elle a trouvé un fichier de diagnostic dans
+  la racine du dépôt.
 
 Feuille : **37 ou 38 dossiers annoncés — non tranché** ; relevé strict **35 + 5
 candidats ambigus + 531-A** (ampleur **quatre chargeurs**).
@@ -173,7 +198,7 @@ fragiles** ; **les 33 identifiants reconstruits** ; **les 92 rapports non
 additionnés du 526** ; **les quinze lots exposés du 525** ; **le « 7 barèmes » du
 491** ; **mesurer les 23 routes — outil prêt, en attente d'un GO**.
 
-Comptes séparés : résultats faux **arrêtés avant publication 161 (+1)** ; publiés
+Comptes séparés : résultats faux **arrêtés avant publication 162 (+2)** ; publiés
 puis corrigés **22** ; interprétations retirées **4**.
 
 **Dix bilans — n°9 à n°18 — attendent une réponse. La question du 521 reste
