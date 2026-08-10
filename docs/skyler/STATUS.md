@@ -2880,6 +2880,44 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 528 — livré** : **la lacune de couverture ne se lève pas par un
+  motif — trois des huit « nouveaux dossiers » étaient des CITATIONS d'autres
+  lots, et la « confirmation des cinq rangs 4 » du 527 était un artefact.**
+  Choix (j) : les **54 rapports** de la période couverte mentionnant un rang
+  sans section `## Classement`. Deux formes alternatives trouvées par lecture —
+  une section « Verdict du lot » avec « classé rang N » (annonce propre) et un
+  **bilan** récapitulant les rangs d'autres lots (**citation**). Calibré sur le
+  lot 421 (positif) et le lot 430 (bilan → citation). Brut : **42 indéterminés,
+  8 dossiers, 4 citations**. **Premier arrêt** : le lot 482 était classé
+  « DOSSIER rang 2 » alors que son titre dit « Classement — AUCUN » — le crible
+  lisait un rang dans une section de **refus**. **Deuxième arrêt, le plus
+  grave** : **trois des huit « dossiers » sont des citations** (480, 483, 488),
+  vérifiés à la lecture — **37 % de faux positifs**, et un crible par phrase
+  refabrique aussitôt la dérive d'attribution corrigée au 527. **130 → 132.**
+  **Les cinq candidats survivants ne sont nets ni l'un ni l'autre** : 421
+  (annonce propre), 423 (verdict « négatif sur le produit »), 431 (« versant
+  recoupement du dossier 386 »), 453 (« un sous-produit »), 456 (« à
+  requalifier » — **et le 459 l'a requalifié rang 2**). Tous restent `AMBIGU`,
+  rien n'est arbitré. **Ce que cela fait au 527** : cinq autres candidats de
+  rang 4 existent, tous discutables, mais leur existence **retire au « cinq » sa
+  valeur de confirmation** — c'était un artefact de la lacune que le 527
+  signalait lui-même. **Publiés puis corrigés : 18 → 19.** **Une dimension
+  manquait au relevé : les rangs BOUGENT** — le lot 480 avait déjà mesuré trois
+  requalifications (459→456 hausse, 478→407 baisse, 479→416 baisse) ; un relevé
+  statique ne peut pas s'accorder avec un compte fait à une autre date.
+  `docs/skyler/DOSSIERS.md` complété, **généré depuis les JSON des bancs**. Ce
+  que la boucle fait bien : **les rapports disent leurs réserves** — « versant »,
+  « sous-produit », « à requalifier » : la prudence était déjà écrite, il
+  manquait de la relire. Portée : **aucun dossier ajouté** ; total non tranché ;
+  **42 cas sur 54 restent indéterminés** ; les 24 rapports antérieurs non
+  relus. Aucun code, aucun gardien, aucun test, aucun fichier de production
+  touché ; aucune route appelée. MD5 8/8 · snapshot 22 fichiers écart AUCUN ·
+  SW `td-shell-v187` · 2864 passed / 0 skipped. Série 1, 2, 2, 3, 3, 0, 0, 4, 4,
+  4, 2, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0. Trois règles neuves :
+  **528-A une phrase n'est pas une attribution** · **528-B un chiffre confirmé
+  sur un corpus partiel n'est pas confirmé** · **528-C un relevé statique ne
+  peut pas décrire une population qui bouge**. Rapport :
+  `docs/refactor/validation/SKYLER-LOT-528.md`.
 - **Lot 527 — livré** : **le relevé canonique existe —
   `docs/skyler/DOSSIERS.md`.** Choix (h), la dette la plus bloquante : le 526
   avait montré qu'aucun compte n'est possible sans liste canonique. **Un RELEVÉ,

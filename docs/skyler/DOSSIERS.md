@@ -149,3 +149,69 @@ Trois vues heritees de `/options` sont servies et maintenues sans aucune porte d
 
 **Aucune de ces incertitudes n'est résolue ici. Elles sont enregistrées pour
 qu'une décision humaine puisse s'appuyer sur autre chose qu'une rumeur.**
+
+---
+
+# Complément du lot 528 — la lacune de couverture, examinée
+
+Le lot 527 signalait **54 rapports de la période couverte mentionnant un
+rang sans section `## Classement`**. Ils sont ici examinés un par un.
+
+```text
+les 54 cas, classés par forme d'annonce
+   INDETERMINE    42
+   DOSSIER        8
+   CITATION       4
+```
+
+## Les huit candidats, VÉRIFIÉS À LA LECTURE
+
+**Trois sur huit ne sont pas des dossiers mais des CITATIONS** : la phrase
+« classé rang N » y désigne un **autre lot**. C'est la dérive d'attribution
+que le 527 avait corrigée et qu'un crible par phrase refabrique aussitôt.
+
+| lot | verdict après lecture | rang | ce que dit le rapport |
+|---|---|---|---|
+| 421 | **CANDIDAT** | rang 4 | « Classé rang 4 » dans « Verdict du lot » — annonce propre au rapport. |
+| 423 | **CANDIDAT** | rang 4 | rang lu dans « Verdict du lot » ; le verdict est « Négatif sur le produit », donc la portée du dossier est elle-même discutable. |
+| 431 | **CANDIDAT** | rang 4 | « Rang 4, **versant recoupement du dossier 386** (rang 1, déjà ouvert) » — un versant, pas nécessairement une entrée neuve. |
+| 453 | **CANDIDAT** | rang 4 | « ## Un **sous-produit**, classé rang 4 » — sous-produit du lot, pas son objet principal. |
+| 456 | **CANDIDAT** | rang 4 | « je le classe rang 4 en l'état, **à requalifier si un banc l'exécute** » — et le **459 l'a requalifié RANG 2**. |
+| 480 | **CITATION** | — | la phrase « classé rang 1 » appartient à un TABLEAU récapitulant les lots 476 et 447. **Pas un dossier du 480.** |
+| 483 | **CITATION** | — | « 456 + 459 … DÉJÀ CLASSÉ rang 2 » désigne les lots 456 et 459. **Pas un dossier du 483.** |
+| 488 | **CITATION** | — | « le 486 — qui a classé rang 2 » désigne le lot 486. **Pas un dossier du 488.** |
+
+**Aucun des cinq candidats n'est un dossier NEUF sans réserve** : un est un
+*versant* d'un dossier existant, un est un *sous-produit*, un a été
+**requalifié au rang 2** par un lot ultérieur, un porte un verdict négatif.
+**Tous restent `AMBIGU`. Rien n'est arbitré.**
+
+## Une dimension qui manquait au relevé : LES RANGS BOUGENT
+
+Le relevé du 527 est **statique**. Or le lot 480 avait déjà mesuré des
+**requalifications** :
+
+```text
+459 → 456    rang 4 « par lecture » → RANG 2, établi par exécution          HAUSSE
+478 → 407    le dossier fusionné 406+407 classé RANG 2                      BAISSE
+479 → 416    rang 1 → rang 3                                                BAISSE
+```
+
+Un dossier peut donc changer de rang après coup. **Un relevé qui ignore
+cette dimension ne pourra jamais s'accorder avec un compte fait à une
+autre date.**
+
+## Ce que devient le total
+
+```text
+relevé du 527 (section « ## Classement »)              35
+candidats de forme alternative, TOUS AMBIGUS          + 5
+citations écartées après lecture                        3
+cas restés INDÉTERMINÉS parmi les 54                   42
+```
+
+**Le total n'est toujours pas tranché, et il ne le sera pas par un motif.**
+La feuille annonce « 37 ou 38 » ; le relevé strict en compte 35 ; cinq
+candidats ambigus s'y ajoutent peut-être. **Seule une décision humaine peut
+clore ce compte.**
+
