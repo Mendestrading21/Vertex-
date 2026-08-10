@@ -2880,6 +2880,49 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 511 — livré** : **instrument NEUF « producteur sans consommateur » —
+  quarante et une routes de données sur cent trois (39,8 %) ne sont demandées par
+  aucun octet servi. Et j'ai corrigé mon propre chiffre TROIS FOIS. Dossier 511-A,
+  rang 4.** Choix (b), la dette créée par le 510. Question jamais posée en
+  transversal : **quelle part de ce que le serveur calcule n'atteint jamais
+  l'écran ?** **Réponse au niveau ROUTE** (immune à l'angle mort des noms de clé) :
+  `app.url_map` GET hors `/static` → **103 routes de données, 62 citées, 41 jamais
+  citées**. **Nuance non masquée** : 9 des 41 sont des routes d'**exploitation**
+  (`/api/rescan`, `/api/system/jobs`, `/api/validator`, `/api/healthz`, les trois
+  `/api/positions/*`, les deux `/api/live/*`) — ce n'est pas du gâchis. **La part
+  produit est 32/103 = 31 %**, et 39,8 % est une borne haute. **Trois corrections
+  de mon propre chiffre** : (1) **49,4 % FAUX** — mon collecteur comptait les
+  **clés de MAP** comme des noms de champ (les 133 « muettes » de `/scan` étaient
+  des **tickers**) ; (2) 46,5 % encore fragile ; (3) au niveau route **47,6 %
+  FAUX** — mon corpus n'avait pas **`/analysis/<sym>`**, pourtant établi comme
+  servi dès le 502, et **8 routes en dépendaient** ; (4) **39,8 %** corpus complet.
+  **Le second contrôle borne ET disqualifie le crible par clé** : le JS lit sans
+  nommer — `Object.entries` 20, `Object.keys` 55, `Object.values` 6,
+  destructuration 126, accès calculé `d[k]` **705** = **912 constructions**. Le
+  « 173 champs jamais lus » est une **borne supérieure** ; **c'est pourquoi je
+  publie le chiffre des routes**. **Piège d'homonyme, 27ᵉ récurrence, forme neuve —
+  collision de préfixe** : `/api/brief` apparaît deux fois… **dans
+  `/api/briefing/editorial`, une autre route** ; c'est mon compteur strict qui
+  avait raison et ma vérification « plus large » qui produisait le faux positif.
+  **Ce que le résultat éclaire ailleurs** : `/news-feed` n'est **jamais appelé**,
+  alors que `CLAUDE.md` en fait la règle critique n°5 et qu'un gardien la protège —
+  **le gardien protège une sortie que personne ne demande**, écart du même genre
+  que le 381 sur `vx_kit`. **Rang 4**, étalon 454 : rien de faux n'est montré, ces
+  routes ne peignent rien — c'est du **poids mort d'API** ; ce qui le distingue
+  d'une curiosité, c'est l'échelle mesurée et le fait que chaque route reste un
+  contrat à maintenir. **Correction pressentie : décider route par route entre
+  RETIRER et BRANCHER** — `/api/comite`, `/api/committee-review`, `/api/brief`
+  portent des raisonnements de comité que le produit n'affiche nulle part,
+  peut-être une occasion manquée plutôt qu'un déchet. **AUCUN GO, NE RIEN
+  SUPPRIMER.** **Portée : « jamais cité » n'est pas « jamais appelé » ; les 41 ne
+  sont pas classées une par une par intention ; le comptage par clé est abandonné
+  au profit du comptage par route ; POST hors périmètre ; aucun navigateur, aucune
+  route interdite.** Aucun code, aucun test, aucun fichier de production touché,
+  rien supprimé. MD5 **8/8** · snapshot 22 fichiers écart **AUCUN** · SW
+  `td-shell-v187` · **2864 passed / 0 skipped**. Arrêtés avant publication
+  **97 → 100**. Feuille **31 → 32 dossiers · un rang 4**. **L'instrument neuf a
+  rendu un chiffre, ce que les deux lots précédents n'avaient pas fait — mais sans
+  le second contrôle j'aurais publié 49,4 %, faux d'un quart.**
 - **Lot 510 — livré** : **la chasse aux copies rend ZÉRO copie — et trouve les
   versions CORRECTES, écrites trois fois dans le dépôt. Puis le second contrôle
   établit que les trois sont dans du CODE MORT.** Choix (c), la règle 509-B
