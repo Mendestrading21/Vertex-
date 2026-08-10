@@ -2880,6 +2880,32 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 573 — livré** : **les sites hors `catch` sont 80, pas 79** — et
+  **25 d'entre eux signalent un échec sans qu'aucune exception ne soit levée**.
+  Choix (ss). **La calibration a échoué sur un seul terme** : le 571 avait porté
+  le plancher de 89 à 90 **sans re-dériver le complément**, et la dette « 79 hors
+  `catch` » circulait dans trois rapports — 90 − 10 = **80**, le site
+  supplémentaire étant la bannière de `system_page.py:594`, hors `catch`.
+  **Ce qui déclenche les 80** : garde négative 25 · branche if 20 · ailleurs 14 ·
+  événement 12 · promise-catch 5 · fonction nommée 4 ; traits bruts publiés à
+  côté (dansIf 46, testNégatif 25, dansEvent 21…), **12 portent plusieurs
+  traits**. **Le piège vérifié** : 25 gardes négatives + **5 `.catch(` de
+  promesse** — **un `.catch(fn)` n'est pas une `CatchClause`** — soit 30 chemins
+  d'échec potentiels sans clause, 38 % des 80. **L'arrêt du lot** : « garde
+  négative » décrit le **test**, pas l'issue — la sortie contenait déjà
+  `setNet('online')`. Croisé avec le ton : sur les 30, **17 toasts `error`**, 5
+  bannières, 3 `emptyCard`, **1 issue positive**. **25 des 30 signalent un
+  échec.** **Un troisième registre apparaît : la validation de saisie** —
+  « Ticker invalide », « Position introuvable », « Quantité invalide » : **au
+  moins dix-sept refus**, que quatre lots successifs avaient traversés sans les
+  voir, et qui expliquent la brièveté mesurée au 572. Second contrôle : les 10
+  sites en `catch`, même grille (fonctionNommée 8/10) — **les deux distributions
+  ne se comparent pas terme à terme**. Règles **573-A** un complément ne se met
+  pas à jour tout seul · **573-B** un seau nommé d'après le test ne dit rien de
+  l'issue · **573-C** un `.catch(` de promesse n'est pas une `CatchClause`.
+  Cycle : aucun fichier de production touché, SW `td-shell-v187`, MD5 **8 / 8**,
+  snapshot 22 fichiers ; **3 modifiés par la suite de tests** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, **2864 passed / 0 skipped**. Arrêtés **199 (+1)**, **publiés puis corrigés
+  35 (+1)**.
 - **Lot 572 — livré** : **quand Vertex annonce un échec, dit-il pourquoi ?
   Deux registres** — 2 toasts d'erreur sur 22 sont construits, **mais 10
   bannières sur 10 portent la cause réelle** — et **lire le tableau seul aurait
