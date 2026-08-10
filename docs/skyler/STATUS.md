@@ -2880,6 +2880,53 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 506 — livré** : **`/portfolio` calcule le risque affiché sur un capital de
+  ZÉRO, en permanence — `myCapital` est dans le contrat de synchronisation mais
+  AUCUNE ligne du dépôt ne l'écrit. Dossier 506-A, rang 2.** Choix (a)/`system`,
+  la règle critique n°1. Le gardien du 381 couvre déjà liste-à-liste et
+  liste-à-contrat ; reproduire n'aurait rien prouvé (**règle 503-A**), j'ai pris
+  ce qu'il EXCLUT : **les listes correspondent-elles aux ÉCRITURES RÉELLES ?** Le
+  chemin a mené ailleurs que prévu. **La chaîne** : `capital()` rend `null` faute
+  d'écrivain (la clé n'apparaît que dans les 4 listes DESK_KEYS et dans
+  l'accesseur — **aucune interface ne permet de saisir un capital**) →
+  `portfolio_page.py:718` envoie `cash: E().capital()||0` = **0, toujours** →
+  `PortfolioSnapshot(cash=0, provenance='REAL')` → la page peint « Risques
+  priorisés ». **Mesuré en appelant les moteurs en processus, AUCUN POST** : HHI
+  **0.279 → 0.009**, bêta **1.05 → 0.37**, pire stress **−10,46 % → −1,77 %**
+  quand le cash monte. **Le zéro est l'hypothèse la plus alarmiste possible.**
+  **Et les phrases basculent** : les trois messages sont à seuil ; sur 1 ligne à
+  cash=0 la page affiche « Concentration très élevée (HHI 1.000) » et « Pire
+  scénario −15,00 % », **les deux disparaissent avec 30 % de cash**. Sur un
+  portefeuille diversifié aucun seuil n'est franchi — **visibilité conditionnelle,
+  dite explicitement**. **Le second contrôle a fait tomber DEUX de mes propres
+  résultats** : (1) mon contrôle négatif sur le bêta était **VACUEUX** — je
+  comparais `None` à `None` ; refait avec des bêtas, **le bêta bouge, mon modèle
+  était faux**, et la correction AGRANDIT le défaut ; (2) **accusation retirée** —
+  `vxTodayBaseline` et `vxPortfolioBaseline`, non synchronisées, ont un **repli
+  honnête** (« Depuis ta dernière visite », état vide explicite) : ce n'est pas un
+  défaut (499, 501) ; (3) et un **zéro produit par mon propre banc** — « `/system`
+  0 sous-vue » venait de ce que je cherchais `_VIEWS` au lieu de `VIEWS` ; il y en
+  a **cinq**, et le brief du réveil se trompait aussi. **Sens inverse cherché
+  (504)** : le défaut sur-alerte et ne peut pas sous-estimer, mais un `myCapital`
+  hérité serait **figé à jamais**. **Fait ancré sans être classé** : cinq des 17
+  clés synchronisées (`myRecosClosed`, `simCash`, `simClosed`, `simStart`,
+  `simTrades`) ne sont **ni écrites ni lues** — poids mort, rien de faux affiché.
+  **Sous-produit majeur** : `/journal` 5 vues, `/portfolio` 6, `/markets` 5,
+  `/options` 6, `/system` 5, plus 3 pages sans sous-vue = **30 vues servies, 8
+  empreintées — VINGT-DEUX hors de toute empreinte** ; le « MD5 8/8 » est exact
+  mais couvre huit trentièmes (18 empreintes nouvelles au rapport). **Aucun
+  gardien** : le seul test touchant ce cash poste `simulated:True` avec
+  `cash:5000` ; le chemin réel n'est couvert par rien. **Rang 2** : pas la vue par
+  défaut, le défaut **sur-alerte** (étalon **478**), visibilité conditionnelle ;
+  **pas rang 3** car c'est peint, ça concerne le risque, et la cause ne se résorbe
+  pas seule. **Portée : `desk_data.json` jamais ouvert ; aucun POST (reconstitution
+  fidèle du handler) ; positions et cash fabriqués, seuils lus dans les octets
+  servis ; aucun navigateur ; inventaire d'écritures = une borne (clés littérales
+  seulement).** Aucun code, aucun test, aucun fichier de production touché, rien
+  supprimé, rien corrigé. MD5 **8/8** · snapshot 22 fichiers écart **AUCUN** · SW
+  `td-shell-v187` · **2864 passed / 0 skipped**. Arrêtés avant publication
+  **83 → 86** ; publiés puis corrigés **12**. Feuille **28 → 29 dossiers · onze
+  rang 2**.
 - **Lot 505 — livré** : **`/journal?view=progression`, sous-vue jamais auditée —
   sous « Mes erreurs récurrentes diminuent-elles ? », la page écrit « la
   discipline progresse » sur une série STRICTEMENT PLATE, et « Vigilance » après
