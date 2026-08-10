@@ -2880,6 +2880,45 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 510 — livré** : **la chasse aux copies rend ZÉRO copie — et trouve les
+  versions CORRECTES, écrites trois fois dans le dépôt. Puis le second contrôle
+  établit que les trois sont dans du CODE MORT.** Choix (c), la règle 509-B
+  appliquée aux quatre dossiers ouverts. Cinq signatures (des **formes de code**,
+  pas des mots), chacune devant retrouver son site d'origine ; le témoin
+  `(a50 if a50 is not None else 50)` rend **exactement les deux sites du 509**.
+  **Aucune copie d'aucun des quatre défauts** : le 505-A est unique, le 506-A n'a
+  qu'un second site en **vendor minifié** (coïncidence). **Le crible rend les
+  versions correctes** : `vx_kit.py:92` et `candlestick-lwc.js:18` gardent `null`
+  **et** `''` avant de convertir — ce que `performance_page.py:192` ne fait pas ;
+  `journal.py:157` porte la version **direction-aware** qui manque au 504-A.
+  **Le second contrôle les tue** : j'allais publier « la version correcte est déjà
+  servie » (supposition qu'un fichier JS statique est chargé). Mesuré, avec les
+  deux témoins du 381 qui se reproduisent (`vx-entities.js` **8/8**, `vx_kit`
+  **0/8**) : les **trois précédents sont à 0/8 pages**, aucun n'atteint le
+  navigateur. Deuxième fois en deux lots qu'une supposition de « servi » me trompe.
+  **Observation avec son n** : sur **trois** idiomes, la version correcte est dans
+  le code mort et la fautive dans le code servi — trois cas, pas une loi.
+  **Le contrôle borne aussi mon propre crible** : la famille « inconnu aplati en
+  zéro » compte **55** occurrences hors vendor (`x()||0` 1 · `?? 0` 13 ·
+  `Number(x)||0` 7 · `float(x or 0)` 4 · `(x or 0)` 30) et **mon motif en couvre 1
+  sur 55** — la **forme exacte** du 506-A est isolée, **pas la famille** ;
+  conclure « cas unique » aurait été abusif d'un facteur cinquante-cinq.
+  **Ce que le lot établit** : les quatre dossiers n'ont pas de copie littérale
+  (la feuille est plus solide qu'elle aurait pu l'être) ; le **508-A reste le seul
+  dossier dupliqué** ; et **la règle 509-C ne s'applique pas ici** — « le dépôt
+  sait déjà faire » était vrai au 509 avec `scorecard.verdict` vivant et servi,
+  c'est faux ici puisque les précédents sont morts. **Portée : crible LITTÉRAL,
+  angle mort chiffré à 54/55 pour une seule famille — les « zéro copie » sont des
+  zéros DE FORME ; une à deux signatures par dossier ; le 507-A n'a PAS été criblé
+  (son défaut est une absence de consommateur, qu'un grep de formule ne capture
+  pas) et je le dis plutôt que de le compter sans copie ; aucun navigateur, aucun
+  POST.** Aucun code, aucun test, aucun fichier de production touché, rien
+  supprimé, rien corrigé. MD5 **8/8** · snapshot 22 fichiers écart **AUCUN** · SW
+  `td-shell-v187` · **2864 passed / 0 skipped**. Arrêtés avant publication
+  **95 → 97**. Feuille **inchangée : 31 dossiers**. **Deuxième lot consécutif sans
+  nouveau dossier ; la série des rangs est 1, 2, 2, 3, 3, 0, 0 — la chasse aux
+  défauts ne rend plus rien de neuf, et les trois pistes restantes sont toutes de
+  l'audit, aucune du produit.**
 - **Lot 509 — livré** : **le cas dégradé intermédiaire, en transversal — AUCUN
   NOUVEAU DOSSIER. Trois candidats retirés sur atteignabilité, et deux résultats
   qui valent mieux.** Choix (b), la veine neuve née de la règle du 508. Question
