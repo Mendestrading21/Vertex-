@@ -2798,6 +2798,53 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 498 — livré** : **la famille `PAGE_*` auditée — les DOUZE constantes sont
+  mortes, zéro atteint une surface servie ; 61,1 % de `terminal.py` est du HTML
+  jamais servi, et 1,43 Mo est reconstruit en mémoire à chaque démarrage.**
+  **AUCUNE SUPPRESSION — audit, pas purge.**
+- **Choix (a)** : dette nommée au 495, reportée au 496 et au 497 — **une dette
+  reportée trois fois devient un évitement**. La symétrie ROW/DÉTAIL **reste une
+  dette nommée**.
+- **Le brief avait raison sur le point qu'il demandait de re-vérifier** :
+  `PAGE_ME` commence bien à **L4741**.
+- **Première calibration ÉCHOUÉE, et c'est ce qui sauve le lot** : le témoin
+  positif `gnavFresh` (`terminal.py:2574`) a rendu **0** et le script s'est
+  arrêté. Un instrument qui n'a jamais démontré qu'il sait voir un « présent » ne
+  peut rien conclure d'un « absent ». Témoin remplacé par **le même test appliqué
+  aux constantes de `vertex/ui/pages/*.py`** (règle 485) : **10 trouvées** jusqu'à
+  6/6, **5 non trouvées** — exactement les modules d'interface déjà connus comme
+  morts. **L'instrument distingue servi et non-servi sur le même genre d'objet.**
+- **Résultat : ZÉRO sur DOUZE.** `PAGE_DAILY` 368 428 o / 1 486 lignes ·
+  `PAGE_ENTREPRISES` 683 · `PAGE_ME` 449 · `PAGE_OPTIONS_DESK` 443 ·
+  `PAGE_WATCHLIST` 333, plus sept construites par `_vpage` —
+  **1 431 362 octets, 3 394 lignes de définition**. Aucune route n'en retourne
+  aucune ; les seuls usages sont les boucles `globals()[_pg] = …` qui recopient
+  d'une constante morte vers une autre.
+- **Le faux positif que j'ai failli publier** : quatre constantes sont sorties
+  « 1/6 fragments · SERVIE » et j'allais écrire « quatre des douze sont servies ».
+  **Un fragment sur six est la signature d'un morceau PARTAGÉ** : les quatre sont
+  des extraits du dictionnaire `__VXVOCAB`, injecté partout. **Tri à la lecture.**
+- **Second contrôle — une constante morte peut être la SOURCE d'octets servis** :
+  le fichier contient ce cas (`_NAV_CSS_CANON`/`_NAV_BUILD_CANON`/`_VXSCATTER_JS`
+  extraits de `PAGE_DAILY`). Mesuré : **0/6 servis** pour les trois — **la chaîne
+  d'extraction reste interne à la famille morte**. Le contrôle **confirme au lieu
+  d'infirmer**, et je le dis.
+- **Trouvaille latérale** : `_SCATTER_HELP_JS` vaut **la chaîne vide** —
+  `_extract` n'a pas trouvé son marqueur et a rendu `''` **en silence**. Sans
+  conséquence (code mort), mais c'est un **mode d'échec muet**.
+- **Mesure large** (même test sur toutes les constantes chaîne > 400 o) :
+  **19 constantes, toutes absentes des octets servis, 4 369 lignes / 7 153 =
+  61,1 %.**
+- **Aucun dossier** : c'est du code mort, pas un défaut affiché. `CLAUDE.md` dit
+  déjà que la purge É1 a laissé des reliques — **ce lot ne les découvre pas, il
+  les chiffre**. Le coût de démarrage est donné **en octets, pas en
+  millisecondes** : non chiffré en temps. **Rien n'est supprimé** : c'est **le
+  devis d'une purge éventuelle**, pas la purge.
+- Feuille **inchangée : 26 dossiers**. Comptes : arrêtés avant publication
+  **75 (+2)**.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  runtime **22 fichiers, écart AUCUN** · suite **2864 passed / 0 skipped**.
+
 - **Lot 497 — livré** : **le 495-A borné — il atteint bien `/portfolio`, mais par
   un chemin ÉTROIT et CONDITIONNEL : il n'y arrive que si la position n'a PAS de
   thèse.** Quatre faux arrêtés, dont **trois branches d'échec de mon propre banc**.
