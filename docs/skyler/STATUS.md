@@ -2880,6 +2880,33 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 574 — livré** : **les refus de saisie — deux nombres égaux, deux
+  ensembles différents**, et un corpus qui n'a jamais vu **les 35 vues**. Choix
+  (tt). **L'arrêt du lot** : le second témoin, lu dans `analysis_page.py`
+  (`'Montant envisagé requis'`), est **absent du corpus** — celui-ci a été
+  construit en appelant les 8 pages **à leur URL de base**, et **les 35 vues
+  (`?view=…`) n'y sont pas**. Borne de portée valant pour **six lots** (539 →
+  574) : *un témoin lu dans la source n'est pas un témoin présent dans le servi*.
+  **Deux bornes, aucune n'est un recensement** : (A) branche appelant le canal
+  **25** · (B) branche contenant un `return` **290** · dans les deux 21 · **269
+  s'arrêtent sans rien dire** · union 294. **Le cœur du lot** : le 573 publiait
+  « garde négative 25 », la borne (A) rend 25 — croisé par identité de site,
+  **24 en commun**, une différence de chaque côté (`setNet('offline')` dans un
+  `catch` ; une bannière `vx-error-banner`), **deux angles morts opposés qui se
+  compensent exactement, par coïncidence**. **Second arrêt** : le premier
+  croisement rendait « 0 en commun » — le rapport imprime « garde négative »
+  (accentué), le banc stocke `'garde negative'`. **Lecture des 25** : SAISIE 12 ·
+  ABSENCE 10 · ÉTAT 3 ; ton error 16, sans ton 6, warning/warn/info 1 chacun.
+  **Correction** : le « 17 » du 573 comptait des toasts au ton `error`, pas des
+  refus de saisie — sur les 16 de la borne (A), **11 sont des refus**, 5
+  annoncent une donnée manquante. **Le compte lu est 12.** Second contrôle : 42
+  refus JSON serveur (567) contre 25 côté client — **unités non comparables
+  terme à terme**, mais **le produit refuse des deux côtés**. Règles **574-A** un
+  corpus de pages n'est pas un corpus d'écrans · **574-B** deux nombres égaux ne
+  sont pas deux ensembles égaux · **574-C** une valeur enregistrée se lit, elle
+  ne se cite pas depuis le rapport. Cycle : aucun fichier de production touché,
+  SW `td-shell-v187`, MD5 8 / 8 identiques, snapshot 22 fichiers, 3 modifies par la suite (ai_enrichment, desk_data, weekly_snapshot), restaures, ecart final AUCUN, 2864 passed / 0 skipped. Arrêtés
+  **201 (+2)**, **publiés puis corrigés 36 (+1)**.
 - **Lot 573 — livré** : **les sites hors `catch` sont 80, pas 79** — et
   **25 d'entre eux signalent un échec sans qu'aucune exception ne soit levée**.
   Choix (ss). **La calibration a échoué sur un seul terme** : le 571 avait porté
