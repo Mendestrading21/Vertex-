@@ -2880,6 +2880,28 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 572 — livré** : **quand Vertex annonce un échec, dit-il pourquoi ?
+  Deux registres** — 2 toasts d'erreur sur 22 sont construits, **mais 10
+  bannières sur 10 portent la cause réelle** — et **lire le tableau seul aurait
+  donné l'inverse de la vérité**. Choix (rr) : le croisement forme × ton, jamais
+  fait. **Quatre dénominateurs déclarés avant la première case** (79 sites
+  d'appel, 55 toasts, 11 sites hors grille, plancher 90) ; le croisement n'en
+  utilise qu'un. **Le tableau (55 toasts)** : construite 2 `error` / 11
+  `success` ; littérale 19 / 12 ; total 22 / 23. Médiane des littérales d'erreur
+  : **deux mots**. **L'arrêt du lot** : la colonne `error` invite à conclure que
+  les échecs n'expliquent pas — **or les 11 sites exclus par construction sont
+  précisément ceux qui portent la cause** : 10 bannières distinctes, **10
+  interpolent une valeur réelle, 0 texte fixe** (« Radar injoignable : » +
+  `esc(e.message)`, `⚠ ${errs.map(…)}`…). Recomposé : **12 des 33 signalements
+  d'échec portent la cause**, pas 2 sur 22. **Deux registres, pas un défaut** :
+  la bannière a la place et l'utilise, le toast est éphémère et reste court ; les
+  deux toasts construits sont dans des `catch`. Second contrôle : **35 des 90
+  sites sont exclus du croisement**, plus 6 toasts sans ton — tous des
+  confirmations d'action, lues. Règles **572-A** un tableau croisé exclut, et ce
+  qu'il exclut peut porter la réponse · **572-B** deux registres ne se jugent pas
+  à la même aune · **572-C** le dénominateur se déclare avant la case. Cycle :
+  aucun fichier de production touché, SW `td-shell-v187`, MD5 **8 / 8**, snapshot
+  22 fichiers ; **3 modifiés par la suite de tests** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, **2864 passed / 0 skipped**. Arrêtés **198 (+1)**.
 - **Lot 571 — livré** : **le canal que j'avais appelé « d'erreur » — 33
   de ses 90 sites signalent un échec, 23 toasts sont des confirmations** — et
   **le plancher du 570 était sous-compté : 90, pas 89**. Choix (qq), un lot qui
