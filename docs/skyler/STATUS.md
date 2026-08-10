@@ -2880,6 +2880,49 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 507 — livré** : **`/options`, desk jamais audité — `iv_units` promet une
+  détection d'unité « JAMAIS MUETTE » et le moteur tient parole, mais l'interface
+  n'en lit AUCUN champ. Dossier 507-A, rang 3.** Choix (a)/`options`.
+  **Correction d'un chiffre publié au 506** : « 30 vues servies » est **faux** —
+  `/options` sert via `_ALL_VIEWS` (6 visibles **+ 3 legacy** : `overview`,
+  `radar`, `scenarios`) et `/opportunities` a **cinq** vues comptées pour une.
+  Total réel **37 vues servies, 8 empreintées → vingt-neuf hors empreinte**.
+  Deuxième fois en deux lots que `_VIEWS`/`VIEWS` me piège. **Le contrat** :
+  `iv_units.py` énonce trois fois « plus JAMAIS d'heuristique silencieuse »,
+  « UNIQUE frontière tolérée », « l'appelant **DOIT** propager l'unité détectée et
+  l'avertissement ». **Mesuré** (moteur en processus, board DEMO, GOOGL) :
+  `iv=0.468`, `iv_detected_from='PERCENT'`, `iv_unit='DECIMAL'`, `warnings=['IV du
+  board détectée en POURCENTAGE (46.8) — convertie…']`. **Le moteur propage
+  exactement ce qui est exigé.** Puis sur **223 890 caractères servis** (6 vues +
+  2 JS) : `iv_warning`, `iv_unit`, `POURCENTAGE`, `from_legacy_board` **tous
+  absents** — et la mesure qui tranche, car un littéral absent ne prouverait rien
+  si le JS rendait le tableau à l'exécution : **`.warnings` a ZÉRO occurrence**
+  dans les trois scripts servis, **alors que `limitations` est rendue deux fois**.
+  La page a une place pour les réserves et s'en sert ; le canal où atterrit la
+  détection d'unité n'a aucun lecteur. **Le second contrôle a retiré deux tiers du
+  brouillon** : (I) les sept sites de conversion hors frontière existent bien et
+  le seuil documenté **1.5** diverge des quatre heuristiques inline à **3** sur la
+  bande `]1.5, 3]`, **mais le board DEMO ne l'atteint jamais** (51 contrats, iv min
+  28,1 · médiane 46,8 · max 61,9, zéro dans la bande) → divergence théorique, pas
+  de dossier ; (II) le couple `vol_charts` (÷100) ↔ JS (×100) **se compense** →
+  retiré ; (III) les deux conventions du JS **ne sont pas une incohérence**, chaque
+  site respectant le contrat de SON endpoint → retiré. **Aucun gardien sur la
+  propagation** : « warnings » a zéro occurrence dans les quatre tests qui gardent
+  la frontière. **Rang 3**, un cran au-dessus de l'étalon **454** (rang 4, « rien
+  de faux n'est montré ») sur deux critères absolus : un contrat explicite rompu
+  **au dernier mètre**, et **la place existe et sert déjà**. **Pas rang 2** : aucun
+  chiffre ni phrase faux, la valeur manquante est une **provenance**. **Fait ancré
+  non classé** : sept sites contredisent « UNIQUE frontière », deux seuils
+  incompatibles, trois divisions sans détection — le jour où un producteur émettra
+  du décimal, elles rendront des IV cent fois trop petites en silence. **Portée :
+  board DEMO seulement (pourcentage), je ne peux pas savoir d'ici pour le board
+  réel ; aucune route `/api/options/*`, aucun POST, `/options/<sym>` jamais
+  touché ; aucun navigateur ; `terminal.scan()` DEMO exécuté puis snapshot
+  restauré.** Aucun code, aucun test, aucun fichier de production touché, rien
+  supprimé, rien corrigé. MD5 **8/8** · snapshot 22 fichiers écart **AUCUN** · SW
+  `td-shell-v187` · **2864 passed / 0 skipped**. Arrêtés avant publication
+  **86 → 89** ; publiés puis corrigés **12 → 13**. Feuille **29 → 30 dossiers ·
+  quatre rang 3**.
 - **Lot 506 — livré** : **`/portfolio` calcule le risque affiché sur un capital de
   ZÉRO, en permanence — `myCapital` est dans le contrat de synchronisation mais
   AUCUNE ligne du dépôt ne l'écrit. Dossier 506-A, rang 2.** Choix (a)/`system`,
