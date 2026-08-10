@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 560 — livré** : **le marquage par fichier ne s'est pas
+  propagé** — un seul banc sur sept était touché, et le mécanisme partagé sort
+  à **353 sites d'appel, zéro mal attribué**. Choix (ff) : après le 559,
+  combien d'autres chiffres publiés reposent sur ce marquage ? **L'arrêt du
+  lot** : le brief annonçait `l552_contrat.py` comme témoin positif, or **ce
+  banc ne lit aucun fichier de test** — ses champs nommés viennent du JSON du
+  551. Le marquage par fichier était dans `l552_ambigus.py`, un autre banc du
+  même lot. **Un lot après avoir constaté que « les 21 du 551 » venaient du 552,
+  le brief attribue à nouveau un défaut au mauvais artefact.** La mesure, lue
+  dans le code de chaque banc : cinq bancs lisent les tests, **deux scopent par
+  fonction** (`l550`, `l551`), et les trois sans portée ne marquent pas la même
+  chose — `l548` mesure des sites d'appel, `l549_construits` des variables de
+  boucle, et **`l552_ambigus` est le seul à construire un ensemble de variables
+  de réponse par fichier**. **Les deux plus gros chiffres de la série — les 388
+  champs du 551 et la profondeur du 550 — sont mesurés par fonction et ne sont
+  pas touchés.** Le mécanisme partagé (noms de client reconnus par fichier dans
+  quatre bancs) : **353 sites, 353 liés dans leur fonction, 0 attribué par le
+  fichier seul**. Second contrôle : mon détecteur de portée cherche une fonction
+  **nommée** `portee` — le péché du 559-B — et n'est acceptable que parce qu'il
+  a été corroboré en lisant les trois bancs concernés. Règles **560-A** un
+  défaut d'instrument ne se généralise pas par analogie · **560-B** un détecteur
+  par nom doit être corroboré par lecture · **560-C** un zéro mesuré vaut mieux
+  qu'un risque supposé. Cycle : aucun fichier de production touché, SW
+  `td-shell-v187`, MD5 8 / 8 identiques, snapshot 22 fichiers ; 3 modifies par la suite de tests (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), restaures — ecart final AUCUN, aucun fichier apparu ni disparu, suite **2864 passed / 0 skipped**. Arrêtés **186
+  (+1)**.
 - **Lot 559 — livré** : **les « 21 tests de membre ambigus » — mal
   attribués depuis sept rapports, et huit d'entre eux ne testent pas une réponse
   HTTP du tout**. Choix (ee) : une dette laissée à l'état de nombre depuis huit
