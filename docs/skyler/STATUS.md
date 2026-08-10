@@ -2880,6 +2880,51 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 520 — livré** : **première mesure de ce que l'utilisateur VOIT — les
+  chargeurs exécutés se comportent CORRECTEMENT, états vides honnêtes compris.
+  Et j'ai failli publier un FAUX dossier de rang 2 : l'erreur JavaScript brute
+  venait de MON BANC, pas du produit. Aucun dossier (rang 0).** Choix (b), dette
+  du 519 : « câblée » n'est pas « peinte ». Instrument validé aux 504-511 —
+  extraire la fonction du JS servi, l'exécuter sous node, capturer ce qu'elle
+  écrit, **`VX.fetch` stubé, aucun appel ne sort** ; ajout de ce lot, une
+  **résolution automatique des voisines** pour ne pas conclure « vue cassée »
+  quand seul mon stub manque. **Résultat** : `/system?view=automations` est
+  **exemplaire** — charge riche → tableau des jobs (2208 o) · charge vide `{}` →
+  « Registre de jobs vide. » et « Rapport non généré (serveur fraîchement
+  démarré ?) » (329 o) · fetch en échec → « Registre indisponible : HTTP 500 »
+  (182 o). `/portfolio?view=options` et `/journal?view=progression` peignent
+  identiquement aux trois régimes, ce qui est **normal** : elles lisent les
+  données du poste, pas la charge réseau ; leur état vide est honnête.
+  **J'ai failli publier un faux dossier** : mon premier régime faisait rendre
+  `null` à `VX.fetch`, et la vue peignait **« Cannot read properties of null
+  (reading 'jobs') »** — un message JavaScript brut dans l'interface, soit un
+  dossier VISIBLE, le premier depuis le 514. Vérification dans `vx-core.js` :
+  **`VX.fetch` LÈVE, elle ne rend jamais null**. Mon régime n'existe pas. Refait
+  avec les deux dégradations réelles (charge `{}` — le 512 a mesuré que
+  `/api/weekly` rend cela — et exception propagée), le produit répond
+  honnêtement dans les deux cas. **116 → 118.** **Deux vues sur cinq non
+  exécutées, et je ne les exécuterai pas** : elles appellent `/api/options/*`,
+  dont l'innocuité réseau **n'est pas établie** ; lues, elles montrent un état
+  vide honnête (« Saisis un symbole. »), qui est leur état d'arrivée. **Ce que le
+  lot ne trouve pas est le résultat** : aucun chiffre faux, aucun squelette
+  perpétuel, aucune fuite technique ; les états vides distinguent « vide » de
+  « indisponible ». Après quatre lots sur l'axe du produit servi : **la surface
+  visible se tient** — ce qui manque, ce sont des tests (518-A) et des portes
+  d'entrée (519-A), pas de la correction. **Second contrôle** : mes stubs ne sont
+  pas un navigateur ; **la charge riche est fabriquée par moi** ; **ma calibration
+  de variété est mal écrite** (compare des paires, ne peut aboutir avec trois
+  régimes) — publiée telle quelle (509-A), la variété étant démontrée par les
+  2208/329/182 octets. **Ce que le dépôt fait bien** : `VX.fetch` lève au lieu de
+  rendre null — **c'est ce qui empêche le message technique que je croyais avoir
+  trouvé** ; deux tentatives de reprise avant de lever. Aucun fichier de
+  production touché. MD5 8/8 · snapshot 22 fichiers écart AUCUN · SW
+  `td-shell-v187` · **2864 passed / 0 skipped**. Feuille **inchangée : 37
+  dossiers**. Série **1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2, 0, 0, 0, 4, 4, 0**.
+  **Ce lot rapporte quelque chose de plus rare qu'un dossier : la preuve qu'un
+  défaut que je croyais tenir n'existait pas. Première fois que l'arrêt portait
+  sur un défaut VISIBLE — la catégorie que j'avais le plus envie de trouver. Le
+  dossier le plus désirable est celui qu'il faut vérifier le plus durement.**
+
 - **Lot 519 — livré** : **les 7 vues sans test FONCTIONNENT toutes. Mais 3 vues
   servies sur 35 ne sont liées depuis AUCUNE barre d'onglets — trois écrans
   complets, câblés, au contenu ENTIÈREMENT DISTINCT, qu'on n'atteint qu'en tapant
