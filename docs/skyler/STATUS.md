@@ -2798,6 +2798,49 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 493 — livré** : **la famille « producteur constant » balayée sur tout le
+  code serveur — elle ne rend RIEN de neuf ; mais le balayage découvre un SECOND
+  score /40, importé en production sous l'alias `ibkr`.**
+- **Choix assumé** : (b) rouvrir la famille qui a donné deux rangs 1, plutôt que
+  (a) finir la veine des barèmes — **(a) reste une dette nommée**, chiffrée à un
+  seul traçage pour trois cibles.
+- **Calibration ÉCHOUÉE du premier coup, et c'est ce qui sauve le lot** : témoin
+  positif `'rr'` ressorti **non constant**, arrêt immédiat. Diagnostic : **`'rr'`
+  a 12 sites dans 8 modules, tous calculés sauf `analysis.py:262`** — **j'agrégeais
+  par nom de clé sur tout le dépôt : l'homonyme au niveau du CHAMP**. Corrigé en
+  **(fichier, clé)**.
+- **Résultat** : onze champs numériques constants dont le nom est lu dans les
+  octets servis — **dix légitimes** (TTL, prix de démo, poids, table de points)
+  et **un déjà classé** (`rr 3.0`, dossier 442). **La famille est close par la
+  mesure : aucun défaut neuf sous cette forme.**
+- **Trouvaille latérale** : `scorecard.py:178` déclare `'max': 40` — **un second
+  score /40**, appelé en production (`terminal.py:591`, `:1597`) via
+  `from vertex.engines import scorecard as **ibkr**`. **Vingtième homonyme, par
+  alias d'import : en 493 lots la boucle n'avait jamais vu qu'il existe DEUX
+  scores /40.**
+- **Et je n'ai pas établi son plafond** : mon banc rendait « 25/40 », **non
+  publié comme plafond** — les composantes montrent les branches **neutres**
+  (`Fondamentaux 5/8`, `Option Fit 4/6`), donc l'entrée fabriquée n'est pas lue.
+  **Dette nommée.**
+- **Second contrôle — le détecteur ne voit que les dicts littéraux** : ni
+  `out['k']=5`, ni un `return`, **ni un argument par défaut**. Or le 492 a trouvé
+  exactement cela (`_num(…, 55)`) : **mon recensement aurait manqué la trouvaille
+  du lot précédent.** La famille est vide **sous cette forme**, pas en général.
+- **Trois faux arrêtés** : l'agrégation par nom de clé (stoppée par la
+  calibration), l'extraction sur `score` au lieu de `score40` (« −1 » lisible
+  comme « rien trouvé »), et le banc tombé dans les branches neutres. **59 → 62.**
+- **Troisième lot consécutif sans nouveau dossier** — les veines ouvertes sont
+  mesurées et ne rendent plus. Le lot apporte néanmoins **la preuve qu'une
+  famille peut être close par la mesure**.
+- Feuille **inchangée** : 24 dossiers · quatorze rang 1 · huit rang 2 · trois rang 3.
+- **Un fichier runtime est APPARU** : `desk_backup_20260810.json`, créé par la
+  suite au basculement de date. **Comportement caractérisé au 388**, pas une
+  pollution. **Non supprimé** — effacer une sauvegarde du desk serait destructeur
+  et l'invariant l'interdit ; **gitignoré** (vérifié), contenu **copie fidèle**
+  du desk, `desk_data.json` **restauré à l'octet**. Compte runtime **21 → 22**.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  suite **2864 passed / 0 skipped**.
+
 - **Lot 492 — livré** : **les deux barèmes réellement peints, tracés jusqu'au
   producteur — « accord /100 » est SAIN, « confiance /100 » plafonne à 95, et les
   DEUX bornes du garde-fou du comité sont MORTES.**
