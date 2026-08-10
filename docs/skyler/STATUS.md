@@ -2880,6 +2880,33 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 548 — livré** : **l'angle mort total, mesuré pour la première
+  fois — 67 points d'entrée sur 184 ne sont appelés ni par la suite ni par
+  moi.** Choix (r) : mesure entièrement statique, lecture des 301 fichiers de
+  `tests/` par `ast`, croisée avec `terminal.app.url_map`, **aucun appel
+  réseau**. L'appariement se fait par la **règle**
+  (`url_map.bind(…).match(…)`), jamais par comparaison de chaînes (546-A).
+  **L'arrêt du lot** : mon détecteur de client de test était trop étroit
+  **quatre fois de suite** — v1 (`return …test_client()`) rejetait **112**
+  appels légitimes, v2 (+ `yield`, `with … as`) **39**, v3 (+ `c = _client()`)
+  **26**, v4 (+ fixture rendant un tuple) **2**. **L'erreur allait dans le
+  mauvais sens** : un appel rejeté à tort retire de la couverture et **gonfle**
+  l'angle mort ; publier la v1 aurait donné un chiffre spectaculaire et faux.
+  Les deux bornes (542-B) ne diffèrent que d'**un** point d'entrée,
+  `redesign.legacy_vault`, tranché par lecture — `items.get('/vault')` est un
+  accès à un **dictionnaire**, pas un appel HTTP : **67 est le bon chiffre**.
+  Mesure : **184** points d'entrée hors `static`, **116 couverts par la
+  suite**, **9 par mon corpus de 44 URL** (dont 8 déjà couverts par la suite),
+  **67 par personne**. Par famille : **36 redirections héritées**, **27**
+  points `/api/…`, **4** autres. Quatre des cinq routes interdites au réseau
+  sortant sont dans le lot des non couverts — **aveugle par construction** ;
+  la cinquième, `/desc/<sym>`, est couverte. Portée : « couvert par personne »
+  est une **borne haute** — **90 appels à chemin construit** sont comptés à
+  part ; « couvert » ne veut pas dire « bien testé ». Règles **548-A** un
+  instrument trop étroit fabrique des trous · **548-B** un idiome de test n'est
+  pas un idiome · **548-C** quand deux bornes ne diffèrent que d'un cas, on lit
+  ce cas. Cycle : aucun fichier de production touché, SW `td-shell-v187`,
+  **MD5 8/8**, snapshot 22 fichiers ; **3 modifiés pendant le lot** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, aucun fichier apparu ni disparu, **2864 passed / 0 skipped**, lancée **après** les documents. Arrêtés **168 (+1)**.
 - **Lot 547 — livré** : **51 sur 51 — aucun squelette ne disparaît au
   rendu.** Choix (q) : le 546 avait expliqué l'écart des 51 par la fenêtre de
   400 caractères, mais ne l'avait prouvé que sur **un** cas. La pile du 535
