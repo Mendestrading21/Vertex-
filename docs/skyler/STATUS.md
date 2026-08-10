@@ -2880,6 +2880,45 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 509 — livré** : **le cas dégradé intermédiaire, en transversal — AUCUN
+  NOUVEAU DOSSIER. Trois candidats retirés sur atteignabilité, et deux résultats
+  qui valent mieux.** Choix (b), la veine neuve née de la règle du 508. Question
+  posée d'avance : *combien de fonctions de synthèse rendent un verdict sur une
+  entrée PARTIELLE, et combien s'abstiennent ?* Six producteurs recensés **par
+  leur forme**, testés sur PLEIN / PARTIEL / VIDE. **(1) Le 508-A est DEUX FOIS
+  plus large que publié** : `strategy_fit._strat_tilt` est une **copie quasi mot
+  pour mot** de `market_lens.climate` — mêmes poids, **même substitution
+  `else 50`**, même garde limitée à l'absence totale, même **46 sans marqueur**
+  sur une entrée partielle. Le rang ne change pas (c'est l'atteignabilité non
+  démontrée qui le plafonne), **la portée double** : corriger `market_lens` seul
+  laisserait le second exemplaire intact. **(2) Le dépôt SAIT dégrader honnêtement,
+  deux modules sur quatre** : `scorecard.verdict` rend **REFUSÉ avec le marqueur
+  « insuffisant »**, `context_for` expose ses **`dimensions`**. Ce n'est donc pas
+  une limite d'architecture mais une **incohérence entre modules** — et la
+  correction pressentie du 508 n'est pas une invention, c'est ce que `scorecard`
+  fait déjà. **(3) Trois retraits sur atteignabilité (règle 507-A)** : `decide()`
+  plante bien sur `clé: None` (le défaut de `.get` ne s'applique qu'à une clé
+  ABSENTE) **mais sur 20 détails réels les cinq clés qu'il lit sont 20/20 présentes
+  avec valeur → 20 verdicts, 0 plantage** ; `compose({})` rend `grade D ·
+  confidence 58` sans garde **mais son unique appelant construit un littéral à 12
+  clés toujours présentes** ; et ma thèse « les synthèses fabriquent » était **trop
+  large** (2/4 portent un marqueur) → retirée. **Le contrôle négatif a ÉCHOUÉ et je
+  le dis** : zéro producteur sur quatre ne s'abstient sur le partiel, donc mon banc
+  n'a **aucun contre-exemple** sur cet axe ; ce qu'il montre, c'est que deux d'entre
+  elles **marquent** leur incomplétude — une honnêteté différente de l'abstention.
+  Conclusion plus faible que visée, publiée telle quelle. **Portée : entrées
+  partielles fabriquées (le scan DEMO, lui, est réel et c'est lui qui tue le
+  candidat `decide`) ; six producteurs recensés par la forme, un autre peut
+  m'échapper ; 4 lignes complètes sur 6 ; aucun navigateur, aucun POST ; la
+  duplication de `_strat_tilt` est établie sur le CODE, sa visibilité à l'écran ne
+  l'est pas.** Aucun code, aucun test, aucun fichier de production touché, rien
+  supprimé, rien corrigé. MD5 **8/8** · snapshot 22 fichiers écart **AUCUN** · SW
+  `td-shell-v187` · **2864 passed / 0 skipped**. Arrêtés avant publication
+  **92 → 95** ; interprétations retirées **3 → 4**. Feuille **inchangée : 31
+  dossiers**, mais **508-A voit sa portée doubler**. **Premier lot sans nouveau
+  dossier depuis le 503 : la règle 507-A a coûté TROIS dossiers en trois lots, et
+  la veine des défauts d'affichage a un rendement mesurablement décroissant
+  (1, 2, 2, 3, 3, puis zéro).**
 - **Lot 508 — livré** : **`/markets`, dernière page jamais auditée — `climate()`
   note l'ABSENCE de donnée comme une donnée MOYENNE : un objet marché avec une
   seule clé non pertinente rend un verdict complet, score 46 « NEUTRE ». Dossier
