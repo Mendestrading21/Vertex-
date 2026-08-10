@@ -2880,6 +2880,36 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 534 — livré** : **un vrai analyseur JavaScript était déjà dans la
+  machine — acorn 8.15.0, EMBARQUÉ dans Node 22, rien installé.** Choix (v) :
+  neuf arrêts en trois lots sur la même famille (collisions de noms, cribles
+  textuels) — élargir une dixième expression régulière, c'était refaire la
+  faute. **113 programmes, 3 345 728 octets, zéro erreur d'analyse.** Six
+  témoins, dont **deux où le comptage d'accolades se trompe** (`try` en
+  commentaire et en chaîne · appel dans une clôture posée dans un `try`) et un
+  qui **nomme la limite** (appel au nom construit à l'exécution : invisible).
+  Témoins produit imposés : `renderRadar` hors try, `renderCalendar` dans un
+  try — les deux passent. **Trois arrêts, dont la 532-A refaite À L'INTÉRIEUR
+  du parseur** : recherche des helpers **par nom** → **104 appels de `get(`
+  comptés à tort** ; acorn donne l'arbre, pas les liaisons — il a fallu la
+  table des portées. Ma règle de helper **ratait `VX.fetch`**, et les deux
+  témoins produit l'ont arrêtée. **Mesure à corpus identique** (crible du 533
+  ré-exécuté dans le même processus) : **A 102/120/28/22 contre B
+  130/178/51/33** — le crible voyait **deux tiers** de ce que voit un
+  analyseur. **Feuille des écarts : 71 divergences, 5 causes, zéro
+  inexpliqué.** **Correction : quatre des 28 « non protégés » du 533 étaient
+  faux** — le `.catch(` est à 443, 914, 3 976 et 4 081 caractères de l'appel,
+  au-delà de la fenêtre fixe de 400. **Produit : l'analyseur accuse dix
+  squelettes perpétuels, l'exécution en disculpe les quatre neufs** (221, 61,
+  569 et 147 caractères peints en régime d'échec sur `/portfolio`) — **531-A
+  garde exactement quatre chargeurs, tous sur `/opportunities`, troisième
+  mesure indépendante.** Règles **534-A** un parseur donne un arbre, pas des
+  liaisons · **534-B** une fenêtre fixe n'est pas une portée · **534-C**
+  attribuer un appel à toute fonction qui le contient textuellement, c'est le
+  compter plusieurs fois. Aucun fichier de production touché · SW
+  `td-shell-v187` · MD5 **8/8** · snapshot **écart AUCUN** · **2864 passed /
+  0 skipped**. Arrêtés **146 (+3)** · publiés puis corrigés **22 (+1)**.
+
 - **Lot 533 — livré** : **le crible élargi à cinq helpers ajoute 27
   appels et 15 fonctions non protégées — et ZÉRO nouveau squelette perpétuel.**
   Choix (t) : fermer les deux bornes du 532. Helpers trouvés **par lecture** :
