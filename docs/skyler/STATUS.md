@@ -4,6 +4,88 @@
 > Base historique : `agent/vertex-neon-glass-graphs`  
 > Statut : **Skyler V2 Core livré — phase Institutional+ ouverte**.
 
+## BILAN — veille active, lots 490 → 499 (2026-08-10, bilan n°18)
+
+Dix lots. Bilan **sur pièces** : les dix rapports relus, les chiffres vérifiés au
+dépôt **et dans `git log`**, aucune trouvaille rejouée. Seule mesure fraîche :
+les MD5. **Calibration : elle a arrêté ce lot DEUX FOIS** — motif sensible à la
+casse (le 490 écrit « Arrêtés » en début de phrase), puis dernier nombre au lieu
+du premier (le 499 écrit « 76 (+1) »). Sans elle, toute la série de ce bilan
+aurait été fausse.
+
+### Les chiffres
+
+| | |
+|---|---|
+| suite | **2864 passed / 0 skipped** sur les dix |
+| service worker | **`td-shell-v187`** sur les dix |
+| MD5 des 8 pages | **8/8** déclaré dix fois, remesuré 8/8 aujourd'hui |
+| production | **zéro fichier hors `docs/`** dans les dix commits — vérifié dans `git show --name-only` |
+| gardiens | **zéro** ajouté |
+| PR | **#522 (490) → #531 (499)** |
+
+### Rendement : DEUX dossiers en dix lots
+
+Feuille lue **dans les lignes d'index** : 480-482 **20** · 483 **21** ·
+484-485 **23** · 486-489 **24** · 491-494 **24** · 495 **25** · 496-499 **26**.
+**Tranche 480-489 : +4. Tranche 490-499 : +2. La production est divisée par
+deux.** Les deux neufs : **495-A** (rang 1) et **496-A** (rang 2), plus la
+**requalification du 442**.
+
+### Auto-correction : de +3 à +1
+
+« Publiés puis corrigés » : 480 **7** → 489 **10** ; 490 → 499 **11**. **Le taux
+a baissé des deux tiers, et ce n'est pas nécessairement une amélioration** : la
+tranche a publié moins de chiffres neufs. **Moins publier, c'est moins avoir à
+corriger.**
+
+### Faux arrêtés : +22, et la MOITIÉ sont mes propres instruments
+
+479 **45** · 489 **54** · 499 **76** → tranche 480-489 **+9**, tranche 490-499
+**+22**, taux **multiplié par 2,4**. Classement des 22 :
+
+| | |
+|---|---|
+| **défaillance de mon instrument** | **11** — 490, 491, 492 ×2, 493 ×3, 496, 497 ×2, 498 |
+| erreur de lecture du résultat | 10 — 491, 494 ×3, 495 ×2, 497 ×2, 498, 499 |
+| sonde dangereuse évitée | 1 — 495 |
+
+**Onze sur vingt-deux ne sont pas des faits sur le produit : ce sont des pannes
+de mes propres bancs.** Un compteur qui monte n'est pas en soi une vertu — **il
+mesure autant ma rigueur que ma maladresse.**
+
+### Les règles de calibration servent-elles ? Un tiers
+
+Sur les onze pannes : **3 attrapées par une calibration écrite d'avance** (493,
+496, 498 — plus celle de ce lot), **8 attrapées en lisant la sortie**. Le **497**
+est le contre-exemple : trois pannes, calibration muette — d'où la règle
+« **témoin de CHARGE avant témoin de VARIÉTÉ** ».
+
+### Fermer ou découvrir ? La boucle ferme
+
+**4 veines closes** (493, 496, 498, 499) contre **1 ouverte** (495) et **5 lots
+de bornage** (490, 491, 492, 494, 497). Travail réel — mais **une boucle qui
+ferme quatre fois plus qu'elle n'ouvre approche la fin de ce qu'elle peut trouver
+seule**.
+
+### Le second contrôle : les chiffres du réveil
+
+« feuille 24 → 26 » **confirmé** · « +21 » **faux, c'est +22** · « PR #521 →
+#531 » : la plage propre à la tranche est **#522 → #531** · « 301 fichiers de
+test » : **300** `test_*.py`, 301 `.py` avec `conftest.py`.
+
+### Le stock
+
+26 dossiers · quinze rang 1 · neuf rang 2 · trois rang 3 · dix lots A-J · 7 à
+chiffrer · 7 arbitrages humains · 17+ observations · un devis de purge de 4 369
+lignes. **Corrections engagées 0 · gardiens 0 · octets servis modifiés 0, sur
+VINGT lots.** Je pose la question de la soutenabilité **sans y répondre à la
+place de l'utilisateur**. Élément neuf : **le stock vieillit bien** — deux
+dossiers ont été resserrés par des lots ultérieurs plutôt qu'abandonnés. **Il
+reste inutilisable sans une décision.**
+
+**Dix bilans — n°9 à n°18 — attendent une réponse.**
+
 ## BILAN — veille active, lots 480 → 489 (2026-08-09, bilan n°17)
 
 Dix lots. Bilan fait **sur pièces** : les dix rapports relus, les chiffres
