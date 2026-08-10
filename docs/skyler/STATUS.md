@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 541 — livré** : **ce que l'utilisateur lit quand ça casse — 103 états
+  explicites, dont 28 erreurs ; huit disent le POURQUOI, quinze ne disent que
+  le QUOI.** Choix (i) : appliquer la leçon du 540, compter d'abord ce qui
+  atteint l'écran. **Témoin LU avant d'écrire l'instrument** :
+  `VX.states.error('Registre indisponible : ' + esc(e.message))` — la cause la
+  plus informative n'est pas un littéral mais une cause **construite**, et
+  classer « construite » en catégorie faible aurait faussé le lot dès sa
+  première ligne. **Arrêt** : un repli littéral (`x || 'phrase'`) sortait
+  « non lisible » alors que c'est ce que l'utilisateur lit. **Mesure** : 28
+  `error` (8 construites, 17 littérales de 2 mots à la médiane, dont **quinze
+  de 3 mots ou moins**) et 75 `empty` (médiane 7 mots, maximum 18) — **les
+  états vides sont trois fois plus bavards que les erreurs, l'inverse du
+  besoin**. Action proposée : absente 40, construite 14, littérale 13, vide 8.
+  **Les onze causes « non lisibles » ont été lues : aucune n'est pauvre** —
+  trois helpers dont la raison vient de l'appelant, six replis littéraux ratés
+  par l'enveloppe `esc(…)`, un `fail()` centralisé, et le **filet de dernier
+  recours de `/portfolio`**. **Aucun dossier ouvert** : « Régime indisponible »
+  n'affiche rien de faux ; le relevé est posé, l'arbitrage appartient à
+  l'humain. Règles **541-A** la forme la plus riche peut être celle qu'on croit
+  illisible · **541-B** un repli littéral n'est pas une cause illisible ·
+  **541-C** compter des mots n'est pas juger une phrase. Aucun fichier de
+  production touché · SW `td-shell-v187` · MD5 **8/8** · snapshot **écart
+  AUCUN** · **2864 passed / 0 skipped**. Arrêtés **155 (+1)** · publiés puis
+  corrigés **22**.
+
 - **Lot 540 — livré** : **les dix-sept atténuations qui atteignent un écran
   ont toutes été lues — aucune n'invente un chiffre.** Choix (h) : fermer la
   réserve du 539 (106 racines inconnues). **Point fixe de la provenance**,
