@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 551 — livré** : **l'étendue du filet — médiane 2 champs JSON
+  nommés, 388 au total, 29 au maximum**, et **trois arrêts, tous dans mon
+  instrument**. Choix (w) : lever la limite que le 550 s'était imposée.
+  **(1)** La contamination ne partait jamais : je n'amorçais le suivi que si le
+  parent immédiat de l'appel était une affectation, alors que l'idiome dominant
+  est `j = …get('/cal-feed').get_json()`. Corrigé : **médiane 1 → 3, total
+  220 → 577** — l'erreur faisait paraître la suite plus mince qu'elle n'est.
+  **(2)** Puis le compteur a gonflé dans l'autre sens : `system.service_worker`,
+  un fichier **JavaScript**, ressortait **en tête avec 36 « champs »** — en
+  réalité 34 recherches de sous-chaîne et 2 noms d'en-tête. Le **genre** de la
+  valeur est désormais suivi le long de la chaîne d'accès, et les trois
+  familles comptées séparément. **(3)** Une variable de boucle nomme des
+  champs : `/api/session/manifest` tombait dans le seau des muets alors que son
+  test nomme **six champs** par `for k in (…): assert k in j` — la leçon 549-A
+  que je n'avais pas portée jusqu'ici. **Arrêtés 170 → 173.** Mesure : sur les
+  112 points d'entrée CONTENU, médiane **2**, total **388**, max **29**
+  (`/api/skyler`), 11 à un seul champ, **32 sans aucun champ JSON** — dont
+  **22 vérifiés par sous-chaîne ou en-tête** (pages HTML et ressources
+  statiques), 4 par une forme, et **6 nommés sans être qualifiés**. Second
+  contrôle : 178 sous-chaînes, 45 en-têtes, 85 accès imbriqués — comptés à
+  part, jamais additionnés. Règles **551-A** la contamination part du bout de
+  la chaîne · **551-B** une sous-chaîne n'est pas un champ · **551-C** la leçon
+  d'un lot ne se porte pas toute seule. Cycle : aucun fichier de production
+  touché, SW `td-shell-v187`, **MD5 8/8**, snapshot 22 fichiers ; **3 modifiés pendant le lot** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, aucun fichier apparu ni disparu, **2864 passed / 0 skipped**, lancée **après** les documents.
+  Arrêtés **173 (+3)**.
 - **Lot 550 — livré** : **la profondeur du filet, enfin mesurée — 112
   points d'entrée sur 141 vérifiés au CONTENU, 29 au statut seul, ZÉRO au
   néant.** Choix (u) : les 548 et 549 avaient écrit deux fois que « couvert »
