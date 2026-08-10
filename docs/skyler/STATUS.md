@@ -2880,6 +2880,46 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 521 — livré** : **trois instruments, trois échecs de calibration sur le
+  MÊME témoin — on ne prouve pas statiquement qu'une route ne sort pas sur le
+  réseau. Voilà pourquoi cette dette dort depuis NEUF lots. Alors j'ai construit
+  et VALIDÉ le verrou qui la débloquera. Aucun dossier (rang 0). AUCUNE des 23
+  routes appelée.** Choix (a), la dette du 512, la plus ancienne non entamée ; son
+  blocage a toujours été le même — plusieurs routes **hors liste sûre**, donc une
+  innocuité réseau à établir d'abord. Chaque crible calibré sur **deux réponses
+  connues** : `/api/correlations/<sym>` doit ressortir RÉSEAU, `/api/system/status`
+  HORS RÉSEAU. **I · graphe d'appel par NOM** : positif OK, **négatif échoue** —
+  résolution par nom partout dans le dépôt, un homonyme et le graphe explose (284
+  modules). **II · graphe des IMPORTS** : **négatif échoue encore** — **importer un
+  module n'est pas exécuter son réseau**, la fermeture transitive est trop
+  grossière. **III · délégation vers la liste sûre** : **16 « mesurables » →  2**
+  après nettoyage, parce que j'avais mis **`get`** dans la liste sûre, or il
+  collisionne avec `dict.get`, `args.get`, `repo.get` — presque toute ligne de
+  Python. **118 → 121**, trois arrêts dans un lot, **tous attrapés par leur propre
+  témoin négatif**. **Ce que ces échecs établissent** : la limite est
+  **méthodologique**, pas un défaut de soin — et c'est **la réponse à une question
+  que je ne m'étais jamais posée : pourquoi cette dette ne bouge-t-elle pas ?**
+  **Je la recommandais lot après lot sans voir que je recommandais une impasse.**
+  **La sortie par le haut** : au lieu de prouver qu'une route ne sortira pas,
+  **empêcher toute sortie** — un verrou de processus faisant lever
+  `socket.socket`. La sûreté devient vraie **par construction**, et **l'échec
+  devient l'information**. **Verrou construit et validé** : il **bloque** · il
+  **n'abîme pas le sûr, 5/5 routes sûres répondent 200 verrou posé** · il est
+  **réversible**. **Je ne l'applique à AUCUNE des 23 : outil prêt, pas
+  autorisation.** **Ce que le dépôt fait bien** : les cinq routes sûres répondent
+  **sans aucune sortie réseau possible** — liste empirique **confirmée par
+  construction** pour elles ; et `/api/system/status` répond verrou posé alors que
+  **trois cribles l'accusaient de sortir** : **c'est le produit qui avait raison,
+  pas mes instruments**. Portée : **la dette du 512 reste ENTIÈRE**, ce lot mesure
+  pourquoi elle résiste et fabrique l'outil ; verrou validé sur cinq routes
+  seulement. Aucun fichier de production touché. MD5 8/8 · snapshot 22 fichiers
+  écart AUCUN · SW `td-shell-v187` · **2864 passed / 0 skipped**. Feuille
+  **inchangée : 37 dossiers**. Série **1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2, 0, 0, 0,
+  4, 4, 0, 0**. **Le collisionneur récurrent a un nom : `get` — troisième forme de
+  la famille homonyme dans un seul lot, après le nom de FONCTION et le nom de
+  MODULE. Question posée à l'humain : m'autorisez-vous à appeler les 23 routes,
+  verrou réseau posé ?**
+
 - **Lot 520 — livré** : **première mesure de ce que l'utilisateur VOIT — les
   chargeurs exécutés se comportent CORRECTEMENT, états vides honnêtes compris.
   Et j'ai failli publier un FAUX dossier de rang 2 : l'erreur JavaScript brute
