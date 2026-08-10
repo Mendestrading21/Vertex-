@@ -266,3 +266,29 @@ chaud.
 - mais **un etat de chargement faux** est montre — ce qui l empeche d etre
   rang 4.
 
+
+---
+
+# Complément du lot 532 — `531-A` double de taille
+
+```text
+chargeur                              texte peint en regime d ECHEC
+/opportunities renderRadar                 0 caracteres
+/opportunities renderAnomalies             0 caracteres
+/opportunities renderOptions               0 caracteres
+/opportunities renderStocks                0 caracteres
+/opportunities renderCalendar             50 caracteres
+/options loadStructure                     7 caracteres
+/system loadConnections                  770 caracteres
+/system loadData                         314 caracteres
+```
+
+**Quatre des cinq vues d Opportunites** laissent un squelette perpetuel sur
+panne reseau ; seule `calendar` survit. Le rang reste **3**, l ampleur
+passe de **deux** a **quatre** chargeurs.
+
+`loadConnections` et `loadData`, designes par la lecture statique, sont
+**disculpes a l execution** : 770 et 314 caracteres peints sur panne.
+
+`loadStructure` peint **7 caracteres** : candidat NOMME, NON PROMU.
+

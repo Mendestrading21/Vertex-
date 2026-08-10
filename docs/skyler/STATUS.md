@@ -2880,6 +2880,40 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 532 — livré** : **531-A double de taille — quatre chargeurs
+  d'Opportunités sur cinq laissent un squelette perpétuel, pas deux — et le
+  crible statique désignait six coupables dont l'exécution en disculpe deux.**
+  Choix (r) : sur tout le JS servi, combien de chargeurs attaquent `VX.fetch`
+  sans protection ? Mesuré **par comptage d'accolades**, pas par grep. **Le
+  témoin a pris mon instrument en défaut** — recherche **par nom seul** alors
+  que `renderOptions` existe sur deux pages (famille 521-B) — **puis c'est le
+  témoin qui était faux** : au 531 j'avais noté « renderOptions : try · catch »
+  sur un test grossier, alors que son `await VX.fetch` est **hors de tout try**.
+  **L'instrument avait raison, ma lecture du 531 était trop grossière. Publiés
+  puis corrigés : 20 → 21.** **Mesure : 76 fonctions, 93 appels `VX.fetch`, 12
+  non protégés sur 7 fonctions — soit 87 % d'appels protégés**, le bon motif est
+  la norme. **Second contrôle** : six fonctions non protégées écrivent dans un
+  conteneur à squelette, mais `loadConnections` peignait 770 caractères au 531 —
+  contradiction, donc exécution. Calibré sur la dernière étape (`renderAnomalies`
+  muet, `renderCalendar` peignant). Résultat : **quatre chargeurs muets**
+  (`renderRadar`, `renderAnomalies`, `renderOptions`, `renderStocks`), et
+  **`loadConnections` 770 caractères et `loadData` 314 sont DISCULPÉS**. **531-A
+  passe de deux à quatre chargeurs** : les deux nouveaux butaient au 531 sur
+  `PARAMS is not defined`, mais **en régime d'échec `VX.fetch` lève avant que
+  `PARAMS` ne soit évalué**. **Quatre des cinq vues d'Opportunités laissent un
+  squelette perpétuel ; seule `calendar` survit.** Rang inchangé (3), ampleur
+  doublée. Ce que le dépôt fait bien : 87 % d'appels protégés ; deux accusés
+  innocentés par le second contrôle ; **le défaut est concentré dans un seul
+  fichier, dont la cinquième fonction porte déjà le bon motif**. Portée : le
+  crible ne voit que `VX.fetch` ; `loadStructure` peint 7 caractères — candidat
+  nommé, non promu ; régime d'échec = levée ; **aucune correction engagée**.
+  Aucun code, aucun gardien, aucun test, aucun fichier de production touché.
+  MD5 8/8 · snapshot 22 fichiers écart AUCUN · SW `td-shell-v187` · 2864 passed
+  / 0 skipped. Série 1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2, 0, 0, 0, 4, 4, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 3, 0. Trois règles neuves : **532-A chercher par (page,
+  nom)** · **532-B un témoin peut avoir tort** · **532-C un régime de panne peut
+  rendre mesurable ce que le régime nominal bloque**. Rapport :
+  `docs/refactor/validation/SKYLER-LOT-532.md`.
 - **Lot 531 — livré** : **531-A, rang 3 — deux vues d'Opportunités
   laissent un squelette de chargement PERPÉTUEL si la requête échoue.**
   **Premier dossier depuis le 514**, et le premier visible depuis bien plus
