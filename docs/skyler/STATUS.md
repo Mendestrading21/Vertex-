@@ -2880,6 +2880,29 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 564 — livré** : **troisième chiffre lourd — 11 se reproduit,
+  c'est un cumul par page, les limites distinctes sont 4** — et **la douzième
+  limite du 537 n'a jamais été nommée**. Choix (jj) : le plus petit des cinq
+  restants. Les six bancs du 538 existent ; `res` contient 11 couples et
+  2 + 9 = 11, exact. **Premier constat** : le corps du 538 dit bien « 12 limites,
+  dont 11 levées » — mais son **titre** annonce « les onze limites du 537 », et
+  **`chips` n'apparaît pas une seule fois dans le rapport**. Identifiée par
+  différence, la douzième est **`/options|chips`**, déplacée de « muettes » vers
+  « limites » par le second banc du 537 alors que le 538 avait reçu la liste
+  d'avant. **Second constat** : 11 couples pour **4 signatures distinctes** —
+  `navigate` position 8160 sur les 8 pages vaut sept unités à elle seule, les
+  trois autres (`boot`, `initSettings`, `risk`) sont sur une page. **L'arrêt du
+  lot** : ce quatre **n'est pas** le « quatre » de 531-A, qui désigne les quatre
+  chargeurs muets — **recouvrement mesuré à zéro**. Publier « 4 » sans le dire
+  aurait laissé croire à une confirmation. Second contrôle : **0** couple traité
+  hors de la liste reçue — contrairement au banc du 537 (`renderCalendar`), celui
+  du 538 est discipliné ; **il n'a pas débordé, il a hérité d'un périmètre déjà
+  incomplet**. Règles **564-A** un titre simplifie plus vite qu'un tableau ·
+  **564-B** un périmètre hérité se vérifie à la réception · **564-C** deux
+  nombres égaux ne sont pas le même nombre. Cycle : aucun fichier de production
+  touché, SW `td-shell-v187`, MD5 8 / 8 identiques, snapshot 22 fichiers ; 3 modifies par la suite de tests (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), restaures — ecart final AUCUN, aucun fichier apparu ni disparu, suite **2864 passed / 0 skipped**.
+  Arrêtés **190 (+1)**, interprétations retirées **8 (+1)**. **Quatre chiffres
+  lourds restent.**
 - **Lot 563 — livré** : **deuxième chiffre lourd — 25 se reproduit,
   c'est un cumul par page, les fonctions distinctes sont 18** — et le banc du
   537 avait exécuté **une fonction hors de son propre périmètre**. Choix (ii) :
