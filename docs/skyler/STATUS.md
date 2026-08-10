@@ -2880,6 +2880,48 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 504 — livré** : **retour au PRODUIT après vingt lots de moteurs — sur
+  `/journal`, page jamais auditée, le KPI « Respect des invalidations » affiche
+  100 % EN VERT sur des entrées qui ne portent AUCUN stop, et 0 % EN ROUGE sur une
+  petite position bien gérée. DOSSIER 504-A, rang 1.** Choix (b), la
+  recommandation du 503. **Instrument : rien n'est transcrit** — `behavioral()` et
+  `loadDiscipline()` sont **extraites des OCTETS SERVIS** par `/journal` (md5
+  `243699ace2d5`, celui de la référence) et exécutées telles quelles sous node ;
+  journaux **fabriqués en mémoire**, `desk_data.json` ni lu ni écrit. Résultat sur
+  la vue par défaut : manuel LONG bien formé **50 % neutre (conforme)** · manuel
+  SHORT deux stops sautés **100 % VERT** (vérité 0 %) · auto stop VIDE **100 %
+  VERT** (vérité n/d) · auto stop=prix / exit=total $ **100 % VERT** (n/d) · auto
+  PETITE position bien gérée **0 % ROUGE** (n/d). **Trois causes racines qui
+  co-occurrent (497)** : (A) `num('')` **et** `num(null)` valent **0, pas null** —
+  or `vx-entities.js:145` crée `entrySnap: {}` et `:177` écrit `stop:
+  t.entrySnap?.stop ?? ''`, donc le stop vide est la **forme normale** de l'entrée
+  automatique ; (B) aucune lecture de `e.dir` alors que le modal propose SHORT — le
+  test est **inversé** pour un short ; (C) **unités mêlées** — l'auto écrit
+  `entry`/`exit` en TOTAUX $ pendant que `stop` est un PRIX unitaire. **Du même
+  défaut racine, une tautologie d'affichage : « Respect de la méthode » et
+  « Qualité des entrées », affichés côte à côte, ont un écart de 0 sur les cinq
+  formes que le code peut produire** — deux libellés, un seul nombre. **Second
+  contrôle (481) en trois volets, et le troisième a changé la conclusion** :
+  (I) « servi mais jamais pris » écarté en exécutant `loadDiscipline()` sur un DOM
+  bouchonné et en lisant le HTML produit ; (II) pivot vérifié par témoin direct sur
+  `num` ; (III) **j'allais publier « le défaut rassure » — c'est faux** : il rend
+  aussi 0 % en rouge et accuse un trader irréprochable. **Le défaut n'est pas
+  rassurant, il est ARBITRAIRE : le chiffre suit la TAILLE de la position, pas la
+  discipline.** **Aucun gardien** — `test_journal_system_07.py:39` n'assert que la
+  présence des identifiants, et `test_postmortem.py:29` couvre `postmortem.build()`,
+  le moteur serveur : **« behavioral » désigne deux objets, vingt-sixième récurrence
+  du piège des homonymes**. Rang 1 parce que le chiffre est affiché, colorié, sur la
+  vue par défaut, faux **dans les deux sens**, sans gardien, et que **la phrase
+  d'en-tête porte le même nombre** (motif du 433) ; pas plus haut car aucun ordre
+  n'est passé et READONLY est intact. **Portée dite : `desk_data.json` jamais
+  ouvert (je montre que le code PRODUIT ces formes, pas leur fréquence) ; formes
+  fabriquées ; aucun navigateur ; les quatre autres sous-vues de `/journal` non
+  auditées — et la référence MD5 ne couvre que la vue par défaut, donc quatre vues
+  servies ne sont dans aucune empreinte de la boucle.** Aucun code, aucun test,
+  aucun fichier de production touché, rien supprimé, rien corrigé. MD5 **8/8** ·
+  snapshot 22 fichiers écart **AUCUN** · SW `td-shell-v187` · **2864 passed /
+  0 skipped**. Arrêtés avant publication **81 → 82** ; publiés puis corrigés **12**.
+  Feuille **26 → 27 dossiers · seize rang 1**.
 - **Lot 503 — livré** : **la dette des huit rangs relatifs payée — aucun ne tient
   SEUL par comparaison, et le « NEUF sur vingt-quatre » du 480 est FAUX : il y en a
   QUINZE.** Choix (a) : la plus ancienne dette de fond encore ouverte (nommée au
