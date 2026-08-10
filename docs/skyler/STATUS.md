@@ -2880,6 +2880,32 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 547 — livré** : **51 sur 51 — aucun squelette ne disparaît au
+  rendu.** Choix (q) : le 546 avait expliqué l'écart des 51 par la fenêtre de
+  400 caractères, mais ne l'avait prouvé que sur **un** cas. La pile du 535
+  portée sur la source — pour chaque marqueur, l'`id=` le plus proche avant lui
+  est son **propriétaire unique** — rend **FENÊTRE 150 · PILE 100**, donc
+  **50 des 51 sont des voisins mal attribués**. **L'arrêt du lot** : le 51ᵉ,
+  `vx-demo-banner` (`options_intel_page.py`), ressortait porteur réel sans
+  squelette servi — ce qui aurait été une **trouvaille de production**. Lecture
+  du fichier : `_HEADER` se referme, puis `_LOADING = '<div
+  class="vx-skeleton"…>'` commence — **le marqueur est dans une autre constante
+  Python**, sans aucun lien HTML. Ma pile avait franchi une frontière que le
+  HTML ne franchit pas. Plutôt que d'écarter ce cas à la main, un second banc
+  **mesure** la frontière avec les spans de l'arbre `ast` : **89 propriétaires
+  dans la même chaîne, 11 à cheval**. Résultat final, quatre critères :
+  **FENÊTRE 150 · PILE 100 · STRICT 89 · SERVI 78**, avec **SERVI ⊂ STRICT,
+  zéro exception** et **11 stricts non servis**. **L'hypothèse « squelette qui
+  disparaît au rendu » est réfutée : zéro cas.** Ce qu'il reste : 11
+  identifiants — `pf-risk-gauge` (chaîne JavaScript, 544-A), 8 de
+  `intelligence_page.py`, 2 de `tracking_page.py`. **La dette mesurée quatre
+  fois : 87 → 72 → 21 → 11**, sans jamais changer de nature. Second contrôle :
+  112 marqueurs (87 `%%LOADING%%`, 25 `vx-skeleton`), 7 `id=` en apostrophes
+  invisibles, profondeur invisible côté source. Règles **547-A** une frontière
+  de constante n'est pas une relation HTML · **547-B** une limite se mesure,
+  elle ne se retire pas à la main · **547-C** l'emboîtement est une preuve.
+  Cycle : aucun fichier de production touché, SW `td-shell-v187`, **MD5 8/8**,
+  snapshot 22 fichiers ; **3 modifiés pendant le lot** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, aucun fichier apparu ni disparu, **2864 passed / 0 skipped**, lancée **après** les documents. Arrêtés **167 (+1)**.
 - **Lot 546 — livré** : **les « 72 identifiants jamais servis » n'existent
   pas — 51 des 72 sont servis.** Choix (o) : d'où viennent-ils, et lesquels
   appartiennent à un module sans consommateur ? **Deux arrêts.** Le premier :
