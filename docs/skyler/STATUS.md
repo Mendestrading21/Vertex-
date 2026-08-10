@@ -2880,6 +2880,29 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 570 — livré** : **le second canal d'erreur, inventorié — 89 sites
+  au PLANCHER**, et **79 d'entre eux vivent hors de toute clause `catch`**. Choix
+  (pp). Les noms du canal venant d'un échantillon de 41 clauses, **deux relevés
+  indépendants** ont été faits et l'écart publié. **(A) plancher** : `VX.toast`
+  55 distincts (cumul 251), `emptyCard` 14, `setNet` 5, `setStatus` 5, bannière
+  9, marqueur 1. **Grille du 541 appliquée** : littérale 58 · construite 18 ·
+  repli 1 · absent 2, dont **46 littérales de trois mots ou moins** ; la position
+  de l'argument porteur **varie** (`VX.toast(msg, …)` mais `emptyCard(id, msg)`).
+  **L'écart (A)/(B)** : le relevé structurel trouve 209 sites et 27 appelés
+  inconnus — mais ce sont **des aides de rendu** (`kv`, `cell`, `tile`, `row`).
+  Le contrôle a donc marché **dans les deux sens** : (A) est un plancher, **et
+  (B) n'est pas un recensement** — la forme ne distingue pas un message d'échec
+  d'un libellé de colonne. **L'arrêt du lot** : « 13 » (569) et « 89 » (570) ne
+  comptent pas la même chose — des **clauses** contre des **sites d'appel** ;
+  mesuré, 10 sites vivent dans un `catch`, l'écart de 3 s'expliquant par le
+  périmètre. Second contrôle : **79 des 89 sites sont hors `catch`** — la
+  restriction du 569 cachait quatre cinquièmes du canal. Règles **570-A** un
+  inventaire fondé sur des noms lus dans un échantillon est un plancher ·
+  **570-B** un balayage structurel n'est pas un recensement non plus · **570-C**
+  deux comptes justes peuvent ne pas être comparables. Cycle : aucun fichier de
+  production touché, SW `td-shell-v187`, MD5 **8 / 8**, snapshot 22 fichiers ; **3 modifiés par la suite de tests** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**,
+  **2864 passed / 0 skipped**. Arrêtés **196 (+1)**. **Le total réel des signalements d'échec reste
+  inconnu : deux bornes, aucun recensement.**
 - **Lot 569 — livré** : **les 123 clauses `catch` du 568, enfin lues —
   41 font quelque chose, 13 signalent l'échec par un canal que le 541 ne
   connaissait pas** — et **le piège que j'avais écrit généralisait à partir d'un
