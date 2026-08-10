@@ -2798,6 +2798,50 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 497 — livré** : **le 495-A borné — il atteint bien `/portfolio`, mais par
+  un chemin ÉTROIT et CONDITIONNEL : il n'y arrive que si la position n'a PAS de
+  thèse.** Quatre faux arrêtés, dont **trois branches d'échec de mon propre banc**.
+- **Choix (c)** : borner un rang 1 déjà posé plutôt qu'ouvrir une famille neuve.
+  **(b), l'audit `PAGE_*`, reste une dette nommée.**
+- **Règle 491 d'abord** : chaîne établie sur pièces jusqu'à la colonne
+  **« Verdict moteur »** (`portfolio_page.py:460`), et `/portfolio` fetche bien
+  `/api/positions/state`.
+- **La condition qui change tout** (positions fabriquées en mémoire,
+  `desk_data.json` jamais touché) : **sans thèse et en gain → 20 lignes, verdict
+  changé 4/20** · **avec thèse et en gain → 0 ligne, la carte n'est pas rendue**
+  (tout tombe en `P3_LOW`) · **sous invalidation, avec ou sans thèse → 0/20**
+  (le verdict est dominé par `thesis_invalidated`). **Je refuse de publier
+  « 4/20 sur /portfolio » : vrai du banc, faux du produit.**
+- **Les deux défauts CO-OCCURRENT** : la carte n'apparaît que quand quelque chose
+  ne va pas, et quand ce qui ne va pas est « thèse absente », le moteur est
+  **aussi** aveugle au fondamental.
+- **Second contrôle — les trois autres clés mortes** : `st_fund` **4/20** ·
+  `earnings_dte` **2/20** · `st_timing` **0/20** · les deux premières ensemble
+  **4/20, pas 6** · les trois **4/20**. **L'effet n'est PAS additif** :
+  **l'effet conjoint des quatre clés égale celui de `st_fund` seule.**
+- **Nommé, non classé** : avec une thèse renseignée, `thesis_health` change
+  **20/20** et son échelle **s'effondre de cinq états à deux** — mais
+  `thesis_health`/`overall_status` sortent à **0 occurrence** dans les octets
+  servis (règles 486/491/492).
+- **Quatre faux arrêtés** : (1) mon blob n'était pas lu (`blob['data']['myTrades']`
+  et non `blob['myTrades']`) → « 0 changement sur 0 position », **un non-résultat
+  lisible comme « aucun impact »**, et **ma calibration ne couvrait pas le cas
+  zéro** ; (2) `thesis_health.assess()` sortait en retour anticipé faute de
+  `thesis_text` → « inchangé 0/20 » au lieu de 20/20 ; (3) **`thesisState` de
+  `/portfolio` est un homonyme client** de `thesis_health` (**24ᵉ récurrence**) ;
+  (4) j'allais publier « 4/20 sur /portfolio » sans la condition d'affichage.
+  **69 → 73.**
+- **Leçon de méthode, chèrement payée** : trois des quatre faux étaient des
+  **branches d'échec de mon banc**, et la règle « calibrer le banc sur sa propre
+  validité » (492) **n'en a attrapé aucun** — elle testait la mauvaise chose.
+  **Une calibration doit vérifier que le banc CHARGE quelque chose, pas seulement
+  qu'il REND quelque chose de varié.**
+- **Le rang 1 du 495-A n'est pas modifié** (il tient sur `/analysis`,
+  inconditionnel). Ce lot ajoute une seconde surface **conditionnelle** et
+  **aucun dossier neuf**. Feuille **inchangée : 26 dossiers**.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  runtime **22 fichiers, écart AUCUN** · suite **2864 passed / 0 skipped**.
+
 - **Lot 496 — livré** : **la veine des barèmes définitivement close — `edge /100`
   est SAIN (il atteint 100 et S+) ; mais le second contrôle montre que le R:R du
   moteur est une TAUTOLOGIE, et que « R:R visé » affiche un score /100 sous une
