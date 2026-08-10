@@ -2880,6 +2880,36 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 555 — livré** : **les 7 routes sans filet tiennent leur
+  contrat** — 12 clés lues en portée, **12 confirmées, zéro divergence**. Choix
+  (aa) : le 554 avait nommé 7 routes que le produit appelle au chargement et
+  qu'aucun test ne couvre ; elles ne sont pas autorisées à l'appel, mais leur
+  code est lisible. **Aucune n'a été appelée** — vue par `app.view_functions`,
+  source par `inspect.getsource`, contrat par `ast`. **L'arrêt du lot** : le
+  témoin du brief était faux pour la **cinquième** fois — `api_track_record` ne
+  porte **aucun dictionnaire littéral** (`return
+  jsonify(_track.evaluate(scan_state))`) ; témoin remplacé par
+  `strategy_os_api.py:147`, lu dans le code. Et il désignait encore l'angle
+  mort : les gestionnaires qui **délèguent**. **Trois autres chiffres faux
+  arrêtés** : le même seau « clés hors contrat » a eu quatre versions —
+  **40 → 8 → 3 → 0** — et les trois premières accusaient le produit. (1)
+  L'**espace de noms plat du 553** attribuait `d.results` d'un
+  `fetch('/api/pos-quotes')` à `/api/options`, qui rend `{board, updated}` : **3
+  collisions** de nom mesurées, une route **absorbe**, une autre est
+  **affamée** ; un banc de portée ramène **43 clés brutes à 12**. (2) `ast.walk`
+  descendait dans l'auxiliaire interne `agg` de `track_record.evaluate`. (3) Le
+  contrat de `/api/system/startup-report` est écrit **hors de tout `return`**,
+  par `_REPORT.update` ligne 91 de `startup.py`. **Un instrument insuffisamment
+  lu ne produit pas du bruit neutre : il produit des reproches.** Second
+  contrôle : 3 délégations, **3 résolues** (les 2 récalcitrantes étaient des
+  `import` **écrits dans la fonction**), 0 retour illisible, 8 clés écrites par
+  mutation. Ce que le dépôt fait bien : `validate_config()` n'expose **aucune
+  valeur de secret**, et `startup_report()` porte `'order_execution':
+  'disabled-by-design'` — **READONLY inscrit dans le rapport de démarrage**.
+  Règles **555-A** un espace de noms plat fabrique des reproches · **555-B** un
+  contrat n'est pas toujours dans le `return` · **555-C** `ast.walk` n'est pas
+  une portée. Cycle : aucun fichier de production touché, SW `td-shell-v187`,
+  **MD5 8/8**, snapshot runtime **avec copie du contenu** : 22 fichiers ; **3 modifies par la suite de tests** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaures — ecart final AUCUN**, aucun fichier apparu ni disparu, suite **2864 passed / 0 skipped**. Arrêtés **179 (+4)**.
 - **Lot 554 — livré** : **24 routes que le produit appelle à chaque
   chargement et que je n'ai jamais appelées** — 17 déjà couvertes par la suite,
   3 sous prudence, **zéro interdite**, et **7 que personne ne teste**. Choix
