@@ -2798,6 +2798,40 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 499 — livré** : **la famille du 495 bornée par un ESPION D'EXÉCUTION à
+  zéro faux positif — SEPT clés manquent sur le DÉTAIL, et ZÉRO sur tous les
+  autres objets de `scan_state`. La symétrie inverse nommée au 498 N'EXISTE PAS.**
+- **Choix (a)** : la veine du dernier rang 1, question décidable par la mesure.
+  **(b), le coût de démarrage en millisecondes, reste une dette nommée.**
+- **Changement d'instrument, et c'est le point du lot** : le 495 cherchait par
+  regex (33 sorties, **29 faux positifs**) ; ici chaque objet de `scan_state` est
+  une sous-classe de `dict` qui **enregistre les clés demandées et absentes**.
+  **Une absence enregistrée est réelle par construction — zéro faux positif.**
+- **Calibration** : charge (scan 20/20) · positif (`detail.st_fund` absent
+  **132 fois**) · négatif (`detail.score` jamais absent). **32 exercices, toutes
+  réponses 200**, aucune route réseau sortante.
+- **Résultat** : DÉTAIL **7 clés** (`earnings_dte` 212× · `st_fund` 132× ·
+  `fund_score` 132× · `rr` 92× · `st_timing` 92× · `atr` 80× · `rvol` 80×) ;
+  **ROW 0** ; `portfolio`, `daily`, `market_ctx`, `committee`, `strategy`,
+  `recommendations` : **0**. **Le défaut est confiné à UN objet.** Témoin de vie :
+  le détail a servi `sector` 3 616 fois, `score` 1 892 — les objets ont bien été lus.
+- **Le tri qui compte** : **`rr` a un repli qui FONCTIONNE** (`or plan.get('rr')`)
+  → sans conséquence, et j'allais le compter comme un cinquième défaut. **Une clé
+  morte suivie d'un repli qui marche n'est pas un défaut.** **`atr`** et **`rvol`**
+  n'ont **aucun repli** → `stop_distance_atr = None` et `rel_volume = None`, alors
+  que les valeurs existent (`plan['atr']`, `volx`/`rvol`). **0 occurrence dans les
+  octets servis** → nommés, non classés. **75 → 76.**
+- **Second contrôle, chiffré contre l'ancien instrument** : la regex du 495 voit
+  **89 clés**, l'espion **7** ; **`atr` est INVISIBLE à la regex par construction**
+  (forme parenthésée `(detail or {}).get(`), et **83 clés signalées par la regex
+  n'ont jamais été vues par l'espion** (chemins non exécutés ou faux positifs).
+  **Les deux instruments ne se remplacent pas — chacun voit ce que l'autre ne peut
+  pas voir.**
+- Feuille **inchangée : 26 dossiers**. Dernier lot de la tranche 490-499 ; **le
+  lot 500 est le bilan n°18**.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  runtime **22 fichiers, écart AUCUN** · suite **2864 passed / 0 skipped**.
+
 - **Lot 498 — livré** : **la famille `PAGE_*` auditée — les DOUZE constantes sont
   mortes, zéro atteint une surface servie ; 61,1 % de `terminal.py` est du HTML
   jamais servi, et 1,43 Mo est reconstruit en mémoire à chaque démarrage.**
