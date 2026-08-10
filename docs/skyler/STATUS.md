@@ -2880,6 +2880,57 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 512 — livré** : **les 41 routes muettes lues une par une — le brief se
+  trompait : `/api/comite` ne cache rien (0 chaîne inédite sur 67). Mais un
+  MOTEUR ENTIER, `context.py`, n'atteint l'écran sous AUCUNE formulation. Dossier
+  512-A, rang 4.** Choix (a), la dette créée par le 511 (« je n'ai pas classé les
+  41 par intention »). **Mesure, charge décodée, scan peuplé, sur les 9 routes de
+  la liste SÛRE** — chaînes ≥ 8 caractères réparties entre *déjà dans les octets
+  servis* / *déjà reçues par une route appelée* / *introuvables ailleurs* :
+  `/api/committee-review` 44 → 15/1/**28** · `/api/brief` 30 → 17/1/**12** ·
+  `/api/system/status` 20 → 15/1/4 · `/api/cockpit` 35 → 5/29/1 · `/news-feed`
+  2 → 1/0/1 · **`/api/comite` 67 → 9/58/0** · **`/api/strategie` 19 → 5/14/0** ·
+  **`/api/watchlist` 118 → 14/104/0** · `/api/weekly` charge vide, alimentée par
+  `_weekly_loop()` jamais démarrée ici — **non jugée**. **Le brief et le 511 se
+  trompaient** : ils annonçaient trois routes portant un raisonnement de comité
+  invisible, il y en a **deux**. **Dossier 512-A** : les phrases introuvables
+  (« Top 2% de l'univers · #1/3 dans Technology ») viennent de
+  `vertex/engines/context.py:52 context_for` — percentile d'univers, percentile
+  sectoriel, rang sectoriel, pairs nommés, phrase `_headline` **déjà rédigée** ;
+  **un seul consommateur**, `decision_api.py:46 _ctx_for`, qui alimente
+  **exactement trois routes, les trois muettes**. Corpus servi (9 pages dont la
+  page détail + 33 scripts) : « de l'univers » 0 · « percentile » 0 · « #1/ » 0 ·
+  « quartile » 0. **Classement des 41** : 9 exploitation · 9 appelables mesurées ·
+  **23 lues mais non appelées** (drill-down par entité 12, suivi hypothétique 3,
+  autonomes 8). **Trois arrêts avant publication dans un seul lot** : (1) charge
+  mesurée **sans scan** — j'allais publier « `/api/comite` est vide », alors que
+  ces routes lisent `scan_state` et sont vides par construction sans scan (après
+  scan : 11 648 et 52 153 octets) ; (2) classe « redondant » bâtie sur des **noms
+  de clé** — **28ᵉ récurrence de l'homonyme**, `/api/brief` classé dans la case
+  exactement opposée à la mesure sur contenus ; (3) mon banc comparait des
+  **échappements** (`March\u00e9` contre `Marché`) : recompté après décodage,
+  31 → 28 et 13 → 12 — **artefact réel mais petit, aucune conclusion renversée, et
+  je publie l'écart plutôt que le seul chiffre corrigé**. **Second contrôle (règle
+  481)** : le cas exclu — une information à l'écran sous une autre formulation —
+  écarté **par lecture** (seul producteur du dépôt, un seul consommateur, quatre
+  vocabulaires absents) ; témoin positif : « régime » ressort sous **quatre**
+  formulations, l'instrument sait donc voir une reformulation quand elle existe.
+  **Rang 4** (étalon 454/511-A : rien de faux n'est montré) ; ce qui le distingue
+  de son parent est la **précision** — un moteur, un fichier, une fonction, une
+  phrase utilisateur déjà écrite : **premier élément de la veine directement
+  actionnable en produit sans rien réécrire**. Correction pressentie : afficher
+  `context.headline` sur la fiche d'un titre. **Aucun GO, ne rien supprimer.**
+  Portée : « déjà reçue par une route appelée » n'est **pas** « affichée » ;
+  **seules 9 des 41 sont mesurées**, les 23 autres classées par lecture ;
+  `/api/weekly` non jugée ; les 32 routes hors liste sûre **n'ont pas été
+  appelées**. Aucun fichier de production touché, rien supprimé. MD5 8/8 ·
+  snapshot 22 fichiers écart AUCUN · SW `td-shell-v187` · **2864 passed /
+  0 skipped**. Arrêtés avant publication **100 → 103**. Feuille **33 dossiers ·
+  deux rang 4**. Série des rangs **1, 2, 2, 3, 3, 0, 0, 4, 4** : la veine rend
+  désormais des **occasions manquées** plutôt que des défauts — changement de
+  nature, et premier lot dont la suite naturelle est d'**ajouter** quelque chose
+  à l'écran.
+
 - **Lot 511 — livré** : **instrument NEUF « producteur sans consommateur » —
   quarante et une routes de données sur cent trois (39,8 %) ne sont demandées par
   aucun octet servi. Et j'ai corrigé mon propre chiffre TROIS FOIS. Dossier 511-A,
