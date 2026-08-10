@@ -2880,6 +2880,34 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 559 — livré** : **les « 21 tests de membre ambigus » — mal
+  attribués depuis sept rapports, et huit d'entre eux ne testent pas une réponse
+  HTTP du tout**. Choix (ee) : une dette laissée à l'état de nombre depuis huit
+  lots. **Premier arrêt** : les rapports 552 à 558 disent « les 21 du 551 », or
+  le 551 ne contient ni ce nombre ni ce mot — **les 21 ont été mesurés au 552**.
+  Sept rapports ont propagé l'attribution, et la définition du brief était fausse
+  elle aussi. **Deuxième arrêt** : mon premier classement cherchait le producteur
+  de chaque clé dans tout le dépôt — `note` a **93** producteurs, `label` 100 —
+  et sortait 18 « indécidables » : **l'espace de noms plat du 553, transposé en
+  Python**. Resserré au module de la route : 3 chaînes, 3 indécidables, 15 sans
+  producteur. **L'arrêt qui compte** : lu dans `test_anomaly_engine.py:25`,
+  `d = anomaly.scan(…)` puis `'…' in d['narrative']` — **`d` est le retour direct
+  du moteur**, pas une réponse. Le banc du 552 marquait les variables **par
+  fichier, pas par fonction**. Mesure : **13 sur une vraie réponse HTTP, 8 sur un
+  appel direct** (`anomaly.scan` ×3, `stress.build` ×3, `pretrade.build` ×2).
+  **Les 21 ambigus du 552 sont 13** — correction en ajout, le 552 n'est pas
+  réécrit ; le plancher du 551 n'est **pas** recalculé. Sur les 13 : **3
+  chaînes**, 3 indécidables, 7 sans producteur dans le module de leur route —
+  **la lecture ne tranche que 3 sur 13**, et dix cas restent ouverts sans être
+  déclarés (550-B). Ce que le dépôt fait bien : les 35 tests de racine ne sont
+  pas ambigus, les 8 cas hors sujet sont de vrais tests de moteur, et
+  `anomaly.scan` rend une chaîne assemblée de constantes — jamais un texte
+  inventé. Règles **559-A** une dette se vérifie à sa source avant d'être payée ·
+  **559-B** un nom de clé cherché globalement n'est pas une lecture de contrat ·
+  **559-C** marquer par fichier plutôt que par fonction fait entrer des valeurs
+  qui n'ont rien à faire là. Cycle : aucun fichier de production touché, SW
+  `td-shell-v187`, MD5 8 / 8 identiques, snapshot 22 fichiers ; 3 modifies par la suite de tests (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), restaures — ecart final AUCUN, aucun fichier apparu ni disparu, suite **2864 passed / 0 skipped**. Arrêtés **185
+  (+2)**, publiés puis corrigés **29 (+1)**.
 - **Lot 558 — livré** : **les « 35 accès imbriqués » enfin nommés** —
   presque la moitié n'étaient pas des lectures de contrat mais des **méthodes
   JavaScript**. Choix (dd) : le 553 comptait 35 accès imbriqués et quatre lots
