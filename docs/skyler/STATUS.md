@@ -2880,6 +2880,35 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 565 — livré** : **quatrième chiffre lourd — 112 se reproduit à
+  l'identique, c'est un cumul par page, les atténuations distinctes sont 84** —
+  et **les 28 unités en double sont TOUTES dans le seau que personne n'a jamais
+  lu**. Choix (kk) : le plus gros des quatre restants. Les cinq bancs du 539 sont
+  conservés ; le corpus des 8 pages était déjà sur disque, **aucune route
+  appelée**. Le banc du 539 n'enregistrait **pas la position** : un nouveau banc
+  **relit le corpus** avec le même prédicat et l'ajoute (563-A), sans toucher la
+  preuve. **Reproduction exacte** : 112 · 272 · 2 072 · 105 programmes · 0
+  erreur, plus 17 affichées et 6 racines serveur. **Premier constat** : le « 95 »
+  est bien le **complément** du 17 dans les 112 — recouvrement **prouvé** — mais
+  **le 539 ne l'écrit jamais** ; il naît au 540 par soustraction et circule
+  depuis dans **vingt** rapports sans avoir jamais été compté. **Second
+  constat** : 112 entrées pour **84 signatures distinctes** — quatre signatures
+  (`chart-core.js` ×3, `vx-entities.js`) chargées par les 8 pages valent **28**
+  unités en double. **Troisième constat** : affichées **17 → 17**, racine serveur
+  **6 → 6**, **non affichées 95 → 67** ; feuille 17 + 67 = 84, chevauchement zéro.
+  **Les deux seaux lus un par un étaient exacts** : les conclusions du 539 et du
+  540 sont intactes, **seule la dette rétrécit**. **L'arrêt du lot** : deux
+  « 25 » côte à côte dans ma propre sortie — 25 signatures statiques du produit,
+  25 dans la bibliothèque exclue — **recouvrement mesuré à zéro** avant d'écrire
+  quoi que ce soit. Second contrôle : `chart.umd.min.js`, sauté par le 539, porte
+  **200 entrées / 25 signatures / 0 affichée** — exclusion légitime, mais dont la
+  taille n'avait jamais été donnée. Règles **565-A** un chiffre né d'une
+  soustraction hérite des défauts de ses deux termes · **565-B** un cumul ne se
+  répartit pas uniformément · **565-C** le piège des nombres égaux peut naître
+  dans sa propre sortie. Cycle : aucun fichier de production touché, SW
+  `td-shell-v187`, MD5 **8 / 8**, snapshot 22 fichiers ; **3 modifiés par la suite de tests** (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, **2864 passed / 0 skipped**. Arrêtés
+  **191 (+1)**, interprétations retirées **9 (+1)**. **Trois chiffres lourds
+  restent.**
 - **Lot 564 — livré** : **troisième chiffre lourd — 11 se reproduit,
   c'est un cumul par page, les limites distinctes sont 4** — et **la douzième
   limite du 537 n'a jamais été nommée**. Choix (jj) : le plus petit des cinq
