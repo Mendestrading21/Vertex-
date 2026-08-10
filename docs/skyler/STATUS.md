@@ -2880,6 +2880,39 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 530 — livré** : **les 35 vues servies tiennent — aucune n'est
+  une coquille vide, 31 sur 35 annoncent leur chargement, et les 4 restantes
+  n'ont aucun conteneur muet.** Choix (m), rester sur le produit. Le 523 avait
+  mesuré le total du texte serveur **sans jamais le ventiler par vue**.
+  **Mon témoin positif a ÉCHOUÉ et je le publie** (509-A) :
+  `/system?view=automations`, entièrement hydratée par le JS, sert **749
+  caractères contre une médiane de 588** — **le volume de texte servi ne dit
+  rien de la dépendance au JavaScript**. J'ai changé de **question**, pas de
+  témoin. La mesure reste juste : **35 vues, 24 060 caractères, médiane 588**,
+  de **403** (`/markets?view=sectors`) à **1 643** (`/system?view=settings`) —
+  **aucune coquille vide dans le produit**, chaque vue arrive avec ses titres et
+  ses libellés avant même que le JS ne réponde. **Le discriminant qui marche est
+  le squelette** : **31 vues sur 35** en portent au moins un, 4 aucun
+  (`/markets?view=macro`, `/options?view=volatility`, `?view=events`,
+  `?view=scenarios`). **L'arrêt du lot** : le second contrôle a d'abord rendu
+  « TROU MESURÉ — un conteneur vide et muet par vue » ; **les quatre sont le
+  même, `vx-palette-input`**, le champ de recherche de la palette, **un
+  `<input>` vide par nature**. Conteneurs de contenu muets après correction :
+  **0**. **133 → 134.** Ce que le dépôt fait bien : la page n'est jamais
+  blanche ; le contrat `%%LOADING%%` est tenu à **89 %** ; les deux vues
+  `/options` sans squelette **attendent une saisie** et le disent (« Saisis un
+  symbole. ») — ne pas annoncer un chargement qui n'a pas commencé est correct ;
+  le repli sur la vue par défaut fonctionne au MD5 près. Portée : mesure ce que
+  le SERVEUR sert, pas l'hydratation ; repli testé sur `/system` seulement ;
+  question **répondue à moitié**, l'exécution des 35 chargeurs restant à faire.
+  Aucun code, aucun gardien, aucun test, aucun fichier de production touché ;
+  aucune route interdite. MD5 8/8 · snapshot 22 fichiers écart AUCUN · SW
+  `td-shell-v187` · 2864 passed / 0 skipped. Série 1, 2, 2, 3, 3, 0, 0, 4, 4, 4,
+  2, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0. Trois règles neuves :
+  **530-A le volume de texte servi ne dit rien de la dépendance au JavaScript** ·
+  **530-B un conteneur vide par nature n'est pas un conteneur muet** · **530-C
+  quand un témoin échoue, changer de question, pas de témoin**. Rapport :
+  `docs/refactor/validation/SKYLER-LOT-530.md`.
 - **Lot 529 — livré** : **retour au produit — deux chiffres de rang 4
   confirmés, un juste avec un mot faux, un non reproductible.** Choix (k), et
   changement d'axe assumé : quatre lots d'affilée avaient mesuré ma
