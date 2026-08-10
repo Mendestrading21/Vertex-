@@ -2880,6 +2880,51 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 518 — livré** : **la dette la plus ancienne, enfin mesurée — ce ne sont
+  pas « 29 vues sans empreinte » mais 27 VUES SERVIES SUR 35 dont aucun test ne
+  regarde le contenu. Et mon premier banc disait le contraire. Dossier 518-A,
+  rang 4.** Choix (a), dette portée depuis le lot 505 et **jamais entamée**,
+  seule restante à porter sur le **produit servi**. **Deux corrections d'entrée**
+  : ce ne sont **pas 37 vues mais 35** (`/` et `/analysis` n'ont **aucun
+  registre** ; `/options` en a 9 dont 3 legacy) ; et **« sans empreinte » n'était
+  pas la bonne question** — une empreinte publiée dans un rapport ne protège
+  rien, **ce qui protège un rendu c'est un test**. **Le premier banc rassurait** :
+  35 empreintes **distinctes**, repli **8/8** sur une vue fabriquée, **29 vues
+  requêtées par un test** — j'allais conclure que la dette était un mythe.
+  **Le second contrôle l'a renversé** : « requêtée » n'est pas « gardée ». Sur les
+  35 paires réelles — **8** vues dont un test regarde le CONTENU · **16** testées
+  **uniquement par un code de statut** · **11** dont aucun test ne nomme l'URL.
+  **27 sur 35, soit 77 % de la surface servie, n'ont aucun test qui regarde ce
+  qu'elles affichent**, et l'essentiel du « 29 » vient d'**un seul test** qui
+  parcourt 21 vues sans rien vérifier d'autre que le statut. Parmi les 11 : 4
+  vues par défaut (atteintes par l'URL nue, testée) et **7 non-défauts sans
+  aucune trace** (`/journal?view=progression`, `/options?view=events|overview|
+  radar|volatility`, `/portfolio?view=options`, `/system?view=automations`).
+  **Rang 4** : rien de faux n'est montré, les 35 répondent 200 et le repli marche
+  — **ce n'est pas un défaut du produit mais un défaut de protection** ; ce qui le
+  distingue d'une curiosité est **l'échelle**, 77 % de la surface visible pouvant
+  se vider sans que 2 864 tests bronchent. **Trouvaille secondaire** :
+  `analysis_page.render_index(view)` accepte un paramètre dont le corps contient
+  **zéro occurrence** — `/analysis?view=…` rend toujours la même page. **Deux
+  arrêts avant publication, les deux sur mon banc** : j'ai agrégé la couverture
+  **par nom de vue en perdant la page** (mélangeant les vues d'`intelligence_page`,
+  page morte, et les noms fabriqués des tests négatifs) ; et j'allais publier
+  « 10 vues affichent une bannière d'erreur » alors que je comptais des **classes
+  présentes dans les gabarits JS inertes** — piège 495, lecture **retirée**.
+  **113 → 115.** **Ce que le dépôt fait bien** : 35 empreintes distinctes, repli
+  conforme au code sur 8/8 pages, zéro HTTP ≠ 200, et un test dédié protège déjà
+  le repli. Portée : « sans test de contenu » n'est **pas** « cassée » — c'est une
+  **exposition**, pas une panne ; le crible cherche l'URL littérale et 236 boucles
+  paramétrées existent, donc **le 27 est une borne haute** ; mesuré en DÉMO.
+  Aucun fichier de production touché. MD5 8/8 — **et c'était la calibration
+  positive du banc** · snapshot 22 fichiers écart AUCUN · SW `td-shell-v187` ·
+  **2864 passed / 0 skipped**. Feuille **36 dossiers · quatre rang 4**. Série
+  **1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2, 0, 0, 0, 4**. **Le 517 disait la veine
+  épuisée : c'était vrai de l'axe des INSTRUMENTS. En changeant d'axe — le produit
+  servi — la première mesure rend un dossier. Leçon : une dette portée douze lots
+  sans être mesurée finit par être mal énoncée ; celle-ci l'était sur le nombre,
+  la nature et la conclusion.**
+
 - **Lot 517 — livré** : **l'instrument du 516 est RÉPARÉ — il retrouve enfin son
   propre cas de référence. La zone aveugle contenait EXACTEMENT UN cas, et c'est
   le 513-A déjà connu. Le « 8 » du 516 devient 9. Aucun dossier neuf (rang 0).**
