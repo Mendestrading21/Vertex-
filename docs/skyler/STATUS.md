@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 545 — livré** : **la page que personne n'avait jamais mesurée —
+  `/analysis/<symbole>` porte 15 conteneurs à squelette, ZÉRO muet, et 4 zones
+  de contenu qui se remplissent après une attente sans rien annoncer.** Choix
+  (m) : refaire pour `/analysis/AAPL` ce que les 535 et 536 ont fait pour les
+  43 URL. **Deux arrêts.** Le premier : **le témoin imposé par le brief était
+  faux** — il exigeait `an-chart` comme conteneur à squelette « constaté au
+  544 », alors que le 544 disait seulement « présent hors script » ; les octets
+  servis donnent `<div id="an-chart"></div>`, vide. Le second : le crible
+  rendait **14** conteneurs vides et écrits, ce qui aurait été publié à tort —
+  un second instrument (attente `async`/`.then`) le ramène à **6**, la lecture
+  du code à **4**. Mesure : 69 id servis, 15 `vx-skeleton`, **15 conteneurs à
+  squelette — 5 visés, 10 confiés, zéro muet** ; 19 servis vides, 27 écrits par
+  le JS. **Les quatre zones sous attente sans annonce** : `an-chart`,
+  `an-scores`, `an-committee`, `an-scenarios`. Preuve la plus nette : ligne 736,
+  `const V=$('an-verdict'),SC=$('an-scenarios'),CO=$('an-committee');` — même
+  fonction, même `await`, **un seul des trois porte un squelette**. Constat
+  **non arbitré**, hors relevé, rien corrigé. L'angle mort chiffré : `/analysis`
+  nu porte **1** conteneur contre **15**, recouvrement **zéro** avec les 63 des
+  43 URL. Dette du 544 recomptée : **87 → 72**. Second contrôle : 17 arguments
+  construits, 39 `querySelector`, 1 squelette posé par le JS, 23 identifiants
+  référencés absents du HTML — comptés à part. Règles **545-A** présent n'est
+  pas porteur · **545-B** un conteneur vide n'est un défaut que s'il y a une
+  attente · **545-C** une page peut se contredire à la même ligne. Cycle :
+  aucun fichier de production touché, SW `td-shell-v187`, **MD5 8/8**,
+  snapshot 22 fichiers ; **4 modifiés pendant le lot** (`ai_enrichment.json`, `daily_prev.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, aucun fichier apparu ni disparu, **2864 passed / 0 skipped**, lancée **après** les documents. Arrêtés **164 (+2)**.
 - **Lot 544 — livré** : **les 63 conteneurs du 535 sont confirmés par un
   chemin indépendant — 63 = 63, zéro écart dans les deux sens.** Choix (l) :
   recompter un seul chiffre lourd, le plus porteur, par un chemin différent de
