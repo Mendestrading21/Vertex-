@@ -2880,6 +2880,47 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 501 — livré** : **l'espion d'exécution étendu aux HUIT sous-objets du
+  détail — ZÉRO clé absente. Le bornage du 499 tient un niveau plus bas ; les deux
+  « manques » apparents sont, l'un mon propre banc, l'autre un garde qui
+  fonctionne.**
+- **Choix (b)** : l'espion est l'instrument le plus fiable construit ici, et son
+  périmètre était **explicitement borné à un niveau** par le 499 lui-même.
+  **(a) le coût de démarrage — TROISIÈME report — et (c) les huit rangs relatifs
+  restent des dettes nommées.**
+- **Calibration à trois étages** : CHARGE (20 titres · **160 sous-objets
+  espionnés** · 20 positions) · POSITIF DU MÊME GENRE (on retire `plan['stop']`,
+  l'espion l'enregistre **8 fois**) · NÉGATIF (`plan['entry']` → 0). Bras desk :
+  position **maximalement remplie** avec les 30 clés que les modèles lisent, sans
+  quoi une absence serait ininterprétable.
+- **Résultat : rien.** `plan` 1 620 lectures / **0 absente** · `trade` 1 520 / 0 ·
+  `signals` 436 / 0 · `structure` 216 / 0 · `physics` 136 / 0 · `vertex` 72 / 0 ·
+  `mtf` 68 / 0 · `series` 16 / 0. **La famille est bien un phénomène du PREMIER
+  NIVEAU du détail, et de lui seul.**
+- **Les deux « manques », refusés à la lecture** : `entrySnap['thesis']` 40× est
+  **mon propre banc** (le second bras retire la thèse) ; `sub['options']` 68× est
+  **gardé** (`decision_stack.py:176`, `isinstance(...)`, site localisé **par
+  capture de pile**) et la clé **n'existe légitimement pas** — `analysis.py:203`
+  appelle `compose()` sans `opt`, et la note affichée annonce **quatre**
+  sous-scores. **Une clé morte suivie d'un garde qui marche n'est pas un défaut**
+  (règle 499, deuxième occurrence). **77 → 79.**
+- **Second contrôle** : l'espion est **aveugle à l'itération** — mesuré, **zéro**
+  `.items()`/`.keys()`/`.values()` sur les huit sous-objets dans tout le code
+  serveur : **l'angle mort existe et il est vide, par comptage**. Et surtout :
+  `series`, `structure`, `vertex` affichaient d'abord **0 lecture** — pas
+  « propre », **« jamais exercé »**. Exercices ciblés ajoutés → 16, 216 et 72
+  lectures, toujours zéro absence. **Un zéro de couverture et un zéro de propreté
+  sont indiscernables tant qu'on ne compte pas les lectures réussies.**
+- **Trouvaille latérale** : `decision_stack._decomposition` (sous-scores,
+  ajustements, note) sort à **0 occurrence** dans les octets servis — le moteur
+  dont la confiance et l'accord sont affichés calcule une **traçabilité que
+  personne ne peint**. Nommé, non classé.
+- **Portée** : les sous-objets de **troisième niveau** ne sont pas espionnés — la
+  frontière a bougé d'un cran, elle n'a pas disparu.
+- Feuille **inchangée : 26 dossiers**.
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  runtime **22 fichiers, écart AUCUN** · suite **2864 passed / 0 skipped**.
+
 - **Lot 499 — livré** : **la famille du 495 bornée par un ESPION D'EXÉCUTION à
   zéro faux positif — SEPT clés manquent sur le DÉTAIL, et ZÉRO sur tous les
   autres objets de `scan_state`. La symétrie inverse nommée au 498 N'EXISTE PAS.**
