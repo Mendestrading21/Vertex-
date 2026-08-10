@@ -2880,6 +2880,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 563 — livré** : **deuxième chiffre lourd — 25 se reproduit,
+  c'est un cumul par page, les fonctions distinctes sont 18** — et le banc du
+  537 avait exécuté **une fonction hors de son propre périmètre**. Choix (ii) :
+  même méthode qu'au 562. Les bancs du 537 sont tous conservés — reproduction,
+  pas reconstruction — et la feuille **s'additionne dans ses deux états** (8+6+11
+  avant le second banc, 9+4+12 après), le 534 redonnant exactement 33 couples
+  non protégés. **Premier constat** : le 537 a exécuté **34** entrées pour 33
+  couples ; la 34ᵉ, `/opportunities|renderCalendar`, n'est ni parmi les 33 ni
+  dans aucun seau. Le 25 publié reste juste, **mais une fonction a été exécutée
+  hors périmètre sans que personne le dise**. **Second constat** : 25 couples
+  (page, fonction) pour **18 signatures distinctes** — une seule fonction
+  réellement partagée, `navigate` position 8160 sur les 8 pages, soit 7 unités en
+  double. Contraste avec le 562 : là-bas 12 signatures faisaient tomber 178 à
+  94 ; ici une seule fait tomber 25 à 18. **L'arrêt du lot** : grouper par **nom**
+  aurait fusionné `boot` et `renderOptions`, qui portent **deux positions
+  différentes** — des homonymes, pas des fonctions partagées ; le résultat aurait
+  été 17 et aurait affirmé un partage inexistant. Ce que le dépôt fait bien :
+  **zéro couple sans position retrouvée** vingt-six lots plus tard, et une seule
+  fonction partagée sur 25. Règles **563-A** une méthode qui a marché ne se
+  rejoue pas les yeux fermés · **563-B** un banc peut déborder son propre
+  périmètre en silence · **563-C** l'ampleur d'un défaut ne se transpose pas.
+  Cycle : aucun fichier de production touché, SW `td-shell-v187`, MD5 8 / 8 identiques,
+  snapshot 22 fichiers ; 3 modifies par la suite de tests (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), restaures — ecart final AUCUN, aucun fichier apparu ni disparu, suite **2864 passed / 0 skipped**. Arrêtés **189 (+1)**, interprétations
+  retirées **7 (+1)**. **Cinq chiffres lourds restent.**
 - **Lot 562 — livré** : **le premier des sept chiffres lourds — 178 se
   reproduit exactement, mais c'est un cumul par page ; les sites d'appel
   distincts sont 94**. Choix (hh) : on n'en prend qu'un. **Le banc du 534 existe
