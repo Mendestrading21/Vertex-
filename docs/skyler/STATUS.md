@@ -2880,6 +2880,28 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 544 — livré** : **les 63 conteneurs du 535 sont confirmés par un
+  chemin indépendant — 63 = 63, zéro écart dans les deux sens.** Choix (l) :
+  recompter un seul chiffre lourd, le plus porteur, par un chemin différent de
+  celui qui l'a produit. **L'arrêt du lot contient deux erreurs en une** : mon
+  balayage arrière rendait 64 avec `pf-risk-gauge` en plus, mais **celui-ci vit
+  à l'intérieur d'un `<script>` de 65 923 octets** — une chaîne JavaScript, pas
+  un conteneur servi ; et j'avais commencé à mesurer une « troncature » de 33
+  URL sur 43 pour en faire un défaut de `html.parser`, alors que **c'était une
+  lecture correcte** (mode CDATA imposé par la norme). J'allais donc remplacer
+  un chiffre juste par un faux **et** accuser une bibliothèque qui avait
+  raison. Après correction : **63 par les deux chemins, zéro divergence**.
+  Troisième chemin côté source : 150 identifiants à squelette, 63 servis, **87
+  jamais servis par les 43 URL** — vérifiés en appelant : ce sont ceux de
+  `/analysis/<symbole>`, **jamais comptés par aucun lot**. Second contrôle :
+  **12 squelettes posés par le JavaScript**, comptés à part et non ajoutés au
+  63. Règles **544-A** un identifiant dans une chaîne JavaScript n'est pas un
+  conteneur servi · **544-B** une « troncature » peut être une lecture
+  correcte · **544-C** quand deux chemins divergent, le plus naïf est souvent
+  le fautif. Aucun fichier de production touché · SW `td-shell-v187` · MD5
+  **8/8** · snapshot **écart AUCUN** · **2864 passed / 0 skipped**. Arrêtés
+  **161 (+1)** · publiés puis corrigés **22**.
+
 - **Lot 543 — livré** : **bilan sur pièces des dix lots de mesure (533 → 542)
   — la chaîne des arrêts s'additionne sur neuf transitions sans un écart, la
   série des rangs s'allonge d'exactement un par lot (30 → 39), et les 8 MD5
