@@ -2880,6 +2880,46 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 527 — livré** : **le relevé canonique existe —
+  `docs/skyler/DOSSIERS.md`.** Choix (h), la dette la plus bloquante : le 526
+  avait montré qu'aucun compte n'est possible sans liste canonique. **Un RELEVÉ,
+  pas un arbitrage** — les cas douteux inscrits `AMBIGU` avec leurs deux
+  lectures. Deux corrections au crible du 526 : **auto-attribution** (un
+  identifiant n'est retenu que s'il porte le numéro du rapport lui-même — le 526
+  rangeait « 511-A » sous le lot 512) et **exclusion des refus**. Calibré à
+  quatre étages, dont un **témoin de population** (`525-A`, règle de méthode,
+  doit être absent) et un **témoin de refus** (le lot 520, rang 0 publié, ne
+  produit rien). **Total annoncé tel quel : 35 dossiers, 18/6/1/10** — ni 37 ni
+  38. **Le vrai résultat est la séparation du fiable et du fragile** : un rang
+  écrit dans le TITRE est fiable, un rang lu dans le CORPS peut désigner un rang
+  **rejeté**. **10 fiables contre 25 fragiles**, et **le sous-ensemble fiable
+  donne exactement CINQ rangs 4 — le chiffre de la feuille, retrouvé pour la
+  première fois par un chemin indépendant.** **Les cinq sont nommés : 511-A**
+  (41 routes non appelées), **512-A** (`context.headline` jamais peinte),
+  **513-A** (« Top X % » faux le jour où il s'affiche), **518-A** (vues sans
+  test de contenu, **définition manquante**), **519-A** (trois vues sans porte
+  d'entrée). Sur leurs cinq chiffres porteurs : **un a sa définition écrite, un
+  n'a pas de chiffre unique, un a son périmètre cité, un a sa définition prouvée
+  manquante, un n'a pas été vérifié.** **L'arrêt du lot** : j'ai failli écrire
+  que la répartition publiée est **réfutée** ; la séparation fiable/fragile
+  montre que les 25 rangs fragiles portent tout l'écart et que le fiable
+  **confirme** les cinq rangs 4. **129 → 130.** **Second contrôle** : sur 524
+  rapports, 35 couverts, 13 refus explicites, **78 mentionnent un rang sans
+  section de classement** dont **54 en pleine période couverte** — **le « 35 »
+  est une borne basse, et l'écart avec « 37 ou 38 » est une LACUNE DE
+  COUVERTURE, pas une contradiction.** Ce que la boucle fait bien : treize
+  refus explicites publiés ; la discipline du titre s'est installée d'elle-même
+  (six des dix rangs fiables viennent des lots 511-519) ; la trace n'a jamais
+  manqué. Portée : ne tranche ni le total, ni 25 rangs, ni 33 identifiants
+  reconstruits ; rien n'est arbitré. Aucun code, aucun gardien, aucun test,
+  aucun fichier de production touché ; aucune route appelée. MD5 8/8 · snapshot
+  22 fichiers écart AUCUN · SW `td-shell-v187` · 2864 passed / 0 skipped. Série
+  1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0. Trois
+  règles neuves : **527-A un relevé n'est pas un arbitrage** · **527-B séparer
+  le fiable du fragile avant d'agréger** · **527-C un écart avec une référence
+  peut être une lacune de couverture**. Rapport :
+  `docs/refactor/validation/SKYLER-LOT-527.md` · relevé :
+  `docs/skyler/DOSSIERS.md`.
 - **Lot 526 — livré** : **la feuille ne s'additionne pas.** Choix (f) —
   écrire les définitions des chiffres portant les cinq dossiers de rang 4.
   **Premier geste, retrouver ces cinq dossiers sans les deviner** : crible
