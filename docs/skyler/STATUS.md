@@ -2880,6 +2880,27 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 539 — livré** : **« données réelles uniquement », mesuré de bout en
+  bout pour la première fois — 112 atténuations `|| 0` dans le JS servi, quatre
+  seulement touchent une valeur du serveur ET s'affichent, et les quatre sont
+  des COMPTES.** Choix (f) : changer d'axe après cinq lots sur le JavaScript.
+  **Les deux moitiés mesurées séparément** : côté serveur, **24 champs nuls
+  réellement servis** (dont `unrealized_pnl` et `delta_global`) — il n'envoie
+  pas des zéros ; côté client, **272 formateurs honnêtes**, **2 072 valeurs
+  neutres**, **112 atténuations**. Tri : 6 à racine serveur, 17 affichées, **4
+  serveur ET affichées**, 106 à racine inconnue comptées à part. **Les quatre,
+  lues une par une, sont toutes disculpées** : `tr.entries`, `tr.resolved`,
+  `d.n_outcomes` viennent de `len()` côté serveur — afficher 0 quand il y a
+  zéro élément est vrai, et le contexte est un état vide honnête ; le
+  quatrième, `(r.ts||0)*1000`, arrive dans `VX.fmt.ago` qui commence par
+  `if (!ts) return '—';`. **Aucun chiffre inventé sur le périmètre
+  mesurable.** Réserve nommée : **106 atténuations à racine inconnue**. Règles
+  **539-A** `|| 0` sur un compte n'est pas une invention · **539-B** une
+  atténuation peut alimenter un formateur honnête · **539-C** mesurer la source
+  et le rendu, pas l'un ou l'autre. Aucun fichier de production touché · SW
+  `td-shell-v187` · MD5 **8/8** · snapshot **écart AUCUN** · **2864 passed / 0
+  skipped**. Arrêtés **154 (+1)** · publiés puis corrigés **22**.
+
 - **Lot 538 — livré** : **les onze limites d'instrument du 537 sont levées —
   deux par l'exécution, huit par la lecture, une partiellement — et aucune
   n'est un chargeur muet.** Choix (d) : tant que douze fonctions sur
