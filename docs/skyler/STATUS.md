@@ -2798,6 +2798,52 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 496 — livré** : **la veine des barèmes définitivement close — `edge /100`
+  est SAIN (il atteint 100 et S+) ; mais le second contrôle montre que le R:R du
+  moteur est une TAUTOLOGIE, et que « R:R visé » affiche un score /100 sous une
+  étiquette de ratio.** **Dixième dette nommée payée d'affilée.**
+- **Règle 491 d'abord** : chaîne établie avant tout banc, `vx_edge` non nul
+  **20/20** sur le scan DEMO — l'objet mesuré est bien celui qui est peint.
+- **Un dimensionnement jeté** : ma première grille faisait **1 119 744
+  combinaisons × un Monte-Carlo à 1 200 chemins**. Tuée, restructurée en deux
+  passes (16,5 s puis 3,7 s sur 1 604 configurations ciblées). Rien de faux
+  publié, mais **j'ai dimensionné avant de mesurer le coût**.
+- **Résultat — le barème est sain** : `edge` atteint **100/100**, et **les cinq
+  paliers du verdict sont atteignables**, y compris `VERTEX S+` (edge ≥ 82), la
+  quatrième échelle S+ du dépôt. Aucun plafond, aucun bloc bridé, aucune borne
+  morte.
+- **Un faux arrêté par la calibration (B)** : `institutionality` s'arrêtait à
+  **99** et j'allais publier « un cinquième terme plafonné ».
+  `_clamp((volx−0.8)×12, 0, 15)` donne 14,4 pour `volx = 2,0` (ma grille) et 15
+  pour `volx = 2,5` → **inst 100**. **C'était ma grille, pas le moteur.**
+  **68 → 69.**
+- **Second contrôle** : les 16 champs lus par les cinq termes sont présents
+  **20/20** (rien de mort, contrairement au 495) — mais sur les 20 détails réels,
+  **`rr1/rr2/rr3` n'a qu'UNE valeur distincte : (1.0, 2.0, 3.0)**.
+- **DOSSIER 442 ÉTENDU — le R:R du moteur est une tautologie** :
+  `analysis.py:260-262` pose `tp1 = last + risk`, `tp2 = last + 2·risk`,
+  `tp3 = last + 3·risk`, `'rr': 3.0` ; `quant_engine.rr_score` **recalcule
+  `(tp_k − entry)/risk` sur des cibles qu'il a lui-même définies ainsi**. Résultat
+  (1, 2, 3) **par construction, pour tout titre, toujours** — structurel, pas un
+  artefact de démo. Le 442 disait « un littéral constant » : **c'est toute
+  l'échelle de cibles qui est figée**. **Requalifié, pas dupliqué.** Conséquence :
+  `rr_score` ne varie que par le plafonnement par la résistance — **il mesure où
+  est la résistance, pas le rendement/risque.**
+- **DOSSIER 496-A, RANG 2** : sur `/opportunities`, **quatre sites** affichent
+  `vx_rr` — c'est-à-dire `rr_score`, une **note de 0 à 100** — sous l'étiquette
+  **« R:R visé »**, qui désigne un rapport. « Edge composite » porte `/100` sur la
+  même carte ; « R:R visé » ne porte rien. Le vrai rapport (`rr_detail`) sort à
+  **0 occurrence** dans les octets servis. **Pas d'atténuation** : le
+  « R:R structurel 3 » d'`/analysis` est sur une **autre page** (règle 487), et il
+  aggrave — 3 ici, 64 là. **Rang 2 et pas rang 1** : le chiffre est ambigu, pas
+  faux (règle 492).
+- **Bilan de la veine** : sur les sept barèmes annoncés au 486, **deux étaient des
+  homonymes, deux n'étaient pas des barèmes, un était un doublon, et les deux
+  vrais sont sains.** Bornage complet, coût cinq lots.
+- Feuille : **25 → 26 dossiers · quinze rang 1 · neuf rang 2 · trois rang 3.**
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  runtime **22 fichiers, écart AUCUN** · suite **2864 passed / 0 skipped**.
+
 - **Lot 495 — livré** : **la veine des barèmes close — les « cinq » n'étaient
   que DEUX ; et en la fermant, la mesure trouve un DOSSIER RANG 1 : le moteur
   exécutif décide en aveugle sur QUATRE de ses entrées, dont le score
