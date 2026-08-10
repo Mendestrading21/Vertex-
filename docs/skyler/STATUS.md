@@ -2880,6 +2880,53 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 516 — livré** : **recensement — 457 phrases calculées, 75 atteignent
+  l'écran (16 %), 8 portent un nombre construit. Et une correction du 514 : la
+  liste est COUPÉE À CINQ, si bien que la phrase « top X % » que j'avais montrée
+  est ÉVINCÉE dans 2 cas sur 2 sur données réelles. Aucun dossier neuf (rang 0).**
+  Choix (a), recommandé deux fois et jamais pris ; crible par **AST**, pas par
+  motif textuel (leçon 515-A). **Le recensement** : 457 phrases françaises
+  interpolées dans les sources Python → **75 atteignent l'écran**, dont **7 via
+  les octets servis** et **68 via la charge utile d'une route appelée**, et **8
+  portent un nombre construit**. **Le chemin dominant n'est pas la page mais la
+  charge utile — 68 sur 75, dix fois plus large que le rendu serveur direct** :
+  c'est la voie par laquelle le 514-A est devenu visible. **Aucune des 8 n'est un
+  dossier** : trois utilisent `int()` (troncature, « note 74 » pour 74,9) mais
+  l'écart est **borné à un point sur cent** — convention d'affichage, pas
+  destruction d'information (515-C) ; les cinq autres arrondissent correctement.
+  **La correction du 514** : `decision_stack._result` coupe `pros` et `cons` à
+  cinq. Le 514 avait mesuré sur une carte **fabriquée** aux facteurs concurrents
+  rares. Sur le scan **réel** : 20 titres, **5 produisent la phrase**, **2 seulement
+  la voient survivre (40 %)** — et **les DEUX cas « leader » sont évincés**
+  (ACN « top 2% », AFL « top 8% »), tandis que la forme qui survit est
+  **« bas X % » dans les facteurs NÉGATIFS**. **Le dossier 514-A tient** — la
+  phrase atteint bien l'écran et écrira « bas 0 % » à l'échelle de production —
+  **mais l'illustration que j'avais publiée était précisément la forme que les
+  données réelles évincent**. Rang 2 maintenu, vitrine fausse. **Publiés puis
+  corrigés : 14 → 15.** **Second contrôle : mon recensement rate son propre cas de
+  référence** — `context._headline` assemble par `' · '.join(parts)` et son plus
+  long fragment littéral est « de l'univers », 13 caractères, sous le seuil de
+  prose : **mon dossier 513-A échappe à mon propre crible**. Mesuré : **98
+  interpolées écartées pour fragment trop court**, 227 comme balisage — le « 8 »
+  est une **borne basse**, publiée comme telle. Troisième angle mort, le français
+  **assemblé en JavaScript** : 336 occurrences, **mais mal discriminées** (surtout
+  du balisage à libellés français) — **majorant grossier, pas mesure**. **Deux
+  arrêts avant publication, les deux sur mon banc** : j'interrogeais
+  `/api/decision/AAPL` alors qu'**AAPL n'est pas dans le scan DÉMO** ; puis je ne
+  visais que le meilleur titre, **dont la phrase est justement évincée** —
+  j'allais réfuter le 514-A à tort. **110 → 112.** **Ce que le dépôt fait bien** :
+  cinq des huit phrases arrondissent juste, la coupe à cinq est une **hygiène
+  d'affichage délibérée**, et les 382 phrases non atteintes ne sont pas du gâchis
+  (erreurs, journal, diagnostic). Portée : « atteint l'écran » = fragment présent
+  dans les octets servis **ou** dans une charge appelée — qu'il soit **peint** est
+  une question distincte ; crible Python et littéral ; mesuré sur le scan DÉMO.
+  Aucun fichier de production touché. MD5 8/8 · snapshot 22 fichiers écart AUCUN ·
+  SW `td-shell-v187` · **2864 passed / 0 skipped**. Feuille **inchangée : 35
+  dossiers**. Série **1, 2, 2, 3, 3, 0, 0, 4, 4, 4, 2, 0, 0**. **Enseignement : un
+  instrument doit retrouver son propre cas de référence. Le 514 avait échoué
+  là-dessus et je l'avais réparé ; le 516 échoue à son tour, et cette fois je
+  publie la BORNE plutôt que de réparer.**
+
 - **Lot 515 — livré** : **la dette du 514 est close par un ZÉRO MESURÉ — les 38
   divisions entières du dépôt sont toutes légitimes. Mais le 514 avait publié
   253, faux d'un facteur 6,7, et j'ai attrapé TROIS artefacts de banc dans ce
