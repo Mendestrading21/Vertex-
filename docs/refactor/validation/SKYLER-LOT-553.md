@@ -132,7 +132,7 @@ littéraux**.
 - **Aucun fichier de production touché** (`git diff --stat` sur `vertex/`,
   `terminal.py`, `tests/` : AUCUN). Pas de bump. SW : `td-shell-v187`.
 - `persist` redirigé et **vérifié** avant tout import.
-- **MD5 des 8 pages remesurés : **8 / 8 identiques****
+- **MD5 des 8 pages remesurés : 8 / 8 identiques.**
 - Snapshot runtime **avec copie du contenu** : 22 fichiers ; **4 modifiés pendant le lot** (`ai_enrichment.json`, `daily_prev.json`, `desk_data.json`, `weekly_snapshot.json`), **restaurés — écart final AUCUN**, aucun fichier apparu ni disparu
 - Suite : **2864 passed / 0 skipped**, lancée **après** les documents
 
