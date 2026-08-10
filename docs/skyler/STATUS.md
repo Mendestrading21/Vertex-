@@ -2880,6 +2880,32 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 538 — livré** : **les onze limites d'instrument du 537 sont levées —
+  deux par l'exécution, huit par la lecture, une partiellement — et aucune
+  n'est un chargeur muet.** Choix (d) : tant que douze fonctions sur
+  vingt-cinq restaient inexécutables, le « quatre chargeurs muets » n'était
+  qu'un plancher. **Le brief se trompait sur la cause** : il annonçait que
+  `navigate` a besoin de `location`/`history` ; le code dit qu'il prend un
+  objet URL en **premier argument**, et l'erreur venait de mon harnais qui
+  l'appelait sans argument — la faute 537-A, sur huit fonctions. **Huit
+  limites levées sans un seul stub de plus, par la lecture** : le routeur
+  finit par `.catch(function(){ endBar(); hard(href); })` avec
+  `hard(href) { window.location.href = href; }` — il rattrape tout et retombe
+  sur un chargement de page complet. **Deux levées par l'exécution** :
+  `/markets boot` 633 caractères, `/portfolio risk` 125 — ce dernier était
+  « introuvable » parce qu'il est une **propriété d'objet**, désormais extraite
+  par l'arbre. **Une mesure partielle** : `initSettings`, 299 caractères puis
+  une erreur de DOM — non muette. Ajouts au harnais tous déclarés, et le
+  **témoin positif** garantit qu'aucun ne peint : `renderAnomalies` reste à 0.
+  **Résultat : il reste exactement quatre chargeurs muets, tous sur
+  `/opportunities` — cinquième mesure indépendante, la première sans case
+  vide.** Règles **538-A** un stub de plus n'est pas toujours la réponse ·
+  **538-B** une variable de module est un état, pas un comportement ·
+  **538-C** le brief peut se tromper sur la cause. Aucun fichier de production
+  touché · SW `td-shell-v187` · MD5 **8/8** · snapshot **écart AUCUN** ·
+  **2864 passed / 0 skipped**. Arrêtés **153 (+1)** · publiés puis corrigés
+  **22**.
+
 - **Lot 537 — livré** : **les 51 appels non protégés du 534, exécutés un par
   un — neuf chargeurs peignent, quatre se taisent, et les quatre sont ceux
   qu'on connaît déjà.** Choix (z) : la dette produit la plus lourde restante.
