@@ -2798,6 +2798,56 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 494 — livré** : **la dette du 493 soldée aux DEUX bouts — le second
+  score /40 monte à 40/40 et atteint S+, mais il n'est affiché NULLE PART ;
+  le /40 qu'on VOIT plafonne à 29 et n'atteint jamais S ni S+.**
+- **Ordre imposé par la règle 491** : la surface servie **d'abord**, le plafond
+  ensuite. Cet ordre change le lot : la réponse à (1) interdit tout classement,
+  mais elle rend (2) beaucoup plus parlant.
+- **(1) Surface servie — mesuré : NON.** Corpus **42 objets · 841 916
+  caractères**. Calibration écrite dans le détecteur : positif `.detail`
+  (4 objets), négatif `zzz_inexistant` (0). `.pack` **0** · `score40` **0** ·
+  `no_chase` **0** · `optfit` **0** · `api/cockpit` **0**. **Les deux chemins de
+  production sont morts côté client** : `/api/cockpit` n'a **aucun
+  consommateur**, et les **sept** lecteurs de `r.score40` vivent dans
+  **`PAGE_DAILY` et `PAGE_WATCHLIST`**, que **nulle route ne retourne** ;
+  `/analysis` fetche bien `/api/ticker` mais ne lit que `t.detail` et
+  `t.company`. **Le second /40 est calculé pour chaque titre à chaque scan, et
+  jeté.**
+- **(2) Plafond — 40/40, S+ atteignable.** Deux calibrations avec sortie
+  programmée : entrée vide → **18** exactement (composantes neutres calculées à
+  la main), et **aucune composante restée neutre** sur l'entrée parfaite —
+  **le contrôle qui manquait au 493**. Balayage **2 099 520 combinaisons** :
+  MIN 8 · **MAX 40** · **S+ 3 597 fois (0,17 %)**.
+- **Le contraste, résultat du lot** : `skyler_core.score40` = **29/40**, S et S+
+  **inatteignables** (484-A, 485), **affiché** sur `/analysis` ;
+  `scorecard.score40` = **40/40**, S+ atteignable, **affiché nulle part**.
+  **Deux échelles /40 exactement à l'envers l'une de l'autre.** **Nommé, non
+  classé** (règles 486/491/492).
+- **Second contrôle (I) — plafond PAR SITE D'APPEL** : `terminal.py:591`
+  **38/40** avec **`cata` plafonné à 4/6**, parce que l'`opt` construit en
+  588-590 ne porte **jamais** `earnings_dte` ; `terminal.py:1597` **40/40**.
+  **Le motif du 485 reproduit sur l'autre moteur.**
+- **Second contrôle (II) — conclure par ABSENCE** : sur les **34 clés** posées
+  par `options_pack`, **18 noms apparaissent** dans les octets servis, dont
+  `ibkr` — qui est en réalité `data_sources.ibkr`, l'état du courtier.
+  **L'absence d'un nom est une preuve forte, sa présence ne prouve rien :
+  18 faux positifs sur 34, taux enfin chiffré.**
+- **Trois faux arrêtés** : le motif `ibkr` nu (19 occurrences, toutes le
+  courtier — **21ᵉ homonyme**) ; `d.recommendations` sur `/journal`, qui vient
+  de `decision_memory` (**22ᵉ homonyme**) ; « le vocabulaire servi est
+  orphelin », **réfuté** (`decision_stack.py:110` le produit). **62 → 65.**
+- **Une erreur à moi, publiée hier, corrigée ici** : la ligne d'index du 493 dit
+  « runtime 21 fichiers, écart AUCUN » alors que son rapport dit qu'un fichier
+  **est apparu** et que le compte passe à **22**. **Publiés puis corrigés :
+  10 → 11.**
+- **Quatrième lot consécutif sans nouveau dossier** — feuille inchangée à
+  **24**. Mais le 494 **ferme une question ouverte la veille, aux deux bouts**.
+  Phrase du lot : **il y a deux scores /40 dans Vertex, et c'est le mauvais qui
+  est branché.**
+- Cycle : aucun fichier de production touché · SW `td-shell-v187` · **MD5 8/8** ·
+  runtime **22 fichiers, écart AUCUN** · suite **2864 passed / 0 skipped**.
+
 - **Lot 493 — livré** : **la famille « producteur constant » balayée sur tout le
   code serveur — elle ne rend RIEN de neuf ; mais le balayage découvre un SECOND
   score /40, importé en production sous l'alias `ibkr`.**
