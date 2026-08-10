@@ -2880,6 +2880,37 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 557 — livré** : **`Promise.allSettled` était invisible à trois de
+  mes bancs** — la moitié de la « quatrième cellule » était un artefact, et le
+  contrat non gardé passe de 19 à 35. Choix (cc) : les 8 clés qu'un test nomme
+  et que la page ne lit pas. **L'arrêt du lot** : lu dans `system_page.py:680`,
+  la page fait `Promise.allSettled([VX.fetch('/api/data-quality'), …])` puis
+  `dq = dqR.value` et `if(dq && dq.total > 0)` — **`total` est lue au premier
+  niveau**. Le 553, le 555 et le 556 suivaient `Promise.all` mais ignoraient
+  `allSettled`, dont chaque élément est une enveloppe `{status, value}`. **4 des
+  8 clés sont bel et bien lues**, et l'erreur allait **encore dans le sens
+  accusatoire**. Le plus dur à écrire : **le second contrôle du 553 signalait
+  déjà « 9 valeurs non suivies », dont sept sont exactement ces enveloppes — mon
+  instrument imprimait le chiffre depuis quatre lots.** **Second arrêt, introduit
+  dans ce lot** : en ajoutant la forme `[a,b] = await Promise.all(…)` j'ai passé
+  au résolveur de portée un **nœud synthétique**, hors de la table des parents ;
+  `englobante` rendait la **racine du programme**, d'où une fausse collision sur
+  `st` qui a englouti 11 clés de `/api/system-status`. **Le signal : les totaux
+  ont baissé après un ajout qui ne pouvait qu'augmenter.** **La mesure** : 9 → 12
+  points d'entrée · A 17 → 24 · B 19 → 35 · C 20 → 28 · D 5 → 6. Décomposé : sur
+  les 9 d'origine A 19 · B 23 · C 16 · D 3 ; sur les 3 exhumés A 5 · B 12 · C 12
+  · D 3. Sur le même périmètre de 9, `allSettled` déplace **A +4, B +4, C −4,
+  D −4**, total conservé. **Les « 19 clés » du 553 étaient un plancher.**
+  Corrections : 553 « 19 » → 23 ; 556 « 8 non lues » → 4 l'étaient réellement.
+  Rapports non réécrits, correction en ajout. Ce que le dépôt fait bien :
+  `/api/system-status` et `/api/system/status` **désignent le même point
+  d'entrée** (vérifié dans `url_map`) — aucune route nouvelle appelée ; et
+  `allSettled` signifie qu'une API en panne **n'écroule pas la vue Système**.
+  Règles **557-A** un chiffre non nul du second contrôle est une dette ·
+  **557-B** un nœud synthétique n'a pas de portée · **557-C** un total qui baisse
+  après un ajout est un signal d'alarme. Cycle : aucun fichier de production
+  touché, SW `td-shell-v187`, MD5 8 / 8 identiques, snapshot 22 fichiers ; 3 modifies par la suite de tests (`ai_enrichment.json`, `desk_data.json`, `weekly_snapshot.json`), restaures — ecart final AUCUN, aucun fichier apparu ni disparu, suite **2864 passed / 0 skipped**.
+  Arrêtés **182 (+2)**, publiés puis corrigés **28 (+2)**.
 - **Lot 556 — livré** : **la portée ne réduit pas le contrat non gardé —
   elle exhume un point d'entrée entier que l'espace de noms plat avait
   affamé**. Choix (bb) : recompter les trois seaux du 553 avec la portée du
