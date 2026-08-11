@@ -2880,6 +2880,34 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 576 — livré** : **les cinq instruments rejoués sur le corpus neuf —
+  quatre tiennent, un compte 181 branches fantômes**. Choix (vv). **La part
+  tierce, mesurée avant tout total** : sur 241 516 octets neufs, **163 684
+  (67,8 %) sont une bibliothèque tierce** — le volume **produit** réellement neuf
+  est de **77 832 octets**, trois fois moins que ce que le 575 laissait entendre
+  (interprétation retirée). **Le piège tient pour quatre instruments** : zéro
+  toast, zéro bannière, zéro marqueur sur 163 684 octets de code tiers. **Il
+  tombe pour le cinquième** : la borne (B) du 574 (`if` négatif + `return`) est
+  un motif de JavaScript générique — 181 des 210 branches relevées viennent du
+  fichier tiers ; la borne (B) de produit vaut **29**. **La cause, lue** : six
+  instruments partagent la même ligne, `indexOf('chart.umd')` — un filtre tiers
+  écrit **par nom**, qui couvrait le seul fichier tiers du corpus de base et a
+  laissé passer le second **sans erreur ni avertissement**. Vérifié : le corpus
+  de base ne sert aucun fichier `/vendor/`, donc **les 290 du 574 sont bien du
+  produit** — c'est l'instrument qui est fragile, pas le chiffre. **Tableau
+  base / neuf** : 570 (A) 79 +3 · bannières 10 +8 · (B) 209 +38 · 571 toasts 55
+  +3 · 572 appels 79 +3 · 573 sites 90 +11 · 574 (A) 25 +2. **Le plancher du
+  canal est confirmé à ≥ 101 par un second instrument**, les bannières à ≥ 18.
+  **Aucune conclusion renversée.** Les trois toasts neufs ne portent **aucun ton
+  `error`** — sur cet écran, l'échec passe par les 8 bannières. **Arrêt sur ma
+  propre lecture** : la clef n'est pas `ton` mais `tons` (une liste) — 574-C
+  appliqué à moi-même. Second contrôle : les 9 vues d'`/options` ne servent
+  **aucun** fichier absent du corpus. Règles **576-A** un filtre écrit sur le
+  seul cas présent ne généralise à rien · **576-B** un instrument qui compte un
+  motif générique ne mesure pas le produit · **576-C** un volume neuf se déclare
+  après en avoir retiré le tiers. Cycle : aucun fichier de production touché, SW
+  `td-shell-v187`, MD5 8 / 8 identiques, snapshot 22 fichiers, 4 modifies puis restaures ; **un fichier apparu et un disparu** — rotation quotidienne documentee des sauvegardes desk (BACKUP_KEEP = 7) declenchee par le changement de date pendant le lot, 7 subsistent, rien supprime a la main, 2864 passed / 0 skipped. Arrêtés **203
+  (+1)**, interprétations retirées **11 (+1)**.
 - **Lot 575 — livré** : **les 35 vues n'ajoutent 141 octets — le vrai trou
   était `/analysis` sans symbole**. Choix (uu). **Correction du 574** :
   `analysis_page.py` n'a **aucun registre de vues** ; le témoin
