@@ -2880,6 +2880,7 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 613 — un palier de texte qui ne pouvait etre lisible nulle part.** Le brief visait les bandeaux d etat : **ils sont conformes** (45 feuilles, 5 ecrans en echec, deux methodes, pire ratio **4,79** contre 4,5 ; temoin hors bandeau 5,22). Elargi a **8 pages x 2 largeurs, 2 700 feuilles**, le meme instrument a trouve **`--vx-text-faint` a 3,23:1 sur la surface la plus favorable du produit** — non conforme **par construction**, alors qu il porte l aide des formulaires, les noms de fichiers de `/system` et **l etiquette qui nomme chaque valeur quand la table passe en cartes sous 768 px**. Porte a **`#847a7c`** (4,97 / 4,85 / 4,71 / 4,50 sur les quatre surfaces servies) ; **pas plus haut, car viser toutes les surfaces aurait rendu `faint` plus lumineux que `muted`** — les deux paliers sont couples. **`--vx-text-muted` reste a 4,04:1 sur 11 combinaisons : mesure, chiffre pose (`#938a8c`), NON corrige — 60 litteraux de repli et une decision de design qui revient a l humain.** SW **v196**, suite **2910**, MD5 8/8 identiques, READONLY intact.
 - **Lot 612 — livré** : **l'en-tête promettait 40 px, deux lignes au-dessus d'un
   32** — et le défaut n'est pas le seuil, c'est **ce que le code dit de
   lui-même**. Le brief soupçonnait un **oubli** ; le CSS portait une **exemption

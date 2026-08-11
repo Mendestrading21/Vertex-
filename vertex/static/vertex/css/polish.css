@@ -43,6 +43,6 @@ a.vx-strip-item:hover{border-color:rgba(255,255,255,.28)}
 
 /* ── États vides premium : icône fantôme + halo graphite discret ── */
 .vx-state[data-state="empty"]{padding:26px 18px}
-.vx-state[data-state="empty"] .vx-state-icon{width:42px;height:42px;color:var(--vx-text-faint,#5f5a55);
+.vx-state[data-state="empty"] .vx-state-icon{width:42px;height:42px;color:var(--vx-text-faint,#847a7c);
   background:radial-gradient(circle,rgba(255,255,255,.035),transparent 70%);
   border:1px solid var(--vx-border-soft,rgba(255,255,255,.065))}
