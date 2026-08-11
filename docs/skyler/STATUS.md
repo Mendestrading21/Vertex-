@@ -2880,6 +2880,37 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 609 — livré** : **le producteur rend trois valeurs, le consommateur en
+  attend mille** — et **le lot ne change rien au comportement**.
+  `news_plus.sentiment()` rend **exactement** `-1`, `0` ou `+1` ; ses deux
+  consommateurs de `news_impact.py` ont été écrits pour un score **continu**.
+  **Énumération exhaustive du domaine** (trois valeurs — une preuve, pas un
+  échantillon) : les seuils `0.15` et `0.5` **partitionnent le domaine à
+  l'identique** et ne distinguent que **signé** de **neutre** ; et
+  `confidence = min(0.7, abs(senti))` **ne prend qu'une valeur par direction** —
+  **un littéral déguisé en calcul**. **Ça ne ment à personne aujourd'hui** :
+  `confidence` n'est affichée nulle part ; le défaut est **un désaccord
+  silencieux entre deux moitiés du code**. **Le lot n'ajoute PAS d'amplitude** :
+  des décimales bâties sur 22+22 mots donneraient l'apparence d'une mesure —
+  **tant qu'on ne peut pas montrer que l'amplitude est fondée, le ternaire est
+  plus honnête que le continu**. Ce qui est corrigé, c'est **le silence** :
+  contrat écrit aux deux bouts et **gardé**. **Arrêt du lot : une mutation qui ne
+  mutait pas** — `abs(senti) >= 0.5` apparaît **deux fois**, dans le code **et
+  dans la docstring que je venais d'écrire** ; ma mutation a frappé la prose, le
+  gardien n'avait rien à attraper. **600-A dans une forme neuve**, causée par mon
+  propre travail de documentation. Refaite sur la ligne de code : **2 rouges**.
+  Arrêtés **241 → 242 (+1)**. **Gardien rouge dans les deux sens** (producteur
+  rendu continu → rouge ; seuil déplacé → rouge). **Piège : (d) réfuté — le vrai
+  défaut était le contrat, pas la granularité** ; (c) **non mesurable**, aucun
+  corpus hors ligne, **ne pas conclure vaut mieux qu'estimer**. **Second contrôle
+  (481)** : le chemin d'appel réel concatène titre **et** traduction — vérifié,
+  **cela ne change pas le domaine**. **MD5 8/8 identiques, aucun bump** ; suite
+  **2894 passed / 0 skipped** ; sondes écart **AUCUN** ; READONLY intact. Règles
+  **609-A** (documenter une valeur peut annuler le test qui la vérifie), **609-B**
+  (un littéral déguisé en calcul est pire qu'un littéral), **609-C** (refuser
+  d'ajouter de la précision est un résultat). **Dossiers produit corrigés : 7**
+  *(inchangé — ce lot ferme un désaccord de contrat, pas un défaut produit)*.
+
 - **Lot 608 — livré** : **un état vide qui sait qu'il n'est pas synchronisé** —
   et **le vrai travail était de ne PAS corriger trop large**. Le message du 607
   est un toast transitoire ; celui-ci est **dans la zone** où la conviction se
