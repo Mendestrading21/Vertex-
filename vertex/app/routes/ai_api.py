@@ -9,13 +9,24 @@ from __future__ import annotations
 
 import threading
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from vertex.app.state import scan_state
 from vertex.ai import enrichment as _enrich
 from vertex.ai import health as _health
 
 bp = Blueprint('ai_api', __name__)
+
+
+@bp.route('/api/copilot/ask', methods=['POST'])
+def copilot_ask():
+    """COPILOTE d'analyse : répond à une question en s'ancrant dans les données
+    réelles (digest, GEX/flux/thèse, positions du desk). Via Claude si la clé est
+    configurée, sinon repli déterministe honnête. Lecture seule — aucun ordre."""
+    from vertex.ai import copilot
+    body = request.get_json(force=True, silent=True) or {}
+    return jsonify(copilot.answer(body.get('question'), scan_state,
+                                  symbol=body.get('symbol')))
 
 _refresh_lock = threading.Lock()
 _refreshing = {'on': False}

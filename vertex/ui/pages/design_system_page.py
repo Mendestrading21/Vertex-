@@ -13,35 +13,55 @@ from __future__ import annotations
 from vertex.ui.shell import render_shell
 
 
-def _swatch(var: str, hexv: str = '', label: str = '') -> str:
+def _load_tokens() -> dict:
+    """Valeurs RÉELLES de tokens.css (source unique de vérité). Les alias
+    var(--x) sont résolus un niveau — la page de référence ne peut plus
+    afficher un hex périmé : elle LIT la vérité au lieu de la recopier."""
+    import os
+    import re
+    path = os.path.join(os.path.dirname(__file__), '..', '..', 'static',
+                        'vertex', 'css', 'tokens.css')
+    try:
+        css = open(path, encoding='utf-8').read()
+    except OSError:
+        return {}
+    toks = dict(re.findall(r'(--vx-[a-z0-9-]+)\s*:\s*([^;]+);', css))
+    out = {}
+    for k, v in toks.items():
+        v = v.strip()
+        m = re.fullmatch(r'var\((--vx-[a-z0-9-]+)\)', v)
+        if m:
+            v = toks.get(m.group(1), v).strip()
+        out[k] = v
+    return out
+
+
+_TOKENS = _load_tokens()
+
+
+def _swatch(var: str, label: str = '') -> str:
     name = label or var
+    hexv = _TOKENS.get(var, '')
     meta = f'<span class="ds-hex">{hexv}</span>' if hexv else ''
     return (f'<div class="ds-sw"><span class="ds-chip" style="background:var({var})"></span>'
             f'<code>{name}</code>{meta}</div>')
 
 
-# ── Groupes de palette (tokens réels de tokens.css) ────────────────────────
-_BG = [('--vx-black', '#020202'), ('--vx-obsidian-950', '#050505'),
-       ('--vx-obsidian-900', '#080808'), ('--vx-obsidian-850', '#0b0b0c'),
-       ('--vx-obsidian-800', '#0f1011'), ('--vx-graphite-900', '#121315'),
-       ('--vx-graphite-850', '#151719'), ('--vx-graphite-800', '#191b1e'),
-       ('--vx-graphite-750', '#1e2024'), ('--vx-graphite-700', '#25282d')]
-_COPPER = [('--vx-orange-950', '#3e1607'), ('--vx-orange-900', '#591f09'),
-           ('--vx-orange-850', '#6e280c'), ('--vx-orange-800', '#843310'),
-           ('--vx-orange-700', '#9f4117'), ('--vx-orange-600', '#ba501e'),
-           ('--vx-orange-500', '#cf6128'), ('--vx-orange-400', '#df7739'),
-           ('--vx-copper-dark', '#66321c'), ('--vx-copper', '#914b2b'),
-           ('--vx-copper-light', '#b9683d')]
-_SEM = [('--vx-positive', '#38b879'), ('--vx-negative', '#dc5f52'),
-        ('--vx-warning', '#ce8a29'), ('--vx-option', '#85609f'),
-        ('--vx-amber', '#ce8a29'), ('--vx-beige', '#c8ad8d'),
-        ('--vx-neutral-chart', '#8f8a83'), ('--vx-info', 'cuivre clair')]
-_TEXT = [('--vx-text-primary', '#f3f1ed'), ('--vx-text-secondary', '#b7b3ad'),
-         ('--vx-text-muted', '#817d77'), ('--vx-text-faint', '#5e5b56')]
+# ── Groupes de palette (les VALEURS viennent de tokens.css, jamais recopiées) ─
+_BG = ['--vx-black', '--vx-obsidian-950', '--vx-obsidian-900', '--vx-obsidian-850',
+       '--vx-obsidian-800', '--vx-graphite-900', '--vx-graphite-850',
+       '--vx-graphite-800', '--vx-graphite-750', '--vx-graphite-700']
+_COPPER = ['--vx-orange-950', '--vx-orange-900', '--vx-orange-850', '--vx-orange-800',
+           '--vx-orange-700', '--vx-orange-600', '--vx-orange-500', '--vx-orange-400',
+           '--vx-copper-dark', '--vx-copper', '--vx-copper-light']
+_SEM = ['--vx-positive', '--vx-negative', '--vx-warning', '--vx-option',
+        '--vx-amber', '--vx-beige', '--vx-neutral-chart', '--vx-info']
+_TEXT = ['--vx-text-primary', '--vx-text-secondary', '--vx-text-muted',
+         '--vx-text-faint']
 
 
 def _swatches(items):
-    return '<div class="ds-sw-grid">' + ''.join(_swatch(v, h) for v, h in items) + '</div>'
+    return '<div class="ds-sw-grid">' + ''.join(_swatch(v) for v in items) + '</div>'
 
 
 _DS_CSS = """
@@ -214,7 +234,7 @@ def _content() -> str:
     return (_DS_CSS + '<div class="vx-grid vx-page-enter">'
             + intro
             + sec('Palette — noirs & graphites', 'fonds obsidienne', _swatches(_BG))
-            + sec('Palette — cuivre / orange brûlé', 'accent principal', _swatches(_COPPER))
+            + sec('Palette — rampe de marque (alias historiques)', 'blanc-gris en verre', _swatches(_COPPER))
             + sec('Palette — sémantiques', 'positif · négatif · warning · options', _swatches(_SEM), span='6')
             + sec('Palette — texte', 'blanc cassé + gris chauds', _swatches(_TEXT), span='6')
             + sec('Typographie', 'hiérarchie', type_rows)

@@ -185,6 +185,7 @@ _VIEW_CONTENT = {
 
 _JS = r"""
 <script src="/static/vertex/js/charts/bar-chart.js" defer></script>
+<script src="/static/vertex/js/charts/consensus-bars.js" defer></script>
 <script>
 (function(){
 'use strict';
@@ -192,7 +193,7 @@ const $=(id)=>document.getElementById(id);
 const E=()=>window.VXEntities;
 const ROOT=document.getElementById('vx-intel');
 const VIEW=(ROOT&&ROOT.dataset.view)||'analyst';
-function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 function whenChartsReady(fn){
   if(window.VXCharts&&window.Chart)return fn();
   window.addEventListener('load',fn,{once:true});
@@ -252,6 +253,24 @@ async function runAnalysis(sym,question){
   renderScores(sym,strat);
 }
 function renderVerdict(sym,question,strat,deci){
+  /* Données insuffisantes → état honnête, calme, explicite. JAMAIS une
+     apparence de conviction (pas de verdict coloré, pas de comité chiffré). */
+  if(deci&&deci.final_decision==='DATA_INSUFFICIENT'){
+    const miss=(deci.data_quality&&(deci.data_quality.missing_fields||[]).join(', '))||'données du titre absentes';
+    $('vx-analyst-verdict').innerHTML=
+      `<div class="vx-flex vx-mb3">
+        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${sym}">${sym}</button>
+        <span class="vx-badge" data-decision="INCONNU">Donn&eacute;es insuffisantes</span></div>
+      <div class="vx-insufficient"><div class="vx-insufficient-icon">&mdash;</div>
+        <div><b>Vertex ne tranche pas ce titre.</b>
+        <div class="vx-insufficient-why">Donn&eacute;es insuffisantes (${esc(miss)}). Aucune conviction n&#8217;est affich&eacute;e tant que le dossier n&#8217;est pas complet.</div></div></div>
+      ${question?`<div class="vx-help vx-mt2">Question : &laquo; ${esc(question)} &raquo;</div>`:''}
+      <div class="vx-flex vx-wrap vx-gap2 vx-mt3">
+        <button class="vx-btn vx-btn-sm" data-open-analysis="${sym}">Ouvrir l&#8217;analyse compl&egrave;te</button></div>
+      <div class="vx-card-footer">${VX.updateIndicator((strat&&strat.as_of),'decision stack','delayed')}</div>`;
+    $('vx-analyst-meta').innerHTML=`<span class="vx-meta">${esc(sym)}</span>`;
+    return;
+  }
   const decision=(strat&&strat.final_decision)||'ATTENDRE';
   const unknowns=(strat&&strat.unknowns)||[];
   const blocking=(strat&&strat.blocking_rules)||[];
@@ -359,11 +378,22 @@ function renderCommittee(){
           +'</div>';
       }
     }
-    var _tone={AVOID:'var(--vx-negative)',WAIT:'var(--vx-warning)',WATCH_BREAKOUT:'var(--vx-brand)',ACHETER:'var(--vx-positive)',RENFORCER:'var(--vx-positive)',ATTENDRE:'var(--vx-warning)'};
-    var _tk=Object.keys(tally),_tmax=Math.max.apply(null,[1].concat(_tk.map(function(k){return tally[k];})));
-    var _th=$('vx-committee-tally');
-    if(_th)_th.innerHTML='<div class="vx-kpi-label vx-mb2">Répartition des verdicts</div>'+_tk.sort(function(a,b){return tally[b]-tally[a];}).map(function(k){var w=Math.round(tally[k]/_tmax*100);
-      return '<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:140px;font-size:12px;color:var(--vx-text-secondary)">'+esc(k)+'</span><span style="flex:1;height:12px;background:var(--vx-surface-3);border-radius:6px;overflow:hidden"><span style="display:block;height:100%;width:'+w+'%;background:'+(_tone[k]||'var(--vx-neutral-chart)')+';border-radius:6px"></span></span><span class="vx-mono" style="width:34px;text-align:right;font-size:12px">'+tally[k]+'</span></div>';}).join('');
+    /* TOURNÉE TV (lot 191) : répartition des verdicts au style « Note des
+       analystes » — builder consensusBars, comptes RÉELS du tally serveur. */
+    whenChartsReady(function(){
+      if(!(window.VXCharts&&VXCharts.consensusBars))return;
+      var _tone=function(k){
+        if(k==='STRONG_BUY'||k==='BUY'||k==='BUY_PULLBACK'||k==='ACHETER'||k==='RENFORCER')return VXCharts.colors.positive;
+        if(k==='AVOID'||k==='NO_NEW_RISK')return VXCharts.colors.negative;
+        if(k==='WATCH_BREAKOUT')return VXCharts.colors.brand;
+        return VXCharts.colors.warning;   /* WAIT / ATTENDRE / TOO_LATE / autres */
+      };
+      var _lbl=function(k){var v=window.__VXVOCAB&&__VXVOCAB[k];return (v&&(v.label||v[0]))||k;};
+      VXCharts.consensusBars('vx-committee-tally',{
+        title:'Répartition des verdicts',
+        items:Object.keys(tally).map(function(k){return {label:_lbl(k),count:tally[k],color:_tone(k)};}),
+        note:(c.universe_scanned||Object.keys(tally).reduce(function(a,k){return a+tally[k];},0))+' dossiers — verdicts réels du comité.'});
+    });
   }catch(e){}
   $('vx-committee-meta').innerHTML=VX.updateIndicator(c.as_of,
     (c.data_source==='demo'?'d&eacute;mo':'scan')+' · '+(c.universe_scanned??reviews.length)+' titres pass&eacute;s en revue',
@@ -507,7 +537,7 @@ async function initResearch(){
       $('vx-research-body').innerHTML=VX.states.empty(
         'Validation indisponible : '+esc(v.note||'historique insuffisant')+'. '
         +'Le validateur exige une courbe d&#8217;equity r&eacute;elle — rien n&#8217;est simul&eacute; pour combler.',
-        '<a class="vx-btn vx-btn-sm" href="/performance">Ouvrir Performance</a>');
+        '<a class="vx-btn vx-btn-sm" href="/journal">Ouvrir le Journal</a>');
       $('vx-research-chart').innerHTML='';
       return;
     }

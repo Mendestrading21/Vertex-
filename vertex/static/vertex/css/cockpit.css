@@ -7,7 +7,7 @@
 :root{
   --vx-glow-pos:0 0 15px rgba(54,200,137,.30);
   --vx-glow-neg:0 0 15px rgba(237,101,92,.30);
-  --vx-glow-copper-soft:0 0 24px rgba(163,202,66,.15);
+  --vx-glow-copper-soft:0 0 24px rgba(255,255,255,.15);
   --vx-tile-hi:inset 0 1px 0 rgba(255,255,255,.045);
   --vx-tile-grad:linear-gradient(180deg,rgba(255,255,255,.016),transparent 40%);
 }
@@ -27,8 +27,8 @@ a.vx-strip-item,.vx-strip-item{position:relative;overflow:hidden;
   border-radius:var(--vx-r);
   transition:transform var(--vx-t-fast),border-color var(--vx-t-fast),box-shadow var(--vx-t-fast)}
 .vx-strip-item::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;pointer-events:none;
-  background:linear-gradient(90deg,transparent,rgba(163,202,66,.42),transparent);opacity:.55}
-a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(163,202,66,.32)}
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.42),transparent);opacity:.55}
+a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(255,255,255,.32)}
 /* Grand chiffre net + delta directionnel appuyé, façon cockpit de référence */
 .vx-strip-item .vx-kpi-label{opacity:.85}
 .vx-strip-item .vx-kpi-value{font-size:23px!important;letter-spacing:-.02em;color:var(--vx-text-primary)}
@@ -42,6 +42,22 @@ a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(16
 /* ══ Grands chiffres directionnels génériques (.vx-kpi-value.vx-pos/.vx-neg) ══ */
 .vx-kpi-value.vx-pos{color:var(--vx-positive);text-shadow:var(--vx-glow-pos)}
 .vx-kpi-value.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}
+
+/* ══ Rangée de stats compactes (post-mortem, fiches) — LOT 125 ══
+   .vx-stats-row/.vx-stat étaient utilisées par 5 pages SANS style : les
+   libellés et valeurs s'affichaient collés (« Trades3 »). Tuiles de verre
+   sobres, chiffres tabulaires, uniquement des tokens. */
+.vx-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));
+  gap:10px;margin:2px 0 12px}
+.vx-stat{display:flex;flex-direction:column;gap:3px;padding:10px 12px;
+  background:linear-gradient(160deg,var(--vx-surface-2),transparent 70%);
+  border:1px solid var(--vx-border-soft);border-radius:10px;min-width:0}
+.vx-stat-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.55px;
+  color:var(--vx-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vx-stat-value{font-family:var(--vx-font-mono);font-weight:700;font-size:19px;
+  line-height:1.15;font-variant-numeric:tabular-nums;color:var(--vx-text-primary)}
+.vx-stat-value.vx-pos{color:var(--vx-positive);text-shadow:var(--vx-glow-pos)}
+.vx-stat-value.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}
 
 /* ══ Utilitaire « grand chiffre » (hero KPI façon référence) ══ */
 .vx-stat-xl{font-family:var(--vx-font-mono);font-weight:800;font-size:44px;line-height:1;
@@ -65,6 +81,15 @@ a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(16
   border-top:7px solid var(--vx-text-primary);filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
 .vx-rail-scale{display:flex;justify-content:space-between;font-size:10px;color:var(--vx-text-faint);
   margin-top:5px;letter-spacing:.4px;text-transform:uppercase}
+/* GRAMMAIRE TV (lot 198) : chip de VALEUR posé au-dessus du pointeur du rail —
+   fond clair, texte sombre (même langage que le pointeur blanc des jauges et
+   les chips de bord). Positionné par --vx-rail-pos, borné aux extrémités. */
+.vx-rail-chipline{position:relative;height:18px;margin-top:6px}
+.vx-rail-chip{position:absolute;left:clamp(18px,var(--vx-rail-pos,50%),calc(100% - 18px));
+  transform:translateX(-50%);background:var(--vx-text-primary,#F8F5F3);
+  color:var(--vx-graphite-850,#121214);font-weight:800;font-size:10.5px;
+  padding:1px 8px;border-radius:7px;font-variant-numeric:tabular-nums;
+  white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.45)}
 
 /* ══ Liseré supérieur cuivre sur les cartes phares marquées .vx-card--accent ══ */
 .vx-card--accent{position:relative}

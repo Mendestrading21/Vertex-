@@ -54,9 +54,9 @@
     if (!host || !VC || !window.Chart) return;
     var pts = rows.filter(function (r) { return r.p && r.p.return_pct != null; });
     if (!pts.length) { host.innerHTML = ''; return; }
-    var positive = (VC.colors && VC.colors.positive) || '#36c889';
-    var negative = (VC.colors && VC.colors.negative) || '#ed655c';
-    var neutral = (VC.colors && VC.colors.neutral) || '#8f8a83';
+    var positive = (VC.colors && VC.colors.positive) || '#2BBE90';
+    var negative = (VC.colors && VC.colors.negative) || '#E9555F';
+    var neutral = (VC.colors && VC.colors.neutral) || '#9d978e';
     var labels = pts.map(function (r) { return r.t.symbol; });
     var self = pts.map(function (r) { return +r.p.return_pct.toFixed(2); });
     var spy = pts.map(function (r) { return r.p.benchmark_return_pct != null ? +r.p.benchmark_return_pct.toFixed(2) : null; });

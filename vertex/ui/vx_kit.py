@@ -22,7 +22,7 @@ CSS = r"""
 .vx-btn{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.045);color:#dfe6f2;font:600 12.5px/1 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;cursor:pointer;transition:background .14s,border-color .14s,transform .14s,filter .14s;white-space:nowrap}
 .vx-btn .i{font-size:14px;line-height:1}
 .vx-btn:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.26);transform:translateY(-1px)}
-.vx-btn.pri{background:linear-gradient(180deg,#ff8a2b,#f56f0e);border-color:#ff7a18;color:#160d03;font-weight:800}
+.vx-btn.pri{background:linear-gradient(180deg,#ff8a2b,#f56f0e);border-color:#dbe1e8;color:#160d03;font-weight:800}
 .vx-btn.pri:hover{filter:brightness(1.07)}
 .vx-btn.on{background:rgba(34,197,94,.16);border-color:rgba(34,197,94,.5);color:#7ee2a4}
 .vx-mini{display:inline-flex;gap:4px;align-items:center}
@@ -31,7 +31,7 @@ CSS = r"""
 .vx-ic.on{background:rgba(34,197,94,.16);border-color:rgba(34,197,94,.5)}
 .vx-chips{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}
 .vx-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font:600 11.5px/1.2 ui-sans-serif,system-ui,sans-serif;text-decoration:none;border:1px solid transparent}
-.vx-chip.pos{background:rgba(255,122,24,.14);border-color:rgba(255,122,24,.4);color:#ffb774}
+.vx-chip.pos{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.4);color:#dbe1e8}
 .vx-chip.fol{background:rgba(245,180,91,.13);border-color:rgba(245,180,91,.35);color:#f5c67f}
 .vx-chip.wl{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.34);color:#c8ad8d}
 .vx-chip.al{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.34);color:#fca5a5}
@@ -49,7 +49,7 @@ CSS = r"""
 .vx-trail a{color:#8794ab;text-decoration:none}
 .vx-trail a:hover{color:#cbd4e2}
 .vx-trail .sep{color:#4b5563}
-.vx-trail .cur{color:#ff9a3d;font-weight:800}
+.vx-trail .cur{color:#dbe1e8;font-weight:800}
 .vx-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);background:#12151c;border:1px solid rgba(255,255,255,.16);color:#eef2f8;padding:11px 18px;border-radius:12px;font:600 13px/1.3 ui-sans-serif,system-ui,sans-serif;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:99999;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;max-width:min(92vw,420px)}
 .vx-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .vx-toast.ok{border-color:rgba(34,197,94,.5)}
@@ -65,7 +65,7 @@ CSS = r"""
 .vx-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
 .vx-field>span{font:600 11px/1 ui-sans-serif,system-ui,sans-serif;color:#8794ab;letter-spacing:.4px;text-transform:uppercase}
 .vx-field input,.vx-field select{height:38px;padding:0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.03);color:#eef2f8;font:600 13.5px/1 ui-sans-serif,system-ui,sans-serif;outline:none;width:100%}
-.vx-field input:focus,.vx-field select:focus{border-color:#ff7a18;background:rgba(255,122,24,.06)}
+.vx-field input:focus,.vx-field select:focus{border-color:#dbe1e8;background:rgba(255,255,255,.06)}
 .vx-field input[readonly]{opacity:.7;cursor:not-allowed}
 .vx-hint{font:600 12px/1.4 ui-sans-serif,system-ui,sans-serif;color:#8794ab;min-height:16px;margin-top:4px}
 .vx-hint .bad{color:#ef4444}

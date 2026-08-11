@@ -22,9 +22,17 @@
 
   /* ── Event bus (§41) ─────────────────────────────────────────────── */
   const bus = new EventTarget();
+  let _pageBus = [];                    // abonnements de PAGE (purgés à la navigation)
   VX.bus = {
-    on(name, fn) { bus.addEventListener(name, fn); return () => bus.removeEventListener(name, fn); },
+    /* opts.persistent : abonnement de SHELL, survit aux navigations client.
+       Défaut = abonnement de page → retiré au teardown (évite les doublons). */
+    on(name, fn, opts) {
+      bus.addEventListener(name, fn);
+      if (!(opts && opts.persistent)) _pageBus.push({ name, fn });
+      return () => bus.removeEventListener(name, fn);
+    },
     emit(name, detail) { bus.dispatchEvent(new CustomEvent(name, { detail })); },
+    _clearPage() { _pageBus.forEach((h) => bus.removeEventListener(h.name, h.fn)); _pageBus = []; },
   };
   VX.EVENTS = ['vx:favorites-changed', 'vx:watchlist-changed', 'vx:follow-changed',
     'vx:position-changed', 'vx:alert-changed', 'vx:thesis-changed',
@@ -180,7 +188,9 @@
   VX.openAnalysis = function (symbol, extra) {
     VX.context.save(Object.assign({ selectedSymbol: symbol }, extra || {}));
     VX.recentTickers.push(symbol);
-    location.href = '/analysis/' + encodeURIComponent(symbol.toUpperCase());
+    var href = '/analysis/' + encodeURIComponent(symbol.toUpperCase());
+    if (VX.router && VX.router.go) VX.router.go(href);   // navigation ticker fluide (SPA)
+    else location.href = href;                            // repli dur (routeur absent)
   };
 
   /* ── Tickers récents ─────────────────────────────────────────────── */
@@ -193,13 +203,92 @@
     },
   };
 
-  /* ── Refresh Manager (§40) ───────────────────────────────────────── */
+  /* ── Couche de données : cache persistant + SWR + dédup (§40, LOT 3) ──
+     Le cache survit désormais au reload (sessionStorage) → revenir sur une page
+     ne relance pas un chargement lourd. Déduplication in-flight, invalidation
+     ciblée, stale-while-revalidate (VX.swr), annulation propre. Lecture seule. */
   const cache = new Map();     // url -> {ts, data}
-  const inflight = new Map();  // url -> Promise
+  const inflight = new Map();  // url -> {p, ctl}
+  const PERSIST_KEY = 'vxDataCache';
+  const PERSIST_MAX_ENTRY = 200000;   // n'archive pas les gros payloads (ex. /scan ~8Mo)
+  const PERSIST_MAX = 60;             // nb d'entrées persistées
+
+  /* Hydrate le cache depuis la session au démarrage (revisite instantanée). */
+  (function hydrate() {
+    try {
+      const raw = sessionStorage.getItem(PERSIST_KEY);
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      Object.keys(obj).forEach((u) => { cache.set(u, obj[u]); });
+    } catch (e) {}
+  })();
+  // Ne JAMAIS archiver de données personnelles/compte en clair dans sessionStorage
+  // (positions réelles, IBKR, desk, compte) — confidentialité. Ces endpoints restent
+  // en cache mémoire (perdu au reload), mais ne sont pas persistés.
+  const PERSIST_DENY = ['/api/ibkr', '/api/positions', '/api/pos-quotes', '/api/desk',
+    '/api/account', '/api/tracking'];
+  function _persistable(url) {
+    for (let i = 0; i < PERSIST_DENY.length; i++) { if (url.indexOf(PERSIST_DENY[i]) === 0) return false; }
+    return true;
+  }
+  let _persistTimer = null;
+  function schedulePersist() {
+    if (_persistTimer) return;
+    _persistTimer = setTimeout(() => {
+      _persistTimer = null;
+      try {
+        const out = {}; let n = 0;
+        // les plus récents d'abord, bornés en taille et en nombre
+        const entries = Array.from(cache.entries()).sort((a, b) => b[1].ts - a[1].ts);
+        for (const [u, v] of entries) {
+          if (n >= PERSIST_MAX) break;
+          if (!_persistable(u)) continue;               // données perso/compte → jamais persistées
+          let s; try { s = JSON.stringify(v); } catch (e) { continue; }
+          if (s.length > PERSIST_MAX_ENTRY) continue;   // trop gros → non persisté
+          out[u] = v; n++;
+        }
+        sessionStorage.setItem(PERSIST_KEY, JSON.stringify(out));
+      } catch (e) {}
+    }, 400);
+  }
+
+  function _store(url, data) {
+    cache.set(url, { ts: Date.now(), data });
+    if (cache.size > 120) cache.delete(cache.keys().next().value);
+    schedulePersist();
+  }
+
+  /* ── TTL effectif : « chargé une fois, figé 30 min » ─────────────────────
+     Dans un cycle de session d'analyse (30 min), les données du scan ne changent
+     PAS. On les tient donc en cache toute la session → changer de page est
+     INSTANTANÉ, aucun rechargement, aucune ré-recherche. Sécurité :
+     - un TTL explicite ≤ 0 (SWR, /api/session/manifest, bouton « Rafraîchir »)
+       force toujours le réseau — jamais forcé long ;
+     - les endpoints LIVE / personnels (statut, cotations, IBKR, desk, compte)
+       gardent leur TTL court d'origine ;
+     - watchSession invalide le cache dès qu'un NOUVEAU scan publie (session_id) →
+       bascule atomique, donc jamais de donnée périmée servie au-delà de la session. */
+  const SESSION_TTL = 1800000;   // 30 min = REFRESH_SEC serveur (cadence de session)
+  const LIVE_TTL = ['/api/live/status', '/api/pos-quotes', '/api/ibkr', '/api/positions',
+    '/api/account', '/api/tracking', '/api/desk'];
+  function _effTtl(url, ttl) {
+    if (ttl <= 0) return ttl;                                  // force-refresh explicite → réseau
+    for (let i = 0; i < LIVE_TTL.length; i++) { if (url.indexOf(LIVE_TTL[i]) === 0) return ttl; }
+    // On NE fige PAS tant que la session n'est pas « ready » : au démarrage à froid le
+    // scan se remplit encore (régime UNKNOWN, VIX n/d…) — garder le TTL court laisse les
+    // données arriver, au lieu de figer un écran vide 30 min. Une fois la session prête,
+    // on tient les données du scan toute la session (navigation instantanée).
+    try { if (!VX.store || VX.store.get('session_status') !== 'ready') return ttl; } catch (e) { return ttl; }
+    return ttl > SESSION_TTL ? ttl : SESSION_TTL;
+  }
+
+  const _stats = { hits: 0, misses: 0, dedup: 0 };   // observabilité (§18)
   VX.fetch = function (url, { ttl = 30000, priority = 'normal', signal } = {}) {
+    ttl = _effTtl(url, ttl);                                   // « figé 30 min » : cf. _effTtl
     const hit = cache.get(url);
-    if (hit && Date.now() - hit.ts < ttl) return Promise.resolve(hit.data);
-    if (inflight.has(url)) return inflight.get(url);
+    if (hit && Date.now() - hit.ts < ttl) { _stats.hits++; return Promise.resolve(hit.data); }
+    if (inflight.has(url)) { _stats.dedup++; return inflight.get(url).p; }
+    _stats.misses++;
     const ctl = new AbortController();
     if (signal) signal.addEventListener('abort', () => ctl.abort());
     const p = (async () => {
@@ -209,8 +298,7 @@
           const r = await fetch(url, { signal: ctl.signal });
           if (!r.ok) throw new Error('HTTP ' + r.status);
           const data = await r.json();
-          cache.set(url, { ts: Date.now(), data });
-          if (cache.size > 80) cache.delete(cache.keys().next().value);
+          _store(url, data);
           return data;
         } catch (e) {
           lastErr = e;
@@ -220,21 +308,76 @@
       }
       throw lastErr;
     })().finally(() => inflight.delete(url));
-    inflight.set(url, p);
+    inflight.set(url, { p, ctl });
     return p;
   };
+
+  /* Lecture synchrone du cache (sans réseau) : donnée + fraîcheur, ou null. */
+  VX.fetch.peek = function (url) {
+    const hit = cache.get(url);
+    return hit ? { data: hit.data, age: Date.now() - hit.ts, ts: hit.ts } : null;
+  };
+  /* Métriques de cache (observabilité §18) : hits / misses / dédup / entrées. */
+  VX.fetch.stats = function () {
+    const total = _stats.hits + _stats.misses;
+    return {
+      hits: _stats.hits, misses: _stats.misses, dedup: _stats.dedup,
+      hit_rate: total ? Math.round(100 * _stats.hits / total) : null,
+      entries: cache.size, inflight: inflight.size,
+    };
+  };
+  /* Invalidation CIBLÉE (clé exacte, préfixe, ou prédicat) — plus de cache.clear() aveugle. */
+  VX.fetch.invalidate = function (target) {
+    let pred;
+    if (typeof target === 'function') pred = target;
+    else if (typeof target === 'string') pred = (u) => u === target || u.indexOf(target) === 0;
+    else { cache.clear(); schedulePersist(); return; }
+    Array.from(cache.keys()).forEach((u) => { if (pred(u)) cache.delete(u); });
+    schedulePersist();
+  };
+
+  /* stale-while-revalidate : rend le cache TOUT DE SUITE (même périmé), puis
+     revalide en fond et rappelle onData si la donnée a changé. Ne vide JAMAIS
+     l'écran, ne remplace jamais du valide par du vide (erreur → garde l'ancien).
+     Retourne un annulateur : à appeler au changement de page/ticker (anti-hors-ordre). */
+  VX.swr = function (url, onData, opts) {
+    opts = opts || {};
+    const ttl = opts.ttl == null ? 30000 : opts.ttl;
+    let alive = true;
+    const hit = cache.get(url);
+    let servedStr = null;
+    if (hit) { servedStr = safeStr(hit.data); try { onData(hit.data, { stale: Date.now() - hit.ts >= ttl, cached: true }); } catch (e) {} }
+    const fresh = hit && Date.now() - hit.ts < ttl;
+    if (!fresh) {
+      VX.fetch(url, { ttl: 0 }).then((data) => {
+        if (!alive) return;                       // navigation/ticker changé → ignore (hors-ordre)
+        const s = safeStr(data);
+        if (s !== servedStr) { try { onData(data, { stale: false, cached: false }); } catch (e) {} }
+      }).catch(() => { /* garde l'ancien contenu, jamais de vide */ });
+    }
+    return function cancel() { alive = false; };
+  };
+  function safeStr(o) { try { return JSON.stringify(o); } catch (e) { return null; } }
   VX.refresh = {
     _tasks: [], _suspended: false,
-    register(fn, intervalMs, label) {
-      const task = { fn, intervalMs, label, id: null };
+    /* opts.persistent : tâche de SHELL (statut global…), survit aux navigations.
+       Défaut = tâche de page → intervalle arrêté au teardown (évite les doublons
+       de loaders et les fetch fantômes après changement de page). */
+    register(fn, intervalMs, label, opts) {
+      const task = { fn, intervalMs, label, id: null, persistent: !!(opts && opts.persistent) };
       const run = () => { if (!document.hidden) { try { fn(); } catch (e) { console.error('[vx-refresh]', label, e); } } };
       task.id = setInterval(run, intervalMs);
       this._tasks.push(task);
       return task;
     },
+    _clearPage() {
+      const keep = [];
+      this._tasks.forEach((t) => { if (t.persistent) { keep.push(t); } else { clearInterval(t.id); } });
+      this._tasks = keep;
+    },
     async runAll(btn) {
       if (btn) { btn.dataset.state = 'refreshing'; btn.disabled = true; }
-      cache.clear();
+      VX.fetch.invalidate();      // vide cache mémoire + persistance (rafraîchissement explicite)
       try {
         await Promise.allSettled(this._tasks.map(t => t.fn()));
         VX.bus.emit('vx:data-refreshed', {});
@@ -243,8 +386,141 @@
       if (btn) setTimeout(() => { btn.dataset.state = 'ready'; btn.disabled = false; }, 900);
     },
   };
+
+  /* ── Cycle de vie de PAGE (navigation client persistante, LOT 2) ──────
+     Le routeur (vx-router.js) appelle VX.page._teardown() AVANT de remplacer
+     #vx-content : on arrête les tâches/abonnements de la page sortante et on
+     exécute ses nettoyages (onLeave). Le shell (statut, live-updates, entités)
+     est marqué persistant et n'est jamais touché. */
+  VX.page = {
+    _gen: 0,
+    _leave: [],
+    onLeave(fn) { if (typeof fn === 'function') this._leave.push(fn); },
+    _teardown() {
+      this._leave.forEach((fn) => { try { fn(); } catch (e) {} });
+      this._leave = [];
+      try { VX.refresh._clearPage(); } catch (e) {}
+      try { VX.bus._clearPage(); } catch (e) {}
+      try { if (window.VXCharts && VXCharts.destroyAll) VXCharts.destroyAll(); } catch (e) {}
+      this._gen++;
+    },
+  };
+
+  /* ── Fraîcheur : identité visuelle unifiée des données (§8, LOT 5) ──────
+     Une SEULE table de seuils (résout l'incohérence des seuils de l'audit) : un
+     helper que chaque page adopte pour marquer live / snapshot / sauvegardé /
+     stale / recalcul / erreur / offline, de façon discrète et cohérente. */
+  VX.freshness = {
+    THRESH: { live: 20000, snapshot: 1800000, stale: 2100000 },   // ms : 20 s / 30 min / 35 min — aligné sur la session d'analyse (cadence 30 min)
+    LABEL: {
+      live: 'Live', snapshot: 'Analyse', saved: 'Sauvegardé',
+      stale: 'À actualiser', refreshing: 'Recalcul…', error: 'Erreur', offline: 'Hors ligne',
+    },
+    assess(o) {
+      o = o || {};
+      if (o.offline) return this._r('offline');
+      if (o.error) return this._r('error');
+      if (o.refreshing) return this._r('refreshing');
+      if (o.saved) return this._r('saved');
+      const a = o.ageMs;
+      if (a == null) return { state: 'unknown', label: '—', tone: 'muted' };
+      if (o.live && a < this.THRESH.live) return this._r('live');
+      if (a < this.THRESH.snapshot) return this._r('snapshot');
+      return this._r('stale');
+    },
+    _r(state) {
+      const tone = { live: 'pos', snapshot: 'info', saved: 'muted', stale: 'warn',
+        refreshing: 'info', error: 'neg', offline: 'neg' }[state] || 'muted';
+      return { state: state, label: this.LABEL[state] || state, tone: tone };
+    },
+    /* Puce discrète prête à insérer (innerHTML). */
+    chip(a) {
+      a = a || {};
+      const dot = a.state === 'live' ? '<span class="vx-fresh-dot"></span>' : '';
+      return '<span class="vx-fresh-chip" data-state="' + a.state + '" title="' + (a.label || '') + '">' +
+        dot + (a.label || '') + '</span>';
+    },
+  };
+
+  /* ── Store global minimal (LOT 2 — fondation ; SWR/dédup enrichis au LOT 3) ──
+     Vérité partagée du contexte applicatif : session active, ticker courant,
+     historique de navigation, prix live (source centrale à venir). Lecture seule
+     côté métier — aucun ordre, aucune donnée inventée. */
+  VX.store = {
+    _s: {
+      active_session_id: null, previous_session_id: null, session_status: null,
+      active_ticker: null, selected_timeframe: null,
+      nav_history: [], live_prices: {}, freshness_map: {},
+    },
+    get(k) { return this._s[k]; },
+    set(k, v) { this._s[k] = v; VX.bus.emit('vx:store-changed', { key: k, value: v }); return v; },
+    snapshot() { return Object.assign({}, this._s); },
+    pushNav(href) {
+      const h = this._s.nav_history;
+      if (h[h.length - 1] !== href) h.push(href);
+      if (h.length > 30) h.shift();
+    },
+  };
+
+  /* ── Source de prix CENTRALE (§9, LOT 5) ──────────────────────────────
+     Un ticker = un prix partout (shell, Analyse, Portefeuille, Options, listes).
+     On distingue explicitement : prix LIVE, prix de RÉFÉRENCE du snapshot (session),
+     prix moyen d'ACHAT. On ne remplace JAMAIS silencieusement un prix de scénario/
+     référence par le live. Prix invalide → ignoré (jamais de chiffre inventé).
+     Les widgets lisent get()/subscribe() → cohérence garantie entre les pages. */
+  VX.prices = {
+    _m: {},        // SYM -> {live, chg, liveTs, ref, refSession, avgCost}
+    _subs: {},
+    get(sym) { return sym ? (this._m[String(sym).toUpperCase()] || null) : null; },
+    _ok(v) { return v != null && isFinite(v); },
+    setLive(sym, price, chg, ts) {
+      if (!sym || !this._ok(price)) return;              // jamais de prix inventé
+      sym = String(sym).toUpperCase();
+      const e = this._m[sym] || (this._m[sym] = {});
+      e.live = +price; if (this._ok(chg)) e.chg = +chg; e.liveTs = ts || Date.now();
+      try { VX.store._s.live_prices[sym] = e; } catch (x) {}
+      this._emit(sym);
+    },
+    setRef(sym, price, sessionId) {                       // prix figé du snapshot d'analyse
+      if (!sym) return;
+      sym = String(sym).toUpperCase();
+      const e = this._m[sym] || (this._m[sym] = {});
+      if (this._ok(price)) { e.ref = +price; e.refSession = sessionId || null; }
+      this._emit(sym);
+    },
+    setAvgCost(sym, price) {
+      if (!sym || !this._ok(price)) return;
+      sym = String(sym).toUpperCase();
+      (this._m[sym] || (this._m[sym] = {})).avgCost = +price;
+    },
+    subscribe(sym, cb) {
+      sym = String(sym).toUpperCase();
+      (this._subs[sym] || (this._subs[sym] = [])).push(cb);
+      if (this._m[sym]) { try { cb(this._m[sym]); } catch (e) {} }   // valeur courante tout de suite
+      return () => { this._subs[sym] = (this._subs[sym] || []).filter((f) => f !== cb); };
+    },
+    _emit(sym) {
+      (this._subs[sym] || []).forEach((cb) => { try { cb(this._m[sym]); } catch (e) {} });
+      VX.bus.emit('vx:price:' + sym, this._m[sym]);
+    },
+  };
+
   /* Suspendre en arrière-plan, rafraîchir au retour. */
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) VX.bus.emit('vx:data-refreshed', { reason: 'visibility' });
   });
+
+  /* ── PRÉCHAUFFAGE : au chargement du shell, on réchauffe les endpoints légers
+     (digest de session + résumé marché) dès que le navigateur est au repos, pour
+     que la première navigation vers Aujourd'hui / Marchés soit quasi instantanée.
+     Uniquement des GET de lecture, cache client partagé (VX.fetch). Aucun ordre. */
+  const _warm = () => {
+    ['/api/session/digest', '/api/market/summary'].forEach(u => {
+      try { VX.fetch(u, { ttl: 30000, priority: 'low' }).catch(() => {}); } catch (e) {}
+    });
+  };
+  const _schedule = () => (window.requestIdleCallback
+    ? requestIdleCallback(_warm, { timeout: 2500 }) : setTimeout(_warm, 900));
+  if (document.readyState === 'complete') _schedule();
+  else window.addEventListener('load', _schedule, { once: true });
 })();

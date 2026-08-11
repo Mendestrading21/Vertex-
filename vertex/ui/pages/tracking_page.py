@@ -12,15 +12,15 @@ from vertex.ui.shell import render_shell
 _STYLE = """
 <style>
 #vx-content .vx-hypo{display:inline-block;font-size:11px;font-weight:650;letter-spacing:.03em;
-  color:var(--vx-warning,#dda23b);border:1px solid var(--vx-warning,#dda23b);border-radius:999px;
+  color:var(--vx-warning,#D9BE3C);border:1px solid var(--vx-warning,#D9BE3C);border-radius:999px;
   padding:.12rem .6rem}
-#vx-content .vx-trk-note{color:var(--vx-text-dim,#8a837a);font-size:12.5px;margin:.4rem 0 0}
-#vx-content .vx-pos{color:var(--vx-positive,#36c889)}
-#vx-content .vx-neg{color:var(--vx-negative,#ed655c)}
-#vx-content .vx-muted{color:var(--vx-text-dim,#8a837a)}
+#vx-content .vx-trk-note{color:var(--vx-text-muted,#8A8284);font-size:12.5px;margin:.4rem 0 0}
+#vx-content .vx-pos{color:var(--vx-positive,#2BBE90)}
+#vx-content .vx-neg{color:var(--vx-negative,#E9555F)}
+#vx-content .vx-muted{color:var(--vx-text-muted,#8A8284)}
 #vx-content .vx-stat{display:flex;flex-direction:column;min-width:88px}
-#vx-content .vx-stat-label{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--vx-text-dim,#8a837a)}
-#vx-content .vx-stat-value{font-size:20px;font-weight:650;color:var(--vx-text,#efe7dc);margin-top:.15rem}
+#vx-content .vx-stat-label{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--vx-text-muted,#8A8284)}
+#vx-content .vx-stat-value{font-size:20px;font-weight:650;color:var(--vx-text,#F8F5F3);margin-top:.15rem}
 </style>
 """
 

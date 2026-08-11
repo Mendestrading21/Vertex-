@@ -9,7 +9,7 @@ Priorité (§12) :
 """
 from __future__ import annotations
 
-from typing import Callable, Iterable
+from typing import Callable
 
 from .models import (
     ProvenancedValue, SOURCE_IBKR, SOURCE_SECONDARY, SOURCE_FALLBACK_EOD,

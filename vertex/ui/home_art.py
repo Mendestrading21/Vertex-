@@ -19,7 +19,7 @@ Analyse uniquement — cette couche ne fait que dessiner.
 ART_CSS = r"""
 /* ── ambiance salle de marché ── */
 body{background:
- radial-gradient(1100px 520px at 78% -160px,rgba(255,122,24,.075),transparent 60%),
+ radial-gradient(1100px 520px at 78% -160px,rgba(255,255,255,.075),transparent 60%),
  radial-gradient(900px 560px at -12% 34%,rgba(56,189,248,.05),transparent 55%),
  radial-gradient(700px 500px at 108% 78%,rgba(167,139,250,.04),transparent 55%),
  #0b0e14 !important}
@@ -29,34 +29,34 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opa
  background-size:56px 56px;
  -webkit-mask-image:radial-gradient(900px 460px at 60% 0,#000 30%,transparent 75%);
  mask-image:radial-gradient(900px 460px at 60% 0,#000 30%,transparent 75%)}
-::selection{background:rgba(255,122,24,.32);color:#fff}
+::selection{background:rgba(255,255,255,.32);color:#fff}
 *{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent}
 *::-webkit-scrollbar{width:9px;height:9px}
 *::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:9px}
-*::-webkit-scrollbar-thumb:hover{background:rgba(255,122,24,.35)}
-:focus-visible{outline:2px solid rgba(255,154,61,.85);outline-offset:2px;border-radius:6px}
+*::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.35)}
+:focus-visible{outline:2px solid rgba(255,255,255,.85);outline-offset:2px;border-radius:6px}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 /* ── chapitres éditoriaux ── */
 .ovchap{margin:64px 2px 22px!important;align-items:center!important}
-.ovchap .n{color:#FF9A3D!important;background:linear-gradient(135deg,rgba(255,122,24,.16),rgba(255,122,24,.05));
- border:1px solid rgba(255,122,24,.35);padding:7px 10px 6px!important;border-radius:10px;
+.ovchap .n{color:#dbe1e8!important;background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.05));
+ border:1px solid rgba(255,255,255,.35);padding:7px 10px 6px!important;border-radius:10px;
  font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:11px!important;letter-spacing:1.5px!important;
- box-shadow:0 0 22px -8px rgba(255,122,24,.55)}
+ box-shadow:0 0 22px -8px rgba(255,255,255,.55)}
 .ovchap .t{font-size:clamp(23px,2.5vw,29px)!important;letter-spacing:-.02em!important;
  background:linear-gradient(180deg,#f7fafc,#c7d0dd);-webkit-background-clip:text;background-clip:text;
  -webkit-text-fill-color:transparent}
 .ovchap .s{font-size:10px!important;letter-spacing:.14em;text-transform:uppercase;color:#5d6673!important;margin-top:6px!important;font-weight:700}
-.ovchap .ln{height:2px!important;background:linear-gradient(90deg,rgba(255,122,24,.45),rgba(255,255,255,.05) 55%,transparent)!important;border-radius:2px}
-.ovsub{color:#FF9A3D!important;letter-spacing:.16em!important}
+.ovchap .ln{height:2px!important;background:linear-gradient(90deg,rgba(255,255,255,.45),rgba(255,255,255,.05) 55%,transparent)!important;border-radius:2px}
+.ovsub{color:#dbe1e8!important;letter-spacing:.16em!important}
 .ovsub::before{content:"— "}
 /* ── panneaux premium ── */
 .hero,.scard{border-radius:18px!important;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
-.hero:hover,.scard:hover{transform:translateY(-2px);border-color:rgba(255,122,24,.26)!important;
- box-shadow:0 22px 48px -30px rgba(0,0,0,.9),0 0 34px -20px rgba(255,122,24,.4)}
+.hero:hover,.scard:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.26)!important;
+ box-shadow:0 22px 48px -30px rgba(0,0,0,.9),0 0 34px -20px rgba(255,255,255,.4)}
 .hero{background:linear-gradient(160deg,#14161d,#0c0e13)!important;position:relative;overflow:hidden}
 .hero::after{content:"";position:absolute;top:-70px;right:-60px;width:240px;height:240px;pointer-events:none;
- background:radial-gradient(closest-side,rgba(255,122,24,.13),transparent);border-radius:50%}
+ background:radial-gradient(closest-side,rgba(255,255,255,.13),transparent);border-radius:50%}
 /* ── apparition douce (uniquement si le JS a ajouté .artjs) ── */
 .artjs .ovchap,.artjs .ovc{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease}
 .artjs .ovchap.artin,.artjs .ovc.artin{opacity:1;transform:none}
@@ -64,7 +64,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opa
 #artBoard{display:grid;grid-template-columns:1.7fr 1fr 1fr;gap:14px;margin:14px 0 6px}
 #artBoard .ac{background:linear-gradient(168deg,#12141b,#0b0d12);border:1px solid rgba(255,255,255,.09);
  border-radius:16px;padding:14px 15px 8px;transition:border-color .18s}
-#artBoard .ac:hover{border-color:rgba(255,122,24,.3)}
+#artBoard .ac:hover{border-color:rgba(255,255,255,.3)}
 #artBoard .hd{display:flex;align-items:baseline;gap:9px}
 #artBoard .hd .t{font-size:12px;font-weight:800;letter-spacing:.4px}
 #artBoard .hd .v{margin-left:auto;font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
@@ -140,7 +140,7 @@ def apply(page):
 # ── Trading Desk : même ambiance + titres de sections éditoriaux ──
 DESK_CSS = r"""
 body{background:
- radial-gradient(1100px 520px at 78% -160px,rgba(255,122,24,.07),transparent 60%),
+ radial-gradient(1100px 520px at 78% -160px,rgba(255,255,255,.07),transparent 60%),
  radial-gradient(900px 560px at -12% 34%,rgba(56,189,248,.045),transparent 55%),
  #0b0e14 !important}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
@@ -149,17 +149,17 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opa
  background-size:56px 56px;
  -webkit-mask-image:radial-gradient(900px 460px at 60% 0,#000 30%,transparent 75%);
  mask-image:radial-gradient(900px 460px at 60% 0,#000 30%,transparent 75%)}
-::selection{background:rgba(255,122,24,.32);color:#fff}
+::selection{background:rgba(255,255,255,.32);color:#fff}
 *{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent}
 *::-webkit-scrollbar{width:9px;height:9px}
 *::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:9px}
-:focus-visible{outline:2px solid rgba(255,154,61,.85);outline-offset:2px;border-radius:6px}
+:focus-visible{outline:2px solid rgba(255,255,255,.85);outline-offset:2px;border-radius:6px}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 .stitle{display:flex;align-items:center;gap:11px;letter-spacing:.13em!important;text-transform:uppercase;
- color:#FF9A3D!important;margin:44px 2px 14px!important;font-weight:800!important}
-.stitle::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,rgba(255,122,24,.4),rgba(255,255,255,.04) 60%,transparent);border-radius:2px}
+ color:#dbe1e8!important;margin:44px 2px 14px!important;font-weight:800!important}
+.stitle::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,rgba(255,255,255,.4),rgba(255,255,255,.04) 60%,transparent);border-radius:2px}
 .vcard{transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
-.vcard:hover{transform:translateY(-1px);border-color:rgba(255,122,24,.24);box-shadow:0 16px 38px -28px rgba(0,0,0,.85)}
+.vcard:hover{transform:translateY(-1px);border-color:rgba(255,255,255,.24);box-shadow:0 16px 38px -28px rgba(0,0,0,.85)}
 """
 
 

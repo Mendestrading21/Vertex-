@@ -27,7 +27,7 @@ le produit. Analyse only, aucun ordre.
 """
 
 CSS = r"""
-#av{--acc:#ff7a18;--acc2:#ff9a3d;--good:#22c55e;--bad:#ef4444;--info:#b9683d;--warn:#f5b45b;--vio:#85609f;
+#av{--acc:#dbe1e8;--acc2:#dbe1e8;--good:#22c55e;--bad:#ef4444;--info:#b9683d;--warn:#f5b45b;--vio:#85609f;
  --ink:#eef2f8;--ink2:#aeb8c8;--mut:#8794ab;--faint:#4b5563;--surf:#101218;--bg2:#0b0d12;
  --hair:rgba(255,255,255,.07);--hair2:rgba(255,255,255,.12);
  --mono:ui-monospace,'SF Mono',Menlo,monospace;color:var(--ink);display:block}
@@ -39,12 +39,12 @@ CSS = r"""
 #av .chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
 #av .chip{background:rgba(255,255,255,.035);border:1px solid var(--hair2);color:var(--ink2);border-radius:999px;font-size:11.5px;font-weight:700;padding:6px 13px;cursor:pointer;transition:all .13s}
 #av .chip:hover{border-color:rgba(255,255,255,.25)}
-#av .chip.on{background:rgba(255,122,24,.14);border-color:rgba(255,122,24,.5);color:var(--acc2)}
+#av .chip.on{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5);color:var(--acc2)}
 #av .layout{display:grid;grid-template-columns:minmax(330px,1fr) 1.5fr;gap:16px;align-items:start}
 #av .list{display:flex;flex-direction:column;gap:7px;max-height:76vh;overflow-y:auto;padding-right:4px}
 #av .item{background:var(--bg2);border:1px solid var(--hair);border-radius:12px;padding:10px 13px;cursor:pointer;transition:border-color .13s,transform .12s}
-#av .item:hover{border-color:rgba(255,122,24,.35);transform:translateX(2px)}
-#av .item.sel{border-color:rgba(255,122,24,.55);background:linear-gradient(165deg,#14161d,#0c0e13)}
+#av .item:hover{border-color:rgba(255,255,255,.35);transform:translateX(2px)}
+#av .item.sel{border-color:rgba(255,255,255,.55);background:linear-gradient(165deg,#14161d,#0c0e13)}
 #av .item.arch{opacity:.55}
 #av .item .t{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
 #av .item .m{font-size:10.5px;color:var(--faint);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
@@ -62,7 +62,7 @@ CSS = r"""
 #av .ed.on{display:block}
 #av .ed .grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
 #av .jf{width:100%;background:#0a0c10;border:1px solid var(--hair2);border-radius:10px;color:var(--ink);font-size:13px;padding:9px 11px;outline:none;font-family:inherit}
-#av .jf:focus{border-color:rgba(255,122,24,.5)}
+#av .jf:focus{border-color:rgba(255,255,255,.5)}
 #av textarea.jf{min-height:110px;resize:vertical;font-family:var(--mono);font-size:12.5px}
 #av .empty{padding:44px 20px;text-align:center;color:var(--mut);font-size:13px}
 #av .imp{color:var(--warn)}
@@ -85,7 +85,7 @@ JS = r"""
 /* ═══ ArchiveVault — données (localStorage vxVault, sync desk) ═══ */
 var AV_TYPES={prompt:['📜','Prompt','#85609f'],analyse:['🔬','Analyse','#b9683d'],idee:['💡','Idée','#f5b45b'],
  version:['🕰️','Ancienne version','#8794ab'],technote:['🔧','Note technique','#22c55e'],design:['🎨','Design','#ec4899'],
- bug:['🐛','Bug','#ef4444'],feature:['🚀','Feature future','#ff7a18'],texte:['📝','Texte libre','#aeb8c8']};
+ bug:['🐛','Bug','#ef4444'],feature:['🚀','Feature future','#dbe1e8'],texte:['📝','Texte libre','#aeb8c8']};
 var AV={f:{q:'',type:'',status:'active',imp:false,period:''},sel:null,edit:null};
 function avGet(){try{return JSON.parse(localStorage.getItem('vxVault')||'null')||avSeed();}catch(e){return avSeed();}}
 function avSet(a){localStorage.setItem('vxVault',JSON.stringify(a));localStorage.setItem('deskTs',String(Date.now()));avPush();}

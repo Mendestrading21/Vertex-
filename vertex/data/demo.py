@@ -90,7 +90,16 @@ def _demo_options_board(rows, detail):
         oi = int(800 + liq * 26000 * (1.3 if bk == 'moyen' else 1.0) * (0.5 + rng.random()))
         vol = int(oi * (0.06 + rng.random() * 0.22))
         spread_pct = round(max(0.6, 9.0 * (1.1 - liq) * (1.5 if bk == 'long' else 1.0)), 1)
+        # gamma Black-Scholes (par action) — cohérent avec spot/strike/T/iv de la démo,
+        # pour alimenter l'analyse GEX (positionnement dealer). Donnée synthétique étiquetée DÉMO.
+        try:
+            srt = iv * math.sqrt(T)
+            d1 = (math.log(spot / strike) + (0.045 + iv * iv / 2) * T) / srt if srt > 0 else 0.0
+            gamma_ps = math.exp(-d1 * d1 / 2) / (math.sqrt(2 * math.pi) * spot * srt) if srt > 0 else 0.0
+        except (ValueError, ZeroDivisionError):
+            gamma_ps = 0.0
         return {
+            'gamma': round(gamma_ps, 6),
             'sym': sym, 'type': right, 'bucket': bk,
             'exp': (datetime.now() + timedelta(days=dte)).strftime('%Y-%m-%dT00:00:00'),
             'dte': dte, 'strike': strike, 'tgt': tgt, 'spot': round(spot, 2),

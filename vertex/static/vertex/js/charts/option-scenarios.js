@@ -1,6 +1,6 @@
 /* option-scenarios.js — matrice scénarios (Stop/Flat/TP1-3 × temps) depuis
    la SIMULATION MOTEUR (scenario_pricer) — l'UI ne price rien. */
-(function(){const C=window.VXCharts,VX=window.VX;
+(function(){const C=window.VXCharts=window.VXCharts||{},VX=window.VX;
 C.scenarioMatrix=function(host,sim,opts){
   const el=typeof host==='string'?document.getElementById(host):host;
   if(!el)return;

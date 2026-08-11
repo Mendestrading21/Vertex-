@@ -18,7 +18,7 @@ VXJS = os.path.join(ROOT, 'vertex', 'static', 'vertex', 'js')
 VXCSS = os.path.join(ROOT, 'vertex', 'static', 'vertex', 'css')
 
 PAGES = ['/', '/markets', '/opportunities', '/portfolio', '/analysis',
-         '/analysis/NVDA', '/performance', '/intelligence', '/system']
+         '/analysis/NVDA', '/journal', '/options', '/system']
 
 
 @pytest.fixture(scope='module')
@@ -226,8 +226,8 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v42' in body
-    assert 'td-shell-v41' not in body
+    assert 'td-shell-v188' in body
+    assert 'td-shell-v150' not in body
 
 
 # ── Sécurité produit ─────────────────────────────────────────────────────
@@ -252,11 +252,17 @@ def test_no_order_execution_path():
 
 
 def test_v3_tokens_are_canonical():
-    """Palette Vertex Signal Terminal — canonique et centralisée.
-    Vert Signal = identité (pas « hausse ») · émeraude = positif distinct."""
+    """Palette Vertex (identité NEUTRE blanc/gris) — canonique et centralisée.
+    Marque = blanc-gris #DBE1E8 (accent d'interface, jamais « hausse ») · émeraude
+    = positif · corail = risque · jaune = attente · violet = options · cyan =
+    comparaison. Le token de marque reste `--vx-ember-*` (valeur neutre désormais)."""
     tokens = _read(VXCSS, 'tokens.css')
-    for var in ('--vx-obsidian-950:#040504', '--vx-signal-500:#84aa31',
-                '--vx-brand:var(--vx-signal-500)', '--vx-positive:#36c889',
-                '--vx-negative:#ed655c', '--vx-warning:#dda23b',
-                '--vx-option:#9c79d0', '--vx-neutral-chart:#9d978e'):
+    for var in ('--vx-canvas:#020305', '--vx-ember-500:#dbe1e8',
+                '--vx-brand:var(--vx-ember-500)', '--vx-positive:#2BBE90',
+                '--vx-negative:#E9555F', '--vx-warning:#D9BE3C',
+                '--vx-option:#9B7BFF', '--vx-neutral-chart:#BABABA'):
         assert var in tokens, f'token manquant : {var}'
+    # Garde-fou anti-régression : le vert Signal ne doit plus être la marque.
+    assert '--vx-brand:var(--vx-signal-500)' not in tokens, \
+        'la marque ne doit plus pointer sur le vert Signal'
+    assert '#84aa31' not in tokens, 'aucun littéral vert Signal résiduel dans les tokens'

@@ -8,9 +8,8 @@ Tout ticker, partout dans l'app, ouvre CETTE fiche.
 """
 from __future__ import annotations
 
-import json
 
-from vertex.ui.shell import render_shell
+from vertex.ui.shell import json_for_script, render_shell
 
 
 def render_index(view: str = '') -> str:
@@ -23,7 +22,7 @@ def render_index(view: str = '') -> str:
             ('3', 'Timing technique — tendance, niveaux, R:R'),
             ('4', 'Sentiment & positionnement'),
             ('·', 'Anomalies & signaux TradingView'),
-            ('·', 'Scénarios Bull / Base / Bear'),
+            ('·', 'Scénarios pessimiste / probable / exceptionnel'),
             ('·', 'Options associées — convexité, IV, DTE'),
             ('★', 'Décision finale & plan de niveaux'),
         ])
@@ -90,14 +89,17 @@ $('an-favs').innerHTML=(Array.isArray(favs)&&favs.length?favs:[]).map(s=>
   `<button class="vx-btn vx-ticker" data-open-analysis="${s}">${s}</button>`).join('')
   ||'<span class="vx-muted">Aucun favori — marque un titre avec ★ depuis sa fiche.</span>';
 let names=null;
+/* Échappement local (ce bloc est une IIFE distincte du esc() principal) : les libellés
+   de /api/names sont rendus en innerHTML → on neutralise tout HTML/attribut. */
+const escN=s=>String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
 $('an-search').addEventListener('input',async function(){
   const q=this.value.trim().toUpperCase();
   if(!q){$('an-results').innerHTML='';return}
   try{ if(!names){const d=await VX.fetch('/api/names',{ttl:600000});names=d.names||d;} }catch(e){names={};}
   const hits=Object.entries(names).filter(([s,n])=>s.startsWith(q)||String(n).toUpperCase().includes(q)).slice(0,8);
   $('an-results').innerHTML=(hits.length?hits:( /^[A-Z.]{1,6}$/.test(q)?[[q,'ouvrir la fiche']]:[]))
-    .map(([s,n])=>`<button class="vx-btn" style="justify-content:flex-start" data-open-analysis="${s}">
-      <span class="vx-ticker" style="min-width:64px">${s}</span><span class="vx-dim">${n}</span></button>`).join('')
+    .map(([s,n])=>`<button class="vx-btn" style="justify-content:flex-start" data-open-analysis="${escN(s)}">
+      <span class="vx-ticker" style="min-width:64px">${escN(s)}</span><span class="vx-dim">${escN(n)}</span></button>`).join('')
     ||VX.states.empty('Aucun titre trouvé dans l’univers.');
 });
 $('an-search').focus();
@@ -110,13 +112,33 @@ $('an-search').focus();
 
 _SECTIONS = """
 <div id="an-stale"></div>
-<!-- 1. Résumé décisionnel (header sticky géré en CSS local) -->
+<section class="vx-card vx-mt3" aria-label="Scanner d'anomalies">
+  <div class="vx-card-header"><span class="vx-card-title">Scanner d'anomalies — qu'est-ce qui sort de l'ordinaire&nbsp;?</span>
+    <span class="vx-chart-question">Spikes |z|&ge;2, r&eacute;gime de volatilit&eacute;, s&eacute;quences, extr&ecirc;mes — sur les cl&ocirc;tures r&eacute;elles. Constat, pas une pr&eacute;vision.</span></div>
+  <div id="an-anomaly">%%LOADING%%</div>
+</section>
+<section class="vx-card vx-mt3" aria-label="Laboratoire d'évidence">
+  <div class="vx-card-header"><span class="vx-card-title">Que s'est-il pass&eacute; apr&egrave;s&nbsp;? — &eacute;vidence historique</span>
+    <span class="vx-chart-question">Rendements r&eacute;els &agrave; 1/5/10 barres et MFE/MAE apr&egrave;s les spikes pass&eacute;s de CETTE s&eacute;rie. In-sample, descriptif — pas un backtest.</span></div>
+  <div id="an-evidence">%%LOADING%%</div>
+</section>
+<section class="vx-card vx-mt3" aria-label="Skyler — décision canonique">
+  <div class="vx-card-header"><span class="vx-card-title">Skyler — d&eacute;cision canonique</span>
+    <span class="vx-chart-question">Score /40 par blocs de la Constitution V2, hard gates prioritaires, sc&eacute;narios sur niveaux r&eacute;els — d&eacute;terministe, jamais un ordre.</span></div>
+  <div id="an-skyler">%%LOADING%%</div>
+</section>
+<!-- NIVEAU 1 — Carte-Verdict signature (verdict · score · confiance · entrée ·
+     invalidation · risque · catalyseur · prochaine action) puis Carte-Scénario. -->
+<div id="an-verdict">%%LOADING%%</div>
+<div id="an-scenarios" class="vx-mt4"></div>
+<!-- 1b. Barre compacte : prix + actions (le verdict prime, cf. Carte-Verdict) -->
 <div class="vx-card vx-accent" id="an-hero" style="position:sticky;top:calc(var(--vx-topbar-h) + 8px);z-index:20">
   <div class="vx-flex vx-wrap">
     <span class="vx-ticker" style="font-size:22px" id="an-sym">%%SYM%%</span>
     <span class="vx-dim" id="an-name">—</span>
     <span class="vx-kpi-value" style="font-size:22px" id="an-price">—</span>
     <span class="vx-mono" id="an-change">—</span>
+    <span id="an-fresh"></span>
     <span class="vx-badge vx-badge-decision" id="an-decision" data-decision="">—</span>
     <span id="an-badges"></span>
     <span class="vx-right vx-flex">
@@ -145,6 +167,9 @@ _SECTIONS = """
 <!-- 3. Graphique principal -->
 <div id="an-chart"></div>
 
+<!-- 3b. Raisonnement du comité (intégré depuis Intelligence) -->
+<div id="an-committee" class="vx-mt4"></div>
+
 <!-- 4-8. Dimensions dans l'ordre imposé -->
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-6" id="an-fundamental"><div class="vx-card-header">
@@ -166,8 +191,7 @@ _SECTIONS = """
 </div>
 
 <!-- 9. Scénarios -->
-<section class="vx-card vx-mt4" id="an-scenarios"><div class="vx-card-header">
-  <span class="vx-card-title">Scénarios Bull / Base / Bear</span></div><div data-body>%%LOADING%%</div></section>
+<!-- Scénarios : domicile unique = Carte-Scénario en tête de page (an-scenarios). -->
 
 <!-- 11. Options -->
 <section class="vx-card vx-mt4" id="an-options">
@@ -194,24 +218,51 @@ _SECTIONS = """
     <span class="vx-card-title">Plan & niveaux clés</span></div><div data-body>%%LOADING%%</div></section>
   <section class="vx-card vx-card--compact" id="an-rail-risks"><div class="vx-card-header">
     <span class="vx-card-title">Risques identifiés</span></div><div data-body>—</div></section>
+  <section class="vx-card vx-card--compact" id="an-copilot" aria-label="Copilote d'analyse">
+    <div class="vx-card-header"><span class="vx-card-title">Copilote</span>
+      <span class="vx-chart-question">Question sur ce titre — réponse ancrée dans les chiffres réels.</span></div>
+    <div data-body>
+      <input id="an-cp-q" class="vx-input" aria-label="Question sur ce titre" placeholder="ex. Quel est le risque principal ici ?" maxlength="500" autocomplete="off" style="margin-bottom:.4rem" />
+      <button class="vx-btn vx-btn-sm vx-btn-primary" id="an-cp-go">Demander</button>
+      <div id="an-cp-out" class="vx-mt2"></div>
+      <div class="vx-meta vx-mt1">Lecture seule — aucun ordre.</div>
+    </div></section>
+  <section class="vx-card vx-card--compact" id="an-pretrade" aria-label="Ticket pré-trade">
+    <div class="vx-card-header"><span class="vx-card-title">Ticket pré-trade</span>
+      <span class="vx-chart-question">7 contrôles réels avant d'envisager ce titre. Descriptif — aucun ordre.</span></div>
+    <div data-body>
+      <input id="an-pt-amt" class="vx-input" type="number" min="1" step="any" aria-label="Montant envisag&eacute; en dollars" placeholder="Montant envisagé (ex. 2000)" style="margin-bottom:.4rem" />
+      <button class="vx-btn vx-btn-sm vx-btn-primary" id="an-pt-go">Vérifier</button>
+      <div id="an-pt-out" class="vx-mt2"></div>
+    </div></section>
 </div>
 </aside>
 </div>
 """
 
 _JS = r"""
+<!-- Moteur de chandeliers : ÉCHELLE DE REPLI, pas un chargement concurrent.
+     Un SEUL moteur rend le graphique (cf. drawChart plus bas) :
+       1. VXCharts.lwCandlestickCard  → CANONIQUE (TradingView Lightweight Charts,
+          qualité pro : chandeliers nets, overlays MM + plan, zoom/pan natif).
+       2. VXCharts.candlestickCard    → repli Canvas si la lib LWC échoue.
+       3. VXCharts.priceCard          → repli ligne si les bougies sont invalides.
+     Vérifié navigateur : #an-chart contient un unique .vx-lwc (LWC actif).
+     Ne pas retirer les paliers 2-3 : ce sont les replis honnêtes, pas des doublons. -->
 <script src="/static/vertex/js/charts/price-chart.js" defer></script>
 <script src="/static/vertex/js/charts/candlestick-chart.js" defer></script>
 <script src="/static/vertex/js/vendor/lightweight-charts.standalone.production.js" defer></script>
 <script src="/static/vertex/js/charts/candlestick-lwc.js" defer></script>
 <script src="/static/vertex/js/charts/annotations.js" defer></script>
+<script src="/static/vertex/js/charts/anomaly-scan.js" defer></script>
+<script src="/static/vertex/js/charts/projection-cone.js" defer></script>
 <script>
 (function(){
 'use strict';
 const SYM=%%SYM_JSON%%;
 const $=(id)=>document.getElementById(id);
 const E=()=>window.VXEntities;
-function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 function body(id,html){const el=document.querySelector('#'+id+' [data-body]');if(el)el.innerHTML=html;}
 function kv(k,v,cls){return `<div class="vx-kv"><span class="k">${k}</span><span class="v ${cls||''}">${VX.fmt.nd(v)}</span></div>`;}
 
@@ -220,7 +271,7 @@ VX.recentTickers.push(SYM);
 /* Header : badges entités + favori */
 function paintBadges(){
   $('an-badges').innerHTML=E()?E().badges(SYM):'';
-  $('an-fav').style.color=E()&&E().isFavorite(SYM)?'#FFD27A':'var(--vx-text-muted)';
+  $('an-fav').style.color=E()&&E().isFavorite(SYM)?'var(--vx-warning)':'var(--vx-text-muted)';
 }
 $('an-fav').addEventListener('click',()=>{E().toggleFavorite(SYM);paintBadges();});
 ['vx:favorites-changed','vx:watchlist-changed','vx:follow-changed','vx:position-changed','vx:alert-changed']
@@ -239,10 +290,18 @@ VX.bus.on('vx:thesis-changed',paintThesis);
 let TF='6m'; let TICKER=null;
 async function loadDossier(){
   let t=null,exec=null,stale=false;
+  /* Anti-course ticker (§CONTINUITY) : on fige la génération de page à l'entrée. Si
+     l'utilisateur a navigué ailleurs pendant les fetch, _gen a changé → on abandonne
+     AVANT de peindre, pour ne jamais afficher le dossier d'un titre sur une autre page. */
+  const _g=(window.VX&&VX.page)?VX.page._gen:0;
   try{t=await VX.fetch('/api/ticker/'+SYM,{ttl:60000});}catch(e){}
   try{exec=await VX.fetch('/api/strategy/decision/'+SYM,{ttl:60000});}catch(e){}
+  if(window.VX&&VX.page&&VX.page._gen!==_g)return;   // page supplantée → ne rien peindre
   TICKER=t;
   const d=(t&&t.detail)||{};
+  /* Source de prix centrale (§9) : le prix de ce ticker devient cohérent partout
+     (shell, Portefeuille, Options, listes). Prix invalide ignoré, jamais inventé. */
+  try{ if(window.VX&&VX.prices&&d.price!=null){ VX.prices.setLive(SYM,d.price,d.change); VX.prices.setRef(SYM,d.price,(VX.store&&VX.store.get('active_session_id'))||null); } }catch(e){}
   const demo=!!(window.__vxStatus&&window.__vxStatus.demo);
   if(!t||!t.in_universe&&!d.price){
     $('an-stale').innerHTML='<div class="vx-error-banner">Titre hors du scan courant — dossier partiel. '
@@ -254,6 +313,17 @@ async function loadDossier(){
   const chg=d.change;
   $('an-change').textContent=chg!==undefined?VX.fmt.pct(chg):'n/d';
   $('an-change').className='vx-mono '+(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted');
+  /* Badge de fraîcheur du prix (§8) : Live / Analyse / À actualiser, honnête. */
+  try{
+    if($('an-fresh')&&window.VX&&VX.freshness){
+      if(d.price==null){$('an-fresh').innerHTML='';}
+      else{
+        const pk=VX.fetch.peek('/api/ticker/'+SYM);
+        const live=!(window.__vxStatus&&window.__vxStatus.demo);
+        $('an-fresh').innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:pk?pk.age:null,live:live}));
+      }
+    }
+  }catch(e){}
   const decision=(exec&&exec.final_decision)||'ATTENDRE';
   const db=$('an-decision');db.textContent=decision;db.dataset.decision=decision.replace('É','E');
   /* Rail décisionnel sticky */
@@ -278,9 +348,9 @@ async function loadDossier(){
     /* Carte des risques d'entreprise (§24) — fondamentaux réels. */
     const rm=t&&t.risk_map;
     if(rm&&rm.risks){
-      const col={'ÉLEVÉ':'var(--vx-negative,#dc6254)','MODÉRÉ':'var(--vx-warning,#cc892c)',
-        'FAIBLE':'var(--vx-positive,#39b879)','INCONNU':'var(--vx-text-dim,#817d77)'};
-      html+='<div class="vx-mt3" style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--vx-text-dim,#817d77)">Carte des risques ('
+      const col={'ÉLEVÉ':'var(--vx-negative,#E9555F)','MODÉRÉ':'var(--vx-warning,#D9BE3C)',
+        'FAIBLE':'var(--vx-positive,#2BBE90)','INCONNU':'var(--vx-text-muted,#8A8284)'};
+      html+='<div class="vx-mt3" style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--vx-text-muted,#8A8284)">Carte des risques ('
         +esc(rm.known_count)+'/'+esc(rm.total_count)+' mesurés)</div>'
         +rm.risks.map(r=>`<div style="display:flex;justify-content:space-between;gap:.5rem;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px">`
           +`<span>${esc(r.category)}</span><span style="color:${col[r.level]||'#888'};font-weight:600">${esc(r.level)}</span></div>`
@@ -316,7 +386,7 @@ async function loadDossier(){
   const overlays=[
     {label:'MM20',color:cc('amber','#ce8a29'),data:tail(S.ema20),dash:[]},
     {label:'MM50',color:cc('beige','#c8ad8d'),data:tail(S.sma50),dash:[5,3]},
-    {label:'MM200',color:cc('neutral','#8f8a83'),data:tail(S.sma200),dash:[2,3]},
+    {label:'MM200',color:cc('neutral','#9d978e'),data:tail(S.sma200),dash:[2,3]},
   ].filter(o=>o.data&&o.data.some(x=>x!=null));
   const events=[];
   if(d.earnings_dte!==null&&d.earnings_dte!==undefined&&d.earnings_dte>=0&&d.earnings_dte<=cut.length)
@@ -360,7 +430,7 @@ async function loadDossier(){
                          peers.find(p=>p.symbol===SYM)||{});
   body('an-fundamental',
     kv('Score fondamental moteur',d.st_fund??f.score)
-    +kv('Croissance CA',me.rev_growth!==undefined?VX.fmt.pct(me.rev_growth*100,0):null)
+    +kv('Croissance CA',me.rev_growth!==undefined?VX.fmt.pct(me.rev_growth*100,0):null,me.rev_growth==null?'':me.rev_growth>0?'vx-pos':me.rev_growth<0?'vx-neg':'')
     +kv('Marge',me.margin!==undefined?VX.fmt.pct(me.margin*100,0):null)
     +kv('P/E',me.pe!=null?(+me.pe).toFixed(1):null)+kv('ROE',me.roe!==undefined&&me.roe!==null?VX.fmt.pct(me.roe*100,0):null)
     +kv('Médiane sectorielle P/E',t&&t.sector_median&&(t.sector_median.median_pe??t.sector_median))
@@ -381,14 +451,19 @@ async function loadDossier(){
     const rows=[['1 sem.',d.perf_w],['1 mois',d.perf_m],['1 trim.',d.perf_q],['1 an',d.perf_y]].filter(r=>r[1]!=null&&!isNaN(r[1]));
     if(!rows.length)return '';
     const maxAbs=Math.max(5,...rows.map(r=>Math.abs(r[1])));
-    return '<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">'
+    return '<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#30292B);padding-top:8px">'
       +'<div class="vx-meta vx-mb1" style="text-transform:uppercase;letter-spacing:.04em">Performance multi-horizons</div>'
+      /* LOT 130 : matiere verre — la barre est un degrade de sa propre couleur,
+         doux au centre (zero) et DENSE a l'extremite de la valeur (meme
+         grammaire que C.bars), via color-mix sur les tokens (aucun litteral). */
       +rows.map(function(r){const v=r[1];const neg=v<0;const w=Math.min(50,Math.abs(v)/maxAbs*50);
+        const tok=neg?'var(--vx-negative,#E9555F)':'var(--vx-positive,#2BBE90)';
+        const grad='linear-gradient('+(neg?'270deg':'90deg')+',color-mix(in srgb,'+tok+' 35%,transparent),'+tok+')';
         return '<div style="display:flex;align-items:center;gap:6px;margin:2px 0" role="img" aria-label="'+r[0]+' '+(v>=0?'+':'')+v+' %">'
-          +'<span style="width:52px;font-size:10.5px;color:var(--vx-text-muted,#817d77)">'+r[0]+'</span>'
-          +'<span style="flex:1;height:10px;position:relative;background:var(--vx-surface-3,#17191c);border-radius:3px;overflow:hidden">'
+          +'<span style="width:52px;font-size:10.5px;color:var(--vx-text-muted,#8A8284)">'+r[0]+'</span>'
+          +'<span style="flex:1;height:10px;position:relative;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden">'
             +'<span style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.16)"></span>'
-            +'<span style="position:absolute;top:0;bottom:0;'+(neg?('right:50%;width:'+w.toFixed(1)+'%'):('left:50%;width:'+w.toFixed(1)+'%'))+';background:'+(neg?'var(--vx-negative,#dc6255)':'var(--vx-positive,#39b878)')+'"></span></span>'
+            +'<span style="position:absolute;top:0;bottom:0;'+(neg?('right:50%;width:'+w.toFixed(1)+'%'):('left:50%;width:'+w.toFixed(1)+'%'))+';background:'+grad+';border-radius:2px"></span></span>'
           +'<span style="width:54px;text-align:right;font-size:10.5px;font-variant-numeric:tabular-nums" class="'+(neg?'vx-neg':'vx-pos')+'">'+(v>=0?'+':'')+VX.fmt.num(v,1)+'%</span></div>';
       }).join('')+'</div>';
   }
@@ -407,10 +482,24 @@ async function loadDossier(){
   const _up=(_tgt&&_px)?((_tgt/_px-1)*100):null;
   const _rl={strong_buy:'Achat fort',buy:'Achat',outperform:'Surperformance',hold:'Conserver',underperform:'Sous-performance',sell:'Vente'}[an.rating]||an.rating;
   const consensus=(an.rating||_tgt)?(
-    `<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">`
+    `<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#30292B);padding-top:8px">`
     +(an.rating?`<div class="vx-kv"><span class="k">Consensus analystes</span><span class="v">${esc(_rl||'—')}${an.rating_mean!=null?` (${(+an.rating_mean).toFixed(1)}/5)`:''}${an.n_analysts?` · ${an.n_analysts} analystes`:''}</span></div>`:'')
     +(_tgt?`<div class="vx-kv"><span class="k">Objectif moyen</span><span class="v">${VX.fmt.price(_tgt)}${_up!=null?` <span class="${_up>=0?'vx-pos':'vx-neg'}">(${_up>=0?'+':''}${_up.toFixed(1)}%)</span>`:''}</span></div>`:'')
-    +((an.target_low&&an.target_high)?`<div class="vx-kv"><span class="k">Fourchette</span><span class="v vx-dim">${VX.fmt.price(an.target_low)} – ${VX.fmt.price(an.target_high)}</span></div>`:'')
+    +((an.target_low&&an.target_high)?(function(){
+      /* LOT 141 : la fourchette d'objectifs n'est plus du texte nu — RAIL de
+         verre low -> high avec le COURS (cyan) et l'OBJECTIF MOYEN (warning)
+         en reperes halotes : on voit ou le prix vit dans la fourchette des
+         analystes. Reperes clampes aux bords (jamais inventes). */
+      const lo=an.target_low,hi=an.target_high,span=(hi-lo)||1;
+      const pos=(v)=>Math.max(2,Math.min(98,(v-lo)/span*100));
+      const mk=(v,tok,lbl)=>v==null?'':'<span title="'+lbl+' '+VX.fmt.price(v)+'" style="position:absolute;left:'+pos(v).toFixed(1)+'%;top:-2px;bottom:-2px;width:2px;background:'+tok+';border-radius:1px;box-shadow:0 0 5px color-mix(in srgb,'+tok+' 55%,transparent)"></span>';
+      return '<div class="vx-kv"><span class="k">Fourchette</span><span class="v" style="display:inline-flex;align-items:center;gap:8px;min-width:0">'
+        +'<span class="vx-dim" style="font-size:11px">'+VX.fmt.price(lo)+'</span>'
+        +'<span style="position:relative;flex:1;min-width:70px;height:7px;background:linear-gradient(90deg,color-mix(in srgb,var(--vx-brand,#DBE1E8) 12%,transparent),color-mix(in srgb,var(--vx-brand,#DBE1E8) 30%,transparent));border-radius:3px">'
+        +mk(_px,'var(--vx-cyan,#45D6E8)','cours')
+        +mk(_tgt,'var(--vx-warning,#D9BE3C)','objectif moyen')
+        +'</span><span class="vx-dim" style="font-size:11px">'+VX.fmt.price(hi)+'</span></span></div>';
+    })():'')
     +`</div>`):'';
   body('an-sentiment',
     kv('Force relative vs univers',d.rs)
@@ -465,32 +554,16 @@ async function loadDossier(){
         <button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXEntities.openAddModal('${SYM}','alert')">Créer une alerte</button></div>`);
   }catch(e){body('an-tv',VX.states.empty('Intégration TradingView non configurée — aucune donnée inventée.'));}
 
-  /* 9. Scénarios Bull/Base/Bear (plan moteur) */
-  const px=d.price;
-  if(plan.tp1||plan.stop){
-    body('an-scenarios',
-      `<div class="vx-grid" style="grid-template-columns:repeat(3,1fr);gap:10px">
-        <div class="vx-card" style="border-color:rgba(34,199,122,.3)"><div class="vx-kpi">
-          <span class="vx-kpi-label">Bull</span><span class="vx-kpi-value vx-pos" style="font-size:19px">${VX.fmt.nd(plan.tp2||plan.tp1)}</span>
-          <span class="vx-meta">${px&&(plan.tp2||plan.tp1)?VX.fmt.pct(((plan.tp2||plan.tp1)/px-1)*100,1):''}</span></div></div>
-        <div class="vx-card"><div class="vx-kpi">
-          <span class="vx-kpi-label">Base</span><span class="vx-kpi-value" style="font-size:19px">${VX.fmt.nd(plan.tp1)}</span>
-          <span class="vx-meta">${px&&plan.tp1?VX.fmt.pct((plan.tp1/px-1)*100,1):''}</span></div></div>
-        <div class="vx-card" style="border-color:rgba(239,83,80,.3)"><div class="vx-kpi">
-          <span class="vx-kpi-label">Bear</span><span class="vx-kpi-value vx-neg" style="font-size:19px">${VX.fmt.nd(plan.stop)}</span>
-          <span class="vx-meta">${px&&plan.stop?VX.fmt.pct((plan.stop/px-1)*100,1):''}</span></div></div>
-      </div>
-      <div class="vx-meta vx-mt2">Niveaux du plan moteur (structure de marché) — variations arithmétiques vs cours actuel.</div>`);
-  }else body('an-scenarios',VX.states.empty('Plan moteur indisponible — pas de scénarios chiffrés.'));
+  /* 9. Scénarios : domicile unique = Carte-Scénario en tête (loadDecisionStack). */
 
   /* 10. Plan — échelle Risk/Reward (§24.5) : niveaux du plan proportionnels au prix */
   function rrLadder(px,plan){
     const VC=window.VXCharts||{colors:{}};const col=(n,f)=>(VC.colors&&VC.colors[n])||f;
     const lv=[];
-    if(plan.stop!=null)lv.push({k:'Stop',v:plan.stop,c:col('negative','#dc5f52')});
+    if(plan.stop!=null)lv.push({k:'Stop',v:plan.stop,c:col('negative','#E9555F')});
     const e=(plan.entry!=null?plan.entry:px);
-    if(e!=null)lv.push({k:'Entrée',v:e,c:col('info','#b9683d')});
-    [plan.tp1,plan.tp2,plan.tp3].forEach(function(t,i){if(t!=null)lv.push({k:'TP'+(i+1),v:t,c:col('positive','#38b879')});});
+    if(e!=null)lv.push({k:'Entrée',v:e,c:col('info','#45D6E8')});
+    [plan.tp1,plan.tp2,plan.tp3].forEach(function(t,i){if(t!=null)lv.push({k:'TP'+(i+1),v:t,c:col('positive','#2BBE90')});});
     if(lv.length<2)return '';
     const vals=lv.map(function(l){return l.v;});
     const min=Math.min.apply(null,vals),max=Math.max.apply(null,vals),rng=(max-min)||1;
@@ -504,14 +577,15 @@ async function loadDossier(){
     const rows=lv.map(function(l){const yy=y(l.v);const pct=(px&&l.v)?((l.v/px-1)*100):null;
       return '<line x1="'+axX+'" y1="'+yy.toFixed(1)+'" x2="'+(axX+8)+'" y2="'+yy.toFixed(1)+'" stroke="'+l.c+'" stroke-width="2"/>'
         +'<circle cx="'+axX+'" cy="'+yy.toFixed(1)+'" r="3" fill="'+l.c+'"/>'
-        +'<text x="'+(axX-8)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="var(--vx-text-secondary,#b7b2aa)">'+l.k+'</text>'
+        +'<text x="'+(axX-8)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="var(--vx-text-secondary,#BABABA)">'+l.k+'</text>'
         +'<text x="'+(axX+14)+'" y="'+(yy+3).toFixed(1)+'" font-size="10.5" fill="'+l.c+'" style="font-variant-numeric:tabular-nums">'+VX.fmt.nd(l.v)+(pct!=null?' ('+(pct>=0?'+':'')+pct.toFixed(1)+'%)':'')+'</text>';}).join('');
     const aria='Échelle risque/récompense : '+lv.map(function(l){return l.k+' '+VX.fmt.nd(l.v);}).join(', ')+(plan.rr?', R:R '+plan.rr:'');
     return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:'+W+'px;display:block;margin:0 auto 10px" role="img" aria-label="'+aria.replace(/"/g,'&quot;')+'">'
       +'<line x1="'+axX+'" y1="'+padT+'" x2="'+axX+'" y2="'+(H-padB)+'" stroke="rgba(255,255,255,.12)"/>'+bands+rows+'</svg>';
   }
   body('an-plan',
-    rrLadder(d.price,plan)
+    `<div id="an-cone" class="vx-mb2"></div>`
+    +rrLadder(d.price,plan)
     +kv('Entrée',plan.entry)+kv('Stop (invalidation sous-jacent)',plan.stop,'vx-neg')
     +kv('TP1',plan.tp1,'vx-pos')+kv('TP2',plan.tp2,'vx-pos')+kv('TP3',plan.tp3,'vx-pos')
     +kv('R:R structurel',plan.rr)
@@ -521,6 +595,10 @@ async function loadDossier(){
       <button class="vx-btn vx-btn-sm vx-btn-soft" onclick="window.__prepOrder&&window.__prepOrder('${SYM}')">Préparer l’ordre (copier IBKR)</button>
     </div>
     <div id="an-order-ticket" class="vx-mt2"></div>`);
+  if(window.VXCharts&&VXCharts.projectionCone){
+    VXCharts.projectionCone('an-cone',{spot:d.price,stop:plan.stop,tp1:plan.tp1,tp2:plan.tp2,tp3:plan.tp3,
+      history:(S.close||[]).slice(-60),horizonLabel:'plan moteur'+(plan.rr?' · R:R '+plan.rr:'')});
+  }
   window.__prepOrder=function(sym){
     const host=document.getElementById('an-order-ticket');if(!host)return;
     const av=Number(localStorage.getItem('vxAccountValue')||'')||null;
@@ -553,7 +631,7 @@ async function loadDossier(){
             +'<div><div class="vx-meta">R:R</div><b>'+(t.reward_risk!=null?t.reward_risk:'—')+'</b></div></div>'
             +(t.blocked?'<div class="vx-stale-banner vx-mt2">⛔ Préparation bloquée par la stratégie : '+warn.map(esc).join(' · ')+'</div>'
               :(warn.length?'<div class="vx-meta vx-mt2" style="color:var(--vx-warning)">'+warn.map(esc).join(' · ')+'</div>':''))
-            +'<pre id="ot-pre" style="white-space:pre-wrap;background:var(--vx-surface-2,#1d1f22);padding:.7rem;border-radius:8px;margin-top:.7rem;font-size:12px">'+esc(t.copy_text||'')+'</pre>'
+            +'<pre id="ot-pre" style="white-space:pre-wrap;background:var(--vx-surface-2,#121214);padding:.7rem;border-radius:8px;margin-top:.7rem;font-size:12px">'+esc(t.copy_text||'')+'</pre>'
             +'<button class="vx-btn vx-btn-sm vx-btn-ghost" id="ot-copy">Copier le ticket</button>'
             +'<div class="vx-meta vx-mt1">'+esc(t.disclaimer||'')+'</div></div>';
           const cp=document.getElementById('ot-copy');
@@ -607,7 +685,7 @@ async function loadDossier(){
     +(jr.length?jr.map(j=>`<div class="vx-kv"><span class="k">${j.date} · ${esc(j.dir||'')}</span>
       <span class="v ${j.pnl>0?'vx-pos':j.pnl<0?'vx-neg':''}">${j.result||''} ${j.pnl!==undefined&&j.pnl!==''?VX.fmt.num(j.pnl):''}</span></div>`).join('')
       :VX.states.empty('Aucune entrée de journal sur ce titre.'))
-    +`<div class="vx-meta vx-mt2"><a href="/performance?view=journal&sym=${SYM}">Journal complet →</a></div>`);
+    +`<div class="vx-meta vx-mt2"><a href="/journal?view=journal&sym=${SYM}">Journal complet →</a></div>`);
   paintBadges();paintThesis();
   try{loadAnalyst();}catch(e){}
 }
@@ -636,7 +714,7 @@ async function loadAnalyst(){
       return `<div class="vx-kv"><span class="k">${esc(r.date)} · ${esc(r.firm)}</span><span class="v ${dir}">${esc(r.to||r.pt_action||r.action)}${tgt}</span></div>`;
     }).join('');
   }
-  if(cat){const el=$b('an-catalysts');if(el)el.innerHTML+=`<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">${cat}</div>`;}
+  if(cat){const el=$b('an-catalysts');if(el)el.innerHTML+=`<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#30292B);padding-top:8px">${cat}</div>`;}
   /* Sentiment : détention institutionnelle (13F) + initiés */
   let sen='';
   if(a.holders&&a.holders.length){
@@ -648,10 +726,216 @@ async function loadAnalyst(){
   if(a.insider){const ib=a.insider;
     sen+=kv('Initiés (récent)',`${ib.buys} achat(s) / ${ib.sells} vente(s)`,(ib.bias==='buy'?'vx-pos':ib.bias==='sell'?'vx-neg':''));
   }
-  if(sen){const el=$b('an-sentiment');if(el)el.innerHTML+=`<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#26221e);padding-top:8px">${sen}</div>`;}
+  if(sen){const el=$b('an-sentiment');if(el)el.innerHTML+=`<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#30292B);padding-top:8px">${sen}</div>`;}
+}
+/* ── Carte-Verdict + Carte-Scénario + Raisonnement du comité (decision stack) ── */
+function pctRet(entry,tgt){if(entry==null||tgt==null||!entry)return null;return (tgt-entry)/entry*100;}
+async function loadDecisionStack(){
+  let dec=null;
+  try{dec=await VX.fetch('/api/decision/'+SYM,{ttl:60000});}catch(e){}
+  const V=$('an-verdict'),SC=$('an-scenarios'),CO=$('an-committee');
+  if(!dec){if(V)V.innerHTML='<div class="vx-card">'+VX.states.error('Décision indisponible')+'</div>';return;}
+  /* DATA_INSUFFICIENT → état honnête, aucune conviction. */
+  if(dec.final_decision==='DATA_INSUFFICIENT'){
+    const miss=(dec.data_quality&&(dec.data_quality.missing_fields||[]).join(', '))||'données du titre absentes';
+    if(V)V.innerHTML='<section class="vx-card vx-verdict-card" data-tone="gray">'
+      +'<div class="vx-verdict-head"><span class="vx-verdict-label">Données insuffisantes</span>'
+      +'<span class="vx-verdict-score">confiance 0</span></div>'
+      +'<div class="vx-insufficient"><div class="vx-insufficient-icon">&mdash;</div>'
+      +'<div><b>Vertex ne tranche pas '+esc(SYM)+'.</b>'
+      +'<div class="vx-insufficient-why">Données insuffisantes ('+esc(miss)+'). Aucune conviction affichée tant que le dossier n\'est pas complet.</div></div></div>'
+      +'<div class="vx-mt3"><a class="vx-btn vx-btn-soft" href="/system?view=data">Prochaine action : vérifier les données →</a></div></section>';
+    if(SC)SC.innerHTML='';if(CO)CO.innerHTML='';
+    return;
+  }
+  const tone=dec.decision_tone||'gray';
+  const conf=(dec.confidence!=null)?dec.confidence:null;
+  const entry=dec.entry,inval=dec.invalidation!=null?dec.invalidation:dec.stop;
+  const tgts=dec.targets||{};
+  const dq=(dec.data_quality&&dec.data_quality.grade)?('données '+dec.data_quality.grade):'';
+  const cell=(k,v)=>'<div class="vx-verdict-cell"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
+  if(V)V.innerHTML='<section class="vx-card vx-verdict-card" data-tone="'+esc(tone)+'">'
+    +'<div class="vx-verdict-head"><span class="vx-verdict-label">'+esc(dec.decision_label||dec.final_decision)+'</span>'
+    +(dec.grade?'<span class="vx-badge">'+esc(dec.grade)+'</span>':'')
+    +(conf!=null?'<span class="vx-verdict-score">confiance '+conf+'/100</span>':'')
+    +'<span class="vx-actions">'+('<span class="vx-freshness" data-live="'+(demoState()?'fallback':'delayed')+'"><span class="vx-live-dot"></span>'+(demoState()?'Démo':'Différé')+'</span>')+'</span></div>'
+    +'<div class="vx-verdict-grid">'
+    +cell('Prix',(TICKER&&TICKER.detail&&TICKER.detail.price!=null)?VX.fmt.price(TICKER.detail.price):'—')
+    +cell('Entrée',entry!=null?VX.fmt.price(entry):'—')
+    +cell('Invalidation',inval!=null?VX.fmt.price(inval):'—')
+    +cell('Conviction',dec.conviction!=null?dec.conviction:'—')
+    +cell('Véhicule',esc(dec.vehicle||'—'))
+    +(dq?cell('Qualité',esc(dq)):'')
+    +'</div>'
+    +'<div class="vx-mt3 vx-flex vx-wrap vx-gap2">'
+    +'<a class="vx-btn vx-btn-primary" href="#an-scenarios">Voir les scénarios ↓</a>'
+    +'<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\''+SYM+'\',\'alert\')">Alerte sur l\'invalidation</button>'
+    +'<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\''+SYM+'\',\'note\')">Journaliser l\'hypothèse</button></div>'
+    +'</section>';
+  /* Carte-Scénario : pessimiste / probable / exceptionnel dérivés du plan réel
+     (entrée → invalidation / cibles). Aucune probabilité inventée. */
+  if(SC){
+    const rDown=pctRet(entry,inval),rBase=pctRet(entry,tgts.tp1!=null?tgts.tp1:tgts.tp2),rUp=pctRet(entry,tgts.tp3!=null?tgts.tp3:tgts.tp2);
+    const asym=(rDown!=null&&rUp!=null&&rDown!==0)?Math.abs(rUp/rDown):null;
+    const scen=(kind,k,tgt,ret,note)=>'<div class="vx-scenario" data-kind="'+kind+'"><span class="vx-scenario-k">'+k+'</span>'
+      +'<span class="vx-scenario-v">'+(ret!=null?(ret>0?'+':'')+ret.toFixed(1)+' %':'—')+'</span>'
+      +'<span class="vx-scenario-note">'+(tgt!=null?'cible '+VX.fmt.price(tgt):'cible n/d')+(note?' · '+note:'')+'</span></div>';
+    if(entry!=null&&(inval!=null||tgts.tp1!=null)){
+      SC.innerHTML='<section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Scénarios</span>'
+        +'<span class="vx-chart-question">Combien puis-je perdre, gagner probablement, gagner exceptionnellement ?</span></div>'
+        +'<div class="vx-scenario-grid">'
+        +scen('down','Pessimiste',inval,rDown,'invalidation')
+        +scen('base','Probable',tgts.tp1!=null?tgts.tp1:tgts.tp2,rBase,'cible 1')
+        +scen('up','Exceptionnel',tgts.tp3!=null?tgts.tp3:tgts.tp2,rUp,'cible étendue')
+        +'</div>'
+        +(asym!=null?'<div class="vx-kv vx-mt2"><span class="k">Asymétrie (gain exceptionnel / perte max)</span><span class="v vx-mono '+(asym>=2?'vx-pos':asym>=1?'':'vx-neg')+'">'+asym.toFixed(1)+'×</span></div>':'')
+        +'<div class="vx-card-foot"><span class="vx-meta">Scénarios dérivés du plan de niveaux moteur (entrée/invalidation/cibles) — aucune probabilité inventée.</span></div></section>';
+    }else{SC.innerHTML='<div class="vx-card">'+VX.states.empty('Plan de niveaux insuffisant pour construire les scénarios.')+'</div>';}
+  }
+  /* Raisonnement du comité (intégré depuis Intelligence) */
+  if(CO){
+    const com=dec.committee||{};
+    const pros=(dec.pros||[]).slice(0,4),cons=(dec.cons||[]).slice(0,4),unk=(dec.unknowns||[]).slice(0,3);
+    CO.innerHTML='<section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Raisonnement du comité</span>'
+      +(com.agreement!=null?'<span class="vx-actions"><span class="vx-badge">accord '+com.agreement+'/100</span></span>':'')+'</div>'
+      +(com.view?'<div class="vx-dim vx-mb2">Consensus : <b>'+esc(com.view)+'</b>'+(com.has_contradiction?' · <span class="vx-neg">contradictions internes exposées</span>':'')+'</div>':'')
+      +'<div class="vx-grid">'
+      +'<div class="vx-col-6"><div class="vx-meta vx-mb1">Facteurs positifs</div>'+(pros.length?pros.map(p=>'<div class="vx-pos" style="font-size:12px">+ '+esc(p)+'</div>').join(''):'<span class="vx-muted">—</span>')+'</div>'
+      +'<div class="vx-col-6"><div class="vx-meta vx-mb1">Facteurs négatifs</div>'+(cons.length?cons.map(c=>'<div class="vx-neg" style="font-size:12px">− '+esc(c)+'</div>').join(''):'<span class="vx-muted">—</span>')+'</div>'
+      +'</div>'
+      +(com.devils_advocate?'<div class="vx-insight vx-mt2" data-tone="risk"><b>Avocat du diable</b><div class="vx-mt1">'+esc(com.devils_advocate)+'</div></div>':'')
+      +(unk.length?'<div class="vx-kv vx-mt2"><span class="k">Ce que nous ne savons pas</span><span class="v vx-muted">'+unk.map(esc).join(' · ')+'</span></div>':'')
+      +'<div class="vx-card-foot"><span class="vx-meta">Comité déterministe (decision stack) — l\'IA explique, ne décide jamais.</span></div></section>';
+  }
+}
+function demoState(){return !!(window.__vxStatus&&window.__vxStatus.demo);}
+/* Copilote du titre : question libre → /api/copilot/ask ancré sur SYM (chiffres réels). */
+(function(){
+  const go=$('an-cp-go'),q=$('an-cp-q'),out=$('an-cp-out');
+  if(!go||!q||!out)return;
+  function ask(){
+    const question=(q.value||'').trim();
+    if(!question){VX.toast&&VX.toast('Écris une question','warn');return;}
+    out.innerHTML='<div class="vx-empty">Le copilote analyse '+SYM+'…</div>';
+    fetch('/api/copilot/ask',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:question,symbol:SYM})})
+      .then(r=>r.json()).then(d=>{
+        if(!d.ok){out.innerHTML='<div class="vx-error-banner">'+esc(d.error||'réponse indisponible')+'</div>';return;}
+        out.innerHTML='<div class="vx-insight" data-tone="action" style="white-space:pre-wrap;font-size:12.5px">'+esc(d.answer)+'</div>'
+          +'<div class="vx-meta" style="margin-top:.3rem">'+esc(d.label||'')+'</div>';
+      }).catch(e=>{out.innerHTML='<div class="vx-error-banner">Copilote injoignable : '+esc(e.message)+'</div>';});
+  }
+  go.addEventListener('click',ask);
+  q.addEventListener('keydown',e=>{if(e.key==='Enter')ask();});
+})();
+/* Ticket pré-trade : montant envisagé → 7 contrôles réels via /api/pretrade/check. */
+(function(){
+  const go=$('an-pt-go'),amt=$('an-pt-amt'),out=$('an-pt-out');
+  if(!go||!amt||!out)return;
+  const ICON={ok:'✓',attention:'⚠',defavorable:'✕',inconnu:'·'};
+  const CLS={ok:'vx-pos',attention:'vx-warn',defavorable:'vx-neg',inconnu:'vx-muted'};
+  function run(){
+    const a=Number(amt.value);
+    if(!(a>0)){VX.toast&&VX.toast('Montant envisagé requis','warn');return;}
+    out.innerHTML='<div class="vx-empty">Vérification de '+SYM+'…</div>';
+    fetch('/api/pretrade/check',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({symbol:SYM,amount:a})})
+      .then(r=>r.json()).then(d=>{
+        const tone=d.tone==='ok'?'pos':d.tone==='ko'?'neg':'neutral';
+        out.innerHTML='<div class="vx-flex vx-mb1" style="gap:.4rem;align-items:center">'
+          +'<span class="vx-badge" data-tone="'+tone+'">'+esc(d.overall||'—')+'</span>'
+          +'<span class="vx-meta">'+esc(d.symbol)+' · '+VX.fmt.num(d.amount,0)+'</span></div>'
+          +'<ul style="margin:.2rem 0;padding-left:0;list-style:none;font-size:12.5px">'
+          +(d.checks||[]).map(c=>'<li style="margin:.25rem 0"><span class="'+(CLS[c.status]||'vx-muted')+'" style="display:inline-block;width:16px">'+(ICON[c.status]||'·')+'</span><b>'+esc(c.label)+'</b> — '+esc(c.detail)+'</li>').join('')
+          +'</ul><div class="vx-meta">'+esc(d.narrative||'')+'</div>';
+      }).catch(e=>{out.innerHTML='<div class="vx-error-banner">Vérification impossible : '+esc(e.message)+'</div>';});
+  }
+  go.addEventListener('click',run);
+  amt.addEventListener('keydown',e=>{if(e.key==='Enter')run();});
+})();
+async function loadAnomalies(){
+  const host=$('an-anomaly');if(!host)return;
+  try{
+    const d=await VX.fetch('/api/anomalies/'+SYM,{ttl:120000});
+    if(window.VXCharts&&VXCharts.anomalyScan)VXCharts.anomalyScan('an-anomaly',d);
+    else host.innerHTML='<div class="vx-empty">Builder indisponible.</div>';
+  }catch(e){host.innerHTML='<div class="vx-error-banner">Scanner injoignable : '+esc(e.message)+'</div>';}
+}
+/* Skyler — décision canonique : score /40 par blocs, hard gates, scénarios. */
+async function loadSkyler(){
+  const host=$('an-skyler');if(!host)return;
+  try{
+    const r=await VX.fetch('/api/skyler/'+SYM,{ttl:120000});
+    const d=r&&r.decision;if(!d){host.innerHTML='<div class="vx-empty">Décision indisponible.</div>';return;}
+    const tone=d.decision==='ACHETER'||d.decision==='RENFORCER'?'pos'
+      :d.decision==='REFUSER'||d.decision==='REDUIRE'?'neg':'neutral';
+    const sc=d.score||{},blocks=sc.blocks||{};
+    const LBL={fundamentals_quality:'Fondamentaux',catalysts:'Catalyseurs',
+      technical_timing:'Technique',institutions_flow_anomalies:'Flux/anomalies',
+      market_regime_sector:'Régime',asymmetry_scenarios:'Asymétrie',
+      options_quality:'Option',data_quality:'Données'};
+    const chips=Object.keys(LBL).filter(k=>blocks[k]).map(k=>{
+      const b=blocks[k];const cls=b.status==='INSUFFICIENT'?'vx-muted':(b.points>=b.max*0.66?'vx-pos':'vx-warn');
+      return '<span class="vx-badge" data-tone="neutral" title="'+esc(b.basis||'')+'" style="margin:.12rem .2rem .12rem 0"><span class="'+cls+'">'+esc(LBL[k])+' '+b.points+'/'+b.max+'</span></span>';
+    }).join('');
+    const gates=(d.gates||[]).filter(g=>g.triggered===true);
+    const unknown=(d.gates||[]).filter(g=>g.triggered===null).length;
+    const sn=d.scenarios||{};
+    const row=(s,lab)=>s?'<li style="margin:.2rem 0"><b>'+lab+'</b> — cible '+VX.fmt.num(s.target,2)
+      +' ('+(s.return_pct>0?'+':'')+s.return_pct+' %) · probabilité : non calibrée</li>':'';
+    host.innerHTML='<div class="vx-flex vx-mb1" style="gap:.45rem;align-items:center;flex-wrap:wrap">'
+      +'<span class="vx-badge" data-tone="'+tone+'">'+esc(d.decision||'—')+'</span>'
+      +'<b>'+(sc.total??'—')+'/40</b><span class="vx-meta">niveau '+esc(d.level||'—')
+      +(d.capped_by_gate?' · plafonnée par '+esc(d.capped_by_gate):'')+'</span></div>'
+      +'<div class="vx-mb1">'+chips+'</div>'
+      +(gates.length?'<div class="vx-mb1">'+gates.map(g=>'<div class="vx-neg" style="font-size:12.5px">✕ '+esc(g.id)+' — '+esc(g.reason)+'</div>').join('')+'</div>':'')
+      +(sn.available?'<ul style="margin:.2rem 0;padding-left:0;list-style:none;font-size:12.5px">'
+        +row(sn.bear,'Pessimiste')+row(sn.base,'Probable')+row(sn.bull,'Exceptionnel')+'</ul>':'')
+      +'<div class="vx-meta" style="margin-top:.3rem">'
+      +(d.catalyst?'Catalyseur : '+esc(d.catalyst)+' · ':'')
+      +(d.invalidation!=null?'Invalidation : '+VX.fmt.num(d.invalidation,2)+' · ':'')
+      +(d.max_risk_pct!=null?'Risque max : '+d.max_risk_pct+' % · ':'')
+      +(unknown?unknown+' porte(s) non évaluable(s) · ':'')
+      +'Objection : '+esc(d.strongest_objection||'—')+'</div>';
+  }catch(e){host.innerHTML='<div class="vx-error-banner">Skyler injoignable : '+esc(e.message)+'</div>';}
+}
+/* Laboratoire d'évidence (X2) : stats ex post réelles après les spikes passés. */
+async function loadEvidence(){
+  const host=$('an-evidence');if(!host)return;
+  try{
+    const d=await VX.fetch('/api/evidence/'+SYM,{ttl:300000});
+    if(!d||d.available===false){
+      host.innerHTML='<div class="vx-empty">'+esc((d&&d.reason)||'évidence indisponible')+'.</div>';return;
+    }
+    if(!d.n_events){
+      host.innerHTML='<div class="vx-empty">Aucun spike historique sur la fenêtre ('+d.points+' clôtures) — rien à mesurer, rien d\'inventé.</div>';return;
+    }
+    const fm=(v)=>v==null?'—':((v>0?'+':'')+v+' %');
+    const cls=(v)=>v==null?'':v>0?'vx-pos':v<0?'vx-neg':'';
+    const row=(lab,b)=>b.n_measured?'<tr><td data-label="Direction"><b>'+lab+'</b> <span class="vx-meta">×'+b.n_measured+'</span></td>'
+      +'<td data-label="+1 barre" class="vx-num '+cls(b.median_fwd_1_pct)+'">'+fm(b.median_fwd_1_pct)+'</td>'
+      +'<td data-label="+5 barres" class="vx-num '+cls(b.median_fwd_5_pct)+'">'+fm(b.median_fwd_5_pct)+'</td>'
+      +'<td data-label="+10 barres" class="vx-num '+cls(b.median_fwd_10_pct)+'">'+fm(b.median_fwd_10_pct)+'</td>'
+      +'<td data-label="MFE" class="vx-num vx-pos">'+fm(b.median_mfe_pct)+'</td>'
+      +'<td data-label="MAE" class="vx-num vx-neg">'+fm(b.median_mae_pct)+'</td></tr>':'';
+    host.innerHTML='<div class="vx-table-wrap"><table class="vx-table"><thead><tr>'
+      +'<th>Après un spike…</th><th>+1 barre</th><th>+5 barres</th><th>+10 barres</th><th>MFE</th><th>MAE</th>'
+      +'</tr></thead><tbody>'+row('haussier',d.up)+row('baissier',d.down)+'</tbody></table></div>'
+      +'<div class="vx-meta" style="margin-top:.3rem">'+d.n_events+' spike(s) historique(s)'
+      +(d.n_unmeasurable?' · '+d.n_unmeasurable+' trop récent(s) non mesurable(s)':'')
+      +' · médianes exactes · '+esc(d.note||'')+'</div>';
+  }catch(e){host.innerHTML='<div class="vx-error-banner">Évidence injoignable : '+esc(e.message)+'</div>';}
 }
 loadDossier();
+loadDecisionStack();
+loadAnomalies();
+loadEvidence();
+VX.refresh.register(loadEvidence,300000,'analysis-evidence');
+loadSkyler();
+VX.refresh.register(loadSkyler,300000,'analysis-skyler');
+VX.refresh.register(loadAnomalies,300000,'analysis-anomaly');
 VX.refresh.register(loadDossier,180000,'analysis');
+VX.refresh.register(loadDecisionStack,180000,'analysis-decision');
 })();
 </script>
 """
@@ -675,7 +959,7 @@ def render(sym: str) -> str:
                'méritent-elles du capital maintenant ?</div></div></div>'
                + _SECTIONS.replace('%%SYM%%', safe)
                .replace('%%LOADING%%', '<div class="vx-skeleton" style="height:48px"></div>'))
-    js = _JS.replace('%%SYM_JSON%%', json.dumps(safe))
+    js = _JS.replace('%%SYM_JSON%%', json_for_script(safe))
     return render_shell(title=f'{safe} · Analyse', active='analysis',
                         space_label='Analyse', sub_label=safe, content=content,
                         page_js=js, page_label=f'Analyse {safe}',

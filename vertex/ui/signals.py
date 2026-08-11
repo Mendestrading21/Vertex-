@@ -15,22 +15,22 @@ Analyse uniquement — un signal n'est jamais un ordre.
 """
 
 CSS = r"""
-#sg{--acc:#ff7a18;--acc2:#ff9a3d;--good:#22c55e;--bad:#ef4444;--info:#b9683d;--warn:#f5b45b;--vio:#85609f;
+#sg{--acc:#dbe1e8;--acc2:#dbe1e8;--good:#22c55e;--bad:#ef4444;--info:#b9683d;--warn:#f5b45b;--vio:#85609f;
  --ink:#eef2f8;--ink2:#aeb8c8;--mut:#8794ab;--faint:#4b5563;--surf:#101218;--bg2:#0b0d12;
  --hair:rgba(255,255,255,.07);--hair2:rgba(255,255,255,.12);
  --mono:ui-monospace,'SF Mono',Menlo,monospace;--sp:clamp(40px,5vw,60px);color:var(--ink);display:block}
 #sg .num{font-variant-numeric:tabular-nums}
 #sg section{padding:var(--sp) 0 0}
 #sg .eyebrow{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--acc);margin-bottom:12px}
-#sg .eyebrow .rn{font-family:var(--mono);color:#FF9A3D;background:linear-gradient(135deg,rgba(255,122,24,.16),rgba(255,122,24,.05));border:1px solid rgba(255,122,24,.35);padding:6px 9px;border-radius:9px;letter-spacing:1.5px}
-#sg .eyebrow::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,rgba(255,122,24,.4),transparent);border-radius:2px}
+#sg .eyebrow .rn{font-family:var(--mono);color:#dbe1e8;background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.35);padding:6px 9px;border-radius:9px;letter-spacing:1.5px}
+#sg .eyebrow::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,rgba(255,255,255,.4),transparent);border-radius:2px}
 #sg h2{font-size:clamp(20px,2.4vw,26px);font-weight:800;letter-spacing:-.02em;margin:0 0 6px;
  background:linear-gradient(180deg,#f7fafc,#c7d0dd);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 #sg .sub{color:var(--mut);font-size:12.5px;max-width:70ch;margin-bottom:18px}
 #sg .panel{background:linear-gradient(170deg,var(--surf),var(--bg2));border:1px solid var(--hair);border-radius:18px;padding:20px 22px}
-#sg .aiq{display:flex;gap:12px;align-items:flex-start;margin-top:16px;padding:13px 16px;background:linear-gradient(120deg,rgba(255,122,24,.09),rgba(255,122,24,.02));border:1px solid rgba(255,122,24,.16);border-left:2.5px solid var(--acc);border-radius:13px;font-size:13px;line-height:1.6;color:var(--ink2)}
+#sg .aiq{display:flex;gap:12px;align-items:flex-start;margin-top:16px;padding:13px 16px;background:linear-gradient(120deg,rgba(255,255,255,.09),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.16);border-left:2.5px solid var(--acc);border-radius:13px;font-size:13px;line-height:1.6;color:var(--ink2)}
 #sg .aiq b{color:var(--ink)}
-#sg .aiq .ico{flex:none;width:22px;height:22px;border-radius:7px;background:rgba(255,122,24,.16);display:grid;place-items:center;font-size:12px}
+#sg .aiq .ico{flex:none;width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:12px}
 #sg .lbl{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
 #sg .pulse{display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center}
 #sg .fam{display:flex;flex-direction:column;gap:9px}

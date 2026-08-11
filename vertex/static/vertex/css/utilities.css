@@ -19,9 +19,13 @@
   .vx-hide-desktop{display:initial}
 }
 .vx-divider{height:1px;background:var(--vx-border-soft);margin:var(--vx-s3) 0}
-.vx-kv{display:flex;justify-content:space-between;gap:var(--vx-s3);
+.vx-kv{display:flex;justify-content:space-between;align-items:baseline;gap:var(--vx-s3);
   padding:4px 0;border-bottom:1px dashed var(--vx-border-soft);font-size:12.5px}
 .vx-kv:last-child{border-bottom:none}
-.vx-kv .k{color:var(--vx-text-muted)}
+/* lot 57 : le libellé passe à la ligne au besoin — l'information n'est
+   JAMAIS tronquée par ellipse (« Politique par défaut » → « Politique … »).
+   LOT 126 : le libellé garde sa largeur NATURELLE (≤ 55 %) — une valeur
+   longue ne l'écrase plus en « Ét at » ; c'est la valeur qui replie. */
+.vx-kv .k{color:var(--vx-text-muted);flex:0 0 auto;max-width:55%;min-width:0;overflow-wrap:anywhere}
 .vx-kv .v{font-family:var(--vx-font-mono);font-variant-numeric:tabular-nums;
-  font-weight:600;text-align:right}
+  font-weight:600;text-align:right;flex:1 1 auto;min-width:0;overflow-wrap:anywhere}

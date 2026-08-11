@@ -24,8 +24,9 @@
     overlay(app.dataset.mobileNav === 'open');
   });
   $('vx-mobile-more')?.addEventListener('click', () => {
-    VX.shell.openDrawer('Navigation', ['analysis', 'intelligence', 'system'].map(id => {
-      const it = { analysis: ['Analyse', '/analysis'], intelligence: ['Intelligence', '/intelligence'], system: ['Système', '/system'] }[id];
+    /* Espaces hors barre mobile (5 prioritaires) : Options, Journal, Système. */
+    VX.shell.openDrawer('Navigation', ['options', 'journal', 'system'].map(id => {
+      const it = { options: ['Options', '/options'], journal: ['Journal', '/journal'], system: ['Système', '/system'] }[id];
       return `<a class="vx-nav-item" href="${it[1]}">${it[0]}</a>`;
     }).join(''));
   });
@@ -37,24 +38,28 @@
     const focusables = container.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
     if (focusables.length) focusables[0].focus();
   }
+  /* A11y (lot 209) : un panneau FERMÉ est invisible aux lecteurs d'écran et
+     infocusable — aria-hidden + inert posés fermé, retirés à l'ouverture. */
+  function panelOpen(el) { el.dataset.open = '1'; el.removeAttribute('aria-hidden'); el.removeAttribute('inert'); }
+  function panelClose(el) { el.dataset.open = '0'; el.setAttribute('aria-hidden', 'true'); el.setAttribute('inert', ''); }
   const shell = VX.shell = {
     openDrawer(title, html) {
       lastFocus = document.activeElement;
       $('vx-drawer-title').textContent = title;
       $('vx-drawer-body').innerHTML = html;
-      $('vx-drawer').dataset.open = '1'; overlay(true);
+      panelOpen($('vx-drawer')); overlay(true);
       trapFocus($('vx-drawer'));
     },
-    closeDrawer() { $('vx-drawer').dataset.open = '0'; overlay(false); lastFocus?.focus?.(); },
+    closeDrawer() { panelClose($('vx-drawer')); overlay(false); lastFocus?.focus?.(); },
     openModal(title, bodyHtml, footerHtml) {
       lastFocus = document.activeElement;
       $('vx-modal-title').textContent = title;
       $('vx-modal-body').innerHTML = bodyHtml;
       $('vx-modal-footer').innerHTML = footerHtml || '';
-      $('vx-modal').dataset.open = '1';
+      panelOpen($('vx-modal'));
       trapFocus($('vx-modal'));
     },
-    closeModal() { $('vx-modal').dataset.open = '0'; lastFocus?.focus?.(); },
+    closeModal() { panelClose($('vx-modal')); lastFocus?.focus?.(); },
     closeAll() {
       shell.closeDrawer(); shell.closeModal();
       $('vx-palette').dataset.open = '0';
@@ -70,7 +75,9 @@
   /* ── Retour contextuel (§15) ─────────────────────────────────────── */
   const backBtn = $('vx-back-btn');
   const ctx = VX.context.get();
-  const SPACE_LABELS = { '/': 'au briefing', '/markets': 'aux marchés', '/opportunities': 'aux opportunités', '/portfolio': 'au portefeuille', '/analysis': 'à l’analyse', '/performance': 'à la performance', '/intelligence': 'à l’intelligence', '/system': 'au système' };
+  /* lot 55 : les 8 espaces canoniques couverts (+ 2 anciennes routes encore
+     joignables) — plus jamais de chemin brut dans le libellé de retour. */
+  const SPACE_LABELS = { '/': 'au briefing', '/markets': 'aux marchés', '/opportunities': 'aux opportunités', '/portfolio': 'au portefeuille', '/analysis': 'à l’analyse', '/options': 'aux options', '/journal': 'au journal', '/system': 'au système', '/performance': 'à la performance', '/intelligence': 'à l’intelligence' };
   if (ctx && ctx.from && ctx.from !== location.pathname && backBtn) {
     const label = ctx.view === 'watchlist' ? 'Retour à la watchlist' : ('Retour ' + (SPACE_LABELS[ctx.from] || 'à ' + (ctx.label || ctx.from)));
     backBtn.querySelector('span').textContent = label;
@@ -100,9 +107,39 @@
   tickClock(); setInterval(tickClock, 30000);
 
   /* ── État global (sidebar footer) + connexions ───────────────────── */
+  /* ── Mode offline / dégradé (§13) : on ne montre JAMAIS un écran vide parce
+     qu'une source est indisponible. Hors ligne → on marque l'état, on garde les
+     dernières données (cache persistant LOT 3) et la navigation ; au retour, on
+     revalide. Bascule online/offline via les événements réseau ET l'échec des
+     requêtes de statut. ── */
+  function setNet(state) {
+    const prev = document.documentElement.getAttribute('data-net') || 'online';
+    document.documentElement.setAttribute('data-net', state);
+    if (VX.store) VX.store.set('connection_state', state);
+    if (prev === state) return;
+    const el = $('vx-global-status');
+    if (state === 'offline') {
+      if (el) {
+        const d = el.querySelector('.vx-dot'), l = el.querySelector('.vx-status-label');
+        if (d) d.style.background = 'var(--vx-negative)';
+        if (l) l.textContent = 'Hors ligne';
+      }
+      try { VX.toast('Hors ligne — dernières données conservées', 'warn', 3200); } catch (e) {}
+    } else {
+      try { VX.toast('Reconnecté', 'success', 2000); } catch (e) {}
+      VX.bus.emit('vx:data-refreshed', { reason: 'reconnect' });
+    }
+  }
+  try { setNet(navigator.onLine === false ? 'offline' : 'online'); } catch (e) {}
+  window.addEventListener('offline', function () { setNet('offline'); });
+  window.addEventListener('online', function () { setNet('online'); loadStatus(); });
+
   async function loadStatus() {
     try {
       const st = await VX.fetch('/api/live/status', { ttl: 60000 });
+      // HONNÊTETÉ réseau : le statut peut être servi du cache persistant pendant une
+      // vraie coupure — ne JAMAIS annoncer « Reconnecté » si le navigateur est hors ligne.
+      if (navigator.onLine !== false) setNet('online');
       const el = $('vx-global-status'); if (!el) return;
       const demo = !!st.demo;
       const dot = el.querySelector('.vx-dot'); const label = el.querySelector('.vx-status-label');
@@ -110,9 +147,57 @@
       label.textContent = demo ? 'Mode démo' : 'Données actives';
       window.__vxStatus = st;
       VX.bus.emit('vx:connection-changed', st);
-    } catch (e) { /* silencieux : bandeau par page */ }
+    } catch (e) {
+      if (navigator.onLine === false) setNet('offline');   // échec réseau réel → dégradé
+    }
   }
-  loadStatus(); VX.refresh.register(loadStatus, 90000, 'status');
+  loadStatus(); VX.refresh.register(loadStatus, 90000, 'status', { persistent: true });
+
+  /* ── Session d'analyse : détection de NOUVELLE session + bascule atomique ──
+     (CONTINUITY LOT 5) On surveille le manifest ; quand le session_id change (un
+     nouveau scan s'est publié), on bascule d'un coup : le store est mis à jour, le
+     cache instantané (snapshot) est invalidé, une notification discrète paraît, et
+     toutes les pages se rechargent via vx:data-refreshed. Aucun recalcul, lecture seule. */
+  let _lastSessionNotify = 0;
+  const SESSION_NOTIFY_THROTTLE = 600000;   // notification visible au plus toutes les 10 min
+  async function watchSession() {
+    let m;
+    try { m = await VX.fetch('/api/session/manifest', { ttl: 0 }); } catch (e) { return; }
+    if (!m || !m.session_id) return;                     // scan pas encore publié → on ré-essaiera
+    VX.store.set('session_status', m.status);
+    VX.store.set('active_session_id', m.session_id);     // base des badges de fraîcheur
+
+    /* Le cache de données est ALIGNÉ sur la session courante (l'identifiant est
+       persisté avec le cache en sessionStorage). Dès que la session observée diffère
+       de celle du cache, on invalide et on recharge :
+       - 1re publication APRÈS un démarrage à froid (le cache tenait un état vide/partiel) ;
+       - nouveau scan (bascule 30 min).
+       → on ne reste JAMAIS figé sur un écran de démarrage vide (régime UNKNOWN / n/d).
+       Même session ⇒ on ne touche à rien ⇒ navigation instantanée. */
+    let aligned = null;
+    try { aligned = sessionStorage.getItem('vxCacheSession'); } catch (e) {}
+    if (m.session_id === aligned) return;                // session inchangée → cache valide
+    try { sessionStorage.setItem('vxCacheSession', m.session_id); } catch (e) {}
+    VX.store.set('previous_session_id', aligned);
+    // invalide le snapshot de scan ; garde le desk perso ET le manifest (toujours réseau)
+    VX.fetch.invalidate((u) => u.indexOf('/api/desk') !== 0 && u.indexOf('/api/session/manifest') !== 0);
+    VX.bus.emit('vx:session-changed', m);
+    VX.bus.emit('vx:data-refreshed', { reason: aligned == null ? 'session-ready' : 'session-switch' });
+    // Notification visible SEULEMENT pour une vraie bascule (pas le 1er alignement à froid),
+    // throttlée (~10 min) pour ne pas spammer.
+    if (aligned != null) {
+      const now = Date.now();
+      if (now - _lastSessionNotify >= SESSION_NOTIFY_THROTTLE) {
+        _lastSessionNotify = now;
+        const bits = ['Analyse mise à jour'];
+        if (m.as_of) bits.push('Session ' + m.as_of);
+        if (m.scanned) bits.push(m.scanned + ' sociétés');
+        if (m.quality_pct != null) bits.push('qualité ' + m.quality_pct + ' %');
+        try { VX.toast(bits.join(' · '), 'success', 4200); } catch (e) {}
+      }
+    }
+  }
+  watchSession(); VX.refresh.register(watchSession, 60000, 'session-watch', { persistent: true });
 
   $('vx-connections-btn')?.addEventListener('click', async () => {
     let st = window.__vxStatus, diag = null;
@@ -169,18 +254,21 @@
   $('vx-refresh-btn')?.addEventListener('click', function () { VX.refresh.runAll(this); });
 
   /* ── Command palette (§14) ───────────────────────────────────────── */
+  /* 8 espaces canoniques (PR n°2) + approfondissements joignables. */
   const PAGES = [
-    ['Briefing', '/'], ['Marchés', '/markets'], ['Marchés · Secteurs', '/markets?view=sectors'],
+    ["Aujourd'hui", '/'], ['Marchés', '/markets'], ['Marchés · Secteurs', '/markets?view=sectors'],
     ['Marchés · Volatilité', '/markets?view=volatility'], ['Marchés · Breadth', '/markets?view=breadth'],
     ['Opportunités', '/opportunities'], ['Opportunités · Options', '/opportunities?view=options'],
     ['Opportunités · Anomalies', '/opportunities?view=anomalies'], ['Opportunités · Calendrier', '/opportunities?view=calendar'],
+    ['Analyse', '/analysis'],
     ['Portefeuille', '/portfolio'], ['Portefeuille · Watchlist', '/portfolio?view=watchlist'],
-    ['Portefeuille · Risque', '/portfolio?view=risk'], ['Analyse', '/analysis'],
-    ['Performance', '/performance'], ['Performance · Journal', '/performance?view=journal'],
-    ['Performance · Track Record', '/performance?view=track-record'],
-    ['Intelligence', '/intelligence'], ['Intelligence · Comité', '/intelligence?view=committee'],
+    ['Portefeuille · Risque', '/portfolio?view=risk'],
+    ['Options', '/options'], ['Options · Volatilité', '/options?view=volatility'],
+    ['Journal', '/journal'], ['Journal · Décisions', '/journal?view=journal'],
+    ['Journal · Track Record', '/journal?view=track-record'], ['Journal · Suivis', '/tracking'],
+    ['Analyse · Comité', '/intelligence?view=committee'],
     ['Système', '/system'], ['Système · Connexions', '/system?view=connections'],
-    ['Système · Archive', '/system?view=archive'],
+    ['Système · Archive', '/system?view=archive'], ['Système · Design System', '/design-system'],
   ];
   const palette = $('vx-palette'), pInput = $('vx-palette-input'), pList = $('vx-palette-list');
   let pItems = [], pSel = 0, namesCache = null;
@@ -250,8 +338,21 @@
   document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
   });
-  $('vx-global-search')?.addEventListener('focus', (e) => { e.target.blur(); openPalette(); });
+  /* Lot 302 : ne JAMAIS ouvrir au focus — le Tab clavier traversait le champ
+     et la palette s'ouvrait de force (les boutons du topbar devenaient
+     inatteignables au clavier). Ouverture : clic/tap (inchangé) ou FRAPPE
+     dans le champ (le caractère saisi amorce la recherche de la palette). */
   $('vx-global-search')?.addEventListener('click', openPalette);
+  $('vx-global-search')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'Enter' || e.key === 'ArrowDown' || e.key.length === 1) {
+      e.preventDefault(); openPalette();
+      if (e.key.length === 1) { pInput.value = e.key; renderPalette(e.key); }
+    }
+  });
+  /* Lot 291 : la palette est un fond plein écran sans Échap au tactile —
+     le tap sur le fond (hors boîte) ferme, comme tout dialogue. */
+  palette?.addEventListener('click', (e) => { if (e.target === palette) palette.dataset.open = '0'; });
 
   /* ── + Ajouter (§19) ─────────────────────────────────────────────── */
   $('vx-add-btn')?.addEventListener('click', () => window.VXEntities?.openAddModal());
@@ -260,4 +361,13 @@
   window.addEventListener('pagehide', () => {
     if (!location.pathname.startsWith('/analysis/')) VX.context.save();
   });
+
+  /* ── Service worker : offline + précache (LOT 82) ──────────────────
+     Le shell canonique n'enregistrait JAMAIS /sw.js (seules les pages
+     legacy le faisaient) : aucun offline sur les 8 espaces. */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
 })();

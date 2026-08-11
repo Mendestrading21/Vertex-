@@ -14,7 +14,7 @@ canvas haute densité (devicePixelRatio), responsive.
 """
 
 CSS = r"""
-#olab{--acc:#ff7a18;--acc2:#ff9a3d;--good:#22c55e;--bad:#ef4444;--info:#b9683d;--warn:#f5b45b;--vio:#85609f;
+#olab{--acc:#dbe1e8;--acc2:#dbe1e8;--good:#22c55e;--bad:#ef4444;--info:#b9683d;--warn:#f5b45b;--vio:#85609f;
  --ink:#eef2f8;--ink2:#aeb8c8;--mut:#8794ab;--faint:#4b5563;--surf:#101218;--bg2:#0b0d12;
  --hair:rgba(255,255,255,.07);--hair2:rgba(255,255,255,.12);
  --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
@@ -24,13 +24,13 @@ CSS = r"""
 #olab section{padding:var(--sp) 0 0}
 #olab .eyebrow{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--acc);margin-bottom:12px}
 #olab .eyebrow .rn{font-family:var(--mono);color:var(--faint);letter-spacing:0}
-#olab .eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(255,122,24,.35),transparent)}
+#olab .eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.35),transparent)}
 #olab h2{font-size:clamp(21px,2.6vw,28px);font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
 #olab .sub{color:var(--mut);font-size:13px;max-width:70ch;margin-bottom:22px}
 #olab .panel{background:linear-gradient(170deg,var(--surf),var(--bg2));border:1px solid var(--hair);border-radius:20px;padding:22px 24px}
-#olab .aiq{display:flex;gap:12px;align-items:flex-start;margin-top:18px;padding:14px 17px;background:linear-gradient(120deg,rgba(255,122,24,.09),rgba(255,122,24,.02));border:1px solid rgba(255,122,24,.16);border-left:2.5px solid var(--acc);border-radius:14px;font-size:13.5px;line-height:1.6;color:var(--ink2)}
+#olab .aiq{display:flex;gap:12px;align-items:flex-start;margin-top:18px;padding:14px 17px;background:linear-gradient(120deg,rgba(255,255,255,.09),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.16);border-left:2.5px solid var(--acc);border-radius:14px;font-size:13.5px;line-height:1.6;color:var(--ink2)}
 #olab .aiq b{color:var(--ink)}
-#olab .aiq .ico{flex:none;width:22px;height:22px;border-radius:7px;background:rgba(255,122,24,.16);display:grid;place-items:center;font-size:12px;margin-top:1px}
+#olab .aiq .ico{flex:none;width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:12px;margin-top:1px}
 #olab .lbl{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
 #olab .pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;padding:3px 10px;border-radius:999px;letter-spacing:.4px}
 #olab .p-good{background:rgba(34,197,94,.13);color:var(--good)}
@@ -64,14 +64,14 @@ CSS = r"""
 #olab .arow .h{display:flex;gap:9px;align-items:center;font-weight:700;font-size:13.5px}
 #olab .arow .imp{margin-top:6px}
 #olab .arow .txt{font-size:12.8px;color:var(--ink2);line-height:1.6}
-#olab .arow .rec{font-size:12px;color:var(--ink2);line-height:1.5;padding-left:12px;border-left:2px solid rgba(255,122,24,.4)}
+#olab .arow .rec{font-size:12px;color:var(--ink2);line-height:1.5;padding-left:12px;border-left:2px solid rgba(255,255,255,.4)}
 #olab .arow .rec b{color:var(--acc2);font-weight:800;font-size:10px;letter-spacing:.8px}
 #olab .sbar{height:5px;border-radius:99px;background:rgba(255,255,255,.06);margin-top:8px;overflow:hidden}
 #olab .sbar i{display:block;height:100%;border-radius:99px}
 #olab .snum{font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:5px}
 /* plan — timeline verticale */
 #olab .tl{position:relative;padding-left:30px}
-#olab .tl::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,rgba(255,122,24,.5),rgba(255,255,255,.06))}
+#olab .tl::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.06))}
 #olab .tl>div{position:relative;padding:0 0 22px}
 #olab .tl .dot{position:absolute;left:-27px;top:3px;width:16px;height:16px;border-radius:99px;display:grid;place-items:center;font-size:9px;background:#16181f;border:2px solid var(--faint)}
 #olab .tl .t{font-weight:800;font-size:13.5px}
@@ -219,17 +219,17 @@ function drawOne(id){if(OLDRAWN[id]||!OL)return;OLDRAWN[id]=1;var v=OL.viz||{};
   var ymax=Math.max.apply(0,vals)*1.15||60;axes(x,pad,0,ymax,function(y){return Math.round(y)+'%';});
   var bw=(x.W-pad.l-pad.r)/T.length;
   T.forEach(function(t,i){var cx=pad.l+bw*i+bw/2,W=Math.min(34,bw/3);
-   [[t.sym_iv,'#ff7a18',-W-3],[t.board_iv,'rgba(255,255,255,.28)',3]].forEach(function(b){if(b[0]==null)return;
+   [[t.sym_iv,'#dbe1e8',-W-3],[t.board_iv,'rgba(255,255,255,.28)',3]].forEach(function(b){if(b[0]==null)return;
     var h=(x.H-pad.t-pad.b)*b[0]/ymax;x.fillStyle=b[1];x.fillRect(cx+b[2],x.H-pad.b-h,W,h);});
    x.fillStyle='#8794ab';x.textAlign='center';x.fillText(t.bucket,cx,x.H-4);});
-  x.fillStyle='#ff7a18';x.textAlign='left';x.fillText('■ titre',pad.l,10);x.fillStyle='#8794ab';x.fillText('■ board',pad.l+50,10);}
+  x.fillStyle='#dbe1e8';x.textAlign='left';x.fillText('■ titre',pad.l,10);x.fillStyle='#8794ab';x.fillText('■ board',pad.l+50,10);}
  if(id==='cRadar'&&v.radar){var x=ctx2d(id);if(!x)return;var ks=Object.keys(v.radar),n=ks.length,
   cx=x.W/2,cy=x.H/2+4,R=Math.min(x.W,x.H)/2-26;
   x.strokeStyle='rgba(255,255,255,.08)';[.33,.66,1].forEach(function(f){x.beginPath();
    for(var i=0;i<=n;i++){var a=-Math.PI/2+i*2*Math.PI/n,X=cx+Math.cos(a)*R*f,Y=cy+Math.sin(a)*R*f;i?x.lineTo(X,Y):x.moveTo(X,Y);}x.stroke();});
   x.beginPath();ks.forEach(function(k,i){var a=-Math.PI/2+i*2*Math.PI/n,f=(v.radar[k]||0)/100,
    X=cx+Math.cos(a)*R*f,Y=cy+Math.sin(a)*R*f;i?x.lineTo(X,Y):x.moveTo(X,Y);});x.closePath();
-  x.fillStyle='rgba(255,122,24,.18)';x.fill();x.strokeStyle='#ff7a18';x.lineWidth=1.6;x.stroke();
+  x.fillStyle='rgba(255,255,255,.18)';x.fill();x.strokeStyle='#dbe1e8';x.lineWidth=1.6;x.stroke();
   x.fillStyle='#aeb8c8';ks.forEach(function(k,i){var a=-Math.PI/2+i*2*Math.PI/n;x.textAlign=Math.cos(a)>.3?'left':Math.cos(a)<-.3?'right':'center';
    x.fillText(k,cx+Math.cos(a)*(R+11),cy+Math.sin(a)*(R+11)+3);});}
  if((id==='gPop'||id==='gConv')&&v.gauges){var x=ctx2d(id);if(!x)return;
@@ -269,8 +269,8 @@ function s02(r){if(!r)return '';
   +'<b class="num" style="font-size:16px;color:'+scol(x.score)+'">'+$n(x.score)+'</b></div>'
   +'<div style="font-size:11px;color:var(--mut);margin-top:4px" class="num">$'+$n(x.strike,1)+' · '+x.exp+' · POP '+$n(x.pop)+'% · coût '+$usd(x.cost)+' · si scénario → <b style="color:var(--good)">+'+$n(x.pot)+'%</b></div></div>';}).join('');
  return sec('02','Option Research','La meilleure opportunité parmi les contrats analysés — la fiche qui répond à tout : quoi, pourquoi, combien, jusqu\'à quand.',
-  '<div class="panel" style="border-color:rgba(255,122,24,.28);box-shadow:0 0 60px -38px rgba(255,122,24,.55)">'
-  +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><span class="pill" style="background:linear-gradient(135deg,rgba(255,122,24,.22),rgba(255,122,24,.08));color:var(--acc2);font-size:11px;padding:6px 14px">💎 L\'OPTION DU JOUR</span><span style="font-size:11px;color:var(--mut)">la plus asymétrique des '+$n((OL.overview||{}).contracts)+' analysées</span></div>'
+  '<div class="panel" style="border-color:rgba(255,255,255,.28);box-shadow:0 0 60px -38px rgba(255,255,255,.55)">'
+  +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><span class="pill" style="background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,.08));color:var(--acc2);font-size:11px;padding:6px 14px">💎 L\'OPTION DU JOUR</span><span style="font-size:11px;color:var(--mut)">la plus asymétrique des '+$n((OL.overview||{}).contracts)+' analysées</span></div>'
   +'<div class="hero"><div class="id">'
   +'<span class="pill '+(r.type==='PUT'?'p-bad':'p-good')+'">'+r.type+'</span> <span class="pill p-mut">'+$h(r.sector)+'</span>'
   +'<div class="tk">'+r.sym+' <span style="font-size:.4em;color:var(--mut);font-weight:700">$'+$n(r.strike,1)+' · '+$h((r.exp||'').slice(0,10))+'</span></div>'

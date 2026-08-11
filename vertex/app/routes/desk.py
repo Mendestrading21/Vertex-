@@ -110,6 +110,25 @@ def make_blueprint(*, opt_job, ibkr_enabled):
             persist.save_json('desk_data.json', {'ts': int(time.time() * 1000), 'data': snap['data']})
         return jsonify({'ok': True, 'restored': name})
 
+    @bp.route('/api/journal/postmortem')
+    def api_journal_postmortem():
+        """POST-MORTEM du journal : stats réelles + drapeaux de discipline depuis les
+        trades clôturés du desk (myTradesClosed + vxJournal). Descriptif, pas un
+        conseil. Lecture seule — aucun ordre."""
+        import json as _json
+        from vertex.engines import postmortem as _pm
+        blob = persist.load_json('desk_data.json', {}) or {}
+        data = blob.get('data') or {}
+
+        def _parse(key):
+            raw = data.get(key)
+            try:
+                v = _json.loads(raw) if isinstance(raw, str) else (raw or [])
+                return v if isinstance(v, list) else []
+            except Exception:
+                return []
+        return jsonify(_pm.build(_parse('myTradesClosed'), _parse('vxJournal')))
+
     @bp.route('/api/watchlist-tv')
     def api_watchlist_tv():
         """Univers du desk au format TradingView (à coller dans une watchlist TV pour rester synchronisé)."""

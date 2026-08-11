@@ -18,13 +18,15 @@ def test_cockpit_css_exists_with_tokens():
         assert needle in src, needle
 
 
-def test_markets_volatility_cockpit_gauges():
-    """Vue Volatilité = cockpit : jauge VIX + rail stress + jauges régime/participation,
-    tous sourcés depuis /api/market/summary (réel), états vides honnêtes sinon."""
+def test_markets_volatility_single_reading():
+    """PR n°3 : Vue Volatilité = UNE seule lecture principale (jauge VIX + rail
+    stress + positionnement régime en texte). Les jauges régime/participation
+    DUPLIQUÉES ont été retirées (une donnée = un domicile)."""
     src = open(os.path.join(ROOT, 'vertex', 'ui', 'pages', 'markets_page.py'), encoding='utf-8').read()
-    for needle in ('vx-mk-vix-gauge', 'vx-rail--stress', 'vx-mk-vol-regime',
-                   'vx-mk-vol-breadth', 'vx-mk-vol-rail', "/api/market/summary"):
+    for needle in ('vx-mk-vix-gauge', 'vx-rail--stress', 'vx-mk-vol-rail', "/api/market/summary"):
         assert needle in src, needle
+    # jauges dupliquées retirées
+    assert 'vx-mk-vol-regime' not in src and 'vx-mk-vol-breadth' not in src
     assert 'VIX non fourni' in src  # état vide honnête
 
 
@@ -44,11 +46,15 @@ def test_design_system_charts_catalog():
 
 
 def test_breadth_selection_funnel_real_data():
-    """Vue Breadth : entonnoir de sélection alimenté par les données réelles du scan."""
+    """Vue Breadth : entonnoir de sélection alimenté par les données réelles du scan.
+    PR n°3 : les anneaux (rings) redondants et la barre unique (breadthCard) ont
+    été retirés ; on conserve la jauge + la tendance + l'entonnoir."""
     src = open(os.path.join(ROOT, 'vertex', 'ui', 'pages', 'markets_page.py'), encoding='utf-8').read()
-    for needle in ('vx-mk-funnel', 'VXCharts.funnel', 'Univers scanné',
-                   'vx-mk-participation-rings', 'VXCharts.rings'):
+    for needle in ('vx-mk-funnel', 'VXCharts.funnel', 'Univers scanné', 'vx-mk-breadth-trend'):
         assert needle in src, needle
+    # doublons retirés : anneaux + barre unique
+    assert 'vx-mk-participation-rings' not in src and 'VXCharts.rings' not in src
+    assert 'vx-mk-breadth-chart' not in src
 
 
 def test_markets_breadth_participation_gauge():
@@ -76,18 +82,22 @@ def test_cockpit_no_neon_blue():
 
 
 def test_cockpit_directional_value_semantics_in_briefing():
-    """Le grand chiffre coloré n'est PAS appliqué au VIX ni au taux (anti-contresens)."""
+    """Anti-contresens : la tuile VIX du Hero n'est JAMAIS colorée directionnellement
+    (un VIX en hausse n'est pas « bon » en émeraude). PR n°3."""
     src = open(os.path.join(ROOT, 'vertex', 'ui', 'pages', 'briefing.py'), encoding='utf-8').read()
-    assert "['vix','tnx'].includes(slug)" in src
+    # la tuile VIX est construite sans classe de couleur (3e argument vide)
+    assert "kpiTile('VIX',vixHtml,''" in src
 
 
-def test_briefing_market_pulse_gauges_present():
-    """Le bandeau Pouls du marché : 3 jauges radiales + rail de positionnement,
-    sourcés depuis /api/market/summary (données réelles) — jamais inventés."""
+def test_briefing_is_summary_not_markets_copy():
+    """PR n°3 : Aujourd'hui RÉSUME (Hero éditorial + 4 KPI cliquables + diff), il ne
+    recopie plus Marchés. Les jauges Pouls, le graphe SPY et le breadthCard
+    (domiciliés dans Marchés) ont été retirés — une donnée = un domicile."""
     src = open(os.path.join(ROOT, 'vertex', 'ui', 'pages', 'briefing.py'), encoding='utf-8').read()
-    for needle in ('vx-gauge-vix', 'vx-gauge-breadth', 'vx-gauge-trend',
-                   'vx-regime-rail', 'async function loadPulse',
-                   "/api/market/summary", 'VXCharts.gauge', "data-block=\"pulse\""):
+    for needle in ('vx-hero', 'async function loadSummary', 'vx-diff',
+                   'Aucun historique de comparaison disponible', 'kpiTile'):
         assert needle in src, needle
-    # état vide honnête si la donnée manque (pas de zéro inventé)
-    assert 'VIX non calculé' in src and 'Breadth non calculée' in src
+    # duplications de Marchés retirées
+    for banned in ('loadPulse', 'vx-gauge-vix', 'vx-gauge-trend', 'vx-market-chart',
+                   'VXCharts.breadthCard', 'loadRotation'):
+        assert banned not in src, 'duplication Marchés résiduelle : ' + banned

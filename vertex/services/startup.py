@@ -79,7 +79,9 @@ def run_startup_sequence(scan_state: dict) -> dict:
 
     def live():
         try:
-            from vertex.services.live_stream import BROKER
+            # L'import EST le diagnostic : s'il échoue, le SSE est indisponible
+            # et l'étape bascule en DEGRADED. Ne pas « nettoyer ». (lot 325)
+            from vertex.services.live_stream import BROKER  # noqa: F401
             return 'READY', 'flux SSE prêt (repli polling côté client)'
         except Exception:
             return 'DEGRADED', 'SSE indisponible — polling seul'

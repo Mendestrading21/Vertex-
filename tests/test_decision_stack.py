@@ -38,6 +38,22 @@ def test_missing_data_blocks():
     assert r['data_quality']['blocks_decision'] is True
 
 
+def test_unknown_symbol_is_honestly_insufficient(monkeypatch):
+    """Garde-fou C-08 : un symbole hors univers / sans donnée ne doit JAMAIS
+    produire un verdict confiant. La décision reste 'Données insuffisantes' et
+    la confiance de haut niveau est nulle (le comité interne peut refléter le
+    seul vent de marché, mais il ne pilote pas la décision)."""
+    r = ds.evaluate({'symbol': 'ZZZZZ'}, market={'roro': 'RISK-OFF', 'spy_regime': 'TREND'},
+                    scan_age_s=10, demo=True)
+    assert r['final_decision'] == 'DATA_INSUFFICIENT'
+    assert r['decision_label'] == 'Données insuffisantes'
+    assert r['confidence'] == 0            # confiance de décision nulle
+    assert r['conviction'] == 0
+    assert r['reasoning'] is None          # aucun scénario fabriqué
+    assert r['score_breakdown'] is None    # aucune décomposition inventée
+    assert 'price' in r['data_quality']['missing_fields']
+
+
 def test_risk_off_no_strong_buy():
     r = ds.evaluate(_stock(score=90), market={'roro': 'RISK-OFF', 'spy_regime': 'TREND'})
     assert r['final_decision'] != 'STRONG_BUY'

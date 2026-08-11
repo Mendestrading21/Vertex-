@@ -1,0 +1,192 @@
+"""tests/test_options_intelligence_lot6.py — SKYLER LOT 6 : Options Intelligence.
+
+Scanners TACTICAL/SWING/LEAPS strictement séparés (jamais ~35 DTE pour une
+requête LEAPS), probabilité de doublement avec modèle DOCUMENTÉ et étiqueté
+ESTIMATED (≠ PoP), mandat LEAPS V2 appliqué (delta 0,70-0,90, OI, spread),
+OptionsContext branché dans le score Skyler (bloc options_quality réel).
+"""
+import math
+
+import pytest
+
+from vertex.options import double_prob as DP
+from vertex.options import horizon_scanners as HS
+
+
+def _board():
+    def c(sym, typ, dte, strike, delta, oi=2000, spread=2.0, quality=70, cost=500,
+          iv=40.0, spot=100.0):
+        return {'sym': sym, 'type': typ, 'dte': dte, 'strike': strike, 'delta': delta,
+                'oi': oi, 'spread_pct': spread, 'quality': quality, 'cost': cost,
+                'iv': iv, 'spot': spot, 'exp': 'X'}
+    return [
+        c('TST', 'CALL', 45, 105, 0.35),                       # TACTICAL
+        c('TST', 'CALL', 120, 105, 0.40),                      # SWING
+        c('TST', 'CALL', 365, 80, 0.80),                       # LEAPS conforme
+        c('TST', 'CALL', 365, 120, 0.30, oi=100, spread=9.0),  # LEAPS hors mandat
+        c('TST', 'PUT', 365, 90, -0.75),                       # LEAPS put long
+        c('OTH', 'CALL', 365, 50, 0.85),                       # autre titre
+    ]
+
+
+# ─── Séparation stricte des univers ─────────────────────────────────────────────
+
+def test_leaps_scan_never_returns_short_dte():
+    res = HS.scan(_board(), 'LEAPS', sym='TST')
+    assert res['available'] is True
+    assert res['candidates']
+    assert all(180 <= c['dte'] <= 540 for c in res['candidates'])
+    assert res['window'] == [180, 540]
+
+
+def test_tactical_and_swing_windows():
+    t = HS.scan(_board(), 'TACTICAL', sym='TST')
+    assert [c['dte'] for c in t['candidates']] == [45]
+    s = HS.scan(_board(), 'SWING', sym='TST')
+    assert [c['dte'] for c in s['candidates']] == [120]
+
+
+def test_unknown_universe_refused():
+    res = HS.scan(_board(), 'YOLO', sym='TST')
+    assert res['available'] is False and 'univers' in res['reason']
+
+
+def test_symbol_filter_and_empty_honest():
+    res = HS.scan(_board(), 'LEAPS', sym='ZZZ')
+    assert res['available'] is False and res['candidates'] == []
+
+
+# ─── Mandat LEAPS V2 appliqué (jamais silencieux) ───────────────────────────────
+
+def test_leaps_mandate_flags():
+    res = HS.scan(_board(), 'LEAPS', sym='TST')
+    by_strike = {c['strike']: c for c in res['candidates']}
+    good = by_strike[80]
+    assert good['mandate']['delta_ok'] is True
+    assert good['mandate']['oi_ok'] is True and good['mandate']['spread_ok'] is True
+    assert good['hors_mandat'] is False
+    bad = by_strike[120]
+    assert bad['mandate']['delta_ok'] is False       # 0.30 hors [0.70, 0.90]
+    assert bad['mandate']['oi_ok'] is False          # 100 < oi_min 500
+    assert bad['mandate']['spread_ok'] is False      # 9 % > 5 %
+    assert bad['hors_mandat'] is True
+
+
+def test_iv_normalized_and_labeled():
+    res = HS.scan(_board(), 'LEAPS', sym='TST')
+    c = res['candidates'][0]
+    assert c['iv'] is not None and c['iv'] < 1.5      # décimale
+    assert c['iv_unit'] == 'DECIMAL'
+
+
+def test_ranking_in_mandate_first():
+    res = HS.scan(_board(), 'LEAPS', sym='TST')
+    hm = [c['hors_mandat'] for c in res['candidates']]
+    assert hm == sorted(hm)                           # conformes d'abord
+
+
+# ─── Probabilité de doublement (≠ PoP, modèle documenté) ────────────────────────
+
+def test_double_probability_hand_computed_call():
+    """S=100, K=100, prime 5, 365 j, IV 30 %, r=4.5 %, q=0 : doubler ⇒ S_T ≥ 110.
+    d = (ln(100/110) + (r − σ²/2)) / σ = (−0.09531 + 0) / 0.3 → P = N(−0.3177) ≈ 0.375."""
+    d = DP.double_probability(spot=100, strike=100, premium=5, dte=365, iv=0.30,
+                              right='CALL')
+    assert d['available'] is True
+    assert d['threshold_price'] == pytest.approx(110.0)
+    assert d['probability'] == pytest.approx(0.375, abs=0.01)
+    assert d['status'] == 'ESTIMATED'
+
+
+def test_double_probability_put():
+    d = DP.double_probability(spot=100, strike=100, premium=5, dte=365, iv=0.30,
+                              right='PUT')
+    assert d['threshold_price'] == pytest.approx(90.0)
+    assert 0.30 < d['probability'] < 0.45
+
+
+def test_double_probability_model_documented():
+    d = DP.double_probability(spot=100, strike=100, premium=5, dte=365, iv=0.30)
+    m = d['model']
+    assert m['type'] == 'lognormal_terminal_intrinsic'
+    assert m['calibrated'] is False
+    assert any('échéance' in a or 'echeance' in a for a in m['assumptions'])
+    assert 'spread' in ' '.join(m['assumptions']).lower()
+    assert d['confidence'] == 'REDUITE'
+
+
+def test_double_probability_is_not_pop():
+    """Doubler est plus dur que finir en profit : P(double) < P(S_T > breakeven)."""
+    d = DP.double_probability(spot=100, strike=100, premium=5, dte=365, iv=0.30)
+    # PoP terminal (breakeven 105) avec le même modèle :
+    pop_d = (math.log(100 / 105) + (0.045 - 0.045)) / 0.30
+    pop = 0.5 * (1 + math.erf(pop_d / math.sqrt(2)))
+    assert d['probability'] < pop
+
+
+def test_double_probability_refuses_bad_inputs():
+    assert DP.double_probability(spot=-1, strike=100, premium=5, dte=30, iv=0.3)['available'] is False
+    assert DP.double_probability(spot=100, strike=100, premium=0, dte=30, iv=0.3)['available'] is False
+    assert DP.double_probability(spot=100, strike=100, premium=5, dte=30, iv=31)['available'] is False  # % non converti
+    r = DP.double_probability(spot=100, strike=100, premium=5, dte=-2, iv=0.3)
+    assert r['available'] is False and r['refusals']
+
+
+def test_put_threshold_below_zero_prob_zero():
+    d = DP.double_probability(spot=100, strike=8, premium=5, dte=365, iv=0.30, right='PUT')
+    assert d['probability'] == 0.0                    # seuil ≤ 0 : impossible, pas d'invention
+
+
+# ─── OptionsContext branché dans Skyler ─────────────────────────────────────────
+
+def test_skyler_options_block_scored_when_context_wired():
+    from vertex.engines import skyler_core as SK
+    leaps = HS.scan(_board(), 'LEAPS', sym='TST')
+    octx = HS.options_context(leaps)
+    p = SK.build_packet('TST', {'score': 70, 'verdict': 'ACHETER',
+                                'plan': {'entry': 100, 'stop': 94, 'tp1': 106,
+                                         'tp2': 112, 'tp3': 118, 'rr_res': 3.0}},
+                        options_ctx=octx, as_of='10:00')
+    assert p['contexts']['options']['available'] is True
+    sc = SK.score40(p)
+    b = sc['blocks']['options_quality']
+    assert b['points'] > 0 and b['status'] in ('AVAILABLE', 'PARTIAL')
+    assert 'options_quality' not in sc['insufficient_blocks']
+
+
+def test_skyler_options_block_insufficient_without_context():
+    from vertex.engines import skyler_core as SK
+    p = SK.build_packet('TST', {'score': 70}, as_of='10:00')
+    sc = SK.score40(p)
+    assert sc['blocks']['options_quality']['status'] == 'INSUFFICIENT'
+
+
+# ─── Route ──────────────────────────────────────────────────────────────────────
+
+def test_scanner_route():
+    import terminal
+    from vertex.app.state import scan_state
+    saved = scan_state.get('options_board')
+    scan_state['options_board'] = _board()
+    try:
+        c = terminal.app.test_client()
+        d = c.get('/api/options/scanner/LEAPS?sym=TST').get_json()
+        assert d['available'] is True
+        assert all(180 <= x['dte'] <= 540 for x in d['candidates'])
+        assert d['candidates'][0].get('double_prob') is not None
+        bad = c.get('/api/options/scanner/NOPE?sym=TST').get_json()
+        assert bad['available'] is False
+    finally:
+        if saved is None:
+            scan_state.pop('options_board', None)
+        else:
+            scan_state['options_board'] = saved
+
+
+def test_options_leaps_view_has_universe_scanner():
+    """Gardien LOT 8c : la vue LEAPS expose le scanner par univers."""
+    import terminal
+    body = terminal.app.test_client().get('/options?view=leaps').get_data(as_text=True)
+    assert 'vx-sc-out' in body
+    assert 'options-scanner.js' in body
+    assert 'TACTICAL' in body and 'SWING' in body

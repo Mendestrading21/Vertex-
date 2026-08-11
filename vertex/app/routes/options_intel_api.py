@@ -66,7 +66,11 @@ def options_volatility(sym):
     cur_iv = ivs[len(ivs) // 2] if ivs else None
     iv_low = min(ivs) if ivs else None
     iv_high = max(ivs) if ivs else None
-    closes = detail.get('closes') or detail.get('history') or None
+    # Série CANONIQUE du scan (LOT 4) — les formes legacy 'closes'/'history'
+    # n'avaient aucun producteur et ne sont plus admises.
+    from vertex.data import series as _series
+    closes, _closes_src = _series.closes(detail)
+    closes = closes or None
     d = _oi.interpret_volatility(sym, current_iv=cur_iv, iv_low=iv_low,
                                  iv_high=iv_high, closes=closes,
                                  source='SCAN', as_of=_as_of())
@@ -118,6 +122,68 @@ def _num(x):
         return float(x)
     except (TypeError, ValueError):
         return None
+
+
+@bp.route('/api/options/gex-radar')
+def options_gex_radar():
+    """RADAR de positionnement : GEX de tous les sous-jacents du board, classés
+    par |net GEX|. « Où les dealers poussent-ils le plus fort ? » Lecture seule."""
+    from vertex.options import gex_scan as _gs
+    try:
+        d = _gs.scan(_board(), _detail_by_sym(), top=30)
+        d['as_of'] = _as_of()
+        d['demo'] = bool(DEMO_MODE)
+        return jsonify(d)
+    except Exception as e:
+        return jsonify({'empty': True, 'rows': [],
+                        'error': '%s: %s' % (type(e).__name__, e)}), 500
+
+
+@bp.route('/api/options/gex/<sym>')
+def options_gex(sym):
+    """Positionnement dealer d'un sous-jacent : profil GEX + flux notable + thèse.
+    Données réelles du board (OI/gamma/volume) — jamais inventées. Vue FENÊTRÉE :
+    le board ne retient que les strikes du scan (±35 % du spot), pas la chaîne
+    entière — signalé honnêtement au client. Lecture seule, aucun ordre."""
+    from vertex.options import gex as _gex, flow as _flow, dealer_synthesis as _ds
+    sym = (sym or '').upper()[:12]
+    board = _board()
+    contracts = [c for c in board if str(c.get('sym', '')).upper() == sym]
+    detail = (scan_state.get('detail') or {}).get(sym) or {}
+    spot = None
+    for c in contracts:
+        spot = _num(c.get('spot'))
+        if spot:
+            break
+    if not spot:
+        spot = _num(detail.get('price'))
+    # Move attendu du cycle : médiane des em_pct RÉELS des contrats (jamais inventé).
+    ems = sorted(_num(c.get('em_pct')) for c in contracts
+                 if _num(c.get('em_pct')) is not None)
+    em_pct = ems[len(ems) // 2] if ems else None
+    try:
+        profile = _gex.compute(contracts, spot=spot, symbol=sym)
+        flow = _flow.analyze(contracts, symbol=sym)
+        synth = _ds.build(profile, flow,
+                          earnings_in_days=detail.get('earnings_in_days'),
+                          symbol=sym, em_pct=em_pct)
+    except Exception as e:
+        return jsonify({'symbol': sym, 'empty': True,
+                        'error': '%s: %s' % (type(e).__name__, e)}), 500
+    # Journal quotidien du GEX (best-effort, réel seulement) → série « Daily GEX ».
+    history = []
+    try:
+        from vertex.options import gex_history as _gh
+        _gh.record(profile)
+        history = _gh.series(sym)
+    except Exception:
+        pass
+    return jsonify({
+        'symbol': sym, 'as_of': _as_of(), 'demo': bool(DEMO_MODE),
+        'contracts_available': len(contracts),
+        'coverage': 'fenêtre du scan (strikes ±35 % du spot) — pas la chaîne complète',
+        'gex': profile, 'flow': flow, 'synthesis': synth, 'history': history,
+    })
 
 
 @bp.route('/api/options/vol-charts/<sym>')
@@ -173,6 +239,27 @@ def chart_interpretation(chart_id):
     return jsonify(unknown(cid, 'Graphique non reconnu',
                            reason='chart_id inconnu ou paramètre sym manquant',
                            source='SCAN'))
+
+
+@bp.route('/api/options/scanner/<universe>')
+def api_options_scanner(universe):
+    """SCANNERS PAR UNIVERS (SKYLER LOT 6) : TACTICAL / SWING / LEAPS strictement
+    séparés, mandat LEAPS V2 étiqueté par candidat, probabilité de doublement
+    (modèle documenté, ESTIMATED) sur les 5 meilleurs. Lecture seule."""
+    from flask import request
+    from vertex.options import double_prob as _dp, horizon_scanners as _hs
+    sym = (request.args.get('sym') or '').upper().strip() or None
+    res = _hs.scan(scan_state.get('options_board') or [], universe, sym=sym)
+    if res.get('available'):
+        for c in res['candidates'][:5]:
+            prem = (c.get('cost') / 100.0) if isinstance(c.get('cost'), (int, float)) else None
+            c['double_prob'] = _dp.double_probability(
+                spot=c.get('spot'), strike=c.get('strike'), premium=prem,
+                dte=c.get('dte'), iv=c.get('iv'), right=c.get('type') or 'CALL')
+    res['as_of'] = _as_of()
+    from vertex.app.config import DEMO_MODE as _demo
+    res['demo'] = _demo
+    return jsonify(res)
 
 
 __all__ = ['bp']

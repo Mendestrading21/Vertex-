@@ -10,11 +10,6 @@ import terminal
 from vertex.ui import journal
 
 
-def test_page_mounts_new_module():
-    assert 'tjRoot' in terminal.PAGE_JOURNAL
-    assert journal.BODY in terminal.PAGE_JOURNAL
-
-
 def test_form_ids_are_backward_compatible():
     # l'auto-journalisation du Desk et la saisie manuelle utilisent ces ids
     for fid in ('jTicker', 'jEntry', 'jStop', 'jTp', 'jExit', 'jPnl',
@@ -31,7 +26,6 @@ def test_storage_schema_is_preserved():
 def test_pinned_decisions_kept():
     # les hôtes du bloc « décisions épinglées » (partagé avec /decisions)
     assert 'djStats' in journal.JS and 'djList' in journal.JS
-    assert '_DECJ_JS' in open('terminal.py', encoding='utf-8').read()
 
 
 def test_analysis_engine_sections_present():
@@ -41,12 +35,12 @@ def test_analysis_engine_sections_present():
 
 
 def test_route_serves_journal():
-    # Redesign : /journal redirige vers Performance/Journal (301), qui rend
-    # le shell unique. Le schéma vxJournal (module journal.py) reste la
-    # source du contrat de données, gardée par les autres tests du fichier.
+    # PR n°2 : /journal est un ESPACE CANONIQUE (n°7) rendu directement (200),
+    # plus une redirection. Il rend le shell unique. Le schéma vxJournal
+    # (module journal.py) reste la source du contrat de données.
     c = terminal.app.test_client()
     r = c.get('/journal')
-    assert r.status_code == 301
-    assert '/performance' in r.headers['Location']
-    r2 = c.get('/journal', follow_redirects=True)
-    assert r2.status_code == 200 and b'vx-app' in r2.data
+    assert r.status_code == 200 and b'vx-app' in r.data
+    # l'ancienne URL /performance redirige désormais vers /journal
+    rp = c.get('/performance')
+    assert rp.status_code == 301 and rp.headers['Location'].split('?')[0] == '/journal'

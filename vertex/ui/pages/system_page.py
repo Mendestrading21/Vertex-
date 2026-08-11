@@ -10,6 +10,7 @@ Invariant produit affirmé partout : READONLY — aucun ordre possible
 """
 from __future__ import annotations
 
+from vertex.app.config import AUTH_ON
 from vertex.ui.shell import render_shell
 
 VIEWS = (
@@ -20,6 +21,30 @@ VIEWS = (
     ('archive', 'Archive'),
 )
 _DEFAULT_VIEW = 'connections'
+
+
+def _lock_card(auth_on: bool) -> str:
+    """Carte « Verrou d'accès » (vue Connexions) — l'état RÉEL du verrou.
+
+    Seul bouton de verrouillage atteignable de l'UI : l'ancien vivait dans
+    la page Paramètres héritée, jamais routée. Sans code actif, état honnête
+    (pas de bouton — il n'y a rien à verrouiller) + rappel du repli 127.0.0.1.
+    """
+    if auth_on:
+        body = ('<div class="vx-help vx-mb2">Code d&#8217;entr&eacute;e exig&eacute; sur tous les appareils '
+                '&mdash; session sign&eacute;e 30 jours, anti-force-brute, comparaison &agrave; temps constant.</div>'
+                '<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/logout" id="vx-lock-btn">'
+                '&#128275; Se d&eacute;connecter &amp; verrouiller cet appareil</a>')
+        badge = '<span class="vx-badge" id="vx-lock-badge">actif</span>'
+    else:
+        body = ('<div class="vx-help">Aucun code d&#8217;entr&eacute;e d&eacute;fini &mdash; par s&eacute;curit&eacute;, '
+                'le serveur n&#8217;&eacute;coute que <b>127.0.0.1</b> (pas d&#8217;acc&egrave;s WiFi/LAN). '
+                'Pour prot&eacute;ger et ouvrir l&#8217;acc&egrave;s (iPhone, tablette) : d&eacute;finir '
+                '<b>VERTEX_CODE</b> dans <b>.env</b> &mdash; voir SECURITE.md.</div>')
+        badge = '<span class="vx-badge" id="vx-lock-badge">inactif</span>'
+    return ('<div class="vx-grid vx-mt4"><section class="vx-card vx-col-12" aria-label="Verrou d&#8217;acc&egrave;s">'
+            '<div class="vx-card-header"><span class="vx-card-title">Verrou d&#8217;acc&egrave;s</span>'
+            + badge + '</div>' + body + '</section></div>')
 
 
 def _tabs(active: str) -> str:
@@ -47,6 +72,9 @@ def _header(active: str) -> str:
 
 _VIEW_CONTENT = {
     'connections': '''
+<section class="vx-card vx-card--hero vx-mt4" id="vx-sys-hero" aria-label="Verdict technique">
+  <div class="vx-skeleton" style="height:64px"></div>
+</section>
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-4" aria-label="Santé du système">
     <div class="vx-card-header"><span class="vx-card-title">Santé — moteurs</span>
@@ -87,7 +115,7 @@ _VIEW_CONTENT = {
         <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-brain-refresh">Mettre &agrave; jour avec Claude</button></span></div>
     <div class="vx-help vx-mb2">Quand l&#8217;acc&egrave;s live manque, Claude va chercher les vraies donn&eacute;es du jour
       sur le web (cotations diff&eacute;r&eacute;es, actualit&eacute;s) &mdash; toujours <b>sourc&eacute;es</b> et &eacute;tiquet&eacute;es
-      <span class="vx-badge" style="color:var(--vx-orange-500,#cf6128);border:1px solid var(--vx-orange-500,#cf6128)">via Claude · web · diff&eacute;r&eacute;</span>,
+      <span class="vx-badge" style="color:var(--vx-orange-500,#DBE1E8);border:1px solid var(--vx-orange-500,#DBE1E8)">via Claude · web · diff&eacute;r&eacute;</span>,
       jamais d&eacute;guis&eacute;es en donn&eacute;e broker r&eacute;elle. Aucun chiffre invent&eacute;.</div>
     <div id="vx-brain-body">%%LOADING%%</div>
   </section>
@@ -104,6 +132,7 @@ _VIEW_CONTENT = {
     <div id="vx-conn-store">%%LOADING%%</div>
   </section>
 </div>
+%%LOCKCARD%%
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Moteurs">
     <div class="vx-card-header"><span class="vx-card-title">Moteurs</span>
@@ -133,6 +162,13 @@ _VIEW_CONTENT = {
   <section class="vx-card vx-col-12" aria-label="Titres d&eacute;grad&eacute;s">
     <div class="vx-card-header"><span class="vx-card-title">Titres en qualit&eacute; d&eacute;grad&eacute;e</span></div>
     <div id="vx-data-degraded">%%LOADING%%</div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Continuit&eacute;">
+    <div class="vx-card-header"><span class="vx-card-title">Continuit&eacute; &mdash; navigation &amp; donn&eacute;es</span>
+      <span class="vx-actions vx-meta">Session applicative continue (client)</span></div>
+    <div id="vx-continuity">%%LOADING%%</div>
   </section>
 </div>''',
 
@@ -192,6 +228,20 @@ _VIEW_CONTENT = {
       (positions, journal, alertes, coffre&hellip;). L&#8217;import demande confirmation avant
       toute &eacute;criture — aucune cl&eacute; n&#8217;est renomm&eacute;e, le protocole de sync reste intact.</div>
   </section>
+</div>
+<div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Application">
+    <div class="vx-card-header"><span class="vx-card-title">Application</span>
+      <span class="vx-badge" id="vx-app-shell-badge"></span></div>
+    <div id="vx-app-info">%%LOADING%%</div>
+    <div class="vx-flex vx-wrap vx-gap2 vx-mt3">
+      <button class="vx-btn vx-btn-primary" id="vx-app-update">Forcer la mise &agrave; jour de l&#8217;app</button>
+    </div>
+    <div class="vx-help vx-mt2">Vide le cache hors-ligne (service worker) puis recharge la page —
+      utile sur iPhone/tablette quand une nouvelle version du shell vient d&#8217;&ecirc;tre publi&eacute;e
+      et que l&#8217;ancienne reste affich&eacute;e. <b>Aucune donn&eacute;e desk n&#8217;est touch&eacute;e</b>
+      (positions, journal, alertes&hellip; restent intactes).</div>
+  </section>
 </div>''',
 
     'archive': '''
@@ -225,7 +275,7 @@ const $=(id)=>document.getElementById(id);
 const E=()=>window.VXEntities;
 const ROOT=document.getElementById('vx-system');
 const VIEW=(ROOT&&ROOT.dataset.view)||'connections';
-function esc(s){return String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 function whenChartsReady(fn){
   if(window.VXCharts&&window.Chart)return fn();
   window.addEventListener('load',fn,{once:true});
@@ -241,13 +291,15 @@ async function loadConnSummary(){
   let d;try{d=await VX.fetch('/api/system/connections',{ttl:20000});}catch(e){el.innerHTML=VX.states.error('Connexions indisponibles');return;}
   const tone={LIVE:'pos',READY:'pos',DELAYED:'warn',DEGRADED:'warn',FALLBACK:'warn',STALE:'warn',
     OFFLINE:'neg',ERROR:'neg',BLOCKED:'neg',CONFIGURATION_MISSING:'neutral',NOT_IMPLEMENTED:'neutral',DEMO:'neutral',LOADING:'neutral'};
-  const col={pos:'var(--vx-positive,#39b879)',warn:'var(--vx-warning,#cc892c)',neg:'var(--vx-negative,#dc6254)',neutral:'var(--vx-text-dim,#817d77)'};
+  const col={pos:'var(--vx-positive,#2BBE90)',warn:'var(--vx-warning,#D9BE3C)',neg:'var(--vx-negative,#E9555F)',neutral:'var(--vx-text-muted,#8A8284)'};
   const rows=(d.connections||[]).map(function(c){
     const t=tone[c.status]||'neutral';
-    return '<div style="display:grid;grid-template-columns:150px 130px 1fr;gap:.6rem;align-items:center;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.05)">'
+    /* LOT 126 : la colonne du badge s'adapte au statut (max-content) — fini
+       CONFIGURATION_MISSING qui debordait sur le texte voisin. */
+    return '<div style="display:grid;grid-template-columns:150px minmax(110px,max-content) 1fr;gap:.6rem;align-items:center;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.05)">'
       +'<b>'+esc(c.name)+'</b>'
-      +'<span class="vx-badge" style="color:'+col[t]+';border:1px solid '+col[t]+'">'+esc(c.status)+'</span>'
-      +'<span class="vx-dim" style="font-size:12.5px">'+esc(c.detail||'')+(c.action?' <span style="color:var(--vx-orange-500,#cf6128)">→ '+esc(c.action)+'</span>':'')+'</span></div>';
+      +'<span class="vx-badge" style="color:'+col[t]+';border:1px solid '+col[t]+';justify-self:start">'+esc(c.status)+'</span>'
+      +'<span class="vx-dim" style="font-size:12.5px">'+esc(c.detail||'')+(c.action?' <span style="color:var(--vx-orange-500,#DBE1E8)">→ '+esc(c.action)+'</span>':'')+'</span></div>';
   }).join('');
   el.innerHTML=rows||'<div class="vx-empty">Aucun canal.</div>';
 }
@@ -294,7 +346,7 @@ async function loadBrain(){
         const impactCls=n?({HAUSSIER:'vx-pos',BAISSIER:'vx-neg',NEUTRE:'vx-dim'}[n.impact]||'vx-dim'):'';
         return '<tr><td><b>'+esc(s)+'</b></td>'
           +'<td class="vx-num vx-mono">'+VX.fmt.num(q.value,2)+' '+esc(q.currency||'')+chg+'</td>'
-          +'<td><span class="vx-badge" style="color:var(--vx-warning,#dda23b);border:1px solid var(--vx-warning,#dda23b);font-size:11px">'+esc(q.source_label||'via Claude · web')+'</span>'+brainCitations(q.citations)+'</td>'
+          +'<td><span class="vx-badge" style="color:var(--vx-warning,#D9BE3C);border:1px solid var(--vx-warning,#D9BE3C);font-size:11px">'+esc(q.source_label||'via Claude · web')+'</span>'+brainCitations(q.citations)+'</td>'
           +'<td class="'+impactCls+'" style="font-size:12px">'+(n?esc(n.impact)+' — '+esc((n.headline||'').slice(0,64)):'<span class="vx-dim">—</span>')+'</td></tr>';
       }).join('')+'</tbody></table></div>';
   }else if(status==='MISSING'){
@@ -310,7 +362,7 @@ async function loadBrain(){
   if(window.VXCharts&&VXCharts.barCard&&movers.length){
     VXCharts.barCard('vx-brain-movers',{title:'Plus forts mouvements du jour',
       labels:movers,values:movers.map(s=>quotes[s].change_pct),
-      colors:movers.map(s=>quotes[s].change_pct>=0?'#36c889':'#ed655c'),
+      colors:movers.map(s=>quotes[s].change_pct>=0?VXCharts.colors.positive:VXCharts.colors.negative),
       horizontal:true,yFmt:(v)=>v+'%',source:'via Claude · web',
       timestamp:(snap&&snap.as_of)?Date.parse(snap.as_of):Date.now(),mode:'delayed'});
   }
@@ -401,6 +453,39 @@ async function loadConnections(){
     var _sym=(st&&st.scan&&st.scan.symbols); if(_sym==null&&diag&&diag.scan)_sym=diag.scan.rows;
     var _ai=(diag&&diag.ai)||{};
     var _pct=_eng.length?Math.round(_ok/_eng.length*100):null;
+    /* Hero technique (§ « Puis-je faire confiance à Vertex aujourd'hui ? ») —
+       synthèse honnête depuis les payloads réels ; aucun chiffre inventé. */
+    try{
+      var _delayed=_frK.length-_frOk;
+      var _ib=String((st&&(st.data_sources||{}).ibkr)||'inconnu');
+      var _ibTxt={'connected-live':['IBKR connecté · temps réel','pos'],
+        'connected-delayed':['IBKR connecté · différé','warn'],
+        'enabled-idle':['IBKR activé · aucune session confirmée','warn'],
+        'disabled':['IBKR désactivé','muted'],'inconnu':['IBKR état inconnu','muted']}[_ib]||['IBKR état inconnu','muted'];
+      var _demo=st&&st.mode&&String(st.mode).toLowerCase().indexOf('demo')>=0;
+      var _headline,_tone;
+      if(!_eng.length){_headline='État système en cours de lecture';_tone='muted';}
+      else if(_warn>0||_ok<_eng.length){_headline='Système partiellement dégradé';_tone='warn';}
+      else{_headline='Système opérationnel';_tone='pos';}
+      var _ro=(st&&st.readonly&&st.analysis_only);
+      var _line=[
+        _ibTxt[0],
+        (_delayed>0?(_delayed+' domaine(s) de données en différé/rassis'):(_frK.length?'toutes les données fraîches':'fraîcheur inconnue')),
+        (_warn===0?'aucune erreur critique':(_warn+' avertissement(s) à revoir')),
+        (_ro?'lecture seule confirmée (aucun ordre)':'lecture seule NON confirmée')
+      ];
+      var _hero=$('vx-sys-hero');
+      if(_hero)_hero.innerHTML='<div class="vx-flex vx-wrap" style="justify-content:space-between;align-items:flex-start;gap:10px">'
+        +'<div style="max-width:640px"><div class="vx-flex" style="gap:8px;align-items:center;margin-bottom:4px">'
+        +'<span class="vx-eyebrow">Confiance données</span>'
+        +'<span class="vx-freshness" data-state="'+(_tone==='pos'?'live':_tone==='warn'?'delayed':'stale')+'">'+esc(_headline)+'</span>'
+        +(_demo?'<span class="vx-badge-demo">DÉMO</span>':'')+(_ro?'<span class="vx-badge vx-pos">READONLY</span>':'')+'</div>'
+        +'<h2 style="margin:0 0 6px;font-size:21px" class="'+({pos:'vx-pos',warn:'vx-warn',muted:'vx-muted'}[_tone])+'">'+esc(_headline)+'</h2>'
+        +'<p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.6">'+_line.map(esc).join(' · ')+'.</p></div>'
+        +'<div class="vx-flex" style="gap:8px;flex-wrap:wrap">'
+        +'<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/system?view=data">Fraîcheur par domaine →</a>'
+        +'<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/system?view=automations">Diagnostics</a></div></div>';
+    }catch(e){}
     whenChartsReady(function(){ if(window.VXCharts&&VXCharts.gauge) VXCharts.gauge('vx-sys-gauge',{
       value:_pct,min:0,max:100,unit:'%',label:'Moteurs OK',
       reading:_eng.length?(_ok+'/'+_eng.length+' moteurs opérationnels'):'moteurs inconnus',
@@ -557,6 +642,39 @@ async function loadConnections(){
   }
 }
 
+/* ══ Continuité — observabilité navigation & données (§18) ══════════ */
+async function loadContinuity(){
+  const host=$('vx-continuity'); if(!host)return;
+  const s=(VX.fetch.stats&&VX.fetch.stats())||{};
+  const st=(VX.store&&VX.store.snapshot&&VX.store.snapshot())||{};
+  let man=null; try{ man=await VX.fetch('/api/session/manifest',{ttl:30000}); }catch(e){}
+  const net=document.documentElement.getAttribute('data-net')||'online';
+  const nPrices=(VX.prices&&VX.prices._m)?Object.keys(VX.prices._m).length:0;
+  const fr=(VX.freshness&&man)?VX.freshness.chip(VX.freshness.assess({ageMs:(man.age_s||0)*1000,
+      offline:net==='offline', error:man.error, refreshing:man.status==='analyzing'})):'';
+  const row=(k,v)=>'<div class="vx-kv"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
+  const nd=(v,suf)=>(v==null?'&mdash;':(''+v+(suf||'')));
+  host.innerHTML='<div class="vx-grid">'
+   +'<div class="vx-col-4"><div class="vx-subhead">Navigation</div>'
+     +row('Shell persistant','oui (SPA)')
+     +row('Historique',(st.nav_history?st.nav_history.length:0)+' pages')
+     +row('Ticker actif',nd(st.active_ticker))+'</div>'
+   +'<div class="vx-col-4"><div class="vx-subhead">Cache client</div>'
+     +row('Entrées',nd(s.entries))
+     +row('Taux de hits',nd(s.hit_rate,'&nbsp;%'))
+     +row('Dédup / requêtes en vol',nd(s.dedup)+' / '+nd(s.inflight))+'</div>'
+   +'<div class="vx-col-4"><div class="vx-subhead">Session d\'analyse '+fr+'</div>'
+     +row('Session',nd(man&&man.session_id))
+     +row('Couverture',nd(man&&man.coverage_pct,'&nbsp;%'))
+     +row('Qualité données',nd(man&&man.quality_pct,'&nbsp;%'))+'</div>'
+   +'<div class="vx-col-4"><div class="vx-subhead">Connexion</div>'
+     +row('Réseau',net==='offline'?'<span class="vx-neg">hors ligne</span>':'en ligne')
+     +row('Source',nd(man&&man.source))+'</div>'
+   +'<div class="vx-col-4"><div class="vx-subhead">Prix centraux</div>'
+     +row('Tickers suivis',nd(nPrices))+'</div>'
+   +'</div>';
+}
+
 /* ══ Vue DONNÉES ════════════════════════════════════════════════════ */
 async function loadData(){
   const [dqR,diagR,liveR]=await Promise.allSettled([
@@ -574,7 +692,8 @@ async function loadData(){
     const labels=Object.keys(byQ);
     const values=labels.map(k=>byQ[k]);
     const colByQ={FRESH:VXCharts.colors.positive,RECENT:VXCharts.colors.cyan,
-      STALE:VXCharts.colors.warning,EXPIRED:VXCharts.colors.negative,MISSING:VXCharts.colors.muted};
+      STALE:VXCharts.colors.warning,EXPIRED:VXCharts.colors.negative,MISSING:VXCharts.colors.muted,
+      DEMO:VXCharts.colors.violet};
     const dominant=labels.slice().sort((a,b)=>byQ[b]-byQ[a])[0];
     whenChartsReady(()=>VXCharts.donutCard('vx-data-quality-chart',{
       title:'Qualit&eacute; des donn&eacute;es ('+dq.total+' titres)',
@@ -616,6 +735,13 @@ async function loadData(){
   if(live&&live.domains&&Object.keys(live.domains).length){
     const doms=live.domains;
     /* Heatmap de fraîcheur (§37) : une tuile/domaine, couleur = état, chiffre = âge. */
+    /* GRAMMAIRE TV (lot 196) : le domaine le PLUS RASSIS (âge max connu,
+       si ≥ 2 âges connus) est la DOMINANTE — tuile au liseré appuyé + âge
+       en CHIP pleine couleur dans la table (grammaire tvEdgeChip), les
+       autres restent adoucis. Comptes réels uniquement. */
+    const knownAges=Object.keys(doms).filter(k=>{const a=(doms[k]||{}).age_s;return a!==null&&a!==undefined&&isFinite(Number(a));});
+    let worstKey=null;
+    if(knownAges.length>=2)worstKey=knownAges.reduce((a,b)=>Number(doms[a].age_s)>=Number(doms[b].age_s)?a:b);
     const tile=(k)=>{const d=doms[k]||{};
       const fresh=d.fresh===true||d.state==='fresh'||d.state==='live';
       const off=d.state==='offline';
@@ -623,11 +749,31 @@ async function loadData(){
       const soft=fresh?'rgba(57,184,120,.13)':(off?'rgba(220,98,85,.13)':'rgba(204,137,44,.13)');
       const age=d.age_s===null||d.age_s===undefined?'—':(d.age_s<120?Math.round(d.age_s)+' s':Math.round(d.age_s/60)+' min');
       const lbl=fresh?'frais':(off?'hors ligne':'différé');
-      return `<div role="img" aria-label="${esc(k)} ${lbl} ${age}" style="padding:10px 12px;border-radius:9px;display:flex;flex-direction:column;gap:1px;background:${soft};border:1px solid var(${col},#8f8a83)">
-        <span style="font-size:11px;color:var(--vx-text-secondary,#b7b2aa);text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</span>
-        <span style="font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(${col},#8f8a83)">${age}</span>
-        <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#817d77)">${lbl}</span></div>`;};
+      return `<div role="img" aria-label="${esc(k)} ${lbl} ${age}" style="padding:10px 12px;border-radius:9px;display:flex;flex-direction:column;gap:1px;background:${soft};border:${k===worstKey?'1.6px':'1px'} solid var(${col},#9d978e)">
+        <span style="font-size:11px;color:var(--vx-text-secondary,#BABABA);text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</span>
+        <span style="font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(${col},#9d978e)">${age}</span>
+        <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#8A8284)">${lbl}</span></div>`;};
     const heat=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-bottom:14px" aria-label="Heatmap de fraîcheur des données">${Object.keys(doms).map(tile).join('')}</div>`;
+    /* LOT 142 : l'age n'est plus un chiffre nu — mini-barre de VERRE de
+       STALENESS relative (echelle = age max connu ; frais -> positive
+       courte, differe -> warning, hors ligne -> negative) : le domaine le
+       plus rassis saute aux yeux. Sans age connu : pas de barre (honnete). */
+    const maxAge=Math.max(1,...Object.keys(doms).map(k=>Number((doms[k]||{}).age_s)||0));
+    const ageBar=(d,ageTxt,isWorst)=>{
+      if(d.age_s===null||d.age_s===undefined)return ageTxt;   /* pas d'age -> pas de barre */
+      const a=Number(d.age_s);
+      if(!isFinite(a))return ageTxt;
+      const fresh=d.fresh===true||d.state==='fresh'||d.state==='live';
+      const tok=fresh?'var(--vx-positive,#2BBE90)':(d.state==='offline'?'var(--vx-negative,#E9555F)':'var(--vx-warning,#D9BE3C)');
+      const w=Math.max(4,Math.min(100,a/maxAge*100));
+      /* le PLUS RASSIS porte son age en CHIP pleine couleur (texte sombre) */
+      const ageHtml=isWorst
+        ?'<span style="background:'+tok+';color:var(--vx-graphite-850,#121214);font-weight:800;padding:1px 7px;border-radius:6px;font-size:11px">'+ageTxt+'</span>'
+        :'<span>'+ageTxt+'</span>';
+      return '<span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">'
+        +'<span style="width:56px;height:7px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block">'
+        +'<span style="display:block;height:100%;width:'+w.toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:3px"></span></span>'
+        +ageHtml+'</span>';};
     $('vx-data-fresh').innerHTML=heat+`<div style="overflow-x:auto"><table class="vx-table">
       <thead><tr><th>Domaine</th><th>&Eacute;tat</th><th class="vx-num">&Acirc;ge</th><th>D&eacute;tail</th></tr></thead><tbody>`
       +Object.keys(doms).map(k=>{
@@ -638,7 +784,7 @@ async function loadData(){
           :(d.age_s<120?Math.round(d.age_s)+' s':Math.round(d.age_s/60)+' min');
         return `<tr><td><b>${esc(k)}</b></td>
           <td>${statusBadge(status,fresh?'frais':(d.state||'rassis'))}</td>
-          <td class="vx-num vx-mono">${age}</td>
+          <td class="vx-num vx-mono">${ageBar(d,age,k===worstKey)}</td>
           <td class="vx-dim" style="font-size:12px">${esc(d.detail||'—')}</td></tr>`;
       }).join('')+'</tbody></table></div>';
     $('vx-data-fresh-meta').innerHTML=VX.updateIndicator(
@@ -651,10 +797,12 @@ async function loadData(){
   if(dq){
     const worst=dq.degraded||[];
     $('vx-data-degraded').innerHTML=worst.length
-      ?'<div class="vx-flex vx-wrap vx-gap2">'+worst.map(w=>
-        `<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(w.symbol)}"
+      ?'<div class="vx-flex vx-wrap vx-gap2">'+worst.map(w=>{
+        const q=String(w.quality||'').toUpperCase();
+        const st=/EXPIR|MISSING|ABSEN|INVALID/.test(q)?'offline':/STALE|DELAY|RETARD|DEGRAD/.test(q)?'delayed':'delayed';
+        return `<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(w.symbol)}"
           title="${esc((w.warnings||[]).join(' · '))}">${esc(w.symbol)}
-          <span class="vx-badge vx-badge-status" data-status="delayed">${esc(w.quality)}</span></button>`).join('')+'</div>'
+          <span class="vx-badge vx-badge-status" data-status="${st}">${esc(w.quality)}</span></button>`;}).join('')+'</div>'
       :VX.states.empty('Aucun titre en qualit&eacute; d&eacute;grad&eacute;e — rien &agrave; signaler.');
   }else{
     $('vx-data-degraded').innerHTML=VX.states.error('Rapport de qualit&eacute; indisponible');
@@ -674,6 +822,51 @@ async function doRefresh(){
 }
 
 /* ══ Vue RÉGLAGES ═══════════════════════════════════════════════════ */
+/* Carte Application (lot 284) : version du shell RÉELLE lue des caches du
+   navigateur (jamais un numéro codé en dur) + mise à jour forcée — vide le
+   cache SW puis recharge. Ne touche JAMAIS localStorage (données desk). */
+async function renderAppInfo(){
+  /* Deux versions RÉELLES : locale (caches de cet appareil) et publiée
+     (lue de /sw.js servi à l'instant) → verdict à jour / mise à jour. */
+  let local=null,server=null;
+  try{
+    const ks=await caches.keys();
+    const m=ks.map(k=>/^td-shell-v(\d+)$/.exec(k)).filter(Boolean);
+    if(m.length)local=Math.max.apply(null,m.map(x=>Number(x[1])));
+  }catch(e){}
+  try{
+    const t=await (await fetch('/sw.js',{cache:'no-store'})).text();
+    const m=/td-shell-v(\d+)/.exec(t);
+    if(m)server=Number(m[1]);
+  }catch(e){}
+  const fmt=v=>v==null?'n/d':'td-shell-v'+v;
+  const sw=('serviceWorker' in navigator)
+    ?(navigator.serviceWorker.controller?'actif (hors-ligne prêt)':'installé, pas encore aux commandes')
+    :'indisponible';
+  const el=$('vx-app-info');
+  if(el)el.innerHTML=kv('Version locale (cache de cet appareil)',fmt(local))
+    +kv('Version publiée (serveur)',fmt(server))
+    +kv('Service worker',sw);
+  const badge=$('vx-app-shell-badge');
+  if(badge)badge.textContent=(local!=null&&server!=null)
+    ?(server>local?'mise à jour disponible':'à jour')
+    :fmt(local);
+}
+async function forceAppUpdate(){
+  const btn=$('vx-app-update');
+  if(btn){btn.disabled=true;btn.textContent='Mise à jour…';}
+  try{
+    if('serviceWorker' in navigator){
+      const regs=await navigator.serviceWorker.getRegistrations();
+      for(const r of regs){try{await r.unregister();}catch(e){}}
+    }
+    if(window.caches){
+      const ks=await caches.keys();
+      for(const k of ks){try{await caches.delete(k);}catch(e){}}
+    }
+  }catch(e){}
+  location.reload();
+}
 function initSettings(){
   /* Densité (vxDashboardLayout.density) */
   let layout={};try{layout=JSON.parse(localStorage.getItem('vxDashboardLayout')||'{}')}catch(e){}
@@ -713,6 +906,13 @@ function initSettings(){
   renderDeskSummary();
   $('vx-desk-export').addEventListener('click',exportDesk);
   $('vx-desk-import-file').addEventListener('change',importDesk);
+  if($('vx-app-update')){
+    $('vx-app-update').addEventListener('click',forceAppUpdate);
+    renderAppInfo();
+    /* Au premier chargement le SW installe encore son cache : re-lire quand il est prêt. */
+    if('serviceWorker' in navigator&&navigator.serviceWorker.ready)
+      navigator.serviceWorker.ready.then(()=>setTimeout(renderAppInfo,600)).catch(()=>{});
+  }
   VX.bus.on('vx:data-refreshed',renderDeskSummary);
 }
 function deskKeys(){
@@ -725,7 +925,7 @@ function renderDeskSummary(){
   let present=0,bytes=0;
   keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null){present++;bytes+=v.length;}});
   $('vx-settings-desk').innerHTML=
-    kv('Cl&eacute;s synchronis&eacute;es',keys.length+' (contrat __DESK_KEYS — aucune cl&eacute; renomm&eacute;e)')
+    kv('Cl&eacute;s synchronis&eacute;es',keys.length+' (contrat DESK_KEYS — aucune cl&eacute; renomm&eacute;e)')
     +kv('Cl&eacute;s pr&eacute;sentes localement',String(present))
     +kv('Taille locale',VX.fmt.num(bytes/1024,1)+' Ko')
     +kv('Derni&egrave;re &eacute;criture locale',VX.fmt.ago(Number(localStorage.getItem('deskTs')||0)||null));
@@ -836,7 +1036,7 @@ function renderVault(){
     +rows.map(e=>`<tr>
       <td><button class="vx-btn vx-btn-sm vx-btn-ghost" data-vault-open="${esc(String(e.id))}"
         style="font-weight:600">${esc(e.title||'(sans titre)')}</button>
-        <div class="vx-meta vx-truncate" style="max-width:420px">${esc(String(e.content||'').slice(0,120))}</div></td>
+        <div class="vx-meta vx-truncate" style="max-width:420px" title="${esc(String(e.content||'').slice(0,120))}">${esc(String(e.content||'').slice(0,120))}</div></td>
       <td><span class="vx-badge">${esc(e.type||'note')}</span>
         ${e.status?`<span class="vx-badge vx-muted">${esc(e.status)}</span>`:''}</td>
       <td class="vx-dim" style="font-size:12px">${(e.tags||[]).map(t=>'#'+esc(t)).join(' ')||'—'}</td>
@@ -968,8 +1168,10 @@ if(VIEW==='connections'){
   VX.refresh.register(loadConnections,60000,'connections');
 }else if(VIEW==='data'){
   loadData();
+  loadContinuity();
   $('vx-data-refresh').addEventListener('click',doRefresh);
   VX.refresh.register(loadData,60000,'data');
+  VX.refresh.register(loadContinuity,15000,'continuity');
 }else if(VIEW==='automations'){
   loadAutomations();
   VX.refresh.register(loadAutomations,60000,'automations');
@@ -987,7 +1189,8 @@ VX.context.restoreIfReturning();
 def render(view: str = 'connections') -> str:
     view = view if view in dict(VIEWS) else _DEFAULT_VIEW
     body = _VIEW_CONTENT[view].replace(
-        '%%LOADING%%', '<div class="vx-skeleton" style="height:60px"></div>')
+        '%%LOADING%%', '<div class="vx-skeleton" style="height:60px"></div>').replace(
+        '%%LOCKCARD%%', _lock_card(AUTH_ON))
     content = (_header(view)
                + f'<div id="vx-system" data-view="{view}">' + body + '</div>')
     sub = dict(VIEWS)[view]

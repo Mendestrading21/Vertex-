@@ -12,8 +12,6 @@ from __future__ import annotations
 from vertex.visualization.schemas import (
     interpretation, unknown, ST_FAVORABLE, ST_NEUTRE, ST_DEFAVORABLE,
 )
-from . import volatility as vol
-
 
 def _num(x):
     try:

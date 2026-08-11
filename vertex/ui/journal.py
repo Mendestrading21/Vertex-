@@ -24,7 +24,7 @@ le trader ne complète que l'émotion, l'erreur et la leçon.
 """
 
 CSS = r"""
-#tj{--acc:#ff7a18;--acc2:#ff9a3d;--good:#22c55e;--bad:#ef4444;--info:#b9683d;--warn:#f5b45b;--vio:#85609f;
+#tj{--acc:#dbe1e8;--acc2:#dbe1e8;--good:#22c55e;--bad:#ef4444;--info:#b9683d;--warn:#f5b45b;--vio:#85609f;
  --ink:#eef2f8;--ink2:#aeb8c8;--mut:#8794ab;--faint:#4b5563;--surf:#101218;--bg2:#0b0d12;
  --hair:rgba(255,255,255,.07);--hair2:rgba(255,255,255,.12);
  --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
@@ -34,13 +34,13 @@ CSS = r"""
 #tj section{padding:var(--sp) 0 0}
 #tj .eyebrow{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--acc);margin-bottom:12px}
 #tj .eyebrow .rn{font-family:var(--mono);color:var(--faint);letter-spacing:0}
-#tj .eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(255,122,24,.35),transparent)}
+#tj .eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.35),transparent)}
 #tj h2{font-size:clamp(20px,2.4vw,26px);font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
 #tj .sub{color:var(--mut);font-size:13px;max-width:72ch;margin-bottom:20px}
 #tj .panel{background:linear-gradient(170deg,var(--surf),var(--bg2));border:1px solid var(--hair);border-radius:18px;padding:20px 22px}
-#tj .aiq{display:flex;gap:12px;align-items:flex-start;margin-top:16px;padding:13px 16px;background:linear-gradient(120deg,rgba(255,122,24,.09),rgba(255,122,24,.02));border:1px solid rgba(255,122,24,.16);border-left:2.5px solid var(--acc);border-radius:13px;font-size:13px;line-height:1.6;color:var(--ink2)}
+#tj .aiq{display:flex;gap:12px;align-items:flex-start;margin-top:16px;padding:13px 16px;background:linear-gradient(120deg,rgba(255,255,255,.09),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.16);border-left:2.5px solid var(--acc);border-radius:13px;font-size:13px;line-height:1.6;color:var(--ink2)}
 #tj .aiq b{color:var(--ink)}
-#tj .aiq .ico{flex:none;width:22px;height:22px;border-radius:7px;background:rgba(255,122,24,.16);display:grid;place-items:center;font-size:12px;margin-top:1px}
+#tj .aiq .ico{flex:none;width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:12px;margin-top:1px}
 #tj .lbl{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
 #tj .pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;padding:3px 10px;border-radius:999px;letter-spacing:.3px}
 #tj .p-good{background:rgba(34,197,94,.13);color:var(--good)}
@@ -90,18 +90,18 @@ CSS = r"""
 /* saisie */
 #tj .form{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
 #tj .jf{width:100%;background:#0b0c10;border:1px solid var(--hair2);border-radius:10px;color:var(--ink);font-size:13px;padding:9px 11px;outline:none;font-family:inherit}
-#tj .jf:focus{border-color:rgba(255,122,24,.5)}
+#tj .jf:focus{border-color:rgba(255,255,255,.5)}
 #tj textarea.jf{min-height:56px;resize:vertical}
 #tj .jfield label{display:block;font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:0 0 5px}
 #tj .jchip{background:rgba(255,255,255,.04);border:1px solid var(--hair2);color:var(--ink2);border-radius:999px;font-size:12px;font-weight:600;padding:6px 12px;cursor:pointer}
-#tj .jchip.on{background:rgba(255,122,24,.15);border-color:rgba(255,122,24,.5);color:var(--acc2)}
+#tj .jchip.on{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.5);color:var(--acc2)}
 #tj .tog{display:flex;gap:8px}
 #tj .tog button{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--hair2);color:var(--ink2);border-radius:10px;font-size:12.5px;font-weight:700;padding:9px;cursor:pointer}
 #tj .tog .onL{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.5);color:var(--good)}
 #tj .tog .onS{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.5);color:var(--bad)}
 /* liste des trades */
 #tj .trow{display:grid;grid-template-columns:auto 1fr auto;gap:6px 14px;padding:12px 14px;border:1px solid var(--hair);border-radius:13px;background:var(--bg2);margin-bottom:9px;cursor:pointer;transition:border-color .15s,transform .12s}
-#tj .trow:hover{border-color:rgba(255,122,24,.4);transform:translateY(-1px)}
+#tj .trow:hover{border-color:rgba(255,255,255,.4);transform:translateY(-1px)}
 #tj .trow .tk{font-size:15px;font-weight:900}
 #tj .trow .meta{font-size:11px;color:var(--mut)}
 #tj .todo{border:1px dashed rgba(245,180,91,.5);border-radius:13px;padding:11px 14px;margin-bottom:9px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:rgba(245,180,91,.04)}
@@ -111,14 +111,14 @@ CSS = r"""
 #tj .fiche{width:100%;max-width:860px;background:linear-gradient(175deg,#13151b,#0b0d12);border:1px solid var(--hair2);border-radius:20px;padding:24px 26px;margin-bottom:6vh}
 #tj .fscore{font-size:42px;font-weight:900;line-height:1}
 #tj .ftl{position:relative;padding-left:24px;margin-top:8px}
-#tj .ftl::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:linear-gradient(180deg,rgba(255,122,24,.5),rgba(255,255,255,.06))}
+#tj .ftl::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.06))}
 #tj .ftl>div{position:relative;padding-bottom:13px;font-size:12.5px;color:var(--ink2)}
 #tj .ftl>div::before{content:"";position:absolute;left:-21px;top:4px;width:9px;height:9px;border-radius:99px;background:#16181f;border:2px solid var(--faint)}
 #tj .simrow{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;font-size:12px;padding:8px 0;border-bottom:1px solid var(--hair)}
 /* roadmap */
 #tj .road{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
 #tj .road>div{background:var(--bg2);border:1px solid var(--hair);border-radius:12px;padding:11px 10px;text-align:center;transition:border-color .15s}
-#tj .road>div:hover{border-color:rgba(255,122,24,.45)}
+#tj .road>div:hover{border-color:rgba(255,255,255,.45)}
 #tj .road .i{font-size:18px}
 #tj .road .t{font-size:10.5px;font-weight:800;margin-top:5px}
 #tj .road .s{font-size:9px;color:var(--faint);margin-top:2px}

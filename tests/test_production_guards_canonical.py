@@ -133,8 +133,10 @@ def test_every_button_has_handler():
     le JS, ou attribut data-* consommé par un écouteur (délégation)."""
     js_all = _all_shell_js()
     offenders = []
-    # design_system_demo = vitrine READONLY : boutons d'exemple volontairement inertes.
-    _skip = {'design_system_demo.py'}
+    # Vitrines READONLY : boutons d'exemple volontairement inertes (échantillons
+    # de design). design_system_demo = Command Surface ; widget_lab = /widget-lab
+    # (laboratoire du Design System, hors produit).
+    _skip = {'design_system_demo.py', 'widget_lab.py'}
     for page in list(PAGES.glob('*.py')) + [ROOT / 'vertex' / 'ui' / 'shell' / '__init__.py']:
         if page.name in _skip:
             continue
@@ -301,4 +303,4 @@ def test_mobile_action_bar(client):
 
 def test_service_worker_version(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v42' in body
+    assert 'td-shell-v188' in body

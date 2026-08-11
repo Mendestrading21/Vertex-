@@ -129,14 +129,14 @@ def test_morning_brief_uses_live_news_endpoint():
 # ───────────────────────────────────────────── Couverture des routes (§31)
 _MAIN_ROUTES = [
     '/', '/markets', '/opportunities', '/portfolio', '/analysis', '/options',
-    '/performance', '/intelligence', '/system',
+    '/journal', '/intelligence', '/system',
     '/markets?view=macro', '/markets?view=sectors', '/markets?view=breadth',
     '/markets?view=volatility',
     '/opportunities?view=stocks', '/opportunities?view=options',
     '/opportunities?view=anomalies', '/opportunities?view=calendar',
     '/portfolio?view=positions', '/portfolio?view=options', '/portfolio?view=risk',
     '/portfolio?view=watchlist',
-    '/performance?view=journal', '/performance?view=track-record',
+    '/journal?view=journal', '/journal?view=track-record',
     '/intelligence?view=committee', '/intelligence?view=strategy',
     '/intelligence?view=impacts', '/intelligence?view=research',
     '/system?view=data', '/system?view=automations', '/system?view=settings',

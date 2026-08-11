@@ -1,5 +1,5 @@
 /* option-iv-sensitivity.js — sensibilité IV depuis la simulation moteur. */
-(function(){const C=window.VXCharts,VX=window.VX;
+(function(){const C=window.VXCharts=window.VXCharts||{},VX=window.VX;
 C.ivSensitivityCard=function(host,sim,opts){
   const iv=(sim&&sim.iv_sensitivity)||[];
   if(!iv.length){const el=typeof host==='string'?document.getElementById(host):host;

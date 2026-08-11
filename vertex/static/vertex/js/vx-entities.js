@@ -185,6 +185,18 @@
       VX.bus.emit('vx:position-changed', { sym: t.sym, action: 'close' });
       VX.toast(`Position ${t.sym} clôturée (journal mis à jour)`, 'success');
     },
+    /* deletePosition : suppression PURE d'une saisie du registre (ticker/quantité
+       erronés) — retirée de myTrades, AUCUN passage au journal, AUCUN ordre.
+       Différent de recordExit qui journalise une sortie réelle. */
+    deletePosition(id) {
+      const list = this.positions();
+      const t = list.find(x => x.id === id); if (!t) return false;
+      set('myTrades', list.filter(x => x.id !== id));
+      this._log(t.sym, 'DELETE', 'position retirée du registre', id);
+      VX.bus.emit('vx:position-changed', { sym: t.sym, action: 'delete' });
+      VX.toast(`Position ${t.sym} supprimée du registre`, 'success');
+      return true;
+    },
     /* Alertes (schéma vxAlerts historique — évaluées côté serveur) */
     alerts() { return get('vxAlerts', []); },
     hasAlert(sym) { return this.alerts().some(a => a.sym === String(sym).toUpperCase() && a.active); },
@@ -254,7 +266,7 @@
       { sep: true },
       { label: 'Ouvrir les options', run: () => { VX.context.save({ selectedSymbol: sym }); location.href = '/opportunities?view=options&sym=' + sym; } },
       { label: 'Ajouter une note / thèse', run: () => E.openAddModal(sym, 'note') },
-      { label: 'Ouvrir le journal', run: () => { VX.context.save(); location.href = '/performance?view=journal&sym=' + sym; } },
+      { label: 'Ouvrir le journal', run: () => { VX.context.save(); location.href = '/journal?view=journal&sym=' + sym; } },
       { label: 'Copier le ticker', run: () => { navigator.clipboard?.writeText(sym); VX.toast(sym + ' copié'); } },
       { label: 'Ouvrir TradingView ↗', run: () => window.open('https://www.tradingview.com/chart/?symbol=' + encodeURIComponent(sym), '_blank', 'noopener') },
     ];
@@ -262,8 +274,11 @@
   };
   /* Menu contextuel positionné (clavier: ↑↓ Entrée Échap) */
   E.openMenu = function (sym, anchorEl, contract) {
+    E._renderMenu(E.actionsFor(sym, contract), anchorEl);
+  };
+  /* Rendu générique d'un menu d'actions [{label,run}|{sep}] ancré sur un élément. */
+  E._renderMenu = function (acts, anchorEl) {
     const menu = document.getElementById('vx-context-menu');
-    const acts = E.actionsFor(sym, contract);
     menu.innerHTML = acts.map((a, i) => a.sep ? '<div class="vx-sep"></div>' :
       `<button role="menuitem" data-i="${i}">${a.label}</button>`).join('');
     const r = anchorEl.getBoundingClientRect();
@@ -287,10 +302,21 @@
   };
   /* Délégation globale : tout élément [data-entity-menu="SYM"] ouvre le menu. */
   document.addEventListener('click', (e) => {
+    const posTrigger = e.target.closest('[data-position-menu]');
+    if (posTrigger) { e.preventDefault(); e.stopPropagation(); E.openPositionMenu(Number(posTrigger.dataset.positionMenu), posTrigger); return; }
     const trigger = e.target.closest('[data-entity-menu]');
     if (trigger) { e.preventDefault(); e.stopPropagation(); E.openMenu(trigger.dataset.entityMenu, trigger); return; }
     const open = e.target.closest('[data-open-analysis]');
     if (open) { e.preventDefault(); VX.openAnalysis(open.dataset.openAnalysis); }
+  });
+  /* Clavier : Enter/Espace activent les contrôles délégués non natifs
+     (tickers role="button", menus d'entité) — même chemin que le clic. */
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const el = e.target.closest && e.target.closest('[data-open-analysis],[data-entity-menu],[data-position-menu]');
+    if (!el) return;
+    if (['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)) return;
+    e.preventDefault(); el.click();
   });
 
   /* ── + Ajouter : formulaire progressif (§19) ─────────────────────── */
@@ -413,5 +439,92 @@
       document.getElementById('vx-add-sym')?.focus();
     }
     render();
+  };
+
+  /* ── Gestion d'une POSITION précise (par id) : modifier / clôturer / supprimer ──
+     Registre déclaratif : toutes ces actions restent LOCALES, Vertex n'envoie
+     JAMAIS d'ordre. « Clôturer » journalise une sortie réelle (P&L) ; « Supprimer »
+     retire une saisie erronée sans rien journaliser. ── */
+  E.openEditPosition = function (id) {
+    const t = E.positions().find(x => x.id === id);
+    if (!t) { VX.toast('Position introuvable', 'error'); return; }
+    const isOpt = t.type !== 'STK';
+    const per = t.qty ? (isOpt ? t.cost / (t.qty * 100) : t.cost / t.qty) : 0;   // prix unitaire reconstruit
+    const stop0 = (t.entrySnap && t.entrySnap.stop != null) ? t.entrySnap.stop : '';
+    const body = `
+      <div class="vx-flex vx-mb3"><span class="vx-ticker" style="font-size:18px">${t.sym}</span>
+        <span class="vx-badge">${t.type}${t.strike ? ' ' + t.strike : ''}${t.exp ? ' ' + t.exp : ''}</span></div>
+      <div class="vx-form-row">
+        <div class="vx-field"><label>Quantité</label><input class="vx-input" id="fe-qty" type="number" min="1" value="${t.qty}" /></div>
+        <div class="vx-field"><label>Prix unitaire${isOpt ? ' (prime par action)' : ''}</label>
+          <input class="vx-input" id="fe-cost" type="number" step="any" value="${per || ''}" /></div>
+      </div>
+      <div class="vx-field"><label>Stop / invalidation</label>
+        <input class="vx-input" id="fe-stop" type="number" step="any" value="${stop0}" /></div>
+      <div class="vx-help">Modification LOCALE du registre — aucun ordre envoyé.</div>`;
+    VX.shell.openModal('Modifier la position — ' + t.sym, body,
+      '<button class="vx-btn" id="fe-cancel">Annuler</button><button class="vx-btn vx-btn-primary" id="fe-ok">Enregistrer</button>');
+    document.getElementById('fe-cancel')?.addEventListener('click', () => VX.shell.closeModal());
+    document.getElementById('fe-ok')?.addEventListener('click', () => {
+      const qty = Number(document.getElementById('fe-qty').value) || 0;
+      const unit = Number(document.getElementById('fe-cost').value) || 0;
+      if (!(qty > 0)) { VX.toast('Quantité invalide', 'error'); return; }
+      const total = isOpt ? qty * unit * 100 : qty * unit;   // schéma desk : cost = TOTAL investi
+      const snap = Object.assign({}, t.entrySnap || {});
+      const sv = document.getElementById('fe-stop').value;
+      snap.stop = sv === '' ? null : Number(sv);
+      E.updatePosition(id, { qty, cost: Math.round(total * 100) / 100, entryPrice: unit, entrySnap: snap });
+      VX.shell.closeModal();
+    });
+  };
+  E.openClosePosition = function (id) {
+    const t = E.positions().find(x => x.id === id);
+    if (!t) { VX.toast('Position introuvable', 'error'); return; }
+    const invested = (VX.fmt && VX.fmt.price) ? VX.fmt.price(t.cost) : t.cost;
+    const body = `
+      <div class="vx-flex vx-mb3"><span class="vx-ticker" style="font-size:18px">${t.sym}</span>
+        <span class="vx-badge">${t.type}${t.strike ? ' ' + t.strike : ''}</span>
+        <span class="vx-meta">investi ${invested}</span></div>
+      <div class="vx-field"><label>Montant TOTAL récupéré à la sortie</label>
+        <input class="vx-input" id="fc-exit" type="number" step="any" placeholder="valeur de sortie totale" /></div>
+      <div class="vx-field"><label>Note (optionnel)</label>
+        <input class="vx-input" id="fc-note" placeholder="raison de la sortie" /></div>
+      <div class="vx-help">Clôture DÉCLARATIVE : la position passe au journal (P&amp;L calculé). Aucun ordre n'est envoyé.</div>`;
+    VX.shell.openModal('Clôturer la position — ' + t.sym, body,
+      '<button class="vx-btn" id="fc-cancel">Annuler</button><button class="vx-btn vx-btn-primary" id="fc-ok">Clôturer</button>');
+    document.getElementById('fc-cancel')?.addEventListener('click', () => VX.shell.closeModal());
+    document.getElementById('fc-ok')?.addEventListener('click', () => {
+      const exit = document.getElementById('fc-exit').value;
+      if (exit === '' || isNaN(Number(exit))) { VX.toast('Montant de sortie requis', 'error'); return; }
+      E.recordExit(id, Number(exit), document.getElementById('fc-note').value);
+      VX.shell.closeModal();
+    });
+  };
+  E.confirmDeletePosition = function (id) {
+    const t = E.positions().find(x => x.id === id);
+    if (!t) { VX.toast('Position introuvable', 'error'); return; }
+    const desc = `${t.type}${t.strike ? ' ' + t.strike : ''}${t.exp ? ' ' + t.exp : ''}, qté ${t.qty}`;
+    VX.shell.openModal('Supprimer la position — ' + t.sym,
+      `<p>Retirer <b>${t.sym}</b> (${desc}) du registre ?</p>
+       <div class="vx-help">Suppression d'une saisie — <b>sans</b> passage au journal. Pour journaliser une sortie réelle, utilise « Clôturer ».</div>`,
+      '<button class="vx-btn" id="fd-cancel">Annuler</button><button class="vx-btn vx-btn-danger" id="fd-ok">Supprimer</button>');
+    document.getElementById('fd-cancel')?.addEventListener('click', () => VX.shell.closeModal());
+    document.getElementById('fd-ok')?.addEventListener('click', () => { E.deletePosition(id); VX.shell.closeModal(); });
+  };
+  /* Menu d'actions d'une POSITION précise (id) — surface modifier/clôturer/supprimer,
+     puis les actions utiles du titre. Ouvert par [data-position-menu="<id>"]. */
+  E.openPositionMenu = function (id, anchorEl) {
+    const t = E.positions().find(x => x.id === id);
+    if (!t) { VX.toast('Position introuvable', 'error'); return; }
+    E._renderMenu([
+      { label: 'Modifier la position', run: () => E.openEditPosition(id) },
+      { label: 'Clôturer la position (→ journal)', run: () => E.openClosePosition(id) },
+      { label: 'Supprimer la position', run: () => E.confirmDeletePosition(id) },
+      { sep: true },
+      { label: 'Ouvrir l’analyse', run: () => VX.openAnalysis(t.sym) },
+      { label: 'Ajouter une note / thèse', run: () => E.openAddModal(t.sym, 'note') },
+      { label: 'Ouvrir le journal', run: () => { VX.context.save(); location.href = '/journal?view=journal&sym=' + t.sym; } },
+      { label: 'Copier le ticker', run: () => { navigator.clipboard?.writeText(t.sym); VX.toast(t.sym + ' copié'); } },
+    ], anchorEl);
   };
 })();

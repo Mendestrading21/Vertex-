@@ -180,11 +180,11 @@
     var t = (calls || 0) + (puts || 0); if (!t) return '';
     var cp = Math.round((calls || 0) / t * 100), pp = 100 - cp;
     return '<div style="margin-top:.8rem" role="img" aria-label="CALLS ' + (calls || 0) + ' contre PUTS ' + (puts || 0) + ', ' + cp + ' % calls">' +
-      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--vx-text-secondary,#bab4ac);margin-bottom:3px">' +
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--vx-text-secondary,#BABABA);margin-bottom:3px">' +
       '<span>CALLS ' + VXf.nd(calls) + ' (' + cp + ' %)</span><span>PUTS ' + VXf.nd(puts) + ' (' + pp + ' %)</span></div>' +
-      '<div style="height:14px;border-radius:5px;overflow:hidden;display:flex;background:var(--vx-surface-3,#17191b)">' +
-      '<span style="width:' + cp + '%;background:var(--vx-positive,#36c889)"></span>' +
-      '<span style="width:' + pp + '%;background:var(--vx-negative,#ed655c)"></span></div>' +
+      '<div style="height:14px;border-radius:5px;overflow:hidden;display:flex;background:var(--vx-surface-3,#121214)">' +
+      '<span style="width:' + cp + '%;background:var(--vx-positive,#2BBE90)"></span>' +
+      '<span style="width:' + pp + '%;background:var(--vx-negative,#E9555F)"></span></div>' +
       '<div class="vx-muted" style="font-size:11px;margin-top:4px">Dominante : ' + ((calls || 0) >= (puts || 0) ? 'CALLS' : 'PUTS') + ' — biais de la Stratégie Vertex : achat de calls (les puts restent tactiques). Volume/OI ≠ conviction certaine.</div></div>';
   }
 
@@ -295,7 +295,7 @@
   function chartTerm(VC, d) {
     var pts = (d.term_structure && d.term_structure.points) || [];
     if (pts.length < 2) { document.getElementById('vx-opt-term').innerHTML = '<div class="vx-card"><div class="vx-empty">Structure par terme : pas assez d’échéances.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#84aa31');
+    var brand = col(VC, 'brand', '#DBE1E8');
     var slope = d.term_structure.slope;
     var concl = slope == null ? '' : slope > 0.02 ? 'Contango — court terme meilleur marché' : slope < -0.02 ? 'Inversée — stress court terme' : 'Structure plate';
     var c = VC.card('vx-opt-term', {
@@ -320,8 +320,13 @@
   function chartCone(VC, d) {
     var pts = (d.expected_move_cone && d.expected_move_cone.points) || [];
     if (pts.length < 2) { document.getElementById('vx-opt-cone').innerHTML = '<div class="vx-card"><div class="vx-empty">Cône : pas assez d’échéances.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#84aa31'), copper = col(VC, 'copper', '#48631b');
+    var brand = col(VC, 'brand', '#DBE1E8'), copper = col(VC, 'copper', '#8A8284');
     var labels = pts.map(function (p) { return p.dte + ' j'; });
+    /* GRAMMAIRE TV (lot 203) : les bandes 1σ/2σ sont une ESTIMATION
+       lognormale → remplissage HACHURÉ (C.hatchPattern, lot 197) comme le
+       cône de projection et le payoff. Repli translucide si absent. */
+    var h1 = VC.hatchPattern ? VC.hatchPattern(brand) : brand + '20';
+    var h2 = VC.hatchPattern ? VC.hatchPattern(copper) : copper + '18';
     var ds = function (key, w, fill, bg) {
       return { data: pts.map(function (p) { return p[key]; }), borderColor: w ? copper : 'transparent', borderWidth: w, pointRadius: 0, fill: fill, backgroundColor: bg, tension: .25 };
     };
@@ -336,10 +341,10 @@
           type: 'line',
           data: { labels: labels, datasets: [
             ds('hi2', 0, false, 'transparent'),
-            Object.assign(ds('hi1', 1, '-1', copper + '18'), {}),
-            Object.assign(ds('mid', 2, '-1', brand + '20'), { borderColor: brand }),
-            Object.assign(ds('lo1', 1, '-1', brand + '20'), {}),
-            Object.assign(ds('lo2', 1, '-1', copper + '18'), {}) ] },
+            Object.assign(ds('hi1', 1, '-1', h2), {}),
+            Object.assign(ds('mid', 2, '-1', h1), { borderColor: brand }),
+            Object.assign(ds('lo1', 1, '-1', h1), {}),
+            Object.assign(ds('lo2', 1, '-1', h2), {}) ] },
           options: { interaction: { mode: 'index', intersect: false },
             plugins: { tooltip: { callbacks: { label: function (ctx) { return ['2σ+', '1σ+', 'médian', '1σ−', '2σ−'][ctx.datasetIndex] + ' : ' + VXf.num(ctx.parsed.y, 2); } } } },
             scales: { y: { ticks: { callback: function (v) { return VXf.num(v, 0); } } } } } });
@@ -351,7 +356,7 @@
   function chartOI(VC, d) {
     var rows = (d.oi_by_strike && d.oi_by_strike.rows) || [];
     if (!rows.length) { document.getElementById('vx-opt-oi').innerHTML = '<div class="vx-card"><div class="vx-empty">Open interest indisponible.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#84aa31'), violet = col(VC, 'violet', '#9c79d0');
+    var brand = col(VC, 'brand', '#DBE1E8'), violet = col(VC, 'violet', '#9c79d0');
     var c = VC.card('vx-opt-oi', {
       title: 'Open interest par strike', question: 'Où se concentrent les positions ouvertes ?',
       conclusion: 'CALL vs PUT', height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
@@ -376,7 +381,7 @@
     var sm = d.iv_smile || {};
     var calls = sm.calls || [], puts = sm.puts || [];
     if (!calls.length && !puts.length) { document.getElementById('vx-opt-smile').innerHTML = '<div class="vx-card"><div class="vx-empty">Smile indisponible.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#84aa31'), beige = col(VC, 'beige', '#c0b79f');
+    var brand = col(VC, 'brand', '#DBE1E8'), beige = col(VC, 'beige', '#c0b79f');
     var strikes = {};
     calls.concat(puts).forEach(function (r) { strikes[r.strike] = 1; });
     var xs = Object.keys(strikes).map(Number).sort(function (a, b) { return a - b; });
@@ -449,8 +454,8 @@
   // ── Stratégies options MULTI-JAMBES (§19) — moteur multileg_lab, lecture seule ──
   function fmtUsd(v) { var n = Math.round(v); return (n < 0 ? '-$' : '$') + VXf.num(Math.abs(n), 0); }
   function stratKpi(l, v) {
-    return '<div class="vx-card--compact" style="padding:5px 7px;background:var(--vx-surface-2,#111315);border-radius:7px">' +
-      '<div style="font-size:10px;letter-spacing:.03em;color:var(--vx-text-muted,#817d77)">' + l + '</div>' +
+    return '<div class="vx-card--compact" style="padding:5px 7px;background:var(--vx-surface-2,#121214);border-radius:7px">' +
+      '<div style="font-size:10px;letter-spacing:.03em;color:var(--vx-text-muted,#8A8284)">' + l + '</div>' +
       '<div class="vx-mono" style="font-size:13px;font-weight:700">' + v + '</div></div>';
   }
   function loadStrategies(sym) {
@@ -474,10 +479,10 @@
         var pop = s.probability_of_profit != null ? s.probability_of_profit + ' %' : '—';
         var be = (s.breakevens && s.breakevens.length) ? s.breakevens.map(function (b) { return VXf.nd(b); }).join(' · ') : '—';
         var g = s.greeks;
-        var recoStyle = s.recommended ? ' style="border-color:var(--vx-signal-500,#84aa31);box-shadow:0 0 0 1px var(--vx-signal-500,#84aa31)"' : '';
+        var recoStyle = s.recommended ? ' style="border-color:var(--vx-signal-500,#DBE1E8);box-shadow:0 0 0 1px var(--vx-signal-500,#DBE1E8)"' : '';
         return '<section class="vx-card vx-col-6"' + recoStyle + '>' +
           '<div class="vx-card-header"><span class="vx-card-title">' + esc(s.label) + '</span>' +
-          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-signal-500,#84aa31);color:#0b0d0a;font-weight:700">★ Recommandée</span>' : '') +
+          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-signal-500,#DBE1E8);color:#0b0d0a;font-weight:700">★ Recommandée</span>' : '') +
           '<span class="vx-badge" style="color:var(--vx-' + (credit ? 'positive' : 'option') + ')">' + (credit ? 'crédit ' : 'débit ') + fmtUsd(Math.abs(s.net_premium)) + '</span></div>' +
           (s.fit_reason ? '<div class="vx-meta" style="margin:-2px 0 6px">' + esc(s.fit_reason) + '</div>' : '') +
           '<div id="strat-pf-' + i + '" style="height:150px"></div>' +

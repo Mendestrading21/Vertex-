@@ -94,13 +94,13 @@ def test_options_page_renders_as_primary_space(client):
     r = client.get('/options')
     assert r.status_code == 200
     html = r.get_data(as_text=True)
-    assert 'Options Intelligence' in html
-    # Options est désormais un espace PRINCIPAL (§18 overhaul) : le nav le marque actif
+    assert '<h1>Options</h1>' in html
+    # Options est un espace PRINCIPAL canonique (n°6/8) : le nav le marque actif
     assert 'data-nav-id="options"' in html
     assert re.search(r'data-nav-id="options"[^>]*aria-current="page"', html) \
         or 'data-nav-id="options" aria-current="page"' in html
-    # neuf espaces dans la nav principale (Options ajouté)
-    assert len(re.findall(r'class="vx-nav-item"', html)) == 9
+    # huit espaces canoniques dans la nav principale (PR n°2)
+    assert len(re.findall(r'class="vx-nav-item"', html)) == 8
 
 
 def test_options_page_subviews(client):
@@ -149,3 +149,95 @@ def test_no_order_execution_path_in_new_modules():
             src = fh.read()
         m = call_or_def.search(src)
         assert not m, '%s : chemin d\'ordre interdit détecté (%s)' % (rel, m and m.group(1))
+
+
+def test_options_gex_route_real_numbers(client, tmp_path, monkeypatch):
+    """L'endpoint GEX assemble profil + flux + thèse depuis un board réel semé.
+
+    ⚠ La route journalise le profil dans `gex_history_cache.json` : sans
+    redirection, ce test écrivait un point FABRIQUÉ par jour dans l'historique
+    GEX réel, que `/api/options/gex-radar` sert ensuite comme une mesure
+    (invariant n°4). Mesuré au lot 388 : 8 points MSFT strictement identiques
+    accumulés, un par exécution de la suite. Le stockage est redirigé vers un
+    dossier temporaire — le mécanisme `_BASE_DIR`, déjà employé par
+    `test_desk_routes.py`.
+    """
+    from vertex.services import persist
+    monkeypatch.setattr(persist, '_BASE_DIR', str(tmp_path))
+    from vertex.app.state import scan_state
+    scan_state['options_board'] = [
+        {'sym': 'MSFT', 'type': 'CALL', 'strike': 460, 'gamma': 0.05, 'oi': 5000,
+         'vol': 500, 'cost': 2000, 'spot': 440, 'dte': 21, 'exp': '2026-08-21'},
+        {'sym': 'MSFT', 'type': 'PUT', 'strike': 420, 'gamma': 0.03, 'oi': 2000,
+         'vol': 100, 'cost': 800, 'spot': 440, 'dte': 21, 'exp': '2026-08-21'},
+    ]
+    scan_state.setdefault('detail', {})['MSFT'] = {'price': 440, 'earnings_in_days': 1}
+    try:
+        r = client.get('/api/options/gex/MSFT')
+        assert r.status_code == 200
+        d = r.get_json()
+        assert d['symbol'] == 'MSFT'
+        assert d['gex']['empty'] is False
+        assert d['gex']['call_wall'] == 460
+        assert d['synthesis']['empty'] is False
+        assert d['synthesis']['bias'] in ('haussier', 'baissier', 'neutre')
+        assert 'coverage' in d              # honnêteté : vue fenêtrée signalée
+        assert d['flow']['contracts'][0]['strike'] == 460
+    finally:
+        scan_state['options_board'] = []
+
+
+def test_options_gex_route_empty_is_honest(client):
+    from vertex.app.state import scan_state
+    scan_state['options_board'] = []
+    r = client.get('/api/options/gex/NOPE')
+    assert r.status_code == 200
+    d = r.get_json()
+    assert d['gex']['empty'] is True
+    assert d['synthesis']['empty'] is True
+
+
+def test_positioning_view_renders_and_is_wired(client):
+    """La vue « Positionnement dealer (GEX) » existe, câblée, honnête, sans ordre."""
+    r = client.get('/options?view=positioning')
+    assert r.status_code == 200
+    body = r.get_data(as_text=True)
+    assert 'Positionnement dealer' in body
+    assert 'vx-gx-sym' in body and 'vx-gx-go' in body           # champ + bouton câblés
+    assert 'options-gex.js' in body                              # builder inclus
+    assert 'tick-par-tick' in body or 'pas la chaîne complète' in body or 'GEX par strike' in body
+    # invariant READONLY : aucun verbe d'ordre dans la page
+    for verb in ('place_order', 'placeOrder', 'submit_order', 'transmit'):
+        assert verb not in body
+
+
+def test_positioning_tab_in_options_nav(client):
+    r = client.get('/options')
+    assert r.status_code == 200
+    assert 'data-view-tab="positioning"' in r.get_data(as_text=True)
+
+
+def test_gex_radar_route(client):
+    """Le radar classe les titres du board par |net GEX| — données réelles semées."""
+    from vertex.app.state import scan_state
+    scan_state['options_board'] = [
+        {'sym': 'AAA', 'type': 'CALL', 'strike': 110, 'gamma': 0.06, 'oi': 8000, 'spot': 100},
+        {'sym': 'BBB', 'type': 'PUT', 'strike': 45, 'gamma': 0.05, 'oi': 4000, 'spot': 50},
+    ]
+    try:
+        d = client.get('/api/options/gex-radar').get_json()
+        assert d['empty'] is False
+        assert [r['symbol'] for r in d['rows']] == ['AAA', 'BBB']
+        assert d['rows'][0]['regime'] == 'stabilisant'
+        assert 'climate' in d
+    finally:
+        scan_state['options_board'] = []
+
+
+def test_positioning_view_has_radar_and_analysis_has_copilot(client):
+    body = client.get('/options?view=positioning').get_data(as_text=True)
+    assert 'vx-gx-radar' in body and 'Radar de positionnement' in body
+    body2 = client.get('/analysis/AAPL').get_data(as_text=True)
+    assert 'an-copilot' in body2 and 'an-cp-go' in body2      # copilote câblé sur la fiche
+    for verb in ('place_order', 'placeOrder', 'submit_order', 'transmit'):
+        assert verb not in body2

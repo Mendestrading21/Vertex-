@@ -31,7 +31,7 @@
 
 /* Bannières d'état */
 .vx-stale-banner{display:flex;align-items:center;gap:8px;
-  background:var(--vx-warning-soft);border:1px solid rgba(221,162,59,.3);
+  background:var(--vx-warning-soft);border:1px solid rgba(217,190,60,.3);
   color:var(--vx-warning);border-radius:var(--vx-r-sm);padding:6px 10px;
   font-size:12px;margin-bottom:var(--vx-s3)}
 .vx-error-banner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
@@ -45,13 +45,13 @@
 
 /* Mode démo — clair, propre, sans ambiguïté */
 .vx-demo-banner{display:flex;align-items:center;gap:9px;
-  background:var(--vx-brand-soft);border:1px solid rgba(163,202,66,.3);
+  background:var(--vx-brand-soft);border:1px solid rgba(255,255,255,.3);
   color:var(--vx-brand-strong);border-radius:var(--vx-r-sm);
   padding:7px 12px;font-size:12px;font-weight:600;margin-bottom:var(--vx-s4)}
 .vx-badge-demo{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;
   border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.5px;
   text-transform:uppercase;background:var(--vx-brand-soft);
-  color:var(--vx-brand-strong);border:1px solid rgba(163,202,66,.3)}
+  color:var(--vx-brand-strong);border:1px solid rgba(255,255,255,.3)}
 
 /* Indicateurs live (§29) : live/delayed/frozen/fallback/offline */
 .vx-live-dot{width:7px;height:7px;border-radius:99px;flex:none;
@@ -61,3 +61,22 @@
 [data-live="frozen"] .vx-live-dot,.vx-live-dot[data-live="frozen"]{background:var(--vx-neutral-chart)}
 [data-live="fallback"] .vx-live-dot,.vx-live-dot[data-live="fallback"]{background:var(--vx-violet)}
 [data-live="offline"] .vx-live-dot,.vx-live-dot[data-live="offline"]{background:var(--vx-negative)}
+
+/* ═══ CONTINUITY LOT 5 — Identité de fraîcheur (puce unifiée) + mode offline ═══ */
+.vx-fresh-chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:650;
+  letter-spacing:.03em;padding:2px 8px;border-radius:999px;white-space:nowrap;
+  border:1px solid var(--vx-border-soft);background:rgba(255,255,255,.03);color:var(--vx-text-muted)}
+.vx-fresh-chip[data-state="live"]{color:var(--vx-positive);border-color:rgba(43,190,144,.28)}
+.vx-fresh-chip[data-state="snapshot"]{color:var(--vx-text-secondary)}
+.vx-fresh-chip[data-state="stale"]{color:var(--vx-warning);border-color:rgba(217,190,60,.28)}
+.vx-fresh-chip[data-state="refreshing"]{color:var(--vx-text-secondary)}
+.vx-fresh-chip[data-state="error"],.vx-fresh-chip[data-state="offline"]{color:var(--vx-negative);border-color:rgba(233,85,95,.28)}
+.vx-fresh-dot{width:6px;height:6px;border-radius:50%;background:var(--vx-positive);
+  box-shadow:0 0 0 3px rgba(43,190,144,.16);animation:vx-fresh-pulse 1.8s ease-in-out infinite}
+@keyframes vx-fresh-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@media (prefers-reduced-motion:reduce){.vx-fresh-dot{animation:none}}
+/* Hors ligne : léger voile sur le bandeau live du shell (données conservées) */
+:root[data-net="offline"] .vx-live-dot{background:var(--vx-negative)!important;animation:none}
+/* Sous-titre de sous-panneau (observabilité Continuité) */
+.vx-subhead{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--vx-text-muted);margin:0 0 8px;display:flex;align-items:center;gap:8px}

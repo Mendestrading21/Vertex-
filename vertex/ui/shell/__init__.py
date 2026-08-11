@@ -9,16 +9,20 @@ from __future__ import annotations
 
 SHELL_VERSION = 'vx-shell-1'
 
-# Navigation principale — EXACTEMENT huit espaces (§10).
+# Navigation principale — EXACTEMENT HUIT espaces canoniques (décision produit
+# PR n°2). Registre UNIQUE de la navigation du redesign. Ordre = parcours de
+# décision. Le DERNIER élément (Système) est épinglé en pied de sidebar.
+# Intelligence (→ Analyse) et Performance (→ Journal + Portefeuille) ne sont plus
+# des espaces autonomes ; leurs pages restent joignables hors nav le temps de la
+# refonte de contenu. Aucun 9e espace ne peut être ajouté sans fusion/suppression.
 PRIMARY_NAV = (
-    {'id': 'briefing', 'label': 'Briefing', 'href': '/', 'icon': 'home'},
+    {'id': 'briefing', 'label': "Aujourd'hui", 'href': '/', 'icon': 'home'},
     {'id': 'markets', 'label': 'Marchés', 'href': '/markets', 'icon': 'globe'},
     {'id': 'opportunities', 'label': 'Opportunités', 'href': '/opportunities', 'icon': 'radar'},
-    {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
     {'id': 'analysis', 'label': 'Analyse', 'href': '/analysis', 'icon': 'chart'},
+    {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
     {'id': 'options', 'label': 'Options', 'href': '/options', 'icon': 'bolt'},
-    {'id': 'performance', 'label': 'Performance', 'href': '/performance', 'icon': 'trend'},
-    {'id': 'intelligence', 'label': 'Intelligence', 'href': '/intelligence', 'icon': 'brain'},
+    {'id': 'journal', 'label': 'Journal', 'href': '/journal', 'icon': 'book'},
     {'id': 'system', 'label': 'Système', 'href': '/system', 'icon': 'settings'},
 )
 
@@ -41,7 +45,29 @@ _ICONS = {
     'back': '<path d="m15 18-6-6 6-6"/>',
     'star': '<path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/>',
     'bolt': '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
+    'book': '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13"/>',
 }
+
+
+def json_for_script(value) -> str:
+    """Sérialise `value` pour un bloc `<script>` inline — JAMAIS `json.dumps` nu.
+
+    `json.dumps` échappe `"` et `\\` mais NI `<` NI `/` : une valeur contenant
+    `</script>` ferme la balise côté analyseur HTML et tout ce qui suit devient
+    du HTML ACTIF. C'était le cas de `/opportunities?sym=…`, dont les valeurs de
+    paramètres d'URL n'étaient pas filtrées (constat du lot 372 — seules les
+    CLÉS étaient sur liste blanche).
+
+    On neutralise `<`, `>` et `&` en échappements `\\uXXXX`. Un moteur JS les
+    relit à l'identique dans un littéral de chaîne : le comportement client est
+    inchangé, seul l'analyseur HTML ne peut plus voir de balise fermante.
+
+    Gardien : `tests/test_json_script_lot372.py`.
+    """
+    import json as _json
+    return (_json.dumps(value)
+            .replace('<', '\\u003c').replace('>', '\\u003e')
+            .replace('&', '\\u0026'))
 
 
 def icon(name: str, size: int = 18) -> str:
@@ -74,8 +100,20 @@ def _sidebar(active: str) -> str:
 </aside>'''
 
 
-def _topbar(space_label: str, sub_label: str = '') -> str:
-    crumb = f'<span class="vx-crumb-root">Vertex</span><span aria-hidden="true">/</span><b>{space_label}</b>'
+def _space_href(active: str) -> str:
+    """Racine de l'espace actif — depuis PRIMARY_NAV (source unique)."""
+    for it in PRIMARY_NAV:
+        if it['id'] == active:
+            return it['href']
+    return '/'
+
+
+def _topbar(space_label: str, sub_label: str = '', space_href: str = '/') -> str:
+    # Fil d'Ariane CLIQUABLE (lot 55) : « Vertex » ramène au briefing, le
+    # segment d'espace ramène à la racine de l'espace (utile depuis une fiche).
+    crumb = (f'<a class="vx-crumb-root" href="/">Vertex</a>'
+             f'<span aria-hidden="true">/</span>'
+             f'<a class="vx-crumb-space" href="{space_href}"><b>{space_label}</b></a>')
     if sub_label:
         crumb += f'<span aria-hidden="true">/</span><span>{sub_label}</span>'
     return f'''<header class="vx-topbar">
@@ -101,7 +139,9 @@ def _topbar(space_label: str, sub_label: str = '') -> str:
 
 
 def _mobile_bar(active: str) -> str:
-    order = ('briefing', 'markets', 'opportunities', 'portfolio', 'performance')
+    # 5 espaces prioritaires du parcours de décision quotidien ; le reste
+    # (Options, Journal, Système) via « Plus ». Conçu pour 390px sans débordement.
+    order = ('briefing', 'markets', 'opportunities', 'analysis', 'portfolio')
     links = []
     for it in PRIMARY_NAV:
         if it['id'] not in order:
@@ -116,12 +156,12 @@ def _mobile_bar(active: str) -> str:
 
 _OVERLAYS = '''
 <div class="vx-overlay" id="vx-overlay" data-open="0"></div>
-<aside class="vx-drawer" id="vx-drawer" data-open="0" role="dialog" aria-modal="true" aria-label="Panneau contextuel">
+<aside class="vx-drawer" id="vx-drawer" data-open="0" role="dialog" aria-modal="true" aria-label="Panneau contextuel" aria-hidden="true" inert>
   <div class="vx-drawer-header"><h2 id="vx-drawer-title">—</h2>
     <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-drawer aria-label="Fermer">✕</button></div>
   <div class="vx-drawer-body" id="vx-drawer-body"></div>
 </aside>
-<div class="vx-modal" id="vx-modal" data-open="0" role="dialog" aria-modal="true">
+<div class="vx-modal" id="vx-modal" data-open="0" role="dialog" aria-modal="true" aria-hidden="true" inert>
   <div class="vx-modal-box">
     <div class="vx-modal-header"><h2 id="vx-modal-title">—</h2>
       <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-modal aria-label="Fermer">✕</button></div>
@@ -141,11 +181,55 @@ _OVERLAYS = '''
 '''
 
 
+def _wants_fragment() -> bool:
+    """Vrai si la requête courante demande un FRAGMENT (navigation client persistante).
+
+    Progressive-enhancement : sans JS (ou en accès direct / deep link / refresh /
+    nouvel onglet) la requête est normale → document complet. Le routeur client
+    (vx-router.js) ajoute l'en-tête `X-Vertex-Fragment: 1` pour ne recevoir que le
+    contenu + les métadonnées, et ne remplacer que #vx-content sans reconstruire le
+    shell. Lecture seule ; jamais d'effet de bord."""
+    try:
+        from flask import request
+        return (request.headers.get('X-Vertex-Fragment') == '1'
+                or request.args.get('__frag') == '1')
+    except Exception:
+        return False
+
+
+def _render_fragment(*, title: str, active: str, space_label: str, sub_label: str,
+                     content: str, page_js: str, page_label: str, mobile_bar: str) -> str:
+    """Enveloppe de fragment : métadonnées + contenu + barre mobile + scripts de page.
+
+    Le contenu et la barre mobile sont dans des <template> (aucune ressource chargée,
+    aucun script exécuté à l'analyse) ; le routeur lit les data-* pour remettre à jour
+    le fil d'Ariane / la nav active / le titre, injecte le contenu, puis ré-exécute
+    `page_js` (src dédupliqués, inline en portée isolée). Voir vx-router.js."""
+    from html import escape
+    return (f'<div class="vx-fragment" data-title="{escape(title, quote=True)}" '
+            f'data-active="{escape(active, quote=True)}" '
+            f'data-space-label="{escape(space_label, quote=True)}" '
+            f'data-sub-label="{escape(sub_label, quote=True)}" '
+            f'data-page-label="{escape(page_label or space_label, quote=True)}"></div>\n'
+            f'<template class="vx-frag-content">{content}</template>\n'
+            f'<template class="vx-frag-mobile">{mobile_bar}</template>\n'
+            f'{page_js}')
+
+
 def render_shell(*, title: str, active: str, space_label: str, sub_label: str = '',
                  content: str, page_js: str = '', page_label: str = '',
                  mobile_actions: str = '') -> str:
-    """Assemble la page complète autour du contenu fourni."""
+    """Assemble la page complète autour du contenu fourni.
+
+    Si la requête demande un fragment (navigation client persistante), ne renvoie
+    QUE le contenu + métadonnées + scripts de page (shell conservé côté client)."""
+    from vertex.engines.recommendation import vocab_js as _vjs
+    vocab = _vjs()   # vocabulaire des verdicts — source unique (__VXVOCAB)
     mobile_bar = mobile_actions or _mobile_bar(active)
+    if _wants_fragment():
+        return _render_fragment(title=title, active=active, space_label=space_label,
+                                sub_label=sub_label, content=content, page_js=page_js,
+                                page_label=page_label, mobile_bar=mobile_bar)
     return f'''<!doctype html><html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
@@ -153,9 +237,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/static/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/static/vertex/css/fonts.css">
 <link rel="stylesheet" href="/static/vertex/css/tokens.css">
 <link rel="stylesheet" href="/static/vertex/css/base.css">
 <link rel="stylesheet" href="/static/vertex/css/layout.css">
@@ -171,14 +253,15 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/polish.css">
 <link rel="stylesheet" href="/static/vertex/css/control-surface.css">
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
+<link rel="stylesheet" href="/static/vertex/css/neon-glass.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
 <div class="vx-app" id="vx-app" data-sidebar="expanded">
 {_sidebar(active)}
 <div class="vx-main">
-{_topbar(space_label, sub_label)}
-<main class="vx-content" id="vx-content" data-page-label="{page_label or space_label}">
+{_topbar(space_label, sub_label, _space_href(active))}
+<main class="vx-content" id="vx-content" data-space="{active}" data-page-label="{page_label or space_label}">
 {content}
 </main>
 </div>
@@ -186,9 +269,11 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 {mobile_bar}
 {_OVERLAYS}
 <script src="/static/chart.umd.min.js" defer></script>
+<script id="vx-vocab">window.__VXVOCAB={vocab};</script>
 <script src="/static/vertex/js/vx-core.js"></script>
 <script src="/static/vertex/js/vx-entities.js"></script>
 <script src="/static/vertex/js/vx-shell.js"></script>
+<script src="/static/vertex/js/vx-router.js"></script>
 <script src="/static/vertex/js/live-updates.js" defer></script>
 <script src="/static/vertex/js/charts/chart-theme-obsidian-copper.js" defer></script>
 <script src="/static/vertex/js/charts/chart-core.js" defer></script>

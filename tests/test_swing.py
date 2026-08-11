@@ -35,5 +35,4 @@ def test_annotate_adds_fields():
 
 def test_terminal_bindings_are_the_module():
     import terminal
-    assert terminal._swing_project is swing.project
     assert terminal._annotate_swing is swing.annotate

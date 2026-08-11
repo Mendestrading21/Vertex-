@@ -44,6 +44,23 @@ def api_market_summary():
     })
 
 
+@bp.route('/api/market/context')
+def api_market_context():
+    """MarketContext canonique (SKYLER LOT 3) : dimensions typées valeur/unité/
+    source/fraîcheur/statut, régime + transition, diff depuis la dernière session.
+    Lecture seule ; absent = MISSING, jamais estimé."""
+    from vertex.app.config import DEMO_MODE as _demo
+    from vertex.engines import market_context as _mcx
+    from vertex.services import persist
+    prev = persist.load_json('market_context_last.json', None)
+    ctx = _mcx.build(scan_state, prev=prev, demo=_demo)
+    # base du « depuis la dernière session » : on ne persiste qu'un contexte daté
+    # et seulement quand le scan a republié (as_of différent).
+    if ctx.get('as_of') and (not prev or prev.get('as_of') != ctx.get('as_of')):
+        persist.save_json('market_context_last.json', ctx)
+    return jsonify(ctx)
+
+
 @bp.route('/api/cockpit')
 def api_cockpit():
     """Widgets du cockpit : action du jour + top opportunités."""

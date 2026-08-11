@@ -6,9 +6,10 @@
 
 ---
 
-Cockpit d'analyse trading **local** (Python/Flask) pour 57 leaders US : scoring,
-moteur de décision IBKR /40, options desk, cours **en direct via IBKR**, fiches
-entreprise complètes, plan du jour, watchlist poster.
+Cockpit d'analyse trading **local** (Python/Flask) sur l'univers des grands
+indices US (S&P 500 ∪ Nasdaq 100 ∪ Dow Jones, ~500 titres) : scoring, moteurs
+de décision, options, cours **en direct via IBKR**, portefeuille, journal de
+discipline.
 
 > ⛔ **ANALYSE / LECTURE SEULE.** Aucun ordre n'est jamais passé. La connexion
 > IBKR est verrouillée en `readonly=True`. Ceci n'est pas un conseil financier.
@@ -30,7 +31,10 @@ Puis ouvrir **http://localhost:5002**.
 
 ## 📱 Accès depuis l'iPhone / une tablette (même WiFi maison)
 
-Le serveur écoute déjà sur tout le réseau local (`host='0.0.0.0'`).
+**Par défaut le serveur n'écoute que sur `127.0.0.1`** (sécurité). Pour
+l'ouvrir au réseau local, définir un code d'accès dans `.env` :
+`VERTEX_CODE=…` (verrou de session) — ou, en connaissance de cause,
+`VERTEX_LAN=1`. Le serveur passe alors en `0.0.0.0`.
 
 1. Sur le PC, trouver son IP locale : `ipconfig` (ex. `192.168.x.x`).
 2. Autoriser le port 5002 dans le pare-feu Windows (une fois, en admin) :
@@ -40,17 +44,26 @@ Le serveur écoute déjà sur tout le réseau local (`host='0.0.0.0'`).
 3. Sur l'iPhone (même WiFi) : ouvrir **http://192.168.x.x:5002**
    (le PC + TWS doivent rester allumés).
 
-## Pages
+## Pages — les 8 espaces
 
-- `/` — cockpit live (plan du jour, recommandations IBKR /40, marché, positions, options)
-- `/titre/<TICKER>` — fiche entreprise complète (technique + fondamentaux + options + décision)
-- `/entreprises` — screener des 57 sociétés (cours live + fondamentaux, triable)
-- `/options` — options desk complet (LEAPS / Swing / Tactique, Option Quality /100)
-- `/watchlist` — poster « Daily Watchlist » imprimable
+- `/` — **Aujourd'hui** : brief éditorial, régime, KPI, action prioritaire
+- `/markets` — **Marchés** : indices, breadth, VIX, rotation
+- `/opportunities` — **Opportunités** : radar, shortlist, comparaison
+- `/analysis` — **Analyse** : plan d'analyse complet d'un titre
+- `/portfolio` — **Portefeuille** : synthèse, thèses, risque, performance
+- `/options` — **Options** : contrats, payoff, Greeks, positionnement (GEX)
+- `/journal` — **Journal** : discipline, décisions, hypothèses
+- `/system` — **Système** : santé des données, sources, sync
+
+(Les anciennes routes `/titre`, `/entreprises`, `/watchlist`… redirigent
+vers ces espaces.)
 
 ## Structure
 
-- `terminal.py` — app Flask + toutes les pages + connexion IBKR + flux cours live
-- `vertex/quant`, `vertex/engines`, `vertex/options`… — moteurs : `scoring`, `decide` (décision), `scorecard` (verdict /40), `legacy_engine` (options),
-  `fundamentals`, `sectors`, `daily`, `anomalies`, `market`, `weekly`, `research`, `ai`
-- `ib_reader.py` — lecture IBKR (readonly, garde-fou anti-ordre)
+- `terminal.py` — app Flask (noyau historique : APIs, IBKR, flux live)
+- `vertex/app/routes/` — les routes des 8 espaces (Blueprints)
+- `vertex/ui/pages/` — les pages produit (rendu serveur + hydratation `VXCharts`)
+- `vertex/engines`, `vertex/quant`, `vertex/options`… — moteurs : scoring,
+  decision_stack (vérité des verdicts), recommendation, options_lab,
+  track_record, fundamentals, sectors, market…
+- `ib_reader.py` — lecture IBKR (readonly=True forcé, garde-fou anti-ordre)

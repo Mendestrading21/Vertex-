@@ -32,6 +32,14 @@ def _now_iso() -> str:
     return time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
 
 
+def _safe_url(u) -> bool:
+    """Vrai si `u` est un lien web http(s) — seul schéma rendu en <a href> côté client.
+    Rejette javascript:/data:/vbscript:… et tout non-texte (garde-fou XSS)."""
+    if not isinstance(u, str):
+        return False
+    return u.strip().lower().startswith(('http://', 'https://'))
+
+
 def label(source: str) -> str:
     """Libellé humain court d'une source (pour badges UI)."""
     return _LABELS.get(source, source)
@@ -50,7 +58,11 @@ def wrap(value, *, source, as_of=None, citations=None, estimation=None, note='')
     if estimation is None:
         # Tout ce qui vient de Claude est une estimation ; le broker seul est « réel ».
         estimation = source in (SRC_CLAUDE_WEB, SRC_CLAUDE)
-    cits = [c for c in (citations or []) if isinstance(c, dict) and c.get('url')]
+    # Sécurité : une citation n'est gardée que si son URL est un lien web réel
+    # (http/https). On rejette javascript:, data:, etc. — ces liens sont rendus en
+    # <a href> côté client, un schéma non-web serait un vecteur XSS/exfiltration.
+    cits = [c for c in (citations or [])
+            if isinstance(c, dict) and _safe_url(c.get('url'))]
     return {
         'value': value,
         'source': source,
