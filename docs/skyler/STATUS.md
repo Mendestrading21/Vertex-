@@ -2880,6 +2880,34 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 582 — livré** : **le serveur dit « je ne sais pas », un client répond
+  « à l'instant » — premier dossier depuis quarante-neuf lots (rang 1)**. Choix
+  (bbb). Les quatre sites qui alimentent la fraîcheur, lus en entier : **trois
+  emploient une garde de type** (`typeof … === 'number' ? …*1000 : null`) —
+  exactement l'entrée qui déclenche la branche `—` mesurée au 581. **Le
+  quatrième, `/system`, emploie `(man.age_s || 0) * 1000`** : un repli n'est pas
+  une garde, `null || 0` vaut **0**. Et le serveur, lu dans le code, renvoie
+  **`None`** quand il ignore l'âge — la route voisine porte même le commentaire
+  « **jamais un âge faussement frais** » avant d'effacer l'âge. **Le serveur
+  efface pour ne pas mentir ; le client remplace par zéro.** **L'arrêt du lot** :
+  j'allais publier « donc Live » — l'appel ne passe pas `live`, donc `assess`
+  tombe sur `snapshot`, libellé **« Analyse »**. Direction juste, libellé faux.
+  **Le dossier, délimité** : sur `/system`, la branche `—` est **inatteignable
+  par construction**. Selon l'état : manifeste injoignable → chaîne vide
+  (honnête) ; `analyzing` → « Recalcul… » (honnête) ; **âge nul sans offline, ni
+  error, ni analyzing → « Analyse » pour un âge que le serveur dit ignorer**.
+  **L'ordre de décision masque le défaut sans le corriger.** Second contrôle :
+  **0 appel à `chip()` sans `assess()`**. Ce que le dépôt fait bien : trois sites
+  sur quatre gardent l'ignorance, le serveur efface un âge qu'il ne peut
+  garantir, le garde rend **rien** plutôt qu'une puce fausse. Portée : le libellé
+  **n'a pas été observé à l'écran** — ce qui est mesuré, c'est l'inatteignabilité
+  de la branche `—` ; **rien n'est corrigé**, la correction est une décision
+  humaine ; ma remontée aux déclarations **ne résout pas la portée** (limite
+  déclarée). Règles **582-A** un repli `|| 0` sur un âge rend une branche
+  d'honnêteté inatteignable · **582-B** une garde de type n'est pas un repli ·
+  **582-C** l'ordre de décision peut masquer un défaut sans le corriger. Cycle :
+  aucun fichier de production touché, SW `td-shell-v187`, MD5 8 / 8 identiques, snapshot
+  22 fichiers, 3 modifies puis restaures, ecart final AUCUN, rien apparu ni disparu, 2864 passed / 0 skipped. Arrêtés **209 (+1)**.
 - **Lot 581 — livré** : **quatre vocabulaires d'état — et le `—` honnête est
   écrit à l'endroit exact où l'âge est inconnu**. Choix (aaa). **Piège (a),
   vérifié** : `LABEL` porte **sept** libellés français, et **`unknown` n'y est
