@@ -2880,6 +2880,33 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 593 — livré** : **trois gardiens sur quatre ont un écart entre leur
+  prose et leur code, et tous vont dans le même sens — le code est plus
+  PERMISSIF que la prose**. Choix (mmm). Sept promesses lues : **EXACT 3 · PLUS
+  LARGE 3 · NON ÉCRIT 1**, aucun « plus étroit ». `..._lot228` accepte les
+  suffixes `A-E` là où sa prose dit « lots 01-09 », et teste l'en-tête par trois
+  sous-chaînes sur 600 caractères ; `..._lot364` dit « sur la même ligne » et
+  cherche **n'importe où** *(témoin du 592, ressorti — calibration OK)* ;
+  `..._lot23` vérifie **en plus** `assert 'GO' in idx`, une exigence que sa
+  docstring ne mentionne pas. **Seul `..._lot366` tient exactement sa prose.**
+  **Piège MIXTE, prévu d'avance (troisième lot de suite)** : (a) « au moins un
+  autre gardien a un écart » → **confirmé, deux autres** ; (b) « les nombres
+  sont tous périmés » → **réfuté, deux des trois sont encore exacts**. **Les
+  nombres datés, recalculés avec le critère du code (587-A)** : 218 → **582**,
+  13 → **13**, 110 → **110**. Les trois sont **datés dans leur propre phrase** —
+  un nombre daté qui a bougé n'est pas un mensonge. **L'arrêt du lot** : mon
+  premier banc annonçait 117 modules contre 110, donc « périmé » — **faux**, le
+  code exclut `__init__.py` ; avec **son** critère : **110 exactement**. C'est
+  la faute du 592 répétée, arrêtée cette fois avant publication. **Second
+  contrôle** : hors périmètre, `..._lot361` et `..._lot381` portent le même
+  phénomène — **des mesures datées, pas des promesses**. **Non établi** : que
+  ces écarts soient des défauts — **un gardien plus permissif passe quand
+  même** ; les quatre sont verts. Règles **593-A** les écarts vont tous dans le
+  même sens · **593-B** un nombre daté se recalcule avec le critère du code qui
+  l'a produit · **593-C** un test peut vérifier plus que sa prose n'annonce.
+  Cycle : aucun fichier de production touché, **aucun test modifié, aucune
+  docstring corrigée**, SW `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés),
+  suite **2864 passed / 0 skipped** · `git status tests/` et `docs/**` (hors 593) **vides**. Arrêtés **219 (+1)**.
 - **Lot 592 — livré** : **la prose d'un gardien n'est pas sa règle**. Choix
   (lll). Le gardien du lot 364 dit « à condition de le dire **sur la même
   ligne** » ; son code vérifie `any(nom in ligne and 'RETIRÉ' in ligne …)` —
