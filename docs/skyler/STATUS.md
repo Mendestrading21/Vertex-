@@ -2880,6 +2880,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 584 — livré** : **l'origine d'un champ ne dit pas si son repli ment —
+  c'est le consommateur qui décide**. Choix (ddd). Les **cinq sites « temps »**
+  restants du 583 sont tracés **aux deux bouts**. **`base.ts`** n'a **aucune
+  origine serveur** : la page l'écrit elle-même dans `localStorage` — et le repli
+  y a l'effet **opposé** au 582, il **repose la référence**, c'est-à-dire qu'il
+  **répare**. **`s.received_ts`** vient d'un magasin de signaux TradingView à
+  **écrivain unique** — absence impossible ; et de toute façon **`VX.fmt.ago(0)`
+  rend « — »** (`if(!ts) return '—'`). **`r.ts`** **peut** manquer, mais la
+  branche est gardée par une **clef sœur** (`r.steps`) — un **couplage**, pas une
+  vérification. **Exécuté, pas déduit** : `ago(0)` → « — » · `assess({ageMs:0})`
+  → `{state:'snapshot', label:'Analyse'}` · `assess({ageMs:null})` →
+  `{label:'—'}`. **Même motif, deux consommateurs, un seul défaut.** **L'arrêt du
+  lot** : mon second contrôle annonçait « 304 appels `Date.now()` », en comptant
+  un fichier statique **une fois par page** — **ma propre règle 580-C, enfreinte
+  quatre lots plus tard** ; après déduplication : **87 appels sur 49 fichiers**.
+  Constats nommés, non corrigés : l'**infobulle** `01/01/1970` n'est pas gardée
+  comme le texte visible ; **le serveur lui-même hésite** sur `received_ts` (deux
+  replis défensifs, un accès nu — les trois ne peuvent avoir raison ensemble).
+  Piège 1 **à moitié vraie et fausse dans sa prémisse** (aucun flux de prix : un
+  webhook) ; piège 2 **confirmé**. Règles **584-A** l'origine ne dit pas si le
+  repli ment · **584-B** une garde peut porter sur une clef sœur · **584-C** un
+  texte visible honnête n'entraîne pas une infobulle honnête. Cycle : aucun
+  fichier de production touché, SW `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot
+  **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped**. Arrêtés **211 (+1)**.
 - **Lot 583 — livré** : **mon attente était inversée — `|| 0` porte deux fois
   plus souvent sur une mesure que sur un compte**. Choix (ccc). **188 sites**
   relevés, **52 dans la bibliothèque tierce** isolés avant tout total → **136 de
