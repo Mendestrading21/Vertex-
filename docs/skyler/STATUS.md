@@ -2880,6 +2880,33 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 599 — livré** : **une garde de bornes ne garde pas le rôle**, démontré
+  sur les deux fautes du même lot 596. `l596_inventaire.py` porte
+  `retir|RETIRÉE|…`, **nu**, qui a laissé passer « tiers re**tir**és » ;
+  `l596_elargi.py` porte `\bretiré\b|…`, **gardé**, qui a laissé passer
+  « **retiré** à la main ». **Le second portait des bornes et a échoué quand
+  même.** Choix (sss). **Inventaire : 1 941 motifs sur 415 bancs**, relevés
+  **par AST et non par regex** (598-B). **Les « nus » ne sont pas tous
+  accusables** : sur 1 632, **766 (47 %) n'ont aucun mot de langue** — `'|'`,
+  `'#'`, `'—'`, `'N/D'` — donc aucun homonyme possible. Sur la population
+  pertinente (1 175) : **nu à risque 866 (74 %)**, gardé 302 (26 %), gardé mais
+  insuffisant 7. **Piège MIXTE** : (a) « la majorité est nue » **confirmé,
+  74 %** ; (b) « les quatre incidents viennent tous de motifs nus » **réfuté —
+  4 sur 5**, et le cinquième est **le cas décisif**. **L'arrêt du lot** : ma
+  calibration a échoué parce que **j'avais nommé le mauvais banc** — l'instrument
+  avait raison, le témoin était mal attribué. Première fois qu'une calibration
+  m'arrête sur **l'énoncé du témoin**. **Second contrôle** : les gardiens du
+  dépôt sont à **95 %** nus à risque contre **74 %** pour mes bancs — **mon
+  attente « le dépôt garde mieux » est réfutée**, mais **ce n'est pas un
+  défaut** : un gardien cherche des chaînes qu'il contrôle, mes bancs cherchent
+  des mots français dans de la prose. **Non établi** : qu'un motif nu soit une
+  faute — **l'absence de garde n'est pas une erreur réalisée** ; et **le
+  dénominateur des fautes reste inconnu**. Règles **599-A** une borne garde la
+  frontière, pas le rôle · **599-B** un motif sans mot de langue n'a pas de
+  problème de rôle · **599-C** une calibration peut échouer sur le témoin, pas
+  sur l'instrument. Cycle : aucun fichier de production touché, **aucun test
+  modifié, aucun motif réparé**, SW `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot
+  **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped** · `git status tests/` et `docs/**` (hors 599) **vides**. Arrêtés **229 (+1)**.
 - **Lot 598 — livré** : **le vocabulaire de la boucle a changé de nature au lot
   550** — le rapport prudent/accusatoire passe de **0,13** à **3,65**, un facteur
   vingt-huit. Choix (rrr). **La question du brief n'était pas mesurable telle
