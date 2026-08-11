@@ -100,6 +100,18 @@ button.vx-nav-item{background:none;font:inherit;cursor:pointer;text-align:left;
 .vx-col-8{grid-column:span 8}.vx-col-9{grid-column:span 9}
 .vx-col-12{grid-column:span 12}
 
+/* LOT 610 — UN ETAT POSE DANS UNE GRILLE OCCUPE TOUTE SA LARGEUR.
+   Mesure : un `vx-error-banner` ecrit en enfant direct d une `.vx-grid` sans
+   classe de colonne tombe dans une colonne implicite — largeur 22 px, contenu
+   coupe de 102 px, A TOUTES LES LARGEURS (390 comme 1440). Le rendu nominal
+   porte ses `vx-col-*` ; ce sont les etats d ECHEC, ajoutes lot par lot, qui les
+   oublient — et une preuve qui verifie la PRESENCE du texte ne voit pas qu il
+   est illisible. Regle de FAMILLE (606-C) : tout etat, present ou futur, prend
+   la grille entiere. */
+.vx-grid > .vx-state,
+.vx-grid > .vx-error-banner,
+.vx-grid > .vx-stale-banner{grid-column:1 / -1}
+
 /* ── Densité ───────────────────────────────────────────────────────── */
 [data-density="compact"]{--vx-s4:12px;--vx-s5:16px;--vx-s6:18px}
 [data-density="dense"]{--vx-s4:10px;--vx-s5:12px;--vx-s6:14px;--vx-fs-body:12.5px}

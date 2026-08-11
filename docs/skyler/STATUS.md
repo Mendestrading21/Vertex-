@@ -2880,6 +2880,35 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 610 — livré** : **un bandeau large de 22 pixels, depuis sept lots** — et
+  **le défaut n'est pas mobile**. Le brief envoyait chercher un défaut mobile ; la
+  mesure en a trouvé un, **à toutes les largeurs, et il était à moi**. Chaque
+  bandeau mesuré **contre son parent**, à 390 et 1440 px, sur six écrans en
+  échec : **16 zones**, une seule fautive — `/markets?view=macro` avec `summary`
+  en échec, bandeau **large de 22 px, contenu coupé de 102 px**, désormais
+  **366 px**. Cause : `#vx-mk-macro-regime` est une **grille**, et l'état d'échec
+  ajouté au **lot 603** n'avait **aucune classe de colonne** — il tombait dans une
+  colonne implicite. **Ma preuve du 603 vérifiait la PRÉSENCE du texte** ; il y
+  était, **illisible**. Correctif de **famille** (606-C) : une règle CSS couvre
+  les trois classes d'état, présentes et futures. **Piège réfuté 3 fois sur 4**,
+  dont **(d)** — « un bandeau qui déborde ferait déborder la page » : `scrollWidth`
+  valait **0 px partout**, le bandeau était écrasé **dans sa propre boîte**. Si
+  `scrollWidth` avait été mon seul instrument, ce lot aurait conclu « tout va
+  bien ». **Deux arrêts** : mon témoin 1440 px ne couvrait que **trois** des six
+  cas et j'ai failli publier « défaut mobile » (**un témoin partiel ne témoigne
+  pas**) ; et mon gardien détournait `persist._BASE_DIR`, un **état global**, sans
+  le rendre — faisant tomber un test **étranger**. Arrêtés **242 → 244 (+2)**,
+  publiés puis corrigés **40 → 41**. **Gardien rouge dans les deux sens**, vérifié
+  **dans la feuille SERVIE**. **Second contrôle (481)** : le rendu nominal à
+  390 px ne déborde **jamais** — le défaut est de **mise en page**, pas de
+  largeur. Bump `td-shell-v193` → **`td-shell-v194`** ; **MD5 8/8 identiques** ;
+  suite **2898 passed / 0 skipped** ; sondes écart **AUCUN** ; READONLY intact.
+  Non établi : **que les autres largeurs soient saines** — deux points mesurés,
+  rien entre les deux. Règles **610-A** (une preuve de présence n'est pas une
+  preuve de lisibilité), **610-B** (un témoin partiel ne témoigne pas), **610-C**
+  (un test qui détourne un état global doit le rendre). **Dossiers produit
+  corrigés : 8.**
+
 - **Lot 609 — livré** : **le producteur rend trois valeurs, le consommateur en
   attend mille** — et **le lot ne change rien au comportement**.
   `news_plus.sentiment()` rend **exactement** `-1`, `0` ou `+1` ; ses deux
