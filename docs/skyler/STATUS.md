@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 585 — livré** : **un repli `|| 0` détruit les gardes situées en aval**
+  — mesuré **deux fois**, par exécution et par lecture. Choix (eee).
+  **`VX.fmt.num(null)` rend « — » ; `VX.fmt.num(null || 0)` rend « 0,00 ».**
+  Et `VXCharts.waterfall` filtre déjà `value != null` et sait afficher un état
+  vide — **le repli écrit en amont lui fait avaler la valeur absente**, en barre
+  de hauteur nulle. **Le dépôt a des branches honnêtes ; le repli les rend
+  inatteignables.** **Mes trois pièges sont réfutés** : **0 des 52** affiche `0`
+  comme un nombre ; les **quatre** formateurs gardent `null`/`undefined` **mais
+  pas `0`** (alors qu'`ago` garde tout ce qui est faux) ; le gabarit HTML n'est
+  pas fréquent — **un seul** site, et c'est la fabrication d'un **identifiant
+  DOM**. **Par issue** : **indécis 39 (75 %)** · sans sortie **12** · gabarit
+  **1**. **Les deux sites les plus conséquents** sont des **seuils de
+  classement** (`(r.score||0)>=80` → « S+ », `(snap.score||0)>=78` →
+  « Offensive ») : un score absent y devient un **mauvais** score, et le repli
+  produit une **catégorie** différente, pas un « 0 » visible. Second contrôle :
+  **24 des 52** passent par un constructeur de graphique — `0` y devient une
+  **géométrie**, pas un texte. **Deux arrêts** : mes calibrations ont échoué
+  **deux fois sur le même témoin**, et **deux fois l'instrument avait raison** —
+  « consommateur » était sous-défini, puis un parcours d'ancêtres ne traverse
+  pas une affectation (**portée déclarée et comptée : 39 sur 52**). Règles
+  **585-A** « consommateur » n'est pas un fait unique · **585-B** un repli
+  détruit les gardes en aval · **585-C** une calibration qui échoue deux fois
+  mesure la portée, pas l'exactitude. Cycle : aucun fichier de production
+  touché, SW `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped**.
+  Arrêtés **213 (+2)**.
 - **Lot 584 — livré** : **l'origine d'un champ ne dit pas si son repli ment —
   c'est le consommateur qui décide**. Choix (ddd). Les **cinq sites « temps »**
   restants du 583 sont tracés **aux deux bouts**. **`base.ts`** n'a **aucune
