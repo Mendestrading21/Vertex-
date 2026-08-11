@@ -455,7 +455,7 @@
   function fmtUsd(v) { var n = Math.round(v); return (n < 0 ? '-$' : '$') + VXf.num(Math.abs(n), 0); }
   function stratKpi(l, v) {
     return '<div class="vx-card--compact" style="padding:5px 7px;background:var(--vx-surface-2,#121214);border-radius:7px">' +
-      '<div style="font-size:10px;letter-spacing:.03em;color:var(--vx-text-muted,#8A8284)">' + l + '</div>' +
+      '<div style="font-size:10px;letter-spacing:.03em;color:var(--vx-text-muted,#989092)">' + l + '</div>' +
       '<div class="vx-mono" style="font-size:13px;font-weight:700">' + v + '</div></div>';
   }
   function loadStrategies(sym) {

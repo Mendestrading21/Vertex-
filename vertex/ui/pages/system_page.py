@@ -291,7 +291,7 @@ async function loadConnSummary(){
   let d;try{d=await VX.fetch('/api/system/connections',{ttl:20000});}catch(e){el.innerHTML=VX.states.error('Connexions indisponibles');return;}
   const tone={LIVE:'pos',READY:'pos',DELAYED:'warn',DEGRADED:'warn',FALLBACK:'warn',STALE:'warn',
     OFFLINE:'neg',ERROR:'neg',BLOCKED:'neg',CONFIGURATION_MISSING:'neutral',NOT_IMPLEMENTED:'neutral',DEMO:'neutral',LOADING:'neutral'};
-  const col={pos:'var(--vx-positive,#2BBE90)',warn:'var(--vx-warning,#D9BE3C)',neg:'var(--vx-negative,#E9555F)',neutral:'var(--vx-text-muted,#8A8284)'};
+  const col={pos:'var(--vx-positive,#2BBE90)',warn:'var(--vx-warning,#D9BE3C)',neg:'var(--vx-negative,#E9555F)',neutral:'var(--vx-text-muted,#989092)'};
   const rows=(d.connections||[]).map(function(c){
     const t=tone[c.status]||'neutral';
     /* LOT 126 : la colonne du badge s'adapte au statut (max-content) — fini
@@ -761,7 +761,7 @@ async function loadData(){
       return `<div role="img" aria-label="${esc(k)} ${lbl} ${age}" style="padding:10px 12px;border-radius:9px;display:flex;flex-direction:column;gap:1px;background:${soft};border:${k===worstKey?'1.6px':'1px'} solid var(${col},#9d978e)">
         <span style="font-size:11px;color:var(--vx-text-secondary,#BABABA);text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</span>
         <span style="font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(${col},#9d978e)">${age}</span>
-        <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#8A8284)">${lbl}</span></div>`;};
+        <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#989092)">${lbl}</span></div>`;};
     const heat=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-bottom:14px" aria-label="Heatmap de fraîcheur des données">${Object.keys(doms).map(tile).join('')}</div>`;
     /* LOT 142 : l'age n'est plus un chiffre nu — mini-barre de VERRE de
        STALENESS relative (echelle = age max connu ; frais -> positive

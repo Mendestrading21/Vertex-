@@ -32,7 +32,7 @@ OPTION = '#9B7BFF'         # violet contrôlé — RÉSERVÉ aux options / IV / 
 # ── Texte ──────────────────────────────────────────────────────────────
 TEXT = '#F8F5F3'
 TEXT_DIM = '#BABABA'
-TEXT_MUTED = '#8A8284'
+TEXT_MUTED = '#989092'
 
 # Palette de séries — ordre déterministe, jamais arc-en-ciel. La série 0 est
 # toujours la marque ; la série 1 TRANCHE (cyan de comparaison technique —

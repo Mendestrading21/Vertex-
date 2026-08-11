@@ -57,18 +57,33 @@
   /* ── Texte ── */
   --vx-text-primary:#F8F5F3;
   --vx-text-secondary:#BABABA;
-  --vx-text-muted:#8A8284;
+  /* LOT 614 — #8A8284 tombait a 4,04:1 sous `.vx-meta`, `.vx-kpi-label`,
+     `.vx-card-footer` et `.vx-muted` : sous le seuil WCAG AA sur 11 combinaisons
+     page x largeur, mesurees au navigateur sur les 8 pages servies. #989092
+     donne 4,86 sur ce meme fond (marge +0,36 ; le minimum strict #938a8c ne
+     laissait que +0,01, soit aucune marge). Luminance 0,2870, entre le palier
+     `faint` (0,2028) et le palier `secondary` (0,4910) : hierarchie preservee.
+     ATTENTION 1 — le meme hexadecimal #8A8284 porte AUSSI le role « serie
+     neutre acier » (`--vx-steel-3`, palette.COPPER, derniere serie des
+     graphiques, lignes support/resistance). Ce role N'A PAS bouge : confondre
+     les deux changerait la couleur d'une SERIE DE DONNEES au pretexte de rendre
+     du texte lisible.
+     ATTENTION 2 — ne jamais ecrire ici un nom de token suivi d'un deux-points,
+     `design_system_page._load_tokens` avalerait la declaration suivante. */
+  --vx-text-muted:#989092;
   /* LOT 613 — #655d5f plafonnait à 3,23:1 sur la surface la PLUS favorable du
      produit : ce palier ne pouvait atteindre le seuil WCAG AA (4,5:1) NULLE
      PART, alors qu'il porte du texte réel (`.vx-help`, `.vx-mono`, étiquettes
      de momentum à 8 px, en-têtes de table en mode cartes sous 768 px).
      #847a7c tient 4,97 / 4,85 / 4,71 / 4,50 sur canvas / shell / surface /
      elevated — les quatre surfaces où ce texte est effectivement servi — et
-     sa luminance (0,2028) reste SOUS celle de --vx-text-muted (0,2303), donc
-     la hiérarchie primary > secondary > muted > faint est préservée.
+     sa luminance (0,2028) reste SOUS celle du palier `muted`, donc la
+     hiérarchie primary > secondary > muted > faint est préservée.
      Il reste sous le seuil sur les surfaces `selected` et `warm-depth`. Les
      rendre conformes exigerait de remonter d'abord le palier `muted` (les deux
-     paliers sont couplés), décision de design laissée à l'humain.
+     paliers sont couplés) — fait au lot 614, mais `faint` n'a PAS suivi : aucun
+     texte n'a été mesuré sur ces deux surfaces, et éclaircir sans mesure
+     reviendrait à corriger un défaut qu'on n'a pas constaté.
      ATTENTION — ne jamais écrire ici un nom de token suivi d'un deux-points :
      `design_system_page._load_tokens` lit `(--vx-...)\s*:\s*([^;]+);` et
      avalerait la déclaration suivante comme valeur. */

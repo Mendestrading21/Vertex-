@@ -719,7 +719,7 @@ function loadSectors(scan){
           g.font='10px sans-serif';g.fillStyle='rgba(255,255,255,.32)';
           g.fillText('LEADING',a.right-58,a.top+14);g.fillText('IMPROVING',a.left+6,a.top+14);
           g.fillText('WEAKENING',a.right-66,a.bottom-8);g.fillText('LAGGING',a.left+6,a.bottom-8);
-          g.fillStyle=(window.VXCharts&&VXCharts.colors&&VXCharts.colors.muted)||'#8A8284';g.font='9px sans-serif';
+          g.fillStyle=(window.VXCharts&&VXCharts.colors&&VXCharts.colors.muted)||'#989092';g.font='9px sans-serif';
           chart.data.datasets[0].data.forEach((d,i)=>{const m=chart.getDatasetMeta(0).data[i];if(m)g.fillText(String(d.label).slice(0,11),m.x+9,m.y+3);});
           g.restore();}}]})});
   }
@@ -839,7 +839,7 @@ function loadBreadthInternals(scan){
       const col=i>=7?cc.positive:i<=2?cc.negative:cc.warning;
       return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px" role="img" aria-label="score ${i*10} à ${i*10+10} : ${n} titres">
         <span style="width:100%;height:120px;display:flex;align-items:flex-end"><span style="width:100%;height:${h}%;background:${col};border-radius:3px 3px 0 0;min-height:2px"></span></span>
-        <span style="font-size:9px;color:var(--vx-text-muted,#8A8284);font-variant-numeric:tabular-nums">${i*10}</span></div>`;};
+        <span style="font-size:9px;color:var(--vx-text-muted,#989092);font-variant-numeric:tabular-nums">${i*10}</span></div>`;};
     $('vx-mk-dist').innerHTML='<div style="display:flex;gap:3px;align-items:flex-end;padding:6px 2px">'+dist.map(bar).join('')+'</div>';
   }else if(dCard){dCard.hidden=true;}
 }

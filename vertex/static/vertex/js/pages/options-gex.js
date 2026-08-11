@@ -96,8 +96,8 @@
       svg.push('<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + Math.max(1, bh) + '" fill="' + (v >= 0 ? pos : neg) + '" opacity=".85"><title>' + esc(e.date) + ' : ' + money(v) + '</title></rect>');
     });
     var first = h[0], last = h[n - 1];
-    svg.push('<text x="' + pad + '" y="' + (H - 4) + '" font-size="9.5" fill="var(--vx-text-muted,#8A8284)">' + esc(first.date) + '</text>');
-    svg.push('<text x="' + (W - pad) + '" y="' + (H - 4) + '" font-size="9.5" text-anchor="end" fill="var(--vx-text-muted,#8A8284)">' + esc(last.date) + '</text>');
+    svg.push('<text x="' + pad + '" y="' + (H - 4) + '" font-size="9.5" fill="var(--vx-text-muted,#989092)">' + esc(first.date) + '</text>');
+    svg.push('<text x="' + (W - pad) + '" y="' + (H - 4) + '" font-size="9.5" text-anchor="end" fill="var(--vx-text-muted,#989092)">' + esc(last.date) + '</text>');
     svg.push('</svg>');
     var trend = (n >= 2 && last.net_gex != null && first.net_gex != null)
       ? (last.net_gex > first.net_gex ? 'Le gamma s’empile à la hausse sur la période.'
@@ -243,7 +243,7 @@
       if (pw > 0.5) svg.push('<rect x="' + (mid - pw) + '" y="' + y + '" width="' + pw + '" height="' + (rowH - 6) + '" fill="' + neg + '" opacity="' + (i === iPut ? '1' : '.55') + '"/>');
       if (i === iCall && cw > 0.5) svg.push(chip(mid + cw + 4, y, money(r.call_gex), pos, true));
       if (i === iPut && pw > 0.5) svg.push(chip(mid - pw - 4, y, money(r.put_gex), neg, false));
-      svg.push('<text x="' + (mid + 4) + '" y="' + (y + rowH - 9) + '" font-size="9.5" fill="var(--vx-text-muted,#8A8284)">' + f(r.strike, 0) + '</text>');
+      svg.push('<text x="' + (mid + 4) + '" y="' + (y + rowH - 9) + '" font-size="9.5" fill="var(--vx-text-muted,#989092)">' + f(r.strike, 0) + '</text>');
     });
     if (spotY != null) svg.push('<line x1="10" y1="' + spotY + '" x2="' + (W - 10) + '" y2="' + spotY + '" stroke="var(--vx-orange-500,#DBE1E8)" stroke-dasharray="3 3"/>');
     svg.push('</svg>');

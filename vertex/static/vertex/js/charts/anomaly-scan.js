@@ -23,7 +23,7 @@
     const up = cl[n - 1] >= cl[0];
     const line = up ? 'var(--vx-positive,#2BBE90)' : 'var(--vx-negative,#E9555F)';
     const neg = 'var(--vx-negative,#E9555F)', warn = 'var(--vx-warning,#D9BE3C)';
-    const dim = 'var(--vx-text-muted,#8A8284)';
+    const dim = 'var(--vx-text-muted,#989092)';
     const svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Scanner d\'anomalies">'];
 
     // Bande de régime de volatilité (5 derniers points) si détecté.

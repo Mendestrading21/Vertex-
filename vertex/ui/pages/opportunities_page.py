@@ -198,7 +198,7 @@ async function renderFunnel(){
   if(!f||!f.stages||!f.stages.length){
     el.innerHTML=VX.states.empty('Entonnoir vide — aucun etage retourne par le moteur.');return;}
   const roleColor={'ATTAQUE':'var(--vx-positive,#2BBE90)','MILIEU':'var(--vx-beige,#c8bfae)',
-    'DÉFENSE':'var(--vx-neutral-chart,#BABABA)','RÉSERVE':'var(--vx-text-muted,#8A8284)'};
+    'DÉFENSE':'var(--vx-neutral-chart,#BABABA)','RÉSERVE':'var(--vx-text-muted,#989092)'};
   const roles=(f.roles||[]).map(function(r){
     return '<span class="vx-chip" style="border:1px solid '+ (roleColor[r.role]||'#555')
       +';color:'+(roleColor[r.role]||'#aaa')+'">'+esc(r.role)+' '+esc(r.count)+'</span>';
