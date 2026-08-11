@@ -26,7 +26,26 @@ _NEG = ('miss', 'misses', 'fall', 'falls', 'plunge', 'drop', 'cut', 'cuts', 'dow
 
 
 def sentiment(text):
-    """Score lexical : +1 positif · -1 négatif · 0 neutre/mixte."""
+    """Score lexical TERNAIRE : rend EXACTEMENT +1, -1 ou 0. Jamais autre chose.
+
+    CONTRAT (lot 609, explicité après mesure) — le domaine est {-1, 0, +1} et
+    rien d'autre. Ce n'est pas une intensité : trois mots positifs valent un
+    seul, et « 3 positifs / 2 négatifs » rend la même chose que « 1 positif ».
+    Le comparateur est `pos > neg`, pas une amplitude.
+
+    POURQUOI ON NE LE REND PAS CONTINU. Une forme `(pos-neg)/(pos+neg)` donnerait
+    des décimales — donc l'apparence d'une mesure — construites sur un lexique de
+    22 mots positifs et 22 négatifs. Un « 0,333 » issu de trois mots-clés a l'air
+    d'une mesure et n'en est pas une. Tant qu'on ne peut pas montrer que
+    l'amplitude est FONDÉE, le ternaire est plus honnête que le continu.
+
+    CE QUI EN DÉPEND, mesuré : `news_impact.score_importance` ajoute +5 quand le
+    score est signé, ce qui participe au choix de l'« Actualité dominante »
+    affichée sur `/`. La valeur a donc une conséquence visible — mais deux états
+    utiles seulement (signé / neutre).
+
+    Gardien : `tests/test_sentiment_contrat_lot609.py`.
+    """
     t = ' ' + (text or '').lower() + ' '
     pos = sum(1 for w in _POS if w in t)
     neg = sum(1 for w in _NEG if w in t)
