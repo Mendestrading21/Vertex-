@@ -2880,6 +2880,33 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 606 — livré** : **le dossier 582 est fermé — et le défaut a été VU, pas
+  seulement déduit.** Ouvert depuis **vingt-quatre lots**, le 582 se terminait par
+  « sa correction est une décision humaine » ; la décision est donnée. `/system`
+  construisait sa puce de fraîcheur avec **`ageMs:(man.age_s||0)*1000`** — un
+  **repli**, pas une garde : `null || 0` vaut **0**. Or le serveur met `age_s` à
+  `null` **délibérément**, avec le commentaire « HONNÊTETÉ : l'âge figé au build
+  sous-estimerait la vraie ancienneté ». **Le serveur efface l'âge pour ne pas
+  mentir ; le client le remplaçait par zéro.** **Observé en vrai Chromium**, trois
+  passes avant / trois après sur `/system?view=data` : avec `age_s: null`,
+  **`snapshot / ANALYSE` avant → `unknown / —` après** ; le manifeste nominal et
+  un `age_s: 42` **ne bougent pas**. **Avant, les trois passes étaient
+  indiscernables** — un âge que le serveur déclare ignorer était présenté comme un
+  âge de quarante-deux secondes. **Gardien neuf de 5 tests, 2 rouges par
+  mutation**, qui garde **la famille** (les 5 pages) et **les trois bouts de la
+  chaîne**, avec garde-fou de volume. **Piège confirmé, sauf un compte** : les
+  sites sont **cinq**, pas quatre — `analysis_page.py:323` s'est ajouté depuis le
+  582 (et il est honnête). **594-A : un compte est juste à sa date.** **Second
+  contrôle (481)** : zéro puce de fraîcheur hors de l'ordre de décision, toujours
+  zéro vingt-quatre lots plus tard. Bump `td-shell-v190` → **`td-shell-v191`** ;
+  MD5 **7/8 identiques**, seule `/system` bouge (`024ff6d83691`) ; suite **2875
+  passed / 0 skipped** ; sondes écart **AUCUN** ; READONLY intact. Non établi :
+  **à quelle fréquence `age_s` arrive nul en production** — le chemin est réel,
+  mais je l'ai injecté pour l'observer, pas rencontré. Règles **606-A** (un
+  correctif d'honnêteté doit être montré, pas déduit), **606-B** (une preuve a
+  besoin d'une passe qui ne doit pas bouger), **606-C** (garder la famille, pas le
+  cas). **Dossiers produit corrigés : 5.**
+
 - **Lot 605 — livré** : **les sept dépôts, lus — et il n'y a rien à prendre :
   cinq des sept n'ont AUCUNE licence.** Sans licence, tous droits réservés : ils
   ne sont **pas copiables**, quelle que soit leur qualité. Les deux seuls

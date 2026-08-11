@@ -650,7 +650,16 @@ async function loadContinuity(){
   let man=null; try{ man=await VX.fetch('/api/session/manifest',{ttl:30000}); }catch(e){}
   const net=document.documentElement.getAttribute('data-net')||'online';
   const nPrices=(VX.prices&&VX.prices._m)?Object.keys(VX.prices._m).length:0;
-  const fr=(VX.freshness&&man)?VX.freshness.chip(VX.freshness.assess({ageMs:(man.age_s||0)*1000,
+  /* LOT 606 (dossier 582, ouvert au 582, ferme ici) : ce site portait
+     `(man.age_s||0)*1000` — un REPLI sur un age, la seule des cinq puces de
+     fraicheur a ne pas garder l ignorance. Le serveur met DELIBEREMENT
+     `age_s: null` quand il ne peut pas garantir l anciennete (session_snapshot,
+     et `restored['age_s']=None` avec son commentaire d honnetete) ; `null||0`
+     vaut 0, donc « age nul », donc la puce « Analyse » — l inverse exact du
+     tiret honnete. Une GARDE DE TYPE, comme les quatre autres sites : un age
+     inconnu redevient `null`, et `assess` rend `—`. */
+  const fr=(VX.freshness&&man)?VX.freshness.chip(VX.freshness.assess({
+      ageMs:(typeof man.age_s==='number')?man.age_s*1000:null,
       offline:net==='offline', error:man.error, refreshing:man.status==='analyzing'})):'';
   const row=(k,v)=>'<div class="vx-kv"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
   const nd=(v,suf)=>(v==null?'&mdash;':(''+v+(suf||'')));
