@@ -89,9 +89,20 @@
   .vx-kpi .vx-kpi-value{font-size:22px}
   .vx-drawer{width:100vw}
   .vx-modal{padding:4vh var(--vx-s2)}
-  /* Cibles tactiles ≥ 40px */
-  .vx-btn,.vx-tab,.vx-chip{min-height:40px}
-  .vx-btn-sm{min-height:32px}
+  /* Cibles tactiles — DEUX seuils, et le second est une exemption ASSUMÉE.
+     LOT 612, mesuré en vrai Chromium à 390 px : 40 boutons du produit sont à
+     32 px de haut — 20 dans les bandeaux d'état (« Réessayer », « Ouvrir
+     Système »), 20 ailleurs. Ce n'est donc pas un angle mort des bandeaux mais
+     une règle générale des actions SECONDAIRES, appliquée uniformément.
+     L'en-tête d'origine annonçait « ≥ 40px » deux lignes au-dessus d'un 32 :
+     il décrivait une intention, pas le bloc. Corrigé ici — le seuil reste
+     inchangé, c'est SA DESCRIPTION qui l'était.
+     32 px reste sous le seuil que ce bloc affiche pour les actions primaires
+     (40) et sous les recommandations d'accessibilité usuelles (44) : le porter
+     à 40 toucherait ces 40 boutons et relève d'une DÉCISION DE DESIGN, pas d'un
+     correctif. Mesure et écart consignés au lot 612. */
+  .vx-btn,.vx-tab,.vx-chip{min-height:40px}         /* actions primaires */
+  .vx-btn-sm{min-height:32px}                       /* actions secondaires */
   /* lot 294 : les contrôles segmentés (réglages Système) mesuraient 26px —
      hors de la règle ci-dessus car sans classe vx-btn. */
   .vx-segmented button{min-height:40px}

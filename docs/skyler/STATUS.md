@@ -2880,6 +2880,32 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 612 — livré** : **l'en-tête promettait 40 px, deux lignes au-dessus d'un
+  32** — et le défaut n'est pas le seuil, c'est **ce que le code dit de
+  lui-même**. Le brief soupçonnait un **oubli** ; le CSS portait une **exemption
+  écrite** (`.vx-btn-sm{min-height:32px}`, juste sous `/* Cibles tactiles ≥ 40px
+  */`). **Mesure à 390 px, cinq écrans en échec** : **20 boutons de bandeaux à
+  32 px**, et surtout **20 boutons HORS bandeaux au même 32** sur 42 témoins.
+  Les bandeaux ne sont donc **pas un angle mort** : c'est une règle générale des
+  actions **secondaires**, appliquée à **40 boutons**. Témoin 1440 px : les mêmes
+  font **26–28 px** — le passage 26 → 32 **prouve que la règle mobile atteint
+  bien les bandeaux**. **Corrigé : la description.** L'en-tête dit désormais deux
+  seuils, l'exemption assumée, le chiffre mesuré, et que 32 px reste sous les
+  recommandations usuelles. **Refusé : porter `.vx-btn-sm` à 40 px** — cela
+  toucherait 40 boutons et **relève d'une décision de design, pas d'un
+  correctif** ; le chiffre est posé, la décision revient à l'humain (609-C).
+  **Piège : (b) réfuté dans sa prémisse** — et **c'est le second contrôle (481),
+  les 20 boutons témoins, qui l'a réfuté** : sans lui j'aurais « corrigé » une
+  décision de design et **cassé l'uniformité**. **Aucune règle CSS modifiée**,
+  commentaire seul ; bump `td-shell-v194` → **`td-shell-v195`** ; **MD5 8/8
+  identiques** ; suite **2905 passed / 0 skipped** ; sondes écart **AUCUN** ;
+  READONLY intact. Non établi : **que 32 px suffise au doigt** (aucun test
+  d'usage) et **le contraste**, toujours non mesuré après trois lots qui n'ont
+  jugé que la **géométrie**. Règles **612-A** (une exemption écrite n'est pas un
+  oubli), **612-B** (quand le code et son commentaire divergent, réparer d'abord
+  le commentaire), **612-C** (le second contrôle distingue un angle mort d'une
+  règle). **Dossiers produit corrigés : 9.**
+
 - **Lot 611 — livré** : **neuf bandes, 144 mesures, zéro fautive** — le défaut du
   610 **n'avait pas de frère**, et ce lot **ne change rien au produit**. Le 610
   n'avait mesuré que **deux largeurs** et l'avait dit ; ce lot mesure les autres :
