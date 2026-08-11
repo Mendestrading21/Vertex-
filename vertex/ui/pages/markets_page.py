@@ -606,8 +606,12 @@ function loadYield(scan){
     ],{yFmt:(v)=>v+' %'})});
 }
 async function loadMacroRegime(){
-  var s; try{ s=await VX.fetch('/api/market/summary',{ttl:30000}); }catch(e){ return; }
-  var el=$('vx-mk-macro-regime'); if(!el||!s)return;
+  /* LOT 603 (dossier 531-A, suite) : un echec ne laisse plus la zone vide et
+     muette. Invariant produit : donnee absente -> mention honnete. */
+  var s=null,err=null;
+  try{ s=await VX.fetch('/api/market/summary',{ttl:30000}); }catch(e){ err=e; }
+  var el=$('vx-mk-macro-regime'); if(!el)return;
+  if(err||!s){ el.innerHTML=VX.states.error('Appétit pour le risque indisponible'); return; }
   var gap=(typeof s.roro_gap==='number')?s.roro_gap:null,roro=s.roro||'—',br=s.breadth||{};
   var pos=gap!=null&&gap>=0,mag=gap==null?0:Math.min(100,Math.abs(gap)/25*100);
   var bar='<div style="position:relative;height:16px;background:var(--vx-surface-3);border-radius:6px;overflow:hidden;margin:6px 0">'
