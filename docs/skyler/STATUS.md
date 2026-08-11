@@ -2880,6 +2880,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 586 — livré** : **les deux « sites les plus conséquents » du 585 sont
+  inertes — et je retire une interprétation du 585**. Choix (fff). **Évalué, pas
+  déduit** : `undefined >= 78` est faux, `(undefined||0) >= 78` est faux aussi.
+  Sur **25 combinaisons**, le repli ne change le résultat que pour un seuil
+  **≤ 0** — **4 cas sur 25, aucun aux seuils 78 et 80** ; `null`, `''` et
+  `false` sont **coercés en 0** par `>=`. **La phrase du 585 « il produit une
+  catégorie différente » est fausse quant au repli** : le déclassement se produit
+  **avec ou sans lui**. **Les deux origines, lues** : `r.score` vient de `/scan`,
+  posé par `int(max(0, min(100, …)))` et lu par **deux accès nus** — **il ne peut
+  ni manquer ni valoir `None`** ; `snap.score` n'a **aucune origine serveur** et
+  **la branche de repli de `tSnapOf` ne contient aucune clef `score`**. **Contre-
+  piège confirmé** : `b==='Actionnable'` exige déjà `r.score>=72`, **écrit sans
+  repli**. **Second contrôle** : **210 seuils sur champ nu contre 3 repliés** —
+  **le repli est l'exception (1,4 %)**, et le troisième
+  (`(d.top_weight_pct||0)>15`) **n'avait été nommé par aucun lot comme un
+  seuil**. **Constat** : le dépôt a **deux scanners aux contrats opposés** sur le
+  nom `score` — `/scan` jamais `None`, `stages.py` **`None` par conception**.
+  **Aucun arrêt ce lot** : la calibration est passée du premier coup — le dire
+  est aussi une mesure. Règles **586-A** un repli dans un seuil est inerte si le
+  seuil est strictement positif · **586-B** deux producteurs peuvent avoir des
+  contrats opposés sur le même nom — nommer la route · **586-C** mesurer la
+  fréquence de l'écriture concurrente avant de qualifier une écriture. Cycle :
+  aucun fichier de production touché, SW `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot
+  **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped**. Arrêtés **213** · interprétations retirées **12**.
 - **Lot 585 — livré** : **un repli `|| 0` détruit les gardes situées en aval**
   — mesuré **deux fois**, par exécution et par lecture. Choix (eee).
   **`VX.fmt.num(null)` rend « — » ; `VX.fmt.num(null || 0)` rend « 0,00 ».**
