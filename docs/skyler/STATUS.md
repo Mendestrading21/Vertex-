@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 579 — livré** : **cinq fabriques d'état, 106 appels — et une fabrique
+  morte dont l'état est bien vivant**. Choix (yy). L'objet `VX.states` lu dans
+  l'AST : `empty`, `error`, `ghost`, `loading`, `stale` — **quatre états nommés
+  dans le DOM** via `data-state`, et **quatre des cinq portent un repli au
+  centre** (`loading` n'en a aucun, et n'a rien à remplacer). **Appels** :
+  `empty` **73**, `error` **30**, `loading` 2, `ghost` 1, **`stale` 0** — total
+  **106**. **L'arrêt du lot** : j'allais écrire « la bannière rassise n'existe
+  pas ». Comptage **brut** : `vx-stale-banner` est produite par **6 sites** —
+  la fabrique morte, **une seconde fabrique dans `chart-core.js`**, et quatre
+  sites écrits à la main. **L'état est vivant, c'est sa fabrique canonique qui
+  est morte**, et le produit rend le même état avec **deux vocabulaires** :
+  « Donnée rassise » et « Données périmées ». **Le « 63 » du 568** : croisé par
+  identité de site, **63 dans les deux, 0 de chaque côté** — cette fois deux
+  nombres égaux **sont** le même ensemble. Nuance : les données du 568 portaient
+  déjà les 28 appels à la fabrique d'erreur, rangés sous le mot « états » — **ce
+  qui manquait n'était pas la donnée, c'était le lien**. Second contrôle : **0
+  appel indirect, 0 alias** — la restriction ne coûte rien ici, mesuré et non
+  supposé. Ce que le dépôt fait bien : 106 rendus par une fabrique commune,
+  quatre états lisibles dans le DOM, `empty` qui accepte une action. Portée :
+  **un compte d'appels n'est pas une surface d'écran** ; rien n'est corrigé.
+  Règles **579-A** une fabrique morte ne prouve pas un état mort · **579-B** deux
+  fabriques pour le même état, c'est deux vocabulaires · **579-C** quand deux
+  nombres égaux sont vraiment le même ensemble, le dire aussi. Cycle : aucun
+  fichier de production touché, SW `td-shell-v187`, MD5 8 / 8 identiques, snapshot
+  22 fichiers, 3 modifies puis restaures, ecart final AUCUN, rien apparu ni disparu, 2864 passed / 0 skipped. Arrêtés **206 (+1)**.
 - **Lot 578 — livré** : **la bannière canonique de Vertex est une fonction,
   appelée 30 fois, que cinq lots n'ont jamais vue**. Choix (xx). **Le piège est
   vérifié** : parmi les 10 bannières d'origine, `esc(d.error || 'réponse
