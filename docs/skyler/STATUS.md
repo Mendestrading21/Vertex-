@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 600 — livré · BILAN n°19 de la tranche 590-599** : **la boucle ne s'est
+  pas repliée sur elle-même, elle s'est ouverte**. Choix (ttt). **Le bilan sur
+  pièces** : 10 lots fusionnés · verdicts **MIXTE 7 · réfuté 1 · confirmé 1 ·
+  non publié 1** · **arrêts +14 (215 → 229)** · **30 règles neuves**, dont **17
+  (57 %) déjà citées**, 13 jamais, **1 retirée** (`594-C`) · **nombres publiés
+  puis corrigés : ZÉRO** — le compteur n'a pas bougé de 40. **Le chiffre le plus
+  fort de la tranche est un zéro** : quatorze fautes, toutes prises avant
+  publication. **La question de fond** — la boucle mesure-t-elle encore le
+  produit ? Trois actes distingués avant de compter : **toucher 0/10** (vérifié
+  par `git show --stat`, pas par la prose) · **lire du produit 4/10** ·
+  **`tests/` 6/10** · **rapports seuls 4/10**. **Piège MIXTE** : (a) « aucun lot
+  n'a touché la production » **confirmé** ; (b) « la majorité n'a lu que des
+  rapports » **réfuté**. **Second contrôle** : la tranche **580-589** n'ouvrait
+  **jamais** `tests/` et lisait **8/10** uniquement des rapports — **le repli
+  n'est pas récent, il est en recul**. **Deux arrêts** : une **calibration qui
+  passe à vide** (le témoin n'affichait aucun chemin, la condition était vraie
+  par vacuité — **pire qu'un échec : ça endort**), puis un critère comptant
+  `tests_garde` et une regex comme des chemins — **cinquième morsure de 596-B**.
+  **Non établi** : si mesurer ses propres instruments vaut le coût — **le lot
+  compte, il ne juge pas** ; et **le silence de l'humain n'est pas un mandat**.
+  Règles **600-A** une calibration qui passe à vide est pire qu'une qui échoue ·
+  **600-B** le diff dit ce qui a changé · **600-C** un bilan se mesure contre la
+  tranche précédente. Cycle : aucun fichier de production touché, **aucun test
+  modifié, aucun bloc BILAN déplacé**, SW `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot
+  **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped** · `git status tests/` et `docs/**` (hors 600) **vides**. Arrêtés **231 (+2)**.
 - **Lot 599 — livré** : **une garde de bornes ne garde pas le rôle**, démontré
   sur les deux fautes du même lot 596. `l596_inventaire.py` porte
   `retir|RETIRÉE|…`, **nu**, qui a laissé passer « tiers re**tir**és » ;
