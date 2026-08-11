@@ -2880,6 +2880,37 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 594 — livré** : **la force d'une assertion de sous-chaîne tient à la
+  CROISSANCE de sa meule, pas à sa nature**. Choix (nnn), sur la question que le
+  593 avait laissée ouverte. **19 sites relevés par AST là où le brief en
+  nommait 4** — 5 à meule document (mesurés), **14 à meule corps rendu, nommés
+  et laissés fermés** (hors liste sûre). `'GO' in idx` : meule **croissante de
+  1 184 525 caractères**, **609 occurrences, INERTE** — **privé de ses 587
+  verdicts `GO` délibérés il en garde 22** dans `GOOGL`, `CATÉGORIE`, `GONFLÉ`,
+  `GOALKEEPER`, `GOUVERNÉE`, **et tient encore**. Les trois aiguilles du gardien
+  228 portent sur `head`, **borné à 600 caractères** : **1 occurrence chacune,
+  force maximale**. **Deux des trois sont dans la même phrase** — « Périmètre :
+  lots **10 et suivants** », positions 81 et 88 : **la conjonction à trois
+  termes n'a que DEUX points de rupture**. Mais **les trois désignent vraiment
+  le périmètre** : le `'10'` parasite que je cherchais n'existe pas. **Piège
+  MIXTE, quatrième d'affilée** : (a) inertie **confirmée** ; (b) « `'10'` est la
+  plus fragile » **réfuté, trois à égalité à 1**. **Noté d'avance comme suspect
+  et tenu** : le MIXTE vient de **la forme de mes pièges** — un volet qualitatif
+  large plus un classement précis — **pas du dépôt**. **L'arrêt du lot** : deux
+  de mes bancs concluent « **chaque** » là où leur propre tableau dit « 4 sur
+  15 » et « 502 sur 584 » — **l'écart prose/code que je mesurais chez les
+  gardiens, reproduit par moi dans le lot qui l'étudie** ; bancs conservés tels
+  quels. **Second contrôle** : 1 437 sites hors périmètre sur 239 fichiers,
+  étendue **1 à 15** — mon attente « le code servi est plus fort » **réfutée**,
+  la fourchette de production tient **dans** la documentaire. **Non établi** :
+  l'intention derrière `assert 'GO' in idx` — **non mesurable, je ne prétends
+  pas y répondre**. Règles **594-A** la force se mesure à la croissance de la
+  meule · **594-B** pour un gardien, fragile et fort sont le même mot ·
+  **594-C** un piège qualitatif + classement précis produit un MIXTE par
+  construction. Cycle : aucun fichier de production touché, **aucun test
+  modifié, aucune docstring corrigée, aucun octet supprimé**, SW
+  `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped** · `git status tests/` et `docs/**` (hors 594) **vides**. Arrêtés
+  **220 (+1)**.
 - **Lot 593 — livré** : **trois gardiens sur quatre ont un écart entre leur
   prose et leur code, et tous vont dans le même sens — le code est plus
   PERMISSIF que la prose**. Choix (mmm). Sept promesses lues : **EXACT 3 · PLUS
