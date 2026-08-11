@@ -2880,6 +2880,33 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 602 — livré** : **le dossier 531-A est corrigé** — *premier lot de
+  CORRECTION depuis le 514*, sur accord explicite de l'humain pour finaliser le
+  produit. **Deux zones d'Opportunités échouaient en silence** : sur erreur
+  réseau elles retournaient sans un mot, laissant une colonne vide et muette,
+  contraire à l'invariant « donnée absente → mention honnête ». `renderFunnel`
+  affiche désormais `VX.states.error('Entonnoir indisponible')` (et
+  `VX.states.empty` sur étages vides) ; `loadSkylerRank` **crée sa section** et
+  y affiche `VX.states.error('Classement Skyler indisponible')` — les deux avec
+  **Réessayer** et **Ouvrir Système**. **Preuve en vrai Chromium avec l'échec
+  injecté** : 3 passes sur `/opportunities` — nominal 0 erreur console / 4 662
+  car. ; entonnoir en échec 4 382 car. avec « ⚠ Entonnoir indisponible » ;
+  sweep en échec 3 027 car. avec la section présente et honnête. **Arrêt du
+  lot : mon harnais a passé À VIDE** — les trois passes rendaient exactement
+  4 662 caractères et le contrôle annonçait « CORRIGÉ : OUI » ; le contrôle
+  testait la non-vacuité et la zone était pleine **parce que le fetch avait
+  réussi**. Cause : **Playwright n'intercepte pas les requêtes servies par un
+  service worker**. Durci par `service_workers='block'` + vérification du
+  **texte attendu**. C'est **600-A appliquée au lot suivant, sur mon propre
+  harnais**. Arrêtés **232 → 233 (+1)**. 2 fichiers de production, 5 gardiens
+  de version, bump SW `td-shell-v187` → **`td-shell-v188`**. **MD5 7/8
+  identiques**, seule `/opportunities` bouge (`c1b5c52e18c5`). Suite **2864
+  passed / 0 skipped**, sondes écart **AUCUN**, READONLY intact. Non établi :
+  **que les autres pages n'aient pas le même défaut — les silences équivalents
+  ailleurs sont nommés, pas traités**. Règles **602-A** (un harnais doit
+  prouver que la voie d'échec a été exercée) et **602-B** (un service worker
+  rend une interception réseau invisible). **Dossiers produit corrigés : 1.**
+
 - **Lot 601 — livré** : **les règles non citées ne sont pas redondantes, elles
   sont oubliées** — et **la boucle en redécouvre une huit lots plus tard sans la
   citer**. Choix (uuu). **`591-C`** (« un gardien sans garde-fou de volume peut

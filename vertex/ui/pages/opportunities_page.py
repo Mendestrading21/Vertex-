@@ -191,8 +191,12 @@ function renderCompare(rows){
 /* ── ENTONNOIR D'OPPORTUNITÉS (§11-12) : univers → … → actionnable ── */
 async function renderFunnel(){
   const el=$('op-funnel');if(!el)return;
-  let f;try{f=await VX.fetch('/api/opportunities/funnel',{ttl:60000});}catch(e){return;}
-  if(!f||!f.stages||!f.stages.length)return;
+  /* LOT 602 (dossier 531-A) : un echec ne laisse plus la colonne vide et muette.
+     Invariant produit : donnee absente -> mention honnete, jamais du silence. */
+  let f;try{f=await VX.fetch('/api/opportunities/funnel',{ttl:60000});}
+  catch(e){el.innerHTML=VX.states.error('Entonnoir indisponible');return;}
+  if(!f||!f.stages||!f.stages.length){
+    el.innerHTML=VX.states.empty('Entonnoir vide — aucun etage retourne par le moteur.');return;}
   const roleColor={'ATTAQUE':'var(--vx-positive,#2BBE90)','MILIEU':'var(--vx-beige,#c8bfae)',
     'DÉFENSE':'var(--vx-neutral-chart,#BABABA)','RÉSERVE':'var(--vx-text-muted,#8A8284)'};
   const roles=(f.roles||[]).map(function(r){
@@ -639,13 +643,18 @@ async function renderCalendar(){
 /* Classement Skyler (X1) : le moteur canonique sur TOUT l'univers scanné.
    Gate plafonnante visible par ligne — jamais masquée. Idempotent (re-boots). */
 async function loadSkylerRank(){
-  let d=null;
-  try{d=await VX.fetch('/api/skyler/sweep',{ttl:120000});}catch(e){return;}
-  if(!d)return;
+  /* LOT 602 (dossier 531-A) : un echec de sweep ne disparait plus en silence —
+     la section s affiche avec un etat honnete plutot que de ne pas exister. */
+  let d=null,err=null;
+  try{d=await VX.fetch('/api/skyler/sweep',{ttl:120000});}catch(e){err=e;}
   document.querySelectorAll('[aria-label="Classement Skyler"]').forEach(n=>n.remove());
   const host=document.createElement('section');
   host.className='vx-card vx-mt3';host.setAttribute('aria-label','Classement Skyler');
   host.id='vx-skyler-rank';
+  if(err||!d){
+    host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span></div>'
+      +VX.states.error('Classement Skyler indisponible');
+    $('op-body').appendChild(host);return;}
   if(!d.n){
     host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span></div>
       ${VX.states.empty(esc((d.reason||'classement indisponible')+'.'))}`;
