@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 591 — livré** : **quatre gardiens documentaires — 12 tests sur 2864,
+  soit 0,42 % — et la règle d'ajout-seulement est écrite dans un test, pas
+  seulement dans mes briefs**. Choix (kkk). **La découverte** :
+  `test_references_vivantes_lot364.py` porte dans sa docstring « les rapports
+  `SKYLER-LOT-NNN` sont des **archives** : on ne les réécrit pas » — **c'est un
+  contrat du dépôt, pas une convention que je m'impose**. **Piège classé MIXTE,
+  avec sa classe prévue d'avance (590-A)** : (nombre) « moins de dix » → **4,
+  confirmé** ; (nature) « surtout des références » → **4 exigences sur 8,
+  réfuté**. **Première fois qu'un MIXTE est prévu et non reconstruit.** **Les
+  quatre** : lot 228 (4/4), lot 364 (4/4), lot 366 (3/3), lot 23 (**1 sur 7** —
+  compter par fichier aurait surestimé de six). **Trois sur quatre se
+  surveillent eux-mêmes** (`test_le_gardien_ne_tourne_pas_a_vide`) : sans
+  garde-fou de volume, un gardien peut passer **en vérifiant zéro chose**. Le
+  contrat le plus fin est un contrat d'**honnêteté** : un document vivant peut
+  citer un gardien retiré **à condition de le dire sur la même ligne**. **Neuf
+  fichiers ne sont pas des gardiens** — sept mentions en commentaire, deux
+  **exclusions** de `git grep`. **Second contrôle** : **zéro** gardien sur le
+  scratchpad ou les bancs (l'unique « banc » est *bancaire*) — **les bancs qui
+  produisent chaque chiffre publié depuis soixante lots ne sont ni versionnés,
+  ni testés, ni sauvegardés**. **L'arrêt du lot** : un critère syntaxique
+  (« cite `docs/` ») n'est pas un critère comportemental (« lit un document ») —
+  deux bornes, **9** (témoin absent) et **13** (trop large), aucune juste ; la
+  bonne réponse **4** vient de la lecture. Règles **591-A/B/C**. Cycle : aucun
+  fichier de production touché, **aucun test modifié**, SW `td-shell-v187`, MD5
+  **8 / 8 identiques** (SW `td-shell-v187`), snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped** · `git status tests/` **vide** — aucun test modifié. Arrêtés **217 (+1)**.
 - **Lot 590 — livré** : **mon attente était fausse, et dans le sens rassurant —
   le taux de réfutation est de 38 %, pas « plus des deux tiers »**. Choix (jjj).
   Les **seize attentes principales** sont lues une par une dans les rapports :
