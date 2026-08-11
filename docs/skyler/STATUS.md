@@ -2880,6 +2880,36 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 608 — livré** : **un état vide qui sait qu'il n'est pas synchronisé** —
+  et **le vrai travail était de ne PAS corriger trop large**. Le message du 607
+  est un toast transitoire ; celui-ci est **dans la zone** où la conviction se
+  forme. Sur les **59** états vides du produit, la majorité vient d'un **moteur
+  serveur** : y coller « bureau non synchronisé » serait **un mensonge d'un autre
+  genre**, la faute du 602 commise à l'envers. D'où un état **séparé**
+  (`VX.states.emptyDesk`) plutôt qu'un `empty()` élargi qui aurait menti sur 38
+  zones. **21 zones basculées** sur 5 fichiers. **Trois instruments, trois
+  corrections** : le premier rattachait chaque vide au helper de deux lignes le
+  plus proche (**43 sur 59 mal classés** — c'était **607-C**, écrite la veille) ;
+  le deuxième ratait **`E()`**, l'alias local de `VXEntities`, ce qui faisait
+  passer **tout `/journal`** pour du serveur. **Arrêt du lot : j'ai décidé sur une
+  sortie tronquée** — `head -40` m'a fait conclure que `/journal` portait deux
+  états vides ; il en porte **dix**. L'instrument était juste, ma lecture non.
+  Arrêtés **240 → 241 (+1)**. **Le contrôle a été refusé deux fois pour vacuité**
+  (`/markets` puis `/system` n'affichent aucun état vide) avant d'être décisif sur
+  **la même page sous la même panne** : `/journal?view=track-record` en échec
+  montre **2 états vides, 1 avec mention (bureau), 1 sans (moteur)** — **un vide
+  parle, l'autre se tait**. **Gardien rouge dans les deux sens** : retirer une
+  mention d'une zone bureau échoue, en ajouter une à une zone moteur échoue aussi.
+  Piège confirmé **sauf (c)** — « `empty()` est le point unique à modifier » —
+  **et (c) était le volet décisif**. Bump `td-shell-v192` → **`td-shell-v193`** ;
+  MD5 **4/8 identiques** (`/`, `/portfolio`, `/journal`, `/system` bougent) ;
+  suite **2887 passed / 0 skipped** ; sondes écart **AUCUN** ; READONLY intact.
+  Non établi : **que les 21 zones soient exactement les bonnes** — c'est une
+  lecture, zone par zone. Règles **608-A** (un correctif d'honnêteté doit être
+  plus étroit que la famille qu'il vise), **608-B** (un gardien d'honnêteté doit
+  être rouge dans les deux sens), **608-C** (lire une sortie tronquée, c'est
+  mesurer autre chose). **Dossiers produit corrigés : 7.**
+
 - **Lot 607 — livré** : **une donnée réelle présentée comme absente** —
   l'invariant produit pris **à l'envers**. Le brief proposait `sendBeacon` ; en
   allant vérifier, ce chemin s'est révélé **déjà réparé** (`pull()` compare les

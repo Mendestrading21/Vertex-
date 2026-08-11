@@ -333,7 +333,7 @@ async function loadAlerts(){
       +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(a.sym)+'">'+esc(a.sym)+'</button>'
       +'<span class="vx-grow vx-dim" style="font-size:12px">'+(a.cond==='above'?'franchit':'casse')+' '+VX.fmt.price(a.level)+'</span>'
       +'<span class="vx-badge vx-warn">armée</span></div>').join('');
-    $('vx-alerts').innerHTML=(srv+rows)||VX.states.empty('Aucune alerte active.',
+    $('vx-alerts').innerHTML=(srv+rows)||VX.states.emptyDesk('Aucune alerte active.',
       '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'alert\')">Créer une alerte</button>');
   }catch(e){$('vx-alerts').innerHTML=VX.states.error('Alertes indisponibles');}
 }
@@ -357,7 +357,7 @@ async function loadCalendar(){
 async function loadPortfolio(){
   const pos=(E()&&E().positions())||[];
   if(!pos.length){
-    $('vx-portfolio').innerHTML=VX.states.empty('Aucune position déclarée.',
+    $('vx-portfolio').innerHTML=VX.states.emptyDesk('Aucune position déclarée.',
       '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
     return;
   }

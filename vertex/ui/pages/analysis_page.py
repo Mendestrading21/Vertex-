@@ -281,7 +281,7 @@ $('an-fav').addEventListener('click',()=>{E().toggleFavorite(SYM);paintBadges();
 function paintThesis(){
   const note=E()&&E().note(SYM);
   $('an-thesis').innerHTML=note?esc(note).replace(/\n/g,'<br>'):
-    VX.states.empty('Aucune thèse enregistrée sur ce titre.',
+    VX.states.emptyDesk('Aucune thèse enregistrée sur ce titre.',
       `<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${SYM}','note')">Écrire la thèse</button>`);
 }
 VX.bus.on('vx:thesis-changed',paintThesis);
@@ -684,7 +684,7 @@ async function loadDossier(){
       — stop ${VX.fmt.nd(follows[0].stop)}, objectif ${VX.fmt.nd(follows[0].tgt)}</div>`:'')
     +(jr.length?jr.map(j=>`<div class="vx-kv"><span class="k">${j.date} · ${esc(j.dir||'')}</span>
       <span class="v ${j.pnl>0?'vx-pos':j.pnl<0?'vx-neg':''}">${j.result||''} ${j.pnl!==undefined&&j.pnl!==''?VX.fmt.num(j.pnl):''}</span></div>`).join('')
-      :VX.states.empty('Aucune entrée de journal sur ce titre.'))
+      :VX.states.emptyDesk('Aucune entrée de journal sur ce titre.'))
     +`<div class="vx-meta vx-mt2"><a href="/journal?view=journal&sym=${SYM}">Journal complet →</a></div>`);
   paintBadges();paintThesis();
   try{loadAnalyst();}catch(e){}

@@ -285,7 +285,7 @@ async function renderSynthese(){
   const pos=E().positions();
   $('pf-summary').innerHTML='';
   if(!pos.length){
-    $('pf-body').innerHTML=VX.states.empty(
+    $('pf-body').innerHTML=VX.states.emptyDesk(
       'Aucune position déclarée — le portefeuille répond « où suis-je exposé ? » '
       +'dès la première position. Déclare une position ou importe depuis IBKR (lecture seule).',
       '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>'
@@ -395,7 +395,7 @@ async function renderSynthese(){
     .slice(0,5);
   const dl=$('pf-decision-list');
   if(dl){
-    if(!urgent.length){dl.innerHTML=VX.states.empty('Aucune position urgente — toutes les thèses sont intactes ou en surveillance normale.');}
+    if(!urgent.length){dl.innerHTML=VX.states.emptyDesk('Aucune position urgente — toutes les thèses sont intactes ou en surveillance normale.');}
     else{dl.innerHTML=urgent.map(x=>{const t=x.t,na=nextAction(t);
       return `<div class="vx-flex" style="padding:9px 0;border-bottom:1px dashed var(--vx-border-soft);gap:10px;align-items:center">
         <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${t.sym}">${t.sym}</button>
@@ -469,7 +469,7 @@ async function renderPositions(){
   const rich=enrich(pos,await quotesFor(pos));
   renderSummary(rich);
   if(!pos.length){
-    $('pf-body').innerHTML=VX.states.empty('Aucune position déclarée.',
+    $('pf-body').innerHTML=VX.states.emptyDesk('Aucune position déclarée.',
       '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
     return;
   }
@@ -550,7 +550,7 @@ async function renderPositions(){
         <th class="vx-num">P&L %</th><th class="vx-num">Poids</th><th>Conviction</th><th>État de thèse</th>
         <th class="vx-num">Invalidation</th><th>Catalyseur</th><th>Prochaine action</th><th></th></tr></thead>
         <tbody>${list.map(rowHtml).join('')}</tbody></table></div>`
-        :VX.states.empty('Aucune position '+g.toLowerCase()+'.')}
+        :VX.states.emptyDesk('Aucune position '+g.toLowerCase()+'.')}
       </section>`).join('')
     +`<section class="vx-card vx-mb3" aria-label="Contribution au P&L"><div class="vx-card-header">
         <span class="vx-card-title">Contribution au P&L par position</span>
@@ -597,7 +597,10 @@ async function renderPerformance(){
       <div class="vx-col-7" id="pf-perf-monthly"></div>
       <div class="vx-col-5" id="pf-perf-contrib"></div>
     </div>`;
-  const emptyCard=(host,reason,action)=>{const el=$(host);if(el)el.innerHTML='<div class="vx-card">'+VX.states.empty(reason,action||'')+'</div>';};
+  /* LOT 608 : `desk` a vrai quand le vide vient du BUREAU (journal, equite,
+     clotures declarees) et non d un moteur — seul ce cas merite la mention
+     « bureau non synchronise ». */
+  const emptyCard=(host,reason,action,desk)=>{const el=$(host);if(el)el.innerHTML='<div class="vx-card">'+(desk?VX.states.emptyDesk(reason,action||''):VX.states.empty(reason,action||''))+'</div>';};
   const JOURNAL_ACTION='<a class="vx-btn vx-btn-sm" href="/journal?view=journal">Ouvrir le journal</a>';
 
   /* Courbe d'équité cumulée + drawdown (série des clôtures déclarées). */
@@ -620,8 +623,8 @@ async function renderPerformance(){
         why:'La profondeur des drawdowns mesure la discipline de risque réelle.',
         confirm:'Drawdowns courts et peu profonds.',invalidate:'Drawdown qui s’aggrave.'}});
   }else{
-    emptyCard('pf-perf-equity','Courbe d’équité indisponible — elle se construit au fil des clôtures de positions déclarées.',JOURNAL_ACTION);
-    emptyCard('pf-perf-drawdown','Drawdown indisponible sans courbe d’équité.');
+    emptyCard('pf-perf-equity','Courbe d’équité indisponible — elle se construit au fil des clôtures de positions déclarées.',JOURNAL_ACTION,true);
+    emptyCard('pf-perf-drawdown','Drawdown indisponible sans courbe d’équité.',null,true);
   }
 
   /* Saisonnalité mensuelle (période) — moyenne simple des % de clôture par mois. */
@@ -641,7 +644,7 @@ async function renderPerformance(){
       min:-8,max:8,fmt:(v)=>v===null?'·':VX.fmt.pct(v,1),
       source:'clôtures déclarées',timestamp:Date.now(),mode:'delayed',
       limits:'moyenne des % par trade — pas une performance composée'});
-  }else{emptyCard('pf-perf-monthly','Saisonnalité disponible à partir de 3 clôtures datées.',JOURNAL_ACTION);}
+  }else{emptyCard('pf-perf-monthly','Saisonnalité disponible à partir de 3 clôtures datées.',JOURNAL_ACTION,true);}
 
   /* Contribution par position (positions ouvertes, P&L latent absolu). */
   const rich=enrich(pos,await quotesFor(pos));
@@ -668,7 +671,7 @@ async function renderOptions(){
   const rich=enrich(opts,await quotesFor(opts));
   renderSummary(enrich(pos,await quotesFor(pos)));
   if(!opts.length){
-    $('pf-body').innerHTML=VX.states.empty(
+    $('pf-body').innerHTML=VX.states.emptyDesk(
       'Aucune position option — le sélecteur privilégie les CALLS (max 3, dont 1 PUT tactique).',
       '<a class="vx-btn vx-btn-sm vx-btn-primary" href="/opportunities?view=options">Chercher un contrat</a>'
       +' <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options?view=structure">Analyser une structure →</a>');
@@ -708,7 +711,7 @@ async function renderOptions(){
 /* ═══ RISQUE PRIORISÉ (LOT F — moteur risk_engine, positions réelles §26) ═══ */
 async function renderRisk(){
   const pos=E().positions();
-  if(!pos.length){$('pf-body').innerHTML=VX.states.empty('Aucune position déclarée — le risque se calcule sur les positions réelles, jamais sur les candidats du scanner.');return;}
+  if(!pos.length){$('pf-body').innerHTML=VX.states.emptyDesk('Aucune position déclarée — le risque se calcule sur les positions réelles, jamais sur les candidats du scanner.');return;}
   const rich=enrich(pos,await quotesFor(pos));
   renderSummary(rich);
   let scan=null;try{scan=await VX.fetch('/scan',{ttl:300000});}catch(e){}
@@ -932,7 +935,7 @@ async function renderWatchlist(){
             <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${w.sym}">Analyse</button>
             <button class="vx-btn vx-btn-sm vx-btn-danger" data-wl-del="${w.sym}">Retirer</button>
           </div></td></tr>`).join('')}</tbody></table></div>`
-        :VX.states.empty('Watchlist vide — ajoutez les titres à surveiller activement avec thèse et zone.',
+        :VX.states.emptyDesk('Watchlist vide — ajoutez les titres à surveiller activement avec thèse et zone.',
           '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'watchlist\')">+ Ajouter</button>')}
     </section>
     <section class="vx-card vx-mb3"><div class="vx-card-header"><span class="vx-card-title">Suivis actifs (setups)</span></div>
@@ -942,7 +945,7 @@ async function renderWatchlist(){
         <span class="vx-grow vx-mono vx-meta">entrée ${VX.fmt.nd(r.entry_spot)} · stop ${VX.fmt.nd(r.stop)} · objectif ${VX.fmt.nd(r.tgt)}</span>
         <span class="vx-meta">depuis ${r.followed||'—'}</span>
         <button class="vx-btn vx-btn-sm vx-btn-danger" data-unfollow="${r.sym}">Retirer</button></div>`).join('')
-        :VX.states.empty('Aucun suivi actif — créez un suivi depuis une analyse (entrée/stop/objectif).')}
+        :VX.states.emptyDesk('Aucun suivi actif — créez un suivi depuis une analyse (entrée/stop/objectif).')}
     </section>
     <section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Favoris (accès rapide)</span></div>
       <div class="vx-flex vx-wrap">${favs.length?favs.map(s=>
