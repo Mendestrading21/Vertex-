@@ -2880,6 +2880,41 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 595 — livré** : **la règle 594-C est fausse, je la retire**. Choix
+  (ooo). Elle affirmait qu'un piège à deux volets produit un MIXTE « par
+  construction », les qualitatifs passant presque toujours et les précis
+  échouant presque toujours. Mesuré : **QUALITATIF 2 confirmés sur 5 (40 %)**,
+  **PRÉCIS 7 sur 14 (50 %)** — **l'inverse de la prédiction, et deux taux à
+  portée d'un tirage à pile ou face**. **Interprétations retirées 13 → 14** ; le
+  rapport 594 n'est pas réécrit (append seulement). **La prémisse du brief était
+  fausse** : sur 31 rapports, **9 seulement** portent un tableau volet/verdict
+  (26 mentionnent le mot, 18 ont un titre, **5 ne le mentionnent jamais**).
+  **Classement fait à l'aveugle** — critère syntaxique figé avant d'ouvrir un
+  rapport, appliqué à la cellule gauche seule ; **29 volets, 19 tranchés, 10 non
+  tranchés comptés et non répartis**. **La parade échoue, et c'est le résultat
+  le plus solide** : **4 des 5 volets « qualitatifs » sont précis à la lecture**
+  (« domine », « la plupart », « moins de dix » en lettres) — **après lecture la
+  classe compte UN membre contre 18**. Verdict : **NON MESURABLE puis RÉFUTÉ**,
+  le « non mesurable » ayant été **nommé d'avance** pour que je ne puisse pas
+  m'y dérober. Ce qui reste : **je n'écris quasiment pas de volets
+  qualitatifs** — la prémisse de 594-C est fausse sur mes propres textes.
+  **Piège du lot : (a) réfuté, (b) réfuté, global RÉFUTÉ — pas un MIXTE.**
+  Après quatre d'affilée, **le cinquième est un refus net, sur le lot même qui
+  testait « le MIXTE est fabriqué par construction »**. **L'arrêt du lot** : mon
+  détecteur exigeait `volet` dans l'en-tête et annonçait **4 tableaux sur 31** ;
+  les lots 585→589 écrivent `| piège | verdict |` — **le compte réel est 9**.
+  **Troisième fois d'affilée qu'un critère syntaxique trop étroit me trompe**
+  alors que 591-A est citée en tête de chaque brief. **Second contrôle** :
+  fenêtre 533→563, **corps 2 · titre 0 · tableau 0** contre 26/18/9 — l'attente
+  confirmée, et **l'instrument mesure la date de naissance d'une forme
+  d'écriture, pas une propriété du dépôt**. **Non établi** : si j'écris mes
+  pièges pour qu'ils soient à moitié vrais — **question d'intention, à laquelle
+  les fréquences ne répondent pas**. Règles **595-A** une règle née d'un seul lot
+  doit être mesurée avant d'être citée · **595-B** citer 591-A ne suffit pas à
+  l'appliquer · **595-C** quand une classe tombe à un membre, le verdict est
+  « non mesurable », pas un pourcentage. Cycle : aucun fichier de production
+  touché, **aucun test modifié, aucun rapport corrigé**, SW `td-shell-v187`,
+  MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped** · `git status tests/` et `docs/**` (hors 595) **vides**. Arrêtés **221 (+1)**.
 - **Lot 594 — livré** : **la force d'une assertion de sous-chaîne tient à la
   CROISSANCE de sa meule, pas à sa nature**. Choix (nnn), sur la question que le
   593 avait laissée ouverte. **19 sites relevés par AST là où le brief en
