@@ -835,12 +835,17 @@ async function renderRisk(){
    Lecture seule de /api/skyler/graph ; relations non documentées = questions
    de recherche, jamais des arêtes inventées. */
 async function renderHiddenDeps(){
-  let d=null;
-  try{d=await VX.fetch('/api/skyler/graph',{ttl:180000});}catch(e){return;}
-  if(!d)return;
+  /* LOT 603 (dossier 531-A, suite) : un echec ne fait plus disparaitre la
+     section. Invariant produit : donnee absente -> mention honnete. */
+  let d=null,err=null;
+  try{d=await VX.fetch('/api/skyler/graph',{ttl:180000});}catch(e){err=e;}
   document.querySelectorAll('[aria-label="Dépendances cachées"]').forEach(n=>n.remove());
   const host=document.createElement('section');
   host.className='vx-card vx-mt3';host.setAttribute('aria-label','Dépendances cachées');
+  if(err||!d){
+    host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Dépendances cachées</span></div>'
+      +VX.states.error('Dépendances cachées indisponibles');
+    $('pf-body').appendChild(host);return;}
   const deps=d.hidden_dependencies||[];
   const qs=(d.research_questions||[]).slice(0,6);
   const depHtml=deps.length?deps.map(x=>'<div class="vx-insight" data-tone="risk"><b>'
@@ -872,12 +877,17 @@ async function renderHiddenDeps(){
 async function renderStress(){
   /* Stress-scénarios (±X % marché) sur les actions déclarées, prix réels du scan.
      Options exclues honnêtement (IBKR requis) — couverture affichée. */
-  let d=null;
-  try{d=await VX.fetch('/api/portfolio/stress',{ttl:120000});}catch(e){return;}
-  if(!d)return;
+  /* LOT 603 (dossier 531-A, suite) : un echec ne fait plus disparaitre la
+     section. Invariant produit : donnee absente -> mention honnete. */
+  let d=null,err=null;
+  try{d=await VX.fetch('/api/portfolio/stress',{ttl:120000});}catch(e){err=e;}
   document.querySelectorAll('[aria-label="Stress-scénarios"]').forEach(n=>n.remove());   // idempotent (re-boots)
   const host=document.createElement('section');
   host.className='vx-card vx-mt3';host.setAttribute('aria-label','Stress-scénarios');
+  if(err||!d){
+    host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Stress-scénarios — si le marché choque&nbsp;?</span></div>'
+      +VX.states.error('Stress-scénarios indisponibles');
+    $('pf-body').appendChild(host);return;}
   const money=(x)=>x==null?'n/d':((x>=0?'+':'')+VX.fmt.num(x,0));
   if(d.empty){
     host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Stress-scénarios — si le marché choque&nbsp;?</span></div>
@@ -948,12 +958,17 @@ async function renderWatchlist(){
 /* Discipline V2 (SKYLER LOT 8d) : bornes 8-15, concentration (top/HHI), plafond
    par titre — PortfolioContext canonique, jamais un chiffre inventé. */
 async function renderDiscipline(){
-  let d=null;
-  try{d=await VX.fetch('/api/portfolio/context',{ttl:120000});}catch(e){return;}
-  if(!d)return;
+  /* LOT 603 (dossier 531-A, suite) : un echec ne fait plus disparaitre la
+     section. Invariant produit : donnee absente -> mention honnete. */
+  let d=null,err=null;
+  try{d=await VX.fetch('/api/portfolio/context',{ttl:120000});}catch(e){err=e;}
   document.querySelectorAll('[aria-label="Discipline V2"]').forEach(n=>n.remove());   // idempotent
   const host=document.createElement('section');
   host.className='vx-card vx-mt3';host.setAttribute('aria-label','Discipline V2');
+  if(err||!d){
+    host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Discipline du portefeuille (Constitution V2)</span></div>'
+      +VX.states.error('Discipline du portefeuille indisponible');
+    $('pf-body').appendChild(host);return;}
   if(d.available===false){
     host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Discipline du portefeuille (Constitution V2)</span></div>
       ${VX.states.empty(esc((d.reason||'contexte indisponible')+'.'))}`;

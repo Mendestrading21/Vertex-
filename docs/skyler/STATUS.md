@@ -2880,6 +2880,40 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 603 — livré** : **les silences des autres pages, traités** — et **le
+  compte brut ment d'un facteur treize : 92 → 20 → 4**. Le 602 nommait la suite ;
+  c'est ce lot. Trois instruments successifs, chacun corrigeant le précédent :
+  **52** (faux — il comptait les `catch` où le rendu continue avec un objet vide
+  et affiche des « — » honnêtes), **48** (faux — il oubliait de regarder si le
+  corps écrit, et classait « muet » des `catch` qui font
+  `innerHTML=VX.states.error(...)`), **20** (juste mais brut), puis **4 défauts
+  après lecture du rôle**. C'est **596-B payée deux fois dans le même lot**.
+  **Les quatre corrigés** : `loadMacroRegime` de `/markets?view=macro`
+  (zone vide et muette) et `renderHiddenDeps` / `renderStress` /
+  `renderDiscipline` de `/portfolio?view=risk` (**section absente**) — les trois
+  sections de Portefeuille **savaient déjà dire « donnée absente »** pour
+  `d.empty` / `d.available===false` : **seul le chemin réseau restait muet**.
+  **Preuve en vrai Chromium, 6 passes, SW bloqué (602-B)** : nominales 0 erreur
+  console (2 840 / 4 746 car.), échecs à 2 636 / 3 569 / 4 115 / 4 463 car., tous
+  avec leur état honnête et **Réessayer · Ouvrir Système**. **Arrêt du lot : mon
+  harnais a passé À VIDE une deuxième fois** — je chargeais les deux pages sur
+  leur **vue par défaut**, où les quatre fonctions ne sont jamais appelées ; les
+  zones étaient absentes **même en nominal**. Ce qui a sauvé le lot est **602-A
+  appliquée à la lettre** : le contrôle vérifie le **texte attendu**, pas la
+  non-vacuité. **La règle écrite hier a arrêté l'erreur d'aujourd'hui.** Arrêtés
+  **233 → 234 (+1)**. **Piège : (a) confirmé (4), (b) réfuté (16 des 20 sont
+  bénins), (c) non mesurable — global mixte** ; (a) était réfuté par les deux
+  comptes bruts et **confirmé par la lecture**. **Second contrôle (481)** : les
+  fichiers JS statiques — **42 muets, deux fois plus que les pages, zéro défaut
+  de zone** (infrastructure, pas rendu). Bump SW `td-shell-v188` →
+  **`td-shell-v189`** ; MD5 **6/8 identiques** (`/markets` `cadcddec50df`,
+  `/portfolio` `61c9516ad3e3`) ; suite **2864 passed / 0 skipped** ; sondes écart
+  **AUCUN** ; READONLY intact. Non établi : **que ce soient les derniers silences
+  du produit** — une seule forme mesurée, le bloc `catch`. Règles **603-A** (un
+  compte brut de silences ment d'un facteur dix), **603-B** (une voie d'échec ne
+  s'exerce que sur la vue qui l'appelle), **603-C** (un piège enterré par la
+  mesure peut être sauvé par la lecture). **Dossiers produit corrigés : 2.**
+
 - **Lot 602 — livré** : **le dossier 531-A est corrigé** — *premier lot de
   CORRECTION depuis le 514*, sur accord explicite de l'humain pour finaliser le
   produit. **Deux zones d'Opportunités échouaient en silence** : sur erreur
