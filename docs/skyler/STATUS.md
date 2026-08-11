@@ -2880,6 +2880,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 590 — livré** : **mon attente était fausse, et dans le sens rassurant —
+  le taux de réfutation est de 38 %, pas « plus des deux tiers »**. Choix (jjj).
+  Les **seize attentes principales** sont lues une par une dans les rapports :
+  **RÉFUTÉ 6 (38 %) · CONFIRMÉ 5 (31 %) · MIXTE 5 (31 %)**, couverture 16/16.
+  **Le contre-piège n'est pas déclenché** : je n'écris pas des pièges faciles à
+  réfuter. **Une classe imprévue pèse autant que les confirmations — MIXTE** :
+  un piège est **plus souvent à moitié vrai que franchement faux**, et les
+  rapports le disent eux-mêmes (« à moitié juste, et à moitié faux »,
+  « la bonne direction et le mauvais libellé »). **Le sens des six réfutations** :
+  **4 sous-estiment la part produit**, **1 la surestime** (585), 1 autre. **Le
+  589-C disait « systématiquement » — mesuré, c'est une tendance, pas une loi.**
+  **La discipline commence au lot 568**, six lots avant la fenêtre, et la
+  **section standardisée n'existe qu'à partir du 584** — présente dans **6
+  rapports sur 16**. **L'arrêt du lot** : j'ai cherché `iege` dans un texte
+  français ; le mot écrit est **« pièges »**, avec l'accent — d'où **16 rapports
+  sur 16 déclarés « sans section piège »**, alors que je les ai écrites moi-même.
+  **Ce n'est pas la recherche qui a sauvé la publication, c'est l'invraisemblance
+  du résultat.** **Non établi** : que ces verdicts soient justes — ils sont
+  **cités, pas réévalués**. Règles **590-A** un piège est plus souvent à moitié
+  vrai que franchement faux · **590-B** une recherche de texte français s'écrit
+  avec les accents et se confronte à la vraisemblance · **590-C** 589-C est une
+  tendance, pas une loi. Cycle : aucun fichier de production touché, SW
+  `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped** (après correction de la référence morte). Arrêtés
+  **216 (+1)**.
 - **Lot 589 — livré** : **l'angle mort annoncé n'existait pas à cette taille —
   28 sites de produit, le plus petit des trois, et deux avaient déjà été
   publiés**. Choix (iii). **Le « 226 » du 588 était un nombre BRUT** : son
