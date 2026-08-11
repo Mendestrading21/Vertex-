@@ -34,13 +34,38 @@
   /* ── Sync /api/desk (protocole historique inchangé) ─────────────── */
   let pushTimer = null;
   function schedulePush() { clearTimeout(pushTimer); pushTimer = setTimeout(() => { pushTimer = null; pushNow(); }, 1200); }
+
+  /* LOT 604 — la synchro du bureau échouait EN SILENCE, deux fois dans une
+     ligne : `fetch(...).catch(() => {})` avalait l'échec réseau, ET un 4xx/5xx
+     ne déclenchait même pas ce `catch` (fetch ne rejette que sur échec réseau ;
+     une réponse d'erreur RÉSOUT la promesse, et `r.ok` n'était jamais lu). Un
+     refus du serveur était donc totalement invisible. Ces données sont les
+     données PERSONNELLES de l'utilisateur — invariant produit : ce qui échoue
+     se dit. Rien n'est perdu (localStorage garde tout, le push suivant
+     rattrape) ; c'est ce que le message annonce, sans dramatiser. */
+  const SYNC_ALERTE_MS = 600000;          // au plus une alerte visible / 10 min
+  let derniereAlerteSync = 0;
+  function syncEtat(etat, detail) {
+    try { VX.store.set('desk_sync', etat); } catch (e) {}
+    if (etat === 'ok') return;
+    const t = Date.now();
+    if (t - derniereAlerteSync < SYNC_ALERTE_MS) return;
+    derniereAlerteSync = t;
+    try {
+      VX.toast('Synchronisation du bureau impossible (' + detail + ') — tes données '
+        + 'restent sur cet appareil et repartiront à la prochaine réussite.', 'warn', 5200);
+    } catch (e) {}
+  }
+
   function pushNow() {
     try {
       const data = {};
       DESK_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v != null) data[k] = v; });
       const ts = Number(localStorage.getItem('deskTs') || Date.now());
-      fetch('/api/desk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ts, data }) }).catch(() => {});
-    } catch (e) {}
+      fetch('/api/desk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ts, data }) })
+        .then(r => { syncEtat(r.ok ? 'ok' : 'error', 'refus du serveur, HTTP ' + r.status); })
+        .catch(() => { syncEtat('error', 'serveur injoignable'); });
+    } catch (e) { syncEtat('error', 'écriture locale impossible'); }
   }
   async function pull() {
     try {

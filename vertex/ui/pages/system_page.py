@@ -966,7 +966,7 @@ function importDesk(ev){
       try{localStorage.setItem('deskTs',String(Date.now()));}catch(e){}
       const out={};keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null)out[k]=v;});
       fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ts:Number(localStorage.getItem('deskTs')||Date.now()),data:out})}).catch(()=>{});
+        body:JSON.stringify({ts:Number(localStorage.getItem('deskTs')||Date.now()),data:out})}).then(r=>{if(!r.ok)VX.toast('Synchronisation du bureau refusée par le serveur (HTTP '+r.status+') — tes données restent sur cet appareil.','warn',5200);}).catch(()=>{VX.toast('Synchronisation du bureau impossible (serveur injoignable) — tes données restent sur cet appareil.','warn',5200);});
       VX.shell.closeModal();
       VX.bus.emit('vx:data-refreshed',{reason:'desk-import'});
       VX.toast(importable.length+' clé(s) importée(s) et synchronisée(s)','success');
@@ -989,7 +989,7 @@ function vaultSet(list){
     const keys=deskKeys();const data={};
     keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null)data[k]=v;});
     fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ts:Number(localStorage.getItem('deskTs')||Date.now()),data})}).catch(()=>{});
+      body:JSON.stringify({ts:Number(localStorage.getItem('deskTs')||Date.now()),data})}).then(r=>{if(!r.ok)VX.toast('Synchronisation du bureau refusée par le serveur (HTTP '+r.status+') — tes données restent sur cet appareil.','warn',5200);}).catch(()=>{VX.toast('Synchronisation du bureau impossible (serveur injoignable) — tes données restent sur cet appareil.','warn',5200);});
   }catch(e){}
 }
 function initArchive(){
