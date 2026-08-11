@@ -2880,6 +2880,42 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 605 — livré** : **les sept dépôts, lus — et il n'y a rien à prendre :
+  cinq des sept n'ont AUCUNE licence.** Sans licence, tous droits réservés : ils
+  ne sont **pas copiables**, quelle que soit leur qualité. Les deux seuls
+  licenciés (MIT) sont en **C#/.NET** et en **Elixir** — l'intersection
+  « légalement copiable » ∩ « techniquement transposable » est **vide**.
+  **Ce qu'ils ont donné quand même : une question.** `lumoraesf/Finhub`, le plus
+  petit des sept, déduplique ses news par titre exact ; en lisant ces quinze
+  lignes — *et Vertex, il déduplique comment ?* **Vertex faisait pire** :
+  `terminal.py::_news_loop`, qui alimente `/news-feed`, clé sur **`titre[:60]`**.
+  Deux erreurs opposées — **faux positif** : deux dépêches différentes partageant
+  leur ouverture (formule figée, cas courant en finance) → **la seconde est jetée,
+  de l'information réelle disparaît** ; **faux négatif** : le même article en
+  casse différente → **il passe deux fois**. Et **`news_plus.dedupe_news()`
+  existait depuis le lot 4**, testé, correct — **le fil ne l'appelait pas**.
+  Corrigé en une ligne. **Gardien neuf de 6 tests, vérifié par mutation** (3
+  rouges sur le code d'avant). **Deux arrêts** : mon anti-doublon a **compté à
+  vide** (clé `triggers` sur une charge exposant `data` → « 0 » au lieu de 5), et
+  mon **périmètre de recherche excluait `terminal.py`**, d'où une accusation
+  fausse de « sentiment structurellement nul » — **interprétation retirée**.
+  Un **troisième arrêt** : le gardien des noms personnels a refusé le commit —
+  le motif interdit dormait dans **« amélioration »** privé de son accent.
+  Arrêtés **235 → 238 (+3)**, interprétations retirées **14 → 15**. **Piège
+  réfuté 4 fois sur 4**, dont (c) « le plus gros dépôt est le plus utile » — 45 Mo
+  dont 14 Mo de présentation, et le plus utile fut le plus petit. **Second
+  contrôle (481)** : le dépôt de référence déduplique **moins bien que notre
+  propre code** — sans ce contrôle j'aurais importé une régression en croyant
+  emprunter une amélioration. **MD5 8/8 identiques, aucun bump** (correctif
+  serveur) ; suite **2870 passed / 0 skipped** ; sondes écart **AUCUN** ; READONLY
+  intact ; **aucun octet copié d'un dépôt tiers**. Non pris et nommé : le
+  dictionnaire **Loughran–McDonald** de `VVVleng` (~2 300 termes contre nos 22+22)
+  — redistribué sans licence, **décision humaine requise** ; et notre sentiment
+  **ternaire** (`pos > neg`). Règles **605-A** (un dépôt sans licence n'est pas
+  une ressource), **605-B** (la valeur d'une lecture extérieure est la question,
+  pas le code), **605-C** (un périmètre qui exclut le monolithe conclut faux).
+  **Dossiers produit corrigés : 4.**
+
 - **Lot 604 — livré** : **la synchro des données personnelles échouait en
   silence — deux silences dans une ligne**. `vx-entities.js::pushNow` pousse
   positions, journal, alertes, watchlist et notes vers `/api/desk` par
