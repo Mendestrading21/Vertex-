@@ -2880,6 +2880,34 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 588 — livré** : **le produit compare deux grandeurs plus souvent qu'il
+  ne dessine — 49 contre 26 — et le brief avait oublié une famille entière**.
+  Choix (hhh). **Piège réfuté** : j'attendais la domination de la géométrie ;
+  elle arrive **troisième**. **DEUX GRANDEURS 49 (45 %) · GÉOMÉTRIE 26 (24 %) ·
+  BORNE DE BOUCLE 23 (21 %) · GRANDEUR/RÉGLAGE 10 (9 %) · non tranché 0**,
+  couverture 108/108, 98 couples distincts. **La quatrième famille — BORNE DE
+  BOUCLE — n'était pas dans le brief** et pèse 21 %. Le **108** du 587 est
+  **recalculé et reproduit à l'identique**. **20 comparaisons produisent un
+  libellé** : `mark<=stop → « cassée »`, `mark<=stop*1.04 → « fragilisée »`,
+  `bo.adv>=bo.dec → vx-pos`, `recovered>=invested → « WIN »`, `server>local →
+  « mise à jour disponible »`… **`mark <= stop` est la plus conséquente** : elle
+  décide qu'une thèse est **cassée**, en confrontant un prix vivant à un stop
+  **saisi par l'utilisateur**. **Cinq comparaisons d'horodatages** forment un
+  **cinquième lieu où la fraîcheur se décide** — et il n'utilise **aucun** des
+  quatre vocabulaires trouvés aux 580/581. **Second contrôle** : **36 égalités**
+  sur une grandeur numérique, majoritairement des tests d'index — mais
+  `_warn===0` et `rDown!==0` sont des jugements qui échappaient à six lots.
+  **L'arrêt du lot** : mon premier classement rendait 23 non tranchés parce que
+  **mes clefs venaient d'un affichage tronqué à 30 caractères** et non des
+  valeurs stockées — **574-C enfreinte à nouveau, cette fois mécanisée**. Banc
+  fautif conservé, second banc sur les 98 couples réels → **0 non tranché**.
+  **Non établi** : que ces 49 soient justes — aucune confrontée au serveur ; et
+  **226 comparaisons à gauche non nommable** sont écartées par les deux relevés,
+  plancher jamais mesuré. Règles **588-A** les familles d'un brief ne couvrent
+  pas forcément l'ensemble · **588-B** une clef se copie depuis la donnée ·
+  **588-C** le produit compare plus qu'il ne dessine. Cycle : aucun fichier de
+  production touché, SW `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés),
+  suite **2864 passed / 0 skipped**. Arrêtés **215 (+1)**.
 - **Lot 587 — livré** : **les seuils de produit sont majoritairement des
   DÉCISIONS, pas des bornes techniques — 111 contre 81 — et le nombre publié par
   le 586 était faux**. Choix (ggg). **La correction, mesurée** : mon relevé
