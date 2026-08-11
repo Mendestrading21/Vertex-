@@ -2880,6 +2880,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 587 — livré** : **les seuils de produit sont majoritairement des
+  DÉCISIONS, pas des bornes techniques — 111 contre 81 — et le nombre publié par
+  le 586 était faux**. Choix (ggg). **La correction, mesurée** : mon relevé
+  rendait **192**, le 586 annonçait **210**. Banc du 586 **rejoué tel quel**,
+  comparaison site par site : **187 communs · 23 vus par le 586 seulement · 5 vus
+  par le 587 seulement**. Les **23 sont tous dans `/vendor/lightweight-charts`** —
+  **le filtre du 586 excluait `chart.umd` mais pas `/vendor/`**. **Le chiffre
+  juste est 192** ; la conclusion du 586 (« le repli est l'exception ») n'est
+  **pas** affectée (1,5 % au lieu de 1,4 %). **C'est ma propre règle 576-C que le
+  586 a enfreinte** — troisième auto-violation en quatre lots. **Piège principal
+  réfuté** : j'attendais la domination des bornes de rendu ; c'est l'inverse —
+  **DÉCISION 111 (58 %), BORNE 81 (42 %), non tranché 0**, couverture 192/192.
+  **`options-structure.js` porte à lui seul 36 décisions**, plus que
+  `/portfolio` et `/markets` réunis. **25 libellés lus** — et un constat non
+  corrigé : `Excellente`/`excellente`, `Médiocre`/`mediocre`, **le même jugement
+  écrit deux fois**. **Second contrôle** : les seuils à droite non littérale sont
+  **108** — **le plancher du 586 était dépassé de 36 % de toutes les
+  comparaisons**. **Non établi** : que ces 111 décisions soient **justes** —
+  aucune n'a été confrontée au moteur. Règles **587-A** un nombre qui contredit
+  silencieusement un nombre déjà publié est une faute, même s'il est juste ·
+  **587-B** les seuils de produit sont majoritairement des décisions · **587-C**
+  un filtre de tiers doit nommer tous les chemins tiers. Cycle : aucun fichier de
+  production touché, SW `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés),
+  suite **2864 passed / 0 skipped**. Arrêtés **214 (+1)** · publiés puis corrigés **39 (+1)**.
 - **Lot 586 — livré** : **les deux « sites les plus conséquents » du 585 sont
   inertes — et je retire une interprétation du 585**. Choix (fff). **Évalué, pas
   déduit** : `undefined >= 78` est faux, `(undefined||0) >= 78` est faux aussi.
