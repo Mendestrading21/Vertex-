@@ -2880,6 +2880,28 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 583 — livré** : **mon attente était inversée — `|| 0` porte deux fois
+  plus souvent sur une mesure que sur un compte**. Choix (ccc). **188 sites**
+  relevés, **52 dans la bibliothèque tierce** isolés avant tout total → **136 de
+  produit**. **L'arrêt du lot** : mon classeur rangeait 9 sites en « âge », dont
+  **trois fois `puts`** — la racine `ts` testée avec `endswith`. **Un classement
+  par racine est un devinement automatisé** ; classeur jeté, **86 noms lus**,
+  couverture vérifiée 136 sur 136. **Lus par nature** : **MESURE 52** (score,
+  delta, gex, confidence, cost, cash, strike, max_loss…) · **COMPTE 35** ·
+  **TEMPS 6** · **AUTRE / non nommé 43**. **Les comptes ne sont pas la
+  majorité** (26 %). Les six sites « temps » sont lus un par un — **aucun n'a de
+  garde en amont**, et l'un d'eux est le dossier du 582. **Établi** : 58 sites
+  appliquent un repli à une grandeur dont 0 est une valeur plausible — **le motif
+  du 582 n'est pas une exception, c'est la forme dominante**. **Non établi** :
+  qu'un seul soit un défaut — **le 582 reste le seul lu aux deux bouts**. Second
+  contrôle : les replis écrits autrement sont **5, toutes dans la bibliothèque
+  tierce, 0 dans le produit** — le dépôt écrit ses replis d'une seule façon.
+  Portée : la classification est une **lecture**, pas une règle ; rien n'est
+  corrigé. Règles **583-A** un classeur par suffixe est un devinement automatisé
+  · **583-B** `|| 0` porte plus souvent sur une mesure que sur un compte ·
+  **583-C** un repli n'est pas un défaut tant que les deux bouts n'ont pas été
+  lus. Cycle : aucun fichier de production touché, SW `td-shell-v187`, MD5
+  8 / 8 identiques, snapshot 22 fichiers, 3 modifies puis restaures, ecart final AUCUN, rien apparu ni disparu, 2864 passed / 0 skipped. Arrêtés **210 (+1)**.
 - **Lot 582 — livré** : **le serveur dit « je ne sais pas », un client répond
   « à l'instant » — premier dossier depuis quarante-neuf lots (rang 1)**. Choix
   (bbb). Les quatre sites qui alimentent la fraîcheur, lus en entier : **trois
