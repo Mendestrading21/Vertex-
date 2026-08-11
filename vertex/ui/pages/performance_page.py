@@ -248,7 +248,7 @@ function loadDiscipline(){
 function loadHypotheses(){
   const host=$('vx-pf-hypo');if(!host)return;
   const j=(E()?E().journal():[])||[];
-  if(!j.length){host.innerHTML=VX.states.empty('Aucune hypothèse journalisée — chaque décision est une thèse à vérifier.',JOURNAL_ACTION);return;}
+  if(!j.length){host.innerHTML=VX.states.emptyDesk('Aucune hypothèse journalisée — chaque décision est une thèse à vérifier.',JOURNAL_ACTION);return;}
   const wins=j.filter(e=>e.result==='WIN'),losses=j.filter(e=>e.result==='LOSS'),open=j.filter(e=>!e.result);
   const chip=(label,n,cls)=>`<div class="vx-kpi vx-card vx-card--compact" style="grid-column:span 4">
     <span class="vx-kpi-label">${label}</span><span class="vx-kpi-value ${cls}" style="font-size:24px">${n}</span></div>`;
@@ -289,7 +289,7 @@ function loadJournal(){
   const f=currentFilter();
   const list=f?all.filter(e=>String(e.ticker||'').toUpperCase().includes(f)):all;
   if(!list.length){
-    $('vx-pf-journal').innerHTML=VX.states.empty(
+    $('vx-pf-journal').innerHTML=VX.states.emptyDesk(
       f?('Aucune entrée pour « '+esc(f)+' ».'):'Timeline vide — déclare tes décisions pour mesurer ton exécution.',
       '<button class="vx-btn vx-btn-sm" id="vx-pf-add-empty">Ajouter une entrée</button>');
     $('vx-pf-add-empty')?.addEventListener('click',openEntryModal);
@@ -318,7 +318,7 @@ function loadMistakes(){
   const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
   $('vx-pf-mistakes').innerHTML=top.length?top.map(([m,n])=>
     `<div class="vx-kv"><span class="k">${esc(m)}</span><span class="v vx-mono">× ${n}</span></div>`).join('')
-    :VX.states.empty('Aucune erreur déclarée — renseigne le champ « erreur » à chaque sortie perdante.');
+    :VX.states.emptyDesk('Aucune erreur déclarée — renseigne le champ « erreur » à chaque sortie perdante.');
 }
 function openEntryModal(){
   const field=(id,label,type,ph)=>`<div class="vx-field"><label for="${id}">${label}</label>
@@ -365,20 +365,20 @@ function loadLearnings(){
   const lessons=[...new Set(all.map(e=>String(e.lesson||'').trim()).filter(Boolean))];
   $('vx-pf-lessons').innerHTML=lessons.length?
     '<ul style="margin:0;padding-left:18px;line-height:1.9">'+lessons.map(l=>`<li>${esc(l)}</li>`).join('')+'</ul>'
-    :VX.states.empty('Aucune leçon consignée — renseigne le champ « leçon » à chaque sortie de trade.',JOURNAL_ACTION);
+    :VX.states.emptyDesk('Aucune leçon consignée — renseigne le champ « leçon » à chaque sortie de trade.',JOURNAL_ACTION);
   const counts={};
   all.forEach(e=>{const m=String(e.mistake||'').trim();if(m)counts[m]=(counts[m]||0)+1;});
   const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
   $('vx-pf-recurrent').innerHTML=top.length?top.map(([m,n])=>
     `<div class="vx-kv"><span class="k">${esc(m)}</span><span class="v vx-mono">× ${n}</span></div>`).join('')
-    :VX.states.empty('Aucune erreur récurrente déclarée pour l’instant.');
+    :VX.states.emptyDesk('Aucune erreur récurrente déclarée pour l’instant.');
   /* Biais comportementaux — décompte des états émotionnels déclarés. */
   const emo={};
   all.forEach(e=>{const m=String(e.emo||'').trim().toLowerCase();if(m)emo[m]=(emo[m]||0)+1;});
   const rows=Object.entries(emo).sort((a,b)=>b[1]-a[1]);
   const bh=$('vx-pf-biais');
   if(bh){
-    if(!rows.length){bh.innerHTML=VX.states.empty('Aucun état émotionnel déclaré — renseigne « état émotionnel » (calme, FOMO, peur…) pour révéler tes biais.');}
+    if(!rows.length){bh.innerHTML=VX.states.emptyDesk('Aucun état émotionnel déclaré — renseigne « état émotionnel » (calme, FOMO, peur…) pour révéler tes biais.');}
     else{
       const max=rows[0][1];
       bh.innerHTML='<div style="display:flex;flex-direction:column;gap:6px">'+rows.map(([m,n])=>
@@ -466,7 +466,7 @@ async function loadTrack(){
 function loadReal(){
   const list=trades();
   if(!list.length){
-    $('vx-pf-real').innerHTML=VX.states.empty('Aucun trade réel déclaré avec résultat — le journal est la seule source de cette section.',JOURNAL_ACTION);
+    $('vx-pf-real').innerHTML=VX.states.emptyDesk('Aucun trade réel déclaré avec résultat — le journal est la seule source de cette section.',JOURNAL_ACTION);
     return;
   }
   const s=stats(list);

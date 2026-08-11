@@ -1033,7 +1033,7 @@ function renderVault(){
       .map(x=>String(x||'').toLowerCase()).some(x=>x.includes(q));
   }).sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
   if(!rows.length){
-    $('vx-vault-list').innerHTML=VX.states.empty(
+    $('vx-vault-list').innerHTML=VX.states.emptyDesk(
       all.length?'Aucune entr&eacute;e ne correspond &agrave; la recherche ou au filtre.'
       :'Le coffre est vide — archivez ici vos analyses, mod&egrave;les et documents de r&eacute;f&eacute;rence.',
       all.length?'':'<button class="vx-btn vx-btn-sm" id="vx-vault-new-empty">Cr&eacute;er la premi&egrave;re entr&eacute;e</button>');

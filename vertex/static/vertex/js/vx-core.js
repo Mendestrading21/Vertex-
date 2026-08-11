@@ -120,6 +120,31 @@
       const g = VX.states.ghost(opts.ghost === undefined ? 'bars' : opts.ghost);
       return `<div class="vx-state" data-state="empty">${g}<b>${title}</b><span>${reason || ''}</span>${action || ''}</div>`;
     },
+    /* LOT 608 — un vide qui vient du BUREAU (localStorage synchronisé), pas d'un
+       moteur serveur. Depuis le 607, `VX.store.desk_sync` sait quand la lecture
+       du bureau a échoué ; personne ne l'affichait, et « Aucune position
+       déclarée » restait écrit tel quel alors que le serveur avait peut-être les
+       positions. C'est 607-A dans la zone même où l'utilisateur forme sa
+       conviction — le message global du 607 est transitoire, celui-ci est là.
+
+       DÉLIBÉRÉMENT SÉPARÉ de `empty()` : sur les 59 états vides du produit, 39
+       viennent d'un moteur serveur et n'ont RIEN à voir avec le bureau. Y coller
+       cette mention serait un mensonge d'un autre genre — la faute corrigée
+       depuis le 602, commise à l'envers. Cet état est réservé aux zones qui
+       lisent réellement les clés du bureau. */
+    emptyDesk(reason, action, opts) {
+      let sync = null;
+      try { sync = VX.store && VX.store.get('desk_sync'); } catch (e) {}
+      const base = VX.states.empty(reason, action, opts);
+      if (!sync || sync === 'ok') return base;
+      const quoi = sync === 'read-error'
+        ? 'tes données du serveur n’ont pas pu être chargées'
+        : 'la dernière sauvegarde vers le serveur a échoué';
+      return base + `<div class="vx-error-banner" data-state="desk-desync">` +
+        `⚠ Bureau non synchronisé — ${quoi}. Cette liste peut être incomplète : ` +
+        `n’en conclus pas qu’elle est vide.` +
+        `<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/system?view=data">Ouvrir Système</a></div>`;
+    },
     stale(ageText, source, impact) {
       return `<div class="vx-stale-banner" data-state="stale">⏳ Donnée rassise (${ageText}${source ? ' · ' + source : ''})` +
         `${impact ? ' — ' + impact : ' — décision ACTIONABLE bloquée'}</div>`;
