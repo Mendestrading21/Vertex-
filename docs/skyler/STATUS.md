@@ -2880,6 +2880,33 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 611 — livré** : **neuf bandes, 144 mesures, zéro fautive** — le défaut du
+  610 **n'avait pas de frère**, et ce lot **ne change rien au produit**. Le 610
+  n'avait mesuré que **deux largeurs** et l'avait dit ; ce lot mesure les autres :
+  390, **600, 700, 768, 800, 900, 1024, 1180**, 1440 — **16 zones d'état à
+  chacune, 0 px de débordement de page à chacune**, chaque bandeau comparé **à son
+  parent**. Les deux largeurs du 610 **re-mesurées dans le même passage**, pas
+  citées de mémoire (610-B). **Arrêt du lot : mon piège comptait quatre bascules ;
+  il y en a HUIT.** Il raisonnait sur `responsive.css` seul ; en balayant toutes
+  les feuilles servies — 520, 640, 720, 768, 820, 900, 1024, 1280 — il y a **neuf
+  bandes**, et **deux de plus** que je ne croyais restaient non couvertes. **C'est
+  605-C dans une autre feuille** : un périmètre qui exclut une partie du code
+  conclut faux. Banc corrigé **avant toute conclusion**. Arrêtés **244 → 245
+  (+1)**. **Piège : (a) réfuté, (c) non mesurable, (d) confirmé** — et **(b) SANS
+  OBJET**, un volet conditionnel dont la condition est fausse ne se vérifie pas.
+  **Second contrôle (481)** : le débordement de la **page**, tous éléments
+  confondus — **0 px partout**, alors que `/portfolio` et `/system` portent des
+  tableaux et `/markets` des graphiques. **Puisqu'il ne corrige rien, le lot
+  laisse un gardien de son hypothèse** : la liste des bascules est épinglée —
+  ajouter une bascule rend le test **rouge** avec la marche à suivre, retirer la
+  règle du 610 aussi. **MD5 8/8 identiques, aucun bump** ; suite **2901 passed /
+  0 skipped** ; sondes écart **AUCUN** ; READONLY intact. Non établi : **que
+  toutes les largeurs soient saines** (neuf points sur un continuum), **que les
+  bandeaux soient lisibles** (seul le découpage est jugé), **que la hauteur
+  tienne** (une seule dimension mesurée). Règles **611-A** (une bande n'est pas
+  une borne), **611-B** (un volet conditionnel sans condition ne se vérifie pas),
+  **611-C** (une mesure sans correctif doit laisser un gardien de son hypothèse).
+
 - **Lot 610 — livré** : **un bandeau large de 22 pixels, depuis sept lots** — et
   **le défaut n'est pas mobile**. Le brief envoyait chercher un défaut mobile ; la
   mesure en a trouvé un, **à toutes les largeurs, et il était à moi**. Chaque
