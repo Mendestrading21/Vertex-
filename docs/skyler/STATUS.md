@@ -2880,6 +2880,40 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 604 — livré** : **la synchro des données personnelles échouait en
+  silence — deux silences dans une ligne**. `vx-entities.js::pushNow` pousse
+  positions, journal, alertes, watchlist et notes vers `/api/desk` par
+  `fetch(...).catch(()=>{})` : **(1)** l'échec réseau était avalé ; **(2)** un
+  **4xx/5xx ne déclenchait même pas ce `catch`** — `fetch` ne rejette que sur
+  échec réseau, une réponse d'erreur **résout** la promesse, et `r.ok` n'était
+  jamais lu. **Un refus du serveur était totalement invisible.** Trois sites :
+  le chemin de production servi aux 8 pages + 2 copies inline dans `/system`.
+  **Rien n'était perdu** (localStorage garde tout) — le coût est que
+  l'utilisateur **croit être synchronisé** pendant que le blob serveur
+  vieillit ; la facture arrive sur un autre appareil. **Preuve rouge puis verte
+  en vrai Chromium** : 500 injecté sur `POST /api/desk` + écriture réelle —
+  **avant** aucun toast et `desk_sync` null, **après** un avertissement explicite
+  et `desk_sync='error'` ; **le POST a eu lieu dans les 4 passes**, la voie
+  d'échec est exercée, pas supposée (602-A). **Les deux autres formes exclues par
+  le 603 sont propres** : 37 gardes `if(!host)return;` → **31 hôtes sur 31
+  présents dans le HTML servi des 35 URL, 0 introuvable** ; `/system` sous
+  `allSettled` → **5 et 4 états honnêtes** quand ses 4 puis 3 sources tombent.
+  **Arrêt du lot : 603-B commise dans le lot suivant celui qui l'a écrite** — mon
+  contrôle **devinait** les vues et déclarait `vx-pf-prog` introuvable alors
+  qu'il vit sur `view=progression` ; le banc corrigé **lit `_VIEWS` dans le
+  code**. Arrêtés **234 → 235 (+1)**. **Piège réfuté trois fois** — et **le
+  volume est un mauvais guide** : 37 gardes bénins, 3 lignes coupables.
+  **Le gardien du lot 361 a arrêté le commit** (premier octet changé sous
+  `/static` de tout l'arc) en donnant la marche à suivre exacte. Bump SW
+  `td-shell-v189` → **`td-shell-v190`** + empreinte des assets et `_SW_VERSION`
+  (qui pointait encore 187) ; MD5 **7/8 identiques**, seule `/system` bouge
+  (`f657bf63178b`) ; suite **2864 passed / 0 skipped** ; sondes écart **AUCUN** ;
+  READONLY intact. Non établi : **`sendBeacon` reste muet par construction** —
+  nommé, non traité. Règles **604-A** (`fetch` ne rejette pas sur 4xx/5xx),
+  **604-B** (le volume ne dit rien de la gravité), **604-C** (un silence sur le
+  chemin d'écriture coûte plus qu'un silence à l'affichage). **Dossiers produit
+  corrigés : 3.**
+
 - **Lot 603 — livré** : **les silences des autres pages, traités** — et **le
   compte brut ment d'un facteur treize : 92 → 20 → 4**. Le 602 nommait la suite ;
   c'est ce lot. Trois instruments successifs, chacun corrigeant le précédent :
