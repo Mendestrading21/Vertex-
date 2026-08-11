@@ -2880,6 +2880,39 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 596 — livré** : **inventaire des règles de méthode — 225 énoncées,
+  122 (54 %) jamais citées après leur lot, 23 (10 %) créditées d'un arrêt, une
+  seule retirée**. Choix (ppp). Deux systèmes de nommage comptés séparément :
+  **225** règles `NNN-X` et **45** « règle NNN » au numéro nu — le brief ne
+  nommait que le premier. **`531-A` désigne DEUX objets** — un dossier de défaut
+  et une règle de méthode, tous deux déclarés au rapport 531 : sur ses **129
+  citations (52 lots)**, **57 (44 %) rappellent une dette**, pas une méthode, et
+  **ces 129 pèsent 31 % des 411 citations du corpus** — le classement des
+  « règles les plus citées » est contaminé d'autant. **La faute 580 commise par
+  la numérotation elle-même.** **Piège MIXTE** : (a) « la majorité jamais
+  citée » **confirmé, 54 %, majorité courte** ; (b) « 546-A, 587-A, 591-A
+  concentrent » **réfuté** — 546-A rang 2, mais **587-A rang 15 et 591-A rang
+  31** ; la concentration existe (top 10 = **233 / 411, 57 %**) mais **le trio
+  nommé d'avance est faux aux deux tiers**. **Quatre affirmations fausses
+  évitées** : « 36 règles » (critère exigeant une section que **12 rapports sur
+  593** possèdent) · « 587-A retirée » (`retir` matchait « tiers re**tir**és » —
+  **la maladie `GO`-dans-`GOOGL` du 594, dans mon propre instrument**) ·
+  « 547-B retirée » (« retiré **à la main** » — mot juste, sens inverse) ·
+  « 531-A règle la plus citée ». **La calibration a attrapé la première** — le
+  témoin `546-A` était nommé dans le piège avant la mesure ; **les trois autres
+  viennent de la lecture**. **Recouvrement** : le **lot 500** avait déjà mesuré
+  « la calibration attrape environ un tiers des pannes — le reste vient de la
+  discipline, pas du dispositif » ; ici **1 faute sur 4** — même proportion, 96
+  lots plus tard, mais **quatre cas ne confirment rien**. **Second contrôle** :
+  une règle **non numérotée** est **impossible à compter** — verdict NON
+  MESURABLE assumé plutôt qu'un motif inventé. **Non établi** : qu'une règle non
+  citée soit morte — **le silence n'est pas la mort**. Règles **596-A** un
+  identifiant doit désigner un seul objet · **596-B** les bornes de mot ne
+  suffisent pas, il faut le rôle · **596-C** citer n'est pas appliquer, et ne pas
+  citer n'est pas ignorer. Cycle : aucun fichier de production touché, **aucun
+  test modifié, aucune règle retirée ni réécrite — inventaire, pas ménage**, SW
+  `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped** · `git status tests/` et `docs/**` (hors 596) **vides**. Arrêtés
+  **224 (+3)**.
 - **Lot 595 — livré** : **la règle 594-C est fausse, je la retire**. Choix
   (ooo). Elle affirmait qu'un piège à deux volets produit un MIXTE « par
   construction », les qualitatifs passant presque toujours et les précis
