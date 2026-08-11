@@ -2880,6 +2880,32 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 589 — livré** : **l'angle mort annoncé n'existait pas à cette taille —
+  28 sites de produit, le plus petit des trois, et deux avaient déjà été
+  publiés**. Choix (iii). **Le « 226 » du 588 était un nombre BRUT** : son
+  compteur (`res.sansNom++`) n'enregistrait **aucune position**, donc ni
+  déduplication (un statique compte huit fois) ni filtre des tiers, et il était
+  restreint aux droites non littérales sans le dire. Décomposition reproduite :
+  **318 bruts · 226 (= le chiffre du 588) · 71 dédupliqués · 28 de produit**.
+  **Publiés puis corrigés 39 → 40.** La part tierce y est de **61 %** — la plus
+  élevée de la série, logique pour un code minifié. **Piège réfuté** :
+  « surtout de l'arithmétique de dessin » → **géométrie 5 sur 28 (18 %)**. Les
+  28 sont **affichées en entier** puis lues : **DURÉE/ÂGE 10 · DOMAINE 8 ·
+  COMPTE/SIGNE 5 · GÉOMÉTRIE 5 · non tranché 0**. **`m[i-1]*m[i] <= 0` est la
+  plus fine** : elle **détecte un croisement de zéro** par une multiplication —
+  invisible à tout instrument cherchant un nom. **Recouvrement mesuré (546-A)** :
+  **2 des 28 étaient déjà publiés** (583/584) — un angle mort qui contient des
+  sites déjà lus n'en est pas entièrement un. Second contrôle : **6 ont les deux
+  côtés composés**, et **quatre comparent le dernier élément d'une série à son
+  premier** — un idiome, pas quatre inventions. **Limite majeure** : « gauche non
+  nommable » est **une propriété de mon instrument, pas du code** — c'est ce qui
+  a produit **trois relevés différents (192/108/28) sur le même corpus**. Règles
+  **589-A** un compteur sans position n'est pas une mesure · **589-B** un angle
+  mort doit être confronté à ce qui a déjà été publié · **589-C** mon attente
+  « surtout technique » a été fausse **trois fois de suite** — ce n'est plus une
+  erreur, c'est un biais. Cycle : aucun fichier de production touché, SW
+  `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped**. Arrêtés
+  **215** · publiés puis corrigés **40 (+1)**.
 - **Lot 588 — livré** : **le produit compare deux grandeurs plus souvent qu'il
   ne dessine — 49 contre 26 — et le brief avait oublié une famille entière**.
   Choix (hhh). **Piège réfuté** : j'attendais la domination de la géométrie ;
