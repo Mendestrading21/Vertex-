@@ -14,7 +14,7 @@
     brand: '#DBE1E8', blue: '#45D6E8', cyan: '#45D6E8', violet: '#9B7BFF',
     positive: '#2BBE90', negative: '#E9555F', warning: '#D9BE3C',
     info: '#45D6E8', neutral: '#BABABA',
-    text: '#BABABA', muted: '#8A8284', grid: 'rgba(255,255,255,.05)',
+    text: '#BABABA', muted: '#989092', grid: 'rgba(255,255,255,.05)',
     /* lot 56 : séries réordonnées pour un contraste réel entre courbes
        comparées (marque, cyan, sable, violet, jaune, gris) — les trois
        premiers étaient des blancs-gris indistinguables. Palette inchangée. */
@@ -635,7 +635,7 @@
     bands.forEach(b => {
       if (b.label) {
         const [zx, zy] = pt(ang((prev + Math.min(b.to, max)) / 2), r + 14);
-        zoneLabels += `<text x="${zx.toFixed(1)}" y="${zy.toFixed(1)}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="9" letter-spacing=".4">${b.label}</text>`;
+        zoneLabels += `<text x="${zx.toFixed(1)}" y="${zy.toFixed(1)}" text-anchor="middle" fill="var(--vx-text-muted,#989092)" font-size="9" letter-spacing=".4">${b.label}</text>`;
       }
       prev = b.to;
     });
@@ -657,8 +657,8 @@
       <div class="vx-gauge" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
         <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:250px;display:block;margin:0 auto">
           ${defs}${track}${zoneLabels}${needle}
-          <text x="${cx}" y="${cy - 34}" text-anchor="middle" fill="var(--vx-text-primary,#F8F5F3)" font-size="26" font-weight="800" style="font-variant-numeric:tabular-nums">${disp}<tspan font-size="12" font-weight="600" fill="var(--vx-text-muted,#8A8284)">${o.unit || ''}</tspan></text>
-          <text x="${cx}" y="${cy - 18}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="9.5" letter-spacing=".5">${o.label || ''}</text>
+          <text x="${cx}" y="${cy - 34}" text-anchor="middle" fill="var(--vx-text-primary,#F8F5F3)" font-size="26" font-weight="800" style="font-variant-numeric:tabular-nums">${disp}<tspan font-size="12" font-weight="600" fill="var(--vx-text-muted,#989092)">${o.unit || ''}</tspan></text>
+          <text x="${cx}" y="${cy - 18}" text-anchor="middle" fill="var(--vx-text-muted,#989092)" font-size="9.5" letter-spacing=".5">${o.label || ''}</text>
         </svg>
         ${o.reading ? `<div style="text-align:center;margin-top:2px;font-size:14px;font-weight:800;color:${valColor}">${o.reading}</div>` : ''}
       </div>`;
@@ -770,7 +770,7 @@
         svg += `<line x1="${(x + bw).toFixed(1)}" y1="${yc.toFixed(1)}" x2="${xn.toFixed(1)}" y2="${yc.toFixed(1)}" stroke="rgba(255,255,255,.18)" stroke-dasharray="2,2"/>`;
       }
       svg += `<text x="${(x + bw / 2).toFixed(1)}" y="${(yTop - 4).toFixed(1)}" text-anchor="middle" font-size="10" fill="var(--vx-text-secondary,#BABABA)" style="font-variant-numeric:tabular-nums">${(b.val >= 0 && !b.total ? '+' : '') + fmt(b.val)}</text>`;
-      svg += `<text x="${(x + bw / 2).toFixed(1)}" y="${(H - 9).toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--vx-text-muted,#8A8284)">${String(b.label).slice(0, Math.floor(bw / 6) + 2)}</text>`;
+      svg += `<text x="${(x + bw / 2).toFixed(1)}" y="${(H - 9).toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--vx-text-muted,#989092)">${String(b.label).slice(0, Math.floor(bw / 6) + 2)}</text>`;
     });
     const aria = (o.ariaLabel || 'décomposition') + ' : ' + bars.map(b => b.label + ' ' + fmt(b.val)).join(', ');
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${svg}</svg>`;
@@ -802,7 +802,7 @@
       spokes += `<line x1="${cx}" y1="${cy}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="rgba(255,255,255,.06)"/>`;
       const [lx, ly] = pt(i, R + 13);
       const anchor = Math.abs(lx - cx) < 6 ? 'middle' : (lx > cx ? 'start' : 'end');
-      labels += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="9.5" fill="var(--vx-text-muted,#8A8284)">${a.label}</text>`;
+      labels += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="9.5" fill="var(--vx-text-muted,#989092)">${a.label}</text>`;
     });
     const clamp = (v) => Math.max(0, Math.min(1, (v || 0) / max));
     const vpts = axes.map((a, i) => pt(i, R * clamp(a.value)).map(n => n.toFixed(1)).join(',')).join(' ');
@@ -857,11 +857,11 @@
         const col = n.color || toneCol[n.tone] || C.colors.neutral;
         const active = n.tone === 'active' || (n.count > 0);
         const bg = active ? 'rgba(57,184,120,.09)' : 'var(--vx-surface-2,#121214)';
-        const arrow = i < nodes.length - 1 ? '<span aria-hidden="true" style="align-self:center;color:var(--vx-text-muted,#8A8284);padding:0 5px;font-size:13px">→</span>' : '';
+        const arrow = i < nodes.length - 1 ? '<span aria-hidden="true" style="align-self:center;color:var(--vx-text-muted,#989092);padding:0 5px;font-size:13px">→</span>' : '';
         return '<div style="flex:0 0 auto;min-width:76px;text-align:center;padding:8px 10px;border-radius:9px;background:' + bg + ';border:1px solid ' + col + '55">'
           + '<div style="font-size:10.5px;color:var(--vx-text-secondary,#BABABA);text-transform:capitalize;white-space:nowrap">' + String(n.label) + '</div>'
           + (n.count != null ? '<div style="font-size:15px;font-weight:800;color:' + col + ';font-variant-numeric:tabular-nums">' + n.count + '</div>' : '')
-          + (n.sub ? '<div style="font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--vx-text-muted,#8A8284)">' + n.sub + '</div>' : '')
+          + (n.sub ? '<div style="font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--vx-text-muted,#989092)">' + n.sub + '</div>' : '')
           + '</div>' + arrow;
       }).join('') + '</div>';
     return el;
@@ -897,7 +897,7 @@
     });
     const center = (o.centerValue != null)
       ? `<text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="26" font-weight="800" fill="var(--vx-text-primary,#F8F5F3)" style="font-variant-numeric:tabular-nums">${o.centerValue}</text>
-         ${o.centerLabel ? `<text x="${cx}" y="${cy + 16}" text-anchor="middle" font-size="9.5" fill="var(--vx-text-muted,#8A8284)">${o.centerLabel}</text>` : ''}`
+         ${o.centerLabel ? `<text x="${cx}" y="${cy + 16}" text-anchor="middle" font-size="9.5" fill="var(--vx-text-muted,#989092)">${o.centerLabel}</text>` : ''}`
       : '';
     const aria = (o.ariaLabel || 'anneaux') + ' : ' + items.map(d => d.label + ' ' + Math.round(d.value)).join(', ');
     el.innerHTML = `<div class="vx-flex vx-wrap" style="gap:14px;align-items:center;justify-content:center">

@@ -349,8 +349,8 @@ async function loadDossier(){
     const rm=t&&t.risk_map;
     if(rm&&rm.risks){
       const col={'ÉLEVÉ':'var(--vx-negative,#E9555F)','MODÉRÉ':'var(--vx-warning,#D9BE3C)',
-        'FAIBLE':'var(--vx-positive,#2BBE90)','INCONNU':'var(--vx-text-muted,#8A8284)'};
-      html+='<div class="vx-mt3" style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--vx-text-muted,#8A8284)">Carte des risques ('
+        'FAIBLE':'var(--vx-positive,#2BBE90)','INCONNU':'var(--vx-text-muted,#989092)'};
+      html+='<div class="vx-mt3" style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--vx-text-muted,#989092)">Carte des risques ('
         +esc(rm.known_count)+'/'+esc(rm.total_count)+' mesurés)</div>'
         +rm.risks.map(r=>`<div style="display:flex;justify-content:space-between;gap:.5rem;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px">`
           +`<span>${esc(r.category)}</span><span style="color:${col[r.level]||'#888'};font-weight:600">${esc(r.level)}</span></div>`
@@ -460,7 +460,7 @@ async function loadDossier(){
         const tok=neg?'var(--vx-negative,#E9555F)':'var(--vx-positive,#2BBE90)';
         const grad='linear-gradient('+(neg?'270deg':'90deg')+',color-mix(in srgb,'+tok+' 35%,transparent),'+tok+')';
         return '<div style="display:flex;align-items:center;gap:6px;margin:2px 0" role="img" aria-label="'+r[0]+' '+(v>=0?'+':'')+v+' %">'
-          +'<span style="width:52px;font-size:10.5px;color:var(--vx-text-muted,#8A8284)">'+r[0]+'</span>'
+          +'<span style="width:52px;font-size:10.5px;color:var(--vx-text-muted,#989092)">'+r[0]+'</span>'
           +'<span style="flex:1;height:10px;position:relative;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden">'
             +'<span style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.16)"></span>'
             +'<span style="position:absolute;top:0;bottom:0;'+(neg?('right:50%;width:'+w.toFixed(1)+'%'):('left:50%;width:'+w.toFixed(1)+'%'))+';background:'+grad+';border-radius:2px"></span></span>'

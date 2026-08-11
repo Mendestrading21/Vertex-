@@ -96,7 +96,7 @@
           <path d="${track}" fill="none" stroke="url(#${uid}a)" stroke-opacity="${conf == null ? '.3' : '.95'}" stroke-width="5" stroke-linecap="round"/>
           ${pointer}
           <text x="${cx}" y="${cy - 10}" text-anchor="middle" fill="var(--vx-text,#F8F5F3)" font-size="17" font-weight="800">${o.regime}</text>
-          <text x="${cx}" y="${cy + 8}" text-anchor="middle" fill="${conf == null ? 'var(--vx-text-muted,#8A8284)' : col}" font-size="10.5" font-weight="${conf == null ? '400' : '800'}">${confTxt}</text>
+          <text x="${cx}" y="${cy + 8}" text-anchor="middle" fill="${conf == null ? 'var(--vx-text-muted,#989092)' : col}" font-size="10.5" font-weight="${conf == null ? '400' : '800'}">${confTxt}</text>
         </svg>
         ${chips.length ? `<div class="vx-ra-grammar">${chips.join('')}</div>` : ''}
         <div class="vx-ra-verdict" data-tone="${tone}">▸ ${verdict}${inval}</div>

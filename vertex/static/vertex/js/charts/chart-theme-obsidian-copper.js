@@ -25,7 +25,7 @@
       warning: '#D9BE3C',
       neutral: '#BABABA',     /* benchmark neutre (palette.NEUTRAL) */
       text: '#BABABA',
-      muted: '#8A8284',
+      muted: '#989092',
       grid: 'rgba(255,255,255,.05)',
       /* Ordre des séries = palette.SERIES : marque, sable, neutre, violet
          options, ambre, acier. Toute divergence casse le test de cohérence. */

@@ -20,7 +20,7 @@ pouvait atteindre 4,5:1 **nulle part**, alors qu'il porte du texte réel :
 
 **LA CONTRAINTE QUI REND LE CORRECTIF NON TRIVIAL** : viser la conformité sur
 *toutes* les surfaces déclarées imposait `#92878a`, dont la luminance (0,2527)
-**dépasse celle de `--vx-text-muted` (0,2303)** — la hiérarchie des paliers
+**dépassait celle de `--vx-text-muted`** (0,2303 à l'époque) — la hiérarchie des paliers
 s'inversait. **Les deux paliers sont couplés** : on ne peut pas rendre `faint`
 conforme partout sans d'abord déplacer `muted`. D'où `#847a7c` (L = 0,2028),
 conforme sur les quatre surfaces où ce texte est **effectivement servi**, et qui
@@ -43,14 +43,6 @@ _SEUIL_AA = 4.5
 _SURFACES_SERVIES = ('--vx-canvas', '--vx-shell', '--vx-surface', '--vx-surface-elevated')
 # Celles où il reste sous le seuil — limite assumée, documentée, non corrigée.
 _SURFACES_HORS_PORTEE = ('--vx-surface-selected', '--vx-warm-depth')
-
-# Fond composé sous `.vx-meta` / `.vx-kpi-label`, MESURÉ au navigateur (luminance
-# relative WCAG). Plus clair que toute surface opaque déclarée : c'est un empilement
-# de voiles de verre, pas un token.
-_FOND_META_MESURE = 0.01939
-# Ratio de `--vx-text-muted` sur ce fond, mesuré : 4,04 — sous le seuil.
-_MUTED_MESURE = 4.04
-
 
 def _tokens():
     src = io.open(_TOKENS, encoding='utf-8').read()
@@ -160,29 +152,9 @@ def test_la_limite_assumee_du_palier_faint_est_toujours_celle_qui_est_documentee
         % (list(_SURFACES_HORS_PORTEE), encore_sous))
 
 
-def test_le_deficit_mesure_du_palier_muted_est_epingle_tel_quel():
-    """CE QUE LE LOT 613 A REFUSÉ DE CORRIGER, et pourquoi.
-
-    `--vx-text-muted` tombe à **4,04:1** sous `.vx-meta` / `.vx-kpi-label` — sous
-    le seuil, sur 11 combinaisons page/largeur. Le lot ne l'a PAS déplacé : ce
-    token a **60 littéraux de repli** dans `vertex/ui/**`, et le corriger touche
-    le poids typographique de tout le produit. C'est une décision de design, elle
-    revient à l'humain (612-B).
-
-    Ce test épingle le déficit **tel qu'il est mesuré**. Il devient rouge dans les
-    DEUX sens : si quelqu'un assombrit encore le palier, et si quelqu'un le
-    corrige sans mettre le rapport à jour.
-    """
-    t = _tokens()
-    muted = t.get('--vx-text-muted')
-    assert muted, '--vx-text-muted introuvable'
-    r = _ratio_l(_luminance(muted), _FOND_META_MESURE)
-    assert abs(r - _MUTED_MESURE) < 0.06, (
-        '`--vx-text-muted` sur le fond mesuré de .vx-meta donne %.2f, la mesure du '
-        'lot 613 disait %.2f. Soit le token a bougé, soit le fond a changé : dans '
-        'les deux cas, re-mesurer au navigateur et mettre à jour SKYLER-LOT-613.md '
-        '— le rapport affirme un chiffre qui ne serait plus vrai.' % (r, _MUTED_MESURE))
-    assert r < _SEUIL_AA, (
-        '`--vx-text-muted` atteint désormais %.2f (≥ %.1f) : le déficit documenté '
-        'au lot 613 est corrigé. Excellente nouvelle — mettre à jour le rapport, '
-        'qui le présente encore comme ouvert, et retirer ce test.' % (r, _SEUIL_AA))
+# Le test `test_le_deficit_mesure_du_palier_muted_est_epingle_tel_quel` vivait ici.
+# Son message d'échec disait : « si ce palier atteint désormais le seuil, mettre à
+# jour le rapport et retirer ce test ». **Le lot 614 l'a fermé** — `--vx-text-muted`
+# est passé de #8A8284 (4,04) à #989092 (4,86). Le test a donc été retiré, et son
+# successeur — qui garde le seuil ATTEINT au lieu d'épingler le déficit — vit dans
+# `tests/test_contraste_palier_muted_lot614.py`.

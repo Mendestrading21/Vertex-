@@ -40,7 +40,7 @@
         + '<span style="display:block;height:100%;width:' + w + '%;border-radius:7px;background:' + col
         + ';opacity:' + (dominant ? '1' : '.45') + '"></span></span>'
         + '<span class="vx-mono" style="width:36px;flex:0 0 auto;text-align:right;font-size:12.5px;font-weight:'
-        + (dominant ? '800' : '600') + ';color:' + (dominant ? col : 'var(--vx-text-muted,#8A8284)') + '">' + it.count + '</span></div>';
+        + (dominant ? '800' : '600') + ';color:' + (dominant ? col : 'var(--vx-text-muted,#989092)') + '">' + it.count + '</span></div>';
     }).join('');
     const aria = (o.title || 'Consensus') + ' : ' + sorted.map(it => it.label + ' ' + it.count).join(', ')
       + ' — total ' + total;

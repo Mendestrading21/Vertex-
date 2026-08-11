@@ -25,7 +25,7 @@ OPTIONS = 'vertex/ui/pages/options_intel_page.py'
 PORTFOLIO = 'vertex/ui/pages/portfolio_page.py'
 
 # valeurs ACTUELLES des tokens (tokens.css) + palette officielle
-CURRENT = {'#F8F5F3', '#BABABA', '#8A8284', '#2BBE90', '#E9555F', '#D9BE3C',
+CURRENT = {'#F8F5F3', '#BABABA', '#8A8284', '#989092', '#2BBE90', '#E9555F', '#D9BE3C',
            '#DBE1E8', '#30292B', '#0c0c0e', '#121214'}
 
 
