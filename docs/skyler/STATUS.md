@@ -2880,6 +2880,31 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 592 — livré** : **la prose d'un gardien n'est pas sa règle**. Choix
+  (lll). Le gardien du lot 364 dit « à condition de le dire **sur la même
+  ligne** » ; son code vérifie `any(nom in ligne and 'RETIRÉ' in ligne …)` —
+  **n'importe où dans le document**, et sur le littéral `RETIRÉ` en majuscules.
+  **Deux écarts : la portée et le mot.** Règle **exécutée** : 0 échec ; règle
+  **écrite** : 3. **Le 591 avait repris la docstring sans vérifier le code —
+  interprétation retirée, 12 → 13.** **Piège MIXTE, prévu d'avance (deuxième
+  lot de suite)** : (a) « des dizaines » → **10, réfuté** ; (b) « la purge É1 du
+  323 » → **9 sur 10, confirmé**. **Les 38 sites, lus** : **placeholder 23
+  (61 %)** · **morte 10** · dit l'absence 3 · mon incident du 590 : 2. **Un
+  comptage syntaxique aurait annoncé 38 — 3,8 fois le réel.** Les quatre seules
+  cibles mortes sont les trois gardiens de la purge É1 et
+  `vertex/services/skyler_sweep.py` (lot 214) — **la seule que la purge
+  n'explique pas**. **Le « 7 » du lot 364 recalculé** : 18 aujourd'hui, et les 7
+  d'alors sont exactement les 6 des rapports 183/184/185 + la citation du 71 —
+  **son nombre était juste à sa date, aucune erreur**. **L'arrêt du lot** : mon
+  second contrôle concluait « le contrat ne tient pas — 3 manquements » alors
+  que **la suite est verte** ; j'ai lu le gardien plutôt que de le publier.
+  **Non établi** : que ces 10 références soient un problème — **ce sont des
+  archives, le dépôt les autorise**. Règles **592-A** un résultat qui contredit
+  un test vert est faux jusqu'à preuve du contraire · **592-B** la prose d'un
+  gardien n'est pas sa règle · **592-C** un placeholder n'est pas une référence
+  morte. Cycle : aucun fichier de production touché, **aucun test modifié,
+  aucune référence corrigée**, SW `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot
+  **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped** · `git status tests/` et `docs/**` (hors 592) **vides**. Arrêtés **218 (+1)**.
 - **Lot 591 — livré** : **quatre gardiens documentaires — 12 tests sur 2864,
   soit 0,42 % — et la règle d'ajout-seulement est écrite dans un test, pas
   seulement dans mes briefs**. Choix (kkk). **La découverte** :
