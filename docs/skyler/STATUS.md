@@ -2880,6 +2880,35 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 597 — livré** : **le crédit ne mesure pas ce qui a servi**. Choix
+  (qqq). Sur les 40 sites de crédit lus : **CAUSALE 7 (18 %)** seulement, et la
+  classe la plus nombreuse — **NOMME LA FAUTE, 18 sites (45 %)** — **n'était pas
+  dans mon critère** : la règle y sert de **vocabulaire** pour désigner une faute
+  que je viens de refaire. Puis DÉCORATIVE 5, INDÉCIDABLE 4 (comptée, non
+  répartie), AMBIGU 3 (`531-A`, à part), **ARTEFACT 3** — `587-A` et `547-B` ne
+  sont en section d'arrêt que **comme objets d'une affirmation fausse de mon
+  propre instrument**. **Le critère publié d'avance a manqué 60 % des cas**, et
+  **il est publié avec ses erreurs**. **Piège MIXTE** : (a) « majorité
+  décorative » **réfuté** (5 sur 40) — *ce n'est pas décoratif, c'est
+  diagnostique* ; (b) « sous-comptage réel et grand » **confirmé**. **Le
+  sous-comptage sous trois critères** : 90/57 (63 %), 80/50 (62 %), **77/47
+  (61 %)** — **les trois convergent, le résultat ne dépend pas du critère**.
+  **L'arrêt du lot** : mon détecteur d'arrêts confond les rôles — 10 titres de
+  rapport et 3 « Arrêt de la boucle » comptés à tort ; **troisième fois d'affilée
+  que 596-B me reprend, une règle née il y a un lot**. **Le « 23 » du 596
+  recalculé donne 24** — l'écart est `547-B`, créditée **par le rapport 596
+  lui-même** : son nombre était juste à sa date. **Second contrôle** : parmi les
+  **80** règles citées sans crédit, **`550-B`** (« un seau nommé RIEN est une
+  accusation ») compte **14 citations sur 13 lots** et a façonné le vocabulaire
+  de tous — « candidate », « plancher », « sans lecture observée » — pour **zéro
+  crédit**. **La règle la plus efficace du corpus est invisible aux compteurs.**
+  **Non établi** : ce qui s'est réellement passé au moment de l'arrêt — le texte
+  est écrit après coup par la partie intéressée. Règles **597-A** une règle sert
+  surtout à nommer une faute, pas à l'empêcher · **597-B** un identifiant peut
+  être crédité par le texte qui le disculpe · **597-C** un résultat qui tient
+  sous trois critères est solide. Cycle : aucun fichier de production touché,
+  **aucun test modifié, aucun crédit retiré**, SW `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`),
+  snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped** · `git status tests/` et `docs/**` (hors 597) **vides**. Arrêtés **225 (+1)**.
 - **Lot 596 — livré** : **inventaire des règles de méthode — 225 énoncées,
   122 (54 %) jamais citées après leur lot, 23 (10 %) créditées d'un arrêt, une
   seule retirée**. Choix (ppp). Deux systèmes de nommage comptés séparément :
