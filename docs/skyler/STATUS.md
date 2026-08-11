@@ -2880,6 +2880,32 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 598 — livré** : **le vocabulaire de la boucle a changé de nature au lot
+  550** — le rapport prudent/accusatoire passe de **0,13** à **3,65**, un facteur
+  vingt-huit. Choix (rrr). **La question du brief n'était pas mesurable telle
+  quelle** : le lot 553, celui qui porte « candidate », **n'a aucun tableau
+  markdown** — un extracteur de libellés aurait mesuré la date d'apparition d'une
+  forme ; j'ai mesuré **les mots**, qui traversent les formes. **Le piège de rôle
+  nommé d'avance a payé** : `550-B` s'énonce dans des phrases qui **refusent** le
+  mot accusatoire (« candidate, jamais morte »), et la calibration l'a vu du
+  premier coup. **Piège CONFIRMÉ** : (a) facteur 28 ; (b) **confirmé faiblement**
+  — à date égale, citant `550-B` **4,36** contre **3,37** (NET), **3,21** contre
+  **3,03** (BRUT) : **le sens tient sous les deux critères, la marge tombe de
+  1,29× à 1,06×**. Le volet (a) était **suspect par construction** — les rapports
+  d'avant 550 ne peuvent pas citer `550-B`. **Trois arrêts, dont deux sur mon
+  correcteur** : l'extracteur non construit ; **mon correcteur de rôle a
+  lui-même un problème de rôle** (6 faux positifs sur 9 — « morte et NON
+  supprimée » n'est pas un refus) ; et **le second contrôle aurait conclu
+  l'inverse de la vérité** — 91 occurrences « prudentes » dans le code, mais
+  `evaluate_candidate(candidate: dict)` emploie **« candidate » comme mot de
+  métier**, antérieur de centaines de lots. **Quatrième fois d'affilée que 596-B
+  mord.** **Non établi** : que `550-B` ait **causé** la prudence — le
+  renversement coïncide avec la règle, rien ne prouve qu'il en découle. Règles
+  **598-A** un correcteur de rôle a lui aussi un rôle à vérifier · **598-B** un
+  mot de métier n'est pas un mot de méthode · **598-C** un volet qui compare deux
+  époques mesure la date. Cycle : aucun fichier de production touché, **aucun
+  test modifié, aucun libellé renommé**, SW `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`),
+  snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped** · `git status tests/` et `docs/**` (hors 598) **vides**. Arrêtés **228 (+3)**.
 - **Lot 597 — livré** : **le crédit ne mesure pas ce qui a servi**. Choix
   (qqq). Sur les 40 sites de crédit lus : **CAUSALE 7 (18 %)** seulement, et la
   classe la plus nombreuse — **NOMME LA FAUTE, 18 sites (45 %)** — **n'était pas
