@@ -2880,6 +2880,34 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 580 — livré** : **trois familles d'états, pas deux — et `data-state=`
+  en porte deux à la fois**. Choix (zz). **La seconde fabrique**,
+  `C._stateBody(state, opts)` de `chart-core.js`, **1 site distinct**, 4
+  branches : `loading` **délègue** à `VX.states.loading`, `stale`, `error` et
+  `empty` **non**. **Première moitié du piège : fausse** — aucun état propre aux
+  graphiques, les 4 noms sont un sous-ensemble strict de `VX.states`. **Seconde
+  moitié : vérifiée** — **même nom, sortie différente** : `error` chez
+  `VX.states` porte « Réessayer » et « Ouvrir Système », chez `_stateBody`
+  **aucun bouton, aucun lien**, un `data-tone` en plus et un autre repli. **Une
+  branche sur quatre délègue : la délégation était donc possible.** **Une
+  troisième famille**, trouvée en lisant le contexte de `state: 'unknown'` :
+  **`VX.freshness`, 8 noms**, seuils 20 s / 30 min / 35 min — et son `chip()`
+  pose **`data-state=`, le même attribut** que les états de rendu. Croisés par
+  nom : **`error` et `stale` sont dans les trois familles** ; `data-state="error"`
+  est donc **ambigu dans le DOM**. **Correction d'unité arrêtée avant
+  publication** : mes « 16 appelants » sont **2 sites** — un fichier `/static/**`
+  servi sur 8 pages ; même faute qu'aux lots 511 et 552. Second contrôle :
+  comptage brut par fichier distinct, et **9 valeurs littérales de `data-state=`
+  seulement** — `chip()` en pose d'autres par concaténation, donc **le comptage
+  littéral est un plancher**. Ce que le dépôt fait bien : aucun état inventé,
+  `loading` qui délègue, trois familles qui nomment leur état dans le DOM, des
+  seuils de fraîcheur écrits, un repli par branche. Portée : l'ambiguïté est
+  **structurelle, pas observée** ; rien n'est corrigé. Règles **580-A** un même
+  attribut peut porter deux espaces de valeurs · **580-B** déléguer une branche
+  sur quatre prouve que les trois autres pouvaient l'être · **580-C** un fichier
+  servi sur huit pages n'est pas huit sites. Cycle : aucun fichier de production
+  touché, SW `td-shell-v187`, MD5 8 / 8 identiques, snapshot 22 fichiers, 3 modifies puis restaures, ecart final AUCUN, rien apparu ni disparu, 2864 passed / 0 skipped.
+  Arrêtés **207 (+1)**.
 - **Lot 579 — livré** : **cinq fabriques d'état, 106 appels — et une fabrique
   morte dont l'état est bien vivant**. Choix (yy). L'objet `VX.states` lu dans
   l'AST : `empty`, `error`, `ghost`, `loading`, `stale` — **quatre états nommés
