@@ -2880,6 +2880,37 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 607 — livré** : **une donnée réelle présentée comme absente** —
+  l'invariant produit pris **à l'envers**. Le brief proposait `sendBeacon` ; en
+  allant vérifier, ce chemin s'est révélé **déjà réparé** (`pull()` compare les
+  horodatages et repousse tout seul), et **le vrai trou était dans la fonction
+  même qui assure cette réparation** : le 604 a corrigé les trois **écritures**
+  de la synchro et n'a pas regardé la **lecture**. `pull()` ne lisait pas `r.ok`
+  (604-A sur l'autre chemin) et son `catch` était vide. **Sur un profil neuf dont
+  le GET échoue, le bureau s'affiche VIDE** — « aucun trade déclaré » devient
+  indiscernable de « bureau non synchronisé », alors que le serveur a les
+  données. **Le coût est d'une autre nature que celui du 604** : une écriture
+  ratée se rattrape seule ; **une lecture ratée fabrique une conclusion fausse
+  dans la tête de l'utilisateur**. **Rouge puis vert, même banc** : avant, les
+  deux passes muettes et `desk_sync` null ; après, un message explicite
+  (« … n'en conclus pas que c'est vide ») et `desk_sync='read-error'`, la passe
+  nominale **inchangée** (606-B). **Deux arrêts** : mon banc échantillonnait les
+  toasts **à 7 s** alors qu'un toast vit **5,2 s** — j'ai failli publier « aucun
+  message », et **deux instruments successifs ont dit « rien » sur une chose qui
+  était là** ; et mon gardien identifiait le `catch` englobant par sa **position**
+  (« le dernier »), attrapant un `catch` interne légitime — corrigé par la
+  **profondeur**. Arrêtés **238 → 240 (+2)**. **Second contrôle (481)** encodé
+  dans le gardien : `pull()` garde **exactement 2** écritures `localStorage`,
+  zéro `removeItem`, zéro `clear` — **la lecture est restée une lecture**. Bump
+  `td-shell-v191` → **`td-shell-v192`** + empreinte des assets ; **MD5 8/8
+  identiques** (fichier statique) ; suite **2881 passed / 0 skipped** ; sondes
+  écart **AUCUN** ; READONLY intact. Non traité et nommé : **les états vides des
+  pages ne savent toujours pas qu'ils ne sont pas synchronisés** — le message est
+  un toast global. Règles **607-A** (une donnée réelle présentée comme absente
+  est pire qu'une zone muette), **607-B** (un message éphémère se mesure dans sa
+  vie), **607-C** (une heuristique positionnelle sur du code est fragile).
+  **Dossiers produit corrigés : 6.**
+
 - **Lot 606 — livré** : **le dossier 582 est fermé — et le défaut a été VU, pas
   seulement déduit.** Ouvert depuis **vingt-quatre lots**, le 582 se terminait par
   « sa correction est une décision humaine » ; la décision est donnée. `/system`

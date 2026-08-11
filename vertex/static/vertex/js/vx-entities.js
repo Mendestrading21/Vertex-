@@ -45,16 +45,17 @@
      rattrape) ; c'est ce que le message annonce, sans dramatiser. */
   const SYNC_ALERTE_MS = 600000;          // au plus une alerte visible / 10 min
   let derniereAlerteSync = 0;
-  function syncEtat(etat, detail) {
-    try { VX.store.set('desk_sync', etat); } catch (e) {}
-    if (etat === 'ok') return;
+  function syncAlerte(message) {
     const t = Date.now();
     if (t - derniereAlerteSync < SYNC_ALERTE_MS) return;
     derniereAlerteSync = t;
-    try {
-      VX.toast('Synchronisation du bureau impossible (' + detail + ') — tes données '
-        + 'restent sur cet appareil et repartiront à la prochaine réussite.', 'warn', 5200);
-    } catch (e) {}
+    try { VX.toast(message, 'warn', 5200); } catch (e) {}
+  }
+  function syncEtat(etat, detail) {
+    try { VX.store.set('desk_sync', etat); } catch (e) {}
+    if (etat === 'ok') return;
+    syncAlerte('Synchronisation du bureau impossible (' + detail + ') — tes données '
+      + 'restent sur cet appareil et repartiront à la prochaine réussite.');
   }
 
   function pushNow() {
@@ -67,9 +68,19 @@
         .catch(() => { syncEtat('error', 'serveur injoignable'); });
     } catch (e) { syncEtat('error', 'écriture locale impossible'); }
   }
+  /* LOT 607 — la LECTURE échouait en silence, comme l'écriture avant le 604 :
+     `r.ok` n'était pas lu (604-A, sur l'autre chemin) et le `catch` était vide.
+     Le coût est plus grand qu'il n'y paraît : sur un navigateur neuf dont le GET
+     échoue, le bureau s'affiche VIDE — et « aucun trade déclaré » devient
+     indiscernable de « bureau non synchronisé », alors que le serveur, lui, a
+     les données. C'est l'invariant produit pris à l'envers : ce n'est pas une
+     donnée absente présentée comme réelle, c'est une donnée RÉELLE présentée
+     comme absente. Rien n'est perdu ni écrasé — la lecture reste en lecture. */
   async function pull() {
     try {
-      const r = await fetch('/api/desk'); const d = await r.json();
+      const r = await fetch('/api/desk');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
       const localTs = Number(localStorage.getItem('deskTs') || 0);
       if (d && d.ts && d.data) {
         if (d.ts > localTs) { /* serveur plus récent : ne jamais écraser du plus récent par du plus ancien */
@@ -81,7 +92,13 @@
       } else if (!d || !d.ts) {
         if (localTs) pushNow();
       }
-    } catch (e) {}
+      try { VX.store.set('desk_sync', 'ok'); } catch (e2) {}
+    } catch (e) {
+      try { VX.store.set('desk_sync', 'read-error'); } catch (e2) {}
+      syncAlerte('Bureau non synchronisé : tes données du serveur n’ont pas pu être '
+        + 'chargées (' + ((e && e.message) || 'erreur réseau') + '). Ce qui s’affiche '
+        + 'vient de cet appareil — n’en conclus pas que c’est vide.');
+    }
   }
   pull(); setInterval(() => { if (!document.hidden) pull(); }, 120000);
   /* Flush du push au déchargement : une écriture suivie d'une navigation
