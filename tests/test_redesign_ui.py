@@ -313,7 +313,7 @@ def test_service_worker_bumped(client):
     r = client.get('/sw.js')
     assert r.status_code == 200
     body = r.get_data(as_text=True)
-    assert 'td-shell-v197' in body, 'le shell a changé — la version du cache doit suivre'
+    assert 'td-shell-v198' in body, 'le shell a changé — la version du cache doit suivre'
     assert 'td-shell-v150' not in body
 
 
