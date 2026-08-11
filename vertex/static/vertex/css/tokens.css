@@ -71,23 +71,25 @@
      ATTENTION 2 — ne jamais ecrire ici un nom de token suivi d'un deux-points,
      `design_system_page._load_tokens` avalerait la declaration suivante. */
   --vx-text-muted:#989092;
-  /* LOT 613 — #655d5f plafonnait à 3,23:1 sur la surface la PLUS favorable du
-     produit : ce palier ne pouvait atteindre le seuil WCAG AA (4,5:1) NULLE
-     PART, alors qu'il porte du texte réel (`.vx-help`, `.vx-mono`, étiquettes
-     de momentum à 8 px, en-têtes de table en mode cartes sous 768 px).
-     #847a7c tient 4,97 / 4,85 / 4,71 / 4,50 sur canvas / shell / surface /
-     elevated — les quatre surfaces où ce texte est effectivement servi — et
-     sa luminance (0,2028) reste SOUS celle du palier `muted`, donc la
-     hiérarchie primary > secondary > muted > faint est préservée.
-     Il reste sous le seuil sur les surfaces `selected` et `warm-depth`. Les
-     rendre conformes exigerait de remonter d'abord le palier `muted` (les deux
-     paliers sont couplés) — fait au lot 614, mais `faint` n'a PAS suivi : aucun
-     texte n'a été mesuré sur ces deux surfaces, et éclaircir sans mesure
-     reviendrait à corriger un défaut qu'on n'a pas constaté.
-     ATTENTION — ne jamais écrire ici un nom de token suivi d'un deux-points :
-     `design_system_page._load_tokens` lit `(--vx-...)\s*:\s*([^;]+);` et
-     avalerait la déclaration suivante comme valeur. */
-  --vx-text-faint:#847a7c;
+  /* LOT 613 puis 615 — #655d5f plafonnait a 3,23:1 sur la surface la PLUS
+     favorable du produit : ce palier ne pouvait atteindre le seuil WCAG AA
+     (4,5:1) NULLE PART, alors qu'il porte du texte reel (`.vx-help`,
+     `.vx-mono`, etiquettes de momentum a 8 px, et l'etiquette `td::before` qui
+     NOMME chaque valeur quand une table passe en cartes sous 720 px).
+     Le 613 l'avait porte a #847a7c, borne par la position d'alors du palier
+     `muted` : cela donnait EXACTEMENT 4,50 sur `surface-elevated`, mesure au
+     navigateur par injection DOM — conforme, avec ZERO marge. Le 614 ayant
+     remonte `muted` a #989092, le 615 profite de la place liberee : #8f8587
+     tient 5,77 / 5,63 / 5,47 / 5,23 sur canvas / shell / surface / elevated
+     (marge +0,73 sur la pire surface servie) et ferme aussi `surface-selected`
+     a 4,74. Luminance 0,2436, sous celle du palier `muted` (0,2870) : la
+     hierarchie primary > secondary > muted > faint tient, avec un pas visible.
+     Seule limite restante, assumee et gardee par un test : la surface
+     `warm-depth` a 4,37 — aucun texte n'y a jamais ete mesure, et eclaircir
+     sans mesure reviendrait a corriger un defaut qu'on n'a pas constate.
+     ATTENTION — ne jamais ecrire ici un nom de token suivi d'un deux-points,
+     `design_system_page._load_tokens` avalerait la declaration suivante. */
+  --vx-text-faint:#8f8587;
 
   /* ══ MARQUE — BLANC / GRIS CLAIR (identité neutre ; jamais « hausse ») ══
      Plus de bleu ni d'orange : l'accent d'interface est un blanc légèrement gris,

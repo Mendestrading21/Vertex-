@@ -42,7 +42,8 @@ _SEUIL_AA = 4.5
 # Les surfaces opaques où le palier `faint` porte du texte, mesurées au navigateur.
 _SURFACES_SERVIES = ('--vx-canvas', '--vx-shell', '--vx-surface', '--vx-surface-elevated')
 # Celles où il reste sous le seuil — limite assumée, documentée, non corrigée.
-_SURFACES_HORS_PORTEE = ('--vx-surface-selected', '--vx-warm-depth')
+# LOT 615 : `surface-selected` a ete FERMEE (4,74). Seule `warm-depth` reste.
+_SURFACES_HORS_PORTEE = ('--vx-warm-depth',)
 
 def _tokens():
     src = io.open(_TOKENS, encoding='utf-8').read()
