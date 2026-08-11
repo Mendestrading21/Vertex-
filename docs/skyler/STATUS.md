@@ -2880,6 +2880,32 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 601 — livré** : **les règles non citées ne sont pas redondantes, elles
+  sont oubliées** — et **la boucle en redécouvre une huit lots plus tard sans la
+  citer**. Choix (uuu). **`591-C`** (« un gardien sans garde-fou de volume peut
+  passer en vérifiant zéro chose ») et **`600-A`** (« une calibration qui passe à
+  vide est pire qu'une qui échoue ») portent **le même mécanisme** — un contrôle
+  qui passe sur un ensemble vide — et **la chaîne `591-C` est absente du rapport
+  600**. **Le compte du 600 recalculé** donne 18/12 contre 17/13 : l'écart se
+  décompose sur **`599-B`, citée par le rapport 600 lui-même** ; en excluant le
+  600 de son propre périmètre, **17/13 se reproduit exactement — son nombre était
+  juste à sa date**. **Piège RÉFUTÉ des deux côtés** : (a) « majoritairement
+  redondantes » → **4 sur 12** ; (b) « les citées sont impératives » → réfuté
+  puis **NON MESURABLE**. **La parade de forme échoue 4 fois sur 6** : après
+  lecture, la classe IMPÉRATIVE compte **deux membres sur trente** — **mon corpus
+  est un recueil de constats, pas un règlement**. **Les quatre redondances sont
+  des affinements**, jamais des doublons. **L'arrêt du lot** : mon banc imprime
+  « LES 13 NON CITÉES » **au-dessus d'une liste de douze** — **la faute de
+  l'arrêt du 594, dans le lot qui mesure les règles nées de ces arrêts**.
+  **Second contrôle** : parmi les **113 règles antérieures jamais citées**, le
+  témoin pris au milieu (`554-A`) ne répète rien non plus — **ce n'est pas la
+  redondance qui les tait**. **Non établi** : qu'une règle non citée soit
+  inutile — `550-B`, jamais créditée, a façonné treize lots. Règles **601-A**
+  non citée ≠ redondante · **601-B** la boucle redécouvre ses règles sans les
+  citer · **601-C** ce corpus est un recueil de constats. Cycle : aucun fichier
+  de production touché, **aucune règle retirée ni réécrite**, SW
+  `td-shell-v187`, MD5 **8 / 8 identiques** (SW `td-shell-v187`), snapshot **pris avant, restauré après — écart final AUCUN** (22 fichiers ; 3 modifiés par la suite, restaurés), suite **2864 passed / 0 skipped** · `git status tests/` et `docs/**` (hors 601) **vides**. Arrêtés
+  **232 (+1)**.
 - **Lot 600 — livré · BILAN n°19 de la tranche 590-599** : **la boucle ne s'est
   pas repliée sur elle-même, elle s'est ouverte**. Choix (ttt). **Le bilan sur
   pièces** : 10 lots fusionnés · verdicts **MIXTE 7 · réfuté 1 · confirmé 1 ·
