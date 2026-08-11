@@ -2880,6 +2880,34 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 578 — livré** : **la bannière canonique de Vertex est une fonction,
+  appelée 30 fois, que cinq lots n'ont jamais vue**. Choix (xx). **Le piège est
+  vérifié** : parmi les 10 bannières d'origine, `esc(d.error || 'réponse
+  indisponible')` interpole — donc comptait dans le « 100 % » — mais n'apprend
+  rien quand la cause manque. **Le 572 n'était pas faux dans son compte, il
+  était faux dans le mot « réelle ».** **Deux arrêts sur mes propres
+  instruments** : le premier attribuait à la bannière les interpolations de
+  **toute l'affectation** (un panneau entier sur `/system`), le second — ma
+  correction — prenait le **plus petit nœud** et coupait le `+ esc(e.message)`.
+  **Aucun critère de taille ne délimite un fragment dans une chaîne plate** : il
+  faut délimiter par le **contenu**. **La découverte** : `VX.states.error(cause,
+  retryFn)` dans `vx-core.js`, servie sur les 8 pages, invisible à tous les
+  instruments depuis le 570 parce qu'elle **rend** une chaîne au lieu d'affecter
+  le DOM — **28 appels dans le corpus de base, 2 dans le neuf, 0 position commune
+  avec les 18 écrites à la main**. **Le plancher des bannières passe de 18 à au
+  moins 48.** Les 30 appels classés : phrase fixe **19**, phrase fixe +
+  interpolation **8**, identifiant nu **2**, repli littéral **1**. Second
+  contrôle : comptage brut par clef `(page, nom)` — l'angle mort était
+  précisément `vx-core.js`, une occurrence servie huit fois, jamais expliquée.
+  **Ce que le dépôt fait bien** : une bannière canonique unique, et **chacun de
+  ces 30 sites offre deux issues — « Réessayer » et « Ouvrir Système »**, jamais
+  rapporté jusqu'ici. Portée : **48 est un plancher** ; rien n'est corrigé.
+  Règles **578-A** aucun critère de taille ne délimite un fragment dans une
+  chaîne plate · **578-B** un canal peut avoir une fabrique que tous les
+  instruments ignorent · **578-C** un repli au centre vaut pour tous les
+  appelants. Cycle : aucun fichier de production touché, SW `td-shell-v187`,
+  MD5 8 / 8 identiques, snapshot 22 fichiers, 3 modifies puis restaures, ecart final AUCUN, rien apparu ni disparu, 2864 passed / 0 skipped. Arrêtés **205 (+2)**, publiés
+  puis corrigés **38 (+1)**.
 - **Lot 577 — livré** : **le « 10 sur 10 » du 572 tombe à 17 sur 18 — et
   pourtant les huit disent pourquoi**. Choix (ww). Les 8 bannières du nouvel
   écran, comptées au 576, sont ici **lues**. Deux instruments indépendants (570
