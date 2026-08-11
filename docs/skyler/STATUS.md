@@ -2880,6 +2880,30 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 577 — livré** : **le « 10 sur 10 » du 572 tombe à 17 sur 18 — et
+  pourtant les huit disent pourquoi**. Choix (ww). Les 8 bannières du nouvel
+  écran, comptées au 576, sont ici **lues**. Deux instruments indépendants (570
+  et 572) rendent **8**, sur les mêmes sites. **Le piège échoue** : une bannière
+  est **littérale** — « Titre hors du scan courant — dossier partiel » — deux
+  littéraux concaténés. **Une affirmation à 100 % se réfute, elle ne se confirme
+  pas** ; le 572 avait raison sur son corpus et faux comme loi. **Le second
+  piège tient** : des 7 qui interpolent, **6 relaient `esc(e.message)`** préfixé
+  du domaine en panne, et **1 relaie `esc(d.error || 'réponse indisponible')`** —
+  elle interpole, donc elle compte, mais **n'apprend rien quand la cause
+  manque**. **Malgré tout, les huit disent pourquoi**, par trois moyens : relayer
+  l'exception, relayer le champ serveur, ou **énoncer une cause constante en
+  clair** — la littérale n'avait rien à interpoler. **Le critère tombe, la
+  conclusion produit tient.** Second contrôle : comptage **brut** de la classe,
+  sans filtre par nom de fichier (leçon 576-A) — **8 brutes, 8 vues, écart 0** ;
+  la même restriction `innerHTML` coûtait une bannière sur le corpus de base :
+  **une limite d'instrument se mesure sur chaque corpus**. Ce que le dépôt fait
+  bien : 5 bannières nomment le domaine avant la cause, **7 sur 7 passent par
+  `esc()`**, la littérale propose une action. Règles **577-A** une affirmation à
+  100 % se réfute · **577-B** « interpole » n'est pas « dit pourquoi » ·
+  **577-C** une bannière littérale peut dire la cause mieux qu'une interpolée.
+  **Aucun compteur ne bouge** : le piège a échoué et c'est publié comme tel.
+  Cycle : aucun fichier de production touché, SW `td-shell-v187`, MD5 8 / 8 identiques,
+  snapshot 22 fichiers, 3 modifies puis restaures, ecart final AUCUN, aucun fichier apparu ni disparu (la rotation desk du 576 ne s est pas reproduite), 2864 passed / 0 skipped.
 - **Lot 576 — livré** : **les cinq instruments rejoués sur le corpus neuf —
   quatre tiennent, un compte 181 branches fantômes**. Choix (vv). **La part
   tierce, mesurée avant tout total** : sur 241 516 octets neufs, **163 684
