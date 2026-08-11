@@ -2880,6 +2880,34 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 581 — livré** : **quatre vocabulaires d'état — et le `—` honnête est
+  écrit à l'endroit exact où l'âge est inconnu**. Choix (aaa). **Piège (a),
+  vérifié** : `LABEL` porte **sept** libellés français, et **`unknown` n'y est
+  pas** — `assess` court-circuite la table et renvoie `label: '—'` dès que
+  `ageMs == null`, **avant** toute tentative de classer. L'ordre de décision, lu :
+  offline → error → refreshing → saved → **`—`** → live (< 20 s) → snapshot
+  (< 30 min) → stale. **Piège (b), vérifié** : `data-state="live|saved|…"` = **0**
+  en littéral parce que `chip()` concatène — la famille atteint pourtant le DOM
+  par **8 sites distincts**. **L'arrêt du lot** : mon banc a rendu « `_freshness`
+  absente » — faux comme conclusion, la fonction s'appelle **`freshnessBadge`**.
+  **J'avais cherché le nom que le brief m'avait donné** : 521-B appliqué à
+  moi-même. **Le quatrième vocabulaire** : 6 noms → 5 valeurs d'attribut → 6
+  libellés, avec **trois renommages** (`stale → frozen`, `demo → fallback`,
+  `missing → offline`) et **deux noms sur la même valeur avec deux libellés
+  distincts**. Croisées par nom, les deux familles de fraîcheur partagent `live`,
+  `offline`, `stale` et utilisent **deux attributs différents**. Avec le 580, cela
+  fait **quatre vocabulaires**, et **`stale` est le seul mot présent dans les
+  quatre**. Second contrôle : `freshnessBadge` a **un seul site d'appel** — mais
+  il est dans le constructeur de carte canonique : **un appel couvre plus d'écran
+  que les huit de la famille voisine**. Ce que le dépôt fait bien : le `—` honnête
+  au bon endroit, un ordre de décision défendable (l'indisponible passe avant
+  l'âge), sept libellés français, des seuils écrits en clair, un repli qui
+  n'invente rien. Portée : **aucun défaut constaté** — ce lot mesure une forme,
+  pas un effet ; rien n'est corrigé. Règles **581-A** le mot d'un brief n'est pas
+  le nom du code · **581-B** un nom d'état n'est pas sa valeur d'attribut ·
+  **581-C** un seul site d'appel peut couvrir tout l'écran. Cycle : aucun fichier
+  de production touché, SW `td-shell-v187`, MD5 8 / 8 identiques, snapshot 22 fichiers, 3 modifies puis restaures, ecart final AUCUN, rien apparu ni disparu,
+  2864 passed / 0 skipped. Arrêtés **208 (+1)**.
 - **Lot 580 — livré** : **trois familles d'états, pas deux — et `data-state=`
   en porte deux à la fois**. Choix (zz). **La seconde fabrique**,
   `C._stateBody(state, opts)` de `chart-core.js`, **1 site distinct**, 4
