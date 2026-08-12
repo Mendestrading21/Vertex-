@@ -99,6 +99,20 @@ button.vx-nav-item{background:none;font:inherit;cursor:pointer;text-align:left;
 .vx-col-6{grid-column:span 6}.vx-col-7{grid-column:span 7}
 .vx-col-8{grid-column:span 8}.vx-col-9{grid-column:span 9}
 .vx-col-12{grid-column:span 12}
+.vx-col-1{grid-column:span 1}.vx-col-10{grid-column:span 10}
+.vx-col-11{grid-column:span 11}
+
+/* Grammaire de composition commune — dérivée des références validées.
+   Les pages ne recréent plus leur propre grille ni leurs propres espacements. */
+.vx-section-stack{display:flex;flex-direction:column;gap:var(--vx-s4);min-width:0}
+.vx-section-stack--loose{gap:var(--vx-s6)}
+.vx-hero-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);
+  gap:var(--vx-s4);align-items:start;min-width:0}
+.vx-hero-grid--wide{grid-template-columns:minmax(0,3fr) minmax(250px,1fr)}
+.vx-hero-main,.vx-insight-rail{min-width:0}
+.vx-insight-rail{display:flex;flex-direction:column;gap:var(--vx-s4)}
+.vx-grid--dense{gap:var(--vx-s3)}
+.vx-grid--loose{gap:var(--vx-s6)}
 
 /* LOT 610 — UN ETAT POSE DANS UNE GRILLE OCCUPE TOUTE SA LARGEUR.
    Mesure : un `vx-error-banner` ecrit en enfant direct d une `.vx-grid` sans

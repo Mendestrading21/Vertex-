@@ -245,7 +245,7 @@
       if (i === iPut && pw > 0.5) svg.push(chip(mid - pw - 4, y, money(r.put_gex), neg, false));
       svg.push('<text x="' + (mid + 4) + '" y="' + (y + rowH - 9) + '" font-size="9.5" fill="var(--vx-text-muted,#989092)">' + f(r.strike, 0) + '</text>');
     });
-    if (spotY != null) svg.push('<line x1="10" y1="' + spotY + '" x2="' + (W - 10) + '" y2="' + spotY + '" stroke="var(--vx-orange-500,#DBE1E8)" stroke-dasharray="3 3"/>');
+    if (spotY != null) svg.push('<line x1="10" y1="' + spotY + '" x2="' + (W - 10) + '" y2="' + spotY + '" stroke="var(--vx-orange-500,#D28A54)" stroke-dasharray="3 3"/>');
     svg.push('</svg>');
     host.innerHTML = svg.join('')
       + '<div class="vx-muted" style="margin-top:.3rem">Vert = call GEX (+) · rouge = put GEX (−) · pointillé orange = spot ' + f(g.spot) + '. '
@@ -276,6 +276,7 @@
   function load(sym) {
     sym = (sym || '').trim().toUpperCase();
     if (!/^[A-Z.\-]{1,12}$/.test(sym)) { VX.toast && VX.toast('Ticker invalide', 'error'); return; }
+    try { if (VX.store) VX.store.set('active_ticker', sym); } catch (e0) {}
     $('vx-gx-thesis').innerHTML = '<section class="vx-card"><div class="vx-empty">Analyse du positionnement de ' + esc(sym) + '…</div></section>';
     VX.fetch('/api/options/gex/' + encodeURIComponent(sym), { ttl: 120000 }).then(function (d) {
       renderThesis(d); renderTiles(d); renderBars(d); renderFlow(d); renderDaily(d);

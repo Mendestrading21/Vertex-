@@ -6,9 +6,6 @@
 @media (max-width:1280px){
   .vx-content{padding-left:var(--vx-s4);padding-right:var(--vx-s4)}
   .vx-strip-item{grid-column:span 3}
-  .vx-col-7,.vx-col-8,.vx-col-9{grid-column:span 12}
-  .vx-col-5{grid-column:span 6}
-  .vx-col-4{grid-column:span 6}
 }
 
 @media (max-width:1024px){
@@ -17,14 +14,28 @@
   .vx-app .vx-main{margin-left:var(--vx-sidebar-w-collapsed)}
   .vx-app .vx-logo-name,.vx-app .vx-nav-label,
   .vx-app .vx-sidebar-status .vx-status-label{display:none}
-  .vx-col-6,.vx-col-5{grid-column:span 6}
+  /* Les couples asymétriques 4/8, 5/7 et 3/9 passent en pile : chaque panneau
+     conserve une largeur de lecture utile sur tablette. */
+  .vx-col-3,.vx-col-4,.vx-col-5,.vx-col-7,.vx-col-8,.vx-col-9{grid-column:span 12}
+  .vx-col-6{grid-column:span 6}
   .vx-session{display:none}
+  .vx-hero-grid,.vx-hero-grid--wide{grid-template-columns:minmax(0,1fr)}
+  .vx-insight-rail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
 @media (max-width:768px){
   .vx-grid{gap:var(--vx-s3)}
   .vx-strip-item{grid-column:span 4}
-  .vx-col-2,.vx-col-3,.vx-col-4,.vx-col-5,.vx-col-6{grid-column:span 6}
+  .vx-col-1,.vx-col-2,.vx-col-3,.vx-col-4,.vx-col-5,.vx-col-6,
+  .vx-col-7,.vx-col-8,.vx-col-9,.vx-col-10,.vx-col-11,.vx-col-12{
+    grid-column:span 12}
+  /* Les onglets restent scrollables et signalent visuellement le contenu
+     hors écran sans ajouter une barre lourde. */
+  .vx-tabs{scrollbar-width:thin;scrollbar-color:var(--vx-border-strong) transparent;
+    padding-bottom:2px}
+  .vx-tabs::-webkit-scrollbar{display:block;height:3px}
+  .vx-tabs::-webkit-scrollbar-thumb{background:var(--vx-border-strong);border-radius:999px}
+  .vx-tabs::-webkit-scrollbar-track{background:transparent}
   h1{font-size:24px}
   .vx-topbar{padding:0 var(--vx-s3);gap:var(--vx-s2)}
   /* lot 56 : masquer AUSSI le séparateur adjacent — sinon slash orphelin */
@@ -46,6 +57,13 @@
      lignes inline se replient, les enfants flex rétrécissent. */
   .vx-content :where(section,article,div,header,ul,li){min-width:0}
   .vx-card-header{flex-wrap:wrap;row-gap:var(--vx-s2)}
+  .vx-kpi-strip,.vx-kpi-strip[data-count="3"]{
+    grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--vx-s3)}
+  .vx-page-lead{align-items:flex-start;flex-direction:column;gap:var(--vx-s3)}
+  .vx-page-lead__actions{width:100%;justify-content:flex-start}
+  .vx-section-title{align-items:flex-start;flex-direction:column}
+  .vx-section-title__actions{margin-left:0;width:100%}
+  .vx-insight-rail{grid-template-columns:minmax(0,1fr)}
   .vx-flex{flex-wrap:wrap}
   .vx-dim,.vx-kpi-label,.vx-meta,.vx-status-detail{overflow-wrap:anywhere}
 }
@@ -87,7 +105,10 @@
   .vx-page-header .vx-actions{width:100%;justify-content:flex-start;
     overflow-x:auto;scrollbar-width:none}
   .vx-kpi .vx-kpi-value{font-size:22px}
-  .vx-drawer{width:100vw}
+  .vx-drawer,.vx-drawer[data-variant="summary"],.vx-drawer[data-variant="detail"]{
+    width:100vw;min-width:0;max-width:none}
+  .vx-connection-row{grid-template-columns:minmax(0,1fr) max-content;align-items:start}
+  .vx-connection-detail{grid-column:1/-1}
   .vx-modal{padding:4vh var(--vx-s2)}
   /* Cibles tactiles — DEUX seuils, et le second est une exemption ASSUMÉE.
      LOT 612, mesuré en vrai Chromium à 390 px : 40 boutons du produit sont à
@@ -103,6 +124,8 @@
      correctif. Mesure et écart consignés au lot 612. */
   .vx-btn,.vx-tab,.vx-chip{min-height:40px}         /* actions primaires */
   .vx-btn-sm{min-height:32px}                       /* actions secondaires */
+  .vx-btn-icon{width:40px;min-width:40px}
+  .vx-btn-icon.vx-btn-sm{width:32px;min-width:32px}
   /* lot 294 : les contrôles segmentés (réglages Système) mesuraient 26px —
      hors de la règle ci-dessus car sans classe vx-btn. */
   .vx-segmented button{min-height:40px}

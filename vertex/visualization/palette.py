@@ -6,17 +6,18 @@ une intention (marque, benchmark, positif, négatif, option…). Le thème
 graphique JS (`chart-theme-obsidian-copper.js`) DOIT rester cohérent avec ce
 registre — un test le vérifie.
 
-Identité Vertex : BLANC / GRIS CLAIR (en verre). Marque = blanc-gris neutre,
-série de référence (PAS « hausse »). Émeraude = positif. Plus AUCUN bleu ni
-orange identitaire ; tout bleu dominant reste interdit. Miroir strict de
-tokens.css (#DBE1E8). Le cyan #45D6E8 = comparaison technique uniquement.
+Identité Vertex : CUIVRE SOBRE sur fond obsidienne. La marque reste une série
+de référence (PAS « hausse ») : le cuivre ne remplace jamais l'émeraude ou le
+corail sémantiques. Tout bleu dominant reste interdit. Le cyan #45D6E8 reste
+réservé aux comparaisons techniques.
 """
 from __future__ import annotations
 
-# ── Couleurs de marque (série principale = BLANC / GRIS CLAIR neutre) ──
-BRAND = '#DBE1E8'          # série principale Vertex (identité, pas « hausse »)
+# ── Couleurs de marque (cuivre = identité, jamais direction financière) ──
+BRAND = '#D28A54'          # cuivre Vertex, série principale (pas « hausse »)
+BRAND_HOVER = '#E1A06E'    # cuivre clair, interaction / survol
 COPPER = '#8A8284'         # série neutre acier (gris chaud)
-COPPER_LIGHT = '#EEF1F5'   # blanc-gris clair de marque (accents hover)
+COPPER_LIGHT = BRAND_HOVER  # alias historique conservé pour compatibilité
 AMBER = '#D9BE3C'          # série secondaire / attention
 BEIGE = '#c8bfae'          # benchmark clair (sable)
 TECHNICAL = '#45D6E8'      # cyan — comparaison technique UNIQUEMENT (doctrine §3)
@@ -43,6 +44,7 @@ SERIES = (BRAND, TECHNICAL, BEIGE, OPTION, AMBER, COPPER)
 # Rôle sémantique → couleur. C'est CE dictionnaire qui fait autorité.
 SEMANTIC = {
     'brand': BRAND,
+    'brand_hover': BRAND_HOVER,
     'copper': COPPER,
     'copper_light': COPPER_LIGHT,
     'amber': AMBER,
@@ -95,20 +97,20 @@ def is_bluish(hex_color: str) -> bool:
     return b > r + 30 and b > g + 30 and b > 90 and r < 110
 
 
-# Couleurs de marque (blanc/gris neutre — plus aucune n'est réellement bleue).
-# Conservé comme liste d'exception du garde-fou ; tout bleu dominant reste interdit.
-BRAND_BLUES = {BRAND.lower(), COPPER_LIGHT.lower()}
+# Nom historique conservé pour l'API du garde-fou. Le cuivre actuel n'est pas
+# bleu ; l'ensemble reste l'allow-list explicite des couleurs identitaires.
+BRAND_BLUES = {BRAND.lower(), BRAND_HOVER.lower()}
 
 
 def audit_no_blue() -> list:
     """Rend la liste des couleurs du registre « bleu dominant » NON autorisées.
-    Le bleu de marque (identité) est admis ; tout autre bleu doit être vide."""
+    L'allow-list identitaire historique est admise ; tout autre bleu doit être vide."""
     return [name for name, col in SEMANTIC.items()
             if is_bluish(col) and str(col).lower() not in BRAND_BLUES]
 
 
 __all__ = [
-    'BRAND', 'COPPER', 'COPPER_LIGHT', 'AMBER', 'BEIGE', 'TECHNICAL', 'POSITIVE', 'NEGATIVE',
+    'BRAND', 'BRAND_HOVER', 'COPPER', 'COPPER_LIGHT', 'AMBER', 'BEIGE', 'TECHNICAL', 'POSITIVE', 'NEGATIVE',
     'WARNING', 'NEUTRAL', 'OPTION', 'TEXT', 'TEXT_DIM', 'TEXT_MUTED',
     'SERIES', 'SEMANTIC', 'STATUS_COLOR', 'series_color', 'status_color',
     'is_bluish', 'audit_no_blue',

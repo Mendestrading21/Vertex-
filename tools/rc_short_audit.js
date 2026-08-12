@@ -176,6 +176,10 @@ const NOISE = [/net::ERR_ABORTED/, /fonts\.googleapis\.com/, /fonts\.gstatic\.co
     fs.writeFileSync(tmpFile, JSON.stringify(bundle), 'utf-8');
     await page.goto(BASE + '/journal', { waitUntil: 'domcontentloaded', timeout: 20000 });
     await page.waitForTimeout(2000);
+    // L'import vit désormais dans le niveau Expert replié : l'audit suit le
+    // vrai parcours utilisateur avant d'utiliser le vrai champ fichier.
+    await page.locator('#vx-pf-history-disclosure > summary').click();
+    await page.waitForTimeout(200);
     await page.setInputFiles('#vx-mem-import-file', tmpFile);
     await page.waitForTimeout(2500);
     const result = await page.evaluate(() => {

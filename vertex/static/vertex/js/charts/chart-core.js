@@ -1,44 +1,89 @@
-/* Vertex Charts — chart-core.js
-   Moteur unique : Chart.js (déjà embarqué) + contrat visuel §34.
-   Chaque graphique = ChartCard { titre, question, conclusion, corps, pied
-   (source/date/mode/limites), bouton « Comprendre ce graphique » }.
-   L'UI ne calcule AUCUN indicateur : elle trace ce que les moteurs donnent. */
+/* VXCharts : rendu uniquement ; les moteurs restent la source des valeurs. */
 (function () {
   'use strict';
   const VX = window.VX;
   const C = window.VXCharts = window.VXCharts || {};
 
-  /* Thème V3 unique (chart-theme.js) — repli sur les mêmes valeurs si absent */
   const THEME = window.VXChartTheme || { colors: {}, tooltip: {} };
   C.colors = Object.assign({
-    brand: '#DBE1E8', blue: '#45D6E8', cyan: '#45D6E8', violet: '#9B7BFF',
+    brand: '#D28A54', brandHover: '#E1A06E', blue: '#45D6E8', cyan: '#45D6E8', violet: '#9B7BFF',
     positive: '#2BBE90', negative: '#E9555F', warning: '#D9BE3C',
     info: '#45D6E8', neutral: '#BABABA',
-    text: '#BABABA', muted: '#989092', grid: 'rgba(255,255,255,.05)',
-    /* lot 56 : séries réordonnées pour un contraste réel entre courbes
-       comparées (marque, cyan, sable, violet, jaune, gris) — les trois
-       premiers étaient des blancs-gris indistinguables. Palette inchangée. */
-    series: ['#DBE1E8', '#45D6E8', '#c8bfae', '#9B7BFF', '#D9BE3C', '#8A8284'],
+    text: '#BABABA', muted: '#989092', grid: 'rgba(200,194,188,.08)',
+    axis: 'rgba(200,194,188,.16)', crosshair: 'rgba(200,194,188,.30)',
+    series: ['#D28A54', '#45D6E8', '#c8bfae', '#9B7BFF', '#D9BE3C', '#8A8284'],
   }, THEME.colors);
+
+  const CHART_EVENTS = ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'];
+  C.sizes = Object.freeze({ micro: 72, compact: 176, standard: 240, hero: 360 });
+
+  function reducedMotion() {
+    try { return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches; }
+    catch (e) { return false; }
+  }
+  function cssFont(token, fallback) {
+    try {
+      const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+      return value || fallback;
+    } catch (e) { return fallback; }
+  }
+  /* Comparaison temporelle par index ; formes discrètes au point le plus proche. */
+  C.interaction = function (type) {
+    const profile = type === 'line' || type === 'scatter'
+      ? ['index', false, 'x'] : ['nearest', type === 'doughnut' || type === 'pie', null];
+    const interaction = { ['mode']: profile[0], intersect: profile[1] };
+    if (profile[2]) interaction.axis = profile[2];
+    return interaction;
+  };
 
   function chartDefaults() {
     if (!window.Chart) return;
     const d = Chart.defaults;
     d.color = C.colors.text;
-    d.font.family = getComputedStyle(document.documentElement).getPropertyValue('--vx-font') || 'Inter,sans-serif';
+    d.font.family = cssFont('--vx-font', 'Inter,sans-serif');
     d.font.size = 11;
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) d.animation = false;
-    else if (d.animation && typeof d.animation === 'object') d.animation.duration = 250;
+    d.responsive = true;
+    d.maintainAspectRatio = false;
+    d.normalized = true;
+    d.events = CHART_EVENTS.slice();
+    if (reducedMotion()) d.animation = false;
+    else if (d.animation && typeof d.animation === 'object') {
+      d.animation.duration = 180;
+      d.animation.easing = 'easeOutQuart';
+    }
+    d.plugins = d.plugins || {};
+    d.plugins.legend = d.plugins.legend || {};
     d.plugins.legend.display = false;
+    d.plugins.legend.labels = Object.assign({}, d.plugins.legend.labels, {
+      color: C.colors.muted, boxWidth: 10, boxHeight: 3, padding: 14,
+      usePointStyle: true, pointStyle: 'line', font: { size: 10 },
+    });
     const tt = (window.VXChartTheme && window.VXChartTheme.tooltip) || {};
+    d.plugins.tooltip = d.plugins.tooltip || {};
     d.plugins.tooltip.backgroundColor = tt.backgroundColor || '#151719';
     d.plugins.tooltip.borderColor = tt.borderColor || 'rgba(255,255,255,.15)';
     d.plugins.tooltip.borderWidth = 1;
-    d.plugins.tooltip.padding = 10;
-    d.plugins.tooltip.cornerRadius = 8;
+    d.plugins.tooltip.padding = 11;
+    d.plugins.tooltip.cornerRadius = 7;
     d.plugins.tooltip.titleColor = tt.titleColor || '#f3f1ed';
     d.plugins.tooltip.bodyColor = tt.bodyColor || '#b7b3ad';
-    d.maintainAspectRatio = false;
+    d.plugins.tooltip.footerColor = tt.footerColor || C.colors.muted;
+    d.plugins.tooltip.titleFont = { family: d.font.family, size: 11, weight: '600' };
+    d.plugins.tooltip.bodyFont = { family: cssFont('--vx-font-mono', 'monospace'), size: 11 };
+    d.plugins.tooltip.footerFont = { family: d.font.family, size: 10 };
+    d.plugins.tooltip.displayColors = true;
+    d.plugins.tooltip.usePointStyle = true;
+    d.plugins.tooltip.boxWidth = 8;
+    d.plugins.tooltip.boxHeight = 8;
+    d.plugins.tooltip.bodySpacing = 5;
+    d.plugins.tooltip.titleSpacing = 3;
+    d.plugins.tooltip.caretPadding = 8;
+    d.plugins.tooltip.caretSize = 5;
+    d.plugins.tooltip.position = 'nearest';
+    if (d.scale && d.scale.title) {
+      d.scale.title.color = C.colors.muted;
+      d.scale.title.font = { size: 11, weight: '500' };
+    }
   }
   if (window.Chart) chartDefaults(); else document.addEventListener('DOMContentLoaded', chartDefaults);
 
@@ -47,6 +92,14 @@
     if (!window.Chart || !canvas) return null;
     const prev = registry.get(canvas);
     if (prev) prev.destroy();
+    config = config || {};
+    config.options = config.options || {};
+    if (config.options.responsive === undefined) config.options.responsive = true;
+    if (config.options.maintainAspectRatio === undefined) config.options.maintainAspectRatio = false;
+    if (config.options.normalized === undefined) config.options.normalized = true;
+    if (!config.options.interaction) config.options.interaction = C.interaction(config.type);
+    if (!config.options.events) config.options.events = CHART_EVENTS.slice();
+    if (reducedMotion()) config.options.animation = false;
     const chart = new Chart(canvas.getContext('2d'), config);
     registry.set(canvas, chart);
     return chart;
@@ -71,16 +124,64 @@
     } catch (e) {}
     registry.clear();
   };
-  C.axes = function ({ y = true, x = true, yFmt } = {}) {
+  function chartViewportProfile() {
+    try {
+      if (typeof window.matchMedia !== 'function') return 'desktop';
+      if (window.matchMedia('(max-width: 520px)').matches) return 'mobile';
+      if (window.matchMedia('(max-width: 768px)').matches) return 'compact';
+      return 'desktop';
+    } catch (e) { return 'desktop'; }
+  }
+  function compactChartViewport() {
+    try { return chartViewportProfile() !== 'desktop'; }
+    catch (e) { return false; }
+  }
+  function interactiveColor(color) {
+    return color === C.colors.brand ? C.colors.brandHover : color;
+  }
+  C.axes = function ({ y = true, x = true, yFmt, xFmt, xTitle, yTitle,
+                       xGrid = false, yGrid = true, density = 'standard' } = {}) {
+    const profile = chartViewportProfile();
+    const compact = profile !== 'desktop';
+    const micro = density === 'micro';
+    const xTicks = micro ? 3 : (profile === 'mobile' ? 4 : (compact ? 5 : 8));
+    const yTicks = micro ? 3 : (profile === 'mobile' ? 4 : (compact ? 5 : 6));
     return {
-      x: { display: x, grid: { color: C.colors.grid }, ticks: { maxTicksLimit: 8, maxRotation: 0 } },
-      y: { display: y, grid: { color: C.colors.grid }, position: 'right',
-           ticks: { maxTicksLimit: 6, callback: yFmt || undefined } },
+      x: { display: x, grid: { display: xGrid, color: C.colors.grid, drawTicks: false },
+           border: { display: false },
+           title: { display: !!xTitle, text: xTitle || '' },
+           ticks: { color: C.colors.muted, maxTicksLimit: xTicks, maxRotation: 0, minRotation: 0,
+             autoSkip: true, autoSkipPadding: compact ? 12 : 18, sampleSize: compact ? 48 : 96,
+             padding: 7, callback: xFmt || undefined } },
+      y: { display: y, grid: { display: yGrid, color: C.colors.grid, drawTicks: false },
+           border: { display: false }, position: 'right',
+           title: { display: !!yTitle, text: yTitle || '' },
+           ticks: { color: C.colors.muted, maxTicksLimit: yTicks, autoSkip: true,
+             padding: 7, callback: yFmt || undefined } },
     };
   };
 
   /* ── ChartCard : contrat visuel §34 ─────────────────────────────── */
   let uid = 0;
+  const chartVariants = new Set(Object.keys(C.sizes));
+  function chartVariant(opts) {
+    const value = String((opts && (opts.variant || opts.size)) || 'standard').toLowerCase();
+    return chartVariants.has(value) ? value : 'standard';
+  }
+  function chartHeight(opts) {
+    const custom = Number(opts && opts.height);
+    if (Number.isFinite(custom) && custom > 0) return Math.max(48, Math.min(720, Math.round(custom)));
+    return null;
+  }
+  function chartHeightStyle(opts) {
+    const height = chartHeight(opts);
+    return height === null ? '' : ` style="--vx-chart-height:${height}px"`;
+  }
+  function attr(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char];
+    });
+  }
 
   /* Badge de fraîcheur canonique — langage visuel unique de l'honnêteté.
      freshness ∈ live | delayed | stale | demo | offline | missing. */
@@ -99,17 +200,17 @@
 
   /* Corps d'état honnête du Chart Shell : loading / empty / stale / error. */
   C._stateBody = function (state, opts) {
-    const h = opts.height || 200;
+    const body = `<div class="vx-chart-body"${chartHeightStyle(opts)}`;
     const msg = opts.stateMessage;
     if (state === 'loading')
-      return `<div class="vx-chart-body" style="height:${h}px" aria-busy="true">${VX.states.loading(3)}</div>`;
+      return `${body} aria-busy="true">${VX.states.loading(3)}</div>`;
     if (state === 'stale')
-      return `<div class="vx-stale-banner">⏱ Données périmées — ${msg || 'dernière valeur connue affichée.'}</div>` +
-        `<div class="vx-chart-body" style="height:${h}px"><div class="vx-state" data-state="stale"><div class="vx-state-icon">⏱</div><div><b>Périmé</b><br>${msg || 'Rafraîchir pour actualiser.'}</div></div></div>`;
+      return `<div class="vx-stale-banner">⏱ Données périmées — ${msg || 'graphique masqué jusqu’à actualisation.'}</div>` +
+        `${body}><div class="vx-state" data-state="stale"><div class="vx-state-icon">⏱</div><div><b>Périmé</b><br>${msg || 'La dernière valeur n’est pas affichée afin d’éviter une lecture obsolète.'}</div></div></div>`;
     if (state === 'error')
-      return `<div class="vx-chart-body" style="height:${h}px"><div class="vx-state" data-tone="error" data-state="error"><div class="vx-state-icon">!</div><div><b>Erreur</b><br>${msg || 'Impossible de charger ce graphique.'}</div></div></div>`;
+      return `${body}><div class="vx-state" data-tone="error" data-state="error"><div class="vx-state-icon">!</div><div><b>Erreur</b><br>${msg || 'Impossible de charger ce graphique.'}</div></div></div>`;
     /* empty (défaut) — assumé, jamais un rectangle vide */
-    return `<div class="vx-chart-body" style="height:${h}px"><div class="vx-state" data-state="empty"><div class="vx-state-icon">—</div><div><b>Donnée indisponible</b><br>${msg || opts.question || 'Aucune donnée à afficher.'}</div></div></div>`;
+    return `${body}><div class="vx-state" data-state="empty"><div class="vx-state-icon">—</div><div><b>Donnée indisponible</b><br>${msg || opts.question || 'Aucune donnée à afficher.'}</div></div></div>`;
   };
 
   /* Raccourci : rendre un Chart Shell dans un état donné (sans canvas). */
@@ -118,60 +219,85 @@
   };
 
   C.card = function (host, opts) {
-    /* CHART SHELL CANONIQUE (§34). opts:
-       {title, question, conclusion, timeframe, unit, freshness, summary,
-        controlsHtml, height, source, timestamp, mode, limits,
-        explain:{shows,why,confirm,invalidate}, legend:[{label,color}],
-        state:'loading'|'empty'|'stale'|'error', stateMessage,
-        render(canvas)->Chart}
-       Contrat : titre · question · conclusion · période · unité · source ·
-       fraîcheur · légende · aide · résumé accessible · skeleton/vide/périmé/erreur. */
+    /* Shell canonique : réponse, contexte, rendu, provenance et aide. */
+    opts = opts || {};
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;
     destroyOn(el.querySelector('canvas'));   // anti-fuite : détruit le graphique du rendu précédent
     const id = 'vxch-' + (++uid);
     const legend = (opts.legend || []).map(l =>
       `<span><span class="vx-swatch" style="background:${l.color}"></span>${l.label}</span>`).join('');
-    el.classList.add('vx-card', 'vx-chart-card');
+    const explain = opts.explain && typeof opts.explain === 'object' ? opts.explain : null;
+    const explainSections = explain ? [
+      ['Ce que montre le graphique', explain.shows],
+      ['Pourquoi cela compte', explain.why],
+      ['Ce qui confirmerait', explain.confirm],
+      ['Ce qui invaliderait', explain.invalidate],
+    ].filter(([, value]) => typeof value === 'string' && value.trim()) : [];
+    const hasExplain = explainSections.length > 0;
+    /* `VX.fmt.ago` rend un tiret pour un horodatage absent ou invalide : on
+       l'écarte ici pour ne jamais exposer ce placeholder dans la provenance. */
+    const ageLabel = opts.timestamp !== null && opts.timestamp !== undefined && opts.timestamp !== ''
+      ? VX.fmt.ago(opts.timestamp) : '';
+    const hasTimestamp = !!ageLabel && ageLabel !== '—';
+    const modeLabel = { live: 'Live', delayed: 'Différé', fallback: 'Secours', demo: 'Démo',
+      stale: 'Périmé', error: 'Erreur' }[String(opts.mode || '').toLowerCase()] || '';
+    const provenance = hasTimestamp
+      ? VX.updateIndicator(opts.timestamp, opts.source, opts.mode)
+      : (opts.source ? `<span class="vx-update" data-mode="${opts.mode || 'fallback'}"><span class="vx-dot"></span>${opts.source}${modeLabel ? ' · ' + modeLabel : ''}</span>` : '');
+    const detailButton = hasExplain
+      ? `<button class="vx-btn vx-btn-sm vx-btn-ghost vx-explain-btn" data-explain="${id}" aria-label="Comprendre ce graphique">Détails</button>`
+      : '';
+    const foot = (provenance || opts.limits || detailButton) ? `<div class="vx-chart-foot">
+        ${provenance ? `<span class="vx-chart-provenance">${provenance}</span>` : ''}
+        ${opts.limits ? `<span class="vx-meta">${opts.limits}</span>` : ''}
+        ${detailButton}
+      </div>` : '';
+    const variant = chartVariant(opts);
+    if (el.classList && typeof el.classList.remove === 'function') {
+      chartVariants.forEach(name => el.classList.remove('vx-chart-size-' + name));
+    }
+    el.classList.add('vx-card', 'vx-chart-card', 'vx-chart-size-' + variant);
+    if (typeof el.setAttribute === 'function') el.setAttribute('data-chart-size', variant);
     const head = `
       <div class="vx-chart-head">
-        <span class="vx-chart-title">${opts.title || ''}</span>
-        ${opts.timeframe ? `<span class="vx-badge">${opts.timeframe}</span>` : ''}
-        ${opts.unit ? `<span class="vx-badge vx-badge-unit">${opts.unit}</span>` : ''}
-        ${C.freshnessBadge(opts.freshness)}
-        <span class="vx-chart-controls">${opts.controlsHtml || ''}</span>
-        ${opts.question ? `<span class="vx-chart-question">${opts.question}</span>` : ''}
+        <h3 class="vx-chart-title" id="${id}-title">${opts.title || ''}</h3>
+        ${(opts.timeframe || opts.unit || opts.freshness) ? `<span class="vx-chart-meta">
+          ${opts.timeframe ? `<span class="vx-badge">${opts.timeframe}</span>` : ''}
+          ${opts.unit ? `<span class="vx-badge vx-badge-unit">${opts.unit}</span>` : ''}
+          ${C.freshnessBadge(opts.freshness)}</span>` : ''}
+        ${opts.controlsHtml ? `<span class="vx-chart-controls">${opts.controlsHtml}</span>` : ''}
+        ${opts.question && !opts.conclusion ? `<span class="vx-chart-question">${opts.question}</span>` :
+          (opts.question ? `<span class="vx-sr-only">${opts.question}</span>` : '')}
         ${opts.conclusion ? `<span class="vx-chart-conclusion">${opts.conclusion}</span>` : ''}
       </div>`;
 
     /* États honnêtes : pas de canvas, on rend l'état et on sort. */
     if (opts.state && opts.state !== 'ready') {
-      el.innerHTML = head + C._stateBody(opts.state, opts);
+      el.innerHTML = head + C._stateBody(opts.state, opts) + foot;
       return null;
     }
 
     const summary = opts.summary || opts.conclusion || opts.title || 'graphique';
     el.innerHTML = head +
-      `<div class="vx-chart-body" style="height:${opts.height || 200}px"><canvas id="${id}" role="img" aria-label="${summary}"></canvas></div>` +
-      (opts.summary ? `<p class="vx-sr-only">${opts.summary}</p>` : '') +
+      `<div class="vx-chart-body"${chartHeightStyle(opts)}><canvas id="${id}" role="img" aria-labelledby="${id}-title" aria-describedby="${id}-summary"></canvas></div>` +
+      `<p class="vx-sr-only" id="${id}-summary">${attr(summary)}</p>` +
       (legend ? `<div class="vx-chart-legend">${legend}</div>` : '') +
-      `<div class="vx-chart-foot">
-        ${VX.updateIndicator(opts.timestamp, opts.source, opts.mode)}
-        ${opts.unit ? `<span class="vx-meta">Unité : ${opts.unit}</span>` : ''}
-        ${opts.limits ? `<span class="vx-meta">${opts.limits}</span>` : ''}
-        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-explain-btn" data-explain="${id}">Comprendre ce graphique</button>
-      </div>`;
+      foot;
     const canvas = el.querySelector('canvas');
     const chart = opts.render ? opts.render(canvas) : null;
+    /* Certains builders (multiLine) gèrent eux-mêmes l'identification des
+       séries selon le viewport. Leur légende remplace celle du shell. */
+    if (chart && chart.$vxOwnLegend) el.querySelector('.vx-chart-legend')?.remove();
     el.querySelector('[data-explain]')?.addEventListener('click', () => {
-      const ex = opts.explain || {};
-      VX.shell.openDrawer(opts.title || 'Graphique', `
-        <h3 class="vx-mb2">Ce que montre le graphique</h3><p class="vx-dim">${ex.shows || opts.question || '—'}</p>
-        <h3 class="vx-mt4 vx-mb2">Pourquoi cela compte</h3><p class="vx-dim">${ex.why || '—'}</p>
-        <h3 class="vx-mt4 vx-mb2">Ce qui confirmerait</h3><p class="vx-dim">${ex.confirm || '—'}</p>
-        <h3 class="vx-mt4 vx-mb2">Ce qui invaliderait</h3><p class="vx-dim">${ex.invalidate || '—'}</p>
-        <div class="vx-divider"></div>
-        <div class="vx-meta">Source : ${opts.source || 'n/d'}${opts.unit ? ' · Unité : ' + opts.unit : ''} · ${VX.fmt.ago(opts.timestamp)}${opts.limits ? ' · ' + opts.limits : ''}</div>`);
+      const meta = [];
+      if (opts.source) meta.push('Source : ' + opts.source);
+      if (hasTimestamp) meta.push(ageLabel);
+      if (opts.limits) meta.push(opts.limits);
+      const body = explainSections.map(([title, value], index) =>
+        `<h3 class="${index ? 'vx-mt4 ' : ''}vx-mb2">${title}</h3><p class="vx-dim">${value}</p>`).join('');
+      VX.shell.openDrawer(opts.title || 'Graphique', body + (meta.length
+        ? `<div class="vx-divider"></div><div class="vx-meta">${meta.join(' · ')}</div>` : ''));
     });
     return chart;
   };
@@ -181,31 +307,25 @@
     if (!canvas || !values || values.length < 2) return null;
     const up = values[values.length - 1] >= values[0];
     const col = color || (up === positiveIsGood ? C.colors.positive : C.colors.negative);
-    /* signature 2026 (lot 53) : lissage monotone + mini-aire en dégradé —
-       le rendu watchlist des apps de courtage, muet (aucune interaction). */
     return C.mount(canvas, {
       type: 'line',
-      data: { labels: values.map((_, i) => i), datasets: [{ data: values, borderColor: col, borderWidth: 1.6, pointRadius: 0, cubicInterpolationMode: 'monotone', tension: .35, fill,
+      data: { labels: values.map((_, i) => i), datasets: [{ data: values, borderColor: col, borderWidth: 1.5, pointRadius: 0, cubicInterpolationMode: 'monotone', tension: 0, fill,
         backgroundColor: (ctx) => {
           const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height || 60);
-          g.addColorStop(0, col + '33'); g.addColorStop(1, col + '00'); return g;
+          g.addColorStop(0, col + '26'); g.addColorStop(1, col + '00'); return g;
         } }] },
       options: { scales: { x: { display: false }, y: { display: false } }, plugins: { tooltip: { enabled: false } }, events: [] },
     });
   };
-  /* ── Signature visuelle 2026 (LOT 51) — appliquée CENTRALEMENT à C.area ──
-     Courbe LISSE monotone (jamais de dépassement au-delà des données réelles),
-     dégradé riche 3 arrêts, glow subtil de la ligne, pastille de dernier prix
-     façon app de courtage. Palette : C.colors + suffixes alpha sur la couleur
-     reçue (même idiome que l'existant — aucun littéral nouveau). */
+  /* Glow optionnel conservé pour les appelants historiques. */
   C.glowPlugin = function (color) {
     return {
       id: 'vxGlow',
       beforeDatasetDraw(chart, args) {
         if (args.index !== 0) return;
         const ctx = chart.ctx;
-        ctx.save(); ctx.shadowColor = color + '59'; ctx.shadowBlur = 7;
-        ctx.shadowOffsetY = 1;
+        ctx.save(); ctx.shadowColor = color + '33'; ctx.shadowBlur = 2;
+        ctx.shadowOffsetY = 0;
       },
       afterDatasetDraw(chart, args) {
         if (args.index !== 0) return;
@@ -213,10 +333,9 @@
       },
     };
   };
-  C.crosshairPlugin = function (color) {
-    /* ligne de visée verticale au survol (type app de courtage) — suit le
-       point ACTIF du tooltip (mode index) + point surligné ; jamais
-       dessinée hors survol. */
+  C.crosshairPlugin = function () {
+    /* Visée neutre et discrète : elle suit uniquement un point ACTIF du
+       tooltip, reste bornée au plot et ne transforme jamais la série en décor. */
     return {
       id: 'vxCrosshair',
       afterDatasetsDraw(chart) {
@@ -225,13 +344,19 @@
         const active = tt.getActiveElements();
         if (!active.length || tt.opacity === 0) return;
         const el = active[0].element, area = chart.chartArea, ctx = chart.ctx;
+        if (!el || !area || !Number.isFinite(el.x) || el.x < area.left || el.x > area.right) return;
         ctx.save();
-        ctx.strokeStyle = color + '59';
-        ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
+        if (ctx.rect && ctx.clip) { ctx.beginPath(); ctx.rect(area.left, area.top, area.right - area.left, area.bottom - area.top); ctx.clip(); }
+        ctx.strokeStyle = C.colors.crosshair;
+        ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(el.x, area.top); ctx.lineTo(el.x, area.bottom); ctx.stroke();
         ctx.setLineDash([]);
-        ctx.beginPath(); ctx.arc(el.x, el.y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = color; ctx.fill();
+        if (Number.isFinite(el.y) && el.y >= area.top && el.y <= area.bottom) {
+          const dataset = chart.data && chart.data.datasets && chart.data.datasets[active[0].datasetIndex];
+          const pointColor = dataset && typeof dataset.borderColor === 'string' ? dataset.borderColor : C.colors.text;
+          ctx.beginPath(); ctx.arc(el.x, el.y, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = pointColor; ctx.fill();
+        }
         ctx.restore();
       },
     };
@@ -272,9 +397,7 @@
       },
     };
   };
-  /* GRAMMAIRE TV (lot 197) : motif hachuré 45° réutilisable — équivalent
-     CANVAS du tvHatch SVG (teinte faible + rayures fines) : la texture qui
-     dit « estimation/projection, pas un réel » sur les remplissages. */
+  /* Hachures : estimation/projection, jamais série observée. */
   C.hatchPattern = function (color) {
     const t = document.createElement('canvas'); t.width = 8; t.height = 8;
     const g = t.getContext('2d');
@@ -287,9 +410,7 @@
     g.stroke();
     return g.createPattern(t, 'repeat');
   };
-  /* GRAMMAIRE TV (lot 195) : chips Max/Min posés sur les extrêmes RÉELS de la
-     série — équivalent canvas du tvEdgeChip SVG (fond plein, texte sombre).
-     which : undefined = les deux · 'max' | 'min' = un seul. */
+  /* Repères Max/Min des valeurs réelles ; `which` peut en limiter un. */
   C.tvExtremesPlugin = function (color, yFmt, which) {
     const lbl = (v) => (typeof yFmt === 'function') ? yFmt(v)
       : (window.VX && VX.fmt && VX.fmt.price ? VX.fmt.price(v) : String(v));
@@ -329,7 +450,7 @@
       },
     };
   };
-  C.area = function (canvas, labels, values, { color = C.colors.blue, yFmt, fill = true, extraDatasets = [], last = true, glow = true, crosshair = true, extremes = false, hatch = false } = {}) {
+  C.area = function (canvas, labels, values, { color = C.colors.blue, yFmt, xFmt, xTitle, yTitle, fill = true, extraDatasets = [], last = true, glow = false, crosshair = true, extremes = false, hatch = false } = {}) {
     const plugins = [];
     if (glow) plugins.push(C.glowPlugin(color));
     if (crosshair) plugins.push(C.crosshairPlugin(color));
@@ -338,51 +459,41 @@
     return C.mount(canvas, {
       type: 'line',
       data: { labels, datasets: [{ data: values, borderColor: color, borderWidth: 1.8, pointRadius: 0,
-        cubicInterpolationMode: 'monotone', tension: .35, fill,
-        /* LOT 120 : dégradé vertical à 4 arrêts — descente plus douce
-           (jamais un aplat), fin totalement transparente.
-           LOT 197 (tournée TV) : hatch=true → remplissage HACHURÉ
-           (C.hatchPattern) = la texture « estimation/projection ». */
+        pointHoverBackgroundColor: interactiveColor(color), pointHoverBorderColor: interactiveColor(color),
+        cubicInterpolationMode: 'monotone', tension: 0, fill,
         backgroundColor: hatch ? C.hatchPattern(color) : (ctx) => {
           const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height || 200);
-          g.addColorStop(0, color + '59'); g.addColorStop(.3, color + '2E');
-          g.addColorStop(.62, color + '12'); g.addColorStop(1, color + '00');
+          g.addColorStop(0, color + '2E'); g.addColorStop(.3, color + '1F');
+          g.addColorStop(.62, color + '0F'); g.addColorStop(1, color + '00');
           return g;
         } }, ...extraDatasets] },
-      options: { scales: C.axes({ yFmt }), interaction: { mode: 'index', intersect: false } },
+      options: { scales: C.axes({ yFmt, xFmt, xTitle, yTitle }), interaction: C.interaction('line') },
       plugins,
     });
   };
-  C.bars = function (canvas, labels, values, { colors, horizontal = false, yFmt } = {}) {
+  C.bars = function (canvas, labels, values, { colors, horizontal = false, yFmt, valueFmt, xTitle, yTitle } = {}) {
+    /* `yFmt` reste supporté pour tous les appelants historiques. `valueFmt`
+       nomme plus justement le contrat : en horizontal, la valeur vit sur X. */
+    const fmt = typeof valueFmt === 'function' ? valueFmt : yFmt;
+    const formatValue = (v) => typeof fmt === 'function' ? fmt(v) : String(v);
     const cols = colors || values.map(v => v >= 0 ? C.colors.positive : C.colors.negative);
-    /* signature 2026 (lot 53) + LOT 125 : matière VERRE — chaque barre est un
-       dégradé de sa PROPRE couleur, dense à l'extrémité de la valeur et doux
-       vers la base (même grammaire que le treemap/l'aire), liseré fin de la
-       couleur, PLEINE au survol. L'alpha n'est appliqué qu'aux hex 6 digits —
-       toute autre couleur passe inchangée, jamais corrompue. */
+    const hoverCols = cols.map(interactiveColor);
+    /* Remplissage institutionnel : aplat contenu, liseré fin, couleur pleine
+       seulement au survol. Aucun dégradé décoratif sur une comparaison. */
     const isHex = (c) => typeof c === 'string' && /^#[0-9A-Fa-f]{6}$/.test(c);
-    const glass = (ctx) => {
+    const barFill = (ctx) => {
       const c = cols[ctx.dataIndex % cols.length];
-      if (!isHex(c)) return c;
-      const area = ctx.chart.chartArea;
-      if (!area) return c + 'D9';
-      const neg = Number(ctx.raw) < 0;
-      const g = horizontal
-        ? ctx.chart.ctx.createLinearGradient(area.left, 0, area.right, 0)
-        : ctx.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
-      /* extrémité de la valeur = dense (E0), base = douce (55) */
-      if (horizontal ? neg : !neg) { g.addColorStop(0, c + 'E0'); g.addColorStop(1, c + '55'); }
-      else { g.addColorStop(0, c + '55'); g.addColorStop(1, c + 'E0'); }
-      return g;
+      return isHex(c) ? c + 'B8' : c;
     };
-    /* GRAMMAIRE TV (lot 199) : la barre DOMINANTE (|valeur| max, si ≥ 2
-       barres) porte un liseré appuyé + sa VALEUR en chip pleine couleur
-       (texte sombre) au bout de la barre — même langage que la barre
-       dominante du consensus (191) et la cellule dominante de la heatmap
-       (194). Les autres barres gardent leur matière verre inchangée. */
-    const domI = values.length >= 2
-      ? values.reduce((b, v, i) => Math.abs(Number(v) || 0) > Math.abs(Number(values[b]) || 0) ? i : b, 0)
-      : -1;
+    /* Une seule valeur dominante reçoit un repère chiffré. */
+    let domI = -1;
+    if (values.length >= 2) values.forEach((raw, index) => {
+      if (raw === null || raw === undefined || typeof raw === 'boolean'
+          || (typeof raw === 'string' && raw.trim() === '')) return;
+      const value = Number(raw);
+      if (!Number.isFinite(value)) return;
+      if (domI < 0 || Math.abs(value) > Math.abs(Number(values[domI]))) domI = index;
+    });
     const domPlugin = {
       id: 'vxBarDominant',
       afterDatasetsDraw(chart) {
@@ -391,7 +502,7 @@
         const pt = meta && meta.data && meta.data[domI]; if (!pt) return;
         const v = Number(values[domI]); if (!isFinite(v)) return;
         const col = cols[domI % cols.length];
-        const txt = (typeof yFmt === 'function') ? yFmt(v) : String(v);
+        const txt = formatValue(v);
         const ctx = chart.ctx, area = chart.chartArea;
         ctx.save();
         ctx.font = '700 9px ' + ((window.Chart && Chart.defaults.font.family) || 'Inter,sans-serif');
@@ -409,23 +520,44 @@
         ctx.restore();
       },
     };
+    const scales = C.axes({
+      xFmt: horizontal ? fmt : undefined,
+      yFmt: horizontal ? undefined : fmt,
+      xTitle,
+      yTitle,
+    });
     return C.mount(canvas, {
       type: 'bar',
-      data: { labels, datasets: [{ data: values, backgroundColor: glass, hoverBackgroundColor: cols,
+      data: { labels, datasets: [{ data: values, backgroundColor: barFill, hoverBackgroundColor: hoverCols,
         borderColor: cols.map((c, i) => isHex(c) ? (i === domI ? c : c + '80') : c),
         borderWidth: values.map((_, i) => i === domI ? 1.6 : 1),
         borderRadius: 5, borderSkipped: false, maxBarThickness: 26 }] },
-      options: { indexAxis: horizontal ? 'y' : 'x', scales: C.axes({ yFmt }) },
+      options: { indexAxis: horizontal ? 'y' : 'x', scales,
+        interaction: C.interaction('bar'),
+        plugins: { tooltip: { callbacks: { label(ctx) {
+          const value = horizontal ? ctx.parsed.x : ctx.parsed.y;
+          return value === null || value === undefined ? '' : formatValue(value);
+        } } } } },
       plugins: [domPlugin],
     });
   };
   C.donut = function (canvas, labels, values, { colors } = {}) {
-    /* §33 : un donut ≤ ~5 catégories · signature 2026 (lot 53) : arcs
-       arrondis espacés + léger décalage au survol.
-       LOT 128 : LE chiffre éducatif du donut — la catégorie DOMINANTE et sa
-       part (%) affichées au CENTRE de l'anneau, dans la couleur de son arc.
-       L'œil lit la conclusion sans additionner de tête. Rien si total nul. */
-    const l = labels.slice(0, 5), v = values.slice(0, 5);
+    /* Donut borné à cinq catégories, total nul non dessiné. */
+    const rawLabels = Array.isArray(labels) ? labels : [];
+    const rawValues = Array.isArray(values) ? values : [];
+    let l = rawLabels.slice(), v = rawValues.slice(0, rawLabels.length);
+    const requestedPalette = Array.isArray(colors) ? colors : C.colors.series;
+    let palette = rawLabels.map((_, index) =>
+      requestedPalette[index] || C.colors.series[index % C.colors.series.length]);
+    /* La queue est agrégée explicitement sans perdre le total. */
+    if (l.length > 5) {
+      const other = v.slice(4).reduce((sum, value) => sum + (Number(value) || 0), 0);
+      l = l.slice(0, 4).concat('Autres');
+      v = v.slice(0, 4).concat(other);
+      palette = palette.slice(0, 4).concat(C.colors.neutral);
+    } else {
+      l = l.slice(0, 5); v = v.slice(0, 5); palette = palette.slice(0, 5);
+    }
     const center = {
       id: 'vxDonutCenter',
       afterDatasetsDraw(chart) {
@@ -450,24 +582,21 @@
     };
     return C.mount(canvas, {
       type: 'doughnut',
-      data: { labels: l, datasets: [{ data: v, backgroundColor: colors || C.colors.series, borderWidth: 0, borderRadius: 4, spacing: 2, hoverOffset: 6 }] },
-      options: { cutout: '70%', plugins: { legend: { display: true, position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } },
+      data: { labels: l, datasets: [{ data: v, backgroundColor: palette,
+        hoverBackgroundColor: palette.map(interactiveColor), borderWidth: 0, borderRadius: 4, spacing: 1, hoverOffset: 3 }] },
+      options: { cutout: '70%', interaction: C.interaction('doughnut'), plugins: { legend: { display: true,
+        position: compactChartViewport() ? 'bottom' : 'right',
+        align: 'start', labels: { boxWidth: 10, boxHeight: 3, padding: 12,
+          usePointStyle: true, pointStyle: 'line', font: { size: 10 } } } } },
       plugins: [center],
     });
   };
-  /* LOT 120 — finition « ultra propre » des lignes multiples : chaque série
-     se termine par un POINT NET dans sa couleur (halo léger) et son NOM court
-     collé au bout de la ligne — l'œil suit une courbe jusqu'à son identité,
-     sans aller-retour avec la légende. Aucun littéral couleur nouveau. */
+  /* Repère terminal ; nom en bout seulement quand trois séries au plus tiennent. */
   C.endDotsPlugin = function (withLabels) {
     return {
       id: 'vxEndDots',
       afterDatasetsDraw(chart) {
         const { ctx } = chart;
-        /* LOT 129 : anti-collision des noms de série — deux lignes qui
-           finissent à la même hauteur (ex. courbe des taux « Actuelle » /
-           « Séance préc. ») écartent leurs étiquettes d'au moins 11 px au
-           lieu de s'écrire l'une sur l'autre. */
         const placed = [];
         const labelY = (y) => {
           let yy = y;
@@ -487,8 +616,8 @@
           const col = (typeof d.borderColor === 'string' && d.borderColor) || C.colors.series[i % 6];
           ctx.save();
           ctx.fillStyle = col;
-          ctx.globalAlpha = .22;
-          ctx.beginPath(); ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2); ctx.fill();   /* halo */
+          ctx.globalAlpha = .12;
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2); ctx.fill(); /* repère */
           ctx.globalAlpha = 1;
           ctx.beginPath(); ctx.arc(pt.x, pt.y, 2.6, 0, Math.PI * 2); ctx.fill(); /* point net */
           if (withLabels && d.label) {
@@ -501,7 +630,8 @@
       },
     };
   };
-  /* Halo néon très doux sous chaque trait — la matière Neon Glass sans bruit. */
+  /* Renfort optique quasi imperceptible : maintient le contraste d'un trait
+     fin sans produire de halo décoratif. Conservé pour compatibilité API. */
   C.softGlowPlugin = function () {
     return {
       id: 'vxSoftGlow',
@@ -510,33 +640,40 @@
         chart.ctx.save();
         if (typeof d.borderColor === 'string') {
           chart.ctx.shadowColor = d.borderColor;
-          chart.ctx.shadowBlur = 4;
+          chart.ctx.shadowBlur = 1;
         }
       },
       afterDatasetDraw(chart) { chart.ctx.restore(); },
     };
   };
-  C.multiLine = function (canvas, labels, datasets, { yFmt, crosshair = true } = {}) {
-    /* signature 2026 affinée (lot 120) : traits FINS (1.6), halo néon doux,
-       point terminal net + nom de série en bout de ligne. Lissage monotone
-       conservé (jamais de faux extrêmes). */
-    return C.mount(canvas, {
+  C.multiLine = function (canvas, labels, datasets, { yFmt, xFmt, xTitle, yTitle, crosshair = true } = {}) {
+    /* Traits fins, segments exacts (tension 0), point terminal et légende
+       responsive. Aucun faux extremum ni courbe décorative. */
+    const compact = compactChartViewport();
+    const showEndLabels = !compact && datasets.length <= 3;
+    const endDots = showEndLabels ? C.endDotsPlugin(true) : C.endDotsPlugin(false);
+    const chart = C.mount(canvas, {
       type: 'line',
-      data: { labels, datasets: datasets.map((d, i) => Object.assign({ borderColor: C.colors.series[i % 6], borderWidth: 1.6, pointRadius: 0, cubicInterpolationMode: 'monotone', tension: .35, fill: false }, d)) },
-      options: { scales: C.axes({ yFmt }), interaction: { mode: 'index', intersect: false },
-        layout: { padding: { right: 54 } },
-        plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } },
-      plugins: [...(crosshair ? [C.crosshairPlugin(C.colors.brand)] : []),
-                C.softGlowPlugin(), C.endDotsPlugin(true)],
+      data: { labels, datasets: datasets.map((d, i) => {
+        const color = d.borderColor || C.colors.series[i % C.colors.series.length];
+        return Object.assign({ borderColor: color, borderWidth: 1.6, pointRadius: 0,
+          pointHoverBackgroundColor: interactiveColor(color), pointHoverBorderColor: interactiveColor(color),
+          cubicInterpolationMode: 'monotone', tension: 0, fill: false }, d);
+      }) },
+      options: { scales: C.axes({ yFmt, xFmt, xTitle, yTitle }), interaction: C.interaction('line'),
+        layout: { padding: { right: showEndLabels ? 54 : 8 } },
+        plugins: { legend: { display: !showEndLabels, position: 'bottom', align: 'start',
+          labels: { boxWidth: 8, boxHeight: 3, padding: 12,
+            usePointStyle: true, pointStyle: 'line', font: { size: 10 } } } } },
+      plugins: [...(crosshair ? [C.crosshairPlugin()] : []),
+                C.softGlowPlugin(), endDots],
     });
+    if (chart) chart.$vxOwnLegend = true;
+    return chart;
   };
   /* Annotations de niveaux (entrée/stop/TP…) — plugin ligne horizontale. */
   C.levelLines = function (levels) {
-    /* levels: [{value,label,kind:'entry'|'stop'|'tp'|'support'|'resistance'}]
-       GRAMMAIRE TV (lot 202) : chaque niveau du PLAN porte son étiquette en
-       CHIP pleine couleur au BORD DROIT (texte sombre) — comme les étiquettes
-       de l'échelle de prix TradingView — avec anti-collision verticale
-       (empilement) et bornage à la zone de tracé. Ligne pointillée inchangée. */
+    /* Étiquettes bornées et anticollision au bord droit. */
     const colByKind = { entry: C.colors.info, stop: C.colors.negative, tp: C.colors.positive,
       support: C.colors.cyan, resistance: C.colors.warning };
     return {
@@ -574,10 +711,7 @@
       },
     };
   };
-  /* ── GRAMMAIRE TV (tournée graphique, lot 189) ─────────────────────────────
-     Helpers partagés par les builders refaits au style TradingView :
-     hachures d'ESTIMATION (zones prévisionnelles) et chip d'ÉTIQUETTE DE BORD
-     (Max/Moy/Min collés au bord droit, comme le cône de prix cible TV). */
+  /* Primitives SVG pour estimation et étiquettes de bord. */
   C.tvHatch = function (id, color) {
     // <defs> réutilisable : rayures diagonales fines = « estimation, pas un réel »
     return `<pattern id="${id}" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
@@ -593,14 +727,7 @@
       <text x="${(anchor + w / 2).toFixed(1)}" y="${(y + fs * 0.36).toFixed(1)}" text-anchor="middle" fill="var(--vx-graphite-850,#121214)" font-size="${fs}" font-weight="800" style="font-variant-numeric:tabular-nums">${text}</text></g>`;
   };
 
-  /* ── Jauge TV (SVG, sans Chart.js) — régime, risk score, VIX, options env ──
-     STYLE TRADINGVIEW (lot 189) : arc UNIQUE en dégradé continu construit sur
-     les couleurs des bandes (rouge→jaune→vert…), AIGUILLE blanche depuis le
-     pivot, libellés de zones au fil de l'arc, état (reading) affiché
-     en évidence dans la couleur de la zone courante.
-     opts: {value, min=0, max=100, unit, label, reading,
-            bands:[{to, color, label?}]}  // zones gauche→droite (ordre croissant)
-     Accessible : role=img + aria-label chiffré. Aucune animation permanente. */
+  /* Jauge SVG accessible, réservée aux métriques réellement bornées. */
   C.gauge = function (host, opts) {
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;
@@ -617,8 +744,6 @@
     };
     const bands = o.bands && o.bands.length ? o.bands : [{ to: max, color: C.colors.neutral }];
     const gid = 'vxGg-' + ((el.id || 'g').replace(/[^\w-]/g, ''));
-    // Dégradé CONTINU le long de l'axe des valeurs : un stop au début et à la
-    // fin de chaque bande (les couleurs fondent à la frontière, comme TV).
     const span = max - min;
     let stops = '', prev = min;
     bands.forEach((b, i) => {
@@ -628,9 +753,7 @@
       prev = b.to;
     });
     const defs = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="0">${stops}</linearGradient>${C.tvHatch(gid + '-h', C.colors.muted)}</defs>`;
-    // piste : l'arc ENTIER en dégradé (léger si pas de valeur, franc sinon)
     const track = `<path d="${arc(ang(min), ang(max))}" stroke="url(#${gid})" stroke-opacity="${v == null ? '.28' : '.9'}" stroke-width="10" fill="none" stroke-linecap="round"/>`;
-    // libellés de zones (si fournis) au milieu de chaque bande, hors de l'arc
     let zoneLabels = ''; prev = min;
     bands.forEach(b => {
       if (b.label) {
@@ -642,8 +765,6 @@
     let needle = '', valColor = C.colors.neutral;
     if (v != null) {
       for (const b of bands) { if (v <= b.to) { valColor = b.color; break; } valColor = b.color; }
-      // AIGUILLE TV : pointeur blanc COURT posé sur l'arc (jamais sur le texte
-      // central) + halo de la couleur de zone au bout.
       const a = ang(v);
       const [x1, y1] = pt(a, r - 24), [x2, y2] = pt(a, r - 2);
       const [hx, hy] = pt(a, r);
@@ -665,9 +786,7 @@
     return el;
   };
 
-  /* ── Treemap (SVG squarifié) — poids relatif : portefeuille, segments, secteurs ──
-     opts: {items:[{label, value>0, color?, sub?}], width, height, fmt?, emptyHtml?}
-     Aspect ratios équilibrés (algorithme squarify). Accessible : chaque tuile role=img. */
+  /* Treemap SVG squarifié, une tuile accessible par poids réel. */
   C.treemap = function (host, opts) {
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;
@@ -705,11 +824,6 @@
     }
     if (row.length) layout(row);
     const fmt = o.fmt || ((v) => v);
-    /* LOT 123 — matière VERRE : chaque tuile est un dégradé diagonal de sa
-       propre couleur (dense en haut-gauche → doux en bas-droit), liseré fin
-       de la couleur elle-même, part du total affichée en haut-droit sur les
-       grandes tuiles (LE chiffre éducatif du treemap). Aucun littéral
-       couleur nouveau — les couleurs viennent des données. */
     const tid = 'vxTm-' + String(el.id || 't').replace(/[^a-zA-Z0-9_-]/g, '');
     const tdefs = '<defs>' + rects.map((r, i) => {
       const col = r.d.color || C.colors.neutral;
@@ -736,10 +850,7 @@
     return el;
   };
 
-  /* ── Waterfall (SVG) — décomposition/contribution : P&L, risque, santé, décision ──
-     opts: {items:[{label, value, isTotal?}], fmt?, ariaLabel, width, height, emptyHtml}
-     Contributions cumulatives (vert +, rouge −) ; isTotal = barre depuis 0 (brand).
-     Accessible : role=img + résumé. */
+  /* Waterfall SVG accessible : contributions cumulatives et totaux depuis zéro. */
   C.waterfall = function (host, opts) {
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;
@@ -777,21 +888,35 @@
     return el;
   };
 
-  /* ── Radar (SVG polygonal) — scorecard, greeks, risques d'entreprise ──
-     opts: {axes:[{label, value}], max=100, color, ariaLabel, width, height, emptyHtml}
-     ≥3 axes requis. Accessible : role=img + résumé chiffré. */
+  /* Radar SVG accessible, au moins trois axes tous disponibles. */
   C.radar = function (host, opts) {
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;
     const o = opts || {};
-    const axes = (o.axes || []).filter(a => a && a.label != null);
+    let axes = (o.axes || []).filter(a => a && a.label != null);
     if (axes.length < 3) { el.innerHTML = o.emptyHtml || ''; return null; }
+    /* Une absence refuse le tracé entier ; le vrai zéro reste valide. */
+    const axisNumber = (a) => {
+      const raw = a.value;
+      if (raw === null || raw === undefined || typeof raw === 'boolean'
+          || (typeof raw === 'string' && raw.trim() === '')) return null;
+      const value = Number(raw);
+      return Number.isFinite(value) ? value : null;
+    };
+    const missing = axes.filter(a => axisNumber(a) === null);
+    if (missing.length) {
+      const esc = (s) => String(s).replace(/[<>&"']/g, c => (
+        { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' }[c]));
+      const labels = missing.map(a => esc(a.label)).join(', ');
+      el.innerHTML = o.emptyHtml
+        || `<div class="vx-empty" data-state="empty" role="status">Radar non tracé — axes n/d : ${labels}.</div>`;
+      return null;
+    }
+    axes = axes.map(a => Object.assign({}, a, { value: axisNumber(a) }));
     const max = o.max || 100, N = axes.length, W = o.width || 260, H = o.height || 240;
     const cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 26;
     const ang = (i) => -Math.PI / 2 + i * 2 * Math.PI / N;
     const pt = (i, r) => [cx + r * Math.cos(ang(i)), cy + r * Math.sin(ang(i))];
-    /* LOT 122 — grille en opacité DÉGRESSIVE (l'anneau extérieur guide,
-       l'intérieur murmure) : la profondeur se lit sans bruit. */
     let grid = '';
     [[0.25, .035], [0.5, .05], [0.75, .065], [1, .09]].forEach(([f, op]) => {
       grid += `<polygon points="${axes.map((_, i) => pt(i, R * f).map(n => n.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="rgba(255,255,255,${op})" stroke-width="1"/>`;
@@ -804,12 +929,9 @@
       const anchor = Math.abs(lx - cx) < 6 ? 'middle' : (lx > cx ? 'start' : 'end');
       labels += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="9.5" fill="var(--vx-text-muted,#989092)">${a.label}</text>`;
     });
-    const clamp = (v) => Math.max(0, Math.min(1, (v || 0) / max));
+    const clamp = (v) => Math.max(0, Math.min(1, v / max));
     const vpts = axes.map((a, i) => pt(i, R * clamp(a.value)).map(n => n.toFixed(1)).join(',')).join(' ');
     const col = o.color || C.colors.brand;
-    /* LOT 122 — remplissage en dégradé RADIAL (centre transparent → bord
-       coloré) : la surface respire au lieu d'être un aplat. Points sommets
-       nets avec halo léger. Aucun littéral couleur nouveau. */
     const rid = 'vxRad-' + String(el.id || 'r').replace(/[^a-zA-Z0-9_-]/g, '');
     const rdefs = `<defs><radialGradient id="${rid}" cx="50%" cy="50%" r="65%">
       <stop offset="0" stop-color="${col}" stop-opacity=".04"/>
@@ -820,30 +942,26 @@
       return `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="5" fill="${col}" fill-opacity=".18"/>
         <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.4" fill="${col}"/>`;
     }).join('');
-    /* GRAMMAIRE TV (lot 201) : le SOMMET DOMINANT (valeur max réelle) porte
-       un anneau de focus + sa valeur en chip pleine couleur (tvEdgeChip),
-       posé vers le centre pour ne pas gêner les libellés d'axes. */
+    /* Le sommet dominant reçoit l'unique repère chiffré. */
     let domMark = '';
     let domI = -1;
     axes.forEach((a, i) => {
-      if (a.value != null && !isNaN(a.value) && (domI < 0 || Number(a.value) > Number(axes[domI].value))) domI = i;
+      if (domI < 0 || a.value > axes[domI].value) domI = i;
     });
     if (domI >= 0 && C.tvEdgeChip) {
       const [dx, dy] = pt(domI, R * clamp(axes[domI].value));
       const [ix, iy] = pt(domI, Math.max(R * clamp(axes[domI].value) - 20, 14));
-      const txt = String(Math.round(axes[domI].value || 0));
+      const txt = String(Math.round(axes[domI].value));
       domMark = `<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="6.5" fill="none" stroke="${col}" stroke-opacity=".55" stroke-width="1.5"/>`
         + C.tvEdgeChip(ix - (txt.length * 9 * 0.62 + 12) / 2, iy, txt, col, { align: 'left', fontSize: 9 });
     }
-    const aria = (o.ariaLabel || 'radar') + ' : ' + axes.map(a => a.label + ' ' + Math.round(a.value || 0)).join(', ');
+    const aria = (o.ariaLabel || 'radar') + ' : ' + axes.map(a => a.label + ' ' + Math.round(a.value)).join(', ');
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block;margin:0 auto" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">
       ${rdefs}${grid}${spokes}<polygon points="${vpts}" fill="url(#${rid})" stroke="${col}" stroke-width="1.6" stroke-linejoin="round"/>${dots}${domMark}${labels}</svg>`;
     return el;
   };
 
-  /* ── Flow diagram (chaîne de nœuds connectés) — impacts, pipeline système ──
-     opts: {nodes:[{label, count?, sub?, tone?('active'|'idle'|'warn'|'err'), color?}], ariaLabel, emptyHtml}
-     Horizontal, scrollable, responsive. Accessible : role=img + résumé. */
+  /* Chaîne de nœuds accessible et scrollable. */
   C.flow = function (host, opts) {
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;
@@ -867,9 +985,7 @@
     return el;
   };
 
-  /* ── Anneaux concentriques (multi-métriques en %) — composite, scorecard ──
-     opts: {items:[{label, value, max?(=100), color?}], size?, centerLabel?, centerValue?, ariaLabel, emptyHtml}
-     Jusqu'à 5 anneaux, extérieur → intérieur. SVG pur, accessible. */
+  /* Jusqu'à cinq anneaux concentriques accessibles. */
   C.rings = function (host, opts) {
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;
@@ -885,7 +1001,6 @@
       const frac = Math.max(0, Math.min(1, (d.value || 0) / (d.max || 100)));
       const col = d.color || C.colors.series[i % C.colors.series.length];
       const circ = TAU * r;
-      // piste + arc de valeur (départ à 12h, sens horaire)
       rings += `<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="none" stroke="${col}" stroke-opacity=".16" stroke-width="${sw.toFixed(1)}"/>`;
       rings += `<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw.toFixed(1)}" stroke-linecap="round"
         stroke-dasharray="${(circ * frac).toFixed(1)} ${(circ * (1 - frac) + circ).toFixed(1)}"
@@ -906,9 +1021,7 @@
     return el;
   };
 
-  /* ── Entonnoir de conversion (étapes qui se resserrent) — pipeline de sélection ──
-     opts: {stages:[{label, value, color?}], ariaLabel, fmt?, emptyHtml}
-     Trapèzes centrés, largeur ∝ valeur, % de l'étape initiale affiché. */
+  /* Entonnoir SVG pour étapes successives réelles. */
   C.funnel = function (host, opts) {
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;
@@ -919,10 +1032,6 @@
     const top = Math.max(...stages.map(s => s.value), 1);
     const W = o.width || 320, rowH = 34, gap = 6, H = stages.length * (rowH + gap);
     const cx = W / 2, minW = 26;
-    /* LOT 121 — entonnoir « ultra propre » : UN SEUL ton de marque en dégradé
-       vertical, opacité qui décroît avec la profondeur (la matière raconte la
-       déperdition), UN chiffre par étage, la plus forte perte marquée d'un
-       −N discret. Fini l'arc-en-ciel et les pourcentages doublés. */
     const gid = 'vxFnl-' + String(el.id || 'f').replace(/[^a-zA-Z0-9_-]/g, '');
     const defs = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="${C.colors.brand}"/>
@@ -955,8 +1064,7 @@
     return el;
   };
 
-  /* ── Barres-étincelles (mini bar chart pour tuiles KPI) ──
-     C.sparkbars(hostOrEl, values[], {color?, height?, posNeg?}) */
+  /* Mini bar chart décorativement muet pour KPI. */
   C.sparkbars = function (host, values, opts) {
     const el = typeof host === 'string' ? document.getElementById(host) : host;
     if (!el) return null;

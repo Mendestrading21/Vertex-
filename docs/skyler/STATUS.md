@@ -2880,6 +2880,25 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 619 — Analyse, décision d’abord.** Une seule décision principale,
+  scénarios en appui, chandelier immédiatement dessous, puis thèse, plan et
+  risques ; preuves et outils restent accessibles sous divulgation progressive.
+  Le radar refuse désormais les axes absents au lieu d’inventer des zéros, le
+  catalyseur futur reste hors de l’historique et le scanner d’anomalies devient
+  neutre, statique et sourcé. Validation Chromium réelle à **1440/1024/390 px** :
+  HTTP 200, graphique présent, **0 px de débordement**, **0 erreur console** et
+  **0 requête échouée**. Elle a trouvé puis fait corriger la locale LWC invalide
+  et la course du prix dans le verdict. Suite **2947 passed**, routes canoniques
+  200, SW **v201**, READONLY et exécution désactivée confirmés.
+- **Lot 618 — fondations visuelles Obsidian Copper.** Identité canonique
+  **#D28A54**, surfaces graphite, hiérarchie et interactions assagies. Nouveau
+  gardien comportemental : miroirs CSS/Python/JS, couples responsive, Détails
+  conditionnel, donut Autres, barres horizontales `valueFmt`, heatmap et cartes
+  inertes. Il a trouvé `.vx-col-3` absent du passage en pile à 1024 px
+  (**3/12**) ; corrigé avant publication, puis **7/7**. Suite **2934 passed / 0
+  skipped**, 8 routes Flask 200, SW **v200**, READONLY intact. Validation
+  navigateur réelle non disponible ici : réserve maintenue, aucune capture ni
+  affirmation console inventée.
 - **Lot 617 — un plafond qui ne rognait pas, ne debordait pas, et comprimait une icone.** Derniere dimension non traitee des bandeaux : la **hauteur**. `.vx-state` portait `max-height:240px` sans regle `overflow`. **Mon piege ecrit d avance — « ca deborde » — est REFUTE** : dans un conteneur flex, un plafond **comprime** au lieu de faire deborder, et la compression est **invisible a tout test de debordement** — deux instruments ont repondu « aucun debordement » avant que le troisieme (`scrollHeight` de chaque enfant) ne trouve. **J ai failli publier « 0 zone atteignant 240 px » alors qu une y etait exactement** ; c est d avoir demande **la distribution** au lieu du compte qui a fait basculer le lot — la plus haute etait a **99,2 % du plafond**. Effet reel a 390 px : hauteur naturelle **249 px**, et les 9 px de compression absorbes **entierement par l icone fantome decorative** (41 -> 31 px), aucun texte perdu. **0 des 20 cartes ordinaires ne plafonne sa hauteur** : la contrainte etait isolee, elle est retiree. Le commentaire de production ecrit au moment du retrait affirmait un debordement — **reecrit apres la mesure, avant publication**. SW **v199**, suite **2927**, READONLY intact.
 - **Lot 616 — le texte des graphiques, mesure au lieu d etre raisonne.** Le 614 avait change `VXCharts.colors.muted` en ecrivant lui-meme « raisonnement, **pas une mesure** » : c etait sa seule dette reconnue, elle est soldee. Un `<canvas>` n expose aucun noeud de texte, donc **seuls les pixels peints existent**. **Premier banc VIDE, et il l a dit** : l interieur entier d un canvas donne 17 a 41 % de dominante — c est un dessin, pas un fond. Second banc, sur les regions ou le texte est reellement peint : **12 sondees, 5 retenues** (59 a 84 %), pire ratio **6,16** pour `muted` et **9,89** pour `text`, seuil 4,5. Fonds echantillonnes de (6,6,7) a (14,15,15) — **les canvas sont bien transparents**. **Raisonnement du 614 confirme, aucune correction.** Un **faux positif de mon propre gardien** arrete : `--vx-canvas` dans une declaration faisait passer un `radial-gradient` clair pour un fond de canvas. **0 fichier de production, aucun octet servi change, donc aucun bump SW.** Suite **2923**, MD5 8/8 identiques, READONLY intact.
 - **Lot 615 — l etiquette qui nomme chaque valeur sous 720 px, enfin rendue.** Recensee par les 613 et 614, jamais mesuree : les tables du produit sont **vides**, donc `.vx-table-cards td` n existe pas. **Un faux arrete** : j avais compte `data-label` **28 fois dans les octets servis** de `/portfolio` — c etait la **source JS des gabarits**, le navigateur disait **0**. Mesuree par **injection DOM** d une ligne synthetique a 390 px (on mesure le CSS, pas une donnee) : **2,93 avant le 613 · 4,50 apres le 613 · 5,23 apres le 615**. Le 4,50 etait **exactement le seuil** parce que le 613 avait ete **borne par la position d alors de `muted`** ; le 614 ayant leve cette contrainte, `--vx-text-faint` passe a **`#8f8587`** (marge **+0,73**, `surface-selected` fermee au passage). **Les trois lots forment une chaine.** Effet de bord : le cas publie « indetermine » au 613 se ferme. Sous le seuil **26 -> 15** ; par la methode qui a du signal sur chaque cas, **aucune famille de texte ne reste sous le seuil sur les 8 pages servies**. SW **v198**, suite **2919**, MD5 8/8 identiques, 0 erreur JS cliente, READONLY intact.
