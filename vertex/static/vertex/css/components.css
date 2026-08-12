@@ -32,18 +32,26 @@
   color:var(--vx-text-muted)}
 
 /* ── Composition de page institutionnelle ────────────────────────── */
+/* LOT 627 — RECUPERER LE HAUT DE PAGE. Mesure sur les 8 pages servies a
+   1440 px : la premiere donnee se trouvait a **247 px du haut en moyenne**
+   (183 mini, 293 maxi). Fil d'Ariane + titre + resume + bandeau demo +
+   onglets consommaient un quart de la hauteur d'ecran avant le premier
+   chiffre. Le titre repete par ailleurs le libelle de la navigation active.
+   Il n'est PAS supprime — un document a besoin de son `h1`, et un lecteur
+   d'ecran s'en sert pour annoncer la page. Il est resserre : la marge basse
+   du bloc, l'ecart au resume et la marge des meta passent d'un cran. */
 .vx-page-lead{display:flex;align-items:flex-end;gap:var(--vx-s5);
-  margin:var(--vx-s2) 0 var(--vx-s5);min-width:0}
+  margin:0 0 var(--vx-s3);min-width:0}
 .vx-page-lead__main{flex:1;min-width:0}
 .vx-page-lead__eyebrow{display:flex;align-items:center;gap:var(--vx-s2);
   margin-bottom:6px;color:var(--vx-brand-strong);font-size:10.5px;font-weight:750;
   letter-spacing:.11em;text-transform:uppercase}
 .vx-page-lead h1{font-size:clamp(26px,2.15vw,34px);line-height:1.08;
   letter-spacing:-.035em;margin:0;color:var(--vx-text-primary)}
-.vx-page-lead__summary{max-width:760px;margin:8px 0 0;color:var(--vx-text-secondary);
-  font-size:14px;line-height:1.55}
+.vx-page-lead__summary{max-width:760px;margin:4px 0 0;color:var(--vx-text-secondary);
+  font-size:14px;line-height:1.5}
 .vx-page-lead__meta{display:flex;align-items:center;gap:var(--vx-s2);
-  flex-wrap:wrap;margin-top:var(--vx-s3);color:var(--vx-text-muted);
+  flex-wrap:wrap;margin-top:var(--vx-s2);color:var(--vx-text-muted);
   font-size:var(--vx-fs-meta)}
 .vx-page-lead__actions{display:flex;align-items:center;justify-content:flex-end;
   gap:var(--vx-s2);flex-wrap:wrap;min-width:0}
