@@ -51,6 +51,17 @@
 .vx-kpi-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
   gap:var(--vx-s4);min-width:0}
 .vx-kpi-strip[data-count="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* LOT 625 — les tuiles KPI du Portefeuille portent un `grid-column:span 3` EN
+   LIGNE, dimensionne pour la grille historique a 12 colonnes. La bande
+   `vx-kpi-strip`, introduite par la refonte visuelle, n'en declare que 4 :
+   `span 3` sur 4 ne laisse tenir qu'UNE tuile par rangee. Mesure a 1440 px :
+   les quatre KPI faisaient 860 px chacun, empiles, au lieu de 276 cote a cote —
+   quatre ecrans de defilement pour quatre chiffres.
+   Le meme helper sert aussi des conteneurs `.vx-grid` a 12 colonnes ou `span 3`
+   est JUSTE : la correction doit donc venir de la BANDE, pas des tuiles.
+   `!important` est ici necessaire et non decoratif : rien d'autre ne bat un
+   style en ligne. */
+.vx-kpi-strip > *{grid-column:span 1 !important}
 .vx-kpi-card{position:relative;display:flex;flex-direction:column;min-height:116px;
   padding:var(--vx-s4);overflow:hidden}
 .vx-kpi-card::before{content:"";position:absolute;inset:0 auto 0 0;width:2px;
