@@ -356,13 +356,22 @@ async function renderSynthese(){
       (m.optPct!=null&&m.optPct>25)?'vx-warn':'')}
   </div>`;
 
+  /* LOT 625 — la treemap n'avait QU'UNE dimension de couleur : le P&L latent.
+     Or le P&L est precisement ce qui manque le plus souvent (marques IBKR hors
+     ligne). Sans lui, le plus gros objet visuel de la page devenait gris sur
+     gris et n'encodait plus que deux aires. Repli honnete : quand aucun P&L
+     n'est connu, la couleur porte la CONCENTRATION, avec le repere deja etabli
+     dans ce fichier (sous 15 % / 15-25 / au-dela). La legende suit le mode
+     reel : une couleur ne doit jamais vouloir dire deux choses sans le dire. */
+  const plConnu=rich.some(t=>t.pl!=null);
+  const totalTree=rich.reduce((s,t)=>s+Math.max(0,t.value??t.invested??0),0);
   $('pf-body').innerHTML=hero+kpis
     +'<div id="pf-diff" class="vx-mb3"></div>'
     +`<section class="vx-card vx-mb3" aria-label="Allocation et concentration">
         <div class="vx-chart-head"><span class="vx-chart-title">Allocation & concentration du capital</span>
           <span class="vx-chart-question">Où le capital est-il réellement concentré ?</span></div>
         <div id="pf-alloc-tree" style="height:260px"></div>
-        <div class="vx-card-foot"><span class="vx-meta">Taille = poids (valeur de marché, repli au coût) · couleur = P&amp;L latent (émeraude gagnant / corail perdant / neutre sans marque). Positions déclarées — aucune valeur inventée.</span></div>
+        <div class="vx-card-foot"><span class="vx-meta">Taille = poids (valeur de marché, repli au coût) · ${plConnu?'couleur = P&amp;L latent (émeraude gagnant / corail perdant / neutre sans marque)':'P&amp;L latent indisponible — <b>la couleur porte ici la CONCENTRATION</b> (émeraude sous 15 % / jaune 15-25 % / corail au-delà), pas une performance'}. Positions déclarées — aucune valeur inventée.</span></div>
       </section>`
     +`<section class="vx-card" aria-label="Positions exigeant une décision"><div class="vx-card-header">
         <span class="vx-card-title">Positions exigeant une décision</span>
@@ -376,8 +385,15 @@ async function renderSynthese(){
     const cc=VXCharts.colors;const el=$('pf-alloc-tree');const w=(el&&el.clientWidth)||900;
     VXCharts.treemap(el,{width:w,height:260,
       items:rich.map(t=>({label:t.sym,value:Math.max(1,t.value??t.invested??0),
-        sub:(t.pl!=null?((t.pl>=0?'+':'')+VX.fmt.num(t.pl,1)+'%'):(t.type!=='STK'?t.type:'')),
-        color:(t.pl>0?cc.positive:t.pl<0?cc.negative:cc.neutral)})),
+        sub:(t.pl!=null?((t.pl>=0?'+':'')+VX.fmt.num(t.pl,1)+'%')
+             :(plConnu?(t.type!=='STK'?t.type:'')
+               :(totalTree>0?VX.fmt.num(Math.max(0,t.value??t.invested??0)/totalTree*100,0)+' %':''))),
+        color:(plConnu
+               ?(t.pl>0?cc.positive:t.pl<0?cc.negative:cc.neutral)
+               :(function(){ /* repli concentration — repere ~15 % de ce fichier */
+                   if(!(totalTree>0))return cc.neutral;
+                   const w=Math.max(0,t.value??t.invested??0)/totalTree*100;
+                   return w>25?cc.negative:(w>=15?cc.warning:cc.positive);})())})),
       fmt:(v)=>VX.fmt.price(v)});
   }
 

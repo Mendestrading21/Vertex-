@@ -89,12 +89,20 @@
 }
 
 /* ── SESSION D'ANALYSE (barre de commandement toujours ouverte, Aujourd'hui) ── */
-.vx-content[data-space="briefing"] .vx-asess{display:block;margin:0 0 14px}
+/* LOT 628 — RYTHME VERTICAL DE L'ACCUEIL. Mesure sur un serveur DONT LE CODE
+   A ETE VERIFIE (marqueurs des lots 625 et 627 dans le CSS servi, SW v204) :
+   les tuiles de decision etaient a 415 px du haut. Decomposition :
+     en-tete de page 70 · bandeau demo 35 + 16 d'ecart · barre de fraicheur 74
+     · en-tete du hero + phrase de decision 103.
+   La barre de fraicheur consommait 60 px de carte (padding 12/15 + bordure)
+   pour UNE ligne de metadonnees — la plus faible densite de l'ecran. Son
+   padding et sa marge sont resserres ; son contenu n'est pas touche. */
+.vx-content[data-space="briefing"] .vx-asess{display:block;margin:0 0 8px}
 .vx-content[data-space="briefing"] .vx-ss-card{
   background:var(--ng-glass-ink,rgba(0,0,0,.34));
   background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018)),rgba(0,0,0,.34);
   -webkit-backdrop-filter:blur(12px) saturate(1.03);backdrop-filter:blur(12px) saturate(1.03);
-  border:1px solid var(--ng-border);border-radius:14px;padding:12px 15px;
+  border:1px solid var(--ng-border);border-radius:12px;padding:7px 13px;
   box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 10px 30px -16px rgba(0,0,0,.7)}
 .vx-content[data-space="briefing"] .vx-ss-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .vx-content[data-space="briefing"] .vx-ss-title{font-size:12px;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-secondary)}

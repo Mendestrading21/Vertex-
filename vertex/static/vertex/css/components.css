@@ -32,18 +32,26 @@
   color:var(--vx-text-muted)}
 
 /* ── Composition de page institutionnelle ────────────────────────── */
+/* LOT 627 — RECUPERER LE HAUT DE PAGE. Mesure sur les 8 pages servies a
+   1440 px : la premiere donnee se trouvait a **247 px du haut en moyenne**
+   (183 mini, 293 maxi). Fil d'Ariane + titre + resume + bandeau demo +
+   onglets consommaient un quart de la hauteur d'ecran avant le premier
+   chiffre. Le titre repete par ailleurs le libelle de la navigation active.
+   Il n'est PAS supprime — un document a besoin de son `h1`, et un lecteur
+   d'ecran s'en sert pour annoncer la page. Il est resserre : la marge basse
+   du bloc, l'ecart au resume et la marge des meta passent d'un cran. */
 .vx-page-lead{display:flex;align-items:flex-end;gap:var(--vx-s5);
-  margin:var(--vx-s2) 0 var(--vx-s5);min-width:0}
+  margin:0 0 var(--vx-s3);min-width:0}
 .vx-page-lead__main{flex:1;min-width:0}
 .vx-page-lead__eyebrow{display:flex;align-items:center;gap:var(--vx-s2);
   margin-bottom:6px;color:var(--vx-brand-strong);font-size:10.5px;font-weight:750;
   letter-spacing:.11em;text-transform:uppercase}
 .vx-page-lead h1{font-size:clamp(26px,2.15vw,34px);line-height:1.08;
   letter-spacing:-.035em;margin:0;color:var(--vx-text-primary)}
-.vx-page-lead__summary{max-width:760px;margin:8px 0 0;color:var(--vx-text-secondary);
-  font-size:14px;line-height:1.55}
+.vx-page-lead__summary{max-width:760px;margin:4px 0 0;color:var(--vx-text-secondary);
+  font-size:14px;line-height:1.5}
 .vx-page-lead__meta{display:flex;align-items:center;gap:var(--vx-s2);
-  flex-wrap:wrap;margin-top:var(--vx-s3);color:var(--vx-text-muted);
+  flex-wrap:wrap;margin-top:var(--vx-s2);color:var(--vx-text-muted);
   font-size:var(--vx-fs-meta)}
 .vx-page-lead__actions{display:flex;align-items:center;justify-content:flex-end;
   gap:var(--vx-s2);flex-wrap:wrap;min-width:0}
@@ -51,6 +59,17 @@
 .vx-kpi-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
   gap:var(--vx-s4);min-width:0}
 .vx-kpi-strip[data-count="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* LOT 625 — les tuiles KPI du Portefeuille portent un `grid-column:span 3` EN
+   LIGNE, dimensionne pour la grille historique a 12 colonnes. La bande
+   `vx-kpi-strip`, introduite par la refonte visuelle, n'en declare que 4 :
+   `span 3` sur 4 ne laisse tenir qu'UNE tuile par rangee. Mesure a 1440 px :
+   les quatre KPI faisaient 860 px chacun, empiles, au lieu de 276 cote a cote —
+   quatre ecrans de defilement pour quatre chiffres.
+   Le meme helper sert aussi des conteneurs `.vx-grid` a 12 colonnes ou `span 3`
+   est JUSTE : la correction doit donc venir de la BANDE, pas des tuiles.
+   `!important` est ici necessaire et non decoratif : rien d'autre ne bat un
+   style en ligne. */
+.vx-kpi-strip > *{grid-column:span 1 !important}
 .vx-kpi-card{position:relative;display:flex;flex-direction:column;min-height:116px;
   padding:var(--vx-s4);overflow:hidden}
 .vx-kpi-card::before{content:"";position:absolute;inset:0 auto 0 0;width:2px;
