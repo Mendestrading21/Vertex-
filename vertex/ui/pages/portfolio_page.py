@@ -41,17 +41,17 @@ def _tabs(view: str) -> str:
 
 
 _CONTENT = """
-<div class="vx-page-header"><div><h1>Portefeuille</h1>
+<div class="vx-page-header vx-page-lead"><div><h1>Portefeuille</h1>
 <div class="vx-sub">Où mon capital est-il exposé, et quelle position exige une décision ?</div></div>
-<div class="vx-actions">
+<div class="vx-actions vx-toolbar">
   <span id="pf-fresh" style="align-self:center"></span>
   <button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal('','position')">+ Position</button>
   <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('','watchlist')">+ Watchlist</button>
   <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/tracking">Suivis →</a>
 </div></div>
 %%TABS%%
-<div class="vx-grid vx-mt4" id="pf-summary" aria-label="Synthèse portefeuille"></div>
-<div id="pf-body" class="vx-mt4">%%LOADING%%</div>
+<div class="vx-grid vx-kpi-strip vx-mt4" id="pf-summary" aria-label="Synthèse portefeuille"></div>
+<div id="pf-body" class="vx-mt4 vx-section-stack">%%LOADING%%</div>
 """
 
 _JS = r"""
@@ -299,42 +299,34 @@ async function renderSynthese(){
   const act=priorityAction(rich);
   const demo=window.__pfLive===false;
 
-  /* Hero éditorial — honnête (données réelles uniquement), ≤ 1 message. */
-  const plLine=m.plAbs!=null
-    ?`<b class="${m.plAbs>=0?'vx-pos':'vx-neg'}">${m.plAbs>=0?'+':''}${VX.fmt.price(m.plAbs)}</b> de P&L latent`
-    :'P&L latent <b>indisponible</b> (marques IBKR hors ligne — aucun chiffre inventé)';
-  const concLine=m.top1?`Ta plus grosse position pèse <b>${VX.fmt.num(m.top1.w,0)} %</b> (${m.top1.sym}) · Top 3 = <b>${VX.fmt.num(m.top3,0)} %</b>`:'';
-  const hero=`<section class="vx-card vx-card--hero vx-mb3" aria-label="Synthèse du portefeuille">
-    <div class="vx-flex vx-wrap" style="justify-content:space-between;align-items:flex-start;gap:10px">
-      <div style="max-width:640px">
+  /* Hero ACTIONNEL : il ne répète aucun des quatre KPI chiffrés placés juste
+     dessous. Une réponse, un risque dominant, deux chemins analytiques. */
+  const hero=`<section class="vx-card vx-card--hero vx-page-lead vx-mb3" aria-label="Synthèse du portefeuille">
+    <div class="vx-grid vx-hero-grid">
+      <div class="vx-col-8">
         <div class="vx-flex" style="gap:8px;align-items:center;margin-bottom:6px">
-          <span class="vx-eyebrow">Synthèse</span>${freshBadge()}
+          <span class="vx-eyebrow">Prochaine décision analytique</span>${freshBadge()}
           ${demo?'<span class="vx-badge-demo">DÉMO</span>':''}</div>
         <h2 style="margin:0 0 6px;font-size:22px;line-height:1.25">
-          ${m.netValue!=null?VX.fmt.price(m.netValue):'n/d'} de valeur nette · ${plLine}</h2>
-        <p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.5">${concLine}${concLine?' · ':''}${rich.length} position(s), ${m.opts.length} option(s).</p>
+          ${act.sym?'<span class="vx-ticker">'+esc(act.sym)+'</span> — ':''}${esc(act.label)}</h2>
+        <p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.5">Décision d’analyse uniquement : Vertex ne transmet aucun ordre.</p>
+        <div class="vx-toolbar vx-mt3">
+          <a class="vx-btn vx-btn-sm vx-btn-primary" href="/portfolio?view=positions">Examiner les positions →</a>
+          <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio?view=risk">Analyser le risque</a>
+        </div>
       </div>
-      <div class="vx-flex" style="gap:8px;flex-wrap:wrap">
-        <a class="vx-btn vx-btn-sm vx-btn-primary" href="/portfolio?view=positions">Voir le tableau des positions →</a>
-        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio?view=risk">Analyser le risque</a>
-      </div>
-    </div>
-    <div class="vx-grid vx-mt3">
-      <div class="vx-insight vx-col-6" data-tone="risk">
+      <aside class="vx-insight vx-insight-rail vx-col-4" data-tone="risk">
         <span class="vx-kpi-label">Risque dominant</span>
         <div class="${toneCls(risk.tone)}" style="font-weight:600;margin-top:3px">${esc(risk.label)}</div>
-        <div class="vx-meta">${esc(risk.detail)}</div></div>
-      <div class="vx-insight vx-col-6" data-tone="action">
-        <span class="vx-kpi-label">Action prioritaire</span>
-        <div class="${toneCls(act.tone)}" style="font-weight:600;margin-top:3px">${act.sym?'<span class="vx-ticker">'+esc(act.sym)+'</span> — ':''}${esc(act.label)}</div>
-        <div class="vx-meta">analyse — aucune exécution d’ordre</div></div>
+        <div class="vx-meta">${esc(risk.detail)}</div>
+      </aside>
     </div></section>`;
 
   /* 4 KPI canoniques (LOT A) — valeur nette · P&L · concentration · exposition. */
   const kpi=(label,val,sub,cls)=>`<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3">
     <span class="vx-kpi-label">${label}</span><span class="vx-kpi-value" style="font-size:21px">${val}</span>
     <span class="vx-kpi-delta ${cls||'vx-muted'}">${sub}</span></div>`;
-  const kpis=`<div class="vx-grid vx-mb3">
+  const kpis=`<div class="vx-grid vx-kpi-strip vx-mb3">
     ${kpi('Valeur nette',m.netValue!=null?VX.fmt.price(m.netValue):'n/d',
       m.cash!=null?('dont cash '+VX.fmt.price(m.cash)):'cash non renseigné',m.allMarked?'':'vx-warn')}
     ${kpi('P&L latent total',m.plAbs!=null?((m.plAbs>=0?'+':'')+VX.fmt.price(m.plAbs)):'n/d',
@@ -364,13 +356,22 @@ async function renderSynthese(){
       (m.optPct!=null&&m.optPct>25)?'vx-warn':'')}
   </div>`;
 
+  /* LOT 625 — la treemap n'avait QU'UNE dimension de couleur : le P&L latent.
+     Or le P&L est precisement ce qui manque le plus souvent (marques IBKR hors
+     ligne). Sans lui, le plus gros objet visuel de la page devenait gris sur
+     gris et n'encodait plus que deux aires. Repli honnete : quand aucun P&L
+     n'est connu, la couleur porte la CONCENTRATION, avec le repere deja etabli
+     dans ce fichier (sous 15 % / 15-25 / au-dela). La legende suit le mode
+     reel : une couleur ne doit jamais vouloir dire deux choses sans le dire. */
+  const plConnu=rich.some(t=>t.pl!=null);
+  const totalTree=rich.reduce((s,t)=>s+Math.max(0,t.value??t.invested??0),0);
   $('pf-body').innerHTML=hero+kpis
     +'<div id="pf-diff" class="vx-mb3"></div>'
     +`<section class="vx-card vx-mb3" aria-label="Allocation et concentration">
         <div class="vx-chart-head"><span class="vx-chart-title">Allocation & concentration du capital</span>
           <span class="vx-chart-question">Où le capital est-il réellement concentré ?</span></div>
         <div id="pf-alloc-tree" style="height:260px"></div>
-        <div class="vx-card-foot"><span class="vx-meta">Taille = poids (valeur de marché, repli au coût) · couleur = P&amp;L latent (émeraude gagnant / corail perdant / neutre sans marque). Positions déclarées — aucune valeur inventée.</span></div>
+        <div class="vx-card-foot"><span class="vx-meta">Taille = poids (valeur de marché, repli au coût) · ${plConnu?'couleur = P&amp;L latent (émeraude gagnant / corail perdant / neutre sans marque)':'P&amp;L latent indisponible — <b>la couleur porte ici la CONCENTRATION</b> (émeraude sous 15 % / jaune 15-25 % / corail au-delà), pas une performance'}. Positions déclarées — aucune valeur inventée.</span></div>
       </section>`
     +`<section class="vx-card" aria-label="Positions exigeant une décision"><div class="vx-card-header">
         <span class="vx-card-title">Positions exigeant une décision</span>
@@ -384,8 +385,15 @@ async function renderSynthese(){
     const cc=VXCharts.colors;const el=$('pf-alloc-tree');const w=(el&&el.clientWidth)||900;
     VXCharts.treemap(el,{width:w,height:260,
       items:rich.map(t=>({label:t.sym,value:Math.max(1,t.value??t.invested??0),
-        sub:(t.pl!=null?((t.pl>=0?'+':'')+VX.fmt.num(t.pl,1)+'%'):(t.type!=='STK'?t.type:'')),
-        color:(t.pl>0?cc.positive:t.pl<0?cc.negative:cc.neutral)})),
+        sub:(t.pl!=null?((t.pl>=0?'+':'')+VX.fmt.num(t.pl,1)+'%')
+             :(plConnu?(t.type!=='STK'?t.type:'')
+               :(totalTree>0?VX.fmt.num(Math.max(0,t.value??t.invested??0)/totalTree*100,0)+' %':''))),
+        color:(plConnu
+               ?(t.pl>0?cc.positive:t.pl<0?cc.negative:cc.neutral)
+               :(function(){ /* repli concentration — repere ~15 % de ce fichier */
+                   if(!(totalTree>0))return cc.neutral;
+                   const w=Math.max(0,t.value??t.invested??0)/totalTree*100;
+                   return w>25?cc.negative:(w>=15?cc.warning:cc.positive);})())})),
       fmt:(v)=>VX.fmt.price(v)});
   }
 
@@ -446,9 +454,10 @@ function actionListHtml(state){
   if(!rows.length)return '';
   const pill=(pr)=>{const c={P0_CRITICAL:'var(--vx-negative)',P1_HIGH:'var(--vx-warning)'}[pr]||'var(--vx-text-muted)';
     return `<span class="vx-badge" style="color:${c}">${(pr||'').replace('_',' ')}</span>`;}
-  return `<section class="vx-card vx-mb3"><div class="vx-card-header">
+  return `<details class="vx-disclosure vx-mb3"><summary>Priorités avancées du moteur · ${rows.length}</summary>
+    <section class="vx-card vx-mt2"><div class="vx-card-header">
     <span class="vx-card-title">Priorités du moteur (Position Intelligence)</span>
-    <span class="vx-meta vx-right">${rows.length} · P0 puis P1</span></div>
+    <span class="vx-meta vx-right">P0 puis P1</span></div>
     <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
     <th>Priorité</th><th>Titre</th><th>Statut</th><th>Action analytique</th>
     <th>Verdict moteur</th><th class="vx-num">P&L</th></tr></thead><tbody>
@@ -461,7 +470,7 @@ function actionListHtml(state){
       <td data-label="P&L" class="vx-num ${r.pl_pct>0?'vx-pos':r.pl_pct<0?'vx-neg':''}">${r.pl_pct!=null?VX.fmt.pct(r.pl_pct,1):'n/d'}</td>
     </tr>`).join('')}</tbody></table></div>
     <div class="vx-card-footer">${VX.updateIndicator(state.updated_at,'Position Intelligence',state.live?'live':'fallback')}
-    · verdicts moteur — aucune action n’exécute d’ordre</div></section>`;
+    · verdicts moteur — aucune action n’exécute d’ordre</div></section></details>`;
 }
 
 async function renderPositions(){
@@ -531,8 +540,23 @@ async function renderPositions(){
         <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyse</button>
         <button class="vx-btn vx-btn-sm vx-btn-ghost" data-position-menu="${t.id}" aria-label="Gérer la position ${t.sym} : modifier, clôturer, supprimer">Gérer ⋯</button>
       </div></td></tr>`;};
+  const rowEssential=(t)=>{const st=thesisState(t),na=nextAction(t),tr=tierOf(t);
+    const wgt=total?((t.value??t.invested??0)/total*100):null;
+    const instrument=(/CALL|PUT/i.test(t.type||'')?t.type:(t.type||'STK'))
+      +(t.strike?' '+t.strike:'')+(t.exp?' · '+t.exp:'');
+    return `<tr>
+      <td data-label="Position"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${t.sym}">${t.sym}</button>
+        <span class="vx-meta">${esc(instrument)}</span></td>
+      <td data-label="Valeur" class="vx-num">${t.value!=null?VX.fmt.price(t.value):'n/d'}
+        <span class="vx-meta">cours ${t.mark!=null?VX.fmt.price(t.mark):'n/d'}</span></td>
+      <td data-label="P&L" class="vx-num ${t.plAbs>0?'vx-pos':t.plAbs<0?'vx-neg':''}">${t.plAbs!=null?((t.plAbs>=0?'+':'')+VX.fmt.price(t.plAbs)):'n/d'}
+        <span class="vx-meta">${t.pl!=null?VX.fmt.pct(t.pl,1):'n/d'}</span></td>
+      <td data-label="Poids" class="vx-num">${wgtBar(wgt,tr?tr.max:null)}</td>
+      <td data-label="Thèse">${stBadge(st)}<span class="vx-meta">conviction ${convOf(t)}</span></td>
+      <td data-label="Action analytique" class="${toneCls(na.tone)}"><span>${esc(na.label)}</span>
+        <div class="vx-row-actions vx-mt1"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyse</button>
+        <button class="vx-btn vx-btn-sm vx-btn-ghost" data-position-menu="${t.id}" aria-label="Gérer la position ${t.sym} : modifier, clôturer, supprimer">Gérer ⋯</button></div></td></tr>`;};
 
-  const groups={Actions:rich.filter(t=>t.type==='STK'),Options:rich.filter(t=>t.type!=='STK')};
   $('pf-body').innerHTML=
     survHtml
     +(posState?actionListHtml(posState):'')
@@ -541,41 +565,23 @@ async function renderPositions(){
        explicite du marché. Une thèse n’est « cassée » que si l’invalidation pré-définie est franchie —
        jamais par une simple baisse de prix.</div>`
     +(ibkr&&ibkr.ok===false?'<div class="vx-stale-banner">IBKR hors ligne — marques desk/EOD utilisées (aucune valeur inventée).</div>':'')
-    +Object.entries(groups).map(([g,list])=>`
-      <section class="vx-card vx-mb3"><div class="vx-card-header"><span class="vx-card-title">${g}</span>
-        <span class="vx-meta vx-right">${list.length}</span></div>
-      ${list.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
-        <th>Titre</th><th>Instrument</th><th class="vx-num">Qté</th><th class="vx-num">Prix moyen</th>
-        <th class="vx-num">Prix actuel</th><th class="vx-num">Valeur marché</th><th class="vx-num">P&L</th>
-        <th class="vx-num">P&L %</th><th class="vx-num">Poids</th><th>Conviction</th><th>État de thèse</th>
-        <th class="vx-num">Invalidation</th><th>Catalyseur</th><th>Prochaine action</th><th></th></tr></thead>
-        <tbody>${list.map(rowHtml).join('')}</tbody></table></div>`
-        :VX.states.emptyDesk('Aucune position '+g.toLowerCase()+'.')}
-      </section>`).join('')
-    +`<section class="vx-card vx-mb3" aria-label="Contribution au P&L"><div class="vx-card-header">
-        <span class="vx-card-title">Contribution au P&L par position</span>
-        <span class="vx-chart-question">Qui porte le résultat du portefeuille ?</span></div>
-       <div id="pf-contrib-host"></div></section>`
+    +`<section class="vx-card vx-mb3" aria-label="Positions déclarées"><div class="vx-card-header">
+        <span class="vx-card-title">Positions</span><span class="vx-actions"><span class="vx-meta">${rich.length} · actions et options</span>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio?view=performance">Performance →</a></span></div>
+      <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
+        <th>Position</th><th class="vx-num">Valeur</th><th class="vx-num">P&L</th>
+        <th class="vx-num">Poids</th><th>Thèse</th><th>Action analytique</th></tr></thead>
+        <tbody>${rich.map(rowEssential).join('')}</tbody></table></div>
+      <details class="vx-disclosure vx-mt3" id="pf-position-details"><summary>Détails techniques des ${rich.length} positions</summary>
+        <div class="vx-table-wrap vx-table-cards vx-mt2"><table class="vx-table"><thead><tr>
+          <th>Titre</th><th>Instrument</th><th class="vx-num">Qté</th><th class="vx-num">Prix moyen</th>
+          <th class="vx-num">Prix actuel</th><th class="vx-num">Valeur marché</th><th class="vx-num">P&L</th>
+          <th class="vx-num">P&L %</th><th class="vx-num">Poids</th><th>Conviction</th><th>État de thèse</th>
+          <th class="vx-num">Invalidation</th><th>Catalyseur</th><th>Prochaine action</th><th>Actions</th></tr></thead>
+          <tbody>${rich.map(rowHtml).join('')}</tbody></table></div></details></section>
+      <div id="pf-contrib-host" hidden aria-hidden="true"></div>`
     +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
       · IBKR: ${ibkr&&ibkr.count!==undefined?ibkr.count+' position(s) broker (lecture seule)':'hors ligne'} · lecture seule — aucun ordre</div>`;
-
-  /* Contribution au P&L (barres horizontales signées) — repli honnête sans marque. */
-  const withAbs=rich.filter(t=>t.plAbs!=null).sort((a,b)=>b.plAbs-a.plAbs);
-  const ch=$('pf-contrib-host');
-  if(ch){
-    if(!withAbs.length){ch.innerHTML='<div class="vx-meta">Marques indisponibles (IBKR hors ligne) — aucune contribution affichée plutôt qu’un chiffre inventé.</div>';}
-    else if(window.VXCharts&&VXCharts.card&&VXCharts.bars){
-      VXCharts.card('pf-contrib-host',{title:'Contribution au P&L par position',
-        question:'Qui porte le résultat ?',
-        conclusion:withAbs[0].sym+' contribue le plus ('+((withAbs[0].plAbs>=0?'+':'')+VX.fmt.price(withAbs[0].plAbs))+').',
-        height:Math.max(120,Math.min(320,withAbs.length*30)),
-        source:window.__pfLive?'IBKR/desk':'desk (repli)',timestamp:Date.now(),mode:window.__pfLive?'live':'fallback',
-        limits:'P&L latent absolu (valeur − coût) sur positions déclarées',
-        render:(cv)=>VXCharts.bars(cv,withAbs.map(t=>t.sym),withAbs.map(t=>Math.round(t.plAbs)),
-          {horizontal:true,colors:withAbs.map(t=>t.plAbs>=0?VXCharts.colors.positive:VXCharts.colors.negative),
-           yFmt:(v)=>VX.fmt.price(v)})});
-    }
-  }
 }
 
 /* ═══ PERFORMANCE (LOT G — migrée depuis Journal, domicile unique) ═══ */
@@ -586,12 +592,12 @@ async function renderPerformance(){
   const eq=(E()?E().equity():[])||[];
   const closed=(E()?E().closedPositions():[])||[];
   $('pf-body').innerHTML=`
-    <div class="vx-insight vx-mb3" role="note"><b>Performance de portefeuille — domicile unique.</b>
+    <div class="vx-insight vx-page-lead vx-mb3" role="note"><b>Performance de portefeuille — domicile unique.</b>
       Courbe cumulée, drawdown, contribution et saisonnalité vivent ici (migrées depuis Journal).
       Le Journal ne conserve que la méthode, la discipline, les erreurs et l’apprentissage.</div>
-    <div class="vx-grid vx-mb3">
-      <div class="vx-col-7" id="pf-perf-equity"></div>
-      <div class="vx-col-5" id="pf-perf-drawdown"></div>
+    <div class="vx-grid vx-hero-grid vx-mb3">
+      <div class="vx-col-8" id="pf-perf-equity"></div>
+      <aside class="vx-col-4 vx-insight-rail" id="pf-perf-drawdown"></aside>
     </div>
     <div class="vx-grid">
       <div class="vx-col-7" id="pf-perf-monthly"></div>
@@ -730,53 +736,37 @@ async function renderRisk(){
        « Manquant/insuffisant » n'est jamais présenté comme zéro. */
     const broken=rich.filter(t=>thesisState(t).key==='cassee');
     const critiques=[];
-    (guard.blocking_rules||[]).forEach(x=>critiques.push(esc(x)));
+    (guard.blocking_rules||[]).forEach(x=>critiques.push(String(x)));
     if(broken.length)critiques.push(broken.length+' position(s) sous invalidation : '+broken.map(t=>t.sym).join(' · '));
     const importants=[];
-    if(risk.hhi!=null&&risk.hhi>=0.66)importants.push('Concentration très élevée (HHI '+risk.hhi+')');
+    if(risk.hhi!=null&&risk.hhi>=0.66)importants.push('Concentration très élevée — vérifier le KPI HHI');
     const _wsv=Object.values(stress).map(v=>v&&v.impact_pct).filter(x=>typeof x==='number');
     const _worst=_wsv.length?Math.min.apply(null,_wsv):null;
     if(_worst!=null&&_worst<=-15)importants.push('Pire scénario de stress : '+VX.fmt.pct(_worst,1));
     if(risk.beta!=null&&risk.beta>=1.3)importants.push('Bêta pondéré élevé ('+risk.beta+')');
-    const prioBlock=`<section class="vx-card vx-mb3" aria-label="Risques priorisés">
-      <div class="vx-card-header"><span class="vx-card-title">Risques priorisés</span>
-        <span class="vx-meta vx-right">critiques → importants → secondaires</span></div>
-      <div class="vx-kpi-label">Critiques</div>
-      ${critiques.length?critiques.map(x=>`<div class="vx-insight" data-tone="risk">${x}</div>`).join(''):'<div class="vx-meta">Aucun risque critique détecté.</div>'}
-      <div class="vx-kpi-label vx-mt3">Importants</div>
-      ${importants.length?importants.map(x=>`<div class="vx-meta">⚠ ${esc(x)}</div>`).join(''):'<div class="vx-meta">Aucun risque important au-dessus des repères.</div>'}
-      <div class="vx-kpi-label vx-mt3">Secondaires</div>
-      <div class="vx-meta">Exposition sectorielle et Greeks détaillés ci-dessous. Greeks agrégés : ${risk.options_exposure&&risk.options_exposure.delta!=null?'disponibles':'non estimés sans IBKR (jamais inventés)'}.</div>
-    </section>`;
+    const mainRisk=critiques[0]||importants[0]||'Aucun risque critique au-dessus des repères du moteur.';
+    const riskTone=critiques.length?'risk':importants.length?'warning':'neutral';
+    const prioBlock=`<section class="vx-card vx-card--hero vx-page-lead vx-mb3" aria-label="Verdict de risque">
+      <div class="vx-card-header"><span class="vx-card-title">Verdict de risque</span>
+        <span class="vx-meta vx-right">positions réelles · lecture seule</span></div>
+      <div class="vx-grid vx-hero-grid"><div class="vx-col-8">
+        <h2 style="margin:0 0 6px;font-size:22px;line-height:1.3">${esc(mainRisk)}</h2>
+        <div class="vx-meta">${critiques.length?critiques.length+' critique(s)':importants.length?importants.length+' risque(s) important(s)':'Aucun blocage'} · les détails secondaires sont repliés.</div>
+      </div><aside class="vx-insight vx-insight-rail vx-col-4" data-tone="${riskTone}">
+        <b>Garde-fous</b><div class="vx-meta">Nouveau titre : ${guard.new_stock_allowed?'autorisé':'BLOQUÉ'} · nouvelle option : ${guard.new_option_allowed?'autorisée':'BLOQUÉE'}</div>
+      </aside></div></section>`;
+    const _hhi=(risk.hhi!=null)?Math.round(risk.hhi*100):null;
+    const _rk=(l,v,dd,cls,id)=>`<div class="vx-card vx-card--compact vx-kpi"${id?' id="'+id+'"':''} style="grid-column:span 3">
+      <span class="vx-kpi-label">${l}</span><span class="vx-kpi-value" style="font-size:22px">${v==null?'n/d':v}</span>
+      <span class="vx-kpi-delta ${cls||'vx-muted'}">${dd}</span></div>`;
 
-    $('pf-body').innerHTML=prioBlock+`<div class="vx-grid vx-mb3">
-      <section class="vx-card vx-col-4" aria-label="Concentration du risque">
-        <div class="vx-card-header"><span class="vx-card-title">Concentration du risque</span>
-          <span class="vx-chart-question">Le capital est-il trop concentré ?</span></div>
-        <div id="pf-risk-gauge"><div class="vx-skeleton" style="height:118px"></div></div>
-        <div class="vx-card-footer"><span class="vx-meta">Indice HHI (0 = dispersé · 100 = tout sur un titre) — donnée réelle du moteur.</span></div>
-      </section>
-      <section class="vx-card vx-col-8" aria-label="Synthèse du risque">
-        <div class="vx-card-header"><span class="vx-card-title">Synthèse du risque</span></div>
-        <div class="vx-grid" id="pf-risk-kpis"></div>
-      </section>
+    $('pf-body').innerHTML=prioBlock+`<div class="vx-grid vx-kpi-strip vx-mb3" id="pf-risk-kpis">
+      ${_rk('Concentration HHI',risk.hhi!=null?risk.hhi:null,'0 = dispersé · 1 = concentré',(_hhi!=null&&_hhi>=66)?'vx-neg':'','pf-risk-gauge')}
+      ${_rk('Bêta',risk.beta!=null?risk.beta:null,'pondéré')}
+      ${_rk('Drawdown',risk.drawdown_pct!=null?risk.drawdown_pct+' %':null,'depuis le pic')}
+      ${_rk('Pire scénario',_worst!=null?VX.fmt.pct(_worst,1):null,'stress moteur',(_worst!=null&&_worst<0)?'vx-neg':'')}
     </div>
-    <div class="vx-grid">
-      <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Garde-fous</span></div>
-        ${kv('Nouveau titre',guard.new_stock_allowed?'autorisé':'BLOQUÉ',guard.new_stock_allowed?'vx-pos':'vx-neg')}
-        ${kv('Nouvelle option',guard.new_option_allowed?'autorisée':'BLOQUÉE',guard.new_option_allowed?'vx-pos':'vx-neg')}
-        ${(guard.mandatory_reviews||[]).map(rr=>`<div class="vx-meta">⚠ ${esc(rr)}</div>`).join('')}</div>
-      <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Concentration</span></div>
-        ${kv('Drawdown portefeuille',risk.drawdown_pct!==null&&risk.drawdown_pct!==undefined?risk.drawdown_pct+' %':'n/d (pic non renseigné)')}
-        ${kv('HHI',risk.hhi)}${kv('Bêta pondéré',risk.beta)}
-        <div id="pf-sector-donut" class="vx-mt2"><span class="vx-meta">Exposition sectorielle…</span></div></div>
-      <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Greeks agrégés</span></div>
-        ${kv('Delta global',risk.options_exposure&&risk.options_exposure.delta,'vx-violet')}
-        ${kv('Gamma global',risk.options_exposure&&risk.options_exposure.gamma,'vx-violet')}
-        ${kv('Theta global',risk.options_exposure&&risk.options_exposure.theta,'vx-violet')}
-        ${kv('Vega global',risk.options_exposure&&risk.options_exposure.vega,'vx-violet')}
-        <div class="vx-meta vx-mt2">Greeks broker requis — sans IBKR, non estimés (aucune invention).</div></div>
-      <section class="vx-card vx-col-12"><div class="vx-card-header"><span class="vx-card-title">Stress tests (§26)</span>
+    <section class="vx-card" aria-label="Visualisation unique des stress tests"><div class="vx-card-header"><span class="vx-card-title">Stress tests (§26)</span>
         <span class="vx-chart-question">Combien perd le portefeuille dans chaque scénario ?</span></div>
         ${(function(){const arr=Object.entries(stress).filter(([,v])=>v.impact_pct!=null);
           if(!arr.length)return '';
@@ -795,26 +785,37 @@ async function renderRisk(){
               +'<span style="flex:1;height:13px;background:var(--vx-surface-3,#121214);border-radius:4px;overflow:hidden"><span style="display:block;height:100%;width:'+w.toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:4px'+(isWorst?';box-shadow:0 0 6px color-mix(in srgb,var(--vx-negative,#E9555F) 45%,transparent)':'')+'"></span></span>'
               +'<span style="width:58px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums;'+(isWorst?'font-weight:700':'')+'" class="'+(neg?'vx-neg':'vx-pos')+'">'+VX.fmt.pct(v.impact_pct,1)+'</span></div>';
           }).join('')+'</div>';})()}
-        <div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Scénario</th>
-        <th class="vx-num">Impact estimé</th><th>Note</th></tr></thead><tbody>
-        ${Object.entries(stress).map(([k,v])=>`<tr><td>${k}</td>
-          <td class="vx-num ${v.impact_pct!=null?(v.impact_pct<0?'vx-neg':v.impact_pct>0?'vx-pos':''):''}">${v.impact_pct!==null&&v.impact_pct!==undefined?VX.fmt.pct(v.impact_pct,1):'non estimé'}</td>
-          <td class="vx-meta">${esc(v.note||'')}</td></tr>`).join('')}</tbody></table></div>
+        <details class="vx-disclosure"><summary>Valeurs et hypothèses des scénarios</summary>
+          <div class="vx-table-wrap vx-mt2"><table class="vx-table"><thead><tr><th>Scénario</th>
+          <th class="vx-num">Impact estimé</th><th>Note</th></tr></thead><tbody>
+          ${Object.entries(stress).map(([k,v])=>`<tr><td>${k}</td>
+            <td class="vx-num ${v.impact_pct!=null?(v.impact_pct<0?'vx-neg':v.impact_pct>0?'vx-pos':''):''}">${v.impact_pct!==null&&v.impact_pct!==undefined?VX.fmt.pct(v.impact_pct,1):'non estimé'}</td>
+            <td class="vx-meta">${esc(v.note||'')}</td></tr>`).join('')}</tbody></table></div></details>
         <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'risk_engine (positions réelles)',window.__pfLive?'live':'fallback')}
-        ${(risk.warnings||[]).length?'· '+risk.warnings.length+' avertissement(s)':''}</div></section></div>`;
+        ${(risk.warnings||[]).length?'· '+risk.warnings.length+' avertissement(s)':''}</div></section>
+      <details class="vx-disclosure vx-mt3" id="pf-risk-advanced"><summary>Expertise · garde-fous, secteurs et Greeks</summary>
+        <div class="vx-grid vx-mt2">
+          <div class="vx-card vx-col-12"><div class="vx-card-header"><span class="vx-card-title">Registre priorisé complet</span></div>
+            <div class="vx-kpi-label">Critiques</div>
+            ${critiques.length?critiques.map(x=>`<div class="vx-meta vx-neg">· ${esc(x)}</div>`).join(''):'<div class="vx-meta">Aucun risque critique détecté.</div>'}
+            <div class="vx-kpi-label vx-mt2">Importants</div>
+            ${importants.length?importants.map(x=>`<div class="vx-meta vx-warn">· ${esc(x)}</div>`).join(''):'<div class="vx-meta">Aucun risque important au-dessus des repères.</div>'}
+            <div class="vx-kpi-label vx-mt2">Secondaires</div>
+            <div class="vx-meta">Exposition sectorielle et Greeks ci-dessous · ${risk.options_exposure&&risk.options_exposure.delta!=null?'Greeks disponibles':'Greeks non estimés sans IBKR'}.</div></div>
+          <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Garde-fous</span></div>
+            ${kv('Nouveau titre',guard.new_stock_allowed?'autorisé':'BLOQUÉ',guard.new_stock_allowed?'vx-pos':'vx-neg')}
+            ${kv('Nouvelle option',guard.new_option_allowed?'autorisée':'BLOQUÉE',guard.new_option_allowed?'vx-pos':'vx-neg')}
+            ${(guard.mandatory_reviews||[]).map(rr=>`<div class="vx-meta">⚠ ${esc(rr)}</div>`).join('')}</div>
+          <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Secteurs</span></div>
+            <div id="pf-sector-donut"><span class="vx-meta">Exposition sectorielle…</span></div></div>
+          <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Greeks agrégés</span></div>
+            ${kv('Delta global',risk.options_exposure&&risk.options_exposure.delta,'vx-violet')}
+            ${kv('Gamma global',risk.options_exposure&&risk.options_exposure.gamma,'vx-violet')}
+            ${kv('Theta global',risk.options_exposure&&risk.options_exposure.theta,'vx-violet')}
+            ${kv('Vega global',risk.options_exposure&&risk.options_exposure.vega,'vx-violet')}
+            <div class="vx-meta vx-mt2">Greeks broker requis — sans IBKR, non estimés (aucune invention).</div></div>
+        </div></details>`;
     try{
-      var _hhi=(risk.hhi!=null)?Math.round(risk.hhi*100):null;
-      if(window.VXCharts&&VXCharts.gauge)VXCharts.gauge('pf-risk-gauge',{
-        value:_hhi,min:0,max:100,unit:'',label:'Concentration',
-        reading:_hhi==null?'donnée indisponible':(_hhi>=66?'très concentré':_hhi>=33?'concentration modérée':'bien dispersé'),
-        bands:[{to:33,color:VXCharts.colors.positive},{to:66,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.negative}]});
-      var _rk=function(l,v,dd,cls){return '<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value" style="font-size:22px">'+(v==null?'—':v)+'</span>'+(dd?'<span class="vx-kpi-delta '+(cls||'vx-muted')+'">'+dd+'</span>':'')+'</div>';};
-      var _rh=$('pf-risk-kpis');
-      if(_rh)_rh.innerHTML=
-        _rk('HHI',risk.hhi!=null?risk.hhi:'—','indice',(_hhi!=null&&_hhi>=66)?'vx-neg':'')
-        +_rk('Bêta',risk.beta!=null?risk.beta:'—','pondéré')
-        +_rk('Drawdown',(risk.drawdown_pct!=null)?(risk.drawdown_pct+' %'):'n/d','pic')
-        +_rk('Pire scénario',_worst!=null?VX.fmt.pct(_worst,1):'—','stress',(_worst!=null&&_worst<0)?'vx-neg':'');
       var _sw=risk.sector_weights||{};
       var _sh=document.getElementById('pf-sector-donut');
       if(_sh){
@@ -843,11 +844,11 @@ async function renderHiddenDeps(){
   let d=null,err=null;
   try{d=await VX.fetch('/api/skyler/graph',{ttl:180000});}catch(e){err=e;}
   document.querySelectorAll('[aria-label="Dépendances cachées"]').forEach(n=>n.remove());
-  const host=document.createElement('section');
-  host.className='vx-card vx-mt3';host.setAttribute('aria-label','Dépendances cachées');
+  const host=document.createElement('details');
+  host.className='vx-disclosure vx-mt3';host.setAttribute('aria-label','Dépendances cachées');
   if(err||!d){
-    host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Dépendances cachées</span></div>'
-      +VX.states.error('Dépendances cachées indisponibles');
+    host.innerHTML='<summary>Expertise · dépendances cachées</summary><div class="vx-card vx-mt2">'
+      +VX.states.error('Dépendances cachées indisponibles')+'</div>';
     $('pf-body').appendChild(host);return;}
   const deps=d.hidden_dependencies||[];
   const qs=(d.research_questions||[]).slice(0,6);
@@ -868,11 +869,11 @@ async function renderHiddenDeps(){
     }).join('')):'';
   const qHtml=qs.length?('<div class="vx-kpi-label vx-mt2">Questions de recherche (relations non documentées — jamais inventées)</div>'
     +qs.map(x=>'<div class="vx-meta">· '+esc(x.symbol)+' — '+esc(x.question)+'</div>').join('')):'';
-  host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Dépendances cachées (Knowledge Graph)</span>'
+  host.innerHTML='<summary>Expertise · dépendances cachées</summary><div class="vx-card vx-mt2"><div class="vx-card-header"><span class="vx-card-title">Dépendances cachées (Knowledge Graph)</span>'
     +'<span class="vx-chart-question">Deux titres partagent-ils une exposition non évidente&nbsp;?</span></div>'
     +depHtml+grpHtml+seHtml+qHtml
     +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'knowledge graph (secteur déclaré · co-mouvement · catalyseurs datés · desk)','delayed')
-    +(d.demo?' · <span class="vx-badge" data-tone="neutral">DÉMO</span>':'')+'</div>';
+    +(d.demo?' · <span class="vx-badge" data-tone="neutral">DÉMO</span>':'')+'</div></div>';
   $('pf-body').appendChild(host);
 }
 
@@ -885,27 +886,27 @@ async function renderStress(){
   let d=null,err=null;
   try{d=await VX.fetch('/api/portfolio/stress',{ttl:120000});}catch(e){err=e;}
   document.querySelectorAll('[aria-label="Stress-scénarios"]').forEach(n=>n.remove());   // idempotent (re-boots)
-  const host=document.createElement('section');
-  host.className='vx-card vx-mt3';host.setAttribute('aria-label','Stress-scénarios');
+  const host=document.createElement('details');
+  host.className='vx-disclosure vx-mt3';host.setAttribute('aria-label','Stress-scénarios');
   if(err||!d){
-    host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Stress-scénarios — si le marché choque&nbsp;?</span></div>'
-      +VX.states.error('Stress-scénarios indisponibles');
+    host.innerHTML='<summary>Expertise · couverture du stress uniforme</summary><div class="vx-card vx-mt2">'
+      +VX.states.error('Stress-scénarios indisponibles')+'</div>';
     $('pf-body').appendChild(host);return;}
   const money=(x)=>x==null?'n/d':((x>=0?'+':'')+VX.fmt.num(x,0));
   if(d.empty){
-    host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Stress-scénarios — si le marché choque&nbsp;?</span></div>
-      ${VX.states.empty(esc((d.reason||'stress indisponible')+'.'))}`;
+    host.innerHTML=`<summary>Expertise · couverture du stress uniforme</summary><div class="vx-card vx-mt2">
+      ${VX.states.empty(esc((d.reason||'stress indisponible')+'.'))}</div>`;
   }else{
-    const tiles=(d.scenarios||[]).map(s=>`<div class="vx-stat">
-        <span class="vx-stat-label">Marché ${s.shock_pct>0?'+':''}${s.shock_pct} %</span>
-        <span class="vx-stat-value ${s.impact>0?'vx-pos':s.impact<0?'vx-neg':''}">${money(s.impact)}</span>
-        ${s.worst?`<span class="vx-muted">${esc(s.worst.sym)} ${money(s.worst.impact)}</span>`:''}</div>`).join('');
-    host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Stress-scénarios — si le marché choque&nbsp;?</span>
-        <span class="vx-chart-question">Impact P&L d'un choc uniforme sur tes actions (prix réels). Descriptif, pas une prévision.</span></div>
-      <div class="vx-stats-row">${tiles}</div>
+    const rows=(d.scenarios||[]).map(s=>`<div class="vx-kv">
+        <span class="k">Marché ${s.shock_pct>0?'+':''}${s.shock_pct} %${s.worst?' · pire '+esc(s.worst.sym):''}</span>
+        <span class="v ${s.impact>0?'vx-pos':s.impact<0?'vx-neg':''}">${money(s.impact)}${s.worst?' · '+money(s.worst.impact):''}</span></div>`).join('');
+    host.innerHTML=`<summary>Expertise · couverture du stress uniforme</summary><div class="vx-card vx-mt2">
+      <div class="vx-card-header"><span class="vx-card-title">Chocs uniformes complémentaires</span>
+        <span class="vx-chart-question">Valeurs de contrôle du stress principal — pas une seconde visualisation.</span></div>
+      ${rows}
       <p class="vx-lead" style="font-size:13.5px">${esc(d.narrative||'')}</p>
       ${(d.excluded||[]).length?`<div class="vx-muted">Exclues du chiffrage : ${d.excluded.map(e=>esc(e.sym+' ('+e.reason+')')).join(' · ')}</div>`:''}
-      <div class="vx-card-footer">Couverture ${d.coverage_pct!=null?d.coverage_pct+' %':'n/d'} du capital déclaré · lecture seule — aucun ordre.</div>`;
+      <div class="vx-card-footer">Couverture ${d.coverage_pct!=null?d.coverage_pct+' %':'n/d'} du capital déclaré · lecture seule — aucun ordre.</div></div>`;
   }
   $('pf-body').appendChild(host);
 }
@@ -917,8 +918,12 @@ async function renderWatchlist(){
   /* cycle de vie watchlist → couleur (déclenchée=vert, proche/attente=jaune, invalidée=rouge) */
   const wlCls=s=>s==='declenchee'?'vx-pos':(s==='proche'||s==='en_attente')?'vx-warn':s==='invalidee'?'vx-neg':'';
   $('pf-body').innerHTML=`
+    <div class="vx-page-lead vx-mb3"><b>Trois types de surveillance, trois engagements différents.</b>
+      <div class="vx-meta">Watchlist = idée documentée · Suivi actif = plan entrée/stop/objectif · Favori = raccourci sans thèse.</div></div>
+    <div class="vx-section-stack">
     <section class="vx-card vx-mb3"><div class="vx-card-header"><span class="vx-card-title">Watchlist (surveillance active)</span>
       <span class="vx-actions"><button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('','watchlist')">+ Ajouter</button></span></div>
+      <div class="vx-meta vx-mb2">Idée avec priorité, thèse, zone, catalyseur et cycle de vie explicites.</div>
       ${wl.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
         <th>Titre</th><th>Priorité</th><th>Thèse</th><th>Zone</th><th>Catalyseur</th>
         <th>Statut</th><th>Ajouté</th><th></th></tr></thead><tbody>
@@ -939,6 +944,7 @@ async function renderWatchlist(){
           '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'watchlist\')">+ Ajouter</button>')}
     </section>
     <section class="vx-card vx-mb3"><div class="vx-card-header"><span class="vx-card-title">Suivis actifs (setups)</span></div>
+      <div class="vx-meta vx-mb2">Plan chiffré déjà défini : entrée, invalidation et objectif.</div>
       ${follows.length?follows.map(r=>`<div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">
         <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${r.sym}">${r.sym}</button>
         <span class="vx-badge vx-badge-entity" data-kind="follow">${r.kind}</span>
@@ -948,10 +954,11 @@ async function renderWatchlist(){
         :VX.states.emptyDesk('Aucun suivi actif — créez un suivi depuis une analyse (entrée/stop/objectif).')}
     </section>
     <section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Favoris (accès rapide)</span></div>
+      <div class="vx-meta vx-mb2">Simple raccourci. Un favori n’implique ni thèse, ni alerte, ni position.</div>
       <div class="vx-flex vx-wrap">${favs.length?favs.map(s=>
         `<button class="vx-btn vx-ticker" data-open-analysis="${s}">★ ${s}</button>`).join('')
         :'<span class="vx-muted">Aucun favori — l’étoile est disponible sur chaque titre.</span>'}</div>
-    </section>`;
+    </section></div>`;
   document.querySelectorAll('[data-wl-del]').forEach(b=>b.addEventListener('click',()=>{E().removeFromWatchlist(b.dataset.wlDel);renderWatchlist();}));
   document.querySelectorAll('[data-unfollow]').forEach(b=>b.addEventListener('click',()=>{E().unfollow(b.dataset.unfollow);renderWatchlist();}));
   document.querySelectorAll('[data-wl-status]').forEach(sel=>sel.addEventListener('change',()=>{
@@ -966,29 +973,29 @@ async function renderDiscipline(){
   let d=null,err=null;
   try{d=await VX.fetch('/api/portfolio/context',{ttl:120000});}catch(e){err=e;}
   document.querySelectorAll('[aria-label="Discipline V2"]').forEach(n=>n.remove());   // idempotent
-  const host=document.createElement('section');
-  host.className='vx-card vx-mt3';host.setAttribute('aria-label','Discipline V2');
+  const host=document.createElement('details');
+  host.className='vx-disclosure vx-mt3';host.setAttribute('aria-label','Discipline V2');
   if(err||!d){
-    host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Discipline du portefeuille (Constitution V2)</span></div>'
-      +VX.states.error('Discipline du portefeuille indisponible');
+    host.innerHTML='<summary>Expertise · discipline Constitution V2</summary><div class="vx-card vx-mt2">'
+      +VX.states.error('Discipline du portefeuille indisponible')+'</div>';
     $('pf-body').appendChild(host);return;}
   if(d.available===false){
-    host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Discipline du portefeuille (Constitution V2)</span></div>
-      ${VX.states.empty(esc((d.reason||'contexte indisponible')+'.'))}`;
+    host.innerHTML=`<summary>Expertise · discipline Constitution V2</summary><div class="vx-card vx-mt2">
+      ${VX.states.empty(esc((d.reason||'contexte indisponible')+'.'))}</div>`;
   }else{
     const b=d.bounds||{};
     const inb=d.in_bounds?'<span class="vx-badge" data-tone="pos">dans les bornes</span>'
       :`<span class="vx-badge" data-tone="neutral">${d.n_positions<b.min?'sous la cible':'au-dessus de la cible'}</span>`;
     const topOver=(d.top_weight_pct||0)>15;
-    host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Discipline du portefeuille (Constitution V2)</span>
-      <span class="vx-chart-question">${b.min}-${b.max} lignes cibles · plafond 15&nbsp;% par titre · concentration HHI.</span></div>
+    host.innerHTML=`<summary>Expertise · discipline Constitution V2</summary><div class="vx-card vx-mt2">
+      <div class="vx-card-header"><span class="vx-card-title">Discipline du portefeuille (Constitution V2)</span>
+      <span class="vx-chart-question">${b.min}-${b.max} lignes cibles · plafond 15&nbsp;% par titre. Le HHI canonique reste dans les 4 KPI Risque.</span></div>
       <div class="vx-grid">
-        <div class="vx-stat vx-col-3"><span class="vx-stat-label">Lignes</span><span class="vx-stat-value">${d.n_positions}</span><span class="vx-meta">${inb}</span></div>
-        <div class="vx-stat vx-col-3"><span class="vx-stat-label">Plus gros titre</span><span class="vx-stat-value">${esc(d.top_symbol||'—')}</span><span class="vx-meta ${topOver?'vx-neg':''}">${VX.fmt.num(d.top_weight_pct,1)}&nbsp;% ${topOver?'· > plafond 15 %':''}</span></div>
-        <div class="vx-stat vx-col-3"><span class="vx-stat-label">Concentration (HHI)</span><span class="vx-stat-value">${VX.fmt.num(d.hhi,3)}</span><span class="vx-meta">1 = tout sur un titre</span></div>
-        <div class="vx-stat vx-col-3"><span class="vx-stat-label">Valeur suivie</span><span class="vx-stat-value">${VX.fmt.num(d.total_value,0)}</span><span class="vx-meta">${esc((d.provenance||[]).join(' + '))}</span></div>
+        <div class="vx-stat vx-col-4"><span class="vx-stat-label">Lignes</span><span class="vx-stat-value">${d.n_positions}</span><span class="vx-meta">${inb}</span></div>
+        <div class="vx-stat vx-col-4"><span class="vx-stat-label">Plus gros titre</span><span class="vx-stat-value">${esc(d.top_symbol||'—')}</span><span class="vx-meta ${topOver?'vx-neg':''}">${VX.fmt.num(d.top_weight_pct,1)}&nbsp;% ${topOver?'· > plafond 15 %':''}</span></div>
+        <div class="vx-stat vx-col-4"><span class="vx-stat-label">Valeur suivie</span><span class="vx-stat-value">${VX.fmt.num(d.total_value,0)}</span><span class="vx-meta">${esc((d.provenance||[]).join(' + '))}</span></div>
       </div>
-      <div class="vx-meta" style="margin-top:.35rem">${d.valuation_note?esc(d.valuation_note)+' · ':''}Bornes et plafonds = Constitution V2 — analyse, jamais un ordre.</div>`;
+      <div class="vx-meta" style="margin-top:.35rem">${d.valuation_note?esc(d.valuation_note)+' · ':''}Bornes et plafonds = Constitution V2 — analyse, jamais un ordre.</div></div>`;
   }
   $('pf-body').appendChild(host);
 }

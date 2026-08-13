@@ -34,23 +34,42 @@
   /* ── Overlay / drawer / modal ────────────────────────────────────── */
   let lastFocus = null;
   function overlay(open) { $('vx-overlay').dataset.open = open ? '1' : '0'; }
+  function focusable(container) {
+    return Array.from(container.querySelectorAll(
+      'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    )).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true'
+      && (!el.getClientRects || el.getClientRects().length));
+  }
   function trapFocus(container) {
-    const focusables = container.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
-    if (focusables.length) focusables[0].focus();
+    const items = focusable(container);
+    if (items.length) items[0].focus();
   }
   /* A11y (lot 209) : un panneau FERMÉ est invisible aux lecteurs d'écran et
      infocusable — aria-hidden + inert posés fermé, retirés à l'ouverture. */
   function panelOpen(el) { el.dataset.open = '1'; el.removeAttribute('aria-hidden'); el.removeAttribute('inert'); }
   function panelClose(el) { el.dataset.open = '0'; el.setAttribute('aria-hidden', 'true'); el.setAttribute('inert', ''); }
   const shell = VX.shell = {
-    openDrawer(title, html) {
+    openDrawer(title, html, options) {
+      const opts = options || {};
+      const drawer = $('vx-drawer');
       lastFocus = document.activeElement;
       $('vx-drawer-title').textContent = title;
       $('vx-drawer-body').innerHTML = html;
-      panelOpen($('vx-drawer')); overlay(true);
-      trapFocus($('vx-drawer'));
+      $('vx-drawer-footer').innerHTML = opts.footerHtml || '';
+      $('vx-drawer-tabs').innerHTML = opts.tabsHtml || '';
+      $('vx-drawer-tabs').hidden = !opts.tabsHtml;
+      drawer.dataset.variant = opts.variant === 'summary' || opts.variant === 'detail'
+        ? opts.variant : 'default';
+      drawer.setAttribute('aria-label', title || 'Panneau contextuel');
+      panelOpen(drawer); overlay(true);
+      trapFocus(drawer);
     },
-    closeDrawer() { panelClose($('vx-drawer')); overlay(false); lastFocus?.focus?.(); },
+    closeDrawer() {
+      const drawer = $('vx-drawer');
+      panelClose(drawer); overlay(false);
+      $('vx-drawer-tabs').hidden = true;
+      lastFocus?.focus?.();
+    },
     openModal(title, bodyHtml, footerHtml) {
       lastFocus = document.activeElement;
       $('vx-modal-title').textContent = title;
@@ -70,7 +89,17 @@
   document.querySelectorAll('[data-close-drawer]').forEach(b => b.addEventListener('click', shell.closeDrawer));
   document.querySelectorAll('[data-close-modal]').forEach(b => b.addEventListener('click', shell.closeModal));
   $('vx-overlay').addEventListener('click', shell.closeAll);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') shell.closeAll(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { shell.closeAll(); return; }
+    if (e.key !== 'Tab') return;
+    const panel = [$('vx-palette'), $('vx-modal'), $('vx-drawer')]
+      .find(el => el && el.dataset.open === '1');
+    if (!panel) return;
+    const items = focusable(panel); if (!items.length) return;
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
 
   /* ── Retour contextuel (§15) ─────────────────────────────────────── */
   const backBtn = $('vx-back-btn');

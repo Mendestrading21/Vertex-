@@ -1,19 +1,20 @@
 /* Vertex Charts — chart-theme-obsidian-copper.js (§35-36)
-   Thème graphique unique VERTEX (identité BLANC/GRIS neutre), MIROIR de la source
+   Thème graphique unique VERTEX (identité CUIVRE SOBRE), MIROIR de la source
    de vérité Python `vertex/visualization/palette.py` (test durci
    test_js_theme_matches_python_palette compare la série entière) :
-   série principale = blanc-gris (identité/référence, PAS « hausse ») · benchmark =
+   série principale = cuivre (identité/référence, PAS « hausse ») · benchmark =
    gris chaud · série secondaire = sable/ambre · positif = émeraude · négatif =
    rouge corail · options = violet contrôlé · comparaison technique = cyan. Plus
-   aucun bleu ni orange identitaire ; aucune palette arc-en-ciel automatique.
+   aucun bleu identitaire ; aucune palette arc-en-ciel automatique.
    Chargé AVANT chart-core.js. */
 (function () {
   'use strict';
   window.VXChartTheme = {
     colors: {
-      brand: '#DBE1E8',       /* série principale : blanc-gris neutre (identité) */
+      brand: '#D28A54',       /* série principale : cuivre neutre (identité) */
+      brandHover: '#E1A06E',  /* cuivre clair : interaction / survol */
       copper: '#8A8284',      /* série neutre acier (palette.COPPER) */
-      copperLight: '#EEF1F5', /* blanc-gris clair (palette.COPPER_LIGHT) */
+      copperLight: '#E1A06E', /* alias historique de palette.COPPER_LIGHT */
       amber: '#D9BE3C',       /* série secondaire / attention */
       beige: '#c8bfae',       /* benchmark clair (sable) */
       info: '#45D6E8',        /* information = cyan comparaison technique */
@@ -26,16 +27,20 @@
       neutral: '#BABABA',     /* benchmark neutre (palette.NEUTRAL) */
       text: '#BABABA',
       muted: '#989092',
-      grid: 'rgba(255,255,255,.05)',
+      /* Infrastructure graphique : neutres chauds, jamais une nouvelle série. */
+      grid: 'rgba(200,194,188,.08)',
+      axis: 'rgba(200,194,188,.16)',
+      crosshair: 'rgba(200,194,188,.30)',
       /* Ordre des séries = palette.SERIES : marque, sable, neutre, violet
          options, ambre, acier. Toute divergence casse le test de cohérence. */
-      series: ['#DBE1E8', '#45D6E8', '#c8bfae', '#9B7BFF', '#D9BE3C', '#8A8284'],
+      series: ['#D28A54', '#45D6E8', '#c8bfae', '#9B7BFF', '#D9BE3C', '#8A8284'],
     },
     tooltip: {
-      backgroundColor: '#1D1819',
-      borderColor: 'rgba(90,69,64,.55)',
-      titleColor: '#F8F5F3',
-      bodyColor: '#BABABA',
+      backgroundColor: '#141619',
+      borderColor: 'rgba(200,194,188,.20)',
+      titleColor: '#F5F3F0',
+      bodyColor: '#C8C2BC',
+      footerColor: '#989092',
     },
   };
 })();

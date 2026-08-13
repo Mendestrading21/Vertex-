@@ -32,33 +32,57 @@
       out.innerHTML = '<div class="vx-empty">' + esc((d && d.reason) || 'Scan indisponible.') + '</div>';
       return;
     }
-    var rows = (d.candidates || []).map(function (c) {
-      var dp = c.double_prob;
-      var dpTxt = (dp && dp.available)
-        ? (num(dp.probability * 100, 1) + ' % <span class="vx-muted">EST.</span>')
-        : '<span class="vx-muted">—</span>';
-      return '<tr>'
-        + '<td data-label="Titre"><b>' + esc(c.sym) + '</b></td>'
-        + '<td data-label="Type">' + esc(c.type) + '</td>'
+    var candidates = d.candidates || [];
+    var rows = candidates.map(function (c, index) {
+      return '<tr data-candidate="' + index + '" data-clickable tabindex="0">'
+        + '<td data-label="Contrat"><span class="vx-table-primary"><strong>' + esc(c.sym) + '</strong>'
+        + '<span>' + esc(c.type) + (c.exp ? ' · ' + esc(c.exp) : '') + '</span></span></td>'
         + '<td data-label="Strike" class="vx-num">' + num(c.strike, 1) + '</td>'
         + '<td data-label="DTE" class="vx-num">' + esc(c.dte) + '</td>'
         + '<td data-label="Delta" class="vx-num">' + num(c.delta, 2) + '</td>'
         + '<td data-label="IV" class="vx-num">' + (c.iv != null ? num(c.iv * 100, 1) + ' %' : '—') + '</td>'
-        + '<td data-label="OI" class="vx-num">' + (c.oi != null ? c.oi : '—') + '</td>'
-        + '<td data-label="Spread" class="vx-num">' + (c.spread_pct != null ? num(c.spread_pct, 1) + ' %' : '—') + '</td>'
         + '<td data-label="Qualité" class="vx-num">' + (c.quality != null ? c.quality : '—') + '</td>'
         + '<td data-label="Mandat">' + mandateCell(c) + '</td>'
-        + '<td data-label="P(doubler)" class="vx-num">' + dpTxt + '</td>'
+        + '<td data-label="Détail"><span class="vx-row-open">Ouvrir</span></td>'
         + '</tr>';
     }).join('');
     out.innerHTML = '<div class="vx-meta vx-mb1">' + esc(d.universe) + ' · fenêtre ' + esc((d.window || []).join('-'))
       + ' DTE · ' + d.n + ' contrat(s)' + (d.demo ? ' · <span class="vx-badge" data-tone="neutral">DÉMO</span>' : '') + '</div>'
       + '<div class="vx-table-wrap"><table class="vx-table"><thead><tr>'
-      + '<th>Titre</th><th>Type</th><th>Strike</th><th>DTE</th><th>Delta</th><th>IV</th><th>OI</th>'
-      + '<th>Spread</th><th>Qualité</th><th>Mandat</th><th>P(doubler)</th>'
+      + '<th>Contrat</th><th class="vx-num">Strike</th><th class="vx-num">DTE</th><th class="vx-num">Delta</th>'
+      + '<th class="vx-num">IV</th><th class="vx-num">Qualité</th><th>Mandat</th><th></th>'
       + '</tr></thead><tbody>' + rows + '</tbody></table></div>'
       + '<div class="vx-meta" style="margin-top:.3rem">P(doubler) = P(valeur terminale ≥ 2× coût), '
       + 'modèle lognormal non calibré — estimation, pas une promesse · hors-mandat affiché, jamais filtré en silence.</div>';
+
+    function openCandidate(index) {
+      var c = candidates[index]; if (!c || !window.VX || !VX.shell) return;
+      var dp = c.double_prob;
+      var probability = (dp && dp.available) ? num(dp.probability * 100, 1) + ' % · estimation' : 'n/d';
+      var mandate = c.mandate == null ? 'n/d' : (c.hors_mandat ? 'Hors mandat' : 'Conforme');
+      var body = '<div class="vx-section-stack">'
+        + '<div class="vx-data-ledger"><span>' + esc(c.type || 'Contrat') + '</span><span>' + esc(c.dte) + ' jours</span>'
+        + '<span>Lecture seule</span></div>'
+        + '<div class="vx-stats-row">'
+        + '<div class="vx-stat"><span class="vx-stat-label">Strike</span><span class="vx-stat-value">' + num(c.strike, 1) + '</span></div>'
+        + '<div class="vx-stat"><span class="vx-stat-label">Delta</span><span class="vx-stat-value">' + num(c.delta, 2) + '</span></div>'
+        + '<div class="vx-stat"><span class="vx-stat-label">IV</span><span class="vx-stat-value">' + (c.iv != null ? num(c.iv * 100, 1) + ' %' : 'n/d') + '</span></div>'
+        + '<div class="vx-stat"><span class="vx-stat-label">Qualité</span><span class="vx-stat-value">' + (c.quality != null ? c.quality : 'n/d') + '</span></div></div>'
+        + '<div class="vx-card vx-card--compact"><div class="vx-card-header"><span class="vx-card-title">Liquidité et mandat</span></div>'
+        + '<div class="vx-kv"><span>Open interest</span><b>' + (c.oi != null ? c.oi : 'n/d') + '</b></div>'
+        + '<div class="vx-kv"><span>Spread</span><b>' + (c.spread_pct != null ? num(c.spread_pct, 1) + ' %' : 'n/d') + '</b></div>'
+        + '<div class="vx-kv"><span>Mandat</span><b>' + mandate + '</b></div>'
+        + '<div class="vx-kv"><span>Probabilité de doubler</span><b>' + probability + '</b></div></div>'
+        + '<p class="vx-meta">Modèle lognormal non calibré. Cette lecture ne déclenche aucun ordre.</p></div>';
+      VX.shell.openDrawer((c.sym || 'Contrat') + ' · détail LEAPS', body, { variant: 'summary' });
+    }
+    out.querySelectorAll('[data-candidate]').forEach(function (row) {
+      var open = function () { openCandidate(Number(row.getAttribute('data-candidate'))); };
+      row.addEventListener('click', open);
+      row.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); }
+      });
+    });
   }
 
   function run() {

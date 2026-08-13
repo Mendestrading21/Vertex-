@@ -3,7 +3,9 @@
 Question : « Où est la meilleure convexité, à quel prix de volatilité, et
 quel événement la menace ? » Accessible via /options — ESPACE PRINCIPAL
 CANONIQUE n°6 (le nav met « Options » en actif). Plus de double rattachement
-ambigu à Opportunités. Sous-vues (?view=) : overview · volatility · radar · events.
+ambigu à Opportunités. Sous-vues visibles (?view=) : structure · positioning ·
+leaps · positions · volatility · events. Les anciens liens overview/radar/
+scenarios restent servis et rattachés visuellement à Structure.
 
 Le module Python n'invente aucun chiffre : il assemble le squelette + le
 script client ; toutes les données viennent de /api/options/* (moteurs purs
@@ -31,80 +33,41 @@ _LEGACY_VIEWS = (
     ('scenarios', 'Scénarios'),
 )
 _ALL_VIEWS = _VIEWS + _LEGACY_VIEWS
+_VIEW_PARENT = {'overview': 'structure', 'radar': 'structure', 'scenarios': 'structure'}
 
 
 def _tabs(view: str) -> str:
     items = []
+    selected_view = _VIEW_PARENT.get(view, view)
     for vid, label in _VIEWS:
-        sel = 'true' if vid == view else 'false'
+        sel = 'true' if vid == selected_view else 'false'
         items.append('<a class="vx-tab" role="tab" href="?view=%s" '
                      'aria-selected="%s" data-view-tab="%s">%s</a>' % (vid, sel, vid, label))
     return ('<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Options">'
             + ''.join(items) + '</nav>')
 
 
-_STYLE = """
-<style>
-#vx-content .vx-stats-row{display:flex;flex-wrap:wrap;gap:.75rem 1.5rem;padding:.4rem 0}
-#vx-content .vx-stat{display:flex;flex-direction:column;min-width:92px}
-#vx-content .vx-stat-label{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--vx-text-muted,#989092)}
-#vx-content .vx-stat-value{font-size:20px;font-weight:650;color:var(--vx-text,#F8F5F3);margin-top:.15rem}
-#vx-content .vx-verdict{padding:.2rem 0}
-#vx-content .vx-lead{font-size:16px;line-height:1.45;margin:.35rem 0 .2rem;color:var(--vx-text,#F8F5F3)}
-#vx-content .vx-verdict .vx-sub{color:var(--vx-text-muted,#989092);font-size:13.5px}
-#vx-content .vx-muted{color:var(--vx-text-muted,#989092);font-size:12.5px}
-.vx-badge[data-tone="pos"]{color:var(--vx-positive,#2BBE90);border-color:var(--vx-positive,#2BBE90)}
-.vx-badge[data-tone="neg"]{color:var(--vx-negative,#E9555F);border-color:var(--vx-negative,#E9555F)}
-.vx-badge[data-tone="neutral"]{color:var(--vx-text-muted,#989092);border-color:var(--vx-border,#30292B)}
-#vx-content .vx-demo-tag{display:inline-block;font-size:11px;font-weight:650;letter-spacing:.03em;
-  color:var(--vx-warning,#D9BE3C);border:1px solid var(--vx-warning,#D9BE3C);border-radius:999px;
-  padding:.1rem .55rem;margin-bottom:.6rem}
-#vx-content .vx-field{display:flex;flex-direction:column;gap:.3rem;max-width:260px;margin-bottom:.6rem}
-#vx-content .vx-field span{font-size:12px;color:var(--vx-text-muted,#989092)}
-.vx-explain h3{font-size:16px;margin:0 0 .5rem}
-.vx-explain h4{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--vx-text-muted,#989092);margin:.9rem 0 .3rem}
-.vx-explain .vx-grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-.vx-explain ul{margin:.2rem 0;padding-left:1.1rem}
-.vx-explain li{margin:.15rem 0;font-size:13.5px}
-@media(max-width:640px){.vx-explain .vx-grid2{grid-template-columns:1fr}}
-#vx-content .vx-opt-hero-grid{display:grid;grid-template-columns:220px 1fr;gap:1.6rem;align-items:center}
-#vx-content .vx-opt-gauge{display:flex;flex-direction:column;gap:.45rem;align-items:flex-start}
-#vx-content .vx-opt-gauge-score{font-size:44px;font-weight:700;line-height:1;color:var(--vx-text,#F8F5F3)}
-#vx-content .vx-opt-gauge-score small{font-size:16px;color:var(--vx-text-muted,#989092);font-weight:500}
-#vx-content .vx-opt-gauge-score[data-tone="pos"]{color:var(--vx-positive,#2BBE90)}
-#vx-content .vx-opt-gauge-score[data-tone="neg"]{color:var(--vx-negative,#E9555F)}
-#vx-content .vx-opt-gauge-track{width:100%;height:7px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
-#vx-content .vx-opt-gauge-track i{display:block;height:100%;border-radius:4px;background:var(--vx-warning,#D9BE3C);transition:width .32s ease}
-#vx-content .vx-opt-gauge-track i[data-tone="pos"]{background:var(--vx-positive,#2BBE90)}
-#vx-content .vx-opt-gauge-track i[data-tone="neg"]{background:var(--vx-negative,#E9555F)}
-#vx-content .vx-opt-dims{display:flex;flex-direction:column;gap:.5rem}
-#vx-content .vx-opt-dim{display:grid;grid-template-columns:140px 1fr 42px;gap:.6rem;align-items:center;font-size:13px}
-#vx-content .vx-opt-dim-l{color:var(--vx-text-secondary,#BABABA)}
-#vx-content .vx-opt-dim-bar{height:6px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
-#vx-content .vx-opt-dim-bar i{display:block;height:100%;background:var(--vx-brand,#DBE1E8);border-radius:4px;transition:width .3s ease}
-#vx-content .vx-opt-dim-v{text-align:right;color:var(--vx-text,#F8F5F3);font-variant-numeric:tabular-nums}
-#vx-content .vx-opt-pulse{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem;padding-top:.9rem;border-top:1px solid rgba(255,255,255,.06)}
-#vx-content .vx-opt-chip{font-size:12px;padding:.25rem .6rem;border-radius:999px;background:var(--vx-surface-2,#121214);color:var(--vx-text-secondary,#BABABA)}
-#vx-content .vx-opt-chip b{color:var(--vx-text,#F8F5F3);font-weight:600}
-@media(max-width:720px){#vx-content .vx-opt-hero-grid{grid-template-columns:1fr}}
-/* PR n°6 — Carte-Verdict Options, Greeks interprétés, matrice de comparaison */
-#vx-content .vx-greeks{display:flex;flex-direction:column;gap:.55rem}
-#vx-content .vx-greek{padding:.45rem .6rem;border:1px solid var(--vx-border-soft,#30292B);border-radius:8px;background:var(--vx-surface-1,#0c0c0e)}
-#vx-content .vx-greek b{font-size:13px}
-#vx-content .vx-scenario-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.35rem}
-#vx-content tr.vx-row-hl{background:rgba(132,170,49,.08)}
-#vx-content tr.vx-row-hl td{border-top:1px solid rgba(132,170,49,.3);border-bottom:1px solid rgba(132,170,49,.3)}
-#vx-content .vx-verdict-card{padding:1.1rem 1.2rem}
-#vx-content .vx-eyebrow{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#989092)}
-</style>
-"""
+_STYLE = ""  # styles Options migrés dans le CSS partagé canonique
 
 _HEADER = """
-<div class="vx-page-header">
-  <div><h1>Options</h1>
-  <div class="vx-sub">Où est la meilleure convexité, à quel prix de volatilité, et quel événement la menace ?</div></div>
-</div>
+<header class="vx-page-lead">
+  <div class="vx-page-lead__main">
+    <div class="vx-page-lead__eyebrow">Intelligence de convexité</div>
+    <h1>Options</h1>
+    <p class="vx-page-lead__summary">Mesurer l’asymétrie, le prix de la volatilité et le risque d’événement avant toute décision.</p>
+    <div class="vx-page-lead__meta"><span class="vx-readonly-shield">Analyse uniquement · aucun ordre</span></div>
+  </div>
+</header>
 %%TABS%%
+<section class="vx-card vx-options-context vx-mt3" aria-label="Contexte du sous-jacent">
+  <div class="vx-options-context__copy">
+    <span class="vx-card-title">Sous-jacent actif</span>
+    <span class="vx-meta">Conservé entre les vues Structure, Positionnement, LEAPS, Volatilité et Événements.</span>
+  </div>
+  <label class="vx-field vx-options-context__field"><span>Symbole</span>
+    <input id="vx-options-symbol" class="vx-input" placeholder="ex. AAPL" maxlength="12" autocomplete="off" aria-label="Sous-jacent actif"></label>
+  <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-options-apply">Actualiser l’analyse</button>
+</section>
 <div id="vx-demo-banner"></div>
 """
 
@@ -112,68 +75,56 @@ _LOADING = '<div class="vx-skeleton" style="height:120px"></div>'
 
 _VIEW_CONTENT = {
     'structure': """
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-12" aria-label="Analyser une structure">
-    <div class="vx-card-header"><span class="vx-card-title">Cette structure offre-t-elle une asymétrie suffisante&nbsp;?</span>
-      <span class="vx-chart-question">Verdict, scénarios, payoff, sensibilités et comparaison — depuis le board d&#8217;options. Aucun ordre.</span></div>
-    <div class="vx-card-body vx-flex vx-wrap" style="gap:.6rem;align-items:flex-end">
-      <label class="vx-field"><span>Sous-jacent</span>
-        <input id="vx-os-sym" class="vx-input" placeholder="ex. AAPL" maxlength="12" autocomplete="off"></label>
-      <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-os-go">Évaluer l'asymétrie</button>
-      <span id="vx-os-chips" class="vx-flex vx-wrap" style="gap:6px"></span>
-    </div>
-  </section>
+<div class="vx-options-local-bridge" hidden>
+  <input id="vx-os-sym" tabindex="-1"><button id="vx-os-go" type="button">Actualiser</button>
 </div>
+<div id="vx-os-chips" class="vx-options-shortcuts vx-mt3" aria-label="Sous-jacents du tableau"></div>
 <div id="vx-os-verdict" class="vx-mt3">%%LOADING%%</div>
 <div id="vx-os-scenarios" class="vx-mt3"></div>
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-7" aria-label="Payoff à l'échéance">
+<div class="vx-hero-grid vx-mt3">
+  <section class="vx-card vx-hero-main" aria-label="Payoff à l'échéance">
     <div class="vx-card-header"><span class="vx-card-title">Payoff à l'échéance</span>
       <span class="vx-chart-question">Où gagne / perd la structure selon le cours ?</span></div>
     <div id="vx-os-payoff"><div class="vx-empty">Choisis un sous-jacent présent dans le tableau d'options.</div></div>
   </section>
-  <section class="vx-card vx-col-5" aria-label="Sensibilités">
+  <aside class="vx-card vx-insight-rail" aria-label="Sensibilités">
     <div class="vx-card-header"><span class="vx-card-title">Sensibilités (Greeks)</span></div>
     <div id="vx-os-greeks"><div class="vx-empty">—</div></div>
-  </section>
+  </aside>
 </div>
-<div id="vx-os-compare" class="vx-mt3"></div>
+<details class="vx-disclosure vx-mt3">
+  <summary>Comparer les contrats et voir la méthode</summary>
+  <div class="vx-disclosure__body" id="vx-os-compare"></div>
+</details>
 """,
     'positioning': """
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-12" aria-label="Positionnement dealer (GEX)">
-    <div class="vx-card-header"><span class="vx-card-title">Positionnement dealer — où le gamma pousse-t-il le cours&nbsp;?</span>
-      <span class="vx-chart-question">Exposition gamma (GEX) par strike, murs, bascule zero-gamma, flux notable et thèse — depuis la chaîne réelle. Aucun ordre.</span></div>
-    <div class="vx-card-body vx-flex vx-wrap" style="gap:.6rem;align-items:flex-end">
-      <label class="vx-field"><span>Sous-jacent</span>
-        <input id="vx-gx-sym" class="vx-input" placeholder="ex. MSFT" maxlength="12" autocomplete="off"></label>
-      <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-gx-go">Analyser le positionnement</button>
-      <span id="vx-gx-chips" class="vx-flex vx-wrap" style="gap:6px"></span>
-    </div>
-  </section>
+<div class="vx-options-local-bridge" hidden>
+  <input id="vx-gx-sym" tabindex="-1"><button id="vx-gx-go" type="button">Actualiser</button>
 </div>
 <div class="vx-grid vx-mt3">
   <section class="vx-card vx-col-12" aria-label="Radar de positionnement">
-    <div class="vx-card-header"><span class="vx-card-title">Radar de positionnement — où les dealers poussent-ils&nbsp;?</span>
+    <div class="vx-card-header"><span class="vx-card-title">Positionnement dealer — radar GEX</span>
       <span class="vx-chart-question">Tous les titres du tableau, classés par |net GEX|. Clique une ligne pour le détail.</span></div>
     <div id="vx-gx-radar">%%LOADING%%</div>
   </section>
 </div>
 <div id="vx-gx-thesis" class="vx-mt3"></div>
 <div id="vx-gx-tiles" class="vx-mt3"></div>
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-7" aria-label="GEX par strike">
+<div class="vx-hero-grid vx-mt3">
+  <section class="vx-card vx-hero-main" aria-label="GEX par strike">
     <div class="vx-card-header"><span class="vx-card-title">GEX par strike</span>
       <span class="vx-chart-question">Call GEX (+) vs Put GEX (−) — concentration de l'exposition gamma.</span></div>
     <div id="vx-gx-bars"><div class="vx-empty">Choisis un sous-jacent présent dans le tableau d'options.</div></div>
   </section>
-  <section class="vx-card vx-col-5" aria-label="Flux notable">
+  <aside class="vx-card vx-insight-rail" aria-label="Flux notable">
     <div class="vx-card-header"><span class="vx-card-title">Flux notable</span>
       <span class="vx-chart-question">Gros premium négocié du cycle (volume × prime) — pas un flux tick-par-tick.</span></div>
     <div id="vx-gx-flow"><div class="vx-empty">—</div></div>
-  </section>
+  </aside>
 </div>
-<div class="vx-grid vx-mt3">
+<details class="vx-disclosure vx-mt3">
+  <summary>Historique quotidien et copilote</summary>
+  <div class="vx-disclosure__body vx-grid">
   <section class="vx-card vx-col-7" aria-label="GEX quotidien">
     <div class="vx-card-header"><span class="vx-card-title">GEX quotidien — le gamma s'empile-t-il&nbsp;?</span>
       <span class="vx-chart-question">Net GEX jour après jour (journal réel — un point par jour analysé, jamais inventé).</span></div>
@@ -189,19 +140,15 @@ _VIEW_CONTENT = {
       <div id="vx-cp-out" class="vx-mt2"></div>
     </div>
   </section>
-</div>
+  </div>
+</details>
 """,
     'leaps': """
 <div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-12" aria-label="Scanner par univers">
-    <div class="vx-card-header"><span class="vx-card-title">Scanner par univers — quel horizon, quels contrats conformes&nbsp;?</span>
-      <span class="vx-chart-question">Fenêtres STRICTES du mandat V2 (TACTICAL 20-60 · SWING 60-180 · LEAPS 180-540 DTE) · hors-mandat étiqueté, jamais caché · probabilité de doublement ESTIMÉE (modèle non calibré).</span></div>
+  <section class="vx-card vx-col-12" aria-label="Scanner LEAPS">
+    <div class="vx-card-header"><span class="vx-card-title">Scanner LEAPS — quels contrats longue échéance sont conformes&nbsp;?</span>
+      <span class="vx-chart-question">Échéance 180–540 jours · hors-mandat visible · probabilité de doublement estimée, jamais présentée comme certaine.</span></div>
     <div class="vx-card-body vx-flex vx-wrap" style="gap:.6rem;align-items:flex-end">
-      <span id="vx-sc-tabs" class="vx-flex" style="gap:6px">
-        <button class="vx-btn vx-btn-sm" data-universe="LEAPS">LEAPS</button>
-        <button class="vx-btn vx-btn-sm vx-btn-ghost" data-universe="SWING">SWING</button>
-        <button class="vx-btn vx-btn-sm vx-btn-ghost" data-universe="TACTICAL">TACTICAL</button>
-      </span>
       <label class="vx-field"><span>Filtre titre (optionnel)</span>
         <input id="vx-sc-sym" class="vx-input" placeholder="ex. NVDA" maxlength="12" autocomplete="off"></label>
       <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-sc-go">Scanner</button>
@@ -209,26 +156,29 @@ _VIEW_CONTENT = {
     <div id="vx-sc-out" class="vx-mt2">%%LOADING%%</div>
   </section>
 </div>
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-12" aria-label="Profil LEAPS">
-    <div class="vx-card-header"><span class="vx-card-title">Profil LEAPS — acheter du temps, une tendance, un catalyseur&nbsp;?</span>
-      <span class="vx-chart-question">Delta 0,70-0,90 · échéance 6-18 mois · OI élevé · spread faible · tendance + catalyseur.</span></div>
-    <div class="vx-card-body vx-flex vx-wrap" style="gap:.6rem;align-items:flex-end">
-      <label class="vx-field"><span>Sous-jacent</span>
-        <input id="vx-lp-sym" class="vx-input" placeholder="ex. NVDA" maxlength="12" autocomplete="off"></label>
-      <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-lp-go">Lire les LEAPS</button>
-      <span id="vx-lp-chips" class="vx-flex vx-wrap" style="gap:6px"></span>
+<details class="vx-disclosure vx-mt3">
+  <summary>Comparer un horizon plus court</summary>
+  <div class="vx-disclosure__body">
+    <div id="vx-sc-tabs" class="vx-flex vx-wrap" style="gap:6px" role="group" aria-label="Univers d’options">
+      <button class="vx-btn vx-btn-sm" data-universe="LEAPS">LEAPS · 180–540 j</button>
+      <button class="vx-btn vx-btn-sm vx-btn-ghost" data-universe="SWING">Swing · 60–180 j</button>
+      <button class="vx-btn vx-btn-sm vx-btn-ghost" data-universe="TACTICAL">Tactique · 20–60 j</button>
     </div>
-  </section>
+    <p class="vx-meta vx-mt2">Ces horizons restent des comparaisons avancées ; la vue conserve LEAPS comme mandat principal.</p>
+  </div>
+</details>
+<div class="vx-options-local-bridge" hidden>
+  <input id="vx-lp-sym" tabindex="-1"><button id="vx-lp-go" type="button">Actualiser</button>
 </div>
+<div id="vx-lp-chips" class="vx-options-shortcuts vx-mt3" aria-label="Sous-jacents du tableau"></div>
 <div id="vx-lp-out" class="vx-mt3"><div class="vx-empty">Choisis un sous-jacent pour lire ses contrats longue échéance.</div></div>
 """,
     'positions': """
 <div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-12" aria-label="Domicile canonique des positions options">
-    <div class="vx-insight" data-tone="action"><b>Domicile canonique des positions options.</b>
-      Le détail (Greeks, échéances, payoff, catalyseurs, invalidations, liquidité) vit ici.
-      Le Portefeuille ne garde qu'un résumé d'exposition et un lien vers cette vue.</div>
+  <section class="vx-card vx-col-12" aria-label="Exposition des positions options">
+    <div class="vx-card-header"><span class="vx-card-title">Exposition et échéances</span>
+      <span class="vx-readonly-shield">Suivi uniquement · aucun ordre</span></div>
+    <p class="vx-card-conclusion">Repère d’abord les échéances proches, les pertes à contrôler et les positions dont les données sont incomplètes.</p>
   </section>
 </div>
 <div id="vx-op-body" class="vx-mt3">%%LOADING%%</div>
@@ -257,25 +207,25 @@ _VIEW_CONTENT = {
 </div>
 """,
     'volatility': """
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-12" aria-label="Sélecteur de titre">
-    <div class="vx-card-header"><span class="vx-card-title">Volatilité par sous-jacent</span></div>
-    <div class="vx-card-body">
-      <label class="vx-field"><span>Symbole</span>
-        <input id="vx-opt-vol-sym" class="vx-input" placeholder="ex. AAPL" maxlength="12" autocomplete="off"></label>
-      <button class="vx-btn vx-btn-sm" id="vx-opt-vol-go">Interpréter</button>
-    </div>
-  </section>
-  <section class="vx-card vx-col-12" id="vx-opt-vol-out" aria-label="Interprétation volatilité">
+<div class="vx-options-local-bridge" hidden>
+  <input id="vx-opt-vol-sym" tabindex="-1"><button id="vx-opt-vol-go" type="button">Actualiser</button>
+</div>
+<div class="vx-hero-grid vx-mt3">
+  <div class="vx-hero-main" id="vx-opt-term"></div>
+  <aside class="vx-card vx-insight-rail" id="vx-opt-vol-out" aria-label="Interprétation volatilité">
     <div class="vx-card-header"><span class="vx-card-title">Les options sont-elles chères ?</span>
       <span class="vx-actions"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-explain="volatility">Comprendre ce graphique</button></span></div>
     <div id="vx-opt-vol-out-body"><div class="vx-empty">Choisis un symbole présent dans le tableau d'options.</div></div>
-  </section>
-  <div class="vx-col-6" id="vx-opt-term"></div>
-  <div class="vx-col-6" id="vx-opt-cone"></div>
-  <div class="vx-col-6" id="vx-opt-oi"></div>
-  <div class="vx-col-6" id="vx-opt-smile"></div>
+  </aside>
 </div>
+<details class="vx-disclosure vx-mt3">
+  <summary>Cône estimé, intérêt ouvert et smile</summary>
+  <div class="vx-disclosure__body vx-grid">
+    <div class="vx-col-4" id="vx-opt-cone"></div>
+    <div class="vx-col-4" id="vx-opt-oi"></div>
+    <div class="vx-col-4" id="vx-opt-smile"></div>
+  </div>
+</details>
 """,
     'radar': """
 <div class="vx-grid vx-mt3">
@@ -286,15 +236,10 @@ _VIEW_CONTENT = {
 </div>
 """,
     'scenarios': """
+<div class="vx-options-local-bridge" hidden>
+  <input id="vx-opt-sc-sym" tabindex="-1"><button id="vx-opt-sc-go" type="button">Actualiser</button>
+</div>
 <div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-12" aria-label="Sélecteur de titre">
-    <div class="vx-card-header"><span class="vx-card-title">Scénarios du meilleur contrat</span></div>
-    <div class="vx-card-body">
-      <label class="vx-field"><span>Symbole</span>
-        <input id="vx-opt-sc-sym" class="vx-input" placeholder="ex. GOOGL" maxlength="12" autocomplete="off"></label>
-      <button class="vx-btn vx-btn-sm" id="vx-opt-sc-go">Simuler</button>
-    </div>
-  </section>
   <section class="vx-card vx-col-12" id="vx-opt-sc-out" aria-label="Scénarios">
     <div class="vx-card-header"><span class="vx-card-title">Que vaudra le contrat selon le spot, le temps et l'IV ?</span></div>
     <div id="vx-opt-sc-out-body"><div class="vx-empty">Choisis un symbole présent dans le tableau d'options.</div></div>
@@ -307,15 +252,10 @@ _VIEW_CONTENT = {
 </div>
 """,
     'events': """
+<div class="vx-options-local-bridge" hidden>
+  <input id="vx-opt-ev-sym" tabindex="-1"><button id="vx-opt-ev-go" type="button">Actualiser</button>
+</div>
 <div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-12" aria-label="Sélecteur de titre">
-    <div class="vx-card-header"><span class="vx-card-title">Risque d'événement par titre</span></div>
-    <div class="vx-card-body">
-      <label class="vx-field"><span>Symbole</span>
-        <input id="vx-opt-ev-sym" class="vx-input" placeholder="ex. AAPL" maxlength="12" autocomplete="off"></label>
-      <button class="vx-btn vx-btn-sm" id="vx-opt-ev-go">Évaluer</button>
-    </div>
-  </section>
   <section class="vx-card vx-col-12" id="vx-opt-ev-out" aria-label="Interprétation événement">
     <div class="vx-card-header"><span class="vx-card-title">Un événement menace-t-il l'échéance ?</span>
       <span class="vx-actions"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-explain="event_risk">Comprendre ce graphique</button></span></div>
@@ -337,6 +277,7 @@ _PAGE_JS = (
     '<script src="/static/vertex/js/pages/options-structure.js" defer></script>'
     '<script src="/static/vertex/js/pages/options-gex.js" defer></script>'
     '<script src="/static/vertex/js/pages/options-scanner.js" defer></script>'
+    '<script src="/static/vertex/js/pages/options-context.js" defer></script>'
 )
 
 
