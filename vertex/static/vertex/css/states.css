@@ -84,7 +84,12 @@
 .vx-demo-banner{display:flex;align-items:center;gap:9px;
   background:var(--vx-brand-soft);border:1px solid rgba(255,255,255,.3);
   color:var(--vx-brand-strong);border-radius:var(--vx-r-sm);
-  padding:7px 12px;font-size:12px;font-weight:600;margin-bottom:var(--vx-s4)}
+  padding:5px 12px;font-size:12px;font-weight:600;margin-bottom:var(--vx-s2)}
+/* LOT 628 — le bandeau demo occupait 35 px + 16 px d'ecart avant les tuiles
+   de decision. Il DOIT rester visible et lisible : c'est lui qui empeche de
+   prendre une donnee synthetique pour une donnee reelle. Seuls son padding
+   et sa marge basse sont resserres ; ni sa taille de texte, ni son contraste,
+   ni son libelle ne bougent. */
 .vx-badge-demo{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;
   border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.5px;
   text-transform:uppercase;background:var(--vx-brand-soft);
