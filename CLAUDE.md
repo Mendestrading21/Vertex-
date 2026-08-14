@@ -1,77 +1,51 @@
-# VERTEX — Guide pour les sessions Claude (local & cloud)
+# Vertex — instructions projet pour Claude Code
 
-Terminal d'ANALYSE de trading (Flask, port 5002). **Lecture seule : aucun ordre n'est jamais passé** — invariant produit absolu (`READONLY=True` dans `vertex/app/config.py`).
+## Mission
+Vertex est un terminal d’aide à la décision d’investissement. Il doit rester **READONLY** : analyser, hiérarchiser, expliquer, comparer et suivre. Il ne doit jamais créer, modifier, transmettre ou exécuter un ordre financier.
 
-## SKYLER V2 — règle prioritaire
+## Règle obligatoire pour tout travail UI / UX / design / graphique
+Avant de modifier une page, un composant, une couleur, un texte, une icône, une grille, un tableau, un graphique ou le shell, lire et appliquer :
 
-Pour tout travail lié à l’analyse marché, aux actions, aux options, au portefeuille, aux anomalies, aux catalyseurs, à l’IA Skyler ou à la refonte associée, lire et appliquer en premier :
+`.claude/skills/rebuilding-vertex-visual-system/SKILL.md`
 
-```text
-.claude/skills/vertex-skyler-v2/SKILL.md
-```
+Ce skill est la source de vérité opérationnelle de la refonte Vertex Signal OS. Il contient les règles visuelles, la méthode page-par-page, la grammaire TradingView, la micro-copy, les composants, la validation et les critères de sortie.
 
-Branche d’intégration :
+Ne pas improviser une nouvelle direction esthétique en dehors de ce système.
 
-```text
-integration/vertex-skyler-v2
-```
+## Sources de vérité existantes à préserver
+- `vertex/strategy/` : moteurs de décision et Constitution.
+- `vertex/visualization/palette.py` : registre couleur Python.
+- `vertex/static/vertex/js/charts/chart-theme-obsidian-copper.js` : miroir du thème graphique navigateur.
+- `vertex/static/vertex/js/charts/chart-core.js` : moteur graphique canonique.
+- `vertex/ui/shell/` : shell et navigation canoniques.
+- `docs/design/VERTEX_SIGNAL_OS.md` : contrat de design engagé.
+- `tests/` : gardiens produit, sécurité, accessibilité, cache et cohérence visuelle.
 
-Commande initiale obligatoire :
+## Invariants non négociables
+1. Aucun chemin d’exécution d’ordre.
+2. Aucune donnée inventée pour remplir un widget.
+3. Les états `loading`, `empty`, `stale`, `error`, `demo`, `offline` restent explicites.
+4. Une couleur = une signification.
+5. Une donnée importante = un traitement visuel dominant, pas dix accents concurrents.
+6. Toute modification de `/static` impose la mise à jour cohérente du cache/service worker et de ses tests gardiens.
+7. Toute refonte doit conserver ou améliorer accessibilité, responsive, handlers et routes.
+8. Ne jamais déclarer une page terminée sans exécuter sa checklist de validation du skill.
 
-```text
-/vertex-skyler-v2 audit
-```
+## Méthode de travail
+- Travailler **une page canonique à la fois**.
+- Auditer d’abord, proposer la hiérarchie, puis reconstruire.
+- Réutiliser des primitives communes avant de créer un composant local.
+- Après chaque page : tests ciblés + contrôle visuel desktop/tablette/mobile + zéro bouton mort + zéro erreur console.
+- Seulement après validation, passer à la page suivante.
 
-Une invocation exécute un seul lot. Claude doit produire les preuves, mettre à jour `docs/skyler/STATUS.md`, créer un rapport de validation et s’arrêter. Aucun lot suivant sans validation humaine explicite.
-
-Ne jamais travailler directement sur `main`. Les anciennes branches V4/Prism sont des références historiques et ne doivent pas devenir la base de Skyler V2.
-
-## Lancer & vérifier
-- App : `python terminal.py` (ou `.claude/launch.json` → serveur « vertex », port 5002). Windows : `Lancer_VERTEX.bat`.
-- Tests : `python -m pytest tests/ -q` → **doivent passer à 100 %** avant tout commit.
-- Santé : `GET /healthz` · erreurs JS clients : `GET /api/client-log` (doit rester à 0) · état live : `GET /api/live/status`.
-- Après un changement lourd : vérifier en vrai navigateur (pas seulement curl) + 0 erreur console.
-
-## Architecture (la vraie)
-- **Monolithe** `terminal.py` (**~7 150 lignes** depuis la purge É1 du lot 323 ; il en faisait 10 743) : HTML/JS construits en chaînes Python. Modules `vertex/ui/*.py` réellement servis : `nav`, `vx_kit`, `sync_center`, `design_system`, `home_art`. ⚠️ `options_lab`, `journal`, `vault`, `signals`, `strategy_os` n'ont **plus aucun consommateur en production** (leurs pages sont mortes) — reliques en attente de décision, cf. `docs/refactor/validation/SKYLER-LOT-327.md`.
-- **Moteurs** : `vertex/engines/` (decision_stack = vérité des verdicts, recommendation = façade unique + vocabulaire `__VXVOCAB`, options_lab, track_record, evidence…).
-- **Routes** : `vertex/app/routes/` (Blueprints) + routes restantes dans terminal.py.
-- **État partagé** : `vertex/app/state.py` (`scan_state` muté en place — ne JAMAIS réassigner).
-- **Données perso utilisateur** : localStorage navigateur (`myTrades`, `myRecos`, `myFavs`, `vxJournal`, `vxAlerts`…) synchronisé serveur en blob `desk_data.json` (last-writer-wins + backup quotidien `desk_backup_*.json`).
-
-## Règles critiques (violations = données perdues ou app cassée)
-1. **Clés de sync desk** : toute nouvelle clé localStorage à synchroniser doit être ajoutée dans **LES 2 listes RÉELLEMENT SERVIES** — `DESK_KEYS` de `vertex/static/vertex/js/vx-entities.js` (fichier statique chargé par les 8 pages) et le **repli** de `deskKeys()` dans `vertex/ui/pages/system_page.py` (inline dans `/system`, utilisé si `VXEntities` n'est pas chargé) — sinon un push l'efface côté serveur. Mesuré au lot 381 : `vertex/ui/vx_kit.py` porte bien `DESK_KEYS` et sert de **référence de comparaison** aux gardiens, mais son JS (21 727 o) **n'atteint aucune des 8 pages** — le décrire comme « kit global présent sur toutes les pages » était faux ; le garder synchronisé reste utile tant qu'il sert d'ancre, mais ce n'est pas lui que le navigateur lit. `vertex/ui/journal.py` porte une 4ᵉ copie et **n'est plus servi** non plus (page morte). Depuis la purge É1, terminal.py n'en héberge aucune. Tests gardiens : `tests/test_desk_keys_servies_lot381.py` (**garde les listes par ce qu'elles SERVENT** — le repli de `system_page` n'était couvert par rien, retirer une clé y passait les 2 754 tests), plus `tests/test_production.py::test_desk_sync_keys_single_source_of_truth` et `tests/test_strategy_os_final_guards.py::test_all_sync_keys_match` (comparaison sur disque).
-2. **Apostrophes françaises dans les chaînes JS** de terminal.py : toujours échapper (`aujourd\\'hui`) — deux SyntaxError silencieuses ont déjà vécu.
-3. **Service worker** : bump `td-shell-vN` dans `vertex/app/routes/system.py` dès qu'un **octet servi** change — HTML de shell **ET tout fichier sous `/static`** (CSS, JS, polices, images). Le SW met en cache les navigations + **tout `/static`** + le manifeste ; `activate` supprime tous les caches dont la clé diffère, donc **le bump est ce qui purge la copie de repli hors-ligne**. Il n'est pas là « pour que l'utilisateur voie la nouvelle interface » : le SW est *network-first* (le frais gagne toujours en ligne, repli cache au-delà de 4,5 s ou hors-ligne). Fenêtre d'exposition sans bump : visiteur déjà venu, hors-ligne ou réseau lent, servi depuis un cache assemblé à des visites différentes. Gardien : `tests/test_sw_cache_scope_lot361.py` (empreinte des assets ↔ version enregistrée ; message d'échec = marche à suivre).
-4. **Données RÉELLES uniquement** : jamais de chiffre inventé affiché comme réel. Donnée absente → `—`/`n/d` honnête. Le mot « démo » ne s'affiche que si le serveur le confirme.
-5. **News/textes externes** : **deux** familles de sorties, deux contrats — ne pas les mélanger (lot 358).
-   - *Sortie assainie au serveur* : `/news-feed`, `/api/events/<sym>`, `/api/skyler/<sym>` → **toujours** via `news_plus.sanitize_news()` avant de servir, car leurs consommateurs injectent le titre **brut** en innerHTML. Gardien : `tests/test_xss_exits_lot177.py`.
-   - *Sortie échappée au rendu* : `/api/ai/enrichment` (`vertex/ai/enrichment.py::parse_news`, cerveau Claude+web) n'appelle **pas** `sanitize_news` et ne le doit pas — son unique rendu (`system_page.py::loadBrain`) échappe déjà via `esc()`, et un assainissement serveur double-échapperait les titres légitimes. Sa sûreté tient à 3 propriétés : citations filtrées http(s) (`provenance._safe_url`), forme reconstruite et bornée (4 champs), rendu via `esc()`. Gardien : `tests/test_ai_news_exit_lot358.py`.
-6. **desk_data.json** : ne jamais l'écraser à la main ; en cas de doute, backups `desk_backup_*.json` + `/api/desk/restore`. **Ce que le filet couvre vraiment** (mesuré au lot 362) : le snapshot est pris **une fois par jour**, avant la 1ʳᵉ écriture — un restore rend donc l'état d'**avant la première sync du jour** et **perd le travail de la journée** ; profondeur maximale **7 jours** (`BACKUP_KEEP`). Le last-writer-wins est **total** : un push partiel remplace le blob entier (les clés absentes disparaissent) et un push `data: {}` est **accepté** (la validation porte sur le type, pas le contenu) — l'écrasement n'a pas besoin d'être « à la main ». Le client protège bien (`vx_kit.py` : push seulement après hydratation réussie, abstention si `bootSync` échoue, re-remplissage des clés absentes) ; le scénario résiduel est un navigateur dont l'écriture localStorage échoue en silence. Gardiens : `tests/test_desk_backup_lot178.py` (chaîne de sauvegarde) et `tests/test_desk_perte_lot362.py` (caractérisation des pertes — à mettre à jour si le serveur est durci).
-
-## Git
-- Pour Skyler V2, suivre exclusivement la gouvernance du skill `vertex-skyler-v2`.
-- **`main` = version canonique publiée** — la mettre à jour SEULEMENT avec accord explicite de l'utilisateur.
-- Données runtime (edge_ledger, desk_backup_*, track_meta, alerts_fired, .env, .vertex_secret) : gitignorées, jamais commitées.
-
-## Sécurité
-- Verrou d'accès : `VERTEX_CODE` dans `.env` (chargé automatiquement ; `.env.example` = modèle). `VERTEX_SECRET` indépendant sinon secret aléatoire persistant `.vertex_secret`.
-- Sans code d'accès, le serveur n'écoute que 127.0.0.1 (LAN/iPhone : définir `VERTEX_CODE`, ou `VERTEX_LAN=1` en connaissance de cause).
-- IBKR : `readonly=True` toujours ; worker unique avec `RequestTimeout=45` (ne pas retirer — anti-blocage).
-
-## Couleurs — la règle réellement tenue (mesuré au lot 382)
-
-L'énoncé « tokens/VXChartTheme uniquement, **aucun littéral couleur** » était
-**faux** : `vertex/ui/**` contient **265 littéraux `#RRGGBB` distincts, dont 53
-atteignent une page servie**. La règle que le code respecte et qu'un gardien
-impose réellement est plus étroite : **aucun bleu NON-MARQUE en dur**
-(`tests/test_obsidian_theme.py::test_no_blue_in_ui_pages`, vérifié par mutation —
-un `#1e6fd9` échoue, un `#ff00ff` passe).
-
-Pour tout NOUVEAU travail : préférer les tokens. Ce qui est verrouillé :
-`tests/test_litteraux_couleur_servis_lot382.py` interdit la **croissance** du
-nombre de littéraux servis (borne fixée à la mesure) et vérifie l'absence de bleu
-non-marque **dans les octets servis**, pas seulement dans les sources.
-
-## Utilisateur
-Trader francophone, interface en FR. Compte IBKR réel connecté via TWS (lecture seule). Préfère : données réelles partout, zéro erreur, tout synchronisé automatiquement au lancement. Aucun nom personnel ne doit apparaître dans le code, l'interface ou la documentation.
+## Ordre recommandé
+1. Shell global
+2. Aujourd’hui
+3. Marchés
+4. Opportunités
+5. Analyse
+6. Portefeuille
+7. Options
+8. Journal
+9. Système
+10. Passe finale responsive/accessibilité/performance/cohérence
