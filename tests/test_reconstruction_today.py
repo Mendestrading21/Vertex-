@@ -69,10 +69,10 @@ def test_today_no_order_path():
 
 
 def test_root_route_still_200_with_shell(client):
-    """La route `/` répond 200 et garde le shell (space briefing, neon-glass, SW v55)."""
+    """La route `/` répond 200 et garde le shell, le thème historique et Signal OS."""
     body = client.get('/').get_data(as_text=True)
     assert 'data-space="briefing"' in body
     assert '/static/vertex/css/neon-glass.css' in body
     assert 'vx-skeleton' in body               # squelette de chargement conservé
     sw = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v187' in sw
+    assert 'td-shell-v188' in sw
