@@ -68,3 +68,25 @@
 
   connect();
 })();
+
+/* Signal OS est chargé depuis ce runtime partagé par les huit espaces.
+   Cette stratégie garde le shell Python stable pendant la migration et garantit
+   que la couche visuelle arrive après les feuilles historiques. */
+(function loadSignalOS(){
+  'use strict';
+  document.documentElement.dataset.visual = 'signal-os';
+  if(!document.querySelector('link[data-vertex-signal-os]')){
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = '/static/vertex/css/signal-os.css';
+    css.dataset.vertexSignalOs = '1';
+    document.head.appendChild(css);
+  }
+  if(!document.querySelector('script[data-vertex-signal-os]')){
+    const js = document.createElement('script');
+    js.src = '/static/vertex/js/signal-os.js';
+    js.async = false;
+    js.dataset.vertexSignalOs = '1';
+    document.head.appendChild(js);
+  }
+})();
