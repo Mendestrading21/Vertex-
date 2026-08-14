@@ -306,8 +306,11 @@ async function loadRegime(){
       +'<div class="vx-kv"><span class="k">Confirmations exigées</span><span class="v">'+VX.fmt.nd(adj.confirmation_required)+'</span></div>'
       +'<div class="vx-card-footer"><a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets?view=breadth">Participation →</a></div>';
     if(window.VXCharts&&VXCharts.regimeAura){
+      /* LOT 629 — `||0` transformait une confiance ABSENTE en « 0 % confiance »,
+         un chiffre inventé affiché comme mesure. Absente → null, et l’objet
+         affiche « confiance n/d » avec sa couronne éteinte. */
       VXCharts.regimeAura('vx-regime-object',{regime:r&&r.regime,
-        confidence:Math.round(((r&&r.confidence)||0)*100),
+        confidence:(r&&r.confidence!=null&&!isNaN(r.confidence))?Math.round(r.confidence*100):null,
         newRisk:(adj.new_risk_allowed===undefined?null:!!adj.new_risk_allowed),
         invalidation:inval,grammar:grammar,
         source:'Moteur de régimes',timestamp:r&&(r.as_of||r.timestamp||r.updated)||null,mode:'delayed'});
