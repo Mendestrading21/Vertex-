@@ -31,7 +31,15 @@ def classify(title: str) -> str:
 
 
 def score_importance(event: dict, portfolio_syms: list[str]) -> int:
-    """0-100 — déterministe : corroborations + portefeuille + catégorie."""
+    """0-100 — déterministe : corroborations + portefeuille + catégorie.
+
+    LOT 609 — CE QUE LE SEUIL DE SENTIMENT DISCRIMINE VRAIMENT. Le seul
+    producteur de `sentiment` (`news_plus.sentiment`) rend EXACTEMENT -1, 0 ou
+    +1. Sur ce domaine, `abs(senti) >= 0.5` ne sépare PAS le fort du faible :
+    il sépare seulement le SIGNÉ du NEUTRE — vérifié par énumération exhaustive
+    du domaine. Le seuil est conservé tel quel (il resterait correct si une
+    source continue apparaissait) mais il ne mesure aucune intensité aujourd'hui.
+    """
     score = 30
     score += min(30, 10 * (event.get('corroborations', 1) - 1))
     if any(s in portfolio_syms for s in event.get('entities', [])):
@@ -47,7 +55,20 @@ def score_importance(event: dict, portfolio_syms: list[str]) -> int:
 
 
 def potential_impact(event: dict) -> dict:
-    """Direction POTENTIELLE (jamais « causera ») dérivée du sentiment fourni."""
+    """Direction POTENTIELLE (jamais « causera ») dérivée du sentiment fourni.
+
+    LOT 609 — `confidence` N'EST PAS UNE MESURE AUJOURD'HUI. `min(0.7, abs(senti))`
+    a l'air calculé ; sur le domaine réel du producteur ({-1, 0, +1}) il ne prend
+    QU'UNE valeur par direction : 0.7 pour un signe, 0.3 pour le neutre. C'est un
+    littéral déguisé en calcul.
+
+    Rien n'est changé au comportement — cette valeur n'est affichée nulle part
+    (seule `direction` l'est, dans l'« Actualité dominante » de `/`), et lui
+    inventer une amplitude serait ajouter de la fausse précision. Ce qui est
+    corrigé, c'est le SILENCE : quiconque rendra `sentiment` continu doit savoir
+    que ces seuils et cette confiance ont été écrits pour un continuum qu'ils
+    n'ont jamais reçu. Gardien : `tests/test_sentiment_contrat_lot609.py`.
+    """
     senti = event.get('sentiment')
     if not isinstance(senti, (int, float)):
         return {'direction': 'INCONNUE', 'confidence': 0.0}

@@ -1,37 +1,39 @@
 /* Vertex Design System — tokens.css
-   VERTEX NEUE EMBER — source unique et canonique des couleurs, typos, rayons,
-   espacements. Remplace Signal Green + Obsidian Copper + la palette locale Neon Glass.
+   VERTEX OBSIDIAN COPPER — source unique et canonique des couleurs, typos,
+   rayons et espacements. Le cuivre signe la marque et les actions prioritaires ;
+   les grandes surfaces restent graphite pour préserver sobriété et lisibilité.
 
    UNE COULEUR = UNE SIGNIFICATION :
-   BLANC / GRIS CLAIR (en verre) = identité / marque / action principale / sélection / focus
+   CUIVRE = identité / marque / action principale / sélection / focus
                   (⚠️ NE signifie JAMAIS « hausse / achat / réussite ») ·
    ÉMERAUDE = gain / hausse / confirmation RÉELLE (« Marché ouvert » compris) ·
    CORAIL = perte / risque RÉEL · JAUNE = attente / seuil / avertissement ·
    CYAN = comparaison technique · VIOLET = options / volatilité ·
-   GRIS CHAUD = neutre / benchmark / indisponible. AUCUN orange, AUCUN bleu.
-   L'accent d'interface est un blanc légèrement gris translucide, jamais coloré. */
+   GRIS CHAUD = neutre / benchmark / indisponible. Le cyan reste exclusivement
+   technique ; le cuivre n'exprime jamais une hausse ou une réussite. */
 :root{
-  /* ══ Fondation NEUE EMBER — surfaces chaudes très sombres ══ */
-  --vx-canvas:#020305;             /* canvas global — quasi noir */
-  --vx-shell:#070709;              /* shell (sidebar / topbar / app) */
-  --vx-surface:#0c0c0e;            /* surface standard (carte) */
-  --vx-surface-elevated:#121214;   /* surface élevée */
-  --vx-surface-hover:#181719;      /* survol */
-  --vx-surface-selected:#1d1c1f;   /* sélection */
-  --vx-warm-depth:#242327;         /* profondeur neutre / halo localisé (discret) */
+  color-scheme:dark;
+  /* ══ Fondation Obsidian — surfaces graphite très sombres ══ */
+  --vx-canvas:#060707;             /* canvas global */
+  --vx-shell:#090A0C;              /* shell (sidebar / topbar / app) */
+  --vx-surface:#101215;            /* surface standard (carte) */
+  --vx-surface-elevated:#141619;   /* surface élevée */
+  --vx-surface-hover:#1C2025;      /* survol interactif */
+  --vx-surface-selected:#22262C;   /* sélection neutre */
+  --vx-warm-depth:#202226;         /* profondeur neutre / halo localisé */
 
   /* ── Compat noirs & graphites (repointés sur la fondation Ember) ── */
-  --vx-black:#060405;
+  --vx-black:#040505;
   --vx-obsidian-950:var(--vx-canvas);
   --vx-obsidian-900:var(--vx-shell);
   --vx-obsidian-850:var(--vx-shell);
-  --vx-obsidian-800:#0c0c0e;
-  --vx-graphite-900:#0c0c0e;
-  --vx-graphite-850:#121214;
-  --vx-graphite-800:#121214;
-  --vx-graphite-750:#181719;
-  --vx-graphite-700:#1d1c1f;
-  --vx-root:var(--vx-canvas);--vx-app:var(--vx-shell);--vx-sidebar:var(--vx-shell);--vx-topbar:rgba(7,7,9,.96);
+  --vx-obsidian-800:#101215;
+  --vx-graphite-900:#101215;
+  --vx-graphite-850:#141619;
+  --vx-graphite-800:#141619;
+  --vx-graphite-750:#1C2025;
+  --vx-graphite-700:#22262C;
+  --vx-root:var(--vx-canvas);--vx-app:var(--vx-shell);--vx-sidebar:var(--vx-shell);--vx-topbar:rgba(9,10,12,.94);
 
   /* ── Fonds (compat V3 : bg-0..3) ── */
   --vx-bg-0:var(--vx-canvas);
@@ -48,41 +50,70 @@
   --vx-surface-3:var(--vx-surface-elevated);
   --vx-surface-4:var(--vx-surface-hover);
 
-  /* ── Bordures chaudes (subtile → forte) ── */
-  --vx-border-faint:rgba(90,69,64,.35);
-  --vx-border-soft:#30292B;
-  --vx-border-default:#30292B;
-  --vx-border-strong:#5A4540;
+  /* ── Bordures graphite ; cuivre uniquement pour l'accent actif ── */
+  --vx-border-faint:rgba(200,194,188,.08);
+  --vx-border-soft:#292D32;
+  --vx-border-default:#32373D;
+  --vx-border-strong:#4A5159;
+  --vx-border-accent:rgba(210,138,84,.56);
 
   /* ── Texte ── */
-  --vx-text-primary:#F8F5F3;
-  --vx-text-secondary:#BABABA;
-  --vx-text-muted:#8A8284;
-  --vx-text-faint:#655d5f;
+  --vx-text-primary:#F5F3F0;
+  --vx-text-secondary:#C8C2BC;
+  /* LOT 614 — #8A8284 tombait a 4,04:1 sous `.vx-meta`, `.vx-kpi-label`,
+     `.vx-card-footer` et `.vx-muted` : sous le seuil WCAG AA sur 11 combinaisons
+     page x largeur, mesurees au navigateur sur les 8 pages servies. #989092
+     donne 4,86 sur ce meme fond (marge +0,36 ; le minimum strict #938a8c ne
+     laissait que +0,01, soit aucune marge). Luminance 0,2870, entre le palier
+     `faint` (0,2028) et le palier `secondary` (0,4910) : hierarchie preservee.
+     ATTENTION 1 — le meme hexadecimal #8A8284 porte AUSSI le role « serie
+     neutre acier » (`--vx-steel-3`, palette.COPPER, derniere serie des
+     graphiques, lignes support/resistance). Ce role N'A PAS bouge : confondre
+     les deux changerait la couleur d'une SERIE DE DONNEES au pretexte de rendre
+     du texte lisible.
+     ATTENTION 2 — ne jamais ecrire ici un nom de token suivi d'un deux-points,
+     `design_system_page._load_tokens` avalerait la declaration suivante. */
+  --vx-text-muted:#989092;
+  /* LOT 613 puis 615 — #655d5f plafonnait a 3,23:1 sur la surface la PLUS
+     favorable du produit : ce palier ne pouvait atteindre le seuil WCAG AA
+     (4,5:1) NULLE PART, alors qu'il porte du texte reel (`.vx-help`,
+     `.vx-mono`, etiquettes de momentum a 8 px, et l'etiquette `td::before` qui
+     NOMME chaque valeur quand une table passe en cartes sous 720 px).
+     Le 613 l'avait porte a #847a7c, borne par la position d'alors du palier
+     `muted` : cela donnait EXACTEMENT 4,50 sur `surface-elevated`, mesure au
+     navigateur par injection DOM — conforme, avec ZERO marge. Le 614 ayant
+     remonte `muted` a #989092, le 615 profite de la place liberee : #8f8587
+     tient 5,77 / 5,63 / 5,47 / 5,23 sur canvas / shell / surface / elevated
+     (marge +0,73 sur la pire surface servie) et ferme aussi `surface-selected`
+     a 4,74. Luminance 0,2436, sous celle du palier `muted` (0,2870) : la
+     hierarchie primary > secondary > muted > faint tient, avec un pas visible.
+     Seule limite restante, assumee et gardee par un test : la surface
+     `warm-depth` a 4,37 — aucun texte n'y a jamais ete mesure, et eclaircir
+     sans mesure reviendrait a corriger un defaut qu'on n'a pas constate.
+     ATTENTION — ne jamais ecrire ici un nom de token suivi d'un deux-points,
+     `design_system_page._load_tokens` avalerait la declaration suivante. */
+  --vx-text-faint:#8f8587;
 
-  /* ══ MARQUE — BLANC / GRIS CLAIR (identité neutre ; jamais « hausse ») ══
-     Plus de bleu ni d'orange : l'accent d'interface est un blanc légèrement gris,
-     en verre. Boutons/nav/liens/sélection = blanc-gris translucide, texte sombre.
-     Les noms de tokens restent `--vx-ember-*` (source unique). Les seules VRAIES
-     couleurs sont sémantiques : vert=gain, rouge=perte, jaune=attente (foncées +
-     transparentes), violet=options, cyan=technique. */
-  --vx-ember-950:#14181e;
-  --vx-ember-900:#1b2027;
-  --vx-ember-800:#272e37;
-  --vx-ember-700:#3a434e;
-  --vx-ember-600:#aab3bf;          /* pressé (gris moyen) */
-  --vx-ember-500:#dbe1e8;          /* marque principale (blanc un peu gris) */
-  --vx-ember-400:#eef1f5;          /* hover (quasi blanc) */
-  --vx-ember-300:#f5f7f9;
-  --vx-ember-soft:rgba(255,255,255,.07);
-  --vx-ember-glow:rgba(255,255,255,.16);
-  --vx-ember-ink:#0b0e14;          /* texte sombre sur bouton blanc/gris */
+  /* ══ MARQUE — CUIVRE SOBRE (identité et action ; jamais « hausse ») ══
+     Les noms `ember` restent pour compatibilité. Les grandes surfaces ne sont
+     jamais cuivrées : seule une petite zone active reçoit cet accent. */
+  --vx-ember-950:#1D120C;
+  --vx-ember-900:#2C1A10;
+  --vx-ember-800:#4A2B19;
+  --vx-ember-700:#784527;
+  --vx-ember-600:#B96D3C;          /* pressé */
+  --vx-ember-500:#D28A54;          /* marque principale */
+  --vx-ember-400:#E1A06E;          /* hover */
+  --vx-ember-300:#EDB78D;
+  --vx-ember-soft:rgba(210,138,84,.12);
+  --vx-ember-glow:rgba(210,138,84,.22);
+  --vx-ember-ink:#130B07;          /* texte sombre sur action cuivre */
 
   --vx-brand:var(--vx-ember-500);
   --vx-brand-strong:var(--vx-ember-400);
   --vx-brand-hover:var(--vx-ember-400);
   --vx-brand-pressed:var(--vx-ember-600);
-  --vx-brand-selected:var(--vx-surface-selected);
+  --vx-brand-selected:rgba(210,138,84,.16);
   --vx-brand-soft:var(--vx-ember-soft);
   --vx-brand-ink:var(--vx-ember-ink);
   --vx-amber:#D9BE3C;
@@ -100,7 +131,7 @@
   --vx-signal-300:var(--vx-ember-300);
   --vx-signal-soft:var(--vx-ember-soft);
   --vx-signal-glow:var(--vx-ember-glow);
-  /* rampe « orange » legacy → Ember (désormais réellement orange) */
+  /* rampe « orange » legacy → cuivre Ember */
   --vx-orange-950:var(--vx-ember-950);
   --vx-orange-900:var(--vx-ember-900);
   --vx-orange-850:var(--vx-ember-800);
@@ -109,7 +140,7 @@
   --vx-orange-600:var(--vx-ember-600);
   --vx-orange-500:var(--vx-ember-500);
   --vx-orange-400:var(--vx-ember-400);
-  /* copper legacy → tons Ember sombres */
+  /* copper legacy → rampe cuivre canonique */
   --vx-copper-dark:var(--vx-ember-800);
   --vx-copper:var(--vx-ember-700);
   --vx-copper-light:var(--vx-ember-500);
@@ -143,15 +174,11 @@
   --vx-cyan-soft:rgba(69,214,232,.12);
 
   /* ── Dégradés (réservés aux éléments importants, fonctionnels) ── */
-  --vx-brand-gradient:linear-gradient(135deg,var(--vx-ember-400) 0%,var(--vx-ember-600) 100%);
-  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(255,255,255,.022),transparent 66%);
+  --vx-brand-gradient:linear-gradient(180deg,var(--vx-ember-400) 0%,var(--vx-ember-500) 100%);
+  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(210,138,84,.045),transparent 66%);
 
-  /* ── Typographie ──
-     Direction souhaitée : NEUE MONTREAL. AUCUN fichier Neue Montreal licencié n'est
-     embarqué dans le dépôt (cf. VERTEX_NEUE_EMBER_SYSTEM.md §Typographie) → fallback
-     robuste Inter, en reproduisant la hiérarchie/rythme Neue Montreal. Aucun
-     téléchargement non autorisé. Le rendu reste correct sans Google Fonts. */
-  --vx-font:"Neue Montreal",Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  /* ── Typographie — Inter est auto-hébergée ; aucun téléchargement externe ── */
+  --vx-font:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --vx-font-mono:"JetBrains Mono","SFMono-Regular",Consolas,"Liberation Mono",monospace;
   --vx-fs-display:40px;--vx-fs-page:32px;--vx-fs-subtitle:14px;--vx-fs-section:22px;
   --vx-fs-card:15px;--vx-fs-body:14px;--vx-fs-meta:12px;
@@ -168,12 +195,12 @@
   --vx-content-max:1600px;--vx-sidebar-w:240px;--vx-sidebar-w-collapsed:72px;
   --vx-topbar-h:62px;--vx-mobile-bar-h:56px;
 
-  /* ── Élévation (chaude, discrète) ── */
+  /* ── Élévation graphite, discrète ── */
   --vx-shadow-1:0 1px 2px rgba(0,0,0,.5);
   --vx-shadow-2:0 4px 16px rgba(0,0,0,.5);
-  --vx-shadow-signal:0 8px 26px rgba(255,255,255,.12);
+  --vx-shadow-signal:0 8px 26px rgba(210,138,84,.14);
   --vx-shadow-modal:0 16px 48px rgba(0,0,0,.68);
-  --vx-glow-brand:0 0 0 1px rgba(255,255,255,.30),0 4px 20px rgba(255,255,255,.10);
+  --vx-glow-brand:0 0 0 1px rgba(210,138,84,.40),0 6px 18px rgba(210,138,84,.12);
 
   /* ── Transitions ── */
   --vx-ease-out:cubic-bezier(.23,1,.32,1);

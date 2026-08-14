@@ -226,7 +226,7 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v187' in body
+    assert 'td-shell-v206' in body
     assert 'td-shell-v150' not in body
 
 
@@ -252,12 +252,12 @@ def test_no_order_execution_path():
 
 
 def test_v3_tokens_are_canonical():
-    """Palette Vertex (identité NEUTRE blanc/gris) — canonique et centralisée.
-    Marque = blanc-gris #DBE1E8 (accent d'interface, jamais « hausse ») · émeraude
+    """Palette Vertex OBSIDIAN COPPER — canonique et centralisée.
+    Marque = cuivre #D28A54 (accent d'interface, jamais « hausse ») · émeraude
     = positif · corail = risque · jaune = attente · violet = options · cyan =
-    comparaison. Le token de marque reste `--vx-ember-*` (valeur neutre désormais)."""
+    comparaison. Le token de marque reste `--vx-ember-*` pour compatibilité."""
     tokens = _read(VXCSS, 'tokens.css')
-    for var in ('--vx-canvas:#020305', '--vx-ember-500:#dbe1e8',
+    for var in ('--vx-canvas:#060707', '--vx-ember-500:#D28A54',
                 '--vx-brand:var(--vx-ember-500)', '--vx-positive:#2BBE90',
                 '--vx-negative:#E9555F', '--vx-warning:#D9BE3C',
                 '--vx-option:#9B7BFF', '--vx-neutral-chart:#BABABA'):

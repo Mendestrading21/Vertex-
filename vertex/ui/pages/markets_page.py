@@ -34,10 +34,10 @@ def _tabs(view: str) -> str:
 
 
 _HEADER = """
-<div class="vx-page-header">
-  <div><h1>Marchés</h1>
-  <div class="vx-sub">Dans quel environnement la stratégie opère-t-elle ?</div></div>
-  <span id="vx-mk-fresh" class="vx-right"></span>
+<div class="vx-page-header vx-page-lead vx-markets-header">
+  <div class="vx-page-lead__main"><h1>Marchés</h1>
+  <div class="vx-sub">Le régime d’abord, une tendance principale, les détails ensuite.</div></div>
+  <span id="vx-mk-fresh" class="vx-page-lead__meta vx-right"></span>
 </div>
 %%TABS%%
 <div id="vx-demo-banner"></div>
@@ -46,57 +46,80 @@ _HEADER = """
 # ── Squelettes par sous-vue ──────────────────────────────────────────────
 _VIEW_CONTENT = {
     'overview': """
-<!-- Bandeau HERO : le régime du marché est la première réponse (question :
-     « le vent est-il dans le dos ou de face ? »). Risque du jour à ses côtés. -->
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-card--hero vx-col-8" id="vx-mk-regime" aria-label="Régime de marché">
+<!-- Réponse immédiate : régime et risque, sans seconde visualisation. -->
+<div class="vx-hero-grid vx-mt3 vx-markets-lead">
+  <section class="vx-card vx-card--hero" id="vx-mk-regime" aria-label="Régime de marché">
     <div class="vx-card-header"><span class="vx-card-title">Régime de marché</span>
       <span class="vx-chart-question">Le vent est-il dans le dos ou de face ?</span></div>
     <div id="vx-mk-regime-body">%%LOADING%%</div>
   </section>
-  <section class="vx-card vx-col-4" id="vx-mk-risk" aria-label="Risque du jour">
-    <div class="vx-card-header"><span class="vx-card-title">Risque du jour</span></div>
-    <div id="vx-mk-risk-body">%%LOADING%%</div>
-  </section>
+  <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)" id="vx-mk-risk" aria-label="Risque du jour">
+    <section class="vx-card">
+      <div class="vx-card-header"><span class="vx-card-title">Risque du jour</span></div>
+      <div id="vx-mk-risk-body">%%LOADING%%</div>
+    </section>
+  </aside>
 </div>
-<div class="vx-grid vx-mt4" id="vx-mk-strip" aria-label="Indices et cross-asset"></div>
-<div class="vx-grid vx-mt4">
-  <div class="vx-col-8" id="vx-mk-spy"></div>
-  <section class="vx-card vx-col-4" id="vx-mk-leader" aria-label="Leadership sectoriel">
-    <div class="vx-card-header"><span class="vx-card-title">Leadership sectoriel</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=sectors">Secteurs →</a></span></div>
-    <div id="vx-mk-leader-body">%%LOADING%%</div>
-  </section>
+
+<!-- Quatre KPI maximum, puis UN graphe principal avec le leadership à droite. -->
+<div class="vx-kpi-strip vx-mt4" id="vx-mk-strip" data-max-kpis="4" aria-label="Quatre indices clés"></div>
+<div class="vx-hero-grid vx-mt4">
+  <div id="vx-mk-spy"></div>
+  <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)" id="vx-mk-leader" aria-label="Leadership sectoriel">
+    <section class="vx-card">
+      <div class="vx-card-header"><span class="vx-card-title">Leadership sectoriel</span>
+        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=sectors">Secteurs →</a></span></div>
+      <div id="vx-mk-leader-body">%%LOADING%%</div>
+    </section>
+  </aside>
 </div>
-<div class="vx-grid vx-mt4">
-  <div class="vx-col-12" id="vx-mk-multi"></div>
-</div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-6" aria-label="Top 10 hausses">
-    <div class="vx-card-header"><span class="vx-card-title">Top 10 — plus fortes hausses</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Univers →</a></span></div>
-    <div id="vx-mk-top"></div>
-  </section>
-  <section class="vx-card vx-col-6" aria-label="Flop 10 baisses">
-    <div class="vx-card-header"><span class="vx-card-title">Flop 10 — plus fortes baisses</span></div>
-    <div id="vx-mk-flop"></div>
-  </section>
-</div>
+
+<!-- Contrats historiques conservés, mais la comparaison et les mouvements ne
+     concurrencent plus le graphique de référence au premier écran. -->
+<details class="vx-disclosure vx-mt4 vx-markets-overview-details">
+  <summary>Comparaison des indices et mouvements du scan</summary>
+  <div class="vx-disclosure__body">
+    <div class="vx-section-stack">
+      <div id="vx-mk-multi"></div>
+      <div class="vx-hero-grid">
+        <section class="vx-card" aria-label="Top 10 hausses">
+          <div class="vx-card-header"><span class="vx-card-title">Top 10 — plus fortes hausses</span>
+            <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Univers →</a></span></div>
+          <div id="vx-mk-top"></div>
+        </section>
+        <section class="vx-card" aria-label="Flop 10 baisses">
+          <div class="vx-card-header"><span class="vx-card-title">Flop 10 — plus fortes baisses</span></div>
+          <div id="vx-mk-flop"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+</details>
 """,
     'macro': """
-<div class="vx-grid vx-mt3" id="vx-mk-macro-kpis" aria-label="Indicateurs macro"></div>
-<div class="vx-grid vx-mt3" id="vx-mk-macro-regime" aria-label="Appétit pour le risque &amp; régime"></div>
-<div class="vx-grid vx-mt4">
-  <div class="vx-col-7" id="vx-mk-yield"></div>
-  <section class="vx-card vx-col-5" aria-label="Limites des données macro">
-    <div class="vx-card-header"><span class="vx-card-title">Limites des données</span></div>
-    <div class="vx-insight">Courbe tracée sur les <b>4 maturités réelles</b> du scan
-    (3M · 5A · 10A · 30A). Les maturités intermédiaires (2A/7A/20A) ne sont pas fournies
-    par les moteurs — non affichées plutôt qu’inventées.</div>
-  </section>
+<div class="vx-kpi-strip vx-mt3" id="vx-mk-macro-kpis" data-max-kpis="4" aria-label="Quatre indicateurs macro clés"></div>
+<div class="vx-hero-grid vx-mt4">
+  <div id="vx-mk-yield"></div>
+  <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)">
+    <div class="vx-grid" id="vx-mk-macro-regime" aria-label="Appétit pour le risque &amp; régime"></div>
+  </aside>
 </div>
-<div class="vx-grid vx-mt4">
-  <div class="vx-col-12" id="vx-mk-macro-cal"></div>
+<div class="vx-section-stack vx-mt4">
+  <div id="vx-mk-macro-cal"></div>
+  <details class="vx-disclosure vx-markets-macro-details">
+    <summary>Données complémentaires et limites</summary>
+    <div class="vx-disclosure__body">
+      <div class="vx-hero-grid">
+        <div id="vx-mk-macro-extra"></div>
+        <section class="vx-card" aria-label="Limites des données macro">
+          <div class="vx-card-header"><span class="vx-card-title">Limites des données</span></div>
+          <div class="vx-insight">Courbe tracée sur les <b>4 maturités réelles</b> du scan
+          (3M · 5A · 10A · 30A). Les maturités intermédiaires (2A/7A/20A) ne sont pas fournies
+          par les moteurs — non affichées plutôt qu’inventées.</div>
+        </section>
+      </div>
+    </div>
+  </details>
 </div>
 """,
     'sectors': """
@@ -114,81 +137,87 @@ _VIEW_CONTENT = {
 </div>
 """,
     'breadth': """
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-5 vx-card--accent" aria-label="Participation du marché">
-    <div class="vx-card-header"><span class="vx-card-title">Participation du marché</span></div>
-    <div id="vx-mk-breadth-gauge">%%LOADING%%</div>
-  </section>
-  <section class="vx-card vx-col-7" aria-label="Détail de la participation">
-    <div class="vx-card-header"><span class="vx-card-title">Détail — au-dessus des moyennes</span></div>
-    <div id="vx-mk-breadth-detail">%%LOADING%%</div>
-  </section>
+<!-- La tendance répond à la question principale ; le KPI et son rail donnent
+     le niveau actuel sans ajouter une seconde jauge. -->
+<div class="vx-hero-grid vx-mt3">
+  <div id="vx-mk-breadth-trend"></div>
+  <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)" aria-label="Participation du marché">
+    <section class="vx-card">
+      <div class="vx-card-header"><span class="vx-card-title">Participation actuelle</span></div>
+      <div id="vx-mk-breadth-gauge">%%LOADING%%</div>
+      <div class="vx-card-header"><span class="vx-card-title">Détail — au-dessus des moyennes</span></div>
+      <div id="vx-mk-breadth-detail">%%LOADING%%</div>
+    </section>
+  </aside>
 </div>
-<!-- Breadth (PR n°3) : conserver UNE jauge de participation + UNE courbe de
-     tendance multi-séances. La barre unique (breadthCard) et les anneaux
-     redondants ont été retirés. -->
-<div class="vx-grid vx-mt4">
-  <div class="vx-col-12" id="vx-mk-breadth-trend"></div>
-</div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-6 vx-card--accent" aria-label="Entonnoir de sélection">
-    <div class="vx-card-header"><span class="vx-card-title">Entonnoir de sélection</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Dossiers →</a></span></div>
-    <div id="vx-mk-funnel">%%LOADING%%</div>
-  </section>
-  <div class="vx-col-6" id="vx-mk-verdicts"></div>
-</div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-5" id="vx-mk-internals-card" aria-label="Internals du marché" hidden>
-    <div class="vx-card-header"><span class="vx-card-title">Internals — participation mesurée</span></div>
-    <div id="vx-mk-internals"></div>
-  </section>
-  <section class="vx-card vx-col-7" id="vx-mk-dist-card" aria-label="Distribution des scores" hidden>
-    <div class="vx-chart-head"><span class="vx-chart-title">Distribution des scores de l’univers</span>
-      <span class="vx-chart-question">Le marché est-il globalement fort ou faible ?</span></div>
-    <div id="vx-mk-dist"></div>
-    <div class="vx-card-foot"><span class="vx-meta">Nombre de titres par tranche de score Vertex (0-100). Décalage à droite = univers globalement fort.</span></div>
-  </section>
-</div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" id="vx-mk-health-card" aria-label="Composition de la santé du marché" hidden>
-    <div class="vx-chart-head"><span class="vx-chart-title">Composition de la santé du marché</span>
-      <span class="vx-chart-question">D’où vient le score de santé ?</span></div>
-    <div id="vx-mk-health-wf" style="height:240px"></div>
-    <div class="vx-card-foot"><span class="vx-meta">Santé = 30&nbsp;% (&gt;MM50) + 25&nbsp;% (&gt;MM200) + 25&nbsp;% (breadth) + 20&nbsp;% (avancées/déclins). Contributions pondérées du moteur d’internals — aucune pondération inventée.</span></div>
-  </section>
-</div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" aria-label="Limites des données de breadth">
-    <div class="vx-insight">Breadth, participation (&gt;MM50/MM200), avancées/déclins,
-    nouveaux hauts/bas et distribution des scores sont calculés sur l’<b>univers des leaders
-    scannés</b> (univers partiel, pas l’ensemble du NYSE). Advance/decline cumulés
-    multi-séances ne sont pas fournis — non affichés plutôt qu’inventés.</div>
-  </section>
-</div>
+
+<details class="vx-disclosure vx-mt4 vx-markets-breadth-details">
+  <summary>Sélection et métriques avancées</summary>
+  <div class="vx-disclosure__body">
+    <div class="vx-section-stack">
+      <div class="vx-hero-grid">
+        <section class="vx-card" aria-label="Entonnoir de sélection">
+          <div class="vx-card-header"><span class="vx-card-title">Entonnoir de sélection</span>
+            <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Dossiers →</a></span></div>
+          <div id="vx-mk-funnel">%%LOADING%%</div>
+        </section>
+        <div id="vx-mk-verdicts"></div>
+      </div>
+      <div class="vx-hero-grid">
+        <section class="vx-card" id="vx-mk-internals-card" aria-label="Internals du marché" hidden>
+          <div class="vx-card-header"><span class="vx-card-title">Internals — participation mesurée</span></div>
+          <div id="vx-mk-internals"></div>
+        </section>
+        <section class="vx-card" id="vx-mk-dist-card" aria-label="Distribution des scores" hidden>
+          <div class="vx-chart-head"><span class="vx-chart-title">Distribution des scores de l’univers</span>
+            <span class="vx-chart-question">Le marché est-il globalement fort ou faible ?</span></div>
+          <div id="vx-mk-dist"></div>
+          <div class="vx-card-foot"><span class="vx-meta">Nombre de titres par tranche de score Vertex (0-100). Décalage à droite = univers globalement fort.</span></div>
+        </section>
+      </div>
+      <section class="vx-card" id="vx-mk-health-card" aria-label="Composition de la santé du marché" hidden>
+        <div class="vx-chart-head"><span class="vx-chart-title">Composition de la santé du marché</span>
+          <span class="vx-chart-question">D’où vient le score de santé ?</span></div>
+        <div id="vx-mk-health-wf" style="height:240px"></div>
+        <div class="vx-card-foot"><span class="vx-meta">Santé = 30&nbsp;% (&gt;MM50) + 25&nbsp;% (&gt;MM200) + 25&nbsp;% (breadth) + 20&nbsp;% (avancées/déclins). Contributions pondérées du moteur d’internals — aucune pondération inventée.</span></div>
+      </section>
+      <section class="vx-card" aria-label="Limites des données de breadth">
+        <div class="vx-insight">Breadth, participation (&gt;MM50/MM200), avancées/déclins,
+        nouveaux hauts/bas et distribution des scores sont calculés sur l’<b>univers des leaders
+        scannés</b> (univers partiel, pas l’ensemble du NYSE). Advance/decline cumulés
+        multi-séances ne sont pas fournis — non affichés plutôt qu’inventés.</div>
+      </section>
+    </div>
+  </div>
+</details>
 """,
     'volatility': """
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-6 vx-card--accent" id="vx-mk-vix" aria-label="VIX">
+<!-- Une seule lecture visuelle du VIX. Le contexte de régime reste textuel et replié. -->
+<div class="vx-section-stack vx-mt3">
+  <section class="vx-card vx-card--hero" id="vx-mk-vix" aria-label="VIX">
     <div class="vx-card-header"><span class="vx-card-title">VIX — volatilité implicite du marché</span></div>
     <div id="vx-mk-vix-body">%%LOADING%%</div>
   </section>
-  <section class="vx-card vx-col-6 vx-card--accent" aria-label="Contexte de volatilité">
-    <div class="vx-card-header"><span class="vx-card-title">Contexte — régime</span></div>
-    <!-- Une seule lecture de volatilité (VIX à gauche). Les jauges régime &
-         breadth dupliquées ont été retirées ; le positionnement régime reste
-         en texte (domicile canonique : Breadth / Vue d'ensemble). -->
-    <div id="vx-mk-vol-rail">%%LOADING%%</div>
-  </section>
-</div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" aria-label="Volatilité implicite par symbole">
-    <div class="vx-card-header"><span class="vx-card-title">IV par symbole</span></div>
-    <div class="vx-insight">La term structure de volatilité implicite par symbole est
-    disponible dans la fiche analyse de chaque titre (onglet Options). Cette vue
-    couvre la volatilité de marché (VIX) et le contexte de régime fournis par le moteur.</div>
-    <div class="vx-mt3"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/analysis">Ouvrir une fiche analyse →</a></div>
-  </section>
+  <details class="vx-disclosure vx-markets-volatility-details">
+    <summary>Contexte de régime et volatilité par titre</summary>
+    <div class="vx-disclosure__body">
+      <div class="vx-hero-grid">
+        <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)">
+          <section class="vx-card" aria-label="Contexte de volatilité">
+            <div class="vx-card-header"><span class="vx-card-title">Contexte — régime</span></div>
+            <div id="vx-mk-vol-rail">%%LOADING%%</div>
+          </section>
+        </aside>
+        <section class="vx-card" aria-label="Volatilité implicite par symbole">
+          <div class="vx-card-header"><span class="vx-card-title">IV par symbole</span></div>
+          <div class="vx-insight">La term structure de volatilité implicite par symbole est
+          disponible dans la fiche analyse de chaque titre (onglet Options). Cette vue
+          couvre la volatilité de marché (VIX) et le contexte de régime fournis par le moteur.</div>
+          <div class="vx-mt3"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/analysis">Ouvrir une fiche analyse →</a></div>
+        </section>
+      </div>
+    </div>
+  </details>
 </div>
 """,
 }
@@ -253,6 +282,7 @@ async function loadRegime(scan){
     const adj=r.adjustments||{};
     const conf=Math.round((r.confidence||0)*100);
     const dims=(r.dimensions_used||[]).length;
+    const rStamp=r.as_of||r.timestamp||r.updated||null;
     /* État honnête MAIS compact & éditorial : moins de 3 dimensions → régime
        réellement INCONNU. On n'affiche PAS un « UNKNOWN » géant à 0 % NI 40 % de
        vide : on explique, puis on montre les signaux de marché RÉELLEMENT
@@ -274,7 +304,7 @@ async function loadRegime(scan){
           </div>
           ${sigs.length?`<div class="vx-mk-sigrow">${sigs.join('')}</div>`:'<div class="vx-help">Aucun signal de marché fourni par le dernier scan.</div>'}
           <div class="vx-flex" style="gap:8px;margin-top:2px">${SCAN_ACTION}
-            <span class="vx-meta" style="margin-left:auto">${VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')}</span></div>
+            <span class="vx-meta" style="margin-left:auto">${VX.updateIndicator(rStamp,'Moteur de régimes','delayed')}</span></div>
         </div>`;
       return;
     }
@@ -282,24 +312,17 @@ async function loadRegime(scan){
     const allowed=adj.new_risk_allowed;
     const chip=(k,v,st)=>`<div class="vx-mk-chip"${st?` data-state="${st}"`:''}><span class="k">${k}</span><span class="v">${v}</span></div>`;
     $('vx-mk-regime-body').innerHTML=
-      `<div class="vx-mk-hero-grid">
-        <div>
-          <div class="vx-mk-regime-name" data-tone="${meta[1]}" data-regime="${esc(r.regime)}">${meta[0]}</div>
-          <div class="vx-mk-regime-sub">${meta[2]} · ${dims} dimensions évaluées${(r.secondary&&r.secondary.length)?' · aussi '+esc(r.secondary[0]):''}</div>
-          <div class="vx-mk-chips">
-            ${chip('Nouveau risque',allowed?'Autorisé':'BLOQUÉ',allowed?'on':'off')}
-            ${chip('Priorité setups',VX.fmt.nd(SETUP_LABEL[adj.setup_priority]||adj.setup_priority))}
-            ${chip('Confirmations',VX.fmt.nd(adj.confirmation_required))}
-          </div>
+      `<div class="vx-mk-regime-lead">
+        <div class="vx-mk-regime-name" data-tone="${meta[1]}" data-regime="${esc(r.regime)}">${meta[0]}</div>
+        <div class="vx-mk-regime-sub">${meta[2]} · ${dims} dimensions évaluées${(r.secondary&&r.secondary.length)?' · aussi '+esc(r.secondary[0]):''}</div>
+        <div class="vx-mk-chips">
+          ${chip('Nouveau risque',allowed?'Autorisé':'BLOQUÉ',allowed?'on':'off')}
+          ${chip('Confiance',conf+' %')}
+          ${chip('Priorité setups',VX.fmt.nd(SETUP_LABEL[adj.setup_priority]||adj.setup_priority))}
+          ${chip('Confirmations',VX.fmt.nd(adj.confirmation_required))}
         </div>
-        <div style="text-align:center"><div id="vx-mk-regime-gauge"></div></div>
       </div>
-      <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')}</div>`;
-    if(window.VXCharts&&VXCharts.gauge){
-      const reading=conf>=70?'Signal net — régime lisible':conf>=40?'Signal modéré — confirmations utiles':'Signal faible — prudence accrue';
-      VXCharts.gauge('vx-mk-regime-gauge',{value:conf,min:0,max:100,unit:' %',label:'confiance',reading:reading,
-        bands:[{to:40,color:VXCharts.colors.negative},{to:70,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.positive}]});
-    }
+      <div class="vx-card-footer">${VX.updateIndicator(rStamp,'Moteur de régimes','delayed')}</div>`;
   }catch(e){$('vx-mk-regime-body').innerHTML=VX.states.error('Régime indisponible');}
 }
 function moversRows(rows,dir){
@@ -496,13 +519,12 @@ function macroCard(label,d,scan,note){
 const IDX_MAIN=['S&P 500','Nasdaq','Dow Jones','Russell 2000'];
 function loadStrip(scan){
   const by=crossAsset(scan);
-  const known=IDX_MAIN.filter(n=>by[n]&&(by[n].last!==null&&by[n].last!==undefined));
+  const known=IDX_MAIN.filter(n=>by[n]&&(by[n].last!==null&&by[n].last!==undefined)).slice(0,4);
   if(!known.length){
     $('vx-mk-strip').innerHTML='<div class="vx-col-12">'+VX.states.empty('Indices indisponibles — lancer un scan depuis Système.',SCAN_ACTION)+'</div>';return;
   }
-  $('vx-mk-strip').innerHTML=
-    '<div class="vx-col-12 vx-mk-sectitle">Indices actions</div>'
-    +known.map(label=>'<div class="vx-col-3">'+indexCard(label,by[label],scan)+'</div>').join('');
+  $('vx-mk-strip').innerHTML=known.map(label=>
+    '<div class="vx-kpi vx-markets-index-kpi">'+indexCard(label,by[label],scan)+'</div>').join('');
 }
 /* Comparaison multi-indices : chaque série rebasée à 0 % (transformation
    d'affichage des séries fournies — aucun point inventé). */
@@ -571,11 +593,19 @@ function loadMacroKpis(scan){
   if(!known.length){
     $('vx-mk-macro-kpis').innerHTML='<div class="vx-col-12">'+VX.states.empty('Données macro non fournies par le scan — rien d’inventé.',SCAN_ACTION)+'</div>';return;
   }
-  /* Rangée dense d'actifs cross-asset : chaque carte est identitaire (monogramme,
-     relation, aire ou stat compacte) — aucune demi-carte vide, aucun clone. */
-  $('vx-mk-macro-kpis').innerHTML=
-    '<div class="vx-col-12 vx-mk-sectitle">Cross-asset — taux, dollar, matières &amp; crypto</div>'
-    +known.map(n=>'<div class="vx-col-4">'+macroCard(n,by[n],scan,MACRO_NOTE[n])+'</div>').join('');
+  /* Premier écran = quatre KPI maximum. Les actifs supplémentaires restent
+     disponibles sous disclosure, sans suppression de donnée ni de source. */
+  const primary=known.slice(0,4),extra=known.slice(4);
+  $('vx-mk-macro-kpis').innerHTML=primary.map(n=>
+    '<div class="vx-kpi vx-markets-macro-kpi">'+macroCard(n,by[n],scan,MACRO_NOTE[n])+'</div>').join('');
+  const x=$('vx-mk-macro-extra');
+  if(x){
+    x.innerHTML=extra.length
+      ?'<section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Cross-asset complémentaire</span></div>'
+        +extra.map(n=>macroCard(n,by[n],scan,MACRO_NOTE[n])).join('')
+        +'<div class="vx-card-footer">'+VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))+'</div></section>'
+      :'<section class="vx-card"><div class="vx-insight">Aucun actif macro supplémentaire fourni par le scan.</div></section>';
+  }
 }
 /* Courbe des taux US — 4 maturités RÉELLES du scan (jamais interpolées) */
 function loadYield(scan){
@@ -606,26 +636,29 @@ function loadYield(scan){
     ],{yFmt:(v)=>v+' %'})});
 }
 async function loadMacroRegime(){
-  var s; try{ s=await VX.fetch('/api/market/summary',{ttl:30000}); }catch(e){ return; }
-  var el=$('vx-mk-macro-regime'); if(!el||!s)return;
+  /* LOT 603 (dossier 531-A, suite) : un echec ne laisse plus la zone vide et
+     muette. Invariant produit : donnee absente -> mention honnete. */
+  var s=null,err=null;
+  try{ s=await VX.fetch('/api/market/summary',{ttl:30000}); }catch(e){ err=e; }
+  var el=$('vx-mk-macro-regime'); if(!el)return;
+  if(err||!s){ el.innerHTML=VX.states.error('Appétit pour le risque indisponible'); return; }
   var gap=(typeof s.roro_gap==='number')?s.roro_gap:null,roro=s.roro||'—',br=s.breadth||{};
   var pos=gap!=null&&gap>=0,mag=gap==null?0:Math.min(100,Math.abs(gap)/25*100);
   var bar='<div style="position:relative;height:16px;background:var(--vx-surface-3);border-radius:6px;overflow:hidden;margin:6px 0">'
     +'<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--vx-border-strong)"></div>'
     +(gap==null?'':'<div style="position:absolute;top:2px;bottom:2px;'+(pos?'left:50%':'right:50%')+';width:'+(mag/2).toFixed(0)+'%;background:'+(pos?'var(--vx-positive)':'var(--vx-negative)')+';border-radius:3px"></div>')+'</div>';
-  var kp=function(l,v,d,vc){return '<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value '+(vc||'')+'" style="font-size:22px">'+v+'</span>'+(d?'<span class="vx-kpi-delta vx-muted">'+d+'</span>':'')+'</div>';};
   var brCls=function(x){return x==null?'':(x>=55?'vx-pos':x<=45?'vx-neg':'vx-warn');};
-  el.innerHTML='<section class="vx-card vx-col-5" aria-label="Appétit pour le risque">'
+  var kv=function(l,v,vc){return '<div class="vx-kv"><span class="k">'+l+'</span><span class="v vx-mono '+(vc||'')+'">'+v+'</span></div>';};
+  el.innerHTML='<section class="vx-card vx-col-12" aria-label="Appétit pour le risque">'
     +'<div class="vx-card-header"><span class="vx-card-title">Appétit pour le risque</span><span class="vx-chart-question">Risk-on ou risk-off ?</span></div>'
     +'<div style="font-size:22px;font-weight:800;color:'+(pos?'var(--vx-positive)':'var(--vx-negative)')+'">'+esc(roro)+'</div>'+bar
     +'<div class="vx-flex" style="justify-content:space-between"><span class="vx-meta">RISK-OFF</span><span class="vx-meta">écart '+(gap==null?'n/d':(gap>0?'+':'')+gap)+'</span><span class="vx-meta">RISK-ON</span></div>'
-    +'<div class="vx-card-footer"><span class="vx-meta">Écart risk-on/risk-off du moteur (positif = appétit, négatif = aversion). Aucune valeur inventée.</span></div></section>'
-    +'<div class="vx-col-7"><div class="vx-grid">'
-    +kp('Régime',esc(s.regime||'—'),'marché')
-    +kp('VIX',s.vix!=null?s.vix:'—',esc(s.vix_band||''))
-    +kp('&gt; MM50',br.above50!=null?br.above50+' %':'—','participation',brCls(br.above50))
-    +kp('&gt; MM200',br.above200!=null?br.above200+' %':'—','tendance long',brCls(br.above200))
-    +'</div></div>';
+    +'<div class="vx-mt3">'
+    +kv('Régime',esc(s.regime||'—'))
+    +kv('VIX',s.vix!=null?esc(s.vix)+(s.vix_band?' · '+esc(s.vix_band):''):'—')
+    +kv('&gt; MM50',br.above50!=null?br.above50+' %':'—',brCls(br.above50))
+    +kv('&gt; MM200',br.above200!=null?br.above200+' %':'—',brCls(br.above200))
+    +'</div><div class="vx-card-footer"><span class="vx-meta">Écart risk-on/risk-off du moteur (positif = appétit, négatif = aversion). Aucune valeur inventée.</span></div></section>';
 }
 async function loadMacroCal(){
   try{
@@ -715,7 +748,7 @@ function loadSectors(scan){
           g.font='10px sans-serif';g.fillStyle='rgba(255,255,255,.32)';
           g.fillText('LEADING',a.right-58,a.top+14);g.fillText('IMPROVING',a.left+6,a.top+14);
           g.fillText('WEAKENING',a.right-66,a.bottom-8);g.fillText('LAGGING',a.left+6,a.bottom-8);
-          g.fillStyle=(window.VXCharts&&VXCharts.colors&&VXCharts.colors.muted)||'#8A8284';g.font='9px sans-serif';
+          g.fillStyle=(window.VXCharts&&VXCharts.colors&&VXCharts.colors.muted)||'#989092';g.font='9px sans-serif';
           chart.data.datasets[0].data.forEach((d,i)=>{const m=chart.getDatasetMeta(0).data[i];if(m)g.fillText(String(d.label).slice(0,11),m.x+9,m.y+3);});
           g.restore();}}]})});
   }
@@ -723,17 +756,29 @@ function loadSectors(scan){
 
 /* ═══ BREADTH ═══ */
 async function loadBreadth(scan){
-  const G=window.VXCharts&&VXCharts.gauge;const CO=(window.VXCharts&&VXCharts.colors)||{};
+  const CO=(window.VXCharts&&VXCharts.colors)||{};
   /* breadth réelle = /api/market/summary.breadth (objet), pas scan.market. */
   let sum={};try{sum=await VX.fetch('/api/market/summary',{ttl:60000})||{};}catch(e){}
   const sb=sum.breadth;let brNum=null,bo=null;
-  if(sb!=null&&typeof sb==='object'){bo=sb;brNum=(sb.above50!=null)?Number(sb.above50):(sb.above200!=null?Number(sb.above200):null);}
+  if(sb!=null&&typeof sb==='object'){
+    bo=sb;const raw=(sb.above50!=null)?sb.above50:sb.above200;
+    brNum=(raw!=null&&!isNaN(raw))?Number(raw):null;
+  }
   else if(sb!=null&&!isNaN(sb))brNum=Number(sb);
-  /* Jauge de participation (au-dessus de la MM50) */
-  if(G&&brNum!=null){VXCharts.gauge('vx-mk-breadth-gauge',{value:brNum,min:0,max:100,unit:' %',label:'> MM50',
-    reading:brNum>=55?'Participation saine — hausse partagée':brNum>=45?'Participation moyenne':'Participation étroite — sélectivité',
-    bands:[{to:40,color:CO.negative},{to:55,color:CO.warning},{to:100,color:CO.positive}]});}
-  else emptyCard('vx-mk-breadth-gauge','Participation non calculée par le dernier scan.',SCAN_ACTION);
+  /* Le host historique `vx-mk-breadth-gauge` est conservé pour le contrat DOM,
+     mais le doublon en jauge devient un KPI + rail simple. La tendance reste la
+     seule visualisation principale de la vue. */
+  const bHost=$('vx-mk-breadth-gauge');
+  if(bHost&&brNum!=null){
+    const pct=Math.max(0,Math.min(100,brNum));
+    const reading=brNum>=55?'Participation saine — hausse partagée':brNum>=45?'Participation moyenne':'Participation étroite — sélectivité';
+    bHost.innerHTML=
+      '<div class="vx-stat-xl"><span class="vx-stat-xl-value vx-mono">'+VX.fmt.num(brNum,0)+' %</span><span class="vx-stat-xl-label">Titres &gt; MM50</span></div>'
+      +'<div class="vx-rail vx-mt2" style="--vx-rail-pos:'+pct.toFixed(0)+'%"><span class="vx-rail-mark"></span></div>'
+      +'<div class="vx-rail-scale"><span>0 %</span><span>50 %</span><span>100 %</span></div>'
+      +'<div class="vx-insight vx-mt2">'+reading+'</div>'
+      +'<div class="vx-card-footer">'+VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))+'</div>';
+  }else if(bHost)bHost.innerHTML=VX.states.empty('Participation non calculée par le dernier scan.',SCAN_ACTION);
   /* Détail : au-dessus des moyennes, avancées/déclins, nouveaux hauts/bas */
   const dEl=$('vx-mk-breadth-detail');
   if(dEl){
@@ -835,15 +880,14 @@ function loadBreadthInternals(scan){
       const col=i>=7?cc.positive:i<=2?cc.negative:cc.warning;
       return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px" role="img" aria-label="score ${i*10} à ${i*10+10} : ${n} titres">
         <span style="width:100%;height:120px;display:flex;align-items:flex-end"><span style="width:100%;height:${h}%;background:${col};border-radius:3px 3px 0 0;min-height:2px"></span></span>
-        <span style="font-size:9px;color:var(--vx-text-muted,#8A8284);font-variant-numeric:tabular-nums">${i*10}</span></div>`;};
+        <span style="font-size:9px;color:var(--vx-text-muted,#989092);font-variant-numeric:tabular-nums">${i*10}</span></div>`;};
     $('vx-mk-dist').innerHTML='<div style="display:flex;gap:3px;align-items:flex-end;padding:6px 2px">'+dist.map(bar).join('')+'</div>';
   }else if(dCard){dCard.hidden=true;}
 }
 
-/* ═══ VOLATILITY ═══ (cockpit : jauge VIX + rail calme↔stress + régime/participation)
+/* ═══ VOLATILITY ═══ (cockpit : un seul hero VIX + contexte régime textuel)
    Source RÉELLE = /api/market/summary (scan.market ne porte que la session). */
 async function loadVix(scan){
-  const G=window.VXCharts&&VXCharts.gauge;const CO=(window.VXCharts&&VXCharts.colors)||{};
   let sum={};try{sum=await VX.fetch('/api/market/summary',{ttl:60000})||{};}catch(e){}
   let vix=(sum.vix!=null&&!isNaN(sum.vix))?Number(sum.vix):null;
   if(vix==null){const vi=((scan&&scan.indices)||[]).find(i=>i&&i.name==='VIX');if(vi&&vi.price!=null)vix=Number(vi.price);}
@@ -852,49 +896,52 @@ async function loadVix(scan){
   if(vix==null){
     $('vx-mk-vix-body').innerHTML=VX.states.empty('VIX non fourni par le dernier scan.',SCAN_ACTION);
   }else{
+    const stress=Math.max(0,Math.min(100,(vix-10)/30*100));
+    const reading=vix<15?'Volatilité comprimée — primes d’options bon marché':vix<25?'Volatilité élevée — prudence sur les entrées':'Stress — expansion de volatilité';
+    /* `vx-mk-vix-gauge` reste l'hôte contractuel, mais ne monte plus une jauge
+       redondante : il porte désormais la valeur hero. Le rail est l'unique
+       visualisation bornée calme ↔ stress. */
     $('vx-mk-vix-body').innerHTML=
-      `<div id="vx-mk-vix-gauge" class="vx-mb2"></div>`
+      `<div id="vx-mk-vix-gauge" class="vx-markets-vix-stat"><div class="vx-stat-xl"><span class="vx-stat-xl-value vx-mono">${VX.fmt.nd(vix)}</span><span class="vx-stat-xl-label">Indice VIX</span></div></div>`
       +(chg!==null&&chg!==undefined?`<div class="vx-kv"><span class="k">Variation</span><span class="v ${chg>0?'vx-neg':chg<0?'vx-pos':'vx-muted'}">${VX.fmt.pct(chg)} vs hier</span></div>`:'')
       +(band?`<div class="vx-kv"><span class="k">Bande</span><span class="v">${esc(band)}</span></div>`:'')
-      /* Rail calme ↔ stress : VIX 10→40 projeté sur 0→100 % */
       +`<div class="vx-stat-xl-label vx-mt3">Calme ↔ Stress</div>`
-      +`<div class="vx-rail vx-rail--stress vx-mt2" style="--vx-rail-pos:${Math.max(0,Math.min(100,(vix-10)/30*100)).toFixed(0)}%"><span class="vx-rail-mark"></span></div>`
-      /* GRAMMAIRE TV (lot 198) : la valeur RÉELLE en chip sur le pointeur */
-      +`<div class="vx-rail-chipline" style="--vx-rail-pos:${Math.max(0,Math.min(100,(vix-10)/30*100)).toFixed(0)}%"><span class="vx-rail-chip">${VX.fmt.nd(vix)}</span></div>`
+      +`<div class="vx-rail vx-rail--stress vx-mt2" style="--vx-rail-pos:${stress.toFixed(0)}%"><span class="vx-rail-mark"></span></div>`
+      +`<div class="vx-rail-chipline" style="--vx-rail-pos:${stress.toFixed(0)}%"><span class="vx-rail-chip">${VX.fmt.nd(vix)}</span></div>`
       +`<div class="vx-rail-scale"><span>10</span><span>25</span><span>40+</span></div>`
-      +`<div class="vx-help vx-mt2">Un VIX bas comprime les primes d’options ; un VIX en expansion invalide les entrées agressives.</div>`
+      +`<div class="vx-insight vx-mt2">${reading}. Un VIX en expansion invalide les entrées agressives.</div>`
       +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
-    if(G){
-      const reading=vix<15?'Volatilité comprimée — primes d’options bon marché':vix<25?'Volatilité élevée — prudence sur les entrées':'Stress — expansion de volatilité';
-      VXCharts.gauge('vx-mk-vix-gauge',{value:vix,min:0,max:50,label:'VIX',reading:reading,
-        bands:[{to:15,color:CO.positive},{to:25,color:CO.warning},{to:50,color:CO.negative}]});
-    }
   }
-  /* Contexte régime — UNIQUEMENT en texte (une seule lecture de volatilité, la
-     jauge VIX ci-dessus). Les jauges régime & breadth dupliquées sont retirées. */
+  /* Contexte régime — uniquement en texte, sous disclosure. */
   try{
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
     const conf=Math.round((r.confidence||0)*100);
     const allowed=r.adjustments&&r.adjustments.new_risk_allowed;
-    const pos=allowed?Math.max(55,conf):Math.min(45,100-conf);
     /* Étiquette honnête : UNKNOWN → « indéterminé » explicité, jamais un code brut. */
     const known=REGIME_LABEL[r.regime];
     const regTxt=known?('<b>'+esc(known[0])+'</b> · confiance '+conf+' %')
       :'<b>indéterminé</b> — moins de 3 dimensions de marché';
     if($('vx-mk-vol-rail'))$('vx-mk-vol-rail').innerHTML=
-      '<div class="vx-stat-xl-label">Positionnement — Défense ↔ Attaque</div>'
-      +'<div class="vx-rail vx-mt2" style="--vx-rail-pos:'+pos+'%"><span class="vx-rail-mark"></span></div>'
-      +'<div class="vx-rail-chipline" style="--vx-rail-pos:'+pos+'%"><span class="vx-rail-chip">'+(known?conf+' %':'n/d')+'</span></div>'
-      +'<div class="vx-rail-scale"><span>Défense</span><span>Neutre</span><span>Attaque</span></div>'
-      +'<div class="vx-meta vx-mt2">Régime '+regTxt+' · '
-      +(allowed?'<span class="vx-pos">nouveau risque autorisé</span>':'<span class="vx-neg">nouveau risque BLOQUÉ</span>')+'</div>'
-      +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'Moteur de régimes','delayed')
+      '<div class="vx-insight">Régime '+regTxt+'</div>'
+      +'<div class="vx-kv vx-mt2"><span class="k">Confiance</span><span class="v vx-mono">'+(known?conf+' %':'n/d')+'</span></div>'
+      +'<div class="vx-kv"><span class="k">Nouveau risque</span><span class="v '+(allowed?'vx-pos':'vx-neg')+'">'+(allowed?'autorisé':'BLOQUÉ')+'</span></div>'
+      +'<div class="vx-card-footer">'+VX.updateIndicator(r.as_of||r.timestamp||r.updated||null,'Moteur de régimes','delayed')
       +'<a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="?view=breadth">Participation →</a></div>';
   }catch(e){if($('vx-mk-vol-rail'))$('vx-mk-vol-rail').innerHTML=VX.states.error('Régime indisponible');}
 }
 
 /* ═══ Orchestration ═══ */
+function bindDisclosureResize(){
+  document.querySelectorAll('details.vx-disclosure').forEach(d=>{
+    if(d.dataset.vxResizeBound)return;
+    d.dataset.vxResizeBound='1';
+    d.addEventListener('toggle',()=>{
+      if(d.open)requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+    });
+  });
+}
 async function boot(){
+  bindDisclosureResize();
   const render=(scan)=>{
     demoBanner(scan);
     /* Badge de fraîcheur du snapshot (§8) : Live / Analyse / À actualiser. */

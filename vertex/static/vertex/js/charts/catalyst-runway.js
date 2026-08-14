@@ -60,7 +60,7 @@
       const tx = xOf(d);
       ticks += `<line x1="${tx.toFixed(1)}" y1="${axisY - 3}" x2="${tx.toFixed(1)}" y2="${axisY + 3}"
         stroke="var(--vx-border-soft,#30292B)" stroke-width="1"/>
-        <text x="${tx.toFixed(1)}" y="${axisY + 13}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="7" opacity=".7">${d}j</text>`;
+        <text x="${tx.toFixed(1)}" y="${axisY + 13}" text-anchor="middle" fill="var(--vx-text-muted,#989092)" font-size="7" opacity=".7">${d}j</text>`;
     }
     /* anti-collision (lot 61) : DEUX rangées d'étiquettes par côté ; chaque
        étiquette prend la première rangée où il reste de la place (calculée
@@ -102,7 +102,7 @@
         <line x1="${left.toFixed(1)}" y1="${axisY}" x2="${left.toFixed(1)}" y2="${stemY2}" stroke="${col}" stroke-opacity=".7" stroke-width="1.5"/>
         ${focus}
         <circle cx="${left.toFixed(1)}" cy="${axisY}" r="${r}" fill="${col}"/>
-        <text x="${lx.toFixed(1)}" y="${lblY}" text-anchor="middle" fill="var(--vx-text-muted,#8A8284)" font-size="8.5">${label.slice(0, 14)}</text>
+        <text x="${lx.toFixed(1)}" y="${lblY}" text-anchor="middle" fill="var(--vx-text-muted,#989092)" font-size="8.5">${label.slice(0, 14)}</text>
         ${jLabel}
       </g>`;
     }).join('');
@@ -117,8 +117,8 @@
       <line x1="${x0}" y1="${axisY}" x2="${x1}" y2="${axisY}" stroke="url(#${gid})" stroke-width="2.5" stroke-linecap="round" stroke-opacity=".85"/>
       ${ticks}
       <line x1="${x0}" y1="${axisY - 6}" x2="${x0}" y2="${axisY + 6}" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
-      <text x="${x0}" y="${H - 4}" fill="var(--vx-text-muted,#8A8284)" font-size="7.5">aujourd’hui</text>
-      <text x="${x1}" y="${H - 4}" text-anchor="end" fill="var(--vx-text-muted,#8A8284)" font-size="7.5">horizon J-${horizon}</text>
+      <text x="${x0}" y="${H - 4}" fill="var(--vx-text-muted,#989092)" font-size="7.5">aujourd’hui</text>
+      <text x="${x1}" y="${H - 4}" text-anchor="end" fill="var(--vx-text-muted,#989092)" font-size="7.5">horizon J-${horizon}</text>
       ${marks}</svg>`;
 
     el.innerHTML = head + svg +

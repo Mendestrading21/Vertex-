@@ -2880,6 +2880,362 @@ sans autorisation demandée.
   littéral couleur nouveau. SW v133 → v134 + 4 gardiens. Captures
   avant/après + preuve barres verre envoyées. Suite 1984/2, RC GO.
 
+- **Lot 619 — Analyse, décision d’abord.** Une seule décision principale,
+  scénarios en appui, chandelier immédiatement dessous, puis thèse, plan et
+  risques ; preuves et outils restent accessibles sous divulgation progressive.
+  Le radar refuse désormais les axes absents au lieu d’inventer des zéros, le
+  catalyseur futur reste hors de l’historique et le scanner d’anomalies devient
+  neutre, statique et sourcé. Validation Chromium réelle à **1440/1024/390 px** :
+  HTTP 200, graphique présent, **0 px de débordement**, **0 erreur console** et
+  **0 requête échouée**. Elle a trouvé puis fait corriger la locale LWC invalide
+  et la course du prix dans le verdict. Suite **2947 passed**, routes canoniques
+  200, SW **v201**, READONLY et exécution désactivée confirmés.
+- **Lot 618 — fondations visuelles Obsidian Copper.** Identité canonique
+  **#D28A54**, surfaces graphite, hiérarchie et interactions assagies. Nouveau
+  gardien comportemental : miroirs CSS/Python/JS, couples responsive, Détails
+  conditionnel, donut Autres, barres horizontales `valueFmt`, heatmap et cartes
+  inertes. Il a trouvé `.vx-col-3` absent du passage en pile à 1024 px
+  (**3/12**) ; corrigé avant publication, puis **7/7**. Suite **2934 passed / 0
+  skipped**, 8 routes Flask 200, SW **v200**, READONLY intact. Validation
+  navigateur réelle non disponible ici : réserve maintenue, aucune capture ni
+  affirmation console inventée.
+- **Lot 617 — un plafond qui ne rognait pas, ne debordait pas, et comprimait une icone.** Derniere dimension non traitee des bandeaux : la **hauteur**. `.vx-state` portait `max-height:240px` sans regle `overflow`. **Mon piege ecrit d avance — « ca deborde » — est REFUTE** : dans un conteneur flex, un plafond **comprime** au lieu de faire deborder, et la compression est **invisible a tout test de debordement** — deux instruments ont repondu « aucun debordement » avant que le troisieme (`scrollHeight` de chaque enfant) ne trouve. **J ai failli publier « 0 zone atteignant 240 px » alors qu une y etait exactement** ; c est d avoir demande **la distribution** au lieu du compte qui a fait basculer le lot — la plus haute etait a **99,2 % du plafond**. Effet reel a 390 px : hauteur naturelle **249 px**, et les 9 px de compression absorbes **entierement par l icone fantome decorative** (41 -> 31 px), aucun texte perdu. **0 des 20 cartes ordinaires ne plafonne sa hauteur** : la contrainte etait isolee, elle est retiree. Le commentaire de production ecrit au moment du retrait affirmait un debordement — **reecrit apres la mesure, avant publication**. SW **v199**, suite **2927**, READONLY intact.
+- **Lot 616 — le texte des graphiques, mesure au lieu d etre raisonne.** Le 614 avait change `VXCharts.colors.muted` en ecrivant lui-meme « raisonnement, **pas une mesure** » : c etait sa seule dette reconnue, elle est soldee. Un `<canvas>` n expose aucun noeud de texte, donc **seuls les pixels peints existent**. **Premier banc VIDE, et il l a dit** : l interieur entier d un canvas donne 17 a 41 % de dominante — c est un dessin, pas un fond. Second banc, sur les regions ou le texte est reellement peint : **12 sondees, 5 retenues** (59 a 84 %), pire ratio **6,16** pour `muted` et **9,89** pour `text`, seuil 4,5. Fonds echantillonnes de (6,6,7) a (14,15,15) — **les canvas sont bien transparents**. **Raisonnement du 614 confirme, aucune correction.** Un **faux positif de mon propre gardien** arrete : `--vx-canvas` dans une declaration faisait passer un `radial-gradient` clair pour un fond de canvas. **0 fichier de production, aucun octet servi change, donc aucun bump SW.** Suite **2923**, MD5 8/8 identiques, READONLY intact.
+- **Lot 615 — l etiquette qui nomme chaque valeur sous 720 px, enfin rendue.** Recensee par les 613 et 614, jamais mesuree : les tables du produit sont **vides**, donc `.vx-table-cards td` n existe pas. **Un faux arrete** : j avais compte `data-label` **28 fois dans les octets servis** de `/portfolio` — c etait la **source JS des gabarits**, le navigateur disait **0**. Mesuree par **injection DOM** d une ligne synthetique a 390 px (on mesure le CSS, pas une donnee) : **2,93 avant le 613 · 4,50 apres le 613 · 5,23 apres le 615**. Le 4,50 etait **exactement le seuil** parce que le 613 avait ete **borne par la position d alors de `muted`** ; le 614 ayant leve cette contrainte, `--vx-text-faint` passe a **`#8f8587`** (marge **+0,73**, `surface-selected` fermee au passage). **Les trois lots forment une chaine.** Effet de bord : le cas publie « indetermine » au 613 se ferme. Sous le seuil **26 -> 15** ; par la methode qui a du signal sur chaque cas, **aucune famille de texte ne reste sous le seuil sur les 8 pages servies**. SW **v198**, suite **2919**, MD5 8/8 identiques, 0 erreur JS cliente, READONLY intact.
+- **Lot 614 — le palier `muted` passe le seuil, et les deux roles de #8A8284 restent separes.** Le 613 avait mesure le defaut (**4,04:1** sur 11 combinaisons) et l avait remis a l humain ; l humain a tranche. Porte a **`#989092`** (**4,86**, marge **+0,36**) et non au minimum strict `#938a8c`, qui ne laissait que **+0,01** — une conformite a un centieme n en est pas une. **Le vrai risque n etait pas le correctif mais son perimetre** : le meme hexadecimal portait **deux roles**, texte discret (43 sites, corriges) et **serie neutre acier** (9 sites : `--vx-steel-3`, derniere serie des graphiques, lignes support/resistance, **inchanges**) — un `sed` aveugle aurait change la couleur d une **serie de donnees**. Combinaisons sous le seuil **26 -> 16** ; les **sept** familles sous seuil par les deux methodes ont toutes ete corrigees, et **la puce verte, sous seuil pour une autre cause, n a pas bouge** — preuve que la cause etait bien identifiee. SW **v197**, suite **2915**, MD5 **4/8 changees** (exactement celles qui SERVENT le litteral, verifie), 0 erreur JS cliente, READONLY intact.
+- **Lot 613 — un palier de texte qui ne pouvait etre lisible nulle part.** Le brief visait les bandeaux d etat : **ils sont conformes** (45 feuilles, 5 ecrans en echec, deux methodes, pire ratio **4,79** contre 4,5 ; temoin hors bandeau 5,22). Elargi a **8 pages x 2 largeurs, 2 700 feuilles**, le meme instrument a trouve **`--vx-text-faint` a 3,23:1 sur la surface la plus favorable du produit** — non conforme **par construction**, alors qu il porte l aide des formulaires, les noms de fichiers de `/system` et **l etiquette qui nomme chaque valeur quand la table passe en cartes sous 768 px**. Porte a **`#847a7c`** (4,97 / 4,85 / 4,71 / 4,50 sur les quatre surfaces servies) ; **pas plus haut, car viser toutes les surfaces aurait rendu `faint` plus lumineux que `muted`** — les deux paliers sont couples. **`--vx-text-muted` reste a 4,04:1 sur 11 combinaisons : mesure, chiffre pose (`#938a8c`), NON corrige — 60 litteraux de repli et une decision de design qui revient a l humain.** SW **v196**, suite **2910**, MD5 8/8 identiques, READONLY intact.
+- **Lot 612 — livré** : **l'en-tête promettait 40 px, deux lignes au-dessus d'un
+  32** — et le défaut n'est pas le seuil, c'est **ce que le code dit de
+  lui-même**. Le brief soupçonnait un **oubli** ; le CSS portait une **exemption
+  écrite** (`.vx-btn-sm{min-height:32px}`, juste sous `/* Cibles tactiles ≥ 40px
+  */`). **Mesure à 390 px, cinq écrans en échec** : **20 boutons de bandeaux à
+  32 px**, et surtout **20 boutons HORS bandeaux au même 32** sur 42 témoins.
+  Les bandeaux ne sont donc **pas un angle mort** : c'est une règle générale des
+  actions **secondaires**, appliquée à **40 boutons**. Témoin 1440 px : les mêmes
+  font **26–28 px** — le passage 26 → 32 **prouve que la règle mobile atteint
+  bien les bandeaux**. **Corrigé : la description.** L'en-tête dit désormais deux
+  seuils, l'exemption assumée, le chiffre mesuré, et que 32 px reste sous les
+  recommandations usuelles. **Refusé : porter `.vx-btn-sm` à 40 px** — cela
+  toucherait 40 boutons et **relève d'une décision de design, pas d'un
+  correctif** ; le chiffre est posé, la décision revient à l'humain (609-C).
+  **Piège : (b) réfuté dans sa prémisse** — et **c'est le second contrôle (481),
+  les 20 boutons témoins, qui l'a réfuté** : sans lui j'aurais « corrigé » une
+  décision de design et **cassé l'uniformité**. **Aucune règle CSS modifiée**,
+  commentaire seul ; bump `td-shell-v194` → **`td-shell-v195`** ; **MD5 8/8
+  identiques** ; suite **2905 passed / 0 skipped** ; sondes écart **AUCUN** ;
+  READONLY intact. Non établi : **que 32 px suffise au doigt** (aucun test
+  d'usage) et **le contraste**, toujours non mesuré après trois lots qui n'ont
+  jugé que la **géométrie**. Règles **612-A** (une exemption écrite n'est pas un
+  oubli), **612-B** (quand le code et son commentaire divergent, réparer d'abord
+  le commentaire), **612-C** (le second contrôle distingue un angle mort d'une
+  règle). **Dossiers produit corrigés : 9.**
+
+- **Lot 611 — livré** : **neuf bandes, 144 mesures, zéro fautive** — le défaut du
+  610 **n'avait pas de frère**, et ce lot **ne change rien au produit**. Le 610
+  n'avait mesuré que **deux largeurs** et l'avait dit ; ce lot mesure les autres :
+  390, **600, 700, 768, 800, 900, 1024, 1180**, 1440 — **16 zones d'état à
+  chacune, 0 px de débordement de page à chacune**, chaque bandeau comparé **à son
+  parent**. Les deux largeurs du 610 **re-mesurées dans le même passage**, pas
+  citées de mémoire (610-B). **Arrêt du lot : mon piège comptait quatre bascules ;
+  il y en a HUIT.** Il raisonnait sur `responsive.css` seul ; en balayant toutes
+  les feuilles servies — 520, 640, 720, 768, 820, 900, 1024, 1280 — il y a **neuf
+  bandes**, et **deux de plus** que je ne croyais restaient non couvertes. **C'est
+  605-C dans une autre feuille** : un périmètre qui exclut une partie du code
+  conclut faux. Banc corrigé **avant toute conclusion**. Arrêtés **244 → 245
+  (+1)**. **Piège : (a) réfuté, (c) non mesurable, (d) confirmé** — et **(b) SANS
+  OBJET**, un volet conditionnel dont la condition est fausse ne se vérifie pas.
+  **Second contrôle (481)** : le débordement de la **page**, tous éléments
+  confondus — **0 px partout**, alors que `/portfolio` et `/system` portent des
+  tableaux et `/markets` des graphiques. **Puisqu'il ne corrige rien, le lot
+  laisse un gardien de son hypothèse** : la liste des bascules est épinglée —
+  ajouter une bascule rend le test **rouge** avec la marche à suivre, retirer la
+  règle du 610 aussi. **MD5 8/8 identiques, aucun bump** ; suite **2901 passed /
+  0 skipped** ; sondes écart **AUCUN** ; READONLY intact. Non établi : **que
+  toutes les largeurs soient saines** (neuf points sur un continuum), **que les
+  bandeaux soient lisibles** (seul le découpage est jugé), **que la hauteur
+  tienne** (une seule dimension mesurée). Règles **611-A** (une bande n'est pas
+  une borne), **611-B** (un volet conditionnel sans condition ne se vérifie pas),
+  **611-C** (une mesure sans correctif doit laisser un gardien de son hypothèse).
+
+- **Lot 610 — livré** : **un bandeau large de 22 pixels, depuis sept lots** — et
+  **le défaut n'est pas mobile**. Le brief envoyait chercher un défaut mobile ; la
+  mesure en a trouvé un, **à toutes les largeurs, et il était à moi**. Chaque
+  bandeau mesuré **contre son parent**, à 390 et 1440 px, sur six écrans en
+  échec : **16 zones**, une seule fautive — `/markets?view=macro` avec `summary`
+  en échec, bandeau **large de 22 px, contenu coupé de 102 px**, désormais
+  **366 px**. Cause : `#vx-mk-macro-regime` est une **grille**, et l'état d'échec
+  ajouté au **lot 603** n'avait **aucune classe de colonne** — il tombait dans une
+  colonne implicite. **Ma preuve du 603 vérifiait la PRÉSENCE du texte** ; il y
+  était, **illisible**. Correctif de **famille** (606-C) : une règle CSS couvre
+  les trois classes d'état, présentes et futures. **Piège réfuté 3 fois sur 4**,
+  dont **(d)** — « un bandeau qui déborde ferait déborder la page » : `scrollWidth`
+  valait **0 px partout**, le bandeau était écrasé **dans sa propre boîte**. Si
+  `scrollWidth` avait été mon seul instrument, ce lot aurait conclu « tout va
+  bien ». **Deux arrêts** : mon témoin 1440 px ne couvrait que **trois** des six
+  cas et j'ai failli publier « défaut mobile » (**un témoin partiel ne témoigne
+  pas**) ; et mon gardien détournait `persist._BASE_DIR`, un **état global**, sans
+  le rendre — faisant tomber un test **étranger**. Arrêtés **242 → 244 (+2)**,
+  publiés puis corrigés **40 → 41**. **Gardien rouge dans les deux sens**, vérifié
+  **dans la feuille SERVIE**. **Second contrôle (481)** : le rendu nominal à
+  390 px ne déborde **jamais** — le défaut est de **mise en page**, pas de
+  largeur. Bump `td-shell-v193` → **`td-shell-v194`** ; **MD5 8/8 identiques** ;
+  suite **2898 passed / 0 skipped** ; sondes écart **AUCUN** ; READONLY intact.
+  Non établi : **que les autres largeurs soient saines** — deux points mesurés,
+  rien entre les deux. Règles **610-A** (une preuve de présence n'est pas une
+  preuve de lisibilité), **610-B** (un témoin partiel ne témoigne pas), **610-C**
+  (un test qui détourne un état global doit le rendre). **Dossiers produit
+  corrigés : 8.**
+
+- **Lot 609 — livré** : **le producteur rend trois valeurs, le consommateur en
+  attend mille** — et **le lot ne change rien au comportement**.
+  `news_plus.sentiment()` rend **exactement** `-1`, `0` ou `+1` ; ses deux
+  consommateurs de `news_impact.py` ont été écrits pour un score **continu**.
+  **Énumération exhaustive du domaine** (trois valeurs — une preuve, pas un
+  échantillon) : les seuils `0.15` et `0.5` **partitionnent le domaine à
+  l'identique** et ne distinguent que **signé** de **neutre** ; et
+  `confidence = min(0.7, abs(senti))` **ne prend qu'une valeur par direction** —
+  **un littéral déguisé en calcul**. **Ça ne ment à personne aujourd'hui** :
+  `confidence` n'est affichée nulle part ; le défaut est **un désaccord
+  silencieux entre deux moitiés du code**. **Le lot n'ajoute PAS d'amplitude** :
+  des décimales bâties sur 22+22 mots donneraient l'apparence d'une mesure —
+  **tant qu'on ne peut pas montrer que l'amplitude est fondée, le ternaire est
+  plus honnête que le continu**. Ce qui est corrigé, c'est **le silence** :
+  contrat écrit aux deux bouts et **gardé**. **Arrêt du lot : une mutation qui ne
+  mutait pas** — `abs(senti) >= 0.5` apparaît **deux fois**, dans le code **et
+  dans la docstring que je venais d'écrire** ; ma mutation a frappé la prose, le
+  gardien n'avait rien à attraper. **600-A dans une forme neuve**, causée par mon
+  propre travail de documentation. Refaite sur la ligne de code : **2 rouges**.
+  Arrêtés **241 → 242 (+1)**. **Gardien rouge dans les deux sens** (producteur
+  rendu continu → rouge ; seuil déplacé → rouge). **Piège : (d) réfuté — le vrai
+  défaut était le contrat, pas la granularité** ; (c) **non mesurable**, aucun
+  corpus hors ligne, **ne pas conclure vaut mieux qu'estimer**. **Second contrôle
+  (481)** : le chemin d'appel réel concatène titre **et** traduction — vérifié,
+  **cela ne change pas le domaine**. **MD5 8/8 identiques, aucun bump** ; suite
+  **2894 passed / 0 skipped** ; sondes écart **AUCUN** ; READONLY intact. Règles
+  **609-A** (documenter une valeur peut annuler le test qui la vérifie), **609-B**
+  (un littéral déguisé en calcul est pire qu'un littéral), **609-C** (refuser
+  d'ajouter de la précision est un résultat). **Dossiers produit corrigés : 7**
+  *(inchangé — ce lot ferme un désaccord de contrat, pas un défaut produit)*.
+
+- **Lot 608 — livré** : **un état vide qui sait qu'il n'est pas synchronisé** —
+  et **le vrai travail était de ne PAS corriger trop large**. Le message du 607
+  est un toast transitoire ; celui-ci est **dans la zone** où la conviction se
+  forme. Sur les **59** états vides du produit, la majorité vient d'un **moteur
+  serveur** : y coller « bureau non synchronisé » serait **un mensonge d'un autre
+  genre**, la faute du 602 commise à l'envers. D'où un état **séparé**
+  (`VX.states.emptyDesk`) plutôt qu'un `empty()` élargi qui aurait menti sur 38
+  zones. **21 zones basculées** sur 5 fichiers. **Trois instruments, trois
+  corrections** : le premier rattachait chaque vide au helper de deux lignes le
+  plus proche (**43 sur 59 mal classés** — c'était **607-C**, écrite la veille) ;
+  le deuxième ratait **`E()`**, l'alias local de `VXEntities`, ce qui faisait
+  passer **tout `/journal`** pour du serveur. **Arrêt du lot : j'ai décidé sur une
+  sortie tronquée** — `head -40` m'a fait conclure que `/journal` portait deux
+  états vides ; il en porte **dix**. L'instrument était juste, ma lecture non.
+  Arrêtés **240 → 241 (+1)**. **Le contrôle a été refusé deux fois pour vacuité**
+  (`/markets` puis `/system` n'affichent aucun état vide) avant d'être décisif sur
+  **la même page sous la même panne** : `/journal?view=track-record` en échec
+  montre **2 états vides, 1 avec mention (bureau), 1 sans (moteur)** — **un vide
+  parle, l'autre se tait**. **Gardien rouge dans les deux sens** : retirer une
+  mention d'une zone bureau échoue, en ajouter une à une zone moteur échoue aussi.
+  Piège confirmé **sauf (c)** — « `empty()` est le point unique à modifier » —
+  **et (c) était le volet décisif**. Bump `td-shell-v192` → **`td-shell-v193`** ;
+  MD5 **4/8 identiques** (`/`, `/portfolio`, `/journal`, `/system` bougent) ;
+  suite **2887 passed / 0 skipped** ; sondes écart **AUCUN** ; READONLY intact.
+  Non établi : **que les 21 zones soient exactement les bonnes** — c'est une
+  lecture, zone par zone. Règles **608-A** (un correctif d'honnêteté doit être
+  plus étroit que la famille qu'il vise), **608-B** (un gardien d'honnêteté doit
+  être rouge dans les deux sens), **608-C** (lire une sortie tronquée, c'est
+  mesurer autre chose). **Dossiers produit corrigés : 7.**
+
+- **Lot 607 — livré** : **une donnée réelle présentée comme absente** —
+  l'invariant produit pris **à l'envers**. Le brief proposait `sendBeacon` ; en
+  allant vérifier, ce chemin s'est révélé **déjà réparé** (`pull()` compare les
+  horodatages et repousse tout seul), et **le vrai trou était dans la fonction
+  même qui assure cette réparation** : le 604 a corrigé les trois **écritures**
+  de la synchro et n'a pas regardé la **lecture**. `pull()` ne lisait pas `r.ok`
+  (604-A sur l'autre chemin) et son `catch` était vide. **Sur un profil neuf dont
+  le GET échoue, le bureau s'affiche VIDE** — « aucun trade déclaré » devient
+  indiscernable de « bureau non synchronisé », alors que le serveur a les
+  données. **Le coût est d'une autre nature que celui du 604** : une écriture
+  ratée se rattrape seule ; **une lecture ratée fabrique une conclusion fausse
+  dans la tête de l'utilisateur**. **Rouge puis vert, même banc** : avant, les
+  deux passes muettes et `desk_sync` null ; après, un message explicite
+  (« … n'en conclus pas que c'est vide ») et `desk_sync='read-error'`, la passe
+  nominale **inchangée** (606-B). **Deux arrêts** : mon banc échantillonnait les
+  toasts **à 7 s** alors qu'un toast vit **5,2 s** — j'ai failli publier « aucun
+  message », et **deux instruments successifs ont dit « rien » sur une chose qui
+  était là** ; et mon gardien identifiait le `catch` englobant par sa **position**
+  (« le dernier »), attrapant un `catch` interne légitime — corrigé par la
+  **profondeur**. Arrêtés **238 → 240 (+2)**. **Second contrôle (481)** encodé
+  dans le gardien : `pull()` garde **exactement 2** écritures `localStorage`,
+  zéro `removeItem`, zéro `clear` — **la lecture est restée une lecture**. Bump
+  `td-shell-v191` → **`td-shell-v192`** + empreinte des assets ; **MD5 8/8
+  identiques** (fichier statique) ; suite **2881 passed / 0 skipped** ; sondes
+  écart **AUCUN** ; READONLY intact. Non traité et nommé : **les états vides des
+  pages ne savent toujours pas qu'ils ne sont pas synchronisés** — le message est
+  un toast global. Règles **607-A** (une donnée réelle présentée comme absente
+  est pire qu'une zone muette), **607-B** (un message éphémère se mesure dans sa
+  vie), **607-C** (une heuristique positionnelle sur du code est fragile).
+  **Dossiers produit corrigés : 6.**
+
+- **Lot 606 — livré** : **le dossier 582 est fermé — et le défaut a été VU, pas
+  seulement déduit.** Ouvert depuis **vingt-quatre lots**, le 582 se terminait par
+  « sa correction est une décision humaine » ; la décision est donnée. `/system`
+  construisait sa puce de fraîcheur avec **`ageMs:(man.age_s||0)*1000`** — un
+  **repli**, pas une garde : `null || 0` vaut **0**. Or le serveur met `age_s` à
+  `null` **délibérément**, avec le commentaire « HONNÊTETÉ : l'âge figé au build
+  sous-estimerait la vraie ancienneté ». **Le serveur efface l'âge pour ne pas
+  mentir ; le client le remplaçait par zéro.** **Observé en vrai Chromium**, trois
+  passes avant / trois après sur `/system?view=data` : avec `age_s: null`,
+  **`snapshot / ANALYSE` avant → `unknown / —` après** ; le manifeste nominal et
+  un `age_s: 42` **ne bougent pas**. **Avant, les trois passes étaient
+  indiscernables** — un âge que le serveur déclare ignorer était présenté comme un
+  âge de quarante-deux secondes. **Gardien neuf de 5 tests, 2 rouges par
+  mutation**, qui garde **la famille** (les 5 pages) et **les trois bouts de la
+  chaîne**, avec garde-fou de volume. **Piège confirmé, sauf un compte** : les
+  sites sont **cinq**, pas quatre — `analysis_page.py:323` s'est ajouté depuis le
+  582 (et il est honnête). **594-A : un compte est juste à sa date.** **Second
+  contrôle (481)** : zéro puce de fraîcheur hors de l'ordre de décision, toujours
+  zéro vingt-quatre lots plus tard. Bump `td-shell-v190` → **`td-shell-v191`** ;
+  MD5 **7/8 identiques**, seule `/system` bouge (`024ff6d83691`) ; suite **2875
+  passed / 0 skipped** ; sondes écart **AUCUN** ; READONLY intact. Non établi :
+  **à quelle fréquence `age_s` arrive nul en production** — le chemin est réel,
+  mais je l'ai injecté pour l'observer, pas rencontré. Règles **606-A** (un
+  correctif d'honnêteté doit être montré, pas déduit), **606-B** (une preuve a
+  besoin d'une passe qui ne doit pas bouger), **606-C** (garder la famille, pas le
+  cas). **Dossiers produit corrigés : 5.**
+
+- **Lot 605 — livré** : **les sept dépôts, lus — et il n'y a rien à prendre :
+  cinq des sept n'ont AUCUNE licence.** Sans licence, tous droits réservés : ils
+  ne sont **pas copiables**, quelle que soit leur qualité. Les deux seuls
+  licenciés (MIT) sont en **C#/.NET** et en **Elixir** — l'intersection
+  « légalement copiable » ∩ « techniquement transposable » est **vide**.
+  **Ce qu'ils ont donné quand même : une question.** `lumoraesf/Finhub`, le plus
+  petit des sept, déduplique ses news par titre exact ; en lisant ces quinze
+  lignes — *et Vertex, il déduplique comment ?* **Vertex faisait pire** :
+  `terminal.py::_news_loop`, qui alimente `/news-feed`, clé sur **`titre[:60]`**.
+  Deux erreurs opposées — **faux positif** : deux dépêches différentes partageant
+  leur ouverture (formule figée, cas courant en finance) → **la seconde est jetée,
+  de l'information réelle disparaît** ; **faux négatif** : le même article en
+  casse différente → **il passe deux fois**. Et **`news_plus.dedupe_news()`
+  existait depuis le lot 4**, testé, correct — **le fil ne l'appelait pas**.
+  Corrigé en une ligne. **Gardien neuf de 6 tests, vérifié par mutation** (3
+  rouges sur le code d'avant). **Deux arrêts** : mon anti-doublon a **compté à
+  vide** (clé `triggers` sur une charge exposant `data` → « 0 » au lieu de 5), et
+  mon **périmètre de recherche excluait `terminal.py`**, d'où une accusation
+  fausse de « sentiment structurellement nul » — **interprétation retirée**.
+  Un **troisième arrêt** : le gardien des noms personnels a refusé le commit —
+  le motif interdit dormait dans **« amélioration »** privé de son accent.
+  Arrêtés **235 → 238 (+3)**, interprétations retirées **14 → 15**. **Piège
+  réfuté 4 fois sur 4**, dont (c) « le plus gros dépôt est le plus utile » — 45 Mo
+  dont 14 Mo de présentation, et le plus utile fut le plus petit. **Second
+  contrôle (481)** : le dépôt de référence déduplique **moins bien que notre
+  propre code** — sans ce contrôle j'aurais importé une régression en croyant
+  emprunter une amélioration. **MD5 8/8 identiques, aucun bump** (correctif
+  serveur) ; suite **2870 passed / 0 skipped** ; sondes écart **AUCUN** ; READONLY
+  intact ; **aucun octet copié d'un dépôt tiers**. Non pris et nommé : le
+  dictionnaire **Loughran–McDonald** de `VVVleng` (~2 300 termes contre nos 22+22)
+  — redistribué sans licence, **décision humaine requise** ; et notre sentiment
+  **ternaire** (`pos > neg`). Règles **605-A** (un dépôt sans licence n'est pas
+  une ressource), **605-B** (la valeur d'une lecture extérieure est la question,
+  pas le code), **605-C** (un périmètre qui exclut le monolithe conclut faux).
+  **Dossiers produit corrigés : 4.**
+
+- **Lot 604 — livré** : **la synchro des données personnelles échouait en
+  silence — deux silences dans une ligne**. `vx-entities.js::pushNow` pousse
+  positions, journal, alertes, watchlist et notes vers `/api/desk` par
+  `fetch(...).catch(()=>{})` : **(1)** l'échec réseau était avalé ; **(2)** un
+  **4xx/5xx ne déclenchait même pas ce `catch`** — `fetch` ne rejette que sur
+  échec réseau, une réponse d'erreur **résout** la promesse, et `r.ok` n'était
+  jamais lu. **Un refus du serveur était totalement invisible.** Trois sites :
+  le chemin de production servi aux 8 pages + 2 copies inline dans `/system`.
+  **Rien n'était perdu** (localStorage garde tout) — le coût est que
+  l'utilisateur **croit être synchronisé** pendant que le blob serveur
+  vieillit ; la facture arrive sur un autre appareil. **Preuve rouge puis verte
+  en vrai Chromium** : 500 injecté sur `POST /api/desk` + écriture réelle —
+  **avant** aucun toast et `desk_sync` null, **après** un avertissement explicite
+  et `desk_sync='error'` ; **le POST a eu lieu dans les 4 passes**, la voie
+  d'échec est exercée, pas supposée (602-A). **Les deux autres formes exclues par
+  le 603 sont propres** : 37 gardes `if(!host)return;` → **31 hôtes sur 31
+  présents dans le HTML servi des 35 URL, 0 introuvable** ; `/system` sous
+  `allSettled` → **5 et 4 états honnêtes** quand ses 4 puis 3 sources tombent.
+  **Arrêt du lot : 603-B commise dans le lot suivant celui qui l'a écrite** — mon
+  contrôle **devinait** les vues et déclarait `vx-pf-prog` introuvable alors
+  qu'il vit sur `view=progression` ; le banc corrigé **lit `_VIEWS` dans le
+  code**. Arrêtés **234 → 235 (+1)**. **Piège réfuté trois fois** — et **le
+  volume est un mauvais guide** : 37 gardes bénins, 3 lignes coupables.
+  **Le gardien du lot 361 a arrêté le commit** (premier octet changé sous
+  `/static` de tout l'arc) en donnant la marche à suivre exacte. Bump SW
+  `td-shell-v189` → **`td-shell-v190`** + empreinte des assets et `_SW_VERSION`
+  (qui pointait encore 187) ; MD5 **7/8 identiques**, seule `/system` bouge
+  (`f657bf63178b`) ; suite **2864 passed / 0 skipped** ; sondes écart **AUCUN** ;
+  READONLY intact. Non établi : **`sendBeacon` reste muet par construction** —
+  nommé, non traité. Règles **604-A** (`fetch` ne rejette pas sur 4xx/5xx),
+  **604-B** (le volume ne dit rien de la gravité), **604-C** (un silence sur le
+  chemin d'écriture coûte plus qu'un silence à l'affichage). **Dossiers produit
+  corrigés : 3.**
+
+- **Lot 603 — livré** : **les silences des autres pages, traités** — et **le
+  compte brut ment d'un facteur treize : 92 → 20 → 4**. Le 602 nommait la suite ;
+  c'est ce lot. Trois instruments successifs, chacun corrigeant le précédent :
+  **52** (faux — il comptait les `catch` où le rendu continue avec un objet vide
+  et affiche des « — » honnêtes), **48** (faux — il oubliait de regarder si le
+  corps écrit, et classait « muet » des `catch` qui font
+  `innerHTML=VX.states.error(...)`), **20** (juste mais brut), puis **4 défauts
+  après lecture du rôle**. C'est **596-B payée deux fois dans le même lot**.
+  **Les quatre corrigés** : `loadMacroRegime` de `/markets?view=macro`
+  (zone vide et muette) et `renderHiddenDeps` / `renderStress` /
+  `renderDiscipline` de `/portfolio?view=risk` (**section absente**) — les trois
+  sections de Portefeuille **savaient déjà dire « donnée absente »** pour
+  `d.empty` / `d.available===false` : **seul le chemin réseau restait muet**.
+  **Preuve en vrai Chromium, 6 passes, SW bloqué (602-B)** : nominales 0 erreur
+  console (2 840 / 4 746 car.), échecs à 2 636 / 3 569 / 4 115 / 4 463 car., tous
+  avec leur état honnête et **Réessayer · Ouvrir Système**. **Arrêt du lot : mon
+  harnais a passé À VIDE une deuxième fois** — je chargeais les deux pages sur
+  leur **vue par défaut**, où les quatre fonctions ne sont jamais appelées ; les
+  zones étaient absentes **même en nominal**. Ce qui a sauvé le lot est **602-A
+  appliquée à la lettre** : le contrôle vérifie le **texte attendu**, pas la
+  non-vacuité. **La règle écrite hier a arrêté l'erreur d'aujourd'hui.** Arrêtés
+  **233 → 234 (+1)**. **Piège : (a) confirmé (4), (b) réfuté (16 des 20 sont
+  bénins), (c) non mesurable — global mixte** ; (a) était réfuté par les deux
+  comptes bruts et **confirmé par la lecture**. **Second contrôle (481)** : les
+  fichiers JS statiques — **42 muets, deux fois plus que les pages, zéro défaut
+  de zone** (infrastructure, pas rendu). Bump SW `td-shell-v188` →
+  **`td-shell-v189`** ; MD5 **6/8 identiques** (`/markets` `cadcddec50df`,
+  `/portfolio` `61c9516ad3e3`) ; suite **2864 passed / 0 skipped** ; sondes écart
+  **AUCUN** ; READONLY intact. Non établi : **que ce soient les derniers silences
+  du produit** — une seule forme mesurée, le bloc `catch`. Règles **603-A** (un
+  compte brut de silences ment d'un facteur dix), **603-B** (une voie d'échec ne
+  s'exerce que sur la vue qui l'appelle), **603-C** (un piège enterré par la
+  mesure peut être sauvé par la lecture). **Dossiers produit corrigés : 2.**
+
+- **Lot 602 — livré** : **le dossier 531-A est corrigé** — *premier lot de
+  CORRECTION depuis le 514*, sur accord explicite de l'humain pour finaliser le
+  produit. **Deux zones d'Opportunités échouaient en silence** : sur erreur
+  réseau elles retournaient sans un mot, laissant une colonne vide et muette,
+  contraire à l'invariant « donnée absente → mention honnête ». `renderFunnel`
+  affiche désormais `VX.states.error('Entonnoir indisponible')` (et
+  `VX.states.empty` sur étages vides) ; `loadSkylerRank` **crée sa section** et
+  y affiche `VX.states.error('Classement Skyler indisponible')` — les deux avec
+  **Réessayer** et **Ouvrir Système**. **Preuve en vrai Chromium avec l'échec
+  injecté** : 3 passes sur `/opportunities` — nominal 0 erreur console / 4 662
+  car. ; entonnoir en échec 4 382 car. avec « ⚠ Entonnoir indisponible » ;
+  sweep en échec 3 027 car. avec la section présente et honnête. **Arrêt du
+  lot : mon harnais a passé À VIDE** — les trois passes rendaient exactement
+  4 662 caractères et le contrôle annonçait « CORRIGÉ : OUI » ; le contrôle
+  testait la non-vacuité et la zone était pleine **parce que le fetch avait
+  réussi**. Cause : **Playwright n'intercepte pas les requêtes servies par un
+  service worker**. Durci par `service_workers='block'` + vérification du
+  **texte attendu**. C'est **600-A appliquée au lot suivant, sur mon propre
+  harnais**. Arrêtés **232 → 233 (+1)**. 2 fichiers de production, 5 gardiens
+  de version, bump SW `td-shell-v187` → **`td-shell-v188`**. **MD5 7/8
+  identiques**, seule `/opportunities` bouge (`c1b5c52e18c5`). Suite **2864
+  passed / 0 skipped**, sondes écart **AUCUN**, READONLY intact. Non établi :
+  **que les autres pages n'aient pas le même défaut — les silences équivalents
+  ailleurs sont nommés, pas traités**. Règles **602-A** (un harnais doit
+  prouver que la voie d'échec a été exercée) et **602-B** (un service worker
+  rend une interception réseau invisible). **Dossiers produit corrigés : 1.**
+
 - **Lot 601 — livré** : **les règles non citées ne sont pas redondantes, elles
   sont oubliées** — et **la boucle en redécouvre une huit lots plus tard sans la
   citer**. Choix (uuu). **`591-C`** (« un gardien sans garde-fou de volume peut

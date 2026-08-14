@@ -34,17 +34,53 @@
   /* ── Sync /api/desk (protocole historique inchangé) ─────────────── */
   let pushTimer = null;
   function schedulePush() { clearTimeout(pushTimer); pushTimer = setTimeout(() => { pushTimer = null; pushNow(); }, 1200); }
+
+  /* LOT 604 — la synchro du bureau échouait EN SILENCE, deux fois dans une
+     ligne : `fetch(...).catch(() => {})` avalait l'échec réseau, ET un 4xx/5xx
+     ne déclenchait même pas ce `catch` (fetch ne rejette que sur échec réseau ;
+     une réponse d'erreur RÉSOUT la promesse, et `r.ok` n'était jamais lu). Un
+     refus du serveur était donc totalement invisible. Ces données sont les
+     données PERSONNELLES de l'utilisateur — invariant produit : ce qui échoue
+     se dit. Rien n'est perdu (localStorage garde tout, le push suivant
+     rattrape) ; c'est ce que le message annonce, sans dramatiser. */
+  const SYNC_ALERTE_MS = 600000;          // au plus une alerte visible / 10 min
+  let derniereAlerteSync = 0;
+  function syncAlerte(message) {
+    const t = Date.now();
+    if (t - derniereAlerteSync < SYNC_ALERTE_MS) return;
+    derniereAlerteSync = t;
+    try { VX.toast(message, 'warn', 5200); } catch (e) {}
+  }
+  function syncEtat(etat, detail) {
+    try { VX.store.set('desk_sync', etat); } catch (e) {}
+    if (etat === 'ok') return;
+    syncAlerte('Synchronisation du bureau impossible (' + detail + ') — tes données '
+      + 'restent sur cet appareil et repartiront à la prochaine réussite.');
+  }
+
   function pushNow() {
     try {
       const data = {};
       DESK_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v != null) data[k] = v; });
       const ts = Number(localStorage.getItem('deskTs') || Date.now());
-      fetch('/api/desk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ts, data }) }).catch(() => {});
-    } catch (e) {}
+      fetch('/api/desk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ts, data }) })
+        .then(r => { syncEtat(r.ok ? 'ok' : 'error', 'refus du serveur, HTTP ' + r.status); })
+        .catch(() => { syncEtat('error', 'serveur injoignable'); });
+    } catch (e) { syncEtat('error', 'écriture locale impossible'); }
   }
+  /* LOT 607 — la LECTURE échouait en silence, comme l'écriture avant le 604 :
+     `r.ok` n'était pas lu (604-A, sur l'autre chemin) et le `catch` était vide.
+     Le coût est plus grand qu'il n'y paraît : sur un navigateur neuf dont le GET
+     échoue, le bureau s'affiche VIDE — et « aucun trade déclaré » devient
+     indiscernable de « bureau non synchronisé », alors que le serveur, lui, a
+     les données. C'est l'invariant produit pris à l'envers : ce n'est pas une
+     donnée absente présentée comme réelle, c'est une donnée RÉELLE présentée
+     comme absente. Rien n'est perdu ni écrasé — la lecture reste en lecture. */
   async function pull() {
     try {
-      const r = await fetch('/api/desk'); const d = await r.json();
+      const r = await fetch('/api/desk');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
       const localTs = Number(localStorage.getItem('deskTs') || 0);
       if (d && d.ts && d.data) {
         if (d.ts > localTs) { /* serveur plus récent : ne jamais écraser du plus récent par du plus ancien */
@@ -56,7 +92,13 @@
       } else if (!d || !d.ts) {
         if (localTs) pushNow();
       }
-    } catch (e) {}
+      try { VX.store.set('desk_sync', 'ok'); } catch (e2) {}
+    } catch (e) {
+      try { VX.store.set('desk_sync', 'read-error'); } catch (e2) {}
+      syncAlerte('Bureau non synchronisé : tes données du serveur n’ont pas pu être '
+        + 'chargées (' + ((e && e.message) || 'erreur réseau') + '). Ce qui s’affiche '
+        + 'vient de cet appareil — n’en conclus pas que c’est vide.');
+    }
   }
   pull(); setInterval(() => { if (!document.hidden) pull(); }, 120000);
   /* Flush du push au déchargement : une écriture suivie d'une navigation

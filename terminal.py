@@ -1153,7 +1153,7 @@ NEWS_SYMS = ['SPY', 'QQQ', 'NVDA', 'AAPL', 'MSFT', 'META', 'AMZN', 'TSLA', 'AMD'
 def _news_loop():
     while True:
         try:
-            seen, feed = set(), []
+            feed = []
             # couverture dynamique : le socle + les titres CHAUDS du scan (mouvement/volume)
             hot = []
             try:
@@ -1170,12 +1170,17 @@ def _news_loop():
                     its, _ = ai.fr_news(sym, its)
                     for it in its:
                         it['senti'] = _news_plus.sentiment((it.get('title') or '') + ' ' + (it.get('fr') or ''))
-                        k = (it.get('title') or '')[:60]
-                        if k and k not in seen:
-                            seen.add(k)
-                            feed.append({**it, 'sym': sym})
+                        feed.append({**it, 'sym': sym})
                 except Exception:
                     continue
+            # LOT 605 : la deduplication se faisait sur `titre[:60]` — deux
+            # depeches DIFFERENTES partageant leur ouverture etaient confondues
+            # (information REELLE perdue), et le meme article en casse ou
+            # ponctuation differente passait deux fois. `dedupe_news` existe
+            # dans le depot depuis le lot 4, est teste, et cle sur le titre
+            # NORMALISE COMPLET + le lien : le fil ne l'appelait simplement pas.
+            # Dedupe AVANT le tri : on garde le premier arrive, comme avant.
+            feed = _news_plus.dedupe_news(feed)
             feed.sort(key=lambda x: x.get('time') or '', reverse=True)
             news_state['items'] = feed[:45]
             news_state['updated'] = datetime.now().strftime('%H:%M:%S')

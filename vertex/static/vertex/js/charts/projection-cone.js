@@ -83,8 +83,8 @@
       : '';
 
     /* frontière aujourd'hui + libellé de zone */
-    const nowLine = '<line x1="' + x0.toFixed(1) + '" y1="' + mT + '" x2="' + x0.toFixed(1) + '" y2="' + (H - mB) + '" stroke="var(--vx-text-muted,#8A8284)" stroke-width="1" stroke-dasharray="2 4" stroke-opacity=".6"/>'
-      + '<text x="' + (x0 + 6).toFixed(1) + '" y="' + (mT + 8) + '" fill="var(--vx-text-muted,#8A8284)" font-size="8.5" letter-spacing=".6">PROJECTION — ' + (o.horizonLabel || 'plan moteur') + '</text>';
+    const nowLine = '<line x1="' + x0.toFixed(1) + '" y1="' + mT + '" x2="' + x0.toFixed(1) + '" y2="' + (H - mB) + '" stroke="var(--vx-text-muted,#989092)" stroke-width="1" stroke-dasharray="2 4" stroke-opacity=".6"/>'
+      + '<text x="' + (x0 + 6).toFixed(1) + '" y="' + (mT + 8) + '" fill="var(--vx-text-muted,#989092)" font-size="8.5" letter-spacing=".6">PROJECTION — ' + (o.horizonLabel || 'plan moteur') + '</text>';
 
     /* chips de bord (grammaire tvEdgeChip, lot 189) */
     let chips = '';

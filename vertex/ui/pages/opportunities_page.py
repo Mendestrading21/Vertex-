@@ -21,12 +21,12 @@ def _tabs(view: str) -> str:
 
 
 _CONTENT = """
-<div class="vx-page-header"><div><h1>Opportunités</h1>
+<div class="vx-page-header vx-page-lead"><div><h1>Opportunités</h1>
 <div class="vx-sub">Quelles opportunités méritent réellement une analyse ?</div></div>
-<div class="vx-actions"><span id="op-fresh" style="align-self:center"></span><button class="vx-btn vx-btn-sm"
+<div class="vx-actions vx-toolbar"><span id="op-fresh" style="align-self:center"></span><button class="vx-btn vx-btn-sm"
   onclick="VXEntities.openAddModal()">+ Ajouter</button></div></div>
 %%TABS%%
-<div id="op-body" class="vx-mt4">%%LOADING%%</div>
+<div id="op-body" class="vx-mt4 vx-section-stack">%%LOADING%%</div>
 """
 
 _JS = r"""
@@ -112,15 +112,16 @@ function renderDominant(rows,scan,catBySym){
         ${momBars(best)?'<div style="margin-top:4px"><div class="vx-meta" style="margin-bottom:4px">Momentum 1S · 1M · 1T · 1A</div>'+momBars(best)+'</div>':''}
       </div>
       <div class="vx-op-dom-r">
-        <div class="vx-op-metrics">
+        <div class="vx-op-metrics vx-kpi-strip">
           ${metric('Asymétrie',asym!=null?VX.fmt.nd(asym):'n/d',asym!=null&&asym>=25)}
           ${metric('Probabilité de gain',pwin!=null?pwin+' %':'n/d',pwin!=null&&pwin>=55)}
           ${metric('R:R visé',rr!=null?VX.fmt.nd(rr):'n/d')}
-          ${metric('Edge composite',edge!=null?VX.fmt.nd(edge)+'/100':'n/d')}
+          ${metric('Qualité données',best.vx_tq!=null?VX.fmt.nd(best.vx_tq)+'/100':'n/d')}
         </div>
         <div class="vx-op-lines">
           <div class="row"><span class="k">Catalyseur</span><span class="v">${cat?esc(cat):'aucun catalyseur daté à l’horizon du calendrier'}</span></div>
           <div class="row"><span class="k">Invalidation</span><span class="v risk">${esc(inval)}</span></div>
+          <div class="row"><span class="k">Edge composite</span><span class="v">${edge!=null?VX.fmt.nd(edge)+'/100':'n/d'}</span></div>
           <div class="row"><span class="k">Profil</span><span class="v">${esc((best.profile||'')+(best.profile_hint?' — '+best.profile_hint:''))||'n/d'}</span></div>
         </div>
         <div class="vx-flex vx-wrap" style="gap:.4rem;margin-top:auto">
@@ -158,7 +159,9 @@ function renderShortlist(rows,scan,catBySym){
 function renderCompare(rows){
   const el=$('op-compare');if(!el)return;
   const cand=opRanked(rows).slice(0,4);
-  if(cand.length<2){el.innerHTML='';return;}
+  const disclosure=el.closest('details');
+  if(cand.length<2){el.innerHTML='';if(disclosure)disclosure.hidden=true;return;}
+  if(disclosure)disclosure.hidden=false;
   /* métriques réelles : (clé, label, accessor, max pour le rail, higherIsBetter) */
   const M=[
     ['score','Score',r=>r.score,100,true],
@@ -191,10 +194,14 @@ function renderCompare(rows){
 /* ── ENTONNOIR D'OPPORTUNITÉS (§11-12) : univers → … → actionnable ── */
 async function renderFunnel(){
   const el=$('op-funnel');if(!el)return;
-  let f;try{f=await VX.fetch('/api/opportunities/funnel',{ttl:60000});}catch(e){return;}
-  if(!f||!f.stages||!f.stages.length)return;
+  /* LOT 602 (dossier 531-A) : un echec ne laisse plus la colonne vide et muette.
+     Invariant produit : donnee absente -> mention honnete, jamais du silence. */
+  let f;try{f=await VX.fetch('/api/opportunities/funnel',{ttl:60000});}
+  catch(e){el.innerHTML=VX.states.error('Entonnoir indisponible');return;}
+  if(!f||!f.stages||!f.stages.length){
+    el.innerHTML=VX.states.empty('Entonnoir vide — aucun etage retourne par le moteur.');return;}
   const roleColor={'ATTAQUE':'var(--vx-positive,#2BBE90)','MILIEU':'var(--vx-beige,#c8bfae)',
-    'DÉFENSE':'var(--vx-neutral-chart,#BABABA)','RÉSERVE':'var(--vx-text-muted,#8A8284)'};
+    'DÉFENSE':'var(--vx-neutral-chart,#BABABA)','RÉSERVE':'var(--vx-text-muted,#989092)'};
   const roles=(f.roles||[]).map(function(r){
     return '<span class="vx-chip" style="border:1px solid '+ (roleColor[r.role]||'#555')
       +';color:'+(roleColor[r.role]||'#aaa')+'">'+esc(r.role)+' '+esc(r.count)+'</span>';
@@ -204,7 +211,7 @@ async function renderFunnel(){
   if(st.length>=2){let bi=0,bd=0;for(let i=1;i<st.length;i++){const d=(st[i-1].count||0)-(st[i].count||0);if(d>bd){bd=d;bi=i;}}
     concl=bd>0?('Plus forte déperdition : '+esc(st[bi-1].label)+' → '+esc(st[bi].label)+' (−'+bd+').')
       :'Entonnoir plat — peu de déperdition entre étages.';}
-  el.innerHTML='<section class="vx-card" aria-label="Entonnoir de sélection"><div class="vx-card-header"><span class="vx-card-title">Entonnoir de sélection</span>'
+  el.innerHTML='<section class="vx-card vx-card--compact" aria-label="Entonnoir de sélection"><div class="vx-card-header"><span class="vx-card-title">Entonnoir de sélection</span>'
     +'<span class="vx-chart-question">Que reste-t-il après filtrage ?</span></div>'
     +'<div class="vx-flex vx-wrap" style="gap:.35rem;margin-bottom:.4rem">'+roles+'</div>'
     +'<div id="op-funnel-viz"></div>'
@@ -239,35 +246,51 @@ async function renderRadar(){
   const best=opRanked(rows)[0];
   $('op-body').innerHTML=demoBanner(scan)
     +'<div id="op-hero"></div>'
-    +'<div class="vx-grid vx-mt4"><div class="vx-col-12" id="op-dominant"></div></div>'
     +'<div class="vx-grid vx-mt4" id="op-shortlist"></div>'
-    +'<div class="vx-grid vx-mt4">'
+    +'<div class="vx-grid vx-hero-grid vx-mt4">'
       +'<div class="vx-col-8"><div id="op-scatter"></div>'
+        +'<div id="op-scatter-missing" class="vx-meta vx-mt2"></div>'
         +'<section class="vx-card vx-mt3" id="op-scatter-sel-card"><div class="vx-card-header"><span class="vx-card-title">Point sélectionné</span>'
           +'<span class="vx-chart-question">Inspecte un titre du scatter</span></div>'
           +'<div id="op-scatter-sel" class="vx-op-scatter-sel"><div class="vx-help">Clique un point du scatter pour l’inspecter'
           +(best?', ou ouvre directement la meilleure opportunité : <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="'+esc(best.symbol)+'">Ouvrir '+esc(best.symbol)+' →</button>':'')+'.</div></div></section></div>'
-      +'<div class="vx-col-4" id="op-funnel"></div></div>'
-    +'<div id="op-compare" class="vx-mt4"></div>';
+      +'<aside class="vx-col-4 vx-insight-rail" id="op-funnel"></aside></div>'
+    +'<details class="vx-disclosure vx-mt4" id="op-compare-disclosure"><summary>Comparer les candidats sous forme de matrice</summary>'
+      +'<div id="op-compare" class="vx-mt3"></div></details>';
   renderHero(rows,scan,best,catBySym);
   renderDominant(rows,scan,catBySym);
   renderFunnel();
   renderShortlist(rows,scan,catBySym);
   renderCompare(rows);
   const bestSym=best?best.symbol:null;
+  /* Un point n'existe que si SES DEUX axes sont présents. Les titres dont le
+     timing ou la qualité manque restent explicitement hors du nuage : jamais
+     de repli visuel à 50, qui fabriquerait une position neutre. */
+  const axisNum=(v)=>v===null||v===undefined||v===''?null:Number(v);
+  const axisOk=(v)=>v!==null&&Number.isFinite(v)&&v>=0&&v<=100;
+  const scatterRows=rows.map(function(r){
+    const x=axisNum(r.strat_score??r.score),y=axisNum(r.st_tech??r.rs);
+    return {r:r,x:x,y:y,ok:axisOk(x)&&axisOk(y)};
+  });
+  const plotted=scatterRows.filter(p=>p.ok),missing=scatterRows.filter(p=>!p.ok);
+  const missingHost=$('op-scatter-missing');
+  if(missingHost)missingHost.innerHTML=missing.length
+    ?'<b>'+missing.length+' titre(s) hors nuage :</b> axe qualité ou timing n/d / hors plage 0–100 — '
+      +missing.slice(0,8).map(p=>esc(p.r.symbol)).join(' · ')+(missing.length>8?' · …':'')
+    :'Tous les titres affichés disposent des deux axes.';
   VXCharts.card('op-scatter',{
     title:'Scatter d\'asymétrie — qualité × timing',
     question:'Où se trouvent les meilleurs couples qualité × timing ?',
-    conclusion:(function(){const a=rows.filter(r=>bucketOf(r)==='Actionnable').length;
+    conclusion:(function(){const a=plotted.filter(p=>bucketOf(p.r)==='Actionnable').length;
       return a?(a+' candidat(s) en zone actionnable (haut-droit)'):'Aucun candidat en zone actionnable — attendre reste valide';})(),
     height:360,unit:'score 0-100',source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
-    summary:'Nuage de points des titres scannés : qualité stratégique en X, timing en Y ; les meilleures asymétries sont en haut à droite.',
+    summary:'Nuage de points des titres disposant de deux scores : qualité stratégique en X, timing en Y ; les données incomplètes sont listées hors du graphique.',
     explain:{shows:'Chaque point est un titre scanné, placé par les scores moteur (qualité en X, timing en Y).',
       why:'La stratégie n’engage que lorsque qualité ET timing convergent (coin haut-droit).',
       confirm:'Un point qui migre vers le haut-droit avec volume.',
       invalidate:'Retour sous 55 en qualité stratégique.'},
     render:(cv)=>VXCharts.mount(cv,{type:'scatter',
-      data:{datasets:[{data:rows.map(r=>{const _t=(r.st_tech??r.rs);return {x:r.strat_score??r.score,y:(_t??50),tOk:_t!=null,sym:r.symbol,
+      data:{datasets:[{data:plotted.map(p=>{const r=p.r;return {x:p.x,y:p.y,tOk:true,sym:r.symbol,
           v:r.verdict,setup:(r.profile||'')+(r.profile_hint?' — '+r.profile_hint:''),sector:r.sector||'',price:r.price,rr:r.vx_rr,asym:r.vx_asym,pwin:r.vx_pwin,score:r.score,
           best:r.symbol===bestSym,r:5+Math.min(8,(r.anomaly_score||r.sigcount||0))};}),
         pointRadius:(ctx)=>ctx.raw?ctx.raw.r:4,pointHoverRadius:(ctx)=>ctx.raw?ctx.raw.r+3:7,
@@ -275,8 +298,8 @@ async function renderRadar(){
           return v==='BUY'||v==='ACHETER'?cc.positive:(v==='AVOID'||v==='ÉVITER'?cc.negative:cc.neutral);},
         pointBorderColor:(ctx)=>ctx.raw&&ctx.raw.best?VXCharts.colors.brand:%%DEMO_BORDER%%,
         pointBorderWidth:(ctx)=>ctx.raw&&ctx.raw.best?2:1}]},
-      options:{scales:{x:{title:{display:true,text:'Qualité stratégique →'},grid:{color:'rgba(255,255,255,.06)'}},
-        y:{title:{display:true,text:'Qualité du timing ↑'},grid:{color:'rgba(255,255,255,.06)'}}},
+      options:{scales:{x:{min:0,max:100,title:{display:true,text:'Qualité stratégique →'},grid:{color:'rgba(255,255,255,.06)'}},
+        y:{min:0,max:100,title:{display:true,text:'Qualité du timing ↑'},grid:{color:'rgba(255,255,255,.06)'}}},
         onClick:(evt,els,chart)=>{const pts=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
           if(pts.length){const d=chart.data.datasets[0].data[pts[0].index];
             document.getElementById('op-scatter-sel').innerHTML=
@@ -342,22 +365,21 @@ function renderHero(rows,scan,best,catBySym){
   else if(cnt['S']){msg='Aucune opportunité S+ aujourd’hui. '+cnt['S']+' dossier(s) S méritent une analyse.';tone='go';}
   else if(cnt['A']){msg='Aucune asymétrie exceptionnelle. '+cnt['A']+' dossier(s) A à surveiller.';tone='wait';}
   else {msg='Aucune asymétrie exceptionnelle détectée. Attendre est une décision valide.';tone='wait';}
-  if(best){const cat=catBySym&&catBySym[best.symbol];
-    msg+=' '+esc(best.symbol)+' présente la meilleure asymétrie ('+(best.vx_asym!=null?'asym. '+VX.fmt.nd(best.vx_asym):'score '+VX.fmt.nd(best.score))+')'
-      +(cat?', mais '+esc(cat.toLowerCase())+' — risque événementiel à surveiller':'')+'.';}
-  const chip=(k,v,hot)=>'<div class="vx-op-chip"'+(hot?' data-hot="1"':'')+'><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
-  el.innerHTML='<section class="vx-card vx-card--hero"><div class="vx-card-header"><span class="vx-card-title">Ce qui mérite ton attention</span>'
+  const rankBadges='<div class="vx-toolbar vx-mt2" aria-label="Niveaux de la sélection">'
+    +'<span class="vx-badge">S+ · '+cnt['S+']+'</span>'
+    +'<span class="vx-badge">S · '+cnt['S']+'</span>'
+    +'<span class="vx-badge">A · '+cnt['A']+'</span>'
+    +'<span class="vx-badge">Données · '+dq+'</span></div>';
+  /* Le message éditorial et la meilleure opportunité partagent désormais UNE
+     seule carte hero. Les quatre métriques décisionnelles vivent dans la
+     dominante ; les volumes S+/S/A restent de simples badges de contexte. */
+  el.innerHTML='<section class="vx-card vx-card--hero" aria-label="Réponse du radar">'
+    +'<div class="vx-card-header"><span class="vx-card-title">Ce qui mérite ton attention</span>'
     +'<span class="vx-actions"><span class="vx-freshness" data-live="'+(m==='fallback'?'fallback':'delayed')+'"><span class="vx-live-dot"></span>'+dq+'</span></span></div>'
-    +'<div class="vx-op-hero-lead"><span class="tag" data-tone="'+tone+'">'+(cnt['S+']||cnt['S']?'À étudier':'Patience')+'</span>'
-      +'<span class="txt">'+msg+'</span></div>'
-    +'<div class="vx-op-hero-chips">'
-      +chip('S+',String(cnt['S+']),cnt['S+']>0)
-      +chip('S',String(cnt['S']),cnt['S']>0)
-      +chip('A',String(cnt['A']))
-      +chip('Meilleure',best?esc(best.symbol):'—',!!best)
-      +chip('Données',dq)
-    +'</div>'
-    +(best?'<div class="vx-mt3"><button class="vx-btn vx-btn-primary" data-open-analysis="'+esc(best.symbol)+'">Étudier le dossier '+esc(best.symbol)+' →</button></div>':'')
+    +'<div class="vx-grid vx-hero-grid"><div class="vx-col-5 vx-page-lead">'
+      +'<div class="vx-op-hero-lead"><span class="tag" data-tone="'+tone+'">'+(cnt['S+']||cnt['S']?'À étudier':'Patience')+'</span>'
+        +'<span class="txt">'+msg+'</span></div>'+rankBadges+'</div>'
+      +'<div class="vx-col-7 vx-insight-rail" id="op-dominant"></div></div>'
     +'</section>';
 }
 
@@ -383,31 +405,48 @@ async function renderStocks(){
         +'<span style="width:56px;height:8px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block">'
         +'<span style="display:block;height:100%;width:'+Math.max(3,Math.min(100,n)).toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:3px"></span></span>'
         +'<span style="font-variant-numeric:tabular-nums">'+VX.fmt.nd(n)+'</span></span>';};
-    $('op-table').innerHTML=f.length?`<table class="vx-table"><thead><tr>
-      <th>Titre</th><th>Statut</th><th class="vx-num" data-sortable>Score</th><th>Décision moteur</th>
-      <th class="vx-num">Cours</th><th class="vx-num">R:R</th><th>Setup</th><th>Secteur</th><th></th></tr></thead><tbody>
-      ${f.slice(0,80).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
-        <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
-        <td data-label="Statut"><span class="vx-badge ${bucketCls(bucketOf(r))}">${bucketOf(r)}</span></td>
-        <td data-label="Score" class="vx-num">${scoreBar(r.score)}</td>
-        <td data-label="Décision"><span class="vx-badge ${vCls(r.verdict)}">${esc(r.verdict||'')}</span></td>
-        <td data-label="Cours" class="vx-num">${VX.fmt.nd(r.price!==undefined?VX.fmt.price(r.price):null)}</td>
-        <td data-label="R:R" class="vx-num">${VX.fmt.nd(r.rr)}</td>
-        <td data-label="Setup" class="vx-truncate" style="max-width:130px" title="${esc(pbStr(r.playbook)||r.profile||'—')}">${esc(pbStr(r.playbook)||r.profile||'—')}</td>
-        <td data-label="Secteur">${esc(r.sector||'—')}</td>
-        <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table>`
+    const decisionCell=(r)=>`<span class="vx-badge ${bucketCls(bucketOf(r))}">${bucketOf(r)}</span>`
+      +(r.verdict?`<span class="vx-meta ${vCls(r.verdict)}">${esc(r.verdict)}</span>`:'');
+    const essentialRow=(r)=>`<tr data-clickable data-open-analysis="${r.symbol}">
+      <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span><span class="vx-meta">${esc(r.sector||'secteur n/d')}</span></td>
+      <td data-label="Décision">${decisionCell(r)}</td>
+      <td data-label="Score" class="vx-num">${scoreBar(r.score)}</td>
+      <td data-label="Cours" class="vx-num">${VX.fmt.nd(r.price!==undefined?VX.fmt.price(r.price):null)}</td>
+      <td data-label="R:R" class="vx-num">${VX.fmt.nd(r.rr)}</td>
+      <td data-label="Action">${rowActions(r.symbol)}</td></tr>`;
+    const technicalRow=(r)=>`<tr data-clickable data-open-analysis="${r.symbol}">
+      <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
+      <td data-label="Décision">${decisionCell(r)}</td>
+      <td data-label="Score" class="vx-num">${scoreBar(r.score)}</td>
+      <td data-label="Cours" class="vx-num">${VX.fmt.nd(r.price!==undefined?VX.fmt.price(r.price):null)}</td>
+      <td data-label="R:R" class="vx-num">${VX.fmt.nd(r.rr)}</td>
+      <td data-label="Setup" class="vx-truncate" title="${esc(pbStr(r.playbook)||r.profile||'—')}">${esc(pbStr(r.playbook)||r.profile||'—')}</td>
+      <td data-label="Secteur">${esc(r.sector||'—')}</td>
+      <td data-label="Action">${rowActions(r.symbol)}</td></tr>`;
+    $('op-table').innerHTML=f.length?`<section class="vx-card" aria-label="Meilleures actions du scan">
+      <div class="vx-card-header"><span class="vx-card-title">Les dossiers les plus utiles maintenant</span>
+        <span class="vx-meta vx-right">Top ${Math.min(10,f.length)} sur ${f.length}</span></div>
+      <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
+        <th>Titre</th><th>Décision</th><th class="vx-num" data-sortable>Score</th>
+        <th class="vx-num">Cours</th><th class="vx-num">R:R</th><th>Action</th></tr></thead>
+        <tbody>${f.slice(0,10).map(essentialRow).join('')}</tbody></table></div></section>
+      <details class="vx-disclosure vx-mt3" id="op-stocks-full"><summary>Voir les ${f.length} titres et les détails techniques</summary>
+        <div class="vx-table-wrap vx-table-cards vx-mt2"><table class="vx-table"><thead><tr>
+          <th>Titre</th><th>Décision</th><th class="vx-num">Score</th><th class="vx-num">Cours</th>
+          <th class="vx-num">R:R</th><th>Setup</th><th>Secteur</th><th>Action</th></tr></thead>
+          <tbody>${f.map(technicalRow).join('')}</tbody></table></div></details>`
       :VX.states.empty('Aucun titre ne correspond aux filtres.','<button class="vx-btn vx-btn-sm" id="op-clear">Effacer les filtres</button>');
     document.getElementById('op-clear')?.addEventListener('click',()=>{Object.keys(state).forEach(k=>state[k]='');paint();});
   }
   $('op-body').innerHTML=demoBanner(scan)+`
-    <div class="vx-filterbar" role="group" aria-label="Filtres">
+    <div class="vx-filterbar vx-toolbar" role="group" aria-label="Filtres">
       ${OUT.map(b=>`<button class="vx-chip" data-filter-key="decision" data-filter-value="${b}"
         aria-pressed="${state.bucket===b}">${b}</button>`).join('')}
       <select class="vx-select" data-filter-key="sector" style="width:auto" aria-label="Secteur">
         <option value="">Tous secteurs</option>${sectors.map(s=>`<option ${state.sector===s?'selected':''}>${s}</option>`).join('')}</select>
       <input class="vx-input" data-filter-key="setup" style="width:150px" placeholder="setup (BREAKOUT…)" value="${esc(state.setup)}" aria-label="Setup">
     </div>
-    <div class="vx-table-wrap vx-table-cards" id="op-table"></div>
+    <div id="op-table"></div>
     <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.source,metaMode(scan))}
       · ${rows.length} titres scannés</div>`;
   document.querySelectorAll('[data-filter-key="decision"]').forEach(c=>c.addEventListener('click',()=>{
@@ -479,14 +518,14 @@ async function renderOptions(){
     let f=board;
     if(state.sym)f=f.filter(c=>c.sym===state.sym);
     if(state.cat)f=f.filter(c=>catOf(c)===state.cat);
-    $('op-opt-table').innerHTML=f.length?`<table class="vx-table"><thead><tr>
-      <th>Sous-jacent</th><th>Catégorie</th><th class="vx-num">Strike</th><th>Échéance</th>
-      <th class="vx-num">DTE</th><th class="vx-num">Delta</th><th class="vx-num">IV</th>
-      <th class="vx-num">Prime</th><th class="vx-num">Spread</th><th class="vx-num">Volume</th>
-      <th class="vx-num">OI</th><th class="vx-num">Breakeven</th><th class="vx-num">R:R cible</th><th></th></tr></thead>
-      <tbody>${f.slice(0,50).map((c,i)=>`<tr data-clickable data-ct="${board.indexOf(c)}" tabindex="0" role="button" aria-label="Simuler ${esc(c.sym)} ${VX.fmt.nd(c.strike)}">
-        <td data-label="Sous-jacent"><span class="vx-ticker">${c.sym}</span></td>
-        <td data-label="Catégorie"><span class="vx-badge" style="color:var(--vx-violet)">${catOf(c)}</span></td>
+    const optRow=(c,compact)=>`<tr data-clickable data-ct="${board.indexOf(c)}" tabindex="0" role="button" aria-label="Simuler ${esc(c.sym)} ${VX.fmt.nd(c.strike)}">
+        <td data-label="Contrat"><span class="vx-ticker">${c.sym}</span><span class="vx-meta">${VX.fmt.nd(c.strike)} · ${VX.fmt.nd(c.exp)}${c.dte!=null?' · '+VX.fmt.nd(c.dte)+' j':''}</span></td>
+        <td data-label="Profil"><span class="vx-badge" style="color:var(--vx-violet)">${catOf(c)}</span></td>
+        ${compact?`<td data-label="Delta" class="vx-num">${VX.fmt.nd(c.delta)}</td>
+        <td data-label="Prime" class="vx-num">${VX.fmt.nd(c.cost)}</td>
+        <td data-label="Spread" class="vx-num">${c.spread_pct!=null?c.spread_pct+'%':'—'}</td>
+        <td data-label="Qualité" class="vx-num"><b>${VX.fmt.nd(c.quality)}</b></td>
+        <td data-label="Action">${rowActions(c.sym)}</td>`:`
         <td data-label="Strike" class="vx-num">${VX.fmt.nd(c.strike)}</td>
         <td data-label="Échéance" class="vx-mono">${VX.fmt.nd(c.exp)}</td>
         <td data-label="DTE" class="vx-num">${VX.fmt.nd(c.dte)}</td>
@@ -498,7 +537,26 @@ async function renderOptions(){
         <td data-label="OI" class="vx-num">${VX.fmt.nd(c.oi)}</td>
         <td data-label="Breakeven" class="vx-num">${VX.fmt.nd(c.be)}</td>
         <td data-label="R:R" class="vx-num">${VX.fmt.nd(c.p_tgt)}</td>
-        <td>${rowActions(c.sym)}</td></tr>`).join('')}</tbody></table>`
+        <td data-label="Action">${rowActions(c.sym)}</td>`}</tr>`;
+    const shortlist=f.slice().sort((a,b)=>{
+      const qa=Number(a.quality),qb=Number(b.quality);
+      return (Number.isFinite(qb)?qb:-Infinity)-(Number.isFinite(qa)?qa:-Infinity);
+    }).slice(0,3);
+    $('op-opt-table').innerHTML=f.length?`<section class="vx-card" aria-label="Shortlist options">
+      <div class="vx-card-header"><span class="vx-card-title">Shortlist options — relais vers l’espace Options</span>
+        <span class="vx-meta vx-right">${shortlist.length} contrat(s) sur ${f.length}</span></div>
+      <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
+        <th>Contrat</th><th>Profil</th><th class="vx-num">Delta</th><th class="vx-num">Prime</th>
+        <th class="vx-num">Spread</th><th class="vx-num">Qualité</th><th>Action</th></tr></thead>
+        <tbody>${shortlist.map(c=>optRow(c,true)).join('')}</tbody></table></div>
+      <div class="vx-card-footer">Sélection analytique uniquement · ouvrir Options pour valider liquidité, payoff et Greeks.</div></section>
+      <details class="vx-disclosure vx-mt3" id="op-options-full"><summary>Voir le board complet et les métriques techniques</summary>
+        <div class="vx-table-wrap vx-table-cards vx-mt2"><table class="vx-table"><thead><tr>
+          <th>Contrat</th><th>Profil</th><th class="vx-num">Strike</th><th>Échéance</th>
+          <th class="vx-num">DTE</th><th class="vx-num">Delta</th><th class="vx-num">IV</th>
+          <th class="vx-num">Prime</th><th class="vx-num">Spread</th><th class="vx-num">Volume</th>
+          <th class="vx-num">OI</th><th class="vx-num">Breakeven</th><th class="vx-num">R:R cible</th><th>Action</th></tr></thead>
+          <tbody>${f.map(c=>optRow(c,false)).join('')}</tbody></table></div></details>`
       :VX.states.empty(state.sym?'Aucun contrat pour '+state.sym+' dans le board courant.':'Board options vide — le sélecteur ne force jamais une idée.',
         '<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a>');
     document.querySelectorAll('[data-ct]').forEach(tr=>{
@@ -507,25 +565,26 @@ async function renderOptions(){
       tr.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e);}});});
   }
   $('op-body').innerHTML=demoBanner(scan)+`
-    <div class="vx-filterbar">
+    <div class="vx-filterbar vx-toolbar">
       ${['BALANCED','DYNAMIC','ULTRA_CONVEX'].map(c=>`<button class="vx-chip" data-filter-key="setup"
         data-filter-value="${c}" aria-pressed="${state.cat===c}">${c}</button>`).join('')}
       <input class="vx-input" data-filter-key="sym" style="width:120px;text-transform:uppercase"
         placeholder="Ticker" value="${esc(state.sym)}" aria-label="Filtrer par ticker">
       <span class="vx-meta">Greeks complets (gamma/theta/vega) : disponibles à la simulation du contrat — le board legacy n'expose que le delta.</span>
     </div>
-    <div class="vx-flex vx-mb2" style="gap:.5rem;flex-wrap:wrap"><button class="vx-btn vx-btn-sm vx-btn-soft" id="op-compare"
+    <div class="vx-flex vx-toolbar vx-mb2" style="gap:.5rem;flex-wrap:wrap"><button class="vx-btn vx-btn-sm vx-btn-soft" id="op-compare"
       onclick="window.__opCompare&&window.__opCompare((new URLSearchParams(location.search)).get('sym')||'')">
       Comparer 3 contrats (défensif · principal · explosif)</button>
       <a class="vx-btn vx-btn-sm" href="/options">Options Intelligence →</a></div>
-    <div class="vx-table-wrap vx-table-cards" id="op-opt-table"></div>
+    <div id="op-opt-table"></div>
     <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.options_source||scan.source,metaMode(scan))}</div>
-    <div class="vx-grid vx-mt4" id="op-contract" hidden>
-      <div class="vx-col-6" id="op-payoff"></div>
-      <div class="vx-col-6" id="op-scenarios"></div>
-      <div class="vx-col-6" id="op-theta"></div>
-      <div class="vx-col-6" id="op-iv"></div>
-    </div>`;
+    <details class="vx-disclosure vx-mt4" id="op-contract" hidden><summary>Simulation détaillée du contrat sélectionné</summary>
+      <div class="vx-grid vx-mt3">
+        <div class="vx-col-6" id="op-payoff"></div>
+        <div class="vx-col-6" id="op-scenarios"></div>
+        <div class="vx-col-6" id="op-theta"></div>
+        <div class="vx-col-6" id="op-iv"></div>
+      </div></details>`;
   document.querySelectorAll('[data-filter-key="setup"]').forEach(c=>c.addEventListener('click',()=>{
     state.cat=state.cat===c.dataset.filterValue?'':c.dataset.filterValue;
     document.querySelectorAll('[data-filter-key="setup"]').forEach(x=>
@@ -534,6 +593,7 @@ async function renderOptions(){
   paint();
   async function openContract(c){
     $('op-contract').hidden=false;
+    $('op-contract').open=true;
     $('op-contract').scrollIntoView({behavior:'smooth',block:'nearest'});
     VXCharts.payoffCard('op-payoff',{title:`${c.sym} ${c.strike} CALL ${c.exp}`,
       question:'Que rapporte/coûte ce contrat à l’échéance ?',
@@ -571,10 +631,13 @@ async function renderOptions(){
 async function renderAnomalies(){
   const scan=await VX.fetch('/scan',{ttl:120000});
   const rows=(scan.rows||[]).filter(r=>(r.anomalies||[]).length);
-  const groups={Actions:rows};
+  const groupMeta={Actions:'scan courant',Données:'/api/data-quality',Options:'non agrégé ici',
+    Volatilité:'non agrégée ici',Portefeuille:'non agrégé ici',Modèles:'non agrégé ici'};
   $('op-body').innerHTML=demoBanner(scan)+`
-    <div class="vx-filterbar">${['Actions','Options','Données','Volatilité','Portefeuille','Modèles']
-      .map((g,i)=>`<button class="vx-chip" aria-pressed="${i===0}" data-ag="${g}">${g}</button>`).join('')}</div>
+    <div class="vx-page-lead vx-mb3"><b>Anomalies disponibles par source</b>
+      <div class="vx-meta">Une catégorie sans flux consolidé est dite indisponible ; elle n’est jamais déduite depuis une autre métrique.</div></div>
+    <div class="vx-filterbar vx-toolbar">${['Actions','Données','Options','Volatilité','Portefeuille','Modèles']
+      .map((g,i)=>`<button class="vx-chip" aria-pressed="${i===0}" data-ag="${g}">${g} · ${groupMeta[g]}</button>`).join('')}</div>
     <div id="op-anom"></div>`;
   function paint(group){
     if(group==='Actions'){
@@ -604,8 +667,9 @@ async function renderAnomalies(){
           <div class="vx-meta vx-mt2">${esc(dq.note||'')}</div></div>`;
       }).catch(()=>{$('op-anom').innerHTML=VX.states.error('Qualité de données indisponible');});
     }else{
-      $('op-anom').innerHTML=VX.states.empty(`Anomalies « ${group} » : détectées par symbole — ouvrir une analyse pour le détail (moteurs option_anomalies / vol_surface / portefeuille).`,
-        '<button class="vx-btn vx-btn-sm" onclick="document.getElementById(\'vx-global-search\').click()">Chercher un titre</button>');
+      const href=group==='Options'?'/options':group==='Volatilité'?'/options?view=volatility':group==='Portefeuille'?'/portfolio?view=risk':'/system';
+      $('op-anom').innerHTML=VX.states.empty(`Aucun flux agrégé « ${group} » n’est fourni à cette vue. Aucun résultat n’est déduit ou inventé.`,
+        '<a class="vx-btn vx-btn-sm" href="'+href+'">Ouvrir l’espace source</a>');
     }
   }
   document.querySelectorAll('[data-ag]').forEach(b=>b.addEventListener('click',()=>{
@@ -639,16 +703,23 @@ async function renderCalendar(){
 /* Classement Skyler (X1) : le moteur canonique sur TOUT l'univers scanné.
    Gate plafonnante visible par ligne — jamais masquée. Idempotent (re-boots). */
 async function loadSkylerRank(){
-  let d=null;
-  try{d=await VX.fetch('/api/skyler/sweep',{ttl:120000});}catch(e){return;}
-  if(!d)return;
+  /* LOT 602 (dossier 531-A) : un echec de sweep ne disparait plus en silence —
+     la section s affiche avec un etat honnete plutot que de ne pas exister. */
+  let d=null,err=null;
+  try{d=await VX.fetch('/api/skyler/sweep',{ttl:120000});}catch(e){err=e;}
   document.querySelectorAll('[aria-label="Classement Skyler"]').forEach(n=>n.remove());
-  const host=document.createElement('section');
-  host.className='vx-card vx-mt3';host.setAttribute('aria-label','Classement Skyler');
+  const host=document.createElement('details');
+  host.className='vx-disclosure vx-mt3';host.setAttribute('aria-label','Classement Skyler');
   host.id='vx-skyler-rank';
+  if(err||!d){
+    host.innerHTML='<summary>Expertise avancée · Classement Skyler /40</summary><div class="vx-card vx-mt2">'
+      +'<div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span></div>'
+      +VX.states.error('Classement Skyler indisponible')+'</div>';
+    $('op-body').appendChild(host);return;}
   if(!d.n){
-    host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span></div>
-      ${VX.states.empty(esc((d.reason||'classement indisponible')+'.'))}`;
+    host.innerHTML=`<summary>Expertise avancée · Classement Skyler /40</summary><div class="vx-card vx-mt2">
+      <div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span></div>
+      ${VX.states.empty(esc((d.reason||'classement indisponible')+'.'))}</div>`;
   }else{
     const tone=x=>x==='ACHETER'||x==='RENFORCER'?'pos':x==='REFUSER'||x==='REDUIRE'?'neg':'neutral';
     /* LOT 136 : le score canonique /40 gagne sa mini-barre de verre graduee
@@ -668,12 +739,13 @@ async function loadSkylerRank(){
       <td data-label="Catalyseur">${esc(r.catalyst||'—')}</td>
       <td data-label="Invalidation" class="vx-num">${r.invalidation!=null?VX.fmt.num(r.invalidation,2):'—'}</td>
     </tr>`).join('');
-    host.innerHTML=`<div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span>
+    host.innerHTML=`<summary>Expertise avancée · Classement Skyler /40</summary><div class="vx-card vx-mt2">
+      <div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span>
       <span class="vx-chart-question">Régime marché partagé : ${esc(d.market_regime||'n/d')} · gates visibles · un score ne déclenche jamais un ordre.</span></div>
       <div class="vx-table-wrap"><table class="vx-table"><thead><tr>
         <th>Titre</th><th>Décision</th><th>Score</th><th>Niveau</th><th>Gate</th><th>Catalyseur</th><th>Invalidation</th>
       </tr></thead><tbody>${rows}</tbody></table></div>
-      <div class="vx-meta" style="margin-top:.3rem">${d.n} titre(s) · ${esc(d.note||'')}${d.demo?' · DÉMO':''}</div>`;
+      <div class="vx-meta" style="margin-top:.3rem">${d.n} titre(s) · ${esc(d.note||'')}${d.demo?' · DÉMO':''}</div></div>`;
   }
   $('op-body').appendChild(host);
 }

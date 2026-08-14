@@ -18,7 +18,7 @@ C.priceCard=function(host,opts){
   return C.card(host,Object.assign({},opts,{render:(cv)=>{
     const extra=(opts.overlays||[]).map((o,i)=>({data:o.values,label:o.label,
       borderColor:o.color||C.colors.series[(i+2)%6],borderWidth:1,pointRadius:0,tension:.2,fill:false}));
-    const brand=C.colors.brand||'#DBE1E8';
+    const brand=C.colors.brand||'#D28A54';
     /* signature 2026 (lot 54) : monotone, 2 px, degrade 3 arrets, glow,
        crosshair et pastille de dernier prix — plan moteur et earnings
        conserves tels quels. */

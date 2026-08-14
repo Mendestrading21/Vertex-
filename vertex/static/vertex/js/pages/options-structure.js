@@ -90,6 +90,7 @@
 
   /* ════════════════ VUE STRUCTURE ════════════════ */
   function loadStructure(sym) {
+    try { if (window.VX && VX.store) VX.store.set('active_ticker', sym); } catch (e0) {}
     var vHost = $('vx-os-verdict'); if (!vHost) return;
     vHost.innerHTML = '<div class="vx-skeleton" style="height:150px"></div>';
     $('vx-os-scenarios').innerHTML = ''; $('vx-os-compare').innerHTML = '';
@@ -348,6 +349,7 @@
     return { total: total, parts: parts };
   }
   function loadLeaps(sym) {
+    try { if (window.VX && VX.store) VX.store.set('active_ticker', sym); } catch (e0) {}
     var host = $('vx-lp-out'); if (!host) return;
     host.innerHTML = '<div class="vx-skeleton" style="height:120px"></div>';
     board().then(function (bd) {
@@ -407,32 +409,58 @@
         '<a class="vx-btn vx-btn-sm vx-btn-primary" href="/opportunities?view=options">Chercher un contrat</a>');
       return;
     }
-    var body = opts.map(function (t) {
+    var models = [];
+    var body = opts.map(function (t, index) {
       var q = _optQuotes[t.id] || {}; var mark = q.mark != null ? q.mark : null;
       var value = mark != null ? mark * 100 * t.qty : null;
       var pl = (value != null && t.cost) ? (value - t.cost) / t.cost * 100 : null;
       var tt = Object.assign({}, t, { pl: pl });
       var dte = t.exp ? Math.round((new Date(t.exp) - Date.now()) / 86400000) : null;
       var na = optNextAction(tt), s = t.entrySnap || {};
-      return '<tr>'
-        + '<td data-label="Contrat"><span class="vx-ticker">' + esc(t.sym) + '</span> <span class="vx-badge" style="color:var(--vx-option,#9B7BFF)">' + esc(t.type) + ' ' + nd(t.strike) + ' ' + esc(t.exp || '') + '</span></td>'
+      models.push({ t: t, mark: mark, value: value, pl: pl, dte: dte, action: na, snap: s });
+      return '<tr data-option-position="' + index + '" data-clickable tabindex="0">'
+        + '<td data-label="Contrat"><span class="vx-table-primary"><strong class="vx-ticker">' + esc(t.sym) + '</strong>'
+        + '<span>' + esc(t.type) + ' ' + nd(t.strike) + ' · ' + esc(t.exp || 'échéance n/d') + '</span></span></td>'
         + '<td data-label="Qté" class="vx-num">' + t.qty + '</td>'
-        + '<td data-label="Coût" class="vx-num">' + price(t.cost) + '</td>'
         + '<td data-label="Marque" class="vx-num">' + (mark != null ? price(mark) : 'n/d') + '</td>'
         + '<td data-label="P&L %" class="vx-num ' + (pl > 0 ? 'vx-pos' : pl < 0 ? 'vx-neg' : '') + '">' + (pl != null ? num(pl, 1) + ' %' : 'n/d') + '</td>'
         + '<td data-label="DTE" class="vx-num ' + (dte != null && dte <= 7 ? 'vx-warn' : '') + '">' + (dte != null ? dte + ' j' : '—') + '</td>'
-        + '<td data-label="Invalidation" class="vx-num vx-neg">' + nd(s.stop) + '</td>'
         + '<td data-label="Prochaine action" class="' + toneCls(na.tone) + '" style="max-width:230px;font-size:12px">' + esc(na.label) + '</td>'
-        + '<td><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options?view=structure&sym=' + encodeURIComponent(t.sym) + '">Structure</a></td></tr>';
+        + '<td data-label="Détail"><span class="vx-row-open">Ouvrir</span></td></tr>';
     }).join('');
-    host.innerHTML = '<div class="vx-insight vx-mb3" data-tone="risk"><b>Garde-fou perdants (Constitution §18).</b> '
-      + 'Une option en perte ne reçoit jamais « renforcer » sans confirmation positive du marché — jamais parce que la prime a baissé.</div>'
-      + '<section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Positions options — détail canonique</span>'
+    host.innerHTML = '<div class="vx-insight vx-mb3" data-tone="risk"><b>Règle de sécurité.</b> '
+      + 'Une option en perte n’affiche jamais « renforcer » sans confirmation positive du marché.</div>'
+      + '<section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Positions options</span>'
       + '<span class="vx-meta vx-right">' + opts.length + ' · lecture seule — aucun ordre</span></div>'
       + '<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>'
-      + '<th>Contrat</th><th class="vx-num">Qté</th><th class="vx-num">Coût</th><th class="vx-num">Marque</th><th class="vx-num">P&L %</th>'
-      + '<th class="vx-num">DTE</th><th class="vx-num">Invalidation</th><th>Prochaine action</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>'
+      + '<th>Contrat</th><th class="vx-num">Qté</th><th class="vx-num">Marque</th><th class="vx-num">P&L %</th>'
+      + '<th class="vx-num">DTE</th><th>Prochaine action</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>'
       + '<div class="vx-card-footer"><span class="vx-meta">Marques/Greeks live via IBKR (lecture seule) ; sans IBKR, « n/d » honnête — jamais estimés.</span></div></section>';
+
+    function openPosition(index) {
+      var m = models[index]; if (!m || !VX.shell) return;
+      var t = m.t, body = '<div class="vx-section-stack">'
+        + '<div class="vx-data-ledger"><span>' + esc(t.type || 'Option') + '</span><span>' + esc(t.exp || 'échéance n/d') + '</span><span>Lecture seule</span></div>'
+        + '<div class="vx-stats-row">'
+        + '<div class="vx-stat"><span class="vx-stat-label">Coût</span><span class="vx-stat-value">' + price(t.cost) + '</span></div>'
+        + '<div class="vx-stat"><span class="vx-stat-label">Marque</span><span class="vx-stat-value">' + (m.mark != null ? price(m.mark) : 'n/d') + '</span></div>'
+        + '<div class="vx-stat"><span class="vx-stat-label">P&L</span><span class="vx-stat-value ' + (m.pl > 0 ? 'vx-pos' : m.pl < 0 ? 'vx-neg' : '') + '">' + (m.pl != null ? num(m.pl, 1) + ' %' : 'n/d') + '</span></div>'
+        + '<div class="vx-stat"><span class="vx-stat-label">DTE</span><span class="vx-stat-value">' + (m.dte != null ? m.dte + ' j' : 'n/d') + '</span></div></div>'
+        + '<div class="vx-card vx-card--compact"><div class="vx-card-header"><span class="vx-card-title">Plan de suivi</span></div>'
+        + '<div class="vx-kv"><span>Strike</span><b>' + nd(t.strike) + '</b></div>'
+        + '<div class="vx-kv"><span>Invalidation</span><b class="vx-neg">' + nd(m.snap.stop) + '</b></div>'
+        + '<div class="vx-kv"><span>Action suivante</span><b class="' + toneCls(m.action.tone) + '">' + esc(m.action.label) + '</b></div></div>'
+        + '<p class="vx-meta">La marque reste n/d sans cotation IBKR. Aucun prix n’est estimé.</p></div>';
+      var footer = '<a class="vx-btn vx-btn-sm vx-btn-primary" href="/options?view=structure&sym=' + encodeURIComponent(t.sym) + '">Analyser la structure</a>';
+      VX.shell.openDrawer(esc(t.sym) + ' · position option', body, { variant: 'summary', footerHtml: footer });
+    }
+    host.querySelectorAll('[data-option-position]').forEach(function (row) {
+      var open = function () { openPosition(Number(row.getAttribute('data-option-position'))); };
+      row.addEventListener('click', open);
+      row.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); }
+      });
+    });
     // marques serveur (best-effort, comme le desk)
     fetch('/api/pos-quotes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ positions: opts.map(function (t) { return { sym: t.sym, exp: t.exp, strike: t.strike, right: t.right }; }) }) })
       .then(function (r) { return r.json(); }).then(function (d) {
@@ -449,7 +477,7 @@
       var syms = Array.from(new Set(bd.map(function (c) { return c.sym; }))).slice(0, 8);
       host.innerHTML = '<span class="vx-muted" style="font-size:11px">Depuis le tableau :</span> '
         + syms.map(function (x) { return '<button type="button" class="vx-btn vx-btn-sm vx-btn-ghost" data-osym="' + esc(x) + '">' + esc(x) + '</button>'; }).join('');
-      host.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-osym]') : null; if (!b) return; input.value = b.getAttribute('data-osym'); load(input.value); });
+      host.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-osym]') : null; if (!b) return; input.value = b.getAttribute('data-osym'); try { if (VX.store) VX.store.set('active_ticker', input.value); } catch (x) {} load(input.value); });
       var pre = null; try { pre = new URLSearchParams(location.search).get('sym'); } catch (e2) {}
       if (!input.value && (pre || syms.length)) { input.value = (pre || syms[0]).toUpperCase(); load(input.value); }
     });

@@ -8,41 +8,44 @@
   --vx-control-xs:24px;--vx-control-sm:30px;--vx-control-md:36px;--vx-control-lg:42px;--vx-control-xl:48px;
   --vx-shadow-raised:0 1px 0 rgba(255,255,255,.05) inset,0 6px 14px rgba(0,0,0,.28);
   --vx-shadow-pressed:0 2px 7px rgba(0,0,0,.34) inset;
-  --vx-shadow-copper:0 6px 18px rgba(0,0,0,.24),0 1px 0 rgba(255,220,190,.10) inset;
+  --vx-shadow-copper:0 6px 18px rgba(0,0,0,.28),0 1px 0 rgba(255,225,200,.16) inset;
   --vx-shadow-floating:0 18px 48px rgba(0,0,0,.42);
-  --vx-cs-focus:0 0 0 2px rgba(255,255,255,.34);
+  --vx-cs-focus:0 0 0 3px var(--vx-brand-soft);
   --vx-motion-fast:130ms;--vx-motion-standard:200ms;--vx-motion-slow:320ms;
 }
 
 /* ── Boutons tactiles (Raised Graphite) — sauf ghost & link qui restent plats ── */
 .vx-btn:not(.vx-btn-ghost):not(.vx-btn-link){box-shadow:var(--vx-shadow-raised)}
 @media (prefers-reduced-motion:no-preference){
-  .vx-btn:not(.vx-btn-ghost):not(.vx-btn-link):hover{transform:translateY(-1px)}
+  .vx-btn:not(.vx-btn-ghost):not(.vx-btn-link):not(:disabled):not([aria-disabled="true"]):hover{
+    transform:translateY(-1px)}
 }
-.vx-btn:not(.vx-btn-ghost):not(.vx-btn-link):active{transform:translateY(1px);box-shadow:var(--vx-shadow-pressed)}
+.vx-btn:not(.vx-btn-ghost):not(.vx-btn-link):not(:disabled):not([aria-disabled="true"]):active{
+  transform:translateY(1px);box-shadow:var(--vx-shadow-pressed)}
 .vx-btn-ghost,.vx-btn-link{box-shadow:none}
 
 /* ── Primary (Copper Action) — dominant, profondeur cuivre ── */
 .vx-btn-primary{box-shadow:var(--vx-shadow-copper);font-weight:700;letter-spacing:.01em}
-.vx-btn-primary:hover{box-shadow:var(--vx-shadow-copper),var(--vx-glow-brand)}
+.vx-btn-primary:not(:disabled):not([aria-disabled="true"]):hover{box-shadow:var(--vx-shadow-copper)}
 .vx-btn-primary:active{box-shadow:var(--vx-shadow-pressed)}
 
 /* ── Focus visible cohérent (accessibilité §31) ── */
 .vx-btn:focus-visible,.vx-chip:focus-visible,.vx-tab:focus-visible,
 .vx-segmented button:focus-visible,.vx-switch:focus-visible,
-.vx-select:focus-visible,input[type="range"]:focus-visible{outline:none;box-shadow:var(--vx-cs-focus)}
+.vx-select:focus-visible,input[type="range"]:focus-visible{
+  outline:2px solid var(--vx-brand);outline-offset:3px}
 
 /* ── Chips / filtres tactiles ; état actif = liseré cuivre ── */
 .vx-chip{transition:background var(--vx-motion-fast),border-color var(--vx-motion-fast),box-shadow var(--vx-motion-fast),transform var(--vx-motion-fast)}
 @media (prefers-reduced-motion:no-preference){.vx-chip:hover{transform:translateY(-1px)}}
 .vx-chip:hover{border-color:var(--vx-border-strong,rgba(255,255,255,.16))}
-.vx-chip[aria-pressed="true"]{border-color:var(--vx-orange-500,#dbe1e8);
-  box-shadow:0 0 0 1px rgba(255,255,255,.18),0 4px 10px rgba(0,0,0,.16)}
+.vx-chip[aria-pressed="true"]{border-color:var(--vx-brand);
+  background:var(--vx-brand-soft);box-shadow:0 0 0 1px var(--vx-brand-soft)}
 
 /* ── Onglets : actif surélevé + barre cuivre plus marquée ── */
 .vx-tab{transition:color var(--vx-motion-fast),background var(--vx-motion-fast),border-color var(--vx-motion-fast);border-radius:7px 7px 0 0}
 .vx-tab:hover{background:rgba(255,255,255,.03)}
-.vx-tab[aria-selected="true"]{background:rgba(255,255,255,.06);border-bottom-width:2.5px}
+.vx-tab[aria-selected="true"]{background:var(--vx-brand-soft);border-bottom-width:2.5px}
 
 /* ── Segmented control : rail creusé, indicateur actif surélevé ── */
 .vx-segmented{box-shadow:var(--vx-shadow-pressed);gap:2px}

@@ -75,7 +75,14 @@ RACINES = ('terminal.py', 'ib_reader.py')
 # Exclusions JUSTIFIÉES : scripts autonomes, jamais importés par l'application,
 # donc hors de la surface où un repli pourrait être servi à l'utilisateur.
 # Vérifié par `test_les_exclusions_restent_des_scripts_autonomes`.
-HORS_PRODUCTION = ('test_connection.py', 'verifier_vertex.py')
+#
+# `lancer_ipad.py` (lot 629) : lanceur de confort. Il prépare `.env`, lit
+# l'adresse locale, puis passe la main à `terminal.py` par `subprocess`. Rien
+# ne l'importe — il ne peut donc servir aucun repli à l'utilisateur. Son unique
+# `except OSError` entoure la détection d'IP et renvoie `None`, pas un nombre :
+# l'adresse manquante est ensuite DITE (« adresse locale introuvable »), jamais
+# remplacée par une valeur plausible.
+HORS_PRODUCTION = ('test_connection.py', 'verifier_vertex.py', 'lancer_ipad.py')
 
 # Recensement GELÉ — mêmes règles qu'au lot 378 : tout ajout doit passer ici,
 # avec sa justification, plutôt que d'apparaître en silence.

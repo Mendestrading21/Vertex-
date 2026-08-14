@@ -52,148 +52,137 @@ def _tabs(active: str) -> str:
         f'<a class="vx-tab" role="tab" href="?view={vid}" '
         f'aria-selected="{"true" if vid == active else "false"}">{label}</a>'
         for vid, label in VIEWS)
-    # Référence visuelle (§50) — lien vers la page Design System, à droite.
-    ds = ('<a class="vx-tab" href="/design-system" style="margin-left:auto;color:var(--vx-copper-light)" '
-          'title="Référence visuelle OBSIDIAN COPPER">Design System</a>')
-    return f'<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Système">{tabs}{ds}</nav>'
+    return f'<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Système">{tabs}</nav>'
 
 
 def _header(active: str) -> str:
-    return f'''<div class="vx-page-header">
-  <div><h1>Système</h1>
+    return f'''<div class="vx-page-header vx-page-lead">
+  <div class="vx-page-lead__main"><h1>Système</h1>
   <div class="vx-sub">Le système est-il en bonne santé et branché sur du réel ?</div></div>
+  <span class="vx-readonly-shield vx-page-lead__meta" id="vx-readonly-invariant">
+    <b>READONLY</b> &middot; analyse uniquement <span id="vx-readonly-confirm" class="vx-meta"></span>
+  </span>
 </div>
-<div class="vx-insight vx-mb3" data-tone="risk" id="vx-readonly-invariant">
-  <b>READONLY — aucun ordre possible (disabled-by-design).</b>
-  Vertex est un terminal d&#8217;analyse : il lit, il n&#8217;ex&eacute;cute jamais.
-  <span id="vx-readonly-confirm" class="vx-meta"></span></div>
 {_tabs(active)}'''
 
 
 _VIEW_CONTENT = {
     'connections': '''
-<section class="vx-card vx-card--hero vx-mt4" id="vx-sys-hero" aria-label="Verdict technique">
+<section class="vx-card vx-card--hero vx-page-lead vx-mt4" id="vx-sys-hero" aria-label="Verdict technique">
   <div class="vx-skeleton" style="height:64px"></div>
 </section>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-4" aria-label="Santé du système">
-    <div class="vx-card-header"><span class="vx-card-title">Santé — moteurs</span>
-      <span class="vx-chart-question">Les moteurs tournent-ils ?</span></div>
-    <div id="vx-sys-gauge"><div class="vx-skeleton" style="height:118px"></div></div>
-    <div class="vx-card-footer"><span class="vx-meta">% de moteurs au statut « ok » — donnée réelle, aucun score inventé.</span></div>
-  </section>
-  <div class="vx-col-8"><div class="vx-grid" id="vx-sys-kpis"><div class="vx-skeleton" style="height:70px"></div></div></div>
-</div>
-<section class="vx-card vx-mt4" id="vx-conn-summary" aria-label="Canaux de connexion">
-  <div class="vx-card-header"><span class="vx-card-title">Canaux — état honnête</span>
-    <span class="vx-dim" style="font-size:12px">configuré ≠ connecté · jamais LIVE sans preuve</span></div>
+<section class="vx-card vx-mt4" id="vx-conn-summary" aria-label="Matrice consolidée des connexions">
+  <div class="vx-card-header"><span class="vx-card-title">Matrice consolid&eacute;e des connexions</span>
+    <span class="vx-dim" style="font-size:12px">configur&eacute; &ne; connect&eacute; &middot; jamais LIVE sans preuve</span></div>
   <div id="vx-conn-summary-body">%%LOADING%%</div>
 </section>
-<div class="vx-grid vx-mt4" id="vx-conn-grid">
-  <section class="vx-card vx-col-4" aria-label="IBKR">
-    <div class="vx-card-header"><span class="vx-card-title">IBKR</span>
-      <span id="vx-conn-ibkr-badge"></span></div>
-    <div id="vx-conn-ibkr">%%LOADING%%</div>
-  </section>
-  <section class="vx-card vx-col-4" aria-label="TradingView">
-    <div class="vx-card-header"><span class="vx-card-title">TradingView</span>
-      <span id="vx-conn-tv-badge"></span></div>
-    <div id="vx-conn-tv">%%LOADING%%</div>
-  </section>
-  <section class="vx-card vx-col-4" aria-label="Claude (IA)">
-    <div class="vx-card-header"><span class="vx-card-title">Claude (IA)</span>
-      <span id="vx-conn-ai-badge"></span></div>
-    <div id="vx-conn-ai">%%LOADING%%</div>
-  </section>
+<div class="vx-hero-grid vx-mt4">
+  <div class="vx-kpi-strip" id="vx-sys-kpis" data-max-kpis="4" aria-label="Quatre indicateurs de confiance"><div class="vx-skeleton" style="height:70px"></div></div>
+  <aside class="vx-insight-rail" aria-label="Santé du système">
+    <section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Santé — moteurs</span>
+        <span class="vx-chart-question">Les moteurs tournent-ils ?</span></div>
+      <div id="vx-sys-gauge"><div class="vx-skeleton" style="height:118px"></div></div>
+      <div class="vx-card-footer"><span class="vx-meta">% de moteurs au statut « ok » — donnée réelle, aucun score inventé.</span></div></section>
+  </aside>
 </div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" aria-label="Cerveau Claude — enrichissement web">
-    <div class="vx-card-header">
-      <span class="vx-card-title">Cerveau Claude &mdash; donn&eacute;es web &agrave; jour</span>
-      <span class="vx-actions">
-        <span id="vx-brain-badge"></span>
-        <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-brain-refresh">Mettre &agrave; jour avec Claude</button></span></div>
-    <div class="vx-help vx-mb2">Quand l&#8217;acc&egrave;s live manque, Claude va chercher les vraies donn&eacute;es du jour
-      sur le web (cotations diff&eacute;r&eacute;es, actualit&eacute;s) &mdash; toujours <b>sourc&eacute;es</b> et &eacute;tiquet&eacute;es
-      <span class="vx-badge" style="color:var(--vx-orange-500,#DBE1E8);border:1px solid var(--vx-orange-500,#DBE1E8)">via Claude · web · diff&eacute;r&eacute;</span>,
-      jamais d&eacute;guis&eacute;es en donn&eacute;e broker r&eacute;elle. Aucun chiffre invent&eacute;.</div>
-    <div id="vx-brain-body">%%LOADING%%</div>
-  </section>
-</div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-6" aria-label="Synchronisation">
-    <div class="vx-card-header"><span class="vx-card-title">Synchronisation</span>
-      <span id="vx-conn-sync-badge"></span></div>
-    <div id="vx-conn-sync">%%LOADING%%</div>
-  </section>
-  <section class="vx-card vx-col-6" aria-label="Stockage">
-    <div class="vx-card-header"><span class="vx-card-title">Stockage &amp; sant&eacute;</span>
-      <span id="vx-conn-store-badge"></span></div>
-    <div id="vx-conn-store">%%LOADING%%</div>
-  </section>
-</div>
-%%LOCKCARD%%
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" aria-label="Moteurs">
-    <div class="vx-card-header"><span class="vx-card-title">Moteurs</span>
-      <span class="vx-actions" id="vx-conn-meta"></span></div>
-    <div id="vx-conn-engines">%%LOADING%%</div>
-  </section>
-</div>''',
+<details class="vx-disclosure vx-mt4" id="vx-conn-details">
+  <summary>D&eacute;tails des int&eacute;grations, du stockage et des moteurs</summary>
+  <div class="vx-disclosure__body vx-section-stack">
+    <div class="vx-grid" id="vx-conn-grid">
+      <section class="vx-card vx-col-4" aria-label="IBKR">
+        <div class="vx-card-header"><span class="vx-card-title">IBKR</span><span id="vx-conn-ibkr-badge"></span></div>
+        <div id="vx-conn-ibkr">%%LOADING%%</div>
+      </section>
+      <section class="vx-card vx-col-4" aria-label="TradingView">
+        <div class="vx-card-header"><span class="vx-card-title">TradingView</span><span id="vx-conn-tv-badge"></span></div>
+        <div id="vx-conn-tv">%%LOADING%%</div>
+      </section>
+      <section class="vx-card vx-col-4" aria-label="Claude (IA)">
+        <div class="vx-card-header"><span class="vx-card-title">Claude (IA)</span><span id="vx-conn-ai-badge"></span></div>
+        <div id="vx-conn-ai">%%LOADING%%</div>
+      </section>
+    </div>
+    <section class="vx-card" aria-label="Cerveau Claude — enrichissement web">
+      <div class="vx-card-header"><span class="vx-card-title">Cerveau Claude &middot; donn&eacute;es web sourc&eacute;es</span>
+        <span class="vx-actions"><span id="vx-brain-badge"></span>
+          <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-brain-refresh">Mettre &agrave; jour avec Claude</button></span></div>
+      <div class="vx-help vx-mb2">Cotations diff&eacute;r&eacute;es et actualit&eacute;s restent sourc&eacute;es, &eacute;tiquet&eacute;es et ne sont jamais pr&eacute;sent&eacute;es comme une donn&eacute;e broker live.</div>
+      <div id="vx-brain-body">%%LOADING%%</div>
+    </section>
+    <div class="vx-hero-grid">
+      <section class="vx-card" aria-label="Synchronisation">
+        <div class="vx-card-header"><span class="vx-card-title">Synchronisation</span><span id="vx-conn-sync-badge"></span></div>
+        <div id="vx-conn-sync">%%LOADING%%</div>
+      </section>
+      <section class="vx-card" aria-label="Stockage">
+        <div class="vx-card-header"><span class="vx-card-title">Stockage &amp; sant&eacute;</span><span id="vx-conn-store-badge"></span></div>
+        <div id="vx-conn-store">%%LOADING%%</div>
+      </section>
+    </div>
+    %%LOCKCARD%%
+    <section class="vx-card" aria-label="Moteurs">
+      <div class="vx-card-header"><span class="vx-card-title">Moteurs</span><span class="vx-actions" id="vx-conn-meta"></span></div>
+      <div id="vx-conn-engines">%%LOADING%%</div>
+    </section>
+  </div>
+</details>''',
 
     'data': '''
-<div class="vx-grid vx-mt4">
-  <div class="vx-col-5" id="vx-data-quality-chart"></div>
-  <section class="vx-card vx-col-7" aria-label="Dernier scan">
-    <div class="vx-card-header"><span class="vx-card-title">Dernier scan &amp; m&eacute;triques</span>
-      <span class="vx-actions">
-        <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-data-refresh">Actualiser</button></span></div>
-    <div id="vx-data-scan">%%LOADING%%</div>
-  </section>
+<div class="vx-page-lead vx-mt4">
+  <div><h2>Donn&eacute;es exploitables</h2><div class="vx-sub">Qualit&eacute;, fra&icirc;cheur et exceptions qui peuvent limiter une d&eacute;cision.</div></div>
+  <div class="vx-toolbar"><button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-data-refresh">Actualiser</button></div>
 </div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" aria-label="Fra&icirc;cheur par domaine">
+<div class="vx-hero-grid vx-mt4">
+  <div id="vx-data-quality-chart"></div>
+  <section class="vx-card" aria-label="Fra&icirc;cheur par domaine">
     <div class="vx-card-header"><span class="vx-card-title">Fra&icirc;cheur par domaine</span>
       <span class="vx-actions" id="vx-data-fresh-meta"></span></div>
     <div id="vx-data-fresh">%%LOADING%%</div>
   </section>
 </div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" aria-label="Titres d&eacute;grad&eacute;s">
+<div class="vx-section-stack vx-mt4">
+  <section class="vx-card" aria-label="Titres d&eacute;grad&eacute;s">
     <div class="vx-card-header"><span class="vx-card-title">Titres en qualit&eacute; d&eacute;grad&eacute;e</span></div>
     <div id="vx-data-degraded">%%LOADING%%</div>
   </section>
-</div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" aria-label="Continuit&eacute;">
-    <div class="vx-card-header"><span class="vx-card-title">Continuit&eacute; &mdash; navigation &amp; donn&eacute;es</span>
-      <span class="vx-actions vx-meta">Session applicative continue (client)</span></div>
-    <div id="vx-continuity">%%LOADING%%</div>
-  </section>
+  <details class="vx-disclosure" id="vx-data-diagnostics">
+    <summary>Diagnostics avanc&eacute;s &middot; scan et continuit&eacute;</summary>
+    <div class="vx-disclosure__body vx-section-stack">
+      <section class="vx-card" aria-label="Dernier scan">
+        <div class="vx-card-header"><span class="vx-card-title">Dernier scan &amp; m&eacute;triques</span></div>
+        <div id="vx-data-scan">%%LOADING%%</div>
+      </section>
+      <section class="vx-card" aria-label="Continuit&eacute;">
+        <div class="vx-card-header"><span class="vx-card-title">Continuit&eacute; &middot; navigation et donn&eacute;es</span>
+          <span class="vx-actions vx-meta">Session applicative continue (client)</span></div>
+        <div id="vx-continuity">%%LOADING%%</div>
+      </section>
+    </div>
+  </details>
 </div>''',
 
     'automations': '''
-<div class="vx-grid vx-mt4">
+<div class="vx-page-lead vx-mt4"><div><h2>Automatisations</h2><div class="vx-sub">Ce qui tourne, ce qui d&eacute;marre et ce qui reste &agrave; configurer.</div></div></div>
+<div class="vx-hero-grid vx-mt4">
   <section class="vx-card vx-col-7" aria-label="Jobs de fond">
-    <div class="vx-card-header"><span class="vx-card-title">Automatisations (§24)</span>
+    <div class="vx-card-header"><span class="vx-card-title">T&acirc;ches en arri&egrave;re-plan</span>
       <span class="vx-meta vx-right">priorit&eacute; : positions &gt; stops &gt; options &gt; risques &gt; d&eacute;cisions &gt; univers</span></div>
     <div id="vx-auto-jobs">%%LOADING%%</div>
   </section>
   <section class="vx-card vx-col-5" aria-label="Rapport de d&eacute;marrage">
-    <div class="vx-card-header"><span class="vx-card-title">Startup report (§10)</span></div>
+    <div class="vx-card-header"><span class="vx-card-title">D&eacute;marrage</span></div>
     <div id="vx-auto-startup">%%LOADING%%</div>
   </section>
 </div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" aria-label="Configuration">
-    <div class="vx-card-header"><span class="vx-card-title">Configuration (statuts — aucune valeur affich&eacute;e)</span></div>
-    <div id="vx-auto-config">%%LOADING%%</div>
-  </section>
-</div>
+<details class="vx-disclosure vx-mt4" id="vx-auto-configuration">
+  <summary>Configuration &middot; statuts uniquement</summary>
+  <div class="vx-disclosure__body"><div id="vx-auto-config">%%LOADING%%</div></div>
+</details>
 ''',
     'settings': '''
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-6" aria-label="Affichage">
+<div class="vx-page-lead vx-mt4"><div><h2>R&eacute;glages essentiels</h2><div class="vx-sub">Pr&eacute;f&eacute;rences locales de cet appareil.</div></div></div>
+<div class="vx-section-stack vx-mt4">
+  <section class="vx-card" aria-label="Affichage">
     <div class="vx-card-header"><span class="vx-card-title">Affichage</span></div>
     <div class="vx-kv"><span class="k">Densit&eacute;</span><span class="v">
       <span class="vx-segmented" role="group" aria-label="Densit&eacute;">
@@ -216,32 +205,31 @@ _VIEW_CONTENT = {
     <div class="vx-help vx-mt2">Pr&eacute;f&eacute;rences purement locales (localStorage de ce navigateur) —
       elles ne touchent ni les moteurs ni les donn&eacute;es desk.</div>
   </section>
-  <section class="vx-card vx-col-6" aria-label="Donn&eacute;es desk">
-    <div class="vx-card-header"><span class="vx-card-title">Donn&eacute;es desk (export / import)</span></div>
-    <div id="vx-settings-desk">%%LOADING%%</div>
-    <div class="vx-flex vx-wrap vx-gap2 vx-mt3">
-      <button class="vx-btn vx-btn-primary" id="vx-desk-export">Exporter (JSON)</button>
-      <label class="vx-btn" for="vx-desk-import-file" style="cursor:pointer">Importer un JSON&hellip;</label>
-      <input type="file" id="vx-desk-import-file" accept="application/json,.json" hidden />
+  <details class="vx-disclosure" id="vx-settings-advanced">
+    <summary>Avanc&eacute; &middot; sauvegarde, application et r&eacute;f&eacute;rence visuelle</summary>
+    <div class="vx-disclosure__body vx-section-stack">
+      <section class="vx-card" aria-label="Donn&eacute;es desk">
+        <div class="vx-card-header"><span class="vx-card-title">Sauvegarde desk</span></div>
+        <div id="vx-settings-desk">%%LOADING%%</div>
+        <div class="vx-toolbar vx-mt3">
+          <button class="vx-btn vx-btn-primary" id="vx-desk-export">Exporter (JSON)</button>
+          <label class="vx-btn" for="vx-desk-import-file" style="cursor:pointer">Importer un JSON&hellip;</label>
+          <input type="file" id="vx-desk-import-file" accept="application/json,.json" hidden />
+        </div>
+        <div class="vx-help vx-mt2">L&#8217;import demande confirmation ; aucune cl&eacute; n&#8217;est renomm&eacute;e et le protocole de synchronisation reste intact.</div>
+      </section>
+      <section class="vx-card" aria-label="Application">
+        <div class="vx-card-header"><span class="vx-card-title">Application</span><span class="vx-badge" id="vx-app-shell-badge"></span></div>
+        <div id="vx-app-info">%%LOADING%%</div>
+        <div class="vx-toolbar vx-mt3"><button class="vx-btn vx-btn-primary" id="vx-app-update">Forcer la mise &agrave; jour de l&#8217;app</button></div>
+        <div class="vx-help vx-mt2">Recharge le shell hors ligne. <b>Aucune donn&eacute;e desk n&#8217;est touch&eacute;e</b>.</div>
+      </section>
+      <section class="vx-card" aria-label="Référence visuelle">
+        <div class="vx-card-header"><span class="vx-card-title">R&eacute;f&eacute;rence visuelle</span></div>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/design-system">Ouvrir le Design System &rarr;</a>
+      </section>
     </div>
-    <div class="vx-help vx-mt2">L&#8217;export t&eacute;l&eacute;charge vos cl&eacute;s desk telles quelles
-      (positions, journal, alertes, coffre&hellip;). L&#8217;import demande confirmation avant
-      toute &eacute;criture — aucune cl&eacute; n&#8217;est renomm&eacute;e, le protocole de sync reste intact.</div>
-  </section>
-</div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" aria-label="Application">
-    <div class="vx-card-header"><span class="vx-card-title">Application</span>
-      <span class="vx-badge" id="vx-app-shell-badge"></span></div>
-    <div id="vx-app-info">%%LOADING%%</div>
-    <div class="vx-flex vx-wrap vx-gap2 vx-mt3">
-      <button class="vx-btn vx-btn-primary" id="vx-app-update">Forcer la mise &agrave; jour de l&#8217;app</button>
-    </div>
-    <div class="vx-help vx-mt2">Vide le cache hors-ligne (service worker) puis recharge la page —
-      utile sur iPhone/tablette quand une nouvelle version du shell vient d&#8217;&ecirc;tre publi&eacute;e
-      et que l&#8217;ancienne reste affich&eacute;e. <b>Aucune donn&eacute;e desk n&#8217;est touch&eacute;e</b>
-      (positions, journal, alertes&hellip; restent intactes).</div>
-  </section>
+  </details>
 </div>''',
 
     'archive': '''
@@ -291,15 +279,18 @@ async function loadConnSummary(){
   let d;try{d=await VX.fetch('/api/system/connections',{ttl:20000});}catch(e){el.innerHTML=VX.states.error('Connexions indisponibles');return;}
   const tone={LIVE:'pos',READY:'pos',DELAYED:'warn',DEGRADED:'warn',FALLBACK:'warn',STALE:'warn',
     OFFLINE:'neg',ERROR:'neg',BLOCKED:'neg',CONFIGURATION_MISSING:'neutral',NOT_IMPLEMENTED:'neutral',DEMO:'neutral',LOADING:'neutral'};
-  const col={pos:'var(--vx-positive,#2BBE90)',warn:'var(--vx-warning,#D9BE3C)',neg:'var(--vx-negative,#E9555F)',neutral:'var(--vx-text-muted,#8A8284)'};
+  const statusLabel={LIVE:'Direct',READY:'Prêt',DELAYED:'Différé',DEGRADED:'Dégradé',
+    FALLBACK:'Secours',STALE:'Périmé',OFFLINE:'Hors ligne',ERROR:'Erreur',BLOCKED:'Bloqué',
+    CONFIGURATION_MISSING:'À configurer',NOT_IMPLEMENTED:'Non disponible',DEMO:'Démo',LOADING:'Chargement'};
+  const col={pos:'var(--vx-positive,#2BBE90)',warn:'var(--vx-warning,#D9BE3C)',neg:'var(--vx-negative,#E9555F)',neutral:'var(--vx-text-muted,#989092)'};
   const rows=(d.connections||[]).map(function(c){
     const t=tone[c.status]||'neutral';
     /* LOT 126 : la colonne du badge s'adapte au statut (max-content) — fini
        CONFIGURATION_MISSING qui debordait sur le texte voisin. */
-    return '<div style="display:grid;grid-template-columns:150px minmax(110px,max-content) 1fr;gap:.6rem;align-items:center;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.05)">'
-      +'<b>'+esc(c.name)+'</b>'
-      +'<span class="vx-badge" style="color:'+col[t]+';border:1px solid '+col[t]+';justify-self:start">'+esc(c.status)+'</span>'
-      +'<span class="vx-dim" style="font-size:12.5px">'+esc(c.detail||'')+(c.action?' <span style="color:var(--vx-orange-500,#DBE1E8)">→ '+esc(c.action)+'</span>':'')+'</span></div>';
+    return '<div class="vx-connection-row">'
+      +'<b class="vx-connection-name">'+esc(c.name)+'</b>'
+      +'<span class="vx-badge vx-connection-status" title="Statut technique : '+esc(c.status)+'" style="color:'+col[t]+';border-color:'+col[t]+'">'+esc(statusLabel[c.status]||c.status)+'</span>'
+      +'<span class="vx-dim vx-connection-detail">'+esc(c.detail||'')+(c.action?' <span class="vx-connection-action">→ '+esc(c.action)+'</span>':'')+'</span></div>';
   }).join('');
   el.innerHTML=rows||'<div class="vx-empty">Aucun canal.</div>';
 }
@@ -490,21 +481,19 @@ async function loadConnections(){
       value:_pct,min:0,max:100,unit:'%',label:'Moteurs OK',
       reading:_eng.length?(_ok+'/'+_eng.length+' moteurs opérationnels'):'moteurs inconnus',
       bands:[{to:60,color:VXCharts.colors.negative},{to:85,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.positive}]}); });
-    var _kp=function(l,v,d,cls){return '<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 4"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value" style="font-size:22px">'+v+'</span>'+(d?'<span class="vx-kpi-delta '+(cls||'vx-muted')+'">'+d+'</span>':'')+'</div>';};
+    var _kp=function(l,v,d,cls){return '<div class="vx-card vx-card--compact vx-kpi-card vx-kpi"><span class="vx-kpi-label">'+l+'</span><span class="vx-kpi-value '+(cls||'')+'" style="font-size:22px">'+v+'</span>'+(d?'<span class="vx-kpi-delta '+(cls||'vx-muted')+'">'+d+'</span>':'')+'</div>';};
     var _kh=$('vx-sys-kpis');
     if(_kh)_kh.innerHTML=
       _kp('Moteurs',_eng.length?(_ok+'/'+_eng.length):'—','opérationnels',(_eng.length&&_ok===_eng.length)?'vx-pos':'')
       +_kp('Données fraîches',_frK.length?(_frOk+'/'+_frK.length):'—','domaines')
       +_kp('Erreurs',_warn,_warn===0?'aucune':'à voir',_warn===0?'vx-pos':'vx-neg')
-      +_kp('Scan',_sym!=null?_sym:'—','titres')
-      +_kp('Appels IA',_ai.total!=null?(_ai.ok+'/'+_ai.total):'—',(_ai.fallbacks?(_ai.fallbacks+' repli'):'ok'))
       +_kp('Lecture seule',(st&&st.readonly)?'✓':'⚠',(st&&st.readonly)?'aucun ordre':'à vérifier',(st&&st.readonly)?'vx-pos':'vx-neg');
   }catch(e){}
 
   /* Invariant READONLY confirmé par le serveur */
   if(st)$('vx-readonly-confirm').textContent=st.readonly&&st.analysis_only
-    ?' Confirmé par le serveur : ordres '+(st.order_execution||'disabled-by-design')+'.'
-    :' ATTENTION : le serveur ne confirme pas le mode lecture seule.';
+    ?' · serveur confirmé · '+(st.order_execution||'disabled-by-design')
+    :' · confirmation serveur absente';
 
   /* IBKR — honnête : connecté-live / connecté-différé / activé-inactif / désactivé */
   if(st){
@@ -650,7 +639,16 @@ async function loadContinuity(){
   let man=null; try{ man=await VX.fetch('/api/session/manifest',{ttl:30000}); }catch(e){}
   const net=document.documentElement.getAttribute('data-net')||'online';
   const nPrices=(VX.prices&&VX.prices._m)?Object.keys(VX.prices._m).length:0;
-  const fr=(VX.freshness&&man)?VX.freshness.chip(VX.freshness.assess({ageMs:(man.age_s||0)*1000,
+  /* LOT 606 (dossier 582, ouvert au 582, ferme ici) : ce site portait
+     `(man.age_s||0)*1000` — un REPLI sur un age, la seule des cinq puces de
+     fraicheur a ne pas garder l ignorance. Le serveur met DELIBEREMENT
+     `age_s: null` quand il ne peut pas garantir l anciennete (session_snapshot,
+     et `restored['age_s']=None` avec son commentaire d honnetete) ; `null||0`
+     vaut 0, donc « age nul », donc la puce « Analyse » — l inverse exact du
+     tiret honnete. Une GARDE DE TYPE, comme les quatre autres sites : un age
+     inconnu redevient `null`, et `assess` rend `—`. */
+  const fr=(VX.freshness&&man)?VX.freshness.chip(VX.freshness.assess({
+      ageMs:(typeof man.age_s==='number')?man.age_s*1000:null,
       offline:net==='offline', error:man.error, refreshing:man.status==='analyzing'})):'';
   const row=(k,v)=>'<div class="vx-kv"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
   const nd=(v,suf)=>(v==null?'&mdash;':(''+v+(suf||'')));
@@ -691,22 +689,25 @@ async function loadData(){
     const byQ=dq.by_quality||{};
     const labels=Object.keys(byQ);
     const values=labels.map(k=>byQ[k]);
-    const colByQ={FRESH:VXCharts.colors.positive,RECENT:VXCharts.colors.cyan,
-      STALE:VXCharts.colors.warning,EXPIRED:VXCharts.colors.negative,MISSING:VXCharts.colors.muted,
-      DEMO:VXCharts.colors.violet};
     const dominant=labels.slice().sort((a,b)=>byQ[b]-byQ[a])[0];
-    whenChartsReady(()=>VXCharts.donutCard('vx-data-quality-chart',{
-      title:'Qualit&eacute; des donn&eacute;es ('+dq.total+' titres)',
-      question:'Les donn&eacute;es sont-elles utilisables pour d&eacute;cider ?',
-      conclusion:'Dominante : '+dominant+' ('+byQ[dominant]+' / '+dq.total+') · source '+(dq.scan_source||'n/d'),
-      labels,values,colors:labels.map(k=>colByQ[k]||VXCharts.colors.muted),height:200,
-      source:'scan '+(dq.scan_source||'n/d'),timestamp:(scan&&scan.last_scan_ts)||Date.now(),
-      mode:dq.scan_source==='demo'?'fallback':'delayed',
-      limits:dq.note||'',
-      explain:{shows:'La r&eacute;partition des titres scann&eacute;s par niveau de qualit&eacute; de donn&eacute;es.',
-        why:'Une d&eacute;cision ACTIONABLE exige des donn&eacute;es fra&icirc;ches — la qualit&eacute; plafonne la d&eacute;cision.',
-        confirm:'Une majorit&eacute; FRESH/RECENT issue d&#8217;une source r&eacute;elle.',
-        invalidate:'Des paquets STALE/EXPIRED/MISSING ou une source d&eacute;mo.'}}));
+    whenChartsReady(()=>{
+      const colors=VXCharts.colors;
+      const colByQ={FRESH:colors.positive,RECENT:colors.cyan,
+        STALE:colors.warning,EXPIRED:colors.negative,MISSING:colors.muted,
+        DEMO:colors.violet};
+      VXCharts.donutCard('vx-data-quality-chart',{
+        title:'Qualit&eacute; des donn&eacute;es ('+dq.total+' titres)',
+        question:'Les donn&eacute;es sont-elles utilisables pour d&eacute;cider ?',
+        conclusion:'Dominante : '+dominant+' ('+byQ[dominant]+' / '+dq.total+') · source '+(dq.scan_source||'n/d'),
+        labels,values,colors:labels.map(k=>colByQ[k]||colors.muted),height:200,
+        source:'scan '+(dq.scan_source||'n/d'),timestamp:(scan&&scan.last_scan_ts)||Date.now(),
+        mode:dq.scan_source==='demo'?'fallback':'delayed',
+        limits:dq.note||'',
+        explain:{shows:'La r&eacute;partition des titres scann&eacute;s par niveau de qualit&eacute; de donn&eacute;es.',
+          why:'Une d&eacute;cision ACTIONABLE exige des donn&eacute;es fra&icirc;ches — la qualit&eacute; plafonne la d&eacute;cision.',
+          confirm:'Une majorit&eacute; FRESH/RECENT issue d&#8217;une source r&eacute;elle.',
+          invalidate:'Des paquets STALE/EXPIRED/MISSING ou une source d&eacute;mo.'}});
+    });
   }else{
     $('vx-data-quality-chart').innerHTML='<div class="vx-card">'
       +VX.states.empty('Aucun titre scann&eacute; — la qualit&eacute; ne peut pas &ecirc;tre mesur&eacute;e.',
@@ -752,7 +753,7 @@ async function loadData(){
       return `<div role="img" aria-label="${esc(k)} ${lbl} ${age}" style="padding:10px 12px;border-radius:9px;display:flex;flex-direction:column;gap:1px;background:${soft};border:${k===worstKey?'1.6px':'1px'} solid var(${col},#9d978e)">
         <span style="font-size:11px;color:var(--vx-text-secondary,#BABABA);text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</span>
         <span style="font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(${col},#9d978e)">${age}</span>
-        <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#8A8284)">${lbl}</span></div>`;};
+        <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#989092)">${lbl}</span></div>`;};
     const heat=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-bottom:14px" aria-label="Heatmap de fraîcheur des données">${Object.keys(doms).map(tile).join('')}</div>`;
     /* LOT 142 : l'age n'est plus un chiffre nu — mini-barre de VERRE de
        STALENESS relative (echelle = age max connu ; frais -> positive
@@ -966,7 +967,7 @@ function importDesk(ev){
       try{localStorage.setItem('deskTs',String(Date.now()));}catch(e){}
       const out={};keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null)out[k]=v;});
       fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ts:Number(localStorage.getItem('deskTs')||Date.now()),data:out})}).catch(()=>{});
+        body:JSON.stringify({ts:Number(localStorage.getItem('deskTs')||Date.now()),data:out})}).then(r=>{if(!r.ok)VX.toast('Synchronisation du bureau refusée par le serveur (HTTP '+r.status+') — tes données restent sur cet appareil.','warn',5200);}).catch(()=>{VX.toast('Synchronisation du bureau impossible (serveur injoignable) — tes données restent sur cet appareil.','warn',5200);});
       VX.shell.closeModal();
       VX.bus.emit('vx:data-refreshed',{reason:'desk-import'});
       VX.toast(importable.length+' clé(s) importée(s) et synchronisée(s)','success');
@@ -989,7 +990,7 @@ function vaultSet(list){
     const keys=deskKeys();const data={};
     keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null)data[k]=v;});
     fetch('/api/desk',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ts:Number(localStorage.getItem('deskTs')||Date.now()),data})}).catch(()=>{});
+      body:JSON.stringify({ts:Number(localStorage.getItem('deskTs')||Date.now()),data})}).then(r=>{if(!r.ok)VX.toast('Synchronisation du bureau refusée par le serveur (HTTP '+r.status+') — tes données restent sur cet appareil.','warn',5200);}).catch(()=>{VX.toast('Synchronisation du bureau impossible (serveur injoignable) — tes données restent sur cet appareil.','warn',5200);});
   }catch(e){}
 }
 function initArchive(){
@@ -1024,7 +1025,7 @@ function renderVault(){
       .map(x=>String(x||'').toLowerCase()).some(x=>x.includes(q));
   }).sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
   if(!rows.length){
-    $('vx-vault-list').innerHTML=VX.states.empty(
+    $('vx-vault-list').innerHTML=VX.states.emptyDesk(
       all.length?'Aucune entr&eacute;e ne correspond &agrave; la recherche ou au filtre.'
       :'Le coffre est vide — archivez ici vos analyses, mod&egrave;les et documents de r&eacute;f&eacute;rence.',
       all.length?'':'<button class="vx-btn vx-btn-sm" id="vx-vault-new-empty">Cr&eacute;er la premi&egrave;re entr&eacute;e</button>');
@@ -1123,7 +1124,7 @@ async function loadAutomations(){
     const d=await VX.fetch('/api/system/automations',{ttl:15000});
     const jobs=d.jobs||[];
     $('vx-auto-jobs').innerHTML=jobs.length?`<div class="vx-table-wrap"><table class="vx-table"><thead><tr>
-      <th>Job</th><th>Statut</th><th class="vx-num">Exécutions</th><th>Dernière</th><th>Prochaine (est.)</th><th class="vx-num">Durée</th></tr></thead><tbody>
+      <th>Tâche</th><th>Statut</th><th class="vx-num">Exécutions</th><th>Dernière</th><th>Prochaine (est.)</th><th class="vx-num">Durée</th></tr></thead><tbody>
       ${jobs.map(j=>{
         const st=j.last_run===null?['frozen','jamais exécuté']:(j.last_ok?['live','OK']:['offline','erreur']);
         return `<tr><td><b>${esc(j.name)}</b><br><span class="vx-meta">${esc(j.description||'')}</span></td>
@@ -1162,6 +1163,9 @@ async function loadAutomations(){
 }
 
 /* ══ Orchestration ══════════════════════════════════════════════════ */
+document.querySelectorAll('details.vx-disclosure').forEach(d=>{
+  d.addEventListener('toggle',()=>{if(d.open)window.dispatchEvent(new Event('resize'));});
+});
 if(VIEW==='connections'){
   loadConnections();
   document.getElementById('vx-brain-refresh')?.addEventListener('click',refreshBrain);

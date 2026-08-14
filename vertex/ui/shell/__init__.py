@@ -159,7 +159,9 @@ _OVERLAYS = '''
 <aside class="vx-drawer" id="vx-drawer" data-open="0" role="dialog" aria-modal="true" aria-label="Panneau contextuel" aria-hidden="true" inert>
   <div class="vx-drawer-header"><h2 id="vx-drawer-title">—</h2>
     <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-drawer aria-label="Fermer">✕</button></div>
+  <div class="vx-drawer-tabs" id="vx-drawer-tabs" hidden></div>
   <div class="vx-drawer-body" id="vx-drawer-body"></div>
+  <div class="vx-drawer-footer" id="vx-drawer-footer"></div>
 </aside>
 <div class="vx-modal" id="vx-modal" data-open="0" role="dialog" aria-modal="true" aria-hidden="true" inert>
   <div class="vx-modal-box">

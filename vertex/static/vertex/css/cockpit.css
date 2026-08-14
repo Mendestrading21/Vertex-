@@ -5,9 +5,9 @@
    Additive : ne modifie AUCUNE structure ni logique ; réutilise les tokens. */
 
 :root{
-  --vx-glow-pos:0 0 15px rgba(54,200,137,.30);
-  --vx-glow-neg:0 0 15px rgba(237,101,92,.30);
-  --vx-glow-copper-soft:0 0 24px rgba(255,255,255,.15);
+  --vx-glow-pos:none;
+  --vx-glow-neg:none;
+  --vx-glow-copper-soft:0 0 0 1px var(--vx-brand-soft);
   --vx-tile-hi:inset 0 1px 0 rgba(255,255,255,.045);
   --vx-tile-grad:linear-gradient(180deg,rgba(255,255,255,.016),transparent 40%);
 }
@@ -17,7 +17,7 @@
    Les cartes graphiques gardent leur rendu propre. */
 .vx-card:not(.vx-card--hero){box-shadow:var(--vx-tile-hi),var(--vx-shadow-1)}
 @media (prefers-reduced-motion:no-preference){
-  .vx-card:not(.vx-chart-card):not(.vx-card--hero):hover{
+  .vx-card:is(a,button,[role="button"],[data-clickable]):not(.vx-chart-card):not(.vx-card--hero):hover{
     box-shadow:var(--vx-tile-hi),0 10px 30px rgba(0,0,0,.5)}
 }
 
@@ -27,21 +27,21 @@ a.vx-strip-item,.vx-strip-item{position:relative;overflow:hidden;
   border-radius:var(--vx-r);
   transition:transform var(--vx-t-fast),border-color var(--vx-t-fast),box-shadow var(--vx-t-fast)}
 .vx-strip-item::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;pointer-events:none;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.42),transparent);opacity:.55}
-a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(255,255,255,.32)}
+  background:linear-gradient(90deg,transparent,var(--vx-brand),transparent);opacity:.48}
+a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:var(--vx-border-accent)}
 /* Grand chiffre net + delta directionnel appuyé, façon cockpit de référence */
 .vx-strip-item .vx-kpi-label{opacity:.85}
 .vx-strip-item .vx-kpi-value{font-size:23px!important;letter-spacing:-.02em;color:var(--vx-text-primary)}
 .vx-strip-item .vx-kpi-delta{font-weight:700;font-size:12.5px}
-.vx-strip-item .vx-kpi-delta.vx-pos{color:var(--vx-positive);text-shadow:var(--vx-glow-pos)}
-.vx-strip-item .vx-kpi-delta.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}
+.vx-strip-item .vx-kpi-delta.vx-pos{color:var(--vx-positive)}
+.vx-strip-item .vx-kpi-delta.vx-neg{color:var(--vx-negative)}
 /* Flèches ▲▼ ajoutées visuellement (le texte du delta garde déjà son signe +/–) */
-.vx-strip-item .vx-kpi-delta.vx-pos::after{content:" ▲";font-size:8.5px;vertical-align:1px}
-.vx-strip-item .vx-kpi-delta.vx-neg::after{content:" ▼";font-size:8.5px;vertical-align:-1px}
+.vx-strip-item .vx-kpi-delta.vx-pos::after{content:" ▲";font-size:10px;vertical-align:1px}
+.vx-strip-item .vx-kpi-delta.vx-neg::after{content:" ▼";font-size:10px;vertical-align:-1px}
 
 /* ══ Grands chiffres directionnels génériques (.vx-kpi-value.vx-pos/.vx-neg) ══ */
-.vx-kpi-value.vx-pos{color:var(--vx-positive);text-shadow:var(--vx-glow-pos)}
-.vx-kpi-value.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}
+.vx-kpi-value.vx-pos{color:var(--vx-positive);text-shadow:none}
+.vx-kpi-value.vx-neg{color:var(--vx-negative);text-shadow:none}
 
 /* ══ Rangée de stats compactes (post-mortem, fiches) — LOT 125 ══
    .vx-stats-row/.vx-stat étaient utilisées par 5 pages SANS style : les
@@ -56,14 +56,14 @@ a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(25
   color:var(--vx-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vx-stat-value{font-family:var(--vx-font-mono);font-weight:700;font-size:19px;
   line-height:1.15;font-variant-numeric:tabular-nums;color:var(--vx-text-primary)}
-.vx-stat-value.vx-pos{color:var(--vx-positive);text-shadow:var(--vx-glow-pos)}
-.vx-stat-value.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}
+.vx-stat-value.vx-pos{color:var(--vx-positive);text-shadow:none}
+.vx-stat-value.vx-neg{color:var(--vx-negative);text-shadow:none}
 
 /* ══ Utilitaire « grand chiffre » (hero KPI façon référence) ══ */
 .vx-stat-xl{font-family:var(--vx-font-mono);font-weight:800;font-size:44px;line-height:1;
   letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--vx-text-primary)}
-.vx-stat-xl.vx-pos{color:var(--vx-positive);text-shadow:var(--vx-glow-pos)}
-.vx-stat-xl.vx-neg{color:var(--vx-negative);text-shadow:var(--vx-glow-neg)}
+.vx-stat-xl.vx-pos{color:var(--vx-positive);text-shadow:none}
+.vx-stat-xl.vx-neg{color:var(--vx-negative);text-shadow:none}
 .vx-stat-xl-label{font-size:var(--vx-fs-meta);text-transform:uppercase;letter-spacing:.6px;
   color:var(--vx-text-muted)}
 
@@ -106,4 +106,6 @@ a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:rgba(25
 /* ══ Réduction de mouvement : neutralise lifts/glows animés ══ */
 @media (prefers-reduced-motion:reduce){
   .vx-strip-item,.vx-card{transition:none}
+  a.vx-strip-item:hover,
+  .vx-card:is(a,button,[role="button"],[data-clickable]):hover{transform:none}
 }

@@ -13,8 +13,8 @@ Shell visible → SW v117 → v118.
 import glob
 import re
 
-CURRENT = {'#F8F5F3', '#BABABA', '#8A8284', '#2BBE90', '#E9555F', '#D9BE3C',
-           '#DBE1E8', '#30292B', '#0c0c0e', '#121214', '#c8bfae', '#9B7BFF',
+CURRENT = {'#F8F5F3', '#BABABA', '#8A8284', '#989092', '#2BBE90', '#E9555F', '#D9BE3C',
+           '#D28A54', '#30292B', '#0c0c0e', '#121214', '#c8bfae', '#9B7BFF',
            '#45D6E8', '#050505', '#151719'}
 
 
