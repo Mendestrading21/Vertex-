@@ -199,9 +199,17 @@ a:hover{color:var(--vx-text-primary);text-decoration:none}
   transition:border-color var(--vx-t-fast),background var(--vx-t-fast),box-shadow var(--vx-t-fast);
 }
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-card::before{content:none!important}
-.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-card:hover{
+/* HOVER SEULEMENT SI LA CARTE EST CLIQUABLE (gardien du lot 618).
+   La règle d'origine visait `.vx-card:hover` sans condition. Elle avait été
+   écrite pour NEUTRALISER le soulèvement hérité (`transform:none`) — sauf que
+   ce soulèvement n'existe plus : les six règles de survol du produit sont déjà
+   toutes gardées par `:is(a,button,[role="button"],[data-clickable])`. Il ne
+   restait donc que l'effet de bord : un fond et une bordure qui bougent au
+   survol d'une carte INERTE, c'est-à-dire la promesse d'un clic qui n'arrivera
+   pas. Même condition que le reste du produit — une seule grammaire. */
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-card:is(a,button,[role="button"],[data-clickable]):hover{
   transform:none;
-  background:var(--vx-surface);
+  background:var(--vx-surface-hover);
   border-color:var(--vx-border-default);
   box-shadow:var(--vx-shadow-1);
 }
@@ -255,7 +263,9 @@ a:hover{color:var(--vx-text-primary);text-decoration:none}
   border:1px solid var(--vx-border-faint);
   transform:none;
 }
-.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-kpi:hover{
+/* Même règle que pour la carte : une tuile KPI qui réagit au survol sans être
+   cliquable ment sur ce qu'elle propose (gardien du lot 618). */
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-kpi:is(a,button,[role="button"],[data-clickable]):hover{
   transform:none;
   background:rgba(255,255,255,.032);
   border-color:var(--vx-border-default);
@@ -505,11 +515,33 @@ a:hover{color:var(--vx-text-primary);text-decoration:none}
   background:rgba(255,255,255,.02);
 }
 .vx-update{font-size:10.5px}
-.vx-demo-banner,.vx-stale-banner{
+/* LES QUATRE BANDEAUX D'ÉTAT SONT UNE SEULE FAMILLE.
+   Signal OS n'en habillait que deux — démo et périmé — et laissait l'erreur et
+   le hors-ligne avec le rayon et la bordure hérités. Or c'est exactement la
+   famille où l'incohérence coûte le plus : ces bandeaux existent pour DIRE que
+   la donnée n'est pas ce qu'elle paraît. Deux d'entre eux à 11 px et deux à
+   l'ancien rayon, c'est l'utilisateur qui doute du message.
+   La couleur suit le sens, pas le bandeau : jaune = à surveiller (démo,
+   périmé), corail = défaillance réelle (erreur), gris = absence de réseau. */
+.vx-demo-banner,.vx-stale-banner,.vx-error-banner,.vx-offline-banner{
   border-radius:11px;
-  border:1px solid rgba(217,190,60,.22);
+  border-width:1px;
+  border-style:solid;
+}
+.vx-demo-banner,.vx-stale-banner{
+  border-color:rgba(217,190,60,.22);
   background:var(--vx-warning-soft);
   color:var(--vx-warning);
+}
+.vx-error-banner{
+  border-color:rgba(233,85,95,.22);
+  background:var(--vx-negative-soft);
+  color:var(--vx-negative);
+}
+.vx-offline-banner{
+  border-color:var(--vx-border-soft);
+  background:rgba(255,255,255,.03);
+  color:var(--vx-text-secondary);
 }
 
 /* ── Briefing : réponse en premier, détails ensuite ─────────────────── */
@@ -575,13 +607,22 @@ a:hover{color:var(--vx-text-primary);text-decoration:none}
 .vx-palette-item[aria-selected="true"]{background:var(--vx-brand-soft);color:var(--vx-text-primary)}
 .vx-toast{border-radius:12px;background:var(--vx-surface-elevated);border-color:var(--vx-border-default)}
 
-/* ── Mobile et tablettes ────────────────────────────────────────────── */
-@media (max-width:1180px){
+/* ── Mobile et tablettes ────────────────────────────────────────────────
+   BASCULES ALIGNÉES SUR CELLES QUI ONT ÉTÉ MESURÉES (gardien du lot 611).
+   Signal OS arrivait avec 1180 px et 960 px. Ce sont deux bascules NEUVES :
+   elles créent deux bandes de largeur que le banc du 611 — chaque bandeau
+   mesuré contre son parent, neuf bandes — n'a jamais exercées, et rendent
+   périmée en silence la conclusion « les neuf bandes sont saines ».
+   Retargetées sur 1280 et 1024, déjà dans le recensement mesuré, et qui sont
+   par ailleurs les bascules décrites par VISUAL_SYSTEM.md (≥1280 : deux ou
+   trois colonnes · 768-1279 : rail compact · <768 : une colonne). Les blocs
+   sont inchangés : seule la largeur à laquelle ils s'appliquent bouge. */
+@media (max-width:1280px){
   :root{--vx-sidebar-w:208px}
   .vx-content{padding-left:18px;padding-right:18px}
   .vx-topbar{padding:0 18px}
 }
-@media (max-width:960px){
+@media (max-width:1024px){
   .vx-grid{gap:12px}
   .vx-col-2,.vx-col-3,.vx-col-4{grid-column:span 6}
   .vx-col-5,.vx-col-7,.vx-col-8,.vx-col-9{grid-column:span 12}

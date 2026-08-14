@@ -74,19 +74,11 @@ function replaceStaticCopy(root){
     }
   });
 
-  const search = document.getElementById('vx-global-search');
-  if(search){
-    search.placeholder = 'Ticker, option ou page';
-    search.setAttribute('aria-label','Rechercher un ticker, une option ou une page');
-  }
-
-  const add = document.getElementById('vx-add-btn');
-  if(add){
-    const label = add.querySelector('.vx-hide-mobile');
-    if(label) label.textContent = 'Analyser';
-    add.setAttribute('aria-label','Lancer une analyse');
-    add.title = 'Lancer une analyse';
-  }
+  /* La micro-copy DU SHELL n'est plus réécrite ici : le placeholder de
+     recherche, son aria-label et le bouton « Analyser » sont écrits à la source,
+     dans `vertex/ui/shell/__init__.py`. Réécrire un libellé après coup laisse
+     DEUX vérités — celle que le serveur envoie, celle que l'utilisateur lit — et
+     tout gardien qui lit les octets servis garde alors l'ancienne. */
 }
 
 function normalizeGrades(root){

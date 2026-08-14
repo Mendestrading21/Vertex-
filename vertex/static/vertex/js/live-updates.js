@@ -69,24 +69,10 @@
   connect();
 })();
 
-/* Signal OS est chargé depuis ce runtime partagé par les huit espaces.
-   Cette stratégie garde le shell Python stable pendant la migration et garantit
-   que la couche visuelle arrive après les feuilles historiques. */
-(function loadSignalOS(){
-  'use strict';
-  document.documentElement.dataset.visual = 'signal-os';
-  if(!document.querySelector('link[data-vertex-signal-os]')){
-    const css = document.createElement('link');
-    css.rel = 'stylesheet';
-    css.href = '/static/vertex/css/signal-os.css';
-    css.dataset.vertexSignalOs = '1';
-    document.head.appendChild(css);
-  }
-  if(!document.querySelector('script[data-vertex-signal-os]')){
-    const js = document.createElement('script');
-    js.src = '/static/vertex/js/signal-os.js';
-    js.async = false;
-    js.dataset.vertexSignalOs = '1';
-    document.head.appendChild(js);
-  }
-})();
+/* SIGNAL OS N'EST PLUS CHARGÉ D'ICI.
+   Ce fichier créait `<link>` et `<script>` à l'exécution (`loadSignalOS`). La
+   feuille arrivait donc APRÈS le premier rendu — flash de l'ancien thème à
+   chaque navigation complète —, le service worker ne la voyait pas dans le HTML
+   de shell qu'il met en cache, et l'ordre de cascade dépendait du moment où ce
+   script s'exécutait. Les deux ressources sont déclarées dans le document, dans
+   `vertex/ui/shell/__init__.py`, la feuille en dernier. */

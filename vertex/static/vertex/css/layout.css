@@ -42,6 +42,12 @@
   border-top:1px solid var(--vx-border-soft)}
 .vx-sidebar-status{display:flex;align-items:center;gap:8px;padding:6px 12px;
   font-size:var(--vx-fs-meta);color:var(--vx-text-muted);white-space:nowrap}
+/* La pastille d'état portait ses quatre déclarations EN LIGNE dans le shell
+   Python — géométrie et couleur fixes, donc rien de dynamique à justifier.
+   `vx-shell.js` la repeint ensuite via `style.background` ; la couleur d'ici
+   n'est que l'état de départ, « on ne sait pas encore ». */
+.vx-sidebar-status .vx-dot{width:7px;height:7px;border-radius:99px;flex:none;
+  background:var(--vx-text-faint)}
 .vx-app[data-sidebar="collapsed"] .vx-logo-name,
 .vx-app[data-sidebar="collapsed"] .vx-nav-label,
 .vx-app[data-sidebar="collapsed"] .vx-sidebar-status .vx-status-label{display:none}

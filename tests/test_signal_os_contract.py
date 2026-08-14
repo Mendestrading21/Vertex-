@@ -14,6 +14,7 @@ JS = ROOT / "vertex/static/vertex/js/signal-os.js"
 LIVE = ROOT / "vertex/static/vertex/js/live-updates.js"
 SYSTEM = ROOT / "vertex/app/routes/system.py"
 DOC = ROOT / "docs/design/VERTEX_SIGNAL_OS.md"
+SHELL = ROOT / "vertex/ui/shell/__init__.py"
 
 
 def _read(path: Path) -> str:
@@ -22,12 +23,30 @@ def _read(path: Path) -> str:
 
 
 def test_signal_os_assets_are_loaded_globally_after_the_historical_theme():
+    """La propriété n'a pas changé — le mécanisme, si.
+
+    Signal OS arrivait par `loadSignalOS()` dans `live-updates.js` : un `<link>`
+    créé en JS et injecté à l'exécution. Le document se peignait donc une fois
+    SANS la feuille (flash de l'ancien thème à chaque navigation complète), le
+    service worker ne la voyait pas dans le HTML de shell qu'il met en cache, et
+    l'ordre de cascade dépendait du moment où le script s'exécutait plutôt que de
+    la position dans le `<head>`.
+
+    Ce test garde donc la même chose — chargé globalement, APRÈS la couche
+    historique — mais là où elle est désormais vraie : dans le shell.
+    """
+    shell = _read(SHELL)
+    assert '<link rel="stylesheet" href="/static/vertex/css/signal-os.css">' in shell, (
+        'la feuille Signal OS n\'est plus déclarée dans le shell : elle ne '
+        'couvre plus les huit espaces.')
+    assert '/static/vertex/js/signal-os.js' in shell
+    assert shell.index('neon-glass.css') < shell.index('signal-os.css'), (
+        'Signal OS passe AVANT la couche historique : la cascade s\'inverse et '
+        'neon-glass.css reprend la main sur la nouvelle identité.')
     live = _read(LIVE)
-    assert "/static/vertex/css/signal-os.css" in live
-    assert "/static/vertex/js/signal-os.js" in live
-    assert "appendChild(css)" in live
-    assert "appendChild(js)" in live
-    assert live.index("signal-os.css") < live.index("appendChild(css)")
+    assert 'appendChild(css)' not in live, (
+        'l\'injection à l\'exécution est revenue dans live-updates.js — flash de '
+        'l\'ancien thème, et la feuille sort du contrat de cache du shell.')
 
 
 def test_signal_os_covers_all_eight_canonical_spaces():

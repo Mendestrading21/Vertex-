@@ -91,7 +91,7 @@ def _sidebar(active: str) -> str:
   <nav class="vx-sidebar-nav">{nav}</nav>
   <div class="vx-sidebar-foot">
     <div class="vx-sidebar-status" id="vx-global-status">
-      <span class="vx-dot" style="width:7px;height:7px;border-radius:99px;background:var(--vx-text-faint)"></span>
+      <span class="vx-dot"></span>
       <span class="vx-status-label">État…</span></div>
     {system_item}
     <button class="vx-nav-item vx-collapse-btn" id="vx-collapse-btn"
@@ -122,11 +122,12 @@ def _topbar(space_label: str, sub_label: str = '', space_href: str = '/') -> str
   <button class="vx-back-btn" id="vx-back-btn" data-visible="0">{icon('back')}<span>Retour</span></button>
   <nav class="vx-breadcrumb" aria-label="Fil d’Ariane">{crumb}</nav>
   <div class="vx-topbar-search">{icon('search', 16)}
-    <input id="vx-global-search" type="search" placeholder="Rechercher une action, une option ou une page"
-      autocomplete="off" aria-label="Recherche globale" />
+    <input id="vx-global-search" type="search" placeholder="Ticker, option ou page"
+      autocomplete="off" aria-label="Rechercher un ticker, une option ou une page" />
     <span class="vx-kbd">⌘K</span></div>
   <div class="vx-topbar-right">
-    <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-add-btn">{icon('plus', 14)}<span class="vx-hide-mobile">Ajouter</span></button>
+    <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-add-btn"
+      aria-label="Lancer une analyse" title="Lancer une analyse">{icon('plus', 14)}<span class="vx-hide-mobile">Analyser</span></button>
     <div class="vx-session vx-hide-mobile" id="vx-session">—<br><span class="vx-muted">New York —:—</span></div>
     <button class="vx-btn vx-btn-icon vx-btn-ghost" id="vx-connections-btn"
       aria-label="Connexions" title="Connexions (IBKR, TradingView, Claude, sync)">{icon('plug')}</button>
@@ -232,7 +233,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
         return _render_fragment(title=title, active=active, space_label=space_label,
                                 sub_label=sub_label, content=content, page_js=page_js,
                                 page_label=page_label, mobile_bar=mobile_bar)
-    return f'''<!doctype html><html lang="fr"><head><meta charset="utf-8">
+    return f'''<!doctype html><html lang="fr" data-visual="signal-os"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
 <title>{title} · Vertex</title>
@@ -256,6 +257,16 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/control-surface.css">
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
 <link rel="stylesheet" href="/static/vertex/css/neon-glass.css">
+<!-- SIGNAL OS EN DERNIER, ET DANS LE DOCUMENT.
+     La couche arrivait par `loadSignalOS()` dans live-updates.js : un <link>
+     cree en JS et injecte a l execution. Trois consequences, toutes reelles :
+     le document se peignait une fois SANS elle (flash de l ancien theme a
+     chaque navigation complete), le service worker ne la voyait pas dans le
+     HTML de shell qu il met en cache, et l ordre de cascade dependait du
+     moment ou le script s executait plutot que de la position dans le head.
+     Elle est declaree ici, apres neon-glass.css : dernier arrive, dernier
+     applique, et connue du document des le premier octet. -->
+<link rel="stylesheet" href="/static/vertex/css/signal-os.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
@@ -277,6 +288,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <script src="/static/vertex/js/vx-shell.js"></script>
 <script src="/static/vertex/js/vx-router.js"></script>
 <script src="/static/vertex/js/live-updates.js" defer></script>
+<script src="/static/vertex/js/signal-os.js" defer></script>
 <script src="/static/vertex/js/charts/chart-theme-obsidian-copper.js" defer></script>
 <script src="/static/vertex/js/charts/chart-core.js" defer></script>
 {page_js}
