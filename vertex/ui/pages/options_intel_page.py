@@ -21,9 +21,9 @@ _VIEWS = (
     ('structure', 'Structure'),
     ('positioning', 'Positionnement'),
     ('leaps', 'LEAPS'),
-    ('positions', 'Mes positions'),
+    ('positions', 'Positions'),
     ('volatility', 'Volatilité'),
-    ('events', 'Événements'),
+    ('events', 'Catalyseurs'),
 )
 # Vues encore servies (routes 200, contenu intact) mais hors barre d'onglets :
 # overview/radar/scenarios restent accessibles/testées, absorbées par Structure.

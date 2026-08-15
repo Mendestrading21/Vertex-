@@ -48,7 +48,7 @@ def render_index(view: str = '') -> str:
       <div class="vx-help vx-mt2">Astuce : ⌘K / Ctrl+K depuis n’importe quelle page.</div>
     </div>
     <section class="vx-card vx-mt4" aria-label="Titres récents">
-      <div class="vx-card-header"><span class="vx-card-title">Titres récents</span></div>
+      <div class="vx-card-header"><span class="vx-card-title">Récents</span></div>
       <div class="vx-card-body vx-flex vx-wrap" id="an-recent"><span class="vx-skeleton" style="width:120px;height:26px"></span></div>
     </section>
     <section class="vx-card vx-mt4" aria-label="Favoris">
@@ -65,9 +65,9 @@ def render_index(view: str = '') -> str:
     <section class="vx-card vx-mt4" aria-label="Raccourcis">
       <div class="vx-card-header"><span class="vx-card-title">Raccourcis</span></div>
       <div class="vx-card-body">
-        <div class="an-shortcut"><span>Recherche globale</span><span class="an-kbd">⌘K</span></div>
-        <div class="an-shortcut"><span>Scanner d’opportunités</span><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities">Ouvrir →</a></div>
-        <div class="an-shortcut"><span>Portefeuille & positions</span><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></div>
+        <div class="an-shortcut"><span>Recherche</span><span class="an-kbd">⌘K</span></div>
+        <div class="an-shortcut"><span>Opportunités</span><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities">Ouvrir →</a></div>
+        <div class="an-shortcut"><span>Portefeuille</span><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></div>
       </div>
     </section>
   </aside>

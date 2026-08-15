@@ -82,20 +82,35 @@ def test_signal_os_copy_layer_is_local_and_read_only():
     forbidden = ("fetch(", "XMLHttpRequest", "EventSource", ".submit(", "sendBeacon")
     for token in forbidden:
         assert token not in js, f"La couche visuelle ne doit pas faire de réseau: {token}"
-    # Pages NON encore reconstruites : leur micro-copy passe encore par la table.
-    assert "Exposition, risque et prochaine décision." in js
-    assert "Convexité, volatilité et risque événementiel." in js
+    # La couche ne pose plus que des attributs sémantiques : elle LIT une valeur
+    # déjà rendue (« S+ », « pessimiste ») et permet au CSS de la colorer.
+    assert "normalizeGrades" in js and "normalizeDecisionCards" in js
 
 
-def test_la_copy_des_pages_reconstruites_a_quitte_la_table():
-    """La table de réécriture est une MIGRATION, pas une architecture.
+def test_la_table_de_reecriture_est_fermee():
+    """LA propriété finale, et elle est plus forte que la précédente.
 
-    Tant qu'un libellé y figure, il existe deux fois : dans les octets servis et
-    à l'écran. Ce test vérifie que les pages déjà reconstruites — shell,
-    Aujourd'hui — écrivent le leur à la source ET ne le réécrivent plus après
-    coup. Sans lui, la table ne rétrécirait jamais.
+    Tant que la table existait, ce test énumérait ses entrées mortes une par
+    une — et il a fini par se prendre les pieds dedans : le commentaire qui
+    EXPLIQUE la fermeture cite les libellés retirés. Une énumération de chaînes
+    interdites interdit aussi qu'on écrive pourquoi on les a retirées.
+
+    La table entière a disparu. On garde donc la STRUCTURE, pas les mots :
+    plus de `Map` de libellés, plus de passe de remplacement de texte.
     """
     js = _read(JS)
+    assert 'const COPY' not in js, (
+        'une table de micro-copy est revenue dans la couche visuelle : le '
+        'serveur et l\'écran recommenceraient à dire deux choses différentes.')
+    assert 'replaceStaticCopy' not in js, (
+        'la passe de remplacement de texte est de retour.')
+    assert '.textContent =' not in js and '.textContent=' not in js, (
+        'la couche visuelle réécrit de nouveau du texte dans le DOM.')
+
+
+def test_les_libelles_migres_sont_bien_a_la_source():
+    """Contrepartie du test ci-dessus : la table est fermée PARCE QUE chaque
+    libellé a été écrit à sa source, pas parce qu'on a renoncé aux libellés."""
     pages = {
         'briefing.py': ('Signal du jour', 'Top opportunités'),
         'markets_page.py': ('Vue globale', 'Risque principal', 'Top hausses',
@@ -103,22 +118,19 @@ def test_la_copy_des_pages_reconstruites_a_quitte_la_table():
                             'Santé du marché'),
         'opportunities_page.py': ('Priorités', 'Dossiers à étudier',
                                   'Shortlist options', 'Qualité × timing'),
+        'analysis_page.py': ('>Récents<', '<span>Recherche</span>',
+                             '<span>Portefeuille</span>'),
+        'portfolio_page.py': ("('watchlist', 'Surveillance')",
+                              'Exposition, risque et prochaine décision.'),
+        'options_intel_page.py': ("('positions', 'Positions')",
+                                  "('events', 'Catalyseurs')"),
     }
     for fichier, libelles in pages.items():
         src = (ROOT / 'vertex/ui/pages' / fichier).read_text(encoding='utf-8')
         for libelle in libelles:
             assert libelle in src, (
-                '« %s » n\'est plus écrit à la source dans %s' % (libelle, fichier))
-            assert libelle not in js, (
-                '« %s » est revenu dans la table de réécriture : le serveur et '
-                'l\'écran ne diraient plus la même chose.' % libelle)
-    for mort in ('Brief Vertex', 'Meilleures opportunités',
-                 'Depuis ta dernière visite', 'Leadership sectoriel',
-                 'VIX — volatilité implicite du marché',
-                 'Composition de la santé du marché'):
-        assert mort not in js, (
-            'entrée « %s » toujours dans la table alors que sa page est '
-            'reconstruite.' % mort)
+                '« %s » n\'est pas écrit à la source dans %s — la table étant '
+                'fermée, plus rien ne le corrige à l\'écran.' % (libelle, fichier))
 
 
 def test_signal_os_uses_no_external_asset_or_import():

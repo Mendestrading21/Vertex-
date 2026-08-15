@@ -29,7 +29,7 @@ from vertex.ui.shell import json_for_script, render_shell
 
 _VIEWS = (('team', 'Synthèse'), ('positions', 'Positions'),
           ('performance', 'Performance'), ('risk', 'Risque'),
-          ('options', 'Options'), ('watchlist', 'Watchlist'))
+          ('options', 'Options'), ('watchlist', 'Surveillance'))
 
 
 def _tabs(view: str) -> str:
@@ -42,7 +42,7 @@ def _tabs(view: str) -> str:
 
 _CONTENT = """
 <div class="vx-page-header vx-page-lead"><div><h1>Portefeuille</h1>
-<div class="vx-sub">Où mon capital est-il exposé, et quelle position exige une décision ?</div></div>
+<div class="vx-sub">Exposition, risque et prochaine décision.</div></div>
 <div class="vx-actions vx-toolbar">
   <span id="pf-fresh" style="align-self:center"></span>
   <button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal('','position')">+ Position</button>

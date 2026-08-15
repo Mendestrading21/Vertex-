@@ -1,65 +1,37 @@
-/* Vertex Signal OS — micro-copy et sémantique visuelle globales.
+/* Vertex Signal OS — sémantique visuelle.
    Aucun calcul, aucune donnée financière, aucun appel réseau.
-   La couche ne modifie que des libellés statiques connus et ajoute des attributs
-   visuels aux grades déjà présents dans le DOM. */
+   La couche LIT le DOM et y pose des attributs sémantiques ; elle n'invente
+   aucun texte et n'en remplace aucun.
+
+   LA TABLE DE MICRO-COPY EST FERMÉE.
+
+   Cette couche portait une `Map` de 45 libellés qu'elle réécrivait dans le DOM
+   après le rendu : le serveur envoyait « VIX — volatilité implicite du marché »,
+   l'écran affichait « VIX ». Deux vérités pour un même libellé — et tout gardien
+   qui lit les octets servis gardait l'ancienne, pendant que la nouvelle n'était
+   gardée par rien.
+
+   Vidée page par page, chaque libellé écrit à sa source :
+     shell + Aujourd'hui (7) · Marchés (15) · Opportunités (5) · le reste (7).
+
+   HUIT ENTRÉES NE POUVAIENT DÉJÀ PLUS RIEN RÉÉCRIRE. « Rechercher un titre pour
+   ouvrir sa fiche canonique. », « Ce que révèle une fiche », « Que s'est-il
+   passé après ? — évidence historique » et « Cette structure offre-t-elle une
+   asymétrie suffisante ? » (présente DEUX fois) ne sont produites par aucune
+   page ; « Skyler — décision canonique » n'existe que dans un commentaire ;
+   « Où est la meilleure convexité… » que dans une docstring ; « Ajouter » avait
+   été écrit à la source au lot Shell.
+   **Une table de réécriture ne peut pas savoir qu'elle est périmée** : elle
+   échoue en silence, ce qui est exactement sa nature.
+
+   Ce qui reste ici est d'une autre espèce. `normalizeGrades` et
+   `normalizeDecisionCards` ne changent aucun texte : elles LISENT une valeur
+   déjà présente (« S+ », « pessimiste ») et posent l'attribut qui permet au CSS
+   de la colorer. Le serveur reste la seule source du contenu. */
 (function(){
 'use strict';
 
-/* MIGRATION — cette table rétrécit page par page.
-   Chaque libellé qu'elle réécrit existe DEUX FOIS : dans les octets servis et
-   à l'écran. Tout gardien qui lit le serveur garde alors l'ancienne version, et
-   la nouvelle n'est gardée par rien. Une entrée disparaît d'ici quand la page
-   qui la porte est reconstruite et écrit son libellé à la source.
-   Fait : shell, Aujourd'hui, Marchés, Opportunités. Restent : Analyse,
-   Portefeuille, Options, Journal, Système. */
-const COPY = new Map([
-  ["Rechercher un titre pour ouvrir sa fiche canonique.","Ouvre un dossier complet en quelques secondes."],
-  ["Ce que révèle une fiche","Contenu du dossier"],
-  ["Titres récents","Récents"],
-  ["Portefeuille & positions","Portefeuille"],
-  ["Où mon capital est-il exposé, et quelle position exige une décision ?","Exposition, risque et prochaine décision."],
-  ["Watchlist","Surveillance"],
-  ["Où est la meilleure convexité, à quel prix de volatilité, et quel événement la menace ?","Convexité, volatilité et risque événementiel."],
-  ["Cette structure offre-t-elle une asymétrie suffisante ?","L’asymétrie est-elle suffisante ?"],
-  ["Cette structure offre-t-elle une asymétrie suffisante ?","L’asymétrie est-elle suffisante ?"],
-  ["Mes positions","Positions"],
-  ["Événements","Catalyseurs"],
-  ["Que s'est-il passé après ? — évidence historique","Évidence historique"],
-  ["Skyler — décision canonique","Décision Skyler"],
-  ["Recherche globale","Recherche"],
-  ["Ajouter","Analyser"]
-]);
-
-const COPY_SELECTOR = [
-  '.vx-page-header .vx-sub',
-  '.vx-card-title',
-  '.vx-chart-title',
-  '.vx-section-header h2',
-  '.vx-tab',
-  '.an-shortcut > span:first-child',
-  '.vx-op-sectitle'
-].join(',');
-
 let scheduled = false;
-
-function replaceStaticCopy(root){
-  const scope = root && root.querySelectorAll ? root : document;
-  scope.querySelectorAll(COPY_SELECTOR).forEach(function(el){
-    if(el.childElementCount) return;
-    const before = (el.textContent || '').trim();
-    const after = COPY.get(before);
-    if(after && after !== before){
-      el.textContent = after;
-      el.dataset.signalCopy = '1';
-    }
-  });
-
-  /* La micro-copy DU SHELL n'est plus réécrite ici : le placeholder de
-     recherche, son aria-label et le bouton « Analyser » sont écrits à la source,
-     dans `vertex/ui/shell/__init__.py`. Réécrire un libellé après coup laisse
-     DEUX vérités — celle que le serveur envoie, celle que l'utilisateur lit — et
-     tout gardien qui lit les octets servis garde alors l'ancienne. */
-}
 
 function normalizeGrades(root){
   const scope = root && root.querySelectorAll ? root : document;
@@ -95,7 +67,6 @@ function apply(root){
     document.body.dataset.visual = 'signal-os';
     document.body.classList.add('vx-signal-os');
   }
-  replaceStaticCopy(root);
   normalizeGrades(root);
   normalizeDecisionCards(root);
 }
@@ -111,6 +82,11 @@ function schedule(root){
 
 function boot(){
   apply(document);
+  /* L'observateur reste NÉCESSAIRE : les grades arrivent avec les données, donc
+     après le premier rendu, et la navigation persistante remplace le contenu
+     sans recharger la page. Il ne relance plus que deux passes qui lisent des
+     attributs — la passe de réécriture, qui balayait sept sélecteurs sur tout
+     le sous-arbre à chaque mutation, a disparu avec la table. */
   const target = document.getElementById('vx-content') || document.body;
   if(target && window.MutationObserver){
     new MutationObserver(function(mutations){
