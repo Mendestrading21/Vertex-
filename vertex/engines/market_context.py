@@ -28,7 +28,7 @@ STALE_AFTER_S = 2100          # aligné sur STALE_SCAN_SEC (constants.py)
 
 # Dimensions du schéma cible non alimentées par une source réelle aujourd'hui —
 # déclarées MISSING honnêtement (elles arrivent avec leurs sources, jamais avant).
-_UNAVAILABLE = ('rates_curve', 'dollar', 'credit_spreads', 'vol_term_structure',
+_UNAVAILABLE = ('credit_spreads', 'vol_term_structure',
                 'dispersion', 'liquidity', 'cross_asset')
 
 _UNITS_UNAVAILABLE = {'rates_curve': 'bps', 'dollar': 'index', 'credit_spreads': 'bps',
@@ -65,6 +65,8 @@ def build(scan_state, prev=None, now=None, demo=False, stale_after_s=STALE_AFTER
     now = time.time() if now is None else now
     market = scan_state.get('market') or {}
     mc = scan_state.get('market_ctx') or {}
+    macro = {str(item.get('id')): item for item in (scan_state.get('macro') or [])
+             if isinstance(item, dict) and item.get('id')}
     ts = scan_state.get('scan_ts')
     as_of = scan_state.get('scan_ts_h') or scan_state.get('updated')
 
@@ -127,6 +129,16 @@ def build(scan_state, prev=None, now=None, demo=False, stale_after_s=STALE_AFTER
     }
     if vix_status_override and dimensions['vix']['value'] is not None:
         dimensions['vix']['status'] = vix_status_override
+    curve = _num((macro.get('CURVE') or {}).get('value'))
+    curve_bps = round(curve * 100.0, 1) if curve is not None else None
+    dxy = _num((macro.get('DX-Y.NYB') or {}).get('value'))
+    dxy_chg = _num((macro.get('DX-Y.NYB') or {}).get('chg'))
+    dollar_trend = ('STRENGTHENING' if dxy_chg is not None and dxy_chg >= 0.3 else
+                    'WEAKENING' if dxy_chg is not None and dxy_chg <= -0.3 else None)
+    dimensions['rates_curve'] = dim(curve_bps, 'bps', 'scan.macro',
+                                    raw_pp=curve, trend=('INVERTED' if curve_bps is not None and curve_bps < 0 else None))
+    dimensions['dollar'] = dim(dxy, 'index', 'scan.macro', change=dxy_chg,
+                               trend=dollar_trend)
     for name in _UNAVAILABLE:
         dimensions[name] = _fact(None, _UNITS_UNAVAILABLE[name], None, None, 'MISSING')
 
@@ -134,7 +146,8 @@ def build(scan_state, prev=None, now=None, demo=False, stale_after_s=STALE_AFTER
 
     # ── Régime (moteur déterministe §24) + transition ───────────────────────────
     reg = classify_regime({'index_trend': trend, 'breadth_pct': breadth,
-                           'vix': vix_val, 'leadership': leadership})
+                           'vix': vix_val, 'leadership': leadership,
+                           'yield_curve_bps': curve_bps, 'dollar_trend': dollar_trend})
     prev_label = ((prev or {}).get('regime') or {}).get('label')
     transition = {'from': prev_label, 'to': reg.get('regime'),
                   'changed': (None if prev_label is None else prev_label != reg.get('regime'))}

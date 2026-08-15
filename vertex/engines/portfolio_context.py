@@ -16,13 +16,53 @@ Règles d'honnêteté :
 """
 from __future__ import annotations
 
+from vertex.portfolio.correlation import correlation_matrix
+
 
 def _profile():
     from vertex.strategy.constitution import load_profile
     return load_profile()
 
 
-def build(positions, quotes=None, sym=None, capital=None, profile=None):
+def _aligned_returns(series_by_symbol, symbols):
+    """Rendements quotidiens strictement alignés sur les dates communes.
+
+    Une liste de clôtures sans dates, ou un recouvrement inférieur à 31 séances,
+    ne suffit pas à déclarer une corrélation disponible.
+    """
+    points = {}
+    for symbol in symbols:
+        series = (series_by_symbol or {}).get(symbol) or {}
+        dates, closes = series.get('dates'), series.get('close')
+        if not isinstance(dates, list) or not isinstance(closes, list) or len(dates) != len(closes):
+            continue
+        values = {}
+        for date, close in zip(dates, closes):
+            try:
+                value = float(close)
+            except (TypeError, ValueError):
+                continue
+            if date and value > 0:
+                values[str(date)] = value
+        if len(values) >= 31:
+            points[symbol] = values
+    if len(points) < 2:
+        return {}, 'séries datées insuffisantes pour au moins deux positions'
+    common = set.intersection(*(set(values) for values in points.values()))
+    if len(common) < 31:
+        return {}, 'moins de 31 séances communes entre les positions'
+    ordered = [date for date in next(iter(points.values())) if date in common]
+    out = {}
+    for symbol, values in points.items():
+        closes = [values[date] for date in ordered]
+        returns = [(current / previous - 1.0) for previous, current in zip(closes, closes[1:])
+                   if previous > 0]
+        if len(returns) >= 30:
+            out[symbol] = returns
+    return out, (None if len(out) >= 2 else 'rendements alignés insuffisants')
+
+
+def build(positions, quotes=None, sym=None, capital=None, profile=None, series_by_symbol=None):
     """positions : liste canonique (repository.load_positions). quotes : {SYM: px}.
     capital : base de sizing (sinon valeur investie totale). sym : candidat étudié."""
     prof = profile or _profile()
@@ -117,6 +157,24 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None):
                   'never_triggers_orders': True,
                   'note': 'Plafonds ANALYTIQUES de la Constitution V2 — jamais un ordre.'}
 
+    returns, correlation_reason = _aligned_returns(series_by_symbol, list(by_sym))
+    correlations = correlation_matrix(returns) if returns else {}
+    if returns:
+        correlation_context = {
+            'available': bool(correlations.get('pairs')),
+            'average': correlations.get('average'),
+            'high_pairs': correlations.get('high_pairs') or {},
+            'pairs': correlations.get('pairs') or {},
+            'symbols_covered': correlations.get('symbols_covered') or [],
+            'warning': correlations.get('warning'),
+            'method': 'rendements journaliers alignés sur dates communes ; minimum 30 rendements',
+        }
+        if not correlation_context['available']:
+            correlation_context['reason'] = 'aucune paire corrélable malgré les séries disponibles'
+    else:
+        correlation_context = {'available': False,
+                               'reason': correlation_reason or 'données de corrélation non branchées'}
+
     return {
         'available': True, 'generator': 'deterministic',
         'n_positions': n, 'bounds': {'min': pmin, 'max': pmax},
@@ -128,8 +186,7 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None):
         'candidate': candidate, 'sizing': sizing,
         'risk_budget': {'available': False,
                         'reason': 'aucun stop déclaré par position — budget de risque non estimé'},
-        'correlations': {'available': False,
-                         'reason': 'données de corrélation/facteurs non branchées — jamais approximées'},
+        'correlations': correlation_context,
         'provenance': sorted({p.get('source') or 'MANUAL' for p in open_real}),
     }
 

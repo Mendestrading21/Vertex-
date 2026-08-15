@@ -41,6 +41,7 @@ from vertex.market import context as market
 from vertex.research import chart_read as research
 from vertex.data_sources import fundamentals
 from vertex.data_sources import analyst_deep
+from vertex.data_sources import scan_evidence as _scan_evidence
 from vertex.engines import decide as engine
 from vertex.engines import scorecard as ibkr
 from vertex.strategy import legacy_adapter as strategy
@@ -191,6 +192,7 @@ if _FUND_CACHE:                                      # publie le cache dès le d
     scan_state['fundamentals'] = {'by_sym': _FUND_CACHE, 'by_sector': _recompute_sectors(_FUND_CACHE)}
 if _OPT_CACHE.get('board'):
     scan_state['options_board'] = _OPT_CACHE['board']
+    scan_state['options_as_of'] = _OPT_CACHE.get('ts')
 scan_state['macro'] = _load_json('macro_cache.json', [])
 scan_state['radar'] = _load_json('radar_cache.json', None)   # radar marché IBKR (persistant)
 
@@ -526,9 +528,22 @@ def scan():
                 _db = _demo_options_board(rows, detail)
                 _annotate_swing(_db, detail)
                 scan_state['options_board'] = _db
+                scan_state['options_as_of'] = time.time()
                 _attach_vehicle(rows, _db)
             except Exception:
                 pass
+        # PREUVES PAR TITRE : qualité, provenance et réconciliation sont produites
+        # à partir du cycle actuel avant tout chemin décisionnel Skyler/Strategy OS.
+        # Une chaîne sans timestamp reste explicitement non actionnable.
+        try:
+            _packets, _reconciliations = _scan_evidence.build_scan(
+                detail, data, scan_state.get('source'), scan_state.get('options_board') or [],
+                scan_state.get('options_as_of'))
+            scan_state['analytics_packets'] = _packets
+            scan_state['reconciliation_by_symbol'] = _reconciliations
+        except Exception:
+            scan_state['analytics_packets'] = []
+            scan_state['reconciliation_by_symbol'] = {}
         try:
             pf = backtest(data)
         except Exception:
@@ -1042,6 +1057,7 @@ def _publish_board(focus):
     if ob:
         _annotate_swing(ob, scan_state.get('detail') or {})
         scan_state['options_board'] = ob
+        scan_state['options_as_of'] = now
         _attach_vehicle(scan_state.get('rows') or [], ob)   # rafraîchit le verdict véhicule
         _save_json('options_cache.json', {'board': ob, 'ts': time.time()})
 
@@ -1094,6 +1110,7 @@ def _opt_loop():
                     else:                              # repli yfinance : board focus seul
                         _annotate_swing(ob, scan_state.get('detail') or {})
                         scan_state['options_board'] = ob
+                        scan_state['options_as_of'] = time.time()
                         _save_json('options_cache.json', {'board': ob, 'ts': time.time()})
             except Exception:
                 pass

@@ -136,9 +136,12 @@ def api_skyler(sym):
         from vertex.positions.repository import load_positions
         from vertex.services import persist
         pos = load_positions(persist.load_json('desk_data.json', {}) or {})
-        quotes = {s: (d or {}).get('price') for s, d in (scan_state.get('detail') or {}).items()
+        detail_map = scan_state.get('detail') or {}
+        quotes = {s: (d or {}).get('price') for s, d in detail_map.items()
                   if isinstance(d, dict) and d.get('price') is not None}
-        pctx = _pc.build(pos, quotes=quotes, sym=sym)
+        series_by_symbol = {s: (d or {}).get('series') or {} for s, d in detail_map.items()
+                            if isinstance(d, dict)}
+        pctx = _pc.build(pos, quotes=quotes, sym=sym, series_by_symbol=series_by_symbol)
     except Exception:
         pctx = None
     # Red-team PRODUITE (LOT 14) : les 10 questions du comité évaluées sur le

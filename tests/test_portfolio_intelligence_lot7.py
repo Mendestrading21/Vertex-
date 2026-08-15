@@ -133,6 +133,18 @@ def test_risk_budget_honestly_absent_without_stops():
     assert 'stop' in ctx['risk_budget']['reason']
 
 
+def test_correlation_requires_explicitly_dated_overlapping_series():
+    series = {}
+    for offset, symbol in enumerate(('AAA', 'BBB', 'CCC')):
+        closes = [100 + offset + day * (1 + offset * 0.1) for day in range(40)]
+        series[symbol] = {'dates': [f'03-{day:02d}' for day in range(1, 41)], 'close': closes}
+    ctx = PC.build(_positions(), quotes=_quotes(), series_by_symbol=series)
+    assert ctx['correlations']['available'] is True
+    assert len(ctx['correlations']['pairs']) == 3
+    absent = PC.build(_positions(), quotes=_quotes())
+    assert absent['correlations']['available'] is False
+
+
 # ─── Branchement Skyler : gates portefeuille ────────────────────────────────────
 
 def _detail(verdict='RENFORCER'):

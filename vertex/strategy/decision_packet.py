@@ -7,7 +7,7 @@ la décision à ``ATTENDRE``. Il ne déclenche aucun ordre et ne conserve aucune
 """
 from __future__ import annotations
 
-from vertex.anomalies.stock_anomalies import detect_stock_anomalies
+from vertex.engines.anomaly_context import build as build_anomaly_context
 from vertex.market.regime_engine import classify_regime
 
 INCOMPLETE_PACKET_RULE = 'DECISION_PACKET_INCOMPLETE'
@@ -61,13 +61,8 @@ def _guard(scan_state: dict, detail: dict) -> tuple[dict, bool]:
 
 
 def _actual_anomalies(symbol: str, detail: dict) -> list[dict]:
-    series = detail.get('series') or {}
-    closes = series.get('close') or []
-    if not isinstance(closes, list) or len(closes) < 30:
-        return []
-    bars = [{'date': '', 'open': close, 'high': close, 'low': close,
-             'close': close, 'volume': None} for close in closes]
-    return [anomaly.to_dict() for anomaly in detect_stock_anomalies(symbol, bars)]
+    context = build_anomaly_context(symbol, detail)
+    return context.get('events') or []
 
 
 def _market_regime(scan_state: dict) -> dict:
