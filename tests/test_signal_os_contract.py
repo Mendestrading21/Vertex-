@@ -82,10 +82,32 @@ def test_signal_os_copy_layer_is_local_and_read_only():
     forbidden = ("fetch(", "XMLHttpRequest", "EventSource", ".submit(", "sendBeacon")
     for token in forbidden:
         assert token not in js, f"La couche visuelle ne doit pas faire de réseau: {token}"
-    assert "Signal du jour" in js
-    assert "Top opportunités" in js
+    # Pages NON encore reconstruites : leur micro-copy passe encore par la table.
     assert "Exposition, risque et prochaine décision." in js
     assert "Convexité, volatilité et risque événementiel." in js
+
+
+def test_la_copy_des_pages_reconstruites_a_quitte_la_table():
+    """La table de réécriture est une MIGRATION, pas une architecture.
+
+    Tant qu'un libellé y figure, il existe deux fois : dans les octets servis et
+    à l'écran. Ce test vérifie que les pages déjà reconstruites — shell,
+    Aujourd'hui — écrivent le leur à la source ET ne le réécrivent plus après
+    coup. Sans lui, la table ne rétrécirait jamais.
+    """
+    js = _read(JS)
+    brief = (ROOT / 'vertex/ui/pages/briefing.py').read_text(encoding='utf-8')
+    for libelle in ('Signal du jour', 'Top opportunités'):
+        assert libelle in brief, (
+            '« %s » n\'est plus écrit à la source dans briefing.py' % libelle)
+        assert libelle not in js, (
+            '« %s » est revenu dans la table de réécriture : le serveur et '
+            'l\'écran ne diraient plus la même chose.' % libelle)
+    for mort in ('Brief Vertex', 'Meilleures opportunités',
+                 'Depuis ta dernière visite'):
+        assert mort not in js, (
+            'entrée « %s » toujours dans la table alors qu\'Aujourd\'hui est '
+            'reconstruite.' % mort)
 
 
 def test_signal_os_uses_no_external_asset_or_import():

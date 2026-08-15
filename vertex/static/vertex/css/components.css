@@ -72,6 +72,19 @@
 .vx-kpi-strip > *{grid-column:span 1 !important}
 .vx-kpi-card{position:relative;display:flex;flex-direction:column;min-height:116px;
   padding:var(--vx-s4);overflow:hidden}
+/* SIGNAL OS · AUJOURD'HUI — la tuile KPI est un LIEN vers le domicile canonique
+   de sa donnée. Les trois déclarations qui en font un lien discret (décoration,
+   couleur, taille du chiffre) étaient écrites EN LIGNE dans le gabarit JS :
+   rien de dynamique, donc rien à justifier. Le contexte (3ᵉ étage) est poussé en
+   bas pour que les quatre tuiles alignent leur ligne de base quel que soit le
+   nombre de lignes de la valeur. */
+a.vx-kpi-card{text-decoration:none;color:inherit}
+a.vx-kpi-card .vx-kpi-value{font-size:20px}
+/* Le 3ᵉ étage est de la PROSE (« participation étroite », « Vertex ne tranche
+   pas »), pas un chiffre : la police à chasse fixe, juste pour aligner des
+   colonnes de nombres, lui donnait l'air d'un fragment de code. */
+a.vx-kpi-card .vx-kpi-delta{margin-top:auto;padding-top:var(--vx-s2);
+  font-family:var(--vx-font);letter-spacing:0}
 .vx-kpi-card::before{content:"";position:absolute;inset:0 auto 0 0;width:2px;
   background:transparent}
 .vx-kpi-card[data-tone="positive"]::before{background:var(--vx-positive)}

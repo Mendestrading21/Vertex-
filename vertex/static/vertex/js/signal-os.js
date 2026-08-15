@@ -5,14 +5,14 @@
 (function(){
 'use strict';
 
+/* MIGRATION — cette table rétrécit page par page.
+   Chaque libellé qu'elle réécrit existe DEUX FOIS : dans les octets servis et
+   à l'écran. Tout gardien qui lit le serveur garde alors l'ancienne version, et
+   la nouvelle n'est gardée par rien. Une entrée disparaît d'ici quand la page
+   qui la porte est reconstruite et écrit son libellé à la source.
+   Fait : shell, Aujourd'hui. Restent : Marchés, Opportunités, Analyse,
+   Portefeuille, Options, Journal, Système. */
 const COPY = new Map([
-  ["Dois-je agir aujourd’hui, et sur quoi ?","Les signaux qui méritent une action."],
-  ["Dois-je agir aujourd'hui, et sur quoi ?","Les signaux qui méritent une action."],
-  ["Brief Vertex","Signal du jour"],
-  ["Depuis ta dernière visite","Ce qui a changé"],
-  ["Meilleures opportunités","Top opportunités"],
-  ["Alertes prioritaires","Alertes"],
-  ["Portefeuille — ce qui a changé","Portefeuille"],
   ["Dans quel environnement la stratégie opère-t-elle ?","Régime, risque et leadership."],
   ["Vue d’ensemble","Vue globale"],
   ["Vue d'ensemble","Vue globale"],

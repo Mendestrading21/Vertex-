@@ -27,9 +27,11 @@ def test_today_leads_with_one_decision_and_four_kpis():
     html = briefing._CONTENT
     js = briefing._JS
 
+    # `vx-disclosure` a été RETIRÉ de cette liste au lot Signal OS · Aujourd'hui.
+    # Il n'y a plus de repli sur cette page : voir
+    # `test_today_keeps_one_regime_visual_and_shows_catalysts` ci-dessous.
     for cls in ('vx-page-lead', 'vx-kpi-strip', 'vx-hero-grid',
-                'vx-insight-rail', 'vx-toolbar', 'vx-section-stack',
-                'vx-disclosure'):
+                'vx-insight-rail', 'vx-toolbar', 'vx-section-stack'):
         assert cls in html
 
     assert 'data-max-kpis="4"' in html
@@ -44,13 +46,41 @@ def test_today_leads_with_one_decision_and_four_kpis():
         assert label in js
 
 
-def test_today_keeps_one_regime_visual_and_relegates_deep_context():
-    html = briefing._CONTENT
-    details = _details_containing(html, 'id="vx-calendar"')
+def test_today_keeps_one_regime_visual_and_shows_catalysts():
+    """RENVERSEMENT ASSUMÉ DU LOT 621 — les catalyseurs sortent du repli.
 
-    assert 'id="vx-portfolio"' in details
-    assert html.index('id="vx-opp-stocks"') < html.index('<details')
-    assert html.index('id="vx-alerts"') < html.index('<details')
+    Le 621 avait mis calendrier et portefeuille dans un `<details>` fermé, sous
+    le résumé « Catalyseurs et portefeuille », pour qu'ils ne concurrencent pas
+    la décision principale.
+
+    `PAGES.md` les classe **4ᵉ et 5ᵉ** des six rangs d'Aujourd'hui — entre les
+    opportunités et le brief éditorial. Ce sont des éléments de premier plan.
+    Et un catalyseur à J-2 qu'il faut déplier pour voir ne remplit pas son
+    office : il existe précisément pour prévenir **avant**.
+
+    Ce qui est CONSERVÉ du 621, et qui était sa vraie trouvaille : une seule
+    visualisation de régime sur la page, et l'ordre décision → régime →
+    opportunités → surveillance.
+    """
+    html = briefing._CONTENT
+    # Les commentaires HTML ne sont pas du balisage. Le commentaire qui EXPLIQUE
+    # le retrait du repli cite `<details>` — chercher la sous-chaîne dans la
+    # source brute le comptait comme un repli réel (même famille que 616-B :
+    # chercher une sous-chaîne n'est pas lire du balisage).
+    balisage = re.sub(r'<!--.*?-->', '', html, flags=re.S)
+
+    assert '<details' not in balisage, (
+        'un repli est réapparu sur Aujourd\'hui. Vérifier ce qu\'il cache : si '
+        'c\'est un des six rangs de PAGES.md, il ne doit pas être replié.')
+    assert 'id="vx-calendar"' in balisage and 'id="vx-portfolio"' in balisage
+    # L'ordre de la page suit celui de la hiérarchie cible.
+    for avant, apres in (('id="vx-hero"', 'id="vx-regime-body"'),
+                         ('id="vx-regime-body"', 'id="vx-opp-stocks"'),
+                         ('id="vx-opp-stocks"', 'id="vx-alerts"'),
+                         ('id="vx-alerts"', 'id="vx-calendar"'),
+                         ('id="vx-calendar"', 'id="vx-portfolio"')):
+        assert balisage.index(avant) < balisage.index(apres), (
+            'ordre rompu : %s devrait précéder %s' % (avant, apres))
     assert briefing._JS.count('VXCharts.regimeAura(') == 1
     assert 'timestamp:r&&(r.as_of||r.timestamp||r.updated)||null' in briefing._JS
 

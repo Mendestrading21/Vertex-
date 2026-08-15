@@ -103,7 +103,7 @@ _CONTENT = """
 
 <!-- NIVEAU 1 — une phrase décisionnelle et quatre KPI au maximum. -->
 <section class="vx-card vx-card--hero vx-today-lead" id="vx-hero" aria-label="Réponse du jour">
-  <div class="vx-card-header"><span class="vx-card-title">Décision du jour</span>
+  <div class="vx-card-header"><span class="vx-card-title">Signal du jour</span>
     <span class="vx-actions" id="vx-hero-fresh"></span></div>
   <div id="vx-brief-body" aria-live="polite">%%LOADING%%</div>
   <div class="vx-kpi-strip vx-mt3" id="vx-hero-kpis" data-max-kpis="4"
@@ -131,7 +131,7 @@ _CONTENT = """
 <div class="vx-section-stack vx-mt4">
   <div class="vx-hero-grid vx-today-secondary">
     <section class="vx-card" aria-label="Meilleures opportunités">
-      <div class="vx-card-header"><span class="vx-card-title">Opportunités à étudier</span>
+      <div class="vx-card-header"><span class="vx-card-title">Top opportunités</span>
         <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities">Toutes →</a></span></div>
       <div id="vx-opp-stocks">%%LOADING%%</div>
     </section>
@@ -142,21 +142,22 @@ _CONTENT = """
     </section>
   </div>
 
-  <!-- NIVEAU 3 — contrats conservés, détails repliés pour ne pas concurrencer
-       la décision principale. Les hôtes restent montés et sourcés. -->
-  <details class="vx-disclosure vx-today-details">
-    <summary>Catalyseurs et portefeuille</summary>
-    <div class="vx-disclosure__body">
-      <div class="vx-hero-grid">
-        <div id="vx-calendar"></div>
-        <section class="vx-card" aria-label="Portefeuille — ce qui a changé">
-          <div class="vx-card-header"><span class="vx-card-title">Portefeuille — ce qui a changé</span>
-            <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></span></div>
-          <div id="vx-portfolio">%%LOADING%%</div>
-        </section>
-      </div>
-    </div>
-  </details>
+  <!-- NIVEAU 3 — CATALYSEURS ET PORTEFEUILLE, VISIBLES.
+       Ils étaient dans un `<details>` replié, sous le résumé « Catalyseurs et
+       portefeuille ». Or PAGES.md les classe 4ᵉ et 5ᵉ des six rangs de cette
+       page, entre les opportunités et le brief éditorial : ce sont des éléments
+       de premier plan, pas du contexte profond. Un catalyseur à J-2 qu'il faut
+       déplier pour voir ne remplit pas son office — il existe précisément pour
+       prévenir avant. Ils reprennent leur rang ; l'ordre de la page suit celui
+       de la hiérarchie cible. -->
+  <div class="vx-hero-grid vx-today-watch">
+    <div id="vx-calendar"></div>
+    <section class="vx-card" aria-label="Portefeuille — ce qui a changé">
+      <div class="vx-card-header"><span class="vx-card-title">Portefeuille</span>
+        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></span></div>
+      <div id="vx-portfolio">%%LOADING%%</div>
+    </section>
+  </div>
 </div>
 """
 
@@ -187,12 +188,24 @@ function vCls(v){var s=String(v||'').toLowerCase();if(!s)return'';
   if(/(avoid|évit|evit|refus|réduir|reduir|sell|vendre|rejet)/.test(s))return'vx-neg';
   if(/(hold|attend|neutre|patience|surveil|watch)/.test(s))return'vx-warn';return'';}
 
-/* Tuile KPI résumé — cliquable, pointe vers son domicile canonique. */
-function kpiTile(label,value,cls,href){
-  return '<a class="vx-card vx-card--compact vx-kpi vx-kpi-card" style="text-decoration:none;color:inherit" href="'+href+'" aria-label="'+esc(label)+'">'
+/* Tuile KPI résumé — cliquable, pointe vers son domicile canonique.
+   FORME : label -> valeur -> contexte. Le troisième étage portait « voir → »
+   sur les QUATRE tuiles : quatre fois la même phrase, qui ne disait rien que la
+   tuile ne dise déjà (elle est un lien en entier, le curseur le montre). Il
+   porte desormais la donnée qui qualifie la valeur — confiance du régime, bande
+   de breadth, bande de VIX, verdict du comité — et « — » quand elle manque. */
+function kpiTile(label,value,cls,href,contexte){
+  return '<a class="vx-card vx-card--compact vx-kpi vx-kpi-card" href="'+href+'" aria-label="'+esc(label)+'">'
     +'<span class="vx-kpi-label">'+esc(label)+'</span>'
-    +'<span class="vx-kpi-value '+(cls||'')+'" style="font-size:20px">'+value+'</span>'
-    +'<span class="vx-kpi-delta vx-muted">voir →</span></a>';
+    +'<span class="vx-kpi-value '+(cls||'')+'">'+value+'</span>'
+    +'<span class="vx-kpi-delta vx-muted">'+(contexte||'—')+'</span></a>';
+}
+
+/* Le moteur ne rend pas une valeur vide quand il ne tranche pas : il rend la
+   CHAÎNE 'UNKNOWN' (lot 629). Même prédicat que `regime-aura.js`, au même
+   titre — sans lui, le résumé affiche « UNKNOWN » comme un nom de régime. */
+function regimeIndetermine(v){
+  return !v || /^(unknown|inconnu|n\/?d|nd|none|null)$/i.test(String(v).trim());
 }
 
 /* ── Hero éditorial : la réponse en 10 s ── */
@@ -213,27 +226,43 @@ async function loadBrief(){
       +'<div class="vx-card-footer"><span class="vx-meta">'+(b.generator==='deterministic'?'Conclusion déterministe · moteurs':'Conclusion éditoriale validée')+'</span>'
       +'<a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets">Voir les preuves →</a></div>';
     if(b.demo)$('vx-demo-banner').innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
-  }catch(e){$('vx-brief-body').innerHTML=VX.states.error('Brief indisponible ('+e.message+')');}
+  }catch(e){$('vx-brief-body').innerHTML=VX.states.error('Impossible de charger le brief.');}
 }
 
 /* ── 4 KPI résumé cliquables (régime, breadth, VIX, meilleure opportunité) ── */
 async function loadSummary(){
   const paint=(sum,reg,cmd)=>{
     sum=sum||{};reg=reg||{};cmd=cmd||{};
-    const conf=Math.round((reg.confidence||0)*100);
+    /* CONFIANCE : `(reg.confidence||0)*100` affichait « (0%) » quand le moteur
+       n'en rendait AUCUNE — un chiffre fabriqué, indiscernable d'un zéro
+       mesuré. Même défaut que celui corrigé au lot 629 dans l'objet Regime
+       Aura, à un second site d'appel : le résumé. */
+    const conf=(reg.confidence!=null&&!isNaN(reg.confidence))?Math.round(reg.confidence*100):null;
     const br=breadthOf(sum.breadth);
     let vix=num(sum.vix);
     const best=(cmd.top_stocks||[])[0]||null;
-    const regHtml=reg.regime?esc(reg.regime):'n/d';
+    const flou=regimeIndetermine(reg.regime);
+    const regHtml=flou?'<span class="vx-muted">Indéterminé</span>':esc(reg.regime);
+    const regCtx=flou?'Vertex ne tranche pas'
+      :(conf!=null?('confiance '+conf+' %'):'confiance n/d');
     const brHtml=br!=null?(br.v+' %'):'n/d';
-    const brCls=br!=null?(br.v>=55?'vx-pos':'vx-warn'):'';
+    /* UN SEUL seuil dans ce fichier, deux sorties. La couleur encodait déjà
+       `>= 55` sans jamais le dire ; le contexte nomme ce que la couleur affirme,
+       il n'ajoute pas une seconde règle. */
+    const brSain=br!=null?(br.v>=55):null;
+    const brCls=brSain==null?'':(brSain?'vx-pos':'vx-warn');
+    const brCtx=brSain==null?'':(brSain?'participation saine':'participation étroite');
     const vixHtml=vix!=null?vix:'n/d';
     const bestHtml=best?esc(best.symbol):'—';
     const kpis=[
-      kpiTile('Régime',regHtml+' <span class="vx-meta">('+conf+'%)</span>','','/markets'),
-      kpiTile('Breadth'+(br&&br.lbl?' '+br.lbl:''),brHtml,brCls,'/markets?view=breadth'),
-      kpiTile('VIX',vixHtml,'','/markets?view=volatility'),
-      best?kpiTile('Meilleure opp.',bestHtml,'','/analysis/'+encodeURIComponent(best.symbol)):kpiTile('Meilleure opp.','—','','/opportunities'),
+      kpiTile('Régime',regHtml,'','/markets',regCtx),
+      /* L'étiquette NOMME la métrique (« Breadth >MM200 ») — gardien du lot 66 :
+         « 45 % » seul ne dit pas 45 % de quoi. Le 3ᵉ étage porte l'interprétation,
+         pas la métrique. */
+      kpiTile('Breadth'+(br&&br.lbl?' '+br.lbl:''),brHtml,brCls,'/markets?view=breadth',brCtx),
+      kpiTile('VIX',vixHtml,'','/markets?view=volatility',sum.vix_band?esc(sum.vix_band):''),
+      best?kpiTile('Meilleure opp.',bestHtml,'','/analysis/'+encodeURIComponent(best.symbol),best.verdict?esc(best.verdict):'')
+          :kpiTile('Meilleure opp.','—','','/opportunities','aucun dossier retenu'),
     ].join('');
     $('vx-hero-kpis').innerHTML=kpis;
     /* Action prioritaire : dérivée uniquement des données réelles. */
@@ -365,7 +394,7 @@ async function loadCalendar(){
         impact:(m.importance==='haute')?'high':(m.importance==='moyenne'?'med':'low')})),
       ...(cal.items||[]).filter(it=>it&&it.dte!=null).slice(0,4).map(it=>({label:(it.sym||'Résultats'),dte:it.dte,impact:'high'}))]
       .filter(e=>e.dte!=null&&!isNaN(e.dte));
-    VXCharts.catalystRunway('vx-calendar',{title:'Catalyseurs imminents',question:'Quels catalyseurs arrivent, et quand ?',
+    VXCharts.catalystRunway('vx-calendar',{title:'Catalyseurs',question:'Quels catalyseurs arrivent, et quand ?',
       events,source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
       emptyText:'Aucun catalyseur imminent identifié.'});
   }catch(e){$('vx-calendar').innerHTML='<div class="vx-card">'+VX.states.error('Calendrier indisponible')+'</div>';}

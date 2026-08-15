@@ -139,7 +139,15 @@ def build_daily_brief(scan_state: dict, news_state: dict | None = None,
         'what_changed': [f"{ev.get('title_fr') or ev['title']} ({ev['source']})"
                          for ev in top_events[:3]],
         'watching': [s.get('symbol') for s in decisions[:3] if s.get('symbol')],
-        'main_risk': ('Régime UNKNOWN — risque neuf bloqué' if regime in ('UNKNOWN', 'n/d')
+        # SIGNAL OS · AUJOURD'HUI — la CONDITION était juste, le libellé fuyait.
+        # `UNKNOWN` est la sentinelle interne que le moteur rend quand il ne
+        # tranche pas ; elle finissait telle quelle en tête de l'accueil, en
+        # majuscules et en anglais, dans la phrase la plus lue de Vertex. Le
+        # troisième et dernier site du même défaut (les deux autres : l'objet
+        # Regime Aura au lot 629, la tuile KPI du résumé à ce lot).
+        # Aucune règle ne change : même test, même branche, même conclusion.
+        'main_risk': ('Régime indéterminé — risque neuf bloqué'
+                      if regime in ('UNKNOWN', 'n/d')
                       else f'Invalidation du régime {regime}'),
         'main_opportunity': (prio.get('symbol') if prio else None),
         'sources': sources,
