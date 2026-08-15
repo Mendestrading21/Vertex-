@@ -71,7 +71,11 @@ def test_stocks_show_a_six_column_top_then_full_technical_access():
 def test_options_is_a_three_contract_shortlist_and_canonical_relay():
     options = _segment(OPP, 'async function renderOptions', '/* ── ANOMALIES')
     assert ').slice(0,3)' in options
-    assert 'Shortlist options — relais vers l’espace Options' in options
+    # Titre raccourci au lot Signal OS · Opportunités : « relais vers l'espace
+    # Options » expliquait le LOGICIEL, et le lien juste en dessous porte déjà
+    # l'action. Ce qui est gardé ici est la propriété, pas la phrase : trois
+    # contrats, et le relais canonique bien présent.
+    assert '<span class="vx-card-title">Shortlist options</span>' in options
     assert 'id="op-options-full"' in options
     assert 'id="op-contract" hidden' in options
     assert '/options">Options Intelligence' in options

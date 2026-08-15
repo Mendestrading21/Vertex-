@@ -19,7 +19,12 @@ def test_opportunities_scatter_renamed():
     src = _read('vertex/ui/pages/opportunities_page.py')
     assert 'op-scatter' in src, 'le scatter doit s\'appeler op-scatter'
     assert 'op-radar' not in src, 'op-radar (nom trompeur) doit avoir disparu'
-    assert 'Scatter d' in src and 'asym' in src.lower()
+    # Le titre visible ne dit plus « Scatter » : COPY.md demande un nom d'objet
+    # ou de décision, pas le TYPE de graphique — l'utilisateur cherche un couple
+    # qualité × timing, il ne cherche pas un nuage de points. La QUESTION, elle,
+    # reste obligatoire : c'est elle qui justifie le graphique.
+    assert "title:'Qualité × timing'" in src
+    assert 'question:' in src and 'qualité × timing ?' in src
 
 
 def test_opportunities_hero_editorial_honest():

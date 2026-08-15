@@ -22,7 +22,7 @@ def _tabs(view: str) -> str:
 
 _CONTENT = """
 <div class="vx-page-header vx-page-lead"><div><h1>Opportunités</h1>
-<div class="vx-sub">Quelles opportunités méritent réellement une analyse ?</div></div>
+<div class="vx-sub">Les dossiers qui méritent ton attention.</div></div>
 <div class="vx-actions vx-toolbar"><span id="op-fresh" style="align-self:center"></span><button class="vx-btn vx-btn-sm"
   onclick="VXEntities.openAddModal()">+ Ajouter</button></div></div>
 %%TABS%%
@@ -138,7 +138,7 @@ function renderShortlist(rows,scan,catBySym){
   const el=$('op-shortlist');if(!el)return;
   const list=opRanked(rows).slice(1,4);  /* après la dominante */
   if(!list.length){el.innerHTML='';return;}
-  el.innerHTML='<div class="vx-col-12 vx-op-sectitle">Shortlist — méritent une analyse</div>'
+  el.innerHTML='<div class="vx-col-12 vx-op-sectitle">Shortlist</div>'
     +list.map(function(r){const g=opGrade(r);const cat=catBySym&&catBySym[r.symbol];
     return `<div class="vx-col-4"><div class="vx-op-tk" aria-label="${esc(r.symbol)}">
       <div class="vx-op-tk-top">
@@ -185,7 +185,7 @@ function renderCompare(rows){
         <span class="rail"><i style="width:${w.toFixed(0)}%"></i></span>
         <span class="n">${v==null?'n/d':VX.fmt.nd(v)}</span></div></td>`;}).join('');
     return `<tr><td class="metric">${m[1]}</td>${cells}</tr>`;}).join('');
-  el.innerHTML='<div class="vx-card"><div class="vx-chart-head"><span class="vx-chart-title">Comparaison des meilleurs candidats</span>'
+  el.innerHTML='<div class="vx-card"><div class="vx-chart-head"><span class="vx-chart-title">Comparaison</span>'
     +'<span class="vx-chart-question">Lequel offre le meilleur couple asymétrie × probabilité ?</span></div>'
     +'<div class="vx-table-wrap"><table class="vx-op-cmp">'+'<thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>'
     +'<div class="vx-card-foot"><span class="vx-meta">Barres = intensité relative par critère ; orange = meilleur du critère. Champs moteur réels (score, asymétrie vx_asym, prob. gain vx_pwin, R:R vx_rr, edge, momentum, qualité) — aucune valeur inventée. ★ = tête de shortlist.</span></div></div>';
@@ -211,7 +211,7 @@ async function renderFunnel(){
   if(st.length>=2){let bi=0,bd=0;for(let i=1;i<st.length;i++){const d=(st[i-1].count||0)-(st[i].count||0);if(d>bd){bd=d;bi=i;}}
     concl=bd>0?('Plus forte déperdition : '+esc(st[bi-1].label)+' → '+esc(st[bi].label)+' (−'+bd+').')
       :'Entonnoir plat — peu de déperdition entre étages.';}
-  el.innerHTML='<section class="vx-card vx-card--compact" aria-label="Entonnoir de sélection"><div class="vx-card-header"><span class="vx-card-title">Entonnoir de sélection</span>'
+  el.innerHTML='<section class="vx-card vx-card--compact" aria-label="Entonnoir de sélection"><div class="vx-card-header"><span class="vx-card-title">Sélection</span>'
     +'<span class="vx-chart-question">Que reste-t-il après filtrage ?</span></div>'
     +'<div class="vx-flex vx-wrap" style="gap:.35rem;margin-bottom:.4rem">'+roles+'</div>'
     +'<div id="op-funnel-viz"></div>'
@@ -279,7 +279,7 @@ async function renderRadar(){
       +missing.slice(0,8).map(p=>esc(p.r.symbol)).join(' · ')+(missing.length>8?' · …':'')
     :'Tous les titres affichés disposent des deux axes.';
   VXCharts.card('op-scatter',{
-    title:'Scatter d\'asymétrie — qualité × timing',
+    title:'Qualité × timing',
     question:'Où se trouvent les meilleurs couples qualité × timing ?',
     conclusion:(function(){const a=plotted.filter(p=>bucketOf(p.r)==='Actionnable').length;
       return a?(a+' candidat(s) en zone actionnable (haut-droit)'):'Aucun candidat en zone actionnable — attendre reste valide';})(),
@@ -374,7 +374,7 @@ function renderHero(rows,scan,best,catBySym){
      seule carte hero. Les quatre métriques décisionnelles vivent dans la
      dominante ; les volumes S+/S/A restent de simples badges de contexte. */
   el.innerHTML='<section class="vx-card vx-card--hero" aria-label="Réponse du radar">'
-    +'<div class="vx-card-header"><span class="vx-card-title">Ce qui mérite ton attention</span>'
+    +'<div class="vx-card-header"><span class="vx-card-title">Priorités</span>'
     +'<span class="vx-actions"><span class="vx-freshness" data-live="'+(m==='fallback'?'fallback':'delayed')+'"><span class="vx-live-dot"></span>'+dq+'</span></span></div>'
     +'<div class="vx-grid vx-hero-grid"><div class="vx-col-5 vx-page-lead">'
       +'<div class="vx-op-hero-lead"><span class="tag" data-tone="'+tone+'">'+(cnt['S+']||cnt['S']?'À étudier':'Patience')+'</span>'
@@ -424,7 +424,7 @@ async function renderStocks(){
       <td data-label="Secteur">${esc(r.sector||'—')}</td>
       <td data-label="Action">${rowActions(r.symbol)}</td></tr>`;
     $('op-table').innerHTML=f.length?`<section class="vx-card" aria-label="Meilleures actions du scan">
-      <div class="vx-card-header"><span class="vx-card-title">Les dossiers les plus utiles maintenant</span>
+      <div class="vx-card-header"><span class="vx-card-title">Dossiers à étudier</span>
         <span class="vx-meta vx-right">Top ${Math.min(10,f.length)} sur ${f.length}</span></div>
       <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
         <th>Titre</th><th>Décision</th><th class="vx-num" data-sortable>Score</th>
@@ -543,7 +543,7 @@ async function renderOptions(){
       return (Number.isFinite(qb)?qb:-Infinity)-(Number.isFinite(qa)?qa:-Infinity);
     }).slice(0,3);
     $('op-opt-table').innerHTML=f.length?`<section class="vx-card" aria-label="Shortlist options">
-      <div class="vx-card-header"><span class="vx-card-title">Shortlist options — relais vers l’espace Options</span>
+      <div class="vx-card-header"><span class="vx-card-title">Shortlist options</span>
         <span class="vx-meta vx-right">${shortlist.length} contrat(s) sur ${f.length}</span></div>
       <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
         <th>Contrat</th><th>Profil</th><th class="vx-num">Delta</th><th class="vx-num">Prime</th>
@@ -621,7 +621,7 @@ async function renderOptions(){
         conclusion:'IV -20 % à +20 % au scénario BASE',height:190,
         source:'scenario_pricer',timestamp:Date.now(),mode:'delayed'});
     }catch(e){
-      $('op-scenarios').innerHTML='<div class="vx-card">'+VX.states.error('Simulation moteur indisponible : '+e.message)+'</div>';
+      $('op-scenarios').innerHTML='<div class="vx-card">'+VX.states.error('Simulation indisponible.')+'</div>';
       $('op-theta').innerHTML='';$('op-iv').innerHTML='';
     }
   }
@@ -634,7 +634,7 @@ async function renderAnomalies(){
   const groupMeta={Actions:'scan courant',Données:'/api/data-quality',Options:'non agrégé ici',
     Volatilité:'non agrégée ici',Portefeuille:'non agrégé ici',Modèles:'non agrégé ici'};
   $('op-body').innerHTML=demoBanner(scan)+`
-    <div class="vx-page-lead vx-mb3"><b>Anomalies disponibles par source</b>
+    <div class="vx-page-lead vx-mb3"><b>Anomalies par source</b>
       <div class="vx-meta">Une catégorie sans flux consolidé est dite indisponible ; elle n’est jamais déduite depuis une autre métrique.</div></div>
     <div class="vx-filterbar vx-toolbar">${['Actions','Données','Options','Volatilité','Portefeuille','Modèles']
       .map((g,i)=>`<button class="vx-chip" aria-pressed="${i===0}" data-ag="${g}">${g} · ${groupMeta[g]}</button>`).join('')}</div>
@@ -713,12 +713,12 @@ async function loadSkylerRank(){
   host.id='vx-skyler-rank';
   if(err||!d){
     host.innerHTML='<summary>Expertise avancée · Classement Skyler /40</summary><div class="vx-card vx-mt2">'
-      +'<div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span></div>'
+      +'<div class="vx-card-header"><span class="vx-card-title">Classement Skyler (/40)</span></div>'
       +VX.states.error('Classement Skyler indisponible')+'</div>';
     $('op-body').appendChild(host);return;}
   if(!d.n){
     host.innerHTML=`<summary>Expertise avancée · Classement Skyler /40</summary><div class="vx-card vx-mt2">
-      <div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span></div>
+      <div class="vx-card-header"><span class="vx-card-title">Classement Skyler (/40)</span></div>
       ${VX.states.empty(esc((d.reason||'classement indisponible')+'.'))}</div>`;
   }else{
     const tone=x=>x==='ACHETER'||x==='RENFORCER'?'pos':x==='REFUSER'||x==='REDUIRE'?'neg':'neutral';
@@ -740,7 +740,7 @@ async function loadSkylerRank(){
       <td data-label="Invalidation" class="vx-num">${r.invalidation!=null?VX.fmt.num(r.invalidation,2):'—'}</td>
     </tr>`).join('');
     host.innerHTML=`<summary>Expertise avancée · Classement Skyler /40</summary><div class="vx-card vx-mt2">
-      <div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span>
+      <div class="vx-card-header"><span class="vx-card-title">Classement Skyler (/40)</span>
       <span class="vx-chart-question">Régime marché partagé : ${esc(d.market_regime||'n/d')} · gates visibles · un score ne déclenche jamais un ordre.</span></div>
       <div class="vx-table-wrap"><table class="vx-table"><thead><tr>
         <th>Titre</th><th>Décision</th><th>Score</th><th>Niveau</th><th>Gate</th><th>Catalyseur</th><th>Invalidation</th>
@@ -763,7 +763,7 @@ async function opFresh(){try{
   el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:a,live:live}));
 }catch(e){}}
 function boot(){opFresh();(RENDER[VIEW]||renderRadar)().catch(e=>{
-  $('op-body').innerHTML=VX.states.error('Chargement impossible : '+e.message);});}
+  $('op-body').innerHTML=VX.states.error('Impossible de charger les opportunités.');});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 })();
 </script>

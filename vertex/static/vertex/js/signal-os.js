@@ -10,16 +10,12 @@
    à l'écran. Tout gardien qui lit le serveur garde alors l'ancienne version, et
    la nouvelle n'est gardée par rien. Une entrée disparaît d'ici quand la page
    qui la porte est reconstruite et écrit son libellé à la source.
-   Fait : shell, Aujourd'hui, Marchés. Restent : Opportunités, Analyse,
+   Fait : shell, Aujourd'hui, Marchés, Opportunités. Restent : Analyse,
    Portefeuille, Options, Journal, Système. */
 const COPY = new Map([
-  ["Quelles opportunités méritent réellement une analyse ?","Les dossiers qui méritent ton attention."],
-  ["Shortlist — méritent une analyse","Shortlist"],
   ["Rechercher un titre pour ouvrir sa fiche canonique.","Ouvre un dossier complet en quelques secondes."],
   ["Ce que révèle une fiche","Contenu du dossier"],
   ["Titres récents","Récents"],
-  ["Scanner d’opportunités","Opportunités"],
-  ["Scanner d'opportunités","Opportunités"],
   ["Portefeuille & positions","Portefeuille"],
   ["Où mon capital est-il exposé, et quelle position exige une décision ?","Exposition, risque et prochaine décision."],
   ["Watchlist","Surveillance"],
@@ -28,7 +24,6 @@ const COPY = new Map([
   ["Cette structure offre-t-elle une asymétrie suffisante ?","L’asymétrie est-elle suffisante ?"],
   ["Mes positions","Positions"],
   ["Événements","Catalyseurs"],
-  ["Scanner d'anomalies — qu'est-ce qui sort de l'ordinaire ?","Anomalies"],
   ["Que s'est-il passé après ? — évidence historique","Évidence historique"],
   ["Skyler — décision canonique","Décision Skyler"],
   ["Recherche globale","Recherche"],

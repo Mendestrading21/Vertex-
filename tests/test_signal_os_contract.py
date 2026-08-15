@@ -101,6 +101,8 @@ def test_la_copy_des_pages_reconstruites_a_quitte_la_table():
         'markets_page.py': ('Vue globale', 'Risque principal', 'Top hausses',
                             'Top baisses', 'Qualité des données', 'Sélection',
                             'Santé du marché'),
+        'opportunities_page.py': ('Priorités', 'Dossiers à étudier',
+                                  'Shortlist options', 'Qualité × timing'),
     }
     for fichier, libelles in pages.items():
         src = (ROOT / 'vertex/ui/pages' / fichier).read_text(encoding='utf-8')
