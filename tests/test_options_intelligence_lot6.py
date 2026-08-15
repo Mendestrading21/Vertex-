@@ -11,6 +11,7 @@ import pytest
 
 from vertex.options import double_prob as DP
 from vertex.options import horizon_scanners as HS
+from vertex.strategy import constitution as C
 
 
 def _board():
@@ -83,6 +84,42 @@ def test_ranking_in_mandate_first():
     res = HS.scan(_board(), 'LEAPS', sym='TST')
     hm = [c['hors_mandat'] for c in res['candidates']]
     assert hm == sorted(hm)                           # conformes d'abord
+
+
+# ─── Mandat opérationnel Swing 3–6 mois ─────────────────────────────────────────
+
+def test_swing_3_6m_prefers_target_dte_and_emits_holding_plan():
+    board = [
+        {'sym': 'TST', 'type': 'CALL', 'dte': 90, 'strike': 100, 'delta': 0.45,
+         'oi': 900, 'volume': 90, 'spread_pct': 3.0, 'quote_age_seconds': 60,
+         'quality': 95, 'iv': 0.35, 'spot': 100, 'exp': 'A'},
+        {'sym': 'TST', 'type': 'CALL', 'dte': 135, 'strike': 105, 'delta': 0.45,
+         'oi': 900, 'volume': 90, 'spread_pct': 3.0, 'quote_age_seconds': 60,
+         'quality': 75, 'iv': 0.35, 'spot': 100, 'exp': 'B'},
+        {'sym': 'TST', 'type': 'CALL', 'dte': 180, 'strike': 110, 'delta': 0.45,
+         'oi': 900, 'volume': 90, 'spread_pct': 3.0, 'quote_age_seconds': 60,
+         'quality': 99, 'iv': 0.35, 'spot': 100, 'exp': 'C'},
+    ]
+    res = HS.scan(board, 'SWING_3_6M', sym='TST', profile=C.load_profile())
+    assert res['window'] == [75, 210]
+    assert res['preferred_window'] == [90, 180]
+    assert res['candidates'][0]['dte'] == 135
+    assert res['candidates'][0]['mandate_status'] == 'IN_MANDATE'
+    ctx = HS.swing_3_6m_context(board, sym='TST', profile=C.load_profile())
+    assert ctx['universe'] == 'SWING_3_6M'
+    assert ctx['best']['mandate']['bounds']['holding_plan_sessions'] == [5, 10, 15]
+
+
+def test_swing_3_6m_never_assumes_missing_liquidity_is_compliant():
+    board = [{'sym': 'TST', 'type': 'CALL', 'dte': 135, 'strike': 105, 'delta': 0.45,
+              'oi': 900, 'spread_pct': 3.0, 'quality': 75, 'iv': 0.35,
+              'spot': 100, 'exp': 'B'}]
+    res = HS.scan(board, 'SWING_3_6M', sym='TST', profile=C.load_profile())
+    candidate = res['candidates'][0]
+    assert candidate['mandate_status'] == 'PARTIAL_MANDATE'
+    assert candidate['mandate']['volume_ok'] is None
+    assert candidate['mandate']['quote_fresh_ok'] is None
+    assert HS.options_context(res)['best_in_mandate'] is False
 
 
 # ─── Probabilité de doublement (≠ PoP, modèle documenté) ────────────────────────

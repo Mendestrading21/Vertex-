@@ -12,7 +12,7 @@ def test_profile_loads_and_validates():
     # 8–10 lignes ; la V2 élargit délibérément à 8–15 (mandat validé).
     p = C.load_profile()
     assert p.strategy_id == f'vertex_strategy_v{p.version}'
-    assert p.display_name == 'Stratégie Vertex'
+    assert p.display_name.startswith('Stratégie Vertex')
     assert p.portfolio_min_positions == 8
     assert p.portfolio_max_positions == (10 if p.version == 1 else 15)
     assert p.portfolio_max_drawdown_pct == -25

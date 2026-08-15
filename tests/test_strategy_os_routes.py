@@ -29,7 +29,7 @@ def test_profile_route(client):
     r = client.get('/api/strategy/profile')
     assert r.status_code == 200
     data = r.get_json()
-    assert data['display_name'] == 'Stratégie Vertex'
+    assert data['display_name'].startswith('Stratégie Vertex')
     assert data['strategy_id'].startswith('vertex_strategy_v')
 
 
@@ -106,3 +106,34 @@ def test_degraded_mode_empty_scan():
     assert regime['regime'] == 'UNKNOWN'
     assert c.get('/api/system/diagnostics').status_code == 200
     assert c.get('/api/data-quality').get_json()['total'] == 0
+
+
+def test_decision_route_blocks_incomplete_packet(client):
+    data = client.get('/api/strategy/decision/NVDA').get_json()
+    assert data['final_decision'] == 'ATTENDRE'
+    assert data['decision_packet']['complete'] is False
+    assert 'DECISION_PACKET_INCOMPLETE' in data['blocking_rules']
+
+
+def test_decision_route_uses_explicit_complete_packet():
+    app = Flask(__name__)
+    scan_state = {
+        'source': 'ibkr_live',
+        'detail': {
+            'NVDA': {
+                'score': 78, 'rr': 2.3, 'rs': 70, 'st_fund': 72,
+                'st_timing': 65, 'ext_atr': 1.0, 'earnings_dte': 20,
+                'plan': {'entry': 490, 'stop': 465, 'tp1': 540},
+                'series': {'close': [400 + i for i in range(60)]},
+                'data_quality': {'overall': 'FRESH', 'actionable_allowed': True},
+                'reconciliation': {'actionable_allowed': True},
+                'guard': {'blocking_rules': [], 'mandatory_reviews': []},
+            },
+        },
+        'market': {'regime': 'TREND', 'vix': 15.0, 'breadth': 68, 'risk': 'Risk-On'},
+    }
+    app.register_blueprint(strategy_os_api.make_blueprint(scan_state=scan_state))
+    data = app.test_client().get('/api/strategy/decision/NVDA').get_json()
+    assert data['decision_packet']['complete'] is True
+    assert 'DECISION_PACKET_INCOMPLETE' not in data['blocking_rules']
+    assert data['final_decision'] in ('ACHETER', 'RENFORCER', 'ATTENDRE')

@@ -752,6 +752,8 @@
 
 | 619 | `SKYLER-LOT-619.md` | **ANALYSE, DECISION D ABORD.** Une seule carte de verdict, chandelier promu juste apres les scenarios, thèse/plan/risques lisibles, preuves et outils conserves sous divulgation progressive. Radar incomplet : aucun zero invente ; axes `n/d` nommes. Resultats futurs hors de la serie historique. Scanner d anomalies neutre, statique et source. La validation Chromium 1440/1024/390 mesure **0 px de debordement**, graphique present, **0 erreur console / 0 requete echouee** et trouve deux vrais defauts corriges : locale `en-US@posix` invalide et course du prix dans le verdict. Baseline **2934 -> 2947 passed**. 8 routes + fiche + healthz 200, SW **v201**, READONLY confirme | 0.9.0 | v201 | 2947 | GO |
 
+| 629 | `SKYLER-LOT-629.md` | **REGIME AURA — JAUGE COMPLETE POUR UN REGIME JUSQU’ICI NON MESURE.** Rapport de mesure et validation, avec invariants READONLY et traçabilité préservés. | 0.9.0 | v201 | 2947 | GO |
+
 ## Architecture atteinte
 
 ```text

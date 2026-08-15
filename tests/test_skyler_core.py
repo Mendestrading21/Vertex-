@@ -49,7 +49,7 @@ def test_packet_shape_and_versions():
     p = SK.build_packet('TST', _detail(), market=_market(), events=_events(),
                         as_of='10:00:00')
     assert p['schema_version'] == 1 and p['engine_version']
-    assert p['profile_version'] == 2                  # constitution V2 active
+    assert p['profile_version'] == 3                  # constitution V3 active
     assert p['symbol'] == 'TST'
     assert p['freshness_floor'] == '10:00:00'
     assert isinstance(p['audit_trail'], list) and p['audit_trail']

@@ -46,7 +46,7 @@ def sweep(scan_state, demo=False, limit=50, earnings_by_sym=None):
         ev = _events.build(sym, news=_np.sanitize_news(det.get('news') or []),
                            earnings=earnings_by_sym.get(sym, []), macro=None,
                            anomaly=ano, as_of=as_of)
-        octx = _hs.options_context(_hs.scan(board, 'LEAPS', sym=sym))
+        octx = _hs.swing_3_6m_context(board, sym=sym)
         d = _sk.decide(sym, det, market=market, events=ev, anomaly=ano,
                        as_of=as_of, demo=demo, options_ctx=octx)
         sc = d.get('score') or {}
@@ -67,8 +67,9 @@ def sweep(scan_state, demo=False, limit=50, earnings_by_sym=None):
         'n': len(rows), 'rows': rows[:limit], 'as_of': as_of,
         'market_regime': (market.get('regime') or {}).get('label'),
         'demo': bool(demo), 'generator': 'deterministic',
-        'note': 'Classement analytique par le moteur canonique — contexte portefeuille omis '
-                '(étude de candidat sur la fiche Analyse) ; un score ne déclenche jamais un ordre.',
+        'note': 'Classement analytique par le moteur canonique — contexte options Swing 3–6M '
+                'et contexte portefeuille omis (étude de candidat sur la fiche Analyse) ; '
+                'un score ne déclenche jamais un ordre.',
     }
 
 

@@ -121,10 +121,11 @@ def api_skyler(sym):
     ev = _events.build(sym, news=news, earnings=earnings, macro=macro, anomaly=ano,
                        as_of=scan_state.get('scan_ts_h') or scan_state.get('updated'))
     as_of = scan_state.get('scan_ts_h') or scan_state.get('updated')
-    # OptionsContext (LOT 6) : meilleur candidat LEAPS du board réel, mandat étiqueté.
+    # OptionsContext : mandat opérationnel 3–6 mois pour une détention de 1–3 semaines.
+    # Le scanner conserve les candidats partiels et hors mandat, mais le moteur reçoit
+    # explicitement leur statut : aucune conformité n’est supposée par défaut.
     from vertex.options import horizon_scanners as _hs
-    octx = _hs.options_context(_hs.scan(scan_state.get('options_board') or [],
-                                        'LEAPS', sym=sym))
+    octx = _hs.swing_3_6m_context(scan_state.get('options_board') or [], sym=sym)
     # PortfolioContext (LOT 7) : positions canoniques du desk + cotes du scan.
     pctx = None
     try:
