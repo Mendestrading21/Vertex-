@@ -10,18 +10,9 @@
    à l'écran. Tout gardien qui lit le serveur garde alors l'ancienne version, et
    la nouvelle n'est gardée par rien. Une entrée disparaît d'ici quand la page
    qui la porte est reconstruite et écrit son libellé à la source.
-   Fait : shell, Aujourd'hui. Restent : Marchés, Opportunités, Analyse,
+   Fait : shell, Aujourd'hui, Marchés. Restent : Opportunités, Analyse,
    Portefeuille, Options, Journal, Système. */
 const COPY = new Map([
-  ["Dans quel environnement la stratégie opère-t-elle ?","Régime, risque et leadership."],
-  ["Vue d’ensemble","Vue globale"],
-  ["Vue d'ensemble","Vue globale"],
-  ["Régime de marché","Régime"],
-  ["Leadership sectoriel","Leadership"],
-  ["Top 10 — plus fortes hausses","Top hausses"],
-  ["Flop 10 — plus fortes baisses","Top baisses"],
-  ["Détail — au-dessus des moyennes","Au-dessus des moyennes"],
-  ["VIX — volatilité implicite du marché","VIX"],
   ["Quelles opportunités méritent réellement une analyse ?","Les dossiers qui méritent ton attention."],
   ["Shortlist — méritent une analyse","Shortlist"],
   ["Rechercher un titre pour ouvrir sa fiche canonique.","Ouvre un dossier complet en quelques secondes."],
@@ -40,12 +31,6 @@ const COPY = new Map([
   ["Scanner d'anomalies — qu'est-ce qui sort de l'ordinaire ?","Anomalies"],
   ["Que s'est-il passé après ? — évidence historique","Évidence historique"],
   ["Skyler — décision canonique","Décision Skyler"],
-  ["Risque du jour","Risque principal"],
-  ["Participation du marché","Participation"],
-  ["Limites des données","Qualité des données"],
-  ["Leaders par secteur","Leaders"],
-  ["Entonnoir de sélection","Sélection"],
-  ["Composition de la santé du marché","Santé du marché"],
   ["Recherche globale","Recherche"],
   ["Ajouter","Analyser"]
 ]);

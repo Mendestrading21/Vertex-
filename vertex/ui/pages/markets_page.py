@@ -14,7 +14,7 @@ from vertex.ui.shell import render_shell
 
 # Sous-vues canoniques (ordre = ordre des onglets).
 _VIEWS = (
-    ('overview', 'Vue d’ensemble'),
+    ('overview', 'Vue globale'),
     ('macro', 'Macro'),
     ('sectors', 'Secteurs'),
     ('breadth', 'Breadth'),
@@ -49,13 +49,13 @@ _VIEW_CONTENT = {
 <!-- Réponse immédiate : régime et risque, sans seconde visualisation. -->
 <div class="vx-hero-grid vx-mt3 vx-markets-lead">
   <section class="vx-card vx-card--hero" id="vx-mk-regime" aria-label="Régime de marché">
-    <div class="vx-card-header"><span class="vx-card-title">Régime de marché</span>
+    <div class="vx-card-header"><span class="vx-card-title">Régime</span>
       <span class="vx-chart-question">Le vent est-il dans le dos ou de face ?</span></div>
     <div id="vx-mk-regime-body">%%LOADING%%</div>
   </section>
   <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)" id="vx-mk-risk" aria-label="Risque du jour">
     <section class="vx-card">
-      <div class="vx-card-header"><span class="vx-card-title">Risque du jour</span></div>
+      <div class="vx-card-header"><span class="vx-card-title">Risque principal</span></div>
       <div id="vx-mk-risk-body">%%LOADING%%</div>
     </section>
   </aside>
@@ -67,7 +67,7 @@ _VIEW_CONTENT = {
   <div id="vx-mk-spy"></div>
   <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)" id="vx-mk-leader" aria-label="Leadership sectoriel">
     <section class="vx-card">
-      <div class="vx-card-header"><span class="vx-card-title">Leadership sectoriel</span>
+      <div class="vx-card-header"><span class="vx-card-title">Leadership</span>
         <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=sectors">Secteurs →</a></span></div>
       <div id="vx-mk-leader-body">%%LOADING%%</div>
     </section>
@@ -83,12 +83,12 @@ _VIEW_CONTENT = {
       <div id="vx-mk-multi"></div>
       <div class="vx-hero-grid">
         <section class="vx-card" aria-label="Top 10 hausses">
-          <div class="vx-card-header"><span class="vx-card-title">Top 10 — plus fortes hausses</span>
+          <div class="vx-card-header"><span class="vx-card-title">Top hausses</span>
             <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Univers →</a></span></div>
           <div id="vx-mk-top"></div>
         </section>
         <section class="vx-card" aria-label="Flop 10 baisses">
-          <div class="vx-card-header"><span class="vx-card-title">Flop 10 — plus fortes baisses</span></div>
+          <div class="vx-card-header"><span class="vx-card-title">Top baisses</span></div>
           <div id="vx-mk-flop"></div>
         </section>
       </div>
@@ -112,7 +112,7 @@ _VIEW_CONTENT = {
       <div class="vx-hero-grid">
         <div id="vx-mk-macro-extra"></div>
         <section class="vx-card" aria-label="Limites des données macro">
-          <div class="vx-card-header"><span class="vx-card-title">Limites des données</span></div>
+          <div class="vx-card-header"><span class="vx-card-title">Qualité des données</span></div>
           <div class="vx-insight">Courbe tracée sur les <b>4 maturités réelles</b> du scan
           (3M · 5A · 10A · 30A). Les maturités intermédiaires (2A/7A/20A) ne sont pas fournies
           par les moteurs — non affichées plutôt qu’inventées.</div>
@@ -128,7 +128,7 @@ _VIEW_CONTENT = {
 <div class="vx-grid vx-mt3">
   <div class="vx-col-8" id="vx-mk-rotation"></div>
   <section class="vx-card vx-col-4" aria-label="Leaders par secteur">
-    <div class="vx-card-header"><span class="vx-card-title">Leaders par secteur</span></div>
+    <div class="vx-card-header"><span class="vx-card-title">Leaders</span></div>
     <div id="vx-mk-sectors-leaders">%%LOADING%%</div>
   </section>
 </div>
@@ -145,7 +145,7 @@ _VIEW_CONTENT = {
     <section class="vx-card">
       <div class="vx-card-header"><span class="vx-card-title">Participation actuelle</span></div>
       <div id="vx-mk-breadth-gauge">%%LOADING%%</div>
-      <div class="vx-card-header"><span class="vx-card-title">Détail — au-dessus des moyennes</span></div>
+      <div class="vx-card-header"><span class="vx-card-title">Au-dessus des moyennes</span></div>
       <div id="vx-mk-breadth-detail">%%LOADING%%</div>
     </section>
   </aside>
@@ -157,7 +157,7 @@ _VIEW_CONTENT = {
     <div class="vx-section-stack">
       <div class="vx-hero-grid">
         <section class="vx-card" aria-label="Entonnoir de sélection">
-          <div class="vx-card-header"><span class="vx-card-title">Entonnoir de sélection</span>
+          <div class="vx-card-header"><span class="vx-card-title">Sélection</span>
             <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Dossiers →</a></span></div>
           <div id="vx-mk-funnel">%%LOADING%%</div>
         </section>
@@ -176,7 +176,7 @@ _VIEW_CONTENT = {
         </section>
       </div>
       <section class="vx-card" id="vx-mk-health-card" aria-label="Composition de la santé du marché" hidden>
-        <div class="vx-chart-head"><span class="vx-chart-title">Composition de la santé du marché</span>
+        <div class="vx-chart-head"><span class="vx-chart-title">Santé du marché</span>
           <span class="vx-chart-question">D’où vient le score de santé ?</span></div>
         <div id="vx-mk-health-wf" style="height:240px"></div>
         <div class="vx-card-foot"><span class="vx-meta">Santé = 30&nbsp;% (&gt;MM50) + 25&nbsp;% (&gt;MM200) + 25&nbsp;% (breadth) + 20&nbsp;% (avancées/déclins). Contributions pondérées du moteur d’internals — aucune pondération inventée.</span></div>
@@ -195,7 +195,7 @@ _VIEW_CONTENT = {
 <!-- Une seule lecture visuelle du VIX. Le contexte de régime reste textuel et replié. -->
 <div class="vx-section-stack vx-mt3">
   <section class="vx-card vx-card--hero" id="vx-mk-vix" aria-label="VIX">
-    <div class="vx-card-header"><span class="vx-card-title">VIX — volatilité implicite du marché</span></div>
+    <div class="vx-card-header"><span class="vx-card-title">VIX</span></div>
     <div id="vx-mk-vix-body">%%LOADING%%</div>
   </section>
   <details class="vx-disclosure vx-markets-volatility-details">

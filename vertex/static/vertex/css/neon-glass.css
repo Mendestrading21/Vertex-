@@ -357,6 +357,44 @@
   .vx-content[data-space="markets"] .vx-mk-macro .m-area svg{width:88px}
 }
 
+/* ── SIGNAL OS · MARCHÉS — la carte d'indice à 390 px ────────────────────────
+   MESURÉ, pas supposé. Quatre pastilles de position dans la plage dépassaient
+   le bord droit de leur carte de 25, 42, 63 et 66 px — et `.vx-mk-idx` porte
+   `overflow:hidden`, donc elles n'étaient pas « en dehors » : elles étaient
+   COUPÉES EN PLEIN MOT, sans points de suspension. Capture à 390 px :
+   « près du h », « milie ». Le nom de l'indice, lui, était comprimé à 25-48 px
+   (« S&P 500 » sur deux lignes) pour faire de la place à une pastille qui
+   n'entrait de toute façon pas, et « +1,67 % » se cassait en laissant le « % »
+   seul sur sa ligne.
+
+   Un même mécanisme pour les trois : une rangée `flex` en `nowrap` avec, à
+   l'intérieur, une pastille en `white-space:nowrap` que rien ne peut réduire.
+   Sous 720 px — bascule DÉJÀ mesurée par le banc des neuf bandes du lot 611 —
+   la rangée passe à la ligne : la pastille prend la sienne, le nom récupère la
+   largeur entière, et aucun nombre ne se coupe.
+
+   La pastille n'est PAS masquée : « près du haut » est la lecture qui situe le
+   prix dans sa plage. La cacher au mobile serait retirer une information parce
+   qu'elle gêne la mise en page. */
+@media (max-width:720px){
+  .vx-content[data-space="markets"] .vx-mk-idx-top{flex-wrap:wrap;row-gap:6px}
+  .vx-content[data-space="markets"] .vx-mk-idx-name{min-width:0;flex:1 1 auto}
+  .vx-content[data-space="markets"] .vx-mk-idx-rel{margin-left:0;flex:0 0 auto}
+  /* LA VARIATION : deux corrections, parce que la première en a créé une autre.
+     `white-space:nowrap` seul a bien empêché « +1,67 % » de laisser son « % »
+     sur la ligne suivante — et a transformé le retour à la ligne en DÉBORDEMENT
+     de 18 à 35 px, rogné par l'`overflow:hidden` de la carte. Mesuré : « +1,67 »
+     coupé net. On échangeait un defaut contre un autre, plus discret.
+     La rangée valeur doit donc pouvoir passer à la ligne elle aussi : la
+     variation descend ENTIÈRE sous le prix quand les deux ne tiennent pas
+     côte à côte. Le prix perd 4 px pour que le cas reste rare. */
+  .vx-content[data-space="markets"] .vx-mk-idx-valrow{flex-wrap:wrap;
+    column-gap:10px;row-gap:2px}
+  .vx-content[data-space="markets"] .vx-mk-idx-val{font-size:22px}
+  .vx-content[data-space="markets"] .vx-mk-idx-chg{white-space:nowrap}
+  .vx-content[data-space="markets"] .vx-mk-idx-foot{flex-wrap:wrap;row-gap:2px}
+}
+
 /* Leadership sectoriel — classement visuel (barres d'intensité) */
 .vx-content[data-space="markets"] .vx-mk-lead-hero{margin-bottom:12px}
 .vx-content[data-space="markets"] .vx-mk-lead-top{display:block;font-size:20px;font-weight:800;color:var(--vx-text-primary);line-height:1.1}

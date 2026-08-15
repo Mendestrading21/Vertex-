@@ -96,17 +96,26 @@ def test_la_copy_des_pages_reconstruites_a_quitte_la_table():
     coup. Sans lui, la table ne rétrécirait jamais.
     """
     js = _read(JS)
-    brief = (ROOT / 'vertex/ui/pages/briefing.py').read_text(encoding='utf-8')
-    for libelle in ('Signal du jour', 'Top opportunités'):
-        assert libelle in brief, (
-            '« %s » n\'est plus écrit à la source dans briefing.py' % libelle)
-        assert libelle not in js, (
-            '« %s » est revenu dans la table de réécriture : le serveur et '
-            'l\'écran ne diraient plus la même chose.' % libelle)
+    pages = {
+        'briefing.py': ('Signal du jour', 'Top opportunités'),
+        'markets_page.py': ('Vue globale', 'Risque principal', 'Top hausses',
+                            'Top baisses', 'Qualité des données', 'Sélection',
+                            'Santé du marché'),
+    }
+    for fichier, libelles in pages.items():
+        src = (ROOT / 'vertex/ui/pages' / fichier).read_text(encoding='utf-8')
+        for libelle in libelles:
+            assert libelle in src, (
+                '« %s » n\'est plus écrit à la source dans %s' % (libelle, fichier))
+            assert libelle not in js, (
+                '« %s » est revenu dans la table de réécriture : le serveur et '
+                'l\'écran ne diraient plus la même chose.' % libelle)
     for mort in ('Brief Vertex', 'Meilleures opportunités',
-                 'Depuis ta dernière visite'):
+                 'Depuis ta dernière visite', 'Leadership sectoriel',
+                 'VIX — volatilité implicite du marché',
+                 'Composition de la santé du marché'):
         assert mort not in js, (
-            'entrée « %s » toujours dans la table alors qu\'Aujourd\'hui est '
+            'entrée « %s » toujours dans la table alors que sa page est '
             'reconstruite.' % mort)
 
 

@@ -101,6 +101,6 @@ def test_le_service_worker_a_ete_purge_pour_cette_couche(client):
     sw = client.get('/sw.js').get_data(as_text=True)
     m = re.search(r"const CACHE='td-shell-v(\d+)'", sw)
     assert m, 'version du cache introuvable'
-    assert int(m.group(1)) >= 208, (
-        'version servie v%s — le shell de ce lot exige au moins v208'
+    assert int(m.group(1)) >= 209, (
+        'version servie v%s — le shell de ce lot exige au moins v209'
         % m.group(1))
