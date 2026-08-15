@@ -46,7 +46,7 @@ _CONTENT = """
 <div class="vx-actions vx-toolbar">
   <span id="pf-fresh" style="align-self:center"></span>
   <button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal('','position')">+ Position</button>
-  <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('','watchlist')">+ Watchlist</button>
+  <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('','watchlist')">+ Surveillance</button>
   <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/tracking">Suivis →</a>
 </div></div>
 %%TABS%%
@@ -365,10 +365,16 @@ async function renderSynthese(){
      reel : une couleur ne doit jamais vouloir dire deux choses sans le dire. */
   const plConnu=rich.some(t=>t.pl!=null);
   const totalTree=rich.reduce((s,t)=>s+Math.max(0,t.value??t.invested??0),0);
+  /* L'ORDRE SUIT LA REGLE DE LA PAGE, PAS L'HABITUDE.
+     `PAGES.md` §5 : « Le portefeuille doit mettre les risques avant les
+     statistiques decoratives. » Le journal des changements depuis la derniere
+     visite se trouvait ENTRE les KPI et la concentration — mesure a 1440 px :
+     risque a 852 px, journal a 746 px. Un delta depuis la derniere visite est
+     interessant ; il n'est pas ce qui menace le capital. Il descend apres les
+     positions qui exigent une decision. */
   $('pf-body').innerHTML=hero+kpis
-    +'<div id="pf-diff" class="vx-mb3"></div>'
     +`<section class="vx-card vx-mb3" aria-label="Allocation et concentration">
-        <div class="vx-chart-head"><span class="vx-chart-title">Allocation & concentration du capital</span>
+        <div class="vx-chart-head"><span class="vx-chart-title">Allocation & concentration</span>
           <span class="vx-chart-question">Où le capital est-il réellement concentré ?</span></div>
         <div id="pf-alloc-tree" style="height:260px"></div>
         <div class="vx-card-foot"><span class="vx-meta">Taille = poids (valeur de marché, repli au coût) · ${plConnu?'couleur = P&amp;L latent (émeraude gagnant / corail perdant / neutre sans marque)':'P&amp;L latent indisponible — <b>la couleur porte ici la CONCENTRATION</b> (émeraude sous 15 % / jaune 15-25 % / corail au-delà), pas une performance'}. Positions déclarées — aucune valeur inventée.</span></div>
@@ -376,7 +382,8 @@ async function renderSynthese(){
     +`<section class="vx-card" aria-label="Positions exigeant une décision"><div class="vx-card-header">
         <span class="vx-card-title">Positions exigeant une décision</span>
         <span class="vx-meta vx-right"><a href="/portfolio?view=positions">Tableau complet →</a></span></div>
-        <div id="pf-decision-list"></div></section>`;
+        <div id="pf-decision-list"></div></section>`
+    +'<div id="pf-diff" class="vx-mt3"></div>';
 
   renderDiff(m,rich);
 
@@ -428,7 +435,7 @@ function renderDiff(m,rich){
   }
   if(!base||base.netValue==null){
     host.innerHTML=`<section class="vx-card vx-card--compact"><div class="vx-card-header">
-      <span class="vx-card-title">Depuis ta dernière visite</span></div>
+      <span class="vx-card-title">Ce qui a changé</span></div>
       <div class="vx-meta">Aucun historique de comparaison disponible — la référence se pose à cette visite.</div></section>`;
     return;
   }
@@ -438,7 +445,7 @@ function renderDiff(m,rich){
     .map(s=>({s,d:snapshot.byPl[s]-base.byPl[s]})).filter(x=>Math.abs(x.d)>=0.5)
     .sort((a,b)=>Math.abs(b.d)-Math.abs(a.d)).slice(0,3);
   host.innerHTML=`<section class="vx-card vx-card--compact"><div class="vx-card-header">
-    <span class="vx-card-title">Depuis ta dernière visite</span>
+    <span class="vx-card-title">Ce qui a changé</span>
     <span class="vx-meta vx-right">réf. ${VX.fmt.ago(base.ts)}</span></div>
     <div class="vx-flex vx-wrap" style="gap:18px">
       <span>Valeur nette : <b class="${dNet>0?'vx-pos':dNet<0?'vx-neg':'vx-muted'}">${dNet!=null?((dNet>=0?'+':'')+VX.fmt.price(dNet)):'n/d'}</b></span>
