@@ -50,11 +50,18 @@ def _tabs(view: str) -> str:
 _STYLE = ""  # styles Options migrés dans le CSS partagé canonique
 
 _HEADER = """
-<header class="vx-page-lead">
+<!-- UNE SEULE GRAMMAIRE D'EN-TETE POUR LES HUIT ESPACES.
+     Mesure : 7 pages sur 8 emploient `<div class="vx-sub">` ; Options etait la
+     seule a employer `vx-page-lead__summary`, doublee d'un `eyebrow`
+     (« Intelligence de convexite ») que nulle autre page ne possede et qui ne
+     disait rien de plus que le titre juste dessous. Deux noms de classe pour un
+     meme role, c'est un composant duplique pour changer le look — ce que
+     VALIDATION.md refuse. Le bouclier « lecture seule » est CONSERVE : c'est le
+     seul element du bloc qui porte une information. -->
+<header class="vx-page-header vx-page-lead">
   <div class="vx-page-lead__main">
-    <div class="vx-page-lead__eyebrow">Intelligence de convexité</div>
     <h1>Options</h1>
-    <p class="vx-page-lead__summary">Mesurer l’asymétrie, le prix de la volatilité et le risque d’événement avant toute décision.</p>
+    <div class="vx-sub">Convexité, volatilité et risque événementiel.</div>
     <div class="vx-page-lead__meta"><span class="vx-readonly-shield">Analyse uniquement · aucun ordre</span></div>
   </div>
 </header>
@@ -126,7 +133,7 @@ _VIEW_CONTENT = {
   <summary>Historique quotidien et copilote</summary>
   <div class="vx-disclosure__body vx-grid">
   <section class="vx-card vx-col-7" aria-label="GEX quotidien">
-    <div class="vx-card-header"><span class="vx-card-title">GEX quotidien — le gamma s'empile-t-il&nbsp;?</span>
+    <div class="vx-card-header"><span class="vx-card-title">GEX quotidien</span>
       <span class="vx-chart-question">Net GEX jour après jour (journal réel — un point par jour analysé, jamais inventé).</span></div>
     <div id="vx-gx-daily"><div class="vx-empty">L'historique se construit à chaque analyse — reviens demain pour la tendance.</div></div>
   </section>
@@ -146,7 +153,7 @@ _VIEW_CONTENT = {
     'leaps': """
 <div class="vx-grid vx-mt3">
   <section class="vx-card vx-col-12" aria-label="Scanner LEAPS">
-    <div class="vx-card-header"><span class="vx-card-title">Scanner LEAPS — quels contrats longue échéance sont conformes&nbsp;?</span>
+    <div class="vx-card-header"><span class="vx-card-title">Scanner LEAPS</span>
       <span class="vx-chart-question">Échéance 180–540 jours · hors-mandat visible · probabilité de doublement estimée, jamais présentée comme certaine.</span></div>
     <div class="vx-card-body vx-flex vx-wrap" style="gap:.6rem;align-items:flex-end">
       <label class="vx-field"><span>Filtre titre (optionnel)</span>
@@ -213,7 +220,8 @@ _VIEW_CONTENT = {
 <div class="vx-hero-grid vx-mt3">
   <div class="vx-hero-main" id="vx-opt-term"></div>
   <aside class="vx-card vx-insight-rail" id="vx-opt-vol-out" aria-label="Interprétation volatilité">
-    <div class="vx-card-header"><span class="vx-card-title">Les options sont-elles chères ?</span>
+    <div class="vx-card-header"><span class="vx-card-title">Prix de la volatilité</span>
+      <span class="vx-chart-question">Les options sont-elles chères ?</span>
       <span class="vx-actions"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-explain="volatility">Comprendre ce graphique</button></span></div>
     <div id="vx-opt-vol-out-body"><div class="vx-empty">Choisis un symbole présent dans le tableau d'options.</div></div>
   </aside>
@@ -241,7 +249,8 @@ _VIEW_CONTENT = {
 </div>
 <div class="vx-grid vx-mt3">
   <section class="vx-card vx-col-12" id="vx-opt-sc-out" aria-label="Scénarios">
-    <div class="vx-card-header"><span class="vx-card-title">Que vaudra le contrat selon le spot, le temps et l'IV ?</span></div>
+    <div class="vx-card-header"><span class="vx-card-title">Scénarios de valeur</span>
+      <span class="vx-chart-question">Que vaudra le contrat selon le spot, le temps et l'IV ?</span></div>
     <div id="vx-opt-sc-out-body"><div class="vx-empty">Choisis un symbole présent dans le tableau d'options.</div></div>
   </section>
   <section class="vx-card vx-col-12" id="vx-opt-strat" aria-label="Stratégies multi-jambes">
@@ -257,7 +266,8 @@ _VIEW_CONTENT = {
 </div>
 <div class="vx-grid vx-mt3">
   <section class="vx-card vx-col-12" id="vx-opt-ev-out" aria-label="Interprétation événement">
-    <div class="vx-card-header"><span class="vx-card-title">Un événement menace-t-il l'échéance ?</span>
+    <div class="vx-card-header"><span class="vx-card-title">Risque événementiel</span>
+      <span class="vx-chart-question">Un événement menace-t-il l'échéance ?</span>
       <span class="vx-actions"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-explain="event_risk">Comprendre ce graphique</button></span></div>
     <div id="vx-opt-ev-out-body"><div class="vx-empty">Choisis un symbole présent dans le tableau d'options.</div></div>
   </section>

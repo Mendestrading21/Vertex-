@@ -217,7 +217,12 @@
       : ('Perte plafonnée à ' + price(m.capital) + '.');
     host.innerHTML = '';
     VC.card('vx-os-payoff', {
-      title: 'Payoff à l\'échéance — ' + esc(s.label), question: 'Où gagne / perd la structure ?',
+      /* LE CADRE DIT DEJA CE QUE C'EST. La carte hote porte « Payoff à
+         l'échéance » et la question « Où gagne / perd la structure selon le
+         cours ? » ; ce graphique repetait les deux, 72 px plus bas, dans une
+         formulation a peine differente. Il ne garde que ce qu'il AJOUTE :
+         quelle structure est tracee. */
+      title: esc(s.label),
       conclusion: concl, unit: 'P&L $ (1 structure)', timeframe: (d.dte != null ? d.dte + ' j' : ''),
       source: d.demo ? 'multileg_lab (board démo)' : 'multileg_lab (board réel)', timestamp: Date.now(), mode: d.demo ? 'demo' : 'delayed',
       summary: 'Courbe de P&L à l\'échéance selon le cours du sous-jacent ; spot ' + price(m.spot)
