@@ -122,6 +122,41 @@ def test_no_invalidation_gate_triggers_without_plan():
     assert next(g for g in gates if g['id'] == 'NO_INVALIDATION')['triggered'] is True
 
 
+def test_option_mandate_gates_are_evaluated_from_the_selected_contract():
+    options = {
+        'available': True,
+        'universe': 'SWING_3_6M',
+        'window': [75, 210],
+        'best': {
+            'dte': 135, 'spread_pct': 11.0, 'oi': 100,
+            'mandate': {'spread_ok': False, 'oi_ok': False},
+        },
+    }
+    packet = SK.build_packet('TST', _detail(), market=_market(), events=_events(),
+                             options_ctx=options, as_of='10:00:00')
+    gates = {gate['id']: gate for gate in SK.hard_gates(packet, SK.score40(packet))}
+    assert gates['SPREAD_EXCESSIVE']['triggered'] is True
+    assert gates['OI_INSUFFICIENT']['triggered'] is True
+    assert gates['DTE_OUT_OF_MANDATE']['triggered'] is False
+
+
+def test_data_quality_requires_explicit_quality_and_reconciliation_evidence():
+    packet = SK.build_packet('TST', _detail(), market=_market(), events=_events(),
+                             as_of='10:00:00')
+    gates = {gate['id']: gate for gate in SK.hard_gates(packet, SK.score40(packet))}
+    assert gates['DATA_QUALITY_CRITICAL']['triggered'] is True
+    proved = SK.build_packet(
+        'TST', _detail(), market=_market(), events=_events(), as_of='10:00:00',
+        data_quality_ctx={'available': True, 'overall': 'FRESH', 'warnings': [],
+                          'actionable_allowed': True},
+        reconciliation_ctx={'available': True, 'actionable_allowed': True},
+    )
+    score = SK.score40(proved)
+    gates = {gate['id']: gate for gate in SK.hard_gates(proved, score)}
+    assert score['blocks']['data_quality']['points'] == 4
+    assert gates['DATA_QUALITY_CRITICAL']['triggered'] is False
+
+
 def test_unevaluable_gates_are_unknown_not_false():
     p = SK.build_packet('TST', _detail(), market=_market(), as_of='10:00:00')
     gates = SK.hard_gates(p, SK.score40(p))

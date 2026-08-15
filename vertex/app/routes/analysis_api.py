@@ -96,14 +96,15 @@ def api_skyler(sym):
     (score /40, hard gates, scénarios sans probabilité inventée, audit trail).
     Analyse READONLY — jamais un ordre."""
     from vertex.data import series as _series
-    from vertex.engines import anomaly as _an, events as _events
+    from vertex.engines import anomaly_context as _anctx, events as _events
     from vertex.engines import market_context as _mcx, skyler_core as _sk
     from vertex.services import news_plus as _np
     from vertex.app.config import DEMO_MODE as _demo
     sym = (sym or '').upper()[:12]
     detail = (scan_state.get('detail') or {}).get(sym) or {}
     closes, _src = _series.closes(detail)
-    ano = _an.scan(closes) if closes else None
+    benchmark_detail = (scan_state.get('detail') or {}).get('SPY') or {}
+    ano = _anctx.build(sym, detail, benchmark_detail=benchmark_detail) if closes else None
     market = _mcx.build(scan_state, demo=_demo)
     earnings = []
     try:
@@ -126,6 +127,8 @@ def api_skyler(sym):
     # explicitement leur statut : aucune conformité n’est supposée par défaut.
     from vertex.options import horizon_scanners as _hs
     octx = _hs.swing_3_6m_context(scan_state.get('options_board') or [], sym=sym)
+    from vertex.engines import decision_evidence as _evidence
+    dqctx, recctx = _evidence.for_symbol(scan_state, sym, detail)
     # PortfolioContext (LOT 7) : positions canoniques du desk + cotes du scan.
     pctx = None
     try:
@@ -142,13 +145,15 @@ def api_skyler(sym):
     # packet réel — complete=True seulement si les 10 sont fondées.
     from vertex.engines import red_team as _rt
     packet0 = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
-                               as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx)
+                               as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
+                               data_quality_ctx=dqctx, reconciliation_ctx=recctx)
     rt_review = _rt.review(packet0, _sk.score40(packet0))
     rt_input = {'complete': rt_review['complete'], 'basis': rt_review['basis']}
     # Calibration RÉELLE (LOT 19/22) : facteur depuis les résultats mesurés de
     # la mémoire pour CETTE version — cellule du NIVEAU courant si mesurée
     # (§13), agrégat global en secours. Fail-safe, jamais inventé.
     calib = None
+    option_calibration = None
     try:
         from vertex.engines import decision_memory as _dmc
         from vertex.services import persist as _pc
@@ -158,14 +163,23 @@ def api_skyler(sym):
         calib = _dmc.calibration_factor_for(_memc, _sk.ENGINE_VERSION,
                                             level=_score0.get('level'),
                                             regime=_reg0)
+        option_calibration = _dmc.option_calibration_summary(_memc, _sk.ENGINE_VERSION, octx)
     except Exception:
         calib = None
+        option_calibration = None
     decision = _sk.decide(sym, detail, market=market, events=ev, anomaly=ano,
                           as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
-                          red_team=rt_input, calibration=calib)
+                          red_team=rt_input, calibration=calib, data_quality_ctx=dqctx,
+                          reconciliation_ctx=recctx)
+    decision['option_calibration'] = option_calibration or {
+        'available': False,
+        'reason': 'mémoire de calibration indisponible',
+        'scope': 'DIRECTIONAL_PROXY_ONLY',
+    }
     packet = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
                               as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
-                              red_team=rt_input)
+                              red_team=rt_input, data_quality_ctx=dqctx,
+                              reconciliation_ctx=recctx)
     # Journal de calibration (LOT 9) : chaque décision servie est enregistrée
     # (dédupliquée par scan) avec le prix du moment — base des résultats ex post.
     try:

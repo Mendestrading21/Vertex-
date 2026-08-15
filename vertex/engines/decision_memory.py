@@ -820,6 +820,40 @@ def calibration_factor_for(memory, engine_version, level=None, regime=None):
     return g
 
 
+def option_calibration_summary(memory, engine_version, options_context):
+    """État de maturité des segments options pour une décision.
+
+    Les cellules décrivent à ce stade des résultats directionnels du sous-jacent,
+    pas un rendement de contrat. Elles ne sont donc jamais converties en
+    probabilité, ni consommées par le facteur de confiance du moteur.
+    """
+    context = options_context or {}
+    best = context.get('best') or {}
+    universe = context.get('universe')
+    bucket = option_dte_bucket(best.get('dte'))
+    if not context.get('available') or not universe or not bucket:
+        return {'available': False,
+                'reason': 'contexte options ou DTE absent — calibration segmentée non évaluable',
+                'scope': 'DIRECTIONAL_PROXY_ONLY'}
+    cells = calibration_by_context(memory, engine_version)
+    u_cell = ((cells.get('by_option_universe') or {}).get(universe) or
+              {'status': 'INSUFFISANT', 'n_measured': 0})
+    d_cell = ((cells.get('by_option_dte_bucket') or {}).get(bucket) or
+              {'status': 'INSUFFISANT', 'n_measured': 0})
+    mature = u_cell.get('status') == 'MESURE' and d_cell.get('status') == 'MESURE'
+    return {
+        'available': True,
+        'scope': 'DIRECTIONAL_PROXY_ONLY',
+        'universe': universe,
+        'dte_bucket': bucket,
+        'mature': mature,
+        'universe_cell': u_cell,
+        'dte_bucket_cell': d_cell,
+        'note': ('segments observés sur le résultat directionnel du sous-jacent ; '
+                 'P&L de contrat, spread de sortie et slippage non mesurés'),
+    }
+
+
 # ─── Recommandations (jamais auto-appliquées) ───────────────────────────────────
 
 def recommendations(patterns, aggs):

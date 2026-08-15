@@ -449,3 +449,14 @@ def test_option_dte_bucket_is_stable_and_honest_for_missing_values():
     assert DM.option_dte_bucket(135) == '135_164'
     assert DM.option_dte_bucket(210) == '181_210'
     assert DM.option_dte_bucket(None) is None
+
+
+def test_option_calibration_summary_never_claims_contract_pnl_calibration():
+    summary = DM.option_calibration_summary(
+        DM.empty_memory(), 'vX',
+        {'available': True, 'universe': 'SWING_3_6M', 'best': {'dte': 135}},
+    )
+    assert summary['available'] is True
+    assert summary['scope'] == 'DIRECTIONAL_PROXY_ONLY'
+    assert summary['mature'] is False
+    assert summary['universe_cell']['status'] == 'INSUFFISANT'
