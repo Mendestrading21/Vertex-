@@ -40,7 +40,7 @@ def get(tracking_id):
 
 def create(*, tracking_id, entity_type, symbol, quote, started_at,
            market_open=True, benchmark_quote=None, decision='', score=None,
-           contract_id=None, thesis_snapshot_id=None):
+           contract_id=None, thesis_snapshot_id=None, data_quality=None):
     """Crée un suivi horodaté avec un prix de référence honnête.
 
     Récupère la meilleure référence disponible ; si aucune → statut
@@ -60,7 +60,7 @@ def create(*, tracking_id, entity_type, symbol, quote, started_at,
         reference_price_source=rsrc, reference_price_timestamp=started_at,
         contract_id=contract_id, strategy_decision_at_start=decision,
         strategy_score_at_start=score, thesis_snapshot_id=thesis_snapshot_id,
-        data_quality={'warnings': warns}, status=status)
+        data_quality={**(data_quality or {}), 'warnings': warns}, status=status)
     t['benchmark_reference_price'] = bench_ref
     blob = _load()
     blob['trackings'].append(t)

@@ -257,6 +257,8 @@ def test_skyler_route(tmp_path, monkeypatch):
         assert d['symbol'] == 'SKYX'
         assert d['decision']['generator'] == 'deterministic'
         assert d['packet']['schema_version'] == 1
+        assert d['decision']['readiness']['schema_version'] == 1
+        assert d['decision']['readiness']['read_only'] is True
     finally:
         scan_state['detail'].pop('SKYX', None)
 

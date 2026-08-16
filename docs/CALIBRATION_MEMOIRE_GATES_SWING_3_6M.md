@@ -113,4 +113,4 @@ Pour faire évoluer ces segments vers une calibration de P&L option, le pipeline
 
 ## Références de code
 
-Les règles décrites proviennent du code versionné dans la branche de la demande de fusion : [`decision_memory.py`](https://github.com/Mendestrading21/Vertex-/blob/feature/swing-options-decision-packet/vertex/engines/decision_memory.py), [`horizon_scanners.py`](https://github.com/Mendestrading21/Vertex-/blob/feature/swing-options-decision-packet/vertex/options/horizon_scanners.py), [`skyler_core.py`](https://github.com/Mendestrading21/Vertex-/blob/feature/swing-options-decision-packet/vertex/engines/skyler_core.py) et [profil V3](https://github.com/Mendestrading21/Vertex-/blob/feature/swing-options-decision-packet/vertex/strategy/profiles/vertex_strategy_v3.json).
+Les règles décrites proviennent du code versionné dans les fichiers suivants : `vertex/engines/decision_memory.py`, `vertex/options/horizon_scanners.py`, `vertex/engines/skyler_core.py` et `vertex/strategy/profiles/vertex_strategy_v3.json`.

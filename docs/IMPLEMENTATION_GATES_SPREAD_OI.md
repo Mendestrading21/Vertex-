@@ -236,4 +236,4 @@ La garantie de sécurité essentielle est donc la suivante : **les données abse
 
 ## Références de code
 
-La version correspondante est incluse dans la [PR #655](https://github.com/Mendestrading21/Vertex-/pull/655). Les fichiers de référence sont [`horizon_scanners.py`](https://github.com/Mendestrading21/Vertex-/blob/feature/swing-options-decision-packet/vertex/options/horizon_scanners.py) et [`skyler_core.py`](https://github.com/Mendestrading21/Vertex-/blob/feature/swing-options-decision-packet/vertex/engines/skyler_core.py).
+La version correspondante est incluse dans la demande de fusion active. Les fichiers de référence sont `vertex/options/horizon_scanners.py` et `vertex/engines/skyler_core.py`.

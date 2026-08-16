@@ -183,6 +183,10 @@ def api_skyler(sym):
                               as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
                               red_team=rt_input, data_quality_ctx=dqctx,
                               reconciliation_ctx=recctx)
+    # Contrat de présentation stable : une interface ou un agent de design peut
+    # expliquer les preuves manquantes sans jamais toucher au verdict canonique.
+    from vertex.engines import decision_readiness as _readiness
+    decision['readiness'] = _readiness.build(packet, decision)
     # Journal de calibration (LOT 9) : chaque décision servie est enregistrée
     # (dédupliquée par scan) avec le prix du moment — base des résultats ex post.
     try:
