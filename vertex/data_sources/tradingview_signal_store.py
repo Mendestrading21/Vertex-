@@ -19,17 +19,24 @@ MAX_SIGNALS = 500
 REPLAY_WINDOW_S = 15 * 60      # un timestamp plus vieux que 15 min est rejeté
 DEDUP_WINDOW_S = 10 * 60       # même (symbole, signal) sous 10 min = doublon
 SIGNAL_FRESH_S = 6 * 3600      # un signal reçu il y a > 6 h est « rassis » (côté serveur)
+WEBHOOK_RATE_WINDOW_S = 60
+MAX_WEBHOOKS_PER_WINDOW = 30
+MAX_WEBHOOK_PAYLOAD_FIELDS = 12
+MAX_WEBHOOK_VALUE_CHARS = 256
+WEBHOOK_PAYLOAD_PRIORITY = ('price', 'volume', 'timeframe', 'strategy', 'note', 'exchange')
 
 
 class TradingViewSignalStore:
-    def __init__(self, clock=time.time) -> None:
+    def __init__(self, clock=time.time, rate_limit=MAX_WEBHOOKS_PER_WINDOW) -> None:
         self._signals: deque = deque(maxlen=MAX_SIGNALS)
         self._seen_keys: dict[str, float] = {}
+        self._arrivals: deque = deque()
         self._lock = threading.Lock()
         self._clock = clock
+        self._rate_limit = max(1, int(rate_limit))
         self._configured = False   # le secret webhook est-il réellement défini ?
         self.metrics = {'accepted': 0, 'rejected_replay': 0, 'rejected_duplicate': 0,
-                        'rejected_invalid': 0}
+                        'rejected_invalid': 0, 'rejected_rate_limited': 0}
 
     def set_configured(self, flag: bool) -> None:
         """Déclaré par le blueprint : le webhook a-t-il un secret actif ?
@@ -37,6 +44,38 @@ class TradingViewSignalStore:
         Permet à status() de distinguer « non configuré » de « configuré, en
         attente d'un 1er signal » — sinon l'UI ment sur l'état de connexion."""
         self._configured = bool(flag)
+
+    def allow_delivery(self) -> bool:
+        """Borne le débit global sans stocker IP, user-agent ni contenu client."""
+        now = self._clock()
+        with self._lock:
+            while self._arrivals and now - self._arrivals[0] >= WEBHOOK_RATE_WINDOW_S:
+                self._arrivals.popleft()
+            if len(self._arrivals) >= self._rate_limit:
+                self.metrics['rejected_rate_limited'] += 1
+                return False
+            self._arrivals.append(now)
+            return True
+
+    @staticmethod
+    def _bounded_payload(payload: dict | None) -> dict:
+        """Conserve seulement un sous-ensemble plat, de taille bornée, du signal."""
+        if not isinstance(payload, dict):
+            return {}
+        safe = {}
+        ordered = [(key, payload[key]) for key in WEBHOOK_PAYLOAD_PRIORITY if key in payload]
+        ordered.extend((key, value) for key, value in payload.items()
+                       if key not in WEBHOOK_PAYLOAD_PRIORITY)
+        for key, value in ordered:
+            if len(safe) >= MAX_WEBHOOK_PAYLOAD_FIELDS:
+                break
+            if not isinstance(key, str) or len(key) > 64:
+                continue
+            if isinstance(value, (bool, int, float)) or value is None:
+                safe[key] = value
+            elif isinstance(value, str):
+                safe[key] = value[:MAX_WEBHOOK_VALUE_CHARS]
+        return safe
 
     def add(self, symbol: str, signal: str, event_ts: float,
             payload: dict | None = None) -> dict:
@@ -73,7 +112,7 @@ class TradingViewSignalStore:
                                    if now - t < DEDUP_WINDOW_S}
             self._seen_keys[key] = now
             entry = {'symbol': symbol, 'signal': signal, 'event_ts': event_ts,
-                     'received_ts': now, 'payload': dict(payload or {}),
+                     'received_ts': now, 'payload': self._bounded_payload(payload),
                      'action': 'REEVALUATE'}  # jamais un achat
             self._signals.append(entry)
             self.metrics['accepted'] += 1
