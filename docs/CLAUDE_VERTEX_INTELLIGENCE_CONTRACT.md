@@ -26,6 +26,7 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 | `GET /api/skyler/health` | objet | Afficher seulement comme état technique non sensible ; ne jamais afficher ou déduire les contenus de cache. |
 | `request_metrics` dans `GET /api/skyler/health` | objet | Afficher comme diagnostic technique borné ; ne jamais l’interpréter comme une donnée de marché ou de performance de stratégie. |
 | erreurs `400` de routes POST analytiques | objet compact | Afficher comme erreur de validation locale ; ne jamais convertir une entrée rejetée en ticket, recommandation ou décision de marché. |
+| erreurs options ou `internal` | code stable | Afficher une indisponibilité technique sans exposer, déduire ou afficher les détails d’exception. |
 | `decision.multi_asset_guard.issues` | liste | Afficher `OPTION_BOARD_TRUNCATED` comme couverture options partielle ; ne pas la masquer ni la convertir en conformité. |
 
 ## Invariants à ne pas casser

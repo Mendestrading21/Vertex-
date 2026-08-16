@@ -24,7 +24,7 @@ def api_options_lab():
         return jsonify(options_lab.build(scan_state, demo=DEMO_MODE,
                                          cal_items=cal_state.get('items')))
     except Exception as e:
-        return jsonify({'empty': True, 'error': f'{type(e).__name__}: {e}'}), 500
+        return jsonify({'empty': True, 'error': 'options_lab_unavailable'}), 500
 
 
 @bp.route('/api/options/strategies/<sym>')
@@ -54,7 +54,7 @@ def api_options_strategies(sym):
         res['demo'] = DEMO_MODE
         return jsonify(res)
     except Exception as e:
-        return jsonify({'available': False, 'reason': f'{type(e).__name__}: {e}'}), 200
+        return jsonify({'available': False, 'reason': 'options_lab_unavailable'}), 200
 
 
 @bp.route('/api/options/analyze', methods=['POST'])
@@ -80,7 +80,7 @@ def api_options_analyze():
     except _payload.PayloadError as exc:
         return jsonify({'available': False, 'error': str(exc)}), 400
     except Exception as e:
-        return jsonify({'available': False, 'reason': f'{type(e).__name__}: {e}'}), 200
+        return jsonify({'available': False, 'reason': 'options_analysis_unavailable'}), 200
 
 
 __all__ = ['bp']

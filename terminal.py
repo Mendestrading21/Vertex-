@@ -1753,7 +1753,7 @@ def _err_404(e):
 @app.errorhandler(500)
 def _err_500(e):
     if request.path.startswith('/api/'):
-        return jsonify({'error': 'internal', 'detail': str(e)[:200]}), 500
+        return jsonify({'error': 'internal'}), 500
     return redirect('/')
 
 
