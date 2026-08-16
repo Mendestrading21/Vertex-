@@ -168,3 +168,23 @@ def test_la_calibration_ne_fabrique_pas_un_score_qu_elle_ne_mesure_pas():
     assert 'Brier indisponible' in src, (
         'la mention d\'indisponibilité du Brier a disparu : vérifier qu\'un '
         'score n\'a pas été fabriqué à la place.')
+
+
+def test_la_route_journal_sert_l_espace_et_performance_y_redirige():
+    """RELOGÉ depuis `tests/test_journal_page.py`, supprimé au lot 17 avec le
+    module mort `vertex/ui/journal.py`.
+
+    Ce fichier-là testait à 80 % le JS d'une page que plus aucune route ne
+    servait ; ce test-ci gardait en revanche deux choses VIVANTES — l'espace
+    canonique n°7 rend bien 200, et l'ancienne URL `/performance` y redirige.
+    Supprimer un fichier de tests avec son sujet est juste ; emporter au passage
+    la seule assertion qui protégeait autre chose ne l'est pas.
+    """
+    import terminal
+    c = terminal.app.test_client()
+    r = c.get('/journal')
+    assert r.status_code == 200 and b'vx-app' in r.data, (
+        '/journal ne rend plus l\'espace canonique')
+    rp = c.get('/performance')
+    assert rp.status_code in (301, 302) and '/journal' in rp.headers.get('Location', ''), (
+        '/performance ne redirige plus vers le Journal')

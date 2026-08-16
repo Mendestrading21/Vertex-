@@ -3,7 +3,6 @@ import pytest
 from flask import Flask
 
 from vertex.app.routes import strategy_os_api
-from vertex.ui import strategy_os as ui
 
 
 @pytest.fixture()
@@ -21,7 +20,10 @@ def client():
         'rows': [{'symbol': 'NVDA'}],
     }
     app.register_blueprint(strategy_os_api.make_blueprint(scan_state=scan_state))
-    app.add_url_rule('/strategy-os', 'sos', ui.render_page)
+    # `/strategy-os` etait monte ICI sur le module mort `vertex/ui/strategy_os.py`
+    # (supprime au lot 17). En PRODUCTION cette URL est une REDIRECTION vers
+    # /intelligence?view=strategy, mesuree au lot 17 : ce montage n'a jamais
+    # decrit le produit, il fabriquait une route pour se la tester a soi-meme.
     return app.test_client()
 
 
@@ -84,14 +86,6 @@ def test_diagnostics_and_data_quality(client):
         assert secret_like not in blob
     dq = client.get('/api/data-quality').get_json()
     assert dq['total'] == 1 and 'by_quality' in dq
-
-
-def test_hub_page_renders_without_personal_names(client):
-    html = client.get('/strategy-os').get_data(as_text=True)
-    assert 'Vertex Strategy OS' in html
-    assert 'lecture seule' in html
-    low = html.lower()
-    assert 'el' + 'io' not in low and 'men' + 'des' not in low
 
 
 def test_degraded_mode_empty_scan():

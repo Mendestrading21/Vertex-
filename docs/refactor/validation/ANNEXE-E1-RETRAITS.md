@@ -29,7 +29,7 @@ historiques**, elles décrivent l'état de leur époque et ne sont pas corrigée
 | Cat. | Action É1 | Contenu |
 |---|---|---|
 | **A — retrait sec** | Supprimer la déf | Toute déf non référencée par tests/ (la majorité : fonctions de rendu orphelines, gros blocs JS/CSS morts) |
-| **B — retrait avec leurs tests** | Supprimer déf + test de caractérisation | Défs épinglées par les tests écrits POUR ce moment : `test_dead_functions_lot185.py` (29 réfs), `test_legacy_layers_life_lot184.py` (20), `test_legacy_pages_life_lot183.py` (13), épingles `test_nav.py`/`test_options_lab.py`/`test_journal_page.py`/`test_home_art_lot181.py` |
+| **B — retrait avec leurs tests** | Supprimer déf + test de caractérisation | Défs épinglées par les tests écrits POUR ce moment : `test_dead_functions_lot185.py` (29 réfs), `test_legacy_layers_life_lot184.py` (20), `test_legacy_pages_life_lot183.py` (13), épingles `test_nav.py`/`test_options_lab.py`/`test_journal_page.py` (**RETIRÉ** au lot 17)/`test_home_art_lot181.py` |
 | **C — re-cibler le test, PUIS retirer l'alias** | Le test garde sa valeur, seul l'import change | Alias de compatibilité re-exportant des moteurs VIVANTS : `_rsi`/`_atr`/`_adx` → `vertex.engines.indicators` (test_indicators.py), `_demo_one` → `vertex.data.demo` (test_demo.py), `_vehicle_of` → `vertex.engines.strategy_fit` (test_strategy_fit.py), `_swing_project` → module swing (test_swing.py) |
 
 Faux positifs connus du grep ci-dessous (à ignorer au triage) :
@@ -136,7 +136,7 @@ navigateur 8 pages + 0 erreur console ; PR séparée ; rollback = revert.
 - `tests/test_demo.py` — 1 réf(s) : `_demo_one`
 - `tests/test_home_art_lot181.py` — 1 réf(s) : `PAGE_STRATEGIE`
 - `tests/test_indicators.py` — 3 réf(s) : `_adx`, `_atr`, `_rsi`
-- `tests/test_journal_page.py` — 2 réf(s) : `PAGE_JOURNAL`, `_DECJ_JS`
+- `tests/test_journal_page.py` — 2 réf(s) : `PAGE_JOURNAL`, `_DECJ_JS` — **RETIRÉ au lot 17 de Signal OS**, en même temps que son sujet `vertex/ui/journal.py` (module mort : 0 consommateur en production, aucune route déclarée ; `/journal` est servi par l'espace canonique et `/performance` y redirige). Son seul test portant sur du vivant — l'espace rend 200, `/performance` redirige — a été **relogé** dans `tests/test_signal_os_journal_rangs_lot11.py`.
 - `tests/test_legacy_layers_life_lot184.py` — 20 réf(s) : `_BASE_CSS`, `_BASE_JS`, `_BRIEF_JS`, `_CAT_JS`, `_COMPARE_JS`, `_DECJ_JS`, `_DESK_COCKPIT_JS`, `_PORTSIM_JS` …
 - `tests/test_legacy_pages_life_lot183.py` — 13 réf(s) : `PAGE_ANOMALIES`, `PAGE_BRIEF`, `PAGE_CATALYSTS`, `PAGE_COMPARE`, `PAGE_DECISIONS`, `PAGE_JOURNAL`, `PAGE_OPTIONS_LAB`, `PAGE_SECTORS` …
 - `tests/test_live_engine.py` — 1 réf(s) : `home`

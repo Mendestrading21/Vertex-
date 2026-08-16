@@ -64,11 +64,18 @@ def test_ibkr_readonly():
 def test_all_sync_keys_match():
     """Les listes de clés de sync desk sont identiques (règle critique n°1).
 
-    Source de vérité depuis la purge É1 : vx_kit (DESK_KEYS) ; journal.py et
-    vx-entities.js doivent porter exactement les mêmes clés. terminal.py n'en
-    héberge plus aucune copie.
+    Source de vérité : `vx_kit` (DESK_KEYS) et `vx-entities.js`, qui doivent
+    porter exactement les mêmes clés. terminal.py n'en héberge plus aucune copie
+    depuis la purge É1.
+
+    ⚠ RÉDUIT AU LOT 17 DE SIGNAL OS. Ce test comparait aussi `journal.py`, dont
+    la liste vivait en ligne dans `jvSyncPush` ; le module a été supprimé
+    (0 consommateur, aucune route). Une comparaison en moins n'affaiblit rien
+    ici : ce qui protège l'utilisateur, c'est `vx-entities.js` — le SEUL des
+    trois que les huit pages chargent — et son repli inline dans
+    `system_page.py`, gardés par `tests/test_desk_keys_servies_lot381.py`.
     """
-    # vx_kit : liste nommée DESK_KEYS ; journal : liste inline dans jvSyncPush.
+    # vx_kit : liste nommée DESK_KEYS, ancre de comparaison (non servie).
     text = (ROOT / 'vertex/ui/vx_kit.py').read_text(encoding='utf-8', errors='ignore')
     m2 = re.search(r"DESK_KEYS\s*=\s*\[([^\]]+)\]", text)
     assert m2, 'liste de clés absente de vertex/ui/vx_kit.py'
@@ -80,9 +87,15 @@ def test_all_sync_keys_match():
     assert m3, 'DESK_KEYS absent de vx-entities.js'
     ent_keys = set(re.findall(r"'([^']+)'", m3.group(1)))
     assert ent_keys == desk_keys, f'vx-entities: clés désynchronisées {ent_keys ^ desk_keys}'
-    journal = (ROOT / 'vertex/ui/journal.py').read_text(encoding='utf-8', errors='ignore')
+    # Le repli inline de `/system` est l'autre liste RÉELLEMENT SERVIE : elle
+    # remplace ici l'ancre `journal.py` disparue, et c'est un gain — on compare
+    # désormais deux listes que le navigateur reçoit, au lieu d'une servie et
+    # d'une morte.
+    sysp = (ROOT / 'vertex/ui/pages/system_page.py').read_text(
+        encoding='utf-8', errors='ignore')
     for key in desk_keys:
-        assert f"'{key}'" in journal, f'journal.py: clé de sync manquante {key}'
+        assert f"'{key}'" in sysp, (
+            f'system_page.py (repli deskKeys) : clé de sync manquante {key}')
 
 
 def test_ibkr_confirms_signal():

@@ -9,7 +9,6 @@ de la couche de synchronisation (une seule liste de clés desk).
 import re
 
 import terminal
-from vertex.ui import journal
 
 
 def _client():
@@ -63,10 +62,14 @@ def test_desk_sync_keys_single_source_of_truth():
     Depuis la purge É1, terminal.py n'héberge plus AUCUNE liste de clés :
     les copies qu'il portait vivaient dans le JS des pages mortes retirées.
 
-    ⚠ PÉRIMÈTRE — corrigé au lot 394. Ce test compare `vx_kit.JS` et
-    `journal.JS`, et **aucun des deux n'est servi** : le lot 381 a mesuré que
-    `vx_kit.JS` (21 727 o) n'atteint aucune des 8 pages, et `journal.py` est un
-    module mort. La phrase « la source de vérité servie est vx_kit (kit global,
+    ⚠ PÉRIMÈTRE — corrigé au lot 394, RÉDUIT au lot 17 de Signal OS. Ce test
+    comparait `vx_kit.JS` **et** `journal.JS` ; `vertex/ui/journal.py` a été
+    supprimé (module mort, 0 consommateur, aucune route). Il ne reste donc
+    qu'une ancre : `vx_kit.JS`, qui n'est PAS servi non plus — le lot 381 a
+    mesuré que ses 21 727 octets n'atteignent aucune des 8 pages.
+
+    Ce test verrouille donc une ancre de comparaison, pas ce que le navigateur
+    reçoit. La phrase « la source de vérité servie est vx_kit (kit global,
     présent sur toutes les pages) » figurait ici et **était fausse**.
 
     Ce que les 8 pages chargent réellement, c'est
@@ -82,12 +85,11 @@ def test_desk_sync_keys_single_source_of_truth():
             "'vxJournal','myTradeLog','vxVault','vxAlerts','vxWatchlist']")
     from vertex.ui import vx_kit
     src = open('terminal.py', encoding='utf-8').read()
-    assert full in journal.JS                       # journal
-    assert full in vx_kit.JS                        # kit global (DESK_KEYS)
+    assert full in vx_kit.JS                        # ancre de comparaison
     # terminal.py ne doit pas ressusciter de liste de clés (source unique)
     assert 'DESK_KEYS' not in src
     # aucune ancienne liste partielle ne subsiste dans le JS servi
-    served = vx_kit.JS + journal.JS
+    served = vx_kit.JS
     rest = served.replace(full, '')
     assert "'myNotes','myCapital']" not in rest
     assert "'myTradeLog','vxVault']" not in served  # liste SANS vxAlerts = perte d'alertes
