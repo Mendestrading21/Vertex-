@@ -31,3 +31,23 @@ def test_scan_enters_safe_degraded_state_when_all_market_data_missing(monkeypatc
     finally:
         terminal.scan_state.clear()
         terminal.scan_state.update(saved)
+
+
+def test_yfinance_then_stooq_failure_enters_safe_degraded_scan(monkeypatch):
+    saved = copy.deepcopy(terminal.scan_state)
+    try:
+        monkeypatch.setattr(terminal, 'DEMO_MODE', False)
+        monkeypatch.setattr(terminal.yf, 'download',
+                            lambda *args, **kwargs: (_ for _ in ()).throw(TimeoutError('private-yahoo-timeout')))
+        monkeypatch.setattr(terminal, '_stooq_download', lambda _tickers: {})
+        monkeypatch.setattr(terminal.time, 'sleep', lambda _seconds: None)
+        terminal.scan()
+        assert terminal.scan_state['source'] == 'unavailable'
+        assert terminal.scan_state['error'] == 'market_data_unavailable'
+        assert terminal.scan_state['source_health']['scan'] == 'DEGRADED'
+        rendered = str(terminal.scan_state)
+        assert 'private-yahoo-timeout' not in rendered
+        assert 'TimeoutError' not in rendered
+    finally:
+        terminal.scan_state.clear()
+        terminal.scan_state.update(saved)
