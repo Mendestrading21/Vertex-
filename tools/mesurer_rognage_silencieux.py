@@ -55,10 +55,25 @@ PAGES = [('/', ['']),
          ('/markets', _vues('markets_page.py')),
          ('/opportunities', _vues('opportunities_page.py')),
          ('/analysis', ['']),
+         # LA FICHE, pas seulement l'index. Elle etait le seul ecran du produit
+         # qu'aucun instrument ne balayait : l'ouvrir declenche des points
+         # d'entree interdits dans cet environnement, et j'en avais conclu
+         # qu'elle etait « non mesurable ». Elle l'est — en AVORTANT ces points
+         # d'entree au navigateur (cf. INTERDITS) : la requete ne part pas,
+         # donc le serveur ne sort pas. La mesure est PARTIELLE et le dit :
+         # elle porte sur la mise en page, pas sur le rendu des donnees
+         # bloquees. Une page a demi mesuree vaut mieux qu'une page declaree
+         # hors de portee.
+         ('/analysis/ACN', ['']),
          ('/portfolio', _vues('portfolio_page.py')),
          ('/options', _vues('options_intel_page.py')),
          ('/journal', _vues('performance_page.py')),
          ('/system', _vues('system_page.py', 'VIEWS'))]
+
+# Points d'entree que cet environnement interdit d'appeler. Ils sont avortes
+# AU NAVIGATEUR : aucune requete ne part, donc aucun appel sortant.
+INTERDITS = ('**/api/ticker/**', '**/api/analyst/**', '**/api/correlations/**',
+             '**/api/options-for/**', '**/options/*', '**/desc/**')
 
 # Un texte est ROGNE EN SILENCE si son conteneur cache le debordement SANS
 # ellipse ni defilement : rien a l'ecran ne signale qu'un mot est coupe.
@@ -98,6 +113,8 @@ with sync_playwright() as p:
     b=p.chromium.launch(executable_path='/opt/pw-browsers/chromium-1194/chrome-linux/chrome')
     for w,h in ((1440,900),(390,844)):
         ctx=b.new_context(viewport={'width':w,'height':h}, service_workers='block'); pg=ctx.new_page()
+        for _motif in INTERDITS:
+            pg.route(_motif, lambda r: r.abort())
         tot=0; vus=set()
         for route,vues in PAGES:
             for v in vues:

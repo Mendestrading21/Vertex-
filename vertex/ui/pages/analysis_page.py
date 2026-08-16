@@ -384,13 +384,26 @@ async function loadDossier(){
     ['Timing',scoreValue(sc.timing)],['Asymétrie',scoreValue(sc.asymmetry)],
     ['Qualité',scoreValue(sc.data_quality)]];
   const missingAxes=scAxes.filter(a=>a[1]===null).map(a=>a[0]);
+  /* Le radar est monté dans une carte BÂTIE À LA MAIN, donc hors du gabarit
+     VXCharts.card qui impose question et conclusion. C'est la même cause
+     structurelle que le donut « Secteurs » du Portefeuille (lot 12) : ce ne
+     sont pas les graphiques qui oublient la règle, ce sont ceux qui n'entrent
+     pas par le gabarit. La question et la conclusion sont donc posées ici, à
+     la main, et la conclusion est DÉRIVÉE des axes tracés — elle nomme l'axe
+     le plus faible et sa valeur, jamais une phrase générique. */
   $('an-scores').innerHTML=scAxes.map(([k,v])=>
     `<span class="vx-badge" title="${k}">${k} <b class="vx-mono">${VX.fmt.nd(v)}</b></span>`).join('')
     +(demo?'<span class="vx-badge" style="color:var(--vx-warning)">DÉMO</span>':'')
-    +'<div id="an-scorecard-radar" style="flex:1 0 100%;max-width:240px;margin:8px auto 0"></div>';
+    +'<div style="flex:1 0 100%;max-width:240px;margin:8px auto 0">'
+    +'<p class="vx-chart-question">Quel axe de la décision est le plus faible ?</p>'
+    +'<div id="an-scorecard-radar"></div>'
+    +'<p class="vx-chart-conclusion" id="an-scorecard-ccl"></p></div>';
   if(window.VXCharts&&VXCharts.radar&&!missingAxes.length){
     VXCharts.radar('an-scorecard-radar',{axes:scAxes.map(a=>({label:a[0],value:a[1]})),
       max:100,ariaLabel:'Scorecard '+SYM,color:VXCharts.colors.brand,width:240,height:190});
+    const faible=scAxes.slice().sort((a,b)=>a[1]-b[1])[0];
+    const ccl=$('an-scorecard-ccl');
+    if(ccl&&faible)ccl.textContent='Axe le plus faible : '+faible[0]+' ('+faible[1]+'/100).';
   }else if(missingAxes.length){
     $('an-scorecard-radar').innerHTML='<div class="vx-empty" data-state="empty">Radar non tracé — axes n/d : '
       +missingAxes.map(esc).join(', ')+'.</div>';
