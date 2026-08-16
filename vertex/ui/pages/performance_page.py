@@ -45,7 +45,7 @@ def _tabs(view: str) -> str:
 _HEADER = """
 <div class="vx-page-header vx-page-lead">
   <div class="vx-page-lead__main"><h1>Journal</h1>
-  <div class="vx-sub">Suis-je en train de devenir un meilleur investisseur ?</div></div>
+  <div class="vx-sub">Ce qui renforce ou dégrade la qualité des décisions.</div></div>
 </div>
 %%TABS%%
 """
@@ -73,7 +73,7 @@ _VIEW_CONTENT = {
         <span class="vx-meta">La performance de portefeuille reste dans <a href="/portfolio?view=performance">Portefeuille &rarr; Performance</a>.</span></div>
       <div class="vx-hero-grid">
         <section class="vx-card" aria-label="Post-mortem des trades clôturés">
-          <div class="vx-card-header"><span class="vx-card-title">Post-mortem &mdash; que disent mes sorties&nbsp;?</span>
+          <div class="vx-card-header"><span class="vx-card-title">Post-mortem</span><span class="vx-chart-question">Que disent mes sorties&nbsp;?</span>
             <span class="vx-chart-question">Stats r&eacute;elles et drapeaux de discipline. Descriptif, pas un conseil.</span></div>
           <div id="vx-pf-postmortem">%%LOADING%%</div>
         </section>
@@ -150,7 +150,7 @@ _VIEW_CONTENT = {
     'progression': """
 <div class="vx-grid vx-mt3">
   <section class="vx-card vx-col-12" aria-label="Progression de la discipline">
-    <div class="vx-card-header"><span class="vx-card-title">Ma progression</span>
+    <div class="vx-card-header"><span class="vx-card-title">Progression</span>
       <span class="vx-chart-question">Est-ce que je m'améliore, décision après décision ?</span></div>
     <div id="vx-pf-prog">%%LOADING%%</div>
   </section>

@@ -58,7 +58,7 @@ def _tabs(active: str) -> str:
 def _header(active: str) -> str:
     return f'''<div class="vx-page-header vx-page-lead">
   <div class="vx-page-lead__main"><h1>Système</h1>
-  <div class="vx-sub">Le système est-il en bonne santé et branché sur du réel ?</div></div>
+  <div class="vx-sub">Connexions, fraîcheur des données et confiance du terminal.</div></div>
   <span class="vx-readonly-shield vx-page-lead__meta" id="vx-readonly-invariant">
     <b>READONLY</b> &middot; analyse uniquement <span id="vx-readonly-confirm" class="vx-meta"></span>
   </span>

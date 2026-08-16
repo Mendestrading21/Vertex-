@@ -986,8 +986,8 @@ def render(sym: str) -> str:
     sym = sym.upper()[:8]
     safe = ''.join(ch for ch in sym if ch.isalnum() or ch in '.-')
     content = ('<div class="vx-page-header"><div><h1>' + safe + '</h1>'
-               '<div class="vx-sub">Cette entreprise et cette opportunité '
-               'méritent-elles du capital maintenant ?</div></div></div>'
+               '<div class="vx-sub">La thèse mérite-t-elle du capital, et à quel '
+               'risque.</div></div></div>'
                + _SECTIONS.replace('%%SYM%%', safe)
                .replace('%%LOADING%%', '<div class="vx-skeleton" style="height:48px"></div>'))
     js = _JS.replace('%%SYM_JSON%%', json_for_script(safe))
