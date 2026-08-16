@@ -14,36 +14,95 @@ depuis toujours — aucun chemin ne change.
 
 import json
 import os
+import tempfile
 import threading
+import copy
 
 # Racine du dépôt : vertex/services/persist.py → vertex/services → vertex → racine.
 _BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 _LOCK = threading.Lock()
+MAX_CACHE_BYTES = 32 * 1024 * 1024
+MAX_MEMORY_ENTRIES = 64
+_READ_CACHE = {}
+_STATS = {'loads': 0, 'load_failures': 0, 'saves': 0, 'save_failures': 0,
+          'cache_hits': 0, 'cache_misses': 0, 'last_error': None}
 
 
 def cache_path(name):
-    """Chemin absolu d'un fichier de cache (racine du dépôt)."""
-    return os.path.join(_BASE_DIR, name)
+    """Chemin de cache validé, toujours contenu dans la racine du dépôt."""
+    root = os.path.abspath(_BASE_DIR)
+    path = os.path.abspath(os.path.join(root, str(name or '')))
+    if not path.startswith(root + os.sep):
+        raise ValueError('cache_path_invalide')
+    return path
 
 
 def load_json(name, default):
     """Charge un JSON depuis le disque ; `default` si absent ou illisible."""
     try:
-        with open(cache_path(name), 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception:
+        path = cache_path(name)
+        with _LOCK:
+            stat = os.stat(path)
+            if stat.st_size > MAX_CACHE_BYTES:
+                raise ValueError('cache_too_large')
+            signature = (stat.st_mtime_ns, stat.st_size)
+            cached = _READ_CACHE.get(path)
+            if cached and cached['signature'] == signature:
+                _STATS['cache_hits'] += 1
+                return copy.deepcopy(cached['data'])
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            _STATS['loads'] += 1
+            _STATS['cache_misses'] += 1
+            if len(_READ_CACHE) >= MAX_MEMORY_ENTRIES and path not in _READ_CACHE:
+                _READ_CACHE.pop(next(iter(_READ_CACHE)))
+            _READ_CACHE[path] = {'signature': signature, 'data': data}
+            return copy.deepcopy(data)
+    except Exception as exc:
+        _STATS['load_failures'] += 1
+        _STATS['last_error'] = type(exc).__name__
         return default
 
 
 def save_json(name, obj):
-    """Écrit un JSON sur disque sous verrou. Échec silencieux (cache best-effort)."""
+    """Écrit un JSON atomiquement sous verrou.
+
+    Une écriture partielle ne remplace jamais le cache existant. Les échecs restent
+    non bloquants pour l’analyse, mais sont comptabilisés pour l’observabilité.
+    """
+    tmp_path = None
     try:
         with _LOCK:
-            with open(cache_path(name), 'w', encoding='utf-8') as f:
+            path = cache_path(name)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            fd, tmp_path = tempfile.mkstemp(prefix='.vertex-', suffix='.tmp',
+                                            dir=os.path.dirname(path))
+            with os.fdopen(fd, 'w', encoding='utf-8') as f:
                 json.dump(obj, f)
-    except Exception:
-        pass
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp_path, path)
+            tmp_path = None
+            _STATS['saves'] += 1
+            stat = os.stat(path)
+            _READ_CACHE[path] = {'signature': (stat.st_mtime_ns, stat.st_size),
+                                 'data': copy.deepcopy(obj)}
+    except Exception as exc:
+        _STATS['save_failures'] += 1
+        _STATS['last_error'] = type(exc).__name__
+    finally:
+        if tmp_path:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
 
 
-__all__ = ['cache_path', 'load_json', 'save_json']
+def health():
+    """État non sensible de la persistance : compteurs, jamais de chemins ou données."""
+    return {**_STATS, 'memory_entries': len(_READ_CACHE),
+            'max_memory_entries': MAX_MEMORY_ENTRIES, 'max_cache_bytes': MAX_CACHE_BYTES}
+
+
+__all__ = ['cache_path', 'load_json', 'save_json', 'health', 'MAX_CACHE_BYTES']
