@@ -27,6 +27,7 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 4. Le contrat de quote options résout le contrat par `SYM|EXP|STRIKE|C/P`, jamais par symbole seul. Une quote absente devient `DATA_REQUIRED`.
 5. Le champ `cost` historique n’est jamais présenté comme une quote de marché actuelle sans source explicite.
 6. `GET /api/skyler/monitor?horizon=H5|H10|H15|H20|H60` reste indisponible sous son seuil d’échantillon ; `INSUFFICIENT_SAMPLE` n’est jamais traduit par « performance stable ».
+7. `GET /api/tracking/options/cohort` ne présente les métriques d’une cohorte ou d’un segment que lorsque son champ `available` vaut `true` ; le périmètre affiché reste hypothétique.
 
 ## Séparation des responsabilités
 

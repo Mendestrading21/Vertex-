@@ -80,6 +80,14 @@ def tracking_summary():
     return jsonify(repo.summary())
 
 
+@bp.route('/api/tracking/options/cohort')
+def tracking_option_cohort():
+    """Cohorte de contrats options hypothétiques, construite sur les snapshots
+    observés seulement. Ne produit aucune métrique sous le seuil d’échantillon."""
+    from vertex.tracking import option_cohort
+    return jsonify(option_cohort.build(repo.list_all()))
+
+
 @bp.route('/api/tracking', methods=['POST'])
 def create_tracking():
     """Crée un suivi hypothétique. body: {entity_type, symbol, contract_id?,
@@ -143,10 +151,6 @@ def tracking_performance(tracking_id):
     else:
         resolution = _option_quote_from_board(t.get('contract_id'), t['symbol'])
         cur, _, _, _, _ = ref_price.pick_option_reference(resolution.get('quote') or {})
-        if cur is None:
-            # Le repli query-string est conservé pour compatibilité mais ne peut
-            # pas masquer l'absence de board : la réponse expose sa provenance.
-            cur = request.args.get('mark', type=float)
     spy = _spy_quote()
     bench_cur = spy['last'] if spy else None
     out = perf.compute(t, cur, bench_current=bench_cur,
