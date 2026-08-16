@@ -87,6 +87,21 @@
   }
 
   function loading(el) { if (el) el.innerHTML = (window.VX && VX.states) ? VX.states.loading(3) : 'Chargement…'; }
+
+  /* LE TROU DU LOT 08 : `options_intel_page.py` declare `<div
+     id="vx-demo-banner">` et RIEN ne le remplissait — hote present, page
+     muette. Chaque carte d'Options savait pourtant qu'elle etait en demo
+     (`d.demo` traverse le hero, les compteurs, le scanner, le payoff), mais
+     l'espace lui-meme ne le disait pas. Meme texte que Marches et
+     Opportunites : un seul libelle pour un seul fait. */
+  function remplirBandeauDemo(estDemo) {
+    var h = document.getElementById('vx-demo-banner');
+    if (!h) return;
+    h.innerHTML = estDemo
+      ? '<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> '
+        + 'Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>'
+      : '';
+  }
   function fail(el, cause) {
     if (el) el.innerHTML = (window.VX && VX.states)
       ? VX.states.error(cause) : '<div class="vx-error-banner">' + esc(cause) + '</div>';
@@ -156,6 +171,7 @@
     get('/api/options/overview').then(function (d) {
       if (!d || d.empty) {
         var msg = (window.VX && VX.states) ? VX.states.empty('Aucun contrat dans le tableau (scan vide ou hors séance).') : 'Aucune donnée.';
+        remplirBandeauDemo(d && d.demo);
         if (hEl) { hEl.innerHTML = heroHtml(d && d.environment, d && d.option_pulse, d && d.volatility_pulse, d && d.demo); mountEnvGauge(d && d.environment); }
         if (cEl) cEl.innerHTML = msg;
         if (vEl) vEl.innerHTML = verdictCard(d && d.interpretation);
@@ -163,6 +179,7 @@
         return;
       }
       var c = d.counters || {};
+      remplirBandeauDemo(d.demo);
       if (hEl) { hEl.innerHTML = heroHtml(d.environment, d.option_pulse, d.volatility_pulse, d.demo); mountEnvGauge(d.environment); }
       if (cEl) cEl.innerHTML = countersHtml(c, d.demo, d.as_of);
       if (vEl) vEl.innerHTML = verdictCard(d.interpretation);

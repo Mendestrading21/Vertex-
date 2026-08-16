@@ -12,7 +12,7 @@ import time
 
 from flask import Blueprint, jsonify, request
 
-from vertex.app.config import IBKR_ENABLED
+from vertex.app.config import DEMO_MODE, IBKR_ENABLED
 from vertex.app.state import scan_state, weekly_state
 from vertex.data.universe import UNIVERSE
 from vertex.engines import market_lens
@@ -40,7 +40,17 @@ def api_market_summary():
         'best_sector': (scan_state.get('sectors') or [None])[0],
         'scanned': scan_state.get('scanned_n'), 'universe': len(UNIVERSE),
         'scan_age': _scan_age(), 'market': scan_state.get('market'),
-        'source': 'ibkr' if IBKR_ENABLED else 'cloud',
+        # TROIS etats, pas deux. Cette expression etait
+        # `'ibkr' if IBKR_ENABLED else 'cloud'` : elle IGNORAIT DEMO_MODE, donc
+        # en demo elle annoncait « cloud » — c'est-a-dire de la donnee de marche
+        # REELLE — alors que le scan dont elle derive se declare lui-meme
+        # `source: 'demo'`. Deux endpoints, deux verites sur la meme donnee, et
+        # c'est celui qui ment que l'interface lit pour decider d'afficher ou
+        # non le bandeau « donnees synthetiques ».
+        # C'est l'invariant produit n°4 pris a revers : « jamais de chiffre
+        # invente affiche comme reel ». `status_service.py` faisait deja le bon
+        # calcul a trois etats ; ce site-ci ne l'avait simplement pas suivi.
+        'source': 'demo' if DEMO_MODE else ('ibkr' if IBKR_ENABLED else 'cloud'),
     })
 
 
