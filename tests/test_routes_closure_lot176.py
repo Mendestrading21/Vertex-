@@ -29,14 +29,15 @@ def test_funnel_nominal_7_etages_exacts(client):
 
 
 def test_funnel_moteur_en_panne_500_structure_vide_honnete(client, monkeypatch):
-    # Le moteur qui lève → 500 avec structure VIDE + erreur nommée — le client
-    # affiche un état d'erreur, jamais un entonnoir à moitié inventé.
+    # Le moteur qui lève → 500 avec structure VIDE + code sûr — le client
+    # affiche un état d'erreur, jamais un entonnoir à moitié inventé ni un détail interne.
     from vertex.app.routes import opportunities_api as OA
     monkeypatch.setattr(OA._funnel, 'build_funnel',
                         lambda *a, **k: (_ for _ in ()).throw(ValueError('boom')))
     r = client.get('/api/opportunities/funnel')
     assert r.status_code == 500
-    assert r.get_json() == {'stages': [], 'roles': [], 'error': 'ValueError: boom'}
+    assert r.get_json() == {'stages': [], 'roles': [],
+                            'error': 'opportunities_funnel_unavailable'}
 
 
 # ── /api/copilot/ask : jamais un crash, repli étiqueté ───────────────────────

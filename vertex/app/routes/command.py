@@ -138,7 +138,7 @@ def api_portefeuille():
         return jsonify(strategy.build_portfolio(rows, scan_state.get('detail'),
                                                 market=scan_state.get('market_ctx'), capital=cap))
     except Exception as e:
-        return jsonify({'error': f'{type(e).__name__}: {e}'})
+        return jsonify({'error': 'portfolio_analysis_unavailable'})
 
 
 __all__ = ['bp']
