@@ -416,3 +416,47 @@ def test_memory_file_gitignored():
     gi = open(os.path.join(os.path.dirname(__file__), '..', '.gitignore'),
               encoding='utf-8').read()
     assert 'skyler_memory.json' in gi
+
+
+def test_freeze_options_context_and_swing_horizons_are_explicit():
+    packet = _packet()
+    packet['contexts'] = {
+        'options': {
+            'available': True,
+            'universe': 'SWING_3_6M',
+            'mandate_status': 'IN_MANDATE',
+            'best': {
+                'dte': 135, 'delta': 0.45, 'iv': 0.35, 'oi': 1200,
+                'volume': 100, 'spread_pct': 3.0, 'quote_age_seconds': 60,
+                'mandate': {'bounds': {'holding_plan_sessions': [5, 10, 15]}},
+            },
+        },
+    }
+    record = _freeze(packet=packet)
+    assert record['option']['available'] is True
+    assert record['option']['universe'] == 'SWING_3_6M'
+    assert record['option']['dte_bucket'] == '135_164'
+    assert record['option']['holding_plan_sessions'] == [5, 10, 15]
+    outcome = DM.measure(record, [100.0 + i for i in range(1, 16)])
+    assert outcome['horizons']['H10']['return_pct'] == pytest.approx(10.0)
+    assert outcome['horizons']['H15']['return_pct'] == pytest.approx(15.0)
+    assert outcome['horizons']['OPTION']['status'] == 'NON_APPLICABLE'
+    assert 'quote de sortie absente' in outcome['horizons']['OPTION']['basis']
+
+
+def test_option_dte_bucket_is_stable_and_honest_for_missing_values():
+    assert DM.option_dte_bucket(90) == '75_104'
+    assert DM.option_dte_bucket(135) == '135_164'
+    assert DM.option_dte_bucket(210) == '181_210'
+    assert DM.option_dte_bucket(None) is None
+
+
+def test_option_calibration_summary_never_claims_contract_pnl_calibration():
+    summary = DM.option_calibration_summary(
+        DM.empty_memory(), 'vX',
+        {'available': True, 'universe': 'SWING_3_6M', 'best': {'dte': 135}},
+    )
+    assert summary['available'] is True
+    assert summary['scope'] == 'DIRECTIONAL_PROXY_ONLY'
+    assert summary['mature'] is False
+    assert summary['universe_cell']['status'] == 'INSUFFISANT'

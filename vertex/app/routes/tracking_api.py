@@ -15,6 +15,8 @@ from flask import Blueprint, jsonify, request
 from vertex.app.state import scan_state
 from vertex.tracking import repository as repo
 from vertex.tracking import performance as perf
+from vertex.tracking import reference_price as ref_price
+from vertex.options import quote_resolver as option_quotes
 
 bp = Blueprint('tracking_api', __name__)
 
@@ -58,6 +60,14 @@ def _option_quote_from_body(body):
     return q
 
 
+def _option_quote_from_board(contract_id, symbol):
+    """Quote canonique : identité exacte dans le board courant, jamais au symbole seul."""
+    return option_quotes.resolve(
+        scan_state.get('options_board') or [], contract_id_value=contract_id,
+        symbol=symbol, as_of=scan_state.get('options_as_of'),
+        source=scan_state.get('options_source') or 'options_board')
+
+
 @bp.route('/api/tracking', methods=['GET'])
 def list_tracking():
     status = request.args.get('status')
@@ -80,8 +90,16 @@ def create_tracking():
     sym = (body.get('symbol') or '').upper()
     if not sym:
         return jsonify({'error': 'symbol requis'}), 400
+    quote_evidence = None
     if et == 'OPTION':
-        quote = _option_quote_from_body(body)
+        quote_evidence = _option_quote_from_board(body.get('contract_id'), sym)
+        quote = quote_evidence.get('quote') or {}
+        if not quote_evidence.get('available'):
+            # Compatibilité avec les clients historiques : un prix transmis peut
+            # encore être suivi, mais son origine est explicitement déclarée.
+            quote = _option_quote_from_body(body)
+            if quote:
+                quote['source'] = quote.get('source') or 'client_input_unverified'
     else:
         quote = _stock_quote(sym)
         if quote is None:
@@ -90,7 +108,9 @@ def create_tracking():
     t = repo.create(tracking_id=_new_id(), entity_type=et, symbol=sym, quote=quote,
                     started_at=_now_iso(), market_open=_market_open(),
                     benchmark_quote=_spy_quote(), decision=body.get('decision', ''),
-                    score=body.get('score'), contract_id=body.get('contract_id'))
+                    score=body.get('score'), contract_id=body.get('contract_id'),
+                    data_quality=({'option_quote_resolution': quote_evidence}
+                                  if quote_evidence is not None else None))
     return jsonify(t), 201
 
 
@@ -121,11 +141,19 @@ def tracking_performance(tracking_id):
         q = _stock_quote(t['symbol'])
         cur = q['last'] if q else None
     else:
-        cur = request.args.get('mark', type=float)
+        resolution = _option_quote_from_board(t.get('contract_id'), t['symbol'])
+        cur, _, _, _, _ = ref_price.pick_option_reference(resolution.get('quote') or {})
+        if cur is None:
+            # Le repli query-string est conservé pour compatibilité mais ne peut
+            # pas masquer l'absence de board : la réponse expose sa provenance.
+            cur = request.args.get('mark', type=float)
     spy = _spy_quote()
     bench_cur = spy['last'] if spy else None
-    return jsonify(perf.compute(t, cur, bench_current=bench_cur,
-                                current_decision=None, current_score=None))
+    out = perf.compute(t, cur, bench_current=bench_cur,
+                       current_decision=None, current_score=None)
+    if t['entity_type'] == 'OPTION':
+        out['option_quote_resolution'] = resolution
+    return jsonify(out)
 
 
 @bp.route('/api/tracking/<tracking_id>/stop', methods=['POST'])

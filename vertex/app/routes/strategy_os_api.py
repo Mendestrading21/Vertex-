@@ -19,6 +19,7 @@ from vertex.portfolio import models as _pmodels
 from vertex.portfolio import portfolio_guard, risk_engine, stress_tests
 from vertex.portfolio.team_engine import team_view
 from vertex.strategy import constitution as _constitution
+from vertex.strategy import decision_packet as _decision_packet
 from vertex.strategy import executive_engine as _executive
 
 ALERTS = AlertEngine()
@@ -49,37 +50,13 @@ def make_blueprint(scan_state: dict) -> Blueprint:
                             'error': f'{sym} absent du scan courant',
                             'final_decision': 'ATTENDRE',
                             'reason': 'aucune donnée — impossible de décider'}), 200
-        plan = detail.get('plan') or {}
-        source = scan_state.get('source') or ''
-        packet = {
-            'symbol': sym,
-            'fundamental': {'score': detail.get('st_fund') or detail.get('fund_score')},
-            'catalysts': {'score': 60 if detail.get('earnings_dte') is not None else None},
-            'technical': {'score': detail.get('score'),
-                          'reward_risk': detail.get('rr') or (plan.get('rr') if isinstance(plan, dict) else None),
-                          'timing_score': detail.get('st_timing'),
-                          'overextended': (detail.get('ext_atr') or 0) >= 2.5},
-            'sentiment': {'score': detail.get('rs')},
-            'anomalies': [],
-            'data_quality': {'overall': ('DEMO' if source == 'demo'
-                                          else ('RECENT' if source else 'MISSING')),
-                             'actionable_allowed': bool(source and source != 'demo')},
-            'reconciliation': {'actionable_allowed': True},
-            'guard': {'blocking_rules': [], 'mandatory_reviews': []},
-        }
-        try:
-            market = scan_state.get('market') or {}
-            inputs = {'index_trend': {'TREND': 'UP', 'CHOP': 'FLAT'}.get(market.get('regime'),
-                                                                         market.get('spy_trend')),
-                      'breadth_pct': market.get('breadth'), 'vix': market.get('vix')}
-            packet['market_regime'] = classify_regime(inputs)
-        except Exception:
-            packet['market_regime'] = {}
+        packet = _decision_packet.build(sym, detail, scan_state)
         resp = _executive.decide(packet, _profile())
         # Fraîcheur RÉELLE du scan (jamais l'heure du navigateur) — le verdict dérive de
         # scan_state['detail'], aussi vieux que le dernier scan.
         if isinstance(resp, dict):
             resp['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+            resp['decision_packet'] = packet.get('decision_packet') or {}
         return jsonify(resp)
 
     @bp.route('/api/market/regime')

@@ -1,122 +1,290 @@
-"""vertex/options/horizon_scanners.py — SCANNERS PAR UNIVERS (SKYLER LOT 6).
+"""vertex.options.horizon_scanners — scanners déterministes par univers d’échéance.
 
-Sépare STRICTEMENT les horizons du mandat V2 :
-
-  TACTICAL [20, 60) · SWING [60, 180) · LEAPS [180, 540]
-
-Jamais une échéance ~35 DTE pour une requête LEAPS (OPTIONS_CORRECTNESS).
-Analyse les CALLS et PUTS LONGS uniquement (le profil V1/V2 interdit la vente).
-Le mandat LEAPS (delta 0,70-0,90, OI ≥ min, spread ≤ max) est évalué par
-candidat et AFFICHÉ (`mandate`, `hors_mandat`) — jamais filtré en silence :
-un contrat hors mandat reste visible, étiqueté, jamais recommandé en amont.
-
-Fonctions pures, données du board réel uniquement. Lecture seule, aucun ordre.
+Les univers restent strictement séparés. `SWING_3_6M` est le mandat opérationnel
+pour les positions détenues une à trois semaines avec une échéance de trois à six
+mois : fenêtre admissible 75–210 DTE et fenêtre préférée 90–180 DTE par défaut.
+Le scanner ne donne aucun ordre et ne filtre jamais silencieusement un contrat hors
+mandat : chaque candidat porte son statut de conformité, ses raisons et sa base de
+sélection.
 """
 from __future__ import annotations
 
 from vertex.options import iv_units
 
-_FALLBACK_UNIVERSES = {'TACTICAL': [20, 60], 'SWING': [60, 180], 'LEAPS': [180, 540]}
+_FALLBACK_UNIVERSES = {
+    'TACTICAL': [20, 60],
+    'SWING': [60, 180],
+    'SWING_3_6M': [75, 210],
+    'LEAPS': [180, 540],
+}
+
+_FALLBACK_SWING_3_6M = {
+    'preferred_dte': [90, 180],
+    'target_dte': 135,
+    'holding_plan_sessions': [5, 10, 15],
+    'delta_abs_min': 0.30,
+    'delta_abs_max': 0.60,
+    'open_interest_min': 500,
+    'volume_min': 50,
+    'spread_pct_max': 8.0,
+    'max_quote_age_seconds': 900,
+}
 
 
 def _universes(profile=None):
+    """Retourne les fenêtres d’univers avec un fallback stable et documenté."""
     try:
         if profile is None:
             from vertex.strategy.constitution import load_profile
             profile = load_profile()
-        u = (profile.options_profile or {}).get('universes') or {}
-        return {k: list(v) for k, v in u.items() if isinstance(v, (list, tuple)) and len(v) == 2}, profile
+        raw = (profile.options_profile or {}).get('universes') or {}
+        universes = {
+            key: list(value) for key, value in raw.items()
+            if isinstance(value, (list, tuple)) and len(value) == 2
+        }
+        for key, value in _FALLBACK_UNIVERSES.items():
+            universes.setdefault(key, list(value))
+        return universes, profile
     except Exception:
         return dict(_FALLBACK_UNIVERSES), None
 
 
-def _in_window(dte, universe, win):
-    lo, hi = win
+def _swing_3_6m_config(profile=None) -> dict:
+    """Lit le mandat 3–6 mois du profil sans rendre le scanner indisponible."""
+    config = dict(_FALLBACK_SWING_3_6M)
+    if profile is not None:
+        raw = (profile.options_profile or {}).get('swing_3_6m') or {}
+        if isinstance(raw, dict):
+            config.update(raw)
+    return config
+
+
+def _in_window(dte, universe, window):
+    lo, hi = window
     if universe == 'LEAPS':
-        return lo <= dte <= hi          # borne haute incluse (mandat 180-540)
-    return lo <= dte < hi               # [lo, hi) — la borne haute appartient à l'univers suivant
+        return lo <= dte <= hi
+    return lo <= dte < hi
 
 
-def scan(board, universe, sym=None, profile=None):
-    """Candidats LONGS d'un univers d'horizon. Refus structuré si univers inconnu ;
-    vide honnête si aucun contrat dans la fenêtre."""
-    universes, prof = _universes(profile)
-    universe = (universe or '').upper()
-    if universe not in universes:
-        return {'available': False, 'universe': universe, 'candidates': [],
-                'reason': 'univers inconnu : %r (attendu %s)' % (universe, sorted(universes))}
-    win = universes[universe]
+def _value_in_range(value, lo, hi):
+    if value is None:
+        return None
+    try:
+        return bool(lo <= abs(float(value)) <= hi)
+    except (TypeError, ValueError):
+        return None
 
-    leaps_cat = {}
-    if prof is not None:
-        try:
-            leaps_cat = prof.category('LEAPS') or {}
-        except Exception:
-            leaps_cat = {}
-    d_min = leaps_cat.get('delta_min', 0.70)
-    d_max = leaps_cat.get('delta_max', 0.90)
-    oi_min = leaps_cat.get('open_interest_min', 500)
-    spread_max = leaps_cat.get('spread_pct_max', 5.0)
 
-    out = []
-    for c in (board or []):
-        if not isinstance(c, dict):
-            continue
-        if sym and str(c.get('sym', '')).upper() != str(sym).upper():
-            continue
-        typ = str(c.get('type', '')).upper()
-        if typ not in ('CALL', 'PUT'):
-            continue
-        dte = c.get('dte')
-        if not isinstance(dte, (int, float)) or not _in_window(dte, universe, win):
-            continue
-        iv_dec, iv_unit, iv_warn = iv_units.from_legacy_board(c.get('iv'))
-        delta = c.get('delta')
-        cand = {
-            'sym': c.get('sym'), 'type': typ, 'strike': c.get('strike'),
-            'exp': c.get('exp'), 'dte': dte, 'delta': delta,
-            'iv': iv_dec, 'iv_unit': ('DECIMAL' if iv_dec is not None else None),
-            'oi': c.get('oi'), 'spread_pct': c.get('spread_pct'),
-            'cost': c.get('cost'), 'spot': c.get('spot'),
-            'quality': c.get('quality'), 'warnings': [w for w in [iv_warn] if w],
-        }
-        if universe == 'LEAPS':
-            delta_ok = (None if delta is None else bool(d_min <= abs(delta) <= d_max))
-            oi_ok = (None if c.get('oi') is None else bool(c['oi'] >= oi_min))
-            spread_ok = (None if c.get('spread_pct') is None
-                         else bool(c['spread_pct'] <= spread_max))
-            cand['mandate'] = {'delta_ok': delta_ok, 'oi_ok': oi_ok, 'spread_ok': spread_ok,
-                               'bounds': {'delta': [d_min, d_max], 'oi_min': oi_min,
-                                          'spread_pct_max': spread_max}}
-            cand['hors_mandat'] = any(v is False for v in
-                                      (delta_ok, oi_ok, spread_ok))
-        else:
-            cand['mandate'] = None
-            cand['hors_mandat'] = False
-        out.append(cand)
+def _minimum_ok(value, minimum):
+    if value is None:
+        return None
+    try:
+        return bool(float(value) >= float(minimum))
+    except (TypeError, ValueError):
+        return None
 
-    # Conformes au mandat d'abord, puis qualité décroissante — tri stable/déterministe.
-    out.sort(key=lambda x: (x['hors_mandat'], -(x.get('quality') or 0)))
+
+def _maximum_ok(value, maximum):
+    if value is None:
+        return None
+    try:
+        return bool(float(value) <= float(maximum))
+    except (TypeError, ValueError):
+        return None
+
+
+def _quote_age(contract):
+    """Compatibilité avec les noms historiques sans jamais inventer une fraîcheur."""
+    for key in ('quote_age_seconds', 'age_seconds', 'quote_age_s'):
+        value = contract.get(key)
+        if value is not None:
+            return value
+    return None
+
+
+def _leaps_mandate(contract, profile):
+    category = profile.category('LEAPS') if profile is not None else {}
+    d_min = category.get('delta_min', 0.70)
+    d_max = category.get('delta_max', 0.90)
+    oi_min = category.get('open_interest_min', 500)
+    spread_max = category.get('spread_pct_max', 5.0)
     return {
-        'available': bool(out), 'universe': universe, 'window': win,
-        'n': len(out), 'candidates': out, 'generator': 'deterministic',
-        'note': 'Univers strictement séparés — jamais une échéance courte pour une requête LEAPS ; '
-                'hors-mandat étiqueté, jamais filtré en silence.',
-        'reason': None if out else 'aucun contrat %s dans la fenêtre %s pour ce filtre' % (universe, win),
+        'delta_ok': _value_in_range(contract.get('delta'), d_min, d_max),
+        'oi_ok': _minimum_ok(contract.get('oi'), oi_min),
+        'spread_ok': _maximum_ok(contract.get('spread_pct'), spread_max),
+        'bounds': {
+            'delta': [d_min, d_max],
+            'oi_min': oi_min,
+            'spread_pct_max': spread_max,
+        },
     }
 
 
+def _swing_3_6m_mandate(contract, config):
+    age = _quote_age(contract)
+    return {
+        'delta_ok': _value_in_range(contract.get('delta'), config['delta_abs_min'], config['delta_abs_max']),
+        'oi_ok': _minimum_ok(contract.get('oi'), config['open_interest_min']),
+        'volume_ok': _minimum_ok(contract.get('volume'), config['volume_min']),
+        'spread_ok': _maximum_ok(contract.get('spread_pct'), config['spread_pct_max']),
+        'quote_fresh_ok': _maximum_ok(age, config['max_quote_age_seconds']),
+        'bounds': {
+            'delta_abs': [config['delta_abs_min'], config['delta_abs_max']],
+            'oi_min': config['open_interest_min'],
+            'volume_min': config['volume_min'],
+            'spread_pct_max': config['spread_pct_max'],
+            'max_quote_age_seconds': config['max_quote_age_seconds'],
+            'preferred_dte': list(config['preferred_dte']),
+            'target_dte': config['target_dte'],
+            'holding_plan_sessions': list(config['holding_plan_sessions']),
+        },
+    }
+
+
+def _mandate_status(mandate):
+    checks = [value for key, value in mandate.items() if key.endswith('_ok')]
+    if any(value is False for value in checks):
+        return 'OUT_OF_MANDATE'
+    if any(value is None for value in checks):
+        return 'PARTIAL_MANDATE'
+    return 'IN_MANDATE'
+
+
+def _mandate_reasons(mandate):
+    return [key.removesuffix('_ok') + ' indisponible' if value is None else key.removesuffix('_ok') + ' hors mandat'
+            for key, value in mandate.items() if key.endswith('_ok') and value is not True]
+
+
+def _candidate_mandate(contract, universe, profile, swing_config):
+    if universe == 'LEAPS':
+        return _leaps_mandate(contract, profile)
+    if universe == 'SWING_3_6M':
+        return _swing_3_6m_mandate(contract, swing_config)
+    return {}
+
+
+def _dte_distance(dte, universe, swing_config):
+    if universe != 'SWING_3_6M':
+        return 0
+    return abs(float(dte) - float(swing_config['target_dte']))
+
+
+def scan(board, universe, sym=None, profile=None):
+    """Retourne les calls et puts longs d’un univers, avec conformité explicite.
+
+    Les données manquantes ne sont jamais transformées en conformité positive : elles
+    produisent le statut `PARTIAL_MANDATE`, visible dans les raisons du candidat.
+    """
+    universes, profile = _universes(profile)
+    universe = (universe or '').upper()
+    if universe not in universes:
+        return {
+            'available': False,
+            'universe': universe,
+            'candidates': [],
+            'reason': 'univers inconnu : %r (attendu %s)' % (universe, sorted(universes)),
+        }
+
+    window = universes[universe]
+    swing_config = _swing_3_6m_config(profile)
+    candidates = []
+    for raw in board or []:
+        if not isinstance(raw, dict):
+            continue
+        if sym and str(raw.get('sym', '')).upper() != str(sym).upper():
+            continue
+        option_type = str(raw.get('type', '')).upper()
+        if option_type not in ('CALL', 'PUT'):
+            continue
+        dte = raw.get('dte')
+        if not isinstance(dte, (int, float)) or not _in_window(dte, universe, window):
+            continue
+
+        iv_dec, _, iv_warning = iv_units.from_legacy_board(raw.get('iv'))
+        mandate = _candidate_mandate(raw, universe, profile, swing_config)
+        status = _mandate_status(mandate) if mandate else 'NOT_APPLICABLE'
+        candidate = {
+            'sym': raw.get('sym'),
+            'type': option_type,
+            'strike': raw.get('strike'),
+            'exp': raw.get('exp'),
+            'dte': dte,
+            'delta': raw.get('delta'),
+            'iv': iv_dec,
+            'iv_unit': 'DECIMAL' if iv_dec is not None else None,
+            'oi': raw.get('oi'),
+            'volume': raw.get('volume'),
+            'spread_pct': raw.get('spread_pct'),
+            'quote_age_seconds': _quote_age(raw),
+            'cost': raw.get('cost'),
+            'spot': raw.get('spot'),
+            'quality': raw.get('quality'),
+            'warnings': [warning for warning in [iv_warning] if warning],
+            'mandate': mandate or None,
+            'mandate_status': status,
+            'mandate_reasons': _mandate_reasons(mandate) if mandate else [],
+            'hors_mandat': status == 'OUT_OF_MANDATE',
+            'dte_distance_to_target': _dte_distance(dte, universe, swing_config),
+        }
+        candidates.append(candidate)
+
+    rank = {'IN_MANDATE': 0, 'NOT_APPLICABLE': 0, 'PARTIAL_MANDATE': 1, 'OUT_OF_MANDATE': 2}
+    candidates.sort(key=lambda candidate: (
+        rank.get(candidate['mandate_status'], 3),
+        candidate['dte_distance_to_target'],
+        -(candidate.get('quality') or 0),
+        candidate.get('strike') if candidate.get('strike') is not None else float('inf'),
+    ))
+    preferred_window = list(swing_config['preferred_dte']) if universe == 'SWING_3_6M' else None
+    note = (
+        'Mandat 3–6 mois : contrat admissible %s, préférence %s, plan de détention %s séances ; '
+        'la conformité de liquidité et de fraîcheur est affichée sans filtre silencieux.'
+        % (window, preferred_window, swing_config['holding_plan_sessions'])
+        if universe == 'SWING_3_6M' else
+        'Univers strictement séparés ; un contrat hors mandat reste affiché et étiqueté.'
+    )
+    return {
+        'available': bool(candidates),
+        'universe': universe,
+        'window': list(window),
+        'preferred_window': preferred_window,
+        'n': len(candidates),
+        'candidates': candidates,
+        'generator': 'deterministic',
+        'note': note,
+        'reason': None if candidates else 'aucun contrat %s dans la fenêtre %s pour ce filtre' % (universe, window),
+    }
+
+
+def swing_3_6m_context(board, sym=None, profile=None):
+    """Point d’entrée canonique pour le mandat options 3–6 mois de Skyler."""
+    return options_context(scan(board, 'SWING_3_6M', sym=sym, profile=profile))
+
+
 def options_context(scan_result):
-    """OptionsContext minimal pour le SkylerPacket : disponible + meilleur candidat
-    + drapeaux de mandat. Jamais construit sans scan réel."""
+    """Construit un contexte minimal mais traçable à partir d’un scan réel."""
     if not scan_result or not scan_result.get('available'):
-        return {'available': False,
-                'reason': (scan_result or {}).get('reason') or 'scan options indisponible'}
+        return {
+            'available': False,
+            'reason': (scan_result or {}).get('reason') or 'scan options indisponible',
+        }
     best = scan_result['candidates'][0]
-    return {'available': True, 'universe': scan_result['universe'],
-            'window': scan_result['window'], 'n': scan_result['n'],
-            'best': best, 'best_in_mandate': not best['hors_mandat'],
-            'generator': 'deterministic'}
+    return {
+        'available': True,
+        'universe': scan_result['universe'],
+        'window': scan_result['window'],
+        'preferred_window': scan_result.get('preferred_window'),
+        'n': scan_result['n'],
+        'best': best,
+        'best_in_mandate': best['mandate_status'] == 'IN_MANDATE',
+        'mandate_status': best['mandate_status'],
+        'selection_basis': {
+            'status': best['mandate_status'],
+            'reasons': list(best['mandate_reasons']),
+            'dte_distance_to_target': best['dte_distance_to_target'],
+        },
+        'generator': 'deterministic',
+    }
 
 
-__all__ = ['scan', 'options_context']
+__all__ = ['scan', 'options_context', 'swing_3_6m_context']

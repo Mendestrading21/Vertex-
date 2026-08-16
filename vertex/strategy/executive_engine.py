@@ -24,6 +24,7 @@ BLOCKING_TO_MAX_DECISION = {
     'PORTFOLIO_DRAWDOWN_LIMIT': 'ATTENDRE',
     'MAX_OPTIONS_REACHED': 'ATTENDRE',
     'PORTFOLIO_FULL_NO_REPLACEMENT': 'ATTENDRE',
+    'DECISION_PACKET_INCOMPLETE': 'ATTENDRE',
     'THESIS_INVALIDATED': 'REDUIRE',
 }
 
@@ -68,7 +69,11 @@ def decide(packet: dict, profile=None) -> dict:
     for rule in guard.get('blocking_rules') or []:
         if rule in BLOCKING_TO_MAX_DECISION:
             blocking.append(rule)
-            audit.append(f'garde-fou portefeuille: {rule}')
+            if rule == 'DECISION_PACKET_INCOMPLETE':
+                missing = ', '.join(guard.get('missing_sections') or []) or 'sections critiques'
+                audit.append(f'paquet décisionnel incomplet: {missing}')
+            else:
+                audit.append(f'garde-fou portefeuille: {rule}')
     fit = packet.get('portfolio_fit') or {}
     if fit.get('blocked'):
         blocking.append('PORTFOLIO_FULL_NO_REPLACEMENT')

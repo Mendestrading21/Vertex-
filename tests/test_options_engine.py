@@ -306,3 +306,12 @@ def test_hold_through_earnings_requires_full_dossier():
 def test_no_certainty_language():
     text = earnings_engine.sanitize_language('Ce trade est garanti et sans risque')
     assert 'garanti' not in text and 'sans risque' not in text
+
+
+def test_selector_uses_profiled_holding_plan_and_explicit_override():
+    default = call_selector.select_calls(liquid_chain(), setup_long(), PROFILE, rate_curve=CURVE)
+    assert default['holding_plan_sessions'] == [5, 10, 15]
+    assert default['holding_days'] == 10
+    explicit = call_selector.select_calls(liquid_chain(), setup_long(), PROFILE,
+                                          rate_curve=CURVE, holding_days=15)
+    assert explicit['holding_days'] == 15

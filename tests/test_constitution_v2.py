@@ -12,10 +12,10 @@ from vertex.strategy import constitution as C
 
 # ─── V2 existe par versioning, V1 intacte ───────────────────────────────────────
 
-def test_v2_exists_and_is_latest():
+def test_v1_v2_v3_exist_and_v3_is_latest():
     versions = C.list_versions()
-    assert 1 in versions and 2 in versions
-    assert C.load_profile().version == 2          # dernière version par défaut
+    assert {1, 2, 3}.issubset(set(versions))
+    assert C.load_profile().version == 3          # dernière version par défaut
 
 
 def test_v1_untouched_byte_identical_values():
@@ -82,11 +82,15 @@ def test_leaps_category_delta_and_dte():
     assert leaps['double_probability_labeled'] is True
 
 
-def test_universes_tactical_swing_leaps():
+def test_universes_include_swing_3_6m():
     u = C.load_profile().options_profile['universes']
     assert u['TACTICAL'] == [20, 60]
     assert u['SWING'] == [60, 180]
+    assert u['SWING_3_6M'] == [75, 210]
     assert u['LEAPS'] == [180, 540]
+    swing = C.load_profile().options_profile['swing_3_6m']
+    assert swing['preferred_dte'] == [90, 180]
+    assert swing['holding_plan_sessions'] == [5, 10, 15]
 
 
 def test_dte_absolute_max_admits_leaps():
@@ -123,20 +127,20 @@ def test_hard_gates_listed():
         assert g in gates, f'hard gate manquant : {g}'
 
 
-# ─── Le moteur exécutif et les moteurs options fonctionnent sous V2 ─────────────
+# ─── Le moteur exécutif et les moteurs options fonctionnent sous V3 ─────────────
 
-def test_executive_engine_runs_under_v2():
+def test_executive_engine_runs_under_v3():
     from vertex.strategy import executive_engine as EE
     out = EE.decide({'symbol': 'X'}, C.load_profile())
     assert out['symbol'] == 'X'
     assert list(out['analysis_order']) == list(C.ANALYSIS_ORDER)  # scaffold canonique intact
 
 
-def test_multileg_mandate_reads_v2():
+def test_multileg_mandate_reads_v3():
     from vertex.engines import multileg_lab as ml
     ml._MANDATE_CACHE['loaded'] = False           # force le rechargement
     m = ml._options_mandate()
-    assert m['profile_version'] == 2
+    assert m['profile_version'] == 3
     assert m['dte_max'] == 540
     assert m['short_options'] is False
     ml._MANDATE_CACHE['loaded'] = False           # ne pas polluer les autres tests

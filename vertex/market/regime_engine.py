@@ -32,6 +32,8 @@ def classify_regime(inputs: dict) -> dict:
     rv_ratio = inputs.get('realized_vol_ratio')
     leadership = inputs.get('leadership')
     momentum = inputs.get('momentum_pct')
+    yield_curve = inputs.get('yield_curve_bps')
+    dollar_trend = inputs.get('dollar_trend')
 
     secondary: list[str] = []
     votes: dict[str, float] = {}
@@ -63,6 +65,21 @@ def classify_regime(inputs: dict) -> dict:
         vote('RISK_ON', 1)
     elif leadership == 'DEFENSIVE':
         vote('RISK_OFF', 1)
+    # Macro : poids volontairement faible. Ces dimensions modulent le régime,
+    # elles ne doivent jamais dominer prix/breadth/volatilité sans calibration.
+    if yield_curve is not None:
+        if yield_curve < 0:
+            secondary.append('YIELD_CURVE_INVERTED')
+            vote('RISK_OFF', 0.5)
+        elif yield_curve >= 150:
+            secondary.append('YIELD_CURVE_STEEP')
+            vote('RISK_ON', 0.25)
+    if dollar_trend == 'STRENGTHENING':
+        secondary.append('DOLLAR_STRENGTHENING')
+        vote('RISK_OFF', 0.5)
+    elif dollar_trend == 'WEAKENING':
+        secondary.append('DOLLAR_WEAKENING')
+        vote('RISK_ON', 0.25)
     if rv_ratio is not None:
         if rv_ratio >= 1.6:
             vote('VOLATILITY_EXPANSION', 1.5)
@@ -77,7 +94,9 @@ def classify_regime(inputs: dict) -> dict:
             and trend in (None, 'FLAT'):
         vote('MEAN_REVERSION', 1.5)
 
-    regime = max(votes, key=votes.get) if votes else 'UNKNOWN'
+    # Un VIX de panique est un plafond de sécurité : les dimensions macro peuvent
+    # confirmer le risque-off, mais ne doivent jamais déclasser PANIC par cumul.
+    regime = 'PANIC' if vix is not None and vix >= 35 else (max(votes, key=votes.get) if votes else 'UNKNOWN')
     total = sum(votes.values()) or 1
     confidence = round(votes.get(regime, 0) / total, 2)
     ordered = sorted(votes, key=votes.get, reverse=True)
