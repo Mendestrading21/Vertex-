@@ -129,7 +129,13 @@
   --vx-violet-glow:rgba(155,123,255,.22);
   --vx-violet-ink:#0B0820;         /* texte sombre sur action violette */
 
-  /* alias historiques — même rampe, anciens noms */
+  /* ── ALIAS HISTORIQUES — DÉPRÉCIÉS ─────────────────────────────────────
+     Quatre générations de noms (`ember`, `signal`, `orange`, `copper`) pointent
+     toutes vers la MÊME rampe violette. Ils ne repeignent rien : ils mentent
+     seulement sur ce qu'ils valent. Plus AUCUN consommateur du produit ne les
+     nomme (mesuré : 113 sites renommés) — ils ne survivent que pour ne pas
+     casser une référence extérieure. Ne pas en introduire de nouveaux, ne pas
+     en réintroduire dans `vertex/**`. */
   --vx-ember-950:var(--vx-violet-950);
   --vx-ember-900:var(--vx-violet-900);
   --vx-ember-800:var(--vx-violet-800);
@@ -138,45 +144,44 @@
   --vx-ember-500:var(--vx-violet-500);
   --vx-ember-400:var(--vx-violet-400);
   --vx-ember-300:var(--vx-violet-300);
-  --vx-ember-soft:rgba(155,123,255,.12);
+  --vx-ember-soft:var(--vx-brand-soft);
   --vx-ember-glow:var(--vx-violet-glow);
   --vx-ember-ink:var(--vx-violet-ink);
 
-  --vx-brand:var(--vx-ember-500);
-  --vx-brand-strong:var(--vx-ember-400);
-  --vx-brand-hover:var(--vx-ember-400);
-  --vx-brand-pressed:var(--vx-ember-600);
+  --vx-brand:var(--vx-violet-500);
+  --vx-brand-strong:var(--vx-violet-400);
+  --vx-brand-hover:var(--vx-violet-400);
+  --vx-brand-pressed:var(--vx-violet-600);
   --vx-brand-selected:rgba(155,123,255,.16);
-  --vx-brand-soft:var(--vx-ember-soft);
-  --vx-brand-ink:var(--vx-ember-ink);
+  --vx-brand-soft:rgba(155,123,255,.12);
+  --vx-brand-ink:var(--vx-violet-ink);
   --vx-amber:#D9BE3C;
   --vx-beige:#c8bfae;
 
-  /* ── DEPRECATED — Signal Green (compat ; repointé sur Ember, N'EST PLUS la marque) ──
-     Conservé UNIQUEMENT pour ne pas casser des références résiduelles ; à retirer. */
-  --vx-signal-950:var(--vx-ember-950);
-  --vx-signal-900:var(--vx-ember-900);
-  --vx-signal-800:var(--vx-ember-800);
-  --vx-signal-700:var(--vx-ember-700);
-  --vx-signal-600:var(--vx-ember-600);
-  --vx-signal-500:var(--vx-ember-500);
-  --vx-signal-400:var(--vx-ember-400);
-  --vx-signal-300:var(--vx-ember-300);
-  --vx-signal-soft:var(--vx-ember-soft);
-  --vx-signal-glow:var(--vx-ember-glow);
-  /* rampe « orange » legacy → cuivre Ember */
-  --vx-orange-950:var(--vx-ember-950);
-  --vx-orange-900:var(--vx-ember-900);
-  --vx-orange-850:var(--vx-ember-800);
-  --vx-orange-800:var(--vx-ember-800);
-  --vx-orange-700:var(--vx-ember-700);
-  --vx-orange-600:var(--vx-ember-600);
-  --vx-orange-500:var(--vx-ember-500);
-  --vx-orange-400:var(--vx-ember-400);
-  /* copper legacy → rampe cuivre canonique */
-  --vx-copper-dark:var(--vx-ember-800);
-  --vx-copper:var(--vx-ember-700);
-  --vx-copper-light:var(--vx-ember-500);
+  /* DÉPRÉCIÉ — « Signal Green » : ni vert, ni la marque. Repointé sur le violet. */
+  --vx-signal-950:var(--vx-violet-950);
+  --vx-signal-900:var(--vx-violet-900);
+  --vx-signal-800:var(--vx-violet-800);
+  --vx-signal-700:var(--vx-violet-700);
+  --vx-signal-600:var(--vx-violet-600);
+  --vx-signal-500:var(--vx-violet-500);
+  --vx-signal-400:var(--vx-violet-400);
+  --vx-signal-300:var(--vx-violet-300);
+  --vx-signal-soft:var(--vx-brand-soft);
+  --vx-signal-glow:var(--vx-violet-glow);
+  /* DÉPRÉCIÉ — rampe « orange » : elle ne rend pas d'orange, mais du violet. */
+  --vx-orange-950:var(--vx-violet-950);
+  --vx-orange-900:var(--vx-violet-900);
+  --vx-orange-850:var(--vx-violet-800);
+  --vx-orange-800:var(--vx-violet-800);
+  --vx-orange-700:var(--vx-violet-700);
+  --vx-orange-600:var(--vx-violet-600);
+  --vx-orange-500:var(--vx-violet-500);
+  --vx-orange-400:var(--vx-violet-400);
+  /* DÉPRÉCIÉ — « copper » : elle ne rend pas de cuivre, mais du violet. */
+  --vx-copper-dark:var(--vx-violet-800);
+  --vx-copper:var(--vx-violet-700);
+  --vx-copper-light:var(--vx-violet-500);
 
   /* ── États sémantiques (sens financier réel) ── */
   --vx-positive:#2BBE90;           /* gain / hausse / confirmation réelle */
@@ -207,7 +212,7 @@
   --vx-cyan-soft:rgba(69,214,232,.12);
 
   /* ── Dégradés (réservés aux éléments importants, fonctionnels) ── */
-  --vx-brand-gradient:linear-gradient(180deg,var(--vx-ember-400) 0%,var(--vx-ember-500) 100%);
+  --vx-brand-gradient:linear-gradient(180deg,var(--vx-violet-400) 0%,var(--vx-violet-500) 100%);
   --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(155,123,255,.045),transparent 66%);
 
   /* ── Typographie — Inter est auto-hébergée ; aucun téléchargement externe ── */
@@ -257,5 +262,5 @@
   --vx-positive-dim:var(--vx-positive-soft);
   --vx-negative-dim:var(--vx-negative-soft);
   --vx-warning-dim:var(--vx-warning-soft);
-  --vx-copper-legacy:var(--vx-ember-400);
+  --vx-copper-legacy:var(--vx-violet-400);
 }

@@ -62,7 +62,7 @@ def aura(name, conf, tone='go', size=170):
       <stop offset="100%" stop-color="{col}" stop-opacity="0"/></radialGradient></defs>
     <circle cx="{cx}" cy="{cy}" r="{r-2}" fill="url(#{uid})"/>
     <path d="{track}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3" stroke-linecap="round"/>
-    <path d="{ring}" fill="none" stroke="var(--vx-ember-500)" stroke-width="3" stroke-linecap="round"/>
+    <path d="{ring}" fill="none" stroke="var(--vx-violet-500)" stroke-width="3" stroke-linecap="round"/>
   </svg>
   <div class="wl-aura-txt"><span class="n">{name}</span><span class="c">{conf}% confiance</span></div>
 </div>'''
@@ -100,7 +100,7 @@ def sparkline(vals, tone='up', h=44, w=150, dot=True):
     line = ' '.join(f'{x:.1f},{y:.1f}' for x, y in zip(xs, ys))
     area = f'0,{h} ' + line + f' {w},{h}'
     col = {'up': 'var(--vx-positive)', 'down': 'var(--vx-negative)',
-           'tech': 'var(--vx-technical)', 'brand': 'var(--vx-ember-500)'}[tone]
+           'tech': 'var(--vx-technical)', 'brand': 'var(--vx-violet-500)'}[tone]
     d = (f'<circle cx="{xs[-1]:.1f}" cy="{ys[-1]:.1f}" r="2.6" fill="{col}"/>' if dot else '')
     return f'''<svg class="wl-spark" viewBox="0 0 {w} {h}" width="{w}" height="{h}" preserveAspectRatio="none">
   <defs><linearGradient id="{uid}" x1="0" x2="0" y1="0" y2="1">
@@ -126,7 +126,7 @@ def dial(val, mx=100, label='', reading='', unit='%', bands=None, size=150):
     return f'''<svg class="wl-dial" viewBox="0 0 {size} {size*0.75:.0f}" width="{size}" height="{size*0.75:.0f}">
   {segs}
   <path d="{_arc(cx,cy,r,180,va)}" fill="none" stroke="{valcol}" stroke-width="9" stroke-linecap="round"/>
-  <circle cx="{nx:.1f}" cy="{ny:.1f}" r="4.5" fill="var(--vx-ember-500)"/>
+  <circle cx="{nx:.1f}" cy="{ny:.1f}" r="4.5" fill="var(--vx-violet-500)"/>
   <text x="{cx}" y="{cy-16}" text-anchor="middle" fill="var(--vx-text-primary)" font-size="26" font-weight="800" style="font-variant-numeric:tabular-nums">{val:g}{unit}</text>
   <text x="{cx}" y="{cy+2}" text-anchor="middle" fill="var(--vx-text-muted)" font-size="10" letter-spacing=".4">{label}</text>
 </svg>{f'<div class="wl-dial-read">{reading}</div>' if reading else ''}'''
@@ -188,7 +188,7 @@ def tide(pct):
 
 def reactor(score, contribs):
     """S-form REACTOR — composition pondérée (cœur + barres contributrices)."""
-    core_col = 'var(--vx-ember-500)' if score >= 55 else 'var(--vx-warning)'
+    core_col = 'var(--vx-violet-500)' if score >= 55 else 'var(--vx-warning)'
     bars = ''
     for lab, val, w in contribs:
         pc = max(6, min(100, val))
@@ -210,10 +210,10 @@ def ledge(pts, best_i=0):
         col = {'buy': 'var(--vx-positive)', 'avoid': 'var(--vx-negative)',
                'neutral': 'var(--vx-warm-grey)'}[tone]
         if i == best_i:
-            col = 'var(--vx-ember-500)'
+            col = 'var(--vx-violet-500)'
         dots += f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{6 if i==best_i else 5}" fill="{col}" stroke="rgba(255,255,255,.2)"/>'
         if x >= 55 and y >= 55:
-            labs += f'<text x="{px+8:.1f}" y="{py-6:.1f}" fill="{"var(--vx-ember-400)" if i==best_i else "rgba(248,245,243,.9)"}" font-size="10" font-weight="700">{sym}</text>'
+            labs += f'<text x="{px+8:.1f}" y="{py-6:.1f}" fill="{"var(--vx-violet-400)" if i==best_i else "rgba(248,245,243,.9)"}" font-size="10" font-weight="700">{sym}</text>'
     xc = 20 + 55 / 100 * (W - 30)
     yc = H - 22 - 55 / 100 * (H - 40)
     return f'''<svg class="wl-ledge" viewBox="0 0 {W} {H}" width="{W}" height="{H}">
@@ -359,7 +359,7 @@ def horizon_band(tone, name, phase):
   <rect width="220" height="66" fill="url(#{uid})"/>
   <circle cx="168" cy="52" r="16" fill="{col}" opacity=".85" class="wl-glow" style="--wl-acc:{col}"/>
   <line x1="0" y1="66" x2="220" y2="66" stroke="{col}" stroke-width="1.5" opacity=".6"/>
-  <line x1="0" y1="66" x2="220" y2="66" stroke="var(--vx-ember-500)" stroke-width="0" />
+  <line x1="0" y1="66" x2="220" y2="66" stroke="var(--vx-violet-500)" stroke-width="0" />
   <path d="M0,66 Q55,60 110,66 T220,66 L220,110 L0,110 Z" fill="rgba(0,0,0,.25)"/>
   <text x="12" y="26" fill="var(--vx-text-primary)" font-size="15" font-weight="800">{name}</text>
   <text x="12" y="88" fill="var(--vx-text-muted)" font-size="10">{phase}</text></svg></div>'''
@@ -394,7 +394,7 @@ def regime_capsule(name, tone, tension):
 
 def signal_bloom(strength, tone):
     """SIGNAL BLOOM / OPPORTUNITY BEACON — floraison radiale de pétales."""
-    col = {'go': _EM, 'brand': 'var(--vx-ember-500)', 'opt': _VI}[tone]
+    col = {'go': _EM, 'brand': 'var(--vx-violet-500)', 'opt': _VI}[tone]
     n = 12
     petals = ''
     for i in range(n):
@@ -432,14 +432,14 @@ def momentum_ribs(vals):
         ribs += (f'<path d="M20,{y} Q{20+w/2},{y-12} {20+w},{y}" fill="none" stroke="{col}" stroke-width="3" stroke-linecap="round" opacity=".9"/>'
                  f'<text x="6" y="{y+3}" fill="var(--vx-text-muted)" font-size="9">{lab}</text>'
                  f'<text x="{24+w}" y="{y+3}" fill="var(--vx-text-secondary)" font-size="9" style="font-variant-numeric:tabular-nums">{v:+.1f}</text>')
-    return f'<div style="width:200px"><svg viewBox="0 0 200 116" width="200" height="116"><line x1="20" y1="10" x2="20" y2="106" stroke="var(--vx-ember-500)" stroke-width="2" opacity=".7"/>{ribs}</svg></div>'
+    return f'<div style="width:200px"><svg viewBox="0 0 200 116" width="200" height="116"><line x1="20" y1="10" x2="20" y2="106" stroke="var(--vx-violet-500)" stroke-width="2" opacity=".7"/>{ribs}</svg></div>'
 
 
 def conviction_pillar(pct):
     """CONVICTION PILLAR — pilier segmenté (distinct du Spine plein)."""
     segs = 10
     filled = round(pct / 100 * segs)
-    cells = ''.join(f'<div style="height:9px;border-radius:2px;background:{"linear-gradient(90deg,var(--vx-ember-500),var(--vx-ember-400))" if i < filled else "rgba(255,255,255,.06)"}"></div>'
+    cells = ''.join(f'<div style="height:9px;border-radius:2px;background:{"linear-gradient(90deg,var(--vx-violet-500),var(--vx-violet-400))" if i < filled else "rgba(255,255,255,.06)"}"></div>'
                     for i in range(segs - 1, -1, -1))
     return f'''<div style="display:flex;align-items:flex-end;gap:12px">
   <div style="display:flex;flex-direction:column;gap:3px;width:30px">{cells}</div>
@@ -524,8 +524,8 @@ def payoff_terrain():
     <linearGradient id="pg" x1="0" x2="1"><stop offset="0" stop-color="{_EM}" stop-opacity="0"/><stop offset="1" stop-color="{_EM}" stop-opacity=".28"/></linearGradient></defs>
   <rect x="0" y="55" width="{be}" height="{H-55}" fill="url(#pl)"/><rect x="{be}" y="0" width="{W-be}" height="{H}" fill="url(#pg)"/>
   <polyline points="0,80 {be},80 {W},18" fill="none" stroke="var(--vx-text-primary)" stroke-width="2"/>
-  <line x1="{be}" y1="0" x2="{be}" y2="{H}" stroke="var(--vx-ember-500)" stroke-width="1.5" stroke-dasharray="3 3"/>
-  <text x="{be+4}" y="14" fill="var(--vx-ember-400)" font-size="9">breakeven</text>
+  <line x1="{be}" y1="0" x2="{be}" y2="{H}" stroke="var(--vx-violet-500)" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="{be+4}" y="14" fill="var(--vx-violet-400)" font-size="9">breakeven</text>
   <text x="6" y="{H-6}" fill="{_RB}" font-size="9">perte max</text>
   <text x="{W-6}" y="30" text-anchor="end" fill="{_EM}" font-size="9">gain</text></svg></div>'''
 
@@ -547,7 +547,7 @@ def confidence_lens(conf):
     blades = ''.join(f'<line x1="46" y1="46" x2="{_pol(46,46,40,i*60)[0]:.1f}" y2="{_pol(46,46,40,i*60)[1]:.1f}" stroke="rgba(255,255,255,.1)" stroke-width="6"/>' for i in range(6))
     return f'''<div style="width:110px;text-align:center"><svg viewBox="0 0 92 92" width="100" height="100">
   <circle cx="46" cy="46" r="40" fill="none" stroke="var(--vx-border-strong)" stroke-width="2"/>{blades}
-  <circle cx="46" cy="46" r="{open_r:.0f}" fill="var(--vx-ember-soft)" stroke="var(--vx-ember-500)" stroke-width="2"/>
+  <circle cx="46" cy="46" r="{open_r:.0f}" fill="var(--vx-brand-soft)" stroke="var(--vx-violet-500)" stroke-width="2"/>
   <text x="46" y="50" text-anchor="middle" fill="var(--vx-text-primary)" font-size="15" font-weight="800">{conf}%</text></svg>
   <div style="font-size:9.5px;color:var(--vx-text-muted)">confiance</div></div>'''
 
@@ -568,7 +568,7 @@ def scenario_triad():
   <div style="flex:1;padding:9px;border-radius:10px;background:rgba(255,95,105,.1);border:1px solid rgba(255,95,105,.25)">
     <div style="font-size:9px;color:{_RB}">PESSIMISTE</div><b style="font-size:16px;color:{_RB}">−12 %</b><div style="font-size:9px;color:var(--vx-text-muted)">p≈20 %</div></div>
   <div style="flex:1.6;padding:9px;border-radius:10px;background:rgba(255,109,41,.08);border:1px solid var(--vx-border-strong)">
-    <div style="font-size:9px;color:var(--vx-ember-400)">PROBABLE</div><b style="font-size:18px">+8 %</b><div style="font-size:9px;color:var(--vx-text-muted)">p≈55 %</div></div>
+    <div style="font-size:9px;color:var(--vx-violet-400)">PROBABLE</div><b style="font-size:18px">+8 %</b><div style="font-size:9px;color:var(--vx-text-muted)">p≈55 %</div></div>
   <div style="flex:1;padding:9px;border-radius:10px;background:rgba(46,214,161,.1);border:1px solid rgba(46,214,161,.25)">
     <div style="font-size:9px;color:{_EM}">EXCEPTIONNEL</div><b style="font-size:16px;color:{_EM}">+34 %</b><div style="font-size:9px;color:var(--vx-text-muted)">p≈25 %</div></div></div>'''
 
@@ -650,10 +650,10 @@ def engine_spine(engines):
 def readonly_seal():
     """READONLY SEAL — sceau de garantie lecture seule."""
     return f'''<div style="width:120px;text-align:center"><svg viewBox="0 0 100 100" width="96" height="96">
-  <circle cx="50" cy="50" r="42" fill="none" stroke="var(--vx-ember-500)" stroke-width="2.5"/>
-  <circle cx="50" cy="50" r="34" fill="rgba(255,109,41,.06)" stroke="var(--vx-ember-500)" stroke-width="1" stroke-dasharray="2 3"/>
-  <text x="50" y="46" text-anchor="middle" fill="var(--vx-ember-400)" font-size="13" font-weight="850">READ</text>
-  <text x="50" y="62" text-anchor="middle" fill="var(--vx-ember-400)" font-size="13" font-weight="850">ONLY</text></svg>
+  <circle cx="50" cy="50" r="42" fill="none" stroke="var(--vx-violet-500)" stroke-width="2.5"/>
+  <circle cx="50" cy="50" r="34" fill="rgba(255,109,41,.06)" stroke="var(--vx-violet-500)" stroke-width="1" stroke-dasharray="2 3"/>
+  <text x="50" y="46" text-anchor="middle" fill="var(--vx-violet-400)" font-size="13" font-weight="850">READ</text>
+  <text x="50" y="62" text-anchor="middle" fill="var(--vx-violet-400)" font-size="13" font-weight="850">ONLY</text></svg>
   <div style="font-size:9.5px;color:var(--vx-text-muted)">aucun ordre possible</div></div>'''
 
 
@@ -697,7 +697,7 @@ def progress_ladder(series=None, errors=None):
 # ══ GRAMMAIRE BOURSIÈRE — briques financières natives ══════════════════════
 def _foot(source='scan', fresh='il y a 12 s', mode='delayed'):
     """Pied financier universel : source · fraîcheur · mode (honnêteté §7)."""
-    dot = {'live': _EM, 'delayed': _AM, 'demo': 'var(--vx-ember-500)'}[mode]
+    dot = {'live': _EM, 'delayed': _AM, 'demo': 'var(--vx-violet-500)'}[mode]
     return (f'<div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:9.5px;color:var(--vx-text-faint)">'
             f'<span style="width:6px;height:6px;border-radius:50%;background:{dot}"></span>{source} · {fresh}</div>')
 
@@ -762,7 +762,7 @@ def candles(data=OHLC, entry=118, stop=108, target=132, resistance=126,
         active = i == n - 1
         body += f'<line x1="{x:.1f}" y1="{Y(hi):.1f}" x2="{x:.1f}" y2="{Y(lo):.1f}" stroke="{col}" stroke-width="1"/>'
         yb, yt = Y(min(o, c)), Y(max(o, c))
-        outline = 'stroke="var(--vx-ember-500)" stroke-width="1"' if active else ''
+        outline = 'stroke="var(--vx-violet-500)" stroke-width="1"' if active else ''
         body += (f'<rect x="{x-bw/2:.1f}" y="{yt:.1f}" width="{bw:.1f}" height="{max(1,yb-yt):.1f}" '
                  f'fill="{col}" {outline} rx="0.5"/>')
         if volH:
@@ -784,7 +784,7 @@ def candles(data=OHLC, entry=118, stop=108, target=132, resistance=126,
                 f'<text x="{w-2}" y="{y-2:.1f}" text-anchor="end" fill="{col}" font-size="8">{lab} {val:g}</text>')
     lvl = ''
     if not compact:
-        if entry: lvl += hline(entry, 'var(--vx-ember-500)', 'entrée')
+        if entry: lvl += hline(entry, 'var(--vx-violet-500)', 'entrée')
         if stop: lvl += hline(stop, _RB, 'stop')
         if target: lvl += hline(target, _EM, 'objectif')
         if resistance: lvl += hline(resistance, _AM, 'R')
@@ -812,8 +812,8 @@ def candles(data=OHLC, entry=118, stop=108, target=132, resistance=126,
 def price_ladder(price=119.2, entry=118, stop=108, targets=(126, 132), resistance=126):
     """PRICE LADDER — échelle de prix : niveaux + distances en %."""
     lv = sorted([('Objectif 2', targets[1], _EM), ('Objectif 1', targets[0], _EM),
-                 ('Résistance', resistance, _AM), ('Prix', price, 'var(--vx-ember-500)'),
-                 ('Entrée', entry, 'var(--vx-ember-400)'), ('Stop', stop, _RB)],
+                 ('Résistance', resistance, _AM), ('Prix', price, 'var(--vx-violet-500)'),
+                 ('Entrée', entry, 'var(--vx-violet-400)'), ('Stop', stop, _RB)],
                 key=lambda x: -x[1])
     rows = ''
     for lab, val, col in lv:
@@ -834,7 +834,7 @@ def market_tape(items):
     for sym, chg, vol in items:
         col = _EM if chg >= 0 else _RB
         cells += (f'<span style="display:inline-flex;align-items:center;gap:5px;padding:0 12px;border-right:1px solid var(--vx-border-soft)">'
-                  f'<b style="font-size:12px;color:var(--vx-ember-400)">{sym}</b>'
+                  f'<b style="font-size:12px;color:var(--vx-violet-400)">{sym}</b>'
                   f'<span style="font-size:11px;color:{col};font-variant-numeric:tabular-nums">{chg:+.1f}%</span>'
                   f'<span style="font-size:9px;color:var(--vx-text-faint)">{vol}</span></span>')
     return (f'<div style="width:260px;overflow:hidden"><div style="display:flex;white-space:nowrap;animation:wltape 18s linear infinite">{cells}{cells}</div></div>'
@@ -865,8 +865,8 @@ def vol_cone(current=18, pctile=42):
     return (f'<div style="width:{W}px">{_hdr("Volatilité implicite", f"{current}%")}'
             f'<svg viewBox="0 0 {W} {H}" width="100%" height="{H}" style="max-width:{W}px">'
             f'<polygon points="{tp} {bp}" fill="{_VI}" fill-opacity=".12" stroke="{_VI}" stroke-opacity=".4" stroke-width="1"/>'
-            f'<circle cx="{cx}" cy="{cy:.0f}" r="4" fill="var(--vx-ember-500)"/>'
-            f'<text x="{cx+7}" y="{cy+3:.0f}" fill="var(--vx-ember-400)" font-size="9">actuel</text>'
+            f'<circle cx="{cx}" cy="{cy:.0f}" r="4" fill="var(--vx-violet-500)"/>'
+            f'<text x="{cx+7}" y="{cy+3:.0f}" fill="var(--vx-violet-400)" font-size="9">actuel</text>'
             f'<text x="6" y="{H-4}" fill="var(--vx-text-muted)" font-size="9">3M · 6M · 1A</text></svg>'
             f'{_concl(f"{pctile}ᵉ percentile — vol modérée, primes correctes", "opt")}</div>')
 
@@ -883,7 +883,7 @@ def rs_path(series):
             f'<svg viewBox="0 0 {W} {H}" width="100%" height="{H}" style="max-width:{W}px">'
             f'<line x1="0" y1="{z:.0f}" x2="{W}" y2="{z:.0f}" stroke="rgba(255,255,255,.18)" stroke-dasharray="3 3"/>'
             f'<polyline points="{pts}" fill="none" stroke="{_CY}" stroke-width="1.8"/>'
-            f'<circle cx="{W}" cy="{H-(series[-1]-mn)/rng*(H-6)-3:.1f}" r="3" fill="var(--vx-ember-500)"/></svg>'
+            f'<circle cx="{W}" cy="{H-(series[-1]-mn)/rng*(H-6)-3:.1f}" r="3" fill="var(--vx-violet-500)"/></svg>'
             f'{_concl("Surperforme — RS croissante au-dessus de 0" if up else "Sous-performe — divergence baissière", "go" if up else "risk")}</div>')
 
 
@@ -896,10 +896,10 @@ def rr_terrain(maxloss=-8, prob=12, exc=34, be=132):
             f'<linearGradient id="rrg" x1="0" x2="1"><stop offset="0" stop-color="{_EM}" stop-opacity="0"/><stop offset="1" stop-color="{_EM}" stop-opacity=".26"/></linearGradient></defs>'
             f'<rect x="0" y="60" width="96" height="{H-60}" fill="url(#rrl)"/><rect x="96" y="0" width="{W-96}" height="{H}" fill="url(#rrg)"/>'
             f'<polyline points="0,86 96,86 {W},20" fill="none" stroke="#F0EBE4" stroke-width="2"/>'
-            f'<line x1="96" y1="0" x2="96" y2="{H}" stroke="var(--vx-ember-500)" stroke-dasharray="3 3"/>'
+            f'<line x1="96" y1="0" x2="96" y2="{H}" stroke="var(--vx-violet-500)" stroke-dasharray="3 3"/>'
             f'<text x="4" y="{H-6}" fill="{_RB}" font-size="9">max {maxloss}%</text>'
             f'<text x="{W-4}" y="30" text-anchor="end" fill="{_EM}" font-size="9">exc. +{exc}%</text>'
-            f'<text x="100" y="14" fill="var(--vx-ember-400)" font-size="9">BE {be}</text></svg>'
+            f'<text x="100" y="14" fill="var(--vx-violet-400)" font-size="9">BE {be}</text></svg>'
             f'{_concl(f"Gain probable +{prob}% vs risque {maxloss}% — R:R "+f"{exc/abs(maxloss):.1f}", "go")}</div>')
 
 
@@ -908,11 +908,11 @@ def position_health_strip(sym='AAPL', pl=8.4, thesis='intacte', catalyst='Résul
     tcol = {'intacte': _EM, 'surveiller': _AM, 'invalidée': _RB}[thesis]
     plc = _EM if pl >= 0 else _RB
     return (f'<div style="width:250px;display:flex;flex-direction:column;gap:6px">'
-            f'<div style="display:flex;align-items:center;gap:8px"><b style="font-size:14px;color:var(--vx-ember-400)">{sym}</b>'
+            f'<div style="display:flex;align-items:center;gap:8px"><b style="font-size:14px;color:var(--vx-violet-400)">{sym}</b>'
             f'<span style="font-size:15px;font-weight:800;color:{plc};font-variant-numeric:tabular-nums">{pl:+.1f}%</span>'
             f'<span style="margin-left:auto;font-size:10px;padding:2px 8px;border-radius:999px;color:{tcol};border:1px solid {tcol}">thèse {thesis}</span></div>'
             f'<div style="display:flex;gap:12px;font-size:11px;color:var(--vx-text-secondary)"><span>⚡ {catalyst}</span><span>⛔ inval. {inval}</span></div>'
-            f'<div style="display:flex;gap:8px"><button class="wl-tip" data-tip="Ouvrir le dossier" style="font:inherit;font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid var(--vx-ember-500);background:transparent;color:var(--vx-ember-400);cursor:pointer">Réévaluer →</button></div>'
+            f'<div style="display:flex;gap:8px"><button class="wl-tip" data-tip="Ouvrir le dossier" style="font:inherit;font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid var(--vx-violet-500);background:transparent;color:var(--vx-violet-400);cursor:pointer">Réévaluer →</button></div>'
             f'{_concl("Gagnant sur thèse intacte — conserver, ne pas vendre au seul motif du gain", "go")}</div>')
 
 
@@ -936,7 +936,7 @@ def liquidity_depth(bid=118.4, ask=118.6, vol=1250, oi=8400):
     """LIQUIDITY DEPTH — bid/ask · spread · volume · OI · qualité d’exécution."""
     spread = (ask - bid) / ((ask + bid) / 2) * 100
     rows = ''
-    for lab, val, col in [('Ask', ask, _RB), ('', (ask + bid) / 2, 'var(--vx-ember-500)'), ('Bid', bid, _EM)]:
+    for lab, val, col in [('Ask', ask, _RB), ('', (ask + bid) / 2, 'var(--vx-violet-500)'), ('Bid', bid, _EM)]:
         w = 40 + (val - bid) / (ask - bid) * 60 if ask != bid else 60
         rows += (f'<div style="display:flex;align-items:center;gap:8px"><span style="width:26px;font-size:9px;color:var(--vx-text-muted)">{lab}</span>'
                  f'<span style="flex:1;height:8px;background:rgba(0,0,0,.3);border-radius:3px;overflow:hidden"><i style="display:block;height:100%;width:{w:.0f}%;background:{col};opacity:.7"></i></span>'
@@ -950,7 +950,7 @@ def correlation_web(nodes):
     """MARKET CORRELATION WEB — corrélations entre actifs."""
     W, H = 200, 140
     cx, cy = W / 2, H / 2
-    body = f'<circle cx="{cx}" cy="{cy}" r="16" fill="var(--vx-ember-soft)" stroke="var(--vx-ember-500)"/><text x="{cx}" y="{cy+3}" text-anchor="middle" fill="var(--vx-ember-400)" font-size="9" font-weight="700">SPX</text>'
+    body = f'<circle cx="{cx}" cy="{cy}" r="16" fill="var(--vx-brand-soft)" stroke="var(--vx-violet-500)"/><text x="{cx}" y="{cy+3}" text-anchor="middle" fill="var(--vx-violet-400)" font-size="9" font-weight="700">SPX</text>'
     for i, (sym, corr) in enumerate(nodes):
         a = i / len(nodes) * 360
         x, y = _pol(cx, cy, 56, a)
@@ -979,7 +979,7 @@ def earnings_gap_map(gaps):
 
 def sr_spine(price=119, levels=None):
     """SUPPORT/RESISTANCE SPINE — colonne de niveaux techniques."""
-    levels = levels or [('R2', 132, _AM), ('R1', 126, _AM), ('Prix', 119, 'var(--vx-ember-500)'), ('S1', 112, _EM), ('S2', 105, _EM)]
+    levels = levels or [('R2', 132, _AM), ('R1', 126, _AM), ('Prix', 119, 'var(--vx-violet-500)'), ('S1', 112, _EM), ('S2', 105, _EM)]
     mn = min(l[1] for l in levels)
     mx = max(l[1] for l in levels)
     rows = ''
@@ -1011,7 +1011,7 @@ def catalyst_runway(events=None):
                   f'<span style="display:block;font-size:8px;color:var(--vx-text-muted);margin-top:2px">J-{dte}</span></div>')
     nxt = min(events, key=lambda e: e[1])
     return (f'<div style="width:250px">{_hdr("Prochains catalyseurs")}'
-            f'<div style="position:relative;height:56px;border-left:2px solid var(--vx-ember-500)">'
+            f'<div style="position:relative;height:56px;border-left:2px solid var(--vx-violet-500)">'
             f'<div style="position:absolute;left:0;right:0;top:12px;height:1px;background:rgba(255,255,255,.12)"></div>{marks}</div>'
             f'{_concl(f"{nxt[0]} dans {nxt[1]} j — risque événementiel imminent" if nxt[1] <= 5 else f"{nxt[0]} dans {nxt[1]} j — fenêtre dégagée", "risk" if nxt[1] <= 5 else "go")}'
             f'<div class="wl-more">4 catalyseurs · fenêtre 26 j · 2 à fort impact</div>{_foot("calendrier", "aujourd’hui", "delayed")}</div>')
@@ -1460,7 +1460,7 @@ def _benches():
             ('V1 · constellation', constellation([('NVDA', 20, 30, 11, 1), ('AAPL', 45, 55, 8, 1), ('XOM', 68, 35, 6, -1), ('JPM', 82, 62, 5, 1), ('PFE', 55, 80, 4, -1)])),
         ], ['loading', 'empty']),
         ('W-CT', 'Concentration Tower', 'Portefeuille', 'Suis-je trop concentré ?', [
-            ('V1 · tour', concentration_tower([('NVDA', 32, 'var(--vx-ember-500)'), ('AAPL', 22, _GY), ('JPM', 16, _GY), ('Autres', 30, 'rgba(255,255,255,.1)')])),
+            ('V1 · tour', concentration_tower([('NVDA', 32, 'var(--vx-violet-500)'), ('AAPL', 22, _GY), ('JPM', 16, _GY), ('Autres', 30, 'rgba(255,255,255,.1)')])),
         ], ['loading', 'insufficient']),
         ('W-DC', 'Drawdown Canyon', 'Portefeuille', 'À quel point suis-je descendu ?', [
             ('V1 · canyon', drawdown_canyon([0, -2, -5, -9, -14, -11, -7, -12, -6, -3, -1, -4])),
@@ -1854,21 +1854,21 @@ _CSS = r'''
   padding:12px 22px;background:rgba(16,14,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--vx-border-soft)}
 .wl-brand{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--vx-text-secondary)}
 .wl-brand b{color:var(--vx-text-primary);letter-spacing:.02em}
-.wl-logo{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;font-weight:800;color:var(--vx-ember-ink);background:var(--vx-brand-gradient)}
+.wl-logo{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;font-weight:800;color:var(--vx-violet-ink);background:var(--vx-brand-gradient)}
 .wl-tag{font-size:11px;color:var(--vx-text-muted);border-left:1px solid var(--vx-border-default);padding-left:10px;margin-left:4px}
 .wl-actions{display:flex;align-items:center;gap:12px}
 .wl-legend{font-size:11px;display:flex;gap:10px}
-.wl-legend .official{color:var(--vx-ember-400)}.wl-legend .reference{color:var(--vx-technical)}.wl-legend .rejected{color:var(--vx-negative)}
+.wl-legend .official{color:var(--vx-violet-400)}.wl-legend .reference{color:var(--vx-technical)}.wl-legend .rejected{color:var(--vx-negative)}
 .wl-btn{font:inherit;font-size:12px;padding:7px 12px;border-radius:9px;border:1px solid var(--vx-border-strong);
   background:var(--vx-surface-elevated);color:var(--vx-text-primary);cursor:pointer}
-.wl-btn:hover{border-color:var(--vx-ember-500)}
+.wl-btn:hover{border-color:var(--vx-violet-500)}
 .wl-btn.ghost{background:transparent;color:var(--vx-text-muted)}
 .wl-subbar{position:sticky;top:55px;z-index:19;background:rgba(5,7,12,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--vx-border-soft);padding:8px 22px}
 .wl-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
 .wl-navchip{font-size:11.5px;text-decoration:none;color:var(--vx-text-secondary);padding:4px 11px;border-radius:999px;
   border:1px solid var(--vx-border-soft);background:var(--vx-surface)}
-.wl-navchip:hover{border-color:var(--vx-ember-500);color:var(--vx-ember-400)}
-.wl-navchip--gx{color:var(--vx-ember-400);border-color:var(--vx-ember-500);background:var(--vx-ember-soft);font-weight:650}
+.wl-navchip:hover{border-color:var(--vx-violet-500);color:var(--vx-violet-400)}
+.wl-navchip--gx{color:var(--vx-violet-400);border-color:var(--vx-violet-500);background:var(--vx-brand-soft);font-weight:650}
 .wl-note{font-size:11px;color:var(--vx-warning)}
 .wl-main{max-width:1400px;margin:0 auto;padding:22px}
 .wl-fam{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--vx-text-muted);
@@ -1876,19 +1876,19 @@ _CSS = r'''
 .wl-bench{background:linear-gradient(180deg,rgba(37,29,27,.5),rgba(22,19,22,.5));border:1px solid var(--vx-border-soft);
   border-radius:16px;padding:16px 18px;margin-bottom:18px}
 .wl-bench-head{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.wl-id{font-size:11px;font-weight:800;color:var(--vx-ember-400);background:var(--vx-ember-soft);border:1px solid rgba(255,109,41,.25);padding:2px 8px;border-radius:7px}
+.wl-id{font-size:11px;font-weight:800;color:var(--vx-violet-400);background:var(--vx-brand-soft);border:1px solid rgba(255,109,41,.25);padding:2px 8px;border-radius:7px}
 .wl-name{font-size:16px;font-weight:750}
 .wl-q{font-size:12.5px;color:var(--vx-text-muted);font-style:italic}
 /* ═══ CURATION P04 — statut, récap, note, contrat ═══ */
 .wl-summary{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px}
 .wl-sum{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid var(--vx-border-soft);color:var(--vx-text-secondary)}
-.wl-sum.official{color:var(--vx-ember-400);border-color:var(--vx-ember-500);background:var(--vx-ember-soft)}
+.wl-sum.official{color:var(--vx-violet-400);border-color:var(--vx-violet-500);background:var(--vx-brand-soft)}
 .wl-sum.reference{color:var(--vx-technical);border-color:var(--vx-technical)}
 .wl-sum.rework{color:var(--vx-warning);border-color:rgba(255,200,87,.4)}
 .wl-sum.rejected{color:var(--vx-negative);border-color:rgba(255,95,105,.4)}
 .wl-sum.total{color:var(--vx-text-muted)}
 .wl-status{font-size:10px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:7px;border:1px solid var(--vx-border-soft);white-space:nowrap}
-.wl-status--official{color:var(--vx-ember-ink);background:var(--vx-brand-gradient);border:none}
+.wl-status--official{color:var(--vx-violet-ink);background:var(--vx-brand-gradient);border:none}
 .wl-status--reference{color:var(--vx-technical);border-color:var(--vx-technical)}
 .wl-status--rework{color:var(--vx-warning);border-color:rgba(255,200,87,.4)}
 .wl-status--rejected{color:var(--vx-negative);border-color:rgba(255,95,105,.4)}
@@ -1896,11 +1896,11 @@ _CSS = r'''
 .wl-bench[data-status="official"]{border-color:rgba(255,109,41,.32);box-shadow:0 0 0 1px rgba(255,109,41,.12)}
 .wl-bench[data-status="rejected"]{opacity:.72}
 .wl-verdict button[data-note]{font-size:11px}
-.wl-tile[data-note-set] .wl-verdict button[data-note]{color:var(--vx-ember-400);border-color:var(--vx-ember-500)}
+.wl-tile[data-note-set] .wl-verdict button[data-note]{color:var(--vx-violet-400);border-color:var(--vx-violet-500)}
 .wl-contract{margin:12px 0 4px;border:1px solid var(--vx-border-soft);border-radius:11px;background:rgba(0,0,0,.22);overflow:hidden}
-.wl-contract summary{cursor:pointer;font-size:11.5px;font-weight:650;color:var(--vx-ember-400);padding:9px 13px;list-style:none}
+.wl-contract summary{cursor:pointer;font-size:11.5px;font-weight:650;color:var(--vx-violet-400);padding:9px 13px;list-style:none}
 .wl-contract summary::-webkit-details-marker{display:none}
-.wl-contract summary::before{content:"▸ ";color:var(--vx-ember-500)}
+.wl-contract summary::before{content:"▸ ";color:var(--vx-violet-500)}
 .wl-contract[open] summary::before{content:"▾ "}
 .wl-contract-body{padding:4px 13px 12px;display:flex;flex-direction:column;gap:6px}
 .wl-cr{display:grid;grid-template-columns:140px 1fr;gap:12px;font-size:11.5px;align-items:baseline}
@@ -1911,7 +1911,7 @@ _CSS = r'''
 .wl-variants{display:flex;flex-wrap:wrap;gap:14px}
 .wl-tile{background:var(--vx-surface);border:1.5px solid var(--vx-border-soft);border-radius:13px;padding:10px;
   min-width:180px;transition:border-color .18s,box-shadow .18s}
-.wl-tile[data-verdict="official"]{border-color:var(--vx-ember-500);box-shadow:0 0 0 1px var(--vx-ember-500),0 8px 22px -12px rgba(255,109,41,.5)}
+.wl-tile[data-verdict="official"]{border-color:var(--vx-violet-500);box-shadow:0 0 0 1px var(--vx-violet-500),0 8px 22px -12px rgba(255,109,41,.5)}
 .wl-tile[data-verdict="reference"]{border-color:var(--vx-technical);box-shadow:0 0 0 1px var(--vx-technical)}
 .wl-tile[data-verdict="rejected"]{border-color:var(--vx-negative);opacity:.55}
 .wl-tile-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
@@ -1919,8 +1919,8 @@ _CSS = r'''
 .wl-verdict{display:flex;gap:3px}
 .wl-verdict button{width:24px;height:24px;border-radius:6px;border:1px solid var(--vx-border-soft);background:var(--vx-surface-elevated);
   color:var(--vx-text-muted);cursor:pointer;font-size:12px;line-height:1;padding:0}
-.wl-verdict button:hover{border-color:var(--vx-ember-500);color:var(--vx-ember-400)}
-.wl-tile[data-verdict="official"] .wl-verdict button[data-v="official"]{color:var(--vx-ember-400);border-color:var(--vx-ember-500)}
+.wl-verdict button:hover{border-color:var(--vx-violet-500);color:var(--vx-violet-400)}
+.wl-tile[data-verdict="official"] .wl-verdict button[data-v="official"]{color:var(--vx-violet-400);border-color:var(--vx-violet-500)}
 .wl-tile[data-verdict="reference"] .wl-verdict button[data-v="reference"]{color:var(--vx-technical);border-color:var(--vx-technical)}
 .wl-tile[data-verdict="rejected"] .wl-verdict button[data-v="rejected"]{color:var(--vx-negative);border-color:var(--vx-negative)}
 .wl-stage{display:grid;place-items:center;min-height:120px;overflow-x:auto}
@@ -1931,7 +1931,7 @@ _CSS = r'''
 .wl-state{min-width:130px;border:1px dashed var(--vx-border-soft);border-radius:10px;padding:8px;background:rgba(0,0,0,.2)}
 .wl-state .lab{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--vx-text-faint);display:block;margin-bottom:5px}
 .wl-state .body{font-size:11px;color:var(--vx-text-secondary);min-height:24px;display:flex;align-items:center}
-.wl-state--demo .body{color:var(--vx-ember-400)}
+.wl-state--demo .body{color:var(--vx-violet-400)}
 .wl-state--insufficient .body,.wl-state--empty .body{color:var(--vx-text-muted)}
 .wl-state--stale .body{color:var(--vx-warning)}
 .wl-state--offline .body{color:var(--vx-text-muted)}
@@ -1958,19 +1958,19 @@ _CSS = r'''
 .wl-rail-wrap{width:180px}
 .wl-rail{position:relative;height:10px;border-radius:6px;background:rgba(0,0,0,.35);overflow:hidden}
 .wl-rail .fill{position:absolute;inset:0;opacity:.5}
-.wl-rail .mark{position:absolute;top:-3px;width:4px;height:16px;border-radius:3px;background:var(--vx-ember-500);transform:translateX(-50%);box-shadow:0 0 8px var(--vx-ember-glow)}
+.wl-rail .mark{position:absolute;top:-3px;width:4px;height:16px;border-radius:3px;background:var(--vx-violet-500);transform:translateX(-50%);box-shadow:0 0 8px var(--vx-violet-glow)}
 .wl-rail-sc{display:flex;justify-content:space-between;font-size:9.5px;color:var(--vx-text-muted);margin-top:5px}
 .wl-ring{display:block}
 .wl-spine{display:flex;align-items:flex-end;gap:10px;height:120px}
 .wl-spine .col{width:26px;height:100%;border-radius:8px;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;overflow:hidden}
-.wl-spine .col i{width:100%;background:linear-gradient(180deg,var(--vx-ember-400),var(--vx-ember-600));border-radius:8px}
+.wl-spine .col i{width:100%;background:linear-gradient(180deg,var(--vx-violet-400),var(--vx-violet-600));border-radius:8px}
 .wl-spine-l{display:flex;flex-direction:column;justify-content:flex-end}
 .wl-spine-l b{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
 .wl-spine-l span{font-size:10px;color:var(--vx-text-muted)}
 .wl-thermo{display:flex;align-items:center;gap:10px}
 .wl-thermo .col{position:relative;width:22px;height:100%;border-radius:11px;
   background:linear-gradient(180deg,var(--vx-positive),var(--vx-warning),var(--vx-negative))}
-.wl-thermo .mark{position:absolute;left:-3px;right:-3px;height:4px;border-radius:3px;background:var(--vx-ember-500);box-shadow:0 0 8px var(--vx-ember-glow)}
+.wl-thermo .mark{position:absolute;left:-3px;right:-3px;height:4px;border-radius:3px;background:var(--vx-violet-500);box-shadow:0 0 8px var(--vx-violet-glow)}
 .wl-thermo-sc{display:flex;flex-direction:column;justify-content:space-between;height:100%;font-size:9px;color:var(--vx-text-muted)}
 .wl-thermo-v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
 .wl-thermo-v small{font-size:10px;color:var(--vx-text-muted);margin-left:3px}
@@ -1991,11 +1991,11 @@ _CSS = r'''
 .wl-kpi .v{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
 .wl-kpi .d{font-size:12px;font-weight:700}.wl-kpi .d.pos{color:var(--vx-positive)}.wl-kpi .d.neg{color:var(--vx-negative)}.wl-kpi .d.mut{color:var(--vx-text-muted)}
 .wl-grade{display:inline-grid;place-items:center;min-width:26px;height:24px;padding:0 8px;border-radius:8px;font-weight:800;font-size:13px;color:var(--vx-text-primary);border:1px solid var(--vx-border-strong)}
-.wl-grade.hot{color:var(--vx-ember-ink);background:var(--vx-brand-gradient);border:none}
+.wl-grade.hot{color:var(--vx-violet-ink);background:var(--vx-brand-gradient);border:none}
 .wl-live{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--vx-border-soft);background:rgba(0,0,0,.25);color:var(--vx-text-secondary)}
 .wl-live .dot{width:7px;height:7px;border-radius:50%;background:var(--vx-text-muted)}
 .wl-live[data-live="live"] .dot{background:var(--vx-positive);box-shadow:0 0 0 3px rgba(46,214,161,.18),0 0 8px var(--vx-positive);animation:wlpulse 1.8s ease-in-out infinite}
-.wl-live[data-live="delayed"] .dot{background:var(--vx-warning)}.wl-live[data-live="fallback"] .dot{background:var(--vx-ember-500)}
+.wl-live[data-live="delayed"] .dot{background:var(--vx-warning)}.wl-live[data-live="fallback"] .dot{background:var(--vx-violet-500)}
 @keyframes wlpulse{0%,100%{opacity:1}50%{opacity:.5}}
 .wl-slab{min-width:220px}
 .wl-slab-v{font-size:26px;font-weight:850;margin-bottom:8px}
@@ -2005,32 +2005,32 @@ _CSS = r'''
 .wl-dom{display:grid;grid-template-columns:1fr 1.3fr;gap:0;width:100%;max-width:640px;border:1px solid var(--vx-border-strong);border-radius:14px;overflow:hidden;
   background:radial-gradient(120% 120% at 100% 0%,rgba(255,109,41,.12),transparent 55%),linear-gradient(180deg,rgba(37,29,27,.6),rgba(22,19,22,.6))}
 .wl-dom-l{padding:14px;border-right:1px solid var(--vx-border-soft);display:flex;flex-direction:column;gap:8px}
-.wl-dom-l .badge{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--vx-ember-400)}
+.wl-dom-l .badge{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--vx-violet-400)}
 .wl-dom-l .tk{display:flex;align-items:center;gap:10px}.wl-dom-l .sym{font-size:30px;font-weight:850}
 .wl-dom-l .sub{font-size:12px;color:var(--vx-text-secondary)}
 .wl-dom-l .score b{font-size:38px;font-weight:850;font-variant-numeric:tabular-nums}.wl-dom-l .score span{font-size:12px;color:var(--vx-text-muted);margin-left:4px}
 .wl-dom-r{padding:14px;display:flex;flex-direction:column;gap:10px}
 .wl-dom-r .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .wl-dom-r .m{padding:8px 10px;border-radius:10px;background:var(--vx-surface);border:1px solid var(--vx-border-soft)}
-.wl-dom-r .m.hot{border-color:rgba(255,109,41,.4)}.wl-dom-r .m.hot b{color:var(--vx-ember-400)}
+.wl-dom-r .m.hot{border-color:rgba(255,109,41,.4)}.wl-dom-r .m.hot b{color:var(--vx-violet-400)}
 .wl-dom-r .m span{display:block;font-size:10px;color:var(--vx-text-muted)}.wl-dom-r .m b{font-size:17px;font-weight:750;font-variant-numeric:tabular-nums}
-.wl-cta{margin-top:auto;font:inherit;font-size:13px;font-weight:650;padding:9px 14px;border-radius:10px;border:none;color:var(--vx-ember-ink);background:var(--vx-brand-gradient);cursor:pointer}
+.wl-cta{margin-top:auto;font:inherit;font-size:13px;font-weight:650;padding:9px 14px;border-radius:10px;border:none;color:var(--vx-violet-ink);background:var(--vx-brand-gradient);cursor:pointer}
 .wl-idx{min-width:210px;padding:12px;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(37,29,27,.6),rgba(22,19,22,.55));border:1px solid var(--vx-border-soft)}
 .wl-idx::after{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:3px;background:var(--vx-warm-grey)}
 .wl-idx[data-dir="up"]::after{background:var(--vx-positive)}.wl-idx[data-dir="down"]::after{background:var(--vx-negative)}
 .wl-idx .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.wl-idx .mono{font-size:10px;font-weight:800;color:var(--vx-ember-400);background:var(--vx-ember-soft);border:1px solid rgba(255,109,41,.2);padding:2px 6px;border-radius:6px}
+.wl-idx .mono{font-size:10px;font-weight:800;color:var(--vx-violet-400);background:var(--vx-brand-soft);border:1px solid rgba(255,109,41,.2);padding:2px 6px;border-radius:6px}
 .wl-idx .nm{font-size:12px;font-weight:650}.wl-idx .rel{margin-left:auto;font-size:10px;color:var(--vx-text-secondary);border:1px solid var(--vx-border-soft);border-radius:999px;padding:2px 7px}
 .wl-idx .vr{display:flex;align-items:baseline;gap:8px}.wl-idx .val{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
 .wl-idx .chg{font-size:12px;font-weight:700}.wl-idx .chg.pos{color:var(--vx-positive)}.wl-idx .chg.neg{color:var(--vx-negative)}
 .wl-idx .ft{font-size:11px;color:var(--vx-text-muted);margin-top:6px}
 .wl-cmp{border-collapse:separate;border-spacing:0;font-size:12px;min-width:320px}
 .wl-cmp th,.wl-cmp td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--vx-border-soft)}
-.wl-cmp th{font-size:11px;color:var(--vx-text-muted)}.wl-cmp th.best{color:var(--vx-ember-400);font-weight:750}
+.wl-cmp th{font-size:11px;color:var(--vx-text-muted)}.wl-cmp th.best{color:var(--vx-violet-400);font-weight:750}
 .wl-cmp td.mt{color:var(--vx-text-secondary)}
 .wl-cmp .cmp{display:flex;align-items:center;gap:6px}.wl-cmp .rail{flex:1;min-width:40px;height:6px;border-radius:4px;background:rgba(0,0,0,.35);overflow:hidden}
-.wl-cmp .rail i{display:block;height:100%;background:var(--vx-warm-grey);border-radius:4px}.wl-cmp .cmp.win .rail i{background:var(--vx-ember-500)}
-.wl-cmp .n{font-size:11px;font-weight:700;min-width:28px;text-align:right;font-variant-numeric:tabular-nums}.wl-cmp .cmp.win .n{color:var(--vx-ember-400)}
+.wl-cmp .rail i{display:block;height:100%;background:var(--vx-warm-grey);border-radius:4px}.wl-cmp .cmp.win .rail i{background:var(--vx-violet-500)}
+.wl-cmp .n{font-size:11px;font-weight:700;min-width:28px;text-align:right;font-variant-numeric:tabular-nums}.wl-cmp .cmp.win .n{color:var(--vx-violet-400)}
 
 /* ═══ MATIÈRES (6 tiers) — chaque variante peut porter une matière distincte ═══ */
 .wl-surf{position:relative;border-radius:14px;padding:14px;width:100%;overflow:hidden;
@@ -2054,7 +2054,7 @@ _CSS = r'''
 /* étiquette de matière + glow local sur la donnée active */
 .wl-mat-tag{position:absolute;top:8px;right:8px;z-index:2;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;
   color:var(--vx-text-faint);background:rgba(0,0,0,.35);border:1px solid var(--vx-border-soft);border-radius:6px;padding:2px 6px}
-.wl-glow{filter:drop-shadow(0 0 5px var(--wl-acc,var(--vx-ember-glow)))}
+.wl-glow{filter:drop-shadow(0 0 5px var(--wl-acc,var(--vx-violet-glow)))}
 /* LIVE : léger balayage de matière */
 .wl-surf[data-live="1"]::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.05) 50%,transparent 70%);

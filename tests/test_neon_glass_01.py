@@ -52,11 +52,13 @@ def test_glass_covers_all_eight_spaces():
 
 def test_neon_identity_no_blue():
     css = _read(CSS).lower()
-    # Identité orange néon / cuivre présente, SOURCÉE depuis les tokens NEUE EMBER
-    # (plus de littéral orange local : `--ng-neon` pointe sur `--vx-ember-500`).
+    # Identité présente et SOURCÉE depuis la rampe canonique : `--ng-neon`
+    # pointe sur `--vx-violet-500`. Les noms « ember » / « copper » étaient des
+    # alias dépréciés du MÊME violet — épingler l'alias revenait à verrouiller
+    # un nom qui ment.
     flat = css.replace(' ', '')
     assert '--ng-neon' in css and '--ng-copper' in css
-    assert '--ng-neon:var(--vx-ember-500)' in flat, 'identite depuis les tokens Ember'
+    assert '--ng-neon:var(--vx-violet-500)' in flat, 'identite depuis la rampe canonique'
     assert 'var(--ng-neon)' in css  # brand local pointe sur l'orange Ember
     # Aucun hex d'identité en dur dans la couche neon-glass.
     assert '--ng-neon:#' not in flat, 'plus de littéral hex local pour l identite'

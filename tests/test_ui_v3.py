@@ -226,7 +226,7 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v226' in body
+    assert 'td-shell-v227' in body
     assert 'td-shell-v150' not in body
 
 
@@ -255,12 +255,12 @@ def test_v3_tokens_are_canonical():
     """Palette Vertex — canonique et centralisée.
     Marque = VIOLET #9B7BFF (accent d'interface, jamais « hausse ») · émeraude
     = positif · corail = risque · jaune = attente · cyan = comparaison. La rampe
-    canonique s'appelle `--vx-violet-*` ; `--vx-ember-*` reste un alias, et on
-    épingle ici la SOURCE ainsi que le maillon d'alias."""
+    canonique s'appelle `--vx-violet-*`. `--vx-ember-*` reste défini comme
+    alias déprécié, mais plus aucun consommateur ne le nomme : on épingle donc
+    la SOURCE et le maillon de marque, plus la chaîne d'alias."""
     tokens = _read(VXCSS, 'tokens.css')
     for var in ('--vx-canvas:#060707', '--vx-violet-500:#9B7BFF',
-                '--vx-ember-500:var(--vx-violet-500)',
-                '--vx-brand:var(--vx-ember-500)', '--vx-positive:#2BBE90',
+                '--vx-brand:var(--vx-violet-500)', '--vx-positive:#2BBE90',
                 '--vx-negative:#E9555F', '--vx-warning:#D9BE3C',
                 '--vx-option:#9B7BFF', '--vx-neutral-chart:#BABABA'):
         assert var in tokens, f'token manquant : {var}'

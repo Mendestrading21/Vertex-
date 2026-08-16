@@ -371,9 +371,9 @@ function loadLeader(scan){
   const rank=withScore.slice(0,5).map((s,i)=>{
     const L=s.leader&&(s.leader.symbol||((typeof s.leader==='string')?s.leader:null));
     const w=Math.max(6,Math.round((s.avg_score/maxSc)*100));
-    const tok=i===0?'var(--vx-ember-500)':'var(--vx-warm-grey)';
+    const tok=i===0?'var(--vx-violet-500)':'var(--vx-warm-grey)';
     const fill='background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 40%,transparent),'+tok+')'
-      +(i===0?';box-shadow:0 0 6px color-mix(in srgb,var(--vx-ember-500) 45%,transparent)':'');
+      +(i===0?';box-shadow:0 0 6px color-mix(in srgb,var(--vx-violet-500) 45%,transparent)':'');
     return `<div class="vx-mk-lead-row">
       <span class="vx-mk-lead-name" title="${esc(s.sector||'')}">${esc(s.sector||'n/d')}</span>
       <span class="vx-mk-lead-bar"><i style="width:${w}%;${fill}"></i></span>

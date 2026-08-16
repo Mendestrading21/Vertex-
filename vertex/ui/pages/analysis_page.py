@@ -29,7 +29,7 @@ def render_index(view: str = '') -> str:
 .an-dim{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed var(--vx-border-soft)}
 .an-dim:last-child{border-bottom:none}
 .an-dim-n{flex:0 0 26px;height:26px;display:grid;place-items:center;border-radius:8px;
- background:var(--vx-brand-soft);color:var(--vx-copper-light);font:700 12px/1 var(--vx-font-mono,monospace);
+ background:var(--vx-brand-soft);color:var(--vx-violet-500);font:700 12px/1 var(--vx-font-mono,monospace);
  border:1px solid var(--vx-border-accent)}
 .an-dim-l{font-size:13px;color:var(--vx-text-secondary)}
 .an-shortcut{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;

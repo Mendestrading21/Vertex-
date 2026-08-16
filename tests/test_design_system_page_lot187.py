@@ -36,7 +36,9 @@ def test_les_tokens_derives_couvrent_tous_les_groupes():
     # Chaque variable exposée par la page existe RÉELLEMENT dans tokens.css —
     # une variable renommée côté CSS fait échouer la référence, jamais un
     # silence.
-    for group in (ds._BG, ds._COPPER, ds._SEM, ds._TEXT):
+    # `_COPPER` s'appelle `_MARQUE` : le groupe listait quatre generations
+    # d'alias perimes (`orange`, `copper`) au lieu de la rampe canonique.
+    for group in (ds._BG, ds._MARQUE, ds._SEM, ds._TEXT):
         for var in group:
             assert ds._TOKENS.get(var), var
 
@@ -69,4 +71,4 @@ def test_echantillons_copiables_et_etat_vide_honnete():
 
 def test_service_worker_bumpe_v152():
     body = terminal.app.test_client().get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v226' in body                   # changement visible → bump
+    assert 'td-shell-v227' in body                   # changement visible → bump

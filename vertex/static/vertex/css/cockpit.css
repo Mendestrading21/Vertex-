@@ -72,8 +72,8 @@ a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:var(--v
 .vx-rail{position:relative;height:8px;border-radius:99px;overflow:hidden;
   box-shadow:var(--vx-shadow-pressed,inset 0 2px 6px rgba(0,0,0,.4));
   background:linear-gradient(90deg,var(--vx-negative),var(--vx-warning),var(--vx-positive))}
-.vx-rail--copper{background:linear-gradient(90deg,var(--vx-orange-900),var(--vx-orange-500),var(--vx-orange-400))}
-.vx-rail--mono{background:linear-gradient(90deg,var(--vx-graphite-700),var(--vx-orange-500))}
+.vx-rail--copper{background:linear-gradient(90deg,var(--vx-violet-900),var(--vx-violet-500),var(--vx-violet-400))}
+.vx-rail--mono{background:linear-gradient(90deg,var(--vx-graphite-700),var(--vx-violet-500))}
 /* Stress (VIX) : calme à gauche (vert) → stress à droite (rouge) */
 .vx-rail--stress{background:linear-gradient(90deg,var(--vx-positive),var(--vx-warning),var(--vx-negative))}
 .vx-rail-mark{position:absolute;top:-4px;left:var(--vx-rail-pos,50%);transform:translateX(-50%);
@@ -94,7 +94,7 @@ a.vx-strip-item:hover{box-shadow:var(--vx-glow-copper-soft);border-color:var(--v
 /* ══ Liseré supérieur cuivre sur les cartes phares marquées .vx-card--accent ══ */
 .vx-card--accent{position:relative}
 .vx-card--accent::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;pointer-events:none;
-  background:linear-gradient(90deg,transparent,var(--vx-orange-500),transparent);opacity:.6;
+  background:linear-gradient(90deg,transparent,var(--vx-violet-500),transparent);opacity:.6;
   border-radius:var(--vx-r) var(--vx-r) 0 0}
 
 /* ══ Sparklines des tuiles : un peu d'air ══ */

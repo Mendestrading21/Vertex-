@@ -547,10 +547,10 @@
         var pop = s.probability_of_profit != null ? s.probability_of_profit + ' %' : '—';
         var be = (s.breakevens && s.breakevens.length) ? s.breakevens.map(function (b) { return VXf.nd(b); }).join(' · ') : '—';
         var g = s.greeks;
-        var recoStyle = s.recommended ? ' style="border-color:var(--vx-signal-500,#9B7BFF);box-shadow:0 0 0 1px var(--vx-signal-500,#9B7BFF)"' : '';
+        var recoStyle = s.recommended ? ' style="border-color:var(--vx-violet-500,#9B7BFF);box-shadow:0 0 0 1px var(--vx-violet-500,#9B7BFF)"' : '';
         return '<section class="vx-card vx-col-6"' + recoStyle + '>' +
           '<div class="vx-card-header"><span class="vx-card-title">' + esc(s.label) + '</span>' +
-          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-signal-500,#9B7BFF);color:#0b0d0a;font-weight:700">' + VX.icon('star', 12) + ' Recommandée</span>' : '') +
+          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-violet-500,#9B7BFF);color:#0b0d0a;font-weight:700">' + VX.icon('star', 12) + ' Recommandée</span>' : '') +
           '<span class="vx-badge" style="color:var(--vx-' + (credit ? 'positive' : 'option') + ')">' + (credit ? 'crédit ' : 'débit ') + fmtUsd(Math.abs(s.net_premium)) + '</span></div>' +
           (s.fit_reason ? '<div class="vx-meta" style="margin:-2px 0 6px">' + esc(s.fit_reason) + '</div>' : '') +
           '<div id="strat-pf-' + i + '" style="height:150px"></div>' +

@@ -29,10 +29,10 @@
   --ng-border-soft:var(--vx-border-soft);
   --ng-border-strong:var(--vx-border-strong);
   /* ── Identité cuivre, jamais utilisée comme grand fond ── */
-  --ng-neon:var(--vx-ember-500);
-  --ng-neon-bright:var(--vx-ember-400);
-  --ng-copper:var(--vx-ember-600);
-  --ng-neon-soft:var(--vx-ember-soft);
+  --ng-neon:var(--vx-violet-500);
+  --ng-neon-bright:var(--vx-violet-400);
+  --ng-copper:var(--vx-violet-600);
+  --ng-neon-soft:var(--vx-brand-soft);
   --ng-glow:var(--vx-glow-brand);
   --ng-hairline:rgba(155,123,255,.42);
   /* ── Profondeur ── */
@@ -207,7 +207,7 @@
 /* Point actif RRG / sélection : GLOW réservé à l'actif (jamais permanent) */
 .vx-content[data-space="markets"] [data-selected="1"],
 .vx-content[data-space="markets"] .vx-mk-active{
-  filter:drop-shadow(0 0 6px var(--vx-ember-glow));
+  filter:drop-shadow(0 0 6px var(--vx-violet-glow));
 }
 
 /* Heatmap sectorielle : lisibilité renforcée du texte des cellules */
@@ -293,7 +293,7 @@
 .vx-content[data-space="markets"] .vx-mk-idx-top{display:flex;align-items:center;gap:9px}
 .vx-content[data-space="markets"] .vx-mk-mono{
   width:34px;height:34px;flex:0 0 34px;border-radius:9px;display:grid;place-items:center;
-  font-size:11px;font-weight:800;letter-spacing:.02em;color:var(--vx-ember-400);
+  font-size:11px;font-weight:800;letter-spacing:.02em;color:var(--vx-violet-400);
   background:linear-gradient(180deg,var(--vx-brand-soft),rgba(155,123,255,.035));
   -webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2);
   border:1px solid var(--vx-border-accent);
@@ -336,7 +336,7 @@
 }
 .vx-content[data-space="markets"] .vx-mk-macro .m-head{grid-column:1/2;display:flex;align-items:center;gap:8px}
 .vx-content[data-space="markets"] .vx-mk-macro .m-mono{
-  font-size:10px;font-weight:800;letter-spacing:.03em;color:var(--vx-ember-400);
+  font-size:10px;font-weight:800;letter-spacing:.03em;color:var(--vx-violet-400);
   padding:2px 7px;border-radius:7px;border:1px solid var(--vx-border-accent);
   background:linear-gradient(180deg,var(--vx-brand-soft),rgba(155,123,255,.035));
   -webkit-backdrop-filter:blur(8px) saturate(1.2);backdrop-filter:blur(8px) saturate(1.2);
@@ -462,7 +462,7 @@
 .vx-content[data-space="opportunities"] .vx-op-chip .k{font-size:var(--vx-fs-meta);color:var(--vx-text-muted);letter-spacing:.04em}
 .vx-content[data-space="opportunities"] .vx-op-chip .v{font-size:22px;font-weight:800;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;line-height:1}
 .vx-content[data-space="opportunities"] .vx-op-chip[data-hot="1"]{border-color:var(--ng-border-strong)}
-.vx-content[data-space="opportunities"] .vx-op-chip[data-hot="1"] .v{color:var(--vx-ember-400)}
+.vx-content[data-space="opportunities"] .vx-op-chip[data-hot="1"] .v{color:var(--vx-violet-400)}
 
 /* ── Carte OPPORTUNITÉ DOMINANTE (distincte, signature) ── */
 .vx-content[data-space="opportunities"] .vx-op-dominant{
@@ -477,11 +477,11 @@
 .vx-content[data-space="opportunities"] .vx-op-dominant{grid-template-columns:minmax(260px,1fr) minmax(0,1.7fr)}
 .vx-content[data-space="opportunities"] .vx-op-dom-l{padding:18px 18px 16px;border-right:1px solid var(--ng-border-soft);display:flex;flex-direction:column;gap:10px;justify-content:center}
 .vx-content[data-space="opportunities"] .vx-op-dom-r{padding:18px;display:flex;flex-direction:column;gap:12px}
-.vx-content[data-space="opportunities"] .vx-op-dom-badge{font-size:var(--vx-fs-meta);font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--vx-ember-400)}
+.vx-content[data-space="opportunities"] .vx-op-dom-badge{font-size:var(--vx-fs-meta);font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--vx-violet-400)}
 .vx-content[data-space="opportunities"] .vx-op-dom-tk{display:flex;align-items:center;gap:12px}
 .vx-content[data-space="opportunities"] .vx-op-dom-tk .sym{font-size:34px;font-weight:850;letter-spacing:-.01em;color:var(--vx-text-primary);line-height:1}
 .vx-content[data-space="opportunities"] .vx-op-grade{
-  font-size:15px;font-weight:850;padding:4px 12px;border-radius:10px;color:var(--vx-ember-ink);
+  font-size:15px;font-weight:850;padding:4px 12px;border-radius:10px;color:var(--vx-violet-ink);
   background:var(--vx-brand-gradient);box-shadow:0 4px 14px -8px rgba(0,0,0,.7);
 }
 .vx-content[data-space="opportunities"] .vx-op-grade[data-g="A"],
@@ -498,7 +498,7 @@
 .vx-content[data-space="opportunities"] .vx-op-metric .v{font-size:19px;font-weight:750;color:var(--vx-text-primary);font-variant-numeric:tabular-nums}
 .vx-content[data-space="opportunities"] .vx-op-metric .v.pos{color:var(--vx-positive)}
 .vx-content[data-space="opportunities"] .vx-op-metric.hot{border-color:var(--vx-border-accent)}
-.vx-content[data-space="opportunities"] .vx-op-metric.hot .v{color:var(--vx-ember-400)}
+.vx-content[data-space="opportunities"] .vx-op-metric.hot .v{color:var(--vx-violet-400)}
 .vx-content[data-space="opportunities"] .vx-op-lines{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
 .vx-content[data-space="opportunities"] .vx-op-lines .row{display:flex;gap:8px}
 .vx-content[data-space="opportunities"] .vx-op-lines .row .k{color:var(--vx-text-muted);min-width:88px}
@@ -517,7 +517,7 @@
 .vx-content[data-space="opportunities"] .vx-op-tk-top{display:flex;align-items:center;gap:9px}
 .vx-content[data-space="opportunities"] .vx-op-mono{
   width:32px;height:32px;flex:0 0 32px;border-radius:9px;display:grid;place-items:center;
-  font-size:10.5px;font-weight:800;color:var(--vx-ember-400);border:1px solid var(--vx-border-accent);
+  font-size:10.5px;font-weight:800;color:var(--vx-violet-400);border:1px solid var(--vx-border-accent);
   background:linear-gradient(180deg,var(--vx-brand-soft),rgba(155,123,255,.035));
   -webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2);
   box-shadow:0 1px 0 rgba(255,255,255,.16) inset,0 4px 12px -8px rgba(0,0,0,.6);
@@ -527,7 +527,7 @@
 .vx-content[data-space="opportunities"] .vx-op-tk-name .sec{font-size:11px;color:var(--vx-text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
 .vx-content[data-space="opportunities"] .vx-op-tk-grade{margin-left:auto;font-size:12px;font-weight:800;padding:2px 9px;border-radius:8px;color:var(--vx-text-primary);border:1px solid var(--ng-border-strong)}
 .vx-content[data-space="opportunities"] .vx-op-tk-grade[data-g="S+"],
-.vx-content[data-space="opportunities"] .vx-op-tk-grade[data-g="S"]{color:var(--vx-ember-ink);background:var(--vx-brand-gradient);border:none}
+.vx-content[data-space="opportunities"] .vx-op-tk-grade[data-g="S"]{color:var(--vx-violet-ink);background:var(--vx-brand-gradient);border:none}
 .vx-content[data-space="opportunities"] .vx-op-tk-row{display:flex;align-items:baseline;gap:10px}
 .vx-content[data-space="opportunities"] .vx-op-tk-score{font-size:26px;font-weight:800;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;line-height:1}
 .vx-content[data-space="opportunities"] .vx-op-tk-asym{font-size:11.5px;font-weight:650;color:var(--vx-text-secondary)}
@@ -543,7 +543,7 @@
 .vx-content[data-space="opportunities"] .vx-op-cmp th,.vx-content[data-space="opportunities"] .vx-op-cmp td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--ng-border-soft)}
 .vx-content[data-space="opportunities"] .vx-op-cmp thead th{font-size:12px;color:var(--vx-text-muted);font-weight:600}
 .vx-content[data-space="opportunities"] .vx-op-cmp thead th.sym{color:var(--vx-text-primary);font-weight:750;font-size:14px}
-.vx-content[data-space="opportunities"] .vx-op-cmp thead th.best{color:var(--vx-ember-400)}
+.vx-content[data-space="opportunities"] .vx-op-cmp thead th.best{color:var(--vx-violet-400)}
 .vx-content[data-space="opportunities"] .vx-op-cmp td.metric{color:var(--vx-text-secondary);font-size:12.5px}
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell{display:flex;align-items:center;gap:8px}
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell .rail{flex:1;height:6px;border-radius:4px;background:rgba(0,0,0,.35);overflow:hidden;min-width:40px}
@@ -553,10 +553,10 @@
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell .rail i{display:block;height:100%;border-radius:4px;
   background:linear-gradient(90deg,color-mix(in srgb,var(--vx-warm-grey) 40%,transparent),var(--vx-warm-grey))}
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell.win .rail i{
-  background:linear-gradient(90deg,color-mix(in srgb,var(--vx-ember-500) 40%,transparent),var(--vx-ember-500));
-  box-shadow:0 0 6px color-mix(in srgb,var(--vx-ember-500) 45%,transparent)}
+  background:linear-gradient(90deg,color-mix(in srgb,var(--vx-violet-500) 40%,transparent),var(--vx-violet-500));
+  box-shadow:0 0 6px color-mix(in srgb,var(--vx-violet-500) 45%,transparent)}
 .vx-content[data-space="opportunities"] .vx-op-cmp-cell .n{font-size:12px;font-weight:700;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
-.vx-content[data-space="opportunities"] .vx-op-cmp-cell.win .n{color:var(--vx-ember-400)}
+.vx-content[data-space="opportunities"] .vx-op-cmp-cell.win .n{color:var(--vx-violet-400)}
 .vx-content[data-space="opportunities"] .vx-op-cmp col.best,
 .vx-content[data-space="opportunities"] .vx-op-cmp td.bestcol{background:var(--vx-brand-soft)}
 
@@ -566,7 +566,7 @@
 .vx-content[data-space="opportunities"] #op-funnel-viz svg{max-width:330px;margin:0 auto}
 
 /* Scatter : point sélectionné = glow réservé */
-.vx-content[data-space="opportunities"] .vx-op-scatter-sel .vx-ticker{color:var(--vx-ember-400)}
+.vx-content[data-space="opportunities"] .vx-op-scatter-sel .vx-ticker{color:var(--vx-violet-400)}
 
 @media (max-width:520px){
   .vx-content[data-space="opportunities"] .vx-op-metrics{grid-template-columns:1fr 1fr}

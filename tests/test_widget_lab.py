@@ -113,8 +113,10 @@ def test_sample_data_clearly_labeled(html):
 
 
 def test_identity_orange_no_blue(html):
-    # identité : provient des tokens Ember ; aucun littéral bleu identitaire
-    assert 'var(--vx-ember-500)' in html
+    # identité : provient de la rampe CANONIQUE (`--vx-violet-*`), pas d'un
+    # alias déprécié ni d'un littéral. Le lab nommait `--vx-ember-500` — même
+    # couleur, nom périmé : un nuancier qui nomme mal est pire qu'absent.
+    assert 'var(--vx-violet-500)' in html
     hexes = set(re.findall(r'#[0-9a-fA-F]{6}', html))
 
     def bluish(x):

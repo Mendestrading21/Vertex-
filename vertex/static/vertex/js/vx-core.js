@@ -114,20 +114,20 @@
       if (type === 'ring') {
         return '<svg class="vx-state-ghost" viewBox="0 0 44 44" aria-hidden="true">' +
           '<circle cx="22" cy="22" r="17" fill="none" stroke="currentColor" stroke-width="5" opacity=".18"/>' +
-          '<circle cx="22" cy="22" r="17" fill="none" stroke="var(--vx-copper-light)" stroke-width="5" ' +
+          '<circle cx="22" cy="22" r="17" fill="none" stroke="var(--vx-violet-500)" stroke-width="5" ' +
           'stroke-dasharray="60 107" stroke-linecap="round" opacity=".35" transform="rotate(-90 22 22)"/></svg>';
       }
       if (type === 'line') {
         return '<svg class="vx-state-ghost" viewBox="0 0 140 48" aria-hidden="true">' +
           '<line x1="6" y1="42" x2="134" y2="42" stroke="currentColor" stroke-width="1" stroke-dasharray="2 3" opacity=".3"/>' +
-          '<path d="M6 34 L34 26 L58 30 L82 16 L106 22 L134 12" fill="none" stroke="var(--vx-copper-light)" ' +
+          '<path d="M6 34 L34 26 L58 30 L82 16 L106 22 L134 12" fill="none" stroke="var(--vx-violet-500)" ' +
           'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".4"/></svg>';
       }
       let bars = '';
       const hs = [16, 26, 12, 30, 20, 34, 22];
       hs.forEach((h, i) => {
         bars += `<rect x="${8 + i * 19}" y="${42 - h}" width="11" height="${h}" rx="2" ` +
-          `fill="${i === 5 ? 'var(--vx-copper-light)' : 'currentColor'}" opacity="${i === 5 ? .38 : .16}"/>`;
+          `fill="${i === 5 ? 'var(--vx-violet-500)' : 'currentColor'}" opacity="${i === 5 ? .38 : .16}"/>`;
       });
       return '<svg class="vx-state-ghost" viewBox="0 0 140 48" aria-hidden="true">' +
         '<line x1="6" y1="42" x2="140" y2="42" stroke="currentColor" stroke-width="1" opacity=".2"/>' + bars + '</svg>';
