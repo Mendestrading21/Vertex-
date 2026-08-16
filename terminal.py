@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from flask import Flask, jsonify, redirect, request
+from flask import Flask, jsonify, redirect, request, g
 
 try:
     from dotenv import load_dotenv
@@ -87,6 +87,23 @@ from vertex.data import company as _company
 from vertex.services import market_clock as _market_clock
 
 app = Flask(__name__)
+from vertex.services import request_metrics as _request_metrics  # noqa: E402
+
+
+@app.before_request
+def _request_latency_start():
+    if request.path.startswith('/api/'):
+        g._vertex_request_started = time.perf_counter()
+
+
+@app.after_request
+def _request_latency_record(resp):
+    started = getattr(g, '_vertex_request_started', None)
+    if started is not None:
+        _request_metrics.record(request.endpoint, resp.status_code,
+                                (time.perf_counter() - started) * 1000)
+    return resp
+
 # ── JSON SÛR : convertit NaN/Infinity → null. Sinon Flask sort `NaN` (toléré par Python
 #    mais REFUSÉ par JSON.parse des navigateurs → page vide). Arrive avec l'univers XXL :
 #    des titres récents/peu liquides n'ont pas assez d'historique → ma200/ma50 = NaN.
