@@ -190,6 +190,16 @@ def api_skyler(sym):
     from vertex.engines import opportunity_attribution as _attribution
     decision['opportunity_attribution'] = _attribution.build(packet, decision)
     try:
+        from vertex.engines import opportunity_reliability as _reliability
+        from vertex.tracking import option_cohort as _cohort
+        from vertex.tracking import repository as _tracking
+        decision['opportunity_reliability'] = _reliability.build(
+            packet, decision, _cohort.build(_tracking.list_all()))
+    except Exception:
+        decision['opportunity_reliability'] = {
+            'status': 'UNAVAILABLE', 'read_only': True,
+            'note': 'diagnostic de fiabilité indisponible'}
+    try:
         from vertex.engines import intelligence_monitor as _monitor
         from vertex.services import persist as _persist_monitor
         from vertex.engines import decision_memory as _memory_monitor
