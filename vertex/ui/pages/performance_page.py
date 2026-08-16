@@ -78,6 +78,7 @@ _VIEW_CONTENT = {
           <div id="vx-pf-postmortem">%%LOADING%%</div>
         </section>
         <div id="vx-pf-dist"></div>
+        <div id="vx-pf-buckets" class="vx-mt3"></div>
       </div>
     </div>
   </details>
@@ -309,6 +310,59 @@ function loadHypotheses(){
       ${chip('Validées',wins.length,'vx-pos')}${chip('Invalidées',losses.length,'vx-neg')}${chip('En cours',open.length,'vx-muted')}</div>`
     +j.slice().sort((a,b2)=>String(b2.date||'').localeCompare(String(a.date||''))).slice(0,6).map(line).join('')
     +`<div class="vx-card-footer">${j.length} hypothèse(s) · une hypothèse invalidée n’est pas un échec si l’invalidation a été respectée</div>`;
+}
+
+/* RANG 3 de PAGES.md §7 : « résultats par grade / setup / horizon ».
+   INSTRUIT AVANT D'ÊTRE CONSTRUIT (lot 19), et le résultat de l'instruction a
+   changé ce qui est construit :
+
+   - HORIZON  → le champ `tf` existe dans chaque entrée du journal. Constructible.
+   - SETUP    → le champ `trigger` existe. Constructible, mais VIDE sur les
+                entrées créées automatiquement à la clôture d'une position ;
+                elles sont comptées à part, jamais fondues dans un setup nommé.
+   - WIN/LOSS → le champ `result` existe ('WIN' | 'LOSS'). Constructible.
+   - GRADE    → N'EXISTE PAS dans le schéma du bureau. Le fabriquer exigerait
+                soit d'étendre un contrat de données PERSONNELLES synchronisé en
+                last-writer-wins, soit d'aller le chercher côté moteur — ce qui
+                mélangerait les deux sources que le rang 1 de cette page sépare
+                explicitement (« Aucun chiffre ne passe de l'une à l'autre »).
+                Non construit, et dit comme tel dans la carte. */
+function loadBuckets(){
+  const host=$('vx-pf-buckets');if(!host)return;
+  const j=((E()?E().journal():[])||[]).filter(e=>e.result==='WIN'||e.result==='LOSS');
+  if(j.length<3){
+    host.innerHTML='<section class="vx-card">'
+      +VX.states.emptyDesk('Résultats par horizon et par setup à partir de 3 décisions résolues.',JOURNAL_ACTION)
+      +'</section>';return;}
+  const grouper=(champ,libelleVide)=>{
+    const m={};
+    j.forEach(e=>{const k=String(e[champ]||'').trim()||libelleVide;
+      (m[k]=m[k]||{w:0,l:0})[e.result==='WIN'?'w':'l']++;});
+    return Object.keys(m).sort((a,b)=>(m[b].w+m[b].l)-(m[a].w+m[a].l)).slice(0,6)
+      .map(k=>({k,w:m[k].w,l:m[k].l}));
+  };
+  const bloc=(titre,rows,note)=>{
+    if(!rows.length)return '';
+    const ligne=(r)=>{const n=r.w+r.l,p=Math.round(r.w/n*100);
+      return `<div class="vx-kv"><span class="k">${esc(r.k)}</span>
+        <span class="v"><span class="vx-pos">${r.w}</span> / <span class="vx-neg">${r.l}</span>
+        <span class="vx-dim">· ${p} % gagnants sur ${n}</span></span></div>`;};
+    return `<div class="vx-col-6"><div class="vx-kpi-label vx-mb1">${titre}</div>`
+      +rows.map(ligne).join('')+(note?`<div class="vx-meta vx-mt1">${note}</div>`:'')+'</div>';
+  };
+  const sansSetup=j.filter(e=>!String(e.trigger||'').trim()).length;
+  host.innerHTML=`<section class="vx-card" aria-label="Résultats par horizon et par setup">
+    <div class="vx-card-header"><span class="vx-card-title">Résultats par horizon et par setup</span>
+      <span class="vx-chart-question">Quel horizon et quel déclencheur tiennent le mieux ?</span></div>
+    <div class="vx-grid">
+      ${bloc('Par horizon',grouper('tf','non renseigné'))}
+      ${bloc('Par setup (déclencheur)',grouper('trigger','non renseigné'),
+        sansSetup?(sansSetup+' entrée(s) sans déclencheur — clôtures journalisées automatiquement.'):'')}
+    </div>
+    <div class="vx-card-footer">${j.length} décision(s) résolue(s) · le découpage PAR GRADE
+      n'est pas construit : le grade n'existe pas dans le journal, et l'aller chercher
+      côté moteur mélangerait les deux sources que cette page sépare.</div>
+  </section>`;
 }
 
 /* Distribution des rendements par trade — mesure de DISCIPLINE (asymétrie). */
@@ -725,7 +779,7 @@ function bindDisclosures(){
 }
 function boot(){
   bindDisclosures();
-  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();loadPostmortem();loadCalibration();loadMemory();wireMemoryImport();}
+  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();loadBuckets();loadPostmortem();loadCalibration();loadMemory();wireMemoryImport();}
   else if(VIEW==='journal'){
     loadJournal();loadMistakes();
     $('vx-pf-add')?.addEventListener('click',openEntryModal);

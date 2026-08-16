@@ -188,3 +188,63 @@ def test_la_route_journal_sert_l_espace_et_performance_y_redirige():
     rp = c.get('/performance')
     assert rp.status_code in (301, 302) and '/journal' in rp.headers.get('Location', ''), (
         '/performance ne redirige plus vers le Journal')
+
+
+def test_le_rang_3_est_construit_sur_les_axes_que_la_donnee_porte():
+    """LOT 19 — le rang 3 de PAGES.md §7 (« résultats par grade / setup /
+    horizon »), instruit avant d'être construit.
+
+    Schéma du bureau mesuré : `tf` (horizon), `trigger` (setup) et `result`
+    (win/loss) existent ; **`grade` n'existe pas**. Le fabriquer exigerait soit
+    d'étendre un contrat de données PERSONNELLES synchronisé en
+    last-writer-wins, soit d'aller le chercher côté moteur — ce qui mélangerait
+    les deux sources que le rang 1 de cette page sépare explicitement.
+
+    Ce test tient les deux moitiés : ce qui EST construit, et ce qui ne l'est
+    pas **délibérément**.
+    """
+    src = _lire(_JOURNAL)
+    assert "'vx-pf-buckets'" in src or 'vx-pf-buckets' in src, (
+        'la carte « résultats par horizon et par setup » a disparu')
+    assert "grouper('tf'" in src and "grouper('trigger'" in src, (
+        'le découpage ne se fait plus sur les champs que la donnée porte '
+        'réellement (tf = horizon, trigger = setup).')
+    assert "e.result==='WIN'||e.result==='LOSS'" in src, (
+        'le win/loss ne filtre plus les décisions RÉSOLUES : une décision en '
+        'cours compterait comme une perte.')
+    # L'APPEL, pas la définition. `function loadBuckets(){` CONTIENT la chaîne
+    # `loadBuckets()` — les caractères `(){` incluent `()` — donc retirer
+    # l'appel laissait le test vert sur la seule déclaration. Dixième portée
+    # trop large de cette refonte, et la plus discrète : la chaîne cherchée
+    # était syntaxiquement présente dans un tout autre rôle.
+    dispatch = src[src.index("if(VIEW==='overview')"):]
+    dispatch = dispatch[:dispatch.index('\n')]
+    assert 'loadBuckets();' in dispatch, (
+        'la carte du rang 3 n\'est plus appelée par la vue overview : elle '
+        'existe dans le code et ne s\'affiche jamais.')
+
+
+def test_le_grade_n_est_pas_fabrique_et_la_carte_le_dit():
+    """CONTRE-EXEMPLE, et c'est le test qui compte. Il aurait été facile de
+    « compléter » le rang 3 en inventant un grade — depuis le score moteur, ou
+    en étendant le schéma du bureau. La carte DIT son absence, à l'utilisateur,
+    plutôt que de la taire dans un rapport."""
+    src = _lire(_JOURNAL)
+    assert "n'est pas construit" in src and 'grade' in src.lower(), (
+        'la carte ne dit plus pourquoi le découpage par grade est absent : '
+        'une absence non expliquée se lit comme un oubli.')
+    assert "grouper('grade'" not in src, (
+        'un découpage par grade a été construit — vérifier d\'où vient le '
+        'grade : s\'il vient du moteur, il mélange les deux sources que le '
+        'rang 1 sépare.')
+
+
+def test_les_entrees_sans_declencheur_ne_sont_pas_fondues_dans_un_setup():
+    """Les clôtures journalisées AUTOMATIQUEMENT ont un `trigger` vide. Les
+    agréger sous « autre » aurait inventé un setup qui n'a jamais été déclaré."""
+    src = _lire(_JOURNAL)
+    assert "'non renseigné'" in src, (
+        'les entrées sans déclencheur ne sont plus étiquetées comme telles')
+    assert 'sans déclencheur' in src, (
+        'la carte ne signale plus combien d\'entrées n\'ont pas de setup '
+        'déclaré : le lecteur croira que le découpage couvre tout.')
