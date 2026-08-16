@@ -149,9 +149,23 @@ _VIEW_CONTENT = {
 """,
     'progression': """
 <div class="vx-grid vx-mt3">
+  <!-- PAGES.md §7 demande la courbe d'équité et le drawdown DANS le Journal.
+       Ils n'y sont pas, et ce n'est pas un oubli : ils ont été migrés vers
+       Portefeuille, qui est le domicile du capital. La règle « une donnée = un
+       seul domicile » est plus forte que la liste des visualisations — les
+       dupliquer ici créerait deux courbes d'équité à maintenir, donc deux
+       vérités possibles.
+
+       CE QUI MANQUAIT EST PLUS ÉTROIT QUE JE NE L'AI D'ABORD ÉCRIT : le Journal
+       nommait déjà le domicile — deux fois, dans la vue `overview` et dans un
+       état vide. Mais pas dans `progression`, c'est-à-dire pas dans la vue qui
+       POSE la question « est-ce que je progresse ». Une adresse écrite ailleurs
+       que là où l'on cherche ne sert personne. -->
   <section class="vx-card vx-col-12" aria-label="Progression de la discipline">
     <div class="vx-card-header"><span class="vx-card-title">Progression</span>
-      <span class="vx-chart-question">Est-ce que je m'améliore, décision après décision ?</span></div>
+      <span class="vx-chart-question">Est-ce que je m'améliore, décision après décision ?</span>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost"
+        href="/portfolio?view=performance">&Eacute;quit&eacute; &amp; drawdown &rarr;</a></span></div>
     <div id="vx-pf-prog">%%LOADING%%</div>
   </section>
 </div>
