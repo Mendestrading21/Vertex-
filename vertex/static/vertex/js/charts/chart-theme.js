@@ -6,11 +6,13 @@
    rouge corail · comparaison technique = cyan. Plus aucun bleu identitaire ;
    aucune palette arc-en-ciel automatique.
 
-   LE NOM DU FICHIER MENT et il est conservé : il dit « obsidian-copper » et sert
-   un violet. Le renommer force le shell, le service worker, l'empreinte des
-   assets et cinq épinglages de version dans le même geste que le changement de
-   couleur — deux choses distinctes dans un seul commit. Dette explicite, à
-   solder seule.
+   LE NOM NE PORTE PLUS DE COULEUR, ET C'EST LE POINT. Ce fichier s'est appelé
+   `chart-theme-obsidian-copper.js` alors qu'il servait un violet : un nom qui
+   encode l'identité du moment ment dès que l'identité change — et elle a changé
+   deux fois (Signal Green → Ember/cuivre → violet). Il s'appelle désormais
+   `chart-theme.js` : il dit ce qu'il EST, pas de quelle couleur il était.
+   La même logique vaut pour les alias `--vx-ember-*` / `--vx-orange-*` de
+   tokens.css, dont la rampe canonique s'appelle maintenant `--vx-violet-*`.
    Chargé AVANT chart-core.js. */
 (function () {
   'use strict';
