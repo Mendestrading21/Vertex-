@@ -34,11 +34,11 @@ Les drivers sont triés par couverture de bloc et les faiblesses par points manq
 
 ## Surveillance de dérive
 
-`GET /api/skyler/monitor?horizon=H5|H10|H15|H20|H60` utilise exclusivement les outcomes dont le statut est `MESURE` dans la mémoire append-only du moteur courant. Il attend trois fenêtres non chevauchantes de dix résultats par défaut avant d’évaluer une décroissance du hit rate.
+`GET /api/skyler/monitor?horizon=H5|H10|H15|H20|H60` utilise exclusivement les outcomes dont le statut est `MESURE` dans la mémoire append-only du moteur courant. Il produit un statut global, puis des sorties distinctes par régime et par univers d’options. Chaque segment attend trois fenêtres non chevauchantes de dix résultats par défaut avant d’évaluer une décroissance du hit rate.
 
 > Sous le seuil de trente résultats mesurés, le statut est obligatoirement `INSUFFICIENT_SAMPLE`. Vertex ne déduit pas une stabilité ni une dérive à partir d’un échantillon trop petit.
 
-Une décroissance monotone d’au moins 15 points de hit rate donne `UNDER_WATCH`. Le moniteur ne change ni score, ni gate, ni constitution ; il expose seulement une justification de revue.
+Une décroissance monotone d’au moins 15 points de hit rate donne `UNDER_WATCH`. Une seconde surveillance compare la proportion de preuves actionnables de qualité/réconciliation figées entre les mêmes fenêtres ; une baisse monotone d’au moins 20 points produit `DATA_QUALITY_DRIFT`. Le moniteur ne change ni score, ni gate, ni constitution ; il expose seulement une justification de revue.
 
 ## Contrat de présentation
 
