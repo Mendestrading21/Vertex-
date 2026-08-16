@@ -251,6 +251,9 @@ backtest = _backtest.backtest
 # 6 h (EOD = 1 maj/jour, donc aucun spam de l'endpoint gratuit). Lecture seule.
 _STOOQ_CACHE = {'ts': 0.0, 'frames': {}}
 _STOOQ_TTL = 6 * 3600
+YFINANCE_BATCH_TIMEOUT_SECONDS = 10
+STOOQ_REQUEST_TIMEOUT_SECONDS = 8
+_SOURCE_BUDGET_STATE = {'yfinance': 'UNKNOWN', 'stooq': 'UNKNOWN'}
 _STOOQ_IDX = {'^GSPC': '^spx', '^DJI': '^dji', '^IXIC': '^ndq', '^RUT': '^rut', '^VIX': '^vix',
               # matières premières / crypto (mapping stooq)
               'GC=F': 'xauusd', 'SI=F': 'xagusd', 'CL=F': 'cl.f', 'BZ=F': 'cb.f', 'BTC-USD': 'btcusd'}
@@ -281,7 +284,7 @@ def _stooq_one(t):
            f'&d1={d1:%Y%m%d}&d2={d2:%Y%m%d}&i=d')
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=15) as r:
+        with urllib.request.urlopen(req, timeout=STOOQ_REQUEST_TIMEOUT_SECONDS) as r:
             txt = r.read().decode('utf-8', 'ignore')
         if not txt or 'Date' not in txt[:60]:   # 'No data' / page HTML → échec
             return t, None
@@ -325,6 +328,7 @@ def _stooq_download(tickers):
         _STOOQ_CACHE['frames'] = merged
         _STOOQ_CACHE['ts'] = now if not fresh else _STOOQ_CACHE['ts']
         cache = merged
+    _SOURCE_BUDGET_STATE['stooq'] = 'AVAILABLE' if out else ('CACHED' if cache else 'UNAVAILABLE')
     return {t: cache[t] for t in tickers if t in cache} if cache else out
 
 
@@ -340,7 +344,8 @@ def _download_universe(tickers, period='1y', chunk=50):
         part = tickers[i:i + chunk]
         try:
             dl = yf.download(part, period=period, interval='1d', progress=False,
-                             auto_adjust=True, group_by='ticker', threads=True)
+                             auto_adjust=True, group_by='ticker', threads=True,
+                             timeout=YFINANCE_BATCH_TIMEOUT_SECONDS)
         except Exception:
             dl = None
         if dl is None or len(dl) == 0:
@@ -368,6 +373,7 @@ def _download_universe(tickers, period='1y', chunk=50):
         except Exception:
             pass
     stooq_n = len(frames) - yahoo_n
+    _SOURCE_BUDGET_STATE['yfinance'] = 'AVAILABLE' if yahoo_n else 'UNAVAILABLE'
     scan_state['source'] = ('yfinance' if stooq_n == 0 else
                             'stooq' if yahoo_n == 0 else 'yfinance+stooq')
     return frames
@@ -654,6 +660,8 @@ def scan():
                                'market': 'AVAILABLE' if data is not None else 'UNAVAILABLE',
                                'options': 'AVAILABLE' if scan_state.get('options_board') else 'NOT_COLLECTED',
                                'fundamentals': 'AVAILABLE' if fsym else 'NOT_COLLECTED',
+                               'yfinance_budget': _SOURCE_BUDGET_STATE['yfinance'],
+                               'stooq_budget': _SOURCE_BUDGET_STATE['stooq'],
                            },
                            'universe_n': len(syms_scan), 'scanned_n': len(rows),
                            'scan_ts': time.time(),
