@@ -15,6 +15,7 @@ from vertex.engines import quant_engine as vertex
 from vertex.validation import out_of_sample as validator
 from vertex.portfolio import legacy_basket_risk as portfolio_risk
 from vertex.app.state import scan_state
+from vertex.app import input_validation as _input
 
 bp = Blueprint('analysis_api', __name__)
 
@@ -22,13 +23,16 @@ bp = Blueprint('analysis_api', __name__)
 @bp.route('/api/vertex/<sym>')
 def api_vertex(sym):
     """Deep-dive VERTEX d'un titre : bloc quant complet + décomposition explicable."""
-    d = (scan_state.get('detail') or {}).get(sym.upper())
+    sym = _input.symbol(sym)
+    if not sym:
+        return jsonify({'ok': False, 'error': 'symbole_invalide'}), 400
+    d = (scan_state.get('detail') or {}).get(sym)
     if not d:
         return jsonify({'ok': False, 'note': 'titre non scanné'})
     v = d.get('vertex')
     if not v:
         return jsonify({'ok': False, 'note': 'vertex indisponible'})
-    return jsonify({'ok': True, 'symbol': sym.upper(), 'price': d.get('price'),
+    return jsonify({'ok': True, 'symbol': sym, 'price': d.get('price'),
                     'grade': d.get('grade'), 'score': d.get('score'),
                     'vertex': v, 'explain': vertex.explain(v, d)})
 
@@ -63,7 +67,9 @@ def api_anomalies(sym):
     Constat statistique descriptif, jamais une prévision. Lecture seule."""
     from vertex.data import series as _series
     from vertex.engines import anomaly as _an
-    sym = (sym or '').upper()[:12]
+    sym = _input.symbol(sym)
+    if not sym:
+        return jsonify({'ok': False, 'error': 'symbole_invalide'}), 400
     detail = (scan_state.get('detail') or {}).get(sym) or {}
     closes, src = _series.closes(detail)   # série CANONIQUE uniquement (LOT 4)
     d = _an.scan(closes)
@@ -80,7 +86,9 @@ def api_evidence(sym):
     canonique. In-sample, descriptif, jamais un backtest. Lecture seule."""
     from vertex.data import series as _series
     from vertex.engines import evidence_lab as _ev
-    sym = (sym or '').upper()[:12]
+    sym = _input.symbol(sym)
+    if not sym:
+        return jsonify({'ok': False, 'error': 'symbole_invalide'}), 400
     detail = (scan_state.get('detail') or {}).get(sym) or {}
     closes, src = _series.closes(detail)
     d = _ev.study(closes)
@@ -100,7 +108,9 @@ def api_skyler(sym):
     from vertex.engines import market_context as _mcx, skyler_core as _sk
     from vertex.services import news_plus as _np
     from vertex.app.config import DEMO_MODE as _demo
-    sym = (sym or '').upper()[:12]
+    sym = _input.symbol(sym)
+    if not sym:
+        return jsonify({'ok': False, 'error': 'symbole_invalide'}), 400
     detail = (scan_state.get('detail') or {}).get(sym) or {}
     closes, _src = _series.closes(detail)
     benchmark_detail = (scan_state.get('detail') or {}).get('SPY') or {}

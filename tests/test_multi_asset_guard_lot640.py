@@ -22,6 +22,14 @@ def test_multi_asset_guard_identifies_partial_option_contract_evidence():
     assert out['issues'][0]['id'] == 'OPTION_CONTRACT_EVIDENCE_PARTIAL'
 
 
+def test_multi_asset_guard_marks_truncated_option_board_for_review():
+    out = multi_asset_guard.build(
+        {'asset_class': 'EQUITY'}, {'available': True},
+        {'available': True, 'input_truncated': True, 'input_limit': 5000, 'best': {}}, {})
+    assert out['status'] == 'REVIEW_REQUIRED'
+    assert out['issues'][0]['id'] == 'OPTION_BOARD_TRUNCATED'
+
+
 def test_analysis_api_exposes_multi_asset_contract_without_changing_decision(monkeypatch):
     app = Flask(__name__)
     app.register_blueprint(analysis_api.bp)

@@ -9,6 +9,8 @@ sélection.
 """
 from __future__ import annotations
 
+from itertools import islice
+
 from vertex.options import iv_units
 
 _FALLBACK_UNIVERSES = {
@@ -29,6 +31,7 @@ _FALLBACK_SWING_3_6M = {
     'spread_pct_max': 8.0,
     'max_quote_age_seconds': 900,
 }
+MAX_BOARD_CONTRACTS = 5000
 
 
 def _universes(profile=None):
@@ -185,10 +188,21 @@ def scan(board, universe, sym=None, profile=None):
             'reason': 'univers inconnu : %r (attendu %s)' % (universe, sorted(universes)),
         }
 
+    source = board or []
+    try:
+        input_total = len(source)
+        bounded_board = source[:MAX_BOARD_CONTRACTS]
+        input_truncated = input_total > MAX_BOARD_CONTRACTS
+    except TypeError:
+        bounded_board = list(islice(source, MAX_BOARD_CONTRACTS + 1))
+        input_truncated = len(bounded_board) > MAX_BOARD_CONTRACTS
+        if input_truncated:
+            bounded_board = bounded_board[:MAX_BOARD_CONTRACTS]
+        input_total = None
     window = universes[universe]
     swing_config = _swing_3_6m_config(profile)
     candidates = []
-    for raw in board or []:
+    for raw in bounded_board:
         if not isinstance(raw, dict):
             continue
         if sym and str(raw.get('sym', '')).upper() != str(sym).upper():
@@ -249,6 +263,10 @@ def scan(board, universe, sym=None, profile=None):
         'window': list(window),
         'preferred_window': preferred_window,
         'n': len(candidates),
+        'input_contracts_inspected': len(bounded_board),
+        'input_contracts_total': input_total,
+        'input_truncated': input_truncated,
+        'input_limit': MAX_BOARD_CONTRACTS,
         'candidates': candidates,
         'generator': 'deterministic',
         'note': note,
@@ -275,6 +293,9 @@ def options_context(scan_result):
         'window': scan_result['window'],
         'preferred_window': scan_result.get('preferred_window'),
         'n': scan_result['n'],
+        'input_truncated': bool(scan_result.get('input_truncated')),
+        'input_limit': scan_result.get('input_limit'),
+        'input_contracts_total': scan_result.get('input_contracts_total'),
         'best': best,
         'best_in_mandate': best['mandate_status'] == 'IN_MANDATE',
         'mandate_status': best['mandate_status'],

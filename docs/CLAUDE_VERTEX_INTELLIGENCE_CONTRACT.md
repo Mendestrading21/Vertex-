@@ -24,6 +24,7 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 | `decision.portfolio.asset_mix` | objet | Afficher les poids des types d’actifs déclarés ; conserver `UNCLASSIFIED` lorsque le type n’est pas prouvé. |
 | `decision.multi_asset_guard` | objet | Présenter les preuves multi-actifs manquantes comme une revue requise ; ce bloc ne remplace ni les gates ni le verdict. |
 | `GET /api/skyler/health` | objet | Afficher seulement comme état technique non sensible ; ne jamais afficher ou déduire les contenus de cache. |
+| `decision.multi_asset_guard.issues` | liste | Afficher `OPTION_BOARD_TRUNCATED` comme couverture options partielle ; ne pas la masquer ni la convertir en conformité. |
 
 ## Invariants à ne pas casser
 
