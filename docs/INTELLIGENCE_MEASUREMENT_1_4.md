@@ -38,7 +38,7 @@ Les drivers sont triés par couverture de bloc et les faiblesses par points manq
 
 > Sous le seuil de trente résultats mesurés, le statut est obligatoirement `INSUFFICIENT_SAMPLE`. Vertex ne déduit pas une stabilité ni une dérive à partir d’un échantillon trop petit.
 
-Une décroissance monotone d’au moins 15 points de hit rate donne `UNDER_WATCH`. Une seconde surveillance compare la proportion de preuves actionnables de qualité/réconciliation figées entre les mêmes fenêtres ; une baisse monotone d’au moins 20 points produit `DATA_QUALITY_DRIFT`. Le moniteur ne change ni score, ni gate, ni constitution ; il expose seulement une justification de revue.
+Une décroissance monotone d’au moins 15 points de hit rate donne `UNDER_WATCH`. Une seconde surveillance compare la proportion de preuves actionnables de qualité/réconciliation **et** la proportion de paires spot/options `FRESH` ou `RECENT` figées entre les mêmes fenêtres ; une baisse monotone d’au moins 20 points sur l’un de ces deux axes produit `DATA_QUALITY_DRIFT`. Le moniteur ne change ni score, ni gate, ni constitution ; il expose seulement une justification de revue.
 
 ## Contrat de présentation
 
