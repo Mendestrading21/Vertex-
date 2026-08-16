@@ -19,6 +19,9 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 | `decision.opportunity_attribution` | objet | Présenter drivers, faiblesses, gates et preuves manquantes sans transformer ce diagnostic en ordre. |
 | `decision.performance_monitor` | objet | Afficher comme surveillance descriptive ; ne jamais le représenter comme une recalibration automatique. |
 | `decision.opportunity_reliability` | objet | Expliquer la qualité des preuves et de la cohorte, sans remplacer le verdict ni appeler à l’exécution. |
+| `decision.instrument_profile` | objet | Afficher la classe et la source de classification ; `UNKNOWN` ne doit jamais être remplacé par une classe présumée. |
+| `decision.sector_coherence` | objet | Afficher comme comparaison descriptive du scan sectoriel ; ne pas l’interpréter comme une instruction d’allocation. |
+| `decision.portfolio.asset_mix` | objet | Afficher les poids des types d’actifs déclarés ; conserver `UNCLASSIFIED` lorsque le type n’est pas prouvé. |
 
 ## Invariants à ne pas casser
 

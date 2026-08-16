@@ -190,6 +190,16 @@ def api_skyler(sym):
     from vertex.engines import opportunity_attribution as _attribution
     decision['opportunity_attribution'] = _attribution.build(packet, decision)
     try:
+        from vertex.market import instrument_profile as _instrument
+        from vertex.market import sector_coherence as _sector_coherence
+        instrument = _instrument.build(sym, detail)
+        decision['instrument_profile'] = instrument
+        decision['sector_coherence'] = _sector_coherence.build(
+            instrument, detail, scan_state.get('sectors') or [])
+    except Exception:
+        decision['instrument_profile'] = {'asset_class': 'UNKNOWN', 'classification': 'UNAVAILABLE'}
+        decision['sector_coherence'] = {'available': False, 'reason': 'diagnostic indisponible'}
+    try:
         from vertex.engines import opportunity_reliability as _reliability
         from vertex.tracking import option_cohort as _cohort
         from vertex.tracking import repository as _tracking
