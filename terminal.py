@@ -1058,6 +1058,15 @@ def _publish_board(focus):
         _annotate_swing(ob, scan_state.get('detail') or {})
         scan_state['options_board'] = ob
         scan_state['options_as_of'] = now
+        # Suivis HYPOTHÉTIQUES uniquement : chaque refresh du board fige une
+        # quote de contrat réellement publiée pour alimenter le track record.
+        try:
+            from vertex.tracking import repository as _tracking_repo
+            scan_state['option_tracking_snapshot'] = _tracking_repo.record_option_board(
+                ob, at=now, source=scan_state.get('options_source') or 'options_board')
+        except Exception:
+            # Le suivi ne doit jamais interrompre la publication analytique.
+            scan_state['option_tracking_snapshot'] = {'error': 'snapshot indisponible'}
         _attach_vehicle(scan_state.get('rows') or [], ob)   # rafraîchit le verdict véhicule
         _save_json('options_cache.json', {'board': ob, 'ts': time.time()})
 

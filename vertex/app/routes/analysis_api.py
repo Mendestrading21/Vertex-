@@ -9,7 +9,7 @@ d'injection : le Blueprint importe directement le même objet.
 Analyse uniquement, indicatif. Ces routes lisent, ne commandent jamais.
 """
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from vertex.engines import quant_engine as vertex
 from vertex.validation import out_of_sample as validator
@@ -187,6 +187,19 @@ def api_skyler(sym):
     # expliquer les preuves manquantes sans jamais toucher au verdict canonique.
     from vertex.engines import decision_readiness as _readiness
     decision['readiness'] = _readiness.build(packet, decision)
+    from vertex.engines import opportunity_attribution as _attribution
+    decision['opportunity_attribution'] = _attribution.build(packet, decision)
+    try:
+        from vertex.engines import intelligence_monitor as _monitor
+        from vertex.services import persist as _persist_monitor
+        from vertex.engines import decision_memory as _memory_monitor
+        _memory = (_persist_monitor.load_json(_memory_monitor.MEMORY_FILE, None)
+                   or _memory_monitor.empty_memory())
+        decision['performance_monitor'] = _monitor.assess(_memory, _sk.ENGINE_VERSION)
+    except Exception:
+        decision['performance_monitor'] = {'available': False, 'status': 'UNAVAILABLE',
+                                           'read_only': True,
+                                           'reason': 'mémoire de performance indisponible'}
     # Journal de calibration (LOT 9) : chaque décision servie est enregistrée
     # (dédupliquée par scan) avec le prix du moment — base des résultats ex post.
     try:
@@ -261,6 +274,24 @@ def api_skyler_calibration():
     out['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
     from vertex.app.config import DEMO_MODE as _demo
     out['demo'] = _demo
+    return jsonify(out)
+
+
+@bp.route('/api/skyler/monitor')
+def api_skyler_monitor():
+    """MONITEUR D'INTELLIGENCE : dérive descriptive de performance issue des
+    résultats mémoire mesurés. Jamais de recalibration ou désactivation cachée."""
+    from vertex.engines import intelligence_monitor as _monitor
+    from vertex.engines import decision_memory as _memory
+    from vertex.engines import skyler_core as _sk
+    from vertex.services import persist as _persist
+    horizon = str(request.args.get('horizon', 'H10')).upper()
+    if horizon not in ('H5', 'H10', 'H15', 'H20', 'H60'):
+        return jsonify({'ok': False, 'error': 'horizon_invalide',
+                        'allowed': ['H5', 'H10', 'H15', 'H20', 'H60']}), 400
+    memory = _persist.load_json(_memory.MEMORY_FILE, None) or _memory.empty_memory()
+    out = _monitor.assess(memory, _sk.ENGINE_VERSION, horizon=horizon)
+    out['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
     return jsonify(out)
 
 

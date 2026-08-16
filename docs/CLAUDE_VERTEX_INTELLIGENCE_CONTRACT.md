@@ -16,6 +16,8 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 | `decision.readiness.status` | chaîne | Utiliser pour le résumé : `BLOCKED_BY_GATE`, `EVIDENCE_REQUIRED`, `SCORE_INCOMPLETE` ou `ANALYTICAL_REVIEW_READY`. |
 | `decision.readiness.actions` | liste | Afficher les actions de collecte/résolution comme diagnostics, jamais comme actions de trading. |
 | `decision.option_calibration` | objet | Toujours conserver le label `DIRECTIONAL_PROXY_ONLY` tant que le P&L de contrat n’est pas mesuré. |
+| `decision.opportunity_attribution` | objet | Présenter drivers, faiblesses, gates et preuves manquantes sans transformer ce diagnostic en ordre. |
+| `decision.performance_monitor` | objet | Afficher comme surveillance descriptive ; ne jamais le représenter comme une recalibration automatique. |
 
 ## Invariants à ne pas casser
 
@@ -24,6 +26,7 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 3. La bannière « analyse lecture seule » doit rester visible ; aucune UI ne doit ajouter un bouton d’ordre, de broker ou d’exécution.
 4. Le contrat de quote options résout le contrat par `SYM|EXP|STRIKE|C/P`, jamais par symbole seul. Une quote absente devient `DATA_REQUIRED`.
 5. Le champ `cost` historique n’est jamais présenté comme une quote de marché actuelle sans source explicite.
+6. `GET /api/skyler/monitor?horizon=H5|H10|H15|H20|H60` reste indisponible sous son seuil d’échantillon ; `INSUFFICIENT_SAMPLE` n’est jamais traduit par « performance stable ».
 
 ## Séparation des responsabilités
 
