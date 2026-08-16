@@ -599,8 +599,19 @@ async function renderPerformance(){
   const eq=(E()?E().equity():[])||[];
   const closed=(E()?E().closedPositions():[])||[];
   $('pf-body').innerHTML=`
-    <div class="vx-insight vx-page-lead vx-mb3" role="note"><b>Performance de portefeuille — domicile unique.</b>
-      Courbe cumulée, drawdown, contribution et saisonnalité vivent ici (migrées depuis Journal).
+    <!-- Cette vue n'avait AUCUN titre : hors du h1 de la page, son seul
+         intitule etait le <b> de la note ci-dessous. Or c'est le DOMICILE de la
+         courbe d'equite, et depuis le lot 11 la destination du relais pose sur
+         le Journal — on y arrive donc en cherchant explicitement sa
+         progression, et on tombait sur quatre etats vides sans en-tete. Le
+         releve de structure ne trouvait rien ici, exactement comme sur la vue
+         Anomalies : deux vues, un meme defaut de grammaire. La note reste : ce
+         qu'elle dit — le domicile unique — est precisement ce qui rend le
+         relais du Journal honnete. -->
+    <div class="vx-page-lead vx-mb3"><h2>Performance de portefeuille</h2>
+      <div class="vx-sub">Courbe cumulée, drawdown, contribution et saisonnalité.</div></div>
+    <div class="vx-insight vx-mb3" role="note"><b>Domicile unique.</b>
+      Ces quatre mesures vivent ici (migrées depuis Journal).
       Le Journal ne conserve que la méthode, la discipline, les erreurs et l’apprentissage.</div>
     <div class="vx-grid vx-hero-grid vx-mb3">
       <div class="vx-col-8" id="pf-perf-equity"></div>

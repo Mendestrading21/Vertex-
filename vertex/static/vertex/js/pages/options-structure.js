@@ -146,7 +146,14 @@
     return '<section class="vx-verdict-card vx-card" aria-label="Verdict de la structure">'
       + '<div class="vx-flex vx-wrap" style="justify-content:space-between;align-items:flex-start;gap:10px">'
       + '<div><div class="vx-flex" style="gap:8px;align-items:center"><span class="vx-eyebrow">Verdict</span>' + fresh
-      + (m.liq ? '<span class="vx-badge ' + toneCls(m.liq.tone) + '">Liquidité : ' + m.liq.label + '</span>' : '') + '</div>'
+      /* `liq.note` porte « OI 12 340 · spread 2,1 % » — les DEUX champs que le
+         profil de lecture de PAGES.md §6 exige et que l'ecran ne montrait pas.
+         Ils etaient CALCULES et jetes : on lisait « Liquidite : Excellente »
+         sans pouvoir distinguer OI 5 000 / spread 3 % de OI 50 000 /
+         spread 0,2 %. Quand la donnee manque, `note` dit « bid/ask ou OI
+         absent — non evaluable », ce qui est l'etat honnete a afficher aussi. */
+      + (m.liq ? '<span class="vx-badge ' + toneCls(m.liq.tone) + '">Liquidité : ' + m.liq.label + '</span>'
+          + (m.liq.note ? '<span class="vx-meta">' + esc(m.liq.note) + '</span>' : '') : '') + '</div>'
       + '<h2 class="' + toneCls(m.verdict.tone) + '" style="margin:4px 0 2px;font-size:22px">' + esc(m.verdict.label) + '</h2>'
       + '<div class="vx-dim" style="font-size:13px">' + esc(d.sym) + ' · <b>' + esc(s.label) + '</b> · biais ' + esc(d.bias) + ' — ' + esc(m.verdict.why) + '</div></div>'
       + '<div class="vx-flex" style="flex-direction:column;align-items:flex-end;gap:2px">'
@@ -328,7 +335,8 @@
         + '<td data-label="Vega" class="vx-num">' + (g.vega != null ? num(g.vega, 2) : '—') + '</td>'
         + '<td data-label="PoP" class="vx-num">' + (s.probability_of_profit != null ? num(s.probability_of_profit, 0) + ' %' : '—') + '</td>'
         + '<td data-label="DTE" class="vx-num">' + (s.days_to_exp != null ? s.days_to_exp + ' j' : '—') + '</td>'
-        + '<td data-label="Liquidité"><span class="' + toneCls(liq.tone) + '">' + liq.label + '</span></td>'
+        + '<td data-label="Liquidité"><span class="' + toneCls(liq.tone) + '">' + liq.label + '</span>'
+          + (liq.note ? '<div class="vx-meta">' + esc(liq.note) + '</div>' : '') + '</td>'
         + '<td data-label="Asymétrie" class="vx-num">' + (asym != null ? num(asym, 1) + '×' : '—') + '</td>'
         + '<td data-label="Adéquation" class="vx-num">' + (s.fit_score != null ? num(s.fit_score, 0) : '—') + '</td></tr>';
     }).join('');
