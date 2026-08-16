@@ -322,6 +322,13 @@ def api_skyler_monitor():
     return jsonify(out)
 
 
+@bp.route('/api/skyler/health')
+def api_skyler_health():
+    """Santé technique non sensible : compteurs, jamais de cache ni de données."""
+    from vertex.services import persist as _persist
+    return jsonify({'read_only': True, 'persistence': _persist.health()})
+
+
 @bp.route('/api/skyler/memory')
 def api_skyler_memory():
     """MÉMOIRE DÉCISIONNELLE INSTITUTIONNELLE (LOT 10) : décisions figées

@@ -23,6 +23,7 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 | `decision.sector_coherence` | objet | Afficher comme comparaison descriptive du scan sectoriel ; ne pas l’interpréter comme une instruction d’allocation. |
 | `decision.portfolio.asset_mix` | objet | Afficher les poids des types d’actifs déclarés ; conserver `UNCLASSIFIED` lorsque le type n’est pas prouvé. |
 | `decision.multi_asset_guard` | objet | Présenter les preuves multi-actifs manquantes comme une revue requise ; ce bloc ne remplace ni les gates ni le verdict. |
+| `GET /api/skyler/health` | objet | Afficher seulement comme état technique non sensible ; ne jamais afficher ou déduire les contenus de cache. |
 
 ## Invariants à ne pas casser
 
