@@ -196,9 +196,16 @@ def api_skyler(sym):
         decision['instrument_profile'] = instrument
         decision['sector_coherence'] = _sector_coherence.build(
             instrument, detail, scan_state.get('sectors') or [])
+        from vertex.engines import multi_asset_guard as _multi_asset_guard
+        decision['multi_asset_guard'] = _multi_asset_guard.build(
+            instrument, decision['sector_coherence'],
+            packet.get('contexts', {}).get('options'),
+            packet.get('contexts', {}).get('portfolio'))
     except Exception:
         decision['instrument_profile'] = {'asset_class': 'UNKNOWN', 'classification': 'UNAVAILABLE'}
         decision['sector_coherence'] = {'available': False, 'reason': 'diagnostic indisponible'}
+        decision['multi_asset_guard'] = {'status': 'UNAVAILABLE', 'read_only': True,
+                                         'does_not_change_verdict': True}
     try:
         from vertex.engines import opportunity_reliability as _reliability
         from vertex.tracking import option_cohort as _cohort
