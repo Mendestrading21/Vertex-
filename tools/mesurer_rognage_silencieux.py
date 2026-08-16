@@ -31,13 +31,35 @@ rend une mesure fausse et convaincante (leçon du lot 03).
 
 1440 px : 0 · 390 px : 0, après correction des deux mécanismes trouvés.
 """
+import io
+import os
+import re
+
 from playwright.sync_api import sync_playwright
-PAGES = [('/',['']),('/markets',['overview','macro','sectors','breadth','volatility']),
-         ('/opportunities',['radar','shortlist','compare','options']),
-         ('/analysis',['']),('/portfolio',['team','positions','performance','risk','options','watchlist']),
-         ('/options',['gex','leaps','vol','events','positions','structure']),
-         ('/journal',['overview','journal','learnings','progression','track-record']),
-         ('/system',['connections','data','automations','settings','archive'])]
+# LES VUES SONT LUES DANS LA SOURCE, JAMAIS ECRITES A LA MAIN.
+# La premiere version de cet outil portait une liste ecrite de memoire : trois
+# pages sur huit avaient des noms de vues INEXISTANTS (`shortlist`, `compare`,
+# `gex`, `vol`). Une vue inconnue retombe sur la vue par defaut — donc l'outil
+# mesurait la meme page plusieurs fois en croyant en couvrir plusieurs, et ne
+# visitait jamais `stocks`, `anomalies`, `calendar`, `positioning`… C'est la
+# troisieme fois qu'une URL fabriquee me trompe dans cette refonte ; une liste
+# derivee de la source ne peut plus diverger.
+def _vues(fichier, symbole='_VIEWS'):
+    src = io.open(os.path.join('vertex', 'ui', 'pages', fichier), encoding='utf-8').read()
+    m = (re.search(symbole + r'\s*=\s*\((.*?)\n\)', src, re.S)
+         or re.search(symbole + r'\s*=\s*\((.*?)\)\s*\n\n', src, re.S))
+    return re.findall(r"\('([a-z0-9-]+)'\s*,", m.group(1)) if m else ['']
+
+
+PAGES = [('/', ['']),
+         ('/markets', _vues('markets_page.py')),
+         ('/opportunities', _vues('opportunities_page.py')),
+         ('/analysis', ['']),
+         ('/portfolio', _vues('portfolio_page.py')),
+         ('/options', _vues('options_intel_page.py')),
+         ('/journal', _vues('performance_page.py')),
+         ('/system', _vues('system_page.py', 'VIEWS'))]
+
 # Un texte est ROGNE EN SILENCE si son conteneur cache le debordement SANS
 # ellipse ni defilement : rien a l'ecran ne signale qu'un mot est coupe.
 JS = """() => {

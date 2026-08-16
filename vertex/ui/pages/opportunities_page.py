@@ -634,8 +634,13 @@ async function renderAnomalies(){
   const groupMeta={Actions:'scan courant',Données:'/api/data-quality',Options:'non agrégé ici',
     Volatilité:'non agrégée ici',Portefeuille:'non agrégé ici',Modèles:'non agrégé ici'};
   $('op-body').innerHTML=demoBanner(scan)+`
-    <div class="vx-page-lead vx-mb3"><b>Anomalies par source</b>
-      <div class="vx-meta">Une catégorie sans flux consolidé est dite indisponible ; elle n’est jamais déduite depuis une autre métrique.</div></div>
+    <!-- Cette vue portait 879 px de contenu et AUCUN titre : son seul intitule
+         etait un <b> nu, la ou les 25 autres vues du produit ouvrent sur un
+         titre. Mesure au navigateur — le releve de structure ne trouvait rien
+         du tout sur cet onglet, ce qui a d'abord ressemble a une vue vide.
+         Meme grammaire d'en-tete que partout ailleurs : titre + orientation. -->
+    <div class="vx-page-lead vx-mb3"><h2>Anomalies par source</h2>
+      <div class="vx-sub">Une catégorie sans flux consolidé est dite indisponible ; elle n’est jamais déduite depuis une autre métrique.</div></div>
     <div class="vx-filterbar vx-toolbar">${['Actions','Données','Options','Volatilité','Portefeuille','Modèles']
       .map((g,i)=>`<button class="vx-chip" aria-pressed="${i===0}" data-ag="${g}">${g} · ${groupMeta[g]}</button>`).join('')}</div>
     <div id="op-anom"></div>`;
