@@ -30,6 +30,8 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 | `decision.multi_asset_guard.issues` | liste | Afficher `OPTION_BOARD_TRUNCATED` comme couverture options partielle ; ne pas la masquer ni la convertir en conformité. |
 | erreurs webhook `webhook_payload_invalid` / `webhook_rate_limited` | code stable | Afficher un rejet de transport ; ne jamais le transformer en signal ou recommandation de marché. |
 | `scan_status` / `scan_skip_count` | état et compteur | Afficher comme état technique du cycle ; conserver le dernier scan pendant `RUNNING`, sans créer de faux rafraîchissement. |
+| erreur `rescan_rate_limited` et `retry_after` | code stable et entier | Afficher une attente technique globale ; ne pas déduire une identité, ne pas produire de signal et ne pas répéter automatiquement la demande. |
+| `rescan_cooldown_remaining` | entier global | Afficher comme délai descriptif du cycle ; ne jamais l’associer à un utilisateur ou à une donnée de marché. |
 
 ## Invariants à ne pas casser
 

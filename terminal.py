@@ -698,6 +698,16 @@ def scan():
 
 
 _rescan_evt = threading.Event()   # set() par /api/rescan → réveille la boucle pour un re-scan immédiat
+RESCAN_COOLDOWN_SEC = max(1, int(os.getenv('VERTEX_RESCAN_COOLDOWN_SEC', '30')))
+_rescan_gate_lock = threading.Lock()
+_last_rescan_ts = 0.0
+
+
+def _rescan_cooldown_remaining(now=None):
+    """Retourne le délai global restant sans conserver d’identité de demandeur."""
+    current = time.monotonic() if now is None else float(now)
+    elapsed = max(0.0, current - _last_rescan_ts)
+    return max(0, int(math.ceil(RESCAN_COOLDOWN_SEC - elapsed)))
 # ── VERTEX LIVE ENGINE : câblage du moteur central (états + déclencheur) ──
 _live.configure(scan_state=scan_state, news_state=news_state, cal_state=cal_state,
                 weekly_state=weekly_state, rescan_event=_rescan_evt,
@@ -1745,6 +1755,7 @@ def options_pack(sym):
 def scan_ep():
     return jsonify({**scan_state, 'ai_on': ai.available(),
                    'scan_age': _scan_age(),
+                   'rescan_cooldown_remaining': _rescan_cooldown_remaining(),
                    'idx_sets': {'dow': _DOW30, 'ndx': _NDX100, 'sp': _SP500_SET,
                                 'rut': _RUT_SET, 'eu': _EU_SET, 'asia': _ASIA_SET},
                    # source HONNÊTE des données du scan (yfinance/stooq/demo) — le badge
@@ -1755,9 +1766,20 @@ def scan_ep():
 
 @app.route('/api/rescan', methods=['POST', 'GET'])
 def api_rescan():
-    """Force un re-scan immédiat de TOUT l'univers (réveille la boucle de fond)."""
-    _rescan_evt.set()
-    return jsonify({'ok': True, 'universe': len(UNIVERSE),
+    """Réveille le scan au plus une fois par fenêtre globale, sans tracer le demandeur."""
+    global _last_rescan_ts
+    with _rescan_gate_lock:
+        remaining = _rescan_cooldown_remaining()
+        if remaining:
+            response = jsonify({'ok': False, 'error': 'rescan_rate_limited',
+                                'retry_after': remaining})
+            response.status_code = 429
+            response.headers['Retry-After'] = str(remaining)
+            return response
+        _last_rescan_ts = time.monotonic()
+        _rescan_evt.set()
+    return jsonify({'ok': True, 'status': 'rescan_queued', 'universe': len(UNIVERSE),
+                    'cooldown_seconds': RESCAN_COOLDOWN_SEC,
                     'msg': f'Re-scan lancé — recalcul des {len(UNIVERSE)} titres (≈10-30 s). Recharge dans un instant.'})
 
 
