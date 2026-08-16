@@ -28,7 +28,27 @@ def contract_id(contract):
     side = 'P' if right in ('PUT', 'P') else ('C' if right in ('CALL', 'C') else '')
     if not sym or not exp or strike is None or not side:
         return None
-    return '%s|%s|%s|%s' % (sym, exp, strike, side)
+    return '%s|%s|%s|%s' % (sym, exp, _strike_key(strike), side)
+
+
+def _strike_key(value):
+    """Normalise 125 et 125.0 vers la même identité de contrat."""
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+    if math.isfinite(number):
+        return ('%.10f' % number).rstrip('0').rstrip('.')
+    return str(value)
+
+
+def _normalize_contract_id(value):
+    parts = str(value or '').split('|')
+    if len(parts) != 4:
+        return str(value or '')
+    sym, exp, strike, right = parts
+    side = 'P' if right.upper() in ('PUT', 'P') else ('C' if right.upper() in ('CALL', 'C') else right.upper())
+    return '%s|%s|%s|%s' % (sym.upper(), exp, _strike_key(strike), side)
 
 
 def _quote(contract, source):
@@ -62,7 +82,7 @@ def resolve(board, *, contract_id_value=None, symbol=None, as_of=None, source=No
     strikes/échéances. L'appelant reçoit toujours un objet sérialisable avec une
     raison si le contrat n'est pas prouvé dans le board courant.
     """
-    wanted = str(contract_id_value or '')
+    wanted = _normalize_contract_id(contract_id_value)
     symbol = str(symbol or '').upper()
     if not wanted:
         return {'available': False, 'quote': {}, 'reason': 'contract_id requis — symbole seul ambigu',

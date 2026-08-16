@@ -11,6 +11,7 @@ from __future__ import annotations
 from vertex.services import persist
 from . import models
 from .reference_price import pick_stock_reference, pick_option_reference
+from vertex.options import quote_resolver
 
 _STORE = 'tracking.json'
 
@@ -68,19 +69,75 @@ def create(*, tracking_id, entity_type, symbol, quote, started_at,
     return t
 
 
-def add_snapshot(tracking_id, *, price, at, benchmark_price=None):
+def add_snapshot(tracking_id, *, price, at, benchmark_price=None, evidence=None):
     """Ajoute un snapshot horodaté et met à jour high/low. No-op si arrêté."""
     blob = _load()
     t = next((x for x in blob['trackings'] if x.get('tracking_id') == tracking_id), None)
     if not t or t.get('status') != models.ST_ACTIVE:
         return t
     if price is not None:
-        t['snapshots'].append({'price': price, 'at': at, 'benchmark_price': benchmark_price})
+        snap = {'price': price, 'at': at, 'benchmark_price': benchmark_price}
+        if evidence is not None:
+            snap['evidence'] = evidence
+        t['snapshots'].append(snap)
         hi, lo = t.get('high_since'), t.get('low_since')
         t['high_since'] = price if hi is None else max(hi, price)
         t['low_since'] = price if lo is None else min(lo, price)
     _save(blob)
     return t
+
+
+def record_option_board(board, *, at, source=None):
+    """Enregistre les quotes observées de tous les suivis options actifs.
+
+    Le board est fourni par le cycle de scan existant. Aucun appel de marché, prix
+    simulé ou ordre n'est produit ici. À horodatage identique, un suivi ne reçoit
+    jamais deux fois le même snapshot.
+    """
+    blob = _load()
+    stats = {'active_options': 0, 'snapshots_added': 0, 'unresolved': 0,
+             'skipped_same_as_of': 0}
+    changed = False
+    for t in blob['trackings']:
+        if t.get('entity_type') != 'OPTION' or t.get('status') != models.ST_ACTIVE:
+            continue
+        stats['active_options'] += 1
+        resolution = quote_resolver.resolve(
+            board, contract_id_value=t.get('contract_id'), symbol=t.get('symbol'),
+            as_of=at, source=source or 'options_board')
+        price, price_type, price_source, _, warnings = pick_option_reference(
+            resolution.get('quote') or {})
+        dq = t.setdefault('data_quality', {})
+        dq['last_option_quote_resolution'] = {
+            'available': resolution.get('available', False),
+            'reason': resolution.get('reason'),
+            'contract_id': resolution.get('contract_id') or t.get('contract_id'),
+            'as_of': at, 'source': price_source or source or 'options_board',
+            'price_type': price_type or None, 'warnings': warnings,
+        }
+        if price is None:
+            stats['unresolved'] += 1
+            changed = True
+            continue
+        latest = (t.get('snapshots') or [])[-1:]
+        if latest and latest[0].get('at') == at:
+            stats['skipped_same_as_of'] += 1
+            changed = True
+            continue
+        evidence = dict(resolution.get('evidence') or {})
+        evidence.update({'reference_price_type': price_type,
+                         'reference_price_source': price_source,
+                         'warnings': warnings})
+        t['snapshots'].append({'price': price, 'at': at, 'benchmark_price': None,
+                               'evidence': evidence})
+        hi, lo = t.get('high_since'), t.get('low_since')
+        t['high_since'] = price if hi is None else max(hi, price)
+        t['low_since'] = price if lo is None else min(lo, price)
+        stats['snapshots_added'] += 1
+        changed = True
+    if changed:
+        _save(blob)
+    return stats
 
 
 def patch(tracking_id, **fields):
@@ -150,5 +207,5 @@ def summary():
     }
 
 
-__all__ = ['list_all', 'get', 'create', 'add_snapshot', 'patch', 'stop',
+__all__ = ['list_all', 'get', 'create', 'add_snapshot', 'record_option_board', 'patch', 'stop',
            'restart', 'summary']
