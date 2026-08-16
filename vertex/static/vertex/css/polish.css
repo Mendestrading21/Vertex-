@@ -7,7 +7,7 @@
 .vx-card--hero::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;pointer-events:none;
   background:linear-gradient(90deg,transparent,var(--vx-brand),transparent);opacity:.58}
 .vx-card--hero::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(circle at 94% 0%,rgba(210,138,84,.08),transparent 52%);
+  background:radial-gradient(circle at 94% 0%,rgba(155,123,255,.08),transparent 52%);
   border-radius:inherit}
 .vx-card--hero>*{position:relative}
 

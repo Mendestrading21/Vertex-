@@ -34,7 +34,7 @@
   --ng-copper:var(--vx-ember-600);
   --ng-neon-soft:var(--vx-ember-soft);
   --ng-glow:var(--vx-glow-brand);
-  --ng-hairline:rgba(210,138,84,.42);
+  --ng-hairline:rgba(155,123,255,.42);
   /* ── Profondeur ── */
   --ng-shadow:0 1px 0 rgba(255,255,255,.035) inset,0 8px 24px -16px rgba(0,0,0,.72);
   --ng-shadow-raised:0 1px 0 rgba(255,255,255,.05) inset,0 16px 36px -18px rgba(0,0,0,.82);
@@ -43,7 +43,7 @@
 
   position:relative;
   background:
-    radial-gradient(120% 60% at 82% -8%,rgba(210,138,84,.016),transparent 58%),
+    radial-gradient(120% 60% at 82% -8%,rgba(155,123,255,.016),transparent 58%),
     linear-gradient(180deg, var(--ng-bg-1), var(--ng-bg-0));
 }
 
@@ -64,7 +64,7 @@
 /* Hero = carte premium (profondeur + halo cuivre discret, fonctionnel) */
 :where(.vx-content[data-space]) .vx-card--hero{
   background:
-    radial-gradient(120% 100% at 100% 0%,rgba(210,138,84,.055),transparent 55%),
+    radial-gradient(120% 100% at 100% 0%,rgba(155,123,255,.055),transparent 55%),
     linear-gradient(180deg,var(--vx-surface-elevated),var(--vx-surface));
   border-color:var(--ng-border-strong);
   box-shadow:var(--ng-shadow-raised);
@@ -294,7 +294,7 @@
 .vx-content[data-space="markets"] .vx-mk-mono{
   width:34px;height:34px;flex:0 0 34px;border-radius:9px;display:grid;place-items:center;
   font-size:11px;font-weight:800;letter-spacing:.02em;color:var(--vx-ember-400);
-  background:linear-gradient(180deg,var(--vx-brand-soft),rgba(210,138,84,.035));
+  background:linear-gradient(180deg,var(--vx-brand-soft),rgba(155,123,255,.035));
   -webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2);
   border:1px solid var(--vx-border-accent);
   box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 4px 12px -8px rgba(0,0,0,.6);
@@ -323,7 +323,13 @@
 /* ── MACRO CARDS premium (taux/DXY/pétrole/or/BTC) : pas de demi-carte vide ── */
 .vx-content[data-space="markets"] .vx-mk-macro{
   position:relative;overflow:hidden;padding:15px 16px;border-radius:var(--vx-r-card);
-  display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto auto;
+  /* `minmax(0,1fr)` et non `1fr` : une piste `1fr` ne descend pas sous la
+     largeur MIN-CONTENT de ce qu'elle porte, donc la carte deborde et
+     `overflow:hidden` rogne EN SILENCE — ni ellipse, ni defilement, rien qui
+     signale qu'un mot est coupe. Mesure de l'instrument de rognage : 5 px a
+     1440, 20 a 22 px a 390. Meme mecanisme que la carte d'indice du lot 209,
+     sur une autre famille de cartes. */
+  display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto auto;
   column-gap:14px;row-gap:6px;align-items:baseline;min-height:118px;
   background:linear-gradient(180deg,var(--ng-glass-raised),var(--ng-glass));
   border:1px solid var(--ng-border-soft);box-shadow:var(--ng-shadow),inset 0 1px 0 rgba(255,255,255,.04);
@@ -332,7 +338,7 @@
 .vx-content[data-space="markets"] .vx-mk-macro .m-mono{
   font-size:10px;font-weight:800;letter-spacing:.03em;color:var(--vx-ember-400);
   padding:2px 7px;border-radius:7px;border:1px solid var(--vx-border-accent);
-  background:linear-gradient(180deg,var(--vx-brand-soft),rgba(210,138,84,.035));
+  background:linear-gradient(180deg,var(--vx-brand-soft),rgba(155,123,255,.035));
   -webkit-backdrop-filter:blur(8px) saturate(1.2);backdrop-filter:blur(8px) saturate(1.2);
   box-shadow:0 1px 0 rgba(255,255,255,.14) inset;
 }
@@ -344,9 +350,12 @@
 .vx-content[data-space="markets"] .vx-mk-macro .m-chg.flat{color:var(--vx-text-muted)}
 /* Aire occupant la colonne droite : plus jamais de demi-carte vide */
 .vx-content[data-space="markets"] .vx-mk-macro .m-area{
-  grid-column:2/3;grid-row:1/4;align-self:stretch;width:120px;display:flex;align-items:center;
+  /* L'aire etait figee a 120 px : a 390 px elle prend 31 % de la carte et ne
+     laisse pas la place au libelle. Elle se reduit desormais avec la carte. */
+  grid-column:2/3;grid-row:1/4;align-self:stretch;width:min(120px,34%);
+  display:flex;align-items:center;
 }
-.vx-content[data-space="markets"] .vx-mk-macro .m-area svg{width:120px;height:56px;display:block}
+.vx-content[data-space="markets"] .vx-mk-macro .m-area svg{width:100%;max-width:120px;height:56px;display:block}
 .vx-content[data-space="markets"] .vx-mk-macro .m-note{grid-column:1/3;font-size:11px;color:var(--vx-text-muted);margin-top:2px}
 /* Variante FLAT (actif sans série) : plein-largeur, pas de colonne aire vide */
 .vx-content[data-space="markets"] .vx-mk-macro--flat{display:flex;flex-direction:column;gap:8px;justify-content:center}
@@ -354,7 +363,18 @@
 .vx-content[data-space="markets"] .vx-mk-macro--flat .m-note{margin-top:auto}
 @media (max-width:520px){
   .vx-content[data-space="markets"] .vx-mk-macro .m-area{width:88px}
-  .vx-content[data-space="markets"] .vx-mk-macro .m-area svg{width:88px}
+  .vx-content[data-space="markets"] .vx-mk-macro .m-area svg{width:88px;max-width:88px}
+  /* Variante FLAT : elle est en FLEX, donc le `minmax(0,1fr)` de la grille ne
+     la protege pas — mesure du rognage a 390 px : 20 px coupes sur DXY. Un
+     element flex ne descend pas sous sa largeur min-content (`min-width:auto`
+     par defaut) ; la rangee valeur+variation deborde et le `overflow:hidden`
+     de la carte la coupe sans ellipse ni defilement. On autorise le retour a
+     la ligne et on rend les elements reductibles. 520 px est une bascule DEJA
+     recensee (lot 611) : aucune bande de largeur neuve. */
+  .vx-content[data-space="markets"] .vx-mk-macro--flat .mf-row,
+  .vx-content[data-space="markets"] .vx-mk-macro--flat .m-head{flex-wrap:wrap;row-gap:4px}
+  .vx-content[data-space="markets"] .vx-mk-macro--flat .m-val,
+  .vx-content[data-space="markets"] .vx-mk-macro--flat .m-name{min-width:0}
 }
 
 /* ── SIGNAL OS · MARCHÉS — la carte d'indice à 390 px ────────────────────────
@@ -498,7 +518,7 @@
 .vx-content[data-space="opportunities"] .vx-op-mono{
   width:32px;height:32px;flex:0 0 32px;border-radius:9px;display:grid;place-items:center;
   font-size:10.5px;font-weight:800;color:var(--vx-ember-400);border:1px solid var(--vx-border-accent);
-  background:linear-gradient(180deg,var(--vx-brand-soft),rgba(210,138,84,.035));
+  background:linear-gradient(180deg,var(--vx-brand-soft),rgba(155,123,255,.035));
   -webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2);
   box-shadow:0 1px 0 rgba(255,255,255,.16) inset,0 4px 12px -8px rgba(0,0,0,.6);
 }

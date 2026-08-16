@@ -306,7 +306,7 @@
         var x = chart.scales.x.getPixelForValue(nearest), area = chart.chartArea;
         if (!isFinite(x) || !area) return;
         var ctx = chart.ctx; ctx.save();
-        ctx.strokeStyle = col(window.VXCharts || {}, 'brand', 'rgb(210,138,84)');
+        ctx.strokeStyle = col(window.VXCharts || {}, 'brand', 'rgb(155,123,255)');
         ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
         ctx.beginPath(); ctx.moveTo(x, area.top); ctx.lineTo(x, area.bottom); ctx.stroke();
         ctx.setLineDash([]); ctx.fillStyle = col(window.VXCharts || {}, 'muted', 'rgb(152,144,146)');
