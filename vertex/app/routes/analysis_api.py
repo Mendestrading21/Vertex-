@@ -336,7 +336,9 @@ def api_skyler_monitor():
 def api_skyler_health():
     """Santé technique non sensible : compteurs, jamais de cache ni de données."""
     from vertex.services import persist as _persist
-    return jsonify({'read_only': True, 'persistence': _persist.health()})
+    from vertex.services import request_metrics as _metrics
+    return jsonify({'read_only': True, 'persistence': _persist.health(),
+                    'request_metrics': _metrics.summary()})
 
 
 @bp.route('/api/skyler/memory')

@@ -10,4 +10,5 @@ def test_health_route_exposes_only_non_sensitive_persistence_counters():
     assert out['read_only'] is True
     assert 'persistence' in out
     assert 'memory_entries' in out['persistence']
+    assert out['request_metrics']['read_only'] is True
     assert '_BASE_DIR' not in out['persistence']
