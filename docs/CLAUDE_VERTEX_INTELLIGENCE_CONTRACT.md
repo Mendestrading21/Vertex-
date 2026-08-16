@@ -18,6 +18,7 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 | `decision.option_calibration` | objet | Toujours conserver le label `DIRECTIONAL_PROXY_ONLY` tant que le P&L de contrat n’est pas mesuré. |
 | `decision.opportunity_attribution` | objet | Présenter drivers, faiblesses, gates et preuves manquantes sans transformer ce diagnostic en ordre. |
 | `decision.performance_monitor` | objet | Afficher comme surveillance descriptive ; ne jamais le représenter comme une recalibration automatique. |
+| `decision.opportunity_reliability` | objet | Expliquer la qualité des preuves et de la cohorte, sans remplacer le verdict ni appeler à l’exécution. |
 
 ## Invariants à ne pas casser
 
