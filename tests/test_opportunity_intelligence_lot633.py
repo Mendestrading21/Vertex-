@@ -38,7 +38,8 @@ def _memory(n=30):
                           'regime': 'NORMAL', 'level': 'A', 'option': {'universe': 'SWING_3_6M'},
                           'data_evidence': {'quality_available': True, 'quality_actionable': True,
                                             'reconciliation_available': True, 'reconciliation_actionable': True,
-                                            'reconciliation_blocking': False}})
+                                            'reconciliation_blocking': False,
+                                            'spot_freshness': 'FRESH', 'options_freshness': 'RECENT'}})
         ret = 1.0 if index < 20 else -1.0
         outcomes.append({'decision_id': decision_id,
                          'horizons': {'H10': {'status': 'MESURE', 'return_pct': ret}}})
@@ -73,3 +74,15 @@ def test_data_quality_drift_is_separate_and_requires_frozen_evidence():
     assert quality['available'] is True
     assert quality['status'] == 'UNDER_WATCH'
     assert quality['drift_check']['code'] == 'DATA_QUALITY_DRIFT'
+
+
+def test_data_quality_drift_detects_stale_quotes_despite_available_sources():
+    memory = _memory()
+    for record in memory['decisions'][-10:]:
+        record['data_evidence']['spot_freshness'] = 'STALE'
+        record['data_evidence']['options_freshness'] = 'STALE'
+    out = monitor.assess(memory, 'test-v1', horizon='H10', window_size=10)
+    quality = out['data_quality_drift']
+    assert quality['status'] == 'UNDER_WATCH'
+    assert quality['freshness_rate_windows'] == [1.0, 1.0, 0.0]
+    assert quality['drift_check']['freshness_triggered'] is True

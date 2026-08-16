@@ -28,6 +28,11 @@ def for_symbol(scan_state, symbol, detail=None):
     state, detail = scan_state or {}, detail or {}
     packet = _packet_for(state, symbol)
     quality = packet.get('quality') or detail.get('data_quality') or {}
+    sources = packet.get('sources') or {}
+    freshness = {
+        'spot': (sources.get('spot') or {}).get('quality'),
+        'options': (sources.get('options') or {}).get('quality'),
+    }
     raw_rec = (packet.get('reconciliation') or detail.get('reconciliation') or
                (state.get('reconciliation_by_symbol') or {}).get(str(symbol).upper()) or {})
     if quality:
@@ -36,6 +41,7 @@ def for_symbol(scan_state, symbol, detail=None):
             'overall': quality.get('overall'),
             'warnings': list(quality.get('warnings') or []),
             'actionable_allowed': quality.get('actionable_allowed') is True,
+            'freshness': freshness,
             'source': 'analytics_packet' if packet.get('quality') else 'detail',
         }
     else:

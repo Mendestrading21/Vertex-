@@ -61,28 +61,41 @@ def _data_quality_drift(memory, engine_version, window_size):
                if isinstance(d, dict) and d.get('engine_version') == engine_version
                and isinstance(d.get('data_evidence'), dict)]
     usable = []
+    freshness = []
     for record in records:
         evidence = record['data_evidence']
         values = (evidence.get('quality_available'), evidence.get('quality_actionable'),
                   evidence.get('reconciliation_available'), evidence.get('reconciliation_actionable'))
-        if all(value is not None for value in values):
+        freshness_values = (evidence.get('spot_freshness'), evidence.get('options_freshness'))
+        if all(value is not None for value in values) and all(value is not None for value in freshness_values):
             usable.append(all(values) and not bool(evidence.get('reconciliation_blocking')))
+            freshness.append(all(value in ('FRESH', 'RECENT') for value in freshness_values))
     minimum = window_size * 3
     if len(usable) < minimum:
         return {'available': False, 'status': 'INSUFFICIENT_SAMPLE',
                 'n_observations': len(usable), 'required': minimum,
                 'reason': 'preuves qualité/réconciliation figées insuffisantes'}
     recent = usable[-minimum:]
+    recent_freshness = freshness[-minimum:]
     windows = [recent[i:i + window_size] for i in range(0, minimum, window_size)]
+    freshness_windows = [recent_freshness[i:i + window_size] for i in range(0, minimum, window_size)]
     rates = [sum(1 for value in window if value) / len(window) for window in windows]
+    freshness_rates = [sum(1 for value in window if value) / len(window) for window in freshness_windows]
     drop = rates[0] - rates[-1]
-    triggered = drop >= 0.20 and all(a >= b - 0.02 for a, b in zip(rates, rates[1:]))
+    freshness_drop = freshness_rates[0] - freshness_rates[-1]
+    actionable_triggered = drop >= 0.20 and all(a >= b - 0.02 for a, b in zip(rates, rates[1:]))
+    freshness_triggered = (freshness_drop >= 0.20 and
+                           all(a >= b - 0.02 for a, b in zip(freshness_rates, freshness_rates[1:])))
+    triggered = actionable_triggered or freshness_triggered
     return {'available': True, 'status': 'UNDER_WATCH' if triggered else 'STABLE',
             'n_observations': len(usable),
             'actionable_rate_windows': [round(rate, 3) for rate in rates],
-            'drift_check': {'code': 'DATA_QUALITY_DRIFT', 'drop': round(drop, 3),
-                            'triggered': triggered},
-            'note': 'dérive des preuves actionnables figées ; une absence de donnée ne devient jamais une preuve'}
+            'freshness_rate_windows': [round(rate, 3) for rate in freshness_rates],
+            'drift_check': {'code': 'DATA_QUALITY_DRIFT', 'actionable_drop': round(drop, 3),
+                            'freshness_drop': round(freshness_drop, 3),
+                            'actionable_triggered': actionable_triggered,
+                            'freshness_triggered': freshness_triggered, 'triggered': triggered},
+            'note': 'dérive des preuves actionnables et de fraîcheur figées ; une absence de donnée ne devient jamais une preuve'}
 
 
 def assess(memory, engine_version, *, horizon='H10', window_size=10):
