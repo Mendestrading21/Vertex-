@@ -813,8 +813,10 @@ async function renderRisk(){
             ${kv('Nouveau titre',guard.new_stock_allowed?'autorisé':'BLOQUÉ',guard.new_stock_allowed?'vx-pos':'vx-neg')}
             ${kv('Nouvelle option',guard.new_option_allowed?'autorisée':'BLOQUÉE',guard.new_option_allowed?'vx-pos':'vx-neg')}
             ${(guard.mandatory_reviews||[]).map(rr=>`<div class="vx-meta">${esc(rr)}</div>`).join('')}</div>
-          <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Secteurs</span></div>
-            <div id="pf-sector-donut"><span class="vx-meta">Exposition sectorielle…</span></div></div>
+          <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Secteurs</span>
+            <span class="vx-chart-question">Le capital est-il concentré sur un secteur ?</span></div>
+            <div id="pf-sector-donut"><span class="vx-meta">Exposition sectorielle…</span></div>
+            <div class="vx-chart-conclusion" id="pf-sector-ccl"></div></div>
           <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Greeks agrégés</span></div>
             ${kv('Delta global',risk.options_exposure&&risk.options_exposure.delta,'vx-violet')}
             ${kv('Gamma global',risk.options_exposure&&risk.options_exposure.gamma,'vx-violet')}
@@ -835,6 +837,18 @@ async function renderRisk(){
             var _rest=_se.slice(4).reduce(function(s,e){return s+e[1];},0);_lab.push('Autres');_val.push(+_rest.toFixed(2));}
           _sh.innerHTML='<div class="vx-kpi-label vx-mb1">Exposition sectorielle</div><div style="height:150px"><canvas></canvas></div>';
           VXCharts.donut(_sh.querySelector('canvas'),_lab,_val,{});
+          /* CHARTS.md : aucun graphique sans question NI conclusion. Ce donut
+             etait monte dans une carte BATIE A LA MAIN par la page, qui n'en
+             portait aucune des deux — le seul graphique du produit dans ce cas.
+             La conclusion nomme le secteur dominant et sa part REELLE ; elle
+             reste vide si le calcul ne tient pas. */
+          var _c=document.getElementById('pf-sector-ccl');
+          if(_c&&_se.length&&isFinite(_se[0][1])){
+            var _tot=_se.reduce(function(s,e){return s+e[1];},0);
+            _c.textContent=_tot>0
+              ? (_se[0][0]+' domine : '+Math.round(_se[0][1]/_tot*100)+' % de l\'exposition action.')
+              : '';
+          }
         } else {_sh.innerHTML=_se.map(function(e){return kv(e[0],e[1]+' %');}).join('');}
       }
     }catch(e){}

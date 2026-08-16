@@ -223,6 +223,13 @@
          formulation a peine differente. Il ne garde que ce qu'il AJOUTE :
          quelle structure est tracee. */
       title: esc(s.label),
+      /* LA CONCLUSION RESTE ICI, et l'erreur vaut d'etre ecrite : j'ai cru a un
+         doublon avec la carte hote et je l'ai retiree. Mon releve interrogeait
+         les DESCENDANTS de la carte hote — `querySelector` traverse —, donc il
+         y lisait la conclusion DU GRAPHIQUE et la comptait deux fois. La carte
+         hote n'en a jamais eu. Mesure apres coup : 2 questions, ZERO conclusion
+         sur toute la vue. Retire, ce n'etait pas un doublon en moins, c'etait la
+         seule conclusion en moins. */
       conclusion: concl, unit: 'P&L $ (1 structure)', timeframe: (d.dte != null ? d.dte + ' j' : ''),
       source: d.demo ? 'multileg_lab (board démo)' : 'multileg_lab (board réel)', timestamp: Date.now(), mode: d.demo ? 'demo' : 'delayed',
       summary: 'Courbe de P&L à l\'échéance selon le cours du sous-jacent ; spot ' + price(m.spot)

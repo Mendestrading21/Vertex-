@@ -803,8 +803,23 @@ async function loadBreadth(scan){
       const tl=H.map(p=>p.d);
       const series=[{label:'> MM50 %',data:H.map(p=>p.a50)},{label:'> MM200 %',data:H.map(p=>p.a200)},
         {label:'Santé',data:H.map(p=>p.health)}];
+      /* CHARTS.md : aucun graphique sans question NI conclusion. Ce graphique
+         avait la question et pas la conclusion — mesuré au navigateur, il était
+         le seul de Marchés dans ce cas. La conclusion est DÉRIVÉE de la série
+         tracée (premier vs dernier point de « > MM200 »), jamais une phrase
+         générique : si les deux bornes manquent, elle est omise plutôt
+         qu'inventée. */
+      const a200=H.map(p=>p.a200).filter(v=>v!=null&&isFinite(v));
+      let cclBreadth='';
+      if(a200.length>1){
+        const d=Math.round((a200[a200.length-1]-a200[0])*10)/10;
+        cclBreadth=d>0?('Participation en hausse de '+d+' pt sur la période.')
+          :d<0?('Participation en baisse de '+Math.abs(d)+' pt sur la période.')
+          :'Participation stable sur la période.';
+      }
       VXCharts.card('vx-mk-breadth-trend',{title:'Tendance de participation',
         question:'La participation s’améliore-t-elle ou se dégrade-t-elle ?',height:210,
+        conclusion:cclBreadth,
         source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
         limits:'historique breadth de l’univers scanné (partiel, pas tout le NYSE)',
         render:(cv)=>VXCharts.multiLine(cv,tl,series,{yFmt:(v)=>Math.round(v)+' %'})});
