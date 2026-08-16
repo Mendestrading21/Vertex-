@@ -76,6 +76,9 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
 
     valued_at_cost = 0
     by_sym = {}
+    asset_values = {}
+    asset_counts = {}
+    unclassified_assets = 0
     for p in open_real:
         s = str(p.get('symbol') or p.get('sym') or '').upper()
         if not s:
@@ -87,6 +90,12 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
         else:
             val = p.get('cost_basis') or 0.0
             valued_at_cost += 1
+        asset_type = str(p.get('asset_type') or '').upper()
+        if not asset_type:
+            asset_type = 'UNCLASSIFIED'
+            unclassified_assets += 1
+        asset_values[asset_type] = asset_values.get(asset_type, 0.0) + val
+        asset_counts[asset_type] = asset_counts.get(asset_type, 0) + 1
         e = by_sym.setdefault(s, {'value': 0.0, 'cost': 0.0, 'qty': 0.0})
         e['value'] += val
         e['cost'] += p.get('cost_basis') or 0.0
@@ -96,6 +105,11 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
     if total <= 0:
         return {'available': False, 'reason': 'valeur totale nulle — poids incalculables'}
     weights = {s: round(e['value'] / total * 100, 2) for s, e in by_sym.items()}
+    asset_mix = {
+        asset: {'value': round(value, 2), 'weight_pct': round(value / total * 100, 2),
+                'positions': asset_counts.get(asset, 0)}
+        for asset, value in sorted(asset_values.items())
+    }
     hhi = round(sum((e['value'] / total) ** 2 for e in by_sym.values()), 4)
     top_sym = max(by_sym, key=lambda s: by_sym[s]['value'])
 
@@ -180,6 +194,9 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
         'n_positions': n, 'bounds': {'min': pmin, 'max': pmax},
         'in_bounds': bool(pmin <= n <= pmax), 'free_slots': max(0, pmax - n),
         'total_value': round(total, 2), 'weights': weights, 'hhi': hhi,
+        'asset_mix': asset_mix,
+        'asset_mix_note': ('%d position(s) sans type d’actif canonique — jamais classée(s) par défaut'
+                           % unclassified_assets if unclassified_assets else None),
         'top_symbol': top_sym, 'top_weight_pct': weights[top_sym],
         'valuation_note': ('%d position(s) valorisée(s) au coût (cote absente) — jamais un prix inventé'
                            % valued_at_cost if valued_at_cost else None),
