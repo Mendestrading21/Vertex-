@@ -145,6 +145,17 @@ def freeze(decision, packet=None, price=None, closes=None, portfolio_ctx=None,
             if closes and all(_num(c) is not None for c in closes[-_TAIL_LEN:])
             else None)
     option = _option_context(p)
+    contexts = p.get('contexts') or {}
+    quality_ctx = contexts.get('data_quality') or {}
+    reconciliation_ctx = contexts.get('reconciliation') or {}
+    data_evidence = {
+        'quality_available': quality_ctx.get('available'),
+        'quality_overall': quality_ctx.get('overall'),
+        'quality_actionable': quality_ctx.get('actionable_allowed'),
+        'reconciliation_available': reconciliation_ctx.get('available'),
+        'reconciliation_actionable': reconciliation_ctx.get('actionable_allowed'),
+        'reconciliation_blocking': reconciliation_ctx.get('blocking'),
+    }
 
     px = _num(price)
     return {
@@ -195,6 +206,9 @@ def freeze(decision, packet=None, price=None, closes=None, portfolio_ctx=None,
         'contradictions_count': len(contradictions),
         'portfolio': portfolio,
         'option': option,
+        # Preuves de données AU MOMENT de la décision. Elles nourrissent une
+        # surveillance descriptive de dérive, sans réécrire les anciens records.
+        'data_evidence': data_evidence,
     }
 
 

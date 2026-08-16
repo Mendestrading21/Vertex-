@@ -35,7 +35,10 @@ def _memory(n=30):
     for index in range(n):
         decision_id = 'd-%d' % index
         decisions.append({'decision_id': decision_id, 'engine_version': 'test-v1',
-                          'regime': 'NORMAL', 'level': 'A', 'option': {'universe': 'SWING_3_6M'}})
+                          'regime': 'NORMAL', 'level': 'A', 'option': {'universe': 'SWING_3_6M'},
+                          'data_evidence': {'quality_available': True, 'quality_actionable': True,
+                                            'reconciliation_available': True, 'reconciliation_actionable': True,
+                                            'reconciliation_blocking': False}})
         ret = 1.0 if index < 20 else -1.0
         outcomes.append({'decision_id': decision_id,
                          'horizons': {'H10': {'status': 'MESURE', 'return_pct': ret}}})
@@ -53,3 +56,20 @@ def test_performance_monitor_refuses_to_infer_drift_under_sample_threshold():
     out = monitor.assess(_memory(29), 'test-v1', horizon='H10', window_size=10)
     assert out['available'] is False
     assert out['status'] == 'INSUFFICIENT_SAMPLE'
+
+
+def test_performance_monitor_segments_regime_and_option_universe():
+    out = monitor.assess(_memory(), 'test-v1', horizon='H10', window_size=10)
+    assert out['by_regime']['NORMAL']['available'] is True
+    assert out['by_option_universe']['SWING_3_6M']['status'] == 'UNDER_WATCH'
+
+
+def test_data_quality_drift_is_separate_and_requires_frozen_evidence():
+    memory = _memory()
+    for record in memory['decisions'][-10:]:
+        record['data_evidence']['quality_actionable'] = False
+    out = monitor.assess(memory, 'test-v1', horizon='H10', window_size=10)
+    quality = out['data_quality_drift']
+    assert quality['available'] is True
+    assert quality['status'] == 'UNDER_WATCH'
+    assert quality['drift_check']['code'] == 'DATA_QUALITY_DRIFT'

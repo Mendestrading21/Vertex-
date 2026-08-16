@@ -27,6 +27,64 @@ def _measured(memory, engine_version, horizon):
     return out
 
 
+def _window_assessment(samples, window_size):
+    minimum = window_size * 3
+    if len(samples) < minimum:
+        return {'available': False, 'status': 'INSUFFICIENT_SAMPLE',
+                'n_measured': len(samples), 'required': minimum}
+    recent = samples[-minimum:]
+    windows = [recent[i:i + window_size] for i in range(0, minimum, window_size)]
+    hit_rates = [sum(1 for x in window if x['hit']) / len(window) for window in windows]
+    expectancy = [round(sum(x['return_pct'] for x in window) / len(window), 3)
+                  for window in windows]
+    check = drift.performance_drift(hit_rates)
+    return {'available': True,
+            'status': 'UNDER_WATCH' if check and check.get('triggered') else 'STABLE',
+            'n_measured': len(samples),
+            'hit_rate_windows': [round(x, 3) for x in hit_rates],
+            'expectancy_windows_pct': expectancy,
+            'drift_check': check}
+
+
+def _segments(samples, key, window_size):
+    grouped = {}
+    for sample in samples:
+        value = sample.get(key)
+        if value is not None:
+            grouped.setdefault(str(value), []).append(sample)
+    return {group: _window_assessment(values, window_size)
+            for group, values in sorted(grouped.items())}
+
+
+def _data_quality_drift(memory, engine_version, window_size):
+    records = [d for d in (memory or {}).get('decisions', [])
+               if isinstance(d, dict) and d.get('engine_version') == engine_version
+               and isinstance(d.get('data_evidence'), dict)]
+    usable = []
+    for record in records:
+        evidence = record['data_evidence']
+        values = (evidence.get('quality_available'), evidence.get('quality_actionable'),
+                  evidence.get('reconciliation_available'), evidence.get('reconciliation_actionable'))
+        if all(value is not None for value in values):
+            usable.append(all(values) and not bool(evidence.get('reconciliation_blocking')))
+    minimum = window_size * 3
+    if len(usable) < minimum:
+        return {'available': False, 'status': 'INSUFFICIENT_SAMPLE',
+                'n_observations': len(usable), 'required': minimum,
+                'reason': 'preuves qualité/réconciliation figées insuffisantes'}
+    recent = usable[-minimum:]
+    windows = [recent[i:i + window_size] for i in range(0, minimum, window_size)]
+    rates = [sum(1 for value in window if value) / len(window) for window in windows]
+    drop = rates[0] - rates[-1]
+    triggered = drop >= 0.20 and all(a >= b - 0.02 for a, b in zip(rates, rates[1:]))
+    return {'available': True, 'status': 'UNDER_WATCH' if triggered else 'STABLE',
+            'n_observations': len(usable),
+            'actionable_rate_windows': [round(rate, 3) for rate in rates],
+            'drift_check': {'code': 'DATA_QUALITY_DRIFT', 'drop': round(drop, 3),
+                            'triggered': triggered},
+            'note': 'dérive des preuves actionnables figées ; une absence de donnée ne devient jamais une preuve'}
+
+
 def assess(memory, engine_version, *, horizon='H10', window_size=10):
     """Évalue la décroissance du hit rate sur trois fenêtres non chevauchantes."""
     samples = _measured(memory, engine_version, horizon)
@@ -38,17 +96,11 @@ def assess(memory, engine_version, *, horizon='H10', window_size=10):
         return {**base, 'available': False, 'status': 'INSUFFICIENT_SAMPLE',
                 'reason': '%d résultats mesurés requis ; %d disponible(s)' % (minimum, len(samples)),
                 'note': 'aucune dérive de performance n’est déduite sous le seuil minimal'}
-    recent = samples[-minimum:]
-    windows = [recent[i:i + window_size] for i in range(0, minimum, window_size)]
-    hit_rates = [sum(1 for x in w if x['hit']) / len(w) for w in windows]
-    expectancy = [round(sum(x['return_pct'] for x in w) / len(w), 3) for w in windows]
-    check = drift.performance_drift(hit_rates)
-    triggered = bool(check and check.get('triggered'))
-    return {**base, 'available': True,
-            'status': 'UNDER_WATCH' if triggered else 'STABLE',
-            'hit_rate_windows': [round(x, 3) for x in hit_rates],
-            'expectancy_windows_pct': expectancy,
-            'drift_check': check,
+    overall = _window_assessment(samples, window_size)
+    return {**base, **overall,
+            'by_regime': _segments(samples, 'regime', window_size),
+            'by_option_universe': _segments(samples, 'option_universe', window_size),
+            'data_quality_drift': _data_quality_drift(memory, engine_version, window_size),
             'note': ('dérive descriptive sur résultats du sous-jacent mesurés ; '
                      'aucune recalibration ou désactivation automatique n’est appliquée')}
 
