@@ -6,12 +6,12 @@
 
   const THEME = window.VXChartTheme || { colors: {}, tooltip: {} };
   C.colors = Object.assign({
-    brand: '#D28A54', brandHover: '#E1A06E', blue: '#45D6E8', cyan: '#45D6E8', violet: '#9B7BFF',
+    brand: '#9B7BFF', brandHover: '#B9A2FF', blue: '#45D6E8', cyan: '#45D6E8', violet: '#9B7BFF',
     positive: '#2BBE90', negative: '#E9555F', warning: '#D9BE3C',
     info: '#45D6E8', neutral: '#BABABA',
     text: '#BABABA', muted: '#989092', grid: 'rgba(200,194,188,.08)',
     axis: 'rgba(200,194,188,.16)', crosshair: 'rgba(200,194,188,.30)',
-    series: ['#D28A54', '#45D6E8', '#c8bfae', '#9B7BFF', '#D9BE3C', '#8A8284'],
+    series: ['#9B7BFF', '#45D6E8', '#c8bfae', '#D9BE3C', '#8A8284'],
   }, THEME.colors);
 
   const CHART_EVENTS = ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'];
@@ -450,7 +450,13 @@
       },
     };
   };
-  C.area = function (canvas, labels, values, { color = C.colors.blue, yFmt, xFmt, xTitle, yTitle, fill = true, extraDatasets = [], last = true, glow = false, crosshair = true, extremes = false, hatch = false } = {}) {
+  /* Couleur par defaut = LA MARQUE. Elle valait `C.colors.blue`, qui est un
+     alias du CYAN TECHNIQUE — or le registre le reserve a la « comparaison
+     technique UNIQUEMENT ». Consequence mesuree : la serie de reference de
+     Marches et la courbe d'equite du Journal, les deux graphiques phares du
+     produit, etaient peints dans la couleur de la comparaison. Un appelant qui
+     compare passe explicitement `C.colors.cyan`. */
+  C.area = function (canvas, labels, values, { color = C.colors.brand, yFmt, xFmt, xTitle, yTitle, fill = true, extraDatasets = [], last = true, glow = false, crosshair = true, extremes = false, hatch = false } = {}) {
     const plugins = [];
     if (glow) plugins.push(C.glowPlugin(color));
     if (crosshair) plugins.push(C.crosshairPlugin(color));

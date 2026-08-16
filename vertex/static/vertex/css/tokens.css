@@ -94,26 +94,59 @@
      `design_system_page._load_tokens` avalerait la declaration suivante. */
   --vx-text-faint:#8f8587;
 
-  /* ══ MARQUE — CUIVRE SOBRE (identité et action ; jamais « hausse ») ══
-     Les noms `ember` restent pour compatibilité. Les grandes surfaces ne sont
-     jamais cuivrées : seule une petite zone active reçoit cet accent. */
-  --vx-ember-950:#1D120C;
-  --vx-ember-900:#2C1A10;
-  --vx-ember-800:#4A2B19;
-  --vx-ember-700:#784527;
-  --vx-ember-600:#B96D3C;          /* pressé */
-  --vx-ember-500:#D28A54;          /* marque principale */
-  --vx-ember-400:#E1A06E;          /* hover */
-  --vx-ember-300:#EDB78D;
-  --vx-ember-soft:rgba(210,138,84,.12);
-  --vx-ember-glow:rgba(210,138,84,.22);
-  --vx-ember-ink:#130B07;          /* texte sombre sur action cuivre */
+  /* ══ MARQUE — VIOLET VERTEX (identité et action ; jamais « hausse ») ══
+     RAMPE CANONIQUE. Elle s'appelait `ember` et portait un cuivre : la couche
+     Signal OS repeignait ensuite `--vx-brand` en violet PAR-DESSUS, si bien que
+     le produit portait DEUX identités — l'interface lisait l'override violet,
+     les graphiques lisaient la base cuivre, et la divergence n'était visible
+     que sur un écran qui montrait les deux. C'est cette base qui devient
+     violette ; l'override devient une redite, pas une correction.
+     `--vx-ember-*` survit en ALIAS, comme `signal-*` et `orange-*` avant lui :
+     renommer 40 références n'apporte rien, mais un nom de rampe qui annonce une
+     couleur qu'elle n'a pas est exactement ce qui a permis la divergence.
+     Les grandes surfaces ne sont jamais teintées : seule une petite zone active
+     reçoit cet accent. */
+  /* Les stops FONCES sont volontairement plus ROUGES que ne le donnerait un
+     assombrissement a teinte constante : en descendant depuis #9B7BFF, le rouge
+     chute plus vite que le bleu et #2B2270 / #4635A8 basculent en BLEU FRANC —
+     mesure du gardien anti-bleu, qui les a refuses. Ce n'est pas un contorsion
+     pour passer un test : un fond #2B2270 se lit « fintech bleue », soit
+     exactement ce que l'invariant produit interdit. */
+  /* CONTRASTE — l'encre de l'action est SOMBRE (--vx-violet-ink), pas claire :
+     mesuré, du texte quasi blanc sur #9B7BFF donne 2,90:1, très en dessous du
+     seuil AA, alors que l'encre sombre donne 6,24 (repos) et 9,04 (survol).
+     Le stop « pressé » est #8767F2 et non #7F5DF0 : ce dernier ne rendait que
+     4,42 avec l'encre sombre — au-dessous du seuil pour un état pourtant
+     atteignable au clavier comme à la souris. */
+  --vx-violet-950:#15112E;
+  --vx-violet-900:#201A45;
+  --vx-violet-800:#342357;
+  --vx-violet-700:#7052C6;
+  --vx-violet-600:#8767F2;         /* pressé — voir la note contraste ci-dessous */
+  --vx-violet-500:#9B7BFF;         /* marque principale */
+  --vx-violet-400:#B9A2FF;         /* hover */
+  --vx-violet-300:#D2C4FF;
+  --vx-violet-glow:rgba(155,123,255,.22);
+  --vx-violet-ink:#0B0820;         /* texte sombre sur action violette */
+
+  /* alias historiques — même rampe, anciens noms */
+  --vx-ember-950:var(--vx-violet-950);
+  --vx-ember-900:var(--vx-violet-900);
+  --vx-ember-800:var(--vx-violet-800);
+  --vx-ember-700:var(--vx-violet-700);
+  --vx-ember-600:var(--vx-violet-600);
+  --vx-ember-500:var(--vx-violet-500);
+  --vx-ember-400:var(--vx-violet-400);
+  --vx-ember-300:var(--vx-violet-300);
+  --vx-ember-soft:rgba(155,123,255,.12);
+  --vx-ember-glow:var(--vx-violet-glow);
+  --vx-ember-ink:var(--vx-violet-ink);
 
   --vx-brand:var(--vx-ember-500);
   --vx-brand-strong:var(--vx-ember-400);
   --vx-brand-hover:var(--vx-ember-400);
   --vx-brand-pressed:var(--vx-ember-600);
-  --vx-brand-selected:rgba(210,138,84,.16);
+  --vx-brand-selected:rgba(155,123,255,.16);
   --vx-brand-soft:var(--vx-ember-soft);
   --vx-brand-ink:var(--vx-ember-ink);
   --vx-amber:#D9BE3C;
@@ -157,7 +190,7 @@
   --vx-option:#9B7BFF;             /* options / volatilité */
   --vx-option-strong:#7f5df0;
   --vx-option-soft:rgba(155,123,255,.16);
-  --vx-violet:#9B7BFF;
+  --vx-violet:var(--vx-violet-500);
   --vx-violet-soft:rgba(155,123,255,.16);
 
   /* ── Séries neutres + comparaison technique ── */

@@ -65,8 +65,40 @@ def test_signal_os_covers_all_eight_canonical_spaces():
 
 
 def test_signal_os_keeps_one_color_one_meaning_contract():
+    """Une couleur, un sens.
+
+    Cette assertion épinglait le MÉCANISME — la présence de la ligne
+    `--vx-brand:var(--vx-option)` DANS signal-os.css — et non la propriété.
+    Deux conséquences, les deux vécues :
+    - elle restait verte alors que la base `tokens.css` déclarait une marque
+      CUIVRE sous l'override, donc que le produit portait deux identités ;
+    - elle est devenue rouge quand l'override a été supprimé pour que la base
+      soit violette, c'est-à-dire au moment précis où le défaut était corrigé.
+
+    Elle vérifie désormais que la marque SERVIE est le violet, peu importe la
+    feuille qui la déclare.
+    """
     css = _read(CSS)
-    assert "--vx-brand:var(--vx-option)" in css
+    valeurs = dict(re.findall(r'(--vx-[a-z0-9-]+)\s*:\s*([^;]+);',
+                              _read(CSS.parent / 'tokens.css')))
+
+    def resolu(nom):
+        v = (valeurs.get(nom) or '').strip()
+        for _ in range(8):
+            m = re.fullmatch(r'var\((--vx-[a-z0-9-]+)\)', v)
+            if not m:
+                return v
+            suivant = (valeurs.get(m.group(1)) or '').strip()
+            if not suivant or suivant == v:
+                return v
+            v = suivant
+        return v
+
+    assert resolu('--vx-brand').lower() == '#9b7bff', (
+        'la marque servie n\'est plus le violet Vertex : %r' % resolu('--vx-brand'))
+    assert resolu('--vx-brand').lower() == resolu('--vx-option').lower(), (
+        'marque et option ont divergé — l\'interface les tient pour une seule '
+        'couleur depuis la couche Signal OS.')
     assert "var(--vx-positive)" in css
     assert "var(--vx-negative)" in css
     assert "var(--vx-warning)" in css

@@ -525,7 +525,7 @@ async function loadDossier(){
       const mk=(v,tok,lbl)=>v==null?'':'<span title="'+lbl+' '+VX.fmt.price(v)+'" style="position:absolute;left:'+pos(v).toFixed(1)+'%;top:-2px;bottom:-2px;width:2px;background:'+tok+';border-radius:1px;box-shadow:0 0 5px color-mix(in srgb,'+tok+' 55%,transparent)"></span>';
       return '<div class="vx-kv"><span class="k">Fourchette</span><span class="v" style="display:inline-flex;align-items:center;gap:8px;min-width:0">'
         +'<span class="vx-dim" style="font-size:11px">'+VX.fmt.price(lo)+'</span>'
-        +'<span style="position:relative;flex:1;min-width:70px;height:7px;background:linear-gradient(90deg,color-mix(in srgb,var(--vx-brand,#D28A54) 12%,transparent),color-mix(in srgb,var(--vx-brand,#D28A54) 30%,transparent));border-radius:3px">'
+        +'<span style="position:relative;flex:1;min-width:70px;height:7px;background:linear-gradient(90deg,color-mix(in srgb,var(--vx-brand,#9B7BFF) 12%,transparent),color-mix(in srgb,var(--vx-brand,#9B7BFF) 30%,transparent));border-radius:3px">'
         +mk(_px,'var(--vx-cyan,#45D6E8)','cours')
         +mk(_tgt,'var(--vx-warning,#D9BE3C)','objectif moyen')
         +'</span><span class="vx-dim" style="font-size:11px">'+VX.fmt.price(hi)+'</span></span></div>';

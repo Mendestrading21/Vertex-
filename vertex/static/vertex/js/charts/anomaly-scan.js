@@ -22,7 +22,7 @@
     const py = (v) => padT + (1 - (v - mn) / rg) * (H - padT - padB);
     /* La direction globale n'est pas un verdict : la série principale reste
        cuivre, seuls les événements portent la sémantique gain/perte. */
-    const line = 'var(--vx-brand,#D28A54)';
+    const line = 'var(--vx-brand,#9B7BFF)';
     const pos = 'var(--vx-positive,#2BBE90)';
     const neg = 'var(--vx-negative,#E9555F)', warn = 'var(--vx-warning,#D9BE3C)';
     const dim = 'var(--vx-text-muted,#989092)';

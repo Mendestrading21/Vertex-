@@ -219,10 +219,18 @@ def test_identite_cuivre_canonique_et_miroirs_restent_alignes():
     theme = _read(THEME)
     core = _read(CORE)
 
-    assert literals['--vx-ember-500'] == '#d28a54'
-    assert literals['--vx-ember-400'] == '#e1a06e'
-    assert tokens['--vx-brand'] == literals['--vx-ember-500']
-    assert tokens['--vx-brand-hover'] == literals['--vx-ember-400']
+    # La rampe CANONIQUE s'appelle désormais `--vx-violet-*` et porte les
+    # littéraux ; `--vx-ember-*` en est un alias. Ce test épinglait les alias,
+    # donc il aurait été VERT si la rampe canonique avait changé de couleur sans
+    # que les alias suivent — il épingle maintenant la source, et vérifie la
+    # relation d'alias séparément.
+    assert literals['--vx-violet-500'] == '#9b7bff'
+    assert literals['--vx-violet-400'] == '#b9a2ff'
+    assert tokens['--vx-ember-500'] == literals['--vx-violet-500'], (
+        'l\'alias historique ember ne suit plus la rampe canonique')
+    assert tokens['--vx-ember-400'] == literals['--vx-violet-400']
+    assert tokens['--vx-brand'] == literals['--vx-violet-500']
+    assert tokens['--vx-brand-hover'] == literals['--vx-violet-400']
 
     canonical = tokens['--vx-brand']
     hover = tokens['--vx-brand-hover']
@@ -236,12 +244,14 @@ def test_identite_cuivre_canonique_et_miroirs_restent_alignes():
     assert _js_series(theme)[0] == canonical
     assert _js_series(core)[0] == canonical
 
-    # Le cuivre est une identité/référence, jamais une hausse ou une perte.
+    # Le violet est une identité/référence, jamais une hausse ou une perte.
     assert canonical not in {palette.POSITIVE.lower(), palette.NEGATIVE.lower()}
     assert _js_hex(theme, 'positive') == palette.POSITIVE.lower()
     assert _js_hex(theme, 'negative') == palette.NEGATIVE.lower()
-    # `COPPER` est un alias historique de la série acier : il ne doit pas être
-    # entraîné par un changement de la marque.
+    # `COPPER` est un alias historique de la série ACIER — un gris, malgré son
+    # nom : il ne doit pas être entraîné par un changement de la marque, et le
+    # passage de la marque au violet est exactement l'occasion où un `sed`
+    # aveugle l'aurait emporté.
     assert palette.COPPER.lower() == tokens['--vx-steel-3'] == '#8a8284'
     assert palette.COPPER.lower() != canonical
 

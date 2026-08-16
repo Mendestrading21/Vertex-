@@ -15,14 +15,23 @@
    ========================================================================== */
 
 :root{
-  /* Réemploi des couleurs sémantiques déjà canoniques : aucune palette locale. */
-  --vx-brand:var(--vx-option);
-  --vx-brand-strong:var(--vx-option);
-  --vx-brand-hover:var(--vx-option-strong);
-  --vx-brand-pressed:var(--vx-option-strong);
-  --vx-brand-soft:var(--vx-option-soft);
-  --vx-brand-ink:var(--vx-text-primary);
-  --vx-brand-gradient:linear-gradient(135deg,var(--vx-option),var(--vx-option-strong));
+  /* LA MARQUE N'EST PLUS REDEFINIE ICI. Ce bloc repeignait `--vx-brand` en
+     violet PAR-DESSUS une base cuivre : l'interface lisait l'override, les
+     graphiques lisaient la base, et le produit portait deux identités sans que
+     rien ne l'écrive. La base de `tokens.css` est désormais violette — la
+     rampe canonique `--vx-violet-*` — donc ces sept lignes ne corrigeaient
+     plus rien : elles se contentaient de masquer d'où venait la couleur.
+
+     Trois choses qu'elles faisaient et qu'on ne veut pas garder :
+     - `--vx-brand-hover` et `--vx-brand-pressed` valaient LA MÊME valeur :
+       survol et enfoncement étaient indiscernables ;
+     - `--vx-brand-hover` ASSOMBRISSAIT, alors que la rampe éclaircit au survol
+       et n'assombrit qu'à l'enfoncement ;
+     - `--vx-brand-ink` valait le texte quasi blanc : mesuré, 2,90:1 sur le
+       violet, sous le seuil AA, sur l'action principale du produit.
+     Le dégradé, lui, n'existe pas dans la rampe : il est conservé, exprimé
+     depuis les stops. */
+  --vx-brand-gradient:linear-gradient(135deg,var(--vx-violet-500),var(--vx-violet-600));
 
   /* Surfaces plus lisibles et moins « effet IA / glass ». */
   --vx-border-faint:rgba(255,255,255,.045);
@@ -309,7 +318,8 @@ a:hover{color:var(--vx-text-primary);text-decoration:none}
 .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-btn-primary{
   background:var(--vx-brand);
   border-color:var(--vx-brand);
-  color:var(--vx-text-primary);
+  /* Encre SOMBRE : le quasi-blanc donnait 2,90:1 sur le violet (mesuré). */
+  color:var(--vx-brand-ink);
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
   box-shadow:0 8px 22px rgba(155,123,255,.16);

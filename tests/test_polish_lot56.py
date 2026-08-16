@@ -32,11 +32,11 @@ def test_multiline_series_start_distinct():
     assert m, 'palette series introuvable'
     cols = [c.strip().strip("'\"") for c in m.group(1).split(',')]
     # les 3 premières séries doivent être visuellement distinctes :
-    # la marque cuivre, PUIS le cyan technique
-    assert cols[0] == '#D28A54'
+    # la marque VIOLETTE, PUIS le cyan technique
+    assert cols[0] == '#9B7BFF'
     assert cols[1] == '#45D6E8', 'la 2e série doit trancher (cyan), pas un gris proche'
     # aucun littéral hors palette existante
-    allowed = {'#D28A54', '#45D6E8', '#9B7BFF', '#2BBE90', '#E9555F',
+    allowed = {'#9B7BFF', '#B9A2FF', '#45D6E8', '#2BBE90', '#E9555F',
                '#D9BE3C', '#BABABA', '#8A8284', '#c8bfae'}
     assert set(cols) <= allowed, set(cols) - allowed
 

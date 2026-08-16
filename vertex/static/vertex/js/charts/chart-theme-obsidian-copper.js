@@ -1,26 +1,31 @@
-/* Vertex Charts — chart-theme-obsidian-copper.js (§35-36)
-   Thème graphique unique VERTEX (identité CUIVRE SOBRE), MIROIR de la source
+/* Vertex Charts — thème graphique unique VERTEX (§35-36), MIROIR de la source
    de vérité Python `vertex/visualization/palette.py` (test durci
    test_js_theme_matches_python_palette compare la série entière) :
-   série principale = cuivre (identité/référence, PAS « hausse ») · benchmark =
+   série principale = VIOLET (identité/référence, PAS « hausse ») · benchmark =
    gris chaud · série secondaire = sable/ambre · positif = émeraude · négatif =
-   rouge corail · options = violet contrôlé · comparaison technique = cyan. Plus
-   aucun bleu identitaire ; aucune palette arc-en-ciel automatique.
+   rouge corail · comparaison technique = cyan. Plus aucun bleu identitaire ;
+   aucune palette arc-en-ciel automatique.
+
+   LE NOM DU FICHIER MENT et il est conservé : il dit « obsidian-copper » et sert
+   un violet. Le renommer force le shell, le service worker, l'empreinte des
+   assets et cinq épinglages de version dans le même geste que le changement de
+   couleur — deux choses distinctes dans un seul commit. Dette explicite, à
+   solder seule.
    Chargé AVANT chart-core.js. */
 (function () {
   'use strict';
   window.VXChartTheme = {
     colors: {
-      brand: '#D28A54',       /* série principale : cuivre neutre (identité) */
-      brandHover: '#E1A06E',  /* cuivre clair : interaction / survol */
+      brand: '#9B7BFF',       /* série principale : violet Vertex (identité) */
+      brandHover: '#B9A2FF',  /* violet clair : interaction / survol */
       copper: '#8A8284',      /* série neutre acier (palette.COPPER) */
-      copperLight: '#E1A06E', /* alias historique de palette.COPPER_LIGHT */
+      copperLight: '#B9A2FF', /* alias historique de palette.COPPER_LIGHT */
       amber: '#D9BE3C',       /* série secondaire / attention */
       beige: '#c8bfae',       /* benchmark clair (sable) */
       info: '#45D6E8',        /* information = cyan comparaison technique */
       blue: '#45D6E8',        /* alias legacy → cyan technique (distinct du bleu marque) */
       cyan: '#45D6E8',        /* comparaison technique */
-      violet: '#9B7BFF',      /* options & IA (limité) */
+      violet: '#9B7BFF',      /* options & IA — MÊME valeur que brand (voir palette.py) */
       positive: '#2BBE90',
       negative: '#E9555F',
       warning: '#D9BE3C',
@@ -31,9 +36,11 @@
       grid: 'rgba(200,194,188,.08)',
       axis: 'rgba(200,194,188,.16)',
       crosshair: 'rgba(200,194,188,.30)',
-      /* Ordre des séries = palette.SERIES : marque, sable, neutre, violet
-         options, ambre, acier. Toute divergence casse le test de cohérence. */
-      series: ['#D28A54', '#45D6E8', '#c8bfae', '#9B7BFF', '#D9BE3C', '#8A8284'],
+      /* Ordre des séries = palette.SERIES : marque, cyan technique, sable,
+         ambre, acier. Le violet options en est SORTI — il vaut désormais la
+         marque, et deux séries de même couleur ne sont pas deux séries. Toute
+         divergence casse le test de cohérence. */
+      series: ['#9B7BFF', '#45D6E8', '#c8bfae', '#D9BE3C', '#8A8284'],
     },
     tooltip: {
       backgroundColor: '#141619',

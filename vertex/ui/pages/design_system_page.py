@@ -15,8 +15,19 @@ from vertex.ui.shell import render_shell
 
 def _load_tokens() -> dict:
     """Valeurs RÉELLES de tokens.css (source unique de vérité). Les alias
-    var(--x) sont résolus un niveau — la page de référence ne peut plus
-    afficher un hex périmé : elle LIT la vérité au lieu de la recopier."""
+    var(--x) sont résolus JUSQU'AU BOUT — la page de référence ne peut plus
+    afficher un hex périmé : elle LIT la vérité au lieu de la recopier.
+
+    La résolution était limitée à UN niveau, ce qui suffisait tant que la chaîne
+    faisait `--vx-orange-500 → --vx-ember-500 → #hex`. La rampe de marque
+    canonique s'appelle désormais `--vx-violet-*` et `--vx-ember-*` en est un
+    alias : la chaîne compte donc trois maillons, et un seul saut laissait
+    `var(--vx-violet-500)` AFFICHÉ à l'utilisateur — une indirection à la place
+    d'une couleur, sur la page même qui existe pour montrer les couleurs.
+
+    La boucle est bornée (8 sauts) : un alias circulaire ferait tourner un
+    résolveur naïf indéfiniment, à l'import du module, donc au démarrage.
+    """
     import os
     import re
     path = os.path.join(os.path.dirname(__file__), '..', '..', 'static',
@@ -29,9 +40,17 @@ def _load_tokens() -> dict:
     out = {}
     for k, v in toks.items():
         v = v.strip()
-        m = re.fullmatch(r'var\((--vx-[a-z0-9-]+)\)', v)
-        if m:
-            v = toks.get(m.group(1), v).strip()
+        for _ in range(8):
+            m = re.fullmatch(r'var\((--vx-[a-z0-9-]+)\)', v)
+            if not m:
+                break
+            suivant = toks.get(m.group(1))
+            if suivant is None:
+                break
+            suivant = suivant.strip()
+            if suivant == v:          # alias sur lui-même
+                break
+            v = suivant
         out[k] = v
     return out
 
