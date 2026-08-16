@@ -387,7 +387,7 @@ _demo_options_board = _demo.demo_options_board
 _annotate_swing = _swing.annotate
 
 
-def scan():
+def _scan_once():
     try:
         # En DÉMO : on ne scanne que 20 titres → rapide sur le CPU bridé du cloud,
         # suffisant pour visualiser toutes les données. Hors démo : univers complet.
@@ -677,6 +677,24 @@ def scan():
             'scan': 'DEGRADED', 'market': 'UNKNOWN',
             'options': 'UNKNOWN', 'fundamentals': 'UNKNOWN',
         }
+
+
+_SCAN_LOCK = threading.Lock()
+
+
+def scan():
+    """Exécute un seul scan à la fois sans écraser le dernier état publié."""
+    if not _SCAN_LOCK.acquire(blocking=False):
+        scan_state['scan_status'] = 'RUNNING'
+        scan_state['scan_skip_count'] = int(scan_state.get('scan_skip_count') or 0) + 1
+        return False
+    scan_state['scan_status'] = 'RUNNING'
+    try:
+        _scan_once()
+        return True
+    finally:
+        scan_state['scan_status'] = 'DEGRADED' if scan_state.get('error') else 'IDLE'
+        _SCAN_LOCK.release()
 
 
 _rescan_evt = threading.Event()   # set() par /api/rescan → réveille la boucle pour un re-scan immédiat
