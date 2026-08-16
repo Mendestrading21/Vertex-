@@ -332,6 +332,23 @@ def api_skyler_monitor():
     return jsonify(out)
 
 
+@bp.route('/api/skyler/validation')
+def api_skyler_validation():
+    """Validation walk-forward de la mémoire, descriptive et sans recalibration."""
+    from vertex.engines import decision_memory as _memory
+    from vertex.engines import walk_forward_validation as _walk_forward
+    from vertex.engines import skyler_core as _sk
+    from vertex.services import persist as _persist
+    horizon = str(request.args.get('horizon', 'H10')).upper()
+    if horizon not in _walk_forward.HORIZON_SESSIONS:
+        return jsonify({'ok': False, 'error': 'horizon_invalide',
+                        'allowed': list(_walk_forward.HORIZON_SESSIONS)}), 400
+    memory = _persist.load_json(_memory.MEMORY_FILE, None) or _memory.empty_memory()
+    out = _walk_forward.assess(memory, _sk.ENGINE_VERSION, horizon=horizon)
+    out['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+    return jsonify(out)
+
+
 @bp.route('/api/skyler/health')
 def api_skyler_health():
     """Santé technique non sensible : compteurs, jamais de cache ni de données."""

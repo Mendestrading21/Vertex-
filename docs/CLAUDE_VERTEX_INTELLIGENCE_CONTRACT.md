@@ -32,6 +32,9 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 | `scan_status` / `scan_skip_count` | état et compteur | Afficher comme état technique du cycle ; conserver le dernier scan pendant `RUNNING`, sans créer de faux rafraîchissement. |
 | erreur `rescan_rate_limited` et `retry_after` | code stable et entier | Afficher une attente technique globale ; ne pas déduire une identité, ne pas produire de signal et ne pas répéter automatiquement la demande. |
 | `rescan_cooldown_remaining` | entier global | Afficher comme délai descriptif du cycle ; ne jamais l’associer à un utilisateur ou à une donnée de marché. |
+| `GET /api/skyler/validation` | objet descriptif | Afficher comme validation historique en lecture seule ; ne jamais recalibrer, changer la décision ou produire un ordre depuis ce résultat. |
+| `OOS_CONSISTENT` / `OOS_DEGRADED` | statut stable | Présenter la cohérence ou la dégradation historique avec la réserve sur le rendement futur ; `OOS_DEGRADED` demande une revue humaine uniquement. |
+| `INSUFFICIENT_SAMPLE` / `TEMPORAL_EVIDENCE_REQUIRED` de validation | statut stable | Afficher l’absence de preuve sans remplacer ce statut par une estimation ou une conclusion de robustesse. |
 
 ## Invariants à ne pas casser
 
