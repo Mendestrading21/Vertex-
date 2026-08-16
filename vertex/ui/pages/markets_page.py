@@ -346,7 +346,7 @@ function moversRows(rows,dir){
       <span class="vx-grow vx-truncate vx-dim" style="font-size:11.5px" title="${esc(r.sector||'')}">${esc(r.sector||'')}</span>
       <span class="vx-num vx-mono vx-meta" style="width:64px;text-align:right">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):''}</span>
       ${r.score!==null&&r.score!==undefined?`<span class="vx-badge" title="Score Vertex">${VX.fmt.num(r.score,0)}</span>`:''}
-      <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(r.symbol)}" aria-label="Actions ${esc(r.symbol)}">⋯</button></div>`;}).join('');
+      <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(r.symbol)}" aria-label="Actions ${esc(r.symbol)}">${VX.icon('more')}</button></div>`;}).join('');
 }
 function loadMovers(scan){
   const rows=(scan&&scan.rows)||[];
@@ -714,7 +714,7 @@ function loadSectors(scan){
       <td><a href="/opportunities?view=stocks&sector=${encodeURIComponent(s.sector||'')}" onclick="VX.context.save()">${esc(s.sector||'n/d')}</a></td>
       <td class="vx-num vx-mono">${VX.fmt.nd(s.avg_score)}</td>
       <td>${L?`<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(L)}">${esc(L)}</button>`:'—'}</td>
-      <td>${L?`<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(L)}" aria-label="Actions ${esc(L)}">⋯</button>`:''}</td>
+      <td>${L?`<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(L)}" aria-label="Actions ${esc(L)}">${VX.icon('more')}</button>`:''}</td>
     </tr>`;}).join('')+'</tbody></table>'
     +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
   /* Rotation sectorielle en quadrant (RRG-like) : force relative × momentum */

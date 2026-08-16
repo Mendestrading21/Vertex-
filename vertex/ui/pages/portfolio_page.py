@@ -545,7 +545,7 @@ async function renderPositions(){
       <td data-label="Prochaine action" class="${toneCls(na.tone)}" style="max-width:230px;font-size:12px">${esc(na.label)}</td>
       <td data-label="Actions"><div class="vx-row-actions">
         <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyse</button>
-        <button class="vx-btn vx-btn-sm vx-btn-ghost" data-position-menu="${t.id}" aria-label="Gérer la position ${t.sym} : modifier, clôturer, supprimer">Gérer ⋯</button>
+        <button class="vx-btn vx-btn-sm vx-btn-ghost" data-position-menu="${t.id}" aria-label="Gérer la position ${t.sym} : modifier, clôturer, supprimer">Gérer ${VX.icon('more',15)}</button>
       </div></td></tr>`;};
   const rowEssential=(t)=>{const st=thesisState(t),na=nextAction(t),tr=tierOf(t);
     const wgt=total?((t.value??t.invested??0)/total*100):null;
@@ -562,7 +562,7 @@ async function renderPositions(){
       <td data-label="Thèse">${stBadge(st)}<span class="vx-meta">conviction ${convOf(t)}</span></td>
       <td data-label="Action analytique" class="${toneCls(na.tone)}"><span>${esc(na.label)}</span>
         <div class="vx-row-actions vx-mt1"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyse</button>
-        <button class="vx-btn vx-btn-sm vx-btn-ghost" data-position-menu="${t.id}" aria-label="Gérer la position ${t.sym} : modifier, clôturer, supprimer">Gérer ⋯</button></div></td></tr>`;};
+        <button class="vx-btn vx-btn-sm vx-btn-ghost" data-position-menu="${t.id}" aria-label="Gérer la position ${t.sym} : modifier, clôturer, supprimer">Gérer ${VX.icon('more',15)}</button></div></td></tr>`;};
 
   $('pf-body').innerHTML=
     survHtml
@@ -812,7 +812,7 @@ async function renderRisk(){
           <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Garde-fous</span></div>
             ${kv('Nouveau titre',guard.new_stock_allowed?'autorisé':'BLOQUÉ',guard.new_stock_allowed?'vx-pos':'vx-neg')}
             ${kv('Nouvelle option',guard.new_option_allowed?'autorisée':'BLOQUÉE',guard.new_option_allowed?'vx-pos':'vx-neg')}
-            ${(guard.mandatory_reviews||[]).map(rr=>`<div class="vx-meta">⚠ ${esc(rr)}</div>`).join('')}</div>
+            ${(guard.mandatory_reviews||[]).map(rr=>`<div class="vx-meta">${esc(rr)}</div>`).join('')}</div>
           <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Secteurs</span></div>
             <div id="pf-sector-donut"><span class="vx-meta">Exposition sectorielle…</span></div></div>
           <div class="vx-card vx-col-4"><div class="vx-card-header"><span class="vx-card-title">Greeks agrégés</span></div>
@@ -963,7 +963,7 @@ async function renderWatchlist(){
     <section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Favoris (accès rapide)</span></div>
       <div class="vx-meta vx-mb2">Simple raccourci. Un favori n’implique ni thèse, ni alerte, ni position.</div>
       <div class="vx-flex vx-wrap">${favs.length?favs.map(s=>
-        `<button class="vx-btn vx-ticker" data-open-analysis="${s}">★ ${s}</button>`).join('')
+        `<button class="vx-btn vx-ticker" data-open-analysis="${s}">${VX.icon('star',13)} ${s}</button>`).join('')
         :'<span class="vx-muted">Aucun favori — l’étoile est disponible sur chaque titre.</span>'}</div>
     </section></div>`;
   document.querySelectorAll('[data-wl-del]').forEach(b=>b.addEventListener('click',()=>{E().removeFromWatchlist(b.dataset.wlDel);renderWatchlist();}));

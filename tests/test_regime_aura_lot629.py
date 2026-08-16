@@ -2,7 +2,7 @@
 
 Capture d'écran utilisateur (refus du graphique) : la carte RÉGIME affichait
 une jauge pleine, repère à zéro, arc corail, sous-titre « 0 % confiance », et
-la ligne « ▸ Risque neuf BLOQUÉ · Régime UNKNOWN — risque neuf bloqué ».
+la ligne « Risque neuf BLOQUÉ · Régime UNKNOWN — risque neuf bloqué ».
 
 Trois défauts RÉELS derrière le refus esthétique :
 
@@ -203,12 +203,17 @@ def test_une_confiance_absente_laisse_la_couronne_eteinte(rendu):
 
 @_SANS_NODE
 def test_l_invalidation_ne_repete_plus_le_verdict(rendu):
-    """« ▸ Risque neuf BLOQUÉ · Régime UNKNOWN — risque neuf bloqué ».
+    """« Risque neuf BLOQUÉ · Régime UNKNOWN — risque neuf bloqué ».
     Le verdict vient de `new_risk_allowed` (structuré) ; l'invalidation est un
     texte éditorial qui le reformule. On garde ce qui AJOUTE."""
-    assert rendu[1]['verdict'] == '▸ Risque neuf autorisé · Invalidation : SPX sous 5800', (
+    # Le préfixe « ▸ » qui figurait ici a été retiré du produit au lot 09 (2/n)
+    # de Signal OS : c'était une puce décorative devant un texte déjà mis en
+    # forme comme un verdict, et le seul pictogramme textuel encore RENDU sur
+    # l'accueil. Il n'a jamais été le sujet de ce test — la propriété gardée est
+    # que l'invalidation n'y répète pas le verdict, et elle est intacte.
+    assert rendu[1]['verdict'] == 'Risque neuf autorisé · Invalidation : SPX sous 5800', (
         'fragment redondant conservé : %r' % rendu[1]['verdict'])
-    assert rendu[2]['verdict'] == '▸ Risque neuf BLOQUÉ', (
+    assert rendu[2]['verdict'] == 'Risque neuf BLOQUÉ', (
         'une invalidation qui ne dit QUE le verdict devrait disparaître '
         'entièrement : %r' % rendu[2]['verdict'])
 

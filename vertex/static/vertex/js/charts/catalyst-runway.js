@@ -122,7 +122,7 @@
       ${marks}</svg>`;
 
     el.innerHTML = head + svg +
-      `<div class="vx-cr-verdict" data-tone="${tone}">▸ ${String(verdict).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` + foot;
+      `<div class="vx-cr-verdict" data-tone="${tone}">${String(verdict).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` + foot;
     return el;
   };
 })();

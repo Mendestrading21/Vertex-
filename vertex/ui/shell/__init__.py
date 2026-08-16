@@ -46,6 +46,13 @@ _ICONS = {
     'star': '<path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/>',
     'bolt': '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
     'book': '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13"/>',
+    'close': '<path d="M6 6 18 18M18 6 6 18"/>',
+    'more': '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
+    'follow': '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2"/>',
+    'alert': '<path d="M12 4v9"/><circle cx="12" cy="18" r="1.2"/>',
+    'option': '<path d="M12 3 21 12 12 21 3 12z"/>',
+    'caret': '<path d="m6 9 6 6 6-6"/>',
+    'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/>',
 }
 
 
@@ -71,9 +78,23 @@ def json_for_script(value) -> str:
 
 
 def icon(name: str, size: int = 18) -> str:
+    """La SEULE fabrique d'icône du produit (VISUAL_SYSTEM.md : « une seule
+    famille d'icônes outline »).
+
+    `_ICONS` est aussi publié au client (`window.VX.__icons`, voir
+    `_icons_for_client`) et relu par `VX.icon()` dans `vx-core.js` : les pages
+    qui construisent leur HTML en JavaScript dessinent donc **le même trait**,
+    depuis **le même dictionnaire**. Une seconde table côté client aurait été
+    une seconde vérité, et une seconde vérité dérive en silence.
+    """
     return (f'<svg viewBox="0 0 24 24" width="{size}" height="{size}" fill="none" '
             f'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" '
             f'stroke-linejoin="round" aria-hidden="true">{_ICONS.get(name, "")}</svg>')
+
+
+def _icons_for_client() -> str:
+    """Publie la famille d'icônes au client, sérialisée comme tout bloc inline."""
+    return json_for_script(_ICONS)
 
 
 def _sidebar(active: str) -> str:
@@ -155,11 +176,11 @@ def _mobile_bar(active: str) -> str:
             f'</nav></div>')
 
 
-_OVERLAYS = '''
+_OVERLAYS = f'''
 <div class="vx-overlay" id="vx-overlay" data-open="0"></div>
 <aside class="vx-drawer" id="vx-drawer" data-open="0" role="dialog" aria-modal="true" aria-label="Panneau contextuel" aria-hidden="true" inert>
   <div class="vx-drawer-header"><h2 id="vx-drawer-title">—</h2>
-    <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-drawer aria-label="Fermer">✕</button></div>
+    <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-drawer aria-label="Fermer">{icon('close')}</button></div>
   <div class="vx-drawer-tabs" id="vx-drawer-tabs" hidden></div>
   <div class="vx-drawer-body" id="vx-drawer-body"></div>
   <div class="vx-drawer-footer" id="vx-drawer-footer"></div>
@@ -167,7 +188,7 @@ _OVERLAYS = '''
 <div class="vx-modal" id="vx-modal" data-open="0" role="dialog" aria-modal="true" aria-hidden="true" inert>
   <div class="vx-modal-box">
     <div class="vx-modal-header"><h2 id="vx-modal-title">—</h2>
-      <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-modal aria-label="Fermer">✕</button></div>
+      <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-modal aria-label="Fermer">{icon('close')}</button></div>
     <div class="vx-modal-body" id="vx-modal-body"></div>
     <div class="vx-modal-footer" id="vx-modal-footer"></div>
   </div>
@@ -228,6 +249,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
     QUE le contenu + métadonnées + scripts de page (shell conservé côté client)."""
     from vertex.engines.recommendation import vocab_js as _vjs
     vocab = _vjs()   # vocabulaire des verdicts — source unique (__VXVOCAB)
+    icons = _icons_for_client()   # famille d'icônes — source unique (_ICONS)
     mobile_bar = mobile_actions or _mobile_bar(active)
     if _wants_fragment():
         return _render_fragment(title=title, active=active, space_label=space_label,
@@ -283,6 +305,13 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 {_OVERLAYS}
 <script src="/static/chart.umd.min.js" defer></script>
 <script id="vx-vocab">window.__VXVOCAB={vocab};</script>
+<!-- FAMILLE D'ICONES, PUBLIEE AU CLIENT DEPUIS LA MEME TABLE QUE LE SERVEUR.
+     Les pages construisent une grande part de leur HTML en JavaScript ; sans
+     ce pont, elles n avaient aucun moyen d atteindre `_ICONS` et dessinaient
+     des caracteres (⋯, ✕) la ou le shell dessine un trait SVG. Dupliquer le
+     dictionnaire cote client aurait cree une seconde verite : on publie
+     celle du serveur. -->
+<script id="vx-icons">window.VX=window.VX||{{}};window.VX.__icons={icons};</script>
 <script src="/static/vertex/js/vx-core.js"></script>
 <script src="/static/vertex/js/vx-entities.js"></script>
 <script src="/static/vertex/js/vx-shell.js"></script>

@@ -393,3 +393,13 @@ a.vx-kpi-card .vx-kpi-delta{margin-top:auto;padding-top:var(--vx-s2);
 .vx-connection-status{justify-self:start}
 .vx-connection-detail{font-size:12.5px;line-height:1.45}
 .vx-connection-action{color:var(--vx-brand)}
+
+/* SIGNAL OS · PASSE FINALE — puces de jalon du Journal.
+   Les jalons de progression employaient ✅ et 🔒 comme puces : deux emojis
+   multicolores dans une liste, ce que VISUAL_SYSTEM.md refuse (« pas d'emojis
+   comme icônes produit », « ne jamais mélanger pictogrammes remplis et emojis
+   dans la même surface »). L'état vit désormais dans un attribut, la couleur
+   dans le CSS, et le mot dans un texte réservé aux lecteurs d'écran. */
+.vx-kv[data-jalon] .vx-dot{width:7px;height:7px;border-radius:99px;flex:none;
+  display:inline-block;margin-right:6px;background:var(--vx-border-default)}
+.vx-kv[data-jalon="atteint"] .vx-dot{background:var(--vx-positive)}

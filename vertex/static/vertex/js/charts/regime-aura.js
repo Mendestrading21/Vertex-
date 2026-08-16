@@ -176,7 +176,7 @@
           <text x="${cx}" y="${cy + 13}" text-anchor="middle" fill="${conf == null ? 'var(--vx-text-muted,#989092)' : col}" font-size="10.5" font-weight="${conf == null ? '400' : '800'}">${confTxt}</text>
         </svg>
         ${chips.length ? `<div class="vx-ra-grammar">${chips.join('')}</div>` : ''}
-        <div class="vx-ra-verdict" data-tone="${tone}">▸ ${esc(verdict)}${esc(inval)}</div>
+        <div class="vx-ra-verdict" data-tone="${tone}">${esc(verdict)}${esc(inval)}</div>
       </div>` +
       `<div class="vx-chart-foot">${VX.updateIndicator(o.timestamp, o.source || 'Moteur de régimes', o.mode || 'delayed')}</div>`;
     return el;

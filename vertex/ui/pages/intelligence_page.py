@@ -428,7 +428,7 @@ function renderCommittee(){
         <td class="vx-num vx-mono">${agree===null?'—':VX.fmt.num(agree,0)+' %'}</td>
         <td class="vx-num vx-mono">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):'—'}</td>
         <td><button class="vx-btn vx-btn-sm vx-btn-ghost" data-committee-detail="${i}" aria-expanded="false">D&eacute;tail</button></td>
-        <td><button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(r.symbol)}" aria-label="Actions ${esc(r.symbol)}">⋯</button></td>
+        <td><button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(r.symbol)}" aria-label="Actions ${esc(r.symbol)}">${VX.icon('more')}</button></td>
       </tr>
       <tr id="vx-cdetail-${i}" hidden><td colspan="7">
         <div class="vx-grid" style="padding:6px 4px">
@@ -604,7 +604,7 @@ function renderMemory(){
       <td><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(sym)}">${esc(sym)}</button></td>
       <td class="vx-dim" style="font-size:13px;max-width:480px">${esc(String(notes[sym]).slice(0,220))}${String(notes[sym]).length>220?'…':''}</td>
       <td><button class="vx-btn vx-btn-sm" data-edit-note="${esc(sym)}">Modifier</button></td>
-      <td><button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(sym)}" aria-label="Actions ${esc(sym)}">⋯</button></td>
+      <td><button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(sym)}" aria-label="Actions ${esc(sym)}">${VX.icon('more')}</button></td>
     </tr>`).join('')+'</tbody></table></div>'
     +`<div class="vx-card-footer">${syms.length} th&egrave;se(s) · stock&eacute;es en local, synchronis&eacute;es via /api/desk</div>`;
   document.querySelectorAll('[data-edit-note]').forEach(b=>

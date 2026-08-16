@@ -487,7 +487,12 @@ async function loadConnections(){
       _kp('Moteurs',_eng.length?(_ok+'/'+_eng.length):'—','opérationnels',(_eng.length&&_ok===_eng.length)?'vx-pos':'')
       +_kp('Données fraîches',_frK.length?(_frOk+'/'+_frK.length):'—','domaines')
       +_kp('Erreurs',_warn,_warn===0?'aucune':'à voir',_warn===0?'vx-pos':'vx-neg')
-      +_kp('Lecture seule',(st&&st.readonly)?'✓':'⚠',(st&&st.readonly)?'aucun ordre':'à vérifier',(st&&st.readonly)?'vx-pos':'vx-neg');
+      /* La valeur de cette tuile etait '✓' / '⚠' : un pictogramme la ou les trois
+         tuiles voisines portent un NOMBRE, et pour l'invariant le plus important
+         du produit. Un signe ne se lit pas a voix haute, ne se copie pas, et ne
+         distingue pas « confirme par le serveur » de « pas encore su » — d'ou
+         « Inconnue » et non « Non » quand le serveur ne repond pas. */
+      +_kp('Lecture seule',(st&&st.readonly)?'Active':'Inconnue',(st&&st.readonly)?'aucun ordre':'à vérifier',(st&&st.readonly)?'vx-pos':'vx-neg');
   }catch(e){}
 
   /* Invariant READONLY confirmé par le serveur */
@@ -614,7 +619,7 @@ async function loadConnections(){
         return `<span class="vx-badge vx-badge-status" data-status="${state[0]}"
           title="${esc(en.last_error||en.last_success||'')}">${esc(en.name||'moteur')} · ${state[1]}</span>`;
       }).join('')+'</div>'
-      +((st.warnings||[]).length?`<div class="vx-stale-banner vx-mt3">⏳ ${st.warnings.map(esc).join(' · ')}</div>`:'')
+      +((st.warnings||[]).length?`<div class="vx-stale-banner vx-mt3">${st.warnings.map(esc).join(' · ')}</div>`:'')
       +`<div class="vx-mt3"><button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-tech-endpoints">Détails techniques (endpoints) →</button></div>`;
     $('vx-conn-meta').innerHTML=VX.updateIndicator(st.ts||Date.now(),'/api/system-status','delayed');
     $('vx-tech-endpoints')?.addEventListener('click',()=>{

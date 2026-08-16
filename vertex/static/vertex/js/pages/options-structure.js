@@ -312,7 +312,7 @@
       var g = s.greeks || {};
       var liq = strategyLiquidity(bd, d.sym, d.exp, s.legs);
       return '<tr' + (s.recommended ? ' class="vx-row-hl"' : '') + '>'
-        + '<td data-label="Structure">' + (s.recommended ? '★ ' : '') + esc(s.label) + '</td>'
+        + '<td data-label="Structure">' + (s.recommended ? VX.icon('star', 12) + ' ' : '') + esc(s.label) + '</td>'
         + '<td data-label="Risque max" class="vx-num vx-neg">' + price(cap) + '</td>'
         + '<td data-label="Gain max" class="vx-num vx-pos">' + gmax + '</td>'
         + '<td data-label="Breakeven" class="vx-num">' + ((s.breakevens || []).map(function (b) { return nd(b); }).join(' · ') || '—') + '</td>'
@@ -330,7 +330,7 @@
       + '<span class="vx-chart-question">Quelle structure exprime le mieux la thèse avec le moins de risque inutile ?</span></div>'
       + '<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>'
       + head.map(function (h) { return '<th>' + h + '</th>'; }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div>'
-      + '<div class="vx-card-foot"><span class="vx-meta">★ = mieux adaptée au biais (adéquation = 45 % alignement + 30 % PoP + 25 % R:R — heuristique transparente, pas une promesse).</span></div></section>';
+      + '<div class="vx-card-foot"><span class="vx-meta">L\'étoile marque la structure la mieux adaptée au biais (adéquation = 45 % alignement + 30 % PoP + 25 % R:R — heuristique transparente, pas une promesse).</span></div></section>';
   }
 
   /* ════════════════ VUE LEAPS (LOT B) ════════════════ */

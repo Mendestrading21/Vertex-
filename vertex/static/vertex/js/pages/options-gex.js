@@ -263,14 +263,14 @@
       return '<tr><td><span class="vx-badge" data-tone="' + (c.type === 'CALL' ? 'pos' : 'neg') + '">' + esc(c.type) + '</span> ' + f(c.strike, 0)
         + (c.exp ? ' <span class="vx-muted">' + esc(c.exp) + '</span>' : '') + '</td>'
         + '<td class="vx-num">' + f(c.vol, 0) + '</td>'
-        + '<td class="vx-num">' + (c.vol_oi != null ? f(c.vol_oi, 2) + (c.fresh ? ' ⚡' : '') : 'n/d') + '</td>'
+        + '<td class="vx-num">' + (c.vol_oi != null ? f(c.vol_oi, 2) + (c.fresh ? ' ' + VX.icon('bolt', 12) : '') : 'n/d') + '</td>'
         + '<td class="vx-num">' + money(c.premium) + '</td></tr>';
     }).join('');
     var skew = fl.skew ? '<div class="vx-muted" style="margin-bottom:.3rem">Skew premium : <b>' + esc(fl.skew) + '</b> (' + f(fl.call_pct, 0) + ' % calls)</div>' : '';
     host.innerHTML = skew
       + '<div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Contrat</th><th class="vx-num">Vol</th><th class="vx-num">Vol/OI</th><th class="vx-num">Premium</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table></div>'
-      + '<div class="vx-muted" style="margin-top:.3rem">' + esc(fl.basis || '') + '. ⚡ = volume &gt; OI (positionnement frais).</div>';
+      + '<div class="vx-muted" style="margin-top:.3rem">' + esc(fl.basis || '') + '. L\'éclair marque un volume &gt; OI (positionnement frais).</div>';
   }
 
   function load(sym) {

@@ -286,7 +286,7 @@
       chartOI(VC, d);
       chartSmile(VC, d);
     }).catch(function (e) {
-      ids.forEach(function (id) { var el = document.getElementById(id); if (el) el.innerHTML = '<div class="vx-error-banner">⚠ ' + esc(e.message) + '</div>'; });
+      ids.forEach(function (id) { var el = document.getElementById(id); if (el) el.innerHTML = '<div class="vx-error-banner">Intelligence options indisponible.</div>'; });
     });
   }
 
@@ -524,7 +524,7 @@
         var recoStyle = s.recommended ? ' style="border-color:var(--vx-signal-500,#D28A54);box-shadow:0 0 0 1px var(--vx-signal-500,#D28A54)"' : '';
         return '<section class="vx-card vx-col-6"' + recoStyle + '>' +
           '<div class="vx-card-header"><span class="vx-card-title">' + esc(s.label) + '</span>' +
-          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-signal-500,#D28A54);color:#0b0d0a;font-weight:700">★ Recommandée</span>' : '') +
+          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-signal-500,#D28A54);color:#0b0d0a;font-weight:700">' + VX.icon('star', 12) + ' Recommandée</span>' : '') +
           '<span class="vx-badge" style="color:var(--vx-' + (credit ? 'positive' : 'option') + ')">' + (credit ? 'crédit ' : 'débit ') + fmtUsd(Math.abs(s.net_premium)) + '</span></div>' +
           (s.fit_reason ? '<div class="vx-meta" style="margin:-2px 0 6px">' + esc(s.fit_reason) + '</div>' : '') +
           '<div id="strat-pf-' + i + '" style="height:150px"></div>' +

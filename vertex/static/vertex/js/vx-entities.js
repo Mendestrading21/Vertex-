@@ -286,7 +286,7 @@
     badges(sym) {
       sym = String(sym).toUpperCase();
       const out = [];
-      if (this.isFavorite(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="fav">★ Favori</span>');
+      if (this.isFavorite(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="fav">' + VX.icon('star', 12) + ' Favori</span>');
       if (this.inWatchlist(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="watch">Watchlist</span>');
       if (this.isFollowed(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="follow">Suivi actif</span>');
       if (this.hasPosition(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="position">Position</span>');

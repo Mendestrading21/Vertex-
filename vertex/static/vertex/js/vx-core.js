@@ -81,6 +81,24 @@
       `<span class="vx-dot"></span>${parts.join(' · ')}</span>`;
   };
 
+  /* ── Icônes (§ VISUAL_SYSTEM : UNE seule famille outline) ─────────
+     Le dictionnaire n'est PAS défini ici : il est publié par le shell
+     (`window.VX.__icons`, bloc `#vx-icons`) depuis `_ICONS` en Python, qui
+     sert déjà la sidebar, la barre mobile et les overlays. Une seconde table
+     côté client aurait dérivé en silence — c'est exactement le défaut que la
+     table de micro-copy avait produit.
+
+     Un nom inconnu rend une icône VIDE et non un caractère de repli : un
+     glyphe de secours aurait réintroduit, par la porte de derrière, le
+     pictogramme textuel que ce pont existe pour supprimer. */
+  VX.icon = function (name, size) {
+    const d = (VX.__icons || {})[name] || '';
+    const s = size || 18;
+    return '<svg viewBox="0 0 24 24" width="' + s + '" height="' + s + '" fill="none" ' +
+      'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" ' +
+      'stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+  };
+
   /* ── États de données (§39) ──────────────────────────────────────── */
   VX.states = {
     loading(rows = 3) {

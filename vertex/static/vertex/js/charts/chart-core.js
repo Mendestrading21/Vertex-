@@ -205,10 +205,10 @@
     if (state === 'loading')
       return `${body} aria-busy="true">${VX.states.loading(3)}</div>`;
     if (state === 'stale')
-      return `<div class="vx-stale-banner">⏱ Données périmées — ${msg || 'graphique masqué jusqu’à actualisation.'}</div>` +
-        `${body}><div class="vx-state" data-state="stale"><div class="vx-state-icon">⏱</div><div><b>Périmé</b><br>${msg || 'La dernière valeur n’est pas affichée afin d’éviter une lecture obsolète.'}</div></div></div>`;
+      return `<div class="vx-stale-banner">Données périmées — ${msg || 'graphique masqué jusqu’à actualisation.'}</div>` +
+        `${body}><div class="vx-state" data-state="stale"><div class="vx-state-icon">${VX.icon('clock', 20)}</div><div><b>Périmé</b><br>${msg || 'La dernière valeur n’est pas affichée afin d’éviter une lecture obsolète.'}</div></div></div>`;
     if (state === 'error')
-      return `${body}><div class="vx-state" data-tone="error" data-state="error"><div class="vx-state-icon">!</div><div><b>Erreur</b><br>${msg || 'Impossible de charger ce graphique.'}</div></div></div>`;
+      return `${body}><div class="vx-state" data-tone="error" data-state="error"><div class="vx-state-icon">${VX.icon('alert', 20)}</div><div><b>Erreur</b><br>${msg || 'Impossible de charger ce graphique.'}</div></div></div>`;
     /* empty (défaut) — assumé, jamais un rectangle vide */
     return `${body}><div class="vx-state" data-state="empty"><div class="vx-state-icon">—</div><div><b>Donnée indisponible</b><br>${msg || opts.question || 'Aucune donnée à afficher.'}</div></div></div>`;
   };

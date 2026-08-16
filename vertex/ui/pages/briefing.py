@@ -296,9 +296,15 @@ function renderDiff(cur){
   let prev=null;try{prev=JSON.parse(localStorage.getItem('vxTodayBaseline')||'null');}catch(e){prev=null;}
   const rows=[];
   if(!prev||!prev.ts){
-    host.innerHTML='<div class="vx-state" data-state="empty"><div class="vx-state-icon">—</div>'
-      +'<div><b>Aucun historique de comparaison disponible.</b><br>'
-      +'<span class="vx-meta">La référence de cette visite est enregistrée ; les changements apparaîtront à la prochaine.</span></div></div>';
+    /* Ces deux etats etaient BATIS A LA MAIN — meme classe `.vx-state`, mais
+       balisage recopie et, dans la case reservee au pictogramme, un caractere
+       (« — », « = ») la ou tous les etats canoniques portent la silhouette SVG
+       de `VX.states.ghost`. Un composant duplique pour changer une icone, c'est
+       precisement ce que le systeme existe pour eviter : ils passent par la
+       fabrique, et l'icone suit la famille sans que personne ait a y penser. */
+    host.innerHTML=VX.states.empty(
+      'La référence de cette visite est enregistrée ; les changements apparaîtront à la prochaine.',
+      '', {title:'Aucun historique de comparaison disponible.', ghost:'line'});
   }else{
     const fmtDelta=(a,b,unit)=>{if(a==null||b==null)return null;const d=Math.round((a-b)*10)/10;if(d===0)return null;
       const cls=d>0?'vx-pos':'vx-neg';return '<span class="vx-mono '+cls+'">'+(d>0?'+':'')+d+(unit||'')+'</span>';};
@@ -311,7 +317,8 @@ function renderDiff(cur){
     host.innerHTML=rows.length
       ? '<ul style="margin:0;padding-left:18px;line-height:1.9;font-size:13px">'+rows.slice(0,3).map(r=>'<li>'+r+'</li>').join('')+'</ul>'
         +'<div class="vx-meta vx-mt2">Depuis '+esc(new Date(prev.ts).toLocaleString('fr-FR'))+'</div>'
-      : '<div class="vx-state" data-state="empty"><div class="vx-state-icon">=</div><div><b>Rien de significatif n’a changé</b><br><span class="vx-meta">depuis '+esc(new Date(prev.ts).toLocaleString('fr-FR'))+'</span></div></div>';
+      : VX.states.empty('depuis '+esc(new Date(prev.ts).toLocaleString('fr-FR')),
+          '', {title:'Rien de significatif n’a changé', ghost:'line'});
   }
   host.insertAdjacentHTML('beforeend','<div class="vx-meta vx-mt2">Source : comparaison locale de cette session</div>');
   try{localStorage.setItem('vxTodayBaseline',JSON.stringify(Object.assign({},cur,{ts:Date.now()})));}catch(e){}
@@ -348,6 +355,15 @@ async function loadRegime(){
 }
 
 /* ── Meilleures opportunités (top 3, résumé) ── */
+/* Les notes du comité arrivent PREFIXEES d'un emoji ('✅ ENTRÉE CONFIRMÉE — …',
+   vertex/engines/committee.py) : c'est le dernier emoji peint par le produit.
+   LE MOTEUR N'EST PAS TOUCHE — la chaine est son contrat et d'autres
+   consommateurs la lisent — mais le prefixe n'est plus PEINT : la pastille de
+   verdict juste a gauche dit deja « ACHAT », et les mots « ENTRÉE CONFIRMÉE »
+   suivent. On retire des pictogrammes EN TETE de chaine, jamais a l'interieur :
+   une note amputee en son milieu serait une note falsifiee. */
+const sansPicto=t=>String(t==null?'':t)
+  .replace(/^[\u2190-\u2BFF\uFE0F\u{1F000}-\u{1FAFF}\s]+/u,'');
 async function loadOpportunities(){
   try{
     const c=await VX.fetch('/api/command',{ttl:60000});
@@ -356,9 +372,9 @@ async function loadOpportunities(){
       '<div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">'
       +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(s.symbol)+'">'+esc(s.symbol)+'</button>'
       +'<span class="vx-badge '+vCls(s.verdict)+'">'+esc(s.verdict||'')+'</span>'
-      +'<span class="vx-grow vx-truncate vx-dim" style="font-size:12px" title="'+esc(s.note||'')+'">'+esc(s.note||'')+'</span>'
+      +'<span class="vx-grow vx-truncate vx-dim" style="font-size:12px" title="'+esc(sansPicto(s.note))+'">'+esc(sansPicto(s.note))+'</span>'
       +'<span class="vx-num vx-mono">'+VX.fmt.nd(s.price)+'</span>'
-      +'<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="'+esc(s.symbol)+'" aria-label="Actions">⋯</button></div>').join('')
+      +'<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="'+esc(s.symbol)+'" aria-label="Actions">'+VX.icon('more')+'</button></div>').join('')
       :VX.states.empty('Aucune opportunité retenue par le comité.');
   }catch(e){$('vx-opp-stocks').innerHTML=VX.states.error('Opportunités indisponibles');}
 }
@@ -369,10 +385,16 @@ async function loadAlerts(){
     const [mine,cmd]=await Promise.all([
       Promise.resolve((E()&&E().alerts())||[]),
       VX.fetch('/api/command',{ttl:30000}).catch(()=>({}))]);
+    /* L'API transporte la severite comme un EMOJI ('🔴'/'🟠', premier element
+       du tuple d'alerte). VISUAL_SYSTEM.md interdit l'emoji comme icone
+       produit, et COPY.md l'interdit comme ponctuation. On garde le CODE —
+       c'est le contrat du serveur, on n'y touche pas — mais on ne le PEINT
+       plus : une pastille prend la couleur semantique, et la pilule a droite
+       nomme deja la severite en toutes lettres. */
     const srv=((cmd&&cmd.alerts)||[]).slice(0,3).map(a=>{
-      const icon=a[0]||'⚠', danger=(icon==='🔴');
+      const sev=a[0]||'', danger=(sev==='🔴');
       return '<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">'
-        +'<span aria-hidden="true">'+esc(icon)+'</span>'
+        +'<span class="vx-dot" aria-hidden="true" style="background:var(--vx-'+(danger?'negative':'warning')+')"></span>'
         +'<span class="vx-grow vx-dim" style="font-size:12px">'+esc(a[2]||a[1]||'')+'</span>'
         +'<span class="vx-badge" style="color:var(--vx-'+(danger?'negative':'warning')+')">'+esc(a[1]||'alerte')+'</span></div>';}).join('');
     const rows=mine.filter(a=>a.active).slice(0,3).map(a=>

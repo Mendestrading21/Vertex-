@@ -342,7 +342,7 @@ function loadJournal(){
         <td>${e.result==='WIN'?'<span class="vx-badge vx-pos">WIN</span>':e.result==='LOSS'?'<span class="vx-badge vx-neg">LOSS</span>':'—'}</td>
         <td class="vx-num vx-mono ${pnl>0?'vx-pos':pnl<0?'vx-neg':'vx-muted'}">${isFinite(pnl)?(pnl>0?'+':'')+VX.fmt.num(pnl,0)+' $':'—'}</td>
         <td class="vx-dim" style="font-size:12px;max-width:260px">${esc(e.lesson||'')}</td>
-        <td><button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(e.ticker||'')}" aria-label="Actions ${esc(e.ticker||'')}">⋯</button></td>
+        <td><button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(e.ticker||'')}" aria-label="Actions ${esc(e.ticker||'')}">${VX.icon('more')}</button></td>
       </tr>`;}).join('')+'</tbody></table>'
     +`<div class="vx-card-footer">${list.length} entrée(s)${f?' (filtre : '+esc(f)+')':''} · journal local synchronisé desk</div>`;
 }
@@ -434,7 +434,12 @@ function loadProgression(){
     [20,'Respect des invalidations, MAE/MFE, meilleurs setups'],
     [30,'Rolling win rate & discipline par régime']];
   const rows=milestones.map(m=>{const done=b.n>=m[0];
-    return `<div class="vx-kv"><span class="k">${done?'✅':'🔒'} ${m[0]} décisions</span>
+    /* ✅ / 🔒 servaient de puces d'etat : deux emojis multicolores dans une
+       liste, ce que VISUAL_SYSTEM.md refuse. Un attribut porte l'etat, le CSS
+       le colore, et le lecteur d'ecran recoit un mot au lieu d'un pictogramme. */
+    return `<div class="vx-kv" data-jalon="${done?'atteint':'a-venir'}">
+      <span class="k"><span class="vx-dot" aria-hidden="true"></span>
+      <span class="vx-sr-only">${done?'Atteint' : 'À venir'}</span> ${m[0]} décisions</span>
       <span class="v vx-dim" style="font-size:12px;text-align:right">${esc(m[1])}</span></div>`;}).join('');
   /* Erreurs par mois (déclarées) — la fréquence baisse-t-elle ? */
   const all=(E()?E().journal():[])||[];

@@ -9,7 +9,7 @@ Tout ticker, partout dans l'app, ouvre CETTE fiche.
 from __future__ import annotations
 
 
-from vertex.ui.shell import json_for_script, render_shell
+from vertex.ui.shell import icon, json_for_script, render_shell
 
 
 def render_index(view: str = '') -> str:
@@ -53,7 +53,7 @@ def render_index(view: str = '') -> str:
     </section>
     <section class="vx-card vx-mt4" aria-label="Favoris">
       <div class="vx-card-header"><span class="vx-card-title">Favoris</span>
-        <span class="vx-dim" style="font-size:12px">titres marqués ★</span></div>
+        <span class="vx-dim" style="font-size:12px">titres mis en favori</span></div>
       <div class="vx-card-body vx-flex vx-wrap" id="an-favs"></div>
     </section>
   </div>
@@ -83,7 +83,7 @@ $('an-recent').innerHTML=VX.recentTickers.get().map(s=>
 let favs=[];try{favs=JSON.parse(localStorage.getItem('myFavs')||'[]');}catch(e){favs=[];}
 $('an-favs').innerHTML=(Array.isArray(favs)&&favs.length?favs:[]).map(s=>
   `<button class="vx-btn vx-ticker" data-open-analysis="${s}">${s}</button>`).join('')
-  ||'<span class="vx-muted">Aucun favori — marque un titre avec ★ depuis sa fiche.</span>';
+  ||'<span class="vx-muted">Aucun favori — mets un titre en favori depuis sa fiche.</span>';
 let names=null;
 /* Échappement local (ce bloc est une IIFE distincte du esc() principal) : les libellés
    de /api/names sont rendus en innerHTML → on neutralise tout HTML/attribut. */
@@ -124,11 +124,11 @@ _SECTIONS = """
   </div>
   <div class="an-identity-actions">
     <button class="vx-btn vx-btn-icon vx-btn-ghost" id="an-fav" aria-label="Ajouter aux favoris"
-      aria-pressed="false" title="Favori">★</button>
+      aria-pressed="false" title="Favori">%%FAVICON%%</button>
     <button class="vx-btn vx-btn-sm vx-btn-soft" id="an-follow"
       onclick="VXEntities.followStock('%%SYM%%',{decision:(document.getElementById('an-decision')||{}).dataset&&document.getElementById('an-decision').dataset.decision});location.href='/tracking';"
       title="Suivre : mesure la performance hypothétique depuis maintenant">Suivre →</button>
-    <button class="vx-btn vx-btn-sm" data-entity-menu="%%SYM%%">Actions ▾</button>
+    <button class="vx-btn vx-btn-sm" data-entity-menu="%%SYM%%">Actions %%CARET%%</button>
   </div>
 </section>
 
@@ -659,7 +659,7 @@ async function loadDossier(){
             +'<div><div class="vx-meta">Capital engagé</div><b>'+(s.capital_deployed!=null?'$'+s.capital_deployed:'—')+'</b></div>'
             +'<div><div class="vx-meta">Poids projeté</div><b>'+(s.weight_pct!=null?s.weight_pct+' %':'—')+'</b></div>'
             +'<div><div class="vx-meta">R:R</div><b>'+(t.reward_risk!=null?t.reward_risk:'—')+'</b></div></div>'
-            +(t.blocked?'<div class="vx-stale-banner vx-mt2">⛔ Préparation bloquée par la stratégie : '+warn.map(esc).join(' · ')+'</div>'
+            +(t.blocked?'<div class="vx-stale-banner vx-mt2">Préparation bloquée par la stratégie : '+warn.map(esc).join(' · ')+'</div>'
               :(warn.length?'<div class="vx-meta vx-mt2" style="color:var(--vx-warning)">'+warn.map(esc).join(' · ')+'</div>':''))
             +'<pre id="ot-pre" style="white-space:pre-wrap;background:var(--vx-surface-2,#121214);padding:.7rem;border-radius:8px;margin-top:.7rem;font-size:12px">'+esc(t.copy_text||'')+'</pre>'
             +'<button class="vx-btn vx-btn-sm vx-btn-ghost" id="ot-copy">Copier l’analyse</button>'
@@ -919,7 +919,7 @@ async function loadSkyler(){
       +'<b>'+(sc.total??'—')+'/40</b><span class="vx-meta">niveau '+esc(d.level||'—')
       +(d.capped_by_gate?' · plafonnée par '+esc(d.capped_by_gate):'')+'</span></div>'
       +'<div class="vx-mb1">'+chips+'</div>'
-      +(gates.length?'<div class="vx-mb1">'+gates.map(g=>'<div class="vx-neg" style="font-size:12.5px">✕ '+esc(g.id)+' — '+esc(g.reason)+'</div>').join('')+'</div>':'')
+      +(gates.length?'<div class="vx-mb1">'+gates.map(g=>'<div class="vx-neg" style="font-size:12.5px">'+VX.icon('close',13)+' '+esc(g.id)+' — '+esc(g.reason)+'</div>').join('')+'</div>':'')
       +(sn.available?'<ul style="margin:.2rem 0;padding-left:0;list-style:none;font-size:12.5px">'
         +row(sn.bear,'Pessimiste')+row(sn.base,'Probable')+row(sn.bull,'Exceptionnel')+'</ul>':'')
       +'<div class="vx-meta" style="margin-top:.3rem">'
@@ -971,13 +971,18 @@ VX.refresh.register(loadDecisionStack,180000,'analysis-decision');
 </script>
 """
 
-_MOBILE_BAR = """
+# Barre d'actions de la fiche. Elle EMPRUNTE la fabrique d'icônes du shell,
+# comme la barre mobile générique des huit espaces : cinq pictogrammes textuels
+# (★ ◎ ! ◇ ⋯) y voisinaient les traits SVG du reste du produit —
+# VISUAL_SYSTEM.md interdit de mélanger deux familles sur une même surface, et
+# c'est ici la surface la plus dense en actions.
+_MOBILE_BAR = f"""
 <div class="vx-mobile-bar"><nav aria-label="Actions rapides">
-  <button onclick="VXEntities.toggleFavorite('%%SYM%%')">★<span>Favori</span></button>
-  <button onclick="VXEntities.openAddModal('%%SYM%%','follow')">◎<span>Suivre</span></button>
-  <button onclick="VXEntities.openAddModal('%%SYM%%','alert')">!<span>Alerte</span></button>
-  <button onclick="location.href='/opportunities?view=options&sym=%%SYM%%'">◇<span>Options</span></button>
-  <button data-entity-menu="%%SYM%%">⋯<span>Plus</span></button>
+  <button onclick="VXEntities.toggleFavorite('%%SYM%%')">{icon('star', 20)}<span>Favori</span></button>
+  <button onclick="VXEntities.openAddModal('%%SYM%%','follow')">{icon('follow', 20)}<span>Suivre</span></button>
+  <button onclick="VXEntities.openAddModal('%%SYM%%','alert')">{icon('alert', 20)}<span>Alerte</span></button>
+  <button onclick="location.href='/opportunities?view=options&sym=%%SYM%%'">{icon('option', 20)}<span>Options</span></button>
+  <button data-entity-menu="%%SYM%%">{icon('more', 20)}<span>Plus</span></button>
 </nav></div>
 """
 
@@ -989,6 +994,8 @@ def render(sym: str) -> str:
                '<div class="vx-sub">La thèse mérite-t-elle du capital, et à quel '
                'risque.</div></div></div>'
                + _SECTIONS.replace('%%SYM%%', safe)
+               .replace('%%FAVICON%%', icon('star'))
+               .replace('%%CARET%%', icon('caret', 15))
                .replace('%%LOADING%%', '<div class="vx-skeleton" style="height:48px"></div>'))
     js = _JS.replace('%%SYM_JSON%%', json_for_script(safe))
     return render_shell(title=f'{safe} · Analyse', active='analysis',

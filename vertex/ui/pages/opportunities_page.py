@@ -71,7 +71,7 @@ function demoBanner(scan){return scan&&scan.data_source==='demo'?
   '<div class="vx-stale-banner">Mode DÉMO — données synthétiques, clairement identifiées.</div>':'';}
 function rowActions(sym){return `<div class="vx-row-actions">
   <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${sym}">Analyse</button>
-  <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${sym}" aria-label="Actions ${sym}">⋯</button></div>`;}
+  <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${sym}" aria-label="Actions ${sym}">${VX.icon('more')}</button></div>`;}
 
 /* ── Champs réels par ligne (jamais inventés) ── */
 function opGrade(r){const g=(r.grade||'').toString().trim();
@@ -172,7 +172,7 @@ function renderCompare(rows){
     ['mom','Momentum 1M %',r=>r.perf_m,20,true],
     ['tq','Qualité données',r=>r.vx_tq,100,true],
   ];
-  const head='<tr><th>Critère</th>'+cand.map((r,i)=>`<th class="sym${i===0?' best':''}">${esc(r.symbol)}${i===0?' ★':''}</th>`).join('')+'</tr>';
+  const head='<tr><th>Critère</th>'+cand.map((r,i)=>`<th class="sym${i===0?' best':''}">${esc(r.symbol)}${i===0?'<span class="vx-sr-only"> — meilleur candidat</span>':''}</th>`).join('')+'</tr>';
   const body=M.map(function(m){
     const vals=cand.map(m[2]);
     const nums=vals.map(v=>(v==null||isNaN(v))?null:v);
@@ -735,7 +735,7 @@ async function loadSkylerRank(){
       <td data-label="Décision"><span class="vx-badge" data-tone="${tone(r.decision)}">${esc(r.decision||'—')}</span></td>
       <td data-label="Score" class="vx-num">${skBar(r.score_total)}</td>
       <td data-label="Niveau">${esc(r.level||'—')}</td>
-      <td data-label="Gate">${r.capped_by_gate?'<span class="vx-neg" title="décision plafonnée par cette porte">✕ '+esc(r.capped_by_gate)+'</span>':'<span class="vx-muted">—</span>'}</td>
+      <td data-label="Gate">${r.capped_by_gate?'<span class="vx-neg" title="décision plafonnée par cette porte">'+VX.icon('close',13)+' '+esc(r.capped_by_gate)+'</span>':'<span class="vx-muted">—</span>'}</td>
       <td data-label="Catalyseur">${esc(r.catalyst||'—')}</td>
       <td data-label="Invalidation" class="vx-num">${r.invalidation!=null?VX.fmt.num(r.invalidation,2):'—'}</td>
     </tr>`).join('');
