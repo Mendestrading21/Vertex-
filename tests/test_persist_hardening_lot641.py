@@ -35,3 +35,11 @@ def test_load_cache_returns_isolated_copy_and_tracks_hit(monkeypatch, tmp_path):
     second = persist.load_json('cache.json', {})
     assert second == {'nested': {'value': 1}}
     assert persist.health()['cache_hits'] >= 1
+
+
+def test_external_rewrite_invalidates_memory_cache_even_with_same_file_size(monkeypatch, tmp_path):
+    monkeypatch.setattr(persist, '_BASE_DIR', str(tmp_path))
+    persist.save_json('cache.json', {'close': 100})
+    assert persist.load_json('cache.json', {}) == {'close': 100}
+    (tmp_path / 'cache.json').write_text(json.dumps({'close': 123}), encoding='utf-8')
+    assert persist.load_json('cache.json', {}) == {'close': 123}
