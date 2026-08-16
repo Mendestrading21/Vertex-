@@ -9,7 +9,7 @@ Les caches JSON analytiques sont désormais écrits dans un fichier temporaire d
 | Validation de chemin | Un nom de cache ne peut pas sortir de la racine Vertex. |
 | Plafond de lecture | Un cache de plus de 32 Mio est ignoré et renvoie la valeur de repli. |
 | Écriture atomique | Le cache précédent survit à une interruption ou une écriture partielle. |
-| Lecture mémorisée | Les lectures identiques sont servies depuis un cache mémoire borné à 64 entrées. |
+| Lecture mémorisée | Les lectures identiques sont servies depuis un cache mémoire borné à 64 entrées ; une empreinte de contenu invalide le cache lorsqu’un fichier est réécrit localement, même très rapidement et à taille égale. |
 | Isolation | Chaque lecture renvoie une copie profonde afin qu’un appelant ne modifie pas le cache partagé. |
 
 ## Observabilité non sensible

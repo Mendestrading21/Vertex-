@@ -17,6 +17,7 @@ import os
 import tempfile
 import threading
 import copy
+import hashlib
 
 # Racine du dépôt : vertex/services/persist.py → vertex/services → vertex → racine.
 _BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -38,6 +39,16 @@ def cache_path(name):
     return path
 
 
+def _signature(path, stat=None):
+    """Empreinte de contenu : les mtime trop proches ne masquent jamais une écriture externe."""
+    stat = stat or os.stat(path)
+    digest = hashlib.blake2b(digest_size=16)
+    with open(path, 'rb') as raw:
+        for chunk in iter(lambda: raw.read(128 * 1024), b''):
+            digest.update(chunk)
+    return (stat.st_mtime_ns, stat.st_ctime_ns, stat.st_size, digest.digest())
+
+
 def load_json(name, default):
     """Charge un JSON depuis le disque ; `default` si absent ou illisible."""
     try:
@@ -46,7 +57,7 @@ def load_json(name, default):
             stat = os.stat(path)
             if stat.st_size > MAX_CACHE_BYTES:
                 raise ValueError('cache_too_large')
-            signature = (stat.st_mtime_ns, stat.st_size)
+            signature = _signature(path, stat)
             cached = _READ_CACHE.get(path)
             if cached and cached['signature'] == signature:
                 _STATS['cache_hits'] += 1
@@ -86,7 +97,7 @@ def save_json(name, obj):
             tmp_path = None
             _STATS['saves'] += 1
             stat = os.stat(path)
-            _READ_CACHE[path] = {'signature': (stat.st_mtime_ns, stat.st_size),
+            _READ_CACHE[path] = {'signature': _signature(path, stat),
                                  'data': copy.deepcopy(obj)}
     except Exception as exc:
         _STATS['save_failures'] += 1
