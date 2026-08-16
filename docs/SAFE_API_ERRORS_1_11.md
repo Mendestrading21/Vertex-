@@ -14,3 +14,7 @@ Les réponses d’erreur ne retournent plus les classes d’exception, messages,
 | Erreur API non interceptée | `internal` | 500 |
 
 Les codes représentent une indisponibilité de calcul, pas un signal de marché. Ils ne doivent pas être convertis en recommandation, ordre ou hypothèse sur les données sous-jacentes.
+
+## Cycle de scan et santé de sources
+
+Les erreurs de collecte du cycle de scan sont exposées sous `market_data_unavailable` ou `scan_failed`, jamais avec un message de fournisseur. `GET /healthz` ajoute `source_health`, qui ne contient que les statuts `AVAILABLE`, `NOT_COLLECTED`, `UNAVAILABLE`, `UNKNOWN` ou `DEGRADED` pour le scan, le marché, les options et les fondamentaux.

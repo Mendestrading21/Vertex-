@@ -393,7 +393,11 @@ def scan():
         else:
             data = _download_universe(_syms)
         if BENCH not in data:
-            scan_state['error'] = 'aucune donnée marché (yfinance + stooq indisponibles)'
+            scan_state['error'] = 'market_data_unavailable'
+            scan_state['source_health'] = {
+                'scan': 'DEGRADED', 'market': 'UNAVAILABLE',
+                'options': 'NOT_COLLECTED', 'fundamentals': 'NOT_COLLECTED',
+            }
             return
         bc = data[BENCH]['Close'].dropna()
         bench_ret = (float(bc.iloc[-1]) / float(bc.iloc[-63]) - 1) if len(bc) > 63 else 0.0
@@ -645,6 +649,12 @@ def scan():
                            'commodities': commodities, 'macro': macro, 'internals': internals,
                            'recommendations': recs, 'strategy': strat, 'committee': comite,
                            'breadth': breadth, 'spy': spy, 'market': market_status(),
+                           'source_health': {
+                               'scan': 'AVAILABLE',
+                               'market': 'AVAILABLE' if data is not None else 'UNAVAILABLE',
+                               'options': 'AVAILABLE' if scan_state.get('options_board') else 'NOT_COLLECTED',
+                               'fundamentals': 'AVAILABLE' if fsym else 'NOT_COLLECTED',
+                           },
                            'universe_n': len(syms_scan), 'scanned_n': len(rows),
                            'scan_ts': time.time(),
                            'updated': datetime.now().strftime('%H:%M:%S'), 'error': None})
@@ -652,8 +662,12 @@ def scan():
             _apply_ibkr_indices()   # overlay indices/VIX TEMPS RÉEL IBKR par-dessus le différé yfinance
         except Exception:
             pass
-    except Exception as e:
-        scan_state['error'] = f'{type(e).__name__}: {e}'
+    except Exception:
+        scan_state['error'] = 'scan_failed'
+        scan_state['source_health'] = {
+            'scan': 'DEGRADED', 'market': 'UNKNOWN',
+            'options': 'UNKNOWN', 'fundamentals': 'UNKNOWN',
+        }
 
 
 _rescan_evt = threading.Event()   # set() par /api/rescan → réveille la boucle pour un re-scan immédiat
