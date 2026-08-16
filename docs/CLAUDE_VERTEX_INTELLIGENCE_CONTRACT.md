@@ -29,6 +29,7 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 | erreurs options ou `internal` | code stable | Afficher une indisponibilité technique sans exposer, déduire ou afficher les détails d’exception. |
 | `decision.multi_asset_guard.issues` | liste | Afficher `OPTION_BOARD_TRUNCATED` comme couverture options partielle ; ne pas la masquer ni la convertir en conformité. |
 | erreurs webhook `webhook_payload_invalid` / `webhook_rate_limited` | code stable | Afficher un rejet de transport ; ne jamais le transformer en signal ou recommandation de marché. |
+| `scan_status` / `scan_skip_count` | état et compteur | Afficher comme état technique du cycle ; conserver le dernier scan pendant `RUNNING`, sans créer de faux rafraîchissement. |
 
 ## Invariants à ne pas casser
 
