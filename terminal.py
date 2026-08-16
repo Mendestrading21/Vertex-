@@ -374,7 +374,8 @@ def _download_universe(tickers, period='1y', chunk=50):
             pass
     stooq_n = len(frames) - yahoo_n
     _SOURCE_BUDGET_STATE['yfinance'] = 'AVAILABLE' if yahoo_n else 'UNAVAILABLE'
-    scan_state['source'] = ('yfinance' if stooq_n == 0 else
+    scan_state['source'] = ('unavailable' if yahoo_n == 0 and stooq_n == 0 else
+                            'yfinance' if stooq_n == 0 else
                             'stooq' if yahoo_n == 0 else 'yfinance+stooq')
     return frames
 
