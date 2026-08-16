@@ -20,6 +20,10 @@ def build(profile, sector_coherence, options_context=None, portfolio_context=Non
         issues.append({'id': 'ETF_SECTOR_CONTEXT_MISSING', 'severity': 'REVIEW',
                        'reason': 'ETF sectoriel déclaré sans agrégat sectoriel courant'})
     if options.get('available') is True:
+        if options.get('input_truncated'):
+            issues.append({'id': 'OPTION_BOARD_TRUNCATED', 'severity': 'REVIEW',
+                           'reason': 'board options borné à %s contrats — couverture partielle' %
+                                     (options.get('input_limit') or 'une limite déclarée')})
         best = options.get('best') or {}
         mandate = best.get('mandate') or {}
         if any(value is None for key, value in mandate.items() if str(key).endswith('_ok')):
