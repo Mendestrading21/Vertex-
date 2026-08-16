@@ -43,10 +43,14 @@ def make_blueprint(store: TradingViewSignalStore = SIGNAL_STORE,
         if not configured_secret:
             return jsonify({'ok': False, 'error': 'webhook désactivé '
                             '(TRADINGVIEW_WEBHOOK_SECRET absent)'}), 503
-        body = request.get_json(silent=True) or {}
+        body = request.get_json(silent=True)
+        if not isinstance(body, dict) or len(body) > 32:
+            return jsonify({'ok': False, 'error': 'webhook_payload_invalid'}), 400
         provided = str(body.get('secret') or '')
         if not hmac.compare_digest(provided, configured_secret):
             return jsonify({'ok': False, 'error': 'secret invalide'}), 403
+        if not store.allow_delivery():
+            return jsonify({'ok': False, 'error': 'webhook_rate_limited'}), 429
         result = store.add(symbol=body.get('symbol'), signal=body.get('signal'),
                            event_ts=body.get('timestamp'),
                            payload={k: v for k, v in body.items()

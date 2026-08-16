@@ -4,7 +4,8 @@ import time
 from flask import Flask
 
 from vertex.data_sources.tradingview_signal_store import (
-    TradingViewSignalStore, ALLOWED_SIGNALS, REPLAY_WINDOW_S)
+    TradingViewSignalStore, ALLOWED_SIGNALS, REPLAY_WINDOW_S,
+    MAX_WEBHOOK_PAYLOAD_FIELDS, MAX_WEBHOOK_VALUE_CHARS)
 from vertex.data_sources.tradingview_webhooks import make_blueprint
 
 SECRET = 'test-secret-webhook'
@@ -150,3 +151,40 @@ def test_seen_keys_pruned_under_load():
         clock['t'] += DEDUP_WINDOW_S + 1        # chaque clé expire avant la suivante
         store.add(symbol='SYM%d' % (i % 90 or 1), signal='TREND_ALIGNMENT', event_ts=clock['t'])
     assert len(store._seen_keys) <= MAX_SIGNALS + 1
+
+
+def test_webhook_rate_limit_keeps_no_client_identity():
+    store = TradingViewSignalStore(rate_limit=1)
+    app = make_app(store=store)
+    c = app.test_client()
+    assert _post(c, secret=SECRET, symbol='NVDA', signal='BREAKOUT_CONFIRMED',
+                 timestamp=time.time()).status_code == 200
+    r = _post(c, secret=SECRET, symbol='MSFT', signal='BREAKOUT_CONFIRMED',
+              timestamp=time.time())
+    assert r.status_code == 429
+    assert r.get_json()['error'] == 'webhook_rate_limited'
+    assert store.status()['metrics']['rejected_rate_limited'] == 1
+
+
+def test_webhook_payload_is_flat_bounded_and_never_keeps_secret():
+    store = TradingViewSignalStore()
+    app = make_app(store=store)
+    body = {'secret': SECRET, 'symbol': 'NVDA', 'signal': 'BREAKOUT_CONFIRMED',
+            'timestamp': time.time(), 'note': 'x' * (MAX_WEBHOOK_VALUE_CHARS + 10)}
+    body.update({f'field_{i}': i for i in range(MAX_WEBHOOK_PAYLOAD_FIELDS + 8)})
+    assert _post(app.test_client(), **body).status_code == 200
+    payload = store.recent()[0]['payload']
+    assert 'secret' not in payload
+    assert len(payload) <= MAX_WEBHOOK_PAYLOAD_FIELDS
+    assert len(payload['note']) == MAX_WEBHOOK_VALUE_CHARS
+
+
+def test_webhook_rejects_non_object_or_oversized_structure():
+    app = make_app()
+    c = app.test_client()
+    assert c.post('/api/tradingview/webhook', json=['not', 'an', 'object']).status_code == 400
+    body = {'secret': SECRET, 'symbol': 'NVDA', 'signal': 'BREAKOUT_CONFIRMED',
+            'timestamp': time.time()}
+    body.update({f'field_{i}': i for i in range(40)})
+    r = _post(c, **body)
+    assert r.status_code == 400 and r.get_json()['error'] == 'webhook_payload_invalid'
