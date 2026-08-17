@@ -19,6 +19,7 @@ jour et leurs réserves.
 | **Dégradation honnête** (panne globale) | `mesurer_degradation.py` | 33 vues × 3 pannes : **0 fuite, 0 vue muette, 0 erreur** | — |
 | **Panne partielle** | `mesurer_panne_partielle.py` | 10 sources : **0 chiffre, 0 tracé** en silence | 2 témoins (cellule + tracé) |
 | **Intégrité des pages** | `mesurer_integrite_pages.py` | **0 id dupliqué, 0 débordement, 65 liens, 0 cassé** | — |
+| **Routes à identifiant** (lot 40) | `mesurer_sorties_identites.py` | **9 routes sur 9 couvertes, 0 sert la charge** | suivi au champ libre empoisonné |
 
 Tous ces chiffres viennent d'une exécution de ce jour, serveur de démonstration
 à v233, et non d'une mémoire de lot précédent.
@@ -85,10 +86,16 @@ comparer par la structure.**
    (`/api/anomalies/<sym>` est enregistrée deux fois) = **158 balayés**, dont
    **155 servis** et 3 injoignables (le worker IBKR neutralisé).
 
-   Les **neuf** routes à identifiant sont le vrai trou : aucun id valide
+   Les **neuf** routes à identifiant étaient le vrai trou : aucun id valide
    n'existe dans le jeu de démonstration, et en inventer un rendrait un 404 qui
-   ne prouverait rien. Les remplir demande un jeu de données porteur
-   d'identités — c'est le prochain palier, pas une astuce d'outil.
+   ne prouverait rien. Les remplir demandait un jeu de données porteur
+   d'identités — **c'est fait au lot 40**
+   (`tools/mesurer_sorties_identites.py`, rapport `SIGNAL-OS-40-IDENTITES.md`) :
+   les identités sont fabriquées par les portes du produit, **9 routes sur 9
+   sont couvertes, aucune ne sert la charge**, et le témoin ressort. Ce qui
+   reste ouvert de ce côté est listé dans le §5 de ce rapport-là — dont
+   `/api/skyler/memory/import` (POST), la porte par laquelle du texte arbitraire
+   entre encore dans la mémoire sans être balayée.
 
    **Cette réserve est elle-même gardée** depuis le lot 39
    (`tests/test_signal_os_enumeration_sorties_lot33.py`) : la liste des neuf
