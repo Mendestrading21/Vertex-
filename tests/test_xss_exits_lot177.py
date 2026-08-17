@@ -45,6 +45,15 @@ def test_feed_titre_sans_balise_et_quotes_echappees(client):
     assert '<' not in it['publisher']
 
 
+def test_feed_heure_aussi_neutralisee(client):
+    """LOT 32, par mutation : retirer `time` de la liste assainie passait les
+    3 159 tests. Or `/news-feed` le sert, et le fil live l'injecte en innerHTML
+    (`terminal.py::renderFeed`) — il n'est pas moins externe que le titre."""
+    news_state['items'] = [dict(MAL, time='<b>10:00</b>')]
+    it = client.get('/news-feed').get_json()['items'][0]
+    assert '<' not in it['time'] and it['time'] == '10:00'
+
+
 def test_feed_liens_javascript_supprimes_https_encodes(client):
     _inject_feed()
     items = client.get('/news-feed').get_json()['items']

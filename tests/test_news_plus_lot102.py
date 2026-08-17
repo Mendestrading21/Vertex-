@@ -43,6 +43,18 @@ def test_dangerous_link_schemes_are_dropped_https_kept():
     assert '<' not in lk and '>' not in lk        # sûr en href ET window.open
 
 
+def test_every_documented_field_is_sanitized():
+    """LOT 32 — la docstring de `sanitize_news` énumère les champs assainis ;
+    seuls title/fr/publisher/sym étaient éprouvés. Retirer `why` ou `time` de la
+    liste passait les 3 159 tests. Ce test tient la liste ENTIÈRE : un champ
+    qu'on cesse d'assainir se voit ici, qu'une route le serve déjà ou non."""
+    charge = '<b>x</b>'
+    champs = ('title', 'fr', 'pub', 'publisher', 'sym', 'why', 'time')
+    out = np.sanitize_news([{k: charge for k in champs}])[0]
+    oublies = [k for k in champs if out[k] != 'x']
+    assert not oublies, 'champs non assainis : %s' % oublies
+
+
 def test_sanitize_skips_non_dicts_and_preserves_other_keys():
     out = np.sanitize_news([None, 'texte', 42, {'title': 'ok', 'senti': -1}])
     assert len(out) == 1 and out[0]['senti'] == -1

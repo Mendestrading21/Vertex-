@@ -8,6 +8,8 @@ d'actualité fabriqué. Si les actualités manquent, le brief reste factuel
 """
 from __future__ import annotations
 
+from vertex.services.news_plus import strip_markup
+
 
 def _num(x):
     try:
@@ -130,7 +132,12 @@ def build_narrative(scan_state, news_state=None):
     news_available = bool(news_items)
     if news_available:
         top_news = news_items[0]
-        title = (top_news.get('title') or top_news.get('fr') or '').strip()
+        # LOT 32 — `news_state['items']` est BRUT (la boucle d'actualités y dépose
+        # les titres tels quels) : ce narratif est une SORTIE, et il embarquait le
+        # titre sans le toucher. Balisage retiré ; pas d'échappement ici, le seul
+        # rendu (`briefing.py`) échappe déjà — sinon `Barron's` s'afficherait
+        # `Barron&#39;s`.
+        title = strip_markup(top_news.get('title') or top_news.get('fr') or '').strip()
         if title:
             sent.append('À la une : %s.' % title[:180])
             sources.append('actualités (fil assaini)')
