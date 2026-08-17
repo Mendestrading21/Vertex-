@@ -61,6 +61,10 @@ def test_unmeasurable_recent_events_counted_not_invented():
     cl.append(round(cl[-1] * 1.08, 6))          # spike tout en fin de série
     d = EV.study(cl)
     assert d['n_unmeasurable'] >= 1
+    coverage = d['event_coverage']
+    assert coverage['unmeasured_events'] == d['n_unmeasurable']
+    assert coverage['measured_events'] + coverage['unmeasured_events'] == coverage['total_events']
+    assert coverage['coverage_pct'] < 100.0
 
 
 def test_short_series_honest():
