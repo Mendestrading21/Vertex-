@@ -519,6 +519,16 @@ a:hover{color:var(--vx-text-primary);text-decoration:none}
   font-size:12px;
   line-height:1.55;
 }
+/* Texte assourdi SUR UNE TEINTE. Mesure au navigateur du texte `--vx-text-muted`
+   dans un insight : cyan 4,26:1 · avertissement 4,11:1 — sous AA ; violet 4,66:1,
+   soit moins de 0,2 de marge. Le mecanisme est le meme pour les trois : la
+   teinte eclaircit le fond et le texte le plus discret est celui qui casse en
+   premier. Sur une surface teintee, le texte discret monte d'un cran. */
+.vx-insight .vx-meta,
+.vx-insight .vx-kpi-label,
+.vx-insight .vx-dim{
+  color:var(--vx-text-secondary);
+}
 .vx-insufficient{
   border-style:solid;
   border-color:var(--vx-border-soft);
@@ -546,7 +556,10 @@ a:hover{color:var(--vx-text-primary);text-decoration:none}
 .vx-error-banner{
   border-color:rgba(233,85,95,.22);
   background:var(--vx-negative-soft);
-  color:var(--vx-negative);
+  /* Pas `--vx-negative` : mesure 4,38:1 sur ce fond teinte, sous AA. Des
+     trois couleurs semantiques, le negatif est la SEULE illisible sur sa
+     propre teinte (avertissement 7,28 · positif 6,02). */
+  color:var(--vx-negative-text);
 }
 .vx-offline-banner{
   border-color:var(--vx-border-soft);

@@ -100,7 +100,16 @@ def test_signal_os_keeps_one_color_one_meaning_contract():
         'marque et option ont divergé — l\'interface les tient pour une seule '
         'couleur depuis la couche Signal OS.')
     assert "var(--vx-positive)" in css
-    assert "var(--vx-negative)" in css
+    # Le negatif s'exprime dans cette couche par DEUX jetons de la meme famille,
+    # et il faut les nommer tous les deux : `--vx-negative` est illisible sur sa
+    # PROPRE teinte (4,38:1, sous AA), donc la banniere d'erreur emploie
+    # `--vx-negative-text`. Exiger la seule forme `var(--vx-negative)` revenait a
+    # verrouiller un defaut de contraste. Une correspondance par PREFIXE aurait
+    # aussi « marche » — et aurait accepte n'importe quel `--vx-negative-xyz` :
+    # meme piege de portee que dix fois dans cette refonte.
+    assert ("var(--vx-negative)" in css) or ("var(--vx-negative-text)" in css), (
+        'la couche Signal OS n\'exprime plus le negatif : ni `--vx-negative` '
+        'ni `--vx-negative-text` n\'y figurent.')
     assert "var(--vx-warning)" in css
     assert "var(--vx-info-soft)" in css
     assert '[data-grade="S+"]' in css

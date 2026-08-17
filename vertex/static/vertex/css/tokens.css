@@ -189,6 +189,14 @@
   --vx-positive-soft:rgba(43,190,144,.17);
   --vx-negative:#E9555F;           /* perte / risque réel */
   --vx-negative-strong:#e24853;
+  /* Le negatif COMME TEXTE SUR SA PROPRE TEINTE. Mesure au navigateur :
+     #E9555F rend 5,69:1 sur le canevas et 5,12-5,30:1 sur une carte — mais
+     seulement 4,20-4,39:1 sur `--vx-negative-soft`, sous le seuil AA. La
+     teinte semantique ECLAIRCIT le fond, donc le texte deja sature y perd le
+     contraste qu'il avait ailleurs. Ne PAS corriger en eclaircissant
+     `--vx-negative` : il sert de couleur de perte partout ailleurs, ou il
+     passe — le repeindre changerait chaque chiffre rouge du produit. */
+  --vx-negative-text:#EF737B;
   --vx-negative-soft:rgba(233,85,95,.17);
   --vx-warning:#D9BE3C;            /* attente / seuil / avertissement */
   --vx-warning-soft:rgba(217,190,60,.17);
