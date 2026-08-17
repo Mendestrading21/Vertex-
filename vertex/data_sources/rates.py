@@ -25,12 +25,13 @@ class RateQuote:
     timestamp: str
     fallback_used: bool
     notes: list = field(default_factory=list)
+    curve_coverage: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {'rate': self.rate, 'tenor_days': self.tenor_days,
                 'source': self.source, 'source_mode': self.source_mode,
                 'timestamp': self.timestamp, 'fallback_used': self.fallback_used,
-                'notes': list(self.notes)}
+                'notes': list(self.notes), 'curve_coverage': dict(self.curve_coverage)}
 
 
 class RateCurve:
@@ -51,7 +52,11 @@ class RateCurve:
                 rate=FALLBACK_FLAT_RATE, tenor_days=tenor_days,
                 source=SOURCE_FALLBACK_EOD, source_mode=MODE_EOD,
                 timestamp=utc_now_iso(), fallback_used=True,
-                notes=[f'aucune courbe fournie — taux plat de repli {FALLBACK_FLAT_RATE:.3f} documenté'])
+                notes=[f'aucune courbe fournie — taux plat de repli {FALLBACK_FLAT_RATE:.3f} documenté'],
+                curve_coverage={'available': False, 'point_count': 0, 'tenors_days': [],
+                                'source': None, 'timestamp_available': False,
+                                'status': 'FALLBACK_FLAT_RATE', 'read_only': True,
+                                'note': 'taux plat documenté ; aucune courbe de marché fournie'})
         days = sorted(self.points)
         if tenor_days <= days[0]:
             r = self.points[days[0]]
@@ -65,7 +70,12 @@ class RateCurve:
                     break
         return RateQuote(rate=round(r, 6), tenor_days=tenor_days,
                          source=self.source or 'CURVE', source_mode=MODE_EOD,
-                         timestamp=self.timestamp or utc_now_iso(), fallback_used=False)
+                         timestamp=self.timestamp or utc_now_iso(), fallback_used=False,
+                         curve_coverage={'available': True, 'point_count': len(days),
+                                         'tenors_days': days, 'source': self.source or 'CURVE',
+                                         'timestamp_available': bool(self.timestamp),
+                                         'status': 'CURVE_POINTS_AVAILABLE', 'read_only': True,
+                                         'note': 'interpolation limitée aux points de courbe fournis'})
 
 
 def rate_sensitivity(price_fn, base_rate: float, bump: float = 0.005) -> dict:
