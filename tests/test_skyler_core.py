@@ -259,6 +259,9 @@ def test_skyler_route(tmp_path, monkeypatch):
         assert d['packet']['schema_version'] == 1
         assert d['decision']['readiness']['schema_version'] == 1
         assert d['decision']['readiness']['read_only'] is True
+        regime_break = d['decision']['regime_break']
+        assert regime_break['read_only'] is True
+        assert regime_break['does_not_change_decision'] is True
     finally:
         scan_state['detail'].pop('SKYX', None)
 

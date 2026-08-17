@@ -200,6 +200,13 @@ def api_skyler(sym):
     from vertex.engines import opportunity_attribution as _attribution
     decision['opportunity_attribution'] = _attribution.build(packet, decision)
     try:
+        from vertex.market import regime_break as _regime_break
+        decision['regime_break'] = _regime_break.assess((detail or {}).get('series') or {})
+    except Exception:
+        decision['regime_break'] = {'available': False, 'status': 'UNAVAILABLE',
+                                    'read_only': True, 'does_not_change_decision': True,
+                                    'reason': 'diagnostic de rupture indisponible'}
+    try:
         from vertex.market import instrument_profile as _instrument
         from vertex.market import sector_coherence as _sector_coherence
         instrument = _instrument.build(sym, detail)
