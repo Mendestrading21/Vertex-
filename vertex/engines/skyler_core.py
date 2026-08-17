@@ -213,6 +213,14 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
     audit.append({'step': 'contradictions', 'result': len(contradictions)})
 
     unknowns = sorted(k for k, v in contexts.items() if v.get('available') is False)
+    context_coverage = {
+        'known_contexts': len(contexts) - len(unknowns),
+        'total_contexts': len(contexts),
+        'coverage_pct': round(100 * (len(contexts) - len(unknowns)) / len(contexts), 1) if contexts else 0.0,
+        'unknown_contexts': unknowns,
+        'read_only': True,
+        'note': 'contextes manquants restent visibles et ne sont jamais considérés favorables',
+    }
 
     return {
         'schema_version': SCHEMA_VERSION, 'engine_version': ENGINE_VERSION,
@@ -222,6 +230,7 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
         'red_team': (red_team if red_team is not None else
                      {'complete': False, 'basis': 'aucune red-team exécutée'}),
         'contradictions': contradictions, 'unknowns': unknowns,
+        'context_coverage': context_coverage,
         'audit_trail': audit,
     }
 
