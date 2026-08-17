@@ -114,10 +114,13 @@ def calibration(journal, quotes=None):
         'n_decisions': len(journal),
         'by_decision': by_decision, 'by_level': by_level,
         'outcomes': ({'available': True, 'measured': len(rows),
-                      'unmeasured': unmeasured, 'rows': rows,
+                      'unmeasured': unmeasured,
+                      'coverage_pct': round(100 * len(rows) / len(journal), 1) if journal else 0.0,
+                      'rows': rows,
                       'note': 'rendements réels depuis le prix enregistré à la décision — descriptif, pas un backtest'}
                      if rows else
                      {'available': False, 'measured': 0, 'unmeasured': unmeasured,
+                      'coverage_pct': 0.0,
                       'reason': 'aucune paire prix enregistré + cote actuelle — rien de mesurable, rien d’inventé'}),
         'brier': {'available': False,
                   'reason': 'aucune probabilité calibrée émise (les scénarios n’en affichent pas — lot 5) ; '
