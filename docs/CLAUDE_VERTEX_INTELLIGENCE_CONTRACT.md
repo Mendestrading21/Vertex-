@@ -35,6 +35,9 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 | `GET /api/skyler/validation` | objet descriptif | Afficher comme validation historique en lecture seule ; ne jamais recalibrer, changer la décision ou produire un ordre depuis ce résultat. |
 | `OOS_CONSISTENT` / `OOS_DEGRADED` | statut stable | Présenter la cohérence ou la dégradation historique avec la réserve sur le rendement futur ; `OOS_DEGRADED` demande une revue humaine uniquement. |
 | `INSUFFICIENT_SAMPLE` / `TEMPORAL_EVIDENCE_REQUIRED` de validation | statut stable | Afficher l’absence de preuve sans remplacer ce statut par une estimation ou une conclusion de robustesse. |
+| `decision.portfolio.stress_test` | objet descriptif | Afficher les pertes historiques observées comme un diagnostic de risque ; ne jamais le convertir en prévision, taille, ordre ou allocation. |
+| `HISTORICAL_STRESS_AVAILABLE` / `TEMPORAL_EVIDENCE_REQUIRED` de stress | statut stable | Conserver l’indisponibilité lorsqu’une position ou une série datée manque ; ne jamais afficher un stress partiel comme un portefeuille complet. |
+| `HISTORICAL_TAIL_CONCENTRATION` | flag descriptif | Expliquer la contribution historique concentrée d’une ligne ; demander une revue humaine sans modifier automatiquement une position. |
 
 ## Invariants à ne pas casser
 

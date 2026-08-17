@@ -189,6 +189,9 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
         correlation_context = {'available': False,
                                'reason': correlation_reason or 'données de corrélation non branchées'}
 
+    from vertex.portfolio import historical_stress
+    stress_test = historical_stress.assess(weights, series_by_symbol)
+
     return {
         'available': True, 'generator': 'deterministic',
         'n_positions': n, 'bounds': {'min': pmin, 'max': pmax},
@@ -204,6 +207,7 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
         'risk_budget': {'available': False,
                         'reason': 'aucun stop déclaré par position — budget de risque non estimé'},
         'correlations': correlation_context,
+        'stress_test': stress_test,
         'provenance': sorted({p.get('source') or 'MANUAL' for p in open_real}),
     }
 
