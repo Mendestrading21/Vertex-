@@ -352,10 +352,19 @@
     if (open) { e.preventDefault(); VX.openAnalysis(open.dataset.openAnalysis); }
   });
   /* Clavier : Enter/Espace activent les contrôles délégués non natifs
-     (tickers role="button", menus d'entité) — même chemin que le clic. */
+     (tickers role="button", menus d'entité, LIGNES CLIQUABLES) — même chemin
+     que le clic.
+     `[data-clickable]` a été ajouté au lot 27 : la liste ne nommait que trois
+     attributs, si bien que toute ligne cliquable qui n'en portait aucun était
+     focusable et INERTE. Mesuré au navigateur : trois familles de lignes
+     (scanner LEAPS, positions options, comparateur d'options) — on pouvait les
+     atteindre au clavier et il ne se passait rien.
+     Même leçon qu'au lot 25 : une règle qui énumère des noms ne protège que ce
+     qu'on a pensé à nommer. */
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    const el = e.target.closest && e.target.closest('[data-open-analysis],[data-entity-menu],[data-position-menu]');
+    const el = e.target.closest && e.target.closest(
+      '[data-open-analysis],[data-entity-menu],[data-position-menu],[data-clickable]');
     if (!el) return;
     if (['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)) return;
     e.preventDefault(); el.click();

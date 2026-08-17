@@ -438,7 +438,13 @@
       var dte = t.exp ? Math.round((new Date(t.exp) - Date.now()) / 86400000) : null;
       var na = optNextAction(tt), s = t.entrySnap || {};
       models.push({ t: t, mark: mark, value: value, pl: pl, dte: dte, action: na, snap: s });
-      return '<tr data-option-position="' + index + '" data-clickable tabindex="0">'
+      /* role + nom : la ligne est focusable et cliquable, donc c'est un
+         controle. Sans role, un lecteur d'ecran annonce « ligne » et le nom
+         reste implicite ; l'audit du lot 24 ne l'avait pas vue parce qu'il
+         selectionnait `[role="button"]`. */
+      return '<tr data-option-position="' + index + '" data-clickable tabindex="0"'
+        + ' role="button" aria-label="Ouvrir la position ' + esc(t.sym) + ' '
+        + esc(t.type) + ' ' + nd(t.strike) + '">'
         + '<td data-label="Contrat"><span class="vx-table-primary"><strong class="vx-ticker">' + esc(t.sym) + '</strong>'
         + '<span>' + esc(t.type) + ' ' + nd(t.strike) + ' · ' + esc(t.exp || 'échéance n/d') + '</span></span></td>'
         + '<td data-label="Qté" class="vx-num">' + t.qty + '</td>'

@@ -34,7 +34,11 @@
     }
     var candidates = d.candidates || [];
     var rows = candidates.map(function (c, index) {
-      return '<tr data-candidate="' + index + '" data-clickable tabindex="0">'
+      /* Meme raison qu'au fichier des positions : focusable + cliquable = un
+         controle, qui doit annoncer son role et son nom. */
+      return '<tr data-candidate="' + index + '" data-clickable tabindex="0"'
+        + ' role="button" aria-label="Simuler ' + esc(c.sym) + ' ' + esc(c.type)
+        + ' ' + num(c.strike, 1) + '">'
         + '<td data-label="Contrat"><span class="vx-table-primary"><strong>' + esc(c.sym) + '</strong>'
         + '<span>' + esc(c.type) + (c.exp ? ' · ' + esc(c.exp) : '') + '</span></span></td>'
         + '<td data-label="Strike" class="vx-num">' + num(c.strike, 1) + '</td>'
