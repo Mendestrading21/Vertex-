@@ -60,6 +60,7 @@ Ne jamais travailler directement sur `main`. Les anciennes branches V4/Prism son
 - Verrou d'accès : `VERTEX_CODE` dans `.env` (chargé automatiquement ; `.env.example` = modèle). `VERTEX_SECRET` indépendant sinon secret aléatoire persistant `.vertex_secret`.
 - Sans code d'accès, le serveur n'écoute que 127.0.0.1 (LAN/iPhone : définir `VERTEX_CODE`, ou `VERTEX_LAN=1` en connaissance de cause).
 - IBKR : `readonly=True` toujours ; worker unique avec `RequestTimeout=45` (ne pas retirer — anti-blocage).
+- **La surface IBKR employée est une liste BLANCHE mesurée**, pas une liste noire de noms (lot 34) : `tools/mesurer_surface_ibkr.py` énumère à l'AST les capacités réellement appelées sur l'objet `IB` (22 aujourd'hui, toutes en lecture, aucun nom calculé) et `tests/test_signal_os_surface_ibkr_lot34.py` fait échouer **toute capacité nouvelle, quel que soit son nom**. Ajouter un appel IBKR de lecture ⇒ le classer dans `LISTE_BLANCHE` avec le commentaire qui le justifie. Deux pièges mesurés : la dérivation doit suivre l'**alias** (`self._ib = ib` — seul chemin de la passerelle) et les **chemins pointés** (`ib.client.marketDataType`).
 
 ## Couleurs — la règle réellement tenue (mesuré au lot 382)
 

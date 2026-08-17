@@ -53,21 +53,91 @@ def _py_files():
     return _fichiers('.py')
 
 
+def _sans_commentaires_python(src):
+    """Blanchit les COMMENTAIRES d'un source Python, rien d'autre.
+
+    LOT 34 — ce balayage signale une MENTION, pas un APPEL. Il a accusé la
+    docstring d'un outil de sûreté qui doit nommer le verbe qu'il sert
+    justement à tenir hors du code. Interdire de NOMMER la chose dans un
+    commentaire n'ajoute aucune sûreté : ça pousse à écrire des documents
+    vagues à l'endroit précis où il faut être exact.
+
+    Les CHAÎNES restent scannées : `getattr(ib, 'placeOrder')` doit continuer
+    d'être vu, et c'est justement la forme qu'aucune liste ne rattrape ailleurs.
+    Un échec de `tokenize` (fichier illisible) rend la source INTACTE — on
+    scanne trop plutôt que trop peu.
+    """
+    try:
+        import io
+        import tokenize
+        lignes = src.splitlines(keepends=True)
+        for tok in tokenize.generate_tokens(io.StringIO(src).readline):
+            if tok.type != tokenize.COMMENT:
+                continue
+            i, d, f = tok.start[0] - 1, tok.start[1], tok.end[1]
+            lignes[i] = lignes[i][:d] + ' ' * (f - d) + lignes[i][f:]
+        return ''.join(lignes)
+    except Exception:
+        return src
+
+
+def _sans_docstrings_python(src):
+    """Blanchit les DOCSTRINGS (module, classe, fonction) — pas les autres
+    chaînes. Même raison : documenter l'interdit n'est pas l'enfreindre."""
+    try:
+        import ast
+        arbre = ast.parse(src)
+        lignes = src.splitlines(keepends=True)
+        for n in ast.walk(arbre):
+            if not isinstance(n, (ast.Module, ast.ClassDef, ast.FunctionDef,
+                                  ast.AsyncFunctionDef)):
+                continue
+            corps = getattr(n, 'body', None) or []
+            if not (corps and isinstance(corps[0], ast.Expr)
+                    and isinstance(corps[0].value, ast.Constant)
+                    and isinstance(corps[0].value.value, str)):
+                continue
+            d = corps[0].value
+            for i in range(d.lineno - 1, d.end_lineno):
+                lignes[i] = re.sub(r'\S', ' ', lignes[i])
+        return ''.join(lignes)
+    except Exception:
+        return src
+
+
 def test_no_order_execution_calls():
     """Aucun appel d'exécution d'ordre dans le code source — Python ET
     JavaScript. Mesuré au lot 31 : le balayage ignorait le JS, et une mutation
-    y a survecu."""
+    y a survecu. Lot 34 : commentaires et docstrings Python sont exclus — ils
+    ne s'exécutent pas, et les nommer est le travail d'un document de sûreté."""
     hits = []
     for path in _fichiers('.py', '.js'):
         try:
             src = open(path, encoding='utf-8').read()
         except Exception:
             continue
+        scanne = src
+        if path.endswith('.py'):
+            scanne = _sans_docstrings_python(_sans_commentaires_python(src))
         for pat in FORBIDDEN:
-            for m in re.finditer(pat, src):
-                line = src[:m.start()].count('\n') + 1
+            for m in re.finditer(pat, scanne):
+                line = scanne[:m.start()].count('\n') + 1
                 hits.append(f'{os.path.relpath(path, ROOT)}:{line}  {pat}')
     assert not hits, 'Code d\'exécution d\'ordre détecté (INTERDIT) :\n' + '\n'.join(hits)
+
+
+def test_le_balayage_voit_encore_un_vrai_appel_malgre_l_exclusion():
+    """TÉMOIN du lot 34 — exclure commentaires et docstrings ne doit RIEN
+    aveugler d'exécutable. Trois formes, dont la chaîne (nom calculé), qui reste
+    scannée exprès."""
+    src = ('"""Docstring qui nomme placeOrder — a ignorer."""\n'
+           '# commentaire qui nomme placeOrder — a ignorer\n'
+           'ib.placeOrder(c, o)\n'
+           "getattr(ib, 'placeOrder')()\n")
+    vu = _sans_docstrings_python(_sans_commentaires_python(src))
+    assert vu.count('placeOrder') == 2, (
+        'le blanchiment a mange un appel reel, ou laisse passer une mention : %r' % vu)
+    assert re.search(r'\.placeOrder\(', vu) and "getattr(ib, 'placeOrder')" in vu
 
 
 def test_ibkr_is_readonly():
