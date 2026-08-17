@@ -46,6 +46,14 @@ def portfolio_risk(snapshot: PortfolioSnapshot, profile,
     betas = [(weights.get(p.symbol, 0) / 100, p.beta) for p in snapshot.positions
              if p.beta is not None]
     beta = round(sum(w * b for w, b in betas), 2) if betas else None
+    beta_missing = [p.symbol for p in snapshot.positions if p.beta is None]
+    beta_coverage = {
+        'known_positions': len(betas),
+        'total_positions': len(snapshot.positions),
+        'coverage_pct': round(100 * len(betas) / len(snapshot.positions), 1) if snapshot.positions else 0.0,
+        'missing_symbols': beta_missing,
+        'partial': bool(beta_missing),
+    }
 
     # Corrélations
     corr = correlation_matrix(returns_by_symbol or {})
@@ -84,7 +92,13 @@ def portfolio_risk(snapshot: PortfolioSnapshot, profile,
         greeks = {'delta': _agg('delta', 3), 'gamma': _agg('gamma', 4),
                   'theta': _agg('theta', 3), 'vega': _agg('vega', 3),
                   'open_options': len(options_greeks),
-                  'greeks_partial': _known < len(options_greeks)}
+                  'greeks_partial': _known < len(options_greeks),
+                  'coverage': {
+                      'delta_known': _known,
+                      'total_options': len(options_greeks),
+                      'delta_coverage_pct': round(100 * _known / len(options_greeks), 1) if options_greeks else 0.0,
+                      'note': 'grecques absentes ne sont jamais interprétées comme nulles',
+                  }}
         if greeks['open_options'] > profile.max_simultaneous_options:
             no_new_risk = True
             warnings.append(f"{greeks['open_options']} options ouvertes > maximum "
@@ -93,6 +107,7 @@ def portfolio_risk(snapshot: PortfolioSnapshot, profile,
     return {'provenance': snapshot.provenance, 'as_of': snapshot.as_of,
             'equity': snapshot.equity, 'weights': weights,
             'sector_weights': sector_weights, 'hhi': hhi, 'beta': beta,
+            'beta_coverage': beta_coverage,
             'correlations': {'average': corr.get('average'),
                              'high_pairs': corr.get('high_pairs')},
             'drawdown_pct': dd, 'per_stock_pl_pct': per_stock_dd,
