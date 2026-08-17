@@ -73,3 +73,5 @@ def test_portfolio_context_exposes_read_only_historical_stress():
     assert factors['available'] is True
     assert factors['read_only'] is True
     assert factors['factors']['MARKET']['coverage_pct'] == 100.0
+    assert factors['availability']['BETA']['available'] is False
+    assert factors['availability']['BETA']['reason']
