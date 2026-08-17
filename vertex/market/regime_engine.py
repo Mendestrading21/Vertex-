@@ -18,11 +18,22 @@ def classify_regime(inputs: dict) -> dict:
     credit_spread_trend, dispersion, leadership ('CYCLICAL'/'DEFENSIVE'/'MIXED'),
     momentum_pct, volume_trend.
     """
-    dims_used = [k for k, v in (inputs or {}).items() if v is not None]
+    inputs = inputs or {}
+    dims_used = [k for k, v in inputs.items() if v is not None]
+    macro_dimensions = ('yield_curve_bps', 'dollar_trend')
+    macro_available = [key for key in macro_dimensions if inputs.get(key) is not None]
+    macro_coverage = {
+        'available_dimensions': macro_available,
+        'unavailable_dimensions': [key for key in macro_dimensions if key not in macro_available],
+        'coverage_pct': round(100 * len(macro_available) / len(macro_dimensions), 1),
+        'read_only': True,
+        'note': 'modulateurs macro absents ne sont jamais assimilés à un signal neutre ou favorable',
+    }
     if len(dims_used) < 3:
         return {'regime': 'UNKNOWN', 'secondary': [], 'dimensions_used': dims_used,
                 'confidence': 0.0,
                 'notes': ['moins de 3 dimensions disponibles — régime inconnu (honnête)'],
+                'macro_coverage': macro_coverage,
                 'adjustments': _adjustments('UNKNOWN')}
 
     trend = inputs.get('index_trend')
@@ -110,6 +121,7 @@ def classify_regime(inputs: dict) -> dict:
             regime = 'TRANSITION'
     return {'regime': regime, 'secondary': secondary, 'dimensions_used': dims_used,
             'confidence': confidence, 'votes': votes, 'notes': [],
+            'macro_coverage': macro_coverage,
             'adjustments': _adjustments(regime)}
 
 
