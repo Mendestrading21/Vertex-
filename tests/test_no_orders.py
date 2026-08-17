@@ -29,20 +29,36 @@ FORBIDDEN = [
     r'(?:\.|\bdef\s+|\bfunction\s+)auto_execute\s*\(',
 ]
 
-def _py_files():
+def _fichiers(*extensions):
     """Code applicatif et moteurs — on exclut les fichiers de test (qui citent
-    volontairement les motifs interdits) et le cache."""
-    for path in glob.glob(os.path.join(ROOT, '**', '*.py'), recursive=True):
-        base = os.path.basename(path)
-        if '/.git/' in path or '__pycache__' in path or base.startswith('test_'):
-            continue
-        yield path
+    volontairement les motifs interdits), le cache et les bibliotheques
+    minifiees de tiers.
+
+    LOT 31 — l'extension `.js` a ete AJOUTEE apres une mutation qui a SURVECU :
+    un `placeOrder(` place dans un fichier `.js` passait tous les tests, parce
+    que ce balayage ne regardait que le Python. Or Vertex est massivement
+    ecrit en JavaScript : le garde-fou le plus important du produit ignorait
+    la moitie du produit.
+    """
+    for ext in extensions:
+        for path in glob.glob(os.path.join(ROOT, '**', '*' + ext), recursive=True):
+            base = os.path.basename(path)
+            if ('/.git/' in path or '__pycache__' in path
+                    or base.startswith('test_') or base.endswith('.min.js')):
+                continue
+            yield path
+
+
+def _py_files():
+    return _fichiers('.py')
 
 
 def test_no_order_execution_calls():
-    """Aucun appel d'exécution d'ordre dans le code source."""
+    """Aucun appel d'exécution d'ordre dans le code source — Python ET
+    JavaScript. Mesuré au lot 31 : le balayage ignorait le JS, et une mutation
+    y a survecu."""
     hits = []
-    for path in _py_files():
+    for path in _fichiers('.py', '.js'):
         try:
             src = open(path, encoding='utf-8').read()
         except Exception:
@@ -63,13 +79,32 @@ def test_ibkr_is_readonly():
         except Exception:
             continue
         for m in re.finditer(r'\.connect\s*\(', src):
-            seg = src[m.start():m.start() + 200]
-            if 'readonly' in seg.lower():
-                assert re.search(r'readonly\s*=\s*True', seg), \
-                    f'{os.path.relpath(path, ROOT)} : connexion IBKR sans readonly=True'
-                connects.append(path)
-    # Il doit exister au moins un point de connexion IBKR, et tous en readonly.
-    # (Si aucun connect n'existe, le test est vacuously vrai — pas de risque.)
+            seg = src[m.start():m.start() + 220]
+            # LOT 31 — LE TROU, prouve par mutation : l'ancienne version
+            # n'exigeait `readonly=True` QUE si le mot « readonly » figurait
+            # deja dans l'appel. Le RETIRER purement et simplement passait donc
+            # tous les tests — exactement le geste qu'un correctif distrait
+            # produit. Un garde-fou qui ne se declenche que si la protection
+            # est encore la ne protege rien.
+            #
+            # Une connexion IBKR est reconnue par `clientId=` : c'est ce qui la
+            # distingue de la facade sans argument (`gateway.connect()`) et de
+            # tout autre `.connect(` du depot. Les quatre sites reels du
+            # produit le portent (ibkr_gateway + trois dans terminal.py).
+            if not re.search(r'clientId\s*=', seg):
+                continue
+            assert re.search(r'readonly\s*=\s*True', seg), (
+                '%s:%d : connexion IBKR SANS readonly=True. Le verrou lecture '
+                'seule est l\'invariant produit absolu — il ne se retire pas, '
+                'meme temporairement.'
+                % (os.path.relpath(path, ROOT), src[:m.start()].count('\n') + 1))
+            connects.append(path)
+    # Le produit DOIT garder au moins un point de connexion IBKR verrouille :
+    # sans cette assertion, supprimer la passerelle rendrait le test vide et
+    # vert — un garde-fou qui disparait avec ce qu'il garde.
+    assert connects, (
+        'aucune connexion IBKR verrouillee trouvee : soit la passerelle a '
+        'disparu, soit le motif de detection ne la reconnait plus.')
 
 
 def test_config_readonly_invariant():
