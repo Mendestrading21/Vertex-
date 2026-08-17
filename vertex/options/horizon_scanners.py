@@ -105,6 +105,17 @@ def _quote_age(contract):
     return None
 
 
+def _quote_freshness(age, maximum):
+    if age is None:
+        return {'available': False, 'status': 'QUOTE_FRESHNESS_UNAVAILABLE', 'read_only': True}
+    try:
+        age = float(age)
+    except (TypeError, ValueError):
+        return {'available': False, 'status': 'QUOTE_FRESHNESS_UNAVAILABLE', 'read_only': True}
+    return {'available': True, 'status': 'QUOTE_FRESH' if age <= maximum else 'QUOTE_STALE',
+            'age_seconds': age, 'max_age_seconds': maximum, 'read_only': True}
+
+
 def _leaps_mandate(contract, profile):
     category = profile.category('LEAPS') if profile is not None else {}
     d_min = category.get('delta_min', 0.70)
@@ -230,6 +241,7 @@ def scan(board, universe, sym=None, profile=None):
             'volume': raw.get('volume'),
             'spread_pct': raw.get('spread_pct'),
             'quote_age_seconds': _quote_age(raw),
+            'quote_freshness': _quote_freshness(_quote_age(raw), swing_config['max_quote_age_seconds']),
             'cost': raw.get('cost'),
             'spot': raw.get('spot'),
             'quality': raw.get('quality'),
