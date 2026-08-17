@@ -1692,6 +1692,7 @@ def options_pack(sym):
                 _OPTALL_CACHE[sym] = {'ts': time.time(), 'contracts': out['contracts']}
         out.setdefault('option_price_rejections', [])
         out.setdefault('option_price_rejection_count', 0)
+        out['option_board_coverage'] = options.board_coverage(out['contracts'])
         out['best_pick'] = options.recommend(out['contracts'])   # LA meilleure entre les 3
         out['best_two'] = options.recommend_top(out['contracts'], 2)   # le TOP 2 des échéances (#1/#2)
         _d = scan_state['detail'].get(sym)
