@@ -115,13 +115,15 @@ def test_analyze_droite_pure_neutre_limite_documentee():
     a = rf.analyze(np.linspace(100, 200, 400))
     assert a['state'] == 'NEUTRE'
     assert a['hurst'] is None and a['efficiency'] == 1.0
+    assert 'hurst' in a['coverage']['unavailable_metrics']
+    assert a['coverage']['coverage_pct'] < 100.0
 
 
 def test_analyze_gardes_et_contrat():
     assert rf.analyze(np.linspace(100, 200, 70)) is None   # < 80 points
     a = rf.analyze(_persistent())
     assert set(a) == {'hurst', 'entropy', 'efficiency', 'half_life',
-                      'state', 'state_col', 'note'}
+                      'coverage', 'state', 'state_col', 'note'}
 
 
 # ── score_adjust : la rétroaction EXACTE sur le score Vertex ─────────────────
