@@ -85,9 +85,28 @@ def _bs_price(S, K, T, sig, is_call):
     return K * math.exp(-R * T) * _ncdf(-d2) - S * _ncdf(-d1)
 
 
+def option_price_integrity(S, K, T, price, is_call):
+    """Bornes européennes sans dividende : garde-fou, jamais estimation de prix."""
+    if any(not isinstance(v, (int, float)) or not math.isfinite(v) or v <= 0
+           for v in (S, K, T, price)):
+        return {'available': False, 'status': 'OPTION_INPUT_INSUFFICIENT',
+                'read_only': True, 'reason': 'spot, strike, durée ou prix non exploitable'}
+    discounted_strike = K * math.exp(-R * T)
+    lower = max(0.0, S - discounted_strike) if is_call else max(0.0, discounted_strike - S)
+    upper = S if is_call else discounted_strike
+    tolerance = max(0.01, upper * 0.0001)  # précision de cotation, pas une marge de marché
+    valid = lower - tolerance <= price <= upper + tolerance
+    return {'available': valid,
+            'status': 'OPTION_PRICE_COHERENT' if valid else 'PRICE_OUTSIDE_NO_ARBITRAGE',
+            'read_only': True, 'lower_bound': round(lower, 8), 'upper_bound': round(upper, 8),
+            'observed_price': round(price, 8), 'tolerance': round(tolerance, 8),
+            'reason': None if valid else 'prix observé hors bornes européennes sans dividende'}
+
+
 def _iv_from_price(S, K, T, price, is_call):
     """IV implicite par bissection (fallback quand yfinance ne donne pas d'IV fiable)."""
-    if price <= 0 or T <= 0 or S <= 0 or K <= 0:
+    integrity = option_price_integrity(S, K, T, price, is_call)
+    if not integrity['available']:
         return None
     lo, hi = 0.02, 3.0
     if _bs_price(S, K, T, hi, is_call) < price:   # prix hors bornes
@@ -214,10 +233,12 @@ def news_for(tk, n=5):
     return out
 
 
-def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=None, earnings_dte=None):
+def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=None,
+                    earnings_dte=None, include_diagnostics=False):
     """Meilleurs contrats par bucket (court/moyen/long), classés. buckets=None -> long (rétro-compat)."""
     buckets = buckets or config.DEFAULT_BUCKETS
     out = []
+    price_rejections = []
     try:
         tk = yf.Ticker(sym)
         now = _ny_now()
@@ -241,6 +262,14 @@ def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=N
                 quoted = bid > 0 and ask > 0
                 mid = (bid + ask) / 2.0 if quoted else _f(row.get('lastPrice'))
                 if mid <= 0:
+                    continue
+                price_integrity = option_price_integrity(spot, K, T, mid, direction == 'call')
+                if not price_integrity['available']:
+                    if len(price_rejections) < 12:
+                        price_rejections.append({'sym': sym, 'type': direction.upper(), 'bucket': bk,
+                                                 'exp': exp, 'dte': dte, 'strike': K,
+                                                 'price_integrity': price_integrity,
+                                                 'derived_metrics_withheld': True})
                     continue
                 # IV : si yfinance ne donne rien d'exploitable, on la RECALCULE depuis le prix
                 stale = False
@@ -300,13 +329,14 @@ def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=N
                     'pot': round(pot), 'suit': round(suit), 'grade': config.grade(suit),
                     'em_pct': round(iv * math.sqrt(T) * 100, 1),
                     'flags': flags, 'stale': stale,
+                    'price_integrity': price_integrity,
                 }
                 _q = option_quality(_c, spot)
                 _c['quality'] = _q['score']
                 _c['quality_parts'] = _q['parts']
                 out.append(_c)
     except Exception:
-        return []
+        return {'contracts': [], 'price_rejections': [], 'price_rejection_count': 0} if include_diagnostics else []
     # Niveau 1 (séance) : contrats liquides, données réelles. Préféré.
     live = [c for c in out if not c['stale'] and c['spread'] is not None
             and c['spread'] <= config.PROFILE['max_bidask_spread_pct']
@@ -321,6 +351,9 @@ def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=N
         if cnt.get(c['bucket'], 0) < max_n:
             res.append(c)
             cnt[c['bucket']] = cnt.get(c['bucket'], 0) + 1
+    if include_diagnostics:
+        return {'contracts': res, 'price_rejections': price_rejections,
+                'price_rejection_count': len(price_rejections)}
     return res
 
 

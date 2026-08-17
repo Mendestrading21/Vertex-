@@ -41,6 +41,8 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 | `decision.regime_break` | objet descriptif | Présenter la rupture statistique observée comme un diagnostic secondaire ; ne jamais la convertir en prédiction, score, gate, ordre ou allocation. |
 | `REGIME_BREAK_WATCH` / `REGIME_CONTINUITY` | statut stable | Expliquer les seuils et la réserve sur le futur ; la continuité ne doit jamais être présentée comme une certitude. |
 | `TEMPORAL_EVIDENCE_REQUIRED` / `INSUFFICIENT_SAMPLE` de rupture | statut stable | Afficher l’absence de preuve ; ne jamais la remplacer par un régime inféré. |
+| `contract.price_integrity` | objet descriptif | Présenter les bornes de non-arbitrage sans les convertir en recommandation ni en prix théorique à utiliser. |
+| `PRICE_OUTSIDE_NO_ARBITRAGE` / `OPTION_INPUT_INSUFFICIENT` | statut stable | Refuser l’IV, les grecques et les probabilités dérivées de la quote ; ne jamais compléter une valeur manquante par estimation. |
 
 ## Invariants à ne pas casser
 
