@@ -199,6 +199,63 @@ def test_une_duree_est_classee_a_part_et_jamais_masquee():
     assert "for d in durees[:6]:" in src, 'les cas de duree ne sont plus listes'
 
 
+def _vue_g(graphes, etats=0, mentions=0):
+    return {'cellules': {}, 'graphes': dict(graphes), 'etats': etats,
+            'mentions': mentions, 'fuite': None}
+
+
+# ── LOT 37 — la GÉOMÉTRIE des graphiques ────────────────────────────────────
+
+def test_un_trace_qui_change_sans_rien_dire_est_signale():
+    """Réserve du lot 35 : « un chiffre faux dans un graphique SVG sans texte
+    n'est pas vu ». Vertex est un produit de graphiques — c'était le plus gros
+    angle mort de l'instrument. Une courbe qui perd la moitié de ses sommets ne
+    porte aucun texte, donc aucune cellule ne peut la trahir."""
+    avant = _vue_g({'DIV:0>svg:0': '3|747:144,731:140'})
+    apres = _vue_g({'DIV:0>svg:0': '3|366:72,350:68'})
+    trouve = pp._graphes_muets(avant, apres)
+    assert len(trouve) == 1 and '->' in trouve[0], trouve
+
+
+def test_un_trace_est_TU_si_la_vue_signale_son_manque_ou_s_il_disparait():
+    avant = _vue_g({'A': '3|747:144'})
+    assert pp._graphes_muets(avant, _vue_g({'A': '3|366:72'}, etats=1)) == []
+    assert pp._graphes_muets(avant, _vue_g({'A': '3|366:72'}, mentions=1)) == []
+    assert pp._graphes_muets(avant, _vue_g({})) == [], (
+        'un trace retire n\'est pas un trace faux — c\'est la vue qui renonce'
+    )
+    assert pp._graphes_muets(avant, _vue_g({'A': '3|747:144'})) == []
+
+
+def test_l_outil_porte_un_temoin_de_TRACE_distinct_et_refuse_de_conclure_sans():
+    """Un « 0 trace » ne vaut rien sans preuve que le détecteur voie une courbe
+    fausse — et le témoin des CELLULES ne suffit pas : mesuré, altérer le VIX
+    change deux cellules et AUCUN tracé.
+
+    Deux cibles ont dû être corrigées avant que le témoin ne morde : le radar
+    ne bougeait pas, et une troncature limitée à `rows` ne touchait l'entrée
+    d'aucune courbe. La forme qui marche — `/markets?view=overview` avec `/scan`
+    tronqué — fait passer deux aires de 144 à 72 sommets."""
+    src = open(pp.__file__, encoding='utf-8').read()
+    assert 'def _altere_scan(' in src and 'URL_G' in src, (
+        'le temoin des traces a disparu')
+    assert re.search(r"AUCUN trace[^\n]*\n(.*\n)?\s*return 2", src), (
+        'sans temoin de trace concluant, l outil doit REFUSER de conclure')
+    # La troncature doit etre RECURSIVE : « rows » seul ne bouge aucune courbe.
+    tronque = src.split('def _altere_scan(')[1].split('def _releve(')[0]
+    assert 'isinstance(o, dict)' in tronque and 'isinstance(o, list)' in tronque, (
+        'la troncature n\'est plus recursive — elle ne touchera plus l\'entree '
+        'des traces, et le temoin redeviendra muet')
+
+
+def test_la_stabilite_des_traces_croise_aussi_les_trois_releves_sains():
+    src = open(pp.__file__, encoding='utf-8').read()
+    corps = src.split('for url in concernees:')[1].split('print(')[0]
+    assert "a.get('graphes', {}).get(k) == v" in corps \
+        and "d.get('graphes', {}).get(k) == v" in corps, (
+        'les traces ne sont plus encadres : ils vont deriver comme les horloges')
+
+
 def test_les_sources_eprouvees_couvrent_le_produit():
     """Plancher : un balayage qui n'eprouve plus que deux sources passerait."""
     assert len(pp.CIBLES) >= 8, pp.CIBLES

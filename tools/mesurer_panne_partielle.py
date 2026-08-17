@@ -134,8 +134,23 @@ JS = """() => {
     }
     if (t.length <= 24 && /\\d/.test(t)) cellules[chemin(e)] = t;
   });
+  /* GEOMETRIE DES GRAPHIQUES. Un trace faux ne porte aucun texte : les cellules
+     ne peuvent pas le voir. On releve la SIGNATURE de chaque SVG — nombre de
+     traces, longueur de chaque `d`, nombre de sommets — ce qui change des qu'une
+     courbe perd des points ou change de forme, sans dependre d'un rendu exact. */
+  const graphes = {};
+  hote.querySelectorAll('svg').forEach(sv => {
+    if (!vis(sv)) return;
+    const parts = [];
+    sv.querySelectorAll('path, polyline, polygon, rect, circle').forEach(f => {
+      const d = f.getAttribute('d') || f.getAttribute('points') || '';
+      if (d) parts.push(d.length + ':' + (d.match(/[-\\d.]+/g) || []).length);
+      else parts.push(f.tagName + ':' + (f.getAttribute('height') || f.getAttribute('r') || ''));
+    });
+    if (parts.length) graphes[chemin(sv)] = parts.length + '|' + parts.join(',').slice(0, 300);
+  });
   return {
-    cellules, fuite,
+    cellules, graphes, fuite,
     etats: hote.querySelectorAll('[data-state], .vx-state, .vx-empty, '
       + '.vx-error-banner, .vx-insufficient').length,
     mentions: (hote.innerText.match(
@@ -144,7 +159,7 @@ JS = """() => {
 }"""
 
 
-def _ouvrir(nav, panne=None, alterer=None):
+def _ouvrir(nav, panne=None, alterer=None, alterateur=None):
     ctx = nav.new_context(viewport={'width': 1440, 'height': 900}, service_workers='block')
     pg = ctx.new_page()
     for motif in _INTERDITS:
@@ -154,7 +169,7 @@ def _ouvrir(nav, panne=None, alterer=None):
                  lambda r: r.fulfill(status=500, content_type='application/json',
                                      body='{"error":"panne partielle"}'))
     if alterer:
-        pg.route('**' + alterer + '*', _altere)
+        pg.route('**' + alterer + '*', alterateur or _altere)
     return ctx, pg
 
 
@@ -169,6 +184,33 @@ def _altere(route):
             if isinstance(d.get('breadth'), dict) and d['breadth'].get('above200') is not None:
                 d['breadth']['above200'] = 3
         route.fulfill(status=200, content_type='application/json', body=json.dumps(d))
+    except Exception:
+        route.continue_()
+
+
+def _altere_scan(route):
+    """Temoin des GRAPHIQUES : on retire la MOITIE des lignes du scan. La
+    reponse reste valide (200, meme schema), la vue n'a aucune raison de crier —
+    mais tout trace construit sur ces lignes change de forme.
+
+    Sans ce temoin, un « 0 trace » ne prouverait rien : il faut montrer que le
+    detecteur PEUT voir une courbe fausse. Le temoin des cellules ne suffit pas —
+    mesure : alterer le VIX change deux cellules et AUCUN trace."""
+    def _tronque(o):
+        # TOUTE liste, a TOUTE profondeur. Ma premiere version ne coupait que
+        # `rows` : mesure, aucun graphique n'en depend — les courbes sont baties
+        # sur d'autres champs. Un temoin qui ne touche pas l'entree du trace ne
+        # peut rien prouver.
+        if isinstance(o, list):
+            return [_tronque(x) for x in o[:max(1, len(o) // 2)]] if len(o) > 3 \
+                else [_tronque(x) for x in o]
+        if isinstance(o, dict):
+            return {k: _tronque(v) for k, v in o.items()}
+        return o
+    try:
+        rep = route.fetch()
+        route.fulfill(status=200, content_type='application/json',
+                      body=json.dumps(_tronque(rep.json())))
     except Exception:
         route.continue_()
 
@@ -231,6 +273,25 @@ def _silencieux(avant, apres):
     return out
 
 
+def _graphes_muets(avant, apres):
+    """Graphiques dont la GEOMETRIE change sans que la vue le dise.
+
+    Reserve du lot 35 : « un chiffre faux dans un graphique SVG sans texte n'est
+    pas vu ». Vertex est un produit de graphiques — c'etait le plus gros angle
+    mort de l'instrument. Meme discipline que pour les cellules : encadrement,
+    meme cache des deux cotes, et on ne juge que ce qui est identique dans les
+    trois releves sains."""
+    if apres['etats'] > avant['etats'] or apres['mentions'] > avant['mentions']:
+        return []
+    out = []
+    for k, v in avant.get('graphes', {}).items():
+        w = apres.get('graphes', {}).get(k)
+        if w is None or w == v:
+            continue                    # disparu = honnete (la vue retire le trace)
+        out.append('trace %s : %s -> %s' % (k.split('>')[-1], v[:26], w[:26]))
+    return out
+
+
 def main():
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
@@ -260,13 +321,13 @@ def main():
             print('  %-26s %d vue(s)' % (c, len([u for u, s in usage.items() if c in s])))
 
         # 2. Une source en panne a la fois — SEULES les vues concernees.
-        fuites, erreurs, muets, durees = [], [], [], []
+        fuites, erreurs, muets, durees, traces = [], [], [], [], []
         for cible in CIBLES:
             concernees = [u for u, s in usage.items() if cible in s]
             if not concernees:
                 print('--- %-26s aucune vue concernee' % cible)
                 continue
-            n_muets = 0
+            n_muets = n_traces = 0
             for url in concernees:
                 # Contextes recrees PAR VUE. Les garder ouverts sur des dizaines
                 # de vues fait accumuler les processus du navigateur jusqu'au
@@ -292,10 +353,16 @@ def main():
                 d = _releve_neuf(nav, url)
                 stables = {k: v for k, v in b['cellules'].items()
                            if a['cellules'].get(k) == v and d['cellules'].get(k) == v}
+                stables_g = {k: v for k, v in b.get('graphes', {}).items()
+                             if a.get('graphes', {}).get(k) == v
+                             and d.get('graphes', {}).get(k) == v}
                 if c['fuite']:
                     fuites.append('%s :: %s' % (url, c['fuite']))
                 if errs:
                     erreurs.append('%s :: %s' % (url, errs[0]))
+                for ligne in _graphes_muets(dict(b, graphes=stables_g), c):
+                    traces.append('%s [%s] %s' % (url, cible, ligne))
+                    n_traces += 1
                 for ligne in _silencieux(dict(b, cellules=stables), c):
                     avant_txt = ligne.split(' » -> « ')[0].lstrip('« ')
                     apres_txt = ligne.split(' » -> « ')[-1].rstrip(' »')
@@ -305,8 +372,8 @@ def main():
                     else:
                         muets.append(cas)
                         n_muets += 1
-            print('--- %-26s %2d vue(s) · chiffres changes EN SILENCE : %d'
-                  % (cible, len(concernees), n_muets))
+            print('--- %-26s %2d vue(s) · chiffres EN SILENCE : %d · traces : %d'
+                  % (cible, len(concernees), n_muets, n_traces))
 
         # 3. LE TEMOIN — sans lui, un « 0 » ne prouve rien.
         # Meme regle pour le temoin : contexte neuf des deux cotes.
@@ -318,27 +385,53 @@ def main():
         d = _releve_neuf(nav, '/')
         stables = {k: v for k, v in b['cellules'].items()
                    if a['cellules'].get(k) == v and d['cellules'].get(k) == v}
+        stables_g = {k: v for k, v in b.get('graphes', {}).items()
+                     if a.get('graphes', {}).get(k) == v and d.get('graphes', {}).get(k) == v}
         vu = _silencieux(dict(b, cellules=stables), t)
+        vu_g = _graphes_muets(dict(b, graphes=stables_g), t)
+
+        # TEMOIN DES TRACES : une vue qui porte des courbes, et la source dont
+        # elles dependent VRAIMENT. Mesure : /markets?view=overview + /scan
+        # tronque fait passer deux aires de 144 a 72 sommets. Le radar, lui, ne
+        # bougeait pas — un temoin mal cible ne prouve rien.
+        URL_G = '/markets?view=overview'
+        ga = _releve_neuf(nav, URL_G)
+        gb = _releve_neuf(nav, URL_G)
+        ctxG, pgG = _ouvrir(nav, alterer='/scan', alterateur=_altere_scan)
+        gt = _releve(pgG, URL_G)
+        ctxG.close()
+        gd = _releve_neuf(nav, URL_G)
+        g_stables = {k: v for k, v in gb.get('graphes', {}).items()
+                     if ga.get('graphes', {}).get(k) == v and gd.get('graphes', {}).get(k) == v}
+        vu_g += _graphes_muets(dict(gb, graphes=g_stables), gt)
         nav.close()
 
     print('\n=== TEMOIN (source qui repond 200 avec un corps FAUX)')
     for ligne in vu[:4]:
         print('    ' + ligne)
+    for ligne in vu_g[:3]:
+        print('    (trace) ' + ligne)
+    print('    -> cellules vues : %d · traces vus : %d' % (len(vu), len(vu_g)))
     if not vu:
-        print('    AUCUN — l instrument est AVEUGLE, son « 0 » ne vaut rien.')
+        print('    AUCUN chiffre — l instrument est AVEUGLE, son « 0 » ne vaut rien.')
         return 2
-    print('    l instrument voit un chiffre faux silencieux : il peut echouer.')
+    if not vu_g:
+        print('    AUCUN trace — le detecteur de GRAPHIQUES est aveugle, son '
+              '« 0 trace » ne vaut rien.')
+        return 2
+    print('    l instrument voit un chiffre ET un trace faux : il peut echouer.')
 
     print('\n=== VERDICT')
     print('  fuites techniques : %s' % (fuites or 0))
     print('  erreurs de page   : %s' % (erreurs or 0))
     print('  chiffres faux SILENCIEUX : %s' % (muets or 0))
+    print('  TRACES modifies en silence : %s' % (traces[:4] or 0))
     # Les DUREES sont toujours dites, jamais masquees — mais elles ne repondent
     # pas a la meme question qu'un chiffre invente. Voir le commentaire de _DUREE.
     print('  libelles de DUREE modifies (comptes a part) : %d' % len(durees))
     for d in durees[:6]:
         print('    ' + d)
-    if fuites or erreurs or muets:
+    if fuites or erreurs or muets or traces:
         return 1
     print('\nSOUS PANNE PARTIELLE, AUCUN CHIFFRE INVENTE NE S AFFICHE EN SILENCE.')
     if durees:
