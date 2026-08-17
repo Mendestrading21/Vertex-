@@ -68,9 +68,15 @@ def study(closes):
             (measurable_up if e['ret_pct'] >= 0 else measurable_down).append(i)
         else:
             unmeasurable += 1
+    measured = len(measurable_up) + len(measurable_down)
     return {
         'available': True, 'points': n,
         'n_events': len(spikes), 'n_unmeasurable': unmeasurable,
+        'event_coverage': {'measured_events': measured, 'total_events': len(spikes),
+                           'unmeasured_events': unmeasurable,
+                           'coverage_pct': round(100 * measured / len(spikes), 1) if spikes else 0.0,
+                           'read_only': True,
+                           'note': 'événements trop récents exclus des médianes et jamais extrapolés'},
         'up': _bucket(measurable_up, cl),
         'down': _bucket(measurable_down, cl),
         'horizon_bars': HORIZON,
