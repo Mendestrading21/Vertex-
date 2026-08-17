@@ -279,7 +279,7 @@ async function renderRadar(){
       +missing.slice(0,8).map(p=>esc(p.r.symbol)).join(' · ')+(missing.length>8?' · …':'')
     :'Tous les titres affichés disposent des deux axes.';
   VXCharts.card('op-scatter',{
-    title:'Qualité × timing',
+    title:'Qualité × timing',titleLevel:2,
     question:'Où se trouvent les meilleurs couples qualité × timing ?',
     conclusion:(function(){const a=plotted.filter(p=>bucketOf(p.r)==='Actionnable').length;
       return a?(a+' candidat(s) en zone actionnable (haut-droit)'):'Aucun candidat en zone actionnable — attendre reste valide';})(),

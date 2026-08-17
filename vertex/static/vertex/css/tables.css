@@ -61,6 +61,16 @@
   .vx-table-cards tbody tr{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;
     border:1px solid var(--vx-border-soft);border-radius:var(--vx-r);
     padding:12px;background:var(--vx-surface-elevated)}
+  /* Une ligne CLIQUABLE en mode cartes est un controle : `role="button"`,
+     `tabindex`, `aria-label`. Sa carte EST sa limite, et elle rendait 1,20:1
+     — sous les 3:1 de WCAG 1.4.11. Defaut visible SEULEMENT en mobile : les
+     audits des lots 22-23 ne mesuraient qu'a 1440, ou ces lignes sont des
+     lignes de tableau et non des cartes. Les lignes non cliquables gardent
+     leur bordure discrete : elles n'identifient aucun controle. */
+  .vx-table-cards tbody tr[data-clickable],
+  .vx-table-cards tbody tr[role="button"]{
+    border-color:var(--vx-border-control);
+  }
   .vx-table-cards td{height:auto;border:none;padding:4px 0;white-space:normal}
   /* Une cellule TRONQUEE en mode cartes : `.vx-table-cards td` remet
      `white-space:normal` (specificite superieure a `.vx-truncate`), donc le

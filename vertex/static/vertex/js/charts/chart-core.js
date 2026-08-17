@@ -259,9 +259,17 @@
     }
     el.classList.add('vx-card', 'vx-chart-card', 'vx-chart-size-' + variant);
     if (typeof el.setAttribute === 'function') el.setAttribute('data-chart-size', variant);
+    /* NIVEAU DU TITRE — h3 par defaut, parce qu'un graphique est le plus
+       souvent une sous-section d'une carte deja titree en h2. Mais quand un
+       graphique OUVRE une vue, son titre EST le titre de section : le laisser
+       en h3 fait sauter l'ossature de h1 a h3, ce qui desoriente la navigation
+       par titres. Mesure : trois vues de Marches (macro, sectors, breadth)
+       etaient dans ce cas. `titleLevel` ne change RIEN au rendu — le style
+       vient de la classe, pas de la balise. */
+    const niv = (opts.titleLevel === 2) ? 2 : 3;
     const head = `
       <div class="vx-chart-head">
-        <h3 class="vx-chart-title" id="${id}-title">${opts.title || ''}</h3>
+        <h${niv} class="vx-chart-title" id="${id}-title">${opts.title || ''}</h${niv}>
         ${(opts.timeframe || opts.unit || opts.freshness) ? `<span class="vx-chart-meta">
           ${opts.timeframe ? `<span class="vx-badge">${opts.timeframe}</span>` : ''}
           ${opts.unit ? `<span class="vx-badge vx-badge-unit">${opts.unit}</span>` : ''}
@@ -852,7 +860,18 @@
         ${r.w > 90 ? C.tvEdgeChip(r.x + r.w - 7, r.y + 15, share + ' %', col, { fontSize: 9 }) : ''}`}
       </g>`;
     }).join('');
-    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block">${tdefs}${svg}</svg>`;
+    /* La RACINE du treemap etait le seul SVG du produit sans nom ni role :
+       chaque tuile porte deja `role="img"` et son libelle, mais un lecteur
+       d'ecran entrait dans un graphique anonyme avant de les rencontrer. On
+       nomme donc le groupe — `role="group"` et non `img`, pour NE PAS rendre
+       le sous-arbre opaque et garder le detail par tuile. Le resume est
+       DERIVE des donnees tracees : nombre de postes, dominant et sa part. */
+    const domin = rects.length ? rects.reduce((a, b) => (b.d.value > a.d.value ? b : a)) : null;
+    const resume = (o.ariaLabel || 'Repartition')
+      + ' : ' + rects.length + ' poste(s)'
+      + (domin ? ', ' + String(domin.d.label || '') + ' domine a '
+                 + Math.round(domin.d.value / total * 100) + ' %' : '');
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block" role="group" aria-label="${resume.replace(/"/g, '&quot;')}">${tdefs}${svg}</svg>`;
     return el;
   };
 

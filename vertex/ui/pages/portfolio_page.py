@@ -390,7 +390,7 @@ async function renderSynthese(){
   /* Treemap allocation/concentration (1 graphique majeur, avec conclusion). */
   if(window.VXCharts&&VXCharts.treemap){
     const cc=VXCharts.colors;const el=$('pf-alloc-tree');const w=(el&&el.clientWidth)||900;
-    VXCharts.treemap(el,{width:w,height:260,
+    VXCharts.treemap(el,{width:w,height:260,ariaLabel:'Allocation du portefeuille',
       items:rich.map(t=>({label:t.sym,value:Math.max(1,t.value??t.invested??0),
         sub:(t.pl!=null?((t.pl>=0?'+':'')+VX.fmt.num(t.pl,1)+'%')
              :(plConnu?(t.type!=='STK'?t.type:'')

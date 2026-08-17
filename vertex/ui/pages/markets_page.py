@@ -49,7 +49,7 @@ _VIEW_CONTENT = {
 <!-- Réponse immédiate : régime et risque, sans seconde visualisation. -->
 <div class="vx-hero-grid vx-mt3 vx-markets-lead">
   <section class="vx-card vx-card--hero" id="vx-mk-regime" aria-label="Régime de marché">
-    <div class="vx-card-header"><span class="vx-card-title">Régime</span>
+    <div class="vx-card-header"><h2 class="vx-card-title">Régime</h2>
       <span class="vx-chart-question">Le vent est-il dans le dos ou de face ?</span></div>
     <div id="vx-mk-regime-body">%%LOADING%%</div>
   </section>
@@ -112,7 +112,7 @@ _VIEW_CONTENT = {
       <div class="vx-hero-grid">
         <div id="vx-mk-macro-extra"></div>
         <section class="vx-card" aria-label="Limites des données macro">
-          <div class="vx-card-header"><span class="vx-card-title">Qualité des données</span></div>
+          <div class="vx-card-header"><h2 class="vx-card-title">Qualité des données</h2></div>
           <div class="vx-insight">Courbe tracée sur les <b>4 maturités réelles</b> du scan
           (3M · 5A · 10A · 30A). Les maturités intermédiaires (2A/7A/20A) ne sont pas fournies
           par les moteurs — non affichées plutôt qu’inventées.</div>
@@ -128,7 +128,7 @@ _VIEW_CONTENT = {
 <div class="vx-grid vx-mt3">
   <div class="vx-col-8" id="vx-mk-rotation"></div>
   <section class="vx-card vx-col-4" aria-label="Leaders par secteur">
-    <div class="vx-card-header"><span class="vx-card-title">Leaders</span></div>
+    <div class="vx-card-header"><h2 class="vx-card-title">Leaders</h2></div>
     <div id="vx-mk-sectors-leaders">%%LOADING%%</div>
   </section>
 </div>
@@ -143,7 +143,7 @@ _VIEW_CONTENT = {
   <div id="vx-mk-breadth-trend"></div>
   <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)" aria-label="Participation du marché">
     <section class="vx-card">
-      <div class="vx-card-header"><span class="vx-card-title">Participation actuelle</span></div>
+      <div class="vx-card-header"><h2 class="vx-card-title">Participation actuelle</h2></div>
       <div id="vx-mk-breadth-gauge">%%LOADING%%</div>
       <div class="vx-card-header"><span class="vx-card-title">Au-dessus des moyennes</span></div>
       <div id="vx-mk-breadth-detail">%%LOADING%%</div>
@@ -195,7 +195,7 @@ _VIEW_CONTENT = {
 <!-- Une seule lecture visuelle du VIX. Le contexte de régime reste textuel et replié. -->
 <div class="vx-section-stack vx-mt3">
   <section class="vx-card vx-card--hero" id="vx-mk-vix" aria-label="VIX">
-    <div class="vx-card-header"><span class="vx-card-title">VIX</span></div>
+    <div class="vx-card-header"><h2 class="vx-card-title">VIX</h2></div>
     <div id="vx-mk-vix-body">%%LOADING%%</div>
   </section>
   <details class="vx-disclosure vx-markets-volatility-details">
@@ -621,7 +621,7 @@ function loadYield(scan){
   const spread=(t10&&t3&&t10.value!=null&&t3.value!=null)?(t10.value-t3.value):null;
   const cc=VXCharts.colors;
   VXCharts.card('vx-mk-yield',{
-    title:'Courbe des taux US',timeframe:'clôture',
+    title:'Courbe des taux US',titleLevel:2,timeframe:'clôture',
     question:'La courbe est-elle normale ou inversée ?',
     conclusion:spread!=null?('Spread 10a-3m '+(spread>=0?'+':'')+spread.toFixed(2)+' pt — '+(spread<0?'INVERSÉE (signal de récession)':'pentue / normale')):'—',
     height:250,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
@@ -723,7 +723,7 @@ function loadSectors(scan){
     const pts=sectors.map(s=>({x:(s.avg_score!=null?s.avg_score:(s.score||50)),y:(s.avg_change!=null?s.avg_change:0),label:s.sector||''}));
     const quadCol=(x,y)=>x>=50?(y>=0?cc2.positive:cc2.warning):(y>=0?cc2.neutral:cc2.negative);
     VXCharts.card('vx-mk-rotation',{
-      title:'Rotation sectorielle — force relative × momentum',
+      title:'Rotation sectorielle — force relative × momentum',titleLevel:2,
       question:'Quels secteurs mènent, lesquels s’essoufflent ?',
       conclusion:'Haut-droit = Leaders (force + momentum) · bas-gauche = Retardataires — cliquer un secteur',
       height:360,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
@@ -817,7 +817,7 @@ async function loadBreadth(scan){
           :d<0?('Participation en baisse de '+Math.abs(d)+' pt sur la période.')
           :'Participation stable sur la période.';
       }
-      VXCharts.card('vx-mk-breadth-trend',{title:'Tendance de participation',
+      VXCharts.card('vx-mk-breadth-trend',{title:'Tendance de participation',titleLevel:2,
         question:'La participation s’améliore-t-elle ou se dégrade-t-elle ?',height:210,
         conclusion:cclBreadth,
         source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),

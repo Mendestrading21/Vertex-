@@ -138,11 +138,18 @@ def test_les_titres_de_marches_viennent_du_serveur():
     le serveur envoyait « VIX — volatilité implicite du marché », l'écran
     affichait « VIX ». Deux vérités, et les gardiens gardaient la mauvaise."""
     src = io.open(_MARKETS, encoding='utf-8').read()
-    for titre in ('<span class="vx-card-title">VIX</span>',
-                  '<span class="vx-card-title">Leadership</span>',
-                  '<span class="vx-card-title">Risque principal</span>',
-                  '<span class="vx-chart-title">Santé du marché</span>'):
-        assert titre in src, 'titre non écrit à la source : %s' % titre
+    # AGNOSTIQUE A LA BALISE, volontairement. Ce test garde le fait que le
+    # titre VIENT DU SERVEUR, pas la balise qui le porte : le premier titre de
+    # chaque vue est passé de `span` à `h2` au lot 24 pour réparer une ossature
+    # qui sautait de h1 à h3. Épingler `<span>` revenait à interdire une
+    # correction d'accessibilité au nom d'une règle de micro-copy.
+    for classe, titre in (('vx-card-title', 'VIX'),
+                          ('vx-card-title', 'Leadership'),
+                          ('vx-card-title', 'Risque principal'),
+                          ('vx-chart-title', 'Santé du marché')):
+        motif = r'<(span|h2|h3) class="%s">%s</\1>' % (classe, re.escape(titre))
+        assert re.search(motif, src), (
+            'titre non écrit à la source : %s (classe %s)' % (titre, classe))
 
 
 def test_les_libelles_longs_restent_pour_les_lecteurs_d_ecran():
