@@ -50,6 +50,10 @@ def test_long_call_math():
     assert 0.0 <= r['probability_of_profit'] <= 100.0
     # ATM, breakeven au-dessus du spot → PoP < 50 %
     assert r['probability_of_profit'] < 50.0
+    coverage = r['input_coverage']
+    assert coverage['premium_covered_option_legs'] == 1
+    assert coverage['bid_ask_coverage_pct'] == 0.0
+    assert coverage['greeks_available'] is True
 
 
 def test_bull_call_spread_math():
