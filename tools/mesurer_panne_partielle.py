@@ -8,6 +8,11 @@ Le lot 30 a construit cet outil, mesure les fuites et les erreurs (0 et 0), et
 LAISSE LA QUESTION OUVERTE en la documentant : les trois methodes essayees
 donnaient des faux positifs. Le lot 35 la ferme.
 
+RELEVE FINAL (33 vues, 10 sources, serveur de demonstration) : 0 fuite,
+0 erreur de page, 0 chiffre faux silencieux, 0 libelle de duree modifie.
+Temoin concluant. Ce verdict est le QUATRIEME rendu sur la meme question ; les
+trois premiers etaient faux, et le point 2 ci-dessous dit pourquoi.
+
 ## Ce qui a debloque la mesure
 
 1. CLE PAR CHEMIN DOM. La cle du lot 30 (`e.className` + longueur) mettait tout

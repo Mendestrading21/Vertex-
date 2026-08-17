@@ -29,18 +29,18 @@ Course complète, méthode encadrée, serveur de démonstration à SW v233 :
 | fuites techniques (`NaN`, `undefined`…) | **0** |
 | erreurs de page | **0** |
 | **chiffres faux silencieux** | **0** |
-| libellés de **durée** modifiés (comptés à part) | **4**, sur une seule vue |
+| libellés de **durée** modifiés (comptés à part) | **0** |
 | témoin | **concluant** |
+| code de sortie de l'outil | **0** |
 
-**Ce que « 0 » veut dire ici :** aucune cellule portant une **valeur** — un
-pourcentage, un prix, un compte, un score — ne change en silence quand une
-source tombe. Ce qui reste tient en quatre libellés d'**âge** sur
-`/system?view=automations` (« Il y a 51 min » → « 52 min », « dans ~1 min » →
-« ~0 min »). Ils sont identiques dans les trois relevés sains et différents sous
-panne : la panne change donc bien la durée affichée — vraisemblablement
-l'horodatage de repli employé. Une durée plus ancienne n'est pas un chiffre
-inventé, mais **la cause reste à expliquer**, et l'outil l'affiche à chaque
-exécution au lieu de la ranger dans un total rassurant.
+**Ce que « 0 » veut dire ici :** aucune cellule portant une valeur — pourcentage,
+prix, compte, score — ni même un libellé de durée ne change en silence quand une
+source tombe. `/api/desk`, la source la plus exposée (33 vues), est à zéro comme
+les neuf autres.
+
+Ce verdict est le **quatrième** que l'instrument a rendu sur la même question.
+Les trois premiers étaient faux, et le §2.2 dit pourquoi — c'est la partie de ce
+document qui a le plus de valeur.
 
 ---
 
@@ -82,21 +82,30 @@ sans panne ; une cellule n'est jugée que si elle est identique dans les **trois
 On demande à la cellule si elle bouge **aussi quand rien n'est cassé** — aucune
 liste de formats de durée, et le lot 33 a montré ce que valent les listes de noms.
 
-**Et il reste quatre cas.** Ils passent l'encadrement : identiques dans les trois
-relevés sains, différents sous panne. Ce ne sont donc **pas** des faux positifs
-d'horloge — la panne change réellement la durée affichée. Mais ce sont des
-**durées**, et une durée plus ancienne n'est pas un chiffre inventé.
+**Il restait quatre cas, et j'en ai tiré une conclusion fausse.** J'ai écrit :
+« ils passent l'encadrement, donc ce ne sont pas des horloges — la panne change
+réellement la durée affichée ». Deux faits l'ont démentie :
 
-À ce stade j'ai arrêté d'itérer sur l'instrument, et je lui ai fait **dire** la
-distinction au lieu de la masquer : les durées sont comptées à part **et
-affichées à chaque exécution**. Un total qui les aurait absorbées aurait fait
-dire à l'outil autre chose que ce qu'il mesure ; un filtre qui les aurait tues
-aurait caché un comportement réel que je n'explique pas encore.
+1. **La vue en cause ne lit même pas `/api/desk`** — elle lit
+   `/api/system/automations`. Une panne de `/api/desk` n'a aucun chemin pour
+   changer ses âges. Ce détail se trouve en lisant le code, pas le relevé.
+2. **Mes deux bras n'avaient pas le même cache.** Le bras de contrôle réutilisait
+   *un* contexte pour ses trois relevés : le cache client (`VX.fetch`, 15 s) lui
+   rendait la **même** valeur, tandis que le bras sous panne — contexte neuf —
+   refetchait. Toute valeur vivante différait donc systématiquement entre les
+   bras, et l'outil l'imputait à la panne.
 
-> Le résultat de ce lot n'est donc pas « le produit est propre » obtenu du
-> premier coup : c'est un chiffre que mon instrument a annoncé faux **deux fois**
-> avant que la méthode ne soit juste, et dont la dernière part n'est pas classée
-> comme propre mais comme **non expliquée**.
+**Quatrième forme : le même cache des deux côtés.** Un contexte neuf par relevé,
+témoin compris. La course rend alors **0 partout, durées incluses**.
+
+> Ce n'est pas « le produit est propre » obtenu du premier coup : c'est un verdict
+> que mon instrument a rendu **faux trois fois** — horloge globale, horloge à la
+> minute, cache asymétrique — avant d'être juste. Les trois erreurs ont la même
+> forme : **comparer deux choses qui ne sont pas comparables.**
+
+La classification `est_duree` reste dans l'outil comme **précaution** — elle
+mesure zéro aujourd'hui, et son rôle est de ne jamais laisser un total absorber
+un cas de durée si la situation revenait.
 
 ### 2.3 Le détecteur — tout chiffre qui change, pas seulement les zéros
 
@@ -162,11 +171,15 @@ Aucun moteur, aucune règle métier, aucun octet servi touché — **pas de bump
 4. Le témoin altère **une** source (`/api/market/summary`). Il prouve que
    l'instrument peut voir ; il ne prouve pas qu'il verrait toute forme de
    fausseté sur toute source.
-5. **Les quatre durées de `/system?view=automations` ne sont pas expliquées.**
-   Elles ne sont pas un artefact de mesure — l'encadrement les laisse passer.
-   La panne de `/api/desk` change la durée affichée ; je n'ai pas identifié
-   quel horodatage de repli le fait, et je ne l'ai pas cherché plus loin dans ce
-   lot. C'est la réserve la plus concrète qu'il laisse ouverte.
+5. **Une réserve fermée, et il faut dire comment.** J'avais écrit ici que les
+   quatre durées de `/system?view=automations` « ne sont pas un artefact de
+   mesure ». C'était faux : c'était mon montage (§2.2, quatrième forme). Avec le
+   même cache des deux côtés, elles disparaissent. La réserve est fermée par
+   correction de l'instrument, **pas** par explication du produit — il n'y avait
+   rien à expliquer dans le produit.
+6. **Ce que le résultat ne couvre pas** reste entier : une seule source à la
+   fois, cellules visibles seulement, jeu de démonstration, et un témoin qui
+   altère une source. Aucun de ces points n'a bougé avec ce lot.
 
 ---
 
