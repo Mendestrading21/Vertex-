@@ -454,6 +454,34 @@ def build_board(detail, rows, max_calls=6, max_puts=3):
     return board
 
 
+def board_coverage(contracts):
+    """Synthèse de couverture des contrats déjà produits, sans reclassement."""
+    contracts = list(contracts or [])
+    total = len(contracts)
+    liquidity_reported = sum(
+        1 for contract in contracts
+        if (contract.get('liquidity_coverage') or {}).get('reported_fields', 0) == 4
+    )
+    quoted = sum(
+        1 for contract in contracts
+        if (contract.get('liquidity_coverage') or {}).get('quoted_bid_ask') is True
+    )
+    timestamp_reported = sum(
+        1 for contract in contracts
+        if (contract.get('quote_timestamp_coverage') or {}).get('reported') is True
+    )
+    return {
+        'available': bool(contracts), 'contract_count': total,
+        'liquidity_fields_complete': liquidity_reported,
+        'quoted_bid_ask': quoted, 'timestamps_reported': timestamp_reported,
+        'liquidity_fields_complete_pct': round(100 * liquidity_reported / total, 1) if total else 0.0,
+        'quoted_bid_ask_pct': round(100 * quoted / total, 1) if total else 0.0,
+        'timestamps_reported_pct': round(100 * timestamp_reported / total, 1) if total else 0.0,
+        'read_only': True,
+        'note': 'synthèse descriptive ; aucun contrat n’est reclassé ou exclu',
+    }
+
+
 def recommend(contracts):
     """Choisit LA meilleure option entre court / moyen / long (profil swing : moyen/long
     privilégiés, court seulement si excellent). Renvoie le contrat + une justification FR."""

@@ -74,6 +74,21 @@ def test_contract_quote_timestamp_is_exposed_without_age_derivation(monkeypatch)
     assert timestamp['timestamp'] == '2026-08-17T12:00:00Z'
 
 
+def test_board_coverage_summarizes_contract_metadata_without_reordering():
+    contracts = [
+        {'liquidity_coverage': {'reported_fields': 4, 'quoted_bid_ask': True},
+         'quote_timestamp_coverage': {'reported': True}},
+        {'liquidity_coverage': {'reported_fields': 1, 'quoted_bid_ask': False},
+         'quote_timestamp_coverage': {'reported': False}},
+    ]
+    coverage = engine.board_coverage(contracts)
+    assert coverage['contract_count'] == 2
+    assert coverage['liquidity_fields_complete'] == 1
+    assert coverage['quoted_bid_ask'] == 1 and coverage['timestamps_reported'] == 1
+    assert coverage['liquidity_fields_complete_pct'] == 50.0
+    assert contracts[0]['liquidity_coverage']['reported_fields'] == 4
+
+
 def test_board_screen_exposes_rejected_quote_without_derived_metrics(monkeypatch):
     class _Ticker:
         options = ['2027-02-20']
