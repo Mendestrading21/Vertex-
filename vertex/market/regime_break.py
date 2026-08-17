@@ -11,6 +11,7 @@ import math
 from datetime import date
 
 import numpy as np
+from vertex.data import temporal_evidence
 
 
 BASELINE_RETURNS = 60
@@ -54,6 +55,10 @@ def assess(series, *, baseline_returns=BASELINE_RETURNS, recent_returns=RECENT_R
         return _unavailable('INVALID_CONFIGURATION', 'fenêtres de référence invalides')
     dates = (series or {}).get('dates')
     closes = (series or {}).get('close')
+    evidence = temporal_evidence.assess(series, minimum=baseline_returns + recent_returns + 1)
+    if not evidence.get('available'):
+        return _unavailable(evidence.get('status', 'TEMPORAL_EVIDENCE_REQUIRED'),
+                            evidence.get('reason', 'preuve temporelle indisponible'))
     if not isinstance(dates, list) or not isinstance(closes, list) or len(dates) != len(closes):
         return _unavailable('TEMPORAL_EVIDENCE_REQUIRED', 'série de clôtures datée absente ou incohérente')
     points = []
