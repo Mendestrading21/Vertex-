@@ -221,8 +221,19 @@ def main(argv=None):
     print('worker IBKR neutralise sur %d liaison(s)' % neutraliser_le_worker(terminal))
     armer_l_alarme()
 
+    # CHAQUE STORE EST REMPLI COMME EN PRODUCTION, et c'est decisif.
+    #  · `news_state['items']` est BRUT : la boucle d'actualites y depose les
+    #    titres tels quels, et chaque SORTIE assainit.
+    #  · `scan_state['detail'][sym]['news']` est deja ASSAINI : ce store a un
+    #    seul ecrivain, la boucle de scan, qui neutralise AVANT de deposer.
+    # Ma premiere version empoisonnait les deux a l'identique, en brut. Elle
+    # accusait alors `/scan` et `/api/ticker` — pour un etat que la production
+    # ne produit jamais. Un instrument qui fabrique un etat impossible mesure
+    # son propre montage. (Constat du lot 33, applique ici au lot 38.)
+    from vertex.services import news_plus
     news_state['items'] = [dict(CHARGE)]
-    scan_state.setdefault('detail', {})['TSTQ'] = {'price': 100.0, 'news': [dict(CHARGE)]}
+    scan_state.setdefault('detail', {})['TSTQ'] = {
+        'price': 100.0, 'news': news_plus.sanitize_news([dict(CHARGE)])}
     client = terminal.app.test_client()
 
     coupables, injoignables, servies = [], [], 0
