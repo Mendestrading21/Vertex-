@@ -45,6 +45,7 @@ def test_contract_liquidity_coverage_distinguishes_zero_from_missing(monkeypatch
             return type('Chain', (), {'calls': pd.DataFrame([{
                 'strike': 100.0, 'impliedVolatility': 0.2, 'openInterest': None,
                 'volume': 0, 'bid': None, 'ask': None, 'lastPrice': 5.0,
+                'lastTradeDate': None,
             }])})()
     monkeypatch.setattr(engine.yf, 'Ticker', lambda _symbol: _Ticker())
     monkeypatch.setattr(engine, '_pick_expiries', lambda *_args, **_kwargs: [('2027-02-20', 180, 'long')])
@@ -53,6 +54,24 @@ def test_contract_liquidity_coverage_distinguishes_zero_from_missing(monkeypatch
     assert coverage['bid_present'] is False and coverage['ask_present'] is False
     assert coverage['volume_present'] is True and coverage['open_interest_present'] is False
     assert coverage['reported_fields'] == 1 and coverage['quoted_bid_ask'] is False
+    assert contracts[0]['quote_timestamp_coverage']['status'] == 'TIMESTAMP_UNAVAILABLE'
+
+
+def test_contract_quote_timestamp_is_exposed_without_age_derivation(monkeypatch):
+    class _Ticker:
+        options = ['2027-02-20']
+        def option_chain(self, _expiry):
+            return type('Chain', (), {'calls': pd.DataFrame([{
+                'strike': 100.0, 'impliedVolatility': 0.2, 'openInterest': 1000,
+                'volume': 10, 'bid': 4.9, 'ask': 5.1, 'lastPrice': 5.0,
+                'lastTradeDate': '2026-08-17T12:00:00Z',
+            }])})()
+    monkeypatch.setattr(engine.yf, 'Ticker', lambda _symbol: _Ticker())
+    monkeypatch.setattr(engine, '_pick_expiries', lambda *_args, **_kwargs: [('2027-02-20', 180, 'long')])
+    contract = engine.best_for_symbol('TEST', 100.0, 112.0, 'call', buckets=('long',))[0]
+    timestamp = contract['quote_timestamp_coverage']
+    assert timestamp['reported'] is True and timestamp['status'] == 'REPORTED_TIMESTAMP_ONLY'
+    assert timestamp['timestamp'] == '2026-08-17T12:00:00Z'
 
 
 def test_board_screen_exposes_rejected_quote_without_derived_metrics(monkeypatch):

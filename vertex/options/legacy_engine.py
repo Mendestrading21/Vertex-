@@ -55,6 +55,13 @@ def _reported_number(x):
         return False
 
 
+def _reported_timestamp(x):
+    if x is None:
+        return False
+    text = str(x).strip()
+    return bool(text) and text.lower() not in ('none', 'nan', 'nat')
+
+
 def _npdf(x):
     return math.exp(-0.5 * x * x) / math.sqrt(2 * math.pi)
 
@@ -302,6 +309,7 @@ def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=N
                 iv = _f(row.get('impliedVolatility'))
                 raw_oi, raw_vol = row.get('openInterest'), row.get('volume')
                 raw_bid, raw_ask = row.get('bid'), row.get('ask')
+                raw_trade_time = row.get('lastTradeDate')
                 oi = _i(raw_oi)
                 vol = _i(raw_vol)
                 bid = _f(raw_bid)
@@ -390,6 +398,14 @@ def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=N
                         'total_fields': 4,
                         'read_only': True,
                         'note': 'champ absent ≠ zéro observé ; aucune liquidité n’est imputée',
+                    },
+                    'quote_timestamp_coverage': {
+                        'reported': _reported_timestamp(raw_trade_time),
+                        'timestamp': str(raw_trade_time) if _reported_timestamp(raw_trade_time) else None,
+                        'status': ('REPORTED_TIMESTAMP_ONLY' if _reported_timestamp(raw_trade_time)
+                                   else 'TIMESTAMP_UNAVAILABLE'),
+                        'read_only': True,
+                        'note': 'horodatage reporté sans déduction d’âge ou de fraîcheur',
                     },
                 }
                 _q = option_quality(_c, spot)
