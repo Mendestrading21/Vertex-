@@ -105,6 +105,7 @@ def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
     dated_events = sum(1 for event in events if event.get('date') is not None or event.get('dte') is not None)
     news_events = [event for event in events if event.get('kind') == 'news']
     news_timestamped = sum(1 for event in news_events if event.get('date') is not None)
+    keyword_impacts = sum(1 for event in news_events if event.get('impact_derivation') == 'keywords')
 
     return {
         'symbol': sym, 'as_of': as_of, 'n': len(events), 'events': events,
@@ -122,6 +123,13 @@ def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
                                         if news_events else 0.0,
                                         'status': 'TIMESTAMP_COVERAGE_ONLY',
                                         'note': 'format d’horodatage non normalisé : aucun âge ou impact n’est déduit'},
+            'news_impact_coverage': {'keyword_classified_news': keyword_impacts,
+                                     'unclassified_news': len(news_events) - keyword_impacts,
+                                     'total_news': len(news_events),
+                                     'coverage_pct': round(100 * keyword_impacts / len(news_events), 1)
+                                     if news_events else 0.0,
+                                     'status': 'KEYWORD_DERIVATION_ONLY',
+                                     'note': 'titre non classé = aucune interprétation d’impact créée'},
             'all_events_have_source': all(event.get('source') for event in events),
             'read_only': True,
             'note': 'canal absent, événement non daté ou sans mention de révision reste explicitement qualifié',

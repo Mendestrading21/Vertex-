@@ -103,6 +103,10 @@ def test_impact_hint_only_from_transparent_keywords():
     plain = next(e for e in ev['events'] if e['kind'] == 'news' and 'quelconque' in e['label'])
     assert tagged['impact_hint'] == 'EARNINGS' and tagged['impact_derivation'] == 'keywords'
     assert plain['impact_hint'] is None         # pas de mot-clé → pas d'impact inventé
+    coverage = ev['coverage']['news_impact_coverage']
+    assert coverage['keyword_classified_news'] == 1
+    assert coverage['unclassified_news'] == 1
+    assert coverage['status'] == 'KEYWORD_DERIVATION_ONLY'
 
 
 def test_dated_events_sorted_by_dte_first():
