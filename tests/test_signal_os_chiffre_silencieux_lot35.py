@@ -97,12 +97,38 @@ def test_la_mesure_est_ENCADREE_par_des_releves_sans_panne():
     quand rien n'est cassé."""
     src = open(pp.__file__, encoding='utf-8').read()
     corps = src.split('for url in concernees:')[1].split('print(')[0]
-    assert corps.count('_releve(pgA, url)') == 3, (
+    assert corps.count('_releve_neuf(nav, url)') == 3, (
         'la mesure n\'est plus encadree (2 references + 1 controle sans panne) '
         '— le detecteur va accuser les horloges')
-    assert corps.count('_releve(pgB, url)') == 1
+    assert corps.count('_releve_neuf(nav, url, panne=cible') == 1
     assert ("a['cellules'].get(k) == v and d['cellules'].get(k) == v" in corps), (
         'la stabilite ne croise plus les TROIS releves sans panne')
+
+
+def test_les_deux_bras_ont_le_MEME_cache():
+    """QUATRIÈME forme de la même erreur, et la plus coûteuse : j'ai comparé
+    deux bras qui n'étaient pas comparables.
+
+    Le bras de contrôle réutilisait UN contexte pour ses trois relevés, donc le
+    cache client (`VX.fetch` garde 15 s) lui rendait la même valeur, tandis que
+    le bras sous panne — contexte neuf — refetchait. Toute valeur vivante (un âge
+    calculé par le serveur) différait alors systématiquement entre les bras, et
+    l'outil l'imputait à la panne. J'en avais conclu que « la panne change
+    vraiment la durée » : c'était mon montage.
+
+    Un contexte neuf par relevé, des DEUX côtés — témoin compris."""
+    src = open(pp.__file__, encoding='utf-8').read()
+    assert 'def _releve_neuf(' in src and 'ctx.close()' in src, (
+        'le contexte n\'est plus recree par releve : les bras redeviennent '
+        'incomparables des qu\'une valeur vit')
+    # Plus aucun releve ne doit reutiliser un contexte partage entre deux bras.
+    corps = src.split('def main(')[1]
+    assert 'pgA' not in corps and 'pgB' not in corps, (
+        'un contexte partage est revenu dans la boucle de mesure')
+    temoin = corps.split('=== TEMOIN')[0].split('# Meme regle pour le temoin')[-1]
+    assert temoin.count('_releve_neuf(nav') >= 3, (
+        'le temoin ne compare plus a contexte neuf : il heriterait du meme '
+        'biais que la mesure')
 
 
 def test_l_outil_porte_son_propre_temoin_et_le_dit_quand_il_est_aveugle():

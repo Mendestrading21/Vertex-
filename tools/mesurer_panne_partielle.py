@@ -25,11 +25,16 @@ donnaient des faux positifs. Le lot 35 la ferme.
        mesure — la course complete en gardait quatre.
    (c) DEUX references AVANT + UN CONTROLE APRES, tous sans panne. Une cellule
        n'est jugee que si elle est identique dans les TROIS.
-   Il RESTE quatre cas apres (c), sur /system?view=automations : identiques dans
-   les trois releves sains, differents sous panne. La panne change donc bien la
-   duree affichee. Ces cas sont comptes A PART (voir _DUREE) : une duree plus
-   ancienne n'est pas un chiffre INVENTE, et les confondre ferait dire a l'outil
-   autre chose que ce qu'il mesure. Ils sont TOUJOURS affiches.
+   (d) MEME CACHE DES DEUX COTES. Apres (c) il restait quatre cas sur
+       /system?view=automations, et j'ai eu tort d'en conclure que « la panne
+       change vraiment la duree ». La cause etait mon montage : le bras de
+       controle reutilisait UN contexte pour ses trois releves, donc le cache
+       client (`VX.fetch`, 15 s) lui rendait la meme valeur, tandis que le bras
+       sous panne — contexte neuf — refetchait. Toute valeur vivante differait
+       donc entre les bras. Un CONTEXTE NEUF PAR RELEVE, des deux cotes, retire
+       cet avantage. Voir `_releve_neuf`.
+   La vue en cause ne lit meme pas /api/desk : elle lit /api/system/automations.
+   C'est ce detail, verifie dans le code, qui a fait tomber ma conclusion.
 
 3. TOUT CHIFFRE QUI CHANGE, pas seulement les zeros. Le lot 30 ne cherchait
    qu'un « 0 » substitue. Une moyenne sur cinq sources au lieu de six est
@@ -169,6 +174,28 @@ def _releve(pg, url):
     return pg.evaluate(JS)
 
 
+def _releve_neuf(nav, url, panne=None, erreurs=None):
+    """Un CONTEXTE NEUF par releve — pour les DEUX bras, sain comme en panne.
+
+    Sans cela, les bras ne sont pas comparables, et je l'ai paye : le bras de
+    controle reutilisait un seul contexte pour ses trois releves, donc le cache
+    client (`VX.fetch` garde 15 s) lui rendait la MEME valeur, pendant que le
+    bras sous panne, contexte neuf, refetchait. Toute valeur vivante (un age
+    calcule par le serveur) differait alors systematiquement entre les bras —
+    et l'outil l'imputait a la panne.
+
+    J'avais conclu de ces quatre cas qu'ils « passaient l'encadrement, donc la
+    panne change vraiment la duree ». C'etait faux : c'etait mon montage.
+    Meme cache, meme conditions, des deux cotes."""
+    ctx, pg = _ouvrir(nav, panne=panne)
+    try:
+        if erreurs is not None:
+            pg.on('pageerror', lambda e: erreurs.append(str(e)[:70]))
+        return _releve(pg, url)
+    finally:
+        ctx.close()
+
+
 # Un libellé de DURÉE (« Il y a 25 min », « dans ~3 min », « 41 s »). Ce
 # n'est pas un filtre qui masque : ces cas sont TOUJOURS affichés, mais comptés
 # à part, parce qu'ils ne répondent pas à la même question. Mesuré au lot 35 :
@@ -241,8 +268,6 @@ def main():
                 # blocage — mesure : l'outil se figeait apres quelques vues, sans
                 # rien dire. Le cout (~0,3 s par contexte) est le prix d'une
                 # mesure qui va au bout.
-                ctxA, pgA = _ouvrir(nav)
-                ctxB, pgB = _ouvrir(nav, panne=cible)
                 # LA MESURE EST ENCADREE. Deux references AVANT, un controle
                 # APRES, tous sans panne. Une cellule n'est jugee que si elle
                 # est identique dans les TROIS : ce qui change alors sous panne
@@ -255,12 +280,11 @@ def main():
                 # et « dans ~1 min » -> « ~0 min ». Le controle d'apres les
                 # elimine SANS lister les formats de duree — on demande a la
                 # cellule si elle bouge aussi quand rien n'est casse.
-                a = _releve(pgA, url)
-                b = _releve(pgA, url)
+                a = _releve_neuf(nav, url)
+                b = _releve_neuf(nav, url)
                 errs = []
-                pgB.on('pageerror', lambda e, _e=errs: _e.append(str(e)[:70]))
-                c = _releve(pgB, url)
-                d = _releve(pgA, url)
+                c = _releve_neuf(nav, url, panne=cible, erreurs=errs)
+                d = _releve_neuf(nav, url)
                 stables = {k: v for k, v in b['cellules'].items()
                            if a['cellules'].get(k) == v and d['cellules'].get(k) == v}
                 if c['fuite']:
@@ -276,21 +300,20 @@ def main():
                     else:
                         muets.append(cas)
                         n_muets += 1
-                ctxA.close()
-                ctxB.close()
             print('--- %-26s %2d vue(s) · chiffres changes EN SILENCE : %d'
                   % (cible, len(concernees), n_muets))
 
         # 3. LE TEMOIN — sans lui, un « 0 » ne prouve rien.
-        ctxA, pgA = _ouvrir(nav)
+        # Meme regle pour le temoin : contexte neuf des deux cotes.
+        a = _releve_neuf(nav, '/')
+        b = _releve_neuf(nav, '/')
         ctxT, pgT = _ouvrir(nav, alterer='/api/market/summary')
-        a = _releve(pgA, '/')
-        b = _releve(pgA, '/')
-        stables = {k: v for k, v in b['cellules'].items() if a['cellules'].get(k) == v}
         t = _releve(pgT, '/')
-        vu = _silencieux(dict(b, cellules=stables), t)
-        ctxA.close()
         ctxT.close()
+        d = _releve_neuf(nav, '/')
+        stables = {k: v for k, v in b['cellules'].items()
+                   if a['cellules'].get(k) == v and d['cellules'].get(k) == v}
+        vu = _silencieux(dict(b, cellules=stables), t)
         nav.close()
 
     print('\n=== TEMOIN (source qui repond 200 avec un corps FAUX)')
