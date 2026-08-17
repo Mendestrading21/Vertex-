@@ -149,7 +149,7 @@ def _profile():
 
 def build_packet(sym, detail, market=None, events=None, anomaly=None,
                  as_of=None, demo=False, options_ctx=None, portfolio_ctx=None,
-                 red_team=None, data_quality_ctx=None, reconciliation_ctx=None):
+                 red_team=None, data_quality_ctx=None, reconciliation_ctx=None, fundamental_ctx=None):
     """Agrège les sorties moteurs existantes en un packet typé — sans muter les
     sources, sans recalculer, sans inventer."""
     detail = detail or {}
@@ -176,8 +176,8 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
                                                         'reason': 'timeline non fournie'},
         'anomalies': anomaly if anomaly is not None else {'available': False,
                                                           'reason': 'scan anomalies non fourni'},
-        'fundamentals': {'available': False,
-                         'reason': 'contexte fondamental non branché (lot ultérieur)'},
+        'fundamentals': (fundamental_ctx if fundamental_ctx is not None else
+                         {'available': False, 'reason': 'contexte fondamental non fourni'}),
         'options': (options_ctx if options_ctx is not None else
                     {'available': False, 'reason': 'OptionsContext non fourni'}),
         'portfolio': (portfolio_ctx if portfolio_ctx is not None else
@@ -615,12 +615,12 @@ def perturbation_analysis(base_decision, sym, detail, market=None, events=None,
 
 def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
            demo=False, options_ctx=None, portfolio_ctx=None, red_team=None,
-           calibration=None, data_quality_ctx=None, reconciliation_ctx=None):
+           calibration=None, data_quality_ctx=None, reconciliation_ctx=None, fundamental_ctx=None):
     packet = build_packet(sym, detail, market=market, events=events,
                           anomaly=anomaly, as_of=as_of, demo=demo,
                           options_ctx=options_ctx, portfolio_ctx=portfolio_ctx,
                           red_team=red_team, data_quality_ctx=data_quality_ctx,
-                          reconciliation_ctx=reconciliation_ctx)
+                          reconciliation_ctx=reconciliation_ctx, fundamental_ctx=fundamental_ctx)
     score = score40(packet)
     gates = hard_gates(packet, score)
     scen = scenarios(detail)
