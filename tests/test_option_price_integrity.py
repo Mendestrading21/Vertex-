@@ -89,6 +89,37 @@ def test_board_coverage_summarizes_contract_metadata_without_reordering():
     assert contracts[0]['liquidity_coverage']['reported_fields'] == 4
 
 
+def test_options_pack_serves_board_coverage_without_mutating_contracts(monkeypatch):
+    import terminal
+    history = pd.DataFrame({'Close': [100.0 + i * 0.1 for i in range(252)]})
+    class _Ticker:
+        fast_info = {'lastPrice': 100.0}
+        info, calendar, news, options = {}, {}, [], []
+        def history(self, **_kwargs): return history
+    contract = {'sym': 'TEST', 'suit': 60, 'bucket': 'long', 'pop': 55,
+                'danger_n': 1, 'flags': [], 'theta_burn': 0.2, 'em_pct': 5.0}
+    monkeypatch.setattr(terminal.yf, 'Ticker', lambda _symbol: _Ticker())
+    monkeypatch.setattr(terminal.ai, 'fr_news', lambda _sym, news: (news, None))
+    monkeypatch.setattr(terminal.options, 'best_for_symbol', lambda *_args, **_kwargs: {
+        'contracts': [contract], 'price_rejections': [], 'price_rejection_count': 0})
+    monkeypatch.setattr(terminal.options, 'board_coverage', lambda contracts: {
+        'contract_count': len(contracts), 'read_only': True})
+    monkeypatch.setattr(terminal.options, 'recommend', lambda contracts: None)
+    monkeypatch.setattr(terminal.options, 'recommend_top', lambda contracts, _n: [])
+    monkeypatch.setattr(terminal.research, 'chart_read', lambda _detail: '')
+    monkeypatch.setattr(terminal.research, 'chart_verdict', lambda _detail: '')
+    monkeypatch.setattr(terminal.engine, 'decide', lambda *_args: {})
+    monkeypatch.setattr(terminal.ibkr, 'verdict', lambda *_args: {})
+    terminal.scan_state.setdefault('detail', {})['TEST'] = {'price': 100.0, 'plan': {}}
+    try:
+        payload = terminal.options_pack('TEST')
+        assert payload['option_board_coverage'] == {'contract_count': 1, 'read_only': True}
+        assert payload['contracts'] == [contract]
+    finally:
+        terminal.scan_state['detail'].pop('TEST', None)
+        terminal._OPTALL_CACHE.pop('TEST', None)
+
+
 def test_board_screen_exposes_rejected_quote_without_derived_metrics(monkeypatch):
     class _Ticker:
         options = ['2027-02-20']
