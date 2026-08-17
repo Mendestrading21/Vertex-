@@ -50,8 +50,17 @@
         + '<td data-label="Détail"><span class="vx-row-open">Ouvrir</span></td>'
         + '</tr>';
     }).join('');
-    out.innerHTML = '<div class="vx-meta vx-mb1">' + esc(d.universe) + ' · fenêtre ' + esc((d.window || []).join('-'))
-      + ' DTE · ' + d.n + ' contrat(s)' + (d.demo ? ' · <span class="vx-badge" data-tone="neutral">DÉMO</span>' : '') + '</div>'
+    /* Chaque champ de cette ligne est GARDE. Mesure du lot 29 : sur une reponse
+       vide, elle rendait « · fenetre  DTE · undefined contrat(s) » — un mot
+       technique lu par l'utilisateur, et deux champs muets qui ressemblaient a
+       des valeurs. Les cellules voisines gardaient deja (`c.iv != null ? … :
+       '—'`) ; c'est cette ligne-ci qui avait oublie. Une donnee absente se dit,
+       elle ne se laisse pas deviner. */
+    var univ = d.universe ? esc(d.universe) : '—';
+    var fen = (d.window && d.window.length) ? esc(d.window.join('-')) + ' DTE' : 'fenêtre n/d';
+    var nb = (d.n != null && isFinite(d.n)) ? d.n + ' contrat(s)' : 'nombre de contrats n/d';
+    out.innerHTML = '<div class="vx-meta vx-mb1">' + univ + ' · ' + fen + ' · ' + nb
+      + (d.demo ? ' · <span class="vx-badge" data-tone="neutral">DÉMO</span>' : '') + '</div>'
       + '<div class="vx-table-wrap"><table class="vx-table"><thead><tr>'
       + '<th>Contrat</th><th class="vx-num">Strike</th><th class="vx-num">DTE</th><th class="vx-num">Delta</th>'
       + '<th class="vx-num">IV</th><th class="vx-num">Qualité</th><th>Mandat</th><th></th>'
