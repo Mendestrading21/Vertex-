@@ -80,6 +80,11 @@ def test_timeline_normalized_shape():
         assert e['category'] in ('fact', 'interpretation')
         assert e['label'] and e['source']
         assert 'dte' in e and 'impact_hint' in e
+    coverage = ev['coverage']
+    assert all(coverage['input_channels'].values())
+    assert coverage['all_events_have_source'] is True
+    assert coverage['dated_events'] == 4
+    assert coverage['undated_events'] == ev['n'] - 4
 
 
 def test_fact_vs_interpretation_separated():
@@ -126,6 +131,10 @@ def test_revisions_from_news_are_mentions_not_consensus():
 def test_empty_build_honest():
     ev = EV.build('TST')
     assert ev['events'] == [] and ev['n'] == 0
+    assert ev['coverage']['input_channels'] == {
+        'news_provided': False, 'earnings_provided': False,
+        'macro_provided': False, 'anomaly_provided': False,
+    }
 
 
 def test_news_deduplicated_inside_timeline():
