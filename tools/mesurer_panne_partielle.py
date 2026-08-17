@@ -9,8 +9,8 @@ LAISSE LA QUESTION OUVERTE en la documentant : les trois methodes essayees
 donnaient des faux positifs. Le lot 35 la ferme.
 
 RELEVE FINAL (33 vues, 10 sources, serveur de demonstration) : 0 fuite,
-0 erreur de page, 0 chiffre faux silencieux, 0 libelle de duree modifie.
-Temoin concluant. Ce verdict est le QUATRIEME rendu sur la meme question ; les
+0 erreur de page, 0 chiffre faux silencieux, 0 TRACE modifie en silence,
+0 libelle de duree modifie. Les DEUX temoins — cellule et trace — concluent. Ce verdict est le QUATRIEME rendu sur la meme question ; les
 trois premiers etaient faux, et le point 2 ci-dessous dit pourquoi.
 
 ## Ce qui a debloque la mesure

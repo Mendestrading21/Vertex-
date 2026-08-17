@@ -29,8 +29,9 @@ Course complète, méthode encadrée, serveur de démonstration à SW v233 :
 | fuites techniques (`NaN`, `undefined`…) | **0** |
 | erreurs de page | **0** |
 | **chiffres faux silencieux** | **0** |
+| **tracés modifiés en silence** (géométrie SVG) | **0** |
 | libellés de **durée** modifiés (comptés à part) | **0** |
-| témoin | **concluant** |
+| témoins (cellule **et** tracé) | **concluants** |
 | code de sortie de l'outil | **0** |
 
 **Ce que « 0 » veut dire ici :** aucune cellule portant une valeur — pourcentage,
@@ -115,6 +116,40 @@ dangereuse, celle qui ne se remarque pas.
 
 ---
 
+## 2bis. Les graphiques — l'angle mort le plus coûteux
+
+Ce document a longtemps porté une réserve : « un chiffre faux dans un graphique
+SVG sans texte n'est pas vu ». Pour un produit de graphiques, c'était l'angle
+mort principal : une courbe qui perd la moitié de ses sommets ne porte **aucun
+texte** qu'une cellule pourrait trahir.
+
+La sonde relève désormais la **signature géométrique** de chaque SVG — nombre de
+tracés, longueur de chaque `d`, nombre de sommets — avec la même discipline que
+les cellules. Relevé : **0 tracé modifié en silence** sur les dix sources.
+
+**Deux pièges avant d'y arriver, et c'est encore le même motif.**
+
+1. **Détecteur sans témoin.** La première version rendait « 0 tracé » — un zéro
+   sans valeur. Le témoin des *cellules* ne suffit pas : mesuré, altérer le VIX
+   change deux cellules et **aucun** tracé.
+2. **Témoin mal ciblé, puis altération mal ciblée.** `/opportunities?view=radar`
+   ne bougeait pas ; puis une troncature limitée à `rows` ne touchait l'entrée
+   d'aucune courbe. Rendue **récursive** — toute liste du corps réduite de
+   moitié — elle fait passer deux aires de Marchés de **144 à 72 sommets**.
+
+Avant de conclure, j'ai vérifié que la sonde relève réellement des graphiques :
+6 sur `/`, 4 sur Marchés, 1 sur le radar. Elle n'était pas aveugle — ma cible
+l'était.
+
+**Ce que la signature ne voit pas**, et il faut le dire : elle compare une
+longueur de `d` et un nombre de sommets. Une courbe dont les **valeurs**
+changeraient sans changer ni sa longueur de chaîne ni son nombre de points
+passerait. Le choix est délibéré — comparer les `d` au caractère près ferait
+remonter des écarts sous-pixel entre deux rendus identiques, et l'instrument
+crierait sans arrêt.
+
+---
+
 ## 3. Le témoin, sans lequel un « 0 » ne prouve rien
 
 Un balayage qui ne trouve rien peut vouloir dire deux choses : le produit est
@@ -177,9 +212,15 @@ Aucun moteur, aucune règle métier, aucun octet servi touché — **pas de bump
    même cache des deux côtés, elles disparaissent. La réserve est fermée par
    correction de l'instrument, **pas** par explication du produit — il n'y avait
    rien à expliquer dans le produit.
-6. **Ce que le résultat ne couvre pas** reste entier : une seule source à la
-   fois, cellules visibles seulement, jeu de démonstration, et un témoin qui
-   altère une source. Aucun de ces points n'a bougé avec ce lot.
+6. **Ce que le résultat ne couvre pas.** Une seule source à la fois ; jeu de
+   démonstration ; témoins qui altèrent une source chacun. La réserve
+   « cellules visibles seulement » est **levée pour les graphiques** (§2bis)
+   mais pas au-delà : un contenu qui n'est ni texte visible ni géométrie SVG —
+   un tableau replié, une valeur dans une infobulle — n'est toujours pas vu.
+7. **La signature géométrique compare une longueur et un nombre de sommets.**
+   Une courbe dont les valeurs changeraient sans toucher ni l'une ni l'autre
+   passerait. Délibéré : comparer les `d` au caractère près ferait remonter des
+   écarts sous-pixel entre deux rendus identiques.
 
 ---
 
