@@ -1682,10 +1682,16 @@ def options_pack(sym):
             out['contracts'] = _rc['contracts']
             out['contracts_cached'] = True
         else:
-            out['contracts'] = options.best_for_symbol(sym, spot, spot * 1.12, 'call', max_n=2,
-                                                       buckets=('court', 'moyen', 'long'), earnings_dte=edte)
+            screened = options.best_for_symbol(sym, spot, spot * 1.12, 'call', max_n=2,
+                                               buckets=('court', 'moyen', 'long'), earnings_dte=edte,
+                                               include_diagnostics=True)
+            out['contracts'] = screened['contracts']
+            out['option_price_rejections'] = screened['price_rejections']
+            out['option_price_rejection_count'] = screened['price_rejection_count']
             if out['contracts']:                       # réchauffe la rotation au passage
                 _OPTALL_CACHE[sym] = {'ts': time.time(), 'contracts': out['contracts']}
+        out.setdefault('option_price_rejections', [])
+        out.setdefault('option_price_rejection_count', 0)
         out['best_pick'] = options.recommend(out['contracts'])   # LA meilleure entre les 3
         out['best_two'] = options.recommend_top(out['contracts'], 2)   # le TOP 2 des échéances (#1/#2)
         _d = scan_state['detail'].get(sym)
