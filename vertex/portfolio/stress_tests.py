@@ -25,6 +25,17 @@ def run_stress_tests(snapshot: PortfolioSnapshot, profile,
         return out
     sector_of = sector_of or {}
     weights = snapshot.weights()
+    beta_declared = [p.symbol for p in snapshot.positions if p.beta is not None]
+    beta_defaulted = [p.symbol for p in snapshot.positions if p.beta is None]
+    beta_coverage = round(sum(weights.get(symbol, 0) for symbol in beta_declared), 1)
+    out['beta_assumptions'] = {
+        'declared_symbols': beta_declared,
+        'defaulted_symbols': beta_defaulted,
+        'declared_weight_pct': beta_coverage,
+        'default_beta': 1.0,
+        'read_only': True,
+        'note': 'bêta de repli explicitement identifié ; aucune sensibilité n’est inventée',
+    }
 
     def beta_of(p):
         return p.beta if p.beta is not None else 1.0
