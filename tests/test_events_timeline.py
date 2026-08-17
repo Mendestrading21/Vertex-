@@ -113,6 +113,16 @@ def test_revisions_honestly_absent():
     assert 'source' in ev['revisions']['reason']
 
 
+def test_revisions_from_news_are_mentions_not_consensus():
+    ev = EV.build('TST', news=[{'title': 'Broker upgrades TST and raises price target',
+                                'publisher': 'P', 'time': 'Mon'}])
+    revisions = ev['revisions']
+    assert revisions['available'] is True
+    assert revisions['status'] == 'NEWS_MENTIONS_ONLY'
+    assert revisions['mentions'][0]['derivation'] == 'title_keywords'
+    assert 'consensus' in revisions['note']
+
+
 def test_empty_build_honest():
     ev = EV.build('TST')
     assert ev['events'] == [] and ev['n'] == 0

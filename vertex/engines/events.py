@@ -72,11 +72,15 @@ def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
                           impact_derivation=('calendar' if m.get('kind') else None),
                           importance=m.get('importance'), confidence='DECLARED'))
 
+    revision_mentions = []
     for n in dedupe_news(news or []):
         title = n.get('title')
         if not title:
             continue
         hint, deriv = _impact_from_title(title)
+        if hint == 'RATING':
+            revision_mentions.append({'title': title, 'source': 'news.%s' % (n.get('publisher') or 'externe'),
+                                      'date': n.get('time'), 'derivation': 'title_keywords'})
         events.append(_ev('news', title, 'fact',
                           'news.%s' % (n.get('publisher') or 'externe'),
                           date=n.get('time'), dte=None,
@@ -96,8 +100,12 @@ def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
 
     return {
         'symbol': sym, 'as_of': as_of, 'n': len(events), 'events': events,
-        'revisions': {'available': False,
-                      'reason': 'aucune source de révisions d’analystes branchée — jamais estimé'},
+        'revisions': ({'available': True, 'status': 'NEWS_MENTIONS_ONLY',
+                       'mentions': revision_mentions,
+                       'note': 'mentions de titres détectées ; pas de consensus ni révision confirmée'}
+                      if revision_mentions else
+                      {'available': False,
+                       'reason': 'aucune mention de révision ni source de consensus branchée — jamais estimé'}),
         'generator': 'deterministic',
         'note': 'Timeline descriptive — un événement daté n’est pas un catalyseur par défaut ; '
                 'impact suggéré uniquement par mots-clés transparents.',
