@@ -38,6 +38,9 @@ Claude peut modifier la présentation, mais ne doit jamais recalculer le score, 
 | `decision.portfolio.stress_test` | objet descriptif | Afficher les pertes historiques observées comme un diagnostic de risque ; ne jamais le convertir en prévision, taille, ordre ou allocation. |
 | `HISTORICAL_STRESS_AVAILABLE` / `TEMPORAL_EVIDENCE_REQUIRED` de stress | statut stable | Conserver l’indisponibilité lorsqu’une position ou une série datée manque ; ne jamais afficher un stress partiel comme un portefeuille complet. |
 | `HISTORICAL_TAIL_CONCENTRATION` | flag descriptif | Expliquer la contribution historique concentrée d’une ligne ; demander une revue humaine sans modifier automatiquement une position. |
+| `decision.regime_break` | objet descriptif | Présenter la rupture statistique observée comme un diagnostic secondaire ; ne jamais la convertir en prédiction, score, gate, ordre ou allocation. |
+| `REGIME_BREAK_WATCH` / `REGIME_CONTINUITY` | statut stable | Expliquer les seuils et la réserve sur le futur ; la continuité ne doit jamais être présentée comme une certitude. |
+| `TEMPORAL_EVIDENCE_REQUIRED` / `INSUFFICIENT_SAMPLE` de rupture | statut stable | Afficher l’absence de preuve ; ne jamais la remplacer par un régime inféré. |
 
 ## Invariants à ne pas casser
 
