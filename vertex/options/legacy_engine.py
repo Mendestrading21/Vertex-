@@ -42,6 +42,18 @@ def _f(x):
         return 0.0
 
 
+def _reported_number(x):
+    """Vrai si une donnée numérique est présente, y compris zéro reporté.
+
+    Le zéro est une observation potentiellement illiquide ; `None`/NaN est une
+    absence. La couverture ne les confond jamais.
+    """
+    try:
+        return x is not None and math.isfinite(float(x))
+    except (TypeError, ValueError):
+        return False
+
+
 def _npdf(x):
     return math.exp(-0.5 * x * x) / math.sqrt(2 * math.pi)
 
@@ -255,10 +267,12 @@ def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=N
                 if not (spot * lo <= K <= spot * hi):
                     continue
                 iv = _f(row.get('impliedVolatility'))
-                oi = _i(row.get('openInterest'))
-                vol = _i(row.get('volume'))
-                bid = _f(row.get('bid'))
-                ask = _f(row.get('ask'))
+                raw_oi, raw_vol = row.get('openInterest'), row.get('volume')
+                raw_bid, raw_ask = row.get('bid'), row.get('ask')
+                oi = _i(raw_oi)
+                vol = _i(raw_vol)
+                bid = _f(raw_bid)
+                ask = _f(raw_ask)
                 quoted = bid > 0 and ask > 0
                 mid = (bid + ask) / 2.0 if quoted else _f(row.get('lastPrice'))
                 if mid <= 0:
@@ -330,6 +344,18 @@ def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=N
                     'em_pct': round(iv * math.sqrt(T) * 100, 1),
                     'flags': flags, 'stale': stale,
                     'price_integrity': price_integrity,
+                    'liquidity_coverage': {
+                        'bid_present': _reported_number(raw_bid),
+                        'ask_present': _reported_number(raw_ask),
+                        'volume_present': _reported_number(raw_vol),
+                        'open_interest_present': _reported_number(raw_oi),
+                        'quoted_bid_ask': quoted,
+                        'reported_fields': sum((_reported_number(raw_bid), _reported_number(raw_ask),
+                                                _reported_number(raw_vol), _reported_number(raw_oi))),
+                        'total_fields': 4,
+                        'read_only': True,
+                        'note': 'champ absent ≠ zéro observé ; aucune liquidité n’est imputée',
+                    },
                 }
                 _q = option_quality(_c, spot)
                 _c['quality'] = _q['score']
