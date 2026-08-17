@@ -24,6 +24,23 @@ def test_invalid_inputs_do_not_become_implied_volatility():
     assert out['available'] is False and out['status'] == 'OPTION_INPUT_INSUFFICIENT'
 
 
+def test_contract_liquidity_coverage_distinguishes_zero_from_missing(monkeypatch):
+    class _Ticker:
+        options = ['2027-02-20']
+        def option_chain(self, _expiry):
+            return type('Chain', (), {'calls': pd.DataFrame([{
+                'strike': 100.0, 'impliedVolatility': 0.2, 'openInterest': None,
+                'volume': 0, 'bid': None, 'ask': None, 'lastPrice': 5.0,
+            }])})()
+    monkeypatch.setattr(engine.yf, 'Ticker', lambda _symbol: _Ticker())
+    monkeypatch.setattr(engine, '_pick_expiries', lambda *_args, **_kwargs: [('2027-02-20', 180, 'long')])
+    contracts = engine.best_for_symbol('TEST', 100.0, 112.0, 'call', buckets=('long',))
+    coverage = contracts[0]['liquidity_coverage']
+    assert coverage['bid_present'] is False and coverage['ask_present'] is False
+    assert coverage['volume_present'] is True and coverage['open_interest_present'] is False
+    assert coverage['reported_fields'] == 1 and coverage['quoted_bid_ask'] is False
+
+
 def test_board_screen_exposes_rejected_quote_without_derived_metrics(monkeypatch):
     class _Ticker:
         options = ['2027-02-20']
