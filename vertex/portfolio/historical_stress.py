@@ -8,6 +8,7 @@ historique observé. Il ne produit ni ordre, ni taille d’ordre, ni allocation.
 from __future__ import annotations
 
 import math
+from vertex.data import temporal_evidence
 
 
 MIN_COMMON_SESSIONS = 31
@@ -66,6 +67,12 @@ def assess(weights_pct, series_by_symbol, *, minimum_sessions=MIN_COMMON_SESSION
         return _unavailable('INVALID_WEIGHTS', 'poids portefeuille non exploitables', symbols=symbols)
     normalized = {symbol: weight / total_weight for symbol, weight in weights.items()}
 
+    evidence = {symbol: temporal_evidence.assess((series_by_symbol or {}).get(symbol), minimum=minimum_sessions)
+                for symbol in symbols}
+    invalid = [symbol for symbol in symbols if not evidence[symbol].get('available')]
+    if invalid:
+        return _unavailable('TEMPORAL_EVIDENCE_REQUIRED', 'preuve temporelle canonique invalide pour une ou plusieurs positions',
+                            symbols=symbols, missing_symbols=invalid)
     points = {symbol: _series_points((series_by_symbol or {}).get(symbol)) for symbol in symbols}
     missing = [symbol for symbol in symbols if len(points[symbol]) < minimum_sessions]
     if missing:
