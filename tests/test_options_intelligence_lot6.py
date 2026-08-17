@@ -122,6 +122,20 @@ def test_swing_3_6m_never_assumes_missing_liquidity_is_compliant():
     assert HS.options_context(res)['best_in_mandate'] is False
 
 
+def test_swing_3_6m_exposes_quote_freshness_without_hiding_candidates():
+    base = {'sym': 'TST', 'type': 'CALL', 'dte': 135, 'strike': 105, 'delta': 0.45,
+            'oi': 900, 'volume': 90, 'spread_pct': 3.0, 'quality': 75, 'iv': 0.35,
+            'spot': 100, 'exp': 'B'}
+    board = [{**base, 'quote_age_seconds': 60}, {**base, 'strike': 110, 'quote_age_seconds': 901},
+             {**base, 'strike': 115}]
+    out = HS.scan(board, 'SWING_3_6M', sym='TST', profile=C.load_profile())
+    by_strike = {c['strike']: c for c in out['candidates']}
+    assert by_strike[105]['quote_freshness']['status'] == 'QUOTE_FRESH'
+    assert by_strike[110]['quote_freshness']['status'] == 'QUOTE_STALE'
+    assert by_strike[115]['quote_freshness']['status'] == 'QUOTE_FRESHNESS_UNAVAILABLE'
+    assert len(out['candidates']) == 3
+
+
 # ─── Probabilité de doublement (≠ PoP, modèle documenté) ────────────────────────
 
 def test_double_probability_hand_computed_call():
