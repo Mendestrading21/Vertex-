@@ -52,7 +52,10 @@ def test_surpoids_hhi_secteur_et_beta_pondere():
 def test_beta_none_sans_aucun_beta_connu():
     snap = PortfolioSnapshot(positions=[Position('A', 1, last_price=100.0)],
                              cash=0, provenance='SIMULATED')
-    assert portfolio_risk(snap, _Profil())['beta'] is None   # jamais un 1.0 inventé
+    r = portfolio_risk(snap, _Profil())
+    assert r['beta'] is None   # jamais un 1.0 inventé
+    assert r['beta_coverage']['coverage_pct'] == 0.0
+    assert r['beta_coverage']['missing_symbols'] == ['A']
 
 
 # ── Règles de discipline : -25 % portefeuille, -20 % par titre ───────────────
@@ -84,6 +87,7 @@ def test_plafond_options_depasse_bloque_et_partial_signale():
     assert g['delta'] == 1.0                  # somme des seuls deltas CONNUS
     assert g['gamma'] is None                 # aucun gamma → None, pas 0
     assert g['greeks_partial'] is True        # un delta manquant → signalé
+    assert g['coverage']['delta_coverage_pct'] == 75.0
 
 
 def test_sans_options_greeks_defauts_none():
@@ -99,7 +103,7 @@ def test_sans_options_greeks_defauts_none():
 def test_contrat_du_rapport_de_risque():
     r = portfolio_risk(_snap(), _Profil())
     assert set(r) == {'provenance', 'as_of', 'equity', 'weights',
-                      'sector_weights', 'hhi', 'beta', 'correlations',
+                      'sector_weights', 'hhi', 'beta', 'beta_coverage', 'correlations',
                       'drawdown_pct', 'per_stock_pl_pct', 'options_exposure',
                       'overweight', 'no_new_risk', 'warnings'}
     assert r['provenance'] == 'REAL' and r['equity'] == 1500.0
