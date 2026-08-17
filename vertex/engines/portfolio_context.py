@@ -199,10 +199,18 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
         factor_input,
         returns.get('SPY') if returns else None,
     )
+    factor_availability = {
+        factor: {'available': (item.get('value') is not None),
+                 'coverage_pct': item.get('coverage_pct', 0.0),
+                 'reason': (None if item.get('value') is not None else
+                            'preuve facteur indisponible pour les positions couvertes')}
+        for factor, item in factor_exposure.items()
+    }
     factor_coverage = max((item.get('coverage_pct') or 0 for item in factor_exposure.values()), default=0)
     factor_context = {
         'available': bool(returns), 'coverage_pct_max': factor_coverage,
         'factors': factor_exposure,
+        'availability': factor_availability,
         'method': 'rendements canoniques alignés ; facteurs fondamentaux absents restent non disponibles',
         'read_only': True, 'never_triggers_orders': True,
     }
