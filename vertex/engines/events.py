@@ -97,9 +97,26 @@ def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
     # Datés d'abord (DTE croissant — le plus proche est le plus actionnable),
     # non datés ensuite dans leur ordre d'arrivée. Tri stable = déterministe.
     events.sort(key=lambda e: (e['dte'] is None, e['dte'] if e['dte'] is not None else 0))
+    source_counts = {}
+    category_counts = {}
+    for event in events:
+        source_counts[event['source']] = source_counts.get(event['source'], 0) + 1
+        category_counts[event['category']] = category_counts.get(event['category'], 0) + 1
+    dated_events = sum(1 for event in events if event.get('date') is not None or event.get('dte') is not None)
 
     return {
         'symbol': sym, 'as_of': as_of, 'n': len(events), 'events': events,
+        'coverage': {
+            'input_channels': {'news_provided': news is not None,
+                               'earnings_provided': earnings is not None,
+                               'macro_provided': macro is not None,
+                               'anomaly_provided': anomaly is not None},
+            'source_counts': source_counts, 'category_counts': category_counts,
+            'dated_events': dated_events, 'undated_events': len(events) - dated_events,
+            'all_events_have_source': all(event.get('source') for event in events),
+            'read_only': True,
+            'note': 'canal absent, événement non daté ou sans mention de révision reste explicitement qualifié',
+        },
         'revisions': ({'available': True, 'status': 'NEWS_MENTIONS_ONLY',
                        'mentions': revision_mentions,
                        'note': 'mentions de titres détectées ; pas de consensus ni révision confirmée'}
