@@ -110,6 +110,28 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
                 'positions': asset_counts.get(asset, 0)}
         for asset, value in sorted(asset_values.items())
     }
+    from vertex.market import sectors
+    sector_values, unclassified_sectors = {}, []
+    for symbol, position in by_sym.items():
+        sector = sectors.SECTOR_MAP.get(symbol)
+        if not sector:
+            unclassified_sectors.append(symbol)
+            continue
+        sector_values[sector] = sector_values.get(sector, 0.0) + position['value']
+    classified_sector_value = sum(sector_values.values())
+    sector_mix = {
+        sector: {'value': round(value, 2), 'weight_pct': round(value / total * 100, 2)}
+        for sector, value in sorted(sector_values.items())
+    }
+    sector_coverage = {
+        'available': bool(sector_values), 'classified_symbols': sorted(
+            symbol for symbol in by_sym if symbol not in unclassified_sectors),
+        'unclassified_symbols': sorted(unclassified_sectors),
+        'classified_value_pct': round(100 * classified_sector_value / total, 1),
+        'unclassified_value_pct': round(100 * (total - classified_sector_value) / total, 1),
+        'read_only': True,
+        'note': 'seul le référentiel sectoriel existant est utilisé ; aucun secteur par défaut',
+    }
     hhi = round(sum((e['value'] / total) ** 2 for e in by_sym.values()), 4)
     top_sym = max(by_sym, key=lambda s: by_sym[s]['value'])
 
@@ -253,6 +275,8 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
         'in_bounds': bool(pmin <= n <= pmax), 'free_slots': max(0, pmax - n),
         'total_value': round(total, 2), 'weights': weights, 'hhi': hhi,
         'asset_mix': asset_mix,
+        'sector_mix': sector_mix,
+        'sector_coverage': sector_coverage,
         'asset_mix_note': ('%d position(s) sans type d’actif canonique — jamais classée(s) par défaut'
                            % unclassified_assets if unclassified_assets else None),
         'top_symbol': top_sym, 'top_weight_pct': weights[top_sym],

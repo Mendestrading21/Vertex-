@@ -68,6 +68,21 @@ def test_valuation_fallback_labeled():
     assert ctx['valuation_note'] and 'coût' in ctx['valuation_note']
 
 
+def test_sector_coverage_never_assigns_unknown_symbol_by_default():
+    positions = [
+        {'symbol': 'AAPL', 'asset_type': 'STOCK', 'quantity': 10, 'cost_basis': 1000.0,
+         'source': 'MANUAL'},
+        {'symbol': 'UNKNOWNX', 'asset_type': 'STOCK', 'quantity': 10, 'cost_basis': 1000.0,
+         'source': 'MANUAL'},
+    ]
+    ctx = PC.build(positions, quotes={'AAPL': 100.0, 'UNKNOWNX': 100.0})
+    coverage = ctx['sector_coverage']
+    assert 'AAPL' in coverage['classified_symbols']
+    assert coverage['unclassified_symbols'] == ['UNKNOWNX']
+    assert coverage['classified_value_pct'] == 50.0
+    assert coverage['unclassified_value_pct'] == 50.0
+
+
 # ─── Candidat : gagnant/perdant, impact marginal ───────────────────────────────
 
 def test_candidate_loser_reinforcement_forbidden():
