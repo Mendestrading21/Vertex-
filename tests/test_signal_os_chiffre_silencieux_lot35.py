@@ -22,6 +22,7 @@ référence globale puis éprouvait les dix sources ; vingt minutes plus tard,
 chiffres. Aucun n'était causé par la panne. D'où la double référence immédiate,
 à la même cadence que la mesure.
 """
+import ast
 import os
 import re
 import sys
@@ -113,6 +114,42 @@ def test_l_outil_porte_son_propre_temoin_et_le_dit_quand_il_est_aveugle():
         'crier la vue et ne prouverait rien')
     assert re.search(r"AVEUGLE[^\n]*\n\s*return 2", src), (
         'sans temoin concluant, l outil doit refuser de conclure')
+
+
+def test_aucun_outil_importe_par_un_gardien_n_exige_un_navigateur_pour_etre_LU():
+    """Piège payé par une CI rouge que mon poste ne pouvait pas montrer.
+
+    Ce gardien importe le module de l'outil pour éprouver sa LOGIQUE. L'outil
+    importait Playwright au chargement : en CI, qui n'a pas de navigateur, la
+    collecte de TOUTE la suite échouait (`ModuleNotFoundError`). Localement,
+    Playwright est installé — l'erreur était invisible ici.
+
+    Ce que l'outil exige pour MESURER ne doit pas être exigé pour le LIRE. Ce
+    test tient la règle pour les trois outils que les gardiens importent, pas
+    seulement pour celui qui a saigné."""
+    racine = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    lourds = ('playwright', 'curl_cffi', 'ib_insync', 'yfinance')
+    for nom in ('mesurer_panne_partielle', 'mesurer_sorties_news',
+                'mesurer_surface_ibkr'):
+        src = open(os.path.join(racine, 'tools', nom + '.py'), encoding='utf-8').read()
+        # AU NIVEAU DU MODULE seulement : on lit `tree.body`, pas des lignes de
+        # texte. Ma première version découpait la source avant `def main(` et
+        # accusait un import PARESSEUX niché dans une fonction définie plus haut
+        # — exactement ce qu'on veut autoriser. C'est une propriété de
+        # structure ; une comparaison de chaînes ne peut pas la voir.
+        for n in ast.parse(src).body:
+            noms = []
+            if isinstance(n, ast.Import):
+                noms = [a.name for a in n.names]
+            elif isinstance(n, ast.ImportFrom):
+                noms = [n.module or '']
+            for m in noms:
+                racine_mod = m.split('.')[0]
+                assert racine_mod not in lourds, (
+                    '%s importe %s AU NIVEAU DU MODULE : la suite deviendra '
+                    'incollectable partout ou la dependance manque (CI). '
+                    'Deplacer l\'import dans la fonction qui en a besoin.'
+                    % (nom, racine_mod))
 
 
 def test_les_sources_eprouvees_couvrent_le_produit():

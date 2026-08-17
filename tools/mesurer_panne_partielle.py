@@ -48,7 +48,14 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from playwright.sync_api import sync_playwright   # noqa: E402
+
+# IMPORT PARESSEUX de Playwright — il est fait dans `main()`, pas ici.
+# Mesuré au lot 35 : le gardien importe ce module pour éprouver sa LOGIQUE
+# (`_silencieux`, la clé DOM, la liste des sources), et cette logique est pure.
+# Un import de Playwright au chargement rendait TOUTE la suite incollectable en
+# CI, qui n'a pas le navigateur — un échec que mon poste ne pouvait pas montrer,
+# puisqu'il l'a. Ce que l'outil exige pour MESURER ne doit pas être exigé pour
+# le LIRE.
 
 BASE = 'http://localhost:5002'
 _PAGES_DIR = os.path.join('vertex', 'ui', 'pages')
@@ -171,6 +178,7 @@ def _silencieux(avant, apres):
 
 
 def main():
+    from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         nav = pw.chromium.launch(
             executable_path='/opt/pw-browsers/chromium-1194/chrome-linux/chrome')
