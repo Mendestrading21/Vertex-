@@ -137,6 +137,8 @@ def api_skyler(sym):
     # explicitement leur statut : aucune conformité n’est supposée par défaut.
     from vertex.options import horizon_scanners as _hs
     octx = _hs.swing_3_6m_context(scan_state.get('options_board') or [], sym=sym)
+    from vertex.engines import fundamental_context as _fctx
+    fundamentals_ctx = _fctx.build(sym, scan_state.get('fundamentals') or {})
     from vertex.engines import decision_evidence as _evidence
     dqctx, recctx = _evidence.for_symbol(scan_state, sym, detail)
     # PortfolioContext (LOT 7) : positions canoniques du desk + cotes du scan.
@@ -159,7 +161,7 @@ def api_skyler(sym):
     from vertex.engines import red_team as _rt
     packet0 = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
                                as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
-                               data_quality_ctx=dqctx, reconciliation_ctx=recctx)
+                               data_quality_ctx=dqctx, reconciliation_ctx=recctx, fundamental_ctx=fundamentals_ctx)
     rt_review = _rt.review(packet0, _sk.score40(packet0))
     rt_input = {'complete': rt_review['complete'], 'basis': rt_review['basis']}
     # Calibration RÉELLE (LOT 19/22) : facteur depuis les résultats mesurés de
@@ -183,7 +185,7 @@ def api_skyler(sym):
     decision = _sk.decide(sym, detail, market=market, events=ev, anomaly=ano,
                           as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
                           red_team=rt_input, calibration=calib, data_quality_ctx=dqctx,
-                          reconciliation_ctx=recctx)
+                          reconciliation_ctx=recctx, fundamental_ctx=fundamentals_ctx)
     decision['option_calibration'] = option_calibration or {
         'available': False,
         'reason': 'mémoire de calibration indisponible',
@@ -192,7 +194,7 @@ def api_skyler(sym):
     packet = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
                               as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
                               red_team=rt_input, data_quality_ctx=dqctx,
-                              reconciliation_ctx=recctx)
+                              reconciliation_ctx=recctx, fundamental_ctx=fundamentals_ctx)
     # Contrat de présentation stable : une interface ou un agent de design peut
     # expliquer les preuves manquantes sans jamais toucher au verdict canonique.
     from vertex.engines import decision_readiness as _readiness
