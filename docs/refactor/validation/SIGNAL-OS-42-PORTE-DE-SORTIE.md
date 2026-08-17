@@ -108,6 +108,29 @@ serait exactement la faute que les lots 35 à 38 ont appris à ne plus commettre
    servies, et c'est de ce relevé-là — et de lui seul — que sortira une
    éventuelle suppression.
 
+   **Le verdict final, sur 52 vues** : 53 fichiers sur 54 chargés au moins une
+   fois ; **un seul jamais demandé**, `js/charts/projection-cone.js` (6 917 o).
+   Il est supprimé — après une preuve croisée **trois fois**, parce qu'un lot
+   antérieur (575) l'avait mesuré *vivant* sur `/analysis/<sym>` :
+
+   1. plus aucune référence dans le code (seulement dans des rapports
+      historiques) ;
+   2. jamais requis sur les 52 vues, fiches par symbole comprises ;
+   3. la balise `<script>` a disparu de la fiche — vérifié sur trois symboles.
+
+   Le cône de projection a été débranché du plan de trade pendant la refonte ;
+   son fichier était resté. Sans le point 3, la mesure du 575 aurait suffi à me
+   faire renoncer — ou pire, à me faire supprimer un fichier vivant.
+
+   **Deux socles statiques**, ce que l'inventaire ignorait : `static/` à la
+   racine (Chart.js 4.4.1, 205 Ko, chargé par le shell sur **chaque** page) et
+   `vertex/static/vertex/`. Les trois « demandés mais absents du disque » du
+   relevé n'étaient donc pas des liens morts mais un défaut de périmètre : deux
+   polices `.woff2` (hors du filtre `.js/.css`) et Chart.js (autre socle) — les
+   trois répondent 200. Et avant de suspecter ces 205 Ko : `chart-core.js`
+   construit bien de vraies instances `new Chart(...)`, et trois pages d'options
+   en dépendent. Vérifié avant d'accuser.
+
 ### 4.2 Ce qui reste, et qui n'est pas à moi
 
 - **La validation humaine sur appareil physique.** TWS réel, les huit pages,
