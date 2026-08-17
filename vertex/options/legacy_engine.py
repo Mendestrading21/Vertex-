@@ -24,6 +24,7 @@ import yfinance as yf
 
 from vertex.quant import scoring
 from vertex.strategy import config
+from vertex.data_sources.rates import rate_sensitivity
 
 R = 0.045
 
@@ -95,6 +96,38 @@ def _bs_price(S, K, T, sig, is_call):
     if is_call:
         return S * _ncdf(d1) - K * math.exp(-R * T) * _ncdf(d2)
     return K * math.exp(-R * T) * _ncdf(-d2) - S * _ncdf(-d1)
+
+
+def _bs_price_at_rate(S, K, T, sig, is_call, rate):
+    if T <= 0 or sig <= 0:
+        return max((S - K) if is_call else (K - S), 0.0)
+    srt = sig * math.sqrt(T)
+    d1 = (math.log(S / K) + (rate + 0.5 * sig * sig) * T) / srt
+    d2 = d1 - srt
+    if is_call:
+        return S * _ncdf(d1) - K * math.exp(-rate * T) * _ncdf(d2)
+    return K * math.exp(-rate * T) * _ncdf(-d2) - S * _ncdf(-d1)
+
+
+def option_rate_sensitivity(S, K, T, sig, is_call, rate_quote=None):
+    """Sensibilité descriptive au taux, seulement avec une courbe provenancée."""
+    quote = rate_quote.to_dict() if hasattr(rate_quote, 'to_dict') else (rate_quote or {})
+    rate = quote.get('rate') if isinstance(quote, dict) else None
+    try:
+        usable = math.isfinite(float(rate)) and not bool(quote.get('fallback_used'))
+    except (TypeError, ValueError):
+        usable = False
+    if not usable:
+        return {'available': False, 'read_only': True,
+                'reason': 'courbe de taux provenancée non disponible ou servie par repli',
+                'rate_provenance': (quote or None)}
+    sensitivity = rate_sensitivity(
+        lambda candidate_rate: _bs_price_at_rate(S, K, T, sig, is_call, candidate_rate),
+        float(rate),
+    )
+    return {'available': sensitivity['sensitivity_per_bump'] is not None,
+            'read_only': True, 'rate_provenance': quote,
+            'model': 'Black-Scholes sans dividende', 'sensitivity': sensitivity}
 
 
 def option_price_integrity(S, K, T, price, is_call):
@@ -246,7 +279,7 @@ def news_for(tk, n=5):
 
 
 def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=None,
-                    earnings_dte=None, include_diagnostics=False):
+                    earnings_dte=None, include_diagnostics=False, rate_quote=None):
     """Meilleurs contrats par bucket (court/moyen/long), classés. buckets=None -> long (rétro-compat)."""
     buckets = buckets or config.DEFAULT_BUCKETS
     out = []
@@ -344,6 +377,8 @@ def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=N
                     'em_pct': round(iv * math.sqrt(T) * 100, 1),
                     'flags': flags, 'stale': stale,
                     'price_integrity': price_integrity,
+                    'rate_sensitivity': option_rate_sensitivity(
+                        spot, K, T, iv, direction == 'call', rate_quote=rate_quote),
                     'liquidity_coverage': {
                         'bid_present': _reported_number(raw_bid),
                         'ask_present': _reported_number(raw_ask),

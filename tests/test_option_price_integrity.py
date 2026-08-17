@@ -1,5 +1,6 @@
 from vertex.options import legacy_engine as engine
 import pandas as pd
+from vertex.data_sources.rates import RateCurve
 
 
 def test_call_and_put_non_arbitrage_bounds_are_exposed_read_only():
@@ -22,6 +23,19 @@ def test_impossible_option_prices_are_rejected_before_iv_solving():
 def test_invalid_inputs_do_not_become_implied_volatility():
     out = engine.option_price_integrity(0.0, 100.0, 1.0, 5.0, True)
     assert out['available'] is False and out['status'] == 'OPTION_INPUT_INSUFFICIENT'
+
+
+def test_option_rate_sensitivity_requires_non_fallback_curve():
+    curve_quote = RateCurve({30: 0.04, 365: 0.045}, source='TEST_CURVE',
+                            timestamp='2026-08-17T10:00:00Z').rate_for_tenor(180)
+    measured = engine.option_rate_sensitivity(100.0, 100.0, 0.5, 0.2, True, curve_quote)
+    assert measured['available'] is True
+    assert measured['rate_provenance']['source'] == 'TEST_CURVE'
+    assert measured['sensitivity']['sensitivity_per_bump'] is not None
+    fallback = engine.option_rate_sensitivity(100.0, 100.0, 0.5, 0.2, True,
+                                               RateCurve().rate_for_tenor(180))
+    assert fallback['available'] is False
+    assert 'repli' in fallback['reason']
 
 
 def test_contract_liquidity_coverage_distinguishes_zero_from_missing(monkeypatch):
