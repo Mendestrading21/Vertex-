@@ -619,7 +619,7 @@
           if (!meta || meta.hidden || !meta.data || !meta.data.length) return;
           const pt = meta.data[meta.data.length - 1];
           if (!pt || pt.x == null) return;
-          const col = (typeof d.borderColor === 'string' && d.borderColor) || C.colors.series[i % 6];
+          const col = (typeof d.borderColor === 'string' && d.borderColor) || C.colors.series[i % C.colors.series.length];
           ctx.save();
           ctx.fillStyle = col;
           ctx.globalAlpha = .12;

@@ -17,7 +17,7 @@ C.priceCard=function(host,opts){
     {value:plan.support,label:'Support',kind:'support'}];
   return C.card(host,Object.assign({},opts,{render:(cv)=>{
     const extra=(opts.overlays||[]).map((o,i)=>({data:o.values,label:o.label,
-      borderColor:o.color||C.colors.series[(i+2)%6],borderWidth:1,pointRadius:0,tension:.2,fill:false}));
+      borderColor:o.color||C.colors.series[(i+2)%C.colors.series.length],borderWidth:1,pointRadius:0,tension:.2,fill:false}));
     const brand=C.colors.brand||'#9B7BFF';
     /* signature 2026 (lot 54) : monotone, 2 px, degrade 3 arrets, glow,
        crosshair et pastille de dernier prix — plan moteur et earnings

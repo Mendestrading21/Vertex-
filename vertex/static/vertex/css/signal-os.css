@@ -38,6 +38,21 @@
   --vx-border-soft:rgba(255,255,255,.075);
   --vx-border-default:rgba(255,255,255,.105);
   --vx-border-strong:rgba(255,255,255,.17);
+  /* LA LIMITE D'UN CONTROLE, pas une bordure decorative. Mesure au navigateur :
+     56 controles (boutons, chips, champs, selects) sur 14 familles rendaient
+     1,15 a 1,24:1 — ni leur bordure ni leur fond n'atteignaient les 3:1 que
+     WCAG 1.4.11 demande pour identifier un composant. Constat plus large et
+     plus honnete que « quelqu'un a casse la valeur » : AUCUN jeton de bordure
+     du produit n'atteint 3:1, meme `--vx-border-strong` plafonne a 2,51. C'est
+     un parti pris coherent des deux couches, pas une regression.
+     Ces deux jetons ne s'appliquent donc QU'AUX CONTROLES — les bordures
+     decoratives (cartes, separateurs) gardent leur discretion, parce que la
+     regle porte sur ce qui identifie un composant, pas sur tout trait.
+     Precedent interne : `.vx-input:focus` emploie deja rgba(255,255,255,.42),
+     donc ce poids est deja admis sur un controle.
+     Revenir en arriere = remettre ces deux valeurs a .075 / .16. */
+  --vx-border-control:rgba(255,255,255,.35);
+  --vx-border-control-brand:rgba(155,123,255,.75);
   --vx-topbar:rgba(7,7,9,.96);
   --vx-r-sm:10px;
   --vx-r:12px;
@@ -391,7 +406,7 @@ a:hover{color:var(--vx-text-primary);text-decoration:none}
   background:rgba(255,255,255,.025);
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
-  border:1px solid var(--vx-border-soft);
+  border:1px solid var(--vx-border-control);
   box-shadow:none;
 }
 .vx-chip[aria-pressed="true"]{
@@ -427,7 +442,7 @@ a:hover{color:var(--vx-text-primary);text-decoration:none}
   min-height:40px;
   border-radius:11px;
   background:rgba(255,255,255,.03);
-  border:1px solid var(--vx-border-soft);
+  border:1px solid var(--vx-border-control);
   color:var(--vx-text-primary);
 }
 .vx-content :is(input,select,textarea):focus,
@@ -678,4 +693,33 @@ a:hover{color:var(--vx-text-primary);text-decoration:none}
 
 @media (prefers-reduced-motion:reduce){
   .vx-card,.vx-btn,.vx-nav-item,.vx-kpi{transition:none!important}
+}
+
+
+/* ── Limite visible des controles (lot 23) ───────────────────────────────
+   Mesure : 56 controles rendaient 1,15-1,24:1, sous les 3:1 de WCAG 1.4.11.
+   Exclus volontairement : `primary` (degrade plein, identifie par son fond),
+   `ghost` et `link` (sans bordure par choix, identifies comme du texte
+   actionnable). Les inclure aurait rendu une bordure a des composants qui
+   n'en ont jamais eu — corriger un defaut n'autorise pas a en inventer un
+   autre. */
+.vx-btn:not(.vx-btn-primary):not(.vx-btn-ghost):not(.vx-btn-link):not(.vx-btn-soft){
+  border-color:var(--vx-border-control);
+}
+.vx-btn-soft{
+  /* Fond violet tres pale (1,13:1) : sa limite doit venir de la meme famille
+     que sa teinte, pas d'un gris qui la contredirait. */
+  border-color:var(--vx-border-control-brand);
+}
+
+/* ── ETAT SELECTIONNE D'UN CONTROLE SEGMENTE (lot 23) ────────────────────
+   WCAG 1.4.11 couvre explicitement les ETATS. Mesure : le segment presse ne
+   se distinguait que par un fond violet a .12 — 1,17:1 contre le groupe. Son
+   libelle change bien de couleur (#F5F3F0 contre #989092), mais cet ecart
+   vaut 2,81:1 : il porte PRESQUE l'etat, pas tout a fait.
+   Un anneau interne plutot qu'un fond sature : il franchit le seuil des deux
+   cotes (3,72 contre le fond du groupe, 3,17 contre le fond du segment) sans
+   decaler la mise en page ni alourdir la teinte. */
+.vx-segmented button[aria-pressed="true"]{
+  box-shadow:inset 0 0 0 1px var(--vx-border-control-brand);
 }
