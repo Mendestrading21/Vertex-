@@ -140,6 +140,19 @@ def test_option_mandate_gates_are_evaluated_from_the_selected_contract():
     assert gates['DTE_OUT_OF_MANDATE']['triggered'] is False
 
 
+def test_skyler_packet_preserves_stale_option_quote_diagnostic():
+    options = {'available': True, 'universe': 'SWING_3_6M', 'window': [75, 210],
+               'best': {'dte': 135, 'quote_freshness': {'available': True,
+                                                        'status': 'QUOTE_STALE',
+                                                        'age_seconds': 901,
+                                                        'read_only': True}}}
+    packet = SK.build_packet('TST', _detail(), market=_market(), events=_events(),
+                             options_ctx=options, as_of='10:00:00')
+    freshness = packet['contexts']['options']['best']['quote_freshness']
+    assert freshness['status'] == 'QUOTE_STALE'
+    assert freshness['read_only'] is True
+
+
 def test_data_quality_requires_explicit_quality_and_reconciliation_evidence():
     packet = SK.build_packet('TST', _detail(), market=_market(), events=_events(),
                              as_of='10:00:00')
