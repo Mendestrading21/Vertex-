@@ -56,3 +56,35 @@ def test_options_endpoint_serves_structured_price_rejections(monkeypatch):
     assert served['price_integrity']['status'] == 'PRICE_OUTSIDE_NO_ARBITRAGE'
     assert served['derived_metrics_withheld'] is True
     assert not any(key in served for key in ('iv', 'delta', 'gamma', 'theta', 'probability'))
+
+
+def test_options_endpoint_builds_and_serves_real_rejection(monkeypatch):
+    import terminal
+    index = pd.date_range('2025-01-01', periods=252, freq='B')
+    history = pd.DataFrame({'Close': [100.0 + i * 0.1 for i in range(252)]}, index=index)
+    class _Ticker:
+        fast_info = {'lastPrice': 100.0}
+        info, calendar, news = {}, {}, []
+        options = ['2027-02-20']
+        def history(self, **_kwargs): return history
+        def option_chain(self, _expiry):
+            calls = pd.DataFrame([{'strike': 100.0, 'impliedVolatility': 0.2,
+                                  'openInterest': 1000, 'volume': 10,
+                                  'bid': 150.0, 'ask': 152.0, 'lastPrice': 151.0}])
+            return type('Chain', (), {'calls': calls, 'puts': pd.DataFrame(columns=calls.columns)})()
+    monkeypatch.setattr(terminal.yf, 'Ticker', lambda _symbol: _Ticker())
+    monkeypatch.setattr(terminal.ai, 'fr_news', lambda _sym, news: (news, None))
+    monkeypatch.setattr(terminal.research, 'chart_read', lambda _detail: '')
+    monkeypatch.setattr(terminal.research, 'chart_verdict', lambda _detail: '')
+    monkeypatch.setattr(terminal.engine, 'decide', lambda *_args: {})
+    monkeypatch.setattr(terminal.ibkr, 'verdict', lambda *_args: {})
+    terminal.scan_state.setdefault('detail', {})['TEST'] = {'price': 100.0, 'plan': {'tp2': 112.0, 'atr': 2.0}}
+    try:
+        payload = terminal.app.test_client().get('/options/TEST').get_json()
+        assert payload['option_price_rejection_count'] == 1
+        rejected = payload['option_price_rejections'][0]
+        assert rejected['price_integrity']['status'] == 'PRICE_OUTSIDE_NO_ARBITRAGE'
+        assert rejected['derived_metrics_withheld'] is True
+        assert not any(k in rejected for k in ('iv', 'delta', 'gamma', 'theta', 'pop'))
+    finally:
+        terminal.scan_state['detail'].pop('TEST', None)
