@@ -17,27 +17,30 @@ la source manquante peut-il s'afficher entre des chiffres justes, sans qu'aucun
 
 ---
 
-## 1. Le résultat, tel qu'il est établi
+## 1. Le résultat mesuré
+
+Course complète, méthode encadrée, serveur de démonstration à SW v233 :
 
 | | |
 | --- | --- |
 | vues | **33** |
 | cellules chiffrées / stables | **546 / 546** |
 | sources éprouvées en panne isolée | **10** |
-| 9 sources sur 10 — chiffres faux silencieux | **0** |
-| `/api/desk` (33 vues) | **4 candidats, tous identifiés comme des horloges** |
+| fuites techniques (`NaN`, `undefined`…) | **0** |
+| erreurs de page | **0** |
+| **chiffres faux silencieux** | **0** |
+| libellés de **durée** modifiés (comptés à part) | **4**, sur une seule vue |
 | témoin | **concluant** |
 
-Les quatre candidats de `/api/desk` sont des libellés d'âge — « Il y a 25 min »
-devenu « 26 min », « dans ~1 min » devenu « ~0 min ». Ils ont été **réfutés par
-mesure** : en reprenant `/api/desk` seul avec une référence prise juste avant, il
-n'en restait qu'un, « Il y a 36 s » → « Il y a 41 s », l'âge qui avait avancé
-pendant la mesure elle-même.
-
-L'instrument ne pouvait pas les distinguer tout seul — c'est ce que la §2.2
-corrige, et la course de confirmation avec la méthode encadrée est ce qui
-autorisera à écrire « 0 » sans réserve. Tant qu'elle n'a pas rendu son verdict,
-ce document écrit **ce qui est mesuré**, pas ce qui est attendu.
+**Ce que « 0 » veut dire ici :** aucune cellule portant une **valeur** — un
+pourcentage, un prix, un compte, un score — ne change en silence quand une
+source tombe. Ce qui reste tient en quatre libellés d'**âge** sur
+`/system?view=automations` (« Il y a 51 min » → « 52 min », « dans ~1 min » →
+« ~0 min »). Ils sont identiques dans les trois relevés sains et différents sous
+panne : la panne change donc bien la durée affichée — vraisemblablement
+l'horodatage de repli employé. Une durée plus ancienne n'est pas un chiffre
+inventé, mais **la cause reste à expliquer**, et l'outil l'affiche à chaque
+exécution au lieu de la ranger dans un total rassurant.
 
 ---
 
@@ -74,17 +77,26 @@ complète, avec cette correction, a rendu **4** cellules sur
 de 2,4 s ne voient pas bouger un libellé à la minute : il ne tique qu'une fois
 par minute, et il peut tomber pile pendant la mesure.
 
-**La correction juste : encadrer.** Deux références AVANT, un contrôle APRÈS,
-tous sans panne. Une cellule n'est jugée que si elle est identique dans les
-**trois**. Ce qui change alors sous panne ne peut venir que de la panne.
+**Troisième forme : encadrer.** Deux références AVANT, un contrôle APRÈS, tous
+sans panne ; une cellule n'est jugée que si elle est identique dans les **trois**.
+On demande à la cellule si elle bouge **aussi quand rien n'est cassé** — aucune
+liste de formats de durée, et le lot 33 a montré ce que valent les listes de noms.
 
-Aucune liste de formats de durée là-dedans — ce serait encore une liste de noms,
-et le lot 33 a montré ce qu'elles valent. On demande simplement à la cellule si
-elle bouge **aussi quand rien n'est cassé**.
+**Et il reste quatre cas.** Ils passent l'encadrement : identiques dans les trois
+relevés sains, différents sous panne. Ce ne sont donc **pas** des faux positifs
+d'horloge — la panne change réellement la durée affichée. Mais ce sont des
+**durées**, et une durée plus ancienne n'est pas un chiffre inventé.
+
+À ce stade j'ai arrêté d'itérer sur l'instrument, et je lui ai fait **dire** la
+distinction au lieu de la masquer : les durées sont comptées à part **et
+affichées à chaque exécution**. Un total qui les aurait absorbées aurait fait
+dire à l'outil autre chose que ce qu'il mesure ; un filtre qui les aurait tues
+aurait caché un comportement réel que je n'explique pas encore.
 
 > Le résultat de ce lot n'est donc pas « le produit est propre » obtenu du
-> premier coup : c'est un chiffre que mon instrument a d'abord annoncé faux,
-> deux fois, avant que la méthode ne soit juste.
+> premier coup : c'est un chiffre que mon instrument a annoncé faux **deux fois**
+> avant que la méthode ne soit juste, et dont la dernière part n'est pas classée
+> comme propre mais comme **non expliquée**.
 
 ### 2.3 Le détecteur — tout chiffre qui change, pas seulement les zéros
 
@@ -150,3 +162,25 @@ Aucun moteur, aucune règle métier, aucun octet servi touché — **pas de bump
 4. Le témoin altère **une** source (`/api/market/summary`). Il prouve que
    l'instrument peut voir ; il ne prouve pas qu'il verrait toute forme de
    fausseté sur toute source.
+5. **Les quatre durées de `/system?view=automations` ne sont pas expliquées.**
+   Elles ne sont pas un artefact de mesure — l'encadrement les laisse passer.
+   La panne de `/api/desk` change la durée affichée ; je n'ai pas identifié
+   quel horodatage de repli le fait, et je ne l'ai pas cherché plus loin dans ce
+   lot. C'est la réserve la plus concrète qu'il laisse ouverte.
+
+---
+
+## 7. Deux fautes de validation, corrigées ici
+
+Elles n'ont rien à voir avec le sujet du lot, et elles ont coûté deux CI rouges.
+
+1. **Le gardien `test_strategy_os_final_guards` scanne `git ls-files`** — donc
+   les fichiers **suivis**. J'avais lancé la suite avant de stager : mon outil du
+   lot 34 était invisible, la suite passait, et le gardien s'est déclenché au
+   commit. Désormais : stager, puis valider.
+2. **L'outil importait Playwright au chargement.** La CI n'a pas de navigateur :
+   la **collecte de toute la suite** échouait, et mon poste — qui a Playwright —
+   ne pouvait pas le montrer. L'import est passé dans `main()`, un gardien tient
+   la règle pour les trois outils que les tests importent, et **je rejoue
+   désormais la suite avec Playwright rendu inimportable** pour éprouver le
+   même environnement que la CI, pas un plus riche.

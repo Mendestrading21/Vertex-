@@ -152,6 +152,27 @@ def test_aucun_outil_importe_par_un_gardien_n_exige_un_navigateur_pour_etre_LU()
                     % (nom, racine_mod))
 
 
+def test_une_duree_est_classee_a_part_et_jamais_masquee():
+    """Après l'encadrement, il RESTE quatre cas sur `/system?view=automations` :
+    des libellés d'âge identiques dans les trois relevés sains et différents
+    sous panne. La panne change donc bien la durée affichée — mais une durée
+    plus ancienne n'est pas un chiffre INVENTÉ.
+
+    L'outil les compte à part **et les affiche toujours**. Ce test tient les
+    deux moitiés : la classification doit reconnaître une durée, et ne doit pas
+    avaler un pourcentage ou un prix."""
+    for duree in ('Il y a 25 min', 'dans ~1 min', '41 s', '3 h', 'depuis 2 j'):
+        assert pp.est_duree(duree), duree
+    for donnee in ('45 %', '12.7', '8/8', '1 234 $', '0', '-2,4 %'):
+        assert not pp.est_duree(donnee), (
+            '%s classe comme duree : un vrai chiffre serait masque' % donnee)
+    src = open(pp.__file__, encoding='utf-8').read()
+    assert 'libelles de DUREE modifies (comptes a part)' in src, (
+        'les durees ne sont plus AFFICHEES : compter a part sans dire, c\'est '
+        'masquer')
+    assert "for d in durees[:6]:" in src, 'les cas de duree ne sont plus listes'
+
+
 def test_les_sources_eprouvees_couvrent_le_produit():
     """Plancher : un balayage qui n'eprouve plus que deux sources passerait."""
     assert len(pp.CIBLES) >= 8, pp.CIBLES

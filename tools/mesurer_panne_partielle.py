@@ -16,14 +16,20 @@ donnaient des faux positifs. Le lot 35 la ferme.
    cellule et une seule. Effet mesure : 546 cellules chiffrees, 546 STABLES,
    contre 637 sur 1768 avec l'ancienne cle.
 
-2. DOUBLE REFERENCE IMMEDIATE, A LA MEME CADENCE. C'est le point qui compte.
-   Une premiere version prenait UNE reference globale, puis eprouvait les dix
-   sources : vingt minutes plus tard, « Il y a 5 min » etait devenu « Il y a
-   8 min » et l'outil accusait quinze chiffres. Aucun n'etait cause par la
-   panne — c'etait l'horloge. On prend donc DEUX releves de reference separes
-   par le meme delai que celui qui precede la mesure : une cellule qui suit le
-   temps se demasque toute seule entre les deux, sans qu'on ait a lister les
-   formats de duree.
+2. MESURE ENCADREE — et il a fallu TROIS tentatives, chacune mesuree.
+   (a) UNE reference globale, puis dix sources eprouvees : vingt minutes plus
+       tard, « Il y a 5 min » etait devenu « Il y a 8 min » et l'outil accusait
+       quinze chiffres. C'etait l'horloge.
+   (b) DEUX references immediates, a la meme cadence : mieux, mais insuffisant.
+       Un libelle a la minute ne bouge pas en 2,4 s, puis tombe pile pendant la
+       mesure — la course complete en gardait quatre.
+   (c) DEUX references AVANT + UN CONTROLE APRES, tous sans panne. Une cellule
+       n'est jugee que si elle est identique dans les TROIS.
+   Il RESTE quatre cas apres (c), sur /system?view=automations : identiques dans
+   les trois releves sains, differents sous panne. La panne change donc bien la
+   duree affichee. Ces cas sont comptes A PART (voir _DUREE) : une duree plus
+   ancienne n'est pas un chiffre INVENTE, et les confondre ferait dire a l'outil
+   autre chose que ce qu'il mesure. Ils sont TOUJOURS affiches.
 
 3. TOUT CHIFFRE QUI CHANGE, pas seulement les zeros. Le lot 30 ne cherchait
    qu'un « 0 » substitue. Une moyenne sur cinq sources au lieu de six est
@@ -163,6 +169,22 @@ def _releve(pg, url):
     return pg.evaluate(JS)
 
 
+# Un libellé de DURÉE (« Il y a 25 min », « dans ~3 min », « 41 s »). Ce
+# n'est pas un filtre qui masque : ces cas sont TOUJOURS affichés, mais comptés
+# à part, parce qu'ils ne répondent pas à la même question. Mesuré au lot 35 :
+# même encadrée, la mesure en garde quatre sur `/system?view=automations` —
+# identiques dans les trois relevés sains, différents sous panne. La panne
+# change donc bien la durée affichée (vraisemblablement l'horodatage de repli
+# employé), mais une durée plus ancienne n'est pas un chiffre INVENTÉ. Les
+# confondre ferait dire à l'outil autre chose que ce qu'il mesure.
+_DUREE = re.compile(r'^\s*(il y a|dans\s*~?|depuis)?\s*[\d.,]+\s*(s|min|h|j|'
+                    r'seconde|minute|heure|jour)s?\s*$', re.I)
+
+
+def est_duree(txt):
+    return bool(_DUREE.match(txt or ''))
+
+
 def _silencieux(avant, apres):
     """Chiffres CHANGES que la vue ne signale pas. `avant` est la reference la
     plus RECENTE, `apres` la mesure sous panne."""
@@ -206,7 +228,7 @@ def main():
             print('  %-26s %d vue(s)' % (c, len([u for u, s in usage.items() if c in s])))
 
         # 2. Une source en panne a la fois — SEULES les vues concernees.
-        fuites, erreurs, muets = [], [], []
+        fuites, erreurs, muets, durees = [], [], [], []
         for cible in CIBLES:
             concernees = [u for u, s in usage.items() if cible in s]
             if not concernees:
@@ -246,8 +268,14 @@ def main():
                 if errs:
                     erreurs.append('%s :: %s' % (url, errs[0]))
                 for ligne in _silencieux(dict(b, cellules=stables), c):
-                    muets.append('%s [%s] %s' % (url, cible, ligne))
-                    n_muets += 1
+                    avant_txt = ligne.split(' » -> « ')[0].lstrip('« ')
+                    apres_txt = ligne.split(' » -> « ')[-1].rstrip(' »')
+                    cas = '%s [%s] %s' % (url, cible, ligne)
+                    if est_duree(avant_txt) and est_duree(apres_txt):
+                        durees.append(cas)          # compté à part, jamais masqué
+                    else:
+                        muets.append(cas)
+                        n_muets += 1
                 ctxA.close()
                 ctxB.close()
             print('--- %-26s %2d vue(s) · chiffres changes EN SILENCE : %d'
@@ -277,9 +305,18 @@ def main():
     print('  fuites techniques : %s' % (fuites or 0))
     print('  erreurs de page   : %s' % (erreurs or 0))
     print('  chiffres faux SILENCIEUX : %s' % (muets or 0))
+    # Les DUREES sont toujours dites, jamais masquees — mais elles ne repondent
+    # pas a la meme question qu'un chiffre invente. Voir le commentaire de _DUREE.
+    print('  libelles de DUREE modifies (comptes a part) : %d' % len(durees))
+    for d in durees[:6]:
+        print('    ' + d)
     if fuites or erreurs or muets:
         return 1
     print('\nSOUS PANNE PARTIELLE, AUCUN CHIFFRE INVENTE NE S AFFICHE EN SILENCE.')
+    if durees:
+        print('RESERVE : %d libelle(s) de duree changent sous panne. Une duree '
+              'plus ancienne n est pas un chiffre invente, mais la cause reste '
+              'a expliquer.' % len(durees))
     return 0
 
 
