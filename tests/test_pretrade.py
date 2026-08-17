@@ -68,6 +68,9 @@ def test_unknowns_are_honest_not_invented():
     by = {c['key']: c for c in d['checks']}
     assert by['verdict']['status'] == 'inconnu'
     assert by['concentration']['status'] == 'inconnu'
+    assert d['data_coverage']['coverage_pct'] < 100
+    assert 'gex' in d['data_coverage']['unknown_checks']
+    assert d['data_coverage']['read_only'] is True
     assert 'jamais d\'ordre' in d['narrative'] or 'ne passe jamais d\'ordre' in d['narrative']
 
 
