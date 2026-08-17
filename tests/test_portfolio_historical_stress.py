@@ -69,3 +69,7 @@ def test_portfolio_context_exposes_read_only_historical_stress():
     assert stress_test['read_only'] is True
     assert stress_test['symbols'] == ['AAA', 'BBB']
     assert 'order' not in str(stress_test).lower().replace('never_triggers_orders', '')
+    factors = out['factor_exposure']
+    assert factors['available'] is True
+    assert factors['read_only'] is True
+    assert factors['factors']['MARKET']['coverage_pct'] == 100.0

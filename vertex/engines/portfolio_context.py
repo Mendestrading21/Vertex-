@@ -191,6 +191,23 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
 
     from vertex.portfolio import historical_stress
     stress_test = historical_stress.assess(weights, series_by_symbol)
+    from vertex.portfolio.factor_exposure import portfolio_factor_exposure
+    factor_input = {symbol: {'returns': returns.get(symbol) or []} for symbol in by_sym}
+    factor_exposure = portfolio_factor_exposure(
+        type('Snapshot', (), {'positions': [type('Position', (), {'symbol': symbol})() for symbol in by_sym],
+                              'weights': lambda _self: weights})(),
+        factor_input,
+        returns.get('SPY') if returns else None,
+    )
+    factor_coverage = max((item.get('coverage_pct') or 0 for item in factor_exposure.values()), default=0)
+    factor_context = {
+        'available': bool(returns), 'coverage_pct_max': factor_coverage,
+        'factors': factor_exposure,
+        'method': 'rendements canoniques alignés ; facteurs fondamentaux absents restent non disponibles',
+        'read_only': True, 'never_triggers_orders': True,
+    }
+    if not returns:
+        factor_context['reason'] = correlation_reason or 'rendements canoniques insuffisants'
 
     return {
         'available': True, 'generator': 'deterministic',
@@ -208,6 +225,7 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
                         'reason': 'aucun stop déclaré par position — budget de risque non estimé'},
         'correlations': correlation_context,
         'stress_test': stress_test,
+        'factor_exposure': factor_context,
         'provenance': sorted({p.get('source') or 'MANUAL' for p in open_real}),
     }
 
