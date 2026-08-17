@@ -64,7 +64,12 @@ def test_matrice_paires_triees_seuils_et_contrat():
 def test_matrice_vide_honnete():
     assert co.correlation_matrix({}) == {
         'pairs': {}, 'average': None, 'high_pairs': {},
-        'symbols_covered': [], 'warning': None}
+        'symbols_covered': [],
+        'coverage': {'measured_pairs': 0, 'total_pairs': 0,
+                     'unmeasured_pairs': [], 'coverage_pct': 0.0,
+                     'read_only': True,
+                     'note': 'paires sans historique commun suffisant ne reçoivent aucune corrélation'},
+        'warning': None}
 
 
 def test_candidat_moyenne_des_correlations_ou_none():
