@@ -95,20 +95,28 @@ def calibration(journal, quotes=None):
     quotes = quotes or {}
     by_decision, by_level = {}, {}
     rows, unmeasured = [], 0
+    outcome_coverage_by_decision = {}
     for e in journal:
-        by_decision[e.get('decision')] = by_decision.get(e.get('decision'), 0) + 1
+        decision = e.get('decision')
+        by_decision[decision] = by_decision.get(decision, 0) + 1
+        coverage = outcome_coverage_by_decision.setdefault(decision, {'total': 0, 'measured': 0})
+        coverage['total'] += 1
         lv = e.get('level')
         if lv:
             by_level[lv] = by_level.get(lv, 0) + 1
         px0 = e.get('price')
         px1 = quotes.get(e.get('symbol'))
         if px0 and isinstance(px1, (int, float)) and not isinstance(px1, bool) and px0 > 0:
+            coverage['measured'] += 1
             rows.append({'symbol': e['symbol'], 'decision': e.get('decision'),
                          'as_of': e.get('as_of'), 'entry_price': px0,
                          'current_price': float(px1),
                          'return_pct': round((float(px1) / px0 - 1) * 100, 2)})
         else:
             unmeasured += 1
+    for coverage in outcome_coverage_by_decision.values():
+        coverage['unmeasured'] = coverage['total'] - coverage['measured']
+        coverage['coverage_pct'] = round(100 * coverage['measured'] / coverage['total'], 1) if coverage['total'] else 0.0
     return {
         'generator': 'deterministic',
         'n_decisions': len(journal),
@@ -116,11 +124,13 @@ def calibration(journal, quotes=None):
         'outcomes': ({'available': True, 'measured': len(rows),
                       'unmeasured': unmeasured,
                       'coverage_pct': round(100 * len(rows) / len(journal), 1) if journal else 0.0,
+                      'by_decision': outcome_coverage_by_decision,
                       'rows': rows,
                       'note': 'rendements réels depuis le prix enregistré à la décision — descriptif, pas un backtest'}
                      if rows else
-                     {'available': False, 'measured': 0, 'unmeasured': unmeasured,
+                      {'available': False, 'measured': 0, 'unmeasured': unmeasured,
                       'coverage_pct': 0.0,
+                      'by_decision': outcome_coverage_by_decision,
                       'reason': 'aucune paire prix enregistré + cote actuelle — rien de mesurable, rien d’inventé'}),
         'brier': {'available': False,
                   'reason': 'aucune probabilité calibrée émise (les scénarios n’en affichent pas — lot 5) ; '

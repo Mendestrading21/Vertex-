@@ -11,4 +11,7 @@ def test_calibration_reports_measured_outcome_coverage_without_brier():
     assert report['outcomes']['measured'] == 1
     assert report['outcomes']['unmeasured'] == 1
     assert report['outcomes']['coverage_pct'] == 50.0
+    assert report['outcomes']['by_decision']['ATTENDRE'] == {
+        'total': 2, 'measured': 1, 'unmeasured': 1, 'coverage_pct': 50.0,
+    }
     assert report['brier']['available'] is False
