@@ -191,6 +191,36 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
 
     from vertex.portfolio import historical_stress
     stress_test = historical_stress.assess(weights, series_by_symbol)
+    measured_risk, unmeasured_risk = [], []
+    for position in open_real:
+        symbol = str(position.get('symbol') or position.get('sym') or '').upper()
+        quantity = position.get('quantity') or 0
+        price, stop = quotes.get(symbol), position.get('stop')
+        asset_type = str(position.get('asset_type') or '').upper()
+        if asset_type == 'OPTION':
+            unmeasured_risk.append({'symbol': symbol, 'reason': 'option : perte au stop sous-jacent non valorisable sans grecques de position'})
+            continue
+        if price is None or stop is None or not quantity:
+            unmeasured_risk.append({'symbol': symbol, 'reason': 'cote, stop ou quantité manquant'})
+            continue
+        try:
+            risk_value = (float(price) - float(stop)) * float(quantity)
+        except (TypeError, ValueError):
+            unmeasured_risk.append({'symbol': symbol, 'reason': 'cote, stop ou quantité non numérique'})
+            continue
+        if risk_value < 0:
+            unmeasured_risk.append({'symbol': symbol, 'reason': 'stop au-dessus de la cote : risque long non interprétable'})
+            continue
+        measured_risk.append({'symbol': symbol, 'risk_to_stop': round(risk_value, 2)})
+    risk_coverage = round(100 * len(measured_risk) / len(open_real), 1) if open_real else 0.0
+    risk_budget = {'available': bool(measured_risk), 'read_only': True,
+                   'covered_positions': len(measured_risk), 'total_positions': len(open_real),
+                   'coverage_pct': risk_coverage,
+                   'known_risk_to_stop': round(sum(item['risk_to_stop'] for item in measured_risk), 2) if measured_risk else None,
+                   'by_position': measured_risk, 'unmeasured': unmeasured_risk,
+                   'note': 'perte jusqu’au stop déclarée ; positions sans preuve de stop ne sont pas estimées'}
+    if not measured_risk:
+        risk_budget['reason'] = 'aucun stop mesurable — budget de risque non estimé'
     from vertex.portfolio.factor_exposure import portfolio_factor_exposure
     factor_input = {symbol: {'returns': returns.get(symbol) or []} for symbol in by_sym}
     factor_exposure = portfolio_factor_exposure(
@@ -229,8 +259,7 @@ def build(positions, quotes=None, sym=None, capital=None, profile=None, series_b
         'valuation_note': ('%d position(s) valorisée(s) au coût (cote absente) — jamais un prix inventé'
                            % valued_at_cost if valued_at_cost else None),
         'candidate': candidate, 'sizing': sizing,
-        'risk_budget': {'available': False,
-                        'reason': 'aucun stop déclaré par position — budget de risque non estimé'},
+        'risk_budget': risk_budget,
         'correlations': correlation_context,
         'stress_test': stress_test,
         'factor_exposure': factor_context,

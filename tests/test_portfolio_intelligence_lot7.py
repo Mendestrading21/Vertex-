@@ -133,6 +133,21 @@ def test_risk_budget_honestly_absent_without_stops():
     assert 'stop' in ctx['risk_budget']['reason']
 
 
+def test_risk_budget_measures_only_positions_with_declared_stop():
+    positions = [
+        {'symbol': 'AAA', 'quantity': 10, 'cost_basis': 900, 'stop': 80,
+         'asset_type': 'STOCK', 'source': 'MANUAL'},
+        {'symbol': 'BBB', 'quantity': 5, 'cost_basis': 500,
+         'asset_type': 'STOCK', 'source': 'MANUAL'},
+    ]
+    ctx = PC.build(positions, quotes={'AAA': 100, 'BBB': 120})
+    budget = ctx['risk_budget']
+    assert budget['available'] is True
+    assert budget['known_risk_to_stop'] == 200.0
+    assert budget['coverage_pct'] == 50.0
+    assert budget['unmeasured'][0]['symbol'] == 'BBB'
+
+
 def test_correlation_requires_explicitly_dated_overlapping_series():
     series = {}
     for offset, symbol in enumerate(('AAA', 'BBB', 'CCC')):
