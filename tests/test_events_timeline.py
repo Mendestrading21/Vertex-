@@ -141,6 +141,10 @@ def test_news_deduplicated_inside_timeline():
     ev = EV.build('TST', news=[{'title': 'Même titre', 'link': 'a'},
                                {'title': 'Même  titre', 'link': 'b'}])
     assert sum(1 for e in ev['events'] if e['kind'] == 'news') == 1
+    freshness = ev['coverage']['news_timestamp_coverage']
+    assert freshness['timestamped_news'] == 0
+    assert freshness['untimestamped_news'] == 1
+    assert freshness['status'] == 'TIMESTAMP_COVERAGE_ONLY'
 
 
 # ─── Route de bout en bout ──────────────────────────────────────────────────────

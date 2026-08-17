@@ -103,6 +103,8 @@ def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
         source_counts[event['source']] = source_counts.get(event['source'], 0) + 1
         category_counts[event['category']] = category_counts.get(event['category'], 0) + 1
     dated_events = sum(1 for event in events if event.get('date') is not None or event.get('dte') is not None)
+    news_events = [event for event in events if event.get('kind') == 'news']
+    news_timestamped = sum(1 for event in news_events if event.get('date') is not None)
 
     return {
         'symbol': sym, 'as_of': as_of, 'n': len(events), 'events': events,
@@ -113,6 +115,13 @@ def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
                                'anomaly_provided': anomaly is not None},
             'source_counts': source_counts, 'category_counts': category_counts,
             'dated_events': dated_events, 'undated_events': len(events) - dated_events,
+            'news_timestamp_coverage': {'timestamped_news': news_timestamped,
+                                        'total_news': len(news_events),
+                                        'untimestamped_news': len(news_events) - news_timestamped,
+                                        'coverage_pct': round(100 * news_timestamped / len(news_events), 1)
+                                        if news_events else 0.0,
+                                        'status': 'TIMESTAMP_COVERAGE_ONLY',
+                                        'note': 'format d’horodatage non normalisé : aucun âge ou impact n’est déduit'},
             'all_events_have_source': all(event.get('source') for event in events),
             'read_only': True,
             'note': 'canal absent, événement non daté ou sans mention de révision reste explicitement qualifié',
