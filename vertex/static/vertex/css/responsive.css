@@ -129,6 +129,25 @@
   /* lot 294 : les contrôles segmentés (réglages Système) mesuraient 26px —
      hors de la règle ci-dessus car sans classe vx-btn. */
   .vx-segmented button{min-height:40px}
+  /* LOT 25 — la règle ci-dessus est définie PAR CLASSE, donc tout contrôle qui
+     ne porte pas la classe y échappe. C'est la TROISIÈME fois : le lot 294 a dû
+     rattraper les segmentés, et la mesure à 390 px a trouvé deux familles de
+     plus — les tickers cliquables (`role="button"`, 17 px de haut) et les liens
+     de secteur de Marchés (15 px).
+     Précision honnête : ce n'est PAS une violation de WCAG 2.5.8. Leurs
+     voisins sont à 40-121 px, donc l'exception d'espacement s'applique. C'est
+     un défaut de CONFORT sur téléphone, et l'utilisateur consulte Vertex sur
+     iPhone.
+     La règle vise donc le COMPORTEMENT (rôle, attribut d'action) plutôt que la
+     classe, pour couvrir aussi les contrôles à venir. Seuil 32 px = celui que
+     le produit s'est déjà donné pour les actions secondaires, pas un nombre
+     invente. `inline-flex` est nécessaire : `min-height` ne fait rien sur un
+     élément inline. */
+  [role="button"]:not(.vx-btn):not(.vx-chip):not(.vx-tab),
+  [data-open-analysis],
+  a[onclick]:not(.vx-btn):not(.vx-chip){
+    display:inline-flex;align-items:center;min-height:32px;
+  }
   /* Anti-débordement mobile : rien ne doit forcer une largeur > écran.
      Les conteneurs flex laissent leurs enfants rétrécir (min-width:0 lève le
      min-width:auto par défaut qui empêche le retour à la ligne), les en-têtes
