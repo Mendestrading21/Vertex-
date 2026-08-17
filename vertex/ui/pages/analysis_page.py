@@ -488,7 +488,16 @@ async function loadDossier(){
     +`<div class="vx-meta vx-mt2"><a href="/opportunities?view=calendar">Calendrier complet →</a></div>`);
 
   /* 6. Technique */
-  const ttm=(d.ttm_fired?'🚀 sortie de compression':(d.ttm_squeeze?'🔒 en compression (BB dans Keltner)':null));
+  /* LOT 41 : deux EMOJI etaient PEINTS ici — 🚀 et 🔒 — et personne ne les
+     voyait passer : ils n'apparaissent que sur `/analysis/<sym>`, quand la
+     donnee remplit la condition. Un balayage des huit pages d'accueil ne les
+     atteint jamais. COPY.md interdit l'emoji comme ponctuation de produit et
+     VISUAL_SYSTEM.md impose une seule famille outline ; ces deux-la etaient
+     multicolores, donc hors de toute palette.
+     Le pictogramme ne portait AUCUNE information que le texte ne dise deja :
+     « sortie de compression » / « en compression ». L'etat est desormais dit
+     par les mots, et la couleur par la classe semantique juste en dessous. */
+  const ttm=(d.ttm_fired?'sortie de compression':(d.ttm_squeeze?'en compression (BB dans Keltner)':null));
   const ttmDir=d.ttm_dir==='up'?' · momentum haussier':d.ttm_dir==='down'?' · momentum baissier':'';
   function perfBars(d){
     const rows=[['1 sem.',d.perf_w],['1 mois',d.perf_m],['1 trim.',d.perf_q],['1 an',d.perf_y]].filter(r=>r[1]!=null&&!isNaN(r[1]));
@@ -515,7 +524,11 @@ async function loadDossier(){
     +kv('Force relative',d.rs)+kv('RSI',d.rsi)
     +kv('Position 52 semaines',d.pos52!==undefined?d.pos52+' %':null)
     +kv('Extension vs ATR',d.ext_atr,(d.ext_atr>=2.5?'vx-warn':''))
-    +(ttm?kv('TTM Squeeze',ttm+ttmDir,(d.ttm_fired&&d.ttm_dir==='up'?'vx-pos':d.ttm_fired&&d.ttm_dir==='down'?'vx-neg':'')):'')
+    /* La compression SANS sortie n'avait plus de marque une fois le cadenas
+       retire : elle prend `vx-warn` — jaune = attente/prudence dans la
+       semantique de couleur du systeme. Le sens revient par la palette, pas
+       par un dessin. */
+    +(ttm?kv('TTM Squeeze',ttm+ttmDir,(d.ttm_fired&&d.ttm_dir==='up'?'vx-pos':d.ttm_fired&&d.ttm_dir==='down'?'vx-neg':d.ttm_squeeze?'vx-warn':'')):'')
     +perfBars(d)
     +`<div class="vx-meta vx-mt2">La décision finale unique reste ${decision} — les verdicts techniques sont des entrées du moteur exécutif.</div>`);
 

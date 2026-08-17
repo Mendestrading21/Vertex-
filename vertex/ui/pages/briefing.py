@@ -390,9 +390,17 @@ async function loadAlerts(){
        produit, et COPY.md l'interdit comme ponctuation. On garde le CODE —
        c'est le contrat du serveur, on n'y touche pas — mais on ne le PEINT
        plus : une pastille prend la couleur semantique, et la pilule a droite
-       nomme deja la severite en toutes lettres. */
+       nomme deja la severite en toutes lettres.
+       LOT 41 : la comparaison ne cite plus le pictogramme, elle compare son
+       POINT DE CODE. Deux raisons, dont une qui est un vrai defaut evite :
+       un emoji peut arriver suivi d'un selecteur de variante (U+FE0F), et
+       `sev === '\u{1F534}'` devient alors faux EN SILENCE — une alerte rouge
+       s'afficherait en jaune. `codePointAt(0)` ne lit que le caractere de
+       base. Accessoirement, plus aucun emoji ne subsiste dans le code vivant
+       servi ; le contrat du serveur, lui, n'est pas touche. */
+    const ROUGE=0x1F534;   /* LARGE RED CIRCLE — severite « danger » du serveur */
     const srv=((cmd&&cmd.alerts)||[]).slice(0,3).map(a=>{
-      const sev=a[0]||'', danger=(sev==='🔴');
+      const sev=a[0]||'', danger=(sev.codePointAt(0)===ROUGE);
       return '<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">'
         +'<span class="vx-dot" aria-hidden="true" style="background:var(--vx-'+(danger?'negative':'warning')+')"></span>'
         +'<span class="vx-grow vx-dim" style="font-size:12px">'+esc(a[2]||a[1]||'')+'</span>'
