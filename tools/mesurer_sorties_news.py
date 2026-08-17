@@ -140,20 +140,34 @@ def armer_l_alarme():
     signal.signal(signal.SIGALRM, _trop_lente)
 
 
+#  Valeurs de paramètre qu'on sait remplir HONNÊTEMENT, c'est-à-dire par une
+#  valeur que le moteur reconnaît — un paramètre deviné rend un 404 ou un
+#  `available: false`, et une route qui ne s'exécute pas ne prouve rien.
+#    · symbole  → le ticker piégé, présent dans `news_state` et dans `detail`.
+#    · univers  → les univers du scanner d'options (`horizon_scanners`).
+#  Restent NON remplis, et c'est le vrai trou du balayage : les identifiants
+#  (`<tracking_id>`, `<decision_id>`, `<position_id>`, `<chart_id>`,
+#  `<group>/<key>`), qu'aucun jeu de démonstration ne porte, et
+#  `<path:filename>` qui ne sert que des fichiers statiques.
+_SYMBOLE = re.compile(r'<[^>]*(sym|ticker|tk)[^>]*>')
+
+
 def chemins_get(app):
-    """Toutes les routes GET, le paramètre de symbole rempli par le ticker
-    piégé. Les routes à plusieurs paramètres sont écartées — on ne sait pas les
-    remplir honnêtement, et deviner produirait des 404 qui ne prouvent rien."""
+    """Toutes les routes GET, paramètre rempli quand on sait le faire sans
+    inventer : symbole → ticker piégé, univers → `LEAPS`. Le reste est écarté
+    et NOMMÉ comme réserve (voir SIGNAL-OS-38 §4) plutôt que deviné."""
     out = set()
     for r in app.url_map.iter_rules():
         if 'GET' not in (r.methods or set()):
             continue
         chemin = str(r.rule)
         if '<' in chemin:
-            if chemin.count('<') != 1 or not re.search(r'<[^>]*(sym|ticker|tk)[^>]*>',
-                                                       chemin):
+            if chemin.count('<') == 1 and _SYMBOLE.search(chemin):
+                chemin = re.sub(r'<[^>]*>', 'TSTQ', chemin)
+            elif '<universe>' in chemin:
+                chemin = chemin.replace('<universe>', 'LEAPS')
+            else:
                 continue
-            chemin = re.sub(r'<[^>]*>', 'TSTQ', chemin)
         if hors_limites(chemin):
             continue
         out.add(chemin)

@@ -100,6 +100,66 @@ def test_les_news_du_scan_sont_assainies_A_L_INGESTION_pas_a_la_sortie(balayage)
         'verifier que les news du scan ne sont plus assainies qu\'UNE fois')
 
 
+#  ROUTES DONT LE PARAMÈTRE N'EST PAS REMPLISSABLE (lot 39). Aucun identifiant
+#  valide n'existe dans le jeu de démonstration ; en inventer un rendrait un 404,
+#  et un 404 ne prouve rien. Cette liste EST la réserve n°2 de SIGNAL-OS-38 §4 —
+#  elle est ici pour qu'elle ne puisse pas s'élargir en silence.
+RESERVE_IDENTIFIANTS = {
+    '/api/charts/<path:chart_id>/interpretation',
+    '/api/positions/<position_id>/changes',
+    '/api/skyler/memory/<decision_id>',
+    '/api/skyler/memory/cell/<group>/<key>',
+    '/api/tracking/<tracking_id>',
+    '/api/tracking/<tracking_id>/history',
+    '/api/tracking/<tracking_id>/performance',
+    '/memory/<decision_id>',
+    '/memory/cell/<group>/<key>',
+}
+
+
+def test_les_parametres_remplissables_le_sont_vraiment():
+    """LOT 39 — ce que le balayage atteint, et ce qu'il n'atteint pas, nommé.
+
+    Ma formulation initiale de la réserve (« routes à plusieurs paramètres »)
+    était fausse deux fois : la coupure n'est pas le NOMBRE de paramètres mais
+    la capacité à fabriquer une valeur que le moteur reconnaît, et une seule
+    règle en porte deux. Une réserve mal formulée oriente vers le mauvais trou.
+    """
+    import terminal
+    chemins = sonde.chemins_get(terminal.app)
+    assert not [c for c in chemins if '<' in c], (
+        'un chemin part avec un paramètre non rempli — il rendrait un 404')
+    assert '/api/options/scanner/LEAPS' in chemins, (
+        'le paramètre d\'univers n\'est plus rempli : une route du scanner '
+        'd\'options sort du balayage sans que personne le dise')
+    assert '/api/skyler/TSTQ' in chemins, 'le ticker piégé n\'est plus injecté'
+
+
+def test_la_reserve_des_identifiants_ne_s_elargit_pas_en_silence():
+    """Une route à identifiant ajoutée demain agrandit le trou sans bruit.
+
+    Ce test ne prétend pas la balayer — il exige qu'on la voie, et qu'on mette
+    SIGNAL-OS-38 §4 à jour au lieu de la découvrir par accident."""
+    import terminal
+    non_remplies = set()
+    for r in terminal.app.url_map.iter_rules():
+        if 'GET' not in (r.methods or set()):
+            continue
+        c = str(r.rule)
+        if '<' not in c or 'path:filename' in c:
+            continue
+        if c.count('<') == 1 and sonde._SYMBOLE.search(c):
+            continue
+        if '<universe>' in c:
+            continue
+        non_remplies.add(c)
+    assert non_remplies == RESERVE_IDENTIFIANTS, (
+        'la reserve des routes non balayees a change :\n  nouvelles : %s\n'
+        '  disparues : %s\nmettre a jour SIGNAL-OS-38 §4 avec la mesure.'
+        % (sorted(non_remplies - RESERVE_IDENTIFIANTS),
+           sorted(RESERVE_IDENTIFIANTS - non_remplies)))
+
+
 def test_aucune_route_get_ne_sert_de_balisage_externe(balayage):
     """LA propriété. Elle ne nomme aucune route : elle les interroge toutes."""
     import terminal

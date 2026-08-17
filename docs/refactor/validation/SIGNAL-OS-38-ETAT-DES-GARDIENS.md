@@ -15,7 +15,7 @@ jour et leurs réserves.
 | invariant | instrument | verdict mesuré | témoin |
 | --- | --- | --- | --- |
 | **READONLY** — surface IBKR | `mesurer_surface_ibkr.py` | **22 capacités, toutes en lecture**, aucun nom calculé | témoin d'ordre (3 formes) |
-| **Sorties de texte externe** | `mesurer_sorties_news.py` | **154 routes servies, 0 sert la charge** | témoin `/news-feed` neutralisé |
+| **Sorties de texte externe** | `mesurer_sorties_news.py` | **155 routes servies, 0 sert la charge** | témoin `/news-feed` neutralisé |
 | **Dégradation honnête** (panne globale) | `mesurer_degradation.py` | 33 vues × 3 pannes : **0 fuite, 0 vue muette, 0 erreur** | — |
 | **Panne partielle** | `mesurer_panne_partielle.py` | 10 sources : **0 chiffre, 0 tracé** en silence | 2 témoins (cellule + tracé) |
 | **Intégrité des pages** | `mesurer_integrite_pages.py` | **0 id dupliqué, 0 débordement, 65 liens, 0 cassé** | — |
@@ -66,8 +66,36 @@ comparer par la structure.**
 1. **Points hors limites non mesurés** — `/api/ticker/<sym>`, `/desc/…`,
    `/api/analyst/…` : exclus par consigne, leur cas est raisonné à la lecture du
    code, pas mesuré.
-2. **Routes à plusieurs paramètres** écartées du balayage : on ne sait pas les
-   remplir honnêtement.
+2. **Routes non balayées : 17 règles sur 176, et le partage exact** (mesuré au
+   lot 39). Ma formulation précédente — « routes à plusieurs paramètres » —
+   était doublement fausse : la coupure n'est pas le NOMBRE de paramètres mais
+   la capacité à en fabriquer une valeur que le moteur reconnaît, et une seule
+   règle porte deux paramètres (`/memory/cell/<group>/<key>`, sous deux alias).
+
+   | nature du paramètre | rempli ? | règles |
+   | --- | --- | --- |
+   | aucun (chemin fixe) | sans objet | 137 |
+   | symbole (`<sym>`) | oui — ticker piégé | 21 |
+   | univers (`<universe>`) | oui — `LEAPS`, valeur reconnue par `horizon_scanners` | 1 |
+   | **identifiant** (`<tracking_id>`, `<decision_id>`, `<position_id>`, `<chart_id>`, `<group>/<key>`) | **non** | **9** |
+   | fichier statique (`<path:filename>`) | non — ne sert aucun texte externe | 2 |
+   | hors limites (consigne) | non — jamais appelés | 6 |
+
+   L'arithmétique se ferme : 137 + 21 + 1 = 159 chemins, moins un doublon
+   (`/api/anomalies/<sym>` est enregistrée deux fois) = **158 balayés**, dont
+   **155 servis** et 3 injoignables (le worker IBKR neutralisé).
+
+   Les **neuf** routes à identifiant sont le vrai trou : aucun id valide
+   n'existe dans le jeu de démonstration, et en inventer un rendrait un 404 qui
+   ne prouverait rien. Les remplir demande un jeu de données porteur
+   d'identités — c'est le prochain palier, pas une astuce d'outil.
+
+   **Cette réserve est elle-même gardée** depuis le lot 39
+   (`tests/test_signal_os_enumeration_sorties_lot33.py`) : la liste des neuf
+   règles est écrite dans le test, et une dixième route à identifiant ajoutée
+   demain fait échouer la suite au lieu d'élargir le trou en silence. Vérifié
+   par mutation — une route `/api/tracking/<id>/notes` fabriquée pour l'essai
+   fait tomber le gardien ; retirer le remplissage de `<universe>` aussi.
 3. **GET seul.** Une sortie POST qui renverrait du texte externe ne serait pas
    vue — écarté délibérément, l'invariant READONLY interdit de balayer des POST
    à l'aveugle.
