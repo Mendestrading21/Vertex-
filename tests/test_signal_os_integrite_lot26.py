@@ -42,6 +42,7 @@ plages exécutées — d'où des « 100 % » partout qui ne mesuraient **rien**.
 
 import io
 import os
+import re
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _OUTIL = os.path.join(_ROOT, 'tools', 'mesurer_integrite_pages.py')
@@ -57,9 +58,22 @@ def test_l_instrument_d_integrite_est_conserve():
         'l\'instrument ne dérive plus ses vues de la source : il peut de '
         'nouveau visiter des URL inexistantes sans que rien ne le signale '
         '(leçon du lot 14).')
-    assert 'balayer(pw, 320, 800' in src, (
+    #  LOT 42 : la garde portait sur l'appel littéral `balayer(pw, 320, 800`.
+    #  Elle disait la bonne chose de la mauvaise façon — elle figeait une FORME
+    #  d'écriture, pas la propriété. Passer les largeurs dans une table la
+    #  faisait échouer alors que le balayage à 320 px n'avait pas bougé, et
+    #  l'aurait laissée passer si quelqu'un avait gardé l'appel en supprimant
+    #  la boucle. Ce qu'on garde vraiment : la MATRICE de `VALIDATION.md`.
+    largeurs = set(int(n) for n in
+                   re.findall(r"\((\d{3,4}),\s*\d{3,4},\s*'", src))
+    assert 320 in largeurs, (
         'le balayage à 320 px a disparu : c\'est la largeur qu\'impose '
         'WCAG 1.4.10, et le seul endroit où le reflow se mesure.')
+    manquantes = {1440, 1024, 768, 390, 320} - largeurs
+    assert not manquantes, (
+        'la matrice responsive de VALIDATION.md est incomplète — largeurs '
+        'absentes : %s. Les défauts de grille naissent aux BASCULES (1024, '
+        '768, 390), pas aux extrémités.' % sorted(manquantes))
 
 
 def test_l_instrument_ne_suit_jamais_un_point_d_entree_interdit():

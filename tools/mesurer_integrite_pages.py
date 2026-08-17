@@ -1,5 +1,12 @@
-"""Balayage d'INTEGRITE des 35 vues : identifiants dupliques, liens internes
-casses, erreurs de page, et debordement horizontal a 320 px (WCAG 1.4.10).
+"""Balayage d'INTEGRITE des 35 vues sur les CINQ largeurs de la matrice :
+identifiants dupliques, liens internes casses, erreurs de page, et debordement
+horizontal (WCAG 1.4.10 a 320 px).
+
+LOT 42 : l'outil ne mesurait que 1440 et 320 — les deux bouts. La matrice de
+`VALIDATION.md` en demande cinq, et ce ne sont pas les extremites qui cassent :
+les defauts de grille naissent aux BASCULES (1024 sidebar compacte, 768 rail
+vers mobile, 390 une colonne). Un debordement qui n'existe qu'a 768 px passait
+entre les deux mesures sans que rien ne le dise.
 
 Quatre invariants qu'aucun test de la suite ne peut tenir : ils n'existent
 qu'une fois la page rendue et hydratee. Un id duplique ne casse rien
@@ -137,8 +144,19 @@ def balayer(pw, largeur, hauteur, etiquette):
     return not (ids_dbl or erreurs or reflow or casses)
 
 
+# LA MATRICE COMPLETE (VALIDATION.md), et pourquoi elle ne se resume pas a ses
+# extremites. On ne mesurait que 1440 et 320 : les deux bouts. Or les defauts de
+# grille naissent aux BASCULES — 1024 (sidebar compacte), 768 (rail -> mobile),
+# 390 (une colonne, graphiques 280-340 px). Un debordement qui n'existe qu'a
+# 768 px passait entre les deux mesures sans que rien ne le dise.
+LARGEURS = ((1440, 900, 'INTEGRITE 1440'),
+            (1024, 800, 'GRILLE 1024'),
+            (768, 900, 'BASCULE 768'),
+            (390, 844, 'MOBILE 390'),
+            (320, 800, 'REFLOW 320'))   # WCAG 1.4.10
+
 with sync_playwright() as pw:
-    ok = balayer(pw, 1440, 900, 'INTEGRITE')
-    # WCAG 1.4.10 : 320 px de large sans defilement horizontal.
-    ok = balayer(pw, 320, 800, 'REFLOW 320') and ok
+    ok = True
+    for largeur, hauteur, titre in LARGEURS:
+        ok = balayer(pw, largeur, hauteur, titre) and ok
 print('\n%s' % ('TOUT PROPRE' if ok else 'DEFAUTS TROUVES — voir ci-dessus'))
