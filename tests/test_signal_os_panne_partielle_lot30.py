@@ -60,25 +60,32 @@ def test_la_carte_qui_appelle_quoi_est_mesuree_et_non_supposee():
         'une supposition, et le verdict porterait sur des vues sans rapport.')
 
 
-def test_les_limites_sont_ecrites_dans_l_instrument():
-    """CONTRE-EXEMPLE du réflexe « conclure propre ». Trois faux positifs ont
-    été réfutés ; les taire aurait laissé croire que la question est réglée,
-    et le prochain lecteur aurait rouvert la même impasse."""
+def test_les_faux_positifs_restent_ecrits_dans_l_instrument():
+    """CONTRE-EXEMPLE du réflexe « conclure propre ». Les faux positifs réfutés
+    doivent rester écrits : les taire ferait rouvrir la même impasse.
+
+    LOT 35 — la question que ce test gardait comme OUVERTE est désormais
+    FERMÉE, par une mesure. Ce test change donc de contenu, pas de nature : il
+    garde toujours la trace des impasses, mais l'outil ne doit plus annoncer
+    une réserve qu'il a lui-même levée."""
     src = io.open(_OUTIL, encoding='utf-8').read()
-    assert 'NE PEUT PAS decider' in src, (
-        'la limite de la mesure a disparu de l\'instrument : son verdict se '
-        'lirait comme une preuve d\'absence de défaut.')
     assert 'SVGAnimatedString' in src, (
         'le premier faux positif n\'est plus documenté — celui qui confondait '
         'tous les textes SVG dans un seul seau.')
-    assert 'reste OUVERTE' in src, (
-        'le verdict de l\'outil ne dit plus que la question du « chiffre faux '
-        'silencieux » reste ouverte.')
+    assert 'horloge' in src, (
+        'le faux positif du lot 35 n\'est plus documenté : une horloge a la '
+        'minute qui tombe pendant la mesure, et l\'outil accuse un chiffre.')
 
 
 def test_le_verdict_ne_pretend_pas_a_l_absence_de_defaut():
-    """La formulation compte : « aucune fuite ni erreur » est ce qui a été
-    mesuré ; « le produit est propre » ne l'est pas."""
+    """La formulation compte : ce qui est annoncé doit être exactement ce qui a
+    été mesuré. L'outil éprouve la PANNE ; il ne peut rien dire d'une source
+    qui MENT (répond bien, avec de mauvais chiffres) — et son verdict ne doit
+    donc jamais s'élargir jusque-là."""
     src = io.open(_OUTIL, encoding='utf-8').read()
-    assert "'AUCUNE FUITE NI ERREUR sous panne partielle." in src, (
-        'le verdict a été élargi au-delà de ce que l\'instrument mesure.')
+    assert 'SOUS PANNE PARTIELLE, AUCUN CHIFFRE INVENTE' in src, (
+        'le verdict ne dit plus SOUS QUEL REGIME il vaut.')
+    for trop in ('le produit est propre', 'aucune donnee fausse',
+                 'les chiffres sont justes'):
+        assert trop not in src.lower(), (
+            'verdict elargi au-dela de la mesure : « %s »' % trop)

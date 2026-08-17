@@ -26,7 +26,14 @@ def _python_sources():
             yield p
 
 
-DENY_LIST_FILES = ('vertex/ai/tool_registry.py',)  # la liste NOIRE cite les noms pour les interdire
+DENY_LIST_FILES = (
+    'vertex/ai/tool_registry.py',          # la liste NOIRE cite les noms pour les interdire
+    # LOT 34 — l'outil de liste BLANCHE doit nommer les verbes d'execution :
+    # c'est son travail de les tenir hors du code, et il les cite dans sa
+    # documentation et dans le garde-fou qui empeche de les glisser dans la
+    # liste. Meme raison que le registre ci-dessus, cas inverse.
+    'tools/mesurer_surface_ibkr.py',
+)
 
 
 def test_no_order_execution_path():

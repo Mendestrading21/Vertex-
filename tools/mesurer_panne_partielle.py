@@ -1,48 +1,48 @@
 """PANNE PARTIELLE : une source tombe, les autres repondent normalement.
 
-Le lot 29 avait eprouve les pannes GLOBALES — toutes les sources en meme temps
-— et conclu par une reserve : « une panne PARTIELLE est un regime different, ou
-un chiffre faux peut se glisser entre des chiffres justes sans qu'aucun etat
-d'erreur ne s'affiche ». Cet outil eprouve ce regime-la.
+Le lot 29 avait eprouve les pannes GLOBALES et conclu par une reserve : « une
+panne PARTIELLE est un regime different, ou un chiffre faux peut se glisser
+entre des chiffres justes sans qu'aucun etat d'erreur ne s'affiche ».
 
-## Ce qu'il mesure de facon SURE
+Le lot 30 a construit cet outil, mesure les fuites et les erreurs (0 et 0), et
+LAISSE LA QUESTION OUVERTE en la documentant : les trois methodes essayees
+donnaient des faux positifs. Le lot 35 la ferme.
 
-Pour chaque source, il fait d'abord la carte de QUI L'APPELLE (mesure, pas
-supposition), puis ne juge que les vues concernees :
+## Ce qui a debloque la mesure
 
-  * fuites techniques a l'ecran (NaN, undefined, null, Infinity, [object Object]) ;
-  * erreurs de page.
+1. CLE PAR CHEMIN DOM. La cle du lot 30 (`e.className` + longueur) mettait tout
+   texte SVG dans le meme seau — `className` vaut « [object SVGAnimatedString] »
+   — et glissait des qu'un element apparaissait. Le chemin DOM designe une
+   cellule et une seule. Effet mesure : 546 cellules chiffrees, 546 STABLES,
+   contre 637 sur 1768 avec l'ancienne cle.
 
-Releve du lot 30, six sources isolees : 0 fuite, 0 erreur.
+2. DOUBLE REFERENCE IMMEDIATE, A LA MEME CADENCE. C'est le point qui compte.
+   Une premiere version prenait UNE reference globale, puis eprouvait les dix
+   sources : vingt minutes plus tard, « Il y a 5 min » etait devenu « Il y a
+   8 min » et l'outil accusait quinze chiffres. Aucun n'etait cause par la
+   panne — c'etait l'horloge. On prend donc DEUX releves de reference separes
+   par le meme delai que celui qui precede la mesure : une cellule qui suit le
+   temps se demasque toute seule entre les deux, sans qu'on ait a lister les
+   formats de duree.
 
-## Ce qu'il NE PEUT PAS decider, et pourquoi c'est dit ici
+3. TOUT CHIFFRE QUI CHANGE, pas seulement les zeros. Le lot 30 ne cherchait
+   qu'un « 0 » substitue. Une moyenne sur cinq sources au lieu de six est
+   plausible, et fausse.
 
-« Un chiffre faux se glisse-t-il entre des chiffres justes ? » n'est pas
-decidable sur le jeu de donnees de demonstration. J'ai essaye trois methodes,
-et les trois ont produit des FAUX POSITIFS que j'ai du refuter une par une :
+## Le temoin, sans lequel un « 0 » ne prouve rien
 
-  1. comparer toutes les cellules avant/apres : la cle `e.className` vaut
-     « [object SVGAnimatedString] » pour TOUT texte SVG, donc des valeurs sans
-     rapport tombaient dans le meme seau ;
-  2. ajouter un rang de fratrie a la cle : la cle glisse des que l'ordre de
-     rendu change, et desigme une autre cellule ;
-  3. exiger qu'une vue « signale » son manque : plusieurs sources n'apportent
-     RIEN en demo (aucune position a valoriser pour /api/pos-quotes), donc leur
-     panne ne peut rien changer — l'absence de signal n'y prouve rien.
-
-Le seul candidat concret trouve — une KPI de Systeme passant de « 8/8 » a
-« 0 » — a ete REFUTE en regardant l'ecran : la valeur est identique avec et
-sans panne.
-
-Conclure « propre » sur cette question serait affirmer plus que ce que la
-mesure permet. Elle reste ouverte, et elle demande un jeu de donnees ou chaque
-source apporte une valeur observable.
+Un balayage qui ne trouve rien peut vouloir dire que le produit est honnete, ou
+que l'instrument est aveugle. Le temoin fabrique le defaut : la source repond
+200 avec un corps VALIDE mais ALTERE. La vue n'a alors aucune raison d'afficher
+une erreur — elle affiche un chiffre faux. Si l'outil ne le voit pas, son « 0 »
+ne vaut rien et il le DIT.
 
 Lancer :
     DEMO=1 NO_IBKR=1 START_ON_IMPORT=1 python terminal.py &
     python tools/mesurer_panne_partielle.py
 """
 import io
+import json
 import os
 import re
 import sys
@@ -54,8 +54,9 @@ BASE = 'http://localhost:5002'
 _PAGES_DIR = os.path.join('vertex', 'ui', 'pages')
 _INTERDITS = ('**/api/ticker/**', '**/api/analyst/**', '**/api/correlations/**',
               '**/api/options-for/**', '**/options/*', '**/desc/**')
-CIBLES = ('/scan', '/api/pos-quotes', '/api/market/summary', '/api/command',
-          '/api/portfolio/team', '/api/options/overview')
+CIBLES = ('/scan', '/api/pos-quotes', '/api/market/summary', '/api/market/regime',
+          '/api/command', '/api/options/overview', '/cal-feed',
+          '/api/briefing/editorial', '/api/opportunities/funnel', '/api/desk')
 
 
 def _vues(fichier, symbole='_VIEWS'):
@@ -73,6 +74,7 @@ PAGES = [('/', ['']),
          ('/journal', _vues('performance_page.py')),
          ('/system', _vues('system_page.py', 'VIEWS'))]
 
+# Une cellule = un element feuille portant un CHIFFRE, designe par son CHEMIN DOM.
 JS = """() => {
   const vis = (e) => {
     const q = e.getBoundingClientRect();
@@ -86,83 +88,192 @@ JS = """() => {
     }
     return true;
   };
+  const chemin = (e) => {
+    const b = [];
+    for (let n = e; n && n.id !== 'vx-content'; n = n.parentElement) {
+      const p = n.parentElement;
+      if (!p) break;
+      b.push(n.tagName + ':' + ([...p.children].indexOf(n)));
+    }
+    return b.reverse().join('>');
+  };
+  const cellules = {};
   let fuite = null;
-  document.querySelectorAll('#vx-content *').forEach(e => {
-    if (fuite || e.classList.contains('vx-sr-only') || !vis(e)) return;
+  const hote = document.getElementById('vx-content');
+  if (!hote) return { cellules, fuite, etats: 0, mentions: 0 };
+  hote.querySelectorAll('*').forEach(e => {
+    if (e.classList.contains('vx-sr-only') || !vis(e)) return;
     const t = [...e.childNodes].filter(n => n.nodeType === 3)
       .map(n => n.textContent).join('').trim();
-    if (t && /\\b(NaN|undefined|null|Infinity|\\[object Object\\])\\b/.test(t)) fuite = t.slice(0,60);
+    if (!t) return;
+    if (!fuite && /\\b(NaN|undefined|null|Infinity|\\[object Object\\])\\b/.test(t)) {
+      fuite = t.slice(0, 60);
+    }
+    if (t.length <= 24 && /\\d/.test(t)) cellules[chemin(e)] = t;
   });
-  return { fuite };
+  return {
+    cellules, fuite,
+    etats: hote.querySelectorAll('[data-state], .vx-state, .vx-empty, '
+      + '.vx-error-banner, .vx-insufficient').length,
+    mentions: (hote.innerText.match(
+      /(^|\\s)(—|n\\/d|indisponible|non évaluable|non disponible|aucune donnée)/gi) || []).length,
+  };
 }"""
 
-with sync_playwright() as pw:
-    nav = pw.chromium.launch(
-        executable_path='/opt/pw-browsers/chromium-1194/chrome-linux/chrome')
 
-    # 1. La carte QUI APPELLE QUOI, mesuree.
+def _ouvrir(nav, panne=None, alterer=None):
     ctx = nav.new_context(viewport={'width': 1440, 'height': 900}, service_workers='block')
     pg = ctx.new_page()
     for motif in _INTERDITS:
         pg.route(motif, lambda r: r.abort())
-    usage = {}
-    for route, vues in PAGES:
-        for v in vues:
-            url = route + (('?view=' + v) if v else '')
-            vus = set()
+    if panne:
+        pg.route('**' + panne + '*',
+                 lambda r: r.fulfill(status=500, content_type='application/json',
+                                     body='{"error":"panne partielle"}'))
+    if alterer:
+        pg.route('**' + alterer + '*', _altere)
+    return ctx, pg
 
-            def _req(r, _v=vus):
-                u = r.url.replace(BASE, '').split('?')[0]
-                for c in CIBLES:
-                    if u == c or u.startswith(c + '/'):
-                        _v.add(c)
-            pg.on('request', _req)
-            pg.goto(BASE + url, wait_until='domcontentloaded')
-            pg.wait_for_timeout(2400)
-            pg.remove_listener('request', _req)
-            usage[url] = vus
-    ctx.close()
-    print('=== QUI APPELLE QUOI (mesure)')
-    for c in CIBLES:
-        q = [u for u, s in usage.items() if c in s]
-        print('  %-24s %d vue(s)' % (c, len(q)))
 
-    # 2. Une source en panne a la fois — SEULES les vues concernees sont jugees.
-    propre = True
-    for cible in CIBLES:
-        concernees = [u for u, s in usage.items() if cible in s]
-        if not concernees:
-            print('--- %s : aucune vue concernee' % cible)
-            continue
-        ctx = nav.new_context(viewport={'width': 1440, 'height': 900},
-                              service_workers='block')
-        pg = ctx.new_page()
-        for motif in _INTERDITS:
-            pg.route(motif, lambda r: r.abort())
+def _altere(route):
+    """200 + corps VALIDE mais FAUX : la vue n'a aucune raison de crier."""
+    try:
+        rep = route.fetch()
+        d = rep.json()
+        if isinstance(d, dict):
+            if d.get('vix') is not None:
+                d['vix'] = float(d['vix']) + 7.77
+            if isinstance(d.get('breadth'), dict) and d['breadth'].get('above200') is not None:
+                d['breadth']['above200'] = 3
+        route.fulfill(status=200, content_type='application/json', body=json.dumps(d))
+    except Exception:
+        route.continue_()
 
-        def _panne(r):
-            r.fulfill(status=500, content_type='application/json',
-                      body='{"error":"panne partielle"}')
-        pg.route('**' + cible + '*', _panne)
 
-        fuites, erreurs = [], []
-        for url in concernees:
-            errs = []
-            pg.on('pageerror', lambda e, _e=errs: _e.append(str(e)[:70]))
-            pg.goto(BASE + url, wait_until='domcontentloaded')
-            pg.wait_for_timeout(2500)
-            r = pg.evaluate(JS)
-            if r['fuite']:
-                fuites.append('%s :: %s' % (url, r['fuite']))
-            if errs:
-                erreurs.append('%s :: %s' % (url, errs[0]))
-        print('--- panne isolee : %-24s %d vue(s) · fuites %s · erreurs %s'
-              % (cible, len(concernees), fuites or 0, erreurs or 0))
-        if fuites or erreurs:
-            propre = False
+def _releve(pg, url):
+    pg.goto(BASE + url, wait_until='domcontentloaded', timeout=20000)
+    pg.wait_for_timeout(2400)
+    return pg.evaluate(JS)
+
+
+def _silencieux(avant, apres):
+    """Chiffres CHANGES que la vue ne signale pas. `avant` est la reference la
+    plus RECENTE, `apres` la mesure sous panne."""
+    if apres['etats'] > avant['etats'] or apres['mentions'] > avant['mentions']:
+        return []                       # la vue DIT qu'il lui manque quelque chose
+    out = []
+    for k, v in avant['cellules'].items():
+        w = apres['cellules'].get(k)
+        if w is None or w == v or not re.search(r'\d', w):
+            continue                    # disparu, inchange, ou devenu « — » : honnete
+        out.append('« %s » -> « %s »' % (v, w))
+    return out
+
+
+def main():
+    with sync_playwright() as pw:
+        nav = pw.chromium.launch(
+            executable_path='/opt/pw-browsers/chromium-1194/chrome-linux/chrome')
+
+        # 1. La carte QUI APPELLE QUOI, mesuree.
+        ctx, pg = _ouvrir(nav)
+        usage = {}
+        for route, vues in PAGES:
+            for v in vues:
+                url = route + (('?view=' + v) if v else '')
+                vus = set()
+
+                def _req(r, _v=vus):
+                    u = r.url.replace(BASE, '').split('?')[0]
+                    for c in CIBLES:
+                        if u == c or u.startswith(c + '/'):
+                            _v.add(c)
+                pg.on('request', _req)
+                _releve(pg, url)
+                pg.remove_listener('request', _req)
+                usage[url] = vus
         ctx.close()
-    nav.close()
+        print('=== QUI APPELLE QUOI (mesure)')
+        for c in CIBLES:
+            print('  %-26s %d vue(s)' % (c, len([u for u, s in usage.items() if c in s])))
 
-print('\n%s' % ('AUCUNE FUITE NI ERREUR sous panne partielle. La question du '
-                '« chiffre faux silencieux » reste OUVERTE — voir l\'en-tete.'
-                if propre else 'DEFAUTS TROUVES — voir ci-dessus'))
+        # 2. Une source en panne a la fois — SEULES les vues concernees.
+        fuites, erreurs, muets = [], [], []
+        for cible in CIBLES:
+            concernees = [u for u, s in usage.items() if cible in s]
+            if not concernees:
+                print('--- %-26s aucune vue concernee' % cible)
+                continue
+            n_muets = 0
+            for url in concernees:
+                # Contextes recrees PAR VUE. Les garder ouverts sur des dizaines
+                # de vues fait accumuler les processus du navigateur jusqu'au
+                # blocage — mesure : l'outil se figeait apres quelques vues, sans
+                # rien dire. Le cout (~0,3 s par contexte) est le prix d'une
+                # mesure qui va au bout.
+                ctxA, pgA = _ouvrir(nav)
+                ctxB, pgB = _ouvrir(nav, panne=cible)
+                # LA MESURE EST ENCADREE. Deux references AVANT, un controle
+                # APRES, tous sans panne. Une cellule n'est jugee que si elle
+                # est identique dans les TROIS : ce qui change alors sous panne
+                # ne peut venir que de la panne.
+                #
+                # La double reference seule ne suffisait pas, et c'est mesure :
+                # une horloge a la minute ne bouge pas entre deux releves
+                # espaces de 2,4 s, puis tombe pile pendant la mesure. Le
+                # balayage complet accusait ainsi « Il y a 25 min » -> « 26 min »
+                # et « dans ~1 min » -> « ~0 min ». Le controle d'apres les
+                # elimine SANS lister les formats de duree — on demande a la
+                # cellule si elle bouge aussi quand rien n'est casse.
+                a = _releve(pgA, url)
+                b = _releve(pgA, url)
+                errs = []
+                pgB.on('pageerror', lambda e, _e=errs: _e.append(str(e)[:70]))
+                c = _releve(pgB, url)
+                d = _releve(pgA, url)
+                stables = {k: v for k, v in b['cellules'].items()
+                           if a['cellules'].get(k) == v and d['cellules'].get(k) == v}
+                if c['fuite']:
+                    fuites.append('%s :: %s' % (url, c['fuite']))
+                if errs:
+                    erreurs.append('%s :: %s' % (url, errs[0]))
+                for ligne in _silencieux(dict(b, cellules=stables), c):
+                    muets.append('%s [%s] %s' % (url, cible, ligne))
+                    n_muets += 1
+                ctxA.close()
+                ctxB.close()
+            print('--- %-26s %2d vue(s) · chiffres changes EN SILENCE : %d'
+                  % (cible, len(concernees), n_muets))
+
+        # 3. LE TEMOIN — sans lui, un « 0 » ne prouve rien.
+        ctxA, pgA = _ouvrir(nav)
+        ctxT, pgT = _ouvrir(nav, alterer='/api/market/summary')
+        a = _releve(pgA, '/')
+        b = _releve(pgA, '/')
+        stables = {k: v for k, v in b['cellules'].items() if a['cellules'].get(k) == v}
+        t = _releve(pgT, '/')
+        vu = _silencieux(dict(b, cellules=stables), t)
+        ctxA.close()
+        ctxT.close()
+        nav.close()
+
+    print('\n=== TEMOIN (source qui repond 200 avec un corps FAUX)')
+    for ligne in vu[:4]:
+        print('    ' + ligne)
+    if not vu:
+        print('    AUCUN — l instrument est AVEUGLE, son « 0 » ne vaut rien.')
+        return 2
+    print('    l instrument voit un chiffre faux silencieux : il peut echouer.')
+
+    print('\n=== VERDICT')
+    print('  fuites techniques : %s' % (fuites or 0))
+    print('  erreurs de page   : %s' % (erreurs or 0))
+    print('  chiffres faux SILENCIEUX : %s' % (muets or 0))
+    if fuites or erreurs or muets:
+        return 1
+    print('\nSOUS PANNE PARTIELLE, AUCUN CHIFFRE INVENTE NE S AFFICHE EN SILENCE.')
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
