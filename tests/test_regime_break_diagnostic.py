@@ -28,6 +28,14 @@ def test_regime_break_requires_full_dated_evidence():
     assert out['status'] == 'INSUFFICIENT_SAMPLE'
 
 
+def test_regime_break_consumer_refuses_unsorted_series_with_structured_status():
+    series = _series(_baseline() + [0.01] * 20)
+    series['dates'][20], series['dates'][21] = series['dates'][21], series['dates'][20]
+    out = regime.assess(series)
+    assert out['available'] is False and out['status'] == 'TEMPORAL_EVIDENCE_REQUIRED'
+    assert out['read_only'] is True
+
+
 def test_regime_break_flags_realized_volatility_expansion_without_prediction():
     recent = [0.04 if index % 2 else -0.035 for index in range(20)]
     out = regime.assess(_series(_baseline() + recent))

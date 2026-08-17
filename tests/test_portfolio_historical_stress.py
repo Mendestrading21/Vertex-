@@ -51,6 +51,16 @@ def test_historical_stress_refuses_partial_or_undated_portfolio():
     assert out['status'] == 'TEMPORAL_EVIDENCE_REQUIRED'
 
 
+def test_historical_stress_consumer_refuses_unsorted_canonical_dates():
+    aaa = _series([0.01] * 40)
+    aaa['dates'][10], aaa['dates'][11] = aaa['dates'][11], aaa['dates'][10]
+    out = stress.assess({'AAA': 50.0, 'BBB': 50.0},
+                        {'AAA': aaa, 'BBB': _series([0.0] * 40)})
+    assert out['available'] is False
+    assert out['status'] == 'TEMPORAL_EVIDENCE_REQUIRED'
+    assert out['read_only'] is True
+
+
 def test_portfolio_context_exposes_read_only_historical_stress():
     series = {'AAA': _series([0.01] * 40), 'BBB': _series([0.0] * 40)}
     out = context.build(_positions(), quotes={'AAA': 100.0, 'BBB': 100.0}, series_by_symbol=series)
