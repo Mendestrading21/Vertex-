@@ -42,7 +42,7 @@ def earnings_risk(earnings_in_days, dte):
 def dividend_risk(ex_dividend_days, right, dte):
     """Risque ex-dividende (surtout CALLS : décote du spot, exercice anticipé)."""
     if ex_dividend_days is None:
-        return RISK_NONE, ''
+        return RISK_UNKNOWN, "Date ex-dividende inconnue — vérifier avant d'exposer un CALL."
     try:
         d = int(ex_dividend_days)
     except (TypeError, ValueError):
@@ -71,9 +71,23 @@ def combined(earnings_in_days, ex_dividend_days, right, dte):
     """Synthèse du risque d'événement : niveau max + notes cumulées."""
     e_lvl, e_note = earnings_risk(earnings_in_days, dte)
     d_lvl, d_note = dividend_risk(ex_dividend_days, right, dte)
-    worst = e_lvl if _ORDER[e_lvl] >= _ORDER[d_lvl] else d_lvl
+    known_worst = e_lvl if _ORDER[e_lvl] >= _ORDER[d_lvl] else d_lvl
+    # Un calendrier partiel ne devient jamais une absence de risque. Une menace
+    # élevée/modérée déjà observée reste toutefois prioritaire sur l'inconnue.
+    if RISK_UNKNOWN in (e_lvl, d_lvl) and known_worst not in (RISK_HIGH, RISK_MODERATE):
+        worst = RISK_UNKNOWN
+    else:
+        worst = known_worst
     notes = [n for n in (e_note, d_note) if n]
-    return {'level': worst, 'earnings': e_lvl, 'dividend': d_lvl, 'notes': notes}
+    return {'level': worst, 'earnings': e_lvl, 'dividend': d_lvl, 'notes': notes,
+            'calendar_coverage': {
+                'earnings_available': e_lvl != RISK_UNKNOWN,
+                'ex_dividend_available': d_lvl != RISK_UNKNOWN,
+                'status': ('EVENT_CALENDAR_AVAILABLE'
+                           if RISK_UNKNOWN not in (e_lvl, d_lvl)
+                           else 'EVENT_CALENDAR_INCOMPLETE'),
+                'read_only': True,
+            }}
 
 
 __all__ = ['earnings_risk', 'dividend_risk', 'combined',
