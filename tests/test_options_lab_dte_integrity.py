@@ -70,6 +70,18 @@ def test_risks_exposes_missing_iv_dte_and_spread_without_defaults():
     }
 
 
+def test_risks_does_not_treat_missing_vix_as_a_medium_macro_risk():
+    rows = {row['name']: row for row in options_lab._risks({}, {})}
+    macro = rows['Fed / CPI / NFP']
+    assert macro['level'] == 'INCONNU'
+    assert macro['impact'] == 'risque macro non quantifié — VIX indisponible'
+    assert macro['coverage'] == {
+        'available': False,
+        'status': 'MACRO_VIX_UNAVAILABLE',
+        'read_only': True,
+    }
+
+
 def test_comparator_refuses_missing_spot_or_iv_without_default_prices():
     comparator = options_lab._comparator({'sym': 'TST', 'spot': None, 'iv': None}, None, {})
     assert comparator == {

@@ -954,6 +954,7 @@ def _risks(star, market):
     dte_available = available_number(dte, strictly_positive=True)
     spread_available = available_number(spr)
     vix = (market or {}).get('vix')
+    vix_available = available_number(vix, strictly_positive=True)
     roro = (market or {}).get('roro')
 
     def lvl(x, lo, hi):
@@ -989,9 +990,15 @@ def _risks(star, market):
          'proba': 'élevée en période de resserrement', 'fix': 'taille réduite + PUT de couverture indiciel'},
         {'name': 'Gap overnight', 'level': 'MOYEN', 'impact': 'le stop ne protège pas pendant la nuit',
          'proba': 'quelques fois par trimestre', 'fix': 'la taille EST le stop : risque max = prime, dimensionner en conséquence'},
-        {'name': 'Fed / CPI / NFP', 'level': 'ÉLEVÉ' if (vix or 0) >= 20 else 'MOYEN',
-         'impact': 'volatilité brutale ±2-3 % sur indices', 'proba': 'calendrier connu — chaque mois',
-         'fix': 'ne pas ouvrir de position la veille, laisser l\'IV se dégonfler après'},
+        {'name': 'Fed / CPI / NFP',
+         'level': 'ÉLEVÉ' if vix_available and vix >= 20 else 'MOYEN' if vix_available else 'INCONNU',
+         'impact': 'volatilité brutale ±2-3 % sur indices' if vix_available else
+                   'risque macro non quantifié — VIX indisponible',
+         'proba': 'calendrier connu — chaque mois' if vix_available else 'INCONNUE — VIX non reporté',
+         'fix': 'ne pas ouvrir de position la veille, laisser l\'IV se dégonfler après',
+         'coverage': {'available': vix_available,
+                      'status': 'MACRO_VIX_AVAILABLE' if vix_available else 'MACRO_VIX_UNAVAILABLE',
+                      'read_only': True}},
         {'name': 'Résultats trimestriels', 'level': lvl(90 - min(dte, 90), 30, 60) if dte_available else 'INCONNU',
          'impact': 'gap + IV crush combinés' if dte_available else 'horizon vers les résultats non qualifié — DTE indisponible',
          'proba': '4× par an, dates connues' if dte_available else 'INCONNUE — DTE non reporté',
