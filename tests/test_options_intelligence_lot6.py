@@ -57,6 +57,20 @@ def test_symbol_filter_and_empty_honest():
     assert res['available'] is False and res['candidates'] == []
 
 
+def test_profile_load_failure_uses_labeled_fallback_without_stopping_scan(monkeypatch):
+    def unavailable_profile():
+        raise RuntimeError('profil inaccessible')
+
+    monkeypatch.setattr(C, 'load_profile', unavailable_profile)
+    res = HS.scan(_board(), 'SWING', sym='TST')
+    assert res['available'] is True
+    assert res['profile_coverage'] == {
+        'available': False,
+        'status': 'PROFILE_FALLBACK',
+        'read_only': True,
+    }
+
+
 # ─── Mandat LEAPS V2 appliqué (jamais silencieux) ───────────────────────────────
 
 def test_leaps_mandate_flags():

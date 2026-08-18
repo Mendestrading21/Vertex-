@@ -47,9 +47,19 @@ def _universes(profile=None):
         }
         for key, value in _FALLBACK_UNIVERSES.items():
             universes.setdefault(key, list(value))
-        return universes, profile
+        return universes, profile, {
+            'available': True,
+            'status': 'PROFILE_AVAILABLE',
+            'read_only': True,
+        }
     except Exception:
-        return dict(_FALLBACK_UNIVERSES), None
+        # Le scan reste borné et descriptif avec ses fenêtres internes, sans
+        # révéler l’exception ni présenter ce repli comme le profil actif.
+        return dict(_FALLBACK_UNIVERSES), None, {
+            'available': False,
+            'status': 'PROFILE_FALLBACK',
+            'read_only': True,
+        }
 
 
 def _swing_3_6m_config(profile=None) -> dict:
@@ -189,7 +199,7 @@ def scan(board, universe, sym=None, profile=None):
     Les données manquantes ne sont jamais transformées en conformité positive : elles
     produisent le statut `PARTIAL_MANDATE`, visible dans les raisons du candidat.
     """
-    universes, profile = _universes(profile)
+    universes, profile, profile_coverage = _universes(profile)
     universe = (universe or '').upper()
     if universe not in universes:
         return {
@@ -197,6 +207,7 @@ def scan(board, universe, sym=None, profile=None):
             'universe': universe,
             'candidates': [],
             'reason': 'univers inconnu : %r (attendu %s)' % (universe, sorted(universes)),
+            'profile_coverage': profile_coverage,
         }
 
     source = board or []
@@ -279,6 +290,7 @@ def scan(board, universe, sym=None, profile=None):
         'input_contracts_total': input_total,
         'input_truncated': input_truncated,
         'input_limit': MAX_BOARD_CONTRACTS,
+        'profile_coverage': profile_coverage,
         'candidates': candidates,
         'generator': 'deterministic',
         'note': note,
@@ -312,6 +324,7 @@ def options_context(scan_result, historical_closes=None):
         'input_truncated': bool(scan_result.get('input_truncated')),
         'input_limit': scan_result.get('input_limit'),
         'input_contracts_total': scan_result.get('input_contracts_total'),
+        'profile_coverage': scan_result.get('profile_coverage'),
         'best': best,
         'best_in_mandate': best['mandate_status'] == 'IN_MANDATE',
         'mandate_status': best['mandate_status'],
