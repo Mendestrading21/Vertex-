@@ -17,6 +17,23 @@ def test_tops_excludes_missing_or_invalid_dte_from_horizon_categories():
     assert 'INVALID' not in [row['sym'] for row in by_key.get('top_leaps', [])]
 
 
+def test_tops_low_iv_excludes_missing_invalid_and_zero_iv_with_coverage():
+    board = [
+        {'sym': 'MISSING', 'type': 'CALL', 'iv': None},
+        {'sym': 'BOOLEAN', 'type': 'CALL', 'iv': True},
+        {'sym': 'ZERO', 'type': 'CALL', 'iv': 0},
+        {'sym': 'VALID', 'type': 'CALL', 'iv': 22},
+    ]
+    top_lowiv = next(row for row in options_lab._tops(board, []) if row['key'] == 'top_lowiv')
+    assert [row['sym'] for row in top_lowiv['rows']] == ['VALID']
+    assert top_lowiv['coverage'] == {
+        'iv_valid_contracts': 1,
+        'iv_invalid_or_missing_contracts': 3,
+        'status': 'TOP_LOW_IV_AVAILABLE',
+        'read_only': True,
+    }
+
+
 def test_committee_excludes_missing_or_invalid_dte_from_horizon_winners():
     board = [
         {'sym': 'SHORT', 'type': 'CALL', 'dte': 30, 'quality': 80, 'pop': 55},
