@@ -162,6 +162,18 @@ def test_analysis_liquidity_exposes_missing_oi_or_spread_without_imputation():
     assert 'aucune imputation appliquée' in liquidity['text']
 
 
+def test_analysis_options_does_not_call_missing_iv_a_correct_premium():
+    rows = {row['key']: row for row in options_lab._analysis(
+        {'sym': 'TST', 'type': 'CALL', 'iv': None}, {}, {}, [], {})}
+    options = rows['options']
+    assert options['impact'] == 'coût de prime indisponible'
+    assert options['coverage'] == {
+        'iv_available': False,
+        'status': 'PREMIUM_COST_IV_UNAVAILABLE',
+        'read_only': True,
+    }
+
+
 def test_committee_liquidity_excludes_missing_spread_without_default():
     board = [
         {'sym': 'MISSING', 'type': 'CALL', 'strike': 100, 'dte': 90,

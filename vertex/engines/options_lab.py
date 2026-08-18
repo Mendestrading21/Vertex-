@@ -298,13 +298,19 @@ def _analysis(star, detail, market, sectors, overview):
         'entrer sur repli vers la MM20' if (rsi or 50) > 68 else 'l\'entrée directe est défendable'))
     # options (coût de la prime)
     iv = star.get('iv')
-    osc = None if iv is None else max(5, min(95, 100 - (iv - 25) * 1.6))
-    rows.append(_grade_row('options', 'Analyse options', '🧾', osc,
-        'prime chère' if (iv or 0) >= 50 else 'prime correcte', 'haute',
+    iv_available = isinstance(iv, (int, float)) and not isinstance(iv, bool) and iv > 0
+    osc = max(5, min(95, 100 - (iv - 25) * 1.6)) if iv_available else None
+    option_row = _grade_row('options', 'Analyse options', '🧾', osc,
+        'prime chère' if iv_available and iv >= 50 else 'prime correcte' if iv_available else 'coût de prime indisponible', 'haute',
         'IV %s%% · thêta %s%%/j · point mort +%s%% · delta %s.'
-        % (iv, star.get('theta_burn'), _r2((star.get('be', 0) / star.get('spot', 1) - 1) * 100, 1),
+        % (iv if iv_available else '—', star.get('theta_burn'), _r2((star.get('be', 0) / star.get('spot', 1) - 1) * 100, 1),
            star.get('delta')),
-        'préférer un spread pour neutraliser l\'IV' if (iv or 0) >= 50 else 'l\'achat sec reste efficient'))
+        'préférer un spread pour neutraliser l\'IV' if iv_available and iv >= 50 else
+        'l\'achat sec reste efficient' if iv_available else 'vérifier l\'IV avant toute interprétation du coût de prime')
+    option_row['coverage'] = {'iv_available': iv_available,
+                              'status': 'PREMIUM_COST_IV_AVAILABLE' if iv_available else 'PREMIUM_COST_IV_UNAVAILABLE',
+                              'read_only': True}
+    rows.append(option_row)
     # institutionnels (proxy honnête : anomalie de volume + accumulation)
     volz, acc = d.get('vol_z'), d.get('accumulation')
     isc = None if volz is None else max(0, min(100, 50 + volz * 18 + (10 if acc else 0)))
