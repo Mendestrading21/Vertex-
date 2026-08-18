@@ -150,7 +150,8 @@ def _profile():
 def build_packet(sym, detail, market=None, events=None, anomaly=None,
                  as_of=None, demo=False, options_ctx=None, portfolio_ctx=None,
                  red_team=None, data_quality_ctx=None, reconciliation_ctx=None, fundamental_ctx=None,
-                 drawdown_ctx=None, downside_volatility_ctx=None, relative_strength_ctx=None, gap_risk_ctx=None):
+                 drawdown_ctx=None, downside_volatility_ctx=None, relative_strength_ctx=None, gap_risk_ctx=None,
+                 earnings_proximity_ctx=None):
     """Agrège les sorties moteurs existantes en un packet typé — sans muter les
     sources, sans recalculer, sans inventer."""
     detail = detail or {}
@@ -195,6 +196,8 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
                               {'available': False, 'reason': 'contexte de force relative non fourni'}),
         'gap_risk': (gap_risk_ctx if gap_risk_ctx is not None else
                      {'available': False, 'reason': 'contexte de gap non fourni'}),
+        'earnings_proximity': (earnings_proximity_ctx if earnings_proximity_ctx is not None else
+                               {'available': False, 'reason': 'contexte de résultats non fourni'}),
     }
     audit.append({'step': 'contexts', 'result': {
         k: bool(v.get('available', True)) for k, v in contexts.items()}})

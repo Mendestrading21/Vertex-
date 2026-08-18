@@ -156,6 +156,8 @@ def api_skyler(sym):
     news = _np.sanitize_news(detail.get('news') or [])
     ev = _events.build(sym, news=news, earnings=earnings, macro=macro, anomaly=ano,
                        as_of=scan_state.get('scan_ts_h') or scan_state.get('updated'))
+    from vertex.engines import earnings_proximity as _epctx
+    earnings_proximity = _epctx.build(ev)
     as_of = scan_state.get('scan_ts_h') or scan_state.get('updated')
     # OptionsContext : mandat opérationnel 3–6 mois pour une détention de 1–3 semaines.
     # Le scanner conserve les candidats partiels et hors mandat, mais le moteur reçoit
@@ -190,7 +192,8 @@ def api_skyler(sym):
                                data_quality_ctx=dqctx, reconciliation_ctx=recctx,
                                fundamental_ctx=fundamentals_ctx, drawdown_ctx=drawdown,
                                downside_volatility_ctx=downside_volatility,
-                               relative_strength_ctx=relative_strength, gap_risk_ctx=gap_risk)
+                               relative_strength_ctx=relative_strength, gap_risk_ctx=gap_risk,
+                               earnings_proximity_ctx=earnings_proximity)
     rt_review = _rt.review(packet0, _sk.score40(packet0))
     rt_input = {'complete': rt_review['complete'], 'basis': rt_review['basis']}
     # Calibration RÉELLE (LOT 19/22) : facteur depuis les résultats mesurés de
