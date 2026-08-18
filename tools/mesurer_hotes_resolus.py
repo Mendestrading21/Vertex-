@@ -94,8 +94,20 @@ sort*) commise par moi dans le lot même qui la cite. L'outil attend donc que la
 condition soit remplie — plus aucun squelette — jusqu'à un plafond franc, et
 **rend le temps qu'il a fallu**. Ce n'est qu'au-delà du plafond qu'il accuse.
 
+## Les HUIT espaces, pas un seul (lot 59)
+
+Réserve SIGNAL-OS-53 §5.1, de ma main : *« Une seule page. Les sept autres
+espaces ont leurs propres hôtes et ne sont pas balayés. »* L'instrument était
+générique dès l'origine ; seule la liste des disclosures à ouvrir était propre à
+la fiche Analyse. Elle est désormais **découverte** au lieu d'être écrite :
+l'outil ouvre TOUT `<details>` fermé qu'il rencontre, en plusieurs passes —
+ouvrir une disclosure en révèle parfois d'autres, imbriquées.
+
+Écrire la liste à la main aurait reproduit la faute du lot 56, où l'ajout d'un
+troisième bloc replié avait fait rendre « jamais peint » sur un produit correct.
+
 Usage : python tools/mesurer_hotes_resolus.py [--base http://127.0.0.1:5002]
-        [--sym ACN] [--couper]
+        [--sym ACN] [--couper] [--espace /markets | --tous]
 """
 import os
 import sys
@@ -103,6 +115,13 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from tools.mesurer_blocs_peints import _INTERDITS, _chromium  # noqa: E402
+
+
+def espaces():
+    """Les huit espaces, LUS DU REGISTRE et non recopiés : une liste écrite à
+    la main diverge dès le premier ajout de page."""
+    from vertex.ui.shell import PRIMARY_NAV
+    return [(it['id'], it['href']) for it in PRIMARY_NAV]
 
 #  MARQUAGE — et il doit être POSÉ AVANT que la page ne vive. Un hôte est le
 #  parent d'un squelette : c'est lui qui a promis du contenu. On le marque pour
@@ -184,6 +203,35 @@ def main(argv=None):
     if '--sym' in argv:
         sym = argv[argv.index('--sym') + 1]
 
+    #  BALAYAGE DES HUIT ESPACES. Un seul verdict pour tout le produit : le pire
+    #  des huit. Rendre 0 parce que sept pages vont bien et taire la huitieme
+    #  serait exactement le genre de moyenne qui cache un defaut.
+    if '--tous' in argv:
+        pire, resume = 0, []
+        for ident, href in espaces():
+            url = href if href != '/analysis' else '/analysis/%s' % sym
+            print('\n' + '=' * 72)
+            print('ESPACE %s  (%s)%s' % (ident.upper(), url,
+                                         '  [DONNEES COUPEES]' if couper else ''))
+            print('=' * 72)
+            code = une_page(base, url, couper)
+            resume.append((ident, url, code))
+            pire = max(pire, code)
+        print('\n' + '=' * 72)
+        print('RESUME DES HUIT ESPACES%s' % ('  [DONNEES COUPEES]' if couper else ''))
+        print('=' * 72)
+        for ident, url, code in resume:
+            etat = {0: 'OK', 1: 'DEFAUT', 2: 'AVEUGLE'}.get(code, '?')
+            print('  %-14s %-24s %s' % (ident, url, etat))
+        return pire
+
+    url = '/analysis/%s' % sym
+    if '--espace' in argv:
+        url = argv[argv.index('--espace') + 1]
+    return une_page(base, url, couper)
+
+
+def une_page(base, url, couper):
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -206,8 +254,7 @@ def main(argv=None):
                 body='{"error":"panne simulee"}'))
         erreurs = []
         page.on('pageerror', lambda e: erreurs.append(str(e)))
-        page.goto('%s/analysis/%s' % (base, sym), wait_until='domcontentloaded',
-                  timeout=45000)
+        page.goto(base + url, wait_until='domcontentloaded', timeout=45000)
 
         #  TÉMOIN ET DÉFINITION EN UN SEUL GESTE : le marquage posé à
         #  `DOMContentLoaded`. S'il n'a rien marqué, c'est la sonde qui est morte.
@@ -221,16 +268,26 @@ def main(argv=None):
         print('temoin : %d hotes marques au premier instant (parents de '
               'squelette)' % marques)
 
-        #  TROIS disclosures, pas deux : « Évidence historique » est imbriquée
-        #  dans « Analyse approfondie » et garde `#an-evidence` hors de portée.
-        #  L'ordre compte — une imbriquée ne s'ouvre qu'après sa parente.
-        for libelle in ('Analyse approfondie', 'Évidence historique',
-                        'Contextes du dossier'):
-            for som in page.query_selector_all('details > summary'):
-                if libelle in (som.inner_text() or ''):
-                    som.click()
-                    page.wait_for_timeout(400)
-                    break
+        #  ON OUVRE TOUT CE QUI EST REPLIÉ, ET EN PLUSIEURS PASSES.
+        #  Nommer les disclosures une par une était juste pour la fiche Analyse
+        #  et faux partout ailleurs — et le lot 56 a montré le coût : un
+        #  troisième bloc replié, non prévu, et la sonde rend « jamais peint »
+        #  sur un produit correct. Une passe ne suffit pas : ouvrir une
+        #  disclosure en révèle parfois d'autres, imbriquées.
+        for _ in range(4):
+            fermees = [d for d in page.query_selector_all('details')
+                       if not d.get_attribute('open')]
+            if not fermees:
+                break
+            for d in fermees:
+                som = d.query_selector('summary')
+                if not som:
+                    continue
+                try:
+                    som.click(timeout=2000)
+                except Exception:
+                    pass
+            page.wait_for_timeout(300)
         #  ATTENTE SUR CONDITION — plus aucun squelette parmi les hôtes marqués.
         #  Un délai fixe transformait la mesure en tirage au sort : voir la note
         #  d'en-tête. Le plafond est franc et le temps écoulé est rendu.

@@ -19,9 +19,14 @@
   var toneCls = function (t) { return ({ pos: 'vx-pos', neg: 'vx-neg', warn: 'vx-warn', muted: 'vx-muted' })[t] || 'vx-muted'; };
 
   var _board = null;
+  /* Le tableau d'options, et LA RAISON de son absence (lot 59).
+     Avaler l'erreur en rendant `[]` confondait deux etats tres differents :
+     « aucun titre a options » et « tableau injoignable ». Le second doit se
+     dire — sinon la page ne peut annoncer qu'un vide sans cause. */
+  var _boardEchec = false;
   function board() {
     if (_board) return Promise.resolve(_board);
-    return VX.fetch('/api/options', { ttl: 120000 }).then(function (d) { _board = (d && d.board) || []; return _board; }).catch(function () { return []; });
+    return VX.fetch('/api/options', { ttl: 120000 }).then(function (d) { _board = (d && d.board) || []; _boardEchec = false; return _board; }).catch(function () { _boardEchec = true; return []; });
   }
 
   /* ── Liquidité (LOT G) — état explicite, jamais un zéro pour un bid/ask absent ── */
@@ -497,7 +502,7 @@
   }
 
   /* ── Auto-symbole depuis le board (chips) ── */
-  function chips(hostId, inputId, load) {
+  function chips(hostId, inputId, load, onVide) {
     var host = $(hostId), input = $(inputId); if (!host || !input) return;
     board().then(function (bd) {
       var syms = Array.from(new Set(bd.map(function (c) { return c.sym; }))).slice(0, 8);
@@ -506,6 +511,12 @@
       host.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-osym]') : null; if (!b) return; input.value = b.getAttribute('data-osym'); try { if (VX.store) VX.store.set('active_ticker', input.value); } catch (x) {} load(input.value); });
       var pre = null; try { pre = new URLSearchParams(location.search).get('sym'); } catch (e2) {}
       if (!input.value && (pre || syms.length)) { input.value = (pre || syms[0]).toUpperCase(); load(input.value); }
+      /* AUCUN SYMBOLE A CHARGER — et c'est le trou que le lot 59 a mesure.
+         Sans ce `else`, `load()` n'etait jamais appele : la vue Structure
+         gardait son squelette de depart POUR TOUJOURS, alors meme que
+         `loadStructure` porte un `.catch` parfaitement honnete. L'etat honnete
+         existait ; le produit n'y arrivait jamais. */
+      else if (!input.value && typeof onVide === 'function') { onVide(_boardEchec); }
     });
   }
 
@@ -517,7 +528,15 @@
       var run = function () { var s = (inp.value || '').trim().toUpperCase(); if (s) loadStructure(s); };
       go.addEventListener('click', run);
       inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') run(); });
-      chips('vx-os-chips', 'vx-os-sym', function (s) { loadStructure(s); });
+      chips('vx-os-chips', 'vx-os-sym', function (s) { loadStructure(s); },
+        function (echec) {
+          var vHost = $('vx-os-verdict'); if (!vHost) return;
+          vHost.innerHTML = echec
+            ? VX.states.error('Tableau d’options injoignable — aucun titre à analyser. '
+                + 'Saisir un symbole ci-dessus pour forcer l’analyse.')
+            : VX.states.empty('Aucun titre à options dans le tableau courant. '
+                + 'Saisir un symbole ci-dessus pour lancer l’analyse.');
+        });
     } else if (v === 'leaps') {
       var g2 = $('vx-lp-go'), i2 = $('vx-lp-sym');
       if (!g2 || !i2) return;

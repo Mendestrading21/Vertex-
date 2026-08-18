@@ -250,7 +250,15 @@ function loadDiscipline(){
       <p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.6">Le Journal mesure ta <b>méthode</b> — pas la performance du portefeuille (elle vit dans <a href="/portfolio?view=performance">Portefeuille → Performance</a>). Journalise tes décisions pour révéler ta discipline, tes erreurs récurrentes et tes progrès.</p>
       <div class="vx-flex vx-mt3" style="gap:.5rem;flex-wrap:wrap">
         <a class="vx-btn vx-btn-sm vx-btn-primary" href="/journal?view=journal">Journaliser une décision</a></div>`;
+    /* Bande de KPI VIDÉE **et retirée** (lot 59). Le hero au-dessus dit déjà
+       « Aucune décision journalisée » : quatre KPI à « n/d » n'ajouteraient que
+       du bruit, et c'est bien de les enlever. Mais les vider sans retirer la
+       région laissait un `aria-label="Quatre indicateurs de discipline"` sur un
+       conteneur SANS AUCUN ENFANT — annoncé au lecteur d'écran, introuvable à
+       l'exploration. Visuellement il n'y avait rien à voir (hauteur mesurée :
+       0 px) ; c'est l'arbre d'accessibilité qui mentait, pas l'écran. */
     $('vx-pf-kpis').innerHTML='';
+    $('vx-pf-kpis').hidden=true;
     if(next)next.innerHTML='<span class="vx-eyebrow">Prochain axe</span><h3>Documenter une premi&egrave;re d&eacute;cision</h3>'
       +'<p class="vx-dim">Renseigne au minimum la raison, l&rsquo;invalidation et ce qui confirmerait la th&egrave;se.</p>'
       +'<a class="vx-btn vx-btn-sm vx-btn-primary" href="/journal?view=journal">Commencer &rarr;</a>';
@@ -272,6 +280,11 @@ function loadDiscipline(){
   const cell=(label,val,sub,cls)=>`<div class="vx-card vx-kpi-card vx-kpi vx-card--compact" aria-label="${esc(label)}">
     <span class="vx-kpi-label">${label}</span><span class="vx-kpi-value ${cls||''}" style="font-size:20px">${val}</span>
     <span class="vx-meta">${sub}</span></div>`;
+  /* Symétrique du `hidden` posé plus haut : un rafraîchissement qui repasse de
+     zéro décision à une décision doit rendre la bande visible. Sans cela le
+     correctif d'accessibilité créerait un défaut pire — des KPI calculés et
+     invisibles, le motif même que cette série traque. */
+  $('vx-pf-kpis').hidden=false;
   $('vx-pf-kpis').innerHTML=
     cell('Respect de la méthode',pct(b.respectMethod),'décisions avec plan documenté',b.respectMethod>=80?'vx-pos':b.respectMethod!=null&&b.respectMethod<50?'vx-neg':'')
     +cell('Qualité des entrées',pct(b.entryQuality),'avec raison d’entrée',b.entryQuality>=80?'vx-pos':b.entryQuality!=null&&b.entryQuality<50?'vx-neg':'')
