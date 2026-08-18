@@ -64,3 +64,15 @@ def test_risks_exposes_missing_iv_dte_and_spread_without_defaults():
     ):
         assert rows[name]['level'] == 'INCONNU'
         assert rows[name]['coverage'] == {'available': False, 'status': status, 'read_only': True}
+
+
+def test_comparator_refuses_missing_spot_or_iv_without_default_prices():
+    comparator = options_lab._comparator({'sym': 'TST', 'spot': None, 'iv': None}, None, {})
+    assert comparator == {
+        'symbol': 'TST', 'unavailable': True, 'rows': [],
+        'reason': 'matrice de véhicules indisponible — spot ou IV non reporté',
+        'coverage': {
+            'spot_available': False, 'iv_available': False,
+            'status': 'VEHICLE_MATRIX_INPUT_UNAVAILABLE', 'read_only': True,
+        },
+    }
