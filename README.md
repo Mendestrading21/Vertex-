@@ -1,69 +1,110 @@
-# ▲ VERTEX — Terminal d'analyse (analyse only)
+# ▲ VERTEX 1.0
 
-> **🚀 Pour démarrer : ouvre [`DEMARRER_ICI.md`](DEMARRER_ICI.md)** — ou double-clic
-> sur **`Lancer_VERTEX.command`** (Mac) / **`Lancer_VERTEX.bat`** (Windows).
-> Tout s'installe et se lance tout seul, puis ça s'ouvre sur http://localhost:5002.
+**Système d'intelligence de marché et d'aide à la décision — analyse uniquement.**
 
----
+Vertex centralise le régime de marché, le brief quotidien, les opportunités,
+l'analyse d'entreprises, le portefeuille et l'intelligence options. Il est
+conçu pour produire des décisions structurées, mesurables, traçables et
+explicables. **Aucun chemin d'exécution d'ordre n'est autorisé.**
 
-Cockpit d'analyse trading **local** (Python/Flask) sur l'univers des grands
-indices US (S&P 500 ∪ Nasdaq 100 ∪ Dow Jones, ~500 titres) : scoring, moteurs
-de décision, options, cours **en direct via IBKR**, portefeuille, journal de
-discipline.
-
-> ⛔ **ANALYSE / LECTURE SEULE.** Aucun ordre n'est jamais passé. La connexion
-> IBKR est verrouillée en `readonly=True`. Ceci n'est pas un conseil financier.
+> Version active: **Vertex 1.0 RC1** (`1.0.0rc1`). Le statut RC signifie que
+> l'architecture canonique est installée, mais que la release finale dépend
+> encore de la CI complète et de l'acceptation humaine documentée.
 
 ## Lancer
 
 ```bash
-pip install -r requirements.txt   # flask, yfinance, pandas, numpy, ib_async, anthropic…
-python terminal.py
+python -m venv .venv
+# macOS/Linux
+. .venv/bin/activate
+# Windows PowerShell
+# .venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+python -m vertex
 ```
 
-Puis ouvrir **http://localhost:5002**.
+Ouvrir ensuite `http://localhost:5002`.
 
-- `.env` (privé, ignoré par git) : copier `.env.example` → `.env` et y mettre sa clé
-  Anthropic (pour la traduction FR des news, optionnel).
-- **Cours en direct + compte** : lancer **TWS / IB Gateway**, activer l'API
-  (Configuration globale → API → Settings : *Enable Socket Clients* + *Read-Only API*,
-  port 7496/7497, IP de confiance `127.0.0.1`).
+Les lanceurs `Lancer_VERTEX` et `Lancer_VERTEX_DEMO` restent disponibles.
+`python terminal.py` est encore compatible, mais constitue un mode legacy de
+rollback et n'est plus l'entrée canonique.
 
-## 📱 Accès depuis l'iPhone / une tablette (même WiFi maison)
+## Mandats de décision
 
-**Par défaut le serveur n'écoute que sur `127.0.0.1`** (sécurité). Pour
-l'ouvrir au réseau local, définir un code d'accès dans `.env` :
-`VERTEX_CODE=…` (verrou de session) — ou, en connaissance de cause,
-`VERTEX_LAN=1`. Le serveur passe alors en `0.0.0.0`.
+| Mandat | Cadre |
+|---|---|
+| Options tactiques longues | détention typique 2/4/6 semaines; DTE préféré 120–240 jours; cible 180 jours |
+| Actions | horizons de décision 3/6/12 mois |
+| WMB Brief | contexte macro quotidien, daté et sourcé; jamais une source de prix |
 
-1. Sur le PC, trouver son IP locale : `ipconfig` (ex. `192.168.x.x`).
-2. Autoriser le port 5002 dans le pare-feu Windows (une fois, en admin) :
-   ```powershell
-   New-NetFirewallRule -DisplayName "Trading Desk 5002" -Direction Inbound -LocalPort 5002 -Protocol TCP -Action Allow -Profile Private
-   ```
-3. Sur l'iPhone (même WiFi) : ouvrir **http://192.168.x.x:5002**
-   (le PC + TWS doivent rester allumés).
+Le profil de release exécutable est
+`vertex/strategy/release_profiles/vertex_strategy_v4.json`. Les profils V1–V3
+restent disponibles pour l'historique et le rollback, mais le runtime
+canonique active V4 avant de charger l'application.
 
-## Pages — les 8 espaces
+## Sources et intégrations
 
-- `/` — **Aujourd'hui** : brief éditorial, régime, KPI, action prioritaire
-- `/markets` — **Marchés** : indices, breadth, VIX, rotation
-- `/opportunities` — **Opportunités** : radar, shortlist, comparaison
-- `/analysis` — **Analyse** : plan d'analyse complet d'un titre
-- `/portfolio` — **Portefeuille** : synthèse, thèses, risque, performance
-- `/options` — **Options** : contrats, payoff, Greeks, positionnement (GEX)
-- `/journal` — **Journal** : discipline, décisions, hypothèses
-- `/system` — **Système** : santé des données, sources, sync
+- **IBKR**: cours, options et portefeuille, connexion forcée en lecture seule;
+- **TradingView**: signaux authentifiés qui demandent une réévaluation, jamais
+  un achat;
+- **WMB Brief**: contexte macro quotidien avec provenance;
+- **yfinance**: repli différé explicitement étiqueté;
+- **Claude**: synthèse et explication uniquement; les calculs, scores, Greeks,
+  probabilités, hard gates et verdicts restent déterministes.
 
-(Les anciennes routes `/titre`, `/entreprises`, `/watchlist`… redirigent
-vers ces espaces.)
+## Huit espaces canoniques
 
-## Structure
+1. Aujourd'hui
+2. Marchés
+3. Opportunités
+4. Analyse
+5. Portefeuille
+6. Options
+7. Journal
+8. Système
 
-- `terminal.py` — app Flask (noyau historique : APIs, IBKR, flux live)
-- `vertex/app/routes/` — les routes des 8 espaces (Blueprints)
-- `vertex/ui/pages/` — les pages produit (rendu serveur + hydratation `VXCharts`)
-- `vertex/engines`, `vertex/quant`, `vertex/options`… — moteurs : scoring,
-  decision_stack (vérité des verdicts), recommendation, options_lab,
-  track_record, fundamentals, sectors, market…
-- `ib_reader.py` — lecture IBKR (readonly=True forcé, garde-fou anti-ordre)
+## Architecture
+
+```text
+sources réelles
+  → normalisation / qualité / fraîcheur / provenance
+  → moteurs déterministes
+  → packet immuable
+  → hard gates
+  → scénarios / score / portefeuille
+  → décision canonique
+  → explication IA
+  → interface / journal / audit
+```
+
+`vertex.runtime` est l'entrée WSGI canonique. Il active le profil de release
+avant d'importer `terminal.py`. Le monolithe reste un adaptateur historique
+pendant sa décomposition progressive; aucune nouvelle fonctionnalité ne doit y
+être ajoutée.
+
+## Développement
+
+```bash
+python -m compileall -q terminal.py vertex
+python -m pytest -q
+python -m pytest tests/test_no_orders.py -q
+```
+
+Claude Code doit utiliser exclusivement `/vertex-1-0` et les documents sous
+`docs/vertex-1.0/`.
+
+## Documentation active
+
+Commencer par [`docs/vertex-1.0/README.md`](docs/vertex-1.0/README.md).
+Les anciens documents et branches restent consultables comme archives de
+preuve, mais ne sont plus des sources d'instruction.
+
+## Sécurité
+
+- `READONLY=True` et `ANALYSIS_ONLY=True`;
+- aucune route ni fonction d'ordre;
+- secrets dans `.env`, jamais dans Git;
+- données absentes, différées, rassies, démo ou hors ligne explicitement
+  signalées;
+- aucune promesse de performance ou conseil financier personnalisé.
