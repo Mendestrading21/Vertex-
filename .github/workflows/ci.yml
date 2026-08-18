@@ -2,16 +2,31 @@ name: CI
 
 on:
   push:
-    branches: [main, "claude/**", "foundation/**"]
+    branches:
+      - main
+      - "agent/**"
+      - "feature/**"
+      - "fix/**"
+      - "refactor/**"
+      - "integration/**"
   pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: vertex-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       NO_IBKR: "1"
       DEMO: "1"
+      START_ON_IMPORT: "0"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -19,20 +34,39 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install dependencies
-        run: pip install -r requirements.txt pytest
-      - name: Compile check (terminal + packages)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pytest
+          python -m pip check
+      - name: Compile
         run: python -m compileall -q terminal.py vertex
-      - name: Tests (sécurité lecture seule, fondations, quant, smoke)
-        run: pytest -q
+      - name: Vertex 1.0 contract
+        run: |
+          python - <<'PY'
+          import vertex
+          from vertex.product import OPTIONS_MANDATE
+          from vertex.strategy.constitution import load_profile
+          assert vertex.__version__ == "1.0.0rc1"
+          assert OPTIONS_MANDATE["holding_weeks"] == (2, 4, 6)
+          assert load_profile().version == 4
+          print(vertex.RELEASE_NAME)
+          PY
+      - name: Tests
+        run: python -m pytest -q
 
   safety:
-    # Garde-fou de sûreté isolé et bloquant : aucun chemin d'exécution d'ordre.
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NO_IBKR: "1"
+      DEMO: "1"
+      START_ON_IMPORT: "0"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install pytest
-      - name: Vérifier LECTURE SEULE — aucun ordre possible
-        run: pytest tests/test_no_orders.py -q
+      - name: Install safety test dependency
+        run: python -m pip install pytest
+      - name: Prove analysis-only invariant
+        run: python -m pytest tests/test_no_orders.py tests/test_vertex_1_0_contract.py -q

@@ -1,77 +1,127 @@
-# VERTEX — Guide pour les sessions Claude (local & cloud)
+# CLAUDE.md — Vertex 1.0
 
-Terminal d'ANALYSE de trading (Flask, port 5002). **Lecture seule : aucun ordre n'est jamais passé** — invariant produit absolu (`READONLY=True` dans `vertex/app/config.py`).
+## Instruction active unique
 
-## SKYLER V2 — règle prioritaire
-
-Pour tout travail lié à l’analyse marché, aux actions, aux options, au portefeuille, aux anomalies, aux catalyseurs, à l’IA Skyler ou à la refonte associée, lire et appliquer en premier :
+Utiliser exclusivement:
 
 ```text
-.claude/skills/vertex-skyler-v2/SKILL.md
+/vertex-1-0
 ```
 
-Branche d’intégration :
+Skill actif: `.claude/skills/vertex-1-0/SKILL.md`.
+Les skills `vertex-skyler-v2`, `vertex-total-rebuild`, V4 et Signal OS sont
+historiques. Ne jamais relancer leurs workflows par lots.
+
+## Invariants absolus
+
+1. Vertex est **analyse uniquement**.
+2. `vertex.app.config.READONLY` et `ANALYSIS_ONLY` restent toujours `True`.
+3. IBKR reste `readonly=True`.
+4. Aucun endpoint, bouton, fonction, ticket ou agent ne transmet un ordre.
+5. Aucune donnée financière n'est inventée ou remplacée silencieusement par
+   zéro.
+6. Un score élevé ne contourne jamais un hard gate.
+7. Claude n'est jamais le calculateur canonique.
+8. La constitution stratégique ne change qu'au moyen d'une nouvelle version
+   explicite et revue humainement.
+
+## Sources de vérité
+
+Ordre d'autorité:
+
+1. ce fichier;
+2. `.claude/skills/vertex-1-0/SKILL.md`;
+3. `docs/vertex-1.0/`;
+4. `vertex/strategy/profiles/vertex_strategy_v4.json`;
+5. code et tests du composant;
+6. documents historiques, uniquement comme preuves.
+
+En cas de contradiction, ouvrir ou mettre à jour
+`docs/vertex-1.0/DECISIONS.md`; ne pas créer une nouvelle doctrine.
+
+## Produit
+
+- Options: détention typique 2/4/6 semaines; DTE préféré 120–240; cible 180.
+- Actions: horizons 3/6/12 mois.
+- WMB Brief: contexte macro quotidien, daté et sourcé.
+- TradingView: signal authentifié de réévaluation, jamais un déclencheur
+  d'achat.
+- Huit espaces: Aujourd'hui, Marchés, Opportunités, Analyse, Portefeuille,
+  Options, Journal, Système.
+
+## Architecture canonique
 
 ```text
-integration/vertex-skyler-v2
+sources
+  → normalisation + provenance + fraîcheur
+  → moteurs déterministes
+  → packet immuable
+  → hard gates
+  → scénarios + score + portefeuille
+  → décision canonique
+  → explication Claude
+  → UI + journal + audit
 ```
 
-Commande initiale obligatoire :
+Entrées:
 
-```text
-/vertex-skyler-v2 audit
+- local: `python -m vertex`;
+- WSGI: `vertex.runtime:app`;
+- `terminal.py`: adaptateur historique, à réduire; ne pas y ajouter de
+  nouvelle capacité sauf correctif indispensable avant extraction.
+
+## Données et états
+
+Toute surface doit distinguer au minimum:
+`LIVE`, `DELAYED`, `STALE`, `DEMO`, `OFFLINE`, `MISSING`.
+
+Les objets décisionnels doivent conserver:
+
+- source et timestamp;
+- fraîcheur et qualité;
+- faits, métriques, estimations et interprétations séparés;
+- contradictions et opinion minoritaire;
+- thèse, catalyseurs, invalidation et scénarios;
+- version des moteurs, du profil et du packet.
+
+## Rôle de Claude
+
+Autorisé: résumer, synthétiser, comparer, expliquer, rédiger le brief et
+signaler les contradictions.
+
+Interdit: inventer prix/prime/Greek/probabilité/source; modifier score,
+scénario, risque ou verdict; contourner un hard gate; rendre une donnée
+absente conforme; transmettre ou préparer un ordre.
+
+## Workflow Git
+
+- partir du dernier `main`;
+- branche `agent/vertex-1-0-<sujet>`;
+- un objectif cohérent par PR, pas une branche par micro-tâche;
+- PR brouillon vers `main`;
+- aucune fusion automatique;
+- les centaines de branches `agent/skyler-v2-lot-*` sont historiques et ne
+  servent jamais de base.
+
+## Validation minimale
+
+```bash
+python -m compileall -q terminal.py vertex
+python -m pytest -q
+python -m pytest tests/test_no_orders.py -q
 ```
 
-Une invocation exécute un seul lot. Claude doit produire les preuves, mettre à jour `docs/skyler/STATUS.md`, créer un rapport de validation et s’arrêter. Aucun lot suivant sans validation humaine explicite.
+Pour un changement runtime/UI, vérifier aussi:
 
-Ne jamais travailler directement sur `main`. Les anciennes branches V4/Prism sont des références historiques et ne doivent pas devenir la base de Skyler V2.
+- `/healthz`;
+- `/api/client-log` = 0 erreur applicative;
+- les huit espaces en desktop et mobile;
+- mode démo, sans IBKR et panne partielle;
+- absence de fuite de secret ou de donnée de compte.
 
-## Lancer & vérifier
-- App : `python terminal.py` (ou `.claude/launch.json` → serveur « vertex », port 5002). Windows : `Lancer_VERTEX.bat`.
-- Tests : `python -m pytest tests/ -q` → **doivent passer à 100 %** avant tout commit.
-- Santé : `GET /healthz` · erreurs JS clients : `GET /api/client-log` (doit rester à 0) · état live : `GET /api/live/status`.
-- Après un changement lourd : vérifier en vrai navigateur (pas seulement curl) + 0 erreur console.
+## Conditions de livraison
 
-## Architecture (la vraie)
-- **Monolithe** `terminal.py` (**~7 150 lignes** depuis la purge É1 du lot 323 ; il en faisait 10 743) : HTML/JS construits en chaînes Python. Modules `vertex/ui/*.py` réellement servis : `nav`, `vx_kit`, `sync_center`, `design_system`, `home_art`. ⚠️ `options_lab`, `journal`, `vault`, `signals`, `strategy_os` n'ont **plus aucun consommateur en production** (leurs pages sont mortes) — reliques en attente de décision, cf. `docs/refactor/validation/SKYLER-LOT-327.md`.
-- **Moteurs** : `vertex/engines/` (decision_stack = vérité des verdicts, recommendation = façade unique + vocabulaire `__VXVOCAB`, options_lab, track_record, evidence…).
-- **Routes** : `vertex/app/routes/` (Blueprints) + routes restantes dans terminal.py.
-- **État partagé** : `vertex/app/state.py` (`scan_state` muté en place — ne JAMAIS réassigner).
-- **Données perso utilisateur** : localStorage navigateur (`myTrades`, `myRecos`, `myFavs`, `vxJournal`, `vxAlerts`…) synchronisé serveur en blob `desk_data.json` (last-writer-wins + backup quotidien `desk_backup_*.json`).
-
-## Règles critiques (violations = données perdues ou app cassée)
-1. **Clés de sync desk** : toute nouvelle clé localStorage à synchroniser doit être ajoutée dans **LES 2 listes RÉELLEMENT SERVIES** — `DESK_KEYS` de `vertex/static/vertex/js/vx-entities.js` (fichier statique chargé par les 8 pages) et le **repli** de `deskKeys()` dans `vertex/ui/pages/system_page.py` (inline dans `/system`, utilisé si `VXEntities` n'est pas chargé) — sinon un push l'efface côté serveur. Mesuré au lot 381 : `vertex/ui/vx_kit.py` porte bien `DESK_KEYS` et sert de **référence de comparaison** aux gardiens, mais son JS (21 727 o) **n'atteint aucune des 8 pages** — le décrire comme « kit global présent sur toutes les pages » était faux ; le garder synchronisé reste utile tant qu'il sert d'ancre, mais ce n'est pas lui que le navigateur lit. `vertex/ui/journal.py` porte une 4ᵉ copie et **n'est plus servi** non plus (page morte). Depuis la purge É1, terminal.py n'en héberge aucune. Tests gardiens : `tests/test_desk_keys_servies_lot381.py` (**garde les listes par ce qu'elles SERVENT** — le repli de `system_page` n'était couvert par rien, retirer une clé y passait les 2 754 tests), plus `tests/test_production.py::test_desk_sync_keys_single_source_of_truth` et `tests/test_strategy_os_final_guards.py::test_all_sync_keys_match` (comparaison sur disque).
-2. **Apostrophes françaises dans les chaînes JS** de terminal.py : toujours échapper (`aujourd\\'hui`) — deux SyntaxError silencieuses ont déjà vécu.
-3. **Service worker** : bump `td-shell-vN` dans `vertex/app/routes/system.py` dès qu'un **octet servi** change — HTML de shell **ET tout fichier sous `/static`** (CSS, JS, polices, images). Le SW met en cache les navigations + **tout `/static`** + le manifeste ; `activate` supprime tous les caches dont la clé diffère, donc **le bump est ce qui purge la copie de repli hors-ligne**. Il n'est pas là « pour que l'utilisateur voie la nouvelle interface » : le SW est *network-first* (le frais gagne toujours en ligne, repli cache au-delà de 4,5 s ou hors-ligne). Fenêtre d'exposition sans bump : visiteur déjà venu, hors-ligne ou réseau lent, servi depuis un cache assemblé à des visites différentes. Gardien : `tests/test_sw_cache_scope_lot361.py` (empreinte des assets ↔ version enregistrée ; message d'échec = marche à suivre).
-4. **Données RÉELLES uniquement** : jamais de chiffre inventé affiché comme réel. Donnée absente → `—`/`n/d` honnête. Le mot « démo » ne s'affiche que si le serveur le confirme.
-5. **News/textes externes** : **deux** familles de sorties, deux contrats — ne pas les mélanger (lot 358).
-   - *Sortie assainie au serveur* : `/news-feed`, `/api/events/<sym>`, `/api/skyler/<sym>` → **toujours** via `news_plus.sanitize_news()` avant de servir, car leurs consommateurs injectent le titre **brut** en innerHTML. Gardien : `tests/test_xss_exits_lot177.py`.
-   - *Sortie échappée au rendu* : `/api/ai/enrichment` (`vertex/ai/enrichment.py::parse_news`, cerveau Claude+web) n'appelle **pas** `sanitize_news` et ne le doit pas — son unique rendu (`system_page.py::loadBrain`) échappe déjà via `esc()`, et un assainissement serveur double-échapperait les titres légitimes. Sa sûreté tient à 3 propriétés : citations filtrées http(s) (`provenance._safe_url`), forme reconstruite et bornée (4 champs), rendu via `esc()`. Gardien : `tests/test_ai_news_exit_lot358.py`.
-6. **desk_data.json** : ne jamais l'écraser à la main ; en cas de doute, backups `desk_backup_*.json` + `/api/desk/restore`. **Ce que le filet couvre vraiment** (mesuré au lot 362) : le snapshot est pris **une fois par jour**, avant la 1ʳᵉ écriture — un restore rend donc l'état d'**avant la première sync du jour** et **perd le travail de la journée** ; profondeur maximale **7 jours** (`BACKUP_KEEP`). Le last-writer-wins est **total** : un push partiel remplace le blob entier (les clés absentes disparaissent) et un push `data: {}` est **accepté** (la validation porte sur le type, pas le contenu) — l'écrasement n'a pas besoin d'être « à la main ». Le client protège bien (`vx_kit.py` : push seulement après hydratation réussie, abstention si `bootSync` échoue, re-remplissage des clés absentes) ; le scénario résiduel est un navigateur dont l'écriture localStorage échoue en silence. Gardiens : `tests/test_desk_backup_lot178.py` (chaîne de sauvegarde) et `tests/test_desk_perte_lot362.py` (caractérisation des pertes — à mettre à jour si le serveur est durci).
-
-## Git
-- Pour Skyler V2, suivre exclusivement la gouvernance du skill `vertex-skyler-v2`.
-- **`main` = version canonique publiée** — la mettre à jour SEULEMENT avec accord explicite de l'utilisateur.
-- Données runtime (edge_ledger, desk_backup_*, track_meta, alerts_fired, .env, .vertex_secret) : gitignorées, jamais commitées.
-
-## Sécurité
-- Verrou d'accès : `VERTEX_CODE` dans `.env` (chargé automatiquement ; `.env.example` = modèle). `VERTEX_SECRET` indépendant sinon secret aléatoire persistant `.vertex_secret`.
-- Sans code d'accès, le serveur n'écoute que 127.0.0.1 (LAN/iPhone : définir `VERTEX_CODE`, ou `VERTEX_LAN=1` en connaissance de cause).
-- IBKR : `readonly=True` toujours ; worker unique avec `RequestTimeout=45` (ne pas retirer — anti-blocage).
-
-## Couleurs — la règle réellement tenue (mesuré au lot 382)
-
-L'énoncé « tokens/VXChartTheme uniquement, **aucun littéral couleur** » était
-**faux** : `vertex/ui/**` contient **265 littéraux `#RRGGBB` distincts, dont 53
-atteignent une page servie**. La règle que le code respecte et qu'un gardien
-impose réellement est plus étroite : **aucun bleu NON-MARQUE en dur**
-(`tests/test_obsidian_theme.py::test_no_blue_in_ui_pages`, vérifié par mutation —
-un `#1e6fd9` échoue, un `#ff00ff` passe).
-
-Pour tout NOUVEAU travail : préférer les tokens. Ce qui est verrouillé :
-`tests/test_litteraux_couleur_servis_lot382.py` interdit la **croissance** du
-nombre de littéraux servis (borne fixée à la mesure) et vérifie l'absence de bleu
-non-marque **dans les octets servis**, pas seulement dans les sources.
-
-## Utilisateur
-Trader francophone, interface en FR. Compte IBKR réel connecté via TWS (lecture seule). Préfère : données réelles partout, zéro erreur, tout synchronisé automatiquement au lancement. Aucun nom personnel ne doit apparaître dans le code, l'interface ou la documentation.
+La PR doit documenter: objectif, fichiers propriétaires, preuve de tests,
+données/fraîcheur, risques, rollback, limites non vérifiées et décision humaine
+restante. Ne jamais déclarer « prêt à 100 % » sans CI verte et acceptation
+humaine du commit candidat.

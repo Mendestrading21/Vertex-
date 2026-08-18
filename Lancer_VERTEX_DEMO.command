@@ -1,29 +1,20 @@
 #!/bin/bash
-# ════════════════════════════════════════════════════════════════
-#   ▲ VERTEX — mode DÉMO (macOS)
-#   Données synthétiques réalistes mais FICTIVES (marquées 🎭 DÉMO).
-#   Aucun réseau, aucun TWS : ça marche tout de suite, pour découvrir.
-# ════════════════════════════════════════════════════════════════
+# Vertex 1.0 — mode démo, données fictives explicitement marquées.
+set -e
 cd "$(dirname "$0")"
-clear
-echo "════════════════════════════════════════"
-echo "   ▲  VERTEX  —  mode 🎭 DÉMO"
-echo "════════════════════════════════════════"
 
 if ! command -v python3 >/dev/null 2>&1; then
-  echo "❌ Python 3 manquant → https://www.python.org/downloads/"
-  read -p "Entrée pour fermer…"; exit 1
+  echo "Python 3 est requis: https://www.python.org/downloads/"
+  read -r -p "Entrée pour fermer…"
+  exit 1
 fi
+
 if [ ! -d ".venv" ]; then
-  echo "⏳ Première installation (1 à 2 min)…"
   python3 -m venv .venv
   ./.venv/bin/python -m pip install --quiet --upgrade pip
   ./.venv/bin/python -m pip install --quiet -r requirements.txt
 fi
 
-echo ""
-echo "✅ VERTEX (démo) démarre…  →  http://localhost:5002"
-echo "   (navigateur auto dans 5 s · Ctrl+C pour arrêter)"
+export DEMO=1 NO_IBKR=1 START_ON_IMPORT=0
 ( sleep 5; open "http://localhost:5002" >/dev/null 2>&1 ) &
-export DEMO=1 NO_IBKR=1
-exec ./.venv/bin/python terminal.py
+exec ./.venv/bin/python -m vertex
