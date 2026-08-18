@@ -188,7 +188,10 @@ cette disparition bruyante.
 3. **Cinq moteurs restent enfermés** (§3). Trois sont exposables sur la fiche ;
    deux demandent une route de portefeuille ou de suivi — travail de nature
    différente, à ne pas confondre.
-4. **La sonde ne mesure que trois blocs.** Les autres sorties de la fiche
-   (`an-rail-decision`, `an-anomaly`, `an-evidence`, `an-tv`) vivent sous la
-   même disclosure et n'ont jamais été vérifiées au pixel. Le fait mesuré au §2
-   vaut pour elles aussi : les gardiens d'octets ne les couvrent pas.
+4. ~~**La sonde ne mesure que trois blocs.**~~ — **PAYÉE au lot 53.**
+   `tools/mesurer_hotes_resolus.py` mesure les **quinze** hôtes de la fiche, en
+   nominal **et sous coupure totale des données**. Verdict : tous aboutissent
+   dans les deux modes, et sous coupure chacun nomme sa panne. Aucun défaut
+   produit — mais trois fautes d'instrument, dont la plus instructive est un
+   verdict « trois hôtes bloqués » qui n'était qu'une attente trop courte. Voir
+   `SIGNAL-OS-53-HOTES-RESOLUS.md`.
