@@ -961,7 +961,9 @@ def _risks(star, market):
 def _timeline(star, plan, cal_items=None):
     if not star:
         return []
-    dte = star.get('dte') or 90
+    raw_dte = star.get('dte')
+    dte_available = isinstance(raw_dte, (int, float)) and not isinstance(raw_dte, bool) and raw_dte > 0 and float(raw_dte).is_integer()
+    dte = int(raw_dte) if dte_available else None
     # Dates de séance US : horloge de New York, pas celle du serveur.
     today = datetime.now(ZoneInfo('America/New_York')).replace(tzinfo=None)
 
@@ -972,6 +974,14 @@ def _timeline(star, plan, cal_items=None):
         {'when': 'Aujourd\'hui', 'date': at(0), 'icon': '📍', 'tone': 'info',
          'label': 'Point de départ', 'text': (('titre à $%s · ' % ('%g' % star['spot'])) if star.get('spot') else '')
          + 'prime $%s · plan écrit avant l\'entrée' % ('%d' % star['cost'] if star.get('cost') is not None else '—')},
+    ]
+    if dte is None:
+        tl.append({'when': '—', 'date': '—', 'icon': '⚠', 'tone': 'warn',
+                   'label': 'Timeline indisponible',
+                   'text': 'DTE absent ou invalide — aucun checkpoint, résultat ou expiration n’est daté par défaut.',
+                   'coverage': {'dte_available': False, 'status': 'TIMELINE_DTE_UNAVAILABLE', 'read_only': True}})
+    else:
+        tl.extend([
         {'when': 'J+%s' % max(5, dte // 6), 'date': at(max(5, dte // 6)), 'icon': '✅', 'tone': 'good',
          'label': 'Checkpoint de validation', 'text': 'la thèse doit commencer à payer — sinon réévaluer sans état d\'âme'},
         {'when': 'J+%s' % (dte // 3), 'date': at(dte // 3), 'icon': '🥇', 'tone': 'good',
@@ -982,7 +992,7 @@ def _timeline(star, plan, cal_items=None):
          'label': 'Sortie conseillée', 'text': 'dernière fenêtre propre avant l\'accélération du thêta'},
         {'when': 'J+%s' % dte, 'date': (star.get('exp') or '')[:10], 'icon': '🏁', 'tone': 'bad',
          'label': 'Expiration', 'text': 'ne rien tenir jusqu\'ici — un contrat acheté se solde avant'},
-    ]
+        ])
     # événements macro réels si le calendrier est chargé
     for it in (cal_items or [])[:4]:
         lab = it.get('title') or it.get('label') or it.get('event')

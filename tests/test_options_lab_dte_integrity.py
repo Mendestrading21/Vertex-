@@ -155,3 +155,12 @@ def test_plan_exposes_missing_dte_without_an_expiry_timeline():
     steps = {step['key']: step['text'] for step in plan['steps']}
     assert 'DTE non reporté' in steps['exit']
     assert 'aucune échéance n’est inférée' in steps['expiry']
+
+
+def test_timeline_missing_dte_has_no_default_ninety_day_management_dates():
+    timeline = options_lab._timeline({'sym': 'TST', 'dte': None, 'cost': 250}, None)
+    assert len(timeline) == 2
+    assert timeline[1]['coverage'] == {
+        'dte_available': False, 'status': 'TIMELINE_DTE_UNAVAILABLE', 'read_only': True,
+    }
+    assert all('J+90' not in row['when'] for row in timeline)
