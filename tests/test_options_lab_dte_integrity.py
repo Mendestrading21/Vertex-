@@ -187,6 +187,17 @@ def test_analysis_options_does_not_call_missing_iv_a_correct_premium():
     }
 
 
+def test_analysis_does_not_present_missing_directional_scores_as_neutral_or_convex():
+    rows = {row['key']: row for row in options_lab._analysis(
+        {'sym': 'TST', 'type': 'CALL', 'delta': None}, {}, {}, [], {})}
+    assert rows['institutional']['impact'] == 'flux institutionnel indisponible'
+    assert rows['institutional']['coverage']['status'] == 'INSTITUTIONAL_SIGNAL_UNAVAILABLE'
+    assert rows['momentum']['impact'] == 'momentum indisponible'
+    assert rows['momentum']['coverage']['status'] == 'MOMENTUM_SIGNAL_UNAVAILABLE'
+    assert rows['greeks']['impact'] == 'sensibilité grecque indisponible'
+    assert rows['greeks']['coverage']['status'] == 'GREEKS_DELTA_UNAVAILABLE'
+
+
 def test_committee_liquidity_excludes_missing_spread_without_default():
     board = [
         {'sym': 'MISSING', 'type': 'CALL', 'strike': 100, 'dte': 90,

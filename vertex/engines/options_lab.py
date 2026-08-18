@@ -313,21 +313,40 @@ def _analysis(star, detail, market, sectors, overview):
     rows.append(option_row)
     # institutionnels (proxy honnête : anomalie de volume + accumulation)
     volz, acc = d.get('vol_z'), d.get('accumulation')
-    isc = None if volz is None else max(0, min(100, 50 + volz * 18 + (10 if acc else 0)))
-    rows.append(_grade_row('institutional', 'Institutionnels', '🏦', _dir(isc),
-        'accumulation' if (_dir(isc) or 0) >= 60 else 'distribution' if _dir(isc) is not None and _dir(isc) <= 40 else 'neutre', 'moyenne',
-        'Volume anormal z=%s · profil %s. Proxy : le flux réel par contrat n\'est pas publié ici.'
-        % (_r2(volz, 1) if volz is not None else '—',
-           'accumulation' if acc else 'distribution' if d.get('distribution') else 'mixte'),
-        'suivre les cassures accompagnées de volume'))
+    volz_available = isinstance(volz, (int, float)) and not isinstance(volz, bool)
+    isc = max(0, min(100, 50 + volz * 18 + (10 if acc else 0))) if volz_available else None
+    institutional_score = _dir(isc)
+    institutional = _grade_row('institutional', 'Institutionnels', '🏦', institutional_score,
+        'accumulation' if institutional_score is not None and institutional_score >= 60 else
+        'distribution' if institutional_score is not None and institutional_score <= 40 else
+        'neutre' if institutional_score is not None else 'flux institutionnel indisponible', 'moyenne',
+        ('Volume anormal z=%s · profil %s. Proxy : le flux réel par contrat n\'est pas publié ici.'
+         % (_r2(volz, 1), 'accumulation' if acc else 'distribution' if d.get('distribution') else 'mixte')
+         if volz_available else 'Flux institutionnel non quantifié — anomalie de volume indisponible, aucune imputation appliquée.'),
+        'suivre les cassures accompagnées de volume' if institutional_score is not None else
+        'vérifier l’anomalie de volume avant toute lecture institutionnelle')
+    institutional['coverage'] = {'volume_anomaly_available': volz_available,
+                                 'status': 'INSTITUTIONAL_SIGNAL_AVAILABLE' if volz_available else 'INSTITUTIONAL_SIGNAL_UNAVAILABLE',
+                                 'read_only': True}
+    rows.append(institutional)
     # momentum
     mom = d.get('mom')
-    mmsc = None if mom is None else max(0, min(100, 50 + mom * 5))
-    rows.append(_grade_row('momentum', 'Momentum', '🚀', _dir(mmsc),
-        'porteur' if (_dir(mmsc) or 0) >= 60 else 'essoufflé' if _dir(mmsc) is not None and _dir(mmsc) <= 40 else 'neutre', 'moyenne',
-        'Momentum %s · perf 1 mois %s%% · 3 mois %s%%.'
-        % (_r2(mom, 1) if mom is not None else '—', d.get('perf_m'), d.get('perf_q')),
-        'laisser courir tant que la MM20 tient'))
+    mom_available = isinstance(mom, (int, float)) and not isinstance(mom, bool)
+    mmsc = max(0, min(100, 50 + mom * 5)) if mom_available else None
+    momentum_score = _dir(mmsc)
+    momentum = _grade_row('momentum', 'Momentum', '🚀', momentum_score,
+        'porteur' if momentum_score is not None and momentum_score >= 60 else
+        'essoufflé' if momentum_score is not None and momentum_score <= 40 else
+        'neutre' if momentum_score is not None else 'momentum indisponible', 'moyenne',
+        ('Momentum %s · perf 1 mois %s%% · 3 mois %s%%.'
+         % (_r2(mom, 1), d.get('perf_m'), d.get('perf_q'))
+         if mom_available else 'Momentum non quantifié — donnée indisponible, aucune imputation appliquée.'),
+        'laisser courir tant que la MM20 tient' if momentum_score is not None else
+        'vérifier le momentum avant toute lecture directionnelle')
+    momentum['coverage'] = {'momentum_available': mom_available,
+                            'status': 'MOMENTUM_SIGNAL_AVAILABLE' if mom_available else 'MOMENTUM_SIGNAL_UNAVAILABLE',
+                            'read_only': True}
+    rows.append(momentum)
     # liquidité
     oi, spr = star.get('oi'), star.get('spread_pct')
     oi_available = isinstance(oi, (int, float)) and not isinstance(oi, bool) and oi >= 0
@@ -347,12 +366,21 @@ def _analysis(star, detail, market, sectors, overview):
                        'read_only': True}
     rows.append(liq)
     # greeks
-    gsc = None if star.get('delta') is None else max(10, min(90, abs(star.get('delta', 0)) * 130))
-    rows.append(_grade_row('greeks', 'Greeks', '🧮', gsc,
-        'équilibrés' if (gsc or 0) >= 45 else 'convexité pure', 'moyenne',
-        'Delta %s (sensibilité directionnelle) · thêta %s%%/j (loyer du temps) · IV %s%% (prix de l\'incertitude).'
-        % (star.get('delta'), star.get('theta_burn'), star.get('iv')),
-        'delta 0.45-0.70 = le meilleur rapport exposition/décote'))
+    delta = star.get('delta')
+    delta_available = isinstance(delta, (int, float)) and not isinstance(delta, bool)
+    gsc = max(10, min(90, abs(delta) * 130)) if delta_available else None
+    greeks = _grade_row('greeks', 'Greeks', '🧮', gsc,
+        'équilibrés' if gsc is not None and gsc >= 45 else
+        'convexité pure' if gsc is not None else 'sensibilité grecque indisponible', 'moyenne',
+        ('Delta %s (sensibilité directionnelle) · thêta %s%%/j (loyer du temps) · IV %s%% (prix de l\'incertitude).'
+         % (delta, star.get('theta_burn'), star.get('iv'))
+         if delta_available else 'Greeks non qualifiés — delta indisponible, aucune convexité n’est inférée.'),
+        'delta 0.45-0.70 = le meilleur rapport exposition/décote' if delta_available else
+        'vérifier le delta avant toute lecture de convexité')
+    greeks['coverage'] = {'delta_available': delta_available,
+                          'status': 'GREEKS_DELTA_AVAILABLE' if delta_available else 'GREEKS_DELTA_UNAVAILABLE',
+                          'read_only': True}
+    rows.append(greeks)
     # catalyseurs
     raw_dte = star.get('dte')
     dte_available = isinstance(raw_dte, (int, float)) and not isinstance(raw_dte, bool) and raw_dte > 0 and float(raw_dte).is_integer()
