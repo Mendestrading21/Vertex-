@@ -130,6 +130,8 @@ def api_skyler(sym):
         return jsonify({'ok': False, 'error': 'symbole_invalide'}), 400
     detail = (scan_state.get('detail') or {}).get(sym) or {}
     closes, _src = _series.closes(detail)
+    from vertex.engines import drawdown_context as _ddctx
+    drawdown = _ddctx.build(closes)
     benchmark_detail = (scan_state.get('detail') or {}).get('SPY') or {}
     ano = _anctx.build(sym, detail, benchmark_detail=benchmark_detail) if closes else None
     market = _mcx.build(scan_state, demo=_demo)
@@ -179,7 +181,8 @@ def api_skyler(sym):
     from vertex.engines import red_team as _rt
     packet0 = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
                                as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
-                               data_quality_ctx=dqctx, reconciliation_ctx=recctx, fundamental_ctx=fundamentals_ctx)
+                               data_quality_ctx=dqctx, reconciliation_ctx=recctx,
+                               fundamental_ctx=fundamentals_ctx, drawdown_ctx=drawdown)
     rt_review = _rt.review(packet0, _sk.score40(packet0))
     rt_input = {'complete': rt_review['complete'], 'basis': rt_review['basis']}
     # Calibration RÉELLE (LOT 19/22) : facteur depuis les résultats mesurés de

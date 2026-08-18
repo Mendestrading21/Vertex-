@@ -149,7 +149,8 @@ def _profile():
 
 def build_packet(sym, detail, market=None, events=None, anomaly=None,
                  as_of=None, demo=False, options_ctx=None, portfolio_ctx=None,
-                 red_team=None, data_quality_ctx=None, reconciliation_ctx=None, fundamental_ctx=None):
+                 red_team=None, data_quality_ctx=None, reconciliation_ctx=None, fundamental_ctx=None,
+                 drawdown_ctx=None):
     """Agrège les sorties moteurs existantes en un packet typé — sans muter les
     sources, sans recalculer, sans inventer."""
     detail = detail or {}
@@ -186,6 +187,8 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
                          {'available': False, 'reason': 'preuve de qualité des données non fournie'}),
         'reconciliation': (reconciliation_ctx if reconciliation_ctx is not None else
                            {'available': False, 'reason': 'preuve de réconciliation non fournie'}),
+        'drawdown': (drawdown_ctx if drawdown_ctx is not None else
+                     {'available': False, 'reason': 'contexte de drawdown non fourni'}),
     }
     audit.append({'step': 'contexts', 'result': {
         k: bool(v.get('available', True)) for k, v in contexts.items()}})
