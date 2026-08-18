@@ -770,9 +770,16 @@ def _committee(board, detail, tops, star):
 # ─── ⑩ MATRICE DE RISQUES ───
 
 def _risks(star, market):
-    iv = (star or {}).get('iv') or 40
-    dte = (star or {}).get('dte') or 90
+    def available_number(value, strictly_positive=False):
+        return (isinstance(value, (int, float)) and not isinstance(value, bool)
+                and (value > 0 if strictly_positive else value >= 0))
+
+    iv = (star or {}).get('iv')
+    dte = (star or {}).get('dte')
     spr = (star or {}).get('spread_pct')
+    iv_available = available_number(iv, strictly_positive=True)
+    dte_available = available_number(dte, strictly_positive=True)
+    spread_available = available_number(spr)
     vix = (market or {}).get('vix')
     roro = (market or {}).get('roro')
 
@@ -790,14 +797,20 @@ def _risks(star, market):
          'coverage': {'available': theta_available,
                       'status': 'THETA_BURN_AVAILABLE' if theta_available else 'THETA_BURN_UNAVAILABLE',
                       'read_only': True}},
-        {'name': 'IV crush', 'level': lvl(iv, 40, 55), 'impact': 'la prime peut fondre de 20-40 % en une nuit',
-         'proba': 'quasi certaine après chaque publication de résultats',
-         'fix': 'réduire/solder avant les résultats, ou jouer des spreads (vega neutralisé)'},
-        {'name': 'Liquidité', 'level': lvl((spr or 4), 4, 8), 'impact': 'impossible de sortir au juste prix',
+        {'name': 'IV crush', 'level': lvl(iv, 40, 55) if iv_available else 'INCONNU',
+         'impact': 'la prime peut fondre de 20-40 % en une nuit' if iv_available else 'sensibilité IV non quantifiée — IV indisponible',
+         'proba': 'quasi certaine après chaque publication de résultats' if iv_available else 'INCONNUE — IV non reportée',
+         'fix': 'réduire/solder avant les résultats, ou jouer des spreads (vega neutralisé)',
+         'coverage': {'available': iv_available, 'status': 'IV_AVAILABLE' if iv_available else 'IV_UNAVAILABLE', 'read_only': True}},
+        {'name': 'Liquidité', 'level': lvl(spr, 4, 8) if spread_available else 'INCONNU', 'impact': 'impossible de sortir au juste prix',
          'proba': 'permanente sur les strikes exotiques',
-         'fix': 'OI > 500, spread < 5 %, ordres limités uniquement'},
-        {'name': 'Spread (fourchette)', 'level': lvl((spr or 4), 3, 7), 'impact': 'péage payé à l\'entrée ET à la sortie',
-         'proba': 'systématique', 'fix': 'négocier au milieu de fourchette, jamais « au marché »'},
+         'fix': 'OI > 500, spread < 5 %, ordres limités uniquement',
+         'coverage': {'available': spread_available, 'status': 'SPREAD_AVAILABLE' if spread_available else 'SPREAD_UNAVAILABLE', 'read_only': True}},
+        {'name': 'Spread (fourchette)', 'level': lvl(spr, 3, 7) if spread_available else 'INCONNU',
+         'impact': 'péage payé à l\'entrée ET à la sortie' if spread_available else 'coût de fourchette non quantifié — spread indisponible',
+         'proba': 'systématique' if spread_available else 'INCONNUE — spread non reporté',
+         'fix': 'négocier au milieu de fourchette, jamais « au marché »',
+         'coverage': {'available': spread_available, 'status': 'SPREAD_AVAILABLE' if spread_available else 'SPREAD_UNAVAILABLE', 'read_only': True}},
         {'name': 'Macro (taux, dollar)', 'level': 'ÉLEVÉ' if roro == 'RISK-OFF' else 'MOYEN',
          'impact': 'compression des multiples → gap baissier des sous-jacents',
          'proba': 'élevée en période de resserrement', 'fix': 'taille réduite + PUT de couverture indiciel'},
@@ -806,12 +819,16 @@ def _risks(star, market):
         {'name': 'Fed / CPI / NFP', 'level': 'ÉLEVÉ' if (vix or 0) >= 20 else 'MOYEN',
          'impact': 'volatilité brutale ±2-3 % sur indices', 'proba': 'calendrier connu — chaque mois',
          'fix': 'ne pas ouvrir de position la veille, laisser l\'IV se dégonfler après'},
-        {'name': 'Résultats trimestriels', 'level': lvl(90 - min(dte, 90), 30, 60),
-         'impact': 'gap + IV crush combinés', 'proba': '4× par an, dates connues',
-         'fix': 'règle du desk : réduire ou sortir AVANT la publication'},
-        {'name': 'Expiration', 'level': lvl(60 - min(dte, 60), 20, 45),
-         'impact': 'le thêta s\'emballe, le gamma devient loterie', 'proba': 'mécanique en fin de vie',
-         'fix': 'ne jamais tenir les 2-3 dernières semaines d\'un contrat acheté'},
+        {'name': 'Résultats trimestriels', 'level': lvl(90 - min(dte, 90), 30, 60) if dte_available else 'INCONNU',
+         'impact': 'gap + IV crush combinés' if dte_available else 'horizon vers les résultats non qualifié — DTE indisponible',
+         'proba': '4× par an, dates connues' if dte_available else 'INCONNUE — DTE non reporté',
+         'fix': 'règle du desk : réduire ou sortir AVANT la publication',
+         'coverage': {'available': dte_available, 'status': 'DTE_AVAILABLE' if dte_available else 'DTE_UNAVAILABLE', 'read_only': True}},
+        {'name': 'Expiration', 'level': lvl(60 - min(dte, 60), 20, 45) if dte_available else 'INCONNU',
+         'impact': 'le thêta s\'emballe, le gamma devient loterie' if dte_available else 'horizon d’expiration non qualifié — DTE indisponible',
+         'proba': 'mécanique en fin de vie' if dte_available else 'INCONNUE — DTE non reporté',
+         'fix': 'ne jamais tenir les 2-3 dernières semaines d\'un contrat acheté',
+         'coverage': {'available': dte_available, 'status': 'DTE_AVAILABLE' if dte_available else 'DTE_UNAVAILABLE', 'read_only': True}},
         {'name': 'Volatilité du sous-jacent', 'level': lvl((star or {}).get('em_pct') or 25, 25, 40),
          'impact': 'move attendu ±%s%% — le chemin peut secouer avant la cible' % ((star or {}).get('em_pct') or '—'),
          'proba': 'structurelle', 'fix': 'delta modéré (0.45-0.60) + taille qui laisse dormir'},

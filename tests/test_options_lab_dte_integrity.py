@@ -51,3 +51,16 @@ def test_risks_exposes_missing_theta_without_default_erosion():
         'read_only': True,
     }
     assert 'non quantifiée' in theta['impact']
+
+
+def test_risks_exposes_missing_iv_dte_and_spread_without_defaults():
+    rows = {row['name']: row for row in options_lab._risks({'theta_burn': 0.2}, {})}
+    for name, status in (
+        ('IV crush', 'IV_UNAVAILABLE'),
+        ('Liquidité', 'SPREAD_UNAVAILABLE'),
+        ('Spread (fourchette)', 'SPREAD_UNAVAILABLE'),
+        ('Résultats trimestriels', 'DTE_UNAVAILABLE'),
+        ('Expiration', 'DTE_UNAVAILABLE'),
+    ):
+        assert rows[name]['level'] == 'INCONNU'
+        assert rows[name]['coverage'] == {'available': False, 'status': status, 'read_only': True}
