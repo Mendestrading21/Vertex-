@@ -106,8 +106,31 @@ ouvrir une disclosure en révèle parfois d'autres, imbriquées.
 Écrire la liste à la main aurait reproduit la faute du lot 56, où l'ajout d'un
 troisième bloc replié avait fait rendre « jamais peint » sur un produit correct.
 
+## La panne PARTIELLE, qui est le cas frequent (lot 60)
+
+Réserve SIGNAL-OS-59 §5.2, de ma main : *« Coupure totale seulement. Une panne
+partielle — une source sur cinq en échec — reste le cas le plus fréquent en
+vrai, et n'est pas mesurée. »*
+
+Une coupure totale est presque confortable : tout échoue, tout le monde le voit.
+La panne partielle est plus traître — la page reçoit **quatre réponses sur
+cinq**, elle a de quoi remplir la plupart de ses cases, et rien ne la force à
+signaler celle qui manque. C'est là que se loge le pire défaut possible pour ce
+produit : **combler un trou plutôt que le dire.**
+
+`--couper-une <famille>` ne coupe qu'une famille de routes. Les familles sont
+tirées des routes réellement servies, pas inventées.
+
+## Ce que ce mode ne peut PAS voir
+
+Il faut le dire, sinon un « 8/8 OK » se lirait comme une garantie qu'il n'est
+pas. Cet outil détecte les hôtes qui **n'aboutissent pas**. Il ne sait pas
+reconnaître un hôte qui aboutit avec une valeur **inventée** ou **périmée** à la
+place de la donnée manquante. Un chiffre plausible affiché sans source lui
+paraîtra sain. C'est une limite de méthode, pas un réglage.
+
 Usage : python tools/mesurer_hotes_resolus.py [--base http://127.0.0.1:5002]
-        [--sym ACN] [--couper] [--espace /markets | --tous]
+        [--sym ACN] [--couper] [--couper-une skyler] [--espace /markets | --tous]
 """
 import os
 import sys
@@ -198,6 +221,7 @@ def main(argv=None):
     base = 'http://127.0.0.1:5002'
     sym = 'ACN'
     couper = '--couper' in argv
+    famille = argv[argv.index('--couper-une') + 1] if '--couper-une' in argv else None
     if '--base' in argv:
         base = argv[argv.index('--base') + 1]
     if '--sym' in argv:
@@ -212,26 +236,92 @@ def main(argv=None):
             url = href if href != '/analysis' else '/analysis/%s' % sym
             print('\n' + '=' * 72)
             print('ESPACE %s  (%s)%s' % (ident.upper(), url,
-                                         '  [DONNEES COUPEES]' if couper else ''))
+                                         '  [DONNEES COUPEES]' if couper
+                                         else ('  [PANNE %s]' % famille) if famille else ''))
             print('=' * 72)
-            code = une_page(base, url, couper)
+            code = une_page(base, url, couper, famille)
             resume.append((ident, url, code))
-            pire = max(pire, code)
+            #  « Hors portee » (3) n'est pas un echec : il ne doit pas empoisonner
+            #  le verdict d'ensemble, seulement figurer tel quel dans le tableau.
+            pire = max(pire, 0 if code == 3 else code)
         print('\n' + '=' * 72)
-        print('RESUME DES HUIT ESPACES%s' % ('  [DONNEES COUPEES]' if couper else ''))
+        print('RESUME DES HUIT ESPACES%s' % ('  [DONNEES COUPEES]' if couper
+                                                   else ('  [PANNE %s]' % famille) if famille else ''))
         print('=' * 72)
+        mesures = sum(1 for _, _, c in resume if c in (0, 1))
+        if famille and not mesures:
+            print('  AVEUGLE — la famille « %s » n\'est appelee par AUCUN des huit '
+                  'espaces : le nom est probablement faux.' % famille)
+            return 2
         for ident, url, code in resume:
-            etat = {0: 'OK', 1: 'DEFAUT', 2: 'AVEUGLE'}.get(code, '?')
+            etat = {0: 'OK', 1: 'DEFAUT', 2: 'AVEUGLE',
+                    3: 'hors portee'}.get(code, '?')
             print('  %-14s %-24s %s' % (ident, url, etat))
         return pire
+
+    #  QUELLES FAMILLES EXISTENT ? On les RELÈVE au lieu de les supposer.
+    #  Mon premier passage les avait passées à la main : trois d'entre elles
+    #  (`portfolio`, `tracking`, `news`) ne coupaient RIEN sur aucun des huit
+    #  espaces, et rendaient pourtant « 8/8 OK ». Un satisfecit vide, et exactement
+    #  ce que l'en-tête prétendait éviter.
+    if '--familles' in argv:
+        return relever_familles(base, sym)
 
     url = '/analysis/%s' % sym
     if '--espace' in argv:
         url = argv[argv.index('--espace') + 1]
-    return une_page(base, url, couper)
+    return une_page(base, url, couper, famille)
 
 
-def une_page(base, url, couper):
+def relever_familles(base, sym):
+    """Les routes de données réellement demandées par les huit espaces."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print('AVEUGLE — Playwright absent.')
+        return 2
+    par_espace, toutes = {}, {}
+    with sync_playwright() as pw:
+        nav = _chromium(pw)
+        for ident, href in espaces():
+            url = href if href != '/analysis' else '/analysis/%s' % sym
+            ctx = nav.new_context(viewport={'width': 1440, 'height': 900},
+                                  service_workers='block')
+            page = ctx.new_page()
+            for motif in _INTERDITS:
+                page.route(motif, lambda r: r.abort())
+            vues = []
+            page.on('request', lambda r: vues.append(r.url))
+            try:
+                page.goto(base + url, wait_until='domcontentloaded', timeout=45000)
+                page.wait_for_timeout(6000)
+            except Exception:
+                pass
+            chemins = sorted({u.split('?')[0].split('5002')[-1] for u in vues
+                              if '/api/' in u or '/scan' in u or '-feed' in u})
+            par_espace[ident] = chemins
+            for c in chemins:
+                toutes.setdefault(c, set()).add(ident)
+            ctx.close()
+        nav.close()
+    print('ROUTES DE DONNEES REELLEMENT DEMANDEES, par espace\n')
+    for ident, chemins in par_espace.items():
+        print('  %-14s %d route(s)' % (ident, len(chemins)))
+        for c in chemins:
+            print('      %s' % c)
+    print('\nFAMILLES UTILISABLES (segment commun -> espaces qui l\'appellent)\n')
+    familles = {}
+    for chemin, idents in toutes.items():
+        for seg in chemin.strip('/').split('/'):
+            if seg and not seg.isdigit() and seg not in ('api',) and len(seg) > 2:
+                familles.setdefault(seg, set()).update(idents)
+    for seg, idents in sorted(familles.items(), key=lambda kv: -len(kv[1])):
+        if len(idents) >= 2:
+            print('  %-22s %s' % (seg, ', '.join(sorted(idents))))
+    return 0
+
+
+def une_page(base, url, couper, famille=None):
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -243,6 +333,7 @@ def une_page(base, url, couper):
         ctx = nav.new_context(viewport={'width': 1440, 'height': 900},
                               service_workers='block')
         page = ctx.new_page()
+        coupees = []
         page.add_init_script(_MARQUER_TOT)
         for motif in _INTERDITS:
             page.route(motif, lambda r: r.abort())
@@ -252,6 +343,25 @@ def une_page(base, url, couper):
             page.route('**/{api,scan,cal-feed,news-feed}**', lambda r: r.fulfill(
                 status=500, content_type='application/json',
                 body='{"error":"panne simulee"}'))
+        elif famille:
+            #  UNE SEULE famille en panne : le reste répond normalement. C'est
+            #  la situation réelle la plus fréquente, et la plus traître.
+            #
+            #  LA COUPURE RESTE DANS LE PÉRIMÈTRE DES DONNÉES, et mon premier
+            #  jet ne l'y gardait pas : `**/*market*` attrapait aussi l'URL DE
+            #  LA PAGE `/markets`. Le document lui-même recevait un 500, rien ne
+            #  se chargeait, et le témoin rendait « AVEUGLE ». Il avait raison —
+            #  je mesurais un navigateur privé de page, pas un produit qui
+            #  dégrade. On réutilise donc le périmètre éprouvé du mode total, et
+            #  on ne coupe, à l'intérieur, que ce qui porte le nom de la famille.
+            def _partielle(route):
+                if famille in route.request.url.split('?')[0]:
+                    coupees.append(route.request.url)
+                    route.fulfill(status=500, content_type='application/json',
+                                  body='{"error":"panne partielle simulee"}')
+                else:
+                    route.continue_()
+            page.route('**/{api,scan,cal-feed,news-feed}**', _partielle)
         erreurs = []
         page.on('pageerror', lambda e: erreurs.append(str(e)))
         page.goto(base + url, wait_until='domcontentloaded', timeout=45000)
@@ -304,11 +414,28 @@ def une_page(base, url, couper):
         hotes = page.evaluate(_RELEVE)
         nav.close()
 
+    #  TÉMOIN DU MODE PARTIEL. Une famille qui ne correspond à aucune requête
+    #  rendrait « tout va bien » sans avoir rien coupé — un satisfecit vide.
+    #  On exige la preuve que la panne a mordu.
+    if famille and not coupees:
+        #  TROIS VERDICTS, PAS DEUX. Une page qui n'appelle simplement pas cette
+        #  famille n'est ni saine ni aveugle : elle est HORS PORTEE. Les confondre
+        #  rendrait la matrice trompeuse dans les deux sens — un « OK » qui ne
+        #  prouve rien, ou une alarme sur une page qui n'a rien a voir.
+        print('HORS PORTEE — la famille « %s » n\'est appelee par aucune requete '
+              'de cette page : rien n\'a ete coupe, et « tout aboutit » ne dirait '
+              'rien de cette famille ici.' % famille)
+        return 3
+
     reveles = [h for h in hotes if h['revele']]
     caches = [h for h in hotes if not h['revele']]
-    print('mode : %s' % ('DONNEES COUPEES' if couper else 'nominal'))
+    print('mode : %s' % ('DONNEES COUPEES' if couper
+                                else ('PANNE PARTIELLE — %s' % famille) if famille
+                                else 'nominal'))
     print('hotes releves : %d (%d reveles · %d encore replies)'
           % (len(hotes), len(reveles), len(caches)))
+    if famille:
+        print('panne partielle : %d requete(s) coupee(s)' % len(coupees))
     print('resolution complete en %.1f s%s'
           % (attendu, ' — PLAFOND ATTEINT' if attendu >= PLAFOND else ''))
     print()
