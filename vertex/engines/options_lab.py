@@ -76,9 +76,16 @@ def _rr(c):
 # ─── ① COCKPIT MARCHÉ ───
 
 def _overview(board, detail, market, demo):
+    def dte_value(contract):
+        try:
+            value = float(contract.get('dte'))
+        except (TypeError, ValueError):
+            return None
+        return value if value >= 0 else None
+
     calls = [c for c in board if c.get('type') == 'CALL']
     puts = [c for c in board if c.get('type') == 'PUT']
-    leaps = [c for c in board if (c.get('dte') or 0) >= 300]
+    leaps = [c for c in board if dte_value(c) is not None and dte_value(c) >= 300]
     syms = sorted({c.get('sym') for c in board if c.get('sym')})
     ivs = [c['iv'] for c in board if c.get('iv') is not None]
     pops = [c['pop'] for c in board if c.get('pop') is not None]

@@ -29,3 +29,13 @@ def test_committee_excludes_missing_or_invalid_dte_from_horizon_winners():
     assert 'SHORT' in by_title['Meilleur court terme']
     assert 'LONG' in by_title['Meilleur long terme']
     assert by_title['Meilleur LEAPS'] == '—'
+
+
+def test_overview_leaps_count_excludes_missing_or_invalid_dte():
+    board = [
+        {'sym': 'VALID', 'type': 'CALL', 'dte': 365, 'quality': 70, 'iv': 30, 'pop': 55},
+        {'sym': 'MISSING', 'type': 'CALL', 'dte': None, 'quality': 99, 'iv': 30, 'pop': 55},
+        {'sym': 'INVALID', 'type': 'CALL', 'dte': 'inconnu', 'quality': 99, 'iv': 30, 'pop': 55},
+    ]
+    overview = options_lab._overview(board, {}, {}, False)
+    assert overview['leaps'] == 1
