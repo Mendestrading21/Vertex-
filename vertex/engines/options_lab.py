@@ -635,8 +635,16 @@ def _comparator(star, pick, detail):
     if not star:
         return None
     sym = star['sym']
-    spot = star.get('spot') or 100.0
-    iv = (star.get('iv') or 35) / 100.0
+    spot = star.get('spot')
+    iv_pct = star.get('iv')
+    spot_available = isinstance(spot, (int, float)) and not isinstance(spot, bool) and spot > 0
+    iv_available = isinstance(iv_pct, (int, float)) and not isinstance(iv_pct, bool) and iv_pct > 0
+    if not spot_available or not iv_available:
+        return {'symbol': sym, 'unavailable': True, 'rows': [],
+                'reason': 'matrice de véhicules indisponible — spot ou IV non reporté',
+                'coverage': {'spot_available': spot_available, 'iv_available': iv_available,
+                             'status': 'VEHICLE_MATRIX_INPUT_UNAVAILABLE', 'read_only': True}}
+    iv = iv_pct / 100.0
     d = detail.get(sym) or {}
     leg6 = _best_leg(pick, 'm6') if pick else None
     leg12 = _best_leg(pick, 'm12') if pick else None
