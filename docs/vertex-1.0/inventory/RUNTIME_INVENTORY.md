@@ -1,6 +1,6 @@
 # Vertex 1.0 · #779 — Inventaire exécutable du runtime
 
-SHA : `d3f2639027f6` · généré par `tools/vertex_1_0/inventaire_runtime.py`
+SHA : `e66c3b385f00` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 > Ce document est **régénéré**, jamais édité à la main. Un chiffre qui
 > change sans que le code ait bougé est un défaut de l'instrument.
@@ -9,12 +9,12 @@ SHA : `d3f2639027f6` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | mesure | valeur |
 | --- | --- |
-| lignes | 7279 |
-| octets | 813477 |
-| fonctions | 91 |
+| lignes | 7257 |
+| octets | 812640 |
+| fonctions | 88 |
 | plus longue fonction | `_ibkr_opt_worker` (306 lignes) |
-| **routes LEGACY** | **14** |
-| blueprints enregistrés | 21 |
+| **routes LEGACY** | **11** |
+| blueprints enregistrés | 22 |
 | workers démarrés | 15 |
 | boucles de service | 13 |
 | stores de module | 3 |
@@ -23,8 +23,8 @@ SHA : `d3f2639027f6` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | statut | nombre |
 | --- | --- |
-| CANONIQUE (blueprint du paquet) | 140 |
-| LEGACY (`terminal.py`) | 14 |
+| CANONIQUE (blueprint du paquet) | 143 |
+| LEGACY (`terminal.py`) | 11 |
 
 **L'objectif de #779 est que la ligne LEGACY tombe à 0.** Supprimer
 `terminal.py` n'est pas le but ; lui retirer toute responsabilité l'est.
@@ -33,20 +33,17 @@ SHA : `d3f2639027f6` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | chemin | vue | méthodes | ligne |
 | --- | --- | --- | --- |
-| `/scan` | `scan_ep` | * | 1775 |
-| `/api/rescan` | `api_rescan` | POST, GET | 1788 |
-| `/api/ticker/<sym>` | `api_ticker` | * | 1879 |
-| `/api/company/<sym>` | `api_company` | * | 1922 |
-| `/api/analyst/<sym>` | `api_analyst` | * | 1931 |
-| `/api/names` | `api_names` | * | 1943 |
-| `/api/correlations/<sym>` | `api_correlations` | * | 1983 |
-| `/desc/<sym>` | `desc_ep` | * | 2088 |
-| `/options/<sym>` | `opt_ep` | * | 2171 |
-| `/quotes` | `quotes_ep` | * | 2447 |
-| `/ibkr` | `ibkr_ep` | * | 2454 |
-| `/weekly-regen` | `weekly_regen_ep` | POST, GET | 2463 |
-| `/api/alerts/status` | `api_alerts_status` | * | 7186 |
-| `/api/track-record` | `api_track_record` | * | 7192 |
+| `/scan` | `scan_ep` | * | 1774 |
+| `/api/rescan` | `api_rescan` | POST, GET | 1787 |
+| `/api/ticker/<sym>` | `api_ticker` | * | 1878 |
+| `/api/correlations/<sym>` | `api_correlations` | * | 1955 |
+| `/desc/<sym>` | `desc_ep` | * | 2066 |
+| `/options/<sym>` | `opt_ep` | * | 2149 |
+| `/quotes` | `quotes_ep` | * | 2425 |
+| `/ibkr` | `ibkr_ep` | * | 2432 |
+| `/weekly-regen` | `weekly_regen_ep` | POST, GET | 2441 |
+| `/api/alerts/status` | `api_alerts_status` | * | 7164 |
+| `/api/track-record` | `api_track_record` | * | 7170 |
 
 ### Workers démarrés par `terminal.py`
 
@@ -76,8 +73,8 @@ SHA : `d3f2639027f6` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | mesure | valeur |
 | --- | --- |
-| fichiers Python | 339 |
-| routes canoniques | 140 |
+| fichiers Python | 340 |
+| routes canoniques | 143 |
 
 ### Blueprints enregistrés par le monolithe
 
@@ -85,6 +82,7 @@ SHA : `d3f2639027f6` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 - `_analysis_api.bp`
 - `_auth.make_blueprint`
 - `_command.bp`
+- `_company_api.bp`
 - `_content.bp`
 - `_decision_api.make_blueprint`
 - `_desk.make_blueprint`

@@ -40,7 +40,6 @@ from vertex.market import sectors
 from vertex.market import context as market
 from vertex.research import chart_read as research
 from vertex.data_sources import fundamentals
-from vertex.data_sources import analyst_deep
 from vertex.data_sources import scan_evidence as _scan_evidence
 from vertex.engines import decide as engine
 from vertex.engines import scorecard as ibkr
@@ -1918,37 +1917,10 @@ def api_ticker(sym):
                     'risk_map': _risk})
 
 
-@app.route('/api/company/<sym>')
-def api_company(sym):
-    """Profil d'entreprise seul (cache hebdomadaire — activité, CEO, segments, pairs)."""
-    try:
-        return jsonify(_company.get(sym.upper(), demo=DEMO_MODE, brief=True))
-    except Exception as e:
-        return jsonify({'error': f'{type(e).__name__}: {e}'})
 
 
-@app.route('/api/analyst/<sym>')
-def api_analyst(sym):
-    """Données analystes PROFONDES à la demande (révisions BPA, surprises, notes,
-    détention, initiés) — yfinance caché 12 h. En démo : rien (pas de réseau)."""
-    if DEMO_MODE:
-        return jsonify({'demo': True})
-    try:
-        return jsonify(analyst_deep.get(sym.upper()) or {})
-    except Exception as e:
-        return jsonify({'error': f'{type(e).__name__}: {e}'})
 
 
-@app.route('/api/names')
-def api_names():
-    """{ticker: nom d'entreprise} depuis le cache — pour afficher les noms dans Stock info
-    (lecture seule, instantané, aucun fetch réseau)."""
-    try:
-        cache = _company._load()
-        return jsonify({k: v.get('name') for k, v in cache.items()
-                        if isinstance(v, dict) and v.get('name')})
-    except Exception:
-        return jsonify({})
 
 
 # ─── CORRÉLATIONS RÉELLES : le titre vs macro (SOXX, QQQ, S&P, BTC, or, dollar, taux, VIX) ───
@@ -2013,6 +1985,12 @@ app.register_blueprint(_desk.make_blueprint(opt_job=_opt_job, ibkr_enabled=IBKR_
 
 
 # ─── ENDPOINTS D'ANALYSE (Blueprint) — /api/vertex · /api/validator · /api/risk ───
+#  #779 — API ENTREPRISE : les vues /api/company, /api/analyst et /api/names
+#  etaient decorees directement sur `app` ici. Mesure a l'AST : elles ne
+#  dependaient de RIEN d'autre que `app`, donc elles se deplacent sans
+#  injection. Proprietaire canonique : vertex/app/routes/company_api.py.
+from vertex.app.routes import company_api as _company_api
+app.register_blueprint(_company_api.bp)
 app.register_blueprint(_analysis_api.bp)
 
 # ─── COMMAND CENTER (Blueprint) — /api/command · /api/portefeuille ───
