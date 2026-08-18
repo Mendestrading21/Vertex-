@@ -172,10 +172,23 @@ def options_gex(sym):
                         'error': 'options_gex_unavailable'}), 500
     # Journal quotidien du GEX (best-effort, réel seulement) → série « Daily GEX ».
     history = []
+    history_availability = {
+        'available': False,
+        'status': 'GEX_HISTORY_UNAVAILABLE',
+        'points_loaded': 0,
+        'read_only': True,
+        'reason': 'historique GEX indisponible ; une série vide ne signifie pas absence d’observation historique',
+    }
     try:
         from vertex.options import gex_history as _gh
         _gh.record(profile)
         history = _gh.series(sym)
+        history_availability = {
+            'available': True,
+            'status': 'GEX_HISTORY_AVAILABLE',
+            'points_loaded': len(history) if isinstance(history, list) else 0,
+            'read_only': True,
+        }
     except Exception:
         pass
     return jsonify({
@@ -183,6 +196,7 @@ def options_gex(sym):
         'contracts_available': len(contracts),
         'coverage': 'fenêtre du scan (strikes ±35 % du spot) — pas la chaîne complète',
         'gex': profile, 'flow': flow, 'synthesis': synth, 'history': history,
+        'history_availability': history_availability,
     })
 
 
