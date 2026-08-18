@@ -779,11 +779,17 @@ def _risks(star, market):
     def lvl(x, lo, hi):
         return 'ÉLEVÉ' if x >= hi else 'MOYEN' if x >= lo else 'FAIBLE'
 
-    theta_l = lvl(((star or {}).get('theta_burn') or 0.4) * 100, 30, 70)
+    theta_burn = (star or {}).get('theta_burn')
+    theta_available = isinstance(theta_burn, (int, float)) and not isinstance(theta_burn, bool) and theta_burn >= 0
+    theta_l = lvl(theta_burn * 100, 30, 70) if theta_available else 'INCONNU'
     return [
-        {'name': 'Thêta (érosion du temps)', 'level': theta_l, 'impact': 'perte quotidienne certaine',
-         'proba': '100 % — c\'est un loyer, pas un aléa',
-         'fix': 'échéances ≥ 4-6 mois, sortie 2-3 semaines avant expiration'},
+        {'name': 'Thêta (érosion du temps)', 'level': theta_l,
+         'impact': ('perte quotidienne certaine' if theta_available else 'érosion non quantifiée — donnée thêta indisponible'),
+         'proba': ('100 % — c\'est un loyer, pas un aléa' if theta_available else 'INCONNUE — aucune valeur de thêta reportée'),
+         'fix': 'échéances ≥ 4-6 mois, sortie 2-3 semaines avant expiration',
+         'coverage': {'available': theta_available,
+                      'status': 'THETA_BURN_AVAILABLE' if theta_available else 'THETA_BURN_UNAVAILABLE',
+                      'read_only': True}},
         {'name': 'IV crush', 'level': lvl(iv, 40, 55), 'impact': 'la prime peut fondre de 20-40 % en une nuit',
          'proba': 'quasi certaine après chaque publication de résultats',
          'fix': 'réduire/solder avant les résultats, ou jouer des spreads (vega neutralisé)'},
