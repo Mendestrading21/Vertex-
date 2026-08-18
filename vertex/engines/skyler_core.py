@@ -153,7 +153,7 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
                  drawdown_ctx=None, downside_volatility_ctx=None, relative_strength_ctx=None, gap_risk_ctx=None,
                  earnings_proximity_ctx=None, earnings_option_overlap_ctx=None, earnings_holding_overlap_ctx=None,
                  iv_skew_ctx=None, call_put_structure_ctx=None, iv_term_structure_ctx=None,
-                 relative_volume_ctx=None):
+                 relative_volume_ctx=None, open_interest_concentration_ctx=None):
     """Agrège les sorties moteurs existantes en un packet typé — sans muter les
     sources, sans recalculer, sans inventer."""
     detail = detail or {}
@@ -212,6 +212,9 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
                               {'available': False, 'reason': 'contexte de structure IV non fourni'}),
         'relative_volume': (relative_volume_ctx if relative_volume_ctx is not None else
                             {'available': False, 'reason': 'contexte de volume relatif non fourni'}),
+        'open_interest_concentration': (open_interest_concentration_ctx
+                                        if open_interest_concentration_ctx is not None else
+                                        {'available': False, 'reason': 'contexte de concentration OI non fourni'}),
     }
     audit.append({'step': 'contexts', 'result': {
         k: bool(v.get('available', True)) for k, v in contexts.items()}})
