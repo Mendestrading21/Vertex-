@@ -171,6 +171,8 @@ def api_skyler(sym):
     earnings_holding_overlap = _ehctx.build(octx, earnings_proximity)
     from vertex.engines import iv_skew_context as _ivskew
     iv_skew = _ivskew.build(scan_state.get('options_board') or [], sym=sym, spot=detail.get('price'))
+    from vertex.engines import call_put_structure as _callput
+    call_put_structure = _callput.build(scan_state.get('options_board') or [], sym=sym)
     from vertex.engines import fundamental_context as _fctx
     fundamentals_ctx = _fctx.build(sym, scan_state.get('fundamentals') or {})
     from vertex.engines import decision_evidence as _evidence
@@ -202,7 +204,7 @@ def api_skyler(sym):
                                earnings_proximity_ctx=earnings_proximity,
                                earnings_option_overlap_ctx=earnings_option_overlap,
                                earnings_holding_overlap_ctx=earnings_holding_overlap,
-                               iv_skew_ctx=iv_skew)
+                               iv_skew_ctx=iv_skew, call_put_structure_ctx=call_put_structure)
     rt_review = _rt.review(packet0, _sk.score40(packet0))
     rt_input = {'complete': rt_review['complete'], 'basis': rt_review['basis']}
     # Calibration RÉELLE (LOT 19/22) : facteur depuis les résultats mesurés de

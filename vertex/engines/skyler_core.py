@@ -152,7 +152,7 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
                  red_team=None, data_quality_ctx=None, reconciliation_ctx=None, fundamental_ctx=None,
                  drawdown_ctx=None, downside_volatility_ctx=None, relative_strength_ctx=None, gap_risk_ctx=None,
                  earnings_proximity_ctx=None, earnings_option_overlap_ctx=None, earnings_holding_overlap_ctx=None,
-                 iv_skew_ctx=None):
+                 iv_skew_ctx=None, call_put_structure_ctx=None):
     """Agrège les sorties moteurs existantes en un packet typé — sans muter les
     sources, sans recalculer, sans inventer."""
     detail = detail or {}
@@ -205,6 +205,8 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
                                      {'available': False, 'reason': 'contexte résultats-détention non fourni'}),
         'iv_skew': (iv_skew_ctx if iv_skew_ctx is not None else
                     {'available': False, 'reason': 'contexte de skew IV non fourni'}),
+        'call_put_structure': (call_put_structure_ctx if call_put_structure_ctx is not None else
+                               {'available': False, 'reason': 'contexte call-put non fourni'}),
     }
     audit.append({'step': 'contexts', 'result': {
         k: bool(v.get('available', True)) for k, v in contexts.items()}})
