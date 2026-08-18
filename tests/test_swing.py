@@ -19,6 +19,11 @@ def test_invalid_inputs_are_safe():
     assert swing.project(None, None, None, None, None, None) == (None, False)
 
 
+def test_missing_or_invalid_dte_refuses_swing_without_default_maturity():
+    for dte in (None, 'inconnu', -1, 0, 90.5):
+        assert swing.project(100, 45, 0.55, 500, 0.9, dte) == (None, False)
+
+
 def test_short_dated_is_not_ok_even_if_profitable():
     # < 90j → swing_ok False même si le rendement est élevé (règle de sécurité)
     ret, ok = swing.project(100, 45, 0.5, 500, 0.9, 60)
@@ -31,6 +36,14 @@ def test_annotate_adds_fields():
     out = swing.annotate(board, {'Y': {'price': 200}})
     assert out[0]['swing_ret'] == 200 and out[0]['swing_ok'] is True
     assert 'swing_ret' in out[1] and 'swing_ok' in out[1]      # spot pris depuis le detail
+    assert out[0]['swing_status'] == 'SWING_DTE_AVAILABLE'
+
+
+def test_annotate_exposes_missing_dte_without_swing_projection():
+    out = swing.annotate([{'sym': 'X', 'spot': 100, 'iv': 45, 'delta': 0.55,
+                           'cost': 500, 'theta_burn': 0.9, 'dte': None}], {})
+    assert out[0]['swing_ret'] is None and out[0]['swing_ok'] is False
+    assert out[0]['swing_status'] == 'SWING_DTE_UNAVAILABLE'
 
 
 def test_terminal_bindings_are_the_module():
