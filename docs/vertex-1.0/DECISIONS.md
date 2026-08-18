@@ -2,7 +2,7 @@
 
 | ID | Décision | Statut |
 |---|---|---|
-| D-001 | `main` récent est la base de consolidation; aucune ancienne intégration n'est fusionnée en bloc. | active |
+| D-001 | `main` est l'unique base de consolidation; aucune ancienne intégration n'est fusionnée en bloc. | active |
 | D-002 | Nom produit unique: Vertex. « Skyler » reste un nom technique historique, pas une architecture parallèle. | active |
 | D-003 | Entrée locale `python -m vertex`; WSGI `vertex.runtime:app`; `terminal.py` devient adaptateur. | active |
 | D-004 | Options: 2/4/6 semaines, DTE préféré 120–240, cible 180. | active |
@@ -11,5 +11,7 @@
 | D-007 | TradingView demande une réévaluation, jamais une exécution. | active |
 | D-008 | Un seul skill Claude: `/vertex-1-0`. | active |
 | D-009 | Signal OS sera extrait composant par composant après comparaison, jamais fusionné globalement. | active |
-| D-010 | Vertex 1.0 reste RC jusqu'à CI complète et acceptation humaine du même SHA. | active |
+| D-010 | Vertex 1.0 reste RC jusqu'à validation de tous les release gates sur le même SHA. | active |
 | D-011 | Le runtime canonique active le corpus V4; le lancement direct de `terminal.py` conserve V3 uniquement comme rollback transitoire. | active |
+| D-012 | Une capacité n'est « terminée » que si elle satisfait `QUALITY_STANDARD.md`. | active |
+| D-013 | Les suppressions legacy suivent `CLEANUP_POLICY.md`; aucune suppression de masse aveugle. | active |
