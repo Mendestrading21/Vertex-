@@ -1617,10 +1617,12 @@ def _weekly_loop():
 
 # ─── options / GEX / earnings à la demande ───────────────────────────────
 def options_pack(sym):
+    from vertex.options import iv_hv as _iv_hv
     out = {'sym': sym, 'iv': None, 'ivrank': None, 'earnings': None, 'error': None,
            'name': None, 'sector': None, 'mcap': None, 'pe': None, 'beta': None,
            'news': [], 'news_why': None, 'contracts': [],
-           'net_gex': None, 'regime': None, 'call_wall': None, 'put_wall': None, 'gamma_flip': None}
+           'net_gex': None, 'regime': None, 'call_wall': None, 'put_wall': None, 'gamma_flip': None,
+           'hv_20d': None, 'iv_hv_context': _iv_hv.describe(None, None)}
     try:
         tk = yf.Ticker(sym)
         try:
@@ -1655,6 +1657,7 @@ def options_pack(sym):
         h = tk.history(period='1y')['Close']
         ret = np.log(h / h.shift(1)).dropna()
         hv = ret.rolling(20).std() * math.sqrt(252) * 100
+        out['hv_20d'] = round(float(hv.iloc[-1]), 2) if len(hv.dropna()) else None
         out['ivrank'] = round(float((hv.rank(pct=True).iloc[-1]) * 100)) if len(hv.dropna()) else None
         # earnings (+ jours avant résultats, pour la pénalité options court terme)
         edte = None
@@ -1734,6 +1737,7 @@ def options_pack(sym):
                     d = agg.setdefault(K, {'cg': 0., 'pg': 0.})
                     d['cg' if is_call else 'pg'] += g * oi
         out['iv'] = round(float(np.median(atm_ivs)) * 100, 1) if atm_ivs else None
+        out['iv_hv_context'] = _iv_hv.describe(out['iv'], out['hv_20d'])
         if agg:
             ks = sorted(agg)
             scale = 100.0 * spot * spot * 0.01
