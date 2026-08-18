@@ -76,6 +76,28 @@ def test_command_never_contains_orders(client):
         assert forbidden not in flat
 
 
+def test_command_exposes_unavailable_portfolio_controls_without_changing_decision(client, monkeypatch):
+    _set_market()
+    baseline = client.get('/api/command').get_json()['decision']
+
+    def _unavailable(*args, **kwargs):
+        raise RuntimeError('interne')
+
+    monkeypatch.setattr(command.portfolio_risk, 'build', _unavailable)
+    monkeypatch.setattr(command.validator, 'build', _unavailable)
+    j = client.get('/api/command').get_json()
+    assert j['decision'] == baseline
+    assert j['risk'] is None and j['validation'] is None
+    assert j['controls_availability'] == {
+        'risk': {'available': False, 'status': 'PORTFOLIO_RISK_UNAVAILABLE',
+                 'read_only': True, 'reason': 'contrôle de risque portefeuille indisponible'},
+        'validation': {'available': False, 'status': 'PORTFOLIO_VALIDATION_UNAVAILABLE',
+                       'read_only': True, 'reason': 'validation portefeuille indisponible'},
+        'does_not_change_decision': True,
+        'read_only': True,
+    }
+
+
 # ─── /api/portefeuille ───
 
 def test_portefeuille_empty_without_rows(client):

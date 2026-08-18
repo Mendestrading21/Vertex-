@@ -101,11 +101,16 @@ def api_command():
         decision = {'action': 'ATTENDRE / SÉLECTIF', 'color': '#FFB23F',
                     'msg': 'Peu d\'avantage statistique — n\'acheter que l\'exceptionnel, garder du cash.'}
     # RISK MANAGER portefeuille (corrélation / concentration / secteurs)
+    risk_availability = {'available': False, 'status': 'PORTFOLIO_RISK_UNAVAILABLE',
+                         'read_only': True,
+                         'reason': 'contrôle de risque portefeuille indisponible'}
     try:
         risk = portfolio_risk.build([r['symbol'] for r in (cm.get('decisions') or [])
                                      if r['verdict'] in ('ACHETER', 'RENFORCER')][:8] or
                                     [r['symbol'] for r in (scan_state.get('rows') or [])[:8]],
                                     detail)
+        risk_availability = {'available': True, 'status': 'PORTFOLIO_RISK_AVAILABLE',
+                             'read_only': True}
     except Exception:
         risk = None
     if risk and risk.get('no_new_risk'):
@@ -113,13 +118,22 @@ def api_command():
             alerts.append(['🟠', 'CORRÉLATION', f"Panier trop corrélé ({risk['avg_corr']}) — diversifier avant d'ajouter du risque."])
         if 'concentration_sectorielle' in risk.get('flags', []):
             alerts.append(['🟠', 'CONCENTRATION', f"Secteur {risk.get('max_sector_name')} à {risk.get('max_sector')}% — trop concentré."])
+    validation_availability = {'available': False, 'status': 'PORTFOLIO_VALIDATION_UNAVAILABLE',
+                               'read_only': True,
+                               'reason': 'validation portefeuille indisponible'}
     try:
         valid = validator.build((scan_state.get('portfolio') or {}).get('equity') or [])
+        validation_availability = {'available': True, 'status': 'PORTFOLIO_VALIDATION_AVAILABLE',
+                                   'read_only': True}
     except Exception:
         valid = None
     return jsonify({'regime': regime, 'portfolio_score': score, 'decision': decision,
                     'top_stocks': top_stocks, 'top_options': top_options, 'alerts': alerts,
                     'counts': cm.get('counts') or {}, 'risk': risk, 'validation': valid,
+                    'controls_availability': {'risk': risk_availability,
+                                              'validation': validation_availability,
+                                              'does_not_change_decision': True,
+                                              'read_only': True},
                     'exposure': {'actions': '70-90%', 'options': '10-20%', 'etf': 'tampon / cash'}})
 
 
