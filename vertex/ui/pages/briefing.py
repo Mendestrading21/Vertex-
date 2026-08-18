@@ -212,7 +212,30 @@ function regimeIndetermine(v){
 async function loadBrief(){
   try{
     const b=await VX.fetch('/api/briefing/editorial',{ttl:60000});
-    const m=b.demo?'demo':'delayed';
+    /* FRAÎCHEUR RÉELLE, ET NON UNE CONSTANTE (lot 62).
+       Avant : `const m = b.demo ? 'demo' : 'delayed'` — l'étiquette affichait
+       « Différé » que la donnée ait trois minutes ou trois jours. Les branches
+       `live` et `stale` (« Périmé ») de `freshBadge` étaient INATTEIGNABLES sur
+       cette page. Un badge qui occupe la place d'un indicateur de fraîcheur sans
+       porter la moindre information d'âge est un mensonge par omission — et
+       Aujourd'hui est justement la page où l'on décide vite.
+
+       L'âge honnête est `scan_age` (ancienneté de la DONNÉE, pas de l'entrée de
+       cache), déjà servi par `/api/market/summary` que la page charge par
+       ailleurs : `VX.fetch` le rend depuis son cache, sans appel de plus.
+
+       LES SEUILS SONT EMPRUNTÉS À `VX.freshness.THRESH`, jamais recopiés : deux
+       tables de seuils divergent au premier ajustement, et l'écran dirait alors
+       « Différé » là où Marchés dit « À actualiser ». */
+    let m=b.demo?'demo':'delayed';
+    if(!b.demo){
+      try{
+        const s=await VX.fetch('/api/market/summary',{ttl:60000});
+        const ageMs=(typeof s.scan_age==='number')?s.scan_age*1000:null;
+        const T=(window.VX&&VX.freshness&&VX.freshness.THRESH)||{live:20000,snapshot:1800000};
+        if(ageMs!=null)m=ageMs<T.live?'live':(ageMs<T.snapshot?'delayed':'stale');
+      }catch(e){}
+    }
     $('vx-hero-fresh').innerHTML=freshBadge(m)+' <span class="vx-meta">'+esc((b.sources||[]).join(', '))+'</span>';
     const ed=b.editorial||{};
     const lines=b.lines||[];
