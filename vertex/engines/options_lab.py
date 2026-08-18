@@ -483,12 +483,26 @@ def _viz(star, board, detail, pick):
         term.append({'bucket': lab, 'sym_iv': _med(mine), 'board_iv': _med(alls)})
     # radar greeks (normalisé 0-100)
     leg = _best_leg(pick) if pick else None
+    def reported_number(value, positive=False):
+        return (isinstance(value, (int, float)) and not isinstance(value, bool)
+                and (value > 0 if positive else True))
+    delta = star.get('delta')
+    gamma = (leg or {}).get('gamma')
+    theta = star.get('theta_burn')
+    vega = (leg or {}).get('vega')
+    radar_coverage = {
+        'delta': reported_number(delta),
+        'gamma': reported_number(gamma),
+        'theta': reported_number(theta),
+        'vega': reported_number(vega),
+        'iv': reported_number(star.get('iv'), positive=True),
+    }
     radar = {
-        'Delta': min(100, abs(star.get('delta') or 0) * 125),
-        'Gamma': min(100, ((leg or {}).get('gamma') or 0.02) * 2500),
-        'Theta': min(100, (star.get('theta_burn') or 0.4) * 90),
-        'Vega': min(100, ((leg or {}).get('vega') or 0.2) * 250),
-        'IV': min(100, (star.get('iv') or 35) * 1.4),
+        'Delta': min(100, abs(delta) * 125) if radar_coverage['delta'] else None,
+        'Gamma': min(100, gamma * 2500) if radar_coverage['gamma'] else None,
+        'Theta': min(100, theta * 90) if radar_coverage['theta'] else None,
+        'Vega': min(100, vega * 250) if radar_coverage['vega'] else None,
+        'IV': min(100, star.get('iv') * 1.4) if radar_coverage['iv'] else None,
     }
     # Kelly (fraction optimale bornée) — seulement avec POP et potentiel reportés.
     pop_pct = star.get('pop')
@@ -524,6 +538,10 @@ def _viz(star, board, detail, pick):
         'theta': theta_curve,
         'term': term,
         'radar': radar,
+        'radar_coverage': {'available': radar_coverage,
+                           'status': ('RADAR_GREEKS_AVAILABLE' if all(radar_coverage.values())
+                                      else 'RADAR_GREEKS_PARTIAL'),
+                           'read_only': True},
         'em': {'pct': em_pct if em_available else None,
                'lo': _r2(spot * (1 - em_pct / 100)) if em_available else None,
                'hi': _r2(spot * (1 + em_pct / 100)) if em_available else None,

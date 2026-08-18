@@ -130,3 +130,18 @@ def test_viz_exposes_missing_kelly_inputs_without_default_fraction():
         'pop_available': False, 'potential_available': False,
         'status': 'KELLY_INPUT_UNAVAILABLE', 'read_only': True,
     }
+
+
+def test_viz_radar_exposes_missing_greeks_without_defaults():
+    star = {'sym': 'TST', 'spot': 100, 'strike': 105, 'iv': 30, 'dte': 90,
+            'cost': 250, 'type': 'CALL', 'delta': None, 'theta_burn': None}
+    viz = options_lab._viz(star, [], {}, None)
+    assert viz['radar']['Delta'] is None
+    assert viz['radar']['Gamma'] is None
+    assert viz['radar']['Theta'] is None
+    assert viz['radar']['Vega'] is None
+    assert viz['radar']['IV'] == 42.0
+    assert viz['radar_coverage'] == {
+        'available': {'delta': False, 'gamma': False, 'theta': False, 'vega': False, 'iv': True},
+        'status': 'RADAR_GREEKS_PARTIAL', 'read_only': True,
+    }
