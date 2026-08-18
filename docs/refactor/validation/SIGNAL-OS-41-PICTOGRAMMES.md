@@ -157,8 +157,14 @@ conclure.
 1. **L'état de démonstration ne montre pas tout.** Deux branches sont ouvertes
    par symbole ; le bandeau d'erreur, le tiroir ouvert et la watchlist remplie
    restent hors du relevé navigateur (le gardien de code, lui, les couvre).
-2. **`innerText` ne voit pas les pseudo-éléments** (`::before`/`::after`). Un
-   pictogramme injecté par CSS échapperait à la sonde.
+2. ~~**`innerText` ne voit pas les pseudo-éléments**~~ — **fermée au lot 47**
+   (`SIGNAL-OS-47-PSEUDO-ELEMENTS.md`). La sonde lit désormais la propriété
+   `content` calculée des deux pseudo-éléments, avec un témoin qui l'éprouve.
+   Elle a aussitôt trouvé un **cinquième** signe peint que le relevé du lot 41
+   ne pouvait pas voir : `◇` (le préfixe de « Analyse uniquement · aucun
+   ordre »). Le compte de ce rapport — « 4 signes peints » — était donc court
+   d'un ; le verdict de tête, « aucun emoji peint », tient et sur un instrument
+   plus fort.
 3. **Modules non servis non traités.** `nav.py`, `home_art.py`, `vx_kit.py`,
    `widget_lab.py` et les pages de laboratoire portent encore des emoji ; le lot
    381 a mesuré que le JS de `vx_kit` n'atteint aucune des huit pages. Les

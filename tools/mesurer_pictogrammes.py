@@ -87,6 +87,22 @@ SONDE = r"""() => {
     ajoute(e.getAttribute('title'), 'title');
     ajoute(e.getAttribute('alt'), 'alt');
   }
+  /*  LES PSEUDO-ELEMENTS, angle mort declare du lot 41.
+      `innerText` ne les voit pas : un pictogramme pose par CSS
+      (`::before { content: "…" }`) est PEINT a l'ecran et absent du texte.
+      Le produit s'en sert (chevrons, puces), donc l'angle mort n'etait pas
+      theorique. On lit la propriete calculee, et on ignore `none`/`normal`
+      ainsi que les valeurs non litterales (`attr()`, `counter()`), qui ne
+      portent pas de glyphe par elles-memes.  */
+  for (const e of document.querySelectorAll('*')) {
+    for (const pseudo of ['::before', '::after']) {
+      let c;
+      try { c = getComputedStyle(e, pseudo).content; } catch (_) { continue; }
+      if (!c || c === 'none' || c === 'normal') continue;
+      const m = c.match(/^"(.*)"$/s) || c.match(/^'(.*)'$/s);
+      if (m) ajoute(m[1], pseudo);
+    }
+  }
   return vus;
 }"""
 
@@ -155,10 +171,23 @@ def _releve(nav, url, injecter=None):
         page.goto(url, wait_until='domcontentloaded', timeout=45000)
         page.wait_for_timeout(3500)
         if injecter:
-            page.evaluate("t => { const d = document.createElement('div');"
-                          " d.textContent = t; document.body.appendChild(d); }",
-                          injecter)
-            page.wait_for_timeout(100)
+            #  DEUX témoins, parce que la sonde a deux organes et qu'un seul
+            #  témoin n'en éprouve qu'un. Le nœud de texte éprouve `innerText` ;
+            #  la règle CSS éprouve la lecture des pseudo-éléments — celle-là
+            #  était l'angle mort déclaré du lot 41, et un angle mort qu'on
+            #  ferme sans le vérifier reste un angle mort.
+            page.evaluate(
+                "t => {"
+                " const d = document.createElement('div');"
+                " d.textContent = t; d.id = 'vx-temoin-texte';"
+                " document.body.appendChild(d);"
+                " const s = document.createElement('style');"
+                " s.textContent = '#vx-temoin-css::before{content:\"' + t + '\"}';"
+                " document.head.appendChild(s);"
+                " const p = document.createElement('span');"
+                " p.id = 'vx-temoin-css'; document.body.appendChild(p);"
+                "}", injecter)
+            page.wait_for_timeout(150)
         return page.evaluate(SONDE), page.content()
     finally:
         ctx.close()
@@ -186,10 +215,15 @@ def main(argv=None):
             #  Le témoin d'abord : si la sonde ne le revoit pas, tout le reste
             #  du relevé est sans valeur.
             vus, _ = _releve(nav, base + '/', injecter=TEMOIN)
-            if TEMOIN not in vus:
-                print('AVEUGLE — le temoin injecte n\'est pas revu par la sonde.')
+            ou = set((vus.get(TEMOIN) or {}).get('ou') or [])
+            manque = [o for o in ('texte', '::before') if o not in ou]
+            if manque:
+                print('AVEUGLE — le temoin n\'est pas revu par : %s. '
+                      'La sonde a deux organes ; un seul qui repond ne prouve '
+                      'que celui-la.' % ', '.join(manque))
                 return 2
-            print('temoin : pictogramme injecte et revu — la sonde voit l\'ecran')
+            print('temoin : revu dans le TEXTE et dans un PSEUDO-ELEMENT — '
+                  'les deux organes de la sonde repondent')
 
             conditionnelles, absentes = _symboles_conditionnels(base)
             for u, quoi in conditionnelles:

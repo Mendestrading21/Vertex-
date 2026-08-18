@@ -93,6 +93,31 @@ def test_la_fiche_d_un_titre_en_compression_ne_peint_plus_d_emoji(client):
         % ' '.join(trouves))
 
 
+def test_aucun_emoji_pose_par_une_regle_css():
+    """LOT 47 — L'ANGLE MORT QUE LES TESTS CI-DESSUS NE POUVAIENT PAS VOIR.
+
+    Les tests précédents lisent le HTML servi. Un pictogramme posé par CSS
+    (`::before { content: "…" }`) n'y est pas : il vit dans une feuille de
+    style, et il est pourtant **peint**. Mesuré au lot 47 en donnant un second
+    organe à la sonde navigateur — qui a aussitôt trouvé un signe que
+    `innerText` ne voyait pas.
+
+    Ce test garde la même règle du côté des feuilles : un `content:` qui pose
+    un EMOJI serait une icône multicolore, hors de tout token."""
+    import pathlib
+    coupables = []
+    for f in sorted(pathlib.Path('vertex/static/vertex/css').glob('*.css')):
+        for i, ligne in enumerate(f.read_text(encoding='utf-8').splitlines(), 1):
+            if 'content:' not in ligne:
+                continue
+            trouves = sorted(set(_EMOJI.findall(ligne)))
+            if trouves:
+                coupables.append('%s:%d %s' % (f, i, ' '.join(trouves)))
+    assert not coupables, (
+        'une regle CSS pose un emoji, donc une icone multicolore qu\'aucun '
+        'token ne peut repeindre :\n  %s' % '\n  '.join(coupables))
+
+
 def test_la_severite_d_alerte_n_est_plus_comparee_a_un_pictogramme():
     """DÉFAUT RÉEL ÉVITÉ, pas seulement une question de style.
 
