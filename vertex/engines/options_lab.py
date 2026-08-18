@@ -463,11 +463,12 @@ def _viz(star, board, detail, pick):
             row[name] = _r2(spot * math.exp(mu + z * s))
         cone.append(row)
     # distribution de probabilité du prix à l'échéance + P(>BE)
-    be = star.get('be') or strike
+    be = star.get('be')
+    be_available = positive_number(be)
     sT = iv * math.sqrt(T)
     dist = [{'x': _r2(x), 'y': _r2(_npdf((math.log(x / spot) + 0.5 * sT * sT) / sT) / (x * sT), 6)}
             for x in xs if x > 0]
-    p_be = _ncdf(sgn * (math.log(spot / be) - 0.5 * sT * sT) / sT) if be > 0 else None
+    p_be = _ncdf(sgn * (math.log(spot / be) - 0.5 * sT * sT) / sT) if be_available else None
     # décroissance thêta : valeur BS du contrat en fonction des jours restants
     theta_curve = [{'d': dd, 'v': _r2(_bs(spot, strike, dd / 365.0, iv, right) * 100)}
                    for dd in range(dte, -1, -max(1, dte // 30))]
@@ -502,17 +503,27 @@ def _viz(star, board, detail, pick):
     heat = [{'sym': s, 'score': c.get('quality'), 'pop': c.get('pop'), 'rr': _rr(c),
              'iv': c.get('iv'), 'flow': _r2((detail.get(s) or {}).get('vol_z'), 1)}
             for s, c in sorted(best_by.items(), key=lambda kv: -(kv[1].get('quality') or 0))]
+    em_pct = star.get('em_pct')
+    em_available = isinstance(em_pct, (int, float)) and not isinstance(em_pct, bool) and em_pct >= 0
     return {
         'unavailable': False,
         'coverage': coverage,
         'payoff': {'points': payoff, 'be': be, 'spot': spot, 'target': star.get('tgt'), 'prem': star.get('cost')},
         'cone': cone,
-        'dist': {'points': dist, 'be': be, 'spot': spot, 'p_be': _r2((p_be or 0) * 100, 1)},
+        'dist': {'points': dist, 'be': be if be_available else None, 'spot': spot,
+                 'p_be': _r2(p_be * 100, 1) if p_be is not None else None,
+                 'coverage': {'break_even_available': be_available,
+                              'status': 'BREAK_EVEN_AVAILABLE' if be_available else 'BREAK_EVEN_UNAVAILABLE',
+                              'read_only': True}},
         'theta': theta_curve,
         'term': term,
         'radar': radar,
-        'em': {'pct': star.get('em_pct'), 'lo': _r2(spot * (1 - (star.get('em_pct') or 0) / 100)),
-               'hi': _r2(spot * (1 + (star.get('em_pct') or 0) / 100))},
+        'em': {'pct': em_pct if em_available else None,
+               'lo': _r2(spot * (1 - em_pct / 100)) if em_available else None,
+               'hi': _r2(spot * (1 + em_pct / 100)) if em_available else None,
+               'coverage': {'available': em_available,
+                            'status': 'EXPECTED_MOVE_AVAILABLE' if em_available else 'EXPECTED_MOVE_UNAVAILABLE',
+                            'read_only': True}},
         'kelly': {'pct': _r2(kelly * 100, 1),
                   'note': 'fraction de Kelly bornée à 15 % — au-delà, la variance détruit le capital'},
         'gauges': {'pop': star.get('pop'), 'conviction': star.get('quality')},

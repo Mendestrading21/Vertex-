@@ -108,3 +108,14 @@ def test_viz_refuses_missing_core_option_inputs_without_synthetic_curves():
     assert viz['payoff']['points'] == []
     assert viz['cone'] == [] and viz['theta'] == []
     assert viz['em'] == {'pct': None, 'lo': None, 'hi': None}
+
+
+def test_viz_exposes_missing_expected_move_and_break_even_without_neutral_values():
+    star = {'sym': 'TST', 'spot': 100, 'strike': 105, 'iv': 30, 'dte': 90,
+            'cost': 250, 'type': 'CALL', 'be': None, 'em_pct': None}
+    viz = options_lab._viz(star, [], {}, None)
+    assert viz['unavailable'] is False
+    assert viz['dist']['be'] is None and viz['dist']['p_be'] is None
+    assert viz['dist']['coverage']['status'] == 'BREAK_EVEN_UNAVAILABLE'
+    assert viz['em']['pct'] is None and viz['em']['lo'] is None and viz['em']['hi'] is None
+    assert viz['em']['coverage']['status'] == 'EXPECTED_MOVE_UNAVAILABLE'
