@@ -108,7 +108,15 @@ def test_earnings_risk_none_when_expiry_precedes_event():
 def test_dividend_risk_call_penalized():
     lvl, _ = ev.dividend_risk(3, 'CALL', 30)
     assert lvl == ev.RISK_MODERATE
-    assert ev.dividend_risk(None, 'CALL', 30)[0] == ev.RISK_NONE
+    assert ev.dividend_risk(None, 'CALL', 30)[0] == ev.RISK_UNKNOWN
+
+
+def test_combined_event_risk_keeps_missing_calendar_unknown_unless_known_high_risk():
+    incomplete = ev.combined(40, None, 'CALL', 90)
+    assert incomplete['level'] == ev.RISK_UNKNOWN
+    assert incomplete['calendar_coverage']['status'] == 'EVENT_CALENDAR_INCOMPLETE'
+    assert incomplete['calendar_coverage']['ex_dividend_available'] is False
+    assert ev.combined(2, None, 'CALL', 30)['level'] == ev.RISK_HIGH
 
 
 def test_combined_takes_worst():
