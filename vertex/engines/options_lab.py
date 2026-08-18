@@ -950,9 +950,27 @@ def _risks(star, market):
          'proba': 'mécanique en fin de vie' if dte_available else 'INCONNUE — DTE non reporté',
          'fix': 'ne jamais tenir les 2-3 dernières semaines d\'un contrat acheté',
          'coverage': {'available': dte_available, 'status': 'DTE_AVAILABLE' if dte_available else 'DTE_UNAVAILABLE', 'read_only': True}},
-        {'name': 'Volatilité du sous-jacent', 'level': lvl((star or {}).get('em_pct') or 25, 25, 40),
-         'impact': 'move attendu ±%s%% — le chemin peut secouer avant la cible' % ((star or {}).get('em_pct') or '—'),
-         'proba': 'structurelle', 'fix': 'delta modéré (0.45-0.60) + taille qui laisse dormir'},
+        {'name': 'Volatilité du sous-jacent',
+         'level': (lvl((star or {}).get('em_pct'), 25, 40)
+                   if isinstance((star or {}).get('em_pct'), (int, float))
+                   and not isinstance((star or {}).get('em_pct'), bool)
+                   and (star or {}).get('em_pct') >= 0 else 'INCONNU'),
+         'impact': ('move attendu ±%s%% — le chemin peut secouer avant la cible' % (star or {}).get('em_pct')
+                    if isinstance((star or {}).get('em_pct'), (int, float))
+                    and not isinstance((star or {}).get('em_pct'), bool)
+                    and (star or {}).get('em_pct') >= 0 else
+                    'mouvement attendu non quantifié — donnée indisponible'),
+         'proba': ('structurelle' if isinstance((star or {}).get('em_pct'), (int, float))
+                   and not isinstance((star or {}).get('em_pct'), bool)
+                   and (star or {}).get('em_pct') >= 0 else 'INCONNUE — mouvement attendu non reporté'),
+         'fix': 'delta modéré (0.45-0.60) + taille qui laisse dormir',
+         'coverage': {'available': isinstance((star or {}).get('em_pct'), (int, float))
+                                  and not isinstance((star or {}).get('em_pct'), bool)
+                                  and (star or {}).get('em_pct') >= 0,
+                      'status': ('EXPECTED_MOVE_AVAILABLE' if isinstance((star or {}).get('em_pct'), (int, float))
+                                 and not isinstance((star or {}).get('em_pct'), bool)
+                                 and (star or {}).get('em_pct') >= 0 else 'EXPECTED_MOVE_UNAVAILABLE'),
+                      'read_only': True}},
     ]
 
 
