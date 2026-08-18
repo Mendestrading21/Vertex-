@@ -1109,6 +1109,44 @@ function contextesDossier(r){
     +(sansFlag.length?' · '+sansFlag.length+' sans déclaration':'')
     +' · descriptifs, lecture seule</summary>'+rows+'</details>';
 }
+/* REVUE ADVERSARIALE (lot 56) — `red_team_review`, clé de PREMIER NIVEAU de la
+   reponse de `/api/skyler/<sym>`, et la plus riche sortie que personne ne lisait.
+
+   Le moteur pose DIX questions hostiles au dossier — « qu'est-ce qui est deja
+   dans le prix ? », « quel chiffre peut etre trompeur ? » — et y repond avec
+   les seules donnees presentes, chaque reponse portant son niveau de preuve.
+   La decision n'en gardait que deux champs (`complete`, `basis`) ; les dix
+   questions elles-memes voyageaient jusqu'au navigateur sans etre affichees.
+
+   DEUX ETATS, ET LE SECOND EST LE PLUS IMPORTANT. Une question ANSWERED porte
+   `answer` + `evidence_level`. Une question UNANSWERED porte une `reason` et
+   RIEN D'AUTRE : le moteur dit lui-meme que « les objections sans preuve
+   restent ouvertes et ne valident jamais le dossier ». Une revue qui afficherait
+   les reponses en taisant les questions ouvertes transformerait une revue
+   incomplete en satisfecit — exactement le mensonge que cette serie traque.
+   Les questions ouvertes sont donc montrees EN PREMIER.
+
+   Replie par defaut, comme les contextes : cela explique le dossier, cela ne
+   dispute pas le verdict. */
+function revueAdversariale(r){
+  const rt=r&&r.red_team_review;
+  if(!rt||!Array.isArray(rt.questions)||!rt.questions.length)return '';
+  const qs=rt.questions;
+  const ouvertes=qs.filter(q=>q&&q.status!=='ANSWERED');
+  const repondues=qs.filter(q=>q&&q.status==='ANSWERED');
+  const ligne=(q,ouverte)=>'<div class="vx-kv"><span class="k">'
+    +esc(q.question||q.id||'—')+'</span><span class="v '+(ouverte?'vx-warn':'')+'">'
+    +esc(ouverte?(q.reason||'sans preuve — reste ouverte')
+                :(q.answer||'—'))
+    +(!ouverte&&q.evidence_level?' <span class="vx-meta">('+esc(q.evidence_level)+')</span>':'')
+    +'</span></div>';
+  const corps=ouvertes.map(q=>ligne(q,true)).join('')
+    +repondues.map(q=>ligne(q,false)).join('');
+  return '<details class="vx-mt2"><summary class="vx-kpi-label">Revue '
+    +'adversariale — '+repondues.length+'/'+qs.length+' question(s) répondue(s)'
+    +(ouvertes.length?' · '+ouvertes.length+' ouverte(s), jamais comblée(s)':'')
+    +' · descriptive, lecture seule</summary>'+corps+'</details>';
+}
 /* Skyler — décision canonique : score /40 par blocs, hard gates, scénarios. */
 async function loadSkyler(){
   const host=$('an-skyler');if(!host)return;
@@ -1145,7 +1183,8 @@ async function loadSkyler(){
       +(d.max_risk_pct!=null?'Risque max : '+d.max_risk_pct+' % · ':'')
       +(unknown?unknown+' porte(s) non évaluable(s) · ':'')
       +'Objection : '+esc(d.strongest_objection||'—')+'</div>'
-      +contextes(d)+fiabilite(d)+preparation(d)+contextesDossier(r);
+      +contextes(d)+fiabilite(d)+preparation(d)+contextesDossier(r)
+      +revueAdversariale(r);
   }catch(e){host.innerHTML='<div class="vx-error-banner">Skyler injoignable : '+esc(e.message)+'</div>';}
 }
 /* Laboratoire d'évidence (X2) : stats ex post réelles après les spikes passés. */

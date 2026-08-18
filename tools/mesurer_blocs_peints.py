@@ -91,6 +91,8 @@ BLOCS = (
      ('Technique', 'Catalyseurs', 'Marché')),
     ('préparation (lot 54)', 'jamais une instruction d’exécution',
      ('État du dossier', 'Pour rendre le dossier décidable')),
+    ('revue adversariale (lot 56)', 'Revue adversariale',
+     ('déjà dans le prix', 'trompeur')),
 )
 
 #  Isole le sous-arbre de chaque bloc à partir de son ancre. On rend son
@@ -222,7 +224,11 @@ def main(argv=None):
         #  LE CHEMIN DU PRODUIT : deux disclosures, ouvertes au clic, dans
         #  l'ordre où un humain les rencontre.
         ouverts = []
-        for libelle in ('Analyse approfondie', 'Contextes du dossier'):
+        #  Chaque bloc replie ajoute une porte au chemin du produit : trois
+        #  desormais. Un bloc non ouvert se lit « ancre presente, lignes 0 » —
+        #  ce que la sonde a rendu au premier passage du lot 56.
+        for libelle in ('Analyse approfondie', 'Contextes du dossier',
+                        'Revue adversariale'):
             vu = False
             for som in page.query_selector_all('details > summary'):
                 if libelle in (som.inner_text() or ''):
