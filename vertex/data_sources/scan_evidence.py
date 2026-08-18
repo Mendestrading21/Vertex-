@@ -101,6 +101,22 @@ def build_symbol(symbol, detail, frame, scan_source, options_board=None, options
             quotes.append({'source': 'OPTION_CHAIN', 'price': option_spot,
                            'timestamp': option_ts, 'currency': contract.get('currency') or 'USD'})
         reconcile_contract(symbol, contract, report)
+    priced_quotes = [quote for quote in quotes if quote.get('price') not in (None, 0)]
+    option_spots_reported = sum(1 for contract in contracts
+                                if _contract_spot(contract) not in (None, ''))
+    report.set_coverage(
+        scan_spot_reported=price not in (None, '') and bool(timestamp),
+        option_contract_count=len(contracts),
+        option_underlying_spots_reported=option_spots_reported,
+        price_observations=len(priced_quotes),
+        price_comparison_available=len(priced_quotes) >= 2,
+        price_comparisons_attempted=max(0, len(priced_quotes) - 1),
+        timestamp_comparison_available=bool(contracts and timestamp and option_ts),
+        status=('COMPARABLE' if len(priced_quotes) >= 2
+                else 'INSUFFICIENT_COMPARABLE_SOURCES'),
+        read_only=True,
+        note='couverture descriptive ; aucun prix de synthèse ni moyenne n’est calculé',
+    )
     reconcile_spot(symbol, quotes, report)
     if contracts:
         reconcile_spot_vs_options(symbol, timestamp, option_ts, report)

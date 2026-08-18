@@ -32,3 +32,19 @@ def test_scan_evidence_marks_fresh_spot_and_delayed_options_when_timestamped():
     assert packet['sources']['spot']['quality'] == 'FRESH'
     assert packet['sources']['options']['quality'] == 'FRESH'
     assert report['blocking'] is False
+    assert report['coverage']['price_comparison_available'] is True
+    assert report['coverage']['price_comparisons_attempted'] == 1
+    assert report['coverage']['status'] == 'COMPARABLE'
+
+
+def test_scan_evidence_marks_non_comparable_prices_without_synthesis():
+    packet, report = SE.build_symbol(
+        'TST', _detail(), _Frame(datetime.now(timezone.utc)), 'yfinance',
+        options_board=[{'sym': 'TST', 'underlying': 'TST'}], options_as_of=None,
+    )
+    coverage = report['coverage']
+    assert packet['sources']['spot']['value'] == 100.0
+    assert coverage['price_comparison_available'] is False
+    assert coverage['price_comparisons_attempted'] == 0
+    assert coverage['status'] == 'INSUFFICIENT_COMPARABLE_SOURCES'
+    assert 'synthèse' in coverage['note']
