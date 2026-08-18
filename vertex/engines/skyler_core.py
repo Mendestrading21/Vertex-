@@ -35,7 +35,11 @@ SCHEMA_VERSION = 1
 # 0.8.0 : priorité étendue niveau → RÉGIME → global (régime figé dans la mémoire)
 # 0.9.0 : catalyst_kind émis (kind EXPLICITE du même événement daté le plus
 #         proche que `catalyst` — fait du moteur events, jamais re-parsé)
-ENGINE_VERSION = '0.9.0'
+# 1.0.0 : les gates DTE / liquidité du mandat options sont évaluées depuis le
+#         meilleur candidat réellement transmis au SkylerPacket.
+# 1.1.0 : qualité et réconciliation deviennent des contextes explicites ; le
+#         nombre de modules branchés ne peut plus simuler une donnée fiable.
+ENGINE_VERSION = '1.1.0'
 
 PERTURBATIONS = ('score_technique_-10', 'score_technique_+10', 'rr_-0.5', 'rr_+0.5',
                  'regime_confidence_-0.2', 'regime_confidence_+0.2',
@@ -145,7 +149,11 @@ def _profile():
 
 def build_packet(sym, detail, market=None, events=None, anomaly=None,
                  as_of=None, demo=False, options_ctx=None, portfolio_ctx=None,
-                 red_team=None):
+                 red_team=None, data_quality_ctx=None, reconciliation_ctx=None, fundamental_ctx=None,
+                 drawdown_ctx=None, downside_volatility_ctx=None, relative_strength_ctx=None, gap_risk_ctx=None,
+                 earnings_proximity_ctx=None, earnings_option_overlap_ctx=None, earnings_holding_overlap_ctx=None,
+                 iv_skew_ctx=None, call_put_structure_ctx=None, iv_term_structure_ctx=None,
+                 relative_volume_ctx=None, open_interest_concentration_ctx=None):
     """Agrège les sorties moteurs existantes en un packet typé — sans muter les
     sources, sans recalculer, sans inventer."""
     detail = detail or {}
@@ -172,12 +180,41 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
                                                         'reason': 'timeline non fournie'},
         'anomalies': anomaly if anomaly is not None else {'available': False,
                                                           'reason': 'scan anomalies non fourni'},
-        'fundamentals': {'available': False,
-                         'reason': 'contexte fondamental non branché (lot ultérieur)'},
+        'fundamentals': (fundamental_ctx if fundamental_ctx is not None else
+                         {'available': False, 'reason': 'contexte fondamental non fourni'}),
         'options': (options_ctx if options_ctx is not None else
                     {'available': False, 'reason': 'OptionsContext non fourni'}),
         'portfolio': (portfolio_ctx if portfolio_ctx is not None else
                       {'available': False, 'reason': 'PortfolioContext non fourni'}),
+        'data_quality': (data_quality_ctx if data_quality_ctx is not None else
+                         {'available': False, 'reason': 'preuve de qualité des données non fournie'}),
+        'reconciliation': (reconciliation_ctx if reconciliation_ctx is not None else
+                           {'available': False, 'reason': 'preuve de réconciliation non fournie'}),
+        'drawdown': (drawdown_ctx if drawdown_ctx is not None else
+                     {'available': False, 'reason': 'contexte de drawdown non fourni'}),
+        'downside_volatility': (downside_volatility_ctx if downside_volatility_ctx is not None else
+                                {'available': False, 'reason': 'contexte de volatilité baissière non fourni'}),
+        'relative_strength': (relative_strength_ctx if relative_strength_ctx is not None else
+                              {'available': False, 'reason': 'contexte de force relative non fourni'}),
+        'gap_risk': (gap_risk_ctx if gap_risk_ctx is not None else
+                     {'available': False, 'reason': 'contexte de gap non fourni'}),
+        'earnings_proximity': (earnings_proximity_ctx if earnings_proximity_ctx is not None else
+                               {'available': False, 'reason': 'contexte de résultats non fourni'}),
+        'earnings_option_overlap': (earnings_option_overlap_ctx if earnings_option_overlap_ctx is not None else
+                                    {'available': False, 'reason': 'contexte résultats-expiration non fourni'}),
+        'earnings_holding_overlap': (earnings_holding_overlap_ctx if earnings_holding_overlap_ctx is not None else
+                                     {'available': False, 'reason': 'contexte résultats-détention non fourni'}),
+        'iv_skew': (iv_skew_ctx if iv_skew_ctx is not None else
+                    {'available': False, 'reason': 'contexte de skew IV non fourni'}),
+        'call_put_structure': (call_put_structure_ctx if call_put_structure_ctx is not None else
+                               {'available': False, 'reason': 'contexte call-put non fourni'}),
+        'iv_term_structure': (iv_term_structure_ctx if iv_term_structure_ctx is not None else
+                              {'available': False, 'reason': 'contexte de structure IV non fourni'}),
+        'relative_volume': (relative_volume_ctx if relative_volume_ctx is not None else
+                            {'available': False, 'reason': 'contexte de volume relatif non fourni'}),
+        'open_interest_concentration': (open_interest_concentration_ctx
+                                        if open_interest_concentration_ctx is not None else
+                                        {'available': False, 'reason': 'contexte de concentration OI non fourni'}),
     }
     audit.append({'step': 'contexts', 'result': {
         k: bool(v.get('available', True)) for k, v in contexts.items()}})
@@ -197,9 +234,22 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
     for c in ((market or {}).get('conflicts') or []):
         contradictions.append({'kind': 'sources_conflict',
                                'detail': 'Sources en conflit sur %s (non résolu).' % c.get('dimension')})
+    reconciliation = contexts['reconciliation'] or {}
+    if reconciliation.get('available') and reconciliation.get('actionable_allowed') is False:
+        contradictions.append({'kind': 'sources_conflict',
+                               'detail': 'Réconciliation non actionnable : %s' %
+                                         (reconciliation.get('reason') or 'conflit ou désalignement déclaré')})
     audit.append({'step': 'contradictions', 'result': len(contradictions)})
 
     unknowns = sorted(k for k, v in contexts.items() if v.get('available') is False)
+    context_coverage = {
+        'known_contexts': len(contexts) - len(unknowns),
+        'total_contexts': len(contexts),
+        'coverage_pct': round(100 * (len(contexts) - len(unknowns)) / len(contexts), 1) if contexts else 0.0,
+        'unknown_contexts': unknowns,
+        'read_only': True,
+        'note': 'contextes manquants restent visibles et ne sont jamais considérés favorables',
+    }
 
     return {
         'schema_version': SCHEMA_VERSION, 'engine_version': ENGINE_VERSION,
@@ -209,6 +259,7 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
         'red_team': (red_team if red_team is not None else
                      {'complete': False, 'basis': 'aucune red-team exécutée'}),
         'contradictions': contradictions, 'unknowns': unknowns,
+        'context_coverage': context_coverage,
         'audit_trail': audit,
     }
 
@@ -311,10 +362,25 @@ def score40(packet):
                 basis += ' — plafonné : meilleur candidat HORS MANDAT'
             block('options_quality', pts, status, basis)
 
-    avail = sum(1 for name in ('technical', 'market', 'catalysts', 'anomalies')
-                if packet['contexts'][name].get('available', True) is not False)
-    block('data_quality', avail, 'AVAILABLE' if avail >= 2 else 'INSUFFICIENT',
-          '%d/4 contextes branchés disponibles → %d/%d' % (avail, avail, cfg.get('data_quality', 4)))
+    dq = ctx['data_quality'] or {}
+    rec = ctx['reconciliation'] or {}
+    quality = dq.get('overall')
+    if not dq.get('available'):
+        block('data_quality', 0, 'INSUFFICIENT',
+              dq.get('reason') or 'preuve de qualité des données non fournie')
+    elif dq.get('actionable_allowed') is not True:
+        block('data_quality', 0, 'INSUFFICIENT',
+              'qualité %s non actionnable : %s' % (quality or 'inconnue',
+                                                    '; '.join(dq.get('warnings') or [])))
+    elif not rec.get('available') or rec.get('actionable_allowed') is not True:
+        block('data_quality', 0, 'INSUFFICIENT',
+              (rec.get('reason') or 'réconciliation non fournie ou non actionnable'))
+    else:
+        points = {'FRESH': 4, 'RECENT': 3}.get(quality, 0)
+        status = 'AVAILABLE' if points else 'INSUFFICIENT'
+        block('data_quality', points, status,
+              'qualité critique %s et réconciliation actionnable → %d/%d' %
+              (quality or 'inconnue', points, cfg.get('data_quality', 4)))
 
     total = sum(b['points'] for b in blocks.values())
     insufficient = sorted(n for n, b in blocks.items() if b['status'] == 'INSUFFICIENT')
@@ -367,12 +433,15 @@ def hard_gates(packet, score):
             gate(gid, plan.get('stop') is None, 'stop technique %s' %
                  ('présent (%.2f)' % plan['stop'] if plan.get('stop') is not None else 'ABSENT'))
         elif gid == 'DATA_QUALITY_CRITICAL':
-            trig = (not tech.get('available')) or \
+            dq = packet['contexts'].get('data_quality') or {}
+            rec = packet['contexts'].get('reconciliation') or {}
+            trig = (not tech.get('available')) or (dq.get('actionable_allowed') is not True) or \
+                   (rec.get('actionable_allowed') is not True) or \
                    (score['blocks'].get('data_quality', {}).get('points', 0) < 2) or \
                    (len(score['insufficient_blocks']) >= 4)
-            gate(gid, bool(trig), '%d bloc(s) insuffisant(s) ; qualité données %s/4'
-                 % (len(score['insufficient_blocks']),
-                    score['blocks'].get('data_quality', {}).get('points', 0)))
+            gate(gid, bool(trig), '%d bloc(s) insuffisant(s) ; qualité %s ; réconciliation %s'
+                 % (len(score['insufficient_blocks']), dq.get('overall') or 'non prouvée',
+                    'actionnable' if rec.get('actionable_allowed') is True else 'non prouvée/non actionnable'))
         elif gid == 'SOURCES_CONFLICT':
             confl = [c for c in packet['contradictions'] if c['kind'] == 'sources_conflict']
             gate(gid, bool(confl), '%d conflit(s) de sources' % len(confl))
@@ -410,6 +479,38 @@ def hard_gates(packet, score):
                 gate(gid, bool((cand.get('weight_pct') or 0.0) >= max_w),
                      'poids actuel %.1f %% (plafond %.0f %% par titre)'
                      % (cand.get('weight_pct') or 0.0, max_w))
+        elif gid in ('SPREAD_EXCESSIVE', 'OI_INSUFFICIENT', 'DTE_OUT_OF_MANDATE'):
+            octx = packet['contexts']['options'] or {}
+            best = octx.get('best') or {}
+            mandate = best.get('mandate') or {}
+            if not octx.get('available') or not best:
+                gate(gid, None, 'candidat options non fourni — gate non évaluable')
+                continue
+            if gid == 'SPREAD_EXCESSIVE':
+                ok = mandate.get('spread_ok')
+                gate(gid, None if ok is None else not bool(ok),
+                     ('spread non fourni — jamais supposé conforme' if ok is None else
+                      'spread %.2f %% %s le mandat' % (best.get('spread_pct') or 0,
+                                                         'respecte' if ok else 'dépasse')))
+            elif gid == 'OI_INSUFFICIENT':
+                ok = mandate.get('oi_ok')
+                gate(gid, None if ok is None else not bool(ok),
+                     ('open interest non fourni — jamais supposé conforme' if ok is None else
+                      'open interest %s %s le mandat' % (best.get('oi'),
+                                                          'respecte' if ok else 'ne respecte pas')))
+            else:
+                dte = best.get('dte')
+                window = octx.get('window') or []
+                if not isinstance(dte, (int, float)) or len(window) != 2:
+                    gate(gid, None, 'DTE ou fenêtre d’univers absent(e) — jamais supposé(e) conforme')
+                else:
+                    low, high = window
+                    inclusive_high = octx.get('universe') == 'LEAPS'
+                    in_window = low <= dte <= high if inclusive_high else low <= dte < high
+                    gate(gid, not in_window,
+                         'DTE %s %s la fenêtre %s de %s' %
+                         (dte, 'respecte' if in_window else 'sort de', window,
+                          octx.get('universe') or 'l’univers'))
         else:
             gate(gid, None, 'contexte requis non branché — porte non évaluable, jamais supposée fermée')
     return out
@@ -466,7 +567,8 @@ def _decision_label(packet, score, gates, detail):
 
 def perturbation_analysis(base_decision, sym, detail, market=None, events=None,
                           anomaly=None, as_of=None, demo=False, options_ctx=None,
-                          portfolio_ctx=None, red_team=None):
+                          portfolio_ctx=None, red_team=None, data_quality_ctx=None,
+                          reconciliation_ctx=None):
     """Robustesse MESURÉE (0.5.0) : re-décide sous une liste FIXE de variations
     documentées des entrées et mesure la part des perturbations applicables qui
     laissent la décision inchangée. Déterministe — aucun aléatoire ; une
@@ -475,7 +577,8 @@ def perturbation_analysis(base_decision, sym, detail, market=None, events=None,
     def _label_for(d2, m2, e2, a2, o2, p2):
         pk = build_packet(sym, d2, market=m2, events=e2, anomaly=a2, as_of=as_of,
                           demo=demo, options_ctx=o2, portfolio_ctx=p2,
-                          red_team=red_team)
+                          red_team=red_team, data_quality_ctx=data_quality_ctx,
+                          reconciliation_ctx=reconciliation_ctx)
         sc = score40(pk)
         return _decision_label(pk, sc, hard_gates(pk, sc), d2)[0]
 
@@ -550,11 +653,12 @@ def perturbation_analysis(base_decision, sym, detail, market=None, events=None,
 
 def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
            demo=False, options_ctx=None, portfolio_ctx=None, red_team=None,
-           calibration=None):
+           calibration=None, data_quality_ctx=None, reconciliation_ctx=None, fundamental_ctx=None):
     packet = build_packet(sym, detail, market=market, events=events,
                           anomaly=anomaly, as_of=as_of, demo=demo,
                           options_ctx=options_ctx, portfolio_ctx=portfolio_ctx,
-                          red_team=red_team)
+                          red_team=red_team, data_quality_ctx=data_quality_ctx,
+                          reconciliation_ctx=reconciliation_ctx, fundamental_ctx=fundamental_ctx)
     score = score40(packet)
     gates = hard_gates(packet, score)
     scen = scenarios(detail)
@@ -583,7 +687,8 @@ def decide(sym, detail, market=None, events=None, anomaly=None, as_of=None,
     pert = perturbation_analysis(decision, sym, detail, market=market, events=events,
                                  anomaly=anomaly, as_of=as_of, demo=demo,
                                  options_ctx=options_ctx, portfolio_ctx=portfolio_ctx,
-                                 red_team=red_team)
+                                 red_team=red_team, data_quality_ctx=data_quality_ctx,
+                                 reconciliation_ctx=reconciliation_ctx)
     conf = confidence(packet, score, robustness=pert, calibration=calibration)
     audit.append({'step': 'operational_state', 'result': op_state})
     audit.append({'step': 'perturbation', 'result': pert['value']})

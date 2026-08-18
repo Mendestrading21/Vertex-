@@ -35,7 +35,10 @@ def test_options_new_views_registered():
     src = _read(PAGE)
     assert "('structure', 'Structure')" in src
     assert "('leaps', 'LEAPS')" in src
-    assert "('positions', 'Mes positions')" in src
+    # Libellé raccourci au lot Signal OS · fermeture de la table de micro-copy :
+    # « Mes positions » était réécrit en « Positions » dans le DOM après le
+    # rendu. Ce qui est gardé ici est la VUE `positions`, pas son libellé.
+    assert "('positions', 'Positions')" in src
     # défaut = structure (Carte-Verdict d'abord)
     assert "def render(view: str = 'structure')" in src
 

@@ -1,0 +1,725 @@
+/* ========================================================================== 
+   VERTEX SIGNAL OS — couche visuelle canonique
+   --------------------------------------------------------------------------
+   Objectif produit : voir le signal, comprendre la preuve, décider de l'action.
+   Cette feuille est chargée EN DERNIER et unifie les huit espaces sans toucher
+   aux moteurs, aux données ou aux contrats API.
+
+   Règle couleur :
+   - violet = interaction / sélection / identité Vertex ;
+   - vert = gain ou validation réelle ;
+   - rouge = perte ou risque réel ;
+   - jaune = attente ou avertissement ;
+   - cyan = comparaison technique ;
+   - neutres = structure et données secondaires.
+   ========================================================================== */
+
+:root{
+  /* LA MARQUE N'EST PLUS REDEFINIE ICI. Ce bloc repeignait `--vx-brand` en
+     violet PAR-DESSUS une base cuivre : l'interface lisait l'override, les
+     graphiques lisaient la base, et le produit portait deux identités sans que
+     rien ne l'écrive. La base de `tokens.css` est désormais violette — la
+     rampe canonique `--vx-violet-*` — donc ces sept lignes ne corrigeaient
+     plus rien : elles se contentaient de masquer d'où venait la couleur.
+
+     Trois choses qu'elles faisaient et qu'on ne veut pas garder :
+     - `--vx-brand-hover` et `--vx-brand-pressed` valaient LA MÊME valeur :
+       survol et enfoncement étaient indiscernables ;
+     - `--vx-brand-hover` ASSOMBRISSAIT, alors que la rampe éclaircit au survol
+       et n'assombrit qu'à l'enfoncement ;
+     - `--vx-brand-ink` valait le texte quasi blanc : mesuré, 2,90:1 sur le
+       violet, sous le seuil AA, sur l'action principale du produit.
+     Le dégradé, lui, n'existe pas dans la rampe : il est conservé, exprimé
+     depuis les stops. */
+  --vx-brand-gradient:linear-gradient(135deg,var(--vx-violet-500),var(--vx-violet-600));
+
+  /* Surfaces plus lisibles et moins « effet IA / glass ». */
+  --vx-border-faint:rgba(255,255,255,.045);
+  --vx-border-soft:rgba(255,255,255,.075);
+  --vx-border-default:rgba(255,255,255,.105);
+  --vx-border-strong:rgba(255,255,255,.17);
+  /* LA LIMITE D'UN CONTROLE, pas une bordure decorative. Mesure au navigateur :
+     56 controles (boutons, chips, champs, selects) sur 14 familles rendaient
+     1,15 a 1,24:1 — ni leur bordure ni leur fond n'atteignaient les 3:1 que
+     WCAG 1.4.11 demande pour identifier un composant. Constat plus large et
+     plus honnete que « quelqu'un a casse la valeur » : AUCUN jeton de bordure
+     du produit n'atteint 3:1, meme `--vx-border-strong` plafonne a 2,51. C'est
+     un parti pris coherent des deux couches, pas une regression.
+     Ces deux jetons ne s'appliquent donc QU'AUX CONTROLES — les bordures
+     decoratives (cartes, separateurs) gardent leur discretion, parce que la
+     regle porte sur ce qui identifie un composant, pas sur tout trait.
+     Precedent interne : `.vx-input:focus` emploie deja rgba(255,255,255,.42),
+     donc ce poids est deja admis sur un controle.
+     Revenir en arriere = remettre ces deux valeurs a .075 / .16. */
+  --vx-border-control:rgba(255,255,255,.35);
+  --vx-border-control-brand:rgba(155,123,255,.75);
+  --vx-topbar:rgba(7,7,9,.96);
+  --vx-r-sm:10px;
+  --vx-r:12px;
+  --vx-r-lg:16px;
+  --vx-r-card:18px;
+  --vx-r-modal:20px;
+  --vx-sidebar-w:224px;
+  --vx-topbar-h:68px;
+  --vx-content-max:1680px;
+  --vx-shadow-1:0 1px 0 rgba(255,255,255,.035) inset,0 8px 24px rgba(0,0,0,.16);
+  --vx-shadow-2:0 1px 0 rgba(255,255,255,.055) inset,0 18px 48px rgba(0,0,0,.30);
+  --vx-glow-brand:0 0 0 1px rgba(155,123,255,.34),0 10px 32px rgba(155,123,255,.14);
+}
+
+/* ── Fondation ─────────────────────────────────────────────────────────── */
+html{background:var(--vx-canvas);color-scheme:dark}
+body{
+  background:var(--vx-canvas);
+  letter-spacing:-.005em;
+}
+body::before{
+  background:
+    radial-gradient(ellipse 760px 420px at 88% -12%,rgba(155,123,255,.035),transparent 64%),
+    radial-gradient(ellipse 620px 420px at -10% 108%,rgba(69,214,232,.018),transparent 62%),
+    linear-gradient(180deg,var(--vx-shell),var(--vx-canvas));
+}
+a{color:var(--vx-text-secondary)}
+a:hover{color:var(--vx-text-primary);text-decoration:none}
+::selection{background:var(--vx-brand-soft);color:var(--vx-text-primary)}
+*{scrollbar-color:rgba(255,255,255,.18) transparent}
+*::-webkit-scrollbar{width:7px;height:7px}
+*::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:99px}
+
+/* ── App shell : rail calme, topbar opérationnelle ─────────────────────── */
+.vx-sidebar{
+  background:var(--vx-shell);
+  border-right:1px solid var(--vx-border-soft);
+  padding:0 10px;
+}
+.vx-sidebar-logo{
+  height:var(--vx-topbar-h);
+  padding:0 8px;
+  border-bottom:0;
+  gap:11px;
+}
+.vx-logo-mark{
+  width:34px;height:34px;border-radius:11px;
+  background:var(--vx-brand-gradient);
+  color:var(--vx-text-primary);
+  box-shadow:0 8px 24px rgba(155,123,255,.20);
+  font-size:14px;font-weight:850;
+}
+.vx-logo-name{font-size:16px;font-weight:760;letter-spacing:-.02em}
+.vx-sidebar-nav{padding:12px 0}
+.vx-nav-item{
+  min-height:42px;
+  margin:2px 0;
+  padding:9px 11px;
+  border-radius:12px;
+  gap:11px;
+  color:var(--vx-text-muted);
+  font-size:13px;
+  font-weight:590;
+  border:1px solid transparent;
+}
+.vx-nav-item:hover{
+  background:rgba(255,255,255,.035);
+  border-color:var(--vx-border-faint);
+  color:var(--vx-text-primary);
+}
+.vx-nav-item[aria-current="page"]{
+  background:var(--vx-brand-soft);
+  border-color:rgba(155,123,255,.22);
+  color:var(--vx-text-primary);
+}
+.vx-nav-item[aria-current="page"]::before{
+  left:-4px;top:11px;bottom:11px;width:3px;
+  background:var(--vx-brand);
+  box-shadow:0 0 14px rgba(155,123,255,.48);
+}
+.vx-nav-item[aria-current="page"] svg{stroke:var(--vx-brand)}
+.vx-nav-item svg{width:18px;height:18px;stroke-width:1.75}
+.vx-sidebar-foot{padding:10px 0 12px;border-top:1px solid var(--vx-border-faint)}
+.vx-sidebar-status{
+  margin:0 4px 8px;
+  padding:7px 9px;
+  border:1px solid var(--vx-border-faint);
+  border-radius:10px;
+  background:rgba(255,255,255,.02);
+}
+.vx-collapse-btn{justify-content:flex-start}
+.vx-app[data-sidebar="collapsed"] .vx-collapse-btn{justify-content:center}
+
+.vx-topbar{
+  min-height:var(--vx-topbar-h);
+  padding:0 24px;
+  gap:14px;
+  background:rgba(7,7,9,.92);
+  -webkit-backdrop-filter:blur(18px) saturate(1.05);
+  backdrop-filter:blur(18px) saturate(1.05);
+  border-bottom:1px solid var(--vx-border-faint);
+}
+.vx-breadcrumb{font-size:12.5px;color:var(--vx-text-muted);gap:7px}
+.vx-breadcrumb b{color:var(--vx-text-secondary);font-weight:620}
+.vx-topbar-search{max-width:520px}
+.vx-topbar-search input{
+  height:40px;
+  padding:0 58px 0 38px;
+  border-radius:13px;
+  background:rgba(255,255,255,.035);
+  border:1px solid var(--vx-border-soft);
+  color:var(--vx-text-primary);
+  font-size:12.5px;
+}
+.vx-topbar-search input:hover{border-color:var(--vx-border-default)}
+.vx-topbar-search input:focus{
+  background:var(--vx-surface-elevated);
+  border-color:rgba(155,123,255,.46);
+  box-shadow:0 0 0 3px rgba(155,123,255,.11);
+}
+.vx-topbar-search svg{left:13px;top:12px}
+.vx-topbar-search .vx-kbd{right:10px;top:10px}
+.vx-kbd{
+  border-color:var(--vx-border-soft);
+  background:rgba(255,255,255,.04);
+  color:var(--vx-text-faint);
+  border-radius:6px;
+}
+.vx-session{color:var(--vx-text-muted);font-size:11px}
+
+/* ── Contenu et titres : priorité visuelle nette ───────────────────────── */
+.vx-content{
+  padding:24px 26px calc(48px + env(safe-area-inset-bottom));
+}
+.vx-page-header{
+  align-items:center;
+  margin:4px 0 18px;
+  gap:14px;
+}
+.vx-page-header h1{
+  font-size:30px;
+  line-height:1.08;
+  font-weight:760;
+  letter-spacing:-.045em;
+}
+.vx-page-header .vx-sub{
+  margin-top:7px;
+  max-width:720px;
+  color:var(--vx-text-muted);
+  font-size:13px;
+  line-height:1.5;
+}
+.vx-section-header{margin:24px 0 12px}
+.vx-section-header h2{font-size:18px;font-weight:690;letter-spacing:-.025em}
+.vx-grid{gap:14px}
+
+/* ── Cartes : matière mate, aucun décor gratuit ───────────────────────── */
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-card{
+  background:var(--vx-surface);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  border:1px solid var(--vx-border-soft);
+  border-radius:var(--vx-r-card);
+  box-shadow:var(--vx-shadow-1);
+  padding:16px;
+  overflow:visible;
+  transform:none;
+  transition:border-color var(--vx-t-fast),background var(--vx-t-fast),box-shadow var(--vx-t-fast);
+}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-card::before{content:none!important}
+/* HOVER SEULEMENT SI LA CARTE EST CLIQUABLE (gardien du lot 618).
+   La règle d'origine visait `.vx-card:hover` sans condition. Elle avait été
+   écrite pour NEUTRALISER le soulèvement hérité (`transform:none`) — sauf que
+   ce soulèvement n'existe plus : les six règles de survol du produit sont déjà
+   toutes gardées par `:is(a,button,[role="button"],[data-clickable])`. Il ne
+   restait donc que l'effet de bord : un fond et une bordure qui bougent au
+   survol d'une carte INERTE, c'est-à-dire la promesse d'un clic qui n'arrivera
+   pas. Même condition que le reste du produit — une seule grammaire. */
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-card:is(a,button,[role="button"],[data-clickable]):hover{
+  transform:none;
+  background:var(--vx-surface-hover);
+  border-color:var(--vx-border-default);
+  box-shadow:var(--vx-shadow-1);
+}
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-card--hero{
+  padding:20px;
+  background:
+    radial-gradient(ellipse 70% 130% at 100% 0,rgba(155,123,255,.09),transparent 66%),
+    var(--vx-surface-elevated);
+  border-color:rgba(155,123,255,.20);
+  box-shadow:var(--vx-shadow-2);
+}
+.vx-card--compact{padding:13px!important}
+.vx-card.vx-active,.vx-card--accent{
+  border-color:rgba(155,123,255,.28)!important;
+  box-shadow:0 0 0 1px rgba(155,123,255,.06),var(--vx-shadow-1)!important;
+}
+.vx-card-header{
+  align-items:center;
+  min-height:24px;
+  margin-bottom:12px;
+  gap:8px;
+}
+.vx-card-title,
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-card--hero .vx-card-title{
+  color:var(--vx-text-secondary);
+  font-size:13.5px;
+  font-weight:650;
+  text-transform:none;
+  letter-spacing:-.01em;
+}
+.vx-card-question,.vx-chart-question{
+  color:var(--vx-text-faint);
+  font-size:11px;
+  font-style:normal;
+  letter-spacing:0;
+}
+.vx-card-conclusion{font-size:13px;line-height:1.55}
+.vx-card-footer,.vx-card-foot{
+  margin-top:12px;
+  padding-top:10px;
+  border-top:1px solid var(--vx-border-faint);
+}
+
+/* ── KPI : valeur dominante, contexte discret ─────────────────────────── */
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-kpi{
+  min-height:92px;
+  padding:13px;
+  gap:4px;
+  border-radius:14px;
+  background:rgba(255,255,255,.022);
+  border:1px solid var(--vx-border-faint);
+  transform:none;
+}
+/* Même règle que pour la carte : une tuile KPI qui réagit au survol sans être
+   cliquable ment sur ce qu'elle propose (gardien du lot 618). */
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-kpi:is(a,button,[role="button"],[data-clickable]):hover{
+  transform:none;
+  background:rgba(255,255,255,.032);
+  border-color:var(--vx-border-default);
+}
+.vx-kpi .vx-kpi-label{
+  color:var(--vx-text-muted);
+  font-size:10.5px;
+  font-weight:620;
+  text-transform:none;
+  letter-spacing:.01em;
+}
+.vx-kpi .vx-kpi-value{
+  color:var(--vx-text-primary);
+  font-size:28px;
+  line-height:1.1;
+  font-weight:740;
+  letter-spacing:-.045em;
+}
+.vx-kpi .vx-kpi-delta{margin-top:auto;color:var(--vx-text-muted)}
+
+/* ── Actions et contrôles ─────────────────────────────────────────────── */
+.vx-btn{
+  min-height:36px;
+  padding:7px 12px;
+  border-radius:10px;
+  border-color:var(--vx-border-soft);
+  background:rgba(255,255,255,.035);
+  color:var(--vx-text-secondary);
+  font-size:12px;
+  font-weight:620;
+  box-shadow:none;
+}
+.vx-btn:hover{
+  background:rgba(255,255,255,.065);
+  border-color:var(--vx-border-default);
+  color:var(--vx-text-primary);
+  box-shadow:none;
+}
+.vx-btn:active{transform:scale(.985)}
+.vx-btn-primary,
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-btn-primary{
+  background:var(--vx-brand);
+  border-color:var(--vx-brand);
+  /* Encre SOMBRE : le quasi-blanc donnait 2,90:1 sur le violet (mesuré). */
+  color:var(--vx-brand-ink);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  box-shadow:0 8px 22px rgba(155,123,255,.16);
+}
+.vx-btn-primary:hover,
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-btn-primary:hover{
+  background:var(--vx-brand-hover);
+  border-color:var(--vx-brand-hover);
+  box-shadow:0 10px 26px rgba(155,123,255,.22);
+}
+.vx-btn-secondary{background:transparent;border-color:var(--vx-border-default)}
+.vx-btn-ghost{background:transparent;border-color:transparent;color:var(--vx-text-muted)}
+.vx-btn-ghost:hover{background:rgba(255,255,255,.045);color:var(--vx-text-primary)}
+.vx-btn-soft{background:var(--vx-brand-soft);color:var(--vx-brand);border-color:rgba(155,123,255,.16)}
+.vx-btn-sm{min-height:30px;padding:5px 9px;font-size:11.5px}
+.vx-btn-icon{width:36px;height:36px;padding:0;border-radius:11px}
+.vx-btn-icon.vx-btn-sm{width:30px;height:30px}
+
+.vx-tabs{
+  display:inline-flex;
+  max-width:100%;
+  gap:3px;
+  padding:4px;
+  border:1px solid var(--vx-border-faint);
+  border-radius:13px;
+  background:rgba(255,255,255,.025);
+}
+.vx-tab{
+  min-height:34px;
+  padding:7px 12px;
+  border:0;
+  border-radius:9px;
+  color:var(--vx-text-muted);
+  font-size:11.5px;
+  font-weight:610;
+}
+.vx-tab:hover{color:var(--vx-text-primary);background:rgba(255,255,255,.035)}
+.vx-tab[aria-selected="true"]{
+  color:var(--vx-text-primary);
+  background:var(--vx-brand-soft);
+  border-bottom-color:transparent;
+  box-shadow:0 0 0 1px rgba(155,123,255,.16) inset;
+}
+.vx-segmented{
+  padding:3px;
+  border-radius:11px;
+  background:rgba(255,255,255,.025);
+  border-color:var(--vx-border-faint);
+}
+.vx-segmented button{min-height:30px;border-radius:8px;color:var(--vx-text-muted)}
+.vx-segmented button[aria-pressed="true"]{background:var(--vx-brand-soft);color:var(--vx-text-primary)}
+
+/* ── Badges, grades et états ─────────────────────────────────────────── */
+.vx-badge,.vx-freshness{
+  min-height:24px;
+  padding:3px 8px;
+  border-radius:8px;
+  background:rgba(255,255,255,.035);
+  border-color:var(--vx-border-faint);
+  color:var(--vx-text-muted);
+  font-size:10.5px;
+  font-weight:620;
+}
+.vx-chip,
+.vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-chip{
+  min-height:32px;
+  padding:5px 10px;
+  border-radius:9px;
+  background:rgba(255,255,255,.025);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  border:1px solid var(--vx-border-control);
+  box-shadow:none;
+}
+.vx-chip[aria-pressed="true"]{
+  background:var(--vx-brand-soft);
+  border-color:rgba(155,123,255,.24);
+  color:var(--vx-text-primary);
+}
+[data-grade="S+"],[data-g="S+"]{
+  color:var(--vx-text-primary)!important;
+  background:var(--vx-brand)!important;
+  border-color:var(--vx-brand)!important;
+}
+[data-grade="S"],[data-g="S"]{
+  color:var(--vx-brand)!important;
+  background:var(--vx-brand-soft)!important;
+  border-color:rgba(155,123,255,.24)!important;
+}
+[data-grade="A"],[data-g="A"]{
+  color:var(--vx-positive)!important;
+  background:var(--vx-positive-soft)!important;
+  border-color:rgba(43,190,144,.24)!important;
+}
+[data-grade="B"],[data-g="B"]{
+  color:var(--vx-warning)!important;
+  background:var(--vx-warning-soft)!important;
+  border-color:rgba(217,190,60,.24)!important;
+}
+
+/* ── Formulaires ─────────────────────────────────────────────────────── */
+.vx-content :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea),
+.vx-modal :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea),
+.vx-drawer :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
+  min-height:40px;
+  border-radius:11px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--vx-border-control);
+  color:var(--vx-text-primary);
+}
+.vx-content :is(input,select,textarea):focus,
+.vx-modal :is(input,select,textarea):focus,
+.vx-drawer :is(input,select,textarea):focus{
+  border-color:rgba(155,123,255,.44);
+  box-shadow:0 0 0 3px rgba(155,123,255,.10);
+}
+
+/* ── Tableaux : lecture rapide, lignes respirantes ───────────────────── */
+.vx-table-wrap{
+  border-radius:14px;
+  background:transparent;
+  border-color:var(--vx-border-faint);
+}
+.vx-table{font-size:12px}
+.vx-table th{
+  padding:10px 12px;
+  background:var(--vx-surface-elevated);
+  color:var(--vx-text-faint);
+  border-bottom-color:var(--vx-border-faint);
+  font-size:10px;
+  letter-spacing:.04em;
+}
+.vx-table td{height:44px;padding:9px 12px;border-bottom-color:var(--vx-border-faint)}
+.vx-table tbody tr:hover{background:rgba(255,255,255,.025)}
+.vx-table .vx-ticker{color:var(--vx-text-primary);font-weight:720}
+.vx-filterbar{gap:7px}
+
+/* ── Graphiques : cadre sobre, titres directs ────────────────────────── */
+.vx-chart-head{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:28px;
+  margin-bottom:10px;
+}
+.vx-chart-title{
+  color:var(--vx-text-secondary);
+  font-size:13.5px;
+  font-weight:650;
+  letter-spacing:-.01em;
+}
+:is(.vx-chart-card,.vx-tv-card,.vx-chart-shell,[data-chart-card]){
+  border-radius:var(--vx-r-card);
+}
+.vx-content canvas{filter:saturate(.92) contrast(1.03)}
+.vx-content :is(.chart-legend,.vx-chart-legend){color:var(--vx-text-muted);font-size:10.5px}
+
+/* ── Décision Vertex : asymétrie avant tout ──────────────────────────── */
+.vx-verdict-card{
+  padding:18px;
+  gap:14px;
+  background:
+    radial-gradient(ellipse 80% 150% at 100% 0,rgba(155,123,255,.08),transparent 70%),
+    var(--vx-surface-elevated);
+  border-color:rgba(155,123,255,.20);
+  border-radius:var(--vx-r-card);
+}
+.vx-verdict-card .vx-verdict-label{font-size:24px;font-weight:760;letter-spacing:-.04em}
+.vx-verdict-card .vx-verdict-score{font-size:17px}
+.vx-verdict-card .vx-verdict-cell{
+  min-height:64px;
+  padding:10px 11px;
+  border-radius:11px;
+  background:rgba(255,255,255,.025);
+  border:1px solid var(--vx-border-faint);
+}
+.vx-verdict-card .vx-verdict-cell .k{text-transform:none;letter-spacing:0}
+.vx-scenario-grid{gap:10px}
+.vx-scenario{
+  min-height:106px;
+  padding:13px;
+  border-radius:14px;
+  background:rgba(255,255,255,.022);
+  border-color:var(--vx-border-faint);
+}
+.vx-scenario .vx-scenario-k{text-transform:none;letter-spacing:0;font-weight:620}
+.vx-scenario .vx-scenario-v{font-size:22px;letter-spacing:-.035em}
+.vx-scenario[data-kind="down"]{border-color:rgba(233,85,95,.20)}
+.vx-scenario[data-kind="up"]{border-color:rgba(43,190,144,.20)}
+
+/* ── Insight et honnêteté des données ───────────────────────────────── */
+.vx-insight{
+  padding:11px 12px;
+  border-left-width:2px;
+  border-radius:10px;
+  background:var(--vx-info-soft);
+  font-size:12px;
+  line-height:1.55;
+}
+/* Texte assourdi SUR UNE TEINTE. Mesure au navigateur du texte `--vx-text-muted`
+   dans un insight : cyan 4,26:1 · avertissement 4,11:1 — sous AA ; violet 4,66:1,
+   soit moins de 0,2 de marge. Le mecanisme est le meme pour les trois : la
+   teinte eclaircit le fond et le texte le plus discret est celui qui casse en
+   premier. Sur une surface teintee, le texte discret monte d'un cran. */
+.vx-insight .vx-meta,
+.vx-insight .vx-kpi-label,
+.vx-insight .vx-dim{
+  color:var(--vx-text-secondary);
+}
+.vx-insufficient{
+  border-style:solid;
+  border-color:var(--vx-border-soft);
+  background:rgba(255,255,255,.02);
+}
+.vx-update{font-size:10.5px}
+/* LES QUATRE BANDEAUX D'ÉTAT SONT UNE SEULE FAMILLE.
+   Signal OS n'en habillait que deux — démo et périmé — et laissait l'erreur et
+   le hors-ligne avec le rayon et la bordure hérités. Or c'est exactement la
+   famille où l'incohérence coûte le plus : ces bandeaux existent pour DIRE que
+   la donnée n'est pas ce qu'elle paraît. Deux d'entre eux à 11 px et deux à
+   l'ancien rayon, c'est l'utilisateur qui doute du message.
+   La couleur suit le sens, pas le bandeau : jaune = à surveiller (démo,
+   périmé), corail = défaillance réelle (erreur), gris = absence de réseau. */
+.vx-demo-banner,.vx-stale-banner,.vx-error-banner,.vx-offline-banner{
+  border-radius:11px;
+  border-width:1px;
+  border-style:solid;
+}
+.vx-demo-banner,.vx-stale-banner{
+  border-color:rgba(217,190,60,.22);
+  background:var(--vx-warning-soft);
+  color:var(--vx-warning);
+}
+.vx-error-banner{
+  border-color:rgba(233,85,95,.22);
+  background:var(--vx-negative-soft);
+  /* Pas `--vx-negative` : mesure 4,38:1 sur ce fond teinte, sous AA. Des
+     trois couleurs semantiques, le negatif est la SEULE illisible sur sa
+     propre teinte (avertissement 7,28 · positif 6,02). */
+  color:var(--vx-negative-text);
+}
+.vx-offline-banner{
+  border-color:var(--vx-border-soft);
+  background:rgba(255,255,255,.03);
+  color:var(--vx-text-secondary);
+}
+
+/* ── Briefing : réponse en premier, détails ensuite ─────────────────── */
+.vx-content[data-space="briefing"] .vx-asess{margin-bottom:14px}
+.vx-content[data-space="briefing"] .vx-ss-card{
+  padding:11px 13px;
+  background:rgba(255,255,255,.022);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  border:1px solid var(--vx-border-faint);
+  border-radius:14px;
+  box-shadow:none;
+}
+.vx-content[data-space="briefing"] .vx-ss-chip{
+  padding:6px 10px;
+  border-radius:9px;
+  background:rgba(255,255,255,.025);
+  border-color:var(--vx-border-faint);
+}
+.vx-content[data-space="briefing"] #vx-hero-kpis .vx-kpi{min-height:104px}
+.vx-content[data-space="briefing"] #vx-brief-body{max-width:1080px;color:var(--vx-text-secondary)}
+
+/* ── Opportunités : dominante, shortlist, comparaison ───────────────── */
+.vx-content[data-space="opportunities"] .vx-op-dominant{
+  border-radius:20px;
+  background:
+    radial-gradient(ellipse 65% 130% at 100% 0,rgba(155,123,255,.10),transparent 68%),
+    var(--vx-surface-elevated);
+  border:1px solid rgba(155,123,255,.22);
+  box-shadow:var(--vx-shadow-2);
+}
+.vx-content[data-space="opportunities"] :is(.vx-op-tk,.vx-op-metric){
+  border-radius:14px;
+  background:rgba(255,255,255,.025);
+  border-color:var(--vx-border-faint);
+}
+.vx-content[data-space="opportunities"] .vx-op-dom-badge{
+  color:var(--vx-brand);
+  background:var(--vx-brand-soft);
+  border:1px solid rgba(155,123,255,.20);
+  border-radius:8px;
+}
+.vx-content[data-space="opportunities"] .vx-op-dom-score .n{letter-spacing:-.055em}
+
+/* ── Portefeuille / options / système : blocs opérationnels cohérents ─ */
+.vx-content:is([data-space="portfolio"],[data-space="options"]) :is(.vx-risk-card,.vx-opt-card,.vx-position-card),
+.vx-content[data-space="system"] :is(.vx-system-card,.vx-status-card){
+  border-radius:14px;
+  background:rgba(255,255,255,.022);
+  border:1px solid var(--vx-border-faint);
+}
+
+/* ── Overlays ───────────────────────────────────────────────────────── */
+.vx-overlay{background:rgba(0,0,0,.68);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.vx-drawer,.vx-modal-box,.vx-palette-box,.vx-context-menu{
+  background:var(--vx-surface-elevated);
+  border-color:var(--vx-border-default);
+  border-radius:var(--vx-r-modal);
+  box-shadow:var(--vx-shadow-modal);
+}
+.vx-drawer-header,.vx-modal-header,.vx-modal-footer{border-color:var(--vx-border-faint)}
+.vx-palette{background:rgba(0,0,0,.72)}
+.vx-palette-item[aria-selected="true"]{background:var(--vx-brand-soft);color:var(--vx-text-primary)}
+.vx-toast{border-radius:12px;background:var(--vx-surface-elevated);border-color:var(--vx-border-default)}
+
+/* ── Mobile et tablettes ────────────────────────────────────────────────
+   BASCULES ALIGNÉES SUR CELLES QUI ONT ÉTÉ MESURÉES (gardien du lot 611).
+   Signal OS arrivait avec 1180 px et 960 px. Ce sont deux bascules NEUVES :
+   elles créent deux bandes de largeur que le banc du 611 — chaque bandeau
+   mesuré contre son parent, neuf bandes — n'a jamais exercées, et rendent
+   périmée en silence la conclusion « les neuf bandes sont saines ».
+   Retargetées sur 1280 et 1024, déjà dans le recensement mesuré, et qui sont
+   par ailleurs les bascules décrites par VISUAL_SYSTEM.md (≥1280 : deux ou
+   trois colonnes · 768-1279 : rail compact · <768 : une colonne). Les blocs
+   sont inchangés : seule la largeur à laquelle ils s'appliquent bouge. */
+@media (max-width:1280px){
+  :root{--vx-sidebar-w:208px}
+  .vx-content{padding-left:18px;padding-right:18px}
+  .vx-topbar{padding:0 18px}
+}
+@media (max-width:1024px){
+  .vx-grid{gap:12px}
+  .vx-col-2,.vx-col-3,.vx-col-4{grid-column:span 6}
+  .vx-col-5,.vx-col-7,.vx-col-8,.vx-col-9{grid-column:span 12}
+  .vx-page-header{align-items:flex-start}
+  .vx-page-header .vx-actions{width:100%;margin-left:0}
+}
+@media (max-width:720px){
+  .vx-content{padding:16px 12px calc(76px + env(safe-area-inset-bottom))}
+  .vx-page-header{margin-bottom:14px}
+  .vx-page-header h1{font-size:25px}
+  .vx-page-header .vx-sub{font-size:12px}
+  .vx-col-2,.vx-col-3,.vx-col-4,.vx-col-5,.vx-col-6,.vx-col-7,.vx-col-8,.vx-col-9,.vx-col-12{grid-column:span 12}
+  .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-card{padding:14px;border-radius:15px}
+  .vx-content:is([data-space="briefing"],[data-space="markets"],[data-space="opportunities"],[data-space="analysis"],[data-space="portfolio"],[data-space="options"],[data-space="journal"],[data-space="system"]) .vx-card--hero{padding:16px}
+  .vx-tabs{display:flex;width:100%;overflow-x:auto}
+  .vx-tab{flex:0 0 auto;min-height:38px}
+  .vx-mobile-bar{
+    background:rgba(7,7,9,.96);
+    border-top-color:var(--vx-border-soft);
+    -webkit-backdrop-filter:blur(18px);
+    backdrop-filter:blur(18px);
+  }
+  .vx-mobile-bar a[aria-current="page"]{color:var(--vx-brand)}
+  .vx-mobile-bar a[aria-current="page"]::before{
+    content:"";position:absolute;top:0;width:22px;height:2px;border-radius:99px;background:var(--vx-brand)
+  }
+  .vx-mobile-bar a,.vx-mobile-bar button{position:relative}
+  .vx-scenario-grid{grid-template-columns:1fr}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .vx-card,.vx-btn,.vx-nav-item,.vx-kpi{transition:none!important}
+}
+
+
+/* ── Limite visible des controles (lot 23) ───────────────────────────────
+   Mesure : 56 controles rendaient 1,15-1,24:1, sous les 3:1 de WCAG 1.4.11.
+   Exclus volontairement : `primary` (degrade plein, identifie par son fond),
+   `ghost` et `link` (sans bordure par choix, identifies comme du texte
+   actionnable). Les inclure aurait rendu une bordure a des composants qui
+   n'en ont jamais eu — corriger un defaut n'autorise pas a en inventer un
+   autre. */
+.vx-btn:not(.vx-btn-primary):not(.vx-btn-ghost):not(.vx-btn-link):not(.vx-btn-soft){
+  border-color:var(--vx-border-control);
+}
+.vx-btn-soft{
+  /* Fond violet tres pale (1,13:1) : sa limite doit venir de la meme famille
+     que sa teinte, pas d'un gris qui la contredirait. */
+  border-color:var(--vx-border-control-brand);
+}
+
+/* ── ETAT SELECTIONNE D'UN CONTROLE SEGMENTE (lot 23) ────────────────────
+   WCAG 1.4.11 couvre explicitement les ETATS. Mesure : le segment presse ne
+   se distinguait que par un fond violet a .12 — 1,17:1 contre le groupe. Son
+   libelle change bien de couleur (#F5F3F0 contre #989092), mais cet ecart
+   vaut 2,81:1 : il porte PRESQUE l'etat, pas tout a fait.
+   Un anneau interne plutot qu'un fond sature : il franchit le seuil des deux
+   cotes (3,72 contre le fond du groupe, 3,17 contre le fond du segment) sans
+   decaler la mise en page ni alourdir la teinte. */
+.vx-segmented button[aria-pressed="true"]{
+  box-shadow:inset 0 0 0 1px var(--vx-border-control-brand);
+}

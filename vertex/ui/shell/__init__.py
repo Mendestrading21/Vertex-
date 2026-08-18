@@ -46,6 +46,13 @@ _ICONS = {
     'star': '<path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/>',
     'bolt': '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
     'book': '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13"/>',
+    'close': '<path d="M6 6 18 18M18 6 6 18"/>',
+    'more': '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
+    'follow': '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2"/>',
+    'alert': '<path d="M12 4v9"/><circle cx="12" cy="18" r="1.2"/>',
+    'option': '<path d="M12 3 21 12 12 21 3 12z"/>',
+    'caret': '<path d="m6 9 6 6 6-6"/>',
+    'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/>',
 }
 
 
@@ -71,9 +78,23 @@ def json_for_script(value) -> str:
 
 
 def icon(name: str, size: int = 18) -> str:
+    """La SEULE fabrique d'icône du produit (VISUAL_SYSTEM.md : « une seule
+    famille d'icônes outline »).
+
+    `_ICONS` est aussi publié au client (`window.VX.__icons`, voir
+    `_icons_for_client`) et relu par `VX.icon()` dans `vx-core.js` : les pages
+    qui construisent leur HTML en JavaScript dessinent donc **le même trait**,
+    depuis **le même dictionnaire**. Une seconde table côté client aurait été
+    une seconde vérité, et une seconde vérité dérive en silence.
+    """
     return (f'<svg viewBox="0 0 24 24" width="{size}" height="{size}" fill="none" '
             f'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" '
             f'stroke-linejoin="round" aria-hidden="true">{_ICONS.get(name, "")}</svg>')
+
+
+def _icons_for_client() -> str:
+    """Publie la famille d'icônes au client, sérialisée comme tout bloc inline."""
+    return json_for_script(_ICONS)
 
 
 def _sidebar(active: str) -> str:
@@ -91,7 +112,7 @@ def _sidebar(active: str) -> str:
   <nav class="vx-sidebar-nav">{nav}</nav>
   <div class="vx-sidebar-foot">
     <div class="vx-sidebar-status" id="vx-global-status">
-      <span class="vx-dot" style="width:7px;height:7px;border-radius:99px;background:var(--vx-text-faint)"></span>
+      <span class="vx-dot"></span>
       <span class="vx-status-label">État…</span></div>
     {system_item}
     <button class="vx-nav-item vx-collapse-btn" id="vx-collapse-btn"
@@ -122,11 +143,12 @@ def _topbar(space_label: str, sub_label: str = '', space_href: str = '/') -> str
   <button class="vx-back-btn" id="vx-back-btn" data-visible="0">{icon('back')}<span>Retour</span></button>
   <nav class="vx-breadcrumb" aria-label="Fil d’Ariane">{crumb}</nav>
   <div class="vx-topbar-search">{icon('search', 16)}
-    <input id="vx-global-search" type="search" placeholder="Rechercher une action, une option ou une page"
-      autocomplete="off" aria-label="Recherche globale" />
+    <input id="vx-global-search" type="search" placeholder="Ticker, option ou page"
+      autocomplete="off" aria-label="Rechercher un ticker, une option ou une page" />
     <span class="vx-kbd">⌘K</span></div>
   <div class="vx-topbar-right">
-    <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-add-btn">{icon('plus', 14)}<span class="vx-hide-mobile">Ajouter</span></button>
+    <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-add-btn"
+      aria-label="Lancer une analyse" title="Lancer une analyse">{icon('plus', 14)}<span class="vx-hide-mobile">Analyser</span></button>
     <div class="vx-session vx-hide-mobile" id="vx-session">—<br><span class="vx-muted">New York —:—</span></div>
     <button class="vx-btn vx-btn-icon vx-btn-ghost" id="vx-connections-btn"
       aria-label="Connexions" title="Connexions (IBKR, TradingView, Claude, sync)">{icon('plug')}</button>
@@ -154,17 +176,19 @@ def _mobile_bar(active: str) -> str:
             f'</nav></div>')
 
 
-_OVERLAYS = '''
+_OVERLAYS = f'''
 <div class="vx-overlay" id="vx-overlay" data-open="0"></div>
 <aside class="vx-drawer" id="vx-drawer" data-open="0" role="dialog" aria-modal="true" aria-label="Panneau contextuel" aria-hidden="true" inert>
   <div class="vx-drawer-header"><h2 id="vx-drawer-title">—</h2>
-    <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-drawer aria-label="Fermer">✕</button></div>
+    <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-drawer aria-label="Fermer">{icon('close')}</button></div>
+  <div class="vx-drawer-tabs" id="vx-drawer-tabs" hidden></div>
   <div class="vx-drawer-body" id="vx-drawer-body"></div>
+  <div class="vx-drawer-footer" id="vx-drawer-footer"></div>
 </aside>
 <div class="vx-modal" id="vx-modal" data-open="0" role="dialog" aria-modal="true" aria-hidden="true" inert>
   <div class="vx-modal-box">
     <div class="vx-modal-header"><h2 id="vx-modal-title">—</h2>
-      <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-modal aria-label="Fermer">✕</button></div>
+      <button class="vx-btn vx-btn-icon vx-btn-ghost vx-right" data-close-modal aria-label="Fermer">{icon('close')}</button></div>
     <div class="vx-modal-body" id="vx-modal-body"></div>
     <div class="vx-modal-footer" id="vx-modal-footer"></div>
   </div>
@@ -225,12 +249,13 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
     QUE le contenu + métadonnées + scripts de page (shell conservé côté client)."""
     from vertex.engines.recommendation import vocab_js as _vjs
     vocab = _vjs()   # vocabulaire des verdicts — source unique (__VXVOCAB)
+    icons = _icons_for_client()   # famille d'icônes — source unique (_ICONS)
     mobile_bar = mobile_actions or _mobile_bar(active)
     if _wants_fragment():
         return _render_fragment(title=title, active=active, space_label=space_label,
                                 sub_label=sub_label, content=content, page_js=page_js,
                                 page_label=page_label, mobile_bar=mobile_bar)
-    return f'''<!doctype html><html lang="fr"><head><meta charset="utf-8">
+    return f'''<!doctype html><html lang="fr" data-visual="signal-os"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
 <title>{title} · Vertex</title>
@@ -254,6 +279,16 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/control-surface.css">
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
 <link rel="stylesheet" href="/static/vertex/css/neon-glass.css">
+<!-- SIGNAL OS EN DERNIER, ET DANS LE DOCUMENT.
+     La couche arrivait par `loadSignalOS()` dans live-updates.js : un <link>
+     cree en JS et injecte a l execution. Trois consequences, toutes reelles :
+     le document se peignait une fois SANS elle (flash de l ancien theme a
+     chaque navigation complete), le service worker ne la voyait pas dans le
+     HTML de shell qu il met en cache, et l ordre de cascade dependait du
+     moment ou le script s executait plutot que de la position dans le head.
+     Elle est declaree ici, apres neon-glass.css : dernier arrive, dernier
+     applique, et connue du document des le premier octet. -->
+<link rel="stylesheet" href="/static/vertex/css/signal-os.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
@@ -270,12 +305,20 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 {_OVERLAYS}
 <script src="/static/chart.umd.min.js" defer></script>
 <script id="vx-vocab">window.__VXVOCAB={vocab};</script>
+<!-- FAMILLE D'ICONES, PUBLIEE AU CLIENT DEPUIS LA MEME TABLE QUE LE SERVEUR.
+     Les pages construisent une grande part de leur HTML en JavaScript ; sans
+     ce pont, elles n avaient aucun moyen d atteindre `_ICONS` et dessinaient
+     des caracteres (⋯, ✕) la ou le shell dessine un trait SVG. Dupliquer le
+     dictionnaire cote client aurait cree une seconde verite : on publie
+     celle du serveur. -->
+<script id="vx-icons">window.VX=window.VX||{{}};window.VX.__icons={icons};</script>
 <script src="/static/vertex/js/vx-core.js"></script>
 <script src="/static/vertex/js/vx-entities.js"></script>
 <script src="/static/vertex/js/vx-shell.js"></script>
 <script src="/static/vertex/js/vx-router.js"></script>
 <script src="/static/vertex/js/live-updates.js" defer></script>
-<script src="/static/vertex/js/charts/chart-theme-obsidian-copper.js" defer></script>
+<script src="/static/vertex/js/signal-os.js" defer></script>
+<script src="/static/vertex/js/charts/chart-theme.js" defer></script>
 <script src="/static/vertex/js/charts/chart-core.js" defer></script>
 {page_js}
 </body></html>'''

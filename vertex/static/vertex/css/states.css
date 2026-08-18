@@ -1,10 +1,47 @@
 /* Vertex Design System V3 — states.css
    États premium : LOADING / READY / EMPTY / STALE / ERROR / OFFLINE / DEMO.
-   Un état honnête, compact, actionnable — jamais un rectangle géant vide. */
+   Un état honnête, compact, actionnable.
+
+   LOT 617 — cet en-tête promettait « jamais un rectangle géant vide », et
+   `.vx-state` portait un `max-height:240px` censé le garantir. Mesuré : dans
+   une boîte `flex-column`, un plafond ne rogne pas et ne fait pas déborder —
+   il COMPRIME les enfants flexibles. Le seul effet réel était d'écraser
+   l'icône fantôme décorative de 41 px à 31 px sur un unique état, à 390 px.
+   Aucun texte n'était perdu. Le plafond est retiré : la compacité vient de la
+   BRIÈVETÉ des messages, pas d'une contrainte de hauteur qui ne contraint que
+   la décoration. */
 
 .vx-state{display:flex;flex-direction:column;align-items:center;gap:var(--vx-s2);
   padding:var(--vx-s6) var(--vx-s4);text-align:center;color:var(--vx-text-muted);
-  font-size:13px;max-height:240px;justify-content:center}
+  font-size:13px;justify-content:center}
+/* LOT 617 — `max-height:240px` a ete RETIRE d'ici, et ce que la mesure a
+   montre n'est PAS ce que je croyais en le retirant.
+
+   Piege (a), ecrit d'avance : « un plafond sans regle `overflow` fait DEBORDER
+   le contenu ». **REFUTE.** Dans une boite `flex-column`, les enfants sont
+   flexibles : le plafond ne rogne pas et ne fait pas deborder, il COMPRIME.
+
+   Trois instruments successifs ont ete necessaires, et les deux premiers ont
+   repondu « aucun debordement » :
+     1. `scrollHeight > height`      -> 0  (aveugle : scrollHeight rendait la
+                                            valeur DEJA ecretee, 238)
+     2. rect des enfants vs rect de la boite -> 0  (aveugle : les enfants
+                                            retrecissent au lieu de sortir)
+     3. `scrollHeight` de CHAQUE enfant -> trouve : l'icone fantome passait de
+                                            41 px a 31 px
+
+   Effet reel, mesure a 390 px sur `/journal?view=track-record` : hauteur
+   naturelle 249 px pour un plafond de 240, et la compression de 9 px etait
+   absorbee ENTIEREMENT par l'icone fantome decorative (-24 %). Aucun texte
+   perdu, aucun chevauchement, aucun rognage. Un seul etat du produit etait
+   concerne ; aucune des 20 cartes ordinaires mesurees ne plafonne sa hauteur.
+
+   Le plafond est donc retire parce qu'il ne servait rien et deformait une
+   icone, PAS parce qu'il faisait deborder du texte.
+
+   NE PAS le remplacer par `overflow:hidden` : ces zones existent pour DIRE
+   pourquoi une donnee manque. Amputer le motif serait pire que tout ce qui
+   precede. Si la hauteur redevient un sujet, raccourcir le TEXTE. */
 .vx-state b{color:var(--vx-text-secondary)}
 .vx-state .vx-state-icon{width:34px;height:34px;border-radius:10px;
   display:grid;place-items:center;background:var(--vx-surface-2);
@@ -47,7 +84,12 @@
 .vx-demo-banner{display:flex;align-items:center;gap:9px;
   background:var(--vx-brand-soft);border:1px solid rgba(255,255,255,.3);
   color:var(--vx-brand-strong);border-radius:var(--vx-r-sm);
-  padding:7px 12px;font-size:12px;font-weight:600;margin-bottom:var(--vx-s4)}
+  padding:5px 12px;font-size:12px;font-weight:600;margin-bottom:var(--vx-s2)}
+/* LOT 628 — le bandeau demo occupait 35 px + 16 px d'ecart avant les tuiles
+   de decision. Il DOIT rester visible et lisible : c'est lui qui empeche de
+   prendre une donnee synthetique pour une donnee reelle. Seuls son padding
+   et sa marge basse sont resserres ; ni sa taille de texte, ni son contraste,
+   ni son libelle ne bougent. */
 .vx-badge-demo{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;
   border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.5px;
   text-transform:uppercase;background:var(--vx-brand-soft);

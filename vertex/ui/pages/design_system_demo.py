@@ -99,10 +99,10 @@ _STYLE = """
 #vx-ds section.vx-card{margin-bottom:0}
 #vx-ds .vx-ds-block{margin-bottom:1.4rem}
 #vx-ds .vx-ds-block>.vx-meta{text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
-#vx-ds .vx-range{width:220px;accent-color:var(--vx-orange-500,#DBE1E8)}
+#vx-ds .vx-range{width:220px;accent-color:var(--vx-violet-500,#9B7BFF)}
 #vx-ds .vx-switch{width:40px;height:22px;border-radius:99px;background:var(--vx-surface-3,#121214);
   border:1px solid var(--vx-border-soft,rgba(255,255,255,.08));position:relative;cursor:pointer;display:inline-block}
-#vx-ds .vx-switch[data-on="1"]{background:var(--vx-orange-500,#DBE1E8)}
+#vx-ds .vx-switch[data-on="1"]{background:var(--vx-violet-500,#9B7BFF)}
 #vx-ds .vx-switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:99px;
   background:#f4f1ec;transition:transform .16s ease}
 #vx-ds .vx-switch[data-on="1"]::after{transform:translateX(18px)}

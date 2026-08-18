@@ -124,7 +124,7 @@
           }).join(''));
       } else if (xEl) { xEl.innerHTML = '<div class="vx-empty">Aucun suivi clôturé.</div>'; }
     }).catch(function (e) {
-      if (aEl) aEl.innerHTML = '<div class="vx-error-banner">⚠ ' + esc(e.message) + '</div>';
+      if (aEl) aEl.innerHTML = '<div class="vx-error-banner">Suivis indisponibles.</div>';
     });
   }
 

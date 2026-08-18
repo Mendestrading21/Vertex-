@@ -68,3 +68,11 @@
 
   connect();
 })();
+
+/* SIGNAL OS N'EST PLUS CHARGÉ D'ICI.
+   Ce fichier créait `<link>` et `<script>` à l'exécution (`loadSignalOS`). La
+   feuille arrivait donc APRÈS le premier rendu — flash de l'ancien thème à
+   chaque navigation complète —, le service worker ne la voyait pas dans le HTML
+   de shell qu'il met en cache, et l'ordre de cascade dépendait du moment où ce
+   script s'exécutait. Les deux ressources sont déclarées dans le document, dans
+   `vertex/ui/shell/__init__.py`, la feuille en dernier. */

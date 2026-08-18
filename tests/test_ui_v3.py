@@ -133,7 +133,7 @@ def test_every_chart_has_timestamp():
 
 
 def test_chart_theme_is_single():
-    theme = _read(VXJS, 'charts', 'chart-theme-obsidian-copper.js')
+    theme = _read(VXJS, 'charts', 'chart-theme.js')
     assert 'VXChartTheme' in theme
     core = _read(VXJS, 'charts', 'chart-core.js')
     assert 'VXChartTheme' in core
@@ -226,7 +226,7 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v187' in body
+    assert 'td-shell-v246' in body
     assert 'td-shell-v150' not in body
 
 
@@ -252,13 +252,15 @@ def test_no_order_execution_path():
 
 
 def test_v3_tokens_are_canonical():
-    """Palette Vertex (identité NEUTRE blanc/gris) — canonique et centralisée.
-    Marque = blanc-gris #DBE1E8 (accent d'interface, jamais « hausse ») · émeraude
-    = positif · corail = risque · jaune = attente · violet = options · cyan =
-    comparaison. Le token de marque reste `--vx-ember-*` (valeur neutre désormais)."""
+    """Palette Vertex — canonique et centralisée.
+    Marque = VIOLET #9B7BFF (accent d'interface, jamais « hausse ») · émeraude
+    = positif · corail = risque · jaune = attente · cyan = comparaison. La rampe
+    canonique s'appelle `--vx-violet-*`. `--vx-ember-*` reste défini comme
+    alias déprécié, mais plus aucun consommateur ne le nomme : on épingle donc
+    la SOURCE et le maillon de marque, plus la chaîne d'alias."""
     tokens = _read(VXCSS, 'tokens.css')
-    for var in ('--vx-canvas:#020305', '--vx-ember-500:#dbe1e8',
-                '--vx-brand:var(--vx-ember-500)', '--vx-positive:#2BBE90',
+    for var in ('--vx-canvas:#060707', '--vx-violet-500:#9B7BFF',
+                '--vx-brand:var(--vx-violet-500)', '--vx-positive:#2BBE90',
                 '--vx-negative:#E9555F', '--vx-warning:#D9BE3C',
                 '--vx-option:#9B7BFF', '--vx-neutral-chart:#BABABA'):
         assert var in tokens, f'token manquant : {var}'

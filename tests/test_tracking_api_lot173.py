@@ -88,16 +88,14 @@ def test_performance_action_au_prix_courant_du_scan(client):
     assert any('HYPOTHÉTIQUE' in l for l in p['limitations'])   # étiquette imposée
 
 
-def test_performance_option_exige_le_mark_sinon_none(client):
+def test_performance_option_refuse_un_mark_injecte_hors_board(client):
     r = client.post('/api/tracking', json={'entity_type': 'OPTION', 'symbol': 'TSTQ',
                                            'bid': 3.0, 'ask': 3.4})
     tid = r.get_json()['tracking_id']
-    avec = client.get('/api/tracking/%s/performance?mark=4.08' % tid).get_json()
-    assert avec['current_price'] == 4.08
-    assert avec['return_pct'] == 27.5               # (4.08 / 3.2 − 1) × 100
-    sans = client.get('/api/tracking/%s/performance' % tid).get_json()
-    assert sans['current_price'] is None            # pas de mark → pas de chiffre
-    assert sans['return_pct'] is None
+    injected = client.get('/api/tracking/%s/performance?mark=4.08' % tid).get_json()
+    assert injected['current_price'] is None        # query-string ne peut créer une quote
+    assert injected['return_pct'] is None
+    assert injected['option_contract']['mark_mode'] == 'NO_OBSERVED_QUOTE'
 
 
 # ── Stop : gel du résultat final ─────────────────────────────────────────────

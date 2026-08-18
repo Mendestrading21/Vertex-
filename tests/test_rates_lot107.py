@@ -18,12 +18,17 @@ def test_empty_curve_returns_documented_fallback_never_a_market_rate():
     assert q.fallback_used is True and q.source == SOURCE_FALLBACK_EOD
     assert any('repli' in n and 'documenté' in n for n in q.notes), (
         'le repli se DIT — jamais présenté comme une courbe réelle')
+    coverage = q.curve_coverage
+    assert coverage['available'] is False and coverage['status'] == 'FALLBACK_FLAT_RATE'
+    assert coverage['point_count'] == 0 and coverage['tenors_days'] == []
 
 
 def test_linear_interpolation_is_exact():
     c = RateCurve({30: 0.04, 90: 0.05}, source='TEST')
     q = c.rate_for_tenor(60)
     assert q.rate == 0.045 and q.fallback_used is False and q.source == 'TEST'
+    assert q.curve_coverage['available'] is True
+    assert q.curve_coverage['tenors_days'] == [30, 90]
     assert c.rate_for_tenor(45).rate == 0.0425          # quart de chemin
 
 
@@ -49,7 +54,7 @@ def test_exact_tenor_returns_exact_point():
 def test_quote_to_dict_contract():
     d = RateCurve({30: 0.04}).rate_for_tenor(30).to_dict()
     assert set(d) == {'rate', 'tenor_days', 'source', 'source_mode',
-                      'timestamp', 'fallback_used', 'notes'}
+                      'timestamp', 'fallback_used', 'notes', 'curve_coverage'}
     assert d['tenor_days'] == 30 and d['fallback_used'] is False
 
 

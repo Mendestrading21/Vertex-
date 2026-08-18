@@ -19,9 +19,14 @@
   var toneCls = function (t) { return ({ pos: 'vx-pos', neg: 'vx-neg', warn: 'vx-warn', muted: 'vx-muted' })[t] || 'vx-muted'; };
 
   var _board = null;
+  /* Le tableau d'options, et LA RAISON de son absence (lot 59).
+     Avaler l'erreur en rendant `[]` confondait deux etats tres differents :
+     « aucun titre a options » et « tableau injoignable ». Le second doit se
+     dire — sinon la page ne peut annoncer qu'un vide sans cause. */
+  var _boardEchec = false;
   function board() {
     if (_board) return Promise.resolve(_board);
-    return VX.fetch('/api/options', { ttl: 120000 }).then(function (d) { _board = (d && d.board) || []; return _board; }).catch(function () { return []; });
+    return VX.fetch('/api/options', { ttl: 120000 }).then(function (d) { _board = (d && d.board) || []; _boardEchec = false; return _board; }).catch(function () { _boardEchec = true; return []; });
   }
 
   /* ── Liquidité (LOT G) — état explicite, jamais un zéro pour un bid/ask absent ── */
@@ -90,6 +95,7 @@
 
   /* ════════════════ VUE STRUCTURE ════════════════ */
   function loadStructure(sym) {
+    try { if (window.VX && VX.store) VX.store.set('active_ticker', sym); } catch (e0) {}
     var vHost = $('vx-os-verdict'); if (!vHost) return;
     vHost.innerHTML = '<div class="vx-skeleton" style="height:150px"></div>';
     $('vx-os-scenarios').innerHTML = ''; $('vx-os-compare').innerHTML = '';
@@ -141,11 +147,31 @@
     var be = (s.breakevens && s.breakevens.length) ? s.breakevens.map(function (b) { return nd(b); }).join(' · ') : '—';
     var g = s.greeks || null;
     var cell = function (l, v, cls) { return '<div class="vx-kv"><span class="k">' + l + '</span><span class="v ' + (cls || '') + '">' + v + '</span></div>'; };
-    var fresh = '<span class="vx-freshness" data-state="' + (d.demo ? 'demo' : 'delayed') + '">' + (d.demo ? 'DÉMO' : 'DELAYED') + '</span>';
+    /* FRAÎCHEUR RÉELLE, ET NON UNE CONSTANTE (lot 63).
+       Avant : `d.demo ? 'demo' : 'delayed'` avec le texte « DELAYED » — hors
+       démo, ce badge disait la même chose que les primes aient dix secondes ou
+       trois jours. Sur Options, c'est la pire page où mentir : une prime, une IV
+       et un spread vieillissent en minutes, et la carte-Verdict est exactement
+       l'endroit où l'on conclut.
+
+       Le serveur sert déjà l'âge du domaine `options` (avec son propre seuil de
+       1 800 s) dans `/api/live/status`, que le shell pose sur `__vxStatus`. Le
+       badge le lit par le helper canonique — plus aucune table de seuils écrite
+       à la main, et « DELAYED » cède la place au vocabulaire français du reste
+       de l'application. */
+    var fresh = (VX && VX.freshness && VX.freshness.domainChip)
+      ? VX.freshness.domainChip('options') : '';
     return '<section class="vx-verdict-card vx-card" aria-label="Verdict de la structure">'
       + '<div class="vx-flex vx-wrap" style="justify-content:space-between;align-items:flex-start;gap:10px">'
       + '<div><div class="vx-flex" style="gap:8px;align-items:center"><span class="vx-eyebrow">Verdict</span>' + fresh
-      + (m.liq ? '<span class="vx-badge ' + toneCls(m.liq.tone) + '">Liquidité : ' + m.liq.label + '</span>' : '') + '</div>'
+      /* `liq.note` porte « OI 12 340 · spread 2,1 % » — les DEUX champs que le
+         profil de lecture de PAGES.md §6 exige et que l'ecran ne montrait pas.
+         Ils etaient CALCULES et jetes : on lisait « Liquidite : Excellente »
+         sans pouvoir distinguer OI 5 000 / spread 3 % de OI 50 000 /
+         spread 0,2 %. Quand la donnee manque, `note` dit « bid/ask ou OI
+         absent — non evaluable », ce qui est l'etat honnete a afficher aussi. */
+      + (m.liq ? '<span class="vx-badge ' + toneCls(m.liq.tone) + '">Liquidité : ' + m.liq.label + '</span>'
+          + (m.liq.note ? '<span class="vx-meta">' + esc(m.liq.note) + '</span>' : '') : '') + '</div>'
       + '<h2 class="' + toneCls(m.verdict.tone) + '" style="margin:4px 0 2px;font-size:22px">' + esc(m.verdict.label) + '</h2>'
       + '<div class="vx-dim" style="font-size:13px">' + esc(d.sym) + ' · <b>' + esc(s.label) + '</b> · biais ' + esc(d.bias) + ' — ' + esc(m.verdict.why) + '</div></div>'
       + '<div class="vx-flex" style="flex-direction:column;align-items:flex-end;gap:2px">'
@@ -216,7 +242,19 @@
       : ('Perte plafonnée à ' + price(m.capital) + '.');
     host.innerHTML = '';
     VC.card('vx-os-payoff', {
-      title: 'Payoff à l\'échéance — ' + esc(s.label), question: 'Où gagne / perd la structure ?',
+      /* LE CADRE DIT DEJA CE QUE C'EST. La carte hote porte « Payoff à
+         l'échéance » et la question « Où gagne / perd la structure selon le
+         cours ? » ; ce graphique repetait les deux, 72 px plus bas, dans une
+         formulation a peine differente. Il ne garde que ce qu'il AJOUTE :
+         quelle structure est tracee. */
+      title: esc(s.label),
+      /* LA CONCLUSION RESTE ICI, et l'erreur vaut d'etre ecrite : j'ai cru a un
+         doublon avec la carte hote et je l'ai retiree. Mon releve interrogeait
+         les DESCENDANTS de la carte hote — `querySelector` traverse —, donc il
+         y lisait la conclusion DU GRAPHIQUE et la comptait deux fois. La carte
+         hote n'en a jamais eu. Mesure apres coup : 2 questions, ZERO conclusion
+         sur toute la vue. Retire, ce n'etait pas un doublon en moins, c'etait la
+         seule conclusion en moins. */
       conclusion: concl, unit: 'P&L $ (1 structure)', timeframe: (d.dte != null ? d.dte + ' j' : ''),
       source: d.demo ? 'multileg_lab (board démo)' : 'multileg_lab (board réel)', timestamp: Date.now(), mode: d.demo ? 'demo' : 'delayed',
       summary: 'Courbe de P&L à l\'échéance selon le cours du sous-jacent ; spot ' + price(m.spot)
@@ -306,7 +344,7 @@
       var g = s.greeks || {};
       var liq = strategyLiquidity(bd, d.sym, d.exp, s.legs);
       return '<tr' + (s.recommended ? ' class="vx-row-hl"' : '') + '>'
-        + '<td data-label="Structure">' + (s.recommended ? '★ ' : '') + esc(s.label) + '</td>'
+        + '<td data-label="Structure">' + (s.recommended ? VX.icon('star', 12) + ' ' : '') + esc(s.label) + '</td>'
         + '<td data-label="Risque max" class="vx-num vx-neg">' + price(cap) + '</td>'
         + '<td data-label="Gain max" class="vx-num vx-pos">' + gmax + '</td>'
         + '<td data-label="Breakeven" class="vx-num">' + ((s.breakevens || []).map(function (b) { return nd(b); }).join(' · ') || '—') + '</td>'
@@ -315,7 +353,8 @@
         + '<td data-label="Vega" class="vx-num">' + (g.vega != null ? num(g.vega, 2) : '—') + '</td>'
         + '<td data-label="PoP" class="vx-num">' + (s.probability_of_profit != null ? num(s.probability_of_profit, 0) + ' %' : '—') + '</td>'
         + '<td data-label="DTE" class="vx-num">' + (s.days_to_exp != null ? s.days_to_exp + ' j' : '—') + '</td>'
-        + '<td data-label="Liquidité"><span class="' + toneCls(liq.tone) + '">' + liq.label + '</span></td>'
+        + '<td data-label="Liquidité"><span class="' + toneCls(liq.tone) + '">' + liq.label + '</span>'
+          + (liq.note ? '<div class="vx-meta">' + esc(liq.note) + '</div>' : '') + '</td>'
         + '<td data-label="Asymétrie" class="vx-num">' + (asym != null ? num(asym, 1) + '×' : '—') + '</td>'
         + '<td data-label="Adéquation" class="vx-num">' + (s.fit_score != null ? num(s.fit_score, 0) : '—') + '</td></tr>';
     }).join('');
@@ -324,7 +363,7 @@
       + '<span class="vx-chart-question">Quelle structure exprime le mieux la thèse avec le moins de risque inutile ?</span></div>'
       + '<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>'
       + head.map(function (h) { return '<th>' + h + '</th>'; }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div>'
-      + '<div class="vx-card-foot"><span class="vx-meta">★ = mieux adaptée au biais (adéquation = 45 % alignement + 30 % PoP + 25 % R:R — heuristique transparente, pas une promesse).</span></div></section>';
+      + '<div class="vx-card-foot"><span class="vx-meta">L\'étoile marque la structure la mieux adaptée au biais (adéquation = 45 % alignement + 30 % PoP + 25 % R:R — heuristique transparente, pas une promesse).</span></div></section>';
   }
 
   /* ════════════════ VUE LEAPS (LOT B) ════════════════ */
@@ -348,6 +387,7 @@
     return { total: total, parts: parts };
   }
   function loadLeaps(sym) {
+    try { if (window.VX && VX.store) VX.store.set('active_ticker', sym); } catch (e0) {}
     var host = $('vx-lp-out'); if (!host) return;
     host.innerHTML = '<div class="vx-skeleton" style="height:120px"></div>';
     board().then(function (bd) {
@@ -407,32 +447,64 @@
         '<a class="vx-btn vx-btn-sm vx-btn-primary" href="/opportunities?view=options">Chercher un contrat</a>');
       return;
     }
-    var body = opts.map(function (t) {
+    var models = [];
+    var body = opts.map(function (t, index) {
       var q = _optQuotes[t.id] || {}; var mark = q.mark != null ? q.mark : null;
       var value = mark != null ? mark * 100 * t.qty : null;
       var pl = (value != null && t.cost) ? (value - t.cost) / t.cost * 100 : null;
       var tt = Object.assign({}, t, { pl: pl });
       var dte = t.exp ? Math.round((new Date(t.exp) - Date.now()) / 86400000) : null;
       var na = optNextAction(tt), s = t.entrySnap || {};
-      return '<tr>'
-        + '<td data-label="Contrat"><span class="vx-ticker">' + esc(t.sym) + '</span> <span class="vx-badge" style="color:var(--vx-option,#9B7BFF)">' + esc(t.type) + ' ' + nd(t.strike) + ' ' + esc(t.exp || '') + '</span></td>'
+      models.push({ t: t, mark: mark, value: value, pl: pl, dte: dte, action: na, snap: s });
+      /* role + nom : la ligne est focusable et cliquable, donc c'est un
+         controle. Sans role, un lecteur d'ecran annonce « ligne » et le nom
+         reste implicite ; l'audit du lot 24 ne l'avait pas vue parce qu'il
+         selectionnait `[role="button"]`. */
+      return '<tr data-option-position="' + index + '" data-clickable tabindex="0"'
+        + ' role="button" aria-label="Ouvrir la position ' + esc(t.sym) + ' '
+        + esc(t.type) + ' ' + nd(t.strike) + '">'
+        + '<td data-label="Contrat"><span class="vx-table-primary"><strong class="vx-ticker">' + esc(t.sym) + '</strong>'
+        + '<span>' + esc(t.type) + ' ' + nd(t.strike) + ' · ' + esc(t.exp || 'échéance n/d') + '</span></span></td>'
         + '<td data-label="Qté" class="vx-num">' + t.qty + '</td>'
-        + '<td data-label="Coût" class="vx-num">' + price(t.cost) + '</td>'
         + '<td data-label="Marque" class="vx-num">' + (mark != null ? price(mark) : 'n/d') + '</td>'
         + '<td data-label="P&L %" class="vx-num ' + (pl > 0 ? 'vx-pos' : pl < 0 ? 'vx-neg' : '') + '">' + (pl != null ? num(pl, 1) + ' %' : 'n/d') + '</td>'
         + '<td data-label="DTE" class="vx-num ' + (dte != null && dte <= 7 ? 'vx-warn' : '') + '">' + (dte != null ? dte + ' j' : '—') + '</td>'
-        + '<td data-label="Invalidation" class="vx-num vx-neg">' + nd(s.stop) + '</td>'
         + '<td data-label="Prochaine action" class="' + toneCls(na.tone) + '" style="max-width:230px;font-size:12px">' + esc(na.label) + '</td>'
-        + '<td><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options?view=structure&sym=' + encodeURIComponent(t.sym) + '">Structure</a></td></tr>';
+        + '<td data-label="Détail"><span class="vx-row-open">Ouvrir</span></td></tr>';
     }).join('');
-    host.innerHTML = '<div class="vx-insight vx-mb3" data-tone="risk"><b>Garde-fou perdants (Constitution §18).</b> '
-      + 'Une option en perte ne reçoit jamais « renforcer » sans confirmation positive du marché — jamais parce que la prime a baissé.</div>'
-      + '<section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Positions options — détail canonique</span>'
+    host.innerHTML = '<div class="vx-insight vx-mb3" data-tone="risk"><b>Règle de sécurité.</b> '
+      + 'Une option en perte n’affiche jamais « renforcer » sans confirmation positive du marché.</div>'
+      + '<section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Positions options</span>'
       + '<span class="vx-meta vx-right">' + opts.length + ' · lecture seule — aucun ordre</span></div>'
       + '<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>'
-      + '<th>Contrat</th><th class="vx-num">Qté</th><th class="vx-num">Coût</th><th class="vx-num">Marque</th><th class="vx-num">P&L %</th>'
-      + '<th class="vx-num">DTE</th><th class="vx-num">Invalidation</th><th>Prochaine action</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>'
+      + '<th>Contrat</th><th class="vx-num">Qté</th><th class="vx-num">Marque</th><th class="vx-num">P&L %</th>'
+      + '<th class="vx-num">DTE</th><th>Prochaine action</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>'
       + '<div class="vx-card-footer"><span class="vx-meta">Marques/Greeks live via IBKR (lecture seule) ; sans IBKR, « n/d » honnête — jamais estimés.</span></div></section>';
+
+    function openPosition(index) {
+      var m = models[index]; if (!m || !VX.shell) return;
+      var t = m.t, body = '<div class="vx-section-stack">'
+        + '<div class="vx-data-ledger"><span>' + esc(t.type || 'Option') + '</span><span>' + esc(t.exp || 'échéance n/d') + '</span><span>Lecture seule</span></div>'
+        + '<div class="vx-stats-row">'
+        + '<div class="vx-stat"><span class="vx-stat-label">Coût</span><span class="vx-stat-value">' + price(t.cost) + '</span></div>'
+        + '<div class="vx-stat"><span class="vx-stat-label">Marque</span><span class="vx-stat-value">' + (m.mark != null ? price(m.mark) : 'n/d') + '</span></div>'
+        + '<div class="vx-stat"><span class="vx-stat-label">P&L</span><span class="vx-stat-value ' + (m.pl > 0 ? 'vx-pos' : m.pl < 0 ? 'vx-neg' : '') + '">' + (m.pl != null ? num(m.pl, 1) + ' %' : 'n/d') + '</span></div>'
+        + '<div class="vx-stat"><span class="vx-stat-label">DTE</span><span class="vx-stat-value">' + (m.dte != null ? m.dte + ' j' : 'n/d') + '</span></div></div>'
+        + '<div class="vx-card vx-card--compact"><div class="vx-card-header"><span class="vx-card-title">Plan de suivi</span></div>'
+        + '<div class="vx-kv"><span>Strike</span><b>' + nd(t.strike) + '</b></div>'
+        + '<div class="vx-kv"><span>Invalidation</span><b class="vx-neg">' + nd(m.snap.stop) + '</b></div>'
+        + '<div class="vx-kv"><span>Action suivante</span><b class="' + toneCls(m.action.tone) + '">' + esc(m.action.label) + '</b></div></div>'
+        + '<p class="vx-meta">La marque reste n/d sans cotation IBKR. Aucun prix n’est estimé.</p></div>';
+      var footer = '<a class="vx-btn vx-btn-sm vx-btn-primary" href="/options?view=structure&sym=' + encodeURIComponent(t.sym) + '">Analyser la structure</a>';
+      VX.shell.openDrawer(esc(t.sym) + ' · position option', body, { variant: 'summary', footerHtml: footer });
+    }
+    host.querySelectorAll('[data-option-position]').forEach(function (row) {
+      var open = function () { openPosition(Number(row.getAttribute('data-option-position'))); };
+      row.addEventListener('click', open);
+      row.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); }
+      });
+    });
     // marques serveur (best-effort, comme le desk)
     fetch('/api/pos-quotes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ positions: opts.map(function (t) { return { sym: t.sym, exp: t.exp, strike: t.strike, right: t.right }; }) }) })
       .then(function (r) { return r.json(); }).then(function (d) {
@@ -443,15 +515,21 @@
   }
 
   /* ── Auto-symbole depuis le board (chips) ── */
-  function chips(hostId, inputId, load) {
+  function chips(hostId, inputId, load, onVide) {
     var host = $(hostId), input = $(inputId); if (!host || !input) return;
     board().then(function (bd) {
       var syms = Array.from(new Set(bd.map(function (c) { return c.sym; }))).slice(0, 8);
       host.innerHTML = '<span class="vx-muted" style="font-size:11px">Depuis le tableau :</span> '
         + syms.map(function (x) { return '<button type="button" class="vx-btn vx-btn-sm vx-btn-ghost" data-osym="' + esc(x) + '">' + esc(x) + '</button>'; }).join('');
-      host.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-osym]') : null; if (!b) return; input.value = b.getAttribute('data-osym'); load(input.value); });
+      host.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-osym]') : null; if (!b) return; input.value = b.getAttribute('data-osym'); try { if (VX.store) VX.store.set('active_ticker', input.value); } catch (x) {} load(input.value); });
       var pre = null; try { pre = new URLSearchParams(location.search).get('sym'); } catch (e2) {}
       if (!input.value && (pre || syms.length)) { input.value = (pre || syms[0]).toUpperCase(); load(input.value); }
+      /* AUCUN SYMBOLE A CHARGER — et c'est le trou que le lot 59 a mesure.
+         Sans ce `else`, `load()` n'etait jamais appele : la vue Structure
+         gardait son squelette de depart POUR TOUJOURS, alors meme que
+         `loadStructure` porte un `.catch` parfaitement honnete. L'etat honnete
+         existait ; le produit n'y arrivait jamais. */
+      else if (!input.value && typeof onVide === 'function') { onVide(_boardEchec); }
     });
   }
 
@@ -463,7 +541,15 @@
       var run = function () { var s = (inp.value || '').trim().toUpperCase(); if (s) loadStructure(s); };
       go.addEventListener('click', run);
       inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') run(); });
-      chips('vx-os-chips', 'vx-os-sym', function (s) { loadStructure(s); });
+      chips('vx-os-chips', 'vx-os-sym', function (s) { loadStructure(s); },
+        function (echec) {
+          var vHost = $('vx-os-verdict'); if (!vHost) return;
+          vHost.innerHTML = echec
+            ? VX.states.error('Tableau d’options injoignable — aucun titre à analyser. '
+                + 'Saisir un symbole ci-dessus pour forcer l’analyse.')
+            : VX.states.empty('Aucun titre à options dans le tableau courant. '
+                + 'Saisir un symbole ci-dessus pour lancer l’analyse.');
+        });
     } else if (v === 'leaps') {
       var g2 = $('vx-lp-go'), i2 = $('vx-lp-sym');
       if (!g2 || !i2) return;

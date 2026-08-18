@@ -80,6 +80,11 @@ def test_timeline_normalized_shape():
         assert e['category'] in ('fact', 'interpretation')
         assert e['label'] and e['source']
         assert 'dte' in e and 'impact_hint' in e
+    coverage = ev['coverage']
+    assert all(coverage['input_channels'].values())
+    assert coverage['all_events_have_source'] is True
+    assert coverage['dated_events'] == 4
+    assert coverage['undated_events'] == ev['n'] - 4
 
 
 def test_fact_vs_interpretation_separated():
@@ -98,6 +103,10 @@ def test_impact_hint_only_from_transparent_keywords():
     plain = next(e for e in ev['events'] if e['kind'] == 'news' and 'quelconque' in e['label'])
     assert tagged['impact_hint'] == 'EARNINGS' and tagged['impact_derivation'] == 'keywords'
     assert plain['impact_hint'] is None         # pas de mot-clé → pas d'impact inventé
+    coverage = ev['coverage']['news_impact_coverage']
+    assert coverage['keyword_classified_news'] == 1
+    assert coverage['unclassified_news'] == 1
+    assert coverage['status'] == 'KEYWORD_DERIVATION_ONLY'
 
 
 def test_dated_events_sorted_by_dte_first():
@@ -113,15 +122,33 @@ def test_revisions_honestly_absent():
     assert 'source' in ev['revisions']['reason']
 
 
+def test_revisions_from_news_are_mentions_not_consensus():
+    ev = EV.build('TST', news=[{'title': 'Broker upgrades TST and raises price target',
+                                'publisher': 'P', 'time': 'Mon'}])
+    revisions = ev['revisions']
+    assert revisions['available'] is True
+    assert revisions['status'] == 'NEWS_MENTIONS_ONLY'
+    assert revisions['mentions'][0]['derivation'] == 'title_keywords'
+    assert 'consensus' in revisions['note']
+
+
 def test_empty_build_honest():
     ev = EV.build('TST')
     assert ev['events'] == [] and ev['n'] == 0
+    assert ev['coverage']['input_channels'] == {
+        'news_provided': False, 'earnings_provided': False,
+        'macro_provided': False, 'anomaly_provided': False,
+    }
 
 
 def test_news_deduplicated_inside_timeline():
     ev = EV.build('TST', news=[{'title': 'Même titre', 'link': 'a'},
                                {'title': 'Même  titre', 'link': 'b'}])
     assert sum(1 for e in ev['events'] if e['kind'] == 'news') == 1
+    freshness = ev['coverage']['news_timestamp_coverage']
+    assert freshness['timestamped_news'] == 0
+    assert freshness['untimestamped_news'] == 1
+    assert freshness['status'] == 'TIMESTAMP_COVERAGE_ONLY'
 
 
 # ─── Route de bout en bout ──────────────────────────────────────────────────────

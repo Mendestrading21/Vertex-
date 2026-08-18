@@ -8,8 +8,8 @@ seul domicile, migration PR n°5). Le Journal est exclusivement le lieu de la
 DISCIPLINE : qualité des décisions, respect de la méthode, erreurs, apprentissage,
 revue des hypothèses, statistiques comportementales.
 
-Sous-vues (?view=) : overview (Discipline) · journal (Timeline) · learnings
-(Apprentissage) · progression · track-record.
+Sous-vues (?view=) : overview (Discipline) · journal (Chronologie) · learnings
+(Apprentissage) · progression · track-record (Historique).
 
 Le module Python ne fait AUCUN calcul financier : il assemble le squelette + le
 script client. Les agrégations côté client portent uniquement sur les décisions
@@ -25,10 +25,10 @@ from vertex.ui.shell import render_shell
 
 _VIEWS = (
     ('overview', 'Discipline'),
-    ('journal', 'Timeline'),
+    ('journal', 'Chronologie'),
     ('learnings', 'Apprentissage'),
     ('progression', 'Progression'),
-    ('track-record', 'Track record'),
+    ('track-record', 'Historique'),
 )
 
 
@@ -43,67 +43,87 @@ def _tabs(view: str) -> str:
 
 
 _HEADER = """
-<div class="vx-page-header">
-  <div><h1>Journal</h1>
-  <div class="vx-sub">Suis-je en train de devenir un meilleur investisseur ?</div></div>
+<div class="vx-page-header vx-page-lead">
+  <div class="vx-page-lead__main"><h1>Journal</h1>
+  <div class="vx-sub">Ce qui renforce ou dégrade la qualité des décisions.</div></div>
 </div>
 %%TABS%%
 """
 
 _VIEW_CONTENT = {
     'overview': """
-<section class="vx-card vx-card--hero vx-mt3" id="vx-pf-hero" aria-label="Verdict de discipline">
+<section class="vx-card vx-card--hero vx-page-lead vx-mt3" id="vx-pf-hero" aria-label="Verdict de discipline">
   <div class="vx-skeleton" style="height:64px"></div></section>
-<div class="vx-grid vx-mt3" id="vx-pf-kpis" aria-label="Indicateurs de discipline"><div class="vx-skeleton vx-skeleton-kpi vx-col-3" style="grid-column:span 3"></div></div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-7" aria-label="Revue des hypothèses">
+<div class="vx-kpi-strip vx-mt3" id="vx-pf-kpis" data-max-kpis="4" aria-label="Quatre indicateurs de discipline"><div class="vx-skeleton vx-skeleton-kpi"></div></div>
+<div class="vx-hero-grid vx-mt4">
+  <section class="vx-card" aria-label="Revue des hypothèses">
     <div class="vx-card-header"><span class="vx-card-title">Revue des hypothèses</span>
       <span class="vx-chart-question">Mes thèses se vérifient-elles ?</span></div>
     <div id="vx-pf-hypo"><div class="vx-skeleton" style="height:80px"></div></div>
   </section>
-  <div class="vx-col-5" id="vx-pf-dist"></div>
+  <aside class="vx-insight-rail" aria-label="Prochain axe de travail">
+    <div class="vx-insight" id="vx-pf-next-axis" data-tone="neutral"><div class="vx-skeleton" style="height:80px"></div></div>
+  </aside>
 </div>
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-12" aria-label="Post-mortem des trades clôturés">
-    <div class="vx-card-header"><span class="vx-card-title">Post-mortem — que disent mes sorties&nbsp;?</span>
-      <span class="vx-chart-question">Stats réelles + drapeaux de discipline dérivés des clôtures. Descriptif, pas un conseil.</span></div>
-    <div id="vx-pf-postmortem">%%LOADING%%</div>
-  </section>
-</div>
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-12" aria-label="Calibration Skyler">
-    <div class="vx-card-header"><span class="vx-card-title">Calibration Skyler — les d&eacute;cisions vieillissent-elles bien&nbsp;?</span>
-      <span class="vx-chart-question">Journal des d&eacute;cisions canoniques + rendements r&eacute;els depuis le prix enregistr&eacute;. Brier indisponible tant qu&rsquo;aucune probabilit&eacute; calibr&eacute;e n&rsquo;existe — dit tel quel.</span></div>
-    <div id="vx-pf-calibration">%%LOADING%%</div>
-  </section>
-</div>
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-12" aria-label="Mémoire décisionnelle">
-    <div class="vx-card-header"><span class="vx-card-title">M&eacute;moire d&eacute;cisionnelle — Skyler apprend-il de ses d&eacute;cisions&nbsp;?</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/api/skyler/memory/export" download>Exporter &rarr;</a>
-        <label class="vx-btn vx-btn-sm vx-btn-ghost" for="vx-mem-import-file" style="cursor:pointer">Importer &larr;</label>
-        <input type="file" id="vx-mem-import-file" accept="application/json,.json" style="display:none"></span>
-      <span class="vx-chart-question">Ledger immuable par version de moteur : d&eacute;cisions fig&eacute;es, biais surveill&eacute;s, erreurs class&eacute;es — jamais r&eacute;&eacute;crites. L&rsquo;export est ta sauvegarde souveraine ; l&rsquo;import restaure par rejeu (la donn&eacute;e locale gagne toujours).</span></div>
-    <div id="vx-mem-import-result"></div>
-    <div id="vx-pf-memory">%%LOADING%%</div>
-  </section>
+<div class="vx-section-stack vx-mt4">
+  <details class="vx-disclosure" id="vx-pf-results-disclosure">
+    <summary>R&eacute;sultats d&eacute;clar&eacute;s &middot; P&amp;L, r&eacute;ussite et profit factor</summary>
+    <div class="vx-disclosure__body">
+      <div class="vx-page-lead vx-mb3"><b>Mesure descriptive du journal.</b>
+        <span class="vx-meta">La performance de portefeuille reste dans <a href="/portfolio?view=performance">Portefeuille &rarr; Performance</a>.</span></div>
+      <div class="vx-hero-grid">
+        <section class="vx-card" aria-label="Post-mortem des trades clôturés">
+          <div class="vx-card-header"><span class="vx-card-title">Post-mortem</span><span class="vx-chart-question">Que disent mes sorties&nbsp;?</span>
+            <span class="vx-chart-question">Stats r&eacute;elles et drapeaux de discipline. Descriptif, pas un conseil.</span></div>
+          <div id="vx-pf-postmortem">%%LOADING%%</div>
+        </section>
+        <div id="vx-pf-dist"></div>
+        <div id="vx-pf-buckets" class="vx-mt3"></div>
+      </div>
+    </div>
+  </details>
+  <details class="vx-disclosure" id="vx-pf-history-disclosure">
+    <summary>Avanc&eacute; &middot; calibration et m&eacute;moire du moteur</summary>
+    <div class="vx-disclosure__body vx-section-stack">
+      <div class="vx-toolbar">
+        <span class="vx-meta">Historique technique, calibration et ledger immuable.</span>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=track-record">Ouvrir Historique &rarr;</a>
+      </div>
+      <section class="vx-card" aria-label="Calibration Skyler">
+        <div class="vx-card-header"><span class="vx-card-title">Calibration Skyler</span>
+          <span class="vx-chart-question">D&eacute;cisions canoniques et rendements r&eacute;els ; Brier indisponible tant qu&rsquo;il ne peut pas &ecirc;tre mesur&eacute;.</span></div>
+        <div id="vx-pf-calibration">%%LOADING%%</div>
+      </section>
+      <section class="vx-card" aria-label="Mémoire décisionnelle">
+        <div class="vx-card-header"><span class="vx-card-title">M&eacute;moire d&eacute;cisionnelle</span>
+          <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/api/skyler/memory/export" download>Exporter &rarr;</a>
+            <label class="vx-btn vx-btn-sm vx-btn-ghost" for="vx-mem-import-file" style="cursor:pointer">Importer &larr;</label>
+            <input type="file" id="vx-mem-import-file" accept="application/json,.json" style="display:none"></span></div>
+        <div id="vx-mem-import-result"></div>
+        <div id="vx-pf-memory">%%LOADING%%</div>
+      </section>
+    </div>
+  </details>
 </div>
 """,
     'journal': """
-<div class="vx-grid vx-mt3">
-  <section class="vx-card vx-col-8" aria-label="Timeline des décisions">
-    <div class="vx-card-header"><span class="vx-card-title">Timeline des décisions</span>
-      <span class="vx-actions">
-        <input class="vx-input" id="vx-pf-filter" data-filter-key="sym" placeholder="Filtrer par ticker"
-          value="%%SYM%%" autocomplete="off" style="max-width:160px;text-transform:uppercase" aria-label="Filtrer par ticker" />
-        <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-pf-add">Ajouter une entrée</button>
-      </span></div>
+<div class="vx-page-lead vx-mt3">
+  <div><h2>Chronologie des d&eacute;cisions</h2><div class="vx-sub">Retrouver une d&eacute;cision, sa raison et la le&ccedil;on d&eacute;clar&eacute;e.</div></div>
+</div>
+<div class="vx-toolbar vx-mt3" role="search" aria-label="Outils de la chronologie">
+  <input class="vx-input" id="vx-pf-filter" data-filter-key="sym" placeholder="Filtrer par ticker"
+    value="%%SYM%%" autocomplete="off" style="max-width:190px;text-transform:uppercase" aria-label="Filtrer par ticker" />
+  <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-pf-add">Ajouter une entrée</button>
+</div>
+<div class="vx-hero-grid vx-mt3">
+  <section class="vx-card" aria-label="Chronologie des décisions">
+    <div class="vx-card-header"><span class="vx-card-title">D&eacute;cisions d&eacute;clar&eacute;es</span></div>
     <div id="vx-pf-journal">%%LOADING%%</div>
   </section>
-  <section class="vx-card vx-col-4" aria-label="Statistiques d'erreurs">
-    <div class="vx-card-header"><span class="vx-card-title">Erreurs déclarées</span></div>
-    <div id="vx-pf-mistakes">%%LOADING%%</div>
-  </section>
+  <aside class="vx-insight-rail" aria-label="Statistiques d'erreurs">
+    <section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Erreurs déclarées</span></div>
+      <div id="vx-pf-mistakes">%%LOADING%%</div></section>
+  </aside>
 </div>
 """,
     'learnings': """
@@ -130,30 +150,41 @@ _VIEW_CONTENT = {
 """,
     'progression': """
 <div class="vx-grid vx-mt3">
+  <!-- PAGES.md §7 demande la courbe d'équité et le drawdown DANS le Journal.
+       Ils n'y sont pas, et ce n'est pas un oubli : ils ont été migrés vers
+       Portefeuille, qui est le domicile du capital. La règle « une donnée = un
+       seul domicile » est plus forte que la liste des visualisations — les
+       dupliquer ici créerait deux courbes d'équité à maintenir, donc deux
+       vérités possibles.
+
+       CE QUI MANQUAIT EST PLUS ÉTROIT QUE JE NE L'AI D'ABORD ÉCRIT : le Journal
+       nommait déjà le domicile — deux fois, dans la vue `overview` et dans un
+       état vide. Mais pas dans `progression`, c'est-à-dire pas dans la vue qui
+       POSE la question « est-ce que je progresse ». Une adresse écrite ailleurs
+       que là où l'on cherche ne sert personne. -->
   <section class="vx-card vx-col-12" aria-label="Progression de la discipline">
-    <div class="vx-card-header"><span class="vx-card-title">Ma progression</span>
-      <span class="vx-chart-question">Est-ce que je m'améliore, décision après décision ?</span></div>
+    <div class="vx-card-header"><span class="vx-card-title">Progression</span>
+      <span class="vx-chart-question">Est-ce que je m'améliore, décision après décision ?</span>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost"
+        href="/portfolio?view=performance">&Eacute;quit&eacute; &amp; drawdown &rarr;</a></span></div>
     <div id="vx-pf-prog">%%LOADING%%</div>
   </section>
 </div>
 """,
     'track-record': """
-<div class="vx-mt3 vx-insight" role="note"><b>Deux mondes, jamais confondus.</b>
-« Signaux (théorique) » mesure la fiabilité des verdicts du moteur sur données de marché ;
-« Trades réels (journal) » reflète uniquement ce que tu as déclaré avoir exécuté.
-Aucun chiffre de l’un n’alimente l’autre.</div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" aria-label="Signaux théoriques du moteur">
-    <div class="vx-card-header"><span class="vx-card-title">Signaux (théorique) — le moteur se note</span>
-      <span class="vx-badge">API moteur</span></div>
+<div class="vx-page-lead vx-mt3" role="note">
+  <div><h2>Historique</h2><div class="vx-sub">Deux sources s&eacute;par&eacute;es : mesure du moteur et journal d&eacute;clar&eacute;. Aucun chiffre ne passe de l&rsquo;une &agrave; l&rsquo;autre.</div></div>
+</div>
+<div class="vx-section-stack vx-mt4">
+  <section class="vx-card" aria-label="Historique théorique du moteur" data-source-kind="engine">
+    <div class="vx-card-header"><span class="vx-card-title">Moteur &middot; verdicts th&eacute;oriques</span>
+      <span class="vx-badge">Source API moteur</span></div>
     <div id="vx-pf-track">%%LOADING%%</div>
   </section>
-</div>
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-12" aria-label="Trades réels du journal">
-    <div class="vx-card-header"><span class="vx-card-title">Trades réels (journal)</span>
-      <span class="vx-badge" style="color:var(--vx-cyan,#45D6E8)">Tes déclarations</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=journal">Ouvrir la timeline →</a></span></div>
+  <section class="vx-card" aria-label="Historique déclaré du journal" data-source-kind="declared">
+    <div class="vx-card-header"><span class="vx-card-title">Journal &middot; trades d&eacute;clar&eacute;s</span>
+      <span class="vx-badge" style="color:var(--vx-cyan,#45D6E8)">Tes d&eacute;clarations</span>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=journal">Ouvrir la chronologie &rarr;</a></span></div>
     <div id="vx-pf-real">%%LOADING%%</div>
   </section>
 </div>
@@ -181,7 +212,7 @@ function stats(list){
     profitFactor:pertes>0?gains/pertes:(gains>0?Infinity:null),
     expectancy:pnls.length?pnls.reduce((a,b)=>a+b,0)/pnls.length:null};
 }
-const JOURNAL_ACTION='<a class="vx-btn vx-btn-sm" href="/journal?view=journal">Ouvrir la timeline</a>';
+const JOURNAL_ACTION='<a class="vx-btn vx-btn-sm" href="/journal?view=journal">Ouvrir la chronologie</a>';
 function emptyCard(host,reason,action){const el=$(host);if(el)el.innerHTML='<div class="vx-card">'+VX.states.empty(reason,action||'')+'</div>';}
 
 /* Statistiques COMPORTEMENTALES — agrégations honnêtes sur les décisions déclarées
@@ -211,6 +242,7 @@ function behavioral(){
 function loadDiscipline(){
   const b=behavioral();
   const hero=$('vx-pf-hero');
+  const next=$('vx-pf-next-axis');
   if(!b.n){
     if(hero)hero.innerHTML=`<div class="vx-flex" style="gap:8px;align-items:center;margin-bottom:6px">
         <span class="vx-eyebrow">Discipline</span></div>
@@ -218,7 +250,18 @@ function loadDiscipline(){
       <p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.6">Le Journal mesure ta <b>méthode</b> — pas la performance du portefeuille (elle vit dans <a href="/portfolio?view=performance">Portefeuille → Performance</a>). Journalise tes décisions pour révéler ta discipline, tes erreurs récurrentes et tes progrès.</p>
       <div class="vx-flex vx-mt3" style="gap:.5rem;flex-wrap:wrap">
         <a class="vx-btn vx-btn-sm vx-btn-primary" href="/journal?view=journal">Journaliser une décision</a></div>`;
+    /* Bande de KPI VIDÉE **et retirée** (lot 59). Le hero au-dessus dit déjà
+       « Aucune décision journalisée » : quatre KPI à « n/d » n'ajouteraient que
+       du bruit, et c'est bien de les enlever. Mais les vider sans retirer la
+       région laissait un `aria-label="Quatre indicateurs de discipline"` sur un
+       conteneur SANS AUCUN ENFANT — annoncé au lecteur d'écran, introuvable à
+       l'exploration. Visuellement il n'y avait rien à voir (hauteur mesurée :
+       0 px) ; c'est l'arbre d'accessibilité qui mentait, pas l'écran. */
     $('vx-pf-kpis').innerHTML='';
+    $('vx-pf-kpis').hidden=true;
+    if(next)next.innerHTML='<span class="vx-eyebrow">Prochain axe</span><h3>Documenter une premi&egrave;re d&eacute;cision</h3>'
+      +'<p class="vx-dim">Renseigne au minimum la raison, l&rsquo;invalidation et ce qui confirmerait la th&egrave;se.</p>'
+      +'<a class="vx-btn vx-btn-sm vx-btn-primary" href="/journal?view=journal">Commencer &rarr;</a>';
     return;
   }
   /* Phrase éditoriale construite UNIQUEMENT sur des faits comptés. */
@@ -234,21 +277,41 @@ function loadDiscipline(){
     <p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.6">${bits.slice(1).join(' ')||''} Aucun pourcentage n’est inventé — tout est compté sur tes déclarations.</p>`;
   /* KPI comportementaux — « n/d » honnête quand la donnée n'existe pas. */
   const pct=(v)=>v==null?'n/d':v+' %';
-  const cell=(label,val,sub,cls)=>`<div class="vx-card vx-kpi vx-card--compact" style="grid-column:span 3" aria-label="${esc(label)}">
+  const cell=(label,val,sub,cls)=>`<div class="vx-card vx-kpi-card vx-kpi vx-card--compact" aria-label="${esc(label)}">
     <span class="vx-kpi-label">${label}</span><span class="vx-kpi-value ${cls||''}" style="font-size:20px">${val}</span>
     <span class="vx-meta">${sub}</span></div>`;
+  /* Symétrique du `hidden` posé plus haut : un rafraîchissement qui repasse de
+     zéro décision à une décision doit rendre la bande visible. Sans cela le
+     correctif d'accessibilité créerait un défaut pire — des KPI calculés et
+     invisibles, le motif même que cette série traque. */
+  $('vx-pf-kpis').hidden=false;
   $('vx-pf-kpis').innerHTML=
     cell('Respect de la méthode',pct(b.respectMethod),'décisions avec plan documenté',b.respectMethod>=80?'vx-pos':b.respectMethod!=null&&b.respectMethod<50?'vx-neg':'')
     +cell('Qualité des entrées',pct(b.entryQuality),'avec raison d’entrée',b.entryQuality>=80?'vx-pos':b.entryQuality!=null&&b.entryQuality<50?'vx-neg':'')
     +cell('Qualité des sorties',pct(b.exitQuality),'clôtures avec leçon',b.exitQuality>=80?'vx-pos':b.exitQuality!=null&&b.exitQuality<50?'vx-neg':'')
     +cell('Respect des invalidations',pct(b.invalRespect),'pertes sorties près du stop',b.invalRespect!=null&&b.invalRespect>=80?'vx-pos':b.invalRespect!=null&&b.invalRespect<50?'vx-neg':'');
+  if(next){
+    const axes=[
+      {value:b.respectMethod,title:'Formaliser le plan',body:'Ajouter une raison et une invalidation avant de juger la décision.'},
+      {value:b.entryQuality,title:'Expliquer l’entrée',body:'Rendre la raison d’entrée explicite et vérifiable.'},
+      {value:b.exitQuality,title:'Consigner la leçon',body:'Compléter la leçon après chaque clôture.'},
+      {value:b.invalRespect,title:'Respecter l’invalidation',body:'Comparer la sortie au niveau d’invalidation déclaré.'}
+    ];
+    const known=axes.filter(a=>a.value!=null).sort((a,b2)=>a.value-b2.value);
+    const axis=known[0]||axes.find(a=>a.value==null)||axes[0];
+    next.dataset.tone=axis.value!=null&&axis.value<50?'risk':'neutral';
+    next.innerHTML='<span class="vx-eyebrow">Prochain axe</span><h3>'+esc(axis.title)+'</h3>'
+      +'<p class="vx-dim">'+esc(axis.body)+'</p>'
+      +(axis.value==null?'<span class="vx-badge">mesure n/d</span>':'<span class="vx-badge">'+axis.value+' % aujourd&rsquo;hui</span>')
+      +'<div class="vx-mt3"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/journal?view=journal">Voir la chronologie &rarr;</a></div>';
+  }
 }
 
 /* Revue des hypothèses — validées / invalidées / en cours (déclarations). */
 function loadHypotheses(){
   const host=$('vx-pf-hypo');if(!host)return;
   const j=(E()?E().journal():[])||[];
-  if(!j.length){host.innerHTML=VX.states.empty('Aucune hypothèse journalisée — chaque décision est une thèse à vérifier.',JOURNAL_ACTION);return;}
+  if(!j.length){host.innerHTML=VX.states.emptyDesk('Aucune hypothèse journalisée — chaque décision est une thèse à vérifier.',JOURNAL_ACTION);return;}
   const wins=j.filter(e=>e.result==='WIN'),losses=j.filter(e=>e.result==='LOSS'),open=j.filter(e=>!e.result);
   const chip=(label,n,cls)=>`<div class="vx-kpi vx-card vx-card--compact" style="grid-column:span 4">
     <span class="vx-kpi-label">${label}</span><span class="vx-kpi-value ${cls}" style="font-size:24px">${n}</span></div>`;
@@ -260,6 +323,59 @@ function loadHypotheses(){
       ${chip('Validées',wins.length,'vx-pos')}${chip('Invalidées',losses.length,'vx-neg')}${chip('En cours',open.length,'vx-muted')}</div>`
     +j.slice().sort((a,b2)=>String(b2.date||'').localeCompare(String(a.date||''))).slice(0,6).map(line).join('')
     +`<div class="vx-card-footer">${j.length} hypothèse(s) · une hypothèse invalidée n’est pas un échec si l’invalidation a été respectée</div>`;
+}
+
+/* RANG 3 de PAGES.md §7 : « résultats par grade / setup / horizon ».
+   INSTRUIT AVANT D'ÊTRE CONSTRUIT (lot 19), et le résultat de l'instruction a
+   changé ce qui est construit :
+
+   - HORIZON  → le champ `tf` existe dans chaque entrée du journal. Constructible.
+   - SETUP    → le champ `trigger` existe. Constructible, mais VIDE sur les
+                entrées créées automatiquement à la clôture d'une position ;
+                elles sont comptées à part, jamais fondues dans un setup nommé.
+   - WIN/LOSS → le champ `result` existe ('WIN' | 'LOSS'). Constructible.
+   - GRADE    → N'EXISTE PAS dans le schéma du bureau. Le fabriquer exigerait
+                soit d'étendre un contrat de données PERSONNELLES synchronisé en
+                last-writer-wins, soit d'aller le chercher côté moteur — ce qui
+                mélangerait les deux sources que le rang 1 de cette page sépare
+                explicitement (« Aucun chiffre ne passe de l'une à l'autre »).
+                Non construit, et dit comme tel dans la carte. */
+function loadBuckets(){
+  const host=$('vx-pf-buckets');if(!host)return;
+  const j=((E()?E().journal():[])||[]).filter(e=>e.result==='WIN'||e.result==='LOSS');
+  if(j.length<3){
+    host.innerHTML='<section class="vx-card">'
+      +VX.states.emptyDesk('Résultats par horizon et par setup à partir de 3 décisions résolues.',JOURNAL_ACTION)
+      +'</section>';return;}
+  const grouper=(champ,libelleVide)=>{
+    const m={};
+    j.forEach(e=>{const k=String(e[champ]||'').trim()||libelleVide;
+      (m[k]=m[k]||{w:0,l:0})[e.result==='WIN'?'w':'l']++;});
+    return Object.keys(m).sort((a,b)=>(m[b].w+m[b].l)-(m[a].w+m[a].l)).slice(0,6)
+      .map(k=>({k,w:m[k].w,l:m[k].l}));
+  };
+  const bloc=(titre,rows,note)=>{
+    if(!rows.length)return '';
+    const ligne=(r)=>{const n=r.w+r.l,p=Math.round(r.w/n*100);
+      return `<div class="vx-kv"><span class="k">${esc(r.k)}</span>
+        <span class="v"><span class="vx-pos">${r.w}</span> / <span class="vx-neg">${r.l}</span>
+        <span class="vx-dim">· ${p} % gagnants sur ${n}</span></span></div>`;};
+    return `<div class="vx-col-6"><div class="vx-kpi-label vx-mb1">${titre}</div>`
+      +rows.map(ligne).join('')+(note?`<div class="vx-meta vx-mt1">${note}</div>`:'')+'</div>';
+  };
+  const sansSetup=j.filter(e=>!String(e.trigger||'').trim()).length;
+  host.innerHTML=`<section class="vx-card" aria-label="Résultats par horizon et par setup">
+    <div class="vx-card-header"><span class="vx-card-title">Résultats par horizon et par setup</span>
+      <span class="vx-chart-question">Quel horizon et quel déclencheur tiennent le mieux ?</span></div>
+    <div class="vx-grid">
+      ${bloc('Par horizon',grouper('tf','non renseigné'))}
+      ${bloc('Par setup (déclencheur)',grouper('trigger','non renseigné'),
+        sansSetup?(sansSetup+' entrée(s) sans déclencheur — clôtures journalisées automatiquement.'):'')}
+    </div>
+    <div class="vx-card-footer">${j.length} décision(s) résolue(s) · le découpage PAR GRADE
+      n'est pas construit : le grade n'existe pas dans le journal, et l'aller chercher
+      côté moteur mélangerait les deux sources que cette page sépare.</div>
+  </section>`;
 }
 
 /* Distribution des rendements par trade — mesure de DISCIPLINE (asymétrie). */
@@ -282,15 +398,15 @@ function loadDist(){
       {colors:buckets.map(([a])=>a<0?VXCharts.colors.negative:VXCharts.colors.positive)})});
 }
 
-/* ═══ TIMELINE (journal) ═══ */
+/* ═══ CHRONOLOGIE (journal) ═══ */
 function currentFilter(){return ($('vx-pf-filter')?$('vx-pf-filter').value:'').trim().toUpperCase();}
 function loadJournal(){
   const all=(E()?E().journal():[]).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
   const f=currentFilter();
   const list=f?all.filter(e=>String(e.ticker||'').toUpperCase().includes(f)):all;
   if(!list.length){
-    $('vx-pf-journal').innerHTML=VX.states.empty(
-      f?('Aucune entrée pour « '+esc(f)+' ».'):'Timeline vide — déclare tes décisions pour mesurer ton exécution.',
+    $('vx-pf-journal').innerHTML=VX.states.emptyDesk(
+      f?('Aucune entrée pour « '+esc(f)+' ».'):'Chronologie vide — déclare tes décisions pour mesurer ton exécution.',
       '<button class="vx-btn vx-btn-sm" id="vx-pf-add-empty">Ajouter une entrée</button>');
     $('vx-pf-add-empty')?.addEventListener('click',openEntryModal);
     return;
@@ -307,7 +423,7 @@ function loadJournal(){
         <td>${e.result==='WIN'?'<span class="vx-badge vx-pos">WIN</span>':e.result==='LOSS'?'<span class="vx-badge vx-neg">LOSS</span>':'—'}</td>
         <td class="vx-num vx-mono ${pnl>0?'vx-pos':pnl<0?'vx-neg':'vx-muted'}">${isFinite(pnl)?(pnl>0?'+':'')+VX.fmt.num(pnl,0)+' $':'—'}</td>
         <td class="vx-dim" style="font-size:12px;max-width:260px">${esc(e.lesson||'')}</td>
-        <td><button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(e.ticker||'')}" aria-label="Actions ${esc(e.ticker||'')}">⋯</button></td>
+        <td><button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(e.ticker||'')}" aria-label="Actions ${esc(e.ticker||'')}">${VX.icon('more')}</button></td>
       </tr>`;}).join('')+'</tbody></table>'
     +`<div class="vx-card-footer">${list.length} entrée(s)${f?' (filtre : '+esc(f)+')':''} · journal local synchronisé desk</div>`;
 }
@@ -318,7 +434,7 @@ function loadMistakes(){
   const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
   $('vx-pf-mistakes').innerHTML=top.length?top.map(([m,n])=>
     `<div class="vx-kv"><span class="k">${esc(m)}</span><span class="v vx-mono">× ${n}</span></div>`).join('')
-    :VX.states.empty('Aucune erreur déclarée — renseigne le champ « erreur » à chaque sortie perdante.');
+    :VX.states.emptyDesk('Aucune erreur déclarée — renseigne le champ « erreur » à chaque sortie perdante.');
 }
 function openEntryModal(){
   const field=(id,label,type,ph)=>`<div class="vx-field"><label for="${id}">${label}</label>
@@ -365,25 +481,25 @@ function loadLearnings(){
   const lessons=[...new Set(all.map(e=>String(e.lesson||'').trim()).filter(Boolean))];
   $('vx-pf-lessons').innerHTML=lessons.length?
     '<ul style="margin:0;padding-left:18px;line-height:1.9">'+lessons.map(l=>`<li>${esc(l)}</li>`).join('')+'</ul>'
-    :VX.states.empty('Aucune leçon consignée — renseigne le champ « leçon » à chaque sortie de trade.',JOURNAL_ACTION);
+    :VX.states.emptyDesk('Aucune leçon consignée — renseigne le champ « leçon » à chaque sortie de trade.',JOURNAL_ACTION);
   const counts={};
   all.forEach(e=>{const m=String(e.mistake||'').trim();if(m)counts[m]=(counts[m]||0)+1;});
   const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
   $('vx-pf-recurrent').innerHTML=top.length?top.map(([m,n])=>
     `<div class="vx-kv"><span class="k">${esc(m)}</span><span class="v vx-mono">× ${n}</span></div>`).join('')
-    :VX.states.empty('Aucune erreur récurrente déclarée pour l’instant.');
+    :VX.states.emptyDesk('Aucune erreur récurrente déclarée pour l’instant.');
   /* Biais comportementaux — décompte des états émotionnels déclarés. */
   const emo={};
   all.forEach(e=>{const m=String(e.emo||'').trim().toLowerCase();if(m)emo[m]=(emo[m]||0)+1;});
   const rows=Object.entries(emo).sort((a,b)=>b[1]-a[1]);
   const bh=$('vx-pf-biais');
   if(bh){
-    if(!rows.length){bh.innerHTML=VX.states.empty('Aucun état émotionnel déclaré — renseigne « état émotionnel » (calme, FOMO, peur…) pour révéler tes biais.');}
+    if(!rows.length){bh.innerHTML=VX.states.emptyDesk('Aucun état émotionnel déclaré — renseigne « état émotionnel » (calme, FOMO, peur…) pour révéler tes biais.');}
     else{
       const max=rows[0][1];
       bh.innerHTML='<div style="display:flex;flex-direction:column;gap:6px">'+rows.map(([m,n])=>
         `<div style="display:flex;align-items:center;gap:8px"><span style="width:140px;font-size:12.5px;text-transform:capitalize" class="vx-dim">${esc(m)}</span>
-         <span style="flex:1;height:13px;background:var(--vx-surface-3,#121214);border-radius:4px;overflow:hidden"><span style="display:block;height:100%;width:${Math.round(n/max*100)}%;background:var(--vx-brand,#DBE1E8);border-radius:4px"></span></span>
+         <span style="flex:1;height:13px;background:var(--vx-surface-3,#121214);border-radius:4px;overflow:hidden"><span style="display:block;height:100%;width:${Math.round(n/max*100)}%;background:var(--vx-brand,#9B7BFF);border-radius:4px"></span></span>
          <span class="vx-mono" style="width:34px;text-align:right">× ${n}</span></div>`).join('')+'</div>'
         +'<div class="vx-card-footer"><span class="vx-meta">Décompte déclaratif — un biais nommé est un biais qu’on peut corriger.</span></div>';
     }
@@ -399,7 +515,12 @@ function loadProgression(){
     [20,'Respect des invalidations, MAE/MFE, meilleurs setups'],
     [30,'Rolling win rate & discipline par régime']];
   const rows=milestones.map(m=>{const done=b.n>=m[0];
-    return `<div class="vx-kv"><span class="k">${done?'✅':'🔒'} ${m[0]} décisions</span>
+    /* ✅ / 🔒 servaient de puces d'etat : deux emojis multicolores dans une
+       liste, ce que VISUAL_SYSTEM.md refuse. Un attribut porte l'etat, le CSS
+       le colore, et le lecteur d'ecran recoit un mot au lieu d'un pictogramme. */
+    return `<div class="vx-kv" data-jalon="${done?'atteint':'a-venir'}">
+      <span class="k"><span class="vx-dot" aria-hidden="true"></span>
+      <span class="vx-sr-only">${done?'Atteint' : 'À venir'}</span> ${m[0]} décisions</span>
       <span class="v vx-dim" style="font-size:12px;text-align:right">${esc(m[1])}</span></div>`;}).join('');
   /* Erreurs par mois (déclarées) — la fréquence baisse-t-elle ? */
   const all=(E()?E().journal():[])||[];
@@ -423,7 +544,7 @@ function loadProgression(){
   }
 }
 
-/* ═══ TRACK RECORD ═══ */
+/* ═══ HISTORIQUE DU MOTEUR ═══ */
 async function loadTrack(){
   try{
     const tr=await VX.fetch('/api/track-record',{ttl:120000});
@@ -449,24 +570,24 @@ async function loadTrack(){
         <td class="vx-num vx-mono ${s.win_5j==null?'':s.win_5j>=50?'vx-pos':'vx-neg'}">${s.win_5j===null||s.win_5j===undefined?'—':VX.fmt.num(s.win_5j,0)+' %'}</td>
         <td class="vx-num vx-mono">${s.tp1_rate===null||s.tp1_rate===undefined?'—':VX.fmt.num(s.tp1_rate,0)+' % ('+s.tp1_resolved+')'}</td>
       </tr>`).join('')+'</tbody></table>'
-      +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'moteur track-record','delayed')}
+      +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'historique moteur','delayed')}
         <span class="vx-meta">${esc(tr.note||'')}${tr.as_of?' · au '+esc(tr.as_of):''}</span></div>`;
     try{
       const _tl=rows.map(([v])=>v),_tv=rows.map(([,s])=>(s.avg_20j==null?null:s.avg_20j));
       if(window.VXCharts&&VXCharts.card&&VXCharts.bars&&_tv.some(x=>x!=null)){
         VXCharts.card('vx-pf-track-bar',{title:'Rendement moyen +20 séances par verdict',
           question:'Quels verdicts moteur ont le mieux tenu ?',height:200,
-          source:'moteur track-record',timestamp:Date.now(),mode:'delayed',
+          source:'historique moteur',timestamp:Date.now(),mode:'delayed',
           limits:'moyenne réelle des verdicts résolus (n≥5) — mesure, pas une promesse',
           render:(cv)=>VXCharts.bars(cv,_tl,_tv,{colors:_tv.map(v=>v==null?VXCharts.colors.muted:(v>=0?VXCharts.colors.positive:VXCharts.colors.negative)),yFmt:(x)=>x+' %'})});
       }
     }catch(e){}
-  }catch(e){$('vx-pf-track').innerHTML=VX.states.error('Track record moteur indisponible ('+esc(e.message)+')');}
+  }catch(e){$('vx-pf-track').innerHTML=VX.states.error('Historique moteur indisponible ('+esc(e.message)+')');}
 }
 function loadReal(){
   const list=trades();
   if(!list.length){
-    $('vx-pf-real').innerHTML=VX.states.empty('Aucun trade réel déclaré avec résultat — le journal est la seule source de cette section.',JOURNAL_ACTION);
+    $('vx-pf-real').innerHTML=VX.states.emptyDesk('Aucun trade réel déclaré avec résultat — le journal est la seule source de cette section.',JOURNAL_ACTION);
     return;
   }
   const s=stats(list);
@@ -662,8 +783,16 @@ function wireMemoryImport(){
     rd.readAsText(f);
   });
 }
+function bindDisclosures(){
+  document.querySelectorAll('details.vx-disclosure').forEach(d=>{
+    if(d.dataset.vxBound)return;
+    d.dataset.vxBound='1';
+    d.addEventListener('toggle',()=>{if(d.open)window.dispatchEvent(new Event('resize'));});
+  });
+}
 function boot(){
-  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();loadPostmortem();loadCalibration();loadMemory();wireMemoryImport();}
+  bindDisclosures();
+  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();loadBuckets();loadPostmortem();loadCalibration();loadMemory();wireMemoryImport();}
   else if(VIEW==='journal'){
     loadJournal();loadMistakes();
     $('vx-pf-add')?.addEventListener('click',openEntryModal);

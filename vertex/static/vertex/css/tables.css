@@ -1,29 +1,46 @@
 /* Vertex Design System — tables.css : tableau financier canonique (§36). */
 .vx-table-wrap{overflow-x:auto;border:1px solid var(--vx-border-soft);
-  border-radius:var(--vx-r-lg);background:var(--vx-surface)}
-.vx-table{width:100%;border-collapse:collapse;font-size:12.5px}
+  border-radius:var(--vx-r-lg);background:var(--vx-surface);
+  scrollbar-width:thin;scrollbar-color:var(--vx-border-strong) transparent;
+  overscroll-behavior-inline:contain}
+.vx-table-wrap::-webkit-scrollbar{height:7px}
+.vx-table-wrap::-webkit-scrollbar-thumb{background:var(--vx-border-strong);
+  border:2px solid var(--vx-surface);border-radius:999px}
+.vx-table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.35}
 .vx-table th{position:sticky;top:0;z-index:2;background:var(--vx-bg-secondary);
-  color:var(--vx-text-muted);font-size:10.5px;font-weight:700;
+  height:40px;color:var(--vx-text-muted);font-size:10.5px;font-weight:700;
   text-transform:uppercase;letter-spacing:.6px;text-align:left;
-  padding:9px 12px;border-bottom:1px solid var(--vx-border-soft);white-space:nowrap}
+  padding:0 14px;border-bottom:1px solid var(--vx-border-default);white-space:nowrap}
 .vx-table th[data-sortable]{cursor:pointer;user-select:none}
 .vx-table th[data-sortable]:hover{color:var(--vx-text)}
 .vx-table th[aria-sort="ascending"]::after{content:" ↑";color:var(--vx-brand)}
 .vx-table th[aria-sort="descending"]::after{content:" ↓";color:var(--vx-brand)}
-.vx-table td{padding:8px 12px;border-bottom:1px solid var(--vx-border-soft);
+.vx-table td{height:48px;padding:9px 14px;border-bottom:1px solid var(--vx-border-faint);
   white-space:nowrap;vertical-align:middle}
 .vx-table tbody tr:last-child td{border-bottom:none}
-.vx-table tbody tr{transition:background var(--vx-t-fast)}
+.vx-table tbody tr{position:relative;transition:background var(--vx-t-fast),box-shadow var(--vx-t-fast)}
 .vx-table tbody tr:hover{background:var(--vx-surface-hover)}
 .vx-table tbody tr[data-clickable]{cursor:pointer}
+.vx-table tbody tr[data-clickable]:focus-visible,
+.vx-table tbody tr:focus-within{outline:none;box-shadow:inset 2px 0 0 var(--vx-brand)}
 .vx-table .vx-num{font-family:var(--vx-font-mono);font-variant-numeric:tabular-nums;
   text-align:right}
-.vx-table .vx-row-actions{opacity:0;display:flex;gap:4px;justify-content:flex-end;
+.vx-table .vx-row-actions{opacity:.58;display:flex;gap:4px;justify-content:flex-end;
   transition:opacity var(--vx-t-fast)}
 .vx-table tbody tr:hover .vx-row-actions,
 .vx-table tbody tr:focus-within .vx-row-actions{opacity:1}
 .vx-table .vx-ticker{font-family:var(--vx-font-mono);font-weight:700;
   color:var(--vx-text);letter-spacing:.3px}
+.vx-table-primary{display:flex;flex-direction:column;gap:2px;min-width:0}
+.vx-table-primary>strong{color:var(--vx-text-primary);font-weight:650}
+.vx-table-primary>span{color:var(--vx-text-muted);font-size:11px;
+  overflow:hidden;text-overflow:ellipsis;max-width:320px}
+.vx-row-open{display:inline-flex;align-items:center;gap:5px;color:var(--vx-text-muted);
+  font-size:11px;font-weight:650;white-space:nowrap}
+.vx-row-open::after{content:"›";font-size:16px;line-height:1;color:var(--vx-brand-strong)}
+.vx-table tbody tr:hover .vx-row-open{color:var(--vx-text-primary)}
+.vx-table--compact td{height:42px;padding-top:7px;padding-bottom:7px}
+.vx-table--comfortable td{height:54px}
 /* Barre de filtres */
 .vx-filterbar{display:flex;flex-wrap:wrap;gap:var(--vx-s2);align-items:center;
   margin-bottom:var(--vx-s3)}
@@ -43,10 +60,29 @@
   .vx-table-cards tbody{display:flex;flex-direction:column;gap:8px;padding:8px}
   .vx-table-cards tbody tr{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;
     border:1px solid var(--vx-border-soft);border-radius:var(--vx-r);
-    padding:10px;background:var(--vx-surface-elevated)}
-  .vx-table-cards td{border:none;padding:2px 0;white-space:normal}
+    padding:12px;background:var(--vx-surface-elevated)}
+  /* Une ligne CLIQUABLE en mode cartes est un controle : `role="button"`,
+     `tabindex`, `aria-label`. Sa carte EST sa limite, et elle rendait 1,20:1
+     — sous les 3:1 de WCAG 1.4.11. Defaut visible SEULEMENT en mobile : les
+     audits des lots 22-23 ne mesuraient qu'a 1440, ou ces lignes sont des
+     lignes de tableau et non des cartes. Les lignes non cliquables gardent
+     leur bordure discrete : elles n'identifient aucun controle. */
+  .vx-table-cards tbody tr[data-clickable],
+  .vx-table-cards tbody tr[role="button"]{
+    border-color:var(--vx-border-control);
+  }
+  .vx-table-cards td{height:auto;border:none;padding:4px 0;white-space:normal}
+  /* Une cellule TRONQUEE en mode cartes : `.vx-table-cards td` remet
+     `white-space:normal` (specificite superieure a `.vx-truncate`), donc le
+     texte passe a la ligne — mais `overflow:hidden` et le `max-width` en ligne
+     restent, et ce qui depasse est rogne VERTICALEMENT, sans ellipse ni
+     defilement. Mesure : 37 px coupes sur la these de la Surveillance a 390 px.
+     Une troncature a une ligne qui cesse d'etre a une ligne n'est plus une
+     troncature : c'est une perte. */
+  .vx-table-cards td.vx-truncate{
+    max-width:none!important;overflow:visible;text-overflow:clip;white-space:normal}
   .vx-table-cards td::before{content:attr(data-label);display:block;
-    font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;
+    font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;
     color:var(--vx-text-faint)}
   .vx-table-cards .vx-row-actions{opacity:1;grid-column:1/-1;justify-content:flex-start}
 }

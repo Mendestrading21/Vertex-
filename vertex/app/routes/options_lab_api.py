@@ -24,7 +24,7 @@ def api_options_lab():
         return jsonify(options_lab.build(scan_state, demo=DEMO_MODE,
                                          cal_items=cal_state.get('items')))
     except Exception as e:
-        return jsonify({'empty': True, 'error': f'{type(e).__name__}: {e}'}), 500
+        return jsonify({'empty': True, 'error': 'options_lab_unavailable'}), 500
 
 
 @bp.route('/api/options/strategies/<sym>')
@@ -54,7 +54,7 @@ def api_options_strategies(sym):
         res['demo'] = DEMO_MODE
         return jsonify(res)
     except Exception as e:
-        return jsonify({'available': False, 'reason': f'{type(e).__name__}: {e}'}), 200
+        return jsonify({'available': False, 'reason': 'options_lab_unavailable'}), 200
 
 
 @bp.route('/api/options/analyze', methods=['POST'])
@@ -63,13 +63,24 @@ def api_options_analyze():
     p.ex. les positions options RÉELLES du desk regroupées par sous-jacent). Payoff,
     breakevens, gain/perte max, PoP (si IV), greeks. Lecture seule, aucun ordre."""
     try:
-        b = request.get_json(force=True, silent=True) or {}
+        from vertex.app import payload_validation as _payload
+        b = _payload.object_body(request.get_json(force=True, silent=True), max_keys=8)
+        if not b.get('legs'):
+            return jsonify({'available': False, 'reason': 'legs manquant'}), 200
+        legs = _payload.object_list(b, 'legs', maximum=16, minimum=1)
+        spot = _payload.optional_number(b, 'spot')
+        iv = _payload.optional_number(b, 'iv', maximum=10)
+        days = _payload.optional_number(b, 'days', maximum=3650)
+        if b.get('name') is not None and len(str(b.get('name'))) > 96:
+            raise _payload.PayloadError('name_trop_long')
         res = multileg_lab.analyze_strategy(
-            b.get('legs'), b.get('spot'), b.get('iv'), b.get('days'),
+            legs, spot, iv, days,
             name=b.get('name'))
         return jsonify(res)
+    except _payload.PayloadError as exc:
+        return jsonify({'available': False, 'error': str(exc)}), 400
     except Exception as e:
-        return jsonify({'available': False, 'reason': f'{type(e).__name__}: {e}'}), 200
+        return jsonify({'available': False, 'reason': 'options_analysis_unavailable'}), 200
 
 
 __all__ = ['bp']

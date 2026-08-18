@@ -37,6 +37,7 @@ def healthz():
         'last_scan': scan_state.get('updated'),
         'scan_age': round(time.time() - scan_state['scan_ts']) if scan_state.get('scan_ts') else None,
         'scan_error': scan_state.get('error'),
+        'source_health': scan_state.get('source_health') or {'scan': 'UNKNOWN'},
         'vertex_ready': sum(1 for d in (scan_state.get('detail') or {}).values() if d.get('vertex')),
         'engines': ['scoring', 'pivots', 'committee', 'strategy', 'portfolio_risk',
                     'vertex', 'vertex_ml', 'validator'],
@@ -118,8 +119,8 @@ def readyz():
         cfg = validate_config()
         bad = [k for k, v in cfg.items() if isinstance(v, dict) and v.get('status') == 'INVALID']
         _chk('configuration', not bad, 'invalides: %s' % ','.join(bad) if bad else 'valide')
-    except Exception as e:
-        _chk('configuration', False, str(e)[:120])
+    except Exception:
+        _chk('configuration', False, 'configuration_indisponible')
 
     # 2. Stratégie chargée (constitution canonique).
     try:
@@ -134,8 +135,8 @@ def readyz():
         from vertex.services import persist
         persist.load_json('desk_data.json', {})
         _chk('stockage', True, 'desk lisible')
-    except Exception as e:
-        _chk('stockage', False, str(e)[:120])
+    except Exception:
+        _chk('stockage', False, 'stockage_indisponible')
 
     # 4. READONLY effectif (invariant absolu).
     from vertex.app.config import READONLY
@@ -174,11 +175,11 @@ def system_status_ep():
 @bp.route('/favicon.ico')
 @bp.route('/favicon.svg')
 def favicon_ep():
-    """Favicon Vertex : triangle blanc/gris givré sur fond sombre, en SVG inline
+    """Favicon Vertex : triangle cuivre sobre sur fond obsidienne, en SVG inline
     (aucune dépendance fichier → zéro 404 dans l'onglet du navigateur)."""
     svg = ("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>"
            "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>"
-           "<stop offset='0' stop-color='#eef1f5'/><stop offset='1' stop-color='#aab3bf'/>"
+           "<stop offset='0' stop-color='#e1a06e'/><stop offset='1' stop-color='#b96d3c'/>"
            "</linearGradient></defs>"
            "<rect width='64' height='64' rx='14' fill='#0b0e14'/>"
            "<path d='M32 15 L49 45 L15 45 Z' fill='url(#g)'/>"
@@ -208,7 +209,7 @@ def manifest_ep():
 
 
 _SW_JS = r"""
-const CACHE='td-shell-v187';  // v187 lot 328 : honnêteté d'affichage — la page Système annonçait « contrat __DESK_KEYS », symbole disparu avec la purge É1 (lot 323) ; le contrat réel s'appelle DESK_KEYS (vx_kit + vx-entities) ; v186 lot 302 : clavier — le Tab traverse la recherche sans ouvrir la palette (elle s'ouvrait de force, boutons du topbar inatteignables) ; ouverture au clic/tap ou à la frappe ; v185 lot 299 : a11y — aria-label sur les 2 champs de la fiche Analyse (copilote + ticket pré-trade), seuls champs sans étiquette des 26 vues ; v184 lot 297 : honnêteté — le stress test du risque suit __pfLive (le chip « Live » était codé en dur, affiché même sur cotes de repli/DEMO) ; v183 lot 296 : honnêteté — la source du payoff options dit « board démo » en DEMO (l'étiquette « board réel » était codée en dur) ; v182 lot 295 : mobile — boutons tickers .vx-link (21px) et liens vx-dim (16px) portés à ≥40px ; v181 lot 294 : mobile — contrôles segmentés (réglages Système) portés à ≥40px (mesurés 26px) ; v180 lot 293 : mobile — liens d'approfondissement (vx-meta a) portés à ≥40px (mesurés 15px sur la fiche Analyse) ; v179 lot 291 : palette — le tap sur le fond ferme (aucune sortie tactile n'existait : Échap seulement) ; v178 lot 289 : mobile — champ de recherche (chemin tactile vers la palette) ≥40px + icône recentrée ; v177 lot 288 : mobile — pastille ⌘K masquée dans la recherche (affordance clavier mensongère au tactile ; le tap ouvre la palette) ; v176 lot 286 : carte Application — version publiée (serveur) + verdict à jour/mise à jour ; v175 lot 284 : carte Application (version shell + mise à jour forcée) ; v174 lot 283 : carte Verrou d'accès (Système)   // v173 (SKYLER LOT 232) : ligne de fraicheur/source (.vx-update) replie en mobile (un libelle long debordait de 201px sur /portfolio?view=risk) ; v172 (SKYLER LOT 222) : topbar mobile — crumb long et libellé du bouton retour tronquent en ellipse (ils passaient sous les boutons / hors ecran a 390px) ; v171 (SKYLER LOT 213) : texte des tuiles treemap → var(--vx-text-primary) ; gardien hex nu étendu aux builders JS ; v170 (SKYLER LOT 212) : étiquettes RRG (Marchés) + bordure démo (Opportunités) → tokens ; gardien « aucun hex nu dans les pages » ; v169 (SKYLER LOT 211) : movers Système — hex en dur remplacés par les tokens VXCharts.colors ; v168 (SKYLER LOT 209) : a11y — drawer/modal fermés aria-hidden + inert (bascule openDrawer/closeDrawer) ; v167 (SKYLER LOT 203) : cône de mouvement — bandes σ HACHURÉES (estimation) ; GEX — murs call/put dominants + valeur en chip ; v166 (SKYLER LOT 202) : niveaux du plan (levelLines) — chips pleine couleur au bord droit style échelle TV, anti-collision ; canonique LWC déjà natif TV ; v165 (SKYLER LOT 201) : radar TV — sommet dominant : anneau de focus + valeur en chip (C.radar) ; jauge environnement options ✔ héritage C.gauge ; v164 (SKYLER LOT 200) : série de référence Marchés — chips Max/Min sur les extrêmes réels (extremes de areaCard) ; discipline Journal ✔ héritage C.bars ; v163 (SKYLER LOT 199) : barres TV (C.bars partagé) — barre dominante en évidence : liseré appuyé + valeur en chip pleine couleur (IV sens., S+/S/A/B, leadership, movers héritent) ; v162 (SKYLER LOT 198) : rails TV (Marchés) — chip de valeur réelle sur le pointeur (Calme↔Stress : VIX ; Défense↔Attaque : confiance %) ; v161 (SKYLER LOT 197) : théta TV — remplissage hachuré (projection modèle) + chip Min (C.hatchPattern réutilisable, option hatch de C.area) ; v160 (SKYLER LOT 196) : fraîcheur TV (Système) — le domaine le plus rassis en dominante : tuile liserée + âge en chip pleine couleur ; v159 (SKYLER LOT 195) : équité/drawdown TV — chips Max/Min sur les extrêmes réels (tvExtremesPlugin) ; v158 (SKYLER LOT 194) : heatmap TV — texte des cellules coloré par intensité + cellule dominante en évidence ; treemap — part en chip pleine couleur ; v157 (SKYLER LOT 193) : catalystRunway TV — piste en dégradé continu, zone ≤5 j hachurée, chip J-x sur le prochain ; v156 (SKYLER LOT 192) : regimeAura aligné grammaire TV (arc dégradé + pointeur) + payoff hachuré GAIN/PERTE ; v155 (SKYLER LOT 191) : barres de consensus du comité (Intelligence) — style Note des analystes ; v154 (SKYLER LOT 190) : cône de projection du plan (fiche Analyse) — éventail TV chips de bord ; v153 (SKYLER LOT 189) : jauge TV — arc dégradé continu + aiguille blanche + état coloré (tournée graphique) ; v152 (SKYLER LOT 187) : hex du design-system dérivés de tokens.css (fin des étiquettes périmées)
+const CACHE='td-shell-v246';  // v246 SIGNAL OS · LE DETECTEUR DE DEBORDEMENT NE POUVAIT PAS SE DECLENCHER. Reserve du lot 65 (§D3) : le balayage responsive etait la mesure restante la plus utile, seule a toucher un usage reel declare — la consultation iPhone. Deux instruments existaient ; aucun n'avait de TEMOIN DE DETECTION, et l'un etait STRUCTURELLEMENT AVEUGLE. mesurer_integrite_pages.py lisait documentElement.scrollWidth - clientWidth, or html et body portent `overflow-x:clip` : dans ce mode le scrollWidth du documentElement ne depasse JAMAIS clientWidth. Verifie en injectant 400 px de trop : doc.scrollWidth restait a 1440, body.scrollWidth rendait 1840. Son « 0 debordement horizontal » sur cinq largeurs, publie depuis le lot 26, ne prouvait rien — meme famille que le lot 64, une mesure incapable de rendre un resultat positif. CE QUE L'AVEUGLEMENT CACHAIT : a 320 px (WCAG 1.4.10 reflow), le cluster droit de la barre sortait du gabarit de 4 a 34 px selon la page, et comme `clip` interdit tout defilement, le bouton d'actualisation n'etait pas seulement hors ecran mais HORS D'ATTEINTE. Cause mesuree : `flex:1 1 0%` ne suffit pas, `min-width:auto` interdit a un element flex de descendre sous sa taille intrinseque — ~98 px imposes par le padding-left:34px qui loge l'icone. ET MA PREMIERE CORRECTION ETAIT FAUTIVE : `min-width:0` supprimait le debordement mais le fil d'Ariane, lui aussi en flex:1 1 0, reclamait toute la place libre et ecrasait le champ a 0 px sur QUATRE pages sur cinq — supprimant le chemin tactile vers la palette que le lot 289 avait etabli. J'avais echange un defaut contre un autre. Un PLANCHER, pas un zero : 44 px. Piege de mesure au passage : une premiere sonde lisait 38 et 73 px et me faisait croire le champ sain — elle mesurait AVANT que le fil d'Ariane ne se remplisse ; trois echantillons espaces ont tranche. Restait une table (/markets?view=sectors), la SEULE du depot sans `.vx-table-wrap` : elle sortait de 21 px sans ancetre defilant, donc sa colonne « Leader » etait coupee sans recours. Mise au patron maison. RESULTAT : 36 vues x 5 largeurs, zero debordement, zero id duplique, zero lien casse, zero rognage silencieux — cette fois avec des detecteurs prouves mordants (trois temoins de detection ajoutes a l'integrite, un au rognage, plus 768 et 1920 px que la reserve D3 signalait comme jamais balayees). Huit mutations, huit detectees apres correction d'un neuvieme gardien creux de la serie.
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/manifest.webmanifest','/static/icon-180.png','/static/vertex/css/fonts.css','/static/vertex/fonts/inter-var.woff2','/static/vertex/fonts/jetbrains-mono-var.woff2']).catch(()=>{})));});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{

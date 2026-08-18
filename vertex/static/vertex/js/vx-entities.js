@@ -34,17 +34,53 @@
   /* ── Sync /api/desk (protocole historique inchangé) ─────────────── */
   let pushTimer = null;
   function schedulePush() { clearTimeout(pushTimer); pushTimer = setTimeout(() => { pushTimer = null; pushNow(); }, 1200); }
+
+  /* LOT 604 — la synchro du bureau échouait EN SILENCE, deux fois dans une
+     ligne : `fetch(...).catch(() => {})` avalait l'échec réseau, ET un 4xx/5xx
+     ne déclenchait même pas ce `catch` (fetch ne rejette que sur échec réseau ;
+     une réponse d'erreur RÉSOUT la promesse, et `r.ok` n'était jamais lu). Un
+     refus du serveur était donc totalement invisible. Ces données sont les
+     données PERSONNELLES de l'utilisateur — invariant produit : ce qui échoue
+     se dit. Rien n'est perdu (localStorage garde tout, le push suivant
+     rattrape) ; c'est ce que le message annonce, sans dramatiser. */
+  const SYNC_ALERTE_MS = 600000;          // au plus une alerte visible / 10 min
+  let derniereAlerteSync = 0;
+  function syncAlerte(message) {
+    const t = Date.now();
+    if (t - derniereAlerteSync < SYNC_ALERTE_MS) return;
+    derniereAlerteSync = t;
+    try { VX.toast(message, 'warn', 5200); } catch (e) {}
+  }
+  function syncEtat(etat, detail) {
+    try { VX.store.set('desk_sync', etat); } catch (e) {}
+    if (etat === 'ok') return;
+    syncAlerte('Synchronisation du bureau impossible (' + detail + ') — tes données '
+      + 'restent sur cet appareil et repartiront à la prochaine réussite.');
+  }
+
   function pushNow() {
     try {
       const data = {};
       DESK_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v != null) data[k] = v; });
       const ts = Number(localStorage.getItem('deskTs') || Date.now());
-      fetch('/api/desk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ts, data }) }).catch(() => {});
-    } catch (e) {}
+      fetch('/api/desk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ts, data }) })
+        .then(r => { syncEtat(r.ok ? 'ok' : 'error', 'refus du serveur, HTTP ' + r.status); })
+        .catch(() => { syncEtat('error', 'serveur injoignable'); });
+    } catch (e) { syncEtat('error', 'écriture locale impossible'); }
   }
+  /* LOT 607 — la LECTURE échouait en silence, comme l'écriture avant le 604 :
+     `r.ok` n'était pas lu (604-A, sur l'autre chemin) et le `catch` était vide.
+     Le coût est plus grand qu'il n'y paraît : sur un navigateur neuf dont le GET
+     échoue, le bureau s'affiche VIDE — et « aucun trade déclaré » devient
+     indiscernable de « bureau non synchronisé », alors que le serveur, lui, a
+     les données. C'est l'invariant produit pris à l'envers : ce n'est pas une
+     donnée absente présentée comme réelle, c'est une donnée RÉELLE présentée
+     comme absente. Rien n'est perdu ni écrasé — la lecture reste en lecture. */
   async function pull() {
     try {
-      const r = await fetch('/api/desk'); const d = await r.json();
+      const r = await fetch('/api/desk');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
       const localTs = Number(localStorage.getItem('deskTs') || 0);
       if (d && d.ts && d.data) {
         if (d.ts > localTs) { /* serveur plus récent : ne jamais écraser du plus récent par du plus ancien */
@@ -56,7 +92,13 @@
       } else if (!d || !d.ts) {
         if (localTs) pushNow();
       }
-    } catch (e) {}
+      try { VX.store.set('desk_sync', 'ok'); } catch (e2) {}
+    } catch (e) {
+      try { VX.store.set('desk_sync', 'read-error'); } catch (e2) {}
+      syncAlerte('Bureau non synchronisé : tes données du serveur n’ont pas pu être '
+        + 'chargées (' + ((e && e.message) || 'erreur réseau') + '). Ce qui s’affiche '
+        + 'vient de cet appareil — n’en conclus pas que c’est vide.');
+    }
   }
   pull(); setInterval(() => { if (!document.hidden) pull(); }, 120000);
   /* Flush du push au déchargement : une écriture suivie d'une navigation
@@ -244,7 +286,7 @@
     badges(sym) {
       sym = String(sym).toUpperCase();
       const out = [];
-      if (this.isFavorite(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="fav">★ Favori</span>');
+      if (this.isFavorite(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="fav">' + VX.icon('star', 12) + ' Favori</span>');
       if (this.inWatchlist(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="watch">Watchlist</span>');
       if (this.isFollowed(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="follow">Suivi actif</span>');
       if (this.hasPosition(sym)) out.push('<span class="vx-badge vx-badge-entity" data-kind="position">Position</span>');
@@ -310,10 +352,19 @@
     if (open) { e.preventDefault(); VX.openAnalysis(open.dataset.openAnalysis); }
   });
   /* Clavier : Enter/Espace activent les contrôles délégués non natifs
-     (tickers role="button", menus d'entité) — même chemin que le clic. */
+     (tickers role="button", menus d'entité, LIGNES CLIQUABLES) — même chemin
+     que le clic.
+     `[data-clickable]` a été ajouté au lot 27 : la liste ne nommait que trois
+     attributs, si bien que toute ligne cliquable qui n'en portait aucun était
+     focusable et INERTE. Mesuré au navigateur : trois familles de lignes
+     (scanner LEAPS, positions options, comparateur d'options) — on pouvait les
+     atteindre au clavier et il ne se passait rien.
+     Même leçon qu'au lot 25 : une règle qui énumère des noms ne protège que ce
+     qu'on a pensé à nommer. */
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    const el = e.target.closest && e.target.closest('[data-open-analysis],[data-entity-menu],[data-position-menu]');
+    const el = e.target.closest && e.target.closest(
+      '[data-open-analysis],[data-entity-menu],[data-position-menu],[data-clickable]');
     if (!el) return;
     if (['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)) return;
     e.preventDefault(); el.click();

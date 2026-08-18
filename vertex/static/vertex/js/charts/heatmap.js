@@ -1,54 +1,115 @@
-/* heatmap.js — heatmaps HTML/CSS (secteurs, corrélations, IV, scénarios
-   options) : plus lisible et accessible qu'un canvas pour des grilles de
-   petite taille.
-   LOT 127 — matière VERRE : les anciens rgba verts/rouges hors palette sont
-   remplacés par les TOKENS (C.colors.positive/negative convertis en rgb) ;
-   chaque cellule est une tuile — dégradé diagonal de sa propre couleur
-   (dense en haut-gauche → doux en bas-droit, même grammaire que treemap/
-   barres), liseré fin de la couleur, coins arrondis, grille aérée. */
-(function(){const C=window.VXCharts=window.VXCharts||{},VX=window.VX;
+/* heatmap.js — matrice HTML accessible pour secteurs, corrélations, IV et
+   scénarios. Les valeurs restent du texte réel ; le scroll est contenu dans
+   la carte et la couleur ne remplace jamais le libellé chiffré. */
+(function(){
+'use strict';
+const C=window.VXCharts=window.VXCharts||{},VX=window.VX;
+let heatmapUid=0;
+
+function esc(value){
+  return String(value==null?'':value).replace(/[&<>"']/g,c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 function rgbOf(hex){
   const m=/^#([0-9A-Fa-f]{6})$/.exec(hex||'');
   if(!m)return null;
   const n=parseInt(m[1],16);
-  return ((n>>16)&255)+','+((n>>8)&255)+','+(n&255);}
+  return ((n>>16)&255)+','+((n>>8)&255)+','+(n&255);
+}
 function tOf(v,min,max){
-  if(v===null||v===undefined||!isFinite(v))return null;
-  return Math.max(-1,Math.min(1,(v-(min+max)/2)/((max-min)/2||1)));}
-/* GRAMMAIRE TV (lot 194) : le texte de chaque cellule porte la COULEUR de son
-   intensité (fondu avec |t|, comme les cartes secteurs TV), et la cellule
-   DOMINANTE de la grille (|t| max) est en pleine intensité — liseré appuyé +
-   gras 800 — pendant que les autres restent adoucies. */
-function cellStyle(v,min,max,dominant){
+  if(v===null||v===undefined||(typeof v!=='number'&&typeof v!=='string')
+      ||(typeof v==='string'&&!v.trim()))return null;
+  const numeric=Number(v);
+  if(!Number.isFinite(numeric))return null;
+  return Math.max(-1,Math.min(1,(numeric-(min+max)/2)/((max-min)/2||1)));
+}
+/* L'intensité reste contenue : fond mat, liseré sémantique, encre stable. */
+function cellStyle(v,min,max,dominant,negative,positive){
   const t=tOf(v,min,max);
   if(t===null)
-    return 'background:var(--vx-surface-elevated);border-radius:5px';
-  const rgb=rgbOf(t>=0?C.colors.positive:C.colors.negative)||'128,128,128';
-  const a=.12+.42*Math.abs(t);
-  const txt=(.45+.55*Math.abs(t)).toFixed(2);
-  return 'background:linear-gradient(135deg,rgba('+rgb+','+(a+.10).toFixed(2)+'),rgba('+rgb+','+(a*.55).toFixed(2)+'));'
-    +'box-shadow:inset 0 0 0 '+(dominant?'1.6px':'1px')+' rgba('+rgb+','+(dominant?'.75':Math.min(.5,a+.15).toFixed(2))+');'
-    +'color:rgba('+rgb+','+txt+');font-weight:'+(dominant?'800':'700')+';border-radius:5px';}
+    return 'background:var(--vx-surface-elevated);color:var(--vx-text-muted);border-radius:5px';
+  const rgb=rgbOf(t>=0?positive:negative)||'128,128,128';
+  const a=.06+.18*Math.abs(t);
+  return 'background:rgba('+rgb+','+a.toFixed(2)+');'
+    +'box-shadow:inset 0 0 0 '+(dominant?'1.5px':'1px')+' rgba('+rgb+','+(dominant?'.72':Math.min(.44,a+.14).toFixed(2))+');'
+    +'color:var(--vx-text-primary);font-weight:'+(dominant?'800':'650')+';border-radius:5px';
+}
+
 C.heatmapCard=function(host,opts){
-  /* opts: rows[{label,cells[{value,label?,title?,onclick?}]}], columns[], min,max, fmt */
+  /* opts: rows[{label,cells[{value,label?,title?,onclick?}]}], columns[],
+     min,max,fmt,negativeColor?,positiveColor?,source,timestamp,mode,limits */
+  opts=opts||{};
   const el=typeof host==='string'?document.getElementById(host):host;
-  if(!el)return;
+  if(!el)return null;
   el.classList.add('vx-card','vx-chart-card');
   const fmt=opts.fmt||((v)=>VX.fmt.num(v,1));
   const mn=opts.min??-3,mx=opts.max??3;
-  /* cellule dominante = |t| max de TOUTE la grille (comptes réels, 1 seule) */
+  const negative=opts.negativeColor||C.colors.negative;
+  const positive=opts.positiveColor||C.colors.positive;
+  const rows=Array.isArray(opts.rows)?opts.rows:[];
+  const columns=Array.isArray(opts.columns)?opts.columns:[];
+  const id='vxhm-'+(++heatmapUid);
+
+  /* Cellule dominante = |t| max de la grille, uniquement parmi les valeurs
+     réellement numériques. Une absence ne peut donc jamais gagner le focus. */
   let domT=0,domRow=-1,domCol=-1;
-  (opts.rows||[]).forEach((r,ri)=>r.cells.forEach((c,ci)=>{
-    const t=tOf(c.value,mn,mx);
-    if(t!==null&&Math.abs(t)>Math.abs(domT)){domT=t;domRow=ri;domCol=ci;}}));
-  const head=opts.columns?`<tr><th></th>${opts.columns.map(c=>`<th>${c}</th>`).join('')}</tr>`:'';
-  const body=(opts.rows||[]).map((r,ri)=>`<tr><th style="text-align:left">${r.label}</th>${
-    r.cells.map((c,ci)=>`<td class="vx-num" title="${c.title||''}" style="${cellStyle(c.value,mn,mx,ri===domRow&&ci===domCol)};cursor:${c.onclick?'pointer':'default'}" ${c.onclick?`data-hm="${c.onclick}"`:''}>${c.label??fmt(c.value)}</td>`).join('')}</tr>`).join('');
-  el.innerHTML=`<div class="vx-chart-head"><span class="vx-chart-title">${opts.title||''}</span>
-    ${opts.question?`<span class="vx-chart-question">${opts.question}</span>`:''}
-    ${opts.conclusion?`<span class="vx-chart-conclusion">${opts.conclusion}</span>`:''}</div>
-    <div class="vx-table-wrap" style="border:none"><table class="vx-table" style="border-collapse:separate;border-spacing:3px">${head}${body}</table></div>
-    <div class="vx-chart-foot">${VX.updateIndicator(opts.timestamp,opts.source,opts.mode)}
-    ${opts.limits?`<span class="vx-meta">${opts.limits}</span>`:''}</div>`;
-  el.querySelectorAll('[data-hm]').forEach(td=>td.addEventListener('click',()=>{location.href=td.dataset.hm;}));};
+  rows.forEach((r,ri)=>(Array.isArray(r.cells)?r.cells:[]).forEach((c,ci)=>{
+    const t=tOf(c&&c.value,mn,mx);
+    if(t!==null&&Math.abs(t)>Math.abs(domT)){domT=t;domRow=ri;domCol=ci;}
+  }));
+
+  const head=columns.length?`<thead><tr><th scope="col"></th>${columns.map(c=>`<th scope="col">${esc(c)}</th>`).join('')}</tr></thead>`:'';
+  const body=rows.map((r,ri)=>{
+    const cells=Array.isArray(r.cells)?r.cells:[];
+    return `<tr><th scope="row">${esc(r.label)}</th>${cells.map((c,ci)=>{
+      c=c||{};
+      const available=tOf(c.value,mn,mx)!==null;
+      const display=c.label!=null?c.label:(available?fmt(Number(c.value)):'n/d');
+      const column=columns[ci]!=null?columns[ci]:('colonne '+(ci+1));
+      const aria=`${r.label||'Ligne'}, ${column} : ${display}`;
+      const interactive=!!c.onclick;
+      return `<td class="vx-num vx-heatmap-cell" title="${esc(c.title||aria)}" aria-label="${esc(aria)}" style="${cellStyle(c.value,mn,mx,ri===domRow&&ci===domCol,negative,positive)}"${interactive?` data-hm="${esc(c.onclick)}" role="link" tabindex="0"`:''}>${esc(display)}</td>`;
+    }).join('')}</tr>`;
+  }).join('');
+
+  let scaleBody;
+  if(mn<0&&mx>0){
+    scaleBody=`<span>${esc(fmt(mn))}</span><i aria-hidden="true"></i><span>${esc(fmt(0))}</span><i aria-hidden="true"></i><span>${esc(fmt(mx))}</span>`;
+  }else if(mx<=0){
+    scaleBody=`<span>${esc(fmt(mn))}</span><i class="vx-heatmap-scale-negative" aria-hidden="true"></i><span>${esc(fmt(mx))}</span>`;
+  }else{
+    scaleBody=`<span>${esc(fmt(mn))}</span><i class="vx-heatmap-scale-positive" aria-hidden="true"></i><span>${esc(fmt(mx))}</span>`;
+  }
+  const scale=`<div class="vx-heatmap-scale" role="img" aria-label="Échelle de couleur, de ${esc(fmt(mn))} à ${esc(fmt(mx))}">${scaleBody}</div>`;
+  const question=opts.question||'';
+  const conclusion=opts.conclusion||'';
+  const summary=opts.summary||conclusion||question||opts.title||'Matrice de données';
+  const provenance=(opts.source||opts.timestamp)?VX.updateIndicator(opts.timestamp,opts.source,opts.mode):'';
+  const foot=(provenance||opts.limits)?`<div class="vx-chart-foot">
+    ${provenance?`<span class="vx-chart-provenance">${provenance}</span>`:''}
+    ${opts.limits?`<span class="vx-meta">${esc(opts.limits)}</span>`:''}</div>`:'';
+  const content=rows.length?`<div class="vx-heatmap-scroll" role="region" tabindex="0" aria-label="${esc(opts.title||'Heatmap')} — tableau défilant horizontalement">
+      <table class="vx-heatmap-table"><caption class="vx-sr-only">${esc(summary)}</caption>${head}<tbody>${body}</tbody></table></div>${scale}`
+    :`<div class="vx-state" data-state="empty" role="status"><div class="vx-state-icon">—</div><div><b>Donnée indisponible</b><br>${esc(opts.stateMessage||question||'Aucune cellule à afficher.')}</div></div>`;
+
+  el.innerHTML=`<div class="vx-chart-head"><h3 class="vx-chart-title" id="${id}-title">${esc(opts.title||'')}</h3>
+    ${/* `opts.freshness` retire au lot 64 : aucun appelant ne l'a jamais passe,
+          la fonction rendait '' sans valeur, et 0 badge etait peint sur les
+          4 cartes-graphiques mesurees. L'age vit dans la provenance en pied. */
+      (opts.timeframe||opts.unit)?`<span class="vx-chart-meta">
+      ${opts.timeframe?`<span class="vx-badge">${esc(opts.timeframe)}</span>`:''}
+      ${opts.unit?`<span class="vx-badge vx-badge-unit">${esc(opts.unit)}</span>`:''}</span>`:''}
+    ${question&&!conclusion?`<span class="vx-chart-question">${esc(question)}</span>`:
+      (question?`<span class="vx-sr-only">${esc(question)}</span>`:'')}
+    ${conclusion?`<span class="vx-chart-conclusion">${esc(conclusion)}</span>`:''}</div>
+    ${content}${foot}`;
+  el.querySelectorAll('[data-hm]').forEach(td=>{
+    const open=()=>{location.href=td.dataset.hm;};
+    td.addEventListener('click',open);
+    td.addEventListener('keydown',event=>{
+      if(event.key==='Enter'||event.key===' '){event.preventDefault();open();}
+    });
+  });
+  return el;
+};
 })();

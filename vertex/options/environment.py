@@ -115,12 +115,17 @@ def score_environment(board, *, iv_rank=None, detail_by_sym=None,
     overall = round(sum(d['score'] for d in known) / len(known), 1) if known else None
     label = _label(overall)
     interp = _interpret(overall, label, dims, known, as_of=as_of, source=source)
+    unknown_dimensions = [d['key'] for d in dims if not d['known']]
     return {
         'score': overall,
         'label': label,
         'dimensions': dims,
         'dimensions_known': len(known),
         'dimensions_total': len(dims),
+        'data_coverage': {'known_dimensions': len(known), 'total_dimensions': len(dims),
+                          'coverage_pct': round(100 * len(known) / len(dims), 1) if dims else 0.0,
+                          'unknown_dimensions': unknown_dimensions, 'read_only': True,
+                          'note': 'dimensions inconnues exclues du score et jamais traitées comme favorables'},
         'regime': label,
         'interpretation': interp,
     }

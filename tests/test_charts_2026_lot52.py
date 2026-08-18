@@ -55,8 +55,8 @@ def test_no_new_color_literals_outside_palette_and_fallbacks():
     droit d'ajouter AUCUN littéral hex nouveau."""
     src = _src()
     hexes = set(re.findall(r"#[0-9A-Fa-f]{6}\b", src))
-    allowed = {'#DBE1E8', '#45D6E8', '#9B7BFF', '#2BBE90', '#E9555F',
-               '#D9BE3C', '#BABABA', '#8A8284', '#c8bfae', '#151719',
+    allowed = {'#9B7BFF', '#B9A2FF', '#45D6E8', '#9B7BFF', '#2BBE90', '#E9555F',
+               '#D9BE3C', '#BABABA', '#8A8284', '#989092', '#c8bfae', '#151719',
                '#050505', '#0b0b0c', '#111315', '#817d77', '#b7b2aa',
                '#b7b3ad', '#f3f1ed', '#121214', '#F8F5F3'}
     assert hexes <= allowed, 'littéraux inattendus : %s' % (hexes - allowed)

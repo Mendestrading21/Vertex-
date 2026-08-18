@@ -9,26 +9,47 @@ d'injection : le Blueprint importe directement le même objet.
 Analyse uniquement, indicatif. Ces routes lisent, ne commandent jamais.
 """
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from vertex.engines import quant_engine as vertex
 from vertex.validation import out_of_sample as validator
 from vertex.portfolio import legacy_basket_risk as portfolio_risk
 from vertex.app.state import scan_state
+from vertex.app import input_validation as _input
 
 bp = Blueprint('analysis_api', __name__)
+
+_PUBLIC_SOURCE_STATES = {'AVAILABLE', 'DEGRADED', 'UNAVAILABLE', 'NOT_COLLECTED', 'UNKNOWN'}
+_PUBLIC_SOURCE_KEYS = ('scan', 'market', 'options', 'fundamentals')
+
+
+def _source_health_summary(raw):
+    """Réduit l'état de sources à des statuts non sensibles et bornés."""
+    raw = raw if isinstance(raw, dict) else {}
+    sources = {}
+    for key in _PUBLIC_SOURCE_KEYS:
+        state = str(raw.get(key) or 'UNKNOWN').upper()
+        sources[key] = state if state in _PUBLIC_SOURCE_STATES else 'UNKNOWN'
+    counts = {state: sum(1 for value in sources.values() if value == state)
+              for state in sorted(_PUBLIC_SOURCE_STATES)}
+    return {'available': bool(raw), 'sources': sources, 'counts': counts,
+            'read_only': True,
+            'note': 'statuts agrégés non sensibles ; aucun détail de fournisseur ni de demandeur'}
 
 
 @bp.route('/api/vertex/<sym>')
 def api_vertex(sym):
     """Deep-dive VERTEX d'un titre : bloc quant complet + décomposition explicable."""
-    d = (scan_state.get('detail') or {}).get(sym.upper())
+    sym = _input.symbol(sym)
+    if not sym:
+        return jsonify({'ok': False, 'error': 'symbole_invalide'}), 400
+    d = (scan_state.get('detail') or {}).get(sym)
     if not d:
         return jsonify({'ok': False, 'note': 'titre non scanné'})
     v = d.get('vertex')
     if not v:
         return jsonify({'ok': False, 'note': 'vertex indisponible'})
-    return jsonify({'ok': True, 'symbol': sym.upper(), 'price': d.get('price'),
+    return jsonify({'ok': True, 'symbol': sym, 'price': d.get('price'),
                     'grade': d.get('grade'), 'score': d.get('score'),
                     'vertex': v, 'explain': vertex.explain(v, d)})
 
@@ -63,7 +84,9 @@ def api_anomalies(sym):
     Constat statistique descriptif, jamais une prévision. Lecture seule."""
     from vertex.data import series as _series
     from vertex.engines import anomaly as _an
-    sym = (sym or '').upper()[:12]
+    sym = _input.symbol(sym)
+    if not sym:
+        return jsonify({'ok': False, 'error': 'symbole_invalide'}), 400
     detail = (scan_state.get('detail') or {}).get(sym) or {}
     closes, src = _series.closes(detail)   # série CANONIQUE uniquement (LOT 4)
     d = _an.scan(closes)
@@ -80,7 +103,9 @@ def api_evidence(sym):
     canonique. In-sample, descriptif, jamais un backtest. Lecture seule."""
     from vertex.data import series as _series
     from vertex.engines import evidence_lab as _ev
-    sym = (sym or '').upper()[:12]
+    sym = _input.symbol(sym)
+    if not sym:
+        return jsonify({'ok': False, 'error': 'symbole_invalide'}), 400
     detail = (scan_state.get('detail') or {}).get(sym) or {}
     closes, src = _series.closes(detail)
     d = _ev.study(closes)
@@ -96,14 +121,25 @@ def api_skyler(sym):
     (score /40, hard gates, scénarios sans probabilité inventée, audit trail).
     Analyse READONLY — jamais un ordre."""
     from vertex.data import series as _series
-    from vertex.engines import anomaly as _an, events as _events
+    from vertex.engines import anomaly_context as _anctx, events as _events
     from vertex.engines import market_context as _mcx, skyler_core as _sk
     from vertex.services import news_plus as _np
     from vertex.app.config import DEMO_MODE as _demo
-    sym = (sym or '').upper()[:12]
+    sym = _input.symbol(sym)
+    if not sym:
+        return jsonify({'ok': False, 'error': 'symbole_invalide'}), 400
     detail = (scan_state.get('detail') or {}).get(sym) or {}
     closes, _src = _series.closes(detail)
-    ano = _an.scan(closes) if closes else None
+    from vertex.engines import drawdown_context as _ddctx
+    drawdown = _ddctx.build(closes)
+    from vertex.engines import downside_volatility as _dvctx
+    downside_volatility = _dvctx.build(closes)
+    benchmark_detail = (scan_state.get('detail') or {}).get('SPY') or {}
+    from vertex.engines import relative_strength_context as _rsctx
+    relative_strength = _rsctx.build(detail.get('series') or {}, benchmark_detail.get('series') or {})
+    from vertex.engines import gap_risk_context as _grctx
+    gap_risk = _grctx.build(detail)
+    ano = _anctx.build(sym, detail, benchmark_detail=benchmark_detail) if closes else None
     market = _mcx.build(scan_state, demo=_demo)
     earnings = []
     try:
@@ -120,11 +156,33 @@ def api_skyler(sym):
     news = _np.sanitize_news(detail.get('news') or [])
     ev = _events.build(sym, news=news, earnings=earnings, macro=macro, anomaly=ano,
                        as_of=scan_state.get('scan_ts_h') or scan_state.get('updated'))
+    from vertex.engines import earnings_proximity as _epctx
+    earnings_proximity = _epctx.build(ev)
     as_of = scan_state.get('scan_ts_h') or scan_state.get('updated')
-    # OptionsContext (LOT 6) : meilleur candidat LEAPS du board réel, mandat étiqueté.
+    # OptionsContext : mandat opérationnel 3–6 mois pour une détention de 1–3 semaines.
+    # Le scanner conserve les candidats partiels et hors mandat, mais le moteur reçoit
+    # explicitement leur statut : aucune conformité n’est supposée par défaut.
     from vertex.options import horizon_scanners as _hs
-    octx = _hs.options_context(_hs.scan(scan_state.get('options_board') or [],
-                                        'LEAPS', sym=sym))
+    octx = _hs.swing_3_6m_context(scan_state.get('options_board') or [], sym=sym,
+                                  historical_closes=closes)
+    from vertex.engines import earnings_option_overlap as _eoctx
+    earnings_option_overlap = _eoctx.build(octx, earnings_proximity)
+    from vertex.engines import earnings_holding_overlap as _ehctx
+    earnings_holding_overlap = _ehctx.build(octx, earnings_proximity)
+    from vertex.engines import iv_skew_context as _ivskew
+    iv_skew = _ivskew.build(scan_state.get('options_board') or [], sym=sym, spot=detail.get('price'))
+    from vertex.engines import call_put_structure as _callput
+    call_put_structure = _callput.build(scan_state.get('options_board') or [], sym=sym)
+    from vertex.engines import iv_term_structure as _ivterm
+    iv_term_structure = _ivterm.build(scan_state.get('options_board') or [], sym=sym)
+    from vertex.engines import relative_volume_context as _rvctx
+    relative_volume = _rvctx.build(detail)
+    from vertex.engines import open_interest_concentration as _oictx
+    open_interest_concentration = _oictx.build(scan_state.get('options_board') or [], sym=sym)
+    from vertex.engines import fundamental_context as _fctx
+    fundamentals_ctx = _fctx.build(sym, scan_state.get('fundamentals') or {})
+    from vertex.engines import decision_evidence as _evidence
+    dqctx, recctx = _evidence.for_symbol(scan_state, sym, detail)
     # PortfolioContext (LOT 7) : positions canoniques du desk + cotes du scan.
     pctx = None
     try:
@@ -132,22 +190,36 @@ def api_skyler(sym):
         from vertex.positions.repository import load_positions
         from vertex.services import persist
         pos = load_positions(persist.load_json('desk_data.json', {}) or {})
-        quotes = {s: (d or {}).get('price') for s, d in (scan_state.get('detail') or {}).items()
+        detail_map = scan_state.get('detail') or {}
+        quotes = {s: (d or {}).get('price') for s, d in detail_map.items()
                   if isinstance(d, dict) and d.get('price') is not None}
-        pctx = _pc.build(pos, quotes=quotes, sym=sym)
+        series_by_symbol = {s: (d or {}).get('series') or {} for s, d in detail_map.items()
+                            if isinstance(d, dict)}
+        pctx = _pc.build(pos, quotes=quotes, sym=sym, series_by_symbol=series_by_symbol)
     except Exception:
         pctx = None
     # Red-team PRODUITE (LOT 14) : les 10 questions du comité évaluées sur le
     # packet réel — complete=True seulement si les 10 sont fondées.
     from vertex.engines import red_team as _rt
     packet0 = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
-                               as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx)
+                               as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
+                               data_quality_ctx=dqctx, reconciliation_ctx=recctx,
+                               fundamental_ctx=fundamentals_ctx, drawdown_ctx=drawdown,
+                               downside_volatility_ctx=downside_volatility,
+                               relative_strength_ctx=relative_strength, gap_risk_ctx=gap_risk,
+                               earnings_proximity_ctx=earnings_proximity,
+                               earnings_option_overlap_ctx=earnings_option_overlap,
+                               earnings_holding_overlap_ctx=earnings_holding_overlap,
+                               iv_skew_ctx=iv_skew, call_put_structure_ctx=call_put_structure,
+                               iv_term_structure_ctx=iv_term_structure, relative_volume_ctx=relative_volume,
+                               open_interest_concentration_ctx=open_interest_concentration)
     rt_review = _rt.review(packet0, _sk.score40(packet0))
     rt_input = {'complete': rt_review['complete'], 'basis': rt_review['basis']}
     # Calibration RÉELLE (LOT 19/22) : facteur depuis les résultats mesurés de
     # la mémoire pour CETTE version — cellule du NIVEAU courant si mesurée
     # (§13), agrégat global en secours. Fail-safe, jamais inventé.
     calib = None
+    option_calibration = None
     try:
         from vertex.engines import decision_memory as _dmc
         from vertex.services import persist as _pc
@@ -157,14 +229,82 @@ def api_skyler(sym):
         calib = _dmc.calibration_factor_for(_memc, _sk.ENGINE_VERSION,
                                             level=_score0.get('level'),
                                             regime=_reg0)
+        option_calibration = _dmc.option_calibration_summary(_memc, _sk.ENGINE_VERSION, octx)
     except Exception:
         calib = None
+        option_calibration = None
     decision = _sk.decide(sym, detail, market=market, events=ev, anomaly=ano,
                           as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
-                          red_team=rt_input, calibration=calib)
+                          red_team=rt_input, calibration=calib, data_quality_ctx=dqctx,
+                          reconciliation_ctx=recctx, fundamental_ctx=fundamentals_ctx)
+    decision['option_calibration'] = option_calibration or {
+        'available': False,
+        'reason': 'mémoire de calibration indisponible',
+        'scope': 'DIRECTIONAL_PROXY_ONLY',
+    }
     packet = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
                               as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
-                              red_team=rt_input)
+                              red_team=rt_input, data_quality_ctx=dqctx,
+                              reconciliation_ctx=recctx, fundamental_ctx=fundamentals_ctx,
+                              drawdown_ctx=drawdown, downside_volatility_ctx=downside_volatility,
+                              relative_strength_ctx=relative_strength, gap_risk_ctx=gap_risk,
+                              earnings_proximity_ctx=earnings_proximity,
+                              earnings_option_overlap_ctx=earnings_option_overlap,
+                              earnings_holding_overlap_ctx=earnings_holding_overlap,
+                              iv_skew_ctx=iv_skew, call_put_structure_ctx=call_put_structure,
+                              iv_term_structure_ctx=iv_term_structure, relative_volume_ctx=relative_volume,
+                              open_interest_concentration_ctx=open_interest_concentration)
+    # Contrat de présentation stable : une interface ou un agent de design peut
+    # expliquer les preuves manquantes sans jamais toucher au verdict canonique.
+    from vertex.engines import decision_readiness as _readiness
+    decision['readiness'] = _readiness.build(packet, decision)
+    from vertex.engines import opportunity_attribution as _attribution
+    decision['opportunity_attribution'] = _attribution.build(packet, decision)
+    try:
+        from vertex.market import regime_break as _regime_break
+        decision['regime_break'] = _regime_break.assess((detail or {}).get('series') or {})
+    except Exception:
+        decision['regime_break'] = {'available': False, 'status': 'UNAVAILABLE',
+                                    'read_only': True, 'does_not_change_decision': True,
+                                    'reason': 'diagnostic de rupture indisponible'}
+    try:
+        from vertex.market import instrument_profile as _instrument
+        from vertex.market import sector_coherence as _sector_coherence
+        instrument = _instrument.build(sym, detail)
+        decision['instrument_profile'] = instrument
+        decision['sector_coherence'] = _sector_coherence.build(
+            instrument, detail, scan_state.get('sectors') or [])
+        from vertex.engines import multi_asset_guard as _multi_asset_guard
+        decision['multi_asset_guard'] = _multi_asset_guard.build(
+            instrument, decision['sector_coherence'],
+            packet.get('contexts', {}).get('options'),
+            packet.get('contexts', {}).get('portfolio'))
+    except Exception:
+        decision['instrument_profile'] = {'asset_class': 'UNKNOWN', 'classification': 'UNAVAILABLE'}
+        decision['sector_coherence'] = {'available': False, 'reason': 'diagnostic indisponible'}
+        decision['multi_asset_guard'] = {'status': 'UNAVAILABLE', 'read_only': True,
+                                         'does_not_change_verdict': True}
+    try:
+        from vertex.engines import opportunity_reliability as _reliability
+        from vertex.tracking import option_cohort as _cohort
+        from vertex.tracking import repository as _tracking
+        decision['opportunity_reliability'] = _reliability.build(
+            packet, decision, _cohort.build(_tracking.list_all()))
+    except Exception:
+        decision['opportunity_reliability'] = {
+            'status': 'UNAVAILABLE', 'read_only': True,
+            'note': 'diagnostic de fiabilité indisponible'}
+    try:
+        from vertex.engines import intelligence_monitor as _monitor
+        from vertex.services import persist as _persist_monitor
+        from vertex.engines import decision_memory as _memory_monitor
+        _memory = (_persist_monitor.load_json(_memory_monitor.MEMORY_FILE, None)
+                   or _memory_monitor.empty_memory())
+        decision['performance_monitor'] = _monitor.assess(_memory, _sk.ENGINE_VERSION)
+    except Exception:
+        decision['performance_monitor'] = {'available': False, 'status': 'UNAVAILABLE',
+                                           'read_only': True,
+                                           'reason': 'mémoire de performance indisponible'}
     # Journal de calibration (LOT 9) : chaque décision servie est enregistrée
     # (dédupliquée par scan) avec le prix du moment — base des résultats ex post.
     try:
@@ -240,6 +380,51 @@ def api_skyler_calibration():
     from vertex.app.config import DEMO_MODE as _demo
     out['demo'] = _demo
     return jsonify(out)
+
+
+@bp.route('/api/skyler/monitor')
+def api_skyler_monitor():
+    """MONITEUR D'INTELLIGENCE : dérive descriptive de performance issue des
+    résultats mémoire mesurés. Jamais de recalibration ou désactivation cachée."""
+    from vertex.engines import intelligence_monitor as _monitor
+    from vertex.engines import decision_memory as _memory
+    from vertex.engines import skyler_core as _sk
+    from vertex.services import persist as _persist
+    horizon = str(request.args.get('horizon', 'H10')).upper()
+    if horizon not in ('H5', 'H10', 'H15', 'H20', 'H60'):
+        return jsonify({'ok': False, 'error': 'horizon_invalide',
+                        'allowed': ['H5', 'H10', 'H15', 'H20', 'H60']}), 400
+    memory = _persist.load_json(_memory.MEMORY_FILE, None) or _memory.empty_memory()
+    out = _monitor.assess(memory, _sk.ENGINE_VERSION, horizon=horizon)
+    out['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+    return jsonify(out)
+
+
+@bp.route('/api/skyler/validation')
+def api_skyler_validation():
+    """Validation walk-forward de la mémoire, descriptive et sans recalibration."""
+    from vertex.engines import decision_memory as _memory
+    from vertex.engines import walk_forward_validation as _walk_forward
+    from vertex.engines import skyler_core as _sk
+    from vertex.services import persist as _persist
+    horizon = str(request.args.get('horizon', 'H10')).upper()
+    if horizon not in _walk_forward.HORIZON_SESSIONS:
+        return jsonify({'ok': False, 'error': 'horizon_invalide',
+                        'allowed': list(_walk_forward.HORIZON_SESSIONS)}), 400
+    memory = _persist.load_json(_memory.MEMORY_FILE, None) or _memory.empty_memory()
+    out = _walk_forward.assess(memory, _sk.ENGINE_VERSION, horizon=horizon)
+    out['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+    return jsonify(out)
+
+
+@bp.route('/api/skyler/health')
+def api_skyler_health():
+    """Santé technique non sensible : compteurs, jamais de cache ni de données."""
+    from vertex.services import persist as _persist
+    from vertex.services import request_metrics as _metrics
+    return jsonify({'read_only': True, 'persistence': _persist.health(),
+                    'request_metrics': _metrics.summary(),
+                    'source_health': _source_health_summary(scan_state.get('source_health'))})
 
 
 @bp.route('/api/skyler/memory')

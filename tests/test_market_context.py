@@ -61,6 +61,19 @@ def test_empty_state_is_honest():
     assert ctx['as_of'] is None
 
 
+def test_macro_curve_and_dollar_are_explicit_market_dimensions():
+    state = _state()
+    state['macro'] = [
+        {'id': 'CURVE', 'value': -0.35},
+        {'id': 'DX-Y.NYB', 'value': 105.0, 'chg': 0.4},
+    ]
+    out = MC.build(state, now=1000010.0)
+    assert out['dimensions']['rates_curve']['value'] == -35.0
+    assert out['dimensions']['rates_curve']['trend'] == 'INVERTED'
+    assert out['dimensions']['dollar']['trend'] == 'STRENGTHENING'
+    assert 'YIELD_CURVE_INVERTED' in out['regime']['secondary']
+
+
 def test_conflicting_vix_sources_flagged():
     ctx = MC.build(_state(vix=18.0, vix_mc=24.5), now=1000010.0)
     assert ctx['dimensions']['vix']['status'] == 'CONFLICTED'

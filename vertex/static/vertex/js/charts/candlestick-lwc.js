@@ -5,7 +5,7 @@
    pied source-date / bouton « Comprendre ce graphique »), mais rend un vrai graphique
    chandeliers interactif (crosshair, zoom/pan) à la place du canvas Chart.js.
    Bougies : hausse = émeraude (positif), baisse = corail (négatif) — JAMAIS le vert
-   marque (#DBE1E8 = identité, pas « ça monte »). Volume + moyennes serveur + niveaux
+   marque (#9B7BFF = violet Vertex, identite, pas « ca monte »). Volume + moyennes serveur + niveaux
    du plan moteur superposés. Repli automatique sur candlestickCard si la lib ou les
    dates OHLC manquent. Attribution TradingView affichée (exigence de licence). */
 (function () {
@@ -90,6 +90,9 @@
       var chart = LWC.createChart(cont, {
         autoSize: true,
         layout: { background: { type: 'solid', color: 'transparent' }, textColor: cssv('--vx-text-muted', '#817d77'), fontFamily: cssv('--vx-font', 'Inter, ui-sans-serif, system-ui, sans-serif'), fontSize: 11 },
+        /* Ne jamais déléguer la locale à un environnement Linux pouvant exposer
+           `en-US@posix` (tag rejeté par Intl et chandelier interrompu). */
+        localization: { locale: 'fr-FR' },
         grid: { vertLines: { color: grid }, horzLines: { color: grid } },
         rightPriceScale: { borderColor: border },
         timeScale: { borderColor: border, timeVisible: false, secondsVisible: false, rightOffset: 3 },
@@ -128,7 +131,7 @@
 
       /* Niveaux du plan moteur en lignes de prix (entrée/stop/TP/résistance/support). */
       var plan = opts.plan || {};
-      [['entry', 'Entrée', cssv('--vx-brand', '#DBE1E8')], ['stop', 'Stop', neg],
+      [['entry', 'Entrée', cssv('--vx-brand', '#9B7BFF')], ['stop', 'Stop', neg],
        ['tp1', 'TP1', pos], ['tp2', 'TP2', pos], ['tp3', 'TP3', pos],
        ['resistance', 'Résist.', cssv('--vx-steel-3', '#8A8284')], ['support', 'Support', cssv('--vx-steel-3', '#8A8284')]
       ].forEach(function (p) {

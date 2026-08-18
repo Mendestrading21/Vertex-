@@ -90,61 +90,74 @@ def build_editorial(scan_state: dict) -> dict:
 
 
 _CONTENT = """
-<div class="vx-page-header">
-  <div><h1>Aujourd&#8217;hui</h1>
-  <div class="vx-sub">Dois-je agir aujourd&#8217;hui, et sur quoi ?</div></div>
+<div class="vx-page-header vx-page-lead vx-today-header">
+  <div class="vx-page-lead__main"><h1>Aujourd&#8217;hui</h1>
+  <div class="vx-sub">La réponse utile maintenant, puis les preuves à la demande.</div></div>
 </div>
 <div id="vx-demo-banner"></div>
 
-<!-- SESSION D'ANALYSE — toujours ouverte : digest de commandement peuplé
-     instantanément (instantané restauré au démarrage), puis rafraîchi en direct.
-     Assemblé côté serveur depuis l'état déjà calculé (aucun nouveau calcul). -->
-<section class="vx-asess" id="vx-asess" aria-label="Session d'analyse" aria-live="polite">%%LOADING%%</section>
+<!-- Bandeau de fraîcheur compact. Le digest reste celui du serveur : cette vue
+     ne recalcule ni le régime, ni les opportunités, ni la confiance. -->
+<section class="vx-asess vx-toolbar vx-today-freshness" id="vx-asess"
+         aria-label="Fraîcheur de la session d'analyse" aria-live="polite">%%LOADING%%</section>
 
-<!-- NIVEAU 1 — Réponse immédiate : Hero éditorial (la réponse en 10 s).
-     Aujourd'hui RÉSUME ; Marchés explique. Une donnée = un seul domicile. -->
-<section class="vx-card vx-card--hero" id="vx-hero" aria-label="Réponse du jour">
-  <div class="vx-card-header"><span class="vx-card-title">Brief Vertex</span>
+<!-- NIVEAU 1 — une phrase décisionnelle et quatre KPI au maximum. -->
+<section class="vx-card vx-card--hero vx-today-lead" id="vx-hero" aria-label="Réponse du jour">
+  <div class="vx-card-header"><span class="vx-card-title">Signal du jour</span>
     <span class="vx-actions" id="vx-hero-fresh"></span></div>
-  <div id="vx-brief-body">%%LOADING%%</div>
-  <div class="vx-grid vx-mt3" id="vx-hero-kpis" aria-label="Résumé cliquable (chaque tuile pointe vers son domicile canonique)"></div>
+  <div id="vx-brief-body" aria-live="polite">%%LOADING%%</div>
+  <div class="vx-kpi-strip vx-mt3" id="vx-hero-kpis" data-max-kpis="4"
+       aria-label="Quatre indicateurs clés, chacun relié à son domicile canonique"></div>
   <div class="vx-mt3" id="vx-hero-action"></div>
 </section>
 
-<!-- NIVEAU 2 — Justification (résumé, jamais la recopie de Marchés) -->
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-6" aria-label="Depuis la dernière visite">
-    <div class="vx-card-header"><span class="vx-card-title">Depuis ta dernière visite</span></div>
-    <div id="vx-diff">%%LOADING%%</div>
-    <div id="vx-mkt-diff" class="vx-mt2"></div>
-  </section>
-  <section class="vx-card vx-col-6" aria-label="Régime de marché">
+<!-- NIVEAU 2 — une seule visualisation de régime ; changelog court à droite. -->
+<div class="vx-hero-grid vx-mt4 vx-today-context">
+  <section class="vx-card vx-card--hero" aria-label="Régime de marché">
     <div class="vx-card-header"><span class="vx-card-title">Régime</span>
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/markets">Marchés →</a></span></div>
     <div id="vx-regime-body">%%LOADING%%</div>
   </section>
+  <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)" aria-label="Changements depuis la dernière visite">
+    <section class="vx-card">
+      <div class="vx-card-header"><span class="vx-card-title">Ce qui a changé</span></div>
+      <div id="vx-diff">%%LOADING%%</div>
+      <div id="vx-mkt-diff" class="vx-mt2"></div>
+    </section>
+  </aside>
 </div>
 
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-6" aria-label="Meilleures opportunités">
-    <div class="vx-card-header"><span class="vx-card-title">Meilleures opportunités</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities">Toutes →</a></span></div>
-    <div id="vx-opp-stocks">%%LOADING%%</div>
-  </section>
-  <section class="vx-card vx-col-6" aria-label="Alertes prioritaires">
-    <div class="vx-card-header"><span class="vx-card-title">Alertes prioritaires</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=radar">Radar →</a></span></div>
-    <div id="vx-alerts">%%LOADING%%</div>
-  </section>
-</div>
+<!-- NIVEAU 2 — les éléments à surveiller restent visibles mais secondaires. -->
+<div class="vx-section-stack vx-mt4">
+  <div class="vx-hero-grid vx-today-secondary">
+    <section class="vx-card" aria-label="Meilleures opportunités">
+      <div class="vx-card-header"><span class="vx-card-title">Top opportunités</span>
+        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities">Toutes →</a></span></div>
+      <div id="vx-opp-stocks">%%LOADING%%</div>
+    </section>
+    <section class="vx-card" aria-label="Alertes prioritaires">
+      <div class="vx-card-header"><span class="vx-card-title">Alertes prioritaires</span>
+        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=radar">Radar →</a></span></div>
+      <div id="vx-alerts">%%LOADING%%</div>
+    </section>
+  </div>
 
-<div class="vx-grid vx-mt4">
-  <div class="vx-col-6" id="vx-calendar"></div>
-  <section class="vx-card vx-col-6" aria-label="Portefeuille — ce qui a changé">
-    <div class="vx-card-header"><span class="vx-card-title">Portefeuille — ce qui a changé</span>
-      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></span></div>
-    <div id="vx-portfolio">%%LOADING%%</div>
-  </section>
+  <!-- NIVEAU 3 — CATALYSEURS ET PORTEFEUILLE, VISIBLES.
+       Ils étaient dans un `<details>` replié, sous le résumé « Catalyseurs et
+       portefeuille ». Or PAGES.md les classe 4ᵉ et 5ᵉ des six rangs de cette
+       page, entre les opportunités et le brief éditorial : ce sont des éléments
+       de premier plan, pas du contexte profond. Un catalyseur à J-2 qu'il faut
+       déplier pour voir ne remplit pas son office — il existe précisément pour
+       prévenir avant. Ils reprennent leur rang ; l'ordre de la page suit celui
+       de la hiérarchie cible. -->
+  <div class="vx-hero-grid vx-today-watch">
+    <div id="vx-calendar"></div>
+    <section class="vx-card" aria-label="Portefeuille — ce qui a changé">
+      <div class="vx-card-header"><span class="vx-card-title">Portefeuille</span>
+        <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></span></div>
+      <div id="vx-portfolio">%%LOADING%%</div>
+    </section>
+  </div>
 </div>
 """
 
@@ -175,51 +188,104 @@ function vCls(v){var s=String(v||'').toLowerCase();if(!s)return'';
   if(/(avoid|évit|evit|refus|réduir|reduir|sell|vendre|rejet)/.test(s))return'vx-neg';
   if(/(hold|attend|neutre|patience|surveil|watch)/.test(s))return'vx-warn';return'';}
 
-/* Tuile KPI résumé — cliquable, pointe vers son domicile canonique. */
-function kpiTile(label,value,cls,href){
-  return '<a class="vx-card vx-card--compact vx-kpi vx-col-3" style="text-decoration:none;color:inherit" href="'+href+'" aria-label="'+esc(label)+'">'
+/* Tuile KPI résumé — cliquable, pointe vers son domicile canonique.
+   FORME : label -> valeur -> contexte. Le troisième étage portait « voir → »
+   sur les QUATRE tuiles : quatre fois la même phrase, qui ne disait rien que la
+   tuile ne dise déjà (elle est un lien en entier, le curseur le montre). Il
+   porte desormais la donnée qui qualifie la valeur — confiance du régime, bande
+   de breadth, bande de VIX, verdict du comité — et « — » quand elle manque. */
+function kpiTile(label,value,cls,href,contexte){
+  return '<a class="vx-card vx-card--compact vx-kpi vx-kpi-card" href="'+href+'" aria-label="'+esc(label)+'">'
     +'<span class="vx-kpi-label">'+esc(label)+'</span>'
-    +'<span class="vx-kpi-value '+(cls||'')+'" style="font-size:20px">'+value+'</span>'
-    +'<span class="vx-kpi-delta vx-muted">voir →</span></a>';
+    +'<span class="vx-kpi-value '+(cls||'')+'">'+value+'</span>'
+    +'<span class="vx-kpi-delta vx-muted">'+(contexte||'—')+'</span></a>';
+}
+
+/* Le moteur ne rend pas une valeur vide quand il ne tranche pas : il rend la
+   CHAÎNE 'UNKNOWN' (lot 629). Même prédicat que `regime-aura.js`, au même
+   titre — sans lui, le résumé affiche « UNKNOWN » comme un nom de régime. */
+function regimeIndetermine(v){
+  return !v || /^(unknown|inconnu|n\/?d|nd|none|null)$/i.test(String(v).trim());
 }
 
 /* ── Hero éditorial : la réponse en 10 s ── */
 async function loadBrief(){
   try{
     const b=await VX.fetch('/api/briefing/editorial',{ttl:60000});
-    const m=b.demo?'demo':'delayed';
+    /* FRAÎCHEUR RÉELLE, ET NON UNE CONSTANTE (lot 62).
+       Avant : `const m = b.demo ? 'demo' : 'delayed'` — l'étiquette affichait
+       « Différé » que la donnée ait trois minutes ou trois jours. Les branches
+       `live` et `stale` (« Périmé ») de `freshBadge` étaient INATTEIGNABLES sur
+       cette page. Un badge qui occupe la place d'un indicateur de fraîcheur sans
+       porter la moindre information d'âge est un mensonge par omission — et
+       Aujourd'hui est justement la page où l'on décide vite.
+
+       L'âge honnête est `scan_age` (ancienneté de la DONNÉE, pas de l'entrée de
+       cache), déjà servi par `/api/market/summary` que la page charge par
+       ailleurs : `VX.fetch` le rend depuis son cache, sans appel de plus.
+
+       LES SEUILS SONT EMPRUNTÉS À `VX.freshness.THRESH`, jamais recopiés : deux
+       tables de seuils divergent au premier ajustement, et l'écran dirait alors
+       « Différé » là où Marchés dit « À actualiser ». */
+    let m=b.demo?'demo':'delayed';
+    if(!b.demo){
+      try{
+        const s=await VX.fetch('/api/market/summary',{ttl:60000});
+        const ageMs=(typeof s.scan_age==='number')?s.scan_age*1000:null;
+        const T=(window.VX&&VX.freshness&&VX.freshness.THRESH)||{live:20000,snapshot:1800000};
+        if(ageMs!=null)m=ageMs<T.live?'live':(ageMs<T.snapshot?'delayed':'stale');
+      }catch(e){}
+    }
     $('vx-hero-fresh').innerHTML=freshBadge(m)+' <span class="vx-meta">'+esc((b.sources||[]).join(', '))+'</span>';
     const ed=b.editorial||{};
-    const edBlock=ed.narrative?('<p style="font-size:15.5px;line-height:1.75;color:var(--vx-text);margin:0 0 .7rem">'+esc(ed.narrative)+'</p>'):'';
-    $('vx-brief-body').innerHTML=edBlock
-      +'<div style="font-size:14px;line-height:1.75">'+(b.lines||[]).map(l=>esc(l)).join('<br>')+'</div>'
-      +((b.main_risk||b.main_opportunity)?'<div class="vx-flex vx-wrap vx-mt2">'
-        +(b.main_risk?'<span class="vx-badge" style="color:var(--vx-negative)">Risque : '+esc(b.main_risk)+'</span>':'')
-        +(b.main_opportunity?'<span class="vx-badge" style="color:var(--vx-positive)">Opportunité : '+esc(b.main_opportunity)+'</span>':'')+'</div>':'')
-      +'<div class="vx-card-footer"><span class="vx-badge">'+(b.generator==='deterministic'?'Brief déterministe (moteurs)':'Brief IA validé')+'</span>'
+    const lines=b.lines||[];
+    const risk=b.main_risk||ed.main_risk||'';
+    const opportunity=b.main_opportunity||ed.main_opportunity||'';
+    const priced=ed.prices_mainly?('Aujourd’hui, le marché price principalement '+ed.prices_mainly):'';
+    const decision=risk||opportunity||priced||lines[0]||'Aucune conclusion décisionnelle disponible avec les données actuelles.';
+    const tone=risk?'risk':opportunity?'go':'neutral';
+    $('vx-brief-body').innerHTML=
+      '<p class="vx-today-decision" data-tone="'+tone+'">'+esc(decision)+'</p>'
+      +'<div class="vx-card-footer"><span class="vx-meta">'+(b.generator==='deterministic'?'Conclusion déterministe · moteurs':'Conclusion éditoriale validée')+'</span>'
       +'<a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets">Voir les preuves →</a></div>';
     if(b.demo)$('vx-demo-banner').innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
-  }catch(e){$('vx-brief-body').innerHTML=VX.states.error('Brief indisponible ('+e.message+')');}
+  }catch(e){$('vx-brief-body').innerHTML=VX.states.error('Impossible de charger le brief.');}
 }
 
 /* ── 4 KPI résumé cliquables (régime, breadth, VIX, meilleure opportunité) ── */
 async function loadSummary(){
   const paint=(sum,reg,cmd)=>{
     sum=sum||{};reg=reg||{};cmd=cmd||{};
-    const conf=Math.round((reg.confidence||0)*100);
+    /* CONFIANCE : `(reg.confidence||0)*100` affichait « (0%) » quand le moteur
+       n'en rendait AUCUNE — un chiffre fabriqué, indiscernable d'un zéro
+       mesuré. Même défaut que celui corrigé au lot 629 dans l'objet Regime
+       Aura, à un second site d'appel : le résumé. */
+    const conf=(reg.confidence!=null&&!isNaN(reg.confidence))?Math.round(reg.confidence*100):null;
     const br=breadthOf(sum.breadth);
     let vix=num(sum.vix);
     const best=(cmd.top_stocks||[])[0]||null;
-    const regHtml=reg.regime?esc(reg.regime):'n/d';
+    const flou=regimeIndetermine(reg.regime);
+    const regHtml=flou?'<span class="vx-muted">Indéterminé</span>':esc(reg.regime);
+    const regCtx=flou?'Vertex ne tranche pas'
+      :(conf!=null?('confiance '+conf+' %'):'confiance n/d');
     const brHtml=br!=null?(br.v+' %'):'n/d';
-    const brCls=br!=null?(br.v>=55?'vx-pos':'vx-warn'):'';
+    /* UN SEUL seuil dans ce fichier, deux sorties. La couleur encodait déjà
+       `>= 55` sans jamais le dire ; le contexte nomme ce que la couleur affirme,
+       il n'ajoute pas une seconde règle. */
+    const brSain=br!=null?(br.v>=55):null;
+    const brCls=brSain==null?'':(brSain?'vx-pos':'vx-warn');
+    const brCtx=brSain==null?'':(brSain?'participation saine':'participation étroite');
     const vixHtml=vix!=null?vix:'n/d';
     const bestHtml=best?esc(best.symbol):'—';
     const kpis=[
-      kpiTile('Régime',regHtml+' <span class="vx-meta">('+conf+'%)</span>','','/markets'),
-      kpiTile('Breadth'+(br&&br.lbl?' '+br.lbl:''),brHtml,brCls,'/markets?view=breadth'),
-      kpiTile('VIX',vixHtml,'','/markets?view=volatility'),
-      best?kpiTile('Meilleure opp.',bestHtml,'','/analysis/'+encodeURIComponent(best.symbol)):kpiTile('Meilleure opp.','—','','/opportunities'),
+      kpiTile('Régime',regHtml,'','/markets',regCtx),
+      /* L'étiquette NOMME la métrique (« Breadth >MM200 ») — gardien du lot 66 :
+         « 45 % » seul ne dit pas 45 % de quoi. Le 3ᵉ étage porte l'interprétation,
+         pas la métrique. */
+      kpiTile('Breadth'+(br&&br.lbl?' '+br.lbl:''),brHtml,brCls,'/markets?view=breadth',brCtx),
+      kpiTile('VIX',vixHtml,'','/markets?view=volatility',sum.vix_band?esc(sum.vix_band):''),
+      best?kpiTile('Meilleure opp.',bestHtml,'','/analysis/'+encodeURIComponent(best.symbol),best.verdict?esc(best.verdict):'')
+          :kpiTile('Meilleure opp.','—','','/opportunities','aucun dossier retenu'),
     ].join('');
     $('vx-hero-kpis').innerHTML=kpis;
     /* Action prioritaire : dérivée uniquement des données réelles. */
@@ -253,9 +319,15 @@ function renderDiff(cur){
   let prev=null;try{prev=JSON.parse(localStorage.getItem('vxTodayBaseline')||'null');}catch(e){prev=null;}
   const rows=[];
   if(!prev||!prev.ts){
-    host.innerHTML='<div class="vx-state" data-state="empty"><div class="vx-state-icon">—</div>'
-      +'<div><b>Aucun historique de comparaison disponible.</b><br>'
-      +'<span class="vx-meta">La référence de cette visite est enregistrée ; les changements apparaîtront à la prochaine.</span></div></div>';
+    /* Ces deux etats etaient BATIS A LA MAIN — meme classe `.vx-state`, mais
+       balisage recopie et, dans la case reservee au pictogramme, un caractere
+       (« — », « = ») la ou tous les etats canoniques portent la silhouette SVG
+       de `VX.states.ghost`. Un composant duplique pour changer une icone, c'est
+       precisement ce que le systeme existe pour eviter : ils passent par la
+       fabrique, et l'icone suit la famille sans que personne ait a y penser. */
+    host.innerHTML=VX.states.empty(
+      'La référence de cette visite est enregistrée ; les changements apparaîtront à la prochaine.',
+      '', {title:'Aucun historique de comparaison disponible.', ghost:'line'});
   }else{
     const fmtDelta=(a,b,unit)=>{if(a==null||b==null)return null;const d=Math.round((a-b)*10)/10;if(d===0)return null;
       const cls=d>0?'vx-pos':'vx-neg';return '<span class="vx-mono '+cls+'">'+(d>0?'+':'')+d+(unit||'')+'</span>';};
@@ -266,10 +338,12 @@ function renderDiff(cur){
     if((cur.opp||0)!==(prev.opp||0))rows.push('Opportunités : '+prev.opp+' → '+cur.opp);
     if(cur.best&&prev.best&&cur.best!==prev.best)rows.push('Meilleure opp. : '+esc(prev.best)+' → '+esc(cur.best));
     host.innerHTML=rows.length
-      ? '<ul style="margin:0;padding-left:18px;line-height:1.9;font-size:13px">'+rows.map(r=>'<li>'+r+'</li>').join('')+'</ul>'
+      ? '<ul style="margin:0;padding-left:18px;line-height:1.9;font-size:13px">'+rows.slice(0,3).map(r=>'<li>'+r+'</li>').join('')+'</ul>'
         +'<div class="vx-meta vx-mt2">Depuis '+esc(new Date(prev.ts).toLocaleString('fr-FR'))+'</div>'
-      : '<div class="vx-state" data-state="empty"><div class="vx-state-icon">=</div><div><b>Rien de significatif n’a changé</b><br><span class="vx-meta">depuis '+esc(new Date(prev.ts).toLocaleString('fr-FR'))+'</span></div></div>';
+      : VX.states.empty('depuis '+esc(new Date(prev.ts).toLocaleString('fr-FR')),
+          '', {title:'Rien de significatif n’a changé', ghost:'line'});
   }
+  host.insertAdjacentHTML('beforeend','<div class="vx-meta vx-mt2">Source : comparaison locale de cette session</div>');
   try{localStorage.setItem('vxTodayBaseline',JSON.stringify(Object.assign({},cur,{ts:Date.now()})));}catch(e){}
 }
 
@@ -291,16 +365,28 @@ async function loadRegime(){
       +'<div class="vx-kv"><span class="k">Confirmations exigées</span><span class="v">'+VX.fmt.nd(adj.confirmation_required)+'</span></div>'
       +'<div class="vx-card-footer"><a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets?view=breadth">Participation →</a></div>';
     if(window.VXCharts&&VXCharts.regimeAura){
+      /* LOT 629 — `||0` transformait une confiance ABSENTE en « 0 % confiance »,
+         un chiffre inventé affiché comme mesure. Absente → null, et l’objet
+         affiche « confiance n/d » avec sa couronne éteinte. */
       VXCharts.regimeAura('vx-regime-object',{regime:r&&r.regime,
-        confidence:Math.round(((r&&r.confidence)||0)*100),
+        confidence:(r&&r.confidence!=null&&!isNaN(r.confidence))?Math.round(r.confidence*100):null,
         newRisk:(adj.new_risk_allowed===undefined?null:!!adj.new_risk_allowed),
         invalidation:inval,grammar:grammar,
-        source:'Moteur de régimes',timestamp:Date.now(),mode:'delayed'});
+        source:'Moteur de régimes',timestamp:r&&(r.as_of||r.timestamp||r.updated)||null,mode:'delayed'});
     }
   }catch(e){$('vx-regime-body').innerHTML=VX.states.error('Régime indisponible');}
 }
 
 /* ── Meilleures opportunités (top 3, résumé) ── */
+/* Les notes du comité arrivent PREFIXEES d'un emoji ('✅ ENTRÉE CONFIRMÉE — …',
+   vertex/engines/committee.py) : c'est le dernier emoji peint par le produit.
+   LE MOTEUR N'EST PAS TOUCHE — la chaine est son contrat et d'autres
+   consommateurs la lisent — mais le prefixe n'est plus PEINT : la pastille de
+   verdict juste a gauche dit deja « ACHAT », et les mots « ENTRÉE CONFIRMÉE »
+   suivent. On retire des pictogrammes EN TETE de chaine, jamais a l'interieur :
+   une note amputee en son milieu serait une note falsifiee. */
+const sansPicto=t=>String(t==null?'':t)
+  .replace(/^[\u2190-\u2BFF\uFE0F\u{1F000}-\u{1FAFF}\s]+/u,'');
 async function loadOpportunities(){
   try{
     const c=await VX.fetch('/api/command',{ttl:60000});
@@ -309,9 +395,9 @@ async function loadOpportunities(){
       '<div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">'
       +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(s.symbol)+'">'+esc(s.symbol)+'</button>'
       +'<span class="vx-badge '+vCls(s.verdict)+'">'+esc(s.verdict||'')+'</span>'
-      +'<span class="vx-grow vx-truncate vx-dim" style="font-size:12px" title="'+esc(s.note||'')+'">'+esc(s.note||'')+'</span>'
+      +'<span class="vx-grow vx-truncate vx-dim" style="font-size:12px" title="'+esc(sansPicto(s.note))+'">'+esc(sansPicto(s.note))+'</span>'
       +'<span class="vx-num vx-mono">'+VX.fmt.nd(s.price)+'</span>'
-      +'<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="'+esc(s.symbol)+'" aria-label="Actions">⋯</button></div>').join('')
+      +'<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="'+esc(s.symbol)+'" aria-label="Actions">'+VX.icon('more')+'</button></div>').join('')
       :VX.states.empty('Aucune opportunité retenue par le comité.');
   }catch(e){$('vx-opp-stocks').innerHTML=VX.states.error('Opportunités indisponibles');}
 }
@@ -322,10 +408,24 @@ async function loadAlerts(){
     const [mine,cmd]=await Promise.all([
       Promise.resolve((E()&&E().alerts())||[]),
       VX.fetch('/api/command',{ttl:30000}).catch(()=>({}))]);
+    /* L'API transporte la severite comme un EMOJI ('🔴'/'🟠', premier element
+       du tuple d'alerte). VISUAL_SYSTEM.md interdit l'emoji comme icone
+       produit, et COPY.md l'interdit comme ponctuation. On garde le CODE —
+       c'est le contrat du serveur, on n'y touche pas — mais on ne le PEINT
+       plus : une pastille prend la couleur semantique, et la pilule a droite
+       nomme deja la severite en toutes lettres.
+       LOT 41 : la comparaison ne cite plus le pictogramme, elle compare son
+       POINT DE CODE. Deux raisons, dont une qui est un vrai defaut evite :
+       un emoji peut arriver suivi d'un selecteur de variante (U+FE0F), et
+       `sev === '\u{1F534}'` devient alors faux EN SILENCE — une alerte rouge
+       s'afficherait en jaune. `codePointAt(0)` ne lit que le caractere de
+       base. Accessoirement, plus aucun emoji ne subsiste dans le code vivant
+       servi ; le contrat du serveur, lui, n'est pas touche. */
+    const ROUGE=0x1F534;   /* LARGE RED CIRCLE — severite « danger » du serveur */
     const srv=((cmd&&cmd.alerts)||[]).slice(0,3).map(a=>{
-      const icon=a[0]||'⚠', danger=(icon==='🔴');
+      const sev=a[0]||'', danger=(sev.codePointAt(0)===ROUGE);
       return '<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">'
-        +'<span aria-hidden="true">'+esc(icon)+'</span>'
+        +'<span class="vx-dot" aria-hidden="true" style="background:var(--vx-'+(danger?'negative':'warning')+')"></span>'
         +'<span class="vx-grow vx-dim" style="font-size:12px">'+esc(a[2]||a[1]||'')+'</span>'
         +'<span class="vx-badge" style="color:var(--vx-'+(danger?'negative':'warning')+')">'+esc(a[1]||'alerte')+'</span></div>';}).join('');
     const rows=mine.filter(a=>a.active).slice(0,3).map(a=>
@@ -333,7 +433,7 @@ async function loadAlerts(){
       +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(a.sym)+'">'+esc(a.sym)+'</button>'
       +'<span class="vx-grow vx-dim" style="font-size:12px">'+(a.cond==='above'?'franchit':'casse')+' '+VX.fmt.price(a.level)+'</span>'
       +'<span class="vx-badge vx-warn">armée</span></div>').join('');
-    $('vx-alerts').innerHTML=(srv+rows)||VX.states.empty('Aucune alerte active.',
+    $('vx-alerts').innerHTML=(srv+rows)||VX.states.emptyDesk('Aucune alerte active.',
       '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'alert\')">Créer une alerte</button>');
   }catch(e){$('vx-alerts').innerHTML=VX.states.error('Alertes indisponibles');}
 }
@@ -347,7 +447,7 @@ async function loadCalendar(){
         impact:(m.importance==='haute')?'high':(m.importance==='moyenne'?'med':'low')})),
       ...(cal.items||[]).filter(it=>it&&it.dte!=null).slice(0,4).map(it=>({label:(it.sym||'Résultats'),dte:it.dte,impact:'high'}))]
       .filter(e=>e.dte!=null&&!isNaN(e.dte));
-    VXCharts.catalystRunway('vx-calendar',{title:'Catalyseurs imminents',question:'Quels catalyseurs arrivent, et quand ?',
+    VXCharts.catalystRunway('vx-calendar',{title:'Catalyseurs',question:'Quels catalyseurs arrivent, et quand ?',
       events,source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
       emptyText:'Aucun catalyseur imminent identifié.'});
   }catch(e){$('vx-calendar').innerHTML='<div class="vx-card">'+VX.states.error('Calendrier indisponible')+'</div>';}
@@ -357,7 +457,7 @@ async function loadCalendar(){
 async function loadPortfolio(){
   const pos=(E()&&E().positions())||[];
   if(!pos.length){
-    $('vx-portfolio').innerHTML=VX.states.empty('Aucune position déclarée.',
+    $('vx-portfolio').innerHTML=VX.states.emptyDesk('Aucune position déclarée.',
       '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
     return;
   }
@@ -383,30 +483,21 @@ async function loadPortfolio(){
   }).join('')+'<div class="vx-card-footer">'+pos.length+' position(s) · marques '+(Object.keys(quotes).length?'IBKR/desk':'indisponibles')+'</div>';
 }
 
-/* ── Session d'analyse (digest de commandement, toujours ouverte) ── */
+/* ── Session d'analyse : fraîcheur compacte, sans répéter les KPI du hero. ── */
 function sessAge(s){if(s==null)return'';if(s<60)return'il y a '+s+' s';if(s<3600)return'il y a '+Math.round(s/60)+' min';return'il y a '+Math.round(s/3600)+' h';}
 function sessRender(d){
   const el=$('vx-asess');if(!el)return;
   const st=d.state||'analyzing';
   const live=st==='ready';
   const stLabel=live?'Analyse à jour':st==='restored'?'Analyse restaurée · rafraîchissement…':'Analyse en cours…';
-  const reg=d.regime||{};const tone=reg.tone||'idle';
-  const regCls=tone==='go'?'vx-pos':tone==='risk'?'vx-neg':tone==='wait'?'vx-warn':'vx-muted';
-  const opp=d.opportunities||{};const cat=(d.catalysts||{}).next;const mk=d.market||{};
-  const chip=(k,v,cls)=>'<span class="vx-ss-chip"><span class="k">'+k+'</span><span class="v '+(cls||'')+'">'+v+'</span></span>';
-  let chips='';
-  chips+=chip('Climat',reg.label?esc(reg.label):'—',regCls);
-  chips+=chip('Opportunités',opp.actionable!=null?(opp.actionable+(opp.top&&opp.top.length?' · '+opp.top.map(esc).join(' '):'')):'—',opp.actionable>0?'vx-pos':'');
-  chips+=chip('Prochain catalyseur',cat&&cat.dte!=null?((cat.label?esc(cat.label)+' · ':'')+'J-'+cat.dte):'aucun daté',cat&&cat.dte!=null&&cat.dte<=5?'vx-warn':'');
-  chips+=chip('VIX',mk.vix!=null?VX.fmt.nd(mk.vix):'n/d','');
-  chips+=chip('Confiance données',d.confidence!=null?d.confidence+' %':'n/d',d.confidence!=null?(d.confidence>=70?'vx-pos':d.confidence<40?'vx-neg':'vx-warn'):'');
+  const when=d.as_of?esc(String(d.as_of)):sessAge(d.age_s);
+  const confidence=d.confidence!=null?('couverture '+esc(d.confidence)+' %'):'couverture n/d';
   el.innerHTML='<div class="vx-ss-card" data-state="'+st+'">'
     +'<div class="vx-ss-head"><span class="vx-ss-dot'+(live?' live':'')+'" aria-hidden="true"></span>'
-    +'<span class="vx-ss-title">Session d\'analyse</span>'
+    +'<span class="vx-ss-title">Fraîcheur de l’analyse</span>'
     +'<span class="vx-ss-state">'+stLabel+'</span>'
     +'<span class="vx-grow"></span>'
-    +'<span class="vx-meta">'+(d.as_of?esc(String(d.as_of)):sessAge(d.age_s))+(d.demo?' · démo':'')+'</span></div>'
-    +'<div class="vx-ss-chips">'+chips+'</div></div>';
+    +'<span class="vx-meta">'+when+' · '+confidence+(d.demo?' · démo':' · moteurs')+' · lecture seule</span></div></div>';
 }
 async function loadSession(){
   try{
@@ -433,8 +524,8 @@ async function loadMarketDiff(){
   try{
     const d=await VX.fetch('/api/market/context',{ttl:120000});
     const tr=(d.regime||{}).transition||{};
-    const changes=d.changes_since_prev||[];
-    const conflicts=d.conflicts||[];
+    const changes=(d.changes_since_prev||[]).slice(0,3);
+    const conflicts=(d.conflicts||[]).slice(0,1);
     let html='<div class="vx-eyebrow" style="margin-bottom:.25rem">Marché (serveur)</div>';
     if(tr.changed===true){
       html+='<div class="vx-mb1"><span class="vx-badge" data-tone="neutral">Régime : '

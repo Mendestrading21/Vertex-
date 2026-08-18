@@ -81,6 +81,24 @@
       `<span class="vx-dot"></span>${parts.join(' · ')}</span>`;
   };
 
+  /* ── Icônes (§ VISUAL_SYSTEM : UNE seule famille outline) ─────────
+     Le dictionnaire n'est PAS défini ici : il est publié par le shell
+     (`window.VX.__icons`, bloc `#vx-icons`) depuis `_ICONS` en Python, qui
+     sert déjà la sidebar, la barre mobile et les overlays. Une seconde table
+     côté client aurait dérivé en silence — c'est exactement le défaut que la
+     table de micro-copy avait produit.
+
+     Un nom inconnu rend une icône VIDE et non un caractère de repli : un
+     glyphe de secours aurait réintroduit, par la porte de derrière, le
+     pictogramme textuel que ce pont existe pour supprimer. */
+  VX.icon = function (name, size) {
+    const d = (VX.__icons || {})[name] || '';
+    const s = size || 18;
+    return '<svg viewBox="0 0 24 24" width="' + s + '" height="' + s + '" fill="none" ' +
+      'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" ' +
+      'stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+  };
+
   /* ── États de données (§39) ──────────────────────────────────────── */
   VX.states = {
     loading(rows = 3) {
@@ -96,20 +114,20 @@
       if (type === 'ring') {
         return '<svg class="vx-state-ghost" viewBox="0 0 44 44" aria-hidden="true">' +
           '<circle cx="22" cy="22" r="17" fill="none" stroke="currentColor" stroke-width="5" opacity=".18"/>' +
-          '<circle cx="22" cy="22" r="17" fill="none" stroke="var(--vx-copper-light)" stroke-width="5" ' +
+          '<circle cx="22" cy="22" r="17" fill="none" stroke="var(--vx-violet-500)" stroke-width="5" ' +
           'stroke-dasharray="60 107" stroke-linecap="round" opacity=".35" transform="rotate(-90 22 22)"/></svg>';
       }
       if (type === 'line') {
         return '<svg class="vx-state-ghost" viewBox="0 0 140 48" aria-hidden="true">' +
           '<line x1="6" y1="42" x2="134" y2="42" stroke="currentColor" stroke-width="1" stroke-dasharray="2 3" opacity=".3"/>' +
-          '<path d="M6 34 L34 26 L58 30 L82 16 L106 22 L134 12" fill="none" stroke="var(--vx-copper-light)" ' +
+          '<path d="M6 34 L34 26 L58 30 L82 16 L106 22 L134 12" fill="none" stroke="var(--vx-violet-500)" ' +
           'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".4"/></svg>';
       }
       let bars = '';
       const hs = [16, 26, 12, 30, 20, 34, 22];
       hs.forEach((h, i) => {
         bars += `<rect x="${8 + i * 19}" y="${42 - h}" width="11" height="${h}" rx="2" ` +
-          `fill="${i === 5 ? 'var(--vx-copper-light)' : 'currentColor'}" opacity="${i === 5 ? .38 : .16}"/>`;
+          `fill="${i === 5 ? 'var(--vx-violet-500)' : 'currentColor'}" opacity="${i === 5 ? .38 : .16}"/>`;
       });
       return '<svg class="vx-state-ghost" viewBox="0 0 140 48" aria-hidden="true">' +
         '<line x1="6" y1="42" x2="140" y2="42" stroke="currentColor" stroke-width="1" opacity=".2"/>' + bars + '</svg>';
@@ -119,6 +137,31 @@
       const title = opts.title || 'Aucune donnée';
       const g = VX.states.ghost(opts.ghost === undefined ? 'bars' : opts.ghost);
       return `<div class="vx-state" data-state="empty">${g}<b>${title}</b><span>${reason || ''}</span>${action || ''}</div>`;
+    },
+    /* LOT 608 — un vide qui vient du BUREAU (localStorage synchronisé), pas d'un
+       moteur serveur. Depuis le 607, `VX.store.desk_sync` sait quand la lecture
+       du bureau a échoué ; personne ne l'affichait, et « Aucune position
+       déclarée » restait écrit tel quel alors que le serveur avait peut-être les
+       positions. C'est 607-A dans la zone même où l'utilisateur forme sa
+       conviction — le message global du 607 est transitoire, celui-ci est là.
+
+       DÉLIBÉRÉMENT SÉPARÉ de `empty()` : sur les 59 états vides du produit, 39
+       viennent d'un moteur serveur et n'ont RIEN à voir avec le bureau. Y coller
+       cette mention serait un mensonge d'un autre genre — la faute corrigée
+       depuis le 602, commise à l'envers. Cet état est réservé aux zones qui
+       lisent réellement les clés du bureau. */
+    emptyDesk(reason, action, opts) {
+      let sync = null;
+      try { sync = VX.store && VX.store.get('desk_sync'); } catch (e) {}
+      const base = VX.states.empty(reason, action, opts);
+      if (!sync || sync === 'ok') return base;
+      const quoi = sync === 'read-error'
+        ? 'tes données du serveur n’ont pas pu être chargées'
+        : 'la dernière sauvegarde vers le serveur a échoué';
+      return base + `<div class="vx-error-banner" data-state="desk-desync">` +
+        `⚠ Bureau non synchronisé — ${quoi}. Cette liste peut être incomplète : ` +
+        `n’en conclus pas qu’elle est vide.` +
+        `<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/system?view=data">Ouvrir Système</a></div>`;
     },
     stale(ageText, source, impact) {
       return `<div class="vx-stale-banner" data-state="stale">⏳ Donnée rassise (${ageText}${source ? ' · ' + source : ''})` +
@@ -439,6 +482,29 @@
       const dot = a.state === 'live' ? '<span class="vx-fresh-dot"></span>' : '';
       return '<span class="vx-fresh-chip" data-state="' + a.state + '" title="' + (a.label || '') + '">' +
         dot + (a.label || '') + '</span>';
+    },
+    /* ── Fraîcheur d'un DOMAINE de données (lot 63) ───────────────────────
+       Le lot 63 a mesuré, badge par badge sous vieillissement des réponses,
+       que les étiquettes écrites À LA MAIN étaient TOUTES des constantes —
+       « Différé » ou « DELAYED » quel que soit l'âge — tandis que les puces
+       issues de `chip()` réagissaient TOUTES. Le défaut ne venait pas des
+       pages : il venait de ce qu'écrire l'étiquette soi-même était plus court
+       que d'aller chercher un âge.
+
+       Ce helper rend l'honnêteté plus courte que le mensonge. `__vxStatus` est
+       la réponse de `/api/live/status`, posée par le shell sur CHAQUE page :
+       `domains.<nom>.age_s` y donne l'âge réel de la donnée, par domaine
+       (`prices`, `options`, `news`, `calendar`…), chacun avec son propre seuil
+       serveur. Âge inconnu → `assess` rend l'état « — », qui est l'aveu honnête
+       et non une valeur inventée. */
+    domainChip(nom) {
+      const st = (typeof window !== 'undefined' && window.__vxStatus) || null;
+      if (st && st.demo) {
+        return '<span class="vx-fresh-chip" data-state="demo" title="Démonstration">DÉMO</span>';
+      }
+      const d = st && st.domains && st.domains[nom];
+      const a = (d && typeof d.age_s === 'number') ? d.age_s * 1000 : null;
+      return this.chip(this.assess({ ageMs: a, live: !!st && st.mode === 'live' }));
     },
   };
 

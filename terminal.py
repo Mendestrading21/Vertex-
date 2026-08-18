@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from flask import Flask, jsonify, redirect, request
+from flask import Flask, jsonify, redirect, request, g
 
 try:
     from dotenv import load_dotenv
@@ -41,6 +41,7 @@ from vertex.market import context as market
 from vertex.research import chart_read as research
 from vertex.data_sources import fundamentals
 from vertex.data_sources import analyst_deep
+from vertex.data_sources import scan_evidence as _scan_evidence
 from vertex.engines import decide as engine
 from vertex.engines import scorecard as ibkr
 from vertex.strategy import legacy_adapter as strategy
@@ -86,6 +87,23 @@ from vertex.data import company as _company
 from vertex.services import market_clock as _market_clock
 
 app = Flask(__name__)
+from vertex.services import request_metrics as _request_metrics  # noqa: E402
+
+
+@app.before_request
+def _request_latency_start():
+    if request.path.startswith('/api/'):
+        g._vertex_request_started = time.perf_counter()
+
+
+@app.after_request
+def _request_latency_record(resp):
+    started = getattr(g, '_vertex_request_started', None)
+    if started is not None:
+        _request_metrics.record(request.endpoint, resp.status_code,
+                                (time.perf_counter() - started) * 1000)
+    return resp
+
 # ── JSON SÛR : convertit NaN/Infinity → null. Sinon Flask sort `NaN` (toléré par Python
 #    mais REFUSÉ par JSON.parse des navigateurs → page vide). Arrive avec l'univers XXL :
 #    des titres récents/peu liquides n'ont pas assez d'historique → ma200/ma50 = NaN.
@@ -191,6 +209,7 @@ if _FUND_CACHE:                                      # publie le cache dès le d
     scan_state['fundamentals'] = {'by_sym': _FUND_CACHE, 'by_sector': _recompute_sectors(_FUND_CACHE)}
 if _OPT_CACHE.get('board'):
     scan_state['options_board'] = _OPT_CACHE['board']
+    scan_state['options_as_of'] = _OPT_CACHE.get('ts')
 scan_state['macro'] = _load_json('macro_cache.json', [])
 scan_state['radar'] = _load_json('radar_cache.json', None)   # radar marché IBKR (persistant)
 
@@ -232,6 +251,9 @@ backtest = _backtest.backtest
 # 6 h (EOD = 1 maj/jour, donc aucun spam de l'endpoint gratuit). Lecture seule.
 _STOOQ_CACHE = {'ts': 0.0, 'frames': {}}
 _STOOQ_TTL = 6 * 3600
+YFINANCE_BATCH_TIMEOUT_SECONDS = 10
+STOOQ_REQUEST_TIMEOUT_SECONDS = 8
+_SOURCE_BUDGET_STATE = {'yfinance': 'UNKNOWN', 'stooq': 'UNKNOWN'}
 _STOOQ_IDX = {'^GSPC': '^spx', '^DJI': '^dji', '^IXIC': '^ndq', '^RUT': '^rut', '^VIX': '^vix',
               # matières premières / crypto (mapping stooq)
               'GC=F': 'xauusd', 'SI=F': 'xagusd', 'CL=F': 'cl.f', 'BZ=F': 'cb.f', 'BTC-USD': 'btcusd'}
@@ -262,7 +284,7 @@ def _stooq_one(t):
            f'&d1={d1:%Y%m%d}&d2={d2:%Y%m%d}&i=d')
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=15) as r:
+        with urllib.request.urlopen(req, timeout=STOOQ_REQUEST_TIMEOUT_SECONDS) as r:
             txt = r.read().decode('utf-8', 'ignore')
         if not txt or 'Date' not in txt[:60]:   # 'No data' / page HTML → échec
             return t, None
@@ -306,6 +328,7 @@ def _stooq_download(tickers):
         _STOOQ_CACHE['frames'] = merged
         _STOOQ_CACHE['ts'] = now if not fresh else _STOOQ_CACHE['ts']
         cache = merged
+    _SOURCE_BUDGET_STATE['stooq'] = 'AVAILABLE' if out else ('CACHED' if cache else 'UNAVAILABLE')
     return {t: cache[t] for t in tickers if t in cache} if cache else out
 
 
@@ -321,7 +344,8 @@ def _download_universe(tickers, period='1y', chunk=50):
         part = tickers[i:i + chunk]
         try:
             dl = yf.download(part, period=period, interval='1d', progress=False,
-                             auto_adjust=True, group_by='ticker', threads=True)
+                             auto_adjust=True, group_by='ticker', threads=True,
+                             timeout=YFINANCE_BATCH_TIMEOUT_SECONDS)
         except Exception:
             dl = None
         if dl is None or len(dl) == 0:
@@ -349,7 +373,9 @@ def _download_universe(tickers, period='1y', chunk=50):
         except Exception:
             pass
     stooq_n = len(frames) - yahoo_n
-    scan_state['source'] = ('yfinance' if stooq_n == 0 else
+    _SOURCE_BUDGET_STATE['yfinance'] = 'AVAILABLE' if yahoo_n else 'UNAVAILABLE'
+    scan_state['source'] = ('unavailable' if yahoo_n == 0 and stooq_n == 0 else
+                            'yfinance' if stooq_n == 0 else
                             'stooq' if yahoo_n == 0 else 'yfinance+stooq')
     return frames
 
@@ -361,7 +387,7 @@ _demo_options_board = _demo.demo_options_board
 _annotate_swing = _swing.annotate
 
 
-def scan():
+def _scan_once():
     try:
         # En DÉMO : on ne scanne que 20 titres → rapide sur le CPU bridé du cloud,
         # suffisant pour visualiser toutes les données. Hors démo : univers complet.
@@ -374,7 +400,11 @@ def scan():
         else:
             data = _download_universe(_syms)
         if BENCH not in data:
-            scan_state['error'] = 'aucune donnée marché (yfinance + stooq indisponibles)'
+            scan_state['error'] = 'market_data_unavailable'
+            scan_state['source_health'] = {
+                'scan': 'DEGRADED', 'market': 'UNAVAILABLE',
+                'options': 'NOT_COLLECTED', 'fundamentals': 'NOT_COLLECTED',
+            }
             return
         bc = data[BENCH]['Close'].dropna()
         bench_ret = (float(bc.iloc[-1]) / float(bc.iloc[-63]) - 1) if len(bc) > 63 else 0.0
@@ -526,9 +556,22 @@ def scan():
                 _db = _demo_options_board(rows, detail)
                 _annotate_swing(_db, detail)
                 scan_state['options_board'] = _db
+                scan_state['options_as_of'] = time.time()
                 _attach_vehicle(rows, _db)
             except Exception:
                 pass
+        # PREUVES PAR TITRE : qualité, provenance et réconciliation sont produites
+        # à partir du cycle actuel avant tout chemin décisionnel Skyler/Strategy OS.
+        # Une chaîne sans timestamp reste explicitement non actionnable.
+        try:
+            _packets, _reconciliations = _scan_evidence.build_scan(
+                detail, data, scan_state.get('source'), scan_state.get('options_board') or [],
+                scan_state.get('options_as_of'))
+            scan_state['analytics_packets'] = _packets
+            scan_state['reconciliation_by_symbol'] = _reconciliations
+        except Exception:
+            scan_state['analytics_packets'] = []
+            scan_state['reconciliation_by_symbol'] = {}
         try:
             pf = backtest(data)
         except Exception:
@@ -613,6 +656,14 @@ def scan():
                            'commodities': commodities, 'macro': macro, 'internals': internals,
                            'recommendations': recs, 'strategy': strat, 'committee': comite,
                            'breadth': breadth, 'spy': spy, 'market': market_status(),
+                           'source_health': {
+                               'scan': 'AVAILABLE',
+                               'market': 'AVAILABLE' if data is not None else 'UNAVAILABLE',
+                               'options': 'AVAILABLE' if scan_state.get('options_board') else 'NOT_COLLECTED',
+                               'fundamentals': 'AVAILABLE' if fsym else 'NOT_COLLECTED',
+                               'yfinance_budget': _SOURCE_BUDGET_STATE['yfinance'],
+                               'stooq_budget': _SOURCE_BUDGET_STATE['stooq'],
+                           },
                            'universe_n': len(syms_scan), 'scanned_n': len(rows),
                            'scan_ts': time.time(),
                            'updated': datetime.now().strftime('%H:%M:%S'), 'error': None})
@@ -620,11 +671,43 @@ def scan():
             _apply_ibkr_indices()   # overlay indices/VIX TEMPS RÉEL IBKR par-dessus le différé yfinance
         except Exception:
             pass
-    except Exception as e:
-        scan_state['error'] = f'{type(e).__name__}: {e}'
+    except Exception:
+        scan_state['error'] = 'scan_failed'
+        scan_state['source_health'] = {
+            'scan': 'DEGRADED', 'market': 'UNKNOWN',
+            'options': 'UNKNOWN', 'fundamentals': 'UNKNOWN',
+        }
+
+
+_SCAN_LOCK = threading.Lock()
+
+
+def scan():
+    """Exécute un seul scan à la fois sans écraser le dernier état publié."""
+    if not _SCAN_LOCK.acquire(blocking=False):
+        scan_state['scan_status'] = 'RUNNING'
+        scan_state['scan_skip_count'] = int(scan_state.get('scan_skip_count') or 0) + 1
+        return False
+    scan_state['scan_status'] = 'RUNNING'
+    try:
+        _scan_once()
+        return True
+    finally:
+        scan_state['scan_status'] = 'DEGRADED' if scan_state.get('error') else 'IDLE'
+        _SCAN_LOCK.release()
 
 
 _rescan_evt = threading.Event()   # set() par /api/rescan → réveille la boucle pour un re-scan immédiat
+RESCAN_COOLDOWN_SEC = max(1, int(os.getenv('VERTEX_RESCAN_COOLDOWN_SEC', '30')))
+_rescan_gate_lock = threading.Lock()
+_last_rescan_ts = 0.0
+
+
+def _rescan_cooldown_remaining(now=None):
+    """Retourne le délai global restant sans conserver d’identité de demandeur."""
+    current = time.monotonic() if now is None else float(now)
+    elapsed = max(0.0, current - _last_rescan_ts)
+    return max(0, int(math.ceil(RESCAN_COOLDOWN_SEC - elapsed)))
 # ── VERTEX LIVE ENGINE : câblage du moteur central (états + déclencheur) ──
 _live.configure(scan_state=scan_state, news_state=news_state, cal_state=cal_state,
                 weekly_state=weekly_state, rescan_event=_rescan_evt,
@@ -1042,6 +1125,16 @@ def _publish_board(focus):
     if ob:
         _annotate_swing(ob, scan_state.get('detail') or {})
         scan_state['options_board'] = ob
+        scan_state['options_as_of'] = now
+        # Suivis HYPOTHÉTIQUES uniquement : chaque refresh du board fige une
+        # quote de contrat réellement publiée pour alimenter le track record.
+        try:
+            from vertex.tracking import repository as _tracking_repo
+            scan_state['option_tracking_snapshot'] = _tracking_repo.record_option_board(
+                ob, at=now, source=scan_state.get('options_source') or 'options_board')
+        except Exception:
+            # Le suivi ne doit jamais interrompre la publication analytique.
+            scan_state['option_tracking_snapshot'] = {'error': 'snapshot indisponible'}
         _attach_vehicle(scan_state.get('rows') or [], ob)   # rafraîchit le verdict véhicule
         _save_json('options_cache.json', {'board': ob, 'ts': time.time()})
 
@@ -1094,6 +1187,7 @@ def _opt_loop():
                     else:                              # repli yfinance : board focus seul
                         _annotate_swing(ob, scan_state.get('detail') or {})
                         scan_state['options_board'] = ob
+                        scan_state['options_as_of'] = time.time()
                         _save_json('options_cache.json', {'board': ob, 'ts': time.time()})
             except Exception:
                 pass
@@ -1153,7 +1247,7 @@ NEWS_SYMS = ['SPY', 'QQQ', 'NVDA', 'AAPL', 'MSFT', 'META', 'AMZN', 'TSLA', 'AMD'
 def _news_loop():
     while True:
         try:
-            seen, feed = set(), []
+            feed = []
             # couverture dynamique : le socle + les titres CHAUDS du scan (mouvement/volume)
             hot = []
             try:
@@ -1170,12 +1264,17 @@ def _news_loop():
                     its, _ = ai.fr_news(sym, its)
                     for it in its:
                         it['senti'] = _news_plus.sentiment((it.get('title') or '') + ' ' + (it.get('fr') or ''))
-                        k = (it.get('title') or '')[:60]
-                        if k and k not in seen:
-                            seen.add(k)
-                            feed.append({**it, 'sym': sym})
+                        feed.append({**it, 'sym': sym})
                 except Exception:
                     continue
+            # LOT 605 : la deduplication se faisait sur `titre[:60]` — deux
+            # depeches DIFFERENTES partageant leur ouverture etaient confondues
+            # (information REELLE perdue), et le meme article en casse ou
+            # ponctuation differente passait deux fois. `dedupe_news` existe
+            # dans le depot depuis le lot 4, est teste, et cle sur le titre
+            # NORMALISE COMPLET + le lien : le fil ne l'appelait simplement pas.
+            # Dedupe AVANT le tri : on garde le premier arrive, comme avant.
+            feed = _news_plus.dedupe_news(feed)
             feed.sort(key=lambda x: x.get('time') or '', reverse=True)
             news_state['items'] = feed[:45]
             news_state['updated'] = datetime.now().strftime('%H:%M:%S')
@@ -1518,10 +1617,12 @@ def _weekly_loop():
 
 # ─── options / GEX / earnings à la demande ───────────────────────────────
 def options_pack(sym):
+    from vertex.options import iv_hv as _iv_hv
     out = {'sym': sym, 'iv': None, 'ivrank': None, 'earnings': None, 'error': None,
            'name': None, 'sector': None, 'mcap': None, 'pe': None, 'beta': None,
            'news': [], 'news_why': None, 'contracts': [],
-           'net_gex': None, 'regime': None, 'call_wall': None, 'put_wall': None, 'gamma_flip': None}
+           'net_gex': None, 'regime': None, 'call_wall': None, 'put_wall': None, 'gamma_flip': None,
+           'hv_20d': None, 'iv_hv_context': _iv_hv.describe(None, None)}
     try:
         tk = yf.Ticker(sym)
         try:
@@ -1556,6 +1657,7 @@ def options_pack(sym):
         h = tk.history(period='1y')['Close']
         ret = np.log(h / h.shift(1)).dropna()
         hv = ret.rolling(20).std() * math.sqrt(252) * 100
+        out['hv_20d'] = round(float(hv.iloc[-1]), 2) if len(hv.dropna()) else None
         out['ivrank'] = round(float((hv.rank(pct=True).iloc[-1]) * 100)) if len(hv.dropna()) else None
         # earnings (+ jours avant résultats, pour la pénalité options court terme)
         edte = None
@@ -1583,10 +1685,17 @@ def options_pack(sym):
             out['contracts'] = _rc['contracts']
             out['contracts_cached'] = True
         else:
-            out['contracts'] = options.best_for_symbol(sym, spot, spot * 1.12, 'call', max_n=2,
-                                                       buckets=('court', 'moyen', 'long'), earnings_dte=edte)
+            screened = options.best_for_symbol(sym, spot, spot * 1.12, 'call', max_n=2,
+                                               buckets=('court', 'moyen', 'long'), earnings_dte=edte,
+                                               include_diagnostics=True)
+            out['contracts'] = screened['contracts']
+            out['option_price_rejections'] = screened['price_rejections']
+            out['option_price_rejection_count'] = screened['price_rejection_count']
             if out['contracts']:                       # réchauffe la rotation au passage
                 _OPTALL_CACHE[sym] = {'ts': time.time(), 'contracts': out['contracts']}
+        out.setdefault('option_price_rejections', [])
+        out.setdefault('option_price_rejection_count', 0)
+        out['option_board_coverage'] = options.board_coverage(out['contracts'])
         out['best_pick'] = options.recommend(out['contracts'])   # LA meilleure entre les 3
         out['best_two'] = options.recommend_top(out['contracts'], 2)   # le TOP 2 des échéances (#1/#2)
         _d = scan_state['detail'].get(sym)
@@ -1628,6 +1737,7 @@ def options_pack(sym):
                     d = agg.setdefault(K, {'cg': 0., 'pg': 0.})
                     d['cg' if is_call else 'pg'] += g * oi
         out['iv'] = round(float(np.median(atm_ivs)) * 100, 1) if atm_ivs else None
+        out['iv_hv_context'] = _iv_hv.describe(out['iv'], out['hv_20d'])
         if agg:
             ks = sorted(agg)
             scale = 100.0 * spot * spot * 0.01
@@ -1656,6 +1766,7 @@ def options_pack(sym):
 def scan_ep():
     return jsonify({**scan_state, 'ai_on': ai.available(),
                    'scan_age': _scan_age(),
+                   'rescan_cooldown_remaining': _rescan_cooldown_remaining(),
                    'idx_sets': {'dow': _DOW30, 'ndx': _NDX100, 'sp': _SP500_SET,
                                 'rut': _RUT_SET, 'eu': _EU_SET, 'asia': _ASIA_SET},
                    # source HONNÊTE des données du scan (yfinance/stooq/demo) — le badge
@@ -1666,9 +1777,20 @@ def scan_ep():
 
 @app.route('/api/rescan', methods=['POST', 'GET'])
 def api_rescan():
-    """Force un re-scan immédiat de TOUT l'univers (réveille la boucle de fond)."""
-    _rescan_evt.set()
-    return jsonify({'ok': True, 'universe': len(UNIVERSE),
+    """Réveille le scan au plus une fois par fenêtre globale, sans tracer le demandeur."""
+    global _last_rescan_ts
+    with _rescan_gate_lock:
+        remaining = _rescan_cooldown_remaining()
+        if remaining:
+            response = jsonify({'ok': False, 'error': 'rescan_rate_limited',
+                                'retry_after': remaining})
+            response.status_code = 429
+            response.headers['Retry-After'] = str(remaining)
+            return response
+        _last_rescan_ts = time.monotonic()
+        _rescan_evt.set()
+    return jsonify({'ok': True, 'status': 'rescan_queued', 'universe': len(UNIVERSE),
+                    'cooldown_seconds': RESCAN_COOLDOWN_SEC,
                     'msg': f'Re-scan lancé — recalcul des {len(UNIVERSE)} titres (≈10-30 s). Recharge dans un instant.'})
 
 
@@ -1705,7 +1827,7 @@ def _err_404(e):
 @app.errorhandler(500)
 def _err_500(e):
     if request.path.startswith('/api/'):
-        return jsonify({'error': 'internal', 'detail': str(e)[:200]}), 500
+        return jsonify({'error': 'internal'}), 500
     return redirect('/')
 
 

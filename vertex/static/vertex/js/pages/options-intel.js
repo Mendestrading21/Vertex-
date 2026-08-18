@@ -87,6 +87,21 @@
   }
 
   function loading(el) { if (el) el.innerHTML = (window.VX && VX.states) ? VX.states.loading(3) : 'Chargement…'; }
+
+  /* LE TROU DU LOT 08 : `options_intel_page.py` declare `<div
+     id="vx-demo-banner">` et RIEN ne le remplissait — hote present, page
+     muette. Chaque carte d'Options savait pourtant qu'elle etait en demo
+     (`d.demo` traverse le hero, les compteurs, le scanner, le payoff), mais
+     l'espace lui-meme ne le disait pas. Meme texte que Marches et
+     Opportunites : un seul libelle pour un seul fait. */
+  function remplirBandeauDemo(estDemo) {
+    var h = document.getElementById('vx-demo-banner');
+    if (!h) return;
+    h.innerHTML = estDemo
+      ? '<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> '
+        + 'Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>'
+      : '';
+  }
   function fail(el, cause) {
     if (el) el.innerHTML = (window.VX && VX.states)
       ? VX.states.error(cause) : '<div class="vx-error-banner">' + esc(cause) + '</div>';
@@ -156,6 +171,7 @@
     get('/api/options/overview').then(function (d) {
       if (!d || d.empty) {
         var msg = (window.VX && VX.states) ? VX.states.empty('Aucun contrat dans le tableau (scan vide ou hors séance).') : 'Aucune donnée.';
+        remplirBandeauDemo(d && d.demo);
         if (hEl) { hEl.innerHTML = heroHtml(d && d.environment, d && d.option_pulse, d && d.volatility_pulse, d && d.demo); mountEnvGauge(d && d.environment); }
         if (cEl) cEl.innerHTML = msg;
         if (vEl) vEl.innerHTML = verdictCard(d && d.interpretation);
@@ -163,6 +179,7 @@
         return;
       }
       var c = d.counters || {};
+      remplirBandeauDemo(d.demo);
       if (hEl) { hEl.innerHTML = heroHtml(d.environment, d.option_pulse, d.volatility_pulse, d.demo); mountEnvGauge(d.environment); }
       if (cEl) cEl.innerHTML = countersHtml(c, d.demo, d.as_of);
       if (vEl) vEl.innerHTML = verdictCard(d.interpretation);
@@ -250,6 +267,7 @@
   function loadVolatility(sym) {
     var el = document.getElementById('vx-opt-vol-out-body');
     if (!sym) { el.innerHTML = '<div class="vx-empty">Saisis un symbole.</div>'; return; }
+    try { if (VX.store) VX.store.set('active_ticker', sym); } catch (e0) {}
     loading(el);
     get('/api/options/volatility/' + encodeURIComponent(sym)).then(function (d) {
       var interp = d && d.interpretation;
@@ -285,22 +303,46 @@
       chartOI(VC, d);
       chartSmile(VC, d);
     }).catch(function (e) {
-      ids.forEach(function (id) { var el = document.getElementById(id); if (el) el.innerHTML = '<div class="vx-error-banner">⚠ ' + esc(e.message) + '</div>'; });
+      ids.forEach(function (id) { var el = document.getElementById(id); if (el) el.innerHTML = '<div class="vx-error-banner">Intelligence options indisponible.</div>'; });
     });
   }
 
   function col(VC, name, fallback) { return (VC.colors && VC.colors[name]) || fallback; }
 
+  function spotLinePlugin(spot, label) {
+    return {
+      id: 'vxSpotLine' + String(spot).replace(/[^0-9]/g, ''),
+      afterDatasetsDraw: function (chart) {
+        if (spot == null || !chart.scales || !chart.scales.x) return;
+        var labels = chart.data.labels || [], nearest = -1, distance = Infinity;
+        labels.forEach(function (value, index) {
+          var delta = Math.abs(Number(value) - Number(spot));
+          if (isFinite(delta) && delta < distance) { distance = delta; nearest = index; }
+        });
+        if (nearest < 0) return;
+        var x = chart.scales.x.getPixelForValue(nearest), area = chart.chartArea;
+        if (!isFinite(x) || !area) return;
+        var ctx = chart.ctx; ctx.save();
+        ctx.strokeStyle = col(window.VXCharts || {}, 'brand', 'rgb(155,123,255)');
+        ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(x, area.top); ctx.lineTo(x, area.bottom); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle = col(window.VXCharts || {}, 'muted', 'rgb(152,144,146)');
+        ctx.font = '11px JetBrains Mono'; ctx.textAlign = 'center';
+        ctx.fillText(label || ('Spot ' + spot), x, area.top + 12); ctx.restore();
+      },
+    };
+  }
+
   // Structure par terme de l'IV — line, une série (marque).
   function chartTerm(VC, d) {
     var pts = (d.term_structure && d.term_structure.points) || [];
     if (pts.length < 2) { document.getElementById('vx-opt-term').innerHTML = '<div class="vx-card"><div class="vx-empty">Structure par terme : pas assez d’échéances.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#DBE1E8');
+    var brand = col(VC, 'brand', '#9B7BFF');
     var slope = d.term_structure.slope;
     var concl = slope == null ? '' : slope > 0.02 ? 'Contango — court terme meilleur marché' : slope < -0.02 ? 'Inversée — stress court terme' : 'Structure plate';
     var c = VC.card('vx-opt-term', {
       title: 'Structure par terme de l’IV', question: 'L’IV monte-t-elle ou baisse-t-elle avec l’échéance ?',
-      conclusion: concl, height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
+      conclusion: concl, variant: 'hero', height: 360, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
       limits: 'IV ATM approximée par le contrat le plus proche du spot',
       explain: { shows: 'IV ATM par échéance (DTE).', why: 'Une structure inversée signale un stress/événement de court terme (crush probable).', confirm: 'Pente positive et régulière.', invalidate: 'Pente fortement négative.' },
       render: function (canvas) {
@@ -308,10 +350,13 @@
           type: 'line',
           data: { labels: pts.map(function (p) { return p.dte + ' j'; }),
             datasets: [{ label: 'IV ATM', data: pts.map(function (p) { return +(p.iv * 100).toFixed(1); }),
-              borderColor: brand, backgroundColor: brand + '22', borderWidth: 2, pointRadius: 3, pointHoverRadius: 6, tension: .2, fill: true }] },
+              borderColor: brand, backgroundColor: brand + '18', borderWidth: 2, pointRadius: 2, pointHoverRadius: 6, tension: 0, fill: true }] },
           options: { interaction: { mode: 'index', intersect: false },
             plugins: { tooltip: { callbacks: { label: function (ctx) { return 'IV ' + ctx.parsed.y + ' %'; } } } },
-            scales: { y: { ticks: { callback: function (v) { return v + ' %'; } } } } } });
+            scales: {
+              x: { title: { display: true, text: 'Échéance (DTE)' } },
+              y: { title: { display: true, text: 'Volatilité implicite (%)' }, ticks: { callback: function (v) { return v + ' %'; } } },
+            } } });
       } });
     _charts.push(c);
   }
@@ -320,7 +365,7 @@
   function chartCone(VC, d) {
     var pts = (d.expected_move_cone && d.expected_move_cone.points) || [];
     if (pts.length < 2) { document.getElementById('vx-opt-cone').innerHTML = '<div class="vx-card"><div class="vx-empty">Cône : pas assez d’échéances.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#DBE1E8'), copper = col(VC, 'copper', '#8A8284');
+    var brand = col(VC, 'brand', '#9B7BFF'), copper = col(VC, 'copper', '#8A8284');
     var labels = pts.map(function (p) { return p.dte + ' j'; });
     /* GRAMMAIRE TV (lot 203) : les bandes 1σ/2σ sont une ESTIMATION
        lognormale → remplissage HACHURÉ (C.hatchPattern, lot 197) comme le
@@ -332,7 +377,7 @@
     };
     var c = VC.card('vx-opt-cone', {
       title: 'Cône de mouvement attendu', question: 'Jusqu’où le sous-jacent peut-il bouger, à 1σ et 2σ ?',
-      conclusion: 'Spot ' + VXf.nd(d.spot), height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
+      conclusion: 'Estimation lognormale · spot ' + VXf.nd(d.spot), height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
       limits: 'σ = spot · IV_ATM · √(DTE/365) — estimation lognormale',
       legend: [{ label: '1σ', color: brand }, { label: '2σ', color: copper }],
       explain: { shows: 'Fourchette probable du spot par échéance (±1σ, ±2σ).', why: 'Situe stop et objectifs par rapport au mouvement réellement price.', confirm: 'Cible à l’intérieur de 1σ.', invalidate: 'Cible au-delà de 2σ.' },
@@ -347,7 +392,10 @@
             Object.assign(ds('lo2', 1, '-1', h2), {}) ] },
           options: { interaction: { mode: 'index', intersect: false },
             plugins: { tooltip: { callbacks: { label: function (ctx) { return ['2σ+', '1σ+', 'médian', '1σ−', '2σ−'][ctx.datasetIndex] + ' : ' + VXf.num(ctx.parsed.y, 2); } } } },
-            scales: { y: { ticks: { callback: function (v) { return VXf.num(v, 0); } } } } } });
+            scales: {
+              x: { title: { display: true, text: 'Échéance (DTE)' } },
+              y: { title: { display: true, text: 'Cours estimé' }, ticks: { callback: function (v) { return VXf.num(v, 0); } } },
+            } } });
       } });
     _charts.push(c);
   }
@@ -356,7 +404,16 @@
   function chartOI(VC, d) {
     var rows = (d.oi_by_strike && d.oi_by_strike.rows) || [];
     if (!rows.length) { document.getElementById('vx-opt-oi').innerHTML = '<div class="vx-card"><div class="vx-empty">Open interest indisponible.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#DBE1E8'), violet = col(VC, 'violet', '#9c79d0');
+    /* CALL vs PUT : deux series COTE A COTE dans une meme barre divergente.
+       Elles etaient peintes `brand` (cuivre) et `violet`. Depuis que la marque
+       EST le violet, les deux roles portent la meme valeur — les deux moities du
+       graphique deviendraient indiscernables, et c'est precisement ce que ce
+       graphique existe pour distinguer. On ne resout pas ca en inventant une
+       teinte (le registre serait moins lisible pour un seul appelant) : le PUT
+       prend le NEUTRE ACIER, deja une serie declaree du registre. La marque
+       reste sur les CALL, l'opposition redevient visible, et aucun vert/rouge
+       n'est employe — CALL/PUT n'est pas gain/perte. */
+    var brand = col(VC, 'brand', '#9B7BFF'), violet = col(VC, 'copper', '#8A8284');
     var c = VC.card('vx-opt-oi', {
       title: 'Open interest par strike', question: 'Où se concentrent les positions ouvertes ?',
       conclusion: 'CALL vs PUT', height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
@@ -369,9 +426,15 @@
             datasets: [
               { label: 'CALL OI', data: rows.map(function (r) { return r.call; }), backgroundColor: brand + 'cc', borderRadius: 2, maxBarThickness: 22 },
               { label: 'PUT OI', data: rows.map(function (r) { return -r.put; }), backgroundColor: violet + 'cc', borderRadius: 2, maxBarThickness: 22 } ] },
+          plugins: [spotLinePlugin(d.spot, 'Spot ' + VXf.nd(d.spot))],
           options: { interaction: { mode: 'index', intersect: false },
             plugins: { tooltip: { callbacks: { label: function (ctx) { return ctx.dataset.label + ' : ' + VXf.num(Math.abs(ctx.parsed.y), 0); } } } },
-            scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: function (v) { return VXf.num(Math.abs(v), 0); } } } } } });
+            scales: {
+              x: { stacked: true, title: { display: true, text: 'Strike' } },
+              y: { stacked: true, title: { display: true, text: 'Open interest (contrats)' },
+                grid: { color: function (ctx) { return Number(ctx.tick.value) === 0 ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.05)'; } },
+                ticks: { callback: function (v) { return VXf.num(Math.abs(v), 0); } } },
+            } } });
       } });
     _charts.push(c);
   }
@@ -381,7 +444,7 @@
     var sm = d.iv_smile || {};
     var calls = sm.calls || [], puts = sm.puts || [];
     if (!calls.length && !puts.length) { document.getElementById('vx-opt-smile').innerHTML = '<div class="vx-card"><div class="vx-empty">Smile indisponible.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#DBE1E8'), beige = col(VC, 'beige', '#c0b79f');
+    var brand = col(VC, 'brand', '#9B7BFF'), beige = col(VC, 'beige', '#c0b79f');
     var strikes = {};
     calls.concat(puts).forEach(function (r) { strikes[r.strike] = 1; });
     var xs = Object.keys(strikes).map(Number).sort(function (a, b) { return a - b; });
@@ -394,11 +457,15 @@
       render: function (canvas) {
         return VC.mount(canvas, {
           type: 'line', data: { labels: xs, datasets: [
-            { label: 'CALL IV', data: mapiv(calls), borderColor: brand, backgroundColor: brand, borderWidth: 2, pointRadius: 3, pointHoverRadius: 6, spanGaps: true, tension: .2, fill: false },
-            { label: 'PUT IV', data: mapiv(puts), borderColor: beige, backgroundColor: beige, borderWidth: 2, pointRadius: 3, pointHoverRadius: 6, spanGaps: true, tension: .2, fill: false } ] },
+            { label: 'CALL IV', data: mapiv(calls), borderColor: brand, backgroundColor: brand, borderWidth: 2, pointRadius: 2, pointHoverRadius: 6, spanGaps: true, tension: 0, fill: false },
+            { label: 'PUT IV', data: mapiv(puts), borderColor: beige, backgroundColor: beige, borderWidth: 1.5, pointRadius: 2, pointHoverRadius: 6, spanGaps: true, tension: 0, fill: false } ] },
+          plugins: [spotLinePlugin(sm.spot, 'Spot ' + VXf.nd(sm.spot))],
           options: { interaction: { mode: 'index', intersect: false },
             plugins: { tooltip: { callbacks: { label: function (ctx) { return ctx.dataset.label + ' : ' + (ctx.parsed.y == null ? '—' : ctx.parsed.y + ' %'); } } } },
-            scales: { y: { ticks: { callback: function (v) { return v + ' %'; } } } } } });
+            scales: {
+              x: { title: { display: true, text: 'Strike' } },
+              y: { title: { display: true, text: 'Volatilité implicite (%)' }, ticks: { callback: function (v) { return v + ' %'; } } },
+            } } });
       } });
     _charts.push(c);
   }
@@ -407,6 +474,7 @@
   function loadScenarios(sym) {
     var el = document.getElementById('vx-opt-sc-out-body');
     if (!sym) { el.innerHTML = '<div class="vx-empty">Saisis un symbole.</div>'; return; }
+    try { if (VX.store) VX.store.set('active_ticker', sym); } catch (e0) {}
     loading(el);
     loadStrategies(sym);   // stratégies multi-jambes en parallèle (même sélecteur)
     get('/api/options/scenarios/' + encodeURIComponent(sym)).then(function (d) {
@@ -455,7 +523,7 @@
   function fmtUsd(v) { var n = Math.round(v); return (n < 0 ? '-$' : '$') + VXf.num(Math.abs(n), 0); }
   function stratKpi(l, v) {
     return '<div class="vx-card--compact" style="padding:5px 7px;background:var(--vx-surface-2,#121214);border-radius:7px">' +
-      '<div style="font-size:10px;letter-spacing:.03em;color:var(--vx-text-muted,#8A8284)">' + l + '</div>' +
+      '<div style="font-size:10px;letter-spacing:.03em;color:var(--vx-text-muted,#989092)">' + l + '</div>' +
       '<div class="vx-mono" style="font-size:13px;font-weight:700">' + v + '</div></div>';
   }
   function loadStrategies(sym) {
@@ -479,10 +547,10 @@
         var pop = s.probability_of_profit != null ? s.probability_of_profit + ' %' : '—';
         var be = (s.breakevens && s.breakevens.length) ? s.breakevens.map(function (b) { return VXf.nd(b); }).join(' · ') : '—';
         var g = s.greeks;
-        var recoStyle = s.recommended ? ' style="border-color:var(--vx-signal-500,#DBE1E8);box-shadow:0 0 0 1px var(--vx-signal-500,#DBE1E8)"' : '';
+        var recoStyle = s.recommended ? ' style="border-color:var(--vx-violet-500,#9B7BFF);box-shadow:0 0 0 1px var(--vx-violet-500,#9B7BFF)"' : '';
         return '<section class="vx-card vx-col-6"' + recoStyle + '>' +
           '<div class="vx-card-header"><span class="vx-card-title">' + esc(s.label) + '</span>' +
-          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-signal-500,#DBE1E8);color:#0b0d0a;font-weight:700">★ Recommandée</span>' : '') +
+          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-violet-500,#9B7BFF);color:#0b0d0a;font-weight:700">' + VX.icon('star', 12) + ' Recommandée</span>' : '') +
           '<span class="vx-badge" style="color:var(--vx-' + (credit ? 'positive' : 'option') + ')">' + (credit ? 'crédit ' : 'débit ') + fmtUsd(Math.abs(s.net_premium)) + '</span></div>' +
           (s.fit_reason ? '<div class="vx-meta" style="margin:-2px 0 6px">' + esc(s.fit_reason) + '</div>' : '') +
           '<div id="strat-pf-' + i + '" style="height:150px"></div>' +
@@ -523,6 +591,7 @@
   function loadEvents(sym) {
     var el = document.getElementById('vx-opt-ev-out-body');
     if (!sym) { el.innerHTML = '<div class="vx-empty">Saisis un symbole.</div>'; return; }
+    try { if (VX.store) VX.store.set('active_ticker', sym); } catch (e0) {}
     loading(el);
     get('/api/options/event-risk/' + encodeURIComponent(sym)).then(function (d) {
       el.innerHTML = verdictCard(d && d.interpretation);

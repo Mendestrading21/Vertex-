@@ -3,20 +3,29 @@
 UNE seule source de vérité pour les couleurs porteuses de sens. Interdit : une
 couleur choisie au hasard pour différencier deux séries. Chaque couleur porte
 une intention (marque, benchmark, positif, négatif, option…). Le thème
-graphique JS (`chart-theme-obsidian-copper.js`) DOIT rester cohérent avec ce
+graphique JS (`chart-theme.js`) DOIT rester cohérent avec ce
 registre — un test le vérifie.
 
-Identité Vertex : BLANC / GRIS CLAIR (en verre). Marque = blanc-gris neutre,
-série de référence (PAS « hausse »). Émeraude = positif. Plus AUCUN bleu ni
-orange identitaire ; tout bleu dominant reste interdit. Miroir strict de
-tokens.css (#DBE1E8). Le cyan #45D6E8 = comparaison technique uniquement.
+Identité Vertex : VIOLET sur fond obsidienne. `VISUAL_SYSTEM.md` du skill dit
+« Brand : violet Vertex » et « le violet peut identifier la série principale ».
+Ce registre a porté un CUIVRE jusqu'ici, alors que la couche Signal OS peignait
+l'interface en violet : le produit avait deux identités, l'écran en montrait une
+et les graphiques l'autre. Les deux sont désormais la même — `#9B7BFF`, la
+valeur exacte de `--vx-brand` servi.
+
+La marque reste une série de RÉFÉRENCE (PAS « hausse ») : le violet ne remplace
+jamais l'émeraude ou le corail sémantiques. Tout bleu dominant reste interdit —
+et ce violet n'en est pas un : `is_bluish` exige `r < 110`, or il vaut 155.
+Le cyan #45D6E8 reste réservé aux comparaisons techniques.
 """
 from __future__ import annotations
 
-# ── Couleurs de marque (série principale = BLANC / GRIS CLAIR neutre) ──
-BRAND = '#DBE1E8'          # série principale Vertex (identité, pas « hausse »)
-COPPER = '#8A8284'         # série neutre acier (gris chaud)
-COPPER_LIGHT = '#EEF1F5'   # blanc-gris clair de marque (accents hover)
+# ── Couleurs de marque (cuivre = identité, jamais direction financière) ──
+BRAND = '#9B7BFF'          # violet Vertex, série principale (pas « hausse »)
+BRAND_HOVER = '#B9A2FF'    # violet clair, interaction / survol
+COPPER = '#8A8284'         # série neutre acier (gris chaud) — NOM historique,
+#                            rôle inchangé : c'est un gris, pas un cuivre
+COPPER_LIGHT = BRAND_HOVER  # alias historique conservé pour compatibilité
 AMBER = '#D9BE3C'          # série secondaire / attention
 BEIGE = '#c8bfae'          # benchmark clair (sable)
 TECHNICAL = '#45D6E8'      # cyan — comparaison technique UNIQUEMENT (doctrine §3)
@@ -26,23 +35,33 @@ POSITIVE = '#2BBE90'       # ÉMERAUDE — gain / donnée positive (distinct de 
 NEGATIVE = '#E9555F'       # corail — perte / risque
 WARNING = '#D9BE3C'
 NEUTRAL = '#BABABA'        # benchmark neutre (gris chaud)
-OPTION = '#9B7BFF'         # violet contrôlé — RÉSERVÉ aux options / IV / Greeks
-#                            (identité déployée : tokens.css, chart-theme, chart-core)
+OPTION = BRAND             # options / IV / Greeks — MÊME violet que la marque.
+#   Ce n'est pas un raccourci : l'interface les a fusionnés dès la couche Signal
+#   OS (`--vx-brand: var(--vx-option)`), Options est un espace de premier rang du
+#   produit, et sa couleur EST celle du produit. Conséquence assumée : deux rôles
+#   partagent une valeur, donc ils ne peuvent plus se distinguer sur un MÊME
+#   graphique. Un seul en dépendait — la barre divergente CALL/PUT d'Open
+#   Interest — et il reçoit un contraste neutre plutôt qu'une teinte inventée.
 
 # ── Texte ──────────────────────────────────────────────────────────────
 TEXT = '#F8F5F3'
 TEXT_DIM = '#BABABA'
-TEXT_MUTED = '#8A8284'
+TEXT_MUTED = '#989092'
 
 # Palette de séries — ordre déterministe, jamais arc-en-ciel. La série 0 est
 # toujours la marque ; la série 1 TRANCHE (cyan de comparaison technique —
 # lot 56 : trois blancs-gris consécutifs étaient indistinguables sur un même
 # graphique comparé) ; les suivantes descendent en neutralité.
-SERIES = (BRAND, TECHNICAL, BEIGE, OPTION, AMBER, COPPER)
+#   OPTION est SORTI de la série : il vaut désormais BRAND, et deux séries de la
+#   même couleur ne sont pas six couleurs, ce sont cinq — dont une en double.
+#   `VISUAL_SYSTEM.md` classe d'ailleurs « 6 couleurs de série sans besoin »
+#   parmi les anti-motifs. `series_color` boucle, la longueur peut changer.
+SERIES = (BRAND, TECHNICAL, BEIGE, AMBER, COPPER)
 
 # Rôle sémantique → couleur. C'est CE dictionnaire qui fait autorité.
 SEMANTIC = {
     'brand': BRAND,
+    'brand_hover': BRAND_HOVER,
     'copper': COPPER,
     'copper_light': COPPER_LIGHT,
     'amber': AMBER,
@@ -95,20 +114,20 @@ def is_bluish(hex_color: str) -> bool:
     return b > r + 30 and b > g + 30 and b > 90 and r < 110
 
 
-# Couleurs de marque (blanc/gris neutre — plus aucune n'est réellement bleue).
-# Conservé comme liste d'exception du garde-fou ; tout bleu dominant reste interdit.
-BRAND_BLUES = {BRAND.lower(), COPPER_LIGHT.lower()}
+# Nom historique conservé pour l'API du garde-fou. Le cuivre actuel n'est pas
+# bleu ; l'ensemble reste l'allow-list explicite des couleurs identitaires.
+BRAND_BLUES = {BRAND.lower(), BRAND_HOVER.lower()}
 
 
 def audit_no_blue() -> list:
     """Rend la liste des couleurs du registre « bleu dominant » NON autorisées.
-    Le bleu de marque (identité) est admis ; tout autre bleu doit être vide."""
+    L'allow-list identitaire historique est admise ; tout autre bleu doit être vide."""
     return [name for name, col in SEMANTIC.items()
             if is_bluish(col) and str(col).lower() not in BRAND_BLUES]
 
 
 __all__ = [
-    'BRAND', 'COPPER', 'COPPER_LIGHT', 'AMBER', 'BEIGE', 'TECHNICAL', 'POSITIVE', 'NEGATIVE',
+    'BRAND', 'BRAND_HOVER', 'COPPER', 'COPPER_LIGHT', 'AMBER', 'BEIGE', 'TECHNICAL', 'POSITIVE', 'NEGATIVE',
     'WARNING', 'NEUTRAL', 'OPTION', 'TEXT', 'TEXT_DIM', 'TEXT_MUTED',
     'SERIES', 'SEMANTIC', 'STATUS_COLOR', 'series_color', 'status_color',
     'is_bluish', 'audit_no_blue',

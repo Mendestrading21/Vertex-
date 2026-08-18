@@ -260,6 +260,8 @@ def analyze_strategy(legs, spot, iv, days_to_exp, r=R_DEFAULT, name=None, q=Q_DE
     opt_legs = [l for l in legs if l.get('type') in ('call', 'put')]
     have_ba = bool(opt_legs) and all(
         _fin(l.get('bid')) is not None and _fin(l.get('ask')) is not None for l in opt_legs)
+    bid_ask_covered = sum(1 for l in opt_legs
+                           if _fin(l.get('bid')) is not None and _fin(l.get('ask')) is not None)
     if have_ba:
         adverse = 0.0
         for l in legs:
@@ -305,6 +307,17 @@ def analyze_strategy(legs, spot, iv, days_to_exp, r=R_DEFAULT, name=None, q=Q_DE
         'greeks': g,                           # position (delta $1, theta/jour, vega/1%IV)
         'payoff': payoff,
         'execution': execution,                # spread/slippage : inclus ou honnêtement absent
+        'input_coverage': {
+            'legs': len(legs), 'option_legs': len(opt_legs),
+            'premium_covered_option_legs': len(opt_legs),
+            'bid_ask_covered_option_legs': bid_ask_covered,
+            'bid_ask_coverage_pct': round(100 * bid_ask_covered / len(opt_legs), 1) if opt_legs else 0.0,
+            'spot_available': True, 'iv_available': bool(iv and iv > 0),
+            'days_to_exp_available': bool(days_to_exp and days_to_exp > 0),
+            'greeks_available': g is not None, 'probability_of_profit_available': pop is not None,
+            'read_only': True,
+            'note': 'données absentes restent visibles ; aucune prime ou sensibilité n’est imputée',
+        },
         'model': {                             # provenance du modèle — traçable, datée par l'appelant
             'type': 'lognormal_risk_neutral', 'r': r, 'q': q,
             'iv_unit': 'DECIMAL', 'premium_basis': 'declared',

@@ -26,7 +26,26 @@ _NEG = ('miss', 'misses', 'fall', 'falls', 'plunge', 'drop', 'cut', 'cuts', 'dow
 
 
 def sentiment(text):
-    """Score lexical : +1 positif · -1 négatif · 0 neutre/mixte."""
+    """Score lexical TERNAIRE : rend EXACTEMENT +1, -1 ou 0. Jamais autre chose.
+
+    CONTRAT (lot 609, explicité après mesure) — le domaine est {-1, 0, +1} et
+    rien d'autre. Ce n'est pas une intensité : trois mots positifs valent un
+    seul, et « 3 positifs / 2 négatifs » rend la même chose que « 1 positif ».
+    Le comparateur est `pos > neg`, pas une amplitude.
+
+    POURQUOI ON NE LE REND PAS CONTINU. Une forme `(pos-neg)/(pos+neg)` donnerait
+    des décimales — donc l'apparence d'une mesure — construites sur un lexique de
+    22 mots positifs et 22 négatifs. Un « 0,333 » issu de trois mots-clés a l'air
+    d'une mesure et n'en est pas une. Tant qu'on ne peut pas montrer que
+    l'amplitude est FONDÉE, le ternaire est plus honnête que le continu.
+
+    CE QUI EN DÉPEND, mesuré : `news_impact.score_importance` ajoute +5 quand le
+    score est signé, ce qui participe au choix de l'« Actualité dominante »
+    affichée sur `/`. La valeur a donc une conséquence visible — mais deux états
+    utiles seulement (signé / neutre).
+
+    Gardien : `tests/test_sentiment_contrat_lot609.py`.
+    """
     t = ' ' + (text or '').lower() + ' '
     pos = sum(1 for w in _POS if w in t)
     neg = sum(1 for w in _NEG if w in t)
@@ -94,6 +113,30 @@ def _clean_text(s):
              .replace('"', '&quot;').replace("'", '&#39;'))
 
 
+def strip_markup(s):
+    """Retire tout balisage d'un texte externe SANS échapper les méta-caractères.
+
+    Contrat de la SECONDE famille de sorties (règle n°5 du projet) : celles dont
+    le client échappe déjà au rendu (`esc()`). Y appliquer `_clean_text` en plus
+    afficherait `Barron&#39;s` et `AT&amp;T` à l'écran — un double échappement
+    visible sur des titres parfaitement légitimes. Retirer le balisage, lui, ne
+    coûte rien : il ne survit à aucun rendu, échappé ou non, et il n'a donc
+    aucune raison de traverser le serveur."""
+    return _TAG_RE.sub('', str(s)) if s is not None else s
+
+
+def safe_link(lk):
+    """Schéma http(s) obligatoire (sinon None) + quotes/chevrons %-encodés —
+    sûr en `href="…"` comme dans `window.open('…')`."""
+    if not lk:
+        return None
+    lk = str(lk).strip()
+    if not lk.lower().startswith(('http://', 'https://')):
+        return None
+    return (lk.replace('"', '%22').replace("'", '%27')
+              .replace('<', '%3C').replace('>', '%3E'))
+
+
 def sanitize_news(items):
     """Assainit une liste d'items de news EXTERNES (yfinance/RSS/traduction) avant
     de la servir au client. XSS : les titres/liens de publishers tiers sont rendus
@@ -109,14 +152,8 @@ def sanitize_news(items):
         for k in ('title', 'fr', 'pub', 'publisher', 'sym', 'why', 'time'):
             if d.get(k) is not None:
                 d[k] = _clean_text(d[k])
-        lk = d.get('link')
-        if lk:
-            lk = str(lk).strip()
-            if not lk.lower().startswith(('http://', 'https://')):
-                d['link'] = None
-            else:
-                d['link'] = (lk.replace('"', '%22').replace("'", '%27')
-                               .replace('<', '%3C').replace('>', '%3E'))
+        if d.get('link'):
+            d['link'] = safe_link(d['link'])
         out.append(d)
     return out
 
@@ -141,4 +178,5 @@ def dedupe_news(items):
     return out
 
 
-__all__ = ['sentiment', 'aggregate', 'parse_rss', 'rss_news', 'sanitize_news', 'dedupe_news']
+__all__ = ['sentiment', 'aggregate', 'parse_rss', 'rss_news', 'sanitize_news',
+           'dedupe_news', 'strip_markup', 'safe_link']

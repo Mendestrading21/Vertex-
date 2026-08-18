@@ -96,8 +96,8 @@
       svg.push('<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + Math.max(1, bh) + '" fill="' + (v >= 0 ? pos : neg) + '" opacity=".85"><title>' + esc(e.date) + ' : ' + money(v) + '</title></rect>');
     });
     var first = h[0], last = h[n - 1];
-    svg.push('<text x="' + pad + '" y="' + (H - 4) + '" font-size="9.5" fill="var(--vx-text-muted,#8A8284)">' + esc(first.date) + '</text>');
-    svg.push('<text x="' + (W - pad) + '" y="' + (H - 4) + '" font-size="9.5" text-anchor="end" fill="var(--vx-text-muted,#8A8284)">' + esc(last.date) + '</text>');
+    svg.push('<text x="' + pad + '" y="' + (H - 4) + '" font-size="9.5" fill="var(--vx-text-muted,#989092)">' + esc(first.date) + '</text>');
+    svg.push('<text x="' + (W - pad) + '" y="' + (H - 4) + '" font-size="9.5" text-anchor="end" fill="var(--vx-text-muted,#989092)">' + esc(last.date) + '</text>');
     svg.push('</svg>');
     var trend = (n >= 2 && last.net_gex != null && first.net_gex != null)
       ? (last.net_gex > first.net_gex ? 'Le gamma s’empile à la hausse sur la période.'
@@ -243,9 +243,9 @@
       if (pw > 0.5) svg.push('<rect x="' + (mid - pw) + '" y="' + y + '" width="' + pw + '" height="' + (rowH - 6) + '" fill="' + neg + '" opacity="' + (i === iPut ? '1' : '.55') + '"/>');
       if (i === iCall && cw > 0.5) svg.push(chip(mid + cw + 4, y, money(r.call_gex), pos, true));
       if (i === iPut && pw > 0.5) svg.push(chip(mid - pw - 4, y, money(r.put_gex), neg, false));
-      svg.push('<text x="' + (mid + 4) + '" y="' + (y + rowH - 9) + '" font-size="9.5" fill="var(--vx-text-muted,#8A8284)">' + f(r.strike, 0) + '</text>');
+      svg.push('<text x="' + (mid + 4) + '" y="' + (y + rowH - 9) + '" font-size="9.5" fill="var(--vx-text-muted,#989092)">' + f(r.strike, 0) + '</text>');
     });
-    if (spotY != null) svg.push('<line x1="10" y1="' + spotY + '" x2="' + (W - 10) + '" y2="' + spotY + '" stroke="var(--vx-orange-500,#DBE1E8)" stroke-dasharray="3 3"/>');
+    if (spotY != null) svg.push('<line x1="10" y1="' + spotY + '" x2="' + (W - 10) + '" y2="' + spotY + '" stroke="var(--vx-violet-500,#9B7BFF)" stroke-dasharray="3 3"/>');
     svg.push('</svg>');
     host.innerHTML = svg.join('')
       + '<div class="vx-muted" style="margin-top:.3rem">Vert = call GEX (+) · rouge = put GEX (−) · pointillé orange = spot ' + f(g.spot) + '. '
@@ -263,19 +263,20 @@
       return '<tr><td><span class="vx-badge" data-tone="' + (c.type === 'CALL' ? 'pos' : 'neg') + '">' + esc(c.type) + '</span> ' + f(c.strike, 0)
         + (c.exp ? ' <span class="vx-muted">' + esc(c.exp) + '</span>' : '') + '</td>'
         + '<td class="vx-num">' + f(c.vol, 0) + '</td>'
-        + '<td class="vx-num">' + (c.vol_oi != null ? f(c.vol_oi, 2) + (c.fresh ? ' ⚡' : '') : 'n/d') + '</td>'
+        + '<td class="vx-num">' + (c.vol_oi != null ? f(c.vol_oi, 2) + (c.fresh ? ' ' + VX.icon('bolt', 12) : '') : 'n/d') + '</td>'
         + '<td class="vx-num">' + money(c.premium) + '</td></tr>';
     }).join('');
     var skew = fl.skew ? '<div class="vx-muted" style="margin-bottom:.3rem">Skew premium : <b>' + esc(fl.skew) + '</b> (' + f(fl.call_pct, 0) + ' % calls)</div>' : '';
     host.innerHTML = skew
       + '<div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Contrat</th><th class="vx-num">Vol</th><th class="vx-num">Vol/OI</th><th class="vx-num">Premium</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table></div>'
-      + '<div class="vx-muted" style="margin-top:.3rem">' + esc(fl.basis || '') + '. ⚡ = volume &gt; OI (positionnement frais).</div>';
+      + '<div class="vx-muted" style="margin-top:.3rem">' + esc(fl.basis || '') + '. L\'éclair marque un volume &gt; OI (positionnement frais).</div>';
   }
 
   function load(sym) {
     sym = (sym || '').trim().toUpperCase();
     if (!/^[A-Z.\-]{1,12}$/.test(sym)) { VX.toast && VX.toast('Ticker invalide', 'error'); return; }
+    try { if (VX.store) VX.store.set('active_ticker', sym); } catch (e0) {}
     $('vx-gx-thesis').innerHTML = '<section class="vx-card"><div class="vx-empty">Analyse du positionnement de ' + esc(sym) + '…</div></section>';
     VX.fetch('/api/options/gex/' + encodeURIComponent(sym), { ttl: 120000 }).then(function (d) {
       renderThesis(d); renderTiles(d); renderBars(d); renderFlow(d); renderDaily(d);

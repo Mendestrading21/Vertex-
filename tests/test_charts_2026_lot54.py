@@ -65,10 +65,10 @@ def test_candles_scale_fits_price_range():
 
 
 def test_no_new_color_literals_in_touched_files():
-    """price-chart n'a qu'un secours '#DBE1E8' (déjà présent avant le lot),
+    """price-chart n'a qu'un secours de marque cuivre,
     candlestick-chart n'a AUCUN littéral hex — le lot n'en ajoute aucun."""
     hexes_price = set(re.findall(r"#[0-9A-Fa-f]{6}\b", _read(PRICE)))
-    assert hexes_price <= {'#DBE1E8'}, hexes_price
+    assert hexes_price <= {'#9B7BFF'}, hexes_price
     hexes_candle = set(re.findall(r"#[0-9A-Fa-f]{6}\b", _read(CANDLE)))
     assert hexes_candle == set(), hexes_candle
 

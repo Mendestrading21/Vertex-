@@ -9,7 +9,7 @@ Tout ticker, partout dans l'app, ouvre CETTE fiche.
 from __future__ import annotations
 
 
-from vertex.ui.shell import json_for_script, render_shell
+from vertex.ui.shell import icon, json_for_script, render_shell
 
 
 def render_index(view: str = '') -> str:
@@ -17,24 +17,20 @@ def render_index(view: str = '') -> str:
         f'<div class="an-dim"><span class="an-dim-n">{n}</span>'
         f'<span class="an-dim-l">{lab}</span></div>'
         for n, lab in [
-            ('1', 'Fondamental — qualité, croissance, valorisation'),
-            ('2', 'Catalyseurs — résultats, événements datés'),
-            ('3', 'Timing technique — tendance, niveaux, R:R'),
-            ('4', 'Sentiment & positionnement'),
-            ('·', 'Anomalies & signaux TradingView'),
-            ('·', 'Scénarios pessimiste / probable / exceptionnel'),
-            ('·', 'Options associées — convexité, IV, DTE'),
-            ('★', 'Décision finale & plan de niveaux'),
+            ('1', 'Décision — verdict, confiance et prochaine action'),
+            ('2', 'Prix — tendance, invalidation et objectifs'),
+            ('3', 'Scénarios — perte, cas central et potentiel'),
+            ('4', 'Preuves — fondamentaux, catalyseurs et risques'),
         ])
     content = """
 <div class="vx-page-header"><div><h1>Analyse</h1>
-<div class="vx-sub">Rechercher un titre pour ouvrir sa fiche canonique.</div></div></div>
+<div class="vx-sub">Une recherche, une décision lisible, les preuves ensuite.</div></div></div>
 <style id="an-index-css">
 .an-dim{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed var(--vx-border-soft)}
 .an-dim:last-child{border-bottom:none}
 .an-dim-n{flex:0 0 26px;height:26px;display:grid;place-items:center;border-radius:8px;
- background:var(--vx-brand-soft);color:var(--vx-copper-light);font:700 12px/1 var(--vx-font-mono,monospace);
- border:1px solid rgba(185,104,61,.28)}
+ background:var(--vx-brand-soft);color:var(--vx-violet-500);font:700 12px/1 var(--vx-font-mono,monospace);
+ border:1px solid var(--vx-border-accent)}
 .an-dim-l{font-size:13px;color:var(--vx-text-secondary)}
 .an-shortcut{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;
  border-bottom:1px dashed var(--vx-border-soft);font-size:13px;color:var(--vx-text-secondary)}
@@ -52,26 +48,26 @@ def render_index(view: str = '') -> str:
       <div class="vx-help vx-mt2">Astuce : ⌘K / Ctrl+K depuis n’importe quelle page.</div>
     </div>
     <section class="vx-card vx-mt4" aria-label="Titres récents">
-      <div class="vx-card-header"><span class="vx-card-title">Titres récents</span></div>
+      <div class="vx-card-header"><span class="vx-card-title">Récents</span></div>
       <div class="vx-card-body vx-flex vx-wrap" id="an-recent"><span class="vx-skeleton" style="width:120px;height:26px"></span></div>
     </section>
     <section class="vx-card vx-mt4" aria-label="Favoris">
       <div class="vx-card-header"><span class="vx-card-title">Favoris</span>
-        <span class="vx-dim" style="font-size:12px">titres marqués ★</span></div>
+        <span class="vx-dim" style="font-size:12px">titres mis en favori</span></div>
       <div class="vx-card-body vx-flex vx-wrap" id="an-favs"></div>
     </section>
   </div>
   <aside class="vx-col-5">
-    <section class="vx-card vx-accent" aria-label="Contenu d'une fiche">
-      <div class="vx-card-header"><span class="vx-card-title">Ce que révèle une fiche</span></div>
-      <div class="vx-card-body">""" + dims + """</div>
-    </section>
+    <details class="vx-card an-disclosure" aria-label="Contenu d'une fiche">
+      <summary><span>Comment lire une fiche</span><span class="vx-meta">4 repères</span></summary>
+      <div class="vx-card-body" style="padding:var(--vx-s3)">""" + dims + """</div>
+    </details>
     <section class="vx-card vx-mt4" aria-label="Raccourcis">
       <div class="vx-card-header"><span class="vx-card-title">Raccourcis</span></div>
       <div class="vx-card-body">
-        <div class="an-shortcut"><span>Recherche globale</span><span class="an-kbd">⌘K</span></div>
-        <div class="an-shortcut"><span>Scanner d’opportunités</span><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities">Ouvrir →</a></div>
-        <div class="an-shortcut"><span>Portefeuille & positions</span><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></div>
+        <div class="an-shortcut"><span>Recherche</span><span class="an-kbd">⌘K</span></div>
+        <div class="an-shortcut"><span>Opportunités</span><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities">Ouvrir →</a></div>
+        <div class="an-shortcut"><span>Portefeuille</span><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">Ouvrir →</a></div>
       </div>
     </section>
   </aside>
@@ -87,7 +83,7 @@ $('an-recent').innerHTML=VX.recentTickers.get().map(s=>
 let favs=[];try{favs=JSON.parse(localStorage.getItem('myFavs')||'[]');}catch(e){favs=[];}
 $('an-favs').innerHTML=(Array.isArray(favs)&&favs.length?favs:[]).map(s=>
   `<button class="vx-btn vx-ticker" data-open-analysis="${s}">${s}</button>`).join('')
-  ||'<span class="vx-muted">Aucun favori — marque un titre avec ★ depuis sa fiche.</span>';
+  ||'<span class="vx-muted">Aucun favori — mets un titre en favori depuis sa fiche.</span>';
 let names=null;
 /* Échappement local (ce bloc est une IIFE distincte du esc() principal) : les libellés
    de /api/names sont rendus en innerHTML → on neutralise tout HTML/attribut. */
@@ -112,131 +108,144 @@ $('an-search').focus();
 
 _SECTIONS = """
 <div id="an-stale"></div>
-<section class="vx-card vx-mt3" aria-label="Scanner d'anomalies">
-  <div class="vx-card-header"><span class="vx-card-title">Scanner d'anomalies — qu'est-ce qui sort de l'ordinaire&nbsp;?</span>
-    <span class="vx-chart-question">Spikes |z|&ge;2, r&eacute;gime de volatilit&eacute;, s&eacute;quences, extr&ecirc;mes — sur les cl&ocirc;tures r&eacute;elles. Constat, pas une pr&eacute;vision.</span></div>
-  <div id="an-anomaly">%%LOADING%%</div>
-</section>
-<section class="vx-card vx-mt3" aria-label="Laboratoire d'évidence">
-  <div class="vx-card-header"><span class="vx-card-title">Que s'est-il pass&eacute; apr&egrave;s&nbsp;? — &eacute;vidence historique</span>
-    <span class="vx-chart-question">Rendements r&eacute;els &agrave; 1/5/10 barres et MFE/MAE apr&egrave;s les spikes pass&eacute;s de CETTE s&eacute;rie. In-sample, descriptif — pas un backtest.</span></div>
-  <div id="an-evidence">%%LOADING%%</div>
-</section>
-<section class="vx-card vx-mt3" aria-label="Skyler — décision canonique">
-  <div class="vx-card-header"><span class="vx-card-title">Skyler — d&eacute;cision canonique</span>
-    <span class="vx-chart-question">Score /40 par blocs de la Constitution V2, hard gates prioritaires, sc&eacute;narios sur niveaux r&eacute;els — d&eacute;terministe, jamais un ordre.</span></div>
-  <div id="an-skyler">%%LOADING%%</div>
-</section>
-<!-- NIVEAU 1 — Carte-Verdict signature (verdict · score · confiance · entrée ·
-     invalidation · risque · catalyseur · prochaine action) puis Carte-Scénario. -->
-<div id="an-verdict">%%LOADING%%</div>
-<div id="an-scenarios" class="vx-mt4"></div>
-<!-- 1b. Barre compacte : prix + actions (le verdict prime, cf. Carte-Verdict) -->
-<div class="vx-card vx-accent" id="an-hero" style="position:sticky;top:calc(var(--vx-topbar-h) + 8px);z-index:20">
-  <div class="vx-flex vx-wrap">
-    <span class="vx-ticker" style="font-size:22px" id="an-sym">%%SYM%%</span>
+<!-- Identité compacte : le verdict canonique reste dans an-verdict, juste dessous. -->
+<section class="vx-card vx-accent an-identity" id="an-hero" aria-labelledby="an-identity-title">
+  <h2 class="vx-sr-only" id="an-identity-title">Identité et cours de %%SYM%%</h2>
+  <div class="an-identity-main">
+    <span class="vx-ticker" id="an-sym">%%SYM%%</span>
     <span class="vx-dim" id="an-name">—</span>
-    <span class="vx-kpi-value" style="font-size:22px" id="an-price">—</span>
+    <span class="vx-kpi-value" id="an-price">—</span>
     <span class="vx-mono" id="an-change">—</span>
     <span id="an-fresh"></span>
-    <span class="vx-badge vx-badge-decision" id="an-decision" data-decision="">—</span>
     <span id="an-badges"></span>
-    <span class="vx-right vx-flex">
-      <button class="vx-btn vx-btn-icon vx-btn-ghost" id="an-fav" aria-label="Favori" title="Favori">★</button>
-      <button class="vx-btn vx-btn-sm vx-btn-soft" id="an-follow"
-        onclick="VXEntities.followStock('%%SYM%%',{decision:(document.getElementById('an-decision')||{}).dataset&&document.getElementById('an-decision').dataset.decision});location.href='/tracking';"
-        title="Suivre : mesure la performance hypothétique depuis maintenant">Suivre →</button>
-      <button class="vx-btn vx-btn-sm" data-entity-menu="%%SYM%%">Actions ▾</button>
-    </span>
+    <!-- Contrat interne du suivi, volontairement non visuel : le verdict affiché
+         vit exclusivement dans la Carte-Verdict ci-dessous. -->
+    <span class="vx-badge vx-badge-decision" id="an-decision" data-decision="" hidden>—</span>
   </div>
-  <div class="vx-flex vx-wrap vx-mt2" id="an-scores" aria-label="Scores"></div>
-</div>
-
-<!-- 2. Thèse -->
-<section class="vx-card vx-mt4" id="an-thesis-card">
-  <div class="vx-card-header"><span class="vx-card-title">Thèse</span>
-    <span class="vx-actions"><button class="vx-btn vx-btn-sm vx-btn-ghost"
-      onclick="VXEntities.openAddModal('%%SYM%%','note')">Éditer</button></span></div>
-  <div id="an-thesis" class="vx-dim">—</div>
+  <div class="an-identity-actions">
+    <button class="vx-btn vx-btn-icon vx-btn-ghost" id="an-fav" aria-label="Ajouter aux favoris"
+      aria-pressed="false" title="Favori">%%FAVICON%%</button>
+    <button class="vx-btn vx-btn-sm vx-btn-soft" id="an-follow"
+      onclick="VXEntities.followStock('%%SYM%%',{decision:(document.getElementById('an-decision')||{}).dataset&&document.getElementById('an-decision').dataset.decision});location.href='/tracking';"
+      title="Suivre : mesure la performance hypothétique depuis maintenant">Suivre →</button>
+    <button class="vx-btn vx-btn-sm" data-entity-menu="%%SYM%%">Actions %%CARET%%</button>
+  </div>
 </section>
 
-<!-- Workspace (§22) : colonne principale + rail sticky décisionnel -->
+<!-- Niveau 1 : une seule décision visible, puis ses trois scénarios dérivés. -->
+<section class="an-decision-grid vx-mt4" aria-label="Décision et scénarios">
+  <div id="an-verdict">%%LOADING%%</div>
+  <div id="an-scenarios"></div>
+</section>
+
+<!-- Un événement futur ne doit jamais être ancré sur une bougie historique. -->
+<div class="an-catalyst-strip vx-mt3" id="an-catalyst-strip" hidden></div>
+
+<!-- Graphique principal immédiatement après la réponse. -->
+<div id="an-chart" class="vx-mt4"></div>
+
+<!-- Workspace : preuves principales + rail court (plan et risques seulement). -->
 <div class="vx-grid vx-mt4" id="an-workspace">
-<div class="vx-col-8">
+<div class="vx-col-8 an-main-column">
+  <section class="vx-card" id="an-thesis-card" aria-labelledby="an-thesis-title">
+    <div class="vx-card-header"><h2 class="vx-card-title" id="an-thesis-title">Thèse</h2>
+      <span class="vx-actions"><button class="vx-btn vx-btn-sm vx-btn-ghost"
+        onclick="VXEntities.openAddModal('%%SYM%%','note')">Éditer</button></span></div>
+    <div id="an-thesis" class="vx-dim">—</div>
+  </section>
 
-<!-- 3. Graphique principal -->
-<div id="an-chart"></div>
+  <!-- Raisonnement du comité (intégré depuis Intelligence). -->
+  <div id="an-committee" class="vx-mt4"></div>
 
-<!-- 3b. Raisonnement du comité (intégré depuis Intelligence) -->
-<div id="an-committee" class="vx-mt4"></div>
-
-<!-- 4-8. Dimensions dans l'ordre imposé -->
-<div class="vx-grid vx-mt4">
+  <!-- Dimensions dans l'ordre constitutionnel. -->
+  <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-6" id="an-fundamental"><div class="vx-card-header">
-    <span class="vx-card-title">1 · Fondamental</span></div><div data-body>%%LOADING%%</div></section>
+    <h3 class="vx-card-title">1 · Fondamental</h3></div><div data-body>%%LOADING%%</div></section>
   <section class="vx-card vx-col-6" id="an-catalysts"><div class="vx-card-header">
-    <span class="vx-card-title">2 · Catalyseurs</span></div><div data-body>%%LOADING%%</div></section>
+    <h3 class="vx-card-title">2 · Catalyseurs</h3></div><div data-body>%%LOADING%%</div></section>
   <section class="vx-card vx-col-6" id="an-technical"><div class="vx-card-header">
-    <span class="vx-card-title">3 · Timing technique</span></div><div data-body>%%LOADING%%</div></section>
+    <h3 class="vx-card-title">3 · Timing technique</h3></div><div data-body>%%LOADING%%</div></section>
   <section class="vx-card vx-col-6" id="an-sentiment"><div class="vx-card-header">
-    <span class="vx-card-title">4 · Sentiment & positionnement</span></div><div data-body>%%LOADING%%</div></section>
+    <h3 class="vx-card-title">4 · Sentiment & positionnement</h3></div><div data-body>%%LOADING%%</div></section>
+  </div>
+
+  <!-- Expertise à la demande : les moteurs continuent tous de charger, mais
+       leurs sorties secondaires ne concurrencent plus le verdict canonique. -->
+  <details class="vx-card an-disclosure vx-mt4" id="an-deep-analysis">
+    <summary><span>Analyse approfondie</span><span class="vx-meta">scores, anomalies, évidence et signaux</span></summary>
+    <div class="an-proof-grid">
+      <section aria-labelledby="an-engine-title">
+        <h3 id="an-engine-title">Diagnostic moteurs</h3>
+        <p class="vx-meta">Score /40, règles bloquantes et audit. Ces diagnostics expliquent la décision sans la remplacer.</p>
+        <div id="an-skyler">%%LOADING%%</div>
+        <section id="an-rail-decision" aria-label="Sortie ExecutiveEngine">
+          <h3 class="vx-sr-only">Sortie ExecutiveEngine</h3><div data-body>%%LOADING%%</div></section>
+        <div class="vx-flex vx-wrap vx-mt3" id="an-scores" aria-label="Scores du moteur"></div>
+        <p class="vx-meta an-scorecard-note">Marge risque : 100 = aucun garde-fou bloquant ; ce score ne mesure pas la volatilité.</p>
+      </section>
+      <section aria-labelledby="an-anomaly-title">
+        <h3 id="an-anomaly-title">Scanner d’anomalies</h3>
+        <p class="vx-meta">Spikes |z|≥2, régime de volatilité, séquences et extrêmes. Constat descriptif, pas une prévision.</p>
+        <div id="an-anomaly">%%LOADING%%</div>
+        <section id="an-anomalies" aria-label="Liste des anomalies"><div data-body>%%LOADING%%</div></section>
+        <details class="an-disclosure an-disclosure--nested">
+          <summary>Évidence historique</summary>
+          <p class="vx-meta">Résultats observés après les spikes passés de la série disponible. In-sample, descriptif — pas un backtest.</p>
+          <div id="an-evidence">%%LOADING%%</div>
+        </details>
+      </section>
+      <section id="an-tv" aria-labelledby="an-tv-title">
+        <h3 id="an-tv-title">Signaux TradingView</h3><div data-body>%%LOADING%%</div>
+      </section>
+    </div>
+  </details>
+</div>
+<aside class="vx-col-4" id="an-rail">
+<div class="an-rail-stack">
+  <section class="vx-card" id="an-plan"><div class="vx-card-header">
+    <h2 class="vx-card-title">Plan & niveaux clés</h2></div><div data-body>%%LOADING%%</div></section>
+  <section class="vx-card vx-card--compact" id="an-rail-risks"><div class="vx-card-header">
+    <h2 class="vx-card-title">Risques identifiés</h2></div><div data-body>—</div></section>
+</div>
+</aside>
 </div>
 
-<!-- 8. Anomalies + signaux TradingView -->
-<div class="vx-grid vx-mt4">
-  <section class="vx-card vx-col-7" id="an-anomalies"><div class="vx-card-header">
-    <span class="vx-card-title">Anomalies</span></div><div data-body>%%LOADING%%</div></section>
-  <section class="vx-card vx-col-5" id="an-tv"><div class="vx-card-header">
-    <span class="vx-card-title">Signaux TradingView</span></div><div data-body>%%LOADING%%</div></section>
+<!-- Outils séparés du rail et repliés : disponibles sans écraser la lecture. -->
+<details class="vx-card an-disclosure vx-mt4" id="an-tools">
+<summary><span>Outils d’analyse</span><span class="vx-meta">copilote et contrôles avant décision</span></summary>
+<div class="an-tools-grid">
+  <section class="vx-card" id="an-copilot" aria-labelledby="an-copilot-title">
+    <div class="vx-card-header"><h2 class="vx-card-title" id="an-copilot-title">Copilote</h2></div>
+    <p class="vx-chart-question">Question sur ce titre — réponse ancrée dans les chiffres disponibles.</p>
+    <div data-body>
+      <input id="an-cp-q" class="vx-input" aria-label="Question sur ce titre" placeholder="ex. Quel est le risque principal ici ?" maxlength="500" autocomplete="off" style="margin-bottom:.4rem" />
+      <button class="vx-btn vx-btn-sm vx-btn-primary" id="an-cp-go">Demander</button>
+      <div id="an-cp-out" class="vx-mt2" aria-live="polite"></div>
+      <div class="vx-meta vx-mt1">Lecture seule — aucune exécution.</div>
+    </div></section>
+  <section class="vx-card" id="an-pretrade" aria-labelledby="an-pretrade-title">
+    <div class="vx-card-header"><h2 class="vx-card-title" id="an-pretrade-title">Contrôles avant décision</h2></div>
+    <p class="vx-chart-question">Sept contrôles descriptifs avant d’envisager ce titre — aucune exécution.</p>
+    <div data-body>
+      <input id="an-pt-amt" class="vx-input" type="number" min="1" step="any" aria-label="Montant envisag&eacute; en dollars" placeholder="Montant envisagé (ex. 2000)" style="margin-bottom:.4rem" />
+      <button class="vx-btn vx-btn-sm vx-btn-primary" id="an-pt-go">Vérifier les garde-fous</button>
+      <div id="an-pt-out" class="vx-mt2" aria-live="polite"></div>
+    </div></section>
 </div>
+</details>
 
-<!-- 9. Scénarios -->
-<!-- Scénarios : domicile unique = Carte-Scénario en tête de page (an-scenarios). -->
-
-<!-- 11. Options -->
+<!-- Options, compatibilité et historique : relais secondaires. -->
 <section class="vx-card vx-mt4" id="an-options">
-  <div class="vx-card-header"><span class="vx-card-title">Options — Vertex Dynamic Options</span>
+  <div class="vx-card-header"><h2 class="vx-card-title">Options associées</h2>
     <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost"
       href="/opportunities?view=options&sym=%%SYM%%">Ouvrir le desk options →</a></span></div>
   <div data-body>%%LOADING%%</div>
 </section>
-
-<!-- 12-13. Portefeuille + historique -->
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-6" id="an-portfolio-fit"><div class="vx-card-header">
-    <span class="vx-card-title">Compatibilité portefeuille</span></div><div data-body>%%LOADING%%</div></section>
+    <h2 class="vx-card-title">Compatibilité portefeuille</h2></div><div data-body>%%LOADING%%</div></section>
   <section class="vx-card vx-col-6" id="an-history"><div class="vx-card-header">
-    <span class="vx-card-title">Historique (journal & suivis)</span></div><div data-body>%%LOADING%%</div></section>
-</div>
-
-</div>
-<aside class="vx-col-4" id="an-rail">
-<div style="position:sticky;top:calc(var(--vx-topbar-h) + 88px);display:flex;flex-direction:column;gap:var(--vx-s3)">
-  <section class="vx-card vx-card--hero" id="an-rail-decision"><div class="vx-card-header">
-    <span class="vx-card-title">Décision finale</span></div><div data-body>%%LOADING%%</div></section>
-  <section class="vx-card" id="an-plan"><div class="vx-card-header">
-    <span class="vx-card-title">Plan & niveaux clés</span></div><div data-body>%%LOADING%%</div></section>
-  <section class="vx-card vx-card--compact" id="an-rail-risks"><div class="vx-card-header">
-    <span class="vx-card-title">Risques identifiés</span></div><div data-body>—</div></section>
-  <section class="vx-card vx-card--compact" id="an-copilot" aria-label="Copilote d'analyse">
-    <div class="vx-card-header"><span class="vx-card-title">Copilote</span>
-      <span class="vx-chart-question">Question sur ce titre — réponse ancrée dans les chiffres réels.</span></div>
-    <div data-body>
-      <input id="an-cp-q" class="vx-input" aria-label="Question sur ce titre" placeholder="ex. Quel est le risque principal ici ?" maxlength="500" autocomplete="off" style="margin-bottom:.4rem" />
-      <button class="vx-btn vx-btn-sm vx-btn-primary" id="an-cp-go">Demander</button>
-      <div id="an-cp-out" class="vx-mt2"></div>
-      <div class="vx-meta vx-mt1">Lecture seule — aucun ordre.</div>
-    </div></section>
-  <section class="vx-card vx-card--compact" id="an-pretrade" aria-label="Ticket pré-trade">
-    <div class="vx-card-header"><span class="vx-card-title">Ticket pré-trade</span>
-      <span class="vx-chart-question">7 contrôles réels avant d'envisager ce titre. Descriptif — aucun ordre.</span></div>
-    <div data-body>
-      <input id="an-pt-amt" class="vx-input" type="number" min="1" step="any" aria-label="Montant envisag&eacute; en dollars" placeholder="Montant envisagé (ex. 2000)" style="margin-bottom:.4rem" />
-      <button class="vx-btn vx-btn-sm vx-btn-primary" id="an-pt-go">Vérifier</button>
-      <div id="an-pt-out" class="vx-mt2"></div>
-    </div></section>
-</div>
-</aside>
+    <h2 class="vx-card-title">Historique et suivis</h2></div><div data-body>%%LOADING%%</div></section>
 </div>
 """
 
@@ -255,7 +264,6 @@ _JS = r"""
 <script src="/static/vertex/js/charts/candlestick-lwc.js" defer></script>
 <script src="/static/vertex/js/charts/annotations.js" defer></script>
 <script src="/static/vertex/js/charts/anomaly-scan.js" defer></script>
-<script src="/static/vertex/js/charts/projection-cone.js" defer></script>
 <script>
 (function(){
 'use strict';
@@ -271,7 +279,10 @@ VX.recentTickers.push(SYM);
 /* Header : badges entités + favori */
 function paintBadges(){
   $('an-badges').innerHTML=E()?E().badges(SYM):'';
-  $('an-fav').style.color=E()&&E().isFavorite(SYM)?'var(--vx-warning)':'var(--vx-text-muted)';
+  const fav=!!(E()&&E().isFavorite(SYM));
+  $('an-fav').style.color=fav?'var(--vx-warning)':'var(--vx-text-muted)';
+  $('an-fav').setAttribute('aria-pressed',String(fav));
+  $('an-fav').setAttribute('aria-label',fav?'Retirer des favoris':'Ajouter aux favoris');
 }
 $('an-fav').addEventListener('click',()=>{E().toggleFavorite(SYM);paintBadges();});
 ['vx:favorites-changed','vx:watchlist-changed','vx:follow-changed','vx:position-changed','vx:alert-changed']
@@ -281,7 +292,7 @@ $('an-fav').addEventListener('click',()=>{E().toggleFavorite(SYM);paintBadges();
 function paintThesis(){
   const note=E()&&E().note(SYM);
   $('an-thesis').innerHTML=note?esc(note).replace(/\n/g,'<br>'):
-    VX.states.empty('Aucune thèse enregistrée sur ce titre.',
+    VX.states.emptyDesk('Aucune thèse enregistrée sur ce titre.',
       `<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${SYM}','note')">Écrire la thèse</button>`);
 }
 VX.bus.on('vx:thesis-changed',paintThesis);
@@ -289,20 +300,25 @@ VX.bus.on('vx:thesis-changed',paintThesis);
 /* Dossier principal — /api/ticker + décision exécutive */
 let TF='6m'; let TICKER=null;
 async function loadDossier(){
-  let t=null,exec=null,stale=false;
+  let t=null,exec=null,status=window.__vxStatus||null;
   /* Anti-course ticker (§CONTINUITY) : on fige la génération de page à l'entrée. Si
      l'utilisateur a navigué ailleurs pendant les fetch, _gen a changé → on abandonne
      AVANT de peindre, pour ne jamais afficher le dossier d'un titre sur une autre page. */
   const _g=(window.VX&&VX.page)?VX.page._gen:0;
   try{t=await VX.fetch('/api/ticker/'+SYM,{ttl:60000});}catch(e){}
   try{exec=await VX.fetch('/api/strategy/decision/'+SYM,{ttl:60000});}catch(e){}
+  try{status=status||await VX.fetch('/api/live/status',{ttl:60000});}catch(e){}
   if(window.VX&&VX.page&&VX.page._gen!==_g)return;   // page supplantée → ne rien peindre
   TICKER=t;
   const d=(t&&t.detail)||{};
   /* Source de prix centrale (§9) : le prix de ce ticker devient cohérent partout
      (shell, Portefeuille, Options, listes). Prix invalide ignoré, jamais inventé. */
   try{ if(window.VX&&VX.prices&&d.price!=null){ VX.prices.setLive(SYM,d.price,d.change); VX.prices.setRef(SYM,d.price,(VX.store&&VX.store.get('active_session_id'))||null); } }catch(e){}
-  const demo=!!(window.__vxStatus&&window.__vxStatus.demo);
+  const demo=!!(status&&status.demo);
+  const priceDomain=status&&status.domains&&status.domains.prices;
+  const scanTs=priceDomain&&priceDomain.ts;
+  const scanMode=(status&&status.mode)||'delayed';
+  const scanSource=(priceDomain&&priceDomain.source)||'scan';
   if(!t||!t.in_universe&&!d.price){
     $('an-stale').innerHTML='<div class="vx-error-banner">Titre hors du scan courant — dossier partiel. '
       +'<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a></div>';
@@ -310,6 +326,8 @@ async function loadDossier(){
   /* Hero */
   $('an-name').textContent=(t&&t.company&&(t.company.name||t.company.shortName))||'';
   $('an-price').textContent=VX.fmt.nd(d.price!==undefined?VX.fmt.price(d.price):null);
+  const verdictPrice=$('an-verdict-price');
+  if(verdictPrice)verdictPrice.textContent=d.price!=null?VX.fmt.price(d.price):'n/d';
   const chg=d.change;
   $('an-change').textContent=chg!==undefined?VX.fmt.pct(chg):'n/d';
   $('an-change').className='vx-mono '+(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted');
@@ -318,9 +336,9 @@ async function loadDossier(){
     if($('an-fresh')&&window.VX&&VX.freshness){
       if(d.price==null){$('an-fresh').innerHTML='';}
       else{
-        const pk=VX.fetch.peek('/api/ticker/'+SYM);
-        const live=!(window.__vxStatus&&window.__vxStatus.demo);
-        $('an-fresh').innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:pk?pk.age:null,live:live}));
+        const ageMs=priceDomain&&typeof priceDomain.age_s==='number'?priceDomain.age_s*1000:null;
+        if(demo){$('an-fresh').innerHTML='<span class="vx-fresh-chip" data-state="demo">DÉMO</span>';}
+        else{$('an-fresh').innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:ageMs,live:scanMode==='live'}));}
       }
     }
   }catch(e){}
@@ -335,7 +353,9 @@ async function loadDossier(){
         <span class="vx-kpi-delta vx-muted">${exec&&exec.reason?esc(exec.reason):'moteur exécutif unique'}</span></div>`
       +(audit.length?`<details class="vx-mt1"><summary class="vx-meta" style="cursor:pointer">Audit trail (${audit.length})</summary>
         <ul style="margin:6px 0 0;padding-left:16px;font-size:11.5px" class="vx-dim">${audit.slice(0,8).map(a=>`<li>${esc(typeof a==='string'?a:JSON.stringify(a))}</li>`).join('')}</ul></details>`:'')
-      +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'ExecutiveEngine',demo?'fallback':'delayed')}</div>`;
+      +`<div class="vx-card-footer">${scanTs
+        ?VX.updateIndicator(scanTs,'ExecutiveEngine',demo?'fallback':scanMode)
+        :'<span class="vx-update" data-mode="fallback"><span class="vx-dot"></span>ExecutiveEngine · fraîcheur n/d</span>'}</div>`;
   }
   const railR=$('an-rail-risks')&&$('an-rail-risks').querySelector('[data-body]');
   if(railR){
@@ -349,8 +369,8 @@ async function loadDossier(){
     const rm=t&&t.risk_map;
     if(rm&&rm.risks){
       const col={'ÉLEVÉ':'var(--vx-negative,#E9555F)','MODÉRÉ':'var(--vx-warning,#D9BE3C)',
-        'FAIBLE':'var(--vx-positive,#2BBE90)','INCONNU':'var(--vx-text-muted,#8A8284)'};
-      html+='<div class="vx-mt3" style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--vx-text-muted,#8A8284)">Carte des risques ('
+        'FAIBLE':'var(--vx-positive,#2BBE90)','INCONNU':'var(--vx-text-muted,#989092)'};
+      html+='<div class="vx-mt3" style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--vx-text-muted,#989092)">Carte des risques ('
         +esc(rm.known_count)+'/'+esc(rm.total_count)+' mesurés)</div>'
         +rm.risks.map(r=>`<div style="display:flex;justify-content:space-between;gap:.5rem;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px">`
           +`<span>${esc(r.category)}</span><span style="color:${col[r.level]||'#888'};font-weight:600">${esc(r.level)}</span></div>`
@@ -359,15 +379,34 @@ async function loadDossier(){
     railR.innerHTML=html;
   }
   const sc=(exec&&exec.scores)||{};
-  const scAxes=[['Conviction',sc.conviction],['Risque',sc.risk],['Timing',sc.timing],
-    ['Asymétrie',sc.asymmetry],['Qualité',sc.data_quality]];
+  const scoreValue=(v)=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null;
+  const scAxes=[['Conviction',scoreValue(sc.conviction)],['Marge risque',scoreValue(sc.risk)],
+    ['Timing',scoreValue(sc.timing)],['Asymétrie',scoreValue(sc.asymmetry)],
+    ['Qualité',scoreValue(sc.data_quality)]];
+  const missingAxes=scAxes.filter(a=>a[1]===null).map(a=>a[0]);
+  /* Le radar est monté dans une carte BÂTIE À LA MAIN, donc hors du gabarit
+     VXCharts.card qui impose question et conclusion. C'est la même cause
+     structurelle que le donut « Secteurs » du Portefeuille (lot 12) : ce ne
+     sont pas les graphiques qui oublient la règle, ce sont ceux qui n'entrent
+     pas par le gabarit. La question et la conclusion sont donc posées ici, à
+     la main, et la conclusion est DÉRIVÉE des axes tracés — elle nomme l'axe
+     le plus faible et sa valeur, jamais une phrase générique. */
   $('an-scores').innerHTML=scAxes.map(([k,v])=>
     `<span class="vx-badge" title="${k}">${k} <b class="vx-mono">${VX.fmt.nd(v)}</b></span>`).join('')
     +(demo?'<span class="vx-badge" style="color:var(--vx-warning)">DÉMO</span>':'')
-    +'<div id="an-scorecard-radar" style="flex:1 0 100%;max-width:240px;margin:8px auto 0"></div>';
-  if(window.VXCharts&&VXCharts.radar&&scAxes.some(a=>a[1]!==null&&a[1]!==undefined)){
-    VXCharts.radar('an-scorecard-radar',{axes:scAxes.map(a=>({label:a[0],value:a[1]||0})),
+    +'<div style="flex:1 0 100%;max-width:240px;margin:8px auto 0">'
+    +'<p class="vx-chart-question">Quel axe de la décision est le plus faible ?</p>'
+    +'<div id="an-scorecard-radar"></div>'
+    +'<p class="vx-chart-conclusion" id="an-scorecard-ccl"></p></div>';
+  if(window.VXCharts&&VXCharts.radar&&!missingAxes.length){
+    VXCharts.radar('an-scorecard-radar',{axes:scAxes.map(a=>({label:a[0],value:a[1]})),
       max:100,ariaLabel:'Scorecard '+SYM,color:VXCharts.colors.brand,width:240,height:190});
+    const faible=scAxes.slice().sort((a,b)=>a[1]-b[1])[0];
+    const ccl=$('an-scorecard-ccl');
+    if(ccl&&faible)ccl.textContent='Axe le plus faible : '+faible[0]+' ('+faible[1]+'/100).';
+  }else if(missingAxes.length){
+    $('an-scorecard-radar').innerHTML='<div class="vx-empty" data-state="empty">Radar non tracé — axes n/d : '
+      +missingAxes.map(esc).join(', ')+'.</div>';
   }
 
   /* 3. Graphique principal — Trading Workspace (chandeliers réels + overlays MM) */
@@ -388,9 +427,14 @@ async function loadDossier(){
     {label:'MM50',color:cc('beige','#c8ad8d'),data:tail(S.sma50),dash:[5,3]},
     {label:'MM200',color:cc('neutral','#9d978e'),data:tail(S.sma200),dash:[2,3]},
   ].filter(o=>o.data&&o.data.some(x=>x!=null));
-  const events=[];
-  if(d.earnings_dte!==null&&d.earnings_dte!==undefined&&d.earnings_dte>=0&&d.earnings_dte<=cut.length)
-    events.push({index:cut.length-1,label:'E-'+d.earnings_dte+'j'});
+  const earningsDte=(d.earnings_dte!==null&&d.earnings_dte!==undefined&&d.earnings_dte!==''
+    &&Number.isFinite(Number(d.earnings_dte))&&Number(d.earnings_dte)>=0)?Math.round(Number(d.earnings_dte)):null;
+  const catalyst=$('an-catalyst-strip');
+  if(catalyst){
+    catalyst.hidden=earningsDte===null;
+    catalyst.innerHTML=earningsDte===null?'':`<span class="vx-badge vx-warn">Résultats estimés · dans ${earningsDte} j</span>
+      <span class="vx-meta">Événement futur, hors série historique.</span>`;
+  }
   if(cut.length>10){
     /* Chandeliers PRO (TradingView LWC) si OHLC daté dispo ; repli auto sur le
        candlestick Chart.js sinon. Même contrat de carte (contrôles TF, explain…). */
@@ -402,11 +446,10 @@ async function loadDossier(){
         +(plan.rr?` · R:R structurel ${plan.rr}`:''),
       controlsHtml:['1m','3m','6m','1y','2y'].map(tf=>
         `<button class="vx-chip" data-tf="${tf}" aria-pressed="${tf===TF}">${tf}</button>`).join(''),
-      labels:cut.map((_,i)=>i-cut.length),bars:bars,closes:cut,overlays:overlays,plan:plan,events,
+      labels:cut.map((_,i)=>i-cut.length),bars:bars,closes:cut,overlays:overlays,plan:plan,events:[],
       dates:tail(S.dates),volume:tail(S.volume),
       height:Math.round(Math.min(460,Math.max(340,(window.innerWidth||1200)*0.30))),
-      source:(window.__vxStatus&&window.__vxStatus.demo)?'scan (DÉMO)':'scan',
-      timestamp:(t&&t.detail&&t.detail.updated)||Date.now(),mode:demo?'fallback':'delayed',
+      source:scanSource,timestamp:scanTs||null,mode:demo?'demo':scanMode,
       limits:(bars.length?'bougies OHLC quotidiennes':'clôtures quotidiennes')+' du scan · MM = moyennes serveur · niveaux = plan moteur',
       explain:{shows:'Chandeliers (ou clôtures) du titre, moyennes mobiles 20/50/200 et niveaux du plan moteur : entrée, stop (invalidation), objectifs.',
         why:'Le plan chiffré discipline l’exécution : l’invalidation est définie AVANT d’engager du capital ; les MM situent la tendance.',
@@ -439,13 +482,22 @@ async function loadDossier(){
 
   /* 5. Catalyseurs */
   body('an-catalysts',
-    kv('Prochains résultats',d.earnings_dte!==null&&d.earnings_dte!==undefined?('dans '+d.earnings_dte+' j'):null,
-       d.earnings_dte!==null&&d.earnings_dte<=10?'vx-warn':'')
+    kv('Prochains résultats',earningsDte!==null?('dans '+earningsDte+' j'):null,
+       earningsDte!==null&&earningsDte<=10?'vx-warn':'')
     +kv('Politique par défaut','sortie avant annonce (hold-through = dossier complet exigé)')
     +`<div class="vx-meta vx-mt2"><a href="/opportunities?view=calendar">Calendrier complet →</a></div>`);
 
   /* 6. Technique */
-  const ttm=(d.ttm_fired?'🚀 sortie de compression':(d.ttm_squeeze?'🔒 en compression (BB dans Keltner)':null));
+  /* LOT 41 : deux EMOJI etaient PEINTS ici — 🚀 et 🔒 — et personne ne les
+     voyait passer : ils n'apparaissent que sur `/analysis/<sym>`, quand la
+     donnee remplit la condition. Un balayage des huit pages d'accueil ne les
+     atteint jamais. COPY.md interdit l'emoji comme ponctuation de produit et
+     VISUAL_SYSTEM.md impose une seule famille outline ; ces deux-la etaient
+     multicolores, donc hors de toute palette.
+     Le pictogramme ne portait AUCUNE information que le texte ne dise deja :
+     « sortie de compression » / « en compression ». L'etat est desormais dit
+     par les mots, et la couleur par la classe semantique juste en dessous. */
+  const ttm=(d.ttm_fired?'sortie de compression':(d.ttm_squeeze?'en compression (BB dans Keltner)':null));
   const ttmDir=d.ttm_dir==='up'?' · momentum haussier':d.ttm_dir==='down'?' · momentum baissier':'';
   function perfBars(d){
     const rows=[['1 sem.',d.perf_w],['1 mois',d.perf_m],['1 trim.',d.perf_q],['1 an',d.perf_y]].filter(r=>r[1]!=null&&!isNaN(r[1]));
@@ -460,7 +512,7 @@ async function loadDossier(){
         const tok=neg?'var(--vx-negative,#E9555F)':'var(--vx-positive,#2BBE90)';
         const grad='linear-gradient('+(neg?'270deg':'90deg')+',color-mix(in srgb,'+tok+' 35%,transparent),'+tok+')';
         return '<div style="display:flex;align-items:center;gap:6px;margin:2px 0" role="img" aria-label="'+r[0]+' '+(v>=0?'+':'')+v+' %">'
-          +'<span style="width:52px;font-size:10.5px;color:var(--vx-text-muted,#8A8284)">'+r[0]+'</span>'
+          +'<span style="width:52px;font-size:10.5px;color:var(--vx-text-muted,#989092)">'+r[0]+'</span>'
           +'<span style="flex:1;height:10px;position:relative;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden">'
             +'<span style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.16)"></span>'
             +'<span style="position:absolute;top:0;bottom:0;'+(neg?('right:50%;width:'+w.toFixed(1)+'%'):('left:50%;width:'+w.toFixed(1)+'%'))+';background:'+grad+';border-radius:2px"></span></span>'
@@ -472,7 +524,11 @@ async function loadDossier(){
     +kv('Force relative',d.rs)+kv('RSI',d.rsi)
     +kv('Position 52 semaines',d.pos52!==undefined?d.pos52+' %':null)
     +kv('Extension vs ATR',d.ext_atr,(d.ext_atr>=2.5?'vx-warn':''))
-    +(ttm?kv('TTM Squeeze',ttm+ttmDir,(d.ttm_fired&&d.ttm_dir==='up'?'vx-pos':d.ttm_fired&&d.ttm_dir==='down'?'vx-neg':'')):'')
+    /* La compression SANS sortie n'avait plus de marque une fois le cadenas
+       retire : elle prend `vx-warn` — jaune = attente/prudence dans la
+       semantique de couleur du systeme. Le sens revient par la palette, pas
+       par un dessin. */
+    +(ttm?kv('TTM Squeeze',ttm+ttmDir,(d.ttm_fired&&d.ttm_dir==='up'?'vx-pos':d.ttm_fired&&d.ttm_dir==='down'?'vx-neg':d.ttm_squeeze?'vx-warn':'')):'')
     +perfBars(d)
     +`<div class="vx-meta vx-mt2">La décision finale unique reste ${decision} — les verdicts techniques sont des entrées du moteur exécutif.</div>`);
 
@@ -495,7 +551,7 @@ async function loadDossier(){
       const mk=(v,tok,lbl)=>v==null?'':'<span title="'+lbl+' '+VX.fmt.price(v)+'" style="position:absolute;left:'+pos(v).toFixed(1)+'%;top:-2px;bottom:-2px;width:2px;background:'+tok+';border-radius:1px;box-shadow:0 0 5px color-mix(in srgb,'+tok+' 55%,transparent)"></span>';
       return '<div class="vx-kv"><span class="k">Fourchette</span><span class="v" style="display:inline-flex;align-items:center;gap:8px;min-width:0">'
         +'<span class="vx-dim" style="font-size:11px">'+VX.fmt.price(lo)+'</span>'
-        +'<span style="position:relative;flex:1;min-width:70px;height:7px;background:linear-gradient(90deg,color-mix(in srgb,var(--vx-brand,#DBE1E8) 12%,transparent),color-mix(in srgb,var(--vx-brand,#DBE1E8) 30%,transparent));border-radius:3px">'
+        +'<span style="position:relative;flex:1;min-width:70px;height:7px;background:linear-gradient(90deg,color-mix(in srgb,var(--vx-brand,#9B7BFF) 12%,transparent),color-mix(in srgb,var(--vx-brand,#9B7BFF) 30%,transparent));border-radius:3px">'
         +mk(_px,'var(--vx-cyan,#45D6E8)','cours')
         +mk(_tgt,'var(--vx-warning,#D9BE3C)','objectif moyen')
         +'</span><span class="vx-dim" style="font-size:11px">'+VX.fmt.price(hi)+'</span></span></div>';
@@ -561,8 +617,9 @@ async function loadDossier(){
     const VC=window.VXCharts||{colors:{}};const col=(n,f)=>(VC.colors&&VC.colors[n])||f;
     const lv=[];
     if(plan.stop!=null)lv.push({k:'Stop',v:plan.stop,c:col('negative','#E9555F')});
-    const e=(plan.entry!=null?plan.entry:px);
+    const e=plan.entry;
     if(e!=null)lv.push({k:'Entrée',v:e,c:col('info','#45D6E8')});
+    else if(px!=null)lv.push({k:'Cours',v:px,c:col('neutral','#8A8284')});
     [plan.tp1,plan.tp2,plan.tp3].forEach(function(t,i){if(t!=null)lv.push({k:'TP'+(i+1),v:t,c:col('positive','#2BBE90')});});
     if(lv.length<2)return '';
     const vals=lv.map(function(l){return l.v;});
@@ -584,32 +641,31 @@ async function loadDossier(){
       +'<line x1="'+axX+'" y1="'+padT+'" x2="'+axX+'" y2="'+(H-padB)+'" stroke="rgba(255,255,255,.12)"/>'+bands+rows+'</svg>';
   }
   body('an-plan',
-    `<div id="an-cone" class="vx-mb2"></div>`
-    +rrLadder(d.price,plan)
+    rrLadder(d.price,plan)
+    +`<details class="an-disclosure an-disclosure--nested vx-mt3">
+      <summary>Voir tous les niveaux</summary>
+      <div class="vx-mt2">`
     +kv('Entrée',plan.entry)+kv('Stop (invalidation sous-jacent)',plan.stop,'vx-neg')
     +kv('TP1',plan.tp1,'vx-pos')+kv('TP2',plan.tp2,'vx-pos')+kv('TP3',plan.tp3,'vx-pos')
     +kv('R:R structurel',plan.rr)
-    +`<div class="vx-flex vx-mt3" style="flex-wrap:wrap;gap:.4rem">
+    +`</div></details>
+    <div class="vx-flex vx-mt3" style="flex-wrap:wrap;gap:.4rem">
       <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${SYM}','follow')">Créer un suivi</button>
       <button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXCharts.alertFromLevel('${SYM}',${JSON.stringify(plan.entry??null)})">Alerte sur l’entrée</button>
-      <button class="vx-btn vx-btn-sm vx-btn-soft" onclick="window.__prepOrder&&window.__prepOrder('${SYM}')">Préparer l’ordre (copier IBKR)</button>
+      <button class="vx-btn vx-btn-sm vx-btn-soft" onclick="window.__prepOrder&&window.__prepOrder('${SYM}')">Calculer le dimensionnement</button>
     </div>
     <div id="an-order-ticket" class="vx-mt2"></div>`);
-  if(window.VXCharts&&VXCharts.projectionCone){
-    VXCharts.projectionCone('an-cone',{spot:d.price,stop:plan.stop,tp1:plan.tp1,tp2:plan.tp2,tp3:plan.tp3,
-      history:(S.close||[]).slice(-60),horizonLabel:'plan moteur'+(plan.rr?' · R:R '+plan.rr:'')});
-  }
   window.__prepOrder=function(sym){
     const host=document.getElementById('an-order-ticket');if(!host)return;
     const av=Number(localStorage.getItem('vxAccountValue')||'')||null;
-    host.innerHTML=`<div class="vx-card" style="border-color:rgba(207,97,40,.35)">
-      <div class="vx-card-header"><span class="vx-card-title">Préparation d’ordre — READONLY</span></div>
+    host.innerHTML=`<div class="vx-card">
+      <div class="vx-card-header"><span class="vx-card-title">Dimensionnement indicatif — aucune exécution</span></div>
       <div class="vx-card-body vx-flex" style="gap:.5rem;flex-wrap:wrap;align-items:end">
         <label class="vx-field" style="max-width:170px"><span>Valeur du compte ($)</span>
           <input id="ot-av" class="vx-input" type="number" step="any" value="${av||''}" placeholder="ex. 100000"></label>
         <label class="vx-field" style="max-width:130px"><span>Risque par trade (%)</span>
           <input id="ot-rp" class="vx-input" type="number" step="any" value="1"></label>
-        <button class="vx-btn vx-btn-sm" id="ot-go">Calculer le ticket</button>
+        <button class="vx-btn vx-btn-sm" id="ot-go">Calculer</button>
       </div>
       <div id="ot-out"></div></div>`;
     document.getElementById('ot-go').addEventListener('click',function(){
@@ -629,16 +685,16 @@ async function loadDossier(){
             +'<div><div class="vx-meta">Capital engagé</div><b>'+(s.capital_deployed!=null?'$'+s.capital_deployed:'—')+'</b></div>'
             +'<div><div class="vx-meta">Poids projeté</div><b>'+(s.weight_pct!=null?s.weight_pct+' %':'—')+'</b></div>'
             +'<div><div class="vx-meta">R:R</div><b>'+(t.reward_risk!=null?t.reward_risk:'—')+'</b></div></div>'
-            +(t.blocked?'<div class="vx-stale-banner vx-mt2">⛔ Préparation bloquée par la stratégie : '+warn.map(esc).join(' · ')+'</div>'
+            +(t.blocked?'<div class="vx-stale-banner vx-mt2">Préparation bloquée par la stratégie : '+warn.map(esc).join(' · ')+'</div>'
               :(warn.length?'<div class="vx-meta vx-mt2" style="color:var(--vx-warning)">'+warn.map(esc).join(' · ')+'</div>':''))
             +'<pre id="ot-pre" style="white-space:pre-wrap;background:var(--vx-surface-2,#121214);padding:.7rem;border-radius:8px;margin-top:.7rem;font-size:12px">'+esc(t.copy_text||'')+'</pre>'
-            +'<button class="vx-btn vx-btn-sm vx-btn-ghost" id="ot-copy">Copier le ticket</button>'
+            +'<button class="vx-btn vx-btn-sm vx-btn-ghost" id="ot-copy">Copier l’analyse</button>'
             +'<div class="vx-meta vx-mt1">'+esc(t.disclaimer||'')+'</div></div>';
           const cp=document.getElementById('ot-copy');
           if(cp)cp.addEventListener('click',function(){
             const pre=document.getElementById('ot-pre');
             if(pre&&navigator.clipboard)navigator.clipboard.writeText(pre.textContent);
-            VX.toast('Ticket copié — à saisir manuellement dans IBKR','success');});
+            VX.toast('Ticket d’analyse copié — aucune transmission','success');});
         }).catch(function(e){document.getElementById('ot-out').innerHTML='<div class="vx-error-banner">'+esc(e.message)+'</div>';});
     });
   };
@@ -684,7 +740,7 @@ async function loadDossier(){
       — stop ${VX.fmt.nd(follows[0].stop)}, objectif ${VX.fmt.nd(follows[0].tgt)}</div>`:'')
     +(jr.length?jr.map(j=>`<div class="vx-kv"><span class="k">${j.date} · ${esc(j.dir||'')}</span>
       <span class="v ${j.pnl>0?'vx-pos':j.pnl<0?'vx-neg':''}">${j.result||''} ${j.pnl!==undefined&&j.pnl!==''?VX.fmt.num(j.pnl):''}</span></div>`).join('')
-      :VX.states.empty('Aucune entrée de journal sur ce titre.'))
+      :VX.states.emptyDesk('Aucune entrée de journal sur ce titre.'))
     +`<div class="vx-meta vx-mt2"><a href="/journal?view=journal&sym=${SYM}">Journal complet →</a></div>`);
   paintBadges();paintThesis();
   try{loadAnalyst();}catch(e){}
@@ -753,14 +809,22 @@ async function loadDecisionStack(){
   const entry=dec.entry,inval=dec.invalidation!=null?dec.invalidation:dec.stop;
   const tgts=dec.targets||{};
   const dq=(dec.data_quality&&dec.data_quality.grade)?('données '+dec.data_quality.grade):'';
-  const cell=(k,v)=>'<div class="vx-verdict-cell"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
+  const cell=(k,v,id)=>'<div class="vx-verdict-cell"><span class="k">'+k+'</span><span class="v"'
+    +(id?' id="'+id+'"':'')+'>'+v+'</span></div>';
   if(V)V.innerHTML='<section class="vx-card vx-verdict-card" data-tone="'+esc(tone)+'">'
     +'<div class="vx-verdict-head"><span class="vx-verdict-label">'+esc(dec.decision_label||dec.final_decision)+'</span>'
     +(dec.grade?'<span class="vx-badge">'+esc(dec.grade)+'</span>':'')
     +(conf!=null?'<span class="vx-verdict-score">confiance '+conf+'/100</span>':'')
-    +'<span class="vx-actions">'+('<span class="vx-freshness" data-live="'+(demoState()?'fallback':'delayed')+'"><span class="vx-live-dot"></span>'+(demoState()?'Démo':'Différé')+'</span>')+'</span></div>'
+    /* FRAÎCHEUR RÉELLE, ET NON UNE CONSTANTE (lot 63).
+       Avant : `demoState()?'fallback':'delayed'` — hors démo, ce badge disait
+       « Différé » que le prix ait dix secondes ou trois jours, sur la carte du
+       VERDICT, là où la page conclut. Mesuré sous vieillissement des réponses :
+       il ne bougeait pas d'un iota à +2 h. Il lit désormais le MÊME âge que la
+       puce du prix juste au-dessus (`domains.prices.age_s`), par le helper
+       canonique — une seule table de seuils pour toute l'application. */
+    +'<span class="vx-actions">'+((window.VX&&VX.freshness&&VX.freshness.domainChip)?VX.freshness.domainChip('prices'):'')+'</span></div>'
     +'<div class="vx-verdict-grid">'
-    +cell('Prix',(TICKER&&TICKER.detail&&TICKER.detail.price!=null)?VX.fmt.price(TICKER.detail.price):'—')
+    +cell('Prix',(TICKER&&TICKER.detail&&TICKER.detail.price!=null)?VX.fmt.price(TICKER.detail.price):'n/d','an-verdict-price')
     +cell('Entrée',entry!=null?VX.fmt.price(entry):'—')
     +cell('Invalidation',inval!=null?VX.fmt.price(inval):'—')
     +cell('Conviction',dec.conviction!=null?dec.conviction:'—')
@@ -861,6 +925,235 @@ async function loadAnomalies(){
     else host.innerHTML='<div class="vx-empty">Builder indisponible.</div>';
   }catch(e){host.innerHTML='<div class="vx-error-banner">Scanner injoignable : '+esc(e.message)+'</div>';}
 }
+/* CONTEXTES DE DECISION — trois moteurs qui etaient CALCULES, SERIALISES,
+   ENVOYES et JAMAIS PEINTS (lot 49). Ils arrivent deja dans `/api/skyler/<sym>`,
+   sous `decision.regime_break`, `.sector_coherence` et `.instrument_profile` :
+   aucun appel de plus n'est necessaire, il suffisait de les lire.
+
+   Les trois portent leur propre etat honnete (`available:false` + `reason`,
+   `classification:'UNCLASSIFIED'`), donc on les rend TELS QU'ILS SE DISENT :
+   la valeur quand elle existe, la raison quand elle n'existe pas. Aucun chiffre
+   n'est fabrique pour remplir la ligne.
+
+   Ils sont DESCRIPTIFS : les moteurs eux-memes portent
+   `does_not_change_decision: true` et « ne modifie ni le score ni le verdict ».
+   La presentation le dit, pour qu'on ne les lise pas comme un second verdict. */
+function ligneContexte(titre, corps, dispo){
+  return '<div class="vx-kv"><span class="k">'+titre+'</span>'
+    +'<span class="v '+(dispo?'':'vx-muted')+'">'+corps+'</span></div>';
+}
+function contextes(d){
+  const rb=d.regime_break||{}, sc=d.sector_coherence||{}, ip=d.instrument_profile||{};
+  const lignes=[];
+  if(rb.available){
+    const f=(rb.flags||[]).length?' · '+esc((rb.flags||[]).join(', ')):'';
+    lignes.push(ligneContexte('Rupture de régime',
+      'volatilité ×'+VX.fmt.num(rb.volatility_ratio,2)
+      +' · décalage '+VX.fmt.num(rb.mean_shift_z,2)+' σ'
+      +' · '+rb.n_observations+' séances'+f, true));
+  }else if(rb.reason){
+    lignes.push(ligneContexte('Rupture de régime', esc(rb.reason), false));
+  }
+  if(sc.available){
+    lignes.push(ligneContexte('Cohérence sectorielle',
+      esc(sc.sector||'—')+' · écart au secteur '
+      +(sc.instrument_score_minus_sector_avg>0?'+':'')
+      +VX.fmt.num(sc.instrument_score_minus_sector_avg,1)
+      +(sc.instrument_rank_in_sector?' · rang '+sc.instrument_rank_in_sector
+        +'/'+(sc.members_count||'—'):''), true));
+  }else if(sc.reason){
+    lignes.push(ligneContexte('Cohérence sectorielle', esc(sc.reason), false));
+  }
+  if(ip.classification&&ip.classification!=='UNCLASSIFIED'){
+    lignes.push(ligneContexte('Profil d’instrument',
+      esc(ip.classification)+(ip.asset_class?' · '+esc(ip.asset_class):''), true));
+  }else if(ip.classification_source){
+    lignes.push(ligneContexte('Profil d’instrument',
+      'non classé ('+esc(ip.classification_source)+')', false));
+  }
+  if(!lignes.length)return '';
+  return '<div class="vx-mt2"><div class="vx-kpi-label">Contexte — descriptif, '
+    +'ne modifie ni le score ni le verdict</div>'+lignes.join('')+'</div>';
+}
+/* FIABILITE ET MANQUES (lot 50) — trois moteurs de plus qui arrivaient dans
+   `/api/skyler/<sym>` sans etre lus. Ceux-la repondent a la question qu'un
+   score seul laisse ouverte : « puis-je m'y fier, et si le score est bas,
+   QU'EST-CE QUI MANQUE ? »
+
+   Les trois portent aussi leur clause descriptive (`does_not_change_verdict`,
+   « sans ajustement de score »), et on la respecte : ils expliquent le
+   verdict, ils ne le concurrencent pas. */
+const CTRL={data_actionable:'donnees exploitables',gates_evaluable:'portes evaluables',
+  no_triggered_gate:'aucune porte declenchee',reconciliation_actionable:'reconciliation',
+  score_complete:'score complet',score_review_threshold:'seuil de revue'};
+function fiabilite(d){
+  const rel=d.opportunity_reliability||{}, att=d.opportunity_attribution||{},
+        mag=d.multi_asset_guard||{};
+  const bl=[];
+  const ch=rel.checks;
+  if(ch&&typeof ch==='object'){
+    const noms=Object.keys(CTRL).filter(k=>k in ch);
+    const ok=noms.filter(k=>ch[k]===true).length;
+    bl.push('<div class="vx-kv"><span class="k">Fiabilité des preuves</span>'
+      +'<span class="v '+(ok===noms.length?'vx-pos':ok?'vx-warn':'vx-neg')+'">'
+      +ok+'/'+noms.length+' contrôle(s) satisfait(s)</span></div>'
+      +'<div class="vx-meta" style="margin:-.15rem 0 .35rem">'
+      +noms.map(k=>'<span class="'+(ch[k]===true?'vx-pos':'vx-muted')+'">'
+        +esc(CTRL[k])+'</span>').join(' · ')+'</div>');
+  }
+  /* Ce qui manque au score : c'est CE bloc qui transforme un « 12/40 » opaque
+     en quelque chose d'actionnable. On borne la liste et on dit le reste. */
+  const manques=[].concat(att.insufficient_blocks||[]);
+  if(manques.length){
+    const vus=manques.slice(0,6).map(esc).join(', ');
+    bl.push('<div class="vx-kv"><span class="k">Ce qui manque au score</span>'
+      +'<span class="v vx-warn">'+manques.length+' bloc(s) — '+vus
+      +(manques.length>6?', +'+(manques.length-6):'')+'</span></div>');
+  }
+  const issues=(mag.issues||[]).filter(i=>i&&i.reason);
+  if(issues.length){
+    bl.push('<div class="vx-kv"><span class="k">Garde-fou multi-actifs</span>'
+      +'<span class="v vx-warn">'+esc(issues[0].reason)
+      +(issues.length>1?' (+'+(issues.length-1)+')':'')+'</span></div>');
+  }
+  if(!bl.length)return '';
+  return '<div class="vx-mt2"><div class="vx-kpi-label">Fiabilité — explique le '
+    +'verdict, ne le remplace pas</div>'+bl.join('')+'</div>';
+}
+/* PREPARATION DU DOSSIER (lot 54) — `decision.readiness`.
+
+   Encore un moteur CALCULE, SERIALISE, ENVOYE et jamais peint. Celui-la etait
+   classe « enferme » dans mon inventaire du lot 52 : faux, et pour la CINQUIEME
+   fois de la meme famille. Mon balayage cherchait le NOM DU MODULE dans les
+   corps de reponse ; `decision_readiness` publie sous `decision.readiness`, et
+   `walk_forward_validation` sert un corps entier qui ne se nomme jamais. Une
+   sonde qui cherche des noms de fichiers dans du JSON mesure ma convention de
+   nommage, pas le produit.
+
+   Ce qu'il apporte est le complement exact du lot 50. `opportunity_attribution`
+   dit CE QUI MANQUE au score ; `readiness` dit QUOI FAIRE, dans l'ordre, pour
+   que le dossier devienne decidable — et pourquoi il ne l'est pas encore.
+
+   READONLY — le mot « actions » du moteur designe des actions ANALYTIQUES
+   (collecter un contexte, evaluer une regle). Le moteur porte lui-meme
+   `read_only: true` et « ne constitue jamais une instruction d'execution ».
+   La presentation le dit en toutes lettres : rien ici ne se lit comme un ordre. */
+const PREP={BLOCKED_BY_GATE:['bloqué par une règle','vx-neg'],
+  EVIDENCE_REQUIRED:['preuves à collecter','vx-warn'],
+  SCORE_INCOMPLETE:['score incomplet','vx-warn'],
+  ANALYTICAL_REVIEW_READY:['prêt pour revue analytique','vx-pos']};
+function preparation(d){
+  const r=d.readiness;
+  if(!r||typeof r!=='object'||!r.status)return '';
+  const p=PREP[r.status]||[String(r.status).toLowerCase(),''];
+  const bl=['<div class="vx-kv"><span class="k">État du dossier</span>'
+    +'<span class="v '+p[1]+'">'+esc(p[0])+'</span></div>'];
+  const actes=Array.isArray(r.actions)?r.actions:[];
+  if(actes.length){
+    /* On borne et on DIT le reste : une liste tronquee en silence ferait croire
+       le dossier plus proche d'etre complet qu'il ne l'est. */
+    const vus=actes.slice(0,5).map(a=>'<div class="vx-kv"><span class="k">'
+      +esc(a.label||a.kind||'—')+'</span><span class="v vx-muted">'
+      +esc(a.reason||'—')+'</span></div>').join('');
+    bl.push('<div class="vx-meta" style="margin:.35rem 0 .15rem">Pour rendre le '
+      +'dossier décidable — '+actes.length+' point(s) d’analyse'
+      +(actes.length>5?' · 5 affichés':'')+'</div>'+vus);
+  }
+  return '<div class="vx-mt2"><div class="vx-kpi-label">Préparation — diagnostic '
+    +'analytique, jamais une instruction d’exécution</div>'+bl.join('')+'</div>';
+}
+/* LES VINGT-ET-UN CONTEXTES DU DOSSIER (lot 51).
+
+   Ils arrivaient tous dans `packet.contexts` de `/api/skyler/<sym>` et AUCUN
+   n'etait lu. Mesure a l'appui : 6 peints, 8 muets, 20 « enfermes » — et ce
+   dernier chiffre etait faux, parce que je cherchais par NOM DE MODULE alors
+   que le packet les publie sous des cles plus courtes (`drawdown_context`
+   sort en `contexts.drawdown`). Troisieme fois qu'une hypothese de nommage
+   me trompe dans cette serie.
+
+   Le vrai fait, lui, est meilleur que prevu : les 21 contextes partagent UN
+   SEUL contrat — `available`, `status`, `reason`/`note`, `read_only`. Un
+   contrat uniforme merite un rendu GENERIQUE, pas vingt-et-un cas
+   particuliers : ce bloc affiche donc ce que chaque contexte dit de lui-meme,
+   et il accueillera le vingt-deuxieme sans une ligne de code de plus.
+
+   Replie par defaut : ils expliquent le dossier, ils ne disputent pas le
+   verdict — qui reste au-dessus, seul. */
+const CTX_LBL={technical:'Technique',fundamentals:'Fondamentaux',catalysts:'Catalyseurs',
+  anomalies:'Anomalies',market:'Marché',portfolio:'Portefeuille',options:'Options',
+  data_quality:'Qualité des données',reconciliation:'Réconciliation',
+  drawdown:'Drawdown',downside_volatility:'Volatilité baissière',
+  relative_strength:'Force relative',relative_volume:'Volume relatif',
+  gap_risk:'Risque de gap',earnings_proximity:'Proximité des résultats',
+  earnings_holding_overlap:'Résultats vs détention',
+  earnings_option_overlap:'Résultats vs option',
+  iv_term_structure:'Structure de terme IV',iv_skew:'Skew IV',
+  open_interest_concentration:'Concentration d’OI',
+  call_put_structure:'Structure calls/puts'};
+function contextesDossier(r){
+  const ctx=(r&&r.packet&&r.packet.contexts)||{};
+  const cles=Object.keys(ctx).filter(k=>ctx[k]&&typeof ctx[k]==='object');
+  if(!cles.length)return '';
+  /* TROIS ETATS, PAS DEUX — et le troisieme m'a failli faire mentir.
+     `catalysts` et `market` sont des contextes RICHES qui ne portent tout
+     simplement pas le drapeau `available`. Un rendu binaire les grisait comme
+     « non disponibles » : une affirmation fausse sur une donnee presente.
+     Absence de declaration n'est pas declaration d'absence. */
+  const declarants=cles.filter(k=>'available' in ctx[k]);
+  const dispo=declarants.filter(k=>ctx[k].available===true);
+  const sansFlag=cles.filter(k=>!('available' in ctx[k]));
+  const rang=k=>('available' in ctx[k])?(ctx[k].available===true?0:2):1;
+  const rows=cles.sort((a,b)=>rang(a)-rang(b)||a.localeCompare(b)).map(k=>{
+    const c=ctx[k],flag=('available' in c)?c.available===true:null;
+    const dit=flag===true?(c.status||'disponible')
+      :flag===false?(c.reason||c.note||c.status||'non disponible')
+      :(c.status||c.note||'renseigné');
+    return '<div class="vx-kv"><span class="k">'+esc(CTX_LBL[k]||k)+'</span>'
+      +'<span class="v '+(flag===false?'vx-muted':'')+'">'+esc(String(dit))+'</span></div>';
+  }).join('');
+  return '<details class="vx-mt2"><summary class="vx-kpi-label">Contextes du dossier — '
+    +dispo.length+' disponible(s) sur '+declarants.length+' déclarant(s)'
+    +(sansFlag.length?' · '+sansFlag.length+' sans déclaration':'')
+    +' · descriptifs, lecture seule</summary>'+rows+'</details>';
+}
+/* REVUE ADVERSARIALE (lot 56) — `red_team_review`, clé de PREMIER NIVEAU de la
+   reponse de `/api/skyler/<sym>`, et la plus riche sortie que personne ne lisait.
+
+   Le moteur pose DIX questions hostiles au dossier — « qu'est-ce qui est deja
+   dans le prix ? », « quel chiffre peut etre trompeur ? » — et y repond avec
+   les seules donnees presentes, chaque reponse portant son niveau de preuve.
+   La decision n'en gardait que deux champs (`complete`, `basis`) ; les dix
+   questions elles-memes voyageaient jusqu'au navigateur sans etre affichees.
+
+   DEUX ETATS, ET LE SECOND EST LE PLUS IMPORTANT. Une question ANSWERED porte
+   `answer` + `evidence_level`. Une question UNANSWERED porte une `reason` et
+   RIEN D'AUTRE : le moteur dit lui-meme que « les objections sans preuve
+   restent ouvertes et ne valident jamais le dossier ». Une revue qui afficherait
+   les reponses en taisant les questions ouvertes transformerait une revue
+   incomplete en satisfecit — exactement le mensonge que cette serie traque.
+   Les questions ouvertes sont donc montrees EN PREMIER.
+
+   Replie par defaut, comme les contextes : cela explique le dossier, cela ne
+   dispute pas le verdict. */
+function revueAdversariale(r){
+  const rt=r&&r.red_team_review;
+  if(!rt||!Array.isArray(rt.questions)||!rt.questions.length)return '';
+  const qs=rt.questions;
+  const ouvertes=qs.filter(q=>q&&q.status!=='ANSWERED');
+  const repondues=qs.filter(q=>q&&q.status==='ANSWERED');
+  const ligne=(q,ouverte)=>'<div class="vx-kv"><span class="k">'
+    +esc(q.question||q.id||'—')+'</span><span class="v '+(ouverte?'vx-warn':'')+'">'
+    +esc(ouverte?(q.reason||'sans preuve — reste ouverte')
+                :(q.answer||'—'))
+    +(!ouverte&&q.evidence_level?' <span class="vx-meta">('+esc(q.evidence_level)+')</span>':'')
+    +'</span></div>';
+  const corps=ouvertes.map(q=>ligne(q,true)).join('')
+    +repondues.map(q=>ligne(q,false)).join('');
+  return '<details class="vx-mt2"><summary class="vx-kpi-label">Revue '
+    +'adversariale — '+repondues.length+'/'+qs.length+' question(s) répondue(s)'
+    +(ouvertes.length?' · '+ouvertes.length+' ouverte(s), jamais comblée(s)':'')
+    +' · descriptive, lecture seule</summary>'+corps+'</details>';
+}
 /* Skyler — décision canonique : score /40 par blocs, hard gates, scénarios. */
 async function loadSkyler(){
   const host=$('an-skyler');if(!host)return;
@@ -888,7 +1181,7 @@ async function loadSkyler(){
       +'<b>'+(sc.total??'—')+'/40</b><span class="vx-meta">niveau '+esc(d.level||'—')
       +(d.capped_by_gate?' · plafonnée par '+esc(d.capped_by_gate):'')+'</span></div>'
       +'<div class="vx-mb1">'+chips+'</div>'
-      +(gates.length?'<div class="vx-mb1">'+gates.map(g=>'<div class="vx-neg" style="font-size:12.5px">✕ '+esc(g.id)+' — '+esc(g.reason)+'</div>').join('')+'</div>':'')
+      +(gates.length?'<div class="vx-mb1">'+gates.map(g=>'<div class="vx-neg" style="font-size:12.5px">'+VX.icon('close',13)+' '+esc(g.id)+' — '+esc(g.reason)+'</div>').join('')+'</div>':'')
       +(sn.available?'<ul style="margin:.2rem 0;padding-left:0;list-style:none;font-size:12.5px">'
         +row(sn.bear,'Pessimiste')+row(sn.base,'Probable')+row(sn.bull,'Exceptionnel')+'</ul>':'')
       +'<div class="vx-meta" style="margin-top:.3rem">'
@@ -896,7 +1189,9 @@ async function loadSkyler(){
       +(d.invalidation!=null?'Invalidation : '+VX.fmt.num(d.invalidation,2)+' · ':'')
       +(d.max_risk_pct!=null?'Risque max : '+d.max_risk_pct+' % · ':'')
       +(unknown?unknown+' porte(s) non évaluable(s) · ':'')
-      +'Objection : '+esc(d.strongest_objection||'—')+'</div>';
+      +'Objection : '+esc(d.strongest_objection||'—')+'</div>'
+      +contextes(d)+fiabilite(d)+preparation(d)+contextesDossier(r)
+      +revueAdversariale(r);
   }catch(e){host.innerHTML='<div class="vx-error-banner">Skyler injoignable : '+esc(e.message)+'</div>';}
 }
 /* Laboratoire d'évidence (X2) : stats ex post réelles après les spikes passés. */
@@ -940,13 +1235,18 @@ VX.refresh.register(loadDecisionStack,180000,'analysis-decision');
 </script>
 """
 
-_MOBILE_BAR = """
+# Barre d'actions de la fiche. Elle EMPRUNTE la fabrique d'icônes du shell,
+# comme la barre mobile générique des huit espaces : cinq pictogrammes textuels
+# (★ ◎ ! ◇ ⋯) y voisinaient les traits SVG du reste du produit —
+# VISUAL_SYSTEM.md interdit de mélanger deux familles sur une même surface, et
+# c'est ici la surface la plus dense en actions.
+_MOBILE_BAR = f"""
 <div class="vx-mobile-bar"><nav aria-label="Actions rapides">
-  <button onclick="VXEntities.toggleFavorite('%%SYM%%')">★<span>Favori</span></button>
-  <button onclick="VXEntities.openAddModal('%%SYM%%','follow')">◎<span>Suivre</span></button>
-  <button onclick="VXEntities.openAddModal('%%SYM%%','alert')">!<span>Alerte</span></button>
-  <button onclick="location.href='/opportunities?view=options&sym=%%SYM%%'">◇<span>Options</span></button>
-  <button data-entity-menu="%%SYM%%">⋯<span>Plus</span></button>
+  <button onclick="VXEntities.toggleFavorite('%%SYM%%')">{icon('star', 20)}<span>Favori</span></button>
+  <button onclick="VXEntities.openAddModal('%%SYM%%','follow')">{icon('follow', 20)}<span>Suivre</span></button>
+  <button onclick="VXEntities.openAddModal('%%SYM%%','alert')">{icon('alert', 20)}<span>Alerte</span></button>
+  <button onclick="location.href='/opportunities?view=options&sym=%%SYM%%'">{icon('option', 20)}<span>Options</span></button>
+  <button data-entity-menu="%%SYM%%">{icon('more', 20)}<span>Plus</span></button>
 </nav></div>
 """
 
@@ -955,9 +1255,11 @@ def render(sym: str) -> str:
     sym = sym.upper()[:8]
     safe = ''.join(ch for ch in sym if ch.isalnum() or ch in '.-')
     content = ('<div class="vx-page-header"><div><h1>' + safe + '</h1>'
-               '<div class="vx-sub">Cette entreprise et cette opportunité '
-               'méritent-elles du capital maintenant ?</div></div></div>'
+               '<div class="vx-sub">La thèse mérite-t-elle du capital, et à quel '
+               'risque.</div></div></div>'
                + _SECTIONS.replace('%%SYM%%', safe)
+               .replace('%%FAVICON%%', icon('star'))
+               .replace('%%CARET%%', icon('caret', 15))
                .replace('%%LOADING%%', '<div class="vx-skeleton" style="height:48px"></div>'))
     js = _JS.replace('%%SYM_JSON%%', json_for_script(safe))
     return render_shell(title=f'{safe} · Analyse', active='analysis',

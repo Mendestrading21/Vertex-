@@ -160,6 +160,15 @@ def build(symbol, amount, *, verdict=None, roro=None, gex_bias=None, gex_regime=
         overall, tone = 'FAVORABLE', 'ok'
     n_ko = statuses.count(KO)
     n_warn = statuses.count(WARN)
+    unknown_checks = [c['key'] for c in checks if c['status'] == UNKNOWN]
+    data_coverage = {
+        'known_checks': len(checks) - len(unknown_checks),
+        'total_checks': len(checks),
+        'coverage_pct': round(100 * (len(checks) - len(unknown_checks)) / len(checks), 1) if checks else 0.0,
+        'unknown_checks': unknown_checks,
+        'read_only': True,
+        'note': 'contrôles inconnus restent visibles et ne sont jamais traités comme favorables',
+    }
     narrative = ('Vérification pré-trade %s : %d contrôle(s) défavorable(s), %d à surveiller, '
                  'sur %d. Rapport DESCRIPTIF — Vertex ne passe jamais d\'ordre et ceci '
                  'n\'est pas un conseil d\'exécution ; la décision et la discipline restent les tiennes.'
@@ -168,7 +177,7 @@ def build(symbol, amount, *, verdict=None, roro=None, gex_bias=None, gex_regime=
     return {
         'symbol': sym, 'amount': amt,
         'overall': overall, 'tone': tone,
-        'checks': checks, 'narrative': narrative,
+        'checks': checks, 'data_coverage': data_coverage, 'narrative': narrative,
         'generator': 'deterministic',
     }
 

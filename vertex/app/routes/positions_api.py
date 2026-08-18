@@ -129,9 +129,13 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         import json as _json
         from vertex.engines import pretrade as _pt
         from vertex.options import gex as _gex
-        b = request.get_json(force=True, silent=True) or {}
-        sym = str(b.get('symbol') or '').upper()[:12]
-        amount = b.get('amount')
+        from vertex.app import payload_validation as _payload
+        try:
+            b = _payload.object_body(request.get_json(force=True, silent=True), max_keys=12)
+            sym = _payload.required_symbol(b)
+            amount = _payload.optional_number(b, 'amount')
+        except _payload.PayloadError as exc:
+            return jsonify({'error': str(exc)}), 400
         # verdict comité (vérité des verdicts, jamais recalculé)
         verdict = None
         for dcn in ((scan_state.get('committee') or {}).get('decisions') or []):

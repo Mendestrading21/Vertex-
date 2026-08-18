@@ -15,8 +15,19 @@ from vertex.ui.shell import render_shell
 
 def _load_tokens() -> dict:
     """Valeurs RÉELLES de tokens.css (source unique de vérité). Les alias
-    var(--x) sont résolus un niveau — la page de référence ne peut plus
-    afficher un hex périmé : elle LIT la vérité au lieu de la recopier."""
+    var(--x) sont résolus JUSQU'AU BOUT — la page de référence ne peut plus
+    afficher un hex périmé : elle LIT la vérité au lieu de la recopier.
+
+    La résolution était limitée à UN niveau, ce qui suffisait tant que la chaîne
+    faisait `--vx-orange-500 → --vx-violet-500 → #hex`. La rampe de marque
+    canonique s'appelle désormais `--vx-violet-*` et `--vx-ember-*` en est un
+    alias : la chaîne compte donc trois maillons, et un seul saut laissait
+    `var(--vx-violet-500)` AFFICHÉ à l'utilisateur — une indirection à la place
+    d'une couleur, sur la page même qui existe pour montrer les couleurs.
+
+    La boucle est bornée (8 sauts) : un alias circulaire ferait tourner un
+    résolveur naïf indéfiniment, à l'import du module, donc au démarrage.
+    """
     import os
     import re
     path = os.path.join(os.path.dirname(__file__), '..', '..', 'static',
@@ -29,9 +40,17 @@ def _load_tokens() -> dict:
     out = {}
     for k, v in toks.items():
         v = v.strip()
-        m = re.fullmatch(r'var\((--vx-[a-z0-9-]+)\)', v)
-        if m:
-            v = toks.get(m.group(1), v).strip()
+        for _ in range(8):
+            m = re.fullmatch(r'var\((--vx-[a-z0-9-]+)\)', v)
+            if not m:
+                break
+            suivant = toks.get(m.group(1))
+            if suivant is None:
+                break
+            suivant = suivant.strip()
+            if suivant == v:          # alias sur lui-même
+                break
+            v = suivant
         out[k] = v
     return out
 
@@ -51,9 +70,12 @@ def _swatch(var: str, label: str = '') -> str:
 _BG = ['--vx-black', '--vx-obsidian-950', '--vx-obsidian-900', '--vx-obsidian-850',
        '--vx-obsidian-800', '--vx-graphite-900', '--vx-graphite-850',
        '--vx-graphite-800', '--vx-graphite-750', '--vx-graphite-700']
-_COPPER = ['--vx-orange-950', '--vx-orange-900', '--vx-orange-850', '--vx-orange-800',
-           '--vx-orange-700', '--vx-orange-600', '--vx-orange-500', '--vx-orange-400',
-           '--vx-copper-dark', '--vx-copper', '--vx-copper-light']
+# La rampe CANONIQUE, sous ses vrais noms. Cette liste montrait jusqu'ici les
+# alias `--vx-orange-*` et `--vx-copper-*` : la page qui existe pour donner la
+# reference du design en donnait quatre generations de noms perimes, tous
+# resolus vers le meme violet. Un nuancier qui nomme mal est pire qu'absent.
+_MARQUE = ['--vx-violet-950', '--vx-violet-900', '--vx-violet-800', '--vx-violet-700',
+           '--vx-violet-600', '--vx-violet-500', '--vx-violet-400', '--vx-violet-300']
 _SEM = ['--vx-positive', '--vx-negative', '--vx-warning', '--vx-option',
         '--vx-amber', '--vx-beige', '--vx-neutral-chart', '--vx-info']
 _TEXT = ['--vx-text-primary', '--vx-text-secondary', '--vx-text-muted',
@@ -84,7 +106,7 @@ _DS_CSS = """
 .ds-elev>div{width:150px;height:78px;background:var(--vx-surface-raised);border:1px solid var(--vx-border-soft);
  border-radius:var(--vx-r);display:grid;place-items:center;font:500 11px/1 var(--vx-font-mono,monospace);color:var(--vx-text-muted)}
 .ds-ring{--v:72;width:96px;height:96px;border-radius:50%;position:relative;display:grid;place-items:center;
- background:conic-gradient(var(--vx-orange-500) calc(var(--v)*1%),var(--vx-graphite-750) 0)}
+ background:conic-gradient(var(--vx-violet-500) calc(var(--v)*1%),var(--vx-graphite-750) 0)}
 .ds-ring::after{content:"";position:absolute;inset:10px;border-radius:50%;background:var(--vx-surface-base)}
 .ds-ring b{position:relative;z-index:1;font:650 22px/1 var(--vx-font);color:var(--vx-text-primary);font-variant-numeric:tabular-nums}
 .ds-gauge{width:170px;height:90px;overflow:hidden;position:relative}
@@ -177,8 +199,8 @@ def _content() -> str:
         '<div style="text-align:center"><div class="ds-ring"><b>72</b></div>'
         '<div class="vx-kpi-label" style="margin-top:6px">Anneau de score</div></div>'
         '<div class="ds-barwrap">'
-        '<div class="ds-barrow"><span>Software</span><span class="ds-bar"><i style="width:82%;background:var(--vx-orange-500)"></i></span><span class="ds-v">82</span></div>'
-        '<div class="ds-barrow"><span>Énergie</span><span class="ds-bar"><i style="width:61%;background:var(--vx-copper-light)"></i></span><span class="ds-v">61</span></div>'
+        '<div class="ds-barrow"><span>Software</span><span class="ds-bar"><i style="width:82%;background:var(--vx-violet-500)"></i></span><span class="ds-v">82</span></div>'
+        '<div class="ds-barrow"><span>Énergie</span><span class="ds-bar"><i style="width:61%;background:var(--vx-violet-500)"></i></span><span class="ds-v">61</span></div>'
         '<div class="ds-barrow"><span>Positif</span><span class="ds-bar"><i style="width:48%;background:var(--vx-positive)"></i></span><span class="ds-v">48</span></div>'
         '<div class="ds-barrow"><span>Risque</span><span class="ds-bar"><i style="width:27%;background:var(--vx-negative)"></i></span><span class="ds-v">27</span></div>'
         '</div></div>')
@@ -234,7 +256,7 @@ def _content() -> str:
     return (_DS_CSS + '<div class="vx-grid vx-page-enter">'
             + intro
             + sec('Palette — noirs & graphites', 'fonds obsidienne', _swatches(_BG))
-            + sec('Palette — rampe de marque (alias historiques)', 'blanc-gris en verre', _swatches(_COPPER))
+            + sec('Palette — rampe de marque violette', 'du plus sombre au plus clair', _swatches(_MARQUE))
             + sec('Palette — sémantiques', 'positif · négatif · warning · options', _swatches(_SEM), span='6')
             + sec('Palette — texte', 'blanc cassé + gris chauds', _swatches(_TEXT), span='6')
             + sec('Typographie', 'hiérarchie', type_rows)

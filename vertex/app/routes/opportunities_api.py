@@ -42,7 +42,7 @@ def opportunities_funnel():
                                             positions=_positions_count()))
     except Exception as e:
         return jsonify({'stages': [], 'roles': [],
-                        'error': '%s: %s' % (type(e).__name__, e)}), 500
+                        'error': 'opportunities_funnel_unavailable'}), 500
 
 
 __all__ = ['bp']

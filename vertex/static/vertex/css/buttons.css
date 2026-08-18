@@ -10,15 +10,16 @@
   font-family:inherit;white-space:nowrap;position:relative;
   transition:background var(--vx-t-fast),border-color var(--vx-t-fast),
     box-shadow var(--vx-t-fast),transform var(--vx-t-fast)}
-.vx-btn:hover{background:var(--vx-surface-hover);text-decoration:none}
-.vx-btn:active{transform:scale(.97)}
-.vx-btn:disabled,.vx-btn[aria-disabled="true"]{opacity:.45;cursor:not-allowed;transform:none}
+.vx-btn:not(:disabled):not([aria-disabled="true"]):hover{background:var(--vx-surface-hover);text-decoration:none}
+.vx-btn:not(:disabled):not([aria-disabled="true"]):active{transform:scale(.97)}
+.vx-btn:disabled,.vx-btn[aria-disabled="true"]{opacity:.45;cursor:not-allowed;transform:none;pointer-events:none}
 .vx-btn svg{width:16px;height:16px;stroke:currentColor;flex:none}
 
-/* Primary — bouton de marque (orange, dégradé très léger) */
+/* Primary — cuivre réservé à l'action prioritaire */
 .vx-btn-primary{background:var(--vx-brand-gradient);border-color:transparent;
-  color:#f7efe7}
-.vx-btn-primary:hover{background:var(--vx-brand-hover);box-shadow:var(--vx-glow-brand)}
+  color:var(--vx-brand-ink)}
+.vx-btn-primary:not(:disabled):not([aria-disabled="true"]):hover{
+  background:var(--vx-brand-hover);box-shadow:0 6px 18px rgba(0,0,0,.28)}
 
 /* Secondary — contour marqué, fond neutre */
 .vx-btn-secondary{background:var(--vx-surface-1);border-color:var(--vx-border-strong)}
@@ -36,11 +37,11 @@
 
 /* Sémantiques */
 .vx-btn-danger{background:var(--vx-negative-soft);color:var(--vx-negative);
-  border-color:rgba(237,101,92,.32)}
-.vx-btn-danger:hover{background:rgba(237,101,92,.22)}
+  border-color:color-mix(in srgb,var(--vx-negative) 32%,transparent)}
+.vx-btn-danger:not(:disabled):hover{background:color-mix(in srgb,var(--vx-negative) 22%,transparent)}
 .vx-btn-success{background:var(--vx-positive-soft);color:var(--vx-positive);
-  border-color:rgba(54,200,137,.32)}
-.vx-btn-success:hover{background:rgba(54,200,137,.2)}
+  border-color:color-mix(in srgb,var(--vx-positive) 32%,transparent)}
+.vx-btn-success:not(:disabled):hover{background:color-mix(in srgb,var(--vx-positive) 20%,transparent)}
 
 /* Tailles & formes */
 .vx-btn-sm{padding:4px 10px;min-height:26px;font-size:12px}
@@ -64,10 +65,10 @@
 .vx-btn[data-state="loading"]::after{content:"";position:absolute;width:14px;height:14px;
   border:2px solid rgba(255,255,255,.25);border-top-color:var(--vx-brand);
   border-radius:99px;animation:vx-spin .7s linear infinite}
-.vx-btn-primary[data-state="loading"]::after{border-color:rgba(247,239,231,.3);
-  border-top-color:#f7efe7}
-.vx-btn[data-state="success"]{border-color:rgba(54,200,137,.5);color:var(--vx-positive)}
-.vx-btn[data-state="error"]{border-color:rgba(237,101,92,.5);color:var(--vx-negative)}
+.vx-btn-primary[data-state="loading"]::after{border-color:rgba(19,11,7,.28);
+  border-top-color:var(--vx-brand-ink)}
+.vx-btn[data-state="success"]{border-color:color-mix(in srgb,var(--vx-positive) 50%,transparent);color:var(--vx-positive)}
+.vx-btn[data-state="error"]{border-color:color-mix(in srgb,var(--vx-negative) 50%,transparent);color:var(--vx-negative)}
 @keyframes vx-spin{to{transform:rotate(360deg)}}
 
 /* ── Retour tactile au clic (craft motion) — tous les contrôles réagissent ── */
