@@ -26,6 +26,17 @@ def test_volatility_ignores_strings_and_zero_iv():
         'IV textuelle ou nulle = indisponible — jamais convertie en silence')
 
 
+def test_volatility_excludes_missing_invalid_and_boolean_iv_with_coverage():
+    score, note = env._score_volatility([{'iv': 20.0}, {'iv': None}, {'iv': True}, {'iv': 0}])
+    assert score == 100.0 and 'IV médiane 20 %' in note
+    r = env.score_environment([{'iv': 20.0}, {'iv': None}, {'iv': True}, {'iv': 0}])
+    volatility = next(d for d in r['dimensions'] if d['key'] == 'volatility')
+    assert volatility['coverage'] == {
+        'contracts_total': 4, 'iv_observed': 1, 'iv_missing': 1, 'iv_invalid': 2,
+        'status': 'IV_SAMPLE_AVAILABLE', 'read_only': True,
+    }
+
+
 def test_ivrank_inverted_and_clamped():
     assert env._score_ivrank(0)[0] == 100.0    # primes bradées
     assert env._score_ivrank(100)[0] == 0.0
