@@ -918,6 +918,56 @@ async function loadAnomalies(){
     else host.innerHTML='<div class="vx-empty">Builder indisponible.</div>';
   }catch(e){host.innerHTML='<div class="vx-error-banner">Scanner injoignable : '+esc(e.message)+'</div>';}
 }
+/* CONTEXTES DE DECISION — trois moteurs qui etaient CALCULES, SERIALISES,
+   ENVOYES et JAMAIS PEINTS (lot 49). Ils arrivent deja dans `/api/skyler/<sym>`,
+   sous `decision.regime_break`, `.sector_coherence` et `.instrument_profile` :
+   aucun appel de plus n'est necessaire, il suffisait de les lire.
+
+   Les trois portent leur propre etat honnete (`available:false` + `reason`,
+   `classification:'UNCLASSIFIED'`), donc on les rend TELS QU'ILS SE DISENT :
+   la valeur quand elle existe, la raison quand elle n'existe pas. Aucun chiffre
+   n'est fabrique pour remplir la ligne.
+
+   Ils sont DESCRIPTIFS : les moteurs eux-memes portent
+   `does_not_change_decision: true` et « ne modifie ni le score ni le verdict ».
+   La presentation le dit, pour qu'on ne les lise pas comme un second verdict. */
+function ligneContexte(titre, corps, dispo){
+  return '<div class="vx-kv"><span class="k">'+titre+'</span>'
+    +'<span class="v '+(dispo?'':'vx-muted')+'">'+corps+'</span></div>';
+}
+function contextes(d){
+  const rb=d.regime_break||{}, sc=d.sector_coherence||{}, ip=d.instrument_profile||{};
+  const lignes=[];
+  if(rb.available){
+    const f=(rb.flags||[]).length?' · '+esc((rb.flags||[]).join(', ')):'';
+    lignes.push(ligneContexte('Rupture de régime',
+      'volatilité ×'+VX.fmt.num(rb.volatility_ratio,2)
+      +' · décalage '+VX.fmt.num(rb.mean_shift_z,2)+' σ'
+      +' · '+rb.n_observations+' séances'+f, true));
+  }else if(rb.reason){
+    lignes.push(ligneContexte('Rupture de régime', esc(rb.reason), false));
+  }
+  if(sc.available){
+    lignes.push(ligneContexte('Cohérence sectorielle',
+      esc(sc.sector||'—')+' · écart au secteur '
+      +(sc.instrument_score_minus_sector_avg>0?'+':'')
+      +VX.fmt.num(sc.instrument_score_minus_sector_avg,1)
+      +(sc.instrument_rank_in_sector?' · rang '+sc.instrument_rank_in_sector
+        +'/'+(sc.members_count||'—'):''), true));
+  }else if(sc.reason){
+    lignes.push(ligneContexte('Cohérence sectorielle', esc(sc.reason), false));
+  }
+  if(ip.classification&&ip.classification!=='UNCLASSIFIED'){
+    lignes.push(ligneContexte('Profil d’instrument',
+      esc(ip.classification)+(ip.asset_class?' · '+esc(ip.asset_class):''), true));
+  }else if(ip.classification_source){
+    lignes.push(ligneContexte('Profil d’instrument',
+      'non classé ('+esc(ip.classification_source)+')', false));
+  }
+  if(!lignes.length)return '';
+  return '<div class="vx-mt2"><div class="vx-kpi-label">Contexte — descriptif, '
+    +'ne modifie ni le score ni le verdict</div>'+lignes.join('')+'</div>';
+}
 /* Skyler — décision canonique : score /40 par blocs, hard gates, scénarios. */
 async function loadSkyler(){
   const host=$('an-skyler');if(!host)return;
@@ -953,7 +1003,8 @@ async function loadSkyler(){
       +(d.invalidation!=null?'Invalidation : '+VX.fmt.num(d.invalidation,2)+' · ':'')
       +(d.max_risk_pct!=null?'Risque max : '+d.max_risk_pct+' % · ':'')
       +(unknown?unknown+' porte(s) non évaluable(s) · ':'')
-      +'Objection : '+esc(d.strongest_objection||'—')+'</div>';
+      +'Objection : '+esc(d.strongest_objection||'—')+'</div>'
+      +contextes(d);
   }catch(e){host.innerHTML='<div class="vx-error-banner">Skyler injoignable : '+esc(e.message)+'</div>';}
 }
 /* Laboratoire d'évidence (X2) : stats ex post réelles après les spikes passés. */
