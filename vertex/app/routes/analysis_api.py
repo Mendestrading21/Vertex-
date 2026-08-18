@@ -175,6 +175,8 @@ def api_skyler(sym):
     call_put_structure = _callput.build(scan_state.get('options_board') or [], sym=sym)
     from vertex.engines import iv_term_structure as _ivterm
     iv_term_structure = _ivterm.build(scan_state.get('options_board') or [], sym=sym)
+    from vertex.engines import relative_volume_context as _rvctx
+    relative_volume = _rvctx.build(detail)
     from vertex.engines import fundamental_context as _fctx
     fundamentals_ctx = _fctx.build(sym, scan_state.get('fundamentals') or {})
     from vertex.engines import decision_evidence as _evidence
@@ -207,7 +209,7 @@ def api_skyler(sym):
                                earnings_option_overlap_ctx=earnings_option_overlap,
                                earnings_holding_overlap_ctx=earnings_holding_overlap,
                                iv_skew_ctx=iv_skew, call_put_structure_ctx=call_put_structure,
-                               iv_term_structure_ctx=iv_term_structure)
+                               iv_term_structure_ctx=iv_term_structure, relative_volume_ctx=relative_volume)
     rt_review = _rt.review(packet0, _sk.score40(packet0))
     rt_input = {'complete': rt_review['complete'], 'basis': rt_review['basis']}
     # Calibration RÉELLE (LOT 19/22) : facteur depuis les résultats mesurés de
