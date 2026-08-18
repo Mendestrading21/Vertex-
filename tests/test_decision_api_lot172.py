@@ -43,6 +43,27 @@ def test_symbole_inconnu_hold_et_sous_jacent_honnete(client):
     assert r['verdict'] == 'HOLD' and r['confidence'] == 60
     assert r['underlying'] == {'decision': 'DATA_INSUFFICIENT',
                                'label': 'Données insuffisantes', 'tone': 'gray'}
+    assert r['underlying_availability']['available'] is True
+    assert r['underlying_availability']['status'] == 'UNDERLYING_ANALYSIS_AVAILABLE'
+
+
+def test_repli_sous_jacent_expose_sans_modifier_recommandation(client, monkeypatch):
+    from vertex.app.routes import decision_api
+
+    def _unavailable(*args, **kwargs):
+        raise RuntimeError('interne')
+
+    monkeypatch.setattr(decision_api._decision, 'evaluate', _unavailable)
+    r = client.get('/api/position-decision/TSTQ').get_json()
+    assert r['verdict'] == 'HOLD'
+    assert r['underlying'] is None
+    assert r['underlying_availability'] == {
+        'available': False,
+        'status': 'UNDERLYING_ANALYSIS_UNAVAILABLE',
+        'reason': 'analyse sous-jacente indisponible ; décision de position calculée sans ce contexte',
+        'read_only': True,
+        'does_not_change_recommendation': True,
+    }
 
 
 def test_stop_touche_via_query_params(client):
