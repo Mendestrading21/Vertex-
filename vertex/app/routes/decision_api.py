@@ -124,6 +124,15 @@ def make_blueprint(*, scan_state, demo_mode):
         reco['underlying'] = {'decision': (underlying or {}).get('final_decision'),
                               'label': (underlying or {}).get('decision_label'),
                               'tone': (underlying or {}).get('decision_tone')} if underlying else None
+        reco['underlying_availability'] = {
+            'available': underlying is not None,
+            'status': 'UNDERLYING_ANALYSIS_AVAILABLE' if underlying is not None
+            else 'UNDERLYING_ANALYSIS_UNAVAILABLE',
+            'reason': None if underlying is not None
+            else 'analyse sous-jacente indisponible ; décision de position calculée sans ce contexte',
+            'read_only': True,
+            'does_not_change_recommendation': True,
+        }
         return jsonify(reco)
 
     @bp.route('/api/options-for/<sym>')
