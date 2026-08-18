@@ -72,6 +72,14 @@ def build_surface(symbol: str, spot: float, contracts: list[dict],
         return surf
 
     per_expiry: dict[str, dict] = {}
+
+    def valid_dte(value):
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            return None
+        return int(numeric) if numeric >= 0 and numeric.is_integer() else None
+
     for c in contracts or []:
         iv = c.get('iv')
         if iv is None or iv <= 0 or iv > 5:
@@ -79,8 +87,11 @@ def build_surface(symbol: str, spot: float, contracts: list[dict],
         exp = c.get('expiry')
         if not exp:
             continue
-        slot = per_expiry.setdefault(exp, {'dte': c.get('dte'), 'ivs': [],
+        slot = per_expiry.setdefault(exp, {'dtes': set(), 'ivs': [],
                                            'strikes': {}, 'calls': {}, 'puts': {}})
+        dte = valid_dte(c.get('dte'))
+        if dte is not None:
+            slot['dtes'].add(dte)
         slot['ivs'].append((abs(c.get('strike', 0) - spot), float(iv)))
         slot['strikes'][float(c['strike'])] = float(iv)
         side = 'calls' if c.get('right') == 'C' else 'puts'
@@ -89,14 +100,16 @@ def build_surface(symbol: str, spot: float, contracts: list[dict],
     for exp, slot in sorted(per_expiry.items()):
         if not slot['ivs']:
             continue
+        if len(slot['dtes']) != 1:
+            surf.notes.append(f'{exp}: DTE indisponible ou contradictoire — expiration exclue de la surface')
+            continue
         atm_iv = min(slot['ivs'])[1]  # IV du strike le plus proche du spot
-        dte = slot['dte'] or 0
+        dte = next(iter(slot['dtes']))
         surf.by_expiry[exp] = {'dte': dte, 'atm_iv': round(atm_iv, 4),
                                'strikes': {k: round(v, 4) for k, v in sorted(slot['strikes'].items())}}
-        if dte:
-            surf.term_structure.append((int(dte), round(atm_iv, 4)))
-            em = atm_iv * math.sqrt(max(dte, 1) / 365.0) * 100
-            surf.expected_moves[exp] = round(em, 2)
+        surf.term_structure.append((dte, round(atm_iv, 4)))
+        em = atm_iv * math.sqrt(max(dte, 1) / 365.0) * 100
+        surf.expected_moves[exp] = round(em, 2)
         # Skew : IV du put ~10 % OTM vs ATM (proxy 25-delta sans Greeks)
         put_strike_target = spot * 0.90
         puts = slot['puts']
