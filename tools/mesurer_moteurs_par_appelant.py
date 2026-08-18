@@ -208,7 +208,60 @@ def _cle_recevante(arbre, appel):
         if isinstance(cible, ast.Tuple):
             noms = [getattr(e, 'id', '?') for e in cible.elts]
             return ('variables', ', '.join(noms), noms[0] if noms else '')
+
+    #  L'APPEL QUI N'EST AFFECTÉ À RIEN — quatorze moteurs sur vingt-sept.
+    #  Ils ne sont pas insaisissables : leur résultat est consommé SUR PLACE,
+    #  et l'endroit où il l'est dit la clé. Deux formes, les mêmes que pour une
+    #  variable, appliquées cette fois au nœud d'appel lui-même :
+    #    return jsonify(moteur.build(...))        → corps entier
+    #    return jsonify({'risque': moteur.f(...)}) → clé `risque`
+    #  Sans cela je rangeais « indéterminé » ce que l'arbre disait tout haut.
+    for noeud in ast.walk(arbre):
+        if isinstance(noeud, ast.Dict):
+            for cle, val in zip(noeud.keys, noeud.values):
+                if (val is appel and isinstance(cle, ast.Constant)
+                        and isinstance(cle.value, str)):
+                    return ('cle', cle.value, cle.value)
+        elif (isinstance(noeud, ast.Call)
+                and getattr(noeud.func, 'id', '') == 'jsonify'
+                and noeud.args and noeud.args[0] is appel):
+            return ('corps', 'corps entier', '')
     return (None, '', '')
+
+
+def _suite_de_la_variable(arbre, fonction, variable):
+    """UN SAUT DE PLUS, ET IL LÈVE LA MOITIÉ DU BROUILLARD.
+
+    Quand l'appel est reçu par une variable intermédiaire, l'outil rendait
+    « indéterminé » — trente moteurs y stagnaient. Mesuré, cette variable suit
+    presque toujours l'un de deux chemins, tous deux structurels :
+
+    - elle est passée en **argument nommé** à un constructeur :
+      `_sk.build_packet(..., events=ev, ...)` → la clé publiée est `events` ;
+    - elle est posée dans un **littéral de dictionnaire** :
+      `{'paths': paths, ...}` → la clé est `paths`.
+
+    On rend les noms candidats. On ne conclut pas : ils sont ensuite confrontés
+    au produit vivant, qui seul décide. Un saut, borné — pas un suivi de flux
+    complet, qui finirait par tout relier à tout et ne prouverait rien.
+    """
+    candidats = []
+    for noeud in ast.walk(arbre):
+        if not isinstance(noeud, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        if noeud.name != fonction:
+            continue
+        for n in ast.walk(noeud):
+            if isinstance(n, ast.Call):
+                for kw in (n.keywords or []):
+                    if kw.arg and getattr(kw.value, 'id', None) == variable:
+                        candidats.append(kw.arg)
+            elif isinstance(n, ast.Dict):
+                for cle, val in zip(n.keys, n.values):
+                    if (isinstance(cle, ast.Constant) and isinstance(cle.value, str)
+                            and getattr(val, 'id', None) == variable):
+                        candidats.append(cle.value)
+    return candidats
 
 
 def _sert_le_corps(arbre, fonction, variable):
@@ -270,12 +323,16 @@ def relever():
                 continue
             fonction = _fonction_englobante(arbre, noeud.lineno)
             genre, etiquette, variable = _cle_recevante(arbre, noeud)
-            corps_entier = (genre == 'variable'
-                            and _sert_le_corps(arbre, fonction, variable))
+            corps_entier = (genre == 'corps'
+                            or (genre == 'variable'
+                                and _sert_le_corps(arbre, fonction, variable)))
             trace[moteur].append({
                 'fichier': f.name, 'fonction': fonction,
                 'route': routes.get(fonction), 'genre': genre,
                 'etiquette': etiquette, 'corps_entier': corps_entier,
+                #  Un saut de plus quand la variable poursuit son chemin.
+                'suite': (_suite_de_la_variable(arbre, fonction, variable)
+                          if genre == 'variable' else []),
             })
     return connus, trace
 
@@ -359,14 +416,49 @@ def main(argv=None):
     #  … et ce que l'écran lit EN BLOC. Mesuré sur le produit vivant : les clés
     #  réellement publiées dans `packet.contexts`, que le bloc du lot 51 rend
     #  génériquement. Une clé membre de ce conteneur est peinte sans être nommée.
-    generiques, dans_decision = set(), set()
     conteneur_lu = 'packet.contexts' in _source_ecran()
+
+    #  RÉSOUDRE CHAQUE MOTEUR CONTRE SA PROPRE ROUTE, et non contre une seule.
+    #  Deux angles morts mesurés en une fois : `build_packet(events=ev)` publie
+    #  `packet.events` — pas `packet.contexts.events`, que seul je regardais —
+    #  et `knowledge_graph` sort sur `/api/skyler/graph/<sym>`, une route que
+    #  `/api/skyler/ACN` ne pouvait évidemment pas contenir. Interroger la route
+    #  du moteur est la seule facon de ne pas rejouer ce genre de faute.
+    _vues = {}
+
+    def cles_de(route):
+        if not route or '<' not in route and not route.startswith('/api'):
+            return set()
+        chemin = route.replace('<sym>', 'ACN').replace('<symbol>', 'ACN')
+        if '<' in chemin:
+            return set()                       # parametre non substituable
+        if chemin in _vues:
+            return _vues[chemin]
+        cles = set()
+        corps = _corps(base, chemin)
+        if corps:
+            try:
+                rep = json.loads(corps)
+                if isinstance(rep, dict):
+                    cles |= set(rep)
+                    paquet = rep.get('packet')
+                    if isinstance(paquet, dict):
+                        cles |= set(paquet)
+                        if isinstance(paquet.get('contexts'), dict):
+                            cles |= set(paquet['contexts'])
+                    if isinstance(rep.get('decision'), dict):
+                        cles |= set(rep['decision'])
+            except ValueError:
+                pass
+        _vues[chemin] = cles
+        return cles
+
+    generiques = set()
     corps = _corps(base, '/api/skyler/ACN')
     if corps:
         try:
-            rep = json.loads(corps)
-            generiques = set(((rep.get('packet') or {}).get('contexts') or {}))
-            dans_decision = set(rep.get('decision') or {})
+            generiques = set(((json.loads(corps).get('packet') or {})
+                              .get('contexts') or {}))
         except ValueError:
             pass
     if not generiques:
@@ -406,17 +498,18 @@ def main(argv=None):
             #  candidats sont le nom de la variable qui reçoit et le nom du
             #  module débarrassé de son suffixe `_context` — deux conventions
             #  observées, jamais supposées.
-            candidats = [c for c in (u['etiquette'], nom,
-                                     nom[:-8] if nom.endswith('_context') else '')
+            candidats = [c for c in (list(u.get('suite') or [])
+                                     + [u['etiquette'], nom,
+                                        nom[:-8] if nom.endswith('_context') else ''])
                          if c and ',' not in c and c != '—']
-            trouve = next((c for c in candidats
-                           if c in generiques or c in dans_decision), None)
+            servies = cles_de(u['route'])
+            trouve = next((c for c in candidats if c in servies), None)
             if trouve is None:
                 flous.append((nom, route, u['etiquette'] or '—'))
                 continue
             cle = trouve
             u = dict(u, etiquette=('packet.contexts.%s' % trouve
-                                   if trouve in generiques else 'decision.%s' % trouve))
+                                   if trouve in generiques else trouve))
         else:
             cle = u['etiquette'].split('.')[-1]
         ligne = (nom, route, u['etiquette'])
