@@ -95,6 +95,17 @@ leur nom de module — et sont peints depuis le lot 51 par le bloc générique :
 `opportunity_reliability`) sortent dans `decision` et sont peints depuis le
 lot 50.
 
+> ⚠ **CORRIGÉ AU LOT 54 — « restent cinq » est faux : il n'en reste AUCUN
+> d'enfermé.** Le tableau ci-dessous est exact sur les emplacements et faux sur
+> le verdict. Ma sonde cherchait le **nom du module** dans les corps de réponse ;
+> or `decision_readiness` publie sous `decision.readiness`,
+> `walk_forward_validation` et `option_cohort` servent des corps entiers qui ne
+> se nomment jamais, `historical_stress` sort en `stress_test`, et
+> `decision_evidence` alimente `contexts.data_quality`. Les cinq atteignent une
+> route servie. **Cinquième fois** qu'une hypothèse de nommage me trompe dans
+> cette série, et cette fois elle était dans la *méthode* de la sonde, pas dans
+> une liste. Inventaire corrigé et figé : `SIGNAL-OS-54-PREPARATION.md` §1.
+
 **Restent cinq**, et leur emplacement dit pourquoi :
 
 | moteur | fichier | ce que l'emplacement implique |

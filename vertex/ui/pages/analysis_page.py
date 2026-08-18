@@ -1013,6 +1013,48 @@ function fiabilite(d){
   return '<div class="vx-mt2"><div class="vx-kpi-label">Fiabilité — explique le '
     +'verdict, ne le remplace pas</div>'+bl.join('')+'</div>';
 }
+/* PREPARATION DU DOSSIER (lot 54) — `decision.readiness`.
+
+   Encore un moteur CALCULE, SERIALISE, ENVOYE et jamais peint. Celui-la etait
+   classe « enferme » dans mon inventaire du lot 52 : faux, et pour la CINQUIEME
+   fois de la meme famille. Mon balayage cherchait le NOM DU MODULE dans les
+   corps de reponse ; `decision_readiness` publie sous `decision.readiness`, et
+   `walk_forward_validation` sert un corps entier qui ne se nomme jamais. Une
+   sonde qui cherche des noms de fichiers dans du JSON mesure ma convention de
+   nommage, pas le produit.
+
+   Ce qu'il apporte est le complement exact du lot 50. `opportunity_attribution`
+   dit CE QUI MANQUE au score ; `readiness` dit QUOI FAIRE, dans l'ordre, pour
+   que le dossier devienne decidable — et pourquoi il ne l'est pas encore.
+
+   READONLY — le mot « actions » du moteur designe des actions ANALYTIQUES
+   (collecter un contexte, evaluer une regle). Le moteur porte lui-meme
+   `read_only: true` et « ne constitue jamais une instruction d'execution ».
+   La presentation le dit en toutes lettres : rien ici ne se lit comme un ordre. */
+const PREP={BLOCKED_BY_GATE:['bloqué par une règle','vx-neg'],
+  EVIDENCE_REQUIRED:['preuves à collecter','vx-warn'],
+  SCORE_INCOMPLETE:['score incomplet','vx-warn'],
+  ANALYTICAL_REVIEW_READY:['prêt pour revue analytique','vx-pos']};
+function preparation(d){
+  const r=d.readiness;
+  if(!r||typeof r!=='object'||!r.status)return '';
+  const p=PREP[r.status]||[String(r.status).toLowerCase(),''];
+  const bl=['<div class="vx-kv"><span class="k">État du dossier</span>'
+    +'<span class="v '+p[1]+'">'+esc(p[0])+'</span></div>'];
+  const actes=Array.isArray(r.actions)?r.actions:[];
+  if(actes.length){
+    /* On borne et on DIT le reste : une liste tronquee en silence ferait croire
+       le dossier plus proche d'etre complet qu'il ne l'est. */
+    const vus=actes.slice(0,5).map(a=>'<div class="vx-kv"><span class="k">'
+      +esc(a.label||a.kind||'—')+'</span><span class="v vx-muted">'
+      +esc(a.reason||'—')+'</span></div>').join('');
+    bl.push('<div class="vx-meta" style="margin:.35rem 0 .15rem">Pour rendre le '
+      +'dossier décidable — '+actes.length+' point(s) d’analyse'
+      +(actes.length>5?' · 5 affichés':'')+'</div>'+vus);
+  }
+  return '<div class="vx-mt2"><div class="vx-kpi-label">Préparation — diagnostic '
+    +'analytique, jamais une instruction d’exécution</div>'+bl.join('')+'</div>';
+}
 /* LES VINGT-ET-UN CONTEXTES DU DOSSIER (lot 51).
 
    Ils arrivaient tous dans `packet.contexts` de `/api/skyler/<sym>` et AUCUN
@@ -1103,7 +1145,7 @@ async function loadSkyler(){
       +(d.max_risk_pct!=null?'Risque max : '+d.max_risk_pct+' % · ':'')
       +(unknown?unknown+' porte(s) non évaluable(s) · ':'')
       +'Objection : '+esc(d.strongest_objection||'—')+'</div>'
-      +contextes(d)+fiabilite(d)+contextesDossier(r);
+      +contextes(d)+fiabilite(d)+preparation(d)+contextesDossier(r);
   }catch(e){host.innerHTML='<div class="vx-error-banner">Skyler injoignable : '+esc(e.message)+'</div>';}
 }
 /* Laboratoire d'évidence (X2) : stats ex post réelles après les spikes passés. */

@@ -89,6 +89,8 @@ BLOCS = (
      ('Fiabilité des preuves', 'Ce qui manque au score', 'Garde-fou multi-actifs')),
     ('contextes du dossier (lot 51)', 'Contextes du dossier',
      ('Technique', 'Catalyseurs', 'Marché')),
+    ('préparation (lot 54)', 'jamais une instruction d’exécution',
+     ('État du dossier', 'Pour rendre le dossier décidable')),
 )
 
 #  Isole le sous-arbre de chaque bloc à partir de son ancre. On rend son
@@ -290,7 +292,8 @@ def main(argv=None):
         print('\nUne disclosure du chemin n\'a pas pu etre ouverte : le contenu '
               'qu\'elle porte n\'est pas mesure.')
         return 1
-    print('\nLES TROIS BLOCS SONT PEINTS. La reserve du SIGNAL-OS-49 §5.2 est payee.')
+    print('\nLES %d BLOCS SONT PEINTS. La reserve du SIGNAL-OS-49 §5.2 est payee.'
+          % len(BLOCS))
     return 0 if not erreurs else 1
 
 
