@@ -19,6 +19,23 @@ from vertex.app import input_validation as _input
 
 bp = Blueprint('analysis_api', __name__)
 
+_PUBLIC_SOURCE_STATES = {'AVAILABLE', 'DEGRADED', 'UNAVAILABLE', 'NOT_COLLECTED', 'UNKNOWN'}
+_PUBLIC_SOURCE_KEYS = ('scan', 'market', 'options', 'fundamentals')
+
+
+def _source_health_summary(raw):
+    """Réduit l'état de sources à des statuts non sensibles et bornés."""
+    raw = raw if isinstance(raw, dict) else {}
+    sources = {}
+    for key in _PUBLIC_SOURCE_KEYS:
+        state = str(raw.get(key) or 'UNKNOWN').upper()
+        sources[key] = state if state in _PUBLIC_SOURCE_STATES else 'UNKNOWN'
+    counts = {state: sum(1 for value in sources.values() if value == state)
+              for state in sorted(_PUBLIC_SOURCE_STATES)}
+    return {'available': bool(raw), 'sources': sources, 'counts': counts,
+            'read_only': True,
+            'note': 'statuts agrégés non sensibles ; aucun détail de fournisseur ni de demandeur'}
+
 
 @bp.route('/api/vertex/<sym>')
 def api_vertex(sym):
@@ -364,7 +381,8 @@ def api_skyler_health():
     from vertex.services import persist as _persist
     from vertex.services import request_metrics as _metrics
     return jsonify({'read_only': True, 'persistence': _persist.health(),
-                    'request_metrics': _metrics.summary()})
+                    'request_metrics': _metrics.summary(),
+                    'source_health': _source_health_summary(scan_state.get('source_health'))})
 
 
 @bp.route('/api/skyler/memory')
