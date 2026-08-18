@@ -73,10 +73,25 @@ def simulate(contract: dict, setup, rate_curve: RateCurve | None = None,
     spot = float(setup.spot)
     strike = float(contract['strike'])
     right = contract.get('right', 'C')
-    dte = int(contract.get('dte') or 0)
     mid = contract.get('mid')
     iv = contract.get('iv')
     rate_curve = rate_curve or RateCurve()
+    try:
+        raw_dte = float(contract.get('dte'))
+        dte = int(raw_dte) if raw_dte >= 0 and raw_dte.is_integer() else None
+    except (TypeError, ValueError):
+        dte = None
+    if dte is None:
+        return {'current': {}, 'at_stop': None, 'at_tp1': None, 'at_tp2': None,
+                'at_tp3': None, 'time_decay': [], 'iv_sensitivity': [],
+                'worst_planned_loss_pct': None, 'base_expected_gain_pct': None,
+                'extended_gain_pct': None, 'reward_risk': None,
+                'model_source': GREEKS_MODEL, 'rate': None,
+                'input_coverage': {'dte_available': False,
+                                   'status': 'DTE_UNAVAILABLE',
+                                   'read_only': True},
+                'limitations': list(LIMITATIONS) + [
+                    'DTE indisponible ou invalide — simulation refusée (aucune échéance inventée)']}
     rate_q = rate_curve.rate_for_tenor(max(dte, 1))
     rate = rate_q.rate
     q = float(setup.dividend_yield or 0.0)
@@ -86,7 +101,11 @@ def simulate(contract: dict, setup, rate_curve: RateCurve | None = None,
               'worst_planned_loss_pct': None, 'base_expected_gain_pct': None,
               'extended_gain_pct': None, 'reward_risk': None,
               'model_source': GREEKS_MODEL,
-              'rate': rate_q.to_dict(), 'limitations': list(LIMITATIONS)}
+              'rate': rate_q.to_dict(),
+              'input_coverage': {'dte_available': True,
+                                 'status': 'DTE_REPORTED',
+                                 'read_only': True},
+              'limitations': list(LIMITATIONS)}
     if not mid or mid <= 0 or dte <= 0 or spot <= 0:
         result['limitations'].append('données de contrat insuffisantes — simulation refusée '
                                      '(pas de chiffre inventé)')
