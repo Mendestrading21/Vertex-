@@ -137,6 +137,8 @@ def api_skyler(sym):
     benchmark_detail = (scan_state.get('detail') or {}).get('SPY') or {}
     from vertex.engines import relative_strength_context as _rsctx
     relative_strength = _rsctx.build(detail.get('series') or {}, benchmark_detail.get('series') or {})
+    from vertex.engines import gap_risk_context as _grctx
+    gap_risk = _grctx.build(detail)
     ano = _anctx.build(sym, detail, benchmark_detail=benchmark_detail) if closes else None
     market = _mcx.build(scan_state, demo=_demo)
     earnings = []
@@ -188,7 +190,7 @@ def api_skyler(sym):
                                data_quality_ctx=dqctx, reconciliation_ctx=recctx,
                                fundamental_ctx=fundamentals_ctx, drawdown_ctx=drawdown,
                                downside_volatility_ctx=downside_volatility,
-                               relative_strength_ctx=relative_strength)
+                               relative_strength_ctx=relative_strength, gap_risk_ctx=gap_risk)
     rt_review = _rt.review(packet0, _sk.score40(packet0))
     rt_input = {'complete': rt_review['complete'], 'basis': rt_review['basis']}
     # Calibration RÉELLE (LOT 19/22) : facteur depuis les résultats mesurés de
