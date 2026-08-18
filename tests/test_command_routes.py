@@ -106,7 +106,7 @@ def test_portefeuille_engine_error_is_reported(client, monkeypatch):
         raise ValueError('cassé')
     monkeypatch.setattr(command.strategy, 'build_portfolio', boom)
     j = client.get('/api/portefeuille').get_json()
-    assert j['error'] == 'ValueError: cassé'
+    assert j['error'] == 'portfolio_analysis_unavailable'
 
 
 # ─── Intégration monolithe ───

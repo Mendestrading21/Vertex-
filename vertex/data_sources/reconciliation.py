@@ -32,6 +32,7 @@ class Inconsistency:
 class ReconciliationReport:
     symbol: str
     inconsistencies: list = field(default_factory=list)
+    coverage: dict = field(default_factory=dict)
 
     @property
     def blocking(self) -> bool:
@@ -49,10 +50,15 @@ class ReconciliationReport:
     def add(self, code: str, severity: int, detail: str, **observed) -> None:
         self.inconsistencies.append(Inconsistency(code, severity, detail, observed))
 
+    def set_coverage(self, **coverage) -> None:
+        """Conserve les preuves disponibles sans créer de comparaison manquante."""
+        self.coverage = dict(coverage)
+
     def to_dict(self) -> dict:
         return {'symbol': self.symbol, 'blocking': self.blocking,
                 'actionable_allowed': self.actionable_allowed,
                 'max_decision': self.max_decision,
+                'coverage': dict(self.coverage),
                 'inconsistencies': [i.to_dict() for i in self.inconsistencies]}
 
 

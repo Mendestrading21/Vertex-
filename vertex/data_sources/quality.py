@@ -42,9 +42,29 @@ def grade_packet(packet: AnalyticsPacket) -> dict:
             warnings.append(f'{kind}: fallback utilisé ({src.get("source", "?")})')
     overall = worst(*critical)
     actionable_allowed = overall in (QUALITY_FRESH, QUALITY_RECENT)
+    source_qualities = {
+        kind: (src or {}).get('quality', QUALITY_MISSING)
+        for kind, src in packet.sources.items()
+    }
+    missing_sources = [kind for kind, quality in source_qualities.items()
+                       if quality == QUALITY_MISSING]
+    fallback_sources = [kind for kind, src in packet.sources.items()
+                        if (src or {}).get('fallback_used')]
+    available_sources = len(source_qualities) - len(missing_sources)
     packet.quality = {
         'overall': overall,
         'warnings': warnings,
         'actionable_allowed': actionable_allowed,
+        'coverage': {
+            'available_sources': available_sources,
+            'total_sources': len(source_qualities),
+            'missing_sources': missing_sources,
+            'fallback_sources': fallback_sources,
+            'coverage_pct': round(100 * available_sources / len(source_qualities), 1)
+            if source_qualities else 0.0,
+            'qualities': source_qualities,
+            'read_only': True,
+            'note': 'source absente ou de repli reste explicitement qualifiée',
+        },
     }
     return packet.quality

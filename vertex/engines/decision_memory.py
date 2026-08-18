@@ -53,6 +53,54 @@ def _num(x):
     return None
 
 
+def option_dte_bucket(dte):
+    """Bucket de DTE stable pour l’observation, jamais une règle de sélection."""
+    value = _num(dte)
+    if value is None or value < 0:
+        return None
+    if value < 75:
+        return 'UNDER_75'
+    if value < 105:
+        return '75_104'
+    if value < 135:
+        return '105_134'
+    if value < 165:
+        return '135_164'
+    if value < 181:
+        return '165_180'
+    if value <= 210:
+        return '181_210'
+    return 'OVER_210'
+
+
+def _option_context(packet):
+    """Fige uniquement le contexte options déjà présent dans le packet."""
+    ctx = ((packet or {}).get('contexts') or {}).get('options') or {}
+    if not ctx.get('available'):
+        return {'available': False,
+                'reason': ctx.get('reason') or 'contexte options non fourni à la décision'}
+    best = ctx.get('best') or {}
+    mandate = best.get('mandate') or {}
+    bounds = mandate.get('bounds') or {}
+    dte = _num(best.get('dte'))
+    return {
+        'available': bool(best),
+        'universe': ctx.get('universe'),
+        'dte': dte,
+        'dte_bucket': option_dte_bucket(dte),
+        'delta': _num(best.get('delta')),
+        'iv': _num(best.get('iv')),
+        'open_interest': _num(best.get('oi')),
+        'volume': _num(best.get('volume')),
+        'spread_pct': _num(best.get('spread_pct')),
+        'quote_age_seconds': _num(best.get('quote_age_seconds')),
+        'mandate_status': ctx.get('mandate_status') or best.get('mandate_status'),
+        'holding_plan_sessions': list(bounds.get('holding_plan_sessions') or []),
+        'instrument_pnl_available': False,
+        'note': 'contexte de sélection figé ; P&L contractuel non mesuré par ce ledger sans quotes de sortie',
+    }
+
+
 # ─── Gel d'une décision (ledger immuable) ───────────────────────────────────────
 
 def freeze(decision, packet=None, price=None, closes=None, portfolio_ctx=None,
@@ -96,6 +144,20 @@ def freeze(decision, packet=None, price=None, closes=None, portfolio_ctx=None,
     tail = ([_num(c) for c in closes[-_TAIL_LEN:]]
             if closes and all(_num(c) is not None for c in closes[-_TAIL_LEN:])
             else None)
+    option = _option_context(p)
+    contexts = p.get('contexts') or {}
+    quality_ctx = contexts.get('data_quality') or {}
+    reconciliation_ctx = contexts.get('reconciliation') or {}
+    data_evidence = {
+        'quality_available': quality_ctx.get('available'),
+        'quality_overall': quality_ctx.get('overall'),
+        'quality_actionable': quality_ctx.get('actionable_allowed'),
+        'spot_freshness': (quality_ctx.get('freshness') or {}).get('spot'),
+        'options_freshness': (quality_ctx.get('freshness') or {}).get('options'),
+        'reconciliation_available': reconciliation_ctx.get('available'),
+        'reconciliation_actionable': reconciliation_ctx.get('actionable_allowed'),
+        'reconciliation_blocking': reconciliation_ctx.get('blocking'),
+    }
 
     px = _num(price)
     return {
@@ -145,6 +207,10 @@ def freeze(decision, packet=None, price=None, closes=None, portfolio_ctx=None,
         'unknowns': d.get('unknowns') or [],
         'contradictions_count': len(contradictions),
         'portfolio': portfolio,
+        'option': option,
+        # Preuves de données AU MOMENT de la décision. Elles nourrissent une
+        # surveillance descriptive de dérive, sans réécrire les anciens records.
+        'data_evidence': data_evidence,
     }
 
 
@@ -217,10 +283,12 @@ def _horizon(status, sessions=None, return_pct=None, basis='', estimated=None):
 
 
 def measure(record, closes_after):
-    """Mesure le résultat d'un record aux horizons déclarés UNIQUEMENT —
-    5/20/60 séances, horizon du catalyseur (jours→séances étiqueté estimé),
-    horizon de thèse et échéance option (NON_APPLICABLE tant que le moteur ne
-    les déclare pas). Horizon non atteint = EN_ATTENTE, jamais inventé."""
+    """Mesure le sous-jacent aux horizons déclarés uniquement.
+
+    Les horizons 5/10/15 séances suivent le mandat Swing 3–6M. Les horizons 20/60
+    restent disponibles pour l’analyse de thèse. Le P&L du contrat reste explicitement
+    non applicable tant qu’aucune quote de sortie de contrat n’est enregistrée.
+    """
     r = record or {}
     after = [c for c in (closes_after or []) if _num(c) is not None]
     px = _num(r.get('price_at_decision'))
@@ -240,7 +308,13 @@ def measure(record, closes_after):
                         basis='clôture séance +%d vs prix à la décision' % sessions,
                         estimated=estimated)
 
-    horizons = {'H5': measured(5), 'H20': measured(20), 'H60': measured(60)}
+    horizons = {
+        'H5': measured(5),
+        'H10': measured(10),
+        'H15': measured(15),
+        'H20': measured(20),
+        'H60': measured(60),
+    }
 
     # Horizon du catalyseur : le record fige « Libellé (J-N) » en jours
     # calendaires ; conversion en séances ÉTIQUETÉE estimée (× 5/7).
@@ -263,9 +337,16 @@ def measure(record, closes_after):
     horizons['THESE'] = _horizon('NON_APPLICABLE',
                                  basis='horizon de thèse non déclaré par le moteur %s — jamais supposé'
                                        % r.get('engine_version'))
-    horizons['OPTION'] = _horizon('NON_APPLICABLE',
-                                  basis='aucun instrument option choisi par le moteur %s'
-                                        % r.get('engine_version'))
+    option = r.get('option') or {}
+    if option.get('available'):
+        horizons['OPTION'] = _horizon(
+            'NON_APPLICABLE',
+            basis='contrat %s / DTE %s figé, mais quote de sortie absente : P&L contractuel non mesuré'
+                  % (option.get('universe') or 'inconnu', option.get('dte') or 'inconnu'))
+    else:
+        horizons['OPTION'] = _horizon('NON_APPLICABLE',
+                                      basis='aucun instrument option choisi par le moteur %s'
+                                            % r.get('engine_version'))
 
     mfe = mae = None
     if px and px > 0 and after:
@@ -341,7 +422,7 @@ def _measured_class(mem, r):
         if not isinstance(o, dict):        # magasin corrompu → entrée ignorée
             continue
         if o.get('decision_id') == r.get('decision_id'):
-            for h in ('H60', 'H20', 'H5'):
+            for h in ('H60', 'H20', 'H15', 'H10', 'H5'):
                 hz = (o.get('horizons') or {}).get(h) or {}
                 if hz.get('status') == 'MESURE':
                     return classify_error(r, hz.get('return_pct'), h)['class']
@@ -615,7 +696,8 @@ def _measured_hits(memory, engine_version):
 
 
 CONTEXT_GROUPS = ('by_level', 'by_decision', 'by_regime',
-                  'by_catalyst', 'by_catalyst_type')
+                  'by_catalyst', 'by_catalyst_type',
+                  'by_option_universe', 'by_option_dte_bucket', 'by_holding_plan')
 
 
 def _cell_key(group, r):
@@ -640,6 +722,16 @@ def _cell_key(group, r):
             return None
         k = r.get('catalyst_kind')
         return k if isinstance(k, str) and k else 'inconnu'
+    option = r.get('option') or {}
+    if group == 'by_option_universe':
+        v = option.get('universe')
+        return v if option.get('available') and isinstance(v, str) and v else None
+    if group == 'by_option_dte_bucket':
+        v = option.get('dte_bucket')
+        return v if option.get('available') and isinstance(v, str) and v else None
+    if group == 'by_holding_plan':
+        values = option.get('holding_plan_sessions') or []
+        return '_'.join(str(int(v)) for v in values if _num(v) is not None) or None
     return None
 
 
@@ -672,17 +764,21 @@ def calibration_by_context(memory, engine_version):
                 groups[g].setdefault(key, []).append(hit)
     labels = {'by_level': 'niveau', 'by_decision': 'décision',
               'by_regime': 'régime', 'by_catalyst': 'catalyseur',
-              'by_catalyst_type': 'type_catalyseur'}
+              'by_catalyst_type': 'type_catalyseur',
+              'by_option_universe': 'univers_option',
+              'by_option_dte_bucket': 'bucket_dte_option',
+              'by_holding_plan': 'plan_detention_sessions'}
     out = {'engine_version': engine_version, 'n_measured_total': len(rows)}
-    # by_catalyst / by_catalyst_type : découpes d'OBSERVATION uniquement —
-    # jamais consommées par la sélection du facteur (aucune règle moteur).
+    # Les segments catalyseurs et options sont des découpes d’OBSERVATION :
+    # ils décrivent à ce stade le résultat directionnel du sous-jacent, jamais
+    # une calibration du P&L du contrat tant que les quotes de sortie manquent.
     for g in CONTEXT_GROUPS:
         out[g] = {k: _context_cell(v, '%s=%s' % (labels[g], k))
                   for k, v in sorted(groups[g].items())}
-    out['note'] = ('calibration par contexte (§13) — une cellule '
-                   'sous-échantillonnée reste INSUFFISANTE, l’agrégat global '
-                   'est le secours ; by_catalyst et by_catalyst_type sont des '
-                   'découpes d’observation (non consommées)')
+    out['note'] = ('calibration par contexte — une cellule sous-échantillonnée '
+                   'reste INSUFFISANTE et l’agrégat global est le secours ; les '
+                   'segments catalyseurs/options sont des découpes d’observation '
+                   'et non une calibration de P&L contractuel')
     return out
 
 
@@ -738,6 +834,40 @@ def calibration_factor_for(memory, engine_version, level=None, regime=None):
     g = calibration_factor(memory, engine_version)
     g['scope'] = 'global'
     return g
+
+
+def option_calibration_summary(memory, engine_version, options_context):
+    """État de maturité des segments options pour une décision.
+
+    Les cellules décrivent à ce stade des résultats directionnels du sous-jacent,
+    pas un rendement de contrat. Elles ne sont donc jamais converties en
+    probabilité, ni consommées par le facteur de confiance du moteur.
+    """
+    context = options_context or {}
+    best = context.get('best') or {}
+    universe = context.get('universe')
+    bucket = option_dte_bucket(best.get('dte'))
+    if not context.get('available') or not universe or not bucket:
+        return {'available': False,
+                'reason': 'contexte options ou DTE absent — calibration segmentée non évaluable',
+                'scope': 'DIRECTIONAL_PROXY_ONLY'}
+    cells = calibration_by_context(memory, engine_version)
+    u_cell = ((cells.get('by_option_universe') or {}).get(universe) or
+              {'status': 'INSUFFISANT', 'n_measured': 0})
+    d_cell = ((cells.get('by_option_dte_bucket') or {}).get(bucket) or
+              {'status': 'INSUFFISANT', 'n_measured': 0})
+    mature = u_cell.get('status') == 'MESURE' and d_cell.get('status') == 'MESURE'
+    return {
+        'available': True,
+        'scope': 'DIRECTIONAL_PROXY_ONLY',
+        'universe': universe,
+        'dte_bucket': bucket,
+        'mature': mature,
+        'universe_cell': u_cell,
+        'dte_bucket_cell': d_cell,
+        'note': ('segments observés sur le résultat directionnel du sous-jacent ; '
+                 'P&L de contrat, spread de sortie et slippage non mesurés'),
+    }
 
 
 # ─── Recommandations (jamais auto-appliquées) ───────────────────────────────────

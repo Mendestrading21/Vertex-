@@ -43,6 +43,18 @@ def test_narrative_states_assumption_not_advice():
     assert 'pas une prévision' in d['narrative']
 
 
+def test_beta_assumptions_expose_declared_and_defaulted_coverage():
+    from vertex.portfolio.models import Position, PortfolioSnapshot
+    snapshot = PortfolioSnapshot(positions=[Position('AAA', 1, last_price=100, beta=1.2),
+                                            Position('BBB', 1, last_price=100)])
+    from vertex.portfolio.stress_tests import run_stress_tests
+    out = run_stress_tests(snapshot, type('Profile', (), {'portfolio_max_drawdown_pct': -25})())
+    assert out['beta_assumptions']['declared_symbols'] == ['AAA']
+    assert out['beta_assumptions']['defaulted_symbols'] == ['BBB']
+    assert out['beta_assumptions']['declared_weight_pct'] == 50.0
+    assert out['beta_assumptions']['read_only'] is True
+
+
 def test_no_stock_positions_is_honest():
     d = ps.build([{'sym': 'NVDA', 'type': 'CALL', 'qty': 2, 'cost': 800}], {})
     assert d['empty'] is True

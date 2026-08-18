@@ -37,6 +37,7 @@ def healthz():
         'last_scan': scan_state.get('updated'),
         'scan_age': round(time.time() - scan_state['scan_ts']) if scan_state.get('scan_ts') else None,
         'scan_error': scan_state.get('error'),
+        'source_health': scan_state.get('source_health') or {'scan': 'UNKNOWN'},
         'vertex_ready': sum(1 for d in (scan_state.get('detail') or {}).values() if d.get('vertex')),
         'engines': ['scoring', 'pivots', 'committee', 'strategy', 'portfolio_risk',
                     'vertex', 'vertex_ml', 'validator'],
@@ -118,8 +119,8 @@ def readyz():
         cfg = validate_config()
         bad = [k for k, v in cfg.items() if isinstance(v, dict) and v.get('status') == 'INVALID']
         _chk('configuration', not bad, 'invalides: %s' % ','.join(bad) if bad else 'valide')
-    except Exception as e:
-        _chk('configuration', False, str(e)[:120])
+    except Exception:
+        _chk('configuration', False, 'configuration_indisponible')
 
     # 2. Stratégie chargée (constitution canonique).
     try:
@@ -134,8 +135,8 @@ def readyz():
         from vertex.services import persist
         persist.load_json('desk_data.json', {})
         _chk('stockage', True, 'desk lisible')
-    except Exception as e:
-        _chk('stockage', False, str(e)[:120])
+    except Exception:
+        _chk('stockage', False, 'stockage_indisponible')
 
     # 4. READONLY effectif (invariant absolu).
     from vertex.app.config import READONLY

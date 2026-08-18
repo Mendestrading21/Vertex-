@@ -282,8 +282,13 @@ def review(packet, score):
                      'repasse en réévaluation.' % stop, 'F1'))
 
     answered = sum(1 for x in qs if x['status'] == 'ANSWERED')
+    unanswered = [x['id'] for x in qs if x['status'] != 'ANSWERED']
     return {'version': RED_TEAM_VERSION, 'generator': 'deterministic',
             'questions': qs, 'answered': answered, 'complete': answered == 10,
+            'coverage': {'answered': answered, 'total_questions': len(qs),
+                         'coverage_pct': round(100 * answered / len(qs), 1) if qs else 0.0,
+                         'unanswered_ids': unanswered, 'read_only': True,
+                         'note': 'objections sans preuve restent ouvertes et ne valident jamais le dossier'},
             'basis': ('revue red-team %d/10 questions fondées sur les données réelles — '
                       '%s' % (answered, 'COMPLÈTE' if answered == 10 else
                               'incomplète : les questions sans données restent ouvertes, jamais comblées'))}

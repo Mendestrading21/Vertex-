@@ -19,6 +19,7 @@ from vertex.portfolio import factor_exposure as fe
 from vertex.portfolio import replacement_engine as rep
 from vertex.portfolio.models import Position, PortfolioSnapshot
 from vertex.research.institutional.factor_model import FACTORS
+from vertex.research.institutional.factor_model import factor_exposures
 
 
 @pytest.fixture()
@@ -58,6 +59,15 @@ def test_aucune_donnee_value_none_jamais_zero_invente(_fake_factors):
     agg = fe.portfolio_factor_exposure(_snap_50_50(), {})
     assert agg['MARKET'] == {'value': None, 'coverage_pct': 0.0}
     assert set(agg) == set(FACTORS)          # les 10 facteurs toujours présents
+
+
+def test_beta_is_explicitly_available_only_with_benchmark():
+    returns = [0.01 if i % 2 else -0.005 for i in range(40)]
+    with_benchmark = factor_exposures({'returns': returns}, returns)
+    without_benchmark = factor_exposures({'returns': returns}, None)
+    assert with_benchmark['BETA']['value'] is not None
+    assert without_benchmark['BETA']['value'] is None
+    assert 'benchmark absent' in without_benchmark['BETA']['note']
 
 
 # ═══ replacement_engine : proposition, jamais une exécution ═══

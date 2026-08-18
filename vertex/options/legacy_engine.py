@@ -24,6 +24,7 @@ import yfinance as yf
 
 from vertex.quant import scoring
 from vertex.strategy import config
+from vertex.data_sources.rates import rate_sensitivity
 
 R = 0.045
 
@@ -40,6 +41,25 @@ def _f(x):
         return 0.0 if x is None or (isinstance(x, float) and math.isnan(x)) else float(x)
     except Exception:
         return 0.0
+
+
+def _reported_number(x):
+    """Vrai si une donnée numérique est présente, y compris zéro reporté.
+
+    Le zéro est une observation potentiellement illiquide ; `None`/NaN est une
+    absence. La couverture ne les confond jamais.
+    """
+    try:
+        return x is not None and math.isfinite(float(x))
+    except (TypeError, ValueError):
+        return False
+
+
+def _reported_timestamp(x):
+    if x is None:
+        return False
+    text = str(x).strip()
+    return bool(text) and text.lower() not in ('none', 'nan', 'nat')
 
 
 def _npdf(x):
@@ -85,9 +105,60 @@ def _bs_price(S, K, T, sig, is_call):
     return K * math.exp(-R * T) * _ncdf(-d2) - S * _ncdf(-d1)
 
 
+def _bs_price_at_rate(S, K, T, sig, is_call, rate):
+    if T <= 0 or sig <= 0:
+        return max((S - K) if is_call else (K - S), 0.0)
+    srt = sig * math.sqrt(T)
+    d1 = (math.log(S / K) + (rate + 0.5 * sig * sig) * T) / srt
+    d2 = d1 - srt
+    if is_call:
+        return S * _ncdf(d1) - K * math.exp(-rate * T) * _ncdf(d2)
+    return K * math.exp(-rate * T) * _ncdf(-d2) - S * _ncdf(-d1)
+
+
+def option_rate_sensitivity(S, K, T, sig, is_call, rate_quote=None):
+    """Sensibilité descriptive au taux, seulement avec une courbe provenancée."""
+    quote = rate_quote.to_dict() if hasattr(rate_quote, 'to_dict') else (rate_quote or {})
+    rate = quote.get('rate') if isinstance(quote, dict) else None
+    try:
+        usable = math.isfinite(float(rate)) and not bool(quote.get('fallback_used'))
+    except (TypeError, ValueError):
+        usable = False
+    if not usable:
+        return {'available': False, 'read_only': True,
+                'reason': 'courbe de taux provenancée non disponible ou servie par repli',
+                'rate_provenance': (quote or None)}
+    sensitivity = rate_sensitivity(
+        lambda candidate_rate: _bs_price_at_rate(S, K, T, sig, is_call, candidate_rate),
+        float(rate),
+    )
+    return {'available': sensitivity['sensitivity_per_bump'] is not None,
+            'read_only': True, 'rate_provenance': quote,
+            'model': 'Black-Scholes sans dividende', 'sensitivity': sensitivity}
+
+
+def option_price_integrity(S, K, T, price, is_call):
+    """Bornes européennes sans dividende : garde-fou, jamais estimation de prix."""
+    if any(not isinstance(v, (int, float)) or not math.isfinite(v) or v <= 0
+           for v in (S, K, T, price)):
+        return {'available': False, 'status': 'OPTION_INPUT_INSUFFICIENT',
+                'read_only': True, 'reason': 'spot, strike, durée ou prix non exploitable'}
+    discounted_strike = K * math.exp(-R * T)
+    lower = max(0.0, S - discounted_strike) if is_call else max(0.0, discounted_strike - S)
+    upper = S if is_call else discounted_strike
+    tolerance = max(0.01, upper * 0.0001)  # précision de cotation, pas une marge de marché
+    valid = lower - tolerance <= price <= upper + tolerance
+    return {'available': valid,
+            'status': 'OPTION_PRICE_COHERENT' if valid else 'PRICE_OUTSIDE_NO_ARBITRAGE',
+            'read_only': True, 'lower_bound': round(lower, 8), 'upper_bound': round(upper, 8),
+            'observed_price': round(price, 8), 'tolerance': round(tolerance, 8),
+            'reason': None if valid else 'prix observé hors bornes européennes sans dividende'}
+
+
 def _iv_from_price(S, K, T, price, is_call):
     """IV implicite par bissection (fallback quand yfinance ne donne pas d'IV fiable)."""
-    if price <= 0 or T <= 0 or S <= 0 or K <= 0:
+    integrity = option_price_integrity(S, K, T, price, is_call)
+    if not integrity['available']:
         return None
     lo, hi = 0.02, 3.0
     if _bs_price(S, K, T, hi, is_call) < price:   # prix hors bornes
@@ -214,10 +285,12 @@ def news_for(tk, n=5):
     return out
 
 
-def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=None, earnings_dte=None):
+def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=None,
+                    earnings_dte=None, include_diagnostics=False, rate_quote=None):
     """Meilleurs contrats par bucket (court/moyen/long), classés. buckets=None -> long (rétro-compat)."""
     buckets = buckets or config.DEFAULT_BUCKETS
     out = []
+    price_rejections = []
     try:
         tk = yf.Ticker(sym)
         now = _ny_now()
@@ -234,13 +307,24 @@ def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=N
                 if not (spot * lo <= K <= spot * hi):
                     continue
                 iv = _f(row.get('impliedVolatility'))
-                oi = _i(row.get('openInterest'))
-                vol = _i(row.get('volume'))
-                bid = _f(row.get('bid'))
-                ask = _f(row.get('ask'))
+                raw_oi, raw_vol = row.get('openInterest'), row.get('volume')
+                raw_bid, raw_ask = row.get('bid'), row.get('ask')
+                raw_trade_time = row.get('lastTradeDate')
+                oi = _i(raw_oi)
+                vol = _i(raw_vol)
+                bid = _f(raw_bid)
+                ask = _f(raw_ask)
                 quoted = bid > 0 and ask > 0
                 mid = (bid + ask) / 2.0 if quoted else _f(row.get('lastPrice'))
                 if mid <= 0:
+                    continue
+                price_integrity = option_price_integrity(spot, K, T, mid, direction == 'call')
+                if not price_integrity['available']:
+                    if len(price_rejections) < 12:
+                        price_rejections.append({'sym': sym, 'type': direction.upper(), 'bucket': bk,
+                                                 'exp': exp, 'dte': dte, 'strike': K,
+                                                 'price_integrity': price_integrity,
+                                                 'derived_metrics_withheld': True})
                     continue
                 # IV : si yfinance ne donne rien d'exploitable, on la RECALCULE depuis le prix
                 stale = False
@@ -300,13 +384,36 @@ def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=N
                     'pot': round(pot), 'suit': round(suit), 'grade': config.grade(suit),
                     'em_pct': round(iv * math.sqrt(T) * 100, 1),
                     'flags': flags, 'stale': stale,
+                    'price_integrity': price_integrity,
+                    'rate_sensitivity': option_rate_sensitivity(
+                        spot, K, T, iv, direction == 'call', rate_quote=rate_quote),
+                    'liquidity_coverage': {
+                        'bid_present': _reported_number(raw_bid),
+                        'ask_present': _reported_number(raw_ask),
+                        'volume_present': _reported_number(raw_vol),
+                        'open_interest_present': _reported_number(raw_oi),
+                        'quoted_bid_ask': quoted,
+                        'reported_fields': sum((_reported_number(raw_bid), _reported_number(raw_ask),
+                                                _reported_number(raw_vol), _reported_number(raw_oi))),
+                        'total_fields': 4,
+                        'read_only': True,
+                        'note': 'champ absent ≠ zéro observé ; aucune liquidité n’est imputée',
+                    },
+                    'quote_timestamp_coverage': {
+                        'reported': _reported_timestamp(raw_trade_time),
+                        'timestamp': str(raw_trade_time) if _reported_timestamp(raw_trade_time) else None,
+                        'status': ('REPORTED_TIMESTAMP_ONLY' if _reported_timestamp(raw_trade_time)
+                                   else 'TIMESTAMP_UNAVAILABLE'),
+                        'read_only': True,
+                        'note': 'horodatage reporté sans déduction d’âge ou de fraîcheur',
+                    },
                 }
                 _q = option_quality(_c, spot)
                 _c['quality'] = _q['score']
                 _c['quality_parts'] = _q['parts']
                 out.append(_c)
     except Exception:
-        return []
+        return {'contracts': [], 'price_rejections': [], 'price_rejection_count': 0} if include_diagnostics else []
     # Niveau 1 (séance) : contrats liquides, données réelles. Préféré.
     live = [c for c in out if not c['stale'] and c['spread'] is not None
             and c['spread'] <= config.PROFILE['max_bidask_spread_pct']
@@ -321,6 +428,9 @@ def best_for_symbol(sym, spot, target, direction, iv_rank=50, max_n=2, buckets=N
         if cnt.get(c['bucket'], 0) < max_n:
             res.append(c)
             cnt[c['bucket']] = cnt.get(c['bucket'], 0) + 1
+    if include_diagnostics:
+        return {'contracts': res, 'price_rejections': price_rejections,
+                'price_rejection_count': len(price_rejections)}
     return res
 
 
@@ -342,6 +452,34 @@ def build_board(detail, rows, max_calls=6, max_puts=3):
     order = {'court': 0, 'moyen': 1, 'long': 2}
     board.sort(key=lambda c: (order.get(c['bucket'], 9), -c['suit']))
     return board
+
+
+def board_coverage(contracts):
+    """Synthèse de couverture des contrats déjà produits, sans reclassement."""
+    contracts = list(contracts or [])
+    total = len(contracts)
+    liquidity_reported = sum(
+        1 for contract in contracts
+        if (contract.get('liquidity_coverage') or {}).get('reported_fields', 0) == 4
+    )
+    quoted = sum(
+        1 for contract in contracts
+        if (contract.get('liquidity_coverage') or {}).get('quoted_bid_ask') is True
+    )
+    timestamp_reported = sum(
+        1 for contract in contracts
+        if (contract.get('quote_timestamp_coverage') or {}).get('reported') is True
+    )
+    return {
+        'available': bool(contracts), 'contract_count': total,
+        'liquidity_fields_complete': liquidity_reported,
+        'quoted_bid_ask': quoted, 'timestamps_reported': timestamp_reported,
+        'liquidity_fields_complete_pct': round(100 * liquidity_reported / total, 1) if total else 0.0,
+        'quoted_bid_ask_pct': round(100 * quoted / total, 1) if total else 0.0,
+        'timestamps_reported_pct': round(100 * timestamp_reported / total, 1) if total else 0.0,
+        'read_only': True,
+        'note': 'synthèse descriptive ; aucun contrat n’est reclassé ou exclu',
+    }
 
 
 def recommend(contracts):

@@ -147,6 +147,8 @@ def analyze(close):
     S = entropy(rets)
     E = efficiency(p)
     HL = half_life(p)
+    metrics = {'hurst': H, 'entropy': S, 'efficiency': E, 'half_life': HL}
+    unavailable = [name for name, value in metrics.items() if value is None]
 
     # ─ Synthèse d'état : ce que la physique dit de la structure du titre ─
     state, col, note = 'NEUTRE', '#8794ab', 'structure indécise (proche d\'une marche aléatoire)'
@@ -175,5 +177,11 @@ def analyze(close):
         'entropy': (round(S, 3) if S is not None else None),
         'efficiency': (round(E, 3) if E is not None else None),
         'half_life': HL,
+        'coverage': {'measured_metrics': len(metrics) - len(unavailable),
+                     'total_metrics': len(metrics),
+                     'coverage_pct': round(100 * (len(metrics) - len(unavailable)) / len(metrics), 1),
+                     'unavailable_metrics': unavailable,
+                     'points_used': int(len(p)), 'read_only': True,
+                     'note': 'métriques indisponibles restent non mesurées et ne sont jamais interpolées'},
         'state': state, 'state_col': col, 'note': note,
     }

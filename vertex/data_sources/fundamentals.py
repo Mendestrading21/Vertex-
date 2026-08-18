@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 import yfinance as yf
 
 from vertex.market import sectors
+from vertex.data_sources.models import utc_now_iso
 
 
 def _f(v):
@@ -78,7 +79,10 @@ def build(symbols):
                 'median_growth': round(statistics.median(gr) * 100, 1) if gr else None,
                 'n': len(members),
             }
-    return {'by_sym': by_sym, 'by_sector': by_sector}
+    return {'by_sym': by_sym, 'by_sector': by_sector,
+            'provenance': {'source': 'yfinance.info', 'as_of': utc_now_iso(),
+                           'refresh_policy_hours': 6, 'read_only': True,
+                           'note': 'lot fondamental susceptible de champs partiels ; aucune valeur absente n’est imputée'}}
 
 
 def valuation(pe, sector_median_pe):

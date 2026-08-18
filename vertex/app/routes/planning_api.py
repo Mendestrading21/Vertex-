@@ -16,27 +16,34 @@ bp = Blueprint('planning_api', __name__)
 
 @bp.route('/api/planning/ticket', methods=['POST'])
 def planning_ticket():
-    body = request.get_json(force=True, silent=True) or {}
-    sym = (body.get('symbol') or '').upper()[:12]
-    if not sym:
-        return jsonify({'error': 'symbol requis'}), 400
+    from vertex.app import payload_validation as _payload
+    try:
+        body = _payload.object_body(request.get_json(force=True, silent=True), max_keys=18)
+        if not str(body.get('symbol') or '').strip():
+            return jsonify({'error': 'symbol requis'}), 400
+        sym = _payload.required_symbol(body)
+        numeric = {key: _payload.optional_number(body, key)
+                   for key in ('entry', 'stop', 'tp1', 'tp2', 'tp3', 'premium', 'strike',
+                               'limit_price', 'account_value', 'risk_pct')}
+    except _payload.PayloadError as exc:
+        return jsonify({'error': str(exc)}), 400
     detail = (scan_state.get('detail') or {}).get(sym) or {}
     plan = detail.get('plan') or {}
     is_opt = bool(body.get('is_option'))
     ticket = _ot.build_ticket(
         sym, is_option=is_opt,
-        entry=body.get('entry', plan.get('entry')),
-        stop=body.get('stop', plan.get('stop')),
-        tp1=body.get('tp1', plan.get('tp1')),
-        tp2=body.get('tp2', plan.get('tp2')),
-        tp3=body.get('tp3', plan.get('tp3')),
+        entry=numeric['entry'] if numeric['entry'] is not None else plan.get('entry'),
+        stop=numeric['stop'] if numeric['stop'] is not None else plan.get('stop'),
+        tp1=numeric['tp1'] if numeric['tp1'] is not None else plan.get('tp1'),
+        tp2=numeric['tp2'] if numeric['tp2'] is not None else plan.get('tp2'),
+        tp3=numeric['tp3'] if numeric['tp3'] is not None else plan.get('tp3'),
         rr_res=plan.get('rr_res'),
-        premium=body.get('premium'),
-        right=body.get('right'), strike=body.get('strike'),
+        premium=numeric['premium'],
+        right=body.get('right'), strike=numeric['strike'],
         expiry=body.get('expiry'), contract_id=body.get('contract_id'),
-        limit_price=body.get('limit_price'),
-        account_value=body.get('account_value'),
-        risk_pct=body.get('risk_pct'))
+        limit_price=numeric['limit_price'],
+        account_value=numeric['account_value'],
+        risk_pct=numeric['risk_pct'])
     return jsonify(ticket)
 
 

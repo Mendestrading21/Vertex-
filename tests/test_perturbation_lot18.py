@@ -32,7 +32,10 @@ def _octx():
 def _kw():
     return dict(market=_market(), events={'events': [{'label': 'Résultats', 'dte': 30}]},
                 anomaly={'events': [], 'extreme': None}, as_of='t',
-                options_ctx=_octx())
+                options_ctx=_octx(),
+                data_quality_ctx={'available': True, 'overall': 'FRESH',
+                                  'warnings': [], 'actionable_allowed': True},
+                reconciliation_ctx={'available': True, 'actionable_allowed': True})
 
 
 # ─── Version et contrat ─────────────────────────────────────────────────────────

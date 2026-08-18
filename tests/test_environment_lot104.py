@@ -65,6 +65,9 @@ def test_unknown_dimensions_excluded_from_mean_never_zeroed():
     r = env.score_environment([{'spread_pct': 1.0}])
     assert r['score'] == 100.0 and r['dimensions_known'] == 1
     assert r['dimensions_total'] == 5
+    assert r['data_coverage']['coverage_pct'] == 20.0
+    assert r['data_coverage']['unknown_dimensions'] == ['volatility', 'iv_rank', 'quality', 'event_risk']
+    assert r['data_coverage']['read_only'] is True
     unc = r['interpretation']['uncertainties']
     assert len(unc) == 4, 'chaque dimension absente est NOMMÉE en incertitude'
 

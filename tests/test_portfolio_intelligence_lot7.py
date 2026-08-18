@@ -68,6 +68,21 @@ def test_valuation_fallback_labeled():
     assert ctx['valuation_note'] and 'coût' in ctx['valuation_note']
 
 
+def test_sector_coverage_never_assigns_unknown_symbol_by_default():
+    positions = [
+        {'symbol': 'AAPL', 'asset_type': 'STOCK', 'quantity': 10, 'cost_basis': 1000.0,
+         'source': 'MANUAL'},
+        {'symbol': 'UNKNOWNX', 'asset_type': 'STOCK', 'quantity': 10, 'cost_basis': 1000.0,
+         'source': 'MANUAL'},
+    ]
+    ctx = PC.build(positions, quotes={'AAPL': 100.0, 'UNKNOWNX': 100.0})
+    coverage = ctx['sector_coverage']
+    assert 'AAPL' in coverage['classified_symbols']
+    assert coverage['unclassified_symbols'] == ['UNKNOWNX']
+    assert coverage['classified_value_pct'] == 50.0
+    assert coverage['unclassified_value_pct'] == 50.0
+
+
 # ─── Candidat : gagnant/perdant, impact marginal ───────────────────────────────
 
 def test_candidate_loser_reinforcement_forbidden():
@@ -131,6 +146,33 @@ def test_risk_budget_honestly_absent_without_stops():
     ctx = PC.build(_positions(), quotes=_quotes())
     assert ctx['risk_budget']['available'] is False
     assert 'stop' in ctx['risk_budget']['reason']
+
+
+def test_risk_budget_measures_only_positions_with_declared_stop():
+    positions = [
+        {'symbol': 'AAA', 'quantity': 10, 'cost_basis': 900, 'stop': 80,
+         'asset_type': 'STOCK', 'source': 'MANUAL'},
+        {'symbol': 'BBB', 'quantity': 5, 'cost_basis': 500,
+         'asset_type': 'STOCK', 'source': 'MANUAL'},
+    ]
+    ctx = PC.build(positions, quotes={'AAA': 100, 'BBB': 120})
+    budget = ctx['risk_budget']
+    assert budget['available'] is True
+    assert budget['known_risk_to_stop'] == 200.0
+    assert budget['coverage_pct'] == 50.0
+    assert budget['unmeasured'][0]['symbol'] == 'BBB'
+
+
+def test_correlation_requires_explicitly_dated_overlapping_series():
+    series = {}
+    for offset, symbol in enumerate(('AAA', 'BBB', 'CCC')):
+        closes = [100 + offset + day * (1 + offset * 0.1) for day in range(40)]
+        series[symbol] = {'dates': [f'03-{day:02d}' for day in range(1, 41)], 'close': closes}
+    ctx = PC.build(_positions(), quotes=_quotes(), series_by_symbol=series)
+    assert ctx['correlations']['available'] is True
+    assert len(ctx['correlations']['pairs']) == 3
+    absent = PC.build(_positions(), quotes=_quotes())
+    assert absent['correlations']['available'] is False
 
 
 # ─── Branchement Skyler : gates portefeuille ────────────────────────────────────

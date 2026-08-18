@@ -38,7 +38,7 @@ def options_overview():
                                      demo=bool(DEMO_MODE), source='SCAN',
                                      detail_by_sym=_detail_by_sym()))
     except Exception as e:
-        return jsonify({'empty': True, 'error': '%s: %s' % (type(e).__name__, e)}), 500
+        return jsonify({'empty': True, 'error': 'options_overview_unavailable'}), 500
 
 
 @bp.route('/api/options/environment')
@@ -50,7 +50,7 @@ def options_environment():
                                          as_of=_as_of(), source='SCAN'))
     except Exception as e:
         return jsonify({'score': None, 'label': 'INCONNU',
-                        'error': '%s: %s' % (type(e).__name__, e)}), 500
+                        'error': 'options_environment_unavailable'}), 500
 
 
 @bp.route('/api/options/volatility/<sym>')
@@ -110,7 +110,7 @@ def options_scenarios(sym):
         sim = scenario_pricer.simulate(contract, setup)
     except Exception as e:
         return jsonify({'symbol': sym, 'empty': True,
-                        'reason': 'simulation impossible: %s' % e}), 200
+                        'reason': 'simulation_indisponible'}), 200
     return jsonify({'symbol': sym, 'empty': False, 'contract': {
         'type': c.get('type'), 'strike': c.get('strike'), 'dte': c.get('dte'),
         'exp': c.get('exp'), 'iv': iv, 'cost': c.get('cost'), 'spot': spot,
@@ -136,7 +136,7 @@ def options_gex_radar():
         return jsonify(d)
     except Exception as e:
         return jsonify({'empty': True, 'rows': [],
-                        'error': '%s: %s' % (type(e).__name__, e)}), 500
+                        'error': 'options_gex_radar_unavailable'}), 500
 
 
 @bp.route('/api/options/gex/<sym>')
@@ -169,7 +169,7 @@ def options_gex(sym):
                           symbol=sym, em_pct=em_pct)
     except Exception as e:
         return jsonify({'symbol': sym, 'empty': True,
-                        'error': '%s: %s' % (type(e).__name__, e)}), 500
+                        'error': 'options_gex_unavailable'}), 500
     # Journal quotidien du GEX (best-effort, réel seulement) → série « Daily GEX ».
     history = []
     try:
@@ -201,7 +201,7 @@ def options_vol_charts(sym):
                                         source='SCAN', expiry=expiry))
     except Exception as e:
         return jsonify({'symbol': sym, 'empty': True,
-                        'error': '%s: %s' % (type(e).__name__, e)}), 500
+                        'error': 'options_vol_charts_unavailable'}), 500
 
 
 @bp.route('/api/options/event-risk/<sym>')

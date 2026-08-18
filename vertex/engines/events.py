@@ -72,11 +72,15 @@ def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
                           impact_derivation=('calendar' if m.get('kind') else None),
                           importance=m.get('importance'), confidence='DECLARED'))
 
+    revision_mentions = []
     for n in dedupe_news(news or []):
         title = n.get('title')
         if not title:
             continue
         hint, deriv = _impact_from_title(title)
+        if hint == 'RATING':
+            revision_mentions.append({'title': title, 'source': 'news.%s' % (n.get('publisher') or 'externe'),
+                                      'date': n.get('time'), 'derivation': 'title_keywords'})
         events.append(_ev('news', title, 'fact',
                           'news.%s' % (n.get('publisher') or 'externe'),
                           date=n.get('time'), dte=None,
@@ -93,11 +97,49 @@ def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
     # Datés d'abord (DTE croissant — le plus proche est le plus actionnable),
     # non datés ensuite dans leur ordre d'arrivée. Tri stable = déterministe.
     events.sort(key=lambda e: (e['dte'] is None, e['dte'] if e['dte'] is not None else 0))
+    source_counts = {}
+    category_counts = {}
+    for event in events:
+        source_counts[event['source']] = source_counts.get(event['source'], 0) + 1
+        category_counts[event['category']] = category_counts.get(event['category'], 0) + 1
+    dated_events = sum(1 for event in events if event.get('date') is not None or event.get('dte') is not None)
+    news_events = [event for event in events if event.get('kind') == 'news']
+    news_timestamped = sum(1 for event in news_events if event.get('date') is not None)
+    keyword_impacts = sum(1 for event in news_events if event.get('impact_derivation') == 'keywords')
 
     return {
         'symbol': sym, 'as_of': as_of, 'n': len(events), 'events': events,
-        'revisions': {'available': False,
-                      'reason': 'aucune source de révisions d’analystes branchée — jamais estimé'},
+        'coverage': {
+            'input_channels': {'news_provided': news is not None,
+                               'earnings_provided': earnings is not None,
+                               'macro_provided': macro is not None,
+                               'anomaly_provided': anomaly is not None},
+            'source_counts': source_counts, 'category_counts': category_counts,
+            'dated_events': dated_events, 'undated_events': len(events) - dated_events,
+            'news_timestamp_coverage': {'timestamped_news': news_timestamped,
+                                        'total_news': len(news_events),
+                                        'untimestamped_news': len(news_events) - news_timestamped,
+                                        'coverage_pct': round(100 * news_timestamped / len(news_events), 1)
+                                        if news_events else 0.0,
+                                        'status': 'TIMESTAMP_COVERAGE_ONLY',
+                                        'note': 'format d’horodatage non normalisé : aucun âge ou impact n’est déduit'},
+            'news_impact_coverage': {'keyword_classified_news': keyword_impacts,
+                                     'unclassified_news': len(news_events) - keyword_impacts,
+                                     'total_news': len(news_events),
+                                     'coverage_pct': round(100 * keyword_impacts / len(news_events), 1)
+                                     if news_events else 0.0,
+                                     'status': 'KEYWORD_DERIVATION_ONLY',
+                                     'note': 'titre non classé = aucune interprétation d’impact créée'},
+            'all_events_have_source': all(event.get('source') for event in events),
+            'read_only': True,
+            'note': 'canal absent, événement non daté ou sans mention de révision reste explicitement qualifié',
+        },
+        'revisions': ({'available': True, 'status': 'NEWS_MENTIONS_ONLY',
+                       'mentions': revision_mentions,
+                       'note': 'mentions de titres détectées ; pas de consensus ni révision confirmée'}
+                      if revision_mentions else
+                      {'available': False,
+                       'reason': 'aucune mention de révision ni source de consensus branchée — jamais estimé'}),
         'generator': 'deterministic',
         'note': 'Timeline descriptive — un événement daté n’est pas un catalyseur par défaut ; '
                 'impact suggéré uniquement par mots-clés transparents.',

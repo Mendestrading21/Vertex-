@@ -21,16 +21,26 @@ def _corr(a: list[float], b: list[float]) -> float | None:
 def correlation_matrix(returns_by_symbol: dict) -> dict:
     syms = sorted(returns_by_symbol)
     matrix = {}
+    unmeasured_pairs = []
+    total_pairs = 0
     for i, s1 in enumerate(syms):
         for s2 in syms[i + 1:]:
+            total_pairs += 1
             c = _corr(returns_by_symbol[s1], returns_by_symbol[s2])
             if c is not None:
                 matrix[f'{s1}/{s2}'] = c
+            else:
+                unmeasured_pairs.append(f'{s1}/{s2}')
     values = list(matrix.values())
     avg = round(sum(values) / len(values), 3) if values else None
     high_pairs = {k: v for k, v in matrix.items() if v >= 0.8}
     return {'pairs': matrix, 'average': avg, 'high_pairs': high_pairs,
             'symbols_covered': syms,
+            'coverage': {'measured_pairs': len(matrix), 'total_pairs': total_pairs,
+                         'unmeasured_pairs': unmeasured_pairs,
+                         'coverage_pct': round(100 * len(matrix) / total_pairs, 1) if total_pairs else 0.0,
+                         'read_only': True,
+                         'note': 'paires sans historique commun suffisant ne reçoivent aucune corrélation'},
             'warning': ('corrélation moyenne élevée — diversification illusoire'
                         if avg is not None and avg >= 0.7 else None)}
 
