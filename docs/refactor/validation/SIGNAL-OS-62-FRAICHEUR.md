@@ -167,10 +167,30 @@ aucun fichier sous `/static` n'a été touché.
 
 ## 6. Réserves
 
-1. **Options n'a aucun vocabulaire de fraîcheur.** Verdict *sans vocabulaire* :
+1. ~~**Options n'a aucun vocabulaire de fraîcheur.** Verdict *sans vocabulaire* :
    ce n'est pas un mensonge, c'est une absence — mais rien ne dit à
    l'utilisateur de quand datent des primes d'options, qui vieillissent vite.
-   C'est la réserve la plus intéressante que ce lot ouvre.
+   C'est la réserve la plus intéressante que ce lot ouvre.~~
+
+   > ⚠ **CORRECTION (lot 63) — ce verdict était FAUX.** Options porte bien une
+   > étiquette de fraîcheur. Elle vit dans une **troisième** grammaire que mon
+   > instrument ne connaissait pas : `.vx-freshness[data-state]` — ni la puce de
+   > `VX.freshness.chip()`, ni le badge `data-live` de `freshBadge()`. Et ce
+   > n'était pas une absence : c'était **exactement la même constante** que celle
+   > que je venais de corriger sur Aujourd'hui (`d.demo ? 'demo' : 'delayed'`,
+   > avec le texte anglais « DELAYED »).
+   >
+   > J'ai donc rendu « absence » là où il y avait un mensonge — et je l'ai rendu
+   > **le jour même où je corrigeais ce mensonge ailleurs**. Ma table du §3.3
+   > annonçait « DEUX grammaires, pas une » avec l'assurance d'une mesure ; elle
+   > était incomplète. C'est la même faute que les sept corrections d'inventaire
+   > des lots 55 à 58 : **j'ai énuméré ce que je connaissais et je l'ai présenté
+   > comme ce qui existe.**
+   >
+   > Le lot 63 a aussi trouvé la faute plus grave que celle-ci masquait : mon
+   > verdict était **par page**, pas par badge, donc une page portant une
+   > étiquette honnête *et* une étiquette constante était déclarée saine. Voir
+   > `SIGNAL-OS-63-FRAICHEUR-PAR-BADGE.md`.
 2. **Le mode démonstration masque le chemin sur plusieurs espaces.** Ce que je
    mesure, je le mesure hors démo ou pas du tout. La validation en conditions
    réelles (IBKR, marché ouvert) reste à faire par l'utilisateur.

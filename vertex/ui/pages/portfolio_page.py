@@ -271,13 +271,26 @@ function renderSummary(rich){
       (opts.length>=3||opts.filter(t=>t.type==='PUT').length>1)?'vx-warn':'');
 }
 
-/* Freshness honnête (LOT A/I) — état réel de la source, jamais « live » par défaut. */
+/* Freshness honnête (LOT A/I) — état réel de la source, jamais « live » par défaut.
+
+   LOT 63 — ce badge n'était honnête qu'à moitié. `window.__pfLive?'live':'delayed'`
+   distingue bien le mode live du mode différé, mais ne consulte AUCUN âge :
+   mesuré sous vieillissement de toutes les réponses à +2 h, il restait
+   « DELAYED », et l'état « À actualiser » lui était INATTEIGNABLE. Sur la page
+   du portefeuille, cela revenait à présenter des marks de trois jours avec
+   exactement la même étiquette que des marks de trois secondes.
+
+   Il lit désormais le MÊME âge de session que la puce `#pf-fresh` du bandeau —
+   une seule vérité de fraîcheur par page. Le cas « aucune position » reste
+   distinct : sans position, il n'y a pas de donnée à dater, et « OFFLINE » est
+   l'aveu juste. */
 function freshBadge(){
-  const st=window.__pfLive?'live':'delayed';
-  const map={live:['LIVE','vx-pos'],delayed:['DELAYED','vx-warn'],offline:['OFFLINE','vx-neg']};
   const has=E()&&E().positions().length;
-  const s=has?st:'offline';const m=map[s]||map.delayed;
-  return `<span class="vx-freshness" data-state="${s}"><span class="vx-live-dot" data-live="${s==='live'?'1':'0'}"></span>${m[0]}</span>`;
+  if(!has)return `<span class="vx-freshness" data-state="offline"><span class="vx-live-dot" data-live="0"></span>OFFLINE</span>`;
+  if(!(window.VX&&VX.freshness&&VX.fetch))return '';
+  const pk=VX.fetch.peek('/api/session/manifest');
+  const a=(pk&&pk.data&&typeof pk.data.age_s==='number')?pk.data.age_s*1000:null;
+  return VX.freshness.chip(VX.freshness.assess({ageMs:a,live:!!window.__pfLive}));
 }
 
 /* ═══ SYNTHÈSE — PREMIER ÉCRAN (LOT A + H) ═══ */
@@ -1043,7 +1056,10 @@ async function pfFresh(){try{
   const a=(pk&&pk.data&&typeof pk.data.age_s==='number')?pk.data.age_s*1000:null;
   el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:a,live:live}));
 }catch(e){}}
-function boot(){pfFresh();(RENDER[VIEW]||renderSynthese)().catch(e=>{$('pf-body').innerHTML=VX.states.error(e.message);});}
+/* `pfFresh` est ATTENDU avant le rendu (lot 63) : il met le manifeste en cache,
+   dont `freshBadge()` lit l'âge de façon synchrone. Sans cette attente, la
+   synthèse peindrait « — » là où l'âge est connaissable un instant plus tard. */
+async function boot(){try{await pfFresh();}catch(e){}(RENDER[VIEW]||renderSynthese)().catch(e=>{$('pf-body').innerHTML=VX.states.error(e.message);});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 ['vx:position-changed','vx:watchlist-changed','vx:follow-changed','vx:favorites-changed']
   .forEach(ev=>VX.bus.on(ev,(e)=>{if((e.detail||{}).source!=='sync')return boot();boot();}));

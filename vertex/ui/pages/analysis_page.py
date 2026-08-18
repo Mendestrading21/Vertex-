@@ -815,7 +815,14 @@ async function loadDecisionStack(){
     +'<div class="vx-verdict-head"><span class="vx-verdict-label">'+esc(dec.decision_label||dec.final_decision)+'</span>'
     +(dec.grade?'<span class="vx-badge">'+esc(dec.grade)+'</span>':'')
     +(conf!=null?'<span class="vx-verdict-score">confiance '+conf+'/100</span>':'')
-    +'<span class="vx-actions">'+('<span class="vx-freshness" data-live="'+(demoState()?'fallback':'delayed')+'"><span class="vx-live-dot"></span>'+(demoState()?'Démo':'Différé')+'</span>')+'</span></div>'
+    /* FRAÎCHEUR RÉELLE, ET NON UNE CONSTANTE (lot 63).
+       Avant : `demoState()?'fallback':'delayed'` — hors démo, ce badge disait
+       « Différé » que le prix ait dix secondes ou trois jours, sur la carte du
+       VERDICT, là où la page conclut. Mesuré sous vieillissement des réponses :
+       il ne bougeait pas d'un iota à +2 h. Il lit désormais le MÊME âge que la
+       puce du prix juste au-dessus (`domains.prices.age_s`), par le helper
+       canonique — une seule table de seuils pour toute l'application. */
+    +'<span class="vx-actions">'+((window.VX&&VX.freshness&&VX.freshness.domainChip)?VX.freshness.domainChip('prices'):'')+'</span></div>'
     +'<div class="vx-verdict-grid">'
     +cell('Prix',(TICKER&&TICKER.detail&&TICKER.detail.price!=null)?VX.fmt.price(TICKER.detail.price):'n/d','an-verdict-price')
     +cell('Entrée',entry!=null?VX.fmt.price(entry):'—')

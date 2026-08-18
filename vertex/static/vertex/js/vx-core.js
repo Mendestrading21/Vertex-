@@ -483,6 +483,29 @@
       return '<span class="vx-fresh-chip" data-state="' + a.state + '" title="' + (a.label || '') + '">' +
         dot + (a.label || '') + '</span>';
     },
+    /* ── Fraîcheur d'un DOMAINE de données (lot 63) ───────────────────────
+       Le lot 63 a mesuré, badge par badge sous vieillissement des réponses,
+       que les étiquettes écrites À LA MAIN étaient TOUTES des constantes —
+       « Différé » ou « DELAYED » quel que soit l'âge — tandis que les puces
+       issues de `chip()` réagissaient TOUTES. Le défaut ne venait pas des
+       pages : il venait de ce qu'écrire l'étiquette soi-même était plus court
+       que d'aller chercher un âge.
+
+       Ce helper rend l'honnêteté plus courte que le mensonge. `__vxStatus` est
+       la réponse de `/api/live/status`, posée par le shell sur CHAQUE page :
+       `domains.<nom>.age_s` y donne l'âge réel de la donnée, par domaine
+       (`prices`, `options`, `news`, `calendar`…), chacun avec son propre seuil
+       serveur. Âge inconnu → `assess` rend l'état « — », qui est l'aveu honnête
+       et non une valeur inventée. */
+    domainChip(nom) {
+      const st = (typeof window !== 'undefined' && window.__vxStatus) || null;
+      if (st && st.demo) {
+        return '<span class="vx-fresh-chip" data-state="demo" title="Démonstration">DÉMO</span>';
+      }
+      const d = st && st.domains && st.domains[nom];
+      const a = (d && typeof d.age_s === 'number') ? d.age_s * 1000 : null;
+      return this.chip(this.assess({ ageMs: a, live: !!st && st.mode === 'live' }));
+    },
   };
 
   /* ── Store global minimal (LOT 2 — fondation ; SWR/dédup enrichis au LOT 3) ──

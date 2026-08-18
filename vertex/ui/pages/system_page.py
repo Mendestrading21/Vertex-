@@ -476,7 +476,17 @@ async function loadConnections(){
       if(_hero)_hero.innerHTML='<div class="vx-flex vx-wrap" style="justify-content:space-between;align-items:flex-start;gap:10px">'
         +'<div style="max-width:640px"><div class="vx-flex" style="gap:8px;align-items:center;margin-bottom:4px">'
         +'<span class="vx-eyebrow">Confiance données</span>'
-        +'<span class="vx-freshness" data-state="'+(_tone==='pos'?'live':_tone==='warn'?'delayed':'stale')+'">'+esc(_headline)+'</span>'
+        /* ÉTAT DU SYSTÈME, PAS ÂGE DE LA DONNÉE (lot 63).
+           Cette pilule portait la classe `vx-freshness` — le vêtement de la
+           fraîcheur — pour dire « Système opérationnel », qui décrit la
+           CONNEXION. Mesurée sous vieillissement de toutes les réponses à +2 h,
+           elle ne bougeait pas : normal, elle ne parle pas d'âge. Son texte
+           était honnête ; c'est sa CLASSE qui mentait, et c'est très exactement
+           ce qui a fait qu'un instrument l'a prise pour une étiquette de
+           fraîcheur au lot 62 puis pour une constante au lot 63.
+           `vx-badge-status` est la pilule d'état, déjà utilisée six fois sur
+           cette même page — un mot dans le bon vêtement. */
+        +'<span class="vx-badge vx-badge-status" data-status="'+(_tone==='pos'?'live':_tone==='warn'?'delayed':'frozen')+'">'+esc(_headline)+'</span>'
         +(_demo?'<span class="vx-badge-demo">DÉMO</span>':'')+(_ro?'<span class="vx-badge vx-pos">READONLY</span>':'')+'</div>'
         +'<h2 style="margin:0 0 6px;font-size:21px" class="'+({pos:'vx-pos',warn:'vx-warn',muted:'vx-muted'}[_tone])+'">'+esc(_headline)+'</h2>'
         +'<p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.6">'+_line.map(esc).join(' · ')+'.</p></div>'

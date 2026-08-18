@@ -375,7 +375,11 @@ function renderHero(rows,scan,best,catBySym){
      dominante ; les volumes S+/S/A restent de simples badges de contexte. */
   el.innerHTML='<section class="vx-card vx-card--hero" aria-label="Réponse du radar">'
     +'<div class="vx-card-header"><span class="vx-card-title">Priorités</span>'
-    +'<span class="vx-actions"><span class="vx-freshness" data-live="'+(m==='fallback'?'fallback':'delayed')+'"><span class="vx-live-dot"></span>'+dq+'</span></span></div>'
+    /* Le badge du hero portait `dq` (la QUALITÉ des données) dans une pilule de
+       FRAÎCHEUR, avec un état qui ne dépendait d'aucun âge. Deux concepts dans
+       un seul objet, dont un faux. `dq` reste affiché juste à côté, dans
+       `rankBadges` (« Données · … »), où il a toujours eu sa place. */
+    +'<span class="vx-actions">'+opFreshHtml()+'</span></div>'
     +'<div class="vx-grid vx-hero-grid"><div class="vx-col-5 vx-page-lead">'
       +'<div class="vx-op-hero-lead"><span class="tag" data-tone="'+tone+'">'+(cnt['S+']||cnt['S']?'À étudier':'Patience')+'</span>'
         +'<span class="txt">'+msg+'</span></div>'+rankBadges+'</div>'
@@ -757,17 +761,31 @@ async function loadSkylerRank(){
 const RENDER={radar:async function(){await renderRadar();await loadSkylerRank();},
   stocks:renderStocks,options:renderOptions,
   anomalies:renderAnomalies,calendar:renderCalendar};
-async function opFresh(){try{
-  const el=document.getElementById('op-fresh');if(!el||!window.VX||!VX.freshness)return;
-  let pk=VX.fetch.peek('/api/session/manifest');
-  if(!pk){try{await VX.fetch('/api/session/manifest',{ttl:30000});pk=VX.fetch.peek('/api/session/manifest');}catch(e){}}
+/* UNE SEULE FRAÎCHEUR POUR LA PAGE (lot 63).
+   La puce du bandeau (#op-fresh) lisait l'âge réel de la session ; le badge du
+   hero, lui, était écrit à la main — `m==='fallback'?'fallback':'delayed'` — et
+   ne bougeait pas d'un iota quand toutes les réponses vieillissaient de deux
+   heures. Deux étiquettes sur le même écran, une honnête et une décorative.
+   Elles partagent désormais ce calcul unique. */
+function opFreshHtml(){
+  if(!(window.VX&&VX.freshness&&VX.fetch))return '';
+  const pk=VX.fetch.peek('/api/session/manifest');
   const live=!(window.__vxStatus&&window.__vxStatus.demo);
   /* Âge HONNÊTE = ancienneté réelle de la session (manifest.age_s), pas l'âge de
      l'entrée de cache : un manifest resservi doit refléter l'âge de la DONNÉE. */
   const a=(pk&&pk.data&&typeof pk.data.age_s==='number')?pk.data.age_s*1000:null;
-  el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:a,live:live}));
+  return VX.freshness.chip(VX.freshness.assess({ageMs:a,live:live}));
+}
+async function opFresh(){try{
+  const el=document.getElementById('op-fresh');if(!el||!window.VX||!VX.freshness)return;
+  if(!VX.fetch.peek('/api/session/manifest')){
+    try{await VX.fetch('/api/session/manifest',{ttl:30000});}catch(e){}}
+  el.innerHTML=opFreshHtml();
 }catch(e){}}
-function boot(){opFresh();(RENDER[VIEW]||renderRadar)().catch(e=>{
+/* `opFresh` est ATTENDU avant le rendu : sans quoi le hero peindrait son badge
+   avant que le manifeste soit en cache, et afficherait « — » là où l'âge est
+   parfaitement connaissable une fraction de seconde plus tard. */
+async function boot(){try{await opFresh();}catch(e){}(RENDER[VIEW]||renderRadar)().catch(e=>{
   $('op-body').innerHTML=VX.states.error('Impossible de charger les opportunités.');});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 })();

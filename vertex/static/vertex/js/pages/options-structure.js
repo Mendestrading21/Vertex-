@@ -147,7 +147,20 @@
     var be = (s.breakevens && s.breakevens.length) ? s.breakevens.map(function (b) { return nd(b); }).join(' · ') : '—';
     var g = s.greeks || null;
     var cell = function (l, v, cls) { return '<div class="vx-kv"><span class="k">' + l + '</span><span class="v ' + (cls || '') + '">' + v + '</span></div>'; };
-    var fresh = '<span class="vx-freshness" data-state="' + (d.demo ? 'demo' : 'delayed') + '">' + (d.demo ? 'DÉMO' : 'DELAYED') + '</span>';
+    /* FRAÎCHEUR RÉELLE, ET NON UNE CONSTANTE (lot 63).
+       Avant : `d.demo ? 'demo' : 'delayed'` avec le texte « DELAYED » — hors
+       démo, ce badge disait la même chose que les primes aient dix secondes ou
+       trois jours. Sur Options, c'est la pire page où mentir : une prime, une IV
+       et un spread vieillissent en minutes, et la carte-Verdict est exactement
+       l'endroit où l'on conclut.
+
+       Le serveur sert déjà l'âge du domaine `options` (avec son propre seuil de
+       1 800 s) dans `/api/live/status`, que le shell pose sur `__vxStatus`. Le
+       badge le lit par le helper canonique — plus aucune table de seuils écrite
+       à la main, et « DELAYED » cède la place au vocabulaire français du reste
+       de l'application. */
+    var fresh = (VX && VX.freshness && VX.freshness.domainChip)
+      ? VX.freshness.domainChip('options') : '';
     return '<section class="vx-verdict-card vx-card" aria-label="Verdict de la structure">'
       + '<div class="vx-flex vx-wrap" style="justify-content:space-between;align-items:flex-start;gap:10px">'
       + '<div><div class="vx-flex" style="gap:8px;align-items:center"><span class="vx-eyebrow">Verdict</span>' + fresh
