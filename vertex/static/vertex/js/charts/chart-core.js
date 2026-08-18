@@ -183,20 +183,30 @@
     });
   }
 
-  /* Badge de fraîcheur canonique — langage visuel unique de l'honnêteté.
-     freshness ∈ live | delayed | stale | demo | offline | missing. */
-  C.freshnessBadge = function (freshness) {
-    if (!freshness) return '';
-    const f = String(freshness).toLowerCase();
-    const map = {
-      live: ['live', 'Live'], delayed: ['delayed', 'Différé'],
-      stale: ['frozen', 'Périmé'], demo: ['fallback', 'Démo'],
-      offline: ['offline', 'Hors ligne'], missing: ['offline', 'Indisponible'],
-    };
-    const m = map[f] || ['fallback', freshness];
-    return `<span class="vx-freshness" data-live="${m[0]}" title="Fraîcheur : ${m[1]}">` +
-      `<span class="vx-live-dot"></span>${m[1]}</span>`;
-  };
+  /* ── `C.freshnessBadge` A ÉTÉ RETIRÉ (lot 64) ─────────────────────────────
+     Il définissait un « badge de fraîcheur canonique » à six états, appelé
+     depuis `C.card` et `heatmap.js`. Le lot 581 en avait conclu : « un seul
+     site d'appel, mais dans C.card — CHAQUE carte-graphique du produit rend
+     donc ce badge ».
+
+     C'était exactement l'inverse, et c'est mesurable des deux côtés :
+       · statiquement — `opts.freshness` n'était passé par AUCUN appelant, et
+         la fonction rendait `''` sans valeur ;
+       · au navigateur — 4 cartes-graphiques peintes, 0 badge de fraîcheur.
+
+     Un raisonnement juste sur la PORTÉE d'un site d'appel, appliqué à un appel
+     qui ne produit rien. Le lot 581 avait corrigé « un compte d'appels n'est
+     pas une surface d'écran » et commis aussitôt son symétrique : *une portée
+     n'est pas une sortie*.
+
+     Pourquoi retirer plutôt que câbler : l'âge a DÉJÀ un domicile sur la carte
+     — la provenance en pied (`VX.updateIndicator(timestamp, source, mode)`),
+     peinte sur les 4 cartes mesurées. Câbler l'en-tête aurait créé un second
+     domicile pour la même donnée, ce qui est précisément le défaut corrigé au
+     lot 63 sur Opportunités. Et cela supprime une des deux grammaires de
+     fraîcheur que le lot 581 relevait comme divergentes (`data-live` ici,
+     `data-state` dans `VX.freshness`), sans rien retirer de l'écran : le retrait
+     est à rendu IDENTIQUE, puisque la branche était inatteignable. */
 
   /* Corps d'état honnête du Chart Shell : loading / empty / stale / error. */
   C._stateBody = function (state, opts) {
@@ -270,10 +280,9 @@
     const head = `
       <div class="vx-chart-head">
         <h${niv} class="vx-chart-title" id="${id}-title">${opts.title || ''}</h${niv}>
-        ${(opts.timeframe || opts.unit || opts.freshness) ? `<span class="vx-chart-meta">
+        ${(opts.timeframe || opts.unit) ? `<span class="vx-chart-meta">
           ${opts.timeframe ? `<span class="vx-badge">${opts.timeframe}</span>` : ''}
-          ${opts.unit ? `<span class="vx-badge vx-badge-unit">${opts.unit}</span>` : ''}
-          ${C.freshnessBadge(opts.freshness)}</span>` : ''}
+          ${opts.unit ? `<span class="vx-badge vx-badge-unit">${opts.unit}</span>` : ''}</span>` : ''}
         ${opts.controlsHtml ? `<span class="vx-chart-controls">${opts.controlsHtml}</span>` : ''}
         ${opts.question && !opts.conclusion ? `<span class="vx-chart-question">${opts.question}</span>` :
           (opts.question ? `<span class="vx-sr-only">${opts.question}</span>` : '')}

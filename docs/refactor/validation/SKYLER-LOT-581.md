@@ -198,8 +198,34 @@ Trois règles neuves :
 - **581-B · UN NOM D'ÉTAT N'EST PAS SA VALEUR D'ATTRIBUT** — `stale → frozen`,
   `demo → fallback`, `missing → offline` ; deux noms tombent sur la même valeur
   avec deux libellés différents.
-- **581-C · UN SEUL SITE D'APPEL PEUT COUVRIR TOUT L'ÉCRAN** — `freshnessBadge`
-  est appelée **une fois**, dans le constructeur de carte canonique.
+- ~~**581-C · UN SEUL SITE D'APPEL PEUT COUVRIR TOUT L'ÉCRAN** — `freshnessBadge`
+  est appelée **une fois**, dans le constructeur de carte canonique.~~
+
+  > ⚠ **CORRECTION (lot 64) — 581-C ÉTAIT FAUX, ET SON ÉNONCÉ EST À RETOURNER.**
+  >
+  > La conclusion tirée ici était : *« un seul site d'appel, mais il est dans
+  > `C.card` — **chaque carte-graphique du produit rend donc ce badge** »*.
+  > C'est l'inverse, mesuré des deux côtés :
+  >
+  > - statiquement, `opts.freshness` n'était passé par **aucun** appelant du
+  >   produit, et la fonction rend `''` sans valeur ;
+  > - au navigateur, **4 cartes-graphiques peintes, 0 badge de fraîcheur**.
+  >
+  > Le raisonnement sur la **portée** du site d'appel était juste ; il a été
+  > appliqué à un appel **qui ne produit rien**. Ce lot venait précisément de
+  > corriger « un compte d'appels n'est pas une surface d'écran » — et a commis
+  > aussitôt le défaut symétrique :
+  >
+  > **581-C (corrigé) · UNE PORTÉE N'EST PAS UNE SORTIE.** Un site d'appel bien
+  > placé ne prouve rien tant qu'on n'a pas vérifié qu'il **produit** quelque
+  > chose. Compter les appels, puis mesurer leur portée, puis oublier de
+  > regarder l'écran : trois étapes, et l'erreur s'est déplacée à chaque fois
+  > d'un cran sans jamais atteindre le seul juge qui compte.
+  >
+  > `C.freshnessBadge` a été **retirée** au lot 64 — retrait à rendu identique,
+  > puisque la branche était inatteignable. Voir
+  > `SIGNAL-OS-64-CONTRAT-CHART-SHELL.md`. Cela referme aussi une des « dettes
+  > nommées » ci-dessous : les quatre vocabulaires d'état passent à trois.
 
 Feuille : **37 ou 38 dossiers annoncés — non tranché** ; relevé strict **35 + 5
 candidats ambigus + 531-A** (ampleur **quatre chargeurs**).

@@ -93,10 +93,12 @@ C.heatmapCard=function(host,opts){
     :`<div class="vx-state" data-state="empty" role="status"><div class="vx-state-icon">—</div><div><b>Donnée indisponible</b><br>${esc(opts.stateMessage||question||'Aucune cellule à afficher.')}</div></div>`;
 
   el.innerHTML=`<div class="vx-chart-head"><h3 class="vx-chart-title" id="${id}-title">${esc(opts.title||'')}</h3>
-    ${(opts.timeframe||opts.unit||opts.freshness)?`<span class="vx-chart-meta">
+    ${/* `opts.freshness` retire au lot 64 : aucun appelant ne l'a jamais passe,
+          la fonction rendait '' sans valeur, et 0 badge etait peint sur les
+          4 cartes-graphiques mesurees. L'age vit dans la provenance en pied. */
+      (opts.timeframe||opts.unit)?`<span class="vx-chart-meta">
       ${opts.timeframe?`<span class="vx-badge">${esc(opts.timeframe)}</span>`:''}
-      ${opts.unit?`<span class="vx-badge vx-badge-unit">${esc(opts.unit)}</span>`:''}
-      ${C.freshnessBadge?C.freshnessBadge(opts.freshness):''}</span>`:''}
+      ${opts.unit?`<span class="vx-badge vx-badge-unit">${esc(opts.unit)}</span>`:''}</span>`:''}
     ${question&&!conclusion?`<span class="vx-chart-question">${esc(question)}</span>`:
       (question?`<span class="vx-sr-only">${esc(question)}</span>`:'')}
     ${conclusion?`<span class="vx-chart-conclusion">${esc(conclusion)}</span>`:''}</div>

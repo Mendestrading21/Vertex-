@@ -42,8 +42,18 @@ def test_chart_shell_contract_complete():
     """Le Chart Shell (C.card) porte tout le contrat : titre/question/conclusion/
     période/unité/source/fraîcheur/légende/aide/résumé accessible + états."""
     js = _read('vertex/static/vertex/js/charts/chart-core.js')
+    #  LOT 64 — `freshnessBadge` retiré de cette liste, et c'est une correction,
+    #  pas un assouplissement. Ce jeton y affirmait que le shell porte la
+    #  fraîcheur ; la mesure des deux côtés du contrat a montré que la branche
+    #  n'était atteignable PAR PERSONNE (`opts.freshness` jamais passé) et que
+    #  0 badge était peint sur les 4 cartes-graphiques du produit. Le jeton
+    #  survivait d'ailleurs au retrait de la fonction — il restait dans le
+    #  commentaire qui l'explique. Une recherche de sous-chaîne sur un fichier
+    #  entier ne peut pas distinguer « présent » de « atteint l'écran » : c'est
+    #  `updateIndicator`, gardé ci-dessous, qui porte réellement l'âge sur la
+    #  carte, en pied, et qui est peint sur les 4.
     for token in ('vx-chart-title', 'vx-chart-question', 'vx-chart-conclusion',
-                  'timeframe', 'opts.unit', 'freshnessBadge', 'opts.summary',
+                  'timeframe', 'opts.unit', 'opts.summary',
                   'vx-sr-only', 'updateIndicator', 'Comprendre ce graphique'):
         assert token in js, 'contrat Chart Shell incomplet : %s manquant' % token
 
@@ -56,9 +66,24 @@ def test_chart_shell_has_all_states():
 
 
 def test_freshness_badge_covers_all_states():
-    js = _read('vertex/static/vertex/js/charts/chart-core.js')
-    for f in ('live', 'delayed', 'stale', 'demo', 'offline', 'missing'):
-        assert f in js, 'fraîcheur %s absente du badge canonique' % f
+    """LE VOCABULAIRE DE FRAÎCHEUR, LÀ OÙ IL ATTEINT VRAIMENT L'ÉCRAN (lot 64).
+
+    Ce test cherchait six mots dans `chart-core.js` — `live`, `delayed`,
+    `stale`, `demo`, `offline`, `missing` — et les trouvait pour la plupart
+    ailleurs que dans le badge (`vx-live-dot`, les états de rendu, `modeLabel`).
+    Il affirmait « le badge canonique couvre tous les états » en ne prouvant
+    rien de tel : le badge en question n'a JAMAIS rien peint, faute d'appelant.
+
+    Le vocabulaire canonique qui atteint l'écran est `VX.freshness.LABEL`, dans
+    `vx-core.js` — mesuré peint aux lots 62 et 63 sur Aujourd'hui, Marchés,
+    Opportunités, Analyse, Portefeuille et Options. On garde donc l'exigence,
+    déplacée là où elle porte, et sur la TABLE plutôt que sur le fichier."""
+    js = _read('vertex/static/vertex/js/vx-core.js')
+    table = js.split('LABEL: {', 1)[1].split('}', 1)[0]
+    for f in ('live', 'snapshot', 'saved', 'stale', 'refreshing', 'error', 'offline'):
+        assert "%s:" % f in table, (
+            'l\'état de fraîcheur « %s » a disparu de VX.freshness.LABEL : '
+            'l\'écran perd un mot de son vocabulaire d\'honnêteté' % f)
 
 
 # ─────────────────────────────────────────────── Composants canoniques
