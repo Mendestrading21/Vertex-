@@ -156,3 +156,78 @@ def test_ce_qui_manque_au_score_est_annonce(client):
     assert 'ne le remplace pas' in corps, (
         'la clause descriptive a disparu — la fiabilite peut se lire comme un '
         'second verdict')
+
+
+#  ─── LOT 51 : les vingt-et-un contextes du packet ──────────────────────────
+#  Troisième correction du même genre : je cherchais les moteurs par NOM DE
+#  MODULE, alors que le packet les publie sous des clés plus courtes —
+#  `drawdown_context` sort en `contexts.drawdown`. Mes « 20 enfermés »
+#  comptaient donc des moteurs qui sortaient très bien.
+#
+#  Le fait utile : les 21 contextes partagent UN SEUL contrat (`available`,
+#  `status`, `reason`/`note`, `read_only`). Le rendu est donc générique, et
+#  c'est ce que ce gardien protège — un rendu générique accueille le 22e sans
+#  une ligne de code, un rendu à 21 cas particuliers l'oublierait.
+
+def test_les_contextes_du_packet_sortent_avec_un_contrat_uniforme(client):
+    from vertex.app.state import scan_state
+    detail = scan_state.setdefault('detail', {})
+    sauve = detail.get('CTX51')
+    closes = [100.0 + i * 0.3 for i in range(240)]
+    detail['CTX51'] = {'price': closes[-1], 'closes': closes, 'sector': 'Technology',
+                       'series': {'closes': closes}}
+    try:
+        rep = client.get('/api/skyler/CTX51').get_json() or {}
+    finally:
+        if sauve is None:
+            detail.pop('CTX51', None)
+        else:
+            detail['CTX51'] = sauve
+    ctx = ((rep.get('packet') or {}).get('contexts') or {})
+    assert len(ctx) >= 15, (
+        'le packet ne publie plus que %d contextes — le bloc generique de la '
+        'fiche perd sa matiere' % len(ctx))
+    #  LE CONTRAT REEL, mesure et non suppose. Ma premiere version exigeait
+    #  `available` PARTOUT — et deux contextes riches (`catalysts`, `market`)
+    #  ne le portent pas. Le rendu binaire les grisait alors comme « non
+    #  disponibles » : une affirmation FAUSSE sur une donnee presente. Absence
+    #  de declaration n'est pas declaration d'absence.
+    #  Ce que le rendu exige vraiment : que CHAQUE contexte ait de quoi se dire.
+    muets = [k for k, v in ctx.items()
+             if isinstance(v, dict)
+             and 'available' not in v
+             and not (v.get('status') or v.get('note') or v.get('reason'))]
+    assert not muets, (
+        'ces contextes n\'ont ni drapeau `available` ni phrase (`status`, '
+        '`note`, `reason`) : la fiche ne pourrait qu\'inventer ce qu\'ils '
+        'disent — %s' % ', '.join(sorted(muets)))
+
+
+def test_le_bloc_des_contextes_est_generique_et_APPELE(client):
+    """Générique : il lit `packet.contexts` en entier. Appelé : site d'appel
+    présent, même exigence qu'aux lots 49 et 50."""
+    corps = client.get('/analysis/CTX51').get_data(as_text=True)
+    assert 'packet.contexts' in corps.replace(' ', ''), (
+        'la fiche ne lit plus la table des contextes du packet')
+    assert '+contextesDossier(r)' in corps.replace(' ', '').replace('\n', ''), (
+        'le bloc des contextes n\'est plus appele par le rendu')
+    assert 'Contextes du dossier' in corps
+
+
+def test_un_contexte_sans_drapeau_n_est_pas_declare_indisponible(client):
+    """LE DÉFAUT TROUVÉ AVANT LIVRAISON.
+
+    `catalysts` et `market` sont riches et ne portent pas `available`. Un rendu
+    à deux états les affichait grisés, donc « non disponibles » — faux. Le rendu
+    en a trois : disponible, indisponible, et **sans déclaration**."""
+    corps = client.get('/analysis/CTX51').get_data(as_text=True)
+    compact = corps.replace(' ', '').replace('\n', '')
+    #  On vise l'EXPRESSION EXACTE de la ligne, pas une occurrence voisine :
+    #  ma premiere version cherchait `'available'inc`, qui apparait aussi dans
+    #  le comptage. Le rendu binaire passait donc la mutation sans broncher.
+    assert "flag=('available'inc)?c.available===true:null" in compact, (
+        'la ligne de contexte ne distingue plus TROIS etats : le contexte qui '
+        'declare son indisponibilite, celui qui declare sa disponibilite, et '
+        'celui qui ne declare rien')
+    assert 'sans déclaration' in corps, (
+        'le resume ne compte plus les contextes sans drapeau a part')

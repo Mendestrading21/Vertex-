@@ -1013,6 +1013,60 @@ function fiabilite(d){
   return '<div class="vx-mt2"><div class="vx-kpi-label">Fiabilité — explique le '
     +'verdict, ne le remplace pas</div>'+bl.join('')+'</div>';
 }
+/* LES VINGT-ET-UN CONTEXTES DU DOSSIER (lot 51).
+
+   Ils arrivaient tous dans `packet.contexts` de `/api/skyler/<sym>` et AUCUN
+   n'etait lu. Mesure a l'appui : 6 peints, 8 muets, 20 « enfermes » — et ce
+   dernier chiffre etait faux, parce que je cherchais par NOM DE MODULE alors
+   que le packet les publie sous des cles plus courtes (`drawdown_context`
+   sort en `contexts.drawdown`). Troisieme fois qu'une hypothese de nommage
+   me trompe dans cette serie.
+
+   Le vrai fait, lui, est meilleur que prevu : les 21 contextes partagent UN
+   SEUL contrat — `available`, `status`, `reason`/`note`, `read_only`. Un
+   contrat uniforme merite un rendu GENERIQUE, pas vingt-et-un cas
+   particuliers : ce bloc affiche donc ce que chaque contexte dit de lui-meme,
+   et il accueillera le vingt-deuxieme sans une ligne de code de plus.
+
+   Replie par defaut : ils expliquent le dossier, ils ne disputent pas le
+   verdict — qui reste au-dessus, seul. */
+const CTX_LBL={technical:'Technique',fundamentals:'Fondamentaux',catalysts:'Catalyseurs',
+  anomalies:'Anomalies',market:'Marché',portfolio:'Portefeuille',options:'Options',
+  data_quality:'Qualité des données',reconciliation:'Réconciliation',
+  drawdown:'Drawdown',downside_volatility:'Volatilité baissière',
+  relative_strength:'Force relative',relative_volume:'Volume relatif',
+  gap_risk:'Risque de gap',earnings_proximity:'Proximité des résultats',
+  earnings_holding_overlap:'Résultats vs détention',
+  earnings_option_overlap:'Résultats vs option',
+  iv_term_structure:'Structure de terme IV',iv_skew:'Skew IV',
+  open_interest_concentration:'Concentration d’OI',
+  call_put_structure:'Structure calls/puts'};
+function contextesDossier(r){
+  const ctx=(r&&r.packet&&r.packet.contexts)||{};
+  const cles=Object.keys(ctx).filter(k=>ctx[k]&&typeof ctx[k]==='object');
+  if(!cles.length)return '';
+  /* TROIS ETATS, PAS DEUX — et le troisieme m'a failli faire mentir.
+     `catalysts` et `market` sont des contextes RICHES qui ne portent tout
+     simplement pas le drapeau `available`. Un rendu binaire les grisait comme
+     « non disponibles » : une affirmation fausse sur une donnee presente.
+     Absence de declaration n'est pas declaration d'absence. */
+  const declarants=cles.filter(k=>'available' in ctx[k]);
+  const dispo=declarants.filter(k=>ctx[k].available===true);
+  const sansFlag=cles.filter(k=>!('available' in ctx[k]));
+  const rang=k=>('available' in ctx[k])?(ctx[k].available===true?0:2):1;
+  const rows=cles.sort((a,b)=>rang(a)-rang(b)||a.localeCompare(b)).map(k=>{
+    const c=ctx[k],flag=('available' in c)?c.available===true:null;
+    const dit=flag===true?(c.status||'disponible')
+      :flag===false?(c.reason||c.note||c.status||'non disponible')
+      :(c.status||c.note||'renseigné');
+    return '<div class="vx-kv"><span class="k">'+esc(CTX_LBL[k]||k)+'</span>'
+      +'<span class="v '+(flag===false?'vx-muted':'')+'">'+esc(String(dit))+'</span></div>';
+  }).join('');
+  return '<details class="vx-mt2"><summary class="vx-kpi-label">Contextes du dossier — '
+    +dispo.length+' disponible(s) sur '+declarants.length+' déclarant(s)'
+    +(sansFlag.length?' · '+sansFlag.length+' sans déclaration':'')
+    +' · descriptifs, lecture seule</summary>'+rows+'</details>';
+}
 /* Skyler — décision canonique : score /40 par blocs, hard gates, scénarios. */
 async function loadSkyler(){
   const host=$('an-skyler');if(!host)return;
@@ -1049,7 +1103,7 @@ async function loadSkyler(){
       +(d.max_risk_pct!=null?'Risque max : '+d.max_risk_pct+' % · ':'')
       +(unknown?unknown+' porte(s) non évaluable(s) · ':'')
       +'Objection : '+esc(d.strongest_objection||'—')+'</div>'
-      +contextes(d)+fiabilite(d);
+      +contextes(d)+fiabilite(d)+contextesDossier(r);
   }catch(e){host.innerHTML='<div class="vx-error-banner">Skyler injoignable : '+esc(e.message)+'</div>';}
 }
 /* Laboratoire d'évidence (X2) : stats ex post réelles après les spikes passés. */
