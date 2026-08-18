@@ -283,7 +283,10 @@ def analyse(df, bench_ret, fund=None):
     _l = df['Low'].reindex(idx) if 'Low' in df.columns else None
     _v = df['Volume'].reindex(idx) if 'Volume' in df.columns else None
     series = {
-        'dates': [d.strftime('%m-%d') for d in cc.index],
+        # Dates ISO canoniques pour les diagnostics temporels ; libellés courts
+        # séparés pour l'affichage afin de ne jamais réinterpréter les années.
+        'dates': [d.date().isoformat() for d in cc.index],
+        'date_labels': [d.strftime('%m-%d') for d in cc.index],
         'close': [round(float(x), 2) for x in cc.values],
         'ema20': _clean(ema20s.values),
         'sma50': _clean(sma50s.values),
