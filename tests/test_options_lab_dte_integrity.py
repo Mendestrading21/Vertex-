@@ -76,3 +76,17 @@ def test_comparator_refuses_missing_spot_or_iv_without_default_prices():
             'status': 'VEHICLE_MATRIX_INPUT_UNAVAILABLE', 'read_only': True,
         },
     }
+
+
+def test_comparator_does_not_invent_pop_or_break_even_metrics():
+    star = {'sym': 'TST', 'spot': 100, 'iv': 30, 'pop': None}
+    comparator = options_lab._comparator(star, None, {})
+    rows = {row['name']: row for row in comparator['rows']}
+    assert rows['Action (100 titres)']['be'] == 100.0
+    assert rows['Action (100 titres)']['coverage']['break_even_observed'] is True
+    for name, row in rows.items():
+        assert row['pop'] is None
+        assert row['coverage']['pop_available'] is False
+        if name != 'Action (100 titres)':
+            assert row['be'] is None
+            assert row['coverage']['break_even_available'] is False
