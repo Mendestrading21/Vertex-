@@ -98,9 +98,20 @@ def options_scenarios(sym):
     if not spot or spot <= 0:
         return jsonify({'symbol': sym, 'empty': True,
                         'reason': 'spot indisponible — simulation refusée (aucune donnée inventée)'}), 200
+    try:
+        dte_raw = float(c.get('dte'))
+        dte = int(dte_raw) if dte_raw >= 0 and dte_raw.is_integer() else None
+    except (TypeError, ValueError):
+        dte = None
+    if dte is None:
+        return jsonify({'symbol': sym, 'empty': True,
+                        'reason': 'dte indisponible ou invalide — simulation refusée (aucune échéance inventée)',
+                        'input_coverage': {'dte_available': False,
+                                           'status': 'DTE_UNAVAILABLE',
+                                           'read_only': True}}), 200
     iv = c.get('iv')
     contract = {'symbol': sym, 'right': 'P' if c.get('type') == 'PUT' else 'C',
-                'strike': _num(c.get('strike')), 'dte': int(c.get('dte') or 0),
+                'strike': _num(c.get('strike')), 'dte': dte,
                 'mid': ((_num(c.get('cost')) or 0) / 100.0 if _num(c.get('cost')) else None),
                 'iv': (iv / 100.0 if isinstance(iv, (int, float)) and iv > 3 else iv),
                 'expiry': c.get('exp') or ''}

@@ -64,6 +64,31 @@ def test_options_scenarios_route(client):
         assert 'sim' in d and 'contract' in d
 
 
+def test_options_scenarios_refuses_missing_dte_without_inventing_zero(client):
+    from vertex.app.state import scan_state
+    old_board = scan_state.get('options_board')
+    old_detail = scan_state.get('detail', {}).get('DTE0')
+    scan_state['options_board'] = [{'sym': 'DTE0', 'type': 'CALL', 'quality': 80,
+                                    'strike': 110, 'spot': 100, 'dte': None,
+                                    'iv': 0.30, 'cost': 250}]
+    scan_state.setdefault('detail', {})['DTE0'] = {'price': 100}
+    try:
+        d = client.get('/api/options/scenarios/DTE0').get_json()
+        assert d['empty'] is True
+        assert d['reason'] == 'dte indisponible ou invalide — simulation refusée (aucune échéance inventée)'
+        assert d['input_coverage'] == {
+            'dte_available': False,
+            'status': 'DTE_UNAVAILABLE',
+            'read_only': True,
+        }
+    finally:
+        scan_state['options_board'] = old_board
+        if old_detail is None:
+            scan_state['detail'].pop('DTE0', None)
+        else:
+            scan_state['detail']['DTE0'] = old_detail
+
+
 def test_options_scenarios_subview_page(client):
     assert client.get('/options?view=scenarios').status_code == 200
 
