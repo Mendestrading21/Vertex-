@@ -51,10 +51,20 @@ la différence entre deviner et mesurer.
 | famille | nombre |
 | --- | --- |
 | **peints** — la clé est lue | **22** |
-| **muets** — la sortie atteint une route, rien ne la lit | **11** |
+| **muets** — la sortie atteint une route, rien ne la lit | ~~**11**~~ → **3**, corrigé au lot 57 |
 | **indéterminés** — la variable poursuit son chemin, l'AST ne suit pas | 27 |
 | **indirects** — appelés par un autre moteur, sortent sous SA clé | 24 |
 | **sans appelant trouvé** | 10 |
+
+> ⚠ **CORRIGÉ AU LOT 57 — sept de ces onze étaient peints.** Cet outil demandait
+> « la clé est-elle lue ? » à des moteurs qui **servent le corps entier** d'une
+> route et n'en publient donc aucune : la réponse était non *par construction*.
+> `anomaly`, `evidence_lab`, `decision_stack`, `session_digest`,
+> `skyler_journal`, `multileg_lab` et `performance` sont demandés par
+> l'interface, route comprise. Septième fois que cette famille de faute revient,
+> et cette fois **dans l'outil écrit pour corriger les six précédentes**. La
+> bonne question, pour un moteur sans clé, est : *l'écran demande-t-il cette
+> route ?* Détail et inventaire corrigé : `SIGNAL-OS-57-CREDIBILITE.md` §1.
 
 Les onze muets, nommés, parce que c'est le gisement :
 

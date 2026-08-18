@@ -124,6 +124,13 @@ _VIEW_CONTENT = {
       <div class="vx-card-header"><span class="vx-card-title">Moteurs</span><span class="vx-actions" id="vx-conn-meta"></span></div>
       <div id="vx-conn-engines">%%LOADING%%</div>
     </section>
+    <!-- Crédibilité du moteur (lot 57) : deux diagnostics servis et jamais lus.
+         « Les moteurs répondent-ils ? » est déjà au-dessus ; ici on répond à
+         « leurs verdicts passés ont-ils tenu, et dérivent-ils ? ». -->
+    <section class="vx-card" aria-label="Crédibilité du moteur">
+      <div class="vx-card-header"><span class="vx-card-title">Crédibilité du moteur</span></div>
+      <div id="vx-engine-credibility">%%LOADING%%</div>
+    </section>
   </div>
 </details>''',
 
@@ -633,6 +640,69 @@ async function loadConnections(){
         +'<div class="vx-help vx-mt3">Lecture seule — aucun de ces endpoints ne peut passer un ordre.</div>');});
   }else{
     $('vx-conn-engines').innerHTML=VX.states.empty('Liste des moteurs indisponible.');
+  }
+}
+
+/* ══ CRÉDIBILITÉ DU MOTEUR (lot 57) ═══════════════════════════════════
+   Deux diagnostics servis par des routes dédiées et lus par PERSONNE :
+   `/api/skyler/validation` (validation walk-forward de la mémoire) et
+   `/api/skyler/monitor` (dérive de performance). Ils répondent à la seule
+   question qui précède toute confiance dans un verdict : **ce moteur a-t-il
+   été éprouvé, et tient-il encore ?**
+
+   L'inventaire du lot 55 les déclarait muets parmi onze ; mesuré au lot 57,
+   ils ne sont plus que trois dans ce cas, et ceux-là le sont vraiment : aucun
+   fichier de l'interface ne demande leur route.
+
+   LE POINT D'HONNÊTETÉ. Les deux répondent aujourd'hui
+   `status: INSUFFICIENT_SAMPLE` avec leur raison chiffrée (« 60 séances datées
+   requises ; 0 disponibles »). Un échantillon insuffisant n'est **ni** une
+   validation **ni** un échec : c'est une absence de conclusion, et la page doit
+   le dire en toutes lettres. L'afficher en vert se lirait comme « validé » ;
+   en rouge, comme « le moteur est cassé ». Ni l'un ni l'autre n'est vrai. */
+const CRED_ETAT={
+  INSUFFICIENT_SAMPLE:['échantillon insuffisant — aucune conclusion','vx-muted'],
+  OK:['éprouvé sur l’échantillon disponible','vx-pos'],
+  DRIFT:['dérive détectée','vx-warn'],
+  DEGRADED:['dégradé','vx-warn'],
+};
+function credLigne(titre, d, compte){
+  if(!d||typeof d!=='object')
+    return '<div class="vx-kv"><span class="k">'+titre+'</span>'
+      +'<span class="v vx-muted">diagnostic injoignable</span></div>';
+  const st=String(d.status||'');
+  const e=CRED_ETAT[st]||[st.toLowerCase().replace(/_/g,' ')||'—',''];
+  return '<div class="vx-kv"><span class="k">'+titre+'</span>'
+    +'<span class="v '+e[1]+'">'+esc(e[0])+'</span></div>'
+    +'<div class="vx-meta" style="margin:-.15rem 0 .45rem">'
+    +esc(d.reason||d.note||'')+(compte?' · '+esc(compte):'')+'</div>';
+}
+async function loadCredibilite(){
+  const host=$('vx-engine-credibility');if(!host)return;
+  try{
+    const [val,mon]=await Promise.all([
+      VX.fetch('/api/skyler/validation',{ttl:300000}).catch(()=>null),
+      VX.fetch('/api/skyler/monitor',{ttl:300000}).catch(()=>null)]);
+    if(!val&&!mon){
+      host.innerHTML=VX.states.empty('Diagnostics de crédibilité indisponibles.');return;
+    }
+    /* La raison du moteur DIT DÉJÀ le seuil et le disponible (« 60 séance(s)
+       datée(s) requise(s) ; 0 disponible(s) »). Y ajouter « 0/60 séance(s)
+       datée(s) » répétait les mêmes mots — mesuré à l'écran au premier
+       passage. On ne garde que le ratio, qui montre d'un coup d'œil la
+       distance au seuil sans redire la phrase. */
+    const nVal=val&&val.n_dated_sessions!=null&&val.required_dated_sessions!=null
+      ? 'progression '+val.n_dated_sessions+'/'+val.required_dated_sessions:'';
+    const nMon=mon&&mon.n_measured!=null&&mon.n_measured===0?'':(
+      mon&&mon.n_measured!=null?'progression '+mon.n_measured:'');
+    host.innerHTML=
+      credLigne('Validation walk-forward',val,nVal)
+      +credLigne('Dérive de performance',mon,nMon)
+      +'<div class="vx-help vx-mt2">Diagnostics descriptifs, en lecture seule. '
+      +'Un échantillon insuffisant n’est ni une validation ni un échec : c’est '
+      +'l’absence de conclusion, et aucun chiffre n’est extrapolé pour la combler.</div>';
+  }catch(e){
+    host.innerHTML=VX.states.error('Diagnostics de crédibilité injoignables : '+esc(e.message));
   }
 }
 
@@ -1173,8 +1243,10 @@ document.querySelectorAll('details.vx-disclosure').forEach(d=>{
 });
 if(VIEW==='connections'){
   loadConnections();
+  loadCredibilite();
   document.getElementById('vx-brain-refresh')?.addEventListener('click',refreshBrain);
   VX.refresh.register(loadConnections,60000,'connections');
+  VX.refresh.register(loadCredibilite,300000,'credibilite');
 }else if(VIEW==='data'){
   loadData();
   loadContinuity();

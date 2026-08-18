@@ -66,6 +66,15 @@ clé dans les sources de l'UI reproduisait, une fois de plus, « comparer par le
 texte ce qui doit l'être par la structure ». L'outil demande donc aussi : *cette
 clé est-elle membre d'un conteneur que l'écran lit en bloc ?*
 
+**1 bis. Un moteur qui sert le CORPS ENTIER n'a pas de clé — il a une ROUTE.**
+Corrigé au lot 57, et c'est la septième fois de la même famille : je demandais
+« la clé est-elle lue ? » à des moteurs qui n'en publient aucune, et la réponse
+était non par construction. Onze moteurs étaient donc déclarés muets ; **sept**
+sont en réalité peints — l'interface `fetch` leur route et affiche le corps.
+`anomaly`, `evidence_lab`, `decision_stack`, `session_digest`, `skyler_journal`,
+`multileg_lab` et `performance` étaient accusés à tort. La bonne question, pour
+eux, est : *l'écran demande-t-il cette route ?*
+
 **2. « Indéterminé ».** L'AST voit ce qui REÇOIT l'appel. Quand c'est une clé de
 dictionnaire, c'est la clé servie ; quand c'est `jsonify(v)`, c'est le corps
 entier. Mais quand c'est une variable intermédiaire (`pctx`, `ev`, `packet0`)
@@ -379,8 +388,16 @@ def main(argv=None):
         u = next((x for x in usages if x['route']), usages[0])
         route = u['route'] or ('via %s' % u['fonction'])
         if u['corps_entier']:
-            ligne = (nom, route, 'corps entier')
-            (peints if False else muets).append(ligne)
+            #  PAS DE CLÉ, DONC UNE ROUTE. Demander « la cle est-elle lue ? » a
+            #  un moteur qui n'en publie aucune, c'est obtenir « non » par
+            #  construction — sept moteurs etaient ainsi accuses a tort.
+            #  On demande donc : l'ecran demande-t-il cette route ? Le prefixe
+            #  stable est ce qui precede le premier parametre.
+            prefixe = (u['route'] or '').split('<')[0].rstrip('/')
+            demandee = bool(prefixe) and prefixe in ecran
+            ligne = (nom, route, 'corps entier · route %s' %
+                     ('demandee par l\'ecran' if demandee else 'JAMAIS demandee'))
+            (peints if demandee else muets).append(ligne)
             continue
         if u['genre'] != 'cle':
             #  L'AST ne sait pas sous quelle clé cette variable ressort. Plutôt
