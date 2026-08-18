@@ -50,22 +50,47 @@ _PLAGES = (
     (0x1F300, 0x1FAFF),  # emoji
 )
 
-#  Emoji au sens strict : ceux que `COPY.md` interdit comme ponctuation, et que
-#  `VISUAL_SYSTEM.md` interdit comme icône (ils sont multicolores par nature —
-#  aucun token ne peut les repeindre).
-def est_emoji(ch):
-    cp = ord(ch)
-    return cp >= 0x1F300 or ch in '✅❌⚠️🔴🟠🟡🟢'
+#  BMP à présentation EMOJI PAR DÉFAUT : ces caractères sont dessinés en
+#  couleur même sans sélecteur de variante. Liste explicite et courte — c'est
+#  une propriété Unicode (`Emoji_Presentation=Yes`), pas un goût.
+_EMOJI_PAR_DEFAUT = {0x2705, 0x274C, 0x2B1B, 0x2B1C, 0x2B50, 0x2611, 0x231A,
+                     0x231B, 0x23F0, 0x25FD, 0x25FE, 0x2757, 0x2795, 0x2796}
+_VS16 = '️'
 
 
-def est_pictogramme(ch):
-    cp = ord(ch)
+#  Emoji au sens de la règle : ce que `COPY.md` interdit comme ponctuation et
+#  que `VISUAL_SYSTEM.md` interdit comme icône, parce que c'est MULTICOLORE et
+#  qu'aucun token ne peut le repeindre.
+#
+#  LOT 48 — CE CLASSIFIEUR PORTAIT LE JUMEAU DU DÉFAUT QU'IL SERT À TRAQUER.
+#  Il testait l'appartenance à la chaîne littérale `'✅❌⚠️🔴🟠🟡🟢'`. Or celle-ci
+#  contient `⚠` **suivi** de U+FE0F : en la parcourant caractère par caractère,
+#  le `⚠` NU en devenait membre. L'outil accusait donc le signe d'avertissement
+#  du produit — mesuré : la page peint `U+26A0` seul, sans aucun U+FE0F, donc en
+#  présentation TEXTE, monochrome, à la couleur du texte. C'est un signe de
+#  casseau, comme `→` ou `✕`, et la règle ne le vise pas.
+#  Exactement la faute corrigée dans le produit au lot 41 (`sev === '🔴'` cassé
+#  par un sélecteur de variante) : comparer une séquence par un caractère.
+def est_emoji(sequence):
+    """`sequence` est le caractère de base, éventuellement suivi de U+FE0F."""
+    base = sequence[0]
+    cp = ord(base)
+    if cp >= 0x1F300 or cp in _EMOJI_PAR_DEFAUT:
+        return True
+    return _VS16 in sequence          # présentation emoji demandée explicitement
+
+
+def est_pictogramme(sequence):
+    """Le caractère de BASE décide ; un sélecteur de variante ne fait pas d'un
+    caractère ordinaire un pictogramme."""
+    cp = ord(sequence[0])
     return any(a <= cp <= b for a, b in _PLAGES)
 
 
-def _nom(ch):
+def _nom(sequence):
+    ch = sequence[0]
     try:
-        return unicodedata.name(ch)
+        return unicodedata.name(ch) + ('' if len(sequence) == 1 else ' + VS16')
     except ValueError:
         return '?'
 
@@ -74,11 +99,20 @@ SONDE = r"""() => {
   const vus = {};
   const ajoute = (t, ou) => {
     if (!t) return;
-    for (const ch of String(t)) {
-      const cp = ch.codePointAt(0);
-      if (cp < 0x2190) continue;
-      (vus[ch] = vus[ch] || {n: 0, ou: []}).n++;
-      if (vus[ch].ou.length < 3) vus[ch].ou.push(ou);
+    /*  LOT 48 : on releve la SEQUENCE, pas le caractere isole. Un signe suivi
+        de U+FE0F est dessine en COULEUR ; le meme signe seul est monochrome.
+        Les confondre, c'est confondre `⚠` et son jumeau colore — deux objets
+        differents pour la regle de design.  */
+    const s = String(t);
+    for (let i = 0; i < s.length; i++) {
+      const cp = s.codePointAt(i);
+      const large = cp > 0xFFFF;
+      if (cp < 0x2190) { if (large) i++; continue; }
+      let cle = String.fromCodePoint(cp);
+      if (large) i++;
+      if (s.charCodeAt(i + 1) === 0xFE0F) { cle += '️'; i++; }
+      (vus[cle] = vus[cle] || {n: 0, ou: []}).n++;
+      if (vus[cle].ou.length < 3) vus[cle].ou.push(ou);
     }
   };
   ajoute(document.body.innerText, 'texte');
@@ -251,12 +285,12 @@ def main(argv=None):
     print('\nPEINTS A L\'ECRAN — %d pictogrammes distincts' % len(peints))
     for ch, e in sorted(peints.items(), key=lambda x: -x[1]['n']):
         print('  %s U+%04X ×%-4d %-9s %-28s %s'
-              % (ch, ord(ch), e['n'], 'EMOJI' if est_emoji(ch) else 'signe',
+              % (ch, ord(ch[0]), e['n'], 'EMOJI' if est_emoji(ch) else 'signe',
                  _nom(ch)[:28], ' '.join(sorted(e['pages']))))
 
     print('\nSERVIS MAIS JAMAIS PEINTS — %d' % len(servis))
     for ch, pg in sorted(servis.items()):
-        print('  %s U+%04X  %s' % (ch, ord(ch), ' '.join(sorted(pg))))
+        print('  %s U+%04X  %s' % (ch, ord(ch[0]), ' '.join(sorted(pg))))
 
     fautes = {c: e for c, e in peints.items() if est_emoji(c)}
     if fautes:
