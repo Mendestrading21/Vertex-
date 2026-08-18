@@ -20,13 +20,35 @@ def _num(x):
         return None
 
 
+def _iv_sample(board):
+    """IV positives réellement reportées et couverture de leurs exclusions."""
+    values = []
+    missing = invalid = 0
+    for contract in board or []:
+        value = contract.get('iv')
+        if value is None:
+            missing += 1
+            continue
+        if not isinstance(value, (int, float)) or isinstance(value, bool) or value <= 0:
+            invalid += 1
+            continue
+        values.append(float(value) / 100.0)
+    return values, {
+        'contracts_total': len(board or []),
+        'iv_observed': len(values),
+        'iv_missing': missing,
+        'iv_invalid': invalid,
+        'status': 'IV_SAMPLE_AVAILABLE' if values else 'IV_SAMPLE_UNAVAILABLE',
+        'read_only': True,
+    }
+
+
 def _score_volatility(board):
     """IV basse = favorable pour un acheteur. Rend (0..100, note) ou (None, note)."""
-    ivs = [(_num(c.get('iv')) or 0) / 100.0 for c in board
-           if isinstance(c.get('iv'), (int, float))]
-    ivs = [v for v in ivs if v > 0]
+    ivs, coverage = _iv_sample(board)
     if not ivs:
-        return None, 'IV du tableau indisponible'
+        return None, 'IV du tableau indisponible (%d absente(s), %d invalide(s))' % (
+            coverage['iv_missing'], coverage['iv_invalid'])
     ivs.sort()
     med = ivs[len(ivs) // 2]
     # IV médiane 20 % → 100 pts ; 60 %+ → 0 pt (acheter cher = défavorable).
@@ -101,6 +123,7 @@ def score_environment(board, *, iv_rank=None, detail_by_sym=None,
     board : options_board (réel/démo). iv_rank : IV rank agrégé si connu.
     detail_by_sym : {sym: {earnings_in_days,...}} pour l'event risk."""
     board = board or []
+    iv_coverage = _iv_sample(board)[1]
     dims = []
     for key, label, (pts, note) in (
         ('volatility', 'Volatilité', _score_volatility(board)),
@@ -109,8 +132,11 @@ def score_environment(board, *, iv_rank=None, detail_by_sym=None,
         ('liquidity', 'Liquidité', _score_liquidity(board)),
         ('event_risk', 'Risque d\'événement', _score_event(board, detail_by_sym or {})),
     ):
-        dims.append({'key': key, 'label': label, 'score': pts, 'note': note,
-                     'known': pts is not None})
+        dimension = {'key': key, 'label': label, 'score': pts, 'note': note,
+                     'known': pts is not None}
+        if key == 'volatility':
+            dimension['coverage'] = iv_coverage
+        dims.append(dimension)
     known = [d for d in dims if d['known']]
     overall = round(sum(d['score'] for d in known) / len(known), 1) if known else None
     label = _label(overall)
