@@ -145,3 +145,13 @@ def test_viz_radar_exposes_missing_greeks_without_defaults():
         'available': {'delta': False, 'gamma': False, 'theta': False, 'vega': False, 'iv': True},
         'status': 'RADAR_GREEKS_PARTIAL', 'read_only': True,
     }
+
+
+def test_plan_exposes_missing_dte_without_an_expiry_timeline():
+    plan = options_lab._plan({'sym': 'TST', 'dte': None, 'exp': None}, {}, None)
+    assert plan['timeline_coverage'] == {
+        'dte_available': False, 'status': 'TRADE_PLAN_DTE_UNAVAILABLE', 'read_only': True,
+    }
+    steps = {step['key']: step['text'] for step in plan['steps']}
+    assert 'DTE non reporté' in steps['exit']
+    assert 'aucune échéance n’est inférée' in steps['expiry']
