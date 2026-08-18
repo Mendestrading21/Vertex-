@@ -119,3 +119,14 @@ def test_viz_exposes_missing_expected_move_and_break_even_without_neutral_values
     assert viz['dist']['coverage']['status'] == 'BREAK_EVEN_UNAVAILABLE'
     assert viz['em']['pct'] is None and viz['em']['lo'] is None and viz['em']['hi'] is None
     assert viz['em']['coverage']['status'] == 'EXPECTED_MOVE_UNAVAILABLE'
+
+
+def test_viz_exposes_missing_kelly_inputs_without_default_fraction():
+    star = {'sym': 'TST', 'spot': 100, 'strike': 105, 'iv': 30, 'dte': 90,
+            'cost': 250, 'type': 'CALL', 'pop': None, 'pot': None}
+    viz = options_lab._viz(star, [], {}, None)
+    assert viz['kelly']['pct'] is None
+    assert viz['kelly']['coverage'] == {
+        'pop_available': False, 'potential_available': False,
+        'status': 'KELLY_INPUT_UNAVAILABLE', 'read_only': True,
+    }

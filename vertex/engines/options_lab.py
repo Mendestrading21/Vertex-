@@ -490,10 +490,16 @@ def _viz(star, board, detail, pick):
         'Vega': min(100, ((leg or {}).get('vega') or 0.2) * 250),
         'IV': min(100, (star.get('iv') or 35) * 1.4),
     }
-    # Kelly (fraction optimale bornée)
-    pop = (star.get('pop') or 30) / 100.0
-    b = max(0.1, (star.get('pot') or 50) / 100.0)
-    kelly = max(0.0, min(0.15, pop - (1 - pop) / b))
+    # Kelly (fraction optimale bornée) — seulement avec POP et potentiel reportés.
+    pop_pct = star.get('pop')
+    pot_pct = star.get('pot')
+    pop_available = isinstance(pop_pct, (int, float)) and not isinstance(pop_pct, bool) and 0 <= pop_pct <= 100
+    pot_available = isinstance(pot_pct, (int, float)) and not isinstance(pot_pct, bool) and pot_pct > 0
+    kelly = None
+    if pop_available and pot_available:
+        pop = pop_pct / 100.0
+        b = max(0.1, pot_pct / 100.0)
+        kelly = max(0.0, min(0.15, pop - (1 - pop) / b))
     # heatmaps : meilleure ligne par titre × métriques
     best_by = {}
     for c in board:
@@ -524,8 +530,12 @@ def _viz(star, board, detail, pick):
                'coverage': {'available': em_available,
                             'status': 'EXPECTED_MOVE_AVAILABLE' if em_available else 'EXPECTED_MOVE_UNAVAILABLE',
                             'read_only': True}},
-        'kelly': {'pct': _r2(kelly * 100, 1),
-                  'note': 'fraction de Kelly bornée à 15 % — au-delà, la variance détruit le capital'},
+        'kelly': {'pct': _r2(kelly * 100, 1) if kelly is not None else None,
+                  'note': ('fraction de Kelly bornée à 15 % — au-delà, la variance détruit le capital'
+                           if kelly is not None else 'fraction Kelly indisponible — POP ou potentiel de gain non reporté'),
+                  'coverage': {'pop_available': pop_available, 'potential_available': pot_available,
+                               'status': 'KELLY_INPUT_AVAILABLE' if kelly is not None else 'KELLY_INPUT_UNAVAILABLE',
+                               'read_only': True}},
         'gauges': {'pop': star.get('pop'), 'conviction': star.get('quality')},
         'heat': heat,
     }
