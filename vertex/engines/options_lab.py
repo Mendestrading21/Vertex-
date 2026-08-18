@@ -651,36 +651,51 @@ def _comparator(star, pick, detail):
     T6 = 0.5
     rows = []
 
-    def add(name, cost, maxloss, maxgain, pop, be, note):
+    def metric(value, lower=0.0, upper=None):
+        valid = isinstance(value, (int, float)) and not isinstance(value, bool) and value >= lower
+        if upper is not None:
+            valid = valid and value <= upper
+        return value if valid else None
+
+    def add(name, cost, maxloss, maxgain, pop, be, note, pop_observed=False, break_even_observed=False):
         rows.append({'name': name, 'cost': _r2(cost), 'maxloss': _r2(maxloss),
                      'maxgain': maxgain if isinstance(maxgain, str) else _r2(maxgain),
-                     'pop': _r2(pop), 'be': _r2(be), 'note': note})
+                     'pop': _r2(pop), 'be': _r2(be), 'note': note,
+                     'coverage': {'pop_available': pop is not None,
+                                  'pop_observed': pop_observed and pop is not None,
+                                  'break_even_available': be is not None,
+                                  'break_even_observed': break_even_observed and be is not None,
+                                  'read_only': True}})
 
-    add('Action (100 titres)', spot * 100, spot * 100, 'illimité', 50 + ((d.get('rs') or 50) - 50) * 0.4,
-        spot, 'delta 1, pas de thêta, pas d\'échéance — la référence')
+    add('Action (100 titres)', spot * 100, spot * 100, 'illimité', None,
+        spot, 'delta 1, pas de thêta, pas d\'échéance — la référence',
+        break_even_observed=True)
     c_atm = _bs(spot, spot, T6, iv, 'CALL') * 100
+    call_pop = metric(star.get('pop'), upper=100)
+    call_be = metric((leg6 or {}).get('breakeven'))
     add('CALL 6 mois (ATM)', (leg6 or {}).get('premium', 0) * 100 or c_atm, c_atm if not leg6 else leg6['premium'] * 100,
-        'illimité', star.get('pop'), (leg6 or {}).get('breakeven') or spot + c_atm / 100,
-        'convexité maximale — perte bornée à la prime')
+        'illimité', call_pop, call_be, 'convexité maximale — perte bornée à la prime',
+        pop_observed=True, break_even_observed=True)
     p_atm = _bs(spot, spot, T6, iv, 'PUT') * 100
-    add('PUT 6 mois (ATM)', p_atm, p_atm, spot * 100 - p_atm, 100 - (star.get('pop') or 40),
-        spot - p_atm / 100, 'pari baissier ou assurance du portefeuille')
+    add('PUT 6 mois (ATM)', p_atm, p_atm, spot * 100 - p_atm, None,
+        None, 'pari baissier ou assurance du portefeuille')
     c_leaps = _bs(spot, spot * 0.85, 1.2, iv * 0.9, 'CALL') * 100
+    leaps_be = metric((leg12 or {}).get('breakeven'))
     add('LEAPS 12 mois+ (delta 0.8)', (leg12 or {}).get('premium', 0) * 100 or c_leaps, c_leaps if not leg12 else leg12['premium'] * 100,
-        'illimité', min(95, (star.get('pop') or 40) + 15), (leg12 or {}).get('breakeven') or spot * 0.85 + c_leaps / 100,
-        'quasi-action à 40 % du prix — le temps pèse peu')
+        'illimité', None, leaps_be, 'quasi-action à 40 % du prix — le temps pèse peu',
+        break_even_observed=True)
     cc_prem = _bs(spot, spot * 1.05, 0.12, iv, 'CALL') * 100
     add('Covered Call (45 j)', spot * 100 - cc_prem, spot * 100 - cc_prem, cc_prem + spot * 5,
-        68, spot - cc_prem / 100, 'revenu %s$/mois env. — gain plafonné à +5 %%' % _r2(cc_prem * 0.66))
+        None, None, 'revenu %s$/mois env. — gain plafonné à +5 %%' % _r2(cc_prem * 0.66))
     csp_prem = _bs(spot, spot * 0.95, 0.12, iv, 'PUT') * 100
-    add('Cash Secured Put (45 j)', spot * 95, spot * 95 - csp_prem, csp_prem, 72,
-        spot * 0.95 - csp_prem / 100, 'être payé %s$ pour acheter 5 %% moins cher' % _r2(csp_prem))
+    add('Cash Secured Put (45 j)', spot * 95, spot * 95 - csp_prem, csp_prem, None,
+        None, 'être payé %s$ pour acheter 5 %% moins cher' % _r2(csp_prem))
     bcs = (_bs(spot, spot, T6, iv, 'CALL') - _bs(spot, spot * 1.10, T6, iv, 'CALL')) * 100
-    add('Bull Call Spread (6 mois)', bcs, bcs, spot * 10 - bcs, min(90, (star.get('pop') or 40) + 18),
-        spot + bcs / 100, 'coût réduit de ~40 %, gain plafonné à +10 %')
+    add('Bull Call Spread (6 mois)', bcs, bcs, spot * 10 - bcs, None,
+        None, 'coût réduit de ~40 %, gain plafonné à +10 %')
     bps = (_bs(spot, spot, T6, iv, 'PUT') - _bs(spot, spot * 0.90, T6, iv, 'PUT')) * 100
-    add('Bear Put Spread (6 mois)', bps, bps, spot * 10 - bps, 100 - min(90, (star.get('pop') or 40) + 18),
-        spot - bps / 100, 'baissier à risque défini')
+    add('Bear Put Spread (6 mois)', bps, bps, spot * 10 - bps, None,
+        None, 'baissier à risque défini')
     # verdict
     trending = str(d.get('trend') or '').upper() in ('UP', 'HAUSSE', 'TREND') or (d.get('score') or 0) >= 60
     iv_rich = iv * 100 >= 45
