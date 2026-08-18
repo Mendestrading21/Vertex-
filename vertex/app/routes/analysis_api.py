@@ -918,15 +918,29 @@ def api_events(sym):
                     if str(e.get('sym', '')).upper() == sym]
     except Exception:
         earnings = []
-    macro = []
+    macro = None
+    macro_calendar_status = {
+        'available': False,
+        'status': 'MACRO_CALENDAR_UNAVAILABLE',
+        'events_loaded': 0,
+        'read_only': True,
+        'reason': 'calendrier macro indisponible ; aucune absence d’événement n’est inférée',
+    }
     try:
         from vertex.data import macro_calendar
         macro = macro_calendar.events(horizon_days=30)
+        macro_calendar_status = {
+            'available': True,
+            'status': 'MACRO_CALENDAR_AVAILABLE',
+            'events_loaded': len(macro) if isinstance(macro, list) else 0,
+            'read_only': True,
+        }
     except Exception:
-        macro = []
+        macro = None
     # XSS : titres externes assainis AU POINT DE SORTIE (rendus innerHTML client).
     news = _np.sanitize_news(detail.get('news') or [])
     d = _events.build(sym, news=news, earnings=earnings, macro=macro, anomaly=ano,
                       as_of=scan_state.get('scan_ts_h') or scan_state.get('updated'))
+    d['coverage']['macro_calendar'] = macro_calendar_status
     d['demo'] = bool(scan_state.get('source') == 'demo')
     return jsonify(d)

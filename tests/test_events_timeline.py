@@ -170,3 +170,23 @@ def test_events_route_serves_timeline_and_sanitizes():
         assert any(e['kind'] == 'news' for e in d['events'])
     finally:
         scan_state['detail'].pop('EVTX', None)
+
+
+def test_events_route_exposes_macro_calendar_unavailability(monkeypatch):
+    import terminal
+    from vertex.data import macro_calendar
+
+    def _unavailable(*args, **kwargs):
+        raise RuntimeError('interne')
+
+    monkeypatch.setattr(macro_calendar, 'events', _unavailable)
+    d = terminal.app.test_client().get('/api/events/EVTX').get_json()
+    macro = d['coverage']['macro_calendar']
+    assert macro == {
+        'available': False,
+        'status': 'MACRO_CALENDAR_UNAVAILABLE',
+        'events_loaded': 0,
+        'read_only': True,
+        'reason': 'calendrier macro indisponible ; aucune absence d’événement n’est inférée',
+    }
+    assert d['coverage']['input_channels']['macro_provided'] is False
