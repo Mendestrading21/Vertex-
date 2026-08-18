@@ -286,12 +286,13 @@ def scan(board, universe, sym=None, profile=None):
     }
 
 
-def swing_3_6m_context(board, sym=None, profile=None):
+def swing_3_6m_context(board, sym=None, profile=None, historical_closes=None):
     """Point d’entrée canonique pour le mandat options 3–6 mois de Skyler."""
-    return options_context(scan(board, 'SWING_3_6M', sym=sym, profile=profile))
+    return options_context(scan(board, 'SWING_3_6M', sym=sym, profile=profile),
+                           historical_closes=historical_closes)
 
 
-def options_context(scan_result):
+def options_context(scan_result, historical_closes=None):
     """Construit un contexte minimal mais traçable à partir d’un scan réel."""
     if not scan_result or not scan_result.get('available'):
         return {
@@ -299,6 +300,9 @@ def options_context(scan_result):
             'reason': (scan_result or {}).get('reason') or 'scan options indisponible',
         }
     best = scan_result['candidates'][0]
+    from vertex.options import iv_hv
+    iv_pct = best['iv'] * 100.0 if isinstance(best.get('iv'), (int, float)) else None
+    iv_hv_context = iv_hv.describe(iv_pct, iv_hv.realized_volatility_20d(historical_closes))
     return {
         'available': True,
         'universe': scan_result['universe'],
@@ -316,6 +320,7 @@ def options_context(scan_result):
             'reasons': list(best['mandate_reasons']),
             'dte_distance_to_target': best['dte_distance_to_target'],
         },
+        'iv_hv_context': iv_hv_context,
         'generator': 'deterministic',
     }
 

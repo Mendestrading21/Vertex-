@@ -20,3 +20,9 @@ def test_iv_hv_context_reports_gap_without_predictive_claim():
 def test_iv_hv_context_treats_nearby_measurements_as_near():
     out = describe(22.0, 20.0)
     assert out['status'] == 'IV_NEAR_HV'
+
+
+def test_realized_volatility_requires_twenty_observed_returns():
+    from vertex.options.iv_hv import realized_volatility_20d
+    assert realized_volatility_20d([100.0] * 20) is None
+    assert realized_volatility_20d([100.0 + idx * 0.5 for idx in range(21)]) is not None
