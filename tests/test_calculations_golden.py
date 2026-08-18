@@ -163,6 +163,20 @@ def test_expired_option_scenarios_refused():
     sim = sp.simulate(call_contract(dte=0), setup(), rate_curve=CURVE)
     assert sim['reward_risk'] is None
     assert any('refusée' in l for l in sim['limitations'])
+    assert sim['input_coverage']['status'] == 'DTE_REPORTED'
+
+
+@pytest.mark.parametrize('dte', [None, 'inconnu', -1, 30.5])
+def test_missing_or_invalid_dte_scenarios_refused_without_zero_substitution(dte):
+    sim = sp.simulate(call_contract(dte=dte), setup(), rate_curve=CURVE)
+    assert sim['reward_risk'] is None
+    assert sim['rate'] is None
+    assert sim['input_coverage'] == {
+        'dte_available': False,
+        'status': 'DTE_UNAVAILABLE',
+        'read_only': True,
+    }
+    assert any('DTE indisponible ou invalide' in limitation for limitation in sim['limitations'])
 
 
 def test_option_multiplier():
