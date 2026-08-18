@@ -50,6 +50,25 @@ def test_tops_long_excludes_missing_quality_or_pop_from_composite_ranking():
     }
 
 
+def test_tops_individual_metrics_exclude_boolean_and_missing_values():
+    board = [
+        {'sym': 'BAD_POP', 'type': 'CALL', 'pop': True},
+        {'sym': 'GOOD_POP', 'type': 'CALL', 'pop': 55},
+        {'sym': 'BAD_MOM', 'type': 'CALL'},
+        {'sym': 'GOOD_MOM', 'type': 'CALL'},
+        {'sym': 'BAD_FLOW', 'type': 'CALL'},
+        {'sym': 'GOOD_FLOW', 'type': 'CALL'},
+    ]
+    detail = {
+        'BAD_MOM': {'mom': True}, 'GOOD_MOM': {'mom': 4.0},
+        'BAD_FLOW': {'vol_z': True}, 'GOOD_FLOW': {'vol_z': 1.5},
+    }
+    by_key = {row['key']: row['rows'] for row in options_lab._tops(board, detail)}
+    assert [row['sym'] for row in by_key['top_pop']] == ['GOOD_POP']
+    assert [row['sym'] for row in by_key['top_momentum']] == ['GOOD_MOM']
+    assert [row['sym'] for row in by_key['top_flow']] == ['GOOD_FLOW']
+
+
 def test_committee_excludes_missing_or_invalid_dte_from_horizon_winners():
     board = [
         {'sym': 'SHORT', 'type': 'CALL', 'dte': 30, 'quality': 80, 'pop': 55},

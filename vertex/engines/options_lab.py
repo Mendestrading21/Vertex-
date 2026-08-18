@@ -744,6 +744,9 @@ def _tops(board, detail):
     def valid_score(value):
         return isinstance(value, (int, float)) and not isinstance(value, bool) and 0 <= value <= 100
 
+    def valid_number(value):
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
+
     valid_iv_contracts = sum(1 for contract in board if valid_iv(contract))
     top_lowiv_rows = take(valid_iv, lambda c: -c.get('iv'),
                           lambda c: 'IV %s%% — la convexité la moins chère' % c.get('iv'))
@@ -764,19 +767,21 @@ def _tops(board, detail):
          lambda c: 'protection/pari baissier le mieux noté' )),
         ('top_leaps', '🏛️ TOP LEAPS', take(lambda c: dte_value(c) is not None and dte_value(c) >= 300, lambda c: c.get('quality') or 0,
          lambda c: '%s j — le temps travaille pour la thèse' % c.get('dte'))),
-        ('top_momentum', '🚀 TOP Momentum', take(lambda c: (dz(c).get('mom') or 0) > 0,
-         lambda c: dz(c).get('mom') or 0, lambda c: 'momentum titre %s' % _r2(dz(c).get('mom'), 1))),
+        ('top_momentum', '🚀 TOP Momentum', take(
+         lambda c: valid_number(dz(c).get('mom')) and dz(c).get('mom') > 0,
+         lambda c: dz(c).get('mom'), lambda c: 'momentum titre %s' % _r2(dz(c).get('mom'), 1))),
         ('top_breakout', '💥 TOP Breakout', take(lambda c: dz(c).get('breakout'),
          lambda c: c.get('quality') or 0, lambda c: 'cassure détectée sur le sous-jacent')),
         ('top_swing', '🌊 TOP Swing', take(lambda c: c.get('swing_ok'),
          lambda c: c.get('swing_ret') or 0, lambda c: 'projection swing +%s%%' % c.get('swing_ret'))),
         ('top_lowiv', '❄️ TOP Low IV', top_lowiv_rows),
-        ('top_pop', '🎯 TOP High POP', take(lambda c: c.get('pop') is not None,
-         lambda c: c.get('pop') or 0, lambda c: 'POP %s%% — probabilité de profit maximale' % c.get('pop'))),
+        ('top_pop', '🎯 TOP High POP', take(lambda c: valid_score(c.get('pop')),
+         lambda c: c.get('pop'), lambda c: 'POP %s%% — probabilité de profit maximale' % c.get('pop'))),
         ('top_rr', '⚖️ TOP Risk/Reward', take(lambda c: _rr(c) is not None,
          lambda c: _rr(c) or 0, lambda c: 'R:R %s — asymétrie maximale' % _rr(c))),
-        ('top_flow', '🐋 TOP Flux (volume anormal)', take(lambda c: (dz(c).get('vol_z') or 0) >= 1.0,
-         lambda c: dz(c).get('vol_z') or 0, lambda c: 'volume titre z=%s' % _r2(dz(c).get('vol_z'), 1))),
+        ('top_flow', '🐋 TOP Flux (volume anormal)', take(
+         lambda c: valid_number(dz(c).get('vol_z')) and dz(c).get('vol_z') >= 1.0,
+         lambda c: dz(c).get('vol_z'), lambda c: 'volume titre z=%s' % _r2(dz(c).get('vol_z'), 1))),
         ('top_long', '🧭 TOP Long terme', top_long_rows),
         ('top_short', '⚡ TOP Court terme', take(lambda c: dte_value(c) is not None and dte_value(c) <= 60,
          lambda c: c.get('quality') or 0, lambda c: 'tactique %s j — thêta agressif, taille réduite' % c.get('dte'))),
