@@ -227,6 +227,15 @@ def test_put_selected_with_converging_evidence():
     assert sel['scenarios']['reward_risk'] >= 2.0  # constitution : R:R minimal 2:1
 
 
+def test_missing_dte_put_is_explicitly_excluded_without_signal():
+    evidence = {'regime_unfavorable': True, 'relative_weakness': True,
+                'downtrend_confirmed': True}
+    chain = [dict(put(460, 120, -0.40, 26.0), dte=None)]
+    res = bearish_tactical.select_put(chain, bearish_setup(), evidence, PROFILE, rate_curve=CURVE)
+    assert res['selected'] is None
+    assert any('DTE indisponible ou invalide' in note for note in res['notes'])
+
+
 def test_max_one_bearish_position():
     evidence = {'regime_unfavorable': True, 'relative_weakness': True,
                 'downtrend_confirmed': True}

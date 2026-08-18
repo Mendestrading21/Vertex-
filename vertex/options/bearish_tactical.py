@@ -71,13 +71,21 @@ def select_put(contracts: list[dict], setup: UnderlyingSetup, evidence: dict,
     lo, hi = cfg['delta_abs_min'], cfg['delta_abs_max']
     pref_dte = tuple(cfg.get('preferred_dte', (75, 180)))
     candidates = []
+    dte_unavailable = 0
     for c in contracts or []:
         if c.get('right') != 'P':
             continue
         delta = c.get('delta')
         if delta is None or not (lo <= abs(float(delta)) <= hi):
             continue
-        dte = c.get('dte')
+        try:
+            raw_dte = float(c.get('dte'))
+            dte = int(raw_dte) if raw_dte >= 0 and raw_dte.is_integer() else None
+        except (TypeError, ValueError):
+            dte = None
+        if dte is None:
+            dte_unavailable += 1
+            continue
         if not contract_filter.dte_within_constitution(dte, profile):
             continue
         liq = liquidity.assess(c)
@@ -91,6 +99,8 @@ def select_put(contracts: list[dict], setup: UnderlyingSetup, evidence: dict,
         c['_anomalies'] = anomalies
         candidates.append(c)
     if not candidates:
+        if dte_unavailable:
+            out['notes'].append(f'{dte_unavailable} PUT exclu(s) : DTE indisponible ou invalide')
         out['notes'].append('aucun PUT liquide dans la bande de delta — pas de position forcée')
         return out
 
@@ -104,7 +114,7 @@ def select_put(contracts: list[dict], setup: UnderlyingSetup, evidence: dict,
         sc = contract_scorer.score_contract(c, CATEGORY_BEARISH_TACTICAL, sim,
                                             profile, setup)
         # bonus fenêtre DTE préférée du module baissier
-        dte = int(c.get('dte') or 0)
+        dte = int(c['dte'])
         if not (pref_dte[0] <= dte <= pref_dte[1]):
             sc.score *= 0.8
             sc.penalties.append(f'DTE {dte} hors fenêtre baissière {list(pref_dte)}')
