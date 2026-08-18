@@ -98,3 +98,13 @@ def test_strategies_expose_missing_iv_without_iv_default_scoring():
     assert 'IV indisponible' in result['ai']
     assert '40%' not in result['ai']
     assert all(row['coverage']['iv_available'] is False for row in result['items'])
+
+
+def test_viz_refuses_missing_core_option_inputs_without_synthetic_curves():
+    viz = options_lab._viz({'sym': 'TST', 'spot': None, 'strike': None, 'iv': None,
+                             'dte': None, 'cost': None, 'type': 'CALL'}, [], {}, None)
+    assert viz['unavailable'] is True
+    assert viz['coverage']['status'] == 'OPTION_VIZ_INPUT_UNAVAILABLE'
+    assert viz['payoff']['points'] == []
+    assert viz['cone'] == [] and viz['theta'] == []
+    assert viz['em'] == {'pct': None, 'lo': None, 'hi': None}

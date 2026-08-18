@@ -400,13 +400,52 @@ def _plan(star, research, pick):
 def _viz(star, board, detail, pick):
     if not star:
         return None
-    spot = star.get('spot') or 100.0
-    strike = star.get('strike') or spot
-    right = star.get('type', 'CALL')
-    iv = (star.get('iv') or 35) / 100.0
-    dte = max(star.get('dte') or 30, 1)
+
+    def positive_number(value):
+        return isinstance(value, (int, float)) and not isinstance(value, bool) and value > 0
+
+    spot = star.get('spot')
+    strike = star.get('strike')
+    iv_pct = star.get('iv')
+    dte = star.get('dte')
+    premium = star.get('cost')
+    dte_valid = isinstance(dte, (int, float)) and not isinstance(dte, bool) and dte > 0 and float(dte).is_integer()
+    coverage = {
+        'spot_available': positive_number(spot),
+        'strike_available': positive_number(strike),
+        'iv_available': positive_number(iv_pct),
+        'dte_available': dte_valid,
+        'premium_available': positive_number(premium),
+        'read_only': True,
+    }
+    if not all(coverage[key] for key in ('spot_available', 'strike_available', 'iv_available',
+                                         'dte_available', 'premium_available')):
+        coverage['status'] = 'OPTION_VIZ_INPUT_UNAVAILABLE'
+        return {'unavailable': True,
+                'reason': 'visualisations options indisponibles — intrants spot, strike, IV, DTE ou prime manquants',
+                'coverage': coverage,
+                'payoff': {'points': [], 'be': None, 'spot': None, 'target': None, 'prem': None},
+                'cone': [], 'dist': {'points': [], 'be': None, 'spot': None, 'p_be': None},
+                'theta': [], 'term': [], 'radar': {},
+                'em': {'pct': None, 'lo': None, 'hi': None}, 'kelly': None,
+                'gauges': {'pop': None, 'conviction': star.get('quality')}, 'heat': []}
+    coverage['status'] = 'OPTION_VIZ_INPUT_AVAILABLE'
+    dte = int(dte)
+    right = star.get('type') if star.get('type') in ('CALL', 'PUT') else None
+    if right is None:
+        coverage.update({'right_available': False, 'status': 'OPTION_VIZ_INPUT_UNAVAILABLE'})
+        return {'unavailable': True,
+                'reason': 'visualisations options indisponibles — type de contrat absent ou invalide',
+                'coverage': coverage,
+                'payoff': {'points': [], 'be': None, 'spot': None, 'target': None, 'prem': None},
+                'cone': [], 'dist': {'points': [], 'be': None, 'spot': None, 'p_be': None},
+                'theta': [], 'term': [], 'radar': {},
+                'em': {'pct': None, 'lo': None, 'hi': None}, 'kelly': None,
+                'gauges': {'pop': None, 'conviction': star.get('quality')}, 'heat': []}
+    coverage['right_available'] = True
+    iv = iv_pct / 100.0
     T = dte / 365.0
-    prem = (star.get('cost') or 100) / 100.0
+    prem = premium / 100.0
     sgn = 1 if right == 'CALL' else -1
     # payoff à l'échéance (par contrat)
     lo, hi = spot * (1 - 2.2 * iv * math.sqrt(T)), spot * (1 + 2.2 * iv * math.sqrt(T))
@@ -464,6 +503,8 @@ def _viz(star, board, detail, pick):
              'iv': c.get('iv'), 'flow': _r2((detail.get(s) or {}).get('vol_z'), 1)}
             for s, c in sorted(best_by.items(), key=lambda kv: -(kv[1].get('quality') or 0))]
     return {
+        'unavailable': False,
+        'coverage': coverage,
         'payoff': {'points': payoff, 'be': be, 'spot': spot, 'target': star.get('tgt'), 'prem': star.get('cost')},
         'cone': cone,
         'dist': {'points': dist, 'be': be, 'spot': spot, 'p_be': _r2((p_be or 0) * 100, 1)},
