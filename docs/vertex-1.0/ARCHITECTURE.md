@@ -48,11 +48,23 @@ la source primaire.
 - `vertex/ui` et `vertex/static`: présentation;
 - `vertex/ai`: narration et enrichissement, jamais vérité numérique.
 
+### Constitution de release
+
+- `vertex/strategy/profiles`: historique V1–V3 et rollback du runtime legacy;
+- `vertex/strategy/release_profiles`: corpus de release contenant V1–V4;
+- `vertex.strategy.release`: activation explicite et idempotente de V4;
+- aucun profil existant n'est modifié en place;
+- la version active d'une décision est toujours enregistrée dans son packet.
+
+Cette séparation est transitoire: elle permet de valider V4 sans casser les
+preuves historiques V3. Seul le point d'entrée canonique active le corpus de
+release.
+
 ### Runtime
 
-- `python -m vertex`: entrée locale;
-- `vertex.runtime:app`: entrée WSGI;
-- `terminal.py`: composition historique, maintenue par adaptateur;
+- `python -m vertex`: entrée locale et activation V4;
+- `vertex.runtime:app`: entrée WSGI et activation V4;
+- `terminal.py`: composition historique et mode de rollback V3;
 - toute nouvelle capacité doit entrer dans le package, puis être branchée au
   runtime.
 

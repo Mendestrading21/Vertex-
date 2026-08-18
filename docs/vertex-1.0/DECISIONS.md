@@ -12,3 +12,4 @@
 | D-008 | Un seul skill Claude: `/vertex-1-0`. | active |
 | D-009 | Signal OS sera extrait composant par composant après comparaison, jamais fusionné globalement. | active |
 | D-010 | Vertex 1.0 reste RC jusqu'à CI complète et acceptation humaine du même SHA. | active |
+| D-011 | Le runtime canonique active le corpus V4; le lancement direct de `terminal.py` conserve V3 uniquement comme rollback transitoire. | active |

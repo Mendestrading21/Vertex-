@@ -29,7 +29,7 @@ Lire dans cet ordre:
 2. `docs/vertex-1.0/README.md`
 3. `docs/vertex-1.0/PRODUCT_CONTRACT.md`
 4. `docs/vertex-1.0/ARCHITECTURE.md`
-5. `vertex/strategy/profiles/vertex_strategy_v4.json`
+5. `vertex/strategy/release_profiles/vertex_strategy_v4.json`
 6. le code et les tests du composant modifié
 
 Un ancien document ne peut jamais contredire ces sources.
@@ -90,9 +90,10 @@ thèse et rédiger l'explication finale. Claude ne peut jamais:
 
 - `python -m vertex` est l'entrée locale canonique.
 - `vertex.runtime:app` est l'entrée WSGI canonique.
+- le runtime active le corpus `release_profiles` avant d'importer l'adaptateur.
 - `terminal.py` est un adaptateur historique à réduire progressivement, pas
   une destination pour de nouvelles fonctionnalités.
-- `vertex.product` et le profil stratégique actif portent les horizons.
+- `vertex.product` et le profil de release V4 portent les horizons.
 - un endpoint/métrique/page doit avoir un seul propriétaire canonique.
 - les anciennes branches de lots ne sont jamais des bases de développement.
 

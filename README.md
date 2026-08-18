@@ -27,7 +27,8 @@ python -m vertex
 Ouvrir ensuite `http://localhost:5002`.
 
 Les lanceurs `Lancer_VERTEX` et `Lancer_VERTEX_DEMO` restent disponibles.
-`python terminal.py` est encore compatible, mais n'est plus l'entrée canonique.
+`python terminal.py` est encore compatible, mais constitue un mode legacy de
+rollback et n'est plus l'entrée canonique.
 
 ## Mandats de décision
 
@@ -37,8 +38,10 @@ Les lanceurs `Lancer_VERTEX` et `Lancer_VERTEX_DEMO` restent disponibles.
 | Actions | horizons de décision 3/6/12 mois |
 | WMB Brief | contexte macro quotidien, daté et sourcé; jamais une source de prix |
 
-Le profil exécutable actif est
-`vertex/strategy/profiles/vertex_strategy_v4.json`.
+Le profil de release exécutable est
+`vertex/strategy/release_profiles/vertex_strategy_v4.json`. Les profils V1–V3
+restent disponibles pour l'historique et le rollback, mais le runtime
+canonique active V4 avant de charger l'application.
 
 ## Sources et intégrations
 
@@ -75,9 +78,10 @@ sources réelles
   → interface / journal / audit
 ```
 
-`vertex.runtime` est l'entrée WSGI canonique. `terminal.py` reste un adaptateur
-historique pendant sa décomposition progressive; aucune nouvelle
-fonctionnalité ne doit y être ajoutée.
+`vertex.runtime` est l'entrée WSGI canonique. Il active le profil de release
+avant d'importer `terminal.py`. Le monolithe reste un adaptateur historique
+pendant sa décomposition progressive; aucune nouvelle fonctionnalité ne doit y
+être ajoutée.
 
 ## Développement
 

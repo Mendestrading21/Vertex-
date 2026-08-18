@@ -1,16 +1,18 @@
 """Point d'entrée WSGI et local canonique de Vertex 1.0.
 
 ``terminal.py`` reste temporairement le noyau de composition historique. Ce
-module est l'adaptateur officiel pendant son extraction progressive vers le
-package ``vertex``. Les consommateurs ne doivent plus importer ``terminal``
-directement.
+module active d'abord le profil de release V4, puis charge l'adaptateur legacy.
+Les consommateurs ne doivent plus importer ``terminal`` directement.
 """
 
 from importlib import import_module
 from types import ModuleType
 
+from vertex.strategy.release import activate_release_profile
+
 
 def _legacy_runtime() -> ModuleType:
+    activate_release_profile()
     return import_module("terminal")
 
 

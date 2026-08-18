@@ -46,9 +46,11 @@ jobs:
           import vertex
           from vertex.product import OPTIONS_MANDATE
           from vertex.strategy.constitution import load_profile
+          from vertex.strategy.release import load_release_profile
           assert vertex.__version__ == "1.0.0rc1"
           assert OPTIONS_MANDATE["holding_weeks"] == (2, 4, 6)
-          assert load_profile().version == 4
+          assert load_profile().version == 3
+          assert load_release_profile().version == 4
           print(vertex.RELEASE_NAME)
           PY
       - name: Tests

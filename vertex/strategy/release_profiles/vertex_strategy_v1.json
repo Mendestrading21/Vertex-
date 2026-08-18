@@ -1,0 +1,115 @@
+{
+  "strategy_id": "vertex_strategy_v1",
+  "display_name": "Stratégie Vertex",
+  "version": 1,
+  "style": "OFFENSIVE_HIGH_CONVICTION",
+  "benchmark": "SPY",
+  "target_annual_return_pct": 30,
+  "target_is_guarantee": false,
+  "portfolio_target_positions": {
+    "minimum": 8,
+    "maximum": 10
+  },
+  "portfolio_max_drawdown_pct": -25,
+  "stock_max_drawdown_pct": -20,
+  "max_stock_weight_pct": 15,
+  "preferred_stock_weight_pct": [8, 12],
+  "max_simultaneous_options": 3,
+  "analysis_order": [
+    "FUNDAMENTAL",
+    "CATALYSTS",
+    "TECHNICAL_TIMING",
+    "SENTIMENT_POSITIONING",
+    "PORTFOLIO_COMPATIBILITY",
+    "RISK",
+    "FINAL_DECISION"
+  ],
+  "allowed_final_decisions": [
+    "ACHETER",
+    "RENFORCER",
+    "ATTENDRE",
+    "REDUIRE",
+    "REFUSER"
+  ],
+  "options_profile": {
+    "primary_direction": "LONG_CALL",
+    "target_call_share_pct": 90,
+    "rare_bearish_long_puts": true,
+    "short_options": false,
+    "covered_calls": false,
+    "protective_puts": false,
+    "credit_spreads": false,
+    "naked_options": false,
+    "automatic_execution": false,
+    "holding_period_days": {
+      "minimum": 2,
+      "preferred_minimum": 5,
+      "preferred_maximum": 20,
+      "maximum": 28
+    },
+    "dte": {
+      "absolute_minimum": 60,
+      "preferred_minimum": 90,
+      "preferred_maximum": 210,
+      "absolute_maximum": 270
+    },
+    "max_simultaneous_options": 3,
+    "max_simultaneous_bearish_positions": 1,
+    "categories": {
+      "BALANCED": {
+        "delta_min": 0.40,
+        "delta_max": 0.60,
+        "target_gain_pct": [35, 70],
+        "planned_loss_pct": [20, 30],
+        "preferred_dte": [90, 210]
+      },
+      "DYNAMIC": {
+        "delta_min": 0.28,
+        "delta_max": 0.45,
+        "target_gain_pct": [50, 100],
+        "planned_loss_pct": [25, 35],
+        "preferred_dte": [90, 210],
+        "primary": true
+      },
+      "ULTRA_CONVEX": {
+        "delta_min": 0.18,
+        "delta_max": 0.30,
+        "target_gain_pct": [80, 150],
+        "planned_loss_pct": [40, 50],
+        "rare_setup_only": true,
+        "preferred_dte": [120, 240]
+      },
+      "BEARISH_TACTICAL": {
+        "enabled": true,
+        "frequency": "RARE",
+        "max_simultaneous_bearish_positions": 1,
+        "delta_abs_min": 0.30,
+        "delta_abs_max": 0.55,
+        "preferred_dte": [75, 180],
+        "planned_loss_pct": [25, 35],
+        "target_gain_pct": [50, 100]
+      }
+    },
+    "profit_management": {
+      "secure_trigger_gain_pct": 50,
+      "secure_share_pct": [60, 70],
+      "runner_share_pct": [30, 40],
+      "exit_modes": ["FULL_EXIT", "PARTIAL_EXIT", "RUNNER"],
+      "time_stop_sessions": [5, 8]
+    },
+    "earnings": {
+      "pre_earnings_runup_allowed": true,
+      "default_exit_before_announcement": true,
+      "hold_through_earnings_default": false,
+      "post_earnings_reaction_allowed": true,
+      "post_earnings_drift_allowed": true
+    }
+  },
+  "team_portfolio": {
+    "display_name": "Vertex Team Portfolio",
+    "attackers": {"count": [2, 3], "horizon_months": [3, 12]},
+    "midfielders": {"count": [3, 4], "horizon_months": [6, 24]},
+    "defenders": {"count": [2, 2]},
+    "goalkeeper": {"count": [1, 1]}
+  }
+}

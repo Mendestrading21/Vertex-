@@ -32,7 +32,7 @@ Ordre d'autorité:
 1. ce fichier;
 2. `.claude/skills/vertex-1-0/SKILL.md`;
 3. `docs/vertex-1.0/`;
-4. `vertex/strategy/profiles/vertex_strategy_v4.json`;
+4. `vertex/strategy/release_profiles/vertex_strategy_v4.json`;
 5. code et tests du composant;
 6. documents historiques, uniquement comme preuves.
 
@@ -67,8 +67,10 @@ Entrées:
 
 - local: `python -m vertex`;
 - WSGI: `vertex.runtime:app`;
-- `terminal.py`: adaptateur historique, à réduire; ne pas y ajouter de
-  nouvelle capacité sauf correctif indispensable avant extraction.
+- `vertex.runtime` active `release_profiles` avant le chargement applicatif;
+- `terminal.py`: adaptateur historique et mode de rollback V3, à réduire; ne
+  pas y ajouter de nouvelle capacité sauf correctif indispensable avant
+  extraction.
 
 ## Données et états
 

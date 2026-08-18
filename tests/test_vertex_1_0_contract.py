@@ -11,7 +11,8 @@ from vertex.product import (
     OPTIONS_MANDATE,
     ORDER_EXECUTION,
 )
-from vertex.strategy.constitution import load_profile
+from vertex.strategy.constitution import list_versions, load_profile
+from vertex.strategy.release import list_release_versions, load_release_profile
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,9 +33,17 @@ def test_canonical_information_architecture_has_eight_spaces():
     )
 
 
-def test_active_strategy_matches_user_horizons():
-    profile = load_profile()
+def test_release_profile_v4_is_explicit_and_legacy_history_is_unchanged():
+    assert list_versions() == [1, 2, 3]
+    assert load_profile().version == 3
+    assert list_release_versions() == [1, 2, 3, 4]
+    profile = load_release_profile()
     assert profile.version == 4
+    assert profile.strategy_id == "vertex_strategy_v4"
+
+
+def test_active_release_strategy_matches_user_horizons():
+    profile = load_release_profile()
     assert profile.holding.preferred_minimum == 10
     assert profile.holding.preferred_maximum == 30
     assert profile.dte.preferred_minimum == 120
@@ -44,8 +53,8 @@ def test_active_strategy_matches_user_horizons():
     assert profile.raw["equity_profile"]["decision_horizons_months"] == [3, 6, 12]
 
 
-def test_product_constants_match_strategy_profile():
-    profile = load_profile()
+def test_product_constants_match_release_strategy_profile():
+    profile = load_release_profile()
     assert OPTIONS_MANDATE["holding_weeks"] == (2, 4, 6)
     assert OPTIONS_MANDATE["preferred_dte"] == (
         profile.dte.preferred_minimum,
@@ -73,7 +82,9 @@ def test_launch_and_deployment_use_canonical_entrypoint():
     render = (ROOT / "render.yaml").read_text(encoding="utf-8")
     windows = (ROOT / "Lancer_VERTEX.bat").read_text(encoding="utf-8")
     macos = (ROOT / "Lancer_VERTEX.command").read_text(encoding="utf-8")
+    runtime = (ROOT / "vertex/runtime.py").read_text(encoding="utf-8")
     assert "python -m vertex" in readme
     assert "gunicorn vertex.runtime:app" in render
     assert "-m vertex" in windows
     assert "-m vertex" in macos
+    assert "activate_release_profile" in runtime
