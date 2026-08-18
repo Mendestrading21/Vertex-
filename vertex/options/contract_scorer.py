@@ -74,14 +74,22 @@ def score_contract(contract: dict, category: str, sim: dict, profile,
         reasons.append(f'liquidité {liq_score}/100')
 
     # DTE dans la fenêtre préférée de la catégorie
-    dte = int(contract.get('dte') or 0)
     pref = tuple(cat_cfg.get('preferred_dte', (profile.dte.preferred_minimum,
                                                profile.dte.preferred_maximum)))
-    dte_mult = _dte_fit(dte, pref, profile)
-    if dte_mult >= 1.0:
-        reasons.append(f'DTE {dte} dans la fenêtre préférée {list(pref)}')
-    elif dte_mult > 0:
-        penalties.append(f'DTE {dte} hors fenêtre préférée {list(pref)}')
+    try:
+        raw_dte = float(contract.get('dte'))
+        dte = int(raw_dte) if raw_dte >= 0 and raw_dte.is_integer() else None
+    except (TypeError, ValueError):
+        dte = None
+    if dte is None:
+        dte_mult = 0.0
+        penalties.append('DTE indisponible ou invalide — contrat non classable sans échéance prouvée')
+    else:
+        dte_mult = _dte_fit(dte, pref, profile)
+        if dte_mult >= 1.0:
+            reasons.append(f'DTE {dte} dans la fenêtre préférée {list(pref)}')
+        elif dte_mult > 0:
+            penalties.append(f'DTE {dte} hors fenêtre préférée {list(pref)}')
 
     # IV chère : un DTE long ne compense pas une IV extrême
     iv_mult = 1.0

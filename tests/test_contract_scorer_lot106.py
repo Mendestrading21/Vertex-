@@ -69,6 +69,13 @@ def test_dte_fit_degrades_outside_preferred_window():
     assert any('hors fenêtre préférée' in p for p in edge.penalties)
 
 
+@pytest.mark.parametrize('dte', [None, 'inconnu', -1, 30.5])
+def test_missing_or_invalid_dte_is_a_fatal_explicit_scoring_defect(dte):
+    r = cs.score_contract(_contract(dte=dte), 'DYNAMIC', _sim(), PROFILE, _setup())
+    assert r.score == 0.0
+    assert any('DTE indisponible ou invalide' in penalty for penalty in r.penalties)
+
+
 def test_expensive_iv_taxes_even_long_dte():
     r = cs.score_contract(_contract(dte=200), 'DYNAMIC', _sim(),
                           PROFILE, _setup(), surface_context={'iv_rank': 90})
