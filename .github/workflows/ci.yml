@@ -55,6 +55,16 @@ jobs:
           PY
       - name: Tests
         run: python -m pytest -q
+      - name: Canonical runtime smoke
+        run: |
+          python - <<'PY'
+          from vertex.runtime import app
+          from vertex.strategy.constitution import load_profile
+          assert load_profile().version == 4
+          response = app.test_client().get("/healthz")
+          assert response.status_code == 200
+          print(response.get_json(silent=True) or response.get_data(as_text=True)[:200])
+          PY
 
   safety:
     runs-on: ubuntu-latest
