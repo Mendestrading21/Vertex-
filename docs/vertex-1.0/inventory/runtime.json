@@ -3,7 +3,7 @@
   {
    "chemin": "/scan",
    "fichier": "terminal.py",
-   "ligne": 1766,
+   "ligne": 1775,
    "methodes": [
     "*"
    ],
@@ -14,7 +14,7 @@
   {
    "chemin": "/api/rescan",
    "fichier": "terminal.py",
-   "ligne": 1779,
+   "ligne": 1788,
    "methodes": [
     "POST",
     "GET"
@@ -26,7 +26,7 @@
   {
    "chemin": "/api/ticker/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1870,
+   "ligne": 1879,
    "methodes": [
     "*"
    ],
@@ -37,7 +37,7 @@
   {
    "chemin": "/api/company/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1913,
+   "ligne": 1922,
    "methodes": [
     "*"
    ],
@@ -48,7 +48,7 @@
   {
    "chemin": "/api/analyst/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1922,
+   "ligne": 1931,
    "methodes": [
     "*"
    ],
@@ -59,7 +59,7 @@
   {
    "chemin": "/api/names",
    "fichier": "terminal.py",
-   "ligne": 1934,
+   "ligne": 1943,
    "methodes": [
     "*"
    ],
@@ -70,7 +70,7 @@
   {
    "chemin": "/api/correlations/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1975,
+   "ligne": 1983,
    "methodes": [
     "*"
    ],
@@ -81,7 +81,7 @@
   {
    "chemin": "/desc/<sym>",
    "fichier": "terminal.py",
-   "ligne": 2080,
+   "ligne": 2088,
    "methodes": [
     "*"
    ],
@@ -92,7 +92,7 @@
   {
    "chemin": "/options/<sym>",
    "fichier": "terminal.py",
-   "ligne": 2163,
+   "ligne": 2171,
    "methodes": [
     "*"
    ],
@@ -103,7 +103,7 @@
   {
    "chemin": "/quotes",
    "fichier": "terminal.py",
-   "ligne": 2444,
+   "ligne": 2447,
    "methodes": [
     "*"
    ],
@@ -114,7 +114,7 @@
   {
    "chemin": "/ibkr",
    "fichier": "terminal.py",
-   "ligne": 2451,
+   "ligne": 2454,
    "methodes": [
     "*"
    ],
@@ -125,7 +125,7 @@
   {
    "chemin": "/weekly-regen",
    "fichier": "terminal.py",
-   "ligne": 2460,
+   "ligne": 2463,
    "methodes": [
     "POST",
     "GET"
@@ -137,7 +137,7 @@
   {
    "chemin": "/api/alerts/status",
    "fichier": "terminal.py",
-   "ligne": 7183,
+   "ligne": 7186,
    "methodes": [
     "*"
    ],
@@ -148,7 +148,7 @@
   {
    "chemin": "/api/track-record",
    "fichier": "terminal.py",
-   "ligne": 7189,
+   "ligne": 7192,
    "methodes": [
     "*"
    ],
@@ -1767,8 +1767,8 @@
    "yfinance",
    "zlib"
   ],
-  "lignes": 7276,
-  "octets": 813212,
+  "lignes": 7279,
+  "octets": 813477,
   "plus_longue_fonction": [
    "_ibkr_opt_worker",
    306
@@ -1776,7 +1776,7 @@
   "routes": [
    {
     "chemin": "/scan",
-    "ligne": 1766,
+    "ligne": 1775,
     "methodes": [
      "*"
     ],
@@ -1785,7 +1785,7 @@
    },
    {
     "chemin": "/api/rescan",
-    "ligne": 1779,
+    "ligne": 1788,
     "methodes": [
      "POST",
      "GET"
@@ -1795,7 +1795,7 @@
    },
    {
     "chemin": "/api/ticker/<sym>",
-    "ligne": 1870,
+    "ligne": 1879,
     "methodes": [
      "*"
     ],
@@ -1804,7 +1804,7 @@
    },
    {
     "chemin": "/api/company/<sym>",
-    "ligne": 1913,
+    "ligne": 1922,
     "methodes": [
      "*"
     ],
@@ -1813,7 +1813,7 @@
    },
    {
     "chemin": "/api/analyst/<sym>",
-    "ligne": 1922,
+    "ligne": 1931,
     "methodes": [
      "*"
     ],
@@ -1822,7 +1822,7 @@
    },
    {
     "chemin": "/api/names",
-    "ligne": 1934,
+    "ligne": 1943,
     "methodes": [
      "*"
     ],
@@ -1831,7 +1831,7 @@
    },
    {
     "chemin": "/api/correlations/<sym>",
-    "ligne": 1975,
+    "ligne": 1983,
     "methodes": [
      "*"
     ],
@@ -1840,7 +1840,7 @@
    },
    {
     "chemin": "/desc/<sym>",
-    "ligne": 2080,
+    "ligne": 2088,
     "methodes": [
      "*"
     ],
@@ -1849,7 +1849,7 @@
    },
    {
     "chemin": "/options/<sym>",
-    "ligne": 2163,
+    "ligne": 2171,
     "methodes": [
      "*"
     ],
@@ -1858,7 +1858,7 @@
    },
    {
     "chemin": "/quotes",
-    "ligne": 2444,
+    "ligne": 2447,
     "methodes": [
      "*"
     ],
@@ -1867,7 +1867,7 @@
    },
    {
     "chemin": "/ibkr",
-    "ligne": 2451,
+    "ligne": 2454,
     "methodes": [
      "*"
     ],
@@ -1876,7 +1876,7 @@
    },
    {
     "chemin": "/weekly-regen",
-    "ligne": 2460,
+    "ligne": 2463,
     "methodes": [
      "POST",
      "GET"
@@ -1886,7 +1886,7 @@
    },
    {
     "chemin": "/api/alerts/status",
-    "ligne": 7183,
+    "ligne": 7186,
     "methodes": [
      "*"
     ],
@@ -1895,7 +1895,7 @@
    },
    {
     "chemin": "/api/track-record",
-    "ligne": 7189,
+    "ligne": 7192,
     "methodes": [
      "*"
     ],
@@ -1904,17 +1904,9 @@
    }
   ],
   "stores": [
-   "_STOOQ_CACHE",
-   "_SOURCE_BUDGET_STATE",
    "_STOOQ_IDX",
-   "_CORR_BENCH",
    "_FR_DESC",
-   "_ibkr_cache",
-   "_IBKR_MODE",
-   "_live_quotes",
-   "_live_meta",
-   "_IDX_IBKR",
-   "_IDX_META"
+   "_IBKR_MODE"
   ],
   "workers": [
    "_alerts_loop",
@@ -2492,6 +2484,32 @@
    ],
    "routes": [],
    "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/caches.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 124,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [
+    "_STOOQ_CACHE",
+    "_SOURCE_BUDGET_STATE",
+    "_CORR_BENCH",
+    "_ibkr_cache",
+    "_IDX_IBKR",
+    "_IDX_META",
+    "_live_quotes",
+    "_live_meta",
+    "POLITIQUE"
+   ],
    "workers": []
   },
   {
@@ -9819,16 +9837,16 @@
    "workers": []
   }
  ],
- "sha": "d52a39d4baf1",
+ "sha": "d3f2639027f6",
  "totaux": {
   "blueprints_enregistres": 21,
   "boucles_monolithe": 13,
-  "fichiers_paquet": 338,
-  "lignes_monolithe": 7276,
-  "octets_monolithe": 813212,
+  "fichiers_paquet": 339,
+  "lignes_monolithe": 7279,
+  "octets_monolithe": 813477,
   "routes_canoniques": 140,
   "routes_legacy": 14,
-  "stores_monolithe": 11,
+  "stores_monolithe": 3,
   "workers_monolithe": 15
  }
 }

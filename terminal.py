@@ -71,6 +71,13 @@ from vertex.engines import swing as _swing
 from vertex.engines import strategy_fit as _strategy_fit
 from vertex.engines import stats as _stats
 from vertex.app.state import scan_state, weekly_state, news_state, cal_state
+#  #779 — CACHES D'EXECUTION : proprietaire et politique de fraicheur declares
+#  dans `vertex/app/caches.py` (QUALITY_STANDARD §8). Les objets sont les MEMES :
+#  mutes en place, jamais reassignes, donc l'identite est preservee.
+from vertex.app.caches import (          # noqa: F401  (relies par leur nom)
+    _STOOQ_CACHE, _STOOQ_TTL, _SOURCE_BUDGET_STATE, _CORR_BENCH,
+    _ibkr_cache, _IDX_IBKR, _IDX_META, _live_quotes, _live_meta,
+)
 from vertex.app.routes import auth as _auth
 from vertex.app.routes import command as _command
 from vertex.app.routes import session_api as _session_api
@@ -249,11 +256,13 @@ backtest = _backtest.backtest
 # Yahoo (yfinance) rate-limite les serveurs de datacenter → yf.download revient vide
 # sur Render. Stooq sert de filet : données de clôture quotidiennes, mises en cache
 # 6 h (EOD = 1 maj/jour, donc aucun spam de l'endpoint gratuit). Lecture seule.
-_STOOQ_CACHE = {'ts': 0.0, 'frames': {}}
-_STOOQ_TTL = 6 * 3600
+#
+# #779 — LE CACHE ET SON TTL VIVENT DÉSORMAIS DANS `vertex/app/caches.py`, avec
+# leur propriétaire mesuré et leur politique de fraîcheur écrite
+# (QUALITY_STANDARD §8). L'objet est le MÊME : muté en place, jamais réassigné,
+# donc `terminal._STOOQ_CACHE is caches._STOOQ_CACHE`.
 YFINANCE_BATCH_TIMEOUT_SECONDS = 10
 STOOQ_REQUEST_TIMEOUT_SECONDS = 8
-_SOURCE_BUDGET_STATE = {'yfinance': 'UNKNOWN', 'stooq': 'UNKNOWN'}
 _STOOQ_IDX = {'^GSPC': '^spx', '^DJI': '^dji', '^IXIC': '^ndq', '^RUT': '^rut', '^VIX': '^vix',
               # matières premières / crypto (mapping stooq)
               'GC=F': 'xauusd', 'SI=F': 'xagusd', 'CL=F': 'cl.f', 'BZ=F': 'cb.f', 'BTC-USD': 'btcusd'}
@@ -1945,7 +1954,6 @@ def api_names():
 # ─── CORRÉLATIONS RÉELLES : le titre vs macro (SOXX, QQQ, S&P, BTC, or, dollar, taux, VIX) ───
 _CORR_MAP = [('SOXX', 'SOXX'), ('QQQ', 'QQQ'), ('S&P 500', 'SPY'), ('Bitcoin', 'BTC-USD'),
              ('Or', 'GC=F'), ('Dollar', 'DX-Y.NYB'), ('Taux 10a', '^TNX'), ('VIX', '^VIX')]
-_CORR_BENCH = {'ts': 0, 'df': None}
 
 
 def _to_naive(ix):
@@ -2165,7 +2173,6 @@ def opt_ep(sym):
 
 
 # ─── IBKR LECTURE SEULE (ib_reader, readonly) — jamais d'ordre ──────────────
-_ibkr_cache = {'ts': 0.0, 'data': None}
 _IBKR_MODE = {7496: 'RÉEL (TWS)', 7497: 'PAPER (TWS)', 4001: 'RÉEL (Gateway)', 4002: 'PAPER (Gateway)'}
 
 
@@ -2250,8 +2257,6 @@ def _ibkr_snapshot():
 
 
 # ─── COURS EN DIRECT (flux IBKR permanent, lecture seule) ───────────────────
-_live_quotes = {}                       # {sym: {last, change, bid, ask}}
-_live_meta = {'connected': False, 'ts': 0.0, 'rt': False, 'n': 0}
 
 
 def _sync_ibkr_state():
@@ -2342,8 +2347,6 @@ def _quotes_worker():
 # IBUS30. On overlaie scan_state['indices'] + le VIX du contexte. On N'OVERLAIE PAS
 # le Nasdaq (yfinance = ^IXIC Composite ; IBKR gratuit = NDX 100 → indices DIFFÉRENTS,
 # mélanger serait malhonnête §4) ni le Russell. ⛔ LECTURE SEULE (reqMktData only).
-_IDX_IBKR = {}      # {nom_affiché: {'price':.., 'change':.., 'ts':..}}
-_IDX_META = {'connected': False, 'ts': 0.0, 'n': 0}
 # nom d'affichage (DOIT matcher scan_state['indices']) -> (secType, symbol, exchange)
 _IDX_SPECS = [
     ('S&P 500', 'IND', 'SPX', 'CBOE'),

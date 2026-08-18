@@ -1,6 +1,6 @@
 # Vertex 1.0 · #779 — Inventaire exécutable du runtime
 
-SHA : `d52a39d4baf1` · généré par `tools/vertex_1_0/inventaire_runtime.py`
+SHA : `d3f2639027f6` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 > Ce document est **régénéré**, jamais édité à la main. Un chiffre qui
 > change sans que le code ait bougé est un défaut de l'instrument.
@@ -9,15 +9,15 @@ SHA : `d52a39d4baf1` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | mesure | valeur |
 | --- | --- |
-| lignes | 7276 |
-| octets | 813212 |
+| lignes | 7279 |
+| octets | 813477 |
 | fonctions | 91 |
 | plus longue fonction | `_ibkr_opt_worker` (306 lignes) |
 | **routes LEGACY** | **14** |
 | blueprints enregistrés | 21 |
 | workers démarrés | 15 |
 | boucles de service | 13 |
-| stores de module | 11 |
+| stores de module | 3 |
 
 ## Matrice de propriété des routes
 
@@ -33,20 +33,20 @@ SHA : `d52a39d4baf1` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | chemin | vue | méthodes | ligne |
 | --- | --- | --- | --- |
-| `/scan` | `scan_ep` | * | 1766 |
-| `/api/rescan` | `api_rescan` | POST, GET | 1779 |
-| `/api/ticker/<sym>` | `api_ticker` | * | 1870 |
-| `/api/company/<sym>` | `api_company` | * | 1913 |
-| `/api/analyst/<sym>` | `api_analyst` | * | 1922 |
-| `/api/names` | `api_names` | * | 1934 |
-| `/api/correlations/<sym>` | `api_correlations` | * | 1975 |
-| `/desc/<sym>` | `desc_ep` | * | 2080 |
-| `/options/<sym>` | `opt_ep` | * | 2163 |
-| `/quotes` | `quotes_ep` | * | 2444 |
-| `/ibkr` | `ibkr_ep` | * | 2451 |
-| `/weekly-regen` | `weekly_regen_ep` | POST, GET | 2460 |
-| `/api/alerts/status` | `api_alerts_status` | * | 7183 |
-| `/api/track-record` | `api_track_record` | * | 7189 |
+| `/scan` | `scan_ep` | * | 1775 |
+| `/api/rescan` | `api_rescan` | POST, GET | 1788 |
+| `/api/ticker/<sym>` | `api_ticker` | * | 1879 |
+| `/api/company/<sym>` | `api_company` | * | 1922 |
+| `/api/analyst/<sym>` | `api_analyst` | * | 1931 |
+| `/api/names` | `api_names` | * | 1943 |
+| `/api/correlations/<sym>` | `api_correlations` | * | 1983 |
+| `/desc/<sym>` | `desc_ep` | * | 2088 |
+| `/options/<sym>` | `opt_ep` | * | 2171 |
+| `/quotes` | `quotes_ep` | * | 2447 |
+| `/ibkr` | `ibkr_ep` | * | 2454 |
+| `/weekly-regen` | `weekly_regen_ep` | POST, GET | 2463 |
+| `/api/alerts/status` | `api_alerts_status` | * | 7186 |
+| `/api/track-record` | `api_track_record` | * | 7192 |
 
 ### Workers démarrés par `terminal.py`
 
@@ -68,23 +68,15 @@ SHA : `d52a39d4baf1` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 ### Stores de module (état partagé)
 
-- `_CORR_BENCH`
 - `_FR_DESC`
 - `_IBKR_MODE`
-- `_IDX_IBKR`
-- `_IDX_META`
-- `_SOURCE_BUDGET_STATE`
-- `_STOOQ_CACHE`
 - `_STOOQ_IDX`
-- `_ibkr_cache`
-- `_live_meta`
-- `_live_quotes`
 
 ## Paquet `vertex/` — surface canonique
 
 | mesure | valeur |
 | --- | --- |
-| fichiers Python | 338 |
+| fichiers Python | 339 |
 | routes canoniques | 140 |
 
 ### Blueprints enregistrés par le monolithe
