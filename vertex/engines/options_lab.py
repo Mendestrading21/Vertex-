@@ -536,36 +536,44 @@ _STRATS = [
 def _strategies(star, market):
     roro = (market or {}).get('roro')
     reg = (market or {}).get('spy_regime')
-    iv = (star or {}).get('iv') or 40
-    iv_rich = iv >= 45
+    iv = (star or {}).get('iv')
+    iv_available = isinstance(iv, (int, float)) and not isinstance(iv, bool) and iv > 0
+    iv_rich = iv >= 45 if iv_available else None
     trending = reg in ('TREND', 'UP') and roro != 'RISK-OFF'
     chop = reg == 'CHOP'
     out = []
     for name, kind, risk, potential, when, avoid, ctx in _STRATS:
         s = 50
         if kind == 'directionnel':
-            s += (18 if trending else -12 if chop else 0) + (8 if 'Spread' in name and iv_rich else 0)
+            s += (18 if trending else -12 if chop else 0) + (8 if 'Spread' in name and iv_rich is True else 0)
             if 'Bear' in name:
                 s += (15 if roro == 'RISK-OFF' else -12 if trending else 0)
         if kind == 'range':
-            s += (20 if chop else -15 if trending else 0) + (10 if iv_rich else -8)
+            s += (20 if chop else -15 if trending else 0) + (10 if iv_rich is True else -8 if iv_rich is False else 0)
         if kind == 'revenu':
-            s += (14 if iv_rich else -10) + (6 if not chop else 0)
+            s += (14 if iv_rich is True else -10 if iv_rich is False else 0) + (6 if not chop else 0)
         if kind == 'volatilité':
-            s += (-14 if iv_rich else 12)
+            s += (-14 if iv_rich is True else 12 if iv_rich is False else 0)
         if kind == 'couverture':
-            s += (18 if roro == 'RISK-OFF' else -4) + (8 if not iv_rich else -4)
+            s += (18 if roro == 'RISK-OFF' else -4) + (8 if iv_rich is False else -4 if iv_rich is True else 0)
         if kind in ('hybride', 'ciblé'):
             s += 6 if trending else 0
         s = max(10, min(95, round(s)))
         out.append({'name': name, 'kind': kind, 'score': s, 'risk': risk, 'potential': potential,
                     'when': when, 'avoid': avoid, 'context': ctx,
-                    'fit': 'recommandée' if s >= 68 else 'jouable' if s >= 50 else 'hors contexte'})
+                    'fit': 'recommandée' if s >= 68 else 'jouable' if s >= 50 else 'hors contexte',
+                    'coverage': {'iv_available': iv_available,
+                                 'status': 'IV_AVAILABLE' if iv_available else 'IV_UNAVAILABLE',
+                                 'read_only': True}})
     out.sort(key=lambda x: -x['score'])
     best = out[0]
-    ai = ('Contexte du jour : %s, %s, IV médiane %s%%. La structure la mieux payée est « %s » (%s/100) — %s'
-          % (reg or 'régime inconnu', roro or 'risk indéterminé', iv, best['name'], best['score'], best['when']))
-    return {'items': out, 'ai': ai}
+    iv_text = 'IV médiane %s%%' % iv if iv_available else 'IV indisponible'
+    ai = ('Contexte du jour : %s, %s, %s. La structure la mieux payée est « %s » (%s/100) — %s'
+          % (reg or 'régime inconnu', roro or 'risk indéterminé', iv_text, best['name'], best['score'], best['when']))
+    return {'items': out, 'ai': ai,
+            'coverage': {'iv_available': iv_available,
+                         'status': 'IV_AVAILABLE' if iv_available else 'IV_UNAVAILABLE',
+                         'read_only': True}}
 
 
 # ─── ⑦ TOP OPPORTUNITÉS (listes premium) ───

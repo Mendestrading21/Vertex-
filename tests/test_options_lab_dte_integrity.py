@@ -90,3 +90,11 @@ def test_comparator_does_not_invent_pop_or_break_even_metrics():
         if name != 'Action (100 titres)':
             assert row['be'] is None
             assert row['coverage']['break_even_available'] is False
+
+
+def test_strategies_expose_missing_iv_without_iv_default_scoring():
+    result = options_lab._strategies({'sym': 'TST', 'iv': None}, {'spy_regime': 'CHOP', 'roro': 'RISK-ON'})
+    assert result['coverage'] == {'iv_available': False, 'status': 'IV_UNAVAILABLE', 'read_only': True}
+    assert 'IV indisponible' in result['ai']
+    assert '40%' not in result['ai']
+    assert all(row['coverage']['iv_available'] is False for row in result['items'])
