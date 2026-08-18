@@ -245,7 +245,15 @@ def api_skyler(sym):
     packet = _sk.build_packet(sym, detail, market=market, events=ev, anomaly=ano,
                               as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
                               red_team=rt_input, data_quality_ctx=dqctx,
-                              reconciliation_ctx=recctx, fundamental_ctx=fundamentals_ctx)
+                              reconciliation_ctx=recctx, fundamental_ctx=fundamentals_ctx,
+                              drawdown_ctx=drawdown, downside_volatility_ctx=downside_volatility,
+                              relative_strength_ctx=relative_strength, gap_risk_ctx=gap_risk,
+                              earnings_proximity_ctx=earnings_proximity,
+                              earnings_option_overlap_ctx=earnings_option_overlap,
+                              earnings_holding_overlap_ctx=earnings_holding_overlap,
+                              iv_skew_ctx=iv_skew, call_put_structure_ctx=call_put_structure,
+                              iv_term_structure_ctx=iv_term_structure, relative_volume_ctx=relative_volume,
+                              open_interest_concentration_ctx=open_interest_concentration)
     # Contrat de présentation stable : une interface ou un agent de design peut
     # expliquer les preuves manquantes sans jamais toucher au verdict canonique.
     from vertex.engines import decision_readiness as _readiness
