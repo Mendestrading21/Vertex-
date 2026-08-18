@@ -707,7 +707,13 @@ function loadSectors(scan){
     source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
     limits:'univers = leaders scannés'});
   $('vx-mk-sectors-leaders').innerHTML=
-    `<table class="vx-table"><thead><tr><th>Secteur</th><th class="vx-num">Score</th><th>Leader</th><th></th></tr></thead><tbody>`
+    /* `.vx-table-wrap` — le patron maison, et cette table etait la SEULE du
+       depot a s'en passer (lot 66). Consequence mesuree a 320 px : elle sortait
+       du gabarit de 21 px sans qu'aucun ancetre ne puisse defiler, et comme
+       `html`/`body` portent `overflow-x:clip`, la colonne « Leader » etait
+       simplement COUPEE — ni visible, ni atteignable. L'enveloppe rend le
+       depassement defilant, ce que font deja toutes les autres tables. */
+    `<div class="vx-table-wrap"><table class="vx-table"><thead><tr><th>Secteur</th><th class="vx-num">Score</th><th>Leader</th><th></th></tr></thead><tbody>`
     +sectors.map(s=>{
       const L=s.leader&&(s.leader.symbol||((typeof s.leader==='string')?s.leader:null));
       return `<tr>
@@ -715,7 +721,7 @@ function loadSectors(scan){
       <td class="vx-num vx-mono">${VX.fmt.nd(s.avg_score)}</td>
       <td>${L?`<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(L)}">${esc(L)}</button>`:'—'}</td>
       <td>${L?`<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(L)}" aria-label="Actions ${esc(L)}">${VX.icon('more')}</button>`:''}</td>
-    </tr>`;}).join('')+'</tbody></table>'
+    </tr>`;}).join('')+'</tbody></table></div>'
     +`<div class="vx-card-footer">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',modeOf(scan))}</div>`;
   /* Rotation sectorielle en quadrant (RRG-like) : force relative × momentum */
   if(window.VXCharts&&sectors.length>=2){

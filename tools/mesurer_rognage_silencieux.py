@@ -109,22 +109,96 @@ JS = """() => {
   });
   return out;
 }"""
-with sync_playwright() as p:
-    b=p.chromium.launch(executable_path='/opt/pw-browsers/chromium-1194/chrome-linux/chrome')
-    for w,h in ((1440,900),(390,844)):
-        ctx=b.new_context(viewport={'width':w,'height':h}, service_workers='block'); pg=ctx.new_page()
-        for _motif in INTERDITS:
-            pg.route(_motif, lambda r: r.abort())
-        tot=0; vus=set()
-        for route,vues in PAGES:
-            for v in vues:
-                url='http://localhost:5002'+route+(('?view='+v) if v else '')
-                pg.goto(url, wait_until='domcontentloaded'); pg.wait_for_timeout(3200)
-                for r in pg.evaluate(JS):
-                    k=(route,v,r['cls'],r['txt'])
-                    if k in vus: continue
-                    vus.add(k); tot+=1
-                    if tot<=14: print('%4dpx %s?%-12s %-8s %-40s dx=%d dy=%d | %s'%(w,route,v,r['tag'],r['cls'],r['dx'],r['dy'],r['txt']))
-        print('=== %dpx : %d element(s) rogne(s) en silence\n'%(w,tot))
-        ctx.close()
-    b.close()
+# LE TEMOIN — sans lui, « 0 rogne » et « je ne sais pas voir » rendent le meme
+# chiffre. On fabrique dans la page un element VRAIMENT rogne en silence (boite
+# etroite, overflow cache, ni ellipse ni defilement) et on exige que le detecteur
+# le denonce. Il est pose dans #vx-content, la ou l'instrument regarde, et il ne
+# touche jamais le disque.
+TEMOIN_TXT = 'TEMOIN ROGNAGE UNE PHRASE BIEN TROP LONGUE POUR SA BOITE'
+TEMOIN_JS = """() => {
+  const hote = document.querySelector('#vx-content');
+  if (!hote) return false;
+  const d = document.createElement('div');
+  d.style.cssText = 'width:40px;overflow:hidden;white-space:nowrap;font-size:14px';
+  d.textContent = %s;
+  hote.appendChild(d);
+  return true;
+}""" % repr(TEMOIN_TXT).replace("'", '"')
+
+
+# QUATRE LARGEURS. L'outil n'en couvrait que deux (1440 et 390) : la reserve D3
+# du lot 65 notait que 768 (tablette / iPhone paysage) et 1920 (ecran large)
+# n'avaient jamais ete balayes depuis la refonte Signal OS.
+LARGEURS = ((1920, 1080), (1440, 900), (768, 1024), (390, 844))
+
+
+def _navigateur(p):
+    """Chemin par glob : la version epinglee en dur (chromium-1194) casse des
+    que l'image change. Meme helper que les autres instruments de la serie."""
+    import glob
+    for motif in ('/opt/pw-browsers/chromium-*/chrome-linux/chrome',
+                  '/opt/pw-browsers/chromium'):
+        trouves = sorted(glob.glob(motif))
+        if trouves:
+            return p.chromium.launch(executable_path=trouves[-1], args=['--no-sandbox'])
+    return p.chromium.launch(args=['--no-sandbox'])
+
+
+def main(argv=None):
+    import sys
+    argv = list(sys.argv[1:] if argv is None else argv)
+    temoin = '--temoin' in argv
+    base = 'http://localhost:5002'
+    largeurs = LARGEURS
+    if '--largeur' in argv:
+        w = int(argv[argv.index('--largeur') + 1])
+        largeurs = tuple(l for l in LARGEURS if l[0] == w) or ((w, 900),)
+
+    pire = 0
+    with sync_playwright() as p:
+        b = _navigateur(p)
+        for w, h in largeurs:
+            ctx = b.new_context(viewport={'width': w, 'height': h}, service_workers='block')
+            pg = ctx.new_page()
+            for _motif in INTERDITS:
+                pg.route(_motif, lambda r: r.abort())
+            tot = 0
+            vus = set()
+            temoin_vu = False
+            for route, vues in PAGES:
+                for v in vues:
+                    url = base + route + (('?view=' + v) if v else '')
+                    pg.goto(url, wait_until='domcontentloaded')
+                    pg.wait_for_timeout(3200)
+                    if temoin:
+                        pg.evaluate(TEMOIN_JS)
+                    for r in pg.evaluate(JS):
+                        if TEMOIN_TXT[:20] in r['txt']:
+                            temoin_vu = True
+                            continue
+                        k = (route, v, r['cls'], r['txt'])
+                        if k in vus:
+                            continue
+                        vus.add(k)
+                        tot += 1
+                        if tot <= 14:
+                            print('%4dpx %s?%-12s %-8s %-40s dx=%d dy=%d | %s'
+                                  % (w, route, v, r['tag'], r['cls'], r['dx'], r['dy'], r['txt']))
+            if temoin:
+                print('%4dpx TEMOIN : %s' % (w, 'DENONCE — le detecteur mord' if temoin_vu
+                                             else '*** PASSE INAPERCU ***'))
+                if not temoin_vu:
+                    pire = max(pire, 2)
+            print('=== %dpx : %d element(s) rogne(s) en silence\n' % (w, tot))
+            if tot:
+                pire = max(pire, 1)
+            ctx.close()
+        b.close()
+    return pire
+
+
+if __name__ == '__main__':
+    import sys
+    code = main()
+    print('EXIT=%d' % code)
+    sys.exit(code)

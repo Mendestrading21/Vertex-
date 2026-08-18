@@ -77,15 +77,100 @@ JS = """() => {
     .map(a => a.getAttribute('href'))
     .filter(h => h && !h.startsWith('#') && !h.startsWith('mailto:')
               && !h.startsWith('http') && !h.startsWith('javascript:'));
-  const doc = document.documentElement;
+  /* DEBORDEMENT HORIZONTAL — et pourquoi `documentElement` ne peut PAS le dire
+     ici. Mesure du lot 66 : `html` et `body` portent `overflow-x: clip`. Dans ce
+     mode, `documentElement.scrollWidth` ne depasse JAMAIS `clientWidth` — il
+     reste colle a la largeur du gabarit meme avec un element 400 px trop large
+     (verifie : injecte 1840 px de contenu, `doc.scrollWidth` rendait toujours
+     1440, `body.scrollWidth` rendait 1840).
+
+     Le detecteur d'origine etait donc structurellement incapable de se
+     declencher, et son « 0 debordement » sur cinq largeurs, publie depuis le
+     lot 26, ne prouvait rien. Meme famille d'erreur que le lot 64 : une mesure
+     qui ne peut pas rendre de resultat positif.
+
+     On lit donc `body.scrollWidth` — que `clip` n'ecrase pas — et on nomme EN
+     PLUS les elements dont le bord droit sort du gabarit, parce qu'un total ne
+     dit pas QUOI corriger. `clip` a une consequence produit : rien ne defile,
+     donc un element trop large est coupe en silence pour l'utilisateur aussi. */
+  const vp = window.innerWidth;
+  const coupables = [];
+  /* ON BALAIE `body`, PAS `#vx-content`. Le premier relevé rendait « élément non
+     identifié » sur 36 vues : le coupable est `.vx-topbar-right`, qui vit dans
+     le SHELL, hors de la zone de contenu. Restreindre la recherche au contenu
+     revenait à chercher la clé sous le lampadaire. */
+  document.querySelectorAll('body *').forEach(e => {
+    const r = e.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0) return;
+    if (r.right <= vp + 2) return;
+    const cs = getComputedStyle(e);
+    if (cs.position === 'fixed') return;      // overlays hors flux
+    /* CE QUI DEPASSE N'EST PAS FORCEMENT PERDU. Une table large dans un
+       conteneur `overflow-x:auto` sort du gabarit et reste ATTEIGNABLE : on
+       fait defiler. L'accuser noierait le signal reel sous le patron le plus
+       courant du produit — c'est l'exclusion `.vx-sr-only` de
+       `mesurer_rognage_silencieux.py`, transposee. On ne retient donc que ce
+       qu'AUCUN ancetre defilant ne rattrape. */
+    let a = e.parentElement, rattrape = false;
+    while (a && a !== document.body) {
+      const ca = getComputedStyle(a);
+      const peutDefiler = (ca.overflowX === 'auto' || ca.overflowX === 'scroll'
+                           || ca.overflow === 'auto' || ca.overflow === 'scroll');
+      if (peutDefiler && a.scrollWidth - a.clientWidth > 2) { rattrape = true; break; }
+      a = a.parentElement;
+    }
+    if (rattrape) return;
+    coupables.push({ cls: (e.className || '').toString().slice(0, 36),
+                     tag: e.tagName, depasse: Math.round(r.right - vp) });
+  });
   return { dbl: [...dbl], hrefs: [...new Set(hrefs)],
-           debordeH: doc.scrollWidth - doc.clientWidth };
+           debordeH: Math.max(0, document.body.scrollWidth - vp),
+           coupables: coupables.slice(0, 6) };
 }"""
 
 
-def balayer(pw, largeur, hauteur, etiquette):
-    nav = pw.chromium.launch(
-        executable_path='/opt/pw-browsers/chromium-1194/chrome-linux/chrome')
+# LE TEMOIN DE DETECTION — a ne pas confondre avec le temoin de LARGEUR qui
+# existait deja plus bas. Celui-la prouve que le navigateur a applique le
+# gabarit ; il ne prouve pas que les DETECTEURS mordent. « TOUT PROPRE » sur
+# quatre detecteurs jamais mis a l'epreuve et « je ne sais pas voir » rendent
+# exactement le meme resultat.
+#
+# On fabrique donc dans la page les trois defauts que l'outil pretend trouver —
+# un id duplique, un debordement horizontal, un lien interne casse — et on exige
+# qu'il les denonce tous les trois. Rien n'est ecrit sur le disque.
+_TEMOIN_ID = 'vx-temoin-id-duplique'
+_TEMOIN_LIEN = '/vx-cette-route-nexiste-pas-temoin'
+_TEMOIN_JS = """() => {
+  const hote = document.body;
+  for (let i = 0; i < 2; i++) {
+    const d = document.createElement('div');
+    d.id = '%s';
+    hote.appendChild(d);
+  }
+  const large = document.createElement('div');
+  large.style.cssText = 'width:' + (window.innerWidth + 400) + 'px;height:4px';
+  hote.appendChild(large);
+  const a = document.createElement('a');
+  a.setAttribute('href', '%s');
+  a.textContent = 'temoin';
+  hote.appendChild(a);
+  return true;
+}""" % (_TEMOIN_ID, _TEMOIN_LIEN)
+
+
+def _navigateur(pw):
+    """Chemin par glob : la version epinglee en dur casse des que l'image change."""
+    import glob
+    for motif in ('/opt/pw-browsers/chromium-*/chrome-linux/chrome',
+                  '/opt/pw-browsers/chromium'):
+        trouves = sorted(glob.glob(motif))
+        if trouves:
+            return pw.chromium.launch(executable_path=trouves[-1], args=['--no-sandbox'])
+    return pw.chromium.launch(args=['--no-sandbox'])
+
+
+def balayer(pw, largeur, hauteur, etiquette, temoin=False):
+    nav = _navigateur(pw)
     ctx = nav.new_context(viewport={'width': largeur, 'height': hauteur},
                           service_workers='block')
     pg = ctx.new_page()
@@ -127,6 +212,8 @@ def balayer(pw, largeur, hauteur, etiquette):
                         'le releve de cette colonne ne mesurerait pas ce qu\'il '
                         'annonce.' % (largeur, reelle))
                 vu_largeur = True
+            if temoin:
+                pg.evaluate(_TEMOIN_JS)
             r = pg.evaluate(JS)
             pg.remove_listener('console', _console)
 
@@ -136,7 +223,9 @@ def balayer(pw, largeur, hauteur, etiquette):
             if errs:
                 erreurs[url] = sorted(set(errs))[:3]
             if r['debordeH'] > 2:
-                reflow.append('%s (+%d px)' % (url, r['debordeH']))
+                qui = ', '.join('%s.%s +%dpx' % (c['tag'], c['cls'], c['depasse'])
+                                for c in r['coupables']) or 'element non identifie'
+                reflow.append('%s (+%d px) — %s' % (url, r['debordeH'], qui))
 
     print('=== %s (%d px)' % (etiquette, largeur))
     print('  ids dupliques   : %s' % (ids_dbl or 0))
@@ -156,6 +245,23 @@ def balayer(pw, largeur, hauteur, etiquette):
             casses.append('%s -> %s' % (h, type(e).__name__))
     print('  liens internes  : %d distincts, casses : %s'
           % (len(liens), ', '.join(casses) or 0))
+
+    if temoin:
+        #  LES TROIS DEFAUTS FABRIQUES DOIVENT AVOIR ETE DENONCES. Si l'un
+        #  d'eux passe inapercu, le detecteur correspondant est aveugle et son
+        #  « 0 » de la vraie mesure ne veut rien dire.
+        vus = {
+            'id duplique': any(_TEMOIN_ID in v for v in ids_dbl.values()),
+            'debordement H': bool(reflow),
+            'lien casse': any(_TEMOIN_LIEN in c for c in casses),
+        }
+        for quoi, vu in vus.items():
+            print('  TEMOIN %-16s %s' % (quoi, 'DENONCE — le detecteur mord'
+                                         if vu else '*** PASSE INAPERCU ***'))
+        ctx.close()
+        nav.close()
+        return all(vus.values())
+
     ctx.close()
     nav.close()
     return not (ids_dbl or erreurs or reflow or casses)
@@ -172,8 +278,26 @@ LARGEURS = ((1440, 900, 'INTEGRITE 1440'),
             (390, 844, 'MOBILE 390'),
             (320, 800, 'REFLOW 320'))   # WCAG 1.4.10
 
-with sync_playwright() as pw:
-    ok = True
-    for largeur, hauteur, titre in LARGEURS:
-        ok = balayer(pw, largeur, hauteur, titre) and ok
-print('\n%s' % ('TOUT PROPRE' if ok else 'DEFAUTS TROUVES — voir ci-dessus'))
+def main(argv=None):
+    import sys
+    argv = list(sys.argv[1:] if argv is None else argv)
+    temoin = '--temoin' in argv
+    #  Le temoin n'a besoin que d'UNE largeur : il eprouve les detecteurs, pas
+    #  la mise en page. Le faire tourner cinq fois couterait cinq balayages
+    #  complets pour la meme preuve.
+    largeurs = (LARGEURS[0],) if temoin else LARGEURS
+    with sync_playwright() as pw:
+        ok = True
+        for largeur, hauteur, titre in largeurs:
+            ok = balayer(pw, largeur, hauteur, titre, temoin=temoin) and ok
+    if temoin:
+        print('\n%s' % ('TEMOIN OK — les trois detecteurs mordent' if ok
+                        else 'AVEUGLE — un detecteur au moins ne voit pas'))
+        return 0 if ok else 2
+    print('\n%s' % ('TOUT PROPRE' if ok else 'DEFAUTS TROUVES — voir ci-dessus'))
+    return 0 if ok else 1
+
+
+if __name__ == '__main__':
+    import sys
+    sys.exit(main())

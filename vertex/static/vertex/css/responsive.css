@@ -82,7 +82,38 @@
   .vx-col-9{grid-column:span 12}
   .vx-strip-item{grid-column:span 6}
   .vx-strip-item .vx-kpi-value{font-size:17px!important}
-  .vx-topbar-search{max-width:none}
+  /* lot 66 : à 320 px (WCAG 1.4.10 « reflow »), le cluster droit de la barre
+     sortait du gabarit de 4 à 34 px selon la page — et comme `html`/`body`
+     portent `overflow-x:clip`, RIEN ne défile : le bouton d'actualisation
+     était purement HORS D'ATTEINTE. Le détecteur de débordement ne le voyait
+     pas — il lisait `documentElement.scrollWidth`, que `clip` empêche par
+     construction de dépasser (cf. SIGNAL-OS-66).
+
+     Cause mesurée : `flex:1 1 0%` ne suffit pas, parce que `min-width:auto`
+     interdit à un élément flex de descendre sous sa taille INTRINSÈQUE — ici
+     ~98 px, imposés par le `padding-left:34px` qui loge l'icône. Avec 36 px de
+     marges, 42 px de gouttières et un cluster droit de 180 px incompressible,
+     il ne restait pas la place.
+
+     On laisse donc le champ RÉTRÉCIR au lieu de le masquer : le lot 289 a
+     établi qu'il est LE chemin tactile vers la palette de commandes.
+
+     MAIS UN PLANCHER, PAS UN ZÉRO — et c'est ma propre correction qui l'a
+     appris. Un premier jet mettait `min-width:0` : le débordement disparaissait
+     bien, sauf que le fil d'Ariane, lui aussi en `flex:1 1 0`, réclamait toute
+     la place libre une fois rempli et écrasait le champ à **0 px de large sur
+     quatre pages sur cinq** — à 320 comme à 390 px. J'avais échangé un défaut
+     contre un autre : le bouton redevenait atteignable, la recherche
+     disparaissait.
+
+     (Le piège de mesure vaut d'être noté : une première sonde lisait 38 et
+     73 px et me faisait croire le champ sain. Elle mesurait AVANT que le fil
+     d'Ariane ne se remplisse. Trois échantillons espacés ont tranché.)
+
+     44 px est le plancher : le champ reste tappable, le fil d'Ariane cède le
+     reste — c'est lui qui doit céder, il tronque déjà en ellipse par dessein
+     (lot 222). */
+  .vx-topbar-search{max-width:none;min-width:44px}
   /* lot 288 : ⌘K est une affordance CLAVIER — mensongère au tactile (le tap
      sur le champ ouvre la palette) et elle mangeait ~30px d'un champ mesuré
      à 93px sur 390px. */
