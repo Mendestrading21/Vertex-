@@ -44,6 +44,18 @@ def test_atm_iv_is_nearest_strike_and_expected_move_formula():
         0.30 * (180 / 365) ** 0.5 * 100, abs=0.01)  # ±21.07 % à 180 j
 
 
+def test_surface_excludes_expiry_with_missing_or_conflicting_dte():
+    missing = build_surface('TST', 100.0, _rows([(100, 0.30)], dte=None))
+    assert missing.by_expiry == {}
+    assert missing.term_structure == [] and missing.expected_moves == {}
+    assert any('DTE indisponible ou contradictoire' in note for note in missing.notes)
+
+    conflicting = build_surface('TST', 100.0,
+                                _rows([(100, 0.30)], dte=90) + _rows([(101, 0.31)], dte=120))
+    assert conflicting.by_expiry == {}
+    assert any('DTE indisponible ou contradictoire' in note for note in conflicting.notes)
+
+
 def test_skew_needs_a_put_near_10pct_otm():
     with_put = build_surface('TST', 100.0,
                              _rows([(100, 0.30)]) + _rows([(91, 0.38)], right='P'))
