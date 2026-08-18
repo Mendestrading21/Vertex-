@@ -150,7 +150,7 @@ def _profile():
 def build_packet(sym, detail, market=None, events=None, anomaly=None,
                  as_of=None, demo=False, options_ctx=None, portfolio_ctx=None,
                  red_team=None, data_quality_ctx=None, reconciliation_ctx=None, fundamental_ctx=None,
-                 drawdown_ctx=None, downside_volatility_ctx=None):
+                 drawdown_ctx=None, downside_volatility_ctx=None, relative_strength_ctx=None):
     """Agrège les sorties moteurs existantes en un packet typé — sans muter les
     sources, sans recalculer, sans inventer."""
     detail = detail or {}
@@ -191,6 +191,8 @@ def build_packet(sym, detail, market=None, events=None, anomaly=None,
                      {'available': False, 'reason': 'contexte de drawdown non fourni'}),
         'downside_volatility': (downside_volatility_ctx if downside_volatility_ctx is not None else
                                 {'available': False, 'reason': 'contexte de volatilité baissière non fourni'}),
+        'relative_strength': (relative_strength_ctx if relative_strength_ctx is not None else
+                              {'available': False, 'reason': 'contexte de force relative non fourni'}),
     }
     audit.append({'step': 'contexts', 'result': {
         k: bool(v.get('available', True)) for k, v in contexts.items()}})
