@@ -841,9 +841,9 @@ def _committee(board, detail, tops, star):
     stocks = sorted(det.items(), key=lambda kv: -(kv[1].get('score') or 0))
     rows = []
 
-    def add(title, c, why, val=None):
+    def add(title, c, why, val=None, coverage=None):
         rows.append({'title': title, 'winner': fmt(c) if not isinstance(c, str) else c,
-                     'value': val, 'why': why})
+                     'value': val, 'why': why, 'coverage': coverage})
 
     if stocks:
         s0 = stocks[0]
@@ -862,9 +862,18 @@ def _committee(board, detail, tops, star):
     add('Meilleure POP', c, 'probabilité de profit la plus haute', '%s%%' % (c or {}).get('pop') if c else None)
     c = best(lambda x: True, lambda x: dz(x).get('mom') or -99)
     add('Meilleur momentum', c, 'le sous-jacent le plus dynamique', _r2(dz(c).get('mom'), 1) if c else None)
-    c = best(lambda x: x.get('oi') is not None, lambda x: (x.get('oi') or 0) - (x.get('spread_pct') or 5) * 1000)
-    add('Meilleure liquidité', c, 'OI massif + spread serré = exécution propre',
-        (f"OI {c.get('oi'):,}".replace(',', ' ') if c and c.get('oi') else None))
+    def liquidity_ready(contract):
+        oi, spread = contract.get('oi'), contract.get('spread_pct')
+        return (isinstance(oi, (int, float)) and not isinstance(oi, bool) and oi >= 0
+                and isinstance(spread, (int, float)) and not isinstance(spread, bool) and spread >= 0)
+
+    c = best(liquidity_ready, lambda x: x.get('oi') - x.get('spread_pct') * 1000)
+    add('Meilleure liquidité', c,
+        'OI massif + spread serré = exécution propre' if c else 'Liquidité non classable — OI ou spread indisponible.',
+        (f"OI {c.get('oi'):,}".replace(',', ' ') if c and c.get('oi') is not None else None),
+        {'available': c is not None,
+         'status': 'COMMITTEE_LIQUIDITY_AVAILABLE' if c else 'COMMITTEE_LIQUIDITY_UNAVAILABLE',
+         'read_only': True})
     c = best(lambda x: x.get('vol') is not None, lambda x: x.get('vol') or 0)
     add('Meilleur volume', c, 'l\'activité du jour la plus dense', (f"{c.get('vol'):,}".replace(',', ' ') if c and c.get('vol') else None))
     c = best(lambda x: True, lambda x: dz(x).get('vol_z') or -9)
