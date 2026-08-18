@@ -741,9 +741,22 @@ def _tops(board, detail):
         value = contract.get('iv')
         return isinstance(value, (int, float)) and not isinstance(value, bool) and value > 0
 
+    def valid_score(value):
+        return isinstance(value, (int, float)) and not isinstance(value, bool) and 0 <= value <= 100
+
     valid_iv_contracts = sum(1 for contract in board if valid_iv(contract))
     top_lowiv_rows = take(valid_iv, lambda c: -c.get('iv'),
                           lambda c: 'IV %s%% — la convexité la moins chère' % c.get('iv'))
+
+    def eligible_top_long(contract):
+        return (dte_value(contract) is not None and dte_value(contract) >= 150
+                and valid_score(contract.get('quality')) and valid_score(contract.get('pop')))
+
+    top_long_eligible_contracts = sum(1 for contract in board if eligible_top_long(contract))
+    top_long_rows = take(eligible_top_long,
+                         lambda c: c.get('quality') + c.get('pop') * 0.3,
+                         lambda c: 'qualité %s + POP %s%% sur %s j' %
+                         (c.get('quality'), c.get('pop'), c.get('dte')))
     lists = [
         ('top_call', '📈 TOP CALL', take(lambda c: c.get('type') == 'CALL', lambda c: c.get('quality') or 0,
          lambda c: 'qualité %s — le meilleur profil haussier du board' % c.get('quality'))),
@@ -764,9 +777,7 @@ def _tops(board, detail):
          lambda c: _rr(c) or 0, lambda c: 'R:R %s — asymétrie maximale' % _rr(c))),
         ('top_flow', '🐋 TOP Flux (volume anormal)', take(lambda c: (dz(c).get('vol_z') or 0) >= 1.0,
          lambda c: dz(c).get('vol_z') or 0, lambda c: 'volume titre z=%s' % _r2(dz(c).get('vol_z'), 1))),
-        ('top_long', '🧭 TOP Long terme', take(lambda c: dte_value(c) is not None and dte_value(c) >= 150,
-         lambda c: (c.get('quality') or 0) + (c.get('pop') or 0) * 0.3,
-         lambda c: 'qualité %s + POP %s%% sur %s j' % (c.get('quality'), c.get('pop'), c.get('dte')))),
+        ('top_long', '🧭 TOP Long terme', top_long_rows),
         ('top_short', '⚡ TOP Court terme', take(lambda c: dte_value(c) is not None and dte_value(c) <= 60,
          lambda c: c.get('quality') or 0, lambda c: 'tactique %s j — thêta agressif, taille réduite' % c.get('dte'))),
         ('top_defensive', '🛡️ TOP Défensif', take(
@@ -778,7 +789,7 @@ def _tops(board, detail):
     for key, label, rows in lists:
         # La liste IV reste servie même vide : son indisponibilité ne doit pas
         # être confondue avec l’absence d’opportunité de convexité bon marché.
-        if not rows and key != 'top_lowiv':
+        if not rows and key not in ('top_lowiv', 'top_long'):
             continue
         entry = {'key': key, 'label': label, 'rows': rows}
         if key == 'top_lowiv':
@@ -786,6 +797,17 @@ def _tops(board, detail):
                 'iv_valid_contracts': valid_iv_contracts,
                 'iv_invalid_or_missing_contracts': len(board) - valid_iv_contracts,
                 'status': 'TOP_LOW_IV_AVAILABLE' if valid_iv_contracts else 'TOP_LOW_IV_UNAVAILABLE',
+                'read_only': True,
+            }
+        if key == 'top_long':
+            entry['coverage'] = {
+                'quality_and_pop_eligible_contracts': top_long_eligible_contracts,
+                'quality_or_pop_unavailable_contracts': sum(
+                    1 for contract in board
+                    if dte_value(contract) is not None and dte_value(contract) >= 150
+                    and not (valid_score(contract.get('quality')) and valid_score(contract.get('pop')))
+                ),
+                'status': 'TOP_LONG_COMPOSITE_AVAILABLE' if top_long_eligible_contracts else 'TOP_LONG_COMPOSITE_UNAVAILABLE',
                 'read_only': True,
             }
         result.append(entry)

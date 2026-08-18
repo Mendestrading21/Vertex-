@@ -34,6 +34,22 @@ def test_tops_low_iv_excludes_missing_invalid_and_zero_iv_with_coverage():
     }
 
 
+def test_tops_long_excludes_missing_quality_or_pop_from_composite_ranking():
+    board = [
+        {'sym': 'NO_QUALITY', 'type': 'CALL', 'dte': 180, 'quality': None, 'pop': 99},
+        {'sym': 'NO_POP', 'type': 'CALL', 'dte': 180, 'quality': 99, 'pop': None},
+        {'sym': 'VALID', 'type': 'CALL', 'dte': 180, 'quality': 70, 'pop': 55},
+    ]
+    top_long = next(row for row in options_lab._tops(board, []) if row['key'] == 'top_long')
+    assert [row['sym'] for row in top_long['rows']] == ['VALID']
+    assert top_long['coverage'] == {
+        'quality_and_pop_eligible_contracts': 1,
+        'quality_or_pop_unavailable_contracts': 2,
+        'status': 'TOP_LONG_COMPOSITE_AVAILABLE',
+        'read_only': True,
+    }
+
+
 def test_committee_excludes_missing_or_invalid_dte_from_horizon_winners():
     board = [
         {'sym': 'SHORT', 'type': 'CALL', 'dte': 30, 'quality': 80, 'pop': 55},
