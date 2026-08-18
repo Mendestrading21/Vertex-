@@ -39,3 +39,15 @@ def test_overview_leaps_count_excludes_missing_or_invalid_dte():
     ]
     overview = options_lab._overview(board, {}, {}, False)
     assert overview['leaps'] == 1
+
+
+def test_risks_exposes_missing_theta_without_default_erosion():
+    theta = next(row for row in options_lab._risks({'iv': 30, 'dte': 180}, {})
+                 if row['name'] == 'Thêta (érosion du temps)')
+    assert theta['level'] == 'INCONNU'
+    assert theta['coverage'] == {
+        'available': False,
+        'status': 'THETA_BURN_UNAVAILABLE',
+        'read_only': True,
+    }
+    assert 'non quantifiée' in theta['impact']
