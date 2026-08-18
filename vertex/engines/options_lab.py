@@ -341,12 +341,15 @@ def _analysis(star, detail, market, sectors, overview):
         % (star.get('delta'), star.get('theta_burn'), star.get('iv')),
         'delta 0.45-0.70 = le meilleur rapport exposition/décote'))
     # catalyseurs
-    dte = star.get('dte') or 0
-    csc = 65 if dte >= 120 else 40 if dte >= 45 else 25
+    raw_dte = star.get('dte')
+    dte_available = isinstance(raw_dte, (int, float)) and not isinstance(raw_dte, bool) and raw_dte > 0 and float(raw_dte).is_integer()
+    dte = int(raw_dte) if dte_available else None
+    csc = 65 if dte is not None and dte >= 120 else 40 if dte is not None and dte >= 45 else 25 if dte is not None else None
     rows.append(_grade_row('catalysts', 'Catalyseurs', '📅', csc,
-        'temps pour soi' if csc >= 60 else 'course contre la montre', 'moyenne',
-        '%s jours avant expiration — %s fenêtres de résultats trimestriels sur la durée de vie.'
-        % (dte, max(0, round(dte / 91))),
+        'temps pour soi' if csc is not None and csc >= 60 else 'course contre la montre' if csc is not None else 'échéance indisponible', 'moyenne',
+        ('%s jours avant expiration — %s fenêtres de résultats trimestriels sur la durée de vie.'
+         % (dte, max(0, round(dte / 91))) if dte is not None else
+         'DTE indisponible — horizon vers l’expiration et résultats non qualifié.'),
         'sortir ou réduire avant chaque publication (risque d\'IV crush)'))
     return rows
 
@@ -359,6 +362,8 @@ def _plan(star, research, pick):
     leg = _best_leg(pick) if pick else None
     ex = (leg or {}).get('exit') or {}
     spot, be = star.get('spot'), star.get('be')
+    raw_dte = star.get('dte')
+    dte_available = isinstance(raw_dte, (int, float)) and not isinstance(raw_dte, bool) and raw_dte > 0 and float(raw_dte).is_integer()
     steps = [
         {'key': 'entry', 'label': 'Entrée', 'icon': '🎯', 'tone': 'info',
          'text': ('Prime $%s (limite au milieu de fourchette).'
@@ -380,14 +385,19 @@ def _plan(star, research, pick):
         {'key': 'earn', 'label': 'Avant résultats', 'icon': '📢', 'tone': 'warn',
          'text': 'Réduire ou solder avant chaque publication : l\'IV crush peut effacer un gain latent en une nuit.'},
         {'key': 'exit', 'label': 'Sortie idéale', 'icon': '⌛', 'tone': 'warn',
-         'text': 'Solder 2-3 semaines avant l\'expiration — le thêta s\'accélère en fin de vie.'},
+         'text': ('Solder 2-3 semaines avant l\'expiration — le thêta s\'accélère en fin de vie.' if dte_available else
+                  'Horizon de sortie avant expiration indisponible — DTE non reporté.')},
         {'key': 'expiry', 'label': 'Expiration', 'icon': '🏁', 'tone': 'mut',
-         'text': '%s — ne rien tenir au-delà.' % (star.get('exp') or '')[:10]},
+         'text': ('%s — ne rien tenir au-delà.' % (star.get('exp') or '')[:10] if dte_available and star.get('exp') else
+                  'Date d’expiration indisponible — aucune échéance n’est inférée.')},
     ]
     return {
         'steps': steps,
         'capital': (leg or {}).get('sizes') or research.get('capital'),
         'duration': ('%s j de détention visés' % leg['hold']) if leg and leg.get('hold') else None,
+        'timeline_coverage': {'dte_available': dte_available,
+                              'status': 'TRADE_PLAN_DTE_AVAILABLE' if dte_available else 'TRADE_PLAN_DTE_UNAVAILABLE',
+                              'read_only': True},
         'mgmt': 'Risque par trade ≤ 1-2 % du capital. Jamais plus de 3 positions options simultanées corrélées.',
         'ai': ('Discipline avant conviction : le plan est écrit AVANT l\'entrée, la sortie sur stop est '
                'mécanique, les profits se prennent par moitiés. Le pire ennemi de l\'acheteur d\'options '
