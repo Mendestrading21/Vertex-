@@ -216,11 +216,20 @@ def options_vol_charts(sym):
     """Jeux de données pour les graphiques de volatilité d'un titre (§15)."""
     from vertex.options import vol_charts
     sym = (sym or '').upper()[:12]
-    expiry = request.args.get('dte')
-    try:
-        expiry = int(expiry) if expiry else None
-    except (TypeError, ValueError):
-        expiry = None
+    expiry_raw = request.args.get('dte')
+    expiry = None
+    if expiry_raw is not None:
+        try:
+            expiry_number = float(expiry_raw)
+            expiry = int(expiry_number) if expiry_number >= 0 and expiry_number.is_integer() else None
+        except (TypeError, ValueError):
+            expiry = None
+        if expiry is None:
+            return jsonify({'symbol': sym, 'empty': True,
+                            'error': 'options_vol_charts_invalid_dte',
+                            'input_coverage': {'dte_parameter_available': False,
+                                               'status': 'DTE_PARAMETER_INVALID',
+                                               'read_only': True}}), 400
     try:
         return jsonify(vol_charts.build(_board(), sym, as_of=_as_of(),
                                         source='SCAN', expiry=expiry))

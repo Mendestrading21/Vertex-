@@ -102,6 +102,19 @@ def test_options_vol_charts_route(client):
         assert k in d
 
 
+def test_options_vol_charts_rejects_invalid_dte_parameter(client):
+    r = client.get('/api/options/vol-charts/AAPL?dte=inconnu')
+    assert r.status_code == 400
+    assert r.get_json() == {
+        'symbol': 'AAPL', 'empty': True, 'error': 'options_vol_charts_invalid_dte',
+        'input_coverage': {
+            'dte_parameter_available': False,
+            'status': 'DTE_PARAMETER_INVALID',
+            'read_only': True,
+        },
+    }
+
+
 def test_chart_interpretation_contract_route(client):
     r = client.get('/api/charts/options.overview_mix/interpretation')
     assert r.status_code == 200
