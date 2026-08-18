@@ -136,6 +136,17 @@ def test_swing_3_6m_exposes_quote_freshness_without_hiding_candidates():
     assert len(out['candidates']) == 3
 
 
+def test_swing_context_exposes_iv_hv_without_affecting_mandate_status():
+    board = [{'sym': 'TST', 'type': 'CALL', 'dte': 120, 'strike': 100, 'delta': 0.45,
+              'oi': 600, 'volume': 80, 'spread_pct': 2.0, 'quote_age_seconds': 60,
+              'quality': 75, 'iv': 30.0, 'spot': 100.0, 'exp': 'X'}]
+    closes = [100.0 + index * 0.5 for index in range(25)]
+    ctx = HS.swing_3_6m_context(board, sym='TST', profile=C.load_profile(), historical_closes=closes)
+    assert ctx['mandate_status'] == 'IN_MANDATE'
+    assert ctx['iv_hv_context']['available'] is True
+    assert ctx['iv_hv_context']['read_only'] is True
+
+
 # ─── Probabilité de doublement (≠ PoP, modèle documenté) ────────────────────────
 
 def test_double_probability_hand_computed_call():

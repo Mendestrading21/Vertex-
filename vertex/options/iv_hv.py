@@ -1,6 +1,29 @@
 """Écart descriptif entre volatilité implicite et réalisée, sans signal d'exécution."""
 from __future__ import annotations
 
+import math
+
+
+def realized_volatility_20d(closes):
+    """Volatilité réalisée annualisée des 20 derniers rendements, ou None."""
+    values = []
+    for close in closes or []:
+        try:
+            value = float(close)
+        except (TypeError, ValueError):
+            continue
+        if value > 0:
+            values.append(value)
+    if len(values) < 21:
+        return None
+    returns = [math.log(values[idx] / values[idx - 1]) for idx in range(1, len(values))]
+    returns = returns[-20:]
+    if len(returns) < 2:
+        return None
+    mean = sum(returns) / len(returns)
+    variance = sum((value - mean) ** 2 for value in returns) / (len(returns) - 1)
+    return math.sqrt(variance) * math.sqrt(252) * 100.0
+
 
 def describe(implied_volatility_pct, historical_volatility_pct, *, threshold_pct_points=3.0):
     """Retourne un contexte IV-HV uniquement si les deux mesures sont observées."""
@@ -34,4 +57,4 @@ def describe(implied_volatility_pct, historical_volatility_pct, *, threshold_pct
     }
 
 
-__all__ = ['describe']
+__all__ = ['describe', 'realized_volatility_20d']

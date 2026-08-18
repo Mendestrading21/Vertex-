@@ -153,7 +153,8 @@ def api_skyler(sym):
     # Le scanner conserve les candidats partiels et hors mandat, mais le moteur reçoit
     # explicitement leur statut : aucune conformité n’est supposée par défaut.
     from vertex.options import horizon_scanners as _hs
-    octx = _hs.swing_3_6m_context(scan_state.get('options_board') or [], sym=sym)
+    octx = _hs.swing_3_6m_context(scan_state.get('options_board') or [], sym=sym,
+                                  historical_closes=closes)
     from vertex.engines import fundamental_context as _fctx
     fundamentals_ctx = _fctx.build(sym, scan_state.get('fundamentals') or {})
     from vertex.engines import decision_evidence as _evidence
