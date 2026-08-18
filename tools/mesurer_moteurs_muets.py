@@ -1,4 +1,26 @@
-"""tools/mesurer_moteurs_muets.py — QUELS MOTEURS SORTENT, ET PAR OÙ ?
+"""tools/mesurer_moteurs_muets.py — RETIRÉ AU LOT 55 : SA MÉTHODE EST FAUSSE.
+
+⚠ **Cet outil ne rend plus d'inventaire.** Il en a rendu **trois faux
+d'affilée** (lots 49, 52, 54), et la cause n'est pas un réglage mais son
+principe même : il cherche la chaîne `"nom_du_module"` dans le corps des
+réponses servies. Cela ne dit la vérité que si un moteur publie sous une clé
+portant son nom de fichier. Or `drawdown_context` publie `contexts.drawdown`,
+`decision_readiness` publie `decision.readiness`, `historical_stress` publie
+`stress_test` — et surtout `walk_forward_validation` et `option_cohort`
+**servent le corps entier** d'une route dédiée. *Un corps de réponse ne se nomme
+jamais lui-même* : aucune recherche de nom ne peut les trouver.
+
+Remplaçant : **`tools/mesurer_moteurs_par_appelant.py`**, qui remonte la chaîne
+réelle — appelant (AST) → clé reçue → route → écran.
+
+Le texte d'origine est conservé ci-dessous : il documente une leçon qui a coûté
+trois rapports, et l'effacer la ferait oublier. Mais l'outil s'arrête désormais
+avant de mesurer, parce qu'un instrument dont on sait la méthode fausse ne doit
+pas pouvoir produire un quatrième inventaire crédible.
+
+---
+
+Texte d'origine — QUELS MOTEURS SORTENT, ET PAR OÙ ?
 
 La fusion de `main` a apporté 34 moteurs neufs. Deux questions les séparent en
 trois familles, et **c'est la seule chose qui décide de leur valeur** :
@@ -77,6 +99,20 @@ def dossier_riche():
 
 
 def main(argv=None):
+    #  RETIRÉ AU LOT 55. Voir l'en-tête : la méthode — chercher un nom de module
+    #  dans un corps JSON — ne peut structurellement pas voir un moteur qui sert
+    #  le corps entier d'une route. Elle a produit trois inventaires faux.
+    print('RETIRE — cet outil ne mesure plus : sa methode est fausse.\n'
+          '  Il cherche « nom_du_module » dans les corps de reponse, ce qui ne\n'
+          '  marche que si un moteur publie sous une cle portant son nom de\n'
+          '  fichier. Deux moteurs servent le CORPS ENTIER d\'une route, et un\n'
+          '  corps ne se nomme jamais lui-meme.\n'
+          '  Utiliser : python tools/mesurer_moteurs_par_appelant.py')
+    return 2
+
+
+def _methode_retiree(argv=None):
+    """L'ancienne mesure, conservée pour mémoire et plus jamais appelée."""
     os.environ.setdefault('NO_IBKR', '1')
     os.environ.setdefault('DEMO', '1')
     os.environ.setdefault('START_ON_IMPORT', '0')
