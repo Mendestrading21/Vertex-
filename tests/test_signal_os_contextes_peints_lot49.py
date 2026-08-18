@@ -101,3 +101,58 @@ def test_l_etat_indisponible_montre_la_raison_du_moteur(client):
     for motif in (r'rb\.reason', r'sc\.reason', r'ip\.classification_source'):
         assert re.search(motif, corps), (
             'la branche indisponible de %s ne lit plus la raison du moteur' % motif)
+
+
+#  ─── LOT 50 : trois moteurs de plus, trouvés en re-mesurant ────────────────
+#  Mon premier sondage les avait déclarés absents de la réponse. Il utilisait
+#  un titre trop pauvre — clôtures plates, aucune date. Avec un historique
+#  réaliste, `multi_asset_guard`, `opportunity_attribution` et
+#  `opportunity_reliability` ressortent. Le sondage mesurait la pauvreté de
+#  mon jeu d'essai, pas le produit.
+CLES_50 = ('multi_asset_guard', 'opportunity_attribution', 'opportunity_reliability')
+
+
+@pytest.mark.parametrize('cle', CLES_50)
+def test_le_moteur_de_fiabilite_atteint_la_reponse(client, cle):
+    from vertex.app.state import scan_state
+    detail = scan_state.setdefault('detail', {})
+    sauve = detail.get('CTX50')
+    closes = [100.0 + i * 0.4 for i in range(200)]
+    detail['CTX50'] = {'price': closes[-1], 'closes': closes, 'sector': 'Technology',
+                       'series': {'closes': closes}}
+    try:
+        rep = client.get('/api/skyler/CTX50').get_json() or {}
+    finally:
+        if sauve is None:
+            detail.pop('CTX50', None)
+        else:
+            detail['CTX50'] = sauve
+    assert cle in (rep.get('decision') or {}), (
+        '%s n\'atteint plus la reponse servie' % cle)
+
+
+@pytest.mark.parametrize('cle', CLES_50)
+def test_la_fiche_lit_le_moteur_de_fiabilite(client, cle):
+    corps = client.get('/analysis/CTX50').get_data(as_text=True)
+    assert cle in corps, 'la fiche ne lit plus %s' % cle
+
+
+def test_le_bloc_de_fiabilite_est_APPELE(client):
+    """Même exigence qu'au lot 49 : le SITE D'APPEL, pas la simple présence du
+    corps de la fonction. C'est la mutation du 49 qui a montré la différence."""
+    corps = client.get('/analysis/CTX50').get_data(as_text=True)
+    assert '+fiabilite(d)' in corps.replace(' ', '').replace('\n', ''), (
+        'le bloc de fiabilite n\'est plus appele par le rendu de la decision')
+
+
+def test_ce_qui_manque_au_score_est_annonce(client):
+    """Ce bloc est celui qui transforme un « 12/40 » opaque en actionnable."""
+    corps = client.get('/analysis/CTX50').get_data(as_text=True)
+    assert 'Ce qui manque au score' in corps
+    #  On cherche un fragment NON COUPÉ. Le libellé est bâti par concaténation
+    #  dans la source (`'… explique le '+'verdict, ne le remplace pas'`) : la
+    #  phrase entière n'existe qu'après évaluation, pas dans les octets servis.
+    #  Chercher la phrase complète, c'était tester ma mise en page, pas la règle.
+    assert 'ne le remplace pas' in corps, (
+        'la clause descriptive a disparu — la fiabilite peut se lire comme un '
+        'second verdict')

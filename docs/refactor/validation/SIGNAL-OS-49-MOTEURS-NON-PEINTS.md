@@ -92,9 +92,38 @@ un — et **c'est de loin le plus gros gisement de valeur non délivrée du prod
 
 ---
 
+## 4 bis. Suite immédiate (lot 50) — trois de plus, et une leçon
+
+Le §4 annonçait vingt moteurs « n'atteignant aucune réponse servie ». **C'était
+faux pour trois d'entre eux**, et la cause est ma mesure, pas le produit : mon
+sondage utilisait un titre au dossier pauvre — clôtures parfaitement plates,
+aucune date, aucun secteur. Refait avec un historique réaliste (200 clôtures
+bruitées, dates, secteur), trois ressortent :
+
+| moteur | ce qu'il rend |
+| --- | --- |
+| `opportunity_reliability` | **six contrôles** de fiabilité des preuves : données exploitables, portes évaluables, aucune porte déclenchée, réconciliation, score complet, seuil de revue |
+| `opportunity_attribution` | **ce qui manque au score** — blocs insuffisants et contextes absents |
+| `multi_asset_guard` | anomalies de classe d'actif, avec sévérité |
+
+Ces trois-là valent mieux que les trois du lot 49. `opportunity_attribution`
+surtout : c'est le bloc qui transforme un « 12/40 » opaque en quelque chose
+d'actionnable — on ne subit plus le score, on voit ce qui lui manque.
+
+Peints avec la même discipline, et leur clause descriptive respectée
+(`does_not_change_verdict`, « sans ajustement de score ») : **ils expliquent le
+verdict, ils ne le remplacent pas.**
+
+Le sondage mesurait la pauvreté de mon jeu d'essai, pas le produit. C'est la
+faute du lot 38, une fois de plus : *un instrument doit reproduire l'état que le
+produit peut réellement atteindre.* **Reste donc dix-sept moteurs**, pas vingt —
+et ce chiffre-là est à re-mesurer avant d'être cru.
+
+---
+
 ## 5. Réserves
 
-1. **Trois sur trente-quatre.** Le reste est listé au §4, pas traité.
+1. **Six sur trente-quatre.** Le reste est listé au §4, pas traité.
 2. **Le rendu n'est pas vérifié au navigateur dans ce lot** : le gardien prouve
    que le câblage existe et que la donnée arrive, pas que le pixel s'affiche.
    Les instruments des lots 47-48 le feront au prochain passage.

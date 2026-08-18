@@ -968,6 +968,51 @@ function contextes(d){
   return '<div class="vx-mt2"><div class="vx-kpi-label">Contexte — descriptif, '
     +'ne modifie ni le score ni le verdict</div>'+lignes.join('')+'</div>';
 }
+/* FIABILITE ET MANQUES (lot 50) — trois moteurs de plus qui arrivaient dans
+   `/api/skyler/<sym>` sans etre lus. Ceux-la repondent a la question qu'un
+   score seul laisse ouverte : « puis-je m'y fier, et si le score est bas,
+   QU'EST-CE QUI MANQUE ? »
+
+   Les trois portent aussi leur clause descriptive (`does_not_change_verdict`,
+   « sans ajustement de score »), et on la respecte : ils expliquent le
+   verdict, ils ne le concurrencent pas. */
+const CTRL={data_actionable:'donnees exploitables',gates_evaluable:'portes evaluables',
+  no_triggered_gate:'aucune porte declenchee',reconciliation_actionable:'reconciliation',
+  score_complete:'score complet',score_review_threshold:'seuil de revue'};
+function fiabilite(d){
+  const rel=d.opportunity_reliability||{}, att=d.opportunity_attribution||{},
+        mag=d.multi_asset_guard||{};
+  const bl=[];
+  const ch=rel.checks;
+  if(ch&&typeof ch==='object'){
+    const noms=Object.keys(CTRL).filter(k=>k in ch);
+    const ok=noms.filter(k=>ch[k]===true).length;
+    bl.push('<div class="vx-kv"><span class="k">Fiabilité des preuves</span>'
+      +'<span class="v '+(ok===noms.length?'vx-pos':ok?'vx-warn':'vx-neg')+'">'
+      +ok+'/'+noms.length+' contrôle(s) satisfait(s)</span></div>'
+      +'<div class="vx-meta" style="margin:-.15rem 0 .35rem">'
+      +noms.map(k=>'<span class="'+(ch[k]===true?'vx-pos':'vx-muted')+'">'
+        +esc(CTRL[k])+'</span>').join(' · ')+'</div>');
+  }
+  /* Ce qui manque au score : c'est CE bloc qui transforme un « 12/40 » opaque
+     en quelque chose d'actionnable. On borne la liste et on dit le reste. */
+  const manques=[].concat(att.insufficient_blocks||[]);
+  if(manques.length){
+    const vus=manques.slice(0,6).map(esc).join(', ');
+    bl.push('<div class="vx-kv"><span class="k">Ce qui manque au score</span>'
+      +'<span class="v vx-warn">'+manques.length+' bloc(s) — '+vus
+      +(manques.length>6?', +'+(manques.length-6):'')+'</span></div>');
+  }
+  const issues=(mag.issues||[]).filter(i=>i&&i.reason);
+  if(issues.length){
+    bl.push('<div class="vx-kv"><span class="k">Garde-fou multi-actifs</span>'
+      +'<span class="v vx-warn">'+esc(issues[0].reason)
+      +(issues.length>1?' (+'+(issues.length-1)+')':'')+'</span></div>');
+  }
+  if(!bl.length)return '';
+  return '<div class="vx-mt2"><div class="vx-kpi-label">Fiabilité — explique le '
+    +'verdict, ne le remplace pas</div>'+bl.join('')+'</div>';
+}
 /* Skyler — décision canonique : score /40 par blocs, hard gates, scénarios. */
 async function loadSkyler(){
   const host=$('an-skyler');if(!host)return;
@@ -1004,7 +1049,7 @@ async function loadSkyler(){
       +(d.max_risk_pct!=null?'Risque max : '+d.max_risk_pct+' % · ':'')
       +(unknown?unknown+' porte(s) non évaluable(s) · ':'')
       +'Objection : '+esc(d.strongest_objection||'—')+'</div>'
-      +contextes(d);
+      +contextes(d)+fiabilite(d);
   }catch(e){host.innerHTML='<div class="vx-error-banner">Skyler injoignable : '+esc(e.message)+'</div>';}
 }
 /* Laboratoire d'évidence (X2) : stats ex post réelles après les spikes passés. */
