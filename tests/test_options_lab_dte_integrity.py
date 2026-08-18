@@ -64,6 +64,10 @@ def test_risks_exposes_missing_iv_dte_and_spread_without_defaults():
     ):
         assert rows[name]['level'] == 'INCONNU'
         assert rows[name]['coverage'] == {'available': False, 'status': status, 'read_only': True}
+    assert rows['Volatilité du sous-jacent']['level'] == 'INCONNU'
+    assert rows['Volatilité du sous-jacent']['coverage'] == {
+        'available': False, 'status': 'EXPECTED_MOVE_UNAVAILABLE', 'read_only': True,
+    }
 
 
 def test_comparator_refuses_missing_spot_or_iv_without_default_prices():
