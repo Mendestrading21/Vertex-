@@ -125,6 +125,19 @@ def test_viz_exposes_missing_expected_move_and_break_even_without_neutral_values
     assert viz['em']['coverage']['status'] == 'EXPECTED_MOVE_UNAVAILABLE'
 
 
+def test_zero_expected_move_is_not_presented_as_a_flat_range_around_spot():
+    star = {'sym': 'TST', 'spot': 100, 'strike': 105, 'iv': 30, 'dte': 90,
+            'cost': 250, 'type': 'CALL', 'em_pct': 0}
+    viz = options_lab._viz(star, [], {}, None)
+    risks = options_lab._risks(star, {})
+    volatility_risk = next(row for row in risks if row['name'] == 'Volatilité du sous-jacent')
+    assert viz['em']['pct'] is None
+    assert viz['em']['lo'] is None and viz['em']['hi'] is None
+    assert viz['em']['coverage']['status'] == 'EXPECTED_MOVE_UNAVAILABLE'
+    assert volatility_risk['level'] == 'INCONNU'
+    assert volatility_risk['coverage']['status'] == 'EXPECTED_MOVE_UNAVAILABLE'
+
+
 def test_viz_exposes_missing_kelly_inputs_without_default_fraction():
     star = {'sym': 'TST', 'spot': 100, 'strike': 105, 'iv': 30, 'dte': 90,
             'cost': 250, 'type': 'CALL', 'pop': None, 'pot': None}

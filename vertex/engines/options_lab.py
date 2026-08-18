@@ -547,7 +547,9 @@ def _viz(star, board, detail, pick):
              'iv': c.get('iv'), 'flow': _r2((detail.get(s) or {}).get('vol_z'), 1)}
             for s, c in sorted(best_by.items(), key=lambda kv: -(kv[1].get('quality') or 0))]
     em_pct = star.get('em_pct')
-    em_available = isinstance(em_pct, (int, float)) and not isinstance(em_pct, bool) and em_pct >= 0
+    # Une amplitude nulle ne provient pas d'un calcul IV×racine(DTE) exploitable.
+    # Ne pas présenter spot±0 comme une fourchette de marché observée.
+    em_available = isinstance(em_pct, (int, float)) and not isinstance(em_pct, bool) and em_pct > 0
     return {
         'unavailable': False,
         'coverage': coverage,
@@ -976,22 +978,22 @@ def _risks(star, market):
          'level': (lvl((star or {}).get('em_pct'), 25, 40)
                    if isinstance((star or {}).get('em_pct'), (int, float))
                    and not isinstance((star or {}).get('em_pct'), bool)
-                   and (star or {}).get('em_pct') >= 0 else 'INCONNU'),
+                   and (star or {}).get('em_pct') > 0 else 'INCONNU'),
          'impact': ('move attendu ±%s%% — le chemin peut secouer avant la cible' % (star or {}).get('em_pct')
                     if isinstance((star or {}).get('em_pct'), (int, float))
                     and not isinstance((star or {}).get('em_pct'), bool)
-                    and (star or {}).get('em_pct') >= 0 else
+                    and (star or {}).get('em_pct') > 0 else
                     'mouvement attendu non quantifié — donnée indisponible'),
          'proba': ('structurelle' if isinstance((star or {}).get('em_pct'), (int, float))
                    and not isinstance((star or {}).get('em_pct'), bool)
-                   and (star or {}).get('em_pct') >= 0 else 'INCONNUE — mouvement attendu non reporté'),
+                   and (star or {}).get('em_pct') > 0 else 'INCONNUE — mouvement attendu non reporté'),
          'fix': 'delta modéré (0.45-0.60) + taille qui laisse dormir',
          'coverage': {'available': isinstance((star or {}).get('em_pct'), (int, float))
                                   and not isinstance((star or {}).get('em_pct'), bool)
-                                  and (star or {}).get('em_pct') >= 0,
+                                  and (star or {}).get('em_pct') > 0,
                       'status': ('EXPECTED_MOVE_AVAILABLE' if isinstance((star or {}).get('em_pct'), (int, float))
                                  and not isinstance((star or {}).get('em_pct'), bool)
-                                 and (star or {}).get('em_pct') >= 0 else 'EXPECTED_MOVE_UNAVAILABLE'),
+                                 and (star or {}).get('em_pct') > 0 else 'EXPECTED_MOVE_UNAVAILABLE'),
                       'read_only': True}},
     ]
 
