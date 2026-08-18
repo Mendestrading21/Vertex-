@@ -34,7 +34,7 @@ Conséquence pratique : **une seule branche à valider, une seule à fusionner**
 
 | # | critère du gate | instrument | mesure | verdict |
 | --- | --- | --- | --- | --- |
-| 1 | les 8 pages ont passé leur DoD | intégrité + dégradation + panne partielle + clavier + rognage | voir §3 | **partiel — matrice responsive incomplète** |
+| 1 | les 8 pages ont passé leur DoD | intégrité + dégradation + panne partielle + clavier + rognage | voir §3 · matrice 5 largeurs mesurée au **lot 46** | tenu |
 | 2 | shell cohérent | registre de navigation + gardiens de shell | suite verte | tenu |
 | 3 | palette Python/JS/CSS synchronisée | `test_obsidian_theme`, `test_litteraux_couleur_servis_lot382` | 54 tests verts | tenu |
 | 4 | cache PWA cohérent | `test_sw_cache_scope_lot361` | empreinte ↔ v234 | tenu |
@@ -49,7 +49,7 @@ Conséquence pratique : **une seule branche à valider, une seule à fusionner**
 
 | invariant | verdict mesuré |
 | --- | --- |
-| intégrité des pages (1440 + 320) | 0 id dupliqué · 0 erreur de page · 0 débordement · 65 liens, 0 cassé |
+| intégrité des pages · **5 largeurs** (lot 46) | 35 vues × 5 largeurs : 0 id dupliqué · 0 erreur · 0 débordement · 65 liens, 0 cassé — largeur vérifiée par témoin |
 | rognage silencieux (1440 + 390) | 0 élément rogné sans ellipse ni défilement |
 | opérabilité clavier | 45 contrôles non natifs × 2 touches, **1 muet** — le conteneur défilable, faux positif documenté |
 | contrat de focus des surcouches | modale et tiroir : **6 critères sur 6** chacun (ouverture, focus dedans, focus piégé, Échap, `inert`, focus rendu) |
@@ -66,13 +66,12 @@ Conséquence pratique : **une seule branche à valider, une seule à fusionner**
 
 ### 4.1 Ce que j'ai comblé dans ce lot — l'instrument, pas encore son verdict
 
-**À lire avec précision** : ce lot livre les deux instruments qui manquaient et
-leur premier relevé complet est **en cours au moment où ce document est
-commité**. Je n'écris donc aucun chiffre que je n'ai pas vu. Ce qui est acquis :
-le rognage silencieux rend **0 élément rogné à 1440 px** ; les autres largeurs
-et l'inventaire des actifs seront ajoutés ici, mesurés, dans un commit de suite.
-Poser l'instrument est le travail ; en publier le résultat avant de l'avoir lu
-serait exactement la faute que les lots 35 à 38 ont appris à ne plus commettre.
+**Les deux relevés sont désormais lus, et leurs verdicts sont ici** : les
+actifs au §4.1.2 (lot 43), la matrice au **lot 46** — 35 vues × 5 largeurs,
+0 défaut, avec un témoin qui vérifie que la largeur demandée est bien la largeur
+rendue. Poser l'instrument était le travail ; en publier le résultat avant de
+l'avoir lu aurait été la faute que les lots 35 à 38 ont appris à ne plus
+commettre.
 
 
 1. **La matrice responsive n'avait que ses deux bouts.** `VALIDATION.md` en

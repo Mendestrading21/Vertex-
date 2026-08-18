@@ -93,6 +93,7 @@ def balayer(pw, largeur, hauteur, etiquette):
         pg.route(motif, lambda r: r.abort())
 
     ids_dbl, liens, erreurs, reflow = {}, set(), {}, []
+    vu_largeur = False
     for route, vues in PAGES:
         for v in vues:
             url = route + (('?view=' + v) if v else '')
@@ -110,6 +111,22 @@ def balayer(pw, largeur, hauteur, etiquette):
 
             pg.goto(BASE + url, wait_until='domcontentloaded')
             pg.wait_for_timeout(2600)
+            #  TEMOIN DE LARGEUR. Un « 0 debordement a 768 px » ne vaut rien si
+            #  la page a en realite ete rendue a 1440 : le detecteur serait
+            #  propre pour la mauvaise raison. On verifie donc, sur la premiere
+            #  vue de chaque largeur, que le navigateur a bien applique le
+            #  gabarit — et on refuse de continuer sinon, plutot que de publier
+            #  un vert qui ne prouve rien.
+            if not vu_largeur:
+                reelle = pg.evaluate('() => window.innerWidth')
+                if reelle != largeur:
+                    ctx.close()
+                    nav.close()
+                    raise SystemExit(
+                        'AVEUGLE — largeur demandee %d px, largeur rendue %d px : '
+                        'le releve de cette colonne ne mesurerait pas ce qu\'il '
+                        'annonce.' % (largeur, reelle))
+                vu_largeur = True
             r = pg.evaluate(JS)
             pg.remove_listener('console', _console)
 
