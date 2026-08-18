@@ -736,6 +736,14 @@ def _tops(board, detail):
         return [_row(c, note_fn(c)) for c in rows[:n]]
 
     dz = lambda c: (det.get(c.get('sym')) or {})
+
+    def valid_iv(contract):
+        value = contract.get('iv')
+        return isinstance(value, (int, float)) and not isinstance(value, bool) and value > 0
+
+    valid_iv_contracts = sum(1 for contract in board if valid_iv(contract))
+    top_lowiv_rows = take(valid_iv, lambda c: -c.get('iv'),
+                          lambda c: 'IV %s%% — la convexité la moins chère' % c.get('iv'))
     lists = [
         ('top_call', '📈 TOP CALL', take(lambda c: c.get('type') == 'CALL', lambda c: c.get('quality') or 0,
          lambda c: 'qualité %s — le meilleur profil haussier du board' % c.get('quality'))),
@@ -749,8 +757,7 @@ def _tops(board, detail):
          lambda c: c.get('quality') or 0, lambda c: 'cassure détectée sur le sous-jacent')),
         ('top_swing', '🌊 TOP Swing', take(lambda c: c.get('swing_ok'),
          lambda c: c.get('swing_ret') or 0, lambda c: 'projection swing +%s%%' % c.get('swing_ret'))),
-        ('top_lowiv', '❄️ TOP Low IV', take(lambda c: c.get('iv') is not None,
-         lambda c: -(c.get('iv') or 99), lambda c: 'IV %s%% — la convexité la moins chère' % c.get('iv'))),
+        ('top_lowiv', '❄️ TOP Low IV', top_lowiv_rows),
         ('top_pop', '🎯 TOP High POP', take(lambda c: c.get('pop') is not None,
          lambda c: c.get('pop') or 0, lambda c: 'POP %s%% — probabilité de profit maximale' % c.get('pop'))),
         ('top_rr', '⚖️ TOP Risk/Reward', take(lambda c: _rr(c) is not None,
@@ -767,7 +774,22 @@ def _tops(board, detail):
             ('Santé', 'Consommation de base', 'Services publics', 'Healthcare', 'Utilities', 'Consumer Staples'),
             lambda c: c.get('quality') or 0, lambda c: 'profil défensif (secteur/PUT de couverture)')),
     ]
-    return [{'key': k, 'label': lab, 'rows': rows} for k, lab, rows in lists if rows]
+    result = []
+    for key, label, rows in lists:
+        # La liste IV reste servie même vide : son indisponibilité ne doit pas
+        # être confondue avec l’absence d’opportunité de convexité bon marché.
+        if not rows and key != 'top_lowiv':
+            continue
+        entry = {'key': key, 'label': label, 'rows': rows}
+        if key == 'top_lowiv':
+            entry['coverage'] = {
+                'iv_valid_contracts': valid_iv_contracts,
+                'iv_invalid_or_missing_contracts': len(board) - valid_iv_contracts,
+                'status': 'TOP_LOW_IV_AVAILABLE' if valid_iv_contracts else 'TOP_LOW_IV_UNAVAILABLE',
+                'read_only': True,
+            }
+        result.append(entry)
+    return result
 
 
 # ─── ⑧ COMPARATEUR (véhicules sur le titre vedette) ───
