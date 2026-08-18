@@ -77,6 +77,19 @@ page). Sans la première, la seconde passerait sur trois lignes vides.
 
 ## 4. Ce qui reste à brancher — la liste
 
+> ⚠ **CORRIGÉ AU LOT 52 — ce §4 est faux de quinze sur vingt.** Mesuré sur les
+> **162 routes GET servies**, témoin à l'appui : **cinq** moteurs sont
+> réellement enfermés, pas vingt. Douze de cette liste sortent dans
+> `packet.contexts` sous des clés plus courtes (`drawdown_context` publie
+> `contexts.drawdown`) et sont peints depuis le lot 51 ; trois autres sortent
+> dans `decision` et sont peints depuis le lot 50. Le chiffre exact et la
+> correspondance module → clé sont dans `SIGNAL-OS-52-BLOCS-PEINTS.md` §3, et
+> figés par `tests/test_signal_os_blocs_peints_lot52.py`.
+>
+> La liste ci-dessous est conservée telle qu'elle a été écrite : c'est la
+> quatrième fois de la série qu'une hypothèse de nommage me trompe, et l'effacer
+> ferait disparaître la seule chose qu'elle enseigne encore.
+
 Vingt des moteurs neufs n'atteignent **aucune** réponse servie mesurée à ce
 jour : `decision_evidence`, `decision_readiness`, `relative_volume_context`,
 `relative_strength_context`, `iv_term_structure`, `iv_skew_context`,
@@ -124,10 +137,14 @@ et ce chiffre-là est à re-mesurer avant d'être cru.
 ## 5. Réserves
 
 1. **Six sur trente-quatre.** Le reste est listé au §4, pas traité.
-2. **Le rendu n'est pas vérifié au navigateur dans ce lot** : le gardien prouve
-   que le câblage existe et que la donnée arrive, pas que le pixel s'affiche.
-   Les instruments des lots 47-48 le feront au prochain passage.
-3. **Le jeu de démonstration ne remplit pas les trois** : `regime_break` réclame
-   un historique daté, `sector_coherence` un proxy sectoriel. Ce sont leurs
-   états honnêtes qui s'affichent aujourd'hui — ce qui prouve le chemin
-   d'indisponibilité, pas le chemin nominal.
+2. ~~**Le rendu n'est pas vérifié au navigateur dans ce lot**~~ — **PAYÉE au
+   lot 52.** Vérifié dans Chromium sur `/analysis/ACN` : les trois blocs
+   peignent leurs neuf lignes, contre-épreuve à l'appui. Et la mesure a trouvé
+   ce qu'aucun gardien d'octets ne pouvait voir — ils vivent **deux
+   `<details>` en profondeur**. Voir `SIGNAL-OS-52-BLOCS-PEINTS.md`.
+3. ~~**Le jeu de démonstration ne remplit pas les trois**~~ — **caduque au
+   lot 52.** Sur `ACN`, `regime_break` est `available: true` : le chemin
+   **nominal** est peint, pas seulement le chemin d'indisponibilité. Les deux
+   autres montrent bien leur état honnête (`sector_coherence` sans proxy
+   sectoriel, `instrument_profile` non classé), ce qui donne les deux chemins
+   sur le même écran.
