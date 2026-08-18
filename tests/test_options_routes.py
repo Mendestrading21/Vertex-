@@ -197,6 +197,33 @@ def test_options_gex_route_empty_is_honest(client):
     assert d['synthesis']['empty'] is True
 
 
+def test_options_gex_route_exposes_history_unavailability(client, monkeypatch):
+    from vertex.app.state import scan_state
+    from vertex.options import gex_history
+
+    def _unavailable(*args, **kwargs):
+        raise RuntimeError('interne')
+
+    monkeypatch.setattr(gex_history, 'record', _unavailable)
+    scan_state['options_board'] = [
+        {'sym': 'MSFT', 'type': 'CALL', 'strike': 460, 'gamma': 0.05, 'oi': 5000,
+         'vol': 500, 'cost': 2000, 'spot': 440, 'dte': 21, 'exp': '2026-08-21'},
+    ]
+    try:
+        d = client.get('/api/options/gex/MSFT').get_json()
+        assert d['gex']['empty'] is False
+        assert d['history'] == []
+        assert d['history_availability'] == {
+            'available': False,
+            'status': 'GEX_HISTORY_UNAVAILABLE',
+            'points_loaded': 0,
+            'read_only': True,
+            'reason': 'historique GEX indisponible ; une série vide ne signifie pas absence d’observation historique',
+        }
+    finally:
+        scan_state['options_board'] = []
+
+
 def test_positioning_view_renders_and_is_wired(client):
     """La vue « Positionnement dealer (GEX) » existe, câblée, honnête, sans ordre."""
     r = client.get('/options?view=positioning')
