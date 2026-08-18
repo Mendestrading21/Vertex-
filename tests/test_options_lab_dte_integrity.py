@@ -15,3 +15,17 @@ def test_tops_excludes_missing_or_invalid_dte_from_horizon_categories():
     assert [row['sym'] for row in by_key['top_long']] == ['LONG']
     assert 'MISSING' not in [row['sym'] for row in by_key.get('top_leaps', [])]
     assert 'INVALID' not in [row['sym'] for row in by_key.get('top_leaps', [])]
+
+
+def test_committee_excludes_missing_or_invalid_dte_from_horizon_winners():
+    board = [
+        {'sym': 'SHORT', 'type': 'CALL', 'dte': 30, 'quality': 80, 'pop': 55},
+        {'sym': 'LONG', 'type': 'CALL', 'dte': 180, 'quality': 80, 'pop': 55},
+        {'sym': 'MISSING', 'type': 'CALL', 'dte': None, 'quality': 99, 'pop': 99},
+        {'sym': 'INVALID', 'type': 'CALL', 'dte': 'inconnu', 'quality': 99, 'pop': 99},
+    ]
+    committee = options_lab._committee(board, {}, [], board[0])
+    by_title = {row['title']: row['winner'] for row in committee}
+    assert 'SHORT' in by_title['Meilleur court terme']
+    assert 'LONG' in by_title['Meilleur long terme']
+    assert by_title['Meilleur LEAPS'] == '—'

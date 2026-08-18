@@ -689,6 +689,13 @@ def _committee(board, detail, tops, star):
     det = detail or {}
     dz = lambda c: (det.get(c.get('sym')) or {})
 
+    def dte_value(contract):
+        try:
+            value = float(contract.get('dte'))
+        except (TypeError, ValueError):
+            return None
+        return value if value >= 0 else None
+
     def best(pred, key):
         cs = [c for c in board if pred(c)]
         return max(cs, key=key) if cs else None
@@ -712,7 +719,7 @@ def _committee(board, detail, tops, star):
     add('Meilleur CALL', c, 'le profil haussier le mieux noté', '%s/100' % (c or {}).get('quality'))
     c = best(lambda x: x.get('type') == 'PUT', lambda x: x.get('quality') or 0)
     add('Meilleur PUT', c, 'la meilleure protection / pari baissier', '%s/100' % (c or {}).get('quality') if c else None)
-    c = best(lambda x: (x.get('dte') or 0) >= 300, lambda x: x.get('quality') or 0)
+    c = best(lambda x: dte_value(x) is not None and dte_value(x) >= 300, lambda x: x.get('quality') or 0)
     add('Meilleur LEAPS', c, 'la conviction longue la moins dépendante du timing', '%s j' % (c or {}).get('dte') if c else None)
     c = best(lambda x: _rr(x) is not None, lambda x: _rr(x) or 0)
     add('Meilleur Risk/Reward', c, 'asymétrie gain/perte maximale', 'R:R %s' % _rr(c) if c else None)
@@ -737,9 +744,9 @@ def _committee(board, detail, tops, star):
         add('Meilleur secteur', bs_[0], 'score moyen %s sur %s titres' % (_r2(sum(bs_[1]) / len(bs_[1])), len(bs_[1])))
     c = best(lambda x: x.get('swing_ok'), lambda x: x.get('swing_ret') or 0)
     add('Meilleur trade swing', c, 'projection swing la plus payée', '+%s%%' % (c or {}).get('swing_ret') if c else None)
-    c = best(lambda x: (x.get('dte') or 0) >= 150, lambda x: (x.get('quality') or 0) + (x.get('pop') or 0) * 0.3)
+    c = best(lambda x: dte_value(x) is not None and dte_value(x) >= 150, lambda x: (x.get('quality') or 0) + (x.get('pop') or 0) * 0.3)
     add('Meilleur long terme', c, 'qualité + POP sur échéance longue', None)
-    c = best(lambda x: (x.get('dte') or 0) <= 60, lambda x: x.get('quality') or 0)
+    c = best(lambda x: dte_value(x) is not None and dte_value(x) <= 60, lambda x: x.get('quality') or 0)
     add('Meilleur court terme', c, 'le tactique le mieux noté — taille réduite obligatoire', None)
     c = best(lambda x: True, lambda x: (x.get('quality') or 0) + (dz(x).get('confidence') or 0) * 0.3)
     add('Plus forte conviction', c, 'qualité du contrat × confiance du scan sur le titre', None)
