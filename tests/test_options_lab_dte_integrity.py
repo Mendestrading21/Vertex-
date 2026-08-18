@@ -162,6 +162,21 @@ def test_analysis_liquidity_exposes_missing_oi_or_spread_without_imputation():
     assert 'aucune imputation appliquée' in liquidity['text']
 
 
+def test_committee_liquidity_excludes_missing_spread_without_default():
+    board = [
+        {'sym': 'MISSING', 'type': 'CALL', 'strike': 100, 'dte': 90,
+         'oi': 20000, 'spread_pct': None, 'quality': 99},
+        {'sym': 'VALID', 'type': 'CALL', 'strike': 100, 'dte': 90,
+         'oi': 5000, 'spread_pct': 2, 'quality': 70},
+    ]
+    committee = {row['title']: row for row in options_lab._committee(board, {}, [], board[0])}
+    liquidity = committee['Meilleure liquidité']
+    assert 'VALID' in liquidity['winner']
+    assert liquidity['coverage'] == {
+        'available': True, 'status': 'COMMITTEE_LIQUIDITY_AVAILABLE', 'read_only': True,
+    }
+
+
 def test_plan_exposes_missing_dte_without_an_expiry_timeline():
     plan = options_lab._plan({'sym': 'TST', 'dte': None, 'exp': None}, {}, None)
     assert plan['timeline_coverage'] == {
