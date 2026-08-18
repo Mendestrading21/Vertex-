@@ -574,6 +574,14 @@ def _tops(board, detail):
         return []
     det = detail or {}
 
+    def dte_value(contract):
+        """DTE numérique non négatif réellement reporté, sinon None sans repli."""
+        try:
+            value = float(contract.get('dte'))
+        except (TypeError, ValueError):
+            return None
+        return value if value >= 0 else None
+
     def take(pred, key, note_fn, n=5, rev=True):
         rows = [c for c in board if pred(c)]
         rows.sort(key=key, reverse=rev)
@@ -585,7 +593,7 @@ def _tops(board, detail):
          lambda c: 'qualité %s — le meilleur profil haussier du board' % c.get('quality'))),
         ('top_put', '📉 TOP PUT', take(lambda c: c.get('type') == 'PUT', lambda c: c.get('quality') or 0,
          lambda c: 'protection/pari baissier le mieux noté' )),
-        ('top_leaps', '🏛️ TOP LEAPS', take(lambda c: (c.get('dte') or 0) >= 300, lambda c: c.get('quality') or 0,
+        ('top_leaps', '🏛️ TOP LEAPS', take(lambda c: dte_value(c) is not None and dte_value(c) >= 300, lambda c: c.get('quality') or 0,
          lambda c: '%s j — le temps travaille pour la thèse' % c.get('dte'))),
         ('top_momentum', '🚀 TOP Momentum', take(lambda c: (dz(c).get('mom') or 0) > 0,
          lambda c: dz(c).get('mom') or 0, lambda c: 'momentum titre %s' % _r2(dz(c).get('mom'), 1))),
@@ -601,10 +609,10 @@ def _tops(board, detail):
          lambda c: _rr(c) or 0, lambda c: 'R:R %s — asymétrie maximale' % _rr(c))),
         ('top_flow', '🐋 TOP Flux (volume anormal)', take(lambda c: (dz(c).get('vol_z') or 0) >= 1.0,
          lambda c: dz(c).get('vol_z') or 0, lambda c: 'volume titre z=%s' % _r2(dz(c).get('vol_z'), 1))),
-        ('top_long', '🧭 TOP Long terme', take(lambda c: (c.get('dte') or 0) >= 150,
+        ('top_long', '🧭 TOP Long terme', take(lambda c: dte_value(c) is not None and dte_value(c) >= 150,
          lambda c: (c.get('quality') or 0) + (c.get('pop') or 0) * 0.3,
          lambda c: 'qualité %s + POP %s%% sur %s j' % (c.get('quality'), c.get('pop'), c.get('dte')))),
-        ('top_short', '⚡ TOP Court terme', take(lambda c: (c.get('dte') or 0) <= 60,
+        ('top_short', '⚡ TOP Court terme', take(lambda c: dte_value(c) is not None and dte_value(c) <= 60,
          lambda c: c.get('quality') or 0, lambda c: 'tactique %s j — thêta agressif, taille réduite' % c.get('dte'))),
         ('top_defensive', '🛡️ TOP Défensif', take(
             lambda c: c.get('type') == 'PUT' or (dz(c).get('sector') or '') in
