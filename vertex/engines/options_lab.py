@@ -324,15 +324,22 @@ def _analysis(star, detail, market, sectors, overview):
         'laisser courir tant que la MM20 tient'))
     # liquidité
     oi, spr = star.get('oi'), star.get('spread_pct')
-    lsc = None
-    if oi is not None or spr is not None:
-        lsc = max(5, min(95, (min(oi or 0, 20000) / 20000 * 60) + (35 - min(spr or 8, 12) * 3)))
-    rows.append(_grade_row('liquidity', 'Liquidité', '💧', lsc,
-        'exécutable' if (lsc or 0) >= 55 else 'coûteuse', 'haute',
-        'OI %s · volume %s · spread %s%%. Un spread large est un péage payé deux fois (entrée + sortie).'
-        % (f"{oi:,}".replace(',', ' ') if oi else '—', f"{star.get('vol'):,}".replace(',', ' ') if star.get('vol') else '—',
-           spr if spr is not None else '—'),
-        'ordres à cours limité uniquement' if (lsc or 100) < 55 else 'limite au milieu de fourchette'))
+    oi_available = isinstance(oi, (int, float)) and not isinstance(oi, bool) and oi >= 0
+    spread_available = isinstance(spr, (int, float)) and not isinstance(spr, bool) and spr >= 0
+    lsc = (max(5, min(95, (min(oi, 20000) / 20000 * 60) + (35 - min(spr, 12) * 3)))
+           if oi_available and spread_available else None)
+    liq = _grade_row('liquidity', 'Liquidité', '💧', lsc,
+        'exécutable' if lsc is not None and lsc >= 55 else 'coûteuse' if lsc is not None else 'indisponible', 'haute',
+        ('OI %s · volume %s · spread %s%%. Un spread large est un péage payé deux fois (entrée + sortie).'
+         % (f"{oi:,}".replace(',', ' ') if oi_available else '—',
+            f"{star.get('vol'):,}".replace(',', ' ') if star.get('vol') else '—',
+            spr if spread_available else '—') if lsc is not None else
+         'Liquidité non quantifiée — OI ou spread indisponible, aucune imputation appliquée.'),
+        'ordres à cours limité uniquement' if lsc is None or lsc < 55 else 'limite au milieu de fourchette')
+    liq['coverage'] = {'oi_available': oi_available, 'spread_available': spread_available,
+                       'status': 'LIQUIDITY_INPUT_AVAILABLE' if lsc is not None else 'LIQUIDITY_INPUT_UNAVAILABLE',
+                       'read_only': True}
+    rows.append(liq)
     # greeks
     gsc = None if star.get('delta') is None else max(10, min(90, abs(star.get('delta', 0)) * 130))
     rows.append(_grade_row('greeks', 'Greeks', '🧮', gsc,

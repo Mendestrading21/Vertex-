@@ -151,6 +151,17 @@ def test_viz_radar_exposes_missing_greeks_without_defaults():
     }
 
 
+def test_analysis_liquidity_exposes_missing_oi_or_spread_without_imputation():
+    rows = {row['key']: row for row in options_lab._analysis(
+        {'sym': 'TST', 'type': 'CALL', 'oi': None, 'spread_pct': None}, {}, {}, [], {})}
+    liquidity = rows['liquidity']
+    assert liquidity['coverage'] == {
+        'oi_available': False, 'spread_available': False,
+        'status': 'LIQUIDITY_INPUT_UNAVAILABLE', 'read_only': True,
+    }
+    assert 'aucune imputation appliquée' in liquidity['text']
+
+
 def test_plan_exposes_missing_dte_without_an_expiry_timeline():
     plan = options_lab._plan({'sym': 'TST', 'dte': None, 'exp': None}, {}, None)
     assert plan['timeline_coverage'] == {
