@@ -165,6 +165,8 @@ def api_skyler(sym):
     from vertex.options import horizon_scanners as _hs
     octx = _hs.swing_3_6m_context(scan_state.get('options_board') or [], sym=sym,
                                   historical_closes=closes)
+    from vertex.engines import earnings_option_overlap as _eoctx
+    earnings_option_overlap = _eoctx.build(octx, earnings_proximity)
     from vertex.engines import fundamental_context as _fctx
     fundamentals_ctx = _fctx.build(sym, scan_state.get('fundamentals') or {})
     from vertex.engines import decision_evidence as _evidence
@@ -193,7 +195,8 @@ def api_skyler(sym):
                                fundamental_ctx=fundamentals_ctx, drawdown_ctx=drawdown,
                                downside_volatility_ctx=downside_volatility,
                                relative_strength_ctx=relative_strength, gap_risk_ctx=gap_risk,
-                               earnings_proximity_ctx=earnings_proximity)
+                               earnings_proximity_ctx=earnings_proximity,
+                               earnings_option_overlap_ctx=earnings_option_overlap)
     rt_review = _rt.review(packet0, _sk.score40(packet0))
     rt_input = {'complete': rt_review['complete'], 'basis': rt_review['basis']}
     # Calibration RÉELLE (LOT 19/22) : facteur depuis les résultats mesurés de
