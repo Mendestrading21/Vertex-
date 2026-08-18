@@ -176,6 +176,13 @@ def options_for_position(sym, board, held_type='STK'):
     calls = [c for c in rows if c.get('type') == 'CALL']
     puts = [c for c in rows if c.get('type') == 'PUT']
 
+    def dte_value(contract):
+        try:
+            value = float(contract.get('dte'))
+        except (TypeError, ValueError):
+            return None
+        return value if value >= 0 else None
+
     def pack(role, label, c, why):
         if not c:
             return None
@@ -189,16 +196,16 @@ def options_for_position(sym, board, held_type='STK'):
                      'Le contrat haussier le mieux noté du board sur ce titre.'))
     sugg.append(pack('PUT', 'Meilleur PUT / hedge', best(puts),
                      'Pari baissier ou couverture directionnelle sur le titre.'))
-    leaps = best([c for c in rows if (c.get('dte') or 0) >= 300])
+    leaps = best([c for c in rows if dte_value(c) is not None and dte_value(c) >= 300])
     sugg.append(pack('LEAPS', 'LEAPS (≥ 300 j)', leaps,
                      'Exposition longue durée — le temps pèse peu, quasi-action.'))
     if held_type == 'STK':
         cc = best([c for c in calls if 0.15 <= (c.get('delta') or 0) <= 0.40
-                   and 20 <= (c.get('dte') or 0) <= 90])
+                   and dte_value(c) is not None and 20 <= dte_value(c) <= 90])
         sugg.append(pack('COVERED_CALL', 'Covered call (revenu)', cc,
                          'Vendu contre tes actions : encaisse une prime, plafonne le gain.'))
         pp = best([c for c in puts if -0.45 <= (c.get('delta') or 0) <= -0.12
-                   and 25 <= (c.get('dte') or 0) <= 180])
+                   and dte_value(c) is not None and 25 <= dte_value(c) <= 180])
         sugg.append(pack('PROTECTIVE_PUT', 'Protective put (protection)', pp,
                          'Assurance sur ta position longue contre une chute du titre.'))
 

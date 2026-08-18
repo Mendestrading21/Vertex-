@@ -80,3 +80,17 @@ def test_options_for_position_empty_board_is_honest():
     r = reco.options_for_position('ACN', [])
     assert r['suggestions'] == []
     assert r['note'] and 'Aucun contrat' in r['note']
+
+
+def test_options_for_position_excludes_missing_dte_from_horizon_roles():
+    rows = [
+        {'sym': 'TST', 'type': 'CALL', 'quality': 99, 'dte': None, 'delta': 0.30},
+        {'sym': 'TST', 'type': 'PUT', 'quality': 99, 'dte': 'inconnu', 'delta': -0.30},
+        {'sym': 'TST', 'type': 'CALL', 'quality': 80, 'dte': 365, 'delta': 0.70},
+        {'sym': 'TST', 'type': 'CALL', 'quality': 70, 'dte': 45, 'delta': 0.30},
+        {'sym': 'TST', 'type': 'PUT', 'quality': 70, 'dte': 60, 'delta': -0.30},
+    ]
+    roles = {item['role']: item for item in reco.options_for_position('TST', rows, 'STK')['suggestions']}
+    assert roles['LEAPS']['dte'] == 365
+    assert roles['COVERED_CALL']['dte'] == 45
+    assert roles['PROTECTIVE_PUT']['dte'] == 60
