@@ -210,7 +210,7 @@ Mesurés sur le SHA candidat `integration/vertex-1-0-rc`.
 | G2 Données et domaines | **preuves complètes** | acceptation humaine |
 | G3 Intelligence | **partiel** | mémoire réparée, WMB versionné ; **spécimen WMB réel** manquant |
 | G4 Expérience | **preuves complètes** | résidu assumé : 2 fils tronqués de ~12 px ; mode hors-ligne couvert et corrigé (`G4-HORS-LIGNE.md`) |
-| G5 Live read-only | **HUMAN_REQUIRED** | TWS / IB Gateway réel — **bloquant** |
+| G5 Live read-only | **HUMAN_REQUIRED** | TWS / IB Gateway réel — **bloquant**. Banc de mesure écrit et éprouvé (`G5-PROTOCOLE.md`) : une commande à lancer, pas une improvisation |
 | G6 Exploitation | **preuves complètes** | rollback **prouvé sans perte** (`G6-ROLLBACK.md`) ; CVE bloquées par la politique réseau |
 | G7 Release | **NO** | G5, plus l'acceptation humaine du SHA |
 
@@ -247,16 +247,35 @@ Mesurés sur le SHA candidat `integration/vertex-1-0-rc`.
   l'environnement : le proxy refuse le `CONNECT` vers tout hôte hors registres
   de paquets, `api.osv.dev` répond 403 `policy denial`. Se lèvera dans un
   environnement à politique plus large, ou par une base embarquée.
-- **Deux éléments décrits par `CLAUDE.md` sont absents de cette branche** :
-  `VX.freshness.domainChip` n'existe nulle part dans l'arbre, et les gardiens de
-  fraîcheur des lots 62–63 n'y sont présents que sous forme de `.pyc` périmés.
-  C'est vraisemblablement pourquoi le badge écrit à la main d'Aujourd'hui avait
-  survécu ici. **Aucune action** : les importer reviendrait à fusionner Signal OS,
-  que le mandat interdit. Consigné pour la décision de fusion.
+- **`CLAUDE.md` décrit une branche qui n'est pas celle-ci — trois écarts
+  mesurés, dont un qui touche la sûreté.** (a) `VX.freshness.domainChip`
+  n'existe nulle part dans l'arbre. (b) Les gardiens de fraîcheur des lots 62–63
+  ne sont présents que sous forme de `.pyc` périmés — ce qui explique
+  vraisemblablement la survie du badge écrit à la main d'Aujourd'hui, corrigé
+  depuis. (c) **Le plus important** : la défense READONLY que le guide décrit
+  comme « une liste BLANCHE mesurée, pas une liste noire de noms »
+  (`tools/mesurer_surface_ibkr.py` + `test_signal_os_surface_ibkr_lot34.py`)
+  **n'est pas sur cette branche**. Ce que la release-candidate porte, c'est
+  `tests/test_no_orders.py` — une liste noire de noms, dont le lot 31 avait
+  justement montré la limite : elle ne peut rien contre un chemin qu'on n'a pas
+  pensé à nommer. Ce n'est pas une faille ouverte (surface employée petite,
+  `readonly=True` en dur), mais la garantie est **plus faible que le guide ne
+  l'annonce**, et cela se sait mieux avant de brancher un compte réel qu'après.
+  **Aucune action unilatérale** : importer ces fichiers est une décision de
+  fusion, et le mandat interdit de fusionner Signal OS en bloc.
 
 **HUMAN_REQUIRED :**
 
-1. **TWS / IB Gateway réel** — G5, bloquant pour toute release.
+1. **TWS / IB Gateway réel** — G5, bloquant pour toute release. **G5 n'est pas
+   en attente d'une formalité : il est vide.** Les tests qui citent IBKR lisent
+   le *texte* du code (`READONLY is True`, `REQUEST_TIMEOUT_S == 45`,
+   `inspect.getsource`) ; aucun n'ouvre de connexion, et l'import d'`ib_async`
+   est paresseux, donc ce chemin n'a jamais été exécuté ici. Le banc
+   `tools/vertex_1_0/mesurer_g5_live.py` est prêt et éprouvé par un faux
+   broker : souscriptions, live/différé, Greeks absents, rythme,
+   réconciliation ; il **refuse de conclure sans broker** (sortie 3) et sépare
+   « ma sonde est en faute » de « le produit est en faute ». Marche à suivre
+   dans `G5-PROTOCOLE.md`.
 2. **Spécimen de brief WMB réel** — G3.
 3. **Suppression de branches** — 32 sont prouvées sans perte, et le registre de
    restauration (30 branches avec leurs SHA complets) est écrit. La suppression
