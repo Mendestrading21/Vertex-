@@ -3,7 +3,7 @@
   {
    "chemin": "/scan",
    "fichier": "terminal.py",
-   "ligne": 1774,
+   "ligne": 1766,
    "methodes": [
     "*"
    ],
@@ -14,7 +14,7 @@
   {
    "chemin": "/api/rescan",
    "fichier": "terminal.py",
-   "ligne": 1787,
+   "ligne": 1779,
    "methodes": [
     "POST",
     "GET"
@@ -26,7 +26,7 @@
   {
    "chemin": "/api/ticker/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1878,
+   "ligne": 1883,
    "methodes": [
     "*"
    ],
@@ -37,7 +37,7 @@
   {
    "chemin": "/api/correlations/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1955,
+   "ligne": 1960,
    "methodes": [
     "*"
    ],
@@ -48,7 +48,7 @@
   {
    "chemin": "/desc/<sym>",
    "fichier": "terminal.py",
-   "ligne": 2066,
+   "ligne": 2054,
    "methodes": [
     "*"
    ],
@@ -59,7 +59,7 @@
   {
    "chemin": "/options/<sym>",
    "fichier": "terminal.py",
-   "ligne": 2149,
+   "ligne": 2134,
    "methodes": [
     "*"
    ],
@@ -70,7 +70,7 @@
   {
    "chemin": "/quotes",
    "fichier": "terminal.py",
-   "ligne": 2425,
+   "ligne": 2410,
    "methodes": [
     "*"
    ],
@@ -81,7 +81,7 @@
   {
    "chemin": "/ibkr",
    "fichier": "terminal.py",
-   "ligne": 2432,
+   "ligne": 2417,
    "methodes": [
     "*"
    ],
@@ -92,7 +92,7 @@
   {
    "chemin": "/weekly-regen",
    "fichier": "terminal.py",
-   "ligne": 2441,
+   "ligne": 2425,
    "methodes": [
     "POST",
     "GET"
@@ -104,7 +104,7 @@
   {
    "chemin": "/api/alerts/status",
    "fichier": "terminal.py",
-   "ligne": 7164,
+   "ligne": 7148,
    "methodes": [
     "*"
    ],
@@ -115,7 +115,7 @@
   {
    "chemin": "/api/track-record",
    "fichier": "terminal.py",
-   "ligne": 7170,
+   "ligne": 7154,
    "methodes": [
     "*"
    ],
@@ -1705,27 +1705,12 @@
   "blueprints_definis": [],
   "blueprints_enregistres": [
    "_auth.make_blueprint",
-   "_feeds.bp",
    "_desk.make_blueprint",
-   "_company_api.bp",
-   "_analysis_api.bp",
-   "_command.bp",
-   "_session_api.bp",
-   "_options_lab_api.bp",
-   "_options_intel_api.bp",
-   "_tracking_api.bp",
-   "_opportunities_api.bp",
-   "_planning_api.bp",
-   "_ai_api.bp",
-   "_live_api.bp",
-   "_system.bp",
    "_tv_webhooks.make_blueprint",
    "_strategy_os_api.make_blueprint",
    "_redesign.make_blueprint",
-   "_live_events.bp",
    "_positions_api.make_blueprint",
-   "_decision_api.make_blueprint",
-   "_content.bp"
+   "_decision_api.make_blueprint"
   ],
   "boucles": [
    "_alerts_loop",
@@ -1768,8 +1753,8 @@
    "yfinance",
    "zlib"
   ],
-  "lignes": 7257,
-  "octets": 812640,
+  "lignes": 7241,
+  "octets": 812043,
   "plus_longue_fonction": [
    "_ibkr_opt_worker",
    306
@@ -1777,7 +1762,7 @@
   "routes": [
    {
     "chemin": "/scan",
-    "ligne": 1774,
+    "ligne": 1766,
     "methodes": [
      "*"
     ],
@@ -1786,7 +1771,7 @@
    },
    {
     "chemin": "/api/rescan",
-    "ligne": 1787,
+    "ligne": 1779,
     "methodes": [
      "POST",
      "GET"
@@ -1796,7 +1781,7 @@
    },
    {
     "chemin": "/api/ticker/<sym>",
-    "ligne": 1878,
+    "ligne": 1883,
     "methodes": [
      "*"
     ],
@@ -1805,7 +1790,7 @@
    },
    {
     "chemin": "/api/correlations/<sym>",
-    "ligne": 1955,
+    "ligne": 1960,
     "methodes": [
      "*"
     ],
@@ -1814,7 +1799,7 @@
    },
    {
     "chemin": "/desc/<sym>",
-    "ligne": 2066,
+    "ligne": 2054,
     "methodes": [
      "*"
     ],
@@ -1823,7 +1808,7 @@
    },
    {
     "chemin": "/options/<sym>",
-    "ligne": 2149,
+    "ligne": 2134,
     "methodes": [
      "*"
     ],
@@ -1832,7 +1817,7 @@
    },
    {
     "chemin": "/quotes",
-    "ligne": 2425,
+    "ligne": 2410,
     "methodes": [
      "*"
     ],
@@ -1841,7 +1826,7 @@
    },
    {
     "chemin": "/ibkr",
-    "ligne": 2432,
+    "ligne": 2417,
     "methodes": [
      "*"
     ],
@@ -1850,7 +1835,7 @@
    },
    {
     "chemin": "/weekly-regen",
-    "ligne": 2441,
+    "ligne": 2425,
     "methodes": [
      "POST",
      "GET"
@@ -1860,7 +1845,7 @@
    },
    {
     "chemin": "/api/alerts/status",
-    "ligne": 7164,
+    "ligne": 7148,
     "methodes": [
      "*"
     ],
@@ -1869,7 +1854,7 @@
    },
    {
     "chemin": "/api/track-record",
-    "ligne": 7170,
+    "ligne": 7154,
     "methodes": [
      "*"
     ],
@@ -2523,6 +2508,30 @@
    "routes": [],
    "stores": [
     "_ALIASES"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [
+    "bp"
+   ],
+   "boucles": [],
+   "fichier": "vertex/app/factory.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "importlib",
+    "typing"
+   ],
+   "lignes": 107,
+   "plus_longue_fonction": [
+    "register_blueprints",
+    14
+   ],
+   "routes": [],
+   "stores": [
+    "A_INJECTION"
    ],
    "workers": []
   },
@@ -9861,13 +9870,13 @@
    "workers": []
   }
  ],
- "sha": "e66c3b385f00",
+ "sha": "f7daf594a8ac",
  "totaux": {
-  "blueprints_enregistres": 22,
+  "blueprints_enregistres": 7,
   "boucles_monolithe": 13,
-  "fichiers_paquet": 340,
-  "lignes_monolithe": 7257,
-  "octets_monolithe": 812640,
+  "fichiers_paquet": 341,
+  "lignes_monolithe": 7241,
+  "octets_monolithe": 812043,
   "routes_canoniques": 143,
   "routes_legacy": 11,
   "stores_monolithe": 3,

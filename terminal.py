@@ -78,16 +78,8 @@ from vertex.app.caches import (          # noqa: F401  (relies par leur nom)
     _ibkr_cache, _IDX_IBKR, _IDX_META, _live_quotes, _live_meta,
 )
 from vertex.app.routes import auth as _auth
-from vertex.app.routes import command as _command
-from vertex.app.routes import session_api as _session_api
 from vertex.app.routes import desk as _desk
-from vertex.app.routes import options_lab_api as _options_lab_api
-from vertex.app.routes import live_api as _live_api
 from vertex.app.routes import decision_api as _decision_api
-from vertex.app.routes import analysis_api as _analysis_api
-from vertex.app.routes import feeds as _feeds
-from vertex.app.routes import system as _system
-from vertex.app.routes import content as _content
 from vertex.data import demo as _demo
 from vertex.data import company as _company
 from vertex.services import market_clock as _market_clock
@@ -1871,7 +1863,20 @@ def _scan_age():
 
 
 # ─── FLUX DE DONNÉES (Blueprint) — market/summary · cockpit · watchlist · options · search · weekly · strategie · comite ───
-app.register_blueprint(_feeds.bp)
+#  ── REGISTRE DE ROUTES CANONIQUE (#779, contribution a G1) ─────────────
+#  Les 15 blueprints SANS injection sont declares dans
+#  `vertex/app/factory.py` et enregistres ici, en un point unique. Avant, ils
+#  etaient disperses entre les lignes 1866 et 2456, meles aux vues et aux
+#  utilitaires : personne ne pouvait dire quelles routes l'application sert
+#  sans lire 2 300 lignes.
+#
+#  LA POSITION DE CET APPEL N'EST PAS ARBITRAIRE. `/api/anomalies/<sym>` est
+#  declare par DEUX blueprints — `analysis_api` (sans injection, ici) et
+#  `strategy_os_api` (a injection, enregistre plus bas). Flask donne la regle
+#  au PREMIER enregistre. Placer ce groupe apres `strategy_os_api` changerait
+#  donc le gagnant en silence. Il reste avant.
+from vertex.app import factory as _factory
+_factory.register_blueprints(app)
 
 
 @app.route('/api/ticker/<sym>')
@@ -1989,41 +1994,24 @@ app.register_blueprint(_desk.make_blueprint(opt_job=_opt_job, ibkr_enabled=IBKR_
 #  etaient decorees directement sur `app` ici. Mesure a l'AST : elles ne
 #  dependaient de RIEN d'autre que `app`, donc elles se deplacent sans
 #  injection. Proprietaire canonique : vertex/app/routes/company_api.py.
-from vertex.app.routes import company_api as _company_api
-app.register_blueprint(_company_api.bp)
-app.register_blueprint(_analysis_api.bp)
 
 # ─── COMMAND CENTER (Blueprint) — /api/command · /api/portefeuille ───
-app.register_blueprint(_command.bp)
 
 # ─── SESSION D'ANALYSE (Blueprint) — /api/session/digest (digest toujours prêt) ───
-app.register_blueprint(_session_api.bp)
 
 # ─── OPTIONS RESEARCH CENTER (Blueprint) — /api/options-lab ───
-app.register_blueprint(_options_lab_api.bp)
 
 # ─── OPTIONS INTELLIGENCE (Blueprint) — /api/options/overview · volatility · event-risk · /api/charts ───
-from vertex.app.routes import options_intel_api as _options_intel_api
-app.register_blueprint(_options_intel_api.bp)
 
 # ─── TRACKING ENGINE (Blueprint) — /api/tracking (suivi hypothétique, lecture seule) ───
-from vertex.app.routes import tracking_api as _tracking_api
-app.register_blueprint(_tracking_api.bp)
 
 # ─── OPPORTUNITY FUNNEL (Blueprint) — /api/opportunities/funnel (§11-12) ───
-from vertex.app.routes import opportunities_api as _opportunities_api
-app.register_blueprint(_opportunities_api.bp)
 
 # ─── PLANNING (Blueprint) — /api/planning/ticket (préparation d'ordre, READONLY) ───
-from vertex.app.routes import planning_api as _planning_api
-app.register_blueprint(_planning_api.bp)
 
 # ─── CERVEAU CLAUDE+WEB (Blueprint) — /api/ai/enrichment · status · refresh ───
-from vertex.app.routes import ai_api as _ai_api
-app.register_blueprint(_ai_api.bp)
 
 # ─── VERTEX LIVE ENGINE (Blueprint) — /api/live/status · refresh · report ───
-app.register_blueprint(_live_api.bp)
 
 
 # ─── DESCRIPTION MÉTIER (yfinance longBusinessSummary) : à la demande + cache persistant ───
@@ -2096,7 +2084,6 @@ def desc_ep(sym):
 
 
 # ─── SANTÉ SYSTÈME & PWA (Blueprint) — healthz · system-status · favicon · manifest · sw.js ───
-app.register_blueprint(_system.bp)
 
 
 # ─── TRADINGVIEW (Blueprint) — /api/tradingview/webhook · /api/tradingview/signals ───
@@ -2131,8 +2118,6 @@ from vertex.app.routes import redesign as _redesign
 app.register_blueprint(_redesign.make_blueprint(scan_state=scan_state))
 
 # ─── FLUX TEMPS RÉEL (SSE) : /api/live/events — lecture seule, §26 ───
-from vertex.app.routes import live_events as _live_events
-app.register_blueprint(_live_events.bp)
 
 # ─── POSITION INTELLIGENCE : /api/positions/* — lecture seule, cycle de vie ───
 from vertex.app.routes import positions_api as _positions_api
@@ -2434,7 +2419,6 @@ def ibkr_ep():
 
 
 # ─── FILS DE CONTENU (Blueprint) — news-feed · cal-feed · weekly-feed ───
-app.register_blueprint(_content.bp)
 
 
 @app.route('/weekly-regen', methods=['POST', 'GET'])
