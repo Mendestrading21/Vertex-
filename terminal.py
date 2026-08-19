@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from flask import Flask, jsonify, redirect, request, g
+from flask import jsonify
 
 try:
     from dotenv import load_dotenv
@@ -78,54 +78,26 @@ from vertex.app.caches import (          # noqa: F401  (relies par leur nom)
     _STOOQ_CACHE, _STOOQ_TTL, _SOURCE_BUDGET_STATE, _CORR_BENCH,
     _ibkr_cache, _IDX_IBKR, _IDX_META, _live_quotes, _live_meta,
 )
-from vertex.app.routes import auth as _auth
 from vertex.app.routes import desk as _desk
 from vertex.app.routes import decision_api as _decision_api
 from vertex.data import demo as _demo
 from vertex.data import company as _company
 from vertex.services import market_clock as _market_clock
 
-app = Flask(__name__)
-from vertex.services import request_metrics as _request_metrics  # noqa: E402
-
-
-@app.before_request
-def _request_latency_start():
-    if request.path.startswith('/api/'):
-        g._vertex_request_started = time.perf_counter()
-
-
-@app.after_request
-def _request_latency_record(resp):
-    started = getattr(g, '_vertex_request_started', None)
-    if started is not None:
-        _request_metrics.record(request.endpoint, resp.status_code,
-                                (time.perf_counter() - started) * 1000)
-    return resp
-
-# ── JSON SÛR : convertit NaN/Infinity → null. Sinon Flask sort `NaN` (toléré par Python
-#    mais REFUSÉ par JSON.parse des navigateurs → page vide). Arrive avec l'univers XXL :
-#    des titres récents/peu liquides n'ont pas assez d'historique → ma200/ma50 = NaN.
-try:
-    import math as _math
-    from flask.json.provider import DefaultJSONProvider as _DJP
-
-    def _clean_nan(o):
-        if isinstance(o, float):
-            return None if (_math.isnan(o) or _math.isinf(o)) else o
-        if isinstance(o, dict):
-            return {k: _clean_nan(v) for k, v in o.items()}
-        if isinstance(o, (list, tuple)):
-            return [_clean_nan(v) for v in o]
-        return o
-
-    class _SafeJSONProvider(_DJP):
-        def dumps(self, obj, **kw):
-            return super().dumps(_clean_nan(obj), **kw)
-
-    app.json = _SafeJSONProvider(app)
-except Exception:
-    pass
+#  ── FABRIQUE FLASK CANONIQUE (#779, gate G1) ─────────────────────────────
+#  `Flask(__name__)`, la configuration de session, le fournisseur JSON sur
+#  (NaN -> null), la mesure de latence, le verrou d'acces, les en-tetes de
+#  securite, les pages d'erreur et la compression vivaient ICI, disperses entre
+#  les lignes 88 et 1865. Aucun de ces blocs ne dependait de l'etat du
+#  monolithe : ils sont desormais tenus par `vertex/app/factory.py`.
+#
+#  LE PIEGE, MESURE : `Flask(__name__)` ecrit dans `vertex/app/` ferait deriver
+#  `root_path` vers ce dossier, donc `static_folder` vers un chemin inexistant
+#  — les deux fichiers reellement servis depuis `static/` (chart.umd.min.js,
+#  icon-180.png) partiraient en 404 SANS erreur au demarrage. La fabrique fixe
+#  donc `root_path` explicitement.
+from vertex.app import factory as _factory  # noqa: E402
+app = _factory.create_app()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 🔒 CODE D'ENTRÉE (verrou d'accès) — OPTIONNEL, activé par variable d'env.
@@ -134,17 +106,12 @@ except Exception:
 #   • Session signée (cookie) valable 30 jours ; anti-force-brute par IP.
 #   • Recommandé aussi : VERTEX_SECRET=une_longue_chaine_aléatoire (sinon dérivée du code).
 # ─────────────────────────────────────────────────────────────────────────────
-# Source unique de la config d'accès : vertex/app/config.py (dé-duplication — cf. audit).
-# Verrou complet (login/logout + garde globale + anti-force-brute) : Blueprint auth (Ch. II/XV).
-from vertex.app.config import VERTEX_CODE, AUTH_ON, SECRET_KEY  # noqa: E402
-app.secret_key = SECRET_KEY
-app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
-                  PERMANENT_SESSION_LIFETIME=timedelta(days=30),
-                  # cookie jamais envoyé en clair quand l'app est servie en HTTPS (Render/prod)
-                  SESSION_COOKIE_SECURE=bool(os.environ.get('RENDER') or os.environ.get('VERTEX_HTTPS')))
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024   # 2 Mo — le desk sync est un petit blob JSON
-app.register_blueprint(_auth.make_blueprint(code=VERTEX_CODE))
-# (headers de sécurité : _security_headers plus bas — source unique, avec HSTS)
+# Source unique de la config d'accès : vertex/app/config.py.
+# Le Blueprint auth (login/logout + garde globale + anti-force-brute) et la
+# configuration de session sont posés par `_factory.create_app()`, EN PREMIER :
+# le `before_request` du verrou doit pouvoir refuser une requête destinée à
+# n'importe quel blueprint. AUTH_ON reste lu ici — plusieurs vues s'en servent.
+from vertex.app.config import VERTEX_CODE, AUTH_ON, SECRET_KEY  # noqa: E402,F401
 
 
 # scan_state : état partagé du scan — domicile unique dans vertex/app/state.py.
@@ -1801,68 +1768,9 @@ def api_rescan():
                     'msg': f'Re-scan lancé — recalcul des {len(UNIVERSE)} titres (≈10-30 s). Recharge dans un instant.'})
 
 
-@app.after_request
-def _security_headers(resp):
-    """Production : en-têtes de sécurité sur toutes les réponses (analyse only, zéro iframe tierce entrante)."""
-    resp.headers.setdefault('X-Content-Type-Options', 'nosniff')
-    # SAMEORIGIN (pas DENY) : la Home embarque ses propres pages en iframe (?embed=1)
-    # — DENY les bloquait silencieusement. Le clickjacking externe reste interdit.
-    resp.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
-    resp.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
-    resp.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
-    # Données personnelles (blob desk : trades, positions, journal) : jamais
-    # stockées par un cache intermédiaire ou partagé.
-    if request.path.startswith('/api/desk'):
-        resp.headers['Cache-Control'] = 'no-store'
-    if request.is_secure or request.headers.get('X-Forwarded-Proto') == 'https':
-        resp.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
-    return resp
-
-
-@app.errorhandler(404)
-def _err_404(e):
-    if request.path.startswith('/api/'):
-        return jsonify({'error': 'not_found', 'path': request.path}), 404
-    return ('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-            '<title>404 · Vertex</title><style>body{background:#0b0e14;color:#eef2f8;font-family:Inter,system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0}'
-            '.c{text-align:center}.n{font-size:64px;font-weight:900;color:#FF7A18}.t{color:#8794ab;margin:10px 0 22px}'
-            'a{color:#FF9A3D;text-decoration:none;font-weight:700;border:1px solid rgba(255,122,24,.4);padding:10px 20px;border-radius:12px}</style></head>'
-            '<body><div class="c"><div class="n">404</div><div class="t">Cette page n\'existe pas (ou plus).</div>'
-            '<a href="/">\u2190 Retour au Market Overview</a></div></body></html>'), 404
-
-
-@app.errorhandler(500)
-def _err_500(e):
-    if request.path.startswith('/api/'):
-        return jsonify({'error': 'internal'}), 500
-    return redirect('/')
-
-
-@app.after_request
-def _gzip_response(resp):
-    """Compresse les grosses réponses (le /scan pèse ~8 Mo → ~10× moins) — vital pour l'iPhone en Wi-Fi."""
-    try:
-        if resp.status_code != 200 or resp.direct_passthrough:
-            return resp
-        if 'gzip' not in (request.headers.get('Accept-Encoding') or ''):
-            return resp
-        ct = resp.content_type or ''
-        if not (ct.startswith('application/json') or ct.startswith('text/html')):
-            return resp
-        data = resp.get_data()
-        if len(data) < 8192:
-            return resp
-        import gzip as _gz
-        gz = _gz.compress(data, 5)
-        if len(gz) >= len(data):
-            return resp
-        resp.set_data(gz)
-        resp.headers['Content-Encoding'] = 'gzip'
-        resp.headers['Content-Length'] = str(len(gz))
-        resp.headers['Vary'] = 'Accept-Encoding'
-    except Exception:
-        pass
-    return resp
+#  Les en-tetes de securite, les pages d'erreur 404/500 et la compression gzip
+#  vivaient ici. Aucun ne dependait de l'etat du monolithe : ils sont tenus par
+#  `vertex/app/factory.py::create_app`, avec le reste de la plomberie Flask.
 
 
 def _scan_age():

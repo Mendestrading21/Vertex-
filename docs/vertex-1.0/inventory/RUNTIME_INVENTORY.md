@@ -1,6 +1,6 @@
 # Vertex 1.0 · #779 — Inventaire exécutable du runtime
 
-SHA : `f7daf594a8ac` · généré par `tools/vertex_1_0/inventaire_runtime.py`
+SHA : `5513763fa294` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 > Ce document est **régénéré**, jamais édité à la main. Un chiffre qui
 > change sans que le code ait bougé est un défaut de l'instrument.
@@ -9,12 +9,12 @@ SHA : `f7daf594a8ac` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | mesure | valeur |
 | --- | --- |
-| lignes | 7241 |
-| octets | 812043 |
-| fonctions | 88 |
+| lignes | 7175 |
+| octets | 809667 |
+| fonctions | 81 |
 | plus longue fonction | `_ibkr_opt_worker` (306 lignes) |
 | **routes LEGACY** | **11** |
-| blueprints enregistrés | 7 |
+| blueprints enregistrés | 6 |
 | workers démarrés | 15 |
 | boucles de service | 13 |
 | stores de module | 3 |
@@ -33,17 +33,17 @@ SHA : `f7daf594a8ac` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | chemin | vue | méthodes | ligne |
 | --- | --- | --- | --- |
-| `/scan` | `scan_ep` | * | 1766 |
-| `/api/rescan` | `api_rescan` | POST, GET | 1779 |
-| `/api/ticker/<sym>` | `api_ticker` | * | 1883 |
-| `/api/correlations/<sym>` | `api_correlations` | * | 1960 |
-| `/desc/<sym>` | `desc_ep` | * | 2054 |
-| `/options/<sym>` | `opt_ep` | * | 2134 |
-| `/quotes` | `quotes_ep` | * | 2410 |
-| `/ibkr` | `ibkr_ep` | * | 2417 |
-| `/weekly-regen` | `weekly_regen_ep` | POST, GET | 2425 |
-| `/api/alerts/status` | `api_alerts_status` | * | 7148 |
-| `/api/track-record` | `api_track_record` | * | 7154 |
+| `/scan` | `scan_ep` | * | 1740 |
+| `/api/rescan` | `api_rescan` | POST, GET | 1753 |
+| `/api/ticker/<sym>` | `api_ticker` | * | 1798 |
+| `/api/correlations/<sym>` | `api_correlations` | * | 1875 |
+| `/desc/<sym>` | `desc_ep` | * | 1969 |
+| `/options/<sym>` | `opt_ep` | * | 2049 |
+| `/quotes` | `quotes_ep` | * | 2325 |
+| `/ibkr` | `ibkr_ep` | * | 2332 |
+| `/weekly-regen` | `weekly_regen_ep` | POST, GET | 2340 |
+| `/api/alerts/status` | `api_alerts_status` | * | 7063 |
+| `/api/track-record` | `api_track_record` | * | 7069 |
 
 ### Workers démarrés par `terminal.py`
 
@@ -73,12 +73,11 @@ SHA : `f7daf594a8ac` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | mesure | valeur |
 | --- | --- |
-| fichiers Python | 341 |
+| fichiers Python | 342 |
 | routes canoniques | 143 |
 
 ### Blueprints enregistrés par le monolithe
 
-- `_auth.make_blueprint`
 - `_decision_api.make_blueprint`
 - `_desk.make_blueprint`
 - `_positions_api.make_blueprint`

@@ -3,7 +3,7 @@
   {
    "chemin": "/scan",
    "fichier": "terminal.py",
-   "ligne": 1766,
+   "ligne": 1740,
    "methodes": [
     "*"
    ],
@@ -14,7 +14,7 @@
   {
    "chemin": "/api/rescan",
    "fichier": "terminal.py",
-   "ligne": 1779,
+   "ligne": 1753,
    "methodes": [
     "POST",
     "GET"
@@ -26,7 +26,7 @@
   {
    "chemin": "/api/ticker/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1883,
+   "ligne": 1798,
    "methodes": [
     "*"
    ],
@@ -37,7 +37,7 @@
   {
    "chemin": "/api/correlations/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1960,
+   "ligne": 1875,
    "methodes": [
     "*"
    ],
@@ -48,7 +48,7 @@
   {
    "chemin": "/desc/<sym>",
    "fichier": "terminal.py",
-   "ligne": 2054,
+   "ligne": 1969,
    "methodes": [
     "*"
    ],
@@ -59,7 +59,7 @@
   {
    "chemin": "/options/<sym>",
    "fichier": "terminal.py",
-   "ligne": 2134,
+   "ligne": 2049,
    "methodes": [
     "*"
    ],
@@ -70,7 +70,7 @@
   {
    "chemin": "/quotes",
    "fichier": "terminal.py",
-   "ligne": 2410,
+   "ligne": 2325,
    "methodes": [
     "*"
    ],
@@ -81,7 +81,7 @@
   {
    "chemin": "/ibkr",
    "fichier": "terminal.py",
-   "ligne": 2417,
+   "ligne": 2332,
    "methodes": [
     "*"
    ],
@@ -92,7 +92,7 @@
   {
    "chemin": "/weekly-regen",
    "fichier": "terminal.py",
-   "ligne": 2425,
+   "ligne": 2340,
    "methodes": [
     "POST",
     "GET"
@@ -104,7 +104,7 @@
   {
    "chemin": "/api/alerts/status",
    "fichier": "terminal.py",
-   "ligne": 7148,
+   "ligne": 7063,
    "methodes": [
     "*"
    ],
@@ -115,7 +115,7 @@
   {
    "chemin": "/api/track-record",
    "fichier": "terminal.py",
-   "ligne": 7154,
+   "ligne": 7069,
    "methodes": [
     "*"
    ],
@@ -567,7 +567,7 @@
   {
    "chemin": "/api/desk",
    "fichier": "vertex/app/routes/desk.py",
-   "ligne": 71,
+   "ligne": 72,
    "methodes": [
     "GET",
     "POST"
@@ -579,7 +579,7 @@
   {
    "chemin": "/api/desk/backups",
    "fichier": "vertex/app/routes/desk.py",
-   "ligne": 87,
+   "ligne": 88,
    "methodes": [
     "*"
    ],
@@ -590,7 +590,7 @@
   {
    "chemin": "/api/desk/restore",
    "fichier": "vertex/app/routes/desk.py",
-   "ligne": 96,
+   "ligne": 97,
    "methodes": [
     "POST"
    ],
@@ -601,7 +601,7 @@
   {
    "chemin": "/api/journal/postmortem",
    "fichier": "vertex/app/routes/desk.py",
-   "ligne": 114,
+   "ligne": 115,
    "methodes": [
     "*"
    ],
@@ -612,7 +612,7 @@
   {
    "chemin": "/api/watchlist-tv",
    "fichier": "vertex/app/routes/desk.py",
-   "ligne": 133,
+   "ligne": 134,
    "methodes": [
     "*"
    ],
@@ -623,7 +623,7 @@
   {
    "chemin": "/api/ibkr/positions",
    "fichier": "vertex/app/routes/desk.py",
-   "ligne": 139,
+   "ligne": 140,
    "methodes": [
     "*"
    ],
@@ -634,7 +634,7 @@
   {
    "chemin": "/api/pos-quotes",
    "fichier": "vertex/app/routes/desk.py",
-   "ligne": 154,
+   "ligne": 155,
    "methodes": [
     "POST"
    ],
@@ -1704,7 +1704,6 @@
  "monolithe": {
   "blueprints_definis": [],
   "blueprints_enregistres": [
-   "_auth.make_blueprint",
    "_desk.make_blueprint",
    "_tv_webhooks.make_blueprint",
    "_strategy_os_api.make_blueprint",
@@ -1728,7 +1727,7 @@
    "news"
   ],
   "fichier": "terminal.py",
-  "fonctions": 88,
+  "fonctions": 81,
   "imports": [
    "asyncio",
    "collections",
@@ -1736,7 +1735,6 @@
    "datetime",
    "dotenv",
    "flask",
-   "gzip",
    "ib_async",
    "ib_reader",
    "io",
@@ -1753,8 +1751,8 @@
    "yfinance",
    "zlib"
   ],
-  "lignes": 7241,
-  "octets": 812043,
+  "lignes": 7175,
+  "octets": 809667,
   "plus_longue_fonction": [
    "_ibkr_opt_worker",
    306
@@ -1762,7 +1760,7 @@
   "routes": [
    {
     "chemin": "/scan",
-    "ligne": 1766,
+    "ligne": 1740,
     "methodes": [
      "*"
     ],
@@ -1771,7 +1769,7 @@
    },
    {
     "chemin": "/api/rescan",
-    "ligne": 1779,
+    "ligne": 1753,
     "methodes": [
      "POST",
      "GET"
@@ -1781,7 +1779,7 @@
    },
    {
     "chemin": "/api/ticker/<sym>",
-    "ligne": 1883,
+    "ligne": 1798,
     "methodes": [
      "*"
     ],
@@ -1790,7 +1788,7 @@
    },
    {
     "chemin": "/api/correlations/<sym>",
-    "ligne": 1960,
+    "ligne": 1875,
     "methodes": [
      "*"
     ],
@@ -1799,7 +1797,7 @@
    },
    {
     "chemin": "/desc/<sym>",
-    "ligne": 2054,
+    "ligne": 1969,
     "methodes": [
      "*"
     ],
@@ -1808,7 +1806,7 @@
    },
    {
     "chemin": "/options/<sym>",
-    "ligne": 2134,
+    "ligne": 2049,
     "methodes": [
      "*"
     ],
@@ -1817,7 +1815,7 @@
    },
    {
     "chemin": "/quotes",
-    "ligne": 2410,
+    "ligne": 2325,
     "methodes": [
      "*"
     ],
@@ -1826,7 +1824,7 @@
    },
    {
     "chemin": "/ibkr",
-    "ligne": 2417,
+    "ligne": 2332,
     "methodes": [
      "*"
     ],
@@ -1835,7 +1833,7 @@
    },
    {
     "chemin": "/weekly-regen",
-    "ligne": 2425,
+    "ligne": 2340,
     "methodes": [
      "POST",
      "GET"
@@ -1845,7 +1843,7 @@
    },
    {
     "chemin": "/api/alerts/status",
-    "ligne": 7148,
+    "ligne": 7063,
     "methodes": [
      "*"
     ],
@@ -1854,7 +1852,7 @@
    },
    {
     "chemin": "/api/track-record",
-    "ligne": 7154,
+    "ligne": 7069,
     "methodes": [
      "*"
     ],
@@ -2514,20 +2512,29 @@
   {
    "blueprints_definis": [],
    "blueprints_enregistres": [
+    "_auth.make_blueprint",
     "bp"
    ],
    "boucles": [],
    "fichier": "vertex/app/factory.py",
-   "fonctions": 1,
+   "fonctions": 10,
    "imports": [
     "__future__",
+    "datetime",
+    "flask",
+    "gzip",
     "importlib",
-    "typing"
+    "math",
+    "os",
+    "pathlib",
+    "time",
+    "typing",
+    "vertex"
    ],
-   "lignes": 107,
+   "lignes": 303,
    "plus_longue_fonction": [
-    "register_blueprints",
-    14
+    "create_app",
+    136
    ],
    "routes": [],
    "stores": [
@@ -2549,6 +2556,26 @@
    "plus_longue_fonction": [
     "symbol",
     3
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/lifecycle.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "threading",
+    "typing"
+   ],
+   "lignes": 102,
+   "plus_longue_fonction": [
+    "demarrer_une_seule_fois",
+    18
    ],
    "routes": [],
    "stores": [],
@@ -3140,15 +3167,15 @@
     "time",
     "vertex"
    ],
-   "lignes": 190,
+   "lignes": 199,
    "plus_longue_fonction": [
     "make_blueprint",
-    126
+    134
    ],
    "routes": [
     {
      "chemin": "/api/desk",
-     "ligne": 71,
+     "ligne": 72,
      "methodes": [
       "GET",
       "POST"
@@ -3158,7 +3185,7 @@
     },
     {
      "chemin": "/api/desk/backups",
-     "ligne": 87,
+     "ligne": 88,
      "methodes": [
       "*"
      ],
@@ -3167,7 +3194,7 @@
     },
     {
      "chemin": "/api/desk/restore",
-     "ligne": 96,
+     "ligne": 97,
      "methodes": [
       "POST"
      ],
@@ -3176,7 +3203,7 @@
     },
     {
      "chemin": "/api/journal/postmortem",
-     "ligne": 114,
+     "ligne": 115,
      "methodes": [
       "*"
      ],
@@ -3185,7 +3212,7 @@
     },
     {
      "chemin": "/api/watchlist-tv",
-     "ligne": 133,
+     "ligne": 134,
      "methodes": [
       "*"
      ],
@@ -3194,7 +3221,7 @@
     },
     {
      "chemin": "/api/ibkr/positions",
-     "ligne": 139,
+     "ligne": 140,
      "methodes": [
       "*"
      ],
@@ -3203,7 +3230,7 @@
     },
     {
      "chemin": "/api/pos-quotes",
-     "ligne": 154,
+     "ligne": 155,
      "methodes": [
       "POST"
      ],
@@ -8560,10 +8587,10 @@
     "threading",
     "time"
    ],
-   "lignes": 99,
+   "lignes": 140,
    "plus_longue_fonction": [
     "jobs",
-    13
+    27
    ],
    "routes": [],
    "stores": [],
@@ -8596,10 +8623,10 @@
     "os",
     "vertex"
    ],
-   "lignes": 133,
+   "lignes": 142,
    "plus_longue_fonction": [
     "snapshot",
-    88
+    97
    ],
    "routes": [],
    "stores": [],
@@ -9543,7 +9570,7 @@
     "__future__",
     "vertex"
    ],
-   "lignes": 1205,
+   "lignes": 1218,
    "plus_longue_fonction": [
     "_lock_card",
     21
@@ -9870,13 +9897,13 @@
    "workers": []
   }
  ],
- "sha": "f7daf594a8ac",
+ "sha": "5513763fa294",
  "totaux": {
-  "blueprints_enregistres": 7,
+  "blueprints_enregistres": 6,
   "boucles_monolithe": 13,
-  "fichiers_paquet": 341,
-  "lignes_monolithe": 7241,
-  "octets_monolithe": 812043,
+  "fichiers_paquet": 342,
+  "lignes_monolithe": 7175,
+  "octets_monolithe": 809667,
   "routes_canoniques": 143,
   "routes_legacy": 11,
   "stores_monolithe": 3,

@@ -17,8 +17,39 @@ def test_options_overview_does_not_expose_exception_text(monkeypatch):
 
 
 def test_global_api_error_does_not_expose_exception_text():
+    """Le gestionnaire 500 a déménagé dans `vertex/app/factory.py` (#779/G1).
+
+    Il est désormais éprouvé **de bout en bout** plutôt qu'appelé à la main :
+    une route qui lève, une requête réelle, la réponse servie. C'est plus fort
+    que l'ancienne forme — elle vérifiait la fonction, celle-ci vérifie en plus
+    qu'elle est bien **enregistrée** sur l'application."""
+    from vertex.app import factory
+
+    app = factory.create_app()
+    app.config['PROPAGATE_EXCEPTIONS'] = False
+
+    @app.route('/api/leve-une-erreur')
+    def _leve():
+        raise RuntimeError('secret-local-path')
+
+    response = app.test_client().get('/api/leve-une-erreur')
+    assert response.status_code == 500
+    assert response.get_json() == {'error': 'internal'}
+    assert 'secret-local-path' not in response.get_data(as_text=True)
+
+
+def test_l_application_servie_passe_bien_par_la_fabrique():
+    """Le test ci-dessus n'aurait aucune valeur si `terminal.app` était
+    construite autrement : il éprouverait une application que personne ne sert."""
+    assert 500 in terminal.app.error_handler_spec[None], (
+        'l\'application servie n\'a plus de gestionnaire 500 : une exception '
+        'd\'API renverrait la page de trace de Flask'
+    )
+    from werkzeug.exceptions import InternalServerError
+
     with terminal.app.test_request_context('/api/test'):
-        response, status = terminal._err_500(RuntimeError('secret-local-path'))
+        gestionnaire = terminal.app.error_handler_spec[None][500][InternalServerError]
+        response, status = gestionnaire(RuntimeError('secret-local-path'))
     assert status == 500
     assert response.get_json() == {'error': 'internal'}
 

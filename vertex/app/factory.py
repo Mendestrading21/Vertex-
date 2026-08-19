@@ -10,39 +10,67 @@ routes**. Avant lui, 22 `app.register_blueprint(...)` étaient dispersés dans
 fonctions utilitaires. Personne ne pouvait répondre à « quelles routes
 l'application sert-elle ? » sans lire 2 300 lignes.
 
-## Deux familles, et une seule peut déménager aujourd'hui
+## Deux familles, et une seule peut déménager
 
 Mesuré, pas supposé :
 
 - **15 blueprints sans injection** — un objet `bp` de module, rien d'autre. Leur
   enregistrement est une donnée, pas du code : il devient la liste déclarative
   `BLUEPRINTS`.
-- **7 blueprints à injection** — `make_blueprint(...)` nourri par l'état local du
-  monolithe (`scan_state`, `_opt_job`, `_on_tv_signal`, `VERTEX_CODE`…). Ils
-  restent dans `terminal.py` **tant que cet état y vit**. Les déplacer ici
-  n'aurait rien découplé : le registre importerait alors le monolithe, ce qui
-  inverse la dépendance sans la réduire.
+- **6 blueprints à injection** — `make_blueprint(...)` nourri par l'état local du
+  monolithe (`scan_state`, `_opt_job`, `_on_tv_signal`…). Ils restent dans
+  `terminal.py` **tant que cet état y vit**. Les déplacer ici n'aurait rien
+  découplé : le registre importerait alors le monolithe, ce qui inverse la
+  dépendance sans la réduire.
+
+`auth` faisait un septième cas à injection, et n'en était pas un : son unique
+argument, `VERTEX_CODE`, vient de `vertex/app/config.py` — pas du monolithe. Il
+est désormais enregistré par `create_app()`, **en premier**, parce que son
+`before_request` doit pouvoir refuser une requête destinée à n'importe quel
+blueprint.
+
+## `create_app()` — et le piège qu'il fallait mesurer avant de l'écrire
+
+`create_app()` construit l'application : configuration de session, fournisseur
+JSON sûr, mesure de latence, en-têtes de sécurité, pages d'erreur, compression,
+puis les blueprints. Aucune de ces responsabilités ne dépend de l'état du
+monolithe — c'est ce qui rend le déplacement possible.
+
+**Le piège, mesuré et non supposé.** `terminal.py` faisait `Flask(__name__)`
+depuis la racine du dépôt, d'où :
+
+```text
+root_path     = <racine du dépôt>
+static_folder = <racine>/static      ← contient 2 fichiers RÉELLEMENT SERVIS
+                                       (chart.umd.min.js, icon-180.png)
+```
+
+Écrire `Flask(__name__)` **ici** ferait dériver `root_path` vers `vertex/app/`,
+donc `static_folder` vers un dossier qui n'existe pas : les deux fichiers
+seraient servis en 404, **sans erreur au démarrage**, et le service worker en
+mettrait la 404 en cache. D'où le `root_path` **explicite**, et un gardien qui
+compare les chemins résolus plutôt que la façon de les obtenir.
+
+`import_name` reste `'terminal'` : Flask s'en sert pour `app.name` (et le
+logger). Le monolithe le produisait déjà — `__name__` vaut `'terminal'` à
+l'import et `'__main__'` en lancement direct, cas où Flask renvoie de toute
+façon le nom du fichier.
 
 ## L'ordre d'enregistrement est-il neutre ?
 
 Question qu'il fallait poser avant de regrouper. Flask résout les règles par leur
 chemin, pas par leur ordre — sauf si deux blueprints déclarent la **même** règle,
-auquel cas le premier gagne. Le filet de parité compare l'**ensemble complet des
-193 règles** avant/après : un échange silencieux tomberait.
-
-Un cas mérite d'être nommé : `_auth` installe un `before_request`. Il appartient
-à la famille à injection et **reste enregistré tôt** dans `terminal.py`, exactement
-où il était. Le regroupement ne le déplace pas.
-
-## Ce que ce module ne fait pas
-
-Il ne crée pas l'application. `Flask(__name__)` reste dans `terminal.py` avec les
-hooks de latence qui l'accompagnent : les extraire demanderait de déplacer aussi
-la configuration et l'observabilité, et `MIGRATION_PLAN.md` interdit le big bang.
-G1 n'est donc **pas** franchi par ce fichier — il y contribue.
+auquel cas le premier gagne. Mesuré : le dépôt compte **4 règles en double**,
+dont trois sont deux méthodes HTTP du même blueprint (inoffensives) et une seule
+est une vraie collision — `/api/anomalies/<sym>`, entre `analysis_api` et
+`strategy_os_api`. **Aucune route déclarée par `terminal.py` n'entre en
+collision avec un blueprint**, ce qui rend l'avancement des enregistrements dans
+`create_app()` neutre pour le dispatch. Le filet de parité compare l'ensemble
+complet des règles, et un test interroge le gagnant de la collision connue.
 """
 from __future__ import annotations
 
+import pathlib
 from typing import Any, List, Tuple
 
 #: LE REGISTRE DÉCLARATIF. Chaque entrée est `(module, attribut)` : le module est
@@ -76,7 +104,6 @@ BLUEPRINTS: Tuple[Tuple[str, str], ...] = (
 #: sans que le blueprint bouge ferait mentir la doc ; une entrée qui reste alors
 #: que le blueprint a migré laisserait croire à un couplage résolu.
 A_INJECTION = {
-    'auth': 'code d\'accès (VERTEX_CODE) + before_request de garde, posé tôt',
     'desk': 'job options `_opt_job` et drapeau IBKR, tous deux locaux au monolithe',
     'tv_webhooks': 'callback `_on_tv_signal` défini dans le monolithe',
     'strategy_os_api': '`scan_state` passé en argument à la fabrique',
@@ -103,4 +130,173 @@ def register_blueprints(app: Any) -> List[str]:
     return enregistres
 
 
-__all__ = ['BLUEPRINTS', 'A_INJECTION', 'register_blueprints']
+#: Racine du dépôt — le dossier qui contient `terminal.py`, `static/` et
+#: `templates/`. Calculée depuis CE fichier (`vertex/app/factory.py`), donc
+#: stable quel que soit le répertoire courant du processus.
+RACINE = pathlib.Path(__file__).resolve().parents[2]
+
+
+def create_app(*, root_path: str | None = None) -> Any:
+    """Construit l'application Vertex. **Analyse seule, aucun ordre possible.**
+
+    `root_path` est explicite et non déduit de `__name__` : voir l'en-tête du
+    module — le déduire ici ferait pointer `static_folder` vers un dossier
+    inexistant et rendrait deux fichiers réellement servis introuvables, sans la
+    moindre erreur au démarrage."""
+    import math
+    import os
+    import time
+    from datetime import timedelta
+
+    from flask import Flask, g, jsonify, redirect, request
+    from flask.json.provider import DefaultJSONProvider
+
+    from vertex.app.config import SECRET_KEY, VERTEX_CODE
+    from vertex.app.routes import auth as _auth
+    from vertex.services import request_metrics as _request_metrics
+
+    app = Flask('terminal', root_path=str(root_path or RACINE))
+
+    # ── Session et charge utile ──────────────────────────────────────────────
+    app.secret_key = SECRET_KEY
+    app.config.update(
+        SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
+        PERMANENT_SESSION_LIFETIME=timedelta(days=30),
+        # cookie jamais envoyé en clair quand l'app est servie en HTTPS
+        SESSION_COOKIE_SECURE=bool(os.environ.get('RENDER')
+                                   or os.environ.get('VERTEX_HTTPS')))
+    #  2 Mo — la synchro du desk est un petit blob JSON.
+    app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
+
+    # ── JSON SÛR : NaN/Infinity → null ───────────────────────────────────────
+    #  Sans lui, Flask sort littéralement `NaN`, toléré par Python mais REFUSÉ
+    #  par `JSON.parse` des navigateurs → page blanche. Le cas arrive avec
+    #  l'univers XXL : un titre récent n'a pas assez d'historique pour ma200.
+    def _sans_nan(o):
+        if isinstance(o, float):
+            return None if (math.isnan(o) or math.isinf(o)) else o
+        if isinstance(o, dict):
+            return {k: _sans_nan(v) for k, v in o.items()}
+        if isinstance(o, (list, tuple)):
+            return [_sans_nan(v) for v in o]
+        return o
+
+    class _FournisseurJSONSur(DefaultJSONProvider):
+        def dumps(self, obj, **kw):
+            return super().dumps(_sans_nan(obj), **kw)
+
+    app.json = _FournisseurJSONSur(app)
+
+    # ── Mesure de latence des API ────────────────────────────────────────────
+    @app.before_request
+    def _latence_debut():
+        if request.path.startswith('/api/'):
+            g._vertex_request_started = time.perf_counter()
+
+    @app.after_request
+    def _latence_fin(resp):
+        debut = getattr(g, '_vertex_request_started', None)
+        if debut is not None:
+            _request_metrics.record(
+                request.endpoint, resp.status_code,
+                (time.perf_counter() - debut) * 1000)
+        return resp
+
+    # ── Verrou d'accès : posé TÔT, avant toute route ─────────────────────────
+    #  Son `before_request` doit pouvoir refuser une requête destinée à
+    #  n'importe quel blueprint — d'où sa place ici, en premier.
+    app.register_blueprint(_auth.make_blueprint(code=VERTEX_CODE))
+
+    # ── En-têtes de sécurité ─────────────────────────────────────────────────
+    @app.after_request
+    def _entetes_securite(resp):
+        resp.headers.setdefault('X-Content-Type-Options', 'nosniff')
+        #  SAMEORIGIN et non DENY : l'accueil embarque ses propres pages en
+        #  iframe (?embed=1) — DENY les bloquait en silence. Le clickjacking
+        #  externe reste interdit.
+        resp.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
+        resp.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+        resp.headers.setdefault('Permissions-Policy',
+                                'camera=(), microphone=(), geolocation=()')
+        #  Données personnelles (trades, positions, journal) : jamais stockées
+        #  par un cache intermédiaire ou partagé.
+        if request.path.startswith('/api/desk'):
+            resp.headers['Cache-Control'] = 'no-store'
+        if request.is_secure or request.headers.get('X-Forwarded-Proto') == 'https':
+            resp.headers.setdefault('Strict-Transport-Security',
+                                    'max-age=31536000; includeSubDomains')
+        return resp
+
+    # ── Pages d'erreur ───────────────────────────────────────────────────────
+    @app.errorhandler(404)
+    def _err_404(e):
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'not_found', 'path': request.path}), 404
+        return (_PAGE_404, 404)
+
+    @app.errorhandler(500)
+    def _err_500(e):
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'internal'}), 500
+        return redirect('/')
+
+    # ── Compression ──────────────────────────────────────────────────────────
+    @app.after_request
+    def _gzip_response(resp):
+        """Compresse les grosses réponses (`/scan` pèse ~8 Mo → ~10× moins) —
+        décisif sur un iPhone en Wi-Fi."""
+        try:
+            if resp.status_code != 200 or resp.direct_passthrough:
+                return resp
+            if 'gzip' not in (request.headers.get('Accept-Encoding') or ''):
+                return resp
+            ct = resp.content_type or ''
+            if not (ct.startswith('application/json') or ct.startswith('text/html')):
+                return resp
+            data = resp.get_data()
+            if len(data) < 8192:
+                return resp
+            import gzip as _gz
+            gz = _gz.compress(data, 5)
+            if len(gz) >= len(data):
+                return resp
+            resp.set_data(gz)
+            resp.headers['Content-Encoding'] = 'gzip'
+            resp.headers['Content-Length'] = str(len(gz))
+            resp.headers['Vary'] = 'Accept-Encoding'
+        except Exception:
+            #  Une compression ratée ne doit jamais coûter la réponse : on rend
+            #  le corps tel quel, qui est toujours valide. `return` explicite
+            #  plutôt que `pass` — le comportement est le même, mais l'intention
+            #  se lit, et le gardien des avaleurs silencieux n'a rien à juger.
+            return resp
+        return resp
+
+    return app
+
+
+#: Page 404 autonome — aucune dépendance au shell, pour rester servable même si
+#: le rendu de page est en cause.
+#:
+#: NOTE (#779) : ses couleurs sont l'ancienne identité orange (`#FF7A18`), pas le
+#: violet `#9B7BFF` de `CLAUDE.md`. Constat relevé au déplacement, **non
+#: corrigé** : repeindre une page au passage d'une extraction mêlerait deux
+#: changements dans un même diff.
+_PAGE_404 = (
+    '<!doctype html><html lang="fr"><head><meta charset="utf-8">'
+    '<meta name="viewport" content="width=device-width,initial-scale=1">'
+    '<title>404 · Vertex</title><style>body{background:#0b0e14;color:#eef2f8;'
+    'font-family:Inter,system-ui,sans-serif;display:grid;place-items:center;'
+    'height:100vh;margin:0}'
+    '.c{text-align:center}.n{font-size:64px;font-weight:900;color:#FF7A18}'
+    '.t{color:#8794ab;margin:10px 0 22px}'
+    'a{color:#FF9A3D;text-decoration:none;font-weight:700;'
+    'border:1px solid rgba(255,122,24,.4);padding:10px 20px;border-radius:12px}'
+    '</style></head>'
+    '<body><div class="c"><div class="n">404</div>'
+    '<div class="t">Cette page n\'existe pas (ou plus).</div>'
+    '<a href="/">← Retour au Market Overview</a></div></body></html>')
+
+
+__all__ = ['BLUEPRINTS', 'A_INJECTION', 'RACINE', 'create_app',
+           'register_blueprints']

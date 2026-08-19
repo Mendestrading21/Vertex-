@@ -18,14 +18,21 @@ est placé avant, et ce fichier garde ce choix.
 
 Mesuré des deux côtés : `analysis_api.api_anomalies` gagne **avant comme après**.
 
-## Ce que ce fichier ne prétend pas
+## `create_app()` : le piège du `root_path`
 
-G1 demande quatre propriétaires modulaires — factory, routes, lifecycle/workers,
-scheduler. Seul le deuxième est traité. `Flask(__name__)` et les hooks de latence
-restent dans `terminal.py` : les extraire demanderait de déplacer aussi la
-configuration et l'observabilité, ce que `MIGRATION_PLAN.md` interdit de faire
-d'un bloc.
+`terminal.py` faisait `Flask(__name__)` depuis la racine du dépôt, donc
+`static_folder` valait `<racine>/static` — un dossier qui contient **deux
+fichiers réellement servis** (`chart.umd.min.js`, `icon-180.png`).
+
+Écrire `Flask(__name__)` dans `vertex/app/factory.py` ferait dériver `root_path`
+vers `vertex/app/`, donc `static_folder` vers un chemin inexistant : les deux
+fichiers partiraient en **404 sans la moindre erreur au démarrage**, et le
+service worker mettrait ces 404 en cache. D'où le `root_path` explicite, et les
+tests ci-dessous qui comparent les chemins **résolus** — pas la façon de les
+obtenir.
 """
+import pathlib
+
 import pytest
 
 from vertex.app import factory
@@ -82,7 +89,7 @@ def test_les_blueprints_a_injection_restent_documentes(application):
     ferait mentir la doc ; une entrée qui reste alors que le blueprint a migré
     laisserait croire à un couplage résolu."""
     assert set(factory.A_INJECTION) == {
-        'auth', 'desk', 'tv_webhooks', 'strategy_os_api', 'redesign',
+        'desk', 'tv_webhooks', 'strategy_os_api', 'redesign',
         'positions_api', 'decision_api'}, (
         'la liste des blueprints a injection a change : verifier qu\'un '
         'couplage a bien ete resolu, et pas seulement efface de la doc')
@@ -122,3 +129,107 @@ def test_le_registre_n_importe_rien_a_son_propre_import():
         'le registre importe des blueprints au chargement du module')
     assert 'import_module' in src, (
         'l\'import differe a disparu : le registre redevient un cout fixe')
+
+
+def test_la_fabrique_ne_deplace_pas_la_racine_ni_le_dossier_statique(application):
+    """LE PIÈGE DE `create_app()`.
+
+    Un test sur « l'application démarre » ne l'aurait pas vu : elle démarre très
+    bien avec un `static_folder` qui n'existe pas. Ce sont les deux fichiers
+    servis qui le disent."""
+    import pathlib as _pl
+    racine = _pl.Path(__file__).resolve().parents[1]
+    assert _pl.Path(application.root_path) == racine, (
+        'root_path a derive vers %s : la fabrique a repris `Flask(__name__)` '
+        'au lieu du chemin explicite' % application.root_path)
+    assert _pl.Path(application.static_folder) == racine / 'static', (
+        'static_folder a derive vers %s' % application.static_folder)
+    client = application.test_client()
+    for fichier in ('chart.umd.min.js', 'icon-180.png'):
+        r = client.get('/static/' + fichier)
+        assert r.status_code == 200, (
+            '/static/%s repond %d : le dossier statique de la racine n\'est '
+            'plus servi (le service worker mettrait cette 404 en cache)'
+            % (fichier, r.status_code))
+
+
+def test_la_fabrique_installe_toute_la_plomberie(application):
+    """Chaque morceau déplacé est vérifié par son EFFET, pas par sa présence
+    dans le fichier — un `after_request` peut être défini et jamais enregistré."""
+    client = application.test_client()
+    r = client.get('/healthz')
+    assert r.headers.get('X-Content-Type-Options') == 'nosniff'
+    assert r.headers.get('X-Frame-Options') == 'SAMEORIGIN'
+    assert r.headers.get('Permissions-Policy'), 'Permissions-Policy a disparu'
+
+    #  JSON sûr : sans lui, Flask sort `NaN`, que `JSON.parse` REFUSE.
+    assert application.json.dumps({'x': float('nan')}) == '{"x": null}', (
+        'le fournisseur JSON sur n\'est plus installe : une reponse contenant '
+        'NaN rendrait une page blanche cote navigateur')
+
+    #  Session et charge utile.
+    assert application.config['MAX_CONTENT_LENGTH'] == 2 * 1024 * 1024
+    assert application.config['SESSION_COOKIE_HTTPONLY'] is True
+    assert application.config['SESSION_COOKIE_SAMESITE'] == 'Lax'
+    assert application.secret_key, 'la cle de session a disparu'
+
+    #  404 : JSON sur /api, page HTML ailleurs.
+    assert client.get('/api/route-absente').get_json() == {
+        'error': 'not_found', 'path': '/api/route-absente'}
+    assert client.get('/page-absente').status_code == 404
+
+
+def test_l_ordre_d_enregistrement_servi_est_celui_qui_est_declare(application):
+    """Le verrou d'abord, puis les 15 sans injection, puis les 6 à injection.
+
+    PREMIÈRE VERSION DE CE TEST : RETIRÉE. Elle affirmait garder la place du
+    verrou *à l'intérieur* de `create_app()` — mais `create_app()` n'enregistre
+    que lui, donc il est premier où qu'on le mette dans la fonction. La mutation
+    correspondante (verrou déplacé en fin de fabrique) **passait**, et elle avait
+    raison de passer : le comportement ne change pas. Un test qui ne peut pas
+    échouer pour la raison qu'il annonce ment sur ce qu'il protège.
+
+    Ce qui est réellement en jeu, et falsifiable : l'ordre COMPLET tel qu'il est
+    servi. Avancer `register_blueprints(app)` dans la fabrique avant le verrou,
+    ou perdre le verrou, le casse."""
+    noms = list(application.blueprints)
+    assert noms[0] == 'auth', (
+        'le verrou n\'est plus le premier blueprint : %s' % noms[:3])
+
+    declares = [c.rsplit('.', 1)[-1].replace('_api', '') for c, _ in factory.BLUEPRINTS]
+    position = {n: i for i, n in enumerate(noms)}
+    for nom in declares:
+        candidats = [n for n in noms if n == nom or n.startswith(nom)]
+        if not candidats:
+            continue
+        assert position[candidats[0]] > 0, (
+            '%s est enregistre avant le verrou : sa garde ne le couvrirait '
+            'plus' % nom)
+    for injecte in factory.A_INJECTION:
+        court = injecte.replace('_api', '')
+        vus = [n for n in noms if n == court or n == injecte]
+        if vus:
+            assert position[vus[0]] > position[noms[0]], (
+                '%s precede le verrou' % injecte)
+
+
+def test_le_monolithe_ne_construit_plus_l_application():
+    """La preuve que l'extraction a RETIRÉ, et pas seulement ajouté."""
+    src = pathlib.Path(__file__).resolve().parents[1].joinpath(
+        'terminal.py').read_text(encoding='utf-8')
+    #  ON VISE L'AFFECTATION, PAS LE NOM. `Flask(__name__)` apparait aussi dans
+    #  le commentaire qui EXPLIQUE pourquoi il a disparu — le chercher tel quel
+    #  faisait echouer ce test sur un fichier parfaitement correct. Neuvieme
+    #  occurrence de ce piege dans la serie, et la premiere que j'ai posee
+    #  moi-meme dans le meme fichier que sa cause.
+    import re
+    assert not re.search(r'^\s*app\s*=\s*Flask\(', src, re.M), (
+        '`terminal.py` reconstruit une application Flask : il y a de nouveau '
+        'deux fabriques, et la racine y redevient implicite')
+    assert '_factory.create_app()' in src, (
+        'le monolithe ne passe plus par la fabrique canonique')
+    for parti in ('def _security_headers', 'def _err_404', 'def _err_500',
+                  'def _gzip_response', 'app.secret_key ='):
+        assert parti not in src, (
+            '`%s` est revenu dans terminal.py : la plomberie Flask a deux '
+            'domiciles, et rien ne dit lequel gagne' % parti)

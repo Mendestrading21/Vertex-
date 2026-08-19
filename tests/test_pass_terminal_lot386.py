@@ -76,16 +76,32 @@ import pytest
 
 FICHIER = 'terminal.py'
 
-# Recensement GELÉ des 38 handlers, par famille. Une dérive réclame un examen.
+# Recensement GELÉ des handlers, par famille. Une dérive réclame un examen.
+#
+# 38 -> 36 au lot #779/G1 : DEUX handlers ont quitté `terminal.py` avec la
+# plomberie Flask, et aucun n'a été remplacé par un autre avaleur silencieux.
+#   • celui qui gardait l'installation du fournisseur JSON sûr — un `try` autour
+#     d'un import, famille « import/config optionnel » (2 -> 1) ; il est parti
+#     avec le fournisseur dans `vertex/app/factory.py`, où l'import est
+#     inconditionnel : un flask absent casse déjà l'application deux lignes plus
+#     haut, le garder n'aurait protégé de rien ;
+#   • celui de `_gzip_response`, devenu un `return resp` EXPLICITE dans la
+#     fabrique — même comportement (rendre le corps non compressé, toujours
+#     valide), intention lisible.
+# HONNÊTETÉ SUR CETTE MISE À JOUR : le lot 386 n'a pas consigné la famille de
+# chaque ligne, seulement les totaux et les deux cas « examinés de près ». La
+# première baisse est donc CERTAINE (le `try` entourait un import) ; la seconde
+# est RAISONNÉE — la compression ratée produisait une absence honnête, pas une
+# valeur inventée — et non retrouvée dans la classification d'origine.
 FAMILLES = {
     'nettoyage/fermeture': 6,
     'journal/persistance': 10,
-    'import/config optionnel': 2,
+    'import/config optionnel': 1,
     'infra thread': 2,
-    'absence honnête': 16,
+    'absence honnête': 15,
     'examinés de près': 2,
 }
-TOTAL_PASS = 38
+TOTAL_PASS = 36
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.
@@ -100,7 +116,7 @@ def _pass_secs():
 
 # ── 1. Le dénominateur ──────────────────────────────────────────────────────
 
-def test_le_detecteur_voit_bien_les_trente_huit():
+def test_le_detecteur_voit_bien_les_trente_six():
     """Sans dénominateur, la lecture « un par un » ne prouverait rien : si le
     détecteur cassait, le recensement passerait pour complet en couvrant zéro
     handler (leçon des lots 375-377)."""
