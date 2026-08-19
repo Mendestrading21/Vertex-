@@ -211,7 +211,7 @@ Mesurés sur le SHA candidat `integration/vertex-1-0-rc`.
 | G3 Intelligence | **partiel** | mémoire réparée, WMB versionné ; **spécimen WMB réel** manquant |
 | G4 Expérience | **preuves complètes** | résidu assumé : 2 fils tronqués de ~12 px ; mode hors-ligne couvert et corrigé (`G4-HORS-LIGNE.md`) |
 | G5 Live read-only | **HUMAN_REQUIRED** | TWS / IB Gateway réel — **bloquant** |
-| G6 Exploitation | **preuves complètes** | rollback applicatif et CVE non couverts (voir §8) |
+| G6 Exploitation | **preuves complètes** | rollback **prouvé sans perte** (`G6-ROLLBACK.md`) ; CVE bloquées par la politique réseau |
 | G7 Release | **NO** | G5, plus l'acceptation humaine du SHA |
 
 ---
@@ -235,11 +235,18 @@ Mesurés sur le SHA candidat `integration/vertex-1-0-rc`.
   Skyler n'est **pas** une chaîne linéaire (vérifié : `lot-100` n'est pas un
   ancêtre de `lot-101`) — il n'y a pas de collapse facile.
 - **2 fils d'Ariane** tronquent encore de ~12 px, gelés dans un recensement.
-- **Rollback applicatif non testé** : revenir à un SHA antérieur et démarrer
-  demanderait un second arbre de travail. Ce qui *est* prouvé : la rotation
-  garde 7 jours et la restauration rend l'état d'origine à l'identique.
-- **Vulnérabilités connues des dépendances non recherchées** : il faudrait une
-  base de CVE à jour, absente de cet environnement.
+- **Rollback applicatif : résidu levé.** La phrase « demanderait un second
+  arbre de travail » décrivait le fait de ne pas l'avoir fait, pas une
+  impossibilité — `git worktree` le fait. Mesuré depuis `8093088` vers
+  `d52a39d` : la version antérieure démarre, sert l'accueil (200, 40 336 o) et
+  **relit les 7 clés du bureau écrites par la version récente, contenus
+  compris**. Ce qui reste hors preuve : le rollback du service worker (raisonné,
+  non mesuré) et la migration à l'endroit. Voir `G6-ROLLBACK.md`.
+- **Vulnérabilités connues des dépendances : résidu maintenu, raison précisée.**
+  Ce n'est pas un outillage manquant mais la **politique réseau** de
+  l'environnement : le proxy refuse le `CONNECT` vers tout hôte hors registres
+  de paquets, `api.osv.dev` répond 403 `policy denial`. Se lèvera dans un
+  environnement à politique plus large, ou par une base embarquée.
 - **Deux éléments décrits par `CLAUDE.md` sont absents de cette branche** :
   `VX.freshness.domainChip` n'existe nulle part dans l'arbre, et les gardiens de
   fraîcheur des lots 62–63 n'y sont présents que sous forme de `.pyc` périmés.
