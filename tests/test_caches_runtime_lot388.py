@@ -66,7 +66,17 @@ import pytest
 # lot 388. Un nouveau venu doit être examiné : quels tests l'atteignent, et
 # redirigent-ils leur stockage ?
 # Mesure : 12 sites, une fois le détecteur rendu explicite (voir `_nom_de_cache`).
-NB_CACHES_PRODUCTION = 12
+#  12 -> 13 au lot #783/G2 : `desk.py::_snapshot_avant_perte` ecrit un
+#  instantane `desk_avantperte_<date>-<heure>.json` au moment ou un push
+#  menacerait des cles. LA QUESTION QUE POSE CE GARDIEN, POSEE : quels tests
+#  l'atteignent, et redirigent-ils leur stockage ?
+#    - tests/test_desk_perte_lot362.py : OUI (monkeypatch de persist.cache_path)
+#    - tests/test_desk_cycle_lot84.py  : NON, il travaille exprès sur le desk
+#      REEL — et la premiere execution sous le nouveau contrat a bien ecrit un
+#      instantane a la racine. Son `finally` a ete corrige pour vider la cle
+#      explicitement au lieu de l'omettre, ce qui supprime le declencheur.
+#  Le motif est ajoute au .gitignore (donnees personnelles).
+NB_CACHES_PRODUCTION = 13
 
 # Le test qui exerce une route journalisante doit rediriger son stockage.
 # Étendu au lot 389 : `/api/skyler/<sym>` journalise une séance dans

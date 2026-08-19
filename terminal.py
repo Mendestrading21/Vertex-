@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from flask import Flask, jsonify, redirect, request, g
+from flask import jsonify
 
 try:
     from dotenv import load_dotenv
@@ -40,7 +40,6 @@ from vertex.market import sectors
 from vertex.market import context as market
 from vertex.research import chart_read as research
 from vertex.data_sources import fundamentals
-from vertex.data_sources import analyst_deep
 from vertex.data_sources import scan_evidence as _scan_evidence
 from vertex.engines import decide as engine
 from vertex.engines import scorecard as ibkr
@@ -71,62 +70,34 @@ from vertex.engines import swing as _swing
 from vertex.engines import strategy_fit as _strategy_fit
 from vertex.engines import stats as _stats
 from vertex.app.state import scan_state, weekly_state, news_state, cal_state
-from vertex.app.routes import auth as _auth
-from vertex.app.routes import command as _command
-from vertex.app.routes import session_api as _session_api
+#  #779 — CACHES D'EXECUTION : proprietaire et politique de fraicheur declares
+#  dans `vertex/app/caches.py` (QUALITY_STANDARD §8). Les objets sont les MEMES :
+#  mutes en place, jamais reassignes, donc l'identite est preservee.
+from vertex.app import lifecycle as _lifecycle
+from vertex.app.caches import (          # noqa: F401  (relies par leur nom)
+    _STOOQ_CACHE, _STOOQ_TTL, _SOURCE_BUDGET_STATE, _CORR_BENCH,
+    _ibkr_cache, _IDX_IBKR, _IDX_META, _live_quotes, _live_meta,
+)
 from vertex.app.routes import desk as _desk
-from vertex.app.routes import options_lab_api as _options_lab_api
-from vertex.app.routes import live_api as _live_api
 from vertex.app.routes import decision_api as _decision_api
-from vertex.app.routes import analysis_api as _analysis_api
-from vertex.app.routes import feeds as _feeds
-from vertex.app.routes import system as _system
-from vertex.app.routes import content as _content
 from vertex.data import demo as _demo
 from vertex.data import company as _company
 from vertex.services import market_clock as _market_clock
 
-app = Flask(__name__)
-from vertex.services import request_metrics as _request_metrics  # noqa: E402
-
-
-@app.before_request
-def _request_latency_start():
-    if request.path.startswith('/api/'):
-        g._vertex_request_started = time.perf_counter()
-
-
-@app.after_request
-def _request_latency_record(resp):
-    started = getattr(g, '_vertex_request_started', None)
-    if started is not None:
-        _request_metrics.record(request.endpoint, resp.status_code,
-                                (time.perf_counter() - started) * 1000)
-    return resp
-
-# ── JSON SÛR : convertit NaN/Infinity → null. Sinon Flask sort `NaN` (toléré par Python
-#    mais REFUSÉ par JSON.parse des navigateurs → page vide). Arrive avec l'univers XXL :
-#    des titres récents/peu liquides n'ont pas assez d'historique → ma200/ma50 = NaN.
-try:
-    import math as _math
-    from flask.json.provider import DefaultJSONProvider as _DJP
-
-    def _clean_nan(o):
-        if isinstance(o, float):
-            return None if (_math.isnan(o) or _math.isinf(o)) else o
-        if isinstance(o, dict):
-            return {k: _clean_nan(v) for k, v in o.items()}
-        if isinstance(o, (list, tuple)):
-            return [_clean_nan(v) for v in o]
-        return o
-
-    class _SafeJSONProvider(_DJP):
-        def dumps(self, obj, **kw):
-            return super().dumps(_clean_nan(obj), **kw)
-
-    app.json = _SafeJSONProvider(app)
-except Exception:
-    pass
+#  ── FABRIQUE FLASK CANONIQUE (#779, gate G1) ─────────────────────────────
+#  `Flask(__name__)`, la configuration de session, le fournisseur JSON sur
+#  (NaN -> null), la mesure de latence, le verrou d'acces, les en-tetes de
+#  securite, les pages d'erreur et la compression vivaient ICI, disperses entre
+#  les lignes 88 et 1865. Aucun de ces blocs ne dependait de l'etat du
+#  monolithe : ils sont desormais tenus par `vertex/app/factory.py`.
+#
+#  LE PIEGE, MESURE : `Flask(__name__)` ecrit dans `vertex/app/` ferait deriver
+#  `root_path` vers ce dossier, donc `static_folder` vers un chemin inexistant
+#  — les deux fichiers reellement servis depuis `static/` (chart.umd.min.js,
+#  icon-180.png) partiraient en 404 SANS erreur au demarrage. La fabrique fixe
+#  donc `root_path` explicitement.
+from vertex.app import factory as _factory  # noqa: E402
+app = _factory.create_app()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 🔒 CODE D'ENTRÉE (verrou d'accès) — OPTIONNEL, activé par variable d'env.
@@ -135,17 +106,12 @@ except Exception:
 #   • Session signée (cookie) valable 30 jours ; anti-force-brute par IP.
 #   • Recommandé aussi : VERTEX_SECRET=une_longue_chaine_aléatoire (sinon dérivée du code).
 # ─────────────────────────────────────────────────────────────────────────────
-# Source unique de la config d'accès : vertex/app/config.py (dé-duplication — cf. audit).
-# Verrou complet (login/logout + garde globale + anti-force-brute) : Blueprint auth (Ch. II/XV).
-from vertex.app.config import VERTEX_CODE, AUTH_ON, SECRET_KEY  # noqa: E402
-app.secret_key = SECRET_KEY
-app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
-                  PERMANENT_SESSION_LIFETIME=timedelta(days=30),
-                  # cookie jamais envoyé en clair quand l'app est servie en HTTPS (Render/prod)
-                  SESSION_COOKIE_SECURE=bool(os.environ.get('RENDER') or os.environ.get('VERTEX_HTTPS')))
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024   # 2 Mo — le desk sync est un petit blob JSON
-app.register_blueprint(_auth.make_blueprint(code=VERTEX_CODE))
-# (headers de sécurité : _security_headers plus bas — source unique, avec HSTS)
+# Source unique de la config d'accès : vertex/app/config.py.
+# Le Blueprint auth (login/logout + garde globale + anti-force-brute) et la
+# configuration de session sont posés par `_factory.create_app()`, EN PREMIER :
+# le `before_request` du verrou doit pouvoir refuser une requête destinée à
+# n'importe quel blueprint. AUTH_ON reste lu ici — plusieurs vues s'en servent.
+from vertex.app.config import VERTEX_CODE, AUTH_ON, SECRET_KEY  # noqa: E402,F401
 
 
 # scan_state : état partagé du scan — domicile unique dans vertex/app/state.py.
@@ -249,11 +215,13 @@ backtest = _backtest.backtest
 # Yahoo (yfinance) rate-limite les serveurs de datacenter → yf.download revient vide
 # sur Render. Stooq sert de filet : données de clôture quotidiennes, mises en cache
 # 6 h (EOD = 1 maj/jour, donc aucun spam de l'endpoint gratuit). Lecture seule.
-_STOOQ_CACHE = {'ts': 0.0, 'frames': {}}
-_STOOQ_TTL = 6 * 3600
+#
+# #779 — LE CACHE ET SON TTL VIVENT DÉSORMAIS DANS `vertex/app/caches.py`, avec
+# leur propriétaire mesuré et leur politique de fraîcheur écrite
+# (QUALITY_STANDARD §8). L'objet est le MÊME : muté en place, jamais réassigné,
+# donc `terminal._STOOQ_CACHE is caches._STOOQ_CACHE`.
 YFINANCE_BATCH_TIMEOUT_SECONDS = 10
 STOOQ_REQUEST_TIMEOUT_SECONDS = 8
-_SOURCE_BUDGET_STATE = {'yfinance': 'UNKNOWN', 'stooq': 'UNKNOWN'}
 _STOOQ_IDX = {'^GSPC': '^spx', '^DJI': '^dji', '^IXIC': '^ndq', '^RUT': '^rut', '^VIX': '^vix',
               # matières premières / crypto (mapping stooq)
               'GC=F': 'xauusd', 'SI=F': 'xagusd', 'CL=F': 'cl.f', 'BZ=F': 'cb.f', 'BTC-USD': 'btcusd'}
@@ -1278,6 +1246,12 @@ def _news_loop():
             feed.sort(key=lambda x: x.get('time') or '', reverse=True)
             news_state['items'] = feed[:45]
             news_state['updated'] = datetime.now().strftime('%H:%M:%S')
+            #  #779/G1 — NEWS_REFRESH était déclaré au registre des jobs sans
+            #  aucun émetteur : la boucle tournait, la page Système affichait
+            #  « jamais exécuté ». La cadence déclarée au registre (900 s) était
+            #  fausse elle aussi ; la vraie est celle d'en dessous, 60 s.
+            from vertex.scheduler import registry as _sched
+            _sched.beat('NEWS_REFRESH', ok=True)
         except Exception:
             pass
         _live.wait_force('news', 60)
@@ -1794,68 +1768,9 @@ def api_rescan():
                     'msg': f'Re-scan lancé — recalcul des {len(UNIVERSE)} titres (≈10-30 s). Recharge dans un instant.'})
 
 
-@app.after_request
-def _security_headers(resp):
-    """Production : en-têtes de sécurité sur toutes les réponses (analyse only, zéro iframe tierce entrante)."""
-    resp.headers.setdefault('X-Content-Type-Options', 'nosniff')
-    # SAMEORIGIN (pas DENY) : la Home embarque ses propres pages en iframe (?embed=1)
-    # — DENY les bloquait silencieusement. Le clickjacking externe reste interdit.
-    resp.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
-    resp.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
-    resp.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
-    # Données personnelles (blob desk : trades, positions, journal) : jamais
-    # stockées par un cache intermédiaire ou partagé.
-    if request.path.startswith('/api/desk'):
-        resp.headers['Cache-Control'] = 'no-store'
-    if request.is_secure or request.headers.get('X-Forwarded-Proto') == 'https':
-        resp.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
-    return resp
-
-
-@app.errorhandler(404)
-def _err_404(e):
-    if request.path.startswith('/api/'):
-        return jsonify({'error': 'not_found', 'path': request.path}), 404
-    return ('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-            '<title>404 · Vertex</title><style>body{background:#0b0e14;color:#eef2f8;font-family:Inter,system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0}'
-            '.c{text-align:center}.n{font-size:64px;font-weight:900;color:#FF7A18}.t{color:#8794ab;margin:10px 0 22px}'
-            'a{color:#FF9A3D;text-decoration:none;font-weight:700;border:1px solid rgba(255,122,24,.4);padding:10px 20px;border-radius:12px}</style></head>'
-            '<body><div class="c"><div class="n">404</div><div class="t">Cette page n\'existe pas (ou plus).</div>'
-            '<a href="/">\u2190 Retour au Market Overview</a></div></body></html>'), 404
-
-
-@app.errorhandler(500)
-def _err_500(e):
-    if request.path.startswith('/api/'):
-        return jsonify({'error': 'internal'}), 500
-    return redirect('/')
-
-
-@app.after_request
-def _gzip_response(resp):
-    """Compresse les grosses réponses (le /scan pèse ~8 Mo → ~10× moins) — vital pour l'iPhone en Wi-Fi."""
-    try:
-        if resp.status_code != 200 or resp.direct_passthrough:
-            return resp
-        if 'gzip' not in (request.headers.get('Accept-Encoding') or ''):
-            return resp
-        ct = resp.content_type or ''
-        if not (ct.startswith('application/json') or ct.startswith('text/html')):
-            return resp
-        data = resp.get_data()
-        if len(data) < 8192:
-            return resp
-        import gzip as _gz
-        gz = _gz.compress(data, 5)
-        if len(gz) >= len(data):
-            return resp
-        resp.set_data(gz)
-        resp.headers['Content-Encoding'] = 'gzip'
-        resp.headers['Content-Length'] = str(len(gz))
-        resp.headers['Vary'] = 'Accept-Encoding'
-    except Exception:
-        pass
-    return resp
+#  Les en-tetes de securite, les pages d'erreur 404/500 et la compression gzip
+#  vivaient ici. Aucun ne dependait de l'etat du monolithe : ils sont tenus par
+#  `vertex/app/factory.py::create_app`, avec le reste de la plomberie Flask.
 
 
 def _scan_age():
@@ -1863,7 +1778,20 @@ def _scan_age():
 
 
 # ─── FLUX DE DONNÉES (Blueprint) — market/summary · cockpit · watchlist · options · search · weekly · strategie · comite ───
-app.register_blueprint(_feeds.bp)
+#  ── REGISTRE DE ROUTES CANONIQUE (#779, contribution a G1) ─────────────
+#  Les 15 blueprints SANS injection sont declares dans
+#  `vertex/app/factory.py` et enregistres ici, en un point unique. Avant, ils
+#  etaient disperses entre les lignes 1866 et 2456, meles aux vues et aux
+#  utilitaires : personne ne pouvait dire quelles routes l'application sert
+#  sans lire 2 300 lignes.
+#
+#  LA POSITION DE CET APPEL N'EST PAS ARBITRAIRE. `/api/anomalies/<sym>` est
+#  declare par DEUX blueprints — `analysis_api` (sans injection, ici) et
+#  `strategy_os_api` (a injection, enregistre plus bas). Flask donne la regle
+#  au PREMIER enregistre. Placer ce groupe apres `strategy_os_api` changerait
+#  donc le gagnant en silence. Il reste avant.
+from vertex.app import factory as _factory
+_factory.register_blueprints(app)
 
 
 @app.route('/api/ticker/<sym>')
@@ -1909,43 +1837,15 @@ def api_ticker(sym):
                     'risk_map': _risk})
 
 
-@app.route('/api/company/<sym>')
-def api_company(sym):
-    """Profil d'entreprise seul (cache hebdomadaire — activité, CEO, segments, pairs)."""
-    try:
-        return jsonify(_company.get(sym.upper(), demo=DEMO_MODE, brief=True))
-    except Exception as e:
-        return jsonify({'error': f'{type(e).__name__}: {e}'})
 
 
-@app.route('/api/analyst/<sym>')
-def api_analyst(sym):
-    """Données analystes PROFONDES à la demande (révisions BPA, surprises, notes,
-    détention, initiés) — yfinance caché 12 h. En démo : rien (pas de réseau)."""
-    if DEMO_MODE:
-        return jsonify({'demo': True})
-    try:
-        return jsonify(analyst_deep.get(sym.upper()) or {})
-    except Exception as e:
-        return jsonify({'error': f'{type(e).__name__}: {e}'})
 
 
-@app.route('/api/names')
-def api_names():
-    """{ticker: nom d'entreprise} depuis le cache — pour afficher les noms dans Stock info
-    (lecture seule, instantané, aucun fetch réseau)."""
-    try:
-        cache = _company._load()
-        return jsonify({k: v.get('name') for k, v in cache.items()
-                        if isinstance(v, dict) and v.get('name')})
-    except Exception:
-        return jsonify({})
 
 
 # ─── CORRÉLATIONS RÉELLES : le titre vs macro (SOXX, QQQ, S&P, BTC, or, dollar, taux, VIX) ───
 _CORR_MAP = [('SOXX', 'SOXX'), ('QQQ', 'QQQ'), ('S&P 500', 'SPY'), ('Bitcoin', 'BTC-USD'),
              ('Or', 'GC=F'), ('Dollar', 'DX-Y.NYB'), ('Taux 10a', '^TNX'), ('VIX', '^VIX')]
-_CORR_BENCH = {'ts': 0, 'df': None}
 
 
 def _to_naive(ix):
@@ -2005,39 +1905,28 @@ app.register_blueprint(_desk.make_blueprint(opt_job=_opt_job, ibkr_enabled=IBKR_
 
 
 # ─── ENDPOINTS D'ANALYSE (Blueprint) — /api/vertex · /api/validator · /api/risk ───
-app.register_blueprint(_analysis_api.bp)
+#  #779 — API ENTREPRISE : les vues /api/company, /api/analyst et /api/names
+#  etaient decorees directement sur `app` ici. Mesure a l'AST : elles ne
+#  dependaient de RIEN d'autre que `app`, donc elles se deplacent sans
+#  injection. Proprietaire canonique : vertex/app/routes/company_api.py.
 
 # ─── COMMAND CENTER (Blueprint) — /api/command · /api/portefeuille ───
-app.register_blueprint(_command.bp)
 
 # ─── SESSION D'ANALYSE (Blueprint) — /api/session/digest (digest toujours prêt) ───
-app.register_blueprint(_session_api.bp)
 
 # ─── OPTIONS RESEARCH CENTER (Blueprint) — /api/options-lab ───
-app.register_blueprint(_options_lab_api.bp)
 
 # ─── OPTIONS INTELLIGENCE (Blueprint) — /api/options/overview · volatility · event-risk · /api/charts ───
-from vertex.app.routes import options_intel_api as _options_intel_api
-app.register_blueprint(_options_intel_api.bp)
 
 # ─── TRACKING ENGINE (Blueprint) — /api/tracking (suivi hypothétique, lecture seule) ───
-from vertex.app.routes import tracking_api as _tracking_api
-app.register_blueprint(_tracking_api.bp)
 
 # ─── OPPORTUNITY FUNNEL (Blueprint) — /api/opportunities/funnel (§11-12) ───
-from vertex.app.routes import opportunities_api as _opportunities_api
-app.register_blueprint(_opportunities_api.bp)
 
 # ─── PLANNING (Blueprint) — /api/planning/ticket (préparation d'ordre, READONLY) ───
-from vertex.app.routes import planning_api as _planning_api
-app.register_blueprint(_planning_api.bp)
 
 # ─── CERVEAU CLAUDE+WEB (Blueprint) — /api/ai/enrichment · status · refresh ───
-from vertex.app.routes import ai_api as _ai_api
-app.register_blueprint(_ai_api.bp)
 
 # ─── VERTEX LIVE ENGINE (Blueprint) — /api/live/status · refresh · report ───
-app.register_blueprint(_live_api.bp)
 
 
 # ─── DESCRIPTION MÉTIER (yfinance longBusinessSummary) : à la demande + cache persistant ───
@@ -2110,7 +1999,6 @@ def desc_ep(sym):
 
 
 # ─── SANTÉ SYSTÈME & PWA (Blueprint) — healthz · system-status · favicon · manifest · sw.js ───
-app.register_blueprint(_system.bp)
 
 
 # ─── TRADINGVIEW (Blueprint) — /api/tradingview/webhook · /api/tradingview/signals ───
@@ -2145,8 +2033,6 @@ from vertex.app.routes import redesign as _redesign
 app.register_blueprint(_redesign.make_blueprint(scan_state=scan_state))
 
 # ─── FLUX TEMPS RÉEL (SSE) : /api/live/events — lecture seule, §26 ───
-from vertex.app.routes import live_events as _live_events
-app.register_blueprint(_live_events.bp)
 
 # ─── POSITION INTELLIGENCE : /api/positions/* — lecture seule, cycle de vie ───
 from vertex.app.routes import positions_api as _positions_api
@@ -2165,7 +2051,6 @@ def opt_ep(sym):
 
 
 # ─── IBKR LECTURE SEULE (ib_reader, readonly) — jamais d'ordre ──────────────
-_ibkr_cache = {'ts': 0.0, 'data': None}
 _IBKR_MODE = {7496: 'RÉEL (TWS)', 7497: 'PAPER (TWS)', 4001: 'RÉEL (Gateway)', 4002: 'PAPER (Gateway)'}
 
 
@@ -2250,8 +2135,6 @@ def _ibkr_snapshot():
 
 
 # ─── COURS EN DIRECT (flux IBKR permanent, lecture seule) ───────────────────
-_live_quotes = {}                       # {sym: {last, change, bid, ask}}
-_live_meta = {'connected': False, 'ts': 0.0, 'rt': False, 'n': 0}
 
 
 def _sync_ibkr_state():
@@ -2342,8 +2225,6 @@ def _quotes_worker():
 # IBUS30. On overlaie scan_state['indices'] + le VIX du contexte. On N'OVERLAIE PAS
 # le Nasdaq (yfinance = ^IXIC Composite ; IBKR gratuit = NDX 100 → indices DIFFÉRENTS,
 # mélanger serait malhonnête §4) ni le Russell. ⛔ LECTURE SEULE (reqMktData only).
-_IDX_IBKR = {}      # {nom_affiché: {'price':.., 'change':.., 'ts':..}}
-_IDX_META = {'connected': False, 'ts': 0.0, 'n': 0}
 # nom d'affichage (DOIT matcher scan_state['indices']) -> (secType, symbol, exchange)
 _IDX_SPECS = [
     ('S&P 500', 'IND', 'SPX', 'CBOE'),
@@ -2453,7 +2334,6 @@ def ibkr_ep():
 
 
 # ─── FILS DE CONTENU (Blueprint) — news-feed · cal-feed · weekly-feed ───
-app.register_blueprint(_content.bp)
 
 
 @app.route('/weekly-regen', methods=['POST', 'GET'])
@@ -7192,7 +7072,7 @@ def api_track_record():
     return jsonify(_track.evaluate(scan_state))
 
 
-def _start_workers():
+def _demarrer_les_boucles():
     """Démarre les threads de fond. En mode DÉMO (vitrine cloud) on ne lance QUE le
     scan synthétique : les autres boucles (options/news/calendrier/hebdo/fondamentaux)
     dépendent de yfinance — inutiles et coûteuses (mémoire/CPU) quand le réseau est
@@ -7213,6 +7093,25 @@ def _start_workers():
         threading.Thread(target=_indices_loop, daemon=True).start()      # indices/VIX TEMPS RÉEL IBKR (lecture seule)
         threading.Thread(target=_ibkr_opt_worker, daemon=True).start()   # chaînes options IBKR (lecture seule)
         threading.Thread(target=_radar_loop, daemon=True).start()        # scanners + news IBKR (lecture seule)
+
+
+def _start_workers():
+    """Point d'entrée du démarrage des boucles — GARDÉ CONTRE LE DOUBLE APPEL.
+
+    #779/G1. `_start_workers()` est appelé à DEUX endroits : à l'import quand
+    `START_ON_IMPORT=1`, et par `_start_app()`. Sans garde, les deux appels
+    partaient, et `_loop`, `_alerts_loop` et `_cal_loop` tournaient EN DOUBLE —
+    mesuré : 4 fils après import, 7 après le second appel. Deux boucles de scan
+    mutant `scan_state` en même temps ne plantent pas : elles s'écrasent
+    l'une l'autre au hasard de l'ordonnancement.
+
+    La production n'était pas touchée (gunicorn n'appelle jamais `_start_app`),
+    mais le lancement local documenté l'était — donc toute mesure prise en
+    `START_ON_IMPORT=1` l'a été avec deux boucles concurrentes.
+
+    Le second appel est ignoré ET COMPTÉ : `_lifecycle.statut()['ignores']`
+    permet de constater qu'une seconde tentative a eu lieu."""
+    return _lifecycle.demarrer_une_seule_fois(_demarrer_les_boucles, nom='boucles')
 
 
 def _start_app():
