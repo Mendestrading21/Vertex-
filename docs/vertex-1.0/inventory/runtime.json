@@ -12,20 +12,9 @@
    "vue": "api_ticker"
   },
   {
-   "chemin": "/api/correlations/<sym>",
-   "fichier": "terminal.py",
-   "ligne": 1852,
-   "methodes": [
-    "*"
-   ],
-   "porteur": "app",
-   "statut": "LEGACY",
-   "vue": "api_correlations"
-  },
-  {
    "chemin": "/desc/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1946,
+   "ligne": 1896,
    "methodes": [
     "*"
    ],
@@ -36,25 +25,13 @@
   {
    "chemin": "/options/<sym>",
    "fichier": "terminal.py",
-   "ligne": 2026,
+   "ligne": 1976,
    "methodes": [
     "*"
    ],
    "porteur": "app",
    "statut": "LEGACY",
    "vue": "opt_ep"
-  },
-  {
-   "chemin": "/weekly-regen",
-   "fichier": "terminal.py",
-   "ligne": 2303,
-   "methodes": [
-    "POST",
-    "GET"
-   ],
-   "porteur": "app",
-   "statut": "LEGACY",
-   "vue": "weekly_regen_ep"
   },
   {
    "chemin": "/api/copilot/ask",
@@ -441,6 +418,17 @@
    "porteur": "bp",
    "statut": "CANONIQUE",
    "vue": "weekly_feed_ep"
+  },
+  {
+   "chemin": "/api/correlations/<sym>",
+   "fichier": "vertex/app/routes/correlations_api.py",
+   "ligne": 73,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_correlations"
   },
   {
    "chemin": "/api/decision/<sym>",
@@ -1679,6 +1667,18 @@
    "vue": "tracking_history"
   },
   {
+   "chemin": "/weekly-regen",
+   "fichier": "vertex/app/routes/weekly_api.py",
+   "ligne": 35,
+   "methodes": [
+    "POST",
+    "GET"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "weekly_regen_ep"
+  },
+  {
    "chemin": "/api/tradingview/webhook",
    "fichier": "vertex/data_sources/tradingview_webhooks.py",
    "ligne": 42,
@@ -1728,7 +1728,7 @@
    "news"
   ],
   "fichier": "terminal.py",
-  "fonctions": 72,
+  "fonctions": 67,
   "imports": [
    "asyncio",
    "collections",
@@ -1752,8 +1752,8 @@
    "yfinance",
    "zlib"
   ],
-  "lignes": 7145,
-  "octets": 808610,
+  "lignes": 7082,
+  "octets": 805988,
   "plus_longue_fonction": [
    "_ibkr_opt_worker",
    306
@@ -1769,17 +1769,8 @@
     "vue": "api_ticker"
    },
    {
-    "chemin": "/api/correlations/<sym>",
-    "ligne": 1852,
-    "methodes": [
-     "*"
-    ],
-    "porteur": "app",
-    "vue": "api_correlations"
-   },
-   {
     "chemin": "/desc/<sym>",
-    "ligne": 1946,
+    "ligne": 1896,
     "methodes": [
      "*"
     ],
@@ -1788,22 +1779,12 @@
    },
    {
     "chemin": "/options/<sym>",
-    "ligne": 2026,
+    "ligne": 1976,
     "methodes": [
      "*"
     ],
     "porteur": "app",
     "vue": "opt_ep"
-   },
-   {
-    "chemin": "/weekly-regen",
-    "ligne": 2303,
-    "methodes": [
-     "POST",
-     "GET"
-    ],
-    "porteur": "app",
-    "vue": "weekly_regen_ep"
    }
   ],
   "stores": [
@@ -2477,7 +2458,7 @@
     "typing",
     "vertex"
    ],
-   "lignes": 307,
+   "lignes": 309,
    "plus_longue_fonction": [
     "create_app",
     136
@@ -3062,6 +3043,41 @@
      ],
      "porteur": "bp",
      "vue": "weekly_feed_ep"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "correlations_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/correlations_api.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "flask",
+    "pandas",
+    "time",
+    "vertex",
+    "yfinance"
+   ],
+   "lignes": 109,
+   "plus_longue_fonction": [
+    "api_correlations",
+    32
+   ],
+   "routes": [
+    {
+     "chemin": "/api/correlations/<sym>",
+     "ligne": 73,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_correlations"
     }
    ],
    "stores": [],
@@ -4516,6 +4532,40 @@
    "workers": []
   },
   {
+   "blueprints_definis": [
+    "weekly_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/weekly_api.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "datetime",
+    "flask",
+    "vertex"
+   ],
+   "lignes": 52,
+   "plus_longue_fonction": [
+    "weekly_regen_ep",
+    13
+   ],
+   "routes": [
+    {
+     "chemin": "/weekly-regen",
+     "ligne": 35,
+     "methodes": [
+      "POST",
+      "GET"
+     ],
+     "porteur": "bp",
+     "vue": "weekly_regen_ep"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
    "blueprints_definis": [],
    "blueprints_enregistres": [],
    "boucles": [],
@@ -4536,6 +4586,25 @@
     "news_state",
     "cal_state"
    ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/weekly_selection.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 49,
+   "plus_longue_fonction": [
+    "carte_resultats",
+    6
+   ],
+   "routes": [],
+   "stores": [],
    "workers": []
   },
   {
@@ -10012,15 +10081,15 @@
    "workers": []
   }
  ],
- "sha": "a6a6c8163396",
+ "sha": "38e3d100cd6c",
  "totaux": {
   "blueprints_enregistres": 7,
   "boucles_monolithe": 13,
-  "fichiers_paquet": 347,
-  "lignes_monolithe": 7145,
-  "octets_monolithe": 808610,
-  "routes_canoniques": 149,
-  "routes_legacy": 5,
+  "fichiers_paquet": 350,
+  "lignes_monolithe": 7082,
+  "octets_monolithe": 805988,
+  "routes_canoniques": 151,
+  "routes_legacy": 3,
   "stores_monolithe": 3,
   "workers_monolithe": 15
  }

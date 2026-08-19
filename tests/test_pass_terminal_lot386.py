@@ -88,6 +88,10 @@ FICHIER = 'terminal.py'
 #   • celui de `_gzip_response`, devenu un `return resp` EXPLICITE dans la
 #     fabrique — même comportement (rendre le corps non compressé, toujours
 #     valide), intention lisible.
+# 36 -> 35 au lot suivant : celui de `_to_naive` (normalisation des dates des
+# séries de corrélation) est parti AVEC sa fonction dans
+# `vertex/app/routes/correlations_api.py`. Famille « absence honnête » (15 -> 14) :
+# un index sans fuseau n'a rien à retirer, l'échec est le cas nominal.
 # HONNÊTETÉ SUR CETTE MISE À JOUR : le lot 386 n'a pas consigné la famille de
 # chaque ligne, seulement les totaux et les deux cas « examinés de près ». La
 # première baisse est donc CERTAINE (le `try` entourait un import) ; la seconde
@@ -98,10 +102,10 @@ FAMILLES = {
     'journal/persistance': 10,
     'import/config optionnel': 1,
     'infra thread': 2,
-    'absence honnête': 15,
+    'absence honnête': 14,
     'examinés de près': 2,
 }
-TOTAL_PASS = 36
+TOTAL_PASS = 35
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.
@@ -116,7 +120,7 @@ def _pass_secs():
 
 # ── 1. Le dénominateur ──────────────────────────────────────────────────────
 
-def test_le_detecteur_voit_bien_les_trente_six():
+def test_le_detecteur_voit_bien_les_trente_cinq():
     """Sans dénominateur, la lecture « un par un » ne prouverait rien : si le
     détecteur cassait, le recensement passerait pour complet en couvrant zéro
     handler (leçon des lots 375-377)."""

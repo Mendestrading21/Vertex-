@@ -1,6 +1,6 @@
 # Vertex 1.0 · #779 — Inventaire exécutable du runtime
 
-SHA : `a6a6c8163396` · généré par `tools/vertex_1_0/inventaire_runtime.py`
+SHA : `38e3d100cd6c` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 > Ce document est **régénéré**, jamais édité à la main. Un chiffre qui
 > change sans que le code ait bougé est un défaut de l'instrument.
@@ -9,11 +9,11 @@ SHA : `a6a6c8163396` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | mesure | valeur |
 | --- | --- |
-| lignes | 7145 |
-| octets | 808610 |
-| fonctions | 72 |
+| lignes | 7082 |
+| octets | 805988 |
+| fonctions | 67 |
 | plus longue fonction | `_ibkr_opt_worker` (306 lignes) |
-| **routes LEGACY** | **5** |
+| **routes LEGACY** | **3** |
 | blueprints enregistrés | 7 |
 | workers démarrés | 15 |
 | boucles de service | 13 |
@@ -23,8 +23,8 @@ SHA : `a6a6c8163396` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | statut | nombre |
 | --- | --- |
-| CANONIQUE (blueprint du paquet) | 149 |
-| LEGACY (`terminal.py`) | 5 |
+| CANONIQUE (blueprint du paquet) | 151 |
+| LEGACY (`terminal.py`) | 3 |
 
 **L'objectif de #779 est que la ligne LEGACY tombe à 0.** Supprimer
 `terminal.py` n'est pas le but ; lui retirer toute responsabilité l'est.
@@ -34,10 +34,8 @@ SHA : `a6a6c8163396` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 | chemin | vue | méthodes | ligne |
 | --- | --- | --- | --- |
 | `/api/ticker/<sym>` | `api_ticker` | * | 1775 |
-| `/api/correlations/<sym>` | `api_correlations` | * | 1852 |
-| `/desc/<sym>` | `desc_ep` | * | 1946 |
-| `/options/<sym>` | `opt_ep` | * | 2026 |
-| `/weekly-regen` | `weekly_regen_ep` | POST, GET | 2303 |
+| `/desc/<sym>` | `desc_ep` | * | 1896 |
+| `/options/<sym>` | `opt_ep` | * | 1976 |
 
 ### Workers démarrés par `terminal.py`
 
@@ -67,8 +65,8 @@ SHA : `a6a6c8163396` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | mesure | valeur |
 | --- | --- |
-| fichiers Python | 347 |
-| routes canoniques | 149 |
+| fichiers Python | 350 |
+| routes canoniques | 151 |
 
 ### Blueprints enregistrés par le monolithe
 

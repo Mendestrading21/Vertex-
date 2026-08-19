@@ -47,7 +47,10 @@ from vertex.strategy import legacy_adapter as strategy
 from vertex.engines import committee
 
 DAILY_PREV_PATH = os.path.join(os.path.dirname(__file__), 'daily_prev.json')  # baseline diff jour/jour
-WEEKLY_PATH = os.path.join(os.path.dirname(__file__), 'weekly_snapshot.json')  # sélection hebdo FIGÉE
+#  Le chemin du snapshot hebdo vit dans `vertex/app/weekly_selection.py`.
+#  ATTENTION : y recopier `os.path.dirname(__file__)` le ferait pointer vers
+#  vertex/app/ — l'ancien snapshot ne serait plus jamais relu, SANS erreur.
+from vertex.app.weekly_selection import CHEMIN as WEEKLY_PATH  # noqa: E402
 
 # ─── Univers, constantes & config : extraits en modules dédiés (refonte institutionnelle) ───
 #     Responsabilité unique par module ; terminal.py ne fait plus que consommer la donnée.
@@ -99,6 +102,7 @@ from vertex.services import market_clock as _market_clock
 from vertex.app import factory as _factory  # noqa: E402
 from vertex.app import ibkr_state as _ibkr_state  # noqa: E402
 from vertex.app import rescan_gate as _rescan_gate  # noqa: E402
+from vertex.app import weekly_selection as _weekly_selection  # noqa: E402
 app = _factory.create_app()
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1563,11 +1567,7 @@ def _market_internals(rows, detail, breadth):
 # ─── WATCHLIST DE LA SEMAINE : sélection FIGÉE le lundi (état partagé → state.py) ──
 
 
-def _earnings_map():
-    """{sym: dte} depuis le calendrier earnings collecté (cal_state) — pour écarter
-    les titres dont les résultats tombent dans la semaine (gap / IV-crush)."""
-    return {x['sym']: x['dte'] for x in (cal_state.get('items') or [])
-            if x.get('sym') and x.get('dte') is not None}
+_earnings_map = _weekly_selection.carte_resultats
 
 
 def _weekly_loop():
@@ -1821,60 +1821,10 @@ def api_ticker(sym):
 
 
 # ─── CORRÉLATIONS RÉELLES : le titre vs macro (SOXX, QQQ, S&P, BTC, or, dollar, taux, VIX) ───
-_CORR_MAP = [('SOXX', 'SOXX'), ('QQQ', 'QQQ'), ('S&P 500', 'SPY'), ('Bitcoin', 'BTC-USD'),
-             ('Or', 'GC=F'), ('Dollar', 'DX-Y.NYB'), ('Taux 10a', '^TNX'), ('VIX', '^VIX')]
+#  Le trio des correlations — la carte des references, la normalisation des
+#  dates et le cache des series — est parti avec sa route dans
+#  `vertex/app/routes/correlations_api.py`. Aucune dependance au monolithe.
 
-
-def _to_naive(ix):
-    import pandas as pd
-    ix = pd.DatetimeIndex(ix)
-    try:
-        ix = ix.tz_localize(None)
-    except (TypeError, AttributeError):
-        pass
-    return ix.normalize()
-
-
-def _corr_benchmarks():
-    """Séries Close 6 mois des références macro — cache 1 h (mêmes pour tous les titres)."""
-    if _CORR_BENCH['df'] is not None and time.time() - _CORR_BENCH['ts'] < 3600:
-        return _CORR_BENCH['df']
-    import yfinance as yf
-    raw = yf.download([t for _, t in _CORR_MAP], period='6mo',
-                      progress=False, auto_adjust=True)['Close']
-    raw.index = _to_naive(raw.index)
-    _CORR_BENCH['df'] = raw
-    _CORR_BENCH['ts'] = time.time()
-    return raw
-
-
-@app.route('/api/correlations/<sym>')
-def api_correlations(sym):
-    """Corrélation RÉELLE (rendements journaliers, 6 mois) du titre avec chaque référence.
-    Lecture seule. Repli propre : liste vide si données insuffisantes."""
-    sym = (sym or '').upper()
-    try:
-        import yfinance as yf
-        import pandas as pd
-        bench = _corr_benchmarks()
-        s = yf.Ticker(sym).history(period='6mo')['Close']
-        s.index = _to_naive(s.index)
-        df = pd.concat([s.rename(sym), bench], axis=1)
-        rets = df.pct_change()
-        out = []
-        for label, tk in _CORR_MAP:
-            if tk not in rets.columns:
-                continue
-            pair = rets[[sym, tk]].dropna()
-            if len(pair) < 20:
-                continue
-            c = pair[sym].corr(pair[tk])
-            if pd.notna(c):
-                out.append([label, round(float(c), 2)])
-        out.sort(key=lambda x: -x[1])
-        return jsonify({'sym': sym, 'corr': out})
-    except Exception as e:
-        return jsonify({'sym': sym, 'corr': [], 'error': f'{type(e).__name__}: {e}'})
 
 # ─── DESK PERSO (Blueprint) — /api/desk · /api/watchlist-tv · /api/pos-quotes ───
 # (/api/ticker reste ici : la version enrichie — entreprise + pairs — a remplacé celle du Blueprint)
@@ -2299,20 +2249,7 @@ def _indices_loop():
 # ─── FILS DE CONTENU (Blueprint) — news-feed · cal-feed · weekly-feed ───
 
 
-@app.route('/weekly-regen', methods=['POST', 'GET'])
-def weekly_regen_ep():
-    """Force la régénération de la sélection hebdo (ex. nouveau lundi manuel, ou
-    après un gros changement de marché). Reste ANALYSE ONLY — recalcule un snapshot."""
-    if not (scan_state.get('rows') and scan_state.get('detail')):
-        return jsonify({'ok': False, 'error': 'scan pas encore prêt'})
-    try:
-        snap, _ = weekly.get_or_build(WEEKLY_PATH, scan_state['rows'], scan_state['detail'],
-                                      earnings=_earnings_map(), n=6, with_options=True, force=True)
-        weekly_state.update({'data': snap, 'regenerated': True,
-                             'updated': datetime.now().strftime('%H:%M:%S')})
-        return jsonify({'ok': True, 'week': snap.get('week'), 'n': snap.get('meta', {}).get('n')})
-    except Exception as e:
-        return jsonify({'ok': False, 'error': f'{type(e).__name__}: {e}'})
+#  `/weekly-regen` est parti dans `vertex/app/routes/weekly_api.py`.
 
 
 PAGE_DAILY = r"""<!doctype html><html lang="fr"><head><meta charset="utf-8">

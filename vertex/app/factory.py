@@ -82,6 +82,8 @@ from typing import Any, List, Tuple
 #: comparable ligne à ligne si quelqu'un doute.
 BLUEPRINTS: Tuple[Tuple[str, str], ...] = (
     ('vertex.app.routes.scan_api', 'bp'),
+    ('vertex.app.routes.correlations_api', 'bp'),
+    ('vertex.app.routes.weekly_api', 'bp'),
     ('vertex.app.routes.feeds', 'bp'),
     ('vertex.app.routes.company_api', 'bp'),
     ('vertex.app.routes.analysis_api', 'bp'),

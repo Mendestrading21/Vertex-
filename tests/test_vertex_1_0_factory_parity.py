@@ -80,8 +80,10 @@ def test_le_registre_declare_ce_qui_est_reellement_enregistre(application):
     #  15 -> 16 : `track_record_api` (aucune injection — ses deux dependances
     #  vivaient deja dans le paquet).
     #  16 -> 17 : `scan_api`, une fois la porte anti-rafale partie avec lui.
-    assert len(factory.BLUEPRINTS) == 17, (
-        'le registre ne compte plus 17 entrees (%d) : si un blueprint a migre '
+    #  17 -> 19 : `correlations_api` (son trio de helpers l'a suivi) et
+    #  `weekly_api` (chemin du snapshot + carte des resultats).
+    assert len(factory.BLUEPRINTS) == 19, (
+        'le registre ne compte plus 19 entrees (%d) : si un blueprint a migre '
         'depuis le monolithe, mettre a jour A_INJECTION en meme temps'
         % len(factory.BLUEPRINTS))
 
