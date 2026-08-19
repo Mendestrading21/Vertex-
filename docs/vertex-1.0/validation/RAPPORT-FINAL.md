@@ -25,7 +25,7 @@ main ─ d52a39d ─ runtime ─ memoire ─ moteurs ─ qa ─ design
                                   = integration/vertex-1-0-rc   (SHA candidat)
 ```
 
-Suite complète sur ce SHA : **3 422 passed**. Une fusion propre au niveau du
+Suite complète sur ce SHA : **3 439 passed**. Une fusion propre au niveau du
 texte ne prouvant rien, le SHA a été éprouvé : compilation, suite entière,
 balayage navigateur des huit espaces, modes dégradés et exploitation.
 
@@ -76,7 +76,7 @@ feuilles CSS (152 Ko), **toutes servies sur les huit**.
 Toutes mesurées **sur le SHA candidat** `integration/vertex-1-0-rc`.
 
 ```text
-pytest tests/ -q       3 422 passed
+pytest tests/ -q       3 439 passed
 compileall             exit 0
 /healthz               200
 /api/client-log        count: 0
@@ -89,8 +89,9 @@ exploitation (G6)      aller-retour de sauvegarde fidèle, rétention 7 j,
 ```
 
 Repères d'écart : `agent/vertex-1-0-design` seule donnait **3 382** ; la fusion
-des trois chantiers orphelins a porté le total à **3 408** ; le gardien G6
-ajouté ensuite le porte à **3 422**.
+des trois chantiers orphelins a porté le total à **3 408** ; puis le gardien G6
+à **3 422**, la convergence G2 à **3 428**, et la preuve de non-usage du CSS à
+**3 439**.
 
 ---
 
@@ -108,6 +109,7 @@ Chacun était **invisible sous une suite verte**.
 | 6 | le fil d'Ariane était **illisible en mobile** | 84 px pour 122-185 px sur 7 espaces sur 8 ; séparateur réduit à 2 px |
 | 7 | son segment d'espace mesurait **19,5 px** de haut | seule cible tactile du produit sous le plancher de 32 px |
 | 8 | `requests` et `markupsafe` importés **fermement mais non déclarés** | ils arrivaient comme dépendances *transitives* — rien ne casse tant que l'intermédiaire ne change pas. `markupsafe` sert à l'**échappement HTML** : une primitive de sûreté adossée à un pari qu'on ne sait pas qu'on a pris |
+| 9 | `mae_mfe` **inventait** un chiffre depuis un coût de revient négatif | `if not cost_basis` rejette `0` et `None` mais laisse passer un négatif → `mae -220 · mfe -200` sur une entrée absurde. Exporté et testé, mais **aucun appelant de production** : un piège pour le prochain |
 
 ---
 
@@ -155,6 +157,20 @@ leur présenter un cas fabriqué. Les trois mordent désormais (9/9).
 vérifier les dépendances « dans les deux sens » ; il n'en faisait qu'un. Le
 second sens — importé mais non déclaré — est celui qui a trouvé le défaut.
 
+**Une preuve trouée est pire qu'une absence de preuve** — elle autorise l'acte.
+La preuve de non-usage du CSS avait **trois** trous, tous trouvés avant d'agir :
+un corpus limité aux huit espaces (`.ds-note`, servie sur `/design-system`,
+ressortait « prouvée morte » — 29 fausses preuves sur 92), les routes
+paramétrées absentes, et les noms de classe assemblés à l'exécution. Chacun
+aurait fait supprimer du CSS vivant.
+
+**Deux fonctions du même nom ne font pas forcément la même chose ; deux
+fonctions qui font la même chose ne portent pas forcément le même nom.** Sur
+quatre symboles homonymes, trois étaient de simples collisions et un seul un
+vrai doublon. Et le doublon ne se réparait pas en fusionnant : `drawdown_from_peak`
+(maximal) et `drawdown_from_high` (courant) portent le même concept apparent et
+mesurent deux choses — les confondre aurait fait disparaître une information.
+
 **Un seuil peut reposer sur une coïncidence.** Mon gardien des branches exigeait
 « au moins 3 classes non vides ». Deux seulement sont structurellement
 atteignables dans sa configuration rapide ; la troisième tenait à **une** branche
@@ -191,7 +207,7 @@ Mesurés sur le SHA candidat `integration/vertex-1-0-rc`.
 | --- | --- | --- |
 | G0 Fondation | **PASS** (au merge `bf49f9b`) | — |
 | G1 Runtime modulaire | **preuves complètes** | acceptation humaine |
-| G2 Données et domaines | **partiel** | persistance prouvée de bout en bout ; convergence des doublons non close |
+| G2 Données et domaines | **preuves complètes** | acceptation humaine |
 | G3 Intelligence | **partiel** | mémoire réparée, WMB versionné ; **spécimen WMB réel** manquant |
 | G4 Expérience | **preuves complètes** | résidu assumé : 2 fils tronqués de ~12 px |
 | G5 Live read-only | **HUMAN_REQUIRED** | TWS / IB Gateway réel — **bloquant** |
@@ -204,9 +220,14 @@ Mesurés sur le SHA candidat `integration/vertex-1-0-rc`.
 
 **Dette mesurée, aucune action unilatérale prise :**
 
-- **476 règles CSS sur 1 025** jamais appariées au chargement — *candidates*,
-  pas une preuve : une règle d'état ne peut pas s'apparier au relevé.
-  `CLEANUP_POLICY.md` demande une preuve de non-usage.
+- **63 règles CSS prouvées inatteignables** sur 476 candidates (corpus de 99
+  documents servis, 4,34 Mo). Le recensement est **gelé** dans un gardien : il
+  peut baisser, il ne peut pas monter en silence — c'est la « date de retrait »
+  que `CLEANUP_POLICY.md` exige. Les règles ne sont **pas supprimées** : le gain
+  est de quelques kilo-octets sur une RC verte, le risque d'une réécriture
+  automatisée de six feuilles ne l'est pas. Liste exacte disponible en `--json`.
+- **`positions.calculator.mae_mfe`** n'a aucun appelant de production ; il
+  délègue désormais son calcul et son retrait relève d'une décision humaine.
 - **`neon-glass.css` = 35,5 %** des 152 Ko de CSS servis.
 - **`performance_ledger`** — 124 lignes, atteint par les seuls tests.
 - **697 branches distantes classées**, aucune supprimée : 31 fusionnées,

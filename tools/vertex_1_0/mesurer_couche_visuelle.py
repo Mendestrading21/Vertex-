@@ -372,6 +372,10 @@ def mesurer(base: str = BASE_DEFAUT, largeur: int = LARGEUR_DEFAUT, *,
         'regles_jamais_appariees': len(jamais),
         'jamais_par_feuille': {k: len(v) for k, v in sorted(par_feuille.items())},
         'exemples_jamais_appariees': {k: v[:8] for k, v in sorted(par_feuille.items())},
+        #  La liste ENTIERE : `exemples_*` est tronquee pour l'affichage, et
+        #  `mesurer_regles_mortes.py` a besoin de toutes les candidates pour
+        #  produire une preuve — une preuve sur un echantillon n'en est pas une.
+        'toutes_jamais_appariees': {k: v for k, v in sorted(par_feuille.items())},
         'tactile_trop_bas': sum(r['tactile']['trop_bas_total'] for r in releves),
         'tactile_trop_etroits': sum(r['tactile']['trop_etroits_total'] for r in releves),
         'tactile_bande_secondaire': sum(r['tactile']['bande_secondaire_total'] for r in releves),
