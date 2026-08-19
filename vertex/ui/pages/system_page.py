@@ -1126,16 +1126,29 @@ async function loadAutomations(){
     $('vx-auto-jobs').innerHTML=jobs.length?`<div class="vx-table-wrap"><table class="vx-table"><thead><tr>
       <th>Tâche</th><th>Statut</th><th class="vx-num">Exécutions</th><th>Dernière</th><th>Prochaine (est.)</th><th class="vx-num">Durée</th></tr></thead><tbody>
       ${jobs.map(j=>{
-        const st=j.last_run===null?['frozen','jamais exécuté']:(j.last_ok?['live','OK']:['offline','erreur']);
+        /* #779/G1 — AVANT, une seule branche : `last_run===null` -> « jamais
+           exécuté ». Le même mot pour un job EN PANNE et pour un job qu'AUCUN
+           code n'exécute. La mesure (tools/vertex_1_0/mesurer_registre_jobs.py)
+           a trouvé 18 des 27 jobs déclarés sans le moindre émetteur `beat` :
+           ils ne pouvaient pas tourner, et l'écran les accusait d'un échec.
+           Le serveur tranche désormais lui-même via `etat`. */
+        const ETATS={NON_IMPLEMENTE:['frozen','non implémenté'],EN_ATTENTE:['frozen','en attente'],
+                     ACTIF:['live','OK'],ERREUR:['offline','erreur']};
+        const st=ETATS[j.etat]||(j.last_run===null?['frozen','en attente']:(j.last_ok?['live','OK']:['offline','erreur']));
         return `<tr><td><b>${esc(j.name)}</b><br><span class="vx-meta">${esc(j.description||'')}</span></td>
         <td><span class="vx-badge vx-badge-status" data-status="${st[0]}" title="${esc(j.last_error||'')}">${st[1]}</span></td>
         <td class="vx-num">${j.runs||0}</td>
         <td class="vx-mono vx-meta">${j.age_s!==null&&j.age_s!==undefined?VX.fmt.ago(Date.now()-j.age_s*1000):'—'}</td>
-        <td class="vx-mono vx-meta">${j.next_run_eta_s!==null&&j.next_run_eta_s!==undefined?('dans ~'+Math.round(j.next_run_eta_s/60)+' min'):(j.interval_s?'—':'sur événement')}</td>
+        <td class="vx-mono vx-meta">${j.etat==='NON_IMPLEMENTE'?'—':
+          /* « sur événement » PROMET un déclenchement. Pour un job sans exécutant,
+             aucun événement ne le déclenchera jamais : la même invention que le
+             statut, une colonne plus loin. Trouvée à la capture, pas à l'API. */
+          (j.next_run_eta_s!==null&&j.next_run_eta_s!==undefined?('dans ~'+Math.round(j.next_run_eta_s/60)+' min'):(j.interval_s?'—':'sur événement'))}</td>
         <td class="vx-num">${j.last_duration_ms!==null&&j.last_duration_ms!==undefined?j.last_duration_ms+' ms':'—'}</td></tr>`;}).join('')}
       </tbody></table></div>
       <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'/api/system/automations','live')}
-      · les jobs « jamais exécuté » dépendent d'intégrations absentes dans cet environnement (honnêteté avant tout)</div>`
+      · « non implémenté » = déclaré au registre, aucun exécutant dans le code — ce n'est pas une panne.
+      « en attente » = implémenté, pas encore passé depuis le démarrage.</div>`
       :VX.states.empty('Registre de jobs vide.');
   }catch(e){$('vx-auto-jobs').innerHTML=VX.states.error('Registre indisponible : '+esc(e.message));}
   try{

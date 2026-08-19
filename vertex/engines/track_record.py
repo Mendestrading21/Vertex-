@@ -81,10 +81,31 @@ def _load_ledger(max_lines=20000):
     return out[-max_lines:]
 
 
-def _fwd(closes, dates, day, horizon):
-    """Rendement % entre la séance `day` (MM-DD) et +horizon séances. None si trop récent."""
+def _fwd(closes, dates, jour_iso, horizon):
+    """Rendement % entre la séance `jour_iso` (AAAA-MM-JJ) et +horizon séances.
+
+    Rend `(None, i)` si l'horizon **n'est pas encore échu** : c'est la garde
+    anti-look-ahead. Une entrée dont les +20 séances n'ont pas eu lieu ne doit
+    pas être notée, sinon la fiabilité affichée serait celle des seuls verdicts
+    assez vieux pour avoir eu raison.
+
+    ── LE DÉFAUT CORRIGÉ ICI (#783/G3) ────────────────────────────────────────
+    Cette fonction cherchait un libellé `'%m-%d'` dans `series['dates']`, qui
+    contient des dates **ISO** (`'2026-05-15'`). `'05-15' in ['2026-05-15', …]`
+    est toujours faux : `.index()` levait `ValueError` sur CHAQUE entrée, et
+    `evaluate()` rendait `resolved: 0` quoi qu'il arrive. Le moteur ne se notait
+    pas — et l'écran attribuait ce vide à un manque d'historique.
+
+    Mesuré : 8 entrées dont +1, +5 et +20 étaient tous échus → **0 résolue**.
+
+    La comparaison se fait désormais en ISO, ce qui supprime au passage
+    l'ambiguïté d'année que l'ancienne recherche de « dernière occurrence »
+    tentait de contourner : `series['date_labels']` existe précisément parce que
+    `analysis.py` sépare les deux formats « afin de ne jamais réinterpréter les
+    années ». Le registre porte un horodatage complet ; l'année est connue.
+    """
     try:
-        i = len(dates) - 1 - dates[::-1].index(day)   # dernière occurrence (bord d'année)
+        i = dates.index(jour_iso)
     except ValueError:
         return None, None
     j = i + horizon
@@ -114,6 +135,13 @@ def evaluate(state, max_age=1800):
     entries = _load_ledger()
 
     resolved, groups = 0, {}
+    #  ── POURQUOI UNE ENTRÉE N'EST PAS NOTÉE ───────────────────────────────
+    #  Sans ce détail, `resolved: 0` se lit « pas encore assez d'historique »
+    #  alors que la cause peut être toute autre — c'est exactement ce qui est
+    #  arrivé : une jointure de dates cassée rendait 0 quoi qu'il arrive, et
+    #  l'écran invitait l'utilisateur à patienter pour une condition qui ne
+    #  pouvait jamais se résoudre.
+    ignores = {'sans_serie': 0, 'date_absente': 0, 'horizon_non_echu': 0}
 
     def bucket(key):
         return groups.setdefault(key, {'n': 0, 'f1': [], 'f5': [], 'f20': [], 'tp': [0, 0]})
@@ -125,13 +153,21 @@ def evaluate(state, max_age=1800):
         s = d.get('series') or {}
         closes, dates = s.get('close') or [], s.get('dates') or []
         if not closes or not dates:
+            #  Le titre n'est plus dans le scan du jour : aucune série pour le
+            #  noter. Voir la note servie — la fiabilité ne porte que sur les
+            #  titres encore suivis.
+            ignores['sans_serie'] += 1
             continue
-        day = datetime.fromtimestamp(e.get('ts', 0)).strftime('%m-%d')
-        days.add(day)
-        f1, i = _fwd(closes, dates, day, 1)
-        f5, _ = _fwd(closes, dates, day, 5)
-        f20, _ = _fwd(closes, dates, day, 20)
+        jour = datetime.fromtimestamp(e.get('ts', 0)).strftime('%Y-%m-%d')
+        days.add(jour)
+        f1, i = _fwd(closes, dates, jour, 1)
+        f5, _ = _fwd(closes, dates, jour, 5)
+        f20, _ = _fwd(closes, dates, jour, 20)
         if f1 is None and f5 is None and f20 is None:
+            #  `i is None` = la séance de la décision est introuvable dans la
+            #  série ; sinon, aucun horizon n'est encore échu — refus délibéré
+            #  de noter, c'est la garde anti-look-ahead.
+            ignores['date_absente' if i is None else 'horizon_non_echu'] += 1
             continue
         resolved += 1
         tp = _hit_tp1(closes, i, e.get('entry'),
@@ -166,8 +202,13 @@ def evaluate(state, max_age=1800):
                 'tp1_resolved': b['tp'][1]}
 
     out = {'entries': len(entries), 'resolved': resolved, 'days': len(days),
+           'ignores': ignores,
            'note': ('rendements sur CLÔTURES quotidiennes (pas d\'intraday) · '
-                    'TP1-avant-stop approximé sur clôtures · fenêtre séries ~120 séances'),
+                    'TP1-avant-stop approximé sur clôtures · fenêtre séries '
+                    '~120 séances · ne note QUE les titres encore suivis par le '
+                    'scan du jour : un verdict sur un titre sorti de l\'univers '
+                    'n\'est jamais compté, la fiabilité porte donc sur les '
+                    'survivants'),
            'by_verdict': {k[1]: agg(b) for k, b in groups.items() if k[0] == 'verdict' and b['n'] >= 5},
            'by_grade': {k[1]: agg(b) for k, b in groups.items() if k[0] == 'grade' and b['n'] >= 5},
            'by_regime': {k[1]: agg(b) for k, b in groups.items() if k[0] == 'regime' and b['n'] >= 5},

@@ -1,0 +1,20 @@
+{
+  "horizons_echus": {
+    "entrees": 8,
+    "resolus": 8,
+    "verdicts": [
+      "ACHAT"
+    ],
+    "attendu": 8
+  },
+  "horizons_non_echus": {
+    "entrees": 8,
+    "resolus": 0,
+    "attendu": 0
+  },
+  "symbole_hors_univers": {
+    "entrees": 8,
+    "resolus": 0
+  },
+  "note_servie": "rendements sur CLÔTURES quotidiennes (pas d'intraday) · TP1-avant-stop approximé sur clôtures · fenêtre séries ~120 séances · ne note QUE les titres encore suivis par le scan du jour : un verdict sur un titre sorti de l'univers n'est jamais compté, la fiabilité porte donc sur les survivants"
+}

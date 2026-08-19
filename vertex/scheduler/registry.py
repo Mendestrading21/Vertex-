@@ -19,40 +19,66 @@ _LOCK = threading.Lock()
 # boucle historique ; les jobs « événement » ont interval_s None.
 _JOBS: dict[str, dict] = {}
 
-_CANONICAL = (
-    ('STARTUP_HEALTH_CHECK', 'Vérification des connexions au démarrage', None),
-    ('POSITION_REFRESH', 'Cotation des positions déclarées (pos-quotes)', 45),
-    ('OPTION_POSITION_REFRESH', 'Chaînes options IBKR (lecture seule)', 300),
-    ('MARKET_DATA_REFRESH', 'Scan univers + indices + contexte marché', 360),
-    ('PORTFOLIO_RECALCULATION', 'Risque portefeuille sur positions réelles', None),
-    ('DECISION_RECALCULATION', 'Décisions exécutives (par requête/à la demande)', None),
-    ('CATALYST_REFRESH', 'Calendrier earnings + macro', 3600),
-    ('NEWS_REFRESH', 'Fil de nouvelles assaini', 900),
-    ('PREMARKET_BRIEF', 'Brief pré-marché', None),
-    ('INTRADAY_BRIEF', 'Brief intraday', None),
-    ('CLOSE_BRIEF', 'Brief de clôture', None),
-    ('EOD_SNAPSHOT', 'Instantané de fin de journée (track record)', 86400),
-    ('WEEKLY_REVIEW', 'Sélection & revue hebdomadaire', 604800),
-    ('SYSTEM_AUDIT', 'Diagnostics système', None),
-    ('DATA_BACKUP', 'Backup quotidien du desk (rotation 7)', 86400),
-    ('TRACK_RECORD_UPDATE', 'Mise à jour de la fiabilité mesurée', 86400),
-    ('ALERTS_EVALUATION', 'Évaluation serveur des alertes utilisateur', 60),
+#  ── LA QUATRIÈME COLONNE : `implemente` (Vertex 1.0, #779/G1) ──────────────
+#  Elle a été ajoutée parce que la mesure a contredit le registre. Le registre
+#  ne reçoit d'information que par `beat('NOM')` ; or
+#  `tools/vertex_1_0/mesurer_registre_jobs.py` a énuméré à l'AST TOUS les appels
+#  `beat` du dépôt et trouvé **7 émetteurs pour 27 jobs déclarés**. Les 20 autres
+#  ne pouvaient pas tourner : aucun code ne porte leur nom.
+#
+#  L'interface, elle, affichait « jamais exécuté » pour les 27 — le même mot
+#  pour un job en panne et pour un job qui n'existe pas — et le pied de page
+#  affirmait qu'ils « dépendent d'intégrations absentes dans cet
+#  environnement ». C'était faux : ils ne dépendent de rien, ils n'ont pas
+#  d'exécutant. Une affirmation invérifiable présentée comme un diagnostic.
+#
+#  `implemente=False` n'est donc pas un aveu de dette : c'est la seule
+#  description honnête d'une intention non encore réalisée. Le drapeau n'est pas
+#  déclaratif au sens faible — `tests/test_vertex_1_0_registre_jobs.py` le
+#  confronte à la mesure dans les DEUX sens : marquer un job implémenté sans
+#  émetteur échoue, et poser un émetteur sans lever le drapeau échoue aussi.
+_CANONICAL_4 = (
+    ('STARTUP_HEALTH_CHECK', 'Vérification des connexions au démarrage', None, True),
+    ('POSITION_REFRESH', 'Cotation des positions déclarées (pos-quotes)', None, True),
+    ('OPTION_POSITION_REFRESH', 'Chaînes options IBKR (lecture seule)', 300, False),
+    ('MARKET_DATA_REFRESH', 'Scan univers + indices + contexte marché', 360, True),
+    ('PORTFOLIO_RECALCULATION', 'Risque portefeuille sur positions réelles', None, False),
+    ('DECISION_RECALCULATION', 'Décisions exécutives (par requête/à la demande)', None, False),
+    ('CATALYST_REFRESH', 'Calendrier earnings + macro', 3600, True),
+    ('NEWS_REFRESH', 'Fil de nouvelles assaini', 60, True),
+    ('PREMARKET_BRIEF', 'Brief pré-marché', None, False),
+    ('INTRADAY_BRIEF', 'Brief intraday', None, False),
+    ('CLOSE_BRIEF', 'Brief de clôture', None, False),
+    ('EOD_SNAPSHOT', 'Instantané de fin de journée (track record)', 86400, False),
+    ('WEEKLY_REVIEW', 'Sélection & revue hebdomadaire', 604800, True),
+    ('SYSTEM_AUDIT', 'Diagnostics système', None, False),
+    ('DATA_BACKUP', 'Backup quotidien du desk (rotation 7)', 86400, True),
+    ('TRACK_RECORD_UPDATE', 'Mise à jour de la fiabilité mesurée', 86400, True),
+    ('ALERTS_EVALUATION', 'Évaluation serveur des alertes utilisateur', 60, True),
     # Position Intelligence (§39) — cycle de vie analytique des positions.
-    ('STARTUP_POSITION_SYNC', 'Détection & réconciliation des positions au démarrage', None),
-    ('OPEN_POSITION_REFRESH', 'Cotation des positions actions ouvertes', 45),
-    ('OPEN_OPTION_REFRESH', 'Cotation des positions options ouvertes', 60),
-    ('MATERIAL_POSITION_RECALCULATION', 'Recalcul après changement matériel', None),
-    ('THESIS_HEALTH_REVIEW', 'Réévaluation de la santé des thèses', None),
-    ('EOD_POSITION_SNAPSHOT', 'Instantané de fin de journée des positions', 86400),
-    ('POSITION_INTEGRITY_AUDIT', 'Audit d’intégrité des positions', None),
+    ('STARTUP_POSITION_SYNC', 'Détection & réconciliation des positions au démarrage', None, False),
+    ('OPEN_POSITION_REFRESH', 'Cotation des positions actions ouvertes', 45, False),
+    ('OPEN_OPTION_REFRESH', 'Cotation des positions options ouvertes', 60, False),
+    ('MATERIAL_POSITION_RECALCULATION', 'Recalcul après changement matériel', None, False),
+    ('THESIS_HEALTH_REVIEW', 'Réévaluation de la santé des thèses', None, False),
+    ('EOD_POSITION_SNAPSHOT', 'Instantané de fin de journée des positions', 86400, False),
+    ('POSITION_INTEGRITY_AUDIT', 'Audit d’intégrité des positions', None, False),
     # Tracking Engine (§14-18) — suivi analytique hypothétique.
-    ('TRACKING_REFRESH', 'Rafraîchissement des suivis actifs', 60),
-    ('TRACKING_SNAPSHOT', 'Instantané horodaté des suivis', 300),
-    ('EOD_TRACKING_SNAPSHOT', 'Instantané de fin de journée des suivis', 86400),
+    ('TRACKING_REFRESH', 'Rafraîchissement des suivis actifs', 60, False),
+    ('TRACKING_SNAPSHOT', 'Instantané horodaté des suivis', 300, False),
+    ('EOD_TRACKING_SNAPSHOT', 'Instantané de fin de journée des suivis', 86400, False),
 )
 
-for name, desc, interval in _CANONICAL:
+#: Conservé pour les appelants historiques qui itèrent sur trois colonnes.
+_CANONICAL = tuple((n, d, i) for n, d, i, _ in _CANONICAL_4)
+
+#: Les jobs qu'aucun code n'exécute aujourd'hui. Servi pour que l'interface
+#: puisse dire « non implémenté » au lieu de « jamais exécuté ».
+NON_IMPLEMENTES = frozenset(n for n, _, _, ok in _CANONICAL_4 if not ok)
+
+for name, desc, interval, _implemente in _CANONICAL_4:
     _JOBS[name] = {'name': name, 'description': desc, 'interval_s': interval,
+                   'implemente': _implemente,
                    'last_run': None, 'last_ok': None, 'last_error': None,
                    'runs': 0, 'last_duration_ms': None}
 
@@ -62,6 +88,7 @@ def beat(name: str, ok: bool = True, error: str | None = None,
     """Battement émis par une boucle historique après une exécution."""
     with _LOCK:
         j = _JOBS.setdefault(name, {'name': name, 'description': '', 'interval_s': None,
+                                    'implemente': True,
                                     'last_run': None, 'last_ok': None, 'last_error': None,
                                     'runs': 0, 'last_duration_ms': None})
         j['last_run'] = time.time()
@@ -73,7 +100,15 @@ def beat(name: str, ok: bool = True, error: str | None = None,
 
 
 def jobs() -> list[dict]:
-    """Snapshot trié par priorité produit (ordre canonique)."""
+    """Snapshot trié par priorité produit (ordre canonique).
+
+    `etat` distingue trois situations que `last_run: null` confondait toutes :
+
+    - `NON_IMPLEMENTE` — aucun code du dépôt n'émet ce battement. Le job ne peut
+      pas tourner ; dire « jamais exécuté » laisserait croire à une panne.
+    - `EN_ATTENTE`     — implémenté, mais pas encore passé depuis le démarrage.
+    - `ACTIF` / `ERREUR` — il a tourné, et son dernier passage a réussi ou non.
+    """
     now = time.time()
     out = []
     with _LOCK:
@@ -84,6 +119,12 @@ def jobs() -> list[dict]:
             else:
                 j['next_run_eta_s'] = None
             j['age_s'] = round(now - j['last_run']) if j['last_run'] else None
+            if not j.get('implemente', True):
+                j['etat'] = 'NON_IMPLEMENTE'
+            elif j['last_run'] is None:
+                j['etat'] = 'EN_ATTENTE'
+            else:
+                j['etat'] = 'ACTIF' if j['last_ok'] else 'ERREUR'
             out.append(j)
     return out
 
@@ -95,4 +136,4 @@ class _Registry:
 
 registry = _Registry()
 
-__all__ = ['registry', 'jobs', 'beat']
+__all__ = ['registry', 'jobs', 'beat', 'NON_IMPLEMENTES']

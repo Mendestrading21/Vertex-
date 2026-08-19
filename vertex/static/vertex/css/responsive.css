@@ -102,6 +102,32 @@
      Opportunités) mesurés 21px. */
   .vx-dim a{display:inline-block;padding:13px 0}
   .vx-link{min-height:40px}
+  /* #781, même famille que les lots 293/295 : le segment d'espace du fil
+     d'Ariane est un LIEN — il ramène à la racine de l'espace — et il mesurait
+     19,5 px de haut sur les HUIT espaces, sous le plancher de 32 px des
+     actions secondaires. C'était la SEULE cible tactile du produit sous ce
+     plancher. `padding-block` et non `min-height`+`display:flex` : le fil
+     dépend du `text-overflow:ellipsis` posé plus haut (lot 222), et l'ellipse
+     ne s'applique pas au contenu d'un conteneur flex ; le padding agrandit la
+     boîte d'un élément déjà blocifié par le flex parent, sans y toucher.
+     `.vx-topbar` a une hauteur FIXE et `align-items:center` : la barre ne
+     grandit pas, seule la zone touchable s'étend. Mesuré : 19,5 → 33,5 px. */
+  .vx-breadcrumb a{padding-block:7px}
+  /* #781 : le fil recevait 84 px pour 122-185 px de contenu sur SEPT espaces
+     sur huit — tous les segments tronqués, y compris le séparateur réduit à
+     2 px. Or le fil est le seul repère de lieu persistant en mobile, la
+     sidebar y étant hors-écran.
+     Le nom d'espace est masqué parce qu'il est PROUVÉ redondant : le h1 de la
+     page le répète à l'identique sur les huit espaces (« Marchés » /
+     « Marchés »). Le sous-libellé (« Vue d'ensemble », « Discipline »,
+     « Connexions ») n'apparaît NULLE PART ailleurs — c'est la seule
+     information que le fil porte en propre, et il récupère la place. Même
+     stratégie qu'au lot 56, qui masque déjà « Vertex / » plus haut.
+     `:not(:last-child)` est INDISPENSABLE : sur /analysis le fil n'a qu'un
+     seul segment (pas de sous-libellé), et le masquer sans condition
+     laisserait un topbar sans aucun repère de lieu. */
+  .vx-breadcrumb .vx-crumb-space:not(:last-child),
+  .vx-breadcrumb .vx-crumb-space:not(:last-child) + span{display:none}
   .vx-page-header .vx-actions{width:100%;justify-content:flex-start;
     overflow-x:auto;scrollbar-width:none}
   .vx-kpi .vx-kpi-value{font-size:22px}
