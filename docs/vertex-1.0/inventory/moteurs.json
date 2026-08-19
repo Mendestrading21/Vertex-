@@ -1,0 +1,423 @@
+{
+  "total": 59,
+  "servis": 54,
+  "indirects": 4,
+  "inatteints": 1,
+  "atteints_sans_appel": [],
+  "moteurs": [
+    {
+      "moteur": "analysis",
+      "chemin": "vertex/engines/analysis.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 336
+    },
+    {
+      "moteur": "anomaly",
+      "chemin": "vertex/engines/anomaly.py",
+      "statut": "SERVI",
+      "appels_production": 4,
+      "lignes": 135
+    },
+    {
+      "moteur": "anomaly_context",
+      "chemin": "vertex/engines/anomaly_context.py",
+      "statut": "SERVI",
+      "appels_production": 2,
+      "lignes": 60
+    },
+    {
+      "moteur": "backtest",
+      "chemin": "vertex/engines/backtest.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 92
+    },
+    {
+      "moteur": "call_put_structure",
+      "chemin": "vertex/engines/call_put_structure.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 24
+    },
+    {
+      "moteur": "committee",
+      "chemin": "vertex/engines/committee.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 175
+    },
+    {
+      "moteur": "context",
+      "chemin": "vertex/engines/context.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 106
+    },
+    {
+      "moteur": "decide",
+      "chemin": "vertex/engines/decide.py",
+      "statut": "SERVI",
+      "appels_production": 2,
+      "lignes": 128
+    },
+    {
+      "moteur": "decision_evidence",
+      "chemin": "vertex/engines/decision_evidence.py",
+      "statut": "SERVI",
+      "appels_production": 2,
+      "lignes": 64
+    },
+    {
+      "moteur": "decision_memory",
+      "chemin": "vertex/engines/decision_memory.py",
+      "statut": "SERVI",
+      "appels_production": 38,
+      "lignes": 1003
+    },
+    {
+      "moteur": "decision_readiness",
+      "chemin": "vertex/engines/decision_readiness.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 81
+    },
+    {
+      "moteur": "decision_stack",
+      "chemin": "vertex/engines/decision_stack.py",
+      "statut": "SERVI",
+      "appels_production": 3,
+      "lignes": 349
+    },
+    {
+      "moteur": "downside_volatility",
+      "chemin": "vertex/engines/downside_volatility.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 40
+    },
+    {
+      "moteur": "drawdown_context",
+      "chemin": "vertex/engines/drawdown_context.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 39
+    },
+    {
+      "moteur": "earnings_holding_overlap",
+      "chemin": "vertex/engines/earnings_holding_overlap.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 29
+    },
+    {
+      "moteur": "earnings_option_overlap",
+      "chemin": "vertex/engines/earnings_option_overlap.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 29
+    },
+    {
+      "moteur": "earnings_proximity",
+      "chemin": "vertex/engines/earnings_proximity.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 35
+    },
+    {
+      "moteur": "events",
+      "chemin": "vertex/engines/events.py",
+      "statut": "SERVI",
+      "appels_production": 3,
+      "lignes": 149
+    },
+    {
+      "moteur": "evidence",
+      "chemin": "vertex/engines/evidence.py",
+      "statut": "INDIRECT",
+      "appels_production": 1,
+      "lignes": 232
+    },
+    {
+      "moteur": "evidence_lab",
+      "chemin": "vertex/engines/evidence_lab.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 90
+    },
+    {
+      "moteur": "fundamental_context",
+      "chemin": "vertex/engines/fundamental_context.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 27
+    },
+    {
+      "moteur": "gap_risk_context",
+      "chemin": "vertex/engines/gap_risk_context.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 38
+    },
+    {
+      "moteur": "indicators",
+      "chemin": "vertex/engines/indicators.py",
+      "statut": "INDIRECT",
+      "appels_production": 4,
+      "lignes": 42
+    },
+    {
+      "moteur": "intelligence_monitor",
+      "chemin": "vertex/engines/intelligence_monitor.py",
+      "statut": "SERVI",
+      "appels_production": 2,
+      "lignes": 121
+    },
+    {
+      "moteur": "iv_skew_context",
+      "chemin": "vertex/engines/iv_skew_context.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 39
+    },
+    {
+      "moteur": "iv_term_structure",
+      "chemin": "vertex/engines/iv_term_structure.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 45
+    },
+    {
+      "moteur": "knowledge_graph",
+      "chemin": "vertex/engines/knowledge_graph.py",
+      "statut": "SERVI",
+      "appels_production": 2,
+      "lignes": 428
+    },
+    {
+      "moteur": "market_context",
+      "chemin": "vertex/engines/market_context.py",
+      "statut": "SERVI",
+      "appels_production": 3,
+      "lignes": 200
+    },
+    {
+      "moteur": "market_lens",
+      "chemin": "vertex/engines/market_lens.py",
+      "statut": "SERVI",
+      "appels_production": 4,
+      "lignes": 77
+    },
+    {
+      "moteur": "multi_asset_guard",
+      "chemin": "vertex/engines/multi_asset_guard.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 46
+    },
+    {
+      "moteur": "multileg_lab",
+      "chemin": "vertex/engines/multileg_lab.py",
+      "statut": "SERVI",
+      "appels_production": 2,
+      "lignes": 567
+    },
+    {
+      "moteur": "open_interest_concentration",
+      "chemin": "vertex/engines/open_interest_concentration.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 61
+    },
+    {
+      "moteur": "opportunity_attribution",
+      "chemin": "vertex/engines/opportunity_attribution.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 61
+    },
+    {
+      "moteur": "opportunity_reliability",
+      "chemin": "vertex/engines/opportunity_reliability.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 61
+    },
+    {
+      "moteur": "options_lab",
+      "chemin": "vertex/engines/options_lab.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 1164
+    },
+    {
+      "moteur": "performance_ledger",
+      "chemin": "vertex/engines/performance_ledger.py",
+      "statut": "INATTEINT",
+      "appels_production": 0,
+      "lignes": 124
+    },
+    {
+      "moteur": "portfolio_context",
+      "chemin": "vertex/engines/portfolio_context.py",
+      "statut": "SERVI",
+      "appels_production": 3,
+      "lignes": 294
+    },
+    {
+      "moteur": "portfolio_stress",
+      "chemin": "vertex/engines/portfolio_stress.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 110
+    },
+    {
+      "moteur": "postmortem",
+      "chemin": "vertex/engines/postmortem.py",
+      "statut": "SERVI",
+      "appels_production": 2,
+      "lignes": 151
+    },
+    {
+      "moteur": "pretrade",
+      "chemin": "vertex/engines/pretrade.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 185
+    },
+    {
+      "moteur": "quant_engine",
+      "chemin": "vertex/engines/quant_engine.py",
+      "statut": "SERVI",
+      "appels_production": 2,
+      "lignes": 425
+    },
+    {
+      "moteur": "reasoning",
+      "chemin": "vertex/engines/reasoning.py",
+      "statut": "INDIRECT",
+      "appels_production": 1,
+      "lignes": 97
+    },
+    {
+      "moteur": "recommendation",
+      "chemin": "vertex/engines/recommendation.py",
+      "statut": "SERVI",
+      "appels_production": 3,
+      "lignes": 219
+    },
+    {
+      "moteur": "red_team",
+      "chemin": "vertex/engines/red_team.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 297
+    },
+    {
+      "moteur": "relative_strength_context",
+      "chemin": "vertex/engines/relative_strength_context.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 58
+    },
+    {
+      "moteur": "relative_volume_context",
+      "chemin": "vertex/engines/relative_volume_context.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 53
+    },
+    {
+      "moteur": "scorecard",
+      "chemin": "vertex/engines/scorecard.py",
+      "statut": "SERVI",
+      "appels_production": 2,
+      "lignes": 254
+    },
+    {
+      "moteur": "session_digest",
+      "chemin": "vertex/engines/session_digest.py",
+      "statut": "SERVI",
+      "appels_production": 2,
+      "lignes": 116
+    },
+    {
+      "moteur": "session_log",
+      "chemin": "vertex/engines/session_log.py",
+      "statut": "SERVI",
+      "appels_production": 6,
+      "lignes": 115
+    },
+    {
+      "moteur": "session_snapshot",
+      "chemin": "vertex/engines/session_snapshot.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 70
+    },
+    {
+      "moteur": "skyler_core",
+      "chemin": "vertex/engines/skyler_core.py",
+      "statut": "SERVI",
+      "appels_production": 6,
+      "lignes": 745
+    },
+    {
+      "moteur": "skyler_journal",
+      "chemin": "vertex/engines/skyler_journal.py",
+      "statut": "SERVI",
+      "appels_production": 3,
+      "lignes": 142
+    },
+    {
+      "moteur": "skyler_sweep",
+      "chemin": "vertex/engines/skyler_sweep.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 79
+    },
+    {
+      "moteur": "stats",
+      "chemin": "vertex/engines/stats.py",
+      "statut": "SERVI",
+      "appels_production": 2,
+      "lignes": 48
+    },
+    {
+      "moteur": "strategy_fit",
+      "chemin": "vertex/engines/strategy_fit.py",
+      "statut": "SERVI",
+      "appels_production": 3,
+      "lignes": 161
+    },
+    {
+      "moteur": "swing",
+      "chemin": "vertex/engines/swing.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 72
+    },
+    {
+      "moteur": "timeframes",
+      "chemin": "vertex/engines/timeframes.py",
+      "statut": "INDIRECT",
+      "appels_production": 1,
+      "lignes": 66
+    },
+    {
+      "moteur": "track_record",
+      "chemin": "vertex/engines/track_record.py",
+      "statut": "SERVI",
+      "appels_production": 2,
+      "lignes": 221
+    },
+    {
+      "moteur": "walk_forward_validation",
+      "chemin": "vertex/engines/walk_forward_validation.py",
+      "statut": "SERVI",
+      "appels_production": 1,
+      "lignes": 145
+    }
+  ],
+  "surfaces_de_depart": 52
+}

@@ -290,7 +290,15 @@
 }
 .vx-content[data-space="markets"] .vx-mk-idx[data-dir="up"]::after{background:var(--vx-positive)}
 .vx-content[data-space="markets"] .vx-mk-idx[data-dir="down"]::after{background:var(--vx-negative)}
-.vx-content[data-space="markets"] .vx-mk-idx-top{display:flex;align-items:center;gap:9px}
+/* `flex-wrap` + `min-width:0` : sans eux, rien dans cette rangee ne peut ceder.
+   Le monogramme est fige a 34 px, la pastille est en `white-space:nowrap`, et
+   le nom ne retrecit pas — la somme depassait donc la carte, que le
+   `overflow-x:hidden` de `.vx-mk-idx` COUPAIT en silence. Mesure a 390 px :
+   198 px de contenu dans 143 px, « milieu de plage » tronque sans points de
+   suspension ni barre de defilement (Nasdaq, Dow). La pastille passe desormais
+   a la ligne quand elle ne tient pas, et reste a droite grace au
+   `margin-left:auto`. Aucun effet au-dela de 390 px : la rangee y tient deja. */
+.vx-content[data-space="markets"] .vx-mk-idx-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .vx-content[data-space="markets"] .vx-mk-mono{
   width:34px;height:34px;flex:0 0 34px;border-radius:9px;display:grid;place-items:center;
   font-size:11px;font-weight:800;letter-spacing:.02em;color:var(--vx-ember-400);
@@ -299,7 +307,11 @@
   border:1px solid var(--vx-border-accent);
   box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 4px 12px -8px rgba(0,0,0,.6);
 }
-.vx-content[data-space="markets"] .vx-mk-idx-name{font-size:13px;font-weight:650;color:var(--vx-text-primary);line-height:1.15}
+/* `min-width:0` leve le plancher implicite des elements flex (`auto` = taille
+   du contenu) ; les points de suspension disent alors au lecteur qu'il manque
+   du texte, au lieu de le couper sans le dire. */
+.vx-content[data-space="markets"] .vx-mk-idx-name{font-size:13px;font-weight:650;color:var(--vx-text-primary);line-height:1.15;
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vx-content[data-space="markets"] .vx-mk-idx-rel{
   margin-left:auto;font-size:10.5px;font-weight:650;letter-spacing:.02em;padding:3px 8px;border-radius:999px;
   color:var(--vx-text-secondary);background:rgba(0,0,0,.3);border:1px solid var(--ng-border-soft);white-space:nowrap;
