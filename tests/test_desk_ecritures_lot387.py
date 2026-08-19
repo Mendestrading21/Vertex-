@@ -233,13 +233,50 @@ def test_l_ecrivain_autorise_restaure_sous_finally(nom):
 
 def test_la_remise_en_etat_repousse_bien_l_etat_initial():
     """Le `finally` ne suffit pas s'il repousse autre chose que l'état lu au
-    départ. Vérifie que la restauration référence bien `d0`."""
-    src = _source('test_desk_cycle_lot84.py')
-    apres_finally = src.split('finally:', 1)
-    assert len(apres_finally) == 2, 'le `finally` a disparu'
-    assert "'data': d0.get('data')" in apres_finally[1], (
-        'la remise en état ne repousse plus l\'état initial `d0` : elle '
-        'écrirait autre chose que ce que l\'utilisateur avait')
+    départ. Vérifie que le payload restauré DÉRIVE bien de `d0`.
+
+    ⚠ Version précédente : elle cherchait la chaîne exacte
+    `'data': d0.get('data')`. Le durcissement de #783/G2 — le serveur conserve
+    désormais une clé qu'un push omet — a obligé le `finally` à passer par une
+    variable (`retour = dict(d0.get('data') or {})`, plus la clé du test vidée
+    EXPLICITEMENT, sans quoi le marqueur resterait dans le desk réel). La chaîne
+    littérale a disparu ; l'intention, elle, est mieux tenue qu'avant.
+
+    D'où une vérification par l'AST plutôt que par le texte : la valeur postée
+    doit être `d0.get('data')` **ou** un nom construit à partir de `d0` dans ce
+    même `finally`. Un payload qui ne descend pas de `d0` échoue toujours."""
+    import ast as _ast
+    arbre = _ast.parse(_source('test_desk_cycle_lot84.py'))
+    fn = next(n for n in _ast.walk(arbre)
+              if isinstance(n, _ast.FunctionDef)
+              and n.name == 'test_desk_roundtrip_is_faithful')
+    essai = next(n for n in _ast.walk(fn) if isinstance(n, _ast.Try) and n.finalbody)
+    corps = essai.finalbody
+
+    def _cite_d0(noeud):
+        return any(isinstance(x, _ast.Name) and x.id == 'd0'
+                   for x in _ast.walk(noeud))
+
+    #  Les noms locaux du `finally` bâtis à partir de `d0`.
+    issus_de_d0 = {c.id for st in corps if isinstance(st, _ast.Assign)
+                   and _cite_d0(st.value)
+                   for c in st.targets if isinstance(c, _ast.Name)}
+
+    postes = [n for st in corps for n in _ast.walk(st)
+              if isinstance(n, _ast.Call) and isinstance(n.func, _ast.Attribute)
+              and n.func.attr == 'post']
+    assert postes, 'le `finally` ne repousse plus rien'
+    for appel in postes:
+        charge = next((k.value for k in appel.keywords if k.arg == 'json'), None)
+        assert isinstance(charge, _ast.Dict), 'payload de remise en etat illisible'
+        valeur = next((v for k, v in zip(charge.keys, charge.values)
+                       if isinstance(k, _ast.Constant) and k.value == 'data'), None)
+        assert valeur is not None, 'la remise en etat ne poste plus de `data`'
+        descend = _cite_d0(valeur) or (isinstance(valeur, _ast.Name)
+                                       and valeur.id in issus_de_d0)
+        assert descend, (
+            'la remise en etat ne repousse plus l\'etat initial `d0` : elle '
+            'ecrirait autre chose que ce que l\'utilisateur avait')
 
 
 # ── 4. La clé touchée est bien une donnée personnelle synchronisée ──────────

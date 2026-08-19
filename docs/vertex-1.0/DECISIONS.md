@@ -15,3 +15,4 @@
 | D-011 | Le runtime canonique active le corpus V4; le lancement direct de `terminal.py` conserve V3 uniquement comme rollback transitoire. | active |
 | D-012 | Une capacité n'est « terminée » que si elle satisfait `QUALITY_STANDARD.md`. | active |
 | D-013 | Les suppressions legacy suivent `CLEANUP_POLICY.md`; aucune suppression de masse aveugle. | active |
+| D-014 | Sync du desk : **une clé omise par un push est conservée**, car aucun chemin du produit ne supprime une clé de localStorage — une absence est toujours un défaut de lecture. Supprimer se dit en envoyant la clé **vide**. Un instantané `desk_avantperte_*` est pris à la seconde dès qu'une clé est menacée. | active |
