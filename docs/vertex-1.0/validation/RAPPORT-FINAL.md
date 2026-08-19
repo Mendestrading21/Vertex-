@@ -69,9 +69,8 @@ feuilles CSS (152 Ko), **toutes servies sur les huit**.
 ## 3. Preuves
 
 ```text
-pytest tests/ -q       3 380 passed, 2 failed -> les 2 corrigés, re-run ciblé
-                       des 3 fichiers concernés : 20 passed. Confirmation de la
-                       suite ENTIÈRE après correction : à refaire au merge.
+pytest tests/ -q       3 382 passed   (mesuré après correction des 2 échecs
+                       du passage précédent — voir §5, dernier point)
 compileall             exit 0
 /healthz               200
 /api/client-log        count: 0
