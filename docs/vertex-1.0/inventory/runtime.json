@@ -1,0 +1,10186 @@
+{
+ "matrice_routes": [
+  {
+   "chemin": "/api/copilot/ask",
+   "fichier": "vertex/app/routes/ai_api.py",
+   "ligne": 22,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "copilot_ask"
+  },
+  {
+   "chemin": "/api/ai/enrichment",
+   "fichier": "vertex/app/routes/ai_api.py",
+   "ligne": 87,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "ai_enrichment"
+  },
+  {
+   "chemin": "/api/ai/status",
+   "fichier": "vertex/app/routes/ai_api.py",
+   "ligne": 93,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "ai_status"
+  },
+  {
+   "chemin": "/api/ai/refresh",
+   "fichier": "vertex/app/routes/ai_api.py",
+   "ligne": 102,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "ai_refresh"
+  },
+  {
+   "chemin": "/api/vertex/<sym>",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 41,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_vertex"
+  },
+  {
+   "chemin": "/api/validator",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 58,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_validator"
+  },
+  {
+   "chemin": "/api/risk",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 68,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_risk"
+  },
+  {
+   "chemin": "/api/anomalies/<sym>",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 81,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_anomalies"
+  },
+  {
+   "chemin": "/api/evidence/<sym>",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 100,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_evidence"
+  },
+  {
+   "chemin": "/api/skyler/<sym>",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 119,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler"
+  },
+  {
+   "chemin": "/api/skyler/sweep",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 350,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler_sweep"
+  },
+  {
+   "chemin": "/api/skyler/calibration",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 369,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler_calibration"
+  },
+  {
+   "chemin": "/api/skyler/monitor",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 386,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler_monitor"
+  },
+  {
+   "chemin": "/api/skyler/validation",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 404,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler_validation"
+  },
+  {
+   "chemin": "/api/skyler/health",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 421,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler_health"
+  },
+  {
+   "chemin": "/api/skyler/memory",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 431,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler_memory"
+  },
+  {
+   "chemin": "/api/skyler/memory/export",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 508,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler_memory_export"
+  },
+  {
+   "chemin": "/api/skyler/memory/import",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 553,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler_memory_import"
+  },
+  {
+   "chemin": "/api/skyler/memory/cell/<group>/<key>",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 609,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler_memory_cell"
+  },
+  {
+   "chemin": "/api/skyler/memory/<decision_id>",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 633,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler_memory_detail"
+  },
+  {
+   "chemin": "/memory/cell/<group>/<key>",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 654,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "memory_cell_view"
+  },
+  {
+   "chemin": "/memory/<decision_id>",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 729,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "memory_postmortem_view"
+  },
+  {
+   "chemin": "/api/skyler/graph",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 862,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler_graph"
+  },
+  {
+   "chemin": "/api/skyler/graph/<sym>",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 872,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_skyler_graph_sym"
+  },
+  {
+   "chemin": "/api/events/<sym>",
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "ligne": 902,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_events"
+  },
+  {
+   "chemin": "/login",
+   "fichier": "vertex/app/routes/auth.py",
+   "ligne": 116,
+   "methodes": [
+    "GET",
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "login_page"
+  },
+  {
+   "chemin": "/logout",
+   "fichier": "vertex/app/routes/auth.py",
+   "ligne": 142,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "logout_page"
+  },
+  {
+   "chemin": "/api/command",
+   "fichier": "vertex/app/routes/command.py",
+   "ligne": 36,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_command"
+  },
+  {
+   "chemin": "/api/portefeuille",
+   "fichier": "vertex/app/routes/command.py",
+   "ligne": 141,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_portefeuille"
+  },
+  {
+   "chemin": "/api/company/<sym>",
+   "fichier": "vertex/app/routes/company_api.py",
+   "ligne": 40,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_company"
+  },
+  {
+   "chemin": "/api/analyst/<sym>",
+   "fichier": "vertex/app/routes/company_api.py",
+   "ligne": 49,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_analyst"
+  },
+  {
+   "chemin": "/api/names",
+   "fichier": "vertex/app/routes/company_api.py",
+   "ligne": 61,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_names"
+  },
+  {
+   "chemin": "/news-feed",
+   "fichier": "vertex/app/routes/content.py",
+   "ligne": 20,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "news_feed_ep"
+  },
+  {
+   "chemin": "/cal-feed",
+   "fichier": "vertex/app/routes/content.py",
+   "ligne": 38,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "cal_feed_ep"
+  },
+  {
+   "chemin": "/weekly-feed",
+   "fichier": "vertex/app/routes/content.py",
+   "ligne": 44,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "weekly_feed_ep"
+  },
+  {
+   "chemin": "/api/correlations/<sym>",
+   "fichier": "vertex/app/routes/correlations_api.py",
+   "ligne": 73,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_correlations"
+  },
+  {
+   "chemin": "/api/decision/<sym>",
+   "fichier": "vertex/app/routes/decision_api.py",
+   "ligne": 81,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "decision_ep"
+  },
+  {
+   "chemin": "/api/position-decision/<sym>",
+   "fichier": "vertex/app/routes/decision_api.py",
+   "ligne": 99,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "position_decision_ep"
+  },
+  {
+   "chemin": "/api/options-for/<sym>",
+   "fichier": "vertex/app/routes/decision_api.py",
+   "ligne": 140,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "options_for_ep"
+  },
+  {
+   "chemin": "/api/brief",
+   "fichier": "vertex/app/routes/decision_api.py",
+   "ligne": 149,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "brief_ep"
+  },
+  {
+   "chemin": "/api/committee-review",
+   "fichier": "vertex/app/routes/decision_api.py",
+   "ligne": 171,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "committee_review_ep"
+  },
+  {
+   "chemin": "/desc/<sym>",
+   "fichier": "vertex/app/routes/descriptions_api.py",
+   "ligne": 64,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "desc_ep"
+  },
+  {
+   "chemin": "/api/desk",
+   "fichier": "vertex/app/routes/desk.py",
+   "ligne": 72,
+   "methodes": [
+    "GET",
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_desk"
+  },
+  {
+   "chemin": "/api/desk/backups",
+   "fichier": "vertex/app/routes/desk.py",
+   "ligne": 88,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_desk_backups"
+  },
+  {
+   "chemin": "/api/desk/restore",
+   "fichier": "vertex/app/routes/desk.py",
+   "ligne": 97,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_desk_restore"
+  },
+  {
+   "chemin": "/api/journal/postmortem",
+   "fichier": "vertex/app/routes/desk.py",
+   "ligne": 115,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_journal_postmortem"
+  },
+  {
+   "chemin": "/api/watchlist-tv",
+   "fichier": "vertex/app/routes/desk.py",
+   "ligne": 134,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_watchlist_tv"
+  },
+  {
+   "chemin": "/api/ibkr/positions",
+   "fichier": "vertex/app/routes/desk.py",
+   "ligne": 140,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_ibkr_positions"
+  },
+  {
+   "chemin": "/api/pos-quotes",
+   "fichier": "vertex/app/routes/desk.py",
+   "ligne": 155,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_pos_quotes"
+  },
+  {
+   "chemin": "/api/market/summary",
+   "fichier": "vertex/app/routes/feeds.py",
+   "ligne": 28,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_market_summary"
+  },
+  {
+   "chemin": "/api/market/context",
+   "fichier": "vertex/app/routes/feeds.py",
+   "ligne": 48,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_market_context"
+  },
+  {
+   "chemin": "/api/cockpit",
+   "fichier": "vertex/app/routes/feeds.py",
+   "ligne": 65,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_cockpit"
+  },
+  {
+   "chemin": "/api/watchlist",
+   "fichier": "vertex/app/routes/feeds.py",
+   "ligne": 80,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_watchlist"
+  },
+  {
+   "chemin": "/api/options",
+   "fichier": "vertex/app/routes/feeds.py",
+   "ligne": 87,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_options"
+  },
+  {
+   "chemin": "/api/search",
+   "fichier": "vertex/app/routes/feeds.py",
+   "ligne": 92,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_search"
+  },
+  {
+   "chemin": "/api/weekly",
+   "fichier": "vertex/app/routes/feeds.py",
+   "ligne": 99,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_weekly"
+  },
+  {
+   "chemin": "/api/strategie",
+   "fichier": "vertex/app/routes/feeds.py",
+   "ligne": 104,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_strategie"
+  },
+  {
+   "chemin": "/api/comite",
+   "fichier": "vertex/app/routes/feeds.py",
+   "ligne": 110,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_comite"
+  },
+  {
+   "chemin": "/api/live/status",
+   "fichier": "vertex/app/routes/live_api.py",
+   "ligne": 19,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "live_status"
+  },
+  {
+   "chemin": "/api/live/refresh",
+   "fichier": "vertex/app/routes/live_api.py",
+   "ligne": 24,
+   "methodes": [
+    "POST",
+    "GET"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "live_refresh"
+  },
+  {
+   "chemin": "/api/live/report",
+   "fichier": "vertex/app/routes/live_api.py",
+   "ligne": 31,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "live_report"
+  },
+  {
+   "chemin": "/api/live/events",
+   "fichier": "vertex/app/routes/live_events.py",
+   "ligne": 19,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "live_events"
+  },
+  {
+   "chemin": "/api/live/events/stats",
+   "fichier": "vertex/app/routes/live_events.py",
+   "ligne": 49,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "live_events_stats"
+  },
+  {
+   "chemin": "/quotes",
+   "fichier": "vertex/app/routes/live_state_api.py",
+   "ligne": 58,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "quotes_ep"
+  },
+  {
+   "chemin": "/ibkr",
+   "fichier": "vertex/app/routes/live_state_api.py",
+   "ligne": 65,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "ibkr_ep"
+  },
+  {
+   "chemin": "/api/alerts/status",
+   "fichier": "vertex/app/routes/live_state_api.py",
+   "ligne": 69,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_alerts_status"
+  },
+  {
+   "chemin": "/api/opportunities/funnel",
+   "fichier": "vertex/app/routes/opportunities_api.py",
+   "ligne": 38,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "opportunities_funnel"
+  },
+  {
+   "chemin": "/api/options/overview",
+   "fichier": "vertex/app/routes/options_intel_api.py",
+   "ligne": 34,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "options_overview"
+  },
+  {
+   "chemin": "/api/options/environment",
+   "fichier": "vertex/app/routes/options_intel_api.py",
+   "ligne": 45,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "options_environment"
+  },
+  {
+   "chemin": "/api/options/volatility/<sym>",
+   "fichier": "vertex/app/routes/options_intel_api.py",
+   "ligne": 57,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "options_volatility"
+  },
+  {
+   "chemin": "/api/options/scenarios/<sym>",
+   "fichier": "vertex/app/routes/options_intel_api.py",
+   "ligne": 82,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "options_scenarios"
+  },
+  {
+   "chemin": "/api/options/gex-radar",
+   "fichier": "vertex/app/routes/options_intel_api.py",
+   "ligne": 139,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "options_gex_radar"
+  },
+  {
+   "chemin": "/api/options/gex/<sym>",
+   "fichier": "vertex/app/routes/options_intel_api.py",
+   "ligne": 154,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "options_gex"
+  },
+  {
+   "chemin": "/api/options/vol-charts/<sym>",
+   "fichier": "vertex/app/routes/options_intel_api.py",
+   "ligne": 215,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "options_vol_charts"
+  },
+  {
+   "chemin": "/api/options/event-risk/<sym>",
+   "fichier": "vertex/app/routes/options_intel_api.py",
+   "ligne": 242,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "options_event_risk"
+  },
+  {
+   "chemin": "/api/charts/<path:chart_id>/interpretation",
+   "fichier": "vertex/app/routes/options_intel_api.py",
+   "ligne": 260,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "chart_interpretation"
+  },
+  {
+   "chemin": "/api/options/scanner/<universe>",
+   "fichier": "vertex/app/routes/options_intel_api.py",
+   "ligne": 279,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_options_scanner"
+  },
+  {
+   "chemin": "/api/options-lab",
+   "fichier": "vertex/app/routes/options_lab_api.py",
+   "ligne": 20,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_options_lab"
+  },
+  {
+   "chemin": "/api/options/strategies/<sym>",
+   "fichier": "vertex/app/routes/options_lab_api.py",
+   "ligne": 31,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_options_strategies"
+  },
+  {
+   "chemin": "/api/options/analyze",
+   "fichier": "vertex/app/routes/options_lab_api.py",
+   "ligne": 61,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_options_analyze"
+  },
+  {
+   "chemin": "/api/planning/ticket",
+   "fichier": "vertex/app/routes/planning_api.py",
+   "ligne": 18,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "planning_ticket"
+  },
+  {
+   "chemin": "/api/positions/state",
+   "fichier": "vertex/app/routes/positions_api.py",
+   "ligne": 52,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "positions_state"
+  },
+  {
+   "chemin": "/api/positions/report",
+   "fichier": "vertex/app/routes/positions_api.py",
+   "ligne": 65,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "positions_report"
+  },
+  {
+   "chemin": "/api/positions/audit",
+   "fichier": "vertex/app/routes/positions_api.py",
+   "ligne": 72,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "positions_audit"
+  },
+  {
+   "chemin": "/api/positions/reconcile",
+   "fichier": "vertex/app/routes/positions_api.py",
+   "ligne": 79,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "positions_reconcile"
+  },
+  {
+   "chemin": "/api/portfolio/stress",
+   "fichier": "vertex/app/routes/positions_api.py",
+   "ligne": 89,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "portfolio_stress"
+  },
+  {
+   "chemin": "/api/portfolio/context",
+   "fichier": "vertex/app/routes/positions_api.py",
+   "ligne": 109,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "portfolio_context_ep"
+  },
+  {
+   "chemin": "/api/pretrade/check",
+   "fichier": "vertex/app/routes/positions_api.py",
+   "ligne": 124,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "pretrade_check"
+  },
+  {
+   "chemin": "/api/positions/alerts",
+   "fichier": "vertex/app/routes/positions_api.py",
+   "ligne": 167,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "positions_alerts"
+  },
+  {
+   "chemin": "/api/positions/<position_id>/changes",
+   "fichier": "vertex/app/routes/positions_api.py",
+   "ligne": 228,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "position_changes"
+  },
+  {
+   "chemin": "/static/vertex/<path:filename>",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 73,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "vx_static"
+  },
+  {
+   "chemin": "/",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 80,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "briefing_route"
+  },
+  {
+   "chemin": "/markets",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 84,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "markets_route"
+  },
+  {
+   "chemin": "/opportunities",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 88,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "opportunities_route"
+  },
+  {
+   "chemin": "/portfolio",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 93,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "portfolio_route"
+  },
+  {
+   "chemin": "/analysis",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 97,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "analysis_index_route"
+  },
+  {
+   "chemin": "/analysis/<sym>",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 101,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "analysis_route"
+  },
+  {
+   "chemin": "/journal",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 109,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "journal_route"
+  },
+  {
+   "chemin": "/intelligence",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 117,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "intelligence_route"
+  },
+  {
+   "chemin": "/system",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 121,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "system_route"
+  },
+  {
+   "chemin": "/system/design-system",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 125,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "design_system_route"
+  },
+  {
+   "chemin": "/options",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 133,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "options_intel_route"
+  },
+  {
+   "chemin": "/tracking",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 139,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "tracking_route"
+  },
+  {
+   "chemin": "/design-system",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 147,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "design_system_page_route"
+  },
+  {
+   "chemin": "/widget-lab",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 155,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "widget_lab_route"
+  },
+  {
+   "chemin": "/api/briefing/editorial",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 161,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "briefing_editorial"
+  },
+  {
+   "chemin": "/api/options/simulate",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 196,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "options_simulate"
+  },
+  {
+   "chemin": "/titre/<sym>",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 255,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "legacy_titre"
+  },
+  {
+   "chemin": "/company/<sym>",
+   "fichier": "vertex/app/routes/redesign.py",
+   "ligne": 255,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "legacy_titre"
+  },
+  {
+   "chemin": "/scan",
+   "fichier": "vertex/app/routes/scan_api.py",
+   "ligne": 45,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "scan_ep"
+  },
+  {
+   "chemin": "/api/rescan",
+   "fichier": "vertex/app/routes/scan_api.py",
+   "ligne": 62,
+   "methodes": [
+    "POST",
+    "GET"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_rescan"
+  },
+  {
+   "chemin": "/api/session/digest",
+   "fichier": "vertex/app/routes/session_api.py",
+   "ligne": 37,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_session_digest"
+  },
+  {
+   "chemin": "/api/session/manifest",
+   "fichier": "vertex/app/routes/session_api.py",
+   "ligne": 64,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_session_manifest"
+  },
+  {
+   "chemin": "/api/strategy/profile",
+   "fichier": "vertex/app/routes/strategy_os_api.py",
+   "ligne": 35,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "strategy_profile"
+  },
+  {
+   "chemin": "/api/strategy/decision/<sym>",
+   "fichier": "vertex/app/routes/strategy_os_api.py",
+   "ligne": 43,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "strategy_decision"
+  },
+  {
+   "chemin": "/api/market/regime",
+   "fichier": "vertex/app/routes/strategy_os_api.py",
+   "ligne": 63,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "market_regime"
+  },
+  {
+   "chemin": "/api/company/twin/<sym>",
+   "fichier": "vertex/app/routes/strategy_os_api.py",
+   "ligne": 76,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "company_twin_ep"
+  },
+  {
+   "chemin": "/api/anomalies/<sym>",
+   "fichier": "vertex/app/routes/strategy_os_api.py",
+   "ligne": 82,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "anomalies_for"
+  },
+  {
+   "chemin": "/api/portfolio/team",
+   "fichier": "vertex/app/routes/strategy_os_api.py",
+   "ligne": 96,
+   "methodes": [
+    "GET",
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "portfolio_team"
+  },
+  {
+   "chemin": "/api/alerts/active",
+   "fichier": "vertex/app/routes/strategy_os_api.py",
+   "ligne": 123,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "alerts_active"
+  },
+  {
+   "chemin": "/api/system/diagnostics",
+   "fichier": "vertex/app/routes/strategy_os_api.py",
+   "ligne": 127,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "diagnostics"
+  },
+  {
+   "chemin": "/api/data-quality",
+   "fichier": "vertex/app/routes/strategy_os_api.py",
+   "ligne": 133,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "data_quality"
+  },
+  {
+   "chemin": "/healthz",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 27,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "healthz"
+  },
+  {
+   "chemin": "/api/healthz",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 27,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "healthz"
+  },
+  {
+   "chemin": "/api/client-log",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 54,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "client_log_post"
+  },
+  {
+   "chemin": "/api/client-log",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 67,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "client_log_get"
+  },
+  {
+   "chemin": "/api/system/startup-report",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 73,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "startup_report_ep"
+  },
+  {
+   "chemin": "/api/system/config",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 80,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "config_validation_ep"
+  },
+  {
+   "chemin": "/api/system/automations",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 88,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "automations_ep"
+  },
+  {
+   "chemin": "/api/system/jobs",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 88,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "automations_ep"
+  },
+  {
+   "chemin": "/api/system/connections",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 96,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "connections_ep"
+  },
+  {
+   "chemin": "/readyz",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 106,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "readyz"
+  },
+  {
+   "chemin": "/api/system-status",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 152,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "system_status_ep"
+  },
+  {
+   "chemin": "/api/system/status",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 152,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "system_status_ep"
+  },
+  {
+   "chemin": "/favicon.ico",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 177,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "favicon_ep"
+  },
+  {
+   "chemin": "/favicon.svg",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 177,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "favicon_ep"
+  },
+  {
+   "chemin": "/manifest.webmanifest",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 192,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "manifest_ep"
+  },
+  {
+   "chemin": "/sw.js",
+   "fichier": "vertex/app/routes/system.py",
+   "ligne": 236,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "service_worker"
+  },
+  {
+   "chemin": "/options/<sym>",
+   "fichier": "vertex/app/routes/ticker_api.py",
+   "ligne": 43,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "opt_ep"
+  },
+  {
+   "chemin": "/api/ticker/<sym>",
+   "fichier": "vertex/app/routes/ticker_api.py",
+   "ligne": 48,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_ticker"
+  },
+  {
+   "chemin": "/api/track-record",
+   "fichier": "vertex/app/routes/track_record_api.py",
+   "ligne": 33,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_track_record"
+  },
+  {
+   "chemin": "/api/tracking",
+   "fichier": "vertex/app/routes/tracking_api.py",
+   "ligne": 72,
+   "methodes": [
+    "GET"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "list_tracking"
+  },
+  {
+   "chemin": "/api/tracking/summary",
+   "fichier": "vertex/app/routes/tracking_api.py",
+   "ligne": 79,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "tracking_summary"
+  },
+  {
+   "chemin": "/api/tracking/options/cohort",
+   "fichier": "vertex/app/routes/tracking_api.py",
+   "ligne": 84,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "tracking_option_cohort"
+  },
+  {
+   "chemin": "/api/tracking",
+   "fichier": "vertex/app/routes/tracking_api.py",
+   "ligne": 92,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "create_tracking"
+  },
+  {
+   "chemin": "/api/tracking/<tracking_id>",
+   "fichier": "vertex/app/routes/tracking_api.py",
+   "ligne": 126,
+   "methodes": [
+    "GET"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "get_tracking"
+  },
+  {
+   "chemin": "/api/tracking/<tracking_id>",
+   "fichier": "vertex/app/routes/tracking_api.py",
+   "ligne": 134,
+   "methodes": [
+    "PATCH"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "patch_tracking"
+  },
+  {
+   "chemin": "/api/tracking/<tracking_id>/performance",
+   "fichier": "vertex/app/routes/tracking_api.py",
+   "ligne": 143,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "tracking_performance"
+  },
+  {
+   "chemin": "/api/tracking/<tracking_id>/stop",
+   "fichier": "vertex/app/routes/tracking_api.py",
+   "ligne": 164,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "stop_tracking"
+  },
+  {
+   "chemin": "/api/tracking/<tracking_id>/restart",
+   "fichier": "vertex/app/routes/tracking_api.py",
+   "ligne": 180,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "restart_tracking"
+  },
+  {
+   "chemin": "/api/tracking/<tracking_id>/history",
+   "fichier": "vertex/app/routes/tracking_api.py",
+   "ligne": 197,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "tracking_history"
+  },
+  {
+   "chemin": "/weekly-regen",
+   "fichier": "vertex/app/routes/weekly_api.py",
+   "ligne": 35,
+   "methodes": [
+    "POST",
+    "GET"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "weekly_regen_ep"
+  },
+  {
+   "chemin": "/api/tradingview/webhook",
+   "fichier": "vertex/data_sources/tradingview_webhooks.py",
+   "ligne": 42,
+   "methodes": [
+    "POST"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "tradingview_webhook"
+  },
+  {
+   "chemin": "/api/tradingview/signals",
+   "fichier": "vertex/data_sources/tradingview_webhooks.py",
+   "ligne": 70,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "tradingview_signals"
+  }
+ ],
+ "monolithe": {
+  "blueprints_definis": [],
+  "blueprints_enregistres": [
+   "_desk.make_blueprint",
+   "_tv_webhooks.make_blueprint",
+   "_strategy_os_api.make_blueprint",
+   "_redesign.make_blueprint",
+   "_positions_api.make_blueprint",
+   "_decision_api.make_blueprint",
+   "_live_state_api.make_blueprint"
+  ],
+  "boucles": [
+   "_alerts_loop",
+   "_cal_loop",
+   "_edge_loop",
+   "_fund_loop",
+   "_ibkr_opt_worker",
+   "_indices_loop",
+   "_loop",
+   "_news_loop",
+   "_opt_loop",
+   "_quotes_worker",
+   "_radar_loop",
+   "_weekly_loop",
+   "news"
+  ],
+  "fichier": "terminal.py",
+  "fonctions": 61,
+  "imports": [
+   "asyncio",
+   "collections",
+   "concurrent",
+   "datetime",
+   "dotenv",
+   "ib_async",
+   "ib_reader",
+   "io",
+   "json",
+   "numpy",
+   "os",
+   "pandas",
+   "queue",
+   "threading",
+   "time",
+   "urllib",
+   "vertex",
+   "yfinance",
+   "zlib"
+  ],
+  "lignes": 6789,
+  "octets": 787265,
+  "plus_longue_fonction": [
+   "_ibkr_opt_worker",
+   306
+  ],
+  "routes": [],
+  "stores": [
+   "_STOOQ_IDX",
+   "_IBKR_MODE"
+  ],
+  "workers": [
+   "_alerts_loop",
+   "_brain_boot",
+   "_cal_loop",
+   "_edge_loop",
+   "_fund_loop",
+   "_ibkr_opt_worker",
+   "_ibkr_worker",
+   "_indices_loop",
+   "_loop",
+   "_news_loop",
+   "_opt_loop",
+   "_quotes_worker",
+   "_radar_loop",
+   "_startup",
+   "_weekly_loop"
+  ]
+ },
+ "paquet": [
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/__init__.py",
+   "fonctions": 0,
+   "imports": [
+    "version"
+   ],
+   "lignes": 6,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/__main__.py",
+   "fonctions": 0,
+   "imports": [
+    "runtime"
+   ],
+   "lignes": 8,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/anthropic_provider.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "anthropic",
+    "json",
+    "os",
+    "provider"
+   ],
+   "lignes": 50,
+   "plus_longue_fonction": [
+    "analyze",
+    10
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/audit.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "collections",
+    "threading",
+    "time"
+   ],
+   "lignes": 38,
+   "plus_longue_fonction": [
+    "record",
+    7
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/briefs.py",
+   "fonctions": 6,
+   "imports": [
+    "anthropic",
+    "hashlib",
+    "json",
+    "os",
+    "requests"
+   ],
+   "lignes": 179,
+   "plus_longue_fonction": [
+    "fr_news",
+    50
+   ],
+   "routes": [],
+   "stores": [
+    "_cache"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/copilot.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "anthropic",
+    "json",
+    "vertex"
+   ],
+   "lignes": 160,
+   "plus_longue_fonction": [
+    "build_context",
+    41
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/enrichment.py",
+   "fonctions": 13,
+   "imports": [
+    "__future__",
+    "response_validator",
+    "time",
+    "vertex",
+    "web_provider"
+   ],
+   "lignes": 208,
+   "plus_longue_fonction": [
+    "run",
+    48
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/fallback.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "models"
+   ],
+   "lignes": 45,
+   "plus_longue_fonction": [
+    "deterministic_analysis",
+    33
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/health.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "os",
+    "time"
+   ],
+   "lignes": 47,
+   "plus_longue_fonction": [
+    "health",
+    13
+   ],
+   "routes": [],
+   "stores": [
+    "_LAST"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/investment_agent.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "audit",
+    "fallback",
+    "models",
+    "prompt_builder",
+    "provider",
+    "rate_limits",
+    "response_validator",
+    "time"
+   ],
+   "lignes": 56,
+   "plus_longue_fonction": [
+    "analyze",
+    28
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/models.py",
+   "fonctions": 0,
+   "imports": [
+    "__future__",
+    "dataclasses"
+   ],
+   "lignes": 41,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [
+    "ANALYSIS_RESPONSE_SCHEMA"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/prompt_builder.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "json",
+    "models",
+    "strategy_context"
+   ],
+   "lignes": 48,
+   "plus_longue_fonction": [
+    "build_user_prompt",
+    13
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/provenance.py",
+   "fonctions": 7,
+   "imports": [
+    "__future__",
+    "time"
+   ],
+   "lignes": 109,
+   "plus_longue_fonction": [
+    "wrap",
+    27
+   ],
+   "routes": [],
+   "stores": [
+    "_LABELS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/provider.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 15,
+   "plus_longue_fonction": [
+    "available",
+    1
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/rate_limits.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "threading",
+    "time"
+   ],
+   "lignes": 33,
+   "plus_longue_fonction": [
+    "allow",
+    7
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/response_validator.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "models"
+   ],
+   "lignes": 39,
+   "plus_longue_fonction": [
+    "validate_analysis",
+    28
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/strategy_context.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 26,
+   "plus_longue_fonction": [
+    "build_strategy_context",
+    18
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/tool_registry.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "typing"
+   ],
+   "lignes": 60,
+   "plus_longue_fonction": [
+    "register",
+    5
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ai/web_provider.py",
+   "fonctions": 7,
+   "imports": [
+    "__future__",
+    "anthropic",
+    "json",
+    "os",
+    "provider"
+   ],
+   "lignes": 111,
+   "plus_longue_fonction": [
+    "_extract",
+    22
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/alerts/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/alerts/engine.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "collections",
+    "threading",
+    "time"
+   ],
+   "lignes": 86,
+   "plus_longue_fonction": [
+    "raise_alert",
+    31
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/anomalies/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/anomalies/data_anomalies.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "datetime",
+    "models",
+    "vertex"
+   ],
+   "lignes": 155,
+   "plus_longue_fonction": [
+    "check_bars",
+    60
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/anomalies/models.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "dataclasses"
+   ],
+   "lignes": 32,
+   "plus_longue_fonction": [
+    "blocking_codes",
+    1
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/anomalies/option_anomalies.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "math",
+    "models"
+   ],
+   "lignes": 211,
+   "plus_longue_fonction": [
+    "check_contract",
+    90
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/anomalies/stock_anomalies.py",
+   "fonctions": 12,
+   "imports": [
+    "math",
+    "vertex"
+   ],
+   "lignes": 475,
+   "plus_longue_fonction": [
+    "detect_stock_anomalies",
+    276
+   ],
+   "routes": [],
+   "stores": [
+    "INTEREST"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 1,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/caches.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 138,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [
+    "_STOOQ_CACHE",
+    "_SOURCE_BUDGET_STATE",
+    "_CORR_BENCH",
+    "_ibkr_cache",
+    "_IDX_IBKR",
+    "_IDX_META",
+    "_live_quotes",
+    "_live_meta",
+    "_OPTALL_CACHE",
+    "POLITIQUE"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/config.py",
+   "fonctions": 2,
+   "imports": [
+    "os",
+    "secrets"
+   ],
+   "lignes": 89,
+   "plus_longue_fonction": [
+    "_load_dotenv",
+    19
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/config_validation.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "os"
+   ],
+   "lignes": 82,
+   "plus_longue_fonction": [
+    "validate_config",
+    21
+   ],
+   "routes": [],
+   "stores": [
+    "_ALIASES"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [
+    "_auth.make_blueprint",
+    "bp"
+   ],
+   "boucles": [],
+   "fichier": "vertex/app/factory.py",
+   "fonctions": 10,
+   "imports": [
+    "__future__",
+    "datetime",
+    "flask",
+    "gzip",
+    "importlib",
+    "math",
+    "os",
+    "pathlib",
+    "time",
+    "typing",
+    "vertex"
+   ],
+   "lignes": 311,
+   "plus_longue_fonction": [
+    "create_app",
+    136
+   ],
+   "routes": [],
+   "stores": [
+    "A_INJECTION"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/ibkr_state.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "time",
+    "vertex"
+   ],
+   "lignes": 67,
+   "plus_longue_fonction": [
+    "sync",
+    9
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/input_validation.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "re"
+   ],
+   "lignes": 16,
+   "plus_longue_fonction": [
+    "symbol",
+    3
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/lifecycle.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "threading",
+    "typing"
+   ],
+   "lignes": 102,
+   "plus_longue_fonction": [
+    "demarrer_une_seule_fois",
+    18
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/payload_validation.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "math",
+    "vertex"
+   ],
+   "lignes": 53,
+   "plus_longue_fonction": [
+    "optional_number",
+    12
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/rescan_gate.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "math",
+    "os",
+    "threading",
+    "time"
+   ],
+   "lignes": 102,
+   "plus_longue_fonction": [
+    "fenetre_depuis_env",
+    16
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "ai_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/ai_api.py",
+   "fonctions": 8,
+   "imports": [
+    "__future__",
+    "flask",
+    "json",
+    "threading",
+    "vertex"
+   ],
+   "lignes": 111,
+   "plus_longue_fonction": [
+    "enrich_symbols",
+    23
+   ],
+   "routes": [
+    {
+     "chemin": "/api/copilot/ask",
+     "ligne": 22,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "copilot_ask"
+    },
+    {
+     "chemin": "/api/ai/enrichment",
+     "ligne": 87,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "ai_enrichment"
+    },
+    {
+     "chemin": "/api/ai/status",
+     "ligne": 93,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "ai_status"
+    },
+    {
+     "chemin": "/api/ai/refresh",
+     "ligne": 102,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "ai_refresh"
+    }
+   ],
+   "stores": [
+    "_refreshing"
+   ],
+   "workers": [
+    "_run_refresh"
+   ]
+  },
+  {
+   "blueprints_definis": [
+    "analysis_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/analysis_api.py",
+   "fonctions": 26,
+   "imports": [
+    "flask",
+    "hashlib",
+    "json",
+    "markupsafe",
+    "time",
+    "vertex"
+   ],
+   "lignes": 947,
+   "plus_longue_fonction": [
+    "api_skyler",
+    227
+   ],
+   "routes": [
+    {
+     "chemin": "/api/vertex/<sym>",
+     "ligne": 41,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_vertex"
+    },
+    {
+     "chemin": "/api/validator",
+     "ligne": 58,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_validator"
+    },
+    {
+     "chemin": "/api/risk",
+     "ligne": 68,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_risk"
+    },
+    {
+     "chemin": "/api/anomalies/<sym>",
+     "ligne": 81,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_anomalies"
+    },
+    {
+     "chemin": "/api/evidence/<sym>",
+     "ligne": 100,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_evidence"
+    },
+    {
+     "chemin": "/api/skyler/<sym>",
+     "ligne": 119,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler"
+    },
+    {
+     "chemin": "/api/skyler/sweep",
+     "ligne": 350,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler_sweep"
+    },
+    {
+     "chemin": "/api/skyler/calibration",
+     "ligne": 369,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler_calibration"
+    },
+    {
+     "chemin": "/api/skyler/monitor",
+     "ligne": 386,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler_monitor"
+    },
+    {
+     "chemin": "/api/skyler/validation",
+     "ligne": 404,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler_validation"
+    },
+    {
+     "chemin": "/api/skyler/health",
+     "ligne": 421,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler_health"
+    },
+    {
+     "chemin": "/api/skyler/memory",
+     "ligne": 431,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler_memory"
+    },
+    {
+     "chemin": "/api/skyler/memory/export",
+     "ligne": 508,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler_memory_export"
+    },
+    {
+     "chemin": "/api/skyler/memory/import",
+     "ligne": 553,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler_memory_import"
+    },
+    {
+     "chemin": "/api/skyler/memory/cell/<group>/<key>",
+     "ligne": 609,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler_memory_cell"
+    },
+    {
+     "chemin": "/api/skyler/memory/<decision_id>",
+     "ligne": 633,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler_memory_detail"
+    },
+    {
+     "chemin": "/memory/cell/<group>/<key>",
+     "ligne": 654,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "memory_cell_view"
+    },
+    {
+     "chemin": "/memory/<decision_id>",
+     "ligne": 729,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "memory_postmortem_view"
+    },
+    {
+     "chemin": "/api/skyler/graph",
+     "ligne": 862,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler_graph"
+    },
+    {
+     "chemin": "/api/skyler/graph/<sym>",
+     "ligne": 872,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_skyler_graph_sym"
+    },
+    {
+     "chemin": "/api/events/<sym>",
+     "ligne": 902,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_events"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "auth"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/auth.py",
+   "fonctions": 7,
+   "imports": [
+    "flask",
+    "hmac",
+    "html",
+    "time"
+   ],
+   "lignes": 150,
+   "plus_longue_fonction": [
+    "make_blueprint",
+    97
+   ],
+   "routes": [
+    {
+     "chemin": "/login",
+     "ligne": 116,
+     "methodes": [
+      "GET",
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "login_page"
+    },
+    {
+     "chemin": "/logout",
+     "ligne": 142,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "logout_page"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "command"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/command.py",
+   "fonctions": 4,
+   "imports": [
+    "flask",
+    "vertex"
+   ],
+   "lignes": 159,
+   "plus_longue_fonction": [
+    "api_command",
+    101
+   ],
+   "routes": [
+    {
+     "chemin": "/api/command",
+     "ligne": 36,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_command"
+    },
+    {
+     "chemin": "/api/portefeuille",
+     "ligne": 141,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_portefeuille"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "company_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/company_api.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "flask",
+    "vertex"
+   ],
+   "lignes": 73,
+   "plus_longue_fonction": [
+    "api_analyst",
+    8
+   ],
+   "routes": [
+    {
+     "chemin": "/api/company/<sym>",
+     "ligne": 40,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_company"
+    },
+    {
+     "chemin": "/api/analyst/<sym>",
+     "ligne": 49,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_analyst"
+    },
+    {
+     "chemin": "/api/names",
+     "ligne": 61,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_names"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "content"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/content.py",
+   "fonctions": 3,
+   "imports": [
+    "flask",
+    "vertex"
+   ],
+   "lignes": 49,
+   "plus_longue_fonction": [
+    "news_feed_ep",
+    14
+   ],
+   "routes": [
+    {
+     "chemin": "/news-feed",
+     "ligne": 20,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "news_feed_ep"
+    },
+    {
+     "chemin": "/cal-feed",
+     "ligne": 38,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "cal_feed_ep"
+    },
+    {
+     "chemin": "/weekly-feed",
+     "ligne": 44,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "weekly_feed_ep"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "correlations_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/correlations_api.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "flask",
+    "pandas",
+    "time",
+    "vertex",
+    "yfinance"
+   ],
+   "lignes": 109,
+   "plus_longue_fonction": [
+    "api_correlations",
+    32
+   ],
+   "routes": [
+    {
+     "chemin": "/api/correlations/<sym>",
+     "ligne": 73,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_correlations"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "decision_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/decision_api.py",
+   "fonctions": 12,
+   "imports": [
+    "flask",
+    "vertex"
+   ],
+   "lignes": 193,
+   "plus_longue_fonction": [
+    "make_blueprint",
+    166
+   ],
+   "routes": [
+    {
+     "chemin": "/api/decision/<sym>",
+     "ligne": 81,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "decision_ep"
+    },
+    {
+     "chemin": "/api/position-decision/<sym>",
+     "ligne": 99,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "position_decision_ep"
+    },
+    {
+     "chemin": "/api/options-for/<sym>",
+     "ligne": 140,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "options_for_ep"
+    },
+    {
+     "chemin": "/api/brief",
+     "ligne": 149,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "brief_ep"
+    },
+    {
+     "chemin": "/api/committee-review",
+     "ligne": 171,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "committee_review_ep"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "descriptions_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/descriptions_api.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "flask",
+    "json",
+    "threading",
+    "vertex",
+    "yfinance"
+   ],
+   "lignes": 100,
+   "plus_longue_fonction": [
+    "desc_ep",
+    32
+   ],
+   "routes": [
+    {
+     "chemin": "/desc/<sym>",
+     "ligne": 64,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "desc_ep"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "desk"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/desk.py",
+   "fonctions": 10,
+   "imports": [
+    "datetime",
+    "flask",
+    "glob",
+    "json",
+    "os",
+    "re",
+    "shutil",
+    "threading",
+    "time",
+    "vertex"
+   ],
+   "lignes": 199,
+   "plus_longue_fonction": [
+    "make_blueprint",
+    134
+   ],
+   "routes": [
+    {
+     "chemin": "/api/desk",
+     "ligne": 72,
+     "methodes": [
+      "GET",
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "api_desk"
+    },
+    {
+     "chemin": "/api/desk/backups",
+     "ligne": 88,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_desk_backups"
+    },
+    {
+     "chemin": "/api/desk/restore",
+     "ligne": 97,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "api_desk_restore"
+    },
+    {
+     "chemin": "/api/journal/postmortem",
+     "ligne": 115,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_journal_postmortem"
+    },
+    {
+     "chemin": "/api/watchlist-tv",
+     "ligne": 134,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_watchlist_tv"
+    },
+    {
+     "chemin": "/api/ibkr/positions",
+     "ligne": 140,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_ibkr_positions"
+    },
+    {
+     "chemin": "/api/pos-quotes",
+     "ligne": 155,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "api_pos_quotes"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "feeds"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/feeds.py",
+   "fonctions": 10,
+   "imports": [
+    "flask",
+    "time",
+    "vertex"
+   ],
+   "lignes": 116,
+   "plus_longue_fonction": [
+    "api_market_summary",
+    16
+   ],
+   "routes": [
+    {
+     "chemin": "/api/market/summary",
+     "ligne": 28,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_market_summary"
+    },
+    {
+     "chemin": "/api/market/context",
+     "ligne": 48,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_market_context"
+    },
+    {
+     "chemin": "/api/cockpit",
+     "ligne": 65,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_cockpit"
+    },
+    {
+     "chemin": "/api/watchlist",
+     "ligne": 80,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_watchlist"
+    },
+    {
+     "chemin": "/api/options",
+     "ligne": 87,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_options"
+    },
+    {
+     "chemin": "/api/search",
+     "ligne": 92,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_search"
+    },
+    {
+     "chemin": "/api/weekly",
+     "ligne": 99,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_weekly"
+    },
+    {
+     "chemin": "/api/strategie",
+     "ligne": 104,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_strategie"
+    },
+    {
+     "chemin": "/api/comite",
+     "ligne": 110,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_comite"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "live_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/live_api.py",
+   "fonctions": 3,
+   "imports": [
+    "flask",
+    "vertex"
+   ],
+   "lignes": 36,
+   "plus_longue_fonction": [
+    "live_refresh",
+    3
+   ],
+   "routes": [
+    {
+     "chemin": "/api/live/status",
+     "ligne": 19,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "live_status"
+    },
+    {
+     "chemin": "/api/live/refresh",
+     "ligne": 24,
+     "methodes": [
+      "POST",
+      "GET"
+     ],
+     "porteur": "bp",
+     "vue": "live_refresh"
+    },
+    {
+     "chemin": "/api/live/report",
+     "ligne": 31,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "live_report"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "live_events"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [
+    "live_events",
+    "stream"
+   ],
+   "fichier": "vertex/app/routes/live_events.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "flask",
+    "queue",
+    "vertex"
+   ],
+   "lignes": 54,
+   "plus_longue_fonction": [
+    "live_events",
+    26
+   ],
+   "routes": [
+    {
+     "chemin": "/api/live/events",
+     "ligne": 19,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "live_events"
+    },
+    {
+     "chemin": "/api/live/events/stats",
+     "ligne": 49,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "live_events_stats"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "live_state_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/live_state_api.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "flask",
+    "time",
+    "typing",
+    "vertex"
+   ],
+   "lignes": 77,
+   "plus_longue_fonction": [
+    "make_blueprint",
+    26
+   ],
+   "routes": [
+    {
+     "chemin": "/quotes",
+     "ligne": 58,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "quotes_ep"
+    },
+    {
+     "chemin": "/ibkr",
+     "ligne": 65,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "ibkr_ep"
+    },
+    {
+     "chemin": "/api/alerts/status",
+     "ligne": 69,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_alerts_status"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "opportunities_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/opportunities_api.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "flask",
+    "json",
+    "vertex"
+   ],
+   "lignes": 49,
+   "plus_longue_fonction": [
+    "_positions_count",
+    9
+   ],
+   "routes": [
+    {
+     "chemin": "/api/opportunities/funnel",
+     "ligne": 38,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "opportunities_funnel"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "options_intel_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/options_intel_api.py",
+   "fonctions": 14,
+   "imports": [
+    "__future__",
+    "flask",
+    "vertex"
+   ],
+   "lignes": 300,
+   "plus_longue_fonction": [
+    "options_gex",
+    57
+   ],
+   "routes": [
+    {
+     "chemin": "/api/options/overview",
+     "ligne": 34,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "options_overview"
+    },
+    {
+     "chemin": "/api/options/environment",
+     "ligne": 45,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "options_environment"
+    },
+    {
+     "chemin": "/api/options/volatility/<sym>",
+     "ligne": 57,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "options_volatility"
+    },
+    {
+     "chemin": "/api/options/scenarios/<sym>",
+     "ligne": 82,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "options_scenarios"
+    },
+    {
+     "chemin": "/api/options/gex-radar",
+     "ligne": 139,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "options_gex_radar"
+    },
+    {
+     "chemin": "/api/options/gex/<sym>",
+     "ligne": 154,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "options_gex"
+    },
+    {
+     "chemin": "/api/options/vol-charts/<sym>",
+     "ligne": 215,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "options_vol_charts"
+    },
+    {
+     "chemin": "/api/options/event-risk/<sym>",
+     "ligne": 242,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "options_event_risk"
+    },
+    {
+     "chemin": "/api/charts/<path:chart_id>/interpretation",
+     "ligne": 260,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "chart_interpretation"
+    },
+    {
+     "chemin": "/api/options/scanner/<universe>",
+     "ligne": 279,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_options_scanner"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "options_lab_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/options_lab_api.py",
+   "fonctions": 3,
+   "imports": [
+    "flask",
+    "vertex"
+   ],
+   "lignes": 87,
+   "plus_longue_fonction": [
+    "api_options_strategies",
+    26
+   ],
+   "routes": [
+    {
+     "chemin": "/api/options-lab",
+     "ligne": 20,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_options_lab"
+    },
+    {
+     "chemin": "/api/options/strategies/<sym>",
+     "ligne": 31,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_options_strategies"
+    },
+    {
+     "chemin": "/api/options/analyze",
+     "ligne": 61,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "api_options_analyze"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "planning_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/planning_api.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "flask",
+    "vertex"
+   ],
+   "lignes": 51,
+   "plus_longue_fonction": [
+    "planning_ticket",
+    29
+   ],
+   "routes": [
+    {
+     "chemin": "/api/planning/ticket",
+     "ligne": 18,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "planning_ticket"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "positions_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/positions_api.py",
+   "fonctions": 14,
+   "imports": [
+    "__future__",
+    "flask",
+    "json",
+    "vertex"
+   ],
+   "lignes": 254,
+   "plus_longue_fonction": [
+    "make_blueprint",
+    234
+   ],
+   "routes": [
+    {
+     "chemin": "/api/positions/state",
+     "ligne": 52,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "positions_state"
+    },
+    {
+     "chemin": "/api/positions/report",
+     "ligne": 65,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "positions_report"
+    },
+    {
+     "chemin": "/api/positions/audit",
+     "ligne": 72,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "positions_audit"
+    },
+    {
+     "chemin": "/api/positions/reconcile",
+     "ligne": 79,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "positions_reconcile"
+    },
+    {
+     "chemin": "/api/portfolio/stress",
+     "ligne": 89,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "portfolio_stress"
+    },
+    {
+     "chemin": "/api/portfolio/context",
+     "ligne": 109,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "portfolio_context_ep"
+    },
+    {
+     "chemin": "/api/pretrade/check",
+     "ligne": 124,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "pretrade_check"
+    },
+    {
+     "chemin": "/api/positions/alerts",
+     "ligne": 167,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "positions_alerts"
+    },
+    {
+     "chemin": "/api/positions/<position_id>/changes",
+     "ligne": 228,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "position_changes"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "redesign"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/redesign.py",
+   "fonctions": 21,
+   "imports": [
+    "__future__",
+    "flask",
+    "json",
+    "pathlib",
+    "vertex"
+   ],
+   "lignes": 259,
+   "plus_longue_fonction": [
+    "make_blueprint",
+    193
+   ],
+   "routes": [
+    {
+     "chemin": "/static/vertex/<path:filename>",
+     "ligne": 73,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "vx_static"
+    },
+    {
+     "chemin": "/",
+     "ligne": 80,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "briefing_route"
+    },
+    {
+     "chemin": "/markets",
+     "ligne": 84,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "markets_route"
+    },
+    {
+     "chemin": "/opportunities",
+     "ligne": 88,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "opportunities_route"
+    },
+    {
+     "chemin": "/portfolio",
+     "ligne": 93,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "portfolio_route"
+    },
+    {
+     "chemin": "/analysis",
+     "ligne": 97,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "analysis_index_route"
+    },
+    {
+     "chemin": "/analysis/<sym>",
+     "ligne": 101,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "analysis_route"
+    },
+    {
+     "chemin": "/journal",
+     "ligne": 109,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "journal_route"
+    },
+    {
+     "chemin": "/intelligence",
+     "ligne": 117,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "intelligence_route"
+    },
+    {
+     "chemin": "/system",
+     "ligne": 121,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "system_route"
+    },
+    {
+     "chemin": "/system/design-system",
+     "ligne": 125,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "design_system_route"
+    },
+    {
+     "chemin": "/options",
+     "ligne": 133,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "options_intel_route"
+    },
+    {
+     "chemin": "/tracking",
+     "ligne": 139,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "tracking_route"
+    },
+    {
+     "chemin": "/design-system",
+     "ligne": 147,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "design_system_page_route"
+    },
+    {
+     "chemin": "/widget-lab",
+     "ligne": 155,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "widget_lab_route"
+    },
+    {
+     "chemin": "/api/briefing/editorial",
+     "ligne": 161,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "briefing_editorial"
+    },
+    {
+     "chemin": "/api/options/simulate",
+     "ligne": 196,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "options_simulate"
+    },
+    {
+     "chemin": "/titre/<sym>",
+     "ligne": 255,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "legacy_titre"
+    },
+    {
+     "chemin": "/company/<sym>",
+     "ligne": 255,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "legacy_titre"
+    }
+   ],
+   "stores": [
+    "LEGACY_REDIRECTS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "scan_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/scan_api.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "flask",
+    "vertex"
+   ],
+   "lignes": 83,
+   "plus_longue_fonction": [
+    "api_rescan",
+    17
+   ],
+   "routes": [
+    {
+     "chemin": "/scan",
+     "ligne": 45,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "scan_ep"
+    },
+    {
+     "chemin": "/api/rescan",
+     "ligne": 62,
+     "methodes": [
+      "POST",
+      "GET"
+     ],
+     "porteur": "bp",
+     "vue": "api_rescan"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "session_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/session_api.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "flask",
+    "time",
+    "vertex"
+   ],
+   "lignes": 72,
+   "plus_longue_fonction": [
+    "api_session_digest",
+    23
+   ],
+   "routes": [
+    {
+     "chemin": "/api/session/digest",
+     "ligne": 37,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_session_digest"
+    },
+    {
+     "chemin": "/api/session/manifest",
+     "ligne": 64,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_session_manifest"
+    }
+   ],
+   "stores": [
+    "_last"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "strategy_os"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/strategy_os_api.py",
+   "fonctions": 11,
+   "imports": [
+    "__future__",
+    "flask",
+    "vertex"
+   ],
+   "lignes": 152,
+   "plus_longue_fonction": [
+    "make_blueprint",
+    123
+   ],
+   "routes": [
+    {
+     "chemin": "/api/strategy/profile",
+     "ligne": 35,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "strategy_profile"
+    },
+    {
+     "chemin": "/api/strategy/decision/<sym>",
+     "ligne": 43,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "strategy_decision"
+    },
+    {
+     "chemin": "/api/market/regime",
+     "ligne": 63,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "market_regime"
+    },
+    {
+     "chemin": "/api/company/twin/<sym>",
+     "ligne": 76,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "company_twin_ep"
+    },
+    {
+     "chemin": "/api/anomalies/<sym>",
+     "ligne": 82,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "anomalies_for"
+    },
+    {
+     "chemin": "/api/portfolio/team",
+     "ligne": 96,
+     "methodes": [
+      "GET",
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "portfolio_team"
+    },
+    {
+     "chemin": "/api/alerts/active",
+     "ligne": 123,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "alerts_active"
+    },
+    {
+     "chemin": "/api/system/diagnostics",
+     "ligne": 127,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "diagnostics"
+    },
+    {
+     "chemin": "/api/data-quality",
+     "ligne": 133,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "data_quality"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "system"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/system.py",
+   "fonctions": 13,
+   "imports": [
+    "collections",
+    "flask",
+    "time",
+    "vertex"
+   ],
+   "lignes": 244,
+   "plus_longue_fonction": [
+    "readyz",
+    41
+   ],
+   "routes": [
+    {
+     "chemin": "/healthz",
+     "ligne": 27,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "healthz"
+    },
+    {
+     "chemin": "/api/healthz",
+     "ligne": 27,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "healthz"
+    },
+    {
+     "chemin": "/api/client-log",
+     "ligne": 54,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "client_log_post"
+    },
+    {
+     "chemin": "/api/client-log",
+     "ligne": 67,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "client_log_get"
+    },
+    {
+     "chemin": "/api/system/startup-report",
+     "ligne": 73,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "startup_report_ep"
+    },
+    {
+     "chemin": "/api/system/config",
+     "ligne": 80,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "config_validation_ep"
+    },
+    {
+     "chemin": "/api/system/automations",
+     "ligne": 88,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "automations_ep"
+    },
+    {
+     "chemin": "/api/system/jobs",
+     "ligne": 88,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "automations_ep"
+    },
+    {
+     "chemin": "/api/system/connections",
+     "ligne": 96,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "connections_ep"
+    },
+    {
+     "chemin": "/readyz",
+     "ligne": 106,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "readyz"
+    },
+    {
+     "chemin": "/api/system-status",
+     "ligne": 152,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "system_status_ep"
+    },
+    {
+     "chemin": "/api/system/status",
+     "ligne": 152,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "system_status_ep"
+    },
+    {
+     "chemin": "/favicon.ico",
+     "ligne": 177,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "favicon_ep"
+    },
+    {
+     "chemin": "/favicon.svg",
+     "ligne": 177,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "favicon_ep"
+    },
+    {
+     "chemin": "/manifest.webmanifest",
+     "ligne": 192,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "manifest_ep"
+    },
+    {
+     "chemin": "/sw.js",
+     "ligne": 236,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "service_worker"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "ticker_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/ticker_api.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "flask",
+    "vertex"
+   ],
+   "lignes": 94,
+   "plus_longue_fonction": [
+    "api_ticker",
+    42
+   ],
+   "routes": [
+    {
+     "chemin": "/options/<sym>",
+     "ligne": 43,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "opt_ep"
+    },
+    {
+     "chemin": "/api/ticker/<sym>",
+     "ligne": 48,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_ticker"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "track_record_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/track_record_api.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "flask",
+    "vertex"
+   ],
+   "lignes": 39,
+   "plus_longue_fonction": [
+    "api_track_record",
+    2
+   ],
+   "routes": [
+    {
+     "chemin": "/api/track-record",
+     "ligne": 33,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_track_record"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "tracking_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/tracking_api.py",
+   "fonctions": 17,
+   "imports": [
+    "__future__",
+    "datetime",
+    "flask",
+    "uuid",
+    "vertex"
+   ],
+   "lignes": 207,
+   "plus_longue_fonction": [
+    "create_tracking",
+    30
+   ],
+   "routes": [
+    {
+     "chemin": "/api/tracking",
+     "ligne": 72,
+     "methodes": [
+      "GET"
+     ],
+     "porteur": "bp",
+     "vue": "list_tracking"
+    },
+    {
+     "chemin": "/api/tracking/summary",
+     "ligne": 79,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "tracking_summary"
+    },
+    {
+     "chemin": "/api/tracking/options/cohort",
+     "ligne": 84,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "tracking_option_cohort"
+    },
+    {
+     "chemin": "/api/tracking",
+     "ligne": 92,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "create_tracking"
+    },
+    {
+     "chemin": "/api/tracking/<tracking_id>",
+     "ligne": 126,
+     "methodes": [
+      "GET"
+     ],
+     "porteur": "bp",
+     "vue": "get_tracking"
+    },
+    {
+     "chemin": "/api/tracking/<tracking_id>",
+     "ligne": 134,
+     "methodes": [
+      "PATCH"
+     ],
+     "porteur": "bp",
+     "vue": "patch_tracking"
+    },
+    {
+     "chemin": "/api/tracking/<tracking_id>/performance",
+     "ligne": 143,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "tracking_performance"
+    },
+    {
+     "chemin": "/api/tracking/<tracking_id>/stop",
+     "ligne": 164,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "stop_tracking"
+    },
+    {
+     "chemin": "/api/tracking/<tracking_id>/restart",
+     "ligne": 180,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "restart_tracking"
+    },
+    {
+     "chemin": "/api/tracking/<tracking_id>/history",
+     "ligne": 197,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "tracking_history"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "weekly_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/weekly_api.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "datetime",
+    "flask",
+    "vertex"
+   ],
+   "lignes": 52,
+   "plus_longue_fonction": [
+    "weekly_regen_ep",
+    13
+   ],
+   "routes": [
+    {
+     "chemin": "/weekly-regen",
+     "ligne": 35,
+     "methodes": [
+      "POST",
+      "GET"
+     ],
+     "porteur": "bp",
+     "vue": "weekly_regen_ep"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/state.py",
+   "fonctions": 1,
+   "imports": [
+    "time"
+   ],
+   "lignes": 51,
+   "plus_longue_fonction": [
+    "scan_age",
+    15
+   ],
+   "routes": [],
+   "stores": [
+    "scan_state",
+    "weekly_state",
+    "news_state",
+    "cal_state"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/weekly_selection.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 49,
+   "plus_longue_fonction": [
+    "carte_resultats",
+    6
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/catalysts/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/catalysts/earnings_engine.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 83,
+   "plus_longue_fonction": [
+    "evaluate_earnings_plan",
+    36
+   ],
+   "routes": [],
+   "stores": [
+    "CONFIG"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/catalysts/event_engine.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 45,
+   "plus_longue_fonction": [
+    "classify_events",
+    20
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/companies/__init__.py",
+   "fonctions": 0,
+   "imports": [
+    "vertex"
+   ],
+   "lignes": 11,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/companies/change_detector.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 55,
+   "plus_longue_fonction": [
+    "detect_changes",
+    35
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/companies/company_twin.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "time",
+    "vertex"
+   ],
+   "lignes": 67,
+   "plus_longue_fonction": [
+    "company_twin",
+    36
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/company/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/company/risk_map.py",
+   "fonctions": 9,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 147,
+   "plus_longue_fonction": [
+    "build",
+    22
+   ],
+   "routes": [],
+   "stores": [
+    "_ORDER"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 1,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data/_constituents_static.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 60,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data/company.py",
+   "fonctions": 9,
+   "imports": [
+    "json",
+    "os",
+    "statistics",
+    "time",
+    "vertex",
+    "yfinance"
+   ],
+   "lignes": 341,
+   "plus_longue_fonction": [
+    "get",
+    92
+   ],
+   "routes": [],
+   "stores": [
+    "REVENUE_SEGMENTS",
+    "FOUNDED",
+    "PROFILE_CURATED",
+    "_LABELS",
+    "_SECMED",
+    "_IND_CACHE"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data/constants.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 37,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data/constituents.py",
+   "fonctions": 7,
+   "imports": [
+    "io",
+    "json",
+    "os",
+    "pandas",
+    "requests",
+    "time",
+    "vertex"
+   ],
+   "lignes": 113,
+   "plus_longue_fonction": [
+    "get_index_members",
+    26
+   ],
+   "routes": [],
+   "stores": [
+    "_STATIC",
+    "_UA",
+    "_SOURCES"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data/demo.py",
+   "fonctions": 4,
+   "imports": [
+    "datetime",
+    "math",
+    "numpy",
+    "pandas",
+    "zlib"
+   ],
+   "lignes": 136,
+   "plus_longue_fonction": [
+    "_demo_options_board",
+    73
+   ],
+   "routes": [],
+   "stores": [
+    "_DEMO_BASE"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data/descriptions_fr.py",
+   "fonctions": 0,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 49,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [
+    "DESCRIPTIONS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data/macro_calendar.py",
+   "fonctions": 3,
+   "imports": [
+    "datetime"
+   ],
+   "lignes": 72,
+   "plus_longue_fonction": [
+    "events",
+    32
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data/series.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 40,
+   "plus_longue_fonction": [
+    "closes",
+    17
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data/temporal_evidence.py",
+   "fonctions": 1,
+   "imports": [
+    "datetime",
+    "math"
+   ],
+   "lignes": 33,
+   "plus_longue_fonction": [
+    "assess",
+    26
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data/universe.py",
+   "fonctions": 0,
+   "imports": [
+    "vertex"
+   ],
+   "lignes": 325,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [
+    "_GICS",
+    "_INDUSTRY"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 8,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/analyst_deep.py",
+   "fonctions": 12,
+   "imports": [
+    "__future__",
+    "json",
+    "os",
+    "time",
+    "yfinance"
+   ],
+   "lignes": 227,
+   "plus_longue_fonction": [
+    "get",
+    30
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/fallback_market_data.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "models",
+    "provenance"
+   ],
+   "lignes": 38,
+   "plus_longue_fonction": [
+    "eod_close_to_provenanced",
+    11
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/fundamentals.py",
+   "fonctions": 4,
+   "imports": [
+    "concurrent",
+    "statistics",
+    "vertex",
+    "yfinance"
+   ],
+   "lignes": 98,
+   "plus_longue_fonction": [
+    "build",
+    34
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/ibkr_contracts.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "ib_async"
+   ],
+   "lignes": 41,
+   "plus_longue_fonction": [
+    "validate_stock_contract",
+    9
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/ibkr_gateway.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "ib_async",
+    "os",
+    "threading"
+   ],
+   "lignes": 64,
+   "plus_longue_fonction": [
+    "connect",
+    13
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/ibkr_historical.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "ib_async",
+    "models",
+    "provenance"
+   ],
+   "lignes": 36,
+   "plus_longue_fonction": [
+    "bars_to_provenanced",
+    14
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/ibkr_market_data.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "ib_async",
+    "models",
+    "provenance"
+   ],
+   "lignes": 47,
+   "plus_longue_fonction": [
+    "snapshot_to_provenanced",
+    15
+   ],
+   "routes": [],
+   "stores": [
+    "_MODE_BY_TYPE"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/ibkr_option_chain.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "ib_async",
+    "models",
+    "provenance"
+   ],
+   "lignes": 80,
+   "plus_longue_fonction": [
+    "fetch_contract_details",
+    26
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/ibkr_positions.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "models",
+    "provenance"
+   ],
+   "lignes": 38,
+   "plus_longue_fonction": [
+    "positions_to_provenanced",
+    15
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [
+    "_pop_next"
+   ],
+   "fichier": "vertex/data_sources/ibkr_scheduler.py",
+   "fonctions": 8,
+   "imports": [
+    "__future__",
+    "dataclasses",
+    "heapq",
+    "itertools",
+    "threading",
+    "time",
+    "typing"
+   ],
+   "lignes": 175,
+   "plus_longue_fonction": [
+    "_execute",
+    31
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/models.py",
+   "fonctions": 6,
+   "imports": [
+    "__future__",
+    "dataclasses",
+    "time",
+    "typing"
+   ],
+   "lignes": 86,
+   "plus_longue_fonction": [
+    "missing",
+    4
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/provenance.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "datetime",
+    "models"
+   ],
+   "lignes": 78,
+   "plus_longue_fonction": [
+    "stamp",
+    17
+   ],
+   "routes": [],
+   "stores": [
+    "FRESHNESS_THRESHOLDS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/quality.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "models"
+   ],
+   "lignes": 71,
+   "plus_longue_fonction": [
+    "grade_packet",
+    42
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/rates.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "dataclasses",
+    "models"
+   ],
+   "lignes": 93,
+   "plus_longue_fonction": [
+    "rate_for_tenor",
+    29
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/reconciliation.py",
+   "fonctions": 13,
+   "imports": [
+    "__future__",
+    "dataclasses",
+    "provenance"
+   ],
+   "lignes": 155,
+   "plus_longue_fonction": [
+    "reconcile_spot",
+    26
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/scan_evidence.py",
+   "fonctions": 7,
+   "imports": [
+    "__future__",
+    "datetime",
+    "models",
+    "provenance",
+    "quality",
+    "reconciliation"
+   ],
+   "lignes": 139,
+   "plus_longue_fonction": [
+    "build_symbol",
+    56
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/source_router.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "models",
+    "time",
+    "typing"
+   ],
+   "lignes": 126,
+   "plus_longue_fonction": [
+    "fetch",
+    41
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [
+    "allow_delivery"
+   ],
+   "fichier": "vertex/data_sources/tradingview_signal_store.py",
+   "fonctions": 7,
+   "imports": [
+    "__future__",
+    "collections",
+    "threading",
+    "time"
+   ],
+   "lignes": 156,
+   "plus_longue_fonction": [
+    "add",
+    39
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "tradingview"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data_sources/tradingview_webhooks.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "flask",
+    "hmac",
+    "os",
+    "tradingview_signal_store",
+    "typing"
+   ],
+   "lignes": 75,
+   "plus_longue_fonction": [
+    "make_blueprint",
+    41
+   ],
+   "routes": [
+    {
+     "chemin": "/api/tradingview/webhook",
+     "ligne": 42,
+     "methodes": [
+      "POST"
+     ],
+     "porteur": "bp",
+     "vue": "tradingview_webhook"
+    },
+    {
+     "chemin": "/api/tradingview/signals",
+     "ligne": 70,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "tradingview_signals"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 1,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/analysis.py",
+   "fonctions": 2,
+   "imports": [
+    "math",
+    "numpy",
+    "pandas",
+    "vertex"
+   ],
+   "lignes": 337,
+   "plus_longue_fonction": [
+    "analyse",
+    308
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/anomaly.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 136,
+   "plus_longue_fonction": [
+    "scan",
+    85
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/anomaly_context.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 61,
+   "plus_longue_fonction": [
+    "build",
+    22
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/backtest.py",
+   "fonctions": 1,
+   "imports": [
+    "math",
+    "pandas",
+    "vertex"
+   ],
+   "lignes": 93,
+   "plus_longue_fonction": [
+    "backtest",
+    69
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/call_put_structure.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 25,
+   "plus_longue_fonction": [
+    "build",
+    14
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/committee.py",
+   "fonctions": 3,
+   "imports": [
+    "vertex"
+   ],
+   "lignes": 176,
+   "plus_longue_fonction": [
+    "_evaluate_one",
+    112
+   ],
+   "routes": [],
+   "stores": [
+    "PROFILE",
+    "_ORDER"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/context.py",
+   "fonctions": 6,
+   "imports": [],
+   "lignes": 107,
+   "plus_longue_fonction": [
+    "context_for",
+    38
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/decide.py",
+   "fonctions": 2,
+   "imports": [],
+   "lignes": 129,
+   "plus_longue_fonction": [
+    "decide",
+    112
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/decision_evidence.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 65,
+   "plus_longue_fonction": [
+    "for_symbol",
+    40
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [
+    "detect_patterns"
+   ],
+   "fichier": "vertex/engines/decision_memory.py",
+   "fonctions": 32,
+   "imports": [
+    "__future__",
+    "hashlib",
+    "math"
+   ],
+   "lignes": 1004,
+   "plus_longue_fonction": [
+    "freeze",
+    108
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/decision_readiness.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 82,
+   "plus_longue_fonction": [
+    "build",
+    52
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/decision_stack.py",
+   "fonctions": 16,
+   "imports": [
+    "vertex"
+   ],
+   "lignes": 350,
+   "plus_longue_fonction": [
+    "_apply_rules",
+    45
+   ],
+   "routes": [],
+   "stores": [
+    "DECISIONS",
+    "_SUB_LABELS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/downside_volatility.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 41,
+   "plus_longue_fonction": [
+    "build",
+    30
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/drawdown_context.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 40,
+   "plus_longue_fonction": [
+    "build",
+    31
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/earnings_holding_overlap.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 30,
+   "plus_longue_fonction": [
+    "build",
+    21
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/earnings_option_overlap.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 30,
+   "plus_longue_fonction": [
+    "build",
+    21
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/earnings_proximity.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 36,
+   "plus_longue_fonction": [
+    "build",
+    27
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/events.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "re",
+    "vertex"
+   ],
+   "lignes": 150,
+   "plus_longue_fonction": [
+    "build",
+    94
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/evidence.py",
+   "fonctions": 15,
+   "imports": [],
+   "lignes": 233,
+   "plus_longue_fonction": [
+    "gather",
+    18
+   ],
+   "routes": [],
+   "stores": [
+    "_REGIME_WEIGHTS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/evidence_lab.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 91,
+   "plus_longue_fonction": [
+    "study",
+    34
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/fundamental_context.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 28,
+   "plus_longue_fonction": [
+    "build",
+    22
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/gap_risk_context.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 39,
+   "plus_longue_fonction": [
+    "build",
+    30
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/indicators.py",
+   "fonctions": 3,
+   "imports": [
+    "numpy",
+    "pandas"
+   ],
+   "lignes": 43,
+   "plus_longue_fonction": [
+    "adx",
+    11
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/intelligence_monitor.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 122,
+   "plus_longue_fonction": [
+    "_data_quality_drift",
+    39
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/iv_skew_context.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 40,
+   "plus_longue_fonction": [
+    "build",
+    29
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/iv_term_structure.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 46,
+   "plus_longue_fonction": [
+    "build",
+    21
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [
+    "_hidden_groups"
+   ],
+   "fichier": "vertex/engines/knowledge_graph.py",
+   "fonctions": 13,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 429,
+   "plus_longue_fonction": [
+    "build",
+    132
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/market_context.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "time",
+    "vertex"
+   ],
+   "lignes": 201,
+   "plus_longue_fonction": [
+    "build",
+    139
+   ],
+   "routes": [],
+   "stores": [
+    "_UNITS_UNAVAILABLE"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/market_lens.py",
+   "fonctions": 4,
+   "imports": [],
+   "lignes": 78,
+   "plus_longue_fonction": [
+    "build",
+    24
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/multi_asset_guard.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 47,
+   "plus_longue_fonction": [
+    "build",
+    34
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/multileg_lab.py",
+   "fonctions": 19,
+   "imports": [
+    "__future__",
+    "math",
+    "vertex"
+   ],
+   "lignes": 568,
+   "plus_longue_fonction": [
+    "analyze_strategy",
+    143
+   ],
+   "routes": [],
+   "stores": [
+    "STRATEGY_LABELS",
+    "_FIT",
+    "_BIAS_LABEL",
+    "_MANDATE_CACHE"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/open_interest_concentration.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 62,
+   "plus_longue_fonction": [
+    "build",
+    39
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/opportunity_attribution.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 62,
+   "plus_longue_fonction": [
+    "build",
+    49
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/opportunity_reliability.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 62,
+   "plus_longue_fonction": [
+    "build",
+    49
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/options_lab.py",
+   "fonctions": 45,
+   "imports": [
+    "datetime",
+    "math",
+    "zoneinfo"
+   ],
+   "lignes": 1165,
+   "plus_longue_fonction": [
+    "_viz",
+    161
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/performance_ledger.py",
+   "fonctions": 9,
+   "imports": [
+    "__future__",
+    "collections",
+    "math"
+   ],
+   "lignes": 125,
+   "plus_longue_fonction": [
+    "metrics",
+    43
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/portfolio_context.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 295,
+   "plus_longue_fonction": [
+    "build",
+    226
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/portfolio_stress.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 111,
+   "plus_longue_fonction": [
+    "build",
+    72
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/postmortem.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "datetime"
+   ],
+   "lignes": 152,
+   "plus_longue_fonction": [
+    "build",
+    95
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/pretrade.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 186,
+   "plus_longue_fonction": [
+    "build",
+    140
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/quant_engine.py",
+   "fonctions": 14,
+   "imports": [
+    "numpy",
+    "vertex"
+   ],
+   "lignes": 426,
+   "plus_longue_fonction": [
+    "evaluate",
+    85
+   ],
+   "routes": [],
+   "stores": [
+    "_ACTION"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/reasoning.py",
+   "fonctions": 6,
+   "imports": [],
+   "lignes": 98,
+   "plus_longue_fonction": [
+    "scenarios",
+    24
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/recommendation.py",
+   "fonctions": 10,
+   "imports": [
+    "json",
+    "vertex"
+   ],
+   "lignes": 220,
+   "plus_longue_fonction": [
+    "position_decision",
+    62
+   ],
+   "routes": [],
+   "stores": [
+    "HELD",
+    "TONE_CLS",
+    "_ALIAS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/red_team.py",
+   "fonctions": 6,
+   "imports": [
+    "__future__",
+    "math",
+    "vertex"
+   ],
+   "lignes": 298,
+   "plus_longue_fonction": [
+    "review",
+    206
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/relative_strength_context.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 59,
+   "plus_longue_fonction": [
+    "build",
+    31
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/relative_volume_context.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 54,
+   "plus_longue_fonction": [
+    "build",
+    27
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/scorecard.py",
+   "fonctions": 7,
+   "imports": [],
+   "lignes": 255,
+   "plus_longue_fonction": [
+    "ibkr_score",
+    79
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/session_digest.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "time",
+    "vertex"
+   ],
+   "lignes": 117,
+   "plus_longue_fonction": [
+    "build",
+    55
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/session_log.py",
+   "fonctions": 6,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 116,
+   "plus_longue_fonction": [
+    "merge_log",
+    37
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/session_snapshot.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "time"
+   ],
+   "lignes": 71,
+   "plus_longue_fonction": [
+    "build",
+    35
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/skyler_core.py",
+   "fonctions": 15,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 746,
+   "plus_longue_fonction": [
+    "score40",
+    139
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/skyler_journal.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 143,
+   "plus_longue_fonction": [
+    "calibration",
+    48
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/skyler_sweep.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 80,
+   "plus_longue_fonction": [
+    "sweep",
+    58
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/stats.py",
+   "fonctions": 2,
+   "imports": [
+    "math",
+    "numpy",
+    "statistics"
+   ],
+   "lignes": 49,
+   "plus_longue_fonction": [
+    "_recompute_sectors",
+    16
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/strategy_fit.py",
+   "fonctions": 7,
+   "imports": [],
+   "lignes": 162,
+   "plus_longue_fonction": [
+    "_vehicle_of",
+    32
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/swing.py",
+   "fonctions": 3,
+   "imports": [
+    "math"
+   ],
+   "lignes": 73,
+   "plus_longue_fonction": [
+    "_swing_project",
+    25
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/timeframes.py",
+   "fonctions": 2,
+   "imports": [
+    "numpy"
+   ],
+   "lignes": 67,
+   "plus_longue_fonction": [
+    "analyze",
+    44
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/engines/track_record.py",
+   "fonctions": 10,
+   "imports": [
+    "datetime",
+    "json",
+    "time",
+    "vertex"
+   ],
+   "lignes": 181,
+   "plus_longue_fonction": [
+    "evaluate",
+    69
+   ],
+   "routes": [],
+   "stores": [
+    "_MEMO"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [
+    "assess"
+   ],
+   "fichier": "vertex/engines/walk_forward_validation.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "datetime",
+    "math",
+    "vertex"
+   ],
+   "lignes": 146,
+   "plus_longue_fonction": [
+    "assess",
+    66
+   ],
+   "routes": [],
+   "stores": [
+    "HORIZON_SESSIONS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/context.py",
+   "fonctions": 3,
+   "imports": [
+    "math",
+    "numpy",
+    "pandas"
+   ],
+   "lignes": 106,
+   "plus_longue_fonction": [
+    "context",
+    72
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/daily_brief.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "datetime",
+    "time",
+    "vertex",
+    "zoneinfo"
+   ],
+   "lignes": 154,
+   "plus_longue_fonction": [
+    "build_daily_brief",
+    113
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/editorial.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 203,
+   "plus_longue_fonction": [
+    "build_narrative",
+    137
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/indicators.py",
+   "fonctions": 7,
+   "imports": [
+    "__future__",
+    "collections",
+    "math"
+   ],
+   "lignes": 156,
+   "plus_longue_fonction": [
+    "rsi",
+    24
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/instrument_profile.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 59,
+   "plus_longue_fonction": [
+    "build",
+    33
+   ],
+   "routes": [],
+   "stores": [
+    "ETF_SECTOR_PROXY"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/news_dedup.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "re"
+   ],
+   "lignes": 43,
+   "plus_longue_fonction": [
+    "deduplicate",
+    17
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/news_impact.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 83,
+   "plus_longue_fonction": [
+    "potential_impact",
+    22
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/news_pipeline.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 52,
+   "plus_longue_fonction": [
+    "collect",
+    28
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/regime_break.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "datetime",
+    "math",
+    "numpy",
+    "vertex"
+   ],
+   "lignes": 121,
+   "plus_longue_fonction": [
+    "assess",
+    70
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/regime_engine.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 160,
+   "plus_longue_fonction": [
+    "classify_regime",
+    111
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/regime_features.py",
+   "fonctions": 6,
+   "imports": [
+    "numpy"
+   ],
+   "lignes": 188,
+   "plus_longue_fonction": [
+    "analyze",
+    48
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/sector_coherence.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 39,
+   "plus_longue_fonction": [
+    "build",
+    30
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/market/sectors.py",
+   "fonctions": 2,
+   "imports": [],
+   "lignes": 84,
+   "plus_longue_fonction": [
+    "build_sectors",
+    44
+   ],
+   "routes": [],
+   "stores": [
+    "SECTOR_MAP",
+    "SECTOR_ICON"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/observability/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/observability/diagnostics.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "metrics"
+   ],
+   "lignes": 45,
+   "plus_longue_fonction": [
+    "system_diagnostics",
+    19
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/observability/health.py",
+   "fonctions": 1,
+   "imports": [],
+   "lignes": 13,
+   "plus_longue_fonction": [
+    "health_summary",
+    8
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/observability/logging.py",
+   "fonctions": 2,
+   "imports": [
+    "logging"
+   ],
+   "lignes": 22,
+   "plus_longue_fonction": [
+    "get_logger",
+    8
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/observability/metrics.py",
+   "fonctions": 8,
+   "imports": [
+    "__future__",
+    "threading",
+    "time"
+   ],
+   "lignes": 59,
+   "plus_longue_fonction": [
+    "timer",
+    11
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/observability/traces.py",
+   "fonctions": 3,
+   "imports": [
+    "collections",
+    "threading",
+    "time"
+   ],
+   "lignes": 25,
+   "plus_longue_fonction": [
+    "add",
+    3
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/opportunities/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/opportunities/funnel.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 119,
+   "plus_longue_fonction": [
+    "classify_role",
+    35
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 6,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/bearish_tactical.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "models",
+    "vertex"
+   ],
+   "lignes": 128,
+   "plus_longue_fonction": [
+    "select_put",
+    74
+   ],
+   "routes": [],
+   "stores": [
+    "CONFIG"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/call_selector.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "models"
+   ],
+   "lignes": 79,
+   "plus_longue_fonction": [
+    "select_calls",
+    52
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/chain_loader.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "models"
+   ],
+   "lignes": 60,
+   "plus_longue_fonction": [
+    "pick_expiries",
+    17
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/contract_filter.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "models",
+    "vertex"
+   ],
+   "lignes": 76,
+   "plus_longue_fonction": [
+    "hard_filter",
+    27
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/contract_scorer.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "models"
+   ],
+   "lignes": 133,
+   "plus_longue_fonction": [
+    "score_contract",
+    98
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/dealer_synthesis.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 184,
+   "plus_longue_fonction": [
+    "build",
+    97
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/double_prob.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 104,
+   "plus_longue_fonction": [
+    "double_probability",
+    58
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/environment.py",
+   "fonctions": 10,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 192,
+   "plus_longue_fonction": [
+    "score_environment",
+    38
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/event_risk.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 95,
+   "plus_longue_fonction": [
+    "earnings_risk",
+    23
+   ],
+   "routes": [],
+   "stores": [
+    "_ORDER"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/expected_move.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 73,
+   "plus_longue_fonction": [
+    "expected_move",
+    13
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/flow.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 102,
+   "plus_longue_fonction": [
+    "analyze",
+    49
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/gex.py",
+   "fonctions": 10,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 298,
+   "plus_longue_fonction": [
+    "compute",
+    105
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/gex_history.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "time",
+    "vertex"
+   ],
+   "lignes": 69,
+   "plus_longue_fonction": [
+    "record",
+    30
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/gex_scan.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 85,
+   "plus_longue_fonction": [
+    "scan",
+    64
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/horizon_scanners.py",
+   "fonctions": 17,
+   "imports": [
+    "__future__",
+    "itertools",
+    "vertex"
+   ],
+   "lignes": 342,
+   "plus_longue_fonction": [
+    "scan",
+    102
+   ],
+   "routes": [],
+   "stores": [
+    "_FALLBACK_UNIVERSES",
+    "_FALLBACK_SWING_3_6M"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/interpretation.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 98,
+   "plus_longue_fonction": [
+    "interpret_volatility",
+    39
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/iv_hv.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 61,
+   "plus_longue_fonction": [
+    "describe",
+    29
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/iv_units.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 70,
+   "plus_longue_fonction": [
+    "from_legacy_board",
+    13
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/legacy_engine.py",
+   "fonctions": 28,
+   "imports": [
+    "datetime",
+    "math",
+    "vertex",
+    "yfinance",
+    "zoneinfo"
+   ],
+   "lignes": 562,
+   "plus_longue_fonction": [
+    "best_for_symbol",
+    146
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/liquidity.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 41,
+   "plus_longue_fonction": [
+    "assess",
+    30
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/models.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "dataclasses",
+    "datetime"
+   ],
+   "lignes": 65,
+   "plus_longue_fonction": [
+    "dte_of",
+    6
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/overview.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "environment",
+    "pulse",
+    "vertex"
+   ],
+   "lignes": 132,
+   "plus_longue_fonction": [
+    "summarize",
+    48
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/pack.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "datetime",
+    "math",
+    "numpy",
+    "time",
+    "vertex",
+    "yfinance"
+   ],
+   "lignes": 211,
+   "plus_longue_fonction": [
+    "options_pack",
+    143
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/pulse.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 71,
+   "plus_longue_fonction": [
+    "volatility_pulse",
+    19
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/quote_resolver.py",
+   "fonctions": 6,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 120,
+   "plus_longue_fonction": [
+    "resolve",
+    38
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/recommendation.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "models"
+   ],
+   "lignes": 109,
+   "plus_longue_fonction": [
+    "profit_management_plan",
+    38
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/scenario_pricer.py",
+   "fonctions": 7,
+   "imports": [
+    "__future__",
+    "math",
+    "models",
+    "vertex"
+   ],
+   "lignes": 214,
+   "plus_longue_fonction": [
+    "simulate",
+    130
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/vol_charts.py",
+   "fonctions": 9,
+   "imports": [
+    "__future__",
+    "math",
+    "vertex"
+   ],
+   "lignes": 181,
+   "plus_longue_fonction": [
+    "_interpret_term",
+    28
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/vol_surface.py",
+   "fonctions": 6,
+   "imports": [
+    "__future__",
+    "dataclasses",
+    "math",
+    "vertex"
+   ],
+   "lignes": 224,
+   "plus_longue_fonction": [
+    "build_surface",
+    141
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/volatility.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 100,
+   "plus_longue_fonction": [
+    "realized_vol",
+    21
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/planning/__init__.py",
+   "fonctions": 0,
+   "imports": [
+    "order_ticket"
+   ],
+   "lignes": 10,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/planning/order_ticket.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 183,
+   "plus_longue_fonction": [
+    "build_ticket",
+    79
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/portfolio/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/portfolio/correlation.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 53,
+   "plus_longue_fonction": [
+    "correlation_matrix",
+    24
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/portfolio/factor_exposure.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 30,
+   "plus_longue_fonction": [
+    "portfolio_factor_exposure",
+    22
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/portfolio/historical_stress.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "math",
+    "vertex"
+   ],
+   "lignes": 143,
+   "plus_longue_fonction": [
+    "assess",
+    94
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/portfolio/legacy_basket_risk.py",
+   "fonctions": 2,
+   "imports": [
+    "numpy",
+    "vertex"
+   ],
+   "lignes": 100,
+   "plus_longue_fonction": [
+    "build",
+    58
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/portfolio/models.py",
+   "fonctions": 7,
+   "imports": [
+    "__future__",
+    "dataclasses"
+   ],
+   "lignes": 106,
+   "plus_longue_fonction": [
+    "from_ibkr_positions",
+    15
+   ],
+   "routes": [],
+   "stores": [
+    "ROLE_TARGETS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/portfolio/portfolio_guard.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 37,
+   "plus_longue_fonction": [
+    "guard_rules",
+    27
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/portfolio/replacement_engine.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "team_engine"
+   ],
+   "lignes": 37,
+   "plus_longue_fonction": [
+    "propose_replacement",
+    29
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/portfolio/risk_engine.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "correlation",
+    "models"
+   ],
+   "lignes": 116,
+   "plus_longue_fonction": [
+    "portfolio_risk",
+    100
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/portfolio/stress_tests.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "models"
+   ],
+   "lignes": 97,
+   "plus_longue_fonction": [
+    "run_stress_tests",
+    85
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/portfolio/team_engine.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "models"
+   ],
+   "lignes": 111,
+   "plus_longue_fonction": [
+    "candidate_fit",
+    35
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/portfolio/team_roles.py",
+   "fonctions": 0,
+   "imports": [
+    "__future__",
+    "models"
+   ],
+   "lignes": 20,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [
+    "ROLE_DESCRIPTIONS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/positions/__init__.py",
+   "fonctions": 0,
+   "imports": [
+    "vertex"
+   ],
+   "lignes": 15,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/positions/alerts.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "time"
+   ],
+   "lignes": 78,
+   "plus_longue_fonction": [
+    "evaluate",
+    27
+   ],
+   "routes": [],
+   "stores": [
+    "_STATUS_TO_ALERT"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/positions/audit.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "time"
+   ],
+   "lignes": 67,
+   "plus_longue_fonction": [
+    "_check",
+    28
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/positions/calculator.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 172,
+   "plus_longue_fonction": [
+    "enrich_option",
+    79
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/positions/change_detector.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "time",
+    "vertex"
+   ],
+   "lignes": 56,
+   "plus_longue_fonction": [
+    "diff",
+    28
+   ],
+   "routes": [],
+   "stores": [
+    "_LABELS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/positions/detector.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "time",
+    "vertex"
+   ],
+   "lignes": 67,
+   "plus_longue_fonction": [
+    "startup_position_report",
+    38
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/positions/lifecycle.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 157,
+   "plus_longue_fonction": [
+    "stock_status",
+    36
+   ],
+   "routes": [],
+   "stores": [
+    "THRESHOLDS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/positions/models.py",
+   "fonctions": 6,
+   "imports": [
+    "__future__",
+    "datetime",
+    "time"
+   ],
+   "lignes": 184,
+   "plus_longue_fonction": [
+    "option_position",
+    50
+   ],
+   "routes": [],
+   "stores": [
+    "SOURCE_PRIORITY"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/positions/recalculator.py",
+   "fonctions": 6,
+   "imports": [
+    "__future__",
+    "time",
+    "vertex"
+   ],
+   "lignes": 172,
+   "plus_longue_fonction": [
+    "recalculate_all",
+    71
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/positions/reconciler.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "datetime",
+    "time"
+   ],
+   "lignes": 110,
+   "plus_longue_fonction": [
+    "reconcile",
+    71
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/positions/repository.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "json",
+    "vertex"
+   ],
+   "lignes": 75,
+   "plus_longue_fonction": [
+    "load_positions",
+    40
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/positions/thesis_health.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "time"
+   ],
+   "lignes": 105,
+   "plus_longue_fonction": [
+    "assess",
+    78
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/product.py",
+   "fonctions": 0,
+   "imports": [
+    "types"
+   ],
+   "lignes": 67,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/quant/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/quant/ml_calibration.py",
+   "fonctions": 4,
+   "imports": [
+    "joblib",
+    "math",
+    "numpy"
+   ],
+   "lignes": 93,
+   "plus_longue_fonction": [
+    "predict",
+    28
+   ],
+   "routes": [],
+   "stores": [
+    "_W"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/quant/pivots.py",
+   "fonctions": 2,
+   "imports": [],
+   "lignes": 124,
+   "plus_longue_fonction": [
+    "structure",
+    86
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/quant/scoring.py",
+   "fonctions": 7,
+   "imports": [
+    "numpy",
+    "vertex"
+   ],
+   "lignes": 141,
+   "plus_longue_fonction": [
+    "options_score",
+    37
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/backtest.py",
+   "fonctions": 1,
+   "imports": [
+    "factory"
+   ],
+   "lignes": 25,
+   "plus_longue_fonction": [
+    "simple_backtest",
+    15
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/calibration.py",
+   "fonctions": 0,
+   "imports": [
+    "vertex"
+   ],
+   "lignes": 5,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/chart_read.py",
+   "fonctions": 4,
+   "imports": [],
+   "lignes": 170,
+   "plus_longue_fonction": [
+    "chart_read",
+    72
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/costs.py",
+   "fonctions": 0,
+   "imports": [
+    "factory"
+   ],
+   "lignes": 3,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/dataset.py",
+   "fonctions": 1,
+   "imports": [
+    "factory"
+   ],
+   "lignes": 19,
+   "plus_longue_fonction": [
+    "make_dataset",
+    2
+   ],
+   "routes": [],
+   "stores": [
+    "KNOWN_BIASES"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/experiment.py",
+   "fonctions": 0,
+   "imports": [
+    "factory"
+   ],
+   "lignes": 3,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/factory.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "dataclasses"
+   ],
+   "lignes": 120,
+   "plus_longue_fonction": [
+    "run_walk_forward",
+    25
+   ],
+   "routes": [],
+   "stores": [
+    "_TRANSITIONS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/hypothesis.py",
+   "fonctions": 1,
+   "imports": [
+    "factory"
+   ],
+   "lignes": 8,
+   "plus_longue_fonction": [
+    "validate_definition",
+    2
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/institutional/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/institutional/cross_sectional_ranking.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 48,
+   "plus_longue_fonction": [
+    "rank_universe",
+    24
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/institutional/crowding_proxies.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 43,
+   "plus_longue_fonction": [
+    "crowding_score",
+    30
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/institutional/earnings_drift.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 52,
+   "plus_longue_fonction": [
+    "post_earnings_drift_signal",
+    24
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/institutional/factor_model.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 85,
+   "plus_longue_fonction": [
+    "factor_exposures",
+    46
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/institutional/momentum_regimes.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 28,
+   "plus_longue_fonction": [
+    "momentum_quality",
+    22
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/institutional/quality_growth.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 42,
+   "plus_longue_fonction": [
+    "quality_growth_profile",
+    36
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/institutional/relative_value.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 32,
+   "plus_longue_fonction": [
+    "peer_dispersion",
+    23
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/institutional/sector_rotation.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 37,
+   "plus_longue_fonction": [
+    "analyze_rotation",
+    31
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/institutional/signal_ensemble.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 61,
+   "plus_longue_fonction": [
+    "institutional_context",
+    46
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/institutional/volatility_regimes.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 39,
+   "plus_longue_fonction": [
+    "classify_vol_regime",
+    24
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/registry.py",
+   "fonctions": 5,
+   "imports": [
+    "factory"
+   ],
+   "lignes": 23,
+   "plus_longue_fonction": [
+    "add",
+    3
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/reporting.py",
+   "fonctions": 1,
+   "imports": [],
+   "lignes": 11,
+   "plus_longue_fonction": [
+    "experiment_report",
+    6
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/robustness.py",
+   "fonctions": 1,
+   "imports": [
+    "vertex"
+   ],
+   "lignes": 21,
+   "plus_longue_fonction": [
+    "parameter_sensitivity",
+    15
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/tv_confluence.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 98,
+   "plus_longue_fonction": [
+    "summarize",
+    21
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/research/walk_forward.py",
+   "fonctions": 0,
+   "imports": [
+    "factory"
+   ],
+   "lignes": 3,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/runtime.py",
+   "fonctions": 3,
+   "imports": [
+    "importlib",
+    "types",
+    "vertex"
+   ],
+   "lignes": 34,
+   "plus_longue_fonction": [
+    "main",
+    3
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/scanner/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/scanner/candidate_pipeline.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "scan_budget",
+    "stages"
+   ],
+   "lignes": 69,
+   "plus_longue_fonction": [
+    "evaluate_candidate",
+    33
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/scanner/daily.py",
+   "fonctions": 11,
+   "imports": [
+    "json",
+    "math"
+   ],
+   "lignes": 234,
+   "plus_longue_fonction": [
+    "build_daily",
+    98
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/scanner/scan_budget.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 35,
+   "plus_longue_fonction": [
+    "cap",
+    4
+   ],
+   "routes": [],
+   "stores": [
+    "DEFAULT_BUDGET"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/scanner/stages.py",
+   "fonctions": 9,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 164,
+   "plus_longue_fonction": [
+    "technical_stage",
+    28
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/scanner/universe.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 53,
+   "plus_longue_fonction": [
+    "build_universe",
+    30
+   ],
+   "routes": [],
+   "stores": [
+    "ORIGIN_PRIORITY"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/scanner/weekly.py",
+   "fonctions": 16,
+   "imports": [
+    "datetime",
+    "json",
+    "os",
+    "vertex"
+   ],
+   "lignes": 339,
+   "plus_longue_fonction": [
+    "_pick_card",
+    48
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/scheduler/__init__.py",
+   "fonctions": 0,
+   "imports": [
+    "vertex"
+   ],
+   "lignes": 3,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/scheduler/registry.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "threading",
+    "time"
+   ],
+   "lignes": 140,
+   "plus_longue_fonction": [
+    "jobs",
+    27
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/services/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 1,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/services/connections.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "os",
+    "vertex"
+   ],
+   "lignes": 142,
+   "plus_longue_fonction": [
+    "snapshot",
+    97
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/services/live_engine.py",
+   "fonctions": 12,
+   "imports": [
+    "os",
+    "threading",
+    "time",
+    "vertex"
+   ],
+   "lignes": 259,
+   "plus_longue_fonction": [
+    "_domains",
+    55
+   ],
+   "routes": [],
+   "stores": [
+    "_CFG",
+    "_LAST_REPORT",
+    "_FORCE",
+    "_THRESH",
+    "_LABELS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/services/live_stream.py",
+   "fonctions": 7,
+   "imports": [
+    "__future__",
+    "collections",
+    "json",
+    "queue",
+    "threading",
+    "time"
+   ],
+   "lignes": 76,
+   "plus_longue_fonction": [
+    "publish",
+    15
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/services/market_clock.py",
+   "fonctions": 2,
+   "imports": [
+    "datetime",
+    "zoneinfo"
+   ],
+   "lignes": 42,
+   "plus_longue_fonction": [
+    "session_of",
+    10
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/services/news_plus.py",
+   "fonctions": 8,
+   "imports": [
+    "re",
+    "requests",
+    "xml"
+   ],
+   "lignes": 164,
+   "plus_longue_fonction": [
+    "sentiment",
+    24
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/services/persist.py",
+   "fonctions": 5,
+   "imports": [
+    "copy",
+    "hashlib",
+    "json",
+    "os",
+    "tempfile",
+    "threading"
+   ],
+   "lignes": 120,
+   "plus_longue_fonction": [
+    "save_json",
+    31
+   ],
+   "routes": [],
+   "stores": [
+    "_READ_CACHE",
+    "_STATS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/services/request_metrics.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "collections",
+    "threading"
+   ],
+   "lignes": 54,
+   "plus_longue_fonction": [
+    "summary",
+    19
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/services/startup.py",
+   "fonctions": 10,
+   "imports": [
+    "__future__",
+    "os",
+    "time",
+    "vertex"
+   ],
+   "lignes": 106,
+   "plus_longue_fonction": [
+    "run_startup_sequence",
+    71
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/services/status_service.py",
+   "fonctions": 4,
+   "imports": [
+    "datetime"
+   ],
+   "lignes": 108,
+   "plus_longue_fonction": [
+    "build_system_status",
+    62
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 7,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/config.py",
+   "fonctions": 2,
+   "imports": [],
+   "lignes": 61,
+   "plus_longue_fonction": [
+    "verdict",
+    9
+   ],
+   "routes": [],
+   "stores": [
+    "PROFILE",
+    "WEIGHTS",
+    "OPTION_BUCKETS",
+    "COLORS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/constitution.py",
+   "fonctions": 12,
+   "imports": [
+    "__future__",
+    "copy",
+    "dataclasses",
+    "json",
+    "pathlib",
+    "re"
+   ],
+   "lignes": 238,
+   "plus_longue_fonction": [
+    "_validate_raw",
+    34
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/decision_packet.py",
+   "fonctions": 6,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 139,
+   "plus_longue_fonction": [
+    "build",
+    50
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/executive_engine.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 191,
+   "plus_longue_fonction": [
+    "decide",
+    147
+   ],
+   "routes": [],
+   "stores": [
+    "BLOCKING_TO_MAX_DECISION"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [
+    "_strike_for_delta",
+    "add",
+    "build_portfolio"
+   ],
+   "fichier": "vertex/strategy/legacy_adapter.py",
+   "fonctions": 13,
+   "imports": [
+    "math",
+    "vertex"
+   ],
+   "lignes": 273,
+   "plus_longue_fonction": [
+    "_leg",
+    53
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/memory/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/memory/feedback.py",
+   "fonctions": 1,
+   "imports": [
+    "store"
+   ],
+   "lignes": 9,
+   "plus_longue_fonction": [
+    "record_feedback",
+    3
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/memory/learnings.py",
+   "fonctions": 2,
+   "imports": [
+    "store"
+   ],
+   "lignes": 17,
+   "plus_longue_fonction": [
+    "propose_rule",
+    3
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/memory/migrations.py",
+   "fonctions": 1,
+   "imports": [],
+   "lignes": 13,
+   "plus_longue_fonction": [
+    "migrate",
+    6
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/memory/schemas.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 23,
+   "plus_longue_fonction": [
+    "validate_status",
+    3
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/memory/store.py",
+   "fonctions": 6,
+   "imports": [
+    "__future__",
+    "json",
+    "pathlib",
+    "schemas",
+    "threading",
+    "time"
+   ],
+   "lignes": 82,
+   "plus_longue_fonction": [
+    "set_status",
+    15
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/memory/theses.py",
+   "fonctions": 2,
+   "imports": [
+    "schemas",
+    "store"
+   ],
+   "lignes": 15,
+   "plus_longue_fonction": [
+    "add_thesis",
+    3
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/memory/versions.py",
+   "fonctions": 1,
+   "imports": [
+    "store"
+   ],
+   "lignes": 11,
+   "plus_longue_fonction": [
+    "snapshot_version",
+    5
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/strategy/release.py",
+   "fonctions": 6,
+   "imports": [
+    "__future__",
+    "pathlib",
+    "typing"
+   ],
+   "lignes": 70,
+   "plus_longue_fonction": [
+    "activate_release_profile",
+    28
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/tracking/__init__.py",
+   "fonctions": 0,
+   "imports": [
+    "models"
+   ],
+   "lignes": 18,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/tracking/benchmark.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "returns"
+   ],
+   "lignes": 24,
+   "plus_longue_fonction": [
+    "alpha_since",
+    4
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/tracking/models.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 67,
+   "plus_longue_fonction": [
+    "new_tracking",
+    38
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/tracking/option_cohort.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "statistics"
+   ],
+   "lignes": 65,
+   "plus_longue_fonction": [
+    "build",
+    28
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/tracking/performance.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 119,
+   "plus_longue_fonction": [
+    "compute",
+    57
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/tracking/reference_price.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "models"
+   ],
+   "lignes": 72,
+   "plus_longue_fonction": [
+    "pick_stock_reference",
+    19
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/tracking/repository.py",
+   "fonctions": 11,
+   "imports": [
+    "__future__",
+    "reference_price",
+    "vertex"
+   ],
+   "lignes": 212,
+   "plus_longue_fonction": [
+    "record_option_board",
+    50
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/tracking/returns.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 58,
+   "plus_longue_fonction": [
+    "mae_mfe",
+    10
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/design_system.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 68,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/home_art.py",
+   "fonctions": 2,
+   "imports": [],
+   "lignes": 172,
+   "plus_longue_fonction": [
+    "apply",
+    2
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/journal.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 535,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/nav.py",
+   "fonctions": 3,
+   "imports": [],
+   "lignes": 52,
+   "plus_longue_fonction": [
+    "nav_array_js",
+    2
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/options_lab.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 434,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 8,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/analysis_page.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 998,
+   "plus_longue_fonction": [
+    "render_index",
+    91
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/briefing.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "time",
+    "vertex"
+   ],
+   "lignes": 486,
+   "plus_longue_fonction": [
+    "build_editorial",
+    73
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/design_system_demo.py",
+   "fonctions": 10,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 204,
+   "plus_longue_fonction": [
+    "render",
+    41
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/design_system_page.py",
+   "fonctions": 7,
+   "imports": [
+    "__future__",
+    "os",
+    "re",
+    "vertex"
+   ],
+   "lignes": 275,
+   "plus_longue_fonction": [
+    "_content",
+    146
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/intelligence_page.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 675,
+   "plus_longue_fonction": [
+    "render",
+    11
+   ],
+   "routes": [],
+   "stores": [
+    "_VIEW_CONTENT"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/markets_page.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 992,
+   "plus_longue_fonction": [
+    "render",
+    11
+   ],
+   "routes": [],
+   "stores": [
+    "_VIEW_CONTENT"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/opportunities_page.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 791,
+   "plus_longue_fonction": [
+    "render",
+    17
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/options_intel_page.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 299,
+   "plus_longue_fonction": [
+    "render",
+    11
+   ],
+   "routes": [],
+   "stores": [
+    "_VIEW_PARENT",
+    "_VIEW_CONTENT"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/performance_page.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "html",
+    "re",
+    "vertex"
+   ],
+   "lignes": 749,
+   "plus_longue_fonction": [
+    "render",
+    18
+   ],
+   "routes": [],
+   "stores": [
+    "_VIEW_CONTENT"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/portfolio_page.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 1032,
+   "plus_longue_fonction": [
+    "render",
+    8
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/system_page.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 1218,
+   "plus_longue_fonction": [
+    "_lock_card",
+    21
+   ],
+   "routes": [],
+   "stores": [
+    "_VIEW_CONTENT"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/tracking_page.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "vertex"
+   ],
+   "lignes": 70,
+   "plus_longue_fonction": [
+    "render",
+    5
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/pages/widget_lab.py",
+   "fonctions": 91,
+   "imports": [
+    "__future__",
+    "collections",
+    "math"
+   ],
+   "lignes": 2371,
+   "plus_longue_fonction": [
+    "_benches",
+    256
+   ],
+   "routes": [],
+   "stores": [
+    "_GC",
+    "FAM_ACCENT",
+    "CURATION",
+    "CONTRACTS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/shell/__init__.py",
+   "fonctions": 9,
+   "imports": [
+    "__future__",
+    "flask",
+    "html",
+    "json",
+    "vertex"
+   ],
+   "lignes": 284,
+   "plus_longue_fonction": [
+    "render_shell",
+    62
+   ],
+   "routes": [],
+   "stores": [
+    "_ICONS"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/signals.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 189,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/strategy_os.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 123,
+   "plus_longue_fonction": [
+    "render_page",
+    111
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/sync_center.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 109,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/vault.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 302,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/ui/vx_kit.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 315,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/validation/__init__.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 2,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/validation/drift.py",
+   "fonctions": 6,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 90,
+   "plus_longue_fonction": [
+    "assess_signal",
+    24
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/validation/out_of_sample.py",
+   "fonctions": 6,
+   "imports": [
+    "math",
+    "numpy"
+   ],
+   "lignes": 144,
+   "plus_longue_fonction": [
+    "build",
+    59
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/validation/probability_calibration.py",
+   "fonctions": 6,
+   "imports": [
+    "__future__",
+    "math"
+   ],
+   "lignes": 99,
+   "plus_longue_fonction": [
+    "display_probability",
+    25
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/version.py",
+   "fonctions": 0,
+   "imports": [],
+   "lignes": 9,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/visualization/__init__.py",
+   "fonctions": 0,
+   "imports": [
+    "schemas"
+   ],
+   "lignes": 18,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/visualization/chart_spec.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "schemas"
+   ],
+   "lignes": 98,
+   "plus_longue_fonction": [
+    "chart_spec",
+    34
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/visualization/palette.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 118,
+   "plus_longue_fonction": [
+    "is_bluish",
+    14
+   ],
+   "routes": [],
+   "stores": [
+    "SEMANTIC",
+    "STATUS_COLOR"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/visualization/schemas.py",
+   "fonctions": 5,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 117,
+   "plus_longue_fonction": [
+    "interpretation",
+    25
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  }
+ ],
+ "sha": "c1614d82551d",
+ "totaux": {
+  "blueprints_enregistres": 7,
+  "boucles_monolithe": 13,
+  "fichiers_paquet": 354,
+  "lignes_monolithe": 6789,
+  "octets_monolithe": 787265,
+  "routes_canoniques": 154,
+  "routes_legacy": 0,
+  "stores_monolithe": 2,
+  "workers_monolithe": 15
+ }
+}

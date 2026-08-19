@@ -11,7 +11,6 @@ les routes voient toujours les données fraîches. Logique déplacée verbatim.
 Analyse uniquement. Aucune exécution — ces routes lisent, ne commandent rien.
 """
 
-import time
 
 from flask import Blueprint, jsonify, request
 
@@ -25,8 +24,10 @@ def make_blueprint(*, scan_state, demo_mode):
     """Construit le Blueprint API-décision en fermant sur l'état partagé injecté."""
     bp = Blueprint('decision_api', __name__)
 
-    def _scan_age():
-        return round(time.time() - scan_state['scan_ts']) if scan_state.get('scan_ts') else None
+    #  #779/G1 — cette fermeture dupliquait `terminal.py::_scan_age` a
+    #  l'identique. Deux copies d'un meme calcul derivent au premier ajustement,
+    #  et l'ecran afficherait deux ages differents pour la meme donnee.
+    from vertex.app.state import scan_age as _scan_age
 
     def _best_option_for(sym):
         """Meilleur CALL du board pour un titre (véhicule DecisionStack). None si absent."""

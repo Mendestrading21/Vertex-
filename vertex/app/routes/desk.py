@@ -24,6 +24,7 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request
 
 from vertex.data.universe import UNIVERSE
+from vertex.scheduler import registry as _sched
 from vertex.services import persist
 
 BACKUP_KEEP = 7   # rotations quotidiennes conservées
@@ -42,11 +43,11 @@ def _backup_desk():
         if os.path.exists(dst):
             return                                   # déjà sauvegardé aujourd'hui
         shutil.copyfile(src, dst)
-        try:
-            from vertex.scheduler import registry as _sched
-            _sched.beat('DATA_BACKUP', ok=True)
-        except Exception:
-            pass
+        #  L'import est remonté en tête du module : un `beat` n'écrit que dans un
+        #  dict sous verrou et ne lève pas. Le `try/except: pass` qui l'entourait
+        #  ne protégeait donc que de l'import — mieux vaut qu'un import cassé
+        #  éclate au démarrage qu'il ne se taise à chaque sauvegarde.
+        _sched.beat('DATA_BACKUP', ok=True)
         olds = sorted(glob.glob(persist.cache_path('desk_backup_*.json')))
         for p in olds[:-BACKUP_KEEP]:
             os.remove(p)
@@ -181,6 +182,14 @@ def make_blueprint(*, opt_job, ibkr_enabled):
                 if v is not None:
                     posq_cache[k] = (now, v)
                     out[k] = v
+        #  #779/G1 — POSITION_REFRESH était déclaré au registre des jobs mais
+        #  n'avait AUCUN émetteur : la page Système l'affichait « jamais
+        #  exécuté » alors qu'il tourne à chaque cotation du portefeuille. Il
+        #  est à la demande, pas périodique — d'où `interval_s: None` côté
+        #  registre : annoncer « prochaine dans ~45 s » aurait été une seconde
+        #  invention.
+        _sched.beat('POSITION_REFRESH', ok=True,
+                    duration_ms=(time.time() - now) * 1000.0)
         return jsonify({'results': out, 'live': bool(ibkr_enabled), 'ts': int(now)})
 
     return bp

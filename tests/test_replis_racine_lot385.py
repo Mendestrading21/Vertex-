@@ -70,7 +70,12 @@ import pytest
 # Périmètre : les fichiers de PRODUCTION hors `vertex/`, c'est-à-dire ceux que
 # l'application importe. `terminal.py` est le monolithe ; `ib_reader.py` est
 # importé par lui (L2057) pour la connexion IBKR.
-RACINES = ('terminal.py', 'ib_reader.py')
+RACINES = ('terminal.py', 'ib_reader.py',
+           #  #779/G1 — `_i` et `_f` ont suivi leur UNIQUE appelant,
+           #  `options_pack`, dans `vertex/options/pack.py`. Le recensement les
+           #  suit : ce sont les mêmes coercitions, au même endroit de la chaîne
+           #  d'options, et les garde-fous qui écartent leur 0 sont partis avec.
+           'vertex/options/pack.py')
 
 # Exclusions JUSTIFIÉES : scripts autonomes, jamais importés par l'application,
 # donc hors de la surface où un repli pourrait être servi à l'utilisateur.
@@ -87,9 +92,9 @@ HORS_PRODUCTION = ('test_connection.py', 'verifier_vertex.py', 'lancer_ipad.py')
 # Recensement GELÉ — mêmes règles qu'au lot 378 : tout ajout doit passer ici,
 # avec sa justification, plutôt que d'apparaître en silence.
 REPLIS_NUMERIQUES = {
-    ('terminal.py', 0),      # _seed_fund_from_company : compteur exact ;
-                             # _i : coercition, le 0 est écarté au site d'appel
-    ('terminal.py', 0.0),    # _f : idem
+    ('terminal.py', 0),                # _seed_fund_from_company : compteur exact
+    ('vertex/options/pack.py', 0),     # _i : coercition, 0 écarté au site d'appel
+    ('vertex/options/pack.py', 0.0),   # _f : idem
 }
 
 # Bornes fixées À LA MESURE (leçon du lot 378 : une borne qui absorbe la
@@ -248,11 +253,12 @@ def test_les_coercitions_transforment_bien_une_absence_en_zero():
     """Sur VALEURS RÉELLES, pas par lecture (leçon du lot 378, où `50` s'est
     révélé ne PAS être le neutre de l'échelle). Établit la prémisse : le `0` de
     `_i`/`_f` est bien un substitut, pas une mesure."""
-    import terminal
+    #  #779/G1 — `_i`/`_f` ont suivi `options_pack` dans le paquet.
+    from vertex.options import pack as _pack
     for absent in (None, float('nan'), 'abc', {}):
-        assert terminal._i(absent) == 0
-        assert terminal._f(absent) == 0.0
-    assert terminal._i('7') == 7 and terminal._f('7') == 7.0
+        assert _pack._i(absent) == 0
+        assert _pack._f(absent) == 0.0
+    assert _pack._i('7') == 7 and _pack._f('7') == 7.0
 
 
 @pytest.mark.parametrize('garde', [
@@ -264,7 +270,11 @@ def test_le_site_d_appel_ecarte_le_zero_de_repli(garde):
     leur `0` est écarté avant d'entrer dans un calcul servi. Si ce garde-fou
     disparaissait, un repli entrerait dans la médiane d'IV ATM et dans le GEX
     rendus à l'utilisateur — un chiffre inventé présenté comme réel."""
-    src = open('terminal.py', encoding='utf-8').read()
+    #  #779/G1 — la chaine d'options (coercitions ET garde-fous) vit dans
+    #  `vertex/options/pack.py`. Chercher les gardes dans terminal.py faisait
+    #  echouer ce test sur un code intact : ils avaient DEMENAGE ENSEMBLE, ce
+    #  qui est exactement ce qui preserve le raisonnement.
+    src = open('vertex/options/pack.py', encoding='utf-8').read()
     assert garde in src, (
         'garde-fou « %s » disparu de la chaîne d\'options : les 0 de repli de '
         '_i/_f entreraient désormais dans des calculs SERVIS (IV ATM, GEX). '
@@ -276,7 +286,8 @@ def test_les_coercitions_n_ont_pas_essaime():
     """Le raisonnement ci-dessus tient parce que `_i`/`_f` ne sont appelées
     QUE dans la chaîne d'options. Un nouvel appel ailleurs échapperait à la
     démonstration et devrait être examiné."""
-    appels = [n for n in ast.walk(_arbre('terminal.py'))
+    appels = [n for chemin in ('terminal.py', 'vertex/options/pack.py')
+              for n in ast.walk(_arbre(chemin))
               if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
               and n.func.id in ('_i', '_f')]
     assert len(appels) <= 3, (
