@@ -1,6 +1,6 @@
 # Vertex 1.0 · #779 — Inventaire exécutable du runtime
 
-SHA : `c06b5d767944` · généré par `tools/vertex_1_0/inventaire_runtime.py`
+SHA : `a6a6c8163396` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 > Ce document est **régénéré**, jamais édité à la main. Un chiffre qui
 > change sans que le code ait bougé est un défaut de l'instrument.
@@ -9,11 +9,11 @@ SHA : `c06b5d767944` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | mesure | valeur |
 | --- | --- |
-| lignes | 7169 |
-| octets | 809795 |
-| fonctions | 76 |
+| lignes | 7145 |
+| octets | 808610 |
+| fonctions | 72 |
 | plus longue fonction | `_ibkr_opt_worker` (306 lignes) |
-| **routes LEGACY** | **7** |
+| **routes LEGACY** | **5** |
 | blueprints enregistrés | 7 |
 | workers démarrés | 15 |
 | boucles de service | 13 |
@@ -23,8 +23,8 @@ SHA : `c06b5d767944` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | statut | nombre |
 | --- | --- |
-| CANONIQUE (blueprint du paquet) | 147 |
-| LEGACY (`terminal.py`) | 7 |
+| CANONIQUE (blueprint du paquet) | 149 |
+| LEGACY (`terminal.py`) | 5 |
 
 **L'objectif de #779 est que la ligne LEGACY tombe à 0.** Supprimer
 `terminal.py` n'est pas le but ; lui retirer toute responsabilité l'est.
@@ -33,13 +33,11 @@ SHA : `c06b5d767944` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | chemin | vue | méthodes | ligne |
 | --- | --- | --- | --- |
-| `/scan` | `scan_ep` | * | 1741 |
-| `/api/rescan` | `api_rescan` | POST, GET | 1754 |
-| `/api/ticker/<sym>` | `api_ticker` | * | 1799 |
-| `/api/correlations/<sym>` | `api_correlations` | * | 1876 |
-| `/desc/<sym>` | `desc_ep` | * | 1970 |
-| `/options/<sym>` | `opt_ep` | * | 2050 |
-| `/weekly-regen` | `weekly_regen_ep` | POST, GET | 2327 |
+| `/api/ticker/<sym>` | `api_ticker` | * | 1775 |
+| `/api/correlations/<sym>` | `api_correlations` | * | 1852 |
+| `/desc/<sym>` | `desc_ep` | * | 1946 |
+| `/options/<sym>` | `opt_ep` | * | 2026 |
+| `/weekly-regen` | `weekly_regen_ep` | POST, GET | 2303 |
 
 ### Workers démarrés par `terminal.py`
 
@@ -69,8 +67,8 @@ SHA : `c06b5d767944` · généré par `tools/vertex_1_0/inventaire_runtime.py`
 
 | mesure | valeur |
 | --- | --- |
-| fichiers Python | 345 |
-| routes canoniques | 147 |
+| fichiers Python | 347 |
+| routes canoniques | 149 |
 
 ### Blueprints enregistrés par le monolithe
 

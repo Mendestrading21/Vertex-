@@ -98,6 +98,7 @@ from vertex.services import market_clock as _market_clock
 #  donc `root_path` explicitement.
 from vertex.app import factory as _factory  # noqa: E402
 from vertex.app import ibkr_state as _ibkr_state  # noqa: E402
+from vertex.app import rescan_gate as _rescan_gate  # noqa: E402
 app = _factory.create_app()
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -666,17 +667,19 @@ def scan():
         _SCAN_LOCK.release()
 
 
-_rescan_evt = threading.Event()   # set() par /api/rescan → réveille la boucle pour un re-scan immédiat
-RESCAN_COOLDOWN_SEC = max(1, int(os.getenv('VERTEX_RESCAN_COOLDOWN_SEC', '30')))
-_rescan_gate_lock = threading.Lock()
-_last_rescan_ts = 0.0
+#  ── PORTE ANTI-RAFALE DU RE-SCAN (#779/G1) ────────────────────────────────
+#  Le groupe complet — evenement, verrou, fenetre, delai restant — vit desormais
+#  dans `vertex/app/rescan_gate.py`. Il n'avait aucune dependance au monolithe :
+#  seulement threading, os, time et math.
+#
+#  L'EVENEMENT EST PARTAGE, PAS RECOPIE : `_live.configure` le transmet a la
+#  boucle de scan, qui attend CET objet. Le reassigner laisserait la boucle
+#  attendre un objet que plus personne ne reveille — sans aucune erreur levee.
+_rescan_evt = _rescan_gate.EVENEMENT
+RESCAN_COOLDOWN_SEC = _rescan_gate.COOLDOWN_S
+_rescan_cooldown_remaining = _rescan_gate.restant
 
 
-def _rescan_cooldown_remaining(now=None):
-    """Retourne le délai global restant sans conserver d’identité de demandeur."""
-    current = time.monotonic() if now is None else float(now)
-    elapsed = max(0.0, current - _last_rescan_ts)
-    return max(0, int(math.ceil(RESCAN_COOLDOWN_SEC - elapsed)))
 # ── VERTEX LIVE ENGINE : câblage du moteur central (états + déclencheur) ──
 _live.configure(scan_state=scan_state, news_state=news_state, cal_state=cal_state,
                 weekly_state=weekly_state, rescan_event=_rescan_evt,
@@ -1737,36 +1740,9 @@ def options_pack(sym):
     return out
 
 
-@app.route('/scan')
-def scan_ep():
-    return jsonify({**scan_state, 'ai_on': ai.available(),
-                   'scan_age': _scan_age(),
-                   'rescan_cooldown_remaining': _rescan_cooldown_remaining(),
-                   'idx_sets': {'dow': _DOW30, 'ndx': _NDX100, 'sp': _SP500_SET,
-                                'rut': _RUT_SET, 'eu': _EU_SET, 'asia': _ASIA_SET},
-                   # source HONNÊTE des données du scan (yfinance/stooq/demo) — le badge
-                   # « LIVE IBKR » du header reste piloté par ibkr_enabled (overlay /quotes réel)
-                   'data_source': (scan_state.get('source')
-                                   or ('yfinance' if IBKR_ENABLED else 'cloud'))})
-
-
-@app.route('/api/rescan', methods=['POST', 'GET'])
-def api_rescan():
-    """Réveille le scan au plus une fois par fenêtre globale, sans tracer le demandeur."""
-    global _last_rescan_ts
-    with _rescan_gate_lock:
-        remaining = _rescan_cooldown_remaining()
-        if remaining:
-            response = jsonify({'ok': False, 'error': 'rescan_rate_limited',
-                                'retry_after': remaining})
-            response.status_code = 429
-            response.headers['Retry-After'] = str(remaining)
-            return response
-        _last_rescan_ts = time.monotonic()
-        _rescan_evt.set()
-    return jsonify({'ok': True, 'status': 'rescan_queued', 'universe': len(UNIVERSE),
-                    'cooldown_seconds': RESCAN_COOLDOWN_SEC,
-                    'msg': f'Re-scan lancé — recalcul des {len(UNIVERSE)} titres (≈10-30 s). Recharge dans un instant.'})
+#  `/scan` et `/api/rescan` sont partis dans
+#  `vertex/app/routes/scan_api.py` — aucune injection : leur seule
+#  dependance locale etait la porte anti-rafale, partie avec elles.
 
 
 #  Les en-tetes de securite, les pages d'erreur 404/500 et la compression gzip
@@ -1774,8 +1750,8 @@ def api_rescan():
 #  `vertex/app/factory.py::create_app`, avec le reste de la plomberie Flask.
 
 
-def _scan_age():
-    return round(time.time() - scan_state['scan_ts']) if scan_state.get('scan_ts') else None
+#  `_scan_age` existait a l'identique ici ET dans decision_api. Une seule
+#  maison desormais : `vertex.app.state.scan_age`.
 
 
 # ─── FLUX DE DONNÉES (Blueprint) — market/summary · cockpit · watchlist · options · search · weekly · strategie · comite ───

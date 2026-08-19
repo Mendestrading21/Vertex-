@@ -258,7 +258,11 @@ def test_les_cles_non_lues_partent_quand_meme_au_client(cle):
     ces clés voyagent. Aucune page servie ne les lit (mesuré au lot 386) — si
     l'une gagnait un lecteur, sa caractérisation ci-dessus deviendrait un
     enjeu d'affichage et devrait être revue."""
-    src = open(FICHIER, encoding='utf-8').read()
-    assert '{**scan_state' in src, (
+    #  #779/G1 — `/scan` a quitte terminal.py pour
+    #  `vertex/app/routes/scan_api.py`. LE CONSTAT EST INCHANGE : la route
+    #  serialise toujours `{**scan_state}`, donc ces cles voyagent toujours.
+    #  Seul le fichier a change ; le pointer ici garde le constat vivant.
+    src = open('vertex/app/routes/scan_api.py', encoding='utf-8').read()
+    assert '**scan_state' in src, (
         '/scan ne sérialise plus scan_state en bloc : revoir ce que la clé '
         '« %s » atteint désormais' % cle)

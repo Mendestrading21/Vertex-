@@ -1,32 +1,9 @@
 {
  "matrice_routes": [
   {
-   "chemin": "/scan",
-   "fichier": "terminal.py",
-   "ligne": 1741,
-   "methodes": [
-    "*"
-   ],
-   "porteur": "app",
-   "statut": "LEGACY",
-   "vue": "scan_ep"
-  },
-  {
-   "chemin": "/api/rescan",
-   "fichier": "terminal.py",
-   "ligne": 1754,
-   "methodes": [
-    "POST",
-    "GET"
-   ],
-   "porteur": "app",
-   "statut": "LEGACY",
-   "vue": "api_rescan"
-  },
-  {
    "chemin": "/api/ticker/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1799,
+   "ligne": 1775,
    "methodes": [
     "*"
    ],
@@ -37,7 +14,7 @@
   {
    "chemin": "/api/correlations/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1876,
+   "ligne": 1852,
    "methodes": [
     "*"
    ],
@@ -48,7 +25,7 @@
   {
    "chemin": "/desc/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1970,
+   "ligne": 1946,
    "methodes": [
     "*"
    ],
@@ -59,7 +36,7 @@
   {
    "chemin": "/options/<sym>",
    "fichier": "terminal.py",
-   "ligne": 2050,
+   "ligne": 2026,
    "methodes": [
     "*"
    ],
@@ -70,7 +47,7 @@
   {
    "chemin": "/weekly-regen",
    "fichier": "terminal.py",
-   "ligne": 2327,
+   "ligne": 2303,
    "methodes": [
     "POST",
     "GET"
@@ -468,7 +445,7 @@
   {
    "chemin": "/api/decision/<sym>",
    "fichier": "vertex/app/routes/decision_api.py",
-   "ligne": 80,
+   "ligne": 81,
    "methodes": [
     "*"
    ],
@@ -479,7 +456,7 @@
   {
    "chemin": "/api/position-decision/<sym>",
    "fichier": "vertex/app/routes/decision_api.py",
-   "ligne": 98,
+   "ligne": 99,
    "methodes": [
     "*"
    ],
@@ -490,7 +467,7 @@
   {
    "chemin": "/api/options-for/<sym>",
    "fichier": "vertex/app/routes/decision_api.py",
-   "ligne": 139,
+   "ligne": 140,
    "methodes": [
     "*"
    ],
@@ -501,7 +478,7 @@
   {
    "chemin": "/api/brief",
    "fichier": "vertex/app/routes/decision_api.py",
-   "ligne": 148,
+   "ligne": 149,
    "methodes": [
     "*"
    ],
@@ -512,7 +489,7 @@
   {
    "chemin": "/api/committee-review",
    "fichier": "vertex/app/routes/decision_api.py",
-   "ligne": 170,
+   "ligne": 171,
    "methodes": [
     "*"
    ],
@@ -1260,6 +1237,29 @@
    "vue": "legacy_titre"
   },
   {
+   "chemin": "/scan",
+   "fichier": "vertex/app/routes/scan_api.py",
+   "ligne": 45,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "scan_ep"
+  },
+  {
+   "chemin": "/api/rescan",
+   "fichier": "vertex/app/routes/scan_api.py",
+   "ligne": 62,
+   "methodes": [
+    "POST",
+    "GET"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_rescan"
+  },
+  {
    "chemin": "/api/session/digest",
    "fichier": "vertex/app/routes/session_api.py",
    "ligne": 37,
@@ -1728,7 +1728,7 @@
    "news"
   ],
   "fichier": "terminal.py",
-  "fonctions": 76,
+  "fonctions": 72,
   "imports": [
    "asyncio",
    "collections",
@@ -1752,35 +1752,16 @@
    "yfinance",
    "zlib"
   ],
-  "lignes": 7169,
-  "octets": 809795,
+  "lignes": 7145,
+  "octets": 808610,
   "plus_longue_fonction": [
    "_ibkr_opt_worker",
    306
   ],
   "routes": [
    {
-    "chemin": "/scan",
-    "ligne": 1741,
-    "methodes": [
-     "*"
-    ],
-    "porteur": "app",
-    "vue": "scan_ep"
-   },
-   {
-    "chemin": "/api/rescan",
-    "ligne": 1754,
-    "methodes": [
-     "POST",
-     "GET"
-    ],
-    "porteur": "app",
-    "vue": "api_rescan"
-   },
-   {
     "chemin": "/api/ticker/<sym>",
-    "ligne": 1799,
+    "ligne": 1775,
     "methodes": [
      "*"
     ],
@@ -1789,7 +1770,7 @@
    },
    {
     "chemin": "/api/correlations/<sym>",
-    "ligne": 1876,
+    "ligne": 1852,
     "methodes": [
      "*"
     ],
@@ -1798,7 +1779,7 @@
    },
    {
     "chemin": "/desc/<sym>",
-    "ligne": 1970,
+    "ligne": 1946,
     "methodes": [
      "*"
     ],
@@ -1807,7 +1788,7 @@
    },
    {
     "chemin": "/options/<sym>",
-    "ligne": 2050,
+    "ligne": 2026,
     "methodes": [
      "*"
     ],
@@ -1816,7 +1797,7 @@
    },
    {
     "chemin": "/weekly-regen",
-    "ligne": 2327,
+    "ligne": 2303,
     "methodes": [
      "POST",
      "GET"
@@ -2496,7 +2477,7 @@
     "typing",
     "vertex"
    ],
-   "lignes": 306,
+   "lignes": 307,
    "plus_longue_fonction": [
     "create_app",
     136
@@ -2581,6 +2562,28 @@
    "plus_longue_fonction": [
     "optional_number",
     12
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/rescan_gate.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "math",
+    "os",
+    "threading",
+    "time"
+   ],
+   "lignes": 102,
+   "plus_longue_fonction": [
+    "fenetre_depuis_env",
+    16
    ],
    "routes": [],
    "stores": [],
@@ -3071,21 +3074,20 @@
    "blueprints_enregistres": [],
    "boucles": [],
    "fichier": "vertex/app/routes/decision_api.py",
-   "fonctions": 13,
+   "fonctions": 12,
    "imports": [
     "flask",
-    "time",
     "vertex"
    ],
-   "lignes": 192,
+   "lignes": 193,
    "plus_longue_fonction": [
     "make_blueprint",
-    164
+    166
    ],
    "routes": [
     {
      "chemin": "/api/decision/<sym>",
-     "ligne": 80,
+     "ligne": 81,
      "methodes": [
       "*"
      ],
@@ -3094,7 +3096,7 @@
     },
     {
      "chemin": "/api/position-decision/<sym>",
-     "ligne": 98,
+     "ligne": 99,
      "methodes": [
       "*"
      ],
@@ -3103,7 +3105,7 @@
     },
     {
      "chemin": "/api/options-for/<sym>",
-     "ligne": 139,
+     "ligne": 140,
      "methodes": [
       "*"
      ],
@@ -3112,7 +3114,7 @@
     },
     {
      "chemin": "/api/brief",
-     "ligne": 148,
+     "ligne": 149,
      "methodes": [
       "*"
      ],
@@ -3121,7 +3123,7 @@
     },
     {
      "chemin": "/api/committee-review",
-     "ligne": 170,
+     "ligne": 171,
      "methodes": [
       "*"
      ],
@@ -4009,6 +4011,48 @@
   },
   {
    "blueprints_definis": [
+    "scan_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/scan_api.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "flask",
+    "vertex"
+   ],
+   "lignes": 83,
+   "plus_longue_fonction": [
+    "api_rescan",
+    17
+   ],
+   "routes": [
+    {
+     "chemin": "/scan",
+     "ligne": 45,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "scan_ep"
+    },
+    {
+     "chemin": "/api/rescan",
+     "ligne": 62,
+     "methodes": [
+      "POST",
+      "GET"
+     ],
+     "porteur": "bp",
+     "vue": "api_rescan"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
     "session_api"
    ],
    "blueprints_enregistres": [],
@@ -4476,12 +4520,14 @@
    "blueprints_enregistres": [],
    "boucles": [],
    "fichier": "vertex/app/state.py",
-   "fonctions": 0,
-   "imports": [],
-   "lignes": 33,
+   "fonctions": 1,
+   "imports": [
+    "time"
+   ],
+   "lignes": 51,
    "plus_longue_fonction": [
-    "",
-    0
+    "scan_age",
+    15
    ],
    "routes": [],
    "stores": [
@@ -9966,15 +10012,15 @@
    "workers": []
   }
  ],
- "sha": "c06b5d767944",
+ "sha": "a6a6c8163396",
  "totaux": {
   "blueprints_enregistres": 7,
   "boucles_monolithe": 13,
-  "fichiers_paquet": 345,
-  "lignes_monolithe": 7169,
-  "octets_monolithe": 809795,
-  "routes_canoniques": 147,
-  "routes_legacy": 7,
+  "fichiers_paquet": 347,
+  "lignes_monolithe": 7145,
+  "octets_monolithe": 808610,
+  "routes_canoniques": 149,
+  "routes_legacy": 5,
   "stores_monolithe": 3,
   "workers_monolithe": 15
  }

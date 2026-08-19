@@ -77,11 +77,11 @@ def test_le_registre_declare_ce_qui_est_reellement_enregistre(application):
     assert not manquants, (
         'ces blueprints sont declares dans le registre mais absents de '
         'l\'application : %s' % manquants)
-    #  15 -> 16 : `track_record_api` a quitte terminal.py (aucune injection —
-    #  ses deux dependances, `vertex.engines.track_record` et
-    #  `vertex.app.state.scan_state`, vivaient deja dans le paquet).
-    assert len(factory.BLUEPRINTS) == 16, (
-        'le registre ne compte plus 16 entrees (%d) : si un blueprint a migre '
+    #  15 -> 16 : `track_record_api` (aucune injection — ses deux dependances
+    #  vivaient deja dans le paquet).
+    #  16 -> 17 : `scan_api`, une fois la porte anti-rafale partie avec lui.
+    assert len(factory.BLUEPRINTS) == 17, (
+        'le registre ne compte plus 17 entrees (%d) : si un blueprint a migre '
         'depuis le monolithe, mettre a jour A_INJECTION en meme temps'
         % len(factory.BLUEPRINTS))
 

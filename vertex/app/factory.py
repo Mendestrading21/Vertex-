@@ -81,6 +81,7 @@ from typing import Any, List, Tuple
 #: L'ordre reproduit celui qu'avait `terminal.py`, pour que la parité soit
 #: comparable ligne à ligne si quelqu'un doute.
 BLUEPRINTS: Tuple[Tuple[str, str], ...] = (
+    ('vertex.app.routes.scan_api', 'bp'),
     ('vertex.app.routes.feeds', 'bp'),
     ('vertex.app.routes.company_api', 'bp'),
     ('vertex.app.routes.analysis_api', 'bp'),
