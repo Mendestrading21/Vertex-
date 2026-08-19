@@ -141,9 +141,14 @@ def test_board_screen_exposes_rejected_quote_without_derived_metrics(monkeypatch
 
 def test_options_endpoint_serves_structured_price_rejections(monkeypatch):
     import terminal
+    #  #779/G1 — `/options/<sym>` est servi par `vertex/app/routes/ticker_api.py`,
+    #  qui resout `options_pack` dans SON espace de noms. Patcher celui du
+    #  monolithe ne l'atteint plus : la route aurait appele la vraie fonction, et
+    #  le test aurait echoue sur une absence de reseau plutot que sur le contrat.
+    from vertex.app.routes import ticker_api as _ticker
     rejection = {'price_integrity': {'status': 'PRICE_OUTSIDE_NO_ARBITRAGE'},
                  'derived_metrics_withheld': True}
-    monkeypatch.setattr(terminal, 'options_pack', lambda _sym: {
+    monkeypatch.setattr(_ticker, 'options_pack', lambda _sym: {
         'sym': _sym, 'contracts': [], 'option_price_rejection_count': 1,
         'option_price_rejections': [rejection], 'error': None})
     payload = terminal.app.test_client().get('/options/TEST').get_json()

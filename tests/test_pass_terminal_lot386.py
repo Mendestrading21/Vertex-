@@ -76,16 +76,44 @@ import pytest
 
 FICHIER = 'terminal.py'
 
-# Recensement GELÉ des 38 handlers, par famille. Une dérive réclame un examen.
+# Recensement GELÉ des handlers, par famille. Une dérive réclame un examen.
+#
+# 38 -> 36 au lot #779/G1 : DEUX handlers ont quitté `terminal.py` avec la
+# plomberie Flask, et aucun n'a été remplacé par un autre avaleur silencieux.
+#   • celui qui gardait l'installation du fournisseur JSON sûr — un `try` autour
+#     d'un import, famille « import/config optionnel » (2 -> 1) ; il est parti
+#     avec le fournisseur dans `vertex/app/factory.py`, où l'import est
+#     inconditionnel : un flask absent casse déjà l'application deux lignes plus
+#     haut, le garder n'aurait protégé de rien ;
+#   • celui de `_gzip_response`, devenu un `return resp` EXPLICITE dans la
+#     fabrique — même comportement (rendre le corps non compressé, toujours
+#     valide), intention lisible.
+# 36 -> 35 : celui de `_to_naive` (normalisation des dates des séries de
+# corrélation) est parti AVEC sa fonction dans
+# `vertex/app/routes/correlations_api.py`. Famille « absence honnête » (15 -> 14) :
+# un index sans fuseau n'a rien à retirer, l'échec est le cas nominal.
+# 35 -> 32 au lot des trois dernieres routes LEGACY. Les TROIS sont partis avec
+# le code qu'ils entouraient, aucun n'a ete supprime ni ajoute :
+#   • deux dans `options_pack` -> `vertex/options/pack.py` (famille « absence
+#     honnête » : un champ de chaine d'options absent reste absent) ;
+#   • un dans la route `/desc` -> `vertex/app/routes/descriptions_api.py`
+#     (famille « journal/persistance » : l'ecriture du cache disque ne doit
+#     jamais couter la reponse).
+# Familles : absence honnête 14 -> 12, journal/persistance 10 -> 9.
+# HONNÊTETÉ SUR CETTE MISE À JOUR : le lot 386 n'a pas consigné la famille de
+# chaque ligne, seulement les totaux et les deux cas « examinés de près ». La
+# première baisse est donc CERTAINE (le `try` entourait un import) ; la seconde
+# est RAISONNÉE — la compression ratée produisait une absence honnête, pas une
+# valeur inventée — et non retrouvée dans la classification d'origine.
 FAMILLES = {
     'nettoyage/fermeture': 6,
-    'journal/persistance': 10,
-    'import/config optionnel': 2,
+    'journal/persistance': 9,
+    'import/config optionnel': 1,
     'infra thread': 2,
-    'absence honnête': 16,
+    'absence honnête': 12,
     'examinés de près': 2,
 }
-TOTAL_PASS = 38
+TOTAL_PASS = 32
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.
@@ -100,7 +128,7 @@ def _pass_secs():
 
 # ── 1. Le dénominateur ──────────────────────────────────────────────────────
 
-def test_le_detecteur_voit_bien_les_trente_huit():
+def test_le_detecteur_voit_bien_les_trente_deux():
     """Sans dénominateur, la lecture « un par un » ne prouverait rien : si le
     détecteur cassait, le recensement passerait pour complet en couvrant zéro
     handler (leçon des lots 375-377)."""
@@ -242,7 +270,11 @@ def test_les_cles_non_lues_partent_quand_meme_au_client(cle):
     ces clés voyagent. Aucune page servie ne les lit (mesuré au lot 386) — si
     l'une gagnait un lecteur, sa caractérisation ci-dessus deviendrait un
     enjeu d'affichage et devrait être revue."""
-    src = open(FICHIER, encoding='utf-8').read()
-    assert '{**scan_state' in src, (
+    #  #779/G1 — `/scan` a quitte terminal.py pour
+    #  `vertex/app/routes/scan_api.py`. LE CONSTAT EST INCHANGE : la route
+    #  serialise toujours `{**scan_state}`, donc ces cles voyagent toujours.
+    #  Seul le fichier a change ; le pointer ici garde le constat vivant.
+    src = open('vertex/app/routes/scan_api.py', encoding='utf-8').read()
+    assert '**scan_state' in src, (
         '/scan ne sérialise plus scan_state en bloc : revoir ce que la clé '
         '« %s » atteint désormais' % cle)

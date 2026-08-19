@@ -75,4 +75,4 @@ def test_root_route_still_200_with_shell(client):
     assert '/static/vertex/css/neon-glass.css' in body
     assert 'vx-skeleton' in body               # squelette de chargement conservé
     sw = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v206' in sw
+    assert 'td-shell-v208' in sw

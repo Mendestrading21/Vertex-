@@ -465,9 +465,20 @@ async function loadTrack(){
     const by=tr.by_verdict||{};
     const rows=Object.entries(by);
     if(!rows.length){
+      /* #783/G3 — L'ANCIEN MESSAGE DISAIT « le registre se remplit à chaque
+         scan », c'est-à-dire « patience ». Il l'a dit pendant que la jointure
+         de dates était cassée : la condition ne pouvait JAMAIS se résoudre, et
+         l'écran invitait à attendre un résultat impossible. Le serveur détaille
+         desormais POURQUOI chaque entrée n'est pas notée ; on le sert. */
+      const ig=tr.ignores||{};
+      const causes=[];
+      if(ig.horizon_non_echu) causes.push(ig.horizon_non_echu+' trop récent(s) (horizon pas encore écoulé)');
+      if(ig.sans_serie) causes.push(ig.sans_serie+' sur des titres qui ne sont plus suivis par le scan');
+      if(ig.date_absente) causes.push(ig.date_absente+' dont la séance est introuvable dans la série');
       $('vx-pf-track').innerHTML=VX.states.empty(
-        'Pas encore assez de verdicts résolus pour mesurer la fiabilité ('+(tr.entries||0)
-        +' verdict(s) enregistré(s), '+(tr.resolved||0)+' résolu(s) — minimum 5 par verdict). Le registre se remplit à chaque scan.',
+        (tr.entries||0)+' verdict(s) enregistré(s), '+(tr.resolved||0)+' résolu(s)'
+        +' — il en faut 5 par verdict pour publier une fiabilité.'
+        +(causes.length?' Non notés : '+esc(causes.join(' · '))+'.':''),
         '<a class="vx-btn vx-btn-sm" href="/system?view=data">Système / Données</a>');
       return;
     }
