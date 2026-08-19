@@ -1279,6 +1279,12 @@ def _news_loop():
             feed.sort(key=lambda x: x.get('time') or '', reverse=True)
             news_state['items'] = feed[:45]
             news_state['updated'] = datetime.now().strftime('%H:%M:%S')
+            #  #779/G1 — NEWS_REFRESH était déclaré au registre des jobs sans
+            #  aucun émetteur : la boucle tournait, la page Système affichait
+            #  « jamais exécuté ». La cadence déclarée au registre (900 s) était
+            #  fausse elle aussi ; la vraie est celle d'en dessous, 60 s.
+            from vertex.scheduler import registry as _sched
+            _sched.beat('NEWS_REFRESH', ok=True)
         except Exception:
             pass
         _live.wait_force('news', 60)

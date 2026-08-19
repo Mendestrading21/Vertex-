@@ -98,14 +98,23 @@ def snapshot(scan_state, *, ibkr_enabled=False, demo_mode=False):
                        impact='' if storage_ok else 'Synchronisation des données utilisateur compromise.',
                        action='' if storage_ok else 'Vérifier VERTEX_DATA_DIR et les permissions.'))
 
-    # Scheduler : jobs enregistrés + au moins un battement.
+    # Scheduler : jobs EXÉCUTABLES + au moins un battement.
     try:
         from vertex.scheduler import registry
         jobs = registry.jobs()
         ran = sum(1 for j in jobs if j.get('runs'))
-        sched_status = READY if jobs and ran else (DEGRADED if jobs else OFFLINE)
+        #  #779/G1 — « 27 jobs enregistrés » comptait aussi les 18 qui n'ont
+        #  AUCUN exécutant dans le code : un inventaire flatteur, servi comme un
+        #  état de santé. On compte désormais ce qui peut réellement tourner, et
+        #  on nomme le reste au lieu de le dissimuler dans le total.
+        implementes = [j for j in jobs if j.get('implemente', True)]
+        non_impl = len(jobs) - len(implementes)
+        sched_status = READY if implementes and ran else (DEGRADED if implementes else OFFLINE)
         conns.append(_conn('Scheduler', sched_status, configured=True,
-                           detail='%d jobs enregistrés, %d avec au moins une exécution.' % (len(jobs), ran),
+                           detail='%d jobs exécutables, %d avec au moins une exécution'
+                                  '%s.' % (len(implementes), ran,
+                                           ' · %d déclarés sans exécutant' % non_impl
+                                           if non_impl else ''),
                            impact='' if ran else 'Aucun job n\'a encore tourné.',
                            action=''))
     except Exception:
