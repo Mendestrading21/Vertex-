@@ -73,6 +73,7 @@ from vertex.app.state import scan_state, weekly_state, news_state, cal_state
 #  #779 — CACHES D'EXECUTION : proprietaire et politique de fraicheur declares
 #  dans `vertex/app/caches.py` (QUALITY_STANDARD §8). Les objets sont les MEMES :
 #  mutes en place, jamais reassignes, donc l'identite est preservee.
+from vertex.app import lifecycle as _lifecycle
 from vertex.app.caches import (          # noqa: F401  (relies par leur nom)
     _STOOQ_CACHE, _STOOQ_TTL, _SOURCE_BUDGET_STATE, _CORR_BENCH,
     _ibkr_cache, _IDX_IBKR, _IDX_META, _live_quotes, _live_meta,
@@ -7157,7 +7158,7 @@ def api_track_record():
     return jsonify(_track.evaluate(scan_state))
 
 
-def _start_workers():
+def _demarrer_les_boucles():
     """Démarre les threads de fond. En mode DÉMO (vitrine cloud) on ne lance QUE le
     scan synthétique : les autres boucles (options/news/calendrier/hebdo/fondamentaux)
     dépendent de yfinance — inutiles et coûteuses (mémoire/CPU) quand le réseau est
@@ -7178,6 +7179,25 @@ def _start_workers():
         threading.Thread(target=_indices_loop, daemon=True).start()      # indices/VIX TEMPS RÉEL IBKR (lecture seule)
         threading.Thread(target=_ibkr_opt_worker, daemon=True).start()   # chaînes options IBKR (lecture seule)
         threading.Thread(target=_radar_loop, daemon=True).start()        # scanners + news IBKR (lecture seule)
+
+
+def _start_workers():
+    """Point d'entrée du démarrage des boucles — GARDÉ CONTRE LE DOUBLE APPEL.
+
+    #779/G1. `_start_workers()` est appelé à DEUX endroits : à l'import quand
+    `START_ON_IMPORT=1`, et par `_start_app()`. Sans garde, les deux appels
+    partaient, et `_loop`, `_alerts_loop` et `_cal_loop` tournaient EN DOUBLE —
+    mesuré : 4 fils après import, 7 après le second appel. Deux boucles de scan
+    mutant `scan_state` en même temps ne plantent pas : elles s'écrasent
+    l'une l'autre au hasard de l'ordonnancement.
+
+    La production n'était pas touchée (gunicorn n'appelle jamais `_start_app`),
+    mais le lancement local documenté l'était — donc toute mesure prise en
+    `START_ON_IMPORT=1` l'a été avec deux boucles concurrentes.
+
+    Le second appel est ignoré ET COMPTÉ : `_lifecycle.statut()['ignores']`
+    permet de constater qu'une seconde tentative a eu lieu."""
+    return _lifecycle.demarrer_une_seule_fois(_demarrer_les_boucles, nom='boucles')
 
 
 def _start_app():
