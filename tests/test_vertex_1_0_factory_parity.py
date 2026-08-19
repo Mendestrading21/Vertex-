@@ -77,8 +77,11 @@ def test_le_registre_declare_ce_qui_est_reellement_enregistre(application):
     assert not manquants, (
         'ces blueprints sont declares dans le registre mais absents de '
         'l\'application : %s' % manquants)
-    assert len(factory.BLUEPRINTS) == 15, (
-        'le registre ne compte plus 15 entrees (%d) : si un blueprint a migre '
+    #  15 -> 16 : `track_record_api` a quitte terminal.py (aucune injection —
+    #  ses deux dependances, `vertex.engines.track_record` et
+    #  `vertex.app.state.scan_state`, vivaient deja dans le paquet).
+    assert len(factory.BLUEPRINTS) == 16, (
+        'le registre ne compte plus 16 entrees (%d) : si un blueprint a migre '
         'depuis le monolithe, mettre a jour A_INJECTION en meme temps'
         % len(factory.BLUEPRINTS))
 
@@ -90,7 +93,7 @@ def test_les_blueprints_a_injection_restent_documentes(application):
     laisserait croire à un couplage résolu."""
     assert set(factory.A_INJECTION) == {
         'desk', 'tv_webhooks', 'strategy_os_api', 'redesign',
-        'positions_api', 'decision_api'}, (
+        'positions_api', 'decision_api', 'live_state_api'}, (
         'la liste des blueprints a injection a change : verifier qu\'un '
         'couplage a bien ete resolu, et pas seulement efface de la doc')
     for nom, raison in factory.A_INJECTION.items():

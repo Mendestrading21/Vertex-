@@ -17,7 +17,7 @@ Mesuré, pas supposé :
 - **15 blueprints sans injection** — un objet `bp` de module, rien d'autre. Leur
   enregistrement est une donnée, pas du code : il devient la liste déclarative
   `BLUEPRINTS`.
-- **6 blueprints à injection** — `make_blueprint(...)` nourri par l'état local du
+- **7 blueprints à injection** — `make_blueprint(...)` nourri par l'état local du
   monolithe (`scan_state`, `_opt_job`, `_on_tv_signal`…). Ils restent dans
   `terminal.py` **tant que cet état y vit**. Les déplacer ici n'aurait rien
   découplé : le registre importerait alors le monolithe, ce qui inverse la
@@ -89,6 +89,7 @@ BLUEPRINTS: Tuple[Tuple[str, str], ...] = (
     ('vertex.app.routes.options_lab_api', 'bp'),
     ('vertex.app.routes.options_intel_api', 'bp'),
     ('vertex.app.routes.tracking_api', 'bp'),
+    ('vertex.app.routes.track_record_api', 'bp'),
     ('vertex.app.routes.opportunities_api', 'bp'),
     ('vertex.app.routes.planning_api', 'bp'),
     ('vertex.app.routes.ai_api', 'bp'),
@@ -110,6 +111,8 @@ A_INJECTION = {
     'redesign': '`scan_state` passé en argument à la fabrique',
     'positions_api': 'accès à l\'inventaire de positions tenu par le monolithe',
     'decision_api': '`scan_state` plus le mode démonstration résolu au démarrage',
+    'live_state_api': 'instantané IBKR (worker `ib_async` du monolithe) et le '
+                      'dictionnaire d\'alertes que la boucle mute en place',
 }
 
 

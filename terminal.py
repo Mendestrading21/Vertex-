@@ -97,6 +97,7 @@ from vertex.services import market_clock as _market_clock
 #  icon-180.png) partiraient en 404 SANS erreur au demarrage. La fabrique fixe
 #  donc `root_path` explicitement.
 from vertex.app import factory as _factory  # noqa: E402
+from vertex.app import ibkr_state as _ibkr_state  # noqa: E402
 app = _factory.create_app()
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2137,18 +2138,12 @@ def _ibkr_snapshot():
 # ─── COURS EN DIRECT (flux IBKR permanent, lecture seule) ───────────────────
 
 
-def _sync_ibkr_state():
-    """Reflète l'état RÉEL du socket IBKR dans scan_state (honnêteté §2/§10).
-
-    connections.py lit scan_state['ibkr_connected']/['ibkr_live'] — sans cette
-    passerelle, la carte Système resterait à un état de configuration mensonger.
-    Garde-fou fraîcheur : une session dont les ticks datent de > 75 s n'est plus
-    « connectée » (un worker figé ne doit jamais paraître live). On ne mute que
-    des clés — scan_state n'est jamais réassigné."""
-    fresh = (time.time() - _live_meta.get('ts', 0)) < 75
-    connected = bool(_live_meta.get('connected')) and fresh
-    scan_state['ibkr_connected'] = connected
-    scan_state['ibkr_live'] = connected and bool(_live_meta.get('rt'))
+#  La passerelle socket -> scan_state vit desormais dans
+#  `vertex/app/ibkr_state.py` : ses deux entrees (`_live_meta`, `scan_state`)
+#  avaient deja un domicile dans le paquet, elle restait ici par habitude. Le
+#  nom local est CONSERVE — une quinzaine d'appelants s'en servent dans ce
+#  fichier, et les renommer d'un coup melerait deux changements.
+_sync_ibkr_state = _ibkr_state.sync
 
 
 def _store_ticker(t):
@@ -2321,16 +2316,8 @@ def _indices_loop():
         time.sleep(15)
 
 
-@app.route('/quotes')
-def quotes_ep():
-    fresh = (time.time() - _live_meta.get('ts', 0)) < 75
-    _sync_ibkr_state()          # rafraîchit l'état honnête (garde-fou fraîcheur)
-    return jsonify({'quotes': _live_quotes if fresh else {}, 'meta': _live_meta, 'fresh': fresh})
-
-
-@app.route('/ibkr')
-def ibkr_ep():
-    return jsonify(_ibkr_snapshot())
+#  `/quotes` et `/ibkr` sont partis dans
+#  `vertex/app/routes/live_state_api.py` avec `/api/alerts/status`.
 
 
 # ─── FILS DE CONTENU (Blueprint) — news-feed · cal-feed · weekly-feed ───
@@ -7012,6 +6999,21 @@ for _pg, _cur in (('PAGE_SETTINGS', '/settings'), ('PAGE_HEALTH', '/health')):
 _ALERTS_FIRED = _load_json('alerts_fired.json', {})
 
 
+#  ── SONDES D'ETAT (#779/G1) ────────────────────────────────────────────────
+#  Enregistre ICI et pas avec les six autres blueprints a injection : ses deux
+#  dependances (`_ibkr_snapshot`, `_ALERTS_FIRED`) sont definies plus bas dans
+#  ce fichier, et l'enregistrer plus haut leverait un NameError a l'import.
+#  L'ordre est neutre pour le dispatch — aucune des trois routes n'entre en
+#  collision (mesure : 4 regles en double dans le depot, aucune de celles-ci).
+#
+#  `_ALERTS_FIRED` est passe PAR REFERENCE : la boucle d'alertes le mute en
+#  place, et c'est ce partage qui fait que /api/alerts/status sert l'etat
+#  courant plutot qu'une copie figee au demarrage.
+from vertex.app.routes import live_state_api as _live_state_api  # noqa: E402
+app.register_blueprint(_live_state_api.make_blueprint(
+    ibkr_snapshot=_ibkr_snapshot, alerts_fired=_ALERTS_FIRED))
+
+
 def _alert_price(sym):
     q = _live_quotes.get(sym)
     if q and _live_meta.get('connected') and q.get('last') is not None:
@@ -7059,17 +7061,9 @@ def _alerts_loop():
         time.sleep(60)
 
 
-@app.route('/api/alerts/status')
-def api_alerts_status():
-    """Alertes déclenchées côté serveur (évaluées toutes les 60 s, prix live IBKR)."""
-    return jsonify({'fired': _ALERTS_FIRED, 'ts': int(time.time())})
-
-
-@app.route('/api/track-record')
-def api_track_record():
-    """📓 LE MOTEUR SE NOTE : fiabilité mesurée des verdicts (rendements réels
-    +5/+20 séances, TP1-avant-stop) par verdict/grade/régime. Analyse only."""
-    return jsonify(_track.evaluate(scan_state))
+#  `/api/alerts/status` a rejoint `live_state_api`, et
+#  `/api/track-record` `track_record_api` (aucune injection : ses deux
+#  dependances vivaient deja dans le paquet).
 
 
 def _demarrer_les_boucles():

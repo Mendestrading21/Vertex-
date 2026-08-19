@@ -3,7 +3,7 @@
   {
    "chemin": "/scan",
    "fichier": "terminal.py",
-   "ligne": 1740,
+   "ligne": 1741,
    "methodes": [
     "*"
    ],
@@ -14,7 +14,7 @@
   {
    "chemin": "/api/rescan",
    "fichier": "terminal.py",
-   "ligne": 1753,
+   "ligne": 1754,
    "methodes": [
     "POST",
     "GET"
@@ -26,7 +26,7 @@
   {
    "chemin": "/api/ticker/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1798,
+   "ligne": 1799,
    "methodes": [
     "*"
    ],
@@ -37,7 +37,7 @@
   {
    "chemin": "/api/correlations/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1875,
+   "ligne": 1876,
    "methodes": [
     "*"
    ],
@@ -48,7 +48,7 @@
   {
    "chemin": "/desc/<sym>",
    "fichier": "terminal.py",
-   "ligne": 1969,
+   "ligne": 1970,
    "methodes": [
     "*"
    ],
@@ -59,7 +59,7 @@
   {
    "chemin": "/options/<sym>",
    "fichier": "terminal.py",
-   "ligne": 2049,
+   "ligne": 2050,
    "methodes": [
     "*"
    ],
@@ -68,31 +68,9 @@
    "vue": "opt_ep"
   },
   {
-   "chemin": "/quotes",
-   "fichier": "terminal.py",
-   "ligne": 2325,
-   "methodes": [
-    "*"
-   ],
-   "porteur": "app",
-   "statut": "LEGACY",
-   "vue": "quotes_ep"
-  },
-  {
-   "chemin": "/ibkr",
-   "fichier": "terminal.py",
-   "ligne": 2332,
-   "methodes": [
-    "*"
-   ],
-   "porteur": "app",
-   "statut": "LEGACY",
-   "vue": "ibkr_ep"
-  },
-  {
    "chemin": "/weekly-regen",
    "fichier": "terminal.py",
-   "ligne": 2340,
+   "ligne": 2327,
    "methodes": [
     "POST",
     "GET"
@@ -100,28 +78,6 @@
    "porteur": "app",
    "statut": "LEGACY",
    "vue": "weekly_regen_ep"
-  },
-  {
-   "chemin": "/api/alerts/status",
-   "fichier": "terminal.py",
-   "ligne": 7063,
-   "methodes": [
-    "*"
-   ],
-   "porteur": "app",
-   "statut": "LEGACY",
-   "vue": "api_alerts_status"
-  },
-  {
-   "chemin": "/api/track-record",
-   "fichier": "terminal.py",
-   "ligne": 7069,
-   "methodes": [
-    "*"
-   ],
-   "porteur": "app",
-   "statut": "LEGACY",
-   "vue": "api_track_record"
   },
   {
    "chemin": "/api/copilot/ask",
@@ -796,6 +752,39 @@
    "porteur": "bp",
    "statut": "CANONIQUE",
    "vue": "live_events_stats"
+  },
+  {
+   "chemin": "/quotes",
+   "fichier": "vertex/app/routes/live_state_api.py",
+   "ligne": 58,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "quotes_ep"
+  },
+  {
+   "chemin": "/ibkr",
+   "fichier": "vertex/app/routes/live_state_api.py",
+   "ligne": 65,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "ibkr_ep"
+  },
+  {
+   "chemin": "/api/alerts/status",
+   "fichier": "vertex/app/routes/live_state_api.py",
+   "ligne": 69,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_alerts_status"
   },
   {
    "chemin": "/api/opportunities/funnel",
@@ -1569,6 +1558,17 @@
    "vue": "service_worker"
   },
   {
+   "chemin": "/api/track-record",
+   "fichier": "vertex/app/routes/track_record_api.py",
+   "ligne": 33,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_track_record"
+  },
+  {
    "chemin": "/api/tracking",
    "fichier": "vertex/app/routes/tracking_api.py",
    "ligne": 72,
@@ -1709,7 +1709,8 @@
    "_strategy_os_api.make_blueprint",
    "_redesign.make_blueprint",
    "_positions_api.make_blueprint",
-   "_decision_api.make_blueprint"
+   "_decision_api.make_blueprint",
+   "_live_state_api.make_blueprint"
   ],
   "boucles": [
    "_alerts_loop",
@@ -1727,7 +1728,7 @@
    "news"
   ],
   "fichier": "terminal.py",
-  "fonctions": 81,
+  "fonctions": 76,
   "imports": [
    "asyncio",
    "collections",
@@ -1751,8 +1752,8 @@
    "yfinance",
    "zlib"
   ],
-  "lignes": 7175,
-  "octets": 809667,
+  "lignes": 7169,
+  "octets": 809795,
   "plus_longue_fonction": [
    "_ibkr_opt_worker",
    306
@@ -1760,7 +1761,7 @@
   "routes": [
    {
     "chemin": "/scan",
-    "ligne": 1740,
+    "ligne": 1741,
     "methodes": [
      "*"
     ],
@@ -1769,7 +1770,7 @@
    },
    {
     "chemin": "/api/rescan",
-    "ligne": 1753,
+    "ligne": 1754,
     "methodes": [
      "POST",
      "GET"
@@ -1779,7 +1780,7 @@
    },
    {
     "chemin": "/api/ticker/<sym>",
-    "ligne": 1798,
+    "ligne": 1799,
     "methodes": [
      "*"
     ],
@@ -1788,7 +1789,7 @@
    },
    {
     "chemin": "/api/correlations/<sym>",
-    "ligne": 1875,
+    "ligne": 1876,
     "methodes": [
      "*"
     ],
@@ -1797,7 +1798,7 @@
    },
    {
     "chemin": "/desc/<sym>",
-    "ligne": 1969,
+    "ligne": 1970,
     "methodes": [
      "*"
     ],
@@ -1806,7 +1807,7 @@
    },
    {
     "chemin": "/options/<sym>",
-    "ligne": 2049,
+    "ligne": 2050,
     "methodes": [
      "*"
     ],
@@ -1814,50 +1815,14 @@
     "vue": "opt_ep"
    },
    {
-    "chemin": "/quotes",
-    "ligne": 2325,
-    "methodes": [
-     "*"
-    ],
-    "porteur": "app",
-    "vue": "quotes_ep"
-   },
-   {
-    "chemin": "/ibkr",
-    "ligne": 2332,
-    "methodes": [
-     "*"
-    ],
-    "porteur": "app",
-    "vue": "ibkr_ep"
-   },
-   {
     "chemin": "/weekly-regen",
-    "ligne": 2340,
+    "ligne": 2327,
     "methodes": [
      "POST",
      "GET"
     ],
     "porteur": "app",
     "vue": "weekly_regen_ep"
-   },
-   {
-    "chemin": "/api/alerts/status",
-    "ligne": 7063,
-    "methodes": [
-     "*"
-    ],
-    "porteur": "app",
-    "vue": "api_alerts_status"
-   },
-   {
-    "chemin": "/api/track-record",
-    "ligne": 7069,
-    "methodes": [
-     "*"
-    ],
-    "porteur": "app",
-    "vue": "api_track_record"
    }
   ],
   "stores": [
@@ -2531,7 +2496,7 @@
     "typing",
     "vertex"
    ],
-   "lignes": 303,
+   "lignes": 306,
    "plus_longue_fonction": [
     "create_app",
     136
@@ -2540,6 +2505,26 @@
    "stores": [
     "A_INJECTION"
    ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/ibkr_state.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "time",
+    "vertex"
+   ],
+   "lignes": 67,
+   "plus_longue_fonction": [
+    "sync",
+    9
+   ],
+   "routes": [],
+   "stores": [],
    "workers": []
   },
   {
@@ -3442,6 +3427,58 @@
   },
   {
    "blueprints_definis": [
+    "live_state_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/live_state_api.py",
+   "fonctions": 4,
+   "imports": [
+    "__future__",
+    "flask",
+    "time",
+    "typing",
+    "vertex"
+   ],
+   "lignes": 77,
+   "plus_longue_fonction": [
+    "make_blueprint",
+    26
+   ],
+   "routes": [
+    {
+     "chemin": "/quotes",
+     "ligne": 58,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "quotes_ep"
+    },
+    {
+     "chemin": "/ibkr",
+     "ligne": 65,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "ibkr_ep"
+    },
+    {
+     "chemin": "/api/alerts/status",
+     "ligne": 69,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_alerts_status"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
     "opportunities_api"
    ],
    "blueprints_enregistres": [],
@@ -4282,6 +4319,38 @@
      ],
      "porteur": "bp",
      "vue": "service_worker"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "track_record_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/track_record_api.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "flask",
+    "vertex"
+   ],
+   "lignes": 39,
+   "plus_longue_fonction": [
+    "api_track_record",
+    2
+   ],
+   "routes": [
+    {
+     "chemin": "/api/track-record",
+     "ligne": 33,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_track_record"
     }
    ],
    "stores": [],
@@ -9897,15 +9966,15 @@
    "workers": []
   }
  ],
- "sha": "5513763fa294",
+ "sha": "c06b5d767944",
  "totaux": {
-  "blueprints_enregistres": 6,
+  "blueprints_enregistres": 7,
   "boucles_monolithe": 13,
-  "fichiers_paquet": 342,
-  "lignes_monolithe": 7175,
-  "octets_monolithe": 809667,
-  "routes_canoniques": 143,
-  "routes_legacy": 11,
+  "fichiers_paquet": 345,
+  "lignes_monolithe": 7169,
+  "octets_monolithe": 809795,
+  "routes_canoniques": 147,
+  "routes_legacy": 7,
   "stores_monolithe": 3,
   "workers_monolithe": 15
  }
