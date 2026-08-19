@@ -70,6 +70,14 @@ _IDX_META = {'connected': False, 'ts': 0.0, 'n': 0}
 _live_quotes = {}
 _live_meta = {'connected': False, 'ts': 0.0, 'rt': False, 'n': 0}
 
+#: Chaînes d'options déjà collectées, par symbole — PERSISTÉ sur disque
+#: (`optall_cache.json`). Rempli par le chargement au démarrage du monolithe et
+#: muté en place par `_opt_loop` (rotation de l'univers) et par
+#: `vertex.options.pack.options_pack` (fiche ouverte). Ce partage entre une
+#: boucle de fond et une route est exactement ce que ce module existe pour
+#: rendre visible : l'objet doit rester LE MÊME des deux côtés.
+_OPTALL_CACHE = {}
+
 
 #  REGISTRE LISIBLE PAR MACHINE — c'est lui qui rend la politique VÉRIFIABLE.
 #  Un commentaire se périme sans bruit ; ce dictionnaire est testé.
@@ -114,10 +122,16 @@ POLITIQUE = {
         'fraicheur': 'live, `ts` de dernière réception',
         'nature': 'live-meta',
     },
+    '_OPTALL_CACHE': {
+        'proprietaire': '_opt_loop (rotation) + options_pack (fiche ouverte)',
+        'fraicheur': 'TTL 86400 s cote boucle ; la fiche rafraichit a la demande',
+        'nature': 'cache-persiste',   # optall_cache.json
+    },
 }
 
 __all__ = [
     '_STOOQ_CACHE', '_STOOQ_TTL', '_SOURCE_BUDGET_STATE', '_CORR_BENCH',
     '_ibkr_cache', '_IDX_IBKR', '_IDX_META', '_live_quotes', '_live_meta',
+    '_OPTALL_CACHE',
     'POLITIQUE',
 ]

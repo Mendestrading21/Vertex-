@@ -1,39 +1,6 @@
 {
  "matrice_routes": [
   {
-   "chemin": "/api/ticker/<sym>",
-   "fichier": "terminal.py",
-   "ligne": 1775,
-   "methodes": [
-    "*"
-   ],
-   "porteur": "app",
-   "statut": "LEGACY",
-   "vue": "api_ticker"
-  },
-  {
-   "chemin": "/desc/<sym>",
-   "fichier": "terminal.py",
-   "ligne": 1896,
-   "methodes": [
-    "*"
-   ],
-   "porteur": "app",
-   "statut": "LEGACY",
-   "vue": "desc_ep"
-  },
-  {
-   "chemin": "/options/<sym>",
-   "fichier": "terminal.py",
-   "ligne": 1976,
-   "methodes": [
-    "*"
-   ],
-   "porteur": "app",
-   "statut": "LEGACY",
-   "vue": "opt_ep"
-  },
-  {
    "chemin": "/api/copilot/ask",
    "fichier": "vertex/app/routes/ai_api.py",
    "ligne": 22,
@@ -484,6 +451,17 @@
    "porteur": "bp",
    "statut": "CANONIQUE",
    "vue": "committee_review_ep"
+  },
+  {
+   "chemin": "/desc/<sym>",
+   "fichier": "vertex/app/routes/descriptions_api.py",
+   "ligne": 64,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "desc_ep"
   },
   {
    "chemin": "/api/desk",
@@ -1546,6 +1524,28 @@
    "vue": "service_worker"
   },
   {
+   "chemin": "/options/<sym>",
+   "fichier": "vertex/app/routes/ticker_api.py",
+   "ligne": 43,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "opt_ep"
+  },
+  {
+   "chemin": "/api/ticker/<sym>",
+   "fichier": "vertex/app/routes/ticker_api.py",
+   "ligne": 48,
+   "methodes": [
+    "*"
+   ],
+   "porteur": "bp",
+   "statut": "CANONIQUE",
+   "vue": "api_ticker"
+  },
+  {
    "chemin": "/api/track-record",
    "fichier": "vertex/app/routes/track_record_api.py",
    "ligne": 33,
@@ -1728,19 +1728,17 @@
    "news"
   ],
   "fichier": "terminal.py",
-  "fonctions": 67,
+  "fonctions": 61,
   "imports": [
    "asyncio",
    "collections",
    "concurrent",
    "datetime",
    "dotenv",
-   "flask",
    "ib_async",
    "ib_reader",
    "io",
    "json",
-   "math",
    "numpy",
    "os",
    "pandas",
@@ -1752,44 +1750,15 @@
    "yfinance",
    "zlib"
   ],
-  "lignes": 7082,
-  "octets": 805988,
+  "lignes": 6789,
+  "octets": 787265,
   "plus_longue_fonction": [
    "_ibkr_opt_worker",
    306
   ],
-  "routes": [
-   {
-    "chemin": "/api/ticker/<sym>",
-    "ligne": 1775,
-    "methodes": [
-     "*"
-    ],
-    "porteur": "app",
-    "vue": "api_ticker"
-   },
-   {
-    "chemin": "/desc/<sym>",
-    "ligne": 1896,
-    "methodes": [
-     "*"
-    ],
-    "porteur": "app",
-    "vue": "desc_ep"
-   },
-   {
-    "chemin": "/options/<sym>",
-    "ligne": 1976,
-    "methodes": [
-     "*"
-    ],
-    "porteur": "app",
-    "vue": "opt_ep"
-   }
-  ],
+  "routes": [],
   "stores": [
    "_STOOQ_IDX",
-   "_FR_DESC",
    "_IBKR_MODE"
   ],
   "workers": [
@@ -2377,7 +2346,7 @@
    "fichier": "vertex/app/caches.py",
    "fonctions": 0,
    "imports": [],
-   "lignes": 124,
+   "lignes": 138,
    "plus_longue_fonction": [
     "",
     0
@@ -2392,6 +2361,7 @@
     "_IDX_META",
     "_live_quotes",
     "_live_meta",
+    "_OPTALL_CACHE",
     "POLITIQUE"
    ],
    "workers": []
@@ -2458,7 +2428,7 @@
     "typing",
     "vertex"
    ],
-   "lignes": 309,
+   "lignes": 311,
    "plus_longue_fonction": [
     "create_app",
     136
@@ -3145,6 +3115,41 @@
      ],
      "porteur": "bp",
      "vue": "committee_review_ep"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
+    "descriptions_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/descriptions_api.py",
+   "fonctions": 1,
+   "imports": [
+    "__future__",
+    "flask",
+    "json",
+    "threading",
+    "vertex",
+    "yfinance"
+   ],
+   "lignes": 100,
+   "plus_longue_fonction": [
+    "desc_ep",
+    32
+   ],
+   "routes": [
+    {
+     "chemin": "/desc/<sym>",
+     "ligne": 64,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "desc_ep"
     }
    ],
    "stores": [],
@@ -4386,6 +4391,47 @@
   },
   {
    "blueprints_definis": [
+    "ticker_api"
+   ],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/app/routes/ticker_api.py",
+   "fonctions": 2,
+   "imports": [
+    "__future__",
+    "flask",
+    "vertex"
+   ],
+   "lignes": 94,
+   "plus_longue_fonction": [
+    "api_ticker",
+    42
+   ],
+   "routes": [
+    {
+     "chemin": "/options/<sym>",
+     "ligne": 43,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "opt_ep"
+    },
+    {
+     "chemin": "/api/ticker/<sym>",
+     "ligne": 48,
+     "methodes": [
+      "*"
+     ],
+     "porteur": "bp",
+     "vue": "api_ticker"
+    }
+   ],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [
     "track_record_api"
    ],
    "blueprints_enregistres": [],
@@ -4881,6 +4927,26 @@
    "routes": [],
    "stores": [
     "_DEMO_BASE"
+   ],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/data/descriptions_fr.py",
+   "fonctions": 0,
+   "imports": [
+    "__future__"
+   ],
+   "lignes": 49,
+   "plus_longue_fonction": [
+    "",
+    0
+   ],
+   "routes": [],
+   "stores": [
+    "DESCRIPTIONS"
    ],
    "workers": []
   },
@@ -7400,6 +7466,30 @@
    "plus_longue_fonction": [
     "summarize",
     48
+   ],
+   "routes": [],
+   "stores": [],
+   "workers": []
+  },
+  {
+   "blueprints_definis": [],
+   "blueprints_enregistres": [],
+   "boucles": [],
+   "fichier": "vertex/options/pack.py",
+   "fonctions": 3,
+   "imports": [
+    "__future__",
+    "datetime",
+    "math",
+    "numpy",
+    "time",
+    "vertex",
+    "yfinance"
+   ],
+   "lignes": 211,
+   "plus_longue_fonction": [
+    "options_pack",
+    143
    ],
    "routes": [],
    "stores": [],
@@ -10081,16 +10171,16 @@
    "workers": []
   }
  ],
- "sha": "38e3d100cd6c",
+ "sha": "c1614d82551d",
  "totaux": {
   "blueprints_enregistres": 7,
   "boucles_monolithe": 13,
-  "fichiers_paquet": 350,
-  "lignes_monolithe": 7082,
-  "octets_monolithe": 805988,
-  "routes_canoniques": 151,
-  "routes_legacy": 3,
-  "stores_monolithe": 3,
+  "fichiers_paquet": 354,
+  "lignes_monolithe": 6789,
+  "octets_monolithe": 787265,
+  "routes_canoniques": 154,
+  "routes_legacy": 0,
+  "stores_monolithe": 2,
   "workers_monolithe": 15
  }
 }

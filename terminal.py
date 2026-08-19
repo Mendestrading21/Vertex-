@@ -12,7 +12,6 @@ Données :  yfinance (différé ~15 min — OK swing). Greeks/GEX = Black-Schole
 """
 import os
 import json
-import math
 import time
 import threading
 from datetime import datetime, timedelta
@@ -20,7 +19,6 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from flask import jsonify
 
 try:
     from dotenv import load_dotenv
@@ -103,6 +101,7 @@ from vertex.app import factory as _factory  # noqa: E402
 from vertex.app import ibkr_state as _ibkr_state  # noqa: E402
 from vertex.app import rescan_gate as _rescan_gate  # noqa: E402
 from vertex.app import weekly_selection as _weekly_selection  # noqa: E402
+from vertex.app.caches import _OPTALL_CACHE  # noqa: E402
 app = _factory.create_app()
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -186,19 +185,8 @@ scan_state['macro'] = _load_json('macro_cache.json', [])
 scan_state['radar'] = _load_json('radar_cache.json', None)   # radar marché IBKR (persistant)
 
 
-# ─── helpers numériques ───────────────────────────────────────────────────
-def _i(x):
-    try:
-        return 0 if x is None or (isinstance(x, float) and math.isnan(x)) else int(x)
-    except Exception:
-        return 0
-
-
-def _f(x):
-    try:
-        return 0.0 if x is None or (isinstance(x, float) and math.isnan(x)) else float(x)
-    except Exception:
-        return 0.0
+#  Les deux coerceurs numeriques `_i`/`_f` sont partis avec leur unique
+#  appelant, dans `vertex/options/pack.py`.
 
 
 # Black-Scholes : source unique dans vertex/options/legacy_engine.py (dé-duplication — cf. audit).
@@ -1078,7 +1066,11 @@ _YF_FOR_OPTIONS = options.yf          # yfinance d'origine → repli automatique
 # ROTATION UNIVERS COMPLET : cache accumulé {sym: {'ts':…, 'contracts':[…]}} — persistant.
 # Chaque cycle analyse les ~15 titres les plus ANCIENS → tout l'univers optionable (~700
 # titres US) est couvert en quelques heures, puis rafraîchi en continu (fraîcheur < 24 h).
-_OPTALL_CACHE = _load_json('optall_cache.json', {})
+#  Le cache des chaines d'options vit dans `vertex/app/caches.py` — il est
+#  partage entre `_opt_loop` (rotation) et `options_pack` (fiche ouverte).
+#  L'objet doit rester LE MEME des deux cotes : on le REMPLIT, on ne le
+#  reassigne pas.
+_OPTALL_CACHE.update(_load_json('optall_cache.json', {}) or {})
 
 
 _LAST_FOCUS = list((_OPT_CACHE or {}).get('board') or [])   # dernier board focus connu (graine)
@@ -1594,150 +1586,11 @@ def _weekly_loop():
 
 
 # ─── options / GEX / earnings à la demande ───────────────────────────────
-def options_pack(sym):
-    from vertex.options import iv_hv as _iv_hv
-    out = {'sym': sym, 'iv': None, 'ivrank': None, 'earnings': None, 'error': None,
-           'name': None, 'sector': None, 'mcap': None, 'pe': None, 'beta': None,
-           'news': [], 'news_why': None, 'contracts': [],
-           'net_gex': None, 'regime': None, 'call_wall': None, 'put_wall': None, 'gamma_flip': None,
-           'hv_20d': None, 'iv_hv_context': _iv_hv.describe(None, None)}
-    try:
-        tk = yf.Ticker(sym)
-        try:
-            spot = float(tk.fast_info['lastPrice'])
-        except Exception:
-            spot = float(tk.history(period='1d')['Close'].iloc[-1])
-        out['spot'] = round(spot, 2)
-        # infos société EN DIRECT (yfinance .info — lent/flaky → try)
-        try:
-            info = tk.info or {}
-            out['name'] = info.get('shortName') or info.get('longName')
-            out['sector'] = info.get('sector')
-            out['mcap'] = info.get('marketCap')
-            out['pe'] = info.get('trailingPE')
-            out['beta'] = info.get('beta')
-        except Exception:
-            pass
-        # comparaison fondamentale vs MÉDIANE DU SECTEUR (cache fundamentals)
-        _fd = scan_state.get('fundamentals') or {}
-        _fs = (_fd.get('by_sym') or {}).get(sym) or {}
-        _fsec = (_fd.get('by_sector') or {}).get(_fs.get('sector') or out.get('sector')) or {}
-        out['fund'] = _fs
-        out['sector_median_pe'] = _fsec.get('median_pe')
-        out['sector_median_margin'] = _fsec.get('median_margin')
-        out['sector_median_growth'] = _fsec.get('median_growth')
-        out['valuation'] = fundamentals.valuation(_fs.get('pe') or out.get('pe'), _fsec.get('median_pe'))
-        # news (pourquoi ça bouge) + traduction FR live — assainies (XSS, rendu innerHTML client)
-        out['news'] = options.news_for(tk)
-        out['news'], out['news_why'] = ai.fr_news(sym, out['news'])
-        out['news'] = _news_plus.sanitize_news(out['news'])
-        # HV-rank proxy (yfinance ne donne pas l'IV-rank historique)
-        h = tk.history(period='1y')['Close']
-        ret = np.log(h / h.shift(1)).dropna()
-        hv = ret.rolling(20).std() * math.sqrt(252) * 100
-        out['hv_20d'] = round(float(hv.iloc[-1]), 2) if len(hv.dropna()) else None
-        out['ivrank'] = round(float((hv.rank(pct=True).iloc[-1]) * 100)) if len(hv.dropna()) else None
-        # earnings (+ jours avant résultats, pour la pénalité options court terme)
-        edte = None
-        try:
-            cal = tk.calendar
-            ed = None
-            if isinstance(cal, dict):
-                ed = cal.get('Earnings Date')
-                ed = ed[0] if isinstance(ed, (list, tuple)) and ed else ed
-            out['earnings'] = str(ed)[:10] if ed is not None else '—'
-            if ed is not None:
-                try:
-                    edte = (datetime.strptime(str(ed)[:10], '%Y-%m-%d') - datetime.now()).days
-                    edte = edte if edte >= 0 else None
-                except Exception:
-                    edte = None
-        except Exception:
-            out['earnings'] = '—'
-        out['earnings_dte'] = edte
-        # meilleures options CALL par bucket (court/moyen/long) pour CE titre.
-        # FAST-PATH : si la rotation univers a déjà analysé ce titre (<6 h), on sert le
-        # cache immédiatement (la file IBKR peut être occupée par le board → timeouts).
-        _rc = _OPTALL_CACHE.get(sym) or {}
-        if _rc.get('contracts') and time.time() - (_rc.get('ts') or 0) < 6 * 3600:
-            out['contracts'] = _rc['contracts']
-            out['contracts_cached'] = True
-        else:
-            screened = options.best_for_symbol(sym, spot, spot * 1.12, 'call', max_n=2,
-                                               buckets=('court', 'moyen', 'long'), earnings_dte=edte,
-                                               include_diagnostics=True)
-            out['contracts'] = screened['contracts']
-            out['option_price_rejections'] = screened['price_rejections']
-            out['option_price_rejection_count'] = screened['price_rejection_count']
-            if out['contracts']:                       # réchauffe la rotation au passage
-                _OPTALL_CACHE[sym] = {'ts': time.time(), 'contracts': out['contracts']}
-        out.setdefault('option_price_rejections', [])
-        out.setdefault('option_price_rejection_count', 0)
-        out['option_board_coverage'] = options.board_coverage(out['contracts'])
-        out['best_pick'] = options.recommend(out['contracts'])   # LA meilleure entre les 3
-        out['best_two'] = options.recommend_top(out['contracts'], 2)   # le TOP 2 des échéances (#1/#2)
-        _d = scan_state['detail'].get(sym)
-        out['chart_read'] = research.chart_read(_d)               # analyse graphique (texte FR)
-        out['chart_verdict'] = research.chart_verdict(_d)
-        out['decision'] = engine.decide(_d, out)                  # MOTEUR DE DÉCISION (synthèse)
-        _fu = ((scan_state.get('fundamentals') or {}).get('by_sym') or {}).get(sym) or {}
-        out['ibkr'] = ibkr.verdict(_d, out, _fu)                  # VERDICT IBKR (/40 + niveau + timing)
-        # OPTIONS DESK : scénarios + breakeven + expected move sur le contrat recommandé
-        if out.get('best_pick'):
-            _plan = (_d or {}).get('plan') or {}
-            _lv = {'stop': _plan.get('stop'), 'tp1': _plan.get('tp1'),
-                   'tp2': _plan.get('tp2'), 'tp3': _plan.get('tp3')}
-            out['scenarios'] = options.scenarios(out['best_pick'], spot, _lv)
-            out['breakeven'] = options.breakeven_check(out['best_pick'], spot)
-            _em = out['best_pick'].get('em_pct') or 0
-            out['expected_move'] = {'pct': _em, 'lo': round(spot * (1 - _em / 100), 2),
-                                    'hi': round(spot * (1 + _em / 100), 2)}
-        # chaîne d'options → ATM IV + GEX
-        exps = list(tk.options)[:2]
-        lo, hi = spot * 0.9, spot * 1.1
-        agg, atm_ivs = {}, []
-        now = datetime.now()
-        for exp in exps:
-            T = max((datetime.strptime(exp, '%Y-%m-%d') - now).days, 0) / 365.0
-            T = max(T, 0.5 / 365.0)
-            ch = tk.option_chain(exp)
-            for is_call, dfo in ((True, ch.calls), (False, ch.puts)):
-                for _, row in dfo.iterrows():
-                    K = _f(row['strike'])
-                    if K < lo or K > hi:
-                        continue
-                    iv = _f(row.get('impliedVolatility')); oi = _i(row.get('openInterest'))
-                    if iv <= 0 or oi <= 0:
-                        continue
-                    if is_call and abs(K - spot) <= spot * 0.03 and 0.03 < iv < 3.0:
-                        atm_ivs.append(iv)
-                    g = options.gamma(spot, K, T, iv)
-                    d = agg.setdefault(K, {'cg': 0., 'pg': 0.})
-                    d['cg' if is_call else 'pg'] += g * oi
-        out['iv'] = round(float(np.median(atm_ivs)) * 100, 1) if atm_ivs else None
-        out['iv_hv_context'] = _iv_hv.describe(out['iv'], out['hv_20d'])
-        if agg:
-            ks = sorted(agg)
-            scale = 100.0 * spot * spot * 0.01
-            gx = [(K, scale * (agg[K]['cg'] - agg[K]['pg'])) for K in ks]
-            net = sum(v for _, v in gx)
-            out['net_gex'] = net
-            out['regime'] = 'POSITIF' if net > 0 else 'NÉGATIF'
-            out['call_wall'] = round(max((k for k in ks if k >= spot), default=ks[-1],
-                                         key=lambda k: agg[k]['cg']), 2)
-            out['put_wall'] = round(max((k for k in ks if k <= spot), default=ks[0],
-                                        key=lambda k: agg[k]['pg']), 2)
-            cum, flip = 0., None
-            pk = ks[0]
-            for K, v in gx:
-                nc = cum + v
-                if flip is None and cum * nc < 0:
-                    flip = pk + (K - pk) * (-cum / (nc - cum))
-                pk, cum = K, nc
-            out['gamma_flip'] = round(flip, 2) if flip else (out['put_wall'] if net > 0 else out['call_wall'])
-    except Exception as e:
-        out['error'] = f'{type(e).__name__}: {e}'
-    return out
+#  `options_pack` vit dans `vertex/options/pack.py`. Mesure : sur 18 symboles
+#  utilises, TROIS seulement etaient locaux — le cache `_OPTALL_CACHE` (parti
+#  dans vertex/app/caches.py) et les deux coerceurs `_i`/`_f`, dont il etait
+#  l'unique appelant. Le nom local reste : `_opt_loop` s'en sert.
+from vertex.options.pack import options_pack  # noqa: E402
 
 
 #  `/scan` et `/api/rescan` sont partis dans
@@ -1771,158 +1624,17 @@ from vertex.app import factory as _factory
 _factory.register_blueprints(app)
 
 
-@app.route('/api/ticker/<sym>')
-def api_ticker(sym):
-    sym = sym.upper()
-    try:
-        pack = options_pack(sym)
-    except Exception as e:
-        pack = {'sym': sym, 'error': f'{type(e).__name__}: {e}', 'contracts': []}
-    try:
-        comp = _company.get(sym, demo=DEMO_MODE, brief=True)
-    except Exception:
-        comp = None
-    # ── comparaison pairs : VRAIES données (scan live + cache entreprise), zéro invention ──
-    det_all = scan_state.get('detail') or {}
-    peers_data = []
-    for p in ((comp or {}).get('peers') or [])[:4]:
-        pd = det_all.get(p) or {}
-        try:
-            pc = _company.get(p, demo=DEMO_MODE, allow_fetch=False)   # cache seul → rapide
-        except Exception:
-            pc = {}
-        pf = (pc or {}).get('fundamentals') or {}
-        peers_data.append({'symbol': p, 'name': (pc or {}).get('name'),
-                           'score': pd.get('score'), 'verdict': pd.get('verdict'),
-                           'perf_q': pd.get('perf_q'), 'rev_growth': pf.get('rev_growth'),
-                           'margin': pf.get('margin'), 'pe': pf.get('pe'), 'roe': pf.get('roe')})
-    try:
-        _sec_med = _company.sector_medians().get((comp or {}).get('sector')) or {}
-    except Exception:
-        _sec_med = {}
-    # Carte des risques d'entreprise (§24) — depuis fondamentaux réels + médianes.
-    try:
-        from vertex.company import risk_map as _risk_map
-        _det = det_all.get(sym) or {}
-        _risk = _risk_map.build(comp, sector_median=_sec_med,
-                                earnings_in_days=_det.get('earnings_dte'))
-    except Exception:
-        _risk = None
-    return jsonify({'symbol': sym, 'in_universe': sym in UNIVERSE,
-                    'detail': det_all.get(sym), 'peers_data': peers_data,
-                    'company': comp, 'pack': pack, 'sector_median': _sec_med,
-                    'risk_map': _risk})
-
-
-
-
-
-
-
-
-# ─── CORRÉLATIONS RÉELLES : le titre vs macro (SOXX, QQQ, S&P, BTC, or, dollar, taux, VIX) ───
-#  Le trio des correlations — la carte des references, la normalisation des
-#  dates et le cache des series — est parti avec sa route dans
-#  `vertex/app/routes/correlations_api.py`. Aucune dependance au monolithe.
+#  `/api/ticker/<sym>` et `/options/<sym>` sont partis dans
+#  `vertex/app/routes/ticker_api.py`.
 
 
 # ─── DESK PERSO (Blueprint) — /api/desk · /api/watchlist-tv · /api/pos-quotes ───
-# (/api/ticker reste ici : la version enrichie — entreprise + pairs — a remplacé celle du Blueprint)
+#  RETABLI : la suppression de `/api/ticker` avait emporte cet enregistrement,
+#  qui vivait DANS le meme intervalle. Sept routes du desk perso — synchro,
+#  sauvegardes, restauration, cotations de positions — avaient disparu du
+#  service. Aucune erreur n'etait levee : Flask ne se plaint pas d'un blueprint
+#  qu'on n'enregistre pas. Le diff des regles avant/apres l'a montre.
 app.register_blueprint(_desk.make_blueprint(opt_job=_opt_job, ibkr_enabled=IBKR_ENABLED))
-
-
-# ─── ENDPOINTS D'ANALYSE (Blueprint) — /api/vertex · /api/validator · /api/risk ───
-#  #779 — API ENTREPRISE : les vues /api/company, /api/analyst et /api/names
-#  etaient decorees directement sur `app` ici. Mesure a l'AST : elles ne
-#  dependaient de RIEN d'autre que `app`, donc elles se deplacent sans
-#  injection. Proprietaire canonique : vertex/app/routes/company_api.py.
-
-# ─── COMMAND CENTER (Blueprint) — /api/command · /api/portefeuille ───
-
-# ─── SESSION D'ANALYSE (Blueprint) — /api/session/digest (digest toujours prêt) ───
-
-# ─── OPTIONS RESEARCH CENTER (Blueprint) — /api/options-lab ───
-
-# ─── OPTIONS INTELLIGENCE (Blueprint) — /api/options/overview · volatility · event-risk · /api/charts ───
-
-# ─── TRACKING ENGINE (Blueprint) — /api/tracking (suivi hypothétique, lecture seule) ───
-
-# ─── OPPORTUNITY FUNNEL (Blueprint) — /api/opportunities/funnel (§11-12) ───
-
-# ─── PLANNING (Blueprint) — /api/planning/ticket (préparation d'ordre, READONLY) ───
-
-# ─── CERVEAU CLAUDE+WEB (Blueprint) — /api/ai/enrichment · status · refresh ───
-
-# ─── VERTEX LIVE ENGINE (Blueprint) — /api/live/status · refresh · report ───
-
-
-# ─── DESCRIPTION MÉTIER (yfinance longBusinessSummary) : à la demande + cache persistant ───
-# Fetché UNIQUEMENT quand une fiche est ouverte (pas en masse) → zéro throttle. Mis en
-# cache sur disque (descriptions statiques) → 1 seul appel par titre, jamais re-fetché.
-_DESC_PATH = os.path.join(os.path.dirname(__file__), 'desc_cache.json')
-try:
-    with open(_DESC_PATH, 'r', encoding='utf-8') as _fh:
-        _desc_cache = json.load(_fh)
-except Exception:
-    _desc_cache = {}
-_desc_lock = threading.Lock()
-
-
-_FR_DESC = {
-    'AAPL': ("Apple conçoit, fabrique et vend des smartphones (iPhone), ordinateurs (Mac), tablettes (iPad) et objets connectés (Apple Watch, AirPods), ainsi qu'un large écosystème de services (App Store, iCloud, Apple Music, paiements). Son intégration matériel-logiciel et sa marque premium en font l'une des plus grosses capitalisations mondiales.", 'Électronique grand public', 'États-Unis'),
-    'NVDA': ("Nvidia conçoit des processeurs graphiques (GPU) et des puces d'accélération devenus le standard de l'intelligence artificielle et des centres de données. Ses cartes équipent le jeu vidéo, la 3D professionnelle, l'automobile autonome et l'entraînement des grands modèles d'IA.", 'Semi-conducteurs', 'États-Unis'),
-    'MSFT': ("Microsoft édite Windows, la suite Office/Microsoft 365 et la plateforme cloud Azure. Le groupe est aussi présent dans le jeu vidéo (Xbox), les réseaux professionnels (LinkedIn) et investit massivement dans l'IA (partenariat OpenAI, Copilot).", 'Logiciels & Cloud', 'États-Unis'),
-    'META': ("Meta exploite Facebook, Instagram, WhatsApp et Messenger, réunissant des milliards d'utilisateurs. L'essentiel de ses revenus vient de la publicité ciblée ; le groupe investit aussi dans la réalité virtuelle/augmentée (Reality Labs) et l'IA.", 'Réseaux sociaux & Publicité', 'États-Unis'),
-    'GOOGL': ("Alphabet, maison mère de Google, tire l'essentiel de ses revenus de la publicité (Recherche, YouTube, réseau display). Le groupe possède aussi Android, le cloud Google Cloud, et des paris technologiques (Waymo, IA DeepMind/Gemini).", 'Internet & Publicité', 'États-Unis'),
-    'AMZN': ("Amazon est le leader mondial du commerce en ligne et, via AWS, le numéro un du cloud d'entreprise — sa principale source de profits. Le groupe est aussi présent dans la logistique, la publicité, le streaming (Prime) et les objets connectés (Alexa).", 'E-commerce & Cloud', 'États-Unis'),
-    'AVGO': ("Broadcom conçoit des semi-conducteurs (réseau, connectivité, stockage) et des logiciels d'infrastructure d'entreprise. Ses puces équipent centres de données, smartphones et équipements réseau ; le groupe croît par acquisitions.", 'Semi-conducteurs', 'États-Unis'),
-    'TSLA': ("Tesla conçoit et produit des véhicules électriques, des batteries et des solutions de stockage/énergie solaire. Le groupe mise sur la conduite autonome, la robotique et l'intégration verticale de sa production.", 'Automobile & Énergie', 'États-Unis'),
-    'NFLX': ("Netflix est la plateforme mondiale de streaming vidéo par abonnement, produisant et diffusant films et séries dans le monde entier. Le groupe développe la publicité et le jeu vidéo pour diversifier ses revenus.", 'Streaming & Médias', 'États-Unis'),
-    'AMD': ("AMD conçoit des processeurs (CPU Ryzen/EPYC) et cartes graphiques (Radeon) pour PC, serveurs et centres de données. Le groupe est un concurrent direct d'Intel et de Nvidia et monte en puissance sur l'IA.", 'Semi-conducteurs', 'États-Unis'),
-    'CRM': ("Salesforce est le leader mondial des logiciels de gestion de la relation client (CRM) en mode cloud : ventes, service client, marketing et analytique de données, avec une forte intégration d'IA (Einstein).", "Logiciels d'entreprise", 'États-Unis'),
-    'COST': ("Costco exploite un réseau mondial d'entrepôts en libre-service réservés aux adhérents. Son modèle repose sur des marges faibles, de gros volumes et des revenus d'abonnement récurrents très fidélisants.", 'Distribution', 'États-Unis'),
-    'LLY': ("Eli Lilly est un laboratoire pharmaceutique majeur, notamment dans le diabète et l'obésité (agonistes GLP-1), l'oncologie, l'immunologie et les neurosciences. Ses traitements récents connaissent une très forte demande.", 'Pharmacie', 'États-Unis'),
-    'JPM': ("JPMorgan Chase est la plus grande banque américaine : banque de détail, banque d'investissement, gestion d'actifs et de fortune. Diversifiée et solide, elle sert de baromètre au secteur financier.", 'Banque', 'États-Unis'),
-    'V': ("Visa exploite le plus grand réseau mondial de paiement par carte, percevant une commission sur chaque transaction sans porter le risque de crédit. Un modèle très rentable qui profite de la baisse du cash.", 'Paiements', 'États-Unis'),
-    'MA': ("Mastercard exploite un réseau mondial de paiement électronique, se rémunérant sur les transactions traitées. Comme Visa, elle bénéficie de la digitalisation des paiements sans supporter le risque de crédit.", 'Paiements', 'États-Unis'),
-    'HD': ("The Home Depot est le leader américain de la distribution de bricolage, matériaux et équipements pour la maison, servant particuliers comme professionnels du bâtiment.", 'Distribution spécialisée', 'États-Unis'),
-    'UNH': ("UnitedHealth Group est un géant américain de la santé : assurance santé (UnitedHealthcare) et services de soins/données (Optum). Un acteur clé et défensif du système de santé américain.", 'Assurance santé', 'États-Unis'),
-    'XOM': ("ExxonMobil est une major pétrolière et gazière intégrée : exploration, production, raffinage et chimie. Ses résultats suivent les cours du pétrole et du gaz ; le groupe investit aussi dans la capture de carbone.", 'Pétrole & Gaz', 'États-Unis'),
-    'WMT': ("Walmart est le premier distributeur mondial par le chiffre d'affaires, avec un réseau massif d'hypermarchés et une activité e-commerce en forte croissance. Positionné sur les prix bas, il est défensif en période d'incertitude.", 'Distribution', 'États-Unis'),
-}
-
-
-@app.route('/desc/<sym>')
-def desc_ep(sym):
-    sym = (sym or '').upper()
-    if sym in _desc_cache:
-        return jsonify(_desc_cache[sym])
-    out = {'sym': sym, 'summary': '', 'industry': '', 'employees': None, 'country': '', 'lang': 'fr'}
-    if DEMO_MODE or sym in _FR_DESC:          # VITRINE / secours : description FR intégrée
-        fd = _FR_DESC.get(sym)
-        if fd:
-            out['summary'], out['industry'], out['country'] = fd[0], fd[1], fd[2]
-            _desc_cache[sym] = out
-            return jsonify(out)
-    try:
-        info = yf.Ticker(sym).info
-        _en = (info.get('longBusinessSummary') or '')[:900]
-        out['summary'] = ai.fr_desc(sym, _en) if _en else ''   # traduction FR si clé IA dispo
-        out['lang'] = 'fr' if (out['summary'] and out['summary'] != _en) else 'en'
-        out['industry'] = info.get('industry') or ''
-        out['employees'] = info.get('fullTimeEmployees')
-        out['country'] = info.get('country') or ''
-    except Exception:
-        pass
-    if out['summary']:            # on ne cache QUE les fetch réussis (throttle → réessaie plus tard)
-        with _desc_lock:
-            _desc_cache[sym] = out
-            try:
-                with open(_DESC_PATH, 'w', encoding='utf-8') as _fh:
-                    json.dump(_desc_cache, _fh)
-            except Exception:
-                pass
-    return jsonify(out)
 
 
 # ─── SANTÉ SYSTÈME & PWA (Blueprint) — healthz · system-status · favicon · manifest · sw.js ───
@@ -1970,11 +1682,6 @@ app.register_blueprint(_positions_api.make_blueprint(
 # ─── API DÉCISION (Blueprint) — /api/decision · /api/brief · /api/committee-review ───
 # Sortie du monolithe : logique dans vertex/app/routes/decision_api.py, état injecté.
 app.register_blueprint(_decision_api.make_blueprint(scan_state=scan_state, demo_mode=DEMO_MODE))
-
-
-@app.route('/options/<sym>')
-def opt_ep(sym):
-    return jsonify(options_pack(sym.upper()))
 
 
 # ─── IBKR LECTURE SEULE (ib_reader, readonly) — jamais d'ordre ──────────────

@@ -96,12 +96,19 @@ def test_skyler_packet_ne_sert_jamais_le_payload_brut(client, tmp_path, monkeypa
 def test_tous_les_points_de_sortie_appellent_sanitize_news():
     # Régression interdite : retirer un appel sanitize_news d'un point de
     # sortie ferait échouer ce compte. Sites connus : content.py (news-feed),
-    # analysis_api ×2 (/api/skyler, /api/events), skyler_sweep, terminal ×2.
+    # analysis_api ×2 (/api/skyler, /api/events), skyler_sweep, terminal
+    # (chaînes IBKR) et vertex/options/pack.py.
+    #
+    # #779/G1 — le sixième site était le second de `terminal.py` : il vivait
+    # DANS `options_pack`, et il a déménagé AVEC lui. C'est le bon résultat —
+    # l'assainissement suit le code qui sert la donnée — mais le périmètre du
+    # gardien devait suivre, sans quoi il aurait signalé une perte imaginaire.
     import os
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     n = 0
     for rel in ('vertex/app/routes/content.py', 'vertex/app/routes/analysis_api.py',
-                'vertex/engines/skyler_sweep.py', 'terminal.py'):
+                'vertex/engines/skyler_sweep.py', 'terminal.py',
+                'vertex/options/pack.py'):
         src = open(os.path.join(root, rel), encoding='utf-8').read()
         n += src.count('sanitize_news(')
     assert n >= 6, 'un point de sortie de news a perdu son assainissement'

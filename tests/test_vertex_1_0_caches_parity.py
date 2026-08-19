@@ -36,6 +36,13 @@ from vertex.app import caches
 _PARTAGES = (
     '_STOOQ_CACHE', '_SOURCE_BUDGET_STATE', '_CORR_BENCH', '_ibkr_cache',
     '_IDX_IBKR', '_IDX_META', '_live_quotes', '_live_meta',
+    #  #779/G1 — neuvieme cache. Il est partage entre TROIS parties :
+    #  `_opt_loop` (rotation de l'univers, dans le monolithe),
+    #  `vertex.options.pack.options_pack` (fiche ouverte) et le chargement
+    #  disque au demarrage. Le monolithe le REMPLIT (`.update(...)`) au lieu de
+    #  le reassigner : une reassignation separerait la boucle de la route sans
+    #  qu'aucune erreur ne soit levee.
+    '_OPTALL_CACHE',
 )
 
 
@@ -85,7 +92,11 @@ def test_chaque_cache_declare_un_proprietaire_et_une_fraicheur():
     for nom, regle in caches.POLITIQUE.items():
         assert regle.get('proprietaire'), '%s sans proprietaire' % nom
         assert regle.get('fraicheur'), '%s sans politique de fraicheur' % nom
-        assert regle.get('nature') in ('cache', 'live', 'live-meta', 'sante-source'), (
+        #  « cache-persiste » : un cache qui SURVIT au redemarrage. La nuance
+        #  n'est pas cosmetique — un cache memoire perdu se reconstruit, un
+        #  cache disque perime peut servir des chaines d'options d'hier.
+        assert regle.get('nature') in ('cache', 'cache-persiste', 'live',
+                                       'live-meta', 'sante-source'), (
             '%s porte une nature inconnue : %r' % (nom, regle.get('nature')))
 
 

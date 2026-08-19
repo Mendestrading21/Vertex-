@@ -84,6 +84,8 @@ BLUEPRINTS: Tuple[Tuple[str, str], ...] = (
     ('vertex.app.routes.scan_api', 'bp'),
     ('vertex.app.routes.correlations_api', 'bp'),
     ('vertex.app.routes.weekly_api', 'bp'),
+    ('vertex.app.routes.descriptions_api', 'bp'),
+    ('vertex.app.routes.ticker_api', 'bp'),
     ('vertex.app.routes.feeds', 'bp'),
     ('vertex.app.routes.company_api', 'bp'),
     ('vertex.app.routes.analysis_api', 'bp'),

@@ -82,8 +82,10 @@ def test_le_registre_declare_ce_qui_est_reellement_enregistre(application):
     #  16 -> 17 : `scan_api`, une fois la porte anti-rafale partie avec lui.
     #  17 -> 19 : `correlations_api` (son trio de helpers l'a suivi) et
     #  `weekly_api` (chemin du snapshot + carte des resultats).
-    assert len(factory.BLUEPRINTS) == 19, (
-        'le registre ne compte plus 19 entrees (%d) : si un blueprint a migre '
+    #  19 -> 21 : `descriptions_api` (table FR + cache disque) et `ticker_api`
+    #  (les deux dernieres routes LEGACY, avec `options_pack`).
+    assert len(factory.BLUEPRINTS) == 21, (
+        'le registre ne compte plus 21 entrees (%d) : si un blueprint a migre '
         'depuis le monolithe, mettre a jour A_INJECTION en meme temps'
         % len(factory.BLUEPRINTS))
 

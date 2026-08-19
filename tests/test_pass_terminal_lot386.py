@@ -88,10 +88,18 @@ FICHIER = 'terminal.py'
 #   • celui de `_gzip_response`, devenu un `return resp` EXPLICITE dans la
 #     fabrique — même comportement (rendre le corps non compressé, toujours
 #     valide), intention lisible.
-# 36 -> 35 au lot suivant : celui de `_to_naive` (normalisation des dates des
-# séries de corrélation) est parti AVEC sa fonction dans
+# 36 -> 35 : celui de `_to_naive` (normalisation des dates des séries de
+# corrélation) est parti AVEC sa fonction dans
 # `vertex/app/routes/correlations_api.py`. Famille « absence honnête » (15 -> 14) :
 # un index sans fuseau n'a rien à retirer, l'échec est le cas nominal.
+# 35 -> 32 au lot des trois dernieres routes LEGACY. Les TROIS sont partis avec
+# le code qu'ils entouraient, aucun n'a ete supprime ni ajoute :
+#   • deux dans `options_pack` -> `vertex/options/pack.py` (famille « absence
+#     honnête » : un champ de chaine d'options absent reste absent) ;
+#   • un dans la route `/desc` -> `vertex/app/routes/descriptions_api.py`
+#     (famille « journal/persistance » : l'ecriture du cache disque ne doit
+#     jamais couter la reponse).
+# Familles : absence honnête 14 -> 12, journal/persistance 10 -> 9.
 # HONNÊTETÉ SUR CETTE MISE À JOUR : le lot 386 n'a pas consigné la famille de
 # chaque ligne, seulement les totaux et les deux cas « examinés de près ». La
 # première baisse est donc CERTAINE (le `try` entourait un import) ; la seconde
@@ -99,13 +107,13 @@ FICHIER = 'terminal.py'
 # valeur inventée — et non retrouvée dans la classification d'origine.
 FAMILLES = {
     'nettoyage/fermeture': 6,
-    'journal/persistance': 10,
+    'journal/persistance': 9,
     'import/config optionnel': 1,
     'infra thread': 2,
-    'absence honnête': 14,
+    'absence honnête': 12,
     'examinés de près': 2,
 }
-TOTAL_PASS = 35
+TOTAL_PASS = 32
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.
@@ -120,7 +128,7 @@ def _pass_secs():
 
 # ── 1. Le dénominateur ──────────────────────────────────────────────────────
 
-def test_le_detecteur_voit_bien_les_trente_cinq():
+def test_le_detecteur_voit_bien_les_trente_deux():
     """Sans dénominateur, la lecture « un par un » ne prouverait rien : si le
     détecteur cassait, le recensement passerait pour complet en couvrant zéro
     handler (leçon des lots 375-377)."""

@@ -73,7 +73,7 @@ le choix soit visible plutôt que subi.
 
 | gardien | ce qu'il a vu |
 | --- | --- |
-| `test_namespace_guards` | mon commentaire contenait « am**élio**re » — le motif de nom personnel est `elio`, et la règle est **zéro occurrence**. Faux positif inévitable en français ; reformulé plutôt qu'assoupli |
+| `test_namespace_guards` | mon commentaire contenait un verbe français dont une sous-chaîne est le motif de prénom surveillé. La règle est **zéro occurrence** ; faux positif inévitable en français, reformulé plutôt qu'assoupli — y compris dans ce rapport, qui est tombé une seconde fois pour la même raison |
 | `test_pass_terminal_lot386` | 36 → 35 `except: pass` : celui de `_to_naive` est parti **avec** sa fonction |
 
 ## Preuves
