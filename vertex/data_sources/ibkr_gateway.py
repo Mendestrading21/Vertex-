@@ -10,12 +10,22 @@ from __future__ import annotations
 import os
 import threading
 
+from vertex.data_sources import ibkr_link
+
 # Timeout anti-blocage : ne pas retirer (un worker IBKR bloqué gèle l'app).
 REQUEST_TIMEOUT_S = 45
 
-_DEFAULT_HOST = os.environ.get('IBKR_HOST', '127.0.0.1')
-_DEFAULT_PORT = int(os.environ.get('IBKR_PORT', '7497'))
-_DEFAULT_CLIENT_ID = int(os.environ.get('IBKR_CLIENT_ID', '17'))
+_DEFAULT_HOST = ibkr_link.hote()
+#: Le port n'est plus figé : cette façade n'essayait QUE le 7497 (TWS papier) et
+#: ne se connectait donc JAMAIS, en silence, sur un TWS réel seul. `None`
+#: signifie « cherche », et `connect()` parcourt l'ordre partagé.
+_DEFAULT_PORT = None
+#: 17 auparavant — soit exactement l'identifiant de la lecture de compte. IBKR
+#: refuse une seconde session portant un identifiant déjà pris : selon l'ordre
+#: de démarrage, l'un des deux échouait, avec un message qui ne parle jamais de
+#: collision.
+_DEFAULT_CLIENT_ID = int(os.environ.get('IBKR_CLIENT_ID', '0')) \
+    or ibkr_link.client_id('passerelle')
 
 
 class IbkrGateway:
@@ -31,19 +41,48 @@ class IbkrGateway:
 
     # ── cycle de vie ─────────────────────────────────────────────────
     def connect(self):
-        """Connexion lecture seule. Import paresseux : l'app doit démarrer sans TWS."""
+        """Connexion lecture seule. Import paresseux : l'app doit démarrer sans TWS.
+
+        Le port est CHERCHÉ quand il n'est pas imposé : lancer TWS doit suffire,
+        sans variable d'environnement ni redémarrage.
+        """
         from ib_async import IB  # import ici pour le mode dégradé sans dépendance
         with self._lock:
             if self._ib is not None and self._ib.isConnected():
                 return self._ib
-            ib = IB()
-            ib.RequestTimeout = REQUEST_TIMEOUT_S
-            # readonly=True EN DUR : cette façade ne peut PAS ouvrir une session
-            # capable de transmettre des ordres, quels que soient les arguments.
-            ib.connect(self.host, self.port, clientId=self.client_id,
-                       readonly=True, timeout=REQUEST_TIMEOUT_S)
-            self._ib = ib
-            return ib
+            ports = (self.port,) if self.port else ibkr_link.ordre_des_ports()
+            derniere = None
+            for port in ports:
+                ib = IB()
+                ib.RequestTimeout = REQUEST_TIMEOUT_S
+                try:
+                    # readonly=True EN DUR : cette façade ne peut PAS ouvrir une
+                    # session capable de transmettre des ordres, quels que
+                    # soient les arguments.
+                    ib.connect(self.host, port, clientId=self.client_id,
+                               readonly=True, timeout=REQUEST_TIMEOUT_S)
+                except Exception as exc:                       # noqa: BLE001
+                    derniere = exc
+                    continue
+                #  Affectation SIMPLE, et ce n'est pas du style : la mesure de
+                #  surface IBKR derive les porteurs d'objet `IB` en suivant les
+                #  ALIAS (`self._ib = ib`). Ecrit en tuple
+                #  (`self._ib, self.port = ib, port`), l'alias n'est plus derive
+                #  et TOUS les appels passant par `self._ib` deviennent
+                #  invisibles a la liste blanche lecture seule. Le gardien l'a
+                #  trouve ; c'est le code qui a ete corrige, pas lui.
+                self._ib = ib
+                self.port = port
+                ibkr_link.noter_succes(port, 'passerelle')
+                return ib
+            ibkr_link.noter_echec('passerelle', str(derniere or ''))
+            #  On releve l'echec plutot que de rendre None : un appelant qui
+            #  recevrait None irait chercher des cotations sur un objet absent,
+            #  et le message parlerait d'attribut manquant au lieu de TWS.
+            raise ConnectionError(
+                'TWS / IB Gateway injoignable sur %s (ports essayés : %s)%s'
+                % (self.host, ', '.join(str(p) for p in ports),
+                   ' — %s' % derniere if derniere else ''))
 
     def disconnect(self) -> None:
         with self._lock:
@@ -58,6 +97,11 @@ class IbkrGateway:
         return self._ib is not None and self._ib.isConnected()
 
     def status(self) -> dict:
+        """`port` vaut None tant qu'aucune session n'a abouti — l'aveu honnête
+        « on ne sait pas encore », et non un port supposé. `ports_essayes` rend
+        la panne diagnosticable sans lire le code."""
         return {'connected': self.connected, 'host': self.host, 'port': self.port,
+                'mode': ibkr_link.MODES.get(self.port),
+                'ports_essayes': list(ibkr_link.ordre_des_ports()),
                 'client_id': self.client_id, 'readonly': True,
                 'order_execution': 'disabled-by-design'}

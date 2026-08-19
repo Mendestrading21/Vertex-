@@ -39,6 +39,9 @@ from vertex.market import context as market
 from vertex.research import chart_read as research
 from vertex.data_sources import fundamentals
 from vertex.data_sources import scan_evidence as _scan_evidence
+#  Point UNIQUE de decouverte de TWS : ordre des ports et identifiants de
+#  session. Voir vertex/data_sources/ibkr_link.py pour ce qu'il corrige.
+from vertex.data_sources import ibkr_link as _ibkr_link
 from vertex.engines import decide as engine
 from vertex.engines import scorecard as ibkr
 from vertex.strategy import legacy_adapter as strategy
@@ -731,13 +734,22 @@ def _ibkr_opt_worker():
     def conn():
         if ib.isConnected():
             return True
-        for port in (7496, 7497, 4001, 4002):
+        #  Ordre des ports et identifiant de session viennent de `ibkr_link`.
+        #  Cinq sites ouvraient leur propre connexion avec chacun ses idees,
+        #  dont DEUX partageaient le clientId 17 (IBKR refuse alors la seconde
+        #  session) et un cherchait le papier quand les autres cherchaient le
+        #  reel.
+        for port in _ibkr_link.ordre_des_ports():
             try:
-                ib.connect('127.0.0.1', port, clientId=41, readonly=True, timeout=6)
+                ib.connect(_ibkr_link.hote(), port,
+                           clientId=_ibkr_link.client_id('options'),
+                           readonly=True, timeout=6)
                 ib.reqMarketDataType(1)              # temps réel (abonnement actif)
+                _ibkr_link.noter_succes(port, 'options')
                 return True
             except Exception:
                 continue
+        _ibkr_link.noter_echec('options')
         return False
 
     def meta(sym):
@@ -1700,10 +1712,16 @@ def _ibkr_worker(res):
         res['error'] = f'ib_async non disponible ({type(e).__name__})'
         return
     r = IBKRReader()
-    for port in (7497, 7496, 4002, 4001):                  # PAPER d'abord
+    #  Ce site cherchait le PAPIER en premier alors que les trois autres
+    #  cherchaient le REEL : quand les deux TWS repondent, l'ecran affichait le
+    #  cash d'un compte et les cotations d'un autre, sans que rien ne le dise.
+    for port in _ibkr_link.ordre_des_ports():
         try:
-            r.ib.connect('127.0.0.1', port, clientId=17, readonly=True, timeout=2)
+            r.ib.connect(_ibkr_link.hote(), port,
+                         clientId=_ibkr_link.client_id('compte'),
+                         readonly=True, timeout=2)
             r.port = port
+            _ibkr_link.noter_succes(port, 'compte')
             break
         except Exception:
             continue
@@ -1806,13 +1824,18 @@ def _quotes_worker():
             from ib_async import IB, Stock
             ib = IB()
             ok = False
-            for port in (7496, 7497, 4001, 4002):
+            for port in _ibkr_link.ordre_des_ports():
                 try:
-                    ib.connect('127.0.0.1', port, clientId=18, readonly=True, timeout=4)
+                    ib.connect(_ibkr_link.hote(), port,
+                               clientId=_ibkr_link.client_id('cotations'),
+                               readonly=True, timeout=4)
+                    _ibkr_link.noter_succes(port, 'cotations')
                     ok = True
                     break
                 except Exception:
                     continue
+            if not ok:
+                _ibkr_link.noter_echec('cotations')
             if not ok:
                 _live_meta['connected'] = False
                 _sync_ibkr_state()
@@ -1899,13 +1922,18 @@ def _indices_loop():
             from ib_async import IB, Index, CFD
             ib = IB()
             ok = False
-            for port in (7496, 7497, 4001, 4002):
+            for port in _ibkr_link.ordre_des_ports():
                 try:
-                    ib.connect('127.0.0.1', port, clientId=22, readonly=True, timeout=4)
+                    ib.connect(_ibkr_link.hote(), port,
+                               clientId=_ibkr_link.client_id('indices'),
+                               readonly=True, timeout=4)
+                    _ibkr_link.noter_succes(port, 'indices')
                     ok = True
                     break
                 except Exception:
                     continue
+            if not ok:
+                _ibkr_link.noter_echec('indices')
             if not ok:
                 _IDX_META['connected'] = False
                 time.sleep(20)

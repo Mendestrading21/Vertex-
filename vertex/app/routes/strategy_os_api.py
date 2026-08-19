@@ -125,7 +125,8 @@ def make_blueprint(scan_state: dict) -> Blueprint:
 
     @bp.route('/api/system/diagnostics')
     def diagnostics():
-        return jsonify(system_diagnostics(scan_state=scan_state,
+        from vertex.data_sources import ibkr_link as _lien
+        return jsonify(system_diagnostics(scan_state=scan_state, ibkr_link=_lien,
                                           alert_engine=ALERTS, ai_audit=_AI_AUDIT,
                                           signal_store=SIGNAL_STORE))
 

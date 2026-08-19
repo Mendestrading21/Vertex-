@@ -276,6 +276,17 @@ Mesurés sur le SHA candidat `integration/vertex-1-0-rc`.
    réconciliation ; il **refuse de conclure sans broker** (sortie 3) et sépare
    « ma sonde est en faute » de « le produit est en faute ». Marche à suivre
    dans `G5-PROTOCOLE.md`.
+
+   **Le chemin jusqu'à TWS a par ailleurs été rendu automatique**
+   (`G5-CONNEXION-AUTOMATIQUE.md`) : cinq sites se connectaient avec chacun son
+   ordre de ports et son identifiant, dont deux partageaient le clientId 17
+   (IBKR refuse la seconde session) et un cherchait le PAPIER quand les autres
+   cherchaient le RÉEL — deux TWS joignables donnaient alors le cash d'un compte
+   et les cotations d'un autre sur le même écran. Un point unique de découverte
+   (`vertex/data_sources/ibkr_link.py`) : un seul ordre, un identifiant par
+   rôle, le port trouvé partagé, et un message qui dit le réglage exact à
+   vérifier. Lancer TWS suffit désormais, sans variable ni redémarrage — la
+   poignée de main IBKR elle-même reste, elle, non éprouvée.
 2. **Spécimen de brief WMB réel** — G3.
 3. **Suppression de branches** — 32 sont prouvées sans perte, et le registre de
    restauration (30 branches avec leurs SHA complets) est écrit. La suppression

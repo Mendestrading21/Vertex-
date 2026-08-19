@@ -148,6 +148,18 @@ SONDE_DEBORDEMENT = r"""
     //  Une troncature ASSUMEE (`text-overflow:ellipsis`) n'est pas une coupe
     //  accidentelle : les trois points disent au lecteur qu'il manque du texte.
     if (st.textOverflow === 'ellipsis') continue;
+    //  Un conteneur SANS AUCUN CONTENU ne peut rien tronquer : son debordement
+    //  vient d'un ornement (pseudo-element, animation) que le `overflow:hidden`
+    //  est justement la pour rogner. Mesure : le squelette de chargement
+    //  (`.vx-skeleton`, vide) porte un reflet `::after` en
+    //  `transform:translateX(100%)` — a la fin du balayage son bord droit est a
+    //  deux fois la largeur de la boite, d'ou un scrollWidth de 655 pour 366.
+    //  L'instrument criait au defaut sur une decoration qui fonctionne comme
+    //  prevu ; il ne se declenchait qu'en mode reel sans TWS, ou le squelette
+    //  reste a l'ecran. Le critere reste HONNETE parce qu'une troncature
+    //  suppose du contenu a tronquer : sans texte ni enfant, il n'y a rien a
+    //  cacher.
+    if (!(el.textContent || '').trim() && el.children.length === 0) continue;
     const cle = el.tagName + '.' + (el.className || '').toString().slice(0, 40);
     if (vus.has(cle)) continue;
     vus.add(cle);
@@ -397,7 +409,16 @@ PAGE_TEMOIN_PROPRE = """
   .grand{color:%s;background:#000;font-size:26px}
   button{background:#000;color:#fff;border:1px solid #fff}
   button:focus{outline:3px solid #fff}
+  /* Le squelette de chargement du produit, reproduit a l'identique : boite
+     VIDE, `overflow:hidden`, et un reflet `::after` qui balaie en
+     `translateX(100%%)`. A la fin du balayage son bord droit est a deux fois la
+     largeur de la boite. C'est une decoration que le rognage est justement la
+     pour contenir — aucun contenu n'est cache, puisqu'il n'y en a pas. */
+  .squelette{width:300px;height:40px;overflow:hidden;position:relative;background:#222}
+  .squelette::after{content:"";position:absolute;inset:0;transform:translateX(100%%);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent)}
 </style></head><body>
+  <div class="squelette"></div>
   <div class="cadre"><p>texte blanc sur noir</p></div>
   <div class="defile"><div class="large">large mais DEFILABLE — c'est le remede</div></div>
   <p class="primaire">encre sombre sur le degrade du bouton primaire</p>
@@ -464,9 +485,12 @@ def _temoins(navigateur) -> list:
     releve2 = _sonder(page, None, 390, contenu=PAGE_TEMOIN_PROPRE)
     d2, k2, c2 = releve2['debordement'], releve2['clavier'], releve2['contraste']
     if d2['elements'] or d2['document']:
-        echecs.append('TEMOIN NEGATIF ROMPU (debordement) : une page saine dont '
-                      'le seul large conteneur est `overflow-x:auto` ressort en '
-                      'debordement — le remede est compte comme le defaut (%s)'
+        echecs.append('TEMOIN NEGATIF ROMPU (debordement) : une page saine '
+                      'ressort en debordement. Deux motifs sont eprouves ici et '
+                      'aucun n\'est un defaut — un conteneur `overflow-x:auto` '
+                      '(le remede) et un squelette VIDE dont le reflet anime '
+                      'deborde sa boite rognee (une decoration, pas du contenu '
+                      'cache). Trouve : %s'
                       % (d2['elements'][:1] or d2['document']))
     if k2['sans_anneau']:
         echecs.append('TEMOIN NEGATIF ROMPU (clavier) : un bouton avec '

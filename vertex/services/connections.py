@@ -38,6 +38,23 @@ def _env(name):
     return bool(os.environ.get(name, '').strip())
 
 
+def _action_ibkr() -> str:
+    """Le geste à faire, tiré de ce que la découverte a RÉELLEMENT observé.
+
+    « Vérifier TWS/Gateway et le port IBKR » n'aidait personne : cela demandait
+    de vérifier ce que le produit sait déjà. `ibkr_link` a essayé les ports et
+    sait lesquels — autant le dire, avec le réglage exact de TWS à contrôler.
+    """
+    try:
+        from vertex.data_sources import ibkr_link
+        etat = ibkr_link.etat()
+    except Exception:                                      # noqa: BLE001
+        return 'Lancer TWS ou IB Gateway en lecture seule.'
+    if etat.get('port'):
+        return ''
+    return etat.get('raison') or 'Lancer TWS ou IB Gateway en lecture seule.'
+
+
 def snapshot(scan_state, *, ibkr_enabled=False, demo_mode=False):
     """État consolidé des connexions — chaque statut reflète la réalité observée."""
     conns = []
@@ -47,7 +64,9 @@ def snapshot(scan_state, *, ibkr_enabled=False, demo_mode=False):
         conns.append(_conn('IBKR', OFFLINE, configured=False,
                            detail='IBKR non activé (aucune session TWS/Gateway détectée).',
                            impact='P&L/Greeks broker indisponibles ; cotations en secours ou démo.',
-                           action='Lancer TWS/Gateway en lecture seule et définir IBKR_PORT.'))
+                           action='Lancer TWS ou IB Gateway en lecture seule — aucun '
+                                  'port à définir : Vertex cherche les quatre ports '
+                                  'standards et se connecte seul.'))
     else:
         # Activé ≠ connecté : on ne déclare LIVE/DELAYED que sur preuve d'une
         # session ; sinon OFFLINE honnête (§2/§10 — jamais plus favorable).
@@ -62,7 +81,7 @@ def snapshot(scan_state, *, ibkr_enabled=False, demo_mode=False):
         conns.append(_conn('IBKR', st, configured=True, detail=det,
                            impact='Lecture seule stricte (readonly=True).' if (live or connected)
                            else 'P&L/Greeks broker indisponibles tant que la session n\'est pas confirmée.',
-                           action='' if (live or connected) else 'Vérifier TWS/Gateway et le port IBKR.'))
+                           action='' if (live or connected) else _action_ibkr()))
 
     # TradingView : dépend du secret webhook.
     tv_ok = _env('TRADINGVIEW_WEBHOOK_SECRET') or _env('TRADINGVIEW_SECRET')

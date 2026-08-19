@@ -10,7 +10,7 @@ from .metrics import METRICS
 
 def system_diagnostics(scan_state: dict | None = None,
                        scheduler=None, alert_engine=None,
-                       ai_audit=None, signal_store=None) -> dict:
+                       ai_audit=None, signal_store=None, ibkr_link=None) -> dict:
     out = {'metrics': METRICS.snapshot()}
     if scan_state is not None:
         out['scan'] = {
@@ -21,6 +21,15 @@ def system_diagnostics(scan_state: dict | None = None,
         }
     if scheduler is not None:
         out['ibkr_scheduler'] = scheduler.status()
+    #  Ou en est la decouverte de TWS : port retenu, mode (reel/papier), roles
+    #  connectes, et la RAISON quand rien ne repond — sans quoi un « non
+    #  connecte » n'indique aucun geste a faire.
+    #  INJECTE comme les autres sections : la premiere version importait le
+    #  module ici meme, ce qui faisait apparaitre la section sans qu'aucune
+    #  source ne soit fournie — `test_observability_lot179` l'a refuse, et il a
+    #  raison : « rien d'invente sans source » vaut aussi pour un etat vrai.
+    if ibkr_link is not None:
+        out['ibkr_link'] = ibkr_link.etat()
     if alert_engine is not None:
         out['alerts'] = alert_engine.status()
     if ai_audit is not None:
