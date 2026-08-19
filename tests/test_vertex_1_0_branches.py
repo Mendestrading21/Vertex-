@@ -85,13 +85,31 @@ def test_la_classification_est_discriminante(base):
     #  garde rien. La passe complete reste dans le rapport.
     r = _mes.mesurer(base, confinement=False)
     assert r['total'] > 100, 'trop peu de branches pour conclure'
-    classes = {k for k, n in r['par_classe'].items() if n}
-    assert len(classes) >= 3, (
-        'la classification ne distingue plus que %s : elle ne guide plus '
-        'aucune decision' % sorted(classes))
-    assert r['par_classe'].get('FUSIONNEE', 0) > 0, (
+    #  CE QUE CE TEST A DÛ APPRENDRE SUR LUI-MÊME.
+    #
+    #  Sa première version exigeait « au moins 3 classes non vides ». Avec
+    #  `confinement=False`, CONTENUE_AILLEURS n'est jamais calculée : il ne
+    #  restait donc que FUSIONNEE, UNIQUE, et une CONTENU_IDENTIQUE qui tenait
+    #  à UNE branche — la seule dont le diff avec `main` fût vide. Un clone qui
+    #  ne la porte pas (693 refs au lieu de 697) faisait tomber le compte à 2 et
+    #  échouer le test, sans qu'aucun code n'ait changé.
+    #
+    #  Le seuil reposait donc sur une coïncidence, pas sur une propriété. Ce qui
+    #  guide réellement la décision de nettoyage est la SÉPARATION entre « perte
+    #  prouvée nulle » et « porte du travail » — et qu'aucune des deux n'avale
+    #  tout, car une classification qui range tout d'un côté n'informe pas.
+    fusionnees = r['par_classe'].get('FUSIONNEE', 0)
+    uniques = r['par_classe'].get('UNIQUE', 0)
+    assert fusionnees > 0, (
         'aucune branche fusionnee detectee alors que main a des ancetres : '
         '`git branch -r --merged` ne repond plus')
+    assert uniques > 0, (
+        'aucune branche ne porte de travail inedit : `git rev-list` ou '
+        '`git diff` ne repond plus')
+    assert fusionnees + uniques <= r['total'], 'comptage incoherent'
+    assert fusionnees < r['total'] and uniques < r['total'], (
+        'une seule classe avale les %d branches : la classification ne guide '
+        'plus aucune decision' % r['total'])
 
 
 def test_la_serie_skyler_n_est_PAS_une_chaine_lineaire(base):
