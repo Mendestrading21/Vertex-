@@ -53,7 +53,7 @@ _ZONES_MOTEUR = [
     ('vertex/ui/pages/markets_page.py',     'VIX non fourni par le dernier scan.'),
     ('vertex/ui/pages/system_page.py',      'Registre de jobs vide.'),
     ('vertex/ui/pages/system_page.py',      'Liste des moteurs indisponible.'),
-    ('vertex/ui/pages/performance_page.py', 'Pas encore assez de verdicts résolus'),
+    ('vertex/ui/pages/performance_page.py', 'il en faut 5 par verdict pour publier une fiabilité'),
     ('vertex/ui/pages/analysis_page.py',    'Série de prix indisponible pour ce titre.'),
     ('vertex/ui/pages/opportunities_page.py', 'Aucun titre scanné'),
 ]
