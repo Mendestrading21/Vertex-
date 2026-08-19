@@ -56,16 +56,28 @@ def test_evaluate_empty_ledger_is_honest(monkeypatch):
 
 
 def test_evaluate_min_sample_and_no_division_by_zero(monkeypatch):
-    # 6 entrées BUY résolubles (≥ 5 → publié) ; 1 entrée WATCH (< 5 → tue).
-    dates = ['08-01', '08-02', '08-03', '08-04', '08-05', '08-06', '08-07']
+    """6 entrées BUY résolubles (≥ 5 → publié) ; 1 entrée WATCH (< 5 → tue).
+
+    ⚠ #783/G3 — LA FIXTURE DE CE TEST ENCODAIT LE DÉFAUT. Elle fournissait des
+    dates au format `'08-01'`, que le produit ne produit **jamais** :
+    `vertex/engines/analysis.py` émet `series['dates']` en ISO
+    (`'2026-08-01'`) et garde les libellés courts dans un champ séparé,
+    `date_labels`, explicitement « afin de ne jamais réinterpréter les années ».
+
+    Le test passait donc en validant un chemin qui n'existe pas en production —
+    et c'est précisément pour cela que la jointure cassée a survécu : elle était
+    couverte par un test vert. La fixture reproduit désormais le format réel.
+    """
+    annee = datetime.now().year
+    dates = ['%d-08-0%d' % (annee, j) for j in range(1, 8)]
     closes = [100, 101, 102, 103, 104, 105, 106]
-    day_ts = time.mktime(datetime.strptime(
-        f'{datetime.now().year}-08-01', '%Y-%m-%d').timetuple())
+    day_ts = time.mktime(datetime.strptime(dates[0], '%Y-%m-%d').timetuple())
     mk = lambda sym, dec: {'ts': day_ts, 'ticker': sym, 'decision': dec,
                            'entry': None, 'stop': None, 'targets': {},
                            'features': {'grade': 'A'}, 'market_regime': 'TREND'}
     entries = [mk(f'S{i}', 'BUY') for i in range(6)] + [mk('W1', 'WATCH')]
-    detail = {e['ticker']: {'series': {'close': closes, 'dates': dates}}
+    detail = {e['ticker']: {'series': {'close': closes, 'dates': dates,
+                                       'date_labels': [d[5:] for d in dates]}}
               for e in entries}
     monkeypatch.setattr(tr, '_load_ledger', lambda: entries)
     out = tr.evaluate({'detail': detail})
