@@ -156,7 +156,19 @@ def mesurer(sha: str | None = None, *, temoins: bool = True) -> dict:
         env = dict(os.environ, DEMO='1', NO_IBKR='1', PORT=str(PORT_ANCIEN))
         env.pop('VERTEX_CODE', None)
         journal = open('/tmp/vertex-rollback-%s.log' % sha[:8], 'w')
-        proc = subprocess.Popen((sys.executable, '-m', 'vertex'), cwd=str(arbre),
+        #  On lance la version cible DE LA FACON DONT ELLE PEUT L'ETRE.
+        #  `python -m vertex` n'a pas toujours existe : au point de retour reel
+        #  (28343ec), `vertex/__main__.py` est absent et l'invocation echoue par
+        #  « 'vertex' is a package and cannot be directly executed ». Le banc
+        #  concluait alors « la version anterieure NE DEMARRE PAS » — un verdict
+        #  faux sur le produit, du au banc. Le mode de lancement est donc
+        #  DERIVE de l'arbre, pas suppose.
+        commande = ((sys.executable, '-m', 'vertex')
+                    if (arbre / 'vertex' / '__main__.py').exists()
+                    else (sys.executable, 'terminal.py'))
+        r['commande'] = ' '.join(pathlib.Path(c).name if '/' in c else c
+                                 for c in commande)
+        proc = subprocess.Popen(commande, cwd=str(arbre),
                                 env=env, stdout=journal, stderr=subprocess.STDOUT,
                                 stdin=subprocess.DEVNULL, start_new_session=True)
         base = 'http://127.0.0.1:%d' % PORT_ANCIEN
@@ -198,8 +210,8 @@ def rendre_texte(r: dict) -> str:
     o = ['REVENIR EN ARRIERE EST-IL POSSIBLE SANS RIEN PERDRE ?', '=' * 62,
          'version courante  : %s' % r['sha_courant'][:12],
          'retour vers       : %s' % r['sha_anterieur'][:12], '',
-         '1. la version anterieure DEMARRE      : %s'
-         % ('oui' if r.get('demarre') else 'NON'),
+         '1. la version anterieure DEMARRE      : %s   (%s)'
+         % ('oui' if r.get('demarre') else 'NON', r.get('commande') or '—'),
          '2. elle SERT la page d\'accueil        : %s (%d octets)'
          % (r.get('accueil') or '—', r.get('octets_accueil') or 0),
          '3. elle relit le bureau ECRIT PAR LA VERSION RECENTE :']

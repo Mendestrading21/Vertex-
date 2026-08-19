@@ -54,15 +54,35 @@ le gardien épingle désormais la variable réellement lue par le produit.
 ## Résultat
 
 ```
-version courante  : 8093088c6280
-retour vers       : d52a39d4baf1        (base commune avec main)
+version courante  : 16ec829ccfa2
+retour vers       : 28343ec9ffa8        (base commune avec main, 110 commits)
 
-1. la version anterieure DEMARRE      : oui
+1. la version anterieure DEMARRE      : oui   (python terminal.py)
 2. elle SERT la page d'accueil        : 200 (40 336 octets)
 3. elle relit le bureau ECRIT PAR LA VERSION RECENTE :
      7 cles ecrites -> 7 cles relues
      identique : OUI
 ```
+
+## La preuve était devenue fausse en silence
+
+Remesurée lors de l'audit final, elle disait **« la version antérieure NE
+DÉMARRE PAS »**. Le journal donnait la vraie raison :
+
+```
+'vertex' is a package and cannot be directly executed
+```
+
+`python -m vertex` **n'a pas toujours existé** : à la base commune avec `main`,
+`vertex/__main__.py` est absent et le lancement se fait par `python
+terminal.py`. Le banc supposait un mode de lancement au lieu de le lire, et
+rendait donc un verdict faux **sur le produit**.
+
+C'est le mode de panne le plus vicieux d'un instrument : il ne se trompe pas au
+moment où on l'écrit, il **devient faux plus tard**, quand la cible s'éloigne.
+Rien ne l'aurait signalé sans une remesure — d'où l'intérêt de rejouer les
+instruments plutôt que de relire leurs rapports. Le mode de lancement est
+désormais dérivé de l'arbre cible, et un gardien l'exige (mutation vérifiée).
 
 **Le retour arrière est prouvé sans perte** sur les sept clés du bureau
 (`myTrades`, `myFavs`, `myNotes`, `vxJournal`…), contenus compris — pas

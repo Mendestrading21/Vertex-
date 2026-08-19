@@ -99,3 +99,23 @@ def test_l_outil_lit_la_variable_de_port_que_le_produit_lit():
     assert "os.environ.get('PORT'" in produit, (
         'le produit ne lit plus `PORT` — la variable employée par la mesure '
         'doit suivre, sinon le banc teste un port que personne n\'écoute.')
+
+
+def test_le_mode_de_lancement_est_DERIVE_de_l_arbre_cible():
+    """`python -m vertex` n'a pas toujours existé. Au point de retour réel
+    (la base commune avec `main`), `vertex/__main__.py` est absent et
+    l'invocation échoue par « 'vertex' is a package and cannot be directly
+    executed ». Le banc concluait alors « la version antérieure NE DÉMARRE
+    PAS » — un verdict faux sur le produit, dû au banc.
+
+    C'est le mode de panne le plus vicieux d'un instrument : il ne se trompe
+    pas au moment où on l'écrit, il devient faux plus tard, quand la cible
+    s'éloigne. Le mode de lancement doit donc être LU dans l'arbre.
+    """
+    src = OUTIL.read_text(encoding='utf-8')
+    assert "(arbre / 'vertex' / '__main__.py').exists()" in src, (
+        "le banc suppose un mode de lancement au lieu de le dériver : il "
+        'accusera le produit dès que la cible sera antérieure à `python -m '
+        'vertex`.')
+    assert "'terminal.py'" in src, (
+        'le repli historique de lancement a disparu.')
