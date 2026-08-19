@@ -41,9 +41,17 @@ def test_desk_roundtrip_is_faithful(client):
         assert (d1.get('data') or {}).get('myNotes') == data['myNotes'], (
             'le blob desk doit être restitué au bit près (données personnelles)')
     finally:
-        # remise en état honnête — quoi qu'il arrive au-dessus
+        # Remise en état honnête — quoi qu'il arrive au-dessus.
+        #
+        # #783/G2 : le serveur CONSERVE désormais une clé qu'il détient et que
+        # le push n'envoie pas (un push partiel ne peut plus effacer). Si
+        # `myNotes` n'existait pas avant ce test, l'omettre ici laisserait donc
+        # le marqueur dans le desk RÉEL, définitivement. Sous le nouveau
+        # contrat, supprimer se dit EXPLICITEMENT : on renvoie la clé vide.
+        retour = dict(d0.get('data') or {})
+        retour.setdefault('myNotes', '{}')
         client.post('/api/desk', json={'ts': int(time.time() * 1000) + 1,
-                                       'data': d0.get('data') or {}})
+                                       'data': retour})
 
 
 def test_desk_backups_listed(client):
@@ -51,5 +59,11 @@ def test_desk_backups_listed(client):
     assert r.status_code == 200
     body = r.get_json()
     assert isinstance(body.get('backups'), list)
+    #  DEUX familles depuis #783/G2 : le quotidien (avant la 1re sync du jour)
+    #  et l'« avant-perte » (à la seconde, quand un push menaçait des clés).
+    #  Rester sur `desk_backup_` ferait échouer ce test sur un filet ÉLARGI.
     for b in body['backups']:
-        assert b.get('name', '').startswith('desk_backup_')
+        nom, famille = b.get('name', ''), b.get('type')
+        assert nom.startswith(('desk_backup_', 'desk_avantperte_')), nom
+        assert famille in ('quotidien', 'avant-perte'), (
+            'un instantane sans famille declaree : %s' % b)
