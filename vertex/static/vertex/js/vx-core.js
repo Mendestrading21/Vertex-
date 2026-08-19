@@ -72,13 +72,21 @@
     },
   };
 
-  /* ── UpdateIndicator (§38) ───────────────────────────────────────── */
+  /* ── UpdateIndicator (§38) ───────────────────────────────────────────
+     `data-ts` et `.vx-update-age` ne sont pas décoratifs : ils rendent l'âge
+     RE-CALCULABLE après coup. Sans eux, l'âge est peint une fois et ne bouge
+     plus — mesuré : une page sans tâche `VX.refresh` affichait « Il y a 21 min »
+     indéfiniment, réseau vivant comme réseau coupé. Le calcul (`VX.fmt.ago`)
+     était juste ; c'est le RENDU qui n'était jamais rejoué. Voir `VX.freshness
+     ._retick` plus bas. */
   VX.updateIndicator = function (ts, source, mode) {
     const modeLabel = { live: 'Live', delayed: 'Différé', fallback: 'Secours', error: 'Erreur' }[mode] || '';
-    const parts = [VX.fmt.ago(ts)];
-    if (source) parts.push(source + (modeLabel ? ' ' + modeLabel : ''));
-    return `<span class="vx-update" data-mode="${mode || 'fallback'}" title="${VX.fmt.isoFull(ts)}">` +
-      `<span class="vx-dot"></span>${parts.join(' · ')}</span>`;
+    const ms = VX.freshness._ms(ts);
+    const suite = source ? ' · ' + source + (modeLabel ? ' ' + modeLabel : '') : '';
+    return `<span class="vx-update" data-mode="${mode || 'fallback'}"` +
+      (ms == null ? '' : ` data-ts="${ms}"`) +
+      ` title="${VX.fmt.isoFull(ts)}">` +
+      `<span class="vx-dot"></span><span class="vx-update-age">${VX.fmt.ago(ts)}</span>${suite}</span>`;
   };
 
   /* ── États de données (§39) ──────────────────────────────────────── */
@@ -443,29 +451,85 @@
     },
     assess(o) {
       o = o || {};
+      //  L'INSTANT DE RÉFÉRENCE est conservé (`at`) pour que l'évaluation
+      //  puisse être REJOUÉE plus tard sans redemander la donnée : un âge
+      //  n'est vrai qu'à la seconde où on le calcule.
+      const at = (o.ageMs == null) ? null : Date.now() - o.ageMs;
       if (o.offline) return this._r('offline');
       if (o.error) return this._r('error');
       if (o.refreshing) return this._r('refreshing');
       if (o.saved) return this._r('saved');
       const a = o.ageMs;
       if (a == null) return { state: 'unknown', label: '—', tone: 'muted' };
-      if (o.live && a < this.THRESH.live) return this._r('live');
-      if (a < this.THRESH.snapshot) return this._r('snapshot');
-      return this._r('stale');
+      if (o.live && a < this.THRESH.live) return this._r('live', at, o.live);
+      if (a < this.THRESH.snapshot) return this._r('snapshot', at, o.live);
+      return this._r('stale', at, o.live);
     },
-    _r(state) {
+    _r(state, at, live) {
       const tone = { live: 'pos', snapshot: 'info', saved: 'muted', stale: 'warn',
         refreshing: 'info', error: 'neg', offline: 'neg' }[state] || 'muted';
-      return { state: state, label: this.LABEL[state] || state, tone: tone };
+      const r = { state: state, label: this.LABEL[state] || state, tone: tone };
+      if (at != null) { r.at = at; r.live = !!live; }
+      return r;
     },
     /* Puce discrète prête à insérer (innerHTML). */
     chip(a) {
       a = a || {};
       const dot = a.state === 'live' ? '<span class="vx-fresh-dot"></span>' : '';
-      return '<span class="vx-fresh-chip" data-state="' + a.state + '" title="' + (a.label || '') + '">' +
-        dot + (a.label || '') + '</span>';
+      return '<span class="vx-fresh-chip" data-state="' + a.state + '" title="' + (a.label || '') + '"' +
+        (a.at == null ? '' : ' data-at="' + a.at + '" data-was-live="' + (a.live ? '1' : '0') + '"') +
+        '>' + dot + (a.label || '') + '</span>';
+    },
+
+    /* ── RE-DATAGE (aucune requête) ──────────────────────────────────────
+       Un âge affiché est vrai à l'instant où il est peint, et faux ensuite.
+       Les pages qui n'enregistrent aucune tâche `VX.refresh` ne repeignent
+       jamais — mesuré : 11 lignes de provenance sur 11 figées sur Marchés
+       après deux heures, réseau vivant. Et quand le réseau tombe, PLUS AUCUNE
+       page ne repeint, y compris celles qui rafraîchissent d'habitude.
+
+       On rejoue donc le seul calcul qui n'a besoin de rien : l'âge se déduit
+       de l'horodatage DÉJÀ dans le DOM. Aucun `fetch`, aucune donnée nouvelle,
+       aucun chiffre modifié — seule l'étiquette qui date le chiffre est
+       remise à l'heure. Un chiffre périmé reste affiché ; il cesse seulement
+       de se présenter comme frais. */
+    _ms(ts) {
+      if (ts == null || ts === '') return null;
+      const d = (ts instanceof Date) ? ts
+        : new Date(typeof ts === 'number' && ts < 1e12 ? ts * 1000 : ts);
+      const v = d.getTime();
+      return isNaN(v) ? null : v;
+    },
+    _retick(racine) {
+      const doc = racine || document;
+      let n = 0;
+      doc.querySelectorAll('.vx-update[data-ts] > .vx-update-age').forEach((el) => {
+        const ts = Number(el.parentElement.getAttribute('data-ts'));
+        if (!isFinite(ts)) return;
+        const t = VX.fmt.ago(ts);
+        if (el.textContent !== t) { el.textContent = t; n++; }
+      });
+      doc.querySelectorAll('.vx-fresh-chip[data-at]').forEach((el) => {
+        const at = Number(el.getAttribute('data-at'));
+        if (!isFinite(at)) return;
+        const a = this.assess({ ageMs: Date.now() - at,
+          live: el.getAttribute('data-was-live') === '1' });
+        if (el.getAttribute('data-state') === a.state) return;
+        el.setAttribute('data-state', a.state);
+        el.setAttribute('title', a.label || '');
+        el.innerHTML = (a.state === 'live' ? '<span class="vx-fresh-dot"></span>' : '')
+          + (a.label || '');
+        n++;
+      });
+      return n;
     },
   };
+
+  /* Tâche de SHELL : survit aux navigations, ne demande rien au réseau. 30 s
+     est un compromis mesuré — le premier seuil du produit est à 20 s (live),
+     donc une puce ne peut pas mentir plus d'une demi-période au-delà. */
+  VX.refresh.register(() => VX.freshness._retick(), 30000, 'freshness-retick',
+    { persistent: true });
 
   /* ── Store global minimal (LOT 2 — fondation ; SWR/dédup enrichis au LOT 3) ──
      Vérité partagée du contexte applicatif : session active, ticker courant,

@@ -108,6 +108,13 @@ _CONTENT = """
   <div id="vx-brief-body" aria-live="polite">%%LOADING%%</div>
   <div class="vx-kpi-strip vx-mt3" id="vx-hero-kpis" data-max-kpis="4"
        aria-label="Quatre indicateurs clés, chacun relié à son domicile canonique"></div>
+  <!-- L'AGE des quatre KPI. Mesuré : sans lui, ces quatre chiffres — les
+       premiers que l'écran montre — ne portaient AUCUNE indication de date ;
+       la seule marque de la carte était le badge « Démo », qui qualifie la
+       NATURE de la donnée, pas son âge. Rempli par loadSummary depuis
+       `scan_age` (le serveur le sert déjà), via VX.freshness — jamais un
+       libellé écrit à la main. -->
+  <div class="vx-meta vx-mt2" id="vx-hero-age"></div>
   <div class="vx-mt3" id="vx-hero-action"></div>
 </section>
 
@@ -236,6 +243,13 @@ async function loadSummary(){
       best?kpiTile('Meilleure opp.',bestHtml,'','/analysis/'+encodeURIComponent(best.symbol)):kpiTile('Meilleure opp.','—','','/opportunities'),
     ].join('');
     $('vx-hero-kpis').innerHTML=kpis;
+    /* Âge des quatre KPI. `scan_age` est en secondes ; absent → assess rend
+       « — », l'aveu honnête, jamais une valeur inventée. La puce porte son
+       instant de référence et se ré-évalue seule (VX.freshness._retick) :
+       sans réseau, elle passe à « À actualiser » d'elle-même. */
+    const sa=num(sum.scan_age);
+    $('vx-hero-age').innerHTML='Données du scan : '
+      +VX.freshness.chip(VX.freshness.assess({ageMs:sa!=null?sa*1000:null}));
     /* Action prioritaire : dérivée uniquement des données réelles. */
     let action='';
     if(best&&best.symbol){

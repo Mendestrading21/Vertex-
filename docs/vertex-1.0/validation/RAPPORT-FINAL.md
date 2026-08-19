@@ -209,7 +209,7 @@ Mesurés sur le SHA candidat `integration/vertex-1-0-rc`.
 | G1 Runtime modulaire | **preuves complètes** | acceptation humaine |
 | G2 Données et domaines | **preuves complètes** | acceptation humaine |
 | G3 Intelligence | **partiel** | mémoire réparée, WMB versionné ; **spécimen WMB réel** manquant |
-| G4 Expérience | **preuves complètes** | résidu assumé : 2 fils tronqués de ~12 px |
+| G4 Expérience | **preuves complètes** | résidu assumé : 2 fils tronqués de ~12 px ; mode hors-ligne couvert et corrigé (`G4-HORS-LIGNE.md`) |
 | G5 Live read-only | **HUMAN_REQUIRED** | TWS / IB Gateway réel — **bloquant** |
 | G6 Exploitation | **preuves complètes** | rollback applicatif et CVE non couverts (voir §8) |
 | G7 Release | **NO** | G5, plus l'acceptation humaine du SHA |
@@ -240,16 +240,30 @@ Mesurés sur le SHA candidat `integration/vertex-1-0-rc`.
   garde 7 jours et la restauration rend l'état d'origine à l'identique.
 - **Vulnérabilités connues des dépendances non recherchées** : il faudrait une
   base de CVE à jour, absente de cet environnement.
+- **Deux éléments décrits par `CLAUDE.md` sont absents de cette branche** :
+  `VX.freshness.domainChip` n'existe nulle part dans l'arbre, et les gardiens de
+  fraîcheur des lots 62–63 n'y sont présents que sous forme de `.pyc` périmés.
+  C'est vraisemblablement pourquoi le badge écrit à la main d'Aujourd'hui avait
+  survécu ici. **Aucune action** : les importer reviendrait à fusionner Signal OS,
+  que le mandat interdit. Consigné pour la décision de fusion.
 
 **HUMAN_REQUIRED :**
 
 1. **TWS / IB Gateway réel** — G5, bloquant pour toute release.
 2. **Spécimen de brief WMB réel** — G3.
-3. **Autorisation de suppression de branches** — 32 sont prouvées sans perte.
+3. **Suppression de branches** — 32 sont prouvées sans perte, et le registre de
+   restauration (30 branches avec leurs SHA complets) est écrit. La suppression
+   a été **tentée et refusée par le serveur : HTTP 403** — les identifiants de
+   cette session autorisent le `push`, pas la suppression de références. Vérifié
+   après coup : 30/30 toujours présentes, 700 références, rien de partiellement
+   supprimé. Demande donc des identifiants ayant ce droit, pas seulement un
+   accord.
 4. **Acceptation du SHA candidat** `integration/vertex-1-0-rc`, et décision
    d'ordre de fusion vers `main` (l'intégration est faite et verte ; la fusion
    dans `main` demande un accord explicite).
 5. **Décision `performance_ledger`** : le brancher ou le retirer.
+6. **Réintégration éventuelle des gardiens de fraîcheur des lots 62–63**, absents
+   de cette ligne (voir ci-dessus) — décision de fusion, pas de code.
 
 ---
 
