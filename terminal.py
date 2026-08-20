@@ -976,16 +976,23 @@ def _ibkr_opt_worker():
                         pass
 
         quote_pass(good)
-        missing = [x for x in good if (out.get(x[0]) or {}).get('mark') is None]
-        if missing:
+        #  Rattrapage des cotations manquantes sur l'ECHELLE COMPLETE. La
+        #  version d'origine ne tentait que le type 2 (cloture figee), qui
+        #  exige TOUJOURS un abonnement : sans abonnement, la chaine d'options
+        #  restait vide malgre le rattrapage.
+        for _t in _ibkr_link.ECHELLE_DONNEES[1:]:
+            missing = [x for x in good if (out.get(x[0]) or {}).get('mark') is None]
+            if not missing:
+                break
             try:
-                ib.reqMarketDataType(2)          # frozen : dernier cours de clôture quand le marché est fermé
+                ib.reqMarketDataType(_t)
                 quote_pass(missing)
-            finally:
-                try:
-                    ib.reqMarketDataType(1)
-                except Exception:
-                    pass
+            except Exception:
+                continue
+        try:
+            ib.reqMarketDataType(1)              # on rend la ligne au temps reel
+        except Exception:
+            pass
         return out
 
     while True:
@@ -1880,12 +1887,13 @@ def _quotes_worker():
             mdt = 1
             ib.reqMarketDataType(mdt)
             _live_meta['mdt'] = mdt
+            _live_meta['mdt_libelle'] = _ibkr_link.libelle_donnees(mdt)
             passages_a_vide = 0
             cs = [Stock(s.replace('-', ' '), 'SMART', 'USD') for s in LIVE_SYMBOLS]   # classe B : BRK-B -> 'BRK B' pour IBKR
             ib.qualifyContracts(*cs)
             valid = [c for c in cs if getattr(c, 'conId', 0)]
             _live_meta.update({'connected': True, 'n': len(valid)})
-            debut_frozen = 0
+            debut_degrade = 0
             while ib.isConnected():
                 rt = False
                 recus = 0
@@ -1911,25 +1919,35 @@ def _quotes_worker():
                 #  CLOTURE FIGEE (type 2) — une donnee vraie, simplement datee
                 #  d'hier — plutot que de laisser huit ecrans vides. Deux cycles
                 #  d'attente : un lot qui expire n'est pas un marche ferme.
+                #  Escalade 1 -> 2 -> 3 -> 4, regle UNIQUE partagee par les
+                #  flux (`ibkr_link.type_suivant`). Le type 2 exige encore un
+                #  abonnement : sans abonnement, seul le 3 (differe) parle. Deux
+                #  cycles d'attente avant de descendre — un lot qui expire n'est
+                #  pas un marche ferme.
                 if recus == 0:
                     passages_a_vide += 1
-                    if passages_a_vide >= 2 and mdt == 1:
-                        mdt = 2
-                        ib.reqMarketDataType(mdt)
-                        _live_meta['mdt'] = mdt
-                        debut_frozen = time.time()
+                    if passages_a_vide >= 2:
+                        suivant = _ibkr_link.type_suivant(mdt, False)
+                        if suivant != mdt:
+                            mdt = suivant
+                            ib.reqMarketDataType(mdt)
+                            _live_meta['mdt'] = mdt
+                            _live_meta['mdt_libelle'] = _ibkr_link.libelle_donnees(mdt)
+                            debut_degrade = time.time() if mdt != 1 else 0
                         passages_a_vide = 0
                 else:
                     passages_a_vide = 0
-                #  Retour au temps reel toutes les 15 min : rester en cloture
-                #  figee ferait mentir l'ecran a l'ouverture. `debut_frozen` est
-                #  pose AU MOMENT DE LA BASCULE — le remettre a l'heure a chaque
-                #  cycle rendait ce retour structurellement inatteignable.
-                if mdt == 2 and debut_frozen and time.time() - debut_frozen > 900:
+                #  Retour au temps reel toutes les 15 min : rester en mode
+                #  degrade ferait mentir l'ecran a l'ouverture de la seance.
+                #  `debut_degrade` est pose AU MOMENT DE LA BASCULE — le
+                #  remettre a l'heure a chaque cycle rendait ce retour
+                #  structurellement inatteignable.
+                if mdt != 1 and debut_degrade and time.time() - debut_degrade > 900:
                     mdt = 1
                     ib.reqMarketDataType(mdt)
                     _live_meta['mdt'] = mdt
-                    debut_frozen = 0
+                    _live_meta['mdt_libelle'] = _ibkr_link.libelle_donnees(mdt)
+                    debut_degrade = 0
                 ib.sleep(4)
         except Exception as _e:
             _live_meta['connected'] = False
@@ -2049,11 +2067,13 @@ def _indices_loop():
                 #  `except: pass` de plus aurait rendu muette la seule
                 #  explication d'un bandeau vide — precisement le defaut traite
                 #  ici. Les gardiens des lots 385/386 l'ont refuse, a raison.
-                cible = 2 if recus == 0 else 1
+                cible = _ibkr_link.type_suivant(_IDX_META.get('mdt', 1),
+                                                bool(recus))
                 if _IDX_META.get('mdt') != cible:
                     try:
                         ib.reqMarketDataType(cible)
                         _IDX_META['mdt'] = cible
+                        _IDX_META['mdt_libelle'] = _ibkr_link.libelle_donnees(cible)
                         _IDX_META.pop('err_mdt', None)
                     except Exception as _mdte:
                         _IDX_META['err_mdt'] = (

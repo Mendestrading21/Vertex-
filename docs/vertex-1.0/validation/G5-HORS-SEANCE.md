@@ -47,16 +47,46 @@ honnête, elle ne fait pas disparaître ce qu'on sait par ailleurs.
 Le worker des indices, lui, était tolérant (prix conservé, variation `None`). Un
 troisième désaccord entre trois chemins.
 
+## Défaut 3 — le repli vers la clôture figée ne suffisait pas
+
+Mon premier correctif repliait de 1 vers 2. **Le type 2 exige toujours un
+abonnement.** Il ne règle donc QUE le cas « marché fermé alors qu'on est
+abonné » — et laisse entier le cas « pas d'abonnement », qui produit exactement
+le même écran vide.
+
+Les quatre situations réelles, et le seul type qui répond dans chacune :
+
+| abonné | marché | type |
+| --- | --- | --- |
+| oui | ouvert | **1** temps réel |
+| oui | fermé | **2** clôture figée |
+| non | ouvert | **3** différé (~15 min) |
+| non | fermé | **4** clôture différée |
+
+D'où une **échelle unique** — `ibkr_link.type_suivant` — partagée par les trois
+flux : rien reçu → on descend d'un cran ; arrivé en bas → on **remonte au temps
+réel**, sans quoi un flux resterait coincé en différé après la réouverture.
+
+Écrire trois fois la même escalade produit trois escalades différentes : c'est
+déjà arrivé deux fois dans ce produit (les cinq ordres de ports, puis ce repli).
+La règle est donc écrite une fois, et un gardien vérifie que **chaque flux y est
+câblé** — pas qu'il contient telle constante.
+
+Le rattrapage des options, lui, ne tentait que le type 2 : sans abonnement, la
+chaîne restait vide **malgré** le rattrapage. Il parcourt désormais l'échelle
+entière.
+
 ## Le correctif
 
 - **`_store_ticker`** conserve le prix dès qu'il existe (`last`, sinon
   `marketPrice()`, sinon `close`), avec `change: None` quand la clôture manque —
   inconnue avouée, jamais inventée. Il rend désormais `(stocke, temps_reel)` :
   c'est ce `stocke` qui déclenche le repli.
-- **Cotations** : deux cycles entiers sans un seul cours → passage en clôture
-  figée, et **retour au temps réel toutes les 15 minutes** pour ne pas mentir à
-  l'ouverture.
-- **Indices** : même repli, réversible.
+- **Cotations** : deux cycles entiers sans un seul cours → descente d'un cran
+  sur l'échelle, et **retour au temps réel toutes les 15 minutes** pour ne pas
+  mentir à l'ouverture.
+- **Indices** : même règle, même échelle, réversible.
+- **Options** : rattrapage sur l'échelle entière au lieu du seul type 2.
 - Les deux commentaires mensongers sont supprimés.
 
 **Rien n'est inventé.** La clôture figée est une donnée vraie, simplement datée
@@ -79,16 +109,25 @@ Ma première version du gardien cherchait le littéral `reqMarketDataType(2)`.
 Elle a échoué **quand le code s'est amélioré** (`cible = 2 if recus == 0 else
 1`), en signalant un défaut qui n'existait pas. Un gardien qui n'accepte qu'une
 écriture interdit de réécrire, et pousse à contourner plutôt qu'à corriger.
-Réécrit en contrôle de **comportement** : lecture à l'AST, un worker peut
-demander le type 2 par une constante ou par une variable qui vaut 2.
+Réécrit en contrôle de **comportement**… puis réécrit **une seconde fois**,
+pour la même raison : quand l'escalade est passée d'un `if` bricolé à la règle
+partagée, le contrôle « peut-il demander le type 2 » a de nouveau signalé un
+défaut inexistant. Il vérifie désormais le **câblage** — le worker passe-t-il à
+`reqMarketDataType` un résultat de `type_suivant` — en suivant les alias
+**jusqu'au point fixe**, parce que le code écrit `suivant = type_suivant(...)`
+puis `mdt = suivant`. Ne suivre qu'un saut manquait la cible : exactement le
+piège que `self._ib = ib` avait déjà tendu à l'outil de surface IBKR.
 
 ## Vérification
 
-- `compileall` → 0 · suite complète → **3 503 passed**
-- 6 mutations sur le produit, 6 détectées : exiger `last` ET `close` à nouveau ·
-  inventer `change = 0` · retirer le repli · réintroduire le commentaire
-  mensonger · repositionner `debut_frozen` à chaque cycle · rendre un `nan`
-  exploitable.
+- `compileall` → 0 · suite complète → **3 506 passed**
+- 11 mutations, 11 détectées : exiger `last` ET `close` à nouveau · inventer
+  `change = 0` · retirer le repli · réintroduire le commentaire mensonger ·
+  repositionner le compteur de bascule à chaque cycle · rendre un `nan`
+  exploitable · arrêter l'échelle à la clôture figée (différé inatteignable) ·
+  empêcher la remontée au temps réel · faire descendre malgré une donnée reçue ·
+  redonner au worker sa propre règle · ramener le rattrapage options au seul
+  type 2.
 
 ## Ce que cela ne prouve pas
 

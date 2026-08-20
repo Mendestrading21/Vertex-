@@ -78,6 +78,61 @@ CLIENT_IDS = {
 
 MODES = dict(PORTS)
 
+#: Échelle des types de données IBKR, du plus riche au plus tolérant.
+#:
+#: 1 temps réel · 2 clôture figée · 3 différé (~15 min) · 4 clôture différée.
+#:
+#: **Le type 2 exige toujours un abonnement.** C'est le piège : replier de 1
+#: vers 2 ne règle QUE le cas « marché fermé alors qu'on est abonné ». Sans
+#: abonnement, ni 1 ni 2 ne rendent quoi que ce soit — seul le **3** parle.
+#: L'échelle couvre donc les quatre situations réelles :
+#:
+#: | abonné | marché | type qui répond |
+#: | --- | --- | --- |
+#: | oui | ouvert | 1 |
+#: | oui | fermé  | 2 |
+#: | non | ouvert | 3 |
+#: | non | fermé  | 4 |
+#:
+#: Aucun de ces modes n'invente : `ibkr_market_data._MODE_BY_TYPE` les traduit
+#: déjà en LIVE / FROZEN / DELAYED, et une puce de fraîcheur ne peut afficher
+#: « Live » que pour le type 1.
+ECHELLE_DONNEES = (1, 2, 3, 4)
+
+LIBELLE_DONNEES = {
+    1: 'temps réel',
+    2: 'clôture figée',
+    3: 'différé (~15 min)',
+    4: 'clôture différée',
+}
+
+
+def type_suivant(actuel: int, recu: bool, *, echelle=ECHELLE_DONNEES) -> int:
+    """Quel type demander ensuite, sachant si le passage a rapporté quelque chose.
+
+    Une seule règle, partagée par les trois flux — écrire trois fois la même
+    escalade produit trois escalades différentes, et c'est déjà arrivé deux
+    fois dans ce produit (ordres de ports, repli hors séance).
+
+    - quelque chose est arrivé → on ne bouge pas ;
+    - rien n'est arrivé → on descend d'un cran ;
+    - arrivé en bas sans rien → on **remonte au temps réel** plutôt que de
+      rester coincé : si la séance a rouvert entre-temps, rester en différé
+      afficherait un cours vieux de quinze minutes sans raison.
+    """
+    if recu:
+        return actuel
+    if actuel not in echelle:
+        return echelle[0]
+    i = echelle.index(actuel) + 1
+    return echelle[i] if i < len(echelle) else echelle[0]
+
+
+def libelle_donnees(t) -> str:
+    """Mot lisible pour un type. Un type inconnu est avoué, jamais deviné."""
+    return LIBELLE_DONNEES.get(t, 'inconnu')
+
+
 _VERROU = threading.Lock()
 _MEMOIRE: dict = {'port': None, 'depuis': None, 'decouvert_par': None}
 _DERNIERS_ESSAIS: dict = {}
@@ -220,6 +275,7 @@ def oublier() -> None:
         _DERNIERS_ESSAIS.clear()
 
 
-__all__ = ['PORTS', 'CLIENT_IDS', 'MODES', 'hote', 'client_id', 'ports_declares',
+__all__ = ['PORTS', 'CLIENT_IDS', 'MODES', 'ECHELLE_DONNEES',
+           'LIBELLE_DONNEES', 'type_suivant', 'libelle_donnees', 'hote', 'client_id', 'ports_declares',
            'ordre_des_ports', 'sonder', 'noter_succes', 'noter_echec', 'etat',
            'oublier']

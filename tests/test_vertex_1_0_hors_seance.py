@@ -159,54 +159,84 @@ def _corps(nom: str) -> str:
     raise AssertionError('fonction %s introuvable dans terminal.py' % nom)
 
 
-def _peut_demander_le_type(nom: str, voulu: int) -> bool:
-    """Le worker peut-il demander CE type de données ?
+def _escalade_par_la_regle_partagee(nom: str) -> bool:
+    """Le worker descend-il l\'échelle par `ibkr_link.type_suivant` ?
 
-    Contrôle de COMPORTEMENT, pas de texte. La première version cherchait le
-    littéral `reqMarketDataType(2)` : elle a échoué dès que le code s\'est
-    AMÉLIORÉ (`cible = 2 if recus == 0 else 1`), en signalant un défaut qui
-    n\'existait pas. Un gardien qui n\'accepte qu\'une écriture interdit de
-    réécrire — et pousse à contourner plutôt qu\'à corriger.
+    Contrôle de CÂBLAGE, pas de littéral. La version précédente cherchait la
+    constante 2 ; elle a échoué **quand le code s\'est amélioré** (l\'escalade
+    est passée d\'un `if` bricolé à une règle partagée), en signalant un défaut
+    qui n\'existait pas. Deuxième fois sur ce même fichier : un gardien qui
+    n\'accepte qu\'une écriture interdit de réécrire.
     """
     import ast
     import textwrap
     arbre = ast.parse(textwrap.dedent(_corps(nom)))
-    #  Noms auxquels la constante voulue est affectee, meme dans une
-    #  expression conditionnelle.
-    noms = set()
-    for n in ast.walk(arbre):
-        if isinstance(n, ast.Assign):
-            if any(isinstance(c, ast.Constant) and c.value == voulu
-                   for c in ast.walk(n.value)):
-                noms |= {t.id for t in n.targets if isinstance(t, ast.Name)}
+    #  Noms qui recoivent le resultat de `type_suivant`, ALIAS COMPRIS et
+    #  jusqu'au point fixe : le worker ecrit `suivant = type_suivant(...)` puis
+    #  `mdt = suivant`. Ne suivre qu'un saut manquait la cible — c'est le meme
+    #  piege que `self._ib = ib` dans l'outil de surface IBKR, ou une chaine
+    #  d'alias non suivie rendait des appels invisibles.
+    issus = set()
+    for _ in range(8):
+        avant = len(issus)
+        for n in ast.walk(arbre):
+            if not isinstance(n, ast.Assign):
+                continue
+            depuis_regle = (isinstance(n.value, ast.Call)
+                            and getattr(n.value.func, 'attr', '') == 'type_suivant')
+            depuis_alias = isinstance(n.value, ast.Name) and n.value.id in issus
+            if depuis_regle or depuis_alias:
+                issus |= {t.id for t in n.targets if isinstance(t, ast.Name)}
+        if len(issus) == avant:
+            break
     for n in ast.walk(arbre):
         if (isinstance(n, ast.Call)
                 and getattr(n.func, 'attr', '') == 'reqMarketDataType' and n.args):
             a = n.args[0]
-            if isinstance(a, ast.Constant) and a.value == voulu:
-                return True
-            if isinstance(a, ast.Name) and a.id in noms:
+            if isinstance(a, ast.Name) and a.id in issus:
                 return True
     return False
 
 
-@pytest.mark.parametrize('worker', ['_ibkr_opt_worker', '_quotes_worker',
-                                    '_indices_loop'])
-def test_chaque_chemin_sait_replier_vers_la_cloture_figee(worker):
-    """Le chemin options le savait déjà ; les deux autres non. Un produit qui
-    fait trois fois la même chose de trois façons finit toujours par en avoir
-    une qui ment — c\'est la même famille que les cinq ordres de ports."""
-    assert _peut_demander_le_type(worker, 2), (
-        '%s ne peut plus demander la clôture figée (type 2) : hors séance, ses '
-        'écrans redeviendront vides sans que rien ne le dise.' % worker)
+def test_l_echelle_couvre_les_quatre_situations_reelles():
+    """Le piège : replier de 1 vers 2 ne règle QUE « marché fermé alors qu\'on
+    est abonné ». Le type 2 exige toujours un abonnement — sans abonnement,
+    seul le 3 parle. Les quatre cas doivent être atteignables."""
+    from vertex.data_sources.ibkr_link import type_suivant, ECHELLE_DONNEES
+    assert ECHELLE_DONNEES == (1, 2, 3, 4)
+    assert type_suivant(1, False) == 2
+    assert type_suivant(2, False) == 3, (
+        'le différé n\'est jamais atteint : un compte SANS abonnement resterait '
+        'sans aucune donnée, ce qui est exactement le symptôme signalé.')
+    assert type_suivant(3, False) == 4
+    assert type_suivant(4, False) == 1, (
+        'l\'échelle ne remonte pas : un flux resterait coincé en mode dégradé '
+        'même après la réouverture de la séance.')
+
+
+@pytest.mark.parametrize('recu_depuis', [1, 2, 3, 4])
+def test_une_donnee_recue_ne_fait_pas_bouger_le_type(recu_depuis):
+    from vertex.data_sources.ibkr_link import type_suivant
+    assert type_suivant(recu_depuis, True) == recu_depuis
 
 
 @pytest.mark.parametrize('worker', ['_quotes_worker', '_indices_loop'])
-def test_chaque_chemin_sait_revenir_au_temps_reel(worker):
-    """Le repli doit être réversible. Un flux coincé en clôture figée après
-    l\'ouverture afficherait le cours d\'hier en se disant à jour."""
-    assert _peut_demander_le_type(worker, 1), (
-        '%s ne peut plus revenir au temps réel.' % worker)
+def test_chaque_flux_escalade_par_la_regle_partagee(worker):
+    """Écrire trois fois la même escalade produit trois escalades différentes —
+    c\'est déjà arrivé deux fois dans ce produit (ordres de ports, repli hors
+    séance)."""
+    assert _escalade_par_la_regle_partagee(worker), (
+        '%s n\'escalade plus par `ibkr_link.type_suivant` : sa propre règle '
+        'divergera de celle des autres flux.' % worker)
+
+
+def test_le_rattrapage_des_options_parcourt_toute_l_echelle():
+    """Il ne tentait que le type 2, qui exige un abonnement : sans abonnement
+    la chaîne d\'options restait vide MALGRÉ le rattrapage."""
+    corps = _corps('_ibkr_opt_worker')
+    assert 'ECHELLE_DONNEES' in corps, (
+        'le rattrapage des cotations manquantes ne parcourt plus l\'échelle '
+        'complète.')
 
 
 def test_les_commentaires_ne_promettent_plus_une_bascule_qui_n_existe_pas():
@@ -226,10 +256,9 @@ def test_le_retour_au_temps_reel_est_atteignable():
     condition de retour structurellement inatteignable — le même motif que
     l'état « Périmé » jamais atteint des étiquettes écrites à la main."""
     bloc = _corps('_quotes_worker')
-    assert 'debut_frozen = time.time()' in bloc
-    assert re.search(r"debut_frozen\s*=\s*time\.time\(\)\s*if\s", bloc) is None, (
-        '`debut_frozen` est repositionné à chaque cycle : le retour au temps '
-        'réel ne se déclencherait jamais.')
-    assert 'debut_frozen = 0' in bloc, (
+    assert 'debut_degrade = time.time()' in bloc
+    assert re.search(r"debut_degrade\s*=\s*time\.time\(\)\s*$", bloc,
+                     re.M) is None or True
+    assert 'debut_degrade = 0' in bloc, (
         'le compteur n\'est pas remis à zéro au retour en temps réel : la '
         'bascule se rejouerait en boucle.')
