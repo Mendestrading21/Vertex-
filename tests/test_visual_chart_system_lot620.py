@@ -72,7 +72,7 @@ vm.runInThisContext(fs.readFileSync('vertex/static/vertex/js/charts/chart-core.j
         prelude += "\nvm.runInThisContext(fs.readFileSync('vertex/static/vertex/js/charts/heatmap.js', 'utf8'), {filename:'heatmap.js'});\n"
     run = subprocess.run(
         ['node', '-e', prelude + '\n' + body], cwd=ROOT,
-        text=True, capture_output=True, check=False,
+        text=True, encoding='utf-8', capture_output=True, check=False,
     )
     assert run.returncode == 0, run.stderr
     lines = [line for line in run.stdout.splitlines() if line.strip()]

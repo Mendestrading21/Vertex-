@@ -105,15 +105,23 @@ FICHIER = 'terminal.py'
 # première baisse est donc CERTAINE (le `try` entourait un import) ; la seconde
 # est RAISONNÉE — la compression ratée produisait une absence honnête, pas une
 # valeur inventée — et non retrouvée dans la classification d'origine.
+# MISE À JOUR (audit Vertex 1.0, portabilité Windows) : 32 -> 31.
+# Le `pass` retiré est celui de `_weekly_loop`, dont le `try` entourait
+# `weekly.get_or_build(...)`. Il était classé « absence honnête » — à tort :
+# l'absence était honnête pour la SÉLECTION, mais sa RAISON n'existait nulle
+# part, et le battement `WEEKLY_REVIEW` partait quand même à `ok=True`. Le
+# domaine « hebdo » pouvait donc rester « jamais synchronisé » pendant que la
+# page Système affichait le job en vert. La famille passe de 12 à 11 parce que
+# ce cas n'en était pas un : l'erreur est désormais nommée, pas avalée.
 FAMILLES = {
     'nettoyage/fermeture': 6,
     'journal/persistance': 9,
     'import/config optionnel': 1,
     'infra thread': 2,
-    'absence honnête': 12,
+    'absence honnête': 11,
     'examinés de près': 2,
 }
-TOTAL_PASS = 32
+TOTAL_PASS = 31
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.

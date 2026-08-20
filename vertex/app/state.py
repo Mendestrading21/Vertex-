@@ -21,7 +21,8 @@ scan_state = {
 }
 
 # Watchlist de la semaine : sélection figée le lundi (régénérée en fond).
-weekly_state = {'data': None, 'updated': None, 'regenerated': False}
+weekly_state = {'data': None, 'updated': None, 'regenerated': False,
+                'error': None}   # raison d'une absence, jamais un silence
 
 # Fils de contenu (actualités, calendrier de catalyseurs) — remplis par les boucles.
 # cal_state['items'] est réhydraté depuis le cache disque au démarrage par terminal.py.

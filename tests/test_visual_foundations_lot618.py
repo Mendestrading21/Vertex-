@@ -172,7 +172,7 @@ def _node_chart_probe(body: str, *, heatmap: bool = False) -> object:
         script += "\nvm.runInThisContext(fs.readFileSync('vertex/static/vertex/js/charts/heatmap.js', 'utf8'), {filename:'heatmap.js'});\n"
     script += '\n' + body
     run = subprocess.run(
-        ['node', '-e', script], cwd=ROOT, text=True, capture_output=True, check=False
+        ['node', '-e', script], cwd=ROOT, text=True, encoding='utf-8', capture_output=True, check=False
     )
     assert run.returncode == 0, 'sonde Node en échec :\n%s' % run.stderr
     lines = [line for line in run.stdout.splitlines() if line.strip()]

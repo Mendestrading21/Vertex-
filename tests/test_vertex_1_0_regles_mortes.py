@@ -70,6 +70,19 @@ PROUVEES_INATTEIGNABLES = 63
 CORPUS_MINIMAL = 90
 
 
+def _navigateur_dispo():
+    """Meme garde que les autres gardiens navigateur (qa_espaces, couche_visuelle).
+
+    Elle manquait ICI : le skipif ne regardait que le serveur, donc sur une
+    machine ou le serveur tourne SANS playwright installe, le test ne
+    s'abstenait pas — il levait ModuleNotFoundError au milieu de la mesure. Un
+    gardien qui plante ne dit pas « je n'ai pas pu mesurer », il dit « c'est
+    casse », et les deux ne se lisent pas pareil.
+    """
+    from tools.vertex_1_0.mesurer_qa_espaces import navigateur_pret
+    return navigateur_pret()
+
+
 def _serveur_repond():
     try:
         with urllib.request.urlopen('http://127.0.0.1:5002/healthz', timeout=3) as r:
@@ -171,8 +184,9 @@ def test_les_temoins_mordent_tous():
 
 #  ------------------------------------------------ la mesure sur le produit
 
-@pytest.mark.skipif(not _serveur_repond(),
-                    reason='serveur absent — la preuve porterait sur rien')
+@pytest.mark.skipif(not (_serveur_repond() and _navigateur_dispo()),
+                    reason='serveur ou navigateur absent — la preuve porterait '
+                           'sur rien')
 def test_le_recensement_des_regles_prouvees_ne_grossit_pas():
     """`CLEANUP_POLICY.md` : « aucun empilement de CSS temporaire sans date de
     retrait ». Ce plafond EST la date de retrait. Il peut baisser (on a

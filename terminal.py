@@ -1586,17 +1586,27 @@ def _weekly_loop():
     (snapshot persisté) ; on rafraîchit seulement les chiffres vivants à chaque tour."""
     while True:
         if scan_state.get('rows') and scan_state.get('detail'):
+            #  L'echec est NOMME, pas avale. Avant, un `except: pass` laissait le
+            #  domaine « hebdo » a l'etat « jamais synchronise » sans jamais dire
+            #  pourquoi : la surface montrait une absence, et la raison de cette
+            #  absence n'existait nulle part (QUALITY_STANDARD §1).
+            echec = None
             try:
                 snap, regen = weekly.get_or_build(
                     WEEKLY_PATH, scan_state['rows'], scan_state['detail'],
                     earnings=_earnings_map(), n=6, with_options=True)
                 weekly_state.update({'data': snap, 'regenerated': regen,
+                                     'error': None,
                                      'updated': datetime.now().strftime('%H:%M:%S')})
-            except Exception:
-                pass
+            except Exception as e:
+                echec = '%s: %s' % (type(e).__name__, e)
+                weekly_state['error'] = echec
             try:
+                #  Le battement dit la VERITE. Emis inconditionnellement a `ok=True`,
+                #  il declarait le job WEEKLY_REVIEW sain alors que la construction
+                #  venait d'echouer — la page Systeme affichait donc un vert faux.
                 from vertex.scheduler import registry as _sched
-                _sched.beat('WEEKLY_REVIEW', ok=True)
+                _sched.beat('WEEKLY_REVIEW', ok=(echec is None), error=echec)
             except Exception:
                 pass
             time.sleep(300)        # options réelles = lent → toutes les 5 min

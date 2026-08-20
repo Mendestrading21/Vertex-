@@ -194,8 +194,17 @@ def test_la_passerelle_ne_partage_plus_l_identifiant_du_compte():
 def test_la_passerelle_avoue_l_echec_au_lieu_de_rendre_un_objet_vide():
     """Un appelant qui recevrait None irait chercher des cotations sur un objet
     absent, et l'erreur parlerait d'attribut manquant au lieu de TWS."""
+    import socket as _socket
     from vertex.data_sources.ibkr_gateway import IbkrGateway
-    gw = IbkrGateway(host='127.0.0.1')
+    #  Port IMPOSE. Sans port, `connect()` balaie les quatre ports standards :
+    #  sur la machine ou G5 se valide — celle qui a justement TWS ouvert — il
+    #  se connectait, et le gardien echouait faute d'exception. Ce qui est
+    #  mesure ici est l'AVEU de l'echec, pas l'absence de courtier.
+    tmp = _socket.socket()
+    tmp.bind(('127.0.0.1', 0))       # l'OS attribue un port libre...
+    ferme = tmp.getsockname()[1]
+    tmp.close()                       # ...puis on le rend : plus personne n'ecoute
+    gw = IbkrGateway(host='127.0.0.1', port=ferme)
     with pytest.raises((ConnectionError, Exception)) as exc:
         gw.connect()
     assert 'TWS' in str(exc.value) or 'ports' in str(exc.value).lower()
@@ -234,7 +243,12 @@ def test_la_sonde_trouve_un_VRAI_socket_ouvert():
         pytest.skip('port 4002 déjà pris — la mesure porterait sur autre chose')
     srv.listen(1)
     try:
-        r = ibkr_link.sonder(ports=(7496, 4002), hote_='127.0.0.1', delai=0.5)
+        #  On ne sonde QUE le port possede par le test. Interroger 7496 au
+        #  passage rendait la mesure dependante de la machine : avec TWS
+        #  ouvert — l'etat normal de la machine G5 — la sonde rendait
+        #  [7496, 4002] et le mode « TWS reel », et le gardien virait au
+        #  rouge sans qu'aucune regression n'ait eu lieu.
+        r = ibkr_link.sonder(ports=(4002,), hote_='127.0.0.1', delai=0.5)
         assert r['ouverts'] == [4002], (
             'la sonde TCP ne voit pas un écouteur réel : la découverte '
             'automatique ne fonctionnerait pas non plus avec TWS.')

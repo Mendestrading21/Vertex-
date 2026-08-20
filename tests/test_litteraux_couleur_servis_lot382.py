@@ -53,6 +53,7 @@ faux, et le contrat qui n'était pas verrouillé.** Ce test fixe la borne AU
 niveau mesuré, pour qu'aucun littéral supplémentaire n'entre en silence.
 """
 import glob
+import os
 import re
 
 import pytest
@@ -79,7 +80,7 @@ def pages(request):
 def _litteraux_servis(pages):
     """Littéraux #RRGGBB écrits dans `vertex/ui/**` ET présents dans une page."""
     servis = set()
-    for chemin in glob.glob('vertex/ui/**/*.py', recursive=True):
+    for chemin in [c.replace(os.sep, '/') for c in glob.glob('vertex/ui/**/*.py', recursive=True)]:
         src = open(chemin, encoding='utf-8', errors='ignore').read()
         for lit in set(_HEX.findall(src)):
             if any(lit in html for html in pages.values()):
@@ -143,5 +144,7 @@ def test_le_gardien_bleu_couvre_bien_le_shell():
     assert "'vertex', 'ui', '**', '*.py'" in src, (
         'le périmètre de test_no_blue_in_ui_pages a changé — revérifier qu\'il '
         'couvre encore vertex/ui/shell/__init__.py')
-    assert 'vertex/ui/shell/__init__.py' in glob.glob(
-        'vertex/ui/**/*.py', recursive=True), 'le shell est hors du balayage'
+    assert 'vertex/ui/shell/__init__.py' in [
+        c.replace(os.sep, '/')
+        for c in glob.glob('vertex/ui/**/*.py', recursive=True)
+    ], 'le shell est hors du balayage'

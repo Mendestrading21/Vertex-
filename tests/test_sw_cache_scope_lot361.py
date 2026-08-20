@@ -32,7 +32,7 @@ _SW = os.path.join(_ROOT, 'vertex', 'app', 'routes', 'system.py')
 _STATIC = os.path.join(_ROOT, 'vertex', 'static')
 
 # ── Contrat enregistré : ces assets vont avec cette version de shell ─────────
-_EMPREINTE = '452f15f20d9a8f26358a4c0c8a0649d7d95bb932119b46012bc47267ad0d8605'
+_EMPREINTE = 'e18f5682ab12efb1ce7eca7364bb72c911fc34c2d1772db5c88fc80da06bf31a'
 _SW_VERSION = 211
 
 _AIDE = (
@@ -58,16 +58,30 @@ def _version():
 
 
 def _empreinte():
-    """Empreinte agrégée, stable, de tous les fichiers servis sous /static."""
+    """Empreinte agrégée, stable, de tous les fichiers servis sous /static.
+
+    CANONIQUE, et c'est le point : l'empreinte doit désigner l'ÉTAT DES SOURCES,
+    pas la façon dont la machine les a matérialisées. Deux détails de plateforme
+    la faisaient diverger alors qu'aucun asset n'avait bougé —
+
+    - le séparateur de `os.path.relpath` (`\` sous Windows, `/` ailleurs) ;
+    - les fins de ligne, `core.autocrlf=true` livrant des assets en CRLF.
+
+    Sans normalisation, le gardien était rouge par construction sur Windows —
+    donc la machine où G5 se valide (celle qui a TWS) ne pouvait pas reproduire
+    la preuve. Un gardien qu'on ne peut pas exécuter là où l'on décide ne
+    garde rien.
+    """
     chemins = []
     for racine, _, noms in os.walk(_STATIC):
         chemins.extend(os.path.join(racine, n) for n in noms)
     chemins.sort()
     h = hashlib.sha256()
     for p in chemins:
-        h.update(os.path.relpath(p, _ROOT).encode())
+        h.update(os.path.relpath(p, _ROOT).replace(os.sep, '/').encode())
         with open(p, 'rb') as f:
-            h.update(hashlib.sha256(f.read()).digest())
+            brut = f.read().replace(b'\r\n', b'\n')   # CRLF -> LF : canonique
+            h.update(hashlib.sha256(brut).digest())
     return h.hexdigest(), len(chemins)
 
 

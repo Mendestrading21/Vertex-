@@ -98,7 +98,7 @@ def _fichiers():
     for rac, _d, noms in os.walk(RACINE):
         for nom in sorted(noms):
             if nom.endswith('.py'):
-                out.append(os.path.join(rac, nom))
+                out.append(os.path.join(rac, nom).replace(os.sep, '/'))
     return out
 
 

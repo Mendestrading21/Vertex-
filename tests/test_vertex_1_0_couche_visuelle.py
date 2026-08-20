@@ -79,11 +79,9 @@ FILS_ENCORE_TRONQUES = {'briefing', 'markets'}
 
 
 def _navigateur_dispo():
-    try:
-        import playwright.sync_api  # noqa: F401
-    except Exception:  # noqa: BLE001
-        return False
-    return bool(_chromium())
+    #  Lancement reel : voir mesurer_qa_espaces.navigateur_pret().
+    from tools.vertex_1_0.mesurer_qa_espaces import navigateur_pret
+    return navigateur_pret()
 
 
 def _serveur_repond():

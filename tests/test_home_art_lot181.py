@@ -43,7 +43,7 @@ def test_art_js_syntaxe_validee_par_node(tmp_path):
     # depuis Python — la couche artistique est vérifiée par un vrai parseur.
     f = tmp_path / 'art.js'
     f.write_text(ha.ART_JS, encoding='utf-8')
-    r = subprocess.run(['node', '--check', str(f)], capture_output=True, text=True)
+    r = subprocess.run(['node', '--check', str(f)], capture_output=True, text=True, encoding='utf-8')
     assert r.returncode == 0, r.stderr
 
 

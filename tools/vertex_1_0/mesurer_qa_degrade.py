@@ -119,7 +119,16 @@ def secrets_surveilles() -> dict:
 #: environnement — donc ils sont cherchés partout, toujours.
 MOTIFS_SECRET = (
     ('compte IBKR', re.compile(r'\b(?:DU|U)\d{7,}\b')),
-    ('cle OpenAI/Anthropic', re.compile(r'\b(?:sk-[A-Za-z0-9_-]{20,}|sk-ant-[A-Za-z0-9_-]{20,})')),
+    #  Les tirets ne sont admis QUE derriere un prefixe qui identifie deja un
+    #  emetteur (`sk-ant-`, `sk-proj-`). Sans cela, le motif acceptait n'importe
+    #  quel slug d'URL : une depeche WSJ citant SK Hynix
+    #  (`stocks-to-watch-sk-hynix-la-z-boy-...`) faisait virer le gardien de
+    #  fuite au rouge a chaque passage. Un controle qui crie sur l'actualite
+    #  ordinaire finit ignore — et c'est alors la vraie fuite qui passe.
+    ('cle OpenAI/Anthropic', re.compile(
+        r'\b(?:sk-ant-[A-Za-z0-9_-]{20,}'      # Anthropic
+        r'|sk-proj-[A-Za-z0-9_-]{20,}'          # OpenAI (projet)
+        r'|sk-[A-Za-z0-9]{32,})')),             # OpenAI (classique, sans tiret)
     ('cle AWS', re.compile(r'\bAKIA[0-9A-Z]{16}\b')),
     ('cle privee', re.compile(r'-----BEGIN [A-Z ]*PRIVATE KEY-----')),
     ('adresse e-mail', re.compile(r'\b[\w.+-]+@[\w-]+\.[A-Za-z]{2,}\b')),
@@ -269,7 +278,14 @@ CORPS_AVEC_SECRET = ('<html>compte U1234567 et cle sk-ant-'
 CORPS_AVEC_ORDRE = ('<script>function envoyer(){ ib.%s(c, o); }</script>'
                     % ('place' + 'Order'))
 CORPS_PROPRE = ('<html>Analyse en lecture seule. Aucun ordre. '
-                'Cours 123,45 — plage 100-150.</html>')
+                'Cours 123,45 — plage 100-150. '
+                #  TEMOIN DE NON-REGRESSION : cette URL a reellement fait virer
+                #  le gardien au rouge sur /news-feed (SK Hynix lu comme une cle
+                #  d'API). Elle reste dans le corps SAIN : si le motif se
+                #  relachait, le temoin negatif casserait aussitot.
+                '<a href="https://wsj.com/livecoverage/stock-market-today/card/'
+                'stocks-to-watch-sk-hynix-la-z-boy-unitree-target-'
+                'c8MMp4MagwjHSq0QEOSU">SK Hynix</a></html>')
 
 PAQUET_INVENTE = {'decision': {'verdict': 'ACHAT', 'score': {'level': 'A'},
                                'confidence': {'value': 0.82}}}

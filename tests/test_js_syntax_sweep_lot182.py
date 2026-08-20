@@ -40,11 +40,11 @@ def _blocks(html):
 
 def _check(js):
     """node --check : renvoie None si valide, sinon la dernière ligne d'erreur."""
-    with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False) as f:
+    with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8') as f:
         f.write(js)
         path = f.name
     try:
-        r = subprocess.run(['node', '--check', path], capture_output=True, text=True)
+        r = subprocess.run(['node', '--check', path], capture_output=True, text=True, encoding='utf-8')
         return None if r.returncode == 0 else (r.stderr.strip().splitlines() or ['?'])[-1]
     finally:
         os.unlink(path)

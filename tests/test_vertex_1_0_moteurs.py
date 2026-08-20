@@ -113,7 +113,7 @@ def test_performance_ledger_n_est_atteint_que_par_des_tests():
     import subprocess
     r = subprocess.run(
         ['grep', '-rln', 'performance_ledger', '--include=*.py', '.'],
-        cwd=RACINE, capture_output=True, text=True)
+        cwd=RACINE, capture_output=True, text=True, encoding='utf-8')
     citations = [c for c in r.stdout.split() if '__pycache__' not in c]
     hors_tests = [c for c in citations
                   if not c.startswith('./tests/')

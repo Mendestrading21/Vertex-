@@ -62,11 +62,9 @@ CSS = RACINE / 'vertex' / 'static' / 'vertex' / 'css' / 'neon-glass.css'
 
 
 def _navigateur_dispo():
-    try:
-        import playwright.sync_api  # noqa: F401
-    except Exception:  # noqa: BLE001
-        return False
-    return bool(_mes._chromium())
+    #  Un LANCEMENT reel, pas la presence d'un fichier : un binaire present mais
+    #  impossible a engendrer faisait planter la mesure au lieu de l'abstenir.
+    return _mes.navigateur_pret()
 
 
 def _serveur_repond():

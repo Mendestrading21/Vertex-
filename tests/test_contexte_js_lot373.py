@@ -73,7 +73,7 @@ def _fichiers_html():
         for rac, _d, noms in os.walk(base):
             for nom in sorted(noms):
                 if nom.endswith('.py'):
-                    c = os.path.join(rac, nom)
+                    c = os.path.join(rac, nom).replace(os.sep, '/')
                     if c not in out:
                         out.append(c)
     return out

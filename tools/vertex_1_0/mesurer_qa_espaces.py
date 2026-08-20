@@ -87,7 +87,9 @@ Sorties : 0 = mesuré, 2 = témoin muet.
 """
 from __future__ import annotations
 
+import functools
 import glob
+import os
 import json
 import pathlib
 import sys
@@ -107,13 +109,79 @@ def espaces():
     return [(e['id'], e['href']) for e in PRIMARY_NAV]
 
 
+#: Emplacements ou Playwright pose ses navigateurs, par plateforme. Le premier
+#: motif est la convention de CONTENEUR ; les suivants sont le cache standard.
+_MOTIFS_CHROMIUM = (
+    '/opt/pw-browsers/chromium-*/chrome-linux/chrome',
+    '/opt/pw-browsers/chromium/chrome-linux/chrome',
+    '~/.cache/ms-playwright/chromium-*/chrome-linux/chrome',                 # Linux
+    '~/Library/Caches/ms-playwright/chromium-*/chrome-mac*/'
+    'Chromium.app/Contents/MacOS/Chromium',                                  # macOS
+    '~/AppData/Local/ms-playwright/chromium-*/chrome-win*/chrome.exe',       # Windows
+)
+
+
 def _chromium():
-    for motif in ('/opt/pw-browsers/chromium-*/chrome-linux/chrome',
-                  '/opt/pw-browsers/chromium/chrome-linux/chrome'):
-        trouve = sorted(glob.glob(motif))
+    """Le chemin du Chromium de Playwright — sur CETTE machine, pas sur une seule.
+
+    Elle ne connaissait que `/opt/pw-browsers/...`, une convention de conteneur.
+    Partout ailleurs — Windows, macOS, ou un Linux utilisant le cache standard —
+    elle rendait None, et comme les gardiens G4 s'abstiennent sur
+    `bool(_chromium())`, la mesure navigateur des huit espaces ne s'executait
+    NULLE PART : ni en local, ni en CI (ci.yml n'installe pas playwright). Les
+    « 0 defaut » de ces lots ont donc ete etablis a la main, jamais par la suite.
+
+    `PLAYWRIGHT_BROWSERS_PATH` est honore en premier : c'est la variable par
+    laquelle Playwright lui-meme se laisse deplacer, et l'ignorer ferait mentir
+    la sonde sur une machine correctement configuree.
+
+    Rendre None reste licite : `launch(executable_path=None)` laisse Playwright
+    resoudre seul. Le None sert alors d'aveu au gardien — « je n'ai pas pu
+    mesurer » — et non de verdict sur le produit.
+    """
+    racine = os.environ.get('PLAYWRIGHT_BROWSERS_PATH')
+    motifs = list(_MOTIFS_CHROMIUM)
+    if racine:
+        motifs[:0] = [os.path.join(racine, m) for m in
+                      ('chromium-*/chrome-linux/chrome',
+                       'chromium-*/chrome-win*/chrome.exe',
+                       'chromium-*/chrome-mac*/Chromium.app/Contents/MacOS/Chromium')]
+    for motif in motifs:
+        trouve = sorted(glob.glob(os.path.expanduser(motif)))
         if trouve:
             return trouve[-1]
     return None
+
+
+@functools.lru_cache(maxsize=1)
+def navigateur_pret() -> bool:
+    """Le navigateur peut-il VRAIMENT etre lance ici ? (une seule tentative)
+
+    Les gardiens G4 s'abstenaient sur `bool(_chromium())`, c'est-a-dire sur la
+    PRESENCE d'un fichier. Deux machines echouent alors de deux facons opposees :
+
+    - la ou le chemin n'etait pas connu, la mesure s'abstenait en silence — et
+      les huit espaces n'ont jamais ete balayes par la suite ;
+    - la ou le binaire existe mais ne peut pas etre engendre (session sans
+      interface, bac a sable, droits), la mesure PLANTAIT au milieu du test, ce
+      qui se lit « le produit est casse » alors que cela veut dire « je n'ai
+      pas pu mesurer ».
+
+    On tente donc un lancement, une fois, et on repond sur ce qui s'est passe.
+    C'est la seule reponse qui distingue « pas mesure » de « mesure fausse ».
+    """
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception:  # noqa: BLE001
+        return False
+    try:
+        with sync_playwright() as p:
+            nav = p.chromium.launch(executable_path=_chromium(),
+                                    args=['--no-sandbox'])
+            nav.close()
+        return True
+    except Exception:  # noqa: BLE001
+        return False
 
 
 #  ---------------------------------------------------------------- sondes JS

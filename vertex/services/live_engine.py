@@ -111,6 +111,22 @@ def _company_ts():
         return None
 
 
+def _company_count():
+    """Combien d'entreprises le cache porte-t-il vraiment ?
+
+    Le decompte etait fige a None alors que la donnee existe : le Sync Center
+    montrait « companies · ok » sans jamais dire sur combien de profils, seul
+    domaine dans ce cas. Lecture defensive — un cache illisible rend None, ce
+    qui reste plus honnete qu'un zero invente (QUALITY_STANDARD §1).
+    """
+    try:
+        from vertex.services import persist
+        cache = persist.load_json('company_cache.json', None)
+        return len(cache) if isinstance(cache, dict) else None
+    except Exception:
+        return None
+
+
 def _domains():
     st = _CFG['scan_state'] or {}
     news = _CFG['news_state'] or {}
@@ -136,7 +152,7 @@ def _domains():
     counts = {
         'prices': len(st.get('rows') or []),
         'options': len(board),
-        'companies': None,
+        'companies': _company_count(),
         'news': len(news.get('items') or []),
         'calendar': len(cal.get('items') or []),
         'weekly': len(((wk.get('data') or {}).get('picks') or [])) or (1 if wk.get('data') else 0),

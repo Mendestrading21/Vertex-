@@ -187,7 +187,7 @@ def test_no_order_verbs_in_skyler_engines():
 
 def test_runtime_and_secret_files_never_tracked():
     import subprocess
-    out = subprocess.run(['git', 'ls-files'], capture_output=True, text=True).stdout
+    out = subprocess.run(['git', 'ls-files'], capture_output=True, text=True, encoding='utf-8').stdout
     for f in ('skyler_memory.json', 'skyler_decisions.json', 'desk_data.json',
               '.env', '.vertex_secret', 'market_context_last.json'):
         assert f not in out.split('\n'), '%s est suivi par git' % f

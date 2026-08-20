@@ -124,7 +124,7 @@ def rendu():
         banc = f.name
     try:
         p = subprocess.run([_NODE, banc, _AURA, json.dumps(_CAS)],
-                           capture_output=True, text=True, timeout=60)
+                           capture_output=True, text=True, encoding='utf-8', timeout=60)
         assert p.returncode == 0, 'le builder a levé une erreur :\n%s' % p.stderr
         return json.loads(p.stdout)
     finally:
