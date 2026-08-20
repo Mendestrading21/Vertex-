@@ -1653,7 +1653,23 @@ _factory.register_blueprints(app)
 #  sauvegardes, restauration, cotations de positions — avaient disparu du
 #  service. Aucune erreur n'etait levee : Flask ne se plaint pas d'un blueprint
 #  qu'on n'enregistre pas. Le diff des regles avant/apres l'a montre.
-app.register_blueprint(_desk.make_blueprint(opt_job=_opt_job, ibkr_enabled=IBKR_ENABLED))
+def _cotation_repli(symbole):
+    """Dernier recours pour coter une ACTION : le prix que le SCAN a deja etabli.
+
+    Aucune requete reseau nouvelle — la valeur est deja en memoire, produite par
+    le cycle de scan (yfinance/Stooq). C'est ce qui evite un P&L vide quand TWS
+    est ferme, sans abonnement, ou hors seance.
+    """
+    d = (scan_state.get('detail') or {}).get(symbole) or {}
+    px = d.get('price')
+    if px is None:
+        return None
+    return {'spot': px, 'spot_chg': d.get('change')}
+
+
+app.register_blueprint(_desk.make_blueprint(
+    opt_job=_opt_job, ibkr_enabled=IBKR_ENABLED,
+    cotation_repli=_cotation_repli))
 
 
 # ─── SANTÉ SYSTÈME & PWA (Blueprint) — healthz · system-status · favicon · manifest · sw.js ───

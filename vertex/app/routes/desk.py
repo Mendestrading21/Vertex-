@@ -105,11 +105,58 @@ POSQ_TTL_S = 45          # fraîcheur d'une cotation de trade perso
 POSQ_MAX_POSITIONS = 24  # borne dure par requête
 
 
-def make_blueprint(*, opt_job, ibkr_enabled):
+def completer_par_repli(todo, out, repli):
+    """Comble les positions ACTION encore sans cotation, depuis une source déjà
+    en mémoire. Fonction PURE — c'est par elle que les témoins passent.
+
+    Le défaut qu'elle corrige, reproduit localement : sans IBKR (ou si le worker
+    ne rend rien), `/api/pos-quotes` renvoyait `results: {}`. Le client en
+    déduisait `ok = false` et n'affichait AUCUN P&L — alors que le produit avait
+    le prix en mémoire (scan yfinance). Une valeur connue restait invisible
+    parce qu'un seul fournisseur était consulté.
+
+    Les OPTIONS ne sont pas comblées : le scan ne cote pas de contrats, et
+    fabriquer un prix d'option à partir du sous-jacent serait exactement la
+    donnée inventée que le produit interdit. Elles restent absentes, donc
+    honnêtement `—`.
+
+    Chaque valeur de repli porte `source` : sans étiquette, un cours de scan se
+    ferait passer pour une cotation broker.
+    """
+    if not repli:
+        return 0
+    combles = 0
+    for p in todo:
+        if not isinstance(p, dict):
+            continue
+        cle = p.get('key')
+        if not cle or cle in out:
+            continue
+        if (p.get('right') or '').upper() in ('C', 'P'):
+            continue                                   # option : jamais comblée
+        sym = (p.get('sym') or '').upper()
+        try:
+            v = repli(sym)
+        except Exception:                              # noqa: BLE001
+            v = None
+        if not v or v.get('spot') is None:
+            continue
+        out[cle] = {'type': 'STK', 'spot': v.get('spot'),
+                    'spot_chg': v.get('spot_chg'), 'source': 'scan'}
+        combles += 1
+    return combles
+
+
+def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
     """Construit le Blueprint du desk.
 
     opt_job(kind, args, timeout): job IBKR sérialisé (None si indisponible).
     ibkr_enabled                : cotations live possibles (sinon cache seul).
+    cotation_repli(symbole)     : dernier recours pour une ACTION, rendant
+                                  {'spot':…, 'spot_chg':…} ou None. Injecté —
+                                  le blueprint ne doit pas savoir d'où vient
+                                  cette valeur, et l'injection le rend
+                                  éprouvable sans serveur.
     """
     bp = Blueprint('desk', __name__)
     desk_lock = threading.Lock()
@@ -276,6 +323,15 @@ def make_blueprint(*, opt_job, ibkr_enabled):
                 if v is not None:
                     posq_cache[k] = (now, v)
                     out[k] = v
+        #  DERNIER RECOURS pour les actions. Sans lui, `results` revenait VIDE
+        #  des que IBKR etait absent ou muet — et le client, qui exige une
+        #  cotation par ligne, n'affichait aucun P&L alors que le prix etait
+        #  deja en memoire. Verifie en local : POST {sym: ACN} rendait `{}`
+        #  pendant que le scan portait ACN a 198,0.
+        #  Le repli n'est PAS mis en cache : le cache sert les cotations
+        #  broker, et y ranger un cours de scan le ferait servir a la place
+        #  d'une vraie cotation pendant tout le TTL.
+        combles = completer_par_repli(todo, out, cotation_repli)
         #  #779/G1 — POSITION_REFRESH était déclaré au registre des jobs mais
         #  n'avait AUCUN émetteur : la page Système l'affichait « jamais
         #  exécuté » alors qu'il tourne à chaque cotation du portefeuille. Il
@@ -284,9 +340,11 @@ def make_blueprint(*, opt_job, ibkr_enabled):
         #  invention.
         _sched.beat('POSITION_REFRESH', ok=True,
                     duration_ms=(time.time() - now) * 1000.0)
-        return jsonify({'results': out, 'live': bool(ibkr_enabled), 'ts': int(now)})
+        return jsonify({'results': out, 'live': bool(ibkr_enabled),
+                        'fallback_used': bool(combles), 'ts': int(now)})
 
     return bp
 
 
-__all__ = ['make_blueprint', 'POSQ_TTL_S', 'POSQ_MAX_POSITIONS']
+__all__ = ['make_blueprint', 'completer_par_repli', 'POSQ_TTL_S',
+           'POSQ_MAX_POSITIONS']
