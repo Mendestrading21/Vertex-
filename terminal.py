@@ -1797,21 +1797,50 @@ def _ibkr_snapshot():
 _sync_ibkr_state = _ibkr_state.sync
 
 
+def _px_valide(v):
+    """Prix exploitable, ou None. `nan` et `None` sont la MEME chose : « IBKR
+    n\'a rien donne »."""
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    return f if (f == f and f > 0) else None
+
+
 def _store_ticker(t):
-    """Range un ticker IBKR dans _live_quotes. Renvoie True si temps réel."""
+    """Range un ticker IBKR dans _live_quotes. Rend (stocke, temps_reel).
+
+    LE PRIX EST CONSERVE DES QU\'IL EXISTE. L\'ancienne version exigeait `last`
+    ET `close` (`if last and close:`) : hors seance, IBKR ne livre pas toujours
+    la cloture, et un prix REEL etait alors JETE parce qu\'un champ DERIVE — la
+    variation — n\'etait pas calculable. Jeter une verite pour proteger un
+    calcul, c\'est l\'inverse de la regle du produit : une donnee absente devient
+    un `—` honnete, elle ne vide pas l\'ecran de ce qu\'on sait.
+
+    `stocke` est rendu pour que l\'appelant sache si un passage a produit QUOI
+    QUE CE SOIT — c\'est ce qui declenche le repli vers la cloture figee.
+    """
     s = t.contract.symbol.replace(' ', '-')   # IBKR 'BRK B' -> forme interne yfinance 'BRK-B'
-    last = t.last if (t.last is not None and t.last == t.last and t.last > 0) else None
-    close = t.close if (t.close is not None and t.close == t.close and t.close > 0) else None
+    last = _px_valide(getattr(t, 'last', None))
+    close = _px_valide(getattr(t, 'close', None))
+    if last is None:
+        try:
+            last = _px_valide(t.marketPrice())
+        except Exception:
+            last = None
     if last is None:
         last = close
-    if last and close:
-        _live_quotes[s] = {
-            'last': round(last, 2),
-            'change': round((last - close) / close * 100, 2),
-            'bid': round(t.bid, 2) if (t.bid is not None and t.bid == t.bid and t.bid > 0) else None,
-            'ask': round(t.ask, 2) if (t.ask is not None and t.ask == t.ask and t.ask > 0) else None,
-        }
-    return getattr(t, 'marketDataType', None) == 1
+    if last is None:
+        return (False, False)
+    _live_quotes[s] = {
+        'last': round(last, 2),
+        #  Variation INCONNUE plutot qu\'absente de la ligne : sans cloture on
+        #  ne peut pas la calculer, et l\'inventer serait pire que l\'avouer.
+        'change': round((last - close) / close * 100, 2) if close else None,
+        'bid': (lambda v: round(v, 2) if v else None)(_px_valide(getattr(t, 'bid', None))),
+        'ask': (lambda v: round(v, 2) if v else None)(_px_valide(getattr(t, 'ask', None))),
+    }
+    return (True, getattr(t, 'marketDataType', None) == 1)
 
 
 def _quotes_worker():
@@ -1841,13 +1870,25 @@ def _quotes_worker():
                 _sync_ibkr_state()
                 time.sleep(20)
                 continue
-            ib.reqMarketDataType(1)      # 1 = temps réel (bascule auto en différé si pas d'abonnement)
+            #  1 = temps reel. IBKR NE BASCULE PAS TOUT SEUL : le commentaire
+            #  d'origine (« bascule auto en differe si pas d'abonnement ») etait
+            #  FAUX. Avec le type 1, un marche ferme ou un abonnement manquant
+            #  rend des ticks vides — et l'ecran se retrouve sans aucun cours,
+            #  « comme si IBKR n'avait rien trouve ». Le chemin options le
+            #  savait deja (il retente en type 2) ; ce worker-ci et celui des
+            #  indices ne le savaient pas.
+            mdt = 1
+            ib.reqMarketDataType(mdt)
+            _live_meta['mdt'] = mdt
+            passages_a_vide = 0
             cs = [Stock(s.replace('-', ' '), 'SMART', 'USD') for s in LIVE_SYMBOLS]   # classe B : BRK-B -> 'BRK B' pour IBKR
             ib.qualifyContracts(*cs)
             valid = [c for c in cs if getattr(c, 'conId', 0)]
             _live_meta.update({'connected': True, 'n': len(valid)})
+            debut_frozen = 0
             while ib.isConnected():
                 rt = False
+                recus = 0
                 for i in range(0, len(valid), 20):   # lots de 20 = cycle rapide sur tout l'univers, snapshot (lignes libérées entre lots)
                     try:                              # timeout : un symbole sans données ne bloque pas le lot
                         # 14 s : avec l'abonnement TEMPS RÉEL, la fin de snapshot des titres
@@ -1857,11 +1898,38 @@ def _quotes_worker():
                         _live_meta['err'] = f'reqTickers: {type(_e).__name__}: {_e}'
                         continue
                     for t in tickers:
-                        if _store_ticker(t):
+                        stocke, temps_reel = _store_ticker(t)
+                        if stocke:
+                            recus += 1
+                        if temps_reel:
                             rt = True
                     _live_meta.update({'ts': time.time(), 'rt': rt})   # frais dès le 1er lot
                     _sync_ibkr_state()
                     ib.sleep(0.2)
+                #  Un cycle ENTIER sans un seul cours : le marche est ferme, ou
+                #  l'abonnement ne couvre pas ces titres. On demande alors la
+                #  CLOTURE FIGEE (type 2) — une donnee vraie, simplement datee
+                #  d'hier — plutot que de laisser huit ecrans vides. Deux cycles
+                #  d'attente : un lot qui expire n'est pas un marche ferme.
+                if recus == 0:
+                    passages_a_vide += 1
+                    if passages_a_vide >= 2 and mdt == 1:
+                        mdt = 2
+                        ib.reqMarketDataType(mdt)
+                        _live_meta['mdt'] = mdt
+                        debut_frozen = time.time()
+                        passages_a_vide = 0
+                else:
+                    passages_a_vide = 0
+                #  Retour au temps reel toutes les 15 min : rester en cloture
+                #  figee ferait mentir l'ecran a l'ouverture. `debut_frozen` est
+                #  pose AU MOMENT DE LA BASCULE — le remettre a l'heure a chaque
+                #  cycle rendait ce retour structurellement inatteignable.
+                if mdt == 2 and debut_frozen and time.time() - debut_frozen > 900:
+                    mdt = 1
+                    ib.reqMarketDataType(mdt)
+                    _live_meta['mdt'] = mdt
+                    debut_frozen = 0
                 ib.sleep(4)
         except Exception as _e:
             _live_meta['connected'] = False
@@ -1938,7 +2006,11 @@ def _indices_loop():
                 _IDX_META['connected'] = False
                 time.sleep(20)
                 continue
-            ib.reqMarketDataType(1)        # temps réel (repli auto différé si besoin)
+            #  Meme correctif : IBKR ne bascule pas seul, et le commentaire
+            #  d'origine (« repli auto differe si besoin ») decrivait un
+            #  comportement qui n'existe pas.
+            ib.reqMarketDataType(1)
+            _IDX_META['mdt'] = 1
             streams = []
             for name, sec, sym, exch in _IDX_SPECS:
                 try:
@@ -1951,6 +2023,7 @@ def _indices_loop():
             _IDX_META.update({'connected': bool(streams), 'n': len(streams)})
             while ib.isConnected():
                 ib.sleep(12)
+                recus = 0
                 for name, t in streams:
                     px = None
                     for v in (getattr(t, 'last', None), t.marketPrice(), getattr(t, 'close', None)):
@@ -1969,7 +2042,23 @@ def _indices_loop():
                         chg = None
                     if px is not None:
                         _IDX_IBKR[name] = {'price': round(px, 2), 'change': chg, 'ts': time.time()}
+                        recus += 1
                 _IDX_META['ts'] = time.time()
+                #  Aucun indice cote : cloture figee plutot qu'un bandeau vide.
+                #  L'echec de la bascule est ECRIT, jamais avale : un
+                #  `except: pass` de plus aurait rendu muette la seule
+                #  explication d'un bandeau vide — precisement le defaut traite
+                #  ici. Les gardiens des lots 385/386 l'ont refuse, a raison.
+                cible = 2 if recus == 0 else 1
+                if _IDX_META.get('mdt') != cible:
+                    try:
+                        ib.reqMarketDataType(cible)
+                        _IDX_META['mdt'] = cible
+                        _IDX_META.pop('err_mdt', None)
+                    except Exception as _mdte:
+                        _IDX_META['err_mdt'] = (
+                            'bascule type %d refusee: %s: %s'
+                            % (cible, type(_mdte).__name__, _mdte))
                 _apply_ibkr_indices()
         except Exception as _e:
             _IDX_META['connected'] = False
