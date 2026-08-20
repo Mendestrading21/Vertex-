@@ -63,9 +63,14 @@ def test_une_action_sans_cotation_broker_est_comblee_et_etiquetee():
     n = completer_par_repli([_action('ACN')], out, _repli)
     assert n == 1
     assert out['ACN|||']['spot'] == 198.0
-    assert out['ACN|||']['source'] == 'scan', (
+    assert out['ACN|||']['source'] == 'SECONDARY', (
         "sans étiquette, un cours de scan se fait passer pour une cotation "
-        'broker — le mensonge de provenance le plus facile à commettre.')
+        'broker — le mensonge de provenance le plus facile à commettre. Le '
+        'vocabulaire est celui de `models.py`, pas une chaîne inventée ici.')
+    assert out['ACN|||']['mode'] == 'DELAYED'
+    assert out['ACN|||']['fallback_used'] is True, (
+        '`fallback_used` est posé par le routeur dès qu\'on quitte la source '
+        'de tête — sans lui, rien ne distingue un repli d\'une cotation broker.')
     assert out['ACN|||']['type'] == 'STK'
 
 
@@ -136,6 +141,41 @@ def test_la_route_appelle_le_repli_apres_le_passage_broker():
     assert i_ibkr < i_repli, (
         'le repli est consulté AVANT le broker : il servirait un cours de scan '
         'alors qu\'une vraie cotation était disponible.')
+
+
+def test_la_priorite_vient_de_la_table_unique_du_produit():
+    """Un `if broker sinon scan` écrit dans la route serait la TROISIÈME règle
+    de priorité du dépôt — et les deux précédentes (cinq ordres de ports, trois
+    escalades de type de données) ont divergé. L'ordre vit dans
+    `source_router.PRIORITY`, et nulle part ailleurs."""
+    src = DESK.read_text(encoding='utf-8')
+    assert 'resoudre_cotation' in src, (
+        'la route décide de la priorité elle-même au lieu de passer par le '
+        'routeur : une quatrième table de priorité vient de naître.')
+    from vertex.data_sources.source_router import PRIORITY
+    from vertex.data_sources.models import (
+        MODE_DELAYED, MODE_LIVE, SOURCE_IBKR, SOURCE_SECONDARY)
+    assert PRIORITY.index((SOURCE_IBKR, MODE_LIVE)) < \
+        PRIORITY.index((SOURCE_SECONDARY, MODE_DELAYED)), (
+        'le repli passe devant le broker : un cours de scan serait servi alors '
+        "qu'une vraie cotation était disponible.")
+
+
+def test_une_cotation_broker_gagne_toujours_sur_le_repli():
+    from vertex.data_sources.cotation_unifiee import (
+        en_charge_client, resoudre_cotation)
+    c = en_charge_client(resoudre_cotation(broker={'spot': 199.4},
+                                           secondaire={'spot': 198.0}))
+    assert c['spot'] == 199.4 and c['source'] == 'IBKR'
+    assert c['fallback_used'] is False
+
+
+def test_aucune_source_ne_fabrique_rien():
+    """La seule réponse honnête quand personne ne répond : rien. Un zéro
+    plausible serait pire qu'un `—`."""
+    from vertex.data_sources.cotation_unifiee import (
+        en_charge_client, resoudre_cotation)
+    assert en_charge_client(resoudre_cotation(broker=None, secondaire=None)) is None
 
 
 def test_le_repli_n_est_pas_mis_en_cache():

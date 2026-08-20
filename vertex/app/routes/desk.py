@@ -139,10 +139,18 @@ def completer_par_repli(todo, out, repli):
             v = repli(sym)
         except Exception:                              # noqa: BLE001
             v = None
-        if not v or v.get('spot') is None:
+        #  LA PRIORITE N'EST PAS DECIDEE ICI. Elle vient de
+        #  `source_router.PRIORITY`, seule table de priorite du produit, via
+        #  `cotation_unifiee`. Un `if broker sinon scan` ecrit ici serait la
+        #  troisieme regle de priorite du depot — et les deux precedentes
+        #  (ordres de ports, escalades de type de donnees) ont diverge.
+        from vertex.data_sources.cotation_unifiee import (
+            en_charge_client, resoudre_cotation,
+        )
+        charge = en_charge_client(resoudre_cotation(broker=None, secondaire=v))
+        if charge is None:
             continue
-        out[cle] = {'type': 'STK', 'spot': v.get('spot'),
-                    'spot_chg': v.get('spot_chg'), 'source': 'scan'}
+        out[cle] = charge
         combles += 1
     return combles
 
