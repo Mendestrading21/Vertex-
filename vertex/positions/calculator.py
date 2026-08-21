@@ -155,16 +155,48 @@ def portfolio_weights(positions: list[dict]) -> list[dict]:
 
 
 def mae_mfe(cost_basis: float, values: list[float]) -> dict:
-    """MAE/MFE en % depuis la série de valeurs de la position (déclarée)."""
-    if not values or not cost_basis:
+    """MAE/MFE en % depuis la série de valeurs de la position (déclarée).
+
+    **Le calcul de MAE/MFE n'est plus fait ici** : il est délégué à
+    `vertex.tracking.returns.mae_mfe`, seule implémentation vivante de cette
+    notion dans le produit (3 sites d'appel ; celle-ci n'en avait aucun). Deux
+    calculs de la même mesure, ce n'est pas de la duplication de code — c'est
+    **deux réponses possibles à la même question**, et elles divergeaient :
+
+    | entrée | ici, avant | `tracking.returns` |
+    | --- | --- | --- |
+    | base **négative** | `mae -220 · mfe -200` | `None · None` |
+    | `None` dans la série | `TypeError` | valeurs filtrées |
+    | chaîne numérique | `TypeError` | coercée |
+
+    La première ligne est la vraie faute : `if not cost_basis` rejette `0` et
+    `None` mais **laisse passer un négatif**, et rend alors un chiffre
+    parfaitement plausible tiré d'une entrée absurde — exactement ce que
+    l'invariant « aucune donnée financière inventée » interdit.
+
+    `drawdown_from_peak` reste calculé ici, et ce n'est pas un oubli :
+    `tracking.drawdown_from_high` rend le drawdown **courant** (depuis le plus
+    haut jusqu'à la dernière valeur), celui-ci rend le drawdown **maximal**
+    subi sur le chemin. Deux métriques, pas deux implémentations.
+    """
+    #  Import local : `tracking` est la couche canonique, `positions` ne doit
+    #  pas en dependre au chargement du module.
+    from vertex.tracking.returns import _num, mae_mfe as _canonique
+
+    mm = _canonique(cost_basis, values)
+    if mm['mae_pct'] is None:
         return {'mae': None, 'mfe': None, 'drawdown_from_peak': None}
-    rel = [(v / cost_basis - 1) * 100 for v in values]
-    peak = values[0]
-    dd = 0.0
-    for v in values:
+
+    #  Meme coercion que la couche canonique : sans elle, cette fonction
+    #  accepterait des series que le calcul delegue a deja acceptees, puis
+    #  leverait ici — le pire des deux mondes.
+    vals = [v for v in (_num(x) for x in (values or [])) if v is not None]
+    peak, dd = vals[0], 0.0
+    for v in vals:
         peak = max(peak, v)
-        dd = min(dd, (v / peak - 1) * 100)
-    return {'mae': round(min(rel), 2), 'mfe': round(max(rel), 2),
+        if peak:
+            dd = min(dd, (v / peak - 1) * 100)
+    return {'mae': mm['mae_pct'], 'mfe': mm['mfe_pct'],
             'drawdown_from_peak': round(dd, 2)}
 
 

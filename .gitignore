@@ -35,6 +35,7 @@ edge_ledger.jsonl
 track_meta.json
 alerts_fired.json
 desk_backup_*.json
+desk_avantperte_*.json
 
 # Enrichissement Claude+web (runtime, jamais commité)
 ai_enrichment.json

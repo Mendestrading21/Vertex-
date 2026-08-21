@@ -73,7 +73,8 @@ function kv(k,v,cls){return '<div class="kv"><span class="dim">'+k+'</span><b cl
  ].join(''):'API indisponible';
  const r=await j('/api/market/regime');
  $('regime').innerHTML=r?[
-  kv('Régime',r.regime,r.regime==='PANIC'?'neg':(r.regime||'').includes('UP')?'pos':''),
+  kv('Régime',(window.VX&&VX.regime)?VX.regime.label(r.regime):r.regime,
+     r.regime==='PANIC'?'neg':(r.regime||'').includes('UP')?'pos':''),
   kv('Confiance',r.confidence),kv('Dimensions',(r.dimensions_used||[]).length),
   kv('Nouveau risque',(r.adjustments||{}).new_risk_allowed?'autorisé':'BLOQUÉ',
      (r.adjustments||{}).new_risk_allowed?'pos':'neg'),

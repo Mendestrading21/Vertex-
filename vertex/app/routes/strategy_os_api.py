@@ -13,6 +13,7 @@ from vertex.alerts.engine import AlertEngine
 from vertex.anomalies.stock_anomalies import detect_stock_anomalies
 from vertex.ai.audit import AUDIT as _AI_AUDIT
 from vertex.data_sources.tradingview_signal_store import SIGNAL_STORE
+from vertex.engines.market_context import regime_inputs
 from vertex.market.regime_engine import classify_regime
 from vertex.observability.diagnostics import data_quality_report, system_diagnostics
 from vertex.portfolio import models as _pmodels
@@ -61,16 +62,9 @@ def make_blueprint(scan_state: dict) -> Blueprint:
 
     @bp.route('/api/market/regime')
     def market_regime():
-        market = scan_state.get('market') or {}
-        inputs = {
-            'index_trend': {'TREND': 'UP', 'CHOP': 'FLAT'}.get(market.get('regime'),
-                                                               market.get('spy_trend')),
-            'breadth_pct': market.get('breadth'),
-            'vix': market.get('vix'),
-            'leadership': ('CYCLICAL' if market.get('risk') == 'Risk-On'
-                           else 'DEFENSIVE' if market.get('risk') == 'Risk-Off' else None),
-        }
-        return jsonify(classify_regime(inputs))
+        # La clé `market` du scan est l'horloge (market_status), pas les données —
+        # le mapping canonique scan → moteur vit dans market_context.regime_inputs.
+        return jsonify(classify_regime(regime_inputs(scan_state)))
 
     @bp.route('/api/company/twin/<sym>')
     def company_twin_ep(sym):
@@ -125,7 +119,8 @@ def make_blueprint(scan_state: dict) -> Blueprint:
 
     @bp.route('/api/system/diagnostics')
     def diagnostics():
-        return jsonify(system_diagnostics(scan_state=scan_state,
+        from vertex.data_sources import ibkr_link as _lien
+        return jsonify(system_diagnostics(scan_state=scan_state, ibkr_link=_lien,
                                           alert_engine=ALERTS, ai_audit=_AI_AUDIT,
                                           signal_store=SIGNAL_STORE))
 

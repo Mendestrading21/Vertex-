@@ -30,6 +30,8 @@ def build_editorial(scan_state: dict) -> dict:
     missing: list[str] = []
 
     regime = m.get('spy_regime') or m.get('regime')
+    regime = {'TREND': 'marché en tendance', 'CHOP': 'marché sans direction',
+              'UP': 'marché haussier', 'DOWN': 'marché baissier'}.get(regime, regime)
     roro = m.get('roro')
     if regime or roro:
         lines.append(f"Régime : {regime or 'n/d'}"
@@ -108,6 +110,13 @@ _CONTENT = """
   <div id="vx-brief-body" aria-live="polite">%%LOADING%%</div>
   <div class="vx-kpi-strip vx-mt3" id="vx-hero-kpis" data-max-kpis="4"
        aria-label="Quatre indicateurs clés, chacun relié à son domicile canonique"></div>
+  <!-- L'AGE des quatre KPI. Mesuré : sans lui, ces quatre chiffres — les
+       premiers que l'écran montre — ne portaient AUCUNE indication de date ;
+       la seule marque de la carte était le badge « Démo », qui qualifie la
+       NATURE de la donnée, pas son âge. Rempli par loadSummary depuis
+       `scan_age` (le serveur le sert déjà), via VX.freshness — jamais un
+       libellé écrit à la main. -->
+  <div class="vx-meta vx-mt2" id="vx-hero-age"></div>
   <div class="vx-mt3" id="vx-hero-action"></div>
 </section>
 
@@ -224,7 +233,7 @@ async function loadSummary(){
     const br=breadthOf(sum.breadth);
     let vix=num(sum.vix);
     const best=(cmd.top_stocks||[])[0]||null;
-    const regHtml=reg.regime?esc(reg.regime):'n/d';
+    const regHtml=reg.regime?esc(VX.regime.label(reg.regime)):'n/d';
     const brHtml=br!=null?(br.v+' %'):'n/d';
     const brCls=br!=null?(br.v>=55?'vx-pos':'vx-warn'):'';
     const vixHtml=vix!=null?vix:'n/d';
@@ -236,6 +245,13 @@ async function loadSummary(){
       best?kpiTile('Meilleure opp.',bestHtml,'','/analysis/'+encodeURIComponent(best.symbol)):kpiTile('Meilleure opp.','—','','/opportunities'),
     ].join('');
     $('vx-hero-kpis').innerHTML=kpis;
+    /* Âge des quatre KPI. `scan_age` est en secondes ; absent → assess rend
+       « — », l'aveu honnête, jamais une valeur inventée. La puce porte son
+       instant de référence et se ré-évalue seule (VX.freshness._retick) :
+       sans réseau, elle passe à « À actualiser » d'elle-même. */
+    const sa=num(sum.scan_age);
+    $('vx-hero-age').innerHTML='Données du scan : '
+      +VX.freshness.chip(VX.freshness.assess({ageMs:sa!=null?sa*1000:null}));
     /* Action prioritaire : dérivée uniquement des données réelles. */
     let action='';
     if(best&&best.symbol){
@@ -274,7 +290,7 @@ function renderDiff(cur){
     const fmtDelta=(a,b,unit)=>{if(a==null||b==null)return null;const d=Math.round((a-b)*10)/10;if(d===0)return null;
       const cls=d>0?'vx-pos':'vx-neg';return '<span class="vx-mono '+cls+'">'+(d>0?'+':'')+d+(unit||'')+'</span>';};
     if(prev.regime&&cur.regime&&prev.regime!==cur.regime)
-      rows.push('Régime : <b>'+esc(prev.regime)+'</b> → <b>'+esc(cur.regime)+'</b>');
+      rows.push('Régime : <b>'+esc(VX.regime.label(prev.regime))+'</b> → <b>'+esc(VX.regime.label(cur.regime))+'</b>');
     const bd=fmtDelta(cur.breadth,prev.breadth,' pts');if(bd)rows.push('Breadth '+bd);
     const vd=fmtDelta(cur.vix,prev.vix,'');if(vd)rows.push('VIX '+vd);
     if((cur.opp||0)!==(prev.opp||0))rows.push('Opportunités : '+prev.opp+' → '+cur.opp);
@@ -447,7 +463,7 @@ async function loadMarketDiff(){
     let html='<div class="vx-eyebrow" style="margin-bottom:.25rem">Marché (serveur)</div>';
     if(tr.changed===true){
       html+='<div class="vx-mb1"><span class="vx-badge" data-tone="neutral">Régime : '
-        +esc(tr.from||'—')+' → '+esc(tr.to||'—')+'</span></div>';
+        +esc(tr.from?VX.regime.label(tr.from):'—')+' → '+esc(tr.to?VX.regime.label(tr.to):'—')+'</span></div>';
     }
     if(changes.length){
       html+='<ul style="margin:.2rem 0;padding-left:0;list-style:none;font-size:12.5px">'

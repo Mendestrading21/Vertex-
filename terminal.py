@@ -12,7 +12,6 @@ Données :  yfinance (différé ~15 min — OK swing). Greeks/GEX = Black-Schole
 """
 import os
 import json
-import math
 import time
 import threading
 from datetime import datetime, timedelta
@@ -20,7 +19,6 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from flask import Flask, jsonify, redirect, request, g
 
 try:
     from dotenv import load_dotenv
@@ -40,15 +38,20 @@ from vertex.market import sectors
 from vertex.market import context as market
 from vertex.research import chart_read as research
 from vertex.data_sources import fundamentals
-from vertex.data_sources import analyst_deep
 from vertex.data_sources import scan_evidence as _scan_evidence
+#  Point UNIQUE de decouverte de TWS : ordre des ports et identifiants de
+#  session. Voir vertex/data_sources/ibkr_link.py pour ce qu'il corrige.
+from vertex.data_sources import ibkr_link as _ibkr_link
 from vertex.engines import decide as engine
 from vertex.engines import scorecard as ibkr
 from vertex.strategy import legacy_adapter as strategy
 from vertex.engines import committee
 
 DAILY_PREV_PATH = os.path.join(os.path.dirname(__file__), 'daily_prev.json')  # baseline diff jour/jour
-WEEKLY_PATH = os.path.join(os.path.dirname(__file__), 'weekly_snapshot.json')  # sélection hebdo FIGÉE
+#  Le chemin du snapshot hebdo vit dans `vertex/app/weekly_selection.py`.
+#  ATTENTION : y recopier `os.path.dirname(__file__)` le ferait pointer vers
+#  vertex/app/ — l'ancien snapshot ne serait plus jamais relu, SANS erreur.
+from vertex.app.weekly_selection import CHEMIN as WEEKLY_PATH  # noqa: E402
 
 # ─── Univers, constantes & config : extraits en modules dédiés (refonte institutionnelle) ───
 #     Responsabilité unique par module ; terminal.py ne fait plus que consommer la donnée.
@@ -71,62 +74,38 @@ from vertex.engines import swing as _swing
 from vertex.engines import strategy_fit as _strategy_fit
 from vertex.engines import stats as _stats
 from vertex.app.state import scan_state, weekly_state, news_state, cal_state
-from vertex.app.routes import auth as _auth
-from vertex.app.routes import command as _command
-from vertex.app.routes import session_api as _session_api
+#  #779 — CACHES D'EXECUTION : proprietaire et politique de fraicheur declares
+#  dans `vertex/app/caches.py` (QUALITY_STANDARD §8). Les objets sont les MEMES :
+#  mutes en place, jamais reassignes, donc l'identite est preservee.
+from vertex.app import lifecycle as _lifecycle
+from vertex.app.caches import (          # noqa: F401  (relies par leur nom)
+    _STOOQ_CACHE, _STOOQ_TTL, _SOURCE_BUDGET_STATE, _CORR_BENCH,
+    _ibkr_cache, _IDX_IBKR, _IDX_META, _live_quotes, _live_meta,
+)
 from vertex.app.routes import desk as _desk
-from vertex.app.routes import options_lab_api as _options_lab_api
-from vertex.app.routes import live_api as _live_api
 from vertex.app.routes import decision_api as _decision_api
-from vertex.app.routes import analysis_api as _analysis_api
-from vertex.app.routes import feeds as _feeds
-from vertex.app.routes import system as _system
-from vertex.app.routes import content as _content
 from vertex.data import demo as _demo
 from vertex.data import company as _company
 from vertex.services import market_clock as _market_clock
 
-app = Flask(__name__)
-from vertex.services import request_metrics as _request_metrics  # noqa: E402
-
-
-@app.before_request
-def _request_latency_start():
-    if request.path.startswith('/api/'):
-        g._vertex_request_started = time.perf_counter()
-
-
-@app.after_request
-def _request_latency_record(resp):
-    started = getattr(g, '_vertex_request_started', None)
-    if started is not None:
-        _request_metrics.record(request.endpoint, resp.status_code,
-                                (time.perf_counter() - started) * 1000)
-    return resp
-
-# ── JSON SÛR : convertit NaN/Infinity → null. Sinon Flask sort `NaN` (toléré par Python
-#    mais REFUSÉ par JSON.parse des navigateurs → page vide). Arrive avec l'univers XXL :
-#    des titres récents/peu liquides n'ont pas assez d'historique → ma200/ma50 = NaN.
-try:
-    import math as _math
-    from flask.json.provider import DefaultJSONProvider as _DJP
-
-    def _clean_nan(o):
-        if isinstance(o, float):
-            return None if (_math.isnan(o) or _math.isinf(o)) else o
-        if isinstance(o, dict):
-            return {k: _clean_nan(v) for k, v in o.items()}
-        if isinstance(o, (list, tuple)):
-            return [_clean_nan(v) for v in o]
-        return o
-
-    class _SafeJSONProvider(_DJP):
-        def dumps(self, obj, **kw):
-            return super().dumps(_clean_nan(obj), **kw)
-
-    app.json = _SafeJSONProvider(app)
-except Exception:
-    pass
+#  ── FABRIQUE FLASK CANONIQUE (#779, gate G1) ─────────────────────────────
+#  `Flask(__name__)`, la configuration de session, le fournisseur JSON sur
+#  (NaN -> null), la mesure de latence, le verrou d'acces, les en-tetes de
+#  securite, les pages d'erreur et la compression vivaient ICI, disperses entre
+#  les lignes 88 et 1865. Aucun de ces blocs ne dependait de l'etat du
+#  monolithe : ils sont desormais tenus par `vertex/app/factory.py`.
+#
+#  LE PIEGE, MESURE : `Flask(__name__)` ecrit dans `vertex/app/` ferait deriver
+#  `root_path` vers ce dossier, donc `static_folder` vers un chemin inexistant
+#  — les deux fichiers reellement servis depuis `static/` (chart.umd.min.js,
+#  icon-180.png) partiraient en 404 SANS erreur au demarrage. La fabrique fixe
+#  donc `root_path` explicitement.
+from vertex.app import factory as _factory  # noqa: E402
+from vertex.app import ibkr_state as _ibkr_state  # noqa: E402
+from vertex.app import rescan_gate as _rescan_gate  # noqa: E402
+from vertex.app import weekly_selection as _weekly_selection  # noqa: E402
+from vertex.app.caches import _OPTALL_CACHE  # noqa: E402
+app = _factory.create_app()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 🔒 CODE D'ENTRÉE (verrou d'accès) — OPTIONNEL, activé par variable d'env.
@@ -135,17 +114,12 @@ except Exception:
 #   • Session signée (cookie) valable 30 jours ; anti-force-brute par IP.
 #   • Recommandé aussi : VERTEX_SECRET=une_longue_chaine_aléatoire (sinon dérivée du code).
 # ─────────────────────────────────────────────────────────────────────────────
-# Source unique de la config d'accès : vertex/app/config.py (dé-duplication — cf. audit).
-# Verrou complet (login/logout + garde globale + anti-force-brute) : Blueprint auth (Ch. II/XV).
-from vertex.app.config import VERTEX_CODE, AUTH_ON, SECRET_KEY  # noqa: E402
-app.secret_key = SECRET_KEY
-app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
-                  PERMANENT_SESSION_LIFETIME=timedelta(days=30),
-                  # cookie jamais envoyé en clair quand l'app est servie en HTTPS (Render/prod)
-                  SESSION_COOKIE_SECURE=bool(os.environ.get('RENDER') or os.environ.get('VERTEX_HTTPS')))
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024   # 2 Mo — le desk sync est un petit blob JSON
-app.register_blueprint(_auth.make_blueprint(code=VERTEX_CODE))
-# (headers de sécurité : _security_headers plus bas — source unique, avec HSTS)
+# Source unique de la config d'accès : vertex/app/config.py.
+# Le Blueprint auth (login/logout + garde globale + anti-force-brute) et la
+# configuration de session sont posés par `_factory.create_app()`, EN PREMIER :
+# le `before_request` du verrou doit pouvoir refuser une requête destinée à
+# n'importe quel blueprint. AUTH_ON reste lu ici — plusieurs vues s'en servent.
+from vertex.app.config import VERTEX_CODE, AUTH_ON, SECRET_KEY  # noqa: E402,F401
 
 
 # scan_state : état partagé du scan — domicile unique dans vertex/app/state.py.
@@ -214,19 +188,8 @@ scan_state['macro'] = _load_json('macro_cache.json', [])
 scan_state['radar'] = _load_json('radar_cache.json', None)   # radar marché IBKR (persistant)
 
 
-# ─── helpers numériques ───────────────────────────────────────────────────
-def _i(x):
-    try:
-        return 0 if x is None or (isinstance(x, float) and math.isnan(x)) else int(x)
-    except Exception:
-        return 0
-
-
-def _f(x):
-    try:
-        return 0.0 if x is None or (isinstance(x, float) and math.isnan(x)) else float(x)
-    except Exception:
-        return 0.0
+#  Les deux coerceurs numeriques `_i`/`_f` sont partis avec leur unique
+#  appelant, dans `vertex/options/pack.py`.
 
 
 # Black-Scholes : source unique dans vertex/options/legacy_engine.py (dé-duplication — cf. audit).
@@ -249,11 +212,13 @@ backtest = _backtest.backtest
 # Yahoo (yfinance) rate-limite les serveurs de datacenter → yf.download revient vide
 # sur Render. Stooq sert de filet : données de clôture quotidiennes, mises en cache
 # 6 h (EOD = 1 maj/jour, donc aucun spam de l'endpoint gratuit). Lecture seule.
-_STOOQ_CACHE = {'ts': 0.0, 'frames': {}}
-_STOOQ_TTL = 6 * 3600
+#
+# #779 — LE CACHE ET SON TTL VIVENT DÉSORMAIS DANS `vertex/app/caches.py`, avec
+# leur propriétaire mesuré et leur politique de fraîcheur écrite
+# (QUALITY_STANDARD §8). L'objet est le MÊME : muté en place, jamais réassigné,
+# donc `terminal._STOOQ_CACHE is caches._STOOQ_CACHE`.
 YFINANCE_BATCH_TIMEOUT_SECONDS = 10
 STOOQ_REQUEST_TIMEOUT_SECONDS = 8
-_SOURCE_BUDGET_STATE = {'yfinance': 'UNKNOWN', 'stooq': 'UNKNOWN'}
 _STOOQ_IDX = {'^GSPC': '^spx', '^DJI': '^dji', '^IXIC': '^ndq', '^RUT': '^rut', '^VIX': '^vix',
               # matières premières / crypto (mapping stooq)
               'GC=F': 'xauusd', 'SI=F': 'xagusd', 'CL=F': 'cl.f', 'BZ=F': 'cb.f', 'BTC-USD': 'btcusd'}
@@ -697,17 +662,19 @@ def scan():
         _SCAN_LOCK.release()
 
 
-_rescan_evt = threading.Event()   # set() par /api/rescan → réveille la boucle pour un re-scan immédiat
-RESCAN_COOLDOWN_SEC = max(1, int(os.getenv('VERTEX_RESCAN_COOLDOWN_SEC', '30')))
-_rescan_gate_lock = threading.Lock()
-_last_rescan_ts = 0.0
+#  ── PORTE ANTI-RAFALE DU RE-SCAN (#779/G1) ────────────────────────────────
+#  Le groupe complet — evenement, verrou, fenetre, delai restant — vit desormais
+#  dans `vertex/app/rescan_gate.py`. Il n'avait aucune dependance au monolithe :
+#  seulement threading, os, time et math.
+#
+#  L'EVENEMENT EST PARTAGE, PAS RECOPIE : `_live.configure` le transmet a la
+#  boucle de scan, qui attend CET objet. Le reassigner laisserait la boucle
+#  attendre un objet que plus personne ne reveille — sans aucune erreur levee.
+_rescan_evt = _rescan_gate.EVENEMENT
+RESCAN_COOLDOWN_SEC = _rescan_gate.COOLDOWN_S
+_rescan_cooldown_remaining = _rescan_gate.restant
 
 
-def _rescan_cooldown_remaining(now=None):
-    """Retourne le délai global restant sans conserver d’identité de demandeur."""
-    current = time.monotonic() if now is None else float(now)
-    elapsed = max(0.0, current - _last_rescan_ts)
-    return max(0, int(math.ceil(RESCAN_COOLDOWN_SEC - elapsed)))
 # ── VERTEX LIVE ENGINE : câblage du moteur central (états + déclencheur) ──
 _live.configure(scan_state=scan_state, news_state=news_state, cal_state=cal_state,
                 weekly_state=weekly_state, rescan_event=_rescan_evt,
@@ -767,13 +734,22 @@ def _ibkr_opt_worker():
     def conn():
         if ib.isConnected():
             return True
-        for port in (7496, 7497, 4001, 4002):
+        #  Ordre des ports et identifiant de session viennent de `ibkr_link`.
+        #  Cinq sites ouvraient leur propre connexion avec chacun ses idees,
+        #  dont DEUX partageaient le clientId 17 (IBKR refuse alors la seconde
+        #  session) et un cherchait le papier quand les autres cherchaient le
+        #  reel.
+        for port in _ibkr_link.ordre_des_ports():
             try:
-                ib.connect('127.0.0.1', port, clientId=41, readonly=True, timeout=6)
+                ib.connect(_ibkr_link.hote(), port,
+                           clientId=_ibkr_link.client_id('options'),
+                           readonly=True, timeout=6)
                 ib.reqMarketDataType(1)              # temps réel (abonnement actif)
+                _ibkr_link.noter_succes(port, 'options')
                 return True
             except Exception:
                 continue
+        _ibkr_link.noter_echec('options')
         return False
 
     def meta(sym):
@@ -1000,16 +976,23 @@ def _ibkr_opt_worker():
                         pass
 
         quote_pass(good)
-        missing = [x for x in good if (out.get(x[0]) or {}).get('mark') is None]
-        if missing:
+        #  Rattrapage des cotations manquantes sur l'ECHELLE COMPLETE. La
+        #  version d'origine ne tentait que le type 2 (cloture figee), qui
+        #  exige TOUJOURS un abonnement : sans abonnement, la chaine d'options
+        #  restait vide malgre le rattrapage.
+        for _t in _ibkr_link.ECHELLE_DONNEES[1:]:
+            missing = [x for x in good if (out.get(x[0]) or {}).get('mark') is None]
+            if not missing:
+                break
             try:
-                ib.reqMarketDataType(2)          # frozen : dernier cours de clôture quand le marché est fermé
+                ib.reqMarketDataType(_t)
                 quote_pass(missing)
-            finally:
-                try:
-                    ib.reqMarketDataType(1)
-                except Exception:
-                    pass
+            except Exception:
+                continue
+        try:
+            ib.reqMarketDataType(1)              # on rend la ligne au temps reel
+        except Exception:
+            pass
         return out
 
     while True:
@@ -1102,7 +1085,11 @@ _YF_FOR_OPTIONS = options.yf          # yfinance d'origine → repli automatique
 # ROTATION UNIVERS COMPLET : cache accumulé {sym: {'ts':…, 'contracts':[…]}} — persistant.
 # Chaque cycle analyse les ~15 titres les plus ANCIENS → tout l'univers optionable (~700
 # titres US) est couvert en quelques heures, puis rafraîchi en continu (fraîcheur < 24 h).
-_OPTALL_CACHE = _load_json('optall_cache.json', {})
+#  Le cache des chaines d'options vit dans `vertex/app/caches.py` — il est
+#  partage entre `_opt_loop` (rotation) et `options_pack` (fiche ouverte).
+#  L'objet doit rester LE MEME des deux cotes : on le REMPLIT, on ne le
+#  reassigne pas.
+_OPTALL_CACHE.update(_load_json('optall_cache.json', {}) or {})
 
 
 _LAST_FOCUS = list((_OPT_CACHE or {}).get('board') or [])   # dernier board focus connu (graine)
@@ -1278,6 +1265,12 @@ def _news_loop():
             feed.sort(key=lambda x: x.get('time') or '', reverse=True)
             news_state['items'] = feed[:45]
             news_state['updated'] = datetime.now().strftime('%H:%M:%S')
+            #  #779/G1 — NEWS_REFRESH était déclaré au registre des jobs sans
+            #  aucun émetteur : la boucle tournait, la page Système affichait
+            #  « jamais exécuté ». La cadence déclarée au registre (900 s) était
+            #  fausse elle aussi ; la vraie est celle d'en dessous, 60 s.
+            from vertex.scheduler import registry as _sched
+            _sched.beat('NEWS_REFRESH', ok=True)
         except Exception:
             pass
         _live.wait_force('news', 60)
@@ -1585,11 +1578,7 @@ def _market_internals(rows, detail, breadth):
 # ─── WATCHLIST DE LA SEMAINE : sélection FIGÉE le lundi (état partagé → state.py) ──
 
 
-def _earnings_map():
-    """{sym: dte} depuis le calendrier earnings collecté (cal_state) — pour écarter
-    les titres dont les résultats tombent dans la semaine (gap / IV-crush)."""
-    return {x['sym']: x['dte'] for x in (cal_state.get('items') or [])
-            if x.get('sym') and x.get('dte') is not None}
+_earnings_map = _weekly_selection.carte_resultats
 
 
 def _weekly_loop():
@@ -1616,501 +1605,74 @@ def _weekly_loop():
 
 
 # ─── options / GEX / earnings à la demande ───────────────────────────────
-def options_pack(sym):
-    from vertex.options import iv_hv as _iv_hv
-    out = {'sym': sym, 'iv': None, 'ivrank': None, 'earnings': None, 'error': None,
-           'name': None, 'sector': None, 'mcap': None, 'pe': None, 'beta': None,
-           'news': [], 'news_why': None, 'contracts': [],
-           'net_gex': None, 'regime': None, 'call_wall': None, 'put_wall': None, 'gamma_flip': None,
-           'hv_20d': None, 'iv_hv_context': _iv_hv.describe(None, None)}
-    try:
-        tk = yf.Ticker(sym)
-        try:
-            spot = float(tk.fast_info['lastPrice'])
-        except Exception:
-            spot = float(tk.history(period='1d')['Close'].iloc[-1])
-        out['spot'] = round(spot, 2)
-        # infos société EN DIRECT (yfinance .info — lent/flaky → try)
-        try:
-            info = tk.info or {}
-            out['name'] = info.get('shortName') or info.get('longName')
-            out['sector'] = info.get('sector')
-            out['mcap'] = info.get('marketCap')
-            out['pe'] = info.get('trailingPE')
-            out['beta'] = info.get('beta')
-        except Exception:
-            pass
-        # comparaison fondamentale vs MÉDIANE DU SECTEUR (cache fundamentals)
-        _fd = scan_state.get('fundamentals') or {}
-        _fs = (_fd.get('by_sym') or {}).get(sym) or {}
-        _fsec = (_fd.get('by_sector') or {}).get(_fs.get('sector') or out.get('sector')) or {}
-        out['fund'] = _fs
-        out['sector_median_pe'] = _fsec.get('median_pe')
-        out['sector_median_margin'] = _fsec.get('median_margin')
-        out['sector_median_growth'] = _fsec.get('median_growth')
-        out['valuation'] = fundamentals.valuation(_fs.get('pe') or out.get('pe'), _fsec.get('median_pe'))
-        # news (pourquoi ça bouge) + traduction FR live — assainies (XSS, rendu innerHTML client)
-        out['news'] = options.news_for(tk)
-        out['news'], out['news_why'] = ai.fr_news(sym, out['news'])
-        out['news'] = _news_plus.sanitize_news(out['news'])
-        # HV-rank proxy (yfinance ne donne pas l'IV-rank historique)
-        h = tk.history(period='1y')['Close']
-        ret = np.log(h / h.shift(1)).dropna()
-        hv = ret.rolling(20).std() * math.sqrt(252) * 100
-        out['hv_20d'] = round(float(hv.iloc[-1]), 2) if len(hv.dropna()) else None
-        out['ivrank'] = round(float((hv.rank(pct=True).iloc[-1]) * 100)) if len(hv.dropna()) else None
-        # earnings (+ jours avant résultats, pour la pénalité options court terme)
-        edte = None
-        try:
-            cal = tk.calendar
-            ed = None
-            if isinstance(cal, dict):
-                ed = cal.get('Earnings Date')
-                ed = ed[0] if isinstance(ed, (list, tuple)) and ed else ed
-            out['earnings'] = str(ed)[:10] if ed is not None else '—'
-            if ed is not None:
-                try:
-                    edte = (datetime.strptime(str(ed)[:10], '%Y-%m-%d') - datetime.now()).days
-                    edte = edte if edte >= 0 else None
-                except Exception:
-                    edte = None
-        except Exception:
-            out['earnings'] = '—'
-        out['earnings_dte'] = edte
-        # meilleures options CALL par bucket (court/moyen/long) pour CE titre.
-        # FAST-PATH : si la rotation univers a déjà analysé ce titre (<6 h), on sert le
-        # cache immédiatement (la file IBKR peut être occupée par le board → timeouts).
-        _rc = _OPTALL_CACHE.get(sym) or {}
-        if _rc.get('contracts') and time.time() - (_rc.get('ts') or 0) < 6 * 3600:
-            out['contracts'] = _rc['contracts']
-            out['contracts_cached'] = True
-        else:
-            screened = options.best_for_symbol(sym, spot, spot * 1.12, 'call', max_n=2,
-                                               buckets=('court', 'moyen', 'long'), earnings_dte=edte,
-                                               include_diagnostics=True)
-            out['contracts'] = screened['contracts']
-            out['option_price_rejections'] = screened['price_rejections']
-            out['option_price_rejection_count'] = screened['price_rejection_count']
-            if out['contracts']:                       # réchauffe la rotation au passage
-                _OPTALL_CACHE[sym] = {'ts': time.time(), 'contracts': out['contracts']}
-        out.setdefault('option_price_rejections', [])
-        out.setdefault('option_price_rejection_count', 0)
-        out['option_board_coverage'] = options.board_coverage(out['contracts'])
-        out['best_pick'] = options.recommend(out['contracts'])   # LA meilleure entre les 3
-        out['best_two'] = options.recommend_top(out['contracts'], 2)   # le TOP 2 des échéances (#1/#2)
-        _d = scan_state['detail'].get(sym)
-        out['chart_read'] = research.chart_read(_d)               # analyse graphique (texte FR)
-        out['chart_verdict'] = research.chart_verdict(_d)
-        out['decision'] = engine.decide(_d, out)                  # MOTEUR DE DÉCISION (synthèse)
-        _fu = ((scan_state.get('fundamentals') or {}).get('by_sym') or {}).get(sym) or {}
-        out['ibkr'] = ibkr.verdict(_d, out, _fu)                  # VERDICT IBKR (/40 + niveau + timing)
-        # OPTIONS DESK : scénarios + breakeven + expected move sur le contrat recommandé
-        if out.get('best_pick'):
-            _plan = (_d or {}).get('plan') or {}
-            _lv = {'stop': _plan.get('stop'), 'tp1': _plan.get('tp1'),
-                   'tp2': _plan.get('tp2'), 'tp3': _plan.get('tp3')}
-            out['scenarios'] = options.scenarios(out['best_pick'], spot, _lv)
-            out['breakeven'] = options.breakeven_check(out['best_pick'], spot)
-            _em = out['best_pick'].get('em_pct') or 0
-            out['expected_move'] = {'pct': _em, 'lo': round(spot * (1 - _em / 100), 2),
-                                    'hi': round(spot * (1 + _em / 100), 2)}
-        # chaîne d'options → ATM IV + GEX
-        exps = list(tk.options)[:2]
-        lo, hi = spot * 0.9, spot * 1.1
-        agg, atm_ivs = {}, []
-        now = datetime.now()
-        for exp in exps:
-            T = max((datetime.strptime(exp, '%Y-%m-%d') - now).days, 0) / 365.0
-            T = max(T, 0.5 / 365.0)
-            ch = tk.option_chain(exp)
-            for is_call, dfo in ((True, ch.calls), (False, ch.puts)):
-                for _, row in dfo.iterrows():
-                    K = _f(row['strike'])
-                    if K < lo or K > hi:
-                        continue
-                    iv = _f(row.get('impliedVolatility')); oi = _i(row.get('openInterest'))
-                    if iv <= 0 or oi <= 0:
-                        continue
-                    if is_call and abs(K - spot) <= spot * 0.03 and 0.03 < iv < 3.0:
-                        atm_ivs.append(iv)
-                    g = options.gamma(spot, K, T, iv)
-                    d = agg.setdefault(K, {'cg': 0., 'pg': 0.})
-                    d['cg' if is_call else 'pg'] += g * oi
-        out['iv'] = round(float(np.median(atm_ivs)) * 100, 1) if atm_ivs else None
-        out['iv_hv_context'] = _iv_hv.describe(out['iv'], out['hv_20d'])
-        if agg:
-            ks = sorted(agg)
-            scale = 100.0 * spot * spot * 0.01
-            gx = [(K, scale * (agg[K]['cg'] - agg[K]['pg'])) for K in ks]
-            net = sum(v for _, v in gx)
-            out['net_gex'] = net
-            out['regime'] = 'POSITIF' if net > 0 else 'NÉGATIF'
-            out['call_wall'] = round(max((k for k in ks if k >= spot), default=ks[-1],
-                                         key=lambda k: agg[k]['cg']), 2)
-            out['put_wall'] = round(max((k for k in ks if k <= spot), default=ks[0],
-                                        key=lambda k: agg[k]['pg']), 2)
-            cum, flip = 0., None
-            pk = ks[0]
-            for K, v in gx:
-                nc = cum + v
-                if flip is None and cum * nc < 0:
-                    flip = pk + (K - pk) * (-cum / (nc - cum))
-                pk, cum = K, nc
-            out['gamma_flip'] = round(flip, 2) if flip else (out['put_wall'] if net > 0 else out['call_wall'])
-    except Exception as e:
-        out['error'] = f'{type(e).__name__}: {e}'
-    return out
+#  `options_pack` vit dans `vertex/options/pack.py`. Mesure : sur 18 symboles
+#  utilises, TROIS seulement etaient locaux — le cache `_OPTALL_CACHE` (parti
+#  dans vertex/app/caches.py) et les deux coerceurs `_i`/`_f`, dont il etait
+#  l'unique appelant. Le nom local reste : `_opt_loop` s'en sert.
+from vertex.options.pack import options_pack  # noqa: E402
 
 
-@app.route('/scan')
-def scan_ep():
-    return jsonify({**scan_state, 'ai_on': ai.available(),
-                   'scan_age': _scan_age(),
-                   'rescan_cooldown_remaining': _rescan_cooldown_remaining(),
-                   'idx_sets': {'dow': _DOW30, 'ndx': _NDX100, 'sp': _SP500_SET,
-                                'rut': _RUT_SET, 'eu': _EU_SET, 'asia': _ASIA_SET},
-                   # source HONNÊTE des données du scan (yfinance/stooq/demo) — le badge
-                   # « LIVE IBKR » du header reste piloté par ibkr_enabled (overlay /quotes réel)
-                   'data_source': (scan_state.get('source')
-                                   or ('yfinance' if IBKR_ENABLED else 'cloud'))})
+#  `/scan` et `/api/rescan` sont partis dans
+#  `vertex/app/routes/scan_api.py` — aucune injection : leur seule
+#  dependance locale etait la porte anti-rafale, partie avec elles.
 
 
-@app.route('/api/rescan', methods=['POST', 'GET'])
-def api_rescan():
-    """Réveille le scan au plus une fois par fenêtre globale, sans tracer le demandeur."""
-    global _last_rescan_ts
-    with _rescan_gate_lock:
-        remaining = _rescan_cooldown_remaining()
-        if remaining:
-            response = jsonify({'ok': False, 'error': 'rescan_rate_limited',
-                                'retry_after': remaining})
-            response.status_code = 429
-            response.headers['Retry-After'] = str(remaining)
-            return response
-        _last_rescan_ts = time.monotonic()
-        _rescan_evt.set()
-    return jsonify({'ok': True, 'status': 'rescan_queued', 'universe': len(UNIVERSE),
-                    'cooldown_seconds': RESCAN_COOLDOWN_SEC,
-                    'msg': f'Re-scan lancé — recalcul des {len(UNIVERSE)} titres (≈10-30 s). Recharge dans un instant.'})
+#  Les en-tetes de securite, les pages d'erreur 404/500 et la compression gzip
+#  vivaient ici. Aucun ne dependait de l'etat du monolithe : ils sont tenus par
+#  `vertex/app/factory.py::create_app`, avec le reste de la plomberie Flask.
 
 
-@app.after_request
-def _security_headers(resp):
-    """Production : en-têtes de sécurité sur toutes les réponses (analyse only, zéro iframe tierce entrante)."""
-    resp.headers.setdefault('X-Content-Type-Options', 'nosniff')
-    # SAMEORIGIN (pas DENY) : la Home embarque ses propres pages en iframe (?embed=1)
-    # — DENY les bloquait silencieusement. Le clickjacking externe reste interdit.
-    resp.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
-    resp.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
-    resp.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
-    # Données personnelles (blob desk : trades, positions, journal) : jamais
-    # stockées par un cache intermédiaire ou partagé.
-    if request.path.startswith('/api/desk'):
-        resp.headers['Cache-Control'] = 'no-store'
-    if request.is_secure or request.headers.get('X-Forwarded-Proto') == 'https':
-        resp.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
-    return resp
-
-
-@app.errorhandler(404)
-def _err_404(e):
-    if request.path.startswith('/api/'):
-        return jsonify({'error': 'not_found', 'path': request.path}), 404
-    return ('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-            '<title>404 · Vertex</title><style>body{background:#0b0e14;color:#eef2f8;font-family:Inter,system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0}'
-            '.c{text-align:center}.n{font-size:64px;font-weight:900;color:#FF7A18}.t{color:#8794ab;margin:10px 0 22px}'
-            'a{color:#FF9A3D;text-decoration:none;font-weight:700;border:1px solid rgba(255,122,24,.4);padding:10px 20px;border-radius:12px}</style></head>'
-            '<body><div class="c"><div class="n">404</div><div class="t">Cette page n\'existe pas (ou plus).</div>'
-            '<a href="/">\u2190 Retour au Market Overview</a></div></body></html>'), 404
-
-
-@app.errorhandler(500)
-def _err_500(e):
-    if request.path.startswith('/api/'):
-        return jsonify({'error': 'internal'}), 500
-    return redirect('/')
-
-
-@app.after_request
-def _gzip_response(resp):
-    """Compresse les grosses réponses (le /scan pèse ~8 Mo → ~10× moins) — vital pour l'iPhone en Wi-Fi."""
-    try:
-        if resp.status_code != 200 or resp.direct_passthrough:
-            return resp
-        if 'gzip' not in (request.headers.get('Accept-Encoding') or ''):
-            return resp
-        ct = resp.content_type or ''
-        if not (ct.startswith('application/json') or ct.startswith('text/html')):
-            return resp
-        data = resp.get_data()
-        if len(data) < 8192:
-            return resp
-        import gzip as _gz
-        gz = _gz.compress(data, 5)
-        if len(gz) >= len(data):
-            return resp
-        resp.set_data(gz)
-        resp.headers['Content-Encoding'] = 'gzip'
-        resp.headers['Content-Length'] = str(len(gz))
-        resp.headers['Vary'] = 'Accept-Encoding'
-    except Exception:
-        pass
-    return resp
-
-
-def _scan_age():
-    return round(time.time() - scan_state['scan_ts']) if scan_state.get('scan_ts') else None
+#  `_scan_age` existait a l'identique ici ET dans decision_api. Une seule
+#  maison desormais : `vertex.app.state.scan_age`.
 
 
 # ─── FLUX DE DONNÉES (Blueprint) — market/summary · cockpit · watchlist · options · search · weekly · strategie · comite ───
-app.register_blueprint(_feeds.bp)
+#  ── REGISTRE DE ROUTES CANONIQUE (#779, contribution a G1) ─────────────
+#  Les 15 blueprints SANS injection sont declares dans
+#  `vertex/app/factory.py` et enregistres ici, en un point unique. Avant, ils
+#  etaient disperses entre les lignes 1866 et 2456, meles aux vues et aux
+#  utilitaires : personne ne pouvait dire quelles routes l'application sert
+#  sans lire 2 300 lignes.
+#
+#  LA POSITION DE CET APPEL N'EST PAS ARBITRAIRE. `/api/anomalies/<sym>` est
+#  declare par DEUX blueprints — `analysis_api` (sans injection, ici) et
+#  `strategy_os_api` (a injection, enregistre plus bas). Flask donne la regle
+#  au PREMIER enregistre. Placer ce groupe apres `strategy_os_api` changerait
+#  donc le gagnant en silence. Il reste avant.
+from vertex.app import factory as _factory
+_factory.register_blueprints(app)
 
 
-@app.route('/api/ticker/<sym>')
-def api_ticker(sym):
-    sym = sym.upper()
-    try:
-        pack = options_pack(sym)
-    except Exception as e:
-        pack = {'sym': sym, 'error': f'{type(e).__name__}: {e}', 'contracts': []}
-    try:
-        comp = _company.get(sym, demo=DEMO_MODE, brief=True)
-    except Exception:
-        comp = None
-    # ── comparaison pairs : VRAIES données (scan live + cache entreprise), zéro invention ──
-    det_all = scan_state.get('detail') or {}
-    peers_data = []
-    for p in ((comp or {}).get('peers') or [])[:4]:
-        pd = det_all.get(p) or {}
-        try:
-            pc = _company.get(p, demo=DEMO_MODE, allow_fetch=False)   # cache seul → rapide
-        except Exception:
-            pc = {}
-        pf = (pc or {}).get('fundamentals') or {}
-        peers_data.append({'symbol': p, 'name': (pc or {}).get('name'),
-                           'score': pd.get('score'), 'verdict': pd.get('verdict'),
-                           'perf_q': pd.get('perf_q'), 'rev_growth': pf.get('rev_growth'),
-                           'margin': pf.get('margin'), 'pe': pf.get('pe'), 'roe': pf.get('roe')})
-    try:
-        _sec_med = _company.sector_medians().get((comp or {}).get('sector')) or {}
-    except Exception:
-        _sec_med = {}
-    # Carte des risques d'entreprise (§24) — depuis fondamentaux réels + médianes.
-    try:
-        from vertex.company import risk_map as _risk_map
-        _det = det_all.get(sym) or {}
-        _risk = _risk_map.build(comp, sector_median=_sec_med,
-                                earnings_in_days=_det.get('earnings_dte'))
-    except Exception:
-        _risk = None
-    return jsonify({'symbol': sym, 'in_universe': sym in UNIVERSE,
-                    'detail': det_all.get(sym), 'peers_data': peers_data,
-                    'company': comp, 'pack': pack, 'sector_median': _sec_med,
-                    'risk_map': _risk})
+#  `/api/ticker/<sym>` et `/options/<sym>` sont partis dans
+#  `vertex/app/routes/ticker_api.py`.
 
-
-@app.route('/api/company/<sym>')
-def api_company(sym):
-    """Profil d'entreprise seul (cache hebdomadaire — activité, CEO, segments, pairs)."""
-    try:
-        return jsonify(_company.get(sym.upper(), demo=DEMO_MODE, brief=True))
-    except Exception as e:
-        return jsonify({'error': f'{type(e).__name__}: {e}'})
-
-
-@app.route('/api/analyst/<sym>')
-def api_analyst(sym):
-    """Données analystes PROFONDES à la demande (révisions BPA, surprises, notes,
-    détention, initiés) — yfinance caché 12 h. En démo : rien (pas de réseau)."""
-    if DEMO_MODE:
-        return jsonify({'demo': True})
-    try:
-        return jsonify(analyst_deep.get(sym.upper()) or {})
-    except Exception as e:
-        return jsonify({'error': f'{type(e).__name__}: {e}'})
-
-
-@app.route('/api/names')
-def api_names():
-    """{ticker: nom d'entreprise} depuis le cache — pour afficher les noms dans Stock info
-    (lecture seule, instantané, aucun fetch réseau)."""
-    try:
-        cache = _company._load()
-        return jsonify({k: v.get('name') for k, v in cache.items()
-                        if isinstance(v, dict) and v.get('name')})
-    except Exception:
-        return jsonify({})
-
-
-# ─── CORRÉLATIONS RÉELLES : le titre vs macro (SOXX, QQQ, S&P, BTC, or, dollar, taux, VIX) ───
-_CORR_MAP = [('SOXX', 'SOXX'), ('QQQ', 'QQQ'), ('S&P 500', 'SPY'), ('Bitcoin', 'BTC-USD'),
-             ('Or', 'GC=F'), ('Dollar', 'DX-Y.NYB'), ('Taux 10a', '^TNX'), ('VIX', '^VIX')]
-_CORR_BENCH = {'ts': 0, 'df': None}
-
-
-def _to_naive(ix):
-    import pandas as pd
-    ix = pd.DatetimeIndex(ix)
-    try:
-        ix = ix.tz_localize(None)
-    except (TypeError, AttributeError):
-        pass
-    return ix.normalize()
-
-
-def _corr_benchmarks():
-    """Séries Close 6 mois des références macro — cache 1 h (mêmes pour tous les titres)."""
-    if _CORR_BENCH['df'] is not None and time.time() - _CORR_BENCH['ts'] < 3600:
-        return _CORR_BENCH['df']
-    import yfinance as yf
-    raw = yf.download([t for _, t in _CORR_MAP], period='6mo',
-                      progress=False, auto_adjust=True)['Close']
-    raw.index = _to_naive(raw.index)
-    _CORR_BENCH['df'] = raw
-    _CORR_BENCH['ts'] = time.time()
-    return raw
-
-
-@app.route('/api/correlations/<sym>')
-def api_correlations(sym):
-    """Corrélation RÉELLE (rendements journaliers, 6 mois) du titre avec chaque référence.
-    Lecture seule. Repli propre : liste vide si données insuffisantes."""
-    sym = (sym or '').upper()
-    try:
-        import yfinance as yf
-        import pandas as pd
-        bench = _corr_benchmarks()
-        s = yf.Ticker(sym).history(period='6mo')['Close']
-        s.index = _to_naive(s.index)
-        df = pd.concat([s.rename(sym), bench], axis=1)
-        rets = df.pct_change()
-        out = []
-        for label, tk in _CORR_MAP:
-            if tk not in rets.columns:
-                continue
-            pair = rets[[sym, tk]].dropna()
-            if len(pair) < 20:
-                continue
-            c = pair[sym].corr(pair[tk])
-            if pd.notna(c):
-                out.append([label, round(float(c), 2)])
-        out.sort(key=lambda x: -x[1])
-        return jsonify({'sym': sym, 'corr': out})
-    except Exception as e:
-        return jsonify({'sym': sym, 'corr': [], 'error': f'{type(e).__name__}: {e}'})
 
 # ─── DESK PERSO (Blueprint) — /api/desk · /api/watchlist-tv · /api/pos-quotes ───
-# (/api/ticker reste ici : la version enrichie — entreprise + pairs — a remplacé celle du Blueprint)
-app.register_blueprint(_desk.make_blueprint(opt_job=_opt_job, ibkr_enabled=IBKR_ENABLED))
+#  RETABLI : la suppression de `/api/ticker` avait emporte cet enregistrement,
+#  qui vivait DANS le meme intervalle. Sept routes du desk perso — synchro,
+#  sauvegardes, restauration, cotations de positions — avaient disparu du
+#  service. Aucune erreur n'etait levee : Flask ne se plaint pas d'un blueprint
+#  qu'on n'enregistre pas. Le diff des regles avant/apres l'a montre.
+def _cotation_repli(symbole):
+    """Dernier recours pour coter une ACTION : le prix que le SCAN a deja etabli.
+
+    Aucune requete reseau nouvelle — la valeur est deja en memoire, produite par
+    le cycle de scan (yfinance/Stooq). C'est ce qui evite un P&L vide quand TWS
+    est ferme, sans abonnement, ou hors seance.
+    """
+    d = (scan_state.get('detail') or {}).get(symbole) or {}
+    px = d.get('price')
+    if px is None:
+        return None
+    return {'spot': px, 'spot_chg': d.get('change')}
 
 
-# ─── ENDPOINTS D'ANALYSE (Blueprint) — /api/vertex · /api/validator · /api/risk ───
-app.register_blueprint(_analysis_api.bp)
-
-# ─── COMMAND CENTER (Blueprint) — /api/command · /api/portefeuille ───
-app.register_blueprint(_command.bp)
-
-# ─── SESSION D'ANALYSE (Blueprint) — /api/session/digest (digest toujours prêt) ───
-app.register_blueprint(_session_api.bp)
-
-# ─── OPTIONS RESEARCH CENTER (Blueprint) — /api/options-lab ───
-app.register_blueprint(_options_lab_api.bp)
-
-# ─── OPTIONS INTELLIGENCE (Blueprint) — /api/options/overview · volatility · event-risk · /api/charts ───
-from vertex.app.routes import options_intel_api as _options_intel_api
-app.register_blueprint(_options_intel_api.bp)
-
-# ─── TRACKING ENGINE (Blueprint) — /api/tracking (suivi hypothétique, lecture seule) ───
-from vertex.app.routes import tracking_api as _tracking_api
-app.register_blueprint(_tracking_api.bp)
-
-# ─── OPPORTUNITY FUNNEL (Blueprint) — /api/opportunities/funnel (§11-12) ───
-from vertex.app.routes import opportunities_api as _opportunities_api
-app.register_blueprint(_opportunities_api.bp)
-
-# ─── PLANNING (Blueprint) — /api/planning/ticket (préparation d'ordre, READONLY) ───
-from vertex.app.routes import planning_api as _planning_api
-app.register_blueprint(_planning_api.bp)
-
-# ─── CERVEAU CLAUDE+WEB (Blueprint) — /api/ai/enrichment · status · refresh ───
-from vertex.app.routes import ai_api as _ai_api
-app.register_blueprint(_ai_api.bp)
-
-# ─── VERTEX LIVE ENGINE (Blueprint) — /api/live/status · refresh · report ───
-app.register_blueprint(_live_api.bp)
-
-
-# ─── DESCRIPTION MÉTIER (yfinance longBusinessSummary) : à la demande + cache persistant ───
-# Fetché UNIQUEMENT quand une fiche est ouverte (pas en masse) → zéro throttle. Mis en
-# cache sur disque (descriptions statiques) → 1 seul appel par titre, jamais re-fetché.
-_DESC_PATH = os.path.join(os.path.dirname(__file__), 'desc_cache.json')
-try:
-    with open(_DESC_PATH, 'r', encoding='utf-8') as _fh:
-        _desc_cache = json.load(_fh)
-except Exception:
-    _desc_cache = {}
-_desc_lock = threading.Lock()
-
-
-_FR_DESC = {
-    'AAPL': ("Apple conçoit, fabrique et vend des smartphones (iPhone), ordinateurs (Mac), tablettes (iPad) et objets connectés (Apple Watch, AirPods), ainsi qu'un large écosystème de services (App Store, iCloud, Apple Music, paiements). Son intégration matériel-logiciel et sa marque premium en font l'une des plus grosses capitalisations mondiales.", 'Électronique grand public', 'États-Unis'),
-    'NVDA': ("Nvidia conçoit des processeurs graphiques (GPU) et des puces d'accélération devenus le standard de l'intelligence artificielle et des centres de données. Ses cartes équipent le jeu vidéo, la 3D professionnelle, l'automobile autonome et l'entraînement des grands modèles d'IA.", 'Semi-conducteurs', 'États-Unis'),
-    'MSFT': ("Microsoft édite Windows, la suite Office/Microsoft 365 et la plateforme cloud Azure. Le groupe est aussi présent dans le jeu vidéo (Xbox), les réseaux professionnels (LinkedIn) et investit massivement dans l'IA (partenariat OpenAI, Copilot).", 'Logiciels & Cloud', 'États-Unis'),
-    'META': ("Meta exploite Facebook, Instagram, WhatsApp et Messenger, réunissant des milliards d'utilisateurs. L'essentiel de ses revenus vient de la publicité ciblée ; le groupe investit aussi dans la réalité virtuelle/augmentée (Reality Labs) et l'IA.", 'Réseaux sociaux & Publicité', 'États-Unis'),
-    'GOOGL': ("Alphabet, maison mère de Google, tire l'essentiel de ses revenus de la publicité (Recherche, YouTube, réseau display). Le groupe possède aussi Android, le cloud Google Cloud, et des paris technologiques (Waymo, IA DeepMind/Gemini).", 'Internet & Publicité', 'États-Unis'),
-    'AMZN': ("Amazon est le leader mondial du commerce en ligne et, via AWS, le numéro un du cloud d'entreprise — sa principale source de profits. Le groupe est aussi présent dans la logistique, la publicité, le streaming (Prime) et les objets connectés (Alexa).", 'E-commerce & Cloud', 'États-Unis'),
-    'AVGO': ("Broadcom conçoit des semi-conducteurs (réseau, connectivité, stockage) et des logiciels d'infrastructure d'entreprise. Ses puces équipent centres de données, smartphones et équipements réseau ; le groupe croît par acquisitions.", 'Semi-conducteurs', 'États-Unis'),
-    'TSLA': ("Tesla conçoit et produit des véhicules électriques, des batteries et des solutions de stockage/énergie solaire. Le groupe mise sur la conduite autonome, la robotique et l'intégration verticale de sa production.", 'Automobile & Énergie', 'États-Unis'),
-    'NFLX': ("Netflix est la plateforme mondiale de streaming vidéo par abonnement, produisant et diffusant films et séries dans le monde entier. Le groupe développe la publicité et le jeu vidéo pour diversifier ses revenus.", 'Streaming & Médias', 'États-Unis'),
-    'AMD': ("AMD conçoit des processeurs (CPU Ryzen/EPYC) et cartes graphiques (Radeon) pour PC, serveurs et centres de données. Le groupe est un concurrent direct d'Intel et de Nvidia et monte en puissance sur l'IA.", 'Semi-conducteurs', 'États-Unis'),
-    'CRM': ("Salesforce est le leader mondial des logiciels de gestion de la relation client (CRM) en mode cloud : ventes, service client, marketing et analytique de données, avec une forte intégration d'IA (Einstein).", "Logiciels d'entreprise", 'États-Unis'),
-    'COST': ("Costco exploite un réseau mondial d'entrepôts en libre-service réservés aux adhérents. Son modèle repose sur des marges faibles, de gros volumes et des revenus d'abonnement récurrents très fidélisants.", 'Distribution', 'États-Unis'),
-    'LLY': ("Eli Lilly est un laboratoire pharmaceutique majeur, notamment dans le diabète et l'obésité (agonistes GLP-1), l'oncologie, l'immunologie et les neurosciences. Ses traitements récents connaissent une très forte demande.", 'Pharmacie', 'États-Unis'),
-    'JPM': ("JPMorgan Chase est la plus grande banque américaine : banque de détail, banque d'investissement, gestion d'actifs et de fortune. Diversifiée et solide, elle sert de baromètre au secteur financier.", 'Banque', 'États-Unis'),
-    'V': ("Visa exploite le plus grand réseau mondial de paiement par carte, percevant une commission sur chaque transaction sans porter le risque de crédit. Un modèle très rentable qui profite de la baisse du cash.", 'Paiements', 'États-Unis'),
-    'MA': ("Mastercard exploite un réseau mondial de paiement électronique, se rémunérant sur les transactions traitées. Comme Visa, elle bénéficie de la digitalisation des paiements sans supporter le risque de crédit.", 'Paiements', 'États-Unis'),
-    'HD': ("The Home Depot est le leader américain de la distribution de bricolage, matériaux et équipements pour la maison, servant particuliers comme professionnels du bâtiment.", 'Distribution spécialisée', 'États-Unis'),
-    'UNH': ("UnitedHealth Group est un géant américain de la santé : assurance santé (UnitedHealthcare) et services de soins/données (Optum). Un acteur clé et défensif du système de santé américain.", 'Assurance santé', 'États-Unis'),
-    'XOM': ("ExxonMobil est une major pétrolière et gazière intégrée : exploration, production, raffinage et chimie. Ses résultats suivent les cours du pétrole et du gaz ; le groupe investit aussi dans la capture de carbone.", 'Pétrole & Gaz', 'États-Unis'),
-    'WMT': ("Walmart est le premier distributeur mondial par le chiffre d'affaires, avec un réseau massif d'hypermarchés et une activité e-commerce en forte croissance. Positionné sur les prix bas, il est défensif en période d'incertitude.", 'Distribution', 'États-Unis'),
-}
-
-
-@app.route('/desc/<sym>')
-def desc_ep(sym):
-    sym = (sym or '').upper()
-    if sym in _desc_cache:
-        return jsonify(_desc_cache[sym])
-    out = {'sym': sym, 'summary': '', 'industry': '', 'employees': None, 'country': '', 'lang': 'fr'}
-    if DEMO_MODE or sym in _FR_DESC:          # VITRINE / secours : description FR intégrée
-        fd = _FR_DESC.get(sym)
-        if fd:
-            out['summary'], out['industry'], out['country'] = fd[0], fd[1], fd[2]
-            _desc_cache[sym] = out
-            return jsonify(out)
-    try:
-        info = yf.Ticker(sym).info
-        _en = (info.get('longBusinessSummary') or '')[:900]
-        out['summary'] = ai.fr_desc(sym, _en) if _en else ''   # traduction FR si clé IA dispo
-        out['lang'] = 'fr' if (out['summary'] and out['summary'] != _en) else 'en'
-        out['industry'] = info.get('industry') or ''
-        out['employees'] = info.get('fullTimeEmployees')
-        out['country'] = info.get('country') or ''
-    except Exception:
-        pass
-    if out['summary']:            # on ne cache QUE les fetch réussis (throttle → réessaie plus tard)
-        with _desc_lock:
-            _desc_cache[sym] = out
-            try:
-                with open(_DESC_PATH, 'w', encoding='utf-8') as _fh:
-                    json.dump(_desc_cache, _fh)
-            except Exception:
-                pass
-    return jsonify(out)
+app.register_blueprint(_desk.make_blueprint(
+    opt_job=_opt_job, ibkr_enabled=IBKR_ENABLED,
+    cotation_repli=_cotation_repli))
 
 
 # ─── SANTÉ SYSTÈME & PWA (Blueprint) — healthz · system-status · favicon · manifest · sw.js ───
-app.register_blueprint(_system.bp)
 
 
 # ─── TRADINGVIEW (Blueprint) — /api/tradingview/webhook · /api/tradingview/signals ───
@@ -2145,8 +1707,6 @@ from vertex.app.routes import redesign as _redesign
 app.register_blueprint(_redesign.make_blueprint(scan_state=scan_state))
 
 # ─── FLUX TEMPS RÉEL (SSE) : /api/live/events — lecture seule, §26 ───
-from vertex.app.routes import live_events as _live_events
-app.register_blueprint(_live_events.bp)
 
 # ─── POSITION INTELLIGENCE : /api/positions/* — lecture seule, cycle de vie ───
 from vertex.app.routes import positions_api as _positions_api
@@ -2159,13 +1719,7 @@ app.register_blueprint(_positions_api.make_blueprint(
 app.register_blueprint(_decision_api.make_blueprint(scan_state=scan_state, demo_mode=DEMO_MODE))
 
 
-@app.route('/options/<sym>')
-def opt_ep(sym):
-    return jsonify(options_pack(sym.upper()))
-
-
 # ─── IBKR LECTURE SEULE (ib_reader, readonly) — jamais d'ordre ──────────────
-_ibkr_cache = {'ts': 0.0, 'data': None}
 _IBKR_MODE = {7496: 'RÉEL (TWS)', 7497: 'PAPER (TWS)', 4001: 'RÉEL (Gateway)', 4002: 'PAPER (Gateway)'}
 
 
@@ -2181,10 +1735,16 @@ def _ibkr_worker(res):
         res['error'] = f'ib_async non disponible ({type(e).__name__})'
         return
     r = IBKRReader()
-    for port in (7497, 7496, 4002, 4001):                  # PAPER d'abord
+    #  Ce site cherchait le PAPIER en premier alors que les trois autres
+    #  cherchaient le REEL : quand les deux TWS repondent, l'ecran affichait le
+    #  cash d'un compte et les cotations d'un autre, sans que rien ne le dise.
+    for port in _ibkr_link.ordre_des_ports():
         try:
-            r.ib.connect('127.0.0.1', port, clientId=17, readonly=True, timeout=2)
+            r.ib.connect(_ibkr_link.hote(), port,
+                         clientId=_ibkr_link.client_id('compte'),
+                         readonly=True, timeout=2)
             r.port = port
+            _ibkr_link.noter_succes(port, 'compte')
             break
         except Exception:
             continue
@@ -2250,39 +1810,60 @@ def _ibkr_snapshot():
 
 
 # ─── COURS EN DIRECT (flux IBKR permanent, lecture seule) ───────────────────
-_live_quotes = {}                       # {sym: {last, change, bid, ask}}
-_live_meta = {'connected': False, 'ts': 0.0, 'rt': False, 'n': 0}
 
 
-def _sync_ibkr_state():
-    """Reflète l'état RÉEL du socket IBKR dans scan_state (honnêteté §2/§10).
+#  La passerelle socket -> scan_state vit desormais dans
+#  `vertex/app/ibkr_state.py` : ses deux entrees (`_live_meta`, `scan_state`)
+#  avaient deja un domicile dans le paquet, elle restait ici par habitude. Le
+#  nom local est CONSERVE — une quinzaine d'appelants s'en servent dans ce
+#  fichier, et les renommer d'un coup melerait deux changements.
+_sync_ibkr_state = _ibkr_state.sync
 
-    connections.py lit scan_state['ibkr_connected']/['ibkr_live'] — sans cette
-    passerelle, la carte Système resterait à un état de configuration mensonger.
-    Garde-fou fraîcheur : une session dont les ticks datent de > 75 s n'est plus
-    « connectée » (un worker figé ne doit jamais paraître live). On ne mute que
-    des clés — scan_state n'est jamais réassigné."""
-    fresh = (time.time() - _live_meta.get('ts', 0)) < 75
-    connected = bool(_live_meta.get('connected')) and fresh
-    scan_state['ibkr_connected'] = connected
-    scan_state['ibkr_live'] = connected and bool(_live_meta.get('rt'))
+
+def _px_valide(v):
+    """Prix exploitable, ou None. `nan` et `None` sont la MEME chose : « IBKR
+    n\'a rien donne »."""
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    return f if (f == f and f > 0) else None
 
 
 def _store_ticker(t):
-    """Range un ticker IBKR dans _live_quotes. Renvoie True si temps réel."""
+    """Range un ticker IBKR dans _live_quotes. Rend (stocke, temps_reel).
+
+    LE PRIX EST CONSERVE DES QU\'IL EXISTE. L\'ancienne version exigeait `last`
+    ET `close` (`if last and close:`) : hors seance, IBKR ne livre pas toujours
+    la cloture, et un prix REEL etait alors JETE parce qu\'un champ DERIVE — la
+    variation — n\'etait pas calculable. Jeter une verite pour proteger un
+    calcul, c\'est l\'inverse de la regle du produit : une donnee absente devient
+    un `—` honnete, elle ne vide pas l\'ecran de ce qu\'on sait.
+
+    `stocke` est rendu pour que l\'appelant sache si un passage a produit QUOI
+    QUE CE SOIT — c\'est ce qui declenche le repli vers la cloture figee.
+    """
     s = t.contract.symbol.replace(' ', '-')   # IBKR 'BRK B' -> forme interne yfinance 'BRK-B'
-    last = t.last if (t.last is not None and t.last == t.last and t.last > 0) else None
-    close = t.close if (t.close is not None and t.close == t.close and t.close > 0) else None
+    last = _px_valide(getattr(t, 'last', None))
+    close = _px_valide(getattr(t, 'close', None))
+    if last is None:
+        try:
+            last = _px_valide(t.marketPrice())
+        except Exception:
+            last = None
     if last is None:
         last = close
-    if last and close:
-        _live_quotes[s] = {
-            'last': round(last, 2),
-            'change': round((last - close) / close * 100, 2),
-            'bid': round(t.bid, 2) if (t.bid is not None and t.bid == t.bid and t.bid > 0) else None,
-            'ask': round(t.ask, 2) if (t.ask is not None and t.ask == t.ask and t.ask > 0) else None,
-        }
-    return getattr(t, 'marketDataType', None) == 1
+    if last is None:
+        return (False, False)
+    _live_quotes[s] = {
+        'last': round(last, 2),
+        #  Variation INCONNUE plutot qu\'absente de la ligne : sans cloture on
+        #  ne peut pas la calculer, et l\'inventer serait pire que l\'avouer.
+        'change': round((last - close) / close * 100, 2) if close else None,
+        'bid': (lambda v: round(v, 2) if v else None)(_px_valide(getattr(t, 'bid', None))),
+        'ask': (lambda v: round(v, 2) if v else None)(_px_valide(getattr(t, 'ask', None))),
+    }
+    return (True, getattr(t, 'marketDataType', None) == 1)
 
 
 def _quotes_worker():
@@ -2295,25 +1876,43 @@ def _quotes_worker():
             from ib_async import IB, Stock
             ib = IB()
             ok = False
-            for port in (7496, 7497, 4001, 4002):
+            for port in _ibkr_link.ordre_des_ports():
                 try:
-                    ib.connect('127.0.0.1', port, clientId=18, readonly=True, timeout=4)
+                    ib.connect(_ibkr_link.hote(), port,
+                               clientId=_ibkr_link.client_id('cotations'),
+                               readonly=True, timeout=4)
+                    _ibkr_link.noter_succes(port, 'cotations')
                     ok = True
                     break
                 except Exception:
                     continue
             if not ok:
+                _ibkr_link.noter_echec('cotations')
+            if not ok:
                 _live_meta['connected'] = False
                 _sync_ibkr_state()
                 time.sleep(20)
                 continue
-            ib.reqMarketDataType(1)      # 1 = temps réel (bascule auto en différé si pas d'abonnement)
+            #  1 = temps reel. IBKR NE BASCULE PAS TOUT SEUL : le commentaire
+            #  d'origine (« bascule auto en differe si pas d'abonnement ») etait
+            #  FAUX. Avec le type 1, un marche ferme ou un abonnement manquant
+            #  rend des ticks vides — et l'ecran se retrouve sans aucun cours,
+            #  « comme si IBKR n'avait rien trouve ». Le chemin options le
+            #  savait deja (il retente en type 2) ; ce worker-ci et celui des
+            #  indices ne le savaient pas.
+            mdt = 1
+            ib.reqMarketDataType(mdt)
+            _live_meta['mdt'] = mdt
+            _live_meta['mdt_libelle'] = _ibkr_link.libelle_donnees(mdt)
+            passages_a_vide = 0
             cs = [Stock(s.replace('-', ' '), 'SMART', 'USD') for s in LIVE_SYMBOLS]   # classe B : BRK-B -> 'BRK B' pour IBKR
             ib.qualifyContracts(*cs)
             valid = [c for c in cs if getattr(c, 'conId', 0)]
             _live_meta.update({'connected': True, 'n': len(valid)})
+            debut_degrade = 0
             while ib.isConnected():
                 rt = False
+                recus = 0
                 for i in range(0, len(valid), 20):   # lots de 20 = cycle rapide sur tout l'univers, snapshot (lignes libérées entre lots)
                     try:                              # timeout : un symbole sans données ne bloque pas le lot
                         # 14 s : avec l'abonnement TEMPS RÉEL, la fin de snapshot des titres
@@ -2323,11 +1922,48 @@ def _quotes_worker():
                         _live_meta['err'] = f'reqTickers: {type(_e).__name__}: {_e}'
                         continue
                     for t in tickers:
-                        if _store_ticker(t):
+                        stocke, temps_reel = _store_ticker(t)
+                        if stocke:
+                            recus += 1
+                        if temps_reel:
                             rt = True
                     _live_meta.update({'ts': time.time(), 'rt': rt})   # frais dès le 1er lot
                     _sync_ibkr_state()
                     ib.sleep(0.2)
+                #  Un cycle ENTIER sans un seul cours : le marche est ferme, ou
+                #  l'abonnement ne couvre pas ces titres. On demande alors la
+                #  CLOTURE FIGEE (type 2) — une donnee vraie, simplement datee
+                #  d'hier — plutot que de laisser huit ecrans vides. Deux cycles
+                #  d'attente : un lot qui expire n'est pas un marche ferme.
+                #  Escalade 1 -> 2 -> 3 -> 4, regle UNIQUE partagee par les
+                #  flux (`ibkr_link.type_suivant`). Le type 2 exige encore un
+                #  abonnement : sans abonnement, seul le 3 (differe) parle. Deux
+                #  cycles d'attente avant de descendre — un lot qui expire n'est
+                #  pas un marche ferme.
+                if recus == 0:
+                    passages_a_vide += 1
+                    if passages_a_vide >= 2:
+                        suivant = _ibkr_link.type_suivant(mdt, False)
+                        if suivant != mdt:
+                            mdt = suivant
+                            ib.reqMarketDataType(mdt)
+                            _live_meta['mdt'] = mdt
+                            _live_meta['mdt_libelle'] = _ibkr_link.libelle_donnees(mdt)
+                            debut_degrade = time.time() if mdt != 1 else 0
+                        passages_a_vide = 0
+                else:
+                    passages_a_vide = 0
+                #  Retour au temps reel toutes les 15 min : rester en mode
+                #  degrade ferait mentir l'ecran a l'ouverture de la seance.
+                #  `debut_degrade` est pose AU MOMENT DE LA BASCULE — le
+                #  remettre a l'heure a chaque cycle rendait ce retour
+                #  structurellement inatteignable.
+                if mdt != 1 and debut_degrade and time.time() - debut_degrade > 900:
+                    mdt = 1
+                    ib.reqMarketDataType(mdt)
+                    _live_meta['mdt'] = mdt
+                    _live_meta['mdt_libelle'] = _ibkr_link.libelle_donnees(mdt)
+                    debut_degrade = 0
                 ib.sleep(4)
         except Exception as _e:
             _live_meta['connected'] = False
@@ -2342,8 +1978,6 @@ def _quotes_worker():
 # IBUS30. On overlaie scan_state['indices'] + le VIX du contexte. On N'OVERLAIE PAS
 # le Nasdaq (yfinance = ^IXIC Composite ; IBKR gratuit = NDX 100 → indices DIFFÉRENTS,
 # mélanger serait malhonnête §4) ni le Russell. ⛔ LECTURE SEULE (reqMktData only).
-_IDX_IBKR = {}      # {nom_affiché: {'price':.., 'change':.., 'ts':..}}
-_IDX_META = {'connected': False, 'ts': 0.0, 'n': 0}
 # nom d'affichage (DOIT matcher scan_state['indices']) -> (secType, symbol, exchange)
 _IDX_SPECS = [
     ('S&P 500', 'IND', 'SPX', 'CBOE'),
@@ -2390,18 +2024,27 @@ def _indices_loop():
             from ib_async import IB, Index, CFD
             ib = IB()
             ok = False
-            for port in (7496, 7497, 4001, 4002):
+            for port in _ibkr_link.ordre_des_ports():
                 try:
-                    ib.connect('127.0.0.1', port, clientId=22, readonly=True, timeout=4)
+                    ib.connect(_ibkr_link.hote(), port,
+                               clientId=_ibkr_link.client_id('indices'),
+                               readonly=True, timeout=4)
+                    _ibkr_link.noter_succes(port, 'indices')
                     ok = True
                     break
                 except Exception:
                     continue
             if not ok:
+                _ibkr_link.noter_echec('indices')
+            if not ok:
                 _IDX_META['connected'] = False
                 time.sleep(20)
                 continue
-            ib.reqMarketDataType(1)        # temps réel (repli auto différé si besoin)
+            #  Meme correctif : IBKR ne bascule pas seul, et le commentaire
+            #  d'origine (« repli auto differe si besoin ») decrivait un
+            #  comportement qui n'existe pas.
+            ib.reqMarketDataType(1)
+            _IDX_META['mdt'] = 1
             streams = []
             for name, sec, sym, exch in _IDX_SPECS:
                 try:
@@ -2414,6 +2057,7 @@ def _indices_loop():
             _IDX_META.update({'connected': bool(streams), 'n': len(streams)})
             while ib.isConnected():
                 ib.sleep(12)
+                recus = 0
                 for name, t in streams:
                     px = None
                     for v in (getattr(t, 'last', None), t.marketPrice(), getattr(t, 'close', None)):
@@ -2432,7 +2076,25 @@ def _indices_loop():
                         chg = None
                     if px is not None:
                         _IDX_IBKR[name] = {'price': round(px, 2), 'change': chg, 'ts': time.time()}
+                        recus += 1
                 _IDX_META['ts'] = time.time()
+                #  Aucun indice cote : cloture figee plutot qu'un bandeau vide.
+                #  L'echec de la bascule est ECRIT, jamais avale : un
+                #  `except: pass` de plus aurait rendu muette la seule
+                #  explication d'un bandeau vide — precisement le defaut traite
+                #  ici. Les gardiens des lots 385/386 l'ont refuse, a raison.
+                cible = _ibkr_link.type_suivant(_IDX_META.get('mdt', 1),
+                                                bool(recus))
+                if _IDX_META.get('mdt') != cible:
+                    try:
+                        ib.reqMarketDataType(cible)
+                        _IDX_META['mdt'] = cible
+                        _IDX_META['mdt_libelle'] = _ibkr_link.libelle_donnees(cible)
+                        _IDX_META.pop('err_mdt', None)
+                    except Exception as _mdte:
+                        _IDX_META['err_mdt'] = (
+                            'bascule type %d refusee: %s: %s'
+                            % (cible, type(_mdte).__name__, _mdte))
                 _apply_ibkr_indices()
         except Exception as _e:
             _IDX_META['connected'] = False
@@ -2440,36 +2102,14 @@ def _indices_loop():
         time.sleep(15)
 
 
-@app.route('/quotes')
-def quotes_ep():
-    fresh = (time.time() - _live_meta.get('ts', 0)) < 75
-    _sync_ibkr_state()          # rafraîchit l'état honnête (garde-fou fraîcheur)
-    return jsonify({'quotes': _live_quotes if fresh else {}, 'meta': _live_meta, 'fresh': fresh})
-
-
-@app.route('/ibkr')
-def ibkr_ep():
-    return jsonify(_ibkr_snapshot())
+#  `/quotes` et `/ibkr` sont partis dans
+#  `vertex/app/routes/live_state_api.py` avec `/api/alerts/status`.
 
 
 # ─── FILS DE CONTENU (Blueprint) — news-feed · cal-feed · weekly-feed ───
-app.register_blueprint(_content.bp)
 
 
-@app.route('/weekly-regen', methods=['POST', 'GET'])
-def weekly_regen_ep():
-    """Force la régénération de la sélection hebdo (ex. nouveau lundi manuel, ou
-    après un gros changement de marché). Reste ANALYSE ONLY — recalcule un snapshot."""
-    if not (scan_state.get('rows') and scan_state.get('detail')):
-        return jsonify({'ok': False, 'error': 'scan pas encore prêt'})
-    try:
-        snap, _ = weekly.get_or_build(WEEKLY_PATH, scan_state['rows'], scan_state['detail'],
-                                      earnings=_earnings_map(), n=6, with_options=True, force=True)
-        weekly_state.update({'data': snap, 'regenerated': True,
-                             'updated': datetime.now().strftime('%H:%M:%S')})
-        return jsonify({'ok': True, 'week': snap.get('week'), 'n': snap.get('meta', {}).get('n')})
-    except Exception as e:
-        return jsonify({'ok': False, 'error': f'{type(e).__name__}: {e}'})
+#  `/weekly-regen` est parti dans `vertex/app/routes/weekly_api.py`.
 
 
 PAGE_DAILY = r"""<!doctype html><html lang="fr"><head><meta charset="utf-8">
@@ -7132,6 +6772,21 @@ for _pg, _cur in (('PAGE_SETTINGS', '/settings'), ('PAGE_HEALTH', '/health')):
 _ALERTS_FIRED = _load_json('alerts_fired.json', {})
 
 
+#  ── SONDES D'ETAT (#779/G1) ────────────────────────────────────────────────
+#  Enregistre ICI et pas avec les six autres blueprints a injection : ses deux
+#  dependances (`_ibkr_snapshot`, `_ALERTS_FIRED`) sont definies plus bas dans
+#  ce fichier, et l'enregistrer plus haut leverait un NameError a l'import.
+#  L'ordre est neutre pour le dispatch — aucune des trois routes n'entre en
+#  collision (mesure : 4 regles en double dans le depot, aucune de celles-ci).
+#
+#  `_ALERTS_FIRED` est passe PAR REFERENCE : la boucle d'alertes le mute en
+#  place, et c'est ce partage qui fait que /api/alerts/status sert l'etat
+#  courant plutot qu'une copie figee au demarrage.
+from vertex.app.routes import live_state_api as _live_state_api  # noqa: E402
+app.register_blueprint(_live_state_api.make_blueprint(
+    ibkr_snapshot=_ibkr_snapshot, alerts_fired=_ALERTS_FIRED))
+
+
 def _alert_price(sym):
     q = _live_quotes.get(sym)
     if q and _live_meta.get('connected') and q.get('last') is not None:
@@ -7179,20 +6834,12 @@ def _alerts_loop():
         time.sleep(60)
 
 
-@app.route('/api/alerts/status')
-def api_alerts_status():
-    """Alertes déclenchées côté serveur (évaluées toutes les 60 s, prix live IBKR)."""
-    return jsonify({'fired': _ALERTS_FIRED, 'ts': int(time.time())})
+#  `/api/alerts/status` a rejoint `live_state_api`, et
+#  `/api/track-record` `track_record_api` (aucune injection : ses deux
+#  dependances vivaient deja dans le paquet).
 
 
-@app.route('/api/track-record')
-def api_track_record():
-    """📓 LE MOTEUR SE NOTE : fiabilité mesurée des verdicts (rendements réels
-    +5/+20 séances, TP1-avant-stop) par verdict/grade/régime. Analyse only."""
-    return jsonify(_track.evaluate(scan_state))
-
-
-def _start_workers():
+def _demarrer_les_boucles():
     """Démarre les threads de fond. En mode DÉMO (vitrine cloud) on ne lance QUE le
     scan synthétique : les autres boucles (options/news/calendrier/hebdo/fondamentaux)
     dépendent de yfinance — inutiles et coûteuses (mémoire/CPU) quand le réseau est
@@ -7213,6 +6860,25 @@ def _start_workers():
         threading.Thread(target=_indices_loop, daemon=True).start()      # indices/VIX TEMPS RÉEL IBKR (lecture seule)
         threading.Thread(target=_ibkr_opt_worker, daemon=True).start()   # chaînes options IBKR (lecture seule)
         threading.Thread(target=_radar_loop, daemon=True).start()        # scanners + news IBKR (lecture seule)
+
+
+def _start_workers():
+    """Point d'entrée du démarrage des boucles — GARDÉ CONTRE LE DOUBLE APPEL.
+
+    #779/G1. `_start_workers()` est appelé à DEUX endroits : à l'import quand
+    `START_ON_IMPORT=1`, et par `_start_app()`. Sans garde, les deux appels
+    partaient, et `_loop`, `_alerts_loop` et `_cal_loop` tournaient EN DOUBLE —
+    mesuré : 4 fils après import, 7 après le second appel. Deux boucles de scan
+    mutant `scan_state` en même temps ne plantent pas : elles s'écrasent
+    l'une l'autre au hasard de l'ordonnancement.
+
+    La production n'était pas touchée (gunicorn n'appelle jamais `_start_app`),
+    mais le lancement local documenté l'était — donc toute mesure prise en
+    `START_ON_IMPORT=1` l'a été avec deux boucles concurrentes.
+
+    Le second appel est ignoré ET COMPTÉ : `_lifecycle.statut()['ignores']`
+    permet de constater qu'une seconde tentative a eu lieu."""
+    return _lifecycle.demarrer_une_seule_fois(_demarrer_les_boucles, nom='boucles')
 
 
 def _start_app():

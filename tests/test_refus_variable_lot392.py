@@ -194,15 +194,19 @@ def test_un_symbole_inconnu_ne_recoit_pas_une_description_inventee(client, tmp_p
     il ne doit pas non plus fabriquer un contenu plausible.
 
     ⚠ Lot 399 — sur une machine EN LIGNE, cette route interroge yfinance puis
-    **écrit `desc_cache.json` à la racine du dépôt** (terminal.py L1983). Le
+    **écrit `desc_cache.json` à la racine du dépôt**
+    (`descriptions_api.CHEMIN`). Le
     défaut était invisible ici (le réseau échoue) et invisible au recensement du
     lot 389 (l'écriture est conditionnée à la RÉUSSITE du fetch). Le cache
     mémoire et le chemin disque sont donc isolés : la route reste la vraie,
     seule sa destination change.
     """
-    import terminal
-    monkeypatch.setattr(terminal, '_DESC_PATH', str(tmp_path / 'desc_cache.json'))
-    monkeypatch.setattr(terminal, '_desc_cache', {})
+    #  #779/G1 — la route, son cache memoire et son chemin disque vivent dans
+    #  `vertex/app/routes/descriptions_api.py`. Le test vise le module qui les
+    #  tient ; l'isolation du disque reste ce qu'elle etait.
+    from vertex.app.routes import descriptions_api as _desc
+    monkeypatch.setattr(_desc, 'CHEMIN', str(tmp_path / 'desc_cache.json'))
+    monkeypatch.setattr(_desc, '_cache', {})
     corps = json.loads(client.get('/desc/ZZZZINEXISTANT').get_data(as_text=True))
     for champ in ('summary', 'industry', 'country'):
         assert corps.get(champ) == '', (
