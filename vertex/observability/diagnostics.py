@@ -17,6 +17,11 @@ def system_diagnostics(scan_state: dict | None = None,
             'rows': len(scan_state.get('rows') or []),
             'source': scan_state.get('source'),
             'options_source': scan_state.get('options_source'),
+            #  Le DETAIL par contributeur, pas seulement l'etiquette agregee.
+            #  « ibkr+yfinance » dit qu'il y a eu repli ; il ne dit pas sur
+            #  combien de titres. Sans ce compte, un repli passant de 3 a 200
+            #  symboles se lirait exactement pareil a l'ecran.
+            'source_detail': scan_state.get('source_detail'),
             'last_scan_ts': scan_state.get('ts') or scan_state.get('last'),
         }
     if scheduler is not None:

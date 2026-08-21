@@ -304,9 +304,39 @@ def _download_universe(tickers, period='1y', chunk=50):
     Si yfinance échoue (ex: Yahoo bloque l'IP du serveur cloud), bascule
     automatiquement sur Stooq pour les tickers manquants."""
     frames = {}
+    #  ── TETE DE CHAINE : IBKR ────────────────────────────────────────────
+    #  Le courtier d'abord, le web ensuite. Les barres IBKR sont celles du
+    #  compte qui detient les positions : les memes que les cotations, les
+    #  chaines d'options et le P&L. Faire cohabiter deux origines pour un
+    #  meme titre, c'est accepter que le scan et l'ecran ne parlent pas du
+    #  meme cours.
+    #
+    #  Ce qu'IBKR ne sert pas reste au repli, et c'est voulu : un symbole
+    #  qu'il ne connait pas (mesure : AVB) ou un compte sans abonnement
+    #  doivent produire une ABSENCE ici, pas un trou dans le scan. yfinance
+    #  puis stooq ramassent exactement ce qui manque.
+    ibkr_n = 0
+    if IBKR_ENABLED and not DEMO_MODE:
+        try:
+            import asyncio as _aio
+            from vertex.data_sources.ibkr_historical import fetch_universe_bars
+            try:                       # le scan tourne dans un thread de fond
+                _aio.get_event_loop()
+            except RuntimeError:
+                _aio.set_event_loop(_aio.new_event_loop())
+            duree = {'1y': '1 Y', '6mo': '6 M', '2y': '2 Y'}.get(period, '1 Y')
+            recus, rapport = fetch_universe_bars(tickers, duration=duree)
+            frames.update(recus)
+            ibkr_n = len(recus)
+            if rapport.get('inconnus') or rapport.get('vides'):
+                _live_meta['hist_repli'] = len(rapport['inconnus']) + len(rapport['vides'])
+        except Exception as _e:        # TWS absent, refus, coupure : on continue
+            _live_meta['hist_err'] = '%s: %s' % (type(_e).__name__, _e)
+
+    manquants = [t for t in tickers if t not in frames]
     bad_batches = 0
-    for i in range(0, len(tickers), chunk):
-        part = tickers[i:i + chunk]
+    for i in range(0, len(manquants), chunk):
+        part = manquants[i:i + chunk]
         try:
             dl = yf.download(part, period=period, interval='1d', progress=False,
                              auto_adjust=True, group_by='ticker', threads=True,
@@ -338,10 +368,21 @@ def _download_universe(tickers, period='1y', chunk=50):
         except Exception:
             pass
     stooq_n = len(frames) - yahoo_n
+    #  RETRANCHER AVANT de juger yfinance : `yahoo_n` comptait le cumul, part
+    #  IBKR comprise. Juge sur le cumul, le budget se declarait « disponible »
+    #  alors que Yahoo n'avait rien servi — un diagnostic faux, et faux dans le
+    #  sens rassurant.
+    yahoo_n -= ibkr_n
     _SOURCE_BUDGET_STATE['yfinance'] = 'AVAILABLE' if yahoo_n else 'UNAVAILABLE'
-    scan_state['source'] = ('unavailable' if yahoo_n == 0 and stooq_n == 0 else
-                            'yfinance' if stooq_n == 0 else
-                            'stooq' if yahoo_n == 0 else 'yfinance+stooq')
+    #  La provenance NOMME chaque contributeur. « ibkr+yfinance » n'est pas
+    #  « ibkr » : l'ecran doit pouvoir dire qu'une partie de l'univers n'a pas
+    #  ete servie par le courtier, sinon le repli devient invisible — et un
+    #  repli invisible est un mensonge de source (QUALITY_STANDARD §1).
+    contributeurs = [n for n, c in (('ibkr', ibkr_n), ('yfinance', yahoo_n),
+                                    ('stooq', stooq_n)) if c > 0]
+    scan_state['source'] = '+'.join(contributeurs) if contributeurs else 'unavailable'
+    scan_state['source_detail'] = {'ibkr': ibkr_n, 'yfinance': yahoo_n,
+                                   'stooq': stooq_n, 'univers': len(tickers)}
     return frames
 
 
