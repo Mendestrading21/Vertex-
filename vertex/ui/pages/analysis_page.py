@@ -673,25 +673,29 @@ async function loadDossier(){
     });
   };
 
-  /* 11. Options */
+  /* 11. Options — le moteur (options_for_position) sert `suggestions`
+     [{role, role_label, grade, score, strike, exp, dte, delta, premium, pop,
+     why}] ; l'ancien lecteur cherchait `contracts` (clé jamais servie) et la
+     carte restait vide alors que le board avait des contrats. */
   try{
     const ob=await VX.fetch('/api/options-for/'+SYM+'?type=CALL',{ttl:180000});
-    const cs=(ob&&(ob.contracts||ob.list||ob.best))||ob||{};
-    const arr=Array.isArray(cs)?cs:(cs.contracts||[]);
+    const arr=(ob&&(ob.suggestions||ob.contracts||ob.list))||[];
+    const why=(arr[0]&&arr[0].why)?('<div class="vx-meta vx-mt1">'+esc(arr[0].why)+'</div>'):'';
     body('an-options',arr.length?
       `<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
         <th>Contrat</th><th class="vx-num">Strike</th><th>Échéance</th><th class="vx-num">Delta</th>
-        <th class="vx-num">Prime</th><th class="vx-num">OI</th><th></th></tr></thead><tbody>${
-        arr.slice(0,3).map(c=>`<tr>
-          <td data-label="Contrat"><span class="vx-badge" style="color:var(--vx-violet)">CALL</span></td>
+        <th class="vx-num">Prime</th><th class="vx-num">POP</th><th class="vx-num">Note</th><th></th></tr></thead><tbody>${
+        arr.slice(0,4).map(c=>`<tr>
+          <td data-label="Contrat"><span class="vx-badge" style="color:${c.type==='PUT'?'var(--vx-negative)':'var(--vx-violet)'}"${c.why?` title="${esc(c.why)}"`:''}>${esc(c.role_label||c.role||c.type||'CALL')}</span></td>
           <td data-label="Strike" class="vx-num">${VX.fmt.nd(c.strike)}</td>
-          <td data-label="Échéance" class="vx-mono">${VX.fmt.nd(c.exp||c.expiry)}</td>
+          <td data-label="Échéance" class="vx-mono">${VX.fmt.nd(c.exp||c.expiry)}${c.dte!=null?' <span class="vx-meta">('+c.dte+' j)</span>':''}</td>
           <td data-label="Delta" class="vx-num">${VX.fmt.nd(c.delta)}</td>
           <td data-label="Prime" class="vx-num">${VX.fmt.nd(c.mid??c.premium??c.cost)}</td>
-          <td data-label="OI" class="vx-num">${VX.fmt.nd(c.oi??c.openInterest)}</td>
+          <td data-label="POP" class="vx-num">${c.pop!=null?c.pop+' %':'—'}</td>
+          <td data-label="Note" class="vx-num">${esc(c.grade||'—')}${c.score!=null?' <span class="vx-meta">'+c.score+'/100</span>':''}</td>
           <td><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=options&sym=${SYM}">Analyser →</a></td></tr>`).join('')}
-      </tbody></table></div>`
-      :VX.states.empty('Aucun contrat CALL exploitable retourné par le moteur.',
+      </tbody></table></div>`+why
+      :VX.states.empty((ob&&ob.note)||'Aucun contrat CALL exploitable retourné par le moteur.',
         `<a class="vx-btn vx-btn-sm" href="/opportunities?view=options&sym=${SYM}">Ouvrir le desk options</a>`));
   }catch(e){body('an-options',VX.states.empty('Chaîne d’options indisponible (IBKR hors ligne ou titre sans options).'));}
 
