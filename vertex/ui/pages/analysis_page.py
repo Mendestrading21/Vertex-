@@ -288,12 +288,44 @@ $('an-fav').addEventListener('click',()=>{E().toggleFavorite(SYM);paintBadges();
 ['vx:favorites-changed','vx:watchlist-changed','vx:follow-changed','vx:position-changed','vx:alert-changed']
   .forEach(ev=>VX.bus.on(ev,paintBadges));
 
-/* Thèse (note utilisateur) */
+/* Thèse (note utilisateur). Sans thèse, la carte ne reste pas muette : elle
+   propose un BROUILLON construit sur le dossier réel (décision, plan, facteurs
+   du comité) — les moteurs proposent, l'utilisateur décide et édite. */
+let DEC=null;   // dernière décision exécutive peinte (source du brouillon)
+function thesisDraft(){
+  if(!DEC||!(DEC.decision_label||DEC.final_decision))return null;
+  const tg=DEC.targets||{},L=[];
+  const px=v=>v!=null?VX.fmt.nd(v):'—';
+  L.push('Thèse '+SYM+' — brouillon moteur, à valider ('+new Date().toLocaleDateString('fr-FR')+')');
+  L.push('Décision moteur : '+(DEC.decision_label||DEC.final_decision)
+    +(DEC.confidence!=null?' — confiance '+DEC.confidence+'/100':''));
+  if(DEC.entry!=null||DEC.invalidation!=null||DEC.stop!=null)
+    L.push('Plan : entrée '+px(DEC.entry)+' · invalidation '+px(DEC.invalidation!=null?DEC.invalidation:DEC.stop)
+      +(tg.tp1!=null?' · cible '+px(tg.tp1):'')+(tg.tp3!=null?' / étendue '+px(tg.tp3):''));
+  const pros=(DEC.pros||[]).slice(0,2),cons=(DEC.cons||[]).slice(0,2),unk=(DEC.unknowns||[])[0];
+  if(pros.length)L.push('Pour : '+pros.join(' ; '));
+  if(cons.length)L.push('Contre : '+cons.join(' ; '));
+  if(unk)L.push('À surveiller : '+unk);
+  L.push('Ma lecture personnelle : ');
+  return L.join('\n');
+}
 function paintThesis(){
   const note=E()&&E().note(SYM);
-  $('an-thesis').innerHTML=note?esc(note).replace(/\n/g,'<br>'):
-    VX.states.emptyDesk('Aucune thèse enregistrée sur ce titre.',
+  if(note){$('an-thesis').innerHTML=esc(note).replace(/\n/g,'<br>');return;}
+  const draft=thesisDraft();
+  if(!draft){
+    $('an-thesis').innerHTML=VX.states.emptyDesk('Aucune thèse enregistrée sur ce titre.',
       `<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${SYM}','note')">Écrire la thèse</button>`);
+    return;
+  }
+  $('an-thesis').innerHTML=
+    '<div class="vx-meta vx-mb1">Aucune thèse enregistrée — brouillon proposé depuis le dossier réel (les moteurs expliquent, toi tu décides) :</div>'
+    +'<pre class="vx-mono" style="white-space:pre-wrap;background:var(--vx-surface-2,#121214);border:1px dashed var(--vx-border,#2a2a2e);padding:.7rem .8rem;border-radius:10px;font-size:12.5px;line-height:1.7;margin:0 0 .7rem">'+esc(draft)+'</pre>'
+    +'<div class="vx-flex vx-gap2 vx-wrap">'
+    +'<button class="vx-btn vx-btn-sm vx-btn-primary" id="an-th-use">Adopter ce brouillon</button>'
+    +`<button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXEntities.openAddModal('${SYM}','note')">Écrire ma propre thèse</button></div>`;
+  const u=$('an-th-use');
+  if(u)u.addEventListener('click',()=>{E().setNote(SYM,draft);VXEntities.openAddModal(SYM,'note');paintThesis();});
 }
 VX.bus.on('vx:thesis-changed',paintThesis);
 
@@ -782,6 +814,7 @@ async function loadDecisionStack(){
     if(SC)SC.innerHTML='';if(CO)CO.innerHTML='';
     return;
   }
+  DEC=dec;paintThesis();   // le brouillon de thèse se nourrit du dossier réel
   const tone=dec.decision_tone||'gray';
   const conf=(dec.confidence!=null)?dec.confidence:null;
   const entry=dec.entry,inval=dec.invalidation!=null?dec.invalidation:dec.stop;
@@ -827,12 +860,20 @@ async function loadDecisionStack(){
         +'<div class="vx-card-foot"><span class="vx-meta">Scénarios dérivés du plan de niveaux moteur (entrée/invalidation/cibles) — aucune probabilité inventée.</span></div></section>';
     }else{SC.innerHTML='<div class="vx-card">'+VX.states.empty('Plan de niveaux insuffisant pour construire les scénarios.')+'</div>';}
   }
-  /* Raisonnement du comité (intégré depuis Intelligence) */
+  /* Raisonnement du comité (intégré depuis Intelligence). L'accord chiffré
+     seul (« accord 6/100 ») était cryptique : il est traduit en langage
+     humain (faible / moyen / fort) et expliqué quand les moteurs divergent. */
   if(CO){
     const com=dec.committee||{};
     const pros=(dec.pros||[]).slice(0,4),cons=(dec.cons||[]).slice(0,4),unk=(dec.unknowns||[]).slice(0,3);
+    const ag=com.agreement;
+    const agBadge=ag==null?'':('<span class="vx-actions"><span class="vx-badge '
+      +(ag>=70?'vx-pos':ag>=40?'':'vx-neg')+'" title="Convergence des moteurs entre eux (0–100)">accord des moteurs : '
+      +(ag>=70?'fort':ag>=40?'moyen':'faible')+' <span class="vx-mono">('+ag+'/100)</span></span></span>');
+    const agNote=(ag!=null&&ag<40)
+      ?' Accord faible : les moteurs se contredisent — la prudence du verdict vient de là.':'';
     CO.innerHTML='<section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Raisonnement du comité</span>'
-      +(com.agreement!=null?'<span class="vx-actions"><span class="vx-badge">accord '+com.agreement+'/100</span></span>':'')+'</div>'
+      +agBadge+'</div>'
       +(com.view?'<div class="vx-dim vx-mb2">Consensus : <b>'+esc(com.view)+'</b>'+(com.has_contradiction?' · <span class="vx-neg">contradictions internes exposées</span>':'')+'</div>':'')
       +'<div class="vx-grid">'
       +'<div class="vx-col-6"><div class="vx-meta vx-mb1">Facteurs positifs</div>'+(pros.length?pros.map(p=>'<div class="vx-pos" style="font-size:12px">+ '+esc(p)+'</div>').join(''):'<span class="vx-muted">—</span>')+'</div>'
@@ -840,7 +881,7 @@ async function loadDecisionStack(){
       +'</div>'
       +(com.devils_advocate?'<div class="vx-insight vx-mt2" data-tone="risk"><b>Avocat du diable</b><div class="vx-mt1">'+esc(com.devils_advocate)+'</div></div>':'')
       +(unk.length?'<div class="vx-kv vx-mt2"><span class="k">Ce que nous ne savons pas</span><span class="v vx-muted">'+unk.map(esc).join(' · ')+'</span></div>':'')
-      +'<div class="vx-card-foot"><span class="vx-meta">Comité déterministe (decision stack) — l\'IA explique, ne décide jamais.</span></div></section>';
+      +'<div class="vx-card-foot"><span class="vx-meta">Comité déterministe (decision stack) — l\'IA explique, ne décide jamais.'+agNote+'</span></div></section>';
   }
 }
 function demoState(){return !!(window.__vxStatus&&window.__vxStatus.demo);}
