@@ -10,6 +10,28 @@ REGIMES = ('TREND_UP', 'TREND_DOWN', 'CHOP', 'RISK_ON', 'RISK_OFF', 'PANIC',
            'EUPHORIA', 'VOLATILITY_EXPANSION', 'VOLATILITY_COMPRESSION',
            'MEAN_REVERSION', 'TRANSITION', 'UNKNOWN')
 
+# Vocabulaire humain des régimes — miroir de VX.regime.MAP (vx-core.js) : les
+# codes moteur ne s'affichent jamais bruts dans un texte destiné à l'utilisateur.
+REGIME_LABELS_FR = {
+    'TREND_UP': 'Bull Momentum',
+    'TREND_DOWN': 'Bear Pressure',
+    'CHOP': 'Range Mode',
+    'RISK_ON': 'Risk-On',
+    'RISK_OFF': 'Defensive Mode',
+    'PANIC': 'Market Stress',
+    'EUPHORIA': 'Euphoria Mode',
+    'VOLATILITY_EXPANSION': 'Volatility Surge',
+    'VOLATILITY_COMPRESSION': 'Volatility Squeeze',
+    'MEAN_REVERSION': 'Mean Reversion',
+    'TRANSITION': 'Regime Shift',
+    'UNKNOWN': 'Signal Pending',
+}
+
+
+def regime_label_fr(code):
+    """Libellé humain d'un code régime — code inconnu rendu tel quel (honnête)."""
+    return REGIME_LABELS_FR.get(str(code or '').strip().upper(), code)
+
 
 def classify_regime(inputs: dict) -> dict:
     """inputs (tous optionnels — l'absence dégrade honnêtement vers UNKNOWN) :

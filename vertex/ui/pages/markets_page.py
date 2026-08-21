@@ -252,19 +252,10 @@ const SCAN_ACTION='<a class="vx-btn vx-btn-sm" href="/system?view=data">Système
 /* ═══ OVERVIEW ═══ */
 /* Étiquettes FR + tonalité sémantique des régimes du moteur (jamais un code brut
    « UNKNOWN » affiché en grand : tonalité go=porteur, risk=défensif, ''=neutre). */
-const REGIME_LABEL={
-  TREND_UP:['Tendance haussière','go','Le vent est dans le dos — environnement porteur.'],
-  TREND_DOWN:['Tendance baissière','risk','Vent de face — priorité à la défense.'],
-  CHOP:['Sans direction','','Marché indécis — sélectivité et patience.'],
-  RISK_ON:['Risk-On — appétit','go','Appétit pour le risque — momentum favorisé.'],
-  RISK_OFF:['Risk-Off — aversion','risk','Aversion au risque — qualité et défense.'],
-  PANIC:['Panique','risk','Stress extrême — préservation du capital.'],
-  EUPHORIA:['Euphorie','','Excès haussier — prises de bénéfices, prudence.'],
-  VOLATILITY_EXPANSION:['Expansion de volatilité','risk','La volatilité s’étend — entrées agressives invalidées.'],
-  VOLATILITY_COMPRESSION:['Compression de volatilité','','Volatilité comprimée — surveiller les cassures.'],
-  MEAN_REVERSION:['Retour à la moyenne','','Les excès se corrigent — jouer les extrêmes.'],
-  TRANSITION:['Transition','','Le régime bascule — attendre confirmation.'],
-};
+/* Vocabulaire humain des régimes : source unique VX.regime (vx-core.js) —
+   conservé ici sous forme de triplets [label, tone, hint] pour le rendu. */
+const REGIME_LABEL=Object.fromEntries(Object.entries(VX.regime.MAP)
+  .map(([k,m])=>[k,[m.label,m.tone,m.hint]]));
 const SETUP_LABEL={BALANCED:'Équilibrée',BREAKOUT_PULLBACK:'Cassure / pullback',DEFENSIVE:'Défensive',
   MEAN_REVERSION:'Retour moyenne',MOMENTUM:'Momentum',QUALITY_DEFENSIVE:'Qualité défensive',
   CAPITAL_PRESERVATION:'Préservation capital',TAKE_PROFITS:'Prises de bénéfices',
@@ -294,13 +285,14 @@ async function loadRegime(scan){
         sigs.push(sigRail('VIX',v.toFixed(1),(v-10)/30*100,v<15?CO.positive:v<25?CO.warning:CO.negative));}
       if(m.breadth!=null&&!isNaN(m.breadth)){const b=Number(m.breadth);
         sigs.push(sigRail('Participation &gt;MM50',Math.round(b)+' <small>%</small>',b,b>=55?CO.positive:b>=45?CO.warning:CO.negative));}
-      if(m.spy_regime)sigs.push(sigText('Régime S&amp;P 500',esc(m.spy_regime)));
+      if(m.spy_regime)sigs.push(sigText('Régime S&amp;P 500',
+        esc({TREND:'Tendance',CHOP:'Sans direction',UP:'Haussier',DOWN:'Baissier'}[m.spy_regime]||m.spy_regime)));
       if(m.roro)sigs.push(sigText('Risk-on / risk-off',esc(m.roro)));
       $('vx-mk-regime-body').innerHTML=
         `<div class="vx-mk-regime-compact">
           <div class="vx-mk-regime-lead">
-            <span class="tag">Indéterminé</span>
-            <span class="txt">Moins de 3 dimensions qualifiées (${dims} évaluée${dims>1?'s':''}) — le moteur reste honnête et <b>bloque le nouveau risque</b>. Voici les signaux déjà disponibles :</span>
+            <span class="tag">Signal Pending</span>
+            <span class="txt">Lecture du marché en cours — moins de 3 dimensions qualifiées (${dims} évaluée${dims>1?'s':''}) ; le moteur reste honnête et <b>bloque le nouveau risque</b>. Voici les signaux déjà disponibles :</span>
           </div>
           ${sigs.length?`<div class="vx-mk-sigrow">${sigs.join('')}</div>`:'<div class="vx-help">Aucun signal de marché fourni par le dernier scan.</div>'}
           <div class="vx-flex" style="gap:8px;margin-top:2px">${SCAN_ACTION}
@@ -917,10 +909,11 @@ async function loadVix(scan){
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
     const conf=Math.round((r.confidence||0)*100);
     const allowed=r.adjustments&&r.adjustments.new_risk_allowed;
-    /* Étiquette honnête : UNKNOWN → « indéterminé » explicité, jamais un code brut. */
-    const known=REGIME_LABEL[r.regime];
+    /* Étiquette honnête : UNKNOWN garde son état dédié (jamais « confiance 0 % »
+       présentée comme une mesure), jamais un code brut. */
+    const known=r.regime!=='UNKNOWN'&&REGIME_LABEL[r.regime];
     const regTxt=known?('<b>'+esc(known[0])+'</b> · confiance '+conf+' %')
-      :'<b>indéterminé</b> — moins de 3 dimensions de marché';
+      :'<b>Signal Pending</b> — moins de 3 dimensions de marché';
     if($('vx-mk-vol-rail'))$('vx-mk-vol-rail').innerHTML=
       '<div class="vx-insight">Régime '+regTxt+'</div>'
       +'<div class="vx-kv vx-mt2"><span class="k">Confiance</span><span class="v vx-mono">'+(known?conf+' %':'n/d')+'</span></div>'

@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import time
 
-from vertex.market.regime_engine import classify_regime
+from vertex.market.regime_engine import classify_regime, regime_label_fr
 
 SCHEMA_VERSION = 1
 STALE_AFTER_S = 2100          # aligné sur STALE_SCAN_SEC (constants.py)
@@ -53,6 +53,44 @@ def _fact(value, unit, source, as_of, status, **extra):
     if extra:
         d.update(extra)
     return d
+
+
+def regime_inputs(scan_state):
+    """Entrées canoniques du moteur de régime (§24) depuis l'état du scan.
+
+    Source unique du mapping scan → moteur : `build()` et `/api/market/regime`
+    consomment la même vérité. La clé `market` du scan est l'horloge de marché
+    (terminal.py), pas les données — les dimensions réelles vivent dans
+    `market_ctx`, `breadth` et `macro` ; l'ancienne forme `market.{regime,
+    breadth, vix, risk}` reste acceptée en repli (tests, états historiques).
+    """
+    scan_state = scan_state or {}
+    market = scan_state.get('market') or {}
+    mc = scan_state.get('market_ctx') or {}
+    macro = {str(item.get('id')): item for item in (scan_state.get('macro') or [])
+             if isinstance(item, dict) and item.get('id')}
+    raw_regime = market.get('regime') or mc.get('spy_regime')
+    trend = {'TREND': 'UP', 'CHOP': 'FLAT', 'UP': 'UP', 'DOWN': 'DOWN',
+             'FLAT': 'FLAT'}.get(raw_regime, market.get('spy_trend'))
+    raw_breadth = market.get('breadth') if market.get('breadth') is not None else mc.get('breadth')
+    if isinstance(raw_breadth, dict):
+        breadth = _num(raw_breadth.get('above200'))
+    else:
+        breadth = _num(raw_breadth)
+    risk_label = str(market.get('risk') or
+                     (mc.get('roro') if isinstance(mc.get('roro'), str) else '') or '').upper()
+    leadership = ('CYCLICAL' if 'RISK-ON' in risk_label
+                  else 'DEFENSIVE' if 'RISK-OFF' in risk_label else None)
+    vix_a, vix_b = _num(market.get('vix')), _num(mc.get('vix'))
+    vix_val = vix_b if vix_b is not None else vix_a
+    curve = _num((macro.get('CURVE') or {}).get('value'))
+    curve_bps = round(curve * 100.0, 1) if curve is not None else None
+    dxy_chg = _num((macro.get('DX-Y.NYB') or {}).get('chg'))
+    dollar_trend = ('STRENGTHENING' if dxy_chg is not None and dxy_chg >= 0.3 else
+                    'WEAKENING' if dxy_chg is not None and dxy_chg <= -0.3 else None)
+    return {'index_trend': trend, 'breadth_pct': breadth, 'vix': vix_val,
+            'leadership': leadership, 'yield_curve_bps': curve_bps,
+            'dollar_trend': dollar_trend}
 
 
 def build(scan_state, prev=None, now=None, demo=False, stale_after_s=STALE_AFTER_S):
@@ -145,9 +183,7 @@ def build(scan_state, prev=None, now=None, demo=False, stale_after_s=STALE_AFTER
     missing = sorted(n for n, d in dimensions.items() if d['status'] == 'MISSING')
 
     # ── Régime (moteur déterministe §24) + transition ───────────────────────────
-    reg = classify_regime({'index_trend': trend, 'breadth_pct': breadth,
-                           'vix': vix_val, 'leadership': leadership,
-                           'yield_curve_bps': curve_bps, 'dollar_trend': dollar_trend})
+    reg = classify_regime(regime_inputs(scan_state))
     prev_label = ((prev or {}).get('regime') or {}).get('label')
     transition = {'from': prev_label, 'to': reg.get('regime'),
                   'changed': (None if prev_label is None else prev_label != reg.get('regime'))}
@@ -166,7 +202,8 @@ def build(scan_state, prev=None, now=None, demo=False, stale_after_s=STALE_AFTER
 
     if prev:
         if prev_label and prev_label != regime['label']:
-            changes.append('Régime : %s → %s' % (prev_label, regime['label']))
+            changes.append('Régime : %s → %s' % (regime_label_fr(prev_label),
+                                                 regime_label_fr(regime['label'])))
         pv = _num(pval('vix'))
         if pv is not None and vix_val is not None and abs(vix_val - pv) >= 2.0:
             changes.append('VIX : %.1f → %.1f' % (pv, vix_val))

@@ -89,6 +89,33 @@
       `<span class="vx-dot"></span><span class="vx-update-age">${VX.fmt.ago(ts)}</span>${suite}</span>`;
   };
 
+  /* ── Régimes de marché : vocabulaire HUMAIN partagé ─────────────────
+     Source unique des libellés : les codes moteur (TREND_UP, CHOP…) ne
+     s'affichent JAMAIS bruts — chaque page consomme cette table.
+     Forme : { label, tone ('go'|'risk'|''), hint }. */
+  VX.regime = {
+    MAP: {
+      TREND_UP: { label: 'Bull Momentum', tone: 'go', hint: 'Tendance haussière — le marché bénéficie d’un momentum favorable.' },
+      TREND_DOWN: { label: 'Bear Pressure', tone: 'risk', hint: 'Tendance baissière — la pression vendeuse reste dominante.' },
+      CHOP: { label: 'Range Mode', tone: '', hint: 'Marché sans direction — privilégier patience et sélectivité.' },
+      RISK_ON: { label: 'Risk-On', tone: 'go', hint: 'Appétit pour le risque — environnement favorable aux actifs dynamiques.' },
+      RISK_OFF: { label: 'Defensive Mode', tone: 'risk', hint: 'Prudence dominante — priorité à la qualité et à la protection.' },
+      PANIC: { label: 'Market Stress', tone: 'risk', hint: 'Stress extrême — priorité à la préservation du capital.' },
+      EUPHORIA: { label: 'Euphoria Mode', tone: '', hint: 'Optimisme extrême — attention aux excès et aux retournements.' },
+      VOLATILITY_EXPANSION: { label: 'Volatility Surge', tone: 'risk', hint: 'La volatilité augmente — mouvements rapides et risque renforcé.' },
+      VOLATILITY_COMPRESSION: { label: 'Volatility Squeeze', tone: '', hint: 'Marché calme — une accélération pourrait se préparer.' },
+      MEAN_REVERSION: { label: 'Mean Reversion', tone: '', hint: 'Les excès se corrigent — viser les retours à la moyenne.' },
+      TRANSITION: { label: 'Regime Shift', tone: '', hint: 'Le régime bascule — attendre la confirmation.' },
+      UNKNOWN: { label: 'Signal Pending', tone: '', hint: 'Lecture du marché en cours — données encore insuffisantes.' },
+    },
+    _get(code) { return this.MAP[String(code || '').trim().toUpperCase()] || null; },
+    /* Libellé humain ; un code inconnu revient tel quel (honnête, jamais inventé). */
+    label(code) { const m = this._get(code); return m ? m.label : (code || 'n/d'); },
+    tone(code) { const m = this._get(code); return m ? m.tone : ''; },
+    hint(code) { const m = this._get(code); return m ? m.hint : ''; },
+    known(code) { return !!this._get(code); },
+  };
+
   /* ── États de données (§39) ──────────────────────────────────────── */
   VX.states = {
     loading(rows = 3) {
