@@ -77,11 +77,11 @@ def render_index(view: str = '') -> str:
 <script>
 (function(){
 const $=(id)=>document.getElementById(id);
-$('an-recent').innerHTML=VX.recentTickers.get().map(s=>
+($('an-recent')||{}).innerHTML=VX.recentTickers.get().map(s=>
   `<button class="vx-btn vx-ticker" data-open-analysis="${s}">${s}</button>`).join('')
   ||'<span class="vx-muted">Aucun titre consulté récemment.</span>';
 let favs=[];try{favs=JSON.parse(localStorage.getItem('myFavs')||'[]');}catch(e){favs=[];}
-$('an-favs').innerHTML=(Array.isArray(favs)&&favs.length?favs:[]).map(s=>
+($('an-favs')||{}).innerHTML=(Array.isArray(favs)&&favs.length?favs:[]).map(s=>
   `<button class="vx-btn vx-ticker" data-open-analysis="${s}">${s}</button>`).join('')
   ||'<span class="vx-muted">Aucun favori — marque un titre avec ★ depuis sa fiche.</span>';
 let names=null;
@@ -90,10 +90,10 @@ let names=null;
 const escN=s=>String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
 $('an-search').addEventListener('input',async function(){
   const q=this.value.trim().toUpperCase();
-  if(!q){$('an-results').innerHTML='';return}
+  if(!q){($('an-results')||{}).innerHTML='';return}
   try{ if(!names){const d=await VX.fetch('/api/names',{ttl:600000});names=d.names||d;} }catch(e){names={};}
   const hits=Object.entries(names).filter(([s,n])=>s.startsWith(q)||String(n).toUpperCase().includes(q)).slice(0,8);
-  $('an-results').innerHTML=(hits.length?hits:( /^[A-Z.]{1,6}$/.test(q)?[[q,'ouvrir la fiche']]:[]))
+  ($('an-results')||{}).innerHTML=(hits.length?hits:( /^[A-Z.]{1,6}$/.test(q)?[[q,'ouvrir la fiche']]:[]))
     .map(([s,n])=>`<button class="vx-btn" style="justify-content:flex-start" data-open-analysis="${escN(s)}">
       <span class="vx-ticker" style="min-width:64px">${escN(s)}</span><span class="vx-dim">${escN(n)}</span></button>`).join('')
     ||VX.states.empty('Aucun titre trouvé dans l’univers.');
@@ -278,7 +278,7 @@ VX.recentTickers.push(SYM);
 
 /* Header : badges entités + favori */
 function paintBadges(){
-  $('an-badges').innerHTML=E()?E().badges(SYM):'';
+  ($('an-badges')||{}).innerHTML=E()?E().badges(SYM):'';
   const fav=!!(E()&&E().isFavorite(SYM));
   $('an-fav').style.color=fav?'var(--vx-warning)':'var(--vx-text-muted)';
   $('an-fav').setAttribute('aria-pressed',String(fav));
@@ -311,14 +311,14 @@ function thesisDraft(){
 }
 function paintThesis(){
   const note=E()&&E().note(SYM);
-  if(note){$('an-thesis').innerHTML=esc(note).replace(/\n/g,'<br>');return;}
+  if(note){($('an-thesis')||{}).innerHTML=esc(note).replace(/\n/g,'<br>');return;}
   const draft=thesisDraft();
   if(!draft){
-    $('an-thesis').innerHTML=VX.states.emptyDesk('Aucune thèse enregistrée sur ce titre.',
+    ($('an-thesis')||{}).innerHTML=VX.states.emptyDesk('Aucune thèse enregistrée sur ce titre.',
       `<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${SYM}','note')">Écrire la thèse</button>`);
     return;
   }
-  $('an-thesis').innerHTML=
+  ($('an-thesis')||{}).innerHTML=
     '<div class="vx-meta vx-mb1">Aucune thèse enregistrée — brouillon proposé depuis le dossier réel (les moteurs expliquent, toi tu décides) :</div>'
     +'<pre class="vx-mono" style="white-space:pre-wrap;background:var(--vx-surface-2,#121214);border:1px dashed var(--vx-border,#30292B);padding:.7rem .8rem;border-radius:10px;font-size:12.5px;line-height:1.7;margin:0 0 .7rem">'+esc(draft)+'</pre>'
     +'<div class="vx-flex vx-gap2 vx-wrap">'
@@ -352,7 +352,7 @@ async function loadDossier(){
   const scanMode=(status&&status.mode)||'delayed';
   const scanSource=(priceDomain&&priceDomain.source)||'scan';
   if(!t||!t.in_universe&&!d.price){
-    $('an-stale').innerHTML='<div class="vx-error-banner">Titre hors du scan courant — dossier partiel. '
+    ($('an-stale')||{}).innerHTML='<div class="vx-error-banner">Titre hors du scan courant — dossier partiel. '
       +'<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a></div>';
   }
   /* Hero */
@@ -366,11 +366,11 @@ async function loadDossier(){
   /* Badge de fraîcheur du prix (§8) : Live / Analyse / À actualiser, honnête. */
   try{
     if($('an-fresh')&&window.VX&&VX.freshness){
-      if(d.price==null){$('an-fresh').innerHTML='';}
+      if(d.price==null){($('an-fresh')||{}).innerHTML='';}
       else{
         const ageMs=priceDomain&&typeof priceDomain.age_s==='number'?priceDomain.age_s*1000:null;
-        if(demo){$('an-fresh').innerHTML='<span class="vx-fresh-chip" data-state="demo">DÉMO</span>';}
-        else{$('an-fresh').innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:ageMs,live:scanMode==='live'}));}
+        if(demo){($('an-fresh')||{}).innerHTML='<span class="vx-fresh-chip" data-state="demo">DÉMO</span>';}
+        else{($('an-fresh')||{}).innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:ageMs,live:scanMode==='live'}));}
       }
     }
   }catch(e){}
@@ -416,7 +416,7 @@ async function loadDossier(){
     ['Timing',scoreValue(sc.timing)],['Asymétrie',scoreValue(sc.asymmetry)],
     ['Qualité',scoreValue(sc.data_quality)]];
   const missingAxes=scAxes.filter(a=>a[1]===null).map(a=>a[0]);
-  $('an-scores').innerHTML=scAxes.map(([k,v])=>
+  ($('an-scores')||{}).innerHTML=scAxes.map(([k,v])=>
     `<span class="vx-badge" title="${k}">${k} <b class="vx-mono">${VX.fmt.nd(v)}</b></span>`).join('')
     +(demo?'<span class="vx-badge" style="color:var(--vx-warning)">DÉMO</span>':'')
     +'<div id="an-scorecard-radar" style="flex:1 0 100%;max-width:240px;margin:8px auto 0"></div>';
@@ -424,7 +424,7 @@ async function loadDossier(){
     VXCharts.radar('an-scorecard-radar',{axes:scAxes.map(a=>({label:a[0],value:a[1]})),
       max:100,ariaLabel:'Scorecard '+SYM,color:VXCharts.colors.brand,width:240,height:190});
   }else if(missingAxes.length){
-    $('an-scorecard-radar').innerHTML='<div class="vx-empty" data-state="empty">Radar non tracé — axes n/d : '
+    ($('an-scorecard-radar')||{}).innerHTML='<div class="vx-empty" data-state="empty">Radar non tracé — axes n/d : '
       +missingAxes.map(esc).join(', ')+'.</div>';
   }
 
@@ -478,7 +478,7 @@ async function loadDossier(){
     const chartEl=document.querySelector('#an-chart .vx-lwc')||document.querySelector('#an-chart canvas');
     if(chartEl)chartEl.addEventListener('dblclick',()=>VXCharts.alertFromLevel(SYM,plan.entry||d.price));
   }else{
-    $('an-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Série de prix indisponible pour ce titre.')+'</div>';
+    ($('an-chart')||{}).innerHTML='<div class="vx-card">'+VX.states.empty('Série de prix indisponible pour ce titre.')+'</div>';
   }
 
   /* 4. Fondamental */

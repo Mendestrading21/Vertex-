@@ -54,9 +54,9 @@
       const drawer = $('vx-drawer');
       lastFocus = document.activeElement;
       $('vx-drawer-title').textContent = title;
-      $('vx-drawer-body').innerHTML = html;
-      $('vx-drawer-footer').innerHTML = opts.footerHtml || '';
-      $('vx-drawer-tabs').innerHTML = opts.tabsHtml || '';
+      ($('vx-drawer-body')||{}).innerHTML = html;
+      ($('vx-drawer-footer')||{}).innerHTML = opts.footerHtml || '';
+      ($('vx-drawer-tabs')||{}).innerHTML = opts.tabsHtml || '';
       $('vx-drawer-tabs').hidden = !opts.tabsHtml;
       drawer.dataset.variant = opts.variant === 'summary' || opts.variant === 'detail'
         ? opts.variant : 'default';
@@ -73,8 +73,8 @@
     openModal(title, bodyHtml, footerHtml) {
       lastFocus = document.activeElement;
       $('vx-modal-title').textContent = title;
-      $('vx-modal-body').innerHTML = bodyHtml;
-      $('vx-modal-footer').innerHTML = footerHtml || '';
+      ($('vx-modal-body')||{}).innerHTML = bodyHtml;
+      ($('vx-modal-footer')||{}).innerHTML = footerHtml || '';
       panelOpen($('vx-modal'));
       trapFocus($('vx-modal'));
     },

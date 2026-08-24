@@ -283,9 +283,9 @@ function freshBadge(){
 /* ═══ SYNTHÈSE — PREMIER ÉCRAN (LOT A + H) ═══ */
 async function renderSynthese(){
   const pos=E().positions();
-  $('pf-summary').innerHTML='';
+  ($('pf-summary')||{}).innerHTML='';
   if(!pos.length){
-    $('pf-body').innerHTML=VX.states.emptyDesk(
+    ($('pf-body')||{}).innerHTML=VX.states.emptyDesk(
       'Aucune position déclarée — le portefeuille répond « où suis-je exposé ? » '
       +'dès la première position. Déclare une position ou importe depuis IBKR (lecture seule).',
       '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>'
@@ -365,7 +365,7 @@ async function renderSynthese(){
      reel : une couleur ne doit jamais vouloir dire deux choses sans le dire. */
   const plConnu=rich.some(t=>t.pl!=null);
   const totalTree=rich.reduce((s,t)=>s+Math.max(0,t.value??t.invested??0),0);
-  $('pf-body').innerHTML=hero+kpis
+  ($('pf-body')||{}).innerHTML=hero+kpis
     +'<div id="pf-diff" class="vx-mb3"></div>'
     +`<section class="vx-card vx-mb3" aria-label="Allocation et concentration">
         <div class="vx-chart-head"><span class="vx-chart-title">Allocation & concentration du capital</span>
@@ -478,7 +478,7 @@ async function renderPositions(){
   const rich=enrich(pos,await quotesFor(pos));
   renderSummary(rich);
   if(!pos.length){
-    $('pf-body').innerHTML=VX.states.emptyDesk('Aucune position déclarée.',
+    ($('pf-body')||{}).innerHTML=VX.states.emptyDesk('Aucune position déclarée.',
       '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
     return;
   }
@@ -557,7 +557,7 @@ async function renderPositions(){
         <div class="vx-row-actions vx-mt1"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyse</button>
         <button class="vx-btn vx-btn-sm vx-btn-ghost" data-position-menu="${t.id}" aria-label="Gérer la position ${t.sym} : modifier, clôturer, supprimer">Gérer ⋯</button></div></td></tr>`;};
 
-  $('pf-body').innerHTML=
+  ($('pf-body')||{}).innerHTML=
     survHtml
     +(posState?actionListHtml(posState):'')
     +`<div class="vx-insight vx-mb3" data-tone="risk"><b>Garde-fou perdants (Constitution §18).</b>
@@ -591,7 +591,7 @@ async function renderPerformance(){
   renderSummary(enrich(pos,await quotesFor(pos)));
   const eq=(E()?E().equity():[])||[];
   const closed=(E()?E().closedPositions():[])||[];
-  $('pf-body').innerHTML=`
+  ($('pf-body')||{}).innerHTML=`
     <div class="vx-insight vx-page-lead vx-mb3" role="note"><b>Performance de portefeuille — domicile unique.</b>
       Courbe cumulée, drawdown, contribution et saisonnalité vivent ici (migrées depuis Journal).
       Le Journal ne conserve que la méthode, la discipline, les erreurs et l’apprentissage.</div>
@@ -677,7 +677,7 @@ async function renderOptions(){
   const rich=enrich(opts,await quotesFor(opts));
   renderSummary(enrich(pos,await quotesFor(pos)));
   if(!opts.length){
-    $('pf-body').innerHTML=VX.states.emptyDesk(
+    ($('pf-body')||{}).innerHTML=VX.states.emptyDesk(
       'Aucune position option — le sélecteur privilégie les CALLS (max 3, dont 1 PUT tactique).',
       '<a class="vx-btn vx-btn-sm vx-btn-primary" href="/opportunities?view=options">Chercher un contrat</a>'
       +' <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options?view=structure">Analyser une structure →</a>');
@@ -693,7 +693,7 @@ async function renderOptions(){
   const H=(l,v,d,cls)=>`<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3">
     <span class="vx-kpi-label">${l}</span><span class="vx-kpi-value" style="font-size:20px">${v}</span>
     ${d?`<span class="vx-kpi-delta ${cls||'vx-muted'}">${d}</span>`:''}</div>`;
-  $('pf-body').innerHTML=
+  ($('pf-body')||{}).innerHTML=
     `<div class="vx-grid vx-mb3">
       ${H('Exposition options',VX.fmt.price(engaged),'capital engagé (coût déclaré)')}
       ${H('P&L options',plTot!==null?VX.fmt.price(plTot):'n/d',plTot!==null?VX.fmt.pct(plTot/engaged*100,1):'marques indisponibles (IBKR hors ligne)',plTot>0?'vx-pos':plTot<0?'vx-neg':'vx-muted')}
@@ -717,7 +717,7 @@ async function renderOptions(){
 /* ═══ RISQUE PRIORISÉ (LOT F — moteur risk_engine, positions réelles §26) ═══ */
 async function renderRisk(){
   const pos=E().positions();
-  if(!pos.length){$('pf-body').innerHTML=VX.states.emptyDesk('Aucune position déclarée — le risque se calcule sur les positions réelles, jamais sur les candidats du scanner.');return;}
+  if(!pos.length){($('pf-body')||{}).innerHTML=VX.states.emptyDesk('Aucune position déclarée — le risque se calcule sur les positions réelles, jamais sur les candidats du scanner.');return;}
   const rich=enrich(pos,await quotesFor(pos));
   renderSummary(rich);
   let scan=null;try{scan=await VX.fetch('/scan',{ttl:300000});}catch(e){}
@@ -760,7 +760,7 @@ async function renderRisk(){
       <span class="vx-kpi-label">${l}</span><span class="vx-kpi-value" style="font-size:22px">${v==null?'n/d':v}</span>
       <span class="vx-kpi-delta ${cls||'vx-muted'}">${dd}</span></div>`;
 
-    $('pf-body').innerHTML=prioBlock+`<div class="vx-grid vx-kpi-strip vx-mb3" id="pf-risk-kpis">
+    ($('pf-body')||{}).innerHTML=prioBlock+`<div class="vx-grid vx-kpi-strip vx-mb3" id="pf-risk-kpis">
       ${_rk('Concentration HHI',risk.hhi!=null?risk.hhi:null,'0 = dispersé · 1 = concentré',(_hhi!=null&&_hhi>=66)?'vx-neg':'','pf-risk-gauge')}
       ${_rk('Bêta',risk.beta!=null?risk.beta:null,'pondéré')}
       ${_rk('Drawdown',risk.drawdown_pct!=null?risk.drawdown_pct+' %':null,'depuis le pic')}
@@ -831,7 +831,7 @@ async function renderRisk(){
         } else {_sh.innerHTML=_se.map(function(e){return kv(e[0],e[1]+' %');}).join('');}
       }
     }catch(e){}
-  }catch(e){$('pf-body').innerHTML=VX.states.error('Moteur de risque injoignable : '+e.message);}
+  }catch(e){($('pf-body')||{}).innerHTML=VX.states.error('Moteur de risque injoignable : '+e.message);}
 }
 
 /* Dépendances cachées (LOT 16) : knowledge graph — paires partageant AU MOINS
@@ -917,7 +917,7 @@ async function renderWatchlist(){
     declenchee:'Déclenchée',invalidee:'Invalidée',archivee:'Archivée'};
   /* cycle de vie watchlist → couleur (déclenchée=vert, proche/attente=jaune, invalidée=rouge) */
   const wlCls=s=>s==='declenchee'?'vx-pos':(s==='proche'||s==='en_attente')?'vx-warn':s==='invalidee'?'vx-neg':'';
-  $('pf-body').innerHTML=`
+  ($('pf-body')||{}).innerHTML=`
     <div class="vx-page-lead vx-mb3"><b>Trois types de surveillance, trois engagements différents.</b>
       <div class="vx-meta">Watchlist = idée documentée · Suivi actif = plan entrée/stop/objectif · Favori = raccourci sans thèse.</div></div>
     <div class="vx-section-stack">
@@ -1011,7 +1011,7 @@ async function pfFresh(){try{
   const a=(pk&&pk.data&&typeof pk.data.age_s==='number')?pk.data.age_s*1000:null;
   el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:a,live:live}));
 }catch(e){}}
-function boot(){pfFresh();(RENDER[VIEW]||renderSynthese)().catch(e=>{$('pf-body').innerHTML=VX.states.error(e.message);});}
+function boot(){pfFresh();(RENDER[VIEW]||renderSynthese)().catch(e=>{($('pf-body')||{}).innerHTML=VX.states.error(e.message);});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 ['vx:position-changed','vx:watchlist-changed','vx:follow-changed','vx:favorites-changed']
   .forEach(ev=>VX.bus.on(ev,(e)=>{if((e.detail||{}).source!=='sync')return boot();boot();}));

@@ -314,7 +314,7 @@ async function loadBrain(){
   }catch(e){body.innerHTML=VX.states.error('Cerveau Claude injoignable');return;}
   const status=(st&&st.status)||'EMPTY';
   const tn=BRAIN_TONE[status]||['frozen','—'];
-  $('vx-brain-badge').innerHTML=statusBadge(tn[0],tn[1]);
+  ($('vx-brain-badge')||{}).innerHTML=statusBadge(tn[0],tn[1]);
   const quotes=(snap&&snap.surfaces&&snap.surfaces.quotes)||{};
   const news=(snap&&snap.surfaces&&snap.surfaces.news)||{};
   const found=st&&st.quotes_found!=null?st.quotes_found:0;
@@ -504,8 +504,8 @@ async function loadConnections(){
       'disabled':['offline','désactivé']};
     const m=map[ib]||['offline','inconnu'];
     const proven=ib==='connected-live'||ib==='connected-delayed';
-    $('vx-conn-ibkr-badge').innerHTML=statusBadge(m[0],m[1]);
-    $('vx-conn-ibkr').innerHTML=
+    ($('vx-conn-ibkr-badge')||{}).innerHTML=statusBadge(m[0],m[1]);
+    ($('vx-conn-ibkr')||{}).innerHTML=
       kv('&Eacute;tat',esc(m[1]))
       +(ib==='enabled-idle'?'<div class="vx-help vx-mt1 vx-mb1">Config présente mais <b>aucune preuve de session</b> — jamais affiché « connecté » sans tick réel. Ouvre TWS/Gateway (lecture seule).</div>':'')
       +kv('Donn&eacute;es march&eacute;',esc((st.data_sources||{}).market_data||'—'))
@@ -513,8 +513,8 @@ async function loadConnections(){
       +kv('Ex&eacute;cution d&#8217;ordres','<b class="vx-neg">'+esc(st.order_execution||'disabled-by-design')+'</b>')
       +`<div class="vx-card-footer">${VX.updateIndicator(st.ts||Date.now(),'/api/system-status',proven?(ib==='connected-live'?'live':'delayed'):'fallback')}</div>`;
   }else{
-    $('vx-conn-ibkr').innerHTML=VX.states.error('&Eacute;tat syst&egrave;me indisponible');
-    $('vx-conn-ibkr-badge').innerHTML=statusBadge('offline','inconnu');
+    ($('vx-conn-ibkr')||{}).innerHTML=VX.states.error('&Eacute;tat syst&egrave;me indisponible');
+    ($('vx-conn-ibkr-badge')||{}).innerHTML=statusBadge('offline','inconnu');
   }
 
   /* TradingView — état honnête : désactivé ≠ configuré-en-attente ≠ actif */
@@ -527,8 +527,8 @@ async function loadConnections(){
     const badge={ACTIVE:['live','actif · '+fresh+' frais'],
       WAITING:['frozen','configuré · en attente'],
       DISABLED:['offline','webhook désactivé']}[state]||['offline','n/d'];
-    $('vx-conn-tv-badge').innerHTML=statusBadge(badge[0],badge[1]);
-    $('vx-conn-tv').innerHTML=
+    ($('vx-conn-tv-badge')||{}).innerHTML=statusBadge(badge[0],badge[1]);
+    ($('vx-conn-tv')||{}).innerHTML=
       kv('&Eacute;tat',state==='DISABLED'
         ?'<span class="vx-dim">secret webhook absent — 503 honn&ecirc;te, aucun signal invent&eacute;</span>'
         :(state==='ACTIVE'?'<span class="vx-pos">signaux re&ccedil;us</span>':'<span class="vx-dim">webhook pr&ecirc;t, aucun signal r&eacute;cent</span>'))
@@ -543,9 +543,9 @@ async function loadConnections(){
     document.getElementById('vx-tv-setup')?.addEventListener('click',openTvSetup);
     loadTvSignals();
   }else{
-    $('vx-conn-tv').innerHTML=VX.states.empty('Aucun diagnostic TradingView disponible — le magasin de signaux n&#8217;a rien re&ccedil;u.',
+    ($('vx-conn-tv')||{}).innerHTML=VX.states.empty('Aucun diagnostic TradingView disponible — le magasin de signaux n&#8217;a rien re&ccedil;u.',
       '<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=radar">Voir le radar</a>');
-    $('vx-conn-tv-badge').innerHTML=statusBadge('offline','n/d');
+    ($('vx-conn-tv-badge')||{}).innerHTML=statusBadge('offline','n/d');
   }
 
   /* Claude / IA */
@@ -554,17 +554,17 @@ async function loadConnections(){
   if(ai||aiSrc!==undefined){
     const ok=ai?(ai.ok??0):null,total=ai?(ai.total??0):null,fb=ai?(ai.fallbacks??0):null;
     const aiOn=String(aiSrc||'').indexOf('on')===0||String(aiSrc||'')==='enabled'||(ok!==null&&ok>0);
-    $('vx-conn-ai-badge').innerHTML=statusBadge(aiOn?'live':(fb?'fallback':'offline'),
+    ($('vx-conn-ai-badge')||{}).innerHTML=statusBadge(aiOn?'live':(fb?'fallback':'offline'),
       aiOn?'disponible':(fb?'mode secours':'indisponible'));
-    $('vx-conn-ai').innerHTML=
+    ($('vx-conn-ai')||{}).innerHTML=
       kv('Source IA',esc(aiSrc??'—'))
       +(ai?kv('Appels r&eacute;ussis',VX.fmt.nd(ok)+' / '+VX.fmt.nd(total))
           +kv('Replis d&eacute;terministes',VX.fmt.nd(fb)):'')
       +kv('R&ocirc;le','<span class="vx-dim">explique et reformule — ne d&eacute;cide jamais</span>')
       +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'/api/system/diagnostics',aiOn?'live':'fallback')}</div>`;
   }else{
-    $('vx-conn-ai').innerHTML=VX.states.empty('Audit IA indisponible — la synth&egrave;se d&eacute;terministe des moteurs reste servie.');
-    $('vx-conn-ai-badge').innerHTML=statusBadge('fallback','n/d');
+    ($('vx-conn-ai')||{}).innerHTML=VX.states.empty('Audit IA indisponible — la synth&egrave;se d&eacute;terministe des moteurs reste servie.');
+    ($('vx-conn-ai-badge')||{}).innerHTML=statusBadge('fallback','n/d');
   }
 
   /* Synchronisation (Live Engine) */
@@ -573,10 +573,10 @@ async function loadConnections(){
     const names=Object.keys(doms);
     const freshCount=names.filter(k=>doms[k].fresh||doms[k].state==='fresh'||doms[k].state==='live').length;
     const errs=(live.errors||[]);
-    $('vx-conn-sync-badge').innerHTML=statusBadge(
+    ($('vx-conn-sync-badge')||{}).innerHTML=statusBadge(
       errs.length?'delayed':(freshCount===names.length&&names.length?'live':'delayed'),
       freshCount+' / '+names.length+' domaines frais');
-    $('vx-conn-sync').innerHTML=
+    ($('vx-conn-sync')||{}).innerHTML=
       kv('Mode',esc(live.mode||'—'))
       +kv('Derni&egrave;re synchro',VX.fmt.ago(live.last_refresh))
       +kv('Domaines',names.map(esc).join(', ')||'—')
@@ -584,28 +584,28 @@ async function loadConnections(){
       +`<div class="vx-card-footer">${VX.updateIndicator(live.generated?live.generated*1000:Date.now(),'/api/live/status','delayed')}
         <a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/system?view=data">D&eacute;tail par domaine →</a></div>`;
   }else{
-    $('vx-conn-sync').innerHTML=VX.states.error('Live Engine injoignable');
-    $('vx-conn-sync-badge').innerHTML=statusBadge('offline','hors ligne');
+    ($('vx-conn-sync')||{}).innerHTML=VX.states.error('Live Engine injoignable');
+    ($('vx-conn-sync-badge')||{}).innerHTML=statusBadge('offline','hors ligne');
   }
 
   /* Stockage & santé */
   if(hz){
     const ok=hz.ok!==false&&(hz.status==='ok'||hz.ok===true||hz.status===undefined);
-    $('vx-conn-store-badge').innerHTML=statusBadge(ok?'live':'offline',ok?'sain':'dégradé');
-    $('vx-conn-store').innerHTML=
+    ($('vx-conn-store-badge')||{}).innerHTML=statusBadge(ok?'live':'offline',ok?'sain':'dégradé');
+    ($('vx-conn-store')||{}).innerHTML=
       kv('Sant&eacute; serveur',ok?'<span class="vx-pos">OK</span>':'<span class="vx-neg">d&eacute;grad&eacute;</span>')
       +(st?kv('Build',esc(st.build||'—')):'')
       +kv('Donn&eacute;es perso','localStorage navigateur &harr; blob desk_data.json (last-writer-wins)')
       +kv('Sauvegardes','backup quotidien desk_backup_* c&ocirc;t&eacute; serveur')
       +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'/healthz',ok?'live':'error')}</div>`;
   }else{
-    $('vx-conn-store').innerHTML=VX.states.error('/healthz injoignable');
-    $('vx-conn-store-badge').innerHTML=statusBadge('offline','hors ligne');
+    ($('vx-conn-store')||{}).innerHTML=VX.states.error('/healthz injoignable');
+    ($('vx-conn-store-badge')||{}).innerHTML=statusBadge('offline','hors ligne');
   }
 
   /* Moteurs */
   if(st&&Array.isArray(st.engines)&&st.engines.length){
-    $('vx-conn-engines').innerHTML='<div class="vx-flex vx-wrap vx-gap2">'
+    ($('vx-conn-engines')||{}).innerHTML='<div class="vx-flex vx-wrap vx-gap2">'
       +st.engines.map(en=>{
         const loaded=en.status==='ok'||en.ok===true;
         const hasData=!!(en.last_success||en.last_run||en.fresh);
@@ -616,7 +616,7 @@ async function loadConnections(){
       }).join('')+'</div>'
       +((st.warnings||[]).length?`<div class="vx-stale-banner vx-mt3">⏳ ${st.warnings.map(esc).join(' · ')}</div>`:'')
       +`<div class="vx-mt3"><button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-tech-endpoints">Détails techniques (endpoints) →</button></div>`;
-    $('vx-conn-meta').innerHTML=VX.updateIndicator(st.ts||Date.now(),'/api/system-status','delayed');
+    ($('vx-conn-meta')||{}).innerHTML=VX.updateIndicator(st.ts||Date.now(),'/api/system-status','delayed');
     $('vx-tech-endpoints')?.addEventListener('click',()=>{
       VX.shell.openDrawer('Endpoints techniques',
         [['GET /healthz','santé serveur'],['GET /api/system-status','état institutionnel complet'],
@@ -627,7 +627,7 @@ async function loadConnections(){
         .map(([ep,d])=>`<div class="vx-kv"><span class="k vx-mono" style="font-size:11px">${ep}</span><span class="v vx-meta">${d}</span></div>`).join('')
         +'<div class="vx-help vx-mt3">Lecture seule — aucun de ces endpoints ne peut passer un ordre.</div>');});
   }else{
-    $('vx-conn-engines').innerHTML=VX.states.empty('Liste des moteurs indisponible.');
+    ($('vx-conn-engines')||{}).innerHTML=VX.states.empty('Liste des moteurs indisponible.');
   }
 }
 
@@ -709,7 +709,7 @@ async function loadData(){
           invalidate:'Des paquets STALE/EXPIRED/MISSING ou une source d&eacute;mo.'}});
     });
   }else{
-    $('vx-data-quality-chart').innerHTML='<div class="vx-card">'
+    ($('vx-data-quality-chart')||{}).innerHTML='<div class="vx-card">'
       +VX.states.empty('Aucun titre scann&eacute; — la qualit&eacute; ne peut pas &ecirc;tre mesur&eacute;e.',
         '<button class="vx-btn vx-btn-sm" id="vx-data-refresh-empty">Actualiser maintenant</button>')+'</div>';
     document.getElementById('vx-data-refresh-empty')?.addEventListener('click',doRefresh);
@@ -719,7 +719,7 @@ async function loadData(){
   if(scan){
     const metrics=diag.metrics||{};
     const mkeys=Object.keys(metrics).slice(0,8);
-    $('vx-data-scan').innerHTML=
+    ($('vx-data-scan')||{}).innerHTML=
       kv('Lignes scann&eacute;es',VX.fmt.nd(scan.rows))
       +kv('Source scan',esc(scan.source||'aucune'))
       +kv('Source options',esc(scan.options_source||'—'))
@@ -729,7 +729,7 @@ async function loadData(){
       +`<div class="vx-card-footer">${VX.updateIndicator(scan.last_scan_ts,'/api/system/diagnostics',
         scan.source&&scan.source!=='demo'?'delayed':'fallback')}</div>`;
   }else{
-    $('vx-data-scan').innerHTML=VX.states.error('Diagnostics indisponibles');
+    ($('vx-data-scan')||{}).innerHTML=VX.states.error('Diagnostics indisponibles');
   }
 
   /* Fraîcheur par domaine */
@@ -775,7 +775,7 @@ async function loadData(){
         +'<span style="width:56px;height:7px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block">'
         +'<span style="display:block;height:100%;width:'+w.toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:3px"></span></span>'
         +ageHtml+'</span>';};
-    $('vx-data-fresh').innerHTML=heat+`<div style="overflow-x:auto"><table class="vx-table">
+    ($('vx-data-fresh')||{}).innerHTML=heat+`<div style="overflow-x:auto"><table class="vx-table">
       <thead><tr><th>Domaine</th><th>&Eacute;tat</th><th class="vx-num">&Acirc;ge</th><th>D&eacute;tail</th></tr></thead><tbody>`
       +Object.keys(doms).map(k=>{
         const d=doms[k]||{};
@@ -788,16 +788,16 @@ async function loadData(){
           <td class="vx-num vx-mono">${ageBar(d,age,k===worstKey)}</td>
           <td class="vx-dim" style="font-size:12px">${esc(d.detail||'—')}</td></tr>`;
       }).join('')+'</tbody></table></div>';
-    $('vx-data-fresh-meta').innerHTML=VX.updateIndicator(
+    ($('vx-data-fresh-meta')||{}).innerHTML=VX.updateIndicator(
       live.generated?live.generated*1000:Date.now(),'Live Engine · mode '+(live.mode||'n/d'),'delayed');
   }else{
-    $('vx-data-fresh').innerHTML=VX.states.empty('Aucun domaine suivi par le Live Engine pour l&#8217;instant.');
+    ($('vx-data-fresh')||{}).innerHTML=VX.states.empty('Aucun domaine suivi par le Live Engine pour l&#8217;instant.');
   }
 
   /* Titres dégradés */
   if(dq){
     const worst=dq.degraded||[];
-    $('vx-data-degraded').innerHTML=worst.length
+    ($('vx-data-degraded')||{}).innerHTML=worst.length
       ?'<div class="vx-flex vx-wrap vx-gap2">'+worst.map(w=>{
         const q=String(w.quality||'').toUpperCase();
         const st=/EXPIR|MISSING|ABSEN|INVALID/.test(q)?'offline':/STALE|DELAY|RETARD|DEGRAD/.test(q)?'delayed':'delayed';
@@ -806,7 +806,7 @@ async function loadData(){
           <span class="vx-badge vx-badge-status" data-status="${st}">${esc(w.quality)}</span></button>`;}).join('')+'</div>'
       :VX.states.empty('Aucun titre en qualit&eacute; d&eacute;grad&eacute;e — rien &agrave; signaler.');
   }else{
-    $('vx-data-degraded').innerHTML=VX.states.error('Rapport de qualit&eacute; indisponible');
+    ($('vx-data-degraded')||{}).innerHTML=VX.states.error('Rapport de qualit&eacute; indisponible');
   }
 }
 async function doRefresh(){
@@ -925,7 +925,7 @@ function renderDeskSummary(){
   const keys=deskKeys();
   let present=0,bytes=0;
   keys.forEach(k=>{const v=localStorage.getItem(k);if(v!=null){present++;bytes+=v.length;}});
-  $('vx-settings-desk').innerHTML=
+  ($('vx-settings-desk')||{}).innerHTML=
     kv('Cl&eacute;s synchronis&eacute;es',keys.length+' (contrat DESK_KEYS — aucune cl&eacute; renomm&eacute;e)')
     +kv('Cl&eacute;s pr&eacute;sentes localement',String(present))
     +kv('Taille locale',VX.fmt.num(bytes/1024,1)+' Ko')
@@ -1011,7 +1011,7 @@ function initArchive(){
 function renderVault(){
   const all=vaultGet();
   const types=[...new Set(all.map(e=>e.type).filter(Boolean))].sort();
-  $('vx-vault-chips').innerHTML=[['','Tous ('+all.length+')']]
+  ($('vx-vault-chips')||{}).innerHTML=[['','Tous ('+all.length+')']]
     .concat(types.map(t=>[t,t+' ('+all.filter(e=>e.type===t).length+')']))
     .map(([val,label])=>`<button class="vx-chip" data-filter-key="type" data-filter-value="${esc(val)}"
       aria-pressed="${String(val===vaultTypeFilter)}">${esc(label)}</button>`).join('');
@@ -1025,14 +1025,14 @@ function renderVault(){
       .map(x=>String(x||'').toLowerCase()).some(x=>x.includes(q));
   }).sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
   if(!rows.length){
-    $('vx-vault-list').innerHTML=VX.states.emptyDesk(
+    ($('vx-vault-list')||{}).innerHTML=VX.states.emptyDesk(
       all.length?'Aucune entr&eacute;e ne correspond &agrave; la recherche ou au filtre.'
       :'Le coffre est vide — archivez ici vos analyses, mod&egrave;les et documents de r&eacute;f&eacute;rence.',
       all.length?'':'<button class="vx-btn vx-btn-sm" id="vx-vault-new-empty">Cr&eacute;er la premi&egrave;re entr&eacute;e</button>');
     document.getElementById('vx-vault-new-empty')?.addEventListener('click',()=>openVaultModal(null));
     return;
   }
-  $('vx-vault-list').innerHTML=`<div style="overflow-x:auto"><table class="vx-table">
+  ($('vx-vault-list')||{}).innerHTML=`<div style="overflow-x:auto"><table class="vx-table">
     <thead><tr><th>Titre</th><th>Type</th><th>Tags</th><th class="vx-num">Mis &agrave; jour</th><th></th></tr></thead><tbody>`
     +rows.map(e=>`<tr>
       <td><button class="vx-btn vx-btn-sm vx-btn-ghost" data-vault-open="${esc(String(e.id))}"
@@ -1123,7 +1123,7 @@ async function loadAutomations(){
   try{
     const d=await VX.fetch('/api/system/automations',{ttl:15000});
     const jobs=d.jobs||[];
-    $('vx-auto-jobs').innerHTML=jobs.length?`<div class="vx-table-wrap"><table class="vx-table"><thead><tr>
+    ($('vx-auto-jobs')||{}).innerHTML=jobs.length?`<div class="vx-table-wrap"><table class="vx-table"><thead><tr>
       <th>Tâche</th><th>Statut</th><th class="vx-num">Exécutions</th><th>Dernière</th><th>Prochaine (est.)</th><th class="vx-num">Durée</th></tr></thead><tbody>
       ${jobs.map(j=>{
         /* #779/G1 — AVANT, une seule branche : `last_run===null` -> « jamais
@@ -1150,10 +1150,10 @@ async function loadAutomations(){
       · « non implémenté » = déclaré au registre, aucun exécutant dans le code — ce n'est pas une panne.
       « en attente » = implémenté, pas encore passé depuis le démarrage.</div>`
       :VX.states.empty('Registre de jobs vide.');
-  }catch(e){$('vx-auto-jobs').innerHTML=VX.states.error('Registre indisponible : '+esc(e.message));}
+  }catch(e){($('vx-auto-jobs')||{}).innerHTML=VX.states.error('Registre indisponible : '+esc(e.message));}
   try{
     const r=await VX.fetch('/api/system/startup-report',{ttl:60000});
-    $('vx-auto-startup').innerHTML=(r.steps||[]).length?
+    ($('vx-auto-startup')||{}).innerHTML=(r.steps||[]).length?
       (r.steps.map(st2=>{
         const tone={CONNECTED:'live',READY:'live',CONFIGURED:'live',DEGRADED:'delayed',
           MISSING:'frozen',OFFLINE:'offline',ERROR:'offline'}[st2.status]||'frozen';
@@ -1163,16 +1163,16 @@ async function loadAutomations(){
        +`<div class="vx-kv"><span class="k">Exécution d'ordres</span><span class="v vx-pos">${esc(r.order_execution||'')}</span></div>`
        +`<div class="vx-card-footer">${VX.updateIndicator((r.ts||0)*1000,'séquence de démarrage','live')}</div>`)
       :VX.states.empty('Rapport non généré (serveur fraîchement démarré ?).');
-  }catch(e){$('vx-auto-startup').innerHTML=VX.states.error('Rapport indisponible');}
+  }catch(e){($('vx-auto-startup')||{}).innerHTML=VX.states.error('Rapport indisponible');}
   try{
     const c=await VX.fetch('/api/system/config',{ttl:60000});
     const rows=Object.entries(c).filter(([k])=>!k.startsWith('_'));
-    $('vx-auto-config').innerHTML=`<div class="vx-flex vx-wrap vx-gap2">${rows.map(([k,v])=>{
+    ($('vx-auto-config')||{}).innerHTML=`<div class="vx-flex vx-wrap vx-gap2">${rows.map(([k,v])=>{
       const tone={CONFIGURED:'live',MISSING:'frozen',INVALID:'offline'}[v.status]||'frozen';
       return `<span class="vx-badge vx-badge-status" data-status="${tone}"
         title="${esc(v.consequence||'')}">${esc(k)} · ${esc(v.status)}</span>`;}).join('')}</div>
       <div class="vx-help vx-mt2">Survoler un badge : conséquence exacte d'une variable absente. Aucune valeur n'est jamais affichée ni journalisée.</div>`;
-  }catch(e){$('vx-auto-config').innerHTML=VX.states.error('Validation indisponible');}
+  }catch(e){($('vx-auto-config')||{}).innerHTML=VX.states.error('Validation indisponible');}
 }
 
 /* ══ Orchestration ══════════════════════════════════════════════════ */

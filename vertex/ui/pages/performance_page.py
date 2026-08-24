@@ -235,7 +235,7 @@ function loadDiscipline(){
       <p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.6">Le Journal mesure ta <b>méthode</b> — pas la performance du portefeuille (elle vit dans <a href="/portfolio?view=performance">Portefeuille → Performance</a>). Journalise tes décisions pour révéler ta discipline, tes erreurs récurrentes et tes progrès.</p>
       <div class="vx-flex vx-mt3" style="gap:.5rem;flex-wrap:wrap">
         <a class="vx-btn vx-btn-sm vx-btn-primary" href="/journal?view=journal">Journaliser une décision</a></div>`;
-    $('vx-pf-kpis').innerHTML='';
+    ($('vx-pf-kpis')||{}).innerHTML='';
     if(next)next.innerHTML='<span class="vx-eyebrow">Prochain axe</span><h3>Documenter une premi&egrave;re d&eacute;cision</h3>'
       +'<p class="vx-dim">Renseigne au minimum la raison, l&rsquo;invalidation et ce qui confirmerait la th&egrave;se.</p>'
       +'<a class="vx-btn vx-btn-sm vx-btn-primary" href="/journal?view=journal">Commencer &rarr;</a>';
@@ -257,7 +257,7 @@ function loadDiscipline(){
   const cell=(label,val,sub,cls)=>`<div class="vx-card vx-kpi-card vx-kpi vx-card--compact" aria-label="${esc(label)}">
     <span class="vx-kpi-label">${label}</span><span class="vx-kpi-value ${cls||''}" style="font-size:20px">${val}</span>
     <span class="vx-meta">${sub}</span></div>`;
-  $('vx-pf-kpis').innerHTML=
+  ($('vx-pf-kpis')||{}).innerHTML=
     cell('Respect de la méthode',pct(b.respectMethod),'décisions avec plan documenté',b.respectMethod>=80?'vx-pos':b.respectMethod!=null&&b.respectMethod<50?'vx-neg':'')
     +cell('Qualité des entrées',pct(b.entryQuality),'avec raison d’entrée',b.entryQuality>=80?'vx-pos':b.entryQuality!=null&&b.entryQuality<50?'vx-neg':'')
     +cell('Qualité des sorties',pct(b.exitQuality),'clôtures avec leçon',b.exitQuality>=80?'vx-pos':b.exitQuality!=null&&b.exitQuality<50?'vx-neg':'')
@@ -324,13 +324,13 @@ function loadJournal(){
   const f=currentFilter();
   const list=f?all.filter(e=>String(e.ticker||'').toUpperCase().includes(f)):all;
   if(!list.length){
-    $('vx-pf-journal').innerHTML=VX.states.emptyDesk(
+    ($('vx-pf-journal')||{}).innerHTML=VX.states.emptyDesk(
       f?('Aucune entrée pour « '+esc(f)+' ».'):'Chronologie vide — déclare tes décisions pour mesurer ton exécution.',
       '<button class="vx-btn vx-btn-sm" id="vx-pf-add-empty">Ajouter une entrée</button>');
     $('vx-pf-add-empty')?.addEventListener('click',openEntryModal);
     return;
   }
-  $('vx-pf-journal').innerHTML=
+  ($('vx-pf-journal')||{}).innerHTML=
     `<table class="vx-table"><thead><tr><th>Date</th><th>Ticker</th><th>Direction</th>
      <th>Résultat</th><th class="vx-num">P&amp;L</th><th>Leçon</th><th></th></tr></thead><tbody>`
     +list.map(e=>{
@@ -351,7 +351,7 @@ function loadMistakes(){
   const counts={};
   all.forEach(e=>{const m=String(e.mistake||'').trim();if(m)counts[m]=(counts[m]||0)+1;});
   const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-  $('vx-pf-mistakes').innerHTML=top.length?top.map(([m,n])=>
+  ($('vx-pf-mistakes')||{}).innerHTML=top.length?top.map(([m,n])=>
     `<div class="vx-kv"><span class="k">${esc(m)}</span><span class="v vx-mono">× ${n}</span></div>`).join('')
     :VX.states.emptyDesk('Aucune erreur déclarée — renseigne le champ « erreur » à chaque sortie perdante.');
 }
@@ -398,13 +398,13 @@ function openEntryModal(){
 function loadLearnings(){
   const all=E()?E().journal():[];
   const lessons=[...new Set(all.map(e=>String(e.lesson||'').trim()).filter(Boolean))];
-  $('vx-pf-lessons').innerHTML=lessons.length?
+  ($('vx-pf-lessons')||{}).innerHTML=lessons.length?
     '<ul style="margin:0;padding-left:18px;line-height:1.9">'+lessons.map(l=>`<li>${esc(l)}</li>`).join('')+'</ul>'
     :VX.states.emptyDesk('Aucune leçon consignée — renseigne le champ « leçon » à chaque sortie de trade.',JOURNAL_ACTION);
   const counts={};
   all.forEach(e=>{const m=String(e.mistake||'').trim();if(m)counts[m]=(counts[m]||0)+1;});
   const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-  $('vx-pf-recurrent').innerHTML=top.length?top.map(([m,n])=>
+  ($('vx-pf-recurrent')||{}).innerHTML=top.length?top.map(([m,n])=>
     `<div class="vx-kv"><span class="k">${esc(m)}</span><span class="v vx-mono">× ${n}</span></div>`).join('')
     :VX.states.emptyDesk('Aucune erreur récurrente déclarée pour l’instant.');
   /* Biais comportementaux — décompte des états émotionnels déclarés. */
@@ -475,14 +475,14 @@ async function loadTrack(){
       if(ig.horizon_non_echu) causes.push(ig.horizon_non_echu+' trop récent(s) (horizon pas encore écoulé)');
       if(ig.sans_serie) causes.push(ig.sans_serie+' sur des titres qui ne sont plus suivis par le scan');
       if(ig.date_absente) causes.push(ig.date_absente+' dont la séance est introuvable dans la série');
-      $('vx-pf-track').innerHTML=VX.states.empty(
+      ($('vx-pf-track')||{}).innerHTML=VX.states.empty(
         (tr.entries||0)+' verdict(s) enregistré(s), '+(tr.resolved||0)+' résolu(s)'
         +' — il en faut 5 par verdict pour publier une fiabilité.'
         +(causes.length?' Non notés : '+esc(causes.join(' · '))+'.':''),
         '<a class="vx-btn vx-btn-sm" href="/system?view=data">Système / Données</a>');
       return;
     }
-    $('vx-pf-track').innerHTML=
+    ($('vx-pf-track')||{}).innerHTML=
       `<div id="vx-pf-track-bar" class="vx-mb3"></div>`
       +`<table class="vx-table"><thead><tr><th>Verdict moteur</th><th class="vx-num">N</th>
        <th class="vx-num">Rdt +5 séances</th><th class="vx-num">Rdt +20 séances</th>
@@ -507,17 +507,17 @@ async function loadTrack(){
           render:(cv)=>VXCharts.bars(cv,_tl,_tv,{colors:_tv.map(v=>v==null?VXCharts.colors.muted:(v>=0?VXCharts.colors.positive:VXCharts.colors.negative)),yFmt:(x)=>x+' %'})});
       }
     }catch(e){}
-  }catch(e){$('vx-pf-track').innerHTML=VX.states.error('Historique moteur indisponible ('+esc(e.message)+')');}
+  }catch(e){($('vx-pf-track')||{}).innerHTML=VX.states.error('Historique moteur indisponible ('+esc(e.message)+')');}
 }
 function loadReal(){
   const list=trades();
   if(!list.length){
-    $('vx-pf-real').innerHTML=VX.states.emptyDesk('Aucun trade réel déclaré avec résultat — le journal est la seule source de cette section.',JOURNAL_ACTION);
+    ($('vx-pf-real')||{}).innerHTML=VX.states.emptyDesk('Aucun trade réel déclaré avec résultat — le journal est la seule source de cette section.',JOURNAL_ACTION);
     return;
   }
   const s=stats(list);
   const pf=s.profitFactor===Infinity?'∞':(s.profitFactor===null?'—':VX.fmt.num(s.profitFactor,2));
-  $('vx-pf-real').innerHTML=
+  ($('vx-pf-real')||{}).innerHTML=
     `<table class="vx-table"><thead><tr><th class="vx-num">Trades</th><th class="vx-num">Taux de réussite</th>
      <th class="vx-num">P&amp;L total</th><th class="vx-num">Profit factor</th><th class="vx-num">Espérance / trade</th></tr></thead>
      <tbody><tr>

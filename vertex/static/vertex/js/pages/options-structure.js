@@ -93,14 +93,14 @@
     try { if (window.VX && VX.store) VX.store.set('active_ticker', sym); } catch (e0) {}
     var vHost = $('vx-os-verdict'); if (!vHost) return;
     vHost.innerHTML = '<div class="vx-skeleton" style="height:150px"></div>';
-    $('vx-os-scenarios').innerHTML = ''; $('vx-os-compare').innerHTML = '';
-    $('vx-os-payoff').innerHTML = '<div class="vx-empty">Calcul…</div>'; $('vx-os-greeks').innerHTML = '';
+    ($('vx-os-scenarios')||{}).innerHTML = ''; ($('vx-os-compare')||{}).innerHTML = '';
+    ($('vx-os-payoff')||{}).innerHTML = '<div class="vx-empty">Calcul…</div>'; ($('vx-os-greeks')||{}).innerHTML = '';
     Promise.all([VX.fetch('/api/options/strategies/' + encodeURIComponent(sym), { ttl: 60000 }), board()])
       .then(function (r) {
         var d = r[0], bd = r[1];
         if (!d || !d.available || !(d.strategies || []).length) {
           vHost.innerHTML = insufficientCard(sym, (d && d.reason) || 'aucune structure constructible depuis le board');
-          $('vx-os-payoff').innerHTML = '<div class="vx-empty">—</div>'; return;
+          ($('vx-os-payoff')||{}).innerHTML = '<div class="vx-empty">—</div>'; return;
         }
         var s = d.strategies.filter(function (x) { return x.recommended; })[0] || d.strategies[0];
         var ivDec = d.iv;                               // décimale (moteur corrigé PR n°6)

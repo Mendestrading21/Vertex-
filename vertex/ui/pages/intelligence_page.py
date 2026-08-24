@@ -202,8 +202,8 @@ function whenChartsReady(fn){
 /* ══ Vue ANALYSTE ═══════════════════════════════════════════════════ */
 function initAnalyst(){
   const idle=VX.states.empty('Aucune analyse lanc&eacute;e — saisissez un ticker ci-contre.','');
-  $('vx-analyst-verdict').innerHTML=idle;
-  $('vx-analyst-audit').innerHTML=idle;
+  ($('vx-analyst-verdict')||{}).innerHTML=idle;
+  ($('vx-analyst-audit')||{}).innerHTML=idle;
   /* Suggestions : exemples + tickers récents + raccourcis — rien d'inventé */
 (function(){
   const host=$('vx-analyst-suggestions');if(!host)return;
@@ -230,9 +230,9 @@ $('vx-analyst-form').addEventListener('submit',(e)=>{
   });
 }
 async function runAnalysis(sym,question){
-  $('vx-analyst-verdict').innerHTML=VX.states.loading(4);
-  $('vx-analyst-audit').innerHTML=VX.states.loading(5);
-  $('vx-analyst-scores').innerHTML='';
+  ($('vx-analyst-verdict')||{}).innerHTML=VX.states.loading(4);
+  ($('vx-analyst-audit')||{}).innerHTML=VX.states.loading(5);
+  ($('vx-analyst-scores')||{}).innerHTML='';
   const [sd,dd]=await Promise.allSettled([
     VX.fetch('/api/strategy/decision/'+encodeURIComponent(sym),{ttl:15000}),
     VX.fetch('/api/decision/'+encodeURIComponent(sym),{ttl:15000})]);
@@ -242,10 +242,10 @@ async function runAnalysis(sym,question){
      scan (strategy_os_api). On NE fabrique PAS un verdict « ATTENDRE » : on affiche
      l'état vide honnête tant qu'aucun dossier réel n'existe. */
   if(!strat||strat.available===false){
-    $('vx-analyst-verdict').innerHTML=VX.states.empty(
+    ($('vx-analyst-verdict')||{}).innerHTML=VX.states.empty(
       sym+' est absent du scan courant — impossible de d&eacute;cider sans donn&eacute;es.',
       '<a class="vx-btn vx-btn-sm" href="/system?view=data">Lancer un scan (Syst&egrave;me)</a>');
-    $('vx-analyst-audit').innerHTML=VX.states.empty('Aucun raisonnement disponible sans dossier.');
+    ($('vx-analyst-audit')||{}).innerHTML=VX.states.empty('Aucun raisonnement disponible sans dossier.');
     return;
   }
   renderVerdict(sym,question,strat,deci);
@@ -257,7 +257,7 @@ function renderVerdict(sym,question,strat,deci){
      apparence de conviction (pas de verdict coloré, pas de comité chiffré). */
   if(deci&&deci.final_decision==='DATA_INSUFFICIENT'){
     const miss=(deci.data_quality&&(deci.data_quality.missing_fields||[]).join(', '))||'données du titre absentes';
-    $('vx-analyst-verdict').innerHTML=
+    ($('vx-analyst-verdict')||{}).innerHTML=
       `<div class="vx-flex vx-mb3">
         <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${sym}">${sym}</button>
         <span class="vx-badge" data-decision="INCONNU">Donn&eacute;es insuffisantes</span></div>
@@ -268,14 +268,14 @@ function renderVerdict(sym,question,strat,deci){
       <div class="vx-flex vx-wrap vx-gap2 vx-mt3">
         <button class="vx-btn vx-btn-sm" data-open-analysis="${sym}">Ouvrir l&#8217;analyse compl&egrave;te</button></div>
       <div class="vx-card-footer">${VX.updateIndicator((strat&&strat.as_of),'decision stack','delayed')}</div>`;
-    $('vx-analyst-meta').innerHTML=`<span class="vx-meta">${esc(sym)}</span>`;
+    ($('vx-analyst-meta')||{}).innerHTML=`<span class="vx-meta">${esc(sym)}</span>`;
     return;
   }
   const decision=(strat&&strat.final_decision)||'ATTENDRE';
   const unknowns=(strat&&strat.unknowns)||[];
   const blocking=(strat&&strat.blocking_rules)||[];
   const lens=deci&&deci.market_lens;
-  $('vx-analyst-verdict').innerHTML=
+  ($('vx-analyst-verdict')||{}).innerHTML=
     `<div class="vx-flex vx-mb3">
       <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${sym}">${sym}</button>
       <span class="vx-badge vx-badge-decision" data-decision="${esc(decision)}">${esc(decision)}</span>
@@ -291,7 +291,7 @@ function renderVerdict(sym,question,strat,deci){
       <button class="vx-btn vx-btn-sm vx-btn-ghost" data-entity-menu="${sym}">Actions (suivi, alerte, note…)</button>
     </div>
     <div class="vx-card-footer">${VX.updateIndicator((strat&&strat.as_of),'moteur ex&eacute;cutif + decision stack','delayed')}</div>`;
-  $('vx-analyst-meta').innerHTML=`<span class="vx-meta">${esc(sym)}</span>`;
+  ($('vx-analyst-meta')||{}).innerHTML=`<span class="vx-meta">${esc(sym)}</span>`;
 }
 function renderAudit(strat,deci){
   const audit=(strat&&strat.audit_trail)||[];
@@ -308,7 +308,7 @@ function renderAudit(strat,deci){
       +`<div class="vx-col-6"><div class="vx-meta vx-mb1">Arguments pour</div>${pros.slice(0,3).map(p=>`<div class="vx-pos" style="font-size:12px">+ ${esc(p)}</div>`).join('')||'<span class="vx-muted">—</span>'}</div>`
       +`<div class="vx-col-6"><div class="vx-meta vx-mb1">Arguments contre</div>${cons.slice(0,3).map(c=>`<div class="vx-neg" style="font-size:12px">− ${esc(c)}</div>`).join('')||'<span class="vx-muted">—</span>'}</div></div>`;
   }
-  $('vx-analyst-audit').innerHTML=html;
+  ($('vx-analyst-audit')||{}).innerHTML=html;
 }
 function renderScores(sym,strat){
   const s=strat&&strat.scores;
@@ -343,7 +343,7 @@ async function initCommittee(){
     committeeData=await VX.fetch('/api/committee-review',{ttl:60000});
     renderCommittee();
   }catch(e){
-    $('vx-committee-body').innerHTML=VX.states.error('Comit&eacute; indisponible ('+esc(e.message)+')');
+    ($('vx-committee-body')||{}).innerHTML=VX.states.error('Comit&eacute; indisponible ('+esc(e.message)+')');
   }
 }
 function renderCommittee(){
@@ -395,25 +395,25 @@ function renderCommittee(){
         note:(c.universe_scanned||Object.keys(tally).reduce(function(a,k){return a+tally[k];},0))+' dossiers — verdicts réels du comité.'});
     });
   }catch(e){}
-  $('vx-committee-meta').innerHTML=VX.updateIndicator(c.as_of,
+  ($('vx-committee-meta')||{}).innerHTML=VX.updateIndicator(c.as_of,
     (c.data_source==='demo'?'d&eacute;mo':'scan')+' · '+(c.universe_scanned??reviews.length)+' titres pass&eacute;s en revue',
     c.data_source==='demo'?'fallback':'delayed');
   const chips=[['','Toutes ('+reviews.length+')']].concat(
     Object.keys(tally).sort().map(k=>[k,k+' ('+tally[k]+')']));
-  $('vx-committee-chips').innerHTML=chips.map(([val,label])=>
+  ($('vx-committee-chips')||{}).innerHTML=chips.map(([val,label])=>
     `<button class="vx-chip" data-filter-key="decision" data-filter-value="${esc(val)}"
       aria-pressed="${String(val===committeeFilter)}">${esc(label)}</button>`).join('');
   document.querySelectorAll('#vx-committee-chips .vx-chip').forEach(ch=>
     ch.addEventListener('click',()=>{committeeFilter=ch.dataset.filterValue;renderCommittee();}));
   const rows=reviews.filter(r=>!committeeFilter||r.decision===committeeFilter);
   if(!rows.length){
-    $('vx-committee-body').innerHTML=VX.states.empty(
+    ($('vx-committee-body')||{}).innerHTML=VX.states.empty(
       reviews.length?'Aucun titre ne correspond &agrave; ce filtre.'
       :'Aucune revue disponible — le scan n&#8217;a pas encore tourn&eacute;.',
       reviews.length?'':'<a class="vx-btn vx-btn-sm" href="/system?view=data">Syst&egrave;me / Donn&eacute;es</a>');
     return;
   }
-  $('vx-committee-body').innerHTML=`<div style="overflow-x:auto"><table class="vx-table">
+  ($('vx-committee-body')||{}).innerHTML=`<div style="overflow-x:auto"><table class="vx-table">
     <thead><tr><th>Titre</th><th>D&eacute;cision</th><th class="vx-num">Conviction</th>
     <th class="vx-num">Accord</th><th class="vx-num">Prix</th><th><span class="vx-sr-only">D&eacute;tail</span></th><th><span class="vx-sr-only">Actions</span></th></tr></thead><tbody>`
     +rows.map((r,i)=>{
@@ -457,7 +457,7 @@ async function initStrategy(){
     const kv=(k,v)=>`<div class="vx-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`;
     const tgt=raw.portfolio_target_positions||{};
     const pref=raw.preferred_stock_weight_pct||[];
-    $('vx-strategy-core').innerHTML=
+    ($('vx-strategy-core')||{}).innerHTML=
       kv('Identifiant',esc(p.strategy_id||'—'))
       +kv('Version','v'+esc(p.version)+' · disponibles : '+((p.versions_available||[]).map(esc).join(', ')||'—'))
       +kv('Style',esc(p.style||'—'))
@@ -471,14 +471,14 @@ async function initStrategy(){
       +kv('D&eacute;cisions autoris&eacute;es',(raw.allowed_final_decisions||[]).map(d=>
         `<span class="vx-badge vx-badge-decision" data-decision="${esc(d)}">${esc(d)}</span>`).join(' ')||'—')
       +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'constitution serveur v'+esc(p.version),'delayed')}</div>`;
-    $('vx-strategy-meta').innerHTML=`<span class="vx-badge">v${esc(p.version)}</span>`;
+    ($('vx-strategy-meta')||{}).innerHTML=`<span class="vx-badge">v${esc(p.version)}</span>`;
     renderGates(raw);
     renderOptionCategories(raw.options_profile||{});
   }catch(e){
     const err=VX.states.error('Constitution indisponible ('+esc(e.message)+')');
-    $('vx-strategy-core').innerHTML=err;
-    $('vx-strategy-gates').innerHTML=err;
-    $('vx-strategy-options').innerHTML=err;
+    ($('vx-strategy-core')||{}).innerHTML=err;
+    ($('vx-strategy-gates')||{}).innerHTML=err;
+    ($('vx-strategy-options')||{}).innerHTML=err;
   }
 }
 function renderGates(raw){
@@ -497,18 +497,18 @@ function renderGates(raw){
   if(op.max_simultaneous_bearish_positions!==undefined)
     gates.push('Positions baissi&egrave;res simultan&eacute;es : max '+op.max_simultaneous_bearish_positions);
   gates.push('READONLY produit : aucun ordre n&#8217;est jamais pass&eacute; (disabled-by-design)');
-  $('vx-strategy-gates').innerHTML='<ul style="margin:0;padding-left:18px;line-height:1.9;font-size:13px">'
+  ($('vx-strategy-gates')||{}).innerHTML='<ul style="margin:0;padding-left:18px;line-height:1.9;font-size:13px">'
     +gates.map(g=>`<li>${g}</li>`).join('')+'</ul>';
 }
 function renderOptionCategories(op){
   const cats=op.categories||{};
   const names=Object.keys(cats);
   if(!names.length){
-    $('vx-strategy-options').innerHTML=VX.states.empty('Aucune cat&eacute;gorie d&#8217;options d&eacute;finie dans la constitution.');
+    ($('vx-strategy-options')||{}).innerHTML=VX.states.empty('Aucune cat&eacute;gorie d&#8217;options d&eacute;finie dans la constitution.');
     return;
   }
   const band=(a)=>Array.isArray(a)&&a.length===2?a[0]+' &agrave; '+a[1]:'—';
-  $('vx-strategy-options').innerHTML=
+  ($('vx-strategy-options')||{}).innerHTML=
     `<div class="vx-meta vx-mb2">Direction principale : ${esc(op.primary_direction||'—')} ·
       DTE absolu ${VX.fmt.nd(op.dte&&op.dte.absolute_minimum)}-${VX.fmt.nd(op.dte&&op.dte.absolute_maximum)} j ·
       d&eacute;tention ${VX.fmt.nd(op.holding_period_days&&op.holding_period_days.minimum)}-${VX.fmt.nd(op.holding_period_days&&op.holding_period_days.maximum)} j</div>
@@ -534,18 +534,18 @@ async function initResearch(){
   try{
     const v=await VX.fetch('/api/validator',{ttl:120000});
     if(!v.ok){
-      $('vx-research-body').innerHTML=VX.states.empty(
+      ($('vx-research-body')||{}).innerHTML=VX.states.empty(
         'Validation indisponible : '+esc(v.note||'historique insuffisant')+'. '
         +'Le validateur exige une courbe d&#8217;equity r&eacute;elle — rien n&#8217;est simul&eacute; pour combler.',
         '<a class="vx-btn vx-btn-sm" href="/journal">Ouvrir le Journal</a>');
-      $('vx-research-chart').innerHTML='';
+      ($('vx-research-chart')||{}).innerHTML='';
       return;
     }
     const row=(k,val,hint)=>`<tr><td>${k}${hint?` <span class="vx-meta">${hint}</span>`:''}</td>
       <td class="vx-num vx-mono">${val}</td></tr>`;
-    $('vx-research-meta').innerHTML=
+    ($('vx-research-meta')||{}).innerHTML=
       `<span class="vx-badge" style="color:${esc(v.color||'inherit')}">${esc(v.verdict||'—')}</span>`;
-    $('vx-research-body').innerHTML=
+    ($('vx-research-body')||{}).innerHTML=
       `<div style="overflow-x:auto"><table class="vx-table"><thead>
         <tr><th>M&eacute;trique</th><th class="vx-num">Valeur</th></tr></thead><tbody>`
       +row('Sharpe annualis&eacute;',VX.fmt.num(v.sharpe_ann,2))
@@ -574,9 +574,9 @@ async function initResearch(){
           why:'Un edge r&eacute;el survit hors de la fen&ecirc;tre o&ugrave; il a &eacute;t&eacute; d&eacute;couvert.',
           confirm:'Une large majorit&eacute; de fen&ecirc;tres positives avec DSR &eacute;lev&eacute;.',
           invalidate:'Des fen&ecirc;tres n&eacute;gatives r&eacute;p&eacute;t&eacute;es ou une forte d&eacute;gradation IS &rarr; OOS.'}}));
-    }else $('vx-research-chart').innerHTML='';
+    }else ($('vx-research-chart')||{}).innerHTML='';
   }catch(e){
-    $('vx-research-body').innerHTML=VX.states.error('Validateur indisponible ('+esc(e.message)+')');
+    ($('vx-research-body')||{}).innerHTML=VX.states.error('Validateur indisponible ('+esc(e.message)+')');
   }
 }
 
@@ -593,12 +593,12 @@ function renderMemory(){
   const notes=(E()&&E().notes())||{};
   const syms=Object.keys(notes).sort();
   if(!syms.length){
-    $('vx-memory-body').innerHTML=VX.states.empty(
+    ($('vx-memory-body')||{}).innerHTML=VX.states.empty(
       'Aucune th&egrave;se enregistr&eacute;e — vos notes par titre appara&icirc;tront ici (synchronis&eacute;es via le desk).',
       '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'note\')">Cr&eacute;er une th&egrave;se</button>');
     return;
   }
-  $('vx-memory-body').innerHTML=`<div style="overflow-x:auto"><table class="vx-table">
+  ($('vx-memory-body')||{}).innerHTML=`<div style="overflow-x:auto"><table class="vx-table">
     <thead><tr><th>Titre</th><th>Th&egrave;se / note</th><th><span class="vx-sr-only">Modifier</span></th><th><span class="vx-sr-only">Actions</span></th></tr></thead><tbody>`
     +syms.map(sym=>`<tr>
       <td><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(sym)}">${esc(sym)}</button></td>

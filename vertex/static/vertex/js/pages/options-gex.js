@@ -277,12 +277,12 @@
     sym = (sym || '').trim().toUpperCase();
     if (!/^[A-Z.\-]{1,12}$/.test(sym)) { VX.toast && VX.toast('Ticker invalide', 'error'); return; }
     try { if (VX.store) VX.store.set('active_ticker', sym); } catch (e0) {}
-    $('vx-gx-thesis').innerHTML = '<section class="vx-card"><div class="vx-empty">Analyse du positionnement de ' + esc(sym) + '…</div></section>';
+    ($('vx-gx-thesis')||{}).innerHTML = '<section class="vx-card"><div class="vx-empty">Analyse du positionnement de ' + esc(sym) + '…</div></section>';
     VX.fetch('/api/options/gex/' + encodeURIComponent(sym), { ttl: 120000 }).then(function (d) {
       renderThesis(d); renderTiles(d); renderBars(d); renderFlow(d); renderDaily(d);
       try { VX.context && VX.context.save && VX.context.save({ selectedSymbol: sym }); } catch (e) {}
     }).catch(function (e) {
-      $('vx-gx-thesis').innerHTML = '<section class="vx-card"><div class="vx-error-banner">Chargement impossible : ' + esc(e.message) + '</div></section>';
+      ($('vx-gx-thesis')||{}).innerHTML = '<section class="vx-card"><div class="vx-error-banner">Chargement impossible : ' + esc(e.message) + '</div></section>';
     });
   }
 
