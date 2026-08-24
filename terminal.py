@@ -1284,11 +1284,43 @@ def _news_loop():
                 hot = [r['symbol'] for r in rows_n[:6] if r.get('symbol') not in NEWS_SYMS]
             except Exception:
                 pass
+            #  ── TETE DE CHAINE : LE COURTIER ────────────────────────────
+            #  Le compte est abonne a des fournisseurs professionnels (Dow
+            #  Jones, Briefing) : prendre les depeches sur le web pendant ce
+            #  temps, c'est lire une autre actualite que celle du courtier qui
+            #  detient les positions.
+            #
+            #  Un LOT, pas 18 appels : la boucle couvre 12 symboles fixes plus
+            #  6 titres chauds, et l'identifiant client est unique — ouvrir une
+            #  session par symbole couterait plus cher que les depeches.
+            #  Mesure : 12 symboles servis en 8,9 s sur une seule session.
+            depeches = {}
+            if IBKR_ENABLED and not DEMO_MODE:
+                try:
+                    import asyncio as _aio_n
+                    from vertex.data_sources.ibkr_news import depeches_lot
+                    try:
+                        _aio_n.get_event_loop()
+                    except RuntimeError:
+                        _aio_n.set_event_loop(_aio_n.new_event_loop())
+                    depeches = depeches_lot(NEWS_SYMS + hot, n=4)
+                except Exception as _en:      # TWS absent, refus : on continue
+                    _live_meta['news_err'] = '%s: %s' % (type(_en).__name__, _en)
+            n_ibkr = n_web = 0
             for sym in NEWS_SYMS + hot:
                 try:
-                    its = options.news_for(yf.Ticker(sym), n=4)
-                    if not its:                                   # repli multi-sources (throttle yfinance)
-                        its = _news_plus.rss_news(sym, n=4)
+                    its = depeches.get(sym) or []
+                    if its:
+                        n_ibkr += 1
+                    else:
+                        #  Ce que le courtier ne sert pas descend la chaine.
+                        #  Une absence ici n'est pas un vide a l'ecran : c'est
+                        #  le repli qui prend la main, et la provenance le dit.
+                        its = options.news_for(yf.Ticker(sym), n=4)
+                        if not its:                               # repli multi-sources (throttle yfinance)
+                            its = _news_plus.rss_news(sym, n=4)
+                        if its:
+                            n_web += 1
                     its, _ = ai.fr_news(sym, its)
                     for it in its:
                         it['senti'] = _news_plus.sentiment((it.get('title') or '') + ' ' + (it.get('fr') or ''))
@@ -1306,6 +1338,12 @@ def _news_loop():
             feed.sort(key=lambda x: x.get('time') or '', reverse=True)
             news_state['items'] = feed[:45]
             news_state['updated'] = datetime.now().strftime('%H:%M:%S')
+            #  La provenance NOMME ses contributeurs, comme le scan : « ibkr »
+            #  n'est pas « ibkr+web ». Sans ce compte, un fil bascule
+            #  entierement sur le web sans que rien ne change a l'ecran.
+            news_state['source_detail'] = {'ibkr': n_ibkr, 'web': n_web}
+            news_state['source'] = '+'.join(
+                [n for n, c in (('ibkr', n_ibkr), ('web', n_web)) if c]) or 'aucune'
             #  #779/G1 — NEWS_REFRESH était déclaré au registre des jobs sans
             #  aucun émetteur : la boucle tournait, la page Système affichait
             #  « jamais exécuté ». La cadence déclarée au registre (900 s) était

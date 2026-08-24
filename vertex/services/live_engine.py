@@ -172,7 +172,12 @@ def _domains():
            else 'IBKR live (TWS)' if _CFG['ibkr_enabled'] else 'yfinance (delayed ~15 min)')
     sources = {
         'prices': src, 'options': ('démo' if _CFG['demo'] else 'chaînes IBKR/yfinance'),
-        'companies': 'yfinance + cache hebdo', 'news': 'flux traduits',
+        'companies': 'yfinance + cache hebdo',
+        #  La SOURCE REELLE du fil, pas une etiquette figee : « depeches
+        #  ibkr » et « depeches web » ne se lisent pas pareil, et un fil
+        #  qui bascule entierement sur le web doit se voir.
+        'news': ('depeches %s (traduites)' % news['source']) if news.get('source')
+                else 'flux traduits',
         'calendar': 'yfinance earnings', 'weekly': 'scan hebdo', 'ai': 'moteurs Vertex (sur scan)',
     }
     out = {}

@@ -74,6 +74,10 @@ CLIENT_IDS = {
     'indices': 22,      # flux d'indices
     'passerelle': 19,   # vertex.data_sources.ibkr_gateway — 17 auparavant,
                         # donc en collision directe avec « compte ».
+    'news': 24,         # depeches du courtier. Role PROPRE : la boucle news
+                        # tourne toutes les minutes, celle du scan par salves
+                        # de plusieurs minutes — partager un identifiant les
+                        # ferait s'evincer mutuellement.
     'historique': 23,   # barres quotidiennes de l'univers de scan. Un rôle
                         # PROPRE, et non un emprunt à « cotations » : le scan
                         # tourne par salves longues, la collision se lirait
