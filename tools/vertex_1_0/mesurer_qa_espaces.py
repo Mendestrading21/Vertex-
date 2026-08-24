@@ -83,7 +83,7 @@ versions faisaient.
 Usage :
     python tools/vertex_1_0/mesurer_qa_espaces.py [--json] [--base URL]
                                                   [--largeurs 390,1440]
-Sorties : 0 = mesuré, 2 = témoin muet.
+Sorties : 0 = mesuré, 2 = témoin muet, 3 = NON MESURÉ (navigateur indisponible).
 """
 from __future__ import annotations
 
@@ -153,7 +153,67 @@ def _chromium():
     return None
 
 
+#: Code de sortie « je n'ai PAS mesure ». Distinct de 0 (mesure propre), de 2
+#: (temoin muet) et de 1 (plantage). La meme convention que
+#: `mesurer_g5_live` pour TWS injoignable : ne pas avoir mesure n'est pas un
+#: resultat, et surtout pas un resultat PROPRE.
+SORTIE_SANS_NAVIGATEUR = 3
+
+#: Les trois raisons, parce qu'elles n'appellent pas la meme action.
+MODULE_ABSENT = 'MODULE_ABSENT'
+BINAIRE_ABSENT = 'BINAIRE_ABSENT'
+LANCEMENT_REFUSE = 'LANCEMENT_REFUSE'
+
+REMEDES = {
+    MODULE_ABSENT: 'pip install playwright',
+    BINAIRE_ABSENT: 'python -m playwright install chromium',
+    LANCEMENT_REFUSE: ("environnement : session sans interface, bac a sable ou "
+                       "droits — la mesure navigateur ne peut pas s'executer ici"),
+}
+
+
 @functools.lru_cache(maxsize=1)
+def diagnostic_navigateur() -> dict:
+    """Le navigateur peut-il etre lance ici, et SINON pourquoi ? (une tentative)
+
+    `navigateur_pret()` rendait un booleen. C'etait deja mieux que de tester la
+    presence d'un fichier, mais le booleen avale le MOTIF — et les trois motifs
+    n'appellent pas du tout la meme action :
+
+    | motif | ce qu'il faut faire |
+    |---|---|
+    | `MODULE_ABSENT` | installer playwright |
+    | `BINAIRE_ABSENT` | telecharger le navigateur |
+    | `LANCEMENT_REFUSE` | changer d'environnement — rien a installer |
+
+    Repondre « non » aux trois envoie l'operateur reinstaller un binaire qui
+    est deja la. C'est la meme faute que celle de la sonde HTTP (D-053) :
+    l'instrument sait pourquoi il a echoue, et ne le dit pas.
+
+    Rend `{'pret', 'raison', 'detail', 'chemin', 'remede'}`.
+    """
+    chemin = _chromium()
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception as e:  # noqa: BLE001
+        return {'pret': False, 'raison': MODULE_ABSENT, 'detail': str(e)[:160],
+                'chemin': chemin, 'remede': REMEDES[MODULE_ABSENT]}
+    try:
+        with sync_playwright() as p:
+            nav = p.chromium.launch(executable_path=chemin,
+                                    args=['--no-sandbox'])
+            nav.close()
+        return {'pret': True, 'raison': None, 'detail': None,
+                'chemin': chemin, 'remede': None}
+    except Exception as e:  # noqa: BLE001
+        #  Un binaire introuvable et un binaire qui refuse de demarrer sont
+        #  deux mondes : le premier s'installe, le second ne s'installe pas.
+        raison = BINAIRE_ABSENT if chemin is None else LANCEMENT_REFUSE
+        return {'pret': False, 'raison': raison,
+                'detail': str(e).strip().splitlines()[0][:200] if str(e) else '',
+                'chemin': chemin, 'remede': REMEDES[raison]}
+
+
 def navigateur_pret() -> bool:
     """Le navigateur peut-il VRAIMENT etre lance ici ? (une seule tentative)
 
@@ -169,19 +229,32 @@ def navigateur_pret() -> bool:
 
     On tente donc un lancement, une fois, et on repond sur ce qui s'est passe.
     C'est la seule reponse qui distingue « pas mesure » de « mesure fausse ».
+
+    Le contrat BOOLEEN est conserve : trois bancs de test s'abstiennent
+    dessus. Le motif se lit avec `diagnostic_navigateur()`.
     """
-    try:
-        from playwright.sync_api import sync_playwright
-    except Exception:  # noqa: BLE001
-        return False
-    try:
-        with sync_playwright() as p:
-            nav = p.chromium.launch(executable_path=_chromium(),
-                                    args=['--no-sandbox'])
-            nav.close()
-        return True
-    except Exception:  # noqa: BLE001
-        return False
+    return bool(diagnostic_navigateur()['pret'])
+
+
+def abandonner_sans_navigateur(flux=None) -> int:
+    """L'aveu qu'un outil doit rendre quand il n'a PAS pu mesurer.
+
+    Mesure du 24 aout 2026 : les trois outils navigateur sortaient en code 1
+    avec 26 lignes de trace Playwright et ZERO ligne utile. Une trace brute se
+    lit « le produit a plante » — c'est-a-dire l'inverse de la verite, qui est
+    « l'instrument n'a pas pu demarrer ». Et le code 1 se confond avec un vrai
+    plantage, alors que leur contrat annonce « 0 = mesure, 2 = temoin muet ».
+    """
+    import sys as _sys
+    d = diagnostic_navigateur()
+    flux = flux if flux is not None else _sys.stderr
+    print('NON MESURE — navigateur indisponible (%s). %s'
+          % (d['raison'], d['remede']), file=flux)
+    if d['detail']:
+        print('   motif : %s' % d['detail'], file=flux)
+    print("   Ce code (%d) ne dit RIEN du produit : aucune mesure n'a eu "
+          "lieu." % SORTIE_SANS_NAVIGATEUR, file=flux)
+    return SORTIE_SANS_NAVIGATEUR
 
 
 #  ---------------------------------------------------------------- sondes JS
@@ -672,6 +745,11 @@ def rendre_texte(r: dict) -> str:
 
 
 def main() -> int:
+    #  L'AVEU avant la mesure. Sans lui, l'outil sortait en code 1 avec
+    #  26 lignes de trace Playwright et zero ligne utile — ce qui se lit
+    #  « le produit a plante », l'inverse exact de la verite.
+    if not navigateur_pret():
+        return abandonner_sans_navigateur()
     base = BASE_DEFAUT
     if '--base' in sys.argv:
         base = sys.argv[sys.argv.index('--base') + 1]

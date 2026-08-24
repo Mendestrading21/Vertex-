@@ -39,7 +39,7 @@ Cet outil **ne supprime rien**.
 
 Usage :
     python tools/vertex_1_0/mesurer_regles_mortes.py [--json] [--base URL]
-Sorties : 0 = mesuré, 2 = témoin muet.
+Sorties : 0 = mesuré, 2 = témoin muet, 3 = NON MESURÉ (navigateur indisponible).
 """
 from __future__ import annotations
 
@@ -53,6 +53,8 @@ if str(RACINE) not in sys.path:
     sys.path.insert(0, str(RACINE))
 
 from tools.vertex_1_0._sonde_http import appeler  # noqa: E402
+from tools.vertex_1_0.mesurer_qa_espaces import (  # noqa: E402
+    abandonner_sans_navigateur, navigateur_pret)
 
 BASE_DEFAUT = 'http://127.0.0.1:5002'
 
@@ -448,6 +450,11 @@ def rendre_texte(r: dict) -> str:
 
 
 def main() -> int:
+    #  Cet outil derive ses candidates de `mesurer_couche_visuelle`, qui exige
+    #  un navigateur. Sans cet aveu, il plantait au milieu d'une trace
+    #  Playwright — en ayant deja construit un corpus de 4,4 Mo pour rien.
+    if not navigateur_pret():
+        return abandonner_sans_navigateur()
     base = BASE_DEFAUT
     if '--base' in sys.argv:
         base = sys.argv[sys.argv.index('--base') + 1]

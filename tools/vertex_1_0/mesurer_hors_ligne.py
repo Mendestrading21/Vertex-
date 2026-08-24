@@ -44,7 +44,7 @@ honnête d'un détecteur aveugle.
 
 Usage :
     python tools/vertex_1_0/mesurer_hors_ligne.py [--json] [--base URL]
-Sorties : 0 = mesuré, 2 = témoin muet.
+Sorties : 0 = mesuré, 2 = témoin muet, 3 = NON MESURÉ (navigateur indisponible).
 """
 from __future__ import annotations
 
@@ -56,7 +56,8 @@ RACINE = pathlib.Path(__file__).resolve().parents[2]
 if str(RACINE) not in sys.path:
     sys.path.insert(0, str(RACINE))
 
-from tools.vertex_1_0.mesurer_qa_espaces import _chromium, espaces  # noqa: E402
+from tools.vertex_1_0.mesurer_qa_espaces import (  # noqa: E402
+    _chromium, abandonner_sans_navigateur, espaces, navigateur_pret)
 
 BASE_DEFAUT = 'http://127.0.0.1:5002'
 LARGEUR = 1440
@@ -450,6 +451,11 @@ def rendre_texte(r: dict) -> str:
 
 
 def main() -> int:
+    #  L'AVEU avant la mesure. Sans lui, l'outil sortait en code 1 avec
+    #  26 lignes de trace Playwright et zero ligne utile — ce qui se lit
+    #  « le produit a plante », l'inverse exact de la verite.
+    if not navigateur_pret():
+        return abandonner_sans_navigateur()
     base = BASE_DEFAUT
     if '--base' in sys.argv:
         base = sys.argv[sys.argv.index('--base') + 1]

@@ -56,7 +56,7 @@ Cet outil **ne supprime rien**.
 Usage :
     python tools/vertex_1_0/mesurer_couche_visuelle.py [--json] [--base URL]
                                                        [--largeur 390]
-Sorties : 0 = mesuré, 2 = témoin muet.
+Sorties : 0 = mesuré, 2 = témoin muet, 3 = NON MESURÉ (navigateur indisponible).
 """
 from __future__ import annotations
 
@@ -71,7 +71,8 @@ if str(RACINE) not in sys.path:
 
 from tools.vertex_1_0._sonde_http import appeler  # noqa: E402
 
-from tools.vertex_1_0.mesurer_qa_espaces import _chromium, espaces  # noqa: E402
+from tools.vertex_1_0.mesurer_qa_espaces import (  # noqa: E402
+    _chromium, abandonner_sans_navigateur, espaces, navigateur_pret)
 
 BASE_DEFAUT = 'http://127.0.0.1:5002'
 LARGEUR_DEFAUT = 390
@@ -459,6 +460,11 @@ def rendre_texte(r: dict) -> str:
 
 
 def main() -> int:
+    #  L'AVEU avant la mesure. Sans lui, l'outil sortait en code 1 avec
+    #  26 lignes de trace Playwright et zero ligne utile — ce qui se lit
+    #  « le produit a plante », l'inverse exact de la verite.
+    if not navigateur_pret():
+        return abandonner_sans_navigateur()
     base, largeur = BASE_DEFAUT, LARGEUR_DEFAUT
     if '--base' in sys.argv:
         base = sys.argv[sys.argv.index('--base') + 1]
