@@ -320,7 +320,7 @@ function paintThesis(){
   }
   $('an-thesis').innerHTML=
     '<div class="vx-meta vx-mb1">Aucune thèse enregistrée — brouillon proposé depuis le dossier réel (les moteurs expliquent, toi tu décides) :</div>'
-    +'<pre class="vx-mono" style="white-space:pre-wrap;background:var(--vx-surface-2,#121214);border:1px dashed var(--vx-border,#2a2a2e);padding:.7rem .8rem;border-radius:10px;font-size:12.5px;line-height:1.7;margin:0 0 .7rem">'+esc(draft)+'</pre>'
+    +'<pre class="vx-mono" style="white-space:pre-wrap;background:var(--vx-surface-2,#121214);border:1px dashed var(--vx-border,#30292B);padding:.7rem .8rem;border-radius:10px;font-size:12.5px;line-height:1.7;margin:0 0 .7rem">'+esc(draft)+'</pre>'
     +'<div class="vx-flex vx-gap2 vx-wrap">'
     +'<button class="vx-btn vx-btn-sm vx-btn-primary" id="an-th-use">Adopter ce brouillon</button>'
     +`<button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXEntities.openAddModal('${SYM}','note')">Écrire ma propre thèse</button></div>`;

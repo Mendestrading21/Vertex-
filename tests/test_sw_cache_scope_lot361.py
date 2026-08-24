@@ -32,8 +32,8 @@ _SW = os.path.join(_ROOT, 'vertex', 'app', 'routes', 'system.py')
 _STATIC = os.path.join(_ROOT, 'vertex', 'static')
 
 # ── Contrat enregistré : ces assets vont avec cette version de shell ─────────
-_EMPREINTE = 'e18f5682ab12efb1ce7eca7364bb72c911fc34c2d1772db5c88fc80da06bf31a'
-_SW_VERSION = 211
+_EMPREINTE = '7893b40928bf8482e5fa812308c1d175a1179a7a88e28656f80afbecb42e9b4f'
+_SW_VERSION = 212
 
 _AIDE = (
     "Un fichier servi sous /static a changé.\n"
@@ -58,7 +58,7 @@ def _version():
 
 
 def _empreinte():
-    """Empreinte agrégée, stable, de tous les fichiers servis sous /static.
+    r"""Empreinte agrégée, stable, de tous les fichiers servis sous /static.
 
     CANONIQUE, et c'est le point : l'empreinte doit désigner l'ÉTAT DES SOURCES,
     pas la façon dont la machine les a matérialisées. Deux détails de plateforme
