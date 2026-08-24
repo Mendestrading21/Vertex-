@@ -109,7 +109,9 @@ anomalies produit   aucune
 | Reconnexion après coupure | **HUMAN_REQUIRED** | exige de couper TWS |
 | Pacing et backpressure sous charge | **HUMAN_REQUIRED** | 70 requêtes sans violation ≠ preuve de limite |
 | Panne partielle d'un rôle | **HUMAN_REQUIRED** | exige de désactiver un abonnement |
-| Account summary et réconciliation P&L | **NON FAIT** | hors périmètre de ce lot |
+| Account summary (devise réelle, tag absent = `None`) | **PROUVÉ** | lot `reconciliation-pnl`, compte réel |
+| Réconciliation P&L (4 sources confrontées) | **PROUVÉ** | écart réel de **95,46 USD** détecté et nommé |
+| Arbitrage entre deux chiffres du courtier | **HUMAN_REQUIRED** | Vertex rapporte, il ne tranche pas |
 | Signature humaine de G5 | **HUMAN_REQUIRED** | décision, pas mesure |
 
 ## Ce que ce lot ne prouve pas
