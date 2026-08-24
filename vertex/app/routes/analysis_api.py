@@ -9,6 +9,8 @@ d'injection : le Blueprint importe directement le même objet.
 Analyse uniquement, indicatif. Ces routes lisent, ne commandent jamais.
 """
 
+import threading
+
 from flask import Blueprint, jsonify, request
 
 from vertex.engines import quant_engine as vertex
@@ -816,7 +818,59 @@ def memory_postmortem_view(decision_id):
                         content=content)
 
 
+#: Le graphe mémoïsé, avec sa CLÉ DE FRAÎCHEUR — pas un cache sans propriétaire.
+#:
+#: Mesuré : 26 s par appel, et `/api/skyler/graph/<sym>` reconstruisait tout le
+#: graphe avant de propager, donc 26 s de plus. Un widget qui met 26 s ne
+#: s'affiche pas : il tourne, puis le navigateur abandonne. Le balayage des 92
+#: surfaces les comptait « en erreur » alors que les deux routes rendaient 200 —
+#: elles étaient seulement trop lentes pour être vues.
+#:
+#: Le résultat est DÉTERMINISTE pour un scan donné : mêmes séries, même
+#: watchlist sectorielle, même calendrier, mêmes positions. La clé nomme donc
+#: exactement ce dont il dépend, et rien de plus — un cache dont la clé oublie
+#: une entrée sert une réponse périmée en la présentant comme fraîche.
+_KG_MEMO = {'clef': None, 'valeur': None}
+_KG_VERROU = threading.Lock()
+
+
+def _kg_clef():
+    """Ce dont le graphe dépend, mesuré SANS le construire.
+
+    Les positions vivent dans `desk_data.json`, hors du scan : les oublier
+    figerait le graphe sur un portefeuille périmé. On prend donc l'horodatage
+    du fichier — lu, jamais deviné.
+    """
+    detail = scan_state.get('detail') or {}
+    try:
+        from vertex.app.state import cal_state
+        n_cal = len(cal_state.get('items') or [])
+    except Exception:  # noqa: BLE001
+        n_cal = -1
+    desk_ts = None
+    try:
+        import os
+        from vertex.services import persist
+        p = persist.cache_path('desk_data.json')
+        desk_ts = os.path.getmtime(p) if os.path.exists(p) else None
+    except Exception:  # noqa: BLE001
+        desk_ts = None
+    return (scan_state.get('scan_ts'), len(detail), n_cal, desk_ts)
+
+
 def _kg_build():
+    """Le graphe, construit une fois par état de scan (voir `_KG_MEMO`)."""
+    clef = _kg_clef()
+    with _KG_VERROU:
+        if _KG_MEMO['clef'] == clef and _KG_MEMO['valeur'] is not None:
+            return _KG_MEMO['valeur']
+    valeur = _kg_construire()
+    with _KG_VERROU:
+        _KG_MEMO['clef'], _KG_MEMO['valeur'] = clef, valeur
+    return valeur
+
+
+def _kg_construire():
     """Assemble le Knowledge Graph depuis les sources réelles de l'état partagé :
     univers scanné, watchlist sectorielle statique, séries canoniques, calendrier
     earnings/macro, positions desk. Aucune relation inventée."""

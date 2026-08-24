@@ -8,6 +8,9 @@ LISENT et l'analysent.
 """
 from __future__ import annotations
 
+import threading
+import time
+
 from flask import Blueprint, jsonify, request
 
 from vertex.services import persist
@@ -19,13 +22,52 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
     def _desk_blob():
         return persist.load_json('desk_data.json', {}) or {}
 
+    #: Les positions du courtier, tenues QUELQUES SECONDES — avec sa politique
+    #: de fraîcheur écrite, pas un cache anonyme.
+    #:
+    #: Mesuré : `/api/positions/state`, `/report`, `/alerts`, `/audit` et
+    #: `/reconcile` appellent tous `_ibkr_positions()`, et chaque appel met un
+    #: travail en file chez le worker options — derrière la rotation des
+    #: chaînes. Une page qui affiche cinq de ces cartes payait donc cinq
+    #: attentes : 20 s, 33 s, 56 s mesurées. Les cinq lisaient pourtant le MÊME
+    #: état de compte.
+    #:
+    #: QUINZE secondes, et le raisonnement compte plus que le chiffre. Deux
+    #: secondes ne servaient à rien : l'appel au courtier dure lui-même ~20 s,
+    #: donc la mémoire avait toujours expiré avant la route suivante — je
+    #: corrigeais la redondance alors que le coût est la latence.
+    #:
+    #: Quinze secondes ne rendent pas la donnée plus vieille qu'elle n'est
+    #: déjà : quand la réponse s'affiche, elle a DÉJÀ une vingtaine de secondes.
+    #: Ce que la borne change, c'est qu'une page cesse de payer cette attente
+    #: cinq fois. Elle reste courte devant l'horizon du produit — options tenues
+    #: 2 à 6 semaines, actions 3 à 12 mois.
+    #:
+    #: Ce qu'elle ne corrige PAS, et il faut le dire : la première attente. Elle
+    #: vient de la file du worker options, partagée avec la rotation des
+    #: chaînes — un défaut d'architecture, antérieur, qu'un cache ne résout pas.
+    _POS_TTL_S = 15.0
+    _pos_memo = {'ts': 0.0, 'valeur': None}
+    _pos_verrou = threading.Lock()
+    _q_memo = {'clef': None, 'ts': 0.0, 'valeur': None}
+
     def _ibkr_positions():
         if not ibkr_enabled or opt_job is None:
             return None
+        with _pos_verrou:
+            if _pos_memo['valeur'] is not None and (time.time() - _pos_memo['ts']) < _POS_TTL_S:
+                return _pos_memo['valeur']
         try:
-            return opt_job('positions', (), timeout=20)
-        except Exception:
+            valeur = opt_job('positions', (), timeout=20)
+        except Exception:  # noqa: BLE001
             return None
+        #  On ne retient QUE ce qui a abouti : mémoriser un échec le ferait
+        #  durer deux secondes de plus, et un compte lisible passerait pour
+        #  muet alors qu'il ne l'était qu'un instant.
+        if valeur is not None:
+            with _pos_verrou:
+                _pos_memo['ts'], _pos_memo['valeur'] = time.time(), valeur
+        return valeur
 
     def _quotes(positions):
         """Cote via le worker IBKR (posq) quand disponible — sinon None."""
@@ -43,10 +85,24 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
             else:
                 todo.append({'sym': p['symbol'], 'exp': '', 'strike': '', 'right': '',
                              'key': '%s||%s|' % (p['symbol'], '')})
+        #  MEME politique que les positions, et pour la meme raison mesuree :
+        #  `/state` et `/alerts` demandaient CHACUNE la cotation du meme
+        #  panier, chacune derriere un `timeout=45` — 27 s puis 19 s sur une
+        #  seule page. La cle est le panier lui-meme : deux paniers differents
+        #  ne partagent jamais une reponse.
+        clef = tuple(sorted(x['key'] for x in todo))
+        with _pos_verrou:
+            if (_q_memo['clef'] == clef and _q_memo['valeur'] is not None
+                    and (time.time() - _q_memo['ts']) < _POS_TTL_S):
+                return _q_memo['valeur']
         try:
-            return opt_job('posq', (todo,), timeout=45) or {}
-        except Exception:
+            valeur = opt_job('posq', (todo,), timeout=45) or {}
+        except Exception:  # noqa: BLE001
             return {}
+        if valeur:
+            with _pos_verrou:
+                _q_memo['clef'], _q_memo['ts'], _q_memo['valeur'] = clef, time.time(), valeur
+        return valeur
 
     @bp.route('/api/positions/state')
     def positions_state():
