@@ -97,13 +97,39 @@ function enrich(pos,quotes){
     const q=quotes[t.id]||{};
     const isOpt=t.type!=='STK';
     const mark=isOpt?(q.mark??q.last??null):(q.spot??q.mark??q.last??null);
+    /* La PROVENANCE vient du serveur (fonction partagee) : la recalculer ici
+       la ferait diverger au premier ajustement, et l'ecran annoncerait une
+       origine que le calcul ne pratique plus. */
+    const markSource=q.mark_source??null;
+    const spreadPct=(typeof q.spread_pct==='number')?q.spread_pct:null;
     const underSpot=isOpt?(q.spot??null):null;
     const value=mark!==null?(isOpt?mark*100*t.qty:mark*t.qty):null;
     const invested=t.cost||0;
     const pl=value!==null&&invested?((value-invested)/invested*100):null;   /* P&L % */
     const plAbs=value!==null?(value-invested):null;                          /* P&L absolu */
-    return Object.assign({},t,{mark,underSpot,value,invested,pl,plAbs});
+    return Object.assign({},t,{mark,markSource,spreadPct,underSpot,value,invested,pl,plAbs});
   });
+}
+/* Trois conventions coexistent chez le courtier lui-meme et ne donnent pas le
+   meme chiffre. Le libelle dit LAQUELLE a servi — sans lui, un prix affiche est
+   un chiffre sans origine, et un ecart avec le releve du courtier reste
+   inexplicable. Mesure du 24 aout 2026 sur URA : marche 3,50/4,30, marque 3,70
+   (dernier echange), milieu 3,90, marque IBKR 3,8546. */
+const MARQUE_LIB={DERNIER_ECHANGE:'dernier echange',MILIEU_FOURCHETTE:'milieu',
+                  CLOTURE_VEILLE:'cloture veille',ABSENTE:''};
+/* Au-dela, dernier echange, milieu et marque du courtier s'ecartent de
+   plusieurs pour cent : un prix au centime promet alors une precision que la
+   donnee n'a pas. */
+const SPREAD_INCERTAIN=10;
+function marqueNote(t){
+  if(t.mark==null)return'';
+  const lib=MARQUE_LIB[t.markSource]||'';
+  const large=(t.spreadPct!=null&&t.spreadPct>=SPREAD_INCERTAIN);
+  if(!lib&&!large)return'';
+  const bits=[];
+  if(lib)bits.push(lib);
+  if(large)bits.push('marche large '+VX.fmt.pct(t.spreadPct,0,false));
+  return '<div class="vx-meta'+(large?' vx-warn':'')+'">'+bits.join(' · ')+'</div>';
 }
 function roleOf(t){
   const snap=t.entrySnap||{};
@@ -526,7 +552,7 @@ async function renderPositions(){
       <td data-label="Instrument">${/CALL|PUT/i.test(t.type||'')?'<span class="vx-violet">'+t.type+'</span>':t.type}${t.strike?' '+t.strike:''}${t.exp?' '+t.exp:''}</td>
       <td data-label="Qté" class="vx-num">${t.qty}</td>
       <td data-label="Prix moyen" class="vx-num">${perShare(t)!=null?VX.fmt.price(perShare(t)):'—'}</td>
-      <td data-label="Prix actuel" class="vx-num">${t.mark!=null?VX.fmt.price(t.mark):'n/d'}</td>
+      <td data-label="Prix actuel" class="vx-num">${t.mark!=null?VX.fmt.price(t.mark):'n/d'}${marqueNote(t)}</td>
       <td data-label="Valeur marché" class="vx-num">${t.value!=null?VX.fmt.price(t.value):'n/d'}</td>
       <td data-label="P&L" class="vx-num ${t.plAbs>0?'vx-pos':t.plAbs<0?'vx-neg':''}">${t.plAbs!=null?((t.plAbs>=0?'+':'')+VX.fmt.price(t.plAbs)):'n/d'}</td>
       <td data-label="P&L %" class="vx-num ${t.pl>0?'vx-pos':t.pl<0?'vx-neg':''}">${t.pl!=null?VX.fmt.pct(t.pl,1):'n/d'}</td>

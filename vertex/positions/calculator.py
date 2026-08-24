@@ -71,6 +71,28 @@ MARQUE_ABSENTE = 'ABSENTE'
 SPREAD_INCERTAIN_PCT = 10.0
 
 
+def source_de_marque(mark, *, last=None, close=None, mid=None) -> str:
+    """D'où vient cette marque ? Fonction PURE, partagée serveur ET route.
+
+    Écrite une seule fois : la dupliquer côté client la ferait diverger au
+    premier ajustement, et l'écran finirait par annoncer une provenance que le
+    calcul ne pratique plus.
+
+    L'ordre du test suit celui de la production : `last` d'abord — c'est la
+    priorité de `read_tk` —, puis la clôture, puis le milieu. Une marque qui
+    ne correspond à aucun des trois vient quand même d'un prix échangé.
+    """
+    if mark is None:
+        return MARQUE_MILIEU if mid is not None else MARQUE_ABSENTE
+    if last is not None and mark == last:
+        return MARQUE_DERNIER_ECHANGE
+    if close is not None and mark == close:
+        return MARQUE_CLOTURE
+    if mid is not None and round(float(mark), 4) == round(float(mid), 4):
+        return MARQUE_MILIEU
+    return MARQUE_DERNIER_ECHANGE
+
+
 def enrich_option(p: dict, quote: dict | None, underlying_quote: dict | None = None,
                   greeks: dict | None = None, detail: dict | None = None) -> dict:
     """quote: {mark, bid, ask, iv, volume, oi, source}. greeks: broker/model
@@ -97,19 +119,10 @@ def enrich_option(p: dict, quote: dict | None, underlying_quote: dict | None = N
         p['mid'] = round((p['bid'] + p['ask']) / 2, 4)
 
     mark = q.get('mark') if q.get('mark') is not None else q.get('last')
-    source = MARQUE_ABSENTE
-    if mark is not None:
-        if q.get('last') is not None and mark == q.get('last'):
-            source = MARQUE_DERNIER_ECHANGE
-        elif q.get('close') is not None and mark == q.get('close'):
-            source = MARQUE_CLOTURE
-        elif p.get('mid') is not None and round(float(mark), 4) == p['mid']:
-            source = MARQUE_MILIEU
-        else:
-            source = MARQUE_DERNIER_ECHANGE
-    elif p.get('mid') is not None:
+    source = source_de_marque(mark, last=q.get('last'), close=q.get('close'),
+                              mid=p.get('mid'))
+    if mark is None and p.get('mid') is not None:
         mark = p['mid']
-        source = MARQUE_MILIEU
     p['mark'] = mark
     p['mark_source'] = source
     if _n(mark) and _n(qty):

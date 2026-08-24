@@ -348,6 +348,36 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
         #  invention.
         _sched.beat('POSITION_REFRESH', ok=True,
                     duration_ms=(time.time() - now) * 1000.0)
+        #  La PROVENANCE de chaque marque, calculee par la fonction PARTAGEE
+        #  avec le serveur. La dupliquer cote client la ferait diverger au
+        #  premier ajustement, et l'ecran finirait par annoncer une origine
+        #  que le calcul ne pratique plus.
+        #
+        #  Mesure du 24 aout 2026 : sur URA 20270115 C 50, marche 3,50/4,30,
+        #  la marque valait 3,70 — le dernier echange — sans que rien ne le
+        #  dise, ce qui rendait inexplicable un ecart de 272 USD avec le
+        #  courtier.
+        from vertex.positions.calculator import source_de_marque
+        for _k, _q in out.items():
+            if not isinstance(_q, dict):
+                continue
+            _b, _a = _q.get('bid'), _q.get('ask')
+            _mid = round((_b + _a) / 2, 4) if (_b and _a) else None
+            #  Une cotation d'ACTION servie par le repli ne porte qu'un `px` :
+            #  aucune convention de marque ne s'y applique. Lui coller une
+            #  provenance « ABSENTE » serait doublement faux — le prix EXISTE,
+            #  et l'origine n'est pas manquante, elle est hors sujet. On
+            #  n'annote donc que ce qui a reellement une marque a expliquer.
+            if _q.get('mark') is None and _mid is None:
+                continue
+            if _mid is not None and _q.get('mid') is None:
+                _q['mid'] = _mid
+            _q['mark_source'] = source_de_marque(
+                _q.get('mark'), last=_q.get('last'), close=_q.get('close'),
+                mid=_mid)
+            #  Un marche large rend TOUTE convention de marque incertaine.
+            _q['spread_pct'] = (round((_a - _b) / _mid * 100, 2)
+                                if (_mid and _b and _a) else None)
         return jsonify({'results': out, 'live': bool(ibkr_enabled),
                         'fallback_used': bool(combles), 'ts': int(now)})
 
