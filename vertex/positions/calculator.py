@@ -53,6 +53,24 @@ def enrich_stock(p: dict, quote: dict | None, spy_change: float | None = None,
     return p
 
 
+#: D'où vient la marque d'une option. Trois conventions coexistent chez le
+#: courtier lui-même, et elles ne donnent pas le même chiffre — mesuré sur
+#: URA 20270115 C 50 le 24 août 2026 : dernier échange 3,70, milieu 3,90,
+#: clôture 3,88, marque IBKR 3,8546, sur un marché 3,50/4,30.
+#:
+#: Vertex NE TRANCHE PAS entre elles (D-041) : il dit laquelle il a utilisée.
+#: Une valorisation dont on ignore la convention n'est pas auditable.
+MARQUE_DERNIER_ECHANGE = 'DERNIER_ECHANGE'
+MARQUE_MILIEU = 'MILIEU_FOURCHETTE'
+MARQUE_CLOTURE = 'CLOTURE_VEILLE'
+MARQUE_ABSENTE = 'ABSENTE'
+
+#: Au-delà de ce spread relatif, la valorisation est incertaine d'environ la
+#: moitié — afficher un P&L au centime donnerait une précision que la donnée
+#: n'a pas. 10 % : au-dessous, les conventions se rejoignent à peu près.
+SPREAD_INCERTAIN_PCT = 10.0
+
+
 def enrich_option(p: dict, quote: dict | None, underlying_quote: dict | None = None,
                   greeks: dict | None = None, detail: dict | None = None) -> dict:
     """quote: {mark, bid, ask, iv, volume, oi, source}. greeks: broker/model
@@ -65,11 +83,35 @@ def enrich_option(p: dict, quote: dict | None, underlying_quote: dict | None = N
             p[k] = q[k]
     if q.get('oi') is not None:
         p['open_interest'] = q['oi']
+    #  Le dernier échange est TRANSMIS, plus perdu. Avant, `_quote_for_option`
+    #  ne le passait pas : l'écran montrait `mark 3,70` avec `last: None`, donc
+    #  un chiffre sans origine lisible.
+    if q.get('last') is not None and p.get('last') is None:
+        p['last'] = q['last']
+
+    #  Le MILIEU se calcule dès que les deux côtés existent, même quand la
+    #  marque vient d'ailleurs. Sans lui, impossible de comparer le prix d'un
+    #  échange au milieu du marché courant — l'écart entre les deux EST
+    #  l'information sur un contrat peu liquide.
+    if _n(p.get('bid')) and _n(p.get('ask')):
+        p['mid'] = round((p['bid'] + p['ask']) / 2, 4)
+
     mark = q.get('mark') if q.get('mark') is not None else q.get('last')
-    if mark is None and _n(p.get('bid')) and _n(p.get('ask')):
-        mark = (p['bid'] + p['ask']) / 2
-        p['mid'] = round(mark, 4)
+    source = MARQUE_ABSENTE
+    if mark is not None:
+        if q.get('last') is not None and mark == q.get('last'):
+            source = MARQUE_DERNIER_ECHANGE
+        elif q.get('close') is not None and mark == q.get('close'):
+            source = MARQUE_CLOTURE
+        elif p.get('mid') is not None and round(float(mark), 4) == p['mid']:
+            source = MARQUE_MILIEU
+        else:
+            source = MARQUE_DERNIER_ECHANGE
+    elif p.get('mid') is not None:
+        mark = p['mid']
+        source = MARQUE_MILIEU
     p['mark'] = mark
+    p['mark_source'] = source
     if _n(mark) and _n(qty):
         p['market_value'] = round(mark * mult * qty, 2)
     cap = p.get('capital_committed')
@@ -80,6 +122,18 @@ def enrich_option(p: dict, quote: dict | None, underlying_quote: dict | None = N
         p['spread_absolute'] = round(p['ask'] - p['bid'], 4)
         mid = (p['ask'] + p['bid']) / 2
         p['spread_pct'] = round(p['spread_absolute'] / mid * 100, 2) if mid else None
+        #  Un marché large rend TOUTE convention de marque incertaine : à
+        #  20,5 % de spread, dernier échange, milieu et marque du courtier
+        #  s'écartent de plusieurs pour cent. Le dire vaut mieux qu'un P&L au
+        #  centime qui promet une précision inexistante.
+        p['valorisation_incertaine'] = (
+            bool(p['spread_pct'] >= SPREAD_INCERTAIN_PCT)
+            if p.get('spread_pct') is not None else None)
+    else:
+        #  Sans fourchette, l'incertitude est INCONNUE — pas faible. Rendre
+        #  False ferait passer une ignorance pour une garantie.
+        p['spread_pct'] = p.get('spread_pct')
+        p['valorisation_incertaine'] = None
     if _n(p.get('volume')) and _n(p.get('open_interest')) and p['open_interest']:
         p['volume_oi_ratio'] = round(p['volume'] / p['open_interest'], 3)
 
