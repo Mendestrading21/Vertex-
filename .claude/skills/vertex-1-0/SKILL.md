@@ -28,7 +28,9 @@ Lire dans cet ordre :
 5. `docs/vertex-1.0/ARCHITECTURE.md` ;
 6. `docs/vertex-1.0/RELEASE_GATES.md` ;
 7. `vertex/strategy/release_profiles/vertex_strategy_v4.json` ;
-8. code et tests du composant modifié.
+8. `docs/vertex-1.0/audits/AUDIT-TOTAL-2026-08-24.md` pour tout chantier post-RC ;
+9. `docs/vertex-1.0/roadmap/VERTEX-INTELLIGENCE-2.0.md` pour l'ordre des lots post-RC ;
+10. code et tests du composant modifié.
 
 ## Pipeline obligatoire
 
@@ -56,6 +58,21 @@ sources réelles et horodatées → normalisation/provenance/fraîcheur → mote
 7. Valider `compileall`, pytest complet et `tests/test_no_orders.py`.
 8. Si runtime/UI : `/healthz`, `/api/client-log`, huit espaces, desktop/mobile et modes dégradés.
 9. Ouvrir une PR brouillon avec preuves, risques, rollback et limites ; ne jamais fusionner automatiquement.
+
+## Programme post-RC
+
+Pour toute demande d'amélioration globale, de nouvelle source, d'API, de
+stratégie, d'intelligence options, de portefeuille, de news ou de recherche :
+
+1. lire `docs/vertex-1.0/roadmap/SOURCES-APIS-OPEN-SOURCE.md` ;
+2. choisir le premier lot non terminé dont les dépendances sont satisfaites ;
+3. ne jamais ouvrir plusieurs lots dépendants en parallèle ;
+4. utiliser un store point-in-time avant toute nouvelle preuve historique ;
+5. garder tout profil V5 candidat inactif jusqu'à décision humaine.
+
+Le nombre de fonctionnalités n'est pas une preuve de qualité. Aucune nouvelle
+source ou stratégie n'est terminée sans contrat de données, replay, état
+dégradé, validation hors échantillon et attribution.
 
 ## Règles Git
 

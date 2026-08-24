@@ -29,6 +29,8 @@ jobs:
       START_ON_IMPORT: "0"
     steps:
       - uses: actions/checkout@v4
+      - name: Fetch remote refs required by repository governance
+        run: git fetch origin '+refs/heads/*:refs/remotes/origin/*' --depth=1 --no-tags
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
