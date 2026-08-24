@@ -1,0 +1,73 @@
+{
+  "version_fixture": 1,
+  "releve": {
+    "connecte": true,
+    "sondes_en_echec": [],
+    "symboles": [
+      "AAPL",
+      "MSFT",
+      "SPY"
+    ],
+    "heure_broker": "2026-08-24 10:26:37+00:00",
+    "duree_cotations_s": 12.12,
+    "cotations": [
+      {
+        "symbole": "AAPL",
+        "etat": "REELLE",
+        "prix": 310.55
+      },
+      {
+        "symbole": "MSFT",
+        "etat": "REELLE",
+        "prix": 483.52
+      },
+      {
+        "symbole": "SPY",
+        "etat": "REELLE",
+        "prix": 764.41
+      }
+    ],
+    "mode_donnees": "DIRECT_NON_QUALIFIE",
+    "mode_donnees_limite": "temps réel et figé remplissent les mêmes champs : les distinguer exigerait un accusé de réception IBKR que ib_async n'expose pas",
+    "greeks": [
+      {
+        "etat": "ABSENTS",
+        "delta": null,
+        "symbole": "AAPL"
+      },
+      {
+        "etat": "ABSENTS",
+        "delta": null,
+        "symbole": "MSFT"
+      },
+      {
+        "etat": "ABSENTS",
+        "delta": null,
+        "symbole": "SPY"
+      }
+    ],
+    "valeurs_fabriquees": [],
+    "positions": {
+      "n_detenues_non_declarees": 1,
+      "n_declarees_non_detenues": 2,
+      "n_quantites_divergentes": 0,
+      "concordant": false,
+      "anonymise": true
+    },
+    "erreurs": {
+      "souscription": [],
+      "rythme": [],
+      "autres": [],
+      "total": 0
+    },
+    "lecture_seule": {
+      "facade_readonly": true,
+      "session_en_lecture_seule": null,
+      "capacites_d_ecriture_exposees": [],
+      "limite": "la preuve par tentative n'est PAS faite : envoyer quoi que ce soit pour voir si c'est refuse violerait l'invariant que ce banc defend."
+    },
+    "anomalies": [],
+    "mesure": true,
+    "anonymise": true
+  }
+}

@@ -1,0 +1,197 @@
+{
+  "version_fixture": 1,
+  "origine": "capture TWS reelle, port 7496, lecture seule — anonymisee",
+  "fixture": {
+    "mode_donnees": 3,
+    "readonly": null,
+    "heure_broker": "2026-08-24 10:21:45+00:00",
+    "contrats": {
+      "AAPL": {
+        "conId": 265598,
+        "currency": "USD",
+        "exchange": "SMART"
+      },
+      "MSFT": {
+        "conId": 272093,
+        "currency": "USD",
+        "exchange": "SMART"
+      }
+    },
+    "cotations_brutes": {
+      "AAPL": {
+        "last": 310.55,
+        "bid": 310.4,
+        "ask": 310.55,
+        "close": 309.350006,
+        "volume": 2237.0,
+        "time": "2026-08-24T10:21:46.468002+00:00",
+        "greeks": null
+      },
+      "MSFT": {
+        "last": 483.17,
+        "bid": 483.0,
+        "ask": 483.42,
+        "close": 483.23999,
+        "volume": 1744.0,
+        "time": "2026-08-24T10:21:46.568152+00:00",
+        "greeks": null
+      },
+      "AAPL|20260824|310.0|C": {
+        "last": null,
+        "bid": -1.0,
+        "ask": -1.0,
+        "close": 1.48,
+        "volume": 0.0,
+        "time": "2026-08-24T10:22:01.597479+00:00",
+        "greeks": null
+      },
+      "AAPL|20260824|312.5|C": {
+        "last": null,
+        "bid": -1.0,
+        "ask": -1.0,
+        "close": 0.65,
+        "volume": 0.0,
+        "time": "2026-08-24T10:22:01.597479+00:00",
+        "greeks": null
+      },
+      "AAPL|20260824|307.5|C": {
+        "last": null,
+        "bid": -1.0,
+        "ask": -1.0,
+        "close": 2.91,
+        "volume": 0.0,
+        "time": "2026-08-24T10:22:01.597479+00:00",
+        "greeks": null
+      },
+      "MSFT|20260824|482.5|C": {
+        "last": null,
+        "bid": -1.0,
+        "ask": -1.0,
+        "close": 3.36,
+        "volume": 0.0,
+        "time": "2026-08-24T10:22:11.110496+00:00",
+        "greeks": null
+      },
+      "MSFT|20260824|485.0|C": {
+        "last": null,
+        "bid": -1.0,
+        "ask": -1.0,
+        "close": 2.21,
+        "volume": 0.0,
+        "time": "2026-08-24T10:22:13.562893+00:00",
+        "greeks": null
+      },
+      "MSFT|20260824|480.0|C": {
+        "last": null,
+        "bid": -1.0,
+        "ask": -1.0,
+        "close": 4.95,
+        "volume": 0.0,
+        "time": "2026-08-24T10:22:13.562893+00:00",
+        "greeks": null
+      }
+    },
+    "positions_brutes": [
+      {
+        "symbol": "TITRE_1",
+        "position": 1.0,
+        "avgCost": null,
+        "secType": "OPT",
+        "currency": "USD"
+      }
+    ],
+    "expirations_par_symbole": {
+      "AAPL": [
+        {
+          "expirations": [
+            "20260824",
+            "20260826",
+            "20260828",
+            "20260831",
+            "20260902",
+            "20260904"
+          ],
+          "strikes": [
+            5.0,
+            10.0,
+            15.0,
+            20.0,
+            25.0,
+            30.0,
+            35.0,
+            40.0,
+            45.0,
+            50.0,
+            55.0,
+            60.0
+          ]
+        }
+      ],
+      "MSFT": [
+        {
+          "expirations": [
+            "20260824",
+            "20260826",
+            "20260828",
+            "20260831",
+            "20260902",
+            "20260904"
+          ],
+          "strikes": [
+            175.0,
+            180.0,
+            185.0,
+            190.0,
+            195.0,
+            200.0,
+            205.0,
+            210.0,
+            215.0,
+            220.0,
+            225.0,
+            230.0
+          ]
+        }
+      ]
+    },
+    "contrats_options": {
+      "AAPL|20260824|310.0|C": {
+        "conId": 909446159,
+        "currency": "USD",
+        "exchange": "SMART",
+        "multiplier": "100"
+      },
+      "AAPL|20260824|312.5|C": {
+        "conId": 909903509,
+        "currency": "USD",
+        "exchange": "SMART",
+        "multiplier": "100"
+      },
+      "AAPL|20260824|307.5|C": {
+        "conId": 909903476,
+        "currency": "USD",
+        "exchange": "SMART",
+        "multiplier": "100"
+      },
+      "MSFT|20260824|482.5|C": {
+        "conId": 909919259,
+        "currency": "USD",
+        "exchange": "SMART",
+        "multiplier": "100"
+      },
+      "MSFT|20260824|485.0|C": {
+        "conId": 909478254,
+        "currency": "USD",
+        "exchange": "SMART",
+        "multiplier": "100"
+      },
+      "MSFT|20260824|480.0|C": {
+        "conId": 909478232,
+        "currency": "USD",
+        "exchange": "SMART",
+        "multiplier": "100"
+      }
+    },
+    "anonymise": true
+  }
+}

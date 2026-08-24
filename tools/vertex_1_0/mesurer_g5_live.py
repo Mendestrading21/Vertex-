@@ -298,8 +298,6 @@ def sonder(gw, ib, symboles=SYMBOLES_DEFAUT, *, trades_declares=None) -> dict:
     _essayer('abonnement_erreurs',
              lambda: getattr(ib, 'errorEvent').__iadd__(_capter))
 
-    r['mode_donnees'] = _essayer(
-        'mode_donnees', lambda: getattr(ib, 'client').marketDataType)
     r['heure_broker'] = _essayer(
         'heure_broker', lambda: str(ib.reqCurrentTime()))
 
@@ -310,6 +308,20 @@ def sonder(gw, ib, symboles=SYMBOLES_DEFAUT, *, trades_declares=None) -> dict:
     tickers = _essayer('cotations', lambda: ib.reqTickers(*contrats), []) or []
     r['duree_cotations_s'] = round(time.time() - debut, 2)
     r['cotations'] = [classer_cotation(t) for t in tickers]
+    #  Le mode se LIT sur les cotations, pas sur la session : `ib_async` 2.1.0
+    #  n'expose aucun moyen de relire le type demandé, et l'ancienne sonde
+    #  interrogeait `client.marketDataType`, un attribut inexistant — elle a
+    #  échoué à chaque exécution réelle et le tableau affichait « — ».
+    #  Ce que le broker a rempli, lui, est observable.
+    etats = {c['etat'] for c in r['cotations']}
+    r['mode_donnees'] = (
+        'DIFFERE' if 'DIFFEREE' in etats
+        else 'DIRECT_NON_QUALIFIE' if 'REELLE' in etats
+        else 'CLOTURE_SEULE' if 'CLOTURE_SEULE' in etats
+        else 'AUCUNE_DONNEE')
+    r['mode_donnees_limite'] = (
+        'temps réel et figé remplissent les mêmes champs : les distinguer '
+        'exigerait un accusé de réception IBKR que ib_async n\'expose pas')
     r['greeks'] = [dict(classer_greeks(t),
                         symbole=str(getattr(getattr(t, 'contract', None),
                                             'symbol', '?')))
@@ -464,6 +476,25 @@ def main() -> int:
     r = mesurer(syms)
     print(json.dumps(r, indent=2, ensure_ascii=False, default=str)
           if '--json' in sys.argv else rendre_texte(r))
+
+    #  `--artefact` : conserver la mesure, anonymisée. Une preuve G5 qui n'est
+    #  qu'imprimee dans un terminal disparait avec la fenetre — et c'est
+    #  exactement ce qui s'etait passe : la session live etait demontree, mais
+    #  aucun fichier ne permettait de la relire ni de la comparer.
+    #
+    #  L'anonymisation N'EST PAS optionnelle. Le releve contient les positions
+    #  reelles du compte ; ecrire le brut « pour le moment » finit dans le
+    #  depot. `enregistrer` refuse d'ecrire s'il reste une trace.
+    if '--artefact' in sys.argv:
+        from vertex.data_sources.ibkr_replay import enregistrer
+        chemin = sys.argv[sys.argv.index('--artefact') + 1]
+        try:
+            p = enregistrer(r, chemin)
+        except (ValueError, IndexError, OSError) as exc:
+            print('artefact NON ecrit : %s' % exc, file=sys.stderr)
+            return 5
+        print('artefact anonymise : %s' % p, file=sys.stderr)
+
     if not r.get('connecte'):
         return 3
     return 4 if r.get('anomalies') else 0
