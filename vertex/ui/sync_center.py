@@ -61,7 +61,7 @@ JS = r"""
     +'<span class="fresh">'+d.freshness+'</span>'
     +'<span class="st" style="background:'+(STC[d.state]||'#8794ab')+'" title="'+d.state+'"></span></div>';}).join('');
   var errs=(s.errors||[]).map(function(e){return '<div style="color:#f0b0b0;font-size:12px;margin-top:8px">⚠️ <b>'+e.domain+'</b> : '+e.error+'</div>';}).join('');
-  document.getElementById('vxsc').innerHTML=
+  (document.getElementById('vxsc')||{}).innerHTML=
    '<h2>🛰️ Vertex Sync Center <span class="mode" style="color:'+M[1]+';background:'+M[2]+'">'+M[0]+'</span>'
    +'<span class="lm'+(liveOn()?' on':'')+'" onclick="vxLiveToggle()" title="Re-scan automatique toutes les 2 min"><span>Live Mode</span><span class="sw"><i></i></span></span>'
    +'<span style="cursor:pointer;color:#8794ab;font-size:18px;padding:0 4px" onclick="vxSyncClose()">✕</span></h2>'

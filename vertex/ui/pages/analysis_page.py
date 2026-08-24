@@ -356,12 +356,12 @@ async function loadDossier(){
       +'<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a></div>';
   }
   /* Hero */
-  $('an-name').textContent=(t&&t.company&&(t.company.name||t.company.shortName))||'';
-  $('an-price').textContent=VX.fmt.nd(d.price!==undefined?VX.fmt.price(d.price):null);
+  ($('an-name')||{}).textContent=(t&&t.company&&(t.company.name||t.company.shortName))||'';
+  ($('an-price')||{}).textContent=VX.fmt.nd(d.price!==undefined?VX.fmt.price(d.price):null);
   const verdictPrice=$('an-verdict-price');
   if(verdictPrice)verdictPrice.textContent=d.price!=null?VX.fmt.price(d.price):'n/d';
   const chg=d.change;
-  $('an-change').textContent=chg!==undefined?VX.fmt.pct(chg):'n/d';
+  ($('an-change')||{}).textContent=chg!==undefined?VX.fmt.pct(chg):'n/d';
   $('an-change').className='vx-mono '+(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted');
   /* Badge de fraîcheur du prix (§8) : Live / Analyse / À actualiser, honnête. */
   try{
@@ -701,7 +701,7 @@ async function loadDossier(){
             const pre=document.getElementById('ot-pre');
             if(pre&&navigator.clipboard)navigator.clipboard.writeText(pre.textContent);
             VX.toast('Ticket d’analyse copié — aucune transmission','success');});
-        }).catch(function(e){document.getElementById('ot-out').innerHTML='<div class="vx-error-banner">'+esc(e.message)+'</div>';});
+        }).catch(function(e){(document.getElementById('ot-out')||{}).innerHTML='<div class="vx-error-banner">'+esc(e.message)+'</div>';});
     });
   };
 

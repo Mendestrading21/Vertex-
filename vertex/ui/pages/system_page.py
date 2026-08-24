@@ -491,7 +491,7 @@ async function loadConnections(){
   }catch(e){}
 
   /* Invariant READONLY confirmé par le serveur */
-  if(st)$('vx-readonly-confirm').textContent=st.readonly&&st.analysis_only
+  if(st)($('vx-readonly-confirm')||{}).textContent=st.readonly&&st.analysis_only
     ?' · serveur confirmé · '+(st.order_execution||'disabled-by-design')
     :' · confirmation serveur absente';
 

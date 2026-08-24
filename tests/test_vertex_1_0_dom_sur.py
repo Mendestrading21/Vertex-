@@ -22,8 +22,22 @@ import re
 
 RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-#: `$('x').innerHTML=` sans garde. La forme SURE est `($('x')||{})`.
-MOTIF_NU = re.compile(r"\$\('[a-zA-Z0-9\-_]+'\)\.innerHTML\s*=")
+#: Les DEUX formes d'ecriture nue. La forme sure est `(<lookup>||{}).innerHTML=`.
+#:
+#: La premiere version de ce gardien ne connaissait que `$('x')`. Elle a
+#: declare zero defaut alors que 16 ecritures `document.getElementById(...)`
+#: de la MEME classe subsistaient, dont une dans un `.catch()` de la fiche
+#: Analyse — et l'erreur est revenue en session live le lendemain. Un gardien
+#: qui ne connait qu'une orthographe du defaut certifie une page qu'il n'a pas
+#: lue.
+MOTIFS_NUS = (
+    re.compile(r"\$\('[a-zA-Z0-9\-_]+'\)\.(?:innerHTML|textContent)\s*="),
+    re.compile(r"document\.getElementById\([^)]*\)\.(?:innerHTML|textContent)\s*="),
+    re.compile(r"document\.querySelector\([^)]*\)\.(?:innerHTML|textContent)\s*="),
+)
+
+#: Conserve pour les lecteurs de l'ancien nom ; le balayage utilise MOTIFS_NUS.
+MOTIF_NU = MOTIFS_NUS[0]
 
 
 def _fichiers_servis():
@@ -57,7 +71,7 @@ def test_aucune_ecriture_innerHTML_nue():
             s = open(p, encoding='utf-8', errors='ignore').read()
         except OSError:
             continue
-        n = len(MOTIF_NU.findall(s))
+        n = sum(len(rx.findall(s)) for rx in MOTIFS_NUS)
         if n:
             fautifs.append('%s: %d' % (os.path.relpath(p, RACINE).replace(os.sep, '/'), n))
     assert not fautifs, (
@@ -73,3 +87,33 @@ def test_la_forme_sure_est_bien_celle_qui_est_servie():
     assert "||{}).innerHTML" in s, (
         'la page d accueil doit porter la forme sure - 16 ecritures y ont '
         'ete converties')
+
+
+def test_le_gardien_connait_les_DEUX_orthographes_du_defaut():
+    """Le premier gardien ne cherchait que `$('x')`. Il a rendu « 0 defaut »
+    alors que 16 ecritures `document.getElementById(...)` de la meme classe
+    subsistaient — et l'erreur est revenue en session live le lendemain.
+
+    On presente donc a chaque motif une ligne qu'il DOIT voir : un gardien qui
+    ne voit rien parce qu'il regarde a cote rend la meme reponse qu'un gardien
+    satisfait.
+    """
+    echantillons = (
+        "$('vx-truc').innerHTML=x;",
+        "document.getElementById('vx-truc').innerHTML=x;",
+        "document.querySelector('#vx-truc').textContent=x;",
+    )
+    for ligne in echantillons:
+        assert any(rx.search(ligne) for rx in MOTIFS_NUS), ligne
+
+
+def test_la_forme_gardee_n_est_PAS_signalee():
+    """Contre-epreuve : un gardien qui refuse aussi la forme sure rendrait la
+    correction impossible et serait desactive au premier commit presse."""
+    sures = (
+        "($('vx-truc')||{}).innerHTML=x;",
+        "(document.getElementById('vx-truc')||{}).innerHTML=x;",
+        "const el=$('vx-truc');if(el)el.innerHTML=x;",
+    )
+    for ligne in sures:
+        assert not any(rx.search(ligne) for rx in MOTIFS_NUS), ligne

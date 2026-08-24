@@ -53,7 +53,7 @@
       const opts = options || {};
       const drawer = $('vx-drawer');
       lastFocus = document.activeElement;
-      $('vx-drawer-title').textContent = title;
+      ($('vx-drawer-title')||{}).textContent = title;
       ($('vx-drawer-body')||{}).innerHTML = html;
       ($('vx-drawer-footer')||{}).innerHTML = opts.footerHtml || '';
       ($('vx-drawer-tabs')||{}).innerHTML = opts.tabsHtml || '';
@@ -72,7 +72,7 @@
     },
     openModal(title, bodyHtml, footerHtml) {
       lastFocus = document.activeElement;
-      $('vx-modal-title').textContent = title;
+      ($('vx-modal-title')||{}).textContent = title;
       ($('vx-modal-body')||{}).innerHTML = bodyHtml;
       ($('vx-modal-footer')||{}).innerHTML = footerHtml || '';
       panelOpen($('vx-modal'));

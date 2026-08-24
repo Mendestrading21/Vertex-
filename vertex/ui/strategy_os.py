@@ -97,9 +97,9 @@ function kv(k,v,cls){return '<div class="kv"><span class="dim">'+k+'</span><b cl
 })();
 async function loadDecision(){
  const s=($('sym').value||'').trim().toUpperCase();if(!s)return;
- $('decision').textContent='analyse…';
+ ($('decision')||{}).textContent='analyse…';
  const d=await j('/api/strategy/decision/'+s);
- if(!d){$('decision').textContent='API indisponible';return}
+ if(!d){($('decision')||{}).textContent='API indisponible';return}
  if(d.error){($('decision')||{}).innerHTML=kv('Erreur',d.error,'warn');return}
  const sc=d.scores||{};
  ($('decision')||{}).innerHTML=[
@@ -113,9 +113,9 @@ async function loadDecision(){
 }
 async function loadAnomalies(){
  const s=($('anosym').value||'').trim().toUpperCase();if(!s)return;
- $('anomalies').textContent='détection…';
+ ($('anomalies')||{}).textContent='détection…';
  const d=await j('/api/anomalies/'+s);
- if(!d){$('anomalies').textContent='API indisponible';return}
+ if(!d){($('anomalies')||{}).textContent='API indisponible';return}
  ($('anomalies')||{}).innerHTML=((d.anomalies||[]).map(a=>'<span class="badge">'+
   a.code+'</span>').join('')||'aucune anomalie détectée')+
   '<div class="dim" style="margin-top:6px;font-size:12px">'+nd(d.note)+'</div>';

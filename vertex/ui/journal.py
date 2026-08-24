@@ -487,7 +487,7 @@ window.tjOpen=function(id){var a=jGet();var t=a.filter(function(x){return x.id==
   +'<span class="num">'+(rMult(x)!=null?(rMult(x)>=0?'+':'')+rMult(x).toFixed(1)+'R':'—')+'</span>'
   +'<span class="num" style="color:'+(xp>=0?'var(--good)':'var(--bad)')+'">'+money(xp)+'</span>'
   +'<span class="num">IA '+aiScore(x).score+'</span></div>';}).join('');
- document.getElementById('tjFiche').innerHTML=
+ (document.getElementById('tjFiche')||{}).innerHTML=
   '<div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap"><div>'
   +'<div style="display:flex;gap:8px;align-items:center"><span style="font-size:26px;font-weight:900">'+t.ticker+'</span>'
   +(t.dir?'<span class="pill '+(t.dir==='SHORT'?'p-bad':'p-good')+'">'+t.dir+'</span>':'')
@@ -513,7 +513,7 @@ function sRoad(){var steps=[['🧾','Trade','clôturé'],['🧠','Analyse IA','s
 
 /* ═══════════ assemblage ═══════════ */
 function renderAll(){var a=jGet(),m=stats(a);
- document.getElementById('tjRoot').innerHTML=
+ (document.getElementById('tjRoot')||{}).innerHTML=
   sHeader(m)
   +sec2('01','Coach Vertex','Ton niveau, tes badges, et le diagnostic qui évolue après chaque trade.',sCoach(a,m))
   +sec2('02','Dashboard','Les courbes qui disent la vérité : équité, drawdown, forme récente, régularité mensuelle.',sDash(a))

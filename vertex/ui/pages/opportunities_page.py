@@ -302,7 +302,7 @@ async function renderRadar(){
         y:{min:0,max:100,title:{display:true,text:'Qualité du timing ↑'},grid:{color:'rgba(255,255,255,.06)'}}},
         onClick:(evt,els,chart)=>{const pts=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
           if(pts.length){const d=chart.data.datasets[0].data[pts[0].index];
-            document.getElementById('op-scatter-sel').innerHTML=
+            (document.getElementById('op-scatter-sel')||{}).innerHTML=
               `<div class="vx-flex"><span class="vx-ticker" style="font-size:18px" role="button" tabindex="0" data-open-analysis="${d.sym}">${d.sym}</span>${window.VXEntities.badges(d.sym)}
                  <span class="vx-badge vx-badge-decision vx-right" data-decision="${d.v||''}">${d.v||'n/d'}</span></div>
                <div class="vx-op-metrics vx-mt2">
