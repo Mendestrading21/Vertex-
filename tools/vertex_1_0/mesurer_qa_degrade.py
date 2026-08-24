@@ -46,11 +46,12 @@ import os
 import pathlib
 import re
 import sys
-import urllib.request
 
 RACINE = pathlib.Path(__file__).resolve().parents[2]
 if str(RACINE) not in sys.path:
     sys.path.insert(0, str(RACINE))
+
+from tools.vertex_1_0._sonde_http import appeler  # noqa: E402
 
 BASE_DEFAUT = 'http://127.0.0.1:5002'
 
@@ -76,11 +77,19 @@ VERBES_ORDRE = tuple(a + b for a, b in (
 
 
 def _lire(base, chemin, defaut_texte=''):
-    try:
-        with urllib.request.urlopen(base.rstrip('/') + chemin, timeout=20) as r:
-            return r.status, r.read().decode('utf-8', 'replace')
-    except Exception as exc:  # noqa: BLE001
-        return None, '%s: %s' % (type(exc).__name__, exc)
+    """(statut, corps) — `None` en statut = aucune reponse HTTP.
+
+    Le delai plat de 20 s rendait `None` aussi bien pour un serveur mort que
+    pour une route lente, et la CAUSE etait perdue dans un nom de classe
+    d'exception. Le motif est desormais conserve tel quel : « expiree apres
+    60 s » et « connexion refusee » n'appellent pas la meme conclusion.
+    """
+    rep = appeler(base, chemin)
+    if rep.a_repondu:
+        return rep.statut, rep.texte
+    if rep.statut:
+        return rep.statut, rep.texte
+    return None, rep.erreur or defaut_texte
 
 
 #  ------------------------------------------------------------- les prédicats

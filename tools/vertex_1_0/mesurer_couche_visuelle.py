@@ -64,11 +64,12 @@ import json
 import pathlib
 import re
 import sys
-import urllib.request
 
 RACINE = pathlib.Path(__file__).resolve().parents[2]
 if str(RACINE) not in sys.path:
     sys.path.insert(0, str(RACINE))
+
+from tools.vertex_1_0._sonde_http import appeler  # noqa: E402
 
 from tools.vertex_1_0.mesurer_qa_espaces import _chromium, espaces  # noqa: E402
 
@@ -229,14 +230,23 @@ _HEX = re.compile(r'#[0-9a-fA-F]{6}\b')
 
 
 def _hex_servis(base, chemins):
+    """Les couleurs REELLEMENT servies par chaque page.
+
+    Une page qui n'a pas repondu etait auparavant `continue` : elle
+    DISPARAISSAIT du releve, et la conclusion « cette couleur n'est servie
+    nulle part » portait alors sur un corpus ampute EN SILENCE. C'est un faux
+    NEGATIF, plus dangereux qu'un faux positif parce qu'il ne se voit pas — et
+    le delai plat de 20 s suffisait a le declencher sur une page lente.
+
+    Les pages muettes sont desormais conservees sous `None` : le lecteur
+    distingue « aucune couleur trouvee » de « page jamais lue ».
+    """
     trouves = {}
     for c in chemins:
-        try:
-            with urllib.request.urlopen(base.rstrip('/') + c, timeout=20) as r:
-                corps = r.read().decode('utf-8', 'replace')
-        except Exception:  # noqa: BLE001
-            continue
-        trouves[c] = sorted({m.group(0).lower() for m in _HEX.finditer(corps)})
+        rep = appeler(base, c)
+        trouves[c] = (None if not rep.a_repondu
+                      else sorted({m.group(0).lower()
+                                   for m in _HEX.finditer(rep.texte)}))
     return trouves
 
 
@@ -432,8 +442,16 @@ def rendre_texte(r: dict) -> str:
                     ' / '.join(s2['texte'] for s2 in f['segments']), marque))
     o.append('')
     o.append('MOUVEMENT malgre `prefers-reduced-motion: reduce` : %d' % r['mouvement_total'])
-    tous = sorted({h for v in r['hex_servis'].values() for h in v})
+    #  `None` = page JAMAIS LUE, distincte d'une page sans couleur. La
+    #  compter comme vide gonflerait la conclusion « cette couleur n'est
+    #  servie nulle part » d'un corpus ampute en silence.
+    muettes = sorted(c for c, v in r['hex_servis'].items() if v is None)
+    tous = sorted({h for v in r['hex_servis'].values() if v for h in v})
     o.append('HEXADECIMAUX distincts dans les octets servis     : %d' % len(tous))
+    o.append('PAGES NON LUES (corpus ampute, conclusion partielle) : %d'
+             % len(muettes))
+    for c in muettes[:8]:
+        o.append('   %s' % c)
     o.append('')
     o.append('RAPPEL : « jamais appariee au chargement » n\'est PAS « morte ».')
     o.append('Cet outil ne supprime rien (CLEANUP_POLICY.md).')

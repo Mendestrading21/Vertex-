@@ -24,7 +24,7 @@ silencieuse, celle qui affiche une carte propre et creuse.
 
 Il ne dit pas « défaut ». Beaucoup de surfaces sont **légitimement** vides :
 aucune alerte déclenchée, aucun trade au journal, aucune position déclarée. Un
-vide honnête est un vide正. L'outil sépare donc :
+vide honnête est un vide. L'outil sépare donc :
 
 - **VIDE ATTENDU** — la surface dépend du bureau de l'utilisateur, qui peut
   légitimement être vide ;
@@ -42,12 +42,13 @@ from __future__ import annotations
 import json
 import pathlib
 import sys
-import urllib.error
-import urllib.request
 
 RACINE = pathlib.Path(__file__).resolve().parents[2]
 if str(RACINE) not in sys.path:
     sys.path.insert(0, str(RACINE))
+
+from tools.vertex_1_0._sonde_http import (  # noqa: E402
+    BUDGET_INTERACTIF, appeler, sonder_pret)
 
 BASE_DEFAUT = 'http://127.0.0.1:5002'
 
@@ -112,15 +113,34 @@ DEPEND_DU_RESEAU = ('/api/names', '/api/analyst/', '/api/weekly',
                     '/api/live/report', '/api/search')
 
 
-def classer(chemin: str, statut: int, charge) -> str:
-    """PLEINE / VIDE_ATTENDU / VIDE_A_EXAMINER / ATTENDU_404 / ERREUR.
+def classer(chemin: str, statut: int, charge, *, expiree: bool = False,
+            scan_fait: bool = True) -> str:
+    """PLEINE / VIDE_* / PAS_ENCORE_PRET / ATTENDU_404 / EXPIREE / ERREUR.
 
     `ATTENDU_404` n'est pas une indulgence : les routes parametrees sont
     interrogees avec des echantillons DELIBEREMENT inexistants
     (`decision_id=inexistant`). Un 404 y est la BONNE reponse, et le compter
     comme une panne noierait les vraies sous du bruit que l'instrument
     fabrique lui-meme.
+
+    `EXPIREE` est SEPAREE d'`ERREUR`. Mesure du 24 aout 2026 : sur un produit
+    inchange, cet outil a annonce 4, puis 1, puis 0, puis 5 « surfaces en
+    erreur » selon la chauffe du serveur — et jamais les memes. Interrogees
+    une a une avec un delai genereux, toutes repondaient 200 avec leurs
+    donnees. Ce n'etaient pas des pannes : c'etait l'impatience de l'outil,
+    presentee comme une mesure du produit.
+
+    `PAS_ENCORE_PRET` couvre le second fantome. Tant que `last_scan` vaut
+    `null`, les surfaces alimentees par le scan sont vides par construction :
+    `/api/cockpit` et `/api/comite` sortaient « vides A EXAMINER » sur un
+    serveur fraichement redemarre, et se remplissaient des le scan termine.
+    On ne tient PAS de liste de ces surfaces — une liste ecrite a la main
+    excuserait un jour un vide reel. La regle porte sur l'etat du produit :
+    **un produit qui n'a pas scanne ne permet aucune conclusion** sur ses
+    surfaces de marche et de moteurs.
     """
+    if expiree:
+        return 'EXPIREE'
     if statut == 404 and any(v in chemin for v in ECHANTILLONS.values()
                              if v.startswith('inexistant')):
         return 'ATTENDU_404'
@@ -132,20 +152,11 @@ def classer(chemin: str, statut: int, charge) -> str:
         return 'VIDE_ATTENDU'
     if any(chemin.startswith(p) for p in DEPEND_DU_RESEAU):
         return 'VIDE_CACHE_RESEAU'
+    if not scan_fait:
+        return 'PAS_ENCORE_PRET'
     return 'VIDE_A_EXAMINER'
 
 
-#: Routes GET qui DECLENCHENT un travail (rescan, rafraichissement, balayage).
-#: Un instrument qui les appelle ne mesure plus : il agit — il relance un scan,
-#: consomme du quota chez un fournisseur, et fausse la mesure suivante. Le
-#: premier essai de cet outil a expire pour cette raison exacte.
-#: Ce n'est PAS une liste d'exceptions qui affaiblit la mesure : ces routes ne
-#: servent pas une donnee, elles en produisent une.
-#: Flux permanents (SSE). Ils NE REPONDENT JAMAIS « fini » : c'est leur nature,
-#: pas une panne. Le premier essai de cet outil a expire dessus et les a
-#: classes « en erreur » — accusant un endpoint qui fonctionne exactement comme
-#: prevu. Un instrument qui ne distingue pas une requete d'un flux mesure le
-#: mauvais objet.
 FLUX_PERMANENTS = ('/api/live/events',)
 
 ROUTES_A_EFFET = (
@@ -179,22 +190,6 @@ def surfaces_servies() -> list:
             continue
         vues.append(chemin)
     return sorted(set(vues))
-
-
-def _appeler(base: str, chemin: str, delai: float = 8.0):
-    url = base.rstrip('/') + chemin
-    try:
-        with urllib.request.urlopen(url, timeout=delai) as r:
-            brut = r.read()
-            statut = r.status
-    except urllib.error.HTTPError as e:
-        return e.code, None
-    except Exception as e:                                   # noqa: BLE001
-        return 0, {'_erreur': str(e)[:120]}
-    try:
-        return statut, json.loads(brut)
-    except ValueError:
-        return statut, {'_texte': len(brut)}
 
 
 def temoins() -> list:
@@ -237,35 +232,79 @@ def temoins() -> list:
     if classer('/api/names', 200, {}) != 'VIDE_CACHE_RESEAU':
         e.append('TEMOIN ROMPU : un cache reseau vide est confondu avec un '
                  'defaut produit')
+    #  ─── les deux fantomes mesures le 24 aout 2026 ───────────────────────
+    if classer('/api/market/summary', 0, None, expiree=True) != 'EXPIREE':
+        e.append('TEMOIN ROMPU : une EXPIRATION est comptee comme une panne — '
+                 'l\'outil annoncerait 4, 1, 0 puis 5 « surfaces en erreur » '
+                 'sur un produit inchange, selon sa seule patience')
+    if classer('/api/market/summary', 200, {}, scan_fait=False) != 'PAS_ENCORE_PRET':
+        e.append('TEMOIN ROMPU : une surface vide AVANT le premier scan est '
+                 'declaree suspecte — l\'auditeur cherche un defaut qui '
+                 'n\'existe pas (mesure : /api/cockpit et /api/comite)')
+    #  Contre-epreuves. Un gardien qui excuse TOUT ne garde plus rien.
+    if classer('/api/market/summary', 200, {}, scan_fait=True) != 'VIDE_A_EXAMINER':
+        e.append('TEMOIN MUET : l\'indulgence « pas encore pret » s\'est '
+                 'etendue au produit CHAUD — un vrai ecran creux passerait')
+    if classer('/api/decision/reelle', 500, None) != 'ERREUR':
+        e.append('TEMOIN MUET : un VRAI 500 est excuse — la separation '
+                 'expiration/erreur a desarme la detection des pannes')
     return e
 
 
 def mesurer(base: str = BASE_DEFAUT) -> dict:
     echecs = temoins()
+    #  L'etat de CHAUFFE se demande AVANT de conclure quoi que ce soit. Un
+    #  produit qui n'a pas encore scanne rend des surfaces vides par
+    #  construction : les declarer suspectes envoie l'auditeur chercher un
+    #  defaut qui n'existe pas.
+    pret = sonder_pret(base)
+    scan_fait = bool(pret.get('scan_fait'))
     releves = []
     for chemin in surfaces_servies():
-        statut, charge = _appeler(base, chemin)
+        rep = appeler(base, chemin)
         releves.append({
-            'chemin': chemin, 'statut': statut,
-            'donnees': compter_donnees(charge),
-            'classe': classer(chemin, statut, charge),
+            'chemin': chemin, 'statut': rep.statut,
+            'duree_s': round(rep.duree_s, 3),
+            'donnees': compter_donnees(rep.charge),
+            'lente': rep.duree_s > BUDGET_INTERACTIF,
+            'classe': classer(chemin, rep.statut, rep.charge,
+                              expiree=rep.expiree, scan_fait=scan_fait),
         })
     par_classe = {}
     for r in releves:
         par_classe.setdefault(r['classe'], []).append(r['chemin'])
-    return {'base': base, 'echecs_temoins': echecs, 'releves': releves,
-            'par_classe': par_classe, 'total': len(releves)}
+    return {'base': base, 'pret': pret, 'echecs_temoins': echecs,
+            'releves': releves, 'par_classe': par_classe,
+            'total': len(releves)}
 
 
 def rendre_texte(r: dict) -> str:
+    pret = r.get('pret') or {}
     o = ['QUELLES SURFACES SE VIDENT ?', '=' * 60,
-         'base : %s   surfaces servies : %d' % (r['base'], r['total']), '']
-    for classe in ('ERREUR', 'VIDE_A_EXAMINER', 'VIDE_CACHE_RESEAU',
-                   'VIDE_ATTENDU', 'ATTENDU_404', 'PLEINE'):
+         'base : %s   surfaces servies : %d' % (r['base'], r['total'])]
+    #  L'etat de chauffe est en TETE du rapport : sans lui, le lecteur ne peut
+    #  pas savoir ce que ce releve vaut.
+    if not pret.get('joignable'):
+        o.append('CHAUFFE : produit INJOIGNABLE sur /healthz — le releve '
+                 'ci-dessous ne mesure rien du produit.')
+    elif pret.get('scan_fait'):
+        o.append('CHAUFFE : scan a %s (%s titres, %s s) — releve concluant.'
+                 % (pret.get('last_scan'), pret.get('scannes'),
+                    pret.get('scan_age')))
+    else:
+        o.append('CHAUFFE : AUCUN SCAN ENCORE (last_scan null) — les surfaces '
+                 'de marche et de moteurs sont vides PAR CONSTRUCTION. Elles '
+                 'sont classees PAS_ENCORE_PRET, pas suspectes. Relancer une '
+                 'fois le scan termine.')
+    o.append('')
+    for classe in ('ERREUR', 'EXPIREE', 'VIDE_A_EXAMINER', 'PAS_ENCORE_PRET',
+                   'VIDE_CACHE_RESEAU', 'VIDE_ATTENDU', 'ATTENDU_404',
+                   'PLEINE'):
         liste = r['par_classe'].get(classe) or []
         o.append('%-18s %3d' % (classe, len(liste)))
     o.append('')
     for classe, titre in (('ERREUR', 'EN ERREUR'),
+                          ('EXPIREE', "EXPIREES — l'outil n'a pas attendu assez"),
                           ('VIDE_A_EXAMINER', 'VIDES — A EXAMINER')):
         liste = r['par_classe'].get(classe) or []
         if liste:
@@ -273,11 +312,28 @@ def rendre_texte(r: dict) -> str:
             for c in liste:
                 o.append('   %s' % c)
             o.append('')
-    o.append('LECTURE : un vide n\'est pas un defaut. Une surface qui depend du')
-    o.append('RESEAU (caches de noms, fiches analystes) est vide tant que le')
-    o.append('cache n\'est pas rempli — dans un environnement sans reseau, elle')
-    o.append('NE PEUT PAS l\'etre. Lancer cet outil SUR LA MACHINE DE PRODUCTION')
-    o.append('est donc la seule mesure qui discrimine vraiment.')
+    #  Les durees, enfin mesurees. Sans elles, aucun avant/apres n'etait
+    #  possible — et le programme en exige un a chaque lot.
+    lentes = sorted((x for x in r['releves'] if x.get('lente')),
+                    key=lambda x: -x['duree_s'])
+    o.append('PLUS LENTES QUE %.0f s (seuil de confort DECLARE, pas mesure : '
+             'aucun' % BUDGET_INTERACTIF)
+    o.append("AbortController n'existe dans l'UI, donc rien n'abandonne une")
+    o.append('requete cote navigateur) : %d' % len(lentes))
+    for x in lentes[:8]:
+        o.append('   %6.1f s  %s' % (x['duree_s'], x['chemin']))
+    if not lentes:
+        toutes = sorted(r['releves'], key=lambda x: -x['duree_s'])[:5]
+        o.append('   aucune. Les cinq plus longues :')
+        for x in toutes:
+            o.append('   %6.1f s  %s' % (x['duree_s'], x['chemin']))
+    o.append('')
+    o.append("LECTURE : un vide n'est pas un defaut, et une LENTEUR n'est pas")
+    o.append('une panne. Une surface qui depend du RESEAU (caches de noms,')
+    o.append("fiches analystes) est vide tant que le cache n'est pas rempli —")
+    o.append("dans un environnement sans reseau, elle NE PEUT PAS l'etre.")
+    o.append('Lancer cet outil SUR LA MACHINE DE PRODUCTION, SCAN TERMINE, est')
+    o.append('donc la seule mesure qui discrimine vraiment.')
     o.append('BUREAU peut etre vide en verite. Celles qui decrivent le MARCHE ou')
     o.append('les MOTEURS, non : le produit connait ces donnees par ailleurs.')
     o.append('Cet outil ne corrige rien — il montre ou regarder.')

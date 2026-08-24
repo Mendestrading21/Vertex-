@@ -47,11 +47,12 @@ import json
 import pathlib
 import re
 import sys
-import urllib.request
 
 RACINE = pathlib.Path(__file__).resolve().parents[2]
 if str(RACINE) not in sys.path:
     sys.path.insert(0, str(RACINE))
+
+from tools.vertex_1_0._sonde_http import appeler  # noqa: E402
 
 BASE_DEFAUT = 'http://127.0.0.1:5002'
 
@@ -73,11 +74,33 @@ _CONSTRUITE = re.compile(
 
 
 def _lire(url):
-    try:
-        with urllib.request.urlopen(url, timeout=25) as r:
-            return r.read().decode('utf-8', 'replace')
-    except Exception:  # noqa: BLE001
-        return ''
+    """La `Reponse` de la sonde partagee — statut, corps et duree.
+
+    L'ancienne version rendait `''` sur toute exception. C'etait le plus
+    couteux des defauts de cette classe : une page qui n'avait pas repondu
+    dans les 25 s entrait dans le corpus comme une page VIDE, et chaque classe
+    CSS qu'elle seule utilise devenait « jamais apparaissante » — donc
+    candidate a la suppression. Un instrument qui propose de supprimer du code
+    a cause de sa propre impatience est pire qu'aucun instrument.
+
+    Le STATUT est rendu, pas seulement le corps : un 404 sur un echantillon
+    deliberement inexistant n'est pas une page qu'on n'a pas su lire.
+    """
+    return appeler('', url)
+
+
+def _attendu_absent(chemin: str) -> bool:
+    """Ce 404 etait-il DEMANDE ?
+
+    Les routes parametrees sont instanciees avec des echantillons
+    deliberement inexistants (`/memory/inexistant`). Les compter comme
+    « pages non lues » declarerait le corpus ampute a CHAQUE passage, et
+    retomberait toutes les preuves a INDECIDABLE — un outil qui ne conclut
+    jamais ne sert a rien. Defaut trouve en executant l'outil, pas en le
+    relisant.
+    """
+    return any(v in chemin for v in _ECHANTILLONS.values()
+               if str(v).startswith('inexistant'))
 
 
 #: Routes GET qui DÉCLENCHENT quelque chose plutôt que de rendre une page.
@@ -141,6 +164,12 @@ def routes_html():
     return sorted(set(rules))
 
 
+#: Pages et scripts que la mesure n'a PAS pu lire. Une conclusion
+#: « regle morte » tiree d'un corpus ampute proposerait de supprimer du
+#: code a cause de l'impatience de l'instrument.
+NON_LUES: list = []
+
+
 def octets_servis(base, routes=None):
     """Tout ce que le navigateur reçoit : chaque page HTML et son JavaScript.
 
@@ -148,17 +177,30 @@ def octets_servis(base, routes=None):
     toujours — c'est de là qu'on part."""
     base = base.rstrip('/')
     corpus, sources_js = {}, set()
+    #  Ce que l'on n'a PAS pu lire. Auparavant `continue` muet : le corpus
+    #  retrecissait sans que rien ne le dise, et chaque classe vivant sur la
+    #  page manquante devenait « jamais appariee », donc candidate a la
+    #  suppression. `NON_LUES` rend cette amputation VISIBLE.
+    NON_LUES.clear()
     for route in (routes if routes is not None else routes_html()):
-        html = _lire(base + route)
-        if not html:
+        rep = _lire(base + route)
+        if not rep.a_repondu:
+            if not (rep.statut == 404 and _attendu_absent(route)):
+                NON_LUES.append('page:%s (%s)'
+                                % (route, rep.erreur or rep.statut))
             continue
+        html = rep.texte
         corpus['page:' + route] = html
         for m in re.finditer(r'<script[^>]+src="([^"]+)"', html):
             src = m.group(1)
             if src.startswith('/'):
                 sources_js.add(src)
     for src in sorted(sources_js):
-        corpus['js:' + src] = _lire(base + src)
+        rep = _lire(base + src)
+        if not rep.a_repondu:
+            NON_LUES.append('js:%s (%s)' % (src, rep.erreur or rep.statut))
+            continue
+        corpus['js:' + src] = rep.texte
     return corpus
 
 
@@ -261,9 +303,22 @@ def mesurer(base: str = BASE_DEFAUT, candidates=None) -> dict:
         lignes = classer(sels, corpus, prefixes)
         par_feuille[feuille] = lignes
         tous.extend(lignes)
+    #  Un corpus AMPUTE ne prouve rien. Si une seule page n'a pas ete lue, la
+    #  classe qui n'y vit que la parait « jamais apparaissante » — et l'outil
+    #  proposerait de supprimer du code a cause de sa propre impatience. Toutes
+    #  les preuves retombent donc a INDECIDABLE, avec le motif.
+    non_lues = list(NON_LUES)
+    if non_lues:
+        for x in tous:
+            if x['classe'] == 'PROUVEE_INATTEIGNABLE':
+                x['classe'] = 'INDECIDABLE'
+                x['motif'] = ('corpus ampute : %d page(s) non lue(s) — aucune '
+                              'preuve possible' % len(non_lues))
     prouvees = [x for x in tous if x['classe'] == 'PROUVEE_INATTEIGNABLE']
     return {
         'base': base,
+        'non_lues': non_lues,
+        'corpus_complet': not non_lues,
         'octets_servis': {k: len(v) for k, v in corpus.items()},
         'candidates_examinees': len(tous),
         'candidates_annoncees': total_annonce,
@@ -356,6 +411,14 @@ def rendre_texte(r: dict) -> str:
          '=' * 66, 'base : %s' % r['base'], '']
     o.append('octets servis examines : %d pages+scripts, %d o'
              % (len(r['octets_servis']), sum(r['octets_servis'].values())))
+    non_lues = r.get('non_lues') or []
+    if non_lues:
+        o.append("CORPUS AMPUTE : %d page(s)/script(s) NON LU(S) — aucune "
+                 "preuve n'est possible" % len(non_lues))
+        for x in non_lues[:8]:
+            o.append('   %s' % x)
+        o.append('Toutes les preuves sont retombees a INDECIDABLE. Relancer '
+                 'quand le produit repond.')
     o.append('')
     o.append('candidates examinees        : %d (sur %d annoncees)'
              % (r['candidates_examinees'], r['candidates_annoncees']))

@@ -48,10 +48,12 @@ import shutil
 import subprocess
 import sys
 import time
-import urllib.error
-import urllib.request
 
 RACINE = pathlib.Path(__file__).resolve().parents[2]
+if str(RACINE) not in sys.path:
+    sys.path.insert(0, str(RACINE))
+
+from tools.vertex_1_0._sonde_http import appeler  # noqa: E402
 PORT_ANCIEN = 5103
 FICHIER_BUREAU = 'desk_data.json'
 
@@ -111,9 +113,28 @@ def _temoins() -> list:
     return e
 
 
+class SansReponse(RuntimeError):
+    """Le serveur mesure n'a pas repondu — et on sait POURQUOI.
+
+    Cet outil eteint puis rallume deliberement une version : ses delais courts
+    sont LEGITIMES, contrairement aux delais plats des autres instruments. Ce
+    qui manquait, c'est le motif : « expiree apres 3 s » et « connexion
+    refusee » ne disent pas la meme chose d'un rollback, et l'ancien
+    `except (URLError, OSError)` les confondait.
+    """
+
+
 def _http(url: str, timeout: float = 10.0):
-    with urllib.request.urlopen(url, timeout=timeout) as r:
-        return r.status, r.read()
+    """(statut, octets). Leve `SansReponse` si le serveur n'a rien rendu.
+
+    Le contrat de levee est CONSERVE : `_attendre` en depend pour boucler
+    pendant le demarrage, et le remplacer par un retour silencieux ferait
+    croire au demarrage d'un serveur mort.
+    """
+    rep = appeler('', url, plafond=timeout)
+    if rep.statut == 0:
+        raise SansReponse(rep.erreur or 'aucune reponse')
+    return rep.statut, rep.texte.encode('utf-8', 'replace')
 
 
 def _attendre(url: str, secondes: int = 45) -> bool:
@@ -121,7 +142,7 @@ def _attendre(url: str, secondes: int = 45) -> bool:
         try:
             if _http(url, timeout=3)[0] == 200:
                 return True
-        except (urllib.error.URLError, OSError):
+        except (SansReponse, OSError):
             pass
         time.sleep(0.5)
     return False
