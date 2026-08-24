@@ -192,3 +192,71 @@ def test_un_tag_a_la_fois_textuel_et_numerique_garde_le_NOMBRE():
                                   _Ligne("X", "12.5", "USD")])
     assert CPT.valeur(r, "X") == 12.5
     assert r["ecartes"] == []
+
+
+#  ═══════  4. la ligne fautive : un total ne dit pas OU regarder  ═════════════
+
+def test_la_ligne_qui_diverge_est_NOMMEE_avec_ses_deux_valorisations():
+    """Mesure du 24 aout 2026 : le total divergeait de 270,13 et UNE seule
+    ligne en etait responsable — URA, marquee 7 760,00 par Vertex et 8 032,84
+    par le courtier."""
+    r = CPT.reconcilier_positions_pnl(
+        vertex_positions=[{'symbol': 'URA', 'unrealized_pnl': 751.19,
+                           'market_value': 7760.00},
+                          {'symbol': 'AAPL', 'unrealized_pnl': 2.09,
+                           'market_value': 311.09}],
+        broker_positions=[{'symbol': 'URA', 'unrealized_pnl': 1024.03,
+                           'market_value': 8032.84},
+                          {'symbol': 'AAPL', 'unrealized_pnl': 2.09,
+                           'market_value': 311.09}])
+    assert len(r['lignes_divergentes']) == 1
+    d = r['lignes_divergentes'][0]
+    assert d['symbole'] == 'URA'
+    assert round(d['ecart'], 2) == 272.84
+    assert d['valeur_vertex'] == 7760.00 and d['valeur_courtier'] == 8032.84
+    assert "vient de la" in r['note'].replace('à', 'a')
+
+
+def test_les_trois_familles_d_ecart_ne_sont_PAS_confondues():
+    """Une ligne mal valorisee, une ligne suivie a tort et une ligne ignoree
+    n'appellent pas la meme correction."""
+    r = CPT.reconcilier_positions_pnl(
+        vertex_positions=[{'symbol': 'A', 'unrealized_pnl': 1.0},
+                          {'symbol': 'FANTOME', 'unrealized_pnl': 5.0}],
+        broker_positions=[{'symbol': 'A', 'unrealized_pnl': 9.0},
+                          {'symbol': 'IGNOREE', 'unrealized_pnl': 3.0}])
+    assert [x['symbole'] for x in r['lignes_divergentes']] == ['A']
+    assert r['absentes_chez_le_courtier'] == ['FANTOME']
+    assert r['absentes_chez_vertex'] == ['IGNOREE']
+
+
+def test_un_pnl_ABSENT_d_un_cote_n_est_pas_une_divergence():
+    """On ne peut pas comparer ce qui n'a pas ete calcule. Compter l'absence
+    comme un ecart ferait crier la reconciliation sur toute position non cotee."""
+    r = CPT.reconcilier_positions_pnl(
+        vertex_positions=[{'symbol': 'A', 'unrealized_pnl': None}],
+        broker_positions=[{'symbol': 'A', 'unrealized_pnl': 9.0}])
+    assert r['lignes_divergentes'] == []
+
+
+def test_des_lignes_concordantes_ne_signalent_rien():
+    r = CPT.reconcilier_positions_pnl(
+        vertex_positions=[{'symbol': 'A', 'unrealized_pnl': 1.0}],
+        broker_positions=[{'symbol': 'a', 'unrealized_pnl': 1.0}])
+    assert r['lignes_divergentes'] == []
+    assert r['absentes_chez_vertex'] == [] and r['absentes_chez_le_courtier'] == []
+    assert 'aucune ligne' in r['note']
+
+
+def test_une_fermeture_de_souscription_en_echec_est_CONSIGNEE():
+    """Une souscription `reqPnL` qu'on croit fermee alors qu'elle tient encore
+    consomme une ligne de donnees chez le courtier, et la suivante se voit
+    refuser — sans que rien ne relie ce refus a l'oubli qui l'a cause."""
+    assert hasattr(CPT, 'DERNIERE_FERMETURE_EN_ECHEC')
+    from pathlib import Path
+    src = Path(CPT.__file__).read_text(encoding='utf-8')
+    deb = src.index('def pnl_temps_reel')
+    corps = src[deb:deb + 2000]
+    assert 'DERNIERE_FERMETURE_EN_ECHEC' in corps, (
+        "l'echec d'annulation doit etre consigne, pas avale")
+    assert 'cancelPnL' in corps, 'la souscription doit etre annulee'

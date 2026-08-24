@@ -74,6 +74,10 @@ CLIENT_IDS = {
     'indices': 22,      # flux d'indices
     'passerelle': 19,   # vertex.data_sources.ibkr_gateway — 17 auparavant,
                         # donc en collision directe avec « compte ».
+    'pnl': 25,          # souscription reqPnL. Role PROPRE : `compte` est
+                        # deja tenu par le lecteur de resume, et reqPnL est
+                        # une SOUSCRIPTION qui vit plus longtemps qu'une
+                        # lecture — les faire cohabiter les evincerait.
     'news': 24,         # depeches du courtier. Role PROPRE : la boucle news
                         # tourne toutes les minutes, celle du scan par salves
                         # de plusieurs minutes — partager un identifiant les

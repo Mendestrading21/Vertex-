@@ -714,6 +714,55 @@ async function renderOptions(){
     </section>`;
 }
 
+/* ═══ RAPPROCHEMENT P&L — quatre sources, aucune ne gagne en silence ═══
+   Mesure du 24 août 2026 sur compte réel : accountSummary 1 024,03 ·
+   reqPnL 928,57 · portefeuille 1 024,03 · Vertex 753,90. L'écart de 270 USD
+   venait d'UNE ligne (URA, valorisée 7 760,00 contre 8 032,84) et de deux
+   lignes suivies mais non détenues.
+   Afficher un seul de ces chiffres rendrait le P&L vrai ou faux selon un
+   arbitrage que personne n'a pris. La carte les montre tous, nomme l'écart et
+   ne tranche pas. */
+async function renderPnlRecon(){
+  const host=$('pf-pnl-recon'); if(!host) return;
+  let d=null;
+  try{ d=await VX.fetch('/api/positions/pnl-reconciliation',{ttl:15000}); }
+  catch(e){ (host||{}).innerHTML='<section class="vx-card vx-mb3">'
+      +VX.states.error('Rapprochement P&L indisponible')+'</section>'; return; }
+  if(!d) return;
+  const NOMS={resume:'Résumé de compte',temps_reel:'Temps réel (reqPnL)',
+              portefeuille:'Somme des lignes',vertex:'Calcul Vertex'};
+  const src=d.sources||{}, lignes=Object.keys(NOMS).map(k=>{
+    const v=src[k];
+    return '<div class="vx-kpi vx-card vx-card--compact" style="grid-column:span 3">'
+      +'<span class="vx-kpi-label">'+NOMS[k]+'</span>'
+      +'<span class="vx-kpi-value" style="font-size:20px">'
+      +(v==null?'n/d':VX.fmt.num(v))+'</span>'
+      +'<span class="vx-meta">'+(v==null?'source absente':'P&L non réalisé')+'</span></div>';
+  }).join('');
+  const pl=d.par_ligne||{}, div=pl.lignes_divergentes||[];
+  const detail=div.length? '<ul class="vx-list">'+div.map(x=>
+      '<li><b>'+esc(x.symbole)+'</b> — Vertex '+VX.fmt.num(x.pnl_vertex)
+      +' contre '+VX.fmt.num(x.pnl_courtier)+' chez le courtier · écart '
+      +VX.fmt.num(x.ecart)+'</li>').join('')+'</ul>' : '';
+  const orphelines=(pl.absentes_chez_le_courtier||[]);
+  const orphBloc=orphelines.length?'<div class="vx-meta">Suivies par Vertex mais '
+      +'NON détenues par le compte : '+orphelines.map(esc).join(' · ')+'</div>':'';
+  const concordant=d.concordant;
+  const ton=concordant===true?'neutral':concordant===null?'warning':'warning';
+  const titre=concordant===true?'Les sources de P&L concordent'
+      :concordant===null?'Aucune source de P&L n\'a répondu'
+      :'Les sources de P&L divergent';
+  (host||{}).innerHTML='<section class="vx-card vx-mb3" aria-label="Rapprochement du P&L">'
+    +'<div class="vx-card-header"><span class="vx-card-title">Rapprochement du P&amp;L</span>'
+    +'<span class="vx-meta vx-right">lecture seule · Vertex ne tranche pas</span></div>'
+    +'<div class="vx-insight" data-tone="'+ton+'"><b>'+esc(titre)+'</b>'
+    +'<div class="vx-meta">'+esc(d.note||'')+'</div></div>'
+    +'<div class="vx-grid vx-kpi-strip vx-mb3">'+lignes+'</div>'
+    +detail+orphBloc
+    +(d.erreur_courtier?'<div class="vx-meta">Courtier : '+esc(d.erreur_courtier)+'</div>':'')
+    +'</section>';
+}
+
 /* ═══ RISQUE PRIORISÉ (LOT F — moteur risk_engine, positions réelles §26) ═══ */
 async function renderRisk(){
   const pos=E().positions();
@@ -760,7 +809,7 @@ async function renderRisk(){
       <span class="vx-kpi-label">${l}</span><span class="vx-kpi-value" style="font-size:22px">${v==null?'n/d':v}</span>
       <span class="vx-kpi-delta ${cls||'vx-muted'}">${dd}</span></div>`;
 
-    ($('pf-body')||{}).innerHTML=prioBlock+`<div class="vx-grid vx-kpi-strip vx-mb3" id="pf-risk-kpis">
+    ($('pf-body')||{}).innerHTML=prioBlock+'<div id="pf-pnl-recon"></div>'+`<div class="vx-grid vx-kpi-strip vx-mb3" id="pf-risk-kpis">
       ${_rk('Concentration HHI',risk.hhi!=null?risk.hhi:null,'0 = dispersé · 1 = concentré',(_hhi!=null&&_hhi>=66)?'vx-neg':'','pf-risk-gauge')}
       ${_rk('Bêta',risk.beta!=null?risk.beta:null,'pondéré')}
       ${_rk('Drawdown',risk.drawdown_pct!=null?risk.drawdown_pct+' %':null,'depuis le pic')}
@@ -831,6 +880,9 @@ async function renderRisk(){
         } else {_sh.innerHTML=_se.map(function(e){return kv(e[0],e[1]+' %');}).join('');}
       }
     }catch(e){}
+    /* Le rapprochement se peint APRES le reste : il interroge le courtier et
+       ne doit pas retarder l'affichage du risque. Son hote existe deja. */
+    renderPnlRecon();
   }catch(e){($('pf-body')||{}).innerHTML=VX.states.error('Moteur de risque injoignable : '+e.message);}
 }
 

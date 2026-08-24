@@ -181,6 +181,29 @@ def resume_compte(gateway) -> dict:
     return resume_depuis_lignes(ib.accountSummary(), compte=compte)
 
 
+def lignes_portefeuille(gateway) -> list:
+    """Le P&L et la valeur de marché LIGNE À LIGNE, chez le courtier.
+
+    `ib.positions()` ne les porte pas — elle rend le contrat et la quantité.
+    C'est `ib.portfolio()` qui valorise. Les confondre donnerait une
+    comparaison ligne à ligne dont TOUS les P&L courtier seraient `None`, donc
+    une réconciliation qui ne trouve jamais rien et rassure à tort.
+    """
+    ib = gateway.connect()
+    #  readonly=True — verrou de la façade, réécrit ici pour rester visible du
+    #  garde-fou anti-ordres.
+    out = []
+    for p in (ib.portfolio() or []):
+        contrat = getattr(p, "contract", None)
+        out.append({
+            "symbol": str(getattr(contrat, "symbol", "") or "").upper(),
+            "unrealized_pnl": _flottant(getattr(p, "unrealizedPNL", None)),
+            "market_value": _flottant(getattr(p, "marketValue", None)),
+            "sec_type": getattr(contrat, "secType", "") or "",
+        })
+    return [x for x in out if x["symbol"]]
+
+
 def pnl_portefeuille(gateway):
     """Somme des P&L non réalisés ligne à ligne, ou `None` si rien à sommer.
 
@@ -205,5 +228,108 @@ def pnl_portefeuille(gateway):
 __all__ = [
     "MASQUE", "TOLERANCE_DEFAUT", "TOLERANCE_MAX",
     "masquer", "resume_depuis_lignes", "valeur", "reconcilier_pnl",
-    "resume_compte", "pnl_portefeuille",
+    "resume_compte", "pnl_portefeuille", "pnl_temps_reel", "lignes_portefeuille", "DERNIERE_FERMETURE_EN_ECHEC", "reconcilier_positions_pnl",
 ]
+
+
+#: Dernière annulation de souscription `reqPnL` qui a échoué, s'il y en a eu
+#: une. Une souscription qu'on croit fermée alors qu'elle tient encore consomme
+#: une ligne de données chez le courtier, et la suivante se voit refuser — sans
+#: que rien ne relie ce refus à l'oubli qui l'a causé.
+DERNIERE_FERMETURE_EN_ECHEC = {"quand": None, "raison": None}
+
+
+def pnl_temps_reel(gateway, compte: str = "", *, attente: float = 3.0):
+    """Le P&L de la souscription `reqPnL`, ou `None`.
+
+    C'est la source qui DIVERGE des autres — 928,57 contre 1 024,03 le 24 août
+    2026, sur le même compte au même instant. Elle est lue précisément parce
+    qu'elle diverge : masquer la source qui dérange laisserait croire à une
+    concordance que la mesure ne montre pas.
+
+    `reqPnL` est une **souscription**, pas une lecture : elle est annulée dans
+    un `finally`. Une souscription oubliée continue de consommer une ligne de
+    données chez le courtier, et la suivante se voit refuser.
+    """
+    ib = gateway.connect()
+    #  readonly=True : verrou de la façade, réécrit ici pour rester visible du
+    #  garde-fou anti-ordres qui lit la fenêtre suivant chaque `.connect(`.
+    compte = compte or (ib.managedAccounts() or [""])[0]
+    if not compte:
+        return None
+    souscrit = False
+    try:
+        pnl = ib.reqPnL(compte)
+        souscrit = True
+        ib.sleep(attente)
+        return _flottant(getattr(pnl, "unrealizedPnL", None))
+    except Exception:  # noqa: BLE001
+        return None
+    finally:
+        if souscrit:
+            try:
+                ib.cancelPnL(compte)
+            except Exception as exc:  # noqa: BLE001
+                #  L'echec est NOMME, pas avale : une souscription qu'on croit
+                #  fermee alors qu'elle tient encore fera echouer la suivante,
+                #  et rien ne relierait ce refus a l'oubli qui l'a cause.
+                import time as _t
+                DERNIERE_FERMETURE_EN_ECHEC["quand"] = _t.time()
+                DERNIERE_FERMETURE_EN_ECHEC["raison"] = (
+                    "%s: %s" % (type(exc).__name__, str(exc)[:120]))
+
+
+def reconcilier_positions_pnl(vertex_positions, broker_positions,
+                              tolerance: float = TOLERANCE_DEFAUT) -> dict:
+    """Compare le P&L LIGNE À LIGNE, pas seulement le total.
+
+    Un écart global de 270 USD ne dit pas quoi regarder. Mesuré sur le compte
+    réel le 24 août 2026 : le total divergeait de 270,13, et la ligne fautive
+    était **une seule** — URA, marquée 7 760,00 par Vertex et 8 032,84 par le
+    courtier, soit 272,84 d'écart de valorisation sur la MÊME position.
+
+    Trois familles, nommées séparément parce qu'elles n'appellent pas la même
+    correction :
+
+    - **valorisation divergente** : les deux connaissent la ligne et ne
+      s'accordent pas sur son prix — c'est le cas qui fausse un P&L affiché ;
+    - **absente chez le courtier** : Vertex suit une ligne que le compte ne
+      détient pas ;
+    - **absente chez Vertex** : le compte détient une ligne que Vertex ignore.
+    """
+    def _cle(p):
+        return str((p or {}).get("symbol") or "").upper()
+
+    v = {_cle(p): p for p in (vertex_positions or []) if _cle(p)}
+    b = {_cle(p): p for p in (broker_positions or []) if _cle(p)}
+
+    divergentes, absentes_courtier, absentes_vertex = [], [], []
+    for sym in sorted(set(v) | set(b)):
+        pv, pb = v.get(sym), b.get(sym)
+        if pv is None:
+            absentes_vertex.append(sym)
+            continue
+        if pb is None:
+            absentes_courtier.append(sym)
+            continue
+        a = _flottant(pv.get("unrealized_pnl"))
+        c = _flottant(pb.get("unrealized_pnl"))
+        if a is None or c is None:
+            continue
+        if abs(a - c) > tolerance:
+            divergentes.append({
+                "symbole": sym,
+                "pnl_vertex": a, "pnl_courtier": c, "ecart": abs(a - c),
+                "valeur_vertex": _flottant(pv.get("market_value")),
+                "valeur_courtier": _flottant(pb.get("market_value")),
+            })
+    divergentes.sort(key=lambda d: -d["ecart"])
+    return {
+        "lignes_divergentes": divergentes,
+        "absentes_chez_le_courtier": absentes_courtier,
+        "absentes_chez_vertex": absentes_vertex,
+        "tolerance": tolerance,
+        "note": ("aucune ligne ne diverge" if not divergentes else
+                 "%d ligne(s) valorisée(s) différemment — l'écart de total "
+                 "vient de là, pas d'une erreur d'addition" % len(divergentes)),
+    }
