@@ -93,6 +93,10 @@ _VIEW_CONTENT = {
         <div class="vx-card-header"><span class="vx-card-title">IBKR</span><span id="vx-conn-ibkr-badge"></span></div>
         <div id="vx-conn-ibkr">%%LOADING%%</div>
       </section>
+      <section class="vx-card vx-col-4" aria-label="Requ&ecirc;tes options">
+        <div class="vx-card-header"><span class="vx-card-title">Requ&ecirc;tes options</span><span id="vx-strikes-badge"></span></div>
+        <div id="vx-strikes">%%LOADING%%</div>
+      </section>
       <section class="vx-card vx-col-4" aria-label="TradingView">
         <div class="vx-card-header"><span class="vx-card-title">TradingView</span><span id="vx-conn-tv-badge"></span></div>
         <div id="vx-conn-tv">%%LOADING%%</div>
@@ -515,6 +519,36 @@ async function loadConnections(){
   }else{
     ($('vx-conn-ibkr')||{}).innerHTML=VX.states.error('&Eacute;tat syst&egrave;me indisponible');
     ($('vx-conn-ibkr-badge')||{}).innerHTML=statusBadge('offline','inconnu');
+  }
+
+  /* Requêtes options — le correctif est INVISIBLE par construction : il se voit
+     dans ce qui N'ARRIVE PLUS. Mesuré le 25 août 2026 : le produit demandait au
+     courtier des contrats inexistants (214 refus sur 250 lignes de journal,
+     « tout sauf les multiples de 5 »). Sans ce compteur, l'observer exigerait de
+     comparer deux journaux à la main — donc personne ne le ferait. */
+  const sk=diag&&diag.option_strikes;
+  if(sk){
+    const pct=sk.part_evitee_pct;
+    /* `null` = rien n'a encore été proposé. Afficher « 0 % » ferait passer
+       « je n'ai pas mesuré » pour « je n'évite rien ». */
+    const badge=pct==null?['frozen','aucune mesure encore']
+      :(pct>0?['live',pct+' % évité']:['frozen','rien à éviter']);
+    ($('vx-strikes-badge')||{}).innerHTML=statusBadge(badge[0],badge[1]);
+    ($('vx-strikes')||{}).innerHTML=
+      kv('Strikes demand&eacute;s',VX.fmt.nd(sk.strikes_proposes))
+      +kv('&Eacute;vit&eacute;s (d&eacute;j&agrave; refus&eacute;s)',VX.fmt.nd(sk.strikes_evites)
+          +(pct!=null?' <span class="vx-dim">('+pct+' %)</span>':''))
+      +kv('Refus m&eacute;moris&eacute;s',VX.fmt.nd(sk.refus_retenus)
+          +' <span class="vx-dim">sur '+VX.fmt.nd(sk.couples)+' couple(s) titre/&eacute;ch&eacute;ance</span>')
+      +(sk.redemandes_faute_de_mieux
+        ?kv('Redemand&eacute;s quand m&ecirc;me',VX.fmt.nd(sk.redemandes_faute_de_mieux)
+            +' <span class="vx-dim">tout &eacute;tait connu refus&eacute; &mdash; on ne vide jamais la cha&icirc;ne en silence</span>')
+        :'')
+      +'<div class="vx-help vx-mt2">IBKR rend les strikes <b>toutes &eacute;ch&eacute;ances confondues</b>, mais son pas change avec l&#8217;&eacute;ch&eacute;ance. Ce qui a d&eacute;j&agrave; &eacute;t&eacute; refus&eacute; n&#8217;est plus redemand&eacute; &mdash; jamais un strike <b>invent&eacute;</b>.</div>'
+      +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'/api/system/diagnostics','delayed')}</div>`;
+  }else{
+    ($('vx-strikes')||{}).innerHTML=VX.states.empty('Aucune mesure de requ&ecirc;tes options &mdash; la rotation n&#8217;a pas encore interrog&eacute; le courtier.');
+    ($('vx-strikes-badge')||{}).innerHTML=statusBadge('offline','n/d');
   }
 
   /* TradingView — état honnête : désactivé ≠ configuré-en-attente ≠ actif */

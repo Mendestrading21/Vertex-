@@ -10,7 +10,8 @@ from .metrics import METRICS
 
 def system_diagnostics(scan_state: dict | None = None,
                        scheduler=None, alert_engine=None,
-                       ai_audit=None, signal_store=None, ibkr_link=None) -> dict:
+                       ai_audit=None, signal_store=None, ibkr_link=None,
+                       option_strikes=None) -> dict:
     out = {'metrics': METRICS.snapshot()}
     if scan_state is not None:
         out['scan'] = {
@@ -41,6 +42,16 @@ def system_diagnostics(scan_state: dict | None = None,
         out['ai'] = ai_audit.stats()
     if signal_store is not None:
         out['tradingview'] = signal_store.status()
+    #  L'ECONOMIE de requetes options. Mesure du 25 aout 2026 : le produit
+    #  demandait au courtier des contrats inexistants — 214 refus sur 250
+    #  lignes de journal, « tout sauf les multiples de 5 ». Le correctif est
+    #  invisible par construction : il se voit dans ce qui N'ARRIVE PLUS.
+    #  Sans ce compteur, l'observer exigerait de comparer deux journaux du
+    #  courtier a la main, et personne ne le ferait.
+    #  INJECTE, comme les autres sections : la section n'apparait pas si
+    #  aucune source n'est fournie (« rien d'invente sans source »).
+    if option_strikes is not None:
+        out['option_strikes'] = option_strikes.statistiques()
     return out
 
 

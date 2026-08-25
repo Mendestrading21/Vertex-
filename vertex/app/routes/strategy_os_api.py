@@ -120,9 +120,11 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     @bp.route('/api/system/diagnostics')
     def diagnostics():
         from vertex.data_sources import ibkr_link as _lien
+        from vertex.options import strike_memory as _strikes
         return jsonify(system_diagnostics(scan_state=scan_state, ibkr_link=_lien,
                                           alert_engine=ALERTS, ai_audit=_AI_AUDIT,
-                                          signal_store=SIGNAL_STORE))
+                                          signal_store=SIGNAL_STORE,
+                                          option_strikes=_strikes))
 
     @bp.route('/api/data-quality')
     def data_quality():

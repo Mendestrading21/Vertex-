@@ -60,6 +60,18 @@ MAX_ENTREES = 4000
 _VERROU = threading.Lock()
 _REFUS: dict[tuple[str, str], dict[float, float]] = {}
 
+#: Ce que la memoire a REELLEMENT evite, depuis le demarrage. Un correctif
+#: dont on ne peut pas mesurer l'effet est une intention : sans ces compteurs,
+#: le seul moyen d'observer le gain serait de comparer deux journaux du
+#: courtier a la main.
+#:
+#: `redemandes_faute_de_mieux` compte les fois ou TOUT etait connu comme
+#: refuse et ou l'on a redemande quand meme. Ce n'est pas un echec — c'est la
+#: garde anti-aveuglement qui joue — mais un chiffre qui grimpe sans cesse
+#: dirait que la memoire ne sert plus a rien, et il vaut mieux le voir.
+_COMPTEURS = {'strikes_proposes': 0, 'strikes_evites': 0,
+              'redemandes_faute_de_mieux': 0}
+
 
 def _cle(symbole: str, echeance: str) -> tuple[str, str]:
     """`2027-03-19` et `20270319` désignent la même échéance.
@@ -131,19 +143,41 @@ def filtrer(symbole: str, echeance: str, strikes) -> list[float]:
         connus = _REFUS.get(cle) or {}
         gardes = [k for k in proposes
                   if maintenant - connus.get(k, 0.0) > DUREE_REFUS_S]
+        _COMPTEURS['strikes_proposes'] += len(proposes)
+        if gardes:
+            _COMPTEURS['strikes_evites'] += len(proposes) - len(gardes)
+        else:
+            #  Tout etait connu refuse : on redemande. Aucun aller-retour
+            #  n'est evite ici, et le compter comme tel gonflerait le gain
+            #  d'un travail qu'on refait entierement.
+            _COMPTEURS['redemandes_faute_de_mieux'] += 1
     return gardes or proposes
 
 
 def statistiques() -> dict:
-    """De quoi mesurer l'effet, plutôt que de l'affirmer."""
+    """De quoi mesurer l'effet, plutot que de l'affirmer.
+
+    `part_evitee_pct` vaut `None` tant qu'aucun strike n'a ete propose :
+    rendre 0 % ferait passer « je n'ai rien mesure » pour « je n'evite rien ».
+    """
     with _VERROU:
+        proposes = _COMPTEURS['strikes_proposes']
+        evites = _COMPTEURS['strikes_evites']
         return {'couples': len(_REFUS),
-                'refus_retenus': sum(len(v) for v in _REFUS.values())}
+                'refus_retenus': sum(len(v) for v in _REFUS.values()),
+                'strikes_proposes': proposes,
+                'strikes_evites': evites,
+                'redemandes_faute_de_mieux':
+                    _COMPTEURS['redemandes_faute_de_mieux'],
+                'part_evitee_pct': (round(evites / proposes * 100, 1)
+                                    if proposes else None)}
 
 
 def oublier_tout() -> None:
     with _VERROU:
         _REFUS.clear()
+        for k in _COMPTEURS:
+            _COMPTEURS[k] = 0
 
 
 def _elaguer() -> None:
