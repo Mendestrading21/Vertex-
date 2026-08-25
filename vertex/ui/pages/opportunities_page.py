@@ -443,7 +443,7 @@ async function renderStocks(){
       ${OUT.map(b=>`<button class="vx-chip" data-filter-key="decision" data-filter-value="${b}"
         aria-pressed="${state.bucket===b}">${b}</button>`).join('')}
       <select class="vx-select" data-filter-key="sector" style="width:auto" aria-label="Secteur">
-        <option value="">Tous secteurs</option>${sectors.map(s=>`<option ${state.sector===s?'selected':''}>${s}</option>`).join('')}</select>
+        <option value="">Tous secteurs</option>${sectors.map(s=>`<option value="${esc(s)}" ${state.sector===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
       <input class="vx-input" data-filter-key="setup" style="width:150px" placeholder="setup (BREAKOUT…)" value="${esc(state.setup)}" aria-label="Setup">
     </div>
     <div id="op-table"></div>

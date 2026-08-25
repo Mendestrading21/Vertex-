@@ -269,11 +269,11 @@
       });
     } catch (e) {}
     const html = notifs._items.length ? notifs._items.map(n =>
-      `<div class="vx-notif-item" data-priority="${n.priority}"><div class="vx-notif-body">
-        <div class="vx-flex vx-between"><b>${n.title}</b><span class="vx-meta">${VX.fmt.ago(n.ts)}</span></div>
-        <div class="vx-dim">${n.message || ''}</div>
-        <div class="vx-meta">${n.category || ''}</div></div>
-        ${n.ticker ? `<button class="vx-btn vx-btn-sm" onclick="VX.openAnalysis('${n.ticker}')">Analyse</button>` : ''}</div>`
+      `<div class="vx-notif-item" data-priority="${VX.esc(n.priority)}"><div class="vx-notif-body">
+        <div class="vx-flex vx-between"><b>${VX.esc(n.title)}</b><span class="vx-meta">${VX.fmt.ago(n.ts)}</span></div>
+        <div class="vx-dim">${VX.esc(n.message || '')}</div>
+        <div class="vx-meta">${VX.esc(n.category || '')}</div></div>
+        ${/^[A-Z0-9.\-]{1,10}$/.test(String(n.ticker || '')) ? `<button class="vx-btn vx-btn-sm" onclick="VX.openAnalysis('${n.ticker}')">Analyse</button>` : ''}</div>`
     ).join('') : VX.states.empty('Aucune notification pour le moment.', '');
     VX.shell.openDrawer('Notifications', html);
     notifs.markAllRead();

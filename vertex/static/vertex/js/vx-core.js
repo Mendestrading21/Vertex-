@@ -342,6 +342,23 @@
     return ttl > SESSION_TTL ? ttl : SESSION_TTL;
   }
 
+  /* ── Echappement HTML (§securite) ───────────────────────────────────
+     Le produit construit son HTML par chaines. Chaque page en avait sa PROPRE
+     copie d'`esc`, et le JS servi sous /static n'en avait AUCUNE : les
+     notifications interpolaient `n.title`, `n.message` et `n.category` bruts.
+     Recensement du 25 aout 2026 : cinq interpolations de champs d'origine
+     externe sans echappement dans tout le produit.
+
+     Gravite dite honnetement : aucun chemin d'attaquant DISTANT n'est prouve.
+     Le seul champ reellement externe est le `sector` de yfinance ; les autres
+     viennent des tickers saisis par l'utilisateur. Ce qu'on ferme, c'est la
+     CLASSE — pas un exploit vivant. */
+  VX.esc = function (s) {
+    return String(s == null ? '' : s).replace(/[<>&"']/g, function (c) {
+      return { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+
   const _stats = { hits: 0, misses: 0, dedup: 0 };   // observabilité (§18)
   VX.fetch = function (url, { ttl = 30000, priority = 'normal', signal } = {}) {
     ttl = _effTtl(url, ttl);                                   // « figé 30 min » : cf. _effTtl
