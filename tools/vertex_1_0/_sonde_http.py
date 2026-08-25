@@ -36,12 +36,21 @@ où la cinquième est réelle, elle passe avec les autres.
 ## Le seuil de lenteur est une CONVENTION, et le dit
 
 `BUDGET_INTERACTIF = 10.0` s. Ce n'est **pas** une mesure. On a cherché le
-budget réel du client : il n'y en a aucun — pas un `AbortController` dans
-toute l'UI, donc rien n'abandonne une requête côté navigateur. Présenter 10 s
-comme « le moment où le navigateur renonce » serait inventer un fait, ce que
-D-039 interdit ailleurs pour les dates. C'est un seuil de confort déclaré :
-au-delà, une surface interactive est inutilisable pour un humain, et l'outil
-le signale sans prétendre l'avoir mesuré.
+budget réel du client : il n'y en a aucun. Le produit contient **un** seul
+`AbortController` (`vertex/static/vertex/js/vx-core.js`), et il sert
+l'annulation demandée par l'appelant — **aucun minuteur ne le déclenche**.
+Rien n'abandonne donc une requête au bout d'un délai.
+
+*Correction.* La première rédaction disait « pas un `AbortController` dans
+toute l'UI » : c'était faux, et le gardien qui l'appuyait ne balayait que
+`vertex/ui/**/*.py`, jamais le JavaScript servi sous `/static` — où il vit.
+Le fond tient (pas de budget de requête), la preuve était mal bornée. Encore
+D-031 : un gardien dont le champ est trop étroit certifie ce qu'il n'a pas lu.
+
+Présenter 10 s comme « le moment où le navigateur renonce » serait inventer un
+fait, ce que D-039 interdit ailleurs pour les dates. C'est un seuil de confort
+déclaré : au-delà, une surface interactive est inutilisable pour un humain, et
+l'outil le signale sans prétendre l'avoir mesuré.
 """
 from __future__ import annotations
 

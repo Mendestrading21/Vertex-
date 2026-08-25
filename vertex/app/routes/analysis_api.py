@@ -10,6 +10,7 @@ Analyse uniquement, indicatif. Ces routes lisent, ne commandent jamais.
 """
 
 import threading
+import time as _t
 
 from flask import Blueprint, jsonify, request
 
@@ -830,8 +831,21 @@ def memory_postmortem_view(decision_id):
 #: watchlist sectorielle, même calendrier, mêmes positions. La clé nomme donc
 #: exactement ce dont il dépend, et rien de plus — un cache dont la clé oublie
 #: une entrée sert une réponse périmée en la présentant comme fraîche.
-_KG_MEMO = {'clef': None, 'valeur': None}
+_KG_MEMO = {'clef': None, 'valeur': None, 'construit_a': None}
 _KG_VERROU = threading.Lock()
+
+#: UNE construction a la fois. Le verrou du memo etait relache AVANT la
+#: construction : deux visiteurs simultanes payaient donc 15,1 s CHACUN pour
+#: fabriquer le meme graphe. Mesure du 24 aout 2026 sur le produit live.
+_KG_CHANTIER_VERROU = threading.Lock()
+_KG_CHANTIER = {'actif': False, 'echec_a': None, 'erreur': None}
+
+#: Apres un echec, on ne relance pas a chaque requete : un graphe qui ne se
+#: construit plus fabriquerait sinon un fil par visiteur.
+_KG_REPOS_APRES_ECHEC_S = 30.0
+
+FRAICHEUR_LIVE = 'LIVE'
+FRAICHEUR_STALE = 'STALE'
 
 
 def _kg_clef():
@@ -858,16 +872,103 @@ def _kg_clef():
     return (scan_state.get('scan_ts'), len(detail), n_cal, desk_ts)
 
 
-def _kg_build():
-    """Le graphe, construit une fois par état de scan (voir `_KG_MEMO`)."""
+def _kg_construire_serialise(clef):
+    """Construit le graphe, une seule fois meme si N appelants le demandent.
+
+    Les retardataires attendent le verrou puis relisent le memo : ils ne
+    refont pas les 15 s.
+    """
+    with _KG_CHANTIER_VERROU:
+        with _KG_VERROU:
+            if _KG_MEMO['clef'] == clef and _KG_MEMO['valeur'] is not None:
+                return _KG_MEMO['valeur']
+        valeur = _kg_construire()
+        with _KG_VERROU:
+            _KG_MEMO['clef'] = clef
+            _KG_MEMO['valeur'] = valeur
+            _KG_MEMO['construit_a'] = _t.time()
+        return valeur
+
+
+def _kg_reconstruire_en_fond(clef):
+    """Refait le graphe HORS du chemin de requete."""
+    try:
+        _kg_construire_serialise(clef)
+        _KG_CHANTIER['echec_a'] = None
+        _KG_CHANTIER['erreur'] = None
+    except Exception as e:                                   # noqa: BLE001
+        #  Un echec ne DOIT PAS effacer le dernier graphe connu : servir un
+        #  graphe date reste infiniment plus utile qu'une section vide.
+        _KG_CHANTIER['echec_a'] = _t.time()
+        _KG_CHANTIER['erreur'] = str(e)[:200]
+    finally:
+        _KG_CHANTIER['actif'] = False
+
+
+def _kg_lancer_reconstruction(clef) -> bool:
+    """Un fil de reconstruction au plus. Rend True s'il vient d'etre lance."""
+    if _KG_CHANTIER['actif']:
+        return False
+    echec = _KG_CHANTIER['echec_a']
+    if echec and (_t.time() - echec) < _KG_REPOS_APRES_ECHEC_S:
+        return False
+    _KG_CHANTIER['actif'] = True
+    fil = threading.Thread(target=_kg_reconstruire_en_fond, args=(clef,),
+                           name='kg-rebuild', daemon=True)
+    fil.start()
+    return True
+
+
+def _kg_etat():
+    """Le graphe le plus recent DISPONIBLE, et ce qu'il vaut vraiment.
+
+    Mesure du 24 aout 2026, produit live : apres CHAQUE scan, le premier
+    visiteur de la page Portefeuille attendait **15,1 s** (le suivant :
+    0,007 s). Le scan retourne regulierement, donc quelqu'un repayait ces
+    15 s a chaque cycle.
+
+    Attendre n'etait pourtant pas necessaire : le graphe du scan PRECEDENT
+    est une reponse parfaitement utilisable — a condition de dire qu'elle
+    date. C'est la doctrine du produit : ne jamais bloquer, ne jamais mentir
+    sur la fraicheur. On sert donc l'ancien immediatement, marque `STALE`
+    avec son age, et on reconstruit en fond.
+
+    Le tout PREMIER visiteur, lui, attend : il n'y a rien d'honnete a servir,
+    et fabriquer un graphe vide serait exactement l'invention que le produit
+    s'interdit.
+
+    Rend `(valeur, fraicheur, construit_a, reconstruction_lancee)`.
+    """
     clef = _kg_clef()
     with _KG_VERROU:
-        if _KG_MEMO['clef'] == clef and _KG_MEMO['valeur'] is not None:
-            return _KG_MEMO['valeur']
-    valeur = _kg_construire()
-    with _KG_VERROU:
-        _KG_MEMO['clef'], _KG_MEMO['valeur'] = clef, valeur
-    return valeur
+        a_jour = (_KG_MEMO['clef'] == clef and _KG_MEMO['valeur'] is not None)
+        valeur, construit_a = _KG_MEMO['valeur'], _KG_MEMO['construit_a']
+    if a_jour:
+        return valeur, FRAICHEUR_LIVE, construit_a, False
+    if valeur is None:
+        valeur = _kg_construire_serialise(clef)
+        with _KG_VERROU:
+            construit_a = _KG_MEMO['construit_a']
+        return valeur, FRAICHEUR_LIVE, construit_a, False
+    return valeur, FRAICHEUR_STALE, construit_a, _kg_lancer_reconstruction(clef)
+
+
+def _kg_build():
+    """Le graphe servi, TOUJOURS accompagne de ce qu'il vaut.
+
+    La fraicheur est ajoutee sur une COPIE : la polluer dans le memo ferait
+    vieillir un champ fige avec la valeur memoisee, et l'age affiche
+    resterait celui de la construction pour toujours.
+    """
+    valeur, fraicheur, construit_a, lancee = _kg_etat()
+    sortie = dict(valeur)
+    sortie['fraicheur'] = fraicheur
+    sortie['age_s'] = (round(_t.time() - construit_a, 1)
+                       if construit_a else None)
+    sortie['reconstruction_en_cours'] = bool(lancee or _KG_CHANTIER['actif'])
+    if _KG_CHANTIER['erreur']:
+        sortie['reconstruction_erreur'] = _KG_CHANTIER['erreur']
+    return sortie
 
 
 def _kg_construire():
@@ -940,6 +1041,12 @@ def api_skyler_graph_sym(sym):
     out = {'symbol': sym, 'generator': 'deterministic',
            'as_of': g['as_of'], 'demo': g['demo'],
            'engine_version': g['engine_version'],
+           #  Cette route RECOPIE les champs a la main : sans ces trois-la,
+           #  elle servirait un graphe date en le presentant comme courant,
+           #  ce qui est pire que la lenteur qu'on vient de retirer.
+           'fraicheur': g.get('fraicheur'),
+           'age_s': g.get('age_s'),
+           'reconstruction_en_cours': g.get('reconstruction_en_cours'),
            'hops': hops, 'truncated': truncated,
            'paths': paths,
            'hidden_dependencies': [d for d in g['hidden_dependencies']

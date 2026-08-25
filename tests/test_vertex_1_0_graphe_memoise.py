@@ -16,12 +16,25 @@ Ce fichier garde les deux moities du correctif :
 """
 from __future__ import annotations
 
+import time
+
 from vertex.app.routes import analysis_api as api
 
 
 def _vider():
-    api._KG_MEMO['clef'] = None
-    api._KG_MEMO['valeur'] = None
+    api._KG_MEMO.update({'clef': None, 'valeur': None, 'construit_a': None})
+    #  Le lot « graphe chaud » a ajoute une reconstruction de FOND : sans la
+    #  remettre a zero, un chantier laisse par un banc precedent bloquerait le
+    #  suivant, qui echouerait pour une raison sans rapport avec ce qu'il teste.
+    api._KG_CHANTIER.update({'actif': False, 'echec_a': None, 'erreur': None})
+
+
+def _attendre_chantier(secondes=10.0):
+    """La reconstruction est asynchrone : l'attendre EXPLICITEMENT vaut mieux
+    qu'esperer que l'ordonnanceur l'ait faite avant l'assertion suivante."""
+    fin = time.monotonic() + secondes
+    while api._KG_CHANTIER['actif'] and time.monotonic() < fin:
+        time.sleep(0.02)
 
 
 #  ------------------------------------------------------- la memoisation agit
@@ -33,9 +46,13 @@ def test_le_graphe_n_est_construit_qu_une_fois_par_etat_de_scan(monkeypatch):
     appels = []
     monkeypatch.setattr(api, '_kg_construire', lambda: appels.append(1) or {'g': 1})
     monkeypatch.setattr(api, '_kg_clef', lambda: ('scan-1', 5, 0, None))
-    assert api._kg_build() == {'g': 1}
-    assert api._kg_build() == {'g': 1}
-    assert api._kg_build() == {'g': 1}
+    #  L'egalite EXACTE etait accessoire : depuis le lot « graphe chaud », la
+    #  charge porte aussi sa fraicheur. Ce qui est garde ici, c'est le nombre
+    #  de constructions — l'ecart entre 26 s et l'instantane.
+    for _ in range(3):
+        g = api._kg_build()
+        assert g['g'] == 1
+        assert g['fraicheur'] == api.FRAICHEUR_LIVE
     assert len(appels) == 1, 'le graphe a ete reconstruit alors que rien ne bougeait'
 
 
@@ -49,8 +66,14 @@ def test_un_nouveau_scan_invalide_le_graphe(monkeypatch):
     monkeypatch.setattr(api, '_kg_clef', lambda: clef['v'])
     api._kg_build()
     clef['v'] = ('scan-2', 5, 0, None)          # le scan a tourne
-    api._kg_build()
+    #  Depuis le lot « graphe chaud », le visiteur recoit l'ancien graphe
+    #  MARQUE date pendant que le neuf se construit en fond. La reconstruction
+    #  a bien lieu — elle ne se paie simplement plus dans la requete.
+    servi = api._kg_build()
+    assert servi['fraicheur'] == api.FRAICHEUR_STALE
+    _attendre_chantier()
     assert len(appels) == 2, 'un nouveau scan doit reconstruire'
+    assert api._kg_build()['fraicheur'] == api.FRAICHEUR_LIVE
 
 
 #  ------------------------------------------- la cle nomme TOUTES ses entrees

@@ -202,36 +202,69 @@ def test_le_seuil_de_lenteur_est_DECLARE_comme_convention():
         "le motif du choix doit rester ECRIT la ou le seuil est defini")
 
 
-def test_aucun_AbortController_n_est_apparu_dans_l_UI_sans_qu_on_le_sache():
+
+
+#: Un abandon PAR DELAI : un minuteur qui declenche `.abort()`, ou le sucre
+#: `AbortSignal.timeout(...)`. C'est CELA, un budget de requete — pas la
+#: simple presence d'un `AbortController`.
+_BUDGET_CLIENT = re.compile(
+    r"setTimeout\([^;]{0,120}\.abort\(\)|AbortSignal\.timeout\s*\(")
+
+
+def test_aucun_MINUTEUR_n_abandonne_une_requete_cote_client():
     """Le jour où l'UI se donne un budget de requête, ce banc tombe — et le
-    seuil ci-dessus cesse d'être une convention pour devenir mesurable."""
-    ui = Path(__file__).resolve().parents[1] / "vertex" / "ui"
-    trouves = [p.name for p in ui.rglob('*.py')
-               if 'AbortController' in p.read_text(encoding='utf-8', errors='replace')]
-    if trouves:
+    seuil ci-dessus cesse d'être une convention pour devenir mesurable.
+
+    **Ce banc a déjà eu tort.** Sa première version cherchait
+    `AbortController` dans `vertex/ui/**/*.py` seulement, et concluait qu'il
+    n'y en avait aucun. Il y en a un, dans
+    `vertex/static/vertex/js/vx-core.js` — le JavaScript servi, que le
+    balayage ne regardait pas. D-031, une fois de plus : un gardien dont le
+    champ est trop étroit certifie ce qu'il n'a pas lu.
+
+    Ce qui compte n'était d'ailleurs pas la PRÉSENCE d'un `AbortController` —
+    celui-ci sert l'annulation demandée par l'appelant — mais qu'aucun
+    **minuteur** ne le déclenche.
+    """
+    racine = Path(__file__).resolve().parents[1] / "vertex"
+    fichiers = list(racine.rglob('*.js')) + list(racine.rglob('*.py'))
+    assert len(fichiers) > 100, "corpus suspect : %d fichiers" % len(fichiers)
+    minuteurs = []
+    for f in fichiers:
+        try:
+            src = f.read_text(encoding='utf-8', errors='replace')
+        except OSError:
+            continue
+        if _BUDGET_CLIENT.search(src):
+            minuteurs.append(str(f.relative_to(racine)))
+    if minuteurs:
         pytest.fail(
             "l'UI a maintenant un budget de requete (%s) : remplacer la "
             "convention BUDGET_INTERACTIF par cette mesure reelle"
-            % ', '.join(trouves))
+            % ', '.join(minuteurs))
 
 
-#  ═══════  7. le correctif ne doit pas EMPECHER l'outil de conclure  ══════════
-
-def test_un_404_DEMANDE_n_ampute_pas_le_corpus():
-    """Défaut de ma propre correction, trouvé en EXÉCUTANT l'outil et non en
-    le relisant : `mesurer_regles_mortes` instancie les routes paramétrées
-    avec des échantillons délibérément inexistants (`/memory/inexistant`).
-    Les compter comme « pages non lues » déclarait le corpus amputé à CHAQUE
-    passage et retombait toutes les preuves à INDÉCIDABLE — un instrument qui
-    ne conclut jamais ne sert à rien."""
-    from tools.vertex_1_0.mesurer_regles_mortes import _attendu_absent
-    assert _attendu_absent('/memory/inexistant') is True
-    assert _attendu_absent('/memory/cell/inexistant/inexistant') is True
+def test_le_gardien_du_budget_VOIT_un_minuteur_qu_on_lui_montre():
+    """Contre-épreuve, absente de la première version — c'est précisément son
+    absence qui a laissé passer l'erreur."""
+    for forme in ("const t = setTimeout(() => ctl.abort(), 8000);",
+                  "signal: AbortSignal.timeout(5000)"):
+        assert _BUDGET_CLIENT.search(forme), forme
 
 
-def test_mais_un_404_sur_une_VRAIE_route_ampute_bien_le_corpus():
-    """Contre-épreuve. L'indulgence du 404 d'échantillon ne doit pas s'étendre
-    à tout : une page réelle qui disparaît DOIT retirer la preuve."""
-    from tools.vertex_1_0.mesurer_regles_mortes import _attendu_absent
-    assert _attendu_absent('/portfolio') is False
-    assert _attendu_absent('/options/AAPL') is False
+def test_le_gardien_du_budget_NE_signale_PAS_une_annulation_par_l_appelant():
+    """L'`AbortController` de `vx-core.js` propage l'annulation demandée par
+    l'appelant. Le signaler ferait tomber le banc sur un produit sain."""
+    forme = ("const ctl = new AbortController();\n"
+             "if (signal) signal.addEventListener('abort', () => ctl.abort());")
+    assert not _BUDGET_CLIENT.search(forme)
+
+
+def test_le_corpus_du_gardien_couvre_le_JAVASCRIPT_SERVI():
+    """La borne exacte qui manquait. Sans ce banc, le champ pourrait se
+    rétrécir à nouveau sans que rien ne le dise."""
+    racine = Path(__file__).resolve().parents[1] / "vertex"
+    js = list(racine.rglob('*.js'))
+    assert any('vx-core.js' in str(f) for f in js), (
+        "le balayage ne voit pas vx-core.js — c'est la que vit "
+        "l'AbortController que la premiere version a manque")

@@ -950,7 +950,18 @@ async function renderHiddenDeps(){
   host.innerHTML='<summary>Expertise · dépendances cachées</summary><div class="vx-card vx-mt2"><div class="vx-card-header"><span class="vx-card-title">Dépendances cachées (Knowledge Graph)</span>'
     +'<span class="vx-chart-question">Deux titres partagent-ils une exposition non évidente&nbsp;?</span></div>'
     +depHtml+grpHtml+seHtml+qHtml
-    +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'knowledge graph (secteur déclaré · co-mouvement · catalyseurs datés · desk)','delayed')
+    +'<div class="vx-card-footer">'
+    /* `Date.now()` annonçait « mis à jour maintenant » pour un graphe qui peut
+       dater de plusieurs scans : l'horodatage RÉEL de construction est servi
+       par l'API (`age_s`). Un âge faux est pire qu'un âge absent. */
+    +VX.updateIndicator(d.age_s!=null?(Date.now()-d.age_s*1000):null,
+        'knowledge graph (secteur déclaré · co-mouvement · catalyseurs datés · desk)',
+        d.fraicheur==='STALE'?'stale':'delayed')
+    /* Le graphe du scan PRÉCÉDENT est une réponse utilisable — à condition de
+       dire qu'elle date. Servir du périmé en silence serait pire que la
+       lenteur qu'on vient de retirer. */
+    +(d.fraicheur==='STALE'?' · <span class="vx-badge" data-tone="warn">SCAN PRÉCÉDENT</span>':'')
+    +(d.reconstruction_en_cours?' · <span class="vx-meta">recalcul en cours</span>':'')
     +(d.demo?' · <span class="vx-badge" data-tone="neutral">DÉMO</span>':'')+'</div></div>';
   $('pf-body').appendChild(host);
 }
