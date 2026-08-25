@@ -81,7 +81,21 @@ def test_chaque_cache_declare_un_proprietaire_et_une_fraicheur():
     Ajouter un cache sans déclarer qui l'écrit fait échouer la suite — c'est
     précisément l'exigence de `QUALITY_STANDARD.md` §8."""
     declares = set(caches.POLITIQUE)
-    exportes = set(_PARTAGES) | {'_STOOQ_CACHE'}
+    #  Deux familles, et le registre doit couvrir les DEUX :
+    #  - les caches PARTAGES avec le monolithe, dont l'identite est gardee
+    #    plus haut (une reaffectation separerait ecrivains et lecteurs) ;
+    #  - les magasins qui n'ont qu'un proprietaire dans le paquet. Ils
+    #    n'entrent pas dans le contrat de parite — il n'y a rien a comparer —
+    #    mais `QUALITY_STANDARD` §8 exige quand meme proprietaire et politique.
+    #    Les exclure du registre reviendrait a dire que la regle ne vaut que
+    #    pour les caches historiques.
+    magasins = {n for n in dir(caches)
+                if n.startswith('_') and not n.startswith('__')
+                and isinstance(getattr(caches, n), caches._Magasin)}
+    assert magasins, (
+        'le recensement des magasins ne trouve RIEN : sans lui, un magasin '
+        'pourrait apparaitre sans proprietaire declare sans que ce banc bronche')
+    exportes = set(_PARTAGES) | {'_STOOQ_CACHE'} | magasins
     manquants = exportes - declares
     assert not manquants, (
         'ces caches n\'ont ni proprietaire ni politique de fraicheur '

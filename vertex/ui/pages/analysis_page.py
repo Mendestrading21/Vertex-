@@ -108,6 +108,7 @@ $('an-search').focus();
 
 _SECTIONS = """
 <div id="an-stale"></div>
+<div id="an-annexes"></div>
 <!-- Identité compacte : le verdict canonique reste dans an-verdict, juste dessous. -->
 <section class="vx-card vx-accent an-identity" id="an-hero" aria-labelledby="an-identity-title">
   <h2 class="vx-sr-only" id="an-identity-title">Identité et cours de %%SYM%%</h2>
@@ -337,7 +338,13 @@ async function loadDossier(){
      l'utilisateur a navigué ailleurs pendant les fetch, _gen a changé → on abandonne
      AVANT de peindre, pour ne jamais afficher le dossier d'un titre sur une autre page. */
   const _g=(window.VX&&VX.page)?VX.page._gen:0;
-  try{t=await VX.fetch('/api/ticker/'+SYM,{ttl:60000});}catch(e){}
+  /* Le dossier peut arriver INCOMPLET : depuis que la collecte est sortie du
+     chemin synchrone, les annexes se construisent en fond. Le cache client
+     (`ttl` de session, jusqu'a 30 min) figerait alors la version vide pour
+     toute la session — la premiere visite d'un titre resterait un ecran creux.
+     Tant qu'une collecte est annoncee EN COURS, on force donc le reseau. */
+  const _ttlDossier=(window.__anAttentes>0)?0:60000;
+  try{t=await VX.fetch('/api/ticker/'+SYM,{ttl:_ttlDossier});}catch(e){}
   try{exec=await VX.fetch('/api/strategy/decision/'+SYM,{ttl:60000});}catch(e){}
   try{status=status||await VX.fetch('/api/live/status',{ttl:60000});}catch(e){}
   if(window.VX&&VX.page&&VX.page._gen!==_g)return;   // page supplantée → ne rien peindre
@@ -355,6 +362,48 @@ async function loadDossier(){
     ($('an-stale')||{}).innerHTML='<div class="vx-error-banner">Titre hors du scan courant — dossier partiel. '
       +'<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a></div>';
   }
+  /* État des ANNEXES (entreprise, pairs, options, risques). Depuis que la
+     collecte est sortie du chemin synchrone — la fiche montait à 28–48 s sous
+     charge, et cinq demandes simultanées du même titre faisaient cinq
+     collectes dont une à 136,9 s — elles peuvent ne pas être encore là.
+     Le dire est OBLIGATOIRE : servir une fiche amputée en silence serait pire
+     que l'attente qu'on vient de retirer. */
+  try{
+    const m=(t&&t.meta)||null;
+    const hote=$('an-annexes');
+    if(hote&&m){
+      if(m.etat==='MISSING'||m.etat==='OFFLINE'){
+        hote.innerHTML='<div class="vx-insight" data-tone="risk">'
+          +'<b>Dossier en cours de constitution</b> — entreprise, pairs, options et risques '
+          +'n&#8217;ont pas encore été collectés'+(m.rafraichissement_en_cours?' (collecte en cours)':'')
+          +(m.erreur?' · '+esc(m.erreur):'')+'. Le prix et le détail du scan ci-dessus sont, eux, à jour.</div>';
+      }else{
+        const bits=[];
+        if(m.etat==='STALE')bits.push('<span class="vx-badge" data-tone="warn">SCAN PRÉCÉDENT</span>');
+        if(m.qualite==='PARTIELLE')bits.push('<span class="vx-badge" data-tone="warn">PARTIEL</span>'
+          +(m.erreur?' <span class="vx-meta">'+esc(m.erreur)+'</span>':''));
+        if(m.rafraichissement_en_cours)bits.push('<span class="vx-meta">actualisation en cours</span>');
+        hote.innerHTML=bits.length?('<div class="vx-meta">'+bits.join(' · ')+'</div>'):'';
+      }
+      /* Relance BORNEE. Sans borne, un titre dont la collecte echoue en
+         boucle ferait battre la page indefiniment ; avec zero relance, la
+         premiere visite resterait vide jusqu'au prochain rechargement. */
+      const enCours=m.rafraichissement_en_cours||m.etat==='MISSING';
+      window.__anAttentes=enCours?((window.__anAttentes||0)+1):0;
+      /* La borne doit couvrir la collecte REELLE, pas une intuition : mesuree
+         entre 17 et 46 s sur un titre neuf (compte reel, TWS ouvert). Une
+         premiere version bornait a 6 x 5 s = 30 s et perdait la course — la
+         fiche restait « en cours » alors que l'API etait complete. Recul
+         progressif : ~4+6+8+10+12+14+16+18+20+22 s, soit environ 130 s. */
+      if(enCours&&window.__anAttentes<=10){
+        const _d=Math.min(4000+window.__anAttentes*2000,22000);
+        setTimeout(()=>{ if(window.VX&&VX.page&&VX.page._gen!==_g)return; loadDossier(); },_d);
+      }else if(enCours){
+        hote.innerHTML+='<div class="vx-meta">La collecte n&#8217;a pas abouti apr&egrave;s plusieurs tentatives — '
+          +'<a href="/system?view=data">v&eacute;rifier les sources</a>.</div>';
+      }
+    }
+  }catch(e){}
   /* Hero */
   ($('an-name')||{}).textContent=(t&&t.company&&(t.company.name||t.company.shortName))||'';
   ($('an-price')||{}).textContent=VX.fmt.nd(d.price!==undefined?VX.fmt.price(d.price):null);
@@ -457,7 +506,21 @@ async function loadDossier(){
   if(cut.length>10){
     /* Chandeliers PRO (TradingView LWC) si OHLC daté dispo ; repli auto sur le
        candlestick Chart.js sinon. Même contrat de carte (contrôles TF, explain…). */
-    const drawChart=(window.VXCharts&&VXCharts.lwCandlestickCard)||VXCharts.candlestickCard;
+    /* La garde ne protégeait que le côté GAUCHE du `||` : quand `VXCharts`
+       n'est pas encore chargé, l'opérateur évalue la droite et lève
+       « VXCharts is not defined ». Le défaut dormait parce que le dossier
+       mettait 3 à 43 s à revenir — la bibliothèque avait toujours fini de
+       charger avant. Depuis que la route répond en 3 ms, la course se perd,
+       et l'erreur est apparue dans `/api/client-log`. */
+    const _VC=window.VXCharts;
+    /* Repli qui AVOUE, plutôt qu'un `return` : nous sommes au milieu de
+       `loadDossier()`, et sortir ici priverait la fiche de tout ce qui suit —
+       le graphique manquant emporterait la thèse, les catalyseurs et le plan. */
+    const drawChart=(_VC&&(_VC.lwCandlestickCard||_VC.candlestickCard))||function(id){
+      ($(id)||{}).innerHTML=(window.VX&&VX.states&&VX.states.error)
+        ? VX.states.error('Graphique indisponible — biblioth&egrave;que non charg&eacute;e')
+        : '<div class="vx-meta">Graphique indisponible.</div>';
+    };
     drawChart('an-chart',{
       title:SYM+' — graphique principal',timeframe:TF,
       question:'Le timing est-il exploitable maintenant ?',

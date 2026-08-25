@@ -48,6 +48,19 @@ _STOOQ_TTL = 6 * 3600
 # Valeurs : 'UNKNOWN' | 'OK' | 'UNAVAILABLE'.
 _SOURCE_BUDGET_STATE = {'yfinance': 'UNKNOWN', 'stooq': 'UNKNOWN'}
 
+# ── Instantanés des routes interactives ────────────────────────────────────
+# `AUDIT-TOTAL-2026-08-25` P0.1 : une route de page ne lance pas de collecte.
+# Mesuré sur `73de92f5` — `/api/ticker/<sym>` montait à 28–48 s sous charge, et
+# cinq demandes SIMULTANÉES du même titre faisaient cinq collectes, dont une à
+# 136,9 s. Ce magasin sert l'instantané daté et coalesce les reconstructions.
+#
+# Il vit ICI parce que `test_vertex_1_0_caches_parity` exige que tout ce que
+# `POLITIQUE` déclare soit un objet réel de ce module — un registre qui décrit
+# des caches inexistants ne décrit plus rien.
+from vertex.app.snapshot import Magasin as _Magasin           # noqa: E402
+
+_TICKER_SNAPSHOTS = _Magasin('ticker')
+
 # ── Corrélations macro ─────────────────────────────────────────────────────
 # Trames de référence (SOXX, QQQ, S&P, BTC, or, dollar, taux, VIX) partagées par
 # tous les calculs de corrélation d'un même cycle.
@@ -127,11 +140,21 @@ POLITIQUE = {
         'fraicheur': 'TTL 86400 s cote boucle ; la fiche rafraichit a la demande',
         'nature': 'cache-persiste',   # optall_cache.json
     },
+    #  Le magasin d'instantanes des routes interactives. Il ne vit pas ICI
+    #  (c'est un objet, pas un dict partage avec `terminal.py`), mais sa
+    #  politique est declaree ici : QUALITY_STANDARD §8 exige un proprietaire
+    #  et une politique, pas un emplacement particulier.
+    '_TICKER_SNAPSHOTS': {
+        'proprietaire': 'vertex/app/routes/ticker_api.py (unique lecteur/ecrivain)',
+        'fraicheur': 'fenetre 60 s alignee sur le ttl client ; au-dela, servi '
+                     'RASSIS et reconstruit en fond, une seule fois par cle',
+        'nature': 'cache',   # memoire : perdu au redemarrage, reconstruit
+    },
 }
 
 __all__ = [
     '_STOOQ_CACHE', '_STOOQ_TTL', '_SOURCE_BUDGET_STATE', '_CORR_BENCH',
     '_ibkr_cache', '_IDX_IBKR', '_IDX_META', '_live_quotes', '_live_meta',
-    '_OPTALL_CACHE',
+    '_OPTALL_CACHE', '_TICKER_SNAPSHOTS',
     'POLITIQUE',
 ]

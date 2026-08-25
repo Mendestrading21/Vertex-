@@ -44,13 +44,25 @@ from vertex.app.routes import analysis_api as A
 
 @pytest.fixture(autouse=True)
 def _memo_neuf():
-    """Chaque banc part d'un mémo vide — sinon le premier test réchauffe les
-    suivants et ils mesureraient un cas qu'ils croient tester."""
-    A._KG_MEMO.update({'clef': None, 'valeur': None, 'construit_a': None})
-    A._KG_CHANTIER.update({'actif': False, 'echec_a': None, 'erreur': None})
+    """Chaque banc part d'un magasin vide — sinon le premier test réchauffe les
+    suivants et ils mesureraient un cas qu'ils croient tester.
+
+    Depuis la migration vers `vertex/app/snapshot.py`, le mécanisme est celui
+    du magasin PARTAGÉ : le graphe n'a plus sa propre implantation
+    stale-while-revalidate. Les intentions gardées ci-dessous sont inchangées."""
+    A._KG_MAGASIN.oublier_tout()
     yield
-    A._KG_MEMO.update({'clef': None, 'valeur': None, 'construit_a': None})
-    A._KG_CHANTIER.update({'actif': False, 'echec_a': None, 'erreur': None})
+    A._KG_MAGASIN.oublier_tout()
+
+
+def _chantier_en_cours():
+    return any(e.chantier for e in A._KG_MAGASIN._entrees.values())
+
+
+def _attendre_chantier(secondes=10.0):
+    fin = time.monotonic() + secondes
+    while _chantier_en_cours() and time.monotonic() < fin:
+        time.sleep(0.02)
 
 
 def _faux_graphe(marque='a'):
@@ -167,8 +179,9 @@ def test_la_fraicheur_n_est_PAS_ecrite_dans_le_memo(monkeypatch):
     monkeypatch.setattr(A, '_kg_construire', lambda: _faux_graphe('a'))
     monkeypatch.setattr(A, '_kg_clef', lambda: ('scan-1',))
     A._kg_build()
-    assert 'fraicheur' not in A._KG_MEMO['valeur']
-    assert 'age_s' not in A._KG_MEMO['valeur']
+    stocke = list(A._KG_MAGASIN._entrees.values())[0].valeur
+    assert 'fraicheur' not in stocke
+    assert 'age_s' not in stocke
 
 
 #  ═══════════  4. un echec ne detruit rien et ne fait pas tempete  ════════════
@@ -185,10 +198,7 @@ def test_une_reconstruction_qui_ECHOUE_n_efface_pas_le_dernier_graphe(monkeypatc
     monkeypatch.setattr(A, '_kg_construire', _casse)
     monkeypatch.setattr(A, '_kg_clef', lambda: ('scan-2',))
     A._kg_build()
-    for _ in range(50):
-        if not A._KG_CHANTIER['actif']:
-            break
-        time.sleep(0.05)
+    _attendre_chantier()
     g = A._kg_build()
     assert g['marque'] == 'bon', "le dernier graphe connu a ete perdu"
     assert g['fraicheur'] == A.FRAICHEUR_STALE
@@ -212,12 +222,10 @@ def test_un_echec_repete_ne_lance_PAS_un_fil_par_visiteur(monkeypatch):
     for _ in range(20):
         A._kg_build()
         time.sleep(0.02)
-    for _ in range(50):
-        if not A._KG_CHANTIER['actif']:
-            break
-        time.sleep(0.05)
+    _attendre_chantier()
     assert len(essais) <= 2, "%d relances pour 20 visiteurs" % len(essais)
-    assert A._KG_REPOS_APRES_ECHEC_S > 0
+    from vertex.app import snapshot as _S
+    assert _S.REPOS_APRES_ECHEC_S > 0
 
 
 #  ═══════════  5. la route PAR SYMBOLE ne perd pas la fraicheur  ══════════════

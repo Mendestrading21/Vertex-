@@ -22,18 +22,19 @@ from vertex.app.routes import analysis_api as api
 
 
 def _vider():
-    api._KG_MEMO.update({'clef': None, 'valeur': None, 'construit_a': None})
-    #  Le lot « graphe chaud » a ajoute une reconstruction de FOND : sans la
-    #  remettre a zero, un chantier laisse par un banc precedent bloquerait le
-    #  suivant, qui echouerait pour une raison sans rapport avec ce qu'il teste.
-    api._KG_CHANTIER.update({'actif': False, 'echec_a': None, 'erreur': None})
+    #  Le graphe est passe sur le magasin d'instantanes PARTAGE : vider le
+    #  magasin remet a zero la valeur, le chantier de fond et le repos apres
+    #  echec d'un seul geste. Sans cela, un chantier laisse par un banc
+    #  precedent ferait echouer le suivant pour une raison sans rapport.
+    api._KG_MAGASIN.oublier_tout()
 
 
 def _attendre_chantier(secondes=10.0):
     """La reconstruction est asynchrone : l'attendre EXPLICITEMENT vaut mieux
     qu'esperer que l'ordonnanceur l'ait faite avant l'assertion suivante."""
     fin = time.monotonic() + secondes
-    while api._KG_CHANTIER['actif'] and time.monotonic() < fin:
+    while (any(e.chantier for e in api._KG_MAGASIN._entrees.values())
+           and time.monotonic() < fin):
         time.sleep(0.02)
 
 

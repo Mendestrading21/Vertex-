@@ -11,7 +11,7 @@ from .metrics import METRICS
 def system_diagnostics(scan_state: dict | None = None,
                        scheduler=None, alert_engine=None,
                        ai_audit=None, signal_store=None, ibkr_link=None,
-                       option_strikes=None) -> dict:
+                       option_strikes=None, magasins=None) -> dict:
     out = {'metrics': METRICS.snapshot()}
     if scan_state is not None:
         out['scan'] = {
@@ -52,6 +52,13 @@ def system_diagnostics(scan_state: dict | None = None,
     #  aucune source n'est fournie (« rien d'invente sans source »).
     if option_strikes is not None:
         out['option_strikes'] = option_strikes.statistiques()
+    #  Les magasins d'instantanes des routes interactives. Sans p50/p95 ni
+    #  hit ratio, le budget de `AUDIT-TOTAL-2026-08-25` P0.1 — p95 chaud
+    #  < 400 ms, premiere reponse froide < 1,5 s — ne serait verifiable par
+    #  personne apres coup.
+    #  INJECTES comme les autres sections : « rien d'invente sans source ».
+    if magasins is not None:
+        out['instantanes'] = [m.statistiques() for m in magasins]
     return out
 
 
