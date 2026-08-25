@@ -7027,12 +7027,16 @@ def _start_app():
     #   • verrou actif (VERTEX_CODE) ou VERTEX_LAN=1 ou cloud ($PORT) → 0.0.0.0 (iPhone/LAN ok)
     #   • sinon → 127.0.0.1 SEULEMENT : sans code d'accès, le desk ne doit pas être
     #     lisible par n'importe qui sur le Wi-Fi. (Pour l'iPhone sans code : VERTEX_LAN=1.)
-    lan_ok = AUTH_ON or os.environ.get('VERTEX_LAN') == '1' or 'PORT' in os.environ
-    host = '0.0.0.0' if lan_ok else '127.0.0.1'
+    #  La regle d'ecoute et la PHRASE qui l'explique ont desormais un seul
+    #  proprietaire (`vertex/app/exposition.py`). Elle etait decrite ICI et sur
+    #  la page Systeme a partir d'une supposition : avec `PORT` defini et sans
+    #  code, ce message annoncait « VERTEX_LAN=1 — SANS code ! » en nommant une
+    #  variable non definie. Le comportement d'ecoute est INCHANGE.
+    from vertex.app.exposition import exposition as _exposition, phrase as _phrase
+    _etat = _exposition(AUTH_ON)
+    host = _etat['hote']
     print(f'VERTEX -> http://localhost:{port}  ·  IBKR live: {IBKR_ENABLED}  (Ctrl+C pour arreter)')
-    print(('   acces reseau local: OUI (' + ('verrou VERTEX_CODE actif' if AUTH_ON else 'VERTEX_LAN=1 — SANS code !') + ')')
-          if lan_ok else
-          '   acces reseau local: NON (127.0.0.1 seul) — pour l\'iPhone : definis VERTEX_CODE dans .env (recommande) ou VERTEX_LAN=1')
+    print('   ' + _phrase(_etat))
     app.run(host=host, port=port, debug=False, use_reloader=False, threaded=True)
 
 

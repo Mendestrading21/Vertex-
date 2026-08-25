@@ -27,20 +27,52 @@ def _lock_card(auth_on: bool) -> str:
     """Carte « Verrou d'accès » (vue Connexions) — l'état RÉEL du verrou.
 
     Seul bouton de verrouillage atteignable de l'UI : l'ancien vivait dans
-    la page Paramètres héritée, jamais routée. Sans code actif, état honnête
-    (pas de bouton — il n'y a rien à verrouiller) + rappel du repli 127.0.0.1.
+    la page Paramètres héritée, jamais routée.
+
+    ## Le défaut corrigé le 25 août 2026
+
+    Sans code, cette carte affirmait : « par sécurité, le serveur n'écoute que
+    **127.0.0.1** (pas d'accès WiFi/LAN) ». C'était **faux** dès que
+    `VERTEX_LAN=1` ou `PORT` était posé — deux cas où il n'y a ni code ni
+    restriction. **L'écran de sécurité affirmait une protection absente**, à
+    propos du portefeuille réel de l'utilisateur.
+
+    La phrase n'était dérivée de rien : elle décrivait une intention. Elle vient
+    désormais de `vertex/app/exposition.py`, le même calcul que celui qui décide
+    réellement de l'écoute.
     """
+    from vertex.app.exposition import exposition as _exposition
+
+    etat = _exposition(auth_on)
     if auth_on:
         body = ('<div class="vx-help vx-mb2">Code d&#8217;entr&eacute;e exig&eacute; sur tous les appareils '
                 '&mdash; session sign&eacute;e 30 jours, anti-force-brute, comparaison &agrave; temps constant.</div>'
                 '<a class="vx-btn vx-btn-sm vx-btn-ghost" href="/logout" id="vx-lock-btn">'
                 '&#128275; Se d&eacute;connecter &amp; verrouiller cet appareil</a>')
         badge = '<span class="vx-badge" id="vx-lock-badge">actif</span>'
+    elif etat['expose_sans_code']:
+        #  LE cas que la carte niait. Il est dit en toutes lettres, avec la
+        #  raison exacte de l'ouverture — sans quoi l'utilisateur cherche une
+        #  variable qui n'est pas la sienne.
+        cause = ('la variable <b>VERTEX_LAN=1</b>' if etat['motif'] == 'VERTEX_LAN'
+                 else 'la variable <b>PORT</b> (h&eacute;bergeur)')
+        body = ('<div class="vx-insight" data-tone="risk"><b>Aucun code, et le desk est '
+                'joignable depuis le r&eacute;seau.</b> Le serveur &eacute;coute sur '
+                '<b>0.0.0.0</b> &mdash; toutes les interfaces &mdash; &agrave; cause de '
+                + cause + '. Toute personne sur ce r&eacute;seau peut lire le portefeuille, '
+                'les positions et le journal.</div>'
+                '<div class="vx-help vx-mt2">Pour prot&eacute;ger l&#8217;acc&egrave;s : d&eacute;finir '
+                '<b>VERTEX_CODE</b> dans <b>.env</b> &mdash; voir SECURITE.md. '
+                'Pour refermer compl&egrave;tement : retirer '
+                + ('<b>VERTEX_LAN</b>' if etat['motif'] == 'VERTEX_LAN' else '<b>PORT</b>')
+                + ' et red&eacute;marrer.</div>')
+        badge = '<span class="vx-badge" data-tone="warn" id="vx-lock-badge">expos&eacute; sans code</span>'
     else:
-        body = ('<div class="vx-help">Aucun code d&#8217;entr&eacute;e d&eacute;fini &mdash; par s&eacute;curit&eacute;, '
-                'le serveur n&#8217;&eacute;coute que <b>127.0.0.1</b> (pas d&#8217;acc&egrave;s WiFi/LAN). '
-                'Pour prot&eacute;ger et ouvrir l&#8217;acc&egrave;s (iPhone, tablette) : d&eacute;finir '
-                '<b>VERTEX_CODE</b> dans <b>.env</b> &mdash; voir SECURITE.md.</div>')
+        body = ('<div class="vx-help">Aucun code d&#8217;entr&eacute;e d&eacute;fini &mdash; le serveur '
+                '&eacute;coute uniquement <b>127.0.0.1</b>, donc le desk n&#8217;est joignable que '
+                'depuis cette machine. Pour prot&eacute;ger et ouvrir l&#8217;acc&egrave;s '
+                '(iPhone, tablette) : d&eacute;finir <b>VERTEX_CODE</b> dans <b>.env</b> '
+                '&mdash; voir SECURITE.md.</div>')
         badge = '<span class="vx-badge" id="vx-lock-badge">inactif</span>'
     return ('<div class="vx-grid vx-mt4"><section class="vx-card vx-col-12" aria-label="Verrou d&#8217;acc&egrave;s">'
             '<div class="vx-card-header"><span class="vx-card-title">Verrou d&#8217;acc&egrave;s</span>'
