@@ -97,6 +97,12 @@ dollar, énergie, métaux. Stocker date du relevé (mardi) et date de publicatio
 
 Métadonnées observées sur GitHub le 24 août 2026.
 
+La décision détaillée pour les **60 dépôts fournis par l'utilisateur** est dans
+`USER-REPOSITORIES-2026-08-25.md`. Cette matrice prime sur une lecture optimiste
+d'un README : les bots d'exécution, ponts TradingView → IBKR, 0DTE, ventes nues
+et MCP capables d'agir sur le compte sont rejetés du produit, même si une
+fonction de recherche semble intéressante.
+
 | Projet | Signal de maturité | Licence | Ce qu'on reprend | Décision |
 |---|---:|---|---|---|
 | `ib-api-reloaded/ib_async` | 1 720★, actif | BSD-2 | client IBKR sync/async | **dépendance actuelle** |
@@ -161,9 +167,14 @@ flag, une politique de cache, un timeout et une limite de débit.
 
 - IBKR Campus TWS API : https://ibkrcampus.com/campus/ibkr-api-page/twsapi-doc/
 - IBKR market data subscriptions : https://ibkrcampus.com/campus/ibkr-api-page/market-data-subscriptions/
+- IBKR et paquets tiers `ib_async` : https://ibkrcampus.com/docs/tws-api/doc/third-party-api-platforms/non-standard-tws-api-languages-and-packages/ib-insync-and-ib-async
+- TradingView webhooks : https://www.tradingview.com/support/solutions/43000529348-how-to-configure-webhook-alerts/
+- TradingView authentification webhook : https://www.tradingview.com/support/solutions/43000680459-webhook-authentication/
 - SEC EDGAR APIs : https://www.sec.gov/search-filings/edgar-application-programming-interfaces
 - FRED API : https://fred.stlouisfed.org/docs/api/fred/
+- FRED/ALFRED realtime periods : https://fred.stlouisfed.org/docs/api/fred/realtime_period.html
 - BLS API : https://www.bls.gov/developers/home.htm
 - CFTC COT : https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm
+- Cboe options historical data : https://www.cboe.com/us/options/market_statistics/historical_data/
 - OpenBB providers : https://docs.openbb.co/odp/python/extensions/providers
 - Massive API : https://massive.com/docs/

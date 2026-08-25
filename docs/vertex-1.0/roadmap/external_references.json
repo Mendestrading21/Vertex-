@@ -1,6 +1,8 @@
 {
-  "as_of": "2026-08-24",
+  "as_of": "2026-08-25",
   "policy": "reference_or_adapter_only_no_bulk_merge",
+  "user_repository_matrix": "docs/vertex-1.0/roadmap/USER-REPOSITORIES-2026-08-25.md",
+  "user_repository_count_unique": 60,
   "sources": [
     {
       "id": "ibkr_tws",

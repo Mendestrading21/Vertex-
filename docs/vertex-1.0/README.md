@@ -18,8 +18,10 @@ Ce dossier est la source documentaire active unique.
 | `RELEASE_CHECKLIST.md` | preuves exigées avant Vertex 1.0 final |
 | `DECISIONS.md` | registre court des décisions actives |
 | `audits/AUDIT-TOTAL-2026-08-24.md` | audit indépendant de la RC, CI, couverture, sources et dette |
+| `audits/AUDIT-TOTAL-2026-08-25.md` | audit produit/code/exploitation, page par page, et priorités Vertex 2.0 |
 | `roadmap/VERTEX-INTELLIGENCE-2.0.md` | programme ordonné de montée en gamme après stabilisation RC |
 | `roadmap/SOURCES-APIS-OPEN-SOURCE.md` | sélection des sources officielles, API et références externes |
+| `roadmap/USER-REPOSITORIES-2026-08-25.md` | décision adopt/pilot/inspire/reject pour les 60 dépôts proposés |
 | `roadmap/STRATEGY-V5-ARBITRAGE.md` | contradictions V4 / doctrine utilisateur à trancher humainement |
 | `roadmap/CLAUDE-CODE-EXECUTION.md` | prompt d'exécution du programme pour Claude Code |
 | `roadmap/external_references.json` | registre machine-readable des références externes |
