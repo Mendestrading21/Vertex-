@@ -258,6 +258,48 @@ class Registre:
         return anomalies
 
 
+class DisponibiliteInconnue(RuntimeError):
+    """Cette valeur ne peut pas servir de preuve historique."""
+
+
+def exiger_disponibilite(valeur, *, contexte: str):
+    """Refuse une valeur dont on ignore QUAND elle est devenue connaissable.
+
+    `AUDIT-TOTAL-2026-08-25` P0.2 : « aucun nouveau score historique ne doit
+    contourner ce socle ». Une intention ne tient pas ; un refus, si.
+
+    ## Pourquoi un refus et pas un avertissement
+
+    Mesuré le 25 août 2026 : les fondamentaux de `yfinance.info` ne portent
+    qu'un `as_of` **au niveau du lot**, égal à l'instant de RÉCEPTION. Le P/E
+    servi aujourd'hui reflète un dépôt dont la date de publication est
+    inconnue de Vertex. Joindre cette valeur à une date passée donnerait à un
+    rétrotest une information que le marché n'avait pas — le défaut P0 que la
+    phase 2 rend impossible plutôt qu'improbable.
+
+    ## Ce que ce refus ne dit PAS
+
+    Il ne dit pas que la valeur est fausse. Elle est parfaitement utilisable
+    pour décrire le PRÉSENT — c'est son usage actuel dans la fiche d'un titre.
+    Il dit qu'elle ne peut pas servir de preuve sur le PASSÉ.
+
+    Accepte un `Observation`, un dict, ou tout objet portant `available_at`.
+    """
+    dispo = None
+    if isinstance(valeur, Observation):
+        dispo = valeur.available_at
+    elif isinstance(valeur, dict):
+        dispo = valeur.get('available_at')
+    else:
+        dispo = getattr(valeur, 'available_at', None)
+    if not dispo:
+        raise DisponibiliteInconnue(
+            "%s : la date de DISPONIBILITE est inconnue, cette valeur ne peut "
+            "pas fonder une preuve historique. Elle reste utilisable pour "
+            "decrire le present." % contexte)
+    return valeur
+
+
 def _depuis_dict(d: dict) -> Observation:
     d = schemas.migrer(dict(d))
     ins = d.get("instrument") or {}
