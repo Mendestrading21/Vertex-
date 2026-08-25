@@ -161,6 +161,7 @@ def create_app(*, root_path: str | None = None) -> Any:
 
     from vertex.app.config import SECRET_KEY, VERTEX_CODE
     from vertex.app.routes import auth as _auth
+    from vertex.app import origine as _origine
     from vertex.services import request_metrics as _request_metrics
 
     app = Flask('terminal', root_path=str(root_path or RACINE))
@@ -209,6 +210,29 @@ def create_app(*, root_path: str | None = None) -> Any:
                 request.endpoint, resp.status_code,
                 (time.perf_counter() - debut) * 1000)
         return resp
+
+    # ── Écritures : même origine seulement ───────────────────────────────────
+    #  Démontré le 25 août 2026 sur le vrai produit : un POST `text/plain`
+    #  portant `Origin: https://site-malveillant.example` était accepté (200) et
+    #  écrivait dans `/api/desk`. Quatorze routes POST existent ; aucune ne
+    #  vérifiait l'origine.
+    #
+    #  Posé ICI, avant les blueprints : une protection d'écriture qui n'en
+    #  couvrirait que certaines ne protège rien — c'est celle qu'on oublie qui
+    #  sert de porte.
+    @app.before_request
+    def _refuser_ecriture_etrangere():
+        if _origine.origine_etrangere(methode=request.method,
+                                      origine=request.headers.get('Origin', ''),
+                                      hote_servi=request.host):
+            #  403 et non 404 : l'utilisateur légitime qui tomberait dessus doit
+            #  comprendre ce qui se passe, et le journal doit pouvoir le compter.
+            return jsonify({
+                'ok': False,
+                'err': 'ecriture refusee : origine differente de celle servie',
+                'origine': request.headers.get('Origin', '')[:120],
+            }), 403
+        return None
 
     # ── Verrou d'accès : posé TÔT, avant toute route ─────────────────────────
     #  Son `before_request` doit pouvoir refuser une requête destinée à
