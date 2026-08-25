@@ -367,6 +367,8 @@ V5 reste `CANDIDATE` tant que :
 - Playwright/axe sur desktop, mobile, clavier, reduced-motion et cinq états de
   données ;
 - observabilité p50/p95, erreurs, fraîcheur, pacing, cache et circuit breakers.
+- décision de licence du dépôt public et politique d'attribution des dépendances,
+  avant contribution ou distribution externe.
 
 ## Ordre des PR
 

@@ -298,7 +298,10 @@ preuve canonique d'un historique fondamental.
 Risques à corriger : parsing XML RSS par `minidom` sur contenu externe,
 authentification optionnelle, exposition `0.0.0.0` possible avec `PORT` ou
 `VERTEX_LAN=1`, secrets de webhook, HTML/JS fortement construit par chaînes et
-dépendances non verrouillées. Mesures : `defusedxml`, authentification forte
+dépendances non verrouillées. Le dépôt est public sans fichier `LICENSE` : avant
+toute redistribution, contribution externe ou réutilisation, choisir
+explicitement une licence propriétaire ou open source ; l'absence de licence
+n'autorise pas la copie. Mesures : `defusedxml`, authentification forte
 par défaut hors localhost, CSRF sur écritures, CSP avec nonce, cookies sécurisés,
 rate limiting, limites de payload, proxy de confiance explicite, journal sans
 PII/secrets, lock reproductible et SBOM.
