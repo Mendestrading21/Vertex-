@@ -212,6 +212,14 @@ class TickerRejoue:
         self.delayedLast = d.get("delayedLast", _NAN)
         self.delayedBid = d.get("delayedBid", _NAN)
         self.delayedAsk = d.get("delayedAsk", _NAN)
+        #  L'open interest n'arrive QUE si l'appelant a demande le tick
+        #  generique 101. Le double reproduit donc les deux champs separes
+        #  d'IBKR — un CALL ne porte pas l'OI des puts — et leur ABSENCE par
+        #  `NaN`, comme le vrai. Rendre 0 ferait passer « pas de donnee » pour
+        #  « aucun contrat ouvert », deux choses tres differentes pour juger
+        #  la liquidite d'une option.
+        self.callOpenInterest = d.get("callOpenInterest", _NAN)
+        self.putOpenInterest = d.get("putOpenInterest", _NAN)
         g = d.get("greeks")
         self.modelGreeks = _Greeks(g) if g else None
         self.time = _Horodatage(d["time"]) if d.get("time") else None
@@ -303,6 +311,35 @@ class IBRejoue:
                 continue
             sortis.append(c)
         return sortis
+
+    def reqMktData(self, contrat, genericTickList="", snapshot=False,  # noqa: ARG002
+                   regulatorySnapshot=False, mktDataOptions=None):     # noqa: ARG002
+        """Abonnement rejoue. Le `genericTickList` est CONSERVE, pas ignore.
+
+        L'open interest n'arrive que si `101` a ete demande : un double qui
+        servirait l'OI quoi qu'il arrive ferait passer un adaptateur qui ne le
+        demande pas pour un adaptateur qui le recoit — exactement le defaut
+        que `fetch_contract_details` portait (`open_interest=None` en dur).
+        """
+        self.appels.append("reqMktData")
+        self.ticks_demandes = getattr(self, "ticks_demandes", [])
+        self.ticks_demandes.append(str(genericTickList or ""))
+        cotations = self.fixture.get("cotations_brutes") or {}
+        cle = _cle_contrat(contrat)
+        d = dict(cotations.get(cle) or cotations.get(getattr(contrat, "symbol", "")) or {})
+        if "101" not in str(genericTickList or ""):
+            d.pop("callOpenInterest", None)
+            d.pop("putOpenInterest", None)
+        return TickerRejoue(d, contract=contrat)
+
+    def cancelMktData(self, contrat):  # noqa: ARG002
+        """Fermer ce qu'on a ouvert. Un abonnement laisse ouvert consomme une
+        ligne de marche du compte — ressource bornee et partagee."""
+        self.appels.append("cancelMktData")
+
+    def sleep(self, secondes):  # noqa: ARG002
+        """Le rejeu n'attend pas : les callbacks sont deja la."""
+        self.appels.append("sleep")
 
     def reqTickers(self, *contrats):
         self.appels.append("reqTickers")

@@ -63,6 +63,32 @@ Limite conservée et écrite : **temps réel et figé remplissent les mêmes
 champs**. Les distinguer exigerait l'accusé de réception IBKR que `ib_async`
 n'expose pas. Le produit ne revendique donc jamais `LIVE` sur cette seule base.
 
+## L'open interest, et pourquoi il manquait
+
+La case était marquée **NON COUVERT** avec le motif « `fetch_contract_details`
+rend `None` ». Le motif décrivait le symptôme, pas la cause : IBKR sait très
+bien servir l'open interest, mais **uniquement** si l'appelant demande le tick
+générique **101**. `reqTickers` ne le demande pas ; le board de production, lui,
+l'obtient depuis toujours par `reqMktData(genericTickList='100,101,106')`.
+
+L'adaptateur rendait donc `open_interest=None` **en dur**, et
+`QUALITY_STANDARD` §3 — qui exige l'OI pour une option candidate — restait
+inapplicable sans que rien ne le dise. Le mandat options en fait un critère de
+liquidité : un critère dont l'entrée est toujours absente ne filtre rien.
+
+Corrigé en demandant les mêmes ticks que le chemin déjà éprouvé, avec la même
+marge d'attente (2,6 s, mesurée en production) et une annulation en `finally` —
+une ligne de marché laissée ouverte est une ressource bornée et partagée.
+
+Trois distinctions tenues par des témoins : `NaN` et la sentinelle `-1` du
+courtier deviennent `None` ; un open interest **réellement nul** est conservé,
+parce que « aucun contrat ouvert » est une information décisive pour juger la
+liquidité ; et un call ne reçoit jamais l'interêt ouvert des puts.
+
+Les cotations des témoins sont **fabriquées** et le disent : la capture réelle
+n'en portait pas, et on ne complète pas un artefact de preuve avec des chiffres
+inventés.
+
 ## L'artefact
 
 `docs/vertex-1.0/validation/G5-ARTEFACT-2026-08-24.json`, écrit par
@@ -100,7 +126,7 @@ anomalies produit   aucune
 | Type de marché capturé par requête | **PROUVÉ** (avec limite) | `type_observe` |
 | Distinguer temps réel de figé | **HUMAN_REQUIRED** | non exposé par `ib_async` |
 | Chaîne options : bid/ask/mid/IV/Greeks/volume/horodatage | **PROUVÉ** | rejeu, deux branches |
-| Open interest | **NON COUVERT** | `fetch_contract_details` rend `None` |
+| Open interest | **PROUVÉ** | tick générique 101 demandé ; 8 témoins, dont sentinelle `-1`, zéro réel conservé, et call ≠ put |
 | Positions, quantités nulles, quantité illisible | **PROUVÉ** | rejeu |
 | Réconciliation broker / bureau | **PROUVÉ** | 3 écarts nommés séparément |
 | Erreurs 354 / 100 / 10167 classées | **PARTIEL** | classées ; non rencontrées en séance |

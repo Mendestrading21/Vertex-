@@ -472,3 +472,123 @@ def test_rejeu_fetch_snapshot_sur_donnee_DIFFEREE_etiquette_DELAYED_sans_aveu(
     assert pv.source_mode == MODE_DELAYED
     assert not any("non observé" in w for w in pv.warnings), (
         "ici le différé a été CONSTATÉ : l'aveu serait faux")
+
+
+#  ═══════  L'OPEN INTEREST : case « NON COUVERT » du protocole G5  ════════════
+#
+#  `fetch_contract_details` rendait `open_interest=None` **en dur**. La cause
+#  n'etait pas IBKR : `reqTickers` ne demande pas le tick generique 101, donc
+#  l'information n'arrivait jamais. Le board de production, lui, l'obtient
+#  depuis toujours par `reqMktData(genericTickList='100,101,106')`.
+#
+#  `QUALITY_STANDARD` §3 exige l'OI pour une option candidate, et le mandat
+#  options en fait un critere de liquidite : une valeur toujours absente rendait
+#  ce critere inapplicable sans que rien ne le dise.
+#
+#  Les cotations ci-dessous sont FABRIQUEES pour eprouver le chemin. La capture
+#  reelle n'en porte pas, et on ne lui en injecte pas : un artefact de preuve ne
+#  se complete pas avec des chiffres inventes.
+
+def _avec_oi(capture, valeurs):
+    """La capture, plus une cotation d'option FABRIQUEE portant `valeurs`."""
+    opts = capture.get("contrats_options") or {}
+    if not opts:
+        pytest.skip("la capture ne porte aucun contrat d'option")
+    cle = sorted(opts)[0]
+    truque = dict(capture)
+    truque["cotations_brutes"] = dict(capture["cotations_brutes"])
+    truque["cotations_brutes"][cle] = {
+        "last": 4.20, "bid": 4.10, "ask": 4.30, "close": 4.15, "volume": 118.0,
+        "time": "2026-08-24T13:45:00+00:00", **valeurs,
+    }
+    return cle, truque
+
+
+def test_l_open_interest_arrive_desormais_jusqu_a_la_ligne(capture):
+    """La case fermee. Avant : `None` quoi que le courtier envoie."""
+    cle, truque = _avec_oi(capture, {"callOpenInterest": 4213.0,
+                                     "putOpenInterest": 77.0})
+    sym, echeance, strike, right = cle.split("|")
+    pv = OC.fetch_contract_details(R.PasserelleRejouee(truque), sym, echeance,
+                                   [float(strike)], right)
+    assert pv.value[0]["open_interest"] == 4213
+
+
+def test_un_CALL_ne_recoit_jamais_l_open_interest_des_PUTS(capture):
+    """IBKR expose les deux cotes separement. Lire le mauvais donnerait a un
+    call l'interet ouvert des puts — un chiffre plausible et faux, la pire
+    espece."""
+    cle, truque = _avec_oi(capture, {"callOpenInterest": 4213.0,
+                                     "putOpenInterest": 77.0})
+    sym, echeance, strike, _ = cle.split("|")
+    pv = OC.fetch_contract_details(R.PasserelleRejouee(truque), sym, echeance,
+                                   [float(strike)], "C")
+    assert pv.value[0]["open_interest"] == 4213
+    assert pv.value[0]["open_interest"] != 77
+
+
+def test_un_open_interest_ABSENT_reste_None_et_ne_devient_pas_zero(capture):
+    """« Aucune donnee » et « aucun contrat ouvert » sont deux verdicts opposes
+    quand on juge la liquidite d'une option. Les confondre ferait ecarter un
+    contrat parfaitement liquide — ou pire, en retenir un qui ne l'est pas."""
+    cle, truque = _avec_oi(capture, {})       # aucun champ d'OI
+    sym, echeance, strike, right = cle.split("|")
+    pv = OC.fetch_contract_details(R.PasserelleRejouee(truque), sym, echeance,
+                                   [float(strike)], right)
+    assert pv.value[0]["open_interest"] is None
+
+
+def test_la_sentinelle_negative_du_courtier_devient_None(capture):
+    """IBKR rend parfois `-1` pour « pas de donnee ». Le laisser passer
+    afficherait un interet ouvert NEGATIF."""
+    cle, truque = _avec_oi(capture, {"callOpenInterest": -1.0})
+    sym, echeance, strike, _ = cle.split("|")
+    pv = OC.fetch_contract_details(R.PasserelleRejouee(truque), sym, echeance,
+                                   [float(strike)], "C")
+    assert pv.value[0]["open_interest"] is None
+
+
+def test_un_open_interest_REELLEMENT_nul_est_conserve(capture):
+    """Contre-epreuve. Un contrat sans aucun interet ouvert est une INFORMATION
+    — et une information decisive pour un mandat qui exige de la liquidite.
+    La confondre avec l'absence la ferait disparaitre."""
+    cle, truque = _avec_oi(capture, {"callOpenInterest": 0.0})
+    sym, echeance, strike, _ = cle.split("|")
+    pv = OC.fetch_contract_details(R.PasserelleRejouee(truque), sym, echeance,
+                                   [float(strike)], "C")
+    assert pv.value[0]["open_interest"] == 0
+
+
+def test_l_adaptateur_DEMANDE_bien_le_tick_101(capture):
+    """Le defaut n'etait pas dans la lecture, il etait dans la DEMANDE. Sans ce
+    banc, on pourrait retirer le `genericTickList` sans qu'aucun test bronche —
+    et l'OI redeviendrait `None` partout, en silence."""
+    cle, truque = _avec_oi(capture, {"callOpenInterest": 12.0})
+    sym, echeance, strike, right = cle.split("|")
+    passerelle = R.PasserelleRejouee(truque)
+    OC.fetch_contract_details(passerelle, sym, echeance, [float(strike)], right)
+    ib = passerelle.connect()
+    assert any("101" in t for t in getattr(ib, "ticks_demandes", [])), (
+        "le tick generique 101 n'a pas ete demande : l'open interest ne peut "
+        "pas arriver")
+
+
+def test_chaque_abonnement_ouvert_est_REFERME(capture):
+    """Une ligne de marche laissee ouverte est une ressource bornee, partagee
+    avec le reste du produit."""
+    cle, truque = _avec_oi(capture, {"callOpenInterest": 12.0})
+    sym, echeance, strike, right = cle.split("|")
+    passerelle = R.PasserelleRejouee(truque)
+    OC.fetch_contract_details(passerelle, sym, echeance, [float(strike)], right)
+    ib = passerelle.connect()
+    assert ib.appels.count("reqMktData") == ib.appels.count("cancelMktData")
+
+
+def test_aucun_abonnement_ouvert_si_AUCUN_contrat_ne_qualifie(capture):
+    """Contre-epreuve : sans ce court-circuit, on ouvrirait une session et une
+    attente de 2,6 s pour ne rien lire."""
+    passerelle = R.PasserelleRejouee(capture)
+    pv = OC.fetch_contract_details(passerelle, "SYMBOLE_INCONNU", "20260824",
+                                   [100.0], "C")
+    assert pv.value == []
+    assert passerelle.connect().appels.count("reqMktData") == 0
