@@ -31,6 +31,7 @@ except Exception:
 # noyau quant — ne sont volontairement plus importés par le monolithe ;
 # `strategy.config` les a rejoints au lot 324, il n'était plus consommé).
 from vertex.options import legacy_engine as options
+from vertex.options import strike_memory as _strike_memory
 from vertex.ai import briefs as ai
 from vertex.scanner import daily, weekly
 from vertex.anomalies import stock_anomalies as anomalies
@@ -822,8 +823,21 @@ def _ibkr_opt_worker():
         ks = [k for k in m['strikes'] if spot * lo <= k <= spot * hi]
         ks = sorted(ks, key=lambda k: abs(k - spot))[:14]       # 14 strikes max → vitesse
         e8 = exp.replace('-', '')
-        opts = [Option(sym, e8, k, right, 'SMART', tradingClass=m['tc']) for k in sorted(ks)]
+        #  `m['strikes']` est l'UNION des strikes de toutes les échéances : le pas
+        #  d'IBKR change pourtant avec l'échéance (1 $ sur les hebdomadaires, 5 $
+        #  ou 10 $ au-delà). Mesuré le 25 août 2026 : 214 refus « aucune
+        #  définition de titre » sur 250 lignes de journal, TOUT sauf les
+        #  multiples de 5, et les MÊMES strikes redemandés à chaque cycle.
+        #  La mémoire retire ce que le courtier a déjà refusé ; elle n'invente
+        #  jamais un strike, et redemande tout si elle croit tout refusé.
+        ks_demandes = _strike_memory.filtrer(sym, e8, ks)
+        opts = [Option(sym, e8, k, right, 'SMART', tradingClass=m['tc'])
+                for k in sorted(ks_demandes)]
         opts = [o for o in ib.qualifyContracts(*opts) if getattr(o, 'conId', 0)]
+        _valides = {float(o.strike) for o in opts}
+        _strike_memory.noter_acceptes(sym, e8, _valides)
+        _strike_memory.noter_refus(sym, e8,
+                                   [k for k in ks_demandes if k not in _valides])
         rows = []
         for i in range(0, len(opts), 40):
             batch = opts[i:i + 40]
