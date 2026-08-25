@@ -2,7 +2,7 @@
 
 Le compte est abonne a des fournisseurs professionnels ; le fil les
 ignorait et lisait yfinance puis un repli RSS. Mesure du jour sur
-U10360059 : 12 symboles servis en 8,9 s sur UNE session, fil a 45 articles,
+U8000001 : 12 symboles servis en 8,9 s sur UNE session, fil a 45 articles,
 provenance « depeches ibkr » sans aucun repli web.
 
 Le piege que ce fichier garde surtout : `reqHistoricalNews` REJETTE la

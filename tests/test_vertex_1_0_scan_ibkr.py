@@ -1,6 +1,6 @@
 """Vertex 1.0 — IBKR EN TETE DE LA CHAINE DE DONNEES DU SCAN.
 
-Mesure du jour (compte U10360059, TWS reel port 7496) : sur 533 symboles,
+Mesure du jour (compte U8000001, TWS reel port 7496) : sur 533 symboles,
 IBKR en sert **515** et yfinance **18** — ceux dont IBKR ne connait aucune
 definition de titre. Ce fichier garde les deux moities de cette promesse :
 

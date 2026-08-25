@@ -11,7 +11,7 @@ l'ecran et le fil ne parlent pas de la meme actualite.
 c'est un piege concret : passer la liste ENTIERE a `reqHistoricalNews`
 fait rejeter la requete COMPLETE (erreur 321, « Not subscribed »), donc
 zero depeche alors que quatre fournisseurs repondaient. Mesure du jour sur
-U10360059, AAPL, 3 jours :
+U<masque>, AAPL, 3 jours :
 
     BRFG 5 · DJ-N 5 · DJ-RT 5 · BRFUPDN 5 · DJNL 0
     DJ-RTA / DJ-RTE / DJ-RTG : erreur 321

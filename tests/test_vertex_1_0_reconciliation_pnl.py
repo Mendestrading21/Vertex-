@@ -75,7 +75,7 @@ def test_une_valeur_illisible_est_ecartee_et_COMPTEE():
 def test_l_identifiant_de_compte_est_MASQUE():
     """Un numéro de compte ne doit pas se retrouver dans un journal, un
     artefact ou une capture d'écran."""
-    r = CPT.resume_depuis_lignes([], compte="U10360059")
+    r = CPT.resume_depuis_lignes([], compte="U8000001")
     assert "10360059" not in str(r)
     assert r["compte"] == CPT.MASQUE
 

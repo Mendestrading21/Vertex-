@@ -72,7 +72,7 @@ def test_le_temoin_d_anonymisation_voit_reellement_quelque_chose():
     """Un détecteur qui regarde au mauvais endroit rend la même réponse qu'un
     détecteur satisfait. On lui présente donc un relevé SALE."""
     sale = {
-        "raison": "le compte U10360059 a refusé",
+        "raison": "le compte U8000001 a refusé",
         "positions": {"detenues_non_declarees": ["AAPL"],
                       "declarees_non_detenues": [],
                       "quantites_divergentes": [{"sym": "BAC", "broker": 10,
@@ -90,12 +90,12 @@ def test_le_temoin_d_anonymisation_voit_reellement_quelque_chose():
 
 def test_enregistrer_anonymise_avant_d_ecrire(tmp_path):
     """Le chemin nominal : on lui donne un relevé sale, il écrit du propre."""
-    p = R.enregistrer({"raison": "compte U10360059",
+    p = R.enregistrer({"raison": "compte U8000001",
                        "positions": {"detenues_non_declarees": ["AAPL"],
                                      "concordant": False}},
                       tmp_path / "propre.json")
     ecrit = p.read_text(encoding="utf-8")
-    assert "U10360059" not in ecrit and "AAPL" not in ecrit
+    assert "U8000001" not in ecrit and "AAPL" not in ecrit
     assert R.contient_donnee_sensible(R.charger(p)) == []
 
 
@@ -107,7 +107,7 @@ def test_le_filet_REFUSE_d_ecrire_ce_que_l_anonymiseur_a_laisse_passer(
     l'anonymiseur pour prouver que le filet existe vraiment."""
     monkeypatch.setattr(R, "anonymiser", lambda r: dict(r))
     with pytest.raises(ValueError, match="anonymisation incomplète"):
-        R.enregistrer({"raison": "compte U10360059"}, tmp_path / "fuite.json")
+        R.enregistrer({"raison": "compte U8000001"}, tmp_path / "fuite.json")
     assert not (tmp_path / "fuite.json").exists(), (
         "un refus qui écrit quand même le fichier ne refuse rien")
 
