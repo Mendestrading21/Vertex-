@@ -56,6 +56,9 @@ IBKR + SEC + FRED/BLS/CFTC + WMB + sources optionnelles
 - rapport final aligné sur le vrai nombre de tests ;
 - liste explicite des 7/12 skips selon local/CI ;
 - avertissements Pandas 4 et boucle `ib_async` classés et corrigés ou acceptés.
+- `/api/ticker/<sym>` et toute route interactive servent un snapshot borné :
+  aucune collecte yfinance/IBKR lourde dans le chemin synchrone, coalescence des
+  rafraîchissements et budgets p50/p95 publiés.
 
 ### Acceptation
 
@@ -63,6 +66,8 @@ IBKR + SEC + FRED/BLS/CFTC + WMB + sources optionnelles
 - aucune preuve recopiée depuis un autre SHA ;
 - `tests/test_no_orders.py` vert ;
 - pas de fusion ni tag automatique.
+- p95 chaud des routes critiques < 400 ms et réponse initiale froide < 1,5 s,
+  ou état `DEGRADED` explicite avec issue et budget approuvé.
 
 ## Phase 1 — Clôture G5 broker réel
 
@@ -265,12 +270,26 @@ Un signal passe `IDEA → RESEARCH → SHADOW → CANDIDATE → ACTIVE`. Il reto
 - compatibilité avec 8–15 lignes et 3 options maximum ;
 - proposition de taille par niveau, jamais exécution.
 
+### ETF Intelligence
+
+Les ETF sont des instruments de premier rang, pas des actions avec un autre
+nom. Leur dossier ajoute : émetteur, indice, domicile, devise/hedging, AUM,
+frais, spread, ADV, premium/discount, tracking difference, distributions,
+méthode de réplication, holdings point-in-time, overlap et expositions
+look-through pays/secteur/facteur/duration/matières premières.
+
+IBKR fournit contrats et cotations lorsque disponible ; holdings et documents
+viennent de l'émetteur ou d'un provider licencié. Une composition sans date
+d'effet ne participe ni au backtest ni à la compatibilité portefeuille.
+
 ### Acceptation
 
 - risque portefeuille avant conviction isolée ;
 - aucune allocation si données de position non réconciliées ;
 - explication du risque ajouté et du risque remplacé ;
 - stress reproductibles et versionnés.
+- overlap ETF/titres et expositions look-through reproductibles à la date T ;
+- frais, tracking, liquidité et risque de structure visibles avant le score.
 
 ## Phase 8 — Dossier de décision et mémoire
 
@@ -340,6 +359,14 @@ V5 reste `CANDIDATE` tant que :
 - SBOM, audit dépendances et pins reproductibles ;
 - sauvegarde, restauration, rollback et migrations ;
 - politique de rétention des branches et documents historiques.
+- authentification forte par défaut hors localhost, CSRF, CSP à nonce, limites
+  de payload, rate limiting, cookies sécurisés et proxy de confiance explicite ;
+- remplacer le parsing XML externe par `defusedxml` ;
+- extraire progressivement templates/JS/CSS des chaînes Python, sans réécriture
+  frontend big-bang ;
+- Playwright/axe sur desktop, mobile, clavier, reduced-motion et cinq états de
+  données ;
+- observabilité p50/p95, erreurs, fraîcheur, pacing, cache et circuit breakers.
 
 ## Ordre des PR
 

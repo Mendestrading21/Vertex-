@@ -14,15 +14,21 @@ Lis entièrement et dans cet ordre :
 1. CLAUDE.md
 2. .claude/skills/vertex-1-0/SKILL.md
 3. docs/vertex-1.0/README.md
-4. docs/vertex-1.0/audits/AUDIT-TOTAL-2026-08-24.md
-5. docs/vertex-1.0/roadmap/SOURCES-APIS-OPEN-SOURCE.md
-6. docs/vertex-1.0/roadmap/VERTEX-INTELLIGENCE-2.0.md
-7. docs/vertex-1.0/QUALITY_STANDARD.md
-8. docs/vertex-1.0/RELEASE_GATES.md
+4. docs/vertex-1.0/audits/AUDIT-TOTAL-2026-08-25.md
+5. docs/vertex-1.0/audits/AUDIT-TOTAL-2026-08-24.md
+6. docs/vertex-1.0/roadmap/SOURCES-APIS-OPEN-SOURCE.md
+7. docs/vertex-1.0/roadmap/USER-REPOSITORIES-2026-08-25.md
+8. docs/vertex-1.0/roadmap/VERTEX-INTELLIGENCE-2.0.md
+9. docs/vertex-1.0/QUALITY_STANDARD.md
+10. docs/vertex-1.0/RELEASE_GATES.md
 
 Commence par le premier lot non terminé dont toutes les dépendances sont
 satisfaites. Ne lance jamais plusieurs lots en parallèle et ne crée pas une
 branche par micro-tâche.
+
+Avant de choisir le lot, inspecte les PR #793 à #808 et leurs dépendances. Si le
+problème est déjà traité dans une PR ouverte, complète cette PR ou son prochain
+lot canonique ; ne crée jamais un propriétaire concurrent.
 
 Avant de coder :
 - relève le SHA exact et l'état CI ;
@@ -44,6 +50,12 @@ Pendant le lot :
 - l'IA explique, elle ne calcule ni score ni verdict ;
 - tout provider externe passe par un modèle Vertex canonique ;
 - toute nouvelle dépendance exige licence, pin, audit et rollback.
+- aucune requête de page ne lance directement une collecte lourde IBKR/Yahoo ;
+  servir un snapshot daté puis rafraîchir de façon asynchrone et coalescée ;
+- actions = 3/6/12 mois ; options = risque borné, DTE 120–240 cible 180,
+  revues 2/4/6 semaines ; ETF = look-through, liquidité, tracking et frais ;
+- un dépôt externe sert d'inspiration tant que sa licence, ses tests, son
+  domaine et son absence de surface d'ordre ne sont pas prouvés.
 
 À la fin :
 - compileall ;
@@ -51,6 +63,7 @@ Pendant le lot :
 - tests/test_no_orders.py ;
 - tests spécifiques du lot, mutation/témoins ;
 - smoke runtime et huit espaces si runtime/UI ;
+- mesure p50/p95 des routes modifiées et budget explicite ;
 - modes dégradés et panne partielle ;
 - rapport avec preuves du même SHA, risques, limites, rollback et décision
   humaine restante ;
