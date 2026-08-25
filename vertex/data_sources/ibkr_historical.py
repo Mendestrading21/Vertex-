@@ -52,6 +52,38 @@ def _forme_ibkr(symbole: str) -> str:
     return symbole.replace('-', ' ').strip().upper()
 
 
+#: Formes qui ne peuvent PAS etre une action americaine chez IBKR. Ce sont des
+#: conventions yfinance : `^TNX` (indice), `GC=F` (future), `BTC-USD` (paire
+#: crypto), `DX-Y.NYB` (indice avec suffixe de place).
+#:
+#: Mesure du 25 aout 2026, journal du courtier : ces symboles arrivaient bien
+#: ici — le scan telecharge l'historique des indices et matieres premieres par
+#: le MEME chemin que les actions — et `_contrat` tentait TROIS qualifications
+#: d'action pour chacun, a chaque scan. Trois allers-retours perdus par symbole
+#: et par cycle, plus trois erreurs 200 qui noient les vraies dans le journal.
+#:
+#: Verifie avant d'ecrire ce filtre : sur les 517 symboles de l'univers, ZERO
+#: commence par `^`, finit par `=F` ou `-USD`, ou contient un point. Les deux
+#: seuls a porter un tiret sont `BRK-B` et `BF-B`, des actions de classe B que
+#: `_forme_ibkr` traite deja. Le filtre n'ecarte donc aucun titre reel.
+_NON_ACTIONS = ('^', '=F', '-USD', '.')
+
+
+def est_action_us(symbole: str) -> bool:
+    """Ce symbole PEUT-il etre une action americaine ? (forme seule)
+
+    Repondre `False` n'affirme pas que le titre n'existe pas — seulement qu'il
+    ne peut pas etre qualifie comme action US, donc qu'il est inutile de le
+    demander. L'appelant ira au repli, qui connait ces conventions.
+    """
+    s = str(symbole or '').strip().upper()
+    if not s:
+        return False
+    if s.startswith('^') or '.' in s:
+        return False
+    return not (s.endswith('=F') or s.endswith('-USD'))
+
+
 def _contrat(ib, symbole: str):
     """Le contrat action pour ce symbole, ou None si IBKR n'en connaît aucun.
 
@@ -99,7 +131,16 @@ def fetch_universe_bars(symboles, duration: str = '1 Y', *, gateway=None,
     """
     symboles = [str(x) for x in (symboles or [])]
     if not symboles:
-        return {}, {'servis': 0, 'inconnus': [], 'vides': []}
+        return {}, {'servis': 0, 'inconnus': [], 'vides': [], 'non_actions': []}
+
+    #  Ce qui ne peut PAS etre une action US n'est pas demande au courtier.
+    #  Nomme, jamais retire en silence : l'appelant doit pouvoir constater que
+    #  ces symboles partent au repli, et non qu'ils ont echoue.
+    non_actions = [s for s in symboles if not est_action_us(s)]
+    symboles = [s for s in symboles if est_action_us(s)]
+    if not symboles:
+        return {}, {'servis': 0, 'inconnus': [], 'vides': [],
+                    'non_actions': non_actions}
 
     import pandas as pd
     #  `notre` : on ne ferme QUE ce qu'on a ouvert. Une passerelle fournie par
@@ -137,7 +178,11 @@ def fetch_universe_bars(symboles, duration: str = '1 Y', *, gateway=None,
         if verrou:
             verrou.release()
     return frames, {'servis': len(frames), 'inconnus': inconnus,
-                    'vides': vides, 'refus': refus, 'fermeture': fermeture}
+                    'vides': vides, 'refus': refus, 'fermeture': fermeture,
+                    #  Ecartes AVANT la moindre requete, par leur forme. Les
+                    #  compter parmi les 'inconnus' ferait croire qu'IBKR les a
+                    #  refuses, alors qu'on ne les lui a jamais demandes.
+                    'non_actions': non_actions}
 
 
 def _boucle(ib, symboles, duration, pd, journal):
