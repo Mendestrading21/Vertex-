@@ -126,5 +126,18 @@ def test_pipeline_normalisation_fr_vide_none_et_tri():
 
 
 def test_pipeline_etat_vide_contrat_honnete():
-    assert npl.collect({}, None) == {'events': [], 'rejected': 0,
-                                     'raw_count': 0, 'updated': None}
+    """Intention inchangee : sur un etat vide, rien n'est invente.
+
+    L'assertion portait sur l'egalite stricte du dict rendu, ce qui est plus
+    fort que son intention. Depuis D-125, `collect` AJOUTE `rejets_par_cause`
+    et `rejets_note` — le rejet disait combien, jamais pourquoi. Aucun champ
+    d'origine ne change, et c'est ce que ce banc verifie desormais, en exigeant
+    que les compteurs neufs soient eux aussi honnetement a zero.
+    """
+    out = npl.collect({}, None)
+    for cle, attendu in (('events', []), ('rejected', 0),
+                         ('raw_count', 0), ('updated', None)):
+        assert out[cle] == attendu, cle
+    assert set(out['rejets_par_cause'].values()) == {0}
+    assert set(out) - {'events', 'rejected', 'raw_count', 'updated'} \
+        == {'rejets_par_cause', 'rejets_note'}
