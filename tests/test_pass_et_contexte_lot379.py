@@ -86,7 +86,31 @@ RACINE = 'vertex'
 #   • `_i` et `_f`           -> vertex/options/pack.py (×2, via options_pack)
 #   • écriture du cache desc -> vertex/app/routes/descriptions_api.py
 # Un `except: pass` réellement NOUVEAU ferait donc toujours échouer ce test.
-MAX_PASS = 50
+#
+#  ─── FUSION Black Glass, 26 aout 2026 : 50 -> 51 ────────────────────────────
+#
+#  L'arrivee du code de `vertex-live` a apporte DIX nouveaux handlers. Ils ont
+#  ete classes par ce que leur `try` ENTOURE, comme cette garde l'exige — pas
+#  comptes puis absous.
+#
+#  TROIS cachaient une vraie panne, et ont ete CORRIGES, pas tolores :
+#    * `VERTEX_YF_TTL` non entier etait avale : l'utilisateur posait un reglage
+#      qui ne prenait pas, en silence. Signale une fois par valeur.
+#    * `_persist_chain_full` en echec laissait max-pain et surface VIDES — ce
+#      qui se lit comme « ce titre n'a pas d'options ». Nomme dans
+#      `scan_state['chaine_non_persistee']`.
+#    * `_iv_from_price` en echec gardait l'IV precedente : deux origines
+#      melangees dans la meme surface, sur une ENTREE de prix (D-100). Compte.
+#
+#  SEPT restent, et sont des enrichissements best-effort ou des notifications :
+#    chaine de DEMO ; deux `BROKER.publish` (SSE — une notification perdue n'a
+#    aucune consequence sur la donnee) ; `publish` de couverture options ;
+#    `rolling(200).mean()` sur une serie plus courte que 200 barres, ou
+#    l'absence est LEGITIME ; arrondi du spot ; `mark` de cotation dans
+#    `desk.py`. Aucun ne rend une donnee absente conforme.
+#
+#  Un seul de ces sept vit sous `vertex/` (desk.py) — d'ou 50 -> 51.
+MAX_PASS = 51
 
 CLES_HONNETES = ('vix', 'vix_band', 'vix_chg', 'spy_regime', 'spy_adx',
                  'spy_trend_txt')

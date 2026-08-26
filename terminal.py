@@ -312,13 +312,105 @@ _YF_TTL_OPEN = 90       # < REFRESH_SEC=120 : garde la barre du jour fraîche en
 _YF_TTL_CLOSED = 900    # 15 min hors séance : barre figée, tue la tempête + les 429
 
 
+#: Reglages refuses, pour ne les signaler qu'une fois par valeur.
+_TTL_INVALIDE: dict = {}
+
+
+def _analyse_fp(df, bench_ret, fund):
+    """Empreinte des ENTRÉES d'`analyse()` — la fonction qui manquait.
+
+    `vertex-live` a écrit le bloc de mémoïsation de `_analyse_one` en appelant
+    `_analyse_fp(df, bench_ret, _fund)`. **Cette fonction n'a jamais été
+    écrite** — ni sur `main`, ni sur `vertex-live`, ni ailleurs dans l'arbre.
+
+    Conséquence mesurée le 26 août 2026, mode démo, douze titres :
+
+    ```text
+    rows 0   scan_error None   titres_en_echec 12/12
+    NameError: name '_analyse_fp' is not defined
+    ```
+
+    Chaque symbole levait `NameError` à sa première ligne utile, `_safe_one`
+    l'avalait, et le scan rendait **zéro ligne en se déclarant sain**. C'est la
+    signature exacte du desk : `n/d` partout, `/healthz` « ok ».
+
+    ## Ce que l'empreinte doit couvrir
+
+    Exactement les trois entrées d'`analyse(df, bench_ret, fund=…)`, et rien de
+    plus. Une empreinte trop large fait manquer tous les caches ; une empreinte
+    trop étroite **rend un résultat périmé pour une entrée qui a changé** — et
+    ce second défaut est silencieux, donc bien pire.
+
+    * `df` : la dernière valeur de chaque colonne, plus sa longueur et la
+      dernière date. Une barre neuve change la longueur **et** la dernière
+      clôture ; une révision de la dernière barre change la clôture. Hacher les
+      milliers de barres coûterait plus cher que le calcul qu'on évite.
+    * `bench_ret` : sa longueur et sa dernière valeur — le régime bouge avec.
+    * `fund` : le dictionnaire entier, trié, car chaque champ entre dans le
+      score fondamental.
+
+    En cas de doute — une structure qu'on ne sait pas lire — on rend `None`, et
+    l'appelant recalcule. **Un cache qui échoue doit coûter du temps, jamais de
+    la justesse.**
+    """
+    try:
+        h = hashlib.blake2b(digest_size=16)
+        h.update(b'v1')
+        n = len(df)
+        h.update(str(n).encode())
+        if n:
+            derniere = df.index[-1]
+            h.update(str(derniere).encode())
+            for col in sorted(map(str, df.columns)):
+                v = df[col].iloc[-1]
+                h.update(('%s=%r' % (col, v)).encode('utf-8', 'replace'))
+        if bench_ret is not None:
+            h.update(('b%d' % len(bench_ret)).encode())
+            if len(bench_ret):
+                h.update(repr(bench_ret.iloc[-1]).encode('utf-8', 'replace'))
+        if fund:
+            for k in sorted(map(str, fund)):
+                h.update(('%s=%r' % (k, fund[k])).encode('utf-8', 'replace'))
+        return h.hexdigest()
+    except Exception:
+        #  Pas d'empreinte -> pas de memo. `None != None` est FAUX en Python,
+        #  donc on rend une valeur unique plutot que `None` : sans quoi deux
+        #  echecs successifs se prendraient pour un hit et l'on servirait le
+        #  resultat d'un AUTRE titre.
+        return object()
+
+
+#: Memo du scan : {SYM: (empreinte_des_entrees, sortie_PURE_de_analyse)}.
+#:
+#:  CE NOM ETAIT EMPLOYE ET JAMAIS DEFINI. `_one(sym)` — le worker qui analyse
+#:  UN titre — lisait `_ANALYSE_MEMO.get(sym)` a sa premiere ligne utile. Chaque
+#:  symbole levait donc `NameError`, le worker rendait `None`, et le scan
+#:  rendait **zero ligne en se declarant sain** :
+#:
+#:      rows 0   scanned None   scan_error None
+#:
+#:  Mesure faite le 26 aout 2026 sur douze titres en mode demo. C'est la
+#:  signature exacte de ce que montre le desk : des tuiles `n/d` partout et un
+#:  `/healthz` qui repond « ok ».
+#:
+#:  Le memo evite de recalculer `analyse()` quand les entrees n'ont pas bouge
+#:  (meme empreinte). Un dict de module suffit : il ne survit pas au processus,
+#:  et un scan froid le remplit en un passage.
+_ANALYSE_MEMO: dict = {}
+
+
 def _yf_ttl():
     env = os.environ.get('VERTEX_YF_TTL')
     if env is not None:
         try:
             return max(0, int(env))     # 0 = cache off ; N = TTL fixe manuel
         except ValueError:
-            pass
+            #  Un reglage qui ne prend pas SANS LE DIRE est pire qu'un reglage
+            #  absent : l'utilisateur croit avoir agi. On le nomme une fois.
+            if not _TTL_INVALIDE.get(env):
+                _TTL_INVALIDE[env] = True
+                log.warning('VERTEX_YF_TTL=%r ignore (entier attendu) : '
+                            'le TTL automatique reste actif', env)
     try:
         return _YF_TTL_OPEN if market_status().get('open') else _YF_TTL_CLOSED
     except Exception:
@@ -564,11 +656,25 @@ def _scan_once():
                              'st_conf': _sub.get('confidence'), 'st_fproxy': _sub.get('fundamental_is_proxy')}
             return (row, sym, d)
 
+        _echecs_titres: dict = {}
+
         def _safe_one(sym):
             try:
                 return _analyse_one(sym)
-            except Exception:
-                return None   # un titre en échec est simplement ignoré (comportement historique)
+            except Exception as _e:
+                #  « un titre en echec est simplement ignore » : vrai pour UN
+                #  titre, faux quand la cause est commune. Un defaut partage —
+                #  un nom absent, une colonne renommee — fait tomber les 513 d'un
+                #  coup, et le scan rendait alors ZERO ligne en se declarant
+                #  sain : `rows 0, scanned None, scan_error None`. C'est
+                #  exactement ce que le desk affichait, `n/d` partout, pendant
+                #  que /healthz repondait « ok ».
+                #
+                #  Le titre reste ignore ; ce qui change, c'est qu'on sait
+                #  desormais combien, lesquels, et pourquoi.
+                _echecs_titres[str(sym)] = '%s: %s' % (
+                    type(_e).__name__, str(_e)[:120])
+                return None
 
         _t_compute = time.monotonic()   # LOT 0 : durée totale du calcul par symbole (télémétrie perf)
         _workers = int(os.environ.get('VERTEX_SCAN_WORKERS',
@@ -582,6 +688,11 @@ def _scan_once():
                 _results = list(_ex.map(_safe_one, syms_scan))
         else:
             _results = [_safe_one(s) for s in syms_scan]
+        #  Un scan qui perd TOUS ses titres n'est pas un scan sain.
+        scan_state['titres_en_echec'] = (
+            {'n': len(_echecs_titres), 'total': len(syms_scan),
+             'exemples': dict(list(_echecs_titres.items())[:5])}
+            if _echecs_titres else None)
         for _r in _results:   # assemblage sur le thread principal (ordre préservé par map ; rows re-trié après)
             if _r is None:
                 continue
@@ -1319,8 +1430,11 @@ class _IbkrChainSide:
         if rows:                                          # capte la chaîne large pour max pain / OI / PCR
             try:
                 _persist_chain_full(sym, exp, right, rows, (m or {}).get('spot'))
-            except Exception:
-                pass
+            except Exception as _e:
+                #  Sans ce nom, max-pain et surface restent vides et se lisent
+                #  comme « ce titre n'a pas d'options ».
+                scan_state.setdefault('chaine_non_persistee', {})[str(sym).upper()] = {
+                    'echeance': exp, 'cote': right, 'erreur': str(_e)[:160]}
         return pd.DataFrame(rows, columns=['strike', 'impliedVolatility', 'openInterest',
                                            'volume', 'bid', 'ask', 'lastPrice'])
 

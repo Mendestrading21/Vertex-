@@ -16,8 +16,12 @@ from vertex.app.config import DEMO_MODE
 from vertex.app.state import scan_state
 from vertex.options import overview as _ov
 from vertex.options import interpretation as _oi
+#: Strikes dont l'IV n'a pas pu etre recalculee (bornee, lecture seule).
+_IV_NON_RECALCULEE: list = []
+
 from vertex.options import chaine_a_la_demande as _chaine
 from vertex.options import entrees_mesurees as _entrees
+from vertex.options import chaine_a_la_demande as _chaine
 from vertex.options import on_demand as _od
 
 bp = Blueprint('options_intel_api', __name__)
@@ -179,10 +183,8 @@ def options_max_pain(sym):
     fetch on-demand (qui persiste la chaîne via le worker) puis calcule. État vide
     honnête si TWS fermé / hors séance / titre pas chargé — jamais inventé."""
     sym = (sym or '').upper()[:12]
-    try:
-        _od.warm_chain(sym)      # lit C ET P des échéances proches → persiste la chaîne large
-    except Exception:
-        pass
+    #  NON bloquant : la collecte part en fond (defaut P0.1, 28-48 s).
+    _chaine.prechauffer(sym)
     mp = _max_pain(sym)
     if mp is None:
         return jsonify({'symbol': sym, 'available': False,
@@ -244,10 +246,8 @@ def options_chain_grid(sym):
     honnête si TWS fermé / titre pas chargé — jamais inventé. En DÉMO : chaîne
     synthétique clairement étiquetée."""
     sym = (sym or '').upper()[:12]
-    try:
-        _od.warm_chain(sym)
-    except Exception:
-        pass
+    #  NON bloquant : la collecte part en fond (defaut P0.1, 28-48 s).
+    _chaine.prechauffer(sym)
     g = _chain_grid(sym)
     if g is None:
         return jsonify({'symbol': sym, 'available': False,
@@ -298,10 +298,8 @@ def options_surface(sym):
     """Surface de volatilité (strike × échéance) + skew + structure par terme sur
     la chaîne large réelle. État vide honnête si TWS fermé / titre pas chargé."""
     sym = (sym or '').upper()[:12]
-    try:
-        _od.warm_chain(sym)
-    except Exception:
-        pass
+    #  NON bloquant : la collecte part en fond (defaut P0.1, 28-48 s).
+    _chaine.prechauffer(sym)
     s = _surface(sym)
     if s is None:
         return jsonify({'symbol': sym, 'available': False,
@@ -504,8 +502,13 @@ def _wide_contracts(sym):
                                 _civ = _le._iv_from_price(spot, k, T, mid, right == 'C')
                                 if _civ and 0.01 <= _civ <= 3.0:
                                     iv = _civ
-                            except Exception:
-                                pass
+                            except Exception as _e:
+                                #  D-100 : l'IV est une ENTREE de prix. Un echec
+                                #  qui laisse l'ancienne valeur melange deux
+                                #  origines dans la meme surface — on le compte.
+                                _IV_NON_RECALCULEE.append(
+                                    {'strike': k, 'cote': right, 'erreur': str(_e)[:120]})
+                                del _IV_NON_RECALCULEE[:-50]
                 out.append({'sym': str(sym).upper(), 'strike': k, 'type': typ,
                             'dte': dte, 'iv': iv, 'oi': row.get('oi'),
                             'delta': row.get('delta'), 'spot': spot})
@@ -532,10 +535,8 @@ def options_vol_charts(sym):
                             'input_coverage': {'dte_parameter_available': False,
                                                'status': 'DTE_PARAMETER_INVALID',
                                                'read_only': True}}), 400
-    try:
-        _od.warm_chain(sym)          # persiste la chaîne large (OI + greeks réels)
-    except Exception:
-        pass
+    #  NON bloquant : la collecte part en fond (defaut P0.1, 28-48 s).
+    _chaine.prechauffer(sym)
     try:
         wide = _wide_contracts(sym)
         board = wide if wide else _board_for(sym)

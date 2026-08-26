@@ -111,3 +111,30 @@ def etat(sym: str, board=None) -> dict:
                  "pas « ce titre n'a pas d'options »"),
         'read_only': True,
     }
+
+
+def prechauffer(sym: str) -> dict:
+    """Demander la chaîne **sans attendre**. Remplace `on_demand.warm_chain`.
+
+    `vertex-live` appelait `warm_chain(sym)` en synchrone dans quatre routes.
+    L'intention était juste — la chaîne large porte l'OI et les greeks réels,
+    sans elle max-pain et surface sont vides — mais le prix mesuré était de
+    **28 à 48 secondes** par requête, jusqu'à 136,9 s.
+
+    Ici la demande est **enregistrée**, la collecte part en fond, et l'appel
+    rend la main tout de suite. La première requête sur un titre froid rend
+    donc une surface vide **nommée** `MISSING`, et la suivante — quelques
+    secondes plus tard — la rend pleine. C'est le compromis explicite : une
+    page qui répond en disant « pas encore » vaut mieux qu'une page qui fige.
+
+    Rend l'état, pour que l'appelant puisse le joindre à sa réponse au lieu
+    d'avaler l'échec (`except Exception: pass`, qui faisait passer une panne
+    de courtier pour un titre sans options).
+    """
+    liste, meta = contrats(sym, None, attendre=False)
+    return {'symbole': str(sym or '').upper(),
+            'contrats': len(liste),
+            'etat': meta.etat,
+            'chargement_en_cours': bool(
+                getattr(meta, 'rafraichissement_en_cours', False)),
+            'erreur': meta.erreur}

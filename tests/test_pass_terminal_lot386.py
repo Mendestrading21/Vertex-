@@ -120,8 +120,19 @@ FAMILLES = {
     'infra thread': 2,
     'absence honnête': 11,
     'examinés de près': 2,
+    #  Fusion Black Glass : arrivés de `vertex-live`, classés ici parce qu'une
+    #  notification perdue ou un enrichissement absent ne rend AUCUNE donnée
+    #  fausse — la valeur reste celle de la source, simplement sans le
+    #  supplément. Distincts d'« absence honnête », qui décrit une donnée
+    #  manquante ; ici la donnée est là, c'est le confort qui manque.
+    'notification/enrichissement best-effort': 3,
 }
-TOTAL_PASS = 31
+#  31 -> 34 (fusion Black Glass) : six handlers arrives de `vertex-live`,
+#  DEUX corriges sur place (TTL invalide avale, chaine large non
+#  persistee laissant max-pain vide), quatre best-effort — chaine de
+#  demo, deux notifications SSE, arrondi du spot. Classement complet en
+#  tete de `test_pass_et_contexte_lot379.py`.
+TOTAL_PASS = 34
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.

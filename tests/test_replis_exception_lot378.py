@@ -106,7 +106,10 @@ REPLIS_NUMERIQUES = {
 
 # Bornes de population. Elles ne jugent pas le code : elles rendent la DÉRIVE
 # visible. Un écart réclame un examen, pas une correction automatique.
-MAX_PASS_SEC = 50          # mesuré : 46
+#  50 -> 51 : voir le classement des dix handlers de la fusion Black
+#  Glass en tete de `test_pass_et_contexte_lot379.py`. Trois corriges,
+#  sept best-effort, un seul sous `vertex/`.
+MAX_PASS_SEC = 51          # mesuré : 46
 MAX_NUMERIQUES = 14        # mesuré : 14 apres l'arrivee de _i/_f
 
 
