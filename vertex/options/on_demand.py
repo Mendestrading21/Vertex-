@@ -25,6 +25,25 @@ from vertex.options import legacy_engine
 _WARM_GUARD = threading.Lock()
 _WARM_LOCKS = {}
 
+#: POURQUOI une chaine n'a pas pu etre chargee, par symbole. Trois `except:
+#: pass` vivaient ici : les puts perdus, la sonde des deux cotes, et l'echec
+#: complet du prechauffage. Chacun jetait une information sans le dire — et le
+#: gardien `test_pass_et_contexte_lot379` a refuse de voir sa borne relevee
+#: sans examen. Il avait raison : une chaine qui ne se charge pas doit pouvoir
+#: le DIRE, sinon « aucun contrat » et « la source a refuse » se confondent —
+#: et seul le second se corrige.
+_ECHECS: dict = {}
+
+
+def _noter(sym, quoi, exc):
+    #  Enregistre un echec au lieu de l'avaler.
+    _ECHECS[str(sym).upper()] = '%s: %s: %s' % (quoi, type(exc).__name__, exc)
+
+
+def dernier_echec(sym):
+    #  La raison du dernier echec pour ce titre, ou None. Sert aux surfaces.
+    return _ECHECS.get(str(sym or '').upper())
+
 
 def _warm_lock(sym):
     with _WARM_GUARD:
@@ -73,8 +92,11 @@ def fetch(sym):
                     sym, spot, stop, 'put', max_n=2,
                     buckets=('moyen', 'long'),
                     earnings_dte=detail.get('earnings_dte'))
-            except Exception:
-                pass
+            except Exception as exc:              # noqa: BLE001
+                #  Les calls sont deja la : on garde ce qu'on a, mais on NOTE
+                #  que les puts manquent — sinon une these baissiere s'affiche
+                #  sans protection, et rien ne dit pourquoi.
+                _noter(sym, 'puts indisponibles', exc)
         # `best_for_symbol` ne pose pas le champ spot ; vol_charts (structure par
         # terme, cône, smile) et les scénarios en dépendent — on l'injecte ici.
         for c in contracts:
@@ -108,11 +130,13 @@ def warm_chain(sym, n_exp=3):
                 for side in ('calls', 'puts'):    # accéder aux 2 côtés → _df('C') et _df('P')
                     try:
                         _ = getattr(ch, side)
-                    except Exception:
-                        pass
+                    except Exception as exc:      # noqa: BLE001
+                        _noter(sym, 'cote %s illisible' % side, exc)
             cache[sym] = time.time()              # succès → throttle 15 min
-        except Exception:
-            pass
+        except Exception as exc:                  # noqa: BLE001
+            #  Le prechauffage a echoue : le cache n'est PAS pose (retry au
+            #  prochain passage) et la raison est conservee.
+            _noter(sym, 'prechauffage de la chaine', exc)
 
 
 def _lookup_greeks(ent, exp, right, strike):
