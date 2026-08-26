@@ -61,9 +61,65 @@ def activate_release_profile() -> None:
     _ACTIVATED = True
 
 
+def etat_actif() -> dict:
+    """QUELLE constitution s'applique dans CE processus, et d'ou elle vient.
+
+    ## Pourquoi ce temoin existe
+
+    Le repertoire lu depend de la facon dont Vertex a ete lance, et rien ne le
+    disait. Recensement du 26 aout 2026 :
+
+    | lanceur | commande | constitution |
+    |---|---|---|
+    | `Lancer_VERTEX.bat` | `python -m vertex` | **V4** |
+    | `Lancer_VERTEX_DEMO.bat` | `python -m vertex` | **V4** |
+    | `render.yaml` | `gunicorn vertex.runtime:app` | **V4** |
+    | `Installer_Demarrage_Auto.bat` | `pythonw terminal.py` | **V3** |
+
+    Le dernier est celui du **demarrage automatique de Windows** : celui qui
+    fait tourner Vertex a chaque ouverture de session. Il court-circuitait
+    `vertex.runtime`, donc l'activation, donc V4.
+
+    Les deux constitutions different sur **29 points**. V3 n'a ni
+    `equity_profile` — les horizons 3/6/12 mois des actions — ni
+    `holding_period_weeks` — les revues a 2/4/6 semaines ; son DTE prefere est
+    `[90, 180]` cible 135 au lieu de `[120, 240]` cible 180, et son time-stop
+    tombe a 5-8 seances au lieu de 30-45. Ce n'est pas un detail de version :
+    c'est un autre mandat.
+
+    `CLAUDE.md` exige que « la constitution strategique ne change qu'au moyen
+    d'une nouvelle version explicite et revue humainement ». Elle changeait
+    selon la commande de lancement, sans que rien ne l'affiche.
+    """
+    etat = {
+        'release_active': bool(_ACTIVATED),
+        'repertoire': constitution.PROFILES_DIR.name,
+        'version': None,
+        'strategy_id': None,
+        'dte_prefere': None,
+        'dte_cible': None,
+        'erreur': None,
+        'read_only': True,
+    }
+    try:
+        profil = constitution.load_profile()
+    except Exception as exc:                                   # noqa: BLE001
+        etat['erreur'] = ('%s: %s' % (type(exc).__name__, exc))[:160]
+        return etat
+    swing = (profil.options_profile or {}).get('swing_3_6m') or {}
+    etat.update({
+        'version': profil.version,
+        'strategy_id': getattr(profil, 'strategy_id', None),
+        'dte_prefere': swing.get('preferred_dte'),
+        'dte_cible': swing.get('target_dte'),
+    })
+    return etat
+
+
 __all__ = [
     "RELEASE_PROFILES_DIR",
     "activate_release_profile",
+    "etat_actif",
     "list_release_versions",
     "load_release_profile",
 ]

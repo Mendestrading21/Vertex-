@@ -17,7 +17,7 @@ if %errorlevel%==0 (
 )
 echo Installation du demarrage automatique...
 schtasks /create /tn "VertexAutoStart" /sc onlogon /rl limited ^
-  /tr "cmd /c cd /d \"%~dp0\" ^&^& \".venv\Scripts\pythonw.exe\" terminal.py" >nul
+  /tr "cmd /c cd /d \"%~dp0\" ^&^& \".venv\Scripts\pythonw.exe\" -m vertex" >nul
 if errorlevel 1 ( echo [X] Echec ^(lance en tant qu'administrateur ?^). & pause & exit /b 1 )
 echo.
 echo OK : VERTEX demarrera automatiquement a chaque session Windows.

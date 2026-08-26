@@ -14,6 +14,7 @@ from flask import Blueprint, jsonify, Response, request
 from vertex.ai import briefs as ai
 from vertex.app.config import IBKR_ENABLED, DEMO_MODE
 from vertex.app.state import scan_state
+from vertex.strategy import release as _release
 from vertex.data.universe import UNIVERSE
 from vertex.data import constants as _vconst
 from vertex.data.constants import BUILD
@@ -41,6 +42,11 @@ def healthz():
         'vertex_ready': sum(1 for d in (scan_state.get('detail') or {}).values() if d.get('vertex')),
         'engines': ['scoring', 'pivots', 'committee', 'strategy', 'portfolio_risk',
                     'vertex', 'vertex_ml', 'validator'],
+        #  QUELLE constitution s'applique. Elle depend de la commande de
+        #  lancement — `python -m vertex` active V4, un `terminal.py` direct
+        #  reste sur V3 — et rien ne le disait. Les deux different sur 29
+        #  points, dont les horizons actions et la fenetre DTE.
+        'constitution': _release.etat_actif(),
     }), 200
 
 
