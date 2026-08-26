@@ -66,7 +66,10 @@ MODELE = {
     'type': 'black_scholes_europeen',
     'estimated': True,
     'prix_source': 'MODEL_ESTIMATE',
-    'iv_source': 'PROXY_ATR',
+    #  Renseigne par titre : COTEE quand le board porte des contrats,
+    #  PROXY_ATR sinon. Le bloc global dit la regle, chaque `pick` dit
+    #  ce qui lui est REELLEMENT arrive.
+    'iv_source': 'COTEE_SI_DISPONIBLE_SINON_PROXY_ATR',
     'strike_source': 'CHOISI_POUR_DELTA_CIBLE',
     'r': R,
     'q': 0.0,
@@ -78,10 +81,15 @@ MODELE = {
 LIMITATIONS = [
     "prime MODELISEE, jamais cotee : aucun contrat reel ne correspond "
     "necessairement a ce strike ni a cette echeance",
-    "IV deduite de l'ATR (volatilite REALISEE), pas de la chaine d'options "
-    "(volatilite IMPLICITE) — mesure du 26 aout 2026 : l'IV cotee s'etale de "
-    "2,52x entre titres, et la prime d'un call ATM 180 j varie de +128 % sur "
-    "cet intervalle",
+    "IV COTEE quand le board porte des contrats du titre ; sinon proxy ATR, "
+    "et le pick le dit. Le proxy est mesurablement BIAISE : sur 30 titres "
+    "reels (26 aout 2026, ATR de Wilder), il surevalue l'IV dans 30 cas sur "
+    "30 — mediane +40 %, jusqu'a +78 % — car l'ATR mesure la volatilite "
+    "REALISEE et une prime se paie sur l'IMPLICITE. Effet sur la prime d'un "
+    "call ATM 180 j : +34,9 % de mediane, soit ~2 contrats de moins sur un "
+    "budget de 15 k",
+    "structure par terme non modelisee : une seule IV par titre sert tous les "
+    "horizons, de 1 a 12 mois",
     "taux sans risque constant (%.3f), sans courbe par echeance" % R,
     "dividende non applique (q = 0) : sur un titre distributeur, la prime d'un "
     "call est SURESTIMEE",
@@ -89,6 +97,25 @@ LIMITATIONS = [
     "le dimensionnement en dollars decoule de la prime MODELISEE — le cout "
     "reel d'une position depend de la cotation du jour",
 ]
+
+
+def _iv_du_titre(board, sym, atr_pct):
+    """L'IV a employer pour ce titre, et d'ou elle vient.
+
+    La cotation l'emporte des qu'elle existe : le proxy ATR est mesurablement
+    biaise (30 titres sur 30 surevalues, mediane +40 %). Preferer une erreur
+    connue a une cotation reelle serait un choix, et le mauvais.
+
+    Rend `(sigma, source, n_contrats)` — `source` vaut `'COTEE'` ou
+    `'PROXY_ATR'`, et le `pick` le porte, pour qu'un lecteur sache lequel des
+    deux il regarde.
+    """
+    if board:
+        from vertex.options.entrees_mesurees import iv_cotee
+        q = iv_cotee(board, sym)
+        if q['valeur'] is not None:
+            return q['valeur'], 'COTEE', q['n_contrats']
+    return _iv_proxy(atr_pct), 'PROXY_ATR', 0
 
 
 def _iv_proxy(atr_pct):
@@ -210,7 +237,7 @@ _CORE_SHARE = 0.66
 _MAX_POS_RISK = 0.10
 
 
-def _candidates(rows, detail, bias, limit):
+def _candidates(rows, detail, bias, limit, board=None):
     out = []
     for r in (rows or []):
         sym = r.get('symbol')
@@ -220,23 +247,25 @@ def _candidates(rows, detail, bias, limit):
         S = d.get('price')
         if not S or S <= 0:
             continue
-        sig = _iv_proxy(d.get('atr_pct'))
+        sig, iv_src, n_ctr = _iv_du_titre(board, sym, d.get('atr_pct'))
         bullish = (d.get('verdict') or '').upper() not in _BEAR
         primary = 'PUT' if bias == 'dangerous' else ('CALL' if bullish else 'PUT')
         legs = {l['key']: l for l in _legs(S, sig, (d.get('plan') or {}), primary == 'CALL')}
         if not legs:
             continue
         out.append({'sym': sym, 'S': round(S, 2), 'grade': d.get('grade'),
-                    'score': d.get('score'), 'dir': primary, 'legs': legs})
+                    'score': d.get('score'), 'dir': primary, 'legs': legs,
+                    'iv_source': iv_src, 'iv_n_contrats': n_ctr})
         if len(out) >= limit:
             break
     return out
 
 
-def build_portfolio(rows, detail, market=None, capital=100000, n_core=6, n_sat=4):
+def build_portfolio(rows, detail, market=None, capital=100000, n_core=6, n_sat=4,
+                    board=None):
     """Alloue un capital (50k/100k/200k…) en portefeuille d'options selon le profil."""
     bias = _bias(market)
-    cand = _candidates(rows, detail, bias, n_core + n_sat)
+    cand = _candidates(rows, detail, bias, n_core + n_sat, board=board)
     deploy = capital * _DEPLOY
     core_budget, sat_budget = deploy * _CORE_SHARE, deploy * (1 - _CORE_SHARE)
     positions = []
@@ -268,7 +297,10 @@ def build_portfolio(rows, detail, market=None, capital=100000, n_core=6, n_sat=4
                 'cost': cost, 'maxloss': cost,
                 'gain_prob': round(contracts * 100 * (sc['prob']['val'] - leg['premium'])),
                 'gain_exc': round(contracts * 100 * (sc['except']['val'] - leg['premium'])),
-                'prob_pct': sc['prob']['pct'], 'exc_pct': sc['except']['pct']})
+                'prob_pct': sc['prob']['pct'], 'exc_pct': sc['except']['pct'],
+                #  Cette ligne porte un COUT et un `maxloss` en dollars : elle
+                #  doit dire si sa prime vient d'une cotation ou d'un proxy.
+                'iv_source': c.get('iv_source'), 'iv_n_contrats': c.get('iv_n_contrats')})
 
     add(cand[:n_core], core_budget, _CORE_HORIZONS, 'CŒUR')
     add(cand[n_core:n_core + n_sat], sat_budget, _SAT_HORIZONS, 'SATELLITE')
@@ -284,7 +316,7 @@ def build_portfolio(rows, detail, market=None, capital=100000, n_core=6, n_sat=4
             'regime': bias}
 
 
-def build(rows, detail, market=None, top_n=6):
+def build(rows, detail, market=None, top_n=6, board=None):
     """Stratégie pour les meilleures convictions. Call ET Put, pondérés régime."""
     bias = _bias(market)
     picks = []
@@ -296,7 +328,7 @@ def build(rows, detail, market=None, top_n=6):
         S = d.get('price')
         if not S or S <= 0:
             continue
-        sig = _iv_proxy(d.get('atr_pct'))
+        sig, iv_src, n_ctr = _iv_du_titre(board, sym, d.get('atr_pct'))
         iv_expensive = sig > IV_MAX
         verdict = (d.get('verdict') or '').upper()
         bullish = verdict not in _BEAR
@@ -315,7 +347,8 @@ def build(rows, detail, market=None, top_n=6):
             #  meme sens : celle-ci est deduite de l'ATR. Le dire ici, au plus
             #  pres de la valeur, est la seule facon qu'un lecteur ne les
             #  confonde pas.
-            'iv_source': MODELE['iv_source'], 'iv_estimated': True,
+            'iv_source': iv_src, 'iv_estimated': iv_src == 'PROXY_ATR',
+            'iv_n_contrats': n_ctr,
             'iv_expensive': iv_expensive, 'regime': bias, 'primary': primary,
             'call': _legs(S, sig, plan, True),
             'put': _legs(S, sig, plan, False),

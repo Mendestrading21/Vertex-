@@ -75,10 +75,17 @@ def _build():
 #  ═══════════  1. le constructeur déclare enfin son modèle  ═══════════════════
 
 def test_la_STRATEGIE_declare_son_modele():
+    """Intention inchangee depuis D-104 ; le FAIT a change au lot suivant.
+
+    `iv_source` valait `PROXY_ATR` en dur — c'etait alors la verite. Depuis
+    D-107, l'IV COTEE l'emporte quand le board porte des contrats : le bloc
+    global nomme desormais la REGLE, et chaque `pick` nomme ce qui lui est
+    reellement arrive.
+    """
     b = _build()
     assert b['model']['estimated'] is True
     assert b['model']['prix_source'] == 'MODEL_ESTIMATE'
-    assert b['model']['iv_source'] == 'PROXY_ATR'
+    assert 'COTEE' in b['model']['iv_source'] and 'PROXY' in b['model']['iv_source']
     assert b['model']['strike_source'] == 'CHOISI_POUR_DELTA_CIBLE'
 
 
@@ -122,7 +129,9 @@ def test_les_limitations_disent_le_SENS_de_chaque_ecart():
     lims = ' '.join(_build()['limitations']).lower()
     assert 'realisee' in lims and 'implicite' in lims, "la nature de l'IV proxy"
     assert 'surestim' in lims, 'le sens de l ecart du dividende ignore'
-    assert '2,52x' in lims or '2.52x' in lims, 'la dispersion MESUREE'
+    #  D-104 citait la dispersion (2,52x). D-107 l'a remplacee par une mesure
+    #  plus forte : le BIAIS du proxy, 30 titres sur 30, mediane +40 %.
+    assert '30' in lims and '40' in lims, 'le biais MESURE du proxy'
     assert 'dimensionnement' in lims, 'le dollar decoule de la prime modelisee'
 
 
@@ -159,6 +168,7 @@ def test_ce_lot_ne_DEPLACE_aucun_prix():
     """La condition pour qu'une déclaration reste une déclaration. Les valeurs
     sont celles qu'un Black-Scholes à `R` et q=0 produit — inchangées."""
     from vertex.options.legacy_engine import _bs_price, R
+    #  Sans board, le repli est le proxy — et la prime doit etre celle d'avant.
     jambe = _build()['picks'][0]['call'][0]
     attendu = _bs_price(91.64, jambe['strike'], jambe['dte'] / 365.0,
                         A._iv_proxy(2.2), True)

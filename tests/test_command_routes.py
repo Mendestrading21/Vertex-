@@ -105,16 +105,35 @@ def test_portefeuille_empty_without_rows(client):
     assert client.get('/api/portefeuille').get_json() == {}
 
 
+def test_le_double_de_build_portfolio_SUIT_la_vraie_signature():
+    """Un double qui ne suit plus la signature reelle transforme un changement
+    d'API en reponse vide : la route attrape `Exception` et rend `{}`. Le banc
+    d'a cote echouait alors sur un `KeyError`, sans dire pourquoi.
+
+    Ce temoin fait echouer le double AVANT, et avec le bon message.
+    """
+    import inspect
+    from vertex.strategy import legacy_adapter
+    attendus = set(inspect.signature(legacy_adapter.build_portfolio).parameters)
+    assert 'board' in attendus
+
+
 def test_portefeuille_capital_is_clamped(client, monkeypatch):
     scan_state['rows'] = [{'symbol': 'AAA'}]
     seen = {}
 
-    def fake_build(rows, detail, market=None, capital=None):
+    #  `**extra` : la route passe desormais `board=` (D-107). Sans lui, l'appel
+    #  levait, et le `except Exception` de la route rendait `{}` — le banc
+    #  echouait sur un KeyError au lieu de dire ce qui s'etait passe. Le double
+    #  doit suivre la signature reelle, et le banc suivant l'y oblige.
+    def fake_build(rows, detail, market=None, capital=None, **extra):
         seen['capital'] = capital
+        seen['extra'] = extra
         return {'capital': capital}
     monkeypatch.setattr(command.strategy, 'build_portfolio', fake_build)
     client.get('/api/portefeuille?capital=999999999')
     assert seen['capital'] == command.CAPITAL_MAX
+    assert 'board' in seen['extra'], 'la route doit passer le board (D-107)'
     client.get('/api/portefeuille?capital=12')
     assert seen['capital'] == command.CAPITAL_MIN
     client.get('/api/portefeuille?capital=pas-un-nombre')

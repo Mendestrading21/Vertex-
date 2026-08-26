@@ -149,8 +149,10 @@ def api_portefeuille():
     if not rows:
         return jsonify({})
     try:
-        return jsonify(strategy.build_portfolio(rows, scan_state.get('detail'),
-                                                market=scan_state.get('market_ctx'), capital=cap))
+        return jsonify(strategy.build_portfolio(
+            rows, scan_state.get('detail'),
+            market=scan_state.get('market_ctx'), capital=cap,
+            board=scan_state.get('options_board') or []))
     except Exception as e:
         return jsonify({'error': 'portfolio_analysis_unavailable'})
 

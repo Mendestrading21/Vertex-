@@ -650,7 +650,8 @@ def _scan_once():
         recs.sort(key=lambda x: -x['score40'])
         # STRATÉGIE OPTIONS PERSONNALISÉE (1/2/3/6/9/12 mois) — Black-Scholes, zéro réseau
         try:
-            strat = strategy.build(rows, detail, market=mctx, top_n=6)
+            strat = strategy.build(rows, detail, market=mctx, top_n=6,
+                                   board=scan_state.get('options_board') or [])
         except Exception:
             strat = scan_state.get('strategy')
         # COMITÉ D'INVESTISSEMENT (4 portes + thèse/plan/invalidation/conviction)
