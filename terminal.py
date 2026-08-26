@@ -336,6 +336,7 @@ def _download_universe(tickers, period='1y', chunk=50):
 
     manquants = [t for t in tickers if t not in frames]
     bad_batches = 0
+    _abandonnes: list = []
     for i in range(0, len(manquants), chunk):
         part = manquants[i:i + chunk]
         try:
@@ -349,6 +350,12 @@ def _download_universe(tickers, period='1y', chunk=50):
             # l'IP → inutile d'insister, on passe direct au filet Stooq (caché 6 h)
             bad_batches += 1
             if bad_batches >= 3:
+                #  L'abandon CESSE D'ETRE MUET. Il emportait jusqu'ici tout le
+                #  reste de la file sans que rien ne le dise : le Dashboard
+                #  affichait « n/d » et le scan annoncait « aucune erreur ».
+                #  Un abandon qui ne se nomme pas se lit comme une absence de
+                #  donnee chez la source.
+                _abandonnes.extend(manquants[i:])
                 break
             time.sleep(2 * bad_batches)
             continue
@@ -384,6 +391,23 @@ def _download_universe(tickers, period='1y', chunk=50):
     scan_state['source'] = '+'.join(contributeurs) if contributeurs else 'unavailable'
     scan_state['source_detail'] = {'ibkr': ibkr_n, 'yfinance': yahoo_n,
                                    'stooq': stooq_n, 'univers': len(tickers)}
+    #  CE QUI A ETE ABANDONNE, et pourquoi. Le backoff anti-429 coupait la file
+    #  en silence : le Dashboard affichait « n/d » pendant que le scan annoncait
+    #  « aucune erreur ». Un abandon qui ne se nomme pas se lit comme une
+    #  absence de donnee chez la source — et on cherche alors du mauvais cote.
+    #
+    #  `restants` compte ce qui n'a ete servi NI par Yahoo, NI par Stooq : les
+    #  abandonnes que le filet de secours a rattrapes ne manquent plus.
+    restants = [t for t in _abandonnes if t not in frames]
+    scan_state['abandon_debit'] = {
+        'apres_lots_vides': bool(_abandonnes),
+        'symboles_abandonnes': len(_abandonnes),
+        'restes_sans_donnee': len(restants),
+        'exemples': restants[:8],
+        'motif': ('trois lots vides d affilee : Yahoo limite le debit, la file '
+                  'est coupee et le filet Stooq prend le relais'),
+        'read_only': True,
+    } if _abandonnes else None
     return frames
 
 
@@ -399,8 +423,26 @@ def _scan_once():
         # En DÉMO : on ne scanne que 20 titres → rapide sur le CPU bridé du cloud,
         # suffisant pour visualiser toutes les données. Hors démo : univers complet.
         syms_scan = UNIVERSE[:20] if DEMO_MODE else UNIVERSE
-        _syms = (syms_scan + [BENCH, '^VIX', '^GSPC', '^IXIC', '^DJI', '^RUT']
-                 + [c[0] for c in _COMMO] + [m[0] for m in _MACRO_TK])
+        #  LE CONTEXTE DE MARCHE PASSE EN TETE, et ce n'est pas cosmetique.
+        #
+        #  Mesure du 26 aout 2026, sur le desk de l'utilisateur : Dow, S&P,
+        #  Nasdaq, Russell, VIX, or, petrole, argent, BTC, ETH — TOUTES les
+        #  tuiles d'en-tete du Dashboard a « n/d », pendant que le scan
+        #  annoncait 513 titres et aucune erreur.
+        #
+        #  La cause : ces ~16 symboles etaient les DERNIERS de la file, apres
+        #  les 513 actions. Or `_download_universe` abandonne tout le reste
+        #  apres trois lots vides d'affilee (backoff anti-429) — donc quand
+        #  Yahoo limite le debit en fin de scan, ce sont exactement eux qui
+        #  sont sacrifies. Verifie le meme jour : yfinance rendait pourtant
+        #  ^GSPC 7680,36, ^IXIC 26113,75, ^DJI 53547,62, ^VIX 15,44.
+        #
+        #  Seize symboles portent la lecture d'ensemble de la page d'accueil ;
+        #  513 en portent une ligne chacun. Les servir en premier ne coute rien
+        #  et garantit l'en-tete meme quand la queue tombe.
+        _contexte = ([BENCH, '^VIX', '^GSPC', '^IXIC', '^DJI', '^RUT']
+                     + [c[0] for c in _COMMO] + [m[0] for m in _MACRO_TK])
+        _syms = _contexte + [t for t in syms_scan if t not in _contexte]
         if DEMO_MODE:
             data = _demo_universe(_syms)
             scan_state['source'] = 'demo'
