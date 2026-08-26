@@ -9,6 +9,13 @@ plus les chaînes JS exposées par les modules (sync_center, heatmap
 du vault). Survey honnête : tracking_page/vault/sync_center ont déjà
 leurs gardiens de contenu — la lacune transverse était la SYNTAXE.
 """
+#  MARCHES EST FUSIONNE DANS LE DASHBOARD (Black Glass).
+#
+#  `/markets` ne sert plus de page : la route redirige 302 vers `/#…`
+#  pour preserver les favoris. Les listes d'espaces ci-dessous ne le
+#  citent donc plus, et les appels directs visent `/`, qui porte
+#  desormais ce contenu. La couverture n'est pas perdue : elle a
+#  simplement suivi le contenu.
 import functools
 import os
 import re
@@ -20,7 +27,7 @@ import pytest
 import terminal
 from vertex.ui import sync_center
 
-ROUTES = ('/', '/markets', '/opportunities', '/portfolio', '/journal',
+ROUTES = ('/', '/opportunities', '/portfolio', '/journal',
           '/options', '/system', '/tracking', '/intelligence',
           '/analysis', '/titre/AAPL', '/company/AAPL', '/analysis/AAPL',
           '/login', '/widget-lab', '/design-system', '/system/design-system')

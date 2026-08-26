@@ -773,6 +773,7 @@ async function renderCombinedOptions(rich){
       <div class="vx-card-footer">${VX.updateIndicator(Date.now(),window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
         · résumé d'exposition — le détail par contrat est dans Options</div>
     </section>`;
+  }).join('');
 }
 
 /* ═══ RAPPROCHEMENT P&L — quatre sources, aucune ne gagne en silence ═══

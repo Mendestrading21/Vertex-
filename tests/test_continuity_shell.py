@@ -6,6 +6,13 @@ scripts de page (shell conservé côté client par vx-router.js). Ces tests verr
 les contrats statiques ; le comportement SPA lui-même est validé au navigateur
 (voir docs/refactor/validation/CONTINUITY-02.md).
 """
+#  MARCHES EST FUSIONNE DANS LE DASHBOARD (Black Glass).
+#
+#  `/markets` ne sert plus de page : la route redirige 302 vers `/#…`
+#  pour preserver les favoris. Les listes d'espaces ci-dessous ne le
+#  citent donc plus, et les appels directs visent `/`, qui porte
+#  desormais ce contenu. La couverture n'est pas perdue : elle a
+#  simplement suivi le contenu.
 import os
 from pathlib import Path
 
@@ -19,7 +26,7 @@ import terminal
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / 'vertex' / 'static' / 'vertex' / 'js'
 
-SPACES = ['/', '/markets', '/opportunities', '/analysis', '/portfolio',
+SPACES = ['/', '/opportunities', '/analysis', '/portfolio',
           '/journal', '/system']   # /options existe mais repli dur (external-only)
 
 
@@ -36,7 +43,7 @@ def _read(*parts):
 # ── Progressive-enhancement : document complet TOUJOURS servi ───────────────
 def test_full_document_served_without_fragment_header(client):
     """Accès direct / deep link / refresh / sans-JS → document complet inchangé."""
-    html = client.get('/markets').get_data(as_text=True)
+    html = client.get('/').get_data(as_text=True)
     assert html.lstrip().lower().startswith('<!doctype')
     assert '<div class="vx-app"' in html
     assert 'id="vx-content"' in html
@@ -44,7 +51,7 @@ def test_full_document_served_without_fragment_header(client):
 
 def test_fragment_mode_returns_fragment_not_document(client):
     """Requête fragment → PAS de document complet, seulement contenu + métadonnées."""
-    frag = client.get('/markets', headers={'X-Vertex-Fragment': '1'}).get_data(as_text=True)
+    frag = client.get('/', headers={'X-Vertex-Fragment': '1'}).get_data(as_text=True)
     assert '<!doctype' not in frag.lower()
     assert '<div class="vx-app"' not in frag          # shell NON reconstruit
     assert 'class="vx-fragment"' in frag
@@ -60,7 +67,7 @@ def test_fragment_query_flag_also_works(client):
 
 def test_fragment_carries_navigation_metadata(client):
     """Le fragment porte tout ce qu'il faut au routeur pour remettre à jour le shell."""
-    frag = client.get('/markets', headers={'X-Vertex-Fragment': '1'}).get_data(as_text=True)
+    frag = client.get('/', headers={'X-Vertex-Fragment': '1'}).get_data(as_text=True)
     for attr in ('data-title=', 'data-active="markets"', 'data-space-label=',
                  'data-page-label='):
         assert attr in frag, attr
@@ -68,7 +75,7 @@ def test_fragment_carries_navigation_metadata(client):
 
 def test_every_space_serves_a_fragment(client):
     """Chaque espace (hors Options) est navigable en client : fragment + bon data-active."""
-    ids = {'/': 'briefing', '/markets': 'markets', '/opportunities': 'opportunities',
+    ids = {'/': 'briefing', '/opportunities': 'opportunities',
            '/analysis': 'analysis', '/portfolio': 'portfolio', '/journal': 'journal',
            '/system': 'system'}
     for url, active in ids.items():

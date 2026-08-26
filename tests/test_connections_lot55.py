@@ -20,6 +20,13 @@ CENTRALEMENT :
 
 Shell visible → SW v111 → v112.
 """
+#  MARCHES EST FUSIONNE DANS LE DASHBOARD (Black Glass).
+#
+#  `/markets` ne sert plus de page : la route redirige 302 vers `/#…`
+#  pour preserver les favoris. Les listes d'espaces ci-dessous ne le
+#  citent donc plus, et les appels directs visent `/`, qui porte
+#  desormais ce contenu. La couverture n'est pas perdue : elle a
+#  simplement suivi le contenu.
 import re
 
 SHELL_PY = 'vertex/ui/shell/__init__.py'
@@ -39,7 +46,7 @@ def test_breadcrumb_root_is_link_server_side():
 
 def test_breadcrumb_space_is_link_server_side():
     import terminal
-    body = terminal.app.test_client().get('/markets').get_data(as_text=True)
+    body = terminal.app.test_client().get('/').get_data(as_text=True)
     m = re.search(r'<nav class="vx-breadcrumb"[^>]*>(.*?)</nav>', body, re.S)
     assert m, 'fil d’Ariane absent'
     assert re.search(r'<a[^>]*href="/markets"[^>]*>', m.group(1)), \
@@ -59,7 +66,7 @@ def test_back_labels_cover_all_eight_spaces():
     m = re.search(r'SPACE_LABELS = \{(.*?)\}', src, re.S)
     assert m, 'SPACE_LABELS introuvable'
     labels = m.group(1)
-    for route in ("'/'", "'/markets'", "'/opportunities'", "'/analysis'",
+    for route in ("'/'", "'/opportunities'", "'/analysis'",
                   "'/portfolio'", "'/options'", "'/journal'", "'/system'"):
         assert route in labels, 'route absente du retour contextuel : %s' % route
 

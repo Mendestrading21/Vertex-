@@ -52,6 +52,13 @@ la règle réellement tenue est « aucun bleu non-marque ».
 faux, et le contrat qui n'était pas verrouillé.** Ce test fixe la borne AU
 niveau mesuré, pour qu'aucun littéral supplémentaire n'entre en silence.
 """
+#  MARCHES EST FUSIONNE DANS LE DASHBOARD (Black Glass).
+#
+#  `/markets` ne sert plus de page : la route redirige 302 vers `/#…`
+#  pour preserver les favoris. Les listes d'espaces ci-dessous ne le
+#  citent donc plus, et les appels directs visent `/`, qui porte
+#  desormais ce contenu. La couverture n'est pas perdue : elle a
+#  simplement suivi le contenu.
 import glob
 import os
 import re
@@ -60,7 +67,7 @@ import pytest
 
 import terminal
 
-PAGES = ['/', '/markets', '/opportunities', '/analysis', '/portfolio',
+PAGES = ['/', '/opportunities', '/analysis', '/portfolio',
          '/options', '/journal', '/system']
 
 _HEX = re.compile(r'#[0-9a-fA-F]{6}\b')

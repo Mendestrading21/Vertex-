@@ -28,6 +28,13 @@ attente de GO — rien n'est engagé ici) : ces 7 constantes représentent
 **618 527 octets (604 Ko) de HTML assemblés à chaque import** de `terminal.py`,
 pour n'être jamais renvoyés.
 """
+#  MARCHES EST FUSIONNE DANS LE DASHBOARD (Black Glass).
+#
+#  `/markets` ne sert plus de page : la route redirige 302 vers `/#…`
+#  pour preserver les favoris. Les listes d'espaces ci-dessous ne le
+#  citent donc plus, et les appels directs visent `/`, qui porte
+#  desormais ce contenu. La couverture n'est pas perdue : elle a
+#  simplement suivi le contenu.
 import ast
 import re
 
@@ -35,7 +42,7 @@ import pytest
 
 import terminal
 
-PAGES = ['/', '/markets', '/opportunities', '/analysis', '/portfolio',
+PAGES = ['/', '/opportunities', '/analysis', '/portfolio',
          '/options', '/journal', '/system']
 
 # Routes héritées dont le 301 est la raison pour laquelle `_vpage` est sûr.

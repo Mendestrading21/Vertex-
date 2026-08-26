@@ -7,6 +7,13 @@ Prototype VISUEL sur « Aujourd'hui » uniquement :
   · mouvement réduit respecté ; aucun autre espace touché (pas de big-bang) ;
   · aucun moteur/donnée modifié ; READONLY intact.
 """
+#  MARCHES EST FUSIONNE DANS LE DASHBOARD (Black Glass).
+#
+#  `/markets` ne sert plus de page : la route redirige 302 vers `/#…`
+#  pour preserver les favoris. Les listes d'espaces ci-dessous ne le
+#  citent donc plus, et les appels directs visent `/`, qui porte
+#  desormais ce contenu. La couverture n'est pas perdue : elle a
+#  simplement suivi le contenu.
 import os
 
 import pytest
@@ -110,7 +117,7 @@ def test_all_spaces_carry_glass(client):
     """Tous les espaces portent leur attribut ET sont couverts par le glass CSS
     (unification site-wide — plus de « non migré »)."""
     code = _read(CSS)
-    for path, space in (('/markets', 'markets'), ('/opportunities', 'opportunities'),
+    for path, space in (('/opportunities', 'opportunities'),
                         ('/portfolio', 'portfolio'), ('/analysis', 'analysis'),
                         ('/options', 'options'), ('/journal', 'journal'),
                         ('/system', 'system')):

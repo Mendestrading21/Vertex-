@@ -29,6 +29,13 @@ valeur inconnue à sa vue par défaut. Sondé avec deux charges hostiles sur les
 8 pages qui lisent `view=` : aucune fuite, ni dans le JS, ni dans le HTML.
 C'est cette propriété que ce fichier fige.
 """
+#  MARCHES EST FUSIONNE DANS LE DASHBOARD (Black Glass).
+#
+#  `/markets` ne sert plus de page : la route redirige 302 vers `/#…`
+#  pour preserver les favoris. Les listes d'espaces ci-dessous ne le
+#  citent donc plus, et les appels directs visent `/`, qui porte
+#  desormais ce contenu. La couverture n'est pas perdue : elle a
+#  simplement suivi le contenu.
 import re
 
 import pytest
@@ -36,7 +43,7 @@ import pytest
 import terminal
 
 # Les 8 routes qui lisent `view=` (vertex/app/routes/redesign.py).
-ROUTES = ('/markets', '/opportunities', '/portfolio', '/analysis', '/journal',
+ROUTES = ('/opportunities', '/portfolio', '/analysis', '/journal',
           '/intelligence', '/system', '/options')
 
 # Charges hostiles : sortie de chaîne JS, et sortie d'attribut HTML.

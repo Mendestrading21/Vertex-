@@ -54,13 +54,20 @@ ce que la documentation croit.
 Trois fois où j'aurais accusé un gardien sain. Le lot 379 l'avait formulé : *un
 cas qui ne mord pas accuse d'abord la mutation*.
 """
+#  MARCHES EST FUSIONNE DANS LE DASHBOARD (Black Glass).
+#
+#  `/markets` ne sert plus de page : la route redirige 302 vers `/#…`
+#  pour preserver les favoris. Les listes d'espaces ci-dessous ne le
+#  citent donc plus, et les appels directs visent `/`, qui porte
+#  desormais ce contenu. La couverture n'est pas perdue : elle a
+#  simplement suivi le contenu.
 import re
 
 import pytest
 
 import terminal
 
-PAGES = ['/', '/markets', '/opportunities', '/analysis', '/portfolio',
+PAGES = ['/', '/opportunities', '/analysis', '/portfolio',
          '/options', '/journal', '/system']
 
 # Contrat DESK_KEYS — la liste que TOUTE copie servie doit porter à l'identique.

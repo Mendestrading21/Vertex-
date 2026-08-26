@@ -10,6 +10,13 @@ mécaniques client (routeur, store, cache/SWR, préchargement, fraîcheur, prix,
 badges de fraîcheur dans les pages, invariant READONLY, cohérence du Service Worker.
 Tout doit être vert avant un lancement.
 """
+#  MARCHES EST FUSIONNE DANS LE DASHBOARD (Black Glass).
+#
+#  `/markets` ne sert plus de page : la route redirige 302 vers `/#…`
+#  pour preserver les favoris. Les listes d'espaces ci-dessous ne le
+#  citent donc plus, et les appels directs visent `/`, qui porte
+#  desormais ce contenu. La couverture n'est pas perdue : elle a
+#  simplement suivi le contenu.
 import os
 import re
 from pathlib import Path
@@ -26,7 +33,7 @@ JS = ROOT / 'vertex' / 'static' / 'vertex' / 'js'
 CSS = ROOT / 'vertex' / 'static' / 'vertex' / 'css'
 PAGES = ROOT / 'vertex' / 'ui' / 'pages'
 
-SPACES = {'/': 'briefing', '/markets': 'markets', '/opportunities': 'opportunities',
+SPACES = {'/': 'briefing', '/opportunities': 'opportunities',
           '/analysis': 'analysis', '/portfolio': 'portfolio', '/options': 'options',
           '/journal': 'journal', '/system': 'system'}
 
@@ -52,7 +59,7 @@ def test_all_eight_spaces_return_full_document(client):
 
 
 def test_fiche_ticker_and_key_subviews_ok(client):
-    for url in ('/analysis/NVDA', '/markets?view=breadth', '/opportunities?view=stocks',
+    for url in ('/analysis/NVDA', '/?view=breadth', '/opportunities?view=stocks',
                 '/portfolio?view=risk', '/journal?view=journal', '/system?view=data'):
         assert client.get(url).status_code == 200, url
 
@@ -148,7 +155,7 @@ def test_service_worker_version_consistent(client):
 
 # ══ 8. Pas de valeur invalide visible sur les pages clés ══
 def test_no_broken_values_on_key_pages(client):
-    for url in ('/', '/markets', '/system?view=data'):
+    for url in ('/', '/system?view=data'):
         html = re.sub(r'<script.*?</script>', '', client.get(url).get_data(as_text=True), flags=re.S)
         for bad in ('[object Object]', '>undefined<', '>NaN<', '>Infinity<'):
             assert bad not in html, f'{url}: {bad}'

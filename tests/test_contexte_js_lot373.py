@@ -32,6 +32,13 @@ en entier** — le producteur HTML central — parce qu'elle listait les fichier
 `os.listdir`, qui ne descend pas dans les sous-dossiers. C'est précisément là que
 vivait le `json.dumps` nu. Le dernier test ci-dessous verrouille cette leçon.
 """
+#  MARCHES EST FUSIONNE DANS LE DASHBOARD (Black Glass).
+#
+#  `/markets` ne sert plus de page : la route redirige 302 vers `/#…`
+#  pour preserver les favoris. Les listes d'espaces ci-dessous ne le
+#  citent donc plus, et les appels directs visent `/`, qui porte
+#  desormais ce contenu. La couverture n'est pas perdue : elle a
+#  simplement suivi le contenu.
 import ast
 import json
 import os
@@ -43,7 +50,7 @@ import terminal
 from vertex.engines.recommendation import vocab_js
 from vertex.ui.shell import json_for_script
 
-PAGES = ['/', '/markets', '/opportunities', '/analysis', '/portfolio',
+PAGES = ['/', '/opportunities', '/analysis', '/portfolio',
          '/options', '/journal', '/system']
 
 _OUVRE = re.compile(r'<script\b[^>]*>', re.I)
@@ -192,7 +199,7 @@ CHARGES = [
 ]
 
 
-@pytest.mark.parametrize('route', ['/markets', '/journal'])
+@pytest.mark.parametrize('route', ['/journal'])
 @pytest.mark.parametrize('nom,charge', CHARGES)
 def test_une_vue_hostile_est_remplacee_par_la_liste_blanche(client, route, nom, charge):
     r = client.get('%s?view=%s' % (route, charge))
@@ -208,7 +215,7 @@ def test_une_vue_hostile_est_remplacee_par_la_liste_blanche(client, route, nom, 
         'HTML actif pollué par « %s » sur %s' % (nom, route))
 
 
-@pytest.mark.parametrize('route,vue', [('/markets', 'sectors'), ('/journal', 'overview')])
+@pytest.mark.parametrize('route,vue', [('/journal', 'overview')])
 def test_une_vue_legitime_traverse_bien(client, route, vue):
     """Gardien pas TROP strict : la liste blanche ne doit pas tout écraser."""
     html = client.get('%s?view=%s' % (route, vue)).get_data(as_text=True)
