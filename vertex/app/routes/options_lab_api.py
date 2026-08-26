@@ -12,6 +12,7 @@ from flask import Blueprint, jsonify, request
 from vertex.app.config import DEMO_MODE
 from vertex.app.state import cal_state, scan_state
 from vertex.engines import multileg_lab, options_lab
+from vertex.options import entrees_mesurees as _entrees
 
 bp = Blueprint('options_lab_api', __name__)
 
@@ -49,7 +50,13 @@ def api_options_strategies(sym):
             bias = 'bearish'
         else:
             bias = 'neutral'
-        res = multileg_lab.strategies_for_symbol(board, sym, spot, bias=bias)
+        #  Entrees MESUREES : sans elles, ces stratégies etaient analysees a
+        #  4,5 % et dividende nul, comme le simulateur avant D-099.
+        res = multileg_lab.strategies_for_symbol(
+            board, sym, spot, bias=bias,
+            r=_entrees.taux(scan_state, 35),
+            q=(_entrees.rendement_dividende(scan_state, sym) or 0.0))
+        res['entrees'] = _entrees.provenance(scan_state, sym)
         res['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
         res['demo'] = DEMO_MODE
         return jsonify(res)
@@ -64,7 +71,7 @@ def api_options_analyze():
     breakevens, gain/perte max, PoP (si IV), greeks. Lecture seule, aucun ordre."""
     try:
         from vertex.app import payload_validation as _payload
-        b = _payload.object_body(request.get_json(force=True, silent=True), max_keys=8)
+        b = _payload.object_body(request.get_json(force=True, silent=True), max_keys=9)
         if not b.get('legs'):
             return jsonify({'available': False, 'reason': 'legs manquant'}), 200
         legs = _payload.object_list(b, 'legs', maximum=16, minimum=1)
@@ -73,9 +80,17 @@ def api_options_analyze():
         days = _payload.optional_number(b, 'days', maximum=3650)
         if b.get('name') is not None and len(str(b.get('name'))) > 96:
             raise _payload.PayloadError('name_trop_long')
+        #  Le taux ne depend pas du titre : il est toujours mesurable ici. Le
+        #  dividende exige un symbole ; la charge peut le fournir, et sans lui
+        #  `q` reste 0,0 — valeur que le bloc `model` TRACE deja, donc declaree.
+        sym_q = str(b.get('sym') or '').upper()[:12]
         res = multileg_lab.analyze_strategy(
             legs, spot, iv, days,
+            r=_entrees.taux(scan_state, days),
+            q=(_entrees.rendement_dividende(scan_state, sym_q) or 0.0) if sym_q else 0.0,
             name=b.get('name'))
+        if isinstance(res, dict) and res.get('available'):
+            res['entrees'] = _entrees.provenance(scan_state, sym_q)
         return jsonify(res)
     except _payload.PayloadError as exc:
         return jsonify({'available': False, 'error': str(exc)}), 400

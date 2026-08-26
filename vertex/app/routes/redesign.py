@@ -223,12 +223,18 @@ def make_blueprint(scan_state: dict) -> Blueprint:
         if contract['mid'] and spot and contract['mid'] > spot:
             contract['mid'] = round(contract['mid'] / 100.0, 4)
             notes.append('prime par contrat convertie en prime par action (÷100)')
+        #  Entrees MESUREES, pas des constantes : meme proprietaire que
+        #  `options_intel_api`, pour que les deux routes disent le meme prix.
+        from vertex.options import entrees_mesurees as _entrees
         setup = UnderlyingSetup(
             symbol=sym, spot=spot,
             invalidation=plan.get('stop'), tp1=plan.get('tp1'),
-            tp2=plan.get('tp2'), tp3=plan.get('tp3'))
+            tp2=plan.get('tp2'), tp3=plan.get('tp3'),
+            dividend_yield=(_entrees.rendement_dividende(scan_state, sym) or 0.0))
         try:
-            sim = scenario_pricer.simulate(contract, setup)
+            sim = scenario_pricer.simulate(contract, setup,
+                                           rate_curve=_entrees.courbe(scan_state))
+            sim['entrees'] = _entrees.provenance(scan_state, sym)
             analysis = scenario_pricer.capital_free_analysis(sim, contract)
         except Exception as exc:
             return jsonify({'error': f'simulation impossible: {exc}'}), 422
