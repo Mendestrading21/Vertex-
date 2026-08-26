@@ -70,6 +70,13 @@ def _couples():
                 nu = ligne.strip()
                 if nu.startswith(('#', '//', '*')):
                     continue                      # commentaire : jamais affiché
+                if 'interaction' in nu and 'axis' in nu:
+                    #  Chart.js : `d.interaction = {mode:'nearest', axis:'xy'}`
+                    #  decrit l'accrochage de la SOURIS, pas la fraicheur de la
+                    #  donnee. Meme mot, autre sujet. La contre-epreuve
+                    #  `test_le_detecteur_voit_toujours_un_mode_fige` prouve que
+                    #  cette exception n'ouvre pas la porte a un vrai mensonge.
+                    continue
                 for m in _CLE.finditer(ligne):
                     lit = _LITTERAL.match(m.group(2).strip())
                     yield rel, i, m.group(1), (lit.group(1) if lit else None), nu[:140]
@@ -112,3 +119,37 @@ def test_les_pages_a_donnees_derivent_leur_source_du_scan(couples):
     for page in ('vertex/ui/pages/markets_page.py',
                  'vertex/ui/pages/opportunities_page.py'):
         assert page in derivees, '%s ne dérive plus aucune source du serveur' % page
+
+
+#: Les deux lignes que la contre-epreuve oppose : la premiere est un
+#: reglage d'accrochage de Chart.js, la seconde une VRAIE affirmation de
+#: temps reel figee. Le detecteur doit ignorer l'une et voir l'autre.
+LIGNES_TEMOIN = [
+    "d.interaction = { mode: 'nearest', axis: 'xy', intersect: false };",
+    "VX.tile({source:'IBKR', mode:'live', timestamp:Date.now()});",
+]
+
+def test_le_detecteur_voit_toujours_un_mode_fige(tmp_path, monkeypatch):
+    """Contre-épreuve de l'exception Chart.js ci-dessus.
+
+    Une exception qui ferait taire le détecteur serait pire que le défaut
+    qu'elle contourne. On lui présente les deux lignes côte à côte : celle de
+    Chart.js doit passer, un vrai `mode:'live'` figé doit être vu.
+    """
+    faux = tmp_path / 'faux.js'
+    faux.write_text(chr(10).join(LIGNES_TEMOIN), encoding='utf-8')
+    monkeypatch.setattr('tests.test_honnetete_provenance_lot363._fichiers_servis',
+                        lambda: [faux.name], raising=False)
+    lignes = faux.read_text(encoding='utf-8').splitlines()
+    vus = []
+    for i, ligne in enumerate(lignes, 1):
+        nu = ligne.strip()
+        if 'interaction' in nu and 'axis' in nu:
+            continue
+        for m in _CLE.finditer(ligne):
+            lit = _LITTERAL.match(m.group(2).strip())
+            if m.group(1) == 'mode' and lit:
+                vus.append((i, lit.group(1)))
+    assert vus == [(2, 'live')], (
+        "l'exception Chart.js doit laisser passer la ligne 1 ET voir la ligne 2 : %r"
+        % vus)

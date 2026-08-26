@@ -197,7 +197,7 @@ function corrHeatmap(hostId,corr){
   VXCharts.heatmapCard(hostId,{title:'Corrélations du portefeuille',
     question:'La diversification est-elle réelle ou illusoire ?',
     conclusion:(corr.average!=null?('corrélation moyenne '+(+corr.average).toFixed(2)):'')+(corr.warning?' — '+corr.warning:''),
-    columns:syms,rows:rows,min:-1,max:1,source:'risk_engine · rendements réels',timestamp:Date.now(),mode:'live',
+    columns:syms,rows:rows,min:-1,max:1,source:('risk_engine · rendements '+(window.__pfLive?'réels':'de repli')),timestamp:Date.now(),mode:(window.__pfLive?'live':'fallback'),
     limits:'corail = fortement corrélé (risque de concentration) · émeraude = décorrélé (diversification réelle)'});
 }
 /* Composition du capital : Actions / Options / Cash en barre empilée + légende.
@@ -899,7 +899,7 @@ async function renderRisk(){
         ${Object.entries(stress).map(([k,v])=>`<tr><td>${k}</td>
           <td class="vx-num ${v.impact_pct<0?'vx-neg':''}">${v.impact_pct!==null&&v.impact_pct!==undefined?VX.fmt.pct(v.impact_pct,1):'non estimé'}</td>
           <td class="vx-meta">${esc(v.note||'')}</td></tr>`).join('')}</tbody></table></div>
-        <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'risk_engine (positions réelles)','live')}
+        <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'risk_engine (positions réelles)',window.__pfLive?'live':'fallback')}
         ${(risk.warnings||[]).length?'· '+risk.warnings.length+' avertissement(s)':''}</div></section>
       <div class="vx-col-12" id="pf-corr-heatmap"></div></div>`;
     /* Heatmap de corrélations RÉELLES entre les positions (risk_engine · rendements) :
