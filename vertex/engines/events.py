@@ -126,7 +126,10 @@ def _nom_source(n):
         premier = origines[0].get('pub') if isinstance(origines[0], dict) else None
         if premier:
             return premier
-    return n.get('publisher') or n.get('pub') or 'externe'
+    #  Proprietaire unique de la lecture : deux copies de cette regle
+    #  divergeraient au premier producteur ajoute.
+    from vertex.services.news_plus import nom_publieur
+    return nom_publieur(n) or 'externe'
 
 
 def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):

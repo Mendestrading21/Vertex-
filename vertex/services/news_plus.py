@@ -222,6 +222,34 @@ def _clean_text(s):
              .replace('"', '&quot;').replace("'", '&#39;'))
 
 
+#: Les trois producteurs de news du produit n'emettent PAS la meme cle :
+#:
+#:   `data_sources/ibkr_news`            -> `pub`
+#:   `options/legacy_engine` (fil yfinance) -> `pub`
+#:   `services/news_plus.rss_news`       -> `publisher`
+#:
+#: Chaque consommateur qui choisit sa cle perd les producteurs qu'il ignore.
+#: Mesure du 26 aout 2026 : `market/news_pipeline` exigeait `publisher` ou
+#: `source` et **rejetait 2 articles sur 3** — toutes les depeches IBKR et tout
+#: le fil yfinance — en les comptant comme MALFORMES.
+CLES_PUBLIEUR = ('publisher', 'pub', 'source', 'prov')
+
+
+def nom_publieur(item) -> str:
+    """Le nom du publieur, quelle que soit la cle du producteur.
+
+    Rend `''` quand aucune cle n'est renseignee : une absence reste une
+    absence, et inventer « externe » ici la ferait passer pour servie.
+    """
+    if not isinstance(item, dict):
+        return ''
+    for cle in CLES_PUBLIEUR:
+        v = item.get(cle)
+        if isinstance(v, str) and v.strip():
+            return v.strip()
+    return ''
+
+
 def _lien_sur(lk):
     """Un lien servi en `href` / `window.open` — ou `None`.
 
@@ -307,7 +335,7 @@ def dedupe_news(items):
         cle_titre = re.sub(r'[^a-z0-9]+', ' ', str(it.get('title') or '').lower()).strip()
         lien = str(it.get('link') or '').strip()
         garde = (par_titre.get(cle_titre) if cle_titre else None)             or (par_lien.get(lien) if lien else None)
-        origine = {'pub': it.get('pub') or it.get('publisher'),
+        origine = {'pub': nom_publieur(it) or None,
                    'link': it.get('link') or None,
                    'time': it.get('time') or None}
         if garde is not None:
@@ -327,4 +355,5 @@ def dedupe_news(items):
     return out
 
 
-__all__ = ['sentiment', 'aggregate', 'parse_rss', 'rss_news', 'sanitize_news', 'dedupe_news']
+__all__ = ['sentiment', 'aggregate', 'parse_rss', 'rss_news', 'sanitize_news',
+           'dedupe_news', 'nom_publieur', 'CLES_PUBLIEUR']
