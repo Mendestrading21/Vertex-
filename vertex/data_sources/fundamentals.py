@@ -14,6 +14,7 @@ import yfinance as yf
 
 from vertex.market import sectors
 from vertex.data_sources.models import utc_now_iso
+from vertex.data_sources import rendement_dividende as _rdt
 
 
 def _f(v):
@@ -58,6 +59,7 @@ def _one(s):
                    'observe_a': None, 'available_at': None,
                    'erreur': ('%s: %s' % (type(exc).__name__, exc))[:160]}
     sec = sectors.SECTOR_MAP.get(s) or info.get('sector')
+    _rdt_champ = _rdt.rendement(info)
     return s, {
         'source': 'yfinance.info',
         'recu_a': recu_a,
@@ -72,7 +74,13 @@ def _one(s):
         'growth': _f(info.get('revenueGrowth')),
         'beta': _f(info.get('beta')),
         'mcap': _f(info.get('marketCap')),
-        'div': _f(info.get('dividendYield')),
+        #  FRACTION, jamais le champ brut : `yfinance.dividendYield` est un
+        #  POURCENTAGE (mesure du 26 aout 2026), et `analysis.py` le teste
+        #  contre 0.02 — un seuil ecrit pour une fraction. Voir
+        #  `rendement_dividende`, seul proprietaire de l'unite.
+        'div': _rdt_champ['valeur'],
+        'div_source': _rdt_champ['source'],
+        'div_unite_inferee': _rdt_champ['unite_inferee'],
         'roe': _f(info.get('returnOnEquity')),
         'debt_eq': _f(info.get('debtToEquity')),
         'sector': sec,
