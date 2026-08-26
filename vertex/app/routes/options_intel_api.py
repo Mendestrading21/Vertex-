@@ -14,6 +14,7 @@ from vertex.app.config import DEMO_MODE
 from vertex.app.state import scan_state
 from vertex.options import overview as _ov
 from vertex.options import interpretation as _oi
+from vertex.options import entrees_mesurees as _entrees
 
 bp = Blueprint('options_intel_api', __name__)
 
@@ -115,10 +116,15 @@ def options_scenarios(sym):
                 'mid': ((_num(c.get('cost')) or 0) / 100.0 if _num(c.get('cost')) else None),
                 'iv': (iv / 100.0 if isinstance(iv, (int, float)) and iv > 3 else iv),
                 'expiry': c.get('exp') or ''}
+    #  Entrees MESUREES, pas des constantes : la courbe et le rendement sont
+    #  deja collectes et en memoire. Voir `options/entrees_mesurees`.
     setup = UnderlyingSetup(symbol=sym, spot=spot, invalidation=plan.get('stop'),
-                            tp1=plan.get('tp1'), tp2=plan.get('tp2'), tp3=plan.get('tp3'))
+                            tp1=plan.get('tp1'), tp2=plan.get('tp2'), tp3=plan.get('tp3'),
+                            dividend_yield=(_entrees.rendement_dividende(scan_state, sym) or 0.0))
     try:
-        sim = scenario_pricer.simulate(contract, setup)
+        sim = scenario_pricer.simulate(contract, setup,
+                                       rate_curve=_entrees.courbe(scan_state))
+        sim['entrees'] = _entrees.provenance(scan_state, sym)
     except Exception as e:
         return jsonify({'symbol': sym, 'empty': True,
                         'reason': 'simulation_indisponible'}), 200
