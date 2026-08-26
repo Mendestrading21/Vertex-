@@ -9,11 +9,20 @@ from __future__ import annotations
 
 from vertex.market.news_dedup import deduplicate
 from vertex.market.news_impact import classify, score_importance
+from vertex.services.news_plus import nom_publieur
 
 
 def _valid(item: dict) -> bool:
+    """Titre + publieur + heure. Sans quoi l'événement n'est ni datable ni
+    attribuable, et le rejet est COMPTÉ, pas masqué.
+
+    `nom_publieur` remplace `publisher or source` : ces deux clés seules
+    rejetaient **toutes les dépêches IBKR et tout le fil yfinance** — qui
+    émettent `pub` — en les comptant comme MALFORMÉS. Mesure du 26 août 2026 :
+    deux articles sur trois perdus.
+    """
     return bool(item.get('title')) \
-        and bool(item.get('publisher') or item.get('source')) \
+        and bool(nom_publieur(item)) \
         and bool(item.get('time') or item.get('date'))
 
 
@@ -30,7 +39,7 @@ def collect(news_state: dict, portfolio_syms: list[str] | None = None) -> dict:
         ev = {
             'title': title,
             'title_fr': str(it.get('fr') or '').strip() or None,
-            'source': str(it.get('publisher') or it.get('source') or '').strip(),
+            'source': nom_publieur(it),
             'time': str(it.get('time') or it.get('date') or ''),
             'link': it.get('link') or None,
             'sentiment': it.get('senti'),
