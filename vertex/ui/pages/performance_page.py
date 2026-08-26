@@ -192,10 +192,20 @@ function stats(list){
   const pnls=list.map(e=>Number(e.pnl));
   const wins=pnls.filter(p=>p>0),losses=pnls.filter(p=>p<0);
   const gains=wins.reduce((a,b)=>a+b,0),pertes=Math.abs(losses.reduce((a,b)=>a+b,0));
-  return {n:list.length,total:pnls.reduce((a,b)=>a+b,0),
+  const avgWin=wins.length?gains/wins.length:null,avgLoss=losses.length?-(pertes/losses.length):null;
+  /* Drawdown max chiffré : plus grand repli du cumul de P&L (ordre chronologique). */
+  let maxDD=0;{let cum=0,peak=0;list.slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')))
+    .forEach(e=>{cum+=Number(e.pnl)||0;peak=Math.max(peak,cum);maxDD=Math.min(maxDD,cum-peak);});}
+  return {n:list.length,
+    total:pnls.reduce((a,b)=>a+b,0),
     winRate:list.length?100*list.filter(e=>e.result==='WIN').length/list.length:null,
     profitFactor:pertes>0?gains/pertes:(gains>0?Infinity:null),
-    expectancy:pnls.length?pnls.reduce((a,b)=>a+b,0)/pnls.length:null};
+    expectancy:pnls.length?pnls.reduce((a,b)=>a+b,0)/pnls.length:null,
+    avgWin:avgWin,avgLoss:avgLoss,
+    ratio:(avgWin!=null&&avgLoss)?avgWin/Math.abs(avgLoss):null,
+    best:pnls.length?Math.max.apply(null,pnls):null,
+    worst:pnls.length?Math.min.apply(null,pnls):null,
+    maxDD:maxDD};
 }
 const JOURNAL_ACTION='<a class="vx-btn vx-btn-sm" href="/journal?view=journal">Ouvrir la chronologie</a>';
 function emptyCard(host,reason,action){const el=$(host);if(el)el.innerHTML='<div class="vx-card">'+VX.states.empty(reason,action||'')+'</div>';}
@@ -223,22 +233,138 @@ function behavioral(){
     lessons:new Set(j.map(e=>String(e.lesson||'').trim()).filter(Boolean)).size};
 }
 
-/* ═══ DISCIPLINE (overview) — Hero éditorial honnête + KPI comportementaux ═══ */
-function loadDiscipline(){
-  const b=behavioral();
-  const hero=$('vx-pf-hero');
-  const next=$('vx-pf-next-axis');
-  if(!b.n){
-    if(hero)hero.innerHTML=`<div class="vx-flex" style="gap:8px;align-items:center;margin-bottom:6px">
-        <span class="vx-eyebrow">Discipline</span></div>
-      <h2 style="margin:0 0 6px;font-size:21px">Aucune décision journalisée pour l’instant.</h2>
-      <p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.6">Le Journal mesure ta <b>méthode</b> — pas la performance du portefeuille (elle vit dans <a href="/portfolio?view=performance">Portefeuille → Performance</a>). Journalise tes décisions pour révéler ta discipline, tes erreurs récurrentes et tes progrès.</p>
+/* Anneau de progression (§39) — n/max trades clôturés. SVG pur, sur tokens. */
+function progressRing(n,max){
+  var frac=Math.max(0,Math.min(1,max?n/max:0)),R=46,C=2*Math.PI*R;
+  var col=frac>=1?'var(--vx-positive)':'var(--vx-brand)';
+  return '<svg viewBox="0 0 120 120" style="width:132px;height:132px" role="img" aria-label="'+n+' sur '+max+' trades clôturés">'
+    +'<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="var(--vx-surface-3)" stroke-width="10"/>'
+    +'<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+col+'" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+(frac*C).toFixed(1)+' '+C.toFixed(1)+'" transform="rotate(-90 60 60)"/>'
+    +'<text x="60" y="57" text-anchor="middle" font-size="32" font-weight="700" fill="var(--vx-text-primary)" style="font-variant-numeric:tabular-nums">'+n+'</text>'
+    +'<text x="60" y="78" text-anchor="middle" font-size="12" fill="var(--vx-text-muted)">/ '+max+' trades</text></svg>';
+}
+/* Aperçu FANTÔME de la courbe d'équité (§39) — forme déterministe, AUCUN chiffre :
+   fait sentir le produit à venir sans jamais afficher de fausse performance. */
+function ghostEquity(){
+  var pts='M0 95 L60 88 L120 92 L180 70 L240 74 L300 52 L360 58 L420 34';
+  return '<div style="position:relative;margin-bottom:6px"><svg viewBox="0 0 420 120" preserveAspectRatio="none" style="width:100%;height:118px;opacity:.55" aria-hidden="true">'
+    +'<defs><linearGradient id="pfghost" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--vx-brand)" stop-opacity=".22"/><stop offset="1" stop-color="var(--vx-brand)" stop-opacity="0"/></linearGradient></defs>'
+    +'<path d="'+pts+' L420 120 L0 120 Z" fill="url(#pfghost)"/><path d="'+pts+'" fill="none" stroke="var(--vx-brand)" stroke-width="2" stroke-dasharray="4 5" stroke-linejoin="round"/></svg>'
+    +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span class="vx-meta" style="background:var(--vx-surface-1);padding:4px 11px;border-radius:999px;border:1px solid var(--vx-border-soft)">Ta courbe d&#8217;équité apparaîtra ici</span></div></div>';
+}
+
+/* ═══ OVERVIEW ═══ */
+function loadKpis(){
+  const list=trades();
+  if(list.length<5){
+    const n=list.length;
+    const milestones=[[5,'P&L, taux de réussite, profit factor, espérance'],
+      [10,'Distribution gains/pertes, meilleurs & pires trades'],
+      [20,'Courbe d’équité vs SPY, drawdown, MAE / MFE'],
+      [30,'Rolling win rate & expectancy, perf par setup / régime']];
+    const pct=Math.min(100,Math.round(n/5*100));
+    const rows=milestones.map(function(m){const done=n>=m[0];
+      return `<div class="vx-kv"><span class="k">${done?'✅':'🔒'} ${m[0]} trades</span>`
+        +`<span class="v vx-dim" style="font-size:12px;text-align:right">${esc(m[1])}</span></div>`;}).join('');
+    $('vx-pf-kpis').innerHTML=`<div class="vx-card vx-col-12">
+      <div class="vx-card-header"><span class="vx-card-title">Construis ton track record</span>
+        <span class="vx-meta vx-right">${n} / 5 trades pour débloquer les premières statistiques</span></div>
+      <div class="vx-grid">
+        <div class="vx-col-4" style="display:flex;align-items:center;justify-content:center;padding:6px 0">${progressRing(n,5)}</div>
+        <div class="vx-col-8">${ghostEquity()}<div class="vx-mt1">${rows}</div></div>
+      </div>
+      <div class="vx-help vx-mt3">Chaque trade clôturé (WIN/LOSS + P&amp;L) débloque des analyses. Aucune fausse performance n’est affichée avant d’avoir des données réelles — la méthode se juge sur des faits, pas des estimations.</div>
       <div class="vx-flex vx-mt3" style="gap:.5rem;flex-wrap:wrap">
-        <a class="vx-btn vx-btn-sm vx-btn-primary" href="/journal?view=journal">Journaliser une décision</a></div>`;
-    ($('vx-pf-kpis')||{}).innerHTML='';
-    if(next)next.innerHTML='<span class="vx-eyebrow">Prochain axe</span><h3>Documenter une premi&egrave;re d&eacute;cision</h3>'
-      +'<p class="vx-dim">Renseigne au minimum la raison, l&rsquo;invalidation et ce qui confirmerait la th&egrave;se.</p>'
-      +'<a class="vx-btn vx-btn-sm vx-btn-primary" href="/journal?view=journal">Commencer &rarr;</a>';
+        <a class="vx-btn vx-btn-sm vx-btn-primary" href="/performance?view=journal">Ajouter une entrée au journal</a>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio?view=positions">Voir mes positions</a></div>
+    </div>`;
+    return list;
+  }
+  const s=stats(list);
+  const pf=s.profitFactor===Infinity?'∞':(s.profitFactor===null?'—':VX.fmt.num(s.profitFactor,2));
+  const cells=[
+    ['P&L total (déclaré)',(s.total>=0?'+':'')+VX.fmt.num(s.total,0)+' $',s.total>=0?'vx-pos':'vx-neg'],
+    ['Taux de réussite',VX.fmt.num(s.winRate,0)+' %',s.winRate>=50?'vx-pos':'vx-neg'],
+    ['Profit factor',pf,(s.profitFactor||0)>=1?'vx-pos':'vx-neg'],
+    ['Espérance / trade',(s.expectancy>=0?'+':'')+VX.fmt.num(s.expectancy,0)+' $',s.expectancy>=0?'vx-pos':'vx-neg'],
+    ['Gain moyen',s.avgWin!=null?'+'+VX.fmt.num(s.avgWin,0)+' $':'—','vx-pos'],
+    ['Perte moyenne',s.avgLoss!=null?VX.fmt.num(s.avgLoss,0)+' $':'—','vx-neg'],
+    ['Ratio gain/perte',s.ratio!=null?VX.fmt.num(s.ratio,2):'—',(s.ratio||0)>=1?'vx-pos':'vx-neg'],
+    ['Drawdown max',s.maxDD<0?VX.fmt.num(s.maxDD,0)+' $':'—','vx-neg'],
+    ['Meilleur / pire',(s.best!=null?((s.best>=0?'+':'')+VX.fmt.num(s.best,0)):'—')+' / '+(s.worst!=null?VX.fmt.num(s.worst,0):'—')+' $','vx-muted'],
+    ['Trades déclarés',String(s.n),'vx-muted'],
+  ];
+  $('vx-pf-kpis').innerHTML=cells.map(([label,val,cls])=>{
+    const tone=cls==='vx-pos'?'pos':cls==='vx-neg'?'neg':'';
+    return `<div class="vx-stat" style="grid-column:span 2" data-tone="${tone}" aria-label="${esc(label)}">
+      <div class="vx-stat-k">${label}</div>
+      <div class="vx-stat-v">${val}</div>
+      <div class="vx-stat-sub">journal local · vos déclarations</div></div>`;}).join('')
+    +`<div class="vx-stat" style="grid-column:span 2">
+      <div class="vx-stat-k">Source</div>
+      <div class="vx-meta" style="font-size:11.5px;margin-top:5px;line-height:1.4">Calculs arithmétiques sur VOS trades déclarés — aucun indicateur de marché.</div></div>`;
+  return list;
+}
+/* Équité DÉRIVÉE du cumul des P&L de clôture déclarés (le stock myTradesEquity
+   n'est jamais alimenté par recordExit — s'y fier laissait la courbe vide). Base
+   = capital déclaré si présent, sinon 0 (courbe de P&L cumulé). Réel, arithmétique. */
+function derivedEquity(){
+  const cl=trades().slice().filter(e=>e.date).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  if(cl.length<2)return [];
+  const base=(E()&&E().capital&&E().capital())||0;
+  let cum=base;const eq=[];
+  cl.forEach(e=>{cum+=Number(e.pnl)||0;eq.push({d:e.date,v:Math.round(cum*100)/100});});
+  return eq;
+}
+function loadEquity(){
+  const eq=derivedEquity();
+  if(eq.length>=2){
+    /* equity-chart.js / drawdown-chart.js sont des scripts `defer` : garde-fou
+       si loadEquity court avant leur enregistrement (évite « equityCard is not a
+       function ») — on retente une fois tous les scripts chargés. */
+    if(!(window.VXCharts&&VXCharts.equityCard&&VXCharts.drawdownCard)){
+      window.addEventListener('load',loadEquity,{once:true});return;}
+    const labels=eq.map(p=>p.d),values=eq.map(p=>Number(p.v));
+    VXCharts.equityCard('vx-pf-equity',{
+      title:'Courbe d’équité (déclarée)',timeframe:eq.length+' points',
+      question:'Le capital déclaré progresse-t-il régulièrement ?',
+      conclusion:values[values.length-1]>=values[0]?'Équité en progression sur la période.':'Équité en retrait sur la période.',
+      labels,values,height:240,
+      source:'journal local (cumul des clôtures)',timestamp:Date.now(),mode:'delayed',
+      explain:{shows:'La série d’équité issue de vos clôtures de positions déclarées.',
+        why:'Une méthode saine produit une pente régulière, pas des à-coups.',
+        confirm:'Nouveaux plus hauts d’équité avec drawdowns contenus.',
+        invalidate:'Série de plus bas d’équité — réduire la taille et revoir le process.'}});
+    VXCharts.drawdownCard('vx-pf-drawdown',{
+      title:'Drawdown depuis les pics',
+      question:'Les pertes restent-elles contrôlées ?',
+      conclusion:'Dérivé arithmétiquement de la courbe d’équité déclarée.',
+      labels,values,height:240,
+      source:'journal local (cumul des clôtures)',timestamp:Date.now(),mode:'delayed',
+      limits:'dérivé de la série déclarée — pas un indicateur de marché',
+      explain:{shows:'L’écart en % entre l’équité et son dernier pic.',
+        why:'La profondeur des drawdowns mesure la discipline de risque réelle.',
+        confirm:'Drawdowns courts et peu profonds.',invalidate:'Drawdown qui s’aggrave pendant que vous continuez à trader.'}});
+  }else{
+    emptyCard('vx-pf-equity','Courbe d’équité indisponible — elle se construit au fil des clôtures de positions déclarées.',JOURNAL_ACTION);
+    emptyCard('vx-pf-drawdown','Drawdown indisponible sans courbe d’équité.');
+  }
+}
+/* Heatmap mensuelle + distribution — agrégations arithmétiques sur VOS
+   clôtures déclarées (jamais un indicateur de marché). */
+function loadMonthlyAndDist(){
+  /* Cartes issues de scripts `defer` (heatmap.js) : garde-fou tant qu'ils ne sont
+     pas enregistrés (évite un TypeError si l'orchestration court trop tôt). */
+  if(!(window.VXCharts&&VXCharts.heatmapCard&&VXCharts.card&&VXCharts.bars)){
+    window.addEventListener('load',loadMonthlyAndDist,{once:true});return;}
+  /* pnl_pct n'est jamais écrit par recordExit → le calculer depuis (exit−cost)/cost
+     (données réelles des clôtures déclarées). Sinon le filtre restait toujours vide. */
+  const closed=(E()?E().closedPositions():[])||[];
+  const withPl=closed.filter(t=>t.closed&&t.cost).map(t=>Object.assign({},t,
+    {pnl_pct:Math.round((t.exit-t.cost)/t.cost*1000)/10}));
+  if(withPl.length<3){
+    emptyCard('vx-pf-monthly','Heatmap mensuelle disponible à partir de 3 clôtures datées.',JOURNAL_ACTION);
+    emptyCard('vx-pf-dist','Distribution disponible à partir de 3 clôtures.');
     return;
   }
   /* Phrase éditoriale construite UNIQUEMENT sur des faits comptés. */

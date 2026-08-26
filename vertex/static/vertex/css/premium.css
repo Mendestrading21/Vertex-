@@ -1,0 +1,242 @@
+/* Vertex Design System — premium.css
+   COUCHE PREMIUM opt-in : composants riches (grille de métriques color-codée,
+   stat-tiles à halo, jauge de confiance, cadre radar) inspirés des terminaux
+   pro haut de gamme, mais STRICTEMENT dans la palette Vertex (vert Signal =
+   identité, émeraude = gain, corail = perte, ambre = attente, violet = options,
+   acier = neutre/benchmark — jamais de bleu). Chaque classe est nouvelle et
+   opt-in : rien n'écrase les composants existants. Les valeurs absentes
+   dégradent en « — » (aucun chiffre inventé). */
+
+/* ── Grille de métriques financières color-codée ─────────────────────── */
+.vx-metricgrid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:10px;margin-top:6px}
+.vx-metric{
+  position:relative;padding:11px 13px 12px;border-radius:var(--vx-r);
+  background:linear-gradient(180deg,var(--vx-surface-raised),var(--vx-surface-base));
+  border:1px solid var(--vx-border-soft);overflow:hidden;
+  transition:border-color .18s var(--vx-ease),transform .14s var(--vx-ease),box-shadow .18s var(--vx-ease)}
+.vx-metric::before{/* liseré d'accent gauche selon le ton */
+  content:"";position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:var(--_tone,var(--vx-border-strong));opacity:.85}
+.vx-metric:hover{transform:translateY(-1px);border-color:var(--vx-border-default);
+  box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.vx-metric .vx-metric-k{
+  font:600 10px/1.3 var(--vx-font);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--vx-text-muted);display:block;margin-bottom:5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vx-metric .vx-metric-v{
+  font:600 19px/1.05 var(--vx-font-mono);font-variant-numeric:tabular-nums lining-nums;
+  color:var(--vx-text-primary);display:flex;align-items:baseline;gap:6px}
+.vx-metric .vx-metric-u{font-size:11px;color:var(--vx-text-faint);font-weight:500}
+.vx-metric .vx-metric-cmp{/* chip comparaison vs référence */
+  margin-top:7px;font:600 10.5px/1 var(--vx-font-mono);
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 7px;border-radius:var(--vx-r-sm);
+  background:var(--vx-surface-0);color:var(--vx-text-secondary);
+  border:1px solid var(--vx-border-faint)}
+.vx-metric[data-tone="pos"]{--_tone:var(--vx-positive)}
+.vx-metric[data-tone="pos"] .vx-metric-v{color:var(--vx-positive)}
+.vx-metric[data-tone="pos"] .vx-metric-cmp{color:var(--vx-positive);background:var(--vx-positive-soft)}
+.vx-metric[data-tone="neg"]{--_tone:var(--vx-negative)}
+.vx-metric[data-tone="neg"] .vx-metric-v{color:var(--vx-negative)}
+.vx-metric[data-tone="neg"] .vx-metric-cmp{color:var(--vx-negative);background:var(--vx-negative-soft)}
+.vx-metric[data-tone="warn"]{--_tone:var(--vx-warning)}
+.vx-metric[data-tone="warn"] .vx-metric-cmp{color:var(--vx-warning);background:var(--vx-warning-soft)}
+.vx-metric[data-tone="opt"]{--_tone:var(--vx-option)}
+.vx-metric[data-tone="opt"] .vx-metric-v{color:var(--vx-option)}
+/* mini-barre de position vs médiane (track + remplissage + repère médiane) */
+.vx-metric-bar{position:relative;height:4px;border-radius:99px;margin-top:9px;
+  background:var(--vx-surface-0);overflow:hidden}
+.vx-metric-bar>i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;
+  background:var(--_tone,var(--vx-steel-3));opacity:.9;
+  transition:width .5s var(--vx-ease)}
+.vx-metric-bar>b{position:absolute;top:-2px;bottom:-2px;width:1.5px;
+  background:var(--vx-text-secondary);opacity:.55}
+
+/* ── Rangée de stat-tiles à halo (KPI hero) ──────────────────────────── */
+.vx-statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));
+  gap:10px;margin-top:8px}
+.vx-stat{position:relative;padding:12px 14px;border-radius:var(--vx-r);
+  background:radial-gradient(120% 140% at 0% 0%,rgba(201,205,212,.06),transparent 60%),var(--vx-surface-base);
+  border:1px solid var(--vx-border-soft)}
+/* alias -label/-value = -k/-v (filet CMP-02 : couvre tout émetteur legacy) */
+.vx-stat .vx-stat-k,.vx-stat .vx-stat-label{font:600 10px/1.2 var(--vx-font);letter-spacing:.08em;
+  text-transform:uppercase;color:var(--vx-text-muted);margin-bottom:6px}
+.vx-stat .vx-stat-v,.vx-stat .vx-stat-value{font:700 22px/1 var(--vx-font-mono);
+  font-variant-numeric:tabular-nums;color:var(--vx-text-primary)}
+.vx-stat .vx-stat-sub{font:500 10.5px/1.2 var(--vx-font);color:var(--vx-text-faint);margin-top:5px}
+.vx-stat[data-tone="pos"] .vx-stat-v{color:var(--vx-positive)}
+.vx-stat[data-tone="neg"] .vx-stat-v{color:var(--vx-negative)}
+.vx-stat[data-tone="brand"] .vx-stat-v{color:var(--vx-brand-strong)}
+
+/* ── Cadre radar + légende ───────────────────────────────────────────── */
+.vx-radar-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.vx-radar-legend{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;
+  font:600 11px/1 var(--vx-font);color:var(--vx-text-secondary);margin-top:2px}
+.vx-radar-legend span{display:inline-flex;align-items:center;gap:6px}
+.vx-radar-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.vx-verdict-line{display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:9px 12px;margin-top:10px;border-radius:var(--vx-r);
+  background:var(--vx-surface-0);border:1px solid var(--vx-border-faint);
+  font:600 12px/1.35 var(--vx-font);color:var(--vx-text-secondary)}
+.vx-verdict-line b{color:var(--vx-text-primary)}
+
+/* ── Barres divergentes autour d'un axe zéro (attribution P&L par position) ── */
+.vx-divbars{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+.vx-divbar{display:grid;grid-template-columns:52px 1fr 62px;align-items:center;gap:9px}
+.vx-divbar .db-name{font:600 11.5px/1 var(--vx-font-mono);color:var(--vx-text-secondary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vx-divbar .db-track{position:relative;height:12px;border-radius:6px;background:var(--vx-surface-0)}
+.vx-divbar .db-track::before{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;
+  background:var(--vx-border-strong);opacity:.7}
+.vx-divbar .db-track>i{position:absolute;top:1.5px;bottom:1.5px;border-radius:4px;transition:width .5s var(--vx-ease)}
+.vx-divbar .db-track>i.pos{left:50%;background:linear-gradient(90deg,var(--vx-positive-strong),var(--vx-positive))}
+.vx-divbar .db-track>i.neg{right:50%;background:linear-gradient(270deg,var(--vx-negative-strong),var(--vx-negative))}
+.vx-divbar .db-val{text-align:right;font:600 11.5px/1 var(--vx-font-mono);font-variant-numeric:tabular-nums}
+
+/* ── Barre empilée (composition : actions / options / cash) + légende ──── */
+.vx-stackbar{display:flex;height:16px;border-radius:8px;overflow:hidden;
+  background:var(--vx-surface-0);margin-top:8px;border:1px solid var(--vx-border-faint)}
+.vx-stackbar>i{height:100%;transition:width .6s var(--vx-ease);position:relative}
+.vx-stackbar>i+i{box-shadow:-1px 0 0 rgba(0,0,0,.35)}
+.vx-stackbar-legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:9px;
+  font:600 11.5px/1 var(--vx-font);color:var(--vx-text-secondary)}
+.vx-stackbar-legend span{display:inline-flex;align-items:center;gap:6px}
+.vx-stackbar-legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.vx-stackbar-legend b{color:var(--vx-text-primary);font-variant-numeric:tabular-nums}
+
+/* ── Barres de poids par position (allocation · surpondération · cash) ──── */
+.vx-wbars{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.vx-wbar{display:grid;grid-template-columns:118px 1fr 46px;align-items:center;gap:10px}
+.vx-wbar .wb-name{font:600 11.5px/1.2 var(--vx-font-mono);color:var(--vx-text-secondary);
+  display:flex;align-items:center;gap:6px;overflow:hidden}
+.vx-wbar .wb-tag{font:600 8.5px/1 var(--vx-font);letter-spacing:.05em;text-transform:uppercase;
+  color:var(--vx-warning);background:var(--vx-warning-soft);padding:2px 5px;border-radius:99px;white-space:nowrap}
+.vx-wbar .wb-track{position:relative;height:12px;border-radius:6px;background:var(--vx-surface-0);overflow:visible}
+.vx-wbar .wb-track>i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;
+  background:var(--vx-brand-gradient);transition:width .5s var(--vx-ease)}
+.vx-wbar .wb-track>b{position:absolute;top:-3px;bottom:-3px;width:1.5px;background:var(--vx-negative);opacity:.6}
+.vx-wbar[data-tone="over"] .wb-track>i{background:linear-gradient(90deg,var(--vx-warning),#e8b455)}
+.vx-wbar[data-tone="cash"] .wb-track>i{background:var(--vx-steel-3)}
+.vx-wbar[data-tone="cash"] .wb-name{color:var(--vx-text-muted)}
+.vx-wbar .wb-val{text-align:right;font:600 11.5px/1 var(--vx-font-mono);color:var(--vx-text-primary);
+  font-variant-numeric:tabular-nums}
+
+/* ── Jauge de confiance circulaire (Signals) ─────────────────────────── */
+.vx-confgauge{display:flex;flex-direction:column;align-items:center;gap:2px}
+.vx-confgauge svg{overflow:visible;display:block}
+.vx-confgauge .vx-cg-track{stroke:var(--vx-surface-4);fill:none}
+.vx-confgauge .vx-cg-arc{fill:none;stroke-linecap:round;
+  filter:drop-shadow(0 0 5px var(--_glow,rgba(201,205,212,.38)));
+  transition:stroke-dasharray .7s var(--vx-ease)}
+.vx-confgauge .vx-cg-dir{font:700 12px/1 var(--vx-font);letter-spacing:.03em}
+.vx-confgauge .vx-cg-pct{font:700 15px/1 var(--vx-font-mono);fill:var(--vx-text-primary);font-variant-numeric:tabular-nums}
+.vx-confgauge .vx-cg-lbl{font:600 9px/1 var(--vx-font);letter-spacing:.09em;
+  text-transform:uppercase;fill:var(--vx-text-muted)}
+
+/* ── Barre de fourchette (objectifs analystes : bas · médian · haut · prix) ── */
+.vx-rangebar{position:relative;height:7px;border-radius:99px;margin:30px 6px 40px;
+  background:linear-gradient(90deg,var(--vx-negative-soft) 0%,var(--vx-surface-4) 50%,var(--vx-positive-soft) 100%);
+  border:1px solid var(--vx-border-faint)}
+.vx-rangebar .rb-fill{position:absolute;top:0;bottom:0;border-radius:99px;
+  background:linear-gradient(90deg,var(--vx-negative),var(--vx-warning),var(--vx-positive));opacity:.5}
+.vx-rangebar .rb-tick{position:absolute;top:50%;width:2px;height:16px;transform:translate(-50%,-50%);
+  background:var(--vx-text-secondary);border-radius:2px}
+.vx-rangebar .rb-tick[data-kind="mean"]{height:22px;width:3px;background:var(--vx-brand-strong);
+  box-shadow:0 0 8px var(--vx-signal-glow)}
+.vx-rangebar .rb-tick[data-kind="price"]{height:24px;width:3px;background:var(--vx-text-primary)}
+.vx-rangebar .rb-lab{position:absolute;transform:translateX(-50%);white-space:nowrap;
+  font:600 10.5px/1 var(--vx-font-mono);color:var(--vx-text-muted);top:calc(100% + 8px)}
+.vx-rangebar .rb-lab[data-kind="mean"]{color:var(--vx-brand-strong);font-weight:700}
+.vx-rangebar .rb-lab[data-kind="price"]{color:var(--vx-text-primary);font-weight:700;top:-24px}
+.vx-rangebar .rb-lab-sub{display:block;font-size:9px;color:var(--vx-text-faint);text-transform:uppercase;
+  letter-spacing:.06em;margin-top:2px;font-weight:600}
+
+/* ── Barres comparatives (titre vs pairs vs médiane) ─────────────────── */
+.vx-cmpbars{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.vx-cmpbar{display:grid;grid-template-columns:52px 1fr 58px;align-items:center;gap:8px}
+.vx-cmpbar .cb-name{font:600 11px/1.2 var(--vx-font-mono);color:var(--vx-text-secondary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vx-cmpbar[data-self="1"] .cb-name{color:var(--vx-brand-strong)}
+.vx-cmpbar .cb-track{position:relative;height:9px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden}
+.vx-cmpbar .cb-track>i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;
+  background:var(--vx-steel-3);transition:width .5s var(--vx-ease)}
+.vx-cmpbar[data-self="1"] .cb-track>i{background:var(--vx-brand-gradient)}
+.vx-cmpbar .cb-val{font:600 11px/1 var(--vx-font-mono);color:var(--vx-text-secondary);text-align:right;
+  font-variant-numeric:tabular-nums}
+.vx-cmpbar[data-self="1"] .cb-val{color:var(--vx-text-primary)}
+.vx-cmp-med{position:relative;height:1px;margin:2px 0 0 60px;border-top:1px dashed var(--vx-border-strong)}
+
+/* ── Scorecard « profil » : cluster de mini-jauges radiales au coup d'œil ── */
+.vx-scoregauge{display:flex;flex-direction:column;align-items:center;gap:4px}
+.vx-scoregauge svg{overflow:visible;display:block}
+.vx-scoregauge .vx-cg-arc{stroke-linecap:round;filter:drop-shadow(0 0 5px var(--_glow,rgba(201,205,212,.30)));transition:stroke-dasharray .7s var(--vx-ease)}
+.vx-sg-val{font:700 21px/1 var(--vx-font-mono);font-variant-numeric:tabular-nums}
+.vx-sg-lbl{font:600 9.5px/1.15 var(--vx-font);letter-spacing:.05em;text-transform:uppercase;
+  color:var(--vx-text-muted);text-align:center;max-width:84px}
+.vx-gaugecluster{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.vx-scorecard{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px 24px;align-items:center}
+.vx-scorecard-side{display:flex;flex-direction:column;gap:10px;min-width:0}
+/* Meter horizontal (position 52 sem, pwin…) : piste + repère + valeur */
+.vx-meter{position:relative;height:8px;border-radius:99px;background:var(--vx-surface-0);margin:8px 0 4px;
+  border:1px solid var(--vx-border-faint)}
+.vx-meter>i{position:absolute;top:0;bottom:0;left:0;border-radius:99px;
+  background:var(--vx-brand-gradient);transition:width .6s var(--vx-ease)}
+.vx-meter>b{position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:2px;background:var(--vx-text-primary)}
+.vx-meter-row{display:flex;justify-content:space-between;font:600 10.5px/1 var(--vx-font);color:var(--vx-text-muted)}
+/* Barres de performance multi-horizon */
+.vx-perfbars{display:flex;gap:8px}
+.vx-perfbar{flex:1;text-align:center;padding:7px 4px;border-radius:var(--vx-r-sm);
+  background:var(--vx-surface-base);border:1px solid var(--vx-border-faint)}
+.vx-perfbar .pb-k{font:600 9px/1 var(--vx-font);letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-faint);display:block;margin-bottom:4px}
+.vx-perfbar .pb-v{font:700 13px/1 var(--vx-font-mono);font-variant-numeric:tabular-nums}
+.vx-perfbar .pb-bar{height:5px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden;margin:6px 2px 0}
+.vx-perfbar .pb-bar>i{display:block;height:100%;border-radius:99px;transition:width .5s var(--vx-ease)}
+
+/* ── Tuiles de mouvements & mini-cartes de recommandation (fini les lignes) ── */
+.vx-movergrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:9px}
+.vx-mover{position:relative;display:block;width:100%;padding:10px 12px;border-radius:var(--vx-r);
+  cursor:pointer;text-align:left;font:inherit;color:inherit;
+  background:linear-gradient(180deg,var(--vx-surface-raised),var(--vx-surface-base));
+  border:1px solid var(--vx-border-soft);overflow:hidden;
+  transition:transform .14s var(--vx-ease),border-color .18s var(--vx-ease),box-shadow .18s var(--vx-ease)}
+.vx-mover:hover{transform:translateY(-2px);border-color:var(--vx-border-default);
+  box-shadow:0 8px 22px rgba(0,0,0,.42)}
+.vx-mover .mv-sym{font:700 13.5px/1 var(--vx-font-mono);color:var(--vx-text-primary);letter-spacing:.02em}
+.vx-mover .mv-chg{font:700 16.5px/1.1 var(--vx-font-mono);font-variant-numeric:tabular-nums;margin-top:5px}
+.vx-mover .mv-sub{font:500 10.5px/1.35 var(--vx-font);color:var(--vx-text-faint);margin-top:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vx-mover .mv-sub b{color:var(--vx-text-secondary);font-weight:600}
+
+/* ── Halo premium opt-in sur une carte (accent discret en haut) ───────── */
+.vx-card--premium{position:relative;overflow:hidden}
+.vx-card--premium::after{content:"";position:absolute;inset:0 0 auto 0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,205,212,.45),transparent);
+  opacity:.7;pointer-events:none}
+.vx-card--premium:hover{border-color:var(--vx-border-default)}
+
+/* ── Identité premium GLOBALE : liseré d'accent devant chaque titre de
+   section + hover de carte plus profond. Additif, lifte toutes les pages
+   sans toucher au fond des cartes (préserve le halo hero). ───────────── */
+.vx-card-title,.vx-chart-title{position:relative}
+.vx-card-title::before,.vx-chart-title::before{
+  content:"";display:inline-block;width:3px;height:0.82em;border-radius:2px;
+  background:var(--vx-brand);margin-right:8px;vertical-align:-1px;opacity:.9;
+  box-shadow:0 0 6px var(--vx-signal-glow)}
+.vx-card:hover{box-shadow:var(--vx-shadow-2)}
+/* En-tête de page : halo radial discret derrière le grand titre */
+.vx-content>h1:first-of-type,.vx-page-head{position:relative}
+
+/* ── Glow d'angle subtil sur TOUTES les tuiles KPI (additif) ──────────
+   Unifie Marchés, Portefeuille, Performance sans toucher les pages : le
+   dégradé se superpose au fond de carte existant (spécificité .vx-card.vx-kpi
+   + chargement tardif → gagne uniquement sur background-image). */
+.vx-card.vx-kpi{
+  background-image:radial-gradient(130% 140% at 0% 0%,rgba(201,205,212,.055),transparent 58%)}
+.vx-card.vx-kpi:hover{border-color:var(--vx-border-default);transform:translateY(-1px)}
+
+@media (max-width:640px){
+  .vx-metricgrid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
+  .vx-metric .vx-metric-v{font-size:17px}
+}

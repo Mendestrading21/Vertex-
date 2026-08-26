@@ -656,4 +656,55 @@
     ? requestIdleCallback(_warm, { timeout: 2500 }) : setTimeout(_warm, 900));
   if (document.readyState === 'complete') _schedule();
   else window.addEventListener('load', _schedule, { once: true });
+
+  /*  VX.tile — systeme de tuiles de la refonte Black Glass, apporte par
+      l'integration de `vertex-live`. Les pages du kit l'appellent ; sans
+      lui, chaque tuile de metrique et de statistique serait vide.
+
+      La BASE de ce fichier vient de `main` : elle porte VX.swr, VX.store,
+      VX.fetch (cache + invalidation), VX.freshness, VX.prices, VX.regime,
+      VX.page — dix sous-systemes que `vertex-live` n'a pas. Prendre le
+      fichier de live en entier, comme je l'avais fait d'abord, jetait toute
+      cette couche de continuite ; `tests/test_continuity_data.py` l'a dit.  */
+  VX.tile = {
+    /* Métrique riche : label (+ title) + valeur (+ unité) (+ chip de comparaison)
+       (+ mini-barre 0-100 avec repère médian optionnel). Les options additives
+       cmp / mid / kTitle sont OFF par défaut → rétrocompatible. */
+    metric: function (o) {
+      o = o || {};
+      var v = VX.fmt.nd(o.v);
+      var absent = (v === '—');
+      var u = o.unit ? '<span class="vx-metric-u">' + VX.esc(o.unit) + '</span>' : '';
+      var cmp = (o.cmp && !absent) ? '<div class="vx-metric-cmp">' + o.cmp + '</div>' : '';
+      var mid = (o.mid != null) ? '<b style="left:' + (o.mid | 0) + '%"></b>' : '';
+      var bar = (o.bar != null && !absent)
+        ? '<div class="vx-metric-bar"><i style="width:' + Math.max(3, Math.min(100, o.bar)) + '%"></i>' + mid + '</div>' : '';
+      var kt = o.kTitle ? ' title="' + VX.esc(o.kTitle) + '"' : '';
+      return '<div class="vx-metric" data-tone="' + (absent ? '' : _toneAttr(o.tone)) + '">'
+        + '<span class="vx-metric-k"' + kt + '>' + VX.esc(o.k) + '</span>'
+        + '<span class="vx-metric-v">' + v + u + '</span>' + cmp + bar + '</div>';
+    },
+    /* Stat à halo : label + valeur (+ sous-légende) (+ extra, ex. sparkline SVG).
+       Option additive `vfs` (taille de valeur, px) OFF par défaut → rétrocompatible. */
+    stat: function (o) {
+      o = o || {};
+      var vstyle = o.vfs ? ' style="font-size:' + (o.vfs | 0) + 'px"' : '';
+      var sub = (o.sub != null && o.sub !== '') ? '<div class="vx-stat-sub">' + VX.esc(o.sub) + '</div>' : '';
+      return '<div class="vx-stat" data-tone="' + _toneAttr(o.tone) + '">'
+        + '<div class="vx-stat-k">' + VX.esc(o.k) + '</div>'
+        + '<div class="vx-stat-v"' + vstyle + '>' + VX.fmt.nd(o.v) + '</div>' + sub + (o.extra || '') + '</div>';
+    },
+    /* KPI dans une carte compacte : label + valeur + delta (ton par classe). */
+    kpi: function (o) {
+      o = o || {};
+      var tc = _toneCls(o.tone);
+      var span = o.span ? ' style="grid-column:span ' + (o.span | 0) + '"' : '';
+      var delta = (o.delta != null && o.delta !== '')
+        ? '<span class="vx-kpi-delta ' + (tc || 'vx-muted') + '">' + o.delta + '</span>' : '';
+      return '<div class="vx-card vx-card--compact vx-kpi"' + span + '>'
+        + '<span class="vx-kpi-label">' + VX.esc(o.label) + '</span>'
+        + '<span class="vx-kpi-value' + (tc ? ' ' + tc : '') + '">' + VX.fmt.nd(o.value) + '</span>' + delta + '</div>';
+    },
+  };
+
 })();

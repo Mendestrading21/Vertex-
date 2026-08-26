@@ -9,15 +9,10 @@ from __future__ import annotations
 
 SHELL_VERSION = 'vx-shell-1'
 
-# Navigation principale — EXACTEMENT HUIT espaces canoniques (décision produit
-# PR n°2). Registre UNIQUE de la navigation du redesign. Ordre = parcours de
-# décision. Le DERNIER élément (Système) est épinglé en pied de sidebar.
-# Intelligence (→ Analyse) et Performance (→ Journal + Portefeuille) ne sont plus
-# des espaces autonomes ; leurs pages restent joignables hors nav le temps de la
-# refonte de contenu. Aucun 9e espace ne peut être ajouté sans fusion/suppression.
+# Navigation principale (§10). Marchés est FUSIONNÉ dans le Dashboard (/#markets) —
+# plus d'entrée dédiée : le Dashboard porte indices, taux, secteurs, breadth, VIX.
 PRIMARY_NAV = (
-    {'id': 'briefing', 'label': "Aujourd'hui", 'href': '/', 'icon': 'home'},
-    {'id': 'markets', 'label': 'Marchés', 'href': '/markets', 'icon': 'globe'},
+    {'id': 'briefing', 'label': 'Dashboard', 'href': '/', 'icon': 'home'},
     {'id': 'opportunities', 'label': 'Opportunités', 'href': '/opportunities', 'icon': 'radar'},
     {'id': 'analysis', 'label': 'Analyse', 'href': '/analysis', 'icon': 'chart'},
     {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
@@ -139,9 +134,7 @@ def _topbar(space_label: str, sub_label: str = '', space_href: str = '/') -> str
 
 
 def _mobile_bar(active: str) -> str:
-    # 5 espaces prioritaires du parcours de décision quotidien ; le reste
-    # (Options, Journal, Système) via « Plus ». Conçu pour 390px sans débordement.
-    order = ('briefing', 'markets', 'opportunities', 'analysis', 'portfolio')
+    order = ('briefing', 'opportunities', 'portfolio', 'analysis', 'performance')
     links = []
     for it in PRIMARY_NAV:
         if it['id'] not in order:
@@ -239,6 +232,9 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/static/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/GeneralSans-Regular.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/GeneralSans-Medium.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/JetBrainsMono-Regular.woff2">
 <link rel="stylesheet" href="/static/vertex/css/fonts.css">
 <link rel="stylesheet" href="/static/vertex/css/tokens.css">
 <link rel="stylesheet" href="/static/vertex/css/base.css">
@@ -255,7 +251,8 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/polish.css">
 <link rel="stylesheet" href="/static/vertex/css/control-surface.css">
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
-<link rel="stylesheet" href="/static/vertex/css/neon-glass.css">
+<link rel="stylesheet" href="/static/vertex/css/premium.css">
+<link rel="stylesheet" href="/static/vertex/css/glass.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
@@ -275,9 +272,10 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <script src="/static/vertex/js/vx-core.js"></script>
 <script src="/static/vertex/js/vx-entities.js"></script>
 <script src="/static/vertex/js/vx-shell.js"></script>
-<script src="/static/vertex/js/vx-router.js"></script>
+<script src="/static/vertex/js/ui/inspector-drawer.js" defer></script>
 <script src="/static/vertex/js/live-updates.js" defer></script>
 <script src="/static/vertex/js/charts/chart-theme-obsidian-copper.js" defer></script>
 <script src="/static/vertex/js/charts/chart-core.js" defer></script>
+<script src="/static/vertex/js/charts/radar-chart.js" defer></script>
 {page_js}
 </body></html>'''

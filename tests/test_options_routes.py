@@ -137,7 +137,7 @@ def test_options_page_renders_as_primary_space(client):
     assert 'data-nav-id="options"' in html
     assert re.search(r'data-nav-id="options"[^>]*aria-current="page"', html) \
         or 'data-nav-id="options" aria-current="page"' in html
-    # huit espaces canoniques dans la nav principale (PR n°2)
+    # huit espaces dans la nav principale (Marchés fusionné dans le Dashboard)
     assert len(re.findall(r'class="vx-nav-item"', html)) == 8
 
 

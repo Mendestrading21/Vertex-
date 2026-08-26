@@ -9,7 +9,7 @@ d'erreur), `test_all_legacy_routes_redirect` (301 + query préservée),
 | Route | Module | Sous-vues (`?view=`) |
 |---|---|---|
 | `/` | `briefing.render` | (unique, personnalisable) |
-| `/markets` | `markets_page.render` | overview, macro, sectors, breadth, volatility |
+| `/markets` | redirection 302 → `/#ancre` du Dashboard (fusion : sectors→`/#sectors`, macro→`/#markets`, breadth/volatility→`/#pulse`) | — |
 | `/opportunities` | `opportunities_page.render` | radar, stocks, options, anomalies, calendar |
 | `/portfolio` | `portfolio_page.render` | team, positions, risk, watchlist |
 | `/analysis` | `analysis_page.render_index` | recherche (`view=compare` accepté, non exploité — limitation n° 11) |
@@ -26,7 +26,7 @@ servie par Flask (Chart.js, icônes).
 40 entrées `LEGACY_REDIRECTS` + 2 routes paramétrées :
 
 `/daily→/` · `/analyse→/analysis` · `/news→/` ·
-`/calendar→/opportunities?view=calendar` · `/semaine→/markets` · `/brief→/` ·
+`/calendar→/opportunities?view=calendar` · `/semaine→/` · `/brief→/` ·
 `/stocks→/analysis` · `/compare→/analysis?view=compare` ·
 `/comparateur→/analysis?view=compare` · `/entreprises→/analysis` ·
 `/analyse-entreprise→/analysis` · `/strategie→/portfolio` ·
@@ -36,7 +36,7 @@ servie par Flask (Chart.js, icônes).
 `/options→/opportunities?view=options` ·
 `/options-lab→/opportunities?view=options` ·
 `/options-desk→/opportunities?view=options` ·
-`/sectors→/markets?view=sectors` · `/heatmap→/markets?view=sectors` ·
+`/sectors→/#sectors` · `/heatmap→/#sectors` ·
 `/catalysts→/opportunities?view=calendar` ·
 `/catalyseurs→/opportunities?view=calendar` ·
 `/anomalies→/opportunities?view=anomalies` ·

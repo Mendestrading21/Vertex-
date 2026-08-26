@@ -3,6 +3,7 @@
 (function(){const C=window.VXCharts=window.VXCharts||{};
 C.drawdown=function(values){let peak=-Infinity;return values.map(v=>{peak=Math.max(peak,v);return peak>0?(v/peak-1)*100:0;});};
 C.drawdownCard=function(host,opts){
+  if(!C.hasData(opts.values)&&!C.hasData(opts.drawdowns))return C.emptyCard(host,opts,opts.emptyReason||'Drawdown indisponible.');
   const dd=opts.drawdowns||C.drawdown(opts.values||[]);
   /* LOT 195 (tournée TV) : chip Min = le PIRE drawdown réel de la série. */
   return C.card(host,Object.assign({},opts,{render:(cv)=>C.area(cv,opts.labels,dd,{color:C.colors.negative,yFmt:(v)=>v.toFixed(0)+' %',extremes:'min'})}));};

@@ -35,7 +35,7 @@ sont neutralisées (43 décorateurs commentés) et redirigées.
 
 ## 3. Navigation & mapping des routes
 
-8 espaces : `/` Briefing · `/markets` · `/opportunities` · `/portfolio` ·
+8 espaces (Marchés FUSIONNÉ dans le Dashboard) : `/` Dashboard · `/opportunities` · `/portfolio` ·
 `/analysis(/<sym>)` · `/performance` · `/intelligence` · `/system`, chacun
 avec ses sous-vues `?view=` (§10).
 
@@ -43,7 +43,7 @@ Redirections 301 (avec conservation ticker/vue/filtres) — extraits :
 `/titre/<sym>`→`/analysis/<sym>` · `/strategie`→`/portfolio` ·
 `/ma-page`,`/watchlist`,`/suivi`→`/portfolio?view=watchlist` ·
 `/options*`→`/opportunities?view=options` · `/sectors`,`/heatmap`→
-`/markets?view=sectors` · `/catalysts`→`/opportunities?view=calendar` ·
+`/#sectors` · `/catalysts`→`/opportunities?view=calendar` ·
 `/anomalies`→`/opportunities?view=anomalies` · `/journal`,`/decisions`→
 `/performance?view=journal` · `/review`→`/intelligence?view=committee` ·
 `/vault`,`/archive`→`/system?view=archive` · `/settings`,`/health`→`/system` ·

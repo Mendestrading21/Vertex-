@@ -84,7 +84,10 @@ def _tabs(active: str) -> str:
         f'<a class="vx-tab" role="tab" href="?view={vid}" '
         f'aria-selected="{"true" if vid == active else "false"}">{label}</a>'
         for vid, label in VIEWS)
-    return f'<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Système">{tabs}</nav>'
+    # Référence visuelle (§50) — lien vers la page Design System, à droite.
+    ds = ('<a class="vx-tab" href="/design-system" style="margin-left:auto;color:var(--vx-copper-light)" '
+          'title="Référence visuelle BLACK GLASS">Design System</a>')
+    return f'<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Système">{tabs}{ds}</nav>'
 
 
 def _header(active: str) -> str:
@@ -637,17 +640,31 @@ async function loadConnections(){
   if(live){
     const doms=live.domains||{};
     const names=Object.keys(doms);
-    const freshCount=names.filter(k=>doms[k].fresh||doms[k].state==='fresh'||doms[k].state==='live').length;
+    const freshCount=names.filter(k=>doms[k].fresh||['fresh','live','ok'].includes(doms[k].state)).length;
     const errs=(live.errors||[]);
     ($('vx-conn-sync-badge')||{}).innerHTML=statusBadge(
       errs.length?'delayed':(freshCount===names.length&&names.length?'live':'delayed'),
       freshCount+' / '+names.length+' domaines frais');
-    ($('vx-conn-sync')||{}).innerHTML=
+    const liveOn=live.mode==='live';
+    const diagItem=(ok,title,detail)=>{
+      const c=ok===true?'var(--vx-positive)':ok===false?'var(--vx-negative)':'var(--vx-warning)';
+      const mark=ok===true?'✓':ok===false?'✕':'○';
+      return `<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px">`
+        +`<span style="color:${c};font-weight:700;flex:0 0 auto">${mark}</span>`
+        +`<div style="min-width:0"><div style="font-weight:600;color:var(--vx-text-secondary)">${title}</div>`
+        +`<div class="vx-meta">${detail}</div></div></div>`;};
+    $('vx-conn-sync').innerHTML=
       kv('Mode',esc(live.mode||'—'))
       +kv('Derni&egrave;re synchro',VX.fmt.ago(live.last_refresh))
       +kv('Domaines',names.map(esc).join(', ')||'—')
       +(errs.length?`<div class="vx-error-banner vx-mt2">⚠ ${errs.map(e=>esc(e.domain+' : '+e.error)).join('<br>')}</div>`:'')
-      +`<div class="vx-card-footer">${VX.updateIndicator(live.generated?live.generated*1000:Date.now(),'/api/live/status','delayed')}
+      +`<div class="vx-mt3" style="border-top:1px solid var(--vx-border-faint);padding-top:10px">`
+      +`<div class="vx-meta" style="text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Passer en pleinement live — à vérifier côté ton compte IBKR</div>`
+      +diagItem(liveOn,'TWS / IB Gateway ouvert + API activée','Édition → Paramètres → API : « Enable ActiveX and Socket Clients », ports 7496/7497 (live) ou 7497/4002 (paper).')
+      +diagItem(null,'Abonnement Reuters (fondamentaux)','Coche « Reuters Worldwide Fundamentals » dans IBKR Market Data → lève l’erreur 10358 et remplace le repli yfinance par des fondamentaux temps réel.')
+      +diagItem(null,'Abonnement Nasdaq-100 (NDX)','Sans cet abonnement, le Nasdaq reste en différé (affiché honnêtement, jamais mélangé). Abonne-toi pour le temps réel homogène.')
+      +`<div class="vx-meta vx-mt2">Hors séance, les cotations IBKR passent en différé/frozen — c’est normal, pas une panne.</div></div>`
+      +`<div class="vx-card-footer">${VX.updateIndicator(live.generated?live.generated*1000:Date.now(),'/api/live/status',liveOn?'live':'delayed')}
         <a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/system?view=data">D&eacute;tail par domaine →</a></div>`;
   }else{
     ($('vx-conn-sync')||{}).innerHTML=VX.states.error('Live Engine injoignable');
@@ -671,14 +688,18 @@ async function loadConnections(){
 
   /* Moteurs */
   if(st&&Array.isArray(st.engines)&&st.engines.length){
-    ($('vx-conn-engines')||{}).innerHTML='<div class="vx-flex vx-wrap vx-gap2">'
+    /* Moteurs en stat-tiles à halo (au lieu de badges plats) : nom + état
+       color-codé. Jamais « prêt » si le moteur n'a aucune donnée exploitable. */
+    $('vx-conn-engines').innerHTML='<div class="vx-statrow">'
       +st.engines.map(en=>{
         const loaded=en.status==='ok'||en.ok===true;
         const hasData=!!(en.last_success||en.last_run||en.fresh);
-        /* jamais « OK » si le moteur n'a aucune donnée exploitable */
-        const state=!loaded?['offline','KO']:(hasData?['live','prêt']:['frozen','chargé — sans données']);
-        return `<span class="vx-badge vx-badge-status" data-status="${state[0]}"
-          title="${esc(en.last_error||en.last_success||'')}">${esc(en.name||'moteur')} · ${state[1]}</span>`;
+        const state=!loaded?['neg','KO','hors service']:(hasData?['pos','Prêt','opérationnel']:['','Chargé','sans données']);
+        const dotc=state[0]==='pos'?'var(--vx-positive)':state[0]==='neg'?'var(--vx-negative)':'var(--vx-warning)';
+        return `<div class="vx-stat" data-tone="${state[0]}" title="${esc(en.last_error||en.last_success||'')}">
+          <div class="vx-stat-k">${esc(en.name||'moteur')}</div>
+          <div class="vx-stat-v" style="font-size:15px;display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:99px;background:${dotc};flex:0 0 auto"></span>${state[1]}</div>
+          <div class="vx-stat-sub">${state[2]}</div></div>`;
       }).join('')+'</div>'
       +((st.warnings||[]).length?`<div class="vx-stale-banner vx-mt3">⏳ ${st.warnings.map(esc).join(' · ')}</div>`:'')
       +`<div class="vx-mt3"><button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-tech-endpoints">Détails techniques (endpoints) →</button></div>`;
@@ -810,16 +831,16 @@ async function loadData(){
     let worstKey=null;
     if(knownAges.length>=2)worstKey=knownAges.reduce((a,b)=>Number(doms[a].age_s)>=Number(doms[b].age_s)?a:b);
     const tile=(k)=>{const d=doms[k]||{};
-      const fresh=d.fresh===true||d.state==='fresh'||d.state==='live';
+      const fresh=d.fresh===true||['fresh','live','ok'].includes(d.state);
       const off=d.state==='offline';
       const col=fresh?'--vx-positive':(off?'--vx-negative':'--vx-warning');
       const soft=fresh?'rgba(57,184,120,.13)':(off?'rgba(220,98,85,.13)':'rgba(204,137,44,.13)');
       const age=d.age_s===null||d.age_s===undefined?'—':(d.age_s<120?Math.round(d.age_s)+' s':Math.round(d.age_s/60)+' min');
       const lbl=fresh?'frais':(off?'hors ligne':'différé');
-      return `<div role="img" aria-label="${esc(k)} ${lbl} ${age}" style="padding:10px 12px;border-radius:9px;display:flex;flex-direction:column;gap:1px;background:${soft};border:${k===worstKey?'1.6px':'1px'} solid var(${col},#9d978e)">
-        <span style="font-size:11px;color:var(--vx-text-secondary,#BABABA);text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</span>
-        <span style="font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(${col},#9d978e)">${age}</span>
-        <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#989092)">${lbl}</span></div>`;};
+      return `<div role="img" aria-label="${esc(k)} ${lbl} ${age}" style="padding:10px 12px;border-radius:9px;display:flex;flex-direction:column;gap:1px;background:${soft};border:1px solid var(${col},#8f8a83)">
+        <span style="font-size:11px;color:var(--vx-text-secondary,#b7b2aa);text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</span>
+        <span style="font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;color:var(${col},#8f8a83)">${age}</span>
+        <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--vx-text-muted,#817d77)">${lbl}</span></div>`;};
     const heat=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-bottom:14px" aria-label="Heatmap de fraîcheur des données">${Object.keys(doms).map(tile).join('')}</div>`;
     /* LOT 142 : l'age n'est plus un chiffre nu — mini-barre de VERRE de
        STALENESS relative (echelle = age max connu ; frais -> positive
@@ -845,7 +866,7 @@ async function loadData(){
       <thead><tr><th>Domaine</th><th>&Eacute;tat</th><th class="vx-num">&Acirc;ge</th><th>D&eacute;tail</th></tr></thead><tbody>`
       +Object.keys(doms).map(k=>{
         const d=doms[k]||{};
-        const fresh=d.fresh===true||d.state==='fresh'||d.state==='live';
+        const fresh=d.fresh===true||['fresh','live','ok'].includes(d.state);
         const status=fresh?'live':(d.state==='offline'?'offline':'delayed');
         const age=d.age_s===null||d.age_s===undefined?'—'
           :(d.age_s<120?Math.round(d.age_s)+' s':Math.round(d.age_s/60)+' min');

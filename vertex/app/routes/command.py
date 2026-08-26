@@ -76,7 +76,10 @@ def api_command():
             top_options.append({'symbol': p['symbol'], 'dir': d, 'label': leg['label'],
                                 'strike': leg['strike'], 'premium': leg['premium'],
                                 'prob': (sc.get('prob') or {}).get('pct'),
-                                'except': (sc.get('except') or {}).get('pct')})
+                                'except': (sc.get('except') or {}).get('pct'),
+                                # champs RÉELS du moteur (jamais inventés) → carte enrichie
+                                'dte': leg.get('dte'), 'delta': leg.get('delta'),
+                                'breakeven': leg.get('breakeven'), 'spot': p.get('price')})
     # alertes rouges (risk manager, niveau marché)
     alerts = []
     if roro == 'RISK-OFF':

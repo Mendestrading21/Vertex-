@@ -26,6 +26,50 @@ from vertex.strategy import executive_engine as _executive
 ALERTS = AlertEngine()
 
 
+def build_executive_decision(sym: str, scan_state: dict):
+    """Construit le packet moteur + rend la décision exécutive pour <sym>.
+
+    Source UNIQUE du verdict — réutilisée par l'API décision ET l'analyste IA,
+    pour qu'aucun verdict ne diverge entre le dossier et l'interprétation Claude.
+    Retourne (packet, resp) ou (None, None) si le titre est absent du scan.
+    """
+    sym = (sym or '').upper()
+    detail = (scan_state.get('detail') or {}).get(sym) or {}
+    if not detail:
+        return None, None
+    plan = detail.get('plan') or {}
+    source = scan_state.get('source') or ''
+    packet = {
+        'symbol': sym,
+        'fundamental': {'score': detail.get('st_fund') or detail.get('fund_score')},
+        'catalysts': {'score': 60 if detail.get('earnings_dte') is not None else None},
+        'technical': {'score': detail.get('score'),
+                      'reward_risk': detail.get('rr') or (plan.get('rr') if isinstance(plan, dict) else None),
+                      'timing_score': detail.get('st_timing'),
+                      'overextended': (detail.get('ext_atr') or 0) >= 2.5},
+        'sentiment': {'score': detail.get('rs')},
+        'anomalies': [],
+        'data_quality': {'overall': 'RECENT' if source and source != 'demo' else 'MISSING',
+                         'actionable_allowed': bool(source and source != 'demo')},
+        'reconciliation': {'actionable_allowed': True},
+        'guard': {'blocking_rules': [], 'mandatory_reviews': []},
+    }
+    try:
+        market = scan_state.get('market') or {}
+        inputs = {'index_trend': {'TREND': 'UP', 'CHOP': 'FLAT'}.get(market.get('regime'),
+                                                                     market.get('spy_trend')),
+                  'breadth_pct': market.get('breadth'), 'vix': market.get('vix')}
+        packet['market_regime'] = classify_regime(inputs)
+    except Exception:
+        packet['market_regime'] = {}
+    resp = _executive.decide(packet, _constitution.load_profile())
+    # Fraîcheur RÉELLE du scan (jamais l'heure du navigateur) — le verdict dérive de
+    # scan_state['detail'], aussi vieux que le dernier scan.
+    if isinstance(resp, dict):
+        resp['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
+    return packet, resp
+
+
 def make_blueprint(scan_state: dict) -> Blueprint:
     bp = Blueprint('strategy_os', __name__)
 
@@ -42,13 +86,12 @@ def make_blueprint(scan_state: dict) -> Blueprint:
 
     @bp.route('/api/strategy/decision/<sym>')
     def strategy_decision(sym):
-        sym = sym.upper()
-        detail = (scan_state.get('detail') or {}).get(sym) or {}
-        if not detail:
+        packet, resp = build_executive_decision(sym, scan_state)
+        if packet is None:
             # 200 + available:false : état applicatif honnête (pas une erreur
             # transport) — un 404 pollue la console navigateur à chaque fiche.
             return jsonify({'available': False,
-                            'error': f'{sym} absent du scan courant',
+                            'error': f'{sym.upper()} absent du scan courant',
                             'final_decision': 'ATTENDRE',
                             'reason': 'aucune donnée — impossible de décider'}), 200
         packet = _decision_packet.build(sym, detail, scan_state)
@@ -108,10 +151,54 @@ def make_blueprint(scan_state: dict) -> Blueprint:
             snap = _pmodels.PortfolioSnapshot(positions=positions, cash=cash,
                                               provenance='REAL', peak_equity=peak)
         profile = _profile()
-        risk = risk_engine.portfolio_risk(snap, profile)
+        # ── Greeks RÉELS du desk (modelGreeks IBKR persistés) — jamais estimés ──
+        from vertex.options import on_demand as _od
+        _greeks = _od.desk_greeks(body.get('option_positions') or [])
+        _legs = _greeks.get('legs') or []
+        risk = risk_engine.portfolio_risk(snap, profile,
+                                          options_greeks=_legs if _legs else None)
+        # ── Enrichissement stress avec des données RÉELLES du scan (jamais inventées) ──
+        # Secteur : réel (yfinance via le scan). Nasdaq : classification par secteur —
+        # Technology + Communication Services = cœur tech/comm du NDX (hypothèse documentée,
+        # pas un chiffre inventé). Taux / vega / résultats : laissés à None → le moteur les
+        # marque « non estimé » plutôt que d'afficher un faux 0.
+        _det = scan_state.get('detail') or {}
+        _sector_of = {}
+        for p in snap.positions:
+            _sector_of[p.symbol] = (p.sector or (_det.get(p.symbol) or {}).get('sector') or 'Inconnu')
+        _NDX_SECTORS = {'Technology', 'Communication Services'}
+        _nasdaq_exposure = {p.symbol: (_sector_of.get(p.symbol) in _NDX_SECTORS)
+                            for p in snap.positions}
+        stress = stress_tests.run_stress_tests(
+            snap, profile, sector_of=_sector_of, nasdaq_exposure=_nasdaq_exposure,
+            options_vega_value=_greeks.get('vega_usd'))
+        # Le scan ne porte pas les dates de résultats → on n'affiche PAS un faux 0 :
+        # le scénario « gap résultats » devient honnêtement « inconnu ».
+        _has_earn = any(isinstance((_det.get(p.symbol) or {}).get('earnings_dte'), (int, float))
+                        for p in snap.positions)
+        if not _has_earn and 'EARNINGS_GAP_ADVERSE' in stress.get('scenarios', {}):
+            stress['scenarios']['EARNINGS_GAP_ADVERSE'] = {
+                'impact_pct': None,
+                'note': 'dates de résultats non disponibles dans le scan — non estimé'}
+            stress['worst_case_pct'] = min(
+                (v['impact_pct'] for v in stress['scenarios'].values()
+                 if v.get('impact_pct') is not None), default=None)
         return jsonify({'team': team_view(snap, profile), 'risk': risk,
                         'guard': portfolio_guard.guard_rules(risk, profile),
-                        'stress': stress_tests.run_stress_tests(snap, profile)})
+                        'stress': stress})
+
+    @bp.route('/api/portfolio/greeks', methods=['POST'])
+    def portfolio_greeks():
+        """Greeks AGRÉGÉS du desk depuis les greeks BROKER (modelGreeks IBKR) persistés —
+        jamais estimés. POST {option_positions:[{sym,exp,strike,right,qty}]}. Jambe non cotée
+        (hors fenêtre tirée / chaîne pas chargée) → None honnête ; `priced`/`greeks_partial`
+        signalent la couverture. Lecture seule, non bloquant."""
+        from vertex.options import on_demand as _od
+        body = request.get_json(silent=True) or {}
+        g = _od.desk_greeks(body.get('option_positions') or [])
+        g['note'] = ('greeks du broker (IBKR) sur les jambes dont la chaîne est chargée ; '
+                     'ouvre la fiche options d’un titre pour charger sa chaîne')
+        return jsonify(g)
 
     @bp.route('/api/alerts/active')
     def alerts_active():

@@ -1,0 +1,557 @@
+/* Vertex — GLASS : « Terminal institutionnel — verre sombre ». Couche additive
+   chargée EN DERNIER. Redéfinit l'apparence sans renommer aucune classe/symbole.
+   Principes : fond noir/graphite neutre ; surfaces en VERRE gris translucide
+   (blur discret + bordures argent fines + reflet + ombre douce) ; BLANC/GRIS/
+   ARGENT primaire ; sémantique STRICTE vert=positif / rouge=négatif / orange=
+   incertitude ; AUCUN bleu, aucun accent décoratif. Le vert n'est plus l'identité :
+   les usages « marque » (actif, focus, primaire) passent à l'argent. */
+
+/* ══════════════════════════════════════════════════════════════════
+   1) TOKENS — dé-greening (gris froid neutre) + verre + neutralisation marque
+   Les hex figés par les tests restent dans tokens.css ; ici on ne surcharge
+   que des tokens NON figés (surfaces/bordures/texte/gradients/marque-UI).
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  /* Fonds / graphites → gris neutre (obsidian-950 #040504 figé : inchangé) */
+  --vx-obsidian-900:#08090b;
+  --vx-obsidian-850:#0b0c0e;
+  --vx-obsidian-800:#0e0f12;
+  --vx-graphite-900:#101216;
+  --vx-graphite-850:#14161a;
+  --vx-graphite-800:#1a1d22;
+  --vx-graphite-750:#20242a;
+  --vx-graphite-700:#262a30;
+  /* Surfaces neutres */
+  --vx-surface-0:#0b0c0f;
+  --vx-surface-base:#101216;
+  --vx-surface-raised:#15171c;
+  --vx-surface-elevated:#1b1e23;
+  --vx-surface-hover:#232830;
+  --vx-surface-4:#20242a;
+  /* Bordures gris argent très fines */
+  --vx-border-faint:rgba(222,227,237,.05);
+  --vx-border-soft:rgba(222,227,237,.09);
+  --vx-border-default:rgba(222,227,237,.14);
+  --vx-border-strong:rgba(222,227,237,.22);
+  /* Texte dégreené */
+  --vx-text-primary:#f3f5f8;
+  --vx-text-secondary:#b7bcc4;
+  --vx-text-muted:#828892;
+  --vx-text-faint:#5c626b;
+  /* Topbar/sidebar neutres */
+  --vx-topbar:rgba(12,13,16,.7);
+
+  /* ── VERRE ── */
+  --vx-glass-1:rgba(24,26,31,.62);       /* carte principale */
+  --vx-glass-2:rgba(32,35,41,.62);       /* secondaire / élevée */
+  --vx-glass-3:rgba(46,50,58,.66);       /* critique / sélectionnée */
+  --vx-glass-border:rgba(222,227,237,.10);
+  --vx-glass-border-strong:rgba(222,227,237,.18);
+  --vx-glass-sheen:inset 0 1px 0 rgba(255,255,255,.055);
+  --vx-blur-sm:8px;
+  --vx-blur-md:16px;
+  --shadow-card:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.38);
+  --shadow-float:0 20px 60px rgba(0,0,0,.55);
+
+  /* Alias nommés-contrat (VERTEX_GLASS_VISUAL_CONTRACT) — mêmes valeurs,
+     vocabulaire du contrat. Non destructif : les surfaces internes restent
+     pilotées par --vx-glass-1/2/3, ces alias servent aux classes .vx-glass-*. */
+  --vx-glass-subtle:rgba(255,255,255,.025);          /* fond quasi plat (sous-surface) */
+  --vx-glass-card:var(--vx-glass-1);                 /* carte principale */
+  --vx-glass-elevated:var(--vx-glass-2);             /* élevée / secondaire */
+  --vx-glass-hover:var(--vx-glass-3);                /* survol d'une surface interactive */
+  --vx-glass-critical:var(--vx-glass-3);             /* critique / sélectionnée */
+  --vx-glass-border-faint:rgba(222,227,237,.055);    /* bord argent très discret */
+  --vx-glass-blur-sm:var(--vx-blur-sm);
+  --vx-glass-blur-md:var(--vx-blur-md);
+  --vx-glass-blur-lg:24px;
+
+  /* ── Neutralisation de la marque (argent) — le vert reste au positif ── */
+  --vx-silver:#c9cdd4;
+  --vx-silver-soft:rgba(201,205,212,.12);
+  --vx-silver-line:rgba(201,205,212,.28);
+  --vx-brand:var(--vx-silver);
+  --vx-brand-strong:#e6e9ee;
+  --vx-brand-hover:#e6e9ee;
+  --vx-brand-soft:var(--vx-silver-soft);
+  --vx-brand-gradient:linear-gradient(135deg,#3a3f47 0%,#23262c 100%);
+  --vx-signal-soft:var(--vx-silver-soft);
+  --vx-signal-glow:rgba(201,205,212,.16);
+  --vx-glow-brand:0 0 0 1px rgba(201,205,212,.18),0 4px 20px rgba(201,205,212,.06);
+  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(222,227,237,.04),transparent 68%);
+  --vx-info:var(--vx-silver);
+
+  /* Rampe « signal/orange/copper » (ancienne identité VERTE) → argent/graphite.
+     Le vert ne subsiste que via --vx-positive (sémantique). Les hex figés
+     restent dans tokens.css ; ici on ne change que la valeur d'exécution. */
+  --vx-signal-950:#191b1f;--vx-signal-900:#202329;--vx-signal-800:#2b2f36;
+  --vx-signal-700:#3a3f47;--vx-signal-600:#565c66;--vx-signal-500:#c9cdd4;
+  --vx-signal-400:#dfe2e7;--vx-signal-300:#eef0f3;
+  --vx-orange-950:var(--vx-signal-950);--vx-orange-900:var(--vx-signal-900);
+  --vx-orange-850:var(--vx-signal-800);--vx-orange-800:var(--vx-signal-800);
+  --vx-orange-700:var(--vx-signal-700);--vx-orange-600:var(--vx-signal-600);
+  --vx-orange-500:var(--vx-signal-500);--vx-orange-400:var(--vx-signal-400);
+  --vx-copper-dark:var(--vx-signal-800);--vx-copper:var(--vx-signal-700);
+  --vx-copper-light:var(--vx-signal-500);--vx-copper-legacy:var(--vx-signal-400);
+  --vx-beige:#c9cdd4;
+}
+/* Onglet actif : plus de fond/soulignement vert (control-surface) → argent */
+.vx-tab[aria-selected="true"]{background:transparent!important;border-bottom-color:var(--vx-silver)!important}
+.vx-tab:hover{background:rgba(255,255,255,.03)}
+
+/* ══════════════════════════════════════════════════════════════════
+   2) FOND — noir profond neutre + halo lumineux diffus (sidebar) sans couleur
+   ══════════════════════════════════════════════════════════════════ */
+body{background:var(--vx-obsidian-950)}
+body::before{
+  background:
+    radial-gradient(720px 440px at -5% -4%,rgba(222,227,237,.058),transparent 60%),
+    radial-gradient(940px 580px at 100% 0%,rgba(222,227,237,.028),transparent 62%),
+    radial-gradient(150% 100% at 50% 50%,transparent 56%,rgba(0,0,0,.52) 100%)!important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   3) CARTES EN VERRE — translucide + blur + bordure argent + reflet + ombre
+   ══════════════════════════════════════════════════════════════════ */
+/* CMP-01 : définition CANONIQUE de .vx-card (une seule — glass.css charge en dernier).
+   padding/min-width intégrés ici (repris de l'ex-base components.css, désormais retirée). */
+.vx-card{
+  background:var(--vx-glass-1);
+  -webkit-backdrop-filter:blur(var(--vx-blur-md)) saturate(1.05);
+  backdrop-filter:blur(var(--vx-blur-md)) saturate(1.05);
+  border:1px solid var(--vx-glass-border);
+  border-radius:var(--vx-r-lg);
+  padding:var(--vx-s4);min-width:0;
+  box-shadow:var(--vx-glass-sheen),var(--shadow-card);
+  transition:border-color var(--vx-t),box-shadow var(--vx-t),transform var(--vx-t),background var(--vx-t)}
+.vx-card:hover{border-color:var(--vx-glass-border-strong);background:var(--vx-glass-2)}
+.vx-card.vx-elevated,.vx-card--hero{background:var(--vx-glass-2)}
+.vx-card--hero{border-radius:var(--vx-r-modal)}
+.vx-card.vx-active,.vx-card--selected{background:var(--vx-glass-3);
+  border-color:var(--vx-silver-line);box-shadow:var(--vx-glass-sheen),var(--shadow-card),0 0 0 1px var(--vx-silver-line)}
+.vx-card--compact{border-radius:var(--vx-r)}
+@media (prefers-reduced-motion:no-preference){
+  .vx-card:not(.vx-chart-card):hover{transform:translateY(-1px)}
+}
+/* neutralise les liserés/halos colorés hérités (premium/cockpit/polish) */
+.vx-card-title::before,.vx-chart-title::before{background:var(--vx-silver-line)!important;box-shadow:none!important}
+.vx-card--premium::after,.vx-card--hero::before{background:linear-gradient(90deg,transparent,var(--vx-silver-line),transparent)!important}
+.vx-card--hero::after{display:none!important}
+.vx-card.vx-kpi{background-image:none!important}
+
+/* ── Classes utilitaires verre (vocabulaire du contrat) ──────────────
+   Surfaces verre réutilisables SANS passer par .vx-card : pour les blocs
+   qui ne sont pas des cartes (panneaux, sous-surfaces, éléments composés).
+   Même matière (translucide + blur + bord argent + reflet + ombre). */
+.vx-glass-subtle,.vx-glass-card,.vx-glass-elevated,.vx-glass-interactive,
+.vx-glass-selected,.vx-glass-critical{
+  border:1px solid var(--vx-glass-border);border-radius:var(--vx-r-lg);
+  -webkit-backdrop-filter:blur(var(--vx-glass-blur-md)) saturate(1.05);
+  backdrop-filter:blur(var(--vx-glass-blur-md)) saturate(1.05);
+  box-shadow:var(--vx-glass-sheen),var(--shadow-card)}
+.vx-glass-subtle{background:var(--vx-glass-subtle);border-color:var(--vx-glass-border-faint);
+  -webkit-backdrop-filter:blur(var(--vx-glass-blur-sm));backdrop-filter:blur(var(--vx-glass-blur-sm));box-shadow:none}
+.vx-glass-card{background:var(--vx-glass-card)}
+.vx-glass-elevated{background:var(--vx-glass-elevated)}
+.vx-glass-interactive{background:var(--vx-glass-card);cursor:pointer;
+  transition:border-color var(--vx-t),background var(--vx-t),transform var(--vx-t)}
+.vx-glass-interactive:hover{background:var(--vx-glass-hover);border-color:var(--vx-glass-border-strong)}
+.vx-glass-selected{background:var(--vx-glass-3);border-color:var(--vx-silver-line);
+  box-shadow:var(--vx-glass-sheen),var(--shadow-card),0 0 0 1px var(--vx-silver-line)}
+.vx-glass-critical{background:var(--vx-glass-critical);border-color:var(--vx-glass-border-strong)}
+@media (prefers-reduced-motion:no-preference){.vx-glass-interactive:hover{transform:translateY(-1px)}}
+
+/* ══════════════════════════════════════════════════════════════════
+   4) OVERLAYS EN VERRE — drawer / modale / palette / context-menu / toasts
+   ══════════════════════════════════════════════════════════════════ */
+.vx-drawer,.vx-modal-box,.vx-palette-box,.vx-context-menu,.vx-toast{
+  background:var(--vx-glass-2);
+  -webkit-backdrop-filter:blur(var(--vx-blur-md)) saturate(1.05);
+  backdrop-filter:blur(var(--vx-blur-md)) saturate(1.05);
+  border-color:var(--vx-glass-border-strong);
+  box-shadow:var(--vx-glass-sheen),var(--shadow-float)}
+.vx-overlay,.vx-palette{background:rgba(6,7,9,.55);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+
+/* ══════════════════════════════════════════════════════════════════
+   5) SIDEBAR / TOPBAR — verre + item actif ARGENT (plus de vert marque)
+   ══════════════════════════════════════════════════════════════════ */
+.vx-sidebar{background:linear-gradient(180deg,rgba(16,18,22,.6),rgba(10,11,13,.72));
+  -webkit-backdrop-filter:blur(var(--vx-blur-md));backdrop-filter:blur(var(--vx-blur-md));
+  border-right:1px solid var(--vx-glass-border)}
+.vx-topbar{background:var(--vx-topbar);-webkit-backdrop-filter:blur(var(--vx-blur-md));backdrop-filter:blur(var(--vx-blur-md));
+  border-bottom:1px solid var(--vx-glass-border)}
+.vx-nav-item[aria-current="page"]{background:var(--vx-silver-soft);
+  border-color:var(--vx-silver-line);color:var(--vx-text-primary)}
+.vx-nav-item[aria-current="page"]::before{background:linear-gradient(var(--vx-silver),#8b9099)!important}
+.vx-nav-item[aria-current="page"] svg{stroke:var(--vx-brand-strong)}
+.vx-logo-mark{background:var(--vx-brand-gradient);color:#e6e9ee;
+  box-shadow:0 2px 12px rgba(0,0,0,.4),var(--vx-glass-sheen)}
+
+/* ══════════════════════════════════════════════════════════════════
+   6) BOUTONS / CHAMPS — verre neutre ; primaire = graphite/argent (pas vert)
+   ══════════════════════════════════════════════════════════════════ */
+.vx-btn{background:var(--vx-glass-2);border:1px solid var(--vx-glass-border);
+  -webkit-backdrop-filter:blur(var(--vx-blur-sm));backdrop-filter:blur(var(--vx-blur-sm))}
+.vx-btn:hover{border-color:var(--vx-glass-border-strong);background:var(--vx-glass-3)}
+.vx-btn-primary{background:var(--vx-brand-gradient);border-color:var(--vx-silver-line);color:#eef0f3}
+.vx-btn-primary:hover{box-shadow:var(--vx-glow-brand)}
+.vx-btn-ghost,.vx-btn-link{background:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+.vx-input,.vx-select,.vx-textarea,.vx-topbar-search input{
+  background:rgba(255,255,255,.03);border:1px solid var(--vx-glass-border)}
+.vx-input:focus,.vx-select:focus,.vx-textarea:focus,.vx-topbar-search input:focus{
+  border-color:var(--vx-silver-line);box-shadow:0 0 0 3px var(--vx-silver-soft)}
+:focus-visible{outline-color:var(--vx-silver)!important}
+
+/* ══════════════════════════════════════════════════════════════════
+   7) ONGLETS / SEGMENTED / CHIPS — actif argent
+   ══════════════════════════════════════════════════════════════════ */
+.vx-tab[aria-selected="true"]{color:var(--vx-text-primary);border-bottom-color:var(--vx-silver)}
+.vx-segmented{background:rgba(255,255,255,.03);border-color:var(--vx-glass-border)}
+.vx-segmented button[aria-pressed="true"]{background:var(--vx-glass-3);color:var(--vx-text-primary)}
+.vx-chip[aria-pressed="true"]{border-color:var(--vx-silver-line);background:var(--vx-silver-soft);color:var(--vx-text-primary)}
+
+/* ══════════════════════════════════════════════════════════════════
+   8) TABLES — en verre, en-têtes sticky détachés, survol doux
+   ══════════════════════════════════════════════════════════════════ */
+.vx-table-wrap{background:var(--vx-glass-1);
+  -webkit-backdrop-filter:blur(var(--vx-blur-md));backdrop-filter:blur(var(--vx-blur-md));
+  border:1px solid var(--vx-glass-border);border-radius:var(--vx-r-lg)}
+.vx-table thead th{background:rgba(255,255,255,.02);color:var(--vx-text-secondary)}
+.vx-table tbody tr:hover{background:rgba(255,255,255,.03)}
+.vx-table th[data-sort] .arrow,.vx-table thead th{border-color:var(--vx-glass-border)}
+
+/* ══════════════════════════════════════════════════════════════════
+   9) SÉMANTIQUE — le vert/rouge/orange restent réservés au SENS
+   (positif / négatif / incertitude). Rien à changer côté tokens :
+   --vx-positive / --vx-negative / --vx-warning demeurent. On neutralise
+   seulement les usages « marque » ci-dessus. Violet = options (discret).
+   ══════════════════════════════════════════════════════════════════ */
+.vx-fab{display:none!important} /* FAB (issu de NOVA) neutralisé si présent */
+
+/* ══════════════════════════════════════════════════════════════════
+   10) BARRES DE CONVICTION — segments façon référence (neutre / orange / rouge
+   selon le niveau). Réutilisable : <span class="vx-conviction" data-tone="warn">
+   <i class="on"></i>…</span> (les <i class="on"> sont remplis). Le ton code le
+   SENS : haut=argent, moyen=orange (incertitude), faible=rouge. ══════════════ */
+.vx-conviction{display:inline-flex;gap:3px;align-items:center;vertical-align:middle}
+.vx-conviction i{width:9px;height:6px;border-radius:2px;background:var(--vx-border-strong);flex:none}
+.vx-conviction i.on{background:var(--vx-silver)}
+.vx-conviction[data-tone="pos"] i.on{background:var(--vx-positive)}
+.vx-conviction[data-tone="warn"] i.on{background:var(--vx-warning)}
+.vx-conviction[data-tone="neg"] i.on{background:var(--vx-negative)}
+
+/* Tuile KPI façon référence : sous-label + grand nombre + mini-graphe (le
+   mini-graphe reste neutre sauf directionnel — géré par sparkSvg côté page). */
+.vx-kpi-sub{display:block;font-size:var(--vx-fs-meta);color:var(--vx-text-muted);margin-top:1px}
+.vx-kpi .vx-kpi-value{color:var(--vx-text-primary)}
+
+/* ══════════════════════════════════════════════════════════════════
+   11) ENRICHISSEMENT GLOBAL — chaque carte / tuile / graphique / donnée
+   soignée dans le style verre. Sous-surfaces en « verre creusé », pistes
+   neutres, remplissages sémantiques, grands chiffres nets.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Sous-surfaces imbriquées (tuiles KPI/stat/metric, cartes de liste) : verre creusé */
+.vx-stat,.vx-metric,.vx-perfbar,.vx-poscard,.vx-opp-card,.vx-pf-card,.vx-mover,
+.vx-strip-item,.vx-scr-kpis .k,.vx-cmd-strip .vx-cmd-k,.vx-metric-cmp,.vx-verdict-line,
+.vx-opt-chip,.vx-notif-item{
+  background:rgba(255,255,255,.022)!important;
+  border:1px solid var(--vx-glass-border)!important;
+  border-radius:var(--vx-r)!important;
+  box-shadow:var(--vx-glass-sheen)!important}
+.vx-stat:hover,.vx-metric:hover,.vx-poscard:hover,.vx-opp-card:hover,.vx-pf-card:hover,
+.vx-mover:hover,a.vx-strip-item:hover{border-color:var(--vx-glass-border-strong)!important;
+  background:rgba(255,255,255,.04)!important}
+/* liseré de ton (metric/stat) → conserve le SENS (pos/neg/warn) mais neutre par défaut */
+.vx-metric::before{background:var(--_tone,var(--vx-silver-line))!important;opacity:.9}
+
+/* Grands chiffres : blanc net, mono, tabulaire */
+.vx-kpi-value,.vx-stat-v,.vx-stat-value,.vx-metric-v,.vx-stat-xl,.vx-cmd-v,.vx-sg-val,.pf-pl,.mv-chg{
+  color:var(--vx-text-primary)}
+.vx-stat[data-tone="pos"] .vx-stat-v,.vx-metric[data-tone="pos"] .vx-metric-v,.vx-pos{color:var(--vx-positive)}
+.vx-stat[data-tone="neg"] .vx-stat-v,.vx-metric[data-tone="neg"] .vx-metric-v,.vx-neg{color:var(--vx-negative)}
+.vx-stat[data-tone="warn"] .vx-stat-v,.vx-metric[data-tone="warn"] .vx-metric-v,.vx-warn{color:var(--vx-warning)}
+
+/* Pistes de jauges / barres / rails : piste neutre translucide, repère argent */
+.vx-meter,.vx-metric-bar,.vx-rangebar,.vx-stackbar,.vx-opt-gauge-track,.vx-opt-dim-bar,
+.db-track,.wb-track,.cb-track,.pb-bar,.vx-rail{
+  background:rgba(255,255,255,.06)!important}
+.vx-meter>b,.db-track::before,.vx-metric-bar>b{background:var(--vx-text-primary)!important}
+/* remplissages « marque » (non directionnels) → argent ; directionnels gardent le sens */
+.vx-meter>i,.wb-track>i,.cb-track>i,.vx-opt-dim-bar i{background:var(--vx-silver)!important}
+.vx-opt-gauge-track i{background:var(--vx-silver)}
+.vx-opt-gauge-track i[data-tone="pos"],.wb-track>i[data-tone="pos"]{background:var(--vx-positive)!important}
+.vx-opt-gauge-track i[data-tone="neg"]{background:var(--vx-negative)!important}
+/* Rails sémantiques (VIX stress calme→stress) : on garde vert→ambre→rouge (SENS) */
+
+/* Cartes graphiques : en-tête/pied lisibles sur verre */
+.vx-chart-card .vx-chart-head{border-bottom:1px solid var(--vx-glass-border)}
+.vx-chart-foot{border-top:1px solid var(--vx-glass-border);color:var(--vx-text-muted)}
+.vx-chart-tf,.vx-chart-badge{background:rgba(255,255,255,.04);border:1px solid var(--vx-glass-border);
+  border-radius:999px;color:var(--vx-text-secondary)}
+
+/* Badges / pills sur verre */
+.vx-badge{background:rgba(255,255,255,.04);border:1px solid var(--vx-glass-border);color:var(--vx-text-secondary)}
+.vx-badge-decision[data-decision="ACHETER"],.vx-badge-decision[data-decision="RENFORCER"]{
+  background:var(--vx-positive-soft);color:var(--vx-positive);border-color:rgba(54,200,137,.35)}
+.vx-badge-decision[data-decision="ATTENDRE"]{background:var(--vx-warning-soft);color:var(--vx-warning);border-color:rgba(221,162,59,.35)}
+.vx-badge-decision[data-decision="REDUIRE"],.vx-badge-decision[data-decision="REFUSER"]{
+  background:var(--vx-negative-soft);color:var(--vx-negative);border-color:rgba(237,101,92,.35)}
+
+/* Tables : zébrures très douces + numériques nets */
+.vx-table tbody tr:nth-child(even){background:rgba(255,255,255,.012)}
+.vx-table .vx-num,.vx-table td.vx-num{color:var(--vx-text-primary)}
+.vx-ticker{color:var(--vx-text-primary);font-weight:600}
+
+/* Insight / panneaux : liseré argent par défaut (sens conservé si tonalité) */
+.vx-insight{background:rgba(255,255,255,.03);border-left-color:var(--vx-silver-line)}
+.vx-insight[data-tone="risk"]{border-left-color:var(--vx-warning)}
+.vx-insight[data-tone="ai"]{border-left-color:var(--vx-option)}
+
+/* Skeletons cohérents verre */
+.vx-skeleton{background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.06),rgba(255,255,255,.03))}
+
+/* ══════════════════════════════════════════════════════════════════
+   12) SLIDERS (filtres screener) — piste neutre + poignée argent
+   ══════════════════════════════════════════════════════════════════ */
+input[type="range"]{-webkit-appearance:none;appearance:none;height:4px;border-radius:99px;
+  background:rgba(255,255,255,.09);outline:none;cursor:pointer}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--vx-silver);border:2px solid var(--vx-surface-base);
+  box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer}
+input[type="range"]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+  background:var(--vx-silver);border:2px solid var(--vx-surface-base);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+input[type="range"]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--vx-silver-soft)}
+
+/* Cohérence boutons : rayon uniforme, hover doux ; chips en verre */
+.vx-btn,.vx-btn-icon,.vx-btn-sm{border-radius:12px}
+.vx-btn-sm{border-radius:10px}
+.vx-chip{background:rgba(255,255,255,.03);border:1px solid var(--vx-glass-border);color:var(--vx-text-secondary)}
+.vx-chip:hover{border-color:var(--vx-glass-border-strong);color:var(--vx-text-primary)}
+/* Sélecteurs (secteur/véhicule/horizon) en verre */
+.vx-select,select.vx-input{background:rgba(255,255,255,.03);border:1px solid var(--vx-glass-border)}
+
+/* Bannière démo : verre ambre sobre */
+.vx-demo-banner{background:rgba(221,162,59,.08);border:1px solid rgba(221,162,59,.3);border-radius:var(--vx-r)}
+.vx-badge-demo{background:var(--vx-warning-soft);color:var(--vx-warning);border:1px solid rgba(221,162,59,.4)}
+
+/* Zone de sélection « élite » des scatters : teinte neutre discrète */
+/* (gérée côté chart-core ; ici on garde la cohérence des légendes de graphiques) */
+.vx-chart-legend i,.vx-swatch{border-radius:3px}
+
+/* Scrollbars fines neutres */
+*{scrollbar-color:#2a2e34 transparent}
+*::-webkit-scrollbar-thumb{background:#2a2e34;border-radius:8px}
+
+/* ══════════════════════════════════════════════════════════════════
+   13) ARGENT LUMINEUX — GLOBAL. Promotion à TOUTE l'application du
+   traitement validé sur le Dashboard puis Opportunités : cartes en
+   dégradé profond + liseré supérieur lumineux, titres en petites
+   capitales argentées, en-têtes soulignés d'un filet, tableaux discrets,
+   chiffres tabulaires. Scopé #vx-content (l'id du <main>) : ne touche ni
+   la sidebar ni la topbar (déjà traitées §5). Spécificité id → prime sur
+   les règles de classe de components/cockpit/premium/glass sans !important.
+   Les blocs page-local du Dashboard/Opportunités restent gagnants là où
+   ils sont plus spécifiques : rendu identique, aucune régression.
+   ══════════════════════════════════════════════════════════════════ */
+#vx-content .vx-card{
+  position:relative;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(180deg,#14151a 0%,#0c0d11 100%);
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 26px 56px -40px #000;
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+/* liseré supérieur lumineux, encastré dans les coins arrondis (pas d'overflow:hidden) */
+#vx-content .vx-card::after{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  opacity:.55;pointer-events:none}
+#vx-content .vx-card:hover{border-color:rgba(255,255,255,.15);
+  background:linear-gradient(180deg,#16171d 0%,#0d0e12 100%)}
+#vx-content .vx-card.vx-active,#vx-content .vx-card--selected{
+  border-color:var(--vx-silver-line);
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 26px 56px -40px #000,0 0 0 1px var(--vx-silver-line)}
+#vx-content .vx-card--hero,#vx-content .vx-card.vx-elevated,
+#vx-content .vx-card--premium,#vx-content .vx-card--accent{
+  background:linear-gradient(180deg,#16171d 0%,#0d0e12 100%)}
+/* les KPI (.vx-card.vx-kpi) partagent le même verre profond */
+#vx-content .vx-card.vx-kpi{background:linear-gradient(180deg,#14151a 0%,#0c0d11 100%);background-image:none}
+
+/* Titres de carte : petites capitales argentées + en-tête souligné d'un filet */
+#vx-content .vx-card-title,#vx-content .vx-chart-title{
+  font-size:12.5px;font-weight:640;letter-spacing:.085em;text-transform:uppercase;
+  color:var(--vx-text-secondary)}
+#vx-content .vx-card-header,#vx-content .vx-chart-head{
+  padding-bottom:9px;margin-bottom:11px;border-bottom:1px solid rgba(255,255,255,.05)}
+#vx-content .vx-chart-question,#vx-content .vx-card-question{opacity:.7;font-style:italic}
+
+/* Chiffres tabulaires partout (KPI, prix, scores, cellules numériques) */
+#vx-content .vx-num,#vx-content .vx-kpi-value,#vx-content .vx-mono,#vx-content .vx-stat-v,
+#vx-content .vx-metric-v,#vx-content .vx-stat-xl,#vx-content .vx-cmd-v,#vx-content .vx-price,
+#vx-content .pf-pl,#vx-content .mv-chg,#vx-content .vx-sg-val,#vx-content .vx-table td{
+  font-variant-numeric:tabular-nums}
+
+/* Tables : en-têtes discrets en capitales, lignes au survol, bordures fines */
+#vx-content .vx-table th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--vx-text-muted);font-weight:600}
+#vx-content .vx-table td,#vx-content .vx-table th{border-color:rgba(255,255,255,.05)}
+#vx-content .vx-table tbody tr{transition:background .12s}
+#vx-content .vx-table tbody tr:hover{background:rgba(255,255,255,.028)}
+
+/* Chips / badges neutres par défaut — la couleur reste réservée au sémantique */
+#vx-content .vx-chip{border-radius:9px;border:1px solid rgba(255,255,255,.09);
+  background:rgba(255,255,255,.025);color:var(--vx-text-secondary)}
+#vx-content .vx-chip[aria-pressed="true"]{border-color:rgba(255,255,255,.32);color:#fff;
+  background:rgba(255,255,255,.07)}
+
+/* ══════════════════════════════════════════════════════════════════
+   14) FINITION & INTERACTION — transitions fluides, survols enrichis,
+   détails « verre » (voile de lumière, pastilles bombées, halos). Pur CSS,
+   scopé #vx-content, respecte prefers-reduced-motion. Objectif : chaque page
+   au plus clean/pro, cohérente au pixel.
+   ══════════════════════════════════════════════════════════════════ */
+/* Transitions d'interaction homogènes partout */
+#vx-content .vx-btn,#vx-content .vx-chip,#vx-content .vx-tab,#vx-content .vx-badge,
+#vx-content .vx-segmented button,#vx-content .vx-table tbody tr,#vx-content .vx-swatch,
+#vx-content .vx-select,#vx-content .vx-input{
+  transition:background .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease,transform .16s ease}
+
+/* Survol de carte : le liseré supérieur s'illumine + halo plus profond */
+#vx-content .vx-card:hover::after{opacity:.95}
+#vx-content .vx-card:hover{box-shadow:0 1px 0 rgba(255,255,255,.07) inset,0 32px 62px -38px #000,0 0 0 1px rgba(255,255,255,.06)}
+
+/* Sous-tuiles : léger relèvement au survol (coupé si reduced-motion) */
+@media (prefers-reduced-motion:no-preference){
+  #vx-content .vx-stat,#vx-content .vx-metric,#vx-content .vx-opp-card,#vx-content .vx-pf-card,
+  #vx-content .vx-mover,#vx-content .vx-poscard{transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease}
+  #vx-content .vx-stat:hover,#vx-content .vx-metric:hover,#vx-content .vx-opp-card:hover,
+  #vx-content .vx-pf-card:hover,#vx-content .vx-mover:hover,#vx-content .vx-poscard:hover{transform:translateY(-1px)}
+}
+
+/* Carte phare : halo lumineux d'ambiance dans l'angle supérieur */
+#vx-content .vx-card--hero{
+  background:radial-gradient(120% 82% at 0% 0%,rgba(255,255,255,.055),transparent 58%),linear-gradient(180deg,#16171d 0%,#0d0e12 100%)}
+
+/* Onglet actif : fin sous-glow argent */
+#vx-content .vx-tab[aria-selected="true"]{box-shadow:0 6px 14px -10px var(--vx-silver)}
+
+/* Bouton primaire : relief permanent (voile haut) + balayage lumineux au survol */
+#vx-content .vx-btn-primary{position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.12),transparent 46%),var(--vx-brand-gradient)}
+#vx-content .vx-btn-primary::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,transparent 34%,rgba(255,255,255,.16) 50%,transparent 66%);transform:translateX(-130%)}
+@media (prefers-reduced-motion:no-preference){
+  #vx-content .vx-btn-primary:hover::after{transition:transform .55s ease;transform:translateX(130%)}
+}
+
+/* Pastilles de légende / swatch : verre bombé rond */
+#vx-content .vx-chart-legend .vx-swatch,#vx-content .vx-swatch{
+  border-radius:50%;box-shadow:inset 0 1px 1px rgba(255,255,255,.4),0 0 0 1px rgba(0,0,0,.25)}
+
+/* Focus visible élégant (halo argent à double liseré) */
+#vx-content a:focus-visible,#vx-content button:focus-visible,#vx-content [tabindex]:focus-visible{
+  outline:none;box-shadow:0 0 0 2px rgba(9,10,13,.95),0 0 0 4px var(--vx-silver-line)}
+
+/* ══════════════════════════════════════════════════════════════════
+   15) CHÂSSIS (sidebar + topbar) & ÉTATS VIDES — élève le cadre présent sur
+   CHAQUE écran au même niveau premium que le contenu. Visuel uniquement
+   (aucune géométrie touchée). Hors #vx-content : cible la nav globale.
+   ══════════════════════════════════════════════════════════════════ */
+/* Item de navigation actif : barre d'accent argent VISIBLE (l'ancienne à
+   left:-8px était rognée par overflow-y:auto) + pastille verre nette. */
+.vx-nav-item[aria-current="page"]{
+  background:linear-gradient(90deg,rgba(255,255,255,.085),rgba(255,255,255,.03));
+  border-color:rgba(255,255,255,.10)}
+.vx-nav-item[aria-current="page"]::before{
+  left:0;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;
+  background:linear-gradient(var(--vx-silver),#8b9099)!important;
+  box-shadow:0 0 8px rgba(201,205,212,.5)!important}
+.vx-nav-item:hover{background:rgba(255,255,255,.045)}
+/* Logo : jeton verre argent + reflet + glow doux */
+.vx-logo-mark{background:linear-gradient(135deg,#2a2e35,#171a1f);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.12)}
+/* Statut bas de sidebar : puce plus nette */
+.vx-sidebar-status{border-radius:9px}
+.vx-sidebar-status:hover{background:rgba(255,255,255,.03)}
+
+/* Topbar : recherche verre + touche ⌘K en capuchon, boutons icônes plus doux */
+.vx-topbar-search input{background:rgba(255,255,255,.03);border:1px solid var(--vx-glass-border)}
+.vx-topbar-search input:focus{border-color:var(--vx-silver-line);box-shadow:0 0 0 3px var(--vx-silver-soft)}
+.vx-kbd{background:rgba(255,255,255,.05);border:1px solid var(--vx-glass-border);
+  border-radius:6px;padding:1px 6px;box-shadow:inset 0 -1px 0 rgba(0,0,0,.3)}
+.vx-breadcrumb b{color:var(--vx-text-primary)}
+
+/* Bouton primaire — relief permanent partout (topbar comprise, hors #vx-content) */
+.vx-btn-primary{background:linear-gradient(180deg,rgba(255,255,255,.12),transparent 46%),var(--vx-brand-gradient)}
+
+/* États vides — placeholder verre élégant (honnête : jamais une donnée) */
+.vx-state .vx-state-icon{
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 8px 20px -12px #000;
+  color:var(--vx-text-muted)}
+.vx-state .vx-state-ghost{opacity:.5}
+.vx-state b{color:var(--vx-text-secondary)}
+
+/* ══════════════════════════════════════════════════════════════════
+   16) EN-TÊTE DE PAGE — le premier regard sur chaque écran. Grand titre à
+   dégradé argenté subtil (blanc → argent clair) + interlettrage resserré,
+   sous-titre affiné. Présent sur les 8 espaces via .vx-page-header.
+   ══════════════════════════════════════════════════════════════════ */
+#vx-content .vx-page-header h1{
+  letter-spacing:-.015em;line-height:1.03;
+  background:linear-gradient(174deg,#ffffff 0%,#d4d8df 116%);
+  -webkit-background-clip:text;background-clip:text;
+  color:#f3f5f8;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 1px 18px rgba(255,255,255,.05))}
+#vx-content .vx-page-header .vx-sub{color:var(--vx-text-secondary);opacity:.92;max-width:74ch}
+
+/* ══════════════════════════════════════════════════════════════════
+   17) PLEIN ÉCRAN DES GRAPHES — mode focus premium. Fond flouté à vignette,
+   carte verre profond à grands coins + ombre flottante, entrée en zoom doux,
+   grand graphe centré. Surcharge les règles de base de charts.css (id + classe).
+   ══════════════════════════════════════════════════════════════════ */
+#vx-chart-fs-backdrop{
+  background:radial-gradient(120% 120% at 50% 28%,rgba(10,12,16,.70),rgba(3,4,6,.9))!important;
+  -webkit-backdrop-filter:blur(7px) saturate(1.05);backdrop-filter:blur(7px) saturate(1.05)}
+@media (prefers-reduced-motion:no-preference){
+  #vx-chart-fs-backdrop{animation:vx-fade-in .2s ease both}
+}
+#vx-content .vx-chart-card.vx-chart-fs{
+  position:fixed;z-index:calc(var(--vx-z-modal,70) + 1);
+  inset:4vh 5vw;border-radius:20px;
+  border:1px solid rgba(255,255,255,.15);
+  background:linear-gradient(180deg,#1b1d24 0%,#121319 100%);
+  box-shadow:0 40px 130px -28px #000,0 0 0 1px rgba(255,255,255,.04),inset 0 1px 0 rgba(255,255,255,.09);
+  padding:6px 22px 20px;display:flex;flex-direction:column}
+#vx-content .vx-chart-card.vx-chart-fs:hover{transform:none}
+#vx-content .vx-chart-card.vx-chart-fs::after{left:20px;right:20px;opacity:.5}
+@media (prefers-reduced-motion:no-preference){
+  #vx-content .vx-chart-card.vx-chart-fs{animation:vx-fs-zoom .26s cubic-bezier(.22,.61,.36,1) both}
+}
+@keyframes vx-fs-zoom{from{opacity:0;transform:scale(.976)}to{opacity:1;transform:none}}
+#vx-content .vx-chart-card.vx-chart-fs .vx-chart-head{
+  background:linear-gradient(180deg,#1b1d24,rgba(27,29,36,.55));padding:10px 0 12px;margin-bottom:6px}
+#vx-content .vx-chart-card.vx-chart-fs .vx-chart-title{font-size:19px;letter-spacing:.02em}
+#vx-content .vx-chart-card.vx-chart-fs .vx-chart-body{min-height:66vh}
+
+/* ══════════════════════════════════════════════════════════════════
+   18) GRILLE DE CHAÎNE D'OPTIONS (option-chain-grid.js) — PUTS ← Strike → CALLS.
+   Ombrage ITM = teinte ARGENT neutre (jamais vert/rouge), colonne strike centrale
+   nette, repère spot, strike ATM surligné. Tabulaire, compacte, défilement H.
+   ══════════════════════════════════════════════════════════════════ */
+#vx-content .vx-ocg{font-size:11.5px;border-collapse:separate;border-spacing:0;width:100%;font-variant-numeric:tabular-nums}
+#vx-content .vx-ocg th,#vx-content .vx-ocg td{padding:3px 8px;white-space:nowrap;text-align:right}
+#vx-content .vx-ocg thead th{font-size:10px;color:var(--vx-text-muted);font-weight:600}
+#vx-content .vx-ocg .vx-ocg-side{text-align:center;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--vx-text-secondary);border-bottom:1px solid rgba(255,255,255,.07);font-weight:640}
+#vx-content .vx-ocg .vx-ocg-strike{text-align:center;font-weight:700;color:var(--vx-text-primary);background:rgba(255,255,255,.045)}
+#vx-content .vx-ocg td.vx-ocg-strike{border-left:1px solid rgba(255,255,255,.08);border-right:1px solid rgba(255,255,255,.08)}
+#vx-content .vx-ocg td.vx-ocg-itm{background:rgba(201,205,212,.06)}      /* ITM = argent neutre */
+#vx-content .vx-ocg tbody tr:hover td{background:rgba(255,255,255,.035)}
+#vx-content .vx-ocg tr.vx-ocg-atm td{background:rgba(255,255,255,.05)}
+#vx-content .vx-ocg tr.vx-ocg-atm td.vx-ocg-strike{background:rgba(255,255,255,.09);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+#vx-content .vx-ocg tr.vx-ocg-spot td{padding:1px 0;text-align:center;
+  background:linear-gradient(90deg,transparent,rgba(201,205,212,.16),transparent)}
+#vx-content .vx-ocg tr.vx-ocg-spot span{font-size:10px;letter-spacing:.10em;text-transform:uppercase;color:var(--vx-silver)}

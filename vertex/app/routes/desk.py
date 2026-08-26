@@ -155,6 +155,60 @@ def completer_par_repli(todo, out, repli):
     return combles
 
 
+def _scan_fallback_quote(p):
+    """Marque DIFFÉRÉE d'une position quand IBKR ne cote pas (TWS fermé).
+
+    Actions : prix du scan (yfinance différé). Options : mid du contrat
+    correspondant du board (sym + droit + strike, échéance par préfixe —
+    le desk stocke 'YYYY-MM', le board 'YYYY-MM-DD'). Étiquetée delayed:True
+    pour que l'UI l'affiche « différé » — un titre absent du scan reste sans
+    marque (aucun chiffre inventé).
+    """
+    from vertex.app.state import scan_state
+    sym = (p.get('sym') or '').upper()
+    if not sym:
+        return None
+    detail = (scan_state.get('detail') or {}).get(sym) or {}
+    spot = detail.get('price')
+    right = (p.get('right') or '').upper()
+    is_opt = bool(right or p.get('strike') is not None)
+    q = {}
+    if isinstance(spot, (int, float)) and spot > 0:
+        q['spot'] = spot
+    if is_opt:
+        want_type = 'PUT' if right.startswith('P') else 'CALL'
+        want_exp = str(p.get('exp') or '')
+        try:
+            want_strike = float(p.get('strike'))
+        except (TypeError, ValueError):
+            want_strike = None
+        for c in (scan_state.get('options_board') or []):
+            if (str(c.get('sym', '')).upper() == sym
+                    and c.get('type') == want_type
+                    and c.get('mid') is not None
+                    and want_strike is not None
+                    and abs(float(c.get('strike') or 0) - want_strike) < 0.01
+                    and (not want_exp or str(c.get('exp', '')).startswith(want_exp))):
+                q['mark'] = c.get('mid')
+                break
+        if 'mark' not in q and want_strike is not None:
+            # Le board n'a que les « meilleurs » strikes — cote le contrat EXACT
+            # détenu via la chaîne (cache TTL 15 min dans on_demand).
+            try:
+                from vertex.options import on_demand as _od
+                mk = _od.contract_mark(sym, want_exp, want_strike,
+                                       'P' if right.startswith('P') else 'C')
+                if mk is not None:
+                    q['mark'] = mk
+            except Exception:
+                pass
+    if not q:
+        return None
+    q['delayed'] = True
+    q['src'] = 'scan'
+    return q
+
+
 def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
     """Construit le Blueprint du desk.
 
@@ -331,32 +385,43 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
                 if v is not None:
                     posq_cache[k] = (now, v)
                     out[k] = v
-        #  DERNIER RECOURS pour les actions. Sans lui, `results` revenait VIDE
-        #  des que IBKR etait absent ou muet — et le client, qui exige une
-        #  cotation par ligne, n'affichait aucun P&L alors que le prix etait
-        #  deja en memoire. Verifie en local : POST {sym: ACN} rendait `{}`
-        #  pendant que le scan portait ACN a 198,0.
-        #  Le repli n'est PAS mis en cache : le cache sert les cotations
-        #  broker, et y ranger un cours de scan le ferait servir a la place
-        #  d'une vraie cotation pendant tout le TTL.
+        #  INTEGRATION main + vertex-live. Les deux branches avaient ecrit un
+        #  repli pour TWS ferme, et chacune tenait une moitie du probleme :
+        #
+        #   * live couvrait ACTIONS *et* OPTIONS — l'option par le mid REEL du
+        #     contrat du board, pas un prix derive du sous-jacent ; le refus de
+        #     main visait la derivation, pas la lecture d'une cotation existante ;
+        #   * main refusait de METTRE LE REPLI EN CACHE — un cours de scan range
+        #     dans le cache des cotations courtier serait servi a la place d'une
+        #     vraie cotation pendant tout le TTL, meme apres le retour de TWS.
+        #
+        #  On garde la couverture de live et la regle de main.
+        #  1. Repli ACTIONS de `main` — fonction PURE, etiquetee SECONDARY, et
+        #     tenue par des temoins : sans etiquette, un cours de scan se fait
+        #     passer pour une cotation broker.
         combles = completer_par_repli(todo, out, cotation_repli)
-        #  #779/G1 — POSITION_REFRESH était déclaré au registre des jobs mais
-        #  n'avait AUCUN émetteur : la page Système l'affichait « jamais
-        #  exécuté » alors qu'il tourne à chaque cotation du portefeuille. Il
-        #  est à la demande, pas périodique — d'où `interval_s: None` côté
-        #  registre : annoncer « prochaine dans ~45 s » aurait été une seconde
-        #  invention.
+        #  2. Repli OPTIONS de `vertex-live` — le mid REEL du contrat du board.
+        #     `completer_par_repli` refuse deliberement les options : il ne sait
+        #     que deriver du sous-jacent, ce qui serait un prix invente. Lire le
+        #     mid d'un contrat COTE est autre chose, et c'est ce que live fait.
+        for p in todo:
+            k = p.get('key')
+            if k and k not in out:
+                fb = _scan_fallback_quote(p)
+                if fb:
+                    out[k] = fb          # servi, JAMAIS mis en cache
+        #  #779/G1 — POSITION_REFRESH etait declare au registre des jobs mais
+        #  n'avait AUCUN emetteur : la page Systeme l'affichait « jamais
+        #  execute » alors qu'il tourne a chaque cotation du portefeuille.
         _sched.beat('POSITION_REFRESH', ok=True,
                     duration_ms=(time.time() - now) * 1000.0)
-        #  La PROVENANCE de chaque marque, calculee par la fonction PARTAGEE
-        #  avec le serveur. La dupliquer cote client la ferait diverger au
-        #  premier ajustement, et l'ecran finirait par annoncer une origine
-        #  que le calcul ne pratique plus.
+        #  La PROVENANCE de chaque marque, calculee par la fonction PARTAGEE avec
+        #  le serveur. Perdue lors de l'integration de `vertex-live` — cette
+        #  branche n'a jamais eu le lot de la marque visible — et rendue ici.
         #
-        #  Mesure du 24 aout 2026 : sur URA 20270115 C 50, marche 3,50/4,30,
-        #  la marque valait 3,70 — le dernier echange — sans que rien ne le
-        #  dise, ce qui rendait inexplicable un ecart de 272 USD avec le
-        #  courtier.
+        #  Mesure du 24 aout 2026 : sur URA 20270115 C 50, marche 3,50/4,30, la
+        #  marque valait 3,70 — le dernier echange — sans que rien ne le dise, ce
+        #  qui rendait inexplicable un ecart de 272 USD avec le courtier.
         from vertex.positions.calculator import source_de_marque
         for _k, _q in out.items():
             if not isinstance(_q, dict):
@@ -365,9 +430,8 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
             _mid = round((_b + _a) / 2, 4) if (_b and _a) else None
             #  Une cotation d'ACTION servie par le repli ne porte qu'un `px` :
             #  aucune convention de marque ne s'y applique. Lui coller une
-            #  provenance « ABSENTE » serait doublement faux — le prix EXISTE,
-            #  et l'origine n'est pas manquante, elle est hors sujet. On
-            #  n'annote donc que ce qui a reellement une marque a expliquer.
+            #  provenance « ABSENTE » serait doublement faux — le prix EXISTE, et
+            #  l'origine n'est pas manquante, elle est hors sujet.
             if _q.get('mark') is None and _mid is None:
                 continue
             if _mid is not None and _q.get('mid') is None:

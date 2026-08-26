@@ -3,12 +3,11 @@
    Chargé en dernier ; ne redéfinit aucune structure, uniquement du style. */
 
 /* ── Profondeur des cartes Hero : liseré cuivre supérieur + halo d'angle ── */
-.vx-card--hero{position:relative;overflow:visible}
+.vx-card--hero{position:relative;overflow:hidden}
 .vx-card--hero::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;pointer-events:none;
-  background:linear-gradient(90deg,transparent,var(--vx-brand),transparent);opacity:.58}
-.vx-card--hero::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(circle at 94% 0%,rgba(210,138,84,.08),transparent 52%);
-  border-radius:inherit}
+  background:linear-gradient(90deg,transparent,rgba(201,205,212,.5),transparent);opacity:.75}
+.vx-card--hero::after{content:"";position:absolute;top:-38%;right:-8%;width:440px;height:440px;pointer-events:none;
+  background:radial-gradient(circle,rgba(146,88,56,.10),transparent 62%)}
 .vx-card--hero>*{position:relative}
 
 /* ── Données financières : chiffres tabulaires (colonnes alignées, lecture nette) ── */
@@ -16,10 +15,9 @@
   font-variant-numeric:tabular-nums}
 .vx-kpi-value{letter-spacing:-.01em}
 
-/* ── Micro-lift réservé aux cartes réellement interactives ── */
+/* ── Micro-lift au survol (cartes non-graphiques) — coupé en reduced-motion ── */
 @media (prefers-reduced-motion:no-preference){
-  .vx-card:is(a,button,[role="button"],[data-clickable]):not(.vx-chart-card):not(.vx-card--hero):hover{
-    transform:translateY(-1px)}
+  .vx-card:not(.vx-chart-card):not(.vx-card--hero):hover{transform:translateY(-1px)}
   a.vx-strip-item:hover{transform:translateY(-1px)}
 }
 
@@ -41,10 +39,10 @@
 .vx-badge-decision[data-decision]{background:rgba(255,255,255,.035)}
 
 /* ── Barre KPI (indices/cross-asset) : contour un peu plus vivant au survol ── */
-a.vx-strip-item:hover{border-color:var(--vx-border-accent)}
+a.vx-strip-item:hover{border-color:rgba(201,205,212,.28)}
 
 /* ── États vides premium : icône fantôme + halo graphite discret ── */
 .vx-state[data-state="empty"]{padding:26px 18px}
-.vx-state[data-state="empty"] .vx-state-icon{width:42px;height:42px;color:var(--vx-text-faint,#8f8587);
+.vx-state[data-state="empty"] .vx-state-icon{width:42px;height:42px;color:var(--vx-text-faint,#5f5a55);
   background:radial-gradient(circle,rgba(255,255,255,.035),transparent 70%);
   border:1px solid var(--vx-border-soft,rgba(255,255,255,.065))}

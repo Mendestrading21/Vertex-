@@ -68,6 +68,13 @@ _VIEW_CONTENT = {
   </section>
 </div>
 <div class="vx-grid vx-mt4">
+  <section class="vx-card vx-col-12" aria-label="Interpr&eacute;tation de l&#8217;analyste IA">
+    <div class="vx-card-header"><span class="vx-card-title">Interpr&eacute;tation de l&#8217;analyste</span>
+      <span class="vx-actions" id="vx-analyst-ai-src"></span></div>
+    <div id="vx-analyst-ai">%%IDLE%%</div>
+  </section>
+</div>
+<div class="vx-grid vx-mt4">
   <div class="vx-col-5" id="vx-analyst-scores"></div>
   <section class="vx-card vx-col-7" aria-label="Raisonnement et garde-fous">
     <div class="vx-card-header"><span class="vx-card-title">Raisonnement (audit trail)</span></div>
@@ -90,6 +97,7 @@ _VIEW_CONTENT = {
     <div id="vx-committee-tally" class="vx-mt3"></div>
   </section>
 </div>
+<div id="vx-committee-map" class="vx-mt4"></div>
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Matrice du comit&eacute;">
     <div class="vx-card-header"><span class="vx-card-title">Comit&eacute; — revue de l&#8217;univers scann&eacute;</span>
@@ -202,8 +210,9 @@ function whenChartsReady(fn){
 /* ══ Vue ANALYSTE ═══════════════════════════════════════════════════ */
 function initAnalyst(){
   const idle=VX.states.empty('Aucune analyse lanc&eacute;e — saisissez un ticker ci-contre.','');
-  ($('vx-analyst-verdict')||{}).innerHTML=idle;
-  ($('vx-analyst-audit')||{}).innerHTML=idle;
+  $('vx-analyst-verdict').innerHTML=idle;
+  $('vx-analyst-audit').innerHTML=idle;
+  if($('vx-analyst-ai'))$('vx-analyst-ai').innerHTML=idle;
   /* Suggestions : exemples + tickers récents + raccourcis — rien d'inventé */
 (function(){
   const host=$('vx-analyst-suggestions');if(!host)return;
@@ -245,12 +254,57 @@ async function runAnalysis(sym,question){
     ($('vx-analyst-verdict')||{}).innerHTML=VX.states.empty(
       sym+' est absent du scan courant — impossible de d&eacute;cider sans donn&eacute;es.',
       '<a class="vx-btn vx-btn-sm" href="/system?view=data">Lancer un scan (Syst&egrave;me)</a>');
-    ($('vx-analyst-audit')||{}).innerHTML=VX.states.empty('Aucun raisonnement disponible sans dossier.');
+    $('vx-analyst-audit').innerHTML=VX.states.empty('Aucun raisonnement disponible sans dossier.');
+    if($('vx-analyst-ai'))$('vx-analyst-ai').innerHTML=VX.states.empty('Aucune interpr&eacute;tation sans dossier.');
     return;
   }
   renderVerdict(sym,question,strat,deci);
   renderAudit(strat,deci);
   renderScores(sym,strat);
+  renderAI(sym,question);
+}
+/* Analyste IA : Claude INTERPRÈTE le dossier réel des moteurs (jamais il ne décide).
+   Sans clé serveur → synthèse déterministe honnête, jamais de texte inventé. */
+async function renderAI(sym,question){
+  const host=$('vx-analyst-ai');const srcEl=$('vx-analyst-ai-src');
+  if(!host)return;
+  host.innerHTML=VX.states.loading(4);if(srcEl)srcEl.innerHTML='';
+  let d=null;
+  try{
+    d=await VX.fetch('/api/ai/analyst/'+encodeURIComponent(sym)
+      +(question?('?q='+encodeURIComponent(question)):''),{ttl:12000});
+  }catch(e){host.innerHTML=VX.states.error('Analyste indisponible ('+esc(e.message)+')');return;}
+  if(!d||d.available===false){
+    host.innerHTML=VX.states.empty(esc((d&&d.error)||'Dossier absent — aucune interpr&eacute;tation.'));return;}
+  const c=d.content||{};
+  const isClaude=d.source==='claude';
+  if(srcEl)srcEl.innerHTML='<span class="vx-badge '+(isClaude?'vx-pos':'vx-muted')+'">'
+    +(isClaude?('Claude actif&nbsp;· '+esc(d.model||'')):'IA indisponible — synth&egrave;se moteurs')+'</span>';
+  const contradictions=c.contradictions||[];
+  const questions=c.questions_for_user||[];
+  host.innerHTML=
+    (question?'<div class="vx-help vx-mb2">Question&nbsp;: &laquo; '+esc(question)+' &raquo;</div>':'')
+    +'<div style="font-size:14px;line-height:1.65" class="vx-mb3">'+esc(c.summary||'—')+'</div>'
+    +'<div class="vx-grid">'
+      +'<div class="vx-col-6"><div class="vx-meta vx-mb1">Th&egrave;se (haussier)</div>'
+        +'<div class="vx-pos" style="font-size:13px;line-height:1.55">'+esc(c.bull_case||'—')+'</div></div>'
+      +'<div class="vx-col-6"><div class="vx-meta vx-mb1">Avocat du diable (baissier)</div>'
+        +'<div class="vx-neg" style="font-size:13px;line-height:1.55">'+esc(c.bear_case||'—')+'</div></div>'
+    +'</div>'
+    +(contradictions.length?'<div class="vx-mt3"><div class="vx-meta vx-mb1">Contradictions entre moteurs</div>'
+      +'<ul style="margin:0;padding-left:18px;line-height:1.7;font-size:13px">'
+      +contradictions.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')
+    +(c.anomaly_reading?'<div class="vx-kv vx-mt3"><span class="k">Lecture des anomalies</span>'
+      +'<span class="v">'+esc(c.anomaly_reading)+'</span></div>':'')
+    +(c.catalyst_view?'<div class="vx-kv"><span class="k">Catalyseurs</span><span class="v">'+esc(c.catalyst_view)+'</span></div>':'')
+    +(c.scenario_comparison?'<div class="vx-kv"><span class="k">Sc&eacute;narios</span><span class="v">'+esc(c.scenario_comparison)+'</span></div>':'')
+    +(questions.length?'<div class="vx-mt3"><div class="vx-meta vx-mb1">Questions &agrave; creuser</div>'
+      +'<ul style="margin:0;padding-left:18px;line-height:1.7;font-size:13px">'
+      +questions.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')
+    +(c.confidence_comment?'<div class="vx-help vx-mt2">'+esc(c.confidence_comment)+'</div>':'')
+    +'<div class="vx-card-footer">'+VX.updateIndicator(d.as_of,
+      (isClaude?('interpr&eacute;tation Claude — '+esc(d.model||'')):'synth&egrave;se d&eacute;terministe des moteurs')
+      +' · le verdict reste au moteur ex&eacute;cutif','delayed')+'</div>';
 }
 function renderVerdict(sym,question,strat,deci){
   /* Données insuffisantes → état honnête, calme, explicite. JAMAIS une
@@ -346,6 +400,16 @@ async function initCommittee(){
     ($('vx-committee-body')||{}).innerHTML=VX.states.error('Comit&eacute; indisponible ('+esc(e.message)+')');
   }
 }
+/* Cellule de tableau avec mini-barre inline (conviction/accord 0-100) — plus
+   parlant qu'un nombre nu. Repli honnête « — » si null. */
+function cbar(val,col,unit){
+  if(val===null||val===undefined||isNaN(val))return '<td class="vx-num vx-mono">—</td>';
+  const w=Math.max(3,Math.min(100,val));
+  return `<td class="vx-num"><span style="display:inline-flex;align-items:center;gap:7px;justify-content:flex-end">`
+    +`<span style="flex:0 0 44px;height:6px;border-radius:99px;background:var(--vx-surface-0);position:relative;overflow:hidden">`
+    +`<i style="position:absolute;left:0;top:0;bottom:0;width:${w}%;background:${col};border-radius:99px"></i></span>`
+    +`<b class="vx-mono" style="min-width:30px;font-weight:600">${Math.round(val)}${unit||''}</b></span></td>`;
+}
 function renderCommittee(){
   const c=committeeData;const reviews=c.reviews||[];
   const tally=c.tally||{};
@@ -395,7 +459,48 @@ function renderCommittee(){
         note:(c.universe_scanned||Object.keys(tally).reduce(function(a,k){return a+tally[k];},0))+' dossiers — verdicts réels du comité.'});
     });
   }catch(e){}
-  ($('vx-committee-meta')||{}).innerHTML=VX.updateIndicator(c.as_of,
+  /* Carte conviction × accord : chaque titre positionné (x=accord, y=conviction),
+     couleur = groupe de décision, halo ambre = contradiction. 100 % données réelles
+     des reviews ; se replie proprement si < 2 points exploitables. */
+  try{
+    var _mpts=reviews.map(function(r){
+      var ag=(r.agreement==null)?null:(r.agreement<=1?r.agreement*100:r.agreement);
+      if(ag==null||r.conviction==null)return null;
+      return {x:ag,y:r.conviction,sym:r.symbol,dec:r.decision,grp:DECISION_GROUP[r.decision]||'ATTENDRE',contra:!!r.has_contradiction};
+    }).filter(Boolean);
+    var _mhost=$('vx-committee-map');
+    if(_mhost){
+      if(_mpts.length<2){_mhost.innerHTML='';}
+      else whenChartsReady(function(){
+        var cc=VXCharts.colors;
+        var _gc={AVOID:cc.negative,'ÉVITER':cc.negative,WAIT:cc.warning,ATTENDRE:cc.warning,WATCH_BREAKOUT:cc.brand,ACHETER:cc.positive,RENFORCER:cc.positive};
+        VXCharts.card('vx-committee-map',{
+          title:'Carte du comité — conviction × accord',
+          question:'Qui est à la fois convaincu ET consensuel ?',
+          conclusion:_mpts.filter(function(p){return p.y>=60&&p.x>=60;}).length+' titre(s) en zone haute (conviction ≥60, accord ≥60)',
+          height:360,legend:[{label:'Achat',color:cc.positive},{label:'Cassure',color:cc.brand},{label:'Éviter',color:cc.negative},{label:'Attente',color:cc.warning}],
+          source:(committeeData.data_source==='demo'?'scan (DÉMO)':'scan'),timestamp:committeeData.as_of,
+          mode:committeeData.data_source==='demo'?'fallback':'delayed',
+          explain:{shows:'Chaque point est un titre passé en revue, placé par l’accord du comité (X) et la conviction (Y). Couleur = groupe de décision ; cerclé d’ambre = comité divisé.',
+            why:'Le coin haut-droit réunit forte conviction ET fort consensus — les dossiers les plus solides.',
+            confirm:'Un titre qui migre vers le haut-droit au fil des scans.',invalidate:'Conviction ou accord qui s’effondre.'},
+          render:function(cv){return VXCharts.mount(cv,{type:'scatter',
+            data:{datasets:[{data:_mpts,
+              pointRadius:function(ctx){return ctx.raw&&ctx.raw.contra?7:5;},pointHoverRadius:9,
+              pointBackgroundColor:function(ctx){var p=ctx.raw;return p?(_gc[p.dec]||_gc[p.grp]||cc.neutral):cc.neutral;},
+              pointBorderColor:function(ctx){return ctx.raw&&ctx.raw.contra?cc.warning:'rgba(0,0,0,.4)';},
+              pointBorderWidth:function(ctx){return ctx.raw&&ctx.raw.contra?2:1;}}]},
+            options:{scales:{
+              x:{min:0,max:100,title:{display:true,text:'Accord du comité'},grid:{color:'rgba(255,255,255,.06)'}},
+              y:{min:0,max:100,title:{display:true,text:'Conviction'},grid:{color:'rgba(255,255,255,.06)'}}},
+              onClick:function(evt,els,chart){var q=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+                if(q.length){var d=chart.data.datasets[0].data[q[0].index];if(d&&d.sym)location.href='/analysis/'+d.sym;}},
+              plugins:{tooltip:{callbacks:{label:function(it){var p=it.raw;return p.sym+' · '+p.dec+' — conviction '+Math.round(p.y)+', accord '+Math.round(p.x)+'%'+(p.contra?' (contradiction)':'');}}}}}});}
+        });
+      });
+    }
+  }catch(e){}
+  $('vx-committee-meta').innerHTML=VX.updateIndicator(c.as_of,
     (c.data_source==='demo'?'d&eacute;mo':'scan')+' · '+(c.universe_scanned??reviews.length)+' titres pass&eacute;s en revue',
     c.data_source==='demo'?'fallback':'delayed');
   const chips=[['','Toutes ('+reviews.length+')']].concat(
@@ -424,8 +529,8 @@ function renderCommittee(){
         <td><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(r.symbol)}">${esc(r.symbol)}</button>
           ${r.has_contradiction?'<span class="vx-badge" style="color:var(--vx-warning)" title="Le comit&eacute; est divis&eacute; sur ce titre">contradiction</span>':''}</td>
         <td><span class="vx-badge vx-badge-decision" data-decision="${esc(grp)}" title="${esc(r.decision)}">${esc(r.label||r.decision)}</span></td>
-        <td class="vx-num vx-mono">${VX.fmt.nd(r.conviction!==null&&r.conviction!==undefined?VX.fmt.num(r.conviction,0):null)}</td>
-        <td class="vx-num vx-mono">${agree===null?'—':VX.fmt.num(agree,0)+' %'}</td>
+        ${cbar(r.conviction,'var(--vx-brand)')}
+        ${cbar(agree,agree>=70?'var(--vx-positive)':agree>=40?'var(--vx-warning)':'var(--vx-negative)','%')}
         <td class="vx-num vx-mono">${r.price!==null&&r.price!==undefined?VX.fmt.price(r.price):'—'}</td>
         <td><button class="vx-btn vx-btn-sm vx-btn-ghost" data-committee-detail="${i}" aria-expanded="false">D&eacute;tail</button></td>
         <td><button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(r.symbol)}" aria-label="Actions ${esc(r.symbol)}">⋯</button></td>
@@ -545,8 +650,23 @@ async function initResearch(){
       <td class="vx-num vx-mono">${val}</td></tr>`;
     ($('vx-research-meta')||{}).innerHTML=
       `<span class="vx-badge" style="color:${esc(v.color||'inherit')}">${esc(v.verdict||'—')}</span>`;
-    ($('vx-research-body')||{}).innerHTML=
-      `<div style="overflow-x:auto"><table class="vx-table"><thead>
+    /* Bandeau premium : stat-tiles + mini-jauges des probabilités 0-1 (PSR/DSR/PBO).
+       Données réelles /api/validator ; « — » honnête si absent. */
+    const _vtone=v.verdict==='ROBUSTE'?'brand':(v.verdict==='FRAGILE'?'neg':'');
+    const _statrow=`<div class="vx-statrow">
+      <div class="vx-stat" data-tone="${_vtone}"><div class="vx-stat-k">Verdict</div><div class="vx-stat-v">${esc(v.verdict||'—')}</div><div class="vx-stat-sub">robustesse hors échantillon</div></div>
+      <div class="vx-stat" data-tone="${v.sharpe_ann>0?'pos':v.sharpe_ann<0?'neg':''}"><div class="vx-stat-k">Sharpe annualisé</div><div class="vx-stat-v">${VX.fmt.num(v.sharpe_ann,2)}</div><div class="vx-stat-sub">rendement / risque</div></div>
+      <div class="vx-stat" data-tone="${v.folds_positive_pct>=50?'pos':v.folds_positive_pct!=null?'neg':''}"><div class="vx-stat-k">Walk-forward +</div><div class="vx-stat-v">${VX.fmt.num(v.folds_positive_pct,0)}%</div><div class="vx-stat-sub">fenêtres au Sharpe &gt; 0</div></div>
+    </div>`;
+    const _gm=(k,val,tone,cmp)=>`<div class="vx-metric" data-tone="${val==null?'':tone}"><span class="vx-metric-k">${k}</span><span class="vx-metric-v">${val==null?'—':VX.fmt.num(val,3)}</span>${cmp?`<div class="vx-metric-cmp">${cmp}</div>`:''}<div class="vx-metric-bar"><i style="width:${val==null?0:Math.max(3,Math.min(100,val*100))}%"></i></div></div>`;
+    const _probs=`<div class="vx-metricgrid vx-mt3">
+      ${_gm('PSR',v.psr0,v.psr0>=0.5?'pos':'warn','P(Sharpe&gt;0)')}
+      ${_gm('DSR',v.dsr,v.dsr>=0.5?'pos':'neg','Sharpe déflaté')}
+      ${_gm('PBO',v.pbo_estimate,v.pbo_estimate>=0.5?'neg':'pos','sur-optimisation')}
+    </div>`;
+    $('vx-research-body').innerHTML=_statrow+_probs+
+      `<details class="vx-mt3"><summary class="vx-meta" style="cursor:pointer;margin-bottom:8px">Toutes les métriques du validateur</summary>`
+      +`<div style="overflow-x:auto"><table class="vx-table"><thead>
         <tr><th>M&eacute;trique</th><th class="vx-num">Valeur</th></tr></thead><tbody>`
       +row('Sharpe annualis&eacute;',VX.fmt.num(v.sharpe_ann,2))
       +row('PSR',VX.fmt.num(v.psr0,3),'probabilit&eacute; que le Sharpe r&eacute;el d&eacute;passe 0')
@@ -558,7 +678,7 @@ async function initResearch(){
       +row('PBO (proxy)',VX.fmt.num(v.pbo_estimate,2),'probabilit&eacute; de sur-optimisation')
       +row('Skew / Kurtosis',VX.fmt.num(v.skew,2)+' / '+VX.fmt.num(v.kurtosis,2))
       +row('Observations',VX.fmt.nd(v.n))
-      +'</tbody></table></div>'
+      +'</tbody></table></div></details>'
       +`<div class="vx-insight vx-mt3" data-tone="${v.verdict==='FRAGILE'?'risk':'ai'}">${esc(v.note||'')}</div>`
       +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),'validateur hors &eacute;chantillon (indicatif)','delayed')}</div>`;
     const folds=v.fold_sharpes||[];

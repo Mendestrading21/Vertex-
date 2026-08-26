@@ -1,22 +1,42 @@
-/* Polices auto-hébergées (SKYLER LOT 81) — Inter + JetBrains Mono en
-   fichiers VARIABLES locaux (subset latin, tous poids dans un seul
-   woff2). Plus aucune requête externe : offline/PWA identique au mode
-   connecté, aucune donnée envoyée à un CDN tiers. */
+/* Vertex — fonts.css
+   Polices AUTO-HÉBERGÉES (aucune dépendance CDN → fonctionne hors-ligne).
+   General Sans (Fontshare/ITF, néo-grotesk institutionnel) = corps + titres.
+   JetBrains Mono (OFL) = chiffres, tickers, données numériques.
+   Fichiers : /static/vertex/fonts/*.woff2. Chargé EN TÊTE du <head>, avant tokens.css.
+   Aucune graisse > 700 (General Sans plafonne à Bold — voir --vx-fw-black dans tokens.css). */
 
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url(/static/vertex/fonts/inter-var.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+/* ── General Sans ── */
+@font-face{
+  font-family:'General Sans';font-style:normal;font-weight:400;font-display:swap;
+  src:url('/static/vertex/fonts/GeneralSans-Regular.woff2') format('woff2');
+}
+@font-face{
+  font-family:'General Sans';font-style:normal;font-weight:500;font-display:swap;
+  src:url('/static/vertex/fonts/GeneralSans-Medium.woff2') format('woff2');
+}
+@font-face{
+  font-family:'General Sans';font-style:normal;font-weight:600;font-display:swap;
+  src:url('/static/vertex/fonts/GeneralSans-Semibold.woff2') format('woff2');
+}
+@font-face{
+  font-family:'General Sans';font-style:normal;font-weight:700;font-display:swap;
+  src:url('/static/vertex/fonts/GeneralSans-Bold.woff2') format('woff2');
 }
 
-@font-face {
-  font-family: 'JetBrains Mono';
-  font-style: normal;
-  font-weight: 100 800;
-  font-display: swap;
-  src: url(/static/vertex/fonts/jetbrains-mono-var.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+/* ── JetBrains Mono ── */
+@font-face{
+  font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:swap;
+  src:url('/static/vertex/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+}
+@font-face{
+  font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:swap;
+  src:url('/static/vertex/fonts/JetBrainsMono-Medium.woff2') format('woff2');
+}
+@font-face{
+  font-family:'JetBrains Mono';font-style:normal;font-weight:600;font-display:swap;
+  src:url('/static/vertex/fonts/JetBrainsMono-SemiBold.woff2') format('woff2');
+}
+@font-face{
+  font-family:'JetBrains Mono';font-style:normal;font-weight:700;font-display:swap;
+  src:url('/static/vertex/fonts/JetBrainsMono-Bold.woff2') format('woff2');
 }

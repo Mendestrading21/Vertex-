@@ -5,7 +5,7 @@
    pied source-date / bouton « Comprendre ce graphique »), mais rend un vrai graphique
    chandeliers interactif (crosshair, zoom/pan) à la place du canvas Chart.js.
    Bougies : hausse = émeraude (positif), baisse = corail (négatif) — JAMAIS le vert
-   marque (#D28A54 = cuivre institutionnel, pas « ça monte »). Volume + moyennes serveur + niveaux
+   marque (#c9cdd4 = identité, pas « ça monte »). Volume + moyennes serveur + niveaux
    du plan moteur superposés. Repli automatique sur candlestickCard si la lib ou les
    dates OHLC manquent. Attribution TradingView affichée (exigence de licence). */
 (function () {
@@ -86,17 +86,14 @@
       body.appendChild(cont);
 
       var pos = cssv('--vx-positive', '#36c889'), neg = cssv('--vx-negative', '#ed655c');
-      var grid = 'rgba(237,255,237,.045)', border = 'rgba(237,255,237,.09)';
+      var grid = 'rgba(255,255,255,.045)', border = 'rgba(255,255,255,.09)';
       var chart = LWC.createChart(cont, {
         autoSize: true,
         layout: { background: { type: 'solid', color: 'transparent' }, textColor: cssv('--vx-text-muted', '#817d77'), fontFamily: cssv('--vx-font', 'Inter, ui-sans-serif, system-ui, sans-serif'), fontSize: 11 },
-        /* Ne jamais déléguer la locale à un environnement Linux pouvant exposer
-           `en-US@posix` (tag rejeté par Intl et chandelier interrompu). */
-        localization: { locale: 'fr-FR' },
         grid: { vertLines: { color: grid }, horzLines: { color: grid } },
         rightPriceScale: { borderColor: border },
         timeScale: { borderColor: border, timeVisible: false, secondsVisible: false, rightOffset: 3 },
-        crosshair: { mode: 1, vertLine: { color: 'rgba(237,255,237,.28)', width: 1, style: 3 }, horzLine: { color: 'rgba(237,255,237,.28)', width: 1, style: 3 } },
+        crosshair: { mode: 1, vertLine: { color: 'rgba(255,255,255,.28)', width: 1, style: 3 }, horzLine: { color: 'rgba(255,255,255,.28)', width: 1, style: 3 } },
       });
 
       var cs = chart.addCandlestickSeries({ upColor: pos, downColor: neg, borderVisible: false, wickUpColor: pos, wickDownColor: neg });
@@ -131,9 +128,9 @@
 
       /* Niveaux du plan moteur en lignes de prix (entrée/stop/TP/résistance/support). */
       var plan = opts.plan || {};
-      [['entry', 'Entrée', cssv('--vx-brand', '#D28A54')], ['stop', 'Stop', neg],
+      [['entry', 'Entrée', cssv('--vx-brand', '#c9cdd4')], ['stop', 'Stop', neg],
        ['tp1', 'TP1', pos], ['tp2', 'TP2', pos], ['tp3', 'TP3', pos],
-       ['resistance', 'Résist.', cssv('--vx-steel-3', '#8A8284')], ['support', 'Support', cssv('--vx-steel-3', '#8A8284')]
+       ['resistance', 'Résist.', cssv('--vx-steel-3', '#747d75')], ['support', 'Support', cssv('--vx-steel-3', '#747d75')]
       ].forEach(function (p) {
         var v = num(plan[p[0]]); if (v == null) return;
         cs.createPriceLine({ price: v, color: p[2], lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: p[1] });

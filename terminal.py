@@ -11,6 +11,9 @@ Données :  yfinance (différé ~15 min — OK swing). Greeks/GEX = Black-Schole
 ⛔ ANALYSE ONLY — aucun ordre, aucune exécution. NOT FINANCIAL ADVICE.
 """
 import os
+import copy
+import gzip
+import hashlib
 import json
 import time
 import threading
@@ -60,6 +63,7 @@ from vertex.data.universe import *  # noqa: F401,F403  (tickers, indices, secteu
 from vertex.data.constants import BENCH, R, BUILD, REFRESH_SEC  # noqa: F401
 from vertex.app.config import IBKR_ENABLED, DEMO_MODE  # noqa: F401
 from vertex.services import persist as _persist
+from vertex.observability.metrics import METRICS  # télémétrie perf (timers scan) — §37
 from vertex.services import live_engine as _live
 from vertex.services import news_plus as _news_plus
 from vertex.ui import nav as _nav
@@ -298,12 +302,39 @@ def _stooq_download(tickers):
     return {t: cache[t] for t in tickers if t in cache} if cache else out
 
 
+# ── LOT 2 : cache mémoire du téléchargement quotidien (TTL selon la séance) ────
+# La barre EOD ne change pas hors séance → re-télécharger 1 an × ~517 titres toutes
+# les 120 s est pur gaspillage (et déclenche les 429 de Yahoo). Cache par ticker :
+# séance ouverte = TTL court (barre intraday partielle fraîche) ; fermée = TTL long.
+# VERTEX_YF_TTL=0 désactive (comportement historique) ; N force un TTL fixe.
+_YF_CACHE = {}          # {ticker: (DataFrame, ts)}
+_YF_TTL_OPEN = 90       # < REFRESH_SEC=120 : garde la barre du jour fraîche en séance
+_YF_TTL_CLOSED = 900    # 15 min hors séance : barre figée, tue la tempête + les 429
+
+
+def _yf_ttl():
+    env = os.environ.get('VERTEX_YF_TTL')
+    if env is not None:
+        try:
+            return max(0, int(env))     # 0 = cache off ; N = TTL fixe manuel
+        except ValueError:
+            pass
+    try:
+        return _YF_TTL_OPEN if market_status().get('open') else _YF_TTL_CLOSED
+    except Exception:
+        return _YF_TTL_CLOSED
+
+
 def _download_universe(tickers, period='1y', chunk=50):
     """Télécharge l'univers PAR LOTS (plus robuste/rapide qu'un seul gros appel
     sur le plan gratuit). Renvoie un dict {ticker: DataFrame} ; un lot ou un
     ticker en échec est simplement ignoré (jamais de plantage global).
     Si yfinance échoue (ex: Yahoo bloque l'IP du serveur cloud), bascule
-    automatiquement sur Stooq pour les tickers manquants."""
+    automatiquement sur Stooq pour les tickers manquants.
+    Cache mémoire par ticker (Lot 2) : sert depuis le cache les tickers encore
+    frais selon la séance, ne télécharge que les périmés/manquants."""
+    ttl = _yf_ttl()
+    now = time.time()
     frames = {}
     #  ── TETE DE CHAINE : IBKR ────────────────────────────────────────────
     #  Le courtier d'abord, le web ensuite. Les barres IBKR sont celles du
@@ -358,6 +389,8 @@ def _download_universe(tickers, period='1y', chunk=50):
                 df = dl if len(part) == 1 else dl[t]
                 if df is not None and not df.dropna().empty:
                     frames[t] = df
+                    if ttl > 0:
+                        _YF_CACHE[t] = (df, now)   # met en cache le frais
             except Exception:
                 continue
     # FILET DE SECOURS : tout ce que Yahoo n'a pas donné → Stooq (cloud-friendly)
@@ -401,11 +434,12 @@ def _scan_once():
         syms_scan = UNIVERSE[:20] if DEMO_MODE else UNIVERSE
         _syms = (syms_scan + [BENCH, '^VIX', '^GSPC', '^IXIC', '^DJI', '^RUT']
                  + [c[0] for c in _COMMO] + [m[0] for m in _MACRO_TK])
-        if DEMO_MODE:
-            data = _demo_universe(_syms)
-            scan_state['source'] = 'demo'
-        else:
-            data = _download_universe(_syms)
+        with METRICS.timer('scan.download'):
+            if DEMO_MODE:
+                data = _demo_universe(_syms)
+                scan_state['source'] = 'demo'
+            else:
+                data = _download_universe(_syms)
         if BENCH not in data:
             scan_state['error'] = 'market_data_unavailable'
             scan_state['source_health'] = {
@@ -416,36 +450,46 @@ def _scan_once():
         bc = data[BENCH]['Close'].dropna()
         bench_ret = (float(bc.iloc[-1]) / float(bc.iloc[-63]) - 1) if len(bc) > 63 else 0.0
         rows, detail = [], {}
-        for sym in syms_scan:
-            try:
-                df = data[sym].dropna()
-                if len(df) < 60:
-                    continue
-                _fst = scan_state.get('fundamentals') or {}
-                _fsy = (_fst.get('by_sym') or {}).get(sym) or {}
-                _fsec = (_fst.get('by_sector') or {}).get(_fsy.get('sector')) or {}
-                _fund = ({**_fsy, 'sector_median_pe': _fsec.get('median_pe'),
-                          'sector_median_margin': _fsec.get('median_margin'),
-                          'sector_median_growth': _fsec.get('median_growth')} if _fsy else {})
-                # secteur GICS statique TOUJOURS injecté → profil offensif/défensif fiable même sans fondamentaux live
-                _fund.setdefault('sector', _GICS_SECTOR.get(sym) or _INDUSTRY_MAP.get(sym))
-                d = analyse(df, bench_ret, fund=(_fund or None))   # vrais fondamentaux → score fondamental réel (sinon proxy)
-                d['chart_read'] = research.chart_read(d)   # analyse graphique FR (cartes Screener + modale)
-                d['thesis'] = research.thesis(d)            # synthèse Vertex décisive (fusion signaux + comment jouer)
-                d['sector'] = _GICS_SECTOR.get(sym)         # secteur GICS → contexte transversal / pairs (DecisionStack)
-                detail[sym] = d
-                _clf = df['Close'].dropna()                # perf multi-horizons (Équipe semaine/mois/trim./année)
+        _funds = scan_state.get('fundamentals') or {}   # LOT 3 : snapshot unique (cohérent + thread-safe sous //)
 
-                def _pf(nn, _c=_clf):
-                    return round((float(_c.iloc[-1]) / float(_c.iloc[-1 - nn]) - 1) * 100, 1) if len(_c) > nn else None
-                d['perf_w'], d['perf_m'], d['perf_q'], d['perf_y'] = _pf(5), _pf(21), _pf(63), _pf(252)
-                d['hot'] = sym in TREND_SET   # badge 🔥 UI — NE PAS écraser d['trend'] (score 0-100 lu par engine/weekly)
-                _vx = d.get('vertex') or {}
-                _sub = d.get('sub') or {}
-                _kel = _vx.get('kelly') or {}
-                _mc = _vx.get('mc') or {}
-                _evb = _vx.get('ev') or {}
-                rows.append({'symbol': sym, 'price': d['price'], 'change': d['change'],
+        def _analyse_one(sym):
+            """Calcul complet d'UN titre — PUR (lit data/bench_ret/_funds en lecture seule,
+            écrit un objet local). Renvoie (row, sym, detail) ou None. Base du scan //."""
+            df = data[sym].dropna()
+            if len(df) < 60:
+                return None
+            _fsy = (_funds.get('by_sym') or {}).get(sym) or {}
+            _fsec = (_funds.get('by_sector') or {}).get(_fsy.get('sector')) or {}
+            _fund = ({**_fsy, 'sector_median_pe': _fsec.get('median_pe'),
+                      'sector_median_margin': _fsec.get('median_margin'),
+                      'sector_median_growth': _fsec.get('median_growth')} if _fsy else {})
+            # secteur GICS statique TOUJOURS injecté → profil offensif/défensif fiable même sans fondamentaux live
+            _fund.setdefault('sector', _GICS_SECTOR.get(sym) or _INDUSTRY_MAP.get(sym))
+            _fp = _analyse_fp(df, bench_ret, _fund or None)
+            _memo = _ANALYSE_MEMO.get(sym)
+            if _memo is not None and _memo[0] == _fp:
+                d = copy.deepcopy(_memo[1])   # hit : copie privée d'un calcul déjà identique (byte-identique)
+                METRICS.inc('scan.memo_hits')
+            else:
+                with METRICS.timer('scan.symbol'):
+                    d = analyse(df, bench_ret, fund=(_fund or None))   # vrais fondamentaux → score fondamental réel (sinon proxy)
+                _ANALYSE_MEMO[sym] = (_fp, copy.deepcopy(d))   # stocke la sortie PURE (avant enrichissements ci-dessous)
+                METRICS.inc('scan.memo_miss')
+            d['chart_read'] = research.chart_read(d)   # analyse graphique FR (cartes Screener + modale)
+            d['thesis'] = research.thesis(d)            # synthèse Vertex décisive (fusion signaux + comment jouer)
+            d['sector'] = _GICS_SECTOR.get(sym)         # secteur GICS → contexte transversal / pairs (DecisionStack)
+            _clf = df['Close'].dropna()                # perf multi-horizons (Équipe semaine/mois/trim./année)
+
+            def _pf(nn, _c=_clf):
+                return round((float(_c.iloc[-1]) / float(_c.iloc[-1 - nn]) - 1) * 100, 1) if len(_c) > nn else None
+            d['perf_w'], d['perf_m'], d['perf_q'], d['perf_y'] = _pf(5), _pf(21), _pf(63), _pf(252)
+            d['hot'] = sym in TREND_SET   # badge 🔥 UI — NE PAS écraser d['trend'] (score 0-100 lu par engine/weekly)
+            _vx = d.get('vertex') or {}
+            _sub = d.get('sub') or {}
+            _kel = _vx.get('kelly') or {}
+            _mc = _vx.get('mc') or {}
+            _evb = _vx.get('ev') or {}
+            row = {'symbol': sym, 'price': d['price'], 'change': d['change'],
                              'score': d['score'], 'grade': d['grade'], 'verdict': d['verdict'],
                              'perf_w': d.get('perf_w'), 'perf_m': d.get('perf_m'),
                              'perf_q': d.get('perf_q'), 'perf_y': d.get('perf_y'),
@@ -475,22 +519,60 @@ def _scan_once():
                              # sous-scores SCORING (décompose pourquoi le score global = X)
                              'st_tech': _sub.get('technical'), 'st_mom': _sub.get('momentum'),
                              'st_fund': _sub.get('fundamental'), 'st_risk': _sub.get('risk'),
-                             'st_conf': _sub.get('confidence'), 'st_fproxy': _sub.get('fundamental_is_proxy')})
+                             'st_conf': _sub.get('confidence'), 'st_fproxy': _sub.get('fundamental_is_proxy')}
+            return (row, sym, d)
+
+        def _safe_one(sym):
+            try:
+                return _analyse_one(sym)
             except Exception:
+                return None   # un titre en échec est simplement ignoré (comportement historique)
+
+        _t_compute = time.monotonic()   # LOT 0 : durée totale du calcul par symbole (télémétrie perf)
+        _workers = int(os.environ.get('VERTEX_SCAN_WORKERS',
+                                       str(min(8, max(1, (os.cpu_count() or 2) - 1)))))  # laisse 1 cœur au serveur web
+        if _workers > 1 and len(syms_scan) > 1:
+            # LOT 3 : calcul par titre EN PARALLÈLE (map-and-collect → zéro mutation partagée).
+            # analyse()/research.* pures + RNG Monte-Carlo/bootstrap LOCAL ⇒ byte-identique au mode
+            # série (repli VERTEX_SCAN_WORKERS=1). numpy/pandas relâchent le GIL ⇒ vrai parallélisme.
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=_workers) as _ex:
+                _results = list(_ex.map(_safe_one, syms_scan))
+        else:
+            _results = [_safe_one(s) for s in syms_scan]
+        for _r in _results:   # assemblage sur le thread principal (ordre préservé par map ; rows re-trié après)
+            if _r is None:
                 continue
+            _row, _sym, _d = _r
+            rows.append(_row)
+            detail[_sym] = _d
+        METRICS.timing('scan.compute_all', (time.monotonic() - _t_compute) * 1000)  # LOT 0
         rows.sort(key=lambda x: x['score'], reverse=True)
         breadth = round(sum(1 for r in rows if r['verdict'] == 'BUY') / len(rows) * 100) if rows else 0
         spy = ({'price': round(float(bc.iloc[-1]), 2),
                 'change': round((float(bc.iloc[-1]) / float(bc.iloc[-2]) - 1) * 100, 2)} if len(bc) > 1 else None)
-        # INDICES PRINCIPAUX (bande du haut)
+        # INDICES PRINCIPAUX (bande du haut). Le S&P 500 porte en plus une série
+        # de 120 séances + MM20/50/200 calculées ICI (serveur) : c'est le graphique
+        # héros du Dashboard quand SPY n'est pas dans l'univers scanné — vraie
+        # série d'indice, jamais un titre proxy.
         indices = []
         for _tk, _nm in [('^GSPC', 'S&P 500'), ('^IXIC', 'Nasdaq'), ('^DJI', 'Dow Jones'), ('^RUT', 'Russell 2000'), ('^VIX', 'VIX')]:
             try:
                 _cc = data[_tk]['Close'].dropna()
-                indices.append({'name': _nm, 'price': round(float(_cc.iloc[-1]), 2),
-                                'change': round((float(_cc.iloc[-1]) / float(_cc.iloc[-2]) - 1) * 100, 2),
-                                'spark': [round(float(x), 2) for x in _cc.tail(24).values],
-                                'vix': _tk == '^VIX'})
+                _e = {'name': _nm, 'price': round(float(_cc.iloc[-1]), 2),
+                      'change': round((float(_cc.iloc[-1]) / float(_cc.iloc[-2]) - 1) * 100, 2),
+                      'spark': [round(float(x), 2) for x in _cc.tail(24).values],
+                      'vix': _tk == '^VIX'}
+                if _tk == '^GSPC':
+                    def _ser(s):
+                        return [None if x != x else round(float(x), 2)
+                                for x in s.tail(120).values]
+                    _e['series'] = _ser(_cc)
+                    _e['dates'] = [str(d.date()) for d in _cc.tail(120).index]
+                    _e['ema20'] = _ser(_cc.ewm(span=20, adjust=False).mean())
+                    _e['sma50'] = _ser(_cc.rolling(50).mean())
+                    _e['sma200'] = _ser(_cc.rolling(200).mean())
+                indices.append(_e)
             except Exception:
                 pass
         # MATIÈRES PREMIÈRES / CRYPTO (bande sous les indices)
@@ -565,6 +647,7 @@ def _scan_once():
                 scan_state['options_board'] = _db
                 scan_state['options_as_of'] = time.time()
                 _attach_vehicle(rows, _db)
+                scan_state['options_chain_full'] = _demo.demo_chain_full(rows, detail)  # chaîne large synthétique (grille/surface/skew)
             except Exception:
                 pass
         # PREUVES PAR TITRE : qualité, provenance et réconciliation sont produites
@@ -753,6 +836,22 @@ import queue as _queue
 
 _optq = _queue.Queue()
 
+# ── Connexion IBKR configurable (honnêteté : les variables documentées dans
+#    .env.example sont désormais RÉELLEMENT respectées). IBKR_HOST/PORT/CLIENT_ID
+#    priment ; à défaut, sonde par défaut (REAL d'abord, cohérente entre workers). ──
+_IBKR_HOST = (os.environ.get('IBKR_HOST') or '127.0.0.1').strip() or '127.0.0.1'
+_IBKR_CID_BASE = (os.environ.get('IBKR_CLIENT_ID') or '').strip()
+
+
+#  `_ibkr_ports` et `_ibkr_cid` ont vecu ici jusqu'a l'integration de
+#  `vertex-live`. Ils sont retires : `main` a centralise l'ordre de sonde
+#  et l'identifiant de session dans `vertex/data_sources/ibkr_link.py`,
+#  parce que CINQ sites ouvraient leur propre connexion avec chacun ses
+#  idees — dont un qui cherchait le compte PAPIER en premier quand les
+#  quatre autres cherchaient le REEL. Deux ordres differents, c'est
+#  l'ecran qui affiche un compte et le scan qui en lit un autre.
+#  Gardien : `tests/test_vertex_1_0_ibkr_link.py`.
+
 
 def _ibkr_opt_worker():
     # Setup GARDÉ : si ib_async manque ou si l'init échoue, le worker répond None
@@ -804,6 +903,12 @@ def _ibkr_opt_worker():
         p = ([x for x in params if x.exchange == 'SMART'] or params)
         if not p:
             return None
+        # Préférer la classe d'options STANDARD (tradingClass == symbole). Certains
+        # sous-jacents exposent AUSSI une classe AJUSTÉE (« 2MSFT », « 1GOOG »…, née d'un
+        # split ou dividende spécial) : ses strikes near-the-money n'existent pas → IBKR
+        # répond « Unknown contract » en masse et la chaîne ressort VIDE (bug MSFT & co).
+        std = [x for x in p if x.tradingClass == stk.symbol]
+        p = std or p
         _exps, _ks = set(), set()
         for x in p:                                   # union : un paramset SMART peut ne porter qu'une partie des échéances
             _exps |= set(x.expirations)
@@ -846,15 +951,25 @@ def _ibkr_opt_worker():
             ib.sleep(2.6)                                       # greeks + OI arrivent en ~2 s
             for c, t in zip(batch, tks):
                 mg = t.modelGreeks
+
+                def _g(v):                                      # greek IBKR propre (NaN → None)
+                    return float(v) if (v is not None and v == v) else None
                 iv = float(mg.impliedVol) if (mg and mg.impliedVol and mg.impliedVol == mg.impliedVol) else 0.0
                 oi = t.callOpenInterest if right == 'C' else t.putOpenInterest
                 last = t.last if (t.last and t.last == t.last) else (t.close if (t.close and t.close == t.close) else 0.0)
                 rows.append({'strike': float(c.strike), 'impliedVolatility': iv,
-                             'openInterest': int(oi) if (oi and oi == oi) else 0,
-                             'volume': int(t.volume) if (t.volume and t.volume == t.volume) else 0,
+                             # DAT-01 : distinguer ABSENT (NaN → None) d'un vrai 0 reporté.
+                             # (x == x) est faux uniquement pour NaN ; un vrai 0 est donc conservé.
+                             'openInterest': (int(oi) if (oi is not None and oi == oi) else None),
+                             'volume': (int(t.volume) if (t.volume is not None and t.volume == t.volume) else None),
                              'bid': float(t.bid) if (t.bid and t.bid == t.bid and t.bid > 0) else 0.0,
                              'ask': float(t.ask) if (t.ask and t.ask == t.ask and t.ask > 0) else 0.0,
-                             'lastPrice': float(last)})
+                             'lastPrice': float(last),
+                             # Greeks RÉELS du broker (modelGreeks IBKR) — jamais estimés.
+                             'delta': _g(mg.delta) if mg else None,
+                             'gamma': _g(mg.gamma) if mg else None,
+                             'theta': _g(mg.theta) if mg else None,
+                             'vega': _g(mg.vega) if mg else None})
             for c in batch:
                 try:
                     ib.cancelMktData(c)
@@ -1099,6 +1214,58 @@ def _opt_job(kind, args, timeout):
     return box.get('res')
 
 
+def _persist_chain_full(sym, exp, right, rows, spot):
+    """Persiste la chaîne LARGE (14 strikes/côté, AVANT le filtrage « finalistes » du
+    board) → débloque max pain / murs d'OI / strikes demandés / PCR RÉELS.
+    scan_state['options_chain_full'][SYM] = {exp: {'C'|'P': {strike: {oi,vol,iv}}}, 'spot':…, 'ts':…}.
+    Borné à ~200 symboles (purge LRU grossière). ⛔ lecture seule, best-effort, silencieux."""
+    sym = (sym or '').upper()
+    right = (right or 'C').upper()[:1]
+    if not sym or not rows:
+        return
+    by_strike = {}
+    for r in rows:
+        try:
+            k = round(float(r['strike']), 2)
+        except (TypeError, ValueError, KeyError):
+            continue
+        if k <= 0:
+            continue
+        oi = r.get('openInterest')                        # DAT-01 : None honnête si absent, 0 si vrai 0
+        vol = r.get('volume')
+        iv = r.get('impliedVolatility')
+
+        def _rg(name, nd=4):                              # greek broker persisté (None honnête)
+            v = r.get(name)
+            return round(float(v), nd) if isinstance(v, (int, float)) else None
+
+        def _q(name, nd=2):                               # cotation bid/ask/last (None honnête, >0)
+            v = r.get(name)
+            return round(float(v), nd) if isinstance(v, (int, float)) and float(v) > 0 else None
+        by_strike[k] = {'oi': (int(oi) if oi is not None else None),
+                        'vol': (int(vol) if vol is not None else None),
+                        'iv': (round(float(iv), 4) if iv else None),
+                        'delta': _rg('delta'), 'gamma': _rg('gamma'),
+                        'theta': _rg('theta'), 'vega': _rg('vega'),
+                        'bid': _q('bid'), 'ask': _q('ask'), 'last': _q('lastPrice')}
+    if not by_strike:
+        return
+    full = scan_state.setdefault('options_chain_full', {})
+    ent = full.get(sym)
+    if ent is None:
+        if len(full) >= 200:                              # borne mémoire : purge le plus ancien
+            oldest = min(full, key=lambda kk: (full[kk] or {}).get('ts') or 0)
+            full.pop(oldest, None)
+        ent = full[sym] = {}
+    ent.setdefault(exp, {})[right] = by_strike
+    ent['ts'] = time.time()
+    try:
+        if spot is not None and float(spot) > 0:
+            ent['spot'] = round(float(spot), 2)
+    except (TypeError, ValueError):
+        pass
+
+
 class _IbkrChainSide:
     """Résultat de option_chain(exp) : .calls/.puts PARESSEUX → on ne fetch que le côté demandé."""
     def __init__(self, sym, m, exp):
@@ -1107,6 +1274,11 @@ class _IbkrChainSide:
     def _df(self, right):
         sym, m, exp = self._a
         rows = _opt_job('chain', (sym, m, exp, right), timeout=75) or []
+        if rows:                                          # capte la chaîne large pour max pain / OI / PCR
+            try:
+                _persist_chain_full(sym, exp, right, rows, (m or {}).get('spot'))
+            except Exception:
+                pass
         return pd.DataFrame(rows, columns=['strike', 'impliedVolatility', 'openInterest',
                                            'volume', 'bid', 'ask', 'lastPrice'])
 
@@ -1180,6 +1352,14 @@ def _publish_board(focus):
             scan_state['option_tracking_snapshot'] = {'error': 'snapshot indisponible'}
         _attach_vehicle(scan_state.get('rows') or [], ob)   # rafraîchit le verdict véhicule
         _save_json('options_cache.json', {'board': ob, 'ts': time.time()})
+        # Push SSE (canal 'options') : le board a changé → les pages options se rafraîchissent.
+        try:
+            from vertex.services.live_stream import BROKER as _broker
+            _broker.publish('options', {'board_n': len(ob),
+                                        'coverage': scan_state.get('options_coverage'),
+                                        'source': scan_state.get('options_source')})
+        except Exception:
+            pass
 
 
 def _opt_loop():
@@ -3404,7 +3584,7 @@ async function renderActionDuJour(d){
   </div>${lvls}</div>`;
   if(window.__starSym!==top.symbol){
     window.__starSym=top.symbol;
-    try{window.__starOpt=await(await fetch('/options/'+top.symbol)).json();}catch(e){window.__starOpt=null;}
+    try{window.__starOpt=await(await fetch('/api/options/pack/'+top.symbol)).json();}catch(e){window.__starOpt=null;}
   }
   const o=window.__starOpt,so=document.getElementById('dStarOpt');
   if(so&&o&&o.best_pick){const bp=o.best_pick,sc=o.scenarios,qc=bp.quality>=78?'#22C55E':bp.quality>=62?'#F5B45B':'#EF4444';
@@ -3567,7 +3747,7 @@ async function loadDetail(sym){
   el.style.display='block';el.innerHTML='<div class="scard" style="padding:20px"><span class="muted">chargement '+sym+'…</span></div>';
   el.scrollIntoView({behavior:'smooth',block:'start'});
   try{
-    const o=await(await fetch('/options/'+sym)).json();
+    const o=await(await fetch('/api/options/pack/'+sym)).json();
     const d=((window.__lastD||{}).detail||{})[sym]||{};
     const dec=o.decision,dc=dec?(dec.tone==='strong'?'#22C55E':dec.tone==='buy'?'#4ade80':dec.tone==='watch'?'#FF7A18':dec.tone==='wait'?'#FFB23F':'#EF4444'):'#888';
     const lv=d.plan||{},bp=o.best_pick;
@@ -6351,7 +6531,7 @@ function expFav(){var data={myFavs:favs(),myNotes:notes()};var b=new Blob([JSON.
 function impFav(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(d.myFavs)localStorage.setItem('myFavs',JSON.stringify(d.myFavs));if(d.myNotes)localStorage.setItem('myNotes',JSON.stringify(d.myNotes));renderFav();alert('Favoris importes');}catch(e){alert('Fichier invalide');}};r.readAsText(f);}
 function resetFav(){if(confirm('Supprimer TOUS tes favoris ?')){localStorage.removeItem('myFavs');renderFav();}}
 function resetNotes(){if(confirm('Supprimer TOUTES tes notes ?')){localStorage.removeItem('myNotes');renderFav();}}
-fetch('/healthz').then(function(r){return r.json()}).then(function(h){var src=h.ibkr_enabled?'🟢 IBKR temps reel':(h.data_source==='demo'?'🎭 Demo':'🟡 yfinance differe ~15 min');document.getElementById('dataInfo').innerHTML='Source : <b style="color:#C9D2E0">'+src+'</b><br>Dernier scan : il y a <b style="color:#C9D2E0">'+(h.scan_age!=null?h.scan_age+'s':'—')+'</b>';}).catch(function(){});
+fetch('/healthz').then(function(r){return r.json()}).then(function(h){var src=h.ibkr_live?'🟢 IBKR temps reel':(h.data_source==='demo'?'🎭 Demo':(h.ibkr_enabled?'🟡 IBKR configure · donnees differees ~15 min':'🟡 yfinance differe ~15 min'));document.getElementById('dataInfo').innerHTML='Source : <b style="color:#C9D2E0">'+src+'</b><br>Dernier scan : il y a <b style="color:#C9D2E0">'+(h.scan_age!=null?h.scan_age+'s':'—')+'</b>';}).catch(function(){});
 renderD();renderFav();
 """
 
@@ -6566,9 +6746,9 @@ function renderPal(){var host=document.getElementById('hmPal');if(!host)return;v
     +_palCard('📈 TOP · SEMAINE','#22C55E',PAL,'w',1)+_palCard('📉 FLOP · SEMAINE','#EF4444',PAL,'w',-1)
     +_palCard('📈 TOP · MOIS','#22C55E',PAL,'m',1)+_palCard('📉 FLOP · MOIS','#EF4444',PAL,'m',-1)+'</div>'
     +'<div style="'+g+'">'
-    +_palIdx('🏛️ TOP · DOW','#38BDF8',PAL,IDXSETS.dow)+_palIdx('💻 TOP · NASDAQ','#A78BFA',PAL,IDXSETS.ndx)
-    +_palIdx('📊 TOP · S&P 500','#F5B45B',PAL,IDXSETS.sp)+_palIdx('🇺🇸 TOP · RUSSELL','#34D399',PAL,IDXSETS.rut)
-    +_palIdx('🇪🇺 TOP · EUROPE','#60A5FA',PAL,IDXSETS.eu)+_palIdx('🌏 TOP · ASIE','#F472B6',PAL,IDXSETS.asia)+'</div>';}
+    +_palIdx('🏛️ TOP · DOW','#c9cdd4',PAL,IDXSETS.dow)+_palIdx('💻 TOP · NASDAQ','#c9cdd4',PAL,IDXSETS.ndx)
+    +_palIdx('📊 TOP · S&P 500','#c9cdd4',PAL,IDXSETS.sp)+_palIdx('🇺🇸 TOP · RUSSELL','#c9cdd4',PAL,IDXSETS.rut)
+    +_palIdx('🇪🇺 TOP · EUROPE','#c9cdd4',PAL,IDXSETS.eu)+_palIdx('🌏 TOP · ASIE','#c9cdd4',PAL,IDXSETS.asia)+'</div>';}
 function load(){fetch('/scan').then(function(r){return r.json()}).then(function(d){var fs=((d.fundamentals||{}).by_sym)||{},det=d.detail||{};
   ALL=(d.rows||[]).map(function(r){var f=fs[r.symbol]||{},dd=det[r.symbol]||{};return {symbol:r.symbol,change:r.change,score:r.score,sector:r.sector||f.sector||dd.sector||'—'};});
   IDXSETS=d.idx_sets||{};
@@ -6928,6 +7108,12 @@ def _alerts_loop():
                     for k in sorted(_ALERTS_FIRED, key=lambda k: _ALERTS_FIRED[k].get('ts', 0))[:-200]:
                         _ALERTS_FIRED.pop(k, None)
                 _save_json('alerts_fired.json', _ALERTS_FIRED)
+                # Push SSE (canal 'alerts') : une alerte vient de se déclencher.
+                try:
+                    from vertex.services.live_stream import BROKER as _broker
+                    _broker.publish('alerts', {'fired': len(_ALERTS_FIRED)})
+                except Exception:
+                    pass
         except Exception:
             pass
         try:

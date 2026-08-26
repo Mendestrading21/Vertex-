@@ -26,8 +26,22 @@ def configured() -> bool:
     return bool(os.environ.get('ANTHROPIC_API_KEY', '').strip())
 
 
+# Modèle par défaut : profondeur maximale pour l'analyste privé (cf .env.example
+# et le runbook). VERTEX_AI_MODEL prime, ANTHROPIC_MODEL en repli — les deux ids
+# sont valides ; l'utilisateur choisit (claude-opus-4-8 · claude-sonnet-5).
+DEFAULT_MODEL = 'claude-opus-4-8'
+
+
+def resolve_model() -> str:
+    """Résolution unique du modèle IA (partagée provider + santé) — jamais deux
+    sources de vérité divergentes entre /api/ai/status et l'appel réel."""
+    return (os.environ.get('VERTEX_AI_MODEL', '').strip()
+            or os.environ.get('ANTHROPIC_MODEL', '').strip()
+            or DEFAULT_MODEL)
+
+
 def model() -> str:
-    return os.environ.get('ANTHROPIC_MODEL', '').strip() or 'claude-sonnet-5'
+    return resolve_model()
 
 
 def health() -> dict:

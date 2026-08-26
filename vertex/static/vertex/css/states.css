@@ -1,47 +1,10 @@
 /* Vertex Design System V3 — states.css
    États premium : LOADING / READY / EMPTY / STALE / ERROR / OFFLINE / DEMO.
-   Un état honnête, compact, actionnable.
-
-   LOT 617 — cet en-tête promettait « jamais un rectangle géant vide », et
-   `.vx-state` portait un `max-height:240px` censé le garantir. Mesuré : dans
-   une boîte `flex-column`, un plafond ne rogne pas et ne fait pas déborder —
-   il COMPRIME les enfants flexibles. Le seul effet réel était d'écraser
-   l'icône fantôme décorative de 41 px à 31 px sur un unique état, à 390 px.
-   Aucun texte n'était perdu. Le plafond est retiré : la compacité vient de la
-   BRIÈVETÉ des messages, pas d'une contrainte de hauteur qui ne contraint que
-   la décoration. */
+   Un état honnête, compact, actionnable — jamais un rectangle géant vide. */
 
 .vx-state{display:flex;flex-direction:column;align-items:center;gap:var(--vx-s2);
   padding:var(--vx-s6) var(--vx-s4);text-align:center;color:var(--vx-text-muted);
-  font-size:13px;justify-content:center}
-/* LOT 617 — `max-height:240px` a ete RETIRE d'ici, et ce que la mesure a
-   montre n'est PAS ce que je croyais en le retirant.
-
-   Piege (a), ecrit d'avance : « un plafond sans regle `overflow` fait DEBORDER
-   le contenu ». **REFUTE.** Dans une boite `flex-column`, les enfants sont
-   flexibles : le plafond ne rogne pas et ne fait pas deborder, il COMPRIME.
-
-   Trois instruments successifs ont ete necessaires, et les deux premiers ont
-   repondu « aucun debordement » :
-     1. `scrollHeight > height`      -> 0  (aveugle : scrollHeight rendait la
-                                            valeur DEJA ecretee, 238)
-     2. rect des enfants vs rect de la boite -> 0  (aveugle : les enfants
-                                            retrecissent au lieu de sortir)
-     3. `scrollHeight` de CHAQUE enfant -> trouve : l'icone fantome passait de
-                                            41 px a 31 px
-
-   Effet reel, mesure a 390 px sur `/journal?view=track-record` : hauteur
-   naturelle 249 px pour un plafond de 240, et la compression de 9 px etait
-   absorbee ENTIEREMENT par l'icone fantome decorative (-24 %). Aucun texte
-   perdu, aucun chevauchement, aucun rognage. Un seul etat du produit etait
-   concerne ; aucune des 20 cartes ordinaires mesurees ne plafonne sa hauteur.
-
-   Le plafond est donc retire parce qu'il ne servait rien et deformait une
-   icone, PAS parce qu'il faisait deborder du texte.
-
-   NE PAS le remplacer par `overflow:hidden` : ces zones existent pour DIRE
-   pourquoi une donnee manque. Amputer le motif serait pire que tout ce qui
-   precede. Si la hauteur redevient un sujet, raccourcir le TEXTE. */
+  font-size:13px;max-height:240px;justify-content:center}
 .vx-state b{color:var(--vx-text-secondary)}
 .vx-state .vx-state-icon{width:34px;height:34px;border-radius:10px;
   display:grid;place-items:center;background:var(--vx-surface-2);
@@ -65,10 +28,19 @@
 .vx-skeleton-kpi{height:34px;width:60%}
 .vx-skeleton-line{height:12px}
 .vx-skeleton-chart{height:140px}
+.vx-skeleton-hero{height:320px}
+.vx-skeleton-gauge{height:130px;width:130px;border-radius:50%;margin:0 auto}
+.vx-skeleton-table{height:220px}
+.vx-skeleton-heatmap{height:200px}
+/* Grille de skeletons KPI prête (§34) */
+.vx-skeleton-kpirow{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.vx-skeleton-kpirow .vx-skeleton{height:64px}
+/* Réduction de mouvement : la brillance s'arrête */
+@media (prefers-reduced-motion:reduce){.vx-skeleton::after{animation:none}}
 
 /* Bannières d'état */
 .vx-stale-banner{display:flex;align-items:center;gap:8px;
-  background:var(--vx-warning-soft);border:1px solid rgba(217,190,60,.3);
+  background:var(--vx-warning-soft);border:1px solid rgba(221,162,59,.3);
   color:var(--vx-warning);border-radius:var(--vx-r-sm);padding:6px 10px;
   font-size:12px;margin-bottom:var(--vx-s3)}
 .vx-error-banner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
@@ -82,18 +54,13 @@
 
 /* Mode démo — clair, propre, sans ambiguïté */
 .vx-demo-banner{display:flex;align-items:center;gap:9px;
-  background:var(--vx-brand-soft);border:1px solid rgba(255,255,255,.3);
+  background:var(--vx-brand-soft);border:1px solid rgba(201,205,212,.3);
   color:var(--vx-brand-strong);border-radius:var(--vx-r-sm);
-  padding:5px 12px;font-size:12px;font-weight:600;margin-bottom:var(--vx-s2)}
-/* LOT 628 — le bandeau demo occupait 35 px + 16 px d'ecart avant les tuiles
-   de decision. Il DOIT rester visible et lisible : c'est lui qui empeche de
-   prendre une donnee synthetique pour une donnee reelle. Seuls son padding
-   et sa marge basse sont resserres ; ni sa taille de texte, ni son contraste,
-   ni son libelle ne bougent. */
+  padding:7px 12px;font-size:12px;font-weight:600;margin-bottom:var(--vx-s4)}
 .vx-badge-demo{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;
   border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.5px;
   text-transform:uppercase;background:var(--vx-brand-soft);
-  color:var(--vx-brand-strong);border:1px solid rgba(255,255,255,.3)}
+  color:var(--vx-brand-strong);border:1px solid rgba(201,205,212,.3)}
 
 /* Indicateurs live (§29) : live/delayed/frozen/fallback/offline */
 .vx-live-dot{width:7px;height:7px;border-radius:99px;flex:none;
@@ -103,22 +70,3 @@
 [data-live="frozen"] .vx-live-dot,.vx-live-dot[data-live="frozen"]{background:var(--vx-neutral-chart)}
 [data-live="fallback"] .vx-live-dot,.vx-live-dot[data-live="fallback"]{background:var(--vx-violet)}
 [data-live="offline"] .vx-live-dot,.vx-live-dot[data-live="offline"]{background:var(--vx-negative)}
-
-/* ═══ CONTINUITY LOT 5 — Identité de fraîcheur (puce unifiée) + mode offline ═══ */
-.vx-fresh-chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:650;
-  letter-spacing:.03em;padding:2px 8px;border-radius:999px;white-space:nowrap;
-  border:1px solid var(--vx-border-soft);background:rgba(255,255,255,.03);color:var(--vx-text-muted)}
-.vx-fresh-chip[data-state="live"]{color:var(--vx-positive);border-color:rgba(43,190,144,.28)}
-.vx-fresh-chip[data-state="snapshot"]{color:var(--vx-text-secondary)}
-.vx-fresh-chip[data-state="stale"]{color:var(--vx-warning);border-color:rgba(217,190,60,.28)}
-.vx-fresh-chip[data-state="refreshing"]{color:var(--vx-text-secondary)}
-.vx-fresh-chip[data-state="error"],.vx-fresh-chip[data-state="offline"]{color:var(--vx-negative);border-color:rgba(233,85,95,.28)}
-.vx-fresh-dot{width:6px;height:6px;border-radius:50%;background:var(--vx-positive);
-  box-shadow:0 0 0 3px rgba(43,190,144,.16);animation:vx-fresh-pulse 1.8s ease-in-out infinite}
-@keyframes vx-fresh-pulse{0%,100%{opacity:1}50%{opacity:.4}}
-@media (prefers-reduced-motion:reduce){.vx-fresh-dot{animation:none}}
-/* Hors ligne : léger voile sur le bandeau live du shell (données conservées) */
-:root[data-net="offline"] .vx-live-dot{background:var(--vx-negative)!important;animation:none}
-/* Sous-titre de sous-panneau (observabilité Continuité) */
-.vx-subhead{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--vx-text-muted);margin:0 0 8px;display:flex;align-items:center;gap:8px}

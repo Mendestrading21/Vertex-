@@ -9,6 +9,7 @@ Extrait verbatim du monolithe. Analyse uniquement, aucune exécution — c'est u
 test PAPIER, il ne passe aucun ordre.
 """
 
+import hashlib
 import math
 
 import pandas as pd
@@ -16,8 +17,35 @@ import pandas as pd
 from vertex.data.universe import WATCHLIST
 from vertex.engines import indicators
 
+# Lot 9b : mémo du forward-test. Recomputé à l'identique tant que les séries WATCHLIST
+# de `data` sont stables (empreinte len+dernière date+dernier close) → byte-identique.
+_BT_MEMO = {'key': None, 'result': None}
+
 
 def backtest(data, lb=126, top_n=5, smin=58, eq0=100000.0):
+    """Forward-test PAPER (mémoïsé sur l'empreinte des séries WATCHLIST — Lot 9b)."""
+    try:
+        h = hashlib.blake2b(digest_size=16)
+        for sym in WATCHLIST:
+            df = data.get(sym)
+            if df is None:
+                continue
+            cc = df['Close'].dropna()
+            if len(cc):
+                h.update(('%s|%d|%s|%r;' % (sym, len(cc), cc.index[-1], float(cc.iloc[-1]))).encode())
+        key = (h.hexdigest(), lb, top_n, smin, eq0)
+    except Exception:
+        key = None
+    if key is not None and _BT_MEMO['key'] == key:
+        return _BT_MEMO['result']
+    result = _backtest_compute(data, lb=lb, top_n=top_n, smin=smin, eq0=eq0)
+    if key is not None:
+        _BT_MEMO['key'] = key
+        _BT_MEMO['result'] = result
+    return result
+
+
+def _backtest_compute(data, lb=126, top_n=5, smin=58, eq0=100000.0):
     """Forward-test PAPER : top N titres score>=smin, rebalance quotidien, signal d'HIER (zéro lookahead)."""
     closes, scores = {}, {}
     for sym in WATCHLIST:

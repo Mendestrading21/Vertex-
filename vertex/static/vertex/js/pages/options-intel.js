@@ -171,34 +171,45 @@
   }
 
   function stat(label, val) {
-    return '<div class="vx-stat"><span class="vx-stat-label">' + esc(label) +
-      '</span><span class="vx-stat-value">' + val + '</span></div>';
+    // Builder partagé (markup .vx-stat canonique stylé). Repli inline si VX.tile absent.
+    return (window.VX && VX.tile) ? VX.tile.stat({ k: label, v: val })
+      : '<div class="vx-stat"><div class="vx-stat-k">' + esc(label) + '</div><div class="vx-stat-v">' + val + '</div></div>';
   }
 
-  // Barre de proportion CALL vs PUT (direction dominante du tableau d'options).
+  // Cellule de métrique premium color-codée (kit .vx-metric). bar = valeur 0-100
+  // pour la mini-barre (optionnelle). Repli « — » honnête.
+  function mCell(k, v, unit, tone, bar) {
+    // Builder partagé (CMP-02) — markup .vx-metric canonique (data-tone + barre). Repli inline si VX.tile absent.
+    if (window.VX && VX.tile) return VX.tile.metric({ k: k, v: v, unit: unit, tone: tone, bar: bar });
+    var barHtml = (bar != null && v != null) ? '<div class="vx-metric-bar"><i style="width:' + Math.max(3, Math.min(100, bar)) + '%"></i></div>' : '';
+    return '<div class="vx-metric" data-tone="' + (v == null ? '' : (tone || '')) + '"><span class="vx-metric-k">' + esc(k) + '</span>' +
+      '<span class="vx-metric-v">' + (v == null ? '—' : v) + (unit ? '<span class="vx-metric-u">' + unit + '</span>' : '') + '</span>' + barHtml + '</div>';
+  }
+
+  // Répartition CALL vs PUT en barre empilée (kit .vx-stackbar) + légende.
   function callPutBar(calls, puts) {
     var t = (calls || 0) + (puts || 0); if (!t) return '';
     var cp = Math.round((calls || 0) / t * 100), pp = 100 - cp;
-    return '<div style="margin-top:.8rem" role="img" aria-label="CALLS ' + (calls || 0) + ' contre PUTS ' + (puts || 0) + ', ' + cp + ' % calls">' +
-      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--vx-text-secondary,#BABABA);margin-bottom:3px">' +
-      '<span>CALLS ' + VXf.nd(calls) + ' (' + cp + ' %)</span><span>PUTS ' + VXf.nd(puts) + ' (' + pp + ' %)</span></div>' +
-      '<div style="height:14px;border-radius:5px;overflow:hidden;display:flex;background:var(--vx-surface-3,#121214)">' +
-      '<span style="width:' + cp + '%;background:var(--vx-positive,#2BBE90)"></span>' +
-      '<span style="width:' + pp + '%;background:var(--vx-negative,#E9555F)"></span></div>' +
-      '<div class="vx-muted" style="font-size:11px;margin-top:4px">Dominante : ' + ((calls || 0) >= (puts || 0) ? 'CALLS' : 'PUTS') + ' — biais de la Stratégie Vertex : achat de calls (les puts restent tactiques). Volume/OI ≠ conviction certaine.</div></div>';
+    return '<div style="margin-top:.9rem" role="img" aria-label="CALLS ' + (calls || 0) + ' contre PUTS ' + (puts || 0) + ', ' + cp + ' % calls">' +
+      '<div class="vx-stackbar-legend" style="justify-content:space-between;margin-bottom:6px">' +
+      '<span><i style="background:var(--vx-positive)"></i>CALLS ' + VXf.nd(calls) + ' <b>' + cp + '%</b></span>' +
+      '<span><i style="background:var(--vx-negative)"></i>PUTS ' + VXf.nd(puts) + ' <b>' + pp + '%</b></span></div>' +
+      '<div class="vx-stackbar"><i style="width:' + cp + '%;background:var(--vx-positive)"></i><i style="width:' + pp + '%;background:var(--vx-negative)"></i></div>' +
+      '<div class="vx-muted" style="font-size:11px;margin-top:5px">Dominante : ' + ((calls || 0) >= (puts || 0) ? 'CALLS' : 'PUTS') + ' — biais de la Stratégie Vertex : achat de calls (les puts restent tactiques). Volume/OI ≠ conviction certaine.</div></div>';
   }
 
   function countersHtml(c, demo, asOf) {
     var band = c.quality_band ? esc(c.quality_band) : '—';
+    var qtone = c.avg_quality == null ? '' : (c.avg_quality >= 66 ? 'pos' : c.avg_quality >= 45 ? 'warn' : 'neg');
     return (demo ? '<div class="vx-demo-tag">Données de démonstration</div>' : '') +
-      '<div class="vx-stats-row">' +
-      stat('Contrats', VXf.nd(c.total)) +
-      stat('CALLS', VXf.nd(c.calls)) +
-      stat('PUTS', VXf.nd(c.puts)) +
-      stat('Titres', VXf.nd(c.symbols)) +
-      stat('IV moyenne', c.avg_iv != null ? VXf.num(c.avg_iv, 1) + ' %' : '—') +
-      stat('Qualité moy.', c.avg_quality != null ? VXf.num(c.avg_quality, 0) + ' (' + band + ')' : '—') +
-      stat('Spread moy.', c.avg_spread_pct != null ? VXf.num(c.avg_spread_pct, 1) + ' %' : '—') +
+      '<div class="vx-metricgrid">' +
+      mCell('Contrats', VXf.nd(c.total)) +
+      mCell('CALLS', VXf.nd(c.calls), '', (c.calls >= c.puts ? 'pos' : '')) +
+      mCell('PUTS', VXf.nd(c.puts), '', (c.puts > c.calls ? 'neg' : '')) +
+      mCell('Titres', VXf.nd(c.symbols)) +
+      mCell('IV moyenne', c.avg_iv != null ? VXf.num(c.avg_iv, 1) : null, '%', 'warn', c.avg_iv) +
+      mCell('Qualité moy.', c.avg_quality != null ? VXf.num(c.avg_quality, 0) : null, ' (' + band + ')', qtone, c.avg_quality) +
+      mCell('Spread moy.', c.avg_spread_pct != null ? VXf.num(c.avg_spread_pct, 1) : null, '%', (c.avg_spread_pct > 5 ? 'warn' : '')) +
       '</div>' +
       callPutBar(c.calls, c.puts) +
       (asOf ? '<div class="vx-muted" style="margin-top:.5rem">Scan : ' + esc(asOf) + '</div>' : '');
@@ -216,6 +227,16 @@
       .catch(function () { if (window.VX && VX.toast) VX.toast('Suivi impossible', 'error'); });
   };
 
+  // Cellule micro-barre inline (qualité, PoP…) : barre + nombre, color-codée.
+  function microBar(val, unit, col) {
+    if (val == null || isNaN(val)) return '<td>—</td>';
+    var w = Math.max(4, Math.min(100, val));
+    return '<td><span style="display:inline-flex;align-items:center;gap:6px">' +
+      '<span style="flex:0 0 34px;height:5px;border-radius:99px;background:var(--vx-surface-0);position:relative;overflow:hidden">' +
+      '<i style="position:absolute;left:0;top:0;bottom:0;width:' + w + '%;background:' + (col || 'var(--vx-brand)') + ';border-radius:99px"></i></span>' +
+      '<b class="vx-mono" style="font-weight:600">' + Math.round(val) + (unit || '') + '</b></span></td>';
+  }
+
   function radarTable(rows) {
     if (!rows || !rows.length) return '<div class="vx-empty">Aucun contrat de qualité mesurable.</div>';
     var body = rows.map(function (r) {
@@ -228,8 +249,8 @@
         '<td>' + VXf.nd(r.strike) + '</td>' +
         '<td>' + (r.dte != null ? r.dte + ' j' : '—') + '</td>' +
         '<td>' + (r.iv != null ? VXf.num(r.iv, 1) + ' %' : '—') + '</td>' +
-        '<td>' + (r.quality != null ? VXf.num(r.quality, 0) : '—') + '</td>' +
-        '<td>' + (r.pop != null ? VXf.num(r.pop, 0) + ' %' : '—') + '</td>' +
+        microBar(r.quality, '', r.quality >= 66 ? 'var(--vx-positive)' : r.quality >= 45 ? 'var(--vx-warning)' : 'var(--vx-negative)') +
+        microBar(r.pop, '%', 'var(--vx-brand)') +
         '<td>' + follow + '</td></tr>';
     }).join('');
     return '<div class="vx-table-wrap"><table class="vx-table"><thead><tr>' +
@@ -237,12 +258,42 @@
       '<th>IV</th><th>Qualité</th><th>PoP</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
 
+  // Nuage qualité × probabilité de profit : chaque contrat placé par sa qualité (X)
+  // et sa PoP (Y) ; taille = IV (convexité), violet = PUT / acier = CALL. Le coin
+  // haut-droit = contrats de qualité ET à forte probabilité. Données réelles /api.
+  function radarScatter(hostId, rows) {
+    var host = document.getElementById(hostId);
+    if (!host || !window.VXCharts || !window.Chart) { if (host) host.innerHTML = ''; return; }
+    var cc = VXCharts.colors;
+    var pts = (rows || []).filter(function (r) { return r.quality != null && r.pop != null; }).map(function (r) {
+      return { x: +r.quality, y: +r.pop, sym: r.sym, type: r.type, iv: r.iv, r: 4 + Math.min(9, (r.iv || 30) / 12) };
+    });
+    if (pts.length < 2) { host.innerHTML = ''; return; }
+    var cfg = {
+      type: 'scatter', data: { datasets: [{ data: pts,
+        pointRadius: function (ctx) { return ctx.raw ? ctx.raw.r : 5; }, pointHoverRadius: 11,
+        pointBackgroundColor: function (ctx) { var p = ctx.raw; return p && p.type === 'PUT' ? cc.violet : cc.neutral; },
+        pointBorderColor: 'rgba(0,0,0,.4)', pointBorderWidth: 1 }] },
+      options: { scales: {
+        x: { title: { display: true, text: 'Qualité du contrat' }, grid: { color: 'rgba(255,255,255,.06)' } },
+        y: { title: { display: true, text: 'Probabilité de profit (%)' }, grid: { color: 'rgba(255,255,255,.06)' } } },
+        plugins: { tooltip: { callbacks: { label: function (it) { var p = it.raw;
+          return p.sym + ' ' + (p.type || '') + ' — qualité ' + Math.round(p.x) + ' · PoP ' + Math.round(p.y) + '% · IV ' + (p.iv != null ? Math.round(p.iv) + '%' : 'n/d'); } } } } }
+    };
+    host.innerHTML = '<div class="vx-chart-body" style="height:320px"><canvas id="' + hostId + '-cv"></canvas></div>' +
+      '<div class="vx-chart-legend"><span><span class="vx-swatch" style="background:' + cc.neutral + '"></span>CALL</span>' +
+      '<span><span class="vx-swatch" style="background:' + cc.violet + '"></span>PUT</span>' +
+      '<span class="vx-meta">taille = IV (convexité) · haut-droit = qualité ET probabilité</span></div>';
+    VXCharts.mount(document.getElementById(hostId + '-cv'), cfg);
+  }
+
   function loadRadar() {
     var el = document.getElementById('vx-opt-radar-body');
     loading(el);
     get('/api/options/overview').then(function (d) {
       if (!d || d.empty) { el.innerHTML = (window.VX && VX.states) ? VX.states.empty('Tableau d’options vide.') : 'Aucune donnée.'; return; }
-      el.innerHTML = radarTable(d.radar || []);
+      el.innerHTML = '<div id="vx-opt-radar-scatter" class="vx-mb3"></div>' + radarTable(d.radar || []);
+      radarScatter('vx-opt-radar-scatter', d.radar || []);
     }).catch(function (e) { fail(el, e.message); });
   }
 
@@ -319,8 +370,8 @@
   // Structure par terme de l'IV — line, une série (marque).
   function chartTerm(VC, d) {
     var pts = (d.term_structure && d.term_structure.points) || [];
-    if (pts.length < 2) { (document.getElementById('vx-opt-term')||{}).innerHTML = '<div class="vx-card"><div class="vx-empty">Structure par terme : pas assez d’échéances.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#D28A54');
+    if (pts.length < 2) { document.getElementById('vx-opt-term').innerHTML = '<div class="vx-card"><div class="vx-empty">Structure par terme : pas assez d’échéances.</div></div>'; return; }
+    var brand = col(VC, 'brand', '#c9cdd4');
     var slope = d.term_structure.slope;
     var concl = slope == null ? '' : slope > 0.02 ? 'Contango — court terme meilleur marché' : slope < -0.02 ? 'Inversée — stress court terme' : 'Structure plate';
     var c = VC.card('vx-opt-term', {
@@ -347,8 +398,8 @@
   // Cône de mouvement attendu — bandes 1σ/2σ (fill entre datasets).
   function chartCone(VC, d) {
     var pts = (d.expected_move_cone && d.expected_move_cone.points) || [];
-    if (pts.length < 2) { (document.getElementById('vx-opt-cone')||{}).innerHTML = '<div class="vx-card"><div class="vx-empty">Cône : pas assez d’échéances.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#D28A54'), copper = col(VC, 'copper', '#8A8284');
+    if (pts.length < 2) { document.getElementById('vx-opt-cone').innerHTML = '<div class="vx-card"><div class="vx-empty">Cône : pas assez d’échéances.</div></div>'; return; }
+    var brand = col(VC, 'brand', '#c9cdd4'), copper = col(VC, 'copper', '#6d746e');
     var labels = pts.map(function (p) { return p.dte + ' j'; });
     /* GRAMMAIRE TV (lot 203) : les bandes 1σ/2σ sont une ESTIMATION
        lognormale → remplissage HACHURÉ (C.hatchPattern, lot 197) comme le
@@ -386,8 +437,8 @@
   // Open interest par strike — bar divergente CALL / PUT.
   function chartOI(VC, d) {
     var rows = (d.oi_by_strike && d.oi_by_strike.rows) || [];
-    if (!rows.length) { (document.getElementById('vx-opt-oi')||{}).innerHTML = '<div class="vx-card"><div class="vx-empty">Open interest indisponible.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#D28A54'), violet = col(VC, 'violet', '#9c79d0');
+    if (!rows.length) { document.getElementById('vx-opt-oi').innerHTML = '<div class="vx-card"><div class="vx-empty">Open interest indisponible.</div></div>'; return; }
+    var brand = col(VC, 'brand', '#c9cdd4'), violet = col(VC, 'violet', '#9c79d0');
     var c = VC.card('vx-opt-oi', {
       title: 'Open interest par strike', question: 'Où se concentrent les positions ouvertes ?',
       conclusion: 'CALL vs PUT', height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
@@ -417,8 +468,8 @@
   function chartSmile(VC, d) {
     var sm = d.iv_smile || {};
     var calls = sm.calls || [], puts = sm.puts || [];
-    if (!calls.length && !puts.length) { (document.getElementById('vx-opt-smile')||{}).innerHTML = '<div class="vx-card"><div class="vx-empty">Smile indisponible.</div></div>'; return; }
-    var brand = col(VC, 'brand', '#D28A54'), beige = col(VC, 'beige', '#c0b79f');
+    if (!calls.length && !puts.length) { document.getElementById('vx-opt-smile').innerHTML = '<div class="vx-card"><div class="vx-empty">Smile indisponible.</div></div>'; return; }
+    var brand = col(VC, 'brand', '#c9cdd4'), beige = col(VC, 'beige', '#c0b79f');
     var strikes = {};
     calls.concat(puts).forEach(function (r) { strikes[r.strike] = 1; });
     var xs = Object.keys(strikes).map(Number).sort(function (a, b) { return a - b; });
@@ -512,7 +563,7 @@
       }
       var biasFr = { bullish: 'haussier', bearish: 'baissier', neutral: 'neutre' }[d.bias] || '—';
       var head = '<div class="vx-muted" style="margin-bottom:.6rem">' + esc(sym) + ' · spot ' + VXf.nd(d.spot) +
-        ' · échéance ' + esc(d.exp || '—') + ' (' + VXf.nd(d.dte) + ' j) · IV ' + (d.iv != null ? (d.iv * 100).toFixed(0) + ' %' : '—') +
+        ' · échéance ' + esc(d.exp || '—') + ' (' + VXf.nd(d.dte) + ' j) · IV ' + (d.iv != null ? d.iv.toFixed(1) + ' %' : '—') +
         ' · biais ' + biasFr + ' → stratégies classées par adéquation</div>';
       el.innerHTML = head + '<div class="vx-grid">' + d.strategies.map(function (s, i) {
         var credit = s.is_credit;
@@ -521,10 +572,10 @@
         var pop = s.probability_of_profit != null ? s.probability_of_profit + ' %' : '—';
         var be = (s.breakevens && s.breakevens.length) ? s.breakevens.map(function (b) { return VXf.nd(b); }).join(' · ') : '—';
         var g = s.greeks;
-        var recoStyle = s.recommended ? ' style="border-color:var(--vx-signal-500,#D28A54);box-shadow:0 0 0 1px var(--vx-signal-500,#D28A54)"' : '';
+        var recoStyle = s.recommended ? ' style="border-color:var(--vx-signal-500,#c9cdd4);box-shadow:0 0 0 1px var(--vx-signal-500,#c9cdd4)"' : '';
         return '<section class="vx-card vx-col-6"' + recoStyle + '>' +
           '<div class="vx-card-header"><span class="vx-card-title">' + esc(s.label) + '</span>' +
-          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-signal-500,#D28A54);color:#0b0d0a;font-weight:700">★ Recommandée</span>' : '') +
+          (s.recommended ? '<span class="vx-badge" style="background:var(--vx-signal-500,#c9cdd4);color:#0b0d0a;font-weight:700">★ Recommandée</span>' : '') +
           '<span class="vx-badge" style="color:var(--vx-' + (credit ? 'positive' : 'option') + ')">' + (credit ? 'crédit ' : 'débit ') + fmtUsd(Math.abs(s.net_premium)) + '</span></div>' +
           (s.fit_reason ? '<div class="vx-meta" style="margin:-2px 0 6px">' + esc(s.fit_reason) + '</div>' : '') +
           '<div id="strat-pf-' + i + '" style="height:150px"></div>' +

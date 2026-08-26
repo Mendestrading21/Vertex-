@@ -25,12 +25,25 @@ def available():
     return Anthropic is not None and k.startswith('sk-ant-') and 'xxxx' not in k
 
 
+def _content_key(prefix, *parts):
+    """Clé de mémo NON AMBIGUË (PRF-03 : complétude des clés de mémoïsation).
+
+    Les parties sont jointes par un séparateur (\\x00) qui ne peut apparaître dans
+    aucune entrée AVANT le hachage. Deux jeux d'entrées DISTINCTS ne peuvent donc
+    jamais produire la même clé : sans ce séparateur, ``md5(sym + summary)`` ferait
+    collisionner p. ex. ('AB','Cfoo') et ('ABC','foo') → mémo périmé servi en silence
+    (le profil de l'entreprise X rendu pour Y). Toute entrée qui change la sortie DOIT
+    figurer dans ``parts``."""
+    joined = '\x00'.join('' if p is None else str(p) for p in parts)
+    return prefix + ':' + hashlib.md5(joined.encode('utf-8', 'ignore')).hexdigest()
+
+
 def fr_news(ticker, items):
     """Traduit les titres en FR + 1 phrase 'pourquoi ça bouge'. Renvoie (items+'fr', why|None)."""
     if not items:
         return items, None
     titles = [i.get('title', '') for i in items]
-    key = ticker + ':' + hashlib.md5('|'.join(titles).encode('utf-8', 'ignore')).hexdigest()
+    key = _content_key('news', ticker, *titles)  # ticker + chaque titre → clé non ambiguë
     if key in _cache:                       # cache : on ne re-traduit jamais 2x les mêmes titres
         c = _cache[key]
         for it, fr in zip(items, c['fr']):
@@ -84,7 +97,7 @@ def company_brief(sym, summary):
     ajouté). Cache par contenu ; renvoie {} si pas de clé / erreur (dégradation propre)."""
     if not summary:
         return {}
-    key = 'brief:' + hashlib.md5((sym + summary).encode('utf-8', 'ignore')).hexdigest()
+    key = _content_key('brief', sym, summary)  # sym ET summary → clé non ambiguë (pas de collision)
     if key in _cache:
         return _cache[key]
     if not available():
@@ -152,7 +165,7 @@ def fr_desc(sym, summary):
     texte d'origine. Cache par contenu."""
     if not summary:
         return summary
-    key = 'desc:' + hashlib.md5((sym + summary).encode('utf-8', 'ignore')).hexdigest()
+    key = _content_key('desc', sym, summary)  # sym ET summary → clé non ambiguë (pas de collision)
     if key in _cache:
         return _cache[key]
     if available():

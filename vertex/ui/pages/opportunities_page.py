@@ -1,15 +1,24 @@
-"""vertex.ui.pages.opportunities_page — découverte actions & options (§24).
+"""vertex.ui.pages.opportunities_page — le SCREENER complet (§24+).
 
 Question : « Quelles opportunités méritent réellement une analyse ? »
-Sous-vues : radar, stocks, options, anomalies, calendar.
+La page passe de 515 titres scannés à UNE décision : filtres globaux
+(verdict, secteur, score, proba de gain, gain/risque, volume relatif,
+véhicule), graphiques qui montrent le POURQUOI (scatter avantage × proba,
+distribution live, secteurs des résultats), top cartes, table triable.
+Sous-vues : screener · options · portefeuille · anomalies · calendrier.
+Données réelles uniquement — « — » honnête si absent.
 """
 from __future__ import annotations
 
 
 from vertex.ui.shell import json_for_script, render_shell
 
-_VIEWS = (('radar', 'Radar'), ('stocks', 'Actions'), ('options', 'Options'),
-          ('anomalies', 'Anomalies'), ('calendar', 'Calendrier'))
+_VIEWS = (('screener', 'Screener'), ('options', 'Options'),
+          ('portfolio', 'Portefeuille'), ('anomalies', 'Anomalies'),
+          ('calendar', 'Calendrier'))
+
+# Anciennes vues → nouvelles (liens internes historiques : radar/stocks)
+_VIEW_ALIASES = {'radar': 'screener', 'stocks': 'screener'}
 
 
 def _tabs(view: str) -> str:
@@ -26,7 +35,83 @@ _CONTENT = """
 <div class="vx-actions vx-toolbar"><span id="op-fresh" style="align-self:center"></span><button class="vx-btn vx-btn-sm"
   onclick="VXEntities.openAddModal()">+ Ajouter</button></div></div>
 %%TABS%%
-<div id="op-body" class="vx-mt4 vx-section-stack">%%LOADING%%</div>
+<style>
+  /* Barre de filtres du screener : collante, lisible, réactive */
+  .vx-screenbar{position:sticky;top:calc(var(--vx-topbar-h) + 2px);z-index:14;
+    display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;padding:10px 12px;
+    margin-top:12px;border:1px solid var(--vx-border,#26221e);border-radius:12px;
+    background:color-mix(in srgb,var(--vx-surface-1,#141513) 92%,transparent);
+    backdrop-filter:blur(6px)}
+  .vx-screenbar .vx-chip[aria-pressed="true"]{border-color:var(--vx-brand);color:var(--vx-brand-strong,#a3ca42)}
+  .vx-screenbar label.rng{display:flex;align-items:center;gap:6px;font-size:11px;
+    color:var(--vx-text-dim,#817d77)}
+  .vx-screenbar label.rng input[type=range]{width:86px;accent-color:var(--vx-brand,#c9cdd4)}
+  .vx-screenbar label.rng b{font-variant-numeric:tabular-nums;min-width:30px;color:var(--vx-text-secondary)}
+  /* KPI du screener */
+  .vx-scr-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}
+  .vx-scr-kpis .k{padding:11px 13px;border-radius:11px;background:var(--vx-surface-0,#0d100e);
+    border:1px solid var(--vx-border,#26221e)}
+  .vx-scr-kpis .k b{display:block;font:700 21px/1.15 var(--vx-font-mono,monospace);color:var(--vx-text-primary,#f2f5f1)}
+  .vx-scr-kpis .k span{font-size:10.5px;color:var(--vx-text-dim,#817d77);text-transform:uppercase;letter-spacing:.05em}
+  /* Table triable */
+  th[data-sort]{cursor:pointer;user-select:none;white-space:nowrap}
+  th[data-sort]:hover{color:var(--vx-brand,#c9cdd4)}
+  th[data-sort][data-dir="desc"]::after{content:" ↓";color:var(--vx-brand)}
+  th[data-sort][data-dir="asc"]::after{content:" ↑";color:var(--vx-brand)}
+  /* Rail 52 semaines dans la table */
+  .vx-rail52{display:inline-block;width:56px;height:5px;border-radius:99px;
+    background:var(--vx-surface-0);position:relative;vertical-align:middle}
+  .vx-rail52 i{position:absolute;top:-2px;width:8px;height:8px;margin-left:-4px;
+    border-radius:99px;background:var(--vx-beige,#c0b79f)}
+  /* Mobile : la barre de filtres (haute une fois empilée) ne reste pas collante */
+  @media (max-width:760px){.vx-screenbar{position:static}}
+  /* Grille de cartes opportunités : responsive PROPRE (fini le span 4 inline) */
+  .vx-opp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media (max-width:1100px){.vx-opp-grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:680px){.vx-opp-grid{grid-template-columns:1fr}}
+  .vx-opp-card{min-width:0}
+  .vx-opp-notrade{border-left:3px solid var(--vx-negative)!important;opacity:.92}
+  /* KPI : liseré sémantique comme les tuiles météo du Dashboard */
+  .vx-scr-kpis .k{border-left:3px solid transparent}
+  .vx-scr-kpis .k[data-tone="pos"]{border-left-color:var(--vx-positive)}
+  .vx-scr-kpis .k[data-tone="neg"]{border-left-color:var(--vx-negative)}
+  .vx-scr-kpis .k[data-tone="brand"]{border-left-color:var(--vx-brand)}
+
+  /* ═══════════ ARGENT LUMINEUX — harmonisation avec le Dashboard ═══════════ */
+  #vx-content .vx-card{position:relative;overflow:hidden;border-radius:16px;
+    border:1px solid rgba(255,255,255,.07);
+    background:linear-gradient(180deg,#14151a 0%,#0c0d11 100%);
+    box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 26px 56px -40px #000;
+    transition:border-color .18s ease,box-shadow .18s ease}
+  #vx-content .vx-card::after{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);opacity:.5;pointer-events:none}
+  #vx-content .vx-card:hover{border-color:rgba(255,255,255,.16)}
+  #vx-content .vx-card--premium,#vx-content .vx-card--accent{background:linear-gradient(180deg,#16171d 0%,#0d0e12 100%)}
+  #vx-content .vx-card-title{font-size:12.5px !important;font-weight:640;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--vx-text-secondary,#c2c7cf)}
+  #vx-content .vx-card-header{padding-bottom:9px;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.05)}
+  #vx-content .vx-chart-question{opacity:.66;font-size:11px;font-style:italic}
+  #vx-content .vx-meta{font-size:10.5px;color:var(--vx-text-muted,#7c828c)}
+  #vx-content .vx-card-footer,#vx-content .vx-card-foot{opacity:.72}
+  #vx-content .vx-num,#vx-content .vx-kpi-value,#vx-content .vx-mono{font-variant-numeric:tabular-nums}
+  /* Tables : lignes fines, en-têtes discrets, survol argent */
+  #vx-content .vx-table th{font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--vx-text-muted,#7c828c);font-weight:600}
+  #vx-content .vx-table td,#vx-content .vx-table th{border-color:rgba(255,255,255,.05) !important}
+  #vx-content .vx-table tbody tr{transition:background .12s}
+  #vx-content .vx-table tbody tr:hover{background:rgba(255,255,255,.025)}
+  /* Badges de contexte discrets (les colorés gardent leur force) */
+  #vx-content .vx-badge:not([style*="color"]){background:rgba(255,255,255,.03);
+    border-color:rgba(255,255,255,.07);color:var(--vx-text-muted,#7c828c)}
+  /* Chips : style argent net */
+  #vx-content .vx-chip{border-radius:9px;border:1px solid rgba(255,255,255,.09);
+    background:rgba(255,255,255,.025);color:var(--vx-text-secondary,#c2c7cf)}
+  #vx-content .vx-chip[aria-pressed="true"]{border-color:rgba(255,255,255,.34);color:#fff;background:rgba(255,255,255,.07)}
+  /* Cartes résultats : coins + survol */
+  #vx-content .vx-opp-card{border-radius:14px;transition:border-color .15s ease,transform .15s ease}
+  #vx-content .vx-opp-card:hover{border-color:rgba(255,255,255,.16);transform:translateY(-1px)}
+</style>
+<div id="op-body" class="vx-mt3">%%LOADING%%</div>
 """
 
 _JS = r"""
@@ -37,6 +122,8 @@ _JS = r"""
 <script src="/static/vertex/js/charts/option-theta.js" defer></script>
 <script src="/static/vertex/js/charts/option-iv-sensitivity.js" defer></script>
 <script src="/static/vertex/js/charts/bar-chart.js" defer></script>
+<script src="/static/vertex/js/charts/donut-chart.js" defer></script>
+<script src="/static/vertex/js/charts/sector-chart.js" defer></script>
 <script>
 (function(){
 'use strict';
@@ -67,408 +154,587 @@ function bucketCls(b){var s=String(b||'').toLowerCase();
 /* playbook peut être une chaîne OU un objet moteur → toujours une chaîne sûre */
 function pbStr(pb){return (pb&&typeof pb==='object')?(pb.name||pb.label||pb.key||pb.type||''):(pb||'');}
 function metaMode(scan){return scan&&scan.data_source==='demo'?'fallback':'delayed';}
+/* Debounce : les curseurs tirent input en rafale — on repeint au calme (120 ms). */
+function debounce(fn,ms){let t=null;return function(){const a=arguments,c=this;
+  clearTimeout(t);t=setTimeout(()=>fn.apply(c,a),ms||120);};}
 function demoBanner(scan){return scan&&scan.data_source==='demo'?
   '<div class="vx-stale-banner">Mode DÉMO — données synthétiques, clairement identifiées.</div>':'';}
 function rowActions(sym){return `<div class="vx-row-actions">
+  <button class="vx-btn vx-btn-sm vx-btn-ghost" data-inspect="${sym}" title="Aperçu rapide" aria-label="Aperçu ${sym}">Aperçu</button>
   <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${sym}">Analyse</button>
   <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${sym}" aria-label="Actions ${sym}">⋯</button></div>`;}
-
-/* ── Champs réels par ligne (jamais inventés) ── */
-function opGrade(r){const g=(r.grade||'').toString().trim();
-  if(g&&g!=='—')return g;return tierOf(r);}  /* moteur d'abord, sinon dérivé des buckets */
-function opActive(rows){return (rows||[]).filter(r=>r.verdict!=='AVOID'&&r.verdict!=='ÉVITER');}
-function opRanked(rows){const prio=(r)=>{const b=bucketOf(r);return b==='Actionnable'?0:b==='Proche'?1:b==='À surveiller'?2:3;};
-  return opActive(rows).slice().sort((a,b)=>prio(a)-prio(b)||(b.score||0)-(a.score||0));}
-function pctv(v){return (v==null||isNaN(v))?null:(v<=1?Math.round(v*100):Math.round(v));}
-/* Momentum multi-horizon (perf_w/m/q/y RÉELS) → mini-barres d'intensité */
-function momBars(r){
-  const H=[['1S',r.perf_w],['1M',r.perf_m],['1T',r.perf_q],['1A',r.perf_y]].filter(x=>x[1]!=null&&!isNaN(x[1]));
+function sparkMini(closes){
+  const v=(closes||[]).filter(x=>x!=null&&isFinite(x)).slice(-60);
+  if(v.length<8)return '';
+  const w=120,h=26,mn=Math.min.apply(null,v),mx=Math.max.apply(null,v),rng=(mx-mn)||1;
+  const pts=v.map((x,i)=>(i/(v.length-1)*w).toFixed(1)+','+(h-1-((x-mn)/rng)*(h-2)).toFixed(1)).join(' ');
+  const up=v[v.length-1]>=v[0];
+  const col=up?'var(--vx-positive)':'var(--vx-negative)';
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" width="100%" height="26" style="display:block;margin-top:6px" aria-hidden="true">
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/></svg>`;
+}
+function dimStrip(r){
+  const dims=[['C','Conviction',r.st_conf,0],['M','Momentum',r.st_mom,0],['T','Technique',r.st_tech,0],
+              ['F','Fondamental',r.st_fund,0],['R','Risque',r.st_risk,1]];
+  if(!dims.some(d=>d[2]!=null))return '';
+  return `<div style="display:flex;gap:5px;align-items:flex-end;margin-top:8px" role="img" aria-label="dimensions du score">`
+    +dims.map(d=>{const v=d[2];
+      const lvl=v==null?null:(d[3]?100-v:v);
+      const col=lvl==null?'var(--vx-surface-4)':lvl>=67?'var(--vx-positive)':lvl>=40?'var(--vx-warning)':'var(--vx-negative)';
+      const hh=v==null?4:Math.max(4,Math.round(v/100*24));
+      return `<span title="${d[1]} : ${v==null?'n/d':Math.round(v)}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+        <span style="display:flex;align-items:flex-end;height:24px;width:100%"><i style="display:block;width:100%;height:${hh}px;border-radius:3px 3px 1px 1px;background:${col};opacity:${v==null?.35:.95}"></i></span>
+        <b style="font:600 8.5px/1 var(--vx-font);color:var(--vx-text-faint)">${d[0]}</b></span>`;}).join('')+'</div>';
+}
+/* Drapeaux moteur → français lisible (vx_flags : raisons du no-trade / contexte) */
+const FLAG_FR={regime_chop:'Marché sans direction',regime_panic:'Marché en panique',
+  regime_risk_off:'Contexte risk-off',edge_incertain_et_risque_eleve:'Avantage incertain + risque élevé',
+  edge_faible:'Avantage faible',liquidite_faible:'Liquidité faible',correlation_elevee:'Trop corrélé au panier',
+  extension_excessive:'Titre trop étendu',fondamentaux_solides:'Fondamentaux solides',
+  fondamentaux_faibles:'Fondamentaux faibles',earnings_proche:'Résultats imminents',
+  volatilite_elevee:'Volatilité élevée',stop_trop_large:'Stop trop large'};
+function flagFr(k){return FLAG_FR[k]||String(k||'').replace(/_/g,' ');}
+/* Barre de niveaux : stop · cours · entrée · TP — situe le prix dans le plan moteur */
+function levelsBar(plan,price){
+  if(!plan||plan.entry==null||plan.stop==null)return '';
+  const tp=plan.tp3||plan.tp2||plan.tp1;if(tp==null)return '';
+  const lo=Math.min(plan.stop,plan.entry,price||plan.entry);
+  const hi=Math.max(tp,plan.entry,price||plan.entry);const rng=(hi-lo)||1;
+  const pc=(v)=>Math.max(0,Math.min(100,(v-lo)/rng*100));
+  const mk=(v,col,lbl,tt)=>v==null?'':`<i style="position:absolute;left:${pc(v)}%;top:-3px;width:2px;height:12px;background:${col}" title="${lbl} ${VX.fmt.price(v)}"></i>`;
+  const zEntry=pc(plan.entry),zStop=pc(plan.stop);
+  return `<div style="margin-top:8px" title="stop ${VX.fmt.price(plan.stop)} · entrée ${VX.fmt.price(plan.entry)} · objectif ${VX.fmt.price(tp)}">
+    <div class="vx-flex" style="justify-content:space-between;font-size:9px;color:var(--vx-text-dim)">
+      <span style="color:var(--vx-negative)">stop ${VX.fmt.price(plan.stop)}</span>
+      <span>entrée ${VX.fmt.price(plan.entry)}</span>
+      <span style="color:var(--vx-positive)">objectif ${VX.fmt.price(tp)}</span></div>
+    <div style="position:relative;height:6px;border-radius:99px;margin-top:3px;overflow:hidden;
+      background:linear-gradient(90deg,rgba(237,101,92,.35) 0%,rgba(237,101,92,.15) ${zStop}%,var(--vx-surface-0) ${zStop}%,var(--vx-surface-0) ${zEntry}%,rgba(54,200,137,.15) ${zEntry}%,rgba(54,200,137,.4) 100%)">
+      ${price!=null?`<i style="position:absolute;left:${pc(price)}%;top:-3px;width:9px;height:9px;margin-left:-4px;border-radius:99px;background:var(--vx-text-primary,#f2f5f1);box-shadow:0 0 0 2px var(--vx-surface-0)" title="cours ${VX.fmt.price(price)}"></i>`:''}
+    </div></div>`;
+}
+/* Ruban de momentum : perf 1S · 1M · 3M · 1A en mini-barres divergentes.
+   Montre d'un coup si le titre accélère ou s'essouffle selon l'horizon. */
+function perfRibbon(r){
+  const H=[['1S',r.perf_w],['1M',r.perf_m],['3M',r.perf_q],['1A',r.perf_y]].filter(x=>x[1]!=null&&isFinite(x[1]));
   if(!H.length)return '';
   const mx=Math.max(6,...H.map(x=>Math.abs(x[1])));
-  return '<div class="vx-op-mom" aria-label="momentum 1S/1M/1T/1A">'+H.map(function(x){
-    const h=Math.max(10,Math.round(Math.abs(x[1])/mx*100));const col=x[1]>=0?'var(--vx-positive)':'var(--vx-negative)';
-    return '<span class="b" title="'+x[0]+' '+VX.fmt.pct(x[1],1)+'"><i style="height:'+h+'%;background:'+col+'"></i><span>'+x[0]+'</span></span>';
-  }).join('')+'</div>';
+  return `<div class="vx-flex" style="gap:5px;margin-top:7px" role="img" aria-label="momentum multi-horizons">`
+    +H.map(([lbl,v])=>{const h=Math.max(3,Math.round(Math.abs(v)/mx*22));const up=v>=0;
+      return `<span title="${lbl} : ${v>=0?'+':''}${VX.fmt.num(v,1)} %" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+        <span style="display:flex;align-items:${up?'flex-end':'flex-start'};height:24px;width:100%">
+          <i style="display:block;width:100%;height:${h}px;border-radius:2px;background:${up?'var(--vx-positive)':'var(--vx-negative)'};opacity:.9"></i></span>
+        <b style="font:600 8px/1 var(--vx-font);color:var(--vx-text-faint)">${lbl}</b></span>`;}).join('')+'</div>';
 }
-/* ── CARTE OPPORTUNITÉ DOMINANTE (distincte, signature) ── */
-function renderDominant(rows,scan,catBySym){
-  const el=$('op-dominant');if(!el)return;
-  const best=opRanked(rows)[0];
-  if(!best){el.innerHTML='';return;}
-  const g=opGrade(best);const asym=best.vx_asym,pwin=pctv(best.vx_pwin),rr=best.vx_rr,edge=best.vx_edge;
-  const cat=catBySym&&catBySym[best.symbol];
-  const inval=(best.vx_stopfirst!=null)?('probabilité que le stop parte en premier : '+pctv(best.vx_stopfirst)+' % — stop structurel défini dans le dossier')
-    :'stop structurel défini dans le dossier (Analyse)';
-  const metric=(k,v,hot)=>`<div class="vx-op-metric${hot?' hot':''}"><span class="k">${k}</span><span class="v">${v}</span></div>`;
-  el.innerHTML=
-    `<div class="vx-op-dominant" aria-label="Opportunité dominante ${esc(best.symbol)}">
-      <div class="vx-op-dom-l">
-        <span class="vx-op-dom-badge">Opportunité dominante</span>
-        <div class="vx-op-dom-tk"><span class="sym vx-ticker" style="cursor:pointer" role="button" tabindex="0" data-open-analysis="${esc(best.symbol)}">${esc(best.symbol)}</span>
-          <span class="vx-op-grade" data-g="${esc(g)}">${esc(g)}</span></div>
-        <div class="vx-op-dom-sub">${esc(best.sector||best.industry||'secteur n/d')} · ${best.price!=null?VX.fmt.price(best.price):'cours n/d'}
-          ${best.verdict?' · <b class="'+vCls(best.verdict)+'">'+esc(best.verdict)+'</b>':''}</div>
-        <div class="vx-op-dom-score"><span class="n">${VX.fmt.nd(best.score)}</span><span class="u">/100 · score Vertex</span></div>
-        ${momBars(best)?'<div style="margin-top:4px"><div class="vx-meta" style="margin-bottom:4px">Momentum 1S · 1M · 1T · 1A</div>'+momBars(best)+'</div>':''}
-      </div>
-      <div class="vx-op-dom-r">
-        <div class="vx-op-metrics vx-kpi-strip">
-          ${metric('Asymétrie',asym!=null?VX.fmt.nd(asym):'n/d',asym!=null&&asym>=25)}
-          ${metric('Probabilité de gain',pwin!=null?pwin+' %':'n/d',pwin!=null&&pwin>=55)}
-          ${metric('R:R visé',rr!=null?VX.fmt.nd(rr):'n/d')}
-          ${metric('Qualité données',best.vx_tq!=null?VX.fmt.nd(best.vx_tq)+'/100':'n/d')}
-        </div>
-        <div class="vx-op-lines">
-          <div class="row"><span class="k">Catalyseur</span><span class="v">${cat?esc(cat):'aucun catalyseur daté à l’horizon du calendrier'}</span></div>
-          <div class="row"><span class="k">Invalidation</span><span class="v risk">${esc(inval)}</span></div>
-          <div class="row"><span class="k">Edge composite</span><span class="v">${edge!=null?VX.fmt.nd(edge)+'/100':'n/d'}</span></div>
-          <div class="row"><span class="k">Profil</span><span class="v">${esc((best.profile||'')+(best.profile_hint?' — '+best.profile_hint:''))||'n/d'}</span></div>
-        </div>
-        <div class="vx-flex vx-wrap" style="gap:.4rem;margin-top:auto">
-          <button class="vx-btn vx-btn-primary" data-open-analysis="${esc(best.symbol)}">Ouvrir le dossier ${esc(best.symbol)} →</button>
-          <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${esc(best.symbol)}','alert')">Alerte</button>
-          <span class="vx-grow"></span>
-          <span class="vx-meta">${VX.updateIndicator(scan&&(scan.scan_ts||scan.updated),(scan&&scan.source)||'scan',metaMode(scan))}</span>
-        </div>
-      </div>
-    </div>`;
-}
-/* ── SHORTLIST : 3 cartes ticker secondaires (identité, densité variable) ── */
-function renderShortlist(rows,scan,catBySym){
-  const el=$('op-shortlist');if(!el)return;
-  const list=opRanked(rows).slice(1,4);  /* après la dominante */
-  if(!list.length){el.innerHTML='';return;}
-  el.innerHTML='<div class="vx-col-12 vx-op-sectitle">Shortlist — méritent une analyse</div>'
-    +list.map(function(r){const g=opGrade(r);const cat=catBySym&&catBySym[r.symbol];
-    return `<div class="vx-col-4"><div class="vx-op-tk" aria-label="${esc(r.symbol)}">
-      <div class="vx-op-tk-top">
-        <span class="vx-op-mono">${esc(r.symbol).slice(0,4)}</span>
-        <span class="vx-op-tk-name"><span class="sym vx-ticker" style="cursor:pointer" role="button" tabindex="0" data-open-analysis="${esc(r.symbol)}">${esc(r.symbol)}</span>
-          <span class="sec">${esc(r.sector||r.industry||'')}</span></span>
-        <span class="vx-op-tk-grade" data-g="${esc(g)}">${esc(g)}</span>
-      </div>
-      <div class="vx-op-tk-row"><span class="vx-op-tk-score">${VX.fmt.nd(r.score)}<span class="vx-meta" style="font-size:11px;font-weight:600"> /100</span></span>
-        <span class="vx-op-tk-asym">asym. ${r.vx_asym!=null?VX.fmt.nd(r.vx_asym):'n/d'} · R:R ${r.vx_rr!=null?VX.fmt.nd(r.vx_rr):'n/d'}${r.vx_pwin!=null?' · p '+pctv(r.vx_pwin)+'%':''}</span></div>
-      <div class="vx-meta vx-truncate" title="${esc(cat||'')}">${cat?esc(cat):(r.profile_hint?esc(r.profile_hint):'—')}</div>
-      ${momBars(r)}
-      <div class="vx-op-tk-foot"><button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${esc(r.symbol)}">Analyser →</button>
-        <span class="${vCls(r.verdict)}">${esc(r.verdict||'')}</span></div>
-    </div></div>`;}).join('');
-}
-/* ── MATRICE DE COMPARAISON (2-4 meilleurs candidats, barres/rails, meilleur mis en avant) ── */
-function renderCompare(rows){
-  const el=$('op-compare');if(!el)return;
-  const cand=opRanked(rows).slice(0,4);
-  const disclosure=el.closest('details');
-  if(cand.length<2){el.innerHTML='';if(disclosure)disclosure.hidden=true;return;}
-  if(disclosure)disclosure.hidden=false;
-  /* métriques réelles : (clé, label, accessor, max pour le rail, higherIsBetter) */
-  const M=[
-    ['score','Score',r=>r.score,100,true],
-    ['asym','Asymétrie',r=>r.vx_asym,50,true],
-    ['pwin','Prob. gain %',r=>pctv(r.vx_pwin),100,true],
-    ['rr','R:R visé',r=>r.vx_rr,8,true],
-    ['edge','Edge',r=>r.vx_edge,100,true],
-    ['mom','Momentum 1M %',r=>r.perf_m,20,true],
-    ['tq','Qualité données',r=>r.vx_tq,100,true],
-  ];
-  const head='<tr><th>Critère</th>'+cand.map((r,i)=>`<th class="sym${i===0?' best':''}">${esc(r.symbol)}${i===0?' ★':''}</th>`).join('')+'</tr>';
-  const body=M.map(function(m){
-    const vals=cand.map(m[2]);
-    const nums=vals.map(v=>(v==null||isNaN(v))?null:v);
-    const valid=nums.filter(v=>v!=null);
-    const best=valid.length?(m[4]?Math.max.apply(null,valid):Math.min.apply(null,valid)):null;
-    const cells=cand.map(function(r,i){const v=nums[i];
-      const w=v==null?0:Math.max(6,Math.min(100,Math.abs(v)/m[3]*100));
-      const win=(v!=null&&best!=null&&v===best);
-      return `<td class="${i===0?'bestcol':''}"><div class="vx-op-cmp-cell${win?' win':''}">
-        <span class="rail"><i style="width:${w.toFixed(0)}%"></i></span>
-        <span class="n">${v==null?'n/d':VX.fmt.nd(v)}</span></div></td>`;}).join('');
-    return `<tr><td class="metric">${m[1]}</td>${cells}</tr>`;}).join('');
-  el.innerHTML='<div class="vx-card"><div class="vx-chart-head"><span class="vx-chart-title">Comparaison des meilleurs candidats</span>'
-    +'<span class="vx-chart-question">Lequel offre le meilleur couple asymétrie × probabilité ?</span></div>'
-    +'<div class="vx-table-wrap"><table class="vx-op-cmp">'+'<thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>'
-    +'<div class="vx-card-foot"><span class="vx-meta">Barres = intensité relative par critère ; orange = meilleur du critère. Champs moteur réels (score, asymétrie vx_asym, prob. gain vx_pwin, R:R vx_rr, edge, momentum, qualité) — aucune valeur inventée. ★ = tête de shortlist.</span></div></div>';
+function gradeBadge(g){if(!g)return '';
+  const col={S:'#36c889',A:'#c9cdd4',B:'#dda23b',C:'#ed655c',D:'#ed655c'}[String(g).toUpperCase()]||'var(--vx-text-dim)';
+  return `<span class="vx-badge" style="color:${col};border-color:${col}" title="note globale du moteur (S = élite)">${esc(g)}</span>`;}
+function mtfBadge(r){const st=(r&&r.mtf&&r.mtf.state)||'';const u=st.toUpperCase();
+  if(!u)return '';
+  const col=u.includes('ALIGNÉ')?'var(--vx-positive)':u.includes('REPLI')?'var(--vx-warning)':'var(--vx-text-dim)';
+  const short=u.includes('ALIGNÉ')?'MTF alignés':u.includes('REPLI')?'MTF repli':'MTF neutre';
+  return `<span class="vx-badge" style="color:${col}" title="${esc((r.mtf&&r.mtf.note)||st)}">${short}</span>`;}
+function noTradeBadge(r){return r&&r.vx_notrade?`<span class="vx-badge" style="color:var(--vx-negative)" title="dossier interdit par le moteur — voir les raisons">🚫 NO-TRADE</span>`:'';}
+function rail52(v){
+  if(v==null||isNaN(v))return '—';
+  const p=Math.max(0,Math.min(100,v));
+  return `<span class="vx-rail52" title="position dans la fourchette 52 semaines : ${Math.round(p)} %"><i style="left:${p}%"></i></span>`;
 }
 
-/* ── ENTONNOIR D'OPPORTUNITÉS (§11-12) : univers → … → actionnable ── */
-async function renderFunnel(){
-  const el=$('op-funnel');if(!el)return;
-  /* LOT 602 (dossier 531-A) : un echec ne laisse plus la colonne vide et muette.
-     Invariant produit : donnee absente -> mention honnete, jamais du silence. */
-  let f;try{f=await VX.fetch('/api/opportunities/funnel',{ttl:60000});}
-  catch(e){el.innerHTML=VX.states.error('Entonnoir indisponible');return;}
-  if(!f||!f.stages||!f.stages.length){
-    el.innerHTML=VX.states.empty('Entonnoir vide — aucun etage retourne par le moteur.');return;}
-  const roleColor={'ATTAQUE':'var(--vx-positive,#2BBE90)','MILIEU':'var(--vx-beige,#c8bfae)',
-    'DÉFENSE':'var(--vx-neutral-chart,#BABABA)','RÉSERVE':'var(--vx-text-muted,#989092)'};
-  const roles=(f.roles||[]).map(function(r){
-    return '<span class="vx-chip" style="border:1px solid '+ (roleColor[r.role]||'#555')
-      +';color:'+(roleColor[r.role]||'#aaa')+'">'+esc(r.role)+' '+esc(r.count)+'</span>';
-  }).join(' ');
-  /* Conclusion : plus forte déperdition entre deux étages (donnée réelle). */
-  let concl='';const st=f.stages;
-  if(st.length>=2){let bi=0,bd=0;for(let i=1;i<st.length;i++){const d=(st[i-1].count||0)-(st[i].count||0);if(d>bd){bd=d;bi=i;}}
-    concl=bd>0?('Plus forte déperdition : '+esc(st[bi-1].label)+' → '+esc(st[bi].label)+' (−'+bd+').')
-      :'Entonnoir plat — peu de déperdition entre étages.';}
-  el.innerHTML='<section class="vx-card vx-card--compact" aria-label="Entonnoir de sélection"><div class="vx-card-header"><span class="vx-card-title">Entonnoir de sélection</span>'
-    +'<span class="vx-chart-question">Que reste-t-il après filtrage ?</span></div>'
-    +'<div class="vx-flex vx-wrap" style="gap:.35rem;margin-bottom:.4rem">'+roles+'</div>'
-    +'<div id="op-funnel-viz"></div>'
-    +(concl?'<div class="vx-op-sectitle" style="margin:.6rem 2px 0;text-transform:none;letter-spacing:0;font-weight:600;color:var(--vx-text-secondary)">'+concl+'</div>':'')
-    +(f.note?'<div class="vx-dim" style="font-size:12px;margin-top:.4rem">'+esc(f.note)+'</div>':'')
-    +(f.actionable_symbols&&f.actionable_symbols.length?'<div class="vx-dim" style="font-size:12px;margin-top:.4rem">Actionnables : '
-      +f.actionable_symbols.map(function(s){return '<b style="color:var(--vx-positive)">'+esc(s)+'</b>';}).join(' · ')+'</div>':'')
-    +'</section>';
-  /* Vrai entonnoir décroissant (trapèzes + % par étage) au lieu des colonnes texte —
-     donnée réelle /api/opportunities/funnel, jamais inventée ; le composant gère
-     lui-même le repli si < 2 étages. */
-  if(window.VXCharts&&VXCharts.funnel){
-    VXCharts.funnel('op-funnel-viz',{stages:f.stages.map(function(s){return {label:s.label,value:s.count};}),
-      fmt:function(v){return VX.fmt.nd(v);},ariaLabel:'Entonnoir d\'opportunités : univers vers actionnables'});
-  }
-}
-
-/* ── RADAR (§24) : X qualité stratégique · Y timing · taille intensité ── */
-/* Catalyseurs datés RÉELS (résultats à venir) indexés par symbole, depuis le
-   calendrier moteur — jamais inventés ; absence → pas de catalyseur affiché. */
-async function opCatalysts(){
-  const by={};try{const cal=await VX.fetch('/cal-feed',{ttl:300000});
-    (cal.items||[]).forEach(it=>{if(it&&it.sym&&it.dte!=null)by[it.sym]='Résultats dans '+it.dte+' j'
-      +(it.verdict?' · '+it.verdict:'');});}catch(e){}
-  return by;
-}
-async function renderRadar(){
+/* ═════════ SCREENER (vue par défaut) — de 515 titres à UNE décision ═════════ */
+async function renderScreener(){
   const scan=await VX.fetch('/scan',{ttl:120000});
   const rows=(scan.rows||[]).filter(r=>r.score!==undefined);
-  if(!rows.length){($('op-body')||{}).innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
-  const catBySym=await opCatalysts();
-  const best=opRanked(rows)[0];
-  ($('op-body')||{}).innerHTML=demoBanner(scan)
-    +'<div id="op-hero"></div>'
-    +'<div class="vx-grid vx-mt4" id="op-shortlist"></div>'
-    +'<div class="vx-grid vx-hero-grid vx-mt4">'
-      +'<div class="vx-col-8"><div id="op-scatter"></div>'
-        +'<div id="op-scatter-missing" class="vx-meta vx-mt2"></div>'
-        +'<section class="vx-card vx-mt3" id="op-scatter-sel-card"><div class="vx-card-header"><span class="vx-card-title">Point sélectionné</span>'
-          +'<span class="vx-chart-question">Inspecte un titre du scatter</span></div>'
-          +'<div id="op-scatter-sel" class="vx-op-scatter-sel"><div class="vx-help">Clique un point du scatter pour l’inspecter'
-          +(best?', ou ouvre directement la meilleure opportunité : <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="'+esc(best.symbol)+'">Ouvrir '+esc(best.symbol)+' →</button>':'')+'.</div></div></section></div>'
-      +'<aside class="vx-col-4 vx-insight-rail" id="op-funnel"></aside></div>'
-    +'<details class="vx-disclosure vx-mt4" id="op-compare-disclosure"><summary>Comparer les candidats sous forme de matrice</summary>'
-      +'<div id="op-compare" class="vx-mt3"></div></details>';
-  renderHero(rows,scan,best,catBySym);
-  renderDominant(rows,scan,catBySym);
-  renderFunnel();
-  renderShortlist(rows,scan,catBySym);
-  renderCompare(rows);
-  const bestSym=best?best.symbol:null;
-  /* Un point n'existe que si SES DEUX axes sont présents. Les titres dont le
-     timing ou la qualité manque restent explicitement hors du nuage : jamais
-     de repli visuel à 50, qui fabriquerait une position neutre. */
-  const axisNum=(v)=>v===null||v===undefined||v===''?null:Number(v);
-  const axisOk=(v)=>v!==null&&Number.isFinite(v)&&v>=0&&v<=100;
-  const scatterRows=rows.map(function(r){
-    const x=axisNum(r.strat_score??r.score),y=axisNum(r.st_tech??r.rs);
-    return {r:r,x:x,y:y,ok:axisOk(x)&&axisOk(y)};
-  });
-  const plotted=scatterRows.filter(p=>p.ok),missing=scatterRows.filter(p=>!p.ok);
-  const missingHost=$('op-scatter-missing');
-  if(missingHost)missingHost.innerHTML=missing.length
-    ?'<b>'+missing.length+' titre(s) hors nuage :</b> axe qualité ou timing n/d / hors plage 0–100 — '
-      +missing.slice(0,8).map(p=>esc(p.r.symbol)).join(' · ')+(missing.length>8?' · …':'')
-    :'Tous les titres affichés disposent des deux axes.';
-  VXCharts.card('op-scatter',{
-    title:'Scatter d\'asymétrie — qualité × timing',
-    question:'Où se trouvent les meilleurs couples qualité × timing ?',
-    conclusion:(function(){const a=plotted.filter(p=>bucketOf(p.r)==='Actionnable').length;
-      return a?(a+' candidat(s) en zone actionnable (haut-droit)'):'Aucun candidat en zone actionnable — attendre reste valide';})(),
-    height:360,unit:'score 0-100',source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
-    summary:'Nuage de points des titres disposant de deux scores : qualité stratégique en X, timing en Y ; les données incomplètes sont listées hors du graphique.',
-    explain:{shows:'Chaque point est un titre scanné, placé par les scores moteur (qualité en X, timing en Y).',
-      why:'La stratégie n’engage que lorsque qualité ET timing convergent (coin haut-droit).',
-      confirm:'Un point qui migre vers le haut-droit avec volume.',
-      invalidate:'Retour sous 55 en qualité stratégique.'},
-    render:(cv)=>VXCharts.mount(cv,{type:'scatter',
-      data:{datasets:[{data:plotted.map(p=>{const r=p.r;return {x:p.x,y:p.y,tOk:true,sym:r.symbol,
-          v:r.verdict,setup:(r.profile||'')+(r.profile_hint?' — '+r.profile_hint:''),sector:r.sector||'',price:r.price,rr:r.vx_rr,asym:r.vx_asym,pwin:r.vx_pwin,score:r.score,
-          best:r.symbol===bestSym,r:5+Math.min(8,(r.anomaly_score||r.sigcount||0))};}),
-        pointRadius:(ctx)=>ctx.raw?ctx.raw.r:4,pointHoverRadius:(ctx)=>ctx.raw?ctx.raw.r+3:7,
-        pointBackgroundColor:(ctx)=>{const raw=ctx.raw;if(raw&&raw.best)return VXCharts.colors.brand;const v=raw&&raw.v;const cc=VXCharts.colors;
-          return v==='BUY'||v==='ACHETER'?cc.positive:(v==='AVOID'||v==='ÉVITER'?cc.negative:cc.neutral);},
-        pointBorderColor:(ctx)=>ctx.raw&&ctx.raw.best?VXCharts.colors.brand:%%DEMO_BORDER%%,
-        pointBorderWidth:(ctx)=>ctx.raw&&ctx.raw.best?2:1}]},
-      options:{scales:{x:{min:0,max:100,title:{display:true,text:'Qualité stratégique →'},grid:{color:'rgba(255,255,255,.06)'}},
-        y:{min:0,max:100,title:{display:true,text:'Qualité du timing ↑'},grid:{color:'rgba(255,255,255,.06)'}}},
-        onClick:(evt,els,chart)=>{const pts=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
-          if(pts.length){const d=chart.data.datasets[0].data[pts[0].index];
-            (document.getElementById('op-scatter-sel')||{}).innerHTML=
-              `<div class="vx-flex"><span class="vx-ticker" style="font-size:18px" role="button" tabindex="0" data-open-analysis="${d.sym}">${d.sym}</span>${window.VXEntities.badges(d.sym)}
-                 <span class="vx-badge vx-badge-decision vx-right" data-decision="${d.v||''}">${d.v||'n/d'}</span></div>
-               <div class="vx-op-metrics vx-mt2">
-                 <div class="vx-op-metric"><span class="k">Qualité strat.</span><span class="v">${VX.fmt.nd(d.x)}</span></div>
-                 <div class="vx-op-metric"><span class="k">Timing</span><span class="v">${d.tOk?VX.fmt.nd(d.y):'n/d'}</span></div>
-                 <div class="vx-op-metric"><span class="k">Asymétrie</span><span class="v">${VX.fmt.nd(d.asym)}</span></div>
-                 <div class="vx-op-metric"><span class="k">R:R visé</span><span class="v">${VX.fmt.nd(d.rr)}</span></div></div>
-               <div class="vx-kv vx-mt2"><span class="k">Cours</span><span class="v vx-mono">${d.price!==undefined&&d.price!==null?VX.fmt.price(d.price):'n/d'}</span></div>
-               ${d.sector?`<div class="vx-kv"><span class="k">Secteur</span><span class="v">${esc(d.sector)}</span></div>`:''}
-               <div class="vx-flex vx-wrap vx-mt2">
-                 <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${d.sym}">Ouvrir le dossier</button>
-                 <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${d.sym}','watchlist')">Watchlist</button>
-                 <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${d.sym}','alert')">Alerte</button>
-                 <a class="vx-btn vx-btn-sm" href="/opportunities?view=options&sym=${d.sym}">Options</a></div>`;}},
-        plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} · qualité ${VX.fmt.nd(ctx.raw.x)} · timing ${ctx.raw.tOk?VX.fmt.nd(ctx.raw.y):'n/d'} · asym ${VX.fmt.nd(ctx.raw.asym)}`}}}},
-      plugins:[{id:'opQuad',afterDatasetsDraw(chart){const a=chart.chartArea,sx=chart.scales.x,sy=chart.scales.y;
-        const xc=sx.getPixelForValue(55),yc=sy.getPixelForValue(55);const g=chart.ctx;g.save();
-        /* LOT 121 : la zone actionnable (haut-droit) est TEINTÉE d'un dégradé
-           positif très léger — on voit la cible avant de lire les axes. */
-        if(xc<a.right&&yc>a.top){const gz=g.createLinearGradient(xc,yc,a.right,a.top);
-          gz.addColorStop(0,VXCharts.colors.positive+'00');gz.addColorStop(1,VXCharts.colors.positive+'22');
-          g.fillStyle=gz;g.fillRect(xc,a.top,a.right-xc,yc-a.top);}
-        g.strokeStyle='rgba(255,255,255,.12)';g.setLineDash([4,4]);g.beginPath();
-        if(xc>a.left&&xc<a.right){g.moveTo(xc,a.top);g.lineTo(xc,a.bottom);}
-        if(yc>a.top&&yc<a.bottom){g.moveTo(a.left,yc);g.lineTo(a.right,yc);}g.stroke();g.setLineDash([]);
-        g.font='700 10px sans-serif';g.fillStyle='rgba(255,255,255,.30)';
-        g.fillText('À ÉTUDIER',a.right-64,a.top+14);g.fillText('TIMING SEUL',a.left+6,a.top+14);
-        g.fillText('QUALITÉ SEULE',a.right-82,a.bottom-8);g.fillText('À ÉVITER',a.left+6,a.bottom-8);
-        /* Étiquettes directes sur les meilleurs candidats (haut-droit) */
-        const ds=chart.getDatasetMeta(0).data,raw=chart.data.datasets[0].data;
-        const idx=raw.map((d,i)=>[d,i]).filter(x=>x[0].x>=55&&x[0].tOk&&x[0].y>=55)
-          .sort((p,q)=>(q[0].score||0)-(p[0].score||0)).slice(0,4);
-        g.font='700 11px sans-serif';
-        idx.forEach(([d,i])=>{const m=ds[i];if(!m)return;g.fillStyle=d.best?VXCharts.colors.brand:'rgba(248,245,243,.92)';
-          g.fillText(d.sym,Math.min(m.x+8,a.right-30),m.y-6);});
-        g.restore();}}]})});
-}
-
-/* ── HERO ÉDITORIAL : combien d'asymétries, laquelle domine, honnêteté ── */
-function tierOf(r){
-  /* Niveaux dérivés des seuils moteur existants (bucketOf) → langage S+/S/A/B.
-     Aucun score inventé : mappe les buckets réels. */
-  const b=bucketOf(r);
-  if(b==='Actionnable'&&(r.score||0)>=80)return 'S+';
-  if(b==='Actionnable')return 'S';
-  if(b==='Proche')return 'A';
-  if(b==='À surveiller')return 'B';
-  return b==='Rejetée'?'ÉVITER':'—';
-}
-/* ── HERO éditorial COMPACT : compte S+/S/A, meilleure, asymétrie, catalyseur,
-      qualité des données, conclusion — jamais 40 % de vide, jamais inventé. ── */
-function renderHero(rows,scan,best,catBySym){
-  const el=$('op-hero');if(!el)return;
-  const active=opActive(rows);
-  const cnt={'S+':0,'S':0,'A':0,'B':0};active.forEach(r=>{const t=opGrade(r);if(cnt[t]!=null)cnt[t]++;});
-  const m=metaMode(scan);const dq=m==='fallback'?'Démo':m==='live'?'Temps réel':'Différé';
-  /* Message éditorial — UNIQUEMENT à partir des données réelles. */
-  let msg,tone;
-  if(cnt['S+']){msg=cnt['S+']+' opportunité(s) S+ exceptionnelle(s) détectée(s).';tone='go';}
-  else if(cnt['S']){msg='Aucune opportunité S+ aujourd’hui. '+cnt['S']+' dossier(s) S méritent une analyse.';tone='go';}
-  else if(cnt['A']){msg='Aucune asymétrie exceptionnelle. '+cnt['A']+' dossier(s) A à surveiller.';tone='wait';}
-  else {msg='Aucune asymétrie exceptionnelle détectée. Attendre est une décision valide.';tone='wait';}
-  const rankBadges='<div class="vx-toolbar vx-mt2" aria-label="Niveaux de la sélection">'
-    +'<span class="vx-badge">S+ · '+cnt['S+']+'</span>'
-    +'<span class="vx-badge">S · '+cnt['S']+'</span>'
-    +'<span class="vx-badge">A · '+cnt['A']+'</span>'
-    +'<span class="vx-badge">Données · '+dq+'</span></div>';
-  /* Le message éditorial et la meilleure opportunité partagent désormais UNE
-     seule carte hero. Les quatre métriques décisionnelles vivent dans la
-     dominante ; les volumes S+/S/A restent de simples badges de contexte. */
-  el.innerHTML='<section class="vx-card vx-card--hero" aria-label="Réponse du radar">'
-    +'<div class="vx-card-header"><span class="vx-card-title">Ce qui mérite ton attention</span>'
-    +'<span class="vx-actions"><span class="vx-freshness" data-live="'+(m==='fallback'?'fallback':'delayed')+'"><span class="vx-live-dot"></span>'+dq+'</span></span></div>'
-    +'<div class="vx-grid vx-hero-grid"><div class="vx-col-5 vx-page-lead">'
-      +'<div class="vx-op-hero-lead"><span class="tag" data-tone="'+tone+'">'+(cnt['S+']||cnt['S']?'À étudier':'Patience')+'</span>'
-        +'<span class="txt">'+msg+'</span></div>'+rankBadges+'</div>'
-      +'<div class="vx-col-7 vx-insight-rail" id="op-dominant"></div></div>'
-    +'</section>';
-}
-
-/* ── ACTIONS ── */
-async function renderStocks(){
-  const scan=await VX.fetch('/scan',{ttl:120000});
-  let rows=(scan.rows||[]);
+  if(!rows.length){$('op-body').innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
+  const detail=scan.detail||{};
+  const byId={};rows.forEach(r=>{if(r&&r.symbol)byId[r.symbol]=r;});   // index partagé (dossier express, revue…)
   const sectors=[...new Set(rows.map(r=>r.sector).filter(Boolean))].sort();
-  const state={bucket:PARAMS.decision||'',sector:PARAMS.sector||'',setup:PARAMS.setup||'',minScore:0};
-  function paint(){
-    let f=rows;
-    if(state.sector)f=f.filter(r=>r.sector===state.sector);
-    if(state.bucket)f=f.filter(r=>bucketOf(r)===state.bucket);
-    if(state.setup)f=f.filter(r=>(pbStr(r.playbook)||r.profile||'').toUpperCase().includes(state.setup));
-    if(state.minScore)f=f.filter(r=>(r.score||0)>=state.minScore);
-    f=f.slice().sort((a,b)=>(b.score||0)-(a.score||0));
-    /* LOT 135 : le score n'est plus un chiffre nu — mini-barre de verre
-       graduée 0-100 (>=70 positive, 40-69 warning, <40 negative ; dégradé
-       doux → dense via color-mix sur tokens). L'œil classe le scan. */
-    const scoreBar=(v)=>{const n=Number(v);if(!isFinite(n))return VX.fmt.nd(v);
-      const tok=n>=70?'var(--vx-positive,#2BBE90)':n>=40?'var(--vx-warning,#D9BE3C)':'var(--vx-negative,#E9555F)';
-      return '<span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">'
-        +'<span style="width:56px;height:8px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block">'
-        +'<span style="display:block;height:100%;width:'+Math.max(3,Math.min(100,n)).toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:3px"></span></span>'
-        +'<span style="font-variant-numeric:tabular-nums">'+VX.fmt.nd(n)+'</span></span>';};
-    const decisionCell=(r)=>`<span class="vx-badge ${bucketCls(bucketOf(r))}">${bucketOf(r)}</span>`
-      +(r.verdict?`<span class="vx-meta ${vCls(r.verdict)}">${esc(r.verdict)}</span>`:'');
-    const essentialRow=(r)=>`<tr data-clickable data-open-analysis="${r.symbol}">
-      <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span><span class="vx-meta">${esc(r.sector||'secteur n/d')}</span></td>
-      <td data-label="Décision">${decisionCell(r)}</td>
-      <td data-label="Score" class="vx-num">${scoreBar(r.score)}</td>
-      <td data-label="Cours" class="vx-num">${VX.fmt.nd(r.price!==undefined?VX.fmt.price(r.price):null)}</td>
-      <td data-label="R:R" class="vx-num">${VX.fmt.nd(r.rr)}</td>
-      <td data-label="Action">${rowActions(r.symbol)}</td></tr>`;
-    const technicalRow=(r)=>`<tr data-clickable data-open-analysis="${r.symbol}">
-      <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
-      <td data-label="Décision">${decisionCell(r)}</td>
-      <td data-label="Score" class="vx-num">${scoreBar(r.score)}</td>
-      <td data-label="Cours" class="vx-num">${VX.fmt.nd(r.price!==undefined?VX.fmt.price(r.price):null)}</td>
-      <td data-label="R:R" class="vx-num">${VX.fmt.nd(r.rr)}</td>
-      <td data-label="Setup" class="vx-truncate" title="${esc(pbStr(r.playbook)||r.profile||'—')}">${esc(pbStr(r.playbook)||r.profile||'—')}</td>
-      <td data-label="Secteur">${esc(r.sector||'—')}</td>
-      <td data-label="Action">${rowActions(r.symbol)}</td></tr>`;
-    ($('op-table')||{}).innerHTML=f.length?`<section class="vx-card" aria-label="Meilleures actions du scan">
-      <div class="vx-card-header"><span class="vx-card-title">Les dossiers les plus utiles maintenant</span>
-        <span class="vx-meta vx-right">Top ${Math.min(10,f.length)} sur ${f.length}</span></div>
-      <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
-        <th>Titre</th><th>Décision</th><th class="vx-num" data-sortable>Score</th>
-        <th class="vx-num">Cours</th><th class="vx-num">R:R</th><th>Action</th></tr></thead>
-        <tbody>${f.slice(0,10).map(essentialRow).join('')}</tbody></table></div></section>
-      <details class="vx-disclosure vx-mt3" id="op-stocks-full"><summary>Voir les ${f.length} titres et les détails techniques</summary>
-        <div class="vx-table-wrap vx-table-cards vx-mt2"><table class="vx-table"><thead><tr>
-          <th>Titre</th><th>Décision</th><th class="vx-num">Score</th><th class="vx-num">Cours</th>
-          <th class="vx-num">R:R</th><th>Setup</th><th>Secteur</th><th>Action</th></tr></thead>
-          <tbody>${f.map(technicalRow).join('')}</tbody></table></div></details>`
-      :VX.states.empty('Aucun titre ne correspond aux filtres.','<button class="vx-btn vx-btn-sm" id="op-clear">Effacer les filtres</button>');
-    document.getElementById('op-clear')?.addEventListener('click',()=>{Object.keys(state).forEach(k=>state[k]='');paint();});
+
+  /* État des filtres : URL (liens entrants) > localStorage > défauts. */
+  let saved={};try{saved=JSON.parse(localStorage.getItem('vxScreenFilters')||'{}')}catch(e){}
+  const state=Object.assign({bucket:'',sector:'',vehicle:'',setup:'',mtf:'',grade:'',
+      minScore:0,minPwin:0,minRR:0,minRvol:0,maxPrice:0,
+      setBreakout:false,setPullback:false,setSqueeze:false,setAccum:false,
+      exclNoTrade:false,exclHeld:false,exclProxy:false},
+    saved,{bucket:PARAMS.decision||saved.bucket||'',sector:PARAMS.sector||saved.sector||'',
+           setup:(PARAMS.setup||saved.setup||'').toUpperCase()});
+  /* URL entrante > sauvegarde : un lien partagé impose ses filtres */
+  (function(){const u=new URLSearchParams(location.search);
+    ['bucket','sector','vehicle','mtf','grade','setup'].forEach(k=>{if(u.get(k))state[k]=u.get(k);});
+    ['minScore','minPwin','minRR','minRvol','maxPrice'].forEach(k=>{if(u.get(k))state[k]=+u.get(k)||0;});
+    ['setBreakout','setPullback','setSqueeze','setAccum','exclNoTrade','exclHeld','exclProxy'].forEach(k=>{if(u.get(k)==='1')state[k]=true;});})();
+  function persist(){
+    try{localStorage.setItem('vxScreenFilters',JSON.stringify(state))}catch(e){}
+    /* reflète les filtres non vides dans l'URL — lien partageable, retour fidèle */
+    try{const u=new URLSearchParams();
+      Object.keys(state).forEach(k=>{const v=state[k];
+        if(v===true)u.set(k,'1');else if(v&&v!==0&&v!=='')u.set(k,v);});
+      const qs=u.toString();
+      history.replaceState(null,'',location.pathname+(qs?'?'+qs:'')+location.hash);}catch(e){}
   }
-  ($('op-body')||{}).innerHTML=demoBanner(scan)+`
-    <div class="vx-filterbar vx-toolbar" role="group" aria-label="Filtres">
-      ${OUT.map(b=>`<button class="vx-chip" data-filter-key="decision" data-filter-value="${b}"
-        aria-pressed="${state.bucket===b}">${b}</button>`).join('')}
-      <select class="vx-select" data-filter-key="sector" style="width:auto" aria-label="Secteur">
-        <option value="">Tous secteurs</option>${sectors.map(s=>`<option value="${esc(s)}" ${state.sector===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
-      <input class="vx-input" data-filter-key="setup" style="width:150px" placeholder="setup (BREAKOUT…)" value="${esc(state.setup)}" aria-label="Setup">
+  const heldSyms=new Set(((window.VXEntities?VXEntities.positions():[])||[]).map(p=>String(p.sym).toUpperCase()));
+  function vehicleOf(r){const v=r&&r.vehicle;return String((v&&v.reco)||v||'').toUpperCase();}
+  function mtfState(r){const m=r&&r.mtf;return String((m&&m.state)||'').toUpperCase();}
+  function filtered(){
+    let f=rows;
+    if(state.bucket)f=f.filter(r=>bucketOf(r)===state.bucket);
+    if(state.sector)f=f.filter(r=>r.sector===state.sector);
+    if(state.vehicle)f=f.filter(r=>vehicleOf(r).includes(state.vehicle));
+    if(state.mtf)f=f.filter(r=>mtfState(r).includes(state.mtf));
+    if(state.grade){const ord={S:4,A:3,B:2,C:1,D:0};const min=ord[state.grade];
+      f=f.filter(r=>(ord[String(r.grade||'').toUpperCase()]??-1)>=min);}
+    if(state.setup)f=f.filter(r=>(pbText(r)||'').toUpperCase().includes(state.setup));
+    if(state.setBreakout)f=f.filter(r=>r.breakout===true);
+    if(state.setPullback)f=f.filter(r=>r.pullback===true);
+    if(state.setSqueeze)f=f.filter(r=>r.squeeze===true);
+    if(state.setAccum)f=f.filter(r=>r.accumulation===true);
+    if(state.exclNoTrade)f=f.filter(r=>!r.vx_notrade);
+    if(state.exclHeld)f=f.filter(r=>!heldSyms.has(r.symbol));
+    if(state.exclProxy)f=f.filter(r=>r.st_fproxy!==true);
+    if(state.minScore)f=f.filter(r=>(r.score||0)>=state.minScore);
+    if(state.minPwin)f=f.filter(r=>((r.vx_pwin||0)*100)>=state.minPwin);
+    if(state.minRR)f=f.filter(r=>(r.rr||0)>=state.minRR);
+    if(state.minRvol)f=f.filter(r=>(r.rvol||0)>=state.minRvol);
+    if(state.maxPrice)f=f.filter(r=>(r.price||0)<=state.maxPrice);
+    return f;
+  }
+  /* ── Squelette de la vue ── */
+  $('op-body').innerHTML=demoBanner(scan)+`
+    <div class="vx-screenbar" role="group" aria-label="Filtres du screener">
+      <span class="vx-meta" style="flex-basis:100%;display:flex;flex-wrap:wrap;gap:.4rem;align-items:center">
+        <button class="vx-btn vx-btn-sm vx-btn-ghost" id="op-reset">Réinitialiser les filtres</button>
+        <span class="vx-meta vx-right" id="op-count"></span></span>
+      ${OUT.map(b=>`<button class="vx-chip" data-fk="bucket" data-fv="${b}" aria-pressed="${state.bucket===b}">${b}</button>`).join('')}
+      <select class="vx-select" data-fk="sector" style="width:auto" aria-label="Secteur">
+        <option value="">Tous secteurs</option>${sectors.map(s=>`<option ${state.sector===s?'selected':''}>${s}</option>`).join('')}</select>
+      <select class="vx-select" data-fk="vehicle" style="width:auto" aria-label="Véhicule">
+        <option value="">Action & option</option>
+        <option value="ACTION" ${state.vehicle==='ACTION'?'selected':''}>Plutôt action</option>
+        <option value="OPTION" ${state.vehicle==='OPTION'?'selected':''}>Plutôt option</option></select>
+      <select class="vx-select" data-fk="mtf" style="width:auto" aria-label="Multi-horizons">
+        <option value="">Tous horizons</option>
+        <option value="ALIGNÉ" ${state.mtf==='ALIGNÉ'?'selected':''}>Journalier + hebdo alignés</option>
+        <option value="REPLI" ${state.mtf==='REPLI'?'selected':''}>Repli dans tendance</option>
+        <option value="NEUTRE" ${state.mtf==='NEUTRE'?'selected':''}>Neutre</option></select>
+      <select class="vx-select" data-fk="grade" style="width:auto" aria-label="Note minimale">
+        <option value="">Toute note</option>
+        <option value="S" ${state.grade==='S'?'selected':''}>Note S seulement</option>
+        <option value="A" ${state.grade==='A'?'selected':''}>Note A et mieux</option>
+        <option value="B" ${state.grade==='B'?'selected':''}>Note B et mieux</option></select>
+      <span class="vx-meta" style="flex-basis:100%;display:flex;flex-wrap:wrap;gap:.4rem;align-items:center">SETUPS
+        <button class="vx-chip" data-ft="setBreakout" aria-pressed="${state.setBreakout}">🚀 Cassure</button>
+        <button class="vx-chip" data-ft="setPullback" aria-pressed="${state.setPullback}">🎯 Repli</button>
+        <button class="vx-chip" data-ft="setSqueeze" aria-pressed="${state.setSqueeze}">🔒 Compression</button>
+        <button class="vx-chip" data-ft="setAccum" aria-pressed="${state.setAccum}">📥 Accumulation</button>
+        <span style="width:10px"></span>EXCLURE
+        <button class="vx-chip" data-ft="exclNoTrade" aria-pressed="${state.exclNoTrade}">🚫 no-trade moteur</button>
+        <button class="vx-chip" data-ft="exclHeld" aria-pressed="${state.exclHeld}">💼 mes positions</button>
+        <button class="vx-chip" data-ft="exclProxy" aria-pressed="${state.exclProxy}">≈ fondamental estimé</button></span>
+      <label class="rng">score ≥ <input type="range" data-fk="minScore" min="0" max="90" step="5" value="${state.minScore}"><b>${state.minScore||'0'}</b></label>
+      <label class="rng">proba gain ≥ <input type="range" data-fk="minPwin" min="0" max="90" step="5" value="${state.minPwin}"><b>${state.minPwin||'0'}%</b></label>
+      <label class="rng">gain/risque ≥ <input type="range" data-fk="minRR" min="0" max="4" step="0.5" value="${state.minRR}"><b>${state.minRR||'0'}×</b></label>
+      <label class="rng">volume ≥ <input type="range" data-fk="minRvol" min="0" max="3" step="0.5" value="${state.minRvol}"><b>×${state.minRvol||'0'}</b></label>
+      <label class="rng">prix ≤ <input type="range" data-fk="maxPrice" min="0" max="1000" step="25" value="${state.maxPrice}"><b>${state.maxPrice?('$'+state.maxPrice):'∞'}</b></label>
+      <input class="vx-input" data-fk="setup" style="width:130px" placeholder="setup (BREAKOUT…)" value="${esc(state.setup)}" aria-label="Setup">
     </div>
-    <div id="op-table"></div>
-    <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.source,metaMode(scan))}
-      · ${rows.length} titres scannés</div>`;
-  document.querySelectorAll('[data-filter-key="decision"]').forEach(c=>c.addEventListener('click',()=>{
-    state.bucket=state.bucket===c.dataset.filterValue?'':c.dataset.filterValue;
-    document.querySelectorAll('[data-filter-key="decision"]').forEach(x=>
-      x.setAttribute('aria-pressed',String(x.dataset.filterValue===state.bucket)));paint();}));
-  document.querySelector('[data-filter-key="sector"]').addEventListener('change',function(){state.sector=this.value;paint();});
-  document.querySelector('[data-filter-key="setup"]').addEventListener('input',function(){state.setup=this.value.toUpperCase();paint();});
-  paint();
+    <div class="vx-scr-kpis" id="op-kpis" aria-label="Résumé des résultats"></div>
+    <div class="vx-grid vx-mt4">
+      <div class="vx-col-8" id="op-scatter"></div>
+      <div class="vx-col-4">
+        <div class="vx-card" id="op-sel-card"><div class="vx-card-header"><span class="vx-card-title">Sélection</span></div>
+          <div id="op-radar-sel">${'<div class="vx-meta">Clique un point du nuage pour ouvrir son dossier express.</div>'}</div></div>
+        <div id="op-funnel" class="vx-mt3"></div>
+      </div>
+    </div>
+    <div class="vx-grid vx-mt4">
+      <section class="vx-card vx-col-6" id="op-dist-card"><div class="vx-card-header">
+        <span class="vx-card-title">Scores des résultats</span>
+        <span class="vx-chart-question">Le filtre isole-t-il vraiment le haut du panier ?</span></div>
+        <div id="op-dist"></div>
+        <div class="vx-card-foot"><span class="vx-meta" id="op-dist-meta"></span></div></section>
+      <div class="vx-col-6" id="op-sectors"></div>
+    </div>
+    <div class="vx-grid vx-mt4">
+      <div class="vx-col-8" id="op-heat"></div>
+      <div class="vx-col-4" id="op-verdicts"></div>
+    </div>
+    <div id="op-topcards" class="vx-mt4"></div>
+    <div class="vx-card vx-mt4"><div class="vx-card-header"><span class="vx-card-title">Tous les résultats</span>
+      <span class="vx-chart-question">Chaque opportunité en carte — score, objectifs/stop, « pourquoi » ; un clic ouvre la fiche.</span>
+      <span class="vx-right vx-flex" style="gap:6px;align-items:center"><span class="vx-meta">Trier</span><select class="vx-select" id="op-sort" style="width:auto" aria-label="Trier les résultats"></select></span></div>
+      <div id="op-table"></div>
+      <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.source,metaMode(scan))}
+        · <span id="op-table-count"></span> · tri : <span id="op-sort-label">score</span></div></div>`;
+
+  /* ── KPI live ── */
+  function paintKpis(f){
+    const buys=f.filter(r=>r.verdict==='BUY'||r.verdict==='ACHETER').length;
+    const avg=(arr)=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
+    const avgScore=avg(f.map(r=>r.score).filter(x=>x!=null));
+    const pwins=f.map(r=>r.vx_pwin).filter(x=>x!=null).map(x=>x*100);
+    const avgPwin=avg(pwins);
+    const bySec={};f.forEach(r=>{if(r.sector){(bySec[r.sector]=bySec[r.sector]||[]).push(r.score||0);}});
+    const bestSec=Object.entries(bySec).map(([s,v])=>[s,avg(v)]).sort((a,b)=>b[1]-a[1])[0];
+    $('op-kpis').innerHTML=
+      `<div class="k"><b>${f.length}</b><span>titres retenus</span></div>`
+      +`<div class="k" data-tone="${buys>0?'pos':''}"><b style="color:var(--vx-positive)">${buys}</b><span>signaux d’achat</span></div>`
+      +`<div class="k" data-tone="${avgScore>=60?'pos':avgScore<45?'neg':''}"><b>${avgScore!=null?Math.round(avgScore):'—'}</b><span>score moyen</span></div>`
+      +`<div class="k" data-tone="${avgPwin>=55?'pos':avgPwin<45?'neg':''}"><b>${avgPwin!=null?Math.round(avgPwin)+' %':'—'}</b><span>proba gain moyenne</span></div>`
+      +`<div class="k" data-tone="brand"><b style="font-size:15px;line-height:1.4">${bestSec?esc(bestSec[0]):'—'}</b><span>secteur le mieux noté</span></div>`
+      +(function(){const al=f.filter(r=>mtfState(r).includes('ALIGNÉ')).length;
+        return `<div class="k"><b>${f.length?Math.round(al/f.length*100)+' %':'—'}</b><span>journalier+hebdo alignés</span></div>`;})()
+      +(function(){const el=f.filter(r=>['S','A'].includes(String(r.grade||'').toUpperCase())).length;
+        return `<div class="k" data-tone="${el>0?'pos':''}"><b>${el}</b><span>notes S ou A (élite)</span></div>`;})();
+    $('op-count').textContent=f.length+' / '+rows.length+' titres';
+  }
+
+  /* ── Nuage POURQUOI : avantage statistique × proba de gain ── */
+  let scatterChart=null;
+  function paintScatter(f){
+    const cc=VXCharts.colors;
+    const pts=f.filter(r=>r.vx_edge!=null&&r.vx_pwin!=null).map(r=>({
+      x:r.vx_edge,y:r.vx_pwin*100,sym:r.symbol,v:r.verdict,sector:r.sector||'',
+      price:r.price,rr:r.rr,score:r.score,conv:r.st_conf,setup:pbText(r),noTrade:!!r.vx_notrade,
+      ev:r.vx_ev,asym:r.vx_asym,kelly:r.vx_kelly,flags:r.vx_flags||[],
+      /* rayon = Kelly (déjà en %, 0-25) que le moteur oserait — repli conviction */
+      r:r.vx_kelly!=null?4+Math.min(11,Math.max(0,r.vx_kelly*0.7)):4+Math.min(9,Math.max(0,(r.st_conf||50)-40)/6)}));
+    const host=$('op-scatter');
+    if(!pts.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun titre du filtre ne porte à la fois un avantage (edge) et une proba de gain — élargis les filtres.')+'</div>';scatterChart=null;return;}
+    const elite=pts.filter(p=>p.x>=60&&p.y>=60).length;
+    VXCharts.card('op-scatter',{
+      title:'Le POURQUOI en un regard — avantage × proba de gain',
+      question:'Quels titres combinent un vrai avantage statistique ET une bonne proba de réussite ?',
+      conclusion:elite+' titre(s) en zone ÉLITE (avantage ≥ 60 et proba ≥ 60 %)',
+      height:320,source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
+      limits:'avantage & proba : moteur Vertex Monte-Carlo · taille = Kelly (taille de position suggérée) · croix corail = NO-TRADE moteur',
+      explain:{shows:'Chaque point est un titre filtré, placé par son avantage statistique (edge) et sa probabilité de gain simulée.',
+        why:'Un bon dossier combine un avantage réel ET une proba favorable — l’un sans l’autre ne suffit pas.',
+        confirm:'Un point qui migre vers le haut-droit en gardant sa conviction.',
+        invalidate:'Proba qui retombe sous 50 % — le dossier perd son espérance.'},
+      render:(cv)=>{scatterChart=VXCharts.mount(cv,{type:'scatter',
+        data:{datasets:[{data:pts,
+          pointRadius:(ctx)=>ctx.raw?ctx.raw.r:4,pointHoverRadius:(ctx)=>ctx.raw?ctx.raw.r+3:8,
+          /* croix = NO-TRADE moteur (dossier interdit malgré ses chiffres) */
+          pointStyle:(ctx)=>ctx.raw&&ctx.raw.noTrade?'crossRot':'circle',
+          pointBackgroundColor:(ctx)=>{const v=ctx.raw&&ctx.raw.v;
+            return v==='BUY'||v==='ACHETER'?cc.positive:(v==='AVOID'||v==='ÉVITER'?cc.negative:cc.neutral);},
+          pointBorderColor:(ctx)=>ctx.raw&&ctx.raw.noTrade?cc.negative:'rgba(255,255,255,.22)',pointBorderWidth:(ctx)=>ctx.raw&&ctx.raw.noTrade?2:1}]},
+        options:{scales:{
+          x:{title:{display:true,text:'Avantage statistique (edge) →'},min:0,max:100,grid:{color:'rgba(255,255,255,.05)'}},
+          y:{title:{display:true,text:'Proba de gain % ↑'},min:0,max:100,grid:{color:'rgba(255,255,255,.05)'}}},
+          plugins:{tooltip:{callbacks:{label:(ctx)=>{const d2=ctx.raw;
+            return `${d2.sym} · avantage ${Math.round(d2.x)} · proba ${Math.round(d2.y)} %`+(d2.ev!=null?' · espérance '+(d2.ev>=0?'+':'')+VX.fmt.num(d2.ev,1)+' %':'')+(d2.noTrade&&d2.flags[0]?' · 🚫 '+flagFr(d2.flags[0]):'');}}}},
+          onClick:(evt,els,chart)=>{const p=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+            if(p.length)selectSym(chart.data.datasets[0].data[p[0].index]);}},
+        plugins:[{id:'opZones',beforeDatasetsDraw(chart){
+          const a=chart.chartArea,sx=chart.scales.x,sy=chart.scales.y,g=chart.ctx;
+          const x60=sx.getPixelForValue(60),y60=sy.getPixelForValue(60),y50=sy.getPixelForValue(50);
+          g.save();
+          g.fillStyle='rgba(54,200,137,.055)';g.fillRect(x60,a.top,a.right-x60,y60-a.top);
+          g.fillStyle='rgba(237,101,92,.045)';g.fillRect(a.left,y50,a.right-a.left,a.bottom-y50);
+          g.strokeStyle='rgba(255,255,255,.10)';g.setLineDash([4,4]);g.beginPath();
+          g.moveTo(x60,a.top);g.lineTo(x60,a.bottom);g.moveTo(a.left,y60);g.lineTo(a.right,y60);g.stroke();g.setLineDash([]);
+          g.font='10px sans-serif';g.fillStyle='rgba(54,200,137,.55)';g.fillText('ZONE ÉLITE',a.right-70,a.top+14);
+          g.fillStyle='rgba(237,101,92,.5)';g.fillText('proba défavorable',a.left+6,a.bottom-8);
+          g.restore();}}]});return scatterChart;}});
+  }
+  function selectSym(d){
+    const plan=(detail[d.sym]&&detail[d.sym].plan)||null;
+    const flags=(d.flags||[]);
+    $('op-radar-sel').innerHTML=
+      `<div class="vx-flex"><span class="vx-ticker" style="font-size:16px">${esc(d.sym)}</span>${window.VXEntities?VXEntities.badges(d.sym):''}
+         <span class="vx-badge vx-badge-decision vx-right" data-decision="${esc(d.v||'')}">${esc(VERD_FR[d.v]||d.v||'n/d')}</span></div>
+       ${d.noTrade?`<div class="vx-insight vx-mt2" data-tone="risk"><b>🚫 NO-TRADE moteur</b>${flags.length?'<div class="vx-mt1" style="font-size:12px">'+flags.map(flagFr).map(esc).join(' · ')+'</div>':''}</div>`:(flags.length?`<div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">${flags.slice(0,3).map(fl=>`<span class="vx-badge">${esc(flagFr(fl))}</span>`).join('')}</div>`:'')}
+       <div class="vx-kv vx-mt2"><span class="k">Avantage (edge)</span><span class="v vx-mono">${VX.fmt.nd(Math.round(d.x))} / 100</span></div>
+       <div class="vx-kv"><span class="k">Proba de gain</span><span class="v vx-mono">${VX.fmt.nd(Math.round(d.y))} %</span></div>
+       ${d.ev!=null?`<div class="vx-kv"><span class="k">Espérance / trade</span><span class="v vx-mono ${d.ev>0?'vx-pos':d.ev<0?'vx-neg':''}">${(d.ev>=0?'+':'')+VX.fmt.num(d.ev,1)} %</span></div>`:''}
+       ${d.asym!=null?`<div class="vx-kv"><span class="k">Asymétrie gain/perte</span><span class="v vx-mono">${VX.fmt.nd(d.asym)}</span></div>`:''}
+       ${d.kelly!=null?`<div class="vx-kv"><span class="k">Taille suggérée (Kelly)</span><span class="v vx-mono">${VX.fmt.num(d.kelly,1)} %</span></div><div id="op-sel-kelly" style="margin:-4px 0 2px"></div>`:''}
+       <div class="vx-kv"><span class="k">Score</span><span class="v vx-mono">${VX.fmt.nd(d.score)}</span></div>
+       <div class="vx-kv"><span class="k">Cours</span><span class="v vx-mono">${d.price!=null?VX.fmt.price(d.price):'n/d'}</span></div>
+       <div class="vx-kv"><span class="k">Gain/risque</span><span class="v vx-mono">${d.rr!=null?VX.fmt.num(d.rr,1)+'×':'n/d'}</span></div>
+       ${levelsBar(plan,d.price)}
+       <div id="op-sel-mc" class="vx-mt2"></div>
+       ${(function(){const r0=byId[d.sym];return r0?perfRibbon(r0):'';})()}
+       ${(function(){const cr=detail[d.sym]&&detail[d.sym].chart_read;return cr?`<div class="vx-meta vx-mt2" style="white-space:normal;line-height:1.45"><b>Lecture technique :</b> ${esc(cr)}</div>`:'';})()}
+       ${d.setup?`<div class="vx-kv vx-mt2"><span class="k">Setup</span><span class="v">${esc(d.setup)}</span></div>`:''}
+       ${d.sector?`<div class="vx-kv"><span class="k">Secteur</span><span class="v">${esc(d.sector)}</span></div>`:''}
+       <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
+         <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${esc(d.sym)}">Analyse</button>
+         <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${esc(d.sym)}','follow')">Suivre</button>
+         <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${esc(d.sym)}','alert')">Alerte</button>
+         <a class="vx-btn vx-btn-sm" href="/options/${esc(d.sym)}">Options</a></div>`;
+    /* Visuels quant du tiroir (mêmes moteurs que la fiche Analyse — data déjà dans le scan) */
+    (function(){
+      if(!window.VXCharts)return;
+      const cc=VXCharts.colors,dd=detail[d.sym]||{},v=dd.vertex||{};
+      const kp=(v.kelly&&v.kelly.pct!=null)?v.kelly.pct:d.kelly;
+      if(kp!=null&&document.getElementById('op-sel-kelly')&&VXCharts.gauge){
+        VXCharts.gauge('op-sel-kelly',{value:kp,min:0,max:15,unit:'%',
+          bands:[{to:6,color:cc.neutral},{to:12,color:cc.brand},{to:15,color:cc.warning}]});
+      }
+      const mc=v.mc||{},bs=v.bootstrap||{},mcEl=document.getElementById('op-sel-mc');
+      if(mcEl&&bs.p05!=null&&bs.p95!=null&&VXCharts.card){
+        const tp1=mc.p_tp1_first,stopf=mc.p_stop_before_tp1;
+        VXCharts.card('op-sel-mc',{title:'Dispersion Monte-Carlo',
+          question:'Fourchette réaliste du rendement sur l’horizon ?',
+          conclusion:(tp1!=null?'TP1 avant stop '+Math.round(tp1*100)+'% · stop '+Math.round((stopf||0)*100)+'%':''),
+          height:150,source:'Monte-Carlo · bootstrap',timestamp:Date.now(),mode:'delayed',limits:'MODEL_ESTIMATE',
+          render:function(cv){return VXCharts.mount(cv,{type:'bar',
+            data:{labels:['P05','P50','P95'],datasets:[{data:[bs.p05,bs.p50,bs.p95],backgroundColor:[cc.negative,cc.neutral,cc.positive],borderRadius:4,maxBarThickness:26}]},
+            options:{indexAxis:'y',scales:{x:{ticks:{callback:function(x){return x+'%';},color:cc.muted,font:{size:9}},grid:{color:cc.grid}},y:{grid:{display:false},ticks:{color:cc.text,font:{size:10}}}},plugins:{legend:{display:false}}}});}});
+      }
+    })();
+  }
+
+  /* ── Distribution des scores (résultats filtrés) ── */
+  function paintDist(f){
+    const el=$('op-dist');if(!el)return;
+    const dist=Array.from({length:10},()=>0);
+    f.forEach(r=>{const sIdx=Math.max(0,Math.min(9,Math.floor((r.score||0)/10)));dist[sIdx]++;});
+    const tot=f.length;
+    if(!tot){el.innerHTML=VX.states.empty('Aucun résultat avec ces filtres.');$('op-dist-meta').textContent='';return;}
+    const maxN=Math.max(1,...dist);
+    el.innerHTML='<div style="display:flex;gap:4px;align-items:flex-end;padding:8px 2px">'+dist.map((n,i)=>{
+      const hh=Math.round(n/maxN*100);
+      const col=i>=7?'var(--vx-positive)':i<=2?'var(--vx-negative)':'var(--vx-warning)';
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px" role="img" aria-label="score ${i*10}-${i*10+10} : ${n} titres" title="${n} titre(s) entre ${i*10} et ${i*10+10}">
+        <span style="font-size:9.5px;color:var(--vx-text-dim)">${n||''}</span>
+        <span style="width:100%;height:110px;display:flex;align-items:flex-end"><span style="width:100%;height:${hh}%;background:${col};border-radius:3px 3px 0 0;min-height:2px;opacity:.85"></span></span>
+        <span style="font-size:9px;color:var(--vx-text-muted);font-variant-numeric:tabular-nums">${i*10}</span></div>`;}).join('')+'</div>';
+    const avg=Math.round(f.reduce((a,r)=>a+(r.score||0),0)/tot);
+    $('op-dist-meta').textContent='score moyen des résultats : '+avg+' / 100 · '+tot+' titres';
+  }
+
+  /* ── Secteurs des résultats (score moyen par secteur, filtré) ── */
+  function paintSectors(f){
+    const host=$('op-sectors');if(!host)return;
+    const by={};f.forEach(r=>{if(r.sector){(by[r.sector]=by[r.sector]||[]).push(r.score||0);}});
+    const entries=Object.entries(by).map(([s,v])=>[s,Math.round(v.reduce((a,b)=>a+b,0)/v.length),v.length])
+      .sort((a,b)=>b[1]-a[1]).slice(0,9);
+    if(!entries.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun secteur dans les résultats filtrés.')+'</div>';return;}
+    VXCharts.sectorCard('op-sectors',{
+      title:'Secteurs des résultats',question:'Où se concentrent les titres retenus par TES filtres ?',
+      conclusion:entries[0][0]+' en tête ('+entries[0][1]+' de score moyen · '+entries[0][2]+' titres)',
+      labels:entries.map(e=>e[0]+' ('+e[2]+')'),values:entries.map(e=>e[1]),height:240,
+      source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
+      onSector:(name)=>{state.sector=name.replace(/ \(\d+\)$/,'');persist();syncBar();applyAll();},
+      explain:{shows:'Le score moyen par secteur, calculé UNIQUEMENT sur les titres qui passent tes filtres.',
+        why:'Concentrer l’attention là où les résultats filtrés sont les plus forts.',
+        confirm:'Un secteur qui reste en tête quand tu durcis les filtres.',invalidate:'Un leadership qui dépend d’un seul titre.'}});
+  }
+
+  /* ── Carte d'opportunité RICHE (helper réutilisé : top + grille complète) ── */
+  function oppCard(r){
+    const dec=r.verdict||'';
+    const gauge=(window.VXCharts&&VXCharts.confidenceGaugeSVG&&r.score!=null)
+      ?VXCharts.confidenceGaugeSVG(r.score,verdictDir(dec),{size:78,stroke:7,dirLabel:verdictWord(dec)}):'';
+    const pb=pbText(r);const ic=pbIcon(r);
+    const ser=detail[r.symbol]&&detail[r.symbol].series;
+    const spark=sparkMini(ser&&ser.close);
+    const chips=[];
+    if(r.vx_pwin!=null)chips.push(`<span class="vx-badge" style="color:var(--vx-positive)">proba. gain ${Math.round(r.vx_pwin*100)} %</span>`);
+    if(r.vx_ev!=null)chips.push(`<span class="vx-badge" style="color:${r.vx_ev>0?'var(--vx-positive)':'var(--vx-negative)'}" title="espérance mathématique par trade">espérance ${(r.vx_ev>=0?'+':'')+VX.fmt.num(r.vx_ev,1)} %</span>`);
+    if(r.vx_edge!=null)chips.push(`<span class="vx-badge">avantage ${Math.round(r.vx_edge)}</span>`);
+    if(r.rr!=null)chips.push(`<span class="vx-badge">gain/risque ${VX.fmt.num(r.rr,1)}×</span>`);
+    if(r.vx_kelly!=null&&r.vx_kelly>0)chips.push(`<span class="vx-badge" title="taille de position suggérée">Kelly ${VX.fmt.num(r.vx_kelly,0)} %</span>`);
+    if(mtfBadge(r))chips.push(mtfBadge(r));
+    if(r.rvol!=null&&r.rvol>=1.5)chips.push(`<span class="vx-badge" style="color:var(--vx-warning)">volume ×${VX.fmt.num(r.rvol,1)}</span>`);
+    if(r.vx_notrade)chips.push(noTradeBadge(r));
+    const planR=detail[r.symbol]&&detail[r.symbol].plan;
+    return `<div class="vx-card vx-opp-card vx-card--premium ${r.vx_notrade?'vx-opp-notrade':''}" aria-label="${r.symbol}">
+      <div class="vx-flex" style="align-items:flex-start;gap:.6rem">
+        <div style="min-width:0;flex:1">
+          <div class="vx-flex" style="gap:.4rem;flex-wrap:wrap"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px;padding-left:0" data-open-analysis="${r.symbol}">${r.symbol}</button>
+            <span class="vx-badge">${bucketOf(r)}</span>${gradeBadge(r.grade)}</div>
+          <div class="vx-mono vx-mt1" style="font-size:18px;font-weight:700;color:var(--vx-text-primary,#f4f1ec)">${r.price!=null?'$'+VX.fmt.price(r.price):'—'}</div>
+          ${spark}${perfRibbon(r)}
+        </div>
+        <div style="flex:0 0 auto">${gauge}</div>
+      </div>
+      ${dimStrip(r)}
+      <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">${chips.join('')}</div>
+      ${levelsBar(planR,r.price)}
+      ${pb?`<div class="vx-meta vx-mt1" style="white-space:normal;line-height:1.45">${ic?esc(ic)+' ':''}<b>Pourquoi :</b> ${esc(pb)}</div>`:''}
+      <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
+        <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${r.symbol}">Analyser</button>
+        <button class="vx-btn vx-btn-sm" data-inspect="${r.symbol}" title="Aperçu rapide">Aperçu</button>
+        <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','follow')">Suivre</button>
+        <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','alert')">Alerte</button>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/${r.symbol}">Options</a>
+      </div></div>`;
+  }
+  /* ── Top cartes des résultats (highlight 6) ── */
+  function paintTopCards(f){
+    const el=$('op-topcards');if(!el)return;
+    const prio=(r)=>bucketOf(r)==='Actionnable'?0:bucketOf(r)==='Proche'?1:bucketOf(r)==='À surveiller'?2:3;
+    const ranked=f.filter(r=>r.verdict!=='AVOID'&&r.verdict!=='ÉVITER')
+      .slice().sort((a,b)=>prio(a)-prio(b)||(b.score||0)-(a.score||0)).slice(0,6);
+    if(!ranked.length){el.innerHTML='';return;}
+    el.innerHTML='<div class="vx-card-header" style="padding:0 0 8px"><span class="vx-card-title">Top des résultats — pourquoi eux</span>'
+      +'<span class="vx-chart-question">Les 6 meilleurs candidats de TON filtre, avec leurs raisons.</span></div>'
+      +'<div class="vx-opp-grid vx-mb2">'+ranked.map(oppCard).join('')+'</div>';
+  }
+
+  /* ── Table triable ── */
+  const SORTS={score:{k:r=>r.score||0,label:'score'},pwin:{k:r=>(r.vx_pwin||0),label:'proba de gain'},
+    ev:{k:r=>(r.vx_ev==null?-999:r.vx_ev),label:'espérance'},
+    edge:{k:r=>(r.vx_edge||0),label:'avantage'},rr:{k:r=>(r.rr||0),label:'gain/risque'},
+    rvol:{k:r=>(r.rvol||0),label:'volume relatif'},chg:{k:r=>(r.change||0),label:'variation'},
+    perfw:{k:r=>(r.perf_w||0),label:'perf. semaine'},perfm:{k:r=>(r.perf_m||0),label:'perf. mois'},
+    pos52:{k:r=>(r.pos52||0),label:'position 52 sem.'},
+    grade:{k:r=>({S:4,A:3,B:2,C:1,D:0}[String(r.grade||'').toUpperCase()]||-1),label:'note'}};
+  let sortKey='score',sortDir=-1,shownLimit=48;
+  function populateSortSelect(){
+    const sel=document.getElementById('op-sort');if(!sel||sel.dataset.ready)return;
+    sel.innerHTML=Object.entries(SORTS).map(([k,s])=>`<option value="${k}"${k===sortKey?' selected':''}>${s.label}</option>`).join('');
+    sel.dataset.ready='1';
+    sel.addEventListener('change',()=>{sortKey=sel.value;sortDir=-1;shownLimit=48;paintTable(filtered());});
+  }
+  /* « Tous les résultats » = GRILLE DE CARTES riches (plus de table) : chaque
+     opportunité en carte (score, objectifs/stop, pourquoi). Tri par sélecteur,
+     pagination « voir plus ». Un clic sur la carte ouvre la fiche. */
+  function paintTable(f){
+    populateSortSelect();
+    const s=SORTS[sortKey]||SORTS.score;
+    const sorted=f.slice().sort((a,b)=>(s.k(b)-s.k(a))*(-sortDir));
+    $('op-sort-label').textContent=s.label;
+    const shown=sorted.slice(0,shownLimit);
+    $('op-table-count').textContent=shown.length+' affichées sur '+f.length;
+    $('op-table').innerHTML=sorted.length
+      ?'<div class="vx-opp-grid">'+shown.map(oppCard).join('')+'</div>'
+        +(sorted.length>shown.length?`<div class="vx-mt3" style="text-align:center"><button class="vx-btn vx-btn-sm" id="op-more">Voir plus (${sorted.length-shown.length} restantes)</button></div>`:'')
+      :VX.states.empty('Aucun titre ne correspond aux filtres.','<button class="vx-btn vx-btn-sm" id="op-clear2">Effacer les filtres</button>');
+    document.getElementById('op-clear2')?.addEventListener('click',()=>resetFilters());
+    document.getElementById('op-more')?.addEventListener('click',()=>{shownLimit+=48;paintTable(filtered());});
+  }
+
+  /* ── Entonnoir CLIQUABLE : chaque étage applique le filtre correspondant ── */
+  async function paintFunnel(){
+    const el=$('op-funnel');if(!el)return;
+    let fn;try{fn=await VX.fetch('/api/opportunities/funnel',{ttl:60000});}catch(e){return;}
+    if(!fn||!fn.stages||!fn.stages.length)return;
+    el.innerHTML='<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Entonnoir</span>'
+      +'<span class="vx-chart-question">Cliquer un étage filtre le screener.</span></div>'
+      +'<div id="op-funnel-viz"></div>'
+      +(fn.actionable_symbols&&fn.actionable_symbols.length?'<div class="vx-dim vx-mt2" style="font-size:12px">Actionnables : '
+        +fn.actionable_symbols.map(s=>'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(s)+'" style="padding:0 4px;color:var(--vx-positive)">'+esc(s)+'</button>').join(' ')+'</div>':'')
+      +'</div>';
+    if(window.VXCharts&&VXCharts.funnel){
+      VXCharts.funnel('op-funnel-viz',{stages:fn.stages.map(s=>({label:s.label,value:s.count})),
+        fmt:v=>VX.fmt.nd(v),ariaLabel:'Entonnoir de sélection'});
+      /* étages cliquables → mappe l'étage vers un filtre bucket approché */
+      const map={'Actionnable':'Actionnable','Proche':'Proche','À surveiller':'À surveiller'};
+      el.querySelectorAll('#op-funnel-viz [role="img"], #op-funnel-viz svg, #op-funnel-viz div').forEach(()=>{});
+      el.querySelector('#op-funnel-viz').addEventListener('click',(ev)=>{
+        const t=(ev.target.textContent||'').trim();
+        const k=Object.keys(map).find(x=>t.includes(x));
+        if(k){state.bucket=state.bucket===map[k]?'':map[k];persist();syncBar();applyAll();}});
+    }
+  }
+
+  /* ── Heat secteur × statut : où vivent les résultats (clic = filtre combiné) ── */
+  function paintHeat(f){
+    const host=$('op-heat');if(!host||!window.VXCharts||!VXCharts.heatmapCard)return;
+    const secs=[...new Set(f.map(r=>r.sector).filter(Boolean))];
+    if(!secs.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun secteur dans les résultats.')+'</div>';return;}
+    const cnt={};f.forEach(r=>{const k=(r.sector||'')+'|'+bucketOf(r);cnt[k]=(cnt[k]||0)+1;});
+    /* on garde le secteur BRUT (raw) séparé du libellé échappé — le filtre matche
+       r.sector===raw, jamais la version HTML-échappée (bug « 0 titre » sur A&B). */
+    const rows2=secs.map(sec=>({raw:sec,label:esc(sec),cells:OUT.map(b=>{
+      const v=cnt[sec+'|'+b]||0;
+      return {value:v||null,label:v?String(v):'—',title:sec+' · '+b+' : '+v+' titre(s)'};})}))
+      .sort((a,b)=>{const t=(x)=>OUT.reduce((acc,bb,i)=>acc+(cnt[x.raw+'|'+bb]||0)*(OUT.length-i),0);return t(b)-t(a);});
+    VXCharts.heatmapCard('op-heat',{
+      title:'Carte secteur × statut',question:'Dans quels secteurs vivent les dossiers les plus avancés ?',
+      conclusion:'Colonne Actionnable = prêt · cliquer une cellule applique les deux filtres.',
+      columns:OUT,rows:rows2,min:0,max:Math.max(4,...Object.values(cnt)),
+      fmt:(v)=>v==null?'—':String(v),
+      source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
+      limits:'compte de titres par secteur et statut, sur TES filtres'});
+    /* clic cellule → filtre secteur+statut */
+    host.querySelectorAll('tbody tr').forEach((tr,ri)=>{
+      [...tr.querySelectorAll('td')].slice(1).forEach((td,ci)=>{
+        td.style.cursor='pointer';
+        td.addEventListener('click',()=>{
+          const raw=rows2[ri]&&rows2[ri].raw;
+          state.sector=state.sector===raw?'':raw;
+          state.bucket=state.bucket===OUT[ci]?'':OUT[ci];
+          persist();syncBar();applyAll();});
+      });});
+  }
+  /* ── Donut verdicts des résultats ── */
+  function paintVerdicts(f){
+    const host=$('op-verdicts');if(!host)return;
+    const cnt={};f.forEach(r=>{const v=VERD_FR[r.verdict]||r.verdict||'n/d';cnt[v]=(cnt[v]||0)+1;});
+    const ks=Object.keys(cnt);
+    if(!ks.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun verdict.')+'</div>';return;}
+    const tone={'ACHAT':'#36c889','SURVEILLER':'#c0b79f','ATTENDRE':'#dda23b','ÉVITER':'#ed655c'};
+    VXCharts.donutCard('op-verdicts',{title:'Verdicts des résultats',
+      question:'Que pense le moteur de TA sélection ?',
+      labels:ks,values:ks.map(k=>cnt[k]),colors:ks.map(k=>tone[k]||'#8f8a83'),height:200,
+      source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan)});
+  }
+  /* ── Application globale des filtres ── */
+  function applyAll(){
+    const f=filtered();
+    paintKpis(f);paintScatter(f);paintDist(f);paintSectors(f);paintHeat(f);paintVerdicts(f);paintTopCards(f);paintTable(f);
+  }
+  function syncBar(){
+    document.querySelectorAll('[data-fk="bucket"]').forEach(c=>
+      c.setAttribute('aria-pressed',String(c.dataset.fv===state.bucket)));
+    const sec=document.querySelector('select[data-fk="sector"]');if(sec)sec.value=state.sector;
+  }
+  function resetFilters(silent){
+    Object.assign(state,{bucket:'',sector:'',vehicle:'',setup:'',mtf:'',grade:'',
+      minScore:0,minPwin:0,minRR:0,minRvol:0,maxPrice:0,
+      setBreakout:false,setPullback:false,setSqueeze:false,setAccum:false,
+      exclNoTrade:false,exclHeld:false,exclProxy:false});
+    const gs=document.querySelector('select[data-fk="grade"]');if(gs)gs.value='';
+    persist();
+    document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>{r.value=0;
+      const b=r.closest('label').querySelector('b');
+      b.textContent=r.dataset.fk==='maxPrice'?'∞':'0'+(r.dataset.fk==='minPwin'?'%':r.dataset.fk==='minRR'?'×':'');});
+    document.querySelectorAll('.vx-screenbar [data-ft]').forEach(x=>x.setAttribute('aria-pressed','false'));
+    const inp=document.querySelector('input[data-fk="setup"]');if(inp)inp.value='';
+    const veh=document.querySelector('select[data-fk="vehicle"]');if(veh)veh.value='';
+    const mtfSel=document.querySelector('select[data-fk="mtf"]');if(mtfSel)mtfSel.value='';
+    if(!silent){syncBar();applyAll();}
+  }
+  /* Écouteurs de la barre */
+  document.querySelectorAll('[data-fk="bucket"]').forEach(c=>c.addEventListener('click',()=>{
+    state.bucket=state.bucket===c.dataset.fv?'':c.dataset.fv;persist();syncBar();applyAll();}));
+  document.querySelector('select[data-fk="sector"]').addEventListener('change',function(){state.sector=this.value;persist();applyAll();});
+  document.querySelector('select[data-fk="vehicle"]').addEventListener('change',function(){state.vehicle=this.value;persist();applyAll();});
+  document.querySelector('select[data-fk="mtf"]').addEventListener('change',function(){state.mtf=this.value;persist();applyAll();});
+  document.querySelector('select[data-fk="grade"]').addEventListener('change',function(){state.grade=this.value;persist();applyAll();});
+  const applyDebounced=debounce(applyAll,120);
+  document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>r.addEventListener('input',function(){
+    state[this.dataset.fk]=+this.value;
+    const b=this.closest('label').querySelector('b');
+    if(this.dataset.fk==='maxPrice')b.textContent=this.value>0?('$'+this.value):'∞';
+    else b.textContent=this.value+(this.dataset.fk==='minPwin'?'%':this.dataset.fk==='minRR'?'×':'');
+    persist();applyDebounced();}));
+  document.querySelectorAll('.vx-screenbar [data-ft]').forEach(c=>c.addEventListener('click',()=>{
+    state[c.dataset.ft]=!state[c.dataset.ft];
+    c.setAttribute('aria-pressed',String(state[c.dataset.ft]));
+    persist();applyAll();}));
+  document.querySelector('input[data-fk="setup"]').addEventListener('input',function(){state.setup=this.value.toUpperCase();persist();applyDebounced();});
+  document.getElementById('op-reset').addEventListener('click',()=>resetFilters());
+
+  paintFunnel();
+  applyAll();
   VX.context.restoreIfReturning();
 }
 
-/* ── OPTIONS (§24/§35) ── */
+/* ═════════ OPTIONS : screener du board réel ═════════ */
 async function renderOptions(){
   const scan=await VX.fetch('/scan',{ttl:120000});
   const board=(scan.options_board||[]);
-  /* Comparateur §22 : 3 contrats max — défensif (BALANCED) / principal
-     (DYNAMIC) / explosif (ULTRA_CONVEX) — dominance expliquée, jamais
-     d'exécution. */
   window.__opCompare=function(symWanted){
+    /* Plages NON chevauchantes : ≥0.45 défensif · 0.30-0.45 principal · 0.18-0.30 convexe */
     const catOf2=(c)=>{const d=Math.abs(c.delta||0);
-      if(d>=0.40&&d<=0.60)return'BALANCED';if(d>=0.28&&d<0.45)return'DYNAMIC';
+      if(d>=0.45&&d<=0.65)return'BALANCED';if(d>=0.30&&d<0.45)return'DYNAMIC';
       if(d>=0.18&&d<0.30)return'ULTRA_CONVEX';return'AUTRE';};
     let pool=board;
     if(symWanted)pool=pool.filter(c=>c.sym===symWanted);
@@ -484,7 +750,7 @@ async function renderOptions(){
       <td class="vx-num">${VX.fmt.nd(c.delta)}</td><td class="vx-num">${VX.fmt.nd(c.dte)}</td>
       <td class="vx-num">${c.iv!=null?(c.iv).toFixed(0)+'%':'—'}</td>
       <td class="vx-num">${VX.fmt.nd(c.cost)}</td>
-      <td class="vx-num">${c.spread_pct!=null?c.spread_pct+'%':'—'}</td>
+      <td class="vx-num">${c.spread!=null?c.spread+'%':'—'}</td>
       <td class="vx-num">${VX.fmt.nd(c.oi)}</td>
       <td class="vx-num"><b>${VX.fmt.nd(c.quality)}</b></td></tr>`:'';
     const main=avail.find(([l])=>l.startsWith('PRINCIPAL'))||avail[0];
@@ -494,7 +760,7 @@ async function renderOptions(){
       if((c.delta||0)>(m.delta||0))wins.push('delta plus élevé (plus défensif)');
       if((c.cost||1e9)<(m.cost||1e9))wins.push('prime plus faible (plus convexe)');
       if((c.oi||0)>(m.oi||0))wins.push('OI supérieur');
-      return `<li><b>${l}</b> : ${wins.length?('gagne sur '+wins.join(', ')):'ne domine sur aucune dimension clé'} — mais qualité globale ${VX.fmt.nd(c.quality)} vs ${VX.fmt.nd(m[1]?m[1].quality:m.quality??'')}.</li>`;
+      return `<li><b>${l}</b> : ${wins.length?('gagne sur '+wins.join(', ')):'ne domine sur aucune dimension clé'} — qualité globale ${VX.fmt.nd(c.quality)} vs ${VX.fmt.nd(m?m.quality:null)}.</li>`;
     }).join('');
     VX.shell.openDrawer('Comparateur de contrats'+(symWanted?' — '+symWanted:''),
       `<div class="vx-table-wrap"><table class="vx-table"><thead><tr>
@@ -503,110 +769,263 @@ async function renderOptions(){
         <th class="vx-num">Qualité</th></tr></thead>
         <tbody>${avail.map(([l,c])=>row(l,c)).join('')}</tbody></table></div>
        <div class="vx-insight vx-mt3"><b>Pourquoi ${main[0]} domine</b>
-         <div class="vx-mt1" style="font-size:12.5px">Frontière de Pareto : le contrat principal offre le meilleur
-         score composite (R:R simulé × liquidité × coût du temps). Les alternatives gagnent chacune sur UNE
-         dimension mais en sacrifient d'autres :</div>
+         <div class="vx-mt1" style="font-size:12.5px">Le contrat principal offre le meilleur score composite
+         (R:R simulé × liquidité × coût du temps). Les alternatives gagnent chacune sur UNE dimension :</div>
          <ul class="vx-mt1" style="margin:0;padding-left:18px;font-size:12.5px">${why||'<li>aucune alternative disponible</li>'}</ul></div>
        <div class="vx-help vx-mt2">Analyse uniquement — copier le contrat pour le consulter chez le broker.</div>`);
   };
   const symFilter=(PARAMS.sym||'').toUpperCase();
-  const state={cat:PARAMS.setup||'',sym:symFilter};
-  function catOf(c){const d=Math.abs(c.delta||0);
-    if(d>=0.40&&d<=0.60)return'BALANCED';if(d>=0.28&&d<0.45)return'DYNAMIC';
-    if(d>=0.18&&d<0.30)return'ULTRA_CONVEX';return'AUTRE';}
-  function paint(){
+  const state={type:'',bucket:'',danger:'',minQ:0,minPop:0,maxDte:0,maxCost:0,exclStale:false,sym:symFilter};
+  function filtered(){
     let f=board;
     if(state.sym)f=f.filter(c=>c.sym===state.sym);
-    if(state.cat)f=f.filter(c=>catOf(c)===state.cat);
-    const optRow=(c,compact)=>`<tr data-clickable data-ct="${board.indexOf(c)}" tabindex="0" role="button" aria-label="Simuler ${esc(c.sym)} ${VX.fmt.nd(c.strike)}">
-        <td data-label="Contrat"><span class="vx-ticker">${c.sym}</span><span class="vx-meta">${VX.fmt.nd(c.strike)} · ${VX.fmt.nd(c.exp)}${c.dte!=null?' · '+VX.fmt.nd(c.dte)+' j':''}</span></td>
-        <td data-label="Profil"><span class="vx-badge" style="color:var(--vx-violet)">${catOf(c)}</span></td>
-        ${compact?`<td data-label="Delta" class="vx-num">${VX.fmt.nd(c.delta)}</td>
-        <td data-label="Prime" class="vx-num">${VX.fmt.nd(c.cost)}</td>
-        <td data-label="Spread" class="vx-num">${c.spread_pct!=null?c.spread_pct+'%':'—'}</td>
-        <td data-label="Qualité" class="vx-num"><b>${VX.fmt.nd(c.quality)}</b></td>
-        <td data-label="Action">${rowActions(c.sym)}</td>`:`
-        <td data-label="Strike" class="vx-num">${VX.fmt.nd(c.strike)}</td>
-        <td data-label="Échéance" class="vx-mono">${VX.fmt.nd(c.exp)}</td>
-        <td data-label="DTE" class="vx-num">${VX.fmt.nd(c.dte)}</td>
-        <td data-label="Delta" class="vx-num">${VX.fmt.nd(c.delta)}</td>
-        <td data-label="IV" class="vx-num" style="color:var(--vx-option)">${c.iv!=null?(c.iv*100).toFixed(0)+'%':'—'}</td>
-        <td data-label="Prime" class="vx-num">${VX.fmt.nd(c.cost)}</td>
-        <td data-label="Spread" class="vx-num">${c.spread_pct!=null?c.spread_pct+'%':'—'}</td>
-        <td data-label="Volume" class="vx-num">${VX.fmt.nd(c.vol)}</td>
-        <td data-label="OI" class="vx-num">${VX.fmt.nd(c.oi)}</td>
-        <td data-label="Breakeven" class="vx-num">${VX.fmt.nd(c.be)}</td>
-        <td data-label="R:R" class="vx-num">${VX.fmt.nd(c.p_tgt)}</td>
-        <td data-label="Action">${rowActions(c.sym)}</td>`}</tr>`;
-    const shortlist=f.slice().sort((a,b)=>{
-      const qa=Number(a.quality),qb=Number(b.quality);
-      return (Number.isFinite(qb)?qb:-Infinity)-(Number.isFinite(qa)?qa:-Infinity);
-    }).slice(0,3);
-    ($('op-opt-table')||{}).innerHTML=f.length?`<section class="vx-card" aria-label="Shortlist options">
-      <div class="vx-card-header"><span class="vx-card-title">Shortlist options — relais vers l’espace Options</span>
-        <span class="vx-meta vx-right">${shortlist.length} contrat(s) sur ${f.length}</span></div>
-      <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
-        <th>Contrat</th><th>Profil</th><th class="vx-num">Delta</th><th class="vx-num">Prime</th>
-        <th class="vx-num">Spread</th><th class="vx-num">Qualité</th><th>Action</th></tr></thead>
-        <tbody>${shortlist.map(c=>optRow(c,true)).join('')}</tbody></table></div>
-      <div class="vx-card-footer">Sélection analytique uniquement · ouvrir Options pour valider liquidité, payoff et Greeks.</div></section>
-      <details class="vx-disclosure vx-mt3" id="op-options-full"><summary>Voir le board complet et les métriques techniques</summary>
-        <div class="vx-table-wrap vx-table-cards vx-mt2"><table class="vx-table"><thead><tr>
-          <th>Contrat</th><th>Profil</th><th class="vx-num">Strike</th><th>Échéance</th>
-          <th class="vx-num">DTE</th><th class="vx-num">Delta</th><th class="vx-num">IV</th>
-          <th class="vx-num">Prime</th><th class="vx-num">Spread</th><th class="vx-num">Volume</th>
-          <th class="vx-num">OI</th><th class="vx-num">Breakeven</th><th class="vx-num">R:R cible</th><th>Action</th></tr></thead>
-          <tbody>${f.map(c=>optRow(c,false)).join('')}</tbody></table></div></details>`
-      :VX.states.empty(state.sym?'Aucun contrat pour '+state.sym+' dans le board courant.':'Board options vide — le sélecteur ne force jamais une idée.',
-        '<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a>');
-    document.querySelectorAll('[data-ct]').forEach(tr=>{
-      const open=(e)=>{if(e.target.closest('[data-open-analysis],[data-entity-menu]'))return;openContract(board[+tr.dataset.ct]);};
-      tr.addEventListener('click',open);
-      tr.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e);}});});
+    if(state.type)f=f.filter(c=>c.type===state.type);
+    if(state.bucket)f=f.filter(c=>c.bucket===state.bucket);
+    if(state.danger)f=f.filter(c=>c.danger===state.danger);
+    if(state.minQ)f=f.filter(c=>(c.quality||0)>=state.minQ);
+    if(state.minPop)f=f.filter(c=>(c.pop||0)>=state.minPop);
+    if(state.maxDte)f=f.filter(c=>(c.dte||0)<=state.maxDte);
+    if(state.maxCost)f=f.filter(c=>(c.cost||0)<=state.maxCost);
+    if(state.exclStale)f=f.filter(c=>!c.stale);
+    return f;
   }
-  ($('op-body')||{}).innerHTML=demoBanner(scan)+`
-    <div class="vx-filterbar vx-toolbar">
-      ${['BALANCED','DYNAMIC','ULTRA_CONVEX'].map(c=>`<button class="vx-chip" data-filter-key="setup"
-        data-filter-value="${c}" aria-pressed="${state.cat===c}">${c}</button>`).join('')}
-      <input class="vx-input" data-filter-key="sym" style="width:120px;text-transform:uppercase"
-        placeholder="Ticker" value="${esc(state.sym)}" aria-label="Filtrer par ticker">
-      <span class="vx-meta">Greeks complets (gamma/theta/vega) : disponibles à la simulation du contrat — le board legacy n'expose que le delta.</span>
+  const dangers=[...new Set(board.map(c=>c.danger).filter(Boolean))];
+  $('op-body').innerHTML=demoBanner(scan)+`
+    <div class="vx-screenbar" role="group" aria-label="Filtres options">
+      ${['CALL','PUT'].map(t=>`<button class="vx-chip" data-fk="type" data-fv="${t}" aria-pressed="false"
+        style="${t==='PUT'?'color:var(--vx-violet)':''}">${t}</button>`).join('')}
+      ${['court','moyen','long'].map(b=>`<button class="vx-chip" data-fk="bucket" data-fv="${b}" aria-pressed="false">${b} terme</button>`).join('')}
+      <select class="vx-select" data-fk="danger" style="width:auto" aria-label="Danger">
+        <option value="">Tout danger</option>${dangers.map(d=>`<option>${esc(d)}</option>`).join('')}</select>
+      <label class="rng">qualité ≥ <input type="range" data-fk="minQ" min="0" max="80" step="5" value="0"><b>0</b></label>
+      <label class="rng">proba profit ≥ <input type="range" data-fk="minPop" min="0" max="70" step="5" value="0"><b>0%</b></label>
+      <label class="rng">échéance ≤ <input type="range" data-fk="maxDte" min="0" max="400" step="20" value="0"><b>∞</b></label>
+      <label class="rng">prime ≤ <input type="range" data-fk="maxCost" min="0" max="6000" step="250" value="0"><b>∞</b></label>
+      <button class="vx-chip" data-ft="exclStale" aria-pressed="false">⏸ exclure hors séance</button>
+      <input class="vx-input" data-fk="sym" style="width:110px;text-transform:uppercase" placeholder="Ticker" value="${esc(state.sym)}">
+      <button class="vx-btn vx-btn-sm vx-btn-soft" onclick="window.__opCompare&&window.__opCompare(document.querySelector('[data-fk=sym]').value.toUpperCase())">Comparer 3 contrats</button>
+      <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options">Desk options →</a>
+      <span class="vx-meta vx-right" id="op-opt-count"></span>
     </div>
-    <div class="vx-flex vx-toolbar vx-mb2" style="gap:.5rem;flex-wrap:wrap"><button class="vx-btn vx-btn-sm vx-btn-soft" id="op-compare"
-      onclick="window.__opCompare&&window.__opCompare((new URLSearchParams(location.search)).get('sym')||'')">
-      Comparer 3 contrats (défensif · principal · explosif)</button>
-      <a class="vx-btn vx-btn-sm" href="/options">Options Intelligence →</a></div>
-    <div id="op-opt-table"></div>
-    <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.options_source||scan.source,metaMode(scan))}</div>
-    <details class="vx-disclosure vx-mt4" id="op-contract" hidden><summary>Simulation détaillée du contrat sélectionné</summary>
-      <div class="vx-grid vx-mt3">
-        <div class="vx-col-6" id="op-payoff"></div>
-        <div class="vx-col-6" id="op-scenarios"></div>
-        <div class="vx-col-6" id="op-theta"></div>
-        <div class="vx-col-6" id="op-iv"></div>
-      </div></details>`;
-  document.querySelectorAll('[data-filter-key="setup"]').forEach(c=>c.addEventListener('click',()=>{
-    state.cat=state.cat===c.dataset.filterValue?'':c.dataset.filterValue;
-    document.querySelectorAll('[data-filter-key="setup"]').forEach(x=>
-      x.setAttribute('aria-pressed',String(x.dataset.filterValue===state.cat)));paint();}));
-  document.querySelector('[data-filter-key="sym"]').addEventListener('input',function(){state.sym=this.value.toUpperCase();paint();});
-  paint();
+    <div class="vx-scr-kpis" id="op-opt-kpis"></div>
+    <div class="vx-grid vx-mt4">
+      <div class="vx-col-8" id="op-opt-scatter"></div>
+      <div class="vx-col-4"><div class="vx-card" id="op-opt-sel-card">
+        <div class="vx-card-header"><span class="vx-card-title">Contrat sélectionné</span></div>
+        <div id="op-opt-sel"><div class="vx-meta">Clique un point du nuage ou une ligne de la table pour simuler le contrat.</div></div></div></div>
+    </div>
+    <div class="vx-grid vx-mt4">
+      <div class="vx-col-6" id="op-ivdte"></div>
+      <section class="vx-card vx-col-6" id="op-mix-card"><div class="vx-card-header">
+        <span class="vx-card-title">Répartition du board</span>
+        <span class="vx-chart-question">Terme × sens — où vit l’offre de contrats ?</span></div>
+        <div id="op-mix"></div></section>
+    </div>
+    <div class="vx-card vx-mt4"><div class="vx-card-header"><span class="vx-card-title">Contrats du board</span>
+      <span class="vx-chart-question">Cliquer une ligne simule le contrat (payoff, scénarios, décote temps).</span></div>
+      <div id="op-opt-table"></div>
+      <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.options_source||scan.source,metaMode(scan))}</div></div>
+    <div class="vx-grid vx-mt4" id="op-contract" hidden>
+      <div class="vx-col-6" id="op-payoff"></div>
+      <div class="vx-col-6" id="op-scenarios"></div>
+      <div class="vx-col-6" id="op-theta"></div>
+      <div class="vx-col-6" id="op-iv"></div>
+    </div>`;
+  function paintKpis(f){
+    const calls=f.filter(c=>c.type==='CALL').length;
+    const qmax=f.length?Math.max(...f.map(c=>c.quality||0)):null;
+    const pmax=f.length?Math.max(...f.map(c=>c.pop||0)):null;
+    const ivs=f.map(c=>c.iv).filter(x=>x!=null).sort((a,b)=>a-b);
+    const ivMed=ivs.length?ivs[Math.floor(ivs.length/2)]:null;
+    const stale=f.filter(c=>c.stale).length;
+    $('op-opt-kpis').innerHTML=
+      `<div class="k"><b>${f.length}</b><span>contrats</span></div>`
+      +`<div class="k"><b>${calls} / ${f.length-calls}</b><span>calls / puts</span></div>`
+      +`<div class="k"><b>${qmax!=null?Math.round(qmax):'—'}</b><span>meilleure qualité</span></div>`
+      +`<div class="k"><b>${pmax!=null?Math.round(pmax)+' %':'—'}</b><span>meilleure proba profit</span></div>`
+      +`<div class="k"><b>${ivMed!=null?Math.round(ivMed)+' %':'—'}</b><span>IV médiane</span></div>`
+      +(function(){const ems=f.map(c=>c.em_pct).filter(x=>x!=null).sort((a,b)=>a-b);
+        const emMed=ems.length?ems[Math.floor(ems.length/2)]:null;
+        return `<div class="k"><b>${emMed!=null?'±'+VX.fmt.num(emMed,1)+' %':'—'}</b><span>mouvement attendu médian</span></div>`;})()
+      +`<div class="k"><b>${stale}</b><span>hors séance (indicatif)</span></div>`;
+    $('op-opt-count').textContent=f.length+' / '+board.length+' contrats';
+  }
+  function paintScatter(f){
+    const host=$('op-opt-scatter');if(!host)return;
+    const cc=VXCharts.colors;
+    const pts=f.filter(c=>c.quality!=null&&c.pop!=null).map(c=>({
+      x:c.quality,y:c.pop,sym:c.sym,type:c.type,strike:c.strike,exp:c.exp,dte:c.dte,
+      cost:c.cost,danger:c.danger,idx:board.indexOf(c),
+      r:4+Math.min(8,Math.sqrt((c.cost||100)/220))}));
+    if(!pts.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun contrat avec qualité et proba dans ce filtre.')+'</div>';return;}
+    const dangerCol={'Faible':cc.positive,'Modéré':cc.warning,'Élevé':cc.negative,'Extrême':'#b13a33'};
+    VXCharts.card('op-opt-scatter',{
+      title:'Qualité × proba de profit — où sont les bons contrats ?',
+      question:'Quels contrats combinent qualité (liquidité, spread, théta) et proba de finir gagnants ?',
+      conclusion:pts.filter(p=>p.x>=55&&p.y>=45).length+' contrat(s) en zone favorable (qualité ≥ 55 · proba ≥ 45 %)',
+      height:320,source:scan.options_source||scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
+      limits:'taille de point = prime engagée · couleur = danger (théta, proba, échéance)',
+      explain:{shows:'Chaque point est un contrat du board, placé par sa qualité composite et sa probabilité de profit à l’échéance.',
+        why:'Une prime pas chère ne vaut rien si le contrat est illiquide ou brûle trop vite — la qualité le mesure.',
+        confirm:'Contrat en haut-droit avec danger Faible/Modéré.',
+        invalidate:'Danger Élevé/Extrême : le théta ou l’échéance jouent contre toi.'},
+      render:(cv)=>VXCharts.mount(cv,{type:'scatter',
+        data:{datasets:[{data:pts,
+          pointRadius:(ctx)=>ctx.raw?ctx.raw.r:4,pointHoverRadius:(ctx)=>ctx.raw?ctx.raw.r+3:8,
+          pointBackgroundColor:(ctx)=>dangerCol[ctx.raw&&ctx.raw.danger]||cc.neutral,
+          pointBorderColor:'rgba(255,255,255,.2)',pointBorderWidth:1}]},
+        options:{scales:{
+          x:{title:{display:true,text:'Qualité du contrat →'},min:0,max:100,grid:{color:'rgba(255,255,255,.05)'}},
+          y:{title:{display:true,text:'Proba de profit % ↑'},min:0,max:100,grid:{color:'rgba(255,255,255,.05)'}}},
+          plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} ${ctx.raw.type} ${ctx.raw.strike} (${ctx.raw.dte} j) · qualité ${Math.round(ctx.raw.x)} · proba ${Math.round(ctx.raw.y)} % · danger ${ctx.raw.danger||'n/d'}`}}},
+          onClick:(evt,els,chart)=>{const p=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+            if(p.length){const d=chart.data.datasets[0].data[p[0].index];openContract(board[d.idx]);}}}})});
+  }
+  /* Carte CONTRAT (options en cartes, pas en liste) — strike/échéance/DTE en avant,
+     grecs & probas en chips ; clic → openContract (prix, évolution, payoff, scénarios). */
+  function optCard(c){
+    const idx=board.indexOf(c);
+    const typeCol=c.type==='PUT'?'var(--vx-violet)':'var(--vx-positive)';
+    const dgcol={'Faible':'var(--vx-positive)','Modéré':'var(--vx-warning)','Élevé':'var(--vx-negative)','Extrême':'var(--vx-negative)'}[c.danger]||'var(--vx-text-dim)';
+    return `<div class="vx-card vx-opp-card" data-ct="${idx}" tabindex="0" role="button" aria-label="Simuler ${esc(c.sym)} ${VX.fmt.nd(c.strike)}">
+      <div class="vx-flex" style="justify-content:space-between;gap:6px;align-items:flex-start">
+        <div class="vx-flex vx-wrap" style="gap:.35rem;align-items:center"><span class="vx-ticker" style="font-size:15px">${c.sym}</span>
+          <span class="vx-badge" style="color:${typeCol}">${c.type}</span><span class="vx-badge">${esc(c.bucket||'')}</span></div>
+        <span class="vx-badge" style="color:${dgcol}" title="risque">${esc(c.danger||'—')}</span></div>
+      <div class="vx-mono vx-mt1" style="font-size:16px;font-weight:700">Strike ${VX.fmt.nd(c.strike)}<span class="vx-meta" style="font-weight:400"> · éch. ${esc(String(c.exp||'').slice(0,10))}${c.dte!=null?' ('+c.dte+' j)':''}</span></div>
+      <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">
+        ${c.cost!=null?`<span class="vx-badge">prime ${VX.fmt.nd(c.cost)} $</span>`:''}
+        ${c.delta!=null?`<span class="vx-badge">Δ ${VX.fmt.nd(c.delta)}</span>`:''}
+        ${c.iv!=null?`<span class="vx-badge">IV ${Math.round(c.iv)}%</span>`:''}
+        ${c.pop!=null?`<span class="vx-badge" style="color:var(--vx-positive)">PoP ${Math.round(c.pop)}%</span>`:''}
+        ${c.p_tgt!=null?`<span class="vx-badge">P(obj) ${Math.round(c.p_tgt)}%</span>`:''}
+        ${c.swing_ret!=null?`<span class="vx-badge" style="color:${c.swing_ret>0?'var(--vx-positive)':'var(--vx-text-dim)'}" title="rendement si objectif atteint">rend. ${c.swing_ret>=0?'+':''}${VX.fmt.num(c.swing_ret,0)}%${c.swing_ok?' ✓':''}</span>`:''}
+        ${c.quality!=null?`<span class="vx-badge">qualité ${Math.round(c.quality)}</span>`:''}
+      </div>
+      <div class="vx-meta vx-mt2">Clic → prix actuel du sous-jacent, évolution, payoff & scénarios</div></div>`;
+  }
+  function paintTable(f){
+    const sorted=f.slice().sort((a,b)=>(b.quality||0)-(a.quality||0));
+    $('op-opt-table').innerHTML=sorted.length
+      ?'<div class="vx-opp-grid">'+sorted.slice(0,48).map(optCard).join('')+'</div>'
+      :VX.states.empty(state.sym?'Aucun contrat pour '+state.sym+' dans ce filtre.':'Board options vide — le sélecteur ne force jamais une idée.',
+        '<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a>');
+    document.querySelectorAll('#op-opt-table [data-ct]').forEach(cd=>{
+      const open=(e)=>{if(e.target.closest('[data-open-analysis],[data-entity-menu]'))return;openContract(board[+cd.dataset.ct]);};
+      cd.addEventListener('click',open);
+      cd.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e);}});});
+  }
+  /* IV selon l'échéance : structure de vol du board filtré */
+  function paintIvDte(f){
+    const host=$('op-ivdte');if(!host)return;
+    const cc=VXCharts.colors;
+    const pts=f.filter(c=>c.iv!=null&&c.dte!=null).map(c=>({x:c.dte,y:c.iv,sym:c.sym,type:c.type,strike:c.strike,idx:board.indexOf(c)}));
+    if(!pts.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun contrat avec IV dans ce filtre.')+'</div>';return;}
+    VXCharts.card('op-ivdte',{
+      title:'IV selon l’échéance',question:'Payes-tu la volatilité plus cher sur le court ou le long terme ?',
+      conclusion:(function(){const sh=pts.filter(p2=>p2.x<=60),lg=pts.filter(p2=>p2.x>150);
+        const med=(a)=>{if(!a.length)return null;const v=a.map(x=>x.y).sort((m,n)=>m-n);return v[Math.floor(v.length/2)];};
+        const ms=med(sh),ml=med(lg);
+        return (ms!=null&&ml!=null)?('IV médiane : '+Math.round(ms)+' % court terme vs '+Math.round(ml)+' % long terme'):'structure partielle';})(),
+      height:240,source:scan.options_source||scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
+      explain:{shows:'Chaque contrat filtré placé par son échéance (jours) et son IV.',
+        why:'Une IV courte gonflée signale un événement price — acheter du temps peut coûter moins cher en annualisé.',
+        confirm:'IV courte < IV longue (structure normale).',invalidate:'Inversion : le court terme se paie plus cher.'},
+      render:(cv)=>VXCharts.mount(cv,{type:'scatter',
+        data:{datasets:[{data:pts,pointRadius:4,pointHoverRadius:7,
+          pointBackgroundColor:(ctx)=>ctx.raw&&ctx.raw.type==='PUT'?cc.violet:cc.positive,
+          pointBorderColor:'rgba(255,255,255,.18)',pointBorderWidth:1}]},
+        options:{scales:{x:{title:{display:true,text:'Échéance (jours) →'},grid:{color:'rgba(255,255,255,.05)'}},
+          y:{title:{display:true,text:'IV % ↑'},grid:{color:'rgba(255,255,255,.05)'}}},
+          plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.sym} ${ctx.raw.type} ${ctx.raw.strike} · ${ctx.raw.x} j · IV ${Math.round(ctx.raw.y)} %`}}},
+          onClick:(evt,els,chart)=>{const p2=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+            if(p2.length){openContract(board[chart.data.datasets[0].data[p2[0].index].idx]);}}}})});
+  }
+  /* Répartition terme × type : barres empilées HTML */
+  function paintMix(f){
+    const el=$('op-mix');if(!el)return;
+    const B=['court','moyen','long'];
+    const cnt={};f.forEach(c=>{const k=(c.bucket||'?')+'|'+c.type;cnt[k]=(cnt[k]||0)+1;});
+    const tot=f.length||1;
+    if(!f.length){el.innerHTML=VX.states.empty('Aucun contrat.');return;}
+    el.innerHTML=B.map(b=>{
+      const ca=cnt[b+'|CALL']||0,pu=cnt[b+'|PUT']||0,t=ca+pu;
+      if(!t)return '';
+      return `<div class="vx-mt2"><div class="vx-flex" style="justify-content:space-between;font-size:11.5px">
+          <b>${b} terme</b><span class="vx-meta">${t} contrat(s) · ${Math.round(t/tot*100)} %</span></div>
+        <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--vx-surface-0);margin-top:4px"
+          role="img" aria-label="${b} : ${ca} calls, ${pu} puts">
+          ${ca?`<i style="width:${ca/t*100}%;background:var(--vx-positive)" title="${ca} CALL"></i>`:''}
+          ${pu?`<i style="width:${pu/t*100}%;background:var(--vx-violet)" title="${pu} PUT"></i>`:''}</div></div>`;
+    }).join('')
+    +'<div class="vx-stackbar-legend vx-mt2"><span><i style="background:var(--vx-positive)"></i>CALL</span><span><i style="background:var(--vx-violet)"></i>PUT</span></div>';
+  }
+  function applyAll(){const f=filtered();paintKpis(f);paintScatter(f);paintIvDte(f);paintMix(f);paintTable(f);}
+  document.querySelectorAll('.vx-screenbar [data-fk="type"],.vx-screenbar [data-fk="bucket"]').forEach(c=>c.addEventListener('click',()=>{
+    const k=c.dataset.fk;state[k]=state[k]===c.dataset.fv?'':c.dataset.fv;
+    document.querySelectorAll(`.vx-screenbar [data-fk="${k}"]`).forEach(x=>
+      x.setAttribute('aria-pressed',String(x.dataset.fv===state[k])));applyAll();}));
+  document.querySelector('select[data-fk="danger"]').addEventListener('change',function(){state.danger=this.value;applyAll();});
+  const applyDebounced2=debounce(applyAll,120);
+  document.querySelectorAll('.vx-screenbar input[type=range]').forEach(r=>r.addEventListener('input',function(){
+    state[this.dataset.fk]=+this.value;
+    const b=this.closest('label').querySelector('b');
+    if(this.dataset.fk==='maxDte')b.textContent=this.value>0?(this.value+' j'):'∞';
+    else if(this.dataset.fk==='maxCost')b.textContent=this.value>0?('$'+this.value):'∞';
+    else b.textContent=this.value+(this.dataset.fk==='minPop'?'%':'');
+    applyDebounced2();}));
+  document.querySelectorAll('.vx-screenbar [data-ft]').forEach(c=>c.addEventListener('click',()=>{
+    state[c.dataset.ft]=!state[c.dataset.ft];
+    c.setAttribute('aria-pressed',String(state[c.dataset.ft]));applyAll();}));
+  document.querySelector('input[data-fk="sym"]').addEventListener('input',function(){state.sym=this.value.toUpperCase();applyDebounced2();});
   async function openContract(c){
+    if(!c)return;
+    /* Les contrats du board ne portent pas toujours le spot : on le prend du
+       scan (prix réel du sous-jacent) — sans spot, payoff vide honnête. */
+    const spot=(c.spot!=null&&isFinite(c.spot))?c.spot:(((scan.detail||{})[c.sym]||{}).price);
+    $('op-opt-sel').innerHTML=
+      `<div class="vx-flex"><span class="vx-ticker" style="font-size:15px">${esc(c.sym)}</span>
+        <span class="vx-badge" style="color:${c.type==='PUT'?'var(--vx-violet)':'var(--vx-positive)'}">${c.type}</span>
+        <span class="vx-badge vx-right">${esc(c.bucket||'')}</span></div>
+       <div class="vx-kv vx-mt2"><span class="k">Strike · échéance</span><span class="v vx-mono">${VX.fmt.nd(c.strike)} · ${esc(String(c.exp||'').slice(0,10))}</span></div>
+       <div class="vx-kv"><span class="k">Prime</span><span class="v vx-mono">${VX.fmt.nd(c.cost)} $</span></div>
+       <div class="vx-kv"><span class="k">Proba profit</span><span class="v vx-mono">${c.pop!=null?Math.round(c.pop)+' %':'n/d'}</span></div>
+       ${c.p_itm!=null?`<div class="vx-kv"><span class="k">Proba dans la monnaie</span><span class="v vx-mono">${Math.round(c.p_itm)} %</span></div>`:''}
+       ${c.p_tgt!=null?`<div class="vx-kv"><span class="k">Proba d’atteindre l’objectif</span><span class="v vx-mono">${Math.round(c.p_tgt)} %</span></div>`:''}
+       ${c.em_pct!=null?`<div class="vx-kv"><span class="k">Mouvement attendu</span><span class="v vx-mono">± ${VX.fmt.num(c.em_pct,1)} %</span></div>`:''}
+       ${c.swing_ret!=null?`<div class="vx-kv"><span class="k">Rendement si objectif</span><span class="v vx-mono ${c.swing_ret>0?'vx-pos':''}">+${VX.fmt.num(c.swing_ret,0)} %${c.swing_ok?' · aligné plan':''}</span></div>`:''}
+       <div class="vx-kv"><span class="k">Qualité</span><span class="v vx-mono">${VX.fmt.nd(c.quality)}</span></div>
+       <div class="vx-kv"><span class="k">Danger</span><span class="v">${esc(c.danger||'n/d')}</span></div>
+       <div class="vx-kv"><span class="k">Décote temps</span><span class="v vx-mono">${c.theta_burn!=null?VX.fmt.num(c.theta_burn,2)+' % / jour':'n/d'}</span></div>
+       ${c.quality_parts?`<div class="vx-metric-k vx-mt2" style="display:block">D’où vient la qualité ${VX.fmt.nd(c.quality)}</div>
+         ${Object.entries(c.quality_parts).map(([k2,v2])=>{
+           const got=Array.isArray(v2)?v2[0]:v2;const max2=Array.isArray(v2)?v2[1]:100;
+           const pc=max2?Math.round(got/max2*100):0;
+           return `<div class="vx-flex" style="gap:7px;align-items:center;padding:1.5px 0">
+             <span class="vx-meta" style="flex:0 0 76px">${esc(k2)}</span>
+             <span style="flex:1;height:5px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden">
+               <i style="display:block;height:100%;width:${Math.max(3,Math.min(100,pc))}%;background:${pc>=70?'var(--vx-positive)':pc>=40?'var(--vx-warning)':'var(--vx-negative)'};border-radius:99px"></i></span>
+             <b class="vx-mono" style="font-size:10px;flex:0 0 40px;text-align:right">${got}/${max2}</b></div>`;}).join('')}`:''}
+       <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
+         <a class="vx-btn vx-btn-sm vx-btn-primary" href="/options/${esc(c.sym)}">Dossier options</a>
+         <button class="vx-btn vx-btn-sm" data-open-analysis="${esc(c.sym)}">Fiche action</button></div>`;
     $('op-contract').hidden=false;
     $('op-contract').open=true;
     $('op-contract').scrollIntoView({behavior:'smooth',block:'nearest'});
-    VXCharts.payoffCard('op-payoff',{title:`${c.sym} ${c.strike} CALL ${c.exp}`,
+    VXCharts.payoffCard('op-payoff',{title:`${c.sym} ${c.strike} ${c.type} ${c.exp}`,
       question:'Que rapporte/coûte ce contrat à l’échéance ?',
       conclusion:`Breakeven ${VX.fmt.nd(c.be)} · prime ${VX.fmt.nd(c.cost)}`,
-      spot:c.spot,strike:c.strike,premium:c.cost,right:'C',breakeven:c.be,height:210,
+      spot:spot,strike:c.strike,premium:c.cost,right:c.type==='PUT'?'P':'C',breakeven:c.be,height:210,
+      expectedMovePct:c.em_pct,target:c.tgt,
       source:'board options',timestamp:Date.now(),mode:'delayed',
-      explain:{shows:'Le P&L du CALL à l’échéance selon le prix du sous-jacent (arithmétique du contrat).',
+      conclusion:(c.be!=null&&spot&&c.em_pct?('Breakeven '+VX.fmt.nd(c.be)+' · '+(Math.abs(c.be-spot)/spot*100<=c.em_pct?'DANS':'HORS')+' le mouvement attendu (±'+VX.fmt.num(c.em_pct,1)+' %)'):('Breakeven '+VX.fmt.nd(c.be))),
+      explain:{shows:'Le P&L du contrat à l’échéance selon le prix du sous-jacent (arithmétique du contrat).',
         why:'Visualiser breakeven et asymétrie avant d’engager la prime.',
-        confirm:'Sous-jacent au-dessus du breakeven avant l’échéance.',
+        confirm:'Sous-jacent au-delà du breakeven avant l’échéance.',
         invalidate:'Stop sous-jacent touché — on ne « garde pas en espérant ».'}});
     try{
       const q=new URLSearchParams({sym:c.sym,strike:c.strike,dte:c.dte,mid:c.cost,
-        iv:c.iv||'',right:'C',exp:c.exp,spot:c.spot||''});
+        iv:c.iv||'',right:c.type==='PUT'?'P':'C',exp:c.exp,spot:spot||''});
       const s=await VX.fetch('/api/options/simulate?'+q.toString(),{ttl:120000});
       VXCharts.scenarioMatrix('op-scenarios',s.sim,{title:'Scénarios (moteur)',
         question:'Que vaut le contrat selon le spot et le temps ?',
@@ -614,7 +1033,7 @@ async function renderOptions(){
         source:'scenario_pricer',timestamp:Date.now(),mode:'delayed'});
       VXCharts.thetaCard('op-theta',s.sim,{title:'Décomposition temps',
         question:'Combien coûte chaque jour d’attente ?',
-        conclusion:'Time stop conseillé : réévaluer après 5-8 séances sans mouvement',
+        conclusion:'Réévaluer après 5-8 séances sans mouvement',
         height:190,source:'scenario_pricer',timestamp:Date.now(),mode:'delayed'});
       VXCharts.ivSensitivityCard('op-iv',s.sim,{title:'Sensibilité IV',
         question:'Que se passe-t-il si la volatilité implicite bouge ?',
@@ -625,164 +1044,283 @@ async function renderOptions(){
       ($('op-theta')||{}).innerHTML='';($('op-iv')||{}).innerHTML='';
     }
   }
+  applyAll();
 }
 
-/* ── ANOMALIES ── */
+/* ═════════ PORTEFEUILLE : mes positions × le moteur + candidats ═════════ */
+async function renderPortfolio(){
+  const scan=await VX.fetch('/scan',{ttl:120000});
+  const rows=(scan.rows||[]);
+  const byId={};rows.forEach(r=>{byId[r.symbol]=r;});
+  const pos=(window.VXEntities?VXEntities.positions():[])||[];
+  if(!pos.length){
+    $('op-body').innerHTML=VX.states.empty('Aucune position déclarée — le comparateur portefeuille × moteur s’active dès ta première position.',
+      '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
+    return;
+  }
+  const held=pos.map(p=>{
+    const r=byId[String(p.sym).toUpperCase()]||null;
+    const status=!r?'hors scan':(r.verdict==='AVOID'||r.verdict==='ÉVITER')?'à revoir'
+      :(r.verdict==='BUY'||r.verdict==='ACHETER')?'confirmée':'neutre';
+    return {p,r,status};
+  });
+  const toReview=held.filter(h=>h.status==='à revoir');
+  const secOfHeld=[...new Set(held.map(h=>h.r&&h.r.sector).filter(Boolean))];
+  /* Candidats de remplacement : meilleurs titres NON détenus, priorité aux secteurs du portefeuille */
+  const heldSyms=new Set(pos.map(p=>String(p.sym).toUpperCase()));
+  const candidates=rows.filter(r=>!heldSyms.has(r.symbol)&&(r.verdict==='BUY'||r.verdict==='ACHETER'))
+    .slice().sort((a,b)=>(secOfHeld.includes(b.sector)?1:0)-(secOfHeld.includes(a.sector)?1:0)||(b.score||0)-(a.score||0))
+    .slice(0,6);
+  const statusBadge={confirmée:'<span class="vx-badge" style="color:var(--vx-positive)">CONFIRMÉE par le moteur</span>',
+    'à revoir':'<span class="vx-badge" style="color:var(--vx-negative)">À REVOIR — verdict ÉVITER</span>',
+    neutre:'<span class="vx-badge" style="color:var(--vx-warning)">NEUTRE — surveiller</span>',
+    'hors scan':'<span class="vx-badge">hors de l’univers scanné</span>'};
+  $('op-body').innerHTML=demoBanner(scan)+`
+    <div class="vx-scr-kpis">
+      <div class="k"><b>${pos.length}</b><span>positions déclarées</span></div>
+      <div class="k"><b style="color:var(--vx-positive)">${held.filter(h=>h.status==='confirmée').length}</b><span>confirmées par le moteur</span></div>
+      <div class="k"><b style="color:var(--vx-negative)">${toReview.length}</b><span>à revoir (verdict ÉVITER)</span></div>
+      <div class="k"><b>${candidates.length}</b><span>candidats d’achat non détenus</span></div>
+    </div>
+    ${toReview.length?`<div class="vx-insight vx-mt3" data-tone="risk"><b>⚠ ${toReview.length} position(s) contredite(s) par le moteur :</b>
+      ${toReview.map(h=>`<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(h.p.sym)}">${esc(h.p.sym)}</button>`).join(' ')}
+      — vérifier le dossier avant de décider (jamais de vente automatique).</div>`:''}
+    <div class="vx-grid vx-mt3">
+      <section class="vx-card vx-col-6" id="op-pf-risk-card"><div class="vx-card-header">
+        <span class="vx-card-title">Risque du panier</span>
+        <span class="vx-chart-question">Mon portefeuille est-il réellement diversifié ?</span></div>
+        <div id="op-pf-risk"><div class="vx-skeleton" style="height:60px"></div></div></section>
+      <section class="vx-card vx-col-6" id="op-pf-sect-card"><div class="vx-card-header">
+        <span class="vx-card-title">Secteurs du portefeuille</span></div>
+        <div id="op-pf-sect"></div></section>
+    </div>
+    <div class="vx-card vx-mt4"><div class="vx-card-header"><span class="vx-card-title">Mes positions × le moteur</span>
+      <span class="vx-chart-question">Le moteur confirme-t-il encore chacune de mes lignes ?</span></div>
+      <div id="op-pf-cards"></div>
+      <div class="vx-card-footer">${VX.updateIndicator(scan.scan_ts||scan.updated,scan.source,metaMode(scan))}
+        · verdicts du moteur — analyse uniquement, aucune vente automatique</div></div>
+    <div id="op-pf-cands" class="vx-mt4"></div>`;
+  /* Positions en CARTES design (liseré au statut, jauge de score, mini-courbe) */
+  const statusCol={confirmée:'var(--vx-positive)','à revoir':'var(--vx-negative)',
+    neutre:'var(--vx-warning)','hors scan':'var(--vx-text-dim)'};
+  $('op-pf-cards').innerHTML='<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">'
+    +held.map(h=>{const r=h.r||{};
+      const ser=(scan.detail||{})[h.p.sym]&&scan.detail[h.p.sym].series;
+      const gauge=(window.VXCharts&&VXCharts.scoreGaugeSVG&&r.score!=null)
+        ?VXCharts.scoreGaugeSVG(r.score,{size:64,stroke:6,label:'score'}):'';
+      return `<div class="vx-mover" role="group" style="cursor:default;border-left:3px solid ${statusCol[h.status]||'var(--vx-border)'}">
+      <div class="vx-flex" style="justify-content:space-between;gap:6px;align-items:flex-start">
+        <div style="min-width:0">
+          <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:16px;padding-left:0" data-open-analysis="${esc(h.p.sym)}">${esc(h.p.sym)}</button>
+          <span class="vx-badge" ${h.p.type!=='STK'?'style="color:var(--vx-violet)"':''}>${esc(h.p.type||'STK')}${h.p.strike?' '+esc(h.p.strike):''}</span>
+        </div>
+        <div style="flex:0 0 auto">${gauge}</div></div>
+      <div class="vx-mt1">${statusBadge[h.status]||''}</div>
+      <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">
+        ${r.vx_pwin!=null?`<span class="vx-badge" style="color:var(--vx-positive)">proba ${Math.round(r.vx_pwin*100)} %</span>`:''}
+        ${r.change!=null?`<span class="vx-badge ${r.change>0?'vx-pos':'vx-neg'}">${VX.fmt.pct(r.change,1)} auj.</span>`:''}
+        ${r.pos52!=null?`<span class="vx-badge" title="position dans la fourchette 52 semaines">52 sem. ${Math.round(r.pos52)} %</span>`:''}</div>
+      ${sparkMini(ser&&ser.close)}
+      ${pbText(r)?`<div class="vx-meta vx-mt1" style="white-space:normal;line-height:1.4">${esc(pbText(r))}</div>`:''}
+      <div class="vx-flex vx-mt2" style="gap:.3rem">
+        <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${esc(h.p.sym)}">Analyser</button>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/${esc(h.p.sym)}">Options</a>
+        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(h.p.sym)}" aria-label="Actions">⋯</button></div>
+    </div>`;}).join('')+'</div>';
+  /* Risque du panier — chiffres RÉELS du moteur de risque (/api/command.risk) */
+  try{
+    const cmd=await VX.fetch('/api/command',{ttl:60000});
+    const rk=(cmd&&cmd.risk)||null;
+    const el=$('op-pf-risk');
+    if(rk&&el){
+      const kv2=(k,v,cls)=>`<div class="vx-kv"><span class="k">${k}</span><span class="v vx-mono ${cls||''}">${v}</span></div>`;
+      el.innerHTML=
+        `<div id="op-pf-divgauge" class="vx-mb2"></div>`
+        +kv2('Corrélation moyenne',rk.avg_corr!=null?VX.fmt.num(rk.avg_corr,2):'n/d',rk.avg_corr>0.65?'vx-neg':'')
+        +kv2('Pire corrélation',rk.max_corr!=null?VX.fmt.num(rk.max_corr,2):'n/d')
+        +kv2('Secteur le plus lourd',(rk.max_sector_name?esc(rk.max_sector_name)+' · ':'')+(rk.max_sector!=null?Math.round(rk.max_sector)+' %':'n/d'),
+          rk.max_sector>((rk.limits&&rk.limits.max_sector)||40)?'vx-neg':'')
+        +kv2('Nouveau risque',rk.no_new_risk?'BLOQUÉ':'autorisé',rk.no_new_risk?'vx-neg':'vx-pos')
+        +((rk.flags&&rk.flags.length)?`<div class="vx-insight vx-mt2" data-tone="risk">${rk.flags.map(f2=>esc(f2)).join('<br>')}</div>`:'')
+        +`<div class="vx-card-footer"><span class="vx-meta">moteur de risque du panier — limites : ${(rk.limits&&rk.limits.max_pos)||'—'} positions max · ${(rk.limits&&rk.limits.max_sector)||'—'} % max par secteur</span></div>`;
+      if(window.VXCharts&&VXCharts.gauge&&rk.diversification!=null){
+        VXCharts.gauge('op-pf-divgauge',{value:rk.diversification,min:0,max:100,unit:' %',label:'Diversification',
+          reading:rk.diversification>=70?'Panier réellement diversifié':'Concentration à surveiller',
+          bands:[{to:40,color:VXCharts.colors.negative},{to:70,color:VXCharts.colors.warning},{to:100,color:VXCharts.colors.positive}]});
+      }
+    }else if(el){el.innerHTML=VX.states.empty('Moteur de risque indisponible pour ce panier.');}
+  }catch(e){const el=$('op-pf-risk');if(el)el.innerHTML=VX.states.empty('Moteur de risque indisponible.');}
+  /* Donut secteurs du portefeuille (positions réelles × secteur du scan) */
+  (function(){
+    const cnt={};held.forEach(h=>{const sec2=(h.r&&h.r.sector)||'Hors scan';cnt[sec2]=(cnt[sec2]||0)+1;});
+    const ks=Object.keys(cnt);
+    if(ks.length&&window.VXCharts&&VXCharts.donutCard){
+      VXCharts.donutCard('op-pf-sect-card',{title:'Secteurs du portefeuille',
+        question:'Suis-je concentré sur un seul thème ?',
+        labels:ks,values:ks.map(k=>cnt[k]),height:200,
+        source:'positions déclarées × scan',timestamp:Date.now(),mode:'delayed'});
+    }else{$('op-pf-sect').innerHTML=VX.states.empty('Aucun secteur identifiable.');}
+  })();
+  const cd=$('op-pf-cands');
+  cd.innerHTML='<div class="vx-card-header" style="padding:0 0 8px"><span class="vx-card-title">Candidats non détenus — signaux d’achat du moteur</span>'
+    +'<span class="vx-chart-question">Qui mériterait une place, priorité aux secteurs déjà en portefeuille ?</span></div>'
+    +(candidates.length?'<div class="vx-opp-grid">'+candidates.map(r=>`
+      <div class="vx-card" style="border-left:3px solid var(--vx-positive);min-width:0">
+        <div class="vx-flex"><button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" style="font-size:15px;padding-left:0" data-open-analysis="${r.symbol}">${r.symbol}</button>
+          <span class="vx-badge vx-badge-decision vx-right" data-decision="${esc(r.verdict)}">${esc(VERD_FR[r.verdict]||r.verdict)}</span></div>
+        <div class="vx-flex vx-wrap vx-mt1" style="gap:.3rem">
+          <span class="vx-badge">score ${VX.fmt.nd(r.score)}</span>
+          ${r.vx_pwin!=null?`<span class="vx-badge" style="color:var(--vx-positive)">proba ${Math.round(r.vx_pwin*100)} %</span>`:''}
+          ${r.sector?`<span class="vx-badge">${esc(r.sector)}${secOfHeld.includes(r.sector)?' · déjà en portefeuille':''}</span>`:''}</div>
+        ${pbText(r)?`<div class="vx-meta vx-mt1" style="white-space:normal">${esc(pbText(r))}</div>`:''}
+        <div class="vx-flex vx-mt2" style="gap:.3rem">
+          <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${r.symbol}">Analyser</button>
+          <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','follow')">Suivre</button></div>
+      </div>`).join('')+'</div>'
+    :VX.states.empty('Aucun candidat d’achat non détenu dans le scan courant.'));
+}
+
+/* ═════════ ANOMALIES ═════════ */
 async function renderAnomalies(){
   const scan=await VX.fetch('/scan',{ttl:120000});
-  const rows=(scan.rows||[]).filter(r=>(r.anomalies||[]).length);
-  const groupMeta={Actions:'scan courant',Données:'/api/data-quality',Options:'non agrégé ici',
-    Volatilité:'non agrégée ici',Portefeuille:'non agrégé ici',Modèles:'non agrégé ici'};
-  ($('op-body')||{}).innerHTML=demoBanner(scan)+`
-    <div class="vx-page-lead vx-mb3"><b>Anomalies disponibles par source</b>
-      <div class="vx-meta">Une catégorie sans flux consolidé est dite indisponible ; elle n’est jamais déduite depuis une autre métrique.</div></div>
-    <div class="vx-filterbar vx-toolbar">${['Actions','Données','Options','Volatilité','Portefeuille','Modèles']
-      .map((g,i)=>`<button class="vx-chip" aria-pressed="${i===0}" data-ag="${g}">${g} · ${groupMeta[g]}</button>`).join('')}</div>
-    <div id="op-anom"></div>`;
-  function paint(group){
-    if(group==='Actions'){
-      /* LOT 132 : l'intensité n'est plus un chiffre nu — mini-barre de VERRE
-         (dégradé warning doux → dense via color-mix, aucun littéral) à côté
-         de la valeur ; l'œil classe les anomalies sans lire chaque nombre. */
-      const maxI=Math.max.apply(null,[1].concat(rows.map(r=>Number(r.anomaly_score)||0)));
-      const ibar=(v)=>{const n=Number(v);if(!isFinite(n))return VX.fmt.nd(v);
-        const w=Math.max(4,Math.min(100,n/maxI*100));
-        return '<span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">'
-          +'<span style="width:64px;height:8px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block">'
-          +'<span style="display:block;height:100%;width:'+w.toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,var(--vx-warning,#D9BE3C) 35%,transparent),var(--vx-warning,#D9BE3C));border-radius:3px"></span></span>'
-          +'<span style="font-variant-numeric:tabular-nums">'+VX.fmt.nd(n)+'</span></span>';};
-      ($('op-anom')||{}).innerHTML=rows.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
-        <th>Titre</th><th>Anomalies</th><th class="vx-num">Intensité</th><th class="vx-num">Score</th><th></th></tr></thead><tbody>
-        ${rows.slice(0,60).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
-          <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
-          <td data-label="Anomalies">${(r.anomalies||[]).slice(0,4).map(a=>`<span class="vx-badge vx-warn">${esc(typeof a==='string'?a:(a.code||''))}</span>`).join(' ')}</td>
-          <td data-label="Intensité" class="vx-num">${ibar(r.anomaly_score)}</td>
-          <td data-label="Score" class="vx-num">${VX.fmt.nd(r.score)}</td>
-          <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table></div>`
-        :VX.states.empty('Aucune anomalie action détectée sur le scan courant.');
-    }else if(group==='Données'){
-      VX.fetch('/api/data-quality',{ttl:60000}).then(dq=>{
-        ($('op-anom')||{}).innerHTML=`<div class="vx-card">${Object.entries(dq.by_quality||{}).map(([k,v])=>
-          `<div class="vx-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}
-          <div class="vx-meta vx-mt2">${esc(dq.note||'')}</div></div>`;
-      }).catch(()=>{($('op-anom')||{}).innerHTML=VX.states.error('Qualité de données indisponible');});
-    }else{
-      const href=group==='Options'?'/options':group==='Volatilité'?'/options?view=volatility':group==='Portefeuille'?'/portfolio?view=risk':'/system';
-      ($('op-anom')||{}).innerHTML=VX.states.empty(`Aucun flux agrégé « ${group} » n’est fourni à cette vue. Aucun résultat n’est déduit ou inventé.`,
-        '<a class="vx-btn vx-btn-sm" href="'+href+'">Ouvrir l’espace source</a>');
-    }
+  const all=(scan.rows||[]).filter(r=>(r.anomalies||[]).length);
+  let lvl='';let q='';
+  $('op-body').innerHTML=demoBanner(scan)+`
+    <div class="vx-screenbar">
+      ${['ALERTE','ACTIF','CALME'].map(l=>`<button class="vx-chip" data-lvl="${l}" aria-pressed="false"
+        style="${l==='ALERTE'?'color:var(--vx-negative)':l==='ACTIF'?'color:var(--vx-warning)':''}">${l==='ALERTE'?'🔴':l==='ACTIF'?'🟠':'⚪'} ${l}</button>`).join('')}
+      <input class="vx-input" id="op-anom-q" style="width:110px;text-transform:uppercase" placeholder="Ticker">
+      <button class="vx-chip" data-ag="Données">Qualité des données</button>
+      <span class="vx-meta vx-right" id="op-anom-count"></span>
+    </div>
+    <div class="vx-scr-kpis" id="op-anom-kpis"></div>
+    <div class="vx-mt4" id="op-anom-types"></div>
+    <div id="op-anom" class="vx-mt4"></div>`;
+  function filtered(){
+    let f=all;
+    if(lvl)f=f.filter(r=>String(r.anomaly_lvl||'').toUpperCase()===lvl);
+    if(q)f=f.filter(r=>r.symbol.includes(q));
+    return f.slice().sort((a,b)=>(b.anomaly_score||0)-(a.anomaly_score||0));
   }
-  document.querySelectorAll('[data-ag]').forEach(b=>b.addEventListener('click',()=>{
-    document.querySelectorAll('[data-ag]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
-    paint(b.dataset.ag);}));
-  paint('Actions');
+  function paint(){
+    const f=filtered();
+    /* KPI par niveau (sur TOUT le scan, pas seulement le filtre) */
+    const c={ALERTE:0,ACTIF:0,CALME:0};all.forEach(r=>{const l=String(r.anomaly_lvl||'').toUpperCase();if(c[l]!=null)c[l]++;});
+    $('op-anom-kpis').innerHTML=
+      `<div class="k"><b>${all.length}</b><span>titres avec anomalies</span></div>`
+      +`<div class="k"><b style="color:var(--vx-negative)">${c.ALERTE}</b><span>en alerte</span></div>`
+      +`<div class="k"><b style="color:var(--vx-warning)">${c.ACTIF}</b><span>actifs</span></div>`
+      +`<div class="k"><b>${c.CALME}</b><span>calmes</span></div>`;
+    $('op-anom-count').textContent=f.length+' / '+all.length;
+    /* Top types d'anomalies (compte par libellé réel) */
+    const types={};f.forEach(r=>(r.anomalies||[]).forEach(a=>{
+      const l=(typeof a==='string')?a:(a.lbl||a.k||'');if(l)types[l]=(types[l]||0)+1;}));
+    const topT=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    $('op-anom-types').innerHTML=topT.length?
+      '<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Anomalies les plus fréquentes</span>'
+      +'<span class="vx-chart-question">Quel comportement inhabituel domine la séance ?</span></div>'
+      +topT.map(([l,n])=>{const w=Math.round(n/topT[0][1]*100);
+        return `<div class="vx-flex" style="gap:8px;align-items:center;padding:3px 0">
+          <span class="vx-meta" style="flex:0 0 46%;white-space:normal">${esc(l)}</span>
+          <span style="flex:1;height:7px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden">
+            <i style="display:block;height:100%;width:${Math.max(4,w)}%;background:var(--vx-brand);border-radius:99px"></i></span>
+          <b class="vx-mono" style="flex:0 0 26px;text-align:right">${n}</b></div>`;}).join('')+'</div>':'';
+    $('op-anom').innerHTML=f.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
+      <th>Titre</th><th>Niveau</th><th>Anomalies</th><th class="vx-num">Intensité</th><th class="vx-num">Score</th><th></th></tr></thead><tbody>
+      ${f.slice(0,60).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
+        <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
+        <td data-label="Niveau"><span class="vx-badge" style="color:${r.anomaly_lvl==='ALERTE'?'var(--vx-negative)':r.anomaly_lvl==='ACTIF'?'var(--vx-warning)':'var(--vx-text-dim)'}">${esc(r.anomaly_lvl||'—')}</span></td>
+        <td data-label="Anomalies">${(r.anomalies||[]).slice(0,3).map(a=>`<span class="vx-badge" title="${esc(typeof a==='object'?(a.k||''):'')}">${esc(typeof a==='string'?a:(a.lbl||a.k||''))}</span>`).join(' ')}</td>
+        ${heatCell(r.anomaly_score,{label:'Intensité',good:55,mid:25})}
+        ${heatCell(r.score,{label:'Score',good:72,mid:56})}
+        <td>${rowActions(r.symbol)}</td></tr>`).join('')}</tbody></table></div>`
+      :VX.states.empty('Aucune anomalie ne correspond à ce filtre.');
+  }
+  document.querySelectorAll('[data-lvl]').forEach(b=>b.addEventListener('click',()=>{
+    lvl=lvl===b.dataset.lvl?'':b.dataset.lvl;
+    document.querySelectorAll('[data-lvl]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.lvl===lvl)));
+    paint();}));
+  document.getElementById('op-anom-q').addEventListener('input',function(){q=this.value.toUpperCase();paint();});
+  document.querySelector('[data-ag="Données"]').addEventListener('click',()=>{
+    VX.fetch('/api/data-quality',{ttl:60000}).then(dq=>{
+      VX.shell.openDrawer('Qualité des données',`${Object.entries(dq.by_quality||{}).map(([k,v])=>
+        `<div class="vx-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}
+        <div class="vx-meta vx-mt2">${esc(dq.note||'')}</div>`);
+    }).catch(()=>VX.toast('Qualité de données indisponible','error'));});
+  paint();
 }
 
-/* ── CALENDRIER ── */
+/* ═════════ CALENDRIER ═════════ */
 async function renderCalendar(){
   try{
     const cal=await VX.fetch('/cal-feed',{ttl:300000});
-    const positions=(window.VXEntities?window.VXEntities.positions():[]).map(p=>p.sym);
-    /* LOT 132 : imminence — les événements à ≤ 7 jours sont marqués urgent
-       (liseré + date warning via timelineCard) ; dte réel pour les earnings,
-       écart de dates pour la macro. Aucune donnée inventée. */
-    const soonMacro=(dt)=>{const d=(new Date(dt+'T00:00:00')-Date.now())/864e5;return isFinite(d)&&d>=0&&d<=7;};
-    const items=[...(cal.macro||[]).map(m=>({when:m.date,kind:m.kind,urgent:soonMacro(m.date),label:esc(m.label)+(m.note?' — '+esc(m.note):'')+(m.approx?' (approx.)':'')})),
-      ...(cal.items||[]).map(it=>({when:it.date,kind:'Earnings',sym:it.sym,urgent:it.dte!=null&&it.dte<=7,
-        label:`résultats dans ${it.dte} j · verdict moteur ${esc(it.verdict||'n/d')}`
-          +(positions.includes(it.sym)?' · <b class="vx-warn">position exposée</b>':'')}))]
-      .sort((a,b)=>String(a.when).localeCompare(String(b.when)));
-    ($('op-body')||{}).innerHTML='<div id="op-cal"></div>';
-    VXCharts.timelineCard('op-cal',{title:'Calendrier des catalyseurs',
-      question:'Quels événements peuvent faire bouger les dossiers ?',
-      items:items.slice(0,30),source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
-      emptyText:'Aucun événement identifié sur l’horizon.'});
-  }catch(e){($('op-body')||{}).innerHTML=VX.states.error('Calendrier indisponible');}
+    const positions=(window.VXEntities?window.VXEntities.positions():[]).map(p=>String(p.sym).toUpperCase());
+    let cat='',mine=false,horizon=0;
+    $('op-body').innerHTML=`
+      <div class="vx-screenbar">
+        ${[['','Tout'],['macro','Économie'],['earnings','Résultats']].map(([v,l])=>
+          `<button class="vx-chip" data-cat="${v}" aria-pressed="${v===''}">${l}</button>`).join('')}
+        ${[[0,'Tout l’horizon'],[7,'7 jours'],[14,'14 jours'],[30,'30 jours']].map(([v,l])=>
+          `<button class="vx-chip" data-hz="${v}" aria-pressed="${v===0}">${l}</button>`).join('')}
+        <button class="vx-chip" id="op-cal-mine" aria-pressed="false">💼 mes positions seulement</button>
+        <span class="vx-meta vx-right" id="op-cal-count"></span>
+      </div>
+      <div id="op-cal" class="vx-mt3"></div>`;
+    function paint(){
+      const items=[...(cal.macro||[]).map(m=>({when:m.date,dte:m.dte,cat:'macro',kind:m.kind||'Économie',
+          label:esc(m.label)+(m.note?' — '+esc(m.note):'')+(m.approx?' (approx.)':'')})),
+        ...(cal.items||[]).map(it=>({when:it.date,dte:it.dte,cat:'earnings',kind:'Résultats',sym:it.sym,
+          label:`résultats dans ${it.dte} j · verdict moteur ${esc(VERD_FR[it.verdict]||it.verdict||'n/d')}`
+            +(positions.includes(it.sym)?' · <b class="vx-warn">position exposée</b>':'')}))]
+        .filter(i=>!cat||i.cat===cat)
+        .filter(i=>!horizon||(i.dte!=null&&i.dte<=horizon))
+        .filter(i=>!mine||(i.sym&&positions.includes(i.sym))||(i.cat==='macro'&&positions.length))
+        .sort((a,b)=>String(a.when).localeCompare(String(b.when)));
+      document.getElementById('op-cal-count').textContent=items.length+' événement(s)';
+      VXCharts.timelineCard('op-cal',{title:'Calendrier des catalyseurs',
+        question:'Quels événements peuvent faire bouger les dossiers ?',
+        items:items.slice(0,40),source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
+        emptyText:'Aucun événement sur ce filtre.'});
+    }
+    document.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{
+      cat=b.dataset.cat;
+      document.querySelectorAll('[data-cat]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));paint();}));
+    document.querySelectorAll('[data-hz]').forEach(b=>b.addEventListener('click',()=>{
+      horizon=+b.dataset.hz;
+      document.querySelectorAll('[data-hz]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));paint();}));
+    document.getElementById('op-cal-mine').addEventListener('click',function(){
+      mine=!mine;this.setAttribute('aria-pressed',String(mine));paint();});
+    paint();
+  }catch(e){$('op-body').innerHTML=VX.states.error('Calendrier indisponible');}
 }
 
-/* Classement Skyler (X1) : le moteur canonique sur TOUT l'univers scanné.
-   Gate plafonnante visible par ligne — jamais masquée. Idempotent (re-boots). */
-async function loadSkylerRank(){
-  /* LOT 602 (dossier 531-A) : un echec de sweep ne disparait plus en silence —
-     la section s affiche avec un etat honnete plutot que de ne pas exister. */
-  let d=null,err=null;
-  try{d=await VX.fetch('/api/skyler/sweep',{ttl:120000});}catch(e){err=e;}
-  document.querySelectorAll('[aria-label="Classement Skyler"]').forEach(n=>n.remove());
-  const host=document.createElement('details');
-  host.className='vx-disclosure vx-mt3';host.setAttribute('aria-label','Classement Skyler');
-  host.id='vx-skyler-rank';
-  if(err||!d){
-    host.innerHTML='<summary>Expertise avancée · Classement Skyler /40</summary><div class="vx-card vx-mt2">'
-      +'<div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span></div>'
-      +VX.states.error('Classement Skyler indisponible')+'</div>';
-    $('op-body').appendChild(host);return;}
-  if(!d.n){
-    host.innerHTML=`<summary>Expertise avancée · Classement Skyler /40</summary><div class="vx-card vx-mt2">
-      <div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span></div>
-      ${VX.states.empty(esc((d.reason||'classement indisponible')+'.'))}</div>`;
-  }else{
-    const tone=x=>x==='ACHETER'||x==='RENFORCER'?'pos':x==='REFUSER'||x==='REDUIRE'?'neg':'neutral';
-    /* LOT 136 : le score canonique /40 gagne sa mini-barre de verre graduee
-       (patron lot 135) — >= 28 positive, 16-27 warning, < 16 negative. */
-    const skBar=(v)=>{const n=Number(v);if(!isFinite(n))return '<b>—</b>/40';
-      const tok=n>=28?'var(--vx-positive,#2BBE90)':n>=16?'var(--vx-warning,#D9BE3C)':'var(--vx-negative,#E9555F)';
-      return '<span style="display:inline-flex;align-items:center;gap:6px">'
-        +'<span style="width:48px;height:7px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block">'
-        +'<span style="display:block;height:100%;width:'+Math.max(4,Math.min(100,n/40*100)).toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,'+tok+' 35%,transparent),'+tok+');border-radius:3px"></span></span>'
-        +'<span><b>'+n+'</b>/40</span></span>';};
-    const rows=(d.rows||[]).map(r=>`<tr>
-      <td data-label="Titre"><button class="vx-link" data-open-analysis="${esc(r.symbol)}"><b>${esc(r.symbol)}</b></button></td>
-      <td data-label="Décision"><span class="vx-badge" data-tone="${tone(r.decision)}">${esc(r.decision||'—')}</span></td>
-      <td data-label="Score" class="vx-num">${skBar(r.score_total)}</td>
-      <td data-label="Niveau">${esc(r.level||'—')}</td>
-      <td data-label="Gate">${r.capped_by_gate?'<span class="vx-neg" title="décision plafonnée par cette porte">✕ '+esc(r.capped_by_gate)+'</span>':'<span class="vx-muted">—</span>'}</td>
-      <td data-label="Catalyseur">${esc(r.catalyst||'—')}</td>
-      <td data-label="Invalidation" class="vx-num">${r.invalidation!=null?VX.fmt.num(r.invalidation,2):'—'}</td>
-    </tr>`).join('');
-    host.innerHTML=`<summary>Expertise avancée · Classement Skyler /40</summary><div class="vx-card vx-mt2">
-      <div class="vx-card-header"><span class="vx-card-title">Classement Skyler — score canonique /40</span>
-      <span class="vx-chart-question">Régime marché partagé : ${esc(d.market_regime||'n/d')} · gates visibles · un score ne déclenche jamais un ordre.</span></div>
-      <div class="vx-table-wrap"><table class="vx-table"><thead><tr>
-        <th>Titre</th><th>Décision</th><th>Score</th><th>Niveau</th><th>Gate</th><th>Catalyseur</th><th>Invalidation</th>
-      </tr></thead><tbody>${rows}</tbody></table></div>
-      <div class="vx-meta" style="margin-top:.3rem">${d.n} titre(s) · ${esc(d.note||'')}${d.demo?' · DÉMO':''}</div></div>`;
-  }
-  $('op-body').appendChild(host);
-}
-const RENDER={radar:async function(){await renderRadar();await loadSkylerRank();},
-  stocks:renderStocks,options:renderOptions,
+const RENDER={screener:renderScreener,options:renderOptions,portfolio:renderPortfolio,
   anomalies:renderAnomalies,calendar:renderCalendar};
-async function opFresh(){try{
-  const el=document.getElementById('op-fresh');if(!el||!window.VX||!VX.freshness)return;
-  let pk=VX.fetch.peek('/api/session/manifest');
-  if(!pk){try{await VX.fetch('/api/session/manifest',{ttl:30000});pk=VX.fetch.peek('/api/session/manifest');}catch(e){}}
-  const live=!(window.__vxStatus&&window.__vxStatus.demo);
-  /* Âge HONNÊTE = ancienneté réelle de la session (manifest.age_s), pas l'âge de
-     l'entrée de cache : un manifest resservi doit refléter l'âge de la DONNÉE. */
-  const a=(pk&&pk.data&&typeof pk.data.age_s==='number')?pk.data.age_s*1000:null;
-  el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:a,live:live}));
-}catch(e){}}
-function boot(){opFresh();(RENDER[VIEW]||renderRadar)().catch(e=>{
-  ($('op-body')||{}).innerHTML=VX.states.error('Chargement impossible : '+e.message);});}
+function boot(){(RENDER[VIEW]||renderScreener)().catch(e=>{
+  $('op-body').innerHTML=VX.states.error('Chargement impossible : '+e.message);});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 })();
 </script>
 """
 
 
-def render(view: str = 'radar', params=None) -> str:
-    view = view if view in dict(_VIEWS) else 'radar'
+def render(view: str = 'screener', params=None) -> str:
+    view = _VIEW_ALIASES.get(view, view)
+    view = view if view in dict(_VIEWS) else 'screener'
     p = {k: v for k, v in (params or {}).items() if k in
          ('sym', 'sector', 'setup', 'decision')}
     content = (_CONTENT.replace('%%TABS%%', _tabs(view))
                .replace('%%LOADING%%', '<div class="vx-skeleton" style="height:120px"></div>'))
-    # `p` ne filtre que les CLÉS : les VALEURS viennent brutes de l'URL et
-    # entrent dans un bloc <script>. `json_for_script` interdit la sortie de
-    # balise (faille du lot 372).
+    #  `json_for_script`, JAMAIS `json.dumps` nu : ce dernier echappe `"` et
+    #  `\` mais NI `<` NI `/`. Une valeur contenant `</script>` fermerait la
+    #  balise cote analyseur HTML et tout ce qui suit deviendrait du HTML ACTIF —
+    #  c'etait le cas de `/opportunities?sym=...` avant le lot 372.
+    #
+    #  L'integration de `vertex-live` avait rapporte ici les appels nus de cette
+    #  branche, qui n'a jamais eu le durcissement du 372. Y ajouter `import json`
+    #  aurait fait disparaitre l'erreur ET rouvert la faille.
     js = (_JS.replace('%%VIEW%%', json_for_script(view))
-          .replace('%%PARAMS%%', json_for_script(p))
-          .replace('%%DEMO_BORDER%%',
-                   "(window.__vxStatus&&window.__vxStatus.demo)?VXCharts.colors.warning:'rgba(255,255,255,.25)'"))
+          .replace('%%PARAMS%%', json_for_script(p)))
     label = dict(_VIEWS)[view]
     return render_shell(title=f'Opportunités · {label}', active='opportunities',
                         space_label='Opportunités', sub_label=label,
