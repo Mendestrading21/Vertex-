@@ -36,8 +36,17 @@ def news_feed_ep():
 
 @bp.route('/cal-feed')
 def cal_feed_ep():
-    """Earnings + macro RÉEL : FOMC (dates Fed publiées), NFP (1er vendredi), CPI (indicatif)."""
-    return jsonify({**cal_state, 'macro': macro_calendar.events(horizon_days=120)})
+    """Earnings + macro : FOMC (dates Fed PUBLIÉES), NFP et CPI (RÈGLES de
+    calendrier, donc approximatifs — le calendrier officiel BLS n'est pas lu).
+
+    `macro_couverture` dit jusqu'où le calendrier FOMC publié va : au-delà, une
+    absence de réunion est une absence de DONNÉE, pas une absence d'événement.
+    """
+    #  La couverture accompagne les evenements : un horizon qui depasse le
+    #  calendrier FOMC publie doit se voir, pas se deviner.
+    return jsonify({**cal_state,
+                    'macro': macro_calendar.events(horizon_days=120),
+                    'macro_couverture': macro_calendar.couverture(horizon_days=120)})
 
 
 @bp.route('/weekly-feed')
