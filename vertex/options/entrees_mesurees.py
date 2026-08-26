@@ -51,6 +51,25 @@ def courbe(scan_state) -> object:
     return _ct.depuis_macro((scan_state or {}).get('macro'))
 
 
+def taux(scan_state, echeance_jours) -> float:
+    """Le taux annuel continu pour cette échéance, en **fraction**.
+
+    Les moteurs `multileg_lab` et `double_prob` prennent un `r` scalaire, pas
+    une courbe : ils reçoivent donc le point interpolé de leur propre échéance,
+    et non un taux global — c'était tout l'objet de la couche par échéance
+    (§6.6), restée inerte jusqu'à D-098.
+
+    Quand aucune courbe n'est disponible, rend le taux plat documenté : la
+    valeur exacte que ces moteurs employaient déjà par défaut. Le chemin
+    dégradé est donc identique à celui d'avant.
+    """
+    try:
+        jours = int(echeance_jours or 0)
+    except (TypeError, ValueError):
+        jours = 0
+    return float(courbe(scan_state).rate_for_tenor(max(jours, 1)).rate)
+
+
 def rendement_dividende(scan_state, symbole: str):
     """Le rendement du dividende du titre, en **fraction**, ou `None`.
 

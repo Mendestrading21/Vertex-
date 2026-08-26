@@ -472,7 +472,8 @@ def rank_strategies(strategies, bias='neutral', mandate=None):
     return strategies
 
 
-def strategies_for_symbol(board, sym, spot, iv_hint=None, bias='neutral'):
+def strategies_for_symbol(board, sym, spot, iv_hint=None, bias='neutral',
+                          r=R_DEFAULT, q=Q_DEFAULT):
     """Construit + analyse les stratégies canoniques réalisables depuis le BOARD réel.
 
     Le board porte `cost` = prime PAR CONTRAT (×100) → convertie en prime/action.
@@ -535,7 +536,8 @@ def strategies_for_symbol(board, sym, spot, iv_hint=None, bias='neutral'):
         legs = build_preset(kind, spot, ref)
         if not legs:
             continue
-        an = analyze_strategy(legs, spot, iv, dte, name=STRATEGY_LABELS.get(kind, kind))
+        an = analyze_strategy(legs, spot, iv, dte, r=r, q=q,
+                              name=STRATEGY_LABELS.get(kind, kind))
         if an.get('available'):
             an['kind'] = kind
             an['label'] = STRATEGY_LABELS.get(kind, kind)

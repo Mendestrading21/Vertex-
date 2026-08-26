@@ -293,9 +293,17 @@ def api_options_scanner(universe):
     if res.get('available'):
         for c in res['candidates'][:5]:
             prem = (c.get('cost') / 100.0) if isinstance(c.get('cost'), (int, float)) else None
+            #  Entrees MESUREES par candidat : le taux a SON echeance, et le
+            #  dividende de SON sous-jacent. Avec les constantes (4,5 % / 0),
+            #  la probabilite de doublement etait surevaluee jusqu'a 20,9 %
+            #  sur un titre distributeur — dans le sens optimiste.
+            _sym_c = str(c.get('sym') or '').upper()
             c['double_prob'] = _dp.double_probability(
                 spot=c.get('spot'), strike=c.get('strike'), premium=prem,
-                dte=c.get('dte'), iv=c.get('iv'), right=c.get('type') or 'CALL')
+                dte=c.get('dte'), iv=c.get('iv'), right=c.get('type') or 'CALL',
+                r=_entrees.taux(scan_state, c.get('dte')),
+                q=(_entrees.rendement_dividende(scan_state, _sym_c) or 0.0))
+            c['entrees'] = _entrees.provenance(scan_state, _sym_c)
     res['as_of'] = _as_of()
     from vertex.app.config import DEMO_MODE as _demo
     res['demo'] = _demo
