@@ -23,6 +23,9 @@ import json
 import os
 import time
 
+from vertex.data_sources import revisions as _revisions
+from vertex.data_sources.models import utc_now_iso
+
 CACHE_PATH = os.environ.get('ANALYST_CACHE', 'analyst_cache.json')
 TTL_S = 12 * 3600
 
@@ -217,6 +220,15 @@ def get(sym, ttl=TTL_S, force=False):
     }
     # ne persiste que si au moins un bloc a des données (évite de cacher un échec total)
     if any(pack[k] for k in pack if k != '_ts'):
+        #  CE QUI A CHANGE depuis la derniere observation. Sans cela,
+        #  `cache[sym] = pack` ecrasait l'instantane precedent et Vertex n'avait
+        #  aucun historique de revision — seulement celui que Yahoo veut bien
+        #  fournir. Voir `data_sources/revisions`.
+        vus = _revisions.diff(ent, pack, vu_a=utc_now_iso())
+        pack['revisions_observees'] = _revisions.accumuler(
+            (ent or {}).get('revisions_observees'), vus)
+        pack['revisions_couverture'] = _revisions.couverture(
+            pack['revisions_observees'])
         cache[sym] = pack
         _save_cache(cache)
         return pack
