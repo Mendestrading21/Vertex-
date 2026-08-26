@@ -222,6 +222,22 @@ def _clean_text(s):
              .replace('"', '&quot;').replace("'", '&#39;'))
 
 
+def _lien_sur(lk):
+    """Un lien servi en `href` / `window.open` — ou `None`.
+
+    Extrait de `sanitize_news` pour que `sources[].link` passe par la MEME
+    regle : une fonction d'assainissement recopiee diverge, et il suffit
+    qu'une copie oublie un caractere (D-086).
+    """
+    if not lk:
+        return None
+    lk = str(lk).strip()
+    if not lk.lower().startswith(('http://', 'https://')):
+        return None
+    return (lk.replace('"', '%22').replace("'", '%27')
+              .replace('<', '%3C').replace('>', '%3E'))
+
+
 def sanitize_news(items):
     """Assainit une liste d'items de news EXTERNES (yfinance/RSS/traduction) avant
     de la servir au client. XSS : les titres/liens de publishers tiers sont rendus
@@ -237,35 +253,77 @@ def sanitize_news(items):
         for k in ('title', 'fr', 'pub', 'publisher', 'sym', 'why', 'time'):
             if d.get(k) is not None:
                 d[k] = _clean_text(d[k])
-        lk = d.get('link')
-        if lk:
-            lk = str(lk).strip()
-            if not lk.lower().startswith(('http://', 'https://')):
-                d['link'] = None
-            else:
-                d['link'] = (lk.replace('"', '%22').replace("'", '%27')
-                               .replace('<', '%3C').replace('>', '%3E'))
+        d['link'] = _lien_sur(d.get('link'))
+        #  `sources` porte des `pub` et des `link` d'origine EXTERNE, au meme
+        #  titre que les champs de premier niveau. Ne pas l'assainir rouvrirait
+        #  la breche de D-086 sur un champ tout neuf.
+        if isinstance(d.get('sources'), list):
+            d['sources'] = [
+                {'pub': _clean_text(o.get('pub')) if o.get('pub') is not None else None,
+                 'link': _lien_sur(o.get('link')),
+                 'time': _clean_text(o.get('time')) if o.get('time') is not None else None}
+                for o in d['sources'] if isinstance(o, dict)]
         out.append(d)
     return out
 
 
 def dedupe_news(items):
-    """Déduplication des news (SKYLER LOT 4) : même TITRE NORMALISÉ (casse,
-    ponctuation, espaces) ou même LIEN → un seul item conservé (le premier,
-    jamais réécrit). Ordre d'arrivée préservé ; entrées non-dict ignorées."""
-    out, seen_titles, seen_links = [], set(), set()
+    """Consolide les doublons **sans perdre les sources**.
+
+    `VERTEX-INTELLIGENCE-2.0` Phase 4, critere d'acceptation : « meme evenement
+    consolide sans perdre les sources ».
+
+    ## Le defaut, mesure le 26 aout 2026
+
+    Cette fonction gardait le premier item et **jetait les autres**. Vertex
+    collecte a la fois un flux RSS multi-agences et les depeches IBKR : la
+    collision est structurelle, pas hypothetique. Mesure sur le cas reel du
+    produit :
+
+    ```text
+    entree : 4 articles, 3 sources distinctes (Reuters, Bloomberg, IBKR)
+    sortie : 2 articles
+    SOURCES PERDUES : Bloomberg, IBKR
+    ```
+
+    Trois agences independantes rapportant le meme fait est une information
+    **plus forte** qu'une seule. Le produit ne pouvait pas faire la difference :
+    rien ne portait le nombre de sources.
+
+    Effet de bord mesure : la depeche **IBKR** — le flux du courtier, celui du
+    desk — est systematiquement celle qu'on jetait, par simple ordre d'arrivee,
+    parce qu'elle n'a pas d'URL et arrive apres le RSS.
+
+    ## Ce qui ne change pas
+
+    Le premier item reste conserve **et jamais reecrit**, l'ordre d'arrivee est
+    preserve, les entrees non-dict ignorees. On AJOUTE `sources` et
+    `n_sources` ; on ne deplace rien.
+    """
+    out, par_titre, par_lien = [], {}, {}
     for it in (items or []):
         if not isinstance(it, dict):
             continue
-        title_key = re.sub(r'[^a-z0-9]+', ' ', str(it.get('title') or '').lower()).strip()
-        link = str(it.get('link') or '').strip()
-        if (title_key and title_key in seen_titles) or (link and link in seen_links):
+        cle_titre = re.sub(r'[^a-z0-9]+', ' ', str(it.get('title') or '').lower()).strip()
+        lien = str(it.get('link') or '').strip()
+        garde = (par_titre.get(cle_titre) if cle_titre else None)             or (par_lien.get(lien) if lien else None)
+        origine = {'pub': it.get('pub') or it.get('publisher'),
+                   'link': it.get('link') or None,
+                   'time': it.get('time') or None}
+        if garde is not None:
+            #  Doublon : on n'ecrase RIEN, on enregistre la source de plus.
+            if origine not in garde['sources']:
+                garde['sources'].append(origine)
+                garde['n_sources'] = len(garde['sources'])
             continue
-        if title_key:
-            seen_titles.add(title_key)
-        if link:
-            seen_links.add(link)
-        out.append(it)
+        d = dict(it)
+        d['sources'] = [origine]
+        d['n_sources'] = 1
+        if cle_titre:
+            par_titre[cle_titre] = d
+        if lien:
+            par_lien[lien] = d
+        out.append(d)
     return out
 
 
