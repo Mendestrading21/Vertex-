@@ -1,0 +1,62 @@
+{
+  "as_of": "2026-08-25",
+  "policy": "reference_or_adapter_only_no_bulk_merge",
+  "user_repository_matrix": "docs/vertex-1.0/roadmap/USER-REPOSITORIES-2026-08-25.md",
+  "user_repository_count_unique": 60,
+  "sources": [
+    {
+      "id": "ibkr_tws",
+      "url": "https://ibkrcampus.com/campus/ibkr-api-page/twsapi-doc/",
+      "role": ["market_data", "options", "positions", "pnl", "news", "events"],
+      "priority": "P0",
+      "decision": "adopt_existing_and_prove_live"
+    },
+    {
+      "id": "sec_edgar",
+      "url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+      "role": ["filings", "xbrl", "insiders", "institutional_holdings"],
+      "priority": "P0",
+      "decision": "adopt"
+    },
+    {
+      "id": "fred",
+      "url": "https://fred.stlouisfed.org/docs/api/fred/",
+      "role": ["macro", "rates", "credit", "vintages"],
+      "priority": "P0",
+      "decision": "adopt"
+    },
+    {
+      "id": "bls",
+      "url": "https://www.bls.gov/developers/home.htm",
+      "role": ["inflation", "employment", "official_series"],
+      "priority": "P0",
+      "decision": "adopt"
+    },
+    {
+      "id": "cftc_cot",
+      "url": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm",
+      "role": ["positioning", "futures", "macro_regime"],
+      "priority": "P1",
+      "decision": "adopt_targeted"
+    },
+    {
+      "id": "massive",
+      "url": "https://massive.com/docs/",
+      "role": ["historical_options", "nbbo", "news"],
+      "priority": "P2",
+      "decision": "optional_after_ibkr_gap_analysis"
+    }
+  ],
+  "repositories": [
+    {"repo": "ib-api-reloaded/ib_async", "license": "BSD-2-Clause", "decision": "existing_dependency"},
+    {"repo": "dgunning/edgartools", "license": "MIT", "decision": "evaluate_adapter"},
+    {"repo": "microsoft/qlib", "license": "MIT", "decision": "research_reference"},
+    {"repo": "QuantConnect/Lean", "license": "Apache-2.0", "decision": "architecture_reference"},
+    {"repo": "dcajasn/Riskfolio-Lib", "license": "BSD-3-Clause", "decision": "evaluate_facade"},
+    {"repo": "PyPortfolio/PyPortfolioOpt", "license": "MIT", "decision": "allocation_reference"},
+    {"repo": "ranaroussi/quantstats", "license": "Apache-2.0", "decision": "metrics_reference"},
+    {"repo": "OpenBB-finance/OpenBB", "license": "VERIFY_CURRENT_TERMS", "decision": "provider_contract_reference_only"},
+    {"repo": "nautechsystems/nautilus_trader", "license": "LGPL-3.0", "decision": "do_not_integrate_execution_engine"},
+    {"repo": "erdewit/ib_insync", "license": "BSD", "decision": "do_not_adopt_archived"}
+  ]
+}

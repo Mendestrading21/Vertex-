@@ -64,7 +64,7 @@ from-scratch. Créer une lib parallèle serait une régression (doublons, dette)
 
 1. **Pages pauvres** : Portefeuille, Intelligence, Options n'exploitent pas la lib existante à hauteur du reste.
 2. **Types manquants** : treemap, waterfall, sankey, radar, gauge, calendar, bubble-matrix.
-3. **Vérifiabilité** : Portefeuille/Options/Risque dépendent des positions IBKR → test sous compte réel (U10360059) ; Marchés/Opportunités/Performance/Briefing/Analyse testables sans IBKR.
+3. **Vérifiabilité** : Portefeuille/Options/Risque dépendent des positions IBKR → test sous compte réel (U<masque>) ; Marchés/Opportunités/Performance/Briefing/Analyse testables sans IBKR.
 4. **Honnêteté données** (déjà bien tenue) : breadth advance/decline, VIX term structure = données non fournies par les moteurs → **états vides premium**, ne rien inventer (règle §2 respectée).
 
 ## 3. Plan d'exécution (mappé aux phases spec §47)

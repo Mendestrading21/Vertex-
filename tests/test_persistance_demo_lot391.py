@@ -129,7 +129,12 @@ def test_le_scan_expose_sa_source():
     assert "scan_state['source'] = 'demo'" in src, (
         'le scan ne marque plus sa source en mode démo : plus rien ne '
         'distingue une session de démonstration d\'une session réelle')
-    sert = [n for n in ast.walk(arbre)
+    #  #779/G1 — `data_source` est SERVI par `/scan`, qui a quitte terminal.py
+    #  pour `vertex/app/routes/scan_api.py`. Le marquage (`source = 'demo'`)
+    #  reste dans le monolithe, la SORTIE est ailleurs : chercher les deux au
+    #  meme endroit faisait echouer ce test sur une chaine intacte.
+    sortie = _arbre('vertex/app/routes/scan_api.py')
+    sert = [n for n in ast.walk(sortie)
             if isinstance(n, ast.Constant) and n.value == 'data_source']
     assert sert, 'la source n\'est plus exposée aux consommateurs'
 

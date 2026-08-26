@@ -73,9 +73,20 @@ from vertex.strategy import config
 
 RACINE = 'vertex'
 
-# Population mesurée : 46. Borne fixée À la mesure + marge minimale — une borne
-# qui absorbe la première régression n'est pas une borne (leçon du lot 378).
-MAX_PASS = 47
+# Population mesurée : 46 au lot 379, **50** aujourd'hui. Borne fixée À la
+# mesure — une borne qui absorbe la première régression n'est pas une borne
+# (leçon du lot 378).
+#
+# 46 -> 50 au fil de #779/G1, et AUCUN de ces handlers n'est neuf : ils sont
+# arrivés dans `vertex/` avec le code qu'ils entouraient, en quittant
+# `terminal.py` — qui, symétriquement, est passé de 38 à 32 (recensement tenu
+# par `tests/test_pass_terminal_lot386.py`). Le total des deux périmètres est
+# donc stable ; ce qui a changé, c'est la frontière.
+#   • `_to_naive`            -> vertex/app/routes/correlations_api.py
+#   • `_i` et `_f`           -> vertex/options/pack.py (×2, via options_pack)
+#   • écriture du cache desc -> vertex/app/routes/descriptions_api.py
+# Un `except: pass` réellement NOUVEAU ferait donc toujours échouer ce test.
+MAX_PASS = 50
 
 CLES_HONNETES = ('vix', 'vix_band', 'vix_chg', 'spy_regime', 'spy_adx',
                  'spy_trend_txt')
@@ -87,7 +98,7 @@ def _fichiers():
     for rac, _d, noms in os.walk(RACINE):
         for nom in sorted(noms):
             if nom.endswith('.py'):
-                out.append(os.path.join(rac, nom))
+                out.append(os.path.join(rac, nom).replace(os.sep, '/'))
     return out
 
 

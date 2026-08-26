@@ -1,0 +1,5721 @@
+{
+  "base": "origin/main",
+  "arbres_distincts": 694,
+  "groupes_jumeaux": [
+    [
+      "origin/agent/skyler-v2-lot-601",
+      "origin/integration/vertex-skyler-v2"
+    ],
+    [
+      "origin/agent/skyler-v2-lot-625",
+      "origin/agent/vertex-total-rebuild-obsidian-v2"
+    ],
+    [
+      "origin/agent/vertex-1-0-governance",
+      "origin/main"
+    ]
+  ],
+  "total": 697,
+  "par_classe": {
+    "CONTENUE_AILLEURS": 51,
+    "CONTENU_IDENTIQUE": 1,
+    "FUSIONNEE": 31,
+    "UNIQUE": 614
+  },
+  "supprimables_sans_perte": [
+    "origin/agent/regime-aura-629",
+    "origin/agent/vertex-1-0-governance",
+    "origin/claude/vertex-strategy-os-h17dso",
+    "origin/claude/vertex-system-launch-0bsizs",
+    "origin/claude/vertex-visual-rebuild-1ofi8r",
+    "origin/feature/active-source-timeouts",
+    "origin/feature/bounded-analytic-payloads",
+    "origin/feature/freshness-drift-monitor",
+    "origin/feature/measurement-intelligence",
+    "origin/feature/multi-asset-evidence-guard",
+    "origin/feature/multi-asset-market-coherence",
+    "origin/feature/operational-input-bounds",
+    "origin/feature/opportunity-reliability",
+    "origin/feature/option-contract-measurement",
+    "origin/feature/persistence-cache-hardening",
+    "origin/feature/portfolio-historical-stress",
+    "origin/feature/regime-break-diagnostic",
+    "origin/feature/rescan-rate-limit",
+    "origin/feature/safe-latency-observability",
+    "origin/feature/scan-singleflight",
+    "origin/feature/scan-source-resilience",
+    "origin/feature/segmented-drift-monitor",
+    "origin/feature/swing-options-decision-packet",
+    "origin/feature/walk-forward-validation",
+    "origin/feature/webhook-delivery-hardening",
+    "origin/fix/complete-safe-api-errors",
+    "origin/fix/dual-source-unavailable",
+    "origin/fix/request-limit-cache-freshness",
+    "origin/fix/safe-api-errors",
+    "origin/integration/vertex-visual-merge",
+    "origin/main",
+    "origin/test/scan-timeout-degradation"
+  ],
+  "contenues_ailleurs": 51,
+  "pointes": [
+    "origin/agent/lanceur-ipad",
+    "origin/agent/skyler-v2-lot-100",
+    "origin/agent/skyler-v2-lot-101",
+    "origin/agent/skyler-v2-lot-102",
+    "origin/agent/skyler-v2-lot-103",
+    "origin/agent/skyler-v2-lot-104",
+    "origin/agent/skyler-v2-lot-105",
+    "origin/agent/skyler-v2-lot-106",
+    "origin/agent/skyler-v2-lot-107",
+    "origin/agent/skyler-v2-lot-108",
+    "origin/agent/skyler-v2-lot-109",
+    "origin/agent/skyler-v2-lot-110",
+    "origin/agent/skyler-v2-lot-111",
+    "origin/agent/skyler-v2-lot-112",
+    "origin/agent/skyler-v2-lot-113",
+    "origin/agent/skyler-v2-lot-114",
+    "origin/agent/skyler-v2-lot-115",
+    "origin/agent/skyler-v2-lot-116",
+    "origin/agent/skyler-v2-lot-117",
+    "origin/agent/skyler-v2-lot-118",
+    "origin/agent/skyler-v2-lot-119",
+    "origin/agent/skyler-v2-lot-120",
+    "origin/agent/skyler-v2-lot-121",
+    "origin/agent/skyler-v2-lot-122",
+    "origin/agent/skyler-v2-lot-123",
+    "origin/agent/skyler-v2-lot-124",
+    "origin/agent/skyler-v2-lot-125",
+    "origin/agent/skyler-v2-lot-126",
+    "origin/agent/skyler-v2-lot-127",
+    "origin/agent/skyler-v2-lot-128",
+    "origin/agent/skyler-v2-lot-129",
+    "origin/agent/skyler-v2-lot-130",
+    "origin/agent/skyler-v2-lot-131",
+    "origin/agent/skyler-v2-lot-132",
+    "origin/agent/skyler-v2-lot-133",
+    "origin/agent/skyler-v2-lot-134",
+    "origin/agent/skyler-v2-lot-135",
+    "origin/agent/skyler-v2-lot-136",
+    "origin/agent/skyler-v2-lot-137",
+    "origin/agent/skyler-v2-lot-138",
+    "origin/agent/skyler-v2-lot-139",
+    "origin/agent/skyler-v2-lot-140",
+    "origin/agent/skyler-v2-lot-141",
+    "origin/agent/skyler-v2-lot-142",
+    "origin/agent/skyler-v2-lot-143",
+    "origin/agent/skyler-v2-lot-144",
+    "origin/agent/skyler-v2-lot-145",
+    "origin/agent/skyler-v2-lot-146",
+    "origin/agent/skyler-v2-lot-147",
+    "origin/agent/skyler-v2-lot-148",
+    "origin/agent/skyler-v2-lot-149",
+    "origin/agent/skyler-v2-lot-150",
+    "origin/agent/skyler-v2-lot-151",
+    "origin/agent/skyler-v2-lot-152",
+    "origin/agent/skyler-v2-lot-153",
+    "origin/agent/skyler-v2-lot-154",
+    "origin/agent/skyler-v2-lot-155",
+    "origin/agent/skyler-v2-lot-156",
+    "origin/agent/skyler-v2-lot-157",
+    "origin/agent/skyler-v2-lot-158",
+    "origin/agent/skyler-v2-lot-159",
+    "origin/agent/skyler-v2-lot-160",
+    "origin/agent/skyler-v2-lot-161",
+    "origin/agent/skyler-v2-lot-162",
+    "origin/agent/skyler-v2-lot-163",
+    "origin/agent/skyler-v2-lot-164",
+    "origin/agent/skyler-v2-lot-165",
+    "origin/agent/skyler-v2-lot-166",
+    "origin/agent/skyler-v2-lot-167",
+    "origin/agent/skyler-v2-lot-168",
+    "origin/agent/skyler-v2-lot-169",
+    "origin/agent/skyler-v2-lot-170",
+    "origin/agent/skyler-v2-lot-171",
+    "origin/agent/skyler-v2-lot-172",
+    "origin/agent/skyler-v2-lot-173",
+    "origin/agent/skyler-v2-lot-174",
+    "origin/agent/skyler-v2-lot-175",
+    "origin/agent/skyler-v2-lot-176",
+    "origin/agent/skyler-v2-lot-177",
+    "origin/agent/skyler-v2-lot-178",
+    "origin/agent/skyler-v2-lot-179",
+    "origin/agent/skyler-v2-lot-180",
+    "origin/agent/skyler-v2-lot-181",
+    "origin/agent/skyler-v2-lot-182",
+    "origin/agent/skyler-v2-lot-183",
+    "origin/agent/skyler-v2-lot-184",
+    "origin/agent/skyler-v2-lot-185",
+    "origin/agent/skyler-v2-lot-186",
+    "origin/agent/skyler-v2-lot-187",
+    "origin/agent/skyler-v2-lot-188",
+    "origin/agent/skyler-v2-lot-189",
+    "origin/agent/skyler-v2-lot-190",
+    "origin/agent/skyler-v2-lot-191",
+    "origin/agent/skyler-v2-lot-192",
+    "origin/agent/skyler-v2-lot-193",
+    "origin/agent/skyler-v2-lot-194",
+    "origin/agent/skyler-v2-lot-195",
+    "origin/agent/skyler-v2-lot-196",
+    "origin/agent/skyler-v2-lot-197",
+    "origin/agent/skyler-v2-lot-198",
+    "origin/agent/skyler-v2-lot-199",
+    "origin/agent/skyler-v2-lot-200",
+    "origin/agent/skyler-v2-lot-201",
+    "origin/agent/skyler-v2-lot-202",
+    "origin/agent/skyler-v2-lot-203",
+    "origin/agent/skyler-v2-lot-204",
+    "origin/agent/skyler-v2-lot-205",
+    "origin/agent/skyler-v2-lot-206",
+    "origin/agent/skyler-v2-lot-207",
+    "origin/agent/skyler-v2-lot-208",
+    "origin/agent/skyler-v2-lot-209",
+    "origin/agent/skyler-v2-lot-210",
+    "origin/agent/skyler-v2-lot-211",
+    "origin/agent/skyler-v2-lot-212",
+    "origin/agent/skyler-v2-lot-213",
+    "origin/agent/skyler-v2-lot-214",
+    "origin/agent/skyler-v2-lot-215",
+    "origin/agent/skyler-v2-lot-216",
+    "origin/agent/skyler-v2-lot-217",
+    "origin/agent/skyler-v2-lot-218",
+    "origin/agent/skyler-v2-lot-219",
+    "origin/agent/skyler-v2-lot-220",
+    "origin/agent/skyler-v2-lot-221",
+    "origin/agent/skyler-v2-lot-222",
+    "origin/agent/skyler-v2-lot-223",
+    "origin/agent/skyler-v2-lot-224",
+    "origin/agent/skyler-v2-lot-225",
+    "origin/agent/skyler-v2-lot-226",
+    "origin/agent/skyler-v2-lot-227",
+    "origin/agent/skyler-v2-lot-228",
+    "origin/agent/skyler-v2-lot-229",
+    "origin/agent/skyler-v2-lot-230",
+    "origin/agent/skyler-v2-lot-231",
+    "origin/agent/skyler-v2-lot-232",
+    "origin/agent/skyler-v2-lot-233",
+    "origin/agent/skyler-v2-lot-234",
+    "origin/agent/skyler-v2-lot-235",
+    "origin/agent/skyler-v2-lot-236",
+    "origin/agent/skyler-v2-lot-237",
+    "origin/agent/skyler-v2-lot-238",
+    "origin/agent/skyler-v2-lot-239",
+    "origin/agent/skyler-v2-lot-240",
+    "origin/agent/skyler-v2-lot-241",
+    "origin/agent/skyler-v2-lot-242",
+    "origin/agent/skyler-v2-lot-243",
+    "origin/agent/skyler-v2-lot-244",
+    "origin/agent/skyler-v2-lot-245",
+    "origin/agent/skyler-v2-lot-246",
+    "origin/agent/skyler-v2-lot-247",
+    "origin/agent/skyler-v2-lot-248",
+    "origin/agent/skyler-v2-lot-249",
+    "origin/agent/skyler-v2-lot-250",
+    "origin/agent/skyler-v2-lot-251",
+    "origin/agent/skyler-v2-lot-252",
+    "origin/agent/skyler-v2-lot-253",
+    "origin/agent/skyler-v2-lot-254",
+    "origin/agent/skyler-v2-lot-255",
+    "origin/agent/skyler-v2-lot-256",
+    "origin/agent/skyler-v2-lot-257",
+    "origin/agent/skyler-v2-lot-258",
+    "origin/agent/skyler-v2-lot-259",
+    "origin/agent/skyler-v2-lot-260",
+    "origin/agent/skyler-v2-lot-261",
+    "origin/agent/skyler-v2-lot-262",
+    "origin/agent/skyler-v2-lot-263",
+    "origin/agent/skyler-v2-lot-264",
+    "origin/agent/skyler-v2-lot-265",
+    "origin/agent/skyler-v2-lot-266",
+    "origin/agent/skyler-v2-lot-267",
+    "origin/agent/skyler-v2-lot-268",
+    "origin/agent/skyler-v2-lot-269",
+    "origin/agent/skyler-v2-lot-270",
+    "origin/agent/skyler-v2-lot-271",
+    "origin/agent/skyler-v2-lot-272",
+    "origin/agent/skyler-v2-lot-273",
+    "origin/agent/skyler-v2-lot-274",
+    "origin/agent/skyler-v2-lot-275",
+    "origin/agent/skyler-v2-lot-276",
+    "origin/agent/skyler-v2-lot-277",
+    "origin/agent/skyler-v2-lot-278",
+    "origin/agent/skyler-v2-lot-279",
+    "origin/agent/skyler-v2-lot-280",
+    "origin/agent/skyler-v2-lot-281",
+    "origin/agent/skyler-v2-lot-282",
+    "origin/agent/skyler-v2-lot-283",
+    "origin/agent/skyler-v2-lot-284",
+    "origin/agent/skyler-v2-lot-285",
+    "origin/agent/skyler-v2-lot-286",
+    "origin/agent/skyler-v2-lot-287",
+    "origin/agent/skyler-v2-lot-288",
+    "origin/agent/skyler-v2-lot-289",
+    "origin/agent/skyler-v2-lot-29-memory-export",
+    "origin/agent/skyler-v2-lot-290",
+    "origin/agent/skyler-v2-lot-291",
+    "origin/agent/skyler-v2-lot-292",
+    "origin/agent/skyler-v2-lot-293",
+    "origin/agent/skyler-v2-lot-294",
+    "origin/agent/skyler-v2-lot-295",
+    "origin/agent/skyler-v2-lot-296",
+    "origin/agent/skyler-v2-lot-297",
+    "origin/agent/skyler-v2-lot-298",
+    "origin/agent/skyler-v2-lot-299",
+    "origin/agent/skyler-v2-lot-30-catalyst-type",
+    "origin/agent/skyler-v2-lot-300",
+    "origin/agent/skyler-v2-lot-301",
+    "origin/agent/skyler-v2-lot-302",
+    "origin/agent/skyler-v2-lot-303",
+    "origin/agent/skyler-v2-lot-304",
+    "origin/agent/skyler-v2-lot-305",
+    "origin/agent/skyler-v2-lot-306",
+    "origin/agent/skyler-v2-lot-307",
+    "origin/agent/skyler-v2-lot-308",
+    "origin/agent/skyler-v2-lot-309",
+    "origin/agent/skyler-v2-lot-31-deterministic-fuzz",
+    "origin/agent/skyler-v2-lot-310",
+    "origin/agent/skyler-v2-lot-311",
+    "origin/agent/skyler-v2-lot-312",
+    "origin/agent/skyler-v2-lot-313",
+    "origin/agent/skyler-v2-lot-314",
+    "origin/agent/skyler-v2-lot-315",
+    "origin/agent/skyler-v2-lot-316",
+    "origin/agent/skyler-v2-lot-317",
+    "origin/agent/skyler-v2-lot-318",
+    "origin/agent/skyler-v2-lot-319",
+    "origin/agent/skyler-v2-lot-32-short-rc",
+    "origin/agent/skyler-v2-lot-320",
+    "origin/agent/skyler-v2-lot-321",
+    "origin/agent/skyler-v2-lot-322",
+    "origin/agent/skyler-v2-lot-323",
+    "origin/agent/skyler-v2-lot-324",
+    "origin/agent/skyler-v2-lot-325",
+    "origin/agent/skyler-v2-lot-326",
+    "origin/agent/skyler-v2-lot-327",
+    "origin/agent/skyler-v2-lot-328",
+    "origin/agent/skyler-v2-lot-329",
+    "origin/agent/skyler-v2-lot-33-catalyst-type-ui",
+    "origin/agent/skyler-v2-lot-330",
+    "origin/agent/skyler-v2-lot-331",
+    "origin/agent/skyler-v2-lot-332",
+    "origin/agent/skyler-v2-lot-333",
+    "origin/agent/skyler-v2-lot-334",
+    "origin/agent/skyler-v2-lot-335",
+    "origin/agent/skyler-v2-lot-336",
+    "origin/agent/skyler-v2-lot-337",
+    "origin/agent/skyler-v2-lot-338",
+    "origin/agent/skyler-v2-lot-339",
+    "origin/agent/skyler-v2-lot-34-http-fuzz",
+    "origin/agent/skyler-v2-lot-340",
+    "origin/agent/skyler-v2-lot-341",
+    "origin/agent/skyler-v2-lot-342",
+    "origin/agent/skyler-v2-lot-343",
+    "origin/agent/skyler-v2-lot-344",
+    "origin/agent/skyler-v2-lot-345",
+    "origin/agent/skyler-v2-lot-346",
+    "origin/agent/skyler-v2-lot-347",
+    "origin/agent/skyler-v2-lot-348",
+    "origin/agent/skyler-v2-lot-349",
+    "origin/agent/skyler-v2-lot-35-ledger-health",
+    "origin/agent/skyler-v2-lot-350",
+    "origin/agent/skyler-v2-lot-351",
+    "origin/agent/skyler-v2-lot-352",
+    "origin/agent/skyler-v2-lot-353",
+    "origin/agent/skyler-v2-lot-354",
+    "origin/agent/skyler-v2-lot-355",
+    "origin/agent/skyler-v2-lot-356",
+    "origin/agent/skyler-v2-lot-357",
+    "origin/agent/skyler-v2-lot-358",
+    "origin/agent/skyler-v2-lot-359",
+    "origin/agent/skyler-v2-lot-36-skyler-route-fuzz",
+    "origin/agent/skyler-v2-lot-360",
+    "origin/agent/skyler-v2-lot-361",
+    "origin/agent/skyler-v2-lot-362",
+    "origin/agent/skyler-v2-lot-363",
+    "origin/agent/skyler-v2-lot-364",
+    "origin/agent/skyler-v2-lot-365",
+    "origin/agent/skyler-v2-lot-366",
+    "origin/agent/skyler-v2-lot-367",
+    "origin/agent/skyler-v2-lot-368",
+    "origin/agent/skyler-v2-lot-369",
+    "origin/agent/skyler-v2-lot-37-ledger-freshness",
+    "origin/agent/skyler-v2-lot-370",
+    "origin/agent/skyler-v2-lot-371",
+    "origin/agent/skyler-v2-lot-372",
+    "origin/agent/skyler-v2-lot-373",
+    "origin/agent/skyler-v2-lot-374",
+    "origin/agent/skyler-v2-lot-375",
+    "origin/agent/skyler-v2-lot-376",
+    "origin/agent/skyler-v2-lot-377",
+    "origin/agent/skyler-v2-lot-378",
+    "origin/agent/skyler-v2-lot-379",
+    "origin/agent/skyler-v2-lot-38-bilan-continu",
+    "origin/agent/skyler-v2-lot-380",
+    "origin/agent/skyler-v2-lot-381",
+    "origin/agent/skyler-v2-lot-382",
+    "origin/agent/skyler-v2-lot-383",
+    "origin/agent/skyler-v2-lot-384",
+    "origin/agent/skyler-v2-lot-385",
+    "origin/agent/skyler-v2-lot-386",
+    "origin/agent/skyler-v2-lot-387",
+    "origin/agent/skyler-v2-lot-388",
+    "origin/agent/skyler-v2-lot-389",
+    "origin/agent/skyler-v2-lot-39-cell-drilldown",
+    "origin/agent/skyler-v2-lot-390",
+    "origin/agent/skyler-v2-lot-391",
+    "origin/agent/skyler-v2-lot-392",
+    "origin/agent/skyler-v2-lot-393",
+    "origin/agent/skyler-v2-lot-394",
+    "origin/agent/skyler-v2-lot-395",
+    "origin/agent/skyler-v2-lot-396",
+    "origin/agent/skyler-v2-lot-397",
+    "origin/agent/skyler-v2-lot-398",
+    "origin/agent/skyler-v2-lot-399",
+    "origin/agent/skyler-v2-lot-40-cell-view",
+    "origin/agent/skyler-v2-lot-400",
+    "origin/agent/skyler-v2-lot-401",
+    "origin/agent/skyler-v2-lot-402",
+    "origin/agent/skyler-v2-lot-403",
+    "origin/agent/skyler-v2-lot-404",
+    "origin/agent/skyler-v2-lot-405",
+    "origin/agent/skyler-v2-lot-406",
+    "origin/agent/skyler-v2-lot-407",
+    "origin/agent/skyler-v2-lot-408",
+    "origin/agent/skyler-v2-lot-409",
+    "origin/agent/skyler-v2-lot-41-rc-memory-journey",
+    "origin/agent/skyler-v2-lot-410",
+    "origin/agent/skyler-v2-lot-411",
+    "origin/agent/skyler-v2-lot-412",
+    "origin/agent/skyler-v2-lot-413",
+    "origin/agent/skyler-v2-lot-414",
+    "origin/agent/skyler-v2-lot-415",
+    "origin/agent/skyler-v2-lot-416",
+    "origin/agent/skyler-v2-lot-417",
+    "origin/agent/skyler-v2-lot-418",
+    "origin/agent/skyler-v2-lot-419",
+    "origin/agent/skyler-v2-lot-42-export-integrity",
+    "origin/agent/skyler-v2-lot-420",
+    "origin/agent/skyler-v2-lot-421",
+    "origin/agent/skyler-v2-lot-422",
+    "origin/agent/skyler-v2-lot-423",
+    "origin/agent/skyler-v2-lot-424",
+    "origin/agent/skyler-v2-lot-425",
+    "origin/agent/skyler-v2-lot-426",
+    "origin/agent/skyler-v2-lot-427",
+    "origin/agent/skyler-v2-lot-428",
+    "origin/agent/skyler-v2-lot-429",
+    "origin/agent/skyler-v2-lot-43-cell-key-fuzz",
+    "origin/agent/skyler-v2-lot-430",
+    "origin/agent/skyler-v2-lot-431",
+    "origin/agent/skyler-v2-lot-432",
+    "origin/agent/skyler-v2-lot-433",
+    "origin/agent/skyler-v2-lot-434",
+    "origin/agent/skyler-v2-lot-435",
+    "origin/agent/skyler-v2-lot-436",
+    "origin/agent/skyler-v2-lot-437",
+    "origin/agent/skyler-v2-lot-438",
+    "origin/agent/skyler-v2-lot-439",
+    "origin/agent/skyler-v2-lot-44-bilan-2",
+    "origin/agent/skyler-v2-lot-440",
+    "origin/agent/skyler-v2-lot-441",
+    "origin/agent/skyler-v2-lot-442",
+    "origin/agent/skyler-v2-lot-443",
+    "origin/agent/skyler-v2-lot-444",
+    "origin/agent/skyler-v2-lot-445",
+    "origin/agent/skyler-v2-lot-446",
+    "origin/agent/skyler-v2-lot-447",
+    "origin/agent/skyler-v2-lot-448",
+    "origin/agent/skyler-v2-lot-449",
+    "origin/agent/skyler-v2-lot-45-sovereign-import",
+    "origin/agent/skyler-v2-lot-450",
+    "origin/agent/skyler-v2-lot-451",
+    "origin/agent/skyler-v2-lot-452",
+    "origin/agent/skyler-v2-lot-453",
+    "origin/agent/skyler-v2-lot-454",
+    "origin/agent/skyler-v2-lot-455",
+    "origin/agent/skyler-v2-lot-456",
+    "origin/agent/skyler-v2-lot-457",
+    "origin/agent/skyler-v2-lot-458",
+    "origin/agent/skyler-v2-lot-459",
+    "origin/agent/skyler-v2-lot-46-full-restore",
+    "origin/agent/skyler-v2-lot-460",
+    "origin/agent/skyler-v2-lot-461",
+    "origin/agent/skyler-v2-lot-462",
+    "origin/agent/skyler-v2-lot-463",
+    "origin/agent/skyler-v2-lot-464",
+    "origin/agent/skyler-v2-lot-465",
+    "origin/agent/skyler-v2-lot-466",
+    "origin/agent/skyler-v2-lot-467",
+    "origin/agent/skyler-v2-lot-468",
+    "origin/agent/skyler-v2-lot-469",
+    "origin/agent/skyler-v2-lot-47-import-button",
+    "origin/agent/skyler-v2-lot-470",
+    "origin/agent/skyler-v2-lot-471",
+    "origin/agent/skyler-v2-lot-472",
+    "origin/agent/skyler-v2-lot-473",
+    "origin/agent/skyler-v2-lot-474",
+    "origin/agent/skyler-v2-lot-475",
+    "origin/agent/skyler-v2-lot-476",
+    "origin/agent/skyler-v2-lot-477",
+    "origin/agent/skyler-v2-lot-478",
+    "origin/agent/skyler-v2-lot-479",
+    "origin/agent/skyler-v2-lot-48-rc-sovereign-cycle",
+    "origin/agent/skyler-v2-lot-480",
+    "origin/agent/skyler-v2-lot-481",
+    "origin/agent/skyler-v2-lot-482",
+    "origin/agent/skyler-v2-lot-483",
+    "origin/agent/skyler-v2-lot-484",
+    "origin/agent/skyler-v2-lot-485",
+    "origin/agent/skyler-v2-lot-486",
+    "origin/agent/skyler-v2-lot-487",
+    "origin/agent/skyler-v2-lot-488",
+    "origin/agent/skyler-v2-lot-489",
+    "origin/agent/skyler-v2-lot-49-bilan-3",
+    "origin/agent/skyler-v2-lot-490",
+    "origin/agent/skyler-v2-lot-491",
+    "origin/agent/skyler-v2-lot-492",
+    "origin/agent/skyler-v2-lot-493",
+    "origin/agent/skyler-v2-lot-494",
+    "origin/agent/skyler-v2-lot-495",
+    "origin/agent/skyler-v2-lot-496",
+    "origin/agent/skyler-v2-lot-497",
+    "origin/agent/skyler-v2-lot-498",
+    "origin/agent/skyler-v2-lot-499",
+    "origin/agent/skyler-v2-lot-50-profiling",
+    "origin/agent/skyler-v2-lot-500",
+    "origin/agent/skyler-v2-lot-501",
+    "origin/agent/skyler-v2-lot-502",
+    "origin/agent/skyler-v2-lot-503",
+    "origin/agent/skyler-v2-lot-504",
+    "origin/agent/skyler-v2-lot-505",
+    "origin/agent/skyler-v2-lot-506",
+    "origin/agent/skyler-v2-lot-507",
+    "origin/agent/skyler-v2-lot-508",
+    "origin/agent/skyler-v2-lot-509",
+    "origin/agent/skyler-v2-lot-51-charts-2026",
+    "origin/agent/skyler-v2-lot-510",
+    "origin/agent/skyler-v2-lot-511",
+    "origin/agent/skyler-v2-lot-512",
+    "origin/agent/skyler-v2-lot-513",
+    "origin/agent/skyler-v2-lot-514",
+    "origin/agent/skyler-v2-lot-515",
+    "origin/agent/skyler-v2-lot-516",
+    "origin/agent/skyler-v2-lot-517",
+    "origin/agent/skyler-v2-lot-518",
+    "origin/agent/skyler-v2-lot-519",
+    "origin/agent/skyler-v2-lot-52-crosshair",
+    "origin/agent/skyler-v2-lot-520",
+    "origin/agent/skyler-v2-lot-521",
+    "origin/agent/skyler-v2-lot-522",
+    "origin/agent/skyler-v2-lot-523",
+    "origin/agent/skyler-v2-lot-524",
+    "origin/agent/skyler-v2-lot-525",
+    "origin/agent/skyler-v2-lot-526",
+    "origin/agent/skyler-v2-lot-527",
+    "origin/agent/skyler-v2-lot-528",
+    "origin/agent/skyler-v2-lot-529",
+    "origin/agent/skyler-v2-lot-53-charts-polish",
+    "origin/agent/skyler-v2-lot-530",
+    "origin/agent/skyler-v2-lot-531",
+    "origin/agent/skyler-v2-lot-532",
+    "origin/agent/skyler-v2-lot-533",
+    "origin/agent/skyler-v2-lot-534",
+    "origin/agent/skyler-v2-lot-535",
+    "origin/agent/skyler-v2-lot-536",
+    "origin/agent/skyler-v2-lot-537",
+    "origin/agent/skyler-v2-lot-538",
+    "origin/agent/skyler-v2-lot-539",
+    "origin/agent/skyler-v2-lot-54-candles-2026",
+    "origin/agent/skyler-v2-lot-540",
+    "origin/agent/skyler-v2-lot-541",
+    "origin/agent/skyler-v2-lot-542",
+    "origin/agent/skyler-v2-lot-543",
+    "origin/agent/skyler-v2-lot-544",
+    "origin/agent/skyler-v2-lot-545",
+    "origin/agent/skyler-v2-lot-546",
+    "origin/agent/skyler-v2-lot-547",
+    "origin/agent/skyler-v2-lot-548",
+    "origin/agent/skyler-v2-lot-549",
+    "origin/agent/skyler-v2-lot-55-connections",
+    "origin/agent/skyler-v2-lot-550",
+    "origin/agent/skyler-v2-lot-551",
+    "origin/agent/skyler-v2-lot-552",
+    "origin/agent/skyler-v2-lot-553",
+    "origin/agent/skyler-v2-lot-554",
+    "origin/agent/skyler-v2-lot-555",
+    "origin/agent/skyler-v2-lot-556",
+    "origin/agent/skyler-v2-lot-557",
+    "origin/agent/skyler-v2-lot-558",
+    "origin/agent/skyler-v2-lot-559",
+    "origin/agent/skyler-v2-lot-56-polish-today-markets",
+    "origin/agent/skyler-v2-lot-560",
+    "origin/agent/skyler-v2-lot-561",
+    "origin/agent/skyler-v2-lot-562",
+    "origin/agent/skyler-v2-lot-563",
+    "origin/agent/skyler-v2-lot-564",
+    "origin/agent/skyler-v2-lot-565",
+    "origin/agent/skyler-v2-lot-566",
+    "origin/agent/skyler-v2-lot-567",
+    "origin/agent/skyler-v2-lot-568",
+    "origin/agent/skyler-v2-lot-569",
+    "origin/agent/skyler-v2-lot-57-polish-opps-analysis",
+    "origin/agent/skyler-v2-lot-570",
+    "origin/agent/skyler-v2-lot-571",
+    "origin/agent/skyler-v2-lot-572",
+    "origin/agent/skyler-v2-lot-573",
+    "origin/agent/skyler-v2-lot-574",
+    "origin/agent/skyler-v2-lot-575",
+    "origin/agent/skyler-v2-lot-576",
+    "origin/agent/skyler-v2-lot-577",
+    "origin/agent/skyler-v2-lot-578",
+    "origin/agent/skyler-v2-lot-579",
+    "origin/agent/skyler-v2-lot-58-polish-portfolio-options",
+    "origin/agent/skyler-v2-lot-580",
+    "origin/agent/skyler-v2-lot-581",
+    "origin/agent/skyler-v2-lot-582",
+    "origin/agent/skyler-v2-lot-583",
+    "origin/agent/skyler-v2-lot-584",
+    "origin/agent/skyler-v2-lot-585",
+    "origin/agent/skyler-v2-lot-586",
+    "origin/agent/skyler-v2-lot-587",
+    "origin/agent/skyler-v2-lot-588",
+    "origin/agent/skyler-v2-lot-589",
+    "origin/agent/skyler-v2-lot-59-polish-journal-system",
+    "origin/agent/skyler-v2-lot-590",
+    "origin/agent/skyler-v2-lot-591",
+    "origin/agent/skyler-v2-lot-592",
+    "origin/agent/skyler-v2-lot-593",
+    "origin/agent/skyler-v2-lot-594",
+    "origin/agent/skyler-v2-lot-595",
+    "origin/agent/skyler-v2-lot-596",
+    "origin/agent/skyler-v2-lot-597",
+    "origin/agent/skyler-v2-lot-598",
+    "origin/agent/skyler-v2-lot-599",
+    "origin/agent/skyler-v2-lot-60-rc-finale",
+    "origin/agent/skyler-v2-lot-600",
+    "origin/agent/skyler-v2-lot-601",
+    "origin/agent/skyler-v2-lot-602",
+    "origin/agent/skyler-v2-lot-603",
+    "origin/agent/skyler-v2-lot-604",
+    "origin/agent/skyler-v2-lot-605",
+    "origin/agent/skyler-v2-lot-606",
+    "origin/agent/skyler-v2-lot-607",
+    "origin/agent/skyler-v2-lot-608",
+    "origin/agent/skyler-v2-lot-609",
+    "origin/agent/skyler-v2-lot-61-runway-labels",
+    "origin/agent/skyler-v2-lot-610",
+    "origin/agent/skyler-v2-lot-611",
+    "origin/agent/skyler-v2-lot-612",
+    "origin/agent/skyler-v2-lot-613",
+    "origin/agent/skyler-v2-lot-614",
+    "origin/agent/skyler-v2-lot-615",
+    "origin/agent/skyler-v2-lot-616",
+    "origin/agent/skyler-v2-lot-617",
+    "origin/agent/skyler-v2-lot-62-shell-js-palette",
+    "origin/agent/skyler-v2-lot-625",
+    "origin/agent/skyler-v2-lot-63-inspection",
+    "origin/agent/skyler-v2-lot-64-inspection-tour",
+    "origin/agent/skyler-v2-lot-65-inspection-a11y",
+    "origin/agent/skyler-v2-lot-66-audit-total",
+    "origin/agent/skyler-v2-lot-67-deep-views",
+    "origin/agent/skyler-v2-lot-68-ibkr-readonly",
+    "origin/agent/skyler-v2-lot-69-fiche-opps",
+    "origin/agent/skyler-v2-lot-70-degraded-bilan",
+    "origin/agent/skyler-v2-lot-71-hygiene-doc",
+    "origin/agent/skyler-v2-lot-72-performance",
+    "origin/agent/skyler-v2-lot-73-a11y",
+    "origin/agent/skyler-v2-lot-74-robustesse",
+    "origin/agent/skyler-v2-lot-75-rc-finale",
+    "origin/agent/skyler-v2-lot-76-hygiene-js",
+    "origin/agent/skyler-v2-lot-77-headers",
+    "origin/agent/skyler-v2-lot-78-libelles",
+    "origin/agent/skyler-v2-lot-79-fraicheur",
+    "origin/agent/skyler-v2-lot-80-parcours",
+    "origin/agent/skyler-v2-lot-81-fonts",
+    "origin/agent/skyler-v2-lot-82-offline",
+    "origin/agent/skyler-v2-lot-83-controles",
+    "origin/agent/skyler-v2-lot-84-desk",
+    "origin/agent/skyler-v2-lot-85-alertes",
+    "origin/agent/skyler-v2-lot-86-caracterisation",
+    "origin/agent/skyler-v2-lot-87-vocab",
+    "origin/agent/skyler-v2-lot-88-evidence",
+    "origin/agent/skyler-v2-lot-89-track",
+    "origin/agent/skyler-v2-lot-90-services",
+    "origin/agent/skyler-v2-lot-91",
+    "origin/agent/skyler-v2-lot-92-committee",
+    "origin/agent/skyler-v2-lot-93-structure",
+    "origin/agent/skyler-v2-lot-94-post",
+    "origin/agent/skyler-v2-lot-95-indicators",
+    "origin/agent/skyler-v2-lot-96",
+    "origin/agent/skyler-v2-lot-97",
+    "origin/agent/skyler-v2-lot-98-anomalies",
+    "origin/agent/skyler-v2-lot-99",
+    "origin/agent/skyler-v2-rc-periodique-10",
+    "origin/agent/skyler-v2-rc-periodique-20260805-1616",
+    "origin/agent/skyler-v2-rc-periodique-20260805-1655",
+    "origin/agent/skyler-v2-rc-periodique-20260805-1829",
+    "origin/agent/skyler-v2-rc-periodique-20260805-2020",
+    "origin/agent/skyler-v2-rc-periodique-5",
+    "origin/agent/skyler-v2-rc-periodique-6",
+    "origin/agent/skyler-v2-rc-periodique-7",
+    "origin/agent/skyler-v2-rc-periodique-8",
+    "origin/agent/skyler-v2-rc-periodique-9",
+    "origin/agent/vertex-1-0-domaines",
+    "origin/agent/vertex-1-0-foundation",
+    "origin/agent/vertex-1-0-moteurs",
+    "origin/agent/vertex-1-0-persistance",
+    "origin/agent/vertex-1-0-wmb",
+    "origin/agent/vertex-signal-os-v1",
+    "origin/agent/vertex-total-rebuild",
+    "origin/agent/vertex-total-rebuild-obsidian-v2",
+    "origin/claude/vertex-glass-redesign-system",
+    "origin/claude/vertex-improvements-kybc4p",
+    "origin/claude/vertex-latest-screenshots-0tuja0",
+    "origin/integration/vertex-v4-clean",
+    "origin/redesign/vertex-v4-master"
+  ],
+  "uniques": [
+    "origin/agent/lanceur-ipad",
+    "origin/agent/skyler-v2-lot-100",
+    "origin/agent/skyler-v2-lot-101",
+    "origin/agent/skyler-v2-lot-102",
+    "origin/agent/skyler-v2-lot-103",
+    "origin/agent/skyler-v2-lot-104",
+    "origin/agent/skyler-v2-lot-105",
+    "origin/agent/skyler-v2-lot-106",
+    "origin/agent/skyler-v2-lot-107",
+    "origin/agent/skyler-v2-lot-108",
+    "origin/agent/skyler-v2-lot-109",
+    "origin/agent/skyler-v2-lot-110",
+    "origin/agent/skyler-v2-lot-111",
+    "origin/agent/skyler-v2-lot-112",
+    "origin/agent/skyler-v2-lot-113",
+    "origin/agent/skyler-v2-lot-114",
+    "origin/agent/skyler-v2-lot-115",
+    "origin/agent/skyler-v2-lot-116",
+    "origin/agent/skyler-v2-lot-117",
+    "origin/agent/skyler-v2-lot-118",
+    "origin/agent/skyler-v2-lot-119",
+    "origin/agent/skyler-v2-lot-120",
+    "origin/agent/skyler-v2-lot-121",
+    "origin/agent/skyler-v2-lot-122",
+    "origin/agent/skyler-v2-lot-123",
+    "origin/agent/skyler-v2-lot-124",
+    "origin/agent/skyler-v2-lot-125",
+    "origin/agent/skyler-v2-lot-126",
+    "origin/agent/skyler-v2-lot-127",
+    "origin/agent/skyler-v2-lot-128",
+    "origin/agent/skyler-v2-lot-129",
+    "origin/agent/skyler-v2-lot-130",
+    "origin/agent/skyler-v2-lot-131",
+    "origin/agent/skyler-v2-lot-132",
+    "origin/agent/skyler-v2-lot-133",
+    "origin/agent/skyler-v2-lot-134",
+    "origin/agent/skyler-v2-lot-135",
+    "origin/agent/skyler-v2-lot-136",
+    "origin/agent/skyler-v2-lot-137",
+    "origin/agent/skyler-v2-lot-138",
+    "origin/agent/skyler-v2-lot-139",
+    "origin/agent/skyler-v2-lot-140",
+    "origin/agent/skyler-v2-lot-141",
+    "origin/agent/skyler-v2-lot-142",
+    "origin/agent/skyler-v2-lot-143",
+    "origin/agent/skyler-v2-lot-144",
+    "origin/agent/skyler-v2-lot-145",
+    "origin/agent/skyler-v2-lot-146",
+    "origin/agent/skyler-v2-lot-147",
+    "origin/agent/skyler-v2-lot-148",
+    "origin/agent/skyler-v2-lot-149",
+    "origin/agent/skyler-v2-lot-150",
+    "origin/agent/skyler-v2-lot-151",
+    "origin/agent/skyler-v2-lot-152",
+    "origin/agent/skyler-v2-lot-153",
+    "origin/agent/skyler-v2-lot-154",
+    "origin/agent/skyler-v2-lot-155",
+    "origin/agent/skyler-v2-lot-156",
+    "origin/agent/skyler-v2-lot-157",
+    "origin/agent/skyler-v2-lot-158",
+    "origin/agent/skyler-v2-lot-159",
+    "origin/agent/skyler-v2-lot-160",
+    "origin/agent/skyler-v2-lot-161",
+    "origin/agent/skyler-v2-lot-162",
+    "origin/agent/skyler-v2-lot-163",
+    "origin/agent/skyler-v2-lot-164",
+    "origin/agent/skyler-v2-lot-165",
+    "origin/agent/skyler-v2-lot-166",
+    "origin/agent/skyler-v2-lot-167",
+    "origin/agent/skyler-v2-lot-168",
+    "origin/agent/skyler-v2-lot-169",
+    "origin/agent/skyler-v2-lot-170",
+    "origin/agent/skyler-v2-lot-171",
+    "origin/agent/skyler-v2-lot-172",
+    "origin/agent/skyler-v2-lot-173",
+    "origin/agent/skyler-v2-lot-174",
+    "origin/agent/skyler-v2-lot-175",
+    "origin/agent/skyler-v2-lot-176",
+    "origin/agent/skyler-v2-lot-177",
+    "origin/agent/skyler-v2-lot-178",
+    "origin/agent/skyler-v2-lot-179",
+    "origin/agent/skyler-v2-lot-180",
+    "origin/agent/skyler-v2-lot-181",
+    "origin/agent/skyler-v2-lot-182",
+    "origin/agent/skyler-v2-lot-183",
+    "origin/agent/skyler-v2-lot-184",
+    "origin/agent/skyler-v2-lot-185",
+    "origin/agent/skyler-v2-lot-186",
+    "origin/agent/skyler-v2-lot-187",
+    "origin/agent/skyler-v2-lot-188",
+    "origin/agent/skyler-v2-lot-189",
+    "origin/agent/skyler-v2-lot-190",
+    "origin/agent/skyler-v2-lot-191",
+    "origin/agent/skyler-v2-lot-192",
+    "origin/agent/skyler-v2-lot-193",
+    "origin/agent/skyler-v2-lot-194",
+    "origin/agent/skyler-v2-lot-195",
+    "origin/agent/skyler-v2-lot-196",
+    "origin/agent/skyler-v2-lot-197",
+    "origin/agent/skyler-v2-lot-198",
+    "origin/agent/skyler-v2-lot-199",
+    "origin/agent/skyler-v2-lot-200",
+    "origin/agent/skyler-v2-lot-201",
+    "origin/agent/skyler-v2-lot-202",
+    "origin/agent/skyler-v2-lot-203",
+    "origin/agent/skyler-v2-lot-204",
+    "origin/agent/skyler-v2-lot-205",
+    "origin/agent/skyler-v2-lot-206",
+    "origin/agent/skyler-v2-lot-207",
+    "origin/agent/skyler-v2-lot-208",
+    "origin/agent/skyler-v2-lot-209",
+    "origin/agent/skyler-v2-lot-210",
+    "origin/agent/skyler-v2-lot-211",
+    "origin/agent/skyler-v2-lot-212",
+    "origin/agent/skyler-v2-lot-213",
+    "origin/agent/skyler-v2-lot-214",
+    "origin/agent/skyler-v2-lot-215",
+    "origin/agent/skyler-v2-lot-216",
+    "origin/agent/skyler-v2-lot-217",
+    "origin/agent/skyler-v2-lot-218",
+    "origin/agent/skyler-v2-lot-219",
+    "origin/agent/skyler-v2-lot-220",
+    "origin/agent/skyler-v2-lot-221",
+    "origin/agent/skyler-v2-lot-222",
+    "origin/agent/skyler-v2-lot-223",
+    "origin/agent/skyler-v2-lot-224",
+    "origin/agent/skyler-v2-lot-225",
+    "origin/agent/skyler-v2-lot-226",
+    "origin/agent/skyler-v2-lot-227",
+    "origin/agent/skyler-v2-lot-228",
+    "origin/agent/skyler-v2-lot-229",
+    "origin/agent/skyler-v2-lot-230",
+    "origin/agent/skyler-v2-lot-231",
+    "origin/agent/skyler-v2-lot-232",
+    "origin/agent/skyler-v2-lot-233",
+    "origin/agent/skyler-v2-lot-234",
+    "origin/agent/skyler-v2-lot-235",
+    "origin/agent/skyler-v2-lot-236",
+    "origin/agent/skyler-v2-lot-237",
+    "origin/agent/skyler-v2-lot-238",
+    "origin/agent/skyler-v2-lot-239",
+    "origin/agent/skyler-v2-lot-240",
+    "origin/agent/skyler-v2-lot-241",
+    "origin/agent/skyler-v2-lot-242",
+    "origin/agent/skyler-v2-lot-243",
+    "origin/agent/skyler-v2-lot-244",
+    "origin/agent/skyler-v2-lot-245",
+    "origin/agent/skyler-v2-lot-246",
+    "origin/agent/skyler-v2-lot-247",
+    "origin/agent/skyler-v2-lot-248",
+    "origin/agent/skyler-v2-lot-249",
+    "origin/agent/skyler-v2-lot-250",
+    "origin/agent/skyler-v2-lot-251",
+    "origin/agent/skyler-v2-lot-252",
+    "origin/agent/skyler-v2-lot-253",
+    "origin/agent/skyler-v2-lot-254",
+    "origin/agent/skyler-v2-lot-255",
+    "origin/agent/skyler-v2-lot-256",
+    "origin/agent/skyler-v2-lot-257",
+    "origin/agent/skyler-v2-lot-258",
+    "origin/agent/skyler-v2-lot-259",
+    "origin/agent/skyler-v2-lot-260",
+    "origin/agent/skyler-v2-lot-261",
+    "origin/agent/skyler-v2-lot-262",
+    "origin/agent/skyler-v2-lot-263",
+    "origin/agent/skyler-v2-lot-264",
+    "origin/agent/skyler-v2-lot-265",
+    "origin/agent/skyler-v2-lot-266",
+    "origin/agent/skyler-v2-lot-267",
+    "origin/agent/skyler-v2-lot-268",
+    "origin/agent/skyler-v2-lot-269",
+    "origin/agent/skyler-v2-lot-270",
+    "origin/agent/skyler-v2-lot-271",
+    "origin/agent/skyler-v2-lot-272",
+    "origin/agent/skyler-v2-lot-273",
+    "origin/agent/skyler-v2-lot-274",
+    "origin/agent/skyler-v2-lot-275",
+    "origin/agent/skyler-v2-lot-276",
+    "origin/agent/skyler-v2-lot-277",
+    "origin/agent/skyler-v2-lot-278",
+    "origin/agent/skyler-v2-lot-279",
+    "origin/agent/skyler-v2-lot-280",
+    "origin/agent/skyler-v2-lot-281",
+    "origin/agent/skyler-v2-lot-282",
+    "origin/agent/skyler-v2-lot-283",
+    "origin/agent/skyler-v2-lot-284",
+    "origin/agent/skyler-v2-lot-285",
+    "origin/agent/skyler-v2-lot-286",
+    "origin/agent/skyler-v2-lot-287",
+    "origin/agent/skyler-v2-lot-288",
+    "origin/agent/skyler-v2-lot-289",
+    "origin/agent/skyler-v2-lot-29-memory-export",
+    "origin/agent/skyler-v2-lot-290",
+    "origin/agent/skyler-v2-lot-291",
+    "origin/agent/skyler-v2-lot-292",
+    "origin/agent/skyler-v2-lot-293",
+    "origin/agent/skyler-v2-lot-294",
+    "origin/agent/skyler-v2-lot-295",
+    "origin/agent/skyler-v2-lot-296",
+    "origin/agent/skyler-v2-lot-297",
+    "origin/agent/skyler-v2-lot-298",
+    "origin/agent/skyler-v2-lot-299",
+    "origin/agent/skyler-v2-lot-30-catalyst-type",
+    "origin/agent/skyler-v2-lot-300",
+    "origin/agent/skyler-v2-lot-301",
+    "origin/agent/skyler-v2-lot-302",
+    "origin/agent/skyler-v2-lot-303",
+    "origin/agent/skyler-v2-lot-304",
+    "origin/agent/skyler-v2-lot-305",
+    "origin/agent/skyler-v2-lot-306",
+    "origin/agent/skyler-v2-lot-307",
+    "origin/agent/skyler-v2-lot-308",
+    "origin/agent/skyler-v2-lot-309",
+    "origin/agent/skyler-v2-lot-31-deterministic-fuzz",
+    "origin/agent/skyler-v2-lot-310",
+    "origin/agent/skyler-v2-lot-311",
+    "origin/agent/skyler-v2-lot-312",
+    "origin/agent/skyler-v2-lot-313",
+    "origin/agent/skyler-v2-lot-314",
+    "origin/agent/skyler-v2-lot-315",
+    "origin/agent/skyler-v2-lot-316",
+    "origin/agent/skyler-v2-lot-317",
+    "origin/agent/skyler-v2-lot-318",
+    "origin/agent/skyler-v2-lot-319",
+    "origin/agent/skyler-v2-lot-32-short-rc",
+    "origin/agent/skyler-v2-lot-320",
+    "origin/agent/skyler-v2-lot-321",
+    "origin/agent/skyler-v2-lot-322",
+    "origin/agent/skyler-v2-lot-323",
+    "origin/agent/skyler-v2-lot-324",
+    "origin/agent/skyler-v2-lot-325",
+    "origin/agent/skyler-v2-lot-326",
+    "origin/agent/skyler-v2-lot-327",
+    "origin/agent/skyler-v2-lot-328",
+    "origin/agent/skyler-v2-lot-329",
+    "origin/agent/skyler-v2-lot-33-catalyst-type-ui",
+    "origin/agent/skyler-v2-lot-330",
+    "origin/agent/skyler-v2-lot-331",
+    "origin/agent/skyler-v2-lot-332",
+    "origin/agent/skyler-v2-lot-333",
+    "origin/agent/skyler-v2-lot-334",
+    "origin/agent/skyler-v2-lot-335",
+    "origin/agent/skyler-v2-lot-336",
+    "origin/agent/skyler-v2-lot-337",
+    "origin/agent/skyler-v2-lot-338",
+    "origin/agent/skyler-v2-lot-339",
+    "origin/agent/skyler-v2-lot-34-http-fuzz",
+    "origin/agent/skyler-v2-lot-340",
+    "origin/agent/skyler-v2-lot-341",
+    "origin/agent/skyler-v2-lot-342",
+    "origin/agent/skyler-v2-lot-343",
+    "origin/agent/skyler-v2-lot-344",
+    "origin/agent/skyler-v2-lot-345",
+    "origin/agent/skyler-v2-lot-346",
+    "origin/agent/skyler-v2-lot-347",
+    "origin/agent/skyler-v2-lot-348",
+    "origin/agent/skyler-v2-lot-349",
+    "origin/agent/skyler-v2-lot-35-ledger-health",
+    "origin/agent/skyler-v2-lot-350",
+    "origin/agent/skyler-v2-lot-351",
+    "origin/agent/skyler-v2-lot-352",
+    "origin/agent/skyler-v2-lot-353",
+    "origin/agent/skyler-v2-lot-354",
+    "origin/agent/skyler-v2-lot-355",
+    "origin/agent/skyler-v2-lot-356",
+    "origin/agent/skyler-v2-lot-357",
+    "origin/agent/skyler-v2-lot-358",
+    "origin/agent/skyler-v2-lot-359",
+    "origin/agent/skyler-v2-lot-36-skyler-route-fuzz",
+    "origin/agent/skyler-v2-lot-360",
+    "origin/agent/skyler-v2-lot-361",
+    "origin/agent/skyler-v2-lot-362",
+    "origin/agent/skyler-v2-lot-363",
+    "origin/agent/skyler-v2-lot-364",
+    "origin/agent/skyler-v2-lot-365",
+    "origin/agent/skyler-v2-lot-366",
+    "origin/agent/skyler-v2-lot-367",
+    "origin/agent/skyler-v2-lot-368",
+    "origin/agent/skyler-v2-lot-369",
+    "origin/agent/skyler-v2-lot-37-ledger-freshness",
+    "origin/agent/skyler-v2-lot-370",
+    "origin/agent/skyler-v2-lot-371",
+    "origin/agent/skyler-v2-lot-372",
+    "origin/agent/skyler-v2-lot-373",
+    "origin/agent/skyler-v2-lot-374",
+    "origin/agent/skyler-v2-lot-375",
+    "origin/agent/skyler-v2-lot-376",
+    "origin/agent/skyler-v2-lot-377",
+    "origin/agent/skyler-v2-lot-378",
+    "origin/agent/skyler-v2-lot-379",
+    "origin/agent/skyler-v2-lot-38-bilan-continu",
+    "origin/agent/skyler-v2-lot-380",
+    "origin/agent/skyler-v2-lot-381",
+    "origin/agent/skyler-v2-lot-382",
+    "origin/agent/skyler-v2-lot-383",
+    "origin/agent/skyler-v2-lot-384",
+    "origin/agent/skyler-v2-lot-385",
+    "origin/agent/skyler-v2-lot-386",
+    "origin/agent/skyler-v2-lot-387",
+    "origin/agent/skyler-v2-lot-388",
+    "origin/agent/skyler-v2-lot-389",
+    "origin/agent/skyler-v2-lot-39-cell-drilldown",
+    "origin/agent/skyler-v2-lot-390",
+    "origin/agent/skyler-v2-lot-391",
+    "origin/agent/skyler-v2-lot-392",
+    "origin/agent/skyler-v2-lot-393",
+    "origin/agent/skyler-v2-lot-394",
+    "origin/agent/skyler-v2-lot-395",
+    "origin/agent/skyler-v2-lot-396",
+    "origin/agent/skyler-v2-lot-397",
+    "origin/agent/skyler-v2-lot-398",
+    "origin/agent/skyler-v2-lot-399",
+    "origin/agent/skyler-v2-lot-40-cell-view",
+    "origin/agent/skyler-v2-lot-400",
+    "origin/agent/skyler-v2-lot-401",
+    "origin/agent/skyler-v2-lot-402",
+    "origin/agent/skyler-v2-lot-403",
+    "origin/agent/skyler-v2-lot-404",
+    "origin/agent/skyler-v2-lot-405",
+    "origin/agent/skyler-v2-lot-406",
+    "origin/agent/skyler-v2-lot-407",
+    "origin/agent/skyler-v2-lot-408",
+    "origin/agent/skyler-v2-lot-409",
+    "origin/agent/skyler-v2-lot-41-rc-memory-journey",
+    "origin/agent/skyler-v2-lot-410",
+    "origin/agent/skyler-v2-lot-411",
+    "origin/agent/skyler-v2-lot-412",
+    "origin/agent/skyler-v2-lot-413",
+    "origin/agent/skyler-v2-lot-414",
+    "origin/agent/skyler-v2-lot-415",
+    "origin/agent/skyler-v2-lot-416",
+    "origin/agent/skyler-v2-lot-417",
+    "origin/agent/skyler-v2-lot-418",
+    "origin/agent/skyler-v2-lot-419",
+    "origin/agent/skyler-v2-lot-42-export-integrity",
+    "origin/agent/skyler-v2-lot-420",
+    "origin/agent/skyler-v2-lot-421",
+    "origin/agent/skyler-v2-lot-422",
+    "origin/agent/skyler-v2-lot-423",
+    "origin/agent/skyler-v2-lot-424",
+    "origin/agent/skyler-v2-lot-425",
+    "origin/agent/skyler-v2-lot-426",
+    "origin/agent/skyler-v2-lot-427",
+    "origin/agent/skyler-v2-lot-428",
+    "origin/agent/skyler-v2-lot-429",
+    "origin/agent/skyler-v2-lot-43-cell-key-fuzz",
+    "origin/agent/skyler-v2-lot-430",
+    "origin/agent/skyler-v2-lot-431",
+    "origin/agent/skyler-v2-lot-432",
+    "origin/agent/skyler-v2-lot-433",
+    "origin/agent/skyler-v2-lot-434",
+    "origin/agent/skyler-v2-lot-435",
+    "origin/agent/skyler-v2-lot-436",
+    "origin/agent/skyler-v2-lot-437",
+    "origin/agent/skyler-v2-lot-438",
+    "origin/agent/skyler-v2-lot-439",
+    "origin/agent/skyler-v2-lot-44-bilan-2",
+    "origin/agent/skyler-v2-lot-440",
+    "origin/agent/skyler-v2-lot-441",
+    "origin/agent/skyler-v2-lot-442",
+    "origin/agent/skyler-v2-lot-443",
+    "origin/agent/skyler-v2-lot-444",
+    "origin/agent/skyler-v2-lot-445",
+    "origin/agent/skyler-v2-lot-446",
+    "origin/agent/skyler-v2-lot-447",
+    "origin/agent/skyler-v2-lot-448",
+    "origin/agent/skyler-v2-lot-449",
+    "origin/agent/skyler-v2-lot-45-sovereign-import",
+    "origin/agent/skyler-v2-lot-450",
+    "origin/agent/skyler-v2-lot-451",
+    "origin/agent/skyler-v2-lot-452",
+    "origin/agent/skyler-v2-lot-453",
+    "origin/agent/skyler-v2-lot-454",
+    "origin/agent/skyler-v2-lot-455",
+    "origin/agent/skyler-v2-lot-456",
+    "origin/agent/skyler-v2-lot-457",
+    "origin/agent/skyler-v2-lot-458",
+    "origin/agent/skyler-v2-lot-459",
+    "origin/agent/skyler-v2-lot-46-full-restore",
+    "origin/agent/skyler-v2-lot-460",
+    "origin/agent/skyler-v2-lot-461",
+    "origin/agent/skyler-v2-lot-462",
+    "origin/agent/skyler-v2-lot-463",
+    "origin/agent/skyler-v2-lot-464",
+    "origin/agent/skyler-v2-lot-465",
+    "origin/agent/skyler-v2-lot-466",
+    "origin/agent/skyler-v2-lot-467",
+    "origin/agent/skyler-v2-lot-468",
+    "origin/agent/skyler-v2-lot-469",
+    "origin/agent/skyler-v2-lot-47-import-button",
+    "origin/agent/skyler-v2-lot-470",
+    "origin/agent/skyler-v2-lot-471",
+    "origin/agent/skyler-v2-lot-472",
+    "origin/agent/skyler-v2-lot-473",
+    "origin/agent/skyler-v2-lot-474",
+    "origin/agent/skyler-v2-lot-475",
+    "origin/agent/skyler-v2-lot-476",
+    "origin/agent/skyler-v2-lot-477",
+    "origin/agent/skyler-v2-lot-478",
+    "origin/agent/skyler-v2-lot-479",
+    "origin/agent/skyler-v2-lot-48-rc-sovereign-cycle",
+    "origin/agent/skyler-v2-lot-480",
+    "origin/agent/skyler-v2-lot-481",
+    "origin/agent/skyler-v2-lot-482",
+    "origin/agent/skyler-v2-lot-483",
+    "origin/agent/skyler-v2-lot-484",
+    "origin/agent/skyler-v2-lot-485",
+    "origin/agent/skyler-v2-lot-486",
+    "origin/agent/skyler-v2-lot-487",
+    "origin/agent/skyler-v2-lot-488",
+    "origin/agent/skyler-v2-lot-489",
+    "origin/agent/skyler-v2-lot-49-bilan-3",
+    "origin/agent/skyler-v2-lot-490",
+    "origin/agent/skyler-v2-lot-491",
+    "origin/agent/skyler-v2-lot-492",
+    "origin/agent/skyler-v2-lot-493",
+    "origin/agent/skyler-v2-lot-494",
+    "origin/agent/skyler-v2-lot-495",
+    "origin/agent/skyler-v2-lot-496",
+    "origin/agent/skyler-v2-lot-497",
+    "origin/agent/skyler-v2-lot-498",
+    "origin/agent/skyler-v2-lot-499",
+    "origin/agent/skyler-v2-lot-50-profiling",
+    "origin/agent/skyler-v2-lot-500",
+    "origin/agent/skyler-v2-lot-501",
+    "origin/agent/skyler-v2-lot-502",
+    "origin/agent/skyler-v2-lot-503",
+    "origin/agent/skyler-v2-lot-504",
+    "origin/agent/skyler-v2-lot-505",
+    "origin/agent/skyler-v2-lot-506",
+    "origin/agent/skyler-v2-lot-507",
+    "origin/agent/skyler-v2-lot-508",
+    "origin/agent/skyler-v2-lot-509",
+    "origin/agent/skyler-v2-lot-51-charts-2026",
+    "origin/agent/skyler-v2-lot-510",
+    "origin/agent/skyler-v2-lot-511",
+    "origin/agent/skyler-v2-lot-512",
+    "origin/agent/skyler-v2-lot-513",
+    "origin/agent/skyler-v2-lot-514",
+    "origin/agent/skyler-v2-lot-515",
+    "origin/agent/skyler-v2-lot-516",
+    "origin/agent/skyler-v2-lot-517",
+    "origin/agent/skyler-v2-lot-518",
+    "origin/agent/skyler-v2-lot-519",
+    "origin/agent/skyler-v2-lot-52-crosshair",
+    "origin/agent/skyler-v2-lot-520",
+    "origin/agent/skyler-v2-lot-521",
+    "origin/agent/skyler-v2-lot-522",
+    "origin/agent/skyler-v2-lot-523",
+    "origin/agent/skyler-v2-lot-524",
+    "origin/agent/skyler-v2-lot-525",
+    "origin/agent/skyler-v2-lot-526",
+    "origin/agent/skyler-v2-lot-527",
+    "origin/agent/skyler-v2-lot-528",
+    "origin/agent/skyler-v2-lot-529",
+    "origin/agent/skyler-v2-lot-53-charts-polish",
+    "origin/agent/skyler-v2-lot-530",
+    "origin/agent/skyler-v2-lot-531",
+    "origin/agent/skyler-v2-lot-532",
+    "origin/agent/skyler-v2-lot-533",
+    "origin/agent/skyler-v2-lot-534",
+    "origin/agent/skyler-v2-lot-535",
+    "origin/agent/skyler-v2-lot-536",
+    "origin/agent/skyler-v2-lot-537",
+    "origin/agent/skyler-v2-lot-538",
+    "origin/agent/skyler-v2-lot-539",
+    "origin/agent/skyler-v2-lot-54-candles-2026",
+    "origin/agent/skyler-v2-lot-540",
+    "origin/agent/skyler-v2-lot-541",
+    "origin/agent/skyler-v2-lot-542",
+    "origin/agent/skyler-v2-lot-543",
+    "origin/agent/skyler-v2-lot-544",
+    "origin/agent/skyler-v2-lot-545",
+    "origin/agent/skyler-v2-lot-546",
+    "origin/agent/skyler-v2-lot-547",
+    "origin/agent/skyler-v2-lot-548",
+    "origin/agent/skyler-v2-lot-549",
+    "origin/agent/skyler-v2-lot-55-connections",
+    "origin/agent/skyler-v2-lot-550",
+    "origin/agent/skyler-v2-lot-551",
+    "origin/agent/skyler-v2-lot-552",
+    "origin/agent/skyler-v2-lot-553",
+    "origin/agent/skyler-v2-lot-554",
+    "origin/agent/skyler-v2-lot-555",
+    "origin/agent/skyler-v2-lot-556",
+    "origin/agent/skyler-v2-lot-557",
+    "origin/agent/skyler-v2-lot-558",
+    "origin/agent/skyler-v2-lot-559",
+    "origin/agent/skyler-v2-lot-56-polish-today-markets",
+    "origin/agent/skyler-v2-lot-560",
+    "origin/agent/skyler-v2-lot-561",
+    "origin/agent/skyler-v2-lot-562",
+    "origin/agent/skyler-v2-lot-563",
+    "origin/agent/skyler-v2-lot-564",
+    "origin/agent/skyler-v2-lot-565",
+    "origin/agent/skyler-v2-lot-566",
+    "origin/agent/skyler-v2-lot-567",
+    "origin/agent/skyler-v2-lot-568",
+    "origin/agent/skyler-v2-lot-569",
+    "origin/agent/skyler-v2-lot-57-polish-opps-analysis",
+    "origin/agent/skyler-v2-lot-570",
+    "origin/agent/skyler-v2-lot-571",
+    "origin/agent/skyler-v2-lot-572",
+    "origin/agent/skyler-v2-lot-573",
+    "origin/agent/skyler-v2-lot-574",
+    "origin/agent/skyler-v2-lot-575",
+    "origin/agent/skyler-v2-lot-576",
+    "origin/agent/skyler-v2-lot-577",
+    "origin/agent/skyler-v2-lot-578",
+    "origin/agent/skyler-v2-lot-579",
+    "origin/agent/skyler-v2-lot-58-polish-portfolio-options",
+    "origin/agent/skyler-v2-lot-580",
+    "origin/agent/skyler-v2-lot-581",
+    "origin/agent/skyler-v2-lot-582",
+    "origin/agent/skyler-v2-lot-583",
+    "origin/agent/skyler-v2-lot-584",
+    "origin/agent/skyler-v2-lot-585",
+    "origin/agent/skyler-v2-lot-586",
+    "origin/agent/skyler-v2-lot-587",
+    "origin/agent/skyler-v2-lot-588",
+    "origin/agent/skyler-v2-lot-589",
+    "origin/agent/skyler-v2-lot-59-polish-journal-system",
+    "origin/agent/skyler-v2-lot-590",
+    "origin/agent/skyler-v2-lot-591",
+    "origin/agent/skyler-v2-lot-592",
+    "origin/agent/skyler-v2-lot-593",
+    "origin/agent/skyler-v2-lot-594",
+    "origin/agent/skyler-v2-lot-595",
+    "origin/agent/skyler-v2-lot-596",
+    "origin/agent/skyler-v2-lot-597",
+    "origin/agent/skyler-v2-lot-598",
+    "origin/agent/skyler-v2-lot-599",
+    "origin/agent/skyler-v2-lot-60-rc-finale",
+    "origin/agent/skyler-v2-lot-600",
+    "origin/agent/skyler-v2-lot-601",
+    "origin/agent/skyler-v2-lot-602",
+    "origin/agent/skyler-v2-lot-603",
+    "origin/agent/skyler-v2-lot-604",
+    "origin/agent/skyler-v2-lot-605",
+    "origin/agent/skyler-v2-lot-606",
+    "origin/agent/skyler-v2-lot-607",
+    "origin/agent/skyler-v2-lot-608",
+    "origin/agent/skyler-v2-lot-609",
+    "origin/agent/skyler-v2-lot-61-runway-labels",
+    "origin/agent/skyler-v2-lot-610",
+    "origin/agent/skyler-v2-lot-611",
+    "origin/agent/skyler-v2-lot-612",
+    "origin/agent/skyler-v2-lot-613",
+    "origin/agent/skyler-v2-lot-614",
+    "origin/agent/skyler-v2-lot-615",
+    "origin/agent/skyler-v2-lot-616",
+    "origin/agent/skyler-v2-lot-617",
+    "origin/agent/skyler-v2-lot-62-shell-js-palette",
+    "origin/agent/skyler-v2-lot-625",
+    "origin/agent/skyler-v2-lot-63-inspection",
+    "origin/agent/skyler-v2-lot-64-inspection-tour",
+    "origin/agent/skyler-v2-lot-65-inspection-a11y",
+    "origin/agent/skyler-v2-lot-66-audit-total",
+    "origin/agent/skyler-v2-lot-67-deep-views",
+    "origin/agent/skyler-v2-lot-68-ibkr-readonly",
+    "origin/agent/skyler-v2-lot-69-fiche-opps",
+    "origin/agent/skyler-v2-lot-70-degraded-bilan",
+    "origin/agent/skyler-v2-lot-71-hygiene-doc",
+    "origin/agent/skyler-v2-lot-72-performance",
+    "origin/agent/skyler-v2-lot-73-a11y",
+    "origin/agent/skyler-v2-lot-74-robustesse",
+    "origin/agent/skyler-v2-lot-75-rc-finale",
+    "origin/agent/skyler-v2-lot-76-hygiene-js",
+    "origin/agent/skyler-v2-lot-77-headers",
+    "origin/agent/skyler-v2-lot-78-libelles",
+    "origin/agent/skyler-v2-lot-79-fraicheur",
+    "origin/agent/skyler-v2-lot-80-parcours",
+    "origin/agent/skyler-v2-lot-81-fonts",
+    "origin/agent/skyler-v2-lot-82-offline",
+    "origin/agent/skyler-v2-lot-83-controles",
+    "origin/agent/skyler-v2-lot-84-desk",
+    "origin/agent/skyler-v2-lot-85-alertes",
+    "origin/agent/skyler-v2-lot-86-caracterisation",
+    "origin/agent/skyler-v2-lot-87-vocab",
+    "origin/agent/skyler-v2-lot-88-evidence",
+    "origin/agent/skyler-v2-lot-89-track",
+    "origin/agent/skyler-v2-lot-90-services",
+    "origin/agent/skyler-v2-lot-91",
+    "origin/agent/skyler-v2-lot-92-committee",
+    "origin/agent/skyler-v2-lot-93-structure",
+    "origin/agent/skyler-v2-lot-94-post",
+    "origin/agent/skyler-v2-lot-95-indicators",
+    "origin/agent/skyler-v2-lot-96",
+    "origin/agent/skyler-v2-lot-97",
+    "origin/agent/skyler-v2-lot-98-anomalies",
+    "origin/agent/skyler-v2-lot-99",
+    "origin/agent/skyler-v2-rc-periodique-10",
+    "origin/agent/skyler-v2-rc-periodique-20260805-1616",
+    "origin/agent/skyler-v2-rc-periodique-20260805-1655",
+    "origin/agent/skyler-v2-rc-periodique-20260805-1829",
+    "origin/agent/skyler-v2-rc-periodique-20260805-2020",
+    "origin/agent/skyler-v2-rc-periodique-5",
+    "origin/agent/skyler-v2-rc-periodique-6",
+    "origin/agent/skyler-v2-rc-periodique-7",
+    "origin/agent/skyler-v2-rc-periodique-8",
+    "origin/agent/skyler-v2-rc-periodique-9",
+    "origin/agent/vertex-1-0-domaines",
+    "origin/agent/vertex-1-0-foundation",
+    "origin/agent/vertex-1-0-moteurs",
+    "origin/agent/vertex-1-0-persistance",
+    "origin/agent/vertex-1-0-wmb",
+    "origin/agent/vertex-signal-os-v1",
+    "origin/agent/vertex-total-rebuild",
+    "origin/agent/vertex-total-rebuild-obsidian-v2",
+    "origin/claude/vertex-glass-redesign-system",
+    "origin/claude/vertex-improvements-kybc4p",
+    "origin/claude/vertex-latest-screenshots-0tuja0",
+    "origin/integration/vertex-v4-clean",
+    "origin/redesign/vertex-v4-master"
+  ],
+  "inaccessibles": [],
+  "branches": [
+    {
+      "branche": "origin/agent/lanceur-ipad",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/regime-aura-629",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/agent/skyler-v2-audit-convergence",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 102,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-00-baseline",
+        "origin/agent/skyler-v2-lot-01-options-correctness",
+        "origin/agent/skyler-v2-lot-02-constitution-v2"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-00-baseline",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 103,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-01-options-correctness",
+        "origin/agent/skyler-v2-lot-02-constitution-v2",
+        "origin/agent/skyler-v2-lot-03-market-context"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-01-options-correctness",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 104,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-02-constitution-v2",
+        "origin/agent/skyler-v2-lot-03-market-context",
+        "origin/agent/skyler-v2-lot-04-events-ohlcv"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-02-constitution-v2",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 105,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-03-market-context",
+        "origin/agent/skyler-v2-lot-04-events-ohlcv",
+        "origin/agent/skyler-v2-lot-05-skyler-core"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-03-market-context",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 106,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-04-events-ohlcv",
+        "origin/agent/skyler-v2-lot-05-skyler-core",
+        "origin/agent/skyler-v2-lot-06-options-intelligence"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-04-events-ohlcv",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 107,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-05-skyler-core",
+        "origin/agent/skyler-v2-lot-06-options-intelligence",
+        "origin/agent/skyler-v2-lot-07-portfolio-intelligence"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-05-skyler-core",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 108,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-06-options-intelligence",
+        "origin/agent/skyler-v2-lot-07-portfolio-intelligence",
+        "origin/agent/skyler-v2-lot-08a-analysis-skyler"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-06-options-intelligence",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 109,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-07-portfolio-intelligence",
+        "origin/agent/skyler-v2-lot-08a-analysis-skyler",
+        "origin/agent/skyler-v2-lot-08b-today-diff"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-07-portfolio-intelligence",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 110,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-08a-analysis-skyler",
+        "origin/agent/skyler-v2-lot-08b-today-diff",
+        "origin/agent/skyler-v2-lot-08c-options-scanners"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-08a-analysis-skyler",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 111,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-08b-today-diff",
+        "origin/agent/skyler-v2-lot-08c-options-scanners",
+        "origin/agent/skyler-v2-lot-08d-portfolio-discipline"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-08b-today-diff",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 123,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-08c-options-scanners",
+        "origin/agent/skyler-v2-lot-08d-portfolio-discipline",
+        "origin/agent/skyler-v2-lot-08e-journal-calibration"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-08c-options-scanners",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 124,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-08d-portfolio-discipline",
+        "origin/agent/skyler-v2-lot-08e-journal-calibration",
+        "origin/agent/skyler-v2-lot-09-calibration"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-08d-portfolio-discipline",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 126,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-08e-journal-calibration",
+        "origin/agent/skyler-v2-lot-10-decision-memory",
+        "origin/agent/skyler-v2-lot-100"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-08e-journal-calibration",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 127,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-10-decision-memory",
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-09-calibration",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 125,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-08d-portfolio-discipline",
+        "origin/agent/skyler-v2-lot-08e-journal-calibration",
+        "origin/agent/skyler-v2-lot-10-decision-memory"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-10-decision-memory",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 155,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-100",
+      "classe": "UNIQUE",
+      "commits_inedits": 274,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-101",
+      "classe": "UNIQUE",
+      "commits_inedits": 275,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-102",
+      "classe": "UNIQUE",
+      "commits_inedits": 276,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-103",
+      "classe": "UNIQUE",
+      "commits_inedits": 277,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-104",
+      "classe": "UNIQUE",
+      "commits_inedits": 278,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-105",
+      "classe": "UNIQUE",
+      "commits_inedits": 279,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-106",
+      "classe": "UNIQUE",
+      "commits_inedits": 280,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-107",
+      "classe": "UNIQUE",
+      "commits_inedits": 281,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-108",
+      "classe": "UNIQUE",
+      "commits_inedits": 282,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-109",
+      "classe": "UNIQUE",
+      "commits_inedits": 283,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-11-knowledge-graph",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 157,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-110",
+      "classe": "UNIQUE",
+      "commits_inedits": 284,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-111",
+      "classe": "UNIQUE",
+      "commits_inedits": 285,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-112",
+      "classe": "UNIQUE",
+      "commits_inedits": 286,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-113",
+      "classe": "UNIQUE",
+      "commits_inedits": 287,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-114",
+      "classe": "UNIQUE",
+      "commits_inedits": 288,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-115",
+      "classe": "UNIQUE",
+      "commits_inedits": 289,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-116",
+      "classe": "UNIQUE",
+      "commits_inedits": 290,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-117",
+      "classe": "UNIQUE",
+      "commits_inedits": 291,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-118",
+      "classe": "UNIQUE",
+      "commits_inedits": 292,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-119",
+      "classe": "UNIQUE",
+      "commits_inedits": 293,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-12-red-team-rc",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 159,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-120",
+      "classe": "UNIQUE",
+      "commits_inedits": 294,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-121",
+      "classe": "UNIQUE",
+      "commits_inedits": 295,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-122",
+      "classe": "UNIQUE",
+      "commits_inedits": 296,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-123",
+      "classe": "UNIQUE",
+      "commits_inedits": 297,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-124",
+      "classe": "UNIQUE",
+      "commits_inedits": 298,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-125",
+      "classe": "UNIQUE",
+      "commits_inedits": 299,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-126",
+      "classe": "UNIQUE",
+      "commits_inedits": 300,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-127",
+      "classe": "UNIQUE",
+      "commits_inedits": 301,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-128",
+      "classe": "UNIQUE",
+      "commits_inedits": 302,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-129",
+      "classe": "UNIQUE",
+      "commits_inedits": 303,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-13-operational-confidence",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 161,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-130",
+      "classe": "UNIQUE",
+      "commits_inedits": 304,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-131",
+      "classe": "UNIQUE",
+      "commits_inedits": 305,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-132",
+      "classe": "UNIQUE",
+      "commits_inedits": 306,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-133",
+      "classe": "UNIQUE",
+      "commits_inedits": 307,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-134",
+      "classe": "UNIQUE",
+      "commits_inedits": 308,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-135",
+      "classe": "UNIQUE",
+      "commits_inedits": 309,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-136",
+      "classe": "UNIQUE",
+      "commits_inedits": 310,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-137",
+      "classe": "UNIQUE",
+      "commits_inedits": 311,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-138",
+      "classe": "UNIQUE",
+      "commits_inedits": 312,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-139",
+      "classe": "UNIQUE",
+      "commits_inedits": 313,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-14-red-team-producer",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 163,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-140",
+      "classe": "UNIQUE",
+      "commits_inedits": 314,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-141",
+      "classe": "UNIQUE",
+      "commits_inedits": 315,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-142",
+      "classe": "UNIQUE",
+      "commits_inedits": 316,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-143",
+      "classe": "UNIQUE",
+      "commits_inedits": 317,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-144",
+      "classe": "UNIQUE",
+      "commits_inedits": 318,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-145",
+      "classe": "UNIQUE",
+      "commits_inedits": 319,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-146",
+      "classe": "UNIQUE",
+      "commits_inedits": 320,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-147",
+      "classe": "UNIQUE",
+      "commits_inedits": 321,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-148",
+      "classe": "UNIQUE",
+      "commits_inedits": 322,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-149",
+      "classe": "UNIQUE",
+      "commits_inedits": 323,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-15-dated-sessions",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 165,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-150",
+      "classe": "UNIQUE",
+      "commits_inedits": 324,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-151",
+      "classe": "UNIQUE",
+      "commits_inedits": 325,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-152",
+      "classe": "UNIQUE",
+      "commits_inedits": 326,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-153",
+      "classe": "UNIQUE",
+      "commits_inedits": 327,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-154",
+      "classe": "UNIQUE",
+      "commits_inedits": 328,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-155",
+      "classe": "UNIQUE",
+      "commits_inedits": 329,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-156",
+      "classe": "UNIQUE",
+      "commits_inedits": 330,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-157",
+      "classe": "UNIQUE",
+      "commits_inedits": 331,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-158",
+      "classe": "UNIQUE",
+      "commits_inedits": 332,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-159",
+      "classe": "UNIQUE",
+      "commits_inedits": 333,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-16-ui-surfacing",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 167,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-160",
+      "classe": "UNIQUE",
+      "commits_inedits": 334,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-161",
+      "classe": "UNIQUE",
+      "commits_inedits": 335,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-162",
+      "classe": "UNIQUE",
+      "commits_inedits": 336,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-163",
+      "classe": "UNIQUE",
+      "commits_inedits": 337,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-164",
+      "classe": "UNIQUE",
+      "commits_inedits": 338,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-165",
+      "classe": "UNIQUE",
+      "commits_inedits": 339,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-166",
+      "classe": "UNIQUE",
+      "commits_inedits": 340,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-167",
+      "classe": "UNIQUE",
+      "commits_inedits": 341,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-168",
+      "classe": "UNIQUE",
+      "commits_inedits": 342,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-169",
+      "classe": "UNIQUE",
+      "commits_inedits": 343,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-17-partial-correlation",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 169,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-170",
+      "classe": "UNIQUE",
+      "commits_inedits": 344,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-171",
+      "classe": "UNIQUE",
+      "commits_inedits": 345,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-172",
+      "classe": "UNIQUE",
+      "commits_inedits": 346,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-173",
+      "classe": "UNIQUE",
+      "commits_inedits": 347,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-174",
+      "classe": "UNIQUE",
+      "commits_inedits": 348,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-175",
+      "classe": "UNIQUE",
+      "commits_inedits": 349,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-176",
+      "classe": "UNIQUE",
+      "commits_inedits": 350,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-177",
+      "classe": "UNIQUE",
+      "commits_inedits": 351,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-178",
+      "classe": "UNIQUE",
+      "commits_inedits": 352,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-179",
+      "classe": "UNIQUE",
+      "commits_inedits": 353,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-18-perturbation",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 171,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-180",
+      "classe": "UNIQUE",
+      "commits_inedits": 354,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-181",
+      "classe": "UNIQUE",
+      "commits_inedits": 355,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-182",
+      "classe": "UNIQUE",
+      "commits_inedits": 356,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-183",
+      "classe": "UNIQUE",
+      "commits_inedits": 357,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-184",
+      "classe": "UNIQUE",
+      "commits_inedits": 358,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-185",
+      "classe": "UNIQUE",
+      "commits_inedits": 359,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-186",
+      "classe": "UNIQUE",
+      "commits_inedits": 360,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-187",
+      "classe": "UNIQUE",
+      "commits_inedits": 361,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-188",
+      "classe": "UNIQUE",
+      "commits_inedits": 362,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-189",
+      "classe": "UNIQUE",
+      "commits_inedits": 363,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-19-real-calibration",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 173,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-190",
+      "classe": "UNIQUE",
+      "commits_inedits": 364,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-191",
+      "classe": "UNIQUE",
+      "commits_inedits": 365,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-192",
+      "classe": "UNIQUE",
+      "commits_inedits": 366,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-193",
+      "classe": "UNIQUE",
+      "commits_inedits": 367,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-194",
+      "classe": "UNIQUE",
+      "commits_inedits": 368,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-195",
+      "classe": "UNIQUE",
+      "commits_inedits": 369,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-196",
+      "classe": "UNIQUE",
+      "commits_inedits": 370,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-197",
+      "classe": "UNIQUE",
+      "commits_inedits": 371,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-198",
+      "classe": "UNIQUE",
+      "commits_inedits": 372,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-199",
+      "classe": "UNIQUE",
+      "commits_inedits": 373,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-20-postmortem-drilldown",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 175,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-200",
+      "classe": "UNIQUE",
+      "commits_inedits": 374,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-201",
+      "classe": "UNIQUE",
+      "commits_inedits": 375,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-202",
+      "classe": "UNIQUE",
+      "commits_inedits": 376,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-203",
+      "classe": "UNIQUE",
+      "commits_inedits": 377,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-204",
+      "classe": "UNIQUE",
+      "commits_inedits": 378,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-205",
+      "classe": "UNIQUE",
+      "commits_inedits": 379,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-206",
+      "classe": "UNIQUE",
+      "commits_inedits": 380,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-207",
+      "classe": "UNIQUE",
+      "commits_inedits": 381,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-208",
+      "classe": "UNIQUE",
+      "commits_inedits": 382,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-209",
+      "classe": "UNIQUE",
+      "commits_inedits": 383,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-21-redteam-repricing",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 177,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-210",
+      "classe": "UNIQUE",
+      "commits_inedits": 384,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-211",
+      "classe": "UNIQUE",
+      "commits_inedits": 385,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-212",
+      "classe": "UNIQUE",
+      "commits_inedits": 386,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-213",
+      "classe": "UNIQUE",
+      "commits_inedits": 387,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-214",
+      "classe": "UNIQUE",
+      "commits_inedits": 388,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-215",
+      "classe": "UNIQUE",
+      "commits_inedits": 389,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-216",
+      "classe": "UNIQUE",
+      "commits_inedits": 390,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-217",
+      "classe": "UNIQUE",
+      "commits_inedits": 391,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-218",
+      "classe": "UNIQUE",
+      "commits_inedits": 392,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-219",
+      "classe": "UNIQUE",
+      "commits_inedits": 393,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-22-context-calibration",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 179,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-220",
+      "classe": "UNIQUE",
+      "commits_inedits": 394,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-221",
+      "classe": "UNIQUE",
+      "commits_inedits": 395,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-222",
+      "classe": "UNIQUE",
+      "commits_inedits": 396,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-223",
+      "classe": "UNIQUE",
+      "commits_inedits": 397,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-224",
+      "classe": "UNIQUE",
+      "commits_inedits": 398,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-225",
+      "classe": "UNIQUE",
+      "commits_inedits": 399,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-226",
+      "classe": "UNIQUE",
+      "commits_inedits": 400,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-227",
+      "classe": "UNIQUE",
+      "commits_inedits": 401,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-228",
+      "classe": "UNIQUE",
+      "commits_inedits": 402,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-229",
+      "classe": "UNIQUE",
+      "commits_inedits": 403,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-23-postmortem-view",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 181,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-230",
+      "classe": "UNIQUE",
+      "commits_inedits": 404,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-231",
+      "classe": "UNIQUE",
+      "commits_inedits": 405,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-232",
+      "classe": "UNIQUE",
+      "commits_inedits": 406,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-233",
+      "classe": "UNIQUE",
+      "commits_inedits": 407,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-234",
+      "classe": "UNIQUE",
+      "commits_inedits": 408,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-235",
+      "classe": "UNIQUE",
+      "commits_inedits": 409,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-236",
+      "classe": "UNIQUE",
+      "commits_inedits": 410,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-237",
+      "classe": "UNIQUE",
+      "commits_inedits": 411,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-238",
+      "classe": "UNIQUE",
+      "commits_inedits": 412,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-239",
+      "classe": "UNIQUE",
+      "commits_inedits": 413,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-24-sector-exposure",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 183,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-240",
+      "classe": "UNIQUE",
+      "commits_inedits": 414,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-241",
+      "classe": "UNIQUE",
+      "commits_inedits": 415,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-242",
+      "classe": "UNIQUE",
+      "commits_inedits": 416,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-243",
+      "classe": "UNIQUE",
+      "commits_inedits": 417,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-244",
+      "classe": "UNIQUE",
+      "commits_inedits": 418,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-245",
+      "classe": "UNIQUE",
+      "commits_inedits": 419,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-246",
+      "classe": "UNIQUE",
+      "commits_inedits": 420,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-247",
+      "classe": "UNIQUE",
+      "commits_inedits": 421,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-248",
+      "classe": "UNIQUE",
+      "commits_inedits": 422,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-249",
+      "classe": "UNIQUE",
+      "commits_inedits": 423,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-25-simplify",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 185,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-250",
+      "classe": "UNIQUE",
+      "commits_inedits": 424,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-251",
+      "classe": "UNIQUE",
+      "commits_inedits": 425,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-252",
+      "classe": "UNIQUE",
+      "commits_inedits": 426,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-253",
+      "classe": "UNIQUE",
+      "commits_inedits": 427,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-254",
+      "classe": "UNIQUE",
+      "commits_inedits": 428,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-255",
+      "classe": "UNIQUE",
+      "commits_inedits": 429,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-256",
+      "classe": "UNIQUE",
+      "commits_inedits": 430,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-257",
+      "classe": "UNIQUE",
+      "commits_inedits": 431,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-258",
+      "classe": "UNIQUE",
+      "commits_inedits": 432,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-259",
+      "classe": "UNIQUE",
+      "commits_inedits": 433,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-26-regime-calibration",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 187,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-260",
+      "classe": "UNIQUE",
+      "commits_inedits": 434,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-261",
+      "classe": "UNIQUE",
+      "commits_inedits": 435,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-262",
+      "classe": "UNIQUE",
+      "commits_inedits": 436,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-263",
+      "classe": "UNIQUE",
+      "commits_inedits": 437,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-264",
+      "classe": "UNIQUE",
+      "commits_inedits": 438,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-265",
+      "classe": "UNIQUE",
+      "commits_inedits": 439,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-266",
+      "classe": "UNIQUE",
+      "commits_inedits": 440,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-267",
+      "classe": "UNIQUE",
+      "commits_inedits": 441,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-268",
+      "classe": "UNIQUE",
+      "commits_inedits": 442,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-269",
+      "classe": "UNIQUE",
+      "commits_inedits": 443,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-27-rc-audit",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 189,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-270",
+      "classe": "UNIQUE",
+      "commits_inedits": 444,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-271",
+      "classe": "UNIQUE",
+      "commits_inedits": 445,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-272",
+      "classe": "UNIQUE",
+      "commits_inedits": 446,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-273",
+      "classe": "UNIQUE",
+      "commits_inedits": 447,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-274",
+      "classe": "UNIQUE",
+      "commits_inedits": 448,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-275",
+      "classe": "UNIQUE",
+      "commits_inedits": 449,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-276",
+      "classe": "UNIQUE",
+      "commits_inedits": 450,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-277",
+      "classe": "UNIQUE",
+      "commits_inedits": 451,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-278",
+      "classe": "UNIQUE",
+      "commits_inedits": 452,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-279",
+      "classe": "UNIQUE",
+      "commits_inedits": 453,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-28-catalyst-hops",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 191,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101",
+        "origin/agent/skyler-v2-lot-102"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-280",
+      "classe": "UNIQUE",
+      "commits_inedits": 454,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-281",
+      "classe": "UNIQUE",
+      "commits_inedits": 455,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-282",
+      "classe": "UNIQUE",
+      "commits_inedits": 456,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-283",
+      "classe": "UNIQUE",
+      "commits_inedits": 457,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-284",
+      "classe": "UNIQUE",
+      "commits_inedits": 458,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-285",
+      "classe": "UNIQUE",
+      "commits_inedits": 459,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-286",
+      "classe": "UNIQUE",
+      "commits_inedits": 459,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-287",
+      "classe": "UNIQUE",
+      "commits_inedits": 460,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-288",
+      "classe": "UNIQUE",
+      "commits_inedits": 461,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-289",
+      "classe": "UNIQUE",
+      "commits_inedits": 462,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-29-memory-export",
+      "classe": "UNIQUE",
+      "commits_inedits": 193,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-290",
+      "classe": "UNIQUE",
+      "commits_inedits": 463,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-291",
+      "classe": "UNIQUE",
+      "commits_inedits": 464,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-292",
+      "classe": "UNIQUE",
+      "commits_inedits": 465,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-293",
+      "classe": "UNIQUE",
+      "commits_inedits": 466,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-294",
+      "classe": "UNIQUE",
+      "commits_inedits": 467,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-295",
+      "classe": "UNIQUE",
+      "commits_inedits": 468,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-296",
+      "classe": "UNIQUE",
+      "commits_inedits": 469,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-297",
+      "classe": "UNIQUE",
+      "commits_inedits": 470,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-298",
+      "classe": "UNIQUE",
+      "commits_inedits": 471,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-299",
+      "classe": "UNIQUE",
+      "commits_inedits": 472,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-30-catalyst-type",
+      "classe": "UNIQUE",
+      "commits_inedits": 194,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-300",
+      "classe": "UNIQUE",
+      "commits_inedits": 473,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-301",
+      "classe": "UNIQUE",
+      "commits_inedits": 474,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-302",
+      "classe": "UNIQUE",
+      "commits_inedits": 475,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-303",
+      "classe": "UNIQUE",
+      "commits_inedits": 476,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-304",
+      "classe": "UNIQUE",
+      "commits_inedits": 477,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-305",
+      "classe": "UNIQUE",
+      "commits_inedits": 478,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-306",
+      "classe": "UNIQUE",
+      "commits_inedits": 479,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-307",
+      "classe": "UNIQUE",
+      "commits_inedits": 480,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-308",
+      "classe": "UNIQUE",
+      "commits_inedits": 481,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-309",
+      "classe": "UNIQUE",
+      "commits_inedits": 482,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-31-deterministic-fuzz",
+      "classe": "UNIQUE",
+      "commits_inedits": 195,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-310",
+      "classe": "UNIQUE",
+      "commits_inedits": 483,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-311",
+      "classe": "UNIQUE",
+      "commits_inedits": 484,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-312",
+      "classe": "UNIQUE",
+      "commits_inedits": 485,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-313",
+      "classe": "UNIQUE",
+      "commits_inedits": 486,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-314",
+      "classe": "UNIQUE",
+      "commits_inedits": 487,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-315",
+      "classe": "UNIQUE",
+      "commits_inedits": 488,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-316",
+      "classe": "UNIQUE",
+      "commits_inedits": 489,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-317",
+      "classe": "UNIQUE",
+      "commits_inedits": 490,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-318",
+      "classe": "UNIQUE",
+      "commits_inedits": 491,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-319",
+      "classe": "UNIQUE",
+      "commits_inedits": 492,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-32-short-rc",
+      "classe": "UNIQUE",
+      "commits_inedits": 196,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-320",
+      "classe": "UNIQUE",
+      "commits_inedits": 493,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-321",
+      "classe": "UNIQUE",
+      "commits_inedits": 494,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-322",
+      "classe": "UNIQUE",
+      "commits_inedits": 495,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-323",
+      "classe": "UNIQUE",
+      "commits_inedits": 497,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-324",
+      "classe": "UNIQUE",
+      "commits_inedits": 497,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-325",
+      "classe": "UNIQUE",
+      "commits_inedits": 498,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-326",
+      "classe": "UNIQUE",
+      "commits_inedits": 499,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-327",
+      "classe": "UNIQUE",
+      "commits_inedits": 500,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-328",
+      "classe": "UNIQUE",
+      "commits_inedits": 501,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-329",
+      "classe": "UNIQUE",
+      "commits_inedits": 502,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-33-catalyst-type-ui",
+      "classe": "UNIQUE",
+      "commits_inedits": 197,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-330",
+      "classe": "UNIQUE",
+      "commits_inedits": 503,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-331",
+      "classe": "UNIQUE",
+      "commits_inedits": 504,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-332",
+      "classe": "UNIQUE",
+      "commits_inedits": 505,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-333",
+      "classe": "UNIQUE",
+      "commits_inedits": 506,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-334",
+      "classe": "UNIQUE",
+      "commits_inedits": 507,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-335",
+      "classe": "UNIQUE",
+      "commits_inedits": 508,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-336",
+      "classe": "UNIQUE",
+      "commits_inedits": 509,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-337",
+      "classe": "UNIQUE",
+      "commits_inedits": 510,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-338",
+      "classe": "UNIQUE",
+      "commits_inedits": 511,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-339",
+      "classe": "UNIQUE",
+      "commits_inedits": 512,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-34-http-fuzz",
+      "classe": "UNIQUE",
+      "commits_inedits": 198,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-340",
+      "classe": "UNIQUE",
+      "commits_inedits": 513,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-341",
+      "classe": "UNIQUE",
+      "commits_inedits": 514,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-342",
+      "classe": "UNIQUE",
+      "commits_inedits": 515,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-343",
+      "classe": "UNIQUE",
+      "commits_inedits": 516,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-344",
+      "classe": "UNIQUE",
+      "commits_inedits": 517,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-345",
+      "classe": "UNIQUE",
+      "commits_inedits": 518,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-346",
+      "classe": "UNIQUE",
+      "commits_inedits": 519,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-347",
+      "classe": "UNIQUE",
+      "commits_inedits": 520,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-348",
+      "classe": "UNIQUE",
+      "commits_inedits": 521,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-349",
+      "classe": "UNIQUE",
+      "commits_inedits": 522,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-35-ledger-health",
+      "classe": "UNIQUE",
+      "commits_inedits": 199,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-350",
+      "classe": "UNIQUE",
+      "commits_inedits": 523,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-351",
+      "classe": "UNIQUE",
+      "commits_inedits": 524,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-352",
+      "classe": "UNIQUE",
+      "commits_inedits": 525,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-353",
+      "classe": "UNIQUE",
+      "commits_inedits": 526,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-354",
+      "classe": "UNIQUE",
+      "commits_inedits": 527,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-355",
+      "classe": "UNIQUE",
+      "commits_inedits": 528,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-356",
+      "classe": "UNIQUE",
+      "commits_inedits": 529,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-357",
+      "classe": "UNIQUE",
+      "commits_inedits": 530,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-358",
+      "classe": "UNIQUE",
+      "commits_inedits": 531,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-359",
+      "classe": "UNIQUE",
+      "commits_inedits": 532,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-36-skyler-route-fuzz",
+      "classe": "UNIQUE",
+      "commits_inedits": 200,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-360",
+      "classe": "UNIQUE",
+      "commits_inedits": 533,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-361",
+      "classe": "UNIQUE",
+      "commits_inedits": 534,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-362",
+      "classe": "UNIQUE",
+      "commits_inedits": 535,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-363",
+      "classe": "UNIQUE",
+      "commits_inedits": 536,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-364",
+      "classe": "UNIQUE",
+      "commits_inedits": 537,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-365",
+      "classe": "UNIQUE",
+      "commits_inedits": 538,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-366",
+      "classe": "UNIQUE",
+      "commits_inedits": 539,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-367",
+      "classe": "UNIQUE",
+      "commits_inedits": 540,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-368",
+      "classe": "UNIQUE",
+      "commits_inedits": 541,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-369",
+      "classe": "UNIQUE",
+      "commits_inedits": 542,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-37-ledger-freshness",
+      "classe": "UNIQUE",
+      "commits_inedits": 201,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-370",
+      "classe": "UNIQUE",
+      "commits_inedits": 543,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-371",
+      "classe": "UNIQUE",
+      "commits_inedits": 544,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-372",
+      "classe": "UNIQUE",
+      "commits_inedits": 545,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-373",
+      "classe": "UNIQUE",
+      "commits_inedits": 546,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-374",
+      "classe": "UNIQUE",
+      "commits_inedits": 547,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-375",
+      "classe": "UNIQUE",
+      "commits_inedits": 548,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-376",
+      "classe": "UNIQUE",
+      "commits_inedits": 549,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-377",
+      "classe": "UNIQUE",
+      "commits_inedits": 550,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-378",
+      "classe": "UNIQUE",
+      "commits_inedits": 551,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-379",
+      "classe": "UNIQUE",
+      "commits_inedits": 552,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-38-bilan-continu",
+      "classe": "UNIQUE",
+      "commits_inedits": 202,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-380",
+      "classe": "UNIQUE",
+      "commits_inedits": 553,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-381",
+      "classe": "UNIQUE",
+      "commits_inedits": 554,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-382",
+      "classe": "UNIQUE",
+      "commits_inedits": 555,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-383",
+      "classe": "UNIQUE",
+      "commits_inedits": 556,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-384",
+      "classe": "UNIQUE",
+      "commits_inedits": 557,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-385",
+      "classe": "UNIQUE",
+      "commits_inedits": 558,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-386",
+      "classe": "UNIQUE",
+      "commits_inedits": 559,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-387",
+      "classe": "UNIQUE",
+      "commits_inedits": 560,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-388",
+      "classe": "UNIQUE",
+      "commits_inedits": 561,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-389",
+      "classe": "UNIQUE",
+      "commits_inedits": 562,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-39-cell-drilldown",
+      "classe": "UNIQUE",
+      "commits_inedits": 203,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-390",
+      "classe": "UNIQUE",
+      "commits_inedits": 563,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-391",
+      "classe": "UNIQUE",
+      "commits_inedits": 564,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-392",
+      "classe": "UNIQUE",
+      "commits_inedits": 565,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-393",
+      "classe": "UNIQUE",
+      "commits_inedits": 566,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-394",
+      "classe": "UNIQUE",
+      "commits_inedits": 567,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-395",
+      "classe": "UNIQUE",
+      "commits_inedits": 568,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-396",
+      "classe": "UNIQUE",
+      "commits_inedits": 569,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-397",
+      "classe": "UNIQUE",
+      "commits_inedits": 570,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-398",
+      "classe": "UNIQUE",
+      "commits_inedits": 571,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-399",
+      "classe": "UNIQUE",
+      "commits_inedits": 572,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-40-cell-view",
+      "classe": "UNIQUE",
+      "commits_inedits": 204,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-400",
+      "classe": "UNIQUE",
+      "commits_inedits": 573,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-401",
+      "classe": "UNIQUE",
+      "commits_inedits": 574,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-402",
+      "classe": "UNIQUE",
+      "commits_inedits": 575,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-403",
+      "classe": "UNIQUE",
+      "commits_inedits": 576,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-404",
+      "classe": "UNIQUE",
+      "commits_inedits": 577,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-405",
+      "classe": "UNIQUE",
+      "commits_inedits": 578,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-406",
+      "classe": "UNIQUE",
+      "commits_inedits": 579,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-407",
+      "classe": "UNIQUE",
+      "commits_inedits": 580,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-408",
+      "classe": "UNIQUE",
+      "commits_inedits": 581,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-409",
+      "classe": "UNIQUE",
+      "commits_inedits": 582,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-41-rc-memory-journey",
+      "classe": "UNIQUE",
+      "commits_inedits": 205,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-410",
+      "classe": "UNIQUE",
+      "commits_inedits": 583,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-411",
+      "classe": "UNIQUE",
+      "commits_inedits": 584,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-412",
+      "classe": "UNIQUE",
+      "commits_inedits": 585,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-413",
+      "classe": "UNIQUE",
+      "commits_inedits": 586,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-414",
+      "classe": "UNIQUE",
+      "commits_inedits": 587,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-415",
+      "classe": "UNIQUE",
+      "commits_inedits": 588,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-416",
+      "classe": "UNIQUE",
+      "commits_inedits": 589,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-417",
+      "classe": "UNIQUE",
+      "commits_inedits": 590,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-418",
+      "classe": "UNIQUE",
+      "commits_inedits": 591,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-419",
+      "classe": "UNIQUE",
+      "commits_inedits": 592,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-42-export-integrity",
+      "classe": "UNIQUE",
+      "commits_inedits": 206,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-420",
+      "classe": "UNIQUE",
+      "commits_inedits": 593,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-421",
+      "classe": "UNIQUE",
+      "commits_inedits": 594,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-422",
+      "classe": "UNIQUE",
+      "commits_inedits": 595,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-423",
+      "classe": "UNIQUE",
+      "commits_inedits": 596,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-424",
+      "classe": "UNIQUE",
+      "commits_inedits": 597,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-425",
+      "classe": "UNIQUE",
+      "commits_inedits": 598,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-426",
+      "classe": "UNIQUE",
+      "commits_inedits": 599,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-427",
+      "classe": "UNIQUE",
+      "commits_inedits": 600,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-428",
+      "classe": "UNIQUE",
+      "commits_inedits": 601,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-429",
+      "classe": "UNIQUE",
+      "commits_inedits": 602,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-43-cell-key-fuzz",
+      "classe": "UNIQUE",
+      "commits_inedits": 207,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-430",
+      "classe": "UNIQUE",
+      "commits_inedits": 603,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-431",
+      "classe": "UNIQUE",
+      "commits_inedits": 604,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-432",
+      "classe": "UNIQUE",
+      "commits_inedits": 605,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-433",
+      "classe": "UNIQUE",
+      "commits_inedits": 606,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-434",
+      "classe": "UNIQUE",
+      "commits_inedits": 607,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-435",
+      "classe": "UNIQUE",
+      "commits_inedits": 608,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-436",
+      "classe": "UNIQUE",
+      "commits_inedits": 609,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-437",
+      "classe": "UNIQUE",
+      "commits_inedits": 610,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-438",
+      "classe": "UNIQUE",
+      "commits_inedits": 611,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-439",
+      "classe": "UNIQUE",
+      "commits_inedits": 612,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-44-bilan-2",
+      "classe": "UNIQUE",
+      "commits_inedits": 208,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-440",
+      "classe": "UNIQUE",
+      "commits_inedits": 613,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-441",
+      "classe": "UNIQUE",
+      "commits_inedits": 614,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-442",
+      "classe": "UNIQUE",
+      "commits_inedits": 615,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-443",
+      "classe": "UNIQUE",
+      "commits_inedits": 616,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-444",
+      "classe": "UNIQUE",
+      "commits_inedits": 617,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-445",
+      "classe": "UNIQUE",
+      "commits_inedits": 618,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-446",
+      "classe": "UNIQUE",
+      "commits_inedits": 619,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-447",
+      "classe": "UNIQUE",
+      "commits_inedits": 620,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-448",
+      "classe": "UNIQUE",
+      "commits_inedits": 621,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-449",
+      "classe": "UNIQUE",
+      "commits_inedits": 622,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-45-sovereign-import",
+      "classe": "UNIQUE",
+      "commits_inedits": 212,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-450",
+      "classe": "UNIQUE",
+      "commits_inedits": 623,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-451",
+      "classe": "UNIQUE",
+      "commits_inedits": 624,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-452",
+      "classe": "UNIQUE",
+      "commits_inedits": 625,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-453",
+      "classe": "UNIQUE",
+      "commits_inedits": 626,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-454",
+      "classe": "UNIQUE",
+      "commits_inedits": 627,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-455",
+      "classe": "UNIQUE",
+      "commits_inedits": 628,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-456",
+      "classe": "UNIQUE",
+      "commits_inedits": 629,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-457",
+      "classe": "UNIQUE",
+      "commits_inedits": 630,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-458",
+      "classe": "UNIQUE",
+      "commits_inedits": 631,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-459",
+      "classe": "UNIQUE",
+      "commits_inedits": 632,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-46-full-restore",
+      "classe": "UNIQUE",
+      "commits_inedits": 213,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-460",
+      "classe": "UNIQUE",
+      "commits_inedits": 633,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-461",
+      "classe": "UNIQUE",
+      "commits_inedits": 634,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-462",
+      "classe": "UNIQUE",
+      "commits_inedits": 635,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-463",
+      "classe": "UNIQUE",
+      "commits_inedits": 636,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-464",
+      "classe": "UNIQUE",
+      "commits_inedits": 637,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-465",
+      "classe": "UNIQUE",
+      "commits_inedits": 638,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-466",
+      "classe": "UNIQUE",
+      "commits_inedits": 639,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-467",
+      "classe": "UNIQUE",
+      "commits_inedits": 640,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-468",
+      "classe": "UNIQUE",
+      "commits_inedits": 641,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-469",
+      "classe": "UNIQUE",
+      "commits_inedits": 642,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-47-import-button",
+      "classe": "UNIQUE",
+      "commits_inedits": 214,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-470",
+      "classe": "UNIQUE",
+      "commits_inedits": 643,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-471",
+      "classe": "UNIQUE",
+      "commits_inedits": 644,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-472",
+      "classe": "UNIQUE",
+      "commits_inedits": 645,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-473",
+      "classe": "UNIQUE",
+      "commits_inedits": 646,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-474",
+      "classe": "UNIQUE",
+      "commits_inedits": 647,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-475",
+      "classe": "UNIQUE",
+      "commits_inedits": 648,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-476",
+      "classe": "UNIQUE",
+      "commits_inedits": 649,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-477",
+      "classe": "UNIQUE",
+      "commits_inedits": 650,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-478",
+      "classe": "UNIQUE",
+      "commits_inedits": 651,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-479",
+      "classe": "UNIQUE",
+      "commits_inedits": 652,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-48-rc-sovereign-cycle",
+      "classe": "UNIQUE",
+      "commits_inedits": 215,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-480",
+      "classe": "UNIQUE",
+      "commits_inedits": 653,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-481",
+      "classe": "UNIQUE",
+      "commits_inedits": 654,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-482",
+      "classe": "UNIQUE",
+      "commits_inedits": 655,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-483",
+      "classe": "UNIQUE",
+      "commits_inedits": 656,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-484",
+      "classe": "UNIQUE",
+      "commits_inedits": 657,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-485",
+      "classe": "UNIQUE",
+      "commits_inedits": 658,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-486",
+      "classe": "UNIQUE",
+      "commits_inedits": 659,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-487",
+      "classe": "UNIQUE",
+      "commits_inedits": 660,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-488",
+      "classe": "UNIQUE",
+      "commits_inedits": 661,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-489",
+      "classe": "UNIQUE",
+      "commits_inedits": 662,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-49-bilan-3",
+      "classe": "UNIQUE",
+      "commits_inedits": 216,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-490",
+      "classe": "UNIQUE",
+      "commits_inedits": 663,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-491",
+      "classe": "UNIQUE",
+      "commits_inedits": 664,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-492",
+      "classe": "UNIQUE",
+      "commits_inedits": 665,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-493",
+      "classe": "UNIQUE",
+      "commits_inedits": 666,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-494",
+      "classe": "UNIQUE",
+      "commits_inedits": 667,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-495",
+      "classe": "UNIQUE",
+      "commits_inedits": 668,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-496",
+      "classe": "UNIQUE",
+      "commits_inedits": 669,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-497",
+      "classe": "UNIQUE",
+      "commits_inedits": 670,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-498",
+      "classe": "UNIQUE",
+      "commits_inedits": 671,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-499",
+      "classe": "UNIQUE",
+      "commits_inedits": 672,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-50-profiling",
+      "classe": "UNIQUE",
+      "commits_inedits": 218,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-500",
+      "classe": "UNIQUE",
+      "commits_inedits": 673,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-501",
+      "classe": "UNIQUE",
+      "commits_inedits": 674,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-502",
+      "classe": "UNIQUE",
+      "commits_inedits": 675,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-503",
+      "classe": "UNIQUE",
+      "commits_inedits": 676,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-504",
+      "classe": "UNIQUE",
+      "commits_inedits": 677,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-505",
+      "classe": "UNIQUE",
+      "commits_inedits": 678,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-506",
+      "classe": "UNIQUE",
+      "commits_inedits": 679,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-507",
+      "classe": "UNIQUE",
+      "commits_inedits": 680,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-508",
+      "classe": "UNIQUE",
+      "commits_inedits": 681,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-509",
+      "classe": "UNIQUE",
+      "commits_inedits": 682,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-51-charts-2026",
+      "classe": "UNIQUE",
+      "commits_inedits": 219,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-510",
+      "classe": "UNIQUE",
+      "commits_inedits": 683,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-511",
+      "classe": "UNIQUE",
+      "commits_inedits": 684,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-512",
+      "classe": "UNIQUE",
+      "commits_inedits": 685,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-513",
+      "classe": "UNIQUE",
+      "commits_inedits": 686,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-514",
+      "classe": "UNIQUE",
+      "commits_inedits": 687,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-515",
+      "classe": "UNIQUE",
+      "commits_inedits": 688,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-516",
+      "classe": "UNIQUE",
+      "commits_inedits": 689,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-517",
+      "classe": "UNIQUE",
+      "commits_inedits": 690,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-518",
+      "classe": "UNIQUE",
+      "commits_inedits": 691,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-519",
+      "classe": "UNIQUE",
+      "commits_inedits": 692,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-52-crosshair",
+      "classe": "UNIQUE",
+      "commits_inedits": 220,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-520",
+      "classe": "UNIQUE",
+      "commits_inedits": 693,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-521",
+      "classe": "UNIQUE",
+      "commits_inedits": 694,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-522",
+      "classe": "UNIQUE",
+      "commits_inedits": 695,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-523",
+      "classe": "UNIQUE",
+      "commits_inedits": 696,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-524",
+      "classe": "UNIQUE",
+      "commits_inedits": 697,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-525",
+      "classe": "UNIQUE",
+      "commits_inedits": 698,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-526",
+      "classe": "UNIQUE",
+      "commits_inedits": 699,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-527",
+      "classe": "UNIQUE",
+      "commits_inedits": 700,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-528",
+      "classe": "UNIQUE",
+      "commits_inedits": 701,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-529",
+      "classe": "UNIQUE",
+      "commits_inedits": 702,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-53-charts-polish",
+      "classe": "UNIQUE",
+      "commits_inedits": 221,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-530",
+      "classe": "UNIQUE",
+      "commits_inedits": 703,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-531",
+      "classe": "UNIQUE",
+      "commits_inedits": 704,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-532",
+      "classe": "UNIQUE",
+      "commits_inedits": 705,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-533",
+      "classe": "UNIQUE",
+      "commits_inedits": 706,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-534",
+      "classe": "UNIQUE",
+      "commits_inedits": 707,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-535",
+      "classe": "UNIQUE",
+      "commits_inedits": 708,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-536",
+      "classe": "UNIQUE",
+      "commits_inedits": 709,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-537",
+      "classe": "UNIQUE",
+      "commits_inedits": 710,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-538",
+      "classe": "UNIQUE",
+      "commits_inedits": 711,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-539",
+      "classe": "UNIQUE",
+      "commits_inedits": 712,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-54-candles-2026",
+      "classe": "UNIQUE",
+      "commits_inedits": 222,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-540",
+      "classe": "UNIQUE",
+      "commits_inedits": 713,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-541",
+      "classe": "UNIQUE",
+      "commits_inedits": 714,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-542",
+      "classe": "UNIQUE",
+      "commits_inedits": 715,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-543",
+      "classe": "UNIQUE",
+      "commits_inedits": 716,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-544",
+      "classe": "UNIQUE",
+      "commits_inedits": 719,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-545",
+      "classe": "UNIQUE",
+      "commits_inedits": 718,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-546",
+      "classe": "UNIQUE",
+      "commits_inedits": 719,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-547",
+      "classe": "UNIQUE",
+      "commits_inedits": 720,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-548",
+      "classe": "UNIQUE",
+      "commits_inedits": 721,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-549",
+      "classe": "UNIQUE",
+      "commits_inedits": 722,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-55-connections",
+      "classe": "UNIQUE",
+      "commits_inedits": 223,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-550",
+      "classe": "UNIQUE",
+      "commits_inedits": 723,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-551",
+      "classe": "UNIQUE",
+      "commits_inedits": 724,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-552",
+      "classe": "UNIQUE",
+      "commits_inedits": 725,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-553",
+      "classe": "UNIQUE",
+      "commits_inedits": 727,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-554",
+      "classe": "UNIQUE",
+      "commits_inedits": 727,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-555",
+      "classe": "UNIQUE",
+      "commits_inedits": 728,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-556",
+      "classe": "UNIQUE",
+      "commits_inedits": 729,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-557",
+      "classe": "UNIQUE",
+      "commits_inedits": 730,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-558",
+      "classe": "UNIQUE",
+      "commits_inedits": 731,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-559",
+      "classe": "UNIQUE",
+      "commits_inedits": 732,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-56-polish-today-markets",
+      "classe": "UNIQUE",
+      "commits_inedits": 224,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-560",
+      "classe": "UNIQUE",
+      "commits_inedits": 733,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-561",
+      "classe": "UNIQUE",
+      "commits_inedits": 734,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-562",
+      "classe": "UNIQUE",
+      "commits_inedits": 735,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-563",
+      "classe": "UNIQUE",
+      "commits_inedits": 736,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-564",
+      "classe": "UNIQUE",
+      "commits_inedits": 737,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-565",
+      "classe": "UNIQUE",
+      "commits_inedits": 738,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-566",
+      "classe": "UNIQUE",
+      "commits_inedits": 739,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-567",
+      "classe": "UNIQUE",
+      "commits_inedits": 740,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-568",
+      "classe": "UNIQUE",
+      "commits_inedits": 741,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-569",
+      "classe": "UNIQUE",
+      "commits_inedits": 742,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-57-polish-opps-analysis",
+      "classe": "UNIQUE",
+      "commits_inedits": 225,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-570",
+      "classe": "UNIQUE",
+      "commits_inedits": 743,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-571",
+      "classe": "UNIQUE",
+      "commits_inedits": 744,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-572",
+      "classe": "UNIQUE",
+      "commits_inedits": 745,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-573",
+      "classe": "UNIQUE",
+      "commits_inedits": 746,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-574",
+      "classe": "UNIQUE",
+      "commits_inedits": 747,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-575",
+      "classe": "UNIQUE",
+      "commits_inedits": 748,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-576",
+      "classe": "UNIQUE",
+      "commits_inedits": 749,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-577",
+      "classe": "UNIQUE",
+      "commits_inedits": 750,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-578",
+      "classe": "UNIQUE",
+      "commits_inedits": 751,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-579",
+      "classe": "UNIQUE",
+      "commits_inedits": 752,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-58-polish-portfolio-options",
+      "classe": "UNIQUE",
+      "commits_inedits": 226,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-580",
+      "classe": "UNIQUE",
+      "commits_inedits": 753,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-581",
+      "classe": "UNIQUE",
+      "commits_inedits": 754,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-582",
+      "classe": "UNIQUE",
+      "commits_inedits": 755,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-583",
+      "classe": "UNIQUE",
+      "commits_inedits": 756,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-584",
+      "classe": "UNIQUE",
+      "commits_inedits": 757,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-585",
+      "classe": "UNIQUE",
+      "commits_inedits": 758,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-586",
+      "classe": "UNIQUE",
+      "commits_inedits": 759,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-587",
+      "classe": "UNIQUE",
+      "commits_inedits": 760,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-588",
+      "classe": "UNIQUE",
+      "commits_inedits": 761,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-589",
+      "classe": "UNIQUE",
+      "commits_inedits": 762,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-59-polish-journal-system",
+      "classe": "UNIQUE",
+      "commits_inedits": 227,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-590",
+      "classe": "UNIQUE",
+      "commits_inedits": 763,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-591",
+      "classe": "UNIQUE",
+      "commits_inedits": 764,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-592",
+      "classe": "UNIQUE",
+      "commits_inedits": 765,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-593",
+      "classe": "UNIQUE",
+      "commits_inedits": 766,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-594",
+      "classe": "UNIQUE",
+      "commits_inedits": 767,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-595",
+      "classe": "UNIQUE",
+      "commits_inedits": 768,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-596",
+      "classe": "UNIQUE",
+      "commits_inedits": 769,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-597",
+      "classe": "UNIQUE",
+      "commits_inedits": 770,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-598",
+      "classe": "UNIQUE",
+      "commits_inedits": 771,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-599",
+      "classe": "UNIQUE",
+      "commits_inedits": 772,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-60-rc-finale",
+      "classe": "UNIQUE",
+      "commits_inedits": 228,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-600",
+      "classe": "UNIQUE",
+      "commits_inedits": 773,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-601",
+      "classe": "UNIQUE",
+      "commits_inedits": 774,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-602",
+      "classe": "UNIQUE",
+      "commits_inedits": 775,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-603",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-604",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-605",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-606",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-607",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-608",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-609",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-61-runway-labels",
+      "classe": "UNIQUE",
+      "commits_inedits": 229,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-610",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-611",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-612",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-613",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-614",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-615",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-616",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-617",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-62-shell-js-palette",
+      "classe": "UNIQUE",
+      "commits_inedits": 230,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-625",
+      "classe": "UNIQUE",
+      "commits_inedits": 5,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-63-inspection",
+      "classe": "UNIQUE",
+      "commits_inedits": 231,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-64-inspection-tour",
+      "classe": "UNIQUE",
+      "commits_inedits": 232,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-65-inspection-a11y",
+      "classe": "UNIQUE",
+      "commits_inedits": 233,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-66-audit-total",
+      "classe": "UNIQUE",
+      "commits_inedits": 237,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-67-deep-views",
+      "classe": "UNIQUE",
+      "commits_inedits": 238,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-68-ibkr-readonly",
+      "classe": "UNIQUE",
+      "commits_inedits": 239,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-69-fiche-opps",
+      "classe": "UNIQUE",
+      "commits_inedits": 240,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-70-degraded-bilan",
+      "classe": "UNIQUE",
+      "commits_inedits": 241,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-71-hygiene-doc",
+      "classe": "UNIQUE",
+      "commits_inedits": 245,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-72-performance",
+      "classe": "UNIQUE",
+      "commits_inedits": 246,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-73-a11y",
+      "classe": "UNIQUE",
+      "commits_inedits": 247,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-74-robustesse",
+      "classe": "UNIQUE",
+      "commits_inedits": 248,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-75-rc-finale",
+      "classe": "UNIQUE",
+      "commits_inedits": 249,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-76-hygiene-js",
+      "classe": "UNIQUE",
+      "commits_inedits": 250,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-77-headers",
+      "classe": "UNIQUE",
+      "commits_inedits": 251,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-78-libelles",
+      "classe": "UNIQUE",
+      "commits_inedits": 252,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-79-fraicheur",
+      "classe": "UNIQUE",
+      "commits_inedits": 253,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-80-parcours",
+      "classe": "UNIQUE",
+      "commits_inedits": 254,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-81-fonts",
+      "classe": "UNIQUE",
+      "commits_inedits": 255,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-82-offline",
+      "classe": "UNIQUE",
+      "commits_inedits": 256,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-83-controles",
+      "classe": "UNIQUE",
+      "commits_inedits": 257,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-84-desk",
+      "classe": "UNIQUE",
+      "commits_inedits": 258,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-85-alertes",
+      "classe": "UNIQUE",
+      "commits_inedits": 259,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-86-caracterisation",
+      "classe": "UNIQUE",
+      "commits_inedits": 260,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-87-vocab",
+      "classe": "UNIQUE",
+      "commits_inedits": 261,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-88-evidence",
+      "classe": "UNIQUE",
+      "commits_inedits": 262,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-89-track",
+      "classe": "UNIQUE",
+      "commits_inedits": 263,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-90-services",
+      "classe": "UNIQUE",
+      "commits_inedits": 264,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-91",
+      "classe": "UNIQUE",
+      "commits_inedits": 265,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-92-committee",
+      "classe": "UNIQUE",
+      "commits_inedits": 266,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-93-structure",
+      "classe": "UNIQUE",
+      "commits_inedits": 267,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-94-post",
+      "classe": "UNIQUE",
+      "commits_inedits": 268,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-95-indicators",
+      "classe": "UNIQUE",
+      "commits_inedits": 269,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-96",
+      "classe": "UNIQUE",
+      "commits_inedits": 270,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-97",
+      "classe": "UNIQUE",
+      "commits_inedits": 271,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-98-anomalies",
+      "classe": "UNIQUE",
+      "commits_inedits": 272,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-lot-99",
+      "classe": "UNIQUE",
+      "commits_inedits": 273,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-rc-periodique-10",
+      "classe": "UNIQUE",
+      "commits_inedits": 244,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-rc-periodique-20260805-1616",
+      "classe": "UNIQUE",
+      "commits_inedits": 209,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-rc-periodique-20260805-1655",
+      "classe": "UNIQUE",
+      "commits_inedits": 210,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-rc-periodique-20260805-1829",
+      "classe": "UNIQUE",
+      "commits_inedits": 211,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-rc-periodique-20260805-2020",
+      "classe": "UNIQUE",
+      "commits_inedits": 217,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-rc-periodique-5",
+      "classe": "UNIQUE",
+      "commits_inedits": 234,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-rc-periodique-6",
+      "classe": "UNIQUE",
+      "commits_inedits": 235,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-rc-periodique-7",
+      "classe": "UNIQUE",
+      "commits_inedits": 236,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-rc-periodique-8",
+      "classe": "UNIQUE",
+      "commits_inedits": 242,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-rc-periodique-9",
+      "classe": "UNIQUE",
+      "commits_inedits": 243,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/skyler-v2-x1-sweep",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 134,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-10-decision-memory",
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101"
+      ]
+    },
+    {
+      "branche": "origin/agent/skyler-v2-x2-evidence",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 135,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-10-decision-memory",
+        "origin/agent/skyler-v2-lot-100",
+        "origin/agent/skyler-v2-lot-101"
+      ]
+    },
+    {
+      "branche": "origin/agent/vertex-1-0-domaines",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/vertex-1-0-foundation",
+      "classe": "UNIQUE",
+      "commits_inedits": 3,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/vertex-1-0-governance",
+      "classe": "CONTENU_IDENTIQUE",
+      "commits_inedits": 1,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/agent/vertex-1-0-memoire",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 12,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/vertex-1-0-moteurs"
+      ]
+    },
+    {
+      "branche": "origin/agent/vertex-1-0-moteurs",
+      "classe": "UNIQUE",
+      "commits_inedits": 13,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/vertex-1-0-persistance",
+      "classe": "UNIQUE",
+      "commits_inedits": 8,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/vertex-1-0-runtime",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 11,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/vertex-1-0-memoire",
+        "origin/agent/vertex-1-0-moteurs"
+      ]
+    },
+    {
+      "branche": "origin/agent/vertex-1-0-wmb",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/vertex-neon-glass-graphs",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 92,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-audit-convergence",
+        "origin/agent/skyler-v2-lot-00-baseline",
+        "origin/agent/skyler-v2-lot-01-options-correctness"
+      ]
+    },
+    {
+      "branche": "origin/agent/vertex-signal-os-v1",
+      "classe": "UNIQUE",
+      "commits_inedits": 861,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/vertex-total-rebuild",
+      "classe": "UNIQUE",
+      "commits_inedits": 37,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/agent/vertex-total-rebuild-obsidian-v2",
+      "classe": "UNIQUE",
+      "commits_inedits": 2,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/claude/v4-01-foundations",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 54,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/claude/v4-02-shell",
+        "origin/claude/v4-03-components",
+        "origin/claude/v4-04-charts"
+      ]
+    },
+    {
+      "branche": "origin/claude/v4-02-shell",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 55,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/claude/v4-03-components",
+        "origin/claude/v4-04-charts",
+        "origin/claude/v4-06-markets"
+      ]
+    },
+    {
+      "branche": "origin/claude/v4-03-components",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 56,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/claude/v4-04-charts",
+        "origin/claude/v4-06-markets",
+        "origin/claude/v4-10-options"
+      ]
+    },
+    {
+      "branche": "origin/claude/v4-04-charts",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 57,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/claude/v4-06-markets",
+        "origin/claude/v4-10-options",
+        "origin/claude/v4-qa-conformance"
+      ]
+    },
+    {
+      "branche": "origin/claude/v4-06-markets",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 62,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/integration/vertex-v4-clean"
+      ]
+    },
+    {
+      "branche": "origin/claude/v4-10-options",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 62,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/integration/vertex-v4-clean"
+      ]
+    },
+    {
+      "branche": "origin/claude/v4-qa-conformance",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 58,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/claude/v4-06-markets",
+        "origin/claude/v4-10-options",
+        "origin/integration/vertex-v4-clean"
+      ]
+    },
+    {
+      "branche": "origin/claude/vertex-connection-setup-4j3h4j",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 37,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/claude/vertex-latest-screenshots-0tuja0",
+        "origin/feature/vertex-hyper-visual-intelligence"
+      ]
+    },
+    {
+      "branche": "origin/claude/vertex-glass-redesign-system",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/claude/vertex-improvements-kybc4p",
+      "classe": "UNIQUE",
+      "commits_inedits": 1,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/claude/vertex-latest-screenshots-0tuja0",
+      "classe": "UNIQUE",
+      "commits_inedits": 64,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/claude/vertex-strategy-os-h17dso",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/claude/vertex-system-launch-0bsizs",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/claude/vertex-visual-rebuild-1ofi8r",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/active-source-timeouts",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/bounded-analytic-payloads",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/freshness-drift-monitor",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/measurement-intelligence",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/multi-asset-evidence-guard",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/multi-asset-market-coherence",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/operational-input-bounds",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/opportunity-reliability",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/option-contract-measurement",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/persistence-cache-hardening",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/portfolio-historical-stress",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/regime-break-diagnostic",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/rescan-rate-limit",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/safe-latency-observability",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/scan-singleflight",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/scan-source-resilience",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/segmented-drift-monitor",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/swing-options-decision-packet",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/vertex-hyper-visual-intelligence",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 46,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/claude/vertex-latest-screenshots-0tuja0"
+      ]
+    },
+    {
+      "branche": "origin/feature/walk-forward-validation",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/feature/webhook-delivery-hardening",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/fix/complete-safe-api-errors",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/fix/dual-source-unavailable",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/fix/request-limit-cache-freshness",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/fix/safe-api-errors",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/glass-plus-charts",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 50,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/claude/v4-01-foundations",
+        "origin/claude/v4-02-shell",
+        "origin/claude/v4-03-components"
+      ]
+    },
+    {
+      "branche": "origin/glass-plus-charts-oz8jmh",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 52,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/claude/v4-01-foundations",
+        "origin/claude/v4-02-shell",
+        "origin/claude/v4-03-components"
+      ]
+    },
+    {
+      "branche": "origin/integration/vertex-skyler-v2",
+      "classe": "CONTENUE_AILLEURS",
+      "commits_inedits": 774,
+      "diff_vide": false,
+      "contenue_dans": [
+        "origin/agent/skyler-v2-lot-602",
+        "origin/agent/vertex-signal-os-v1"
+      ]
+    },
+    {
+      "branche": "origin/integration/vertex-v4-clean",
+      "classe": "UNIQUE",
+      "commits_inedits": 67,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/integration/vertex-visual-merge",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/main",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    },
+    {
+      "branche": "origin/redesign/vertex-v4-master",
+      "classe": "UNIQUE",
+      "commits_inedits": 5,
+      "diff_vide": false
+    },
+    {
+      "branche": "origin/test/scan-timeout-degradation",
+      "classe": "FUSIONNEE",
+      "commits_inedits": 0,
+      "diff_vide": true
+    }
+  ]
+}

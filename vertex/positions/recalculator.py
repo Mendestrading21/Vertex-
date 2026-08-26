@@ -39,8 +39,13 @@ def _quote_for_option(quotes, p):
     q = (quotes or {}).get(key)
     if not q:
         return None, None
+    #  `last` et `close` TRANSMIS. Avant, ils étaient abandonnés ici : l'écran
+    #  affichait `mark 3,70` avec `last: None` et `mid: None`, donc un chiffre
+    #  dont l'origine était invisible. Or c'est précisément l'origine qui
+    #  explique un écart de 272 USD avec le courtier sur une option peu liquide.
     opt_q = {'mark': q.get('mark') if q.get('mark') is not None else q.get('last'),
              'bid': q.get('bid'), 'ask': q.get('ask'), 'iv': q.get('iv'),
+             'last': q.get('last'), 'close': q.get('close'),
              'volume': q.get('vol'), 'oi': q.get('oi'),
              'source': 'IBKR', 'stale': False}
     under = {'price': q.get('spot')} if q.get('spot') is not None else None

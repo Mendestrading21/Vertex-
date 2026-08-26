@@ -30,6 +30,8 @@ def build_editorial(scan_state: dict) -> dict:
     missing: list[str] = []
 
     regime = m.get('spy_regime') or m.get('regime')
+    regime = {'TREND': 'marché en tendance', 'CHOP': 'marché sans direction',
+              'UP': 'marché haussier', 'DOWN': 'marché baissier'}.get(regime, regime)
     roro = m.get('roro')
     if regime or roro:
         lines.append(f"Régime : {regime or 'n/d'}"
@@ -108,6 +110,13 @@ _CONTENT = """
   <div id="vx-brief-body" aria-live="polite">%%LOADING%%</div>
   <div class="vx-kpi-strip vx-mt3" id="vx-hero-kpis" data-max-kpis="4"
        aria-label="Quatre indicateurs clés, chacun relié à son domicile canonique"></div>
+  <!-- L'AGE des quatre KPI. Mesuré : sans lui, ces quatre chiffres — les
+       premiers que l'écran montre — ne portaient AUCUNE indication de date ;
+       la seule marque de la carte était le badge « Démo », qui qualifie la
+       NATURE de la donnée, pas son âge. Rempli par loadSummary depuis
+       `scan_age` (le serveur le sert déjà), via VX.freshness — jamais un
+       libellé écrit à la main. -->
+  <div class="vx-meta vx-mt2" id="vx-hero-age"></div>
   <div class="vx-mt3" id="vx-hero-action"></div>
 </section>
 
@@ -200,7 +209,7 @@ async function loadBrief(){
   try{
     const b=await VX.fetch('/api/briefing/editorial',{ttl:60000});
     const m=b.demo?'demo':'delayed';
-    $('vx-hero-fresh').innerHTML=freshBadge(m)+' <span class="vx-meta">'+esc((b.sources||[]).join(', '))+'</span>';
+    ($('vx-hero-fresh')||{}).innerHTML=freshBadge(m)+' <span class="vx-meta">'+esc((b.sources||[]).join(', '))+'</span>';
     const ed=b.editorial||{};
     const lines=b.lines||[];
     const risk=b.main_risk||ed.main_risk||'';
@@ -208,12 +217,12 @@ async function loadBrief(){
     const priced=ed.prices_mainly?('Aujourd’hui, le marché price principalement '+ed.prices_mainly):'';
     const decision=risk||opportunity||priced||lines[0]||'Aucune conclusion décisionnelle disponible avec les données actuelles.';
     const tone=risk?'risk':opportunity?'go':'neutral';
-    $('vx-brief-body').innerHTML=
+    ($('vx-brief-body')||{}).innerHTML=
       '<p class="vx-today-decision" data-tone="'+tone+'">'+esc(decision)+'</p>'
       +'<div class="vx-card-footer"><span class="vx-meta">'+(b.generator==='deterministic'?'Conclusion déterministe · moteurs':'Conclusion éditoriale validée')+'</span>'
       +'<a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets">Voir les preuves →</a></div>';
-    if(b.demo)$('vx-demo-banner').innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
-  }catch(e){$('vx-brief-body').innerHTML=VX.states.error('Brief indisponible ('+e.message+')');}
+    if(b.demo)($('vx-demo-banner')||{}).innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
+  }catch(e){($('vx-brief-body')||{}).innerHTML=VX.states.error('Brief indisponible ('+e.message+')');}
 }
 
 /* ── 4 KPI résumé cliquables (régime, breadth, VIX, meilleure opportunité) ── */
@@ -224,7 +233,7 @@ async function loadSummary(){
     const br=breadthOf(sum.breadth);
     let vix=num(sum.vix);
     const best=(cmd.top_stocks||[])[0]||null;
-    const regHtml=reg.regime?esc(reg.regime):'n/d';
+    const regHtml=reg.regime?esc(VX.regime.label(reg.regime)):'n/d';
     const brHtml=br!=null?(br.v+' %'):'n/d';
     const brCls=br!=null?(br.v>=55?'vx-pos':'vx-warn'):'';
     const vixHtml=vix!=null?vix:'n/d';
@@ -235,7 +244,14 @@ async function loadSummary(){
       kpiTile('VIX',vixHtml,'','/markets?view=volatility'),
       best?kpiTile('Meilleure opp.',bestHtml,'','/analysis/'+encodeURIComponent(best.symbol)):kpiTile('Meilleure opp.','—','','/opportunities'),
     ].join('');
-    $('vx-hero-kpis').innerHTML=kpis;
+    ($('vx-hero-kpis')||{}).innerHTML=kpis;
+    /* Âge des quatre KPI. `scan_age` est en secondes ; absent → assess rend
+       « — », l'aveu honnête, jamais une valeur inventée. La puce porte son
+       instant de référence et se ré-évalue seule (VX.freshness._retick) :
+       sans réseau, elle passe à « À actualiser » d'elle-même. */
+    const sa=num(sum.scan_age);
+    ($('vx-hero-age')||{}).innerHTML='Données du scan : '
+      +VX.freshness.chip(VX.freshness.assess({ageMs:sa!=null?sa*1000:null}));
     /* Action prioritaire : dérivée uniquement des données réelles. */
     let action='';
     if(best&&best.symbol){
@@ -245,7 +261,7 @@ async function loadSummary(){
     }else{
       action='<span class="vx-meta">Aucune action prioritaire dérivée des données disponibles.</span>';
     }
-    $('vx-hero-action').innerHTML=action;
+    ($('vx-hero-action')||{}).innerHTML=action;
     /* Diff honnête depuis la dernière visite. */
     renderDiff({regime:reg.regime||null,breadth:br?br.v:null,vix:vix,best:best?best.symbol:null,
       opp:(cmd.top_stocks||[]).length});
@@ -274,7 +290,7 @@ function renderDiff(cur){
     const fmtDelta=(a,b,unit)=>{if(a==null||b==null)return null;const d=Math.round((a-b)*10)/10;if(d===0)return null;
       const cls=d>0?'vx-pos':'vx-neg';return '<span class="vx-mono '+cls+'">'+(d>0?'+':'')+d+(unit||'')+'</span>';};
     if(prev.regime&&cur.regime&&prev.regime!==cur.regime)
-      rows.push('Régime : <b>'+esc(prev.regime)+'</b> → <b>'+esc(cur.regime)+'</b>');
+      rows.push('Régime : <b>'+esc(VX.regime.label(prev.regime))+'</b> → <b>'+esc(VX.regime.label(cur.regime))+'</b>');
     const bd=fmtDelta(cur.breadth,prev.breadth,' pts');if(bd)rows.push('Breadth '+bd);
     const vd=fmtDelta(cur.vix,prev.vix,'');if(vd)rows.push('VIX '+vd);
     if((cur.opp||0)!==(prev.opp||0))rows.push('Opportunités : '+prev.opp+' → '+cur.opp);
@@ -301,7 +317,7 @@ async function loadRegime(){
     const grammar={roro:(sum&&sum.roro)||null,
       breadth:(sum&&sum.breadth&&num(sum.breadth.above200)),
       vix:num(sum&&sum.vix)};
-    $('vx-regime-body').innerHTML=
+    ($('vx-regime-body')||{}).innerHTML=
       '<div id="vx-regime-object" class="vx-mb2"></div>'
       +'<div class="vx-kv"><span class="k">Confirmations exigées</span><span class="v">'+VX.fmt.nd(adj.confirmation_required)+'</span></div>'
       +'<div class="vx-card-footer"><a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="/markets?view=breadth">Participation →</a></div>';
@@ -315,7 +331,7 @@ async function loadRegime(){
         invalidation:inval,grammar:grammar,
         source:'Moteur de régimes',timestamp:r&&(r.as_of||r.timestamp||r.updated)||null,mode:'delayed'});
     }
-  }catch(e){$('vx-regime-body').innerHTML=VX.states.error('Régime indisponible');}
+  }catch(e){($('vx-regime-body')||{}).innerHTML=VX.states.error('Régime indisponible');}
 }
 
 /* ── Meilleures opportunités (top 3, résumé) ── */
@@ -323,7 +339,7 @@ async function loadOpportunities(){
   try{
     const c=await VX.fetch('/api/command',{ttl:60000});
     const stocks=(c.top_stocks||[]).slice(0,3);
-    $('vx-opp-stocks').innerHTML=stocks.length?stocks.map(s=>
+    ($('vx-opp-stocks')||{}).innerHTML=stocks.length?stocks.map(s=>
       '<div class="vx-flex" style="padding:7px 0;border-bottom:1px dashed var(--vx-border-soft)">'
       +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(s.symbol)+'">'+esc(s.symbol)+'</button>'
       +'<span class="vx-badge '+vCls(s.verdict)+'">'+esc(s.verdict||'')+'</span>'
@@ -331,7 +347,7 @@ async function loadOpportunities(){
       +'<span class="vx-num vx-mono">'+VX.fmt.nd(s.price)+'</span>'
       +'<button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="'+esc(s.symbol)+'" aria-label="Actions">⋯</button></div>').join('')
       :VX.states.empty('Aucune opportunité retenue par le comité.');
-  }catch(e){$('vx-opp-stocks').innerHTML=VX.states.error('Opportunités indisponibles');}
+  }catch(e){($('vx-opp-stocks')||{}).innerHTML=VX.states.error('Opportunités indisponibles');}
 }
 
 /* ── Alertes prioritaires (top 3) ── */
@@ -351,9 +367,9 @@ async function loadAlerts(){
       +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(a.sym)+'">'+esc(a.sym)+'</button>'
       +'<span class="vx-grow vx-dim" style="font-size:12px">'+(a.cond==='above'?'franchit':'casse')+' '+VX.fmt.price(a.level)+'</span>'
       +'<span class="vx-badge vx-warn">armée</span></div>').join('');
-    $('vx-alerts').innerHTML=(srv+rows)||VX.states.emptyDesk('Aucune alerte active.',
+    ($('vx-alerts')||{}).innerHTML=(srv+rows)||VX.states.emptyDesk('Aucune alerte active.',
       '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'alert\')">Créer une alerte</button>');
-  }catch(e){$('vx-alerts').innerHTML=VX.states.error('Alertes indisponibles');}
+  }catch(e){($('vx-alerts')||{}).innerHTML=VX.states.error('Alertes indisponibles');}
 }
 
 /* ── Catalyseurs : objet CATALYST RUNWAY (widget officiel W-CR) — piste DTE +
@@ -368,14 +384,14 @@ async function loadCalendar(){
     VXCharts.catalystRunway('vx-calendar',{title:'Catalyseurs imminents',question:'Quels catalyseurs arrivent, et quand ?',
       events,source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
       emptyText:'Aucun catalyseur imminent identifié.'});
-  }catch(e){$('vx-calendar').innerHTML='<div class="vx-card">'+VX.states.error('Calendrier indisponible')+'</div>';}
+  }catch(e){($('vx-calendar')||{}).innerHTML='<div class="vx-card">'+VX.states.error('Calendrier indisponible')+'</div>';}
 }
 
 /* ── Portefeuille : ce qui a changé (compact) ── */
 async function loadPortfolio(){
   const pos=(E()&&E().positions())||[];
   if(!pos.length){
-    $('vx-portfolio').innerHTML=VX.states.emptyDesk('Aucune position déclarée.',
+    ($('vx-portfolio')||{}).innerHTML=VX.states.emptyDesk('Aucune position déclarée.',
       '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
     return;
   }
@@ -388,7 +404,7 @@ async function loadPortfolio(){
       (t.strike!==null&&t.strike!==undefined)?t.strike:'',(t.right||'').toUpperCase()].join('|');
       if(res[key])quotes[t.id]=res[key];});
   }catch(e){}
-  $('vx-portfolio').innerHTML=pos.slice(0,4).map(t=>{
+  ($('vx-portfolio')||{}).innerHTML=pos.slice(0,4).map(t=>{
     const q=quotes[t.id]||{};const isOpt=t.type!=='STK';
     const mark=isOpt?(q.mark??q.last??null):(q.spot??q.mark??q.last??null);
     const value=mark!==null?(isOpt?mark*100*t.qty:mark*t.qty):null;
@@ -447,7 +463,7 @@ async function loadMarketDiff(){
     let html='<div class="vx-eyebrow" style="margin-bottom:.25rem">Marché (serveur)</div>';
     if(tr.changed===true){
       html+='<div class="vx-mb1"><span class="vx-badge" data-tone="neutral">Régime : '
-        +esc(tr.from||'—')+' → '+esc(tr.to||'—')+'</span></div>';
+        +esc(tr.from?VX.regime.label(tr.from):'—')+' → '+esc(tr.to?VX.regime.label(tr.to):'—')+'</span></div>';
     }
     if(changes.length){
       html+='<ul style="margin:.2rem 0;padding-left:0;list-style:none;font-size:12.5px">'

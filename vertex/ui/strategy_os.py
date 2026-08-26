@@ -63,7 +63,7 @@ async function j(u,opt){try{const r=await fetch(u,opt);return await r.json()}cat
 function kv(k,v,cls){return '<div class="kv"><span class="dim">'+k+'</span><b class="'+(cls||'')+'">'+nd(v)+'</b></div>'}
 (async()=>{
  const p=await j('/api/strategy/profile');
- $('profile').innerHTML=p?[
+ ($('profile')||{}).innerHTML=p?[
   kv('Stratégie',p.display_name),kv('Identifiant',p.strategy_id),
   kv('Version',p.version),kv('Style',(p.profile||{}).style),
   kv('Positions cibles',((p.profile||{}).portfolio_target_positions||{}).minimum+'–'+((p.profile||{}).portfolio_target_positions||{}).maximum),
@@ -72,36 +72,37 @@ function kv(k,v,cls){return '<div class="kv"><span class="dim">'+k+'</span><b cl
   kv('Décisions','ACHETER · RENFORCER · ATTENDRE · REDUIRE · REFUSER')
  ].join(''):'API indisponible';
  const r=await j('/api/market/regime');
- $('regime').innerHTML=r?[
-  kv('Régime',r.regime,r.regime==='PANIC'?'neg':(r.regime||'').includes('UP')?'pos':''),
+ ($('regime')||{}).innerHTML=r?[
+  kv('Régime',(window.VX&&VX.regime)?VX.regime.label(r.regime):r.regime,
+     r.regime==='PANIC'?'neg':(r.regime||'').includes('UP')?'pos':''),
   kv('Confiance',r.confidence),kv('Dimensions',(r.dimensions_used||[]).length),
   kv('Nouveau risque',(r.adjustments||{}).new_risk_allowed?'autorisé':'BLOQUÉ',
      (r.adjustments||{}).new_risk_allowed?'pos':'neg'),
   kv('Priorité setups',(r.adjustments||{}).setup_priority)
  ].join(''):'API indisponible';
  const a=await j('/api/alerts/active');
- $('alerts').innerHTML=a?((a.active||[]).length?
+ ($('alerts')||{}).innerHTML=a?((a.active||[]).length?
   a.active.map(x=>'<span class="badge">'+x.symbol+' · '+x.level+'</span>').join(''):
   'aucune alerte active')+kv('Émises',(a.status||{}).metrics?a.status.metrics.emitted:'—'):'—';
  const tv=await j('/api/tradingview/signals');
- $('tv').innerHTML=tv?((tv.signals||[]).slice(-6).map(s=>'<span class="badge">'+
+ ($('tv')||{}).innerHTML=tv?((tv.signals||[]).slice(-6).map(s=>'<span class="badge">'+
   s.symbol+' · '+s.signal+'</span>').join('')||'aucun signal reçu')+
   kv('Stockés',(tv.status||{}).stored):'webhook non configuré';
  const dq=await j('/api/data-quality');
- $('dq').innerHTML=dq?[kv('Symboles',dq.total),kv('Source scan',dq.scan_source),
+ ($('dq')||{}).innerHTML=dq?[kv('Symboles',dq.total),kv('Source scan',dq.scan_source),
   ...Object.entries(dq.by_quality||{}).map(([k,v])=>kv(k,v,
    k==='FRESH'||k==='RECENT'?'pos':'warn'))].join(''):'—';
  const d=await j('/api/system/diagnostics');
- $('diag').innerHTML=d?'<pre>'+JSON.stringify(d,null,1).slice(0,2200)+'</pre>':'—';
+ ($('diag')||{}).innerHTML=d?'<pre>'+JSON.stringify(d,null,1).slice(0,2200)+'</pre>':'—';
 })();
 async function loadDecision(){
  const s=($('sym').value||'').trim().toUpperCase();if(!s)return;
- $('decision').textContent='analyse…';
+ ($('decision')||{}).textContent='analyse…';
  const d=await j('/api/strategy/decision/'+s);
- if(!d){$('decision').textContent='API indisponible';return}
- if(d.error){$('decision').innerHTML=kv('Erreur',d.error,'warn');return}
+ if(!d){($('decision')||{}).textContent='API indisponible';return}
+ if(d.error){($('decision')||{}).innerHTML=kv('Erreur',d.error,'warn');return}
  const sc=d.scores||{};
- $('decision').innerHTML=[
+ ($('decision')||{}).innerHTML=[
   kv('Décision finale',d.final_decision,
      d.final_decision==='ACHETER'||d.final_decision==='RENFORCER'?'pos':
      d.final_decision==='REFUSER'||d.final_decision==='REDUIRE'?'neg':'warn'),
@@ -112,10 +113,10 @@ async function loadDecision(){
 }
 async function loadAnomalies(){
  const s=($('anosym').value||'').trim().toUpperCase();if(!s)return;
- $('anomalies').textContent='détection…';
+ ($('anomalies')||{}).textContent='détection…';
  const d=await j('/api/anomalies/'+s);
- if(!d){$('anomalies').textContent='API indisponible';return}
- $('anomalies').innerHTML=((d.anomalies||[]).map(a=>'<span class="badge">'+
+ if(!d){($('anomalies')||{}).textContent='API indisponible';return}
+ ($('anomalies')||{}).innerHTML=((d.anomalies||[]).map(a=>'<span class="badge">'+
   a.code+'</span>').join('')||'aucune anomalie détectée')+
   '<div class="dim" style="margin-top:6px;font-size:12px">'+nd(d.note)+'</div>';
 }

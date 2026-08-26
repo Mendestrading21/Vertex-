@@ -97,13 +97,39 @@ function enrich(pos,quotes){
     const q=quotes[t.id]||{};
     const isOpt=t.type!=='STK';
     const mark=isOpt?(q.mark??q.last??null):(q.spot??q.mark??q.last??null);
+    /* La PROVENANCE vient du serveur (fonction partagee) : la recalculer ici
+       la ferait diverger au premier ajustement, et l'ecran annoncerait une
+       origine que le calcul ne pratique plus. */
+    const markSource=q.mark_source??null;
+    const spreadPct=(typeof q.spread_pct==='number')?q.spread_pct:null;
     const underSpot=isOpt?(q.spot??null):null;
     const value=mark!==null?(isOpt?mark*100*t.qty:mark*t.qty):null;
     const invested=t.cost||0;
     const pl=value!==null&&invested?((value-invested)/invested*100):null;   /* P&L % */
     const plAbs=value!==null?(value-invested):null;                          /* P&L absolu */
-    return Object.assign({},t,{mark,underSpot,value,invested,pl,plAbs});
+    return Object.assign({},t,{mark,markSource,spreadPct,underSpot,value,invested,pl,plAbs});
   });
+}
+/* Trois conventions coexistent chez le courtier lui-meme et ne donnent pas le
+   meme chiffre. Le libelle dit LAQUELLE a servi — sans lui, un prix affiche est
+   un chiffre sans origine, et un ecart avec le releve du courtier reste
+   inexplicable. Mesure du 24 aout 2026 sur URA : marche 3,50/4,30, marque 3,70
+   (dernier echange), milieu 3,90, marque IBKR 3,8546. */
+const MARQUE_LIB={DERNIER_ECHANGE:'dernier echange',MILIEU_FOURCHETTE:'milieu',
+                  CLOTURE_VEILLE:'cloture veille',ABSENTE:''};
+/* Au-dela, dernier echange, milieu et marque du courtier s'ecartent de
+   plusieurs pour cent : un prix au centime promet alors une precision que la
+   donnee n'a pas. */
+const SPREAD_INCERTAIN=10;
+function marqueNote(t){
+  if(t.mark==null)return'';
+  const lib=MARQUE_LIB[t.markSource]||'';
+  const large=(t.spreadPct!=null&&t.spreadPct>=SPREAD_INCERTAIN);
+  if(!lib&&!large)return'';
+  const bits=[];
+  if(lib)bits.push(lib);
+  if(large)bits.push('marche large '+VX.fmt.pct(t.spreadPct,0,false));
+  return '<div class="vx-meta'+(large?' vx-warn':'')+'">'+bits.join(' · ')+'</div>';
 }
 function roleOf(t){
   const snap=t.entrySnap||{};
@@ -283,9 +309,9 @@ function freshBadge(){
 /* ═══ SYNTHÈSE — PREMIER ÉCRAN (LOT A + H) ═══ */
 async function renderSynthese(){
   const pos=E().positions();
-  $('pf-summary').innerHTML='';
+  ($('pf-summary')||{}).innerHTML='';
   if(!pos.length){
-    $('pf-body').innerHTML=VX.states.emptyDesk(
+    ($('pf-body')||{}).innerHTML=VX.states.emptyDesk(
       'Aucune position déclarée — le portefeuille répond « où suis-je exposé ? » '
       +'dès la première position. Déclare une position ou importe depuis IBKR (lecture seule).',
       '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>'
@@ -365,7 +391,7 @@ async function renderSynthese(){
      reel : une couleur ne doit jamais vouloir dire deux choses sans le dire. */
   const plConnu=rich.some(t=>t.pl!=null);
   const totalTree=rich.reduce((s,t)=>s+Math.max(0,t.value??t.invested??0),0);
-  $('pf-body').innerHTML=hero+kpis
+  ($('pf-body')||{}).innerHTML=hero+kpis
     +'<div id="pf-diff" class="vx-mb3"></div>'
     +`<section class="vx-card vx-mb3" aria-label="Allocation et concentration">
         <div class="vx-chart-head"><span class="vx-chart-title">Allocation & concentration du capital</span>
@@ -478,7 +504,7 @@ async function renderPositions(){
   const rich=enrich(pos,await quotesFor(pos));
   renderSummary(rich);
   if(!pos.length){
-    $('pf-body').innerHTML=VX.states.emptyDesk('Aucune position déclarée.',
+    ($('pf-body')||{}).innerHTML=VX.states.emptyDesk('Aucune position déclarée.',
       '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
     return;
   }
@@ -526,7 +552,7 @@ async function renderPositions(){
       <td data-label="Instrument">${/CALL|PUT/i.test(t.type||'')?'<span class="vx-violet">'+t.type+'</span>':t.type}${t.strike?' '+t.strike:''}${t.exp?' '+t.exp:''}</td>
       <td data-label="Qté" class="vx-num">${t.qty}</td>
       <td data-label="Prix moyen" class="vx-num">${perShare(t)!=null?VX.fmt.price(perShare(t)):'—'}</td>
-      <td data-label="Prix actuel" class="vx-num">${t.mark!=null?VX.fmt.price(t.mark):'n/d'}</td>
+      <td data-label="Prix actuel" class="vx-num">${t.mark!=null?VX.fmt.price(t.mark):'n/d'}${marqueNote(t)}</td>
       <td data-label="Valeur marché" class="vx-num">${t.value!=null?VX.fmt.price(t.value):'n/d'}</td>
       <td data-label="P&L" class="vx-num ${t.plAbs>0?'vx-pos':t.plAbs<0?'vx-neg':''}">${t.plAbs!=null?((t.plAbs>=0?'+':'')+VX.fmt.price(t.plAbs)):'n/d'}</td>
       <td data-label="P&L %" class="vx-num ${t.pl>0?'vx-pos':t.pl<0?'vx-neg':''}">${t.pl!=null?VX.fmt.pct(t.pl,1):'n/d'}</td>
@@ -557,7 +583,7 @@ async function renderPositions(){
         <div class="vx-row-actions vx-mt1"><button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyse</button>
         <button class="vx-btn vx-btn-sm vx-btn-ghost" data-position-menu="${t.id}" aria-label="Gérer la position ${t.sym} : modifier, clôturer, supprimer">Gérer ⋯</button></div></td></tr>`;};
 
-  $('pf-body').innerHTML=
+  ($('pf-body')||{}).innerHTML=
     survHtml
     +(posState?actionListHtml(posState):'')
     +`<div class="vx-insight vx-mb3" data-tone="risk"><b>Garde-fou perdants (Constitution §18).</b>
@@ -591,7 +617,7 @@ async function renderPerformance(){
   renderSummary(enrich(pos,await quotesFor(pos)));
   const eq=(E()?E().equity():[])||[];
   const closed=(E()?E().closedPositions():[])||[];
-  $('pf-body').innerHTML=`
+  ($('pf-body')||{}).innerHTML=`
     <div class="vx-insight vx-page-lead vx-mb3" role="note"><b>Performance de portefeuille — domicile unique.</b>
       Courbe cumulée, drawdown, contribution et saisonnalité vivent ici (migrées depuis Journal).
       Le Journal ne conserve que la méthode, la discipline, les erreurs et l’apprentissage.</div>
@@ -677,7 +703,7 @@ async function renderOptions(){
   const rich=enrich(opts,await quotesFor(opts));
   renderSummary(enrich(pos,await quotesFor(pos)));
   if(!opts.length){
-    $('pf-body').innerHTML=VX.states.emptyDesk(
+    ($('pf-body')||{}).innerHTML=VX.states.emptyDesk(
       'Aucune position option — le sélecteur privilégie les CALLS (max 3, dont 1 PUT tactique).',
       '<a class="vx-btn vx-btn-sm vx-btn-primary" href="/opportunities?view=options">Chercher un contrat</a>'
       +' <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options?view=structure">Analyser une structure →</a>');
@@ -693,7 +719,7 @@ async function renderOptions(){
   const H=(l,v,d,cls)=>`<div class="vx-card vx-card--compact vx-kpi" style="grid-column:span 3">
     <span class="vx-kpi-label">${l}</span><span class="vx-kpi-value" style="font-size:20px">${v}</span>
     ${d?`<span class="vx-kpi-delta ${cls||'vx-muted'}">${d}</span>`:''}</div>`;
-  $('pf-body').innerHTML=
+  ($('pf-body')||{}).innerHTML=
     `<div class="vx-grid vx-mb3">
       ${H('Exposition options',VX.fmt.price(engaged),'capital engagé (coût déclaré)')}
       ${H('P&L options',plTot!==null?VX.fmt.price(plTot):'n/d',plTot!==null?VX.fmt.pct(plTot/engaged*100,1):'marques indisponibles (IBKR hors ligne)',plTot>0?'vx-pos':plTot<0?'vx-neg':'vx-muted')}
@@ -714,10 +740,59 @@ async function renderOptions(){
     </section>`;
 }
 
+/* ═══ RAPPROCHEMENT P&L — quatre sources, aucune ne gagne en silence ═══
+   Mesure du 24 août 2026 sur compte réel : accountSummary 1 024,03 ·
+   reqPnL 928,57 · portefeuille 1 024,03 · Vertex 753,90. L'écart de 270 USD
+   venait d'UNE ligne (URA, valorisée 7 760,00 contre 8 032,84) et de deux
+   lignes suivies mais non détenues.
+   Afficher un seul de ces chiffres rendrait le P&L vrai ou faux selon un
+   arbitrage que personne n'a pris. La carte les montre tous, nomme l'écart et
+   ne tranche pas. */
+async function renderPnlRecon(){
+  const host=$('pf-pnl-recon'); if(!host) return;
+  let d=null;
+  try{ d=await VX.fetch('/api/positions/pnl-reconciliation',{ttl:15000}); }
+  catch(e){ (host||{}).innerHTML='<section class="vx-card vx-mb3">'
+      +VX.states.error('Rapprochement P&L indisponible')+'</section>'; return; }
+  if(!d) return;
+  const NOMS={resume:'Résumé de compte',temps_reel:'Temps réel (reqPnL)',
+              portefeuille:'Somme des lignes',vertex:'Calcul Vertex'};
+  const src=d.sources||{}, lignes=Object.keys(NOMS).map(k=>{
+    const v=src[k];
+    return '<div class="vx-kpi vx-card vx-card--compact" style="grid-column:span 3">'
+      +'<span class="vx-kpi-label">'+NOMS[k]+'</span>'
+      +'<span class="vx-kpi-value" style="font-size:20px">'
+      +(v==null?'n/d':VX.fmt.num(v))+'</span>'
+      +'<span class="vx-meta">'+(v==null?'source absente':'P&L non réalisé')+'</span></div>';
+  }).join('');
+  const pl=d.par_ligne||{}, div=pl.lignes_divergentes||[];
+  const detail=div.length? '<ul class="vx-list">'+div.map(x=>
+      '<li><b>'+esc(x.symbole)+'</b> — Vertex '+VX.fmt.num(x.pnl_vertex)
+      +' contre '+VX.fmt.num(x.pnl_courtier)+' chez le courtier · écart '
+      +VX.fmt.num(x.ecart)+'</li>').join('')+'</ul>' : '';
+  const orphelines=(pl.absentes_chez_le_courtier||[]);
+  const orphBloc=orphelines.length?'<div class="vx-meta">Suivies par Vertex mais '
+      +'NON détenues par le compte : '+orphelines.map(esc).join(' · ')+'</div>':'';
+  const concordant=d.concordant;
+  const ton=concordant===true?'neutral':concordant===null?'warning':'warning';
+  const titre=concordant===true?'Les sources de P&L concordent'
+      :concordant===null?'Aucune source de P&L n\'a répondu'
+      :'Les sources de P&L divergent';
+  (host||{}).innerHTML='<section class="vx-card vx-mb3" aria-label="Rapprochement du P&L">'
+    +'<div class="vx-card-header"><span class="vx-card-title">Rapprochement du P&amp;L</span>'
+    +'<span class="vx-meta vx-right">lecture seule · Vertex ne tranche pas</span></div>'
+    +'<div class="vx-insight" data-tone="'+ton+'"><b>'+esc(titre)+'</b>'
+    +'<div class="vx-meta">'+esc(d.note||'')+'</div></div>'
+    +'<div class="vx-grid vx-kpi-strip vx-mb3">'+lignes+'</div>'
+    +detail+orphBloc
+    +(d.erreur_courtier?'<div class="vx-meta">Courtier : '+esc(d.erreur_courtier)+'</div>':'')
+    +'</section>';
+}
+
 /* ═══ RISQUE PRIORISÉ (LOT F — moteur risk_engine, positions réelles §26) ═══ */
 async function renderRisk(){
   const pos=E().positions();
-  if(!pos.length){$('pf-body').innerHTML=VX.states.emptyDesk('Aucune position déclarée — le risque se calcule sur les positions réelles, jamais sur les candidats du scanner.');return;}
+  if(!pos.length){($('pf-body')||{}).innerHTML=VX.states.emptyDesk('Aucune position déclarée — le risque se calcule sur les positions réelles, jamais sur les candidats du scanner.');return;}
   const rich=enrich(pos,await quotesFor(pos));
   renderSummary(rich);
   let scan=null;try{scan=await VX.fetch('/scan',{ttl:300000});}catch(e){}
@@ -760,7 +835,7 @@ async function renderRisk(){
       <span class="vx-kpi-label">${l}</span><span class="vx-kpi-value" style="font-size:22px">${v==null?'n/d':v}</span>
       <span class="vx-kpi-delta ${cls||'vx-muted'}">${dd}</span></div>`;
 
-    $('pf-body').innerHTML=prioBlock+`<div class="vx-grid vx-kpi-strip vx-mb3" id="pf-risk-kpis">
+    ($('pf-body')||{}).innerHTML=prioBlock+'<div id="pf-pnl-recon"></div>'+`<div class="vx-grid vx-kpi-strip vx-mb3" id="pf-risk-kpis">
       ${_rk('Concentration HHI',risk.hhi!=null?risk.hhi:null,'0 = dispersé · 1 = concentré',(_hhi!=null&&_hhi>=66)?'vx-neg':'','pf-risk-gauge')}
       ${_rk('Bêta',risk.beta!=null?risk.beta:null,'pondéré')}
       ${_rk('Drawdown',risk.drawdown_pct!=null?risk.drawdown_pct+' %':null,'depuis le pic')}
@@ -831,7 +906,10 @@ async function renderRisk(){
         } else {_sh.innerHTML=_se.map(function(e){return kv(e[0],e[1]+' %');}).join('');}
       }
     }catch(e){}
-  }catch(e){$('pf-body').innerHTML=VX.states.error('Moteur de risque injoignable : '+e.message);}
+    /* Le rapprochement se peint APRES le reste : il interroge le courtier et
+       ne doit pas retarder l'affichage du risque. Son hote existe deja. */
+    renderPnlRecon();
+  }catch(e){($('pf-body')||{}).innerHTML=VX.states.error('Moteur de risque injoignable : '+e.message);}
 }
 
 /* Dépendances cachées (LOT 16) : knowledge graph — paires partageant AU MOINS
@@ -872,7 +950,18 @@ async function renderHiddenDeps(){
   host.innerHTML='<summary>Expertise · dépendances cachées</summary><div class="vx-card vx-mt2"><div class="vx-card-header"><span class="vx-card-title">Dépendances cachées (Knowledge Graph)</span>'
     +'<span class="vx-chart-question">Deux titres partagent-ils une exposition non évidente&nbsp;?</span></div>'
     +depHtml+grpHtml+seHtml+qHtml
-    +'<div class="vx-card-footer">'+VX.updateIndicator(Date.now(),'knowledge graph (secteur déclaré · co-mouvement · catalyseurs datés · desk)','delayed')
+    +'<div class="vx-card-footer">'
+    /* `Date.now()` annonçait « mis à jour maintenant » pour un graphe qui peut
+       dater de plusieurs scans : l'horodatage RÉEL de construction est servi
+       par l'API (`age_s`). Un âge faux est pire qu'un âge absent. */
+    +VX.updateIndicator(d.age_s!=null?(Date.now()-d.age_s*1000):null,
+        'knowledge graph (secteur déclaré · co-mouvement · catalyseurs datés · desk)',
+        d.fraicheur==='STALE'?'stale':'delayed')
+    /* Le graphe du scan PRÉCÉDENT est une réponse utilisable — à condition de
+       dire qu'elle date. Servir du périmé en silence serait pire que la
+       lenteur qu'on vient de retirer. */
+    +(d.fraicheur==='STALE'?' · <span class="vx-badge" data-tone="warn">SCAN PRÉCÉDENT</span>':'')
+    +(d.reconstruction_en_cours?' · <span class="vx-meta">recalcul en cours</span>':'')
     +(d.demo?' · <span class="vx-badge" data-tone="neutral">DÉMO</span>':'')+'</div></div>';
   $('pf-body').appendChild(host);
 }
@@ -917,7 +1006,7 @@ async function renderWatchlist(){
     declenchee:'Déclenchée',invalidee:'Invalidée',archivee:'Archivée'};
   /* cycle de vie watchlist → couleur (déclenchée=vert, proche/attente=jaune, invalidée=rouge) */
   const wlCls=s=>s==='declenchee'?'vx-pos':(s==='proche'||s==='en_attente')?'vx-warn':s==='invalidee'?'vx-neg':'';
-  $('pf-body').innerHTML=`
+  ($('pf-body')||{}).innerHTML=`
     <div class="vx-page-lead vx-mb3"><b>Trois types de surveillance, trois engagements différents.</b>
       <div class="vx-meta">Watchlist = idée documentée · Suivi actif = plan entrée/stop/objectif · Favori = raccourci sans thèse.</div></div>
     <div class="vx-section-stack">
@@ -1011,7 +1100,7 @@ async function pfFresh(){try{
   const a=(pk&&pk.data&&typeof pk.data.age_s==='number')?pk.data.age_s*1000:null;
   el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:a,live:live}));
 }catch(e){}}
-function boot(){pfFresh();(RENDER[VIEW]||renderSynthese)().catch(e=>{$('pf-body').innerHTML=VX.states.error(e.message);});}
+function boot(){pfFresh();(RENDER[VIEW]||renderSynthese)().catch(e=>{($('pf-body')||{}).innerHTML=VX.states.error(e.message);});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 ['vx:position-changed','vx:watchlist-changed','vx:follow-changed','vx:favorites-changed']
   .forEach(ev=>VX.bus.on(ev,(e)=>{if((e.detail||{}).source!=='sync')return boot();boot();}));

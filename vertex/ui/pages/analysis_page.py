@@ -77,11 +77,11 @@ def render_index(view: str = '') -> str:
 <script>
 (function(){
 const $=(id)=>document.getElementById(id);
-$('an-recent').innerHTML=VX.recentTickers.get().map(s=>
+($('an-recent')||{}).innerHTML=VX.recentTickers.get().map(s=>
   `<button class="vx-btn vx-ticker" data-open-analysis="${s}">${s}</button>`).join('')
   ||'<span class="vx-muted">Aucun titre consulté récemment.</span>';
 let favs=[];try{favs=JSON.parse(localStorage.getItem('myFavs')||'[]');}catch(e){favs=[];}
-$('an-favs').innerHTML=(Array.isArray(favs)&&favs.length?favs:[]).map(s=>
+($('an-favs')||{}).innerHTML=(Array.isArray(favs)&&favs.length?favs:[]).map(s=>
   `<button class="vx-btn vx-ticker" data-open-analysis="${s}">${s}</button>`).join('')
   ||'<span class="vx-muted">Aucun favori — marque un titre avec ★ depuis sa fiche.</span>';
 let names=null;
@@ -90,10 +90,10 @@ let names=null;
 const escN=s=>String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
 $('an-search').addEventListener('input',async function(){
   const q=this.value.trim().toUpperCase();
-  if(!q){$('an-results').innerHTML='';return}
+  if(!q){($('an-results')||{}).innerHTML='';return}
   try{ if(!names){const d=await VX.fetch('/api/names',{ttl:600000});names=d.names||d;} }catch(e){names={};}
   const hits=Object.entries(names).filter(([s,n])=>s.startsWith(q)||String(n).toUpperCase().includes(q)).slice(0,8);
-  $('an-results').innerHTML=(hits.length?hits:( /^[A-Z.]{1,6}$/.test(q)?[[q,'ouvrir la fiche']]:[]))
+  ($('an-results')||{}).innerHTML=(hits.length?hits:( /^[A-Z.]{1,6}$/.test(q)?[[q,'ouvrir la fiche']]:[]))
     .map(([s,n])=>`<button class="vx-btn" style="justify-content:flex-start" data-open-analysis="${escN(s)}">
       <span class="vx-ticker" style="min-width:64px">${escN(s)}</span><span class="vx-dim">${escN(n)}</span></button>`).join('')
     ||VX.states.empty('Aucun titre trouvé dans l’univers.');
@@ -108,6 +108,7 @@ $('an-search').focus();
 
 _SECTIONS = """
 <div id="an-stale"></div>
+<div id="an-annexes"></div>
 <!-- Identité compacte : le verdict canonique reste dans an-verdict, juste dessous. -->
 <section class="vx-card vx-accent an-identity" id="an-hero" aria-labelledby="an-identity-title">
   <h2 class="vx-sr-only" id="an-identity-title">Identité et cours de %%SYM%%</h2>
@@ -278,7 +279,7 @@ VX.recentTickers.push(SYM);
 
 /* Header : badges entités + favori */
 function paintBadges(){
-  $('an-badges').innerHTML=E()?E().badges(SYM):'';
+  ($('an-badges')||{}).innerHTML=E()?E().badges(SYM):'';
   const fav=!!(E()&&E().isFavorite(SYM));
   $('an-fav').style.color=fav?'var(--vx-warning)':'var(--vx-text-muted)';
   $('an-fav').setAttribute('aria-pressed',String(fav));
@@ -288,12 +289,44 @@ $('an-fav').addEventListener('click',()=>{E().toggleFavorite(SYM);paintBadges();
 ['vx:favorites-changed','vx:watchlist-changed','vx:follow-changed','vx:position-changed','vx:alert-changed']
   .forEach(ev=>VX.bus.on(ev,paintBadges));
 
-/* Thèse (note utilisateur) */
+/* Thèse (note utilisateur). Sans thèse, la carte ne reste pas muette : elle
+   propose un BROUILLON construit sur le dossier réel (décision, plan, facteurs
+   du comité) — les moteurs proposent, l'utilisateur décide et édite. */
+let DEC=null;   // dernière décision exécutive peinte (source du brouillon)
+function thesisDraft(){
+  if(!DEC||!(DEC.decision_label||DEC.final_decision))return null;
+  const tg=DEC.targets||{},L=[];
+  const px=v=>v!=null?VX.fmt.nd(v):'—';
+  L.push('Thèse '+SYM+' — brouillon moteur, à valider ('+new Date().toLocaleDateString('fr-FR')+')');
+  L.push('Décision moteur : '+(DEC.decision_label||DEC.final_decision)
+    +(DEC.confidence!=null?' — confiance '+DEC.confidence+'/100':''));
+  if(DEC.entry!=null||DEC.invalidation!=null||DEC.stop!=null)
+    L.push('Plan : entrée '+px(DEC.entry)+' · invalidation '+px(DEC.invalidation!=null?DEC.invalidation:DEC.stop)
+      +(tg.tp1!=null?' · cible '+px(tg.tp1):'')+(tg.tp3!=null?' / étendue '+px(tg.tp3):''));
+  const pros=(DEC.pros||[]).slice(0,2),cons=(DEC.cons||[]).slice(0,2),unk=(DEC.unknowns||[])[0];
+  if(pros.length)L.push('Pour : '+pros.join(' ; '));
+  if(cons.length)L.push('Contre : '+cons.join(' ; '));
+  if(unk)L.push('À surveiller : '+unk);
+  L.push('Ma lecture personnelle : ');
+  return L.join('\n');
+}
 function paintThesis(){
   const note=E()&&E().note(SYM);
-  $('an-thesis').innerHTML=note?esc(note).replace(/\n/g,'<br>'):
-    VX.states.emptyDesk('Aucune thèse enregistrée sur ce titre.',
+  if(note){($('an-thesis')||{}).innerHTML=esc(note).replace(/\n/g,'<br>');return;}
+  const draft=thesisDraft();
+  if(!draft){
+    ($('an-thesis')||{}).innerHTML=VX.states.emptyDesk('Aucune thèse enregistrée sur ce titre.',
       `<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${SYM}','note')">Écrire la thèse</button>`);
+    return;
+  }
+  ($('an-thesis')||{}).innerHTML=
+    '<div class="vx-meta vx-mb1">Aucune thèse enregistrée — brouillon proposé depuis le dossier réel (les moteurs expliquent, toi tu décides) :</div>'
+    +'<pre class="vx-mono" style="white-space:pre-wrap;background:var(--vx-surface-2,#121214);border:1px dashed var(--vx-border,#30292B);padding:.7rem .8rem;border-radius:10px;font-size:12.5px;line-height:1.7;margin:0 0 .7rem">'+esc(draft)+'</pre>'
+    +'<div class="vx-flex vx-gap2 vx-wrap">'
+    +'<button class="vx-btn vx-btn-sm vx-btn-primary" id="an-th-use">Adopter ce brouillon</button>'
+    +`<button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXEntities.openAddModal('${SYM}','note')">Écrire ma propre thèse</button></div>`;
+  const u=$('an-th-use');
+  if(u)u.addEventListener('click',()=>{E().setNote(SYM,draft);VXEntities.openAddModal(SYM,'note');paintThesis();});
 }
 VX.bus.on('vx:thesis-changed',paintThesis);
 
@@ -305,7 +338,13 @@ async function loadDossier(){
      l'utilisateur a navigué ailleurs pendant les fetch, _gen a changé → on abandonne
      AVANT de peindre, pour ne jamais afficher le dossier d'un titre sur une autre page. */
   const _g=(window.VX&&VX.page)?VX.page._gen:0;
-  try{t=await VX.fetch('/api/ticker/'+SYM,{ttl:60000});}catch(e){}
+  /* Le dossier peut arriver INCOMPLET : depuis que la collecte est sortie du
+     chemin synchrone, les annexes se construisent en fond. Le cache client
+     (`ttl` de session, jusqu'a 30 min) figerait alors la version vide pour
+     toute la session — la premiere visite d'un titre resterait un ecran creux.
+     Tant qu'une collecte est annoncee EN COURS, on force donc le reseau. */
+  const _ttlDossier=(window.__anAttentes>0)?0:60000;
+  try{t=await VX.fetch('/api/ticker/'+SYM,{ttl:_ttlDossier});}catch(e){}
   try{exec=await VX.fetch('/api/strategy/decision/'+SYM,{ttl:60000});}catch(e){}
   try{status=status||await VX.fetch('/api/live/status',{ttl:60000});}catch(e){}
   if(window.VX&&VX.page&&VX.page._gen!==_g)return;   // page supplantée → ne rien peindre
@@ -320,25 +359,67 @@ async function loadDossier(){
   const scanMode=(status&&status.mode)||'delayed';
   const scanSource=(priceDomain&&priceDomain.source)||'scan';
   if(!t||!t.in_universe&&!d.price){
-    $('an-stale').innerHTML='<div class="vx-error-banner">Titre hors du scan courant — dossier partiel. '
+    ($('an-stale')||{}).innerHTML='<div class="vx-error-banner">Titre hors du scan courant — dossier partiel. '
       +'<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a></div>';
   }
+  /* État des ANNEXES (entreprise, pairs, options, risques). Depuis que la
+     collecte est sortie du chemin synchrone — la fiche montait à 28–48 s sous
+     charge, et cinq demandes simultanées du même titre faisaient cinq
+     collectes dont une à 136,9 s — elles peuvent ne pas être encore là.
+     Le dire est OBLIGATOIRE : servir une fiche amputée en silence serait pire
+     que l'attente qu'on vient de retirer. */
+  try{
+    const m=(t&&t.meta)||null;
+    const hote=$('an-annexes');
+    if(hote&&m){
+      if(m.etat==='MISSING'||m.etat==='OFFLINE'){
+        hote.innerHTML='<div class="vx-insight" data-tone="risk">'
+          +'<b>Dossier en cours de constitution</b> — entreprise, pairs, options et risques '
+          +'n&#8217;ont pas encore été collectés'+(m.rafraichissement_en_cours?' (collecte en cours)':'')
+          +(m.erreur?' · '+esc(m.erreur):'')+'. Le prix et le détail du scan ci-dessus sont, eux, à jour.</div>';
+      }else{
+        const bits=[];
+        if(m.etat==='STALE')bits.push('<span class="vx-badge" data-tone="warn">SCAN PRÉCÉDENT</span>');
+        if(m.qualite==='PARTIELLE')bits.push('<span class="vx-badge" data-tone="warn">PARTIEL</span>'
+          +(m.erreur?' <span class="vx-meta">'+esc(m.erreur)+'</span>':''));
+        if(m.rafraichissement_en_cours)bits.push('<span class="vx-meta">actualisation en cours</span>');
+        hote.innerHTML=bits.length?('<div class="vx-meta">'+bits.join(' · ')+'</div>'):'';
+      }
+      /* Relance BORNEE. Sans borne, un titre dont la collecte echoue en
+         boucle ferait battre la page indefiniment ; avec zero relance, la
+         premiere visite resterait vide jusqu'au prochain rechargement. */
+      const enCours=m.rafraichissement_en_cours||m.etat==='MISSING';
+      window.__anAttentes=enCours?((window.__anAttentes||0)+1):0;
+      /* La borne doit couvrir la collecte REELLE, pas une intuition : mesuree
+         entre 17 et 46 s sur un titre neuf (compte reel, TWS ouvert). Une
+         premiere version bornait a 6 x 5 s = 30 s et perdait la course — la
+         fiche restait « en cours » alors que l'API etait complete. Recul
+         progressif : ~4+6+8+10+12+14+16+18+20+22 s, soit environ 130 s. */
+      if(enCours&&window.__anAttentes<=10){
+        const _d=Math.min(4000+window.__anAttentes*2000,22000);
+        setTimeout(()=>{ if(window.VX&&VX.page&&VX.page._gen!==_g)return; loadDossier(); },_d);
+      }else if(enCours){
+        hote.innerHTML+='<div class="vx-meta">La collecte n&#8217;a pas abouti apr&egrave;s plusieurs tentatives — '
+          +'<a href="/system?view=data">v&eacute;rifier les sources</a>.</div>';
+      }
+    }
+  }catch(e){}
   /* Hero */
-  $('an-name').textContent=(t&&t.company&&(t.company.name||t.company.shortName))||'';
-  $('an-price').textContent=VX.fmt.nd(d.price!==undefined?VX.fmt.price(d.price):null);
+  ($('an-name')||{}).textContent=(t&&t.company&&(t.company.name||t.company.shortName))||'';
+  ($('an-price')||{}).textContent=VX.fmt.nd(d.price!==undefined?VX.fmt.price(d.price):null);
   const verdictPrice=$('an-verdict-price');
   if(verdictPrice)verdictPrice.textContent=d.price!=null?VX.fmt.price(d.price):'n/d';
   const chg=d.change;
-  $('an-change').textContent=chg!==undefined?VX.fmt.pct(chg):'n/d';
+  ($('an-change')||{}).textContent=chg!==undefined?VX.fmt.pct(chg):'n/d';
   $('an-change').className='vx-mono '+(chg>0?'vx-pos':chg<0?'vx-neg':'vx-muted');
   /* Badge de fraîcheur du prix (§8) : Live / Analyse / À actualiser, honnête. */
   try{
     if($('an-fresh')&&window.VX&&VX.freshness){
-      if(d.price==null){$('an-fresh').innerHTML='';}
+      if(d.price==null){($('an-fresh')||{}).innerHTML='';}
       else{
         const ageMs=priceDomain&&typeof priceDomain.age_s==='number'?priceDomain.age_s*1000:null;
-        if(demo){$('an-fresh').innerHTML='<span class="vx-fresh-chip" data-state="demo">DÉMO</span>';}
-        else{$('an-fresh').innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:ageMs,live:scanMode==='live'}));}
+        if(demo){($('an-fresh')||{}).innerHTML='<span class="vx-fresh-chip" data-state="demo">DÉMO</span>';}
+        else{($('an-fresh')||{}).innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:ageMs,live:scanMode==='live'}));}
       }
     }
   }catch(e){}
@@ -384,7 +465,7 @@ async function loadDossier(){
     ['Timing',scoreValue(sc.timing)],['Asymétrie',scoreValue(sc.asymmetry)],
     ['Qualité',scoreValue(sc.data_quality)]];
   const missingAxes=scAxes.filter(a=>a[1]===null).map(a=>a[0]);
-  $('an-scores').innerHTML=scAxes.map(([k,v])=>
+  ($('an-scores')||{}).innerHTML=scAxes.map(([k,v])=>
     `<span class="vx-badge" title="${k}">${k} <b class="vx-mono">${VX.fmt.nd(v)}</b></span>`).join('')
     +(demo?'<span class="vx-badge" style="color:var(--vx-warning)">DÉMO</span>':'')
     +'<div id="an-scorecard-radar" style="flex:1 0 100%;max-width:240px;margin:8px auto 0"></div>';
@@ -392,7 +473,7 @@ async function loadDossier(){
     VXCharts.radar('an-scorecard-radar',{axes:scAxes.map(a=>({label:a[0],value:a[1]})),
       max:100,ariaLabel:'Scorecard '+SYM,color:VXCharts.colors.brand,width:240,height:190});
   }else if(missingAxes.length){
-    $('an-scorecard-radar').innerHTML='<div class="vx-empty" data-state="empty">Radar non tracé — axes n/d : '
+    ($('an-scorecard-radar')||{}).innerHTML='<div class="vx-empty" data-state="empty">Radar non tracé — axes n/d : '
       +missingAxes.map(esc).join(', ')+'.</div>';
   }
 
@@ -425,7 +506,21 @@ async function loadDossier(){
   if(cut.length>10){
     /* Chandeliers PRO (TradingView LWC) si OHLC daté dispo ; repli auto sur le
        candlestick Chart.js sinon. Même contrat de carte (contrôles TF, explain…). */
-    const drawChart=(window.VXCharts&&VXCharts.lwCandlestickCard)||VXCharts.candlestickCard;
+    /* La garde ne protégeait que le côté GAUCHE du `||` : quand `VXCharts`
+       n'est pas encore chargé, l'opérateur évalue la droite et lève
+       « VXCharts is not defined ». Le défaut dormait parce que le dossier
+       mettait 3 à 43 s à revenir — la bibliothèque avait toujours fini de
+       charger avant. Depuis que la route répond en 3 ms, la course se perd,
+       et l'erreur est apparue dans `/api/client-log`. */
+    const _VC=window.VXCharts;
+    /* Repli qui AVOUE, plutôt qu'un `return` : nous sommes au milieu de
+       `loadDossier()`, et sortir ici priverait la fiche de tout ce qui suit —
+       le graphique manquant emporterait la thèse, les catalyseurs et le plan. */
+    const drawChart=(_VC&&(_VC.lwCandlestickCard||_VC.candlestickCard))||function(id){
+      ($(id)||{}).innerHTML=(window.VX&&VX.states&&VX.states.error)
+        ? VX.states.error('Graphique indisponible — biblioth&egrave;que non charg&eacute;e')
+        : '<div class="vx-meta">Graphique indisponible.</div>';
+    };
     drawChart('an-chart',{
       title:SYM+' — graphique principal',timeframe:TF,
       question:'Le timing est-il exploitable maintenant ?',
@@ -446,7 +541,7 @@ async function loadDossier(){
     const chartEl=document.querySelector('#an-chart .vx-lwc')||document.querySelector('#an-chart canvas');
     if(chartEl)chartEl.addEventListener('dblclick',()=>VXCharts.alertFromLevel(SYM,plan.entry||d.price));
   }else{
-    $('an-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Série de prix indisponible pour ce titre.')+'</div>';
+    ($('an-chart')||{}).innerHTML='<div class="vx-card">'+VX.states.empty('Série de prix indisponible pour ce titre.')+'</div>';
   }
 
   /* 4. Fondamental */
@@ -669,29 +764,33 @@ async function loadDossier(){
             const pre=document.getElementById('ot-pre');
             if(pre&&navigator.clipboard)navigator.clipboard.writeText(pre.textContent);
             VX.toast('Ticket d’analyse copié — aucune transmission','success');});
-        }).catch(function(e){document.getElementById('ot-out').innerHTML='<div class="vx-error-banner">'+esc(e.message)+'</div>';});
+        }).catch(function(e){(document.getElementById('ot-out')||{}).innerHTML='<div class="vx-error-banner">'+esc(e.message)+'</div>';});
     });
   };
 
-  /* 11. Options */
+  /* 11. Options — le moteur (options_for_position) sert `suggestions`
+     [{role, role_label, grade, score, strike, exp, dte, delta, premium, pop,
+     why}] ; l'ancien lecteur cherchait `contracts` (clé jamais servie) et la
+     carte restait vide alors que le board avait des contrats. */
   try{
     const ob=await VX.fetch('/api/options-for/'+SYM+'?type=CALL',{ttl:180000});
-    const cs=(ob&&(ob.contracts||ob.list||ob.best))||ob||{};
-    const arr=Array.isArray(cs)?cs:(cs.contracts||[]);
+    const arr=(ob&&(ob.suggestions||ob.contracts||ob.list))||[];
+    const why=(arr[0]&&arr[0].why)?('<div class="vx-meta vx-mt1">'+esc(arr[0].why)+'</div>'):'';
     body('an-options',arr.length?
       `<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
         <th>Contrat</th><th class="vx-num">Strike</th><th>Échéance</th><th class="vx-num">Delta</th>
-        <th class="vx-num">Prime</th><th class="vx-num">OI</th><th></th></tr></thead><tbody>${
-        arr.slice(0,3).map(c=>`<tr>
-          <td data-label="Contrat"><span class="vx-badge" style="color:var(--vx-violet)">CALL</span></td>
+        <th class="vx-num">Prime</th><th class="vx-num">POP</th><th class="vx-num">Note</th><th></th></tr></thead><tbody>${
+        arr.slice(0,4).map(c=>`<tr>
+          <td data-label="Contrat"><span class="vx-badge" style="color:${c.type==='PUT'?'var(--vx-negative)':'var(--vx-violet)'}"${c.why?` title="${esc(c.why)}"`:''}>${esc(c.role_label||c.role||c.type||'CALL')}</span></td>
           <td data-label="Strike" class="vx-num">${VX.fmt.nd(c.strike)}</td>
-          <td data-label="Échéance" class="vx-mono">${VX.fmt.nd(c.exp||c.expiry)}</td>
+          <td data-label="Échéance" class="vx-mono">${VX.fmt.nd(c.exp||c.expiry)}${c.dte!=null?' <span class="vx-meta">('+c.dte+' j)</span>':''}</td>
           <td data-label="Delta" class="vx-num">${VX.fmt.nd(c.delta)}</td>
           <td data-label="Prime" class="vx-num">${VX.fmt.nd(c.mid??c.premium??c.cost)}</td>
-          <td data-label="OI" class="vx-num">${VX.fmt.nd(c.oi??c.openInterest)}</td>
+          <td data-label="POP" class="vx-num">${c.pop!=null?c.pop+' %':'—'}</td>
+          <td data-label="Note" class="vx-num">${esc(c.grade||'—')}${c.score!=null?' <span class="vx-meta">'+c.score+'/100</span>':''}</td>
           <td><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=options&sym=${SYM}">Analyser →</a></td></tr>`).join('')}
-      </tbody></table></div>`
-      :VX.states.empty('Aucun contrat CALL exploitable retourné par le moteur.',
+      </tbody></table></div>`+why
+      :VX.states.empty((ob&&ob.note)||'Aucun contrat CALL exploitable retourné par le moteur.',
         `<a class="vx-btn vx-btn-sm" href="/opportunities?view=options&sym=${SYM}">Ouvrir le desk options</a>`));
   }catch(e){body('an-options',VX.states.empty('Chaîne d’options indisponible (IBKR hors ligne ou titre sans options).'));}
 
@@ -778,6 +877,7 @@ async function loadDecisionStack(){
     if(SC)SC.innerHTML='';if(CO)CO.innerHTML='';
     return;
   }
+  DEC=dec;paintThesis();   // le brouillon de thèse se nourrit du dossier réel
   const tone=dec.decision_tone||'gray';
   const conf=(dec.confidence!=null)?dec.confidence:null;
   const entry=dec.entry,inval=dec.invalidation!=null?dec.invalidation:dec.stop;
@@ -823,12 +923,20 @@ async function loadDecisionStack(){
         +'<div class="vx-card-foot"><span class="vx-meta">Scénarios dérivés du plan de niveaux moteur (entrée/invalidation/cibles) — aucune probabilité inventée.</span></div></section>';
     }else{SC.innerHTML='<div class="vx-card">'+VX.states.empty('Plan de niveaux insuffisant pour construire les scénarios.')+'</div>';}
   }
-  /* Raisonnement du comité (intégré depuis Intelligence) */
+  /* Raisonnement du comité (intégré depuis Intelligence). L'accord chiffré
+     seul (« accord 6/100 ») était cryptique : il est traduit en langage
+     humain (faible / moyen / fort) et expliqué quand les moteurs divergent. */
   if(CO){
     const com=dec.committee||{};
     const pros=(dec.pros||[]).slice(0,4),cons=(dec.cons||[]).slice(0,4),unk=(dec.unknowns||[]).slice(0,3);
+    const ag=com.agreement;
+    const agBadge=ag==null?'':('<span class="vx-actions"><span class="vx-badge '
+      +(ag>=70?'vx-pos':ag>=40?'':'vx-neg')+'" title="Convergence des moteurs entre eux (0–100)">accord des moteurs : '
+      +(ag>=70?'fort':ag>=40?'moyen':'faible')+' <span class="vx-mono">('+ag+'/100)</span></span></span>');
+    const agNote=(ag!=null&&ag<40)
+      ?' Accord faible : les moteurs se contredisent — la prudence du verdict vient de là.':'';
     CO.innerHTML='<section class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Raisonnement du comité</span>'
-      +(com.agreement!=null?'<span class="vx-actions"><span class="vx-badge">accord '+com.agreement+'/100</span></span>':'')+'</div>'
+      +agBadge+'</div>'
       +(com.view?'<div class="vx-dim vx-mb2">Consensus : <b>'+esc(com.view)+'</b>'+(com.has_contradiction?' · <span class="vx-neg">contradictions internes exposées</span>':'')+'</div>':'')
       +'<div class="vx-grid">'
       +'<div class="vx-col-6"><div class="vx-meta vx-mb1">Facteurs positifs</div>'+(pros.length?pros.map(p=>'<div class="vx-pos" style="font-size:12px">+ '+esc(p)+'</div>').join(''):'<span class="vx-muted">—</span>')+'</div>'
@@ -836,7 +944,7 @@ async function loadDecisionStack(){
       +'</div>'
       +(com.devils_advocate?'<div class="vx-insight vx-mt2" data-tone="risk"><b>Avocat du diable</b><div class="vx-mt1">'+esc(com.devils_advocate)+'</div></div>':'')
       +(unk.length?'<div class="vx-kv vx-mt2"><span class="k">Ce que nous ne savons pas</span><span class="v vx-muted">'+unk.map(esc).join(' · ')+'</span></div>':'')
-      +'<div class="vx-card-foot"><span class="vx-meta">Comité déterministe (decision stack) — l\'IA explique, ne décide jamais.</span></div></section>';
+      +'<div class="vx-card-foot"><span class="vx-meta">Comité déterministe (decision stack) — l\'IA explique, ne décide jamais.'+agNote+'</span></div></section>';
   }
 }
 function demoState(){return !!(window.__vxStatus&&window.__vxStatus.demo);}

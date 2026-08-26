@@ -19,10 +19,41 @@ IV_SCENARIOS = (-0.20, -0.10, 0.0, 0.10, 0.20)
 LIMITATIONS = [
     'pricing Black-Scholes européen : ESTIMATION pour des options américaines '
     '(exercice anticipé non modélisé) — préférer les valeurs broker quand disponibles',
-    'dividendes intégrés via un rendement continu — un dividende exceptionnel '
-    'proche de l’échéance peut fausser l’estimation',
     'IV supposée constante par strike dans chaque scénario (pas de déformation de smile)',
 ]
+
+#  La phrase sur le dividende est DERIVEE du `q` reellement employe, jamais
+#  affirmee d'avance.
+#
+#  Elle etait auparavant dans `LIMITATIONS` en dur — « dividendes integres via
+#  un rendement continu » — alors qu'AUCUN appelant de production ne renseigne
+#  `UnderlyingSetup.dividend_yield` : les deux sites (`options_intel_api` et
+#  `redesign`) construisent le setup sans ce champ, qui vaut donc `0.0`. Seuls
+#  des bancs le passaient. Le produit affirmait donc integrer un dividende
+#  qu'il n'appliquait jamais — meme faute qu'en D-084, ou l'ecran de securite
+#  promettait une restriction absente.
+#
+#  Mesure du 26 aout 2026, DTE 180 (la cible du mandat), ATM, IV 30 % : ignorer
+#  un rendement de 3 % surevalue le call de 8,9 %, de 7 % le surevalue de
+#  19,8 %. L'ecart va dans le sens qui flatte une these d'achat.
+DIVIDENDE_APPLIQUE = ('dividende pris en compte via un rendement continu de {q} — '
+                      'un dividende exceptionnel proche de l’échéance peut '
+                      'fausser l’estimation')
+DIVIDENDE_ABSENT = ('dividende NON pris en compte (rendement non fourni au '
+                    'simulateur) — sur un titre distributeur, la prime d’un call '
+                    'est SURESTIMÉE, d’autant plus que l’échéance est lointaine')
+
+
+def limitations_pour(q: float) -> list:
+    """Les limites de CETTE simulation, dividende compris.
+
+    Deriver la phrase du `q` employe est la seule facon qu'elle ne mente pas :
+    un texte ecrit d'avance decrit ce qu'on croyait faire, pas ce qui a eu lieu.
+    """
+    q = float(q or 0.0)
+    if q > 0:
+        return list(LIMITATIONS) + [DIVIDENDE_APPLIQUE.format(q='%.2f %%' % (q * 100))]
+    return list(LIMITATIONS) + [DIVIDENDE_ABSENT]
 
 
 def _ncdf(x: float) -> float:
@@ -76,6 +107,9 @@ def simulate(contract: dict, setup, rate_curve: RateCurve | None = None,
     mid = contract.get('mid')
     iv = contract.get('iv')
     rate_curve = rate_curve or RateCurve()
+    #  Connu des le setup : le calculer AVANT le refus DTE permet a la reponse
+    #  refusee de porter la meme verite sur le dividende que la reponse servie.
+    q = float(setup.dividend_yield or 0.0)
     try:
         raw_dte = float(contract.get('dte'))
         dte = int(raw_dte) if raw_dte >= 0 and raw_dte.is_integer() else None
@@ -90,11 +124,10 @@ def simulate(contract: dict, setup, rate_curve: RateCurve | None = None,
                 'input_coverage': {'dte_available': False,
                                    'status': 'DTE_UNAVAILABLE',
                                    'read_only': True},
-                'limitations': list(LIMITATIONS) + [
+                'limitations': limitations_pour(q) + [
                     'DTE indisponible ou invalide — simulation refusée (aucune échéance inventée)']}
     rate_q = rate_curve.rate_for_tenor(max(dte, 1))
     rate = rate_q.rate
-    q = float(setup.dividend_yield or 0.0)
 
     result = {'current': {}, 'at_stop': None, 'at_tp1': None, 'at_tp2': None,
               'at_tp3': None, 'time_decay': [], 'iv_sensitivity': [],
@@ -105,7 +138,7 @@ def simulate(contract: dict, setup, rate_curve: RateCurve | None = None,
               'input_coverage': {'dte_available': True,
                                  'status': 'DTE_REPORTED',
                                  'read_only': True},
-              'limitations': list(LIMITATIONS)}
+              'limitations': limitations_pour(q)}
     if not mid or mid <= 0 or dte <= 0 or spot <= 0:
         result['limitations'].append('données de contrat insuffisantes — simulation refusée '
                                      '(pas de chiffre inventé)')

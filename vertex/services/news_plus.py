@@ -15,7 +15,6 @@ Analyse only.
 """
 
 import re
-import xml.dom.minidom as minidom
 
 _POS = ('beat', 'beats', 'surge', 'soar', 'rally', 'record', 'upgrade', 'raises',
         'strong', 'growth', 'profit', 'wins', 'approval', 'breakthrough', 'buyback',
@@ -66,22 +65,132 @@ def aggregate(items):
             for s, d in by.items()}
 
 
+#: Plafond de taille d'un flux. Un RSS Google News fait quelques dizaines de
+#: kilo-octets ; deux mega-octets laissent une marge confortable et bornent ce
+#: qu'un flux hostile peut faire avaler au processus avant meme le parsing.
+TAILLE_MAX_FLUX = 2 * 1024 * 1024
+
+
+class FluxRefuse(ValueError):
+    """Ce flux ne sera pas parse — et on dit pourquoi."""
+
+
+def _items_surs(brut: str, n: int) -> list:
+    """Les `n` premiers `<item>` d'un flux, lus par un parseur QUI REFUSE le DTD.
+
+    ## La mesure qui justifie ce refus
+
+    `parse_rss` lit du XML **distant et non fiable** (Google News). Il passait
+    par `minidom.parseString`, dont l'expansion d'entites est active. Mesure du
+    25 aout 2026, sur le vrai `parse_rss` :
+
+    | niveaux | charge envoyee | titre rendu | facteur |
+    |---|---:|---:|---:|
+    | 3 | 233 o | 800 o | x100 |
+    | 5 | 343 o | 80 000 o | x10 000 |
+    | 6 | **398 o** | **800 000 o** | **x100 000** |
+
+    Chaque niveau supplementaire multiplie par dix : neuf niveaux tiennent
+    encore dans 500 octets et rendent 800 Mo. C'est un *billion laughs*, et il
+    est atteignable depuis un flux que Vertex va chercher lui-meme.
+
+    ## Pourquoi expat directement, et pas `ElementTree`
+
+    Premiere tentative : poser les gestionnaires sur `ET.XMLParser().parser`.
+    En Python 3.12, `XMLParser` est l'implantation C et n'expose PAS `.parser`
+    — le `getattr(..., None)` rendait donc le durcissement **silencieusement
+    inoperant**, et la mesure d'apres montrait l'expansion intacte. Un
+    durcissement qui ne durcit rien est pire que pas de durcissement : il
+    rassure. C'est la mesure qui l'a dit, pas la relecture.
+
+    ## Pourquoi refuser le DOCTYPE, et pas seulement les entites
+
+    Un flux RSS n'a jamais besoin d'une declaration de type. La refuser a la
+    racine supprime l'expansion d'entites, les entites externes et les
+    references recursives d'un seul geste — et se raisonne en une phrase, ce
+    qu'une liste d'interdictions particulieres ne permet pas.
+
+    ## Pourquoi pas `defusedxml`
+
+    Une dependance nouvelle exige licence verifiee, version verrouillee, audit
+    et rollback (CLAUDE.md). Le refus ci-dessus est plus STRICT que le defaut
+    de `defusedxml` — qui interdit les entites mais parse encore le DTD — et
+    tient dans la bibliotheque standard.
+    """
+    from xml.parsers import expat
+
+    analyseur = expat.ParserCreate()
+
+    def _refuser(*_a, **_k):
+        raise FluxRefuse('declaration de type de document refusee')
+
+    def _refuser_externe(*_a, **_k):
+        raise FluxRefuse('entite externe refusee')
+
+    analyseur.StartDoctypeDeclHandler = _refuser
+    analyseur.EntityDeclHandler = _refuser
+    analyseur.ExternalEntityRefHandler = _refuser_externe
+
+    items, pile, courant, texte = [], [], None, []
+
+    def _debut(nom, _attrs):
+        nonlocal courant, texte
+        local = nom.rsplit(':', 1)[-1]
+        pile.append(local)
+        if local == 'item' and len(items) < n:
+            courant = {}
+        texte = []
+
+    def _texte(donnees):
+        if courant is not None:
+            texte.append(donnees)
+
+    def _fin(nom):
+        nonlocal courant, texte
+        local = nom.rsplit(':', 1)[-1]
+        if pile:
+            pile.pop()
+        if courant is None:
+            texte = []
+            return
+        if local == 'item':
+            items.append(courant)
+            courant = None
+        elif local not in courant:
+            courant[local] = ''.join(texte).strip()
+        texte = []
+
+    analyseur.StartElementHandler = _debut
+    analyseur.CharacterDataHandler = _texte
+    analyseur.EndElementHandler = _fin
+    analyseur.Parse(brut.encode('utf-8') if isinstance(brut, str) else brut, True)
+    return items[:n]
+
+
 def parse_rss(xml_text, n=4):
-    """Parse un flux RSS Google News → [{title, link, publisher, time}]."""
+    """Parse un flux RSS Google News -> [{title, link, publisher, time}].
+
+    Rend `[]` sur n'importe quelle entree invalide ou hostile, et ne leve
+    jamais : c'est un repli reseau, il ne doit pas emporter l'appelant.
+    """
     out = []
     try:
-        doc = minidom.parseString(xml_text)
-        for item in doc.getElementsByTagName('item')[:n]:
-            def _txt(tag):
-                els = item.getElementsByTagName(tag)
-                return els[0].firstChild.nodeValue.strip() if els and els[0].firstChild else ''
-            title = _txt('title')
+        brut = xml_text if isinstance(xml_text, str) else (xml_text or '')
+        if len(brut) > TAILLE_MAX_FLUX:
+            #  Refus AVANT parsing : un flux hostile ne doit pas etre lu du
+            #  tout, pas seulement mal lu.
+            return []
+        for champs in _items_surs(brut, n):
+            title = champs.get('title') or ''
             if not title:
                 continue
-            # Google News suffixe " - Éditeur" au titre
-            pub = _txt('source') or (title.rsplit(' - ', 1)[1] if ' - ' in title else '')
+            #  Google News suffixe « - Editeur » au titre.
+            pub = champs.get('source') or (title.rsplit(' - ', 1)[1]
+                                           if ' - ' in title else '')
             out.append({'title': re.sub(r'\s+-\s+[^-]+$', '', title),
-                        'link': _txt('link'), 'publisher': pub, 'time': _txt('pubDate')})
+                        'link': champs.get('link') or '',
+                        'publisher': pub,
+                        'time': champs.get('pubDate') or ''})
     except Exception:
         return []
     return out

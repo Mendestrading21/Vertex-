@@ -259,9 +259,9 @@ function avCounts(){var a=avGet(),c={active:0,archived:0,types:{}};
  a.forEach(function(x){c[x.status==='archived'?'archived':'active']++;
   if(!AV.f.status||x.status===AV.f.status)c.types[x.type]=(c.types[x.type]||0)+1;});return c;}
 function avRender(){var a=avGet(),c=avCounts();
- document.getElementById('avHead').innerHTML='<b style="color:#C9D2E0">'+a.length+'</b> éléments · '
+ (document.getElementById('avHead')||{}).innerHTML='<b style="color:#C9D2E0">'+a.length+'</b> éléments · '
   +c.active+' actifs · '+c.archived+' archivés · ☁️ synchronisé — rien ne se perd, rien ne pollue';
- document.getElementById('avRoot').innerHTML=vaultSearch()+vaultEditor()
+ (document.getElementById('avRoot')||{}).innerHTML=vaultSearch()+vaultEditor()
   +'<div id="avFiltHost">'+vaultFilters(c)+'</div>'
   +'<div class="layout"><div id="avListHost">'+vaultList()+'</div>'+vaultDetail()+'</div>'
   +'<div style="margin-top:30px;padding-top:12px;border-top:1px solid var(--hair);font-size:11px;color:var(--faint)">🗄️ <b style="color:var(--mut)">Coffre interne</b> — sert à nettoyer les pages principales sans perdre les bonnes idées · Archiver = réversible, Supprimer = définitif (confirmation) · privé, synchronisé via ton desk.</div>';

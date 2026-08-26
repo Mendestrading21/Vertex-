@@ -9,11 +9,13 @@ d'injection : le Blueprint importe directement le même objet.
 Analyse uniquement, indicatif. Ces routes lisent, ne commandent jamais.
 """
 
+
 from flask import Blueprint, jsonify, request
 
 from vertex.engines import quant_engine as vertex
 from vertex.validation import out_of_sample as validator
 from vertex.portfolio import legacy_basket_risk as portfolio_risk
+from vertex.app import snapshot as _instantane
 from vertex.app.state import scan_state
 from vertex.app import input_validation as _input
 
@@ -816,7 +818,100 @@ def memory_postmortem_view(decision_id):
                         content=content)
 
 
+#: Le graphe mémoïsé, avec sa CLÉ DE FRAÎCHEUR — pas un cache sans propriétaire.
+#:
+#: Mesuré : 26 s par appel, et `/api/skyler/graph/<sym>` reconstruisait tout le
+#: graphe avant de propager, donc 26 s de plus. Un widget qui met 26 s ne
+#: s'affiche pas : il tourne, puis le navigateur abandonne. Le balayage des 92
+#: surfaces les comptait « en erreur » alors que les deux routes rendaient 200 —
+#: elles étaient seulement trop lentes pour être vues.
+#:
+#: Le résultat est DÉTERMINISTE pour un scan donné : mêmes séries, même
+#: watchlist sectorielle, même calendrier, mêmes positions. La clé nomme donc
+#: exactement ce dont il dépend, et rien de plus — un cache dont la clé oublie
+#: une entrée sert une réponse périmée en la présentant comme fraîche.
+#: Le graphe passe par le magasin d'instantanés PARTAGÉ. Il avait sa propre
+#: implantation stale-while-revalidate — mémo, verrou de construction, fil de
+#: fond, repos après échec — écrite pour lui seul. La fiche d'un titre en
+#: réclamait une deuxième : deux implantations du même mécanisme divergent
+#: toujours, et la doctrine interdit un propriétaire parallèle.
+#:
+#: Ce que le magasin conserve, à l'identique : une seule construction même à N
+#: visiteurs, l'ancien graphe servi MARQUÉ pendant la reconstruction, un échec
+#: qui n'efface jamais le dernier graphe connu, et un repos après échec.
+_KG_MAGASIN = _instantane.Magasin('knowledge-graph')
+
+#: Fenêtre de fraîcheur du graphe. Elle ne pilote PAS l'invalidation — c'est
+#: `_kg_clef()` qui le fait, en nommant tout ce dont le graphe dépend. La
+#: fenêtre est donc très large : changer de clé suffit à rendre l'entrée
+#: obsolète, et un délai supplémentaire ne ferait que reconstruire un graphe
+#: identique.
+_KG_FRAICHEUR_S = 24 * 3600.0
+
+FRAICHEUR_LIVE = _instantane.LIVE
+FRAICHEUR_STALE = _instantane.STALE
+
+
+def _kg_clef():
+    """Ce dont le graphe dépend, mesuré SANS le construire.
+
+    Les positions vivent dans `desk_data.json`, hors du scan : les oublier
+    figerait le graphe sur un portefeuille périmé. On prend donc l'horodatage
+    du fichier — lu, jamais deviné.
+    """
+    detail = scan_state.get('detail') or {}
+    try:
+        from vertex.app.state import cal_state
+        n_cal = len(cal_state.get('items') or [])
+    except Exception:  # noqa: BLE001
+        n_cal = -1
+    desk_ts = None
+    try:
+        import os
+        from vertex.services import persist
+        p = persist.cache_path('desk_data.json')
+        desk_ts = os.path.getmtime(p) if os.path.exists(p) else None
+    except Exception:  # noqa: BLE001
+        desk_ts = None
+    return (scan_state.get('scan_ts'), len(detail), n_cal, desk_ts)
+
+
 def _kg_build():
+    """Le graphe servi, TOUJOURS accompagné de ce qu'il vaut.
+
+    Mesuré le 24 août 2026, produit live : après CHAQUE scan, le premier
+    visiteur de la page Portefeuille attendait **15,1 s** (le suivant :
+    0,007 s). Le graphe du scan PRÉCÉDENT est pourtant une réponse utilisable
+    — à condition de dire qu'elle date.
+
+    La fraîcheur est ajoutée sur une COPIE : la figer dans la valeur mémoïsée
+    donnerait un âge qui ne bouge plus, c'est-à-dire un chiffre daté faux.
+    """
+    #  UNE seule clé, et un JETON qui porte la dépendance réelle : changer de
+    #  clé à chaque scan aurait fait d'un graphe parfaitement utilisable une
+    #  entrée « absente », donc une attente de 15 s. Le jeton le rend RASSIS.
+    valeur, meta = _KG_MAGASIN.servir('graphe', _kg_construire,
+                                      fraicheur_s=_KG_FRAICHEUR_S,
+                                      attendre=True, jeton=str(_kg_clef()))
+    if valeur is None:
+        #  Aucun graphe n'a jamais pu être construit : on le DIT, on ne rend
+        #  pas une coquille qui ressemblerait à « aucune dépendance cachée ».
+        return {'as_of': None, 'demo': False, 'nodes': [], 'edges': [],
+                'hidden_dependencies': [], 'hidden_groups': [],
+                'research_questions': [], 'sector_exposure': {},
+                'fraicheur': meta.etat, 'age_s': None,
+                'reconstruction_en_cours': meta.rafraichissement_en_cours,
+                'reconstruction_erreur': meta.erreur}
+    sortie = dict(valeur)
+    sortie['fraicheur'] = meta.etat
+    sortie['age_s'] = meta.age_s
+    sortie['reconstruction_en_cours'] = meta.rafraichissement_en_cours
+    if meta.erreur:
+        sortie['reconstruction_erreur'] = meta.erreur
+    return sortie
+
+
+def _kg_construire():
     """Assemble le Knowledge Graph depuis les sources réelles de l'état partagé :
     univers scanné, watchlist sectorielle statique, séries canoniques, calendrier
     earnings/macro, positions desk. Aucune relation inventée."""
@@ -886,6 +981,12 @@ def api_skyler_graph_sym(sym):
     out = {'symbol': sym, 'generator': 'deterministic',
            'as_of': g['as_of'], 'demo': g['demo'],
            'engine_version': g['engine_version'],
+           #  Cette route RECOPIE les champs a la main : sans ces trois-la,
+           #  elle servirait un graphe date en le presentant comme courant,
+           #  ce qui est pire que la lenteur qu'on vient de retirer.
+           'fraicheur': g.get('fraicheur'),
+           'age_s': g.get('age_s'),
+           'reconstruction_en_cours': g.get('reconstruction_en_cours'),
            'hops': hops, 'truncated': truncated,
            'paths': paths,
            'hidden_dependencies': [d for d in g['hidden_dependencies']

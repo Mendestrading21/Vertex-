@@ -172,8 +172,8 @@ function sgTable(){var by={};SG_ALL.forEach(function(x){by[x.code]=(by[x.code]||
 
 window.sgSetF=function(f){SG_F=f;var el=document.getElementById('sgTableSec');if(el)el.innerHTML=sgTable();};
 function sgRender(){
- document.getElementById('sgHead').innerHTML='<b style="color:#C9D2E0">'+SG_ALL.length+'</b> signaux hors-norme détectés par le scan · MAJ continue';
- document.getElementById('sgRoot').innerHTML=
+ (document.getElementById('sgHead')||{}).innerHTML='<b style="color:#C9D2E0">'+SG_ALL.length+'</b> signaux hors-norme détectés par le scan · MAJ continue';
+ (document.getElementById('sgRoot')||{}).innerHTML=
   sgSec('01','Le pouls','Combien de signaux, dans quel sens, et dans quelles familles — l\'humeur du sonar en un regard.',sgPulse())
   +sgSec('02','Le radar','Chaque point est un titre : à droite les titres de qualité, en haut les signaux intenses — la zone d\'or combine les deux.',sgRadar())
   +sgSec('03','Meilleures opportunités','Signal haussier × qualité du titre : ce que le sonar recommande d\'ouvrir en premier.',sgOpps())

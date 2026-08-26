@@ -22,7 +22,7 @@ def _tracked_and_untracked_files():
     """Fichiers de l'arbre de travail (suivis + non suivis non ignorés)."""
     out = subprocess.run(
         ['git', 'ls-files', '--cached', '--others', '--exclude-standard'],
-        cwd=ROOT, capture_output=True, text=True, check=True).stdout
+        cwd=ROOT, capture_output=True, text=True, encoding='utf-8', check=True).stdout
     for rel in out.splitlines():
         p = ROOT / rel
         if not p.is_file():

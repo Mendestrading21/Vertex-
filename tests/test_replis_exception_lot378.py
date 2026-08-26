@@ -94,12 +94,20 @@ REPLIS_NUMERIQUES = {
     ('vertex/engines/quant_engine.py', 0.0),
     ('vertex/engines/track_record.py', 0),             # nombre d'écritures : exact
     ('vertex/quant/ml_calibration.py', 0.0),
+    #  #779/G1 — `_i` et `_f` ont suivi leur unique appelant, `options_pack`,
+    #  depuis `terminal.py`. Ce sont les MÊMES coercitions, au même endroit de
+    #  la chaîne d'options, et les garde-fous qui écartent leur 0 avant tout
+    #  calcul servi (`if iv <= 0 or oi <= 0`, `if K < lo or K > hi`) ont déménagé
+    #  avec elles — c'est ce déplacement conjoint qui préserve le raisonnement.
+    #  Recensé ici pour que la frontière `vertex/` reste complète.
+    ('vertex/options/pack.py', 0),      # _i : coercition, 0 écarté au site d'appel
+    ('vertex/options/pack.py', 0.0),    # _f : idem
 }
 
 # Bornes de population. Elles ne jugent pas le code : elles rendent la DÉRIVE
 # visible. Un écart réclame un examen, pas une correction automatique.
 MAX_PASS_SEC = 50          # mesuré : 46
-MAX_NUMERIQUES = 14        # mesuré : 12
+MAX_NUMERIQUES = 14        # mesuré : 14 apres l'arrivee de _i/_f
 
 
 def _fichiers():
@@ -107,7 +115,7 @@ def _fichiers():
     for rac, _d, noms in os.walk(RACINE):
         for nom in sorted(noms):
             if nom.endswith('.py'):
-                out.append(os.path.join(rac, nom))
+                out.append(os.path.join(rac, nom).replace(os.sep, '/'))
     return out
 
 

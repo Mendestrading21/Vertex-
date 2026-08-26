@@ -233,6 +233,17 @@ _JS = r"""
 'use strict';
 const VIEW='%%VIEW%%';
 const $=(id)=>document.getElementById(id);
+//  ECRIRE DANS UN HOTE QUI N'EST PLUS LA. Cette page a des vues
+//  (?view=regime, sectors, macro...) : changer de vue REMPLACE le DOM, et
+//  une requete encore en vol reprend la main ensuite sur un element
+//  supprime — d'ou « unhandledrejection: Cannot set properties of null
+//  (setting 'innerHTML') » sur /markets, intermittent et donc longtemps mis
+//  sur le compte du hasard. Le fichier gardait DEJA trois ecritures
+//  (`if(el)`, `if(t)`, `if(f)`) et laissait les autres nues : c'est
+//  l'incoherence qui laissait passer la course, pas l'absence d'idee.
+//  `(...||{}).innerHTML=` ecrit dans un objet jetable quand l'hote a
+//  disparu : il n'y a plus rien a peindre, et la promesse ne se rompt pas.
+
 function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 function modeOf(scan){return scan&&scan.data_source==='demo'?'fallback':(scan&&scan.source==='ibkr'?'live':'delayed');}
 // Contexte de marché = market_ctx (régime/vix/breadth/verdict) FUSIONNÉ avec
@@ -242,7 +253,7 @@ function mkt(scan){if(!scan)return {};return Object.assign({},scan.market||{},sc
 async function getScan(){try{return await VX.fetch('/scan',{ttl:120000});}catch(e){return null;}}
 function demoBanner(scan){
   if(scan&&scan.data_source==='demo'&&$('vx-demo-banner'))
-    $('vx-demo-banner').innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
+    ($('vx-demo-banner')||{}).innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
 }
 function emptyCard(host,reason,action){
   const el=$(host);if(el)el.innerHTML='<div class="vx-card">'+VX.states.empty(reason,action||'')+'</div>';
@@ -252,19 +263,10 @@ const SCAN_ACTION='<a class="vx-btn vx-btn-sm" href="/system?view=data">Système
 /* ═══ OVERVIEW ═══ */
 /* Étiquettes FR + tonalité sémantique des régimes du moteur (jamais un code brut
    « UNKNOWN » affiché en grand : tonalité go=porteur, risk=défensif, ''=neutre). */
-const REGIME_LABEL={
-  TREND_UP:['Tendance haussière','go','Le vent est dans le dos — environnement porteur.'],
-  TREND_DOWN:['Tendance baissière','risk','Vent de face — priorité à la défense.'],
-  CHOP:['Sans direction','','Marché indécis — sélectivité et patience.'],
-  RISK_ON:['Risk-On — appétit','go','Appétit pour le risque — momentum favorisé.'],
-  RISK_OFF:['Risk-Off — aversion','risk','Aversion au risque — qualité et défense.'],
-  PANIC:['Panique','risk','Stress extrême — préservation du capital.'],
-  EUPHORIA:['Euphorie','','Excès haussier — prises de bénéfices, prudence.'],
-  VOLATILITY_EXPANSION:['Expansion de volatilité','risk','La volatilité s’étend — entrées agressives invalidées.'],
-  VOLATILITY_COMPRESSION:['Compression de volatilité','','Volatilité comprimée — surveiller les cassures.'],
-  MEAN_REVERSION:['Retour à la moyenne','','Les excès se corrigent — jouer les extrêmes.'],
-  TRANSITION:['Transition','','Le régime bascule — attendre confirmation.'],
-};
+/* Vocabulaire humain des régimes : source unique VX.regime (vx-core.js) —
+   conservé ici sous forme de triplets [label, tone, hint] pour le rendu. */
+const REGIME_LABEL=Object.fromEntries(Object.entries(VX.regime.MAP)
+  .map(([k,m])=>[k,[m.label,m.tone,m.hint]]));
 const SETUP_LABEL={BALANCED:'Équilibrée',BREAKOUT_PULLBACK:'Cassure / pullback',DEFENSIVE:'Défensive',
   MEAN_REVERSION:'Retour moyenne',MOMENTUM:'Momentum',QUALITY_DEFENSIVE:'Qualité défensive',
   CAPITAL_PRESERVATION:'Préservation capital',TAKE_PROFITS:'Prises de bénéfices',
@@ -294,13 +296,14 @@ async function loadRegime(scan){
         sigs.push(sigRail('VIX',v.toFixed(1),(v-10)/30*100,v<15?CO.positive:v<25?CO.warning:CO.negative));}
       if(m.breadth!=null&&!isNaN(m.breadth)){const b=Number(m.breadth);
         sigs.push(sigRail('Participation &gt;MM50',Math.round(b)+' <small>%</small>',b,b>=55?CO.positive:b>=45?CO.warning:CO.negative));}
-      if(m.spy_regime)sigs.push(sigText('Régime S&amp;P 500',esc(m.spy_regime)));
+      if(m.spy_regime)sigs.push(sigText('Régime S&amp;P 500',
+        esc({TREND:'Tendance',CHOP:'Sans direction',UP:'Haussier',DOWN:'Baissier'}[m.spy_regime]||m.spy_regime)));
       if(m.roro)sigs.push(sigText('Risk-on / risk-off',esc(m.roro)));
-      $('vx-mk-regime-body').innerHTML=
+      ($('vx-mk-regime-body')||{}).innerHTML=
         `<div class="vx-mk-regime-compact">
           <div class="vx-mk-regime-lead">
-            <span class="tag">Indéterminé</span>
-            <span class="txt">Moins de 3 dimensions qualifiées (${dims} évaluée${dims>1?'s':''}) — le moteur reste honnête et <b>bloque le nouveau risque</b>. Voici les signaux déjà disponibles :</span>
+            <span class="tag">Signal Pending</span>
+            <span class="txt">Lecture du marché en cours — moins de 3 dimensions qualifiées (${dims} évaluée${dims>1?'s':''}) ; le moteur reste honnête et <b>bloque le nouveau risque</b>. Voici les signaux déjà disponibles :</span>
           </div>
           ${sigs.length?`<div class="vx-mk-sigrow">${sigs.join('')}</div>`:'<div class="vx-help">Aucun signal de marché fourni par le dernier scan.</div>'}
           <div class="vx-flex" style="gap:8px;margin-top:2px">${SCAN_ACTION}
@@ -311,7 +314,7 @@ async function loadRegime(scan){
     const meta=REGIME_LABEL[r.regime];
     const allowed=adj.new_risk_allowed;
     const chip=(k,v,st)=>`<div class="vx-mk-chip"${st?` data-state="${st}"`:''}><span class="k">${k}</span><span class="v">${v}</span></div>`;
-    $('vx-mk-regime-body').innerHTML=
+    ($('vx-mk-regime-body')||{}).innerHTML=
       `<div class="vx-mk-regime-lead">
         <div class="vx-mk-regime-name" data-tone="${meta[1]}" data-regime="${esc(r.regime)}">${meta[0]}</div>
         <div class="vx-mk-regime-sub">${meta[2]} · ${dims} dimensions évaluées${(r.secondary&&r.secondary.length)?' · aussi '+esc(r.secondary[0]):''}</div>
@@ -323,7 +326,7 @@ async function loadRegime(scan){
         </div>
       </div>
       <div class="vx-card-footer">${VX.updateIndicator(rStamp,'Moteur de régimes','delayed')}</div>`;
-  }catch(e){$('vx-mk-regime-body').innerHTML=VX.states.error('Régime indisponible');}
+  }catch(e){($('vx-mk-regime-body')||{}).innerHTML=VX.states.error('Régime indisponible');}
 }
 function moversRows(rows,dir){
   const sorted=(rows||[]).filter(r=>r.change!==null&&r.change!==undefined).slice()
@@ -358,7 +361,7 @@ function loadMovers(scan){
 function loadLeader(scan){
   const sectors=(scan&&scan.sectors)||[];
   if(!sectors.length||typeof sectors[0]!=='object'){
-    $('vx-mk-leader-body').innerHTML=VX.states.empty('Secteurs non calculés par le dernier scan.',SCAN_ACTION);return;
+    ($('vx-mk-leader-body')||{}).innerHTML=VX.states.empty('Secteurs non calculés par le dernier scan.',SCAN_ACTION);return;
   }
   const top=sectors[0];
   const topLeader=top.leader&&(top.leader.symbol||((typeof top.leader==='string')?top.leader:null));
@@ -380,7 +383,7 @@ function loadLeader(scan){
       <span class="vx-mk-lead-sc">${VX.fmt.nd(s.avg_score)}</span>
       ${L?`<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(L)}" title="Leader ${esc(L)}">${esc(L)}</button>`:'<span class="vx-meta">—</span>'}
     </div>`;}).join('');
-  $('vx-mk-leader-body').innerHTML=
+  ($('vx-mk-leader-body')||{}).innerHTML=
     `<div class="vx-mk-lead-hero">
        <span class="vx-mk-lead-top">${esc(top.sector||'n/d')}</span>
        <span class="vx-meta">secteur meneur · score moyen ${VX.fmt.nd(top.avg_score)}${topLeader?' · leader '+esc(topLeader):''}</span>
@@ -391,9 +394,9 @@ function loadLeader(scan){
 function loadRisk(scan){
   const m=mkt(scan);
   if(!m.verdict&&!m.roro){
-    $('vx-mk-risk-body').innerHTML=VX.states.empty('Verdict marché non calculé — lancer un scan.',SCAN_ACTION);return;
+    ($('vx-mk-risk-body')||{}).innerHTML=VX.states.empty('Verdict marché non calculé — lancer un scan.',SCAN_ACTION);return;
   }
-  $('vx-mk-risk-body').innerHTML=
+  ($('vx-mk-risk-body')||{}).innerHTML=
     (m.verdict?`<div style="font-size:14px;line-height:1.7">${esc(m.verdict)}</div>`:'')
     +(m.roro?`<div class="vx-kv vx-mt2"><span class="k">Risk-on / risk-off</span><span class="v">${esc(m.roro)}</span></div>`:'')
     +(m.spy_regime?`<div class="vx-kv"><span class="k">Régime S&amp;P 500</span><span class="v">${esc(m.spy_regime)}</span></div>`:'')
@@ -521,9 +524,9 @@ function loadStrip(scan){
   const by=crossAsset(scan);
   const known=IDX_MAIN.filter(n=>by[n]&&(by[n].last!==null&&by[n].last!==undefined)).slice(0,4);
   if(!known.length){
-    $('vx-mk-strip').innerHTML='<div class="vx-col-12">'+VX.states.empty('Indices indisponibles — lancer un scan depuis Système.',SCAN_ACTION)+'</div>';return;
+    ($('vx-mk-strip')||{}).innerHTML='<div class="vx-col-12">'+VX.states.empty('Indices indisponibles — lancer un scan depuis Système.',SCAN_ACTION)+'</div>';return;
   }
-  $('vx-mk-strip').innerHTML=known.map(label=>
+  ($('vx-mk-strip')||{}).innerHTML=known.map(label=>
     '<div class="vx-kpi vx-markets-index-kpi">'+indexCard(label,by[label],scan)+'</div>').join('');
 }
 /* Comparaison multi-indices : chaque série rebasée à 0 % (transformation
@@ -591,12 +594,12 @@ function loadMacroKpis(scan){
   const by=crossAsset(scan);
   const known=MACRO_NAMES.filter(n=>by[n]&&by[n].last!==null&&by[n].last!==undefined);
   if(!known.length){
-    $('vx-mk-macro-kpis').innerHTML='<div class="vx-col-12">'+VX.states.empty('Données macro non fournies par le scan — rien d’inventé.',SCAN_ACTION)+'</div>';return;
+    ($('vx-mk-macro-kpis')||{}).innerHTML='<div class="vx-col-12">'+VX.states.empty('Données macro non fournies par le scan — rien d’inventé.',SCAN_ACTION)+'</div>';return;
   }
   /* Premier écran = quatre KPI maximum. Les actifs supplémentaires restent
      disponibles sous disclosure, sans suppression de donnée ni de source. */
   const primary=known.slice(0,4),extra=known.slice(4);
-  $('vx-mk-macro-kpis').innerHTML=primary.map(n=>
+  ($('vx-mk-macro-kpis')||{}).innerHTML=primary.map(n=>
     '<div class="vx-kpi vx-markets-macro-kpi">'+macroCard(n,by[n],scan,MACRO_NOTE[n])+'</div>').join('');
   const x=$('vx-mk-macro-extra');
   if(x){
@@ -690,7 +693,7 @@ function loadSectors(scan){
     min:-3,max:3,fmt:(v)=>v===null?'—':VX.fmt.pct(v),
     source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
     limits:'univers = leaders scannés'});
-  $('vx-mk-sectors-leaders').innerHTML=VX.states.empty('Secteurs non calculés par le dernier scan.');
+  ($('vx-mk-sectors-leaders')||{}).innerHTML=VX.states.empty('Secteurs non calculés par le dernier scan.');
     return;
   }
   VXCharts.heatmapCard('vx-mk-sectors-heat',{
@@ -706,7 +709,7 @@ function loadSectors(scan){
     min:-3,max:3,fmt:(v)=>v===null?'—':VX.fmt.pct(v),
     source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
     limits:'univers = leaders scannés'});
-  $('vx-mk-sectors-leaders').innerHTML=
+  ($('vx-mk-sectors-leaders')||{}).innerHTML=
     `<table class="vx-table"><thead><tr><th>Secteur</th><th class="vx-num">Score</th><th>Leader</th><th></th></tr></thead><tbody>`
     +sectors.map(s=>{
       const L=s.leader&&(s.leader.symbol||((typeof s.leader==='string')?s.leader:null));
@@ -865,7 +868,7 @@ function loadBreadthInternals(scan){
   if(iCard)iCard.hidden=false;
   const kvr=(k,v,cls)=>`<div class="vx-kv"><span class="k">${k}</span><span class="v vx-mono ${cls||''}">${v}</span></div>`;
   const pos=(v)=>v>=55?'vx-pos':v<=45?'vx-neg':'';
-  $('vx-mk-internals').innerHTML=
+  ($('vx-mk-internals')||{}).innerHTML=
     kvr('% au-dessus MM50',inter.pct_a50+' %',pos(inter.pct_a50))
     +kvr('% au-dessus MM200',inter.pct_a200+' %',pos(inter.pct_a200))
     +kvr('Avancées / déclins',inter.advpct+' % en hausse',pos(inter.advpct))
@@ -881,7 +884,7 @@ function loadBreadthInternals(scan){
       return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px" role="img" aria-label="score ${i*10} à ${i*10+10} : ${n} titres">
         <span style="width:100%;height:120px;display:flex;align-items:flex-end"><span style="width:100%;height:${h}%;background:${col};border-radius:3px 3px 0 0;min-height:2px"></span></span>
         <span style="font-size:9px;color:var(--vx-text-muted,#989092);font-variant-numeric:tabular-nums">${i*10}</span></div>`;};
-    $('vx-mk-dist').innerHTML='<div style="display:flex;gap:3px;align-items:flex-end;padding:6px 2px">'+dist.map(bar).join('')+'</div>';
+    ($('vx-mk-dist')||{}).innerHTML='<div style="display:flex;gap:3px;align-items:flex-end;padding:6px 2px">'+dist.map(bar).join('')+'</div>';
   }else if(dCard){dCard.hidden=true;}
 }
 
@@ -894,14 +897,14 @@ async function loadVix(scan){
   const chg=(sum.vix_chg!==undefined)?sum.vix_chg:null;
   const band=sum.vix_band||mkt(scan).vix_band;
   if(vix==null){
-    $('vx-mk-vix-body').innerHTML=VX.states.empty('VIX non fourni par le dernier scan.',SCAN_ACTION);
+    ($('vx-mk-vix-body')||{}).innerHTML=VX.states.empty('VIX non fourni par le dernier scan.',SCAN_ACTION);
   }else{
     const stress=Math.max(0,Math.min(100,(vix-10)/30*100));
     const reading=vix<15?'Volatilité comprimée — primes d’options bon marché':vix<25?'Volatilité élevée — prudence sur les entrées':'Stress — expansion de volatilité';
     /* `vx-mk-vix-gauge` reste l'hôte contractuel, mais ne monte plus une jauge
        redondante : il porte désormais la valeur hero. Le rail est l'unique
        visualisation bornée calme ↔ stress. */
-    $('vx-mk-vix-body').innerHTML=
+    ($('vx-mk-vix-body')||{}).innerHTML=
       `<div id="vx-mk-vix-gauge" class="vx-markets-vix-stat"><div class="vx-stat-xl"><span class="vx-stat-xl-value vx-mono">${VX.fmt.nd(vix)}</span><span class="vx-stat-xl-label">Indice VIX</span></div></div>`
       +(chg!==null&&chg!==undefined?`<div class="vx-kv"><span class="k">Variation</span><span class="v ${chg>0?'vx-neg':chg<0?'vx-pos':'vx-muted'}">${VX.fmt.pct(chg)} vs hier</span></div>`:'')
       +(band?`<div class="vx-kv"><span class="k">Bande</span><span class="v">${esc(band)}</span></div>`:'')
@@ -917,17 +920,18 @@ async function loadVix(scan){
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
     const conf=Math.round((r.confidence||0)*100);
     const allowed=r.adjustments&&r.adjustments.new_risk_allowed;
-    /* Étiquette honnête : UNKNOWN → « indéterminé » explicité, jamais un code brut. */
-    const known=REGIME_LABEL[r.regime];
+    /* Étiquette honnête : UNKNOWN garde son état dédié (jamais « confiance 0 % »
+       présentée comme une mesure), jamais un code brut. */
+    const known=r.regime!=='UNKNOWN'&&REGIME_LABEL[r.regime];
     const regTxt=known?('<b>'+esc(known[0])+'</b> · confiance '+conf+' %')
-      :'<b>indéterminé</b> — moins de 3 dimensions de marché';
-    if($('vx-mk-vol-rail'))$('vx-mk-vol-rail').innerHTML=
+      :'<b>Signal Pending</b> — moins de 3 dimensions de marché';
+    if($('vx-mk-vol-rail'))($('vx-mk-vol-rail')||{}).innerHTML=
       '<div class="vx-insight">Régime '+regTxt+'</div>'
       +'<div class="vx-kv vx-mt2"><span class="k">Confiance</span><span class="v vx-mono">'+(known?conf+' %':'n/d')+'</span></div>'
       +'<div class="vx-kv"><span class="k">Nouveau risque</span><span class="v '+(allowed?'vx-pos':'vx-neg')+'">'+(allowed?'autorisé':'BLOQUÉ')+'</span></div>'
       +'<div class="vx-card-footer">'+VX.updateIndicator(r.as_of||r.timestamp||r.updated||null,'Moteur de régimes','delayed')
       +'<a class="vx-btn vx-btn-sm vx-btn-ghost vx-right" href="?view=breadth">Participation →</a></div>';
-  }catch(e){if($('vx-mk-vol-rail'))$('vx-mk-vol-rail').innerHTML=VX.states.error('Régime indisponible');}
+  }catch(e){if($('vx-mk-vol-rail'))($('vx-mk-vol-rail')||{}).innerHTML=VX.states.error('Régime indisponible');}
 }
 
 /* ═══ Orchestration ═══ */
@@ -951,7 +955,7 @@ async function boot(){
            l'entrée de cache : un snapshot resservi doit refléter l'âge de la DONNÉE. */
         const ageMs=(typeof scan.scan_age==='number')?scan.scan_age*1000:null;
         const live=scan.data_source!=='demo';
-        $('vx-mk-fresh').innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:ageMs,live:live}));
+        ($('vx-mk-fresh')||{}).innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:ageMs,live:live}));
       }
     }catch(e){}
     if(VIEW==='overview'){loadRegime(scan);loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);loadMovers(scan);}

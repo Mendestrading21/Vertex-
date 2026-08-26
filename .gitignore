@@ -35,6 +35,7 @@ edge_ledger.jsonl
 track_meta.json
 alerts_fired.json
 desk_backup_*.json
+desk_avantperte_*.json
 
 # Enrichissement Claude+web (runtime, jamais commité)
 ai_enrichment.json
@@ -45,3 +46,9 @@ market_context_last.json
 skyler_decisions.json
 skyler_memory.json
 skyler_sessions.json
+
+# Artefact de mesure de couverture : chemins absolus de la machine, donc noms
+# personnels. Le gardien de noms inspecte les fichiers NON SUIVIS ; le laisser
+# tramer fait echouer la suite pour une raison qui ne concerne pas le produit.
+.coverage
+.coverage.*

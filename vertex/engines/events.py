@@ -4,15 +4,28 @@ Agrège en UNE forme canonique les événements réels d'un titre déjà produit
 ailleurs (news assainies, earnings du calendrier, macro datée, anomalies
 statistiques). Chaque événement porte :
 
-  {kind, label, date, dte, category: 'fact'|'interpretation', source,
-   impact_hint, impact_derivation, importance, confidence}
+  {kind, label, date, dte, category: 'fact'|'estimate'|'interpretation',
+   source, impact_hint, impact_derivation, importance, confidence,
+   date_fiabilite: 'PUBLIEE'|'INDICATIVE'}
 
 Règles d'honnêteté :
   - la PUBLICATION d'une news est un fait ; son IMPACT ne l'est pas — il n'est
     suggéré (`impact_hint`) que par des mots-clés DÉTERMINISTES et transparents
     (`impact_derivation: 'keywords'`), sinon None ;
   - une anomalie statistique est une INTERPRÉTATION (confiance EXACT_STATISTICAL :
-    z-scores exacts) ; une date de calendrier est un fait DÉCLARÉ ;
+    z-scores exacts) ; une date de calendrier PUBLIÉE est un fait DÉCLARÉ ;
+  - une date de calendrier INDICATIVE n'est pas un fait. Le calendrier macro
+    place le CPI « au 13 » par convention et déduit le NFP du premier vendredi ;
+    seules les dates FOMC sont publiées par la Fed. Le drapeau `approx` était
+    perdu ici : le CPI du 13 septembre sortait `fact`/`DECLARED`, identique à la
+    décision FOMC du 16. `date_fiabilite` le porte désormais, et le doute est le
+    DÉFAUT — une source qui ne dit pas si sa date est publiée n'est pas crue sur
+    parole ;
+  - `peut_fonder_un_gate()` est la garde posée pour l'avenir. Aucun des treize
+    hard gates V4 ne consomme les événements AUJOURD'HUI — c'est mesuré, et le
+    dire évite de prétendre fermer une brèche ouverte. Le jour où un gate de
+    fenêtre d'événement s'écrira, il ne pourra pas accepter en silence une date
+    que personne n'a publiée ;
   - un événement daté n'est jamais noté « catalyseur » par sa seule existence ;
   - révisions d'analystes : AUCUNE source branchée → `available: False` honnête,
     jamais estimé ;
@@ -41,12 +54,51 @@ def _impact_from_title(title):
     return None, None
 
 
+#: Fiabilité de la DATE d'un événement — distincte de la confiance dans son
+#: impact. Une date publiée par l'émetteur ou l'institution est un fait ; une
+#: date posée par convention ne l'est pas, même si elle tombe juste.
+DATE_PUBLIEE = 'PUBLIEE'
+DATE_INDICATIVE = 'INDICATIVE'
+
+
+def fiabilite_de_date(source_dict, defaut=DATE_INDICATIVE):
+    """Lit le drapeau `approx` d'une entrée de calendrier.
+
+    Le défaut est INDICATIVE, et c'est le sens du doute : une source qui ne dit
+    pas si sa date est publiée ne doit pas être crue sur parole. Supposer
+    « publiée » ferait entrer n'importe quelle estimation comme un fait.
+    """
+    if not isinstance(source_dict, dict) or 'approx' not in source_dict:
+        return defaut
+    return DATE_INDICATIVE if source_dict.get('approx') else DATE_PUBLIEE
+
+
+def peut_fonder_un_gate(event) -> bool:
+    """Cet événement peut-il déclencher ou lever un hard gate ?
+
+    Deux refus, et aucun n'est cosmétique :
+
+    - une date **indicative** n'a été publiée par personne. La laisser fonder
+      un gate reviendrait à bloquer — ou débloquer — une décision sur une
+      convention interne ;
+    - un événement **sans date** n'ouvre aucune fenêtre temporelle : il n'y a
+      rien à comparer.
+
+    La garde n'est pas un refus généralisé : une date publiée passe. Une garde
+    qui refuse tout serait contournée au premier besoin réel.
+    """
+    if not isinstance(event, dict) or not event.get('date'):
+        return False
+    return event.get('date_fiabilite') == DATE_PUBLIEE
+
+
 def _ev(kind, label, category, source, date=None, dte=None, impact_hint=None,
-        impact_derivation=None, importance=None, confidence=None):
+        impact_derivation=None, importance=None, confidence=None,
+        date_fiabilite=DATE_PUBLIEE):
     return {'kind': kind, 'label': label, 'category': category, 'source': source,
             'date': date, 'dte': dte, 'impact_hint': impact_hint,
             'impact_derivation': impact_derivation, 'importance': importance,
-            'confidence': confidence}
+            'confidence': confidence, 'date_fiabilite': date_fiabilite}
 
 
 def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
@@ -66,11 +118,20 @@ def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
     for m in (macro or []):
         if not isinstance(m, dict) or not m.get('label'):
             continue
-        events.append(_ev('macro', m['label'], 'fact', 'calendar.macro',
+        #  Le drapeau `approx` du calendrier décide de la NATURE de l'entrée :
+        #  une date publiée est un fait déclaré, une date de convention est une
+        #  estimation. Les confondre — ce que faisait ce code — rendait le CPI
+        #  du 13 septembre indiscernable de la décision FOMC du 16.
+        fiab = fiabilite_de_date(m)
+        publiee = fiab == DATE_PUBLIEE
+        events.append(_ev('macro', m['label'],
+                          'fact' if publiee else 'estimate', 'calendar.macro',
                           date=m.get('date'), dte=m.get('dte'),
                           impact_hint=(m.get('kind') or None),
                           impact_derivation=('calendar' if m.get('kind') else None),
-                          importance=m.get('importance'), confidence='DECLARED'))
+                          importance=m.get('importance'),
+                          confidence='DECLARED' if publiee else 'INDICATIVE',
+                          date_fiabilite=fiab))
 
     revision_mentions = []
     for n in dedupe_news(news or []):
@@ -146,4 +207,4 @@ def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
     }
 
 
-__all__ = ['build']
+__all__ = ['build', 'DATE_PUBLIEE', 'DATE_INDICATIVE', 'fiabilite_de_date', 'peut_fonder_un_gate']

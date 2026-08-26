@@ -21,6 +21,8 @@ import json
 import os
 import time
 
+from vertex.data_sources import rendement_dividende as _rdt
+
 try:
     from vertex.data.universe import _INDUSTRY, _GICS_SECTOR, _GICS, UNIVERSE
 except Exception:  # pragma: no cover
@@ -231,7 +233,7 @@ def _fetch_profile(sym):
         'earnings_date': (__import__('datetime').datetime.fromtimestamp(info['earningsTimestamp'])
                           .strftime('%Y-%m-%d') if info.get('earningsTimestamp') else None),
         'cash': info.get('totalCash'), 'debt': info.get('totalDebt'),
-        'dividend': info.get('dividendYield'), 'mcap': info.get('marketCap'),
+        'dividend': _rdt.valeur(info), 'mcap': info.get('marketCap'),
         # ── consensus analystes (type TipRanks — fourni par yfinance / IBKR) ──
         'rating': info.get('recommendationKey'), 'rating_mean': info.get('recommendationMean'),
         'n_analysts': info.get('numberOfAnalystOpinions'),

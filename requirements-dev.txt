@@ -1,0 +1,19 @@
+# Dependances de VALIDATION — pas necessaires pour lancer Vertex.
+#
+# CLAUDE.md impose `python -m pytest -q` comme validation minimale, mais
+# rien ne declarait pytest : sur un environnement neuf monte depuis
+# requirements.txt, la commande obligatoire repondait « No module named
+# pytest ». La CI le rattrapait en l'installant EN DUR dans ci.yml, a deux
+# endroits — donc la dependance existait sans etre une donnee.
+#
+#   python -m pip install -r requirements-dev.txt
+pytest>=8,<10
+
+# Mesure NAVIGATEUR des gates G4 (huit espaces a 390 px, recensement des
+# regles CSS mortes, couche visuelle unique). Sans playwright, ces gardiens
+# s'abstiennent : ils n'ont donc jamais tourne, ni en CI (ci.yml ne
+# l'installait pas) ni en local. Un gate qui ne s'execute nulle part ne
+# garde rien.
+#
+#   python -m playwright install chromium
+playwright>=1.40

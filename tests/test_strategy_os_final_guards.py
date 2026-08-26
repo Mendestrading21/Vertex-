@@ -19,7 +19,7 @@ FORBIDDEN_EXECUTION_NAMES = (
 
 def _python_sources():
     out = subprocess.run(['git', 'ls-files', '*.py'], cwd=ROOT,
-                         capture_output=True, text=True, check=True).stdout
+                         capture_output=True, text=True, encoding='utf-8', check=True).stdout
     for rel in out.splitlines():
         p = ROOT / rel
         if p.is_file() and 'tests' not in Path(rel).parts:

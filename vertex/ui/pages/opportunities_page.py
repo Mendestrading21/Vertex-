@@ -241,10 +241,10 @@ async function opCatalysts(){
 async function renderRadar(){
   const scan=await VX.fetch('/scan',{ttl:120000});
   const rows=(scan.rows||[]).filter(r=>r.score!==undefined);
-  if(!rows.length){$('op-body').innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
+  if(!rows.length){($('op-body')||{}).innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
   const catBySym=await opCatalysts();
   const best=opRanked(rows)[0];
-  $('op-body').innerHTML=demoBanner(scan)
+  ($('op-body')||{}).innerHTML=demoBanner(scan)
     +'<div id="op-hero"></div>'
     +'<div class="vx-grid vx-mt4" id="op-shortlist"></div>'
     +'<div class="vx-grid vx-hero-grid vx-mt4">'
@@ -302,7 +302,7 @@ async function renderRadar(){
         y:{min:0,max:100,title:{display:true,text:'Qualité du timing ↑'},grid:{color:'rgba(255,255,255,.06)'}}},
         onClick:(evt,els,chart)=>{const pts=chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
           if(pts.length){const d=chart.data.datasets[0].data[pts[0].index];
-            document.getElementById('op-scatter-sel').innerHTML=
+            (document.getElementById('op-scatter-sel')||{}).innerHTML=
               `<div class="vx-flex"><span class="vx-ticker" style="font-size:18px" role="button" tabindex="0" data-open-analysis="${d.sym}">${d.sym}</span>${window.VXEntities.badges(d.sym)}
                  <span class="vx-badge vx-badge-decision vx-right" data-decision="${d.v||''}">${d.v||'n/d'}</span></div>
                <div class="vx-op-metrics vx-mt2">
@@ -423,7 +423,7 @@ async function renderStocks(){
       <td data-label="Setup" class="vx-truncate" title="${esc(pbStr(r.playbook)||r.profile||'—')}">${esc(pbStr(r.playbook)||r.profile||'—')}</td>
       <td data-label="Secteur">${esc(r.sector||'—')}</td>
       <td data-label="Action">${rowActions(r.symbol)}</td></tr>`;
-    $('op-table').innerHTML=f.length?`<section class="vx-card" aria-label="Meilleures actions du scan">
+    ($('op-table')||{}).innerHTML=f.length?`<section class="vx-card" aria-label="Meilleures actions du scan">
       <div class="vx-card-header"><span class="vx-card-title">Les dossiers les plus utiles maintenant</span>
         <span class="vx-meta vx-right">Top ${Math.min(10,f.length)} sur ${f.length}</span></div>
       <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
@@ -438,12 +438,12 @@ async function renderStocks(){
       :VX.states.empty('Aucun titre ne correspond aux filtres.','<button class="vx-btn vx-btn-sm" id="op-clear">Effacer les filtres</button>');
     document.getElementById('op-clear')?.addEventListener('click',()=>{Object.keys(state).forEach(k=>state[k]='');paint();});
   }
-  $('op-body').innerHTML=demoBanner(scan)+`
+  ($('op-body')||{}).innerHTML=demoBanner(scan)+`
     <div class="vx-filterbar vx-toolbar" role="group" aria-label="Filtres">
       ${OUT.map(b=>`<button class="vx-chip" data-filter-key="decision" data-filter-value="${b}"
         aria-pressed="${state.bucket===b}">${b}</button>`).join('')}
       <select class="vx-select" data-filter-key="sector" style="width:auto" aria-label="Secteur">
-        <option value="">Tous secteurs</option>${sectors.map(s=>`<option ${state.sector===s?'selected':''}>${s}</option>`).join('')}</select>
+        <option value="">Tous secteurs</option>${sectors.map(s=>`<option value="${esc(s)}" ${state.sector===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
       <input class="vx-input" data-filter-key="setup" style="width:150px" placeholder="setup (BREAKOUT…)" value="${esc(state.setup)}" aria-label="Setup">
     </div>
     <div id="op-table"></div>
@@ -542,7 +542,7 @@ async function renderOptions(){
       const qa=Number(a.quality),qb=Number(b.quality);
       return (Number.isFinite(qb)?qb:-Infinity)-(Number.isFinite(qa)?qa:-Infinity);
     }).slice(0,3);
-    $('op-opt-table').innerHTML=f.length?`<section class="vx-card" aria-label="Shortlist options">
+    ($('op-opt-table')||{}).innerHTML=f.length?`<section class="vx-card" aria-label="Shortlist options">
       <div class="vx-card-header"><span class="vx-card-title">Shortlist options — relais vers l’espace Options</span>
         <span class="vx-meta vx-right">${shortlist.length} contrat(s) sur ${f.length}</span></div>
       <div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
@@ -564,7 +564,7 @@ async function renderOptions(){
       tr.addEventListener('click',open);
       tr.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e);}});});
   }
-  $('op-body').innerHTML=demoBanner(scan)+`
+  ($('op-body')||{}).innerHTML=demoBanner(scan)+`
     <div class="vx-filterbar vx-toolbar">
       ${['BALANCED','DYNAMIC','ULTRA_CONVEX'].map(c=>`<button class="vx-chip" data-filter-key="setup"
         data-filter-value="${c}" aria-pressed="${state.cat===c}">${c}</button>`).join('')}
@@ -621,8 +621,8 @@ async function renderOptions(){
         conclusion:'IV -20 % à +20 % au scénario BASE',height:190,
         source:'scenario_pricer',timestamp:Date.now(),mode:'delayed'});
     }catch(e){
-      $('op-scenarios').innerHTML='<div class="vx-card">'+VX.states.error('Simulation moteur indisponible : '+e.message)+'</div>';
-      $('op-theta').innerHTML='';$('op-iv').innerHTML='';
+      ($('op-scenarios')||{}).innerHTML='<div class="vx-card">'+VX.states.error('Simulation moteur indisponible : '+e.message)+'</div>';
+      ($('op-theta')||{}).innerHTML='';($('op-iv')||{}).innerHTML='';
     }
   }
 }
@@ -633,7 +633,7 @@ async function renderAnomalies(){
   const rows=(scan.rows||[]).filter(r=>(r.anomalies||[]).length);
   const groupMeta={Actions:'scan courant',Données:'/api/data-quality',Options:'non agrégé ici',
     Volatilité:'non agrégée ici',Portefeuille:'non agrégé ici',Modèles:'non agrégé ici'};
-  $('op-body').innerHTML=demoBanner(scan)+`
+  ($('op-body')||{}).innerHTML=demoBanner(scan)+`
     <div class="vx-page-lead vx-mb3"><b>Anomalies disponibles par source</b>
       <div class="vx-meta">Une catégorie sans flux consolidé est dite indisponible ; elle n’est jamais déduite depuis une autre métrique.</div></div>
     <div class="vx-filterbar vx-toolbar">${['Actions','Données','Options','Volatilité','Portefeuille','Modèles']
@@ -651,7 +651,7 @@ async function renderAnomalies(){
           +'<span style="width:64px;height:8px;background:var(--vx-surface-3,#121214);border-radius:3px;overflow:hidden;display:inline-block">'
           +'<span style="display:block;height:100%;width:'+w.toFixed(0)+'%;background:linear-gradient(90deg,color-mix(in srgb,var(--vx-warning,#D9BE3C) 35%,transparent),var(--vx-warning,#D9BE3C));border-radius:3px"></span></span>'
           +'<span style="font-variant-numeric:tabular-nums">'+VX.fmt.nd(n)+'</span></span>';};
-      $('op-anom').innerHTML=rows.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
+      ($('op-anom')||{}).innerHTML=rows.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
         <th>Titre</th><th>Anomalies</th><th class="vx-num">Intensité</th><th class="vx-num">Score</th><th></th></tr></thead><tbody>
         ${rows.slice(0,60).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
           <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
@@ -662,13 +662,13 @@ async function renderAnomalies(){
         :VX.states.empty('Aucune anomalie action détectée sur le scan courant.');
     }else if(group==='Données'){
       VX.fetch('/api/data-quality',{ttl:60000}).then(dq=>{
-        $('op-anom').innerHTML=`<div class="vx-card">${Object.entries(dq.by_quality||{}).map(([k,v])=>
+        ($('op-anom')||{}).innerHTML=`<div class="vx-card">${Object.entries(dq.by_quality||{}).map(([k,v])=>
           `<div class="vx-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}
           <div class="vx-meta vx-mt2">${esc(dq.note||'')}</div></div>`;
-      }).catch(()=>{$('op-anom').innerHTML=VX.states.error('Qualité de données indisponible');});
+      }).catch(()=>{($('op-anom')||{}).innerHTML=VX.states.error('Qualité de données indisponible');});
     }else{
       const href=group==='Options'?'/options':group==='Volatilité'?'/options?view=volatility':group==='Portefeuille'?'/portfolio?view=risk':'/system';
-      $('op-anom').innerHTML=VX.states.empty(`Aucun flux agrégé « ${group} » n’est fourni à cette vue. Aucun résultat n’est déduit ou inventé.`,
+      ($('op-anom')||{}).innerHTML=VX.states.empty(`Aucun flux agrégé « ${group} » n’est fourni à cette vue. Aucun résultat n’est déduit ou inventé.`,
         '<a class="vx-btn vx-btn-sm" href="'+href+'">Ouvrir l’espace source</a>');
     }
   }
@@ -692,12 +692,12 @@ async function renderCalendar(){
         label:`résultats dans ${it.dte} j · verdict moteur ${esc(it.verdict||'n/d')}`
           +(positions.includes(it.sym)?' · <b class="vx-warn">position exposée</b>':'')}))]
       .sort((a,b)=>String(a.when).localeCompare(String(b.when)));
-    $('op-body').innerHTML='<div id="op-cal"></div>';
+    ($('op-body')||{}).innerHTML='<div id="op-cal"></div>';
     VXCharts.timelineCard('op-cal',{title:'Calendrier des catalyseurs',
       question:'Quels événements peuvent faire bouger les dossiers ?',
       items:items.slice(0,30),source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
       emptyText:'Aucun événement identifié sur l’horizon.'});
-  }catch(e){$('op-body').innerHTML=VX.states.error('Calendrier indisponible');}
+  }catch(e){($('op-body')||{}).innerHTML=VX.states.error('Calendrier indisponible');}
 }
 
 /* Classement Skyler (X1) : le moteur canonique sur TOUT l'univers scanné.
@@ -763,7 +763,7 @@ async function opFresh(){try{
   el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:a,live:live}));
 }catch(e){}}
 function boot(){opFresh();(RENDER[VIEW]||renderRadar)().catch(e=>{
-  $('op-body').innerHTML=VX.states.error('Chargement impossible : '+e.message);});}
+  ($('op-body')||{}).innerHTML=VX.states.error('Chargement impossible : '+e.message);});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 })();
 </script>

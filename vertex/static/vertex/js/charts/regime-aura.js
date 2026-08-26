@@ -92,7 +92,7 @@
     const indetermine = !o.regime
       || /^(unknown|inconnu|n\/?d|nd|none|null)$/i.test(String(o.regime).trim());
     if (o.state === 'empty' || indetermine) {
-      el.innerHTML = VX.states.empty(o.stateMessage || 'Régime indéterminé — Vertex ne tranche pas.');
+      el.innerHTML = VX.states.empty(o.stateMessage || 'Signal Pending — lecture du marché en cours, données encore insuffisantes.');
       return null;
     }
     if (o.state === 'error') {
@@ -156,7 +156,11 @@
       : o.newRisk === false ? 'Risque neuf BLOQUÉ' : 'Régime à confirmer';
     const reste = _sansRedite(o.invalidation, verdict);
     const inval = reste ? (' · ' + reste) : '';
-    const regime = String(o.regime).trim();
+    /* Libellé HUMAIN (VX.regime, vx-core.js) — le code moteur ne s'affiche
+       jamais brut. La taille suit la longueur : les libellés longs restent
+       dans le halo sans toucher la couronne. */
+    const regime = (window.VX && VX.regime) ? VX.regime.label(o.regime) : String(o.regime).trim();
+    const regimeSize = regime.length <= 12 ? 18 : regime.length <= 20 ? 14.5 : 12;
     const aria = `Régime ${regime}, ${confTxt}. ${verdict}${inval}`;
 
     el.innerHTML =
@@ -172,7 +176,7 @@
           <circle cx="${cx}" cy="${cy - 4}" r="44" fill="var(--vx-surface)" fill-opacity=".5"/>
           ${couronne}
           ${repere}
-          <text x="${cx}" y="${cy - 6}" text-anchor="middle" fill="${ENCRE}" font-size="18" font-weight="800" letter-spacing=".5">${esc(regime)}</text>
+          <text x="${cx}" y="${cy - 6}" text-anchor="middle" fill="${ENCRE}" font-size="${regimeSize}" font-weight="800" letter-spacing=".5">${esc(regime)}</text>
           <text x="${cx}" y="${cy + 13}" text-anchor="middle" fill="${conf == null ? 'var(--vx-text-muted,#989092)' : col}" font-size="10.5" font-weight="${conf == null ? '400' : '800'}">${confTxt}</text>
         </svg>
         ${chips.length ? `<div class="vx-ra-grammar">${chips.join('')}</div>` : ''}

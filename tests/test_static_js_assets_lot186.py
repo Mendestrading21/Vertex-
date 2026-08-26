@@ -9,6 +9,7 @@ builder de charts s'enregistre sur son espace de noms.
 """
 import functools
 import glob
+import os
 import re
 import subprocess
 
@@ -25,7 +26,7 @@ _ROUTES = ('/', '/markets', '/opportunities', '/portfolio', '/journal',
 
 
 def _js_files():
-    return sorted(f for f in glob.glob('vertex/static/**/*.js', recursive=True)
+    return sorted(f for f in [c.replace(os.sep, '/') for c in glob.glob('vertex/static/**/*.js', recursive=True)]
                   if '/vendor/' not in f)
 
 
@@ -36,7 +37,7 @@ def test_tous_les_fichiers_js_du_produit_parsent():
     assert len(fichiers) >= 30                      # anti-vide : le gardien contrôle
     erreurs = []
     for f in fichiers:
-        r = subprocess.run(['node', '--check', f], capture_output=True, text=True)
+        r = subprocess.run(['node', '--check', f], capture_output=True, text=True, encoding='utf-8')
         if r.returncode != 0:
             erreurs.append((f, (r.stderr.strip().splitlines() or ['?'])[-1]))
     assert erreurs == []
@@ -44,7 +45,7 @@ def test_tous_les_fichiers_js_du_produit_parsent():
 
 def test_seul_vendor_est_exclu_du_gardien():
     # Le seul JS non contrôlé est la bibliothèque tierce minifiée (chandeliers).
-    vendor = [f for f in glob.glob('vertex/static/**/*.js', recursive=True)
+    vendor = [f for f in [c.replace(os.sep, '/') for c in glob.glob('vertex/static/**/*.js', recursive=True)]
               if '/vendor/' in f]
     assert vendor == ['vertex/static/vertex/js/vendor/'
                       'lightweight-charts.standalone.production.js']
@@ -84,7 +85,7 @@ def test_chaque_builder_charts_s_enregistre_sur_son_namespace():
     # Les builders s'attachent à VXCharts ; seule exception : le thème,
     # chargé AVANT chart-core, qui expose VXChartTheme (miroir de palette.py,
     # gardé par test_js_theme_matches_python_palette).
-    for f in sorted(glob.glob('vertex/static/vertex/js/charts/*.js')):
+    for f in sorted([c.replace(os.sep, '/') for c in glob.glob('vertex/static/vertex/js/charts/*.js')]):
         src = open(f, encoding='utf-8').read()
         if f.endswith('chart-theme-obsidian-copper.js'):
             assert 'VXChartTheme' in src

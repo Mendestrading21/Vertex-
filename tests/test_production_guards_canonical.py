@@ -29,7 +29,7 @@ def test_no_personal_names():
     out = subprocess.run(
         ['git', 'grep', '-i', '-l', '-E', f'({first}|{last})', '--', '.',
          ':!docs/redesign'],
-        cwd=ROOT, capture_output=True, text=True)
+        cwd=ROOT, capture_output=True, text=True, encoding='utf-8')
     hits = [l for l in out.stdout.splitlines() if l.strip()]
     assert not hits, f'noms personnels: {hits}'
 
@@ -303,4 +303,4 @@ def test_mobile_action_bar(client):
 
 def test_service_worker_version(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v206' in body
+    assert 'td-shell-v215' in body

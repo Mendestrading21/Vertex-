@@ -387,11 +387,11 @@ function s11(tl){if(!tl||!tl.length)return '';
 /* ───────── assemblage ───────── */
 function olabRender(){var d=OL;if(!d)return;
  var head=document.getElementById('olabHead');
- if(d.empty){document.getElementById('olabRoot').innerHTML='<div class="skel">Le board d\'options n\'est pas encore chargé — le scan tourne, recharge dans un instant.</div>';return;}
+ if(d.empty){(document.getElementById('olabRoot')||{}).innerHTML='<div class="skel">Le board d\'options n\'est pas encore chargé — le scan tourne, recharge dans un instant.</div>';return;}
  var o=d.overview||{};
  head.innerHTML='<b>'+$n(o.contracts)+'</b> contrats · <b>'+$n(o.tickers)+'</b> entreprises · IV '+$n(o.iv_avg,1)+'% · '
   +(d.demo?'<span style="color:var(--vio)">🎭 DÉMO</span>':'chaînes réelles')+(d.as_of?' · MAJ '+d.as_of:'');
- document.getElementById('olabRoot').innerHTML=
+ (document.getElementById('olabRoot')||{}).innerHTML=
   s01(o)+s02(d.research)+s03(d.analysis)+s04(d.plan)+s05(d.viz)+s06(d.strategies)
   +s07(d.tops)+s08(d.comparator)+s09(d.committee)+s10(d.risks)+s11(d.timeline)
   +'<div class="foot">⚠️ <b>Analyse éducative</b> — une option achetée peut perdre 100 % de sa prime · les probabilités sont des estimations de modèle, pas des promesses · '
@@ -402,7 +402,7 @@ async function olabLoad(force){try{
  if(force){var b=document.querySelector('#olab .vbtn');if(b){b.textContent='⟳ Analyse…';setTimeout(function(){b.textContent='⟳ Actualiser';},1500);}}
  var r=await fetch('/api/options-lab');if(r.status===401){location.href='/login?next=/options';return;}
  OL=await r.json();olabRender();
-}catch(e){document.getElementById('olabRoot').innerHTML='<div class="skel">Erreur de chargement — nouvelle tentative dans 5 s…</div>';setTimeout(olabLoad,5000);}}
+}catch(e){(document.getElementById('olabRoot')||{}).innerHTML='<div class="skel">Erreur de chargement — nouvelle tentative dans 5 s…</div>';setTimeout(olabLoad,5000);}}
 olabLoad();setInterval(function(){if(!document.hidden)olabLoad();},120000);
 
 /* ═══ FOCUS TITRE (?t=SYM) — les boutons « 💎 Options » de toute l'app scoprent ici ═══ */

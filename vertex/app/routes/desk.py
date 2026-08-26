@@ -15,6 +15,7 @@ sont INJECTÉES à la construction — le Blueprint reste testable sans réseau.
 """
 
 import glob
+import json
 import os
 import shutil
 import threading
@@ -24,9 +25,56 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request
 
 from vertex.data.universe import UNIVERSE
+from vertex.scheduler import registry as _sched
 from vertex.services import persist
 
 BACKUP_KEEP = 7   # rotations quotidiennes conservées
+
+#: Instantanés « avant perte » conservés (voir `_snapshot_avant_perte`). Plus
+#: nombreux que les quotidiens : ils sont rares par construction — un seul est
+#: pris par épisode de perte — et chacun correspond à un incident réel.
+AVANT_PERTE_KEEP = 20
+
+#: Valeurs qui ne représentent AUCUN travail. Leur disparition ne fait rien
+#: perdre, donc elle n'a pas à être protégée : une liste vide reste une liste
+#: vide. Tout le reste compte, y compris un JSON qu'on ne sait pas relire —
+#: c'est bien la raison de ne pas l'effacer.
+_VIDES = ('', '[]', '{}', 'null', '""', "''")
+
+
+def _porte_du_travail(valeur) -> bool:
+    """La valeur, si elle disparaissait, ferait-elle perdre quelque chose ?"""
+    if valeur is None:
+        return False
+    if not isinstance(valeur, str):
+        try:
+            valeur = json.dumps(valeur, ensure_ascii=False)
+        except Exception:
+            return True          # illisible ≠ vide : dans le doute, on protège
+    return valeur.strip() not in _VIDES
+
+
+def _snapshot_avant_perte(blob) -> str | None:
+    """Instantané SUPPLÉMENTAIRE, pris au moment précis d'une perte annoncée.
+
+    Le filet quotidien (`_backup_desk`) prend son image **avant la première
+    écriture du jour** : restaurer depuis lui rend l'état d'hier et perd tout le
+    travail de la journée (mesuré au lot 362). Celui-ci comble exactement ce
+    trou — il capture l'état *juste avant* que des clés ne soient menacées, donc
+    à la seconde près plutôt qu'à la journée près."""
+    try:
+        horodatage = datetime.now().strftime('%Y%m%d-%H%M%S')
+        nom = 'desk_avantperte_%s.json' % horodatage
+        persist.save_json(nom, blob)
+        vieux = sorted(glob.glob(persist.cache_path('desk_avantperte_*.json')))
+        for p in vieux[:-AVANT_PERTE_KEEP]:
+            os.remove(p)
+        return nom
+    except OSError:
+        #  Un instantané impossible (disque plein, droits) ne doit pas faire
+        #  échouer la sync : les clés menacées sont de toute façon CONSERVÉES
+        #  par la fusion ci-dessous — l'instantané est une seconde ceinture.
+        return None
 
 
 def _backup_desk():
@@ -42,11 +90,11 @@ def _backup_desk():
         if os.path.exists(dst):
             return                                   # déjà sauvegardé aujourd'hui
         shutil.copyfile(src, dst)
-        try:
-            from vertex.scheduler import registry as _sched
-            _sched.beat('DATA_BACKUP', ok=True)
-        except Exception:
-            pass
+        #  L'import est remonté en tête du module : un `beat` n'écrit que dans un
+        #  dict sous verrou et ne lève pas. Le `try/except: pass` qui l'entourait
+        #  ne protégeait donc que de l'import — mieux vaut qu'un import cassé
+        #  éclate au démarrage qu'il ne se taise à chaque sauvegarde.
+        _sched.beat('DATA_BACKUP', ok=True)
         olds = sorted(glob.glob(persist.cache_path('desk_backup_*.json')))
         for p in olds[:-BACKUP_KEEP]:
             os.remove(p)
@@ -57,11 +105,66 @@ POSQ_TTL_S = 45          # fraîcheur d'une cotation de trade perso
 POSQ_MAX_POSITIONS = 24  # borne dure par requête
 
 
-def make_blueprint(*, opt_job, ibkr_enabled):
+def completer_par_repli(todo, out, repli):
+    """Comble les positions ACTION encore sans cotation, depuis une source déjà
+    en mémoire. Fonction PURE — c'est par elle que les témoins passent.
+
+    Le défaut qu'elle corrige, reproduit localement : sans IBKR (ou si le worker
+    ne rend rien), `/api/pos-quotes` renvoyait `results: {}`. Le client en
+    déduisait `ok = false` et n'affichait AUCUN P&L — alors que le produit avait
+    le prix en mémoire (scan yfinance). Une valeur connue restait invisible
+    parce qu'un seul fournisseur était consulté.
+
+    Les OPTIONS ne sont pas comblées : le scan ne cote pas de contrats, et
+    fabriquer un prix d'option à partir du sous-jacent serait exactement la
+    donnée inventée que le produit interdit. Elles restent absentes, donc
+    honnêtement `—`.
+
+    Chaque valeur de repli porte `source` : sans étiquette, un cours de scan se
+    ferait passer pour une cotation broker.
+    """
+    if not repli:
+        return 0
+    combles = 0
+    for p in todo:
+        if not isinstance(p, dict):
+            continue
+        cle = p.get('key')
+        if not cle or cle in out:
+            continue
+        if (p.get('right') or '').upper() in ('C', 'P'):
+            continue                                   # option : jamais comblée
+        sym = (p.get('sym') or '').upper()
+        try:
+            v = repli(sym)
+        except Exception:                              # noqa: BLE001
+            v = None
+        #  LA PRIORITE N'EST PAS DECIDEE ICI. Elle vient de
+        #  `source_router.PRIORITY`, seule table de priorite du produit, via
+        #  `cotation_unifiee`. Un `if broker sinon scan` ecrit ici serait la
+        #  troisieme regle de priorite du depot — et les deux precedentes
+        #  (ordres de ports, escalades de type de donnees) ont diverge.
+        from vertex.data_sources.cotation_unifiee import (
+            en_charge_client, resoudre_cotation,
+        )
+        charge = en_charge_client(resoudre_cotation(broker=None, secondaire=v))
+        if charge is None:
+            continue
+        out[cle] = charge
+        combles += 1
+    return combles
+
+
+def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
     """Construit le Blueprint du desk.
 
     opt_job(kind, args, timeout): job IBKR sérialisé (None si indisponible).
     ibkr_enabled                : cotations live possibles (sinon cache seul).
+    cotation_repli(symbole)     : dernier recours pour une ACTION, rendant
+                                  {'spot':…, 'spot_chg':…} ou None. Injecté —
+                                  le blueprint ne doit pas savoir d'où vient
+                                  cette valeur, et l'injection le rend
+                                  éprouvable sans serveur.
     """
     bp = Blueprint('desk', __name__)
     desk_lock = threading.Lock()
@@ -76,21 +179,65 @@ def make_blueprint(*, opt_job, ibkr_enabled):
             if not isinstance(body.get('data'), dict) or not body.get('ts'):
                 return jsonify({'ok': False, 'err': 'payload invalide'}), 400
             with desk_lock:
+                #  ── UN PUSH NE PEUT PLUS EFFACER CE QU'IL N'ENVOIE PAS ──────
+                #  Mesuré au lot 362 : le last-writer-wins était TOTAL, donc un
+                #  push partiel — ou `data: {}` — remplaçait le blob entier et
+                #  les clés absentes disparaissaient. Le scénario n'est pas
+                #  théorique : le client omet toute clé absente de localStorage
+                #  (`if (v != null)` dans vx-entities.js), et un navigateur dont
+                #  l'écriture localStorage échoue en silence (navigation privée,
+                #  quota) hydrate sans rien persister, puis pousse `{}`.
+                #
+                #  UNE CLÉ ABSENTE NE VEUT JAMAIS DIRE « SUPPRIMÉE » : aucun
+                #  chemin du produit n'appelle `removeItem` sur une clé de desk
+                #  (vérifié) — vider une liste écrit `'[]'`, qui est bien envoyé.
+                #  Une absence est donc toujours un défaut de lecture, jamais une
+                #  intention. On la traite comme telle : on conserve.
+                ancien = persist.load_json('desk_data.json', {}) or {}
+                ancien_data = ancien.get('data')
+                if not isinstance(ancien_data, dict):
+                    ancien_data = {}
+                fusion = dict(body['data'])
+                conservees = sorted(k for k, v in ancien_data.items()
+                                    if k not in fusion and _porte_du_travail(v))
+                instantane = None
+                if conservees:
+                    #  Instantané À LA SECONDE, en plus du filet quotidien qui,
+                    #  lui, remonte à avant la première sync du jour.
+                    instantane = _snapshot_avant_perte(ancien)
+                    for k in conservees:
+                        fusion[k] = ancien_data[k]
                 _backup_desk()                       # snapshot quotidien AVANT écrasement
-                persist.save_json('desk_data.json', {'ts': body['ts'], 'data': body['data']})
-            return jsonify({'ok': True, 'ts': body['ts']})
+                persist.save_json('desk_data.json', {'ts': body['ts'], 'data': fusion})
+            #  La conservation est DITE, pas silencieuse : un client qui perd
+            #  son localStorage doit pouvoir s'en apercevoir.
+            return jsonify({'ok': True, 'ts': body['ts'],
+                            'conservees': conservees,
+                            'instantane': instantane})
         with desk_lock:
             d = persist.load_json('desk_data.json', {}) or {}
         return jsonify(d)
 
     @bp.route('/api/desk/backups')
     def api_desk_backups():
-        """Liste les snapshots quotidiens du desk (restaurables)."""
+        """Liste les instantanés du desk (restaurables), les deux familles.
+
+        `quotidien` remonte à avant la première sync du jour ; `avant-perte` est
+        pris à la seconde, au moment où un push allait faire disparaître des
+        clés. Les lister ensemble n'est pas cosmétique : un instantané qu'aucune
+        sortie ne nomme n'est pas un filet, c'est un fichier."""
         out = []
         for p in sorted(glob.glob(persist.cache_path('desk_backup_*.json')), reverse=True):
-            name = os.path.basename(p)
-            out.append({'name': name, 'date': name[12:20], 'size': os.path.getsize(p)})
-        return jsonify({'backups': out, 'keep': BACKUP_KEEP})
+            nom = os.path.basename(p)
+            out.append({'name': nom, 'date': nom[12:20], 'type': 'quotidien',
+                        'size': os.path.getsize(p)})
+        for p in sorted(glob.glob(persist.cache_path('desk_avantperte_*.json')),
+                        reverse=True):
+            nom = os.path.basename(p)
+            out.append({'name': nom, 'date': nom[16:24], 'heure': nom[25:31],
+                        'type': 'avant-perte', 'size': os.path.getsize(p)})
+        return jsonify({'backups': out, 'keep': BACKUP_KEEP,
+                        'keep_avant_perte': AVANT_PERTE_KEEP})
 
     @bp.route('/api/desk/restore', methods=['POST'])
     def api_desk_restore():
@@ -98,7 +245,10 @@ def make_blueprint(*, opt_job, ibkr_enabled):
         tous les appareils re-tireront cette version). Nom STRICTEMENT validé."""
         name = str((request.get_json(force=True, silent=True) or {}).get('name') or '')
         import re
-        if not re.fullmatch(r'desk_backup_\d{8}\.json', name):
+        #  Deux familles, une seule grammaire de chaque — le nom reste
+        #  STRICTEMENT validé (aucun séparateur de chemin possible).
+        if not (re.fullmatch(r'desk_backup_\d{8}\.json', name)
+                or re.fullmatch(r'desk_avantperte_\d{8}-\d{6}\.json', name)):
             return jsonify({'ok': False, 'err': 'nom invalide'}), 400
         src = persist.cache_path(name)
         if not os.path.exists(src):
@@ -181,9 +331,58 @@ def make_blueprint(*, opt_job, ibkr_enabled):
                 if v is not None:
                     posq_cache[k] = (now, v)
                     out[k] = v
-        return jsonify({'results': out, 'live': bool(ibkr_enabled), 'ts': int(now)})
+        #  DERNIER RECOURS pour les actions. Sans lui, `results` revenait VIDE
+        #  des que IBKR etait absent ou muet — et le client, qui exige une
+        #  cotation par ligne, n'affichait aucun P&L alors que le prix etait
+        #  deja en memoire. Verifie en local : POST {sym: ACN} rendait `{}`
+        #  pendant que le scan portait ACN a 198,0.
+        #  Le repli n'est PAS mis en cache : le cache sert les cotations
+        #  broker, et y ranger un cours de scan le ferait servir a la place
+        #  d'une vraie cotation pendant tout le TTL.
+        combles = completer_par_repli(todo, out, cotation_repli)
+        #  #779/G1 — POSITION_REFRESH était déclaré au registre des jobs mais
+        #  n'avait AUCUN émetteur : la page Système l'affichait « jamais
+        #  exécuté » alors qu'il tourne à chaque cotation du portefeuille. Il
+        #  est à la demande, pas périodique — d'où `interval_s: None` côté
+        #  registre : annoncer « prochaine dans ~45 s » aurait été une seconde
+        #  invention.
+        _sched.beat('POSITION_REFRESH', ok=True,
+                    duration_ms=(time.time() - now) * 1000.0)
+        #  La PROVENANCE de chaque marque, calculee par la fonction PARTAGEE
+        #  avec le serveur. La dupliquer cote client la ferait diverger au
+        #  premier ajustement, et l'ecran finirait par annoncer une origine
+        #  que le calcul ne pratique plus.
+        #
+        #  Mesure du 24 aout 2026 : sur URA 20270115 C 50, marche 3,50/4,30,
+        #  la marque valait 3,70 — le dernier echange — sans que rien ne le
+        #  dise, ce qui rendait inexplicable un ecart de 272 USD avec le
+        #  courtier.
+        from vertex.positions.calculator import source_de_marque
+        for _k, _q in out.items():
+            if not isinstance(_q, dict):
+                continue
+            _b, _a = _q.get('bid'), _q.get('ask')
+            _mid = round((_b + _a) / 2, 4) if (_b and _a) else None
+            #  Une cotation d'ACTION servie par le repli ne porte qu'un `px` :
+            #  aucune convention de marque ne s'y applique. Lui coller une
+            #  provenance « ABSENTE » serait doublement faux — le prix EXISTE,
+            #  et l'origine n'est pas manquante, elle est hors sujet. On
+            #  n'annote donc que ce qui a reellement une marque a expliquer.
+            if _q.get('mark') is None and _mid is None:
+                continue
+            if _mid is not None and _q.get('mid') is None:
+                _q['mid'] = _mid
+            _q['mark_source'] = source_de_marque(
+                _q.get('mark'), last=_q.get('last'), close=_q.get('close'),
+                mid=_mid)
+            #  Un marche large rend TOUTE convention de marque incertaine.
+            _q['spread_pct'] = (round((_a - _b) / _mid * 100, 2)
+                                if (_mid and _b and _a) else None)
+        return jsonify({'results': out, 'live': bool(ibkr_enabled),
+                        'fallback_used': bool(combles), 'ts': int(now)})
 
     return bp
 
 
-__all__ = ['make_blueprint', 'POSQ_TTL_S', 'POSQ_MAX_POSITIONS']
+__all__ = ['make_blueprint', 'completer_par_repli', 'POSQ_TTL_S',
+           'POSQ_MAX_POSITIONS']

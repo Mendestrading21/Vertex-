@@ -77,9 +77,17 @@ def test_timeline_normalized_shape():
     kinds = {e['kind'] for e in ev['events']}
     assert {'news', 'earnings', 'macro', 'anomaly'} <= kinds
     for e in ev['events']:
-        assert e['category'] in ('fact', 'interpretation')
+        #  `estimate` a rejoint la taxonomie : une date de calendrier posée par
+        #  convention — le CPI « au 13 » — n'est pas un fait. Avant, elle
+        #  sortait `fact`/`DECLARED`, indiscernable d'une date publiée par la
+        #  Fed. Voir `events.date_fiabilite` et `peut_fonder_un_gate`.
+        assert e['category'] in ('fact', 'estimate', 'interpretation')
         assert e['label'] and e['source']
         assert 'dte' in e and 'impact_hint' in e
+        #  TOUT événement porte la fiabilité de sa date : un champ absent sur
+        #  une seule branche rendrait la garde contournable par oubli.
+        assert e['date_fiabilite'] in (EV.DATE_PUBLIEE,
+                                       EV.DATE_INDICATIVE), e
     coverage = ev['coverage']
     assert all(coverage['input_channels'].values())
     assert coverage['all_events_have_source'] is True

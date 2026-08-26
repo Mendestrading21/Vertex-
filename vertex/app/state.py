@@ -21,7 +21,8 @@ scan_state = {
 }
 
 # Watchlist de la semaine : sélection figée le lundi (régénérée en fond).
-weekly_state = {'data': None, 'updated': None, 'regenerated': False}
+weekly_state = {'data': None, 'updated': None, 'regenerated': False,
+                'error': None}   # raison d'une absence, jamais un silence
 
 # Fils de contenu (actualités, calendrier de catalyseurs) — remplis par les boucles.
 # cal_state['items'] est réhydraté depuis le cache disque au démarrage par terminal.py.
@@ -29,4 +30,22 @@ news_state = {'items': [], 'updated': None}
 cal_state = {'items': [], 'updated': None}
 
 
-__all__ = ['scan_state', 'weekly_state', 'news_state', 'cal_state']
+def scan_age():
+    """Âge du dernier scan en secondes, ou **None** si aucun scan n'a eu lieu.
+
+    #779/G1 — cette fonction existait à l'identique à DEUX endroits :
+    `terminal.py::_scan_age` et une fermeture locale de
+    `vertex/app/routes/decision_api.py`. Deux copies d'un même calcul dérivent
+    au premier ajustement, et l'écran afficherait alors deux âges différents
+    pour la même donnée.
+
+    `None` plutôt que `0` : un scan qui n'a jamais eu lieu n'a pas « zéro
+    seconde » d'âge — c'est un aveu, pas une mesure. Un repli sur 0 ferait
+    passer une absence pour de la fraîcheur parfaite.
+    """
+    import time
+    ts = scan_state.get('scan_ts')
+    return round(time.time() - ts) if ts else None
+
+
+__all__ = ['scan_state', 'weekly_state', 'news_state', 'cal_state', 'scan_age']

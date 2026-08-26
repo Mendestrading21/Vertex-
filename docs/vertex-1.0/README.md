@@ -17,6 +17,14 @@ Ce dossier est la source documentaire active unique.
 | `CLAUDE_MASTER_PROMPT.md` | prompt unique pour les grands chantiers Claude Code |
 | `RELEASE_CHECKLIST.md` | preuves exigées avant Vertex 1.0 final |
 | `DECISIONS.md` | registre court des décisions actives |
+| `audits/AUDIT-TOTAL-2026-08-24.md` | audit indépendant de la RC, CI, couverture, sources et dette |
+| `audits/AUDIT-TOTAL-2026-08-25.md` | audit produit/code/exploitation, page par page, et priorités Vertex 2.0 |
+| `roadmap/VERTEX-INTELLIGENCE-2.0.md` | programme ordonné de montée en gamme après stabilisation RC |
+| `roadmap/SOURCES-APIS-OPEN-SOURCE.md` | sélection des sources officielles, API et références externes |
+| `roadmap/USER-REPOSITORIES-2026-08-25.md` | décision adopt/pilot/inspire/reject pour les 60 dépôts proposés |
+| `roadmap/STRATEGY-V5-ARBITRAGE.md` | contradictions V4 / doctrine utilisateur à trancher humainement |
+| `roadmap/CLAUDE-CODE-EXECUTION.md` | prompt d'exécution du programme pour Claude Code |
+| `roadmap/external_references.json` | registre machine-readable des références externes |
 
 ## Autorité
 
@@ -29,3 +37,7 @@ En cas de contradiction :
 5. archives.
 
 Toute ambiguïté devient une entrée dans `DECISIONS.md`, jamais un nouveau document « master », « ultimate » ou une branche d'intégration concurrente.
+
+Les documents `roadmap/` ne remplacent ni les gates ni la doctrine active. Ils
+ordonnent le travail après la RC. Une phase ne devient active que lorsque ses
+dépendances et décisions humaines sont satisfaites.
