@@ -1030,10 +1030,16 @@ def api_events(sym):
     try:
         from vertex.data import macro_calendar
         macro = macro_calendar.events(horizon_days=30)
+        #  « Disponible » ne veut pas dire « complet » : la liste FOMC publiee
+        #  a une fin, et au-dela le calendrier rendait MOINS d'evenements sans
+        #  rien dire — indiscernable d'une periode calme.
+        _cov = macro_calendar.couverture(horizon_days=30)
         macro_calendar_status = {
             'available': True,
-            'status': 'MACRO_CALENDAR_AVAILABLE',
+            'status': ('MACRO_CALENDAR_PARTIAL' if _cov['fomc_horizon_depasse']
+                       else 'MACRO_CALENDAR_AVAILABLE'),
             'events_loaded': len(macro) if isinstance(macro, list) else 0,
+            'couverture': _cov,
             'read_only': True,
         }
     except Exception:
