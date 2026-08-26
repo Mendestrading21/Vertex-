@@ -94,11 +94,39 @@ def peut_fonder_un_gate(event) -> bool:
 
 def _ev(kind, label, category, source, date=None, dte=None, impact_hint=None,
         impact_derivation=None, importance=None, confidence=None,
-        date_fiabilite=DATE_PUBLIEE):
-    return {'kind': kind, 'label': label, 'category': category, 'source': source,
-            'date': date, 'dte': dte, 'impact_hint': impact_hint,
-            'impact_derivation': impact_derivation, 'importance': importance,
-            'confidence': confidence, 'date_fiabilite': date_fiabilite}
+        date_fiabilite=DATE_PUBLIEE, sources=None):
+    ev = {'kind': kind, 'label': label, 'category': category, 'source': source,
+          'date': date, 'dte': dte, 'impact_hint': impact_hint,
+          'impact_derivation': impact_derivation, 'importance': importance,
+          'confidence': confidence, 'date_fiabilite': date_fiabilite}
+    if sources:
+        #  Toutes les sources qui ont rapporte CE fait. `source` reste la
+        #  premiere, pour les consommateurs existants ; `sources` les porte
+        #  toutes, parce qu'un fait rapporte par trois agences n'est pas la
+        #  meme preuve qu'un fait rapporte par une.
+        ev['sources'] = sources
+        ev['n_sources'] = len(sources)
+    return ev
+
+
+def _nom_source(n):
+    """Le nom du publieur, quelle que soit la cle du producteur.
+
+    Mesure du 26 aout 2026 : `ibkr_news` et le fil yfinance emettent `pub`,
+    `news_plus.rss_news` emet `publisher`, et ce moteur ne lisait que
+    `publisher`. **Toute depeche IBKR et tout article yfinance ressortait donc
+    `news.externe`** — la source effacee a l'endroit meme ou le packet doit la
+    porter.
+
+    `dedupe_news` normalise desormais tout dans `sources[].pub` : on le lit en
+    premier, et les cles historiques restent en repli.
+    """
+    origines = n.get('sources')
+    if isinstance(origines, list) and origines:
+        premier = origines[0].get('pub') if isinstance(origines[0], dict) else None
+        if premier:
+            return premier
+    return n.get('publisher') or n.get('pub') or 'externe'
 
 
 def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
@@ -139,14 +167,16 @@ def build(sym, news=None, earnings=None, macro=None, anomaly=None, as_of=None):
         if not title:
             continue
         hint, deriv = _impact_from_title(title)
+        nom = _nom_source(n)
+        origines = n.get('sources') if isinstance(n.get('sources'), list) else None
         if hint == 'RATING':
-            revision_mentions.append({'title': title, 'source': 'news.%s' % (n.get('publisher') or 'externe'),
-                                      'date': n.get('time'), 'derivation': 'title_keywords'})
-        events.append(_ev('news', title, 'fact',
-                          'news.%s' % (n.get('publisher') or 'externe'),
+            revision_mentions.append({'title': title, 'source': 'news.%s' % nom,
+                                      'date': n.get('time'), 'derivation': 'title_keywords',
+                                      'sources': origines, 'n_sources': len(origines or [])})
+        events.append(_ev('news', title, 'fact', 'news.%s' % nom,
                           date=n.get('time'), dte=None,
                           impact_hint=hint, impact_derivation=deriv,
-                          confidence=None))
+                          confidence=None, sources=origines))
 
     for a in ((anomaly or {}).get('events') or []):
         if not isinstance(a, dict) or not a.get('label'):

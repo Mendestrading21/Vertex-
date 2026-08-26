@@ -49,8 +49,19 @@ def test_dedupe_news_by_normalized_title_and_link():
 
 
 def test_dedupe_never_rewrites_and_handles_empty():
-    out = news_plus.dedupe_news([{'title': 'A - B (test)', 'link': 'x'}])
-    assert out == [{'title': 'A - B (test)', 'link': 'x'}]
+    """Intention inchangee : la deduplication ne REECRIT rien.
+
+    L'assertion portait sur l'egalite stricte du dict, ce qui est plus fort que
+    son nom : depuis D-116, `dedupe_news` AJOUTE `sources` et `n_sources` pour
+    ne plus perdre les sources (Phase 4). Aucun champ d'origine n'est touche —
+    et c'est exactement ce que ce banc verifie desormais.
+    """
+    entree = {'title': 'A - B (test)', 'link': 'x'}
+    out = news_plus.dedupe_news([dict(entree)])
+    assert len(out) == 1
+    for cle, valeur in entree.items():
+        assert out[0][cle] == valeur, cle
+    assert set(out[0]) - set(entree) == {'sources', 'n_sources'}
     assert news_plus.dedupe_news([]) == []
     assert news_plus.dedupe_news(None) == []
 
