@@ -14,6 +14,7 @@ from vertex.app.config import DEMO_MODE
 from vertex.app.state import scan_state
 from vertex.options import overview as _ov
 from vertex.options import interpretation as _oi
+from vertex.options import chaine_a_la_demande as _chaine
 from vertex.options import entrees_mesurees as _entrees
 
 bp = Blueprint('options_intel_api', __name__)
@@ -21,6 +22,28 @@ bp = Blueprint('options_intel_api', __name__)
 
 def _board():
     return scan_state.get('options_board') or []
+
+
+def _board_pour(sym):
+    """Le board VU DEPUIS un titre : ses contrats, complétés si besoin.
+
+    Le board couvre l'univers par rotation IBKR ; entre deux passages, un titre
+    consulté peut n'y être pour rien, et toutes ses cartes options restent vides
+    sans qu'on sache si le titre n'a pas d'options ou si le board ne l'a pas
+    encore vu.
+
+    `vertex-live` comblait ce trou en appelant `warm_chain` EN SYNCHRONE dans la
+    route — c'est-à-dire en rétablissant le défaut P0.1, mesuré à 28-48 s. Ici la
+    chaîne est chargée EN FOND : la page rend la main tout de suite, et l'état
+    dit si un chargement est en cours.
+    """
+    board = _board()
+    contrats, meta = _chaine.contrats(sym, board)
+    if contrats and not any(str((c or {}).get('sym', '')).upper() == str(sym).upper()
+                            for c in board if isinstance(c, dict)):
+        #  Complété par la chaîne à la demande : on ajoute, on ne remplace pas.
+        return list(board) + list(contrats), meta
+    return board, meta
 
 
 def _as_of():
