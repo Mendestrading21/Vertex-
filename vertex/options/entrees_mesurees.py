@@ -70,6 +70,59 @@ def taux(scan_state, echeance_jours) -> float:
     return float(courbe(scan_state).rate_for_tenor(max(jours, 1)).rate)
 
 
+#: Une IV d'action hors de cet intervalle n'est pas une IV : c'est une cotation
+#: corrompue, un champ mal lu, ou une unite qui n'est pas celle qu'on croit.
+#: Le point est ECARTE et non converti au hasard.
+IV_MIN, IV_MAX_PLAUSIBLE = 0.02, 3.00
+
+
+def iv_cotee(board, symbole: str) -> dict:
+    """L'IV **reellement cotee** du titre, avec la base sur laquelle elle repose.
+
+    Rend `{'valeur', 'n_contrats', 'source'}` — `valeur` a `None` si aucune
+    cotation exploitable.
+
+    ## Pourquoi une seule cotation suffit a l'emporter sur le proxy
+
+    On pourrait exiger trois contrats : une mediane sur un seul n'est pas une
+    surface de volatilite, et D-078 refuse justement les medianes trop minces.
+    Mesure du 26 aout 2026 : le seuil a trois ne couvrirait que **145 des 211
+    titres** du board (69 %), et les 66 autres retomberaient sur le proxy ATR —
+    dont l'ecart mesure est de **+40 % de mediane, sur 30 titres tous
+    surevalues**.
+
+    Preferer un proxy systematiquement faux a une cotation reelle, au motif
+    qu'elle est unique, serait choisir l'erreur connue. La cotation l'emporte
+    donc des un contrat — et `n_contrats` dit sur quoi elle repose, pour qu'un
+    lecteur puisse en juger.
+
+    ## Unite
+
+    Le board exprime l'IV en **POURCENT** (`44.7` = 44,7 %) : meme piege qu'en
+    D-095, et la meme reponse — la conversion est faite ici, une fois, par le
+    proprietaire des entrees.
+    """
+    sym = str(symbole or '').upper()
+    vus = []
+    for c in (board or []):
+        if not isinstance(c, dict) or str(c.get('sym', '')).upper() != sym:
+            continue
+        brut = c.get('iv')
+        if not isinstance(brut, (int, float)) or isinstance(brut, bool):
+            continue
+        v = float(brut) / 100.0
+        if IV_MIN <= v <= IV_MAX_PLAUSIBLE:
+            vus.append(v)
+    if not vus:
+        return {'valeur': None, 'n_contrats': 0, 'source': None}
+    vus.sort()
+    milieu = len(vus) // 2
+    valeur = (vus[milieu] if len(vus) % 2
+              else (vus[milieu - 1] + vus[milieu]) / 2.0)
+    return {'valeur': valeur, 'n_contrats': len(vus),
+            'source': 'options_board (mediane des contrats cotes)'}
+
+
 def rendement_dividende(scan_state, symbole: str):
     """Le rendement du dividende du titre, en **fraction**, ou `None`.
 
