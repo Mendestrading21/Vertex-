@@ -19,7 +19,10 @@ PARTOUT, même sans chaîne d'options réseau (donc visible en mode démo, iPhon
 """
 import math
 
-from vertex.options.legacy_engine import _bs_price, _greeks
+#  `R` est LU dans le moteur, jamais recopie : une declaration qui porterait
+#  sa propre copie du taux finirait par annoncer autre chose que ce qui a
+#  ete calcule — c'est exactement le defaut de D-084.
+from vertex.options.legacy_engine import R, _bs_price, _greeks
 
 # ── Échelle d'échéances + delta cible MIX (court agressif → long conservateur) ─
 HORIZONS = [
@@ -39,6 +42,53 @@ RISK_PCT = (5, 10)          # risque cible par trade (info)
 IV_MAX = 0.85              # filtre « IV pas trop chère » (vol annualisée)
 
 _BEAR = {'AVOID', 'ÉVITER', 'EVITER', 'SELL', 'VENDRE', 'REDUCE', 'ALLÉGER', 'ALLEGER'}
+
+
+#: Ce que ce module PRODUIT, et qu'il doit dire.
+#:
+#: Chaque autre moteur de pricing du dépôt trace ses hypothèses —
+#: `scenario_pricer` (`model_source`, `limitations`), `multileg_lab` et
+#: `double_prob` (bloc `model`). Celui-ci n'en déclarait **aucune**, alors que
+#: c'est le plus modélisé des quatre : ni la prime, ni l'IV, ni le strike ne
+#: viennent d'une cotation. Le strike est CHOISI pour viser un delta, la prime
+#: est CALCULÉE, et l'IV est DÉDUITE de l'ATR.
+#:
+#: Mesuré le 26 août 2026 sur les 578 contrats réellement cotés du board :
+#: l'IV médiane par titre s'étale de **2,52×** entre p10 (0,248) et p90
+#: (0,625). Sur cet intervalle, la prime d'un call ATM à 180 jours varie de
+#: **+128 %**. Le proxy assigne pourtant l'IV depuis le seul ATR : deux titres
+#: de même ATR reçoivent la même IV, quelle que soit celle que le marché cote.
+#:
+#: Et la sortie sert un DIMENSIONNEMENT EN DOLLARS sur cette prime — nombre de
+#: contrats, coût, `maxloss`. Un chiffre modélisé qui prend la forme d'un
+#: montant engagé doit dire qu'il est modélisé.
+MODELE = {
+    'type': 'black_scholes_europeen',
+    'estimated': True,
+    'prix_source': 'MODEL_ESTIMATE',
+    'iv_source': 'PROXY_ATR',
+    'strike_source': 'CHOISI_POUR_DELTA_CIBLE',
+    'r': R,
+    'q': 0.0,
+    'read_only': True,
+}
+
+#: Limites de ce constructeur. Elles ne remplacent pas une cotation : elles
+#: disent pourquoi il ne faut pas la confondre avec une.
+LIMITATIONS = [
+    "prime MODELISEE, jamais cotee : aucun contrat reel ne correspond "
+    "necessairement a ce strike ni a cette echeance",
+    "IV deduite de l'ATR (volatilite REALISEE), pas de la chaine d'options "
+    "(volatilite IMPLICITE) — mesure du 26 aout 2026 : l'IV cotee s'etale de "
+    "2,52x entre titres, et la prime d'un call ATM 180 j varie de +128 % sur "
+    "cet intervalle",
+    "taux sans risque constant (%.3f), sans courbe par echeance" % R,
+    "dividende non applique (q = 0) : sur un titre distributeur, la prime d'un "
+    "call est SURESTIMEE",
+    "modele europeen : l'exercice anticipe n'est pas modelise",
+    "le dimensionnement en dollars decoule de la prime MODELISEE — le cout "
+    "reel d'une position depend de la cotation du jour",
+]
 
 
 def _iv_proxy(atr_pct):
@@ -225,7 +275,8 @@ def build_portfolio(rows, detail, market=None, capital=100000, n_core=6, n_sat=4
     deployed = sum(p['cost'] for p in positions)
     gp = sum(p['gain_prob'] for p in positions)
     ge = sum(p['gain_exc'] for p in positions)
-    return {'capital': capital, 'deployed': deployed, 'cash': round(capital - deployed),
+    return {'model': dict(MODELE), 'limitations': list(LIMITATIONS),
+            'capital': capital, 'deployed': deployed, 'cash': round(capital - deployed),
             'positions': positions, 'n': len(positions), 'maxloss': deployed,
             'gain_prob': gp, 'gain_exc': ge,
             'gain_prob_pct': round(gp / capital * 100, 1) if capital else 0,
@@ -260,12 +311,18 @@ def build(rows, detail, market=None, top_n=6):
         picks.append({
             'symbol': sym, 'price': round(S, 2), 'grade': d.get('grade'),
             'score': d.get('score'), 'iv': round(sig * 100),
+            #  `iv` porte le MEME nom que l'IV COTEE du board, et n'a pas le
+            #  meme sens : celle-ci est deduite de l'ATR. Le dire ici, au plus
+            #  pres de la valeur, est la seule facon qu'un lecteur ne les
+            #  confonde pas.
+            'iv_source': MODELE['iv_source'], 'iv_estimated': True,
             'iv_expensive': iv_expensive, 'regime': bias, 'primary': primary,
             'call': _legs(S, sig, plan, True),
             'put': _legs(S, sig, plan, False),
         })
     return {'picks': picks, 'horizons': HORIZONS, 'sizing': SIZING,
             'regime': bias, 'risk_pct': list(RISK_PCT),
+            'model': dict(MODELE), 'limitations': list(LIMITATIONS),
             'profile': {'style': 'Croissance + équilibre (spéculation, sortie avant échéance)',
                         'instrument': 'Achat Calls / Puts directionnels',
                         'delta': 'Delta MIX : agressif court · conservateur long',
