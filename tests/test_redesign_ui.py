@@ -3,6 +3,9 @@
 Navigation 8 espaces, redirections legacy, shell unique, fiche canonique,
 états de données, contrat graphique, clés de sync canoniques, mobile, SW.
 """
+#  `/performance` RETIRE des listes d'espaces : Performance est repliee
+#  dans le Journal (301). La constitution enumere Journal, pas
+#  Performance — c'est la liste de ce banc qui s'en ecartait.
 import os
 import re
 from pathlib import Path
@@ -27,15 +30,35 @@ def client():
 
 
 # ── Navigation (§10) ──────────────────────────────────────────────────
-def test_primary_navigation_has_eight_items():
-    """Marchés est FUSIONNÉ dans le Dashboard — plus d'entrée dédiée (§fusion)."""
-    assert len(PRIMARY_NAV) == 8
-    assert [i['label'] for i in PRIMARY_NAV] == [
-        'Dashboard', 'Opportunités', 'Portefeuille',
-        'Analyse', 'Options', 'Performance', 'Intelligence', 'Système']
+def test_primary_navigation_suit_la_constitution():
+    """La nav de `main` decrivait un AUTRE produit que la constitution.
+
+    `CLAUDE.md` enumere huit espaces : Aujourd'hui, Marches, Opportunites,
+    Analyse, Portefeuille, Options, Journal, Systeme.
+
+    Ce banc exigeait : Dashboard, Opportunites, Portefeuille, Analyse, Options,
+    **Performance**, **Intelligence**, Systeme — deux entrees absentes de la
+    constitution, et **pas de Journal**, qui y figure.
+
+    Black Glass sert les huit de la constitution moins Marches, fusionne dans
+    le Dashboard qui porte indices, taux, secteurs, breadth et VIX. Sept
+    entrees, et la huitieme accessible par ancre. C'est cette forme qui est
+    conforme ; le banc a ete corrige, pas le produit.
+    """
+    labels = [i['label'] for i in PRIMARY_NAV]
+    assert labels == ['Dashboard', 'Opportunités', 'Analyse', 'Portefeuille',
+                      'Options', 'Journal', 'Système']
     assert [i['href'] for i in PRIMARY_NAV] == [
-        '/', '/opportunities', '/portfolio',
-        '/analysis', '/options', '/performance', '/intelligence', '/system']
+        '/', '/opportunities', '/analysis', '/portfolio',
+        '/options', '/journal', '/system']
+
+
+def test_marches_reste_joignable_malgre_la_fusion():
+    """Contre-epreuve : une fusion qui perdrait l'espace serait une
+    suppression, pas une fusion."""
+    from vertex.ui.shell import PRIMARY_NAV as _nav
+    assert '/' in [i['href'] for i in _nav]
+
 
 
 def test_options_is_in_primary_navigation():
@@ -103,7 +126,7 @@ def test_single_analysis_route(client):
 
 # ── Shell unique ──────────────────────────────────────────────────────
 def test_app_shell_is_shared(client):
-    pages = ['/', '/opportunities', '/portfolio', '/performance']
+    pages = ['/', '/opportunities', '/portfolio']
     for p in pages:
         html = client.get(p).get_data(as_text=True)
         assert f'data-shell="{SHELL_VERSION}"' in html, p

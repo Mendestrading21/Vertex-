@@ -142,19 +142,11 @@ _SECTIONS = """
 </div>
 <!-- Scores + radar : SORTIS du hero collant → la barre d'identité (titre/prix/décision)
      reste seule en haut au défilement, le reste de l'analyse défile librement. -->
-<section class="vx-card vx-mt3" id="an-scores-card">
-  <div class="vx-card-header"><span class="vx-card-title">Scores du comité</span>
-    <span class="vx-chart-question">Conviction, risque, timing, asymétrie, qualité — en un regard</span></div>
-  <div id="an-scores" aria-label="Scores"></div>
-</section>
-
-<!-- 2. Thèse -->
-<section class="vx-card vx-mt4" id="an-thesis-card">
-  <div class="vx-card-header"><span class="vx-card-title">Thèse</span>
-    <span class="vx-actions"><button class="vx-btn vx-btn-sm vx-btn-ghost"
-      onclick="VXEntities.openAddModal('%%SYM%%','note')">Éditer</button></span></div>
-  <div id="an-thesis" class="vx-dim">—</div>
-</section>
+<!-- Scores et These vivent DANS le workspace §22, plus bas. Les deux cartes
+     qui se trouvaient ici en etaient des doublons a l'identique : memes `id`,
+     deux fois dans le meme document. `getElementById` ne rend que le PREMIER,
+     donc le script remplissait ces cartes-ci et laissait celles du workspace —
+     celles que la page met en avant — sur leur tiret. Retirees. -->
 
 <!-- 2-bis. PROFIL DU TITRE — synthèse visuelle au coup d'œil -->
 <section class="vx-card vx-mt4 vx-card--premium" id="an-profile">

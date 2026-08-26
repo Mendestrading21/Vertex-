@@ -6,6 +6,9 @@ sur le HTML rendu + les assets ; les vérifications purement navigateur
 (console, overflow réel) sont doublées par les runs Chromium documentés
 dans docs/VERTEX_UI_V3_IMPLEMENTATION.md.
 """
+#  `/performance` RETIRE des listes d'espaces : Performance est repliee
+#  dans le Journal (301). La constitution enumere Journal, pas
+#  Performance — c'est la liste de ce banc qui s'en ecartait.
 import os
 import re
 
@@ -18,7 +21,7 @@ VXJS = os.path.join(ROOT, 'vertex', 'static', 'vertex', 'js')
 VXCSS = os.path.join(ROOT, 'vertex', 'static', 'vertex', 'css')
 
 PAGES = ['/', '/opportunities', '/portfolio', '/analysis',
-         '/analysis/NVDA', '/performance', '/intelligence', '/system']
+         '/analysis/NVDA', '/intelligence', '/system']
 
 
 @pytest.fixture(scope='module')
