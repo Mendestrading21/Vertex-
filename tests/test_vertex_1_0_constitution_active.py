@@ -100,11 +100,52 @@ def test_le_recensement_n_accuse_PAS_la_forme_corrigee():
 
 def test_tous_les_lanceurs_passent_par_le_runtime_canonique():
     """Contre-épreuve positive : ils doivent lancer QUELQUE CHOSE, et ce
-    quelque chose doit être `-m vertex`."""
+    quelque chose doit être `-m vertex`.
+
+    L'installeur du démarrage automatique le fait par **indirection** depuis
+    D-141 : il ne lance plus une commande composée — `schtasks /tr` refusait le
+    `^&^&` et la tâche n'était jamais créée — mais pointe sur
+    `_vertex_autostart.cmd`. Le banc suit donc le fichier désigné : exiger
+    `-m vertex` dans l'installeur lui-même interdirait la seule forme qui
+    fonctionne.
+    """
     for nom in ('Lancer_VERTEX.bat', 'Lancer_VERTEX_DEMO.bat',
-                'Installer_Demarrage_Auto.bat'):
+                '_vertex_autostart.cmd'):
         src = (RACINE / nom).read_text(encoding='utf-8', errors='replace')
         assert '-m vertex' in src, '%s ne lance pas le runtime canonique' % nom
+    #  L'installeur, lui, doit designer ce lanceur — et lui seul.
+    inst = (RACINE / 'Installer_Demarrage_Auto.bat').read_text(
+        encoding='utf-8', errors='replace')
+    assert '_vertex_autostart.cmd' in inst
+
+
+def test_l_installeur_VERIFIE_la_tache_au_lieu_de_l_affirmer():
+    """Le défaut du 26 août 2026 : `schtasks` répondait « Argument ou option
+    non valide - '^&^&' », la tâche n'était pas créée, et l'installeur
+    affichait quand même « OK : VERTEX demarrera automatiquement ».
+
+    Un statut qui s'affirme sans se vérifier est un mensonge — et celui-là
+    portait sur la constitution appliquée (D-110).
+    """
+    inst = (RACINE / 'Installer_Demarrage_Auto.bat').read_text(
+        encoding='utf-8', errors='replace')
+    #  Le message de succes doit venir APRES une interrogation de la tache.
+    i_ok = inst.index('OK : la tache VertexAutoStart')
+    avant = inst[:i_ok]
+    assert avant.count('schtasks /query') >= 2, (
+        "le « OK » doit suivre une VERIFICATION, pas un code de retour")
+    assert 'echec' in avant.lower() or 'Echec' in avant
+
+
+def test_l_installeur_ne_compose_PLUS_de_commande():
+    """`schtasks /tr` ne reçoit pas de commande composée. Le `^&^&` qui a
+    empêché toute création ne doit pas revenir — hors du commentaire qui
+    explique le défaut."""
+    inst = (RACINE / 'Installer_Demarrage_Auto.bat').read_text(
+        encoding='utf-8', errors='replace')
+    fautives = [l for l in inst.splitlines()
+                if '^&^&' in l and not l.strip().upper().startswith('REM')]
+    assert fautives == [], fautives
 
 
 def test_le_deploiement_distant_passe_aussi_par_le_runtime():
