@@ -34,7 +34,9 @@ class InvestmentAgent:
                 try:
                     raw = self.provider.analyze(build_system_prompt(),
                                                 build_user_prompt(request))
-                    ok, verrors = validate_analysis(raw)
+                    #  Le packet est passe : un chiffre invente fait
+                    #  basculer sur le repli deterministe.
+                    ok, verrors = validate_analysis(raw, packet=request.packet)
                     if ok:
                         result = AnalysisResult(ok=True, source='claude', content=raw,
                                                 model=getattr(self.provider, 'model', ''))
