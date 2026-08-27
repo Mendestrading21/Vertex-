@@ -40,6 +40,7 @@ Réutiliser les modèles existants et créer un adaptateur canonique avant un no
 - Command palette pour navigation et actions non destructives.
 - Drawers de détail réutilisables pour instrument, position, contrat, source et décision.
 - Centre de notifications interne : fraîcheur, événement, thèse à revoir, risque ou job en échec.
+- Calendrier global : macro, résultats, dividendes, expirations, catalyseurs, positions et revues, agrégé sans duplication.
 - Provenance, timestamp et mode de donnée accessibles partout.
 - Préférences de densité, colonnes et vues cohérentes sur toutes les tables.
 
@@ -50,4 +51,3 @@ Réutiliser les modèles existants et créer un adaptateur canonique avant un no
 - Un provider ne devient jamais silencieusement la vérité unique.
 - Les données utilisateur et signaux théoriques ne partagent pas un KPI sans séparation explicite.
 - Les pages composent des vues ; elles ne possèdent pas les stores ni la logique métier.
-

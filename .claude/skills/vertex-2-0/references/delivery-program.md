@@ -18,7 +18,7 @@ Consolider sources, caches, snapshots, observabilité et états dégradés. Vér
 
 ## Lot 4 — Aujourd'hui et Marchés
 
-Command center quotidien, régime, risques, événements et contexte cross-asset.
+Command center quotidien, régime, risques, contexte cross-asset, calendrier central et centre d'alertes.
 
 ## Lot 5 — Opportunités et Analyse
 
@@ -59,4 +59,3 @@ Tests complets, navigateur, console, desktop/mobile, clavier, performance, donn�
 ```
 
 Claude continue ensuite le premier lot non terminé dont les dépendances sont satisfaites. Il ne saute pas à une page attractive si les contrats ou sources nécessaires sont encore fragmentés.
-

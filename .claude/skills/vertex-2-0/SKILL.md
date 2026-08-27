@@ -48,6 +48,7 @@ Lire [platform-architecture.md](references/platform-architecture.md) pour la car
 - Portefeuille, exposition, risque, watchlist et suivi : [portfolio-center.md](references/portfolio-center.md).
 - Intelligence, assistant, comité, mémoire et audit trail : [ai-center.md](references/ai-center.md).
 - Performance, journal, tracking, apprentissages : [performance-center.md](references/performance-center.md).
+- Calendrier économique, résultats, dividendes, expirations, revues et alertes : [calendar-and-alerts.md](references/calendar-and-alerts.md).
 - Données, IBKR, TradingView, WMB, news, jobs et santé : [data-and-integrations.md](references/data-and-integrations.md).
 - Programme complet, lots et conditions de sortie : [delivery-program.md](references/delivery-program.md).
 - Pour toute interface, charger aussi `vertex-design-2-0` et seulement ses références pertinentes.
@@ -64,7 +65,7 @@ Lire [platform-architecture.md](references/platform-architecture.md) pour la car
 8. **Intelligence** rend le raisonnement, les contradictions, la mémoire et la recherche auditables.
 9. **Système** prouve la santé des sources, intégrations, jobs, sécurité et préférences.
 
-Journal, watchlist, calendrier, alertes, tracking et détails sont des surfaces transversales rattachées à un propriétaire clair, pas de nouvelles destinations principales par défaut.
+Journal, watchlist, calendrier, alertes, tracking et détails sont des surfaces transversales rattachées à un propriétaire clair. Le Calendrier possède une vue plein écran accessible globalement, mais ne duplique pas les calendriers spécialisés de Marchés, Options ou Portefeuille : il les agrège avec filtres et liens vers leurs propriétaires.
 
 ## Méthode de livraison
 
@@ -79,4 +80,3 @@ Journal, watchlist, calendrier, alertes, tracking et détails sont des surfaces 
 ## Définition de terminé
 
 Vertex 2.0 n'est pas terminé parce que toutes les pages existent. Il est terminé lorsqu'une idée peut traverser la boucle complète — observation, détection, dossier, décision canonique, impact portefeuille, suivi et mesure — avec données réelles, provenance, états honnêtes, aucun doublon actif, aucune erreur navigateur et aucune capacité d'exécution d'ordre.
-
