@@ -498,6 +498,20 @@ async function renderTeam(){
         </div>`;}).join('')+'</div>':'<div class="vx-meta" style="padding:6px 0">— aucune position dans ce rôle —</div>'}
     </section>`).join('');
   /* Treemap d'allocation (§20 — remplace le donut seul) : taille = poids, couleur = P&L */
+  /*  `plConnu` et `totalTree` étaient EMPLOYÉS quatre fois dans le bloc
+      ci-dessous et déclarés NULLE PART. Trouvés en remettant le desk à zéro :
+      c'est le chemin d'un utilisateur NEUF, celui qu'aucune session avec des
+      positions n'exerce.
+
+      `plConnu` : le P&L est-il connu pour au moins une ligne ? La treemap
+      colore par P&L quand il l'est, et **par concentration** sinon — colorer
+      par un P&L absent peindrait tout en neutre et ferait passer une donnée
+      manquante pour un portefeuille à l'équilibre.
+
+      `totalTree` : le total qui sert de dénominateur aux poids. Sans lui, le
+      repli de concentration divisait par `undefined`.  */
+  const plConnu=rich.some(t=>t.pl!=null);
+  const totalTree=rich.reduce((a,t)=>a+Math.max(0,t.value??t.invested??0),0);
   if(window.VXCharts&&VXCharts.treemap){
     const cc=VXCharts.colors;const el=$('pf-alloc-tree');const w=(el&&el.clientWidth)||900;
     VXCharts.treemap(el,{width:w,height:260,
