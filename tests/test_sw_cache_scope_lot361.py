@@ -32,8 +32,8 @@ _SW = os.path.join(_ROOT, 'vertex', 'app', 'routes', 'system.py')
 _STATIC = os.path.join(_ROOT, 'vertex', 'static')
 
 # ── Contrat enregistré : ces assets vont avec cette version de shell ─────────
-_EMPREINTE = '187aa655eac8a55b0f113dfc3b24b71d36c691e1ff73b412da9008ba516adc65'
-_SW_VERSION = 230
+_EMPREINTE = 'c8f6ba0489b6d436ce7037e460b7b6fbb39a619aed39a0c918fc67a73ebe20f3'
+_SW_VERSION = 231
 
 _AIDE = (
     "Un fichier servi sous /static a changé.\n"

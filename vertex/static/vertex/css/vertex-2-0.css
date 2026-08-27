@@ -900,3 +900,42 @@ html,body{max-width:100%;overflow-x:clip}
 #vx-content .vx-insufficient-why{
   margin-top:4px;font-size:13px;color:var(--vx-mist);line-height:1.5;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   16) MATRICE DES CONNEXIONS — Système
+   Seule la surcharge MOBILE de `.vx-connection-row` existait, dans une media
+   query, et elle supposait une règle de base qui n'a jamais été écrite. Sur
+   desktop la ligne n'avait donc aucune disposition : nom, badge et description
+   se collaient — « IBKRHors ligneIBKR non activé ».
+
+   Trois colonnes : le nom et le badge à leur largeur naturelle, la description
+   prend le reste. Le badge garde `max-content` — c'est ce que le lot 126 avait
+   cherché à obtenir pour que « À configurer » cesse de déborder sur le voisin.
+   ───────────────────────────────────────────────────────────────────────── */
+#vx-content .vx-connection-row{
+  display:grid;
+  grid-template-columns:max-content max-content minmax(0,1fr);
+  align-items:baseline;
+  gap:var(--vx2-s2) var(--vx2-s3);
+  padding:var(--vx2-s2) 0;
+  border-bottom:1px solid var(--vx2-line-faint);
+}
+#vx-content .vx-connection-row:last-child{border-bottom:0}
+#vx-content .vx-connection-name{
+  font-weight:600;color:var(--vx-ink);white-space:nowrap;
+}
+#vx-content .vx-connection-status{
+  justify-self:start;white-space:nowrap;
+  padding:2px 9px;border-radius:var(--vx2-r-pill);
+  border:1px solid currentColor;background:var(--vx-glass-subtle);
+  font-size:10.5px;font-weight:600;letter-spacing:.04em;
+}
+#vx-content .vx-connection-detail{
+  color:var(--vx-mist);line-height:1.55;min-width:0;
+}
+#vx-content .vx-connection-action{color:var(--vx-smoke);white-space:normal}
+@media (max-width:760px){
+  #vx-content .vx-connection-row{
+    grid-template-columns:minmax(0,1fr) max-content;align-items:start}
+  #vx-content .vx-connection-detail{grid-column:1/-1}
+}
