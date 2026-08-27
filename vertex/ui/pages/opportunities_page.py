@@ -11,22 +11,40 @@ Données réelles uniquement — « — » honnête si absent.
 from __future__ import annotations
 
 
+from vertex.ui import vx2
 from vertex.ui.shell import json_for_script, render_shell
 
-_VIEWS = (('screener', 'Radar'), ('options', 'Options'),
-          ('portfolio', 'Positions × moteur'), ('anomalies', 'Anomalies'),
-          ('calendar', 'Catalyseurs'))
+# Le contrat réclame des sous-vues Actions et ETF. Vertex sait classer un
+# instrument — `vertex.market.instrument_profile.build()` — mais ce verdict
+# n'est PAS servi sur les lignes du scan : seul `/api/analysis` le porte, et
+# pour un symbole à la fois.
+#
+# On ne recrée donc pas la règle dans l'interface. On lit son RÉFÉRENTIEL
+# curé — deux listes statiques du produit — et l'écran DIT ce que cette
+# couverture vaut. Un titre hors des deux listes n'est pas classé de force :
+# il est compté à part, et nommé.
+def _referentiel_classes() -> dict:
+    from vertex.market import instrument_profile as _ip
+    from vertex.market import sectors as _sec
+    return {
+        'etf': sorted(set(_ip.BROAD_ETFS) | set(_ip.ETF_SECTOR_PROXY)),
+        'actions': sorted(_sec.SECTOR_MAP),
+    }
 
-# Anciennes vues → nouvelles (liens internes historiques : radar/stocks)
-_VIEW_ALIASES = {'radar': 'screener', 'stocks': 'screener'}
+
+_VIEWS = (('screener', 'Radar'), ('stocks', 'Actions'), ('etf', 'ETF'),
+          ('options', 'Options'), ('anomalies', 'Anomalies'),
+          ('calendar', 'Catalyseurs'), ('portfolio', 'Positions × moteur'))
+
+# `stocks` menait au Radar ; il a désormais sa propre vue, et c'est la même
+# table filtrée — un lien historique arrive donc au bon endroit, en mieux.
+_VIEW_ALIASES = {'radar': 'screener'}
 
 
 def _tabs(view: str) -> str:
-    return ('<div class="vx-tabs" role="tablist">'
-            + ''.join(f'<a class="vx-tab" role="tab" aria-selected='
-                      f'"{"true" if v == view else "false"}" '
-                      f'href="/opportunities?view={v}">{label}</a>'
-                      for v, label in _VIEWS) + '</div>')
+    return vx2.tabs([{'label': label, 'href': f'/opportunities?view={v}',
+                      'actif': v == view} for v, label in _VIEWS],
+                    libelle='Sous-vues des Opportunités')
 
 
 _CONTENT = """
@@ -128,7 +146,7 @@ _JS = r"""
 <script>
 (function(){
 'use strict';
-const VIEW=%%VIEW%%;const PARAMS=%%PARAMS%%;
+const VIEW=%%VIEW%%;const PARAMS=%%PARAMS%%;const CLASSES=%%CLASSES%%;
 const $=(id)=>document.getElementById(id);
 function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 const OUT=['Rejetée','Radar','À surveiller','Proche','Actionnable','Invalidée'];
@@ -267,19 +285,48 @@ function rail52(v){
 }
 
 /* ═════════ SCREENER (vue par défaut) — de 515 titres à UNE décision ═════════ */
-async function renderScreener(){
+/* CLASSE D'INSTRUMENT — sous-vues Actions et ETF.
+   Vertex sait classer un instrument, mais ce verdict n'est PAS servi sur les
+   lignes du scan. On ne recree donc pas la regle ici : on lit son REFERENTIEL
+   cure, injecte par la page, et l'ecran DIT ce que cette couverture vaut.
+   Un titre hors des deux listes n'est jamais classe de force. */
+const _ETF=new Set(CLASSES.etf||[]), _ACT=new Set(CLASSES.actions||[]);
+function classeDe(sym){
+  const s=String(sym||'').toUpperCase();
+  return _ETF.has(s)?'ETF':(_ACT.has(s)?'ACTION':'NON_CLASSE');
+}
+async function renderScreener(classe){
   const scan=await VX.fetch('/scan',{ttl:120000});
   paintContext(scan);
-  const rows=(scan.rows||[]).filter(r=>r.score!==undefined);
+  let rows=(scan.rows||[]).filter(r=>r.score!==undefined);
+  let bandeau='';
+  if(classe){
+    const total=rows.length;
+    const nonClasses=rows.filter(r=>classeDe(r.symbol)==='NON_CLASSE').length;
+    rows=rows.filter(r=>classeDe(r.symbol)===classe);
+    const nom=classe==='ETF'?'ETF':'actions';
+    bandeau='<div class="vx2-banner" data-kind="prudence" role="status"><span>'
+      +'<b>'+rows.length+'</b> '+nom+' sur '+total+' ligne(s) scorée(s). '
+      +'Le classement vient du <b>référentiel curé</b> de Vertex '
+      +'('+(_ETF.size)+' ETF, '+(_ACT.size)+' actions au référentiel sectoriel), '
+      +'pas d’un champ servi par le scan : '
+      +(nonClasses?('<b>'+nonClasses+'</b> ligne(s) restent non classées et n’apparaissent '
+                    +'dans aucune des deux vues — elles sont visibles au '
+                    +'<a href="/opportunities?view=screener">Radar</a>.')
+                 :'aucune ligne non classée.')
+      +'</span></div>';
+  }
   if(!rows.length){
     ($('op-body')||{}).innerHTML='<div class="vx2-state" data-kind="empty" role="status">'
       +'<span class="vx2-state-ghost" aria-hidden="true"><i></i><i></i><i></i><i></i></span>'
-      +'<p class="vx2-state-title">Aucun titre scoré dans le scan courant</p>'
-      +'<p class="vx2-state-cause">L\u2019entonnoir n\u2019a rien à classer : le dernier scan '
-      +'n\u2019a produit aucune ligne portant un score. La barre de contexte '
+      +'<p class="vx2-state-title">'+(classe
+          ?('Aucun '+(classe==='ETF'?'ETF':'titre action')+' scoré dans le scan courant')
+          :'Aucun titre scoré dans le scan courant')+'</p>'
+      +'<p class="vx2-state-cause">L’entonnoir n’a rien à classer : le dernier scan '
+      +'n’a produit aucune ligne portant un score. La barre de contexte '
       +'ci-dessus dit de quelle source et de quand il date.</p>'
       +'<div class="vx2-state-actions">'
-      +'<a class="vx2-btn" href="/system?view=data">Ouvrir Syst\u00e8me \u2192 Donn\u00e9es</a></div>'
+      +'<a class="vx2-btn" href="/system?view=data">Ouvrir Système → Données</a></div>'
       +'</div>';
     return;}
   const detail=scan.detail||{};
@@ -335,7 +382,7 @@ async function renderScreener(){
     return f;
   }
   /* ── Squelette de la vue ── */
-  ($('op-body')||{}).innerHTML=demoBanner(scan)+`
+  ($('op-body')||{}).innerHTML=demoBanner(scan)+bandeau+`
     <div class="vx-screenbar" role="group" aria-label="Filtres du screener">
       <span class="vx-meta" style="flex-basis:100%;display:flex;flex-wrap:wrap;gap:.4rem;align-items:center">
         <button class="vx-btn vx-btn-sm vx-btn-ghost" id="op-reset">Réinitialiser les filtres</button>
@@ -560,6 +607,53 @@ async function renderScreener(){
         confirm:'Un secteur qui reste en tête quand tu durcis les filtres.',invalidate:'Un leadership qui dépend d’un seul titre.'}});
   }
 
+/* ── CINQ AIDES APPELEES ET DEFINIES NULLE PART ────────────────────────
+   `verdictDir`, `verdictWord`, `pbText`, `pbIcon` et `heatCell` sont
+   appelees par la carte d'opportunite, le filtre de setup, la revue de
+   position et la table des anomalies — et introuvables dans TOUT le depot.
+   Chacun de ces chemins levait un `ReferenceError`.
+
+   Invisible en demo : le scan y rend zero ligne, donc aucun ne s'execute.
+   Avec un scan qui produit des lignes, la vue Radar tombait des la premiere
+   carte. Trouve en injectant un scan fictif dans le navigateur.
+
+   Aucune ne calcule ni n'invente : elles LISENT ce que le serveur attache
+   deja — `r.playbook` vient de `strategy_fit`, le libelle et le ton du
+   verdict viennent du vocabulaire canonique. Un champ absent reste absent. */
+
+/* Direction de la jauge de confiance. Le TON est canonique (`__VXVOCAB`) :
+   on ne redecide pas ici si un verdict est haussier. */
+function verdictDir(dec){
+  const e=(window.__VXVOCAB||{})[dec];
+  const t=String((e&&e.tone)||'');
+  if(t.indexOf('green')>=0)return 'up';
+  if(t.indexOf('red')>=0)return 'down';
+  return '';
+}
+/* Libelle humain du verdict. Un code sans entree reste affiche tel quel :
+   mieux vaut un code brut qu'une traduction inventee. */
+function verdictWord(dec){return VERD_FR[dec]||dec||'';}
+
+/* Playbook : `strategy_fit._playbook_of` l'attache cote serveur sous la forme
+   {ic, name, col, desc}. On le lit, on ne le rejoue pas. */
+function pbText(r){const p=r&&r.playbook;return (p&&(p.name||p.lbl))||'';}
+function pbIcon(r){const p=r&&r.playbook;return (p&&p.ic)||'';}
+
+/* Cellule chauffee par seuils. Les seuils viennent de l'APPELANT — ils sont
+   deja ecrits dans le code de chaque table — et une valeur absente ne recoit
+   aucune couleur : un `—` gris, jamais un vert par defaut. */
+function heatCell(v,opt){
+  opt=opt||{};
+  const n=Number(v);
+  if(v==null||!isFinite(n))
+    return '<td data-label="'+esc(opt.label||'')+'" class="vx-num">'
+      +'<span class="vx2-absent">—</span></td>';
+  const ton=n>=(opt.good!=null?opt.good:70)?'vx-pos'
+    :n>=(opt.mid!=null?opt.mid:40)?'vx-warn':'vx-neg';
+  return '<td data-label="'+esc(opt.label||'')+'" class="vx-num">'
+    +'<span class="vx-mono '+ton+'">'+VX.fmt.num(n,0)+'</span></td>';
+}
+
   /* ── Carte d'opportunité RICHE (helper réutilisé : top + grille complète) ── */
   function oppCard(r){
     const dec=r.verdict||'';
@@ -699,7 +793,25 @@ async function renderScreener(){
           persist();syncBar();applyAll();});
       });});
   }
-  /* ── Donut verdicts des résultats ── */
+  /* ── VERD_FR ───────────────────────────────────────────────────────────
+   Reference QUATRE fois dans cette page — donut des verdicts, carte de
+   dossier, revue de position, calendrier des catalyseurs — et definie NULLE
+   PART. Chacun de ces quatre chemins levait `VERD_FR is not defined`.
+
+   Invisible en demo : le scan y rend zero ligne, donc aucun des quatre ne
+   s'execute. Avec un scan qui produit des lignes, la vue Radar tombait des le
+   comptage des verdicts. Trouve en injectant un scan fictif dans le navigateur.
+
+   Le libelle ne s'invente pas : il vient du vocabulaire CANONIQUE
+   (`window.__VXVOCAB`, servi par `recommendation.vocab_js()`). Un code sans
+   entree reste affiche tel quel plutot que traduit au jugé. */
+const VERD_FR=(function(){
+  const v=window.__VXVOCAB||{},out={};
+  Object.keys(v).forEach(function(k){
+    const e=v[k];out[k]=(e&&(e.label||e[0]))||k;});
+  return out;
+})();
+/* ── Donut verdicts des résultats ── */
   function paintVerdicts(f){
     const host=$('op-verdicts');if(!host)return;
     const cnt={};f.forEach(r=>{const v=VERD_FR[r.verdict]||r.verdict||'n/d';cnt[v]=(cnt[v]||0)+1;});
@@ -1336,7 +1448,10 @@ async function renderCalendar(){
   }catch(e){($('op-body')||{}).innerHTML=VX.states.error('Calendrier indisponible');}
 }
 
-const RENDER={screener:renderScreener,options:renderOptions,portfolio:renderPortfolio,
+const RENDER={screener:()=>renderScreener(null),
+  stocks:()=>renderScreener('ACTION'),
+  etf:()=>renderScreener('ETF'),
+  options:renderOptions,portfolio:renderPortfolio,
   anomalies:renderAnomalies,calendar:renderCalendar};
 function boot(){(RENDER[VIEW]||renderScreener)().catch(e=>{
   ($('op-body')||{}).innerHTML=VX.states.error('Chargement impossible : '+e.message);});}
@@ -1361,7 +1476,8 @@ def render(view: str = 'screener', params=None) -> str:
     #  L'integration de `vertex-live` avait rapporte ici les appels nus de cette
     #  branche, qui n'a jamais eu le durcissement du 372. Y ajouter `import json`
     #  aurait fait disparaitre l'erreur ET rouvert la faille.
-    js = (_JS.replace('%%VIEW%%', json_for_script(view))
+    js = (_JS.replace('%%CLASSES%%', json_for_script(_referentiel_classes()))
+          .replace('%%VIEW%%', json_for_script(view))
           .replace('%%PARAMS%%', json_for_script(p)))
     label = dict(_VIEWS)[view]
     return render_shell(title=f'Opportunités · {label}', active='opportunities',

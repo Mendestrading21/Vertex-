@@ -310,12 +310,99 @@
     });
   }
 
+
+  /* ── SOUS-VUE OPTIONS ─────────────────────────────────────────────────
+     Le contrat range « Options » parmi les vues du calendrier. Vertex ne
+     produit AUCUN agregat d'expirations de marche et ne detecte aucune date
+     d'OPEX — c'est ecrit dans la fiche de couverture, et ca le reste.
+
+     Mais une chose EXISTE et etait datee nulle part : les echeances des
+     contrats que l'utilisateur a lui-meme declares. Elles sont reelles,
+     datees, et n'exigent aucun moteur. La vue les montre, et dit
+     explicitement ce qu'elle ne montre pas. */
+  function estOption(t) {
+    return t && (t.type === 'CALL' || t.type === 'PUT' || t.right === 'C' || t.right === 'P');
+  }
+  function rendreEcheances() {
+    var hote = document.getElementById('vx-cal-timeline');
+    if (!hote) return;
+    var E = window.VXEntities;
+    var opts = ((E && E.positions && E.positions()) || []).filter(estOption)
+      .filter(function (t) { return t.exp; })
+      .sort(function (a, b) { return String(a.exp).localeCompare(String(b.exp)); });
+    if (!opts.length) {
+      hote.innerHTML = '<div class="vx2-state" data-kind="empty" role="status">'
+        + '<span class="vx2-state-ghost" aria-hidden="true"><i></i><i></i><i></i><i></i></span>'
+        + '<p class="vx2-state-title">Aucune échéance d’option déclarée</p>'
+        + '<p class="vx2-state-cause">Cette vue date les contrats que <b>vous</b> avez '
+        + 'déclarés. Vertex ne connaît aucun calendrier d’expirations de marché '
+        + 'et ne détecte aucune date d’OPEX.</p>'
+        + '<div class="vx2-state-actions">'
+        + '<a class="vx2-btn" href="/portfolio?view=options">Ouvrir mes options</a></div></div>';
+      return;
+    }
+    var auj = new Date(); auj.setHours(0, 0, 0, 0);
+    var jours = {};
+    opts.forEach(function (t) {
+      (jours[t.exp] = jours[t.exp] || []).push(t);
+    });
+    var html = Object.keys(jours).sort().map(function (d) {
+      var dte = Math.round((new Date(d) - auj) / 86400000);
+      var ton = dte < 0 ? 'stale' : dte <= 7 ? 'delayed' : 'missing';
+      var mot = dte < 0 ? 'expirée' : dte === 0 ? 'aujourd’hui'
+        : ('dans ' + dte + ' jour' + (dte > 1 ? 's' : ''));
+      return '<div class="vx-cal-jour"><div class="vx-cal-jour-tete">'
+        + '<span class="vx-cal-jour-date">' + esc(d) + '</span>'
+        + '<span class="vx2-badge" data-state="' + ton + '">' + mot + '</span></div>'
+        + jours[d].map(function (t) {
+            return '<div class="vx-cal-ev" data-expose="1"><div class="vx-cal-ev-corps">'
+              + '<span class="vx-cal-ev-titre">' + esc(t.sym) + ' ' + esc(t.type || '')
+              + ' ' + esc(String(t.strike == null ? '' : t.strike)) + '</span>'
+              + '<span class="vx-cal-ev-meta">' + esc(String(t.qty || '')) + ' contrat(s) '
+              + '· position déclarée au desk</span></div></div>';
+          }).join('')
+        + '</div>';
+    }).join('');
+    hote.innerHTML = html
+      + '<p class="vx2-stamp vx-mt3">Seules vos positions déclarées sont datées ici. '
+      + 'Aucun calendrier d’expirations de marché, aucune date d’OPEX : '
+      + 'Vertex n’en produit pas.</p>';
+    var cpt = document.getElementById('vx-cal-compte');
+    if (cpt) cpt.innerHTML = '<span class="vx2-badge" data-state="option">'
+      + opts.length + ' contrat(s) · ' + Object.keys(jours).length + ' échéance(s)</span>';
+  }
+
   function boot() {
     // La vue choisie fixe l'horizon de départ : « Aujourd'hui » n'affiche pas
     // trente jours, et « Mois » n'en affiche pas sept.
     var page = $('[data-cal-view]');
     var vue = page ? page.getAttribute('data-cal-view') : 'today';
-    var HORIZON_PAR_VUE = { today: 0, week: 7, month: 30, agenda: 120, portfolio: 30, macro: 120 };
+    var HORIZON_PAR_VUE = { today: 0, week: 7, month: 30, agenda: 120, portfolio: 30,
+                            macro: 120, options: 365 };
+    /*  La vue Options ne lit pas `/cal-feed` : sa donnee est le desk local.
+        Sortir tot laissait TROIS blocs en suspens — le panneau lateral en
+        rectangle gris, la fraicheur sur « Chargement… » pour toujours, et un
+        bandeau de couverture qui parlait d'une lecture qui n'aurait pas lieu.
+        On les remplit AVEC CE QUI EST VRAI ICI plutot que de les abandonner.  */
+    if (vue === 'options') {
+      rendreEcheances();
+      var fr = $('#vx-cal-fraicheur');
+      if (fr) fr.innerHTML = '<span class="vx2-badge" data-state="missing">'
+        + 'Positions déclarées — horodatage local, non fourni</span>';
+      var cv = $('#vx-cal-couverture');
+      if (cv) cv.innerHTML = '<div class="vx2-banner" data-kind="prudence" role="status">'
+        + '<span>Cette vue ne lit pas le calendrier officiel : elle date '
+        + '<b>vos contrats déclarés</b>. Aucun agrégat d’expirations de marché, '
+        + 'aucune date d’OPEX — Vertex n’en produit pas.</span></div>';
+      var pos = $('#vx-cal-positions');
+      if (pos) pos.innerHTML = '<div class="vx2-state" data-kind="missing" role="status">'
+        + '<p class="vx2-state-title">Sans objet sur cette vue</p>'
+        + '<p class="vx2-state-cause">Chaque échéance listée à gauche EST une position '
+        + 'déclarée : les séparer n’apporterait rien. Les événements de marché qui '
+        + 'touchent le portefeuille vivent dans '
+        + '<a href="/calendar?view=portfolio">Portefeuille</a>.</p></div>';
+      return;
+    }
     if (HORIZON_PAR_VUE[vue] != null) etatFiltres.horizon = HORIZON_PAR_VUE[vue];
     if (vue === 'macro') etatFiltres.cat = 'macro';
     if (vue === 'portfolio') etatFiltres.mesPositions = true;

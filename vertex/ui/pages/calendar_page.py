@@ -47,6 +47,7 @@ _VIEWS = (
     ('agenda', 'Agenda'),
     ('portfolio', 'Portefeuille'),
     ('macro', 'Macro'),
+    ('options', 'Options'),
 )
 
 #: Catégories du contrat de calendrier, et leur source RÉELLE.
@@ -62,10 +63,11 @@ _CATEGORIES = (
     ('dividends', 'Dividendes et ex-dates', None,
      'Aucune source de dividende n\'alimente Vertex. La catégorie est déclarée '
      'absente plutôt qu\'affichée vide comme si aucun dividende n\'existait.'),
-    ('expiries', 'Expirations d\'options', None,
-     'Les échéances existent contrat par contrat dans le tableau d\'options, '
-     'mais aucun agrégat calendaire n\'est produit et aucune date d\'OPEX '
-     'n\'est détectée.'),
+    ('expiries', 'Expirations d\'options', 'positions déclarées → exp',
+     'Les échéances de VOS contrats déclarés sont datées et regroupées dans la '
+     'sous-vue Options. En revanche, aucun agrégat de marché n\'est produit et '
+     'aucune date d\'OPEX n\'est détectée : le calendrier ne connaît que ce que '
+     'vous avez déclaré.'),
     ('catalysts', 'Catalyseurs hors résultats', None,
      'Journées investisseurs, lancements, régulatoire, entrées en indice : le '
      'moteur sait les classer, mais aucune source ne les fournit.'),
