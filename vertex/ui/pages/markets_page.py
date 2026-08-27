@@ -10,35 +10,33 @@ Donnée absente → VX.states.empty honnête, jamais un chiffre inventé.
 """
 from __future__ import annotations
 
+from vertex.ui import vx2
 from vertex.ui.shell import render_shell
 
 # Sous-vues canoniques (ordre = ordre des onglets).
+# `Breadth` etait le seul libelle anglais de la barre, alors que le corps de
+# la page ecrit deja « Participation → » pour designer la MEME sous-vue.
+# `indices` est la sous-vue « Indices & cross-asset » du contrat : ses trois
+# blocs existaient, replies dans un `<details>` de la Synthese.
 _VIEWS = (
-    ('overview', 'Vue d’ensemble'),
+    ('overview', 'Synthèse'),
     ('macro', 'Macro'),
+    ('indices', 'Indices & cross-asset'),
     ('sectors', 'Secteurs'),
-    ('breadth', 'Breadth'),
+    ('breadth', 'Participation'),
     ('volatility', 'Volatilité'),
 )
 
 
 def _tabs(view: str) -> str:
     """Barre d'onglets — navigation par URL (?view=…), pas d'état JS."""
-    items = []
-    for vid, label in _VIEWS:
-        sel = 'true' if vid == view else 'false'
-        items.append(f'<a class="vx-tab" role="tab" href="?view={vid}" '
-                     f'aria-selected="{sel}" data-view-tab="{vid}">{label}</a>')
-    return ('<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Marchés">'
-            + ''.join(items) + '</nav>')
+    return vx2.tabs([{'label': label, 'href': f'?view={vid}', 'actif': vid == view}
+                     for vid, label in _VIEWS],
+                    libelle='Sous-vues des Marchés')
 
 
 _HEADER = """
-<div class="vx-page-header vx-page-lead vx-markets-header">
-  <div class="vx-page-lead__main"><p class="vx2-eyebrow">Explorer</p><h1>Marchés</h1>
-  <div class="vx-sub">Dans quel environnement la stratégie opère-t-elle&nbsp;?</div></div>
-  <span id="vx-mk-fresh" class="vx-page-lead__meta vx-right"></span>
-</div>
+%%ENTETE%%
 %%TABS%%
 <div id="vx-demo-banner"></div>
 """
@@ -62,7 +60,6 @@ _VIEW_CONTENT = {
 </div>
 
 <!-- Quatre KPI maximum, puis UN graphe principal avec le leadership à droite. -->
-<div class="vx-kpi-strip vx-mt4" id="vx-mk-strip" data-max-kpis="4" aria-label="Quatre indices clés"></div>
 <div class="vx-hero-grid vx-mt4">
   <div id="vx-mk-spy"></div>
   <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)" id="vx-mk-leader" aria-label="Leadership sectoriel">
@@ -74,27 +71,27 @@ _VIEW_CONTENT = {
   </aside>
 </div>
 
-<!-- Contrats historiques conservés, mais la comparaison et les mouvements ne
-     concurrencent plus le graphique de référence au premier écran. -->
-<details class="vx-disclosure vx-mt4 vx-markets-overview-details">
-  <summary>Comparaison des indices et mouvements du scan</summary>
-  <div class="vx-disclosure__body">
-    <div class="vx-section-stack">
-      <div id="vx-mk-multi"></div>
-      <div class="vx-hero-grid">
-        <section class="vx-card" aria-label="Top 10 hausses">
-          <div class="vx-card-header"><span class="vx-card-title">Top 10 — plus fortes hausses</span>
-            <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Univers →</a></span></div>
-          <div id="vx-mk-top"></div>
-        </section>
-        <section class="vx-card" aria-label="Flop 10 baisses">
-          <div class="vx-card-header"><span class="vx-card-title">Flop 10 — plus fortes baisses</span></div>
-          <div id="vx-mk-flop"></div>
-        </section>
-      </div>
-    </div>
-  </div>
-</details>
+<p class="vx2-stamp vx-mt4">La comparaison des indices et les mouvements du scan
+  vivent désormais dans <a href="?view=indices">Indices &amp; cross-asset</a> —
+  ils ne concurrencent plus le graphique de référence au premier écran.</p>
+""",
+    'indices': """
+<!-- Sous-vue canonique « Indices & cross-asset ». Ces trois blocs existaient,
+     repliés dans un `<details>` de la Synthèse : leur contenu ne change pas,
+     leur adresse devient partageable. -->
+<div class="vx-kpi-strip vx-mt3" id="vx-mk-strip" data-max-kpis="4" aria-label="Indices clés"></div>
+<div class="vx-mt4" id="vx-mk-multi"></div>
+<div class="vx-hero-grid vx-mt4">
+  <section class="vx-card" aria-label="Top 10 hausses">
+    <div class="vx-card-header"><span class="vx-card-title">Top 10 — plus fortes hausses</span>
+      <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities?view=stocks">Univers →</a></span></div>
+    <div id="vx-mk-top"></div>
+  </section>
+  <section class="vx-card" aria-label="Flop 10 baisses">
+    <div class="vx-card-header"><span class="vx-card-title">Flop 10 — plus fortes baisses</span></div>
+    <div id="vx-mk-flop"></div>
+  </section>
+</div>
 """,
     'macro': """
 <div class="vx-kpi-strip vx-mt3" id="vx-mk-macro-kpis" data-max-kpis="4" aria-label="Quatre indicateurs macro clés"></div>
@@ -255,8 +252,11 @@ function demoBanner(scan){
   if(scan&&scan.data_source==='demo'&&$('vx-demo-banner'))
     ($('vx-demo-banner')||{}).innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
 }
-function emptyCard(host,reason,action){
-  const el=$(host);if(el)el.innerHTML='<div class="vx-card">'+VX.states.empty(reason,action||'')+'</div>';
+function emptyCard(host,reason,action,titre){
+  const el=$(host);if(!el)return;
+  el.innerHTML='<div class="vx-card">'
+    +(titre?'<div class="vx-card-header"><span class="vx-card-title">'+titre+'</span></div>':'')
+    +VX.states.empty(reason,action||'')+'</div>';
 }
 const SCAN_ACTION='<a class="vx-btn vx-btn-sm" href="/system?view=data">Système / Données</a>';
 
@@ -302,7 +302,7 @@ async function loadRegime(scan){
       ($('vx-mk-regime-body')||{}).innerHTML=
         `<div class="vx-mk-regime-compact">
           <div class="vx-mk-regime-lead">
-            <span class="tag">Signal Pending</span>
+            <span class="tag">Régime non qualifié</span>
             <span class="txt">Lecture du marché en cours — moins de 3 dimensions qualifiées (${dims} évaluée${dims>1?'s':''}) ; le moteur reste honnête et <b>bloque le nouveau risque</b>. Voici les signaux déjà disponibles :</span>
           </div>
           ${sigs.length?`<div class="vx-mk-sigrow">${sigs.join('')}</div>`:'<div class="vx-help">Aucun signal de marché fourni par le dernier scan.</div>'}
@@ -535,7 +535,8 @@ function loadMultiIndex(scan){
   const by=idxByName(scan);
   const wanted=['S&P 500','Nasdaq','Dow Jones','Russell 2000'];
   const sets=wanted.map(n=>({n,spark:(by[n]&&by[n].spark)||[]})).filter(x=>x.spark.length>5);
-  if(!sets.length){emptyCard('vx-mk-multi','Séries indices indisponibles dans le dernier scan.',SCAN_ACTION);return;}
+  if(!sets.length){emptyCard('vx-mk-multi','Séries indices indisponibles dans le dernier scan.',SCAN_ACTION,
+    'Comparaison des indices');return;}
   const len=Math.min(...sets.map(x=>x.spark.length));
   const labels=Array.from({length:len},(_,i)=>i-len);
   window.VXCharts.card('vx-mk-multi',{
@@ -577,7 +578,8 @@ function loadSpyChart(scan){
         confirm:'Clôtures au-dessus des dernières résistances avec breadth > 55 %.',
         invalidate:'Cassure des supports avec expansion de volatilité.'}});
   }else{
-    emptyCard('vx-mk-spy','Série de référence indisponible — lancer un scan depuis Système.',SCAN_ACTION);
+    emptyCard('vx-mk-spy','Série de référence indisponible — lancer un scan depuis Système.',SCAN_ACTION,
+      'Graphique de référence — S&amp;P 500');
   }
 }
 
@@ -924,7 +926,7 @@ async function loadVix(scan){
        présentée comme une mesure), jamais un code brut. */
     const known=r.regime!=='UNKNOWN'&&REGIME_LABEL[r.regime];
     const regTxt=known?('<b>'+esc(known[0])+'</b> · confiance '+conf+' %')
-      :'<b>Signal Pending</b> — moins de 3 dimensions de marché';
+      :'<b>Régime non qualifié</b> — moins de 3 dimensions de marché';
     if($('vx-mk-vol-rail'))($('vx-mk-vol-rail')||{}).innerHTML=
       '<div class="vx-insight">Régime '+regTxt+'</div>'
       +'<div class="vx-kv vx-mt2"><span class="k">Confiance</span><span class="v vx-mono">'+(known?conf+' %':'n/d')+'</span></div>'
@@ -950,15 +952,22 @@ async function boot(){
     demoBanner(scan);
     /* Badge de fraîcheur du snapshot (§8) : Live / Analyse / À actualiser. */
     try{
-      if($('vx-mk-fresh')&&window.VX&&VX.freshness&&scan){
+      if($('vx-mk-fresh')){
         /* Âge HONNÊTE = ancienneté réelle du scan (scan_age serveur), pas l'âge de
-           l'entrée de cache : un snapshot resservi doit refléter l'âge de la DONNÉE. */
-        const ageMs=(typeof scan.scan_age==='number')?scan.scan_age*1000:null;
-        const live=scan.data_source!=='demo';
-        ($('vx-mk-fresh')||{}).innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:ageMs,live:live}));
+           l'entrée de cache : un snapshot resservi doit refléter l'âge de la DONNÉE.
+           Et quand cet âge MANQUE, on écrit pourquoi plutôt qu'un tiret nu. */
+        const ageMs=(scan&&typeof scan.scan_age==='number')?scan.scan_age*1000:null;
+        const live=!!scan&&scan.data_source!=='demo';
+        if(!scan)
+          ($('vx-mk-fresh')||{}).innerHTML='<span class="vx2-badge" data-state="offline">Aucun scan disponible</span>';
+        else if(ageMs==null)
+          ($('vx-mk-fresh')||{}).innerHTML='<span class="vx2-badge" data-state="missing">Scan non horodaté — âge inconnu</span>';
+        else if(window.VX&&VX.freshness)
+          ($('vx-mk-fresh')||{}).innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:ageMs,live:live}));
       }
     }catch(e){}
-    if(VIEW==='overview'){loadRegime(scan);loadLeader(scan||{});loadRisk(scan);loadStrip(scan);loadSpyChart(scan);loadMultiIndex(scan);loadMovers(scan);}
+    if(VIEW==='overview'){loadRegime(scan);loadLeader(scan||{});loadRisk(scan);loadSpyChart(scan);}
+    else if(VIEW==='indices'){loadStrip(scan);loadMultiIndex(scan);loadMovers(scan);}
     else if(VIEW==='macro'){loadMacroKpis(scan);loadMacroRegime();loadYield(scan);loadMacroCal();}
     else if(VIEW==='sectors'){loadSectors(scan);}
     else if(VIEW==='breadth'){loadBreadth(scan);}
@@ -981,12 +990,36 @@ VX.bus.on('vx:data-refreshed',boot);
 """
 
 
+def _entete() -> str:
+    """En-tête + contexte. L'emplacement de fraîcheur rendait un tiret nu :
+    `VX.freshness.assess({ageMs:null})` renvoie l'état `unknown`, dont le
+    libellé EST « — ». Un signe qui ne nomme pas sa grandeur n'informe de rien."""
+    return (
+        vx2.page_header(
+            surtitre='Explorer', titre='Marchés',
+            question='Dans quel environnement la stratégie opère-t-elle ?',
+            actions=vx2.bouton('Ouvrir les Opportunités', href='/opportunities',
+                               variante='ghost'))
+        + vx2.context_bar([
+            {'label': 'Univers', 'contenu':
+                '<span class="vx2-stamp">Indices, secteurs et volatilité du '
+                '<b>dernier scan</b></span>'},
+            {'label': 'Nature', 'contenu':
+                '<span class="vx2-stamp">Contexte — <b>aucune recommandation</b> '
+                'n’est émise ici</span>'},
+            {'label': 'Fraîcheur du scan', 'contenu':
+                '<span id="vx-mk-fresh">'
+                + vx2.badge_etat('missing', texte='Lecture…') + '</span>'},
+        ]))
+
+
 def render(view: str = 'overview') -> str:
     """Assemble la page Marchés pour la sous-vue demandée (URL = état)."""
     if view not in dict(_VIEWS):
         view = 'overview'
     label = dict(_VIEWS)[view]
-    content = (_HEADER.replace('%%TABS%%', _tabs(view))
+    content = (_HEADER.replace('%%ENTETE%%', _entete())
+               .replace('%%TABS%%', _tabs(view))
                + _VIEW_CONTENT[view]).replace(
         '%%LOADING%%', '<div class="vx-skeleton" style="height:60px"></div>')
     page_js = _JS.replace('%%VIEW%%', view)

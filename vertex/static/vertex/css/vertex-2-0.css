@@ -1046,3 +1046,30 @@ html,body{max-width:100%;overflow-x:clip}
 @media (max-width:640px){
   #vx-content .vx-kpi-strip{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   22) RÉGIME DE MARCHÉ — la pastille d'état de la Synthèse
+   Ses règles vivaient dans `neon-glass.css`, qui n'est JAMAIS servie (dette
+   étiquetée au lot 14). La pastille n'avait donc aucun style : « Régime non
+   qualifié » et la phrase qui suit se lisaient d'un seul tenant, comme une
+   seule phrase incohérente. C'est le premier dommage mesuré de cette feuille
+   morte — jusqu'ici elle n'avait qu'induit en erreur pendant la refonte.
+   ───────────────────────────────────────────────────────────────────────── */
+#vx-content .vx-mk-regime-lead{
+  display:flex;align-items:baseline;gap:var(--vx2-s3);flex-wrap:wrap;
+}
+#vx-content .vx-mk-regime-lead .tag{
+  font-size:var(--vx-fs-meta);font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--vx-caution);
+  padding:3px 9px;border-radius:var(--vx2-r-pill);
+  background:var(--vx-warning-soft);border:1px solid rgba(221,162,59,.30);
+  white-space:nowrap;
+}
+#vx-content .vx-mk-regime-lead .txt{
+  flex:1 1 320px;min-width:0;
+  color:var(--vx-mist);font-size:var(--vx-fs-body);line-height:1.55;
+}
+#vx-content .vx-mk-sigrow{
+  display:grid;gap:var(--vx2-s3);
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+}

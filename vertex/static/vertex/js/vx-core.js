@@ -86,7 +86,12 @@
     return `<span class="vx-update" data-mode="${mode || 'fallback'}"` +
       (ms == null ? '' : ` data-ts="${ms}"`) +
       ` title="${VX.fmt.isoFull(ts)}">` +
-      `<span class="vx-dot"></span><span class="vx-update-age">${VX.fmt.ago(ts)}</span>${suite}</span>`;
+      /*  `VX.fmt.ago(null)` rend « — ». Pose dans un pied de carte, ce tiret
+          se lit comme un age, alors qu'il dit l'ABSENCE d'age : trois pages
+          affichaient « ● — · Moteur … » sans qu'on puisse savoir si la donnee
+          etait fraiche, vieille, ou jamais horodatee. Le mot le dit.  */
+      `<span class="vx-dot"></span><span class="vx-update-age">` +
+      (ms == null ? 'Âge inconnu' : VX.fmt.ago(ts)) + `</span>${suite}</span>`;
   };
 
   /* ── Régimes de marché : vocabulaire HUMAIN partagé ─────────────────

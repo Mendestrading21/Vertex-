@@ -68,15 +68,33 @@ def test_today_freshness_and_changelog_are_compact_and_sourced():
 
 
 def test_markets_overview_is_four_kpis_one_main_chart_and_leadership():
-    html = markets_page._VIEW_CONTENT['overview']
-    details = _details_containing(html, 'id="vx-mk-multi"')
+    """VERTEX 2.0 — même intention, structure canonique.
 
-    assert 'class="vx-kpi-strip' in html
-    assert 'data-max-kpis="4"' in html
-    assert html.index('id="vx-mk-strip"') < html.index('id="vx-mk-spy"')
+    Le banc gardait « la comparaison des indices et les mouvements ne
+    concurrencent pas le graphique de référence au premier écran ». Ils
+    vivaient repliés dans un `<details>` de la Synthèse ; ils ont désormais
+    leur sous-vue `indices` (« Indices & cross-asset » du contrat de page).
+    La garantie est plus forte, pas plus faible : ils ne sont plus sur le
+    premier écran DU TOUT, et leur URL est partageable.
+    """
+    html = markets_page._VIEW_CONTENT['overview']
+    indices = markets_page._VIEW_CONTENT['indices']
+
+    # Le premier écran : régime, risque, graphique de référence, leadership.
     assert html.index('id="vx-mk-spy"') < html.index('id="vx-mk-leader"')
-    assert 'id="vx-mk-top"' in details and 'id="vx-mk-flop"' in details
-    assert 'id="vx-mk-spy"' not in details
+    assert 'id="vx-mk-regime"' in html and 'id="vx-mk-risk"' in html
+
+    # Ce qui a déménagé ne doit être NI perdu, NI resté sur la Synthèse.
+    for cible in ('id="vx-mk-strip"', 'id="vx-mk-multi"',
+                  'id="vx-mk-top"', 'id="vx-mk-flop"'):
+        assert cible not in html, cible + ' est resté sur la Synthèse'
+        assert cible in indices, cible + ' a disparu au lieu de déménager'
+    assert 'id="vx-mk-spy"' not in indices
+    assert 'class="vx-kpi-strip' in indices and 'data-max-kpis="4"' in indices
+
+    # La Synthèse dit OÙ ils sont partis — un déménagement muet est une perte.
+    assert '?view=indices' in html
+
     assert "IDX_MAIN.filter" in markets_page._JS and '.slice(0,4)' in markets_page._JS
     assert 'vx-mk-regime-gauge' not in markets_page._JS
 
@@ -118,7 +136,10 @@ def test_markets_volatility_has_one_vix_visual_and_text_context():
     js = markets_page._JS
 
     assert 'vx-card vx-card--hero' in html
-    assert 'vx-page-lead' in markets_page._HEADER
+    #  VERTEX 2.0 : l'en-tête passe par `vx2.page_header`. L'intention —
+    #  la page porte un en-tête canonique et sa question métier — tient.
+    entete = markets_page._entete()
+    assert 'vx2-header' in entete and 'vx2-question' in entete
     assert html.index('id="vx-mk-vix"') < html.index('<details')
     assert 'IV par symbole' in details
     assert "VXCharts.gauge('vx-mk-vix-gauge'" not in js
