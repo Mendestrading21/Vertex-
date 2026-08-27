@@ -21,33 +21,81 @@ from __future__ import annotations
 import html
 import re
 
+from vertex.ui import vx2
 from vertex.ui.shell import render_shell
 
 _VIEWS = (
-    ('overview', 'Discipline'),
-    ('journal', 'Chronologie'),
-    ('learnings', 'Apprentissage'),
+    ('overview', 'Synthèse'),
+    ('journal', 'Journal'),
+    ('learnings', 'Apprentissages'),
     ('progression', 'Progression'),
     ('track-record', 'Historique'),
 )
 
 
 def _tabs(view: str) -> str:
-    items = []
-    for vid, label in _VIEWS:
-        sel = 'true' if vid == view else 'false'
-        items.append(f'<a class="vx-tab" role="tab" href="?view={vid}" '
-                     f'aria-selected="{sel}" data-view-tab="{vid}">{label}</a>')
-    return ('<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Journal">'
-            + ''.join(items) + '</nav>')
+    return vx2.tabs([{'label': label, 'href': f'?view={vid}', 'actif': vid == view}
+                     for vid, label in _VIEWS],
+                    libelle='Sous-vues de la Performance')
+
+
+# ── Les CINQ populations du contrat ───────────────────────────────────────
+# « Ne jamais fusionner dans un même KPI » : trades réels déclarés, positions
+# IBKR, signaux théoriques moteurs, idées suivies hypothétiquement, simulations
+# options. Chacune a sa source, son propriétaire et sa nature de rendement —
+# et la page doit le DIRE, pas l'espérer.
+_POPULATIONS = (
+    {'ident': 'reels', 'titre': 'Trades réels déclarés',
+     'nature': 'Réalisé — encaissé', 'source': 'journal du desk',
+     'ici': True, 'ou': None,
+     'note': 'La seule population mesurée par les indicateurs de cette page.'},
+    {'ident': 'ibkr', 'titre': 'Positions IBKR',
+     'nature': 'Latent — non encaissé', 'source': 'IBKR en lecture seule',
+     'ici': False, 'ou': '/portfolio?view=positions',
+     'note': 'Valorisation en cours, jamais additionnée à un résultat clos.'},
+    {'ident': 'signaux', 'titre': 'Signaux théoriques moteurs',
+     'nature': 'Théorique — aucun capital engagé', 'source': '/api/track-record',
+     'ici': True, 'ou': '/performance?view=track-record',
+     'note': 'Rendements sur clôtures quotidiennes ; ni frais ni exécution.'},
+    {'ident': 'suivis', 'titre': 'Idées suivies',
+     'nature': 'Hypothétique — jamais encaissé', 'source': '/api/tracking',
+     'ici': False, 'ou': '/follow-up',
+     'note': 'Comparées à SPY depuis la date de marquage.'},
+    {'ident': 'simulations', 'titre': 'Simulations options',
+     'nature': 'Scénario — hypothèses explicites', 'source': None,
+     'ici': False, 'ou': '/simulator',
+     'note': 'Aucune persistance canonique : rien à mesurer dans la durée.'},
+)
+
+
+def _populations() -> str:
+    lignes = []
+    for pop in _POPULATIONS:
+        if pop['ici']:
+            etat = vx2.badge_etat('live', texte='Mesurée ici')
+        elif pop['source'] is None:
+            etat = vx2.badge_etat('missing', texte='Non conservée')
+        else:
+            etat = vx2.badge_etat('missing', texte='Mesurée ailleurs')
+        lien = (vx2.bouton('Ouvrir', href=pop['ou'], variante='ghost')
+                if pop['ou'] else '')
+        lignes.append(
+            '<article class="vx2-population">'
+            f'<div class="vx2-population-head"><strong>{pop["titre"]}</strong>{etat}</div>'
+            f'<p class="vx2-population-nature">{pop["nature"]}</p>'
+            f'<p class="vx2-population-note">{pop["note"]}</p>'
+            '<p class="vx2-population-source">Source&nbsp;: '
+            + (f'<code>{pop["source"]}</code>' if pop['source']
+               else '<span class="vx2-absent">aucune</span>')
+            + f'</p>{lien}</article>')
+    return vx2.section(
+        titre='Populations mesurées',
+        note='un indicateur ne mélange jamais deux de ces lignes',
+        corps='<div class="vx2-populations">' + ''.join(lignes) + '</div>')
 
 
 _HEADER = """
-<div class="vx-page-header vx-page-lead">
-  <div class="vx-page-lead__main"><p class="vx2-eyebrow">Gérer</p><h1>Performance</h1>
-  <div class="vx-sub">La méthode fonctionne-t-elle, et est-elle bien
-  appliquée&nbsp;?</div></div>
-</div>
+%%ENTETE%%
 %%TABS%%
 """
 
@@ -64,7 +112,14 @@ _VIEW_CONTENT = {
       Le bloc affichait depuis un squelette perp&eacute;tuel &mdash; une donn&eacute;e promise qui
       n&rsquo;arrivait jamais. Rien n&rsquo;est invent&eacute; pour le remplir&nbsp;: les mesures r&eacute;elles
       de discipline sont ci-dessous.</p></div></section>
-<div class="vx-kpi-strip vx-mt3" id="vx-pf-kpis" data-max-kpis="4" aria-label="Quatre indicateurs de discipline"><div class="vx-skeleton vx-skeleton-kpi"></div></div>
+<div class="vx-kpi-strip vx-mt3" id="vx-pf-kpis" data-max-kpis="4" aria-label="R&eacute;sultats des trades d&eacute;clar&eacute;s"><div class="vx-skeleton vx-skeleton-kpi"></div></div>
+<div class="vx-mt4" id="vx-pf-discipline" aria-label="Mesures de discipline"><div class="vx-skeleton" style="height:80px"></div></div>
+%%POPULATIONS%%
+<div class="vx-grid vx-mt4">
+  <div class="vx-col-8" id="vx-pf-equity"></div>
+  <aside class="vx-col-4" id="vx-pf-drawdown"></aside>
+</div>
+<div class="vx-grid vx-mt3"><div class="vx-col-12">%%MENSUEL%%</div></div>
 <div class="vx-hero-grid vx-mt4">
   <section class="vx-card" aria-label="Revue des hypothèses">
     <div class="vx-card-header"><span class="vx-card-title">Revue des hypothèses</span>
@@ -192,6 +247,9 @@ _VIEW_CONTENT = {
 
 _JS = r"""
 <script src="/static/vertex/js/charts/bar-chart.js" defer></script>
+<script src="/static/vertex/js/charts/heatmap.js" defer></script>
+<script src="/static/vertex/js/charts/equity-chart.js" defer></script>
+<script src="/static/vertex/js/charts/drawdown-chart.js" defer></script>
 <script>
 (function(){
 'use strict';
@@ -268,6 +326,38 @@ function ghostEquity(){
 }
 
 /* ═══ OVERVIEW ═══ */
+/* Taille d'echantillon dans la barre de contexte : un taux de reussite sans
+   son `n` ne dit pas s'il vaut quelque chose. */
+function echantillon(){
+  const el=$('vx-pf-echantillon');if(!el)return;
+  const n=trades().length;
+  const etat=n>=30?'live':n>=5?'delayed':'missing';
+  const mot=n===0?'Aucun trade clôturé déclaré'
+    :(n+' trade'+(n>1?'s':'')+' clôturé'+(n>1?'s':'')
+      +(n<5?' · sous le minimum de 5':n<30?' · échantillon réduit':''));
+  el.innerHTML='<span class="vx2-badge" data-state="'+etat+'">'+mot+'</span>';
+}
+/* Attendre un script `defer` qui n'est peut-etre pas servi.
+   L'ancienne garde faisait `window.addEventListener('load', fn, {once:true})` :
+   apres que `load` a deja tire — ce qui est le cas de tout rendu differe — le
+   rappel n'est jamais rejoue, et le conteneur reste vide pour toujours. On
+   sonde brievement, puis on ECRIT pourquoi rien ne vient. */
+function quandPret(test,fn,hote,quoi){
+  if(test())return fn();
+  var essais=0;
+  var t=setInterval(function(){
+    if(test()){clearInterval(t);return fn();}
+    if(++essais>20){
+      clearInterval(t);
+      var el=hote&&$(hote);
+      if(el)el.innerHTML='<div class="vx2-state" data-kind="missing" role="status">'
+        +'<p class="vx2-state-title">'+quoi+' — rendu indisponible</p>'
+        +'<p class="vx2-state-cause">La bibliothèque de graphiques ne s’est pas '
+        +'chargée sur cette page. Aucune donnée n’est perdue&nbsp;: elle n’est pas '
+        +'dessinée.</p></div>';
+    }
+  },150);
+}
 function loadKpis(){
   const list=trades();
   if(list.length<5){
@@ -337,7 +427,8 @@ function loadEquity(){
        si loadEquity court avant leur enregistrement (évite « equityCard is not a
        function ») — on retente une fois tous les scripts chargés. */
     if(!(window.VXCharts&&VXCharts.equityCard&&VXCharts.drawdownCard)){
-      window.addEventListener('load',loadEquity,{once:true});return;}
+      return quandPret(function(){return window.VXCharts&&VXCharts.equityCard&&VXCharts.drawdownCard;},
+        loadEquity,'vx-pf-equity','Courbe d’équité');}
     const labels=eq.map(p=>p.d),values=eq.map(p=>Number(p.v));
     VXCharts.equityCard('vx-pf-equity',{
       title:'Courbe d’équité (déclarée)',timeframe:eq.length+' points',
@@ -366,42 +457,45 @@ function loadEquity(){
 }
 /* Heatmap mensuelle + distribution — agrégations arithmétiques sur VOS
    clôtures déclarées (jamais un indicateur de marché). */
-function loadMonthlyAndDist(){
-  /* Cartes issues de scripts `defer` (heatmap.js) : garde-fou tant qu'ils ne sont
-     pas enregistrés (évite un TypeError si l'orchestration court trop tôt). */
-  if(!(window.VXCharts&&VXCharts.heatmapCard&&VXCharts.card&&VXCharts.bars)){
-    window.addEventListener('load',loadMonthlyAndDist,{once:true});return;}
-  /* pnl_pct n'est jamais écrit par recordExit → le calculer depuis (exit−cost)/cost
-     (données réelles des clôtures déclarées). Sinon le filtre restait toujours vide. */
-  const closed=(E()?E().closedPositions():[])||[];
-  const withPl=closed.filter(t=>t.closed&&t.cost).map(t=>Object.assign({},t,
-    {pnl_pct:Math.round((t.exit-t.cost)/t.cost*1000)/10}));
-  if(withPl.length<3){
-    emptyCard('vx-pf-monthly','Heatmap mensuelle disponible à partir de 3 clôtures datées.',JOURNAL_ACTION);
-    emptyCard('vx-pf-dist','Distribution disponible à partir de 3 clôtures.');
+/* ═══ DISCIPLINE ════════════════════════════════════════════════════════
+   Ce bloc etait le corps de `loadDiscipline()`. Quand cette fonction a ete
+   retiree de l'orchestration, son CORPS est reste — colle a l'interieur de
+   `loadMonthlyAndDist`, apres le retour anticipe. Trois consequences :
+
+   1. la heatmap mensuelle n'etait plus dessinee nulle part : la fonction
+      censee la produire ne la produisait plus ;
+   2. avec trois cloture ou plus, elle levait `b is not defined` — `b`, `hero`
+      et `next` n'etaient declares dans aucune portee ;
+   3. rien de tout cela ne se voyait, parce que la fonction n'etait appelee
+      par personne.
+
+   Les deux responsabilites sont separees. Celle-ci ne compte que des faits
+   declares : aucun pourcentage n'est estime. */
+function loadDiscipline(){
+  const b=behavioral();
+  const hote=$('vx-pf-discipline'),next=$('vx-pf-next-axis');
+  if(!b.n){
+    if(hote)hote.innerHTML='<div class="vx2-state" data-kind="empty" role="status">'
+      +'<span class="vx2-state-ghost" aria-hidden="true"><i></i><i></i><i></i><i></i></span>'
+      +'<p class="vx2-state-title">Discipline non mesurable</p>'
+      +'<p class="vx2-state-cause">Aucune décision journalisée. Ces quatre mesures comptent '
+      +'des déclarations ; sans déclaration, elles n’ont rien à compter.</p></div>';
     return;
   }
-  /* Phrase éditoriale construite UNIQUEMENT sur des faits comptés. */
-  const bits=[];
-  if(b.respectMethod!=null)bits.push(`Tu as documenté un plan (raison + invalidation) sur <b>${b.respectMethod} %</b> de tes décisions.`);
-  if(b.mistakes)bits.push(`<b>${b.mistakes}</b> erreur(s) déclarée(s).`);
-  if(b.closed)bits.push(`<b>${b.wins}</b> hypothèse(s) validée(s) · <b>${b.losses}</b> invalidée(s).`);
-  const tone=(b.respectMethod!=null&&b.respectMethod>=80)?'vx-pos':(b.respectMethod!=null&&b.respectMethod<50?'vx-warn':'vx-muted');
-  if(hero)hero.innerHTML=`<div class="vx-flex" style="gap:8px;align-items:center;margin-bottom:6px">
-      <span class="vx-eyebrow">Discipline</span>
-      <span class="vx-badge ${tone}">${b.n} décision(s) journalisée(s)</span></div>
-    <h2 style="margin:0 0 8px;font-size:20px;line-height:1.35" class="${tone}">${bits[0]||'Ta discipline se mesure ici.'}</h2>
-    <p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.6">${bits.slice(1).join(' ')||''} Aucun pourcentage n’est inventé — tout est compté sur tes déclarations.</p>`;
-  /* KPI comportementaux — « n/d » honnête quand la donnée n'existe pas. */
   const pct=(v)=>v==null?'n/d':v+' %';
-  const cell=(label,val,sub,cls)=>`<div class="vx-card vx-kpi-card vx-kpi vx-card--compact" aria-label="${esc(label)}">
-    <span class="vx-kpi-label">${label}</span><span class="vx-kpi-value ${cls||''}" style="font-size:20px">${val}</span>
-    <span class="vx-meta">${sub}</span></div>`;
-  ($('vx-pf-kpis')||{}).innerHTML=
-    cell('Respect de la méthode',pct(b.respectMethod),'décisions avec plan documenté',b.respectMethod>=80?'vx-pos':b.respectMethod!=null&&b.respectMethod<50?'vx-neg':'')
-    +cell('Qualité des entrées',pct(b.entryQuality),'avec raison d’entrée',b.entryQuality>=80?'vx-pos':b.entryQuality!=null&&b.entryQuality<50?'vx-neg':'')
-    +cell('Qualité des sorties',pct(b.exitQuality),'clôtures avec leçon',b.exitQuality>=80?'vx-pos':b.exitQuality!=null&&b.exitQuality<50?'vx-neg':'')
-    +cell('Respect des invalidations',pct(b.invalRespect),'pertes sorties près du stop',b.invalRespect!=null&&b.invalRespect>=80?'vx-pos':b.invalRespect!=null&&b.invalRespect<50?'vx-neg':'');
+  const ton=(v)=>v==null?'':(v>=80?'positive':v<50?'negative':'caution');
+  const cell=(label,v,sub)=>'<div class="vx2-metric">'
+    +'<span class="vx2-metric-label">'+label+'</span>'
+    +'<span class="vx2-metric-value" data-tone="'+(v==null?'missing':ton(v))+'">'+pct(v)+'</span>'
+    +'<span class="vx2-metric-meta">'+sub+'</span></div>';
+  if(hote)hote.innerHTML='<div class="vx2-strip">'
+    +cell('Respect de la méthode',b.respectMethod,'décisions avec plan documenté')
+    +cell('Qualité des entrées',b.entryQuality,'avec raison d’entrée')
+    +cell('Qualité des sorties',b.exitQuality,'clôtures avec leçon')
+    +cell('Respect des invalidations',b.invalRespect,'pertes sorties près du stop')
+    +'</div><p class="vx2-stamp vx-mt2">'+b.n+' décision(s) journalisée(s) · '
+    +b.wins+' validée(s), '+b.losses+' invalidée(s), '+b.open+' en cours · '
+    +'décomptes sur vos déclarations, aucun pourcentage estimé.</p>';
   if(next){
     const axes=[
       {value:b.respectMethod,title:'Formaliser le plan',body:'Ajouter une raison et une invalidation avant de juger la décision.'},
@@ -409,13 +503,16 @@ function loadMonthlyAndDist(){
       {value:b.exitQuality,title:'Consigner la leçon',body:'Compléter la leçon après chaque clôture.'},
       {value:b.invalRespect,title:'Respecter l’invalidation',body:'Comparer la sortie au niveau d’invalidation déclaré.'}
     ];
-    const known=axes.filter(a=>a.value!=null).sort((a,b2)=>a.value-b2.value);
-    const axis=known[0]||axes.find(a=>a.value==null)||axes[0];
-    next.dataset.tone=axis.value!=null&&axis.value<50?'risk':'neutral';
-    next.innerHTML='<span class="vx-eyebrow">Prochain axe</span><h3>'+esc(axis.title)+'</h3>'
-      +'<p class="vx-dim">'+esc(axis.body)+'</p>'
-      +(axis.value==null?'<span class="vx-badge">mesure n/d</span>':'<span class="vx-badge">'+axis.value+' % aujourd&rsquo;hui</span>')
-      +'<div class="vx-mt3"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="/journal?view=journal">Voir la chronologie &rarr;</a></div>';
+    const connus=axes.filter(a=>a.value!=null).sort((x,y)=>x.value-y.value);
+    const axe=connus[0]||axes.find(a=>a.value==null)||axes[0];
+    next.dataset.tone=axe.value!=null&&axe.value<50?'risk':'neutral';
+    /* « Prochain axe » n'est pas un verdict de moteur : c'est la plus basse des
+       quatre mesures comptees. Le libelle le dit. */
+    next.innerHTML='<span class="vx-eyebrow">Prochain axe · mesure la plus basse</span><h3>'+esc(axe.title)+'</h3>'
+      +'<p class="vx-dim">'+esc(axe.body)+'</p>'
+      +(axe.value==null?'<span class="vx2-badge" data-state="missing">mesure n/d</span>'
+        :'<span class="vx2-badge" data-state="'+(axe.value<50?'stale':'delayed')+'">'+axe.value+' % aujourd’hui</span>')
+      +'<div class="vx-mt3"><a class="vx2-btn vx2-btn--ghost" href="/performance?view=journal">Voir le journal &rarr;</a></div>';
   }
 }
 
@@ -862,7 +959,15 @@ function boot(){
         ouvrait la chaine, la vue « overview » du Journal levait des le premier
         appel : AUCUN des cinq blocs suivants ne se chargeait. Retiree — les
         cinq qui existent se chargent maintenant.  */
-    loadHypotheses();loadDist();loadPostmortem();loadCalibration();loadMemory();wireMemoryImport();}
+    /*  Trois chargeurs etaient definis et appeles NULLE PART depuis le retrait
+        de `loadDiscipline()` : `loadKpis` (la bande d'indicateurs et la carte
+        « Construis ton track record »), `loadEquity` (courbe + drawdown) et
+        `loadMonthlyAndDist` (heatmap mensuelle). La bande gardait donc son
+        squelette indefiniment — une donnee promise qui n'arrivait jamais —
+        et les deux autres n'avaient meme plus de conteneur ou ecrire.  */
+    loadKpis();echantillon();
+    loadHypotheses();loadDist();loadPostmortem();loadCalibration();loadMemory();wireMemoryImport();
+    loadEquity();loadDiscipline();}
   else if(VIEW==='journal'){
     loadJournal();loadMistakes();
     $('vx-pf-add')?.addEventListener('click',openEntryModal);
@@ -883,6 +988,44 @@ VX.bus.on('vx:data-refreshed',()=>whenReady(boot));
 """
 
 
+# La heatmap mensuelle figure au contrat, et son code de rendu n'existe plus :
+# il avait été remplacé, dans la fonction censée le porter, par le corps d'un
+# `loadDiscipline()` retiré. Le réécrire supposerait d'agréger des rendements
+# par mois DANS L'UI — ce que `performance-center.md` interdit explicitement
+# (« ne jamais recalculer … dans la couche UI »). On l'avoue.
+_MENSUEL = vx2.capacite_absente(
+    quoi='Heatmap mensuelle',
+    pourquoi='Aucun moteur n’agrège les rendements par mois, et l’agrégation '
+             'ne doit pas être faite dans l’interface. La distribution par '
+             'tranche, elle, ne fait que compter des clôtures : elle reste '
+             'affichée ci-dessous.')
+
+def _entete() -> str:
+    """En-tête + contexte. La barre de contexte nomme la POPULATION mesurée :
+    sans elle, un « taux de réussite » se lit comme celui du portefeuille, alors
+    qu'il ne porte que sur les trades déclarés au journal (contrôle 101)."""
+    return (
+        vx2.page_header(
+            surtitre='Gérer', titre='Performance',
+            question='La méthode fonctionne-t-elle, et est-elle bien appliquée ?',
+            actions=vx2.bouton('Ouvrir le Portefeuille', href='/portfolio',
+                               variante='ghost'))
+        + vx2.context_bar([
+            {'label': 'Population mesurée', 'contenu':
+                '<span class="vx2-stamp"><b>Trades réels déclarés</b> au journal '
+                'du desk</span>'},
+            {'label': 'Nature du résultat', 'contenu':
+                '<span class="vx2-stamp">Réalisé — encaissé, hors frais '
+                'et dividendes</span>'},
+            {'label': 'Échantillon', 'contenu':
+                '<span id="vx-pf-echantillon">'
+                + vx2.badge_etat('missing', texte='Lecture…') + '</span>'},
+            {'label': 'Calcul', 'contenu':
+                '<span class="vx2-stamp">Arithmétique sur vos déclarations — '
+                '<b>aucun moteur</b></span>'},
+        ]))
+
+
 def render(view: str = 'overview', params: dict | None = None) -> str:
     """Assemble le Journal pour la sous-vue demandée (URL = état)."""
     if view not in dict(_VIEWS):
@@ -893,8 +1036,11 @@ def render(view: str = 'overview', params: dict | None = None) -> str:
         raw = str(params.get('sym') or '').strip().upper()
         if re.fullmatch(r'[A-Z.\-]{1,7}', raw):
             sym = raw
-    content = (_HEADER.replace('%%TABS%%', _tabs(view))
-               + _VIEW_CONTENT[view])
+    content = (_HEADER.replace('%%ENTETE%%', _entete())
+               .replace('%%TABS%%', _tabs(view))
+               + _VIEW_CONTENT[view]
+               .replace('%%POPULATIONS%%', _populations())
+               .replace('%%MENSUEL%%', _MENSUEL))
     content = content.replace('%%SYM%%', html.escape(sym)).replace(
         '%%LOADING%%', '<div class="vx-skeleton" style="height:60px"></div>')
     page_js = _JS.replace('%%VIEW%%', view)

@@ -26,6 +26,10 @@ def test_discipline_leads_with_response_four_kpis_hypotheses_and_next_axis():
     assert 'vx-skeleton' not in view.split('id="vx-pf-hero"', 1)[1][:600], \
         'le hero ne doit plus porter un squelette qui ne se résout jamais'
     assert 'id="vx-pf-kpis" data-max-kpis="4"' in view
+    #  Les mesures de discipline ont leur propre conteneur : elles ecrasaient
+    #  la bande des resultats declares, melangeant deux populations dans un
+    #  meme emplacement.
+    assert 'id="vx-pf-discipline"' in view
     assert 'id="vx-pf-hypo"' in view
     assert 'id="vx-pf-next-axis"' in view and 'vx-insight-rail' in view
 
@@ -52,7 +56,9 @@ def test_declared_results_and_engine_history_are_progressively_disclosed():
 
 def test_chronology_has_a_clean_toolbar_and_historical_sources_stay_separate():
     labels = dict(performance_page._VIEWS)
-    assert labels['journal'] == 'Chronologie'
+    #  VERTEX 2.0 : les onglets prennent les libelles canoniques de
+    #  `navigation-and-pages.md` §10. La sous-vue est la meme, son URL aussi.
+    assert labels['journal'] == 'Journal'
     assert labels['track-record'] == 'Historique'
 
     chronology = performance_page._VIEW_CONTENT['journal']

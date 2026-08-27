@@ -71,7 +71,10 @@ def test_journal_routes_200(client):
     #  elle est en favori, liée dans le produit et présente dans une trentaine de
     #  bancs. Ce qui a changé est le titre affiché, pas la disponibilité.
     html = r.get_data(as_text=True)
-    assert r.status_code == 200 and '<h1>Performance</h1>' in html
+    #  VERTEX 2.0 : le titre passe par `vx2.page_header`, qui pose la classe
+    #  canonique. L'intention du banc — la page porte bien son titre — est
+    #  conservee ; seul le balisage a change.
+    assert r.status_code == 200 and '<h1 class="vx2-title">Performance</h1>' in html
     assert 'Journal' in html, 'le Journal reste nommé quelque part dans la page'
 
 

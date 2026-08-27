@@ -990,3 +990,59 @@ html,body{max-width:100%;overflow-x:clip}
 /* Barres de poids : la valeur ne se coupe jamais en deux lignes. « < 0,1 % »
    se cassait après « 0,1 », et le pourcentage tombait seul sous le nombre. */
 #vx-content .vx-wbar .wb-val{white-space:nowrap}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   20) POPULATIONS MESURÉES — Performance
+   Le contrat interdit de fusionner cinq populations dans un même indicateur.
+   Les nommer côte à côte, avec leur nature de résultat et leur propriétaire,
+   rend la séparation lisible au lieu de l'espérer.
+   ───────────────────────────────────────────────────────────────────────── */
+#vx-content .vx2-populations{
+  display:grid;gap:var(--vx2-s3);
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+}
+#vx-content .vx2-population{
+  min-width:0;display:flex;flex-direction:column;gap:var(--vx2-s2);
+  padding:var(--vx2-s3) var(--vx2-s4);
+  border-radius:var(--vx2-r-card);
+  background:var(--vx-surface-base);
+  border:1px solid var(--vx-border-soft);
+}
+#vx-content .vx2-population-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:var(--vx2-s2);flex-wrap:wrap;
+}
+#vx-content .vx2-population-head strong{color:var(--vx-ink)}
+#vx-content .vx2-population-nature{
+  margin:0;color:var(--vx-silver);font-size:var(--vx-fs-card);font-weight:600;
+}
+#vx-content .vx2-population-note,
+#vx-content .vx2-population-source{
+  margin:0;color:var(--vx-smoke);font-size:var(--vx-fs-meta);line-height:1.5;
+}
+#vx-content .vx2-population-source code{
+  font-family:var(--vx-font-mono);color:var(--vx-mist);
+  background:var(--vx-glass-subtle);padding:1px 5px;border-radius:4px;
+}
+#vx-content .vx2-population .vx2-btn{align-self:flex-start;margin-top:auto}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   21) BANDE D'INDICATEURS — `.vx-kpi-strip`
+   Cette classe n'avait AUCUNE règle de disposition en desktop : seule une
+   surcharge mobile existait, dans `responsive.css`. Au-dessus de la largeur
+   de bascule, la bande n'était donc pas une grille du tout et ses onze tuiles
+   s'empilaient en une colonne pleine largeur. Même défaut, et même cause, que
+   la matrice des connexions du lot 12 : l'exception a été écrite, la règle
+   jamais. Les tuiles portent `grid-column:span 2` — la grille fait donc 12.
+   ───────────────────────────────────────────────────────────────────────── */
+#vx-content .vx-kpi-strip{
+  display:grid;gap:var(--vx2-s3);
+  grid-template-columns:repeat(12,minmax(0,1fr));
+  align-items:stretch;
+}
+@media (max-width:1100px){
+  #vx-content .vx-kpi-strip{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  #vx-content .vx-kpi-strip{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
