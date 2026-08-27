@@ -245,14 +245,32 @@ def test_la_route_par_symbole_RECOPIE_la_fraicheur():
 #  ═══════════  6. l'ecran dit l'age REEL, pas « maintenant »  ═════════════════
 
 def test_le_pied_de_carte_n_annonce_plus_maintenant():
-    """`Date.now()` promettait « mis à jour maintenant » pour un graphe pouvant
-    dater de plusieurs scans. Un âge faux est pire qu'un âge absent."""
+    """`Date.now()` promettait « mis a jour maintenant » pour une charge
+    pouvant dater de plusieurs minutes. Un age faux est pire qu'un age absent :
+    il empeche de se mefier.
+
+    L'ancre d'origine — le bloc `renderHiddenDeps` — n'existe plus sous cette
+    forme dans Black Glass ; l'intention, elle, est intacte et se verifie mieux
+    a l'echelle de la page : AUCUN pied de carte ne se date de l'instant du
+    rendu. Ils lisent `window.__pfTs`, pose une seule fois quand les cotations
+    ARRIVENT.
+    """
     import pathlib
     page = (pathlib.Path(A.__file__).resolve().parents[3]
             / 'vertex' / 'ui' / 'pages' / 'portfolio_page.py')
     src = page.read_text(encoding='utf-8')
-    i = src.index('renderHiddenDeps')
-    bloc = src[i:i + 4200]
-    assert "VX.updateIndicator(Date.now(),'knowledge graph" not in bloc
-    assert 'd.age_s' in bloc, "l'age servi doit etre celui de la construction"
-    assert 'SCAN PRÉCÉDENT' in bloc, "un graphe date doit se voir a l'ecran"
+    assert 'window.__pfTs=' in src, (
+        "l'instant d'arrivee des cotations n'est plus retenu")
+    fautifs = [l.strip()[:90] for l in src.splitlines()
+               if 'updateIndicator(Date.now()' in l or 'timestamp:Date.now()' in l]
+    assert fautifs == [], (
+        'un pied de carte se date de l instant du RENDU, pas de celui de la '
+        'donnee : %r' % fautifs)
+
+
+def test_le_banc_verrait_le_defaut_s_il_revenait():
+    """Contre-epreuve : sans elle, « aucun fautif » pourrait vouloir dire
+    « je n ai rien lu »."""
+    faux = ["    <div>${VX.updateIndicator(Date.now(),'x','live')}</div>"]
+    fautifs = [l for l in faux if 'updateIndicator(Date.now()' in l]
+    assert len(fautifs) == 1

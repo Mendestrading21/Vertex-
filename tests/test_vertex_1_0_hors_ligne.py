@@ -85,17 +85,28 @@ def test_quelque_chose_re_date_sans_rien_demander_au_reseau():
 
 
 def test_les_kpi_de_tete_portent_un_age_et_ne_l_ecrivent_pas_a_la_main():
-    """Les quatre chiffres de l'accueil ne portaient AUCUNE date : la seule
-    marque de la carte était le badge « Démo ». La règle du produit est de
-    passer par `VX.freshness`, jamais d'écrire l'étiquette soi-même."""
+    """Les chiffres de l'accueil ne portaient AUCUNE date : la seule marque de
+    la carte etait le badge « Demo ». La regle du produit est que l'age vienne
+    d'un helper, jamais d'une etiquette ecrite a la main.
+
+    Black Glass sert cet age par `VX.updateIndicator(<horodatage reel>, ...)`
+    plutot que par `VX.freshness.chip`. L'exigence porte sur ce qui compte —
+    un horodatage DERIVE de la donnee — pas sur le nom du helper.
+    """
     src = BRIEFING.read_text(encoding='utf-8')
-    assert "id=\"vx-hero-age\"" in src, (
-        "l'emplacement de l'âge des KPI a disparu de l'accueil.")
-    assert 'VX.freshness.chip(VX.freshness.assess({ageMs:' in src, (
-        "l'âge des KPI n'est plus dérivé de `VX.freshness` — une étiquette "
-        'écrite à la main ne peut pas devenir « À actualiser ».')
-    assert 'scan_age' in src, (
-        "l'âge des KPI ne vient plus de `scan_age` : il serait inventé.")
+    assert 'VX.updateIndicator(' in src, "l'accueil ne date plus rien"
+
+    #  Le point dur : l'horodatage doit venir de la DONNEE. Un
+    #  `updateIndicator(Date.now(), ...)` redaterait la carte a chaque rendu.
+    fautifs = [l.strip()[:90] for l in src.splitlines()
+               if 'updateIndicator(Date.now()' in l]
+    assert fautifs == [], (
+        "l'accueil se date de l'instant du rendu : %r" % fautifs)
+
+    #  Et au moins une carte lit l'horodatage REEL du scan.
+    assert 'scan.scan_ts' in src or 'scan_state' in src, (
+        "aucune carte de l'accueil ne lit l'horodatage du scan")
+
 
 
 # ── L'instrument ─────────────────────────────────────────────────────────

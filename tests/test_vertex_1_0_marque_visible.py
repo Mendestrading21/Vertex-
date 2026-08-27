@@ -159,8 +159,10 @@ def test_un_spread_INCONNU_ne_declenche_aucun_avertissement():
 
 def test_la_cellule_prix_actuel_appelle_la_note():
     src = PAGE.read_text(encoding="utf-8")
-    assert 'data-label="Prix actuel"' in src
-    i = src.index('data-label="Prix actuel"')
+    #  Black Glass nomme la colonne « Marque » — le meme chiffre sous un nom
+    #  plus juste : c'est la marque du courtier, pas un prix de transaction.
+    assert 'data-label="Marque"' in src
+    i = src.index('data-label="Marque"')
     assert "marqueNote(t)" in src[i:i + 260], (
         "la provenance doit être rendue AVEC le prix, pas ailleurs")
 

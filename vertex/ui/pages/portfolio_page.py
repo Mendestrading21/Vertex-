@@ -98,6 +98,12 @@ async function quotesFor(pos){
     const r=await fetch('/api/pos-quotes',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({positions:body})});
     const d=await r.json();window.__pfLive=!!d.live;
+    //  L'instant ou la donnee EST ARRIVEE, pas celui ou on la dessine.
+    //  Les pieds de carte affichaient `Date.now()` : ils promettaient
+    //  « mis a jour maintenant » a chaque re-rendu, y compris dix minutes
+    //  plus tard sur une charge qui n'avait pas bouge. Un age faux est
+    //  pire qu'un age absent — il empeche de se mefier.
+    window.__pfTs=(d.ts!=null?d.ts:Date.now());
     const res=d.results||{};const byId={};
     pos.forEach(t=>{const key=[String(t.sym).toUpperCase(),t.exp||'',
       (t.strike!==null&&t.strike!==undefined)?t.strike:'',
@@ -197,7 +203,7 @@ function corrHeatmap(hostId,corr){
   VXCharts.heatmapCard(hostId,{title:'Corrélations du portefeuille',
     question:'La diversification est-elle réelle ou illusoire ?',
     conclusion:(corr.average!=null?('corrélation moyenne '+(+corr.average).toFixed(2)):'')+(corr.warning?' — '+corr.warning:''),
-    columns:syms,rows:rows,min:-1,max:1,source:('risk_engine · rendements '+(window.__pfLive?'réels':'de repli')),timestamp:Date.now(),mode:(window.__pfLive?'live':'fallback'),
+    columns:syms,rows:rows,min:-1,max:1,source:('risk_engine · rendements '+(window.__pfLive?'réels':'de repli')),timestamp:window.__pfTs||null,mode:(window.__pfLive?'live':'fallback'),
     limits:'corail = fortement corrélé (risque de concentration) · émeraude = décorrélé (diversification réelle)'});
 }
 /* Composition du capital : Actions / Options / Cash en barre empilée + légende.
@@ -506,7 +512,7 @@ async function renderPositions(){
         <td data-label="Contrat">${t.type}${t.strike?' '+t.strike+' '+(t.exp||''):''}</td>
         <td data-label="Qté" class="vx-num">${t.qty}</td>
         <td data-label="Coût (total)" class="vx-num">${VX.fmt.price(t.cost)}</td>
-        <td data-label="Marque" class="vx-num">${t.mark!==null?VX.fmt.price(t.mark):'n/d'}</td>
+        <td data-label="Marque" class="vx-num">${t.mark!==null?VX.fmt.price(t.mark):'n/d'}${marqueNote(t)}</td>
         <td data-label="P&L" class="vx-num">${t.pl!==null?`<span style="display:inline-flex;align-items:center;gap:7px;justify-content:flex-end"><span style="flex:0 0 38px;height:6px;border-radius:99px;background:var(--vx-surface-0);position:relative;overflow:hidden"><i style="position:absolute;left:0;top:0;bottom:0;width:${Math.max(4,Math.min(100,Math.abs(t.pl)*6)).toFixed(0)}%;background:${t.pl>0?'var(--vx-positive)':t.pl<0?'var(--vx-negative)':'var(--vx-steel-3)'};border-radius:99px"></i></span><b class="vx-mono ${t.pl>0?'vx-pos':t.pl<0?'vx-neg':''}" style="min-width:44px">${VX.fmt.pct(t.pl,1)}</b></span>`:'<span class="vx-muted">n/d</span>'}</td>
         <td data-label="Statut" class="vx-meta">${pi.lifecycle_status?esc(pi.lifecycle_status.replace(/_/g,' ')):'—'}</td>
         <td><div class="vx-row-actions">
@@ -516,7 +522,7 @@ async function renderPositions(){
         </div></td></tr>`;}).join('')}</tbody></table></div>`
       :VX.states.empty('Aucune position '+g.toLowerCase()+'.')}
     </section>`).join('')
-    +`<div class="vx-card-footer">${VX.updateIndicator(Date.now(),window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
+    +`<div class="vx-card-footer">${VX.updateIndicator(window.__pfTs||null,window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
       · IBKR: ${ibkr&&ibkr.count!==undefined?ibkr.count+' position(s) broker (lecture seule)':'hors ligne'} · lecture seule — aucun ordre</div>`;
 }
 
@@ -552,14 +558,14 @@ async function renderPerformance(){
     VXCharts.equityCard('pf-perf-equity',{title:'Courbe d’équité (cumulée)',timeframe:eq.length+' points',
       question:'Le capital progresse-t-il régulièrement ?',
       conclusion:up?'Équité en progression sur la période.':'Équité en retrait sur la période.',
-      labels,values,height:240,source:'clôtures déclarées (myTradesEquity)',timestamp:Date.now(),mode:'delayed',
+      labels,values,height:240,source:'clôtures déclarées (myTradesEquity)',timestamp:window.__pfTs||null,mode:'delayed',
       explain:{shows:'La série d’équité issue de tes clôtures de positions.',
         why:'Une méthode saine produit une pente régulière, pas des à-coups.',
         confirm:'Nouveaux plus hauts avec drawdowns contenus.',invalidate:'Série de plus bas d’équité.'}});
     VXCharts.drawdownCard('pf-perf-drawdown',{title:'Drawdown depuis les pics',
       question:'Les pertes de portefeuille restent-elles contrôlées ?',
       conclusion:'Dérivé arithmétiquement de la courbe d’équité.',
-      labels,values,height:240,source:'clôtures déclarées (myTradesEquity)',timestamp:Date.now(),mode:'delayed',
+      labels,values,height:240,source:'clôtures déclarées (myTradesEquity)',timestamp:window.__pfTs||null,mode:'delayed',
       limits:'dérivé de la série déclarée — pas un indicateur de marché',
       explain:{shows:'L’écart en % entre l’équité et son dernier pic.',
         why:'La profondeur des drawdowns mesure la discipline de risque réelle.',
@@ -584,7 +590,7 @@ async function renderPerformance(){
       rows:years.map(y=>({label:y,cells:MN.map(mm=>{const arr=byMonth[y+'-'+mm];
         return arr?{value:arr.reduce((a,b)=>a+b,0)/arr.length,title:arr.length+' clôture(s)'}:{value:null,label:'·'};})})),
       min:-8,max:8,fmt:(v)=>v===null?'·':VX.fmt.pct(v,1),
-      source:'clôtures déclarées',timestamp:Date.now(),mode:'delayed',
+      source:'clôtures déclarées',timestamp:window.__pfTs||null,mode:'delayed',
       limits:'moyenne des % par trade — pas une performance composée'});
   }else{emptyCard('pf-perf-monthly','Saisonnalité disponible à partir de 3 clôtures datées.',JOURNAL_ACTION,true);}
 
@@ -596,7 +602,7 @@ async function renderPerformance(){
       question:'Qui porte le résultat latent ?',
       conclusion:withAbs[0].sym+' domine ('+((withAbs[0].plAbs>=0?'+':'')+VX.fmt.price(withAbs[0].plAbs))+').',
       height:Math.max(160,Math.min(300,withAbs.length*30)),source:window.__pfLive?'IBKR/desk':'desk (repli)',
-      timestamp:Date.now(),mode:window.__pfLive?'live':'fallback',limits:'P&L latent absolu (valeur − coût)',
+      timestamp:window.__pfTs||null,mode:window.__pfLive?'live':'fallback',limits:'P&L latent absolu (valeur − coût)',
       render:(cv)=>VXCharts.bars(cv,withAbs.map(t=>t.sym),withAbs.map(t=>Math.round(t.plAbs)),
         {horizontal:true,colors:withAbs.map(t=>t.plAbs>=0?VXCharts.colors.positive:VXCharts.colors.negative),
          yFmt:(v)=>VX.fmt.price(v)})});
@@ -669,7 +675,7 @@ async function renderOptions(){
         <span class="vx-badge" style="color:var(--vx-option)">${t.type} ${t.strike??''} ${t.exp||''}</span></td>
       <td data-label="Qté" class="vx-num">${t.qty}</td>
       <td data-label="Coût" class="vx-num">${VX.fmt.price(t.cost)}</td>
-      <td data-label="Marque" class="vx-num">${t.mark!==null?VX.fmt.price(t.mark):'n/d'}</td>
+      <td data-label="Marque" class="vx-num">${t.mark!==null?VX.fmt.price(t.mark):'n/d'}${marqueNote(t)}</td>
       <td data-label="P&L" class="vx-num ${t.pl>0?'vx-pos':t.pl<0?'vx-neg':''}">${t.pl!==null?VX.fmt.pct(t.pl,1):'n/d'}</td>
       <td data-label="DTE" class="vx-num ${dte!==null&&dte<=7?'vx-warn':''}">${dte!==null?dte+' j':'—'}</td>
       <td data-label="Stop">${VX.fmt.nd(t.entrySnap&&t.entrySnap.stop)}</td>
@@ -677,7 +683,7 @@ async function renderOptions(){
         <button class="vx-btn vx-btn-sm vx-btn-primary" data-opt-analyze="${t.id}">Analyser</button>
         <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Plus">⋯</button>
       </div></td></tr>`;}).join('')}</tbody></table></div>
-    <div class="vx-card-footer">${VX.updateIndicator(Date.now(),window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
+    <div class="vx-card-footer">${VX.updateIndicator(window.__pfTs||null,window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
       · Greeks agrégés affichés uniquement avec IBKR (jamais estimés en agrégat)</div></section>`;
   if(window.VXCharts&&VXCharts.treemap){
     const cc=VXCharts.colors;const el=document.getElementById('pf-opt-tree');const w=(el&&el.clientWidth)||900;
@@ -708,7 +714,7 @@ function renderOptMix(rich){
       question:'Le portefeuille options est-il directionnel ?',
       conclusion:calls+' call(s) · '+puts+' put(s)',
       labels:['CALL','PUT'],values:[calls,puts],colors:['var(--vx-neutral)','var(--vx-option)'],height:200,
-      source:'positions déclarées',timestamp:Date.now(),mode:window.__pfLive?'live':'fallback'});
+      source:'positions déclarées',timestamp:window.__pfTs||null,mode:window.__pfLive?'live':'fallback'});
   }
   const dtes=rich.map(t=>({sym:t.sym,strike:t.strike,type:t.type,
       dte:t.exp?Math.round((new Date(t.exp)-Date.now())/86400000):null})).filter(x=>x.dte!=null)
@@ -770,7 +776,7 @@ async function renderCombinedOptions(rich){
         <div class="vx-kv"><span class="k">Perte max</span><span class="v vx-mono vx-neg">${d.max_loss!=null?VX.fmt.price(d.max_loss):'—'}</span></div>
         <div class="vx-kv"><span class="k">Breakevens</span><span class="v vx-mono">${be}</span></div>
       </div>
-      <div class="vx-card-footer">${VX.updateIndicator(Date.now(),window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
+      <div class="vx-card-footer">${VX.updateIndicator(window.__pfTs||null,window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
         · résumé d'exposition — le détail par contrat est dans Options</div>
     </section>`;
   }).join('');
@@ -899,7 +905,7 @@ async function renderRisk(){
         ${Object.entries(stress).map(([k,v])=>`<tr><td>${k}</td>
           <td class="vx-num ${v.impact_pct<0?'vx-neg':''}">${v.impact_pct!==null&&v.impact_pct!==undefined?VX.fmt.pct(v.impact_pct,1):'non estimé'}</td>
           <td class="vx-meta">${esc(v.note||'')}</td></tr>`).join('')}</tbody></table></div>
-        <div class="vx-card-footer">${VX.updateIndicator(Date.now(),'risk_engine (positions réelles)',window.__pfLive?'live':'fallback')}
+        <div class="vx-card-footer">${VX.updateIndicator(window.__pfTs||null,'risk_engine (positions réelles)',window.__pfLive?'live':'fallback')}
         ${(risk.warnings||[]).length?'· '+risk.warnings.length+' avertissement(s)':''}</div></section>
       <div class="vx-col-12" id="pf-corr-heatmap"></div></div>`;
     /* Heatmap de corrélations RÉELLES entre les positions (risk_engine · rendements) :

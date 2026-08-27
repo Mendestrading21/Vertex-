@@ -1415,6 +1415,10 @@ function loadTopFlop(scan){
 async function loadOpportunities(){
   try{
     const c=await VX.fetch('/api/command',{ttl:60000});
+    //  L'horodatage de la CHARGE. `VX.fetch` sert un cache de 60 s : dater
+    //  la carte de `Date.now()` annoncait « maintenant » sur une reponse
+    //  pouvant avoir une minute, et le re-rendu la rajeunissait sans fin.
+    const cTs=(c&&(c.as_of||c.ts||c.updated))||null;
     const stocks=(c.top_stocks||[]).slice(0,6);
     ($('vx-opp-stocks')||{}).innerHTML=stocks.length?'<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">'+stocks.map(s=>{
       const vx=s.vertex||{};
@@ -1507,7 +1511,7 @@ async function loadOpportunities(){
           <div style="display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--vx-surface-0)" role="img" aria-label="Répartition des verdicts du comité">
             ${_ck.map(k=>`<i style="width:${(counts[k]/total*100).toFixed(1)}%;background:${tone[k]||'var(--vx-text-dim)'}"></i>`).join('')}
           </div>
-          <div class="vx-card-footer">${VX.updateIndicator(Date.now(),isDemo?'démo':'comité',isDemo?'fallback':'delayed')}
+          <div class="vx-card-footer">${VX.updateIndicator(cTs,isDemo?'démo':'comité',isDemo?'fallback':'delayed')}
             <span class="vx-meta">${total} dossier(s) passés en revue par le comité</span></div>`;
       }
     }
