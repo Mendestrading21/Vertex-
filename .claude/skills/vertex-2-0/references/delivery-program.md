@@ -1,61 +1,71 @@
-# Programme de livraison Vertex 2.0
+# Programme de livraison visuelle Vertex 2.0
 
-## Lot 0 — Vérité du dépôt
+Chaque lot modifie uniquement la présentation. Les moteurs, calculs, données, endpoints, intégrations, stores et règles financières restent inchangés.
 
-Baseline SHA/CI/PR, inventaire complet, registre des capacités, carte des routes, pages, données, moteurs, jobs, stores, composants et tests. Identifier les fonctionnalités fantômes et doublons.
+## Lot 0 — Baseline visuelle
 
-## Lot 1 — Contrats transversaux
+Relever SHA/CI/PR. Inventorier toutes les routes et sous-vues existantes, leurs données consommées, actions, composants, styles inline, états et captures desktop/mobile. Vérifier chaque page dans le navigateur avant de dessiner sa cible.
 
-Modèles de présentation, provenance/fraîcheur, identités instruments, formatters, états, recherche, follow-up et audit trail. Aucun nouveau propriétaire parallèle.
+Livrables : matrice page × fonction existante × bloc visuel × état × largeur ; captures avant ; liste des contradictions visuelles ; aucune modification runtime.
 
-## Lot 2 — Design et shell
+## Lot 1 — Source de vérité
 
-Exécuter `vertex-design-2-0` : tokens, Geist, Black Glass, navigation, composants, tables et graphiques partagés.
+Finaliser tokens, Geist/Geist Mono, palette, densité, surfaces, Decision Trace, iconographie, microcopy et page /design-system. Aligner .interface-design/system.md, règles Claude et documents actifs. Les aliases legacy restent tant que leurs consommateurs ne sont pas migrés.
 
-## Lot 3 — Données et intégrations
+## Lot 2 — Shell et navigation
 
-Consolider sources, caches, snapshots, observabilité et états dégradés. Vérifier IBKR, TradingView, WMB, news et données options.
+Refondre sidebar groupée Piloter/Explorer/Gérer/Intelligence, topbar, recherche, calendrier, alertes, drawers, modales et mobile bar. Préserver routes, handlers, IDs DOM, clés et contrats existants.
 
-## Lot 4 — Aujourd'hui et Marchés
+## Lot 3 — Primitives
 
-Command center quotidien, régime, risques, contexte cross-asset, calendrier central et centre d'alertes.
+Consolider visuellement cartes, KPI, badges, boutons, tabs, filtres, formulaires, tables, tooltips, états et drawers. Faire converger les multiples familles de cartes/métriques sans déplacer leur logique.
 
-## Lot 5 — Opportunités et Analyse
+## Lot 4 — Graphiques
 
-Pipeline de détection explicable, tables actions/ETF/options, calendrier/anomalies et dossier canonique complet.
+Unifier uniquement thème, conteneurs, axes, tooltips, légendes, formats d'affichage, resize, destruction, fallbacks et accessibilité. Les séries, valeurs, calculs et sources ne changent pas.
 
-## Lot 6 — Options
+## Lot 5 — Aujourd'hui
 
-Chaîne professionnelle, détails contrat, volatilité, OI/volume, scénarios et livre options.
+Réordonner les fonctions existantes en command center : décision, marché, risques, revues, calendrier, opportunités, portefeuille, options et brief IA. Aucun nouveau calcul.
 
-## Lot 7 — Portefeuille et Risque
+## Lot 6 — Calendrier et Marchés
 
-Positions, allocation/look-through, expositions, stress, watchlist/thèses et simulation d'impact.
+Créer la vue Calendrier seulement avec événements/endpoints déjà présents ; sinon composer les catégories disponibles et marquer les manques. Refaire les sous-vues Marchés avec une visualisation dominante et preuves secondaires.
 
-## Lot 8 — Intelligence IA
+## Lot 7 — Opportunités et Analyse
 
-Assistant contextuel, brief, comité, audit de décision, mémoire et recherche, toujours depuis packets versionnés.
+Réorganiser radar/tables/drawers et dossier ticker. Conserver scores, gates, verdicts, loaders et endpoints exactement. Ajouter clarté, sources, fraîcheur et liens existants.
 
-## Lot 9 — Performance et Suivi
+## Lot 8 — Options
 
-Journal, populations séparées, performance, tracking, centre de suivi et apprentissages confirmables.
+Refondre visuellement Vue d'ensemble, Chaîne, Volatilité, Scanner, Scénarios, Positions et Événements. Présenter les champs réellement fournis ; aucune Greek, IV, quote, score ou stratégie calculée dans l'UI.
 
-## Lot 10 — Système et opérations
+## Lot 9 — Portefeuille et Suivi
 
-Santé, jobs, intégrations, données, sync, archives, préférences, sécurité et observabilité.
+Réordonner Synthèse, Positions, Allocation, Options, Risque et Thèses. Créer la page visuelle Suivi en composant watchlist/tracking/journal existants ; ne pas créer de nouveau store ni état métier.
 
-## Lot 11 — Convergence et nettoyage
+## Lot 10 — Performance et Vertex IA
 
-Migrer derniers consommateurs, retirer chemins fantômes/legacy prouvés, corriger docs, service worker et redirects.
+Séparer visuellement les populations existantes. Refaire Journal, courbes, tables, Assistant, Comité, Décisions, Recherche et Mémoire sans modifier packet, prompt métier, moteur ou persistance.
 
-## Lot 12 — Acceptation
+## Lot 11 — Système
 
-Tests complets, navigateur, console, desktop/mobile, clavier, performance, données réelles et modes live/delayed/stale/demo/offline/missing. Captures et preuves sur le même SHA. PR brouillon, rollback et décision humaine ; aucune fusion automatique.
+Clarifier Connexions, Données, Jobs, Préférences, Sécurité, Archives et Design System. Ne changer aucune connexion, job, secret, backup ou sync.
+
+## Lot 12 — Responsive et accessibilité
+
+Vérifier 390, 430, 768, 1024, 1280, 1440, 1600 et écran large ; clavier, zoom 200 %, touch, focus, reduced motion, contrastes, tableaux et graphiques. Corriger seulement la couche visuelle.
+
+## Lot 13 — Nettoyage visuel
+
+Après recherche des consommateurs, retirer CSS/classes/docs de design devenus sans usage. Ne supprimer aucun moteur, route, endpoint, fonction métier ou actif de données.
+
+## Lot 14 — Acceptation
+
+Comparer avant/après sur le même SHA fonctionnel ; tests complets, no-orders, healthz, client-log, console, modes live/delayed/stale/demo/offline/missing, service worker et rollback. PR brouillon ; aucune fusion automatique.
 
 ## Commande Claude
 
-```text
-/vertex-2-0 lot:0
-```
+    /vertex-2-0 lot:0
 
-Claude continue ensuite le premier lot non terminé dont les dépendances sont satisfaites. Il ne saute pas à une page attractive si les contrats ou sources nécessaires sont encore fragmentés.
+Claude continue le premier lot visuel non terminé. Il implémente et vérifie page par page, sans ouvrir plusieurs lots dépendants simultanément et sans étendre le périmètre au backend.

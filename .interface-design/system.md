@@ -1,56 +1,94 @@
 # Vertex — Système d'interface canonique
 
-> Mémoire de craft alignée sur `.claude/skills/vertex-design-2-0/SKILL.md`.
-> En cas de divergence, le skill et ses références font autorité.
+> Mémoire de craft alignée sur `.claude/skills/vertex-2-0/SKILL.md`.
+> Le skill maître et ses références priment en cas de divergence.
 
-## Direction
+## Intention
 
-**Vertex Black Glass — Signal Light** : terminal financier personnel, calme, dense, précis et strictement en lecture seule. Fond obsidienne, verre noir translucide, structure blanc/argent, très peu de couleur. Le produit ne doit ressembler ni à un template SaaS, ni à une plateforme crypto, ni à un cockpit gaming.
+**Vertex Black Glass — Signal Light** est un centre personnel de trading IA,
+calme, dense et précis. La lecture doit être évidente en cinq secondes : ce qui
+se passe, ce qui mérite l'attention, pourquoi et avec quel risque.
 
-Signature : le V argent et le **Vertex Beam**, reflet linéaire de 1 px utilisé avec parcimonie sur un hero ou une sélection importante. Aucun glow permanent.
+La refonte est uniquement visuelle. Ne modifier ni logique métier, ni données,
+ni moteurs, ni endpoints, ni intégrations, ni persistance.
 
-## Autorités d'exécution
+## Ce que les références imposent
 
-- Tokens : `vertex/static/vertex/css/tokens.css`.
-- Composants : primitives partagées VX, jamais une variante ad hoc de page.
-- Graphiques : `VXCharts` + thème JS + `vertex/visualization/palette.py`.
-- Pages : `vertex/ui/pages/` dans le shell commun.
-- Méthode et critères : `.claude/skills/vertex-design-2-0/references/`.
+Conserver : sidebar compacte, grands espaces analytiques, bandeau de KPI,
+tables professionnelles, sparklines sobres, glows locaux, verre noir,
+hiérarchie nette et véritable adaptation mobile.
 
-Toute migration remplace progressivement les couches Signal Green, Copper, Neon Glass, Signal OS et V3. Ne pas empiler un nouveau thème.
+Éviter : néon sur chaque bord, cartes multicolores, donuts décoratifs,
+blocs marketing, faux chiffres, navigation colorée comme un signal financier
+et terminal desktop simplement compressé sur mobile.
 
-## Couleurs
+## Signature
 
-- Fond profond `#050607`, fond principal `#090b0e`, graphite `#0e1116`.
-- Verre : blanc à .025/.045/.070 d'opacité ; fallback graphite.
-- Texte : principal `#f5f7fa`, secondaire `#b8bec8`, discret `#7a828f`.
-- Argent `#c9ced8` : structure, sélection, focus, série principale.
-- Positif `#36c889` ; négatif/risque `#ed655c` ; prudence/stale `#dda23b`.
-- Violet `#9c79d0` : options seulement et rarement.
-- Aucun bleu identitaire, cuivre de marque, vert décoratif ou arc-en-ciel.
+La signature unique est **Decision Trace** : une hairline argentée avec quatre
+nœuds `Données → Moteur → Décision → Portefeuille`. Elle existe uniquement dans
+le hero Aujourd'hui, le drawer Opportunité, le hero Analyse, l'audit de décision
+IA et l'impact Portefeuille.
 
-La séparation vient d'abord des niveaux de surface et de l'espace. Hairlines presque invisibles uniquement ; aucune bordure lourde décorative.
+Le **Vertex Beam** est seulement un reflet de matière très discret ; ce n'est
+pas une seconde signature et il n'est jamais permanent.
 
-## Typographie
+## Palette et distribution
 
-`Geist` pour l'interface ; `Geist Mono` pour tickers, prix, pourcentages, dates et mesures. Fallbacks : Inter et JetBrains Mono. Chiffres tabulaires partout. Texte visible en français clair ; titres courts ; pas de capitales longues.
+- 82 % obsidienne/graphite : `#050607`, `#090b0e`, `#0e1116`.
+- 13 % blanc/argent/gris : `#f5f7fa`, `#c9ced8`, `#b8bec8`, `#7a828f`.
+- 5 % signal : positif `#36c889`, risque `#ed655c`, prudence `#dda23b`,
+  options `#9c79d0`, analyse/focus exceptionnel `#65d8e8`.
 
-## Géométrie et densité
+Une couleur lumineuse dominante maximum par carte et deux par écran, hors
+vert/rouge directionnels nécessaires. La séparation vient des surfaces, de
+l'espace et de hairlines presque invisibles, jamais de cadres lumineux.
 
-Grille 4 px ; espaces 8/12/16/20/24/32 ; cartes 14–16 px ; contrôles 9–10 px ; grille 12 colonnes ; contenu max ~1600 px. Trois densités réelles : compact, confortable, dense. Les tables conservent unités, colonnes prioritaires et accès au détail.
+## Typographie, géométrie et densité
 
-## Profondeur et motion
+Geist pour l'interface ; Geist Mono pour tickers, prix, pourcentages, dates et
+mesures. Chiffres tabulaires. Titres courts en français, sans longues capitales.
 
-Verre + contraste tonal + espace négatif. Ombre noire diffuse uniquement sur surfaces élevées. Hover tonal et déplacement maximal 1 px ; press .98 ; 140/200/260 ms ease-out ; aucune animation infinie ; reduced motion respecté.
+- Grille 4 px ; espaces 8/12/16/20/24/32.
+- Sidebar 236 px, repliée 72 px ; topbar 60–64 px.
+- Contenu 12 colonnes, max 1600–1680 px.
+- Cartes 14–16 px ; contrôles 9–10 px.
+- Densité desktop 8/10, variance visuelle 4/10, motion 2/10.
 
-## Composants
+## Navigation canonique
 
-Une famille unique pour cartes, MetricCard, badges, contrôles, tables, drawers, états et ChartCard. Chaque widget de données porte question, conclusion, source, timestamp, fraîcheur et état. Loading/empty/partial/stale/delayed/offline/demo/error sont traités honnêtement.
+- **Piloter** : Aujourd'hui, Calendrier.
+- **Explorer** : Marchés, Opportunités, Analyse, Options.
+- **Gérer** : Portefeuille, Suivi, Performance.
+- **Intelligence** : Vertex IA.
+- **Utilitaire épinglé** : Système.
 
-## Navigation
+Recherche globale, état marché, fraîcheur, calendrier, alertes et profil
+restent dans la topbar. Journal vit dans Performance ; watchlist dans Suivi ou
+Portefeuille ; Design System reste une route interne de QA.
 
-Huit espaces principaux : Aujourd'hui, Marchés, Opportunités, Analyse, Portefeuille, Options, Performance, Intelligence. Journal est un raccourci de Performance ; Système est un utilitaire épinglé ; Tracking appartient à Performance ; Design System reste une route interne de QA.
+## Composants et graphiques
 
-## Garde-fous
+Une seule famille de cartes, KPI, badges, contrôles, tables, drawers, états et
+ChartCard. Chaque widget de données rend visibles question, conclusion, source,
+timestamp, fraîcheur et état lorsque ces informations existent.
 
-READONLY intact ; aucune donnée inventée ; aucun calcul dans l'UI ; source et fraîcheur visibles ; focus clavier ; sens jamais porté par la couleur seule ; responsive 390 à 1600+ ; console vide ; tests verts ; bump service worker pour toute livraison visible.
+Le thème graphique peut changer conteneur, axes, grille, labels, tooltip,
+légende, interactions visuelles, resize et accessibilité. Séries, valeurs,
+calculs, agrégations, sources et timeframes canoniques restent inchangés.
+
+## États, accessibilité et responsive
+
+Traiter loading, empty, partial, stale, delayed, offline, demo et error sans
+inventer de contenu. Contraste AA, focus visible, clavier, reduced motion et
+sens jamais porté par la couleur seule. Concevoir réellement pour 390, 768,
+1024, 1280 et 1600+ px ; les tables deviennent priorisées ou inspectables, pas
+illisibles.
+
+## Tests de craft
+
+- **Permutation** : Vertex ne doit pas devenir un template générique si le logo
+  est remplacé.
+- **Distance** : hiérarchie lisible en plissant les yeux.
+- **Signature** : Decision Trace seulement aux cinq emplacements.
+- **Tokens** : aucune couleur, ombre, rayon ou espacement répété en dur.
+- **Vérité** : avant/après utilise les mêmes données et comportements.

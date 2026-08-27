@@ -2,7 +2,7 @@
 
 ## Registre obligatoire
 
-Avant de développer un domaine, inventorier :
+Avant de refondre visuellement un domaine, inventorier en lecture seule :
 
 | Champ | Contenu |
 |---|---|
@@ -14,32 +14,30 @@ Avant de développer un domaine, inventorier :
 | Consommateurs | pages, jobs, API, tests |
 | Réalité | fonctionnel, partiel, fantôme, legacy |
 | Doublons | propriétaires concurrents |
-| Décision | conserver, fusionner, migrer, retirer |
+| Décision visuelle | conserver, regrouper, déplacer, reformuler, masquer |
 | Preuves | tests, navigateur, données, logs |
 
 ## Méthode
 
 1. Rechercher le symbole, la route, les appels et les tests.
 2. Vérifier le comportement au runtime ; un nom de fonction n'est pas une capacité fonctionnelle.
-3. Identifier le propriétaire le plus fiable et les données réellement disponibles.
-4. Porter les consommateurs vers ce propriétaire.
-5. Ajouter des gardiens de non-régression.
-6. Retirer le doublon seulement lorsque son dernier consommateur a migré.
+3. Identifier le propriétaire existant et les données réellement disponibles sans les modifier.
+4. Concevoir une présentation unique qui consomme les mêmes sorties.
+5. Ajouter des gardiens de non-régression visuelle et fonctionnelle.
+6. Retirer uniquement le doublon CSS/HTML lorsque son dernier consommateur visuel a migré.
 
 ## Dette à traiter
 
 - routes/pages décrites sous plusieurs noms ;
 - anciennes identités visuelles et composants dupliqués ;
-- calculs ou formats répétés dans l'UI ;
-- palettes Python/CSS/JS divergentes ;
+- formats d'affichage répétés dans l'UI, sans toucher aux calculs ;
+- palettes de rendu Python/CSS/JS divergentes, sans changer les valeurs métier ;
 - navigation huit/neuf espaces incohérente ;
 - tracking, journal, performance et watchlist qui se chevauchent ;
 - plusieurs tableaux ou drawers pour le même objet ;
-- modules présents mais jamais appelés ;
 - actions UI sans handler ou handlers sans surface ;
 - documentation historique présentée comme active.
 
-## Règle d'ajout
+## Règle de composition
 
-Une nouvelle capacité n'est autorisée qu'après le registre. Elle doit posséder source, contrat, états, propriétaire, consommateur réel, tests, observabilité et rollback. Si elle exige un nouveau provider, traiter licence, entitlement, pacing, cache, timeout, point-in-time, replay et panne partielle avant l'UI.
-
+Une nouvelle page ou sous-vue visuelle est autorisée uniquement si elle compose des routes, handlers, stores, endpoints et données déjà présents. Si une capacité métier manque, la consigner comme besoin hors périmètre et afficher un état honnête ; ne pas créer provider, endpoint, moteur, schéma ou persistance.
