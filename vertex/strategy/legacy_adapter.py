@@ -35,9 +35,68 @@ HORIZONS = [
 ]
 
 SIZING = [
-    {'key': 'ultra',    'label': '5 k ultra',     'budget': 5000,  'color': '#EF4444'},
-    {'key': 'controle', 'label': '15 k contrôlé', 'budget': 15000, 'color': '#FFB23F'},
+    #  `ton` et non `color` : le rouge et l'orange d'ici etaient des hex EN DUR
+    #  — `#EF4444` et `#FFB23F`, ce dernier appartenant a la palette
+    #  Obsidian Copper abandonnee. Un moteur qui impose une couleur impose
+    #  aussi une palette, et la page ne peut plus rester coherente.
+    #
+    #  La surface mappe `ton` -> jeton semantique : `risque` = corail,
+    #  `prudence` = ambre. Meme sens, une seule source de couleur.
+    {'key': 'ultra',    'label': '5 k ultra',     'budget': 5000,  'ton': 'risque'},
+    {'key': 'controle', 'label': '15 k contrôlé', 'budget': 15000, 'ton': 'prudence'},
 ]
+def horizons_annotes():
+    """Les échéances, chacune disant si la constitution ACTIVE la recommande.
+
+    ## Le défaut
+
+    `HORIZONS` va de 30 à 365 jours. La constitution, elle, déclare une bande
+    préférée et une cible — v4 : **120–240, cible 180**. Rien ne le disait à
+    l'écran : un lecteur choisissait « 1 mois » (30 jours) sans savoir qu'il
+    sortait de la doctrine que le reste du produit applique.
+
+    Ce n'est pas un défaut de la table — offrir une échelle et en préférer un
+    point sont deux choses. Le défaut était le **silence**.
+
+    ## Pourquoi c'est dérivé et jamais recopié
+
+    La bande est lue dans `release.etat_actif()` à chaque appel. Une copie
+    ici finirait par annoncer autre chose que ce que les moteurs appliquent —
+    c'est exactement le défaut de D-084, et la raison pour laquelle `R` est
+    importé du moteur plus haut plutôt que redéclaré.
+
+    Quand aucune constitution n'est active (entrée directe par `terminal.py`,
+    mode de repli V3), `dans_la_bande` vaut `None` : **on ne sait pas**, et on
+    le dit — jamais `False`, qui se lirait « déconseillé par la doctrine ».
+    """
+    try:
+        from vertex.strategy import release
+        etat = release.etat_actif() or {}
+    except Exception as e:                       # profil illisible : on le NOMME
+        etat = {'erreur': '%s: %s' % (type(e).__name__, str(e)[:80])}
+
+    bande = etat.get('dte_prefere')
+    cible = etat.get('dte_cible')
+    bas, haut = (bande[0], bande[-1]) if (bande and len(bande) >= 2) else (None, None)
+
+    out = []
+    for h in HORIZONS:
+        dte = h.get('dte')
+        dans = None if bas is None else (bas <= dte <= haut)
+        out.append({**h,
+                    'dans_la_bande': dans,
+                    'est_la_cible': (cible is not None and dte == cible),
+                    'ecart_a_la_cible': (None if cible is None else dte - cible)})
+    return {'horizons': out,
+            'bande_preferee': bande,
+            'dte_cible': cible,
+            'constitution': etat.get('version'),
+            'note': ('`dans_la_bande` a None quand aucune constitution n est '
+                     'active : on ne sait pas, et un False se lirait '
+                     '« deconseille par la doctrine »'),
+            'erreur': etat.get('erreur')}
+
+
 RISK_PCT = (5, 10)          # risque cible par trade (info)
 IV_MAX = 0.85              # filtre « IV pas trop chère » (vol annualisée)
 
@@ -216,7 +275,10 @@ def _leg(S, sig, plan, is_call, h):
     for s in SIZING:
         contracts = int(s['budget'] // (prem * 100)) if prem > 0 else 0
         cost = round(contracts * prem * 100)
-        sizes.append({'key': s['key'], 'label': s['label'], 'color': s['color'],
+        #  `ton` remplace `color` : le moteur ne dicte plus un hex. La
+        #  surface mappe `risque` -> corail et `prudence` -> ambre, comme
+        #  elle le fait deja pour les etats.
+        sizes.append({'key': s['key'], 'label': s['label'], 'ton': s['ton'],
                       'budget': s['budget'], 'contracts': contracts, 'cost': cost,
                       'maxloss': cost,
                       'gain_prob': round(contracts * 100 * (scenarios['prob']['val'] - prem))})
@@ -365,7 +427,12 @@ def build(rows, detail, market=None, top_n=6, board=None):
             'call': _legs(S, sig, plan, True),
             'put': _legs(S, sig, plan, False),
         })
-    return {'picks': picks, 'horizons': HORIZONS, 'sizing': SIZING,
+    _h = horizons_annotes()
+    return {'picks': picks, 'horizons': _h['horizons'],
+            'doctrine_echeances': {k: _h[k] for k in
+                                   ('bande_preferee', 'dte_cible',
+                                    'constitution', 'note', 'erreur')},
+            'sizing': SIZING,
             'regime': bias, 'risk_pct': list(RISK_PCT),
             'model': dict(MODELE), 'limitations': list(LIMITATIONS),
             'profile': {'style': 'Croissance + équilibre (spéculation, sortie avant échéance)',
