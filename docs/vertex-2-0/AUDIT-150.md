@@ -82,12 +82,12 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 
 | № | Contrôle | État | Preuve |
 |---|---|---|---|
-| 031 | Chaque page formule sa question métier | **RÉUSSI** | `vx2.page_header()` rend la question **obligatoire**. Les 12 pages en portent une, vérifié sur les captures du lot 13. |
+| 031 | Chaque page formule sa question métier | **RÉUSSI** | `vx2.page_header()` rend la question **obligatoire**. Les **12 pages** portent la question canonique du contrat, vérifié au navigateur : chacune se termine par « ? ». Quatre portaient une *description* et non une question (« Le régime d'abord, une tendance principale, les détails ensuite ») — corrigées. |
 | 032 | Le point focal est compris en cinq secondes | **RÉUSSI** pour Aujourd'hui, Calendrier, Simulateur ; **À CORRIGER** pour les 9 autres | Aujourd'hui : DecisionTrace en tête (capture `hero`). Calendrier : chronologie dominante. Simulateur : paramètres → résultats. Les autres pages gardent leur hiérarchie d'origine. → **lots 6-8, 10-12**. |
 | 033 | Le premier viewport répond à situation, attention, raison, risque | **RÉUSSI** pour Aujourd'hui ; **À CORRIGER** ailleurs | La DecisionTrace répond aux quatre. → lots de page. |
 | 034 | Une seule visualisation ou table domine la page | **À CORRIGER** | Vrai sur Calendrier et Simulateur. Non vérifié sur les pages non refondues. → lots de page. |
 | 035 | Les KPI secondaires ne rivalisent pas tous au même niveau | **RÉUSSI** pour Aujourd'hui | La bande de 12 tuiles égales n'est plus le premier écran : elle passe **après** le point focal. Ailleurs : → lots de page. |
-| 036 | PageHeader expose périmètre et fraîcheur | **RÉUSSI** pour les pages 2.0 | `vx2.page_header` accepte `surtitre` et `fraicheur`. Calendrier expose sa fraîcheur en ContextBar. |
+| 036 | PageHeader expose périmètre et fraîcheur | **RÉUSSI** | Les **12 pages** annoncent désormais leur groupe de travail en surtitre — `PILOTER`, `EXPLORER`, `GÉRER`, `INTELLIGENCE`, `UTILITAIRE` — et leur nom canonique. Vérifié au navigateur sur les 12. Sans lui, une page n'annonçait pas où elle se situe dans une navigation devenue groupée. |
 | 037 | ContextBar expose période, univers, filtres et source | **RÉUSSI** pour Calendrier et Simulateur | Capture `calendrier-agenda-desktop.png` : Horizon · Type · Périmètre · Fraîcheur. |
 | 038 | DecisionZone contient le point focal réel | **RÉUSSI** pour Aujourd'hui | La DecisionTrace **est** la DecisionZone, et elle lit `scan_state`, pas un texte figé. |
 | 039 | EvidenceZone explique sans répéter | **À CORRIGER** | Non vérifié systématiquement. → lots de page. |
@@ -249,8 +249,8 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 
 | État | Nombre |
 |---|---|
-| **RÉUSSI** (avec preuve) | 104 |
-| **RÉUSSI partiellement** (limite déclarée) | 7 |
+| **RÉUSSI** (avec preuve) | 105 |
+| **RÉUSSI partiellement** (limite déclarée) | 6 |
 | **NON APPLICABLE** (justifié) | 9 |
 | **À CORRIGER** (lot nommé) | 29 |
 | **En attente de décision humaine** | 1 |

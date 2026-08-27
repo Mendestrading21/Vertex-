@@ -41,8 +41,8 @@ def _tabs(view: str) -> str:
 
 
 _CONTENT = """
-<div class="vx-page-header vx-page-lead"><div><h1>Portefeuille</h1>
-<div class="vx-sub">Où mon capital est-il exposé, et quelle position exige une décision ?</div></div>
+<div class="vx-page-header vx-page-lead"><div><p class="vx2-eyebrow">Gérer</p><h1>Portefeuille</h1>
+<div class="vx-sub">Que possède le portefeuille, pourquoi, et avec quels risques&nbsp;?</div></div>
 <div class="vx-actions vx-toolbar">
   <span id="pf-fresh" style="align-self:center"></span>
   <button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal('','position')">+ Position</button>

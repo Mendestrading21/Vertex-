@@ -30,8 +30,8 @@ def _tabs(view: str) -> str:
 
 
 _CONTENT = """
-<div class="vx-page-header vx-page-lead"><div><h1>Opportunités</h1>
-<div class="vx-sub">Quelles opportunités méritent réellement une analyse ?</div></div>
+<div class="vx-page-header vx-page-lead"><div><p class="vx2-eyebrow">Explorer</p><h1>Opportunités</h1>
+<div class="vx-sub">Quels dossiers méritent une analyse maintenant&nbsp;?</div></div>
 <div class="vx-actions vx-toolbar"><span id="op-fresh" style="align-self:center"></span><button class="vx-btn vx-btn-sm"
   onclick="VXEntities.openAddModal()">+ Ajouter</button></div></div>
 %%TABS%%

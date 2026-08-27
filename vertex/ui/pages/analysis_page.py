@@ -23,8 +23,9 @@ def render_index(view: str = '') -> str:
             ('4', 'Preuves — fondamentaux, catalyseurs et risques'),
         ])
     content = """
-<div class="vx-page-header"><div><h1>Analyse</h1>
-<div class="vx-sub">Une recherche, une décision lisible, les preuves ensuite.</div></div></div>
+<div class="vx-page-header"><div><p class="vx2-eyebrow">Explorer</p><h1>Analyse</h1>
+<div class="vx-sub">Ce dossier mérite-t-il du capital potentiel, et sous quelles
+conditions&nbsp;?</div></div></div>
 <style id="an-index-css">
 .an-dim{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed var(--vx-border-soft)}
 .an-dim:last-child{border-bottom:none}

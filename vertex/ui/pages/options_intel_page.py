@@ -50,9 +50,10 @@ _STYLE = ""  # styles Options migrés dans le CSS partagé canonique
 _HEADER = """
 <header class="vx-page-lead">
   <div class="vx-page-lead__main">
-    <div class="vx-page-lead__eyebrow">Intelligence de convexité</div>
+    <div class="vx-page-lead__eyebrow">Explorer</div>
     <h1>Options</h1>
-    <p class="vx-page-lead__summary">Mesurer l’asymétrie, le prix de la volatilité et le risque d’événement avant toute décision.</p>
+    <p class="vx-page-lead__summary">Quelle exposition optionnelle est
+      compréhensible, liquide et compatible avec le risque&nbsp;?</p>
     <div class="vx-page-lead__meta"><span class="vx-readonly-shield">Analyse uniquement · aucun ordre</span></div>
   </div>
 </header>

@@ -35,8 +35,8 @@ def _tabs(view: str) -> str:
 
 _HEADER = """
 <div class="vx-page-header vx-page-lead vx-markets-header">
-  <div class="vx-page-lead__main"><h1>Marchés</h1>
-  <div class="vx-sub">Le régime d’abord, une tendance principale, les détails ensuite.</div></div>
+  <div class="vx-page-lead__main"><p class="vx2-eyebrow">Explorer</p><h1>Marchés</h1>
+  <div class="vx-sub">Dans quel environnement la stratégie opère-t-elle&nbsp;?</div></div>
   <span id="vx-mk-fresh" class="vx-page-lead__meta vx-right"></span>
 </div>
 %%TABS%%

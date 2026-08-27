@@ -44,8 +44,9 @@ def _tabs(view: str) -> str:
 
 _HEADER = """
 <div class="vx-page-header vx-page-lead">
-  <div class="vx-page-lead__main"><h1>Journal</h1>
-  <div class="vx-sub">Suis-je en train de devenir un meilleur investisseur ?</div></div>
+  <div class="vx-page-lead__main"><p class="vx2-eyebrow">Gérer</p><h1>Performance</h1>
+  <div class="vx-sub">La méthode fonctionne-t-elle, et est-elle bien
+  appliquée&nbsp;?</div></div>
 </div>
 %%TABS%%
 """

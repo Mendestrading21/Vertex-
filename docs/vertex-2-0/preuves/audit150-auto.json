@@ -3,7 +3,7 @@
     "n": "001",
     "libelle": "Aucun moteur, formule, score, gate, stratégie ou verdict modifié",
     "etat": "RÉUSSI",
-    "preuve": "159 fichiers au diff ; 0 sous un chemin métier"
+    "preuve": "191 fichiers au diff ; 0 sous un chemin métier"
   },
   {
     "n": "002",
@@ -111,7 +111,7 @@
     "n": "145",
     "libelle": "Service worker bumpé si le contrat l'exige",
     "etat": "RÉUSSI",
-    "preuve": "version servie : td-shell-v225"
+    "preuve": "version servie : td-shell-v226"
   },
   {
     "n": "146",

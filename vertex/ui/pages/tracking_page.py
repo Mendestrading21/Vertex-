@@ -26,8 +26,8 @@ _STYLE = """
 
 _HEADER = """
 <div class="vx-page-header">
-  <div><h1>Suivis</h1>
-  <div class="vx-sub">Que valent mes idées suivies depuis que je les ai marquées ?</div></div>
+  <div><p class="vx2-eyebrow">Gérer</p><h1>Suivi</h1>
+  <div class="vx-sub">Quelles thèses, idées et décisions exigent une attention&nbsp;?</div></div>
   <div class="vx-actions"><span class="vx-hypo">Rendements 100 % hypothétiques</span>
     <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/portfolio">← Portefeuille</a></div>
 </div>

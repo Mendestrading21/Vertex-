@@ -64,7 +64,15 @@ def test_journal_routes_200(client):
         r = client.get('/journal?view=' + v)
         assert r.status_code == 200, v
     r = client.get('/journal')
-    assert r.status_code == 200 and '<h1>Journal</h1>' in r.get_data(as_text=True)
+    #  VERTEX 2.0 : l'espace s'appelle Performance — « la méthode fonctionne-t-elle,
+    #  et est-elle bien appliquée ? ». Le Journal en est une SOUS-VUE : il mesure la
+    #  même chose, à l'échelle de la décision individuelle.
+    #  L'URL /journal continue de servir la page à l'identique, et c'est le point :
+    #  elle est en favori, liée dans le produit et présente dans une trentaine de
+    #  bancs. Ce qui a changé est le titre affiché, pas la disponibilité.
+    html = r.get_data(as_text=True)
+    assert r.status_code == 200 and '<h1>Performance</h1>' in html
+    assert 'Journal' in html, 'le Journal reste nommé quelque part dans la page'
 
 
 # ── Système = Hero technique cockpit ─────────────────────────────────────

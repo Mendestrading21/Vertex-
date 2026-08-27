@@ -800,3 +800,20 @@ html,body{max-width:100%;overflow-x:clip}
   backdrop-filter:blur(var(--vx-blur-md));
   -webkit-backdrop-filter:blur(var(--vx-blur-md));
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   14) SURTITRE DE PAGE — le groupe de travail, annoncé
+   Deux classes existent : `.vx2-eyebrow` (2.0) et `.vx-page-lead__eyebrow`
+   (historique, encore servie par Options). Elles doivent se lire à
+   l'identique — un même rôle ne peut pas avoir deux apparences.
+   ───────────────────────────────────────────────────────────────────────── */
+#vx-content .vx-page-lead__eyebrow,
+#vx-content .vx2-eyebrow{
+  margin:0 0 2px;
+  font-size:11px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--vx-smoke);
+}
+#vx-content .vx-page-header h1,
+#vx-content .vx-page-lead h1{
+  letter-spacing:-.022em;font-weight:650;
+}

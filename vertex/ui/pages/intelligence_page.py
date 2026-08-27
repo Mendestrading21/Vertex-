@@ -33,8 +33,9 @@ def _tabs(active: str) -> str:
 
 def _header(active: str) -> str:
     return f'''<div class="vx-page-header">
-  <div><h1>Intelligence</h1>
-  <div class="vx-sub">Comment Vertex raisonne-t-il et comment la stratégie évolue-t-elle ?</div></div>
+  <div><p class="vx2-eyebrow">Intelligence</p><h1>Vertex IA</h1>
+  <div class="vx-sub">Comment Vertex comprend-il la situation, où sont les
+  contradictions, et que manque-t-il&nbsp;?</div></div>
 </div>
 {_tabs(active)}'''
 
