@@ -1642,10 +1642,20 @@ function loadFunnel(scan){
 /* ── ALERTES ── */
 async function loadAlerts(){
   try{
-    const [mine,cmd]=await Promise.all([
+    /*  `fired` etait LU et defini NULLE PART : `fired.fields` levait un
+        ReferenceError a chaque chargement, que la page ait des donnees ou non.
+        Le `catch` en dessous l'avalait et affichait « Alertes indisponibles » —
+        un etat d'apparence honnete qui masquait un bug. La carte Alertes de la
+        page d'accueil n'a donc JAMAIS fonctionne.
+
+        Le serveur sert pourtant exactement la forme attendue :
+        `/api/alerts/status` -> {fired:{…}}. Le fetch qui devait l'alimenter
+        n'avait simplement jamais ete ecrit. */
+    const [mine,cmd,fired]=await Promise.all([
       Promise.resolve((E()&&E().alerts())||[]),
-      VX.fetch('/api/command',{ttl:30000}).catch(()=>({}))]);
-    const firedMap=fired.fired||{};
+      VX.fetch('/api/command',{ttl:30000}).catch(()=>({})),
+      VX.fetch('/api/alerts/status',{ttl:30000}).catch(()=>({}))]);
+    const firedMap=(fired&&fired.fired)||{};
     const srv=((cmd&&cmd.alerts)||[]).map(a=>{
       const icon=a[0]||'⚠', danger=(icon==='🔴');
       return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
@@ -1662,7 +1672,11 @@ async function loadAlerts(){
       </div>`;}).join('');
     ($('vx-alerts')||{}).innerHTML=((srv+rows)||VX.states.empty('Aucune alerte active.'))
       +'<div class="vx-mt2"><button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXEntities.openAddModal(\'\',\'alert\')">+ Créer une alerte</button></div>';
-  }catch(e){($('vx-alerts')||{}).innerHTML=VX.states.error('Alertes indisponibles');}
+  }catch(e){
+    /*  Nommer la cause : un « indisponible » nu se lit comme une absence de
+        donnee alors que c'etait un defaut de code. Un an durant, personne
+        n'avait de quoi faire la difference. */
+    ($('vx-alerts')||{}).innerHTML=VX.states.error('Alertes indisponibles — '+(e&&e.message?e.message:'cause inconnue'));}
 }
 
 /* ── Portefeuille + calendrier ── */

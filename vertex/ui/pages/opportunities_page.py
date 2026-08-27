@@ -172,6 +172,57 @@ function bucketCls(b){var s=String(b||'').toLowerCase();
   return'';}
 /* playbook peut être une chaîne OU un objet moteur → toujours une chaîne sûre */
 function pbStr(pb){return (pb&&typeof pb==='object')?(pb.name||pb.label||pb.key||pb.type||''):(pb||'');}
+/* ── SIX AIDES APPELEES ET DEFINIES NULLE PART ─────────────────────────
+   `VERD_FR`, `verdictDir`, `verdictWord`, `pbText`, `pbIcon` et `heatCell`
+   etaient appelees par la carte d'opportunite, le filtre de setup, le donut
+   des verdicts, la revue de position et la table des anomalies — et
+   introuvables dans TOUT le depot. Chacun de ces chemins levait un
+   `ReferenceError` qui remplacait le corps entier de la page.
+
+   Invisible en demo : le scan y rend zero ligne, donc aucun ne s'execute.
+   Trouve en injectant un scan fictif dans le navigateur.
+
+   Elles vivent ICI, au niveau du module — un premier placement les avait
+   enfermees dans la portee du Radar, et les vues Anomalies et Positions
+   levaient encore. Le balayage peuple l'a montre.
+
+   Aucune ne calcule ni n'invente : elles LISENT ce que le serveur attache
+   deja. Un champ absent reste absent. */
+const VERD_FR=(function(){
+  /* Le libelle vient du vocabulaire CANONIQUE (`recommendation.vocab_js()`).
+     Une table ecrite a la main divergerait du moteur au premier verdict
+     ajoute, en silence. */
+  const v=window.__VXVOCAB||{},out={};
+  Object.keys(v).forEach(function(k){const e=v[k];out[k]=(e&&(e.label||e[0]))||k;});
+  return out;
+})();
+/* Direction de la jauge : le TON est canonique, on ne redecide pas ici si un
+   verdict est haussier. */
+function verdictDir(dec){
+  const e=(window.__VXVOCAB||{})[dec];const t=String((e&&e.tone)||'');
+  if(t.indexOf('green')>=0)return 'up';
+  if(t.indexOf('red')>=0)return 'down';
+  return '';
+}
+function verdictWord(dec){return VERD_FR[dec]||dec||'';}
+/* Playbook : `strategy_fit._playbook_of` l'attache cote serveur. `pbStr`
+   existait deja pour en extraire le nom — on le REUTILISE plutot que d'en
+   ecrire un second qui divergerait. */
+function pbText(r){return pbStr(r&&r.playbook);}
+function pbIcon(r){const p=r&&r.playbook;return (p&&p.ic)||'';}
+/* Cellule chauffee par seuils. Les seuils viennent de l'APPELANT, deja ecrits
+   dans chaque table. Une valeur absente ne recoit AUCUNE couleur : un tiret
+   gris, jamais un vert par defaut. */
+function heatCell(v,opt){
+  opt=opt||{};const n=Number(v);
+  if(v==null||!isFinite(n))
+    return '<td data-label="'+esc(opt.label||'')+'" class="vx-num">'
+      +'<span class="vx2-absent">—</span></td>';
+  const ton=n>=(opt.good!=null?opt.good:70)?'vx-pos'
+    :n>=(opt.mid!=null?opt.mid:40)?'vx-warn':'vx-neg';
+  return '<td data-label="'+esc(opt.label||'')+'" class="vx-num">'
+    +'<span class="vx-mono '+ton+'">'+VX.fmt.num(n,0)+'</span></td>';
+}
 function metaMode(scan){return scan&&scan.data_source==='demo'?'fallback':'delayed';}
 
 /* ContextBar — univers, dernier scan, source et mode. Rendue MEME quand le
@@ -607,53 +658,6 @@ async function renderScreener(classe){
         confirm:'Un secteur qui reste en tête quand tu durcis les filtres.',invalidate:'Un leadership qui dépend d’un seul titre.'}});
   }
 
-/* ── CINQ AIDES APPELEES ET DEFINIES NULLE PART ────────────────────────
-   `verdictDir`, `verdictWord`, `pbText`, `pbIcon` et `heatCell` sont
-   appelees par la carte d'opportunite, le filtre de setup, la revue de
-   position et la table des anomalies — et introuvables dans TOUT le depot.
-   Chacun de ces chemins levait un `ReferenceError`.
-
-   Invisible en demo : le scan y rend zero ligne, donc aucun ne s'execute.
-   Avec un scan qui produit des lignes, la vue Radar tombait des la premiere
-   carte. Trouve en injectant un scan fictif dans le navigateur.
-
-   Aucune ne calcule ni n'invente : elles LISENT ce que le serveur attache
-   deja — `r.playbook` vient de `strategy_fit`, le libelle et le ton du
-   verdict viennent du vocabulaire canonique. Un champ absent reste absent. */
-
-/* Direction de la jauge de confiance. Le TON est canonique (`__VXVOCAB`) :
-   on ne redecide pas ici si un verdict est haussier. */
-function verdictDir(dec){
-  const e=(window.__VXVOCAB||{})[dec];
-  const t=String((e&&e.tone)||'');
-  if(t.indexOf('green')>=0)return 'up';
-  if(t.indexOf('red')>=0)return 'down';
-  return '';
-}
-/* Libelle humain du verdict. Un code sans entree reste affiche tel quel :
-   mieux vaut un code brut qu'une traduction inventee. */
-function verdictWord(dec){return VERD_FR[dec]||dec||'';}
-
-/* Playbook : `strategy_fit._playbook_of` l'attache cote serveur sous la forme
-   {ic, name, col, desc}. On le lit, on ne le rejoue pas. */
-function pbText(r){const p=r&&r.playbook;return (p&&(p.name||p.lbl))||'';}
-function pbIcon(r){const p=r&&r.playbook;return (p&&p.ic)||'';}
-
-/* Cellule chauffee par seuils. Les seuils viennent de l'APPELANT — ils sont
-   deja ecrits dans le code de chaque table — et une valeur absente ne recoit
-   aucune couleur : un `—` gris, jamais un vert par defaut. */
-function heatCell(v,opt){
-  opt=opt||{};
-  const n=Number(v);
-  if(v==null||!isFinite(n))
-    return '<td data-label="'+esc(opt.label||'')+'" class="vx-num">'
-      +'<span class="vx2-absent">—</span></td>';
-  const ton=n>=(opt.good!=null?opt.good:70)?'vx-pos'
-    :n>=(opt.mid!=null?opt.mid:40)?'vx-warn':'vx-neg';
-  return '<td data-label="'+esc(opt.label||'')+'" class="vx-num">'
-    +'<span class="vx-mono '+ton+'">'+VX.fmt.num(n,0)+'</span></td>';
-}
-
   /* ── Carte d'opportunité RICHE (helper réutilisé : top + grille complète) ── */
   function oppCard(r){
     const dec=r.verdict||'';
@@ -793,24 +797,6 @@ function heatCell(v,opt){
           persist();syncBar();applyAll();});
       });});
   }
-  /* ── VERD_FR ───────────────────────────────────────────────────────────
-   Reference QUATRE fois dans cette page — donut des verdicts, carte de
-   dossier, revue de position, calendrier des catalyseurs — et definie NULLE
-   PART. Chacun de ces quatre chemins levait `VERD_FR is not defined`.
-
-   Invisible en demo : le scan y rend zero ligne, donc aucun des quatre ne
-   s'execute. Avec un scan qui produit des lignes, la vue Radar tombait des le
-   comptage des verdicts. Trouve en injectant un scan fictif dans le navigateur.
-
-   Le libelle ne s'invente pas : il vient du vocabulaire CANONIQUE
-   (`window.__VXVOCAB`, servi par `recommendation.vocab_js()`). Un code sans
-   entree reste affiche tel quel plutot que traduit au jugé. */
-const VERD_FR=(function(){
-  const v=window.__VXVOCAB||{},out={};
-  Object.keys(v).forEach(function(k){
-    const e=v[k];out[k]=(e&&(e.label||e[0]))||k;});
-  return out;
-})();
 /* ── Donut verdicts des résultats ── */
   function paintVerdicts(f){
     const host=$('op-verdicts');if(!host)return;

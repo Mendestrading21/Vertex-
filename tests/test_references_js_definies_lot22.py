@@ -25,14 +25,32 @@ import re
 
 RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-#: (fichier, nom, motif de définition acceptable)
+#: (fichier, nom, motif d'USAGE, motif de DÉFINITION)
+#:
+#: L'usage est explicite, jamais deviné. Une première version supposait qu'une
+#: aide s'appelle toujours `nom(` ou `nom[` — la contre-épreuve a montré qu'elle
+#: LAISSAIT PASSER `fired.fired`, c'est-à-dire précisément le défaut qu'elle
+#: était censée garder. Un gardien qui ne détecte pas est pire qu'aucun gardien :
+#: il rassure.
 AIDES = [
-    ('vertex/ui/pages/opportunities_page.py', 'VERD_FR', r'\bconst\s+VERD_FR\s*='),
-    ('vertex/ui/pages/opportunities_page.py', 'verdictDir', r'\bfunction\s+verdictDir\s*\('),
-    ('vertex/ui/pages/opportunities_page.py', 'verdictWord', r'\bfunction\s+verdictWord\s*\('),
-    ('vertex/ui/pages/opportunities_page.py', 'pbText', r'\bfunction\s+pbText\s*\('),
-    ('vertex/ui/pages/opportunities_page.py', 'pbIcon', r'\bfunction\s+pbIcon\s*\('),
-    ('vertex/ui/pages/opportunities_page.py', 'heatCell', r'\bfunction\s+heatCell\s*\('),
+    ('vertex/ui/pages/opportunities_page.py', 'VERD_FR',
+     r'(?<![\w$.])VERD_FR\s*\[', r'\bconst\s+VERD_FR\s*='),
+    ('vertex/ui/pages/opportunities_page.py', 'verdictDir',
+     r'(?<![\w$.])verdictDir\s*\(', r'\bfunction\s+verdictDir\s*\('),
+    ('vertex/ui/pages/opportunities_page.py', 'verdictWord',
+     r'(?<![\w$.])verdictWord\s*\(', r'\bfunction\s+verdictWord\s*\('),
+    ('vertex/ui/pages/opportunities_page.py', 'pbText',
+     r'(?<![\w$.])pbText\s*\(', r'\bfunction\s+pbText\s*\('),
+    ('vertex/ui/pages/opportunities_page.py', 'pbIcon',
+     r'(?<![\w$.])pbIcon\s*\(', r'\bfunction\s+pbIcon\s*\('),
+    ('vertex/ui/pages/opportunities_page.py', 'heatCell',
+     r'(?<![\w$.])heatCell\s*\(', r'\bfunction\s+heatCell\s*\('),
+    #  Aujourd'hui : `fired` était LU (`fired.fired`) et défini nulle part. Le
+    #  `catch` de la carte Alertes l'avalait en « Alertes indisponibles » — un
+    #  état d'apparence honnête qui masquait un défaut de code. La carte n'a
+    #  jamais fonctionné, ni avec données ni sans.
+    ('vertex/ui/pages/briefing.py', 'fired',
+     r'(?<![\w$.])fired\s*\.', r'const\s*\[[^\]]*\bfired\b[^\]]*\]\s*='),
 ]
 
 
@@ -42,10 +60,10 @@ def _lire(rel):
 
 def test_chaque_aide_appelee_est_definie():
     manquantes = []
-    for rel, nom, motif in AIDES:
+    for rel, nom, usage, definition in AIDES:
         src = _lire(rel)
-        appelee = re.search(r'(?<![\w$.])' + re.escape(nom) + r'\s*[\[(]', src)
-        definie = re.search(motif, src)
+        appelee = re.search(usage, src)
+        definie = re.search(definition, src)
         if appelee and not definie:
             manquantes.append('%s : %s appelée, jamais définie' % (rel.split('/')[-1], nom))
     assert not manquantes, (
