@@ -1,0 +1,145 @@
+[
+  {
+    "route": "/",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-00-avant/accueil-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-00-avant/accueil-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/markets",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-00-avant/markets-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-00-avant/markets-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/opportunities",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-00-avant/opportunities-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-00-avant/opportunities-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/analysis",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-00-avant/analysis-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-00-avant/analysis-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/options",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-00-avant/options-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-00-avant/options-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/portfolio",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-00-avant/portfolio-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-00-avant/portfolio-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/journal",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-00-avant/journal-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-00-avant/journal-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/tracking",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-00-avant/tracking-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-00-avant/tracking-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/intelligence",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-00-avant/intelligence-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-00-avant/intelligence-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/system",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-00-avant/system-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-00-avant/system-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/design-system",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-00-avant/design-system-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-00-avant/design-system-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  }
+]
