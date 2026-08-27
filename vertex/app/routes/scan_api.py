@@ -98,9 +98,15 @@ def _empreinte_du_scan() -> str:
     seconde ecoulee : la fenetre de validite est donc la seconde en cours, ce
     qui est exactement ce qu'un client peut revalider.
     """
-    return '%s|%s|%s' % (scan_state.get('updated'),
-                         scan_state.get('scan_ts_h'),
-                         scan_age())
+    #  Le delai anti-rafale DOIT entrer dans la cle. Sans lui, une demande de
+    #  rescan dans la meme seconde qu'un appel deja servi laissait le cache
+    #  annoncer « 0 s » alors que la porte en appliquait 30 : la surface
+    #  proposait un bouton que le serveur refusait. Une valeur perimee qui
+    #  contredit le comportement reel est pire qu'une absence.
+    return '%s|%s|%s|%s' % (scan_state.get('updated'),
+                            scan_state.get('scan_ts_h'),
+                            scan_age(),
+                            rescan_gate.restant())
 
 
 @bp.route('/scan')
