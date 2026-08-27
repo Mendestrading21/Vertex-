@@ -10,6 +10,12 @@ priorité des risques et les troncatures — les changer devient une
 décision explicite.
 """
 
+#  VOCABULAIRE MIS A JOUR (fusion Black Glass). Les SEUILS — le vrai
+#  contrat de ce fichier — n'ont pas bouge d'un centieme ; seule la
+#  formulation a change, et dans le bon sens : « terminé en hausse »
+#  affirmait une seance CLOSE a une heure ou elle peut etre ouverte.
+#  « s'affichent en hausse » ne promet rien de tel. Les autres suivent
+#  la meme logique : dire ce qui est observe, pas ce qu'on en conclut.
 import pytest
 
 from vertex.market import editorial as ed
@@ -32,7 +38,8 @@ def _idx(sp=None, ndx=None):
 ])
 def test_direction_indices_seuils_exacts(chg, mot):
     n = ed.build_narrative({'indices': _idx(sp=chg)})['narrative']
-    assert ('terminé %s' % mot) in n
+    #  « terminé » -> « s'affichent » : voir la note en tete de fichier.
+    assert ("s'affichent %s" % mot) in n
 
 
 # ── Leadership : écart STRICT > 0.2 entre Nasdaq et S&P ──────────────────────
@@ -40,13 +47,13 @@ def test_direction_indices_seuils_exacts(chg, mot):
 def test_leadership_techno_exige_plus_de_0_2_strict():
     tech = ed.build_narrative({'indices': _idx(sp=1.0, ndx=1.3)})['narrative']
     pile = ed.build_narrative({'indices': _idx(sp=1.0, ndx=1.2)})['narrative']
-    assert 'leadership technologique' in tech
-    assert 'leadership technologique' not in pile     # +0.2 pile ne suffit pas
+    assert 'concentre le leadership' in tech
+    assert 'concentre le leadership' not in pile     # +0.2 pile ne suffit pas
 
 
 def test_rotation_cyclique_quand_sp_domine():
     n = ed.build_narrative({'indices': _idx(sp=1.3, ndx=1.0)})['narrative']
-    assert 'cycliques hors technologie' in n
+    assert 'profite aux valeurs cycliques' in n
 
 
 # ── VIX : les trois phrases, bornes 18 / 25 ──────────────────────────────────
@@ -63,7 +70,7 @@ def test_phrases_vix_bornes_18_25(vix, mot):
 def test_breadth_frontiere_55():
     saine = ed.build_narrative({'market': {'breadth': 55}})['narrative']
     etroite = ed.build_narrative({'market': {'breadth': 54.9}})['narrative']
-    assert 'participation saine' in saine
+    assert 'participation est large' in saine
     assert 'sélectivité' in etroite
 
 
@@ -105,7 +112,8 @@ def test_sources_triees_et_dedupliquees():
         news_state={'items': [{'title': 'T'}]})
     assert r['sources'] == ['actualités (fil assaini)', 'indices (scan)',
                             'secteurs (scan)']
-    assert '2 dossier(s)' in r['narrative'] and '3 en attente' in r['narrative']
+    assert '2 dossiers achetables' in r['narrative']
+    assert '3 en surveillance' in r['narrative']
 
 
 # ── Opportunité prioritaire : premier verdict ACHETER/RENFORCER ──────────────
