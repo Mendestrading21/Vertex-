@@ -1,19 +1,20 @@
 # CLAUDE.md — Vertex 1.0
 
-## Instructions canoniques
+## Instruction racine unique
 
-Autorité produit, données, moteurs, sécurité et release :
-
-```text
-/vertex-1-0
-```
-
-Autorité unique pour toute interface, page, navigation, widget, tableau,
-graphique, typographie, responsive ou refonte visuelle :
+Pour toute demande globale, audit, développement, nouvelle fonctionnalité,
+restructuration ou refonte de Vertex, utiliser :
 
 ```text
-/vertex-design-2-0
+/vertex-2-0
 ```
+
+Skill racine : `.claude/skills/vertex-2-0/SKILL.md`.
+
+Il charge automatiquement les deux autorités spécialisées nécessaires :
+
+- `vertex-1-0` : données, moteurs, stratégie, sécurité et release ;
+- `vertex-design-2-0` : pages, navigation, tableaux, graphiques, UX et identité.
 
 Les skills `vertex-skyler-v2`, `vertex-total-rebuild`, V4, Signal OS,
 Neon Glass, Copper et les anciens `vertex-redesign-*` sont historiques.

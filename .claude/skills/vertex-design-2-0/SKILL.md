@@ -9,7 +9,7 @@ description: Concevoir, restructurer, développer et vérifier toute l'interface
 
 Faire converger toutes les surfaces de Vertex vers un terminal d'analyse personnel de niveau institutionnel : calme, dense, précis, immédiatement lisible et reconnaissable. La qualité visée est celle d'un produit financier premium construit sur mesure, jamais celle d'un template SaaS recoloré.
 
-Ce skill est l'unique autorité pour l'interface, l'expérience, la typographie, les composants, les widgets, les graphiques, la navigation, le responsive et la recomposition des pages de Vertex. Il peut créer une nouvelle page, sous-vue, table ou visualisation lorsqu'elle répond à une question non couverte et qu'une donnée réelle existe. Il complète `vertex-1-0`, qui reste l'autorité pour le produit, les données, les moteurs, la sécurité et la lecture seule.
+Ce skill est l'autorité spécialisée, orchestrée par `vertex-2-0`, pour l'interface, l'expérience, la typographie, les composants, les widgets, les graphiques, la navigation, le responsive et la recomposition des pages de Vertex. Il peut créer une nouvelle page, sous-vue, table ou visualisation lorsqu'elle répond à une question non couverte et qu'une donnée réelle existe. Il complète `vertex-1-0`, qui reste l'autorité pour le produit, les données, les moteurs, la sécurité et la lecture seule.
 
 Il synthétise les méthodes utiles de **Interface Design** (mémoire et cohérence du système), **UI UX Pro Max** (design system, densité, typographie et choix de graphiques), **Vercel Web Design Guidelines** (audit UX/a11y) et **Anthropic Frontend Design** (caractère distinctif). Il ne dépend pas de leur installation : les décisions retenues pour Vertex sont codifiées ici afin d'éviter quatre autorités concurrentes.
 
