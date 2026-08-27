@@ -390,7 +390,8 @@ async function loadBrain(){
     +'<div class="vx-card-footer">'+VX.updateIndicator((snap&&snap.as_of)?Date.parse(snap.as_of):Date.now(),'/api/ai/enrichment',status==='OK'?'delayed':'fallback')
     +' · rendements/prix 100% diff&eacute;r&eacute;s &mdash; jamais un ordre</div>';
   if(window.VXCharts&&VXCharts.barCard&&movers.length){
-    VXCharts.barCard('vx-brain-movers',{title:'Plus forts mouvements du jour',
+    VXCharts.barCard('vx-brain-movers',{title:'Plus forts mouvements du jour',unit:'%',
+      question:'Quels titres bougent le plus aujourd&rsquo;hui&nbsp;?',source:'SCAN',
       labels:movers,values:movers.map(s=>quotes[s].change_pct),
       colors:movers.map(s=>quotes[s].change_pct>=0?VXCharts.colors.positive:VXCharts.colors.negative),
       horizontal:true,yFmt:(v)=>v+'%',source:'via Claude · web',
@@ -783,7 +784,7 @@ async function loadData(){
         STALE:colors.warning,EXPIRED:colors.negative,MISSING:colors.muted,
         DEMO:colors.violet};
       VXCharts.donutCard('vx-data-quality-chart',{
-        title:'Qualit&eacute; des donn&eacute;es ('+dq.total+' titres)',
+        title:'Qualit&eacute; des donn&eacute;es ('+dq.total+' titres)',unit:'titres',
         question:'Les donn&eacute;es sont-elles utilisables pour d&eacute;cider ?',
         conclusion:'Dominante : '+dominant+' ('+byQ[dominant]+' / '+dq.total+') · source '+(dq.scan_source||'n/d'),
         labels,values,colors:labels.map(k=>colByQ[k]||colors.muted),height:200,

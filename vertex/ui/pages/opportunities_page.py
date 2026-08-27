@@ -512,7 +512,7 @@ async function renderScreener(){
       const mc=v.mc||{},bs=v.bootstrap||{},mcEl=document.getElementById('op-sel-mc');
       if(mcEl&&bs.p05!=null&&bs.p95!=null&&VXCharts.card){
         const tp1=mc.p_tp1_first,stopf=mc.p_stop_before_tp1;
-        VXCharts.card('op-sel-mc',{title:'Dispersion Monte-Carlo',
+        VXCharts.card('op-sel-mc',{title:'Dispersion Monte-Carlo',unit:'%',
           question:'Fourchette réaliste du rendement sur l’horizon ?',
           conclusion:(tp1!=null?'TP1 avant stop '+Math.round(tp1*100)+'% · stop '+Math.round((stopf||0)*100)+'%':''),
           height:150,source:'Monte-Carlo · bootstrap',timestamp:Date.now(),mode:'delayed',limits:'MODEL_ESTIMATE',
@@ -550,7 +550,7 @@ async function renderScreener(){
       .sort((a,b)=>b[1]-a[1]).slice(0,9);
     if(!entries.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun secteur dans les résultats filtrés.')+'</div>';return;}
     VXCharts.sectorCard('op-sectors',{
-      title:'Secteurs des résultats',question:'Où se concentrent les titres retenus par TES filtres ?',
+      title:'Secteurs des résultats',unit:'titres',question:'Où se concentrent les titres retenus par TES filtres ?',
       conclusion:entries[0][0]+' en tête ('+entries[0][1]+' de score moyen · '+entries[0][2]+' titres)',
       labels:entries.map(e=>e[0]+' ('+e[2]+')'),values:entries.map(e=>e[1]),height:240,
       source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
@@ -682,7 +682,7 @@ async function renderScreener(){
       return {value:v||null,label:v?String(v):'—',title:sec+' · '+b+' : '+v+' titre(s)'};})}))
       .sort((a,b)=>{const t=(x)=>OUT.reduce((acc,bb,i)=>acc+(cnt[x.raw+'|'+bb]||0)*(OUT.length-i),0);return t(b)-t(a);});
     VXCharts.heatmapCard('op-heat',{
-      title:'Carte secteur × statut',question:'Dans quels secteurs vivent les dossiers les plus avancés ?',
+      title:'Carte secteur × statut',unit:'titres',question:'Dans quels secteurs vivent les dossiers les plus avancés ?',
       conclusion:'Colonne Actionnable = prêt · cliquer une cellule applique les deux filtres.',
       columns:OUT,rows:rows2,min:0,max:Math.max(4,...Object.values(cnt)),
       fmt:(v)=>v==null?'—':String(v),
@@ -706,7 +706,7 @@ async function renderScreener(){
     const ks=Object.keys(cnt);
     if(!ks.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun verdict.')+'</div>';return;}
     const tone={'ACHAT':'#36c889','SURVEILLER':'#c0b79f','ATTENDRE':'#dda23b','ÉVITER':'#ed655c'};
-    VXCharts.donutCard('op-verdicts',{title:'Verdicts des résultats',
+    VXCharts.donutCard('op-verdicts',{title:'Verdicts des résultats',unit:'titres',
       question:'Que pense le moteur de TA sélection ?',
       labels:ks,values:ks.map(k=>cnt[k]),colors:ks.map(k=>tone[k]||'#8f8a83'),height:200,
       source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan)});
@@ -1049,7 +1049,7 @@ async function renderOptions(){
     $('op-contract').hidden=false;
     $('op-contract').open=true;
     $('op-contract').scrollIntoView({behavior:'smooth',block:'nearest'});
-    VXCharts.payoffCard('op-payoff',{title:`${c.sym} ${c.strike} ${c.type} ${c.exp}`,
+    VXCharts.payoffCard('op-payoff',{title:`${c.sym} ${c.strike} ${c.type} ${c.exp}`,unit:'$ par contrat',
       question:'Que rapporte/coûte ce contrat à l’échéance ?',
       conclusion:`Breakeven ${VX.fmt.nd(c.be)} · prime ${VX.fmt.nd(c.cost)}`,
       spot:spot,strike:c.strike,premium:c.cost,right:c.type==='PUT'?'P':'C',breakeven:c.be,height:210,
@@ -1068,11 +1068,11 @@ async function renderOptions(){
         question:'Que vaut le contrat selon le spot et le temps ?',
         conclusion:`R:R simulé ${VX.fmt.nd(s.sim.reward_risk)} · perte planifiée ${VX.fmt.nd(s.sim.worst_planned_loss_pct)} %`,
         source:'scenario_pricer',timestamp:Date.now(),mode:'delayed'});
-      VXCharts.thetaCard('op-theta',s.sim,{title:'Décomposition temps',
+      VXCharts.thetaCard('op-theta',s.sim,{title:'Décomposition temps',unit:'$ par jour',
         question:'Combien coûte chaque jour d’attente ?',
         conclusion:'Réévaluer après 5-8 séances sans mouvement',
         height:190,source:'scenario_pricer',timestamp:Date.now(),mode:'delayed'});
-      VXCharts.ivSensitivityCard('op-iv',s.sim,{title:'Sensibilité IV',
+      VXCharts.ivSensitivityCard('op-iv',s.sim,{title:'Sensibilité IV',unit:'$',
         question:'Que se passe-t-il si la volatilité implicite bouge ?',
         conclusion:'IV -20 % à +20 % au scénario BASE',height:190,
         source:'scenario_pricer',timestamp:Date.now(),mode:'delayed'});
@@ -1193,7 +1193,7 @@ async function renderPortfolio(){
     const cnt={};held.forEach(h=>{const sec2=(h.r&&h.r.sector)||'Hors scan';cnt[sec2]=(cnt[sec2]||0)+1;});
     const ks=Object.keys(cnt);
     if(ks.length&&window.VXCharts&&VXCharts.donutCard){
-      VXCharts.donutCard('op-pf-sect-card',{title:'Secteurs du portefeuille',
+      VXCharts.donutCard('op-pf-sect-card',{title:'Secteurs du portefeuille',unit:'% du portefeuille',
         question:'Suis-je concentré sur un seul thème ?',
         labels:ks,values:ks.map(k=>cnt[k]),height:200,
         source:'positions déclarées × scan',timestamp:Date.now(),mode:'delayed'});
@@ -1319,7 +1319,7 @@ async function renderCalendar(){
         .filter(i=>!mine||(i.sym&&positions.includes(i.sym))||(i.cat==='macro'&&positions.length))
         .sort((a,b)=>String(a.when).localeCompare(String(b.when)));
       (document.getElementById('op-cal-count')||{}).textContent=items.length+' événement(s)';
-      VXCharts.timelineCard('op-cal',{title:'Calendrier des catalyseurs',
+      VXCharts.timelineCard('op-cal',{title:'Calendrier des catalyseurs',unit:'événements',
         question:'Quels événements peuvent faire bouger les dossiers ?',
         items:items.slice(0,40),source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
         emptyText:'Aucun événement sur ce filtre.'});

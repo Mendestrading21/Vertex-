@@ -310,7 +310,7 @@ function corrHeatmap(hostId,corr){
   const rows=syms.map(a=>({label:a,cells:syms.map(b=>{const v=raw(a,b);
     return {value:(a===b||v==null)?null:-v,   // négation : haute corrélation → corail
             label:(v==null?'—':(+v).toFixed(2)),title:a+' / '+b+' : '+(v==null?'n/d':(+v).toFixed(2))};})}));
-  VXCharts.heatmapCard(hostId,{title:'Corrélations du portefeuille',
+  VXCharts.heatmapCard(hostId,{title:'Corrélations du portefeuille',unit:'coefficient',
     question:'La diversification est-elle réelle ou illusoire ?',
     conclusion:(corr.average!=null?('corrélation moyenne '+(+corr.average).toFixed(2)):'')+(corr.warning?' — '+corr.warning:''),
     columns:syms,rows:rows,min:-1,max:1,source:('risk_engine · rendements '+(window.__pfLive?'réels':'de repli')),timestamp:window.__pfTs||null,mode:(window.__pfLive?'live':'fallback'),
@@ -516,7 +516,12 @@ async function renderTeam(){
   const totalTree=rich.reduce((a,t)=>a+Math.max(0,t.value??t.invested??0),0);
   if(window.VXCharts&&VXCharts.treemap){
     const cc=VXCharts.colors;const el=$('pf-alloc-tree');const w=(el&&el.clientWidth)||900;
-    VXCharts.treemap(el,{width:w,height:260,
+    VXCharts.treemap(el,{width:w,height:260,unit:'$ investi',
+      /* La carte hôte pose déjà la question (« Où est concentré le capital,
+         et qui gagne/perd ? ») : la redire ici la doublerait. */
+      source:window.__pfLive?'IBKR/desk':'desk (repli)',timestamp:window.__pfTs||null,
+      mode:window.__pfLive?'live':'fallback',
+      limits:'aire = capital engagé · couleur = P&L quand il est connu',
       items:rich.map(t=>({label:t.sym,value:Math.max(1,t.value??t.invested??0),
         sub:(t.pl!=null?((t.pl>=0?'+':'')+VX.fmt.num(t.pl,1)+'%')
              :(plConnu?(t.type!=='STK'?t.type:'')
@@ -679,14 +684,14 @@ async function renderPerformance(){
   if(eq.length>=2&&window.VXCharts&&VXCharts.equityCard){
     const labels=eq.map(p=>p.d),values=eq.map(p=>Number(p.v));
     const up=values[values.length-1]>=values[0];
-    VXCharts.equityCard('pf-perf-equity',{title:'Courbe d’équité (cumulée)',timeframe:eq.length+' points',
+    VXCharts.equityCard('pf-perf-equity',{title:'Courbe d’équité (cumulée)',unit:'$',timeframe:eq.length+' points',
       question:'Le capital progresse-t-il régulièrement ?',
       conclusion:up?'Équité en progression sur la période.':'Équité en retrait sur la période.',
       labels,values,height:240,source:'clôtures déclarées (myTradesEquity)',timestamp:window.__pfTs||null,mode:'delayed',
       explain:{shows:'La série d’équité issue de tes clôtures de positions.',
         why:'Une méthode saine produit une pente régulière, pas des à-coups.',
         confirm:'Nouveaux plus hauts avec drawdowns contenus.',invalidate:'Série de plus bas d’équité.'}});
-    VXCharts.drawdownCard('pf-perf-drawdown',{title:'Drawdown depuis les pics',
+    VXCharts.drawdownCard('pf-perf-drawdown',{title:'Drawdown depuis les pics',unit:'%',
       question:'Les pertes de portefeuille restent-elles contrôlées ?',
       conclusion:'Dérivé arithmétiquement de la courbe d’équité.',
       labels,values,height:240,source:'clôtures déclarées (myTradesEquity)',timestamp:window.__pfTs||null,mode:'delayed',
@@ -708,7 +713,7 @@ async function renderPerformance(){
     const years=[...new Set(months.map(m2=>m2.slice(0,4)))];
     const MN=['01','02','03','04','05','06','07','08','09','10','11','12'];
     const ML=['J','F','M','A','M','J','J','A','S','O','N','D'];
-    VXCharts.heatmapCard('pf-perf-monthly',{title:'P&L moyen par mois (clôtures)',
+    VXCharts.heatmapCard('pf-perf-monthly',{title:'P&L moyen par mois (clôtures)',unit:'%',
       question:'Y a-t-il des périodes de sur- ou sous-performance ?',
       conclusion:months.length+' mois avec clôtures · moyenne simple des % par trade.',columns:ML,
       rows:years.map(y=>({label:y,cells:MN.map(mm=>{const arr=byMonth[y+'-'+mm];
@@ -722,7 +727,7 @@ async function renderPerformance(){
   const rich=enrich(pos,await quotesFor(pos));
   const withAbs=rich.filter(t=>t.plAbs!=null).sort((a,b)=>b.plAbs-a.plAbs);
   if(withAbs.length&&window.VXCharts&&VXCharts.card&&VXCharts.bars){
-    VXCharts.card('pf-perf-contrib',{title:'Contribution au P&L (positions ouvertes)',
+    VXCharts.card('pf-perf-contrib',{title:'Contribution au P&L (positions ouvertes)',unit:'$',
       question:'Qui porte le résultat latent ?',
       conclusion:withAbs[0].sym+' domine ('+((withAbs[0].plAbs>=0?'+':'')+VX.fmt.price(withAbs[0].plAbs))+').',
       height:Math.max(160,Math.min(300,withAbs.length*30)),source:window.__pfLive?'IBKR/desk':'desk (repli)',
@@ -811,7 +816,11 @@ async function renderOptions(){
       · Greeks agrégés affichés uniquement avec IBKR (jamais estimés en agrégat)</div></section>`;
   if(window.VXCharts&&VXCharts.treemap){
     const cc=VXCharts.colors;const el=document.getElementById('pf-opt-tree');const w=(el&&el.clientWidth)||900;
-    VXCharts.treemap(el,{width:w,height:220,
+    VXCharts.treemap(el,{width:w,height:220,unit:'$ investi',
+      /* Question déjà posée par la carte hôte : « Où est concentré le capital
+         options ? » */
+      source:window.__pfLive?'IBKR/desk':'desk (repli)',timestamp:window.__pfTs||null,
+      mode:window.__pfLive?'live':'fallback',limits:'aire = prime engagée par contrat',
       items:rich.map(t=>({label:t.sym+' '+(t.strike||''),value:Math.max(1,t.invested||0),
         sub:(t.type==='PUT'?'PUT':'CALL')+(t.exp?' '+t.exp:''),
         color:(t.type==='PUT'?(cc.violet||'#9c79d0'):(cc.neutral||'#8f8a83'))})),
@@ -834,7 +843,7 @@ function renderOptMix(rich){
     +'<div id="pf-opt-dte"></div>'
     +'<div class="vx-card-foot"><span class="vx-meta">Jours avant échéance (DTE) par position déclarée · une barre courte = expiration proche.</span></div></section>';
   if(window.VXCharts&&VXCharts.donutCard&&(calls||puts)){
-    VXCharts.donutCard('pf-opt-ring',{title:'CALL vs PUT',
+    VXCharts.donutCard('pf-opt-ring',{title:'CALL vs PUT',unit:'contrats',
       question:'Le portefeuille options est-il directionnel ?',
       conclusion:calls+' call(s) · '+puts+' put(s)',
       labels:['CALL','PUT'],values:[calls,puts],colors:['var(--vx-neutral)','var(--vx-option)'],height:200,
@@ -1469,7 +1478,10 @@ async function renderAllocation(){
   if(window.VXCharts&&VXCharts.treemap){
     const items=Object.keys(d.weights||{}).map(sym=>({label:sym,value:+d.weights[sym],
       color:allocColor(typeOf[sym]||'STOCK'),sub:''}));
-    VXCharts.treemap('pf-alloc-treemap',{items:items,
+    VXCharts.treemap('pf-alloc-treemap',{items:items,unit:'% du portefeuille',
+      /* Question déjà posée par la surface hôte, juste au-dessus. */
+      source:'portfolio_context',timestamp:d.as_of||null,mode:'delayed',
+      limits:'aire = poids au portefeuille · argent = action · violet = option',
       width:640,height:280,fmt:(v)=>VX.fmt.num(v,1)+' %',
       emptyHtml:'<div class="vx2-state" data-kind="empty"><p class="vx2-state-title">Aucun poids calculable</p></div>'});
     /* Une tuile sous ~0,3 % du cadre ne recoit aucun libelle lisible : elle

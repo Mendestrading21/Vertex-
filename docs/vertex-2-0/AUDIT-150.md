@@ -118,7 +118,7 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 | 057 | ValueFlash est court, tonal et désactivé en reduced motion | **NON APPLICABLE** | Aucun ValueFlash n'a été introduit. Le mécanisme existant n'a pas été touché. |
 | 058 | DataLedger expose couverture et données absentes | **RÉUSSI** | Le Calendrier porte une table de **couverture par catégorie** (4 catégories déclarées sans source) ; le Simulateur une table de **prise en charge par classe**. C'est le DataLedger, sous un nom français. |
 | 059 | Aucun widget décoratif ne survit sans question utile | **RÉUSSI** pour les pages 2.0 | Chaque carte ajoutée porte une `question`. `vx2.surface` la propose ; aucune carte 2.0 n'en est dépourvue. |
-| 060 | Le registre page → widget correspond au catalogue canonique | **À CORRIGER** | Aucun registre n'a été produit. → **lot 14**. |
+| 060 | Le registre page → widget correspond au catalogue canonique | **RÉUSSI** (lot 19) | `docs/vertex-2-0/REGISTRE-GRAPHIQUES.md` — **72 cartes** dans 12 fichiers, relevées en lisant les sites d'appel. Un premier relevé **runtime** n'a trouvé qu'**une seule** carte sur 24 sous-vues : sans accès aux fournisseurs de marché, presque tous les graphiques tombent en état vide avant d'être construits. La limite est déclarée dans le registre, et l'outil de relevé runtime (`vertex_2_0_graphiques.py`) est livré pour redevenir la mesure de référence sur une machine connectée. |
 
 ---
 
@@ -126,7 +126,7 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 
 | № | Contrôle | État | Preuve |
 |---|---|---|---|
-| 061 | Chaque graphique formule question, conclusion, source, unité, période | **À CORRIGER** | `vx2.chart_card` porte le contrat complet, mais les graphiques existants **n'y ont pas migré**. → lots de page. |
+| 061 | Chaque graphique formule question, conclusion, source, unité, période | **RÉUSSI partiellement** (lot 19) | Mesuré, puis comblé : **unité 20→72/72**, **source 66→72/72**, **question 64→69/72** au site d'appel et **72/72 à l'écran** (trois treemaps dont la carte hôte pose déjà la question — la redire l'affichait deux fois). Découverte au passage : `treemap` et `waterfall` rendent un SVG **nu** et **ignoraient silencieusement** `unit`, `source` et `question` — le contrat ne pouvait pas y être tenu, et rien ne le signalait ; elles les portent désormais. **Conclusion 51/72 et période 9/72 assumées** : une conclusion est une *lecture*, qu'un treemap de poids ne produit pas ; une période n'a de sens que pour une série temporelle, et l'inventer sur un instantané fabriquerait une fenêtre qui n'existe pas. Justifié au registre. |
 | 062 | Séries, valeurs, agrégations et timeframes inchangés | **RÉUSSI** | Le lot 4 n'a changé que des **couleurs** et deux appels de couleur. Aucune série, aucun calcul. |
 | 063 | Les axes ne trompent pas et le zéro apparaît quand nécessaire | **NON APPLICABLE ici** | Aucun axe modifié. Non vérifiable avec des séries : les sources de marché sont injoignables dans cet environnement. |
 | 064 | Les gaps ne sont pas reliés silencieusement | **NON APPLICABLE ici** | Idem — aucune série réelle à tracer. |
@@ -249,28 +249,26 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 
 | État | Nombre |
 |---|---:|
-| **RÉUSSI** (avec preuve) | 122 |
-| **RÉUSSI partiellement** (limite déclarée) | 8 |
+| **RÉUSSI** (avec preuve) | 123 |
+| **RÉUSSI partiellement** (limite déclarée) | 9 |
 | **NON APPLICABLE** (justifié) | 9 |
 | **RÉUSSI sur une partie des pages, `À CORRIGER` sur les autres** | 3 |
-| **À CORRIGER** (lot nommé ou dette chiffrée) | 7 |
+| **À CORRIGER** (lot nommé ou dette chiffrée) | 5 |
 | **En attente de décision humaine** | 1 |
 | **Total** | **150** |
 
-*Décompte obtenu en LISANT le tableau ligne à ligne — 139 lignes, dont des
-plages groupées : « 091–098 » couvre huit contrôles, « 102–104 » en couvre
-trois. Chaque plage est dépliée, chaque numéro de 001 à 150 est attribué une
-fois et une seule ; aucun n'est absent. 122 + 8 + 9 + 3 + 7 + 1 = 150.*
+*Décompte obtenu en LISANT le tableau ligne à ligne — chaque plage groupée est
+dépliée (« 091–098 » couvre huit contrôles, « 102–104 » en couvre trois),
+chaque numéro de 001 à 150 est attribué une fois et une seule ; aucun n'est
+absent. 123 + 9 + 9 + 3 + 5 + 1 = 150.*
 
-Les 7 `À CORRIGER` francs restants portent sur **la page Options** (079–081 :
-drawer contrat, term structure, OI/GEX), sur le **registre page → widget**
-(060), sur la **migration des graphiques existants vers `vx2.chart_card`**
-(061), sur **EvidenceZone** (039), et sur la **dette de composants chiffrée**
-au lot 14 (048 : 146 occurrences de tuiles, **déjà visuellement unifiées** par
-le remappage des jetons — migrer ne changerait rien pour l'utilisateur, pour un
-risque réel). Les 3 contrôles mixtes (032–034) sont réussis sur huit des douze
-pages ; il reste Opportunités, Options, Vertex IA et Système. Aucun des dix
-n'est une régression.
+Les 5 `À CORRIGER` francs restants : **EvidenceZone** (039, à vérifier page par
+page) et la **dette de composants chiffrée** au lot 14 (048 : 146 occurrences de
+tuiles, **déjà visuellement unifiées** par le remappage des jetons — migrer ne
+changerait rien pour l'utilisateur, pour un risque réel dans sept pages dont
+trois font plus de 90 ko). Les 3 contrôles mixtes (032–034) sont réussis sur
+neuf des douze pages ; il reste Opportunités, Vertex IA et Système. Aucun des
+huit n'est une régression.
 
 ### Ce que la seconde passe a réellement corrigé
 

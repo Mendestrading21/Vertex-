@@ -644,8 +644,8 @@
       if (window.VXCharts) {
         var VC = window.VXCharts, ts = Date.now();
         if (VC.scenarioMatrix && VC.heatmapCard) VC.scenarioMatrix('vx-opt-sc-matrix', sim, { title: 'Valeur du contrat — scénario × horizon', question: 'Que vaut le contrat selon le mouvement du spot et le temps ?', source: 'scenario_pricer', timestamp: ts, mode: 'delayed' });
-        if (VC.thetaCard) VC.thetaCard('vx-opt-sc-theta', sim, { title: 'Décote temps (theta)', question: 'Combien le temps grignote-t-il la prime, à spot figé ?', source: 'scenario_pricer', timestamp: ts, mode: 'delayed' });
-        if (VC.ivSensitivityCard && VC.barCard) VC.ivSensitivityCard('vx-opt-sc-iv', sim, { title: 'Sensibilité à l\'IV', question: 'Quel impact d\'une variation d\'implicite sur la prime ?', source: 'scenario_pricer', timestamp: ts, mode: 'delayed' });
+        if (VC.thetaCard) VC.thetaCard('vx-opt-sc-theta', sim, { title: 'Décote temps (theta)',unit:'$ par jour', question: 'Combien le temps grignote-t-il la prime, à spot figé ?', source: 'scenario_pricer', timestamp: ts, mode: 'delayed' });
+        if (VC.ivSensitivityCard && VC.barCard) VC.ivSensitivityCard('vx-opt-sc-iv', sim, { title: 'Sensibilité à l\'IV', unit: '$ de prime', question: 'Quel impact d\'une variation d\'implicite sur la prime ?', source: 'scenario_pricer', timestamp: ts, mode: 'delayed' });
       }
     }).catch(function (e) { fail(el, e.message); });
   }

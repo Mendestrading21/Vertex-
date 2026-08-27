@@ -1111,3 +1111,13 @@ html,body{max-width:100%;overflow-x:clip}
 #vx-content .vx2-table-equivalente .vx2-table{min-width:max-content}
 #vx-content .vx2-table-equivalente .vx2-table th,
 #vx-content .vx2-table-equivalente .vx2-table td{white-space:nowrap}
+
+/* Pied des primitives SVG nues (treemap, waterfall) : elles n'avaient jamais
+   porté ni unité ni source, et les options qu'on leur passait étaient
+   silencieusement ignorées. */
+#vx-content .vx-primitive-foot{
+  display:flex;align-items:center;gap:var(--vx2-s3);flex-wrap:wrap;
+  margin-top:var(--vx2-s2);padding-top:var(--vx2-s2);
+  border-top:1px solid var(--vx-border-soft);
+  font-size:var(--vx-fs-meta);color:var(--vx-smoke);
+}

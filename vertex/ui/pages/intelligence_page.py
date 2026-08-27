@@ -685,7 +685,7 @@ async function initResearch(){
     const folds=v.fold_sharpes||[];
     if(folds.length){
       whenChartsReady(()=>VXCharts.barCard('vx-research-chart',{
-        title:'Sharpe par fen&ecirc;tre (walk-forward)',
+        title:'Sharpe par fen&ecirc;tre (walk-forward)',unit:'ratio',
         question:'L&#8217;edge tient-il fen&ecirc;tre apr&egrave;s fen&ecirc;tre ?',
         conclusion:VX.fmt.num(v.folds_positive_pct,0)+' % des fen&ecirc;tres positives — verdict '+(v.verdict||'n/d'),
         labels:folds.map((_,i)=>'F'+(i+1)),values:folds,height:190,

@@ -1067,6 +1067,7 @@ function loadMainChart(scan){
   const mm=(data,label,color,dash)=>{const dd=cut(data);
     return (dd&&dd.some(x=>x!=null))?[{label,data:dd,borderColor:color,borderWidth:1.2,borderDash:dash,pointRadius:0,tension:.2,fill:false}]:[];};
   VXCharts.card('vx-market-chart',{
+    unit:'points d’indice',
     title:(hasSpy?'S&P 500 (SPY) — tendance & moyennes'
           :(hasIdx?'S&P 500 — tendance & moyennes'
                   :'Marché — série de référence · '+key+' (S&P 500 absent du scan)')),
@@ -1124,7 +1125,7 @@ function loadCompare(scan){
   const finPct=(x)=>{const b=x.spark[x.spark.length-len];const v=x.spark[x.spark.length-1];
     return (b&&v!=null)?(v/b-1)*100:null;};
   VXCharts.card('vx-market-compare',{
-    title:'Qui mène ?',timeframe:len+' points',
+    title:'Qui mène ?',unit:'%',timeframe:len+' points',
     question:'Large caps, tech ou small caps ?',
     conclusion:(function(){
       const ranked=sets.map(x=>({n:x.n,f:finPct(x)})).filter(x=>x.f!=null).sort((a,b)=>b.f-a.f);
@@ -1158,7 +1159,7 @@ function loadYield(scan){
   const spread=(t10&&t3&&t10.value!=null&&t3.value!=null)?(t10.value-t3.value):null;
   const cc=VXCharts.colors;
   VXCharts.card('vx-yield',{
-    title:'Courbe des taux US',timeframe:'clôture',
+    title:'Courbe des taux US',unit:'%',timeframe:'clôture',
     question:'Normale ou inversée ?',
     conclusion:spread!=null?('Spread 10a-3m '+(spread>=0?'+':'')+spread.toFixed(2)+' pt — '+(spread<0?'INVERSÉE (signal de récession)':'pentue / normale')):'—',
     height:H_STD,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
@@ -1239,7 +1240,7 @@ function loadSectorsBlock(scan){
   }
   /* Rotation en barres (score moyen par secteur, clic = opportunités du secteur) */
   VXCharts.sectorCard('vx-rotation',{
-    title:'Rotation sectorielle',question:'Où va le capital en ce moment ?',
+    title:'Rotation sectorielle',unit:'%',question:'Où va le capital en ce moment ?',
     conclusion:'Leader : '+(sectors[0].sector||'n/d'),
     labels:sectors.slice(0,9).map(s=>s.sector),
     values:sectors.slice(0,9).map(s=>s.avg_score??s.score??0),height:H_HERO,
@@ -1250,7 +1251,7 @@ function loadSectorsBlock(scan){
       confirm:'Leadership stable sur plusieurs séances.',invalidate:'Rotation défensive brutale.'}});
   /* Heatmap : variation, score, RVOL, titres — lignes cliquables */
   VXCharts.heatmapCard('vx-sectors-heat',{
-    title:'Performance et momentum par secteur',
+    title:'Performance et momentum par secteur',unit:'%',
     question:'Quels secteurs attirent le capital aujourd’hui ?',
     conclusion:'Vert = flux entrant, rouge = flux sortant (variation moyenne du jour).',
     columns:['Var. moyenne %','Score','Vol. relatif','Titres'],
@@ -1268,7 +1269,10 @@ function loadSectorsBlock(scan){
     const cc3=VXCharts.colors;
     const col=(ch)=>ch==null?cc3.neutral:(ch>=0.3?cc3.positive:ch<=-0.3?cc3.negative:cc3.warning);
     const w=(treeEl.clientWidth)||900;
-    VXCharts.treemap(treeEl,{width:w,height:300,
+    VXCharts.treemap(treeEl,{width:w,height:300,unit:'titres par secteur',
+      question:'Où le capital scanné se concentre-t-il, et quels secteurs montent ?',
+      source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:mode,
+      limits:'aire = nombre de titres scannés · couleur = variation moyenne',
       items:sectors.map(x=>({label:x.sector||'n/d',value:(x.n||x.avg_score||1),
         sub:(x.avg_change!=null?((x.avg_change>=0?'+':'')+Number(x.avg_change).toFixed(1)+'%'):''),
         color:col(x.avg_change)})),
@@ -1399,7 +1403,7 @@ function loadPulseExtra(scan){
   const tEl=$('vx-breadth-trend');
   if(tEl){
     if(H.length>2&&window.VXCharts&&VXCharts.card&&VXCharts.multiLine){
-      VXCharts.card('vx-breadth-trend',{title:'Tendance de participation',
+      VXCharts.card('vx-breadth-trend',{title:'Tendance de participation',unit:'% de titres',
         question:'La participation s\u2019améliore-t-elle ou se dégrade-t-elle ?',
         conclusion:(H[H.length-1].a50>=H[0].a50?'En amélioration':'En dégradation')+' sur '+H.length+' séances',
         height:H_STD,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode,
@@ -1437,7 +1441,10 @@ function loadPulseExtra(scan){
   const wEl=$('vx-health-wf');
   if(wEl){
     if(window.VXCharts&&VXCharts.waterfall&&inter.health!=null&&inter.pct_a50!=null){
-      VXCharts.waterfall('vx-health-wf',{ariaLabel:'Composition de la santé du marché',
+      VXCharts.waterfall('vx-health-wf',{ariaLabel:'Composition de la santé du marché',unit:'points de santé (0-100)',
+        question:'Qu’est-ce qui compose la santé du marché aujourd’hui ?',
+        source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:mode,
+        limits:'contributions pondérées des internes du marché',
         items:[
           {label:'> moy. 50 j',value:0.30*(inter.pct_a50||0)},
           {label:'> moy. 200 j',value:0.25*(inter.pct_a200||0)},
@@ -1773,7 +1780,7 @@ async function loadSession(){
         `<button class="vx-chip" data-calr="${id}" aria-pressed="${id===CAL_RANGE}">${l}</button>`).join('')+'</span>';
     const filtCtl=[['all','Tous'],['macro','Macro'],['earnings','Résultats'],['mine','Mes actions']].map(([id,l])=>
         `<button class="vx-chip" data-calf="${id}" aria-pressed="${id===CAL_FILTER}">${l}</button>`).join('');
-    VXCharts.timelineCard('vx-calendar',{title:'Calendrier & catalyseurs',
+    VXCharts.timelineCard('vx-calendar',{title:'Calendrier & catalyseurs',unit:'événements',
       question:'Quels catalyseurs arrivent '+(CAL_RANGE==='day'?'aujourd’hui':'cette semaine')+' ?',
       controlsHtml:rangeCtl+filtCtl,
       items,source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',

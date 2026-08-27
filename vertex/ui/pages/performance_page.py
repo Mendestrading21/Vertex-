@@ -431,7 +431,7 @@ function loadEquity(){
         loadEquity,'vx-pf-equity','Courbe d’équité');}
     const labels=eq.map(p=>p.d),values=eq.map(p=>Number(p.v));
     VXCharts.equityCard('vx-pf-equity',{
-      title:'Courbe d’équité (déclarée)',timeframe:eq.length+' points',
+      title:'Courbe d’équité (déclarée)',unit:'$',timeframe:eq.length+' points',
       question:'Le capital déclaré progresse-t-il régulièrement ?',
       conclusion:values[values.length-1]>=values[0]?'Équité en progression sur la période.':'Équité en retrait sur la période.',
       labels,values,height:240,
@@ -441,7 +441,7 @@ function loadEquity(){
         confirm:'Nouveaux plus hauts d’équité avec drawdowns contenus.',
         invalidate:'Série de plus bas d’équité — réduire la taille et revoir le process.'}});
     VXCharts.drawdownCard('vx-pf-drawdown',{
-      title:'Drawdown depuis les pics',
+      title:'Drawdown depuis les pics',unit:'%',
       question:'Les pertes restent-elles contrôlées ?',
       conclusion:'Dérivé arithmétiquement de la courbe d’équité déclarée.',
       labels,values,height:240,
@@ -542,7 +542,7 @@ function loadDist(){
   const buckets=[[-1e9,-20],[-20,-10],[-10,-5],[-5,0],[0,5],[5,10],[10,20],[20,50],[50,1e9]];
   const labels=['<-20','-20/-10','-10/-5','-5/0','0/+5','+5/+10','+10/+20','+20/+50','>+50'];
   const counts=buckets.map(([a,b])=>withPl.filter(t=>t.pnl_pct>=a&&t.pnl_pct<b).length);
-  VXCharts.card('vx-pf-dist',{title:'Distribution des rendements par trade',
+  VXCharts.card('vx-pf-dist',{title:'Distribution des rendements par trade',unit:'trades',
     question:'Le profil est-il asymétrique (petites pertes, gains amples) ?',
     conclusion:withPl.length+' clôtures · l’asymétrie droite valide la gestion.',
     height:220,source:'journal local (clôtures)',timestamp:Date.now(),mode:'delayed',
@@ -682,7 +682,7 @@ function loadProgression(){
   if(months.length>=2&&window.VXCharts&&VXCharts.card){
     host.innerHTML=`<div class="vx-grid"><div class="vx-col-5">${rows}</div>
       <div class="vx-col-7" id="vx-pf-prog-chart"></div></div>`;
-    VXCharts.card('vx-pf-prog-chart',{title:'Erreurs déclarées par mois',
+    VXCharts.card('vx-pf-prog-chart',{title:'Erreurs déclarées par mois',unit:'erreurs',
       question:'Mes erreurs récurrentes diminuent-elles ?',
       conclusion:byMonth[months[months.length-1]]<=byMonth[months[0]]?'Tendance à la baisse — la discipline progresse.':'Vigilance : les erreurs ne diminuent pas encore.',
       height:200,source:'journal local',timestamp:Date.now(),mode:'delayed',
@@ -737,7 +737,7 @@ async function loadTrack(){
     try{
       const _tl=rows.map(([v])=>v),_tv=rows.map(([,s])=>(s.avg_20j==null?null:s.avg_20j));
       if(window.VXCharts&&VXCharts.card&&VXCharts.bars&&_tv.some(x=>x!=null)){
-        VXCharts.card('vx-pf-track-bar',{title:'Rendement moyen +20 séances par verdict',
+        VXCharts.card('vx-pf-track-bar',{title:'Rendement moyen +20 séances par verdict',unit:'%',
           question:'Quels verdicts moteur ont le mieux tenu ?',height:200,
           source:'historique moteur',timestamp:Date.now(),mode:'delayed',
           limits:'moyenne réelle des verdicts résolus (n≥5) — mesure, pas une promesse',

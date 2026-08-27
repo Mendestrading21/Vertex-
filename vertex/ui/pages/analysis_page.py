@@ -506,7 +506,7 @@ function paintQuadrant(cf,sm,peers,demo){
       x:{title:{display:true,text:'Croissance CA (%)'},grid:{color:'rgba(255,255,255,.06)'}},
       y:{title:{display:true,text:'ROE (%)'},grid:{color:'rgba(255,255,255,.06)'}}},
       plugins:{tooltip:{callbacks:{label:function(it){var p=it.raw;return p.sym+' — croissance '+p.x.toFixed(1)+'% · ROE '+p.y.toFixed(0)+'%';}}}}}};
-  VXCharts.card('an-quadrant',{title:'Croissance × rentabilité vs pairs',
+  VXCharts.card('an-quadrant',{title:'Croissance × rentabilité vs pairs',unit:'%',
     question:'Le titre allie-t-il croissance ET rentabilité ?',
     conclusion:(ok(cf.rev_growth)&&ok(cf.roe)&&sm)?((cf.rev_growth*100>=(sm.median_growth||0)&&cf.roe*100>=(sm.median_roe||0))?'Cadran qualité — croissance et rentabilité au-dessus du secteur':'Au moins un axe sous la médiane sectorielle'):'',
     height:320,legend:[{label:SYM,color:cc.brand},{label:'Pairs',color:cc.neutral},{label:'Médiane',color:cc.warning}],
@@ -564,7 +564,7 @@ function paintQuarters(cf,demo){
       x:{grid:{display:false}}},
       plugins:{tooltip:{callbacks:{label:_qtip}}}}};
   VXCharts.card('an-quarters',{
-    title:'Croissance trimestrielle',question:'Le chiffre d’affaires et le résultat progressent-ils ?',
+    title:'Croissance trimestrielle',unit:'%',question:'Le chiffre d’affaires et le résultat progressent-ils ?',
     conclusion:(function(){const r0=qs[0].rev,r1=qs[qs.length-1].rev;
       return (r0&&r1)?('CA '+(r1>=r0?'en hausse':'en baisse')+' sur '+qs.length+' trimestres'):(qs.length+' trimestres');})(),
     height:300,legend:[{label:'Chiffre d’affaires',color:cc.neutral},{label:'Résultat net',color:cc.positive},{label:'Marge nette',color:cc.brand}],
