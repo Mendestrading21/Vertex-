@@ -35,7 +35,9 @@ def test_options_new_views_registered():
     src = _read(PAGE)
     assert "('structure', 'Structure')" in src
     assert "('leaps', 'LEAPS')" in src
-    assert "('positions', 'Mes positions')" in src
+    #  VERTEX 2.0 : libellé canonique de `navigation-and-pages.md` §6.
+    #  La clé d'URL ne change pas.
+    assert "('positions', 'Positions')" in src
     # défaut = structure (Carte-Verdict d'abord)
     assert "def render(view: str = 'structure')" in src
 

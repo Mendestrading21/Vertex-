@@ -59,7 +59,8 @@ def test_chronology_has_a_clean_toolbar_and_historical_sources_stay_separate():
     #  VERTEX 2.0 : les onglets prennent les libelles canoniques de
     #  `navigation-and-pages.md` §10. La sous-vue est la meme, son URL aussi.
     assert labels['journal'] == 'Journal'
-    assert labels['track-record'] == 'Historique'
+    assert labels['track-record'] == 'Signaux théoriques'
+    assert labels['real'] == 'Trades réels'
 
     chronology = performance_page._VIEW_CONTENT['journal']
     assert 'Chronologie des d&eacute;cisions' in chronology
@@ -67,12 +68,29 @@ def test_chronology_has_a_clean_toolbar_and_historical_sources_stay_separate():
     assert chronology.index('vx-pf-filter') < chronology.index('vx-pf-journal')
     assert 'Timeline' not in chronology
 
-    history = performance_page._VIEW_CONTENT['track-record']
-    assert 'data-source-kind="engine"' in history
-    assert 'data-source-kind="declared"' in history
-    assert 'Moteur &middot; verdicts th&eacute;oriques' in history
-    assert 'Journal &middot; trades d&eacute;clar&eacute;s' in history
-    assert 'Aucun chiffre ne passe' in history
+    #  VERTEX 2.0 — la garantie est PLUS FORTE qu'avant, pas plus faible.
+    #
+    #  Les deux populations cohabitaient dans une seule vue, séparées par une
+    #  phrase (« Aucun chiffre ne passe de l'une à l'autre »). Une phrase
+    #  demande au lecteur de se méfier ; deux vues le dispensent de le faire.
+    #  Le contrat les réclame séparées, et deux vues ne se mélangent pas.
+    moteur = performance_page._VIEW_CONTENT['track-record']
+    declare = performance_page._VIEW_CONTENT['real']
+
+    #  Chacune ne porte QUE sa population.
+    assert 'data-source-kind="engine"' in moteur
+    assert 'data-source-kind="declared"' not in moteur
+    assert 'data-source-kind="declared"' in declare
+    assert 'data-source-kind="engine"' not in declare
+
+    #  Chacune NOMME sa population, plutôt que de laisser deviner.
+    assert 'verdicts rendus par les moteurs' in moteur
+    assert 'trades que vous avez d&eacute;clar&eacute;s' in declare
+
+    #  Et chacune renvoie à l'autre : séparer sans dire où est l'autre moitié
+    #  ferait croire que la page ne mesure qu'une chose.
+    assert '?view=real' in moteur
+    assert '?view=track-record' in declare
 
 
 def test_system_readonly_is_compact_and_connections_matrix_precedes_details():

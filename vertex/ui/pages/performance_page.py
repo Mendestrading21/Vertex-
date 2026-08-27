@@ -24,13 +24,26 @@ import re
 from vertex.ui import vx2
 from vertex.ui.shell import render_shell
 
+# Ordre canonique de `navigation-and-pages.md` §10. « Historique » portait
+# DEUX populations dans une seule vue — le moteur et le journal declare — avec
+# une phrase pour prevenir de ne pas les confondre. Le contrat demande de les
+# separer, et c'est plus sur qu'une phrase : deux vues ne se melangent pas.
+#
+# « Tracking hypothetique » n'est PAS ajoute ici : il appartient a Suivi, qui
+# le sert depuis `/api/tracking`. Le panneau « Populations mesurees » y renvoie.
+# En faire un onglet dupliquerait une verite qui doit n'avoir qu'un domicile.
 _VIEWS = (
     ('overview', 'Synthèse'),
     ('journal', 'Journal'),
-    ('learnings', 'Apprentissages'),
+    ('real', 'Trades réels'),
+    ('track-record', 'Signaux théoriques'),
     ('progression', 'Progression'),
-    ('track-record', 'Historique'),
+    ('learnings', 'Apprentissages'),
 )
+
+# L'ancienne URL « Historique » menait aux deux ; elle mene aux signaux, et la
+# vue le dit avec un renvoi vers l'autre population.
+_ALIAS = {'history': 'track-record'}
 
 
 def _tabs(view: str) -> str:
@@ -226,18 +239,36 @@ _VIEW_CONTENT = {
 </div>
 """,
     'track-record': """
-<div class="vx-page-lead vx-mt3" role="note">
-  <div><h2>Historique</h2><div class="vx-sub">Deux sources s&eacute;par&eacute;es : mesure du moteur et journal d&eacute;clar&eacute;. Aucun chiffre ne passe de l&rsquo;une &agrave; l&rsquo;autre.</div></div>
-</div>
+<div class="vx2-section vx-mt3"><div class="vx2-section-head">
+  <h2 class="vx2-section-title">Signaux th&eacute;oriques</h2>
+  <span class="vx2-section-note">rendements des verdicts moteur &mdash; aucun capital engag&eacute;</span></div></div>
+<div class="vx2-banner" data-kind="prudence" role="status"><span>Population&nbsp;:
+  <b>verdicts rendus par les moteurs</b>, mesur&eacute;s sur cl&ocirc;tures quotidiennes.
+  Ni frais, ni ex&eacute;cution, ni glissement. Ces chiffres ne se m&eacute;langent
+  <b>jamais</b> avec vos trades d&eacute;clar&eacute;s, qui vivent dans
+  <a href="?view=real">Trades r&eacute;els</a>.</span></div>
 <div class="vx-section-stack vx-mt4">
   <section class="vx-card" aria-label="Historique théorique du moteur" data-source-kind="engine">
     <div class="vx-card-header"><span class="vx-card-title">Moteur &middot; verdicts th&eacute;oriques</span>
       <span class="vx-badge">Source API moteur</span></div>
     <div id="vx-pf-track">%%LOADING%%</div>
   </section>
+</div>
+""",
+
+    'real': """
+<div class="vx2-section vx-mt3"><div class="vx2-section-head">
+  <h2 class="vx2-section-title">Trades r&eacute;els</h2>
+  <span class="vx2-section-note">vos cl&ocirc;tures d&eacute;clar&eacute;es &mdash; r&eacute;alis&eacute;, encaiss&eacute;</span></div></div>
+<div class="vx2-banner" data-kind="prudence" role="status"><span>Population&nbsp;:
+  <b>trades que vous avez d&eacute;clar&eacute;s</b> au journal, avec un r&eacute;sultat et un
+  P&amp;L. Agr&eacute;gations arithm&eacute;tiques, hors frais et dividendes. Ces chiffres ne
+  se m&eacute;langent <b>jamais</b> avec les verdicts moteur, qui vivent dans
+  <a href="?view=track-record">Signaux th&eacute;oriques</a>.</span></div>
+<div class="vx-section-stack vx-mt4">
   <section class="vx-card" aria-label="Historique déclaré du journal" data-source-kind="declared">
     <div class="vx-card-header"><span class="vx-card-title">Journal &middot; trades d&eacute;clar&eacute;s</span>
-      <span class="vx-badge" style="color:var(--vx-cyan,#45D6E8)">Tes d&eacute;clarations</span>
+      <span class="vx-badge">Vos d&eacute;clarations</span>
       <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost" href="?view=journal">Ouvrir la chronologie &rarr;</a></span></div>
     <div id="vx-pf-real">%%LOADING%%</div>
   </section>
@@ -975,7 +1006,8 @@ function boot(){
   }
   else if(VIEW==='learnings'){loadLearnings();}
   else if(VIEW==='progression'){loadProgression();}
-  else if(VIEW==='track-record'){loadTrack();loadReal();}
+  else if(VIEW==='track-record'){loadTrack();}
+  else if(VIEW==='real'){loadReal();echantillon();}
 }
 function whenReady(fn){
   if(window.VXEntities&&(VIEW!=='overview'&&VIEW!=='progression'||(window.VXCharts&&window.Chart)))return fn();
@@ -1027,7 +1059,8 @@ def _entete() -> str:
 
 
 def render(view: str = 'overview', params: dict | None = None) -> str:
-    """Assemble le Journal pour la sous-vue demandée (URL = état)."""
+    """Assemble la Performance pour la sous-vue demandée (URL = état)."""
+    view = _ALIAS.get(view, view)
     if view not in dict(_VIEWS):
         view = 'overview'
     label = dict(_VIEWS)[view]

@@ -39,6 +39,28 @@
      symbole il est DESACTIVE, parce qu'un lien qui menerait a une 404 est pire
      qu'un lien absent. */
   function updateChainLink(sym) {
+    /*  Deux entrees vers la meme page : le bouton contextuel et, depuis le
+        lot 25, l'onglet « Chaine » que le contrat range parmi les sous-vues.
+        Les deux suivent le sous-jacent, et les deux sont DESACTIVES sans lui —
+        un lien qui menerait a une 404 est pire qu'un lien absent. */
+    var onglet = document.getElementById('vx-options-chain-tab');
+    if (onglet) {
+      if (sym) {
+        onglet.href = '/options/dossier/' + encodeURIComponent(sym);
+        onglet.removeAttribute('aria-disabled');
+        onglet.removeAttribute('tabindex');
+        onglet.title = 'Chaine CALL / strike / PUT de ' + sym;
+        onglet.style.pointerEvents = '';
+        onglet.style.opacity = '';
+      } else {
+        onglet.removeAttribute('href');
+        onglet.setAttribute('aria-disabled', 'true');
+        onglet.setAttribute('tabindex', '-1');
+        onglet.title = 'Choisir un sous-jacent pour ouvrir sa chaine';
+        onglet.style.pointerEvents = 'none';
+        onglet.style.opacity = '.45';
+      }
+    }
     var lien = document.getElementById('vx-options-chain');
     if (!lien) return;
     if (sym) {
