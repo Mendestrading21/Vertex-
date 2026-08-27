@@ -975,7 +975,28 @@ async function loadDossier(){
        avant son chargement — meme garde retry que le radar plus haut (sinon ReferenceError). */
     (function drawWorkspace(_n){
     if(!(window.VXCharts&&VXCharts.mount)){ if(_n<60)setTimeout(function(){drawWorkspace(_n+1);},80); return; }
-    const drawChart=(window.VXCharts&&VXCharts.lwCandlestickCard)||VXCharts.candlestickCard;
+    /*  `candlestick-lwc.js` et `candlestick-chart.js` sont chargés en `defer` :
+        ce bloc peut courir AVANT leur enregistrement, et `drawChart` valait
+        alors `undefined` — « drawChart is not a function », le graphique
+        principal du titre absent, et tout ce qui suit dans la fonction
+        emporté avec lui.
+
+        Le même garde-fou existe déjà dans `performance_page` pour
+        `equity-chart.js`. On réessaie UNE fois, quand tous les scripts sont
+        enregistrés ; si le moteur manque encore, c'est qu'il ne viendra pas,
+        et l'on rend un état vide honnête plutôt qu'une exception.  */
+    const _moteur=()=>(window.VXCharts&&(VXCharts.lwCandlestickCard||VXCharts.candlestickCard))||null;
+    const drawChart=_moteur();
+    if(!drawChart){
+      window.addEventListener('load',()=>{
+        const m=_moteur();
+        if(m){loadDossier();}
+        else{($('an-chart')||{}).innerHTML=
+          (window.VX&&VX.states?VX.states.error('Moteur graphique indisponible')
+                                :'<div class="vx-meta">Moteur graphique indisponible</div>');}
+      },{once:true});
+      return;
+    }
     drawChart('an-chart',{
       title:SYM+' — graphique principal',timeframe:TF,
       question:'Le timing est-il exploitable maintenant ?',
