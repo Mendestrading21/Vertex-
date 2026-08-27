@@ -1,16 +1,23 @@
 # CLAUDE.md — Vertex 1.0
 
-## Instruction active unique
+## Instructions canoniques
 
-Utiliser exclusivement:
+Autorité produit, données, moteurs, sécurité et release :
 
 ```text
 /vertex-1-0
 ```
 
-Skill actif: `.claude/skills/vertex-1-0/SKILL.md`.
-Les skills `vertex-skyler-v2`, `vertex-total-rebuild`, V4 et Signal OS sont
-historiques. Ne jamais relancer leurs workflows par lots.
+Autorité unique pour toute interface, page, navigation, widget, tableau,
+graphique, typographie, responsive ou refonte visuelle :
+
+```text
+/vertex-design-2-0
+```
+
+Les skills `vertex-skyler-v2`, `vertex-total-rebuild`, V4, Signal OS,
+Neon Glass, Copper et les anciens `vertex-redesign-*` sont historiques.
+Ne jamais relancer leurs workflows par lots.
 
 ## Autorité spécialisée Vertex Design 2.0
 
