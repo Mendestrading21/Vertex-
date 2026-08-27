@@ -817,3 +817,86 @@ html,body{max-width:100%;overflow-x:clip}
 #vx-content .vx-page-lead h1{
   letter-spacing:-.022em;font-weight:650;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   15) CARTE DE VERDICT DU DOSSIER
+   Elle n'avait AUCUN style : son conteneur `#an-verdict` n'existait dans
+   aucune section, la garde `if(V)` avalait le rendu, et personne n'a donc
+   jamais vu la carte manquer d'habillage. Le conteneur rendu, il fallait
+   l'habiller.
+
+   L'accent est porté par un liseré gauche piloté par `data-tone`, que le
+   moteur renseigne. C'est le SEUL endroit coloré de la carte : le verdict est
+   la conclusion, il n'a pas besoin d'être crié deux fois.
+   ───────────────────────────────────────────────────────────────────────── */
+#vx-content .vx-verdict-card{
+  position:relative;
+  display:flex;flex-direction:column;gap:var(--vx2-s3);
+  padding:var(--vx2-s5);
+  background:var(--vx-glass-2);
+  border:1px solid var(--vx2-line);
+  border-left:3px solid var(--vx-silver);
+  border-radius:var(--vx2-r-card);
+  box-shadow:var(--vx-glass-sheen),var(--shadow-card);
+  backdrop-filter:blur(var(--vx-blur-md));
+  -webkit-backdrop-filter:blur(var(--vx-blur-md));
+}
+#vx-content .vx-verdict-card[data-tone="green"]{border-left-color:var(--vx-positive)}
+#vx-content .vx-verdict-card[data-tone="red"]{border-left-color:var(--vx-negative)}
+#vx-content .vx-verdict-card[data-tone="amber"],
+#vx-content .vx-verdict-card[data-tone="orange"]{border-left-color:var(--vx-caution)}
+#vx-content .vx-verdict-card[data-tone="gray"]{border-left-color:var(--vx-smoke)}
+
+/* Les trois éléments de tête se collaient : « Données insuffisantesconfiance 0 ».
+   Aucune règle ne les espaçait. */
+#vx-content .vx-verdict-head{
+  display:flex;align-items:baseline;gap:var(--vx2-s3);flex-wrap:wrap;
+}
+#vx-content .vx-verdict-label{
+  font-size:22px;font-weight:650;letter-spacing:-.015em;color:var(--vx-ink);
+  line-height:1.15;
+}
+#vx-content .vx-verdict-card[data-tone="green"] .vx-verdict-label{color:var(--vx-positive)}
+#vx-content .vx-verdict-card[data-tone="red"] .vx-verdict-label{color:var(--vx-negative)}
+#vx-content .vx-verdict-card[data-tone="amber"] .vx-verdict-label,
+#vx-content .vx-verdict-card[data-tone="orange"] .vx-verdict-label{color:var(--vx-caution)}
+#vx-content .vx-verdict-score{
+  font-family:var(--vx-font-mono);font-size:12.5px;color:var(--vx-smoke);
+  font-variant-numeric:tabular-nums;
+}
+#vx-content .vx-verdict-head .vx-actions{margin-left:auto}
+
+/* Grille des repères du plan — prix, entrée, invalidation, conviction… */
+#vx-content .vx-verdict-grid{
+  display:grid;gap:var(--vx2-s3);
+  grid-template-columns:repeat(auto-fit,minmax(132px,1fr));
+  padding-top:var(--vx2-s3);
+  border-top:1px solid var(--vx2-line-faint);
+}
+#vx-content .vx-verdict-cell{display:flex;flex-direction:column;gap:3px;min-width:0}
+#vx-content .vx-verdict-cell .k{
+  font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--vx-smoke);
+}
+#vx-content .vx-verdict-cell .v{
+  font-family:var(--vx-font-mono);font-size:16px;font-weight:600;
+  color:var(--vx-ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
+}
+
+/* « Vertex ne tranche pas » — l'aveu, quand le dossier est incomplet.
+   Il se lit comme une conclusion, pas comme une erreur : c'est un résultat
+   valide du moteur. */
+#vx-content .vx-insufficient{
+  display:flex;align-items:flex-start;gap:var(--vx2-s3);
+  padding:var(--vx2-s3);
+  border:1px dashed var(--vx2-line);border-radius:var(--vx2-r-control);
+  background:var(--vx-glass-subtle);
+}
+#vx-content .vx-insufficient-icon{
+  font-family:var(--vx-font-mono);font-size:22px;color:var(--vx-smoke);
+  line-height:1;flex:none;
+}
+#vx-content .vx-insufficient b{color:var(--vx-ink);font-weight:600}
+#vx-content .vx-insufficient-why{
+  margin-top:4px;font-size:13px;color:var(--vx-mist);line-height:1.5;
+}

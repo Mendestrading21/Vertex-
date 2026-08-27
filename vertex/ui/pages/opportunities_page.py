@@ -13,9 +13,9 @@ from __future__ import annotations
 
 from vertex.ui.shell import json_for_script, render_shell
 
-_VIEWS = (('screener', 'Screener'), ('options', 'Options'),
-          ('portfolio', 'Portefeuille'), ('anomalies', 'Anomalies'),
-          ('calendar', 'Calendrier'))
+_VIEWS = (('screener', 'Radar'), ('options', 'Options'),
+          ('portfolio', 'Positions × moteur'), ('anomalies', 'Anomalies'),
+          ('calendar', 'Catalyseurs'))
 
 # Anciennes vues → nouvelles (liens internes historiques : radar/stocks)
 _VIEW_ALIASES = {'radar': 'screener', 'stocks': 'screener'}
@@ -32,8 +32,9 @@ def _tabs(view: str) -> str:
 _CONTENT = """
 <div class="vx-page-header vx-page-lead"><div><p class="vx2-eyebrow">Explorer</p><h1>Opportunités</h1>
 <div class="vx-sub">Quels dossiers méritent une analyse maintenant&nbsp;?</div></div>
-<div class="vx-actions vx-toolbar"><span id="op-fresh" style="align-self:center"></span><button class="vx-btn vx-btn-sm"
+<div class="vx-actions vx-toolbar"><button class="vx-btn vx-btn-sm"
   onclick="VXEntities.openAddModal()">+ Ajouter</button></div></div>
+<div class="vx2-contextbar" id="op-context" role="group" aria-label="Contexte du scan"><span class="vx2-stamp">Lecture du scan…</span></div>
 %%TABS%%
 <style>
   /* Barre de filtres du screener : collante, lisible, réactive */
@@ -154,6 +155,30 @@ function bucketCls(b){var s=String(b||'').toLowerCase();
 /* playbook peut être une chaîne OU un objet moteur → toujours une chaîne sûre */
 function pbStr(pb){return (pb&&typeof pb==='object')?(pb.name||pb.label||pb.key||pb.type||''):(pb||'');}
 function metaMode(scan){return scan&&scan.data_source==='demo'?'fallback':'delayed';}
+
+/* ContextBar — univers, dernier scan, source et mode. Rendue MEME quand le
+   scan est vide : « aucun titre » sans dire d'ou vient ce vide oblige a
+   deviner si la cause est la source, le moteur ou le rendu. */
+function paintContext(scan){
+  const el=$('op-context'); if(!el)return;
+  const nd='<span class="vx2-absent">\u2014</span>';
+  const rows=(scan&&scan.rows)||[];
+  const src=(scan&&scan.source)||null;
+  const ts=(scan&&(scan.scan_ts_h||scan.scan_ts||scan.updated))||null;
+  const demo=scan&&scan.data_source==='demo';
+  const badge=demo?'<span class="vx2-badge" data-state="demo">D\u00e9mo</span>'
+    :(src?'<span class="vx2-badge" data-state="delayed">Diff\u00e9r\u00e9e</span>'
+         :'<span class="vx2-badge" data-state="missing">Indisponible</span>');
+  const grp=(label,contenu)=>'<div class="vx2-context-group">'
+    +'<span class="vx2-context-label">'+label+'</span>'+contenu+'</div>';
+  const sep='<span class="vx2-context-sep" aria-hidden="true"></span>';
+  el.innerHTML=[
+    grp('Univers','<span class="vx2-mono">'+(rows.length?VX.fmt.nd(rows.length)+' titres':nd)+'</span>'),
+    grp('Dernier scan','<span class="vx2-mono">'+(ts?esc(String(ts)):nd)+'</span>'),
+    grp('Source','<span class="vx2-stamp"><b>'+(src?esc(String(src)):'\u2014')+'</b></span>'),
+    grp('Fra\u00eecheur',badge)
+  ].join(sep);
+}
 /* Debounce : les curseurs tirent input en rafale — on repeint au calme (120 ms). */
 function debounce(fn,ms){let t=null;return function(){const a=arguments,c=this;
   clearTimeout(t);t=setTimeout(()=>fn.apply(c,a),ms||120);};}
@@ -244,8 +269,19 @@ function rail52(v){
 /* ═════════ SCREENER (vue par défaut) — de 515 titres à UNE décision ═════════ */
 async function renderScreener(){
   const scan=await VX.fetch('/scan',{ttl:120000});
+  paintContext(scan);
   const rows=(scan.rows||[]).filter(r=>r.score!==undefined);
-  if(!rows.length){($('op-body')||{}).innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
+  if(!rows.length){
+    ($('op-body')||{}).innerHTML='<div class="vx2-state" data-kind="empty" role="status">'
+      +'<span class="vx2-state-ghost" aria-hidden="true"><i></i><i></i><i></i><i></i></span>'
+      +'<p class="vx2-state-title">Aucun titre scoré dans le scan courant</p>'
+      +'<p class="vx2-state-cause">L\u2019entonnoir n\u2019a rien à classer : le dernier scan '
+      +'n\u2019a produit aucune ligne portant un score. La barre de contexte '
+      +'ci-dessus dit de quelle source et de quand il date.</p>'
+      +'<div class="vx2-state-actions">'
+      +'<a class="vx2-btn" href="/system?view=data">Ouvrir Syst\u00e8me \u2192 Donn\u00e9es</a></div>'
+      +'</div>';
+    return;}
   const detail=scan.detail||{};
   const byId={};rows.forEach(r=>{if(r&&r.symbol)byId[r.symbol]=r;});   // index partagé (dossier express, revue…)
   const sectors=[...new Set(rows.map(r=>r.sector).filter(Boolean))].sort();
@@ -730,6 +766,7 @@ async function renderScreener(){
 /* ═════════ OPTIONS : screener du board réel ═════════ */
 async function renderOptions(){
   const scan=await VX.fetch('/scan',{ttl:120000});
+  paintContext(scan);
   const board=(scan.options_board||[]);
   window.__opCompare=function(symWanted){
     /* Plages NON chevauchantes : ≥0.45 défensif · 0.30-0.45 principal · 0.18-0.30 convexe */
@@ -1050,6 +1087,7 @@ async function renderOptions(){
 /* ═════════ PORTEFEUILLE : mes positions × le moteur + candidats ═════════ */
 async function renderPortfolio(){
   const scan=await VX.fetch('/scan',{ttl:120000});
+  paintContext(scan);
   const rows=(scan.rows||[]);
   const byId={};rows.forEach(r=>{byId[r.symbol]=r;});
   const pos=(window.VXEntities?VXEntities.positions():[])||[];
@@ -1183,6 +1221,7 @@ async function renderPortfolio(){
 /* ═════════ ANOMALIES ═════════ */
 async function renderAnomalies(){
   const scan=await VX.fetch('/scan',{ttl:120000});
+  paintContext(scan);
   const all=(scan.rows||[]).filter(r=>(r.anomalies||[]).length);
   let lvl='';let q='';
   ($('op-body')||{}).innerHTML=demoBanner(scan)+`
@@ -1253,6 +1292,9 @@ async function renderAnomalies(){
 /* ═════════ CALENDRIER ═════════ */
 async function renderCalendar(){
   try{
+    /* Cette vue lit /cal-feed ; le scan n'est demande que pour la barre de
+       contexte, afin qu'elle ne soit pas la seule sous-vue sans provenance. */
+    VX.fetch('/scan',{ttl:120000}).then(paintContext).catch(()=>{});
     const cal=await VX.fetch('/cal-feed',{ttl:300000});
     const positions=(window.VXEntities?window.VXEntities.positions():[]).map(p=>String(p.sym).toUpperCase());
     let cat='',mine=false,horizon=0;
