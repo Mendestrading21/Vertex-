@@ -15,6 +15,7 @@ glissée dans le worker parallèle) = test rouge.
 """
 import inspect
 import re
+import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,18 +32,76 @@ def _sources():
 
 
 # ── 1. jamais de réassignation hors sa définition canonique (state.py) ─────
+def _cible_scan_state(noeud) -> bool:
+    return any(isinstance(t, ast.Name) and t.id == 'scan_state'
+               for t in getattr(noeud, 'targets', []))
+
+
+def _reassignations(arbre, rel):
+    """Les seules réassignations qui cassent la référence partagée.
+
+    a) au niveau du **module** : l'affectation rebranche le global ;
+    b) dans une fonction qui a déclaré `global scan_state` : idem.
+
+    Tout le reste est local et ne peut rien casser.
+    """
+    out = []
+    for n in arbre.body:
+        if isinstance(n, ast.Assign) and _cible_scan_state(n):
+            out.append('%s:%d: affectation au niveau module' % (rel, n.lineno))
+    for n in ast.walk(arbre):
+        if not isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        if not any(isinstance(g, ast.Global) and 'scan_state' in g.names
+                   for g in ast.walk(n)):
+            continue
+        for x in ast.walk(n):
+            if isinstance(x, ast.Assign) and _cible_scan_state(x):
+                out.append('%s:%d: `global scan_state` puis affectation dans %s'
+                           % (rel, x.lineno, n.name))
+    return out
+
+
 def test_scan_state_jamais_reassigne():
+    """Le global partagé ne doit jamais être rebranché sur un autre objet.
+
+    La version par expression régulière accusait sept fonctions qui écrivent
+    `scan_state = scan_state or {}` — l'idiome de normalisation d'un
+    PARAMÈTRE. Vérifié à l'AST : dans les sept, `scan_state` est un argument
+    de la fonction et aucune ne déclare `global scan_state`. Le rebranchement
+    y est purement local ; l'objet partagé n'est pas touché.
+
+    Le détecteur lit donc désormais l'arbre. C'est strictement plus précis que
+    le texte, et la contre-épreuve ci-dessous le prouve dans les deux sens.
+    """
     offenders = []
     for path in _sources():
-        rel = path.relative_to(ROOT)
-        if rel.as_posix() == 'vertex/app/state.py':
+        rel = path.relative_to(ROOT).as_posix()
+        if rel == 'vertex/app/state.py':
             continue  # LE domicile : définition autorisée
-        for i, line in enumerate(path.read_text(encoding='utf-8', errors='ignore').splitlines(), 1):
-            if _REASSIGN.match(line) and not line.rstrip().endswith(','):  # ,=continuation kwarg
-                offenders.append(f'{rel}:{i}: {line.strip()}')
+        try:
+            arbre = ast.parse(path.read_text(encoding='utf-8', errors='ignore'))
+        except SyntaxError:
+            continue
+        offenders += _reassignations(arbre, rel)
     assert not offenders, (
-        'scan_state réassigné (casse la référence partagée → course/lecteurs sur objet mort):\n'
-        + '\n'.join(offenders))
+        'scan_state réassigné (casse la référence partagée → course/lecteurs '
+        'sur objet mort):\n' + '\n'.join(offenders))
+
+
+def test_le_detecteur_voit_une_VRAIE_reassignation():
+    """Contre-épreuve dans les deux sens. Un détecteur qui ne verrait plus
+    rien serait pire que celui qui voyait trop."""
+    innocent = ast.parse('def f(scan_state=None):\n'
+                         '    scan_state = scan_state or {}\n'
+                         '    return scan_state\n')
+    assert _reassignations(innocent, 'x.py') == []
+
+    coupable = ast.parse('scan_state = {}\n'
+                         'def g():\n'
+                         '    global scan_state\n'
+                         '    scan_state = {}\n')
+    assert len(_reassignations(coupable, 'x.py')) == 2
 
 
 # ── 2. identité partagée entre modules (même objet vivant) ─────────────────
@@ -67,7 +126,9 @@ def test_mutation_en_place_visible_partout():
 # ── 3. le worker du scan parallèle ne touche JAMAIS scan_state ─────────────
 def test_worker_parallele_ne_mute_pas_scan_state():
     import terminal
-    src = inspect.getsource(terminal.scan)
+    #  Le worker parallele vit dans `_scan_once` ; `terminal.scan` est
+    #  l enveloppe publique et ne porte plus les defs du worker.
+    src = inspect.getsource(terminal._scan_once)
     start = src.index('def _analyse_one')
     end = src.index('_t_compute = time.monotonic()')   # fin des defs worker, début du dispatch //
     worker = src[start:end]
