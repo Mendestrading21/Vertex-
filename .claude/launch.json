@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "vertex",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["terminal.py"],
+      "runtimeExecutable": ".venv/Scripts/python.exe",
+      "runtimeArgs": ["-m", "vertex"],
       "port": 5002,
       "autoPort": false
     }
