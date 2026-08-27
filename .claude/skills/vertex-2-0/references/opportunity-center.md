@@ -1,5 +1,7 @@
 # Centre Opportunités
 
+Contrat de présentation uniquement : afficher et composer les capacités existantes ; ne pas créer les données, moteurs, scores, calculs, états ou persistance décrits.
+
 ## Mission
 
 Répondre à : **quels dossiers méritent du temps et du capital potentiel maintenant, pourquoi, avec quel risque et quelle fraîcheur ?** Une opportunité n'est pas une recommandation automatique.
@@ -43,4 +45,3 @@ Earnings, macro, dividendes, expirations et événements suivis. Prioriser ce qu
 ## Suivi
 
 Une opportunité peut devenir : à étudier, dossier ouvert, surveillée, prête selon moteur, bloquée, invalidée ou archivée. Ces états de workflow restent distincts du verdict financier.
-

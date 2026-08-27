@@ -1,5 +1,7 @@
 # Centre Analyse
 
+Contrat de présentation uniquement : afficher et composer les capacités existantes ; ne pas créer les données, moteurs, scores, calculs, états ou persistance décrits.
+
 ## Dossier canonique
 
 Chaque instrument possède un dossier unique, accessible depuis recherche, opportunités, portefeuille et watchlist. Aucun espace ne recrée un deuxième dossier divergent.
@@ -27,4 +29,3 @@ Chaque instrument possède un dossier unique, accessible depuis recherche, oppor
 ## Assistant sur le dossier
 
 L'utilisateur peut demander « pourquoi ? », « qu'est-ce qui a changé ? », « quel est le scénario défavorable ? », « quelles données manquent ? » ou « quel impact sur mon portefeuille ? ». La réponse IA cite le packet et sépare faits, moteur, interprétation et limites.
-

@@ -1,5 +1,7 @@
 # Centre Portefeuille et Risque
 
+Contrat de présentation uniquement : afficher et composer les capacités existantes ; ne pas créer les données, moteurs, calculs, états ou persistance décrits.
+
 ## Mission
 
 Répondre à : **que possède le portefeuille, pourquoi, avec quelles expositions, quels risques, quelles échéances de revue et quel impact d'une nouvelle idée ?**
@@ -28,3 +30,6 @@ Chaque élément conserve pourquoi maintenant, catalyseur, invalidation, horizon
 
 Avant de suivre une idée, présenter son impact théorique sur poids, concentration, secteur, devise, corrélation et risque, à partir d'hypothèses explicitement saisies ou calculées par moteur. Ce n'est ni un sizing canonique ni une préparation d'ordre.
 
+Le lien `Tester dans le Simulateur` transmet seulement le contexte visuel disponible à `/simulator`. Comparer situation actuelle, scénario A/B/C et impact portefeuille avec la même base de données. Ne jamais enregistrer la simulation si aucun store canonique n'existe déjà.
+
+Widgets prioritaires : trajectoire valeur/benchmark, equity + drawdown alignés, treemap d'allocation, barres de contribution, heatmap de corrélation, matrice d'exposition, calendrier des positions, concentration et table détaillée avec drawer. Un donut reste secondaire et limité à cinq catégories + Autres.

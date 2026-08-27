@@ -1,5 +1,7 @@
 # Données, intégrations et santé
 
+Contrat de présentation uniquement : cette référence décrit ce que l'UI doit révéler. Elle n'autorise aucun changement aux sources, connexions, caches, jobs, modèles ou contrats existants.
+
 ## Sources
 
 Inventorier les sources déjà présentes avant tout ajout : IBKR, TradingView, WMB, marchés, fondamentaux, news, calendrier, options, stockage local et services internes. Pour chacune : entitlement, licence, univers, champs, latence, fraîcheur, pacing, cache, timeout, provenance, qualité, panne partielle et fallback.
@@ -27,4 +29,3 @@ Connexions, santé, freshness par domaine, dernier scan, jobs, caches, erreurs, 
 ## Observabilité
 
 Healthz, logs client, erreurs provider, pacing, latence, cache hit, données stale, jobs et dérive de schéma. Une page qui paraît vide doit permettre d'identifier si la cause est source, moteur, endpoint ou rendu.
-

@@ -74,6 +74,8 @@ Lire [product-contract.md](references/product-contract.md), puis [platform-archi
 - Identité, tokens, typographie, profondeur, densité et motion : [design-system-final.md](references/design-system-final.md).
 - Cartes, widgets, tables, drawers, formulaires et états : [components-tables-and-states.md](references/components-tables-and-states.md).
 - Choix et implémentation des graphiques : [chart-system-final.md](references/chart-system-final.md).
+- Catalogue des widgets trading, licences et règles d'adoption : [trading-widget-catalog.md](references/trading-widget-catalog.md).
+- Simulateur multi-actifs de positions et scénarios : [position-simulator.md](references/position-simulator.md).
 - Français, accessibilité, responsive et performance : [ux-copy-a11y-performance.md](references/ux-copy-a11y-performance.md).
 - Opportunités, screener, classements, catalyseurs, alertes : [opportunity-center.md](references/opportunity-center.md).
 - Analyse actions/ETF et dossiers : [analysis-center.md](references/analysis-center.md).
@@ -86,13 +88,14 @@ Lire [product-contract.md](references/product-contract.md), puis [platform-archi
 - Programme complet, lots et conditions de sortie : [delivery-program.md](references/delivery-program.md).
 - Sources méthodologiques GitHub et principes retenus : [methodology-sources.md](references/methodology-sources.md).
 - Contrôle final page, domaine et plateforme : [definition-of-done.md](references/definition-of-done.md).
+- Revue exhaustive avant livraison : [audit-150.md](references/audit-150.md).
 
 ## Architecture fonctionnelle
 
 La sidebar est organisée par travail, pas par architecture technique :
 
 - **Piloter** : Aujourd'hui, Calendrier.
-- **Explorer** : Marchés, Opportunités, Analyse, Options.
+- **Explorer** : Marchés, Opportunités, Analyse, Options, Simulateur.
 - **Gérer** : Portefeuille, Suivi, Performance.
 - **Intelligence** : Vertex IA.
 - **Utilitaire épinglé** : Système.
@@ -109,7 +112,7 @@ Alertes et recherche globale restent dans la topbar. Journal appartient à Perfo
 6. Vérifier que calculs, données et provenance sont inchangés, puis contrôler navigateur, responsive, clavier, console, performance et tests.
 7. Livrer une PR brouillon cohérente avec preuves ; ne jamais fusionner automatiquement.
 
-Pour une surface UI, appliquer quatre critiques avant livraison : test de permutation, test de hiérarchie à distance, test de signature sur cinq emplacements précis et test des tokens. Corriger avant de montrer.
+Pour une surface UI, appliquer quatre critiques avant livraison : test de permutation, test de hiérarchie à distance, test de signature sur cinq emplacements précis et test des tokens. Avant le lot d'acceptation, exécuter aussi les 150 contrôles de `references/audit-150.md` et joindre les preuves. Corriger avant de montrer.
 
 ## Définition de terminé
 

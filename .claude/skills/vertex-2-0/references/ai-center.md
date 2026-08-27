@@ -1,5 +1,7 @@
 # Centre Intelligence IA
 
+Contrat de présentation uniquement : afficher et composer les capacités existantes ; ne pas créer les données, moteurs, scores, calculs, états ou persistance décrits.
+
 ## Rôle
 
 L'IA est l'interface explicative de Vertex. Elle synthétise les packets, relie les domaines, cherche les contradictions, répond aux questions et mémorise les éléments autorisés. Elle ne devient jamais la source d'un chiffre canonique.
@@ -37,4 +39,3 @@ Idées, hypothèses, validation OOS, calibration et statut. Aucun résultat de r
 - Montrer les contradictions utiles, pas seulement la conclusion dominante.
 - Ne pas cacher l'âge ou la qualité de la donnée dans une réponse fluide.
 - Journaliser le packet et la version utilisés pour toute explication importante.
-

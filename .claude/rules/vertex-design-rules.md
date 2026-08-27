@@ -30,3 +30,9 @@
     shell → primitive → chart core → page. Captures avant/après au même état.
 15. Vérifier tests, console, healthz, client-log et service worker. PR brouillon,
     rollback documenté, aucune fusion automatique.
+16. Toute bibliothèque de widget suit `trading-widget-catalog.md` : licence,
+    maintenance, poids, sécurité, accessibilité et fallback vérifiés avant usage.
+17. Le Simulateur affiche des scénarios multi-actifs issus des capacités
+    existantes ; jamais de prédiction certaine, calcul inventé ou action broker.
+18. Avant acceptation, exécuter les 150 contrôles documentés et joindre les
+    preuves ; une case sans preuve n'est pas validée.

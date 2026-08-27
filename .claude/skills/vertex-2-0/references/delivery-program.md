@@ -40,29 +40,33 @@ Réorganiser radar/tables/drawers et dossier ticker. Conserver scores, gates, ve
 
 Refondre visuellement Vue d'ensemble, Chaîne, Volatilité, Scanner, Scénarios, Positions et Événements. Présenter les champs réellement fournis ; aucune Greek, IV, quote, score ou stratégie calculée dans l'UI.
 
-## Lot 9 — Portefeuille et Suivi
+## Lot 9 — Simulateur
+
+Composer la page multi-actifs Actions/ETF/Options/Forex depuis les capacités de simulation existantes. Construire paramètres, scénarios, comparaison, risques, impact portefeuille et provenance. Aucun nouveau moteur, calcul de prix, prédiction, store ou action broker.
+
+## Lot 10 — Portefeuille et Suivi
 
 Réordonner Synthèse, Positions, Allocation, Options, Risque et Thèses. Créer la page visuelle Suivi en composant watchlist/tracking/journal existants ; ne pas créer de nouveau store ni état métier.
 
-## Lot 10 — Performance et Vertex IA
+## Lot 11 — Performance et Vertex IA
 
 Séparer visuellement les populations existantes. Refaire Journal, courbes, tables, Assistant, Comité, Décisions, Recherche et Mémoire sans modifier packet, prompt métier, moteur ou persistance.
 
-## Lot 11 — Système
+## Lot 12 — Système
 
 Clarifier Connexions, Données, Jobs, Préférences, Sécurité, Archives et Design System. Ne changer aucune connexion, job, secret, backup ou sync.
 
-## Lot 12 — Responsive et accessibilité
+## Lot 13 — Responsive et accessibilité
 
 Vérifier 390, 430, 768, 1024, 1280, 1440, 1600 et écran large ; clavier, zoom 200 %, touch, focus, reduced motion, contrastes, tableaux et graphiques. Corriger seulement la couche visuelle.
 
-## Lot 13 — Nettoyage visuel
+## Lot 14 — Nettoyage visuel
 
 Après recherche des consommateurs, retirer CSS/classes/docs de design devenus sans usage. Ne supprimer aucun moteur, route, endpoint, fonction métier ou actif de données.
 
-## Lot 14 — Acceptation
+## Lot 15 — Acceptation
 
-Comparer avant/après sur le même SHA fonctionnel ; tests complets, no-orders, healthz, client-log, console, modes live/delayed/stale/demo/offline/missing, service worker et rollback. PR brouillon ; aucune fusion automatique.
+Comparer avant/après sur le même SHA fonctionnel ; exécuter les 150 contrôles de `audit-150.md`, tests complets, no-orders, healthz, client-log, console, modes live/delayed/stale/demo/offline/missing, service worker et rollback. PR brouillon ; aucune fusion automatique.
 
 ## Commande Claude
 

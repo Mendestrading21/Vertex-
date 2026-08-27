@@ -15,6 +15,7 @@
 - Opportunités — `/opportunities`
 - Analyse — `/analysis`
 - Options — `/options`
+- Simulateur — `/simulator`
 
 **Gérer**
 
@@ -83,31 +84,39 @@ Index : recherche, récents, favoris et comparateur. Dossier : Décision, Graphi
 
 Sous-vues : Vue d'ensemble, Chaîne, Volatilité, Scanner, Scénarios, Positions, Événements. Premier écran : sous-jacent, état de la quote/chaîne, régime IV, liquidité, événement et meilleurs contrats. La chaîne CALL/strike/PUT est la table spécialisée principale.
 
-## 7. Portefeuille
+## 7. Simulateur
+
+**Question :** que pourrait devenir une position sous plusieurs scénarios explicites, et quel serait son impact sur le portefeuille ?
+
+Sous-vues : Simple, Avancé, Comparer, Historique seulement si une persistance existe déjà. Classes : Actions, ETF, Options et Forex, selon les données réellement disponibles. Premier écran : paramètres à gauche, scénario central, résultats/risques à droite, hypothèses et provenance toujours visibles. Les sorties sont des simulations, jamais une prédiction certaine, une recommandation ou un ticket d'ordre.
+
+Lire `position-simulator.md`. Une fonction absente reste un état manquant documenté ; aucun calcul financier n'est créé dans l'UI.
+
+## 8. Portefeuille
 
 **Question :** que possède le portefeuille, pourquoi et avec quels risques ?
 
 Sous-vues : Synthèse, Positions, Allocation, Options, Risque, Thèses. Premier écran : valeur/cash/exposition, fraîcheur IBKR, risque principal, concentration, contributeurs et revues urgentes. Tables positions et options séparées ; drawer par position.
 
-## 8. Suivi
+## 9. Suivi
 
 **Question :** quelles thèses, idées et décisions exigent une attention ?
 
 Sous-vues : À revoir, Watchlist, Opportunités suivies, Positions, Options, Alertes, Archives. Premier écran : éléments en retard, prochains événements, changements moteurs et données stale. Table principale : type, objet, statut workflow, verdict séparé, priorité, prochaine revue, catalyseur, invalidation, événement et fraîcheur.
 
-## 9. Performance
+## 10. Performance
 
 **Question :** la méthode fonctionne-t-elle et est-elle bien appliquée ?
 
 Sous-vues : Synthèse, Journal, Trades réels, Signaux théoriques, Tracking hypothétique, Apprentissages. Premier écran adapté à la population sélectionnée : échantillon, période, benchmark, equity/drawdown et limites. Aucun KPI mélangeant les populations.
 
-## 10. Vertex IA
+## 11. Vertex IA
 
 **Question :** comment Vertex comprend-il la situation, où sont les contradictions et que manque-t-il ?
 
 Sous-vues : Assistant, Brief quotidien, Comité, Décisions, Recherche, Mémoire. Premier écran : conversation contextuelle + contexte actif + sources/packet. Les détails montrent moteurs, désaccords, gates, versions et audit trail.
 
-## 11. Système
+## 12. Système
 
 **Question :** Vertex est-il sain, alimenté et correctement configuré ?
 

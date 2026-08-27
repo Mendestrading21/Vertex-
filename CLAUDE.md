@@ -65,6 +65,11 @@ densité professionnelle et mouvement très mesuré.
 - Signature unique : **Decision Trace**, ligne argentée reliant
   Données → Moteur → Décision → Portefeuille sur cinq emplacements définis.
 
+La navigation finale compte douze pages cohérentes : Aujourd'hui, Marchés,
+Opportunités, Analyse, Options, Calendrier, Simulateur, Portefeuille, Suivi,
+Performance, Vertex IA et Système. Le Simulateur est une composition visuelle
+multi-actifs des moteurs existants, jamais un moteur de prévision ou d'ordre.
+
 ## Sources de vérité
 
 Pour le chantier visuel :

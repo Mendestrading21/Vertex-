@@ -40,6 +40,14 @@ Zéro visible sur barres signées/drawdown ; axes non trompeurs ; base commune p
 
 Une couche de thème lit les tokens CSS. Tooltip, axes, grilles, formatters d'affichage, légendes, registry, ResizeObserver, destruction et reduced motion sont centralisés. Canvas transparent ; surface gérée par ChartCard. Détruire instance/listeners/observers avant recréation sans changer la donnée.
 
+## Bibliothèques et plugins
+
+Lire `trading-widget-catalog.md` avant d'introduire une dépendance. Réutiliser le moteur graphique déjà présent tant qu'il couvre le contrat. Une nouvelle bibliothèque exige preuve de licence, maintenance, poids, CSP, accessibilité, resize, destruction, fallback et absence de changement des données.
+
+Pour TradingView Lightweight Charts v5, vérifier la version et les typings locaux avant toute option. Ne pas copier une API v4 : `addSeries(SeriesType, options)` remplace les anciens `addLineSeries`/`addCandlestickSeries`, les timestamps Unix sont en secondes, les temps sont uniques et croissants, `update()` sert aux mises à jour incrémentales, et chaque instance/listener est détruit au démontage. Les plugins officiels restent des points de départ à durcir, pas des composants production garantis.
+
+Plugins visuels à considérer seulement si la donnée existe déjà : volume profile, heatmap, session highlighting, tooltip delta, alertes de prix, lignes utilisateur, bandes, grouped/stacked bars et accessibilité. Aucun plugin n'obtient le droit de calculer un signal ou un niveau canonique.
+
 ## Accessibilité
 
 Résumé textuel, valeurs clés, légende lisible, contraste, motifs/signes et fallback table pour toute visualisation critique. Les interactions clavier donnent accès au point sélectionné ou à une table équivalente.

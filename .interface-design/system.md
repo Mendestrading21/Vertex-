@@ -57,7 +57,7 @@ mesures. Chiffres tabulaires. Titres courts en français, sans longues capitales
 ## Navigation canonique
 
 - **Piloter** : Aujourd'hui, Calendrier.
-- **Explorer** : Marchés, Opportunités, Analyse, Options.
+- **Explorer** : Marchés, Opportunités, Analyse, Options, Simulateur.
 - **Gérer** : Portefeuille, Suivi, Performance.
 - **Intelligence** : Vertex IA.
 - **Utilitaire épinglé** : Système.
@@ -75,6 +75,10 @@ timestamp, fraîcheur et état lorsque ces informations existent.
 Le thème graphique peut changer conteneur, axes, grille, labels, tooltip,
 légende, interactions visuelles, resize et accessibilité. Séries, valeurs,
 calculs, agrégations, sources et timeframes canoniques restent inchangés.
+
+Le Simulateur est une surface analytique multi-actifs. Il compare des scénarios
+explicites pour Actions, ETF, Options et Forex avec les moteurs existants ; il
+ne promet pas une prévision, n'invente aucun calcul et ne prépare aucun ordre.
 
 ## États, accessibilité et responsive
 

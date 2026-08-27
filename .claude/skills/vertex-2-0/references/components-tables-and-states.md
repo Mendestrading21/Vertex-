@@ -24,7 +24,7 @@ Le widget ne calcule jamais le verdict. Il consomme un modèle de présentation 
 
 ## Tables unifiées
 
-Toutes les grandes tables partagent : colonnes configurables, ordre mémorisé, tri, filtres, recherche, saved views, densité, header sticky, colonnes clés sticky, navigation clavier, sélection neutre, drawer de détail, pagination/virtualisation, export autorisé et états complets.
+Toutes les grandes tables partagent : colonnes configurables, tri, filtres, recherche, densité, header sticky, colonnes clés sticky, navigation clavier, sélection neutre, drawer de détail, pagination/virtualisation, export autorisé et états complets. L'ordre mémorisé et les vues enregistrées utilisent uniquement le mécanisme canonique existant ; à défaut, ils restent limités à la session, sans nouvelle clé de persistance.
 
 ### Règles
 

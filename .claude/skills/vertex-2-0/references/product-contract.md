@@ -31,6 +31,7 @@ En moins de cinq minutes, Vertex doit permettre de :
 - Suivi obligatoire : une décision sans invalidation ni prochaine revue est incomplète.
 - Dégradation honnête : une plateforme partiellement alimentée reste utile sans simuler le réel.
 - Progressivité : profondeur maximale, mais révélée au bon moment plutôt qu'affichée simultanément.
+- Simulation honnête : le simulateur multi-actifs compare des scénarios issus des capacités existantes ; il ne prédit pas avec certitude, ne recommande pas et n'exécute rien.
 
 ## Non-objectifs
 

@@ -1,5 +1,7 @@
 # Calendrier central et alertes
 
+Contrat de présentation uniquement : composer les événements et alertes déjà fournis ; ne créer ni source, ni type d'alerte, ni état persistant, ni calcul, ni job.
+
 ## Mission
 
 Répondre à : **qu'est-ce qui arrive, quand, quels instruments ou positions sont concernés, quel est le niveau d'importance et quelle préparation analytique est nécessaire ?**
@@ -40,7 +42,7 @@ Chaque événement expose : titre français, type, date/heure et fuseau, importa
 
 ## Alertes
 
-Créer un centre d'alertes non transactionnel :
+Composer visuellement un centre d'alertes non transactionnel à partir des alertes et états déjà présents. Si un type, un snooze ou une résolution n'existe pas, afficher la capacité manquante et ne pas l'implémenter dans ce chantier :
 
 - événement proche pour position ou option ;
 - thèse ou position à revoir ;
@@ -50,7 +52,7 @@ Créer un centre d'alertes non transactionnel :
 - expiration proche ;
 - job/source en échec.
 
-Une alerte possède type, sévérité, cause, source, timestamp, objet lié, état lu/non lu, snooze et résolution. Acquitter une alerte ne modifie pas le verdict ou le moteur.
+Afficher type, sévérité, cause, source, timestamp, objet lié et, lorsqu'ils existent déjà, état lu/non lu, snooze et résolution. Acquitter une alerte ne modifie pas le verdict ou le moteur.
 
 ## Intégration dans les pages
 
@@ -64,9 +66,8 @@ Une alerte possède type, sévérité, cause, source, timestamp, objet lié, ét
 
 ## Fuseaux horaires
 
-Stocker en UTC, afficher selon la préférence utilisateur et toujours montrer le fuseau lorsque l'heure influence une décision. Gérer changement d'heure et événements sans heure précise. Ne jamais supposer que la date fournisseur est locale.
+Conserver les timestamps et fuseaux fournis par les contrats existants ; afficher selon la préférence utilisateur sans réécrire la donnée. Toujours montrer le fuseau lorsque l'heure influence une décision. Vérifier le rendu au changement d'heure et pour les événements sans heure précise. Ne jamais supposer que la date fournisseur est locale.
 
 ## États
 
 Loading, empty, partial, stale, offline et error. Un calendrier vide distingue « aucun événement » de « source indisponible ». En mode partiel, indiquer les catégories couvertes et manquantes.
-

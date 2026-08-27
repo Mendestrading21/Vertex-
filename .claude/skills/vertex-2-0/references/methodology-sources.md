@@ -40,3 +40,9 @@ Retenu : explorer le monde réel du produit, nommer les défauts à rejeter, tok
 - Flask/Python/JS existant, aucune hypothèse React/Tailwind.
 - Français simple, données réelles, lecture seule et auditabilité avant esthétique.
 - Les méthodes externes guident le design ; elles n'autorisent jamais une modification métier.
+
+## Sources de widgets trading
+
+Le catalogue détaillé et les licences sont dans `trading-widget-catalog.md`. Les sources principales auditées sont TradingView Lightweight Charts et ses plugins officiels, Perspective, Apache ECharts, Plotly.js, Grid.js, D3FC, Lab49 Value Flash, Ghostfolio, FreqUI, QuantStats, VolVisualizer, OpenAlgo et NQGEX. Une source peut inspirer une forme sans autoriser la copie de son code.
+
+Le skill officiel Lightweight Charts a aussi été étudié pour retenir les pièges v5 : vérifier les typings locaux, timestamps en secondes, séries triées, lifecycle, resize, destruction, plugins et API publiques. Il ne remplace pas le contrat graphique Vertex.

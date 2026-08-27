@@ -1,5 +1,7 @@
 # Architecture cible de la plateforme
 
+Carte de lecture uniquement : cette référence aide l'interface à composer les capacités déjà présentes. Elle n'autorise aucune modification d'architecture métier, de modèle, de store, de persistance, de contrat, d'API, de job ou d'intégration.
+
 ## Positionnement
 
 Vertex est la couche d'intelligence située au-dessus des sources et du courtier. IBKR détient comptes, positions et données autorisées. TradingView fournit des alertes/contextes. Les autres sources apportent macro, fondamentaux, news, calendrier ou signaux. Vertex normalise, vérifie, analyse, relie et explique ; l'humain décide et agit hors de Vertex.
@@ -32,7 +34,7 @@ Sources réelles
 - `FollowUp` : objet surveillé, échéance, événement, changement et état.
 - `PerformanceRecord` : signal théorique, suivi ou trade réel explicitement typé.
 
-Réutiliser les modèles existants et créer un adaptateur canonique avant un nouveau modèle parallèle.
+Cette refonte réutilise les modèles et sorties existants. Ne créer ni adaptateur métier ni modèle parallèle ; si une adaptation de présentation est indispensable, elle reste locale à la vue, sans calcul ni persistance.
 
 ## Expérience transversale
 

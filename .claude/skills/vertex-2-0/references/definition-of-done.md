@@ -33,5 +33,6 @@
 - healthz, client-log, desktop/mobile et modes dégradés vérifiés ;
 - service worker à jour ;
 - décision humaine avant merge/release.
+- les 150 contrôles de `audit-150.md` sont renseignés avec preuve, non applicable justifié ou anomalie ouverte ; aucun contrôle n'est simplement coché par supposition.
 
 Ne jamais déclarer « 100 % terminé » avec uniquement une suite de tests verte. Il faut preuve runtime, navigateur, données inchangées et acceptation humaine sur le commit candidat.
