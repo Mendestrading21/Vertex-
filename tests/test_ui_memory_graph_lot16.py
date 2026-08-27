@@ -58,4 +58,6 @@ def test_service_worker_bumped_to_at_least_v95():
     body = _body('/sw.js')
     m = re.search(r"td-shell-v(\d+)", body)
     assert m and int(m.group(1)) >= 95
-    assert 'td-shell-v216' not in body
+    #  Le numero doit avoir DEPASSE v94, pas rester dessus. Ecrire ici la
+    #  version COURANTE viderait l'assertion de sens a chaque bump.
+    assert 'td-shell-v94' not in body

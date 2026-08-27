@@ -12,7 +12,6 @@ Données :  yfinance (différé ~15 min — OK swing). Greeks/GEX = Black-Schole
 """
 import os
 import copy
-import gzip
 import hashlib
 import json
 import time
