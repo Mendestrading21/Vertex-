@@ -37,23 +37,19 @@ def build_executive_decision(sym: str, scan_state: dict):
     detail = (scan_state.get('detail') or {}).get(sym) or {}
     if not detail:
         return None, None
-    plan = detail.get('plan') or {}
-    source = scan_state.get('source') or ''
-    packet = {
-        'symbol': sym,
-        'fundamental': {'score': detail.get('st_fund') or detail.get('fund_score')},
-        'catalysts': {'score': 60 if detail.get('earnings_dte') is not None else None},
-        'technical': {'score': detail.get('score'),
-                      'reward_risk': detail.get('rr') or (plan.get('rr') if isinstance(plan, dict) else None),
-                      'timing_score': detail.get('st_timing'),
-                      'overextended': (detail.get('ext_atr') or 0) >= 2.5},
-        'sentiment': {'score': detail.get('rs')},
-        'anomalies': [],
-        'data_quality': {'overall': 'RECENT' if source and source != 'demo' else 'MISSING',
-                         'actionable_allowed': bool(source and source != 'demo')},
-        'reconciliation': {'actionable_allowed': True},
-        'guard': {'blocking_rules': [], 'mandatory_reviews': []},
-    }
+    #  UN SEUL constructeur de packet. Le corps qui vivait ici en fabriquait
+    #  un second, a la main, en posant `blocking_rules: []`,
+    #  `mandatory_reviews: []` et `actionable_allowed: True` EN DUR : le packet
+    #  se declarait donc complet par construction, sans que rien ne l'ait
+    #  verifie. Consequence mesuree : un packet INCOMPLET rendait `ACHETER` la
+    #  ou la doctrine impose `ATTENDRE` (invariant 6 — un score eleve ne
+    #  contourne jamais une garde dure), et `decision_packet.complete`
+    #  n'existait meme pas dans la reponse.
+    #
+    #  `decision_packet.build` est le proprietaire canonique : il derive la
+    #  qualite, le rapprochement et les gardes des donnees REELLES, et pose
+    #  `DECISION_PACKET_INCOMPLETE` quand une preuve manque.
+    packet = _decision_packet.build(sym, detail, scan_state)
     try:
         market = scan_state.get('market') or {}
         inputs = {'index_trend': {'TREND': 'UP', 'CHOP': 'FLAT'}.get(market.get('regime'),
@@ -94,12 +90,13 @@ def make_blueprint(scan_state: dict) -> Blueprint:
                             'error': f'{sym.upper()} absent du scan courant',
                             'final_decision': 'ATTENDRE',
                             'reason': 'aucune donnée — impossible de décider'}), 200
-        packet = _decision_packet.build(sym, detail, scan_state)
-        resp = _executive.decide(packet, _profile())
-        # Fraîcheur RÉELLE du scan (jamais l'heure du navigateur) — le verdict dérive de
-        # scan_state['detail'], aussi vieux que le dernier scan.
+        #  `build_executive_decision` ci-dessus construit DEJA le packet,
+        #  appelle le moteur et pose `as_of`. Le corps qui suivait refaisait
+        #  tout une seconde fois — et sur `detail`, un nom qui n'existe pas
+        #  dans cette portee. La route de decision, coeur du produit, levait
+        #  donc `NameError` a CHAQUE appel : le gestionnaire d'erreur de Flask
+        #  rendait 500 et la fiche restait sans verdict.
         if isinstance(resp, dict):
-            resp['as_of'] = scan_state.get('scan_ts_h') or scan_state.get('updated')
             resp['decision_packet'] = packet.get('decision_packet') or {}
         return jsonify(resp)
 
