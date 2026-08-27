@@ -1,0 +1,28 @@
+[
+  {
+    "route": "/intelligence?view=brief",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-24-apres/intelligence-view-brief-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-24-apres/intelligence-view-brief-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/intelligence?view=decisions",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-24-apres/intelligence-view-decisions-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-24-apres/intelligence-view-decisions-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  }
+]

@@ -10,34 +10,51 @@ ne décide jamais ; donnée absente → état vide honnête avec action.
 """
 from __future__ import annotations
 
+from vertex.ui import vx2
 from vertex.ui.shell import render_shell
 
+# Ordre canonique de `navigation-and-pages.md` §11. `analyst` porte deja le
+# point d'entree conversationnel : c'est l'Assistant, sous un autre nom. Deux
+# vues manquaient vraiment — le Brief quotidien et les Decisions. `strategy`
+# (constitution, hard gates) reste : le contrat ne l'exige pas, mais elle
+# n'appartient a aucune autre page et la supprimer perdrait du contenu reel.
 VIEWS = (
-    ('analyst', 'Analyste'),
+    ('analyst', 'Assistant'),
+    ('brief', 'Brief quotidien'),
     ('committee', 'Comité'),
-    ('strategy', 'Stratégie'),
-    ('impacts', 'Impacts'),
+    ('decisions', 'Décisions'),
     ('research', 'Recherche'),
     ('memory', 'Mémoire'),
+    ('strategy', 'Doctrine'),
+    ('impacts', 'Impacts'),
 )
 _DEFAULT_VIEW = 'analyst'
 
 
 def _tabs(active: str) -> str:
-    tabs = ''.join(
-        f'<a class="vx-tab" role="tab" href="?view={vid}" '
-        f'aria-selected="{"true" if vid == active else "false"}">{label}</a>'
-        for vid, label in VIEWS)
-    return f'<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Intelligence">{tabs}</nav>'
+    return vx2.tabs([{'label': label, 'href': f'?view={vid}', 'actif': vid == active}
+                     for vid, label in VIEWS],
+                    libelle='Sous-vues de Vertex IA')
 
 
 def _header(active: str) -> str:
-    return f'''<div class="vx-page-header">
-  <div><p class="vx2-eyebrow">Intelligence</p><h1>Vertex IA</h1>
-  <div class="vx-sub">Comment Vertex comprend-il la situation, où sont les
-  contradictions, et que manque-t-il&nbsp;?</div></div>
-</div>
-{_tabs(active)}'''
+    return (
+        vx2.page_header(
+            surtitre='Intelligence', titre='Vertex IA',
+            question='Comment Vertex comprend-il la situation, où sont les '
+                     'contradictions, et que manque-t-il ?')
+        + vx2.context_bar([
+            {'label': 'Rôle', 'contenu':
+                '<span class="vx2-stamp">Claude <b>explique</b> — il ne calcule '
+                'ni ne décide</span>'},
+            {'label': 'Autorité', 'contenu':
+                '<span class="vx2-stamp">Le verdict vient des <b>moteurs</b>, '
+                'jamais du texte</span>'},
+            {'label': 'Fraîcheur', 'contenu':
+                '<span id="vx-ia-fresh">'
+                + vx2.badge_etat('missing', texte='Lecture…') + '</span>'},
+        ])
+        + _tabs(active))
 
 
 _VIEW_CONTENT = {
@@ -82,6 +99,35 @@ _VIEW_CONTENT = {
     <div id="vx-analyst-audit">%%IDLE%%</div>
   </section>
 </div>''',
+
+    'brief': '''
+<div class="vx2-section vx-mt4"><div class="vx2-section-head">
+  <h2 class="vx2-section-title">Brief quotidien</h2>
+  <span class="vx2-section-note">la lecture du jour, dat&eacute;e et sourc&eacute;e</span></div></div>
+<div class="vx-hero-grid vx-mt3">
+  <section class="vx-card vx-card--hero" aria-label="Lecture du jour">
+    <div class="vx-card-header"><span class="vx-card-title">Ce que Vertex retient aujourd&#8217;hui</span>
+      <span class="vx-chart-question">Que dois-je comprendre avant d&#8217;ouvrir un dossier&nbsp;?</span></div>
+    <div id="vx-ia-brief">%%LOADING%%</div>
+  </section>
+  <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)">
+    <section class="vx-card" aria-label="Ce qui a chang&eacute;">
+      <div class="vx-card-header"><span class="vx-card-title">Ce qui a chang&eacute; depuis hier</span></div>
+      <div id="vx-ia-brief-delta">%%LOADING%%</div>
+    </section>
+  </aside>
+</div>
+<div class="vx-mt4" id="vx-ia-brief-source"></div>''',
+
+    'decisions': '''
+<div class="vx2-section vx-mt4"><div class="vx2-section-head">
+  <h2 class="vx2-section-title">D&eacute;cisions canoniques</h2>
+  <span class="vx2-section-note">le verdict des moteurs, ses gates et sa version</span></div></div>
+<div class="vx2-banner" data-kind="prudence" role="status"><span>Ces verdicts viennent
+  des <b>moteurs</b>. Claude peut les expliquer&nbsp;; il ne les modifie jamais, et
+  aucun score ne contourne un hard gate.</span></div>
+<div class="vx-mt3" id="vx-ia-decisions">%%LOADING%%</div>
+<div class="vx-mt4" id="vx-ia-decisions-versions"></div>''',
 
     'committee': '''
 <div class="vx-grid vx-mt4">
@@ -777,12 +823,102 @@ function initImpacts(){
   paintStatus();paint();
   whenChartsReady(paint);   /* re-render une fois chart-core.js (defer) chargé → flow diagram */
 }
+
+/* ══ BRIEF QUOTIDIEN ═════════════════════════════════════════════════
+   `/api/briefing/editorial` sert la lecture du jour, DATEE. Rien n'est
+   reformule ici : les lignes sont rendues telles que le serveur les produit. */
+async function initBrief(){
+  let d=null,err=null;
+  try{d=await VX.fetch('/api/briefing/editorial',{ttl:60000});}catch(e){err=e;}
+  const hote=$('vx-ia-brief');
+  if(err||!d){if(hote)hote.innerHTML=VX.states.error('Brief indisponible : '+((err&&err.message)||'aucune reponse'));return;}
+  const daily=d.daily||{};
+  const lignes=(daily.compact||daily.lines||d.lines||[]);
+  if(hote)hote.innerHTML=lignes.length
+    ? '<div class="vx2-theses">'+lignes.map(function(l){
+        return '<article class="vx2-these"><p class="vx2-these-texte">'+esc(l)+'</p></article>';}).join('')+'</div>'
+    : '<div class="vx2-state" data-kind="empty" role="status">'
+      +'<p class="vx2-state-title">Aucune ligne de brief</p>'
+      +'<p class="vx2-state-cause">Le générateur déterministe n’a rien produit pour ce scan.</p></div>';
+  const chg=(d.changed_since_yesterday||[]);
+  const dh=$('vx-ia-brief-delta');
+  if(dh)dh.innerHTML=chg.length
+    ? chg.map(function(c){return '<div class="vx-kv"><span class="k">'+esc(typeof c==='string'?c:(c.label||c.symbol||''))
+        +'</span><span class="v">'+esc(typeof c==='object'?(c.detail||c.change||''):'')+'</span></div>';}).join('')
+    : '<div class="vx2-state" data-kind="empty" role="status">'
+      +'<p class="vx2-state-title">Aucun changement relevé</p>'
+      +'<p class="vx2-state-cause">La comparaison à hier n’a produit aucune différence, '
+      +'ou aucun scan d’hier n’est disponible.</p></div>';
+  const src=$('vx-ia-brief-source');
+  if(src)src.innerHTML='<p class="vx2-stamp">'
+    +(d.as_of?('Daté du '+esc(d.as_of)):'<span class="vx2-absent">Non horodaté</span>')
+    +' · générateur <b>'+esc(d.generator||daily.generator||'déterministe')+'</b>'
+    /*  « source aucune » se lisait comme « il n'y a pas de source », alors que
+        le champ est simplement absent de la reponse. Deux choses differentes. */
+    +' · '+((d.sources&&d.sources.length)
+        ?('source '+esc(d.sources.join(', ')))
+        :'<span class="vx2-absent">source non déclarée par le serveur</span>')
+    +' · Claude ne réécrit pas ces lignes : il les sert telles quelles.</p>';
+  peindreFraicheurIA(d.as_of);
+}
+
+/* ══ DECISIONS CANONIQUES ════════════════════════════════════════════
+   `scan.committee.decisions` porte le verdict, ses raisons et ses gates.
+   Aucun verdict n'est recalcule, aucun libelle n'est invente : le vocabulaire
+   vient de `__VXVOCAB`. */
+async function initDecisions(){
+  const hote=$('vx-ia-decisions');if(!hote)return;
+  let scan=null,err=null;
+  try{scan=await VX.fetch('/scan',{ttl:120000});}catch(e){err=e;}
+  if(err){hote.innerHTML=VX.states.error('Scan indisponible : '+err.message);return;}
+  const com=(scan&&scan.committee)||{};
+  const ds=com.decisions||[];
+  const lbl=function(k){const v=(window.__VXVOCAB||{})[k];return (v&&(v.label||v[0]))||k||'n/d';};
+  hote.innerHTML=ds.length
+    ? '<div class="vx2-theses">'+ds.map(function(d){
+        const g=d.gates||d.hard_gates||[];
+        return '<article class="vx2-these"><div class="vx2-these-head">'
+          +'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(d.symbol)+'">'+esc(d.symbol)+'</button>'
+          +'<span class="vx2-badge" data-state="live">'+esc(lbl(d.verdict))+'</span></div>'
+          +(d.why||d.reason?'<p class="vx2-these-texte">'+esc(d.why||d.reason)+'</p>':'')
+          +'<dl class="vx2-these-grid">'
+          +'<div class="vx2-these-cell"><dt>Score</dt><dd>'+(d.score!=null?'<span class="vx2-mono">'+VX.fmt.num(d.score,0)+'</span>':'<span class="vx2-absent">n/d</span>')+'</dd></div>'
+          +'<div class="vx2-these-cell"><dt>Hard gates</dt><dd>'+(g.length?esc(g.join(' · ')):'<span class="vx2-absent">aucun signalé</span>')+'</dd></div>'
+          +'<div class="vx2-these-cell"><dt>Moteur</dt><dd>'+esc(d.engine||d.source||'comité')+'</dd></div>'
+          +'</dl></article>';}).join('')+'</div>'
+    : '<div class="vx2-state" data-kind="empty" role="status">'
+      +'<span class="vx2-state-ghost" aria-hidden="true"><i></i><i></i><i></i><i></i></span>'
+      +'<p class="vx2-state-title">Aucune décision canonique</p>'
+      +'<p class="vx2-state-cause">Le comité n’a rendu aucun verdict sur le dernier scan. '
+      +'C’est un résultat valide, pas un manque à combler.</p></div>';
+  const v=$('vx-ia-decisions-versions');
+  if(v)v.innerHTML='<p class="vx2-stamp">'+ds.length+' décision(s) · '
+    +'profil <b>'+esc((scan&&scan.strategy&&scan.strategy.id)||'n/d')+'</b>'
+    +' · scan '+esc((scan&&(scan.scan_ts||scan.updated))||'non horodaté')
+    +' · un score élevé ne contourne jamais un hard gate.</p>';
+  peindreFraicheurIA(scan&&(scan.scan_ts||scan.updated));
+}
+
+/* La barre de contexte porte la fraicheur de la donnee AFFICHEE. */
+function peindreFraicheurIA(ts){
+  const el=$('vx-ia-fresh');if(!el)return;
+  if(!ts){el.innerHTML='<span class="vx2-badge" data-state="missing">Non horodaté</span>';return;}
+  if(window.VX&&VX.freshness){
+    const ms=VX.freshness._ms(ts);
+    if(ms!=null){el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:Date.now()-ms,live:false}));return;}
+  }
+  el.innerHTML='<span class="vx2-badge" data-state="missing">Horodatage illisible</span>';
+}
+
+
 if(VIEW==='analyst')initAnalyst();
 else if(VIEW==='committee'){initCommittee();VX.refresh.register(initCommittee,120000,'committee');}
 else if(VIEW==='strategy')initStrategy();
 else if(VIEW==='research')initResearch();
 else if(VIEW==='impacts')initImpacts();
 else if(VIEW==='memory')initMemory();
+else if(VIEW==='brief')initBrief();
+else if(VIEW==='decisions')initDecisions();
 VX.context.restoreIfReturning();
 })();
 </script>
