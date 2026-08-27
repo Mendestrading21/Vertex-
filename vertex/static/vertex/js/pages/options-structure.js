@@ -475,6 +475,14 @@
     var host = $(hostId), input = $(inputId); if (!host || !input) return;
     board().then(function (bd) {
       var syms = Array.from(new Set(bd.map(function (c) { return c.sym; }))).slice(0, 8);
+      if (!syms.length) {
+        /* Sans tableau d'options, « Depuis le tableau : » suivi de rien est une
+           promesse non tenue. On dit la cause, et on laisse la saisie libre. */
+        host.innerHTML = '<span class="vx-muted" style="font-size:11px">'
+          + 'Aucun sous-jacent dans le tableau d\u2019options : la cha\u00eene n\u2019a pas '
+          + '\u00e9t\u00e9 aliment\u00e9e par le dernier scan. Saisis un symbole ci-dessus.</span>';
+        return;
+      }
       host.innerHTML = '<span class="vx-muted" style="font-size:11px">Depuis le tableau :</span> '
         + syms.map(function (x) { return '<button type="button" class="vx-btn vx-btn-sm vx-btn-ghost" data-osym="' + esc(x) + '">' + esc(x) + '</button>'; }).join('');
       host.addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('[data-osym]') : null; if (!b) return; input.value = b.getAttribute('data-osym'); try { if (VX.store) VX.store.set('active_ticker', input.value); } catch (x) {} load(input.value); });

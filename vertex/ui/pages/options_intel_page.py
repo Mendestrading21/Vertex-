@@ -78,7 +78,13 @@ _VIEW_CONTENT = {
   <input id="vx-os-sym" tabindex="-1"><button id="vx-os-go" type="button">Actualiser</button>
 </div>
 <div id="vx-os-chips" class="vx-options-shortcuts vx-mt3" aria-label="Sous-jacents du tableau"></div>
-<div id="vx-os-verdict" class="vx-mt3">%%LOADING%%</div>
+<div id="vx-os-verdict" class="vx-mt3">
+  <div class="vx2-state" data-kind="empty" role="status">
+    <span class="vx2-state-ghost" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <p class="vx2-state-title">Aucun sous-jacent s&eacute;lectionn&eacute;</p>
+    <p class="vx2-state-cause">Saisis un symbole ci-dessus, ou choisis-en un dans le
+      tableau d&rsquo;options, pour lire sa structure, son payoff et ses sensibilit&eacute;s.</p>
+  </div></div>
 <div id="vx-os-scenarios" class="vx-mt3"></div>
 <div class="vx-hero-grid vx-mt3">
   <section class="vx-card vx-hero-main" aria-label="Payoff à l'échéance">
@@ -88,7 +94,12 @@ _VIEW_CONTENT = {
   </section>
   <aside class="vx-card vx-insight-rail" aria-label="Sensibilités">
     <div class="vx-card-header"><span class="vx-card-title">Sensibilités (Greeks)</span></div>
-    <div id="vx-os-greeks"><div class="vx-empty">—</div></div>
+    <div id="vx-os-greeks">
+  <div class="vx2-state" data-kind="empty" role="status">
+    <p class="vx2-state-title">Sensibilit&eacute;s indisponibles</p>
+    <p class="vx2-state-cause">Elles viennent du contrat s&eacute;lectionn&eacute;. Aucune Greek
+      n&rsquo;est estim&eacute;e en son absence.</p>
+  </div></div>
   </aside>
 </div>
 <details class="vx-disclosure vx-mt3">

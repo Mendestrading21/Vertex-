@@ -32,10 +32,14 @@ _JS = """() => {
   document.querySelectorAll('#vx-content div, #vx-content section, #vx-content aside')
     .forEach(el => {
       const r = el.getBoundingClientRect();
-      if (r.width < 180 || r.height < 70) return;
+      // 48 px et non 70 : un squelette de 60 px de haut est parfaitement
+      // visible, et c'est exactement ce qui avait échappé à la première passe.
+      if (r.width < 180 || r.height < 48) return;
       if (ferme(el)) return;                       // repli, pas vide
       if ((el.innerText || '').trim().length > 0) return;
-      if (el.querySelector('canvas, svg, img, table, input, button, a')) return;
+      const squeletteSeul = el.querySelector('.vx-skeleton, .vx2-skeleton')
+        && !(el.innerText || '').trim();
+      if (!squeletteSeul && el.querySelector('canvas, svg, img, table, input, button, a')) return;
       const st = getComputedStyle(el);
       if (st.display === 'none' || st.visibility === 'hidden' || st.opacity === '0') return;
       const bg = st.backgroundColor;

@@ -95,7 +95,7 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 | 041 | DepthZone contient méthode, historique et détails | **RÉUSSI** pour Simulateur (Hypothèses, Prise en charge par classe) et Calendrier (Couverture) |
 | 042 | Les actions sûres sont proches de leur objet | **RÉUSSI** | « Ouvrir le dossier » sur la ligne de l'événement ; « Ouvrir Système » dans l'état vide qui la motive. |
 | 043 | Les explications longues sont progressives | **RÉUSSI** | Tables équivalentes en `<details>` repliés ; disclosures conservées sur Système et Performance. |
-| 044 | Les états vides donnent cause et prochaine action sûre | **RÉUSSI** | `vx2.etat()` rend `cause` **obligatoire**. 0 rectangle vide sur 13 routes (`preuves/etats-vides.json`). |
+| 044 | Les états vides donnent cause et prochaine action sûre | **RÉUSSI** | `vx2.etat()` rend `cause` **obligatoire**. 0 rectangle vide sur 13 routes. Le détecteur a d'abord laissé passer un **squelette perpétuel de 60 px** sur `/options` : son seuil de hauteur était à 70 px, et un squelette comptait comme du contenu. Seuil abaissé à 48 px, et un conteneur qui ne porte qu'un squelette compte désormais comme vide — un squelette n'est pas du contenu, c'est une promesse. |
 | 045 | Le test de distance confirme une hiérarchie nette | **NON APPLICABLE — jugement humain** | Vérifiable seulement à l'œil, sur les captures. Les captures desktop/mobile sont fournies pour que ce jugement puisse être porté ; je ne le porte pas à la place de l'humain. |
 
 ---
@@ -148,7 +148,7 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 
 | № | Contrôle | État | Preuve |
 |---|---|---|---|
-| 076 | La chaîne garde CALL/strike/PUT et ATM neutre | **À CORRIGER** | Page Options non refondue. → **lot 8**. |
+| 076 | La chaîne garde CALL/strike/PUT et ATM neutre | **À CORRIGER** | Page Options non refondue dans son contenu. → **lot 8**. Trois états malhonnêtes y ont toutefois été corrigés : un squelette perpétuel (`#vx-os-verdict`, jamais rempli faute de sous-jacent), un « — » nu pour les Greeks, et un raccourci « Depuis le tableau : » suivi de **rien** quand la chaîne n'est pas alimentée. |
 | 077 | Bid, ask, mid, spread, volume, OI, IV et Greeks absents restent absents | **RÉUSSI** au Simulateur | `/api/options/simulate` refuse sans prix réel : « spot indisponible — simulation refusée (aucune donnée inventée) ». Capture `simulator-option-refus.png`. Page Options → lot 8. |
 | 078 | Multiplicateur, coût par contrat et coût total non confondus | **RÉUSSI** au Simulateur | Champ « Prime (mid) » avec l'aide « Par action, pas par contrat » ; métrique séparée « Coût par contrat — prime × multiplicateur ». |
 | 079 | Le drawer contrat expose mark, source, heure, qualité et limites | **À CORRIGER** | → lot 8. |
