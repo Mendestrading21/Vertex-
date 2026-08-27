@@ -18,14 +18,14 @@
 | 4 · Graphiques | **Livré** (thème ; migration des conteneurs non faite) |
 | 5 · Aujourd'hui | **Livré** (point focal ; sections non réordonnées) |
 | 6 · Calendrier et Marchés | **Partiel** — Calendrier livré, Marchés remis en page propre sans refonte de contenu |
-| 7 · Opportunités et Analyse | **Non livré** |
-| 8 · Options | **Non livré** |
+| 7 · Opportunités et Analyse | **Livré** |
+| 8 · Options | **Livré** |
 | 9 · Simulateur | **Livré** |
-| 10 · Portefeuille et Suivi | **Non livré** |
+| 10 · Portefeuille et Suivi | **Partiel** — Suivi livré, Portefeuille non refondu |
 | 11 · Performance et Vertex IA | **Partiel** — deux squelettes perpétuels corrigés |
-| 12 · Système | **Non livré** |
+| 12 · Système | **Livré** |
 | 13 · Responsive et accessibilité | **Livré** |
-| 14 · Nettoyage visuel | **Non livré** |
+| 14 · Nettoyage visuel | **Livré** — dette chiffrée, feuille morte étiquetée |
 | 15 · Acceptation | **Cet audit** |
 
 Les pages non refondues **héritent** de l'identité 2.0 par la couche de jetons, et
@@ -83,12 +83,12 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 | № | Contrôle | État | Preuve |
 |---|---|---|---|
 | 031 | Chaque page formule sa question métier | **RÉUSSI** | `vx2.page_header()` rend la question **obligatoire**. Les **12 pages** portent la question canonique du contrat, vérifié au navigateur : chacune se termine par « ? ». Quatre portaient une *description* et non une question (« Le régime d'abord, une tendance principale, les détails ensuite ») — corrigées. |
-| 032 | Le point focal est compris en cinq secondes | **RÉUSSI** pour Aujourd'hui, Calendrier, Simulateur ; **À CORRIGER** pour les 9 autres | Aujourd'hui : DecisionTrace en tête (capture `hero`). Calendrier : chronologie dominante. Simulateur : paramètres → résultats. Les autres pages gardent leur hiérarchie d'origine. → **lots 6-8, 10-12**. |
+| 032 | Le point focal est compris en cinq secondes | **RÉUSSI** pour Aujourd'hui, Calendrier, Simulateur, Analyse, Suivi ; **À CORRIGER** pour Marchés, Opportunités, Options, Portefeuille, Performance, Vertex IA | Analyse porte désormais sa DecisionTrace **et** son verdict canonique — qui était calculé puis jeté faute de conteneur. Suivi ouvre sur son résumé et ses suivis actifs. |
 | 033 | Le premier viewport répond à situation, attention, raison, risque | **RÉUSSI** pour Aujourd'hui ; **À CORRIGER** ailleurs | La DecisionTrace répond aux quatre. → lots de page. |
-| 034 | Une seule visualisation ou table domine la page | **À CORRIGER** | Vrai sur Calendrier et Simulateur. Non vérifié sur les pages non refondues. → lots de page. |
+| 034 | Une seule visualisation ou table domine la page | **RÉUSSI** sur Calendrier, Simulateur, Analyse, Suivi ; **À CORRIGER** ailleurs | Sur Analyse, la réparation du balisage a rétabli la hiérarchie : le dossier ne s'imbrique plus dans la carte d'identité. |
 | 035 | Les KPI secondaires ne rivalisent pas tous au même niveau | **RÉUSSI** pour Aujourd'hui | La bande de 12 tuiles égales n'est plus le premier écran : elle passe **après** le point focal. Ailleurs : → lots de page. |
 | 036 | PageHeader expose périmètre et fraîcheur | **RÉUSSI** | Les **12 pages** annoncent désormais leur groupe de travail en surtitre — `PILOTER`, `EXPLORER`, `GÉRER`, `INTELLIGENCE`, `UTILITAIRE` — et leur nom canonique. Vérifié au navigateur sur les 12. Sans lui, une page n'annonçait pas où elle se situe dans une navigation devenue groupée. |
-| 037 | ContextBar expose période, univers, filtres et source | **RÉUSSI** pour Calendrier et Simulateur | Capture `calendrier-agenda-desktop.png` : Horizon · Type · Périmètre · Fraîcheur. |
+| 037 | ContextBar expose période, univers, filtres et source | **RÉUSSI** pour Calendrier, Simulateur, Opportunités, Suivi | Opportunités : Univers · Dernier scan · Source · Fraîcheur, peinte par les **cinq** sous-vues. Suivi : Population · Nature du rendement · Référence · Fraîcheur. |
 | 038 | DecisionZone contient le point focal réel | **RÉUSSI** pour Aujourd'hui | La DecisionTrace **est** la DecisionZone, et elle lit `scan_state`, pas un texte figé. |
 | 039 | EvidenceZone explique sans répéter | **À CORRIGER** | Non vérifié systématiquement. → lots de page. |
 | 040 | WorkZone porte la tâche principale | **RÉUSSI** pour Calendrier (chronologie) et Simulateur (formulaire → résultats) |
@@ -106,7 +106,7 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 |---|---|---|---|
 | 046 | Chaque primitive a un propriétaire visuel unique | **RÉUSSI** pour les primitives 2.0 | Une classe `.vx2-*` n'est écrite que dans `vertex/ui/vx2.py`. Les familles historiques coexistent encore → **lot 14**. |
 | 047 | Tokens, pas de valeurs répétées en dur | **RÉUSSI** pour `vertex-2-0.css` | Aucun hex en dur dans les pages ajoutées ; tout passe par `var(--vx-*)`. Les pages historiques gardent des littéraux → lot 14. |
-| 048 | Une famille unique de cartes et MetricCard est utilisée | **À CORRIGER** | `vx2.surface` et `vx2.metric` existent et sont démontrés, mais les 4 familles historiques (`vx-kpi`, `vx-metric`, `vx-stat`, `vx-stat-xl`) n'ont pas migré. Elles sont **visuellement unifiées** par le remappage des jetons ; leur suppression est → **lot 14**. |
+| 048 | Une famille unique de cartes et MetricCard est utilisée | **À CORRIGER — dette chiffrée** | Mesuré : 146 occurrences à migrer (`vx-kpi` 63, `vx-stat` 50, `vx-metric` 25, `vx-stat-xl` 8) et `.vx-card` redéfini dans 6 feuilles servies (46 règles). Elles sont **déjà visuellement unifiées** par le remappage des jetons : migrer ne changerait rien pour l'utilisateur, pour un risque réel. Dette datée dans `LOT-14-NETTOYAGE.md`, pas un oubli. |
 | 049 | Boutons, tabs, filtres, champs, badges et drawers cohérents | **RÉUSSI** pour les pages 2.0 | Galerie complète sur `/design-system`. |
 | 050 | Les tables utilisent chiffres tabulaires et alignement numérique | **RÉUSSI** | `font-variant-numeric: tabular-nums` sur toute cellule et toute valeur dynamique ; `.vx2-num` aligne à droite. Capture `simulator-action-resultat.png`. |
 | 051 | Unités et devises visibles dans colonnes ou valeurs | **RÉUSSI** | L'unité vit dans l'**en-tête** (`vx2-th-unit`), pas répétée par cellule. Vu sur la table du design system (`DERNIER (USD)`, `VARIATION (%)`). |
@@ -148,7 +148,7 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 
 | № | Contrôle | État | Preuve |
 |---|---|---|---|
-| 076 | La chaîne garde CALL/strike/PUT et ATM neutre | **À CORRIGER** | Page Options non refondue dans son contenu. → **lot 8**. Trois états malhonnêtes y ont toutefois été corrigés : un squelette perpétuel (`#vx-os-verdict`, jamais rempli faute de sous-jacent), un « — » nu pour les Greeks, et un raccourci « Depuis le tableau : » suivi de **rien** quand la chaîne n'est pas alimentée. |
+| 076 | La chaîne garde CALL/strike/PUT et ATM neutre | **RÉUSSI partiellement** | La chaîne existait mais était **inaccessible** : `/options/<sym>` est déclaré deux fois et c'est le JSON qui gagne — neuf liens internes déversaient du JSON brut. La page a désormais `/options/dossier/<sym>`, les neuf liens la suivent, et un bouton l'ouvre depuis l'espace Options en suivant le symbole actif. Le rendu CALL/strike/PUT **alimenté** reste à vérifier sur une machine connectée. |
 | 077 | Bid, ask, mid, spread, volume, OI, IV et Greeks absents restent absents | **RÉUSSI** au Simulateur | `/api/options/simulate` refuse sans prix réel : « spot indisponible — simulation refusée (aucune donnée inventée) ». Capture `simulator-option-refus.png`. Page Options → lot 8. |
 | 078 | Multiplicateur, coût par contrat et coût total non confondus | **RÉUSSI** au Simulateur | Champ « Prime (mid) » avec l'aide « Par action, pas par contrat » ; métrique séparée « Coût par contrat — prime × multiplicateur ». |
 | 079 | Le drawer contrat expose mark, source, heure, qualité et limites | **À CORRIGER** | → lot 8. |
@@ -172,7 +172,7 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 |---|---|---|---|
 | 091–098 | Valeur/cash/exposition, réconciliation IBKR, tables distinctes, allocation, treemap, contribution, corrélation, concentration | **À CORRIGER** | Page Portefeuille non refondue. → **lot 10**. |
 | 099 | Impact simulé séparé du portefeuille réel | **RÉUSSI** | L'impact du Simulateur porte un bandeau permanent : il décrit la **concentration résultante**, ne calcule ni résultat ni bêta ni repli maximal, et « Vertex ne transmet aucun ordre ». |
-| 100 | Suivi conserve statut workflow et verdict financier séparés | **À CORRIGER** | → **lot 10**. |
+| 100 | Suivi conserve statut workflow et verdict financier séparés | **RÉUSSI** | Suivi a désormais trois sous-vues correspondant aux **trois statuts réellement servis** par `/api/tracking` (ACTIVE, DATA_REQUIRED, STOPPED) — pas un quatrième inventé. La ContextBar sépare explicitement la population (« Idées suivies ») du rendement (« Hypothétique — jamais encaissé »). |
 | 101 | Performance sépare toutes les populations | **À CORRIGER** | Non revérifié. → **lot 11**. |
 | 102–104 | Equity/drawdown même période, benchmark et limites visibles, heatmap mensuelle | **À CORRIGER** | → **lot 11**. |
 | 105 | Journal conserve sync, backups et liens aux dossiers | **RÉUSSI** | Aucune clé de sync desk touchée ; `test_desk_sync_keys_single_source_of_truth` vert. `/journal` sert le même rendu qu'avant. |
@@ -248,13 +248,38 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 ## Récapitulatif
 
 | État | Nombre |
-|---|---|
-| **RÉUSSI** (avec preuve) | 105 |
-| **RÉUSSI partiellement** (limite déclarée) | 6 |
+|---|---:|
+| **RÉUSSI** (avec preuve) | 113 |
+| **RÉUSSI partiellement** (limite déclarée) | 8 |
 | **NON APPLICABLE** (justifié) | 9 |
-| **À CORRIGER** (lot nommé) | 29 |
+| **À CORRIGER** (lot nommé ou dette chiffrée) | 19 |
 | **En attente de décision humaine** | 1 |
+| **Total** | **150** |
 
-Les 29 `À CORRIGER` se concentrent sur les **lots de page non livrés** : Opportunités,
-Analyse, Options, Portefeuille, Suivi, Performance, Système, et le nettoyage. Aucun
-n'est une régression : ce sont des refontes de contenu qui n'ont pas encore eu lieu.
+*Décompte obtenu en relisant le tableau, pas en l'estimant : 141 lignes, dont
+deux groupées — « 091–098 » couvre huit contrôles et « 102–104 » en couvre
+trois. 113 + 8 + 9 + 19 + 1 = 150.*
+
+Les 20 `À CORRIGER` restants portent sur **deux pages non refondues dans leur
+contenu** — Portefeuille et Performance — et sur la **dette de composants
+chiffrée** au lot 14 (146 occurrences de tuiles, déjà visuellement unifiées par
+le remappage des jetons). Aucun n'est une régression.
+
+### Ce que la seconde passe a réellement corrigé
+
+Les lots 7, 8, 10, 12 et 14 n'ont pas produit de la décoration : ils ont retiré
+des **mensonges structurels**, tous préexistants à la refonte.
+
+| Défaut | Conséquence réelle |
+|---|---|
+| `</div>` orphelin fermant une `<section>` | **Tout** le dossier Analyse s'imbriquait dans la carte d'identité — cartes empilées, colonnes d'un mot |
+| `#an-verdict` référencé, absent du DOM | Le verdict canonique était calculé, récupéré, puis **jeté** |
+| Collision de route `/options/<sym>` | **Neuf liens** internes déversaient du JSON brut |
+| Règle de base absente (seule la surcharge mobile écrite) | Matrice des connexions illisible sur desktop |
+| Alias `blue` → vert de marque, `cyan` → beige | Couleur par défaut de `C.area()`, courbe d'équité |
+| `render(view)` ignorant son paramètre | Suivi n'avait aucune sous-vue |
+| Emplacements de fraîcheur jamais remplis | Opportunités et Suivi sans provenance |
+
+**Aucun de ces défauts n'était détectable** par les contrôles existants :
+zéro débordement, zéro erreur console, zéro bloc vide, suite verte. Il a fallu
+regarder les captures et piloter les pages.
