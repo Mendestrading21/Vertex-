@@ -1,7 +1,11 @@
 # Vertex 2.0 — récapitulatif de livraison
 
 **Branche :** `claude/vertex-2-0-visual-redesign-vy3h7s`
-**PR brouillon :** [#839](https://github.com/Mendestrading21/Vertex-/pull/839)
+**PR brouillon :** `#839`  
+<!-- L'URL complète n'est pas écrite ici : son segment de propriétaire porte un
+     nom personnel, et le dépôt en exige zéro dans l'arbre
+     (test_namespace_guards, test_production_guards_canonical). Le numéro suffit,
+     le document vivant dans le dépôt concerné. -->
 **Base :** `main` @ `eff337f` · **8 commits** · 200 fichiers, +7461 / −143
 
 ---
