@@ -210,10 +210,18 @@ function whenChartsReady(fn){
 
 /* ══ Vue ANALYSTE ═══════════════════════════════════════════════════ */
 function initAnalyst(){
-  const idle=VX.states.empty('Aucune analyse lanc&eacute;e — saisissez un ticker ci-contre.','');
-  ($('vx-analyst-verdict')||{}).innerHTML=idle;
-  ($('vx-analyst-audit')||{}).innerHTML=idle;
-  if($('vx-analyst-ai'))($('vx-analyst-ai')||{}).innerHTML=idle;
+  /*  Les trois cartes rendaient la MEME phrase, empilees : « Aucune analyse
+      lancee — saisissez un ticker ci-contre. » trois fois de suite. Trois
+      paragraphes identiques n'informent pas trois fois ; ils fatiguent.
+      Chacune dit desormais ce que ELLE ne peut pas montrer, et une seule
+      porte la marche a suivre.  */
+  const vide=(quoi,aide)=>VX.states.empty(quoi,aide||'');
+  ($('vx-analyst-verdict')||{}).innerHTML=vide(
+    'Aucun verdict : saisissez un ticker ci-contre pour lancer une analyse.','');
+  ($('vx-analyst-audit')||{}).innerHTML=vide(
+    'Le raisonnement s&rsquo;affichera ici, &eacute;tape par &eacute;tape, une fois l&rsquo;analyse lanc&eacute;e.','');
+  if($('vx-analyst-ai'))($('vx-analyst-ai')||{}).innerHTML=vide(
+    'L&rsquo;interpr&eacute;tation vient apr&egrave;s le verdict des moteurs — elle ne le pr&eacute;c&egrave;de jamais.','');
   /* Suggestions : exemples + tickers récents + raccourcis — rien d'inventé */
 (function(){
   const host=$('vx-analyst-suggestions');if(!host)return;

@@ -509,7 +509,12 @@ async function loadConnections(){
       if(_hero)_hero.innerHTML='<div class="vx-flex vx-wrap" style="justify-content:space-between;align-items:flex-start;gap:10px">'
         +'<div style="max-width:640px"><div class="vx-flex" style="gap:8px;align-items:center;margin-bottom:4px">'
         +'<span class="vx-eyebrow">Confiance données</span>'
-        +'<span class="vx-freshness" data-state="'+(_tone==='pos'?'live':_tone==='warn'?'delayed':'stale')+'">'+esc(_headline)+'</span>'
+        /*  La pastille rendait le MEME texte que le titre juste en dessous :
+            « Systeme partiellement degrade » se lisait deux fois, l'un sous
+            l'autre. Elle porte desormais l'ETAT — ce que le titre ne dit pas —
+            et le titre garde le verdict. Chacun apporte quelque chose.  */
+        +'<span class="vx-freshness" data-state="'+(_tone==='pos'?'live':_tone==='warn'?'delayed':'stale')+'">'
+        +({pos:'toutes vertes',warn:'à revoir',muted:'lecture en cours'}[_tone]||'état inconnu')+'</span>'
         +(_demo?'<span class="vx-badge-demo">DÉMO</span>':'')+(_ro?'<span class="vx-badge vx-pos">READONLY</span>':'')+'</div>'
         +'<h2 style="margin:0 0 6px;font-size:21px" class="'+({pos:'vx-pos',warn:'vx-warn',muted:'vx-muted'}[_tone])+'">'+esc(_headline)+'</h2>'
         +'<p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.6">'+_line.map(esc).join(' · ')+'.</p></div>'

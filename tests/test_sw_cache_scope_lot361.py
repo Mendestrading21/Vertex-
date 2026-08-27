@@ -33,7 +33,7 @@ _STATIC = os.path.join(_ROOT, 'vertex', 'static')
 
 # ── Contrat enregistré : ces assets vont avec cette version de shell ─────────
 _EMPREINTE = '03242ec060f40912328df928f5128a034750bab42d9cabac17aa845aafdd5415'
-_SW_VERSION = 241
+_SW_VERSION = 242
 
 _AIDE = (
     "Un fichier servi sous /static a changé.\n"

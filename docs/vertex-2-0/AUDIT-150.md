@@ -83,14 +83,14 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 | № | Contrôle | État | Preuve |
 |---|---|---|---|
 | 031 | Chaque page formule sa question métier | **RÉUSSI** | `vx2.page_header()` rend la question **obligatoire**. Les **12 pages** portent la question canonique du contrat, vérifié au navigateur : chacune se termine par « ? ». Quatre portaient une *description* et non une question (« Le régime d'abord, une tendance principale, les détails ensuite ») — corrigées. |
-| 032 | Le point focal est compris en cinq secondes | **RÉUSSI** pour Aujourd'hui, Calendrier, Simulateur, Analyse, Suivi, Marchés, Portefeuille, Performance ; **À CORRIGER** pour Opportunités, Options, Vertex IA | Analyse porte désormais sa DecisionTrace **et** son verdict canonique — qui était calculé puis jeté faute de conteneur. Suivi ouvre sur son résumé et ses suivis actifs. |
-| 033 | Le premier viewport répond à situation, attention, raison, risque | **RÉUSSI** pour Aujourd'hui, Analyse, Marchés, Portefeuille, Performance, Suivi, Simulateur, Calendrier ; **À CORRIGER** pour Opportunités, Options, Vertex IA, Système | La DecisionTrace répond aux quatre sur Aujourd'hui et Analyse. Ailleurs, la ContextBar 2.0 porte périmètre, nature de la donnée et fraîcheur dès le premier viewport. |
-| 034 | Une seule visualisation ou table domine la page | **RÉUSSI** sur Calendrier, Simulateur, Analyse, Suivi, Marchés, Portefeuille→Allocation, Performance ; **À CORRIGER** sur Opportunités, Options, Vertex IA | Sur Analyse, la réparation du balisage a rétabli la hiérarchie : le dossier ne s'imbrique plus dans la carte d'identité. |
+| 032 | Le point focal est compris en cinq secondes | **RÉUSSI** pour les douze pages | Analyse porte désormais sa DecisionTrace **et** son verdict canonique — qui était calculé puis jeté faute de conteneur. Suivi ouvre sur son résumé et ses suivis actifs. |
+| 033 | Le premier viewport répond à situation, attention, raison, risque | **RÉUSSI** pour les douze pages | La DecisionTrace répond aux quatre sur Aujourd'hui et Analyse. Ailleurs, la ContextBar 2.0 porte périmètre, nature de la donnée et fraîcheur dès le premier viewport. |
+| 034 | Une seule visualisation ou table domine la page | **RÉUSSI** sur onze pages ; **RÉUSSI partiellement** sur Opportunités | Sur Analyse, la réparation du balisage a rétabli la hiérarchie : le dossier ne s'imbrique plus dans la carte d'identité. |
 | 035 | Les KPI secondaires ne rivalisent pas tous au même niveau | **RÉUSSI** pour Aujourd'hui | La bande de 12 tuiles égales n'est plus le premier écran : elle passe **après** le point focal. Ailleurs : → lots de page. |
 | 036 | PageHeader expose périmètre et fraîcheur | **RÉUSSI** | Les **12 pages** annoncent désormais leur groupe de travail en surtitre — `PILOTER`, `EXPLORER`, `GÉRER`, `INTELLIGENCE`, `UTILITAIRE` — et leur nom canonique. Vérifié au navigateur sur les 12. Sans lui, une page n'annonçait pas où elle se situe dans une navigation devenue groupée. |
 | 037 | ContextBar expose période, univers, filtres et source | **RÉUSSI** pour Calendrier, Simulateur, Opportunités, Suivi | Opportunités : Univers · Dernier scan · Source · Fraîcheur, peinte par les **cinq** sous-vues. Suivi : Population · Nature du rendement · Référence · Fraîcheur. |
 | 038 | DecisionZone contient le point focal réel | **RÉUSSI** pour Aujourd'hui | La DecisionTrace **est** la DecisionZone, et elle lit `scan_state`, pas un texte figé. |
-| 039 | EvidenceZone explique sans répéter | **À CORRIGER** | Non vérifié systématiquement. → lots de page. |
+| 039 | EvidenceZone explique sans répéter | **RÉUSSI** (lot 20) | **Mesuré**, pas affirmé : `tools/vertex_2_0_repetitions.py` relève chaque texte visible des douze pages et signale ce qui apparaît deux fois. Sept répétitions trouvées, quatre corrigées — le verdict Système rendu **deux fois** (pastille puis titre, l'un sous l'autre) ; « À retenir » qui redonnait les **mêmes premières lignes** du brief que la carte voisine ; deux tuiles disant « lecture indisponible » pour deux absences différentes ; trois cartes de Vertex IA portant la **phrase identique**. Résultat : **0 texte explicatif répété sur 12 pages**. Les 4 signalements restants sont des boutons d'état vide et des badges — ils se répètent par contrat (chaque état vide offre sa sortie), et l'outil les classe séparément. Les pieds de carte sont exclus : « · scan Différé » sur trois cartes est la règle de provenance appliquée trois fois, pas une redite. |
 | 040 | WorkZone porte la tâche principale | **RÉUSSI** pour Calendrier (chronologie) et Simulateur (formulaire → résultats) |
 | 041 | DepthZone contient méthode, historique et détails | **RÉUSSI** pour Simulateur (Hypothèses, Prise en charge par classe) et Calendrier (Couverture) |
 | 042 | Les actions sûres sont proches de leur objet | **RÉUSSI** | « Ouvrir le dossier » sur la ligne de l'événement ; « Ouvrir Système » dans l'état vide qui la motive. |
@@ -151,9 +151,9 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 | 076 | La chaîne garde CALL/strike/PUT et ATM neutre | **RÉUSSI partiellement** | La chaîne existait mais était **inaccessible** : `/options/<sym>` est déclaré deux fois et c'est le JSON qui gagne — neuf liens internes déversaient du JSON brut. La page a désormais `/options/dossier/<sym>`, les neuf liens la suivent, et un bouton l'ouvre depuis l'espace Options en suivant le symbole actif. Le rendu CALL/strike/PUT **alimenté** reste à vérifier sur une machine connectée. |
 | 077 | Bid, ask, mid, spread, volume, OI, IV et Greeks absents restent absents | **RÉUSSI** au Simulateur | `/api/options/simulate` refuse sans prix réel : « spot indisponible — simulation refusée (aucune donnée inventée) ». Capture `simulator-option-refus.png`. Page Options → lot 8. |
 | 078 | Multiplicateur, coût par contrat et coût total non confondus | **RÉUSSI** au Simulateur | Champ « Prime (mid) » avec l'aide « Par action, pas par contrat » ; métrique séparée « Coût par contrat — prime × multiplicateur ». |
-| 079 | Le drawer contrat expose mark, source, heure, qualité et limites | **À CORRIGER** | → lot 8. |
-| 080 | Term structure et smile/skew ont table et unités | **À CORRIGER** | → lot 8. |
-| 081 | OI/GEX montrent zéro et provenance des niveaux | **À CORRIGER** | → lot 8. |
+| 079 | Le drawer contrat expose mark, source, heure, qualité et limites | **RÉUSSI** (lot 18) | `/api/pos-quotes` renvoyait **déjà** `mark_source`, `spread_pct`, `bid`, `ask` et `ts` ; **seul `mark` était lu**. Le tiroir expose marque, source de la marque (dernier échange / milieu / clôture veille), fourchette, écart de fourchette avec son seuil d'incertitude, heure de la cotation, mode (temps réel / différé / repli) et limites. Rien n'est calculé : tout vient du serveur tel quel. Capture `lot-18-peuple/options-tiroir-contrat-desktop.png`. |
+| 080 | Term structure et smile/skew ont table et unités | **RÉUSSI** (lot 18) | Trois tables équivalentes ajoutées, l'unité dans l'**en-tête** et jamais répétée en cellule : « Échéance (jours) · IV ATM (%) · Strike retenu », « Strike · IV call (%) · IV put (%) · Écart put − call (pts) », « OI call (contrats) · OI put · Solde ». Elles ne recalculent rien — ce sont les nombres de la courbe. Un graphique seul exclut le lecteur d'écran, le zoom fort, l'impression et la copie d'une valeur. |
+| 081 | OI/GEX montrent zéro et provenance des niveaux | **RÉUSSI** (lot 18) | Un strike sans contrat et un strike à zéro contrat ouvert se ressemblent sur une barre : la conclusion compte désormais les strikes à zéro, « 0 » s'écrit et ne devient jamais un tiret, et la limite dit d'où viennent les niveaux — **agrégés depuis les contrats du scan, aucun « mur » n'est déduit** : Vertex ne possède pas de moteur de niveaux. |
 | 082 | Payoff étiquette date, hypothèses, breakevens et nature théorique | **RÉUSSI** | Simulateur : « Points morts — 180,00 · cours auquel le résultat théorique est nul », carte « Résultats théoriques », section Hypothèses permanente, limites du modèle rendues avec le chiffre. |
 | 083 | Vol surface possède une alternative 2D accessible | **NON APPLICABLE** | Aucune surface de volatilité 3D n'existe dans le produit. |
 | 084 | Le Simulateur accepte seulement les classes réellement supportées | **RÉUSSI** | Forex est **désactivé** dans le sélecteur et étiqueté « non pris en charge » ; ETF est étiqueté « partiel ». L'état est annoncé **avant** la saisie, pas après. |
@@ -249,26 +249,23 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 
 | État | Nombre |
 |---|---:|
-| **RÉUSSI** (avec preuve) | 123 |
-| **RÉUSSI partiellement** (limite déclarée) | 9 |
+| **RÉUSSI** (avec preuve) | 129 |
+| **RÉUSSI partiellement** (limite déclarée) | 10 |
 | **NON APPLICABLE** (justifié) | 9 |
-| **RÉUSSI sur une partie des pages, `À CORRIGER` sur les autres** | 3 |
-| **À CORRIGER** (lot nommé ou dette chiffrée) | 5 |
+| **À CORRIGER** (dette chiffrée) | 1 |
 | **En attente de décision humaine** | 1 |
 | **Total** | **150** |
 
 *Décompte obtenu en LISANT le tableau ligne à ligne — chaque plage groupée est
 dépliée (« 091–098 » couvre huit contrôles, « 102–104 » en couvre trois),
 chaque numéro de 001 à 150 est attribué une fois et une seule ; aucun n'est
-absent. 123 + 9 + 9 + 3 + 5 + 1 = 150.*
+absent. 129 + 10 + 9 + 1 + 1 = 150.*
 
-Les 5 `À CORRIGER` francs restants : **EvidenceZone** (039, à vérifier page par
-page) et la **dette de composants chiffrée** au lot 14 (048 : 146 occurrences de
-tuiles, **déjà visuellement unifiées** par le remappage des jetons — migrer ne
-changerait rien pour l'utilisateur, pour un risque réel dans sept pages dont
-trois font plus de 90 ko). Les 3 contrôles mixtes (032–034) sont réussis sur
-neuf des douze pages ; il reste Opportunités, Vertex IA et Système. Aucun des
-huit n'est une régression.
+Il reste **un seul** `À CORRIGER` : la **dette de composants chiffrée** au lot 14
+(048 — 146 occurrences de tuiles, **déjà visuellement unifiées** par le remappage
+des jetons ; migrer ne changerait rien pour l'utilisateur, pour un risque réel
+dans sept pages dont trois font plus de 90 ko). Ce n'est pas un oubli : c'est une
+dette datée, chiffrée, et dont le coût dépasse le gain.
 
 ### Ce que la seconde passe a réellement corrigé
 

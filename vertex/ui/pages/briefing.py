@@ -1820,7 +1820,7 @@ async function loadEssential(scan){
   const roro=String(sum.roro||'').toUpperCase();
   const aWord=roro==='RISK-ON'?'APPÉTIT':roro==='RISK-OFF'?'PRUDENCE':(roro==='NEUTRE'?'NEUTRE':'—');
   const aTone=roro==='RISK-ON'?'pos':roro==='RISK-OFF'?'neg':'';
-  const aSub=roro==='RISK-ON'?'l’argent va vers les actifs risqués':roro==='RISK-OFF'?'les investisseurs privilégient la sécurité':(roro==='NEUTRE'?'ni appétit ni aversion marqués':'lecture indisponible');
+  const aSub=roro==='RISK-ON'?'l’argent va vers les actifs risqués':roro==='RISK-OFF'?'les investisseurs privilégient la sécurité':(roro==='NEUTRE'?'ni appétit ni aversion marqués':'appétit pour le risque non fourni');
   const vix=sum.vix;
   const vWord=vix==null?'—':(vix<15?'CALME':vix<25?'NORMALE':'NERVEUSE');
   const vTone=vix==null?'':(vix<15?'pos':vix<25?'':'neg');
@@ -1843,10 +1843,16 @@ async function loadEssential(scan){
   const ups=rows.filter(r=>r.change>0).sort((a,b)=>b.change-a.change);
   const downs=rows.filter(r=>r.change<0).sort((a,b)=>a.change-b.change);
   const mv=(r,pos)=>r?`<button class="vx-chip" data-open-analysis="${esc(r.symbol)}" style="color:${pos?'var(--vx-positive)':'var(--vx-negative)'}"><b>${esc(r.symbol)}</b>&nbsp;${VX.fmt.pct(r.change,1)}</button>`:'';
-  const lines=((ed&&ed.lines)||[]).slice(0,3);
+  /*  « A retenir » rendait `ed.lines.slice(0,3)` — exactement les memes
+      premieres lignes que « Essentiels de la journee » dans la carte Brief,
+      juste a cote. Deux cartes, un seul texte : l'utilisateur lisait la meme
+      phrase deux fois sur un ecran. Cette carte garde ce qu'elle SEULE porte,
+      cinq mesures lisibles d'un coup d'oeil, et renvoie au proprietaire de la
+      prose.  */
+  const nLignes=((ed&&ed.lines)||[]).length;
   el.innerHTML=
-    `<div class="vx-statrow">${tile('Tendance',tWord,tSub,tTone,spxSpark)}${tile('Ambiance',aWord,aSub,aTone)}${tile('Volatilité',vWord,vSub,vTone,vixSpark)}${tile('Participation',bWord,bSub,bTone)}${tile('Secteur fort',bs?esc(bs):'—',bs?'meneur du jour':'lecture indisponible',bs?'brand':'')}</div>`
-    +(lines.length?`<div class="vx-mt3"><span class="vx-metric-k" style="display:block;margin-bottom:6px">À retenir</span>${lines.map(l=>`<div class="vx-flex" style="gap:8px;padding:4px 0;align-items:flex-start"><span style="flex:0 0 6px;height:6px;border-radius:99px;background:var(--vx-brand);margin-top:6px"></span><span class="vx-dim" style="font-size:13px">${esc(l)}</span></div>`).join('')}</div>`:'')
+    `<div class="vx-statrow">${tile('Tendance',tWord,tSub,tTone,spxSpark)}${tile('Ambiance',aWord,aSub,aTone)}${tile('Volatilité',vWord,vSub,vTone,vixSpark)}${tile('Participation',bWord,bSub,bTone)}${tile('Secteur fort',bs?esc(bs):'—',bs?'meneur du jour':'aucun secteur classé par le scan',bs?'brand':'')}</div>`
+    +(nLignes?`<p class="vx2-stamp vx-mt3">La lecture rédigée — ${nLignes} ligne${nLignes>1?'s':''} — vit dans <b>Brief du marché</b>, ci-dessous.</p>`:'')
     /* « Mouvements du jour » retiré — doublon avec la section Top 10 (épuré : seulement l'essentiel) */
     +sessionLine(scan);
   const meta=$('vx-ess-meta');
