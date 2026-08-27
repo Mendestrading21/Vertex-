@@ -5,7 +5,7 @@ description: Orchestrateur unique pour auditer, développer, valider et publier 
 
 # ACTIVE_SKILL: vertex-1-0
 
-Ce skill est la seule instruction active pour Claude Code dans ce dépôt.
+Ce skill est l'autorité active pour le produit, les données, les moteurs, la sécurité et la release. Pour toute interface, page, navigation, widget, tableau, graphique, typographie ou refonte visuelle, charger aussi `.claude/skills/vertex-design-2-0/SKILL.md`, qui est l'unique autorité spécialisée de design et hérite de tous les invariants ci-dessous.
 
 ## Mission
 

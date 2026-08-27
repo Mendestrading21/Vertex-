@@ -12,8 +12,18 @@ Skill actif: `.claude/skills/vertex-1-0/SKILL.md`.
 Les skills `vertex-skyler-v2`, `vertex-total-rebuild`, V4 et Signal OS sont
 historiques. Ne jamais relancer leurs workflows par lots.
 
-## Refonte « Black Glass Institutional » (kit installé)
-- Direction visuelle canonique = **Black Glass Institutional** : fond noir/graphite neutre, cartes en verre gris translucide, blanc/gris/argent en couleur structurelle, **sémantique stricte** (vert = positif, rouge = négatif/risque, orange = prudence/incertitude), **zéro bleu**, violet réservé aux options.
+## Autorité spécialisée Vertex Design 2.0
+
+Pour toute demande d'interface, navigation, page, composant, widget, tableau, graphique, responsive, typographie ou refonte visuelle, invoquer exclusivement :
+
+```text
+/vertex-design-2-0
+```
+
+Skill : `.claude/skills/vertex-design-2-0/SKILL.md`. Il hérite de tous les invariants de `vertex-1-0` et devient l'unique autorité de design. En cas de conflit, sécurité, lecture seule et vérité financière restent prioritaires. Les anciens workflows Signal OS, Neon Glass, Copper, Signal Green et `vertex-redesign-*` sont historiques.
+
+## Refonte « Vertex Black Glass — Signal Light »
+- Direction visuelle canonique = **Vertex Black Glass — Signal Light** : fond obsidienne/graphite, verre noir translucide, structure blanc/argent, séparation par surfaces plutôt que bordures visibles, Geist + Geist Mono, **sémantique stricte** (vert = positif, rouge = négatif/risque, ambre = prudence/incertitude), **zéro bleu identitaire**, violet réservé aux options.
 - Contrats de référence : `docs/VERTEX_GLASS_REDESIGN_MASTER_PLAN.md` + `docs/claude/` (`VERTEX_GLASS_VISUAL_CONTRACT.md`, `VERTEX_CHART_CONTRACT.md`, `VERTEX_REFACTOR_RULES.md`, `VERTEX_PAGE_MATRIX.md`, `VERTEX_ACCEPTANCE_CHECKLIST.md`).
 - Skills d'orchestration : `.claude/skills/vertex-redesign-*` (orchestrator, foundations, une par espace, qa). Couche CSS = `vertex/static/vertex/css/glass.css` (chargée en dernier).
 
