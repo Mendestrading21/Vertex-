@@ -217,7 +217,16 @@ def charger_companyfacts(cik, *, lecteur=None, timeout: float = 20.0) -> dict:
     import urllib.request
     requete = urllib.request.Request(url, headers=entete)
     with urllib.request.urlopen(requete, timeout=timeout) as reponse:
-        return json.loads(reponse.read().decode("utf-8"))
+        brut = reponse.read()
+        #  L'en-tête DEMANDE gzip et la SEC l'accorde : décoder sans
+        #  décompresser levait `UnicodeDecodeError: byte 0x8b` — les deux
+        #  premiers octets d'un flux gzip. Ce chemin n'avait jamais été
+        #  exercé en réseau réel, seulement par `lecteur` injecté ; le défaut
+        #  attendait donc le premier appel véritable.
+        if (reponse.headers.get("Content-Encoding") or "").lower() == "gzip":
+            import gzip as _gz
+            brut = _gz.decompress(brut)
+        return json.loads(brut.decode("utf-8"))
 
 
 __all__ = [

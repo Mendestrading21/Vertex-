@@ -1154,6 +1154,117 @@ async function renderWatchlist(){
 
 /* Discipline V2 (SKYLER LOT 8d) : bornes 8-15, concentration (top/HHI), plafond
    par titre — PortfolioContext canonique, jamais un chiffre inventé. */
+/* ═══ STRESS ET DEPENDANCES CACHEES — LES DEUX ANALYSES MANQUANTES ═══════
+
+   Les deux etaient APPELEES par la vue « risque » et definies NULLE PART :
+   `risk:async function(){await renderRisk();await renderStress();
+    await renderDiscipline();await renderHiddenDeps();}`
+
+   La vue levait donc `ReferenceError` sur la deuxieme ligne et ne rendait
+   RIEN — pas meme `renderRisk`, qui existe pourtant.
+
+   Les moteurs, eux, existaient : `/api/portfolio/stress` et `/api/risk` sont
+   servis depuis `engines/portfolio_stress.py` et le contexte de correlation.
+   Seul l'affichage manquait.
+
+   Lecture seule : ces deux blocs DECRIVENT une exposition, ils n'en preparent
+   aucune. Aucun chiffre n'est calcule ici — tout vient du serveur.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Stress : ce que le portefeuille encaisse sur un choc de marche. */
+async function renderStress(){
+  let d=null,err=null;
+  try{d=await VX.fetch('/api/portfolio/stress',{ttl:120000});}catch(e){err=e;}
+  document.querySelectorAll('[aria-label="Stress"]').forEach(n=>n.remove());
+  const host=document.createElement('section');
+  host.className='vx-card vx-mt3';host.setAttribute('aria-label','Stress');
+
+  if(err||!d){
+    host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Stress de marche</span></div>'
+      +VX.states.error('Stress indisponible');
+    ($('pf-body')||{}).appendChild&&$('pf-body').appendChild(host);return;}
+
+  const tete='<div class="vx-card-header"><span class="vx-card-title">Stress de marche</span>'
+    +'<span class="vx-chart-question">Que perd le portefeuille si le marche recule ?</span></div>';
+
+  if(d.empty){
+    /*  Un stress sans position chiffrable n'est pas un stress a zero : c'est
+        une ABSENCE. L'afficher comme « perte 0 » serait la lecture la plus
+        dangereuse possible de cette carte.  */
+    const exclus=(d.excluded||[]).length;
+    host.innerHTML=tete+VX.states.empty(esc(d.reason||'aucune position chiffrable'))
+      +(exclus?`<div class="vx-meta vx-mt2">${exclus} position(s) exclue(s) faute de prix reel`
+        +(d.excluded_cost!=null?` · cout declare ${VX.fmt.price(d.excluded_cost)}`:'')+'</div>':'')
+      +`<div class="vx-card-footer">${VX.updateIndicator(window.__pfTs||null,
+          'portfolio_stress',window.__pfLive?'live':'fallback')}</div>`;
+    ($('pf-body')||{}).appendChild&&$('pf-body').appendChild(host);return;}
+
+  const lignes=(d.positions||[]).map(x=>{
+    const pv=(x.loss_pct!=null)?VX.fmt.pct(x.loss_pct,1):'n/d';
+    return `<tr><td data-label="Titre">${esc(x.sym||'')}</td>`
+      +`<td data-label="Valeur" class="vx-num">${x.value!=null?VX.fmt.price(x.value):'n/d'}</td>`
+      +`<td data-label="Choc" class="vx-num vx-neg">${x.loss!=null?VX.fmt.price(x.loss):'n/d'}</td>`
+      +`<td data-label="Impact" class="vx-num vx-neg">${pv}</td></tr>`;}).join('');
+
+  host.innerHTML=tete
+    +`<div class="vx-meta">${esc(d.assumption||'')}</div>`
+    +(d.narrative?`<p class="vx-mt2">${esc(d.narrative)}</p>`:'')
+    +`<div class="vx-table-wrap vx-mt2"><table class="vx-table"><thead><tr>
+        <th>Titre</th><th class="vx-num">Valeur</th><th class="vx-num">Choc</th>
+        <th class="vx-num">Impact</th></tr></thead><tbody>${lignes}</tbody></table></div>`
+    +`<div class="vx-meta vx-mt2">Couverture ${d.coverage_pct!=null?VX.fmt.pct(d.coverage_pct,0):'n/d'}`
+    +((d.excluded||[]).length?` · ${(d.excluded||[]).length} position(s) hors calcul faute de prix reel`:'')
+    +'</div>'
+    +`<div class="vx-card-footer">${VX.updateIndicator(window.__pfTs||null,
+        'portfolio_stress · '+esc(d.generator||'moteur'),
+        window.__pfLive?'live':'fallback')} · lecture seule</div>`;
+  ($('pf-body')||{}).appendChild&&$('pf-body').appendChild(host);
+}
+
+/* Dependances cachees : ce que l'etiquette de secteur ne montre pas. */
+async function renderHiddenDeps(){
+  let d=null,err=null;
+  try{d=await VX.fetch('/api/risk',{ttl:120000});}catch(e){err=e;}
+  document.querySelectorAll('[aria-label="Dependances cachees"]').forEach(n=>n.remove());
+  const host=document.createElement('section');
+  host.className='vx-card vx-mt3';host.setAttribute('aria-label','Dependances cachees');
+
+  const tete='<div class="vx-card-header"><span class="vx-card-title">Dependances cachees</span>'
+    +'<span class="vx-chart-question">Mes positions bougent-elles ensemble sans que le secteur le dise ?</span></div>';
+
+  if(err||!d){
+    host.innerHTML=tete+VX.states.error('Analyse de dependances indisponible');
+    ($('pf-body')||{}).appendChild&&$('pf-body').appendChild(host);return;}
+
+  const flags=d.flags||[];
+  if(!flags.length){
+    /*  « Aucun drapeau » et « panier trop petit » sont deux choses
+        differentes : la premiere est un resultat, la seconde une absence de
+        mesure. Le serveur les distingue par `note` — on la sert telle quelle
+        plutot que d'annoncer une diversification qu'on n'a pas mesuree.  */
+    host.innerHTML=tete
+      +(d.note?VX.states.empty(esc(d.note))
+             :VX.states.empty('Aucune dependance cachee detectee sur '+(d.n||0)+' titre(s)'))
+      +`<div class="vx-card-footer">${VX.updateIndicator(window.__pfTs||null,'risk_engine',
+          window.__pfLive?'live':'fallback')}</div>`;
+    ($('pf-body')||{}).appendChild&&$('pf-body').appendChild(host);return;}
+
+  const items=flags.map(f=>{
+    const t=(f.severity==='high'||f.level==='high')?'neg':'warn';
+    const paire=(f.pair||f.symbols||[]).join(' + ');
+    return `<div class="vx-kv"><span class="k">${esc(paire||f.kind||'')}</span>`
+      +`<span class="v"><span class="vx-badge" data-tone="${t}">${esc(f.label||f.kind||'')}</span></span></div>`;
+  }).join('');
+
+  host.innerHTML=tete
+    +`<div class="vx-mt2">${items}</div>`
+    +`<div class="vx-meta vx-mt2">${flags.length} signal(aux) sur ${d.n||0} titre(s)`
+    +(d.no_new_risk?' · <span class="vx-neg">nouveau risque deconseille</span>':'')+'</div>'
+    +`<div class="vx-card-footer">${VX.updateIndicator(window.__pfTs||null,'risk_engine',
+        window.__pfLive?'live':'fallback')} · lecture seule</div>`;
+  ($('pf-body')||{}).appendChild&&$('pf-body').appendChild(host);
+}
+
 async function renderDiscipline(){
   /* LOT 603 (dossier 531-A, suite) : un echec ne fait plus disparaitre la
      section. Invariant produit : donnee absente -> mention honnete. */
@@ -1187,7 +1298,7 @@ async function renderDiscipline(){
   $('pf-body').appendChild(host);
 }
 const RENDER={team:renderTeam,positions:renderPositions,performance:renderPerformance,
-  options:renderOptions,risk:async function(){await renderRisk();await renderDiscipline();}  /* `renderStress` et `renderHiddenDeps` etaient appelees ici et definies NULLE PART : la vue « risque » levait ReferenceError et ne rendait donc RIEN, pas meme les deux blocs qui existent. Les appels morts sont retires ; les deux analyses restent a ecrire. */,watchlist:renderWatchlist};
+  options:renderOptions,risk:async function(){await renderRisk();await renderStress();await renderDiscipline();await renderHiddenDeps();},watchlist:renderWatchlist};
 async function pfFresh(){try{
   const el=$('pf-fresh');if(!el||!window.VX||!VX.freshness)return;
   let pk=VX.fetch.peek('/api/session/manifest');

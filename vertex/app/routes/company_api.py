@@ -31,7 +31,9 @@ from flask import Blueprint, jsonify
 
 from vertex.app.config import DEMO_MODE
 from vertex.data import company as _company
+from vertex.app import snapshot as _instantane
 from vertex.data_sources import analyst_deep
+from vertex.data_sources import sec_fondamentaux as _sec_f
 
 bp = Blueprint('company_api', __name__)
 
@@ -67,6 +69,65 @@ def api_names():
                         if isinstance(v, dict) and v.get('name')})
     except Exception:
         return jsonify({})
+
+
+#  ── SEC EDGAR : la seule source fondamentale DATEE du produit ───────────────
+#
+#  Elle etait ecrite, testee, et branchee NULLE PART. Les fondamentaux Reuters
+#  sont refuses par le compte IBKR (10358) et `yfinance` n'expose aucune date
+#  de publication : sans cette route, aucun fait fondamental du produit ne
+#  peut dire ce qui etait connaissable a une date donnee.
+#
+#  Servie par le magasin d'instantanes, jamais en synchrone : un
+#  `companyfacts` fait plusieurs mega-octets et se paie en secondes. La route
+#  rend tout de suite ce qu'elle a et charge le reste EN FOND — c'est le
+#  defaut P0.1, et on ne le rouvre pas pour une source de plus.
+FRAICHEUR_SEC_S = 6 * 3600.0
+PLAFOND_SEC_S = 48 * 3600.0
+_MAGASIN_SEC = _instantane.Magasin('sec-fondamentaux')
+
+
+@bp.route('/api/sec/fondamentaux/<sym>')
+def api_sec_fondamentaux(sym):
+    """Faits deposes a la SEC pour ce titre, chacun date de sa publication.
+
+    Chaque fait porte DEUX dates : `observed_at` (la periode decrite) et
+    `available_at` (le depot). Les confondre est exactement ce que la doctrine
+    interdit — un retrotest qui daterait un resultat de sa periode emploierait
+    un chiffre publie des semaines plus tard.
+    """
+    symbole = str(sym or '').upper()[:12]
+
+    def _charger():
+        r = _sec_f.fondamentaux(symbole)
+        return r, {'source': 'SEC_EDGAR',
+                   'qualite': 'MEASURED' if r.get('faits') else 'ABSENTE'}
+
+    valeur, meta = _MAGASIN_SEC.servir(
+        symbole, _charger, fraicheur_s=FRAICHEUR_SEC_S,
+        plafond_s=PLAFOND_SEC_S, attendre=False)
+    corps = dict(valeur or {'symbole': symbole, 'faits': []})
+    corps['etat_fraicheur'] = {
+        'etat': meta.etat,
+        'age_s': meta.age_s,
+        'chargement_en_cours': bool(getattr(meta, 'rafraichissement_en_cours', False)),
+        'erreur': meta.erreur,
+        'note': ('un premier appel sur un titre froid rend MISSING et charge en '
+                 'fond : « aucun fait » signifie ici « pas encore », pas '
+                 '« cette entreprise n a rien depose »'),
+    }
+    corps['read_only'] = True
+    return jsonify(corps)
+
+
+@bp.route('/api/sec/etat')
+def api_sec_etat():
+    """L'etat de la source — dont le drapeau et le contact, separement.
+
+    `VERTEX_ENABLE_SEC` a longtemps figure dans un `.env` sans que RIEN ne le
+    lise. Cette route rend la question verifiable depuis la page Systeme.
+    """
+    return jsonify(_sec_f.etat())
 
 
 __all__ = ['bp']
