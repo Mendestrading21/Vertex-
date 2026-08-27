@@ -24,7 +24,10 @@ def client():
 
 BAD_SYMS = ['INEXISTANT', 'aaa', 'AAPL;DROP TABLE', 'A' * 120, 'été',
             '<script>alert(1)</script>', '-1', 'NULL']
-PAGES = ['/', '/markets', '/opportunities', '/analysis', '/portfolio',
+#  `/markets` retire : Marches est fusionne dans le Dashboard et la route
+#  redirige (302). Une redirection n'est pas un 5xx — ce banc verifie
+#  qu'une vue inconnue ne casse rien, pas qu'une page existe.
+PAGES = ['/', '/opportunities', '/analysis', '/portfolio',
          '/options', '/journal', '/system']
 
 

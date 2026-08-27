@@ -137,8 +137,11 @@ def test_options_page_renders_as_primary_space(client):
     assert 'data-nav-id="options"' in html
     assert re.search(r'data-nav-id="options"[^>]*aria-current="page"', html) \
         or 'data-nav-id="options" aria-current="page"' in html
-    # huit espaces dans la nav principale (Marchés fusionné dans le Dashboard)
-    assert len(re.findall(r'class="vx-nav-item"', html)) == 8
+    #  SEPT entrees : les huit espaces de la constitution moins Marches,
+    #  fusionne dans le Dashboard qui porte indices, taux, secteurs,
+    #  breadth et VIX. Le commentaire disait deja « fusionne » ; le compte
+    #  ne l'avait pas suivi.
+    assert len(re.findall(r'class="vx-nav-item"', html)) == 7
 
 
 def test_options_page_subviews(client):

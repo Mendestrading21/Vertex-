@@ -28,8 +28,12 @@ def configured() -> bool:
 
 # Modèle par défaut : profondeur maximale pour l'analyste privé (cf .env.example
 # et le runbook). VERTEX_AI_MODEL prime, ANTHROPIC_MODEL en repli — les deux ids
-# sont valides ; l'utilisateur choisit (claude-opus-4-8 · claude-sonnet-5).
-DEFAULT_MODEL = 'claude-opus-4-8'
+# sont valides ; l'utilisateur choisit. Famille courante : claude-opus-5
+# (le plus capable) · claude-sonnet-5 (defaut, equilibre cout/qualite)
+# · claude-haiku-4-5 (le plus rapide). `claude-opus-4-8` appartient a la
+# generation precedente : il servait de defaut, ce qui faisait tourner
+# tout le produit sur un modele perime sans que rien ne le dise.
+DEFAULT_MODEL = 'claude-sonnet-5'
 
 
 def resolve_model() -> str:
