@@ -6,7 +6,7 @@
      nom personnel, et le dépôt en exige zéro dans l'arbre
      (test_namespace_guards, test_production_guards_canonical). Le numéro suffit,
      le document vivant dans le dépôt concerné. -->
-**Base :** `main` @ `eff337f` · **8 commits** · 200 fichiers, +7461 / −143
+**Base :** `main` @ `eff337f` · **16 commits**
 
 ---
 
@@ -21,18 +21,39 @@
 | **4** | Graphiques — thème réaligné | ✅ |
 | **5** | Aujourd'hui — point focal `Decision Trace` | ✅ |
 | **6** | Calendrier ✅ · Marchés remis en page propre, contenu non refondu | ⚠️ partiel |
+| **7** | Opportunités et Analyse | ✅ |
+| **8** | Options | ✅ |
 | **9** | Simulateur multi-classes | ✅ |
+| **10** | Suivi ✅ · Portefeuille non refondu | ⚠️ partiel |
 | **11** | Deux squelettes perpétuels de Performance corrigés | ⚠️ partiel |
+| **12** | Système | ✅ |
 | **13** | Responsive et accessibilité, mesurés | ✅ |
+| **14** | Nettoyage — dette chiffrée, feuille morte étiquetée | ✅ |
 | **15** | Audit d'acceptation — 150 contrôles renseignés | ✅ |
 
-**Non livrés :** lots **7** (Opportunités et Analyse), **8** (Options — trois états
-malhonnêtes corrigés, contenu non refondu), **10** (Portefeuille et Suivi),
-**12** (Système), **14** (nettoyage visuel).
-
-Ces pages **héritent** de l'identité 2.0 par la couche de jetons et passent tous les
-contrôles transverses. Ce qu'elles n'ont pas reçu, c'est une refonte de leur
+**Restent non refondus dans leur contenu :** **Portefeuille**, **Performance** et
+les sous-vues Marchés. Ils héritent de l'identité 2.0 et passent tous les
+contrôles transverses ; ce qu'ils n'ont pas reçu, c'est une refonte de leur
 hiérarchie d'information.
+
+## La seconde passe n'a pas décoré — elle a retiré des mensonges
+
+Tous préexistants à la refonte, et **aucun détectable** par les contrôles
+existants (zéro débordement, zéro erreur console, zéro bloc vide, suite verte) :
+
+| Défaut | Conséquence réelle |
+|---|---|
+| `</div>` orphelin fermant une `<section>` | **Toute** la page Analyse s'imbriquait dans la carte d'identité — cartes empilées, colonnes d'un mot par ligne |
+| `#an-verdict` référencé, absent du DOM | Le verdict canonique était calculé, récupéré, puis **jeté** |
+| Collision de route `/options/<sym>` | **Neuf liens** internes déversaient du JSON brut |
+| Seule la surcharge mobile écrite | Matrice des connexions illisible sur desktop |
+| Alias `blue` → vert de marque, `cyan` → beige | Couleur par défaut de `C.area()`, courbe d'équité |
+| `render(view)` ignorant son paramètre | Suivi n'avait aucune sous-vue |
+| Emplacements de fraîcheur jamais remplis | Opportunités, Suivi |
+| `neon-glass.css`, 855 lignes jamais servies | Ses règles ont induit en erreur pendant ce chantier même |
+
+Il a fallu **regarder les captures et piloter les pages**. Deux gardiens ont été
+ajoutés pour que ces classes de défaut ne reviennent pas en silence.
 
 ---
 
