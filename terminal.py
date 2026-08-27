@@ -1687,7 +1687,12 @@ def _news_loop():
             # Dedupe AVANT le tri : on garde le premier arrive, comme avant.
             feed = _news_plus.dedupe_news(feed)
             feed.sort(key=lambda x: x.get('time') or '', reverse=True)
-            news_state['items'] = feed[:45]
+            #  Regle produit n°5 : tout texte externe passe par
+            #  `sanitize_news` AVANT d'etre servi. Cette branche-ci —
+            #  RSS, yfinance, traduction — ne le faisait pas ; seule
+            #  celle d'IBKR etait couverte. Le fil est rendu en
+            #  innerHTML : un titre porteur de balise passait tel quel.
+            news_state['items'] = _news_plus.sanitize_news(feed[:45])
             news_state['updated'] = datetime.now().strftime('%H:%M:%S')
             #  La provenance NOMME ses contributeurs, comme le scan : « ibkr »
             #  n'est pas « ibkr+web ». Sans ce compte, un fil bascule

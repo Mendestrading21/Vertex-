@@ -137,7 +137,7 @@
         render: function (cv) { return VXCharts.mount(cv, { type: 'line',
           data: { labels: ts.map(function (p) { return p.dte + ' j'; }), datasets: [{ data: ts.map(function (p) { return p.iv * 100; }), borderColor: cc.brand, backgroundColor: 'rgba(201,205,212,.12)', fill: true, tension: .3, pointRadius: 4, pointBackgroundColor: cc.brand }] },
           options: { scales: { y: { ticks: { callback: function (v) { return v + ' %'; } }, grid: { color: 'rgba(255,255,255,.05)' } }, x: { grid: { display: false } } } } }); } });
-      else document.getElementById('vx-osym-term').innerHTML = '';
+      else (document.getElementById('vx-osym-term')||{}).innerHTML = '';
       var cn = (d.expected_move_cone && d.expected_move_cone.points) || [];
       if (cn.length >= 2) {
         var mk = function (key, col, w, dash) { return { data: cn.map(function (p) { return p[key]; }), borderColor: col, borderWidth: w, borderDash: dash || [], pointRadius: 0, fill: false, tension: .2 }; };
@@ -148,7 +148,7 @@
           render: function (cv) { return VXCharts.mount(cv, { type: 'line',
             data: { labels: cn.map(function (p) { return p.dte + ' j'; }), datasets: [mk('hi2', cc.neutral, 1, [4, 4]), mk('hi1', cc.brand, 1.4), mk('mid', cc.positive, 2), mk('lo1', cc.brand, 1.4), mk('lo2', cc.neutral, 1, [4, 4])] },
             options: { scales: { y: { grid: { color: 'rgba(255,255,255,.05)' } }, x: { grid: { display: false } } } } }); } });
-      } else document.getElementById('vx-osym-cone').innerHTML = '';
+      } else (document.getElementById('vx-osym-cone')||{}).innerHTML = '';
       var oi = (d.oi_by_strike && d.oi_by_strike.rows) || [];
       if (oi.length) VXCharts.card('vx-osym-oi', {
         title: 'Open interest par strike', question: 'Où se concentrent les positions ouvertes ?',
@@ -159,7 +159,7 @@
             { label: 'CALL', data: oi.map(function (r) { return r.call; }), backgroundColor: 'rgba(201,205,212,.8)' },
             { label: 'PUT', data: oi.map(function (r) { return r.put; }), backgroundColor: 'rgba(156,121,208,.8)' }] },
           options: { scales: { y: { grid: { color: 'rgba(255,255,255,.05)' } }, x: { grid: { display: false } } } } }); } });
-      else document.getElementById('vx-osym-oi').innerHTML = '';
+      else (document.getElementById('vx-osym-oi')||{}).innerHTML = '';
       var sm = d.iv_smile || {}; var smC = sm.calls || [], smP = sm.puts || [];
       if (smC.length + smP.length >= 2) VXCharts.card('vx-osym-smile', {
         title: 'Smile d’IV · ' + (sm.dte != null ? sm.dte + ' j' : ''), question: 'L’IV est-elle plus chère sur les puts (skew) ?',
@@ -170,7 +170,7 @@
             { data: smC.map(function (p) { return { x: p.strike, y: p.iv * 100 }; }), pointBackgroundColor: '#c9cdd4', pointRadius: 5 },
             { data: smP.map(function (p) { return { x: p.strike, y: p.iv * 100 }; }), pointBackgroundColor: '#9c79d0', pointRadius: 5 }] },
           options: { scales: { y: { ticks: { callback: function (v) { return v + ' %'; } }, grid: { color: 'rgba(255,255,255,.05)' } }, x: { grid: { color: 'rgba(255,255,255,.04)' } } } } }); } });
-      else document.getElementById('vx-osym-smile').innerHTML = '<div class="vx-card">' + empty('Smile indisponible (trop peu de strikes cotés).') + '</div>';
+      else (document.getElementById('vx-osym-smile')||{}).innerHTML = '<div class="vx-card">' + empty('Smile indisponible (trop peu de strikes cotés).') + '</div>';
     });
   }
 
@@ -351,7 +351,7 @@
       var det = scan && scan.detail && scan.detail[SYM];
       var spot = (det && det.price) != null ? det.price : (board.find(function (c) { return c.sym === SYM; }) || {}).spot;
       paintScorecard(board, spot);
-    }).catch(function () { document.getElementById('vx-osym-scorecard').innerHTML = empty('Scan injoignable.'); });
+    }).catch(function () { (document.getElementById('vx-osym-scorecard')||{}).innerHTML = empty('Scan injoignable.'); });
   });
   get('/api/options/vol-charts/' + encodeURIComponent(SYM)).then(paintVol)
     .catch(function () { body('vx-osym-verdict', empty('Volatilité indisponible.')); });

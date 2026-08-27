@@ -739,7 +739,7 @@ async function loadStrip(){
     :'<div class="vx-card vx-col-12">'+VX.states.empty('Indices indisponibles — lancer un scan depuis Système.','<a class="vx-btn vx-btn-sm" href="/system?view=data">Système / Données</a>')+'</div>';
   if(cross)cross.innerHTML=ROW2.filter(n=>by[n]&&by[n].last!=null).map(n=>kpiCell(n,by[n],scan,3)).join('');
   if(scan&&scan.data_source==='demo')
-    $('vx-demo-banner').innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
+    ($('vx-demo-banner')||{}).innerHTML='<div class="vx-demo-banner"><span class="vx-badge-demo">Démo</span> Données synthétiques clairement identifiées — jamais présentées comme réelles.</div>';
   return scan;
 }
 
@@ -799,14 +799,14 @@ async function loadBrief(){
         +(ed.news_available===false?'<span class="vx-badge">Brief data-only</span>':'')+'</div>':'')
       +(domSec?`<div class="vx-insight vx-mt2"><b>Actualité dominante</b><div class="vx-mt1">${esc(domSec.text)}</div></div>`:'')
       +'</div>';
-    $('vx-brief-body').innerHTML=leadHtml+essHtml+detailHtml
+    ($('vx-brief-body')||{}).innerHTML=leadHtml+essHtml+detailHtml
       +'<div id="vx-brief-morewrap" style="text-align:center;margin-top:8px"><button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-brief-more">Lire la suite ↓</button></div>'
       +`<div class="vx-card-footer">
          ${VX.updateIndicator(b.as_of,(b.sources||[]).join(', '),b.demo?'fallback':'delayed')}
          <span class="vx-badge">${b.generator==='deterministic'?'Déterministe (moteurs)':'IA validé'}</span>
          ${kindLabel?`<span class="vx-badge" style="color:var(--vx-amber)">${kindLabel}</span>`:''}
          <button class="vx-btn vx-btn-sm vx-btn-ghost vx-right" data-scrollto="markets">Voir les preuves ↓</button></div>`;
-    $('vx-brief-meta').innerHTML=`<span class="vx-meta">${(daily.word_count||b.word_count)} mots · lecture 30 s</span>`;
+    ($('vx-brief-meta')||{}).innerHTML=`<span class="vx-meta">${(daily.word_count||b.word_count)} mots · lecture 30 s</span>`;
     const cl=$('vx-brief-clamp'),moreBtn=$('vx-brief-more'),moreWrap=$('vx-brief-morewrap');
     if(cl&&moreBtn){
       if(cl.scrollHeight<60){if(moreWrap)moreWrap.style.display='none';cl.dataset.clamped='0';}
@@ -834,7 +834,7 @@ async function loadBrief(){
         +(changed?`<div class="vx-insight vx-mt2"><b>Depuis hier (moteurs)</b><ul class="vx-mt1" style="margin:0;padding-left:18px">${changed}</ul></div>`:'');
       side.innerHTML=h||VX.states.empty('Aucun risque ni changement saillant remonté par les moteurs.');
     }
-  }catch(e){$('vx-brief-body').innerHTML=VX.states.error('Brief indisponible ('+e.message+')');}
+  }catch(e){($('vx-brief-body')||{}).innerHTML=VX.states.error('Brief indisponible ('+e.message+')');}
 }
 
 /* ── Régime : vocabulaire moteur → français CLAIR (aucun code à l'écran) ── */
@@ -860,7 +860,7 @@ async function loadRegime(){
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
     const adj=r.adjustments||{};
     const conf=Math.round((r.confidence||0)*100);
-    $('vx-regime-body').innerHTML=
+    ($('vx-regime-body')||{}).innerHTML=
       `<div id="vx-regime-gauge" class="vx-mb2"></div>
       <div class="vx-kpi vx-mb3" style="text-align:center"><span class="vx-kpi-value" style="font-size:17px" data-regime="${r.regime}">${regFr(r.regime)[0]}</span>
        <span class="vx-kpi-delta vx-muted" style="white-space:normal;line-height:1.45">${regFr(r.regime)[1]}</span>
@@ -1186,15 +1186,15 @@ async function loadPulse(scan){
   let vix=(sum.vix!=null&&!isNaN(sum.vix))?Number(sum.vix):null;
   if(vix==null){const vi=(scan.indices||[]).find(i=>i&&i.name==='VIX');if(vi&&vi.price!=null)vix=Number(vi.price);}
   if(G&&vix!=null){
-    $('vx-gauge-vix').innerHTML='<div id="vx-gauge-vix-g"></div><div id="vx-gauge-vix-rail"></div>';
+    ($('vx-gauge-vix')||{}).innerHTML='<div id="vx-gauge-vix-g"></div><div id="vx-gauge-vix-rail"></div>';
     VXCharts.gauge('vx-gauge-vix-g',{value:vix,min:0,max:50,unit:'',label:'VIX',
       reading:vix<15?'Calme — primes bon marché':vix<25?'Normal':'Tendu — prudence',
       bands:[{to:15,color:CO.positive},{to:25,color:CO.warning},{to:50,color:CO.negative}]});
-    $('vx-gauge-vix-rail').innerHTML=
+    ($('vx-gauge-vix-rail')||{}).innerHTML=
       `<div class="vx-rail vx-rail--stress vx-mt2" style="--vx-rail-pos:${Math.max(0,Math.min(100,(vix-10)/30*100)).toFixed(0)}%"><span class="vx-rail-mark"></span></div>`
       +`<div class="vx-rail-scale"><span>10</span><span>25</span><span>40+</span></div>`;
   }
-  else $('vx-gauge-vix').innerHTML=VX.states.empty('VIX non calculé.');
+  else ($('vx-gauge-vix')||{}).innerHTML=VX.states.empty('VIX non calculé.');
   /* Breadth — participation */
   let br=null;const sb=sum.breadth;
   if(sb!=null&&typeof sb==='object')br=(sb.above50!=null)?Number(sb.above50):(sb.above200!=null?Number(sb.above200):null);
@@ -1202,7 +1202,7 @@ async function loadPulse(scan){
   if(G&&br!=null){VXCharts.gauge('vx-gauge-breadth',{value:br,min:0,max:100,unit:' %',label:'Participation',
     reading:br>=55?'Hausse partagée — saine':'Étroite — portée par peu de titres',
     bands:[{to:40,color:CO.negative},{to:55,color:CO.warning},{to:100,color:CO.positive}]});}
-  else $('vx-gauge-breadth').innerHTML=VX.states.empty('Breadth non calculée.');
+  else ($('vx-gauge-breadth')||{}).innerHTML=VX.states.empty('Breadth non calculée.');
   /* Régime — confiance + POSTURE 3 ÉTATS (lecture moteur, jamais un % inventé) */
   try{
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
@@ -1214,7 +1214,7 @@ async function loadPulse(scan){
     /* Posture = lecture DIRECTE du moteur : risque bloqué → Défense ;
        autorisé + confiance ≥ 55 → Attaque ; autorisé sinon → Neutre. */
     const st=!allowed?'def':(conf>=55?'att':'neu');
-    $('vx-regime-rail').innerHTML=
+    ($('vx-regime-rail')||{}).innerHTML=
       '<div class="vx-stat-xl-label">Lecture moteur</div>'
       +`<div class="vx-posture" role="img" aria-label="Posture ${st==='def'?'défense':st==='att'?'attaque':'neutre'}">
         <span ${st==='def'?'data-on="def"':''}>Défense</span>
@@ -1224,10 +1224,10 @@ async function loadPulse(scan){
       +(allowed?'<span class="vx-pos">nouveau risque autorisé</span>':'<span class="vx-neg">nouveau risque BLOQUÉ</span>')+'</div>'
       +'<div class="vx-card-footer">'+VX.updateIndicator(r.as_of||Date.now(),'Moteur de régimes','delayed')+'</div>';
   }catch(e){
-    if($('vx-gauge-trend'))$('vx-gauge-trend').innerHTML=VX.states.empty('Régime non calculé.');
-    if($('vx-regime-rail'))$('vx-regime-rail').innerHTML=VX.states.error('Positionnement indisponible');
+    if($('vx-gauge-trend'))($('vx-gauge-trend')||{}).innerHTML=VX.states.empty('Régime non calculé.');
+    if($('vx-regime-rail'))($('vx-regime-rail')||{}).innerHTML=VX.states.error('Positionnement indisponible');
   }
-  $('vx-pulse-meta').innerHTML=VX.updateIndicator(scan.scan_ts||scan.updated,scan.source||'scan',mode);
+  ($('vx-pulse-meta')||{}).innerHTML=VX.updateIndicator(scan.scan_ts||scan.updated,scan.source||'scan',mode);
   loadBreadthBlock(scan,sum);
 }
 
@@ -1395,7 +1395,7 @@ async function loadOpportunities(){
   try{
     const c=await VX.fetch('/api/command',{ttl:60000});
     const stocks=(c.top_stocks||[]).slice(0,6);
-    $('vx-opp-stocks').innerHTML=stocks.length?'<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">'+stocks.map(s=>{
+    ($('vx-opp-stocks')||{}).innerHTML=stocks.length?'<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">'+stocks.map(s=>{
       const vx=s.vertex||{};
       const chips=[];
       if(vx.p_win!=null)chips.push(`<span class="vx-badge" style="color:var(--vx-positive)" title="probabilité que le trade soit gagnant (moteur Monte-Carlo)">proba. gain ${Math.round(vx.p_win*100)} %</span>`);
@@ -1433,7 +1433,7 @@ async function loadOpportunities(){
       } else rrHost.innerHTML='';
     }
     const opts=(c.top_options||[]).slice(0,6);
-    $('vx-opp-options').innerHTML=opts.length?'<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fit,minmax(234px,1fr))">'+opts.map(o=>{
+    ($('vx-opp-options')||{}).innerHTML=opts.length?'<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fit,minmax(234px,1fr))">'+opts.map(o=>{
       const isPut=(o.dir||'').toUpperCase()==='PUT';
       const prob=(o.prob!=null&&isFinite(o.prob))?Math.round(o.prob):null;
       /* Moneyness RÉELLE (spot vs strike). ITM = dans la monnaie. Rien inventé : si pas de spot → omis. */
@@ -1491,8 +1491,8 @@ async function loadOpportunities(){
       }
     }
   }catch(e){
-    $('vx-opp-stocks').innerHTML=VX.states.error('Opportunités indisponibles');
-    $('vx-opp-options').innerHTML=VX.states.error('Opportunités indisponibles');
+    ($('vx-opp-stocks')||{}).innerHTML=VX.states.error('Opportunités indisponibles');
+    ($('vx-opp-options')||{}).innerHTML=VX.states.error('Opportunités indisponibles');
   }
 }
 /* Entonnoir de sélection : univers → notés → dossiers → achats (données du scan) */
@@ -1541,9 +1541,9 @@ async function loadAlerts(){
         <span class="vx-grow vx-dim" style="font-size:12px">${a.cond==='above'?'franchit':'casse'} ${VX.fmt.price(a.level)} ${esc(a.note||'')}</span>
         ${hit?'<span class="vx-badge" style="color:var(--vx-warning)">déclenchée</span>':'<span class="vx-badge">armée</span>'}
       </div>`;}).join('');
-    $('vx-alerts').innerHTML=((srv+rows)||VX.states.empty('Aucune alerte active.'))
+    ($('vx-alerts')||{}).innerHTML=((srv+rows)||VX.states.empty('Aucune alerte active.'))
       +'<div class="vx-mt2"><button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXEntities.openAddModal(\'\',\'alert\')">+ Créer une alerte</button></div>';
-  }catch(e){$('vx-alerts').innerHTML=VX.states.error('Alertes indisponibles');}
+  }catch(e){($('vx-alerts')||{}).innerHTML=VX.states.error('Alertes indisponibles');}
 }
 
 /* ── Portefeuille + calendrier ── */
@@ -1564,7 +1564,7 @@ async function loadPortfolio(){
       if(res[key])quotes[t.id]=res[key];});
   }catch(e){}
   /* Cartes design : symbole + P&L en grand, détail au-dessous — un clic ouvre la fiche. */
-  $('vx-portfolio').innerHTML='<div class="vx-pf-grid">'+pos.slice(0,8).map(t=>{
+  ($('vx-portfolio')||{}).innerHTML='<div class="vx-pf-grid">'+pos.slice(0,8).map(t=>{
     const q=quotes[t.id]||{};const isOpt=t.type!=='STK';
     const mark=isOpt?(q.mark??q.last??null):(q.spot??q.mark??q.last??null);
     const value=mark!==null?(isOpt?mark*100*t.qty:mark*t.qty):null;
@@ -1649,7 +1649,7 @@ async function loadSession(){
       CAL_FILTER=b.dataset.calf;loadCalendar();}));
     document.querySelectorAll('[data-calr]').forEach(b=>b.addEventListener('click',()=>{
       CAL_RANGE=b.dataset.calr;loadCalendar();}));
-  }catch(e){$('vx-calendar').innerHTML='<div class="vx-card">'+VX.states.error('Calendrier indisponible')+'</div>';}
+  }catch(e){($('vx-calendar')||{}).innerHTML='<div class="vx-card">'+VX.states.error('Calendrier indisponible')+'</div>';}
 }
 
 /* Séance & scan : l'état RÉEL de la machine, en badges (heure NY, séance,

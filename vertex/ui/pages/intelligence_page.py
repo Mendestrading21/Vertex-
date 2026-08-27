@@ -210,9 +210,9 @@ function whenChartsReady(fn){
 /* ══ Vue ANALYSTE ═══════════════════════════════════════════════════ */
 function initAnalyst(){
   const idle=VX.states.empty('Aucune analyse lanc&eacute;e — saisissez un ticker ci-contre.','');
-  $('vx-analyst-verdict').innerHTML=idle;
-  $('vx-analyst-audit').innerHTML=idle;
-  if($('vx-analyst-ai'))$('vx-analyst-ai').innerHTML=idle;
+  ($('vx-analyst-verdict')||{}).innerHTML=idle;
+  ($('vx-analyst-audit')||{}).innerHTML=idle;
+  if($('vx-analyst-ai'))($('vx-analyst-ai')||{}).innerHTML=idle;
   /* Suggestions : exemples + tickers récents + raccourcis — rien d'inventé */
 (function(){
   const host=$('vx-analyst-suggestions');if(!host)return;
@@ -254,8 +254,8 @@ async function runAnalysis(sym,question){
     ($('vx-analyst-verdict')||{}).innerHTML=VX.states.empty(
       sym+' est absent du scan courant — impossible de d&eacute;cider sans donn&eacute;es.',
       '<a class="vx-btn vx-btn-sm" href="/system?view=data">Lancer un scan (Syst&egrave;me)</a>');
-    $('vx-analyst-audit').innerHTML=VX.states.empty('Aucun raisonnement disponible sans dossier.');
-    if($('vx-analyst-ai'))$('vx-analyst-ai').innerHTML=VX.states.empty('Aucune interpr&eacute;tation sans dossier.');
+    ($('vx-analyst-audit')||{}).innerHTML=VX.states.empty('Aucun raisonnement disponible sans dossier.');
+    if($('vx-analyst-ai'))($('vx-analyst-ai')||{}).innerHTML=VX.states.empty('Aucune interpr&eacute;tation sans dossier.');
     return;
   }
   renderVerdict(sym,question,strat,deci);
@@ -500,7 +500,7 @@ function renderCommittee(){
       });
     }
   }catch(e){}
-  $('vx-committee-meta').innerHTML=VX.updateIndicator(c.as_of,
+  ($('vx-committee-meta')||{}).innerHTML=VX.updateIndicator(c.as_of,
     (c.data_source==='demo'?'d&eacute;mo':'scan')+' · '+(c.universe_scanned??reviews.length)+' titres pass&eacute;s en revue',
     c.data_source==='demo'?'fallback':'delayed');
   const chips=[['','Toutes ('+reviews.length+')']].concat(
@@ -664,7 +664,7 @@ async function initResearch(){
       ${_gm('DSR',v.dsr,v.dsr>=0.5?'pos':'neg','Sharpe déflaté')}
       ${_gm('PBO',v.pbo_estimate,v.pbo_estimate>=0.5?'neg':'pos','sur-optimisation')}
     </div>`;
-    $('vx-research-body').innerHTML=_statrow+_probs+
+    ($('vx-research-body')||{}).innerHTML=_statrow+_probs+
       `<details class="vx-mt3"><summary class="vx-meta" style="cursor:pointer;margin-bottom:8px">Toutes les métriques du validateur</summary>`
       +`<div style="overflow-x:auto"><table class="vx-table"><thead>
         <tr><th>M&eacute;trique</th><th class="vx-num">Valeur</th></tr></thead><tbody>`

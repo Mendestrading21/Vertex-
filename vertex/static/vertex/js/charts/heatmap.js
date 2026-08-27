@@ -1,6 +1,14 @@
 /* heatmap.js — heatmaps HTML/CSS (secteurs, corrélations, IV) : plus lisible
    et accessible qu'un canvas pour des grilles de petite taille. */
 (function(){const C=window.VXCharts,VX=window.VX;
+//  Les titres passes a la heatmap viennent de donnees EXTERNES (nom de
+//  titre, libelle de moteur, conclusion redigee). Ils etaient interpoles
+//  tels quels, dont un DANS UN ATTRIBUT `title=""` — ou une seule
+//  apostrophe double suffit a sortir de l'attribut. Un seul point de
+//  passage, pour qu'aucun appelant n'ait a y penser.
+function esc(v){return String(v==null?'':v).replace(/[<>&"']/g,
+  function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c];});}
+
 function cellColor(v,min,max,scale){
   if(v===null||v===undefined||!isFinite(v))return'var(--vx-surface-elevated)';
   /* SÉQUENTIEL (mono-teinte argent) pour une donnée NON signée : IV, surface de vol…
@@ -19,14 +27,14 @@ C.heatmapCard=function(host,opts){
   if(!el)return;
   el.classList.add('vx-card','vx-chart-card');
   const fmt=opts.fmt||((v)=>VX.fmt.num(v,1));
-  const head=opts.columns?`<tr><th></th>${opts.columns.map(c=>`<th>${c}</th>`).join('')}</tr>`:'';
-  const body=(opts.rows||[]).map(r=>`<tr><th style="text-align:left">${r.label}</th>${
-    r.cells.map(c=>`<td class="vx-num" title="${c.title||''}" style="background:${cellColor(c.value,opts.min??-3,opts.max??3,opts.scale)};cursor:${c.onclick?'pointer':'default'}" ${c.onclick?`data-hm="${c.onclick}"`:''}>${c.label??fmt(c.value)}</td>`).join('')}</tr>`).join('');
-  el.innerHTML=`<div class="vx-chart-head"><span class="vx-chart-title">${opts.title||''}</span>
-    ${opts.question?`<span class="vx-chart-question">${opts.question}</span>`:''}
-    ${opts.conclusion?`<span class="vx-chart-conclusion">${opts.conclusion}</span>`:''}</div>
+  const head=opts.columns?`<tr><th></th>${opts.columns.map(c=>`<th>${esc(c)}</th>`).join('')}</tr>`:'';
+  const body=(opts.rows||[]).map(r=>`<tr><th style="text-align:left">${esc(r.label)}</th>${
+    r.cells.map(c=>`<td class="vx-num" title="${esc(c.title)}" style="background:${cellColor(c.value,opts.min??-3,opts.max??3,opts.scale)};cursor:${c.onclick?'pointer':'default'}" ${c.onclick?`data-hm="${c.onclick}"`:''}>${c.label??fmt(c.value)}</td>`).join('')}</tr>`).join('');
+  el.innerHTML=`<div class="vx-chart-head"><span class="vx-chart-title">${esc(opts.title)}</span>
+    ${opts.question?`<span class="vx-chart-question">${esc(opts.question)}</span>`:''}
+    ${opts.conclusion?`<span class="vx-chart-conclusion">${esc(opts.conclusion)}</span>`:''}</div>
     <div class="vx-table-wrap" style="border:none"><table class="vx-table vx-heat">${head}${body}</table></div>
     <div class="vx-chart-foot">${VX.updateIndicator(opts.timestamp,opts.source,opts.mode)}
-    ${opts.limits?`<span class="vx-meta">${opts.limits}</span>`:''}</div>`;
+    ${opts.limits?`<span class="vx-meta">${esc(opts.limits)}</span>`:''}</div>`;
   el.querySelectorAll('[data-hm]').forEach(td=>td.addEventListener('click',()=>{location.href=td.dataset.hm;}));};
 })();

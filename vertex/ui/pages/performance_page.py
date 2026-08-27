@@ -266,7 +266,7 @@ function loadKpis(){
     const rows=milestones.map(function(m){const done=n>=m[0];
       return `<div class="vx-kv"><span class="k">${done?'✅':'🔒'} ${m[0]} trades</span>`
         +`<span class="v vx-dim" style="font-size:12px;text-align:right">${esc(m[1])}</span></div>`;}).join('');
-    $('vx-pf-kpis').innerHTML=`<div class="vx-card vx-col-12">
+    ($('vx-pf-kpis')||{}).innerHTML=`<div class="vx-card vx-col-12">
       <div class="vx-card-header"><span class="vx-card-title">Construis ton track record</span>
         <span class="vx-meta vx-right">${n} / 5 trades pour débloquer les premières statistiques</span></div>
       <div class="vx-grid">
@@ -294,7 +294,7 @@ function loadKpis(){
     ['Meilleur / pire',(s.best!=null?((s.best>=0?'+':'')+VX.fmt.num(s.best,0)):'—')+' / '+(s.worst!=null?VX.fmt.num(s.worst,0):'—')+' $','vx-muted'],
     ['Trades déclarés',String(s.n),'vx-muted'],
   ];
-  $('vx-pf-kpis').innerHTML=cells.map(([label,val,cls])=>{
+  ($('vx-pf-kpis')||{}).innerHTML=cells.map(([label,val,cls])=>{
     const tone=cls==='vx-pos'?'pos':cls==='vx-neg'?'neg':'';
     return `<div class="vx-stat" style="grid-column:span 2" data-tone="${tone}" aria-label="${esc(label)}">
       <div class="vx-stat-k">${label}</div>

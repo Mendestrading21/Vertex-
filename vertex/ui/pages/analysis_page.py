@@ -629,7 +629,7 @@ $('an-fav').addEventListener('click',()=>{E().toggleFavorite(SYM);paintBadges();
 let ENGINE_THESIS=null;
 function paintThesis(){
   const note=E()&&E().note(SYM);
-  $('an-thesis').innerHTML=note?esc(note).replace(/\n/g,'<br>'):
+  ($('an-thesis')||{}).innerHTML=note?esc(note).replace(/\n/g,'<br>'):
     (ENGINE_THESIS
       ?`<div class="vx-insight" data-tone="ai"><b>Thèse moteur (auto)</b> — ${esc(ENGINE_THESIS)}</div>
         <div class="vx-meta vx-mt2">Générée par les moteurs sur les données du scan — écris ta propre thèse pour la remplacer.
@@ -885,7 +885,7 @@ async function loadDossier(){
       <span style="flex:1;min-width:60px;height:7px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden">
         <i style="display:block;height:100%;width:${v==null?0:Math.max(3,Math.min(100,v))}%;background:var(--vx-brand);border-radius:99px;transition:width .4s ease"></i></span>
       <b class="vx-mono" style="flex:0 0 30px;text-align:right;font-size:14px">${VX.fmt.nd(v)}</b></div>`;
-  $('an-scores').innerHTML=`<div class="an-scorecard-grid">
+  ($('an-scores')||{}).innerHTML=`<div class="an-scorecard-grid">
       <div id="an-scorecard-radar" style="min-height:196px;display:flex;align-items:center;justify-content:center"></div>
       <div style="min-width:0">${scAxes.map(([k,v])=>scBar(k,v)).join('')}${demo?'<div class="vx-badge vx-mt2" style="color:var(--vx-warning)">DONNÉES DÉMO</div>':''}</div>
     </div>`;
@@ -974,7 +974,7 @@ async function loadDossier(){
           options:{scales:{x:{display:false},y:{min:0,max:100,position:'right',grid:{display:false},border:{display:false},ticks:{stepSize:20,font:{size:10},color:VXCharts.colors.muted,padding:6}}},
             plugins:{tooltip:{callbacks:{label:function(ctx){return 'RSI '+VX.fmt.num(ctx.parsed.y,0);}}}}},
           plugins:[rsiBands]});}});
-    }else{$('an-rsi').innerHTML='';}
+    }else{($('an-rsi')||{}).innerHTML='';}
     /* Sous-graphe Volume — barres colorées selon le sens du jour (hausse/baisse).
        Donnée RÉELLE (series.volume) ; « le mouvement est-il soutenu ? » */
     const vol=tail(S.volume);
@@ -991,11 +991,11 @@ async function loadDossier(){
             ticks:{maxTicksLimit:3,font:{size:9},color:VXCharts.colors.muted,padding:6,
               callback:function(v){return v>=1e6?(v/1e6).toFixed(0)+'M':v>=1e3?(v/1e3).toFixed(0)+'k':v;}}}},
             plugins:{tooltip:{callbacks:{label:function(ctx){return 'Volume '+VX.fmt.num(ctx.parsed.y,0);}}}}}});}});
-    }else{$('an-volume').innerHTML='';}
+    }else{($('an-volume')||{}).innerHTML='';}
     })(0);
   }else{
-    $('an-chart').innerHTML='<div class="vx-card">'+VX.states.empty('Série de prix indisponible pour ce titre.')+'</div>';
-    $('an-rsi').innerHTML='';$('an-volume').innerHTML='';
+    ($('an-chart')||{}).innerHTML='<div class="vx-card">'+VX.states.empty('Série de prix indisponible pour ce titre.')+'</div>';
+    ($('an-rsi')||{}).innerHTML='';($('an-volume')||{}).innerHTML='';
   }
 
   /* 4. Fondamental */

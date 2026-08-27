@@ -311,7 +311,7 @@ async function renderTeam(){
   const totalValue=rich.reduce((s,t)=>s+(t.value??t.invested),0);
   const sub={'Offensive':'Attaquants','Noyau':'Milieux','Défense / gardien':'Défenseurs & gardien',
     'Options tactiques':'HORS équipe — jamais gardien (max 3)'};
-  $('pf-body').innerHTML=`<div id="pf-cmd-strip" class="vx-mb3"></div>
+  ($('pf-body')||{}).innerHTML=`<div id="pf-cmd-strip" class="vx-mb3"></div>
     <section class="vx-card vx-mb3" aria-label="Allocation du portefeuille">
       <div class="vx-chart-head"><span class="vx-chart-title">Allocation du portefeuille</span>
         <span class="vx-chart-question">Où est concentré le capital, et qui gagne/perd ?</span></div>
@@ -357,10 +357,10 @@ async function renderTeam(){
         :'<div class="vx-meta" style="color:var(--vx-positive)">✓ Composition d’équipe conforme.</div>';
     }catch(e){}
   })();
-  $('pf-contrib-body').innerHTML=withVal.length
+  ($('pf-contrib-body')||{}).innerHTML=withVal.length
     ?divBars(withVal.map(t=>({name:(t.sym+(t.type!=='STK'?' '+t.type:'')),val:(t.value-t.invested)})),{fmt:_pfx})
     :'<div class="vx-meta">Marques indisponibles (IBKR hors ligne) — aucun P&L affiché plutôt qu’un chiffre inventé.</div>';
-  $('pf-team-cols').innerHTML=Object.entries(roles).map(([role,list])=>`
+  ($('pf-team-cols')||{}).innerHTML=Object.entries(roles).map(([role,list])=>`
     <section class="vx-card vx-mb3" aria-label="${role}">
       <div class="vx-card-header"><span class="vx-card-title">${role}</span>
         <span class="vx-meta">${sub[role]}</span>
@@ -491,7 +491,7 @@ async function renderPositions(){
   const posById={};((posState&&posState.positions)||[]).forEach(p=>{posById[String(p.position_id)]=p;});
   const srcLabel=(s)=>({IBKR:'IBKR',MANUAL:'Manuelle',PAPER:'Paper',SIMULATED:'Simulation',IMPORTED:'Importée'}[s]||'Manuelle');
   const groups={Actions:rich.filter(t=>t.type==='STK'),Options:rich.filter(t=>t.type!=='STK')};
-  $('pf-body').innerHTML=
+  ($('pf-body')||{}).innerHTML=
     (posState?actionListHtml(posState):'')+
     (ibkr&&ibkr.ok===false?'<div class="vx-stale-banner">IBKR hors ligne — marques desk/EOD utilisées (aucune valeur inventée).</div>':'')
     +Object.entries(groups).map(([g,list])=>`
@@ -636,7 +636,7 @@ async function renderOptions(){
   const gDelta=(og&&og.delta!=null)?((og.delta>0?'+':'')+VX.fmt.num(og.delta,0)):'n/d';
   const gTheta=(og&&og.theta!=null)?(VX.fmt.num(og.theta,0)+' $/j'):'n/d';
   const gVega=(og&&og.vega!=null)?('vega '+VX.fmt.num(og.vega,0)+' $/pt'):(og?'chaîne à charger':'IBKR requis');
-  $('pf-body').innerHTML=
+  ($('pf-body')||{}).innerHTML=
     `<div class="vx-grid vx-mb3">
       ${H('CALLS ouverts',calls.length,'direction principale (~90 %)')}
       ${H('PUTS tactiques',puts.length+' / 1',puts.length>1?'PLAFOND DÉPASSÉ':'rares, jamais « parce que ça baisse »',puts.length>1?'vx-neg':'')}
@@ -843,7 +843,7 @@ async function renderRisk(){
     const d=await r.json();
     const risk=d.risk||{},guard=d.guard||{},stress=(d.stress||{}).scenarios||{};
     const optGreeks={delta:risk.options_exposure&&risk.options_exposure.delta};
-    $('pf-body').innerHTML=`<div class="vx-grid vx-mb3">
+    ($('pf-body')||{}).innerHTML=`<div class="vx-grid vx-mb3">
       <section class="vx-card vx-col-4" aria-label="Concentration du risque">
         <div class="vx-card-header"><span class="vx-card-title">Concentration du risque</span>
           <span class="vx-chart-question">Le capital est-il trop concentré ?</span></div>
@@ -995,7 +995,7 @@ async function renderWatchlist(){
         <button class="vx-btn vx-btn-sm vx-btn-danger" data-wl-del="${w.sym}">✕</button>
       </div>
     </div>`;}).join('');
-  $('pf-body').innerHTML=`
+  ($('pf-body')||{}).innerHTML=`
     <section class="vx-card vx-mb3 vx-card--premium"><div class="vx-card-header"><span class="vx-card-title">Watchlist (surveillance active)</span>
       <span class="vx-chart-question">Score, tendance et alignement en direct du scan</span>
       <span class="vx-actions"><button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('','watchlist')">+ Ajouter</button></span></div>

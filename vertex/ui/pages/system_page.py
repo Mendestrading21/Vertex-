@@ -653,7 +653,7 @@ async function loadConnections(){
         +`<span style="color:${c};font-weight:700;flex:0 0 auto">${mark}</span>`
         +`<div style="min-width:0"><div style="font-weight:600;color:var(--vx-text-secondary)">${title}</div>`
         +`<div class="vx-meta">${detail}</div></div></div>`;};
-    $('vx-conn-sync').innerHTML=
+    ($('vx-conn-sync')||{}).innerHTML=
       kv('Mode',esc(live.mode||'—'))
       +kv('Derni&egrave;re synchro',VX.fmt.ago(live.last_refresh))
       +kv('Domaines',names.map(esc).join(', ')||'—')
@@ -690,7 +690,7 @@ async function loadConnections(){
   if(st&&Array.isArray(st.engines)&&st.engines.length){
     /* Moteurs en stat-tiles à halo (au lieu de badges plats) : nom + état
        color-codé. Jamais « prêt » si le moteur n'a aucune donnée exploitable. */
-    $('vx-conn-engines').innerHTML='<div class="vx-statrow">'
+    ($('vx-conn-engines')||{}).innerHTML='<div class="vx-statrow">'
       +st.engines.map(en=>{
         const loaded=en.status==='ok'||en.ok===true;
         const hasData=!!(en.last_success||en.last_run||en.fresh);

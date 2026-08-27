@@ -245,7 +245,7 @@ function rail52(v){
 async function renderScreener(){
   const scan=await VX.fetch('/scan',{ttl:120000});
   const rows=(scan.rows||[]).filter(r=>r.score!==undefined);
-  if(!rows.length){$('op-body').innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
+  if(!rows.length){($('op-body')||{}).innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
   const detail=scan.detail||{};
   const byId={};rows.forEach(r=>{if(r&&r.symbol)byId[r.symbol]=r;});   // index partagé (dossier express, revue…)
   const sectors=[...new Set(rows.map(r=>r.sector).filter(Boolean))].sort();
@@ -299,7 +299,7 @@ async function renderScreener(){
     return f;
   }
   /* ── Squelette de la vue ── */
-  $('op-body').innerHTML=demoBanner(scan)+`
+  ($('op-body')||{}).innerHTML=demoBanner(scan)+`
     <div class="vx-screenbar" role="group" aria-label="Filtres du screener">
       <span class="vx-meta" style="flex-basis:100%;display:flex;flex-wrap:wrap;gap:.4rem;align-items:center">
         <button class="vx-btn vx-btn-sm vx-btn-ghost" id="op-reset">Réinitialiser les filtres</button>
@@ -375,7 +375,7 @@ async function renderScreener(){
     const avgPwin=avg(pwins);
     const bySec={};f.forEach(r=>{if(r.sector){(bySec[r.sector]=bySec[r.sector]||[]).push(r.score||0);}});
     const bestSec=Object.entries(bySec).map(([s,v])=>[s,avg(v)]).sort((a,b)=>b[1]-a[1])[0];
-    $('op-kpis').innerHTML=
+    ($('op-kpis')||{}).innerHTML=
       `<div class="k"><b>${f.length}</b><span>titres retenus</span></div>`
       +`<div class="k" data-tone="${buys>0?'pos':''}"><b style="color:var(--vx-positive)">${buys}</b><span>signaux d’achat</span></div>`
       +`<div class="k" data-tone="${avgScore>=60?'pos':avgScore<45?'neg':''}"><b>${avgScore!=null?Math.round(avgScore):'—'}</b><span>score moyen</span></div>`
@@ -385,7 +385,7 @@ async function renderScreener(){
         return `<div class="k"><b>${f.length?Math.round(al/f.length*100)+' %':'—'}</b><span>journalier+hebdo alignés</span></div>`;})()
       +(function(){const el=f.filter(r=>['S','A'].includes(String(r.grade||'').toUpperCase())).length;
         return `<div class="k" data-tone="${el>0?'pos':''}"><b>${el}</b><span>notes S ou A (élite)</span></div>`;})();
-    $('op-count').textContent=f.length+' / '+rows.length+' titres';
+    ($('op-count')||{}).textContent=f.length+' / '+rows.length+' titres';
   }
 
   /* ── Nuage POURQUOI : avantage statistique × proba de gain ── */
@@ -441,7 +441,7 @@ async function renderScreener(){
   function selectSym(d){
     const plan=(detail[d.sym]&&detail[d.sym].plan)||null;
     const flags=(d.flags||[]);
-    $('op-radar-sel').innerHTML=
+    ($('op-radar-sel')||{}).innerHTML=
       `<div class="vx-flex"><span class="vx-ticker" style="font-size:16px">${esc(d.sym)}</span>${window.VXEntities?VXEntities.badges(d.sym):''}
          <span class="vx-badge vx-badge-decision vx-right" data-decision="${esc(d.v||'')}">${esc(VERD_FR[d.v]||d.v||'n/d')}</span></div>
        ${d.noTrade?`<div class="vx-insight vx-mt2" data-tone="risk"><b>🚫 NO-TRADE moteur</b>${flags.length?'<div class="vx-mt1" style="font-size:12px">'+flags.map(flagFr).map(esc).join(' · ')+'</div>':''}</div>`:(flags.length?`<div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">${flags.slice(0,3).map(fl=>`<span class="vx-badge">${esc(flagFr(fl))}</span>`).join('')}</div>`:'')}
@@ -493,7 +493,7 @@ async function renderScreener(){
     const dist=Array.from({length:10},()=>0);
     f.forEach(r=>{const sIdx=Math.max(0,Math.min(9,Math.floor((r.score||0)/10)));dist[sIdx]++;});
     const tot=f.length;
-    if(!tot){el.innerHTML=VX.states.empty('Aucun résultat avec ces filtres.');$('op-dist-meta').textContent='';return;}
+    if(!tot){el.innerHTML=VX.states.empty('Aucun résultat avec ces filtres.');($('op-dist-meta')||{}).textContent='';return;}
     const maxN=Math.max(1,...dist);
     el.innerHTML='<div style="display:flex;gap:4px;align-items:flex-end;padding:8px 2px">'+dist.map((n,i)=>{
       const hh=Math.round(n/maxN*100);
@@ -503,7 +503,7 @@ async function renderScreener(){
         <span style="width:100%;height:110px;display:flex;align-items:flex-end"><span style="width:100%;height:${hh}%;background:${col};border-radius:3px 3px 0 0;min-height:2px;opacity:.85"></span></span>
         <span style="font-size:9px;color:var(--vx-text-muted);font-variant-numeric:tabular-nums">${i*10}</span></div>`;}).join('')+'</div>';
     const avg=Math.round(f.reduce((a,r)=>a+(r.score||0),0)/tot);
-    $('op-dist-meta').textContent='score moyen des résultats : '+avg+' / 100 · '+tot+' titres';
+    ($('op-dist-meta')||{}).textContent='score moyen des résultats : '+avg+' / 100 · '+tot+' titres';
   }
 
   /* ── Secteurs des résultats (score moyen par secteur, filtré) ── */
@@ -598,10 +598,10 @@ async function renderScreener(){
     populateSortSelect();
     const s=SORTS[sortKey]||SORTS.score;
     const sorted=f.slice().sort((a,b)=>(s.k(b)-s.k(a))*(-sortDir));
-    $('op-sort-label').textContent=s.label;
+    ($('op-sort-label')||{}).textContent=s.label;
     const shown=sorted.slice(0,shownLimit);
-    $('op-table-count').textContent=shown.length+' affichées sur '+f.length;
-    $('op-table').innerHTML=sorted.length
+    ($('op-table-count')||{}).textContent=shown.length+' affichées sur '+f.length;
+    ($('op-table')||{}).innerHTML=sorted.length
       ?'<div class="vx-opp-grid">'+shown.map(oppCard).join('')+'</div>'
         +(sorted.length>shown.length?`<div class="vx-mt3" style="text-align:center"><button class="vx-btn vx-btn-sm" id="op-more">Voir plus (${sorted.length-shown.length} restantes)</button></div>`:'')
       :VX.states.empty('Aucun titre ne correspond aux filtres.','<button class="vx-btn vx-btn-sm" id="op-clear2">Effacer les filtres</button>');
@@ -790,7 +790,7 @@ async function renderOptions(){
     return f;
   }
   const dangers=[...new Set(board.map(c=>c.danger).filter(Boolean))];
-  $('op-body').innerHTML=demoBanner(scan)+`
+  ($('op-body')||{}).innerHTML=demoBanner(scan)+`
     <div class="vx-screenbar" role="group" aria-label="Filtres options">
       ${['CALL','PUT'].map(t=>`<button class="vx-chip" data-fk="type" data-fv="${t}" aria-pressed="false"
         style="${t==='PUT'?'color:var(--vx-violet)':''}">${t}</button>`).join('')}
@@ -838,7 +838,7 @@ async function renderOptions(){
     const ivs=f.map(c=>c.iv).filter(x=>x!=null).sort((a,b)=>a-b);
     const ivMed=ivs.length?ivs[Math.floor(ivs.length/2)]:null;
     const stale=f.filter(c=>c.stale).length;
-    $('op-opt-kpis').innerHTML=
+    ($('op-opt-kpis')||{}).innerHTML=
       `<div class="k"><b>${f.length}</b><span>contrats</span></div>`
       +`<div class="k"><b>${calls} / ${f.length-calls}</b><span>calls / puts</span></div>`
       +`<div class="k"><b>${qmax!=null?Math.round(qmax):'—'}</b><span>meilleure qualité</span></div>`
@@ -848,7 +848,7 @@ async function renderOptions(){
         const emMed=ems.length?ems[Math.floor(ems.length/2)]:null;
         return `<div class="k"><b>${emMed!=null?'±'+VX.fmt.num(emMed,1)+' %':'—'}</b><span>mouvement attendu médian</span></div>`;})()
       +`<div class="k"><b>${stale}</b><span>hors séance (indicatif)</span></div>`;
-    $('op-opt-count').textContent=f.length+' / '+board.length+' contrats';
+    ($('op-opt-count')||{}).textContent=f.length+' / '+board.length+' contrats';
   }
   function paintScatter(f){
     const host=$('op-opt-scatter');if(!host)return;
@@ -906,7 +906,7 @@ async function renderOptions(){
   }
   function paintTable(f){
     const sorted=f.slice().sort((a,b)=>(b.quality||0)-(a.quality||0));
-    $('op-opt-table').innerHTML=sorted.length
+    ($('op-opt-table')||{}).innerHTML=sorted.length
       ?'<div class="vx-opp-grid">'+sorted.slice(0,48).map(optCard).join('')+'</div>'
       :VX.states.empty(state.sym?'Aucun contrat pour '+state.sym+' dans ce filtre.':'Board options vide — le sélecteur ne force jamais une idée.',
         '<a class="vx-btn vx-btn-sm" href="/system?view=data">Vérifier les données</a>');
@@ -983,7 +983,7 @@ async function renderOptions(){
     /* Les contrats du board ne portent pas toujours le spot : on le prend du
        scan (prix réel du sous-jacent) — sans spot, payoff vide honnête. */
     const spot=(c.spot!=null&&isFinite(c.spot))?c.spot:(((scan.detail||{})[c.sym]||{}).price);
-    $('op-opt-sel').innerHTML=
+    ($('op-opt-sel')||{}).innerHTML=
       `<div class="vx-flex"><span class="vx-ticker" style="font-size:15px">${esc(c.sym)}</span>
         <span class="vx-badge" style="color:${c.type==='PUT'?'var(--vx-violet)':'var(--vx-positive)'}">${c.type}</span>
         <span class="vx-badge vx-right">${esc(c.bucket||'')}</span></div>
@@ -1054,7 +1054,7 @@ async function renderPortfolio(){
   const byId={};rows.forEach(r=>{byId[r.symbol]=r;});
   const pos=(window.VXEntities?VXEntities.positions():[])||[];
   if(!pos.length){
-    $('op-body').innerHTML=VX.states.empty('Aucune position déclarée — le comparateur portefeuille × moteur s’active dès ta première position.',
+    ($('op-body')||{}).innerHTML=VX.states.empty('Aucune position déclarée — le comparateur portefeuille × moteur s’active dès ta première position.',
       '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
     return;
   }
@@ -1075,7 +1075,7 @@ async function renderPortfolio(){
     'à revoir':'<span class="vx-badge" style="color:var(--vx-negative)">À REVOIR — verdict ÉVITER</span>',
     neutre:'<span class="vx-badge" style="color:var(--vx-warning)">NEUTRE — surveiller</span>',
     'hors scan':'<span class="vx-badge">hors de l’univers scanné</span>'};
-  $('op-body').innerHTML=demoBanner(scan)+`
+  ($('op-body')||{}).innerHTML=demoBanner(scan)+`
     <div class="vx-scr-kpis">
       <div class="k"><b>${pos.length}</b><span>positions déclarées</span></div>
       <div class="k"><b style="color:var(--vx-positive)">${held.filter(h=>h.status==='confirmée').length}</b><span>confirmées par le moteur</span></div>
@@ -1103,7 +1103,7 @@ async function renderPortfolio(){
   /* Positions en CARTES design (liseré au statut, jauge de score, mini-courbe) */
   const statusCol={confirmée:'var(--vx-positive)','à revoir':'var(--vx-negative)',
     neutre:'var(--vx-warning)','hors scan':'var(--vx-text-dim)'};
-  $('op-pf-cards').innerHTML='<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">'
+  ($('op-pf-cards')||{}).innerHTML='<div class="vx-movergrid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">'
     +held.map(h=>{const r=h.r||{};
       const ser=(scan.detail||{})[h.p.sym]&&scan.detail[h.p.sym].series;
       const gauge=(window.VXCharts&&VXCharts.scoreGaugeSVG&&r.score!=null)
@@ -1159,7 +1159,7 @@ async function renderPortfolio(){
         question:'Suis-je concentré sur un seul thème ?',
         labels:ks,values:ks.map(k=>cnt[k]),height:200,
         source:'positions déclarées × scan',timestamp:Date.now(),mode:'delayed'});
-    }else{$('op-pf-sect').innerHTML=VX.states.empty('Aucun secteur identifiable.');}
+    }else{($('op-pf-sect')||{}).innerHTML=VX.states.empty('Aucun secteur identifiable.');}
   })();
   const cd=$('op-pf-cands');
   cd.innerHTML='<div class="vx-card-header" style="padding:0 0 8px"><span class="vx-card-title">Candidats non détenus — signaux d’achat du moteur</span>'
@@ -1185,7 +1185,7 @@ async function renderAnomalies(){
   const scan=await VX.fetch('/scan',{ttl:120000});
   const all=(scan.rows||[]).filter(r=>(r.anomalies||[]).length);
   let lvl='';let q='';
-  $('op-body').innerHTML=demoBanner(scan)+`
+  ($('op-body')||{}).innerHTML=demoBanner(scan)+`
     <div class="vx-screenbar">
       ${['ALERTE','ACTIF','CALME'].map(l=>`<button class="vx-chip" data-lvl="${l}" aria-pressed="false"
         style="${l==='ALERTE'?'color:var(--vx-negative)':l==='ACTIF'?'color:var(--vx-warning)':''}">${l==='ALERTE'?'🔴':l==='ACTIF'?'🟠':'⚪'} ${l}</button>`).join('')}
@@ -1206,17 +1206,17 @@ async function renderAnomalies(){
     const f=filtered();
     /* KPI par niveau (sur TOUT le scan, pas seulement le filtre) */
     const c={ALERTE:0,ACTIF:0,CALME:0};all.forEach(r=>{const l=String(r.anomaly_lvl||'').toUpperCase();if(c[l]!=null)c[l]++;});
-    $('op-anom-kpis').innerHTML=
+    ($('op-anom-kpis')||{}).innerHTML=
       `<div class="k"><b>${all.length}</b><span>titres avec anomalies</span></div>`
       +`<div class="k"><b style="color:var(--vx-negative)">${c.ALERTE}</b><span>en alerte</span></div>`
       +`<div class="k"><b style="color:var(--vx-warning)">${c.ACTIF}</b><span>actifs</span></div>`
       +`<div class="k"><b>${c.CALME}</b><span>calmes</span></div>`;
-    $('op-anom-count').textContent=f.length+' / '+all.length;
+    ($('op-anom-count')||{}).textContent=f.length+' / '+all.length;
     /* Top types d'anomalies (compte par libellé réel) */
     const types={};f.forEach(r=>(r.anomalies||[]).forEach(a=>{
       const l=(typeof a==='string')?a:(a.lbl||a.k||'');if(l)types[l]=(types[l]||0)+1;}));
     const topT=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    $('op-anom-types').innerHTML=topT.length?
+    ($('op-anom-types')||{}).innerHTML=topT.length?
       '<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Anomalies les plus fréquentes</span>'
       +'<span class="vx-chart-question">Quel comportement inhabituel domine la séance ?</span></div>'
       +topT.map(([l,n])=>{const w=Math.round(n/topT[0][1]*100);
@@ -1225,7 +1225,7 @@ async function renderAnomalies(){
           <span style="flex:1;height:7px;border-radius:99px;background:var(--vx-surface-0);overflow:hidden">
             <i style="display:block;height:100%;width:${Math.max(4,w)}%;background:var(--vx-brand);border-radius:99px"></i></span>
           <b class="vx-mono" style="flex:0 0 26px;text-align:right">${n}</b></div>`;}).join('')+'</div>':'';
-    $('op-anom').innerHTML=f.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
+    ($('op-anom')||{}).innerHTML=f.length?`<div class="vx-table-wrap vx-table-cards"><table class="vx-table"><thead><tr>
       <th>Titre</th><th>Niveau</th><th>Anomalies</th><th class="vx-num">Intensité</th><th class="vx-num">Score</th><th></th></tr></thead><tbody>
       ${f.slice(0,60).map(r=>`<tr data-clickable data-open-analysis="${r.symbol}">
         <td data-label="Titre"><span class="vx-ticker">${r.symbol}</span></td>
@@ -1256,7 +1256,7 @@ async function renderCalendar(){
     const cal=await VX.fetch('/cal-feed',{ttl:300000});
     const positions=(window.VXEntities?window.VXEntities.positions():[]).map(p=>String(p.sym).toUpperCase());
     let cat='',mine=false,horizon=0;
-    $('op-body').innerHTML=`
+    ($('op-body')||{}).innerHTML=`
       <div class="vx-screenbar">
         ${[['','Tout'],['macro','Économie'],['earnings','Résultats']].map(([v,l])=>
           `<button class="vx-chip" data-cat="${v}" aria-pressed="${v===''}">${l}</button>`).join('')}
@@ -1276,7 +1276,7 @@ async function renderCalendar(){
         .filter(i=>!horizon||(i.dte!=null&&i.dte<=horizon))
         .filter(i=>!mine||(i.sym&&positions.includes(i.sym))||(i.cat==='macro'&&positions.length))
         .sort((a,b)=>String(a.when).localeCompare(String(b.when)));
-      document.getElementById('op-cal-count').textContent=items.length+' événement(s)';
+      (document.getElementById('op-cal-count')||{}).textContent=items.length+' événement(s)';
       VXCharts.timelineCard('op-cal',{title:'Calendrier des catalyseurs',
         question:'Quels événements peuvent faire bouger les dossiers ?',
         items:items.slice(0,40),source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
@@ -1291,13 +1291,13 @@ async function renderCalendar(){
     document.getElementById('op-cal-mine').addEventListener('click',function(){
       mine=!mine;this.setAttribute('aria-pressed',String(mine));paint();});
     paint();
-  }catch(e){$('op-body').innerHTML=VX.states.error('Calendrier indisponible');}
+  }catch(e){($('op-body')||{}).innerHTML=VX.states.error('Calendrier indisponible');}
 }
 
 const RENDER={screener:renderScreener,options:renderOptions,portfolio:renderPortfolio,
   anomalies:renderAnomalies,calendar:renderCalendar};
 function boot(){(RENDER[VIEW]||renderScreener)().catch(e=>{
-  $('op-body').innerHTML=VX.states.error('Chargement impossible : '+e.message);});}
+  ($('op-body')||{}).innerHTML=VX.states.error('Chargement impossible : '+e.message);});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 })();
 </script>
