@@ -31,6 +31,31 @@
         link.href = url.pathname + url.search;
       } catch (e) {}
     });
+    updateChainLink(sym);
+  }
+
+  /* Le dossier par sous-jacent porte la chaine CALL / strike / PUT — « la table
+     specialisee principale » du contrat. Son lien suit le symbole actif ; sans
+     symbole il est DESACTIVE, parce qu'un lien qui menerait a une 404 est pire
+     qu'un lien absent. */
+  function updateChainLink(sym) {
+    var lien = document.getElementById('vx-options-chain');
+    if (!lien) return;
+    if (sym) {
+      lien.href = '/options/dossier/' + encodeURIComponent(sym);
+      lien.removeAttribute('aria-disabled');
+      lien.removeAttribute('tabindex');
+      lien.textContent = 'Ouvrir la cha\u00eene de ' + sym + ' \u2192';
+      lien.style.pointerEvents = '';
+      lien.style.opacity = '';
+    } else {
+      lien.removeAttribute('href');
+      lien.setAttribute('aria-disabled', 'true');
+      lien.setAttribute('tabindex', '-1');
+      lien.textContent = 'Choisir un sous-jacent pour ouvrir sa cha\u00eene';
+      lien.style.pointerEvents = 'none';
+      lien.style.opacity = '.45';
+    }
   }
   function currentSymbol() {
     var query = '';

@@ -29,7 +29,7 @@ import sys
 import urllib.request
 
 ROUTES = ('/', '/calendar', '/markets', '/opportunities', '/analysis',
-          '/analysis/AAPL', '/options', '/options/AAPL', '/simulator',
+          '/analysis/AAPL', '/options', '/options/dossier/AAPL', '/simulator',
           '/portfolio', '/follow-up', '/performance', '/intelligence',
           '/system', '/design-system')
 

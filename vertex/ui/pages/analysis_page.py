@@ -131,7 +131,7 @@ _SECTIONS = """
     <span class="vx-right vx-flex">
       <span class="vx-flex" style="gap:2px;margin-right:6px" role="group" aria-label="Mode d'analyse">
         <span class="vx-btn vx-btn-sm vx-btn-primary" aria-current="true" title="Mode actuel : analyse de l'action">Action</span>
-        <a class="vx-btn vx-btn-sm" href="/options/%%SYM%%" title="Dossier options : chaîne, probabilités, IV, scénarios, stratégies">Options</a>
+        <a class="vx-btn vx-btn-sm" href="/options/dossier/%%SYM%%" title="Dossier options : chaîne, probabilités, IV, scénarios, stratégies">Options</a>
       </span>
       <button class="vx-btn vx-btn-icon vx-btn-ghost" id="an-fav" aria-label="Favori" title="Favori">★</button>
       <button class="vx-btn vx-btn-sm vx-btn-soft" id="an-follow"
@@ -308,7 +308,7 @@ _SECTIONS = """
 <section class="vx-card vx-mt4" id="an-options" hidden>
   <div class="vx-card-header"><span class="vx-card-title">Options — Vertex Dynamic Options</span>
     <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost"
-      href="/options/%%SYM%%">Dossier options complet →</a></span></div>
+      href="/options/dossier/%%SYM%%">Dossier options complet →</a></span></div>
   <div data-body>%%LOADING%%</div>
 </section>
 <div class="vx-grid vx-mt4">
@@ -1358,7 +1358,7 @@ async function loadDossier(){
       const host=document.getElementById('an-options-chain');
       if(host){host.className='vx-card';host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Chaîne — meilleurs contrats</span></div>'
         +VX.states.empty('Aucun contrat exploitable pour '+esc(SYM)+' (IBKR hors ligne ou titre sans options liquides).',
-          '<a class="vx-btn vx-btn-sm" href="/options/'+SYM+'">Ouvrir le dossier options</a>');}
+          '<a class="vx-btn vx-btn-sm" href="/options/dossier/'+SYM+'">Ouvrir le dossier options</a>');}
       const bb=document.getElementById('an-options-bubble');if(bb)bb.innerHTML='';
     }
   }catch(e){

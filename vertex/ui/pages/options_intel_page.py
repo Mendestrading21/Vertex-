@@ -66,6 +66,9 @@ _HEADER = """
   <label class="vx-field vx-options-context__field"><span>Symbole</span>
     <input id="vx-options-symbol" class="vx-input" placeholder="ex. AAPL" maxlength="12" autocomplete="off" aria-label="Sous-jacent actif"></label>
   <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-options-apply">Actualiser l’analyse</button>
+  <a class="vx-btn vx-btn-sm" id="vx-options-chain" href="/options/dossier/"
+     title="Chaîne CALL / strike / PUT, probabilités, IV, scénarios et stratégies">
+    Ouvrir la chaîne complète →</a>
 </section>
 <div id="vx-demo-banner"></div>
 """

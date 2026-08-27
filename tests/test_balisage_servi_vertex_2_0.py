@@ -29,7 +29,7 @@ _OUTIL = os.path.join(_ROOT, 'tools', 'vertex_2_0_balisage.py')
 #: Les routes servies. Les deux fiches par symbole sont incluses : c'est
 #: précisément là que le défaut vivait.
 ROUTES = ('/', '/calendar', '/markets', '/opportunities', '/analysis',
-          '/analysis/AAPL', '/options', '/options/AAPL', '/simulator',
+          '/analysis/AAPL', '/options', '/options/dossier/AAPL', '/simulator',
           '/portfolio', '/follow-up', '/performance', '/intelligence',
           '/system', '/design-system', '/journal', '/tracking')
 

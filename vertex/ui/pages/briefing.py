@@ -1561,7 +1561,7 @@ async function loadOpportunities(){
       if(o.dte!=null)facts.push(`<b>${o.dte}</b> j`);
       if(o.breakeven!=null)facts.push(`point mort <b>${VX.fmt.nd(o.breakeven)}</b>`);
       return `
-      <button class="vx-mover" onclick="location.href='/options/${esc(o.symbol)}'" aria-label="Dossier options ${esc(o.symbol)}" style="border-left:3px solid var(--vx-violet)">
+      <button class="vx-mover" onclick="location.href='/options/dossier/${esc(o.symbol)}'" aria-label="Dossier options ${esc(o.symbol)}" style="border-left:3px solid var(--vx-violet)">
         <div class="vx-flex" style="justify-content:space-between;gap:6px;align-items:center"><span class="mv-sym">${esc(o.symbol)}</span>
           <span class="vx-badge" style="color:${isPut?'var(--vx-negative)':'var(--vx-positive)'}">${esc((o.dir||'CALL').toUpperCase())}</span>
           <span class="vx-badge" style="color:var(--vx-violet)">${esc(o.label||'')}</span>${moneyTag}</div>

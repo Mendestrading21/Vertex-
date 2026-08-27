@@ -499,7 +499,7 @@ async function renderScreener(){
          <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${esc(d.sym)}">Analyse</button>
          <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${esc(d.sym)}','follow')">Suivre</button>
          <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${esc(d.sym)}','alert')">Alerte</button>
-         <a class="vx-btn vx-btn-sm" href="/options/${esc(d.sym)}">Options</a></div>`;
+         <a class="vx-btn vx-btn-sm" href="/options/dossier/${esc(d.sym)}">Options</a></div>`;
     /* Visuels quant du tiroir (mêmes moteurs que la fiche Analyse — data déjà dans le scan) */
     (function(){
       if(!window.VXCharts)return;
@@ -597,7 +597,7 @@ async function renderScreener(){
         <button class="vx-btn vx-btn-sm" data-inspect="${r.symbol}" title="Aperçu rapide">Aperçu</button>
         <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','follow')">Suivre</button>
         <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','alert')">Alerte</button>
-        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/${r.symbol}">Options</a>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/dossier/${r.symbol}">Options</a>
       </div></div>`;
   }
   /* ── Top cartes des résultats (highlight 6) ── */
@@ -1044,7 +1044,7 @@ async function renderOptions(){
                <i style="display:block;height:100%;width:${Math.max(3,Math.min(100,pc))}%;background:${pc>=70?'var(--vx-positive)':pc>=40?'var(--vx-warning)':'var(--vx-negative)'};border-radius:99px"></i></span>
              <b class="vx-mono" style="font-size:10px;flex:0 0 40px;text-align:right">${got}/${max2}</b></div>`;}).join('')}`:''}
        <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
-         <a class="vx-btn vx-btn-sm vx-btn-primary" href="/options/${esc(c.sym)}">Dossier options</a>
+         <a class="vx-btn vx-btn-sm vx-btn-primary" href="/options/dossier/${esc(c.sym)}">Dossier options</a>
          <button class="vx-btn vx-btn-sm" data-open-analysis="${esc(c.sym)}">Fiche action</button></div>`;
     $('op-contract').hidden=false;
     $('op-contract').open=true;
@@ -1162,7 +1162,7 @@ async function renderPortfolio(){
       ${pbText(r)?`<div class="vx-meta vx-mt1" style="white-space:normal;line-height:1.4">${esc(pbText(r))}</div>`:''}
       <div class="vx-flex vx-mt2" style="gap:.3rem">
         <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${esc(h.p.sym)}">Analyser</button>
-        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/${esc(h.p.sym)}">Options</a>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/dossier/${esc(h.p.sym)}">Options</a>
         <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(h.p.sym)}" aria-label="Actions">⋯</button></div>
     </div>`;}).join('')+'</div>';
   /* Risque du panier — chiffres RÉELS du moteur de risque (/api/command.risk) */

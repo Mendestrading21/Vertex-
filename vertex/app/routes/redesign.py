@@ -150,7 +150,24 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     # ── Dossier Options d'un titre — la « machine d'analyse » d'un sous-jacent
     # (chaîne, probabilités, IV, scénarios, stratégies). Bascule Action|Options
     # depuis la fiche /analysis/<sym>.
-    @bp.route('/options/<sym>')
+    # ── Dossier Options d'un titre — chaîne CALL/strike/PUT, probabilités,
+    # IV, scénarios, stratégies.
+    #
+    # COLLISION DE ROUTE, connue et documentée dans CLAUDE.md : `/options/<sym>`
+    # est déclaré DEUX fois — ici, et dans `ticker_api.opt_ep` qui rend du JSON.
+    # C'est le JSON qui gagne. Conséquence mesurée : cette page n'a jamais été
+    # servie, et les NEUF liens internes qui pointaient vers elle déversaient du
+    # JSON brut à l'utilisateur.
+    #
+    # Supprimer l'endpoint JSON serait une modification de backend, hors du
+    # périmètre de cette refonte visuelle. La page reçoit donc une URL qui lui
+    # appartient, et les liens la suivent. `/options/<sym>` reste servi à
+    # l'identique pour ses éventuels consommateurs.
+    #
+    # Besoin hors périmètre consigné : déduplquer la route côté backend, et
+    # rendre `/options/<sym>` à la page — le JSON est déjà servi sous
+    # `/api/options/chain/<sym>` et `/api/options/chain-grid/<sym>`.
+    @bp.route('/options/dossier/<sym>')
     def options_symbol_route(sym):
         from vertex.ui.pages import options_symbol_page
         return options_symbol_page.render(sym)
