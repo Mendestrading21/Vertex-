@@ -282,6 +282,14 @@ def create_app(*, root_path: str | None = None) -> Any:
                 return resp
             if 'gzip' not in (request.headers.get('Accept-Encoding') or ''):
                 return resp
+            if resp.headers.get('Content-Encoding'):
+                #  DEJA compressee par la route. Recompresser produit un
+                #  DOUBLE gzip : le client decompresse une fois, obtient des
+                #  octets qui commencent encore par 1f 8b, et lit du binaire la
+                #  ou il attend du JSON. Le corps est valide a l'octet pres et
+                #  pourtant illisible — la pire forme de panne, parce que rien
+                #  ne signale d'erreur.
+                return resp
             ct = resp.content_type or ''
             if not (ct.startswith('application/json') or ct.startswith('text/html')):
                 return resp
