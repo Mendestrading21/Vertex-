@@ -77,7 +77,9 @@ def test_chronology_has_a_clean_toolbar_and_historical_sources_stay_separate():
 
 def test_system_readonly_is_compact_and_connections_matrix_precedes_details():
     header = system_page._header('connections')
-    assert 'vx-page-header vx-page-lead' in header
+    #  VERTEX 2.0 : l'en-tete passe par `vx2.page_header` + `vx2.context_bar`.
+    #  L'intention — un en-tete canonique, compact, avant la matrice — tient.
+    assert 'vx2-header' in header
     assert 'vx-readonly-shield' in header and '<b>READONLY</b>' in header
     assert 'vx-insight vx-mb3' not in header
 

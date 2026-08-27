@@ -92,5 +92,5 @@ def test_system_route_200_and_readonly(client):
     r = client.get('/system')
     assert r.status_code == 200
     html = r.get_data(as_text=True)
-    assert '<h1>Système</h1>' in html
+    assert '<h1 class="vx2-title">Système</h1>'  # VERTEX 2.0 : titre via vx2.page_header in html
     assert 'READONLY' in html  # invariant affiché

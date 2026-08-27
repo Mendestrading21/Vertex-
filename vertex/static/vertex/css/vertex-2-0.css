@@ -1121,3 +1121,17 @@ html,body{max-width:100%;overflow-x:clip}
   border-top:1px solid var(--vx-border-soft);
   font-size:var(--vx-fs-meta);color:var(--vx-smoke);
 }
+
+/* Engagement produit écrit — vue Sécurité. Une liste, pas une carte de plus. */
+#vx-content .vx2-jamais{
+  margin:0;padding:0;list-style:none;
+  display:flex;flex-direction:column;gap:var(--vx2-s2);
+}
+#vx-content .vx2-jamais li{
+  position:relative;padding-left:calc(var(--vx2-s4) + 2px);
+  color:var(--vx-mist);font-size:var(--vx-fs-body);line-height:1.6;
+}
+#vx-content .vx2-jamais li::before{
+  content:"";position:absolute;left:0;top:.55em;
+  width:6px;height:6px;border-radius:50%;background:var(--vx-positive);
+}
