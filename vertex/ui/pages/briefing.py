@@ -859,7 +859,12 @@ async function loadRegime(){
   try{
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
     const adj=r.adjustments||{};
-    const conf=Math.round((r.confidence||0)*100);
+    //  `||0` transformait une confiance ABSENTE en « 0 % » affiche comme
+    //  une mesure — la pire lecture possible : 0 % de confiance se lit
+    //  « le moteur est sur qu'il ne sait pas », alors que la verite est
+    //  « le moteur n'a rien rendu ». `null` traverse et la surface rend
+    //  n/d.
+    const conf=r.confidence!=null?Math.round(r.confidence*100):null;
     ($('vx-regime-body')||{}).innerHTML=
       `<div id="vx-regime-gauge" class="vx-mb2"></div>
       <div class="vx-kpi vx-mb3" style="text-align:center"><span class="vx-kpi-value" style="font-size:17px" data-regime="${r.regime}">${regFr(r.regime)[0]}</span>
@@ -872,9 +877,17 @@ async function loadRegime(){
       <button class="vx-btn vx-btn-sm vx-btn-ghost vx-right" data-scrollto="pulse">Pouls ↓</button></div>`;
     if(window.VXCharts&&VXCharts.gauge){
       const CO=(window.VXCharts&&VXCharts.colors)||{};
-      const reading=conf>=70?'Signal net — régime lisible':conf>=40?'Signal modéré — confirmations utiles':'Signal faible — prudence accrue';
-      VXCharts.gauge('vx-regime-gauge',{value:conf,min:0,max:100,unit:' %',label:'confiance',reading:reading,
-        bands:[{to:40,color:CO.negative},{to:70,color:CO.warning},{to:100,color:CO.positive}]});
+      //  `conf` peut valoir null : sans ce cas, `null>=70` est faux, `null>=40`
+      //  aussi, et l'absence se lisait « Signal faible — prudence accrue ».
+      //  Un jugement rendu sur rien.
+      const reading=conf==null?'Confiance non rendue par le moteur'
+        :conf>=70?'Signal net — régime lisible'
+        :conf>=40?'Signal modéré — confirmations utiles'
+        :'Signal faible — prudence accrue';
+      if(conf==null){($('vx-regime-gauge')||{}).innerHTML=
+        VX.states.empty('Confiance non rendue');}
+      else{VXCharts.gauge('vx-regime-gauge',{value:conf,min:0,max:100,unit:' %',label:'confiance',reading:reading,
+        bands:[{to:40,color:CO.negative},{to:70,color:CO.warning},{to:100,color:CO.positive}]});}
     }
   }catch(e){($('vx-regime-body')||{}).innerHTML=VX.states.error('Régime indisponible');}
 }
@@ -1206,21 +1219,29 @@ async function loadPulse(scan){
   /* Régime — confiance + POSTURE 3 ÉTATS (lecture moteur, jamais un % inventé) */
   try{
     const r=await VX.fetch('/api/market/regime',{ttl:120000});
-    const conf=Math.round((r.confidence||0)*100);
+    //  `||0` transformait une confiance ABSENTE en « 0 % » affiche comme
+    //  une mesure — la pire lecture possible : 0 % de confiance se lit
+    //  « le moteur est sur qu'il ne sait pas », alors que la verite est
+    //  « le moteur n'a rien rendu ». `null` traverse et la surface rend
+    //  n/d.
+    const conf=r.confidence!=null?Math.round(r.confidence*100):null;
     const allowed=r.adjustments&&r.adjustments.new_risk_allowed;
-    if(G){VXCharts.gauge('vx-gauge-trend',{value:conf,min:0,max:100,unit:' %',label:'Régime',
+    if(G&&conf!=null){VXCharts.gauge('vx-gauge-trend',{value:conf,min:0,max:100,unit:' %',label:'Régime',
       reading:regFr(r.regime)[0]+' · '+(allowed?'risque autorisé':'risque bloqué'),
       bands:[{to:40,color:CO.negative},{to:70,color:CO.warning},{to:100,color:CO.positive}]});}
     /* Posture = lecture DIRECTE du moteur : risque bloqué → Défense ;
        autorisé + confiance ≥ 55 → Attaque ; autorisé sinon → Neutre. */
-    const st=!allowed?'def':(conf>=55?'att':'neu');
+    //  `conf==null` tombe en Neutre, pas en Attaque : une posture offensive
+    //  ne se prend pas sur une confiance qu'on n'a pas.
+    const st=!allowed?'def':(conf!=null&&conf>=55?'att':'neu');
     ($('vx-regime-rail')||{}).innerHTML=
       '<div class="vx-stat-xl-label">Lecture moteur</div>'
       +`<div class="vx-posture" role="img" aria-label="Posture ${st==='def'?'défense':st==='att'?'attaque':'neutre'}">
         <span ${st==='def'?'data-on="def"':''}>Défense</span>
         <span ${st==='neu'?'data-on="neu"':''}>Neutre</span>
         <span ${st==='att'?'data-on="att"':''}>Attaque</span></div>`
-      +'<div class="vx-meta vx-mt3">Régime <b>'+esc(regFr(r.regime)[0])+'</b> · confiance '+conf+' % · '
+      +'<div class="vx-meta vx-mt3">Régime <b>'+esc(regFr(r.regime)[0])+'</b> · confiance '
+      +(conf==null?'n/d':conf+' %')+' · '
       +(allowed?'<span class="vx-pos">nouveau risque autorisé</span>':'<span class="vx-neg">nouveau risque BLOQUÉ</span>')+'</div>'
       +'<div class="vx-card-footer">'+VX.updateIndicator(r.as_of||Date.now(),'Moteur de régimes','delayed')+'</div>';
   }catch(e){
